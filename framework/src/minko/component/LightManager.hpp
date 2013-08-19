@@ -38,12 +38,15 @@ namespace minko
 		private:
 			typedef std::shared_ptr<AbstractComponent>	AbsCmpPtr;
 			typedef std::shared_ptr<scene::Node>		NodePtr;
-			typedef std::shared_ptr<AbstractLight>		AbsLightPtr;
 
 		private:
 			std::shared_ptr<data::Provider>				_data;
-			std::set<AbsLightPtr>						_ambientLights;
-			std::set<AbsLightPtr>						_directionalLights;
+			std::set<std::shared_ptr<AmbientLight>>		_ambientLights;
+			std::set<std::shared_ptr<DirectionalLight>>	_directionalLights;
+			std::set<std::shared_ptr<PointLight>>		_pointLights;
+			std::set<std::shared_ptr<SpotLight>>		_spotLights;
+
+			std::shared_ptr<math::Vector3>				_ambientLightsContribution;
 
 			Signal<AbsCmpPtr, NodePtr>::Slot			_targetAddedSlot;
 			Signal<AbsCmpPtr, NodePtr>::Slot			_targetRemovedSlot;
@@ -93,7 +96,10 @@ namespace minko
 			componentRemovedHandler(NodePtr node, NodePtr target, AbsCmpPtr cmp);
 
 			void
-			updateLightArray(const std::string& arrayName, std::set<AbsLightPtr>& lights);
+			setLightArrayLength(const std::string& arrayName, int length);
+
+			void
+			setLightColor(const std::string& arrayName, std::shared_ptr<math::Vector3> color);
 		};
 	}
 }

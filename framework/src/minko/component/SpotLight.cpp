@@ -17,44 +17,56 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "AbstractDiscreteLight.hpp"
+#include "SpotLight.hpp"
 
+#include "minko/math/Vector3.hpp"
 #include "minko/math/Matrix4x4.hpp"
-#include "minko/scene/Node.hpp"
-#include "minko/data/Container.hpp"
 
 using namespace minko;
+using namespace minko::math;
 using namespace minko::component;
 
-AbstractDiscreteLight::AbstractDiscreteLight(const std::string& arrayName) :
-	AbstractLight(arrayName)
+/*static*/
+uint SpotLight::_counter = 0;
+
+SpotLight::SpotLight():
+	AbstractDiscreteLight("spotLights", _counter++),
+	_worldPosition(Vector3::create(0.0f, 0.0f, 0.0f)),
+	_worldDirection(Vector3::create(0.0f, 0.0f, 1.0f))
 {
+	diffuse(1.f);
+	specular(1.f);
+
+	innerConeAngle(PI * 0.2f);
+	outerConeAngle(PI * 0.25f);
+
+	data()->set("position", _worldPosition);
+	data()->set("direction", _worldDirection);
 }
 
 void
-AbstractDiscreteLight::targetAddedHandler(AbstractComponent::Ptr cmp, std::shared_ptr<scene::Node> target)
+SpotLight::updateModelToWorldMatrix(std::shared_ptr<math::Matrix4x4> modelToWorld)
 {
-	AbstractLight::targetAddedHandler(cmp, target);
-
-	_modelToWorldChangedSlot = target->data()->propertyChanged("transform.modelToWorldMatrix")->connect(std::bind(
-		&AbstractDiscreteLight::modelToWorldMatrixChangedHandler,
-		std::dynamic_pointer_cast<AbstractDiscreteLight>(shared_from_this()),
-		std::placeholders::_1,
-		std::placeholders::_2
-	));
+	modelToWorld->translationVector(_worldPosition);
+	modelToWorld->deltaTransform(Vector3::zAxis(), _worldDirection);
 }
 
 void
-AbstractDiscreteLight::targetRemovedHandler(AbstractComponent::Ptr cmp, std::shared_ptr<scene::Node> target)
+SpotLight::innerConeAngle(float radians)
 {
-	AbstractLight::targetRemovedHandler(cmp, target);
+	if (radians < 0.0f || radians > 0.5f * (float)PI)
+		throw std::invalid_argument("radians");
 
-	_modelToWorldChangedSlot = nullptr;
+	_cosInnerConeAngle = cosf(radians);
+	data()->set<float>("cosInnerConeAngle", _cosInnerConeAngle);
 }
 
 void
-AbstractDiscreteLight::modelToWorldMatrixChangedHandler(std::shared_ptr<data::Container> 	container,
-								 						const std::string& 					propertyName)
+SpotLight::outerConeAngle(float radians)
 {
-	updateModelToWorldMatrix(container->get<math::Matrix4x4::Ptr>(propertyName));
+	if (radians < 0.0f || radians > 0.5f * (float)PI)
+		throw std::invalid_argument("radians");
+
+	_cosOuterConeAngle = cosf(radians);
+	data()->set<float>("cosOuterConeAngle", _cosOuterConeAngle);
 }

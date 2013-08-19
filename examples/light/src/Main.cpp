@@ -39,7 +39,7 @@ int main(int argc, char** argv)
 		root->addComponent(sceneManager);
 		
 		auto ambientLight = scene::Node::create("ambient light");
-		ambientLight->addComponent(AmbientLight::create());
+		ambientLight->addComponent(AmbientLight::create(1.0));
 		root->addChild(ambientLight);
 
 		// setup directional light
@@ -57,6 +57,18 @@ int main(int argc, char** argv)
 		lightNode2->component<Transform>()->transform()
 			->lookAt(Vector3::zero(), Vector3::create(0.f, -1.f, 1.f));
 		root->addChild(lightNode2);
+
+
+		// setup point light 1
+		auto pointLightNode = scene::Node::create("plight");
+		auto pointLight		= component::PointLight::create();
+		pointLight->color()->setTo(0.2f, 0.2f, 1.0f);
+
+		pointLightNode->addComponent(pointLight);
+		pointLightNode->addComponent(Transform::create());
+		pointLightNode->component<Transform>()->transform()->appendTranslation(0.0f, 2.0f, 0.0f);
+
+		root->addChild(pointLightNode);
 
 		// setup camera
         auto renderingComponent = Renderer::create();
