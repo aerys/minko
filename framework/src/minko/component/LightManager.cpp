@@ -19,20 +19,28 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/component/LightManager.hpp"
 
+#include "minko/math/Vector3.hpp"
 #include "minko/data/Provider.hpp"
 #include "minko/data/Container.hpp"
 #include "minko/scene/Node.hpp"
 #include "minko/scene/NodeSet.hpp"
-#include "minko/component/AbstractLight.hpp"
 #include "minko/component/AmbientLight.hpp"
 #include "minko/component/DirectionalLight.hpp"
+#include "minko/component/PointLight.hpp"
+#include "minko/component/SpotLight.hpp"
 
+using namespace minko::math;
 using namespace minko::component;
 
 LightManager::LightManager() :
 	AbstractComponent(),
 	std::enable_shared_from_this<LightManager>(),
 	_data(data::Provider::create()),
+	_ambientLights(),
+	_directionalLights(),
+	_pointLights(),
+	_spotLights(),
+	_ambientLightsContribution(Vector3::create(0.0f, 0.0f, 0.0f)),
 	_targetAddedSlot(nullptr),
 	_targetRemovedSlot(nullptr),
 	_addedSlot(nullptr),
@@ -40,6 +48,7 @@ LightManager::LightManager() :
 	_componentAddedSlot(nullptr),
 	_componentRemovedSlot(nullptr)
 {
+	setLightColor("ambientLightsContribution", _ambientLightsContribution);
 }
 
 void
@@ -110,10 +119,15 @@ LightManager::targetRemovedHandler(AbsCmpPtr cmp, NodePtr target)
 {
 	_ambientLights.clear();
 	_directionalLights.clear();
-	_addedSlot = nullptr;
-	_removedSlot = nullptr;
-	_componentAddedSlot = nullptr;
-	_componentRemovedSlot = nullptr;
+	_pointLights.clear();
+	_spotLights.clear();
+
+	_ambientLightsContribution->copyFrom(Vector3::zero());
+
+	_addedSlot				= nullptr;
+	_removedSlot			= nullptr;
+	_componentAddedSlot		= nullptr;
+	_componentRemovedSlot	= nullptr;
 
 	target->data()->removeProvider(_data);
 }
@@ -121,110 +135,139 @@ LightManager::targetRemovedHandler(AbsCmpPtr cmp, NodePtr target)
 void
 LightManager::addedHandler(NodePtr node, NodePtr target, NodePtr ancestor)
 {
-	auto numAmbientLights = _ambientLights.size();
-	auto numDirectionalLights = _directionalLights.size();
-	std::vector<AbstractLight::Ptr> lights;
+	auto numAmbientLights		= _ambientLights.size();
+	auto numDirectionalLights	= _directionalLights.size();
+	auto numPointLights			= _pointLights.size();
+	auto numSpotLights			= _spotLights.size();
+
+	auto ambientLightsContribution		= Vector3::create()->copyFrom(_ambientLightsContribution);
+	_ambientLightsContribution->copyFrom(Vector3::zero());
 
 	auto descendants = scene::NodeSet::create(target)->descendants(true);
 	for (auto& descendant : descendants->nodes())
 	{
 		for (auto& ambientLight : descendant->components<AmbientLight>())
-			if (_ambientLights.insert(ambientLight).second)
-				lights.push_back(ambientLight);
+		{
+			_ambientLights.insert(ambientLight);
+			_ambientLightsContribution += ambientLight->color() * ambientLight->ambient();
+		}
 
 		for (auto& directionalLight : descendant->components<DirectionalLight>())
-			if (_directionalLights.insert(directionalLight).second)
-				lights.push_back(directionalLight);
+			_directionalLights.insert(directionalLight);
+
+		for (auto& pointLight : descendant->components<PointLight>())
+			_pointLights.insert(pointLight);
+
+		for (auto& spotLight : descendant->components<SpotLight>())
+			_spotLights.insert(spotLight);
 	}
 
 	if (numAmbientLights != _ambientLights.size())
-		updateLightArray("ambientLights", _ambientLights);
+		setLightArrayLength("ambientLights.length", _ambientLights.size());
 	if (numDirectionalLights != _directionalLights.size())
-		updateLightArray("directionalLights", _directionalLights);
+		setLightArrayLength("directionalLights.length", _directionalLights.size());
+	if (numPointLights != _pointLights.size())
+		setLightArrayLength("pointLights.length", _pointLights.size());
+	if (numSpotLights != _spotLights.size())
+		setLightArrayLength("spotLights.length", _spotLights.size());
 
-	for (auto light : lights)
-		targets()[0]->data()->addProvider(light->_arrayData);
+	if ((ambientLightsContribution - _ambientLightsContribution)->length() > 1e-6f)
+		setLightColor("ambientLightsContribution", _ambientLightsContribution);
 }
 
 void
 LightManager::removedHandler(NodePtr node, NodePtr target, NodePtr ancestor)
 {
-	auto numAmbientLights = _ambientLights.size();
-	auto numDirectionalLights = _directionalLights.size();
-	std::vector<AbstractLight::Ptr> lights;
+	auto numAmbientLights			= _ambientLights.size();
+	auto numDirectionalLights		= _directionalLights.size();
+	auto numPointLights				= _pointLights.size();
+	auto numSpotLights				= _spotLights.size();
+
+	auto ambientLightsContribution	= Vector3::create()->copyFrom(_ambientLightsContribution);
+	_ambientLightsContribution->copyFrom(Vector3::zero());
 
 	auto descendants = scene::NodeSet::create(target)->descendants(true);
 	for (auto& descendant : descendants->nodes())
 	{
 		for (auto& ambientLight : descendant->components<AmbientLight>())
-			if (_ambientLights.erase(ambientLight))
-				lights.push_back(ambientLight);
-	
+		{
+			_ambientLights.erase(ambientLight);
+			_ambientLightsContribution += ambientLight->color() * ambientLight->ambient();
+		}
+
 		for (auto& directionalLight : descendant->components<DirectionalLight>())
-			if (_directionalLights.erase(directionalLight))
-				lights.push_back(directionalLight);
+			_directionalLights.erase(directionalLight);
+
+		for (auto& pointLight : descendant->components<PointLight>())
+			_pointLights.erase(pointLight);
+
+		for (auto& spotLight : descendant->components<SpotLight>())
+			_spotLights.erase(spotLight);
 	}
 
 	if (numAmbientLights != _ambientLights.size())
-		updateLightArray("ambientLights", _ambientLights);
+		setLightArrayLength("ambientLights.length", _ambientLights.size());
 	if (numDirectionalLights != _directionalLights.size())
-		updateLightArray("directionalLights", _directionalLights);
+		setLightArrayLength("directionalLights.length", _directionalLights.size());
+	if (numPointLights != _pointLights.size())
+		setLightArrayLength("pointLights.length", _pointLights.size());
+	if (numSpotLights != _spotLights.size())
+		setLightArrayLength("spotLights.length", _spotLights.size());
 
-	for (auto light : lights)
-		targets()[0]->data()->removeProvider(light->_arrayData);
+	if ((ambientLightsContribution - _ambientLightsContribution)->length() > 1e-6f)
+		setLightColor("ambientLightsContribution", _ambientLightsContribution);
 }
 
 void
 LightManager::componentAddedHandler(NodePtr node, NodePtr target, AbsCmpPtr cmp)
 {
-	auto ambientLight = std::dynamic_pointer_cast<AmbientLight>(cmp);
-	auto directionalLight = std::dynamic_pointer_cast<DirectionalLight>(cmp);
+	auto ambientLight		= std::dynamic_pointer_cast<AmbientLight>(cmp);
+	auto directionalLight	= std::dynamic_pointer_cast<DirectionalLight>(cmp);
+	auto pointLight			= std::dynamic_pointer_cast<PointLight>(cmp);
+	auto spotLight			= std::dynamic_pointer_cast<SpotLight>(cmp);
 
 	if (ambientLight && _ambientLights.insert(ambientLight).second)
-	{
-		updateLightArray("ambientLights", _ambientLights);
-		targets()[0]->data()->addProvider(ambientLight->_arrayData);
-	}
+		setLightArrayLength("ambientLights.length", _ambientLights.size());
 	else if (directionalLight && _directionalLights.insert(directionalLight).second)
-	{
-		updateLightArray("directionalLights", _directionalLights);
-		targets()[0]->data()->addProvider(directionalLight->_arrayData);
-	}
+		setLightArrayLength("directionalLights.length", _directionalLights.size());
+	else if (pointLight && _pointLights.insert(pointLight).second)
+		setLightArrayLength("pointLights.length", _pointLights.size());
+	else if (spotLight && _spotLights.insert(spotLight).second)
+		setLightArrayLength("spotLights.length", _spotLights.size());
 }
 
 void
 LightManager::componentRemovedHandler(NodePtr node, NodePtr target, AbsCmpPtr cmp)
 {
-	auto ambientLight = std::dynamic_pointer_cast<AmbientLight>(cmp);
-	auto directionalLight = std::dynamic_pointer_cast<DirectionalLight>(cmp);
+	auto ambientLight		= std::dynamic_pointer_cast<AmbientLight>(cmp);
+	auto directionalLight	= std::dynamic_pointer_cast<DirectionalLight>(cmp);
+	auto pointLight			= std::dynamic_pointer_cast<PointLight>(cmp);
+	auto spotLight			= std::dynamic_pointer_cast<SpotLight>(cmp);
 
 	if (ambientLight && _ambientLights.erase(ambientLight))
-	{
-		updateLightArray("ambientLights", _ambientLights);
-		targets()[0]->data()->removeProvider(ambientLight->_arrayData);
-	}
+		setLightArrayLength("ambientLights.length", _ambientLights.size());
 	else if (directionalLight && _directionalLights.erase(directionalLight))
-	{
-		updateLightArray("directionalLights", _directionalLights);
-		targets()[0]->data()->removeProvider(directionalLight->_arrayData);
-	}
+		setLightArrayLength("directionalLights.length", _directionalLights.size());
+	else if (pointLight && _pointLights.insert(pointLight).second)
+		setLightArrayLength("pointLights.length", _pointLights.size());
+	else if (spotLight && _spotLights.insert(spotLight).second)
+		setLightArrayLength("spotLights.length", _spotLights.size());
 }
 
 void
-LightManager::updateLightArray(const std::string& arrayName, std::set<AbstractLight::Ptr>& lights)
+LightManager::setLightColor(const std::string& arrayName, Vector3::Ptr color)
 {
-	auto propertyName = arrayName + ".length";
-	auto length = lights.size();
+	//_data->set<Vector3>(arrayName, *color);
+}
 
+void
+LightManager::setLightArrayLength(const std::string& arrayName, int length)
+{
 	if (length == 0)
 	{
-		if (_data->hasProperty(propertyName))
-			_data->unset(propertyName);
+		if (_data->hasProperty(arrayName))
+			_data->unset(arrayName);
 	}
 	else
-		_data->set<int>(propertyName, length);
-
-	auto counter = 0;
-	for (auto& light : lights)
-		light->lightId(counter++);
+		_data->set<int>(arrayName, length);
 }
