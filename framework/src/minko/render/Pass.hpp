@@ -107,6 +107,13 @@ namespace minko
 				return _stateBindings;
 			}
 
+			inline
+			const BindingMap&
+			macroBindings()
+			{
+				return _macroBindings;
+			}
+
 			std::shared_ptr<DrawCall>
 			createDrawCall(std::shared_ptr<data::Container> data, std::shared_ptr<data::Container> rootData);
 
