@@ -224,7 +224,7 @@ LightManager::updateLightArray(const std::string& arrayName, std::unordered_set<
 	else
 		_data->set<int>(propertyName, length);
 
-	auto counter = 0;
+	auto counter = lights.size();
 	for (auto& light : lights)
-		light->lightId(counter++);
+		light->lightId(--counter);
 }
