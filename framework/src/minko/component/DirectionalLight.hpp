@@ -35,8 +35,6 @@ namespace minko
 		    typedef std::shared_ptr<DirectionalLight> Ptr;
 
 		private:
-			static uint						_counter;
-
 			std::shared_ptr<math::Vector3>	_color;
 			std::shared_ptr<math::Vector3>	_worldDirection;
 
