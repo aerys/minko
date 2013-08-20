@@ -46,7 +46,7 @@ namespace minko
 			std::set<std::shared_ptr<PointLight>>		_pointLights;
 			std::set<std::shared_ptr<SpotLight>>		_spotLights;
 
-			std::shared_ptr<math::Vector3>				_sumAmbientColors;
+			std::shared_ptr<math::Vector3>				_ambientLightsContribution;
 
 			Signal<AbsCmpPtr, NodePtr>::Slot			_targetAddedSlot;
 			Signal<AbsCmpPtr, NodePtr>::Slot			_targetRemovedSlot;
