@@ -815,8 +815,6 @@ OpenGLES2Context::getProgramInputs(const unsigned int program)
 	fillUniformInputs(program, names, types, locations);
 	fillAttributeInputs(program, names, types, locations);
 
-    checkForErrors();
-
 	return ProgramInputs::create(shared_from_this(), program, names, types, locations);
 }
 
@@ -840,6 +838,7 @@ OpenGLES2Context::fillUniformInputs(const unsigned int					program,
     	std::vector<char> name(maxUniformNameLength);
 
     	glGetActiveUniform(program, i, maxUniformNameLength, &nameLength, &size, &type, &name[0]);
+    	checkForErrors();
 
 	    name[nameLength] = 0;
 
@@ -915,6 +914,7 @@ OpenGLES2Context::fillAttributeInputs(const unsigned int				program,
     	std::vector<char> name(maxAttributeNameLength);
 
 		glGetActiveAttrib(program, i, maxAttributeNameLength, &nameLength, &size, &type, &name[0]);
+	    checkForErrors();
 
 	    name[nameLength] = 0;
 
@@ -1004,7 +1004,7 @@ OpenGLES2Context::setUniform(unsigned int location, float value1, float value2, 
 }
 
 void
-OpenGLES2Context::setUniformMatrix4x4(unsigned int location, unsigned int size, bool transpose, const float* values)
+OpenGLES2Context::setUniform(unsigned int location, unsigned int size, bool transpose, const float* values)
 {
 	glUniformMatrix4fv(location, size, transpose, values);
 }

@@ -205,10 +205,10 @@ namespace minko
 
 			virtual
 			void
-			setUniformMatrix4x4(unsigned int    location,
-                                unsigned int    size,
-                                bool            transpose,
-                                const float*    values) = 0;
+			setUniform(unsigned int    location,
+                       unsigned int    size,
+                       bool            transpose,
+                       const float*    values) = 0;
 
             virtual
             void
