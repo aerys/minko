@@ -106,11 +106,20 @@ namespace minko
 				return _stateBindings;
 			}
 
-			std::shared_ptr<DrawCall>
-			createDrawCall(std::shared_ptr<data::Container> data, std::shared_ptr<data::Container> rootData);
+			inline
+			std::shared_ptr<States>
+			states()
+			{
+				return _states;
+			}
 
 			std::shared_ptr<Program>
-			selectProgram(std::shared_ptr<data::Container> data, std::shared_ptr<data::Container> rootData);
+			selectProgram(std::shared_ptr<data::Container> 	data,
+						  std::shared_ptr<data::Container> 	rootData,
+						  std::list<std::string>&			macroBindingProperties);
+
+			void
+			setUniform(const std::string& name, float value);
 
 		private:
 			Pass(const std::string&					name,
