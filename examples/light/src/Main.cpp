@@ -33,9 +33,10 @@ int main(int argc, char** argv)
 	auto window = glfwCreateWindow(800, 600, "Minko - Cube Example", NULL, NULL);
 	glfwMakeContextCurrent(window);
 
-	auto sceneManager = SceneManager::create(render::OpenGLES2Context::create());
-    auto mesh = scene::Node::create("mesh");
-    auto lightNode = scene::Node::create("directional light 1");
+	auto sceneManager	= SceneManager::create(render::OpenGLES2Context::create());
+    auto mesh			= scene::Node::create("mesh");
+    auto lightNode		= scene::Node::create("directional light 1");
+	auto pointLightNode	= scene::Node::create("plight");
 
 	// setup assets
 	sceneManager->assets()->defaultOptions()->generateMipmaps(true);
@@ -57,14 +58,14 @@ int main(int argc, char** argv)
 		root->addComponent(sceneManager);
 		
 		auto ambientLight = scene::Node::create("ambient light");
-		ambientLight->addComponent(AmbientLight::create(1.0));
+		ambientLight->addComponent(AmbientLight::create(0.8f));
 		root->addChild(ambientLight);
 
 		// setup directional light
 		auto directionalLight = DirectionalLight::create();
 		lightNode->addComponent(Transform::create());
 		lightNode->addComponent(directionalLight);
-		root->addChild(lightNode);
+		//root->addChild(lightNode);
 
 		// setup directional light 2
 		auto lightNode2 = scene::Node::create("light2");
@@ -74,18 +75,17 @@ int main(int argc, char** argv)
 		lightNode2->addComponent(Transform::create());
 		lightNode2->component<Transform>()->transform()
 			->lookAt(Vector3::zero(), Vector3::create(0.f, -1.f, 1.f));
-		root->addChild(lightNode2);
+		//root->addChild(lightNode2);
 
 		// setup point light 1
-		auto pointLightNode = scene::Node::create("plight");
 		auto pointLight		= component::PointLight::create();
 		pointLight->color()->setTo(0.2f, 0.2f, 1.0f);
 
 		pointLightNode->addComponent(pointLight);
 		pointLightNode->addComponent(Transform::create());
-		pointLightNode->component<Transform>()->transform()->appendTranslation(0.0f, 2.0f, 0.0f);
+		pointLightNode->component<Transform>()->transform()->appendTranslation(2.0f, 0.0f, 0.0f);
 
-		root->addChild(pointLightNode);
+		//root->addChild(pointLightNode);
 
 		// setup camera
         auto renderingComponent = Renderer::create();
@@ -114,8 +114,9 @@ int main(int argc, char** argv)
 
 	while (!glfwWindowShouldClose(window))
 	{
-		mesh->component<Transform>()->transform()->prependRotationY(-.01f);
+		//mesh->component<Transform>()->transform()->prependRotationY(-.01f);
 		lightNode->component<Transform>()->transform()->prependRotationY(.01f);
+		pointLightNode->component<Transform>()->transform()->appendRotationY(.01f);
 
 		sceneManager->nextFrame();
 		printFramerate();
