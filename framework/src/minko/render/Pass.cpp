@@ -45,22 +45,10 @@ Pass::Pass(const std::string&				name,
 {
 }
 
-std::shared_ptr<DrawCall>
-Pass::createDrawCall(std::shared_ptr<data::Container> data, std::shared_ptr<data::Container> rootData)
-{
-	return DrawCall::create(
-        selectProgram(data, rootData),
-        data,
-        rootData,
-        _attributeBindings,
-        _uniformBindings,
-        _stateBindings,
-        _states
-    );
-}
-
 std::shared_ptr<Program>
-Pass::selectProgram(std::shared_ptr<data::Container> data, std::shared_ptr<data::Container> rootData)
+Pass::selectProgram(std::shared_ptr<data::Container> data,
+					std::shared_ptr<data::Container> rootData,
+					std::list<std::string>&			 macroBindingProperties)
 {
 	Program::Ptr program;
 
@@ -90,6 +78,8 @@ Pass::selectProgram(std::shared_ptr<data::Container> data, std::shared_ptr<data:
 					if (container->propertyHasType<int>(propertyName))
 						defines += " " + std::to_string(container->get<int>(propertyName));
 					defines += "\n";
+
+					macroBindingProperties.push_back(propertyName);
 				}
             }
 
@@ -106,14 +96,18 @@ Pass::selectProgram(std::shared_ptr<data::Container> data, std::shared_ptr<data:
 			);
 
 			program = Program::create(_programTemplate->context(), vs, fs);
-            program->vertexShader()->upload();
-		    program->fragmentShader()->upload();
-		    program->upload();
 
 			// register the program to this signature
 			_signatureToProgram[signature] = program;
 		}
 	}
+
+	if (!program->vertexShader()->isReady())
+        program->vertexShader()->upload();
+	if (!program->fragmentShader()->isReady())
+	    program->fragmentShader()->upload();
+	if (!program->isReady())
+		program->upload();
 
 	return program;
 }
@@ -140,4 +134,11 @@ Pass::buildSignature(std::shared_ptr<data::Container> data, std::shared_ptr<data
     }
 
 	return signature;
+}
+
+void
+Pass::setUniform(const std::string& name, float value)
+{
+	for (auto signatureAndProgram : _signatureToProgram)
+		signatureAndProgram.second->setUniform(name, value);
 }
