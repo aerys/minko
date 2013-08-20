@@ -91,12 +91,8 @@ Surface::geometry(std::shared_ptr<geometry::Geometry> newGeometry)
 		target->data()->removeProvider(_geometry->data());
 		target->data()->addProvider(newGeometry->data());
 
-		_drawCalls.clear();
-
-		for (auto pass : _effect->passes())
-		{
-			_drawCalls.push_back(pass->createDrawCall(target->data(), target->root()->data()));
-		}
+		deleteDrawCalls();
+		createDrawCalls();
 	}
 
 	_geometry = newGeometry;
@@ -123,10 +119,47 @@ Surface::targetAddedHandler(AbstractComponent::Ptr	ctrl,
 	data->addProvider(_geometry->data());
     data->addProvider(_effect->data());
 
-	_drawCalls.clear();
+    createDrawCalls();
+}
+
+void
+Surface::createDrawCalls()
+{
+	auto target = targets()[0];
+	std::list<std::string> macroBindingProperties;
 
 	for (auto pass : _effect->passes())
-		_drawCalls.push_back(pass->createDrawCall(data, target->root()->data()));
+	{
+		auto drawCall = DrawCall::create(
+			pass->attributeBindings(),
+			pass->uniformBindings(),
+			pass->stateBindings(),
+			pass->states()
+		);
+
+		macroBindingProperties.clear();
+		drawCall->configure(
+			pass->selectProgram(target->data(), target->root()->data(), macroBindingProperties),
+			target->data(),
+			target->root()->data()
+		);
+
+		for (auto& propertyName : macroBindingProperties)
+		{
+			std::cout << propertyName << ", ";
+			_macroBindingPropertyToDrawCalls[propertyName].push_back(drawCall);
+		}
+		std::cout << std::endl;
+
+		_drawCalls.push_back(drawCall);
+	}
+}
+
+void
+Surface::deleteDrawCalls()
+{
+	_drawCalls.clear();
+	_macroBindingPropertyToDrawCalls.clear();
 }
 
 void
@@ -152,10 +185,6 @@ Surface::addedOrRemovedHandler(NodePtr node, NodePtr target, NodePtr ancestor)
 	auto rootData = node->root()->data();
 	auto i = 0;
 
-	for (auto drawCall : _drawCalls)
-		drawCall->configure(
-			_effect->passes()[i++]->selectProgram(nodeData, rootData),
-			nodeData,
-			rootData
-		);
+	deleteDrawCalls();
+	createDrawCalls();
 }
