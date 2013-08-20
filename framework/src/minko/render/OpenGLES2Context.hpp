@@ -232,7 +232,7 @@ namespace minko
 			setUniform(unsigned int location, float value1, float value2, float value3, float value4);
 
 			void
-			setUniformMatrix4x4(unsigned int location, unsigned int size, bool transpose, const float* values);
+			setUniform(unsigned int location, unsigned int size, bool transpose, const float* values);
 
             void
             setBlendMode(Blending::Source source, Blending::Destination destination);
