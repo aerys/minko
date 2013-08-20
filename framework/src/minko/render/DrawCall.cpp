@@ -90,6 +90,9 @@ DrawCall::bind(ContainerPtr data, ContainerPtr rootData)
     auto numVertexBuffers   = 0;
     auto programInputs      = _program->inputs();
 
+    if (!programInputs)
+        throw;
+
     for (unsigned int inputId = 0; inputId < programInputs->locations().size(); ++inputId)
 	{
 		auto type		= programInputs->types()[inputId];
@@ -106,7 +109,8 @@ DrawCall::bind(ContainerPtr data, ContainerPtr rootData)
 				continue;
 
 			auto vertexBuffer	= getDataProperty<VertexBuffer::Ptr>(name);
-			auto attribute		= vertexBuffer->attribute(inputName);
+            auto attributeName  = name.substr(name.find_last_of('.') + 1);
+			auto attribute		= vertexBuffer->attribute(attributeName);
 
             _vertexBuffers[numVertexBuffers] = vertexBuffer->id();
             _vertexBufferLocations[numVertexBuffers] = location;
@@ -252,7 +256,7 @@ DrawCall::render(AbstractContext::Ptr context)
         context->setUniform(uniformFloat4.first, float4->x(), float4->y(), float4->z(), float4->w());
     }
     for (auto& uniformFloat16 : _uniformFloat16)
-        context->setUniformMatrix4x4(uniformFloat16.first, 1, true, uniformFloat16.second);
+        context->setUniform(uniformFloat16.first, 1, true, uniformFloat16.second);
 
     for (uint textureId = 0; textureId < _textures.size(); ++textureId)
     {
