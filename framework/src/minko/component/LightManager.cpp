@@ -335,5 +335,5 @@ void
 LightManager::updateSumAmbients(Vector3::Ptr value)
 {
 	_sumAmbients = value;
-	_data->set<Vector3>("sumAmbients", *_sumAmbients);
+	_data->set<Vector3::Ptr>("sumAmbients", _sumAmbients);
 }
