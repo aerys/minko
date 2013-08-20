@@ -34,9 +34,6 @@ namespace minko
 			typedef std::shared_ptr<PointLight> Ptr;
 	
 		private:
-			static uint						_counter;
-
-			std::shared_ptr<math::Vector3>	_color;
 			std::shared_ptr<math::Vector3>	_worldPosition;
 
 		public:
@@ -51,6 +48,10 @@ namespace minko
 				return light;
 			}
 	
+			~PointLight()
+		    {
+		    }
+
 		protected:
 			void
             updateModelToWorldMatrix(std::shared_ptr<math::Matrix4x4> modelToWorld);

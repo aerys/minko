@@ -26,12 +26,8 @@ using namespace minko;
 using namespace minko::math;
 using namespace minko::component;
 
-/*static*/
-uint PointLight::_counter = 0;
-
 PointLight::PointLight():
-	AbstractDiscreteLight("pointLights", _counter++),
-	_color(Vector3::create(1.0f, 1.0f, 1.0f)),
+	AbstractDiscreteLight("pointLights"),
 	_worldPosition(Vector3::create(0.0f, 0.0f, 0.0f))
 {
 	diffuse(1.f);
