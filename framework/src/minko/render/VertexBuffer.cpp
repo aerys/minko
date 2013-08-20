@@ -108,5 +108,5 @@ VertexBuffer::attribute(const std::string& attributeName)
 		if (std::get<0>(*attr) == attributeName)
 			return attr;
 
-	throw std::invalid_argument("attributeName");
+	throw std::invalid_argument("attributeName = " + attributeName);
 }
