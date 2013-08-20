@@ -50,3 +50,10 @@ Program::dispose()
 	_vertexShader = nullptr;
 	_fragmentShader = nullptr;
 }
+
+void
+Program::setUniform(const std::string& name, float value)
+{
+	_context->setProgram(_id);
+	_context->setUniform(_inputs->location(name), value);
+}
