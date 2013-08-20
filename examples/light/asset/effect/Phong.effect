@@ -26,7 +26,7 @@
 		"SHININESS"					: "material.shininess",
 		"MODEL_TO_WORLD"			: "transform.modelToWorldMatrix",
 		"NUM_AMBIENT_LIGHTS"		: "ambientLights.length",
-		"AMBIENT_LIGHTS_CONTRIB"	: "ambientLightsContribution",
+		"PRECOMPUTED_AMBIENT"		: "sumAmbients",
 		"NUM_DIRECTIONAL_LIGHTS"	: "directionalLights.length",
 		"NUM_POINT_LIGHTS"			: "pointLights.length"
 	},
@@ -93,9 +93,9 @@
 				uniform AmbientLight ambientLights[NUM_AMBIENT_LIGHTS];
 			#endif // NUM_AMBIENT_LIGHTS
 			
-			#ifdef AMBIENT_LIGHTS_CONTRIB
-				uniform vec3 ambientLightsContribution;
-			#endif // AMBIENT_LIGHTS_CONTRIB
+			#ifdef PRECOMPUTED_AMBIENT
+				uniform vec3 sumAmbients;
+			#endif // PRECOMPUTED_AMBIENT
 			
 			#ifdef NUM_DIRECTIONAL_LIGHTS
 				uniform DirectionalLight directionalLights[NUM_DIRECTIONAL_LIGHTS];
@@ -130,18 +130,18 @@
 				#endif
 
 				vec3 phong = vec3(0.);
-				/*
-				#ifdef AMBIENT_LIGHTS_CONTRIB
-					phong += ambientLightsContribution;
-				#endif // AMBIENT_LIGHTS_CONTRIB
-				*/
+				#ifdef PRECOMPUTED_AMBIENT
+					phong += sumAmbients;
+				#else
 				
-				#ifdef NUM_AMBIENT_LIGHTS
-					for (int i = 0; i < NUM_AMBIENT_LIGHTS; ++i)
-					{
-						phong += ambientLights[i].color * ambientLights[i].ambient;
-					}
-				#endif
+					#ifdef NUM_AMBIENT_LIGHTS
+						for (int i = 0; i < NUM_AMBIENT_LIGHTS; ++i)
+						{
+							phong += ambientLights[i].color * ambientLights[i].ambient;
+						}
+					#endif // NUM_AMBIENT_LIGHTS
+		
+				#endif // PRECOMPUTED_AMBIENT
 				
 				#if defined NUM_DIRECTIONAL_LIGHTS || defined NUM_POINT_LIGHTS
 					vec3 eyeVector		= normalize(cameraPosition - vertexPosition);
@@ -195,8 +195,13 @@
 					diffuse = vec4(diffuse.rgb * phong, diffuse.a);
 				#endif // defined NUM_DIRECTIONAL_LIGHTS || defined NUM_POINT_LIGHTS
 
-								
-				gl_FragColor = diffuse;
+				//#ifdef AMBIENTS_CONTRIBUTION
+				//gl_FragColor = vec4(0.0, 1.0, 0.0, 1.0);
+				//#else
+				//gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+				//#endif // AMBIENTS_CONTRIBUTION
+				gl_FragColor = vec4(phong, 1.0);
+				//gl_FragColor = diffuse;
 			}
 		"
 	}]
