@@ -36,7 +36,8 @@ namespace minko
 		private:
 			static uint						_counter;
 
-			std::shared_ptr<math::Vector3>	_color;
+			float							_cosInnerConeAngle;
+			float							_cosOuterConeAngle;
 			std::shared_ptr<math::Vector3>	_worldPosition;
 			std::shared_ptr<math::Vector3>	_worldDirection;
 
@@ -51,7 +52,27 @@ namespace minko
 
 			    return light;
 			}
-	
+
+			inline
+			float
+			cosInnerConeAngle() const
+			{
+				return _cosInnerConeAngle;
+			}
+
+			void
+			innerConeAngle(float radians);
+
+			inline
+			float
+			cosOuterConeAngle() const
+			{
+				return _cosOuterConeAngle;
+			}
+
+			void
+			outerConeAngle(float radians);
+
 		protected:
 			void
             updateModelToWorldMatrix(std::shared_ptr<math::Matrix4x4> modelToWorld);
