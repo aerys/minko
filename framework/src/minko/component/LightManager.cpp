@@ -19,6 +19,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/component/LightManager.hpp"
 
+#include "minko/math/Vector3.hpp"
 #include "minko/data/Provider.hpp"
 #include "minko/data/Container.hpp"
 #include "minko/scene/Node.hpp"
