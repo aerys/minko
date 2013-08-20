@@ -40,7 +40,7 @@ LightManager::LightManager() :
 	_directionalLights(),
 	_pointLights(),
 	_spotLights(),
-	_sumAmbientColors(Vector3::create(0.0f, 0.0f, 0.0f)),
+	_ambientLightsContribution(Vector3::create(0.0f, 0.0f, 0.0f)),
 	_targetAddedSlot(nullptr),
 	_targetRemovedSlot(nullptr),
 	_addedSlot(nullptr),
@@ -48,7 +48,7 @@ LightManager::LightManager() :
 	_componentAddedSlot(nullptr),
 	_componentRemovedSlot(nullptr)
 {
-	setLightColor("ambientLights.sumColors", _sumAmbientColors);
+	setLightColor("ambientLightsContribution", _ambientLightsContribution);
 }
 
 void
@@ -122,7 +122,7 @@ LightManager::targetRemovedHandler(AbsCmpPtr cmp, NodePtr target)
 	_pointLights.clear();
 	_spotLights.clear();
 
-	_sumAmbientColors->copyFrom(Vector3::zero());
+	_ambientLightsContribution->copyFrom(Vector3::zero());
 
 	_addedSlot				= nullptr;
 	_removedSlot			= nullptr;
@@ -140,8 +140,8 @@ LightManager::addedHandler(NodePtr node, NodePtr target, NodePtr ancestor)
 	auto numPointLights			= _pointLights.size();
 	auto numSpotLights			= _spotLights.size();
 
-	auto sumAmbientColors		= Vector3::create()->copyFrom(_sumAmbientColors);
-	_sumAmbientColors->copyFrom(Vector3::zero());
+	auto ambientLightsContribution		= Vector3::create()->copyFrom(_ambientLightsContribution);
+	_ambientLightsContribution->copyFrom(Vector3::zero());
 
 	auto descendants = scene::NodeSet::create(target)->descendants(true);
 	for (auto& descendant : descendants->nodes())
@@ -149,7 +149,7 @@ LightManager::addedHandler(NodePtr node, NodePtr target, NodePtr ancestor)
 		for (auto& ambientLight : descendant->components<AmbientLight>())
 		{
 			_ambientLights.insert(ambientLight);
-			_sumAmbientColors += ambientLight->color() * ambientLight->ambient();
+			_ambientLightsContribution += ambientLight->color() * ambientLight->ambient();
 		}
 
 		for (auto& directionalLight : descendant->components<DirectionalLight>())
@@ -171,20 +171,20 @@ LightManager::addedHandler(NodePtr node, NodePtr target, NodePtr ancestor)
 	if (numSpotLights != _spotLights.size())
 		setLightArrayLength("spotLights.length", _spotLights.size());
 
-	if ((sumAmbientColors - _sumAmbientColors)->length() > 1e-6f)
-		setLightColor("ambientLights.sumColors", _sumAmbientColors);
+	if ((ambientLightsContribution - _ambientLightsContribution)->length() > 1e-6f)
+		setLightColor("ambientLightsContribution", _ambientLightsContribution);
 }
 
 void
 LightManager::removedHandler(NodePtr node, NodePtr target, NodePtr ancestor)
 {
-	auto numAmbientLights		= _ambientLights.size();
-	auto numDirectionalLights	= _directionalLights.size();
-	auto numPointLights			= _pointLights.size();
-	auto numSpotLights			= _spotLights.size();
+	auto numAmbientLights			= _ambientLights.size();
+	auto numDirectionalLights		= _directionalLights.size();
+	auto numPointLights				= _pointLights.size();
+	auto numSpotLights				= _spotLights.size();
 
-	auto sumAmbientColors		= Vector3::create()->copyFrom(_sumAmbientColors);
-	_sumAmbientColors->copyFrom(Vector3::zero());
+	auto ambientLightsContribution	= Vector3::create()->copyFrom(_ambientLightsContribution);
+	_ambientLightsContribution->copyFrom(Vector3::zero());
 
 	auto descendants = scene::NodeSet::create(target)->descendants(true);
 	for (auto& descendant : descendants->nodes())
@@ -192,7 +192,7 @@ LightManager::removedHandler(NodePtr node, NodePtr target, NodePtr ancestor)
 		for (auto& ambientLight : descendant->components<AmbientLight>())
 		{
 			_ambientLights.erase(ambientLight);
-			_sumAmbientColors += ambientLight->color() * ambientLight->ambient();
+			_ambientLightsContribution += ambientLight->color() * ambientLight->ambient();
 		}
 
 		for (auto& directionalLight : descendant->components<DirectionalLight>())
@@ -214,8 +214,8 @@ LightManager::removedHandler(NodePtr node, NodePtr target, NodePtr ancestor)
 	if (numSpotLights != _spotLights.size())
 		setLightArrayLength("spotLights.length", _spotLights.size());
 
-	if ((sumAmbientColors - _sumAmbientColors)->length() > 1e-6f)
-		setLightColor("ambientLights.sumColors", _sumAmbientColors);
+	if ((ambientLightsContribution - _ambientLightsContribution)->length() > 1e-6f)
+		setLightColor("ambientLightsContribution", _ambientLightsContribution);
 }
 
 void
@@ -257,7 +257,7 @@ LightManager::componentRemovedHandler(NodePtr node, NodePtr target, AbsCmpPtr cm
 void
 LightManager::setLightColor(const std::string& arrayName, Vector3::Ptr color)
 {
-	_data->set<Vector3>(arrayName, *color);
+	//_data->set<Vector3>(arrayName, *color);
 }
 
 void
