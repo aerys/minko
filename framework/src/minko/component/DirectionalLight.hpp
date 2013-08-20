@@ -35,7 +35,6 @@ namespace minko
 		    typedef std::shared_ptr<DirectionalLight> Ptr;
 
 		private:
-			std::shared_ptr<math::Vector3>	_color;
 			std::shared_ptr<math::Vector3>	_worldDirection;
 
 	    public:

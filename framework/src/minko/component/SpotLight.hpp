@@ -42,9 +42,10 @@ namespace minko
 		public:
 			inline static
 			Ptr
-			create()
+			create(float innerAngleRadians = PI * 0.25f,
+				   float outerAngleRadians = -1.0f)
 			{
-				auto light = std::shared_ptr<SpotLight>(new SpotLight());
+				auto light = std::shared_ptr<SpotLight>(new SpotLight(innerAngleRadians, outerAngleRadians));
 
                 light->initialize();
 
@@ -76,7 +77,8 @@ namespace minko
             updateModelToWorldMatrix(std::shared_ptr<math::Matrix4x4> modelToWorld);
 
 		private:
-			SpotLight();
+			SpotLight(float innerAngleRadians,
+					  float outerAngleRadians);
 		};
 	}
 }

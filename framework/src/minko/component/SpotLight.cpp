@@ -26,7 +26,8 @@ using namespace minko;
 using namespace minko::math;
 using namespace minko::component;
 
-SpotLight::SpotLight():
+SpotLight::SpotLight(float innerAngleRadians,
+					 float outerAngleRadians):
 	AbstractDiscreteLight("spotLights"),
 	_worldPosition(Vector3::create(0.0f, 0.0f, 0.0f)),
 	_worldDirection(Vector3::create(0.0f, 0.0f, 1.0f))
@@ -34,8 +35,8 @@ SpotLight::SpotLight():
 	diffuse(1.f);
 	specular(1.f);
 
-	innerConeAngle(PI * 0.2f);
-	outerConeAngle(PI * 0.25f);
+	innerConeAngle(innerAngleRadians);
+	outerConeAngle(std::max(outerAngleRadians, innerAngleRadians));
 
 	data()->set("position", _worldPosition);
 	data()->set("direction", _worldDirection);
