@@ -31,12 +31,14 @@ uint SpotLight::_counter = 0;
 
 SpotLight::SpotLight():
 	AbstractDiscreteLight("spotLights", _counter++),
-	_color(Vector3::create(1.0f, 1.0f, 1.0f)),
 	_worldPosition(Vector3::create(0.0f, 0.0f, 0.0f)),
 	_worldDirection(Vector3::create(0.0f, 0.0f, 1.0f))
 {
 	diffuse(1.f);
 	specular(1.f);
+
+	innerConeAngle(PI * 0.2f);
+	outerConeAngle(PI * 0.25f);
 
 	data()->set("position", _worldPosition);
 	data()->set("direction", _worldDirection);
@@ -47,4 +49,24 @@ SpotLight::updateModelToWorldMatrix(std::shared_ptr<math::Matrix4x4> modelToWorl
 {
 	modelToWorld->translationVector(_worldPosition);
 	modelToWorld->deltaTransform(Vector3::zAxis(), _worldDirection);
+}
+
+void
+SpotLight::innerConeAngle(float radians)
+{
+	if (radians < 0.0f || radians > 0.5f * (float)PI)
+		throw std::invalid_argument("radians");
+
+	_cosInnerConeAngle = cosf(radians);
+	data()->set<float>("cosInnerConeAngle", _cosInnerConeAngle);
+}
+
+void
+SpotLight::outerConeAngle(float radians)
+{
+	if (radians < 0.0f || radians > 0.5f * (float)PI)
+		throw std::invalid_argument("radians");
+
+	_cosOuterConeAngle = cosf(radians);
+	data()->set<float>("cosOuterConeAngle", _cosOuterConeAngle);
 }
