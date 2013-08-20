@@ -34,8 +34,6 @@ namespace minko
 			typedef std::shared_ptr<SpotLight> Ptr;
 	
 		private:
-			static uint						_counter;
-
 			float							_cosInnerConeAngle;
 			float							_cosOuterConeAngle;
 			std::shared_ptr<math::Vector3>	_worldPosition;

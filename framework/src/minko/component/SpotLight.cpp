@@ -26,11 +26,8 @@ using namespace minko;
 using namespace minko::math;
 using namespace minko::component;
 
-/*static*/
-uint SpotLight::_counter = 0;
-
 SpotLight::SpotLight():
-	AbstractDiscreteLight("spotLights", _counter++),
+	AbstractDiscreteLight("spotLights"),
 	_worldPosition(Vector3::create(0.0f, 0.0f, 0.0f)),
 	_worldDirection(Vector3::create(0.0f, 0.0f, 1.0f))
 {
