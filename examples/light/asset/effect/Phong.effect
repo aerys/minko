@@ -65,25 +65,23 @@
 					vertexUV = uv;
 				#endif
 
-				vec4 pos = vec4(position, 1.0);
-				
+				vec4 worldPosition = vec4(position, 1.0);
 				#ifdef MODEL_TO_WORLD
-					pos = modelToWorldMatrix * pos;
-				#endif
+					worldPosition = modelToWorldMatrix * worldPosition;
+				#endif // MODEL_TO_WORLD
 				
-				#ifdef NUM_DIRECTIONAL_LIGHTS
-					vec3 worldNormal = normal;
+				#if defined NUM_DIRECTIONAL_LIGHTS || defined NUM_POINT_LIGHTS
+					vertexPosition	= worldPosition.xyz;
+					
+					vertexNormal	= normal;
 					#ifdef MODEL_TO_WORLD
-						worldNormal = mat3(modelToWorldMatrix) * worldNormal;
+						vertexPosition	= 
+						vertexNormal	= mat3(modelToWorldMatrix) * vertexNormal;
 					#endif
-					vertexNormal = normalize(worldNormal);
+					vertexNormal	= normalize(vertexNormal);
+				#endif // defined NUM_DIRECTIONAL_LIGHTS || defined NUM_POINT_LIGHTS
 
-					#ifdef SHININESS
-						vertexPosition = pos.xyz;
-					#endif
-				#endif
-
-				gl_Position =  worldToScreenMatrix * pos;
+				gl_Position =  worldToScreenMatrix * worldPosition;
 			}
 		",
 		"fragmentShader"	: "
@@ -144,15 +142,20 @@
 						phong += ambientLights[i].color * ambientLights[i].ambient;
 					}
 				#endif
-
-				#ifdef NUM_DIRECTIONAL_LIGHTS
-					vec3 eyeVector = normalize(cameraPosition - vertexPosition);
-					vec3 normal = normalize(vertexNormal);
-
+				
+				#if defined NUM_DIRECTIONAL_LIGHTS || defined NUM_POINT_LIGHTS
+					vec3 eyeVector		= normalize(cameraPosition - vertexPosition);
+					vec3 normal			= normalize(vertexNormal);
+					
+					vec3 lightDirection	= vec3(0.0);
+					float contribution	= 0.0;
+					
+					#ifdef NUM_DIRECTIONAL_LIGHTS
+					//---------------------------
 					for (int i = 0; i < NUM_DIRECTIONAL_LIGHTS; ++i)
 					{
-						vec3 lightDirection = normalize(-directionalLights[i].direction);
-						float contribution = phong_diffuseReflection(normal, lightDirection)
+						lightDirection	= normalize(-directionalLights[i].direction);
+						contribution	= phong_diffuseReflection(normal, lightDirection)
 							* directionalLights[i].diffuse;
 
 						#ifdef SHININESS
@@ -162,20 +165,38 @@
 								eyeVector,
 								shininess
 							) * directionalLights[i].specular;
-
-						#endif
+						#endif // SHININESS
 
 						phong += contribution * directionalLights[i].color;
 					}
+					#endif // NUM_DIRECTIONAL_LIGHTS
+					
+					#ifdef NUM_POINT_LIGHTS
+					//---------------------
+					for (int i = 0; i < NUM_POINT_LIGHTS; ++i)
+					{
+						lightDirection	= normalize(pointLights[i].position - vertexPosition);
+						contribution	= phong_diffuseReflection(normal, lightDirection)
+							* pointLights[i].diffuse;
 
+						#ifdef SHININESS
+							contribution += phong_specularReflection(
+								normal,
+								lightDirection,
+								eyeVector,
+								shininess
+							) * pointLights[i].specular;
+						#endif // SHININESS
+
+						phong += contribution * pointLights[i].color;
+					}
+					#endif // NUM_POINT_LIGHTS
+					
 					diffuse = vec4(diffuse.rgb * phong, diffuse.a);
-				#endif
-				
-				#ifdef NUM_POINT_LIGHTS
-					glFragColor = vec4(NUM_POINT_LIGHTS * 0.5f, NUM_POINT_LIGHTS * 0.5f, NUM_POINT_LIGHTS * 0.5f, 1.0);
-				#else
-					gl_FragColor = diffuse;
-				#endif // NUM_POINT_LIGHTS
+				#endif // defined NUM_DIRECTIONAL_LIGHTS || defined NUM_POINT_LIGHTS
+
+								
+				gl_FragColor = diffuse;
 			}
 		"
 	}]

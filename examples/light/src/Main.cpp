@@ -9,6 +9,24 @@ using namespace minko;
 using namespace minko::component;
 using namespace minko::math;
 
+void
+printFramerate(const unsigned int delay = 1)
+{
+	static auto start = time(NULL);
+	static auto numFrames = 0;
+
+	int secondTime = time(NULL);
+
+	++numFrames;
+
+	if ((secondTime - start) >= 1)
+	{
+		std::cout << numFrames << " fps." << std::endl;
+		start = time(NULL);
+		numFrames = 0;
+	}
+}
+
 int main(int argc, char** argv)
 {
 	glfwInit();
@@ -58,7 +76,6 @@ int main(int argc, char** argv)
 			->lookAt(Vector3::zero(), Vector3::create(0.f, -1.f, 1.f));
 		root->addChild(lightNode2);
 
-
 		// setup point light 1
 		auto pointLightNode = scene::Node::create("plight");
 		auto pointLight		= component::PointLight::create();
@@ -101,6 +118,7 @@ int main(int argc, char** argv)
 		lightNode->component<Transform>()->transform()->prependRotationY(.01f);
 
 		sceneManager->nextFrame();
+		printFramerate();
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
