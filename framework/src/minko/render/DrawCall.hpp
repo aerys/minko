@@ -78,21 +78,14 @@ namespace minko
 		public:
 			static inline
 			Ptr
-			create(std::shared_ptr<Program>	program,
-				   ContainerPtr				data,
-				   ContainerPtr				rootData,
-				   const data::BindingMap&	attributeBindings,
+			create(const data::BindingMap&	attributeBindings,
 				   const data::BindingMap&	uniformBindings,
 				   const data::BindingMap&	stateBindings,
                    std::shared_ptr<States>  states)
 			{
-                auto dc = std::shared_ptr<DrawCall>(new DrawCall(
-					attributeBindings, uniformBindings, stateBindings, states
-				));
-
-                dc->configure(program, data, rootData);
-
-				return dc;
+				return std::shared_ptr<DrawCall>(new DrawCall(
+                    attributeBindings, uniformBindings, stateBindings, states
+                ));;
 			}
 
             inline
