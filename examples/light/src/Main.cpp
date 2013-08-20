@@ -37,6 +37,7 @@ int main(int argc, char** argv)
     auto mesh			= scene::Node::create("mesh");
     auto lightNode		= scene::Node::create("directional light 1");
 	auto pointLightNode	= scene::Node::create("plight");
+	auto spotLightNode	= scene::Node::create("spotlight");
 
 	// setup assets
 	sceneManager->assets()->defaultOptions()->generateMipmaps(true);
@@ -45,10 +46,11 @@ int main(int argc, char** argv)
 		->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()))
 		->queue("texture/box.png")
 		->queue("effect/Phong.effect");
-
 #ifdef DEBUG
     sceneManager->assets()->defaultOptions()->includePaths().insert("bin/debug");
 #endif
+
+	const float boxScale = 3.0f;
 
     auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
 	{
@@ -80,12 +82,19 @@ int main(int argc, char** argv)
 		// setup point light 1
 		auto pointLight		= component::PointLight::create();
 		pointLight->color()->setTo(0.2f, 0.2f, 1.0f);
-
 		pointLightNode->addComponent(pointLight);
 		pointLightNode->addComponent(Transform::create());
-		pointLightNode->component<Transform>()->transform()->appendTranslation(2.0f, 0.0f, 0.0f);
-
-		//root->addChild(pointLightNode);
+		pointLightNode->component<Transform>()->transform()->appendTranslation(boxScale, 0.0f, 0.0f);
+		root->addChild(pointLightNode);
+		 
+		// setup spot light
+		auto spotLight	= component::SpotLight::create(0.05f*PI, 0.075f*PI);
+		spotLight->color()->setTo(0.8f, 0.8f, 0.0f);
+		spotLightNode->addComponent(spotLight);
+		spotLightNode->addComponent(Transform::create());
+		spotLightNode->component<Transform>()->transform()
+			->lookAt(Vector3::zero(), Vector3::create(0.0f, 2.0f, 0.0f), Vector3::create(-1.0, 0.0, 0.0));
+		root->addChild(spotLightNode);
 
 		// setup camera
         auto renderingComponent = Renderer::create();
@@ -99,6 +108,10 @@ int main(int argc, char** argv)
 
 		// setup mesh
 		mesh->addComponent(Transform::create());
+		mesh->component<Transform>()->transform()
+			->appendScaling(boxScale, boxScale, boxScale)
+			->appendTranslation(0.0f, -0.5f*boxScale, 0.0f);
+
 		mesh->addComponent(Surface::create(
 			assets->geometry("cube"),
 			data::Provider::create()
@@ -117,6 +130,7 @@ int main(int argc, char** argv)
 		//mesh->component<Transform>()->transform()->prependRotationY(-.01f);
 		lightNode->component<Transform>()->transform()->prependRotationY(.01f);
 		pointLightNode->component<Transform>()->transform()->appendRotationY(.01f);
+		//spotLightNode->component<Transform>()->transform()->appendRotationY(.01f);
 
 		sceneManager->nextFrame();
 		printFramerate();
