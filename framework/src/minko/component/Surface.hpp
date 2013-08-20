@@ -37,6 +37,7 @@ namespace minko
 		private:
 			typedef std::shared_ptr<scene::Node>		NodePtr;
 			typedef std::shared_ptr<render::DrawCall>	DrawCallPtr;
+			typedef std::list<DrawCallPtr>				DrawCallList;
 
 		private:
 			std::shared_ptr<geometry::Geometry>				_geometry;
@@ -44,6 +45,7 @@ namespace minko
 			std::shared_ptr<render::Effect>					_effect;
 
 			std::list<DrawCallPtr>							_drawCalls;
+			std::unordered_map<std::string, DrawCallList>	_macroBindingPropertyToDrawCalls;
 
 			Signal<AbstractComponent::Ptr, NodePtr>::Slot	_targetAddedSlot;
 			Signal<AbstractComponent::Ptr, NodePtr>::Slot	_targetRemovedSlot;
@@ -99,7 +101,6 @@ namespace minko
 				return _drawCalls;
 			}
 
-
 		private:
 			Surface(std::shared_ptr<geometry::Geometry> geometry,
 					std::shared_ptr<data::Provider>		material,
@@ -107,6 +108,12 @@ namespace minko
 
 			void
 			initialize();
+
+			void
+			createDrawCalls();
+
+			void
+			deleteDrawCalls();
 
 			void
 			targetAddedHandler(AbstractComponent::Ptr ctrl, NodePtr target);
