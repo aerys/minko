@@ -30,3 +30,10 @@ Effect::Effect(std::vector<PassPtr>& passes) :
 	_data(data::Provider::create())
 {
 }
+
+void
+Effect::setUniform(const std::string& name, float value)
+{
+	for (auto& pass : _passes)
+		pass->setUniform(name, value);
+}
