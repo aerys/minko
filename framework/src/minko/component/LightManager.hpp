@@ -46,7 +46,7 @@ namespace minko
 			std::set<std::shared_ptr<PointLight>>		_pointLights;
 			std::set<std::shared_ptr<SpotLight>>		_spotLights;
 
-			std::shared_ptr<Vector3>					_sumAmbientColors;
+			std::shared_ptr<math::Vector3>				_sumAmbientColors;
 
 			Signal<AbsCmpPtr, NodePtr>::Slot			_targetAddedSlot;
 			Signal<AbsCmpPtr, NodePtr>::Slot			_targetRemovedSlot;
@@ -99,7 +99,7 @@ namespace minko
 			setLightArrayLength(const std::string& arrayName, int length);
 
 			void
-			setLightColor(const std::string& arrayName, Vector3::Ptr color);
+			setLightColor(const std::string& arrayName, std::shared_ptr<math::Vector3> color);
 		};
 	}
 }
