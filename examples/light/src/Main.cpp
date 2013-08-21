@@ -38,13 +38,18 @@ int main(int argc, char** argv)
     auto lightNode		= scene::Node::create("directional light 1");
 	auto pointLightNode	= scene::Node::create("plight");
 	auto spotLightNode	= scene::Node::create("spotlight");
+	auto sphereGeometry	= geometry::SphereGeometry::create(sceneManager->assets()->context(), 32, 16, true);
+
+	sphereGeometry->computeTangentSpace(false);
 
 	// setup assets
 	sceneManager->assets()->defaultOptions()->generateMipmaps(true);
 	sceneManager->assets()
 		->registerParser<file::PNGParser>("png")
 		->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()))
+		->geometry("sphere", sphereGeometry)
 		->queue("texture/box.png")
+		->queue("texture/normalmap-cells.png")
 		->queue("effect/Phong.effect");
 #ifdef DEBUG
     sceneManager->assets()->defaultOptions()->includePaths().insert("bin/debug");
@@ -67,7 +72,7 @@ int main(int argc, char** argv)
 		auto directionalLight = DirectionalLight::create();
 		lightNode->addComponent(Transform::create());
 		lightNode->addComponent(directionalLight);
-		//root->addChild(lightNode);
+		root->addChild(lightNode);
 
 		// setup directional light 2
 		auto lightNode2 = scene::Node::create("light2");
@@ -113,10 +118,11 @@ int main(int argc, char** argv)
 			->appendTranslation(0.0f, -0.5f*boxScale, 0.0f);
 
 		mesh->addComponent(Surface::create(
-			assets->geometry("cube"),
+			assets->geometry("sphere"),
 			data::Provider::create()
 				->set("material.diffuseColor",	Vector4::create(0.f, 0.f, 1.f, 1.f))
 				->set("material.diffuseMap",	assets->texture("texture/box.png"))
+				->set("material.normalMap",		assets->texture("texture/normalmap-cells.png"))
 				->set("material.shininess",		32.f),
 			assets->effect("effect/Phong.effect")
 		));
@@ -143,4 +149,5 @@ int main(int argc, char** argv)
 	glfwTerminate();
 
 	exit(EXIT_SUCCESS);
+
 }
