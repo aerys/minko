@@ -5,12 +5,14 @@
 	"attributeBindings"	: {
 		"position"					: "geometry.vertex.attribute.position",
 		"uv"						: "geometry.vertex.attribute.uv",
-		"normal"					: "geometry.vertex.attribute.normal"
+		"normal"					: "geometry.vertex.attribute.normal",
+		"tangent"					: "geometry.vertex.attribute.tangent"
 	},
 	
 	"uniformBindings"	: {
 		"diffuseColor"				: "material.diffuseColor",
 		"diffuseMap"				: "material.diffuseMap",
+		"normalMap"					: "material.normalMap",
 		"shininess"					: "material.shininess",
 		"modelToWorldMatrix"		: "transform.modelToWorldMatrix",
 		"worldToScreenMatrix"		: "camera.worldToScreenMatrix",
@@ -23,6 +25,7 @@
 
 	"macroBindings"	: {
 		"DIFFUSE_MAP"				: "material.diffuseMap",
+		"NORMAL_MAP"				: "material.normalMap",
 		"SHININESS"					: "material.shininess",
 		"MODEL_TO_WORLD"			: "transform.modelToWorldMatrix",
 		"NUM_AMBIENT_LIGHTS"		: "ambientLights.length",
@@ -41,7 +44,7 @@
 		"diffuseMap"	: { "filter" : "linear", "mipFilter" : "linear" }
 	},
 
-	"includes"	: [ "Phong.glsl", "LightTypes.glsl" ],
+	"includes"	: [ "Phong.glsl", "NormalMap.glsl", "LightTypes.glsl" ],
 	
 	"passes"	: [{	
 		"vertexShader"	: "
@@ -52,13 +55,15 @@
 			attribute vec3 position;
 			attribute vec2 uv;
 			attribute vec3 normal;
+			attribute vec3 tangent;
 
 			uniform mat4 modelToWorldMatrix;
 			uniform mat4 worldToScreenMatrix;
 
+			varying vec3 vertexPosition;
 			varying vec2 vertexUV;
 			varying vec3 vertexNormal;
-			varying vec3 vertexPosition;
+			varying vec3 vertexTangent;
 
 			void main(void)
 			{
@@ -72,13 +77,23 @@
 				#endif // MODEL_TO_WORLD
 				
 				#if defined NUM_DIRECTIONAL_LIGHTS || defined NUM_POINT_LIGHTS || defined NUM_SPOT_LIGHTS
+				
 					vertexPosition	= worldPosition.xyz;
 					
-					vertexNormal	= normal;
+					vertexNormal = normal;				
 					#ifdef MODEL_TO_WORLD
-						vertexNormal	= mat3(modelToWorldMatrix) * vertexNormal;
-					#endif
-					vertexNormal	= normalize(vertexNormal);
+						vertexNormal = mat3(modelToWorldMatrix) * vertexNormal;
+					#endif // MODEL_TO_WORLD
+					vertexNormal = normalize(vertexNormal);
+					
+					#ifdef NORMAL_MAP
+						vertexTangent = tangent;
+						#ifdef MODEL_TO_WORLD
+							vertexTangent = mat3(modelToWorldMatrix) * vertexTangent;
+						#endif // MODEL_TO_WORLD
+						vertexTangent = normalize(vertexTangent);
+					#endif // NORMAL_MAP
+					
 				#endif // defined NUM_DIRECTIONAL_LIGHTS || defined NUM_POINT_LIGHTS || defined NUM_SPOT_LIGHTS
 
 				gl_Position =  worldToScreenMatrix * worldPosition;
@@ -111,26 +126,31 @@
 			
 			uniform vec4 diffuseColor;
 			uniform sampler2D diffuseMap;
+			uniform sampler2D normalMap;
+			
 			uniform float shininess;
 			uniform vec3 cameraPosition;
 			
+			varying vec3 vertexPosition;
 			varying vec2 vertexUV;
 			varying vec3 vertexNormal;
-			varying vec3 vertexPosition;
+			varying vec3 vertexTangent;
 
 			void main(void)
 			{
 				vec4 diffuse = vec4(0);
-
-				// diffuse
+				
 				#ifdef DIFFUSE_MAP
 					diffuse = texture2D(diffuseMap, vertexUV);
 				#else
 					diffuse = diffuseColor;
 				#endif // DIFFUSE_MAP
-
+				
+				
 				vec3 phong = vec3(0.);
+				
 				#ifdef PRECOMPUTED_AMBIENT
+				//------------------------
 					phong += sumAmbients;
 				#else
 				
@@ -143,18 +163,34 @@
 		
 				#endif // PRECOMPUTED_AMBIENT
 				
+				
 				#if defined NUM_DIRECTIONAL_LIGHTS || defined NUM_POINT_LIGHTS || defined NUM_SPOT_LIGHTS
-					vec3 eyeVector		= normalize(cameraPosition - vertexPosition);
-					vec3 normal			= normalize(vertexNormal);
 					
 					vec3 lightDirection	= vec3(0.0);
 					float contribution	= 0.0;
+					
+					vec3 normal		= normalize(vertexNormal);
+					vec3 eyeVector	= cameraPosition - vertexPosition;
+
+					#ifdef NORMAL_MAP
+						// warning: the normal vector must be normalized at this point!
+						mat3 worldToTangentMatrix = getWorldToTangentSpaceMatrix(normal, vertexTangent);
+						
+						normal		= normalize(2.0*texture2D(normalMap, vertexUV).xyz - 1.0);
+						eyeVector	= worldToTangentMatrix * eyeVector;
+					#endif // NORMAL_MAP
+					
+					eyeVector	= normalize(eyeVector);
 					
 					#ifdef NUM_DIRECTIONAL_LIGHTS
 					//---------------------------
 					for (int i = 0; i < NUM_DIRECTIONAL_LIGHTS; ++i)
 					{
 						lightDirection	= normalize(-directionalLights[i].direction);
+						#ifdef NORMAL_MAP
+							lightDirection = worldToTangentMatrix * lightDirection;
+						#endif // NORMAL_MAP
+						
 						contribution	= phong_diffuseReflection(normal, lightDirection)
 							* directionalLights[i].diffuse;
 
@@ -176,6 +212,10 @@
 					for (int i = 0; i < NUM_POINT_LIGHTS; ++i)
 					{
 						lightDirection	= normalize(pointLights[i].position - vertexPosition);
+						#ifdef NORMAL_MAP
+							lightDirection = worldToTangentMatrix * lightDirection;
+						#endif // NORMAL_MAP
+						
 						contribution	= phong_diffuseReflection(normal, lightDirection)
 							* pointLights[i].diffuse;
 
@@ -197,12 +237,17 @@
 					for (int i = 0; i < NUM_SPOT_LIGHTS; ++i)
 					{
 						lightDirection		= normalize(spotLights[i].position - vertexPosition);
-						vec3  spotDirection	= normalize(-spotLights[i].direction);
+						vec3  spotDirection	= normalize(-spotLights[i].direction);						
 						float cosSpot		= dot(-lightDirection, spotDirection);
 						float cosOuter		= spotLights[i].cosOuterConeAngle;
 
 						if (cosOuter < cosSpot)
 						{
+							#ifdef NORMAL_MAP
+								lightDirection	= worldToTangentMatrix * lightDirection;
+								spotDirection	= worldToTangentMatrix * spotDirection;
+							#endif // NORMAL_MAP
+						
 							contribution	= phong_diffuseReflection(normal, lightDirection)
 								* spotLights[i].diffuse;
 
