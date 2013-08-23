@@ -25,12 +25,18 @@ using namespace minko;
 using namespace minko::component;
 using namespace minko::math;
 
-DirectionalLight::DirectionalLight()
+DirectionalLight::DirectionalLight() :
+	AbstractDiscreteLight("directionalLights"),
+	_worldDirection(Vector3::create(-1.f, 0.f, -1.f))
 {
-    _data
-        ->set("light.ambient",      Vector3::create(.25f, .25f, .25f))
-		->set("light.direction",    Vector3::create(-1.f, -1.f, -1.f))
-        ->set("light.diffuse",		Vector3::create(1.f, 1.f, 1.f))
-        ->set("light.specular",		Vector3::create(1.f, 1.f, 1.f));
+	diffuse(1.f);
+	specular(1.f);
+
+    data()->set("direction", _worldDirection);
 }
 
+void
+DirectionalLight::updateModelToWorldMatrix(std::shared_ptr<Matrix4x4> modelToWorld)
+{
+	modelToWorld->deltaTransform(Vector3::zAxis(), _worldDirection);
+}

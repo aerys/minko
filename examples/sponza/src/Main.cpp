@@ -21,6 +21,7 @@
 #include "minko/component/SponzaLighting.hpp"
 #include "minko/component/Fire.hpp"
 
+using namespace minko;
 using namespace minko::component;
 using namespace minko::math;
 
@@ -434,8 +435,6 @@ initializeCamera(scene::Node::Ptr group)
 		// set-up camera from the mk file
 		camera = cameras->nodes().front();
 		cameraInGroup = true;
-
-		std::cout << "parsed camera's transform = " << std::to_string(camera->component<Transform>()->transform()) << std::endl;
 
 		if (camera->hasComponent<component::bullet::Collider>())
 		{
