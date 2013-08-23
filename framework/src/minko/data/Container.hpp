@@ -84,6 +84,15 @@ namespace minko
 				_propertyNameToProvider[propertyName]->set<T>(propertyName, value);
 			}
 
+			template <typename T>
+			bool
+			propertyHasType(const std::string& propertyName)
+			{
+				assertPropertyExists(propertyName);
+
+				return _propertyNameToProvider[propertyName]->propertyHasType<T>(propertyName);
+			}
+
 			PropertyChangedSignalPtr
 			propertyChanged(const std::string& propertyName);
 

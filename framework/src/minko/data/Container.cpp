@@ -133,12 +133,12 @@ Container::providerPropertyChangedHandler(std::shared_ptr<Provider> 	provider,
 }
 
 void
-Container::providerPropertyAddedHandler(std::shared_ptr<Provider> provider,
-											   const std::string& 			 propertyName)
+Container::providerPropertyAddedHandler(std::shared_ptr<Provider> 	provider,
+										const std::string& 			propertyName)
 {
 	if (_propertyNameToProvider.count(propertyName) != 0)
-		throw std::logic_error("Duplicate binding property name: " + propertyName);
-
+		throw std::logic_error("duplicate property name: " + propertyName);
+	
 	_propertyNameToProvider[propertyName] = provider;
 
 	if (_propertyChanged.count(propertyName) != 0)
@@ -154,7 +154,7 @@ Container::providerPropertyAddedHandler(std::shared_ptr<Provider> provider,
 
 void
 Container::providerPropertyRemovedHandler(std::shared_ptr<Provider> 	provider,
-												 const std::string&				propertyName)
+										  const std::string&			propertyName)
 {
 	_propertyNameToProvider.erase(propertyName);
 
