@@ -83,21 +83,28 @@ namespace minko
 	namespace component
 	{
 		class AbstractComponent;
-        class AbstractRootDataComponent;
-		class Transform;
+	    class AbstractRootDataComponent;
+	    class SceneManager;
+    	class Transform;
 		class Surface;
 		class Renderer;
 		class PerspectiveCamera;
+
+        class LightManager;
+        class AbstractLight;
+        class AmbientLight;
+        class AbstractDiscreteLight;
         class DirectionalLight;
-		class SceneManager;
 	}
 
 	namespace data
 	{
 		class Provider;
+		class ArrayProvider;
 		class ValueBase;
 		class Value;
 		class Container;
+        typedef std::unordered_map<std::string, std::string> BindingMap;
 	}
 
 	namespace geometry
@@ -183,14 +190,4 @@ operator-=(std::shared_ptr<T> a, std::shared_ptr<T> b)
 	return *a -= b;
 }
 
-namespace std
-{
-	template<typename T>
-	string
-	to_string(shared_ptr<T> value)
-	{
-		return to_string(*value);
-	}
-}
-
-using namespace minko;
+//using namespace minko;

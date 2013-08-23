@@ -117,6 +117,16 @@ namespace minko
 				return _x * value->_x + _y * value->_y + _z * value->_z + _w * value->_w;
 			}
 
+			std::string
+			toString()
+			{
+				std::stringstream stream;
+				
+				stream << "(" << _x << ", " << _y << ", " << _z << ", " << _w << ")";
+
+				return stream.str();
+			}
+
 			inline
 			Ptr
 			operator-()
