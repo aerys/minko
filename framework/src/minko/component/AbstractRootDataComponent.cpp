@@ -22,10 +22,17 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/scene/Node.hpp"
 #include "minko/data/Container.hpp"
 
+using namespace minko;
 using namespace minko::component;
 
 AbstractRootDataComponent::AbstractRootDataComponent() :
     _data(data::Provider::create()),
+    _enabled(true)
+{
+}
+
+AbstractRootDataComponent::AbstractRootDataComponent(std::shared_ptr<data::Provider> provider) :
+    _data(provider),
     _enabled(true)
 {
 }
@@ -65,20 +72,32 @@ AbstractRootDataComponent::targetAddedHandler(AbstractComponent::Ptr ctrl, NodeP
     _addedSlot = target->added()->connect(cb);
     _removedSlot = target->removed()->connect(cb);
 
-    _root = target->root();
-    _root->data()->addProvider(_data);
+    updateRoot(target->root());
 }
 
 void
 AbstractRootDataComponent::targetRemovedHandler(AbstractComponent::Ptr ctrl, NodePtr target)
 {
-    _root = nullptr;
+    updateRoot(nullptr);
 }
 
 void
 AbstractRootDataComponent::addedOrRemovedHandler(NodePtr node, NodePtr target, NodePtr ancestor)
 {
-    _root->data()->removeProvider(_data);
-    _root = target->root();
-    _root->data()->addProvider(_data);
+    updateRoot(node->root());
+}
+
+void
+AbstractRootDataComponent::updateRoot(NodePtr root)
+{
+    if (root == _root)
+        return;
+
+    if (_root)
+        _root->data()->removeProvider(_data);
+    
+    _root = root;
+
+    if (_root)
+        _root->data()->addProvider(_data);
 }

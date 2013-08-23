@@ -35,8 +35,8 @@ namespace minko
 			typedef std::shared_ptr<Program>	Ptr;
 
 		private:
-			typedef std::shared_ptr<render::AbstractContext>		AbstractContextPtr;
-			typedef std::shared_ptr<render::ProgramInputs>	ProgramInputsPtr;
+			typedef std::shared_ptr<render::AbstractContext>	AbstractContextPtr;
+			typedef std::shared_ptr<render::ProgramInputs>		ProgramInputsPtr;
 
 		private:
 			std::shared_ptr<Shader>	_vertexShader;
@@ -91,6 +91,9 @@ namespace minko
 
 			void
 			dispose();
+
+			void
+			setUniform(const std::string& name, float value);
 
 		private:
 			Program(AbstractContextPtr context);

@@ -25,14 +25,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/DrawCall.hpp"
 #include "minko/render/States.hpp"
 
+using namespace minko;
 using namespace minko::render;
 
 Pass::Pass(const std::string&				name,
 		   std::shared_ptr<render::Program>	program,
-		   BindingMap&						attributeBindings,
-		   BindingMap&						uniformBindings,
-		   BindingMap&						stateBindings,
-		   BindingMap&						macroBindings,
+		   data::BindingMap&				attributeBindings,
+		   data::BindingMap&				uniformBindings,
+		   data::BindingMap&				stateBindings,
+		   data::BindingMap&				macroBindings,
            std::shared_ptr<States>          states) :
 	_name(name),
 	_programTemplate(program),
@@ -44,22 +45,10 @@ Pass::Pass(const std::string&				name,
 {
 }
 
-std::shared_ptr<DrawCall>
-Pass::createDrawCall(std::shared_ptr<data::Container> data, std::shared_ptr<data::Container> rootData)
-{
-	return DrawCall::create(
-        selectProgram(data),
-        data,
-        rootData,
-        _attributeBindings,
-        _uniformBindings,
-        _stateBindings,
-        _states
-    );
-}
-
 std::shared_ptr<Program>
-Pass::selectProgram(std::shared_ptr<data::Container> data)
+Pass::selectProgram(std::shared_ptr<data::Container> data,
+					std::shared_ptr<data::Container> rootData,
+					std::list<std::string>&			 macroBindingProperties)
 {
 	Program::Ptr program;
 
@@ -67,7 +56,7 @@ Pass::selectProgram(std::shared_ptr<data::Container> data)
 		program = _programTemplate;
 	else
 	{
-		auto signature	= buildSignature(data);
+		auto signature	= buildSignature(data, rootData);
 
 		program = _signatureToProgram[signature];
 
@@ -81,7 +70,17 @@ Pass::selectProgram(std::shared_ptr<data::Container> data)
 			for (auto& macroBinding : _macroBindings)
             {
 				if (signature & (1 << i++))
-					defines += "#define " + macroBinding.first + "\n";
+				{
+					auto& propertyName = macroBinding.second;
+					auto& container = data->hasProperty(propertyName) ? data : rootData;
+
+					defines += "#define " + macroBinding.first;
+					if (container->propertyHasType<int>(propertyName))
+						defines += " " + std::to_string(container->get<int>(propertyName));
+					defines += "\n";
+
+					macroBindingProperties.push_back(propertyName);
+				}
             }
 
 			// for program template by adding #defines
@@ -97,27 +96,33 @@ Pass::selectProgram(std::shared_ptr<data::Container> data)
 			);
 
 			program = Program::create(_programTemplate->context(), vs, fs);
-            program->vertexShader()->upload();
-		    program->fragmentShader()->upload();
-		    program->upload();
 
 			// register the program to this signature
 			_signatureToProgram[signature] = program;
 		}
 	}
 
+	if (!program->vertexShader()->isReady())
+        program->vertexShader()->upload();
+	if (!program->fragmentShader()->isReady())
+	    program->fragmentShader()->upload();
+	if (!program->isReady())
+		program->upload();
+
 	return program;
 }
 
 const unsigned int
-Pass::buildSignature(std::shared_ptr<data::Container> data)
+Pass::buildSignature(std::shared_ptr<data::Container> data, std::shared_ptr<data::Container> rootData)
 {
 	unsigned int signature = 0;
 	unsigned int i = 0;
 
 	for (auto& macroBinding : _macroBindings)
     {
-		if (data->hasProperty(macroBinding.second))
+        auto& propertyName = macroBinding.second;
+
+        if (data->hasProperty(propertyName) || rootData->hasProperty(propertyName))
 		{
 			// WARNING: we do not support more than 32 macro bindings
 			if (i == 32)
@@ -129,4 +134,11 @@ Pass::buildSignature(std::shared_ptr<data::Container> data)
     }
 
 	return signature;
+}
+
+void
+Pass::setUniform(const std::string& name, float value)
+{
+	for (auto signatureAndProgram : _signatureToProgram)
+		signatureAndProgram.second->setUniform(name, value);
 }
