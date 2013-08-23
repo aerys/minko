@@ -31,12 +31,9 @@ Effect::Effect(std::vector<PassPtr>& passes) :
 {
 }
 
-/*
-std::shared_ptr<EffectInstance>
-Effect::instanciate(data::Container::Ptr data)
+void
+Effect::setUniform(const std::string& name, float value)
 {
-
-
-	return nullptr;
+	for (auto& pass : _passes)
+		pass->setUniform(name, value);
 }
-*/

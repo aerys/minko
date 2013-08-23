@@ -5,6 +5,7 @@
 
 #include "GLFW/glfw3.h"
 
+using namespace minko;
 using namespace minko::component;
 using namespace minko::math;
 
@@ -37,9 +38,9 @@ int main(int argc, char** argv)
 		root->addComponent(sceneManager);
 
 		// setup camera
-        auto renderingComponent = Renderer::create();
-		renderingComponent->backgroundColor(0x7F7F7FFF);
-        camera->addComponent(renderingComponent);
+        auto renderer = Renderer::create();
+		renderer->backgroundColor(0x7F7F7FFF);
+        camera->addComponent(renderer);
 		camera->addComponent(Transform::create());
 		camera->component<Transform>()->transform()
 			->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 3.f));

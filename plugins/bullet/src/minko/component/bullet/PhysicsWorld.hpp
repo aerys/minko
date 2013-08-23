@@ -118,6 +118,10 @@ namespace minko
 					return physicsWorld;
 				}
 
+				~PhysicsWorld()
+				{
+				}
+
 				bool
 				hasCollider(ColliderDataPtr) const;
 
