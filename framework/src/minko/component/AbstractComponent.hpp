@@ -47,9 +47,7 @@ namespace minko
 			}
 
 			virtual
-			~AbstractComponent()
-			{
-			}
+			~AbstractComponent() = 0;
 
 			inline
 			const std::vector<std::shared_ptr<scene::Node>>&
@@ -86,5 +84,10 @@ namespace minko
 				return _targetRemoved;
 			}
 		};
+
+		inline
+		AbstractComponent::~AbstractComponent()
+		{
+		}
 	}
 }

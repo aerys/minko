@@ -34,18 +34,18 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/data/Container.hpp"
 #include "minko/math/Matrix4x4.hpp"
 
+using namespace minko;
 using namespace minko::math;
 using namespace minko::render;
 using namespace minko::render;
 
 SamplerState DrawCall::_defaultSamplerState = SamplerState(WrapMode::CLAMP, TextureFilter::NEAREST, MipFilter::NONE);
 
-DrawCall::DrawCall(Program::Ptr											program,
-				   const std::unordered_map<std::string, std::string>&	attributeBindings,
-				   const std::unordered_map<std::string, std::string>&	uniformBindings,
-				   const std::unordered_map<std::string, std::string>&	stateBindings,
-                   States::Ptr                                          states) :
-	_program(program),
+DrawCall::DrawCall(const data::BindingMap&	attributeBindings,
+				   const data::BindingMap&	uniformBindings,
+				   const data::BindingMap&	stateBindings,
+                   States::Ptr              states) :
+	_program(nullptr),
 	_attributeBindings(attributeBindings),
 	_uniformBindings(uniformBindings),
 	_stateBindings(stateBindings),
@@ -64,8 +64,19 @@ DrawCall::DrawCall(Program::Ptr											program,
 }
 
 void
+DrawCall::configure(std::shared_ptr<Program>  program,
+                    ContainerPtr              data,
+                    ContainerPtr              rootData)
+{
+    _program = program;
+    bind(data, rootData);
+}
+
+void
 DrawCall::bind(ContainerPtr data, ContainerPtr rootData)
 {
+	reset();
+
 	_data = data;
 	_rootData = rootData;
     _propertyChangedSlots.clear();
@@ -79,6 +90,9 @@ DrawCall::bind(ContainerPtr data, ContainerPtr rootData)
     auto numVertexBuffers   = 0;
     auto programInputs      = _program->inputs();
 
+    if (!programInputs)
+        throw;
+
     for (unsigned int inputId = 0; inputId < programInputs->locations().size(); ++inputId)
 	{
 		auto type		= programInputs->types()[inputId];
@@ -87,7 +101,7 @@ DrawCall::bind(ContainerPtr data, ContainerPtr rootData)
 
 		if (type == ProgramInputs::Type::attribute)
 		{
-			auto name	= _attributeBindings.count(inputName)
+			auto& name	= _attributeBindings.count(inputName)
 				? _attributeBindings.at(inputName)
 				: inputName;
 
@@ -95,7 +109,8 @@ DrawCall::bind(ContainerPtr data, ContainerPtr rootData)
 				continue;
 
 			auto vertexBuffer	= getDataProperty<VertexBuffer::Ptr>(name);
-			auto attribute		= vertexBuffer->attribute(inputName);
+            auto attributeName  = name.substr(name.find_last_of('.') + 1);
+			auto attribute		= vertexBuffer->attribute(attributeName);
 
             _vertexBuffers[numVertexBuffers] = vertexBuffer->id();
             _vertexBufferLocations[numVertexBuffers] = location;
@@ -107,7 +122,7 @@ DrawCall::bind(ContainerPtr data, ContainerPtr rootData)
 		}
 		else
 		{
-			auto name	= _uniformBindings.count(inputName)
+			auto& name	= _uniformBindings.count(inputName)
 				? _uniformBindings.at(inputName)
 				: inputName;
 
@@ -143,6 +158,40 @@ DrawCall::bind(ContainerPtr data, ContainerPtr rootData)
 	}
 
 	bindStates();
+}
+
+void
+DrawCall::reset()
+{
+	_uniformFloat.clear();
+	_uniformFloat2.clear();
+	_uniformFloat3.clear();
+	_uniformFloat4.clear();
+	_uniformFloat16.clear();
+
+	_textures.clear();
+	_textureLocations.clear();
+	_textureWrapMode.clear();
+	_textureFilters.clear();
+	_textureMipFilters.clear();
+
+	_textures.resize(8, -1);
+	_textureLocations.resize(8, -1);
+	_textureWrapMode.resize(8, WrapMode::CLAMP);
+	_textureFilters.resize(8, TextureFilter::NEAREST);
+	_textureMipFilters.resize(8, MipFilter::NONE);
+
+	_vertexBuffers.clear();
+	_vertexBufferLocations.clear();
+	_vertexSizes.clear();
+	_vertexAttributeSizes.clear();
+	_vertexAttributeOffsets.clear();
+
+	_vertexBuffers.resize(8, -1);
+	_vertexBufferLocations.resize(8, -1);
+	_vertexSizes.resize(8, -1);
+	_vertexAttributeSizes.resize(8, -1);
+	_vertexAttributeOffsets.resize(8, -1);
 }
 
 void
@@ -207,7 +256,7 @@ DrawCall::render(AbstractContext::Ptr context)
         context->setUniform(uniformFloat4.first, float4->x(), float4->y(), float4->z(), float4->w());
     }
     for (auto& uniformFloat16 : _uniformFloat16)
-        context->setUniformMatrix4x4(uniformFloat16.first, 1, true, uniformFloat16.second);
+        context->setUniform(uniformFloat16.first, 1, true, uniformFloat16.second);
 
     for (uint textureId = 0; textureId < _textures.size(); ++textureId)
     {
