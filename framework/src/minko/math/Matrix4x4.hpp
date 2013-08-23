@@ -103,6 +103,19 @@ namespace minko
 				return _m;
 			}
 
+			std::string
+			toString()
+			{
+				std::stringstream stream;
+
+				stream << "(" << _m[0] << ", " << _m[1] << ", " << _m[2] << ", " << _m[3] << ",\n"
+					<< _m[4] << ", " << _m[5] << ", " << _m[6] << ", " << _m[7] << ",\n"
+					<< _m[8] << ", " << _m[9] << ", " << _m[10] << ", " << _m[11] << ",\n"
+					<< _m[12] << ", " << _m[13] << ", " << _m[14] << ", " << _m[15] << ")";
+
+				return stream.str();
+			}
+
 			Ptr
 			identity();
 
@@ -177,6 +190,9 @@ namespace minko
 
             std::shared_ptr<Vector3>
             transform(std::shared_ptr<Vector3> v, std::shared_ptr<Vector3> output = nullptr);
+
+			std::shared_ptr<Vector3>
+            deltaTransform(std::shared_ptr<Vector3> v, std::shared_ptr<Vector3> output = nullptr);            
 
 			inline
 			Ptr
@@ -268,23 +284,5 @@ namespace minko
 				   	float m20, float m21, float m22, float m23,
 				   	float m30, float m31, float m32, float m33);
 		};
-	}
-}
-
-namespace std
-{
-	template<typename Matrix4x4>
-	string
-	to_string(Matrix4x4 value)
-	{
-		const std::vector<float> values = value.values();
-		std::stringstream stream;
-
-		stream << "(" << values[0] << ", " << values[1] << ", " << values[2] << ", " << values[3] << ",\n"
-			<< values[4] << ", " << values[5] << ", " << values[6] << ", " << values[7] << ",\n"
-			<< values[8] << ", " << values[9] << ", " << values[10] << ", " << values[11] << ",\n"
-			<< values[12] << ", " << values[13] << ", " << values[14] << ", " << values[15] << ")";
-
-		return stream.str();
 	}
 }

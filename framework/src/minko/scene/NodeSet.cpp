@@ -21,6 +21,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/scene/Node.hpp"
 
+using namespace minko;
+
 scene::NodeSet::Ptr
 scene::NodeSet::descendants(bool andSelf, bool depthFirst, scene::NodeSet::Ptr result)
 {

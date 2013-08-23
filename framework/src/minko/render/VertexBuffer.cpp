@@ -21,6 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/render/AbstractContext.hpp"
 
+using namespace minko;
 using namespace minko::render;
 
 VertexBuffer::VertexBuffer(std::shared_ptr<AbstractContext> context) :
@@ -107,5 +108,5 @@ VertexBuffer::attribute(const std::string& attributeName)
 		if (std::get<0>(*attr) == attributeName)
 			return attr;
 
-	throw std::invalid_argument("attributeName");
+	throw std::invalid_argument("attributeName = " + attributeName);
 }

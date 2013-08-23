@@ -21,18 +21,22 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 
-#include "minko/component/AbstractRootDataComponent.hpp"
-#include "minko/data/Provider.hpp"
+#include "minko/component/AbstractDiscreteLight.hpp"
+#include "minko/math/Matrix4x4.hpp"
 
 namespace minko
 {
     namespace component
     {
 	    class DirectionalLight :
-            public AbstractRootDataComponent
+            public AbstractDiscreteLight
 	    {
 	    public:
 		    typedef std::shared_ptr<DirectionalLight> Ptr;
+
+		private:
+			std::shared_ptr<math::Vector3>	_color;
+			std::shared_ptr<math::Vector3>	_worldDirection;
 
 	    public:
 		    inline static
@@ -45,6 +49,14 @@ namespace minko
 
 			    return light;
 		    }
+
+		    ~DirectionalLight()
+		    {
+		    }
+
+		protected:
+			void
+            updateModelToWorldMatrix(std::shared_ptr<math::Matrix4x4> modelToWorld);
 
 	    private:
 		    DirectionalLight();

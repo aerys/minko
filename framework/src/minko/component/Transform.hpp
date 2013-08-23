@@ -65,6 +65,10 @@ namespace minko
 				return ctrl;
 			}
 
+			~Transform()
+			{
+			}
+
 			inline
 			std::shared_ptr<math::Matrix4x4>
 			transform()

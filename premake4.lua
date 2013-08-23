@@ -10,6 +10,7 @@ end
 include 'examples/sponza'
 --include 'examples/envmap'
 include 'examples/cube'
+include 'examples/light'
 
 -- core framework
 include 'framework'

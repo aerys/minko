@@ -1,0 +1,157 @@
+// phong effect
+{
+	"name"	: "phong",
+	
+	"attributeBindings"	: {
+		"position"					: "geometry.vertex.attribute.position",
+		"uv"						: "geometry.vertex.attribute.uv",
+		"normal"					: "geometry.vertex.attribute.normal"
+	},
+	
+	"uniformBindings"	: {
+		"diffuseColor"				: "material.diffuseColor",
+		"diffuseMap"				: "material.diffuseMap",
+		"shininess"					: "material.shininess",
+		"modelToWorldMatrix"		: "transform.modelToWorldMatrix",
+		"worldToScreenMatrix"		: "camera.worldToScreenMatrix",
+		"cameraPosition"			: "camera.position"
+	},
+	
+	"stateBindings"	: {
+		"blendMode"					: "material.blendMode"
+	},
+
+	"macroBindings"	: {
+		"DIFFUSE_MAP"				: "material.diffuseMap",
+		"SHININESS"					: "material.shininess",
+		"MODEL_TO_WORLD"			: "transform.modelToWorldMatrix",
+		"NUM_DIRECTIONAL_LIGHTS"	: "directionalLights.length",
+		"NUM_AMBIENT_LIGHTS"		: "ambientLights.length"
+	},
+	
+	"priority"			: 0,
+	"blendMode"			: ["one", "zero"],
+	"depthTest"			: [true, "less_equal"],
+	"triangleCulling"	: "back",
+	
+	"samplerStates" : {
+		"diffuseMap"	: { "filter" : "linear", "mipFilter" : "linear" }
+	},
+
+	"includes"	: [ "Phong.glsl" ],
+	
+	"passes"	: [{	
+		"vertexShader"	: "
+			#ifdef GL_ES
+				precision mediump float;
+			#endif
+		
+			attribute vec3 position;
+			attribute vec2 uv;
+			attribute vec3 normal;
+
+			uniform mat4 modelToWorldMatrix;
+			uniform mat4 worldToScreenMatrix;
+
+			varying vec2 vertexUV;
+			varying vec3 vertexNormal;
+			varying vec3 vertexPosition;
+
+			void main(void)
+			{
+				#ifdef DIFFUSE_MAP
+					vertexUV = uv;
+				#endif
+
+				vec4 pos = vec4(position, 1.0);
+				
+				#ifdef MODEL_TO_WORLD
+					pos = modelToWorldMatrix * pos;
+				#endif
+				
+				#ifdef NUM_DIRECTIONAL_LIGHTS
+					vec3 worldNormal = normal;
+					#ifdef MODEL_TO_WORLD
+						worldNormal = mat3(modelToWorldMatrix) * worldNormal;
+					#endif
+					vertexNormal = normalize(worldNormal);
+
+					#ifdef SHININESS
+						vertexPosition = pos.xyz;
+					#endif
+				#endif
+
+				gl_Position =  worldToScreenMatrix * pos;
+			}
+		",
+		"fragmentShader"	: "
+			#ifdef GL_ES
+				precision mediump float;
+			#endif
+
+			#ifdef NUM_AMBIENT_LIGHTS
+				uniform AmbientLight ambientLights[NUM_AMBIENT_LIGHTS];
+			#endif
+			#ifdef NUM_DIRECTIONAL_LIGHTS
+				uniform DirectionalLight directionalLights[NUM_DIRECTIONAL_LIGHTS];
+			#endif
+
+			uniform vec4 diffuseColor;
+			uniform sampler2D diffuseMap;
+			uniform float shininess;
+			uniform vec3 cameraPosition;
+			
+			varying vec2 vertexUV;
+			varying vec3 vertexNormal;
+			varying vec3 vertexPosition;
+
+			void main(void)
+			{
+				vec4 diffuse = vec4(0);
+
+				// diffuse
+				#ifdef DIFFUSE_MAP
+					diffuse = texture2D(diffuseMap, vertexUV);
+				#else
+					diffuse = diffuseColor;
+				#endif
+
+				vec3 phong = vec3(0.);
+				#ifdef NUM_AMBIENT_LIGHTS
+					for (int i = 0; i < NUM_AMBIENT_LIGHTS; ++i)
+					{
+						phong += ambientLights[i].color * ambientLights[i].ambient;
+					}
+				#endif
+
+				#ifdef NUM_DIRECTIONAL_LIGHTS
+					vec3 eyeVector = normalize(cameraPosition - vertexPosition);
+					vec3 normal = normalize(vertexNormal);
+
+					for (int i = 0; i < NUM_DIRECTIONAL_LIGHTS; ++i)
+					{
+						vec3 lightDirection = normalize(-directionalLights[i].direction);
+						float contribution = phong_diffuseReflection(normal, lightDirection)
+							* directionalLights[i].diffuse;
+
+						#ifdef SHININESS
+							contribution += phong_specularReflection(
+								normal,
+								lightDirection,
+								eyeVector,
+								shininess
+							) * directionalLights[i].specular;
+
+						#endif
+
+						phong += contribution * directionalLights[i].color;
+					}
+
+					diffuse = vec4(diffuse.rgb * phong, diffuse.a);
+				#endif
+
+				gl_FragColor = diffuse;
+			}
+		"
+	}]
+}

@@ -40,6 +40,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 # include "glsl_optimizer.h"
 #endif
 
+using namespace minko;
 using namespace minko::render;
 
 OpenGLES2Context::BlendFactorsMap OpenGLES2Context::_blendingFactors = OpenGLES2Context::initializeBlendFactorsMap();
@@ -88,10 +89,14 @@ OpenGLES2Context::initializeDepthFuncsMap()
 }
 
 OpenGLES2Context::OpenGLES2Context() :
+	_textures(),
+    _textureSizes(),
+    _textureHasMipmaps(),
 	_viewportX(0),
 	_viewportY(0),
 	_viewportWidth(0),
 	_viewportHeight(0),
+	_currentTarget(0),
 	_currentIndexBuffer(-1),
 	_currentVertexBuffer(8, -1),
 	_currentVertexSize(8, -1),
@@ -99,7 +104,13 @@ OpenGLES2Context::OpenGLES2Context() :
 	_currentVertexOffset(8, -1),
 	_currentTexture(8, -1),
 	_currentProgram(-1),
-    _currentTriangleCulling(TriangleCulling::BACK)
+    _currentTriangleCulling(TriangleCulling::BACK),
+    _currentWrapMode(),
+    _currentTextureFilter(),
+    _currentMipFilter(),
+    _currentBlendMode(Blending::Mode::DEFAULT),
+    _currentDepthMask(0xffffffff),
+    _currentDepthFunc(CompareMode::UNSET)
 {
 #ifdef _WIN32
     glewInit();
@@ -124,10 +135,6 @@ OpenGLES2Context::OpenGLES2Context() :
 	_viewportHeight = viewportSettings[3];
 
 	setDepthTest(true, CompareMode::LESS);
-
-#ifdef MINKO_GLSL_OPTIMIZER
-    _glslOptimizer = glslopt_initialize(true);
-#endif
 }
 
 OpenGLES2Context::~OpenGLES2Context()
@@ -149,10 +156,6 @@ OpenGLES2Context::~OpenGLES2Context()
 
 	for (auto& fragmentShader : _fragmentShaders)
 		glDeleteShader(fragmentShader);
-
-#ifdef MINKO_GLSL_OPTIMIZER
-    glslopt_cleanup(_glslOptimizer);
-#endif
 }
 
 void
@@ -464,7 +467,7 @@ OpenGLES2Context::createTexture(unsigned int 	width,
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
   	_textures.push_back(texture);
-    _textureSizes[texture] = std::pair<uint, uint>(width, height);
+    _textureSizes[texture] = std::make_pair(width, height);
     _textureHasMipmaps[texture] = mipMapping;
     _currentWrapMode[texture] = WrapMode::CLAMP;
     _currentTextureFilter[texture] = TextureFilter::NEAREST;
@@ -651,7 +654,11 @@ OpenGLES2Context::setSamplerStateAt(const unsigned int position, WrapMode wrappi
 const unsigned int
 OpenGLES2Context::createProgram()
 {
-	return glCreateProgram();
+	auto handle = glCreateProgram();
+	
+	_programs.push_back(handle);
+
+	return handle;
 }
 
 void
@@ -693,10 +700,10 @@ OpenGLES2Context::compileShader(const unsigned int shader)
 	glCompileShader(shader);
 
 #ifdef DEBUG
-     auto errors = getShaderCompilationLogs(shader);
+    auto errors = getShaderCompilationLogs(shader);
 
-     if (!errors.empty())
-		std::cout << errors << std::endl;
+    if (!errors.empty())
+		std::cerr << errors << std::endl;
 #endif
 
     checkForErrors();
@@ -720,6 +727,7 @@ OpenGLES2Context::setShaderSource(const unsigned int shader,
 							      const std::string& source)
 {
 #ifdef MINKO_GLSL_OPTIMIZER
+	glslopt_ctx* glslOptimizer = glslopt_initialize(true);
     std::string src = "#version 100\n" + source;
 	const char* sourceString = src.c_str();
 
@@ -727,7 +735,7 @@ OpenGLES2Context::setShaderSource(const unsigned int shader,
         ? kGlslOptShaderVertex
         : kGlslOptShaderFragment;
 
-    auto optimizedShader = glslopt_optimize(_glslOptimizer, type, sourceString, 0);
+    auto optimizedShader = glslopt_optimize(glslOptimizer, type, sourceString, 0);
     if (glslopt_get_status(optimizedShader))
     {
         auto optimizedSource = glslopt_get_output(optimizedShader);
@@ -735,10 +743,17 @@ OpenGLES2Context::setShaderSource(const unsigned int shader,
     }
     else
     {
+		std::stringstream stream(source);
+		std::string line;
+
         std::cerr << glslopt_get_log(optimizedShader) << std::endl;
+		for (auto i = 0; std::getline(stream, line); ++i)
+			std::cerr << i << "\t" << line << std::endl;
+
         throw std::invalid_argument("source");
     }
     glslopt_shader_delete(optimizedShader);
+    glslopt_cleanup(glslOptimizer);
 #else
     std::string src = "#version 120\n" + source;
 	const char* sourceString = src.c_str();
@@ -796,10 +811,9 @@ OpenGLES2Context::getProgramInputs(const unsigned int program)
 	std::vector<ProgramInputs::Type> types;
 	std::vector<unsigned int> locations;
 
+	glUseProgram(program);
 	fillUniformInputs(program, names, types, locations);
 	fillAttributeInputs(program, names, types, locations);
-
-    checkForErrors();
 
 	return ProgramInputs::create(shared_from_this(), program, names, types, locations);
 }
@@ -813,7 +827,6 @@ OpenGLES2Context::fillUniformInputs(const unsigned int					program,
 	int total = -1;
 	int maxUniformNameLength = -1;
 
-	glUseProgram(program);
 	glGetProgramiv(program, GL_ACTIVE_UNIFORM_MAX_LENGTH, &maxUniformNameLength);
 	glGetProgramiv(program, GL_ACTIVE_UNIFORMS, &total);
 
@@ -825,6 +838,7 @@ OpenGLES2Context::fillUniformInputs(const unsigned int					program,
     	std::vector<char> name(maxUniformNameLength);
 
     	glGetActiveUniform(program, i, maxUniformNameLength, &nameLength, &size, &type, &name[0]);
+    	checkForErrors();
 
 	    name[nameLength] = 0;
 
@@ -889,7 +903,6 @@ OpenGLES2Context::fillAttributeInputs(const unsigned int				program,
 	int total = -1;
 	int maxAttributeNameLength = -1;
 
-	glUseProgram(program);
 	glGetProgramiv(program, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &maxAttributeNameLength);
 	glGetProgramiv(program, GL_ACTIVE_ATTRIBUTES, &total);
 
@@ -901,6 +914,7 @@ OpenGLES2Context::fillAttributeInputs(const unsigned int				program,
     	std::vector<char> name(maxAttributeNameLength);
 
 		glGetActiveAttrib(program, i, maxAttributeNameLength, &nameLength, &size, &type, &name[0]);
+	    checkForErrors();
 
 	    name[nameLength] = 0;
 
@@ -990,7 +1004,7 @@ OpenGLES2Context::setUniform(unsigned int location, float value1, float value2, 
 }
 
 void
-OpenGLES2Context::setUniformMatrix4x4(unsigned int location, unsigned int size, bool transpose, const float* values)
+OpenGLES2Context::setUniform(unsigned int location, unsigned int size, bool transpose, const float* values)
 {
 	glUniformMatrix4fv(location, size, transpose, values);
 }
@@ -1157,7 +1171,30 @@ OpenGLES2Context::createRTTBuffers(unsigned int texture, unsigned int width, uns
 unsigned int
 OpenGLES2Context::getError()
 {
-    return glGetError();
+	auto error = glGetError();
+
+	switch(error)
+	{
+	default:
+		break;
+	case GL_INVALID_ENUM:
+		std::cerr << "GL_INVALID_ENUM" << std::endl;
+		break;
+	case GL_INVALID_FRAMEBUFFER_OPERATION:
+		std::cerr << "GL_INVALID_FRAMEBUFFER_OPERATION" << std::endl;
+		break;
+	case GL_INVALID_VALUE:
+		std::cerr << "GL_INVALID_VALUE" << std::endl;
+		break;
+	case GL_INVALID_OPERATION:
+		std::cerr << "GL_INVALID_OPERATION" << std::endl;
+		break;
+	case GL_OUT_OF_MEMORY:
+		std::cerr << "GL_OUT_OF_MEMORY" << std::endl;
+		break;
+	}
+
+    return error;
 }
 
 void
