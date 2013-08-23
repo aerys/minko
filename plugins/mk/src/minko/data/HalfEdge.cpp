@@ -19,6 +19,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "HalfEdge.hpp"
 
+using namespace minko;
 using namespace minko::data;
 
 HalfEdge::HalfEdge(unsigned int startNodeId,

@@ -61,6 +61,9 @@ namespace minko
                 return _data;
             }
 
+            void
+            setUniform(const std::string& name, float value);
+
 		private:
 			Effect(std::vector<PassPtr>&	passes);
 		};		

@@ -1,6 +1,7 @@
 #include "EmitterShape.hpp"
 #include "minko/particle/ParticleData.hpp"
 
+using namespace minko;
 using namespace minko::particle;
 using namespace minko::particle::shape;
 

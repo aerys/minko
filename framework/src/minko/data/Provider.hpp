@@ -65,6 +65,7 @@ namespace minko
 				return _names;
 			}
 
+			virtual
 			bool 
 			hasProperty(const std::string&) const;
 
@@ -118,6 +119,20 @@ namespace minko
 			}
 
 			template <typename T>
+			typename std::enable_if<std::is_convertible<T, std::shared_ptr<Value>>::value, bool>::type
+			propertyHasType(const std::string& propertyName)
+			{
+				return std::dynamic_pointer_cast<typename T::element_type>(_values[propertyName]) != nullptr;
+			}
+
+			template <typename T>
+			typename std::enable_if<!std::is_convertible<T, std::shared_ptr<Value>>::value, bool>::type
+			propertyHasType(const std::string& propertyName)
+			{
+				return std::dynamic_pointer_cast<ValueWrapper<T>>(_values[propertyName]) != nullptr;
+			}
+
+			template <typename T>
 			Ptr
 			set(const std::string& propertyName, T value)
 			{
@@ -126,17 +141,21 @@ namespace minko
 				return shared_from_this();
 			}
 
+			virtual
 			void
 			unset(const std::string& propertyName);
 
+			void
+			swap(const std::string& propertyName1, const std::string& propertyName2);
+
+		protected:
+			Provider();
+
+			virtual
+			void
+			registerProperty(const std::string& propertyName, std::shared_ptr<Value> value);
+
 		private:
-			Provider() :
-				enable_shared_from_this(),
-				_propertyChanged(Signal<Ptr, const std::string&>::create()),
-				_propertyAdded(Signal<Ptr, const std::string&>::create()),
-				_propertyRemoved(Signal<Ptr, const std::string&>::create())
-			{
-			}
 
 			void
 			propertyWrapperInitHandler(const std::string& propertyName);
@@ -156,9 +175,6 @@ namespace minko
 			{
 				return ValueWrapper<T>::create(value);
 			}
-
-			void
-			registerProperty(const std::string& propertyName, std::shared_ptr<Value> value);
 
 			template <typename P>
 			class ValueWrapper :
