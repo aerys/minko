@@ -17,7 +17,8 @@ project "glsl-optimizer"
 	}
 	excludes {
 		"src/glsl/main.cpp",
-		"src/glsl/builtin_compiler/builtin_stubs.cpp"
+		"src/glsl/builtin_compiler/builtin_stubs.cpp",
+		"src/glsl/glcpp/glcpp-parse.y"
 	}
 	flags { "NoExceptions" }
 	

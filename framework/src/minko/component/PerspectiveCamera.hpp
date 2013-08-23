@@ -61,6 +61,10 @@ namespace minko
 				return ctrl;
 			}
 
+			~PerspectiveCamera()
+			{
+			}
+
         protected:
             void
             targetAddedHandler(AbstractComponent::Ptr ctrl, NodePtr target);

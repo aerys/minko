@@ -21,6 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Signal.hpp"
 
+using namespace minko;
 using namespace minko::math;
 
 Matrix4x4::Ptr
@@ -252,10 +253,25 @@ Matrix4x4::transform(std::shared_ptr<Vector3> v, std::shared_ptr<Vector3> output
     if (!output)
         output = Vector3::create();
 
-    output->setTo(
-        v->x() * _m[0] + v->x() * _m[1] + v->x() * _m[2] + _m[3],
-        v->y() * _m[4] + v->y() * _m[5] + v->y() * _m[6] + _m[7],
-        v->z() * _m[8] + v->z() * _m[9] + v->z() * _m[10] + _m[11]
+	output->setTo(
+        v->x() * _m[0] + v->y() * _m[1] + v->z() * _m[2] + _m[3],
+        v->x() * _m[4] + v->y() * _m[5] + v->z() * _m[6] + _m[7],
+        v->x() * _m[8] + v->y() * _m[9] + v->z() * _m[10] + _m[11]
+    );
+
+    return output;
+}
+
+std::shared_ptr<Vector3>
+Matrix4x4::deltaTransform(std::shared_ptr<Vector3> v, std::shared_ptr<Vector3> output)
+{
+    if (!output)
+        output = Vector3::create();
+
+	output->setTo(
+        v->x() * _m[0] + v->y() * _m[1] + v->z() * _m[2],
+        v->x() * _m[4] + v->y() * _m[5] + v->z() * _m[6],
+        v->x() * _m[8] + v->y() * _m[9] + v->z() * _m[10]
     );
 
     return output;
@@ -504,7 +520,7 @@ Matrix4x4::view(Vector3::Ptr eye, Vector3::Ptr lookAt, Vector3::Ptr upAxis)
 	}
 
 	Vector3::Ptr xAxis = Vector3::create()->copyFrom(upAxis)->cross(zAxis)->normalize();
-	Vector3::Ptr yAxis = Vector3::create()->copyFrom(zAxis)->cross(xAxis); //->normalize();
+	Vector3::Ptr yAxis = Vector3::create()->copyFrom(zAxis)->cross(xAxis)->normalize();
 
 	if ((xAxis->x() == 0.f && xAxis->y() == 0.f && xAxis->z() == 0.f)
 		|| (yAxis->x() == 0.f && yAxis->y() == 0.f && yAxis->z() == 0.f))
@@ -518,11 +534,10 @@ Matrix4x4::view(Vector3::Ptr eye, Vector3::Ptr lookAt, Vector3::Ptr upAxis)
 	float m42 = -(yAxis->dot(eye));
 	float m43 = -(zAxis->dot(eye));
 	
-	
 	return initialize(
-		xAxis->x(),	yAxis->x(),	zAxis->x(),	m41,
-		xAxis->y(),	yAxis->y(),	zAxis->y(), m42,
-		xAxis->z(),	yAxis->z(),	zAxis->z(),	m43,
+		xAxis->x(),	xAxis->y(),	xAxis->z(),	m41,
+		yAxis->x(),	yAxis->y(),	yAxis->z(), m42,
+		zAxis->x(),	zAxis->y(),	zAxis->z(),	m43,
 		0.f,		0.f,		0.f,		1.f
 	);
 }
@@ -532,6 +547,9 @@ Matrix4x4::lookAt(Vector3::Ptr lookAt, Vector3::Ptr	position, Vector3::Ptr up)
 {
 	if (position == 0)
 		position = Vector3::create(_m[3], _m[7], _m[11]);
+
+	if (up == nullptr)
+		up = Vector3::yAxis();
 
 	return view(position, lookAt, up)->invert();
 }

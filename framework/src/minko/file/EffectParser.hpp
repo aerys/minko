@@ -58,11 +58,12 @@ namespace minko
 			bool														_defaultDepthMask;
 			render::CompareMode											_defaultDepthFunc;
             render::TriangleCulling                                     _defaultTriangleCulling;
-			std::unordered_map<std::string, std::string>				_defaultAttributeBindings;
-			std::unordered_map<std::string, std::string>				_defaultUniformBindings;
-			std::unordered_map<std::string, std::string>				_defaultStateBindings;
-			std::unordered_map<std::string, std::string>				_defaultMacroBindings;
             std::unordered_map<std::string, render::SamplerState>       _defaultSamplerStates;
+
+            data::BindingMap				                            _defaultAttributeBindings;
+			data::BindingMap				                            _defaultUniformBindings;
+			data::BindingMap				                            _defaultStateBindings;
+			data::BindingMap                              				_defaultMacroBindings;
 
 			unsigned int												_numDependencies;
 			unsigned int												_numLoadedDependencies;
@@ -115,11 +116,11 @@ namespace minko
 			parsePasses(Json::Value& root, std::shared_ptr<file::Options> options);
 
 			void
-			parseBindings(Json::Value&									contextNode,
-						  std::unordered_map<std::string, std::string>&	attributeBindings,
-						  std::unordered_map<std::string, std::string>&	uniformBindings,
-						  std::unordered_map<std::string, std::string>&	stateBindings,
-						  std::unordered_map<std::string, std::string>&	macroBindings);
+			parseBindings(Json::Value&      contextNode,
+						  data::BindingMap&	attributeBindings,
+						  data::BindingMap&	uniformBindings,
+						  data::BindingMap&	stateBindings,
+						  data::BindingMap&	macroBindings);
 
 			void
 			parseBlendMode(Json::Value&						contextNode,

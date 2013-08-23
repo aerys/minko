@@ -39,7 +39,7 @@ project "minko-bullet"
 		
 	-- linux
 	configuration { "linux" }
-		buildoptions { "-std=c++11" }
+		buildoptions { "-std=c++11 -Wno-narrowing" }
 
 	-- windows
 	configuration { "windows", "x32" }
