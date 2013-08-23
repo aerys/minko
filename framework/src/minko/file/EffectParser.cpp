@@ -165,10 +165,10 @@ EffectParser::parsePasses(Json::Value& root, file::Options::Ptr options)
 		auto name = pass.get("name", std::to_string(passId++)).asString();
 
 		// pass bindings
-		std::unordered_map<std::string, std::string>	attributeBindings(_defaultAttributeBindings);
-		std::unordered_map<std::string, std::string>	uniformBindings(_defaultUniformBindings);
-		std::unordered_map<std::string, std::string>	stateBindings(_defaultStateBindings);
-		std::unordered_map<std::string, std::string>	macroBindings(_defaultMacroBindings);
+		data::BindingMap	attributeBindings(_defaultAttributeBindings);
+		data::BindingMap	uniformBindings(_defaultUniformBindings);
+		data::BindingMap	stateBindings(_defaultStateBindings);
+		data::BindingMap	macroBindings(_defaultMacroBindings);
         
 		parseBindings(pass, attributeBindings, uniformBindings, stateBindings, macroBindings);
 
@@ -311,11 +311,11 @@ EffectParser::parseTriangleCulling(Json::Value& contextNode, TriangleCulling& tr
 }
 
 void
-EffectParser::parseBindings(Json::Value&									contextNode,
-						    std::unordered_map<std::string, std::string>&	attributeBindings,
-						    std::unordered_map<std::string, std::string>&	uniformBindings,
-						    std::unordered_map<std::string, std::string>&	stateBindings,
-							std::unordered_map<std::string, std::string>&	macroBindings)
+EffectParser::parseBindings(Json::Value&	    contextNode,
+						    data::BindingMap&   attributeBindings,
+						    data::BindingMap&	uniformBindings,
+						    data::BindingMap&	stateBindings,
+							data::BindingMap&	macroBindings)
 {
 	auto attributeBindingsValue = contextNode.get("attributeBindings", 0);
 	if (attributeBindingsValue.isObject())
@@ -352,7 +352,7 @@ EffectParser::parseSamplerStates(Json::Value&                                   
             if (samplerStateValue.isObject())
             {
                 auto wrapModeStr        = samplerStateValue.get("wrapMode", "clamp").asString();
-                auto textureFilterStr   = samplerStateValue.get("textureFilter", "nearest").asString();
+                auto textureFilterStr   = samplerStateValue.get("filter", "nearest").asString();
                 auto mipFilterStr       = samplerStateValue.get("mipFilter", "linear").asString();
 
                 auto wrapMode           = wrapModeStr == "repeat" ? WrapMode::REPEAT : WrapMode::CLAMP;
