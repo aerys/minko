@@ -65,6 +65,10 @@ namespace minko
 			    return sm;
 		    }
 
+            ~SceneManager()
+            {
+            }
+
             inline
             uint
             frameId()

@@ -25,10 +25,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/ProgramInputs.hpp"
 #include "minko/render/Blending.hpp"
 
-#ifdef MINKO_GLSL_OPTIMIZER
-struct glslopt_ctx;
-#endif
-
 namespace minko
 {
 	namespace render
@@ -85,10 +81,6 @@ namespace minko
 			bool					                _currentDepthMask;
 			CompareMode				                _currentDepthFunc;
             TriangleCulling                         _currentTriangleCulling;
-
-#ifdef MINKO_GLSL_OPTIMIZER
-            glslopt_ctx*                            _glslOptimizer;
-#endif
 
 		public:
 			~OpenGLES2Context();
@@ -240,7 +232,7 @@ namespace minko
 			setUniform(unsigned int location, float value1, float value2, float value3, float value4);
 
 			void
-			setUniformMatrix4x4(unsigned int location, unsigned int size, bool transpose, const float* values);
+			setUniform(unsigned int location, unsigned int size, bool transpose, const float* values);
 
             void
             setBlendMode(Blending::Source source, Blending::Destination destination);

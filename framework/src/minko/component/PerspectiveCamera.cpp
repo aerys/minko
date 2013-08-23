@@ -23,6 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/Surface.hpp"
 #include "minko/math/Matrix4x4.hpp"
 
+using namespace minko;
 using namespace minko::component;
 using namespace minko::math;
 
@@ -31,16 +32,16 @@ PerspectiveCamera::PerspectiveCamera(float fov,
                                      float zNear,
                                      float zFar) :
     _enabled(true),
-	_view(Matrix4x4::create()),
-	_projection(Matrix4x4::create()->perspective(fov, aspectRatio, zNear, zFar)),
-	_viewProjection(Matrix4x4::create()->copyFrom(_projection)),
+  	_view(Matrix4x4::create()),
+  	_projection(Matrix4x4::create()->perspective(fov, aspectRatio, zNear, zFar)),
+  	_viewProjection(Matrix4x4::create()->copyFrom(_projection)),
     _position(Vector3::create())
 {
-	_data
-        ->set("camera.position",            _position)
-		->set("camera.viewMatrix",			_view)
-		->set("camera.projectionMatrix",	_projection)
-		->set("camera.worldToScreenMatrix",	_viewProjection);
+	data()
+      ->set("camera.position",            _position)
+  		->set("camera.viewMatrix",			    _view)
+  		->set("camera.projectionMatrix",	  _projection)
+  		->set("camera.worldToScreenMatrix",	_viewProjection);
 }
 
 void
@@ -48,12 +49,12 @@ PerspectiveCamera::targetAddedHandler(AbstractComponent::Ptr ctrl, NodePtr targe
 {
     AbstractRootDataComponent::targetAddedHandler(ctrl, target);
 
-	_modelToWorldChangedSlot = target->data()->propertyChanged("transform.modelToWorldMatrix")->connect(std::bind(
-		&PerspectiveCamera::localToWorldChangedHandler,
+  	_modelToWorldChangedSlot = target->data()->propertyChanged("transform.modelToWorldMatrix")->connect(std::bind(
+    		&PerspectiveCamera::localToWorldChangedHandler,
         std::dynamic_pointer_cast<PerspectiveCamera>(shared_from_this()),
-		std::placeholders::_1,
-		std::placeholders::_2
-	));
+    		std::placeholders::_1,
+    		std::placeholders::_2
+  	));
 
     if (target->data()->hasProperty("transform.modelToWorldMatrix"))
         updateMatrices(target->data()->get<Matrix4x4::Ptr>("transform.modelToWorldMatrix"));
@@ -61,7 +62,7 @@ PerspectiveCamera::targetAddedHandler(AbstractComponent::Ptr ctrl, NodePtr targe
 
 void
 PerspectiveCamera::localToWorldChangedHandler(data::Container::Ptr	data,
-											  const std::string&	propertyName)
+											                        const std::string&	  propertyName)
 {
     updateMatrices(data->get<Matrix4x4::Ptr>("transform.modelToWorldMatrix"));
 }
