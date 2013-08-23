@@ -9,6 +9,7 @@ LLVM_ROOT = os.path.expanduser('~/src/clang+llvm-3.2-x86-linux-ubuntu-12.04/bin/
 NODE_JS = 'node'
 SPIDERMONKEY_ENGINE = [os.path.expanduser('/usr/bin/js'), '-m', '-n']
 V8_ENGINE = os.path.expanduser('~/src/v8/d8')
+PYTHON = '/usr/bin/python'
 
 TEMP_DIR = '/tmp'
 
