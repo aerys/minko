@@ -38,6 +38,7 @@ namespace minko
 			typedef const std::unordered_map<std::string, std::string>	    BindingMap;
 			typedef std::shared_ptr<Program>							    ProgramPtr;
             typedef std::unordered_map<std::string, render::SamplerState>   SamplerStatesMap;
+			typedef std::shared_ptr<States>									StatesPtr;
 
 		private:
 			const std::string		_name;
@@ -46,7 +47,7 @@ namespace minko
 			BindingMap				_uniformBindings;
 			BindingMap				_stateBindings;
 			BindingMap				_macroBindings;
-            std::shared_ptr<States> _states;
+            StatesPtr				_states;
 
 			std::map<unsigned int, ProgramPtr>	_signatureToProgram;
 
@@ -59,7 +60,7 @@ namespace minko
 				   BindingMap&						uniformBindings,
 				   BindingMap&						stateBindings,
 				   BindingMap&						macroBindings,
-                   std::shared_ptr<States>          states)
+                   StatesPtr						states)
 			{
 				return std::shared_ptr<Pass>(new Pass(
 					name,
@@ -88,30 +89,37 @@ namespace minko
 
 			inline
 			const BindingMap&
-			attributeBindings()
+			attributeBindings() const
 			{
 				return _attributeBindings;
 			}
 
 			inline
 			const BindingMap&
-			uniformBindings()
+			uniformBindings() const
 			{
 				return _uniformBindings;
 			}
 
 			inline
 			const BindingMap&
-			stateBindings()
+			stateBindings() const
 			{
 				return _stateBindings;
 			}
 
 			inline
 			const BindingMap&
-			macroBindings()
+			macroBindings() const
 			{
 				return _macroBindings;
+			}
+
+			inline
+			StatesPtr
+			states() const
+			{
+				return _states;
 			}
 
 			std::shared_ptr<DrawCall>
