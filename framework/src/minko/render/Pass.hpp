@@ -54,10 +54,10 @@ namespace minko
 			Ptr
 			create(const std::string&				name,
 				   std::shared_ptr<render::Program>	program,
-				   data::BindingMap&				attributeBindings,
-				   data::BindingMap&				uniformBindings,
-				   data::BindingMap&				stateBindings,
-				   data::BindingMap&				macroBindings,
+				   const data::BindingMap&			attributeBindings,
+				   const data::BindingMap&			uniformBindings,
+				   const data::BindingMap&			stateBindings,
+				   const data::BindingMap&			macroBindings,
                    StatesPtr         				states)
 			{
 				return std::shared_ptr<Pass>(new Pass(
@@ -107,7 +107,7 @@ namespace minko
 			}
 
 			inline
-			const BindingMap&
+			const data::BindingMap&
 			macroBindings() const
 			{
 				return _macroBindings;
@@ -134,10 +134,10 @@ namespace minko
 		private:
 			Pass(const std::string&					name,
 				 std::shared_ptr<render::Program>	program,
-				 data::BindingMap&					attributeBindings,
-				 data::BindingMap&					uniformBindings,
-				 data::BindingMap&					stateBindings,
-				 data::BindingMap&					macroBindings,
+				 const data::BindingMap&			attributeBindings,
+				 const data::BindingMap&			uniformBindings,
+				 const data::BindingMap&			stateBindings,
+				 const data::BindingMap&			macroBindings,
                  std::shared_ptr<States>            states);
 
 			const unsigned int
