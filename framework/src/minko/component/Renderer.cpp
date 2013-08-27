@@ -226,7 +226,10 @@ Renderer::removeSurfaceComponent(std::shared_ptr<Surface> ctrl)
 #ifdef __GNUC__
   // Temporary non-fix for GCC missing feature N2350: http://gcc.gnu.org/onlinedocs/libstdc++/manual/status.html
 #else
-	_drawCalls.erase(ctrl->drawCalls().begin(), ctrl->drawCalls().end());
+	for (auto& drawCall : ctrl->drawCalls())
+		_drawCalls.remove(drawCall);
+
+	//_drawCalls.erase(ctrl->drawCalls().begin(), ctrl->drawCalls().end());
 #endif
 }
 
