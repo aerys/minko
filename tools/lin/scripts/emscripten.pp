@@ -49,11 +49,17 @@ class emscripten {
         user => "root"
     }
 
+    exec { "add-apt-repository ppa:chris-lea/node.js":
+        alias => "add-node-ppa",
+        cwd => "/root",
+        user => "root"
+    }
+
     exec { "/usr/bin/apt-get update":
         alias => "apt-get-update",
         cwd => "/root",
         user => "root",
-        require => Exec["add-gcc-ppa"]
+        require => Exec["add-gcc-ppa", "add-node-ppa"]
     }
 
     package {
@@ -61,13 +67,13 @@ class emscripten {
         ensure => "latest",
         require => Exec["apt-get-update"];
 
-      "python-software-properties":
-        ensure => "latest",
-        require => Exec["apt-get-update"];
+      # "python-software-properties":
+      #   ensure => "latest",
+      #   require => Exec["apt-get-update"];
 
       ["gcc-4.8", "g++-4.8"]:
         ensure => "latest",
-        require => Exec["apt-get-update"]
+        require => Exec["apt-get-update"];
     }
 
     exec { "update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.8 20":
