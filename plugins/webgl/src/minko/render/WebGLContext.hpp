@@ -34,8 +34,6 @@ namespace minko
 			typedef std::shared_ptr<WebGLContext> Ptr;
 
 		public:
-			~WebGLContext();
-
 			static
 			Ptr
 			create()
