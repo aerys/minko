@@ -72,7 +72,7 @@ int main(int argc, char** argv)
 		auto directionalLight = DirectionalLight::create();
 		lightNode->addComponent(Transform::create());
 		lightNode->addComponent(directionalLight);
-		root->addChild(lightNode);
+		//root->addChild(lightNode);
 
 		// setup directional light 2
 		auto lightNode2 = scene::Node::create("light2");
@@ -82,7 +82,7 @@ int main(int argc, char** argv)
 		lightNode2->addComponent(Transform::create());
 		lightNode2->component<Transform>()->transform()
 			->lookAt(Vector3::zero(), Vector3::create(0.f, -1.f, 1.f));
-		//root->addChild(lightNode2);
+		root->addChild(lightNode2);
 
 		// setup point light 1
 		auto pointLight		= component::PointLight::create();
@@ -98,7 +98,7 @@ int main(int argc, char** argv)
 		spotLightNode->addComponent(spotLight);
 		spotLightNode->addComponent(Transform::create());
 		spotLightNode->component<Transform>()->transform()
-			->lookAt(Vector3::zero(), Vector3::create(0.0f, 2.0f, 0.0f), Vector3::create(-1.0, 0.0, 0.0));
+			->lookAt(Vector3::zero(), Vector3::create(0.0f, 5.0f, 0.0f), Vector3::create(-1.0, 0.0, 0.0));
 		root->addChild(spotLightNode);
 
 		// setup camera
@@ -107,15 +107,15 @@ int main(int argc, char** argv)
         camera->addComponent(renderingComponent);
 		camera->addComponent(Transform::create());
 		camera->component<Transform>()->transform()
-			->lookAt(Vector3::zero(), Vector3::create(3.f, 3.f, -3.f));
+			->lookAt(Vector3::zero(), Vector3::create(6.f, 6.f, -6.f));
 		camera->addComponent(PerspectiveCamera::create(.785f, 800.f / 600.f, .1f, 1000.f));
         root->addChild(camera);
 
 		// setup mesh
 		mesh->addComponent(Transform::create());
 		mesh->component<Transform>()->transform()
-			->appendScaling(boxScale, boxScale, boxScale)
-			->appendTranslation(0.0f, -0.5f*boxScale, 0.0f);
+			->appendScale(boxScale, boxScale, boxScale)
+			->appendTranslation(0.0f, 0.f, 0.0f);
 
 		mesh->addComponent(Surface::create(
 			assets->geometry("sphere"),
