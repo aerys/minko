@@ -22,34 +22,33 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Common.hpp"
 
 #include "minko/component/AbstractDiscreteLight.hpp"
-#include "minko/math/Matrix4x4.hpp"
 
 namespace minko
 {
-    namespace component
-    {
-	    class DirectionalLight :
-            public AbstractDiscreteLight
-	    {
-	    public:
-		    typedef std::shared_ptr<DirectionalLight> Ptr;
-
+	namespace component
+	{
+		class PointLight:
+			public AbstractDiscreteLight
+		{
+		public:
+			typedef std::shared_ptr<PointLight> Ptr;
+	
 		private:
-			std::shared_ptr<math::Vector3>	_worldDirection;
+			std::shared_ptr<math::Vector3>	_worldPosition;
 
-	    public:
-		    inline static
-		    Ptr
-		    create()
-		    {
-                auto light = std::shared_ptr<DirectionalLight>(new DirectionalLight());
+		public:
+			inline static
+			Ptr
+			create()
+			{
+				auto light = std::shared_ptr<PointLight>(new PointLight());
 
-                light->initialize();
+				light->initialize();
 
-			    return light;
-		    }
-
-		    ~DirectionalLight()
+				return light;
+			}
+	
+			~PointLight()
 		    {
 		    }
 
@@ -57,8 +56,8 @@ namespace minko
 			void
             updateModelToWorldMatrix(std::shared_ptr<math::Matrix4x4> modelToWorld);
 
-	    private:
-		    DirectionalLight();
-	    };
-    }
+		private:
+			PointLight();
+		};
+	}
 }
