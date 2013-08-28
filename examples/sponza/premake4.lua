@@ -71,8 +71,8 @@ project "minko-example-sponza"
 			"../../deps/lin/include"
 		}
 		postbuildcommands {
-			'cp -r asset/* ${TARGETDIR}',
-			'cp -r ../../framework/effect ${TARGETDIR}'
+			'cp -r ../../framework/effect ${TARGETDIR}',
+			'cp -r asset/* ${TARGETDIR}'
 		}
 
 	-- windows
@@ -117,8 +117,8 @@ project "minko-example-sponza"
 			"../../deps/mac/include"
 		}
 		postbuildcommands {
-			'cp -r asset/* .',
-			'cp -r ../../framework/effect/* effect/'
+			'cp -r ../../framework/effect/* effect/',
+			'cp -r asset/* .'
 		}
 
 	-- emscripten
