@@ -17,48 +17,28 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#pragma once
+#include "PointLight.hpp"
 
-#include "minko/Common.hpp"
-
-#include "minko/component/AbstractDiscreteLight.hpp"
+#include "minko/math/Vector4.hpp"
 #include "minko/math/Matrix4x4.hpp"
 
-namespace minko
+using namespace minko;
+using namespace minko::math;
+using namespace minko::component;
+
+PointLight::PointLight():
+	AbstractDiscreteLight("pointLights"),
+	_worldPosition(Vector3::create(0.0f, 0.0f, 0.0f))
 {
-    namespace component
-    {
-	    class DirectionalLight :
-            public AbstractDiscreteLight
-	    {
-	    public:
-		    typedef std::shared_ptr<DirectionalLight> Ptr;
+	diffuse(1.f);
+	specular(1.f);
 
-		private:
-			std::shared_ptr<math::Vector3>	_worldDirection;
-
-	    public:
-		    inline static
-		    Ptr
-		    create()
-		    {
-                auto light = std::shared_ptr<DirectionalLight>(new DirectionalLight());
-
-                light->initialize();
-
-			    return light;
-		    }
-
-		    ~DirectionalLight()
-		    {
-		    }
-
-		protected:
-			void
-            updateModelToWorldMatrix(std::shared_ptr<math::Matrix4x4> modelToWorld);
-
-	    private:
-		    DirectionalLight();
-	    };
-    }
+	data()->set("position", _worldPosition);
 }
+
+void
+PointLight::updateModelToWorldMatrix(std::shared_ptr<math::Matrix4x4> modelToWorld)
+{
+	modelToWorld->translation(_worldPosition);
+}
+
