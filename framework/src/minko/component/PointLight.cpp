@@ -39,6 +39,6 @@ PointLight::PointLight():
 void
 PointLight::updateModelToWorldMatrix(std::shared_ptr<math::Matrix4x4> modelToWorld)
 {
-	modelToWorld->translationVector(_worldPosition);
+	modelToWorld->translation(_worldPosition);
 }
 
