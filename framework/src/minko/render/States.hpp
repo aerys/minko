@@ -71,56 +71,56 @@ namespace minko
 
             inline
             float
-            priority()
+            priority() const
             {
                 return _priority;
             }
 
             inline
             Blending::Source
-            blendingSourceFactor()
+            blendingSourceFactor() const
             {
                 return _blendingSourceFactor;
             }
 
             inline
             Blending::Destination
-            blendingDestinationFactor()
+            blendingDestinationFactor() const
             {
                 return _blendingDestinationFactor;
             }
 
             inline
             bool
-            depthMask()
+            depthMask() const
             {
                 return _depthMask;
             }
 
             inline
             CompareMode
-            depthFun()
+            depthFun() const
             {
                 return _depthFunc;
             }
 
             inline
             TriangleCulling
-            triangleCulling()
+            triangleCulling() const
             {
                 return _triangleCulling;
             }
 
             inline
             const SamplerStates&
-            samplers()
+            samplers() const
             {
                 return _samplerStates;
             }
 
             inline
             std::shared_ptr<Texture>
-            target()
+            target() const
             {
                 return _target;
             }

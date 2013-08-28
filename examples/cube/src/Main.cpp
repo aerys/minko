@@ -28,6 +28,8 @@ int main(int argc, char** argv)
 
 #ifdef DEBUG
     sceneManager->assets()->defaultOptions()->includePaths().insert("bin/debug");
+#else 
+	sceneManager->assets()->defaultOptions()->includePaths().insert("bin/release");
 #endif
 
     auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)

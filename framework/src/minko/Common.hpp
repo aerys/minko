@@ -95,6 +95,8 @@ namespace minko
         class AmbientLight;
         class AbstractDiscreteLight;
         class DirectionalLight;
+		class SpotLight;
+		class PointLight;
 	}
 
 	namespace data
