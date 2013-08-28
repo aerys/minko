@@ -126,7 +126,8 @@ void
 Surface::createDrawCalls()
 {
 	auto target = targets()[0];
-	std::list<std::string> macroBindingProperties;
+	std::list<std::string> bindingDefines;
+	std::list<std::string> bindingValues;
 
 	for (auto pass : _effect->passes())
 	{
@@ -137,19 +138,16 @@ Surface::createDrawCalls()
 			pass->states()
 		);
 
-		macroBindingProperties.clear();
+		bindingDefines.clear();
+		bindingValues.clear();
 		drawCall->configure(
-			pass->selectProgram(target->data(), target->root()->data(), macroBindingProperties),
+			pass->selectProgram(target->data(), target->root()->data(), bindingDefines, bindingValues),
 			target->data(),
 			target->root()->data()
 		);
 
-		for (auto& propertyName : macroBindingProperties)
-		{
-			std::cout << propertyName << ", ";
+		for (auto& propertyName : bindingDefines)
 			_macroBindingPropertyToDrawCalls[propertyName].push_back(drawCall);
-		}
-		std::cout << std::endl;
 
 		_drawCalls.push_back(drawCall);
 	}
@@ -187,4 +185,18 @@ Surface::addedOrRemovedHandler(NodePtr node, NodePtr target, NodePtr ancestor)
 
 	deleteDrawCalls();
 	createDrawCalls();
+}
+
+void
+Surface::propertyAddedHandler(std::shared_ptr<data::Container>  data,
+                              const std::string&                propertyName)
+{
+
+}
+
+void
+Surface::propertyRemovedHandler(std::shared_ptr<data::Container>  data,
+                                const std::string&                propertyName)
+{
+    
 }

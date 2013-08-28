@@ -29,24 +29,39 @@ using namespace minko::geometry;
 using namespace minko::render;
 
 void
-Geometry::addVertexBuffer(std::shared_ptr<render::VertexBuffer> vertexBuffer)
+Geometry::addVertexBuffer(render::VertexBuffer::Ptr vertexBuffer)
 {
-	unsigned int bufferVertexSize	= 0;
+	const unsigned bufVertexSize	= vertexBuffer->vertexSize();
+	const unsigned bufNumVertices	= vertexBuffer->numVertices();
 
 	for (auto attribute : vertexBuffer->attributes())
-	{
 		_data->set("geometry.vertex.attribute." + std::get<0>(*attribute), vertexBuffer);
-		bufferVertexSize += std::get<1>(*attribute);
-	}
-	_vertexSize	+= bufferVertexSize;
+	_vertexSize	+= bufVertexSize;
 	_data->set("geometry.vertex.size", _vertexSize);
 
-	const unsigned int bufferNumVertices	= vertexBuffer->data().size() / bufferVertexSize;
-	if (_numVertices == -1)
-		_numVertices = bufferNumVertices;
-	else if (_numVertices != bufferNumVertices)
+	if (_numVertexBuffers > 0 && _numVertices != bufNumVertices)
 		throw std::logic_error("inconsistent number of vertices between the geometry's vertex streams.");
+	else if (_numVertexBuffers == 0)
+		_numVertices	= bufNumVertices;
+	++_numVertexBuffers;
+}
 
+void
+Geometry::removeVertexBuffer(const std::string& name)
+{
+	if (!_data->hasProperty(name))
+		return;
+
+	VertexBuffer::Ptr vertexBuffer	= _data->get<VertexBuffer::Ptr>(name);
+	for (auto attribute : vertexBuffer->attributes())
+		_data->unset("geometry.vertex.attribute." + std::get<0>(*attribute));
+
+	_vertexSize	-= vertexBuffer->vertexSize();
+	_data->set("geometry.vertex.size", _vertexSize);
+
+	--_numVertexBuffers;
+	if (_numVertexBuffers == 0)
+		_numVertices	= 0;
 }
 
 Geometry::Ptr
