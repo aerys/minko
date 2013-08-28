@@ -24,50 +24,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::math;
 
-Matrix4x4::Ptr
-Matrix4x4::translation(float x, float y, float z)
-{
-	return initialize(
-		1.f, 0.f, 0.f, x,
-		0.f, 1.f, 0.f, y,
-		0.f, 0.f, 1.f, z,
-		0.f, 0.f, 0.f, 1.f
-	);
-}
-
-Matrix4x4::Ptr
-Matrix4x4::rotationX(float radians)
-{
-	return initialize(
-		1.f,    0.f, 			0.f,			0.f,
-		0.f,    cosf(radians),	-sinf(radians), 0.f,
-		0.f,	sinf(radians),	cosf(radians),	0.f,
-		0.f,	0.f,			0.f,			1.f
-	);
-}
-
-Matrix4x4::Ptr
-Matrix4x4::rotationY(float radians)
-{
-	return initialize(
-		cosf(radians),	0.f,	sinf(radians),	0.f,
-		0.f,			1.f,	0.f,			0.f,
-		-sinf(radians),	0.f,	cosf(radians),	0.f,
-		0.f,			0.f,	0.f,			1.f
-	);
-}
-
-Matrix4x4::Ptr
-Matrix4x4::rotationZ(float radians)
-{
-	return initialize(
-		cosf(radians),	-sinf(radians),	0.f,	0.f,
-		sinf(radians),	cosf(radians),	0.f,	0.f,
-		0.f,			0.f,			1.f,	0.f,
-		0.f,			0.f,			0.f,	1.f
-	);
-}
-
 Matrix4x4::Matrix4x4() :
 	_m(16)
 {
@@ -467,7 +423,7 @@ Matrix4x4::append(Quaternion::Ptr rotation)
 
 
 Matrix4x4::Ptr
-Matrix4x4::appendScaling(float x, float y, float z)
+Matrix4x4::appendScale(float x, float y, float z)
 {
 	return append(
 		x,		0.0f,	0.f,	0.f,
@@ -478,7 +434,7 @@ Matrix4x4::appendScaling(float x, float y, float z)
 }
 
 Matrix4x4::Ptr
-Matrix4x4::prependScaling(float x, float y, float z)
+Matrix4x4::prependScale(float x, float y, float z)
 {
 	return prepend(
 		x,		0.0f,	0.f,	0.f,
@@ -577,7 +533,7 @@ Matrix4x4::rotationQuaternion(Quaternion::Ptr output) const
 }
 
 Vector3::Ptr
-Matrix4x4::translationVector(Vector3::Ptr output) const
+Matrix4x4::translation(Vector3::Ptr output) const
 {
 	return output == 0 ? Vector3::create(_m[3], _m[7], _m[11]) : output->setTo(_m[3], _m[7], _m[11]);
 }
