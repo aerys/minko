@@ -22,43 +22,63 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Common.hpp"
 
 #include "minko/component/AbstractDiscreteLight.hpp"
-#include "minko/math/Matrix4x4.hpp"
 
 namespace minko
 {
-    namespace component
-    {
-	    class DirectionalLight :
-            public AbstractDiscreteLight
-	    {
-	    public:
-		    typedef std::shared_ptr<DirectionalLight> Ptr;
-
+	namespace component
+	{
+		class SpotLight :
+			public AbstractDiscreteLight
+		{
+		public:
+			typedef std::shared_ptr<SpotLight> Ptr;
+	
 		private:
+			float							_cosInnerConeAngle;
+			float							_cosOuterConeAngle;
+			std::shared_ptr<math::Vector3>	_worldPosition;
 			std::shared_ptr<math::Vector3>	_worldDirection;
 
-	    public:
-		    inline static
-		    Ptr
-		    create()
-		    {
-                auto light = std::shared_ptr<DirectionalLight>(new DirectionalLight());
+		public:
+			inline static
+			Ptr
+			create(float innerAngleRadians = PI * 0.25f,
+				   float outerAngleRadians = -1.0f)
+			{
+				auto light = std::shared_ptr<SpotLight>(new SpotLight(innerAngleRadians, outerAngleRadians));
 
                 light->initialize();
 
 			    return light;
-		    }
+			}
 
-		    ~DirectionalLight()
-		    {
-		    }
+			inline
+			float
+			cosInnerConeAngle() const
+			{
+				return _cosInnerConeAngle;
+			}
+
+			void
+			innerConeAngle(float radians);
+
+			inline
+			float
+			cosOuterConeAngle() const
+			{
+				return _cosOuterConeAngle;
+			}
+
+			void
+			outerConeAngle(float radians);
 
 		protected:
 			void
             updateModelToWorldMatrix(std::shared_ptr<math::Matrix4x4> modelToWorld);
 
-	    private:
-		    DirectionalLight();
-	    };
-    }
+		private:
+			SpotLight(float innerAngleRadians,
+					  float outerAngleRadians);
+		};
+	}
 }
