@@ -83,19 +83,6 @@ namespace minko
 			Ptr
 			initialize(Quaternion::Ptr, Vector3::Ptr);
 
-
-			Ptr
-			translation(float x, float y, float z);
-
-			Ptr
-			rotationX(float radians);
-
-			Ptr
-			rotationY(float radians);
-			
-			Ptr
-			rotationZ(float radians);
-
 			inline
 			const std::vector<float>&
 			values() const
@@ -168,10 +155,10 @@ namespace minko
 			prepend(Quaternion::Ptr);
 
 			Ptr
-			appendScaling(float x, float y, float z);
+			appendScale(float x, float y, float z);
 
 			Ptr
-			prependScaling(float x, float y, float z);
+			prependScale(float x, float y, float z);
 
 			float
 			determinant();
@@ -260,7 +247,7 @@ namespace minko
 			rotationQuaternion(Quaternion::Ptr output = nullptr) const;
 
 			Vector3::Ptr
-			translationVector(Vector3::Ptr output = nullptr) const;
+			translation(Vector3::Ptr output = nullptr) const;
 
 			Ptr
 			copyFrom(Matrix4x4::Ptr source);
