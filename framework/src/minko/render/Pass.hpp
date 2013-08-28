@@ -116,7 +116,8 @@ namespace minko
 			std::shared_ptr<Program>
 			selectProgram(std::shared_ptr<data::Container> 	data,
 						  std::shared_ptr<data::Container> 	rootData,
-						  std::list<std::string>&			macroBindingProperties);
+						  std::list<std::string>&			bindingDefines,
+						  std::list<std::string>&			bindingValues);
 
 			void
 			setUniform(const std::string& name, float value);
