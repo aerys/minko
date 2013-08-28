@@ -106,7 +106,7 @@ package aerys.minko.scene.node.light
 		
 		public function get shadowCastingType() : uint
 		{
-			return lightData.getProperty('shadowCastingType');
+			return lightData.getLightProperty('shadowCastingType');
 		}
 		public function set shadowCastingType(value : uint) : void
 		{
