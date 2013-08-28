@@ -8,7 +8,6 @@ end
 
 -- examples
 include 'examples/sponza'
-include 'examples/envmap'
 include 'examples/cube'
 --include 'examples/cube-offscreen'
 include 'examples/light'
