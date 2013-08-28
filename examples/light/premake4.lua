@@ -38,7 +38,7 @@ project "minko-example-light"
 
 	-- linux
 	configuration { "linux" }
-		links { "GL", "GLU", "glfw3", "m", "Xrandr", "Xxf86vm", "Xi", "rt" }
+		links { "GL", "GLU", "glfw3", "m", "Xrandr", "Xxf86vm", "Xi", "rt", "X11", "pthread" }
 		libdirs { "../../deps/lin/lib" }
 		includedirs { "../../deps/lin/include" }
 		buildoptions { "-std=c++11" }

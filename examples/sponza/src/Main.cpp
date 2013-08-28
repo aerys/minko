@@ -170,6 +170,14 @@ renderScene()
 void
 glfwMouseMoveHandler(GLFWwindow* window, double x, double y)
 {
+	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_1) == GLFW_RELEASE)
+	{
+		mousePositionX = x;
+		mousePositionY = y;
+
+		return;
+	}
+
 	rotationY += (mousePositionX - x) * .005;
 	rotationX += (mousePositionY - y) * .005;
 
@@ -180,8 +188,6 @@ glfwMouseMoveHandler(GLFWwindow* window, double x, double y)
 	else if (rotationX > +limit)
 		rotationX = +limit;
 
-	mousePositionX = x;
-	mousePositionY = y;
 }
 #endif
 
@@ -292,13 +298,6 @@ deserializeShape(Qark::Map&			shapeData,
 
 			auto delta				= deserialize::TypeDeserializer::matrix4x4(shapeData["delta"]);
 			auto modelToWorld		= node->component<Transform>()->modelToWorldMatrix(true);
-
-#ifdef DEBUG
-			std::cout << "[" << node->name() << "]\tdeserialize TRANSFORM" << std::endl;
-
-			component::bullet::PhysicsWorld::print(std::cout << "- delta = \n", delta) << std::endl;
-			component::bullet::PhysicsWorld::print(std::cout << "- world = \n", modelToWorld) << std::endl;
-#endif // DEBUG
 
 			deserializedShape->initialize(delta, modelToWorld);
 		}
@@ -417,8 +416,6 @@ initializeCamera(scene::Node::Ptr group)
 	bool cameraInGroup = false;
 	if (cameras->nodes().empty())
 	{
-		std::cout << "MANUAL CAMERA" << std::endl;
-
 		// default camera
 		camera = scene::Node::create(CAMERA_NAME);
 
@@ -437,14 +434,7 @@ initializeCamera(scene::Node::Ptr group)
 		cameraInGroup = true;
 
 		if (camera->hasComponent<component::bullet::Collider>())
-		{
-			std::cout << "PARSED CAMERA & COLLIDER" << std::endl;
 			cameraCollider = camera->component<component::bullet::Collider>();
-		}
-		else
-		{
-			std::cout << "PARSED CAMERA W/OUT COLLIDER" << std::endl;
-		}
 	}
 
 	if (!camera->hasComponent<Transform>())
@@ -464,7 +454,6 @@ initializePhysics()
 	physicWorld->setGravity(math::Vector3::create(0.f, -9.8f, 0.f));
 	root->addComponent(physicWorld);
 }
-
 
 void
 printFramerate(const unsigned int delay = 1)
@@ -512,7 +501,7 @@ main(int argc, char** argv)
 	auto window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Sponza Example", NULL, NULL);
 	glfwMakeContextCurrent(window);
 	glfwSetCursorPosCallback(window, glfwMouseMoveHandler);
-	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	// glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
 	std::cout << "OpenGL ES2 context created" << std::endl;
 	context = render::OpenGLES2Context::create();
@@ -577,7 +566,22 @@ main(int argc, char** argv)
 
 		auto fire = Fire::create(assets);
 		for (auto fireNode : fireNodes->nodes())
+		{
 			fireNode->addComponent(fire);
+
+			auto test = scene::Node::create()
+				->addComponent(Transform::create())
+				->addComponent(Surface::create(
+					assets->geometry("cube"),
+					data::Provider::create()->set("material.diffuseColor", Vector4::create(1, 0, 0, 1)),
+					assets->effect("effect/Basic.effect")
+				));
+
+			test->component<Transform>()->transform()->copyFrom(fireNode->component<Transform>()->transform());
+			root->addChild(test);
+
+			std::cout << fireNode->component<Transform>()->transform()->translation()->toString() << std::endl;			
+		}
 	});
 
 	sceneManager->assets()->load();
@@ -594,6 +598,7 @@ main(int argc, char** argv)
 	while (!glfwWindowShouldClose(window))
 	{
 		auto cameraTransform = camera->component<Transform>()->transform();
+
 		if (cameraCollider == nullptr)
 		{
 			if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS ||
@@ -631,13 +636,13 @@ main(int argc, char** argv)
 					 glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 				cameraTransform->prependTranslation(CAMERA_LIN_SPEED, 0.0f, 0.0f);
 
-			eye = cameraTransform->translationVector();
+			eye = cameraTransform->translation();
 
 			if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && eye->y() <= 0.5f)
 				cameraTransform->prependTranslation(0.0f, 4 * CAMERA_LIN_SPEED, 0.0f);
 
 			// look around
-			eye = cameraTransform->translationVector();
+			eye = cameraTransform->translation();
 
 			target->setTo(
 				eye->x() + sinf(rotationY) * cosf(rotationX),
@@ -645,15 +650,7 @@ main(int argc, char** argv)
 				eye->z() + cosf(rotationY) * cosf(rotationX)
 			);
 
-			cameraTransform->view(eye, target, Vector3::upAxis());
-
-			auto newEyePos = cameraTransform->translationVector();
-
-			cameraTransform->appendTranslation(
-				eye->x() - newEyePos->x(),
-				eye->y() - newEyePos->y(),
-				eye->z() - newEyePos->z()
-			);
+			cameraTransform->lookAt(target, eye, Vector3::upAxis());
 
 			cameraCollider->synchronizePhysicsWithGraphics();
 		}
