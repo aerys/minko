@@ -21,81 +21,64 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 
-#include "minko/render/AbstractResource.hpp"
+#include "minko/component/AbstractDiscreteLight.hpp"
 
 namespace minko
 {
-	namespace render
+	namespace component
 	{
-		class Shader :
-			public AbstractResource
+		class SpotLight :
+			public AbstractDiscreteLight
 		{
 		public:
-			typedef std::shared_ptr<Shader> Ptr;
-
-			enum class Type
-			{
-				VERTEX_SHADER,
-				FRAGMENT_SHADER
-			};
-
+			typedef std::shared_ptr<SpotLight> Ptr;
+	
 		private:
-			Type		_type;
-			std::string _source;
+			float							_cosInnerConeAngle;
+			float							_cosOuterConeAngle;
+			std::shared_ptr<math::Vector3>	_worldPosition;
+			std::shared_ptr<math::Vector3>	_worldDirection;
 
 		public:
 			inline static
 			Ptr
-			create(std::shared_ptr<AbstractContext> context, Type type)
+			create(float innerAngleRadians = PI * 0.25f,
+				   float outerAngleRadians = -1.0f)
 			{
-				return std::shared_ptr<Shader>(new Shader(context, type));
-			}
+				auto light = std::shared_ptr<SpotLight>(new SpotLight(innerAngleRadians, outerAngleRadians));
 
-			inline static
-			Ptr
-			create(std::shared_ptr<AbstractContext> context, Type type, const std::string& source)
-			{
-				auto s = create(context, type);
+                light->initialize();
 
-				s->_source = source;
-
-				return s;
+			    return light;
 			}
 
 			inline
-			Type
-			type() const
+			float
+			cosInnerConeAngle() const
 			{
-				return _type;
+				return _cosInnerConeAngle;
 			}
+
+			void
+			innerConeAngle(float radians);
 
 			inline
-			const std::string&
-			source()
+			float
+			cosOuterConeAngle() const
 			{
-				return _source;
-			}
-
-			inline
-			void
-			source(const std::string& source)
-			{
-				_source = source;
+				return _cosOuterConeAngle;
 			}
 
 			void
-			dispose();
+			outerConeAngle(float radians);
 
+		protected:
 			void
-			upload();
+            updateModelToWorldMatrix(std::shared_ptr<math::Matrix4x4> modelToWorld);
 
 		private:
-			Shader(std::shared_ptr<AbstractContext> context,
-				   Type								type) :
-				AbstractResource(context),
-				_type(type)
-			{
-			}
+			SpotLight(float innerAngleRadians,
+					  float outerAngleRadians);
 		};
 	}
 }
