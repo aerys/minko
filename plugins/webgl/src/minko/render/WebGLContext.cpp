@@ -35,7 +35,6 @@ WebGLContext::WebGLContext() :
 	OpenGLES2Context()
 {}
 
-
 void
 WebGLContext::setShaderSource(const unsigned int shader,
 							  const std::string& source)
