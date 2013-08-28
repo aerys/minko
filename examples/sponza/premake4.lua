@@ -60,7 +60,9 @@ project "minko-example-sponza"
 			"Xrandr",
 			"Xxf86vm",
 			"Xi",
-			"rt"
+			"rt",
+			"X11",
+			"pthread"
 		}
 		libdirs {
 			"../../deps/lin/lib"
