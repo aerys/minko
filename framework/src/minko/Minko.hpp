@@ -50,6 +50,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/AmbientLight.hpp"
 #include "minko/component/AbstractDiscreteLight.hpp"
 #include "minko/component/DirectionalLight.hpp"
+#include "minko/component/SpotLight.hpp"
+#include "minko/component/PointLight.hpp"
 #include "minko/render/AbstractResource.hpp"
 #include "minko/render/Program.hpp"
 #include "minko/render/VertexBuffer.hpp"
