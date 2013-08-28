@@ -5,12 +5,14 @@
 	"attributeBindings"	: {
 		"position"					: "geometry.vertex.attribute.position",
 		"uv"						: "geometry.vertex.attribute.uv",
-		"normal"					: "geometry.vertex.attribute.normal"
+		"normal"					: "geometry.vertex.attribute.normal",
+		"tangent"					: "geometry.vertex.attribute.tangent"
 	},
 	
 	"uniformBindings"	: {
 		"diffuseColor"				: "material.diffuseColor",
 		"diffuseMap"				: "material.diffuseMap",
+		"normalMap"					: "material.normalMap",
 		"shininess"					: "material.shininess",
 		"modelToWorldMatrix"		: "transform.modelToWorldMatrix",
 		"worldToScreenMatrix"		: "camera.worldToScreenMatrix",
@@ -23,10 +25,14 @@
 
 	"macroBindings"	: {
 		"DIFFUSE_MAP"				: "material.diffuseMap",
+		"NORMAL_MAP"				: "material.normalMap",
 		"SHININESS"					: "material.shininess",
 		"MODEL_TO_WORLD"			: "transform.modelToWorldMatrix",
+		"NUM_AMBIENT_LIGHTS"		: "ambientLights.length",
+		"PRECOMPUTED_AMBIENT"		: "sumAmbients",
 		"NUM_DIRECTIONAL_LIGHTS"	: "directionalLights.length",
-		"NUM_AMBIENT_LIGHTS"		: "ambientLights.length"
+		"NUM_POINT_LIGHTS"			: "pointLights.length",
+		"NUM_SPOT_LIGHTS"			: "spotLights.length"
 	},
 	
 	"priority"			: 0,
@@ -38,7 +44,7 @@
 		"diffuseMap"	: { "filter" : "linear", "mipFilter" : "linear" }
 	},
 
-	"includes"	: [ "Phong.glsl" ],
+	"includes"	: [ "Phong.glsl", "NormalMap.glsl", "LightTypes.glsl" ],
 	
 	"passes"	: [{	
 		"vertexShader"	: "
@@ -49,13 +55,15 @@
 			attribute vec3 position;
 			attribute vec2 uv;
 			attribute vec3 normal;
+			attribute vec3 tangent;
 
 			uniform mat4 modelToWorldMatrix;
 			uniform mat4 worldToScreenMatrix;
 
+			varying vec3 vertexPosition;
 			varying vec2 vertexUV;
 			varying vec3 vertexNormal;
-			varying vec3 vertexPosition;
+			varying vec3 vertexTangent;
 
 			void main(void)
 			{
@@ -63,25 +71,32 @@
 					vertexUV = uv;
 				#endif
 
-				vec4 pos = vec4(position, 1.0);
-				
+				vec4 worldPosition = vec4(position, 1.0);
 				#ifdef MODEL_TO_WORLD
-					pos = modelToWorldMatrix * pos;
-				#endif
+					worldPosition = modelToWorldMatrix * worldPosition;
+				#endif // MODEL_TO_WORLD
 				
-				#ifdef NUM_DIRECTIONAL_LIGHTS
-					vec3 worldNormal = normal;
+				#if defined NUM_DIRECTIONAL_LIGHTS || defined NUM_POINT_LIGHTS || defined NUM_SPOT_LIGHTS
+				
+					vertexPosition	= worldPosition.xyz;
+					
+					vertexNormal = normal;				
 					#ifdef MODEL_TO_WORLD
-						worldNormal = mat3(modelToWorldMatrix) * worldNormal;
-					#endif
-					vertexNormal = normalize(worldNormal);
+						vertexNormal = mat3(modelToWorldMatrix) * vertexNormal;
+					#endif // MODEL_TO_WORLD
+					vertexNormal = normalize(vertexNormal);
+					
+					#ifdef NORMAL_MAP
+						vertexTangent = tangent;
+						#ifdef MODEL_TO_WORLD
+							vertexTangent = mat3(modelToWorldMatrix) * vertexTangent;
+						#endif // MODEL_TO_WORLD
+						vertexTangent = normalize(vertexTangent);
+					#endif // NORMAL_MAP
+					
+				#endif // defined NUM_DIRECTIONAL_LIGHTS || defined NUM_POINT_LIGHTS || defined NUM_SPOT_LIGHTS
 
-					#ifdef SHININESS
-						vertexPosition = pos.xyz;
-					#endif
-				#endif
-
-				gl_Position =  worldToScreenMatrix * pos;
+				gl_Position =  worldToScreenMatrix * worldPosition;
 			}
 		",
 		"fragmentShader"	: "
@@ -91,47 +106,92 @@
 
 			#ifdef NUM_AMBIENT_LIGHTS
 				uniform AmbientLight ambientLights[NUM_AMBIENT_LIGHTS];
-			#endif
+			#endif // NUM_AMBIENT_LIGHTS
+			
+			#ifdef PRECOMPUTED_AMBIENT
+				uniform vec3 sumAmbients;
+			#endif // PRECOMPUTED_AMBIENT
+			
 			#ifdef NUM_DIRECTIONAL_LIGHTS
 				uniform DirectionalLight directionalLights[NUM_DIRECTIONAL_LIGHTS];
-			#endif
-
+			#endif // NUM_DIRECTIONAL_LIGHTS
+			
+			#ifdef NUM_POINT_LIGHTS
+				uniform PointLight pointLights[NUM_POINT_LIGHTS];
+			#endif // NUM_POINT_LIGHTS
+			
+			#ifdef NUM_SPOT_LIGHTS
+				uniform SpotLight spotLights[NUM_SPOT_LIGHTS];
+			#endif // NUM_SPOT_LIGHTS
+			
 			uniform vec4 diffuseColor;
 			uniform sampler2D diffuseMap;
+			uniform sampler2D normalMap;
+			
 			uniform float shininess;
 			uniform vec3 cameraPosition;
 			
+			varying vec3 vertexPosition;
 			varying vec2 vertexUV;
 			varying vec3 vertexNormal;
-			varying vec3 vertexPosition;
+			varying vec3 vertexTangent;
 
 			void main(void)
 			{
 				vec4 diffuse = vec4(0);
-
-				// diffuse
+				
 				#ifdef DIFFUSE_MAP
 					diffuse = texture2D(diffuseMap, vertexUV);
 				#else
 					diffuse = diffuseColor;
-				#endif
-
+				#endif // DIFFUSE_MAP
+				
+				
 				vec3 phong = vec3(0.);
-				#ifdef NUM_AMBIENT_LIGHTS
-					for (int i = 0; i < NUM_AMBIENT_LIGHTS; ++i)
-					{
-						phong += ambientLights[i].color * ambientLights[i].ambient;
-					}
-				#endif
+				
+				#ifdef PRECOMPUTED_AMBIENT
+				//------------------------
+					phong += sumAmbients;
+				#else
+				
+					#ifdef NUM_AMBIENT_LIGHTS
+						for (int i = 0; i < NUM_AMBIENT_LIGHTS; ++i)
+						{
+							phong += ambientLights[i].color * ambientLights[i].ambient;
+						}
+					#endif // NUM_AMBIENT_LIGHTS
+		
+				#endif // PRECOMPUTED_AMBIENT
+				
+				
+				#if defined NUM_DIRECTIONAL_LIGHTS || defined NUM_POINT_LIGHTS || defined NUM_SPOT_LIGHTS
+					
+					vec3 lightDirection	= vec3(0.0);
+					float contribution	= 0.0;
+					
+					vec3 normal		= normalize(vertexNormal);
+					vec3 eyeVector	= cameraPosition - vertexPosition;
 
-				#ifdef NUM_DIRECTIONAL_LIGHTS
-					vec3 eyeVector = normalize(cameraPosition - vertexPosition);
-					vec3 normal = normalize(vertexNormal);
-
+					#ifdef NORMAL_MAP
+						// warning: the normal vector must be normalized at this point!
+						mat3 worldToTangentMatrix = getWorldToTangentSpaceMatrix(normal, vertexTangent);
+						
+						normal		= normalize(2.0*texture2D(normalMap, vertexUV).xyz - 1.0);
+						eyeVector	= worldToTangentMatrix * eyeVector;
+					#endif // NORMAL_MAP
+					
+					eyeVector	= normalize(eyeVector);
+					
+					#ifdef NUM_DIRECTIONAL_LIGHTS
+					//---------------------------
 					for (int i = 0; i < NUM_DIRECTIONAL_LIGHTS; ++i)
 					{
-						vec3 lightDirection = normalize(-directionalLights[i].direction);
-						float contribution = phong_diffuseReflection(normal, lightDirection)
+						lightDirection	= normalize(-directionalLights[i].direction);
+						#ifdef NORMAL_MAP
+							lightDirection = worldToTangentMatrix * lightDirection;
+						#endif // NORMAL_MAP
+						
+						contribution	= phong_diffuseReflection(normal, lightDirection)
 							* directionalLights[i].diffuse;
 
 						#ifdef SHININESS
@@ -141,15 +201,80 @@
 								eyeVector,
 								shininess
 							) * directionalLights[i].specular;
-
-						#endif
+						#endif // SHININESS
 
 						phong += contribution * directionalLights[i].color;
 					}
+					#endif // NUM_DIRECTIONAL_LIGHTS
+					
+					#ifdef NUM_POINT_LIGHTS
+					//---------------------
+					for (int i = 0; i < NUM_POINT_LIGHTS; ++i)
+					{
+						lightDirection	= normalize(pointLights[i].position - vertexPosition);
+						#ifdef NORMAL_MAP
+							lightDirection = worldToTangentMatrix * lightDirection;
+						#endif // NORMAL_MAP
+						
+						contribution	= phong_diffuseReflection(normal, lightDirection)
+							* pointLights[i].diffuse;
 
-					diffuse = vec4(diffuse.rgb * phong, diffuse.a);
-				#endif
+						#ifdef SHININESS
+							contribution += phong_specularReflection(
+								normal,
+								lightDirection,
+								eyeVector,
+								shininess
+							) * pointLights[i].specular;
+						#endif // SHININESS
 
+						phong += contribution * pointLights[i].color;
+					}
+					#endif // NUM_POINT_LIGHTS
+					
+					#ifdef NUM_SPOT_LIGHTS
+					//--------------------
+					for (int i = 0; i < NUM_SPOT_LIGHTS; ++i)
+					{
+						lightDirection		= normalize(spotLights[i].position - vertexPosition);
+						vec3  spotDirection	= normalize(-spotLights[i].direction);						
+						float cosSpot		= dot(-lightDirection, spotDirection);
+						float cosOuter		= spotLights[i].cosOuterConeAngle;
+
+						if (cosOuter < cosSpot)
+						{
+							#ifdef NORMAL_MAP
+								lightDirection	= worldToTangentMatrix * lightDirection;
+								spotDirection	= worldToTangentMatrix * spotDirection;
+							#endif // NORMAL_MAP
+						
+							contribution	= phong_diffuseReflection(normal, lightDirection)
+								* spotLights[i].diffuse;
+
+							#ifdef SHININESS
+								contribution += phong_specularReflection(
+									normal,
+									lightDirection,
+									eyeVector,
+									shininess
+								) * spotLights[i].specular;
+							#endif // SHININESS
+							
+							float cosInner	= spotLights[i].cosInnerConeAngle;
+							float cutoff	= cosSpot < cosInner && cosOuter < cosInner 
+											? (cosSpot - cosOuter) / (cosInner - cosOuter) 
+											: 1.0;
+							contribution	*= cutoff;
+							
+							phong += contribution * spotLights[i].color;
+						}
+					}
+					#endif // NUM_SPOT_LIGHTS
+					
+				#endif // defined NUM_DIRECTIONAL_LIGHTS || defined NUM_POINT_LIGHTS || defined NUM_SPOT_LIGHTS
+				
+				diffuse = vec4(diffuse.rgb * phong, diffuse.a);
+				
 				gl_FragColor = diffuse;
 			}
 		"
