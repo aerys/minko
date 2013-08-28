@@ -36,14 +36,18 @@ namespace minko
 			typedef std::shared_ptr<LightManager>	Ptr;
 
 		private:
+			typedef std::shared_ptr<math::Vector3>		Vector3Ptr;
 			typedef std::shared_ptr<AbstractComponent>	AbsCmpPtr;
 			typedef std::shared_ptr<scene::Node>		NodePtr;
 			typedef std::shared_ptr<AbstractLight>		AbsLightPtr;
 
 		private:
 			std::shared_ptr<data::Provider>				_data;
+			Vector3Ptr									_sumAmbients;
 			std::list<AbsLightPtr>						_ambientLights;
 			std::list<AbsLightPtr>						_directionalLights;
+			std::list<AbsLightPtr>						_pointLights;
+			std::list<AbsLightPtr>						_spotLights;
 
 			Signal<AbsCmpPtr, NodePtr>::Slot			_targetAddedSlot;
 			Signal<AbsCmpPtr, NodePtr>::Slot			_targetRemovedSlot;
@@ -100,6 +104,9 @@ namespace minko
 
 			void
 			updateLightArray(const std::string& arrayName, std::list<AbsLightPtr>& lights);
+
+			void
+			updateSumAmbients(Vector3Ptr);
 		};
 	}
 }
