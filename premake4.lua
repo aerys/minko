@@ -7,7 +7,7 @@ if _OPTIONS["platform"] == "emscripten" then
 end
    
 -- examples
---include 'examples/sponza'
+include 'examples/sponza'
 --include 'examples/envmap'
 include 'examples/cube'
 include 'examples/light'
