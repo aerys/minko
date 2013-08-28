@@ -33,11 +33,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::component;
 using namespace minko::scene;
+using namespace minko::render;
 
 Renderer::Renderer() :
     _backgroundColor(0),
 	_renderingBegin(Signal<Ptr>::create()),
-	_renderingEnd(Signal<Ptr>::create())
+	_renderingEnd(Signal<Ptr>::create()),
+	_surfaceDrawCalls()
 {
 }
 
@@ -217,6 +219,8 @@ Renderer::componentRemovedHandler(std::shared_ptr<Node>				node,
 void
 Renderer::addSurfaceComponent(std::shared_ptr<Surface> ctrl)
 {
+	_surfaceDrawCalls[ctrl]	= ctrl->drawCalls();
+
 	_drawCalls.insert(_drawCalls.end(), ctrl->drawCalls().begin(), ctrl->drawCalls().end());
 }
 
@@ -226,10 +230,15 @@ Renderer::removeSurfaceComponent(std::shared_ptr<Surface> ctrl)
 #ifdef __GNUC__
   // Temporary non-fix for GCC missing feature N2350: http://gcc.gnu.org/onlinedocs/libstdc++/manual/status.html
 #else
-	for (auto& drawCall : ctrl->drawCalls())
-		_drawCalls.remove(drawCall);
 
-	//_drawCalls.erase(ctrl->drawCalls().begin(), ctrl->drawCalls().end());
+	auto ctrlDrawCalls	= _surfaceDrawCalls.find(ctrl);
+	if (ctrlDrawCalls == _surfaceDrawCalls.end())
+		return;
+
+	for (auto drawCall : ctrlDrawCalls->second)
+		_drawCalls.remove(drawCall);
+	_surfaceDrawCalls.erase(ctrlDrawCalls);
+
 #endif
 }
 
