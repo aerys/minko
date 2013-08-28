@@ -1,16 +1,17 @@
 solution "minko"
    configurations { "debug", "release" }
-   
+
 -- disable the glsl-optimizer when building for emscripten to avoid linkage issues
 if _OPTIONS["platform"] == "emscripten" then
 	_OPTIONS["no-glsl-optimizer"] = "true"
 end
-   
+
 -- examples
 --include 'examples/sponza'
 --include 'examples/envmap'
 --include 'examples/cube'
-dofile("projects/ogilvy-babolat/pulse/pulsating-triangle/premake4-minko.lua")
+include 'examples/cube-offscreen'
+--include 'examples/light'
 
 -- core framework
 include 'framework'
