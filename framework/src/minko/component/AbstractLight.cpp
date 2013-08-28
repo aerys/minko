@@ -28,7 +28,7 @@ using namespace minko::component;
 AbstractLight::AbstractLight(const std::string& arrayName) :
 	AbstractComponent(),
 	_arrayData(data::ArrayProvider::create(arrayName, 0)),
-	_color(math::Vector3::create(1, 1, 1))
+	_color(math::Vector3::create(1.0f, 1.0f, 1.0f))
 {
 	data()->set("color", _color);
 }
