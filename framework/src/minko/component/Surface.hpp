@@ -123,6 +123,18 @@ namespace minko
 
 			void
 			addedOrRemovedHandler(NodePtr node, NodePtr target, NodePtr ancestor);
+
+            void
+            propertyAddedHandler(std::shared_ptr<data::Container>  data,
+                                 const std::string&                propertyName);
+
+            void
+            propertyChangedHandler(std::shared_ptr<data::Container> data,
+                                   const std::string&  				propertyName);
+
+            void
+            propertyRemovedHandler(std::shared_ptr<data::Container>  data,
+                                   const std::string&                propertyName);
 		};
 	}
 }
