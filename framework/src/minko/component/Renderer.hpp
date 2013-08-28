@@ -38,23 +38,24 @@ namespace minko
 			typedef std::shared_ptr<AbstractComponent>	AbsCtrlPtr;
 			typedef std::shared_ptr<Surface>			SurfaceCtrlPtr;
 			typedef std::shared_ptr<render::DrawCall>	DrawCallPtr;
-
+			typedef std::list<DrawCallPtr>				DrawCallList;
 		private:
-			std::list<DrawCallPtr>						_drawCalls;
-			unsigned int								_backgroundColor;
-			std::shared_ptr<SceneManager>				_sceneManager;
-			Signal<Ptr>::Ptr							_renderingBegin;
-			Signal<Ptr>::Ptr							_renderingEnd;
+			std::list<DrawCallPtr>								_drawCalls;
+			std::unordered_map<SurfaceCtrlPtr, DrawCallList>	_surfaceDrawCalls; 
+			unsigned int										_backgroundColor;
+			std::shared_ptr<SceneManager>						_sceneManager;
+			Signal<Ptr>::Ptr									_renderingBegin;
+			Signal<Ptr>::Ptr									_renderingEnd;
 
-			Signal<AbsCtrlPtr, NodePtr>::Slot			_targetAddedSlot;
-			Signal<AbsCtrlPtr, NodePtr>::Slot			_targetRemovedSlot;
-			Signal<NodePtr, NodePtr, NodePtr>::Slot		_addedSlot;
-			Signal<NodePtr, NodePtr, NodePtr>::Slot		_removedSlot;
-			Signal<NodePtr, NodePtr, NodePtr>::Slot		_rootDescendantAddedSlot;
-			Signal<NodePtr, NodePtr, NodePtr>::Slot		_rootDescendantRemovedSlot;
-			Signal<NodePtr, NodePtr, AbsCtrlPtr>::Slot	_componentAddedSlot;
-			Signal<NodePtr, NodePtr, AbsCtrlPtr>::Slot	_componentRemovedSlot;
-			Signal<std::shared_ptr<SceneManager>>::Slot	_renderingBeginSlot;
+			Signal<AbsCtrlPtr, NodePtr>::Slot					_targetAddedSlot;
+			Signal<AbsCtrlPtr, NodePtr>::Slot					_targetRemovedSlot;
+			Signal<NodePtr, NodePtr, NodePtr>::Slot				_addedSlot;
+			Signal<NodePtr, NodePtr, NodePtr>::Slot				_removedSlot;
+			Signal<NodePtr, NodePtr, NodePtr>::Slot				_rootDescendantAddedSlot;
+			Signal<NodePtr, NodePtr, NodePtr>::Slot				_rootDescendantRemovedSlot;
+			Signal<NodePtr, NodePtr, AbsCtrlPtr>::Slot			_componentAddedSlot;
+			Signal<NodePtr, NodePtr, AbsCtrlPtr>::Slot			_componentRemovedSlot;
+			Signal<std::shared_ptr<SceneManager>>::Slot			_renderingBeginSlot;
 
 		public:
 			static
