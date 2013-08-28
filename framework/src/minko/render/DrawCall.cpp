@@ -304,10 +304,10 @@ DrawCall::watchProperty(const std::string& propertyName)
 }
 
 void
-DrawCall::boundPropertyChangedHandler(std::shared_ptr<data::Container>  data,
-                                      const std::string&                propertyName)
+DrawCall::propertyChangedHandler(std::shared_ptr<data::Container>  data,
+                                 const std::string&                propertyName)
 {
-    //bind();
+
 }
 
 bool

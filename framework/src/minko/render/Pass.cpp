@@ -48,7 +48,8 @@ Pass::Pass(const std::string&				name,
 std::shared_ptr<Program>
 Pass::selectProgram(std::shared_ptr<data::Container> data,
 					std::shared_ptr<data::Container> rootData,
-					std::list<std::string>&			 macroBindingProperties)
+					std::list<std::string>&			 bindingDefines,
+					std::list<std::string>&			 bindingValues)
 {
 	Program::Ptr program;
 
@@ -76,10 +77,14 @@ Pass::selectProgram(std::shared_ptr<data::Container> data,
 
 					defines += "#define " + macroBinding.first;
 					if (container->propertyHasType<int>(propertyName))
+					{
 						defines += " " + std::to_string(container->get<int>(propertyName));
-					defines += "\n";
+						bindingValues.push_back(propertyName);
+					}
+					else
+						bindingDefines.push_back(propertyName);
 
-					macroBindingProperties.push_back(propertyName);
+					defines += "\n";
 				}
             }
 
