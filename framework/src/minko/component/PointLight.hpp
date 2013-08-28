@@ -21,81 +21,43 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 
-#include "minko/render/AbstractResource.hpp"
+#include "minko/component/AbstractDiscreteLight.hpp"
 
 namespace minko
 {
-	namespace render
+	namespace component
 	{
-		class Shader :
-			public AbstractResource
+		class PointLight:
+			public AbstractDiscreteLight
 		{
 		public:
-			typedef std::shared_ptr<Shader> Ptr;
-
-			enum class Type
-			{
-				VERTEX_SHADER,
-				FRAGMENT_SHADER
-			};
-
+			typedef std::shared_ptr<PointLight> Ptr;
+	
 		private:
-			Type		_type;
-			std::string _source;
+			std::shared_ptr<math::Vector3>	_worldPosition;
 
 		public:
 			inline static
 			Ptr
-			create(std::shared_ptr<AbstractContext> context, Type type)
+			create()
 			{
-				return std::shared_ptr<Shader>(new Shader(context, type));
+				auto light = std::shared_ptr<PointLight>(new PointLight());
+
+				light->initialize();
+
+				return light;
 			}
+	
+			~PointLight()
+		    {
+		    }
 
-			inline static
-			Ptr
-			create(std::shared_ptr<AbstractContext> context, Type type, const std::string& source)
-			{
-				auto s = create(context, type);
-
-				s->_source = source;
-
-				return s;
-			}
-
-			inline
-			Type
-			type() const
-			{
-				return _type;
-			}
-
-			inline
-			const std::string&
-			source()
-			{
-				return _source;
-			}
-
-			inline
+		protected:
 			void
-			source(const std::string& source)
-			{
-				_source = source;
-			}
-
-			void
-			dispose();
-
-			void
-			upload();
+            updateModelToWorldMatrix(std::shared_ptr<math::Matrix4x4> modelToWorld);
 
 		private:
-			Shader(std::shared_ptr<AbstractContext> context,
-				   Type								type) :
-				AbstractResource(context),
-				_type(type)
-			{
-			}
+			PointLight();
 		};
 	}
 }

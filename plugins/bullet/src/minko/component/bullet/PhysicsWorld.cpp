@@ -382,7 +382,7 @@ bullet::PhysicsWorld::removeScalingShear(Matrix4x4::Ptr input,
 										 Matrix4x4::Ptr output, 
 										 Matrix4x4::Ptr correction)
 {
-	auto translation	= input->translationVector();
+	auto translation	= input->translation();
 
 	// remove translational component, then perform QR decomposition
 	_TMP_MATRIX
@@ -425,7 +425,7 @@ bullet::PhysicsWorld::toBulletTransform(Matrix4x4::Ptr transform,
 {
 	toBulletTransform(
 		transform->rotationQuaternion(), 
-		transform->translationVector(), 
+		transform->translation(), 
 		output
 	);
 }

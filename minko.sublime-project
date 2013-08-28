@@ -1,0 +1,16 @@
+{
+	"folders":
+	[
+		{
+			"path": "."
+		}
+	],
+	"build_systems":
+	[
+		{
+			"name": "make",
+			"cmd": ["cd $project_path && make && ./examples/bin/minko-examples"],
+			"shell": true
+		}
+	]
+}
