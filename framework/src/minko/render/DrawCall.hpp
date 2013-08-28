@@ -154,8 +154,8 @@ namespace minko
             watchProperty(const std::string& propertyName);
 
             void
-            boundPropertyChangedHandler(ContainerPtr        data,
-                                        const std::string&  propertyName);
+            propertyChangedHandler(ContainerPtr        data,
+                                   const std::string&  propertyName);
 		};		
 	}
 }
