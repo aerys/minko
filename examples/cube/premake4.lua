@@ -49,7 +49,7 @@ project "minko-example-cube"
 
 	-- windows
 	configuration { "windows", "x32" }
-		links { "OpenGL32", "glfw3dll", "glew32" }
+		links { "OpenGL32", "SDL2", "SDL2main", "glew32" }
 		libdirs { "../../deps/win/lib" }
 		includedirs { "../../deps/win/include" }
 		postbuildcommands {
