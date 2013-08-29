@@ -61,7 +61,7 @@ EffectParser::initializeBlendFactorMap()
     m["dst_one"]					= static_cast<uint>(render::Blending::Destination::ONE);
 	m["dst_dst_color"]				= static_cast<uint>(render::Blending::Destination::DST_COLOR);
     m["dst_one_minus_dst_color"]	= static_cast<uint>(render::Blending::Destination::ONE_MINUS_DST_COLOR);
-    m["dst_one_minus_alpha"]		= static_cast<uint>(render::Blending::Destination::ONE_MINUS_DST_ALPHA);
+    m["dst_src_alpha_saturate"]		= static_cast<uint>(render::Blending::Destination::SRC_ALPHA_SATURATE);
     m["dst_one_minus_src_alpha"]	= static_cast<uint>(render::Blending::Destination::ONE_MINUS_SRC_ALPHA);
     m["dst_dst_alpha"]				= static_cast<uint>(render::Blending::Destination::DST_ALPHA);
     m["dst_one_minus_dst_alpha"]	= static_cast<uint>(render::Blending::Destination::ONE_MINUS_DST_ALPHA);
