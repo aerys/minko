@@ -67,7 +67,7 @@ project "minko-example-cube"
 		linkoptions { "-std=c++11", "-stdlib=libc++" }
 		links {
 			"m",
-			"glfw3",
+			"SDL2.framework",
 			"Cocoa.framework",
 			"OpenGL.framework",
 			"IOKit.framework"
