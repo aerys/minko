@@ -105,7 +105,7 @@ project "minko-example-sponza"
 		linkoptions { "-std=c++11", "-stdlib=libc++" }
 		links {
 			"m",
-			"SDL2",
+			"SDL2.framework",
 			"OpenGL.framework",
 			"GLUT.framework",
 			"Cocoa.framework",
