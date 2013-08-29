@@ -30,10 +30,10 @@ using namespace minko::render;
 
 Pass::Pass(const std::string&				name,
 		   std::shared_ptr<render::Program>	program,
-		   data::BindingMap&				attributeBindings,
-		   data::BindingMap&				uniformBindings,
-		   data::BindingMap&				stateBindings,
-		   data::BindingMap&				macroBindings,
+		   const data::BindingMap&			attributeBindings,
+		   const data::BindingMap&			uniformBindings,
+		   const data::BindingMap&			stateBindings,
+		   const data::BindingMap&			macroBindings,
            std::shared_ptr<States>          states) :
 	_name(name),
 	_programTemplate(program),
