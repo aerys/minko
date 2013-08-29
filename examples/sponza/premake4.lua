@@ -80,7 +80,8 @@ project "minko-example-sponza"
 		buildoptions { "-std=c++11" }
 		links {
 			"OpenGL32",
-			"glfw3dll",
+			"SDL2",
+			"SDL2main",
 			"glew32"
 		}
 		libdirs {
