@@ -3,7 +3,7 @@
 #include "minko/Minko.hpp"
 #include "minko/MinkoPNG.hpp"
 
-#include "GLFW/glfw3.h"
+#include "SDL2/SDL.h"
 
 using namespace minko;
 using namespace minko::component;
@@ -11,9 +11,18 @@ using namespace minko::math;
 
 int main(int argc, char** argv)
 {
-	glfwInit();
-	auto window = glfwCreateWindow(800, 600, "Minko - Cube Example", NULL, NULL);
-	glfwMakeContextCurrent(window);
+
+	if (SDL_Init(SDL_INIT_VIDEO) == -1)
+		exit(-1);
+
+	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+
+	SDL_Window* window = SDL_CreateWindow("Minko - Cube Example",
+			SDL_WINDOWPOS_UNDEFINED,
+			SDL_WINDOWPOS_UNDEFINED,
+			800, 600, SDL_WINDOW_OPENGL);
+
+	SDL_GLContext glcontext = SDL_GL_CreateContext(window);
 
 	auto sceneManager = SceneManager::create(render::OpenGLES2Context::create());
     auto mesh = scene::Node::create("mesh");
@@ -61,18 +70,31 @@ int main(int argc, char** argv)
 
 	sceneManager->assets()->load();
 
-	while (!glfwWindowShouldClose(window))
+	bool done = false;
+	while (!done)
 	{
+		SDL_Event event;
+
+		while (SDL_PollEvent(&event))
+		{
+			switch (event.type)
+			{
+			case SDL_QUIT:
+				done = true;
+				break;
+			default:
+				break;
+			}
+		}
+
 		mesh->component<Transform>()->transform()->prependRotationY(.01f);
 
 		sceneManager->nextFrame();
 
-		glfwSwapBuffers(window);
-		glfwPollEvents();
+		SDL_GL_SwapWindow(window);
 	}
 
-	glfwDestroyWindow(window);
-	glfwTerminate();
+	SDL_Quit();
 
 	exit(EXIT_SUCCESS);
 }
