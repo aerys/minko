@@ -1,5 +1,6 @@
 package aerys.minko.type.interpolation
 {
+	import aerys.minko.type.animation.timeline.ITimeline;
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Vector4;
 	
@@ -25,7 +26,7 @@ package aerys.minko.type.interpolation
 		protected var _tmpPos		: Vector4;
 		protected var _tmpTangent	: Vector4;
 		protected var _tmpPointAt	: Vector4;
-		
+				
 		public function get checkpoints() : Vector.<Vector4>
 		{
 			return new Vector.<Vector4>([_start, _end]);
@@ -108,6 +109,11 @@ package aerys.minko.type.interpolation
 			_tmpPointAt	= new Vector4();
 		}
 		
+		public function clone() : IInterpolation
+		{
+			throw new Error('Must be overriden');
+		}
+		
 		public function position(t : Number, out : Vector4 = null) : Vector4
 		{
 			if (t < 0 || t > 1)
@@ -160,20 +166,25 @@ package aerys.minko.type.interpolation
 			return out.copyFrom(_tmpTangent);
 		}
 		
-		public function updateMatrix(matrix : Matrix4x4, t : Number) : void
+		public function updateMatrix(t : Number, matrix : Matrix4x4 = null) : Matrix4x4
 		{
 			if (t < 0 || t > 1)
 				throw new Error('t must be between 0 and 1');
-			
-			updatePosition(t);
+
+			matrix	||= new Matrix4x4();
+
+			//updatePosition(t);
 			updatePointAt(t);
-			
+					
+			return matrix.lookAt(_tmpPointAt, _tmpPos, _up);
+			/*
 			matrix.getRawData(TMP_VECTOR);
 			TMP_VECTOR[12] = _tmpPos.x;
 			TMP_VECTOR[13] = _tmpPos.y;
 			TMP_VECTOR[14] = _tmpPos.z;
 			matrix.setRawData(TMP_VECTOR);
-			matrix.lookAt(_at, _tmpPointAt, _up); //matrix.pointAt(_tmpPointAt, _at, _up);
+			*/
+			//matrix.lookAt(_at, _tmpPointAt, _up); //matrix.pointAt(_tmpPointAt, _at, _up);
 		}
 		
 		protected function updatePosition(t : Number) : void
@@ -188,13 +199,13 @@ package aerys.minko.type.interpolation
 		
 		protected function updatePointAt(t : Number) : void
 		{
-			if (Math.abs(_tmpPointAtT - t) < 1e-6)
+			if (Math.abs(t - _tmpPointAtT) < 1e-6)
 				return;
 			
 			updatePosition(t);
 			updateTangent(t);
 			
-			Vector4.subtract(_tmpPos, _tmpTangent, _tmpPointAt);
+			Vector4.add(_tmpPos, _tmpTangent, _tmpPointAt);
 			
 			_tmpPointAtT = t;
 		}

@@ -56,7 +56,7 @@ package aerys.minko.render.geometry.primitive
 			
 			var vertexStream : VertexStream = VertexStream.fromVector(vertexStreamUsage, VertexFormat.XYZ_UV, vertexData); 
 			super(
-				new [IVertexStream](vertexStream as IVertexStream),
+				new <IVertexStream>[vertexStream as IVertexStream],
 				IndexStream.fromVector(indexStreamUsage, indexData)
 			);
 		}

@@ -4,10 +4,10 @@ package aerys.minko.type.interpolation
 	
 	public class BezierQuadSegment extends AbstractBezierSegment
 	{
-		protected var _control : Vector4;
+		protected var	_control	: Vector4;
 		
-		private var _diff10	: Vector4	= null;
-		private var _diff21	: Vector4	= null;
+		private var		_diff10		: Vector4	= null;	
+		private var		_diff21		: Vector4	= null;
 		
 		override public function get firstControl() : Vector4
 		{
@@ -53,6 +53,17 @@ package aerys.minko.type.interpolation
 			_diff21	= new Vector4();
 			
 			_dirty = true;
+		}
+		
+		override public function clone() : IInterpolation
+		{
+			return new BezierQuadSegment(
+				_start.clone(), 
+				_control.clone(), 
+				_end.clone(), 
+				_at.clone(), 
+				_up.clone()
+			);
 		}
 		
 		override protected function updatePrecomputedTerms() : void

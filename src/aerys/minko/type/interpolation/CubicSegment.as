@@ -80,6 +80,18 @@ package aerys.minko.type.interpolation
 			_a3			= new Vector4();
 		}
 		
+		override public function clone() : IInterpolation
+		{
+			return new CubicSegment(
+				_start.clone(), 
+				_end.clone(), 
+				_previous.clone(), 
+				_next.clone(), 
+				_at.clone(), 
+				_up.clone()
+			);
+		}
+		
 		override protected function updatePosition(t : Number) : void
 		{
 			if (_dirty)

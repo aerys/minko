@@ -14,6 +14,18 @@ package aerys.minko.type.interpolation
 			super(start, end, previous, next, at, up);
 		}
 		
+		override public function clone() : IInterpolation
+		{
+			return new CatmullRomSegment(
+				_start.clone(), 
+				_end.clone(), 
+				_previous.clone(), 
+				_next.clone(), 
+				_at.clone(), 
+				_up.clone()
+			);
+		}
+		
 		override protected function updatePrecomputedTerms() : void
 		{
 			// Formula given the sequence of control points (P0, P1, P2, P3):

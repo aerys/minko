@@ -71,6 +71,18 @@ package aerys.minko.type.interpolation
 			_dirty = true;
 		}
 		
+		override public function clone() : IInterpolation
+		{
+			return new BezierCubicSegment(
+				_start.clone(), 
+				_control1.clone(), 
+				_control2.clone(), 
+				_end.clone(), 
+				_at.clone(), 
+				_up.clone()
+			);
+		}
+		
 		override protected function updatePrecomputedTerms() : void
 		{
 			Vector4.subtract(_control1,	_start,		_diff10);

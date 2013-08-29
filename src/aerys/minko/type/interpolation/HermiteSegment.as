@@ -106,10 +106,20 @@ package aerys.minko.type.interpolation
 			
 			_m0			= new Vector4();
 			_m1			= new Vector4();
-			
-			_tmpPos		= new Vector4();
-			_tmpTangent	= new Vector4();
-			_tmpPointAt	= new Vector4();
+		}
+		
+		override public function clone() : IInterpolation
+		{
+			return new HermiteSegment(
+				_start.clone(), 
+				_end.clone(), 
+				_bias, 
+				_tension, 
+				_previous.clone(), 
+				_next.clone(), 
+				_at.clone(), 
+				_up.clone()
+			);
 		}
 		
 		override protected function updatePosition(t : Number) : void

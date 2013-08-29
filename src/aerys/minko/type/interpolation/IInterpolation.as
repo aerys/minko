@@ -1,5 +1,6 @@
 package aerys.minko.type.interpolation
 {
+	import aerys.minko.type.animation.timeline.ITimeline;
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Vector4;
 
@@ -28,7 +29,8 @@ package aerys.minko.type.interpolation
 		 */
 		function lookAt(t : Number, out : Vector4 = null) : Vector4;
 		
-		function updateMatrix(matrix : Matrix4x4, t : Number) : void;
-		//function updateTransform(transform : Transform3D, t : Number) : void;
+		function updateMatrix(t : Number, matrix : Matrix4x4 = null) : Matrix4x4;
+		
+		function clone() : IInterpolation;
 	}
 }
