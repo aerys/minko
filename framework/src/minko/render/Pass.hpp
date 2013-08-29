@@ -37,6 +37,7 @@ namespace minko
 		private:
  			typedef std::shared_ptr<Program>							    ProgramPtr;
             typedef std::unordered_map<std::string, render::SamplerState>   SamplerStatesMap;
+			typedef std::shared_ptr<States>									StatesPtr;
 
 		private:
 			const std::string		            _name;
@@ -45,8 +46,7 @@ namespace minko
 			data::BindingMap				    _uniformBindings;
 			data::BindingMap				    _stateBindings;
 			data::BindingMap				    _macroBindings;
-            std::shared_ptr<States>             _states;
-
+            StatesPtr           				_states;
 			std::map<unsigned int, ProgramPtr>	_signatureToProgram;
 
 		public:
@@ -54,11 +54,11 @@ namespace minko
 			Ptr
 			create(const std::string&				name,
 				   std::shared_ptr<render::Program>	program,
-				   data::BindingMap&				attributeBindings,
-				   data::BindingMap&				uniformBindings,
-				   data::BindingMap&				stateBindings,
-				   data::BindingMap&				macroBindings,
-                   std::shared_ptr<States>          states)
+				   const data::BindingMap&			attributeBindings,
+				   const data::BindingMap&			uniformBindings,
+				   const data::BindingMap&			stateBindings,
+				   const data::BindingMap&			macroBindings,
+                   StatesPtr         				states)
 			{
 				return std::shared_ptr<Pass>(new Pass(
 					name,
@@ -87,37 +87,47 @@ namespace minko
 
 			inline
 			const data::BindingMap&
-			attributeBindings()
+			attributeBindings() const
 			{
 				return _attributeBindings;
 			}
 
 			inline
 			const data::BindingMap&
-			uniformBindings()
+			uniformBindings() const
 			{
 				return _uniformBindings;
 			}
 
 			inline
 			const data::BindingMap&
-			stateBindings()
+			stateBindings() const
 			{
 				return _stateBindings;
 			}
 
 			inline
-			std::shared_ptr<States>
-			states()
+			const data::BindingMap&
+			macroBindings() const
+			{
+				return _macroBindings;
+			}
+
+			inline
+			StatesPtr
+			states() const
 			{
 				return _states;
 			}
 
+			std::shared_ptr<DrawCall>
+			createDrawCall(std::shared_ptr<data::Container> data, std::shared_ptr<data::Container> rootData);
+
 			std::shared_ptr<Program>
 			selectProgram(std::shared_ptr<data::Container> 	data,
 						  std::shared_ptr<data::Container> 	rootData,
-						  std::list<std::string>&			bindingDefines,
-						  std::list<std::string>&			bindingValues);
+						  std::list<std::string>&			 bindingDefines,
+						  std::list<std::string>&			 bindingValues);
 
 			void
 			setUniform(const std::string& name, float value);
@@ -125,10 +135,10 @@ namespace minko
 		private:
 			Pass(const std::string&					name,
 				 std::shared_ptr<render::Program>	program,
-				 data::BindingMap&					attributeBindings,
-				 data::BindingMap&					uniformBindings,
-				 data::BindingMap&					stateBindings,
-				 data::BindingMap&					macroBindings,
+				 const data::BindingMap&			attributeBindings,
+				 const data::BindingMap&			uniformBindings,
+				 const data::BindingMap&			stateBindings,
+				 const data::BindingMap&			macroBindings,
                  std::shared_ptr<States>            states);
 
 			const unsigned int

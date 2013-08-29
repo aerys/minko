@@ -63,6 +63,13 @@ namespace minko
 			}
 
 			inline
+			Type
+			type() const
+			{
+				return _type;
+			}
+
+			inline
 			const std::string&
 			source()
 			{
