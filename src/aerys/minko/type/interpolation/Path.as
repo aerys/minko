@@ -1,5 +1,7 @@
 package aerys.minko.type.interpolation
 {
+	import aerys.minko.render.geometry.Geometry;
+	import aerys.minko.render.geometry.primitive.SplineGeometry;
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Vector4;
 	
@@ -564,6 +566,20 @@ package aerys.minko.type.interpolation
 				);
 			}
 			return control;
+		}
+		
+		public function getGeometry(width				: Number	= 0.05,
+									chunks				: uint		= 80,
+									vertexStreamUsage	: uint		= 3,
+									indexStreamUsage	: uint		= 3) : Geometry
+		{
+			return new SplineGeometry(
+				this, 
+				width, 
+				chunks, 
+				vertexStreamUsage, 
+				indexStreamUsage
+			);
 		}
 	}
 }
