@@ -6,7 +6,6 @@ package aerys.minko.scene.controller.animation
 	import aerys.minko.scene.controller.EnterFrameController;
 	import aerys.minko.scene.node.ISceneNode;
 	import aerys.minko.type.Signal;
-	import aerys.minko.type.animation.timeline.ITimeline;
 	
 	use namespace minko_animation;
 	
@@ -135,7 +134,6 @@ package aerys.minko.scene.controller.animation
 			_currentTime = timeValue;
 			
 			updateNextLabel();
-			checkLabelHit(_currentTime, _currentTime);
 			
 			return this;
 		}
@@ -177,7 +175,7 @@ package aerys.minko.scene.controller.animation
 			{
 				updateNextLabel(_loopBeginTime);
 			}
-			else if (min == _loopEndTime)
+			else if (min == _loopEndTime && _looping)
 			{
 				for(i = 0; i < _labelTimes.length; ++i)
 				{
@@ -193,11 +191,19 @@ package aerys.minko.scene.controller.animation
 			_lastTime = _timeFunction != null ? _timeFunction(getTimer()) : getTimer();
 			_started.execute(this);
 			
+			checkLabelHit(_currentTime, _currentTime);
+			
 			return this;
 		}
 		
 		public function stop() : IAnimationController
 		{
+			if (_isPlaying)
+			{
+				updateNextLabel(_currentTime);
+				checkLabelHit(_currentTime, _currentTime);
+			}
+			
 			_isPlaying = false;
 			_updateOneTime 	= true;
 			_lastTime = _timeFunction != null ? _timeFunction(getTimer()) : getTimer();
@@ -216,7 +222,6 @@ package aerys.minko.scene.controller.animation
 				_currentTime = _loopBeginTime;
 			
 			updateNextLabel();
-			checkLabelHit(_currentTime, _currentTime);
 			
 			return this;
 		}
@@ -278,7 +283,7 @@ package aerys.minko.scene.controller.animation
 						_looped.execute(this);
 					else
 					{
-						_currentTime = deltaT > 0 ? _totalTime : 0;
+						_currentTime = deltaT > 0 ? _loopEndTime : 0;
 						stop();
 						
 						return true;
