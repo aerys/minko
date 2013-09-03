@@ -2,8 +2,6 @@ package aerys.minko.type.interpolation
 {
 	import aerys.minko.type.math.Vector4;
 	
-	import mx.validators.ValidationResult;
-	
 	public class BezierCubicSegment extends AbstractBezierSegment
 	{
 		protected var _control1	: Vector4;
