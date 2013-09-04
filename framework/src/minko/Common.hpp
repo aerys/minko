@@ -36,6 +36,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include <unordered_set>
 #include <vector>
 
+#ifdef __ANDROID__
+# include "minko/to_string.hpp"
+#endif
+
 #define PI 3.1415926535897932384626433832795
 
 namespace minko
