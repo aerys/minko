@@ -40,6 +40,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #elif _WIN32
 # include "GL/glew.h"
 #elif __ANDROID__
+# include <GLES2/gl2.h>
+# include "minko/math/Matrix4x4.hpp"
 # include <android/log.h>
 #else
 # include <GL/gl.h>
@@ -210,7 +212,11 @@ OpenGLES2Context::clear(float 			red,
 	// depth Specifies the depth value used when the depth buffer is cleared. The initial value is 1.
 	//
 	// glClearDepth specify the clear value for the depth buffer
+#ifdef __ANDROID__
+	glClearDepthf(depth);
+#else
 	glClearDepth(depth);
+#endif
 
 	// http://www.opengl.org/sdk/docs/man/xhtml/glClearStencil.xml
 	//
@@ -501,8 +507,11 @@ OpenGLES2Context::createTexture(unsigned int 	width,
 	// data Specifies a pointer to the image data in memory.
 	//
 	// glTexImage2D specify a two-dimensional texture image
+#ifdef __ANDROID__
+    auto format = GL_RGBA;
+#else
     auto format = optimizeForRenderToTexture ? GL_BGRA : GL_RGBA;
-
+#endif
 	if (mipMapping)
     {
         unsigned int level = 0;
@@ -765,7 +774,11 @@ OpenGLES2Context::setShaderSource(const unsigned int shader,
     glslopt_shader_delete(optimizedShader);
     glslopt_cleanup(glslOptimizer);
 #else
+# ifdef __ANDROID__
+    std::string src = "#version 100\n" + source;
+# else
     std::string src = "#version 120\n" + source;
+# endif
 	const char* sourceString = src.c_str();
 
     glShaderSource(shader, 1, &sourceString, 0);
@@ -1016,7 +1029,20 @@ OpenGLES2Context::setUniform(unsigned int location, float value1, float value2, 
 void
 OpenGLES2Context::setUniform(unsigned int location, unsigned int size, bool transpose, const float* values)
 {
+#ifdef __ANDROID__
+    if (transpose)
+    {
+        math::Matrix4x4::Ptr tmp = math::Matrix4x4::create()->initialize(std::vector<float>(values, values + 16));
+        tmp->transpose();
+        glUniformMatrix4fv(location, size, false, tmp->values().data());
+    }
+    else
+    {
+        glUniformMatrix4fv(location, size, transpose, values);
+    }
+#else
 	glUniformMatrix4fv(location, size, transpose, values);
+#endif
 }
 
 void
@@ -1160,7 +1186,11 @@ OpenGLES2Context::createRTTBuffers(unsigned int texture, unsigned int width, uns
     // bind renderbuffer
     glBindRenderbuffer(GL_RENDERBUFFER, renderBuffer);
     // init as a depth buffer
+#ifdef __ANDROID__
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, width, height);
+#else
     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, width, height);
+#endif
     // attach to the FBO for depth
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, renderBuffer);
 
