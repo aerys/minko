@@ -25,12 +25,22 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/MipFilter.hpp"
 #include "minko/render/TriangleCulling.hpp"
 
+#ifdef __ANDROID__
+# define LOG_TAG "Minko native"
+# define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
+#else
+# include <cstdio>
+# define LOGE printf
+#endif
+
 #define GL_GLEXT_PROTOTYPES
 #ifdef __APPLE__
 # include <OpenGL/gl.h>
 # include <GLUT/glut.h>
 #elif _WIN32
 # include "GL/glew.h"
+#elif __ANDROID__
+# include <android/log.h>
 #else
 # include <GL/gl.h>
 # include <GL/glu.h>
@@ -678,7 +688,7 @@ OpenGLES2Context::linkProgram(const unsigned int program)
     auto errors = getProgramInfoLogs(program);
 
     if (!errors.empty())
-    	std::cout << errors << std::endl;
+    	LOGE("%s", errors.c_str());
 #endif
 
     checkForErrors();
@@ -703,7 +713,7 @@ OpenGLES2Context::compileShader(const unsigned int shader)
     auto errors = getShaderCompilationLogs(shader);
 
     if (!errors.empty())
-		std::cerr << errors << std::endl;
+		LOGE("%s", errors.c_str());
 #endif
 
     checkForErrors();
@@ -1175,23 +1185,23 @@ OpenGLES2Context::getError()
 
 	switch(error)
 	{
-	default:
-		break;
 	case GL_INVALID_ENUM:
-		std::cerr << "GL_INVALID_ENUM" << std::endl;
+	    LOGE("GL_INVALID_ENUM");
 		break;
 	case GL_INVALID_FRAMEBUFFER_OPERATION:
-		std::cerr << "GL_INVALID_FRAMEBUFFER_OPERATION" << std::endl;
+	    LOGE("GL_INVALID_FRAMEBUFFER_OPERATION");
 		break;
 	case GL_INVALID_VALUE:
-		std::cerr << "GL_INVALID_VALUE" << std::endl;
+	    LOGE("GL_INVALID_VALUE");
 		break;
 	case GL_INVALID_OPERATION:
-		std::cerr << "GL_INVALID_OPERATION" << std::endl;
+	    LOGE("GL_INVALID_OPERATION");
 		break;
 	case GL_OUT_OF_MEMORY:
-		std::cerr << "GL_OUT_OF_MEMORY" << std::endl;
+	    LOGE("GL_OUT_OF_MEMORY");
 		break;
+    default:
+        break;
 	}
 
     return error;
