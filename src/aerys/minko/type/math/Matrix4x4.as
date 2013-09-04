@@ -699,14 +699,13 @@ package aerys.minko.type.math
 			return this;
 		}
 		
-        final public function getRotationQuaternion(output : Vector4 = null) : Vector4
+        final public function getRotationQuaternion(output : Quaternion = null) : Quaternion
 		{
 			var components 	: Vector.<Vector3D>	= _matrix.decompose(Orientation3D.QUATERNION);
 			var rotation	: Vector3D			= components[1];
 			
-			output ||= new Vector4();
-			output._vector = components[1];
-			output._update |= Vector4.UPDATE_ALL;
+			output ||= new Quaternion();
+			output.set(rotation[3], rotation[0], rotation[1], rotation[2]);
 			
 			return output;
 		}
@@ -1074,12 +1073,12 @@ package aerys.minko.type.math
 			return this;
 		}
 		
-		final public function fromQuaternion(quaternion : Vector4) : Matrix4x4
+		final public function fromQuaternion(quaternion : Quaternion) : Matrix4x4
 		{
-			var x : Number = quaternion.x;
-			var y : Number = quaternion.y;
-			var z : Number = quaternion.z;
-			var w : Number = quaternion.w;
+			var x : Number = quaternion.i;
+			var y : Number = quaternion.j;
+			var z : Number = quaternion.k;
+			var w : Number = quaternion.r;
 			var xy2 : Number = 2.* x * y;
 			var xz2 : Number = 2.* x * z;
 			var xw2 : Number = 2.* x * w;
@@ -1101,20 +1100,20 @@ package aerys.minko.type.math
 			return this;
 		}
 		
-		final public function fromDualQuaternion(dQn : Vector4, 
-                                                 dQd : Vector4) : Matrix4x4
+		final public function fromDualQuaternion(n : Vector4, 
+                                                 d : Vector4) : Matrix4x4
 		{
-			var len2Inv	: Number = 1 / (dQn.w * dQn.w + dQn.x * dQn.x + dQn.y * dQn.y + dQn.z * dQn.z);
+			var len2Inv	: Number = 1 / (n.w * n.w + n.x * n.x + n.y * n.y + n.z * n.z);
 
-			var w		: Number = dQn.w;
-			var x		: Number = dQn.x;
-			var y		: Number = dQn.y;
-			var z		: Number = dQn.z;
+			var w		: Number = n.w;
+			var x		: Number = n.x;
+			var y		: Number = n.y;
+			var z		: Number = n.z;
 
-			var t0		: Number = dQd.w;
-			var t1		: Number = dQd.x;
-			var t2		: Number = dQd.y;
-			var t3		: Number = dQd.z;
+			var t0		: Number = d.w;
+			var t1		: Number = d.x;
+			var t2		: Number = d.y;
+			var t3		: Number = d.z;
 
 			initialize(
 				len2Inv * (w * w + x * x - y * y - z * z),

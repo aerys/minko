@@ -1,95 +1,74 @@
 package aerys.minko.type.math
 {
+	import aerys.minko.type.Factory;
+
 	public final class Quaternion
 	{
-		private static const TMP_QUATERNION : Quaternion = new Quaternion();
+		private static const FACTORY				: Factory			= Factory.getFactory(Quaternion);
+		private static const EPSILON				: Number			= 1e-6;
+		private static const TMP_QUATERNION			: Quaternion		= new Quaternion();
 
-		public function get r() : Number { return _r; }
-		public function get i() : Number { return _i; }
-		public function get j() : Number { return _j; }
-		public function get k() : Number { return _k; }
-
-		protected var _r : Number;
-		protected var _i : Number;
-		protected var _j : Number;
-		protected var _k : Number;
-
-		public static function isEqual(q1 : Quaternion, q2 : Quaternion) : Boolean
+		private var _r		: Number	= 1.;
+		private var _i		: Number	= 0.;
+		private var _j		: Number	= 0.;
+		private var _k		: Number	= 0.;
+		
+		final public function get r() : Number
 		{
-			return q1._r == q2._r && q1._i == q2._i && q1._j == q2._j && q1._k == q2._k;
+			return _r;
+		}
+		
+		final public function get i() : Number
+		{
+			return _i;
+		}
+		
+		final public function get j() : Number
+		{
+			return _j;
+		}
+		
+		final public function get k() : Number
+		{
+			return _k;
 		}
 
-		public static function isNotEqual(q1 : Quaternion, q2 : Quaternion) : Boolean
+		public function get length() : Number
 		{
-			return !isEqual(q1, q2);
+			return Math.sqrt(_r * _r + _i * _i + _j * _j + _k * _k);
 		}
 
-		public static function norm(q : Quaternion) : Number
+		public function get norm() : Number
 		{
-			return q._r * q._r + q._i * q._i + q._j * q._j + q._k * q._k;
+			return length;
 		}
-
-		public static function absolute(q : Quaternion) : Number
-		{
-			return Math.sqrt(Quaternion.norm(q));
-		}
-
+		
 		public static function add(q1 : Quaternion, q2 : Quaternion, out : Quaternion = null) : Quaternion
 		{
-			out ||= new Quaternion();
-			out._r = q1._r + q2._r;
-			out._i = q1._i + q2._i;
-			out._j = q1._j + q2._j;
-			out._k = q1._k + q2._k;
-			return out;
+			out ||= FACTORY.create() as Quaternion;
+			out.copyFrom(q1)
+			return out.incrementBy(q2);
 		}
 
 		public static function subtract(q1 : Quaternion, q2 : Quaternion, out : Quaternion = null) : Quaternion
 		{
-			out ||= new Quaternion();
-			out._r = q1._r - q2._r;
-			out._i = q1._i - q2._i;
-			out._j = q1._j - q2._j;
-			out._k = q1._k - q2._k;
-			return out;
+			out ||= FACTORY.create() as Quaternion;
+			out.copyFrom(q1)
+			return out.decrementBy(q2);
 		}
 
-		public static function multiplyScalar(q : Quaternion, f : Number, out : Quaternion = null) : Quaternion
+		public static function scale(q : Quaternion, f : Number, out : Quaternion = null) : Quaternion
 		{
-			out ||= new Quaternion();
-			out._r = q._r * f;
-			out._i = q._i * f;
-			out._j = q._j * f;
-			out._k = q._k * f;
-			return out;
+			out ||= FACTORY.create() as Quaternion;
+			out.copyFrom(q)
+			return out.scaleBy(f);
 		}
-
+		
 		public static function multiply(q1 : Quaternion, q2 : Quaternion, out : Quaternion = null) : Quaternion
 		{
-			out ||= new Quaternion();
-
-			var t0 : Number = (q1._k - q1._j) * (q2._j - q2._k);
-			var t1 : Number = (q1._r + q1._i) * (q2._r + q2._i);
-			var t2 : Number = (q1._r - q1._i) * (q2._j + q2._k);
-			var t3 : Number = (q1._k + q1._j) * (q2._r - q2._i);
-			var t4 : Number = (q1._k - q1._i) * (q2._i - q2._j);
-			var t5 : Number = (q1._k + q1._i) * (q2._i + q2._j);
-			var t6 : Number = (q1._r + q1._j) * (q2._r - q2._k);
-			var t7 : Number = (q1._r - q1._j) * (q2._r + q2._k);
-			var t8 : Number = t5 + t6 + t7;
-			var t9 : Number = (t4 + t8) / 2;
-
-			out._r = t0 + t9 - t5;
-			out._i = t1 + t9 - t8;
-			out._j = t2 + t9 - t7;
-			out._k = t3 + t9 - t6;
-
-			return out;
-		}
-
-		public static function divideScalar(q : Quaternion, f : Number, out : Quaternion = null) : Quaternion
-		{
-			return Quaternion.multiplyScalar(q, 1 / f, out);
+			out ||= FACTORY.create() as Quaternion;
+			out.copyFrom(q1);
+			return out.multiplyBy(q2);
 		}
 
 		public static function divide(q1 : Quaternion, q2 : Quaternion, out : Quaternion = null) : Quaternion
@@ -99,59 +78,32 @@ package aerys.minko.type.math
 			return out;
 		}
 
-		public static function copy(q : Quaternion, out : Quaternion = null) : Quaternion
-		{
-			out ||= new Quaternion();
-			out._r = q._r;
-			out._i = q._i;
-			out._j = q._j;
-			out._k = q._k;
-			return out;
-		}
-
 		public static function negate(q : Quaternion, out : Quaternion = null) : Quaternion
 		{
-			out ||= new Quaternion();
-			out._r = - q._r;
-			out._i = - q._i;
-			out._j = - q._j;
-			out._k = - q._k;
-			return out;
+			out ||= FACTORY.create() as Quaternion;
+			out.copyFrom(q);
+			return out.negate();
 		}
 
 		public static function conjugate(q : Quaternion, out : Quaternion = null) : Quaternion
 		{
-			out ||= new Quaternion();
-			out._r = q._r;
-			out._i = - q._i;
-			out._j = - q._j;
-			out._k = - q._k;
-			return out;
+			out ||= FACTORY.create() as Quaternion;
+			out.copyFrom(q);
+			return out.conjugate();
 		}
 
 		public static function square(q : Quaternion, out : Quaternion = null) : Quaternion
 		{
-			out ||= new Quaternion();
-
-			var tmp : Number = 2 * q._r;
-			out._r = q._r * q._r - (q._i * q._i + q._j * q._j + q._k * q._k);
-			out._i = tmp * q._i;
-			out._j = tmp * q._j;
-			out._k = tmp * q._k;
-			return out;
+			out ||= FACTORY.create() as Quaternion;
+			out.copyFrom(q);
+			return out.square();
 		}
 
 		public static function invert(q : Quaternion, out : Quaternion = null) : Quaternion
 		{
-			out ||= new Quaternion();
-
-			var tmp : Number = Quaternion.norm(q);
-			out._r = q._r / tmp;
-			out._i = - q._i / tmp;
-			out._j = - q._j / tmp;
-			out._k = - q._k / tmp;
-
-			return out;
+			out ||= FACTORY.create() as Quaternion;
+			out.copyFrom(q);
+			return out.invert();
 		}
 
 
@@ -166,80 +118,141 @@ package aerys.minko.type.math
 			_k = k;
 		}
 		
-		public function setTo(r : Number,
-							  i : Number,
-							  j : Number,
-							  k : Number) : void
+		public function set(r : Number,
+							i : Number,
+							j : Number,
+							k : Number) : Quaternion
 		{
 			_r = r;
 			_i = i;
 			_j = j;
 			_k = k;
+			
+			return this;
 		}
 
-		public function isEqual(q : Quaternion) : Boolean
+		public function copyFrom(q : Quaternion) : Quaternion
 		{
-			return Quaternion.isEqual(this, q);
+			return set(q._r, q._i, q._j, q._k);
 		}
-
-		public function isNotEqual(q : Quaternion) : Boolean
+		
+		public function decrementBy(q : Quaternion) : Quaternion
 		{
-			return Quaternion.isNotEqual(this, q);
+			_r += q._r;
+			_i += q._i;
+			_j += q._j;
+			_k += q._k;
+			
+			return this;
 		}
 
-		public function subtract(q : Quaternion) : Quaternion
+		public function incrementBy(q : Quaternion) : Quaternion
 		{
-			return Quaternion.subtract(this, q, this);
+			_r += q._r;
+			_i += q._i;
+			_j += q._j;
+			_k += q._k;
+
+			return this;
 		}
 
-		public function add(q : Quaternion) : Quaternion
+		public function scaleBy(f : Number) : Quaternion
 		{
-			return Quaternion.add(this, q, this);
+			_r *= f;
+			_i *= f;
+			_j *= f;
+			_k *= f;
+
+			return this;
 		}
 
-		public function multiplyScalar(f : Number) : Quaternion
+		public function multiplyBy(q : Quaternion) : Quaternion
 		{
-			return Quaternion.multiplyScalar(this, f, this);
+			var t0 : Number = (_k - _j) * (q._j - q._k);
+			var t1 : Number = (_r + _i) * (q._r + q._i);
+			var t2 : Number = (_r - _i) * (q._j + q._k);
+			var t3 : Number = (_k + _j) * (q._r - q._i);
+			var t4 : Number = (_k - _i) * (q._i - q._j);
+			var t5 : Number = (_k + _i) * (q._i + q._j);
+			var t6 : Number = (_r + _j) * (q._r - q._k);
+			var t7 : Number = (_r - _j) * (q._r + q._k);
+			var t8 : Number = t5 + t6 + t7;
+			var t9 : Number = (t4 + t8) / 2;
+			
+			_r = t0 + t9 - t5;
+			_i = t1 + t9 - t8;
+			_j = t2 + t9 - t7;
+			_k = t3 + t9 - t6;
+			
+			return this;
 		}
 
-		public function multiply(q : Quaternion) : Quaternion
+		public function normalize(q : Quaternion) : Quaternion
 		{
-			return Quaternion.multiply(this, q, this);
+			var l	: Number	= length;
+			
+			if (l != 0.)
+			{
+				_r *= l;
+				_i *= l;
+				_j *= l;
+				_k *= l;
+			}
+			
+			return this;
 		}
-
-		public function divideScalar(f : Number) : Quaternion
-		{
-			return Quaternion.divideScalar(this, f, this);
-		}
-
+		
 		public function divide(q : Quaternion) : Quaternion
 		{
 			return Quaternion.divide(this, q, this);
 		}
 
-		public function clone() : Quaternion
-		{
-			return Quaternion.copy(this);
-		}
-
 		public function negate() : Quaternion
 		{
-			return Quaternion.negate(this, this);
+			return scaleBy(-1);
 		}
 
 		public function conjugate() : Quaternion
 		{
-			return Quaternion.conjugate(this, this);
+			_i = -_i;
+			_j = -_j;
+			_k = -_k;
+
+			return this;
 		}
 
 		public function square() : Quaternion
 		{
-			return Quaternion.square(this, this);
+			var tmp : Number = 2 * _r;
+			
+			_r = _r * _r - (_i * _i + _j * _j + _k * _k);
+			_i = tmp * _i;
+			_j = tmp * _j;
+			_k = tmp * _k;
+			
+			return this;
 		}
 
 		public function invert() : Quaternion
 		{
-			return Quaternion.invert(this, this);
+			var l : Number = length;
+			
+			_r /= l;
+			_i /= -l;
+			_j /= -l;
+			_k /= -l;
+
+			return this;
+		}
+		
+		public function equals(q : Quaternion) : Boolean
+		{
+			return _r == q._r && _i == q._i && _j == q._j && _k == q._k;
+		}
+		
+		public function clone() : Quaternion
+		{
+			return Quaternion(FACTORY.create()).set(_r, _i, _j, _k);
 		}
 
 		public function toString() : String
@@ -247,5 +260,45 @@ package aerys.minko.type.math
 			return '[Quaternion r="' + _r + '" i="' + _i + '" j="' + _j + '" k="' + _k + '"]';
 		}
 
+		public static function fromRotationBetweenVectors(u : Vector4, v : Vector4) : Quaternion
+		{
+			u.normalize();
+			v.normalize();
+			
+			var kCosTheta		: Number	= Vector4.dotProduct(u, v)
+			var k				: Number	= Math.sqrt(u.lengthSquared * v.lengthSquared);
+			
+			if (Math.abs(kCosTheta / k + 1) < EPSILON)
+			{
+				// 180 degree rotation around any orthogonal vector
+				var other		: Vector4	= (Math.abs(Vector4.dotProduct(u, Vector4.X_AXIS)) < 1.0) ? Vector4.X_AXIS : Vector4.Y_AXIS;
+				var axis		: Vector4	= Vector4.crossProduct(u, other).normalize();
+				
+				return fromRotationOnAxis(axis, Math.PI);
+			}
+			
+			var c	: Vector4		= Vector4.crossProduct(u, v);
+			var d	: Number		= Vector4.dotProduct(u, v);
+			var q	: Quaternion	= Quaternion(FACTORY.create()).set(d + k, c.x, c.y, c.z);
+			
+			return q.scaleBy(1. / q.norm);
+		}
+		
+		private static function fromRotationOnAxis(axis : Vector4, theta : Number) : Quaternion
+		{
+			theta *= .5;
+			axis.normalize();
+			
+			var sine    : Number		= Math.sin(theta);
+			
+			var out		: Quaternion	= Quaternion(FACTORY.create()).set(
+				Math.cos(theta),
+				axis.x * sine,
+				axis.y * sine,
+				axis.z * sine
+			);
+			
+			return out;
+		}
 	}
 }
