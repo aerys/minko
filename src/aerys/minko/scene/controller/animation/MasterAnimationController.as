@@ -93,7 +93,7 @@ package aerys.minko.scene.controller.animation
 		override public function setPlaybackWindow(beginTime : Object = null, endTime : Object = null) : IAnimationController
 		{
 			super.setPlaybackWindow(beginTime, endTime);
-			
+						
 			var numAnimations : uint = _animations.length;
 			
 			for (var animationId : uint = 0; animationId < numAnimations; ++animationId)
