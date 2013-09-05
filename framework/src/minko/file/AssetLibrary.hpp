@@ -24,6 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Signal.hpp"
 #include "minko/file/AbstractParser.hpp"
 #include "minko/file/EffectParser.hpp"
+#include "minko/file/APKLoader.hpp"
 
 namespace minko
 {
@@ -58,9 +59,9 @@ namespace minko
 
 		    std::list<std::string>											_filesQueue;
 		    std::unordered_map<std::string, std::shared_ptr<file::Options>>	_filenameToOptions;
-		    std::unordered_map<std::string, std::shared_ptr<file::Loader>>	_filenameToLoader;
+		    std::unordered_map<std::string, std::shared_ptr<file::AbstractLoader>>	_filenameToLoader;
 
-		    std::vector<Signal<std::shared_ptr<file::Loader>>::Slot>		_loaderSlots;
+		    std::vector<Signal<std::shared_ptr<file::AbstractLoader>>::Slot>		_loaderSlots;
 
 		    std::shared_ptr<Signal<Ptr>>									_complete;
 
@@ -152,10 +153,10 @@ namespace minko
 		    AssetLibrary(AbsContextPtr context);
 
 		    void
-		    loaderErrorHandler(std::shared_ptr<file::Loader> loader);
+		    loaderErrorHandler(std::shared_ptr<file::AbstractLoader> loader);
 
 		    void
-		    loaderCompleteHandler(std::shared_ptr<file::Loader> loader);
+		    loaderCompleteHandler(std::shared_ptr<file::AbstractLoader> loader);
 	    };
     }
 }
