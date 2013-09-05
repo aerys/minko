@@ -8,6 +8,7 @@ package aerys.minko.type.animation.timeline
 		function get propertyPath()	: String;
 
 		function updateAt(time : int, target : Object) : void;
+		function invalidate(target : Object = null) : void;
 		function clone() : ITimeline;
 	}
 }

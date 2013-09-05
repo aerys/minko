@@ -10,7 +10,7 @@ package aerys.minko.render.resource
 	import flash.display3D.textures.TextureBase;
 	import flash.geom.Rectangle;
 	
-	import aerys.minko.ns.minko_render;
+	import aerys.minko.type.Signal;
 
 	public final class Context3DResource
 	{
@@ -53,9 +53,22 @@ package aerys.minko.render.resource
         private var _stencilActionOnDepthFail               : String;
         private var _stencilActionOnDepthPassStencilFail    : String;
 		
+		private var _contextChanged							: Signal	= new Signal("Context3DResource.contextChanged");
+		
+		public function get contextChanged():Signal
+		{
+			return _contextChanged;
+		}
+		
 		public function get context() : Context3D
 		{
 			return _context;
+		}
+		
+		public function set context(v : Context3D) : void
+		{
+			_context = v;
+			_contextChanged.execute(this);
 		}
 		
 		public function get enabledErrorChecking() : Boolean
@@ -74,10 +87,9 @@ package aerys.minko.render.resource
 		public function Context3DResource(context : Context3D)
 		{
 			_context = context;
-            
             initialize();
 		}
-        
+		
         private function initialize() : void
         {
             _vertexBuffers = new Vector.<VertexBuffer3D>(8, true);
@@ -375,5 +387,40 @@ package aerys.minko.render.resource
 			return this;
 		}
 		
+		public function invalidate() : void
+		{
+			_program = null;
+			
+			_depthMask = !_depthMask;
+			_passCompareMode = null;
+			
+			_triangleCulling = null;
+			
+			_blendingSource = null;
+			_blendingDestination = null;
+			
+			_colorMaskRed = !_colorMaskRed;
+			_colorMaskGreen = !_colorMaskGreen;
+			_colorMaskBlue = !_colorMaskBlue;
+			_colorMaskAlpha = !_colorMaskAlpha;
+			
+			_rectangle = null;
+			
+			for (var i : int = _textures.length - 1; i >= 0; --i)
+				_textures[i] = null;
+			
+			for (i = _textures.length - 1; i >= 0; --i)
+				_vertexBuffers[i] = null;
+			
+			_stencilRefNum = 0;
+			_stencilReadMask = 0;
+			_stencilWriteMask = 0;
+			
+			_stencilTriangleFace = null;
+			_stencilCompareMode = null;
+			_stencilActionOnBothPass = null;
+			_stencilActionOnDepthFail = null;
+			_stencilActionOnDepthPassStencilFail = null;
+		}
 	}
 }

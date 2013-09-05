@@ -12,18 +12,18 @@ package aerys.minko.scene.node.camera
 	use namespace minko_scene;
 
 	public class Camera extends AbstractCamera
-	{
+	{		
 		public static const DEFAULT_FOV		: Number	= Math.PI * .25;
         
         private static const TMP_VECTOR4    : Vector4   = new Vector4();
 		
 		public function get fieldOfView() : Number
 		{
-			return _cameraData.fieldOfView;
+			return cameraData.fieldOfView;
 		}
 		public function set fieldOfView(value : Number) : void
 		{
-			_cameraData.fieldOfView = value;
+			cameraData.fieldOfView = value;
 		}
 		
 		public function Camera(fieldOfView	: Number = DEFAULT_FOV,
@@ -32,13 +32,14 @@ package aerys.minko.scene.node.camera
 		{
 			super(zNear, zFar);
 			
-			_cameraData.fieldOfView = fieldOfView;			
+			cameraData.fieldOfView = fieldOfView;			
 		}
 		
 		override minko_scene function cloneNode() : AbstractSceneNode
 		{
 			var clone : Camera = new Camera(fieldOfView, zNear, zFar);
 			
+			clone.userData.setProperties(userData);
 			clone.transform.copyFrom(this.transform);
 			
 			return clone as AbstractSceneNode;
@@ -52,9 +53,9 @@ package aerys.minko.scene.node.camera
 			out ||= new Ray();
 			
 			var sceneBindings	: DataBindings	= (root as Scene).bindings;
-			var zNear			: Number		= _cameraData.zNear;
-			var zFar			: Number		= _cameraData.zFar;
-			var fovDiv2			: Number		= _cameraData.fieldOfView * 0.5;
+			var zNear			: Number		= cameraData.zNear;
+			var zFar			: Number		= cameraData.zFar;
+			var fovDiv2			: Number		= cameraData.fieldOfView * 0.5;
 			var width			: Number		= sceneBindings.propertyExists('viewportWidth')
                 ? sceneBindings.getProperty('viewportWidth')
                 : 0.;
@@ -82,7 +83,7 @@ package aerys.minko.scene.node.camera
 			var sceneBindings	: DataBindings	= (root as Scene).bindings;
 			var width			: Number		= sceneBindings.getProperty('viewportWidth');
 			var height			: Number		= sceneBindings.getProperty('viewportHeight');
-			var screenPosition	: Vector4		= _cameraData.worldToScreen.projectVector(
+			var screenPosition	: Vector4		= cameraData.worldToScreen.projectVector(
                 worldPosition, TMP_VECTOR4
             );
             

@@ -169,6 +169,7 @@ package aerys.minko.scene.node.light
 			);		
 			
 			light.name = this.name;
+			light.userData.setProperties(userData);
 			light.transform.copyFrom(this.transform);
 			
 			return light;

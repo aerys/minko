@@ -47,7 +47,8 @@ package aerys.minko.render
 		private var _keyboardManager	: KeyboardManager	= new KeyboardManager();
 		
 		private var _resized			: Signal			= new Signal('Viewport.resized');
-		
+		private var _contextLost		: Signal			= new Signal('Viewport.contextLost');
+
 		minko_render function get context3D() : Context3DResource
 		{
 			return _context3d;
@@ -155,6 +156,23 @@ package aerys.minko.render
 		public function get resized() : Signal
 		{
 			return _resized;
+		}
+		
+		
+		/**
+		 * The signal executed when the context3D is lost.
+		 * Callback functions for this signal should accept the following
+		 * arguments:
+		 * <ul>
+		 * <li>viewport : Viewport, the viewport executing the signal</li>
+		 * <li>context3D : Context3DResource, the new Context3DResource</li>
+		 * </ul> 
+		 * @return 
+		 * 
+		 */
+		public function get contextLost():Signal
+		{
+			return _contextLost;
 		}
 		
 		/**
@@ -338,13 +356,24 @@ package aerys.minko.render
 		}
 		
 		private function context3dCreatedHandler(event : Event) : void
-		{
-			_context3d = new Context3DResource(_stage3d.context3D);
-			
-			updateStage3D();
-			updateBackBuffer();
-			
-			dispatchEvent(new Event(Event.INIT));
+		{			
+			if (_context3d)
+			{
+				_context3d.context = _stage3d.context3D;
+				_contextLost.execute(this, _context3d);
+				
+				updateStage3D();
+				updateBackBuffer();
+			}
+			else
+			{
+				_context3d = new Context3DResource(_stage3d.context3D);
+				
+				updateStage3D();
+				updateBackBuffer();
+				
+				dispatchEvent(new Event(Event.INIT));
+			}
 		}
 		
 		private function updateBackBuffer() : void

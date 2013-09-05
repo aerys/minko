@@ -284,6 +284,7 @@ package aerys.minko.scene.node
 			
 			clone.name 		= name;
 			clone.geometry 	= _ctrl.geometry;
+			clone.userData.setProperties(userData);
 			
 			clone.properties = DataProvider(_properties.clone());
 			clone._bindings.copySharedProvidersFrom(_bindings);

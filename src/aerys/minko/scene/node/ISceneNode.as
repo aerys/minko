@@ -2,6 +2,7 @@ package aerys.minko.scene.node
 {
 	import aerys.minko.scene.controller.AbstractController;
 	import aerys.minko.type.Signal;
+	import aerys.minko.type.binding.DataProvider;
 	import aerys.minko.type.clone.CloneOptions;
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Vector4;
@@ -24,6 +25,8 @@ package aerys.minko.scene.node
 		function get scaleX() : Number;
 		function get scaleY() : Number;
 		function get scaleZ() : Number;
+		
+		function get userData() : DataProvider;
 		
 		function set x(value : Number) : void;
 		function set y(value : Number) : void;

@@ -1,11 +1,11 @@
 package aerys.minko.render.geometry.stream
 {
+	import flash.utils.ByteArray;
+	import flash.utils.Endian;
+	
 	import aerys.minko.ns.minko_stream;
 	import aerys.minko.render.resource.IndexBuffer3DResource;
 	import aerys.minko.type.Signal;
-	
-	import flash.utils.ByteArray;
-	import flash.utils.Endian;
 
 	public final class IndexStream
 	{
@@ -14,13 +14,19 @@ package aerys.minko.render.geometry.stream
 		minko_stream var _data			: ByteArray;
 		minko_stream var _localDispose	: Boolean;
 
-		private var _usage		: uint;
-		private var _resource	: IndexBuffer3DResource;
-		private var _length		: uint;
+		private var _usage			: uint;
+		private var _resource		: IndexBuffer3DResource;
+		private var _length			: uint;
 		
-		private var _locked		: Boolean;
+		private var _locked			: Boolean;
 		
-		private var _changed	: Signal;
+		private var _changed		: Signal;
+		private var _contextLost	: Signal;
+
+		public function get contextLost():Signal
+		{
+			return _contextLost;
+		}
 
 		public function get usage() : uint
 		{

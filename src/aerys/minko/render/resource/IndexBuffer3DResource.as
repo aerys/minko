@@ -1,12 +1,11 @@
 package aerys.minko.render.resource
 {
+	import flash.display3D.IndexBuffer3D;
+	
 	import aerys.minko.ns.minko_stream;
 	import aerys.minko.render.geometry.stream.IndexStream;
 	import aerys.minko.render.geometry.stream.StreamUsage;
-	
-	import flash.display3D.Context3D;
-	import flash.display3D.IndexBuffer3D;
-	import flash.events.Event;
+	import aerys.minko.type.Signal;
 
 	/**
 	 * IndexBuffer3DResource objects handle index buffers allocation
@@ -26,6 +25,13 @@ package aerys.minko.render.resource
 		private var _numIndices		: uint			= 0;
 		
 		private var _disposed		: Boolean		= false;
+		
+		private var _contextLost	: Signal		= new Signal("IndexBuffer3DResource.contextLost");
+
+		public function get contextLost():Signal
+		{
+			return _contextLost;
+		}
 
 		public function get numIndices() : uint
 		{
@@ -43,9 +49,22 @@ package aerys.minko.render.resource
 			_update = true;
 			_lengthChanged = stream.length != _numIndices;
 		}
+		
+		private function contextLostHandler(context : Context3DResource) : void
+		{
+			if (_disposed)
+				return;
+			
+			if ((_stream.usage & StreamUsage.READ) && _stream._data != null)
+				_indexBuffer = null;
+			_contextLost.execute(this);
+		}
 
 		public function getIndexBuffer3D(context : Context3DResource) : IndexBuffer3D
 		{
+			if (!context.contextChanged.hasCallback(contextLostHandler))
+				context.contextChanged.add(contextLostHandler);
+			
 			var update : Boolean	= _update;
 			
 			if (_disposed)
@@ -81,7 +100,7 @@ package aerys.minko.render.resource
 				_indexBuffer.dispose();
 				_indexBuffer = null;
 			}
-				
+			
 			_disposed = true;
 			_stream = null;
 			_numIndices = 0;

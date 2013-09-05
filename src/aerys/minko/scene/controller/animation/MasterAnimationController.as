@@ -1,54 +1,45 @@
-/**
- * Created with IntelliJ IDEA.
- * User: promethe
- * Date: 12/04/13
- * Time: 20:03
- * To change this template use File | Settings | File Templates.
- */
 package aerys.minko.scene.controller.animation
 {
+	import flash.display.BitmapData;
 	import flash.utils.Dictionary;
 	
 	import aerys.minko.ns.minko_animation;
+	import aerys.minko.render.Viewport;
 	import aerys.minko.scene.controller.AbstractController;
 	import aerys.minko.scene.controller.IRebindableController;
+	import aerys.minko.scene.node.Scene;
+	import aerys.minko.type.animation.timeline.ITimeline;
 	
-	public class MasterAnimationController extends AbstractController implements IAnimationController, IRebindableController
-	{
-		use namespace minko_animation;
-		minko_animation var _animations : Vector.<IAnimationController>;
-		private var _isPlaying  		: Boolean;
+	use namespace minko_animation;
+	
+	public class MasterAnimationController extends AbstractAnimationController implements IRebindableController
+	{		
+		minko_animation var _animations : Vector.<AnimationController>	= null;
 		
-		private var _labelNames : Vector.<String>;
-		private var _labelTimes : Vector.<Number>;
-		
-		public function get numLabels() : uint
+		public function MasterAnimationController(animations	: Vector.<AnimationController>, 
+												  loop			: Boolean = true)
 		{
-			return _labelNames.length;
-		}
-		
-		public function get isPlaying() : Boolean
-		{
-			return _isPlaying;
-		}
-		
-		public function MasterAnimationController(animations : Vector.<IAnimationController>)
-		{
-			super();
-			
+			super(loop);
+
 			_animations = animations.concat();
 			
-			_labelNames = new <String>[];
-			_labelTimes = new <Number>[];
+			var maxTime : int = 0;
+			
+			for each (var animation : AnimationController in _animations)
+			{
+				animation.setMaster(this);
+				maxTime = Math.max(maxTime, animation.totalTime);
+			}
+			
+			_totalTime		= maxTime;
+			
+			setPlaybackWindow(0, _totalTime);
+			seek(0).play();
 		}
 		
-		public function addLabel(name : String, time : Number) : IAnimationController
+		override public function addLabel(name : String, time : Number) : IAnimationController
 		{
-			if (_labelNames.indexOf(name) >= 0)
-				throw new Error('A label with the same name already exists.');
-			
-			_labelNames.push(name);
-			_labelTimes.push(time);
+			super.addLabel(name, time);
 			
 			var numAnimations : uint = _animations.length;
 			
@@ -58,28 +49,13 @@ package aerys.minko.scene.controller.animation
 					_animations[animationId].removeLabel(name);
 				_animations[animationId].addLabel(name,  time);
 			}
+			
 			return this;
 		}
-		
-		public function hasLabel(name : String) : Boolean
+				
+		override public function removeLabel(name : String) : IAnimationController
 		{
-			return _labelNames.indexOf(name) >= 0;
-		}
-		
-		public function removeLabel(name : String) : IAnimationController
-		{
-			var index : int = _labelNames.indexOf(name);
-			
-			if (index < 0)
-				throw new Error('The time label named \'' + name + '\' does not exist.');
-			
-			var numLabels : uint = _labelNames.length - 1;
-			
-			_labelNames[index] = _labelNames[numLabels];
-			_labelNames.length = numLabels;
-			
-			_labelTimes[index] = _labelTimes[numLabels];
-			_labelTimes.length = numLabels;
+			super.removeLabel(name);
 			
 			var numAnimations : uint = _animations.length;
 			
@@ -89,21 +65,11 @@ package aerys.minko.scene.controller.animation
 			return this;
 		}
 		
-		public function seek(time : Object) : IAnimationController
+		override public function play() : IAnimationController
 		{
+			super.play();
+			
 			var numAnimations : uint = _animations.length;
-			
-			for (var animationId : uint = 0; animationId < numAnimations; ++animationId)
-				_animations[animationId].seek(time);
-			
-			return this;
-		}
-		
-		public function play() : IAnimationController
-		{
-			var numAnimations : uint = _animations.length;
-			
-			_isPlaying = true;
 			
 			for (var animationId : uint = 0; animationId < numAnimations; ++animationId)
 				_animations[animationId].play();
@@ -111,11 +77,11 @@ package aerys.minko.scene.controller.animation
 			return this;
 		}
 		
-		public function stop() : IAnimationController
+		override public function stop() : IAnimationController
 		{
-			var numAnimations : uint = _animations.length;
+			super.stop();
 			
-			_isPlaying = false;
+			var numAnimations : uint = _animations.length;
 			
 			for (var animationId : uint = 0; animationId < numAnimations; ++animationId)
 				_animations[animationId].stop();
@@ -123,8 +89,11 @@ package aerys.minko.scene.controller.animation
 			return this;
 		}
 		
-		public function setPlaybackWindow(beginTime : Object = null, endTime : Object = null) : IAnimationController
+		
+		override public function setPlaybackWindow(beginTime : Object = null, endTime : Object = null) : IAnimationController
 		{
+			super.setPlaybackWindow(beginTime, endTime);
+			
 			var numAnimations : uint = _animations.length;
 			
 			for (var animationId : uint = 0; animationId < numAnimations; ++animationId)
@@ -133,8 +102,10 @@ package aerys.minko.scene.controller.animation
 			return this;
 		}
 		
-		public function resetPlaybackWindow() : IAnimationController
+		override public function resetPlaybackWindow() : IAnimationController
 		{
+			super.resetPlaybackWindow();
+			
 			var numAnimations : uint = _animations.length;
 			
 			for (var animationId : uint = 0; animationId < numAnimations; ++animationId)
@@ -143,28 +114,8 @@ package aerys.minko.scene.controller.animation
 			return this;
 		}
 		
-		public function getLabelName(index : uint) : String
-		{
-			return _labelNames[index];
-		}
-		
-		public function getLabelTime(index : uint) : Number
-		{
-			return _labelTimes[index];
-		}
-		
-		public function getLabelTimeByName(name : String) : Number
-		{
-			var index : int = _labelNames.indexOf(name);
-			
-			if (index < 0)
-				throw new Error('The time label named \'' + name + '\' does not exist.');
-			
-			return _labelTimes[index];
-		}
-		
 		override public function clone():AbstractController
-		{			
+		{
 			var newController : MasterAnimationController = new MasterAnimationController(_animations);
 			newController._labelNames = _labelNames.concat();
 			newController._labelTimes = _labelTimes.concat();
@@ -174,11 +125,11 @@ package aerys.minko.scene.controller.animation
 		
 		public function rebindDependencies(nodeMap : Dictionary, controllerMap : Dictionary) : void
 		{
-			var newAnimations : Vector.<IAnimationController> = new Vector.<IAnimationController>();
+			var newAnimations : Vector.<AnimationController> = new Vector.<AnimationController>();
 			
 			for(var i : int = 0; i < _animations.length; ++i)
 			{
-				var newController : IAnimationController = controllerMap[_animations[i]] as IAnimationController;
+				var newController : AbstractAnimationController = controllerMap[_animations[i]] as AbstractAnimationController;
 				if (newController)
 					newAnimations.push(newController);
 			}
@@ -186,34 +137,21 @@ package aerys.minko.scene.controller.animation
 			_animations = newAnimations;
 		}
 		
-		public function changeLabel(oldName : String, newName : String) : IAnimationController
+		override public function changeLabel(oldName : String, newName : String) : IAnimationController
 		{
-			var index : int = _labelNames.indexOf(oldName);
-			
-			if (index < 0)
-				throw new Error('The time label named \'' + oldName + '\' does not exist.');
-			
-			_labelNames[index] = newName;
+			super.changeLabel(oldName, newName);
 			
 			var numAnimations : uint = _animations.length;
 			
 			for (var animationId : uint = 0; animationId < numAnimations; ++animationId)
-			{
-				if (!_animations[animationId].hasLabel(oldName))
-					_animations[animationId].addLabel(oldName, getLabelTime(index));
 				_animations[animationId].changeLabel(oldName, newName);
-			}
+			
 			return this;
 		}
 		
-		public function setTimeForLabel(name : String, newTime : Number) : IAnimationController
+		override public function setTimeForLabel(name : String, newTime : Number) : IAnimationController
 		{
-			var index : int = _labelNames.indexOf(name);
-			
-			if (index < 0)
-				throw new Error('The time label named \'' + name + '\' does not exist.');
-			
-			_labelTimes[index] = newTime;
+			super.setTimeForLabel(name, newTime);
 			
 			var numAnimations : uint = _animations.length;
 			
@@ -221,6 +159,40 @@ package aerys.minko.scene.controller.animation
 				_animations[animationId].setTimeForLabel(name, newTime);
 			
 			return this;
+		}
+		
+		override protected function sceneEnterFrameHandler(scene		: Scene,
+														   viewport		: Viewport, 
+														   destination	: BitmapData, 
+														   time			: Number) : void
+		{
+			if (updateOnTime(time))
+			{
+				var numAnimations : uint = _animations.length;
+				for (var animationId : uint = 0; animationId < numAnimations; ++animationId)
+				{
+					_animations[animationId].setCurrentTime(currentTime);
+					_animations[animationId].update(scene, time);
+				}
+				
+				checkLabelHit(_previousTime, _currentTime);
+			}
+		}
+		
+		override minko_animation function triggerLabelHit(labelName:String, labelTime : int) : void
+		{
+			var numAnimations : uint = _animations.length;
+			for (var animationId : uint = 0; animationId < numAnimations; ++animationId)
+				_animations[animationId].triggerLabelHit(labelName, labelTime);
+			
+			super.triggerLabelHit(labelName, labelTime);
+		}
+		
+		override public function invalidate(target : Object = null) : void
+		{
+			var numAnimations : uint = _animations.length;
+			for (var animationId : uint = 0; animationId < numAnimations; ++animationId)
+				_animations[animationId].invalidate(target);
 		}
 	}
 }

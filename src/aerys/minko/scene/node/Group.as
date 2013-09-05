@@ -1,5 +1,9 @@
 package aerys.minko.scene.node
 {
+	import flash.net.URLRequest;
+	import flash.utils.ByteArray;
+	import flash.utils.getQualifiedClassName;
+	
 	import aerys.minko.ns.minko_scene;
 	import aerys.minko.type.Signal;
 	import aerys.minko.type.Sort;
@@ -7,11 +11,7 @@ package aerys.minko.scene.node
 	import aerys.minko.type.loader.SceneLoader;
 	import aerys.minko.type.loader.parser.ParserOptions;
 	import aerys.minko.type.math.Ray;
-    import aerys.minko.type.xpath.XPathEvaluator;
-
-    import flash.net.URLRequest;
-	import flash.utils.ByteArray;
-	import flash.utils.getQualifiedClassName;
+	import aerys.minko.type.xpath.XPathEvaluator;
 
 	use namespace minko_scene;
 	
@@ -457,6 +457,7 @@ package aerys.minko.scene.node
 			
 			clone.name = name;
 			clone.transform.copyFrom(transform);
+			clone.userData.setProperties(userData);
 			
 			for (var childId : uint = 0; childId < _numChildren; ++childId)
 			{

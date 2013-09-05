@@ -1,13 +1,14 @@
 package aerys.minko.render.shader.picking
 {
+	import flash.geom.Rectangle;
+	
 	import aerys.minko.render.RenderTarget;
 	import aerys.minko.render.shader.SFloat;
 	import aerys.minko.render.shader.Shader;
 	import aerys.minko.render.shader.ShaderSettings;
 	import aerys.minko.render.shader.part.DiffuseShaderPart;
 	import aerys.minko.render.shader.part.animation.VertexAnimationShaderPart;
-	
-	import flash.geom.Rectangle;
+	import aerys.minko.type.enum.TriangleCulling;
 	
 	public final class PickingShader extends Shader
 	{
@@ -26,6 +27,7 @@ package aerys.minko.render.shader.picking
 		{
 			super.initializeSettings(settings);
 			
+			settings.triangleCulling = meshBindings.propertyExists('triangleCulling') ? meshBindings.getProperty('triangleCulling') : TriangleCulling.BACK;
 			settings.priority = Number.MAX_VALUE;
 			settings.scissorRectangle = new Rectangle(0, 0, 1, 1);
 			settings.enabled = meshBindings.propertyExists('pickingId');

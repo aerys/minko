@@ -1,14 +1,11 @@
 package aerys.minko.render.resource
 {
+	import flash.display3D.VertexBuffer3D;
+	
 	import aerys.minko.ns.minko_stream;
-	import aerys.minko.render.geometry.stream.IVertexStream;
 	import aerys.minko.render.geometry.stream.StreamUsage;
 	import aerys.minko.render.geometry.stream.VertexStream;
 	import aerys.minko.type.Signal;
-	
-	import flash.display3D.Context3D;
-	import flash.display3D.VertexBuffer3D;
-	import flash.utils.ByteArray;
 
 	/**
 	 * VertexBuffer3DResource objects handle vertex buffers allocation
@@ -29,8 +26,14 @@ package aerys.minko.render.resource
 		
 		private var _disposed		: Boolean			= false;
 		
-		private var _uploaded		: Signal			= new Signal('VertexBuffer3DRessource.uploaded');
+		private var _uploaded		: Signal			= new Signal('VertexBuffer3DResource.uploaded');
+		private var _contextLost	: Signal			= new Signal('VertexBuffer3DResource.contextLost');
 		
+		public function get contextLost():Signal
+		{
+			return _contextLost;
+		}
+
 		public function get uploaded() : Signal
 		{
 			return _uploaded;
@@ -52,15 +55,28 @@ package aerys.minko.render.resource
 			_update = true;
 			_lengthChanged = vertexStream.numVertices != _numVertices;
 		}
+		
+		private function contextLostHandler(context : Context3DResource) : void
+		{
+			if (_disposed)
+				return;
+			
+			if ((_stream.usage & StreamUsage.READ) && _stream._data != null)
+				_vertexBuffer = null;
+			_contextLost.execute(this);
+		}
 
 		public function getVertexBuffer3D(context : Context3DResource) : VertexBuffer3D
 		{
+			if (!context.contextChanged.hasCallback(contextLostHandler))
+				context.contextChanged.add(contextLostHandler);
+			
 			var update	: Boolean	= _update;
 			
 			if (_disposed)
 				throw new Error('Unable to render a disposed buffer.');
 
-			if (_lengthChanged)
+			if (_lengthChanged || _vertexBuffer == null)
 			{
 				_lengthChanged = false;
 				_numVertices = _stream.numVertices;

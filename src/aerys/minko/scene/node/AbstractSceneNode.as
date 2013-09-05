@@ -1,17 +1,18 @@
 package aerys.minko.scene.node
 {
+	import flash.utils.Dictionary;
+	import flash.utils.getQualifiedClassName;
+	
 	import aerys.minko.ns.minko_scene;
 	import aerys.minko.scene.controller.AbstractController;
 	import aerys.minko.scene.controller.IRebindableController;
 	import aerys.minko.scene.controller.TransformController;
 	import aerys.minko.type.Signal;
+	import aerys.minko.type.binding.DataProvider;
 	import aerys.minko.type.clone.CloneOptions;
 	import aerys.minko.type.clone.ControllerCloneAction;
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Vector4;
-	
-	import flash.utils.Dictionary;
-	import flash.utils.getQualifiedClassName;
 
 	use namespace minko_scene;
 	
@@ -28,7 +29,8 @@ package aerys.minko.scene.node
 		private var _name	    	    		: String;
 		private var _root	        			: ISceneNode;
 		private var _parent	        			: Group;
-        
+        private var _userData					: DataProvider;
+		
 		private var _transform			        : Matrix4x4;
 		
 		private var _controllers		        : Vector.<AbstractController>;
@@ -212,6 +214,11 @@ package aerys.minko.scene.node
 			return _localToWorldChanged;
 		}
         
+		public function get userData() : DataProvider
+		{
+			return _userData;
+		}
+		
 		public function AbstractSceneNode()
 		{
 			initialize();
@@ -223,6 +230,7 @@ package aerys.minko.scene.node
 			_transform = new Matrix4x4();
 			_controllers = new <AbstractController>[];
 			_root = this;
+			_userData = new DataProvider();
 			
 			initializeSignals();
 			initializeSignalHandlers();

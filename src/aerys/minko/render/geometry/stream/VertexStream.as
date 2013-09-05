@@ -1,5 +1,9 @@
 package aerys.minko.render.geometry.stream
 {
+	import flash.utils.ByteArray;
+	import flash.utils.Dictionary;
+	import flash.utils.Endian;
+	
 	import aerys.minko.ns.minko_stream;
 	import aerys.minko.render.geometry.stream.format.VertexComponent;
 	import aerys.minko.render.geometry.stream.format.VertexComponentType;
@@ -8,10 +12,6 @@ package aerys.minko.render.geometry.stream
 	import aerys.minko.render.resource.VertexBuffer3DResource;
 	import aerys.minko.type.Signal;
 	import aerys.minko.type.math.Matrix4x4;
-	
-	import flash.utils.ByteArray;
-	import flash.utils.Dictionary;
-	import flash.utils.Endian;
 
 	public final class VertexStream implements IVertexStream
 	{
@@ -36,7 +36,13 @@ package aerys.minko.render.geometry.stream
 		
 		private var _changed	    	: Signal;
 		private var _boundsChanged  	: Signal;
+		private var _contextLost		: Signal;
 		
+		public function get contextLost():Signal
+		{
+			return _contextLost;
+		}
+
 		public function get format() : VertexFormat
 		{
 			return _format;
@@ -84,7 +90,7 @@ package aerys.minko.render.geometry.stream
 			
 			_data = value;
 			_changed.execute(this);
-			updateMinMax();
+			updateMinMax(true);
 		}
 		
 		public function get locked() : Boolean
@@ -121,6 +127,11 @@ package aerys.minko.render.geometry.stream
 			initialize(format, usage, data, length);
 		}
 		
+		private function contextLostHandler(resource : VertexBuffer3DResource) : void
+		{
+			_contextLost.execute(this);
+		}
+		
 		private function initialize(format	: VertexFormat,
 									usage	: uint,
 									data 	: ByteArray,
@@ -128,12 +139,15 @@ package aerys.minko.render.geometry.stream
 		{
 			_changed = new Signal('VertexStream.changed');
 			_boundsChanged = new Signal('VertexStream.boundsChanged');
+			_contextLost = new Signal('VertexStream.contextLost');
             
             _autoUpdateMinMax = true;
 			_minimum = new <Number>[];
 			_maximum = new <Number>[];
 			
 			_resource = new VertexBuffer3DResource(this);
+			_resource.contextLost.add(contextLostHandler);
+			
 			_format = format || DEFAULT_FORMAT;
 			_usage = usage;
 			_localDispose = false;
@@ -722,14 +736,18 @@ package aerys.minko.render.geometry.stream
 		
 		public static function fromVector(usage 	: uint,
 										  format 	: VertexFormat,
-										  data 		: Vector.<Number>) : VertexStream
+										  data 		: Vector.<Number>,
+										  stream	: VertexStream = null) : VertexStream
 		{
             if (data.length % (format.numBytesPerVertex >> 2))
                 throw new Error('Invalid data length.');
-            
+			
 			var numValues 	: uint 			= data.length;
-			var stream		: VertexStream	= new VertexStream(usage, format);
-			var bytes		: ByteArray 	= stream._data;
+			var bytes		: ByteArray 	= new ByteArray();
+			bytes.endian = Endian.LITTLE_ENDIAN;
+			
+			stream ||= new VertexStream(usage, format);
+			stream._data = bytes;
 			
 			for (var i : uint = 0; i < numValues; ++i)
 				bytes.writeFloat(data[i]);
@@ -746,16 +764,18 @@ package aerys.minko.render.geometry.stream
 											 formatOut		: VertexFormat	= null,
 											 usage			: uint			= 0,
 											 readFunctions 	: Dictionary	= null,
-											 dwordSize		: uint			= 4) : VertexStream
+											 dwordSize		: uint			= 4, 
+											 stream			: VertexStream	= null) : VertexStream
 		{
 			if (bytes.endian != Endian.LITTLE_ENDIAN)
 				throw new Error('Bytes must be in little endian.');
 			
 			formatOut ||= formatIn;
 			
+			stream ||= new VertexStream(usage, formatOut, null);
+			stream._data = null;
+			
 			var dataLength		: uint				= 0;
-			var data			: ByteArray			= null;
-			var stream			: VertexStream		= new VertexStream(usage, formatOut, null);
 			var start			: int				= bytes.position;
 			var numComponents	: int				= formatOut.numComponents;
 			var nativeFormats	: Vector.<int>		= new Vector.<int>(numComponents, true);
@@ -763,9 +783,9 @@ package aerys.minko.render.geometry.stream
 			for (var k : int = 0; k < numComponents; k++)
 				nativeFormats[k] = formatOut.getComponent(k).nativeFormat;
 			
-			data = new ByteArray();
+			var data : ByteArray = new ByteArray();
 			data.endian = Endian.LITTLE_ENDIAN;
-			//new Vector.<Number>(formatOut.numBytesPerVertex * count, true);
+			
 			for (var vertexId : int = 0; vertexId < count; ++vertexId)
 			{
 				for (var componentId : int = 0; componentId < numComponents; ++componentId)
@@ -799,7 +819,7 @@ package aerys.minko.render.geometry.stream
 			// make sure the ByteArray position is at the end of the buffer
 			bytes.position = start + formatIn.numBytesPerVertex * count * dwordSize;
 			
-			stream._data = data;
+			stream.data = data;
 			
 			return stream;
 		}

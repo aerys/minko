@@ -1,7 +1,9 @@
 package aerys.minko.type.loader
 {
 	import flash.events.Event;
+	import flash.events.IOErrorEvent;
 	import flash.events.ProgressEvent;
+	import flash.events.SecurityErrorEvent;
 	import flash.net.URLLoader;
 	import flash.net.URLLoaderDataFormat;
 	import flash.net.URLRequest;
@@ -98,7 +100,27 @@ package aerys.minko.type.loader
 			urlLoader.dataFormat = URLLoaderDataFormat.BINARY;
 			urlLoader.addEventListener(ProgressEvent.PROGRESS, loadProgressHandler);
 			urlLoader.addEventListener(Event.COMPLETE, loadCompleteHandler);
-			urlLoader.load(urlRequest);
+			urlLoader.addEventListener(IOErrorEvent.IO_ERROR, loadErrorHandler);
+			urlLoader.addEventListener(SecurityErrorEvent.SECURITY_ERROR, loadSecurityErrorHandler);
+
+			try
+			{
+				urlLoader.load(urlRequest);
+			}
+			catch (e : Error)
+			{
+				_error.execute(this, e.errorID, e.message);
+			}
+		}
+		
+		private function loadErrorHandler(e : IOErrorEvent) : void
+		{
+			_error.execute(this, e.errorID, e.text);
+		}
+		
+		private function loadSecurityErrorHandler(e : SecurityErrorEvent) : void
+		{
+			_error.execute(this, e.errorID, e.text);
 		}
 		
 		private function loadProgressHandler(e : ProgressEvent) : void

@@ -1,5 +1,8 @@
 package aerys.minko.render.geometry
 {
+	import flash.geom.Point;
+	import flash.utils.ByteArray;
+	
 	import aerys.minko.ns.minko_scene;
 	import aerys.minko.ns.minko_stream;
 	import aerys.minko.render.geometry.stream.IVertexStream;
@@ -16,9 +19,6 @@ package aerys.minko.render.geometry
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Ray;
 	import aerys.minko.type.math.Vector4;
-	
-	import flash.geom.Point;
-	import flash.utils.ByteArray;
 
 	/**
 	 * Geometry objects store and provide a secure access to the geometry of 3D objects
@@ -64,6 +64,8 @@ package aerys.minko.render.geometry
 		
 		private var _name			: String;
 		
+		private var _contextLost	: Signal			= new Signal("Geometry.contextLost");
+
 		public function get name() : String
 		{
 			return _name;
@@ -158,6 +160,11 @@ package aerys.minko.render.geometry
 		public function get changed() : Signal
 		{
 			return _changed;
+		}
+		
+		public function get contextLost():Signal
+		{
+			return _contextLost;
 		}
 		
 		/**
