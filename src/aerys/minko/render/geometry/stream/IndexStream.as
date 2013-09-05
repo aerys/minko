@@ -140,7 +140,7 @@ package aerys.minko.render.geometry.stream
 			var v1 : uint = _data.readShort();
 			var v2 : uint = _data.readShort();
 			
-			_data.position = triangleIndex * 12;
+			_data.position = triangleIndex * 6;
 			_data.writeShort(v0);
 			_data.writeShort(v1);
 			_data.writeShort(v2);
