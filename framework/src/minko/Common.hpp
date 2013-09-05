@@ -133,6 +133,8 @@ namespace minko
 	namespace file
 	{
 		class Options;
+		class AbstractLoader;
+		class APKLoader;
 		class Loader;
 		class AbstractParser;
 		class EffectParser;

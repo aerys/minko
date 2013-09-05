@@ -20,7 +20,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "AssetLibrary.hpp"
 
 #include "minko/scene/Node.hpp"
-#include "minko/file/Loader.hpp"
+#include "minko/file/AbstractLoader.hpp"
+#include "minko/file/Loaderfactory.hpp"
 #include "minko/file/Options.hpp"
 #include "minko/file/AbstractParser.hpp"
 #include "minko/file/EffectParser.hpp"
@@ -176,7 +177,7 @@ AssetLibrary::load()
 	{
 		if (_filenameToLoader.count(filename) == 0)
 		{
-			auto loader = file::Loader::create();
+			auto loader = file::Loaderfactory::create();
 
 			_filenameToLoader[filename] = loader;
 			_loaderSlots.push_back(loader->error()->connect(std::bind(
@@ -193,13 +194,13 @@ AssetLibrary::load()
 }
 
 void
-AssetLibrary::loaderErrorHandler(std::shared_ptr<file::Loader> loader)
+AssetLibrary::loaderErrorHandler(std::shared_ptr<file::AbstractLoader> loader)
 {
 	throw std::invalid_argument(loader->filename());
 }
 
 void
-AssetLibrary::loaderCompleteHandler(std::shared_ptr<file::Loader> loader)
+AssetLibrary::loaderCompleteHandler(std::shared_ptr<file::AbstractLoader> loader)
 {
 	auto filename = loader->filename();
 	auto extension = filename.substr(filename.find_last_of('.') + 1);
