@@ -33,7 +33,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/TriangleCulling.hpp"
 #include "minko/render/Texture.hpp"
 #include "minko/render/Pass.hpp"
-#include "minko/file/Loader.hpp"
+#include "minko/file/AbstractLoader.hpp"
+#include "minko/file/Loaderfactory.hpp"
 #include "minko/file/Options.hpp"
 #include "minko/file/AssetLibrary.hpp"
 #include "json/json.h"
@@ -426,7 +427,7 @@ EffectParser::parseDependencies(Json::Value& root, const std::string& filename, 
 
 		for (unsigned int requireId = 0; requireId < _numDependencies; requireId++)
 		{
-			auto loader = Loader::create();
+			auto loader = Loaderfactory::create();
 
 			_loaderCompleteSlots[loader] = loader->complete()->connect(std::bind(
 				&EffectParser::dependencyCompleteHandler, shared_from_this(), std::placeholders::_1
@@ -441,7 +442,7 @@ EffectParser::parseDependencies(Json::Value& root, const std::string& filename, 
 }
 
 void
-EffectParser::dependencyCompleteHandler(std::shared_ptr<Loader> loader)
+EffectParser::dependencyCompleteHandler(std::shared_ptr<AbstractLoader> loader)
 {
 	++_numLoadedDependencies;
 
@@ -452,7 +453,7 @@ EffectParser::dependencyCompleteHandler(std::shared_ptr<Loader> loader)
 }
 
 void
-EffectParser::dependencyErrorHandler(std::shared_ptr<Loader> loader)
+EffectParser::dependencyErrorHandler(std::shared_ptr<AbstractLoader> loader)
 {
 	std::cout << "error" << std::endl;
 }

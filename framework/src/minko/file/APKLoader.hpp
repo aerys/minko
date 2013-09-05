@@ -17,60 +17,34 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "Loader.hpp"
+#pragma once
 
-#include "Options.hpp"
-#include "minko/Signal.hpp"
+#include "minko/Common.hpp"
+#include "minko/file/AbstractLoader.hpp"
 
-#include <fstream>
-
-using namespace minko;
-using namespace minko::file;
-
-Loader::Loader()
+namespace minko
 {
-}
+    namespace file
+    {
 
-void
-Loader::load(const std::string& filename, std::shared_ptr<Options> options)
-{
-	auto flags = std::ios::in | std::ios::ate | std::ios::binary;
-
-	_filename = filename;
-    _resolvedFilename = filename;
-	_options = options;
-	
-	std::fstream file(filename, flags);
-
-	if (!file.is_open())
-		for (auto path : _options->includePaths())
+        class APKLoader :
+		    public AbstractLoader
 		{
-			file.open(path + "/" + filename, flags);
-			if (file.is_open())
+		public:
+		    inline static
+            Ptr
+            create()
             {
-                _resolvedFilename = path + "/" + filename;
-				break;
+                return std::shared_ptr<APKLoader>(new APKLoader());
             }
-		}
 
-	if (file.is_open())
-	{
-		unsigned int size = (unsigned int)file.tellg();
+			typedef std::shared_ptr<Loader>	Ptr;
+			void
+			load(const std::string& filename, std::shared_ptr<Options> options);
 
-		// FIXME: use fixed size buffers and call _progress accordingly
+		protected:
+			APKLoader();
+		};
 
-		_progress->execute(shared_from_this());
-
-		_data.resize(size);
-
-		file.seekg(0, std::ios::beg);
-		file.read((char*)&_data[0], size);
-		file.close();
-
-		_progress->execute(shared_from_this());
-	
-		_complete->execute(shared_from_this());
-	}
-	else
-		_error->execute(shared_from_this());
-}
+    } /* namespace file */
+} /* namespace minko */

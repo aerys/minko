@@ -17,60 +17,52 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "Loader.hpp"
+#include "APKLoader.hpp"
 
 #include "Options.hpp"
 #include "minko/Signal.hpp"
+#include "minko/setup.hpp"
 
 #include <fstream>
+
+#include <jni.h>
 
 using namespace minko;
 using namespace minko::file;
 
-Loader::Loader()
+APKLoader::APKLoader()
 {
 }
 
-void
-Loader::load(const std::string& filename, std::shared_ptr<Options> options)
+void APKLoader::load(const std::string& filename, std::shared_ptr<Options> options)
 {
-	auto flags = std::ios::in | std::ios::ate | std::ios::binary;
-
-	_filename = filename;
+    _filename = filename;
     _resolvedFilename = filename;
-	_options = options;
-	
-	std::fstream file(filename, flags);
+    _options = options;
 
-	if (!file.is_open())
-		for (auto path : _options->includePaths())
-		{
-			file.open(path + "/" + filename, flags);
-			if (file.is_open())
-            {
-                _resolvedFilename = path + "/" + filename;
-				break;
-            }
-		}
+    JNIEnv* env;
+    JavaVM* jvm = setup::jvm;
+    jvm->AttachCurrentThread(&env, nullptr);
 
-	if (file.is_open())
-	{
-		unsigned int size = (unsigned int)file.tellg();
+    jstring jstr = env->NewStringUTF(filename.c_str());
+    jclass clazz = env->FindClass("in/aerys/minko/example/cube/AssetsLoader");
+    jmethodID method = env->GetStaticMethodID(clazz, "LoadAsset", "(Ljava/lang/String;)[B");
+    jbyteArray retval = (jbyteArray) env->CallStaticObjectMethod(clazz, method, jstr);
 
-		// FIXME: use fixed size buffers and call _progress accordingly
+    if (nullptr != retval)
+    {
+        _progress->execute(shared_from_this());
 
-		_progress->execute(shared_from_this());
+        int len = env->GetArrayLength(retval);
+        unsigned char* buf = new unsigned char[len];
+        env->GetByteArrayRegion(retval, 0, len, reinterpret_cast<jbyte*>(buf));
 
-		_data.resize(size);
+        _data.assign(buf, buf + len);
 
-		file.seekg(0, std::ios::beg);
-		file.read((char*)&_data[0], size);
-		file.close();
+        _progress->execute(shared_from_this());
 
-		_progress->execute(shared_from_this());
-	
-		_complete->execute(shared_from_this());
-	}
-	else
-		_error->execute(shared_from_this());
+        _complete->execute(shared_from_this());
+    }
+    else
+        _error->execute(shared_from_this());
 }
