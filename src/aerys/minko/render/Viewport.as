@@ -9,6 +9,7 @@ package aerys.minko.render
 	import flash.display.Stage3D;
 	import flash.display.StageAlign;
 	import flash.display.StageScaleMode;
+	import flash.display3D.Context3DProfile;
 	import flash.events.Event;
 	import flash.geom.Point;
 	
@@ -48,6 +49,8 @@ package aerys.minko.render
 		
 		private var _resized			: Signal			= new Signal('Viewport.resized');
 		private var _contextLost		: Signal			= new Signal('Viewport.contextLost');
+		
+		private var _context3DProfile	: String			= Context3DProfile.BASELINE;
 
 		minko_render function get context3D() : Context3DResource
 		{
@@ -218,10 +221,11 @@ package aerys.minko.render
 				: null;
 		}
 		
-		public function Viewport(antiAliasing	: uint	= 0,
-								 stage3dId		: uint	= 0,
-								 width			: uint 	= 0,
-								 height			: uint	= 0)
+		public function Viewport(antiAliasing		: uint		= 0,
+								 stage3dId			: uint		= 0,
+								 width				: uint 		= 0,
+								 height				: uint		= 0,
+								 context3DProfile	: String	= Context3DProfile.BASELINE_EXTENDED)
 		{
 			_stage3dId = stage3dId;
 			_antiAliasing = antiAliasing;
@@ -229,6 +233,8 @@ package aerys.minko.render
 			
 			_width = width;
 			_height = height;
+			
+			_context3DProfile = context3DProfile;
 			
 			initialize();
 		}
@@ -280,7 +286,8 @@ package aerys.minko.render
 			{
 				_stage3d = stage.stage3Ds[_stage3dId];
 				_stage3d.addEventListener(Event.CONTEXT3D_CREATE, context3dCreatedHandler);
-				_stage3d.requestContext3D();
+				
+				_stage3d.requestContext3D("auto", _context3DProfile);
 			}
 			
 			_stage3d.visible = visible;
