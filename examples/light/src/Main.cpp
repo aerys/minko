@@ -84,6 +84,7 @@ int main(int argc, char** argv)
 			->lookAt(Vector3::zero(), Vector3::create(0.f, -1.f, 1.f));
 		//root->addChild(lightNode2);
 
+
 		// setup point light 1
 		auto pointLight		= component::PointLight::create();
 		pointLight->color()->setTo(0.2f, 0.2f, 1.0f);
@@ -149,5 +150,4 @@ int main(int argc, char** argv)
 	glfwTerminate();
 
 	exit(EXIT_SUCCESS);
-
 }

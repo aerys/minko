@@ -211,7 +211,9 @@
 					//---------------------
 					for (int i = 0; i < NUM_POINT_LIGHTS; ++i)
 					{
-						lightDirection	= normalize(pointLights[i].position - vertexPosition);
+						lightDirection			= pointLights[i].position - vertexPosition;
+						float distanceToLight 	= length(lightDirection);
+						lightDirection 			/= distanceToLight;
 						#ifdef NORMAL_MAP
 							lightDirection = worldToTangentMatrix * lightDirection;
 						#endif // NORMAL_MAP
@@ -227,8 +229,12 @@
 								shininess
 							) * pointLights[i].specular;
 						#endif // SHININESS
-
-						phong += contribution * pointLights[i].color;
+						
+						float attenuation = pointLights[i].attenuationDistance > 0.0
+							? max(0.0, 1.0 - distanceToLight / pointLights[i].attenuationDistance) 
+							: 1.0;
+							
+						phong += attenuation * contribution * pointLights[i].color;
 					}
 					#endif // NUM_POINT_LIGHTS
 					
@@ -236,7 +242,10 @@
 					//--------------------
 					for (int i = 0; i < NUM_SPOT_LIGHTS; ++i)
 					{
-						lightDirection		= normalize(spotLights[i].position - vertexPosition);
+						lightDirection			= spotLights[i].position - vertexPosition;
+						float distanceToLight	= length(lightDirection);
+						lightDirection			/= distanceToLight;
+						
 						vec3  spotDirection	= normalize(-spotLights[i].direction);						
 						float cosSpot		= dot(-lightDirection, spotDirection);
 						float cosOuter		= spotLights[i].cosOuterConeAngle;
@@ -266,7 +275,11 @@
 											: 1.0;
 							contribution	*= cutoff;
 							
-							phong += contribution * spotLights[i].color;
+							float attenuation = spotLights[i].attenuationDistance > 0.0
+								? max(0.0, 1.0 - distanceToLight / spotLights[i].attenuationDistance)
+								: 1.0;
+							
+							phong += attenuation * contribution * spotLights[i].color;
 						}
 					}
 					#endif // NUM_SPOT_LIGHTS
