@@ -13,6 +13,7 @@
 		"diffuseColor"				: "material.diffuseColor",
 		"diffuseMap"				: "material.diffuseMap",
 		"normalMap"					: "material.normalMap",
+		"specularMap"				: "material.specularMap",
 		"shininess"					: "material.shininess",
 		"modelToWorldMatrix"		: "transform.modelToWorldMatrix",
 		"worldToScreenMatrix"		: "camera.worldToScreenMatrix",
@@ -26,6 +27,7 @@
 	"macroBindings"	: {
 		"DIFFUSE_MAP"				: "material.diffuseMap",
 		"NORMAL_MAP"				: "material.normalMap",
+		"SPECULAR_MAP"				: "material.specularMap",
 		"SHININESS"					: "material.shininess",
 		"MODEL_TO_WORLD"			: "transform.modelToWorldMatrix",
 		"NUM_AMBIENT_LIGHTS"		: "ambientLights.length",
@@ -41,7 +43,9 @@
 	"triangleCulling"	: "back",
 	
 	"samplerStates" : {
-		"diffuseMap"	: { "filter" : "linear", "mipFilter" : "linear" }
+		"diffuseMap"	: { "filter" : "linear", "mipFilter" : "linear" },
+		"normalMap"		: { "filter" : "linear", "mipFilter" : "linear" },
+		"specularMap"	: { "filter" : "linear", "mipFilter" : "linear" }
 	},
 
 	"includes"	: [ "Phong.glsl", "NormalMap.glsl", "LightTypes.glsl" ],
@@ -67,9 +71,9 @@
 
 			void main(void)
 			{
-				#ifdef DIFFUSE_MAP
+				#if defined DIFFUSE_MAP || defined NORMAL_MAP || defined SPECULAR_MAP
 					vertexUV = uv;
-				#endif
+				#endif // defined DIFFUSE_MAP || defined NORMAL_MAP || defined SPECULAR_MAP
 
 				vec4 worldPosition = vec4(position, 1.0);
 				#ifdef MODEL_TO_WORLD
@@ -127,6 +131,7 @@
 			uniform vec4 diffuseColor;
 			uniform sampler2D diffuseMap;
 			uniform sampler2D normalMap;
+			uniform sampler2D specularMap;
 			
 			uniform float shininess;
 			uniform vec3 cameraPosition;
@@ -138,14 +143,19 @@
 
 			void main(void)
 			{
-				vec4 diffuse = vec4(0);
+				vec4 diffuse = diffuseColor;
 				
 				#ifdef DIFFUSE_MAP
 					diffuse = texture2D(diffuseMap, vertexUV);
-				#else
-					diffuse = diffuseColor;
 				#endif // DIFFUSE_MAP
 				
+				float specularIntensity = 1.0;
+				
+				#ifdef SPECULAR_MAP
+					specularIntensity = texture2D(specularMap, vertexUV).r;
+				#elif defined NORMAL_MAP
+					specularIntensity = texture2D(normalMap, vertexUV).a;
+				#endif // SPECULAR_MAP
 				
 				vec3 phong = vec3(0.);
 				
@@ -200,7 +210,7 @@
 								lightDirection,
 								eyeVector,
 								shininess
-							) * directionalLights[i].specular;
+							) * directionalLights[i].specular * specularIntensity;
 						#endif // SHININESS
 
 						phong += contribution * directionalLights[i].color;
@@ -227,7 +237,7 @@
 								lightDirection,
 								eyeVector,
 								shininess
-							) * pointLights[i].specular;
+							) * pointLights[i].specular * specularIntensity;
 						#endif // SHININESS
 						
 						float attenuation = pointLights[i].attenuationDistance > 0.0
@@ -266,7 +276,7 @@
 									lightDirection,
 									eyeVector,
 									shininess
-								) * spotLights[i].specular;
+								) * spotLights[i].specular * specularIntensity;
 							#endif // SHININESS
 							
 							float cosInner	= spotLights[i].cosInnerConeAngle;
