@@ -82,6 +82,9 @@ Pass::selectProgram(std::shared_ptr<data::Container> data,
 					macroBindingProperties.push_back(propertyName);
 				}
             }
+#ifdef DEBUG
+			std::cout << "macro bindings\n--------------\n" << defines << std::endl;
+#endif // DEBUG
 
 			// for program template by adding #defines
 			auto vs = Shader::create(
