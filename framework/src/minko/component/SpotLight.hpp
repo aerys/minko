@@ -36,16 +36,24 @@ namespace minko
 		private:
 			float							_cosInnerConeAngle;
 			float							_cosOuterConeAngle;
+			float							_attenuationDistance;
 			std::shared_ptr<math::Vector3>	_worldPosition;
 			std::shared_ptr<math::Vector3>	_worldDirection;
 
 		public:
 			inline static
 			Ptr
-			create(float innerAngleRadians = PI * 0.25f,
-				   float outerAngleRadians = -1.0f)
+			create(float innerAngleRadians		= PI * 0.25f,
+				   float outerAngleRadians		= -1.0f,
+				   float attenuationDistance	= -1.0f)
 			{
-				auto light = std::shared_ptr<SpotLight>(new SpotLight(innerAngleRadians, outerAngleRadians));
+				auto light = std::shared_ptr<SpotLight>(
+					new SpotLight(
+						innerAngleRadians, 
+						outerAngleRadians,
+						attenuationDistance
+					)
+				);
 
                 light->initialize();
 
@@ -72,13 +80,31 @@ namespace minko
 			void
 			outerConeAngle(float radians);
 
+			inline
+			bool
+			attenuationEnabled() const
+			{
+				return !(attenuationDistance() < 0.0f);
+			}
+
+			inline
+			float
+			attenuationDistance() const
+			{
+				return _attenuationDistance;
+			}
+
+			void
+			attenuationDistance(float);
+
 		protected:
 			void
             updateModelToWorldMatrix(std::shared_ptr<math::Matrix4x4> modelToWorld);
 
 		private:
 			SpotLight(float innerAngleRadians,
-					  float outerAngleRadians);
+					  float outerAngleRadians,
+					  float attenuationDistance);
 		};
 	}
 }
