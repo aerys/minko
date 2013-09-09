@@ -27,13 +27,15 @@ using namespace minko::math;
 using namespace minko::component;
 
 SpotLight::SpotLight(float innerAngleRadians,
-					 float outerAngleRadians):
+					 float outerAngleRadians,
+					 float attenuationDist) :
 	AbstractDiscreteLight("spotLights"),
 	_worldPosition(Vector3::create(0.0f, 0.0f, 0.0f)),
 	_worldDirection(Vector3::create(0.0f, 0.0f, 1.0f))
 {
 	diffuse(1.f);
 	specular(1.f);
+	attenuationDistance(attenuationDist);
 
 	innerConeAngle(innerAngleRadians);
 	outerConeAngle(std::max(outerAngleRadians, innerAngleRadians));
@@ -67,4 +69,11 @@ SpotLight::outerConeAngle(float radians)
 
 	_cosOuterConeAngle = cosf(radians);
 	data()->set<float>("cosOuterConeAngle", _cosOuterConeAngle);
+}
+
+void
+SpotLight::attenuationDistance(float value)
+{
+	_attenuationDistance = value > 1e-6f ? value : -1.0f;
+	data()->set<float>("attenuationDistance", _attenuationDistance);
 }
