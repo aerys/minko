@@ -5,8 +5,10 @@ package aerys.minko.scene.controller.mesh.skinning
 	import flash.utils.Dictionary;
 	
 	import aerys.minko.Minko;
+	import aerys.minko.ns.minko_animation;
 	import aerys.minko.ns.minko_math;
 	import aerys.minko.render.Viewport;
+	import aerys.minko.render.geometry.Geometry;
 	import aerys.minko.scene.controller.AbstractController;
 	import aerys.minko.scene.controller.EnterFrameController;
 	import aerys.minko.scene.controller.IRebindableController;
@@ -149,7 +151,7 @@ package aerys.minko.scene.controller.mesh.skinning
 						);
 					}
 					catch (e : Error)
-					{
+					{	
 						Minko.log(
 							DebugLevel.SKINNING,
 							'Falling back to software skinning: ' + e.message,

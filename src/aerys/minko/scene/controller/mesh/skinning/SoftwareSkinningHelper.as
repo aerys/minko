@@ -1,5 +1,12 @@
 package aerys.minko.scene.controller.mesh.skinning
 {
+	import flash.geom.Matrix3D;
+	import flash.utils.ByteArray;
+	import flash.utils.Dictionary;
+	
+	import mx.utils.NameUtil;
+	
+	import aerys.minko.ns.minko_animation;
 	import aerys.minko.render.geometry.Geometry;
 	import aerys.minko.render.geometry.stream.IVertexStream;
 	import aerys.minko.render.geometry.stream.StreamUsage;
@@ -9,10 +16,9 @@ package aerys.minko.scene.controller.mesh.skinning
 	import aerys.minko.scene.node.Group;
 	import aerys.minko.scene.node.Mesh;
 	import aerys.minko.type.animation.SkinningMethod;
+	import aerys.minko.type.binding.DataProvider;
 	
-	import flash.geom.Matrix3D;
-	import flash.utils.ByteArray;
-	import flash.utils.Dictionary;
+	use namespace minko_animation;
 	
 	internal final class SoftwareSkinningHelper extends AbstractSkinningHelper
 	{
@@ -20,6 +26,8 @@ package aerys.minko.scene.controller.mesh.skinning
 		
 		private var _meshToOriginalGeometry 	: Dictionary		= new Dictionary();
 		private var _meshToFlattenedGeometry	: Dictionary		= new Dictionary();
+		private var _meshToFakeGeometry 		: Dictionary		= new Dictionary();
+		private var _meshToGeometryProvider		: Dictionary		= new Dictionary();
 		
 		public function SoftwareSkinningHelper(method			: uint,
 											   bindShape		: Matrix3D, 
@@ -50,16 +58,22 @@ package aerys.minko.scene.controller.mesh.skinning
 			
 			_meshToOriginalGeometry[mesh]	= mesh.geometry;
 			_meshToFlattenedGeometry[mesh]	= flattenGeometry(mesh.geometry);
-			mesh.geometry = flattenGeometry(_meshToFlattenedGeometry[mesh]);
+			_meshToFakeGeometry[mesh] 		=  flattenGeometry(_meshToFlattenedGeometry[mesh]);
+			
+			if (mesh.bindings.propertyExists('geometry'))
+				_meshToGeometryProvider[mesh] = mesh.bindings.getProviderByBindingName('geometry');
 		}
 		
 		override public function removeMesh(mesh : Mesh) : void
 		{
 			super.removeMesh(mesh);
 			
-			mesh.geometry = _meshToOriginalGeometry[mesh];
+			// force refresh of the geometry
+			mesh.geometry = mesh.geometry;
+			
 			delete _meshToOriginalGeometry[mesh];
 			delete _meshToFlattenedGeometry[mesh];
+			delete _meshToGeometryProvider[mesh];
 		}
 		
 		override protected function updateTargetSkinning(skeletonRoot	: Group, 
@@ -71,10 +85,18 @@ package aerys.minko.scene.controller.mesh.skinning
 			for (var targetId : uint = 0; targetId < numTargets; ++targetId)
 			{
 				var target			: Mesh		= _targets[targetId];
-				var fakeGeometry	: Geometry	= target.geometry;
-				var realGeometry	: Geometry	= _meshToFlattenedGeometry[target];
+				
+				if (_meshToGeometryProvider[target] == null && target.bindings.propertyExists('geometry'))
+					_meshToGeometryProvider[target] = target.bindings.getProviderByBindingName('geometry');
+				
+				var meshProvider	: DataProvider	= _meshToGeometryProvider[target];
+				var fakeGeometry	: Geometry		= _meshToFakeGeometry[target]
+				var realGeometry	: Geometry		= _meshToFlattenedGeometry[target];
 				
 				updateGeometry(fakeGeometry, realGeometry);
+				
+				if (meshProvider && meshProvider.getProperty('geometry') != fakeGeometry)
+					meshProvider.setProperty('geometry', fakeGeometry);
 			}
 		}
 		
