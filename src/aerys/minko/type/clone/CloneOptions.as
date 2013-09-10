@@ -14,6 +14,7 @@ package aerys.minko.type.clone
 
 	public final class CloneOptions
 	{
+		private var _deepClonedControllerTypes	: Vector.<Class>;
 		private var _clonedControllerTypes		: Vector.<Class>;
 		private var _ignoredControllerTypes		: Vector.<Class>;
 		private var _reassignedControllerTypes	: Vector.<Class>;
@@ -25,7 +26,8 @@ package aerys.minko.type.clone
 		}
 		public function set defaultControllerAction(v : uint) : void
 		{
-			if (v != ControllerCloneAction.CLONE 
+			if (v != ControllerCloneAction.DEEP_CLONE 
+				&& v != ControllerCloneAction.CLONE 
 				&& v != ControllerCloneAction.IGNORE 
 				&& v != ControllerCloneAction.REASSIGN)
 				throw new Error('Unknown action type.');
@@ -40,6 +42,7 @@ package aerys.minko.type.clone
 		
 		private function initialize() : void
 		{
+			_deepClonedControllerTypes = new <Class>[];
 			_clonedControllerTypes = new <Class>[];
 			_ignoredControllerTypes = new <Class>[];
 			_reassignedControllerTypes = new <Class>[];
@@ -92,8 +95,9 @@ package aerys.minko.type.clone
 													action			: uint) : CloneOptions
 		{
 			var index : int = 0;
-			
-			if ((index = _clonedControllerTypes.indexOf(controllerClass)) >= 0)
+			if ((index = _deepClonedControllerTypes.indexOf(controllerClass)) >= 0)
+				_deepClonedControllerTypes.splice(index, 1);
+			else if ((index = _clonedControllerTypes.indexOf(controllerClass)) >= 0)
 				_clonedControllerTypes.splice(index, 1);
 			else if ((index = _ignoredControllerTypes.indexOf(controllerClass)) >= 0)
 				_ignoredControllerTypes.splice(index, 1);
@@ -102,6 +106,10 @@ package aerys.minko.type.clone
 			
 			switch (action)
 			{
+				case ControllerCloneAction.DEEP_CLONE:
+					_deepClonedControllerTypes.push(controllerClass);
+					break;
+				
 				case ControllerCloneAction.CLONE:
 					_clonedControllerTypes.push(controllerClass);
 					break;
@@ -123,10 +131,15 @@ package aerys.minko.type.clone
 		
 		public function getActionForController(controller : AbstractController) : uint
 		{
+			var numControllersToDeepClone	: uint = _deepClonedControllerTypes.length;
 			var numControllersToClone		: uint = _clonedControllerTypes.length;
 			var numControllersToIgnore		: uint = _ignoredControllerTypes.length;
 			var numControllersToReassign	: uint = _reassignedControllerTypes.length;
 			var controllerId				: uint;
+			
+			for (controllerId = 0; controllerId < numControllersToDeepClone; ++controllerId)
+				if (controller is _deepClonedControllerTypes[controllerId])
+					return ControllerCloneAction.DEEP_CLONE;
 			
 			for (controllerId = 0; controllerId < numControllersToClone; ++controllerId)
 				if (controller is _clonedControllerTypes[controllerId])
@@ -142,6 +155,5 @@ package aerys.minko.type.clone
 			
 			return _defaultControllerAction;
 		}
-		
 	}
 }

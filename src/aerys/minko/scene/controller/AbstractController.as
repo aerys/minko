@@ -114,5 +114,10 @@ package aerys.minko.scene.controller
 		{
 			throw new Error('The method AbstractController.clone() must be overriden.');
 		}
+		
+		public function deepClone() : AbstractController
+		{
+			return clone();
+		}
 	}
 }

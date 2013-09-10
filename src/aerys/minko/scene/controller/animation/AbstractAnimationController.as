@@ -3,6 +3,7 @@ package aerys.minko.scene.controller.animation
 	import flash.utils.getTimer;
 	
 	import aerys.minko.ns.minko_animation;
+	import aerys.minko.scene.controller.AbstractController;
 	import aerys.minko.scene.controller.EnterFrameController;
 	import aerys.minko.scene.node.ISceneNode;
 	import aerys.minko.type.Signal;
@@ -110,7 +111,7 @@ package aerys.minko.scene.controller.animation
 		{
 			super();
 			
-			_looping = true;
+			_looping = loop;
 			
 			_labelNames = new <String>[];
 			_labelTimes = new <Number>[];
@@ -428,6 +429,25 @@ package aerys.minko.scene.controller.animation
 		public function invalidate(target : Object = null) : void
 		{
 		}
-
+		
+		override public function deepClone() : AbstractController
+		{
+			var clone : AbstractAnimationController = this.clone() as AbstractAnimationController;
+			return clone.clonePlayingState(this);
+		}
+		
+		minko_animation function clonePlayingState(from : AbstractAnimationController) : AbstractAnimationController
+		{
+			_isPlaying		= from._isPlaying;
+			_loopBeginTime	= from._loopBeginTime;
+			_loopEndTime	= from._loopEndTime;
+			_currentTime	= from._currentTime;
+			_lastTime		= from._lastTime;
+			_previousTime	= from._previousTime;
+			_looping		= from._looping;
+			_nextLabelIds	= from._nextLabelIds.concat();
+			_updateOneTime	= from._updateOneTime;
+			return this;
+		}
 	}
 }

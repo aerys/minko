@@ -8,7 +8,6 @@ package aerys.minko.scene.controller.animation
 	import aerys.minko.scene.controller.AbstractController;
 	import aerys.minko.scene.controller.IRebindableController;
 	import aerys.minko.scene.node.Scene;
-	import aerys.minko.type.animation.timeline.ITimeline;
 	
 	use namespace minko_animation;
 	
@@ -168,14 +167,19 @@ package aerys.minko.scene.controller.animation
 		{
 			if (updateOnTime(time))
 			{
-				var numAnimations : uint = _animations.length;
-				for (var animationId : uint = 0; animationId < numAnimations; ++animationId)
-				{
-					_animations[animationId].setCurrentTime(currentTime);
-					_animations[animationId].update(scene, time);
-				}
+				updateAnimations(scene, time);
 				
 				checkLabelHit(_previousTime, _currentTime);
+			}
+		}
+		
+		minko_animation function updateAnimations(scene : Scene, time : Number) : void
+		{
+			var numAnimations : uint = _animations.length;
+			for (var animationId : uint = 0; animationId < numAnimations; ++animationId)
+			{
+				_animations[animationId].setCurrentTime(currentTime);
+				_animations[animationId].update(scene, time);
 			}
 		}
 		

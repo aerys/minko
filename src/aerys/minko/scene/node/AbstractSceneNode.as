@@ -489,7 +489,9 @@ package aerys.minko.scene.node
 				var controller	: AbstractController = AbstractController(objController);
 				var action		: uint				 = cloneOptions.getActionForController(controller);
 				
-				if (action == ControllerCloneAction.CLONE)
+				if (action == ControllerCloneAction.DEEP_CLONE)
+					controllerMap[controller] = controller.deepClone();
+				else if (action == ControllerCloneAction.CLONE)
 					controllerMap[controller] = controller.clone();
 				else if (action == ControllerCloneAction.REASSIGN)
 					controllerMap[controller] = controller;
@@ -509,7 +511,7 @@ package aerys.minko.scene.node
 				var controller	: AbstractController	= AbstractController(objController);
 				var action		: uint					= cloneOptions.getActionForController(controller);
 				
-				if (controller is IRebindableController && action == ControllerCloneAction.CLONE)
+				if (controller is IRebindableController && (action == ControllerCloneAction.CLONE || action == ControllerCloneAction.DEEP_CLONE))
 					IRebindableController(controllerMap[controller]).rebindDependencies(nodeMap, controllerMap);
 			}
 		}

@@ -5,5 +5,6 @@ package aerys.minko.type.clone
 		public static const IGNORE		: uint = 0;
 		public static const REASSIGN	: uint = 1;
 		public static const CLONE		: uint = 2;
+		public static const DEEP_CLONE	: uint = 3;
 	}
 }

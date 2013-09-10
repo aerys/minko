@@ -5,6 +5,7 @@ package aerys.minko.scene.controller.animation
 	import aerys.minko.ns.minko_animation;
 	import aerys.minko.render.Viewport;
 	import aerys.minko.scene.controller.AbstractController;
+	import aerys.minko.scene.controller.EnterFrameController;
 	import aerys.minko.scene.node.Group;
 	import aerys.minko.scene.node.ISceneNode;
 	import aerys.minko.scene.node.Scene;
@@ -51,7 +52,7 @@ package aerys.minko.scene.controller.animation
 		
 		private function initialize(timelines 	: Vector.<ITimeline>) : void
 		{
-			_timelines = timelines.slice();
+			_timelines = timelines.concat();
 			
 			var numTimelines : uint = _timelines.length;
 			
@@ -89,8 +90,8 @@ package aerys.minko.scene.controller.animation
 		
 		override public function clone() : AbstractController
 		{
-			var clone : AnimationController = new AnimationController(_timelines.slice(), _looping);
-			clone._isTimelineUpdateLocked	= _isTimelineUpdateLocked.slice();
+			var clone : AnimationController = new AnimationController(_timelines, _looping);
+			clone._isTimelineUpdateLocked	= _isTimelineUpdateLocked.concat();
 			
 			clone._labelNames	= _labelNames.concat();
 			clone._labelTimes	= _labelTimes.concat();
@@ -121,6 +122,12 @@ package aerys.minko.scene.controller.animation
 			
 			if (updateOnTime(time))
 				update(scene, time);
+		}
+		
+		override protected function targetAddedToScene(target:ISceneNode, scene:Scene):void
+		{
+			super.targetAddedToScene(target, scene);
+			update(scene, _lastTime);
 		}
 		
 		minko_animation function update(scene		: Scene,
