@@ -130,7 +130,7 @@ TypeDeserializer::vector4(std::map<int, render::Texture::Ptr>&	idToTexture,
 	float z = 0.f;
 	float w = 1.f;
 
-	std::cout << propertyName << std::endl;
+	std::cout << "TypeDeserializer::vector4\t" << propertyName << std::endl;
 
 	if (vectorValues[0].type() == typeid(float))
 		x = Any::cast<float>(vectorValues[0]);
