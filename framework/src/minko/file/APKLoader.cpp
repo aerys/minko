@@ -17,11 +17,11 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+#ifdef __ANDROID__
 #include "APKLoader.hpp"
 
 #include "Options.hpp"
 #include "minko/Signal.hpp"
-#include "minko/setup.hpp"
 
 #include <fstream>
 
@@ -29,6 +29,17 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 using namespace minko;
 using namespace minko::file;
+
+JavaVM* APKLoader::jvm;
+
+extern "C"
+{
+    jint JNI_OnLoad(JavaVM *vm, void *reserved)
+    {
+        APKLoader::jvm = vm;
+        return JNI_VERSION_1_2;
+    }
+}
 
 APKLoader::APKLoader()
 {
@@ -41,7 +52,7 @@ void APKLoader::load(const std::string& filename, std::shared_ptr<Options> optio
     _options = options;
 
     JNIEnv* env;
-    JavaVM* jvm = setup::jvm;
+    JavaVM* jvm = APKLoader::jvm;
     jvm->AttachCurrentThread(&env, nullptr);
 
     jstring jstr = env->NewStringUTF(filename.c_str());
@@ -66,3 +77,4 @@ void APKLoader::load(const std::string& filename, std::shared_ptr<Options> optio
     else
         _error->execute(shared_from_this());
 }
+#endif /* __ANDROID__ */
