@@ -1,0 +1,9 @@
+*/bin/
+*/obj/
+*/libs/
+.metadata
+*/.*
+
+*/jni/
+
+*/local.properties
