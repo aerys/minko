@@ -167,7 +167,7 @@ package aerys.minko.scene.controller.animation
 			return this;
 		}
 		
-		protected function updateNextLabel(currentTime : int = -1) : void
+		protected function updateNextLabelOld(currentTime : int = -1) : void
 		{
 			if (reverse)
 				return updateNextLabelReverse(currentTime);
@@ -208,6 +208,53 @@ package aerys.minko.scene.controller.animation
 				updateNextLabel(loopBeginTime);
 			}
 			else if (min == loopEndTime && _looping)
+			{
+				for(i = 0; i < _labelTimes.length; ++i)
+				{
+					if (_labelTimes[i] == loopBeginTime && _nextLabelIds.indexOf(i) == -1)
+						_nextLabelIds.push(i);
+				}
+			}
+		}
+		
+		protected function updateNextLabel(currentTime: int = -1) : void
+		{
+			_nextLabelIds = [];
+			
+			if (!_labelTimes.length)
+				return;
+			
+			if (currentTime == -1)
+				currentTime = _currentTime;
+			
+			var comp : int = _reverse ? int.MIN_VALUE : int.MAX_VALUE;
+			
+			for(var i : int = 0; i < _labelTimes.length; ++i)
+			{
+				var time : int = _labelTimes[i];
+				
+				if (time < _loopBeginTime || time > _loopEndTime)
+					continue;
+				
+				if ((_reverse && time <= currentTime) || (!_reverse && time >= currentTime))
+				{
+					if ((_reverse && time > comp) || (!_reverse && time < comp))
+					{
+						comp = time;
+						_nextLabelIds = [i];
+					}
+					else if (time == comp)
+					{
+						_nextLabelIds.push(i);
+					}
+				}
+			}
+			
+			if (!_nextLabelIds.length)
+			{
+				updateNextLabel(loopBeginTime);
+			}
+			else if (comp == loopEndTime && _looping)
 			{
 				for(i = 0; i < _labelTimes.length; ++i)
 				{
@@ -409,44 +456,20 @@ package aerys.minko.scene.controller.animation
 		
 		protected function checkLabelHit(previousTime : int, newTime : int) : void
 		{
-			if (reverse)
-				return checkLabelHitReverse(previousTime, newTime);
 			if (!_isPlaying || !_nextLabelIds || !_nextLabelIds.length || !_labelHit.numCallbacks)
 				return;
 			
 			var nextLabelTime	: Number	= _labelTimes[_nextLabelIds[0]];
 			var trigger			: Boolean	= false;
 			
-			if (newTime < previousTime)
+			if (!_reverse && newTime < previousTime)
 			{
 				if (previousTime < nextLabelTime && nextLabelTime <= loopEndTime)
 					trigger = true;
 				else if (loopBeginTime <= nextLabelTime && nextLabelTime <= newTime)
 					trigger = true;
 			}
-			else
-			{
-				if ((previousTime < nextLabelTime && nextLabelTime <= newTime) || newTime == nextLabelTime)
-					trigger = true;
-			}
-			if (trigger)
-			{
-				for each(var i : int in _nextLabelIds)
-				triggerLabelHit(_labelNames[i], _labelTimes[i]);
-				
-				updateNextLabel((newTime + 1) % loopEndTime);
-			}
-		}
-		
-		protected function checkLabelHitReverse(previousTime : int, newTime : int) : void
-		{
-			if (!_isPlaying || !_nextLabelIds || !_nextLabelIds.length || !_labelHit.numCallbacks)
-				return;
-			
-			var nextLabelTime	: Number	= _labelTimes[_nextLabelIds[0]];
-			var trigger			: Boolean	= false;
-			
-			if (newTime > previousTime)
+			else if (_reverse && newTime > previousTime)
 			{
 				if (previousTime > nextLabelTime && nextLabelTime >= loopEndTime)
 					trigger = true;
@@ -455,7 +478,9 @@ package aerys.minko.scene.controller.animation
 			}
 			else
 			{
-				if ((previousTime > nextLabelTime && nextLabelTime >= newTime) || newTime == nextLabelTime)
+				if (_reverse && ((previousTime > nextLabelTime && nextLabelTime >= newTime) || newTime == nextLabelTime))
+					trigger = true;
+				else if (!_reverse && ((previousTime < nextLabelTime && nextLabelTime <= newTime) || newTime == nextLabelTime))
 					trigger = true;
 			}
 			if (trigger)
@@ -463,7 +488,12 @@ package aerys.minko.scene.controller.animation
 				for each(var i : int in _nextLabelIds)
 				triggerLabelHit(_labelNames[i], _labelTimes[i]);
 				
-				updateNextLabel((newTime - 1) % _loopEndTime);
+				if (_reverse)
+					newTime--;
+				else
+					newTime++;
+				
+				updateNextLabel(newTime % _loopEndTime);
 			}
 		}
 		
