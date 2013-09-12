@@ -1,4 +1,6 @@
-package in.aerys.minko.example.cube;
+package in.aerys.minko;
+
+import in.aerys.minko.example.cube.MainActivity;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -9,10 +11,25 @@ import android.util.Log;
 
 public class AssetsLoader
 {
+	static private AssetManager mgr;
+	
+	public static void ClearManager()
+	{
+		mgr = null;
+	}
+	
+	public static AssetManager GetManager()
+	{
+		AssetManager manager = MainActivity.Assets;
+		mgr = manager;
+		return manager;
+	}
+	
 	public static byte[] LoadAsset(String name)
 	{
 		Log.d("Minko", "Reading " + name);
 		AssetManager manager = MainActivity.Assets;
+		mgr = manager;
 		InputStream is;
 		
 		try {
