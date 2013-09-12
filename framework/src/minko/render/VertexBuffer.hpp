@@ -28,7 +28,8 @@ namespace minko
 	namespace render
 	{
 		class VertexBuffer :
-			public AbstractResource
+			public AbstractResource,
+			public std::enable_shared_from_this<VertexBuffer>
 		{
 		public:
 			typedef std::shared_ptr<VertexBuffer>								Ptr;
@@ -36,9 +37,11 @@ namespace minko
 			typedef std::shared_ptr<Attribute>									AttributePtr;
 
 		private:
-			std::vector<float>		_data;
-			std::list<AttributePtr>	_attributes;
-			uint					_vertexSize;
+			std::vector<float>					_data;
+			std::list<AttributePtr>				_attributes;
+			uint								_vertexSize;
+
+			std::shared_ptr<Signal<Ptr, int>>	_vertexSizeChanged;
 
 		public:
 			inline static
@@ -109,17 +112,38 @@ namespace minko
 				return _vertexSize;
 			}
 
+			inline
+			std::shared_ptr<Signal<Ptr, int>>
+			vertexSizeChanged()
+			{
+				return _vertexSizeChanged;
+			}
+
+			inline
 			uint
-			numVertices() const;
+			numVertices() const
+			{
+				return _vertexSize > 0 ? _data.size() / _vertexSize : 0;
+			}
+
+			inline
+			void
+			upload()
+			{
+				upload(0, 0);
+			}
 
 			void
-			upload();
+			upload(uint offset, uint numVertices = 0);
 
 			void
 			dispose();
 
 			void
 			addAttribute(const std::string& name, const unsigned int size, const unsigned int offset);
+
+			void
+			removeAttribute(const std::string& name);
 
 			bool
 			hasAttribute(const std::string& attributeName);
@@ -144,10 +168,7 @@ namespace minko
 						 float*										end);
 
 			void
-			vertexSize(unsigned int value)
-			{
-				_vertexSize = value;
-			};
+			vertexSize(unsigned int value);
 		};
 	}
 }

@@ -4,6 +4,102 @@
 		"selected_items":
 		[
 			[
+				"c",
+				"count"
+			],
+			[
+				"_verte",
+				"_vertexSize"
+			],
+			[
+				"vb",
+				"vb"
+			],
+			[
+				"num",
+				"numMeridians"
+			],
+			[
+				"ini",
+				"initializeIndices"
+			],
+			[
+				"with",
+				"withNormals"
+			],
+			[
+				"nu",
+				"numMeridians"
+			],
+			[
+				"at",
+				"attributeName"
+			],
+			[
+				"attrib",
+				"attributeName"
+			],
+			[
+				"attr",
+				"AttributePtr"
+			],
+			[
+				"Attr",
+				"AttributePtr"
+			],
+			[
+				"attri",
+				"attributeName"
+			],
+			[
+				"ver",
+				"vertexSizeChanged"
+			],
+			[
+				"vertex",
+				"vertexBuffer"
+			],
+			[
+				"_",
+				"_vertexSizeChanged"
+			],
+			[
+				"_ver",
+				"_vertexSize"
+			],
+			[
+				"_v",
+				"_vbToVertexSizeChangedSlot"
+			],
+			[
+				"ve",
+				"vertexSizeChanged"
+			],
+			[
+				"verte",
+				"vertexBuffer"
+			],
+			[
+				"Verte",
+				"VertexBufferPtr"
+			],
+			[
+				"vet",
+				"vertexSize"
+			],
+			[
+				"sha",
+				"shared_ptr"
+			],
+			[
+				"att",
+				"attributes"
+			],
+			[
+				"add",
+				"addChild"
+			],
+			[
 				"bind",
 				"bindingDefines"
 			],
@@ -54,10 +150,6 @@
 			[
 				"light",
 				"lightNode2"
-			],
-			[
-				"sha",
-				"shared_from_this"
 			],
 			[
 				"_pro",
@@ -224,10 +316,6 @@
 				"modelToWorld"
 			],
 			[
-				"add",
-				"addChild"
-			],
-			[
 				"Abstract",
 				"AbstractDiscreteLight"
 			],
@@ -296,10 +384,6 @@
 				"attribute"
 			],
 			[
-				"attr",
-				"attributeName"
-			],
-			[
 				"cot",
 				"controller"
 			],
@@ -310,10 +394,6 @@
 			[
 				"an",
 				"ancestorId"
-			],
-			[
-				"nu",
-				"numChildren"
 			],
 			[
 				"targeta",
@@ -434,155 +514,11 @@
 			[
 				"remove",
 				"removeConnectionByIterator"
-			],
-			[
-				"callbac",
-				"callbackIt"
-			],
-			[
-				"conn",
-				"connectionId"
-			],
-			[
-				"Call",
-				"Callback"
-			],
-			[
-				"_ca",
-				"_callbacks"
-			],
-			[
-				"_to",
-				"_toAdd"
-			],
-			[
-				"be",
-				"begin"
-			],
-			[
-				"_c",
-				"_connectionIds"
-			],
-			[
-				"_conn",
-				"_connectionIds"
-			],
-			[
-				"Ca",
-				"CallbackIterator"
-			],
-			[
-				"tra",
-				"transfromCtrl"
-			],
-			[
-				"ch",
-				"childId"
-			],
-			[
-				"c",
-				"children"
-			],
-			[
-				"_",
-				"_enterFrameCds"
-			],
-			[
-				"tr",
-				"transfromCtrl"
-			],
-			[
-				"_lo",
-				"_worldToModel"
-			],
-			[
-				"roo",
-				"RootTransformController"
-			],
-			[
-				"context",
-				"context"
-			],
-			[
-				"A",
-				"AbstractController"
-			],
-			[
-				"update",
-				"updateEnterFrameListeners"
-			],
-			[
-				"Sig",
-				"SignalConnection"
 			]
 		]
 	},
 	"buffers":
 	[
-		{
-			"file": "examples/color-effect/src/Main.cpp",
-			"settings":
-			{
-				"buffer_size": 1911,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "framework/src/minko/render/DrawCall.hpp",
-			"settings":
-			{
-				"buffer_size": 6441,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "framework/src/minko/render/DrawCall.cpp",
-			"settings":
-			{
-				"buffer_size": 10484,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "framework/src/minko/render/Pass.hpp",
-			"settings":
-			{
-				"buffer_size": 3745,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "framework/src/minko/render/Pass.cpp",
-			"settings":
-			{
-				"buffer_size": 4423,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": ".gitignore",
-			"settings":
-			{
-				"buffer_size": 149,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "framework/src/minko/component/Surface.hpp",
-			"settings":
-			{
-				"buffer_size": 3855,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "framework/src/minko/component/Surface.cpp",
-			"settings":
-			{
-				"buffer_size": 5077,
-				"line_ending": "Unix"
-			}
-		}
 	],
 	"build_system": "make",
 	"command_palette":
@@ -628,6 +564,61 @@
 	},
 	"file_history":
 	[
+		"/home/promethe/Projects/minko-cpp/framework/src/minko/render/IndexBuffer.cpp",
+		"/home/promethe/Projects/minko-cpp/framework/src/minko/render/IndexBuffer.hpp",
+		"/home/promethe/Projects/minko-cpp/plugins/particles/src/minko/render/ParticleIndexBuffer.hpp",
+		"/home/promethe/Projects/minko-cpp/framework/src/minko/render/OpenGLES2Context.cpp",
+		"/home/promethe/Projects/minko-cpp/framework/src/minko/render/VertexBuffer.hpp",
+		"/home/promethe/Projects/minko-cpp/framework/src/minko/render/VertexBuffer.cpp",
+		"/home/promethe/Projects/minko-cpp/framework/src/minko/render/DrawCall.cpp",
+		"/home/promethe/Projects/minko-cpp/plugins/particles/src/minko/controller/ParticleSystem.cpp",
+		"/home/promethe/Projects/minko-cpp/plugins/particles/src/minko/render/ParticleVertexBuffer.cpp",
+		"/home/promethe/Projects/minko-cpp/plugins/particles/src/minko/render/ParticleVertexBuffer.hpp",
+		"/home/promethe/Projects/minko-cpp/plugins/particles/src/minko/geometry/ParticlesGeometry.cpp",
+		"/home/promethe/Projects/minko-cpp/plugins/particles/src/minko/geometry/ParticlesGeometry.hpp",
+		"/home/promethe/Projects/minko-cpp/plugins/particles/src/minko/render/ParticleIndexBuffer.cpp",
+		"/home/promethe/Projects/minko-cpp/framework/src/minko/geometry/Geometry.hpp",
+		"/home/promethe/Projects/minko-cpp/framework/src/minko/geometry/CubeGeometry.cpp",
+		"/home/promethe/Projects/minko-cpp/framework/src/minko/geometry/CubeGeometry.hpp",
+		"/home/promethe/Projects/minko-cpp/framework/src/minko/geometry/QuadGeometry.hpp",
+		"/home/promethe/Projects/minko-cpp/framework/src/minko/geometry/SphereGeometry.hpp",
+		"/home/promethe/Projects/minko-cpp/framework/src/minko/geometry/SphereGeometry.cpp",
+		"/home/promethe/Projects/minko-cpp/framework/src/minko/geometry/QuadGeometry.cpp",
+		"/home/promethe/Projects/minko-cpp/framework/src/minko/geometry/Geometry.cpp",
+		"/home/promethe/Projects/minko-cpp/framework/src/minko/render/AbstractResource.hpp",
+		"/home/promethe/Projects/minko-cpp/examples/sponza/src/Main.cpp",
+		"/home/promethe/Projects/minko-cpp/examples/cube/src/Main.cpp",
+		"/home/promethe/.zshrc",
+		"/home/promethe/Projects/minko-cpp/framework/src/minko/component/PointLight.cpp",
+		"/home/promethe/Projects/minko-cpp/framework/src/minko/component/PointLight.hpp",
+		"/home/promethe/conky-manager/themes/Conky Seamod/seamod_rings.lua",
+		"/home/promethe/conky-manager/themes/Conky Seamod/config/conky_seamod",
+		"/home/promethe/.conkyrc1",
+		"/etc/default/grub",
+		"/home/promethe/saucy/.config",
+		"/home/promethe/saucy/ubuntu-saucy/.config",
+		"/home/promethe/Downloads/wl/src/wl/sys/wl_linux.c",
+		"/boot/efi/EFI/refind/refind.conf",
+		"/tmp/wl/src/wl/sys/wl_linux.c",
+		"/tmp/wl/wl.patch",
+		"/tmp/wl/src/wl/sys/wl_dbg.h",
+		"/home/promethe/Projects/minko-cpp/premake4.lua",
+		"/home/promethe/Projects/minko-cpp/examples/sponza/src/minko/component/SponzaLighting.cpp",
+		"/home/promethe/Projects/minko-cpp/framework/src/minko/math/Matrix4x4.hpp",
+		"/home/promethe/Projects/minko-cpp/framework/src/minko/math/Matrix4x4.cpp",
+		"/home/promethe/Projects/minko-cpp/plugins/bullet/src/minko/component/bullet/PhysicsWorld.cpp",
+		"/home/promethe/Projects/minko-cpp/minko.sublime-project",
+		"/home/promethe/Projects/minko-cpp/framework/src/minko/component/Transform.hpp",
+		"/home/promethe/Projects/minko-cpp/framework/src/minko/render/Pass.cpp",
+		"/home/promethe/Projects/minko-cpp/examples/sponza/premake4.lua",
+		"/home/promethe/Projects/minko-cpp/examples/light/premake4.lua",
+		"/home/promethe/Projects/minko-cpp/examples/cube/premake4.lua",
+		"/home/promethe/Projects/minko-cpp/framework/src/minko/component/Surface.cpp",
+		"/home/promethe/Projects/minko-cpp/framework/src/minko/component/Surface.hpp",
+		"/home/promethe/Projects/minko-cpp/framework/src/minko/render/Pass.hpp",
+		"/home/promethe/Projects/minko-cpp/framework/src/minko/render/DrawCall.hpp",
+		"/home/promethe/Projects/minko-cpp/examples/color-effect/src/Main.cpp",
+		"/home/promethe/Projects/minko-cpp/.gitignore",
 		"/home/promethe/Projects/minko/minko-cpp/examples/color-effect/asset/effect/Color.effect",
 		"/home/promethe/Projects/minko/minko-cpp/premake4.lua",
 		"/home/promethe/Projects/minko/minko-cpp/framework/src/minko/render/DrawCall.cpp",
@@ -700,62 +691,7 @@
 		"/home/promethe/Projects/minko/minko-cpp/framework/src/minko/component/Renderer.cpp",
 		"/home/promethe/Projects/minko/minko-cpp/examples/sponza/asset/effect/SponzaLighting.effect",
 		"/home/promethe/Projects/minko/minko-cpp/examples/sponza/src/minko/component/SponzaLighting.cpp",
-		"/home/promethe/Projects/minko/minko-cpp/framework/src/minko/render/Shader.cpp",
-		"/home/promethe/Projects/minko/minko-cpp/examples/cube/premake4.lua",
-		"/home/promethe/Projects/minko/minko-cpp/examples/sponza/premake4.lua",
-		"/home/promethe/Projects/minko/minko-cpp/examples/light/premake4.lua",
-		"/home/promethe/Projects/minko/minko-cpp/examples/cube/src/Main.cpp",
-		"/home/promethe/Projects/minko/minko-cpp/framework/src/minko/file/EffectParser.hpp",
-		"/home/promethe/Projects/minko/minko-cpp/framework/src/minko/render/Blending.hpp",
-		"/home/promethe/Projects/minko/minko-cpp/plugins/bullet/premake4.lua",
-		"/home/promethe/Projects/minko/minko-cpp/plugins/jpeg/src/minko/file/JPEGParser.cpp",
-		"/home/promethe/Projects/minko/minko-cpp/plugins/jpeg/lib/jpeg-compressor/src/jpgd.cpp",
-		"/home/promethe/Projects/minko/minko-cpp/framework/src/minko/render/CompareMode.hpp",
-		"/home/promethe/Projects/minko/minko-cpp/framework/lib/glsl-optimizer/premake4.lua",
-		"/home/promethe/Projects/minko/minko-cpp/framework/lib/glsl-optimizer/Makefile",
-		"/home/promethe/Projects/minko/minko-cpp/framework/premake4.lua",
-		"/home/promethe/Projects/minko/minko-cpp/framework/RenderingController.d",
-		"/home/promethe/Projects/minko/minko-cpp/framework/src/minko/geometry/Geometry.hpp",
-		"/home/promethe/Projects/minko/minko-cpp/framework/src/minko/render/VertexStream.cpp",
-		"/home/promethe/Projects/minko/minko-cpp/framework/src/minko/render/VertexStream.hpp",
-		"/home/promethe/Projects/minko/minko-cpp/framework/src/minko/geometry/Geometry.cpp",
-		"/home/promethe/Projects/minko/minko-cpp/framework/src/minko/geometry/CubeGeometry.cpp",
-		"/home/promethe/Projects/minko/minko-cpp/framework/src/minko/geometry/SphereGeometry.cpp",
-		"/home/promethe/Projects/minko/minko-cpp/examples/src/Main.cpp",
-		"/home/promethe/Projects/minko/minko-cpp/framework/src/minko/resource/VertexStream.cpp",
-		"/home/promethe/Projects/minko/minko-cpp/framework/src/minko/resource/VertexStream.hpp",
-		"/home/promethe/Projects/minko/minko-cpp/examples/premake4.lua",
-		"/home/promethe/.zshrc",
-		"/home/promethe/Projects/minko/minko-cpp/framework/src/minko/scene/controller/SurfaceController.hpp",
-		"/home/promethe/Projects/minko/minko-cpp/framework/src/minko/scene/controller/RenderingController.hpp",
-		"/home/promethe/Projects/minko/minko-cpp/framework/src/minko/scene/controller/RenderingController.cpp",
-		"/home/promethe/Projects/minko/minko-cpp/framework/src/minko/scene/controller/TransformController.cpp",
-		"/home/promethe/Projects/minko/minko-cpp/framework/src/minko/scene/controller/TransformController.hpp",
-		"/home/promethe/Projects/minko/minko-cpp/framework/src/minko/scene/NodeSet.hpp",
-		"/home/promethe/Projects/minko/minko-cpp/framework/src/minko/scene/NodeSet.cpp",
-		"/home/promethe/Projects/minko/minko-cpp/framework/src/minko/Signal.hpp",
-		"/home/promethe/Projects/minko/minko-cpp/framework/src/minko/scene/controller/AbstractController.hpp",
-		"/home/promethe/Projects/minko/minko-cpp/framework/src/minko/SignalConnection.hpp",
-		"/home/promethe/Projects/minko/minko-cpp/framework/src/minko/scene/data/DataProvider.hpp",
-		"/home/promethe/Projects/minko/minko-cpp/framework/src/minko/scene/data/DataBindings.hpp",
-		"/home/promethe/Projects/minko/minko-cpp/framework/src/minko/Any.hpp",
-		"/home/promethe/Projects/minko/minko-cpp/framework/src/minko/render/context/OpenGLESContext.hpp",
-		"/home/promethe/Projects/minko/minko-cpp/framework/src/minko/scene/Scene.cpp",
-		"/home/promethe/Projects/minko/minko-cpp/framework/src/minko/scene/Scene.hpp",
-		"/home/promethe/Projects/minko/minko-cpp/framework/src/minko/scene/data/DataProvider.cpp",
-		"/home/promethe/Projects/minko/minko-cpp/framework/src/minko/render/GLSLProgram.cpp",
-		"/home/promethe/Projects/minko/minko-cpp/framework/src/minko/render/context/OpenGLESContext.cpp",
-		"/home/promethe/Projects/minko/minko-cpp/framework/src/minko/render/GLSLProgram.hpp",
-		"/home/promethe/Projects/minko/minko-cpp/examples/minko-examples.sublime-workspace",
-		"/home/promethe/Projects/minko/minko-cpp/framework/src/minko/scene/NodeSet",
-		"/home/promethe/Projects/minko/minko-cpp/framework/src/minko/scene/controller/SurfaceController.cpp",
-		"/home/promethe/Projects/minko/minko-cpp/framework/src/minko/render/ShaderProgramInputs.hpp",
-		"/home/promethe/Projects/minko/minko-cpp/framework/src/minko/scene/data/DataBindings.cpp",
-		"/home/promethe/Projects/minko/minko-cpp/framework/src/minko/render/GLSLShader.cpp",
-		"/home/promethe/Projects/minko/minko-cpp/framework/src/minko/render/context/AbstractContext.hpp",
-		"/home/promethe/Projects/minko/minko-cpp/examples/shaders/Basic.vertex.glsl",
-		"/home/promethe/Projects/minko/minko-cpp/examples/shaders/Red.fragment.glsl",
-		"/home/promethe/Projects/minko/minko-cpp/framework/src/minko/render/GLSLShader.hpp"
+		"/home/promethe/Projects/minko/minko-cpp/framework/src/minko/render/Shader.cpp"
 	],
 	"find":
 	{
@@ -766,6 +702,7 @@
 		"height": 0.0,
 		"where_history":
 		[
+			"/home/promethe/Projects/minko/minko-cpp/**",
 			"/home/promethe/Projects/minko/minko-cpp",
 			"<open files>,<open folders>",
 			""
@@ -776,6 +713,18 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"})",
+			"initStreams",
+			"wl_pci_driver",
+			"wl_pci_probe(",
+			"wl_proc_read",
+			"wl_proc_write",
+			"create_proc_entry",
+			"hand_fg_colour",
+			"translation",
+			"translationVec",
+			"/*",
+			"std::cout",
 			"macroBindingProperties",
 			"length",
 			"setLightArrayLength",
@@ -891,19 +840,7 @@
 			"mv[0]",
 			"var ",
 			": Number ",
-			"m._m",
-			"cross",
-			"Vector3",
-			"Vector4::",
-			"Vector3::",
-			"Vector4",
-			"operator==",
-			"operator",
-			"direction",
-			"z_axis_X",
-			"eye_Z",
-			"eye_Y",
-			"eye_X"
+			"m._m"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -1049,226 +986,8 @@
 	"groups":
 	[
 		{
-			"selected": 5,
 			"sheets":
 			[
-				{
-					"buffer": 0,
-					"file": "examples/color-effect/src/Main.cpp",
-					"settings":
-					{
-						"buffer_size": 1911,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								1911,
-								1911
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C++.tmLanguage",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 487.0,
-						"zoom_level": 1.0
-					},
-					"type": "text"
-				},
-				{
-					"buffer": 1,
-					"file": "framework/src/minko/render/DrawCall.hpp",
-					"settings":
-					{
-						"buffer_size": 6441,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								6429,
-								6429
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C++.tmLanguage",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 2153.0,
-						"zoom_level": 1.0
-					},
-					"type": "text"
-				},
-				{
-					"buffer": 2,
-					"file": "framework/src/minko/render/DrawCall.cpp",
-					"settings":
-					{
-						"buffer_size": 10484,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								7587,
-								7587
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C++.tmLanguage",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 3580.0,
-						"zoom_level": 1.0
-					},
-					"type": "text"
-				},
-				{
-					"buffer": 3,
-					"file": "framework/src/minko/render/Pass.hpp",
-					"settings":
-					{
-						"buffer_size": 3745,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								3008,
-								3008
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C++.tmLanguage",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 1659.0,
-						"zoom_level": 1.0
-					},
-					"type": "text"
-				},
-				{
-					"buffer": 4,
-					"file": "framework/src/minko/render/Pass.cpp",
-					"settings":
-					{
-						"buffer_size": 4423,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								2886,
-								2886
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C++.tmLanguage",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 901.0,
-						"zoom_level": 1.0
-					},
-					"type": "text"
-				},
-				{
-					"buffer": 5,
-					"file": ".gitignore",
-					"settings":
-					{
-						"buffer_size": 149,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								0,
-								0
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Text/Plain text.tmLanguage"
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"type": "text"
-				},
-				{
-					"buffer": 6,
-					"file": "framework/src/minko/component/Surface.hpp",
-					"settings":
-					{
-						"buffer_size": 3855,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								3588,
-								3588
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C++.tmLanguage",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 1677.0,
-						"zoom_level": 1.0
-					},
-					"type": "text"
-				},
-				{
-					"buffer": 7,
-					"file": "framework/src/minko/component/Surface.cpp",
-					"settings":
-					{
-						"buffer_size": 5077,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								3465,
-								3465
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C++.tmLanguage",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 2050.0,
-						"zoom_level": 1.0
-					},
-					"type": "text"
-				}
 			]
 		}
 	],
@@ -1322,6 +1041,114 @@
 		"selected_items":
 		[
 			[
+				"particlein",
+				"plugins/particles/src/minko/render/ParticleIndexBuffer.cpp"
+			],
+			[
+				"indexbuffer",
+				"framework/src/minko/render/IndexBuffer.cpp"
+			],
+			[
+				"indexbu",
+				"framework/src/minko/render/IndexBuffer.hpp"
+			],
+			[
+				"vertex",
+				"framework/src/minko/render/VertexBuffer.hpp"
+			],
+			[
+				"opengles2con",
+				"framework/src/minko/render/OpenGLES2Context.cpp"
+			],
+			[
+				"particles",
+				"plugins/particles/src/minko/controller/ParticleSystem.cpp"
+			],
+			[
+				"pariclesys",
+				"plugins/particles/src/minko/controller/ParticleSystem.cpp"
+			],
+			[
+				"vertexb",
+				"framework/src/minko/render/VertexBuffer.cpp"
+			],
+			[
+				"particleverte",
+				"plugins/particles/src/minko/render/ParticleVertexBuffer.cpp"
+			],
+			[
+				"particlever",
+				"plugins/particles/src/minko/render/ParticleVertexBuffer.hpp"
+			],
+			[
+				"drawca",
+				"framework/src/minko/render/DrawCall.cpp"
+			],
+			[
+				"particlev",
+				"plugins/particles/src/minko/render/ParticleVertexBuffer.hpp"
+			],
+			[
+				"particlesge",
+				"plugins/particles/src/minko/geometry/ParticlesGeometry.cpp"
+			],
+			[
+				"vertexbu",
+				"framework/src/minko/render/VertexBuffer.cpp"
+			],
+			[
+				"particleg",
+				"plugins/particles/src/minko/geometry/ParticlesGeometry.hpp"
+			],
+			[
+				"particlege",
+				"plugins/particles/src/minko/geometry/ParticlesGeometry.hpp"
+			],
+			[
+				"geome",
+				"framework/src/minko/geometry/Geometry.hpp"
+			],
+			[
+				"abstractre",
+				"framework/src/minko/render/AbstractResource.hpp"
+			],
+			[
+				"particless",
+				"plugins/particles/src/minko/controller/ParticleSystem.cpp"
+			],
+			[
+				"main",
+				"examples/sponza/src/Main.cpp"
+			],
+			[
+				"drawc",
+				"framework/src/minko/render/DrawCall.cpp"
+			],
+			[
+				"poi",
+				"framework/src/minko/component/PointLight.cpp"
+			],
+			[
+				"pointl",
+				"framework/src/minko/component/PointLight.hpp"
+			],
+			[
+				"trans",
+				"framework/src/minko/component/Transform.hpp"
+			],
+			[
+				"physics",
+				"plugins/bullet/src/minko/component/bullet/PhysicsWorld.cpp"
+			],
+			[
+				"matr",
+				"framework/src/minko/math/Matrix4x4.cpp"
+			],
+			[
+				"matri",
+				"framework/src/minko/math/Matrix4x4.hpp"
+			],
+			[
 				"surfa",
 				"framework/src/minko/component/Surface.hpp"
 			],
@@ -1358,16 +1185,8 @@
 				"framework/src/minko/render/Program.cpp"
 			],
 			[
-				"abstractre",
-				"framework/src/minko/render/AbstractResource.hpp"
-			],
-			[
 				"context",
 				"framework/src/minko/render/OpenGLES2Context.cpp"
-			],
-			[
-				"drawc",
-				"framework/src/minko/render/DrawCall.cpp"
 			],
 			[
 				"phong.e",
@@ -1456,10 +1275,6 @@
 			[
 				"lightm",
 				"framework/src/minko/component/LightManager.cpp"
-			],
-			[
-				"main",
-				"examples/light/src/Main.cpp"
 			],
 			[
 				"abstractd",
@@ -1554,16 +1369,8 @@
 				"framework/src/minko/scene/Node.cpp"
 			],
 			[
-				"physics",
-				"plugins/bullet/src/minko/component/bullet/PhysicsWorld.cpp"
-			],
-			[
 				"sponzal",
 				"examples/sponza/src/minko/component/SponzaLighting.hpp"
-			],
-			[
-				"particles",
-				"plugins/particles/src/minko/controller/ParticleSystem.hpp"
 			],
 			[
 				"collider",
@@ -1616,10 +1423,6 @@
 			[
 				"phong.",
 				"framework/effect/Phong.glsl"
-			],
-			[
-				"matr",
-				"framework/src/minko/math/Matrix4x4.cpp"
 			],
 			[
 				"direc",
@@ -1710,10 +1513,6 @@
 				"examples/light/asset/effect/Phong.effect"
 			],
 			[
-				"drawca",
-				"framework/src/minko/render/DrawCall.hpp"
-			],
-			[
 				"surface.c",
 				"framework/src/minko/component/Surface.cpp"
 			],
@@ -1752,86 +1551,6 @@
 			[
 				"jpgd",
 				"plugins/jpeg/lib/jpeg-compressor/src/jpgd.cpp"
-			],
-			[
-				"jpeg",
-				"plugins/jpeg/src/minko/file/JPEGParser.cpp"
-			],
-			[
-				"compa",
-				"framework/src/minko/render/CompareMode.hpp"
-			],
-			[
-				"surfacec",
-				"framework/src/minko/scene/controller/SurfaceController.hpp"
-			],
-			[
-				"ren",
-				"framework/src/minko/scene/controller/RenderingController.hpp"
-			],
-			[
-				"rende",
-				"framework/src/minko/scene/controller/RenderingController.cpp"
-			],
-			[
-				"mat",
-				"framework/src/minko/math/Matrix4x4.cpp"
-			],
-			[
-				"ab",
-				"framework/src/minko/scene/controller/AbstractController.hpp"
-			],
-			[
-				"sign",
-				"framework/src/minko/Signal.hpp"
-			],
-			[
-				"nodes",
-				"framework/src/minko/scene/NodeSet.hpp"
-			],
-			[
-				"si",
-				"framework/src/minko/SignalConnection.hpp"
-			],
-			[
-				"sin",
-				"framework/src/minko/Signal.hpp"
-			],
-			[
-				"datab",
-				"framework/src/minko/scene/data/DataBindings.hpp"
-			],
-			[
-				"datap",
-				"framework/src/minko/scene/data/DataProvider.hpp"
-			],
-			[
-				"signal",
-				"framework/src/minko/SignalConnection.hpp"
-			],
-			[
-				"signalc",
-				"framework/src/minko/SignalConnection.hpp"
-			],
-			[
-				"tran",
-				"framework/src/minko/scene/controller/TransformController.cpp"
-			],
-			[
-				"mink",
-				"framework/src/minko/Minko.hpp"
-			],
-			[
-				"com",
-				"framework/src/minko/Common.hpp"
-			],
-			[
-				"rn",
-				"framework/src/minko/scene/controller/RenderingController.hpp"
-			],
-			[
-				"tr",
-				"framework/src/minko/scene/controller/TransformController.hpp"
 			]
 		],
 		"width": 0.0

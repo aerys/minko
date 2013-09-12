@@ -44,7 +44,11 @@ namespace minko
 			Ptr
 			create(std::shared_ptr<render::AbstractContext> context)
 			{
-				return std::shared_ptr<ParticlesGeometry>(new ParticlesGeometry(context));
+				auto geom = std::shared_ptr<ParticlesGeometry>(new ParticlesGeometry());
+
+				geom->initialize(context);
+
+				return geom;
 			};
 
 			void
@@ -58,7 +62,8 @@ namespace minko
 			}
 
 		protected:
-			ParticlesGeometry(std::shared_ptr<render::AbstractContext> context);
+			void
+			initialize(std::shared_ptr<render::AbstractContext> context);
 		};
 	}
 }
