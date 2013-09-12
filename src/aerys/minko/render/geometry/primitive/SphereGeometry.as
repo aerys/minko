@@ -1,13 +1,14 @@
 package aerys.minko.render.geometry.primitive
 {
+	import flash.utils.ByteArray;
+	import flash.utils.Endian;
+	
+	import aerys.minko.ns.minko_render;
 	import aerys.minko.render.geometry.Geometry;
 	import aerys.minko.render.geometry.stream.IVertexStream;
 	import aerys.minko.render.geometry.stream.IndexStream;
 	import aerys.minko.render.geometry.stream.VertexStream;
 	import aerys.minko.render.geometry.stream.format.VertexFormat;
-	
-	import flash.utils.ByteArray;
-	import flash.utils.Endian;
 
 	public class SphereGeometry extends Geometry
 	{
@@ -16,6 +17,11 @@ package aerys.minko.render.geometry.primitive
 		public static function get sphereGeometry() : SphereGeometry
 		{
 			return _instance || (_instance = new SphereGeometry());
+		}
+		
+		minko_render static function invalidate() : void
+		{
+			_instance = null;
 		}
 		
 		public static const DEFAULT_NUM_PARALLELS	: uint 	= 10;

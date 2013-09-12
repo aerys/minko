@@ -10,6 +10,10 @@ package aerys.minko.render.resource
 	import flash.display3D.textures.TextureBase;
 	import flash.geom.Rectangle;
 	
+	import aerys.minko.ns.minko_render;
+	import aerys.minko.render.geometry.primitive.CubeGeometry;
+	import aerys.minko.render.geometry.primitive.QuadGeometry;
+	import aerys.minko.render.geometry.primitive.SphereGeometry;
 	import aerys.minko.type.Signal;
 
 	public final class Context3DResource
@@ -149,9 +153,15 @@ package aerys.minko.render.resource
 			return _context.createVertexBuffer(numVertices, data32PerVertex);
 		}
 		
-		public function dispose() : void
+		public function dispose(recreate : Boolean = false) : void
 		{
-			_context.dispose();
+			_context.dispose(recreate);
+			if (!recreate)
+			{
+				QuadGeometry.minko_render::invalidate();
+				CubeGeometry.minko_render::invalidate();
+				SphereGeometry.minko_render::invalidate();
+			}
 		}
 		
 		public function drawToBitmapData(destination : BitmapData) : Context3DResource

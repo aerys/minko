@@ -310,7 +310,7 @@ package aerys.minko.render
 			
 			if (_context3d != null)
 			{
-				_context3d.dispose();
+				_context3d.dispose(false);
 				_context3d = null;
 			}
 			

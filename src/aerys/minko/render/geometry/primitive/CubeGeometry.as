@@ -1,5 +1,6 @@
 package aerys.minko.render.geometry.primitive
 {
+	import aerys.minko.ns.minko_render;
 	import aerys.minko.render.geometry.Geometry;
 	import aerys.minko.render.geometry.stream.IVertexStream;
 	import aerys.minko.render.geometry.stream.IndexStream;
@@ -21,6 +22,11 @@ package aerys.minko.render.geometry.primitive
 		public static function get cubeGeometry() : CubeGeometry
 		{
 			return _instance || (_instance = new CubeGeometry(StreamUsage.DYNAMIC));
+		}
+		
+		minko_render static function invalidate() : void
+		{
+			_instance = null;
 		}
 		
 		/**
