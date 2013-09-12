@@ -26,15 +26,6 @@ using namespace minko::geometry;
 using namespace minko::render;
 using namespace minko::render;
 
-SphereGeometry::SphereGeometry(std::shared_ptr<AbstractContext>	context,
-							   unsigned int						numParallels,
-							   unsigned int						numMeridians,
-							   bool								withNormals)
-{
-	initializeVertices(context, numParallels, numMeridians, withNormals);
-	initializeIndices(context, numParallels, numMeridians);
-}
-
 void
 SphereGeometry::initializeVertices(std::shared_ptr<AbstractContext>	context,
 								   unsigned int						numParallels,

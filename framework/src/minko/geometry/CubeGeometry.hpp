@@ -38,11 +38,16 @@ namespace minko
 			Ptr
 			create(std::shared_ptr<render::AbstractContext> context)
 			{
-				return std::shared_ptr<CubeGeometry>(new CubeGeometry(context));
+				auto geom = std::shared_ptr<CubeGeometry>(new CubeGeometry());
+
+				geom->initialize(context);
+
+				return geom;
 			}
 
 		protected:
-			CubeGeometry(std::shared_ptr<render::AbstractContext> context);
+			void
+			initialize(std::shared_ptr<render::AbstractContext> context);
 		};			
 	}
 }
