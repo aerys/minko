@@ -34,10 +34,15 @@ namespace minko
 			typedef std::shared_ptr<Geometry> Ptr;
 
 		private:
-			std::shared_ptr<data::Provider>	_data;
-			unsigned int					_vertexSize;
-			unsigned int					_numVertices;
-			unsigned int					_numVertexBuffers;
+			typedef std::shared_ptr<render::VertexBuffer> VBPtr;
+
+		private:
+			std::shared_ptr<data::Provider>						_data;
+			unsigned int										_vertexSize;
+			unsigned int										_numVertices;
+			unsigned int										_numVertexBuffers;
+
+			std::unordered_map<VBPtr, Signal<VBPtr, int>::Slot>	_vbToVertexSizeChangedSlot;
 
 		public:
 			inline
@@ -115,7 +120,10 @@ namespace minko
 			vertexSize(unsigned int value)
 			{
 				_vertexSize = value;
-			};
+			}
+
+			void
+			vertexSizeChanged(VBPtr vertexBuffer, int offset);
 		};
 	}
 }
