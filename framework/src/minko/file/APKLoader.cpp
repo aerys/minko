@@ -26,6 +26,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include <fstream>
 
 #include <jni.h>
+#include <android/asset_manager.h>
+#include <android/asset_manager_jni.h>
 
 using namespace minko;
 using namespace minko::file;
@@ -56,18 +58,23 @@ void APKLoader::load(const std::string& filename, std::shared_ptr<Options> optio
     jvm->AttachCurrentThread(&env, nullptr);
 
     jstring jstr = env->NewStringUTF(filename.c_str());
-    jclass clazz = env->FindClass("in/aerys/minko/example/cube/AssetsLoader");
-    jmethodID method = env->GetStaticMethodID(clazz, "LoadAsset", "(Ljava/lang/String;)[B");
-    jbyteArray retval = (jbyteArray) env->CallStaticObjectMethod(clazz, method, jstr);
+    jclass clazz = env->FindClass("in/aerys/minko/AssetsLoader");
 
-    if (nullptr != retval)
+    jmethodID method = env->GetStaticMethodID(clazz, "GetManager",
+            "()Landroid/content/res/AssetManager;");
+    jobject retval = (jobject) env->CallStaticObjectMethod(clazz, method);
+    AAssetManager* manager = AAssetManager_fromJava(env, retval);
+
+    AAsset* asset = AAssetManager_open(manager, filename.c_str(), AASSET_MODE_BUFFER);
+
+    if (nullptr != asset)
     {
         _progress->execute(shared_from_this());
 
-        int len = env->GetArrayLength(retval);
-        unsigned char* buf = new unsigned char[len];
-        env->GetByteArrayRegion(retval, 0, len, reinterpret_cast<jbyte*>(buf));
-
+        int len = AAsset_getLength(asset);
+        const unsigned char* buf = (const unsigned char*)AAsset_getBuffer(asset);
+        if (nullptr == buf)
+            _error->execute(shared_from_this());
         _data.assign(buf, buf + len);
 
         _progress->execute(shared_from_this());
@@ -76,5 +83,9 @@ void APKLoader::load(const std::string& filename, std::shared_ptr<Options> optio
     }
     else
         _error->execute(shared_from_this());
+
+    AAsset_close(asset);
+    method = env->GetStaticMethodID(clazz, "ClearManager", "()V");
+    env->CallStaticVoidMethod(clazz, method);
 }
 #endif /* __ANDROID__ */
