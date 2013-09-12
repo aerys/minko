@@ -19,6 +19,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "VertexBuffer.hpp"
 
+#include "minko/Signal.hpp"
 #include "minko/render/AbstractContext.hpp"
 
 using namespace minko;
@@ -26,7 +27,10 @@ using namespace minko::render;
 
 VertexBuffer::VertexBuffer(std::shared_ptr<AbstractContext> context) :
 	AbstractResource(context),
-	_vertexSize(0)
+	std::enable_shared_from_this<VertexBuffer>(),
+	_data(),
+	_vertexSize(0),
+	_vertexSizeChanged(Signal<Ptr, int>::create())
 {
 }
 
@@ -36,7 +40,8 @@ VertexBuffer::VertexBuffer(std::shared_ptr<AbstractContext>	context,
 						   const unsigned int				offset) :
 	AbstractResource(context),
 	_data(data + offset, data + offset + size),
-	_vertexSize(0)
+	_vertexSize(0),
+	_vertexSizeChanged(Signal<Ptr, int>::create())
 {
 	upload();
 }
@@ -46,7 +51,8 @@ VertexBuffer::VertexBuffer(std::shared_ptr<AbstractContext>		context,
 						   std::vector<float>::const_iterator	end) :
 	AbstractResource(context),
 	_data(begin, end),
-	_vertexSize(0)
+	_vertexSize(0),
+	_vertexSizeChanged(Signal<Ptr, int>::create())
 {
 	upload();
 }
@@ -54,18 +60,24 @@ VertexBuffer::VertexBuffer(std::shared_ptr<AbstractContext>		context,
 VertexBuffer::VertexBuffer(std::shared_ptr<AbstractContext> context, float* begin, float* end) :
 	AbstractResource(context),
 	_data(begin, end),
-	_vertexSize(0)
+	_vertexSize(0),
+	_vertexSizeChanged(Signal<Ptr, int>::create())
 {
 	upload();
 }
 
 void
-VertexBuffer::upload()
+VertexBuffer::upload(uint offset, uint numVertices)
 {
     if (_id == -1)
     	_id = _context->createVertexBuffer(_data.size());
 
-	_context->uploadVertexBufferData(_id, 0, _data.size(), &_data[0]);
+    _context->uploadVertexBufferData(
+    	_id,
+    	offset * _vertexSize,
+    	numVertices = 0 ? _data.size() : numVertices * _vertexSize,
+    	&_data[0]
+    );
 }
 
 void
@@ -77,8 +89,8 @@ VertexBuffer::dispose()
 	    _id = -1;
 
 		_data.clear();
-		_attributes.clear();
-		_vertexSize	= 0;
+		// _attributes.clear();
+		// _vertexSize	= 0;
     }
 }
 
@@ -92,17 +104,32 @@ VertexBuffer::addAttribute(const std::string& 	name,
 
 	_attributes.push_back(VertexBuffer::AttributePtr(new VertexBuffer::Attribute(name, size, offset)));
 
-	_vertexSize += size;
+	vertexSize(_vertexSize + size);
 }
 
 bool
 VertexBuffer::hasAttribute(const std::string& attributeName)
 {
-	for (auto& attr : _attributes)
-		if (std::get<0>(*attr) == attributeName)
-			return true;
+	auto it = std::find_if(_attributes.begin(), _attributes.end(), [&](AttributePtr attr)
+	{
+		return std::get<0>(*attr) == attributeName;
+	});
 
-	return false;
+	return it != _attributes.end();
+}
+
+void
+VertexBuffer::removeAttribute(const std::string& attributeName)
+{
+	auto it = std::find_if(_attributes.begin(), _attributes.end(), [&](AttributePtr attr)
+	{
+		return std::get<0>(*attr) == attributeName;
+	});
+
+	if (it == _attributes.end())
+		throw std::invalid_argument("attributeName = " + attributeName);
+
+	vertexSize(_vertexSize - std::get<1>(**it));
 }
 
 VertexBuffer::AttributePtr
@@ -115,10 +142,11 @@ VertexBuffer::attribute(const std::string& attributeName)
 	throw std::invalid_argument("attributeName = " + attributeName);
 }
 
-uint
-VertexBuffer::numVertices() const
+void
+VertexBuffer::vertexSize(unsigned int value)
 {
-	return _vertexSize > 0
-		? _data.size() / _vertexSize
-		: 0;
+	int offset = value - _vertexSize;
+
+	_vertexSize = value;
+	_vertexSizeChanged->execute(shared_from_this(), offset);
 }

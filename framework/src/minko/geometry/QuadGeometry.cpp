@@ -25,7 +25,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::geometry;
 
-QuadGeometry::QuadGeometry(std::shared_ptr<render::AbstractContext> context)
+void
+QuadGeometry::initialize(std::shared_ptr<render::AbstractContext> context)
 {
     float xyzData[]         = {-.5f, .5f, 0.f, -.5f, -.5f, 0.f, .5f, .5f, 0.f, .5f, -.5f, 0.f};
     unsigned short ind[]    = {0, 1, 2, 2, 1, 3};
