@@ -28,21 +28,25 @@ using namespace minko::render;
 ParticleVertexBuffer::ParticleVertexBuffer(std::shared_ptr<AbstractContext> context) :
 	VertexBuffer(context)
 {
-	resetAttributes();
 }
 
-void 
-ParticleVertexBuffer::update(unsigned int	nParticles,
-							 unsigned int	vertexSize)
-{	
-	unsigned int size = nParticles * vertexSize * 4;
+void
+ParticleVertexBuffer::initialize()
+{
+	addAttribute("offset", 2, 0);
+	addAttribute("position", 3, 2);
+}
+
+// void 
+// ParticleVertexBuffer::update(unsigned int nParticles, unsigned int vertexSize)
+// {	
+// 	unsigned int size = nParticles * vertexSize * 4;
 	
-	_context->uploadVertexBufferData(_id, 0, size, &data()[0]);
-}
+// 	_context->uploadVertexBufferData(_id, 0, size, &data()[0]);
+// }
 
 void 
-ParticleVertexBuffer::resize(unsigned int	nParticles,
-							 unsigned int	vertexSize)
+ParticleVertexBuffer::resize(unsigned int nParticles, unsigned int vertexSize)
 {	
 	std::vector<float>& vsData = data();
 	unsigned int oldSize = vsData.size();

@@ -44,6 +44,13 @@ Geometry::addVertexBuffer(render::VertexBuffer::Ptr vertexBuffer)
 	else if (_numVertexBuffers == 0)
 		_numVertices	= bufNumVertices;
 	++_numVertexBuffers;
+
+	_vbToVertexSizeChangedSlot[vertexBuffer] = vertexBuffer->vertexSizeChanged()->connect(std::bind(
+		&Geometry::vertexSizeChanged,
+		shared_from_this(),
+		std::placeholders::_1,
+		std::placeholders::_2
+	));
 }
 
 void
@@ -62,6 +69,8 @@ Geometry::removeVertexBuffer(const std::string& name)
 	--_numVertexBuffers;
 	if (_numVertexBuffers == 0)
 		_numVertices	= 0;
+
+	_vbToVertexSizeChangedSlot.erase(vertexBuffer);
 }
 
 Geometry::Ptr
@@ -214,4 +223,11 @@ Geometry::computeTangentSpace(bool doNormals)
 	addVertexBuffer(tangentsBuffer);
 
 	return shared_from_this();
+}
+
+void
+Geometry::vertexSizeChanged(VertexBuffer::Ptr vertexBuffer, int offset)
+{
+	std::cout << "Geometry::vertexSizeChanged" << std::endl;
+	_vertexSize += offset;
 }

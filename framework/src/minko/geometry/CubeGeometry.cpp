@@ -24,7 +24,8 @@ using namespace minko::geometry;
 using namespace minko::render;
 using namespace minko::render;
 
-CubeGeometry::CubeGeometry(std::shared_ptr<AbstractContext> context)
+void
+CubeGeometry::initialize(std::shared_ptr<AbstractContext> context)
 {
 	float xyzData[] = {
 		// top

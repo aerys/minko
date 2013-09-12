@@ -60,8 +60,15 @@ namespace minko
 				return _data;
 			}
 
+			inline
 			void
-			upload();
+			upload()
+			{
+				upload(0, 0);
+			}
+
+			void
+			upload(uint offset, uint count = 0);
 
 			void
 			dispose();
