@@ -32,6 +32,8 @@ package aerys.minko.render.resource.texture
 			TEXTURE_FORMAT_TO_SAMPLER[FORMAT_COMPRESSED_ALPHA] 	= SamplerFormat.COMPRESSED_ALPHA;
 		}
 		
+		private var _name 			: String = "";
+		
 		private var _texture		: Texture;
 		private var _mipmap			: Boolean;
 
@@ -49,6 +51,16 @@ package aerys.minko.render.resource.texture
 		
 		private var _contextLost	: Signal = new Signal("TextureResource.contextLost");
 		
+		public function get name():String
+		{
+			return _name;
+		}
+
+		public function set name(value:String):void
+		{
+			_name = value;
+		}
+
 		public function get contextLost():Signal
 		{
 			return _contextLost;
