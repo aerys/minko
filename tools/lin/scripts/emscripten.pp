@@ -148,7 +148,7 @@ class emscripten {
         ]
     }
 
-    exec { "/home/vagrant/src/minko-cpp/tools/lin/bin/premake4 --platform=emscripten gmake":
+    exec { "/home/vagrant/src/minko-cpp/tools/lin/bin/premake4.sh --platform=emscripten gmake":
         alias => "configure",
         logoutput => true,
         cwd => "/home/vagrant/src/minko-cpp",
