@@ -140,7 +140,7 @@ renderScene()
 			cameraTransform->prependTranslation(0.0f, 0.0f, speed);
 
 		// look around
-		eye = cameraTransform->translationVector();
+		eye = cameraTransform->translation();
 
 		target->setTo(
 			eye->x() + sinf(rotationY) * cosf(rotationX),
@@ -150,7 +150,7 @@ renderScene()
 		
 		cameraTransform->view(eye, target, Vector3::upAxis());
 		
-		auto newEyePos = cameraTransform->translationVector();
+		auto newEyePos = cameraTransform->translation();
 		
 		cameraTransform->appendTranslation(
 			eye->x() - newEyePos->x(),
