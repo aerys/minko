@@ -17,6 +17,7 @@ struct PointLight
 	vec3 color;
 	float diffuse;
 	float specular;
+	float attenuationDistance;
 	vec3 position;
 };
 
@@ -25,6 +26,7 @@ struct SpotLight
 	vec3 color;
 	float diffuse;
 	float specular;
+	float attenuationDistance;
 	vec3 position;
 	vec3 direction;
 	float cosInnerConeAngle;
