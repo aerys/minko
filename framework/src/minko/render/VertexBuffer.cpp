@@ -87,11 +87,11 @@ VertexBuffer::dispose()
     {
 	    _context->deleteVertexBuffer(_id);
 	    _id = -1;
-
-		_data.clear();
-		// _attributes.clear();
-		// _vertexSize	= 0;
     }
+
+	_data.clear();
+	// _attributes.clear();
+	// _vertexSize	= 0;
 }
 
 void
