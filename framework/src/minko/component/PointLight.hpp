@@ -34,14 +34,15 @@ namespace minko
 			typedef std::shared_ptr<PointLight> Ptr;
 	
 		private:
+			float							_attenuationDistance;
 			std::shared_ptr<math::Vector3>	_worldPosition;
 
 		public:
 			inline static
 			Ptr
-			create()
+			create(float attenuationDistance = -1.0f)
 			{
-				auto light = std::shared_ptr<PointLight>(new PointLight());
+				auto light = std::shared_ptr<PointLight>(new PointLight(attenuationDistance));
 
 				light->initialize();
 
@@ -52,12 +53,29 @@ namespace minko
 		    {
 		    }
 
+			inline
+			bool
+			attenuationEnabled() const
+			{
+				return !(attenuationDistance() < 0.0f);
+			}
+
+			inline
+			float 
+			attenuationDistance() const
+			{
+				return _attenuationDistance;
+			}
+
+			void
+			attenuationDistance(float);
+
 		protected:
 			void
             updateModelToWorldMatrix(std::shared_ptr<math::Matrix4x4> modelToWorld);
 
 		private:
-			PointLight();
+			PointLight(float attenuationDistance);
 		};
 	}
 }
