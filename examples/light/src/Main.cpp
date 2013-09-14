@@ -50,9 +50,14 @@ int main(int argc, char** argv)
 		->geometry("sphere", sphereGeometry)
 		->queue("texture/box.png")
 		->queue("texture/normalmap-cells.png")
+		//->queue("texture/normalmap-squares.png")
+		//->queue("texture/specularmap-squares.png")
 		->queue("effect/Phong.effect");
+
 #ifdef DEBUG
     sceneManager->assets()->defaultOptions()->includePaths().insert("bin/debug");
+#else
+	sceneManager->assets()->defaultOptions()->includePaths().insert("bin/release");
 #endif
 
 	const float boxScale = 3.0f;
@@ -123,6 +128,8 @@ int main(int argc, char** argv)
 				->set("material.diffuseColor",	Vector4::create(0.f, 0.f, 1.f, 1.f))
 				->set("material.diffuseMap",	assets->texture("texture/box.png"))
 				->set("material.normalMap",		assets->texture("texture/normalmap-cells.png"))
+				//->set("material.normalMap",		assets->texture("texture/normalmap-squares.png"))
+				//->set("material.specularMap",	assets->texture("texture/specularmap-squares.png"))
 				->set("material.shininess",		32.f),
 			assets->effect("effect/Phong.effect")
 		));
