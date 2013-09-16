@@ -24,6 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Signal.hpp"
 #include "minko/render/Blending.hpp"
 #include "minko/data/Container.hpp"
+#include "minko/render/ProgramInputs.hpp"
 
 namespace minko
 {
@@ -40,6 +41,9 @@ namespace minko
             typedef std::shared_ptr<data::Container>    ContainerPtr;
 
 		private:
+			static const unsigned int									MAX_NUM_TEXTURES;
+			static const unsigned int									MAX_NUM_VERTEXBUFFERS;
+
             static SamplerState                                         _defaultSamplerState;
 
 			std::shared_ptr<Program>									_program;
@@ -119,6 +123,18 @@ namespace minko
 			void
             bind(ContainerPtr data, ContainerPtr rootData);
 
+			ProgramInputs::Type
+			bindProperty(const std::string& name, int vertexBufferId = -1, int textureId = -1);
+
+			void
+			bindVertexAttribute(const std::string& name, int vertexBufferId);
+
+			void
+			bindTextureSampler2D(const std::string& name, int textureId);
+
+			void
+			bindUniform(const std::string& name);
+
             void
 			bindStates();
 
@@ -134,7 +150,9 @@ namespace minko
                 if (_rootData->hasProperty(propertyName))
                     return _rootData->get<T>(propertyName);
 
-                throw;
+				std::stringstream stream;
+				stream << "failed to find property \'" << propertyName << "' in drawcall's providers." << std::endl;
+				throw std::logic_error(stream.str());
             }
 
 			template <typename T>
