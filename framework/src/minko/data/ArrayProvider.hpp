@@ -69,7 +69,10 @@ namespace minko
 			ArrayProvider(const std::string& name, uint index);
 
 			std::string
-			formatPropertyName(const std::string& propertyName);
+			formatPropertyName(const std::string& name) const;
+
+			const std::string&
+			getPreformattedPropertyName(const std::string& propertyName);
 		};
 	}
 }
