@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Signal.hpp"
 #include "minko/file/AbstractParser.hpp"
 #include "minko/file/EffectParser.hpp"
-#include "minko/file/APKLoader.hpp"
+#include "minko/file/Loader.hpp"
 
 namespace minko
 {
@@ -140,11 +140,47 @@ namespace minko
 		    Ptr
 		    queue(const std::string& filename, std::shared_ptr<file::Options> options = nullptr);
 
-		    Ptr
+		    template <typename T>
+		    typename std::enable_if<std::is_base_of<file::AbstractLoader, T>::value, Ptr>::type
+		    load(const std::string& filename, std::shared_ptr<file::Options> options = nullptr)
+                    {
+                        queue(filename, options);
+                        load<T>();
+
+                        return shared_from_this();
+                    }
+
+                    Ptr
 		    load(const std::string& filename, std::shared_ptr<file::Options> options = nullptr);
 
-		    Ptr
-		    load();
+		    template <typename T>
+		    typename std::enable_if<std::is_base_of<file::AbstractLoader, T>::value, Ptr>::type
+		    load()
+                    {
+                        std::list<std::string> queue = _filesQueue;
+
+                        for (auto& filename : queue)
+                        {
+                            if (_filenameToLoader.count(filename) == 0)
+                            {
+                                auto loader = T::create();
+
+                                _filenameToLoader[filename] = loader;
+                                _loaderSlots.push_back(loader->error()->connect(std::bind(
+                                                &AssetLibrary::loaderErrorHandler, shared_from_this(), std::placeholders::_1
+                                                )));
+                                _loaderSlots.push_back(loader->complete()->connect(std::bind(
+                                                &AssetLibrary::loaderCompleteHandler, shared_from_this(), std::placeholders::_1
+                                                )));
+                                loader->load(filename, _defaultOptions);
+                            }
+                        }
+
+                        return shared_from_this();
+                    }
+
+                    Ptr
+                    load();
 
 		    AbsParserPtr
 		    parser(std::string extension);
