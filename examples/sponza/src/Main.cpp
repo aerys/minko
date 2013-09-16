@@ -78,8 +78,8 @@ SDLMouseMoveHandler(SDL_Window* window)
 		return;
 	}
 
-	rotationY += (mousePositionX - x) * .005;
-	rotationX += (mousePositionY - y) * .005;
+	rotationY += (mousePositionX - x) * .0005;
+	rotationX += (mousePositionY - y) * .0005;
 
 	const float limit = 89 * PI / 180;
 
