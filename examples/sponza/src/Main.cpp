@@ -16,7 +16,6 @@
 #endif
 #include "SDL2/SDL.h"
 
-#include "minko/component/SponzaLighting.hpp"
 #include "minko/component/Fire.hpp"
 
 using namespace minko;
@@ -27,16 +26,15 @@ const float WINDOW_WIDTH		= 1024.0f;
 const float WINDOW_HEIGHT		= 500.0f;
 
 const std::string MK_NAME			= "model/Sponza_lite_sphere.mk";
-const std::string DEFAULT_EFFECT	= "effect/SponzaLighting.effect";
 const std::string CAMERA_NAME		= "camera";
 
 const float CAMERA_LIN_SPEED	= 0.05f;
 const float CAMERA_ANG_SPEED	= PI * 2.f / 180.0f;
 const float CAMERA_MASS			= 50.0f;
 const float CAMERA_FRICTION		= 0.6f;
+const float CAMERA_SENSITIVITY	= 0.0005f;
 
 Renderer::Ptr			renderer			= nullptr;
-auto					sponzaLighting		= SponzaLighting::create();
 auto					mesh				= scene::Node::create("mesh");
 auto					group				= scene::Node::create("group");
 auto					camera				= scene::Node::create("camera");
@@ -50,6 +48,7 @@ float					mousePositionY		= 0.0f;
 Vector3::Ptr			target				= Vector3::create();
 Vector3::Ptr			eye					= Vector3::create();
 bullet::Collider::Ptr	cameraCollider		= nullptr;
+std::vector<component::PointLight::Ptr>	pointLights;
 
 #if defined EMSCRIPTEN
 render::WebGLContext::Ptr       context;
@@ -78,8 +77,8 @@ SDLMouseMoveHandler(SDL_Window* window)
 		return;
 	}
 
-	rotationY += (mousePositionX - x) * .0005;
-	rotationX += (mousePositionY - y) * .0005;
+	rotationY += (mousePositionX - x) * CAMERA_SENSITIVITY;
+	rotationX += (mousePositionY - y) * CAMERA_SENSITIVITY;
 
 	const float limit = 89 * PI / 180;
 
@@ -404,6 +403,95 @@ initializePhysics()
 }
 
 void
+initializeLighting()
+{
+	// lights settings
+	const float			ambient			= 1.0f;
+	auto				ambientColor	= math::Vector3::create(0.25f, 0.12f, 0.0f);
+
+	const unsigned int	numPointLights	= 4;
+	const float			diffuse			= 1.0f;// 1.0f/(float)numPointLights;
+	const float			specular		= 1.0f; //1.0f/(float)numPointLights;
+	auto				pointColor		= math::Vector3::create(1.0f, 0.7f, 0.5f);
+	const float			minx			= -3.14f;
+	const float			maxx			= 2.45f;
+	const float			y				= 0.65f;
+	const float			minz			= -1.1f;
+	const float			maxz			= 0.7f;
+
+	// ambient light
+	auto ambientLight		= component::AmbientLight::create();
+	ambientLight->ambient(ambient);
+	ambientLight->color()->copyFrom(ambientColor);
+
+	auto ambientLightNode	= scene::Node::create("ambient_light");
+	ambientLightNode->addComponent(ambientLight);
+	root->addChild(ambientLightNode);
+
+	// point lights
+	pointLights.clear();
+	pointLights.resize(numPointLights, nullptr);
+	for (unsigned int i = 0; i < numPointLights; ++i)
+	{
+		pointLights[i]	= component::PointLight::create();
+		pointLights[i]->diffuse(diffuse);
+		pointLights[i]->specular(specular);
+		pointLights[i]->color()->copyFrom(pointColor);
+		pointLights[i]->attenuationDistance(2.0f);
+
+		auto transform	= component::Transform::create();
+		transform->transform()->identity()
+			->appendTranslation(
+			(i >> 1) & 0x1 != 0 ? maxx : minx,
+			y,
+			i & 0x1 != 0 ? maxz : minz
+		);
+
+#ifdef DEBUG
+		std::cout << "point light at (" << transform->transform()->translation()->x() << ", " 
+			<< transform->transform()->translation()->y() << ", " 
+			<< transform->transform()->translation()->z() << ")" 
+			<< std::endl;
+#endif //DEBUG
+
+		std::stringstream sstr;
+		sstr << "point_light_" << i;
+		
+		auto pointLightNode = scene::Node::create(sstr.str());
+		pointLightNode->addComponent(pointLights[i]);
+		pointLightNode->addComponent(transform);
+		root->addChild(pointLightNode);
+	}
+}
+
+void
+updateLighting(clock_t startTime)
+{
+	static const float minAttenuation = 2.0f;
+	static const float maxAttenuation = 3.0f;
+
+	static std::vector<float> offsets;
+	if (offsets.empty())
+	{
+		offsets.resize(pointLights.size());
+		for (unsigned int i = 0; i < pointLights.size(); ++i)
+			offsets[i] = 5.0 * rand() / (float)RAND_MAX;
+	}
+
+	const float time = (clock() - startTime)/(float)CLOCKS_PER_SEC;
+
+	for (unsigned int i = 0; i < pointLights.size(); ++i)
+	{
+		const float t			= offsets[i] + time;
+		const float weight		= 0.5f + 0.25f * (sinf(20.0f*t) + sinf(75.0f*t));
+		const float attenuation	= (1.0f - weight) * minAttenuation + weight * maxAttenuation;
+
+		pointLights[i]->attenuationDistance(attenuation);
+	}
+}
+
+
+void
 printFramerate(const unsigned int delay = 1)
 {
 	static auto start = time(NULL);
@@ -472,30 +560,36 @@ main(int argc, char** argv)
 	
 	// load sponza lighting effect and set it as the default effect
 	sceneManager->assets()
-		->load("effect/SponzaLighting.effect")
+		->load("effect/Phong.effect")
+		->load("effect/SponzaPhong.effect")
 		->load("effect/Basic.effect");
-	sceneManager->assets()->defaultOptions()->effect(sceneManager->assets()->effect("effect/SponzaLighting.effect"));
+	sceneManager->assets()->defaultOptions()->effect(sceneManager->assets()->effect("effect/SponzaPhong.effect"));
 
 	// load other assets
 	sceneManager->assets()
 		->queue("texture/firefull.jpg")
 		->queue("effect/Particles.effect")
 		->queue(MK_NAME);
-	
+
 	sceneManager->assets()->defaultOptions()->generateMipmaps(true);
 
 	renderer = Renderer::create();
 
 	initializePhysics();
-	
+
+	// light nodes
+	const clock_t							startTime	= clock();
+	std::vector<component::PointLight::Ptr>	pointLights;
+
 	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
 	{
 		scene::Node::Ptr mk = assets->node(MK_NAME);
 		initializeCamera(mk);
 
+		initializeLighting();
+
 		root->addChild(group);
 		root->addComponent(sceneManager);
-		root->addComponent(sponzaLighting);
 
 		group->addComponent(Transform::create());
 		group->addChild(mk);
@@ -592,8 +686,7 @@ main(int argc, char** argv)
 		}
 
 		sceneManager->nextFrame();
-
-		sponzaLighting->step();
+		updateLighting(startTime);
 		renderer->render();
 
 		SDL_GL_SwapWindow(window);
