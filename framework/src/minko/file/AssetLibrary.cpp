@@ -21,7 +21,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/scene/Node.hpp"
 #include "minko/file/AbstractLoader.hpp"
-#include "minko/file/Loaderfactory.hpp"
 #include "minko/file/Options.hpp"
 #include "minko/file/AbstractParser.hpp"
 #include "minko/file/EffectParser.hpp"
@@ -162,35 +161,13 @@ AssetLibrary::queue(const std::string& filename, std::shared_ptr<file::Options> 
 AssetLibrary::Ptr
 AssetLibrary::load(const std::string& filename, std::shared_ptr<file::Options> options)
 {
-	queue(filename, options);
-	load();
-
-	return shared_from_this();
+	load<file::Loader>(filename, options);
 }
 
 AssetLibrary::Ptr
 AssetLibrary::load()
 {
-	std::list<std::string> queue = _filesQueue;
-
-	for (auto& filename : queue)
-	{
-		if (_filenameToLoader.count(filename) == 0)
-		{
-			auto loader = file::Loaderfactory::create();
-
-			_filenameToLoader[filename] = loader;
-			_loaderSlots.push_back(loader->error()->connect(std::bind(
-				&AssetLibrary::loaderErrorHandler, shared_from_this(), std::placeholders::_1
-			)));
-			_loaderSlots.push_back(loader->complete()->connect(std::bind(
-				&AssetLibrary::loaderCompleteHandler, shared_from_this(), std::placeholders::_1
-			)));
-			loader->load(filename, _defaultOptions);
-		}
-	}
-
-	return shared_from_this();
+    return load<file::Loader>();
 }
 
 void
