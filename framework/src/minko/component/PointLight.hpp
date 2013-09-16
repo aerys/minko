@@ -34,7 +34,7 @@ namespace minko
 			typedef std::shared_ptr<PointLight> Ptr;
 	
 		private:
-			float							_attenuationDistance;
+			math::Vector2::Ptr				_attenuationDistance;
 			std::shared_ptr<math::Vector3>	_worldPosition;
 
 		public:
@@ -64,7 +64,7 @@ namespace minko
 			float 
 			attenuationDistance() const
 			{
-				return _attenuationDistance;
+				return _attenuationDistance->x();
 			}
 
 			void
