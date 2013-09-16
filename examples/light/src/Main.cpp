@@ -9,6 +9,9 @@ using namespace minko;
 using namespace minko::component;
 using namespace minko::math;
 
+uint g_frameId = 0;
+component::SpotLight::Ptr g_spotLight = nullptr;
+
 void
 printFramerate(const unsigned int delay = 1)
 {
@@ -98,9 +101,9 @@ int main(int argc, char** argv)
 		root->addChild(pointLightNode);
 		 
 		// setup spot light
-		auto spotLight	= component::SpotLight::create(0.05f*PI, 0.075f*PI);
-		spotLight->color()->setTo(0.8f, 0.8f, 0.0f);
-		spotLightNode->addComponent(spotLight);
+		/*auto spotLight*/ g_spotLight	= component::SpotLight::create(0.05f*PI, 0.075f*PI);
+		g_spotLight->color()->setTo(0.8f, 0.8f, 0.0f);
+		spotLightNode->addComponent(g_spotLight);
 		spotLightNode->addComponent(Transform::create());
 		spotLightNode->component<Transform>()->transform()
 			->lookAt(Vector3::zero(), Vector3::create(0.0f, 5.0f, 0.0f), Vector3::create(-1.0, 0.0, 0.0));
