@@ -100,32 +100,51 @@ namespace minko
 			}
 
 		public:
+
+			inline
+			bool
+			hasName(const std::string& name) const
+			{
+				return _nameToType.find(name) != _nameToType.end();
+			}
+
 			inline
 			const std::vector<std::string>&
-			names()
+			names() const
 			{
 				return _names;
 			}
 
 			inline
 			const std::vector<Type>&
-			types()
+			types() const
 			{
 				return _types;
 			}
 
 			inline
 			const std::vector<unsigned int>&
-			locations()
+			locations() const
 			{
 				return _locations;
 			}
 
 			inline
 			const int
-			location(const std::string& name)
+			location(const std::string& name) const
 			{
-				return _nameToLocation.count(name) ? _nameToLocation[name] : -1;
+				auto foundLocationIt = _nameToLocation.find(name);
+
+				return foundLocationIt != _nameToLocation.end() ? (int)foundLocationIt->second : -1;
+			}
+
+			inline
+			const Type
+			type(const std::string& name) const
+			{
+				auto foundTypeIt = _nameToType.find(name);
+
+				return foundTypeIt != _nameToType.end() ? foundTypeIt->second : Type::unknown;
 			}
 
 		private:
@@ -134,6 +153,7 @@ namespace minko
 			std::vector<std::string>						_names;
 			std::vector<Type> 								_types;
 			std::vector<unsigned int>						_locations;
+			std::unordered_map<std::string, Type>			_nameToType;
 			std::unordered_map<std::string, unsigned int>	_nameToLocation;
 
 		private:
@@ -146,10 +166,21 @@ namespace minko
 				_program(program),
 				_names(names),
 				_types(types),
-				_locations(locations)
+				_locations(locations),
+				_nameToType(),
+				_nameToLocation()
 			{
-				for (unsigned int i = 0; i < _locations.size(); ++i)
-					_nameToLocation[names[i]] = locations[i];
+#ifdef DEBUG
+				if (_types.size() != _names.size() || _locations.size() != _names.size())
+					throw;
+#endif // DEBUG
+
+				for (unsigned int i = 0; i < _names.size(); ++i)
+				{
+					const std::string& name = _names[i];
+					_nameToType[name]		= _types[i];
+					_nameToLocation[name]	= _locations[i];
+				}
 			}
 		};
 	}
