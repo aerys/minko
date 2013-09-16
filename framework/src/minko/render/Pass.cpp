@@ -28,6 +28,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::render;
 
+/*static*/ const unsigned int Pass::MAX_NUM_BINDINGS = 32;
+
 Pass::Pass(const std::string&				name,
 		   std::shared_ptr<render::Program>	program,
 		   const data::BindingMap&			attributeBindings,
@@ -41,7 +43,9 @@ Pass::Pass(const std::string&				name,
 	_uniformBindings(uniformBindings),
 	_stateBindings(stateBindings),
 	_macroBindings(macroBindings),
-    _states(states)
+    _states(states),
+	_signatureToProgram(),
+	_signatureToMacroValues()
 {
 }
 
@@ -57,12 +61,18 @@ Pass::selectProgram(std::shared_ptr<data::Container> data,
 		program = _programTemplate;
 	else
 	{
-		auto signature	= buildSignature(data, rootData);
+		unsigned int		signatureMask	= 0;
+		std::vector<int>	signatureValues;
+		buildSignature(data, 
+					   rootData, 
+					   signatureMask, 
+					   signatureValues);
 
-		program = _signatureToProgram[signature];
+		program = _signatureToProgram[signatureMask];
 
 		// this instance does not exist... yet!
-		if (!program)
+		bool createPass = (program == nullptr || signatureValuesChanged(signatureMask, signatureValues));
+		if (createPass)
 		{
 			std::string defines = "";
 			uint i = 0;
@@ -70,15 +80,16 @@ Pass::selectProgram(std::shared_ptr<data::Container> data,
 			// create shader header with #defines
 			for (auto& macroBinding : _macroBindings)
             {
-				if (signature & (1 << i++))
+				if (signatureMask & (1 << i))
 				{
-					auto& propertyName = macroBinding.second;
+					const auto& propertyName = macroBinding.second;
 					auto& container = data->hasProperty(propertyName) ? data : rootData;
 
 					defines += "#define " + macroBinding.first;
 					if (container->propertyHasType<int>(propertyName))
 					{
-						defines += " " + std::to_string(container->get<int>(propertyName));
+						//defines += " " + std::to_string(container->get<int>(propertyName));
+						defines += " " + std::to_string(signatureValues[i]);
 						bindingValues.push_back(propertyName);
 					}
 					else
@@ -86,6 +97,9 @@ Pass::selectProgram(std::shared_ptr<data::Container> data,
 
 					defines += "\n";
 				}
+				++i;
+				if (i == MAX_NUM_BINDINGS)
+					break;
             }
 #ifdef DEBUG
 			std::cout << "macro bindings\n--------------\n" << defines << std::endl;
@@ -106,7 +120,8 @@ Pass::selectProgram(std::shared_ptr<data::Container> data,
 			program = Program::create(_programTemplate->context(), vs, fs);
 
 			// register the program to this signature
-			_signatureToProgram[signature] = program;
+			_signatureToProgram[signatureMask]		= program;
+			_signatureToMacroValues[signatureMask]	= signatureValues; 
 		}
 	}
 
@@ -120,28 +135,65 @@ Pass::selectProgram(std::shared_ptr<data::Container> data,
 	return program;
 }
 
-const unsigned int
-Pass::buildSignature(std::shared_ptr<data::Container> data, std::shared_ptr<data::Container> rootData)
+void
+Pass::buildSignature(std::shared_ptr<data::Container> data, 
+					 std::shared_ptr<data::Container> rootData,
+					 unsigned int& signatureMask,
+					 std::vector<int>& signatureValues) const
 {
-	unsigned int signature = 0;
+	signatureMask = 0;
+	signatureValues.clear();
+	signatureValues.resize(MAX_NUM_BINDINGS, -1);
+
 	unsigned int i = 0;
 
 	for (auto& macroBinding : _macroBindings)
     {
         auto& propertyName = macroBinding.second;
 
-        if (data->hasProperty(propertyName) || rootData->hasProperty(propertyName))
+		const bool dataHasBinding		= data->hasProperty(propertyName);
+		const bool rootDataHasBinding	= rootData->hasProperty(propertyName);
+        if (dataHasBinding || rootDataHasBinding)
 		{
 			// WARNING: we do not support more than 32 macro bindings
-			if (i == 32)
+			if (i == MAX_NUM_BINDINGS)
 				throw;
 
-			signature |= 1 << i;
+			signatureMask |= 1 << i;
 		}
+
+		if (dataHasBinding && data->propertyHasType<int>(propertyName))
+			signatureValues[i] = data->get<int>(propertyName);
+		else if (rootDataHasBinding && rootData->propertyHasType<int>(propertyName))
+			signatureValues[i] = rootData->get<int>(propertyName);
+
         ++i;
     }
+}
 
-	return signature;
+bool
+Pass::signatureValuesChanged(unsigned int signatureMask,
+							 const std::vector<int>& signatureValues) const
+{
+#ifdef DEBUG
+	if (signatureValues.size() != MAX_NUM_BINDINGS)
+		throw std::invalid_argument("signatureValues");
+#endif // DEBUG
+
+	const auto foundValuesIt = _signatureToMacroValues.find(signatureMask);
+
+	if (foundValuesIt == _signatureToMacroValues.end())
+		return true;
+	else
+	{
+		const std::vector<int>& oldSignatureValues	= foundValuesIt->second;
+
+		for (unsigned int i = 0; i < MAX_NUM_BINDINGS; ++i)
+			if (signatureValues[i] != oldSignatureValues[i])
+				return true;
+
+		return false;
+	}
 }
 
 void
