@@ -48,6 +48,20 @@ ParticleVertexBuffer::resize(unsigned int	nParticles,
 	unsigned int oldSize = vsData.size();
 	unsigned int size = nParticles * vertexSize * 4;
 
+	if (oldSize != size)
+	{
+		auto attrs = attributes();
+		
+		dispose();
+		for (auto& attr : attrs)
+		{
+			const std::string&	attrName	= std::get<0>(*attr);
+			unsigned int		attrSize	= std::get<1>(*attr);
+			unsigned int		attrOffset	= std::get<2>(*attr);
+			addAttribute(attrName, attrSize, attrOffset);
+		}
+	}
+
 	vsData.resize(size);
 	for (unsigned int i = 0; i < nParticles; ++i)
 	{
@@ -63,9 +77,6 @@ ParticleVertexBuffer::resize(unsigned int	nParticles,
 		vsData[3 * vertexSize + i * vertexSize * 4] = 0.5;
 		vsData[3 * vertexSize + i * vertexSize * 4 + 1] = 0.5;
 	}
-	
-	if (oldSize != size)
-		dispose();
-	
+
 	upload();
 }

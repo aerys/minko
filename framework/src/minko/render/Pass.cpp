@@ -87,6 +87,9 @@ Pass::selectProgram(std::shared_ptr<data::Container> data,
 					defines += "\n";
 				}
             }
+#ifdef DEBUG
+			std::cout << "macro bindings\n--------------\n" << defines << std::endl;
+#endif // DEBUG
 
 			// for program template by adding #defines
 			auto vs = Shader::create(
