@@ -47,7 +47,7 @@ ArrayProvider::index(unsigned int index)
 bool 
 ArrayProvider::hasProperty(const std::string& propertyName)
 {
-	return _propertyNameToArrayPropertyName.count(propertyName);
+	return _propertyNameToArrayPropertyName.count(propertyName) > 0;
 }
 
 void
@@ -69,7 +69,17 @@ ArrayProvider::registerProperty(const std::string& propertyName, std::shared_ptr
 }
 
 std::string
-ArrayProvider::formatPropertyName(const std::string& propertyName)
+ArrayProvider::formatPropertyName(const std::string& propertyName) const
 {
 	return _name + "[" + std::to_string(_index) + "]." + propertyName;
+}
+
+const std::string&
+ArrayProvider::getPreformattedPropertyName(const std::string& propertyName)
+{
+	// std::unordered_map<string, string>::find() returns corrupted iterators when the property is not found.
+
+	return hasProperty(propertyName)
+		? _propertyNameToArrayPropertyName[propertyName]
+		: propertyName;
 }
