@@ -21,6 +21,9 @@ include 'plugins/png'
 if _OPTIONS["platform"] == "emscripten" then
 	include 'plugins/webgl'
 end
+if _OPTIONS["platform"] == "Android" then
+    include 'plugins/apkLoader/'
+end
 include 'plugins/mk'
 include 'plugins/bullet'
 include 'plugins/particles'

@@ -26,6 +26,8 @@ namespace minko
             std::shared_ptr<Signal<Ptr>>    _error;
 
         public:
+            static Ptr create();
+
             inline
             const std::vector<unsigned char>&
             data()
