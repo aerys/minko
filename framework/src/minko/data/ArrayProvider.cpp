@@ -69,7 +69,18 @@ ArrayProvider::registerProperty(const std::string& propertyName, std::shared_ptr
 }
 
 std::string
-ArrayProvider::formatPropertyName(const std::string& propertyName)
+ArrayProvider::formatPropertyName(const std::string& propertyName) const
 {
 	return _name + "[" + std::to_string(_index) + "]." + propertyName;
+}
+
+const std::string&
+ArrayProvider::getPreformattedPropertyName(const std::string& propertyName)
+{
+	unsigned int count = _propertyNameToArrayPropertyName.count(propertyName);
+	// std::unordered_map<string, string>::find() returns corrupted iterators when the property is not found.
+
+	return count==0
+		? propertyName
+		: _propertyNameToArrayPropertyName[propertyName];
 }
