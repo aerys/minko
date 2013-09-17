@@ -24,11 +24,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/Shader.hpp"
 #include "minko/render/DrawCall.hpp"
 #include "minko/render/States.hpp"
+#include "minko/render/ProgramSignature.hpp"
 
 using namespace minko;
 using namespace minko::render;
-
-/*static*/ const unsigned int Pass::MAX_NUM_BINDINGS = 32;
 
 Pass::Pass(const std::string&				name,
 		   std::shared_ptr<render::Program>	program,
@@ -44,8 +43,7 @@ Pass::Pass(const std::string&				name,
 	_stateBindings(stateBindings),
 	_macroBindings(macroBindings),
     _states(states),
-	_signatureToProgram(),
-	_signatureToMacroValues()
+	_signatureToProgram()
 {
 }
 
@@ -61,19 +59,18 @@ Pass::selectProgram(std::shared_ptr<data::Container> data,
 		program = _programTemplate;
 	else
 	{
-		unsigned int		signatureMask	= 0;
-		std::vector<int>	signatureValues;
-		buildSignature(data, 
-					   rootData, 
-					   signatureMask, 
-					   signatureValues);
+		ProgramSignature signature;
+		signature.build(_macroBindings, data, rootData);
 
-		program = _signatureToProgram[signatureMask];
+		const auto foundProgramIt = _signatureToProgram.find(signature);
 
-		// this instance does not exist... yet!
-		bool createPass = (program == nullptr || signatureValuesChanged(signatureMask, signatureValues));
-		if (createPass)
+		if (foundProgramIt != _signatureToProgram.end())
+			program = foundProgramIt->second;
+		else
 		{
+			const uint				signatureMask	= signature.mask();
+			const std::vector<int>&	signatureValues	= signature.values();
+
 			std::string defines = "";
 			uint i = 0;
 
@@ -98,7 +95,7 @@ Pass::selectProgram(std::shared_ptr<data::Container> data,
 					defines += "\n";
 				}
 				++i;
-				if (i == MAX_NUM_BINDINGS)
+				if (i == signatureValues.size())
 					break;
             }
 #ifdef DEBUG
@@ -120,8 +117,7 @@ Pass::selectProgram(std::shared_ptr<data::Container> data,
 			program = Program::create(_programTemplate->context(), vs, fs);
 
 			// register the program to this signature
-			_signatureToProgram[signatureMask]		= program;
-			_signatureToMacroValues[signatureMask]	= signatureValues; 
+			_signatureToProgram[signature] = program;
 		}
 	}
 
@@ -135,15 +131,15 @@ Pass::selectProgram(std::shared_ptr<data::Container> data,
 	return program;
 }
 
+/*
 void
 Pass::buildSignature(std::shared_ptr<data::Container> data, 
 					 std::shared_ptr<data::Container> rootData,
-					 unsigned int& signatureMask,
-					 std::vector<int>& signatureValues) const
+					 Signature& signature) const
 {
-	signatureMask = 0;
-	signatureValues.clear();
-	signatureValues.resize(MAX_NUM_BINDINGS, -1);
+	signature.first = 0;
+	signature.second.clear();
+	signature.second.resize(MAX_NUM_BINDINGS, -1);
 
 	unsigned int i = 0;
 
@@ -159,42 +155,18 @@ Pass::buildSignature(std::shared_ptr<data::Container> data,
 			if (i == MAX_NUM_BINDINGS)
 				throw;
 
-			signatureMask |= 1 << i;
+			signature.first |= 1 << i;
 		}
 
 		if (dataHasBinding && data->propertyHasType<int>(propertyName))
-			signatureValues[i] = data->get<int>(propertyName);
+			signature.second[i] = data->get<int>(propertyName);
 		else if (rootDataHasBinding && rootData->propertyHasType<int>(propertyName))
-			signatureValues[i] = rootData->get<int>(propertyName);
+			signature.second[i] = rootData->get<int>(propertyName);
 
         ++i;
     }
 }
-
-bool
-Pass::signatureValuesChanged(unsigned int signatureMask,
-							 const std::vector<int>& signatureValues) const
-{
-#ifdef DEBUG
-	if (signatureValues.size() != MAX_NUM_BINDINGS)
-		throw std::invalid_argument("signatureValues");
-#endif // DEBUG
-
-	const auto foundValuesIt = _signatureToMacroValues.find(signatureMask);
-
-	if (foundValuesIt == _signatureToMacroValues.end())
-		return true;
-	else
-	{
-		const std::vector<int>& oldSignatureValues	= foundValuesIt->second;
-
-		for (unsigned int i = 0; i < MAX_NUM_BINDINGS; ++i)
-			if (signatureValues[i] != oldSignatureValues[i])
-				return true;
-
-		return false;
-	}
-}
+*/
 
 void
 Pass::setUniform(const std::string& name, float value)
