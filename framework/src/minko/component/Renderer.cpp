@@ -245,7 +245,7 @@ Renderer::removeSurfaceComponent(std::shared_ptr<Surface> ctrl)
 void
 Renderer::render()
 {
-	_renderingEnd->execute(shared_from_this());
+	_renderingBegin->execute(shared_from_this());
 
 	auto context = _sceneManager->assets()->context();
 
@@ -262,7 +262,7 @@ Renderer::render()
 
 	context->present();
 
-	_renderingBegin->execute(shared_from_this());
+	_renderingEnd->execute(shared_from_this());
 }
 
 bool
