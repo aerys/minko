@@ -24,6 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/Blending.hpp"
 #include "minko/render/CompareMode.hpp"
 #include "minko/render/TriangleCulling.hpp"
+#include "minko/render/ProgramSignature.hpp"
 
 namespace minko
 {
@@ -35,15 +36,12 @@ namespace minko
 			typedef std::shared_ptr<Pass> Ptr;
 
 		private:
- 			typedef std::shared_ptr<Program>							    ProgramPtr;
-            typedef std::unordered_map<std::string, render::SamplerState>   SamplerStatesMap;
-			typedef std::shared_ptr<States>									StatesPtr;
-			typedef std::unordered_map<unsigned int, ProgramPtr>			SignatureProgramsMap;
-			typedef std::unordered_map<unsigned int, std::vector<int>>		SignatureValuesMap;
+ 			typedef std::shared_ptr<Program>							ProgramPtr;
+            typedef std::unordered_map<std::string, SamplerState>		SamplerStatesMap;
+			typedef std::shared_ptr<States>								StatesPtr;
+			typedef std::unordered_map<ProgramSignature, ProgramPtr>	SignatureProgramMap;
 
 		private:
-			static const unsigned int	MAX_NUM_BINDINGS;
-
 			const std::string			_name;
 			ProgramPtr					_programTemplate;
 			data::BindingMap			_attributeBindings;
@@ -51,8 +49,7 @@ namespace minko
 			data::BindingMap			_stateBindings;
 			data::BindingMap			_macroBindings;
             StatesPtr           		_states;
-			SignatureProgramsMap		_signatureToProgram;
-			SignatureValuesMap			_signatureToMacroValues;
+			SignatureProgramMap			_signatureToProgram;
 
 		public:
 			inline static
@@ -145,16 +142,6 @@ namespace minko
 				 const data::BindingMap&			stateBindings,
 				 const data::BindingMap&			macroBindings,
                  std::shared_ptr<States>            states);
-
-			void
-			buildSignature(std::shared_ptr<data::Container> data, 
-						   std::shared_ptr<data::Container> rootData,
-						   unsigned int& signatureMask,
-						   std::vector<int>& signatureValues) const;
-
-			bool
-			signatureValuesChanged(unsigned int signatureMask,
-								   const std::vector<int>& newSignatureValues) const;
 		};
 	}
 }
