@@ -133,8 +133,7 @@ package aerys.minko.scene.node.light
 								   shadowZNear			: Number	= 0.1,
 								   shadowZFar			: Number	= 1000.,
                                    shadowBias           : Number    = 1. / 256. / 256.,
-								   shadowColor			: uint		= 0x0,
-								   shadowStrength		: Number	= 1)
+								   shadowColor			: uint		= 0x0)
 		{
 			super(
 				new PointLightController(),
@@ -153,7 +152,6 @@ package aerys.minko.scene.node.light
 			this.shadowZFar		    	= shadowZFar;
             this.shadowBias             = shadowBias;
 			this.shadowColor			= shadowColor;
-			this.shadowStrength			= shadowStrength;
 		}
 		
 		override minko_scene function cloneNode() : AbstractSceneNode

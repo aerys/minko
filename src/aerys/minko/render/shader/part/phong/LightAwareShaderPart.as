@@ -222,17 +222,19 @@ package aerys.minko.render.shader.part.phong
 			);
 		}
 		
-		private function hexToRGB(v:uint, s:Number = 1):SFloat {
-			return float3((1-((v >> 16) & 0xFF) /255) * s ,(1- ((v >> 8) & 0xFF) /255) * s, (1-(v & 0xFF) /255) * s );
-		}
-		
-		protected function coloredShadow(lightId : uint, shadow : SFloat):SFloat {
-			var shadowColor:uint = getLightProperty(lightId, 'shadowColor', 0);
-			var shadowStrength:Number = getLightProperty(lightId, 'shadowStrength', 1);
-			if (shadowColor || shadowStrength < 1)
-				return subtract(1, multiply(hexToRGB(shadowColor,shadowStrength), subtract(1, shadow)));
-			else	
-				return shadow;
+		protected function coloredShadow(lightId : uint, shadow : SFloat) : SFloat 
+		{
+			if (lightPropertyExists(lightId, 'shadowColor'))
+			{
+				var shadowColorRGBA	: SFloat = getLightParameter(lightId, 'shadowColor', 4);
+				var shadowColor 	: SFloat = shadowColorRGBA.rgb;
+				
+				shadowColor = subtract(float3(1, 1, 1), shadowColor);
+				
+				return subtract(1, multiply(shadowColor, subtract(1, shadow)));
+			}
+			
+			return shadow;
 		}
 	}
 }
