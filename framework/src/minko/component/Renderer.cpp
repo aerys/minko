@@ -227,10 +227,6 @@ Renderer::addSurfaceComponent(std::shared_ptr<Surface> ctrl)
 void
 Renderer::removeSurfaceComponent(std::shared_ptr<Surface> ctrl)
 {
-#ifdef __GNUC__
-  // Temporary non-fix for GCC missing feature N2350: http://gcc.gnu.org/onlinedocs/libstdc++/manual/status.html
-#else
-
 	auto ctrlDrawCalls	= _surfaceDrawCalls.find(ctrl);
 	if (ctrlDrawCalls == _surfaceDrawCalls.end())
 		return;
@@ -238,8 +234,6 @@ Renderer::removeSurfaceComponent(std::shared_ptr<Surface> ctrl)
 	for (auto drawCall : ctrlDrawCalls->second)
 		_drawCalls.remove(drawCall);
 	_surfaceDrawCalls.erase(ctrlDrawCalls);
-
-#endif
 }
 
 void
@@ -257,7 +251,7 @@ Renderer::render()
 	);
 
     _drawCalls.sort(&Renderer::compareDrawCalls);
-	for (auto drawCall : _drawCalls)
+	for (auto& drawCall : _drawCalls)
 		drawCall->render(context);
 
 	context->present();
