@@ -117,8 +117,6 @@ package aerys.minko.render.shader.part.phong.attenuation
 				noShadows.scaleBy(1 / (2 * numSamples + 1));
 			}
 			
-			//return noShadows.x;
-			
 			var insideShadow 	: SFloat = multiply(multiply(lessThan(uv.x, 1), greaterThan(uv.x, 0)), multiply(lessThan(uv.y, 1), greaterThan(uv.y, 0)));
 			var outsideShadow	: SFloat = subtract(1, insideShadow);
 			
