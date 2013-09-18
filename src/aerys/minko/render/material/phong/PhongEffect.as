@@ -147,7 +147,7 @@ package aerys.minko.render.material.phong
                 
                 if (getLightProperty(sceneBindings, lightId, 'diffuseEnabled'))
                     passes.push(
-                        new PhongAdditionalShader(lightId, true, false, _diffuseRenderTarget, _id + .5)
+                        new PhongAdditionalShader(lightId, true, false, _diffuseRenderTarget, _id + .7)
                     );
                 
                 if (getLightProperty(sceneBindings, lightId, 'specularEnabled'))
@@ -183,10 +183,11 @@ package aerys.minko.render.material.phong
 			}
             
             if (ambientEnabled)
-                passes.push(new PhongAmbientShader(_diffuseRenderTarget, _id + .75));
+                passes.push(new PhongAmbientShader(_diffuseRenderTarget, _id + .8));
             
-            passes.push(new ZPrepassShader(_diffuseRenderTarget, _id + 1));
-            passes.push(new PhongEmissiveShader(_diffuseRenderTarget.textureResource, _specularRenderTarget.textureResource, null, _id + .25));
+            passes.push(new ZPrepassShader(_diffuseRenderTarget, _id + .9));
+			passes.push(new ZPrepassShader(_specularRenderTarget, _id + .6));
+            passes.push(new PhongEmissiveShader(_diffuseRenderTarget.textureResource, _specularRenderTarget.textureResource, null, _id));
             
             return passes;
 		}

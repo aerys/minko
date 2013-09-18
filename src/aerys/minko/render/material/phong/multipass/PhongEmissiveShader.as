@@ -4,6 +4,7 @@ package aerys.minko.render.material.phong.multipass
     import aerys.minko.render.material.basic.BasicShader;
     import aerys.minko.render.resource.texture.ITextureResource;
     import aerys.minko.render.shader.SFloat;
+    import aerys.minko.type.enum.SamplerFiltering;
     
     public class PhongEmissiveShader extends BasicShader
     {
@@ -42,7 +43,7 @@ package aerys.minko.render.material.phong.multipass
                 var lighting : SFloat = null;
 				
 				if (_diffuseAccumulator)
-					lighting = sampleTexture(getTexture(_diffuseAccumulator), uv);
+					lighting = sampleTexture(getTexture(_diffuseAccumulator, SamplerFiltering.LINEAR), uv);
 				if (_specularAccumulator)
 				{
 					var specular : SFloat = sampleTexture(getTexture(_specularAccumulator), uv);
