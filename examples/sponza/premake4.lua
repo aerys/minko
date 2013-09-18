@@ -79,10 +79,10 @@ project "minko-example-sponza"
 	configuration { "windows", "x32" }
 		buildoptions { "-std=c++11" }
 		links {
-			"OpenGL32",
+			"libGLESv2",
 			"SDL2",
 			"SDL2main",
-			"glew32"
+			"libEGL"
 		}
 		libdirs {
 			"../../deps/win/lib"

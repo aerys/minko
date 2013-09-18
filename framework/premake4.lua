@@ -50,7 +50,7 @@ project "minko-framework"
 
 	-- windows
 	configuration { "windows", "x32" }
-		links { "glew32" }
+		links { "libGLESv2", "libEGL" }
 		includedirs { "../deps/win/include" }
 		libdirs { "../deps/win/lib" }
 
