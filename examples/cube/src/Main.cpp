@@ -21,7 +21,8 @@ int main(int argc, char** argv)
 		"Minko - Cube Example",
 		SDL_WINDOWPOS_UNDEFINED,
 		SDL_WINDOWPOS_UNDEFINED,
-		800, 600, SDL_WINDOW_OPENGL
+		800, 600,
+		SDL_WINDOW_OPENGL
 	);
 
 	SDL_GLContext glcontext = SDL_GL_CreateContext(window);
