@@ -1,5 +1,6 @@
 package aerys.minko.render.shader.part
 {
+	import aerys.minko.render.geometry.stream.format.VertexComponent;
 	import aerys.minko.render.material.basic.BasicProperties;
 	import aerys.minko.render.shader.SFloat;
 	import aerys.minko.render.shader.Shader;
@@ -35,7 +36,7 @@ package aerys.minko.render.shader.part
 			
 			uv = interpolate(uv);
 			
-			if (meshBindings.propertyExists(BasicProperties.DIFFUSE_MAP))
+			if (meshBindings.propertyExists(BasicProperties.DIFFUSE_MAP) && meshBindings.propertyExists(VertexComponent.UV.nativeFormatString))
 			{
 				var diffuseMap	: SFloat	= meshBindings.getTextureParameter(
 					BasicProperties.DIFFUSE_MAP,

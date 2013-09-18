@@ -28,9 +28,17 @@ package aerys.minko.scene.controller.mesh
 		{
 			return _geometry;
 		}
+		
 		public function set geometry(value : Geometry) : void
 		{
+			if (_geometry && _mesh)
+				_mesh.bindings.removeProvider(_geometry.geometryDataProvider);
+			
 			_geometry = value;
+			
+			if (_mesh)
+				_mesh.bindings.addProvider(_geometry.geometryDataProvider);
+			
 			if (_data)
 				_data.setProperty('geometry', value);
 		}
@@ -75,6 +83,8 @@ package aerys.minko.scene.controller.mesh
 			
             _mesh = target;
             _mesh.scene.renderingBegin.add(sceneRenderingBeginHandler);
+			if (_geometry && !_mesh.bindings.hasProvider(_geometry.geometryDataProvider))
+				_mesh.bindings.addProvider(_geometry.geometryDataProvider);
 		}
         
         private function sceneRenderingBeginHandler(scene			: Scene,
