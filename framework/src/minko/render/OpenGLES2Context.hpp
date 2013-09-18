@@ -43,6 +43,8 @@ namespace minko
 			typedef std::pair<uint, uint>							TextureSize;
 
 		protected:
+			bool									_errorsEnabled;
+
 	        static BlendFactorsMap					_blendingFactors;
 			static DepthFuncsMap					_depthFuncs;
 
@@ -92,6 +94,20 @@ namespace minko
 				return std::shared_ptr<OpenGLES2Context>(new OpenGLES2Context());
 			}
 
+			inline
+			bool
+			errorsEnabled()
+			{
+				return _errorsEnabled;
+			}
+
+			inline
+			void
+			errorsEnabled(bool errorsEnabled)
+			{
+				_errorsEnabled = errorsEnabled;
+			}
+			
             inline
             const std::string&
             driverInfo()
@@ -291,9 +307,8 @@ namespace minko
             checkForErrors()
             {
 #ifdef DEBUG
-                auto error = getError();
-	            if (error != 0)
-                    throw;
+				if (_errorsEnabled && getError() != 0)
+					throw;
 #endif
             }
 
