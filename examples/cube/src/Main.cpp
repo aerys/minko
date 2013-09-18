@@ -17,10 +17,12 @@ int main(int argc, char** argv)
 
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
-	SDL_Window* window = SDL_CreateWindow("Minko - Cube Example",
-			SDL_WINDOWPOS_UNDEFINED,
-			SDL_WINDOWPOS_UNDEFINED,
-			800, 600, SDL_WINDOW_OPENGL);
+	SDL_Window* window = SDL_CreateWindow(
+		"Minko - Cube Example",
+		SDL_WINDOWPOS_UNDEFINED,
+		SDL_WINDOWPOS_UNDEFINED,
+		800, 600, SDL_WINDOW_OPENGL
+	);
 
 	SDL_GLContext glcontext = SDL_GL_CreateContext(window);
 
