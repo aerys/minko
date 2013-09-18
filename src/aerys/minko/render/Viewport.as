@@ -225,7 +225,7 @@ package aerys.minko.render
 								 stage3dId			: uint		= 0,
 								 width				: uint 		= 0,
 								 height				: uint		= 0,
-								 context3DProfile	: String	= Context3DProfile.BASELINE_EXTENDED)
+								 context3DProfile	: String	= Context3DProfile.BASELINE)
 		{
 			_stage3dId = stage3dId;
 			_antiAliasing = antiAliasing;
