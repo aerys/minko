@@ -35,7 +35,7 @@ package aerys.minko.render.material.phong.multipass
         {
             super.initializeSettings(settings);
             
-            settings.blending = Blending.ADDITIVE;
+			settings.blending = Blending.ADDITIVE;
             settings.depthTest = DepthTest.LESS | DepthTest.EQUAL;
         }
         

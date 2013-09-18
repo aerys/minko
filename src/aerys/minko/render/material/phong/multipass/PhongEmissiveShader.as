@@ -4,35 +4,23 @@ package aerys.minko.render.material.phong.multipass
     import aerys.minko.render.material.basic.BasicShader;
     import aerys.minko.render.resource.texture.ITextureResource;
     import aerys.minko.render.shader.SFloat;
-    import aerys.minko.render.shader.ShaderSettings;
-    import aerys.minko.type.enum.BlendingDestination;
-    import aerys.minko.type.enum.BlendingSource;
-    import aerys.minko.type.enum.DepthTest;
     
     public class PhongEmissiveShader extends BasicShader
     {
-        private var _lightAccumulator   : ITextureResource;
+        private var _diffuseAccumulator   	: ITextureResource;
+		private var _specularAccumulator   	: ITextureResource;
         
-        private var _screenPos          : SFloat;
+        private var _screenPos          	: SFloat;
         
-        public function PhongEmissiveShader(lightAccumulator    : ITextureResource,
+        public function PhongEmissiveShader(diffuseAccumulator	: ITextureResource,
+											specularAccumulator : ITextureResource,
                                             renderTarget        : RenderTarget  = null,
                                             priority            : Number        = 0.0)
         {
             super(renderTarget, priority);
             
-            _lightAccumulator = lightAccumulator;
-        }
-        
-        override protected function initializeSettings(settings : ShaderSettings) : void
-        {
-            super.initializeSettings(settings);
-            
-            if (!_lightAccumulator)
-            {
-                settings.blending = BlendingDestination.SOURCE_COLOR | BlendingSource.ZERO;
-                settings.depthTest = DepthTest.LESS | DepthTest.EQUAL;
-            }
+            _diffuseAccumulator = diffuseAccumulator;
+			_specularAccumulator = specularAccumulator;
         }
         
         override protected function getVertexPosition() : SFloat
@@ -44,14 +32,23 @@ package aerys.minko.render.material.phong.multipass
         {
             var diffuse : SFloat = super.getPixelColor();
             
-            if (_lightAccumulator)
+            if (_diffuseAccumulator || _specularAccumulator)
             {
                 var uv : SFloat = interpolate(_screenPos);
                 
                 uv = divide(uv.xy, uv.w);
                 uv = multiply(add(float2(uv.x, negate(uv.y)), 1), .5);
                 
-                var lighting : SFloat = sampleTexture(getTexture(_lightAccumulator), uv);
+                var lighting : SFloat = null;
+				
+				if (_diffuseAccumulator)
+					lighting = sampleTexture(getTexture(_diffuseAccumulator), uv);
+				if (_specularAccumulator)
+				{
+					var specular : SFloat = sampleTexture(getTexture(_specularAccumulator), uv);
+					
+					lighting = lighting ? add(lighting, specular) : specular;
+				}
                 
                 diffuse = float4(multiply(diffuse.rgb, lighting.rgb), diffuse.a);
             }
