@@ -30,7 +30,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 # include <OpenGL/gl.h>
 # include <GLUT/glut.h>
 #elif _WIN32
-# include "GL/glew.h"
+# include "GLES2/gl2.h"
+# include "minko/math/Matrix4x4.hpp"
 #else
 # include <GL/gl.h>
 # include <GL/glu.h>
@@ -89,7 +90,7 @@ OpenGLES2Context::initializeDepthFuncsMap()
 }
 
 OpenGLES2Context::OpenGLES2Context() :
-	_errorsEnabled(false),
+	_errorsEnabled(true),
 	_textures(),
     _textureSizes(),
     _textureHasMipmaps(),
@@ -113,9 +114,6 @@ OpenGLES2Context::OpenGLES2Context() :
     _currentDepthMask(true),
     _currentDepthFunc(CompareMode::UNSET)
 {
-#ifdef _WIN32
-    glewInit();
-#endif
 
 	glEnable(GL_DEPTH_TEST);
     glEnable(GL_BLEND);
@@ -201,7 +199,11 @@ OpenGLES2Context::clear(float 			red,
 	// depth Specifies the depth value used when the depth buffer is cleared. The initial value is 1.
 	//
 	// glClearDepth specify the clear value for the depth buffer
+#ifdef GL_ES_VERSION_2_0
+	glClearDepthf(depth);
+#else
 	glClearDepth(depth);
+#endif
 
 	// http://www.opengl.org/sdk/docs/man/xhtml/glClearStencil.xml
 	//
@@ -492,7 +494,11 @@ OpenGLES2Context::createTexture(unsigned int 	width,
 	// data Specifies a pointer to the image data in memory.
 	//
 	// glTexImage2D specify a two-dimensional texture image
+#ifdef GL_ES_VERSION_2_0
+	auto format = GL_RGBA;
+#else
     auto format = optimizeForRenderToTexture ? GL_BGRA : GL_RGBA;
+#endif
 
 	if (mipMapping)
     {
@@ -756,7 +762,7 @@ OpenGLES2Context::setShaderSource(const unsigned int shader,
     glslopt_shader_delete(optimizedShader);
     glslopt_cleanup(glslOptimizer);
 #else
-    std::string src = "#version 120\n" + source;
+    std::string src = "#version 100\n" + source;
 	const char* sourceString = src.c_str();
 
     glShaderSource(shader, 1, &sourceString, 0);
@@ -1007,7 +1013,20 @@ OpenGLES2Context::setUniform(unsigned int location, float value1, float value2, 
 void
 OpenGLES2Context::setUniform(unsigned int location, unsigned int size, bool transpose, const float* values)
 {
+#ifdef GL_ES_VERSION_2_0
+    if (transpose)
+    {
+        math::Matrix4x4::Ptr tmp = math::Matrix4x4::create()->initialize(std::vector<float>(values, values + 16));
+        tmp->transpose();
+        glUniformMatrix4fv(location, size, false, tmp->values().data());
+    }
+    else
+    {
+        glUniformMatrix4fv(location, size, transpose, values);
+    }
+#else
 	glUniformMatrix4fv(location, size, transpose, values);
+#endif
 }
 
 void
@@ -1151,7 +1170,7 @@ OpenGLES2Context::createRTTBuffers(unsigned int texture, unsigned int width, uns
     // bind renderbuffer
     glBindRenderbuffer(GL_RENDERBUFFER, renderBuffer);
     // init as a depth buffer
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, width, height);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, width, height);
     // attach to the FBO for depth
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, renderBuffer);
 
