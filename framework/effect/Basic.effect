@@ -29,7 +29,7 @@
 	"triangleCulling"	: "back",
 	
 	"samplerStates" : {
-		"diffuseMap"	: { "mipFilter" : "linear" }
+		"diffuseMap"	: { "wrapMode" : "repeat", "mipFilter" : "linear" }
 	},
 	
 	"passes"	: [{	
