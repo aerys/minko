@@ -178,7 +178,9 @@ package aerys.minko.scene.node.light
 								  shadowZFar			: Number	= 1000,
 								  shadowQuality			: uint		= 0,
 								  shadowSpread			: uint		= 1,
-                                  shadowBias            : Number    = 1. / 256. / 256.)
+                                  shadowBias            : Number    = 1. / 256. / 256.,
+								  shadowColor			: uint		= 0x0,
+								  shadowStrength		: Number	= 1)
 		{
 			super(
 				new SpotLightController(),
@@ -200,6 +202,8 @@ package aerys.minko.scene.node.light
 			this.shadowQuality			= shadowQuality;
 			this.shadowSpread	        = shadowSpread;
             this.shadowBias             = shadowBias;
+			this.shadowColor			= shadowColor;
+			this.shadowStrength			= shadowStrength;
 			
 			transform.lookAt(Vector4.Z_AXIS, Vector4.ZERO);
 		}

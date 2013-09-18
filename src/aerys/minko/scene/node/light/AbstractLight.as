@@ -17,6 +17,25 @@ package aerys.minko.scene.node.light
 			return _ctrl.lightData;
 		}
 		
+		public function get shadowStrength() : Number
+		{
+			return lightData.getLightProperty('shadowStrength') as Number;
+		}
+		public function set shadowStrength(v : Number)	: void
+		{
+			v = (v > 1)?1:(v < 0)?0:v;
+			lightData.setLightProperty('shadowStrength', v);
+		}
+		
+		public function get shadowColor() : uint
+		{
+			return lightData.getLightProperty('shadowColor') as uint;
+		}
+		public function set shadowColor(v : uint)	: void
+		{
+			lightData.setLightProperty('shadowColor', v);
+		}
+		
 		public function get color() : uint
 		{
 			return lightData.getLightProperty('color') as uint;
@@ -91,6 +110,8 @@ package aerys.minko.scene.node.light
 			this.color				= color;
 			this.emissionMask		= emissionMask;
 			this.lightBleedingBias 	= 0;
+			this.shadowColor		= 0;
+			this.shadowStrength		= 1;
 		}
 	}
 }
