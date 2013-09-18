@@ -199,7 +199,8 @@ package aerys.minko.type.loader.parser
 			_assets						= assets;
 		}
 		
-		private function defaultDependencyLoaderFunction(dependencyPath	: String,
+		private function defaultDependencyLoaderFunction(dependencyId	: String,
+														 dependencyPath	: String,
 														 isTexture		: Boolean,
 														 options		: ParserOptions) : ILoader
 		{
