@@ -38,7 +38,7 @@ project "minko-example-cube"
 
 	-- linux
 	configuration { "linux" }
-		links { "GL", "GLU", "SDL", "m", "Xrandr", "Xxf86vm", "Xi", "rt", "X11", "pthread" }
+		links { "GL", "GLU", "SDL2", "m", "Xrandr", "Xxf86vm", "Xi", "rt", "X11", "pthread" }
 		libdirs { "../../deps/lin/lib" }
 		includedirs { "../../deps/lin/include" }
 		buildoptions { "-std=c++11" }
@@ -49,7 +49,7 @@ project "minko-example-cube"
 
 	-- windows
 	configuration { "windows", "x32" }
-		links { "OpenGL32", "SDL", "SDLmain", "glew32" }
+		links { "libGLESv2", "SDL2", "SDL2main", "libEGL" }
 		libdirs { "../../deps/win/lib" }
 		includedirs { "../../deps/win/include" }
 		postbuildcommands {
@@ -67,7 +67,7 @@ project "minko-example-cube"
 		linkoptions { "-std=c++11", "-stdlib=libc++" }
 		links {
 			"m",
-			"SDL.framework",
+			"SDL2.framework",
 			"Cocoa.framework",
 			"OpenGL.framework",
 			"IOKit.framework"
