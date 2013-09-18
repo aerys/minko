@@ -25,7 +25,8 @@ package aerys.minko.render.shader.part
 		public function getDiffuseColor(killOnAlphaThreshold : Boolean = true, uv : SFloat = null) : SFloat
 		{
 			var diffuseColor : SFloat	= null;
-			
+			var useVertexUv  : Boolean  = uv == null;
+
             uv ||= vertexUV.xy;
 			
 			if (meshBindings.propertyExists(BasicProperties.UV_SCALE))
@@ -33,8 +34,9 @@ package aerys.minko.render.shader.part
 			
 			if (meshBindings.propertyExists(BasicProperties.UV_OFFSET))
 				uv.incrementBy(meshBindings.getParameter(BasicProperties.UV_OFFSET, 2));
-			
-			uv = interpolate(uv);
+
+			if (useVertexUv)
+				uv = interpolate(uv);
 			
 			if (meshBindings.propertyExists(BasicProperties.DIFFUSE_MAP) && meshBindings.propertyExists(VertexComponent.UV.nativeFormatString))
 			{
