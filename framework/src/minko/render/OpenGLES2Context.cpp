@@ -89,6 +89,7 @@ OpenGLES2Context::initializeDepthFuncsMap()
 }
 
 OpenGLES2Context::OpenGLES2Context() :
+	_errorsEnabled(false),
 	_textures(),
     _textureSizes(),
     _textureHasMipmaps(),
@@ -109,7 +110,7 @@ OpenGLES2Context::OpenGLES2Context() :
     _currentTextureFilter(),
     _currentMipFilter(),
     _currentBlendMode(Blending::Mode::DEFAULT),
-    _currentDepthMask(0xffffffff),
+    _currentDepthMask(true),
     _currentDepthFunc(CompareMode::UNSET)
 {
 #ifdef _WIN32

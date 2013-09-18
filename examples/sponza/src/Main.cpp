@@ -12,11 +12,9 @@
 
 #ifdef EMSCRIPTEN
 #include "minko/MinkoWebGL.hpp"
-#include "GL/glut.h"
 #include "emscripten.h"
-#else
-#include "GLFW/glfw3.h"
 #endif
+#include "SDL2/SDL.h"
 
 #include "minko/component/SponzaLighting.hpp"
 #include "minko/component/Fire.hpp"
@@ -66,111 +64,13 @@ resizeHandler(int width, int height)
 	context->configureViewport(0, 0, width, height);
 }
 
+#endif
 void
-keyDownHandler(int key, int x, int y)
+SDLMouseMoveHandler(SDL_Window* window)
 {
-	std::cout << "keyDownHandler: " << key << std::endl;
-	if (cameraCollider == nullptr)
-	{
-		if (key == GLUT_KEY_UP)
-			camera->component<Transform>()->transform()->prependTranslation(0.f, 0.f, -CAMERA_LIN_SPEED);
-		else if (key == GLUT_KEY_DOWN)
-			camera->component<Transform>()->transform()->prependTranslation(0.f, 0.f, CAMERA_LIN_SPEED);
-		if (key == GLUT_KEY_LEFT)
-			camera->component<Transform>()->transform()->prependRotation(-CAMERA_ANG_SPEED, Vector3::yAxis());
-		else if (key == GLUT_KEY_RIGHT)
-			camera->component<Transform>()->transform()->prependRotation(CAMERA_ANG_SPEED, Vector3::yAxis());
-	}
-	else
-	{
-		if (key == GLUT_KEY_UP)
-			speed = -CAMERA_LIN_SPEED;
-		else if (key == GLUT_KEY_DOWN)
-			speed = CAMERA_LIN_SPEED;
-		if (key == GLUT_KEY_LEFT)
-			angSpeed = CAMERA_ANG_SPEED;
-		else if (key == GLUT_KEY_RIGHT)
-			angSpeed = -CAMERA_ANG_SPEED;
-	}
-}
-
-void
-keyUpHandler(int key, int x, int y)
-{
-	if (key == GLUT_KEY_UP || key == GLUT_KEY_DOWN)
-		speed = 0;
-	if (key == GLUT_KEY_LEFT || key == GLUT_KEY_RIGHT)
-		angSpeed = 0;
-}
-
-void
-glutMouseMoveHandler(int x, int y)
-{
-	rotationY += -(mousePositionX - x) * .005;
-	rotationX +=  (mousePositionY - y) * .005;
-
-	const float limit = 89 * PI / 180;
-
-	if (rotationX < -limit)
-		rotationX = -limit;
-	else if (rotationX > +limit)
-		rotationX = +limit;
-
-	mousePositionX = x;
-	mousePositionY = y;
-}
-
-void
-renderScene()
-{
-	auto cameraTransform = camera->component<Transform>()->transform();
-	if (cameraCollider == nullptr)
-	{
-		if (speed)
-			cameraTransform->prependTranslation(0.f, 0.f, speed);
-		if (angSpeed)
-		    cameraTransform->prependRotationY(angSpeed);
-	}
-	else
-	{
-		// the camera has a collider component
-
-		// move forward/backward
-		if (speed)
-			cameraTransform->prependTranslation(0.0f, 0.0f, speed);
-
-		// look around
-		eye = cameraTransform->translation();
-
-		target->setTo(
-			eye->x() + sinf(rotationY) * cosf(rotationX),
-			eye->y() + sinf(rotationX),
-			eye->z() + cosf(rotationY) * cosf(rotationX)
-		);
-		
-		cameraTransform->view(eye, target, Vector3::upAxis());
-		
-		auto newEyePos = cameraTransform->translation();
-		
-		cameraTransform->appendTranslation(
-			eye->x() - newEyePos->x(),
-			eye->y() - newEyePos->y(),
-			eye->z() - newEyePos->z()
-		);
-		
-		cameraCollider->synchronizePhysicsWithGraphics();
-	}
-
-	sponzaLighting->step();
-	renderer->render();
-
-	glutSwapBuffers();
-}
-#else
-void
-glfwMouseMoveHandler(GLFWwindow* window, double x, double y)
-{
-	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_1) == GLFW_RELEASE)
+	int x;
+	int y;
+	if (!(SDL_GetMouseState(&x, &y) & SDL_BUTTON_LEFT))
 	{
 		mousePositionX = x;
 		mousePositionY = y;
@@ -189,7 +89,55 @@ glfwMouseMoveHandler(GLFWwindow* window, double x, double y)
 		rotationX = +limit;
 
 }
-#endif
+
+void
+SDL_KeyboardHandler(bool collider, std::shared_ptr<Matrix4x4> cameraTransform)
+{
+    if (!collider)
+    {
+	const Uint8* keyboardState = SDL_GetKeyboardState(NULL);
+	if (keyboardState[SDL_SCANCODE_UP] ||
+		keyboardState[SDL_SCANCODE_W] ||
+		keyboardState[SDL_SCANCODE_Z])
+	    cameraTransform->prependTranslation(0.f, 0.f, -CAMERA_LIN_SPEED);
+	else if (keyboardState[SDL_SCANCODE_DOWN] ||
+		keyboardState[SDL_SCANCODE_S])
+	    cameraTransform->prependTranslation(0.f, 0.f, CAMERA_LIN_SPEED);
+	if (keyboardState[SDL_SCANCODE_LEFT] ||
+		keyboardState[SDL_SCANCODE_A] ||
+		keyboardState[SDL_SCANCODE_Q])
+	    cameraTransform->prependRotation(-CAMERA_ANG_SPEED, Vector3::yAxis());
+	else if (keyboardState[SDL_SCANCODE_RIGHT] ||
+		keyboardState[SDL_SCANCODE_D])
+	    cameraTransform->prependRotation(CAMERA_ANG_SPEED, Vector3::yAxis());
+    }
+    else
+    {
+
+	const Uint8* keyboardState = SDL_GetKeyboardState(NULL);
+	if (keyboardState[SDL_SCANCODE_UP] ||
+		keyboardState[SDL_SCANCODE_W] ||
+		keyboardState[SDL_SCANCODE_Z])
+	    // go forward
+	    cameraTransform->prependTranslation(Vector3::create(0.0f, 0.0f, -CAMERA_LIN_SPEED));
+	else if (keyboardState[SDL_SCANCODE_DOWN] ||
+		keyboardState[SDL_SCANCODE_S])
+	    // go backward
+	    cameraTransform->prependTranslation(Vector3::create(0.0f, 0.0f, CAMERA_LIN_SPEED));
+	if (keyboardState[SDL_SCANCODE_LEFT] ||
+		keyboardState[SDL_SCANCODE_A] ||
+		keyboardState[SDL_SCANCODE_Q])
+	    cameraTransform->prependTranslation(-CAMERA_LIN_SPEED, 0.0f, 0.0f);
+	else if (keyboardState[SDL_SCANCODE_RIGHT] ||
+		keyboardState[SDL_SCANCODE_D])
+	    cameraTransform->prependTranslation(CAMERA_LIN_SPEED, 0.0f, 0.0f);
+
+	eye = cameraTransform->translation();
+
+	if (keyboardState[SDL_SCANCODE_SPACE] && eye->y() <= 0.5f)
+	    cameraTransform->prependTranslation(0.0f, 4 * CAMERA_LIN_SPEED, 0.0f);
+    }
+}
 
 template <typename T>
 static
@@ -487,22 +435,17 @@ main(int argc, char** argv)
 		)
 	);
 
-#ifdef EMSCRIPTEN
-	glutInit(&argc, argv);
-	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
-	glutInitWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT);
-	glutCreateWindow("Sponza Example");
-	glutReshapeFunc(resizeHandler);
+	SDL_Init(SDL_INIT_VIDEO);
+	auto window = SDL_CreateWindow("Sponza Example",
+		SDL_WINDOWPOS_UNDEFINED,
+		SDL_WINDOWPOS_UNDEFINED,
+		WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_OPENGL);
+	SDL_GL_CreateContext(window);
 
+#ifdef EMSCRIPTEN
 	std::cout << "WebGL context created" << std::endl;
 	context = render::WebGLContext::create();
 #else
-	glfwInit();
-	auto window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Sponza Example", NULL, NULL);
-	glfwMakeContextCurrent(window);
-	glfwSetCursorPosCallback(window, glfwMouseMoveHandler);
-	// glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-
 	std::cout << "OpenGL ES2 context created" << std::endl;
 	context = render::OpenGLES2Context::create();
 #endif
@@ -588,58 +531,51 @@ main(int argc, char** argv)
 
 	std::cout << "start rendering" << std::endl << std::flush;
 
-#if defined EMSCRIPTEN
-	glutSpecialFunc(keyDownHandler);
-	glutSpecialUpFunc(keyUpHandler);
-	glutMotionFunc(glutMouseMoveHandler);
+	bool done = false;
 
-	emscripten_set_main_loop(renderScene, 0, true);
-#else
-	while (!glfwWindowShouldClose(window))
+	while (!done)
 	{
 		auto cameraTransform = camera->component<Transform>()->transform();
 
 		if (cameraCollider == nullptr)
 		{
-			if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS ||
-				glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS ||
-				glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS)
-				cameraTransform->prependTranslation(0.f, 0.f, -CAMERA_LIN_SPEED);
-			else if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS ||
-					 glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-				cameraTransform->prependTranslation(0.f, 0.f, CAMERA_LIN_SPEED);
-			if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS ||
-				glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS ||
-				glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-				cameraTransform->prependRotation(-CAMERA_ANG_SPEED, Vector3::yAxis());
-			else if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS ||
-					 glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-				cameraTransform->prependRotation(CAMERA_ANG_SPEED, Vector3::yAxis());
+		    SDL_Event event;
+		    while (SDL_PollEvent(&event))
+		    {
+			switch (event.type)
+			{
+			    case SDL_MOUSEMOTION:
+				SDLMouseMoveHandler(window);
+				break;
+			    case SDL_QUIT:
+				done = true;
+				break;
+			    default:
+				break;
+			}
+		    }
+		    SDL_KeyboardHandler(false, cameraTransform);
 		}
 		else
 		{
-
-			if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS ||
-				glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS ||
-				glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS)
-				// go forward
-				cameraTransform->prependTranslation(Vector3::create(0.0f, 0.0f, -CAMERA_LIN_SPEED));
-			else if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS ||
-					 glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-				// go backward
-				cameraTransform->prependTranslation(Vector3::create(0.0f, 0.0f, CAMERA_LIN_SPEED));
-			if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS ||
-				glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS ||
-				glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-				cameraTransform->prependTranslation(-CAMERA_LIN_SPEED, 0.0f, 0.0f);
-			else if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS ||
-					 glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-				cameraTransform->prependTranslation(CAMERA_LIN_SPEED, 0.0f, 0.0f);
-
-			eye = cameraTransform->translation();
-
-			if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && eye->y() <= 0.5f)
-				cameraTransform->prependTranslation(0.0f, 4 * CAMERA_LIN_SPEED, 0.0f);
+			SDL_Event event;
+			while (SDL_PollEvent(&event))
+			{
+			    switch (event.type)
+			    {
+				case SDL_MOUSEMOTION:
+				    SDLMouseMoveHandler(window);
+				    break;
+				case SDL_KEYDOWN:
+				    break;
+				case SDL_QUIT:
+				    done = true;
+				    break;
+				default:
+				    break;
+			    }
+			}
+			SDL_KeyboardHandler(true, cameraTransform);
 
 			// look around
 			eye = cameraTransform->translation();
@@ -654,20 +590,19 @@ main(int argc, char** argv)
 
 			cameraCollider->synchronizePhysicsWithGraphics();
 		}
-		
+
 		sceneManager->nextFrame();
-		
+
 		sponzaLighting->step();
 		renderer->render();
 
-		glfwSwapBuffers(window);
-		glfwPollEvents();
+		SDL_GL_SwapWindow(window);
+		SDL_PumpEvents();
 	}
 
-	glfwDestroyWindow(window);
+	SDL_DestroyWindow(window);
 
-	glfwTerminate();
+	SDL_Quit();
 
 	std::exit(EXIT_SUCCESS);
-#endif
 }
