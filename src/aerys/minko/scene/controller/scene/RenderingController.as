@@ -297,12 +297,14 @@ package aerys.minko.scene.controller.scene
 					backBuffer,
 					previous ? previous.settings : null
 				);
-				
+
 				if (!pass.settings.enabled || !pass.shader.enabled || !calls)
                 {
+				
                     previous = pass;
 					continue;
                 }
+
 				
 				++_numEnabledPasses;
 				
