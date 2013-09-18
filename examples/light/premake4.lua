@@ -49,7 +49,7 @@ project "minko-example-light"
 
 	-- windows
 	configuration { "windows", "x32" }
-		links { "OpenGL32", "glfw3dll", "glew32" }
+		links { "libGLESv2", "glfw3dll", "libEGL" }
 		libdirs { "../../deps/win/lib" }
 		includedirs { "../../deps/win/include" }
 		postbuildcommands {
