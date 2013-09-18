@@ -37,6 +37,14 @@ namespace minko
 			{
 			}
 
+			virtual
+			bool
+			errorsEnabled() = 0;
+
+			virtual
+			void
+			errorsEnabled(bool errorsEnabled) = 0;
+
             virtual
             const std::string&
             driverInfo() = 0;

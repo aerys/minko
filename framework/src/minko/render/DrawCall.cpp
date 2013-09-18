@@ -40,6 +40,8 @@ using namespace minko::render;
 using namespace minko::render;
 
 SamplerState DrawCall::_defaultSamplerState = SamplerState(WrapMode::CLAMP, TextureFilter::NEAREST, MipFilter::NONE);
+/*static*/ const unsigned int	DrawCall::MAX_NUM_TEXTURES		= 8;
+/*static*/ const unsigned int	DrawCall::MAX_NUM_VERTEXBUFFERS	= 8;
 
 DrawCall::DrawCall(const data::BindingMap&	attributeBindings,
 				   const data::BindingMap&	uniformBindings,
@@ -50,16 +52,17 @@ DrawCall::DrawCall(const data::BindingMap&	attributeBindings,
 	_uniformBindings(uniformBindings),
 	_stateBindings(stateBindings),
     _states(states),
-    _textures(8, -1),
-    _textureLocations(8, -1),
-    _textureWrapMode(8, WrapMode::CLAMP),
-    _textureFilters(8, TextureFilter::NEAREST),
-    _textureMipFilters(8, MipFilter::NONE),
-    _vertexBuffers(8, -1),
-    _vertexBufferLocations(8, -1),
-    _vertexSizes(8, -1),
-    _vertexAttributeSizes(8, -1),
-    _vertexAttributeOffsets(8, -1)
+    _textures(MAX_NUM_TEXTURES, -1),
+    _textureLocations(MAX_NUM_TEXTURES, -1),
+    _textureWrapMode(MAX_NUM_TEXTURES, WrapMode::CLAMP),
+    _textureFilters(MAX_NUM_TEXTURES, TextureFilter::NEAREST),
+    _textureMipFilters(MAX_NUM_TEXTURES, MipFilter::NONE),
+    _vertexBuffers(MAX_NUM_VERTEXBUFFERS, -1),
+    _vertexBufferLocations(MAX_NUM_VERTEXBUFFERS, -1),
+    _vertexSizes(MAX_NUM_VERTEXBUFFERS, -1),
+    _vertexAttributeSizes(MAX_NUM_VERTEXBUFFERS, -1),
+    _vertexAttributeOffsets(MAX_NUM_VERTEXBUFFERS, -1),
+	_target(nullptr)
 {
 }
 
@@ -86,112 +89,198 @@ DrawCall::bind(ContainerPtr data, ContainerPtr rootData)
     _indexBuffer = indexBuffer->id();
     _numIndices = indexBuffer->data().size();
 
-	auto numTextures	    = 0;
-    auto numVertexBuffers   = 0;
-    auto programInputs      = _program->inputs();
+	unsigned int numTextures	    = 0;
+    unsigned int numVertexBuffers   = 0;
+    auto programInputs				= _program->inputs();
 
     if (!programInputs)
         throw;
 
-    for (unsigned int inputId = 0; inputId < programInputs->locations().size(); ++inputId)
+	const std::vector<std::string>& inputNames	= programInputs->names();
+    for (unsigned int inputId = 0; inputId < inputNames.size(); ++inputId)
 	{
-		auto type		= programInputs->types()[inputId];
-		auto location	= programInputs->locations()[inputId];
-		auto inputName	= programInputs->names()[inputId];
+		auto type = bindProperty(inputNames[inputId], 
+								 numVertexBuffers, 
+								 numTextures);
 
 		if (type == ProgramInputs::Type::attribute)
-		{
-			auto& name	= _attributeBindings.count(inputName)
-				? _attributeBindings.at(inputName)
-				: inputName;
-
-			if (!dataHasProperty(name))
-				continue;
-
-			auto vertexBuffer	= getDataProperty<VertexBuffer::Ptr>(name);
-            auto attributeName  = name.substr(name.find_last_of('.') + 1);
-			auto attribute		= vertexBuffer->attribute(attributeName);
-
-            _vertexBuffers[numVertexBuffers] = vertexBuffer->id();
-            _vertexBufferLocations[numVertexBuffers] = location;
-            _vertexAttributeSizes[numVertexBuffers] = std::get<1>(*attribute);
-            _vertexSizes[numVertexBuffers] = vertexBuffer->vertexSize();
-            _vertexAttributeOffsets[numVertexBuffers] = std::get<2>(*attribute);
-			
-            ++numVertexBuffers;
-		}
-		else
-		{
-			auto& name	= _uniformBindings.count(inputName)
-				? _uniformBindings.at(inputName)
-				: inputName;
-
-			if (!dataHasProperty(name))
-				continue;
-
-			if (type == ProgramInputs::Type::float1)
-                _uniformFloat[location] = getDataProperty<float>(name);
-			else if (type == ProgramInputs::Type::float2)
-                _uniformFloat2[location] = getDataProperty<std::shared_ptr<Vector2>>(name);
-			else if (type == ProgramInputs::Type::float3)
-                _uniformFloat3[location] = getDataProperty<std::shared_ptr<Vector3>>(name);
-			else if (type == ProgramInputs::Type::float4)
-                _uniformFloat4[location] = getDataProperty<std::shared_ptr<Vector4>>(name);
-			else if (type == ProgramInputs::Type::float16)
-                _uniformFloat16[location] = &(getDataProperty<Matrix4x4::Ptr>(name)->data()[0]);
-			else if (type == ProgramInputs::Type::sampler2d)
-			{
-				auto texture        = getDataProperty<Texture::Ptr>(name)->id();
-                auto& samplerState  = _states->samplers().count(inputName)
-                    ? _states->samplers().at(inputName)
-                    : _defaultSamplerState;
-
-                _textures[numTextures] = texture;
-                _textureLocations[numTextures] = location;
-                _textureWrapMode[numTextures] = std::get<0>(samplerState);
-                _textureFilters[numTextures] = std::get<1>(samplerState);
-                _textureMipFilters[numTextures] = std::get<2>(samplerState);
-
-				++numTextures;
-			}
-		}
+			++numVertexBuffers;
+		else if (type == ProgramInputs::Type::sampler2d)
+			++numTextures;
 	}
 
 	bindStates();
 }
 
+ProgramInputs::Type
+DrawCall::bindProperty(const std::string& name, 
+					   int vertexBufferId,
+					   int textureId)
+{
+	if (_program == nullptr || !_program->inputs()->hasName(name))
+		return ProgramInputs::Type::unknown;
+
+	const ProgramInputs::Type type = _program->inputs()->type(name);
+	switch (_program->inputs()->type(name))
+	{
+	case ProgramInputs::Type::attribute:
+		bindVertexAttribute(name, vertexBufferId);
+		break;
+
+	case ProgramInputs::Type::sampler2d:
+		bindTextureSampler2D(name, textureId);
+		break;
+
+	default:
+		bindUniform(name);
+
+	case ProgramInputs::Type::unknown:
+		break;
+	}
+
+	return type;
+}
+
+void
+DrawCall::bindVertexAttribute(const std::string& name, 
+							  int vertexBufferId)
+{
+#ifdef DEBUG
+	if (vertexBufferId < 0 || vertexBufferId >= MAX_NUM_VERTEXBUFFERS)
+		throw std::invalid_argument("vertexBufferId");
+#endif // DEBUG
+
+	if (_program == nullptr)
+		return;
+
+	const int location = _program->inputs()->location(name);
+	if (location < 0)
+		return;
+
+	auto foundNameIt = _attributeBindings.find(name);
+	const std::string& propertyName = foundNameIt != _attributeBindings.end()
+		? foundNameIt->second
+		: name;
+	
+	if (!dataHasProperty(propertyName))
+		return;
+	
+	auto vertexBuffer	= getDataProperty<VertexBuffer::Ptr>(propertyName);
+	auto attributeName  = propertyName.substr(propertyName.find_last_of('.') + 1);
+	auto attribute		= vertexBuffer->attribute(attributeName);
+	
+	_vertexBuffers[vertexBufferId]			= vertexBuffer->id();
+	_vertexBufferLocations[vertexBufferId]	= location;
+	_vertexAttributeSizes[vertexBufferId]	= std::get<1>(*attribute);
+	_vertexSizes[vertexBufferId]			= vertexBuffer->vertexSize();
+	_vertexAttributeOffsets[vertexBufferId]	= std::get<2>(*attribute);
+}
+
+void
+DrawCall::bindTextureSampler2D(const std::string& name, 
+							   int textureId)
+{
+#ifdef DEBUG
+	if (textureId < 0 || textureId >= MAX_NUM_TEXTURES)
+		throw std::invalid_argument("textureId");
+#endif // DEBUG
+
+	if (_program == nullptr)
+		return;
+
+	const int location = _program->inputs()->location(name);
+	if (location < 0)
+		return;
+
+	auto foundNameIt = _uniformBindings.find(name);
+	const std::string& propertyName = foundNameIt != _uniformBindings.end()
+		? foundNameIt->second
+		: name;
+	
+	auto texture        = getDataProperty<Texture::Ptr>(propertyName)->id();
+	auto& samplerState  = _states->samplers().count(name)
+	    ? _states->samplers().at(name)
+	    : _defaultSamplerState;
+	
+	_textures[textureId]			= texture;
+	_textureLocations[textureId]	= location;
+	_textureWrapMode[textureId]		= std::get<0>(samplerState);
+	_textureFilters[textureId]		= std::get<1>(samplerState);
+	_textureMipFilters[textureId]	= std::get<2>(samplerState);
+}
+
+void
+DrawCall::bindUniform(const std::string& name)
+{
+	if (_program == nullptr)
+		return;
+
+	const ProgramInputs::Type	type		= _program->inputs()->type(name);
+	const int					location	= _program->inputs()->location(name);
+	if (type == ProgramInputs::Type::unknown || location < 0)
+		return;
+
+#ifdef DEBUG
+	if (type == ProgramInputs::Type::sampler2d || type == ProgramInputs::Type::attribute)
+		throw;
+#endif // DEBUG
+
+	auto foundNameIt = _uniformBindings.find(name);
+	const std::string& propertyName = foundNameIt != _uniformBindings.end()
+		? foundNameIt->second
+		: name;
+
+	if (!dataHasProperty(propertyName))
+		return;
+
+	if (type == ProgramInputs::Type::float1)
+	     _uniformFloat[location] = getDataProperty<float>(propertyName);
+	else if (type == ProgramInputs::Type::float2)
+	     _uniformFloat2[location] = getDataProperty<std::shared_ptr<Vector2>>(propertyName);
+	else if (type == ProgramInputs::Type::float3)
+	     _uniformFloat3[location] = getDataProperty<std::shared_ptr<Vector3>>(propertyName);
+	else if (type == ProgramInputs::Type::float4)
+	     _uniformFloat4[location] = getDataProperty<std::shared_ptr<Vector4>>(propertyName);
+	else if (type == ProgramInputs::Type::float16)
+	     _uniformFloat16[location] = &(getDataProperty<Matrix4x4::Ptr>(propertyName)->data()[0]);
+	else
+		throw std::logic_error("unsupported uniform type.");
+}
+
 void
 DrawCall::reset()
 {
+	_target = nullptr;
+
 	_uniformFloat.clear();
 	_uniformFloat2.clear();
 	_uniformFloat3.clear();
 	_uniformFloat4.clear();
 	_uniformFloat16.clear();
 
-	_textures.clear();
-	_textureLocations.clear();
-	_textureWrapMode.clear();
-	_textureFilters.clear();
-	_textureMipFilters.clear();
+	_textures			.clear();
+	_textureLocations	.clear();
+	_textureWrapMode	.clear();
+	_textureFilters		.clear();
+	_textureMipFilters	.clear();
 
-	_textures.resize(8, -1);
-	_textureLocations.resize(8, -1);
-	_textureWrapMode.resize(8, WrapMode::CLAMP);
-	_textureFilters.resize(8, TextureFilter::NEAREST);
-	_textureMipFilters.resize(8, MipFilter::NONE);
+	_textures			.resize(MAX_NUM_TEXTURES, -1);
+	_textureLocations	.resize(MAX_NUM_TEXTURES, -1);
+	_textureWrapMode	.resize(MAX_NUM_TEXTURES, WrapMode::CLAMP);
+	_textureFilters		.resize(MAX_NUM_TEXTURES, TextureFilter::NEAREST);
+	_textureMipFilters	.resize(MAX_NUM_TEXTURES, MipFilter::NONE);
 
-	_vertexBuffers.clear();
-	_vertexBufferLocations.clear();
-	_vertexSizes.clear();
-	_vertexAttributeSizes.clear();
-	_vertexAttributeOffsets.clear();
+	_vertexBuffers			.clear();
+	_vertexBufferLocations	.clear();
+	_vertexSizes			.clear();
+	_vertexAttributeSizes	.clear();
+	_vertexAttributeOffsets	.clear();
 
-	_vertexBuffers.resize(8, -1);
-	_vertexBufferLocations.resize(8, -1);
-	_vertexSizes.resize(8, -1);
-	_vertexAttributeSizes.resize(8, -1);
-	_vertexAttributeOffsets.resize(8, -1);
+	_vertexBuffers			.resize(MAX_NUM_VERTEXBUFFERS, -1);
+	_vertexBufferLocations	.resize(MAX_NUM_VERTEXBUFFERS, -1);
+	_vertexSizes			.resize(MAX_NUM_VERTEXBUFFERS, -1);
+	_vertexAttributeSizes	.resize(MAX_NUM_VERTEXBUFFERS, -1);
+	_vertexAttributeOffsets	.resize(MAX_NUM_VERTEXBUFFERS, -1);
 }
 
 void

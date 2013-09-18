@@ -108,28 +108,36 @@ namespace minko
 			typename std::enable_if<std::is_convertible<T, std::shared_ptr<Value>>::value, T>::type
 			get(const std::string& propertyName)
 			{
-				return std::dynamic_pointer_cast<typename T::element_type>(_values[propertyName]);
+				const std::string& formattedName = getPreformattedPropertyName(propertyName);
+
+				return std::dynamic_pointer_cast<typename T::element_type>(_values[formattedName]);
 			}
 
 			template <typename T>
 			typename std::enable_if<!std::is_convertible<T, std::shared_ptr<Value>>::value, T>::type
 			get(const std::string& propertyName)
 			{
-				return std::dynamic_pointer_cast<ValueWrapper<T>>(_values[propertyName])->value();
+				const std::string& formattedName = getPreformattedPropertyName(propertyName);
+
+				return std::dynamic_pointer_cast<ValueWrapper<T>>(_values[formattedName])->value();
 			}
 
 			template <typename T>
 			typename std::enable_if<std::is_convertible<T, std::shared_ptr<Value>>::value, bool>::type
 			propertyHasType(const std::string& propertyName)
 			{
-				return std::dynamic_pointer_cast<typename T::element_type>(_values[propertyName]) != nullptr;
+				const std::string& formattedName = getPreformattedPropertyName(propertyName);
+
+				return std::dynamic_pointer_cast<typename T::element_type>(_values[formattedName]) != nullptr;
 			}
 
 			template <typename T>
 			typename std::enable_if<!std::is_convertible<T, std::shared_ptr<Value>>::value, bool>::type
 			propertyHasType(const std::string& propertyName)
 			{
-				return std::dynamic_pointer_cast<ValueWrapper<T>>(_values[propertyName]) != nullptr;
+				const std::string& formattedName = getPreformattedPropertyName(propertyName);
+
+				return std::dynamic_pointer_cast<ValueWrapper<T>>(_values[formattedName]) != nullptr;
 			}
 
 			template <typename T>
@@ -154,6 +162,13 @@ namespace minko
 			virtual
 			void
 			registerProperty(const std::string& propertyName, std::shared_ptr<Value> value);
+
+			virtual
+			const std::string&
+			getPreformattedPropertyName(const std::string& propertyName)
+			{
+				return propertyName;
+			}
 
 		private:
 
