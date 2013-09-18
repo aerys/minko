@@ -61,7 +61,8 @@ DrawCall::DrawCall(const data::BindingMap&	attributeBindings,
     _vertexBufferLocations(MAX_NUM_VERTEXBUFFERS, -1),
     _vertexSizes(MAX_NUM_VERTEXBUFFERS, -1),
     _vertexAttributeSizes(MAX_NUM_VERTEXBUFFERS, -1),
-    _vertexAttributeOffsets(MAX_NUM_VERTEXBUFFERS, -1)
+    _vertexAttributeOffsets(MAX_NUM_VERTEXBUFFERS, -1),
+	_target(nullptr)
 {
 }
 
@@ -197,8 +198,8 @@ DrawCall::bindTextureSampler2D(const std::string& name,
 		: name;
 	
 	auto texture        = getDataProperty<Texture::Ptr>(propertyName)->id();
-	auto& samplerState  = _states->samplers().count(propertyName)
-	    ? _states->samplers().at(propertyName)
+	auto& samplerState  = _states->samplers().count(name)
+	    ? _states->samplers().at(name)
 	    : _defaultSamplerState;
 	
 	_textures[textureId]			= texture;
@@ -249,6 +250,8 @@ DrawCall::bindUniform(const std::string& name)
 void
 DrawCall::reset()
 {
+	_target = nullptr;
+
 	_uniformFloat.clear();
 	_uniformFloat2.clear();
 	_uniformFloat3.clear();
