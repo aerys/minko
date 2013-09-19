@@ -55,7 +55,7 @@ project "minko-example-sponza"
 		links {
 			"GL",
 			"GLU",
-			"SDL2",
+			"SDL",
 			"m",
 			"Xrandr",
 			"Xxf86vm",
@@ -80,8 +80,8 @@ project "minko-example-sponza"
 		buildoptions { "-std=c++11" }
 		links {
 			"OpenGL32",
-			"SDL2",
-			"SDL2main",
+			"SDL",
+			"SDLmain",
 			"glew32"
 		}
 		libdirs {
@@ -105,7 +105,7 @@ project "minko-example-sponza"
 		linkoptions { "-std=c++11", "-stdlib=libc++" }
 		links {
 			"m",
-			"SDL2.framework",
+			"SDL.framework",
 			"OpenGL.framework",
 			"GLUT.framework",
 			"Cocoa.framework",
