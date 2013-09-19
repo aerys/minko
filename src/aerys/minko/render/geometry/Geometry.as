@@ -383,7 +383,7 @@ package aerys.minko.render.geometry
 			
 			for (var i : int = vertexFormat.numComponents - 1; i >= 0; --i)
 			{
-				_geometryDataProvider.setProperty(vertexFormat.getComponent(i).nativeFormatString, true);
+				_geometryDataProvider.setProperty(vertexFormat.getComponent(i).toString(), true);
 			}
 		}
 		
