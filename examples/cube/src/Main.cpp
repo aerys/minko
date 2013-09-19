@@ -3,7 +3,7 @@
 #include "minko/Minko.hpp"
 #include "minko/MinkoPNG.hpp"
 
-#include "SDL2/SDL.h"
+#include "SDL/SDL.h"
 
 using namespace minko;
 using namespace minko::component;
@@ -17,15 +17,8 @@ int main(int argc, char** argv)
 
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
-	SDL_Window* window = SDL_CreateWindow(
-		"Minko - Cube Example",
-		SDL_WINDOWPOS_UNDEFINED,
-		SDL_WINDOWPOS_UNDEFINED,
-		800, 600,
-		SDL_WINDOW_OPENGL
-	);
-
-	SDL_GLContext glcontext = SDL_GL_CreateContext(window);
+	SDL_WM_SetCaption("Minko - Cube Example", "Minko");
+	SDL_Surface *screen = SDL_SetVideoMode(800, 600, 0, SDL_OPENGL);
 
 	auto sceneManager = SceneManager::create(render::OpenGLES2Context::create());
     auto mesh = scene::Node::create("mesh");
@@ -96,7 +89,7 @@ int main(int argc, char** argv)
 
 		sceneManager->nextFrame();
 
-		SDL_GL_SwapWindow(window);
+		SDL_GL_SwapBuffers();
 	}
 
 	SDL_Quit();
