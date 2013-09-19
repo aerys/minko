@@ -49,7 +49,7 @@ project "minko-example-cube"
 
 	-- windows
 	configuration { "windows", "x32" }
-		links { "OpenGL32", "SDL2", "SDL2main", "glew32" }
+		links { "OpenGL32", "SDL", "SDLmain", "glew32" }
 		libdirs { "../../deps/win/lib" }
 		includedirs { "../../deps/win/include" }
 		postbuildcommands {
@@ -67,7 +67,7 @@ project "minko-example-cube"
 		linkoptions { "-std=c++11", "-stdlib=libc++" }
 		links {
 			"m",
-			"SDL2.framework",
+			"SDL.framework",
 			"Cocoa.framework",
 			"OpenGL.framework",
 			"IOKit.framework"
