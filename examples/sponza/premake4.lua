@@ -81,7 +81,7 @@ project "minko-example-sponza"
 		links {
 			"OpenGL32",
 			"SDL2",
-			"SDLmain",
+			"SDL2main",
 			"glew32"
 		}
 		libdirs {
