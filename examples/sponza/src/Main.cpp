@@ -14,7 +14,7 @@
 #include "minko/MinkoWebGL.hpp"
 #include "emscripten.h"
 #endif
-#include "SDL2/SDL.h"
+#include "SDL/SDL.h"
 
 #include "minko/component/SponzaLighting.hpp"
 #include "minko/component/Fire.hpp"
@@ -66,7 +66,7 @@ resizeHandler(int width, int height)
 
 #endif
 void
-SDLMouseMoveHandler(SDL_Window* window)
+SDLMouseMoveHandler()
 {
 	int x;
 	int y;
@@ -95,46 +95,46 @@ SDL_KeyboardHandler(bool collider, std::shared_ptr<Matrix4x4> cameraTransform)
 {
     if (!collider)
     {
-	const Uint8* keyboardState = SDL_GetKeyboardState(NULL);
-	if (keyboardState[SDL_SCANCODE_UP] ||
-		keyboardState[SDL_SCANCODE_W] ||
-		keyboardState[SDL_SCANCODE_Z])
+	const Uint8* keyboardState = SDL_GetKeyState(NULL);
+	if (keyboardState[SDLK_UP] ||
+		keyboardState[SDLK_w] ||
+		keyboardState[SDLK_z])
 	    cameraTransform->prependTranslation(0.f, 0.f, -CAMERA_LIN_SPEED);
-	else if (keyboardState[SDL_SCANCODE_DOWN] ||
-		keyboardState[SDL_SCANCODE_S])
+	else if (keyboardState[SDLK_DOWN] ||
+		keyboardState[SDLK_s])
 	    cameraTransform->prependTranslation(0.f, 0.f, CAMERA_LIN_SPEED);
-	if (keyboardState[SDL_SCANCODE_LEFT] ||
-		keyboardState[SDL_SCANCODE_A] ||
-		keyboardState[SDL_SCANCODE_Q])
+	if (keyboardState[SDLK_LEFT] ||
+		keyboardState[SDLK_a] ||
+		keyboardState[SDLK_q])
 	    cameraTransform->prependRotation(-CAMERA_ANG_SPEED, Vector3::yAxis());
-	else if (keyboardState[SDL_SCANCODE_RIGHT] ||
-		keyboardState[SDL_SCANCODE_D])
+	else if (keyboardState[SDLK_RIGHT] ||
+		keyboardState[SDLK_d])
 	    cameraTransform->prependRotation(CAMERA_ANG_SPEED, Vector3::yAxis());
     }
     else
     {
 
-	const Uint8* keyboardState = SDL_GetKeyboardState(NULL);
-	if (keyboardState[SDL_SCANCODE_UP] ||
-		keyboardState[SDL_SCANCODE_W] ||
-		keyboardState[SDL_SCANCODE_Z])
+	const Uint8* keyboardState = SDL_GetKeyState(NULL);
+	if (keyboardState[SDLK_UP] ||
+		keyboardState[SDLK_w] ||
+		keyboardState[SDLK_z])
 	    // go forward
 	    cameraTransform->prependTranslation(Vector3::create(0.0f, 0.0f, -CAMERA_LIN_SPEED));
-	else if (keyboardState[SDL_SCANCODE_DOWN] ||
-		keyboardState[SDL_SCANCODE_S])
+	else if (keyboardState[SDLK_DOWN] ||
+		keyboardState[SDLK_s])
 	    // go backward
 	    cameraTransform->prependTranslation(Vector3::create(0.0f, 0.0f, CAMERA_LIN_SPEED));
-	if (keyboardState[SDL_SCANCODE_LEFT] ||
-		keyboardState[SDL_SCANCODE_A] ||
-		keyboardState[SDL_SCANCODE_Q])
+	if (keyboardState[SDLK_LEFT] ||
+		keyboardState[SDLK_a] ||
+		keyboardState[SDLK_q])
 	    cameraTransform->prependTranslation(-CAMERA_LIN_SPEED, 0.0f, 0.0f);
-	else if (keyboardState[SDL_SCANCODE_RIGHT] ||
-		keyboardState[SDL_SCANCODE_D])
+	else if (keyboardState[SDLK_RIGHT] ||
+		keyboardState[SDLK_d])
 	    cameraTransform->prependTranslation(CAMERA_LIN_SPEED, 0.0f, 0.0f);
 
 	eye = cameraTransform->translation();
 
-	if (keyboardState[SDL_SCANCODE_SPACE] && eye->y() <= 0.5f)
+	if (keyboardState[SDLK_SPACE] && eye->y() <= 0.5f)
 	    cameraTransform->prependTranslation(0.0f, 4 * CAMERA_LIN_SPEED, 0.0f);
     }
 }
@@ -254,11 +254,11 @@ deserializeShape(Qark::Map&			shapeData,
 		deserializedShape = nullptr;
 	}
 
-	return deserializedShape;		
+	return deserializedShape;
 }
 
 std::shared_ptr<bullet::Collider>
-deserializeBullet(Qark::Map&						nodeInformation, 
+deserializeBullet(Qark::Map&						nodeInformation,
 				  file::MkParser::ControllerMap&	controllerMap,
 				  file::MkParser::NodeMap&			nodeMap,
 				  scene::Node::Ptr&					node)
@@ -436,11 +436,13 @@ main(int argc, char** argv)
 	);
 
 	SDL_Init(SDL_INIT_VIDEO);
-	auto window = SDL_CreateWindow("Sponza Example",
-		SDL_WINDOWPOS_UNDEFINED,
-		SDL_WINDOWPOS_UNDEFINED,
-		WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_OPENGL);
-	SDL_GL_CreateContext(window);
+
+	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+
+	SDL_WM_SetCaption("Minko - Sponza Example", "Minko");
+	SDL_Surface *screen = SDL_SetVideoMode(WINDOW_WIDTH,
+		WINDOW_HEIGHT,
+		0, SDL_OPENGL);
 
 #ifdef EMSCRIPTEN
 	std::cout << "WebGL context created" << std::endl;
@@ -449,17 +451,17 @@ main(int argc, char** argv)
 	std::cout << "OpenGL ES2 context created" << std::endl;
 	context = render::OpenGLES2Context::create();
 #endif
-	
+
 	std::cout << context->driverInfo() << std::endl;
-	
+
 	auto sceneManager = SceneManager::create(context);
-	
+
 	sceneManager->assets()
 		->registerParser<file::PNGParser>("png")
 		->registerParser<file::JPEGParser>("jpg")
 		->registerParser<file::MkParser>("mk")
 		->geometry("cube", geometry::CubeGeometry::create(context));
-	
+
 #ifdef EMSCRIPTEN
 	sceneManager->assets()->defaultOptions()->includePaths().insert("assets");
 #endif
@@ -469,7 +471,7 @@ main(int argc, char** argv)
 #else
 	sceneManager->assets()->defaultOptions()->includePaths().insert("bin/release");
 #endif
-	
+
 	// load sponza lighting effect and set it as the default effect
 	sceneManager->assets()
 		->load("effect/SponzaLighting.effect")
@@ -481,13 +483,13 @@ main(int argc, char** argv)
 		->queue("texture/firefull.jpg")
 		->queue("effect/Particles.effect")
 		->queue(MK_NAME);
-	
+
 	sceneManager->assets()->defaultOptions()->generateMipmaps(true);
 
 	renderer = Renderer::create();
 
 	initializePhysics();
-	
+
 	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
 	{
 		scene::Node::Ptr mk = assets->node(MK_NAME);
@@ -545,7 +547,7 @@ main(int argc, char** argv)
 			switch (event.type)
 			{
 			    case SDL_MOUSEMOTION:
-				SDLMouseMoveHandler(window);
+				SDLMouseMoveHandler();
 				break;
 			    case SDL_QUIT:
 				done = true;
@@ -564,7 +566,7 @@ main(int argc, char** argv)
 			    switch (event.type)
 			    {
 				case SDL_MOUSEMOTION:
-				    SDLMouseMoveHandler(window);
+				    SDLMouseMoveHandler();
 				    break;
 				case SDL_KEYDOWN:
 				    break;
@@ -596,11 +598,9 @@ main(int argc, char** argv)
 		sponzaLighting->step();
 		renderer->render();
 
-		SDL_GL_SwapWindow(window);
+		SDL_GL_SwapBuffers();
 		SDL_PumpEvents();
 	}
-
-	SDL_DestroyWindow(window);
 
 	SDL_Quit();
 
