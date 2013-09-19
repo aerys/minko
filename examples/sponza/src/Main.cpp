@@ -11,10 +11,12 @@
 #include <time.h>
 
 #ifdef EMSCRIPTEN
-#include "minko/MinkoWebGL.hpp"
-#include "emscripten.h"
+# include "minko/MinkoWebGL.hpp"
+# include "emscripten.h"
+# include "SDL/SDL.h"
+#else
+# include "SDL2/SDL.h"
 #endif
-#include "SDL/SDL.h"
 
 #include "minko/component/SponzaLighting.hpp"
 #include "minko/component/Fire.hpp"
@@ -95,46 +97,46 @@ SDL_KeyboardHandler(bool collider, std::shared_ptr<Matrix4x4> cameraTransform)
 {
     if (!collider)
     {
-	const Uint8* keyboardState = SDL_GetKeyState(NULL);
-	if (keyboardState[SDLK_UP] ||
-		keyboardState[SDLK_w] ||
-		keyboardState[SDLK_z])
+	const Uint8* keyboardState = SDL_GetKeyboardState(NULL);
+	if (keyboardState[SDL_SCANCODE_UP] ||
+		keyboardState[SDL_SCANCODE_W] ||
+		keyboardState[SDL_SCANCODE_Z])
 	    cameraTransform->prependTranslation(0.f, 0.f, -CAMERA_LIN_SPEED);
-	else if (keyboardState[SDLK_DOWN] ||
-		keyboardState[SDLK_s])
+	else if (keyboardState[SDL_SCANCODE_DOWN] ||
+		keyboardState[SDL_SCANCODE_S])
 	    cameraTransform->prependTranslation(0.f, 0.f, CAMERA_LIN_SPEED);
-	if (keyboardState[SDLK_LEFT] ||
-		keyboardState[SDLK_a] ||
-		keyboardState[SDLK_q])
+	if (keyboardState[SDL_SCANCODE_LEFT] ||
+		keyboardState[SDL_SCANCODE_A] ||
+		keyboardState[SDL_SCANCODE_Q])
 	    cameraTransform->prependRotation(-CAMERA_ANG_SPEED, Vector3::yAxis());
-	else if (keyboardState[SDLK_RIGHT] ||
-		keyboardState[SDLK_d])
+	else if (keyboardState[SDL_SCANCODE_RIGHT] ||
+		keyboardState[SDL_SCANCODE_D])
 	    cameraTransform->prependRotation(CAMERA_ANG_SPEED, Vector3::yAxis());
     }
     else
     {
 
-	const Uint8* keyboardState = SDL_GetKeyState(NULL);
-	if (keyboardState[SDLK_UP] ||
-		keyboardState[SDLK_w] ||
-		keyboardState[SDLK_z])
+	const Uint8* keyboardState = SDL_GetKeyboardState(NULL);
+	if (keyboardState[SDL_SCANCODE_UP] ||
+		keyboardState[SDL_SCANCODE_W] ||
+		keyboardState[SDL_SCANCODE_Z])
 	    // go forward
 	    cameraTransform->prependTranslation(Vector3::create(0.0f, 0.0f, -CAMERA_LIN_SPEED));
-	else if (keyboardState[SDLK_DOWN] ||
-		keyboardState[SDLK_s])
+	else if (keyboardState[SDL_SCANCODE_DOWN] ||
+		keyboardState[SDL_SCANCODE_S])
 	    // go backward
 	    cameraTransform->prependTranslation(Vector3::create(0.0f, 0.0f, CAMERA_LIN_SPEED));
-	if (keyboardState[SDLK_LEFT] ||
-		keyboardState[SDLK_a] ||
-		keyboardState[SDLK_q])
+	if (keyboardState[SDL_SCANCODE_LEFT] ||
+		keyboardState[SDL_SCANCODE_A] ||
+		keyboardState[SDL_SCANCODE_Q])
 	    cameraTransform->prependTranslation(-CAMERA_LIN_SPEED, 0.0f, 0.0f);
-	else if (keyboardState[SDLK_RIGHT] ||
-		keyboardState[SDLK_d])
+	else if (keyboardState[SDL_SCANCODE_RIGHT] ||
+		keyboardState[SDL_SCANCODE_D])
 	    cameraTransform->prependTranslation(CAMERA_LIN_SPEED, 0.0f, 0.0f);
 
 	eye = cameraTransform->translation();
 
-	if (keyboardState[SDLK_SPACE] && eye->y() <= 0.5f)
+	if (keyboardState[SDL_SCANCODE_SPACE] && eye->y() <= 0.5f)
 	    cameraTransform->prependTranslation(0.0f, 4 * CAMERA_LIN_SPEED, 0.0f);
     }
 }
@@ -347,7 +349,7 @@ initializeDefaultCameraCollider()
 	data->angularFactor(0.0f, 0.0f, 0.0f);
 	data->friction(CAMERA_FRICTION);
 	data->disableDeactivation(true);
-	
+
 	return bullet::Collider::create(data);
 }
 
@@ -360,7 +362,7 @@ initializeCamera(scene::Node::Ptr group)
 				{
 					return node->name() == CAMERA_NAME;
 				});
-	
+
 	bool cameraInGroup = false;
 	if (cameras->nodes().empty())
 	{
@@ -371,7 +373,7 @@ initializeCamera(scene::Node::Ptr group)
 		camera->component<Transform>()->transform()
 			->appendTranslation(0.0f, 0.75f, 5.0f)
 			->appendRotationY(PI * 0.5);
-		
+
 		cameraCollider = initializeDefaultCameraCollider();
 		camera->addComponent(cameraCollider);
 	}
@@ -437,6 +439,7 @@ main(int argc, char** argv)
 
 	SDL_Init(SDL_INIT_VIDEO);
 
+#ifdef EMSCRIPTEN
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
 	SDL_WM_SetCaption("Minko - Sponza Example", "Minko");
@@ -444,10 +447,18 @@ main(int argc, char** argv)
 		WINDOW_HEIGHT,
 		0, SDL_OPENGL);
 
-#ifdef EMSCRIPTEN
 	std::cout << "WebGL context created" << std::endl;
 	context = render::WebGLContext::create();
 #else
+        SDL_Window *window = SDL_CreateWindow("Minko - Sponza Example",
+                0,
+                0,
+                WINDOW_WIDTH,
+                WINDOW_HEIGHT,
+                SDL_WINDOW_OPENGL);
+
+        SDL_GL_CreateContext(window);
+
 	std::cout << "OpenGL ES2 context created" << std::endl;
 	context = render::OpenGLES2Context::create();
 #endif
@@ -525,7 +536,7 @@ main(int argc, char** argv)
 			test->component<Transform>()->transform()->copyFrom(fireNode->component<Transform>()->transform());
 			root->addChild(test);
 
-			std::cout << fireNode->component<Transform>()->transform()->translation()->toString() << std::endl;			
+			std::cout << fireNode->component<Transform>()->transform()->translation()->toString() << std::endl;
 		}
 	});
 
@@ -598,10 +609,17 @@ main(int argc, char** argv)
 		sponzaLighting->step();
 		renderer->render();
 
+#ifdef EMSCRIPTEN
 		SDL_GL_SwapBuffers();
+#else
+                SDL_GL_SwapWindow(window);
+#endif
 		SDL_PumpEvents();
 	}
 
+#ifndef EMSCRIPTEN
+        SDL_DestroyWindow(window);
+#endif
 	SDL_Quit();
 
 	std::exit(EXIT_SUCCESS);
