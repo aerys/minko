@@ -58,6 +58,18 @@ namespace minko
 				return std::shared_ptr<Provider>(new Provider());
 			}
 
+			static
+			Ptr
+			create(Ptr source)
+			{
+				auto provider = create();
+
+				provider->_names = source->_names;
+				provider->_values = source->_values;
+
+				return provider;
+			}
+
 			inline
 			const std::vector<std::string>&
 			propertyNames()
