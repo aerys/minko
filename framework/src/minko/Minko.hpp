@@ -69,16 +69,3 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/EffectParser.hpp"
 #include "minko/file/AssetLibrary.hpp"
 #include "minko/material/Material.hpp"
-
-namespace minko
-{
-    class Minko
-	{
-	public:
-		static
-		void log(const std::string& message)
-		{
-			std::cout << message << std::endl;
-		}
-	};
-}
