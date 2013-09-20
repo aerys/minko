@@ -104,7 +104,8 @@ NodeDeserializer::deserializeMesh(NodeInfo&			nodeInfo,
 		options->parseOptions(),
 		computeTangent,
 		options->deserializedAssets()->material(materialId),
-		options->parseOptions()->effect());
+		options->parseOptions()->effect()
+	);
 
 	return mesh;
 }
