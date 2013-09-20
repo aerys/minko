@@ -315,7 +315,7 @@ DrawCall::bindStates()
 }
 
 void
-DrawCall::render(AbstractContext::Ptr context)
+DrawCall::render(const AbstractContext::Ptr& context)
 {
     if (_target)
         context->setRenderToTexture(_target->id(), true);

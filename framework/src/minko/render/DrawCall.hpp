@@ -105,7 +105,7 @@ namespace minko
                       ContainerPtr              rootData);
 
 			void
-			render(std::shared_ptr<AbstractContext> context);
+			render(const std::shared_ptr<AbstractContext>& context);
 
 			void
 			initialize(ContainerPtr				                    data,
