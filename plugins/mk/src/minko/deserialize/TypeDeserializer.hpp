@@ -52,7 +52,8 @@ namespace minko
 
 			static
 			std::shared_ptr<data::Provider>
-			provider(std::vector<Any>&									properties,
+			provider(std::shared_ptr<data::Provider>					defaultValues,
+					 std::vector<Any>&									properties,
 					 std::map<int, std::shared_ptr<render::Texture>>&	idToTexture,
 					 std::shared_ptr<NameConverter>						nameConverter);
 
