@@ -11,14 +11,12 @@
 #include <time.h>
 
 #ifdef EMSCRIPTEN
-# include "minko/MinkoWebGL.hpp"
-# include "emscripten.h"
-# include "SDL/SDL.h"
-#else
-# include "SDL2/SDL.h"
+#include "minko/MinkoWebGL.hpp"
+#include "emscripten.h"
 #endif
+#include "SDL2/SDL.h"
 
-#ifdef _WIN32
+#ifdef MINKO_ANGLE
 #include "SDL2/SDL_syswm.h"
 #include <EGL/egl.h>
 #include <GLES2/gl2.h>
@@ -75,7 +73,7 @@ resizeHandler(int width, int height)
 
 #endif
 void
-SDLMouseMoveHandler()
+SDLMouseMoveHandler(SDL_Window* window)
 {
 	int x;
 	int y;
@@ -263,11 +261,11 @@ deserializeShape(Qark::Map&			shapeData,
 		deserializedShape = nullptr;
 	}
 
-	return deserializedShape;
+	return deserializedShape;		
 }
 
 std::shared_ptr<bullet::Collider>
-deserializeBullet(Qark::Map&						nodeInformation,
+deserializeBullet(Qark::Map&						nodeInformation, 
 				  file::MkParser::ControllerMap&	controllerMap,
 				  file::MkParser::NodeMap&			nodeMap,
 				  scene::Node::Ptr&					node)
@@ -356,7 +354,7 @@ initializeDefaultCameraCollider()
 	data->angularFactor(0.0f, 0.0f, 0.0f);
 	data->friction(CAMERA_FRICTION);
 	data->disableDeactivation(true);
-
+	
 	return bullet::Collider::create(data);
 }
 
@@ -369,7 +367,7 @@ initializeCamera(scene::Node::Ptr group)
 				{
 					return node->name() == CAMERA_NAME;
 				});
-
+	
 	bool cameraInGroup = false;
 	if (cameras->nodes().empty())
 	{
@@ -380,7 +378,7 @@ initializeCamera(scene::Node::Ptr group)
 		camera->component<Transform>()->transform()
 			->appendTranslation(0.0f, 0.75f, 5.0f)
 			->appendRotationY(PI * 0.5);
-
+		
 		cameraCollider = initializeDefaultCameraCollider();
 		camera->addComponent(cameraCollider);
 	}
@@ -557,7 +555,7 @@ main(int argc, char** argv)
 		SDL_WINDOWPOS_UNDEFINED,
 		WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_OPENGL);
 
-#ifdef _WIN32
+#ifdef MINKO_ANGLE
 	ESContext* escontext;
 	if (!(escontext = initContext(window)))
 		throw std::runtime_error("Could not create eglContext");
@@ -568,39 +566,23 @@ main(int argc, char** argv)
 #endif
 
 #ifdef EMSCRIPTEN
-	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-
-	SDL_WM_SetCaption("Minko - Sponza Example", "Minko");
-	SDL_Surface *screen = SDL_SetVideoMode(WINDOW_WIDTH,
-		WINDOW_HEIGHT,
-		0, SDL_OPENGL);
-
 	std::cout << "WebGL context created" << std::endl;
 	context = render::WebGLContext::create();
 #else
-        SDL_Window *window = SDL_CreateWindow("Minko - Sponza Example",
-                0,
-                0,
-                WINDOW_WIDTH,
-                WINDOW_HEIGHT,
-                SDL_WINDOW_OPENGL);
-
-        SDL_GL_CreateContext(window);
-
 	std::cout << "OpenGL ES2 context created" << std::endl;
 	context = render::OpenGLES2Context::create();
 #endif
-
+	
 	std::cout << context->driverInfo() << std::endl;
-
+	
 	auto sceneManager = SceneManager::create(context);
-
+	
 	sceneManager->assets()
 		->registerParser<file::PNGParser>("png")
 		->registerParser<file::JPEGParser>("jpg")
 		->registerParser<file::MkParser>("mk")
 		->geometry("cube", geometry::CubeGeometry::create(context));
-
+	
 #ifdef EMSCRIPTEN
 	sceneManager->assets()->defaultOptions()->includePaths().insert("assets");
 #endif
@@ -610,7 +592,7 @@ main(int argc, char** argv)
 #else
 	sceneManager->assets()->defaultOptions()->includePaths().insert("bin/release");
 #endif
-
+	
 	// load sponza lighting effect and set it as the default effect
 	sceneManager->assets()
 		->load("effect/SponzaLighting.effect")
@@ -622,13 +604,13 @@ main(int argc, char** argv)
 		->queue("texture/firefull.jpg")
 		->queue("effect/Particles.effect")
 		->queue(MK_NAME);
-
+	
 	sceneManager->assets()->defaultOptions()->generateMipmaps(true);
 
 	renderer = Renderer::create();
 
 	initializePhysics();
-
+	
 	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
 	{
 		scene::Node::Ptr mk = assets->node(MK_NAME);
@@ -664,7 +646,7 @@ main(int argc, char** argv)
 			test->component<Transform>()->transform()->copyFrom(fireNode->component<Transform>()->transform());
 			root->addChild(test);
 
-			std::cout << fireNode->component<Transform>()->transform()->translation()->toString() << std::endl;
+			std::cout << fireNode->component<Transform>()->transform()->translation()->toString() << std::endl;			
 		}
 	});
 
@@ -737,7 +719,7 @@ main(int argc, char** argv)
 		sponzaLighting->step();
 		renderer->render();
 
-#ifdef _WIN32
+#ifdef MINKO_ANGLE
 		eglSwapBuffers(escontext->eglDisplay, escontext->eglSurface); 
 #else
 		SDL_GL_SwapWindow(window);
@@ -745,9 +727,8 @@ main(int argc, char** argv)
 		SDL_PumpEvents();
 	}
 
-#ifndef EMSCRIPTEN
-        SDL_DestroyWindow(window);
-#endif
+	SDL_DestroyWindow(window);
+
 	SDL_Quit();
 
 	std::exit(EXIT_SUCCESS);

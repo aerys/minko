@@ -3,11 +3,10 @@
 #include "minko/Minko.hpp"
 #include "minko/MinkoPNG.hpp"
 
-#include "SDL/SDL.h"
+#include "SDL2/SDL.h"
 
-#ifdef _WIN32
+#ifdef MINKO_ANGLE
 #include "SDL2/SDL_syswm.h"
-
 #include <EGL/egl.h>
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
@@ -17,7 +16,7 @@ using namespace minko;
 using namespace minko::component;
 using namespace minko::math;
 
-#ifdef _WIN32
+#ifdef MINKO_ANGLE
 typedef struct
 {
    /// Window width
@@ -217,7 +216,7 @@ int main(int argc, char** argv)
 		mesh->component<Transform>()->transform()->prependRotationY(.01f);
 
 		sceneManager->nextFrame();
-#ifdef _WIN32
+#ifdef MINKO_ANGLE
 		eglSwapBuffers(context->eglDisplay, context->eglSurface); 
 #else
 		SDL_GL_SwapWindow(window);
