@@ -50,9 +50,14 @@ project "minko-framework"
 
 	-- windows
 	configuration { "windows", "x32" }
-		links { "libGLESv2", "libEGL" }
 		includedirs { "../deps/win/include" }
 		libdirs { "../deps/win/lib" }
+		if _OPTIONS[ "directX" ] then
+			defines { "MINKO_ANGLE" }
+			links { "libGLESv2", "libEGL" }
+		else
+			links { "glew32" }
+		end
 
 	-- macos
 	configuration { "macosx" }
@@ -67,4 +72,9 @@ project "minko-framework"
 	newoption {
 		trigger     = "no-glsl-optimizer",
 		description = "Disable the GLSL optimizer."
+	}
+	
+	newoption {
+		trigger		= "directX",
+		description = "Enable directX rendering with ANGLE"
 	}
