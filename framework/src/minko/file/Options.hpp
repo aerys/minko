@@ -36,6 +36,7 @@ namespace minko
 
             bool                                        _generateMipMaps;
             std::shared_ptr<render::Effect>             _effect;
+			std::shared_ptr<data::Provider>				_material;
 
 		public:
 			inline static
@@ -99,6 +100,20 @@ namespace minko
             {
                 _effect = effect;
             }
+
+			inline
+			std::shared_ptr<data::Provider>
+			material()
+			{
+				return _material;
+			}
+
+			inline
+			void
+			material(std::shared_ptr<data::Provider> material)
+			{
+				_material = material;
+			}
 
 		private:
 			Options(std::shared_ptr<render::AbstractContext> context);
