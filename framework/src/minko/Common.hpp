@@ -103,6 +103,7 @@ namespace minko
 	{
 		class Provider;
 		class ArrayProvider;
+		class StructureProvider;
 		class ValueBase;
 		class Value;
 		class Container;
@@ -133,6 +134,11 @@ namespace minko
 		class AbstractParser;
 		class EffectParser;
         class AssetLibrary;
+	}
+
+	namespace material
+	{
+		class Material;
 	}
 }
 
