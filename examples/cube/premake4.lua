@@ -49,9 +49,15 @@ project "minko-example-cube"
 
 	-- windows
 	configuration { "windows", "x32" }
-		links { "libGLESv2", "SDL2", "SDL2main", "libEGL" }
+		links { "SDL2", "SDL2main" }
 		libdirs { "../../deps/win/lib" }
 		includedirs { "../../deps/win/include" }
+		if _OPTIONS[ "directX" ] then
+			defines { "MINKO_ANGLE" }
+			links { "libGLESv2", "libEGL" }
+		else
+			links { "glew32" }
+		end
 		postbuildcommands {
 			-- copy framework effects
 			'xcopy /y /e /i ..\\..\\framework\\effect\\* "$(TargetDir)effect"',
