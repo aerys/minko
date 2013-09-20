@@ -37,6 +37,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/scene/Node.hpp"
 #include "minko/scene/NodeSet.hpp"
 #include "minko/data/Provider.hpp"
+#include "minko/data/ArrayProvider.hpp"
+#include "minko/data/StructureProvider.hpp"
 #include "minko/data/Value.hpp"
 #include "minko/data/Container.hpp"
 #include "minko/component/AbstractComponent.hpp"
@@ -66,6 +68,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/AbstractParser.hpp"
 #include "minko/file/EffectParser.hpp"
 #include "minko/file/AssetLibrary.hpp"
+#include "minko/material/Material.hpp"
 
 namespace minko
 {
