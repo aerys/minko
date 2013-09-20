@@ -72,7 +72,7 @@ namespace minko
 			{
 				assertPropertyExists(propertyName);
 
-				return _propertyNameToProvider[propertyName]->get<T>(propertyName);
+				return _propertyNameToProvider[propertyName]->get<T>(propertyName, true);
 			}
 
 			template <typename T>
