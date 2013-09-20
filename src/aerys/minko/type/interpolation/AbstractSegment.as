@@ -72,8 +72,8 @@ package aerys.minko.type.interpolation
 				var tmpVector1 		: Vector4	= new Vector4();
 				var tmpVector2 		: Vector4	= new Vector4();
 				var tmpVectorDiff	: Vector4	= new Vector4();
-				
-				_length = 0;
+			
+				var len : Number = 0.0;
 				position(0, tmpVector1);
 				for (var i : int = 0; i < ITERATIONS; ++i)
 				{
@@ -81,10 +81,13 @@ package aerys.minko.type.interpolation
 					Vector4.subtract(tmpVector2, tmpVector1, tmpVectorDiff);
 					
 					_length += tmpVectorDiff.length; 
-				
+					len += tmpVectorDiff.length;
+					
 					tmpVector2.copyFrom(tmpVector1);
-				}
+				}	
+				_length = len;
 			}
+			
 			return _length;
 		}
 		
