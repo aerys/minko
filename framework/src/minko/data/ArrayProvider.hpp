@@ -48,7 +48,7 @@ namespace minko
 
 			inline
 			unsigned int
-			index()
+			index() const
 			{
 				return _index;
 			}
@@ -56,23 +56,12 @@ namespace minko
 			void
 			index(unsigned int index);
 
-			bool 
-			hasProperty(const std::string& propertyName);
-
-			void
-			registerProperty(const std::string& propertyName, std::shared_ptr<Value> value);
-
-			void
-			unset(const std::string& propertyName);
-
 		private:
 			ArrayProvider(const std::string& name, uint index);
 
+			inline
 			std::string
-			formatPropertyName(const std::string& name) const;
-
-			const std::string&
-			getPreformattedPropertyName(const std::string& propertyName);
+			formatPropertyName(const std::string& propertyName) const;
 		};
 	}
 }
