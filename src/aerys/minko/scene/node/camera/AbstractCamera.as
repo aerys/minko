@@ -176,7 +176,7 @@ package aerys.minko.scene.node.camera
 		 * @return 
 		 * 
 		 */
-		public function getProjection(output : Matrix4x4) : Matrix4x4
+		public function getProjection(output : Matrix4x4 = null) : Matrix4x4
 		{
 			output ||= new Matrix4x4();
 			
