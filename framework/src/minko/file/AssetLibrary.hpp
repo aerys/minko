@@ -24,102 +24,103 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Signal.hpp"
 #include "minko/file/AbstractParser.hpp"
 #include "minko/file/EffectParser.hpp"
+#include "minko/file/AbstractLoader.hpp"
 
 namespace minko
 {
-    namespace file
-    {
-	    class AssetLibrary :
-		    public std::enable_shared_from_this<AssetLibrary>
-	    {
-	    public:
-		    typedef std::shared_ptr<AssetLibrary>				Ptr;
+	namespace file
+	{
+		class AssetLibrary :
+			public std::enable_shared_from_this<AssetLibrary>
+		{
+		public:
+			typedef std::shared_ptr<AssetLibrary>				Ptr;
 
-	    private:
-		    typedef std::shared_ptr<render::AbstractContext>	AbsContextPtr;
-		    typedef std::shared_ptr<render::Effect>				EffectPtr;
-		    typedef std::shared_ptr<render::Texture>			TexturePtr;
-		    typedef std::shared_ptr<geometry::Geometry>			GeometryPtr;
-		    typedef std::shared_ptr<file::AbstractParser>		AbsParserPtr;
-		    typedef std::function<AbsParserPtr(void)>			Handler;
-		    typedef std::shared_ptr<scene::Node>				NodePtr;
+		private:
+			typedef std::shared_ptr<render::AbstractContext>	AbsContextPtr;
+			typedef std::shared_ptr<render::Effect>				EffectPtr;
+			typedef std::shared_ptr<render::Texture>			TexturePtr;
+			typedef std::shared_ptr<geometry::Geometry>			GeometryPtr;
+			typedef std::shared_ptr<file::AbstractParser>		AbsParserPtr;
+			typedef std::function<AbsParserPtr(void)>			Handler;
+			typedef std::shared_ptr<scene::Node>				NodePtr;
 
-	    private:
-		    AbsContextPtr													_context;
-		    std::shared_ptr<file::Options>									_defaultOptions;
-		    std::unordered_map<std::string, Handler>						_parsers;
+		private:
+			AbsContextPtr													_context;
+			std::shared_ptr<file::Options>									_defaultOptions;
+			std::unordered_map<std::string, Handler>						_parsers;
 
-		    std::unordered_map<std::string, GeometryPtr>					_geometries;
-		    std::unordered_map<std::string, EffectPtr>						_effects;
-		    std::unordered_map<std::string, TexturePtr>						_textures;
-		    std::unordered_map<std::string, NodePtr>						_nodes;
-		    std::unordered_map<std::string, std::vector<unsigned char>>		_blobs;
+			std::unordered_map<std::string, GeometryPtr>					_geometries;
+			std::unordered_map<std::string, EffectPtr>						_effects;
+			std::unordered_map<std::string, TexturePtr>						_textures;
+			std::unordered_map<std::string, NodePtr>						_nodes;
+			std::unordered_map<std::string, std::vector<unsigned char>>		_blobs;
 			std::unordered_map<std::string, uint>							_layers;
 
-		    std::list<std::string>											_filesQueue;
-		    std::unordered_map<std::string, std::shared_ptr<file::Options>>	_filenameToOptions;
-		    std::unordered_map<std::string, std::shared_ptr<file::Loader>>	_filenameToLoader;
+			std::list<std::string>											_filesQueue;
+			std::unordered_map<std::string, std::shared_ptr<file::Options>>	_filenameToOptions;
+			std::unordered_map<std::string, std::shared_ptr<file::AbstractLoader>>	_filenameToLoader;
 
-		    std::vector<Signal<std::shared_ptr<file::Loader>>::Slot>		_loaderSlots;
+			std::vector<Signal<std::shared_ptr<file::AbstractLoader>>::Slot>		_loaderSlots;
 
-		    std::shared_ptr<Signal<Ptr>>									_complete;
+			std::shared_ptr<Signal<Ptr>>									_complete;
 
-	    public:
-		    // fixme cyclic reference
-		    static
-		    Ptr
-		    create(AbsContextPtr context);
+		public:
+			// fixme cyclic reference
+			static
+			Ptr
+			create(AbsContextPtr context);
 
-		    inline
-		    AbsContextPtr
-		    context()
-		    {
-			    return _context;
-		    }
+			inline
+			AbsContextPtr
+			context()
+			{
+				return _context;
+			}
 
-		    inline
-		    std::shared_ptr<file::Options>
-		    defaultOptions()
-		    {
-			    return _defaultOptions;
-		    }
+			inline
+			std::shared_ptr<file::Options>
+			defaultOptions()
+			{
+				return _defaultOptions;
+			}
 
-		    inline
-		    std::shared_ptr<Signal<Ptr>>
-		    complete()
-		    {
-			    return _complete;
-		    }
+			inline
+			std::shared_ptr<Signal<Ptr>>
+			complete()
+			{
+				return _complete;
+			}
 
-		    GeometryPtr
-		    geometry(const std::string& name);
+			GeometryPtr
+			geometry(const std::string& name);
 
-		    Ptr
-		    geometry(const std::string& name, GeometryPtr geometry);
+			Ptr
+			geometry(const std::string& name, GeometryPtr geometry);
 
-		    TexturePtr
-		    texture(const std::string& name);
+			TexturePtr
+			texture(const std::string& name);
 
-		    Ptr
-		    texture(const std::string& name, TexturePtr texture);
+			Ptr
+			texture(const std::string& name, TexturePtr texture);
 
-		    NodePtr
-		    node(const std::string& name);
+			NodePtr
+			node(const std::string& name);
 
-		    Ptr
-		    node(const std::string& name, NodePtr node);
+			Ptr
+			node(const std::string& name, NodePtr node);
 
-		    EffectPtr
-		    effect(const std::string& name);
+			EffectPtr
+			effect(const std::string& name);
 
-		    Ptr
-		    effect(const std::string& name, EffectPtr effect);
+			Ptr
+			effect(const std::string& name, EffectPtr effect);
 
-		    const std::vector<unsigned char>&
-		    blob(const std::string& name);
+			const std::vector<unsigned char>&
+			blob(const std::string& name);
 
-		    Ptr
-		    blob(const std::string& name, const std::vector<unsigned char>& blob);
+			Ptr
+			blob(const std::string& name, const std::vector<unsigned char>& blob);
 
 			const unsigned int
 			layer(const std::string& name);
@@ -127,35 +128,71 @@ namespace minko
 			Ptr
 			layer(const std::string& name, const unsigned int mask);
 
-		    template <typename T>
-		    typename std::enable_if<std::is_base_of<file::AbstractParser, T>::value, Ptr>::type
-		    registerParser(const std::string& extension)
-		    {
-			    _parsers[extension] = T::create;
+			template <typename T>
+			typename std::enable_if<std::is_base_of<file::AbstractParser, T>::value, Ptr>::type
+			registerParser(const std::string& extension)
+			{
+				_parsers[extension] = T::create;
 
-			    return shared_from_this();
-		    }
+				return shared_from_this();
+			}
 
-		    Ptr
-		    queue(const std::string& filename, std::shared_ptr<file::Options> options = nullptr);
+			Ptr
+			queue(const std::string& filename, std::shared_ptr<file::Options> options = nullptr);
 
-		    Ptr
-		    load(const std::string& filename, std::shared_ptr<file::Options> options = nullptr);
+			template <typename T>
+			typename std::enable_if<std::is_base_of<file::AbstractLoader, T>::value, Ptr>::type
+			load(const std::string& filename, std::shared_ptr<file::Options> options = nullptr)
+					{
+						queue(filename, options);
+						load<T>();
 
-		    Ptr
-		    load();
+						return shared_from_this();
+					};
 
-		    AbsParserPtr
-		    parser(std::string extension);
+			Ptr
+			load(const std::string& filename, std::shared_ptr<file::Options> options = nullptr);
 
-	    private:
-		    AssetLibrary(AbsContextPtr context);
+			template <typename T>
+			typename std::enable_if<std::is_base_of<file::AbstractLoader, T>::value, Ptr>::type
+			load()
+					{
+						std::list<std::string> queue = _filesQueue;
 
-		    void
-		    loaderErrorHandler(std::shared_ptr<file::Loader> loader);
+						for (auto& filename : queue)
+						{
+							if (_filenameToLoader.count(filename) == 0)
+							{
+								auto loader = T::create();
 
-		    void
-		    loaderCompleteHandler(std::shared_ptr<file::Loader> loader);
-	    };
-    }
+								_filenameToLoader[filename] = loader;
+								_loaderSlots.push_back(loader->error()->connect(std::bind(
+												&AssetLibrary::loaderErrorHandler, shared_from_this(), std::placeholders::_1
+												)));
+								_loaderSlots.push_back(loader->complete()->connect(std::bind(
+												&AssetLibrary::loaderCompleteHandler, shared_from_this(), std::placeholders::_1
+												)));
+								loader->load(filename, _defaultOptions);
+							}
+						}
+
+						return shared_from_this();
+					};
+
+			Ptr
+			load();
+
+			AbsParserPtr
+			parser(std::string extension);
+
+		private:
+			AssetLibrary(AbsContextPtr context);
+
+			void
+			loaderErrorHandler(std::shared_ptr<file::AbstractLoader> loader);
+
+			void
+			loaderCompleteHandler(std::shared_ptr<file::AbstractLoader> loader);
+		};
+	}
 }

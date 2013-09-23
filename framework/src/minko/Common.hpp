@@ -131,6 +131,7 @@ namespace minko
 	{
 		class Options;
 		class Loader;
+		class AbstractLoader;
 		class AbstractParser;
 		class EffectParser;
         class AssetLibrary;

@@ -42,7 +42,7 @@ namespace minko
 			typedef std::shared_ptr<EffectParser>	Ptr;
 
 		private:
-			typedef std::shared_ptr<Loader>			LoaderPtr;
+			typedef std::shared_ptr<AbstractLoader>			LoaderPtr;
 
 		private:
 			static std::unordered_map<std::string, unsigned int>		_blendFactorMap;
@@ -149,11 +149,11 @@ namespace minko
 			parseDependencies(Json::Value& root, const std::string& filename, std::shared_ptr<file::Options> options);
 
 			void
-			dependencyCompleteHandler(std::shared_ptr<Loader> loader);
+			dependencyCompleteHandler(std::shared_ptr<AbstractLoader> loader);
 
 
 			void
-			dependencyErrorHandler(std::shared_ptr<Loader> loader);
+			dependencyErrorHandler(std::shared_ptr<AbstractLoader> loader);
 
 			static
 			std::unordered_map<std::string, unsigned int>
