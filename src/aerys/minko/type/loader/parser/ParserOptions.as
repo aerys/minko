@@ -1,7 +1,5 @@
 package aerys.minko.type.loader.parser
 {
-	import flash.net.URLRequest;
-	
 	import aerys.minko.render.Effect;
 	import aerys.minko.render.material.Material;
 	import aerys.minko.render.material.basic.BasicMaterial;
@@ -9,6 +7,8 @@ package aerys.minko.type.loader.parser
 	import aerys.minko.type.loader.ILoader;
 	import aerys.minko.type.loader.SceneLoader;
 	import aerys.minko.type.loader.TextureLoader;
+	
+	import flash.net.URLRequest;
 	
 	/**
 	 * ParserOptions objects provide properties and function references
@@ -21,6 +21,7 @@ package aerys.minko.type.loader.parser
 	public final class ParserOptions
 	{
 		private var _dependencyLoaderFunction	: Function;
+		private var	_materialFunction			: Function;
         private var _loadSkin                   : Boolean;
 		private var _skinningMethod				: uint;
 		private var _flattenSkinning			: Boolean;
@@ -112,6 +113,16 @@ package aerys.minko.type.loader.parser
 		{
 			_dependencyLoaderFunction = value;
 		}
+
+		public function get materialFunction() : Function
+		{
+			return _materialFunction;
+		}
+		
+		public function set materialFunction(value : Function) : void
+		{
+			_materialFunction = value;
+		}
 		
         public function get loadSkin() : Boolean
         {
@@ -147,6 +158,7 @@ package aerys.minko.type.loader.parser
 		{
 			return new ParserOptions(
 				_dependencyLoaderFunction,
+				_materialFunction,
                 _loadSkin,
 				_skinningMethod,
 				_flattenSkinning,
@@ -161,6 +173,7 @@ package aerys.minko.type.loader.parser
 		}
 		
 		public function ParserOptions(dependencyLoaderFunction	: Function 		= null,
+									  materialFunction			: Function		= null,
                                       loadSkin                  : Boolean 		= true,
 									  skinningMethod			: uint			= 2,
 									  flattenSkinning			: Boolean		= false,
@@ -172,7 +185,8 @@ package aerys.minko.type.loader.parser
 									  parser					: Class			= null,
 									  assets					: AssetsLibrary	= null)
 		{
-			_dependencyLoaderFunction	= dependencyLoaderFunction || defaultDependencyLoaderFunction;
+			_dependencyLoaderFunction	= dependencyLoaderFunction 	|| defaultDependencyLoaderFunction;
+			_materialFunction			= materialFunction			|| defaultMaterialFunction;
             _loadSkin                   = loadSkin;
 			_skinningMethod				= skinningMethod;
 			_flattenSkinning			= flattenSkinning;
@@ -185,7 +199,8 @@ package aerys.minko.type.loader.parser
 			_assets						= assets;
 		}
 		
-		private function defaultDependencyLoaderFunction(dependencyPath	: String,
+		private function defaultDependencyLoaderFunction(dependencyId	: String,
+														 dependencyPath	: String,
 														 isTexture		: Boolean,
 														 options		: ParserOptions) : ILoader
 		{
@@ -204,6 +219,11 @@ package aerys.minko.type.loader.parser
 			
 			return loader;
 		}
-
+		
+		private function defaultMaterialFunction(materialName	: String,
+												 material		: Material) : Material
+		{
+			return material;
+		}
     }
 }

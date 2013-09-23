@@ -13,6 +13,7 @@ package aerys.minko.render.geometry
 	import aerys.minko.render.geometry.stream.format.VertexComponent;
 	import aerys.minko.render.geometry.stream.format.VertexFormat;
 	import aerys.minko.type.Signal;
+	import aerys.minko.type.binding.DataProvider;
 	import aerys.minko.type.binding.IWatchable;
 	import aerys.minko.type.math.BoundingBox;
 	import aerys.minko.type.math.BoundingSphere;
@@ -65,6 +66,13 @@ package aerys.minko.render.geometry
 		private var _name			: String;
 		
 		private var _contextLost	: Signal			= new Signal("Geometry.contextLost");
+
+		private var _geometryDataProvider : DataProvider = new DataProvider();
+		
+		public function get geometryDataProvider():DataProvider
+		{
+			return _geometryDataProvider;
+		}
 
 		public function get name() : String
 		{
@@ -228,6 +236,8 @@ package aerys.minko.render.geometry
 			}
 			
 			updateBoundingVolumes();
+			_changed.add(updateDataProvider);
+			updateDataProvider(this);
 		}
 		
 		public function dispose() : void
@@ -360,6 +370,21 @@ package aerys.minko.render.geometry
 				updateBoundingVolumes();
 			
 			return this;
+		}
+		
+		private function updateDataProvider(geometry : Geometry) : void
+		{
+			if (geometry.numVertexStreams == 0)
+				return;
+			
+			var vertexFormat : VertexFormat = geometry.getVertexStream(0).format;
+			
+			_geometryDataProvider.removeAllProperties();
+			
+			for (var i : int = vertexFormat.numComponents - 1; i >= 0; --i)
+			{
+				_geometryDataProvider.setProperty(vertexFormat.getComponent(i).toString(), true);
+			}
 		}
 		
 		/**

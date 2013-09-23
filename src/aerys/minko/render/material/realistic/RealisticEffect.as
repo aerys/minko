@@ -1,16 +1,14 @@
 package aerys.minko.render.material.realistic
 {
-    import aerys.minko.render.RenderTarget;
     import aerys.minko.render.material.phong.PhongEffect;
     
     public class RealisticEffect extends PhongEffect
     {
-        public function RealisticEffect(renderTarget : RenderTarget = null)
+        public function RealisticEffect()
         {
             super(
-				renderTarget,
-                new RealisticSinglePassShader(renderTarget, 0.),
-                new RealisticBaseShader(renderTarget, .5)
+                new RealisticSinglePassShader(null, 0.),
+                new RealisticBaseShader(null, .5)
             );
         }
     }

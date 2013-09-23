@@ -12,7 +12,7 @@ package aerys.minko.scene.controller.camera
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Vector4;
 	
-	public final class CameraController extends AbstractController
+	public class CameraController extends AbstractController
 	{
 		use namespace minko_scene;
 		
@@ -155,17 +155,17 @@ package aerys.minko.scene.controller.camera
 			updateProjection();
 		}
 		
-		private function cameraPropertyChangedHandler(provider 		: IDataProvider,
-                                                      propertyName 	: String,
-													  bindingName	: String,
-													  value			: Object) : void
+		protected function cameraPropertyChangedHandler(provider 		: IDataProvider,
+                                                        propertyName 	: String,
+													    bindingName	    : String,
+													    value			: Object) : void
 		{
 			if (propertyName == 'zFar' || propertyName == 'zNear' || propertyName == 'fieldOfView'
                 || propertyName == 'zoom')
 				updateProjection();
 		}
 		
-		private function updateProjection() : void
+		protected function updateProjection() : void
 		{
 			var sceneBindings	: DataBindings	= Scene(_camera.root).bindings;
 			

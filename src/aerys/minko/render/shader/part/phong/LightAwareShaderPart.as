@@ -222,5 +222,19 @@ package aerys.minko.render.shader.part.phong
 			);
 		}
 		
+		protected function coloredShadow(lightId : uint, shadow : SFloat) : SFloat 
+		{
+			if (lightPropertyExists(lightId, 'shadowColor'))
+			{
+				var shadowColorRGBA	: SFloat = getLightParameter(lightId, 'shadowColor', 4);
+				var shadowColor 	: SFloat = shadowColorRGBA.rgb;
+				
+				shadowColor = subtract(float3(1, 1, 1), shadowColor);
+				
+				return subtract(1, multiply(shadowColor, subtract(1, shadow)));
+			}
+			
+			return shadow;
+		}
 	}
 }

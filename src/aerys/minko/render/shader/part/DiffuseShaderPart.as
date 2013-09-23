@@ -1,5 +1,6 @@
 package aerys.minko.render.shader.part
 {
+	import aerys.minko.render.geometry.stream.format.VertexComponent;
 	import aerys.minko.render.material.basic.BasicProperties;
 	import aerys.minko.render.shader.SFloat;
 	import aerys.minko.render.shader.Shader;
@@ -24,7 +25,8 @@ package aerys.minko.render.shader.part
 		public function getDiffuseColor(killOnAlphaThreshold : Boolean = true, uv : SFloat = null) : SFloat
 		{
 			var diffuseColor : SFloat	= null;
-			
+			var useVertexUv  : Boolean  = uv == null;
+
             uv ||= vertexUV.xy;
 			
 			if (meshBindings.propertyExists(BasicProperties.UV_SCALE))
@@ -32,10 +34,11 @@ package aerys.minko.render.shader.part
 			
 			if (meshBindings.propertyExists(BasicProperties.UV_OFFSET))
 				uv.incrementBy(meshBindings.getParameter(BasicProperties.UV_OFFSET, 2));
+
+			if (useVertexUv)
+				uv = interpolate(uv);
 			
-			uv = interpolate(uv);
-			
-			if (meshBindings.propertyExists(BasicProperties.DIFFUSE_MAP))
+			if (meshBindings.propertyExists(BasicProperties.DIFFUSE_MAP) && meshBindings.propertyExists(VertexComponent.UV.toString()))
 			{
 				var diffuseMap	: SFloat	= meshBindings.getTextureParameter(
 					BasicProperties.DIFFUSE_MAP,

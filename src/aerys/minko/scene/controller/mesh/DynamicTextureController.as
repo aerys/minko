@@ -7,7 +7,7 @@ package aerys.minko.scene.controller.mesh
 	import aerys.minko.scene.node.Mesh;
 	import aerys.minko.scene.node.Scene;
 	import aerys.minko.type.binding.DataProvider;
-	
+
 	import flash.display.BitmapData;
 	import flash.display.DisplayObject;
 	import flash.geom.Matrix;
@@ -30,13 +30,13 @@ package aerys.minko.scene.controller.mesh
 	{
 		private var _data					: DataProvider;
 		
-		private var _source					: DisplayObject;
+		private var _source					: Object;
 		private var _framerate				: Number;
 		private var _mipMapping				: Boolean;
 		private var _propertyName			: String;
 		private var _matrix					: Matrix;
 		private var _forceBitmapDataClear	: Boolean;
-		private var _bitmapData				: BitmapData;
+		private var _tmpBitmapData			: BitmapData;
 		private var _texture				: TextureResource;
 		
 		private var _lastDraw	            : Number;
@@ -44,9 +44,7 @@ package aerys.minko.scene.controller.mesh
 		/**
 		 * Create a new DynamicTextureController.
 		 * 
-		 * @param source The source DisplayObject to use as a dynamic texture.
-		 * @param width The width of the dynamic texture.
-		 * @param height The height of the dynamic texture.
+		 * @param source The source (BitmapData or DisplayObject) to use as a dynamic texture.
 		 * @param mipMapping Whether mip-mapping should be enabled or not. Default value is 'true'.
 		 * @param framerate The frame rate of the dynamic texture. Default value is '30'.
 		 * @param propertyName The name of the bindings property that should be set with the
@@ -55,9 +53,7 @@ package aerys.minko.scene.controller.mesh
 		 * into the dynamic texture. Default value is 'null'.
 		 * 
 		 */
-		public function DynamicTextureController(source					: DisplayObject,
-												 width					: Number,
-												 height					: Number,
+		public function DynamicTextureController(source					: Object,
 												 mipMapping				: Boolean	= true,
 												 framerate				: Number	= 30.,
 												 propertyName			: String	= 'diffuseMap',
@@ -65,9 +61,12 @@ package aerys.minko.scene.controller.mesh
 												 forceBitmapDataClear	: Boolean	= false)
 		{
 			super();
+
+			if (!(source is DisplayObject) && !(source is BitmapData))
+				throw new Error("Invalid argument: source must be of type DisplayObject or BitmapData.");
 			
 			_source = source;
-			_texture = new TextureResource(width, height);
+			_texture = new TextureResource();
 			_framerate = framerate;
 			_mipMapping = mipMapping;
 			_propertyName = propertyName;
@@ -121,17 +120,45 @@ package aerys.minko.scene.controller.mesh
 			{
 				_lastDraw = time;
 				
-				_bitmapData ||= new BitmapData(_source.width, _source.height);
-				if (_forceBitmapDataClear)
-					_bitmapData.fillRect(
-                        new Rectangle(0, 0, _bitmapData.width, _bitmapData.height),
-                        0
-                    );
-                
-				_bitmapData.draw(_source, _matrix);
-				
-				_texture.setContentFromBitmapData(_bitmapData, _mipMapping);
+				if (_source is DisplayObject)
+				    updateFromDisplayObject();
+				else
+					updateFromBitmapData();
 			}
+		}
+
+		private function updateFromDisplayObject() : void
+		{
+			var sourceDisplayObject : DisplayObject = _source as DisplayObject;
+
+			refreshTempBitmapData();
+
+			_tmpBitmapData.draw(sourceDisplayObject, _matrix);
+			_texture.setContentFromBitmapData(_tmpBitmapData, _mipMapping);
+		}
+
+		private function updateFromBitmapData() : void
+		{
+			if (_matrix)
+			{
+				refreshTempBitmapData();
+
+				_tmpBitmapData.draw(_source as BitmapData, _matrix);
+				_texture.setContentFromBitmapData(_tmpBitmapData, _mipMapping);
+			}
+
+			_texture.setContentFromBitmapData(_source as BitmapData, _mipMapping);
+		}
+
+		private function refreshTempBitmapData() : void
+		{
+			if (!_tmpBitmapData)
+				_tmpBitmapData = new BitmapData(_source.width, _source.height);
+			else if (_forceBitmapDataClear)
+				_tmpBitmapData.fillRect(
+					new Rectangle(0, 0, _tmpBitmapData.width, _tmpBitmapData.height),
+					0
+				);
 		}
 	}
 }

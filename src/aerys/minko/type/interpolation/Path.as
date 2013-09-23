@@ -46,7 +46,7 @@ package aerys.minko.type.interpolation
 			var r : Vector.<Vector4> = new Vector.<Vector4>();
 			r.push(_start);
 			for each (var segment : IInterpolation in _segments)
-			r.push(segment.end);
+				r.push(segment.end);
 			return r;
 		}
 		
@@ -67,7 +67,7 @@ package aerys.minko.type.interpolation
 			{
 				_length = 0;
 				for each (var segment : AbstractSegment in _segments)
-				_length += segment.length;
+					_length += segment.length;
 			}
 			
 			return _length;
@@ -193,6 +193,7 @@ package aerys.minko.type.interpolation
 			if (begin == null) begin = this.end;
 			
 			_segments.push(new LinearSegment(begin, end, _at, _up));
+			_length = NaN;
 			
 			return this;
 		}
@@ -215,6 +216,7 @@ package aerys.minko.type.interpolation
 			
 			updateLastSegment(newSegment);
 			_segments.push(newSegment);
+			_length = NaN;
 			
 			return this;
 		}
@@ -237,6 +239,7 @@ package aerys.minko.type.interpolation
 			
 			updateLastSegment(newSegment);
 			_segments.push(newSegment);
+			_length = NaN;
 			
 			return this;
 		}
@@ -263,6 +266,7 @@ package aerys.minko.type.interpolation
 			
 			updateLastSegment(newSegment);
 			_segments.push(newSegment);
+			_length = NaN;
 			
 			return this;
 		}
@@ -286,6 +290,7 @@ package aerys.minko.type.interpolation
 				new BezierQuadSegment(begin, control, end, _at, _up);
 			
 			_segments.push(newSegment);
+			_length = NaN;
 			
 			return this;
 		}
@@ -311,6 +316,7 @@ package aerys.minko.type.interpolation
 				new BezierCubicSegment(begin, control1, control2, end, _at, _up);
 			
 			_segments.push(newSegment);
+			_length = NaN;
 			
 			return this;
 		}

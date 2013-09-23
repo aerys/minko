@@ -17,6 +17,15 @@ package aerys.minko.scene.node.light
 			return _ctrl.lightData;
 		}
 		
+		public function get shadowColor() : uint
+		{
+			return lightData.getLightProperty('shadowColor') as uint;
+		}
+		public function set shadowColor(v : uint)	: void
+		{
+			lightData.setLightProperty('shadowColor', v);
+		}
+		
 		public function get color() : uint
 		{
 			return lightData.getLightProperty('color') as uint;

@@ -531,7 +531,7 @@ package aerys.minko.render.shader.part.phong
 										   specular 		: Boolean   = true,
 										   normal 			: SFloat	= null) : SFloat
 		{
-			var diffuseLighting     : SFloat	= float3(0, 0, 0);
+			var dynamicLighting     : SFloat	= float3(0, 0, 0);
 			var singleLight         : Boolean   = lightId != -1;
 			var receptionMask	    : uint		= meshBindings.getProperty(
 				PhongProperties.RECEPTION_MASK,
@@ -565,7 +565,7 @@ package aerys.minko.render.shader.part.phong
 							contribution = getSpotLightContribution(lightId, diffuse, specular, normal);
 						
 						if (contribution)
-							diffuseLighting.incrementBy(multiply(color.rgb, contribution));
+							dynamicLighting.incrementBy(multiply(color.rgb, contribution));
 					}
 				}
 				
@@ -575,7 +575,7 @@ package aerys.minko.render.shader.part.phong
 				++lightId;
 			}
 			
-			return diffuseLighting;
+			return saturate(dynamicLighting);
 		}
 		
 	}

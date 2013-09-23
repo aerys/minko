@@ -77,7 +77,7 @@ package aerys.minko.render.shader.sprite
 		
 		override protected function getPixelColor() : SFloat
 		{
-			return _diffuse.getDiffuseColor(true, _uv);
+			return _diffuse.getDiffuseColor(true, interpolate(_uv));
 		}
 	}
 }

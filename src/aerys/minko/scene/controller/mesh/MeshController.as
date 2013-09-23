@@ -1,5 +1,7 @@
 package aerys.minko.scene.controller.mesh
 {
+	import flash.display.BitmapData;
+	
 	import aerys.minko.render.Viewport;
 	import aerys.minko.render.geometry.Geometry;
 	import aerys.minko.scene.controller.AbstractController;
@@ -10,8 +12,6 @@ package aerys.minko.scene.controller.mesh
 	import aerys.minko.type.binding.DataProvider;
 	import aerys.minko.type.enum.DataProviderUsage;
 	import aerys.minko.type.math.Matrix4x4;
-	
-	import flash.display.BitmapData;
 	
 	public final class MeshController extends AbstractController
 	{
@@ -28,9 +28,17 @@ package aerys.minko.scene.controller.mesh
 		{
 			return _geometry;
 		}
+		
 		public function set geometry(value : Geometry) : void
 		{
+			if (_geometry && _mesh)
+				_mesh.bindings.removeProvider(_geometry.geometryDataProvider);
+			
 			_geometry = value;
+			
+			if (_mesh)
+				_mesh.bindings.addProvider(_geometry.geometryDataProvider);
+			
 			if (_data)
 				_data.setProperty('geometry', value);
 		}
@@ -75,6 +83,11 @@ package aerys.minko.scene.controller.mesh
 			
             _mesh = target;
             _mesh.scene.renderingBegin.add(sceneRenderingBeginHandler);
+			
+			if (_geometry && !_mesh.bindings.hasProvider(_geometry.geometryDataProvider))
+			{
+				_mesh.bindings.addProvider(_geometry.geometryDataProvider);
+			}
 		}
         
         private function sceneRenderingBeginHandler(scene			: Scene,
@@ -111,6 +124,9 @@ package aerys.minko.scene.controller.mesh
 			if (!scene)
 				return ;
 
+			if (_geometry && _mesh)
+				_mesh.bindings.removeProvider(_geometry.geometryDataProvider);
+			
             if (scene.renderingBegin.hasCallback(sceneRenderingBeginHandler))
                 scene.renderingBegin.remove(sceneRenderingBeginHandler);
 			
