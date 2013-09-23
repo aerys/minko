@@ -161,45 +161,23 @@ AssetLibrary::queue(const std::string& filename, std::shared_ptr<file::Options> 
 AssetLibrary::Ptr
 AssetLibrary::load(const std::string& filename, std::shared_ptr<file::Options> options)
 {
-	queue(filename, options);
-	load();
-
-	return shared_from_this();
+	return load<file::Loader>(filename, options);
 }
 
 AssetLibrary::Ptr
 AssetLibrary::load()
 {
-	std::list<std::string> queue = _filesQueue;
-
-	for (auto& filename : queue)
-	{
-		if (_filenameToLoader.count(filename) == 0)
-		{
-			auto loader = file::Loader::create();
-
-			_filenameToLoader[filename] = loader;
-			_loaderSlots.push_back(loader->error()->connect(std::bind(
-				&AssetLibrary::loaderErrorHandler, shared_from_this(), std::placeholders::_1
-			)));
-			_loaderSlots.push_back(loader->complete()->connect(std::bind(
-				&AssetLibrary::loaderCompleteHandler, shared_from_this(), std::placeholders::_1
-			)));
-			loader->load(filename, _defaultOptions);
-		}
-	}
-
-	return shared_from_this();
+    return load<file::Loader>();
 }
 
 void
-AssetLibrary::loaderErrorHandler(std::shared_ptr<file::Loader> loader)
+AssetLibrary::loaderErrorHandler(std::shared_ptr<file::AbstractLoader> loader)
 {
 	throw std::invalid_argument(loader->filename());
 }
 
 void
-AssetLibrary::loaderCompleteHandler(std::shared_ptr<file::Loader> loader)
+AssetLibrary::loaderCompleteHandler(std::shared_ptr<file::AbstractLoader> loader)
 {
 	auto filename = loader->filename();
 	auto extension = filename.substr(filename.find_last_of('.') + 1);
