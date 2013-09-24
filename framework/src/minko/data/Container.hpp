@@ -68,7 +68,7 @@ namespace minko
 			hasProvider(std::shared_ptr<Provider> provider);
 
 			bool
-			hasProperty(const std::string& propertyName);
+			hasProperty(const std::string& propertyName) const;
 
 			template <typename T>
 			T

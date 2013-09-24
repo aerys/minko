@@ -80,8 +80,6 @@ namespace minko
             std::unordered_map<uint, const float*>                      _uniformFloat16;
 
             std::list<ContainerPropertyChangedSlot>							_propertyChangedSlots;
-			std::unordered_map<std::string, int>							_inputNameToVertexBufferId;
-			std::unordered_map<std::string, int>							_inputNameToTextureId;
 			std::unordered_map<std::string, ContainerPropertyChangedSlot>	_referenceChangedSlots;
 
 		public:
@@ -132,16 +130,13 @@ namespace minko
 			bindProgramInput(const std::string& inputName, int vertexBufferId = -1, int textureId = -1);
 
 			void
-			rebindProperty(ContainerPtr, const std::string& name);
+			bindVertexAttribute(ContainerPtr, const std::string& propertyName, int location, int vertexBufferId);
 
 			void
-			bindVertexAttribute(const std::string& propertyName, int location, int vertexBufferId);
+			bindTextureSampler2D(ContainerPtr, const std::string& propertyName, int location, int textureId);
 
 			void
-			bindTextureSampler2D(const std::string& propertyName, int location, int textureId);
-
-			void
-			bindUniform(const std::string& propertyName, ProgramInputs::Type, int location);
+			bindUniform(ContainerPtr, const std::string& propertyName, ProgramInputs::Type, int location);
 
             void
 			bindStates();
@@ -172,6 +167,9 @@ namespace minko
 
 				return defaultValue;
             }
+
+			ContainerPtr
+			getDataContainer(const std::string& propertyName) const;
 
             bool
             dataHasProperty(const std::string& propertyName);
