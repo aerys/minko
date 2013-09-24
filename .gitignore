@@ -18,3 +18,5 @@ Makefile
 *.obj
 *.ilk
 *.lastbuildstate
+*.vsglog
+*.cache
