@@ -38,6 +38,7 @@ namespace minko
 
 		private:
             typedef std::shared_ptr<AbstractContext>	AbsCtxPtr;
+			typedef std::shared_ptr<data::Provider>		ProviderPtr;
             typedef std::shared_ptr<data::Container>    ContainerPtr;
 
 		private:

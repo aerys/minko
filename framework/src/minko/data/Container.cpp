@@ -23,7 +23,8 @@ using namespace minko;
 using namespace minko::data;
 
 Container::Container() :
-	std::enable_shared_from_this<Container>()
+	std::enable_shared_from_this<Container>(),
+	_providerReferenceChangedSlot()
 {
 }
 
@@ -116,6 +117,13 @@ Container::propertyChanged(const std::string& propertyName)
 
 	return _propertyChanged[propertyName];
 }
+
+/*
+Container::PropertyChangedSignalPtr
+Container::referenceChanged(const std::string& propertyName)
+{
+}
+*/
 
 void
 Container::assertPropertyExists(const std::string& propertyName)

@@ -79,9 +79,23 @@ DrawCall::bind(ContainerPtr data, ContainerPtr rootData)
 {
 	reset();
 
-	_data = data;
-	_rootData = rootData;
-    _propertyChangedSlots.clear();
+	_data		= data;
+	_rootData	= rootData;
+
+	_propertyChangedSlots.push_back(
+		_data->propertyChanged()->connect(
+		std::bind(&DrawCall::propertyChangedHandler, 
+				  shared_from_this(), 
+				  std::placeholders::_1, 
+				  std::placeholders::_2)
+	));
+	_propertyChangedSlots.push_back(
+		_rootData->propertyChanged()->connect(
+		std::bind(&DrawCall::propertyChangedHandler, 
+				  shared_from_this(), 
+				  std::placeholders::_1, 
+				  std::placeholders::_2)
+	));
 
 	auto indexBuffer	= getDataProperty<IndexBuffer::Ptr>("geometry.indices");
 
@@ -278,6 +292,8 @@ DrawCall::reset()
 	_vertexSizes			.resize(MAX_NUM_VERTEXBUFFERS, -1);
 	_vertexAttributeSizes	.resize(MAX_NUM_VERTEXBUFFERS, -1);
 	_vertexAttributeOffsets	.resize(MAX_NUM_VERTEXBUFFERS, -1);
+
+	_propertyChangedSlots.clear();
 }
 
 void
@@ -393,7 +409,7 @@ void
 DrawCall::propertyChangedHandler(std::shared_ptr<data::Container>  data,
                                  const std::string&                propertyName)
 {
-
+	std::cout << "DrawCall::propertyChangedHandler\t'" << propertyName << "'" << std::endl;
 }
 
 bool
