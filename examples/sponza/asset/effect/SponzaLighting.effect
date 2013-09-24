@@ -173,14 +173,7 @@
 				{
 					vec3 reflected = 2.0 * NdotL * normal - lightDirection;
 
-					float RdotV = dot(reflected, viewVector);
-
-					if (RdotV < 0.0)
-					{
-						return vec3(0.0);
-					}
-
-					float specular = pow(RdotV, shininess);
+					float specular = pow(max(dot(reflected, viewVector), 0.0), max(shininess, 0.00000001));
 
 					return specular * specularColor;
 				}
