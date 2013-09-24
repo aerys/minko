@@ -60,6 +60,13 @@ Container::addProvider(std::shared_ptr<Provider> provider)
 		std::placeholders::_2
 	)));
 
+	_providerReferenceChangedSlot[provider] = provider->referenceChanged()->connect(std::bind(
+		&Container::providerReferenceChangedHandler,
+		shared_from_this(),
+		std::placeholders::_1,
+		std::placeholders::_2
+	));
+
 	for (auto property : provider->values())
 		providerPropertyAddedHandler(provider, property.first);
 }
@@ -93,7 +100,7 @@ Container::hasProvider(std::shared_ptr<Provider> provider)
 }
 
 bool
-Container::hasProperty(const std::string& propertyName)
+Container::hasProperty(const std::string& propertyName) const
 {
 	return _propertyNameToProvider.count(propertyName) != 0;
 }
@@ -191,14 +198,6 @@ Container::providerPropertyAddedHandler(std::shared_ptr<Provider> 	provider,
 	if (_propertyChanged.count(propertyName) != 0)
 		_providerPropertyChangedSlot[provider] = provider->propertyChanged()->connect(std::bind(
 			&Container::providerPropertyChangedHandler,
-			shared_from_this(),
-			std::placeholders::_1,
-			std::placeholders::_2
-		));
-
-	//if (_referenceChanged.count(propertyName) = 0)
-		_providerReferenceChangedSlot[provider] = provider->referenceChanged()->connect(std::bind(
-			&Container::providerReferenceChangedHandler,
 			shared_from_this(),
 			std::placeholders::_1,
 			std::placeholders::_2
