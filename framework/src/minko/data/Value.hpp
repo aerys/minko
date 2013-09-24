@@ -51,6 +51,13 @@ namespace minko
 			{
 			}
 
+			virtual
+			bool
+			operator==(const Value& x) const
+			{
+				return false;
+			}
+
 		protected:
 			Value() :
 				_changed(Signal<Ptr>::create())
