@@ -346,7 +346,8 @@ package aerys.minko.type.xpath
 			
 			while (operator == '.')
 			{
-				chunks.push(operator);
+				//chunks.push(operator);
+				chunks.push(lexer.getToken(true));
 				operator = lexer.getToken(true);
 			}
 			
@@ -358,7 +359,8 @@ package aerys.minko.type.xpath
 			{
 				try
 				{
-					getValueObject(selection[i], chunks);
+					if (getValueObject(selection[i], chunks) == null)
+						removeFromSelection(i);
 				}
 				catch (e : Error)
 				{
