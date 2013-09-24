@@ -131,43 +131,6 @@ Pass::selectProgram(std::shared_ptr<data::Container> data,
 	return program;
 }
 
-/*
-void
-Pass::buildSignature(std::shared_ptr<data::Container> data, 
-					 std::shared_ptr<data::Container> rootData,
-					 Signature& signature) const
-{
-	signature.first = 0;
-	signature.second.clear();
-	signature.second.resize(MAX_NUM_BINDINGS, -1);
-
-	unsigned int i = 0;
-
-	for (auto& macroBinding : _macroBindings)
-    {
-        auto& propertyName = macroBinding.second;
-
-		const bool dataHasBinding		= data->hasProperty(propertyName);
-		const bool rootDataHasBinding	= rootData->hasProperty(propertyName);
-        if (dataHasBinding || rootDataHasBinding)
-		{
-			// WARNING: we do not support more than 32 macro bindings
-			if (i == MAX_NUM_BINDINGS)
-				throw;
-
-			signature.first |= 1 << i;
-		}
-
-		if (dataHasBinding && data->propertyHasType<int>(propertyName))
-			signature.second[i] = data->get<int>(propertyName);
-		else if (rootDataHasBinding && rootData->propertyHasType<int>(propertyName))
-			signature.second[i] = rootData->get<int>(propertyName);
-
-        ++i;
-    }
-}
-*/
-
 void
 Pass::setUniform(const std::string& name, float value)
 {

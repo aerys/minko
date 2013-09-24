@@ -45,8 +45,10 @@ namespace minko
 			std::vector<std::string>								_names;
 			std::unordered_map<std::string, std::shared_ptr<Value>>	_values;
 			std::unordered_map<std::string, ChangedSignalSlot>		_changedSignalSlots;
+			std::unordered_map<std::string, ChangedSignalSlot>		_referenceChangedSignalSlots;
 
 			std::shared_ptr<Signal<Ptr, const std::string&>>		_propertyChanged;
+			std::shared_ptr<Signal<Ptr, const std::string&>>		_referenceChanged;
 			std::shared_ptr<Signal<Ptr, const std::string&>>		_propertyAdded;
 			std::shared_ptr<Signal<Ptr, const std::string&>>		_propertyRemoved;
 
@@ -88,6 +90,13 @@ namespace minko
 			propertyChanged()
 			{
 				return _propertyChanged;
+			}
+
+			inline
+			std::shared_ptr<Signal<Ptr, const std::string&>>
+			referenceChanged()
+			{
+				return _referenceChanged;
 			}
 
 			inline
@@ -212,9 +221,17 @@ namespace minko
 
 				inline
 				P
-				value()
+				value() const
 				{
 					return _value;
+				}
+
+				bool
+				operator==(const Value& value) const
+				{
+					const ValueWrapper<P>* x = dynamic_cast<const ValueWrapper<P>*>(&value);
+
+					return x ? _value == x->value() : false;
 				}
 
 			private:
