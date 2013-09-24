@@ -34,15 +34,17 @@ namespace minko
 			typedef Signal<Ptr, const std::string&>	PropertyChangedSignal;
 
 		private:
-			typedef std::shared_ptr<Provider>									ProviderPtr;
-			typedef std::shared_ptr<Signal<Ptr, const std::string&>>		    PropertyChangedSignalPtr;
-			typedef Signal<std::shared_ptr<Provider>, const std::string&>::Slot	ProviderPropertyChangedSlot;
+			typedef std::shared_ptr<PropertyChangedSignal>		PropertyChangedSignalPtr;
+
+			typedef std::shared_ptr<Provider>					ProviderPtr;
+			typedef Signal<ProviderPtr, const std::string&>		ProviderPropertyChangedSignal;
+			typedef ProviderPropertyChangedSignal::Slot			ProviderPropertyChangedSlot;
 
 			std::list<ProviderPtr>											_providers;
 			std::unordered_map<std::string, ProviderPtr>					_propertyNameToProvider;
 
-			PropertyChangedSignalPtr										_anyPropertyChanged;
 			std::unordered_map<std::string, PropertyChangedSignalPtr>		_propertyChanged;
+			std::unordered_map<std::string, PropertyChangedSignalPtr>		_referenceChanged;
 
 			std::unordered_map<ProviderPtr, std::list<Any>>					_propertyAddedOrRemovedSlots;
 			std::unordered_map<ProviderPtr, ProviderPropertyChangedSlot>	_providerPropertyChangedSlot;
@@ -103,7 +105,7 @@ namespace minko
 
 			inline
 			const std::list<ProviderPtr>&
-			providers()
+			providers() const
 			{
 				return _providers;
 			}
@@ -115,8 +117,10 @@ namespace minko
 			assertPropertyExists(const std::string& propertyName);
 
 			void 
-			providerPropertyChangedHandler(std::shared_ptr<Provider> 	provider,
-										   const std::string& 			propertyName);
+			providerPropertyChangedHandler(ProviderPtr, const std::string& propertyName);
+
+			void
+			providerReferenceChangedHandler(ProviderPtr, const std::string& propertyName);
 
 			void
 			providerPropertyAddedHandler(std::shared_ptr<Provider> 	provider,

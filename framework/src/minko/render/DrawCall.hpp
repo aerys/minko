@@ -37,9 +37,10 @@ namespace minko
 			typedef std::shared_ptr<DrawCall> Ptr;
 
 		private:
-            typedef std::shared_ptr<AbstractContext>	AbsCtxPtr;
-			typedef std::shared_ptr<data::Provider>		ProviderPtr;
-            typedef std::shared_ptr<data::Container>    ContainerPtr;
+            typedef std::shared_ptr<AbstractContext>				AbsCtxPtr;
+			typedef std::shared_ptr<data::Provider>					ProviderPtr;
+            typedef std::shared_ptr<data::Container>				ContainerPtr;
+			typedef data::Container::PropertyChangedSignal::Slot	ContainerPropertyChangedSlot;
 
 		private:
 			static const unsigned int									MAX_NUM_TEXTURES;
@@ -78,7 +79,10 @@ namespace minko
             std::unordered_map<uint, std::shared_ptr<math::Vector4>>    _uniformFloat4;
             std::unordered_map<uint, const float*>                      _uniformFloat16;
 
-            std::list<Signal<ContainerPtr, const std::string&>::Slot>   _propertyChangedSlots;
+            std::list<ContainerPropertyChangedSlot>							_propertyChangedSlots;
+			std::unordered_map<std::string, int>							_inputNameToVertexBufferId;
+			std::unordered_map<std::string, int>							_inputNameToTextureId;
+			std::unordered_map<std::string, ContainerPropertyChangedSlot>	_referenceChangedSlots;
 
 		public:
 			static inline
@@ -125,16 +129,19 @@ namespace minko
             bind(ContainerPtr data, ContainerPtr rootData);
 
 			ProgramInputs::Type
-			bindProperty(const std::string& name, int vertexBufferId = -1, int textureId = -1);
+			bindProgramInput(const std::string& inputName, int vertexBufferId = -1, int textureId = -1);
 
 			void
-			bindVertexAttribute(const std::string& name, int vertexBufferId);
+			rebindProperty(ContainerPtr, const std::string& name);
 
 			void
-			bindTextureSampler2D(const std::string& name, int textureId);
+			bindVertexAttribute(const std::string& propertyName, int location, int vertexBufferId);
 
 			void
-			bindUniform(const std::string& name);
+			bindTextureSampler2D(const std::string& propertyName, int location, int textureId);
+
+			void
+			bindUniform(const std::string& propertyName, ProgramInputs::Type, int location);
 
             void
 			bindStates();
