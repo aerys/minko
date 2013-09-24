@@ -30,7 +30,7 @@ namespace minko
 			public std::enable_shared_from_this<Container>
 		{
 		public:
-			typedef std::shared_ptr<Container>	Ptr;
+			typedef std::shared_ptr<Container>		Ptr;
 			typedef Signal<Ptr, const std::string&>	PropertyChangedSignal;
 
 		private:
@@ -41,10 +41,12 @@ namespace minko
 			std::list<ProviderPtr>											_providers;
 			std::unordered_map<std::string, ProviderPtr>					_propertyNameToProvider;
 
+			PropertyChangedSignalPtr										_anyPropertyChanged;
 			std::unordered_map<std::string, PropertyChangedSignalPtr>		_propertyChanged;
 
 			std::unordered_map<ProviderPtr, std::list<Any>>					_propertyAddedOrRemovedSlots;
 			std::unordered_map<ProviderPtr, ProviderPropertyChangedSlot>	_providerPropertyChangedSlot;
+			std::unordered_map<ProviderPtr, ProviderPropertyChangedSlot>	_providerReferenceChangedSlot;
 
 		public:
 			static
@@ -95,6 +97,9 @@ namespace minko
 
 			PropertyChangedSignalPtr
 			propertyChanged(const std::string& propertyName);
+
+			PropertyChangedSignalPtr
+			referenceChanged(const std::string& propertyName);
 
 			inline
 			const std::list<ProviderPtr>&

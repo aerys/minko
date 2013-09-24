@@ -24,7 +24,9 @@ using namespace minko::data;
 
 Provider::Provider() :
 	enable_shared_from_this(),
+	_referenceChangedSignalSlots(),
 	_propertyChanged(Signal<Ptr, const std::string&>::create()),
+	_referenceChanged(Signal<Ptr, const std::string&>::create()),
 	_propertyAdded(Signal<Ptr, const std::string&>::create()),
 	_propertyRemoved(Signal<Ptr, const std::string&>::create())
 {
@@ -35,6 +37,7 @@ Provider::unset(const std::string& propertyName)
 {
 	_values.erase(propertyName);
 	_changedSignalSlots.erase(propertyName);
+	_referenceChangedSignalSlots.erase(propertyName);
 
 	if (_values.count(propertyName) == 0)
 	{
@@ -84,23 +87,42 @@ Provider::swap(const std::string& propertyName1, const std::string& propertyName
 void
 Provider::registerProperty(const std::string& propertyName, std::shared_ptr<Value> value)
 {
-	bool isNewValue = _values.count(propertyName) == 0;
+	const auto	foundValueIt	= _values.find(propertyName);
+	const bool	isNewValue		= ( foundValueIt == _values.end() );
+//	bool		isNewValue		= _values.count(propertyName) == 0;
+	bool		valueChanged	= false;
 
+	if (!isNewValue)
+		valueChanged = !((*value) == (*foundValueIt->second));
+	
 	_values[propertyName] = value;
+	
     _changedSignalSlots[propertyName] = value->changed()->connect(std::bind(
 		&Signal<Provider::Ptr, const std::string&>::execute,
 		_propertyChanged,
 		shared_from_this(),
 		propertyName
 	));
+	
+	_referenceChangedSignalSlots[propertyName] = _referenceChanged->connect(std::bind(
+		&Signal<Provider::Ptr, const std::string&>::execute,
+		_referenceChanged,
+		shared_from_this(),
+		propertyName
+		));
 
 	if (isNewValue)
 	{
 		_names.push_back(propertyName);
 		_propertyAdded->execute(shared_from_this(), propertyName);
 	}
-	else
+	else if (valueChanged)
+	{
 		_propertyChanged->execute(shared_from_this(), propertyName);
+#ifdef DEBUG
+		std::cout << "Provider::registerProperty\t'" << propertyName << "' changed" << std::endl;
+#endif // DEBUG
+	}
 }
 
 
