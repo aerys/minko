@@ -104,24 +104,23 @@ Provider::registerProperty(const std::string& propertyName, std::shared_ptr<Valu
 		propertyName
 	));
 	
-	_referenceChangedSignalSlots[propertyName] = _referenceChanged->connect(std::bind(
-		&Signal<Provider::Ptr, const std::string&>::execute,
-		_referenceChanged,
-		shared_from_this(),
-		propertyName
-		));
 
 	if (isNewValue)
 	{
 		_names.push_back(propertyName);
 		_propertyAdded->execute(shared_from_this(), propertyName);
 	}
-	else if (valueChanged)
+	else
 	{
 		_propertyChanged->execute(shared_from_this(), propertyName);
+
+		if (valueChanged)
+		{
+			_referenceChanged->execute(shared_from_this(), propertyName);
 #ifdef DEBUG
-		std::cout << "Provider::registerProperty\t'" << propertyName << "' changed" << std::endl;
+			std::cout << "Provider::registerProperty\t'" << propertyName << "' -> referenceChanged" << std::endl;
 #endif // DEBUG
+		}
 	}
 }
 
