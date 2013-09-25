@@ -29,9 +29,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #ifdef __APPLE__
 # include <OpenGL/gl.h>
 # include <GLUT/glut.h>
-#elif _WIN32
+#elif MINKO_ANGLE
 # include "GLES2/gl2.h"
 # include "minko/math/Matrix4x4.hpp"
+#elif _WIN32
+# include "GL/glew.h"
 #else
 # include <GL/gl.h>
 # include <GL/glu.h>
@@ -114,6 +116,9 @@ OpenGLES2Context::OpenGLES2Context() :
     _currentDepthMask(true),
     _currentDepthFunc(CompareMode::UNSET)
 {
+#if defined _WIN32 && !defined MINKO_ANGLE
+	glewInit();
+#endif
 
 	glEnable(GL_DEPTH_TEST);
     glEnable(GL_BLEND);
