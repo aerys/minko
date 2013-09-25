@@ -30,21 +30,25 @@ namespace minko
 			public std::enable_shared_from_this<Container>
 		{
 		public:
-			typedef std::shared_ptr<Container>	Ptr;
-			typedef Signal<Ptr, const std::string&>	PropertyChangedSignal;
+			typedef std::shared_ptr<Container>								Ptr;
+			typedef Signal<Ptr, const std::string&>							PropertyChangedSignal;
 
 		private:
-			typedef std::shared_ptr<Provider>									ProviderPtr;
-			typedef std::shared_ptr<Signal<Ptr, const std::string&>>		    PropertyChangedSignalPtr;
-			typedef Signal<std::shared_ptr<Provider>, const std::string&>::Slot	ProviderPropertyChangedSlot;
+			typedef std::shared_ptr<PropertyChangedSignal>					PropertyChangedSignalPtr;
+
+			typedef std::shared_ptr<Provider>								ProviderPtr;
+			typedef Signal<ProviderPtr, const std::string&>					ProviderPropertyChangedSignal;
+			typedef ProviderPropertyChangedSignal::Slot						ProviderPropertyChangedSlot;
 
 			std::list<ProviderPtr>											_providers;
 			std::unordered_map<std::string, ProviderPtr>					_propertyNameToProvider;
 
-			std::unordered_map<std::string, PropertyChangedSignalPtr>		_propertyChanged;
+			std::unordered_map<std::string, PropertyChangedSignalPtr>		_propValueChanged;
+			std::unordered_map<std::string, PropertyChangedSignalPtr>		_propReferenceChanged;
 
 			std::unordered_map<ProviderPtr, std::list<Any>>					_propertyAddedOrRemovedSlots;
-			std::unordered_map<ProviderPtr, ProviderPropertyChangedSlot>	_providerPropertyChangedSlot;
+			std::unordered_map<ProviderPtr, ProviderPropertyChangedSlot>	_providerValueChangedSlot;
+			std::unordered_map<ProviderPtr, ProviderPropertyChangedSlot>	_providerReferenceChangedSlot;
 
 		public:
 			static
@@ -64,7 +68,7 @@ namespace minko
 			hasProvider(std::shared_ptr<Provider> provider);
 
 			bool
-			hasProperty(const std::string& propertyName);
+			hasProperty(const std::string& propertyName) const;
 
 			template <typename T>
 			T
@@ -94,11 +98,14 @@ namespace minko
 			}
 
 			PropertyChangedSignalPtr
-			propertyChanged(const std::string& propertyName);
+			propertyValueChanged(const std::string& propertyName);
+
+			PropertyChangedSignalPtr
+			propertyReferenceChanged(const std::string& propertyName);
 
 			inline
 			const std::list<ProviderPtr>&
-			providers()
+			providers() const
 			{
 				return _providers;
 			}
@@ -109,17 +116,17 @@ namespace minko
 			void
 			assertPropertyExists(const std::string& propertyName);
 
+			void
+			providerPropertyAddedHandler(ProviderPtr, const std::string& propertyName);
+
+			void
+			providerPropertyRemovedHandler(ProviderPtr, const std::string& propertyName);
+
 			void 
-			providerPropertyChangedHandler(std::shared_ptr<Provider> 	provider,
-										   const std::string& 			propertyName);
+			providerValueChangedHandler(ProviderPtr, const std::string& propertyName);
 
 			void
-			providerPropertyAddedHandler(std::shared_ptr<Provider> 	provider,
-										 const std::string& 		propertyName);
-
-			void
-			providerPropertyRemovedHandler(std::shared_ptr<Provider> 	provider,
-										   const std::string& 			propertyName);
+			providerReferenceChangedHandler(ProviderPtr, const std::string& propertyName);
 		};
 	}
 }
