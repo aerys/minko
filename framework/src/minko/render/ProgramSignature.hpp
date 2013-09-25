@@ -20,54 +20,75 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
-#include "minko/Signal.hpp"
-
-namespace
-{
-}
 
 namespace minko
 {
-	namespace data
+	namespace render
 	{
-		class Value
+		class ProgramSignature
 		{
-		public:
-			typedef std::shared_ptr<Value> Ptr;
+		private:
+			static const uint	MAX_NUM_BINDINGS;
 
-		protected:
-			std::shared_ptr<Signal<Ptr>>	_changed;
+			uint				_mask;
+			std::vector<int>	_values;
 
 		public:
 			inline
-			std::shared_ptr<Signal<Ptr>>
-			changed()
-			{
-				return _changed;
-			}
-
-			virtual
-			~Value()
+			ProgramSignature():
+				_mask(0),
+				_values(MAX_NUM_BINDINGS, 0)
 			{
 			}
+			
+			void
+			build(const data::BindingMap& macroBindings,
+				  std::shared_ptr<data::Container> data,
+				  std::shared_ptr<data::Container> rootData);
 
-			virtual
-			bool
-			operator==(const Value& x) const
+			bool 
+			operator==(const ProgramSignature&) const;
+
+			inline
+			uint
+			mask() const
 			{
-				return false;
+				return _mask;
 			}
 
-		protected:
-			Value() :
-				_changed(Signal<Ptr>::create())
+			inline
+			const std::vector<int>&
+			values() const
 			{
-			}
-
-			Value(std::shared_ptr<Signal<Ptr>> changed) :
-				_changed(changed)
-			{
+				return _values;
 			}
 		};
 	}
+}
+
+namespace std
+{
+	template <class T>
+	inline 
+	void 
+	hash_combine(std::size_t & seed, const T& v)
+	{
+		std::hash<T> hasher;
+		seed ^= hasher(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+	}
+
+	template<> struct hash<minko::render::ProgramSignature>
+	{
+		inline
+		size_t 
+		operator()(const minko::render::ProgramSignature& x) const
+		{
+			size_t seed = std::hash<minko::uint>()(x.mask());
+
+			for (unsigned int i=0; i < x.values().size(); ++i)
+				hash_combine(seed, x.values()[i]);
+
+			return seed;
+		}
+	};
 }

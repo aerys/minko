@@ -17,7 +17,7 @@ struct PointLight
 	vec3 color;
 	float diffuse;
 	float specular;
-	float attenuationDistance;
+	vec2 attenuationDistance;
 	vec3 position;
 };
 
