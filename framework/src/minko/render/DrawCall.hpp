@@ -126,8 +126,11 @@ namespace minko
 			void
             bind(ContainerPtr data, ContainerPtr rootData);
 
-			ProgramInputs::Type
-			bindProgramInput(const std::string& inputName, int vertexBufferId = -1, int textureId = -1);
+			void
+			bindProgramInputs();
+
+			void
+			bindStates();
 
 			void
 			bindVertexAttribute(ContainerPtr, const std::string& propertyName, int location, int vertexBufferId);
@@ -137,9 +140,6 @@ namespace minko
 
 			void
 			bindUniform(ContainerPtr, const std::string& propertyName, ProgramInputs::Type, int location);
-
-            void
-			bindStates();
 
             template <typename T>
             T

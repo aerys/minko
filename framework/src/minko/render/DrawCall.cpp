@@ -85,78 +85,70 @@ DrawCall::bind(ContainerPtr data, ContainerPtr rootData)
 
 	auto indexBuffer	= getDataProperty<IndexBuffer::Ptr>("geometry.indices");
 
-    _indexBuffer = indexBuffer->id();
-    _numIndices = indexBuffer->data().size();
+    _indexBuffer	= indexBuffer->id();
+    _numIndices		= indexBuffer->data().size();
 
-	unsigned int numTextures	    = 0;
-    unsigned int numVertexBuffers   = 0;
-    auto programInputs				= _program->inputs();
-
-    if (!programInputs)
-        throw;
-
-	const std::vector<std::string>& inputNames	= programInputs->names();
-    for (unsigned int inputId = 0; inputId < inputNames.size(); ++inputId)
-	{
-		auto type = bindProgramInput(inputNames[inputId], numVertexBuffers, numTextures);
-
-		if (type == ProgramInputs::Type::attribute)
-			++numVertexBuffers;
-		else if (type == ProgramInputs::Type::sampler2d)
-			++numTextures;
-	}
-
+	bindProgramInputs();
 	bindStates();
 }
 
-ProgramInputs::Type
-DrawCall::bindProgramInput(const std::string& inputName, 
-							int vertexBufferId,
-							int textureId)
+void
+DrawCall::bindProgramInputs()
 {
-	if (_program == nullptr || !_program->inputs()->hasName(inputName))
-		return ProgramInputs::Type::unknown;
+	if (_program == nullptr || _program->inputs() == nullptr)
+		return;
 
-	const auto	type		= _program->inputs()->type(inputName);
-	const int	location	= _program->inputs()->location(inputName);
-
-	switch (type)
+	auto							programInputs		= _program->inputs();
+	const std::vector<std::string>&	inputNames			= programInputs->names();
+	unsigned int					numTextures			= 0;
+    unsigned int					numVertexBuffers	= 0;
+	
+	unsigned int					vertexBufferId		= 0;
+	unsigned int					textureId			= 0;
+	for (unsigned int inputId = 0; inputId < inputNames.size(); ++inputId)
 	{
-	case ProgramInputs::Type::attribute:
+		const std::string&	inputName	= inputNames[inputId];
+		const auto			type		= programInputs->type(inputName);
+		const int			location	= programInputs->location(inputName);
+
+		switch (type)
 		{
-			auto				propertyNameIt	= _attributeBindings.find(inputName);
-			const std::string&	propertyName	= propertyNameIt == _attributeBindings.end() ? inputName : propertyNameIt->second;
-			Container::Ptr		container		= getDataContainer(propertyName);
-			if (container)
-				bindVertexAttribute(container, propertyName, location, vertexBufferId);
+		case ProgramInputs::Type::attribute:
+			{
+				auto				propertyNameIt	= _attributeBindings.find(inputName);
+				const std::string&	propertyName	= propertyNameIt == _attributeBindings.end() ? inputName : propertyNameIt->second;
+				Container::Ptr		container		= getDataContainer(propertyName);
+				if (container)
+					bindVertexAttribute(container, propertyName, location, vertexBufferId);
+				++vertexBufferId;
+				break;
+			}
+	
+		case ProgramInputs::Type::sampler2d:
+			{
+				auto				propertyNameIt	= _uniformBindings.find(inputName);
+				const std::string&	propertyName	= propertyNameIt == _uniformBindings.end() ? inputName : propertyNameIt->second;
+				Container::Ptr		container		= getDataContainer(propertyName);
+				if (container)
+					bindTextureSampler2D(container, propertyName, location, textureId);
+				++textureId;
+				break;
+			}
+	
+		default:
+			{
+				auto				propertyNameIt	= _uniformBindings.find(inputName);
+				const std::string&	propertyName	= propertyNameIt == _uniformBindings.end() ? inputName : propertyNameIt->second;
+				Container::Ptr		container		= getDataContainer(propertyName);
+				if (container)
+					bindUniform(container, propertyName, type, location);
+				break;
+			}
+	
+		case ProgramInputs::Type::unknown:
 			break;
 		}
-
-	case ProgramInputs::Type::sampler2d:
-		{
-			auto				propertyNameIt	= _uniformBindings.find(inputName);
-			const std::string&	propertyName	= propertyNameIt == _uniformBindings.end() ? inputName : propertyNameIt->second;
-			Container::Ptr		container		= getDataContainer(propertyName);
-			if (container)
-				bindTextureSampler2D(container, propertyName, location, textureId);
-			break;
-		}
-
-	default:
-		{
-			auto				propertyNameIt	= _uniformBindings.find(inputName);
-			const std::string&	propertyName	= propertyNameIt == _uniformBindings.end() ? inputName : propertyNameIt->second;
-			Container::Ptr		container		= getDataContainer(propertyName);
-			if (container)
-				bindUniform(container, propertyName, type, location);
-			break;
-		}
-
-	case ProgramInputs::Type::unknown:
-		break;
 	}
-
-	return type;
 }
 
 void
@@ -165,8 +157,6 @@ DrawCall::bindVertexAttribute(Container::Ptr		container,
 							  int					location,
 							  int					vertexBufferId)
 {
-	std::cout << "bind attribute '" << propertyName << "'" << std::endl;
-
 #ifdef DEBUG
 	if (location < 0)
 		throw std::invalid_argument("location");
@@ -203,8 +193,6 @@ DrawCall::bindTextureSampler2D(Container::Ptr		container,
 							   int					location,
 							   int					textureId)
 {
-	std::cout << "bind texture '" << propertyName << "'" << std::endl;
-
 #ifdef DEBUG
 	if (location < 0)
 		throw std::invalid_argument("location");
@@ -242,8 +230,6 @@ DrawCall::bindUniform(Container::Ptr		container,
 					  ProgramInputs::Type	type,
 					  int					location)
 {
-	std::cout << "bind uniform '" << propertyName << "'" << std::endl;
-
 #ifdef DEBUG
 	if (type == ProgramInputs::Type::sampler2d || type == ProgramInputs::Type::attribute)
 		throw std::invalid_argument("type");
@@ -429,7 +415,7 @@ void
 DrawCall::propertyChangedHandler(std::shared_ptr<data::Container>  data,
                                  const std::string&                propertyName)
 {
-	std::cout << "DrawCall::propertyChangedHandler\t'" << propertyName << "'" << std::endl;
+
 }
 
 Container::Ptr
