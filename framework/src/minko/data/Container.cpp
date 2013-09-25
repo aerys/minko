@@ -60,6 +60,7 @@ Container::addProvider(std::shared_ptr<Provider> provider)
 		std::placeholders::_2
 	)));
 
+	std::cout << "Cont [" << this << "] listens to Prov [" << provider.get() << "]" << std::endl;
 	_providerReferenceChangedSlot[provider] = provider->referenceChanged()->connect(std::bind(
 		&Container::providerReferenceChangedHandler,
 		shared_from_this(),
@@ -157,13 +158,6 @@ Container::referenceChanged(const std::string& propertyName)
 	return _referenceChanged[propertyName];
 }
 
-/*
-Container::PropertyChangedSignalPtr
-Container::referenceChanged(const std::string& propertyName)
-{
-}
-*/
-
 void
 Container::assertPropertyExists(const std::string& propertyName)
 {
@@ -183,6 +177,8 @@ void
 Container::providerReferenceChangedHandler(Provider::Ptr		provider,
 										   const std::string&	propertyName)
 {
+	std::cout << "Cont [" << this << "] <- refChanged (" << propertyName << ") <- Prov [" << provider.get() << "]" << std::endl;
+	std::cout << "Cont [" << this << "] -> refChanged (" << propertyName << ")" << std::endl;
 	referenceChanged(propertyName)->execute(shared_from_this(), propertyName);
 }
 
