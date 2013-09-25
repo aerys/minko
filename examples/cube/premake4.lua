@@ -56,7 +56,7 @@ project "minko-example-cube"
 			defines { "MINKO_ANGLE" }
 			links { "libGLESv2", "libEGL" }
 		else
-			links { "glew32" }
+			links { "OpenGL32", "glew32" }
 		end
 		postbuildcommands {
 			-- copy framework effects
