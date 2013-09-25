@@ -3,13 +3,16 @@
 #include "minko/Minko.hpp"
 #include "minko/MinkoPNG.hpp"
 
-#include "SDL2/SDL.h"
-
-#ifdef MINKO_ANGLE
-#include "SDL2/SDL_syswm.h"
-#include <EGL/egl.h>
-#include <GLES2/gl2.h>
-#include <GLES2/gl2ext.h>
+#ifdef EMSCRIPTEN
+# include "SDL/SDL.h"
+#else
+# include "SDL2/SDL.h"
+# ifdef MINKO_ANGLE
+#  include "SDL2/SDL_syswm.h"
+#  include <EGL/egl.h>
+#  include <GLES2/gl2.h>
+#  include <GLES2/gl2ext.h>
+# endif
 #endif
 
 using namespace minko;
@@ -128,8 +131,17 @@ int main(int argc, char** argv)
 	if (SDL_Init(SDL_INIT_VIDEO) == -1)
 		exit(-1);
 
+#ifdef EMSCRIPTEN
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
+	SDL_WM_SetCaption("Minko - Cube Example", "Minko");
+	SDL_Surface *screen = SDL_SetVideoMode(800,
+		600,
+		0, SDL_OPENGL);
+
+	std::cout << "WebGL context created" << std::endl;
+	//context = render::WebGLContext::create();
+#else
 	SDL_Window* window = SDL_CreateWindow(
 		"Minko - Cube Example",
 		SDL_WINDOWPOS_UNDEFINED,
@@ -138,14 +150,15 @@ int main(int argc, char** argv)
 		SDL_WINDOW_OPENGL
 	);
 
-#ifdef _WIN32
+# ifdef MINKO_ANGLE
 	ESContext* context;
 	if (!(context = initContext(window)))
 		throw std::runtime_error("Could not create eglContext");
 
 	std::cout << "EGLContext Initialized" << std::endl;
-#else
+# else
 	SDL_GLContext glcontext = SDL_GL_CreateContext(window);
+# endif
 #endif
 
 	auto sceneManager = SceneManager::create(render::OpenGLES2Context::create());
@@ -213,11 +226,13 @@ int main(int argc, char** argv)
 			}
 		}
 
-		mesh->component<Transform>()->transform()->prependRotationY(.01f);
+		mesh->component<Transform>()->transform()->prependRotationY(.05f);
 
 		sceneManager->nextFrame();
 #ifdef MINKO_ANGLE
-		eglSwapBuffers(context->eglDisplay, context->eglSurface); 
+		eglSwapBuffers(context->eglDisplay, context->eglSurface);
+#elif defined(EMSCRIPTEN)
+		SDL_GL_SwapBuffers();
 #else
 		SDL_GL_SwapWindow(window);
 #endif
