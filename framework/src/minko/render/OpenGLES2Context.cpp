@@ -92,7 +92,7 @@ OpenGLES2Context::initializeDepthFuncsMap()
 }
 
 OpenGLES2Context::OpenGLES2Context() :
-	_errorsEnabled(true),
+	_errorsEnabled(false),
 	_textures(),
     _textureSizes(),
     _textureHasMipmaps(),
@@ -1021,9 +1021,12 @@ OpenGLES2Context::setUniform(unsigned int location, unsigned int size, bool tran
 #ifdef GL_ES_VERSION_2_0
     if (transpose)
     {
-        math::Matrix4x4::Ptr tmp = math::Matrix4x4::create()->initialize(std::vector<float>(values, values + 16));
-        tmp->transpose();
-        glUniformMatrix4fv(location, size, false, tmp->values().data());
+		float tmp[16];
+		for (int i = 0; i < 4; i++)
+			for (int j = 0; j < 4; j++)
+				tmp[i * 4 + j] = values[j * 4 + i];
+
+        glUniformMatrix4fv(location, size, false, tmp);
     }
     else
     {
