@@ -733,10 +733,11 @@ main(int argc, char** argv)
 			cameraCollider->synchronizePhysicsWithGraphics();
 		}
 		
-		sponzaLighting->step();
+		
 		sceneManager->nextFrame();
+		sponzaLighting->step();
 
-		//renderer->render();
+		renderer->render();
 
 #ifdef MINKO_ANGLE
 		eglSwapBuffers(escontext->eglDisplay, escontext->eglSurface); 
