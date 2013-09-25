@@ -24,10 +24,13 @@ using namespace minko::data;
 
 Provider::Provider() :
 	enable_shared_from_this(),
-	_referenceChangedSignalSlots(),
-	_propertyChanged(Signal<Ptr, const std::string&>::create()),
-	_referenceChanged(Signal<Ptr, const std::string&>::create()),
+	_names(),
+	_values(),
+	_valueChangedSlots(),
+	_referenceChangedSlots(),
 	_propertyAdded(Signal<Ptr, const std::string&>::create()),
+	_propValueChanged(Signal<Ptr, const std::string&>::create()),
+	_propReferenceChanged(Signal<Ptr, const std::string&>::create()),
 	_propertyRemoved(Signal<Ptr, const std::string&>::create())
 {
 }
@@ -36,8 +39,8 @@ void
 Provider::unset(const std::string& propertyName)
 {
 	_values.erase(propertyName);
-	_changedSignalSlots.erase(propertyName);
-	_referenceChangedSignalSlots.erase(propertyName);
+	_valueChangedSlots.erase(propertyName);
+	_referenceChangedSlots.erase(propertyName);
 
 	if (_values.count(propertyName) == 0)
 	{
@@ -66,21 +69,29 @@ Provider::swap(const std::string& propertyName1, const std::string& propertyName
 		_values[destination] = _values[source];
 		_values.erase(source);
 
-		_changedSignalSlots[destination] = _changedSignalSlots[source];
-		_changedSignalSlots.erase(source);
+		_valueChangedSlots[destination] = _valueChangedSlots[source];
+		_valueChangedSlots.erase(source);
 
 		_propertyRemoved->execute(shared_from_this(), source);
 		_propertyAdded->execute(shared_from_this(), destination);
 	}
 	else
 	{
-		auto value = _values[propertyName1];
+		const auto	value1	= _values[propertyName1];
+		const auto	value2	= _values[propertyName2];
+		const bool	changed = !( (*value1) == (*value2) );
 
-		_values[propertyName1] = _values[propertyName2];
-		_values[propertyName2] = value;
+		_values[propertyName1] = value2;
+		_values[propertyName2] = value1;
 
-		_propertyChanged->execute(shared_from_this(), propertyName1);
-		_propertyChanged->execute(shared_from_this(), propertyName2);
+		_propValueChanged->execute(shared_from_this(), propertyName1);
+		_propValueChanged->execute(shared_from_this(), propertyName2);
+
+		if (changed)
+		{
+			_propReferenceChanged->execute(shared_from_this(), propertyName1);
+			_propReferenceChanged->execute(shared_from_this(), propertyName2);
+		}
 	}
 }
 
@@ -91,16 +102,16 @@ Provider::registerProperty(const std::string&		propertyName,
 	const auto	foundValueIt	= _values.find(propertyName);
 	const bool	isNewValue		= ( foundValueIt == _values.end() );
 //	bool		isNewValue		= _values.count(propertyName) == 0;
-	bool		valueChanged	= false;
+	bool		changed			= false;
 
 	if (!isNewValue)
-		valueChanged = !((*value) == (*foundValueIt->second));
+		changed = !( (*value) == (*foundValueIt->second) );
 	
 	_values[propertyName] = value;
 	
-    _changedSignalSlots[propertyName] = value->changed()->connect(std::bind(
+    _valueChangedSlots[propertyName] = value->changed()->connect(std::bind(
 		&Signal<Provider::Ptr, const std::string&>::execute,
-		_propertyChanged,
+		_propValueChanged,
 		shared_from_this(),
 		propertyName
 	));
@@ -113,16 +124,10 @@ Provider::registerProperty(const std::string&		propertyName,
 	}
 	else
 	{
-		_propertyChanged->execute(shared_from_this(), propertyName);
+		_propValueChanged->execute(shared_from_this(), propertyName);
 
-		if (valueChanged)
-		{
-#ifdef DEBUG
-			std::cout << "\nProv [" << this << "] -> refChanged (" << propertyName << ")" << std::endl;
-#endif // DEBUG
-
-			_referenceChanged->execute(shared_from_this(), propertyName);
-		}
+		if (changed)
+			_propReferenceChanged->execute(shared_from_this(), propertyName);
 	}
 }
 
@@ -134,7 +139,7 @@ Provider::propertyWrapperInitHandler(const std::string& propertyName)
 
 	/*_values[propertyName] = Value::create(std::bind(
 		&Signal<ptr, const std::string&>::execute,
-		_propertyChanged,
+		_propValueChanged,
 		shared_from_this(),
 		propertyName
 	));*/
