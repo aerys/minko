@@ -85,7 +85,8 @@ Provider::swap(const std::string& propertyName1, const std::string& propertyName
 }
 
 void
-Provider::registerProperty(const std::string& propertyName, std::shared_ptr<Value> value)
+Provider::registerProperty(const std::string&		propertyName, 
+						   std::shared_ptr<Value>	value)
 {
 	const auto	foundValueIt	= _values.find(propertyName);
 	const bool	isNewValue		= ( foundValueIt == _values.end() );
@@ -116,10 +117,11 @@ Provider::registerProperty(const std::string& propertyName, std::shared_ptr<Valu
 
 		if (valueChanged)
 		{
-			_referenceChanged->execute(shared_from_this(), propertyName);
 #ifdef DEBUG
-			std::cout << "Provider::registerProperty\t'" << propertyName << "' -> referenceChanged" << std::endl;
+			std::cout << "\nProv [" << this << "] -> refChanged (" << propertyName << ")" << std::endl;
 #endif // DEBUG
+
+			_referenceChanged->execute(shared_from_this(), propertyName);
 		}
 	}
 }
