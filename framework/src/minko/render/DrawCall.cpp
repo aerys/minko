@@ -177,7 +177,7 @@ DrawCall::bindVertexAttribute(Container::Ptr		container,
 	_vertexAttributeOffsets[vertexBufferId]	= std::get<2>(*attribute);
 
 	if (_referenceChangedSlots.count(propertyName) == 0)
-		_referenceChangedSlots[propertyName] = container->referenceChanged(propertyName)->connect(std::bind(
+		_referenceChangedSlots[propertyName] = container->propertyReferenceChanged(propertyName)->connect(std::bind(
 			&DrawCall::bindVertexAttribute,
 			shared_from_this(),
 			std::placeholders::_1,
@@ -214,7 +214,7 @@ DrawCall::bindTextureSampler2D(Container::Ptr		container,
 	_textureMipFilters[textureId]	= std::get<2>(samplerState);
 
 	if (_referenceChangedSlots.count(propertyName) == 0)
-		_referenceChangedSlots[propertyName] = container->referenceChanged(propertyName)->connect(std::bind(
+		_referenceChangedSlots[propertyName] = container->propertyReferenceChanged(propertyName)->connect(std::bind(
 			&DrawCall::bindTextureSampler2D,
 			shared_from_this(),
 			std::placeholders::_1,
@@ -253,7 +253,7 @@ DrawCall::bindUniform(Container::Ptr		container,
 		throw std::logic_error("unsupported uniform type.");
 
 	if (_referenceChangedSlots.count(propertyName) == 0)
-		_referenceChangedSlots[propertyName] = container->referenceChanged(propertyName)->connect(std::bind(
+		_referenceChangedSlots[propertyName] = container->propertyReferenceChanged(propertyName)->connect(std::bind(
 			&DrawCall::bindUniform,
 			shared_from_this(),
 			std::placeholders::_1,

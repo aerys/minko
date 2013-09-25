@@ -26,10 +26,10 @@ Container::Container() :
 	std::enable_shared_from_this<Container>(),
 	_providers(),
 	_propertyNameToProvider(),
-	_propertyChanged(),
-	_referenceChanged(),
+	_propValueChanged(),
+	_propReferenceChanged(),
 	_propertyAddedOrRemovedSlots(),
-	_providerPropertyChangedSlot(),
+	_providerValueChangedSlot(),
 	_providerReferenceChangedSlot()
 {
 }
@@ -60,8 +60,7 @@ Container::addProvider(std::shared_ptr<Provider> provider)
 		std::placeholders::_2
 	)));
 
-	std::cout << "Cont [" << this << "] listens to Prov [" << provider.get() << "]" << std::endl;
-	_providerReferenceChangedSlot[provider] = provider->referenceChanged()->connect(std::bind(
+	_providerReferenceChangedSlot[provider] = provider->propertyReferenceChanged()->connect(std::bind(
 		&Container::providerReferenceChangedHandler,
 		shared_from_this(),
 		std::placeholders::_1,
@@ -88,10 +87,10 @@ Container::removeProvider(std::shared_ptr<Provider> provider)
 	for (auto property : provider->values())
 		_propertyNameToProvider.erase(property.first);
 
-	if (_providerPropertyChangedSlot.count(provider) != 0)
-		_providerPropertyChangedSlot.erase(provider);
+	if (_providerValueChangedSlot.count(provider) != 0)
+		_providerValueChangedSlot.erase(provider);
 
-	_providerPropertyChangedSlot.erase(provider);
+	_providerValueChangedSlot.erase(provider);
 }
 
 bool
@@ -107,21 +106,21 @@ Container::hasProperty(const std::string& propertyName) const
 }
 
 Container::PropertyChangedSignalPtr
-Container::propertyChanged(const std::string& propertyName)
+Container::propertyValueChanged(const std::string& propertyName)
 {
 	//assertPropertyExists(propertyName);
 
-	if (_propertyChanged.count(propertyName) == 0)
+	if (_propValueChanged.count(propertyName) == 0)
 	{
-		_propertyChanged[propertyName] = Signal<Container::Ptr, const std::string&>::create();
+		_propValueChanged[propertyName] = Signal<Container::Ptr, const std::string&>::create();
 
 		if (_propertyNameToProvider.count(propertyName) != 0)
 		{
 			Provider::Ptr provider = _propertyNameToProvider[propertyName];
 
-			if (_providerPropertyChangedSlot.count(provider) == 0)
-				_providerPropertyChangedSlot[provider] = provider->propertyChanged()->connect(std::bind(
-					&Container::providerPropertyChangedHandler,
+			if (_providerValueChangedSlot.count(provider) == 0)
+				_providerValueChangedSlot[provider] = provider->propertyValueChanged()->connect(std::bind(
+					&Container::providerValueChangedHandler,
 					shared_from_this(),
 					std::placeholders::_1,
 					std::placeholders::_2
@@ -129,15 +128,15 @@ Container::propertyChanged(const std::string& propertyName)
 		}
 	}
 
-	return _propertyChanged[propertyName];
+	return _propValueChanged[propertyName];
 }
 
 Container::PropertyChangedSignalPtr
-Container::referenceChanged(const std::string& propertyName)
+Container::propertyReferenceChanged(const std::string& propertyName)
 {
-	if (_referenceChanged.count(propertyName) == 0)
+	if (_propReferenceChanged.count(propertyName) == 0)
 	{
-		_referenceChanged[propertyName] = Signal<Container::Ptr, const std::string&>::create();
+		_propReferenceChanged[propertyName] = Signal<Container::Ptr, const std::string&>::create();
 
 		if (_propertyNameToProvider.count(propertyName) != 0)
 		{
@@ -145,7 +144,7 @@ Container::referenceChanged(const std::string& propertyName)
 
 			if (_providerReferenceChangedSlot.count(provider) == 0)
 			{
-				_providerReferenceChangedSlot[provider] = provider->referenceChanged()->connect(std::bind(
+				_providerReferenceChangedSlot[provider] = provider->propertyReferenceChanged()->connect(std::bind(
 					&Container::providerReferenceChangedHandler,
 					shared_from_this(),
 					std::placeholders::_1,
@@ -155,7 +154,7 @@ Container::referenceChanged(const std::string& propertyName)
 		}
 	}
 
-	return _referenceChanged[propertyName];
+	return _propReferenceChanged[propertyName];
 }
 
 void
@@ -166,20 +165,18 @@ Container::assertPropertyExists(const std::string& propertyName)
 }
 
 void
-Container::providerPropertyChangedHandler(Provider::Ptr			provider,
+Container::providerValueChangedHandler(Provider::Ptr			provider,
 									      const std::string& 	propertyName)
 {
-	if (_propertyChanged.count(propertyName) != 0)
-		propertyChanged(propertyName)->execute(shared_from_this(), propertyName);
+	if (_propValueChanged.count(propertyName) != 0)
+		propertyValueChanged(propertyName)->execute(shared_from_this(), propertyName);
 }
 
 void
 Container::providerReferenceChangedHandler(Provider::Ptr		provider,
 										   const std::string&	propertyName)
 {
-	std::cout << "Cont [" << this << "] <- refChanged (" << propertyName << ") <- Prov [" << provider.get() << "]" << std::endl;
-	std::cout << "Cont [" << this << "] -> refChanged (" << propertyName << ")" << std::endl;
-	referenceChanged(propertyName)->execute(shared_from_this(), propertyName);
+	propertyReferenceChanged(propertyName)->execute(shared_from_this(), propertyName);
 }
 
 void
@@ -191,15 +188,15 @@ Container::providerPropertyAddedHandler(std::shared_ptr<Provider> 	provider,
 	
 	_propertyNameToProvider[propertyName] = provider;
 
-	if (_propertyChanged.count(propertyName) != 0)
-		_providerPropertyChangedSlot[provider] = provider->propertyChanged()->connect(std::bind(
-			&Container::providerPropertyChangedHandler,
+	if (_propValueChanged.count(propertyName) != 0)
+		_providerValueChangedSlot[provider] = provider->propertyValueChanged()->connect(std::bind(
+			&Container::providerValueChangedHandler,
 			shared_from_this(),
 			std::placeholders::_1,
 			std::placeholders::_2
 		));
 
-	providerPropertyChangedHandler(provider, propertyName);	
+	providerValueChangedHandler(provider, propertyName);	
 }
 
 void
@@ -208,13 +205,13 @@ Container::providerPropertyRemovedHandler(std::shared_ptr<Provider> provider,
 {
 	_propertyNameToProvider.erase(propertyName);
 
-	if (_providerPropertyChangedSlot.count(provider) != 0)
+	if (_providerValueChangedSlot.count(provider) != 0)
 		for (auto property : provider->values())
-			if (_propertyChanged.count(property.first) != 0)
+			if (_propValueChanged.count(property.first) != 0)
 				return;
 
-	_providerPropertyChangedSlot.erase(provider);
+	_providerValueChangedSlot.erase(provider);
 	_providerReferenceChangedSlot.erase(provider);
 
-	providerPropertyChangedHandler(provider, propertyName);
+	providerValueChangedHandler(provider, propertyName);
 }
