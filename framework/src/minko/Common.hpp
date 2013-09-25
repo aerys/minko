@@ -68,6 +68,7 @@ namespace minko
 		class AbstractResource;
 		class Shader;
 		class Program;
+		class ProgramSignature;
 		class VertexFormat;
 		class VertexBuffer;
 		class IndexBuffer;
