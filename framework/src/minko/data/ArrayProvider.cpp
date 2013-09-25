@@ -38,7 +38,7 @@ ArrayProvider::index(unsigned int index)
 	for (auto& propertyName : propertyNames())
 		swap(
 			propertyName,
-			formatPropertyName(propertyName.substr(propertyName.find_first_of(']') + 1)),
+			formatPropertyName(propertyName.substr(propertyName.find_first_of(']') + 2)),
 			true
 		);
 }
