@@ -1,4 +1,4 @@
-#include <time.h>
+#include <ctime>
 
 #include "minko/Minko.hpp"
 #include "minko/MinkoPNG.hpp"
@@ -30,15 +30,19 @@ printFramerate(const unsigned int delay = 1)
 int main(int argc, char** argv)
 {
 	glfwInit();
-	auto window = glfwCreateWindow(800, 600, "Minko - Cube Example", NULL, NULL);
+	auto window = glfwCreateWindow(800, 600, "Minko - Light Example", NULL, NULL);
 	glfwMakeContextCurrent(window);
 
-	auto sceneManager	= SceneManager::create(render::OpenGLES2Context::create());
-    auto mesh			= scene::Node::create("mesh");
-    auto lightNode		= scene::Node::create("directional light 1");
-	auto pointLightNode	= scene::Node::create("plight");
-	auto spotLightNode	= scene::Node::create("spotlight");
-	auto sphereGeometry	= geometry::SphereGeometry::create(sceneManager->assets()->context(), 32, 16, true);
+	const clock_t startTime	= clock();
+
+	auto sceneManager		= SceneManager::create(render::OpenGLES2Context::create());
+    auto mesh				= scene::Node::create("mesh");
+	auto ambientLightNode	= scene::Node::create("ambientLight");
+    auto dirLightNode1		= scene::Node::create("directionalLight1");
+	auto dirLightNode2		= scene::Node::create("directionalLight2");
+	auto pointLightNode		= scene::Node::create("pointLight");
+	auto spotLightNode		= scene::Node::create("spotLight");
+	auto sphereGeometry		= geometry::SphereGeometry::create(sceneManager->assets()->context(), 32, 16, true);
 
 	sphereGeometry->computeTangentSpace(false);
 
@@ -69,28 +73,27 @@ int main(int argc, char** argv)
  
 		root->addComponent(sceneManager);
 		
-		auto ambientLight = scene::Node::create("ambient light");
-		ambientLight->addComponent(AmbientLight::create(0.8f));
-		root->addChild(ambientLight);
+		// ambient light
+		ambientLightNode->addComponent(AmbientLight::create(0.8f));
+		root->addChild(ambientLightNode);
 
-		// setup directional light
+		// directional light
 		auto directionalLight = DirectionalLight::create();
-		lightNode->addComponent(Transform::create());
-		lightNode->addComponent(directionalLight);
-		//root->addChild(lightNode);
+		dirLightNode1->addComponent(Transform::create());
+		dirLightNode1->addComponent(directionalLight);
+		root->addChild(dirLightNode1);
 
-		// setup directional light 2
-		auto lightNode2 = scene::Node::create("light2");
+		// directional light 2
 		directionalLight = DirectionalLight::create();
 		directionalLight->color()->setTo(1.f, 0.f, 0.f);
-		lightNode2->addComponent(directionalLight);
-		lightNode2->addComponent(Transform::create());
-		lightNode2->component<Transform>()->transform()
+		dirLightNode2->addComponent(directionalLight);
+		dirLightNode2->addComponent(Transform::create());
+		dirLightNode2->component<Transform>()->transform()
 			->lookAt(Vector3::zero(), Vector3::create(0.f, -1.f, 1.f));
-		root->addChild(lightNode2);
+		root->addChild(dirLightNode2);
 
 		// setup point light 1
-		auto pointLight		= component::PointLight::create();
+		auto pointLight	= component::PointLight::create();
 		pointLight->color()->setTo(0.2f, 0.2f, 1.0f);
 		pointLightNode->addComponent(pointLight);
 		pointLightNode->addComponent(Transform::create());
@@ -140,10 +143,16 @@ int main(int argc, char** argv)
 
 	while (!glfwWindowShouldClose(window))
 	{
-		//mesh->component<Transform>()->transform()->prependRotationY(-.01f);
-		lightNode->component<Transform>()->transform()->prependRotationY(.01f);
+		dirLightNode1->component<Transform>()->transform()->prependRotationY(.01f);
 		pointLightNode->component<Transform>()->transform()->appendRotationY(.01f);
-		//spotLightNode->component<Transform>()->transform()->appendRotationY(.01f);
+
+		const float ampl		= 0.5f + 0.5f * cosf((float)(clock() - startTime) * 0.01f);
+		const float	outerAng	= PI * 0.01f * (1.0f + 49.0f * ampl);
+		const float innerAng	= 0.8f * outerAng;
+
+		dirLightNode1->component<DirectionalLight>()->diffuse(ampl);
+		spotLightNode->component<SpotLight>()->innerConeAngle(innerAng);
+		spotLightNode->component<SpotLight>()->outerConeAngle(outerAng);
 
 		sceneManager->nextFrame();
 		printFramerate();
