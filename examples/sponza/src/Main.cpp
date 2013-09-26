@@ -407,7 +407,6 @@ initializeCamera(scene::Node::Ptr group)
 
 	camera->addComponent(renderer);
 	camera->addComponent(PerspectiveCamera::create(.785f, WINDOW_WIDTH / WINDOW_HEIGHT, .1f, 1000.f));
-
 	root->addChild(camera);
 }
 
@@ -736,8 +735,6 @@ main(int argc, char** argv)
 		
 		sceneManager->nextFrame();
 		sponzaLighting->step();
-
-		renderer->render();
 
 #ifdef MINKO_ANGLE
 		eglSwapBuffers(escontext->eglDisplay, escontext->eglSurface); 
