@@ -27,10 +27,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::file;
 
-Loader::Loader() :
-	_complete(Signal<Loader::Ptr>::create()),
-	_progress(Signal<Loader::Ptr>::create()),
-	_error(Signal<Loader::Ptr>::create())
+Loader::Loader()
 {
 }
 

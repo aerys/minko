@@ -35,51 +35,16 @@ ArrayProvider::index(unsigned int index)
 		return;
 
 	_index = index;
-	for (auto& propertyNames : _propertyNameToArrayPropertyName)
-	{
-		auto newPropertyName = formatPropertyName(propertyNames.first);
-
-		swap(propertyNames.second, newPropertyName);
-		propertyNames.second = newPropertyName;
-	}
-}
-
-bool 
-ArrayProvider::hasProperty(const std::string& propertyName)
-{
-	return _propertyNameToArrayPropertyName.count(propertyName) > 0;
-}
-
-void
-ArrayProvider::unset(const std::string& propertyName)
-{
-	std::string arrayPropertyName = _propertyNameToArrayPropertyName[propertyName];
-
-	_propertyNameToArrayPropertyName.erase(propertyName);
-	Provider::unset(arrayPropertyName);
-}
-
-void
-ArrayProvider::registerProperty(const std::string& propertyName, std::shared_ptr<Value> value)
-{
-	std::string arrayPropertyName = formatPropertyName(propertyName);
-	
-	_propertyNameToArrayPropertyName[propertyName] = arrayPropertyName;
-	Provider::registerProperty(arrayPropertyName, value);
+	for (auto& propertyName : propertyNames())
+		swap(
+			propertyName,
+			formatPropertyName(propertyName.substr(propertyName.find_first_of(']') + 2)),
+			true
+		);
 }
 
 std::string
 ArrayProvider::formatPropertyName(const std::string& propertyName) const
 {
 	return _name + "[" + std::to_string(_index) + "]." + propertyName;
-}
-
-const std::string&
-ArrayProvider::getPreformattedPropertyName(const std::string& propertyName)
-{
-	// std::unordered_map<string, string>::find() returns corrupted iterators when the property is not found.
-
-	return hasProperty(propertyName)
-		? _propertyNameToArrayPropertyName[propertyName]
-		: propertyName;
 }
