@@ -1,14 +1,15 @@
 package aerys.minko.type.loader.parser
 {
+	import flash.net.URLRequest;
+	
 	import aerys.minko.render.Effect;
 	import aerys.minko.render.material.Material;
 	import aerys.minko.render.material.basic.BasicMaterial;
+	import aerys.minko.render.material.basic.BasicProperties;
 	import aerys.minko.type.loader.AssetsLibrary;
 	import aerys.minko.type.loader.ILoader;
 	import aerys.minko.type.loader.SceneLoader;
 	import aerys.minko.type.loader.TextureLoader;
-	
-	import flash.net.URLRequest;
 	
 	/**
 	 * ParserOptions objects provide properties and function references
@@ -223,7 +224,7 @@ package aerys.minko.type.loader.parser
 		private function defaultMaterialFunction(materialName	: String,
 												 material		: Material) : Material
 		{
-			return _material ? _material : material; // default material if nothing
+			return material ? material : _material; // default material if nothing
 		}
     }
 }
