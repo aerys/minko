@@ -215,11 +215,12 @@ TypeDeserializer::unsupport(std::map<int, std::shared_ptr<render::Texture>>&	idT
 }
 
 data::Provider::Ptr
-TypeDeserializer::provider(std::vector<Any>&					properties,
+TypeDeserializer::provider(data::Provider::Ptr					defaultValues,
+						   std::vector<Any>&					properties,
 						   std::map<int, render::Texture::Ptr>&	idToTexture,
 						   NameConverter::Ptr					nameConverter)
 {
-	data::Provider::Ptr material = data::Provider::create();
+	data::Provider::Ptr material = data::Provider::create(defaultValues);
 
 	for (unsigned int propertyId = 0; propertyId < properties.size(); ++propertyId)
 	{

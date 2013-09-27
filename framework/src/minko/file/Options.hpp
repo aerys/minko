@@ -28,7 +28,11 @@ namespace minko
 		class Options
 		{
 		public:
-			typedef std::shared_ptr<Options> Ptr;
+			typedef std::shared_ptr<Options>			Ptr;
+
+		private:
+			typedef std::shared_ptr<data::Provider>								ProviderPtr;
+			typedef std::function<ProviderPtr(const std::string&, ProviderPtr)> MaterialFunction;
 
 		private:
 			std::shared_ptr<render::AbstractContext>	_context;
@@ -36,6 +40,8 @@ namespace minko
 
             bool                                        _generateMipMaps;
             std::shared_ptr<render::Effect>             _effect;
+			std::shared_ptr<data::Provider>				_material;
+			MaterialFunction							_materialFunction;
 
 		public:
 			inline static
@@ -99,6 +105,34 @@ namespace minko
             {
                 _effect = effect;
             }
+
+			inline
+			std::shared_ptr<data::Provider>
+			material()
+			{
+				return _material;
+			}
+
+			inline
+			void
+			material(std::shared_ptr<data::Provider> material)
+			{
+				_material = material;
+			}
+
+			inline
+			const MaterialFunction&
+			materialFunction() const
+			{
+				return _materialFunction;
+			}
+
+			inline
+			void
+			materialFunction(const MaterialFunction& func)
+			{
+				_materialFunction = func;
+			}
 
 		private:
 			Options(std::shared_ptr<render::AbstractContext> context);

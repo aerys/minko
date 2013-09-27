@@ -19,11 +19,18 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "Options.hpp"
 
+#include "minko/data/Provider.hpp"
+
 using namespace minko;
 using namespace minko::file;
 
 Options::Options(std::shared_ptr<render::AbstractContext> context) :
 	_context(context),
-    _generateMipMaps(false)
+    _generateMipMaps(false),
+	_material(data::Provider::create())
 {
+	_materialFunction = ([] (const std::string&, data::Provider::Ptr material) -> data::Provider::Ptr 
+	{ 
+		return material;
+	} ); 
 }

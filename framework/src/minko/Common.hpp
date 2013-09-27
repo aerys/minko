@@ -68,6 +68,7 @@ namespace minko
 		class AbstractResource;
 		class Shader;
 		class Program;
+		class ProgramSignature;
 		class VertexFormat;
 		class VertexBuffer;
 		class IndexBuffer;
@@ -103,6 +104,7 @@ namespace minko
 	{
 		class Provider;
 		class ArrayProvider;
+		class StructureProvider;
 		class ValueBase;
 		class Value;
 		class Container;
@@ -130,9 +132,15 @@ namespace minko
 	{
 		class Options;
 		class Loader;
+		class AbstractLoader;
 		class AbstractParser;
 		class EffectParser;
         class AssetLibrary;
+	}
+
+	namespace material
+	{
+		class Material;
 	}
 }
 

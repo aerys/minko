@@ -28,7 +28,8 @@ using namespace minko::component;
 
 PointLight::PointLight(float attenuationDist):
 	AbstractDiscreteLight("pointLights"),
-	_worldPosition(Vector3::create(0.0f, 0.0f, 0.0f))
+	_worldPosition(Vector3::create(0.0f, 0.0f, 0.0f)),
+	_attenuationDistance(Vector2::create(0.0f, 0.0f))
 {
 	diffuse(1.f);
 	specular(1.f);
@@ -46,6 +47,6 @@ PointLight::updateModelToWorldMatrix(std::shared_ptr<math::Matrix4x4> modelToWor
 void
 PointLight::attenuationDistance(float value)
 {
-	_attenuationDistance = value > 1e-6f ? value : -1.0f;
-	data()->set<float>("attenuationDistance", _attenuationDistance);
+	_attenuationDistance->setTo(value > 1e-6f ? value : -1.0f, 0.0f);
+	data()->set("attenuationDistance", _attenuationDistance);
 }
