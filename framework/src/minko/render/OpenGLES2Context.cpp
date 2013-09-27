@@ -116,7 +116,7 @@ OpenGLES2Context::OpenGLES2Context() :
     _currentDepthMask(true),
     _currentDepthFunc(CompareMode::UNSET)
 {
-#ifdef _WIN32
+#if defined _WIN32 && !defined MINKO_ANGLE
     glewInit();
 #endif
 
@@ -767,7 +767,11 @@ OpenGLES2Context::setShaderSource(const unsigned int shader,
     glslopt_shader_delete(optimizedShader);
     glslopt_cleanup(glslOptimizer);
 #else
+# ifdef GL_ES_VERSION_2_0
+	std::string src = "#version 100\n" + source;
+# else
     std::string src = "#version 120\n" + source;
+#endif
 	const char* sourceString = src.c_str();
 
     glShaderSource(shader, 1, &sourceString, 0);
@@ -1178,7 +1182,11 @@ OpenGLES2Context::createRTTBuffers(unsigned int texture, unsigned int width, uns
     // bind renderbuffer
     glBindRenderbuffer(GL_RENDERBUFFER, renderBuffer);
     // init as a depth buffer
+#ifdef GL_ES_VERSION_2_0
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, width, height);
+#else
     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, width, height);
+#endif
     // attach to the FBO for depth
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, renderBuffer);
 
