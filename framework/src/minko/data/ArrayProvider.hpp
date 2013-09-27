@@ -61,7 +61,10 @@ namespace minko
 
 			inline
 			std::string
-			formatPropertyName(const std::string& propertyName) const;
+			formatPropertyName(const std::string& propertyName) const
+			{
+				return _name + "[" + std::to_string(_index) + "]." + propertyName;
+			}
 		};
 	}
 }
