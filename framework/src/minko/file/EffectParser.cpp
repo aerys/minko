@@ -440,7 +440,7 @@ EffectParser::parseDependencies(Json::Value& root, const std::string& filename, 
 }
 
 void
-EffectParser::dependencyCompleteHandler(std::shared_ptr<Loader> loader)
+EffectParser::dependencyCompleteHandler(std::shared_ptr<AbstractLoader> loader)
 {
 	++_numLoadedDependencies;
 
@@ -451,7 +451,7 @@ EffectParser::dependencyCompleteHandler(std::shared_ptr<Loader> loader)
 }
 
 void
-EffectParser::dependencyErrorHandler(std::shared_ptr<Loader> loader)
+EffectParser::dependencyErrorHandler(std::shared_ptr<AbstractLoader> loader)
 {
 	std::cout << "error" << std::endl;
 }

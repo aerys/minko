@@ -64,6 +64,7 @@ project "minko-example-sponza"
 			"X11",
 			"pthread"
 		}
+		
 		libdirs {
 			"../../deps/lin/lib"
 		}
@@ -79,11 +80,15 @@ project "minko-example-sponza"
 	configuration { "windows", "x32" }
 		buildoptions { "-std=c++11" }
 		links {
-			"OpenGL32",
 			"SDL2",
-			"SDL2main",
-			"glew32"
+			"SDL2main"
 		}
+		if _OPTIONS[ "directX" ] then
+			defines { "MINKO_ANGLE" }
+			links { "libGLESv2", "libEGL" }
+		else
+			links { "OpenGL32", "glew32" }
+		end
 		libdirs {
 			"../../deps/win/lib"
 		}
