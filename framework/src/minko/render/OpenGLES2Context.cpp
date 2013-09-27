@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 /*
 Copyright (c) 2013 Aerys
 
