@@ -232,7 +232,7 @@ OpenGLES2Context::present()
 	//
 	// force execution of GL commands in finite time
 	//glFlush();
-
+	
     setRenderToBackBuffer();
 }
 
@@ -365,6 +365,15 @@ OpenGLES2Context::setVertexBufferAt(const unsigned int	position,
 	_currentVertexStride[position] = stride;
 	_currentVertexOffset[position] = offset;
 
+	if (vertexBuffer > 0)
+		glEnableVertexAttribArray(position);
+	else
+	{
+		glDisableVertexAttribArray(position);
+		
+		return;
+	}
+
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
 
 	// http://www.khronos.org/opengles/sdk/docs/man/xhtml/glVertexAttribPointer.xml
@@ -376,9 +385,6 @@ OpenGLES2Context::setVertexBufferAt(const unsigned int	position,
 		sizeof(GLfloat) * stride,
 		(void*)(sizeof(GLfloat) * offset)
 	);
-
-	if (currentVertexBuffer < 0)
-		glEnableVertexAttribArray(position);
 
     checkForErrors();
 }
@@ -411,7 +417,7 @@ OpenGLES2Context::uploaderIndexBufferData(const unsigned int 	indexBuffer,
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
 
 	_currentIndexBuffer = indexBuffer;
-
+	
 	glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, offset * sizeof(GLushort), size * sizeof(GLushort), data);
 
     checkForErrors();
