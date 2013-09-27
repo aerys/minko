@@ -17,10 +17,12 @@
 		"diffuseMap"			: "material.diffuseMap",
 		"specularMap"			: "material.specularMap",
 		"normalMap"				: "material.normalMap",
-		"alphaMap"				: "material.alphaMap"
+		"alphaMap"				: "material.alphaMap",
+		"shininess"				: "material.shininess"
 	},
 	"stateBindings"	: {
-		"blendMode"				: "material.blendMode"
+		"blendMode"				: "material.blendMode",
+		"triangleCulling"		: "material.triangleCulling"
 	},
 	"macroBindings"	: {
 		"MODEL_TO_WORLD"		: "transform.modelToWorldMatrix",
@@ -38,13 +40,11 @@
 	"triangleCulling"	: "none",
 	
 	"samplerStates"	: {
-		"alphaMap"		: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "none" },
-		"diffuseMap"	: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" },
-		"specularMap"	: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" },
-		"normalMap"		: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" }
+		"material.alphaMap"		: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "none" },
+		"material.diffuseMap"	: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" },
+		"material.specularMap"	: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" },
+		"material.normalMap"	: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" }
 	},
-
-	"includes"		: [ "Phong.glsl" ],
 
 	"passes"		: [{
 		"vertexShader"	: "
@@ -146,11 +146,40 @@
 			uniform DirectionalLight	light;
 			uniform SponzaLighting		sponza;
 			uniform vec3				cameraPosition;
+			uniform float				shininess;
 
 			varying vec3				worldPosition;
 			varying vec3				worldNormal;
 			varying vec3				worldTangent;
 			varying vec2				vertexUV;
+
+			float phong_lambert(vec3 normal,  vec3 lightDirection)
+			{
+				return max(dot(normal, lightDirection), 0.);
+			}
+
+			vec3 phong_diffuseReflection(vec3 normal,  vec3 lightDirection,  vec3 lightColor)
+			{
+				return lightColor * phong_lambert(normal, lightDirection);
+			}
+
+			vec3 phong_specularReflection(vec3 normal,  vec3 lightDirection,  vec3 viewVector,  vec3 specularColor,  float shininess)
+			{
+				float NdotL = dot(normal, lightDirection);
+	
+				if (NdotL < 0.0)
+				{
+					return vec3(0.0);
+				}
+				else
+				{
+					vec3 reflected = 2.0 * NdotL * normal - lightDirection;
+
+					float specular = pow(max(dot(reflected, viewVector), 0.0), max(shininess, 0.00000001));
+
+					return specular * specularColor;
+				}
+			}
 			
 			// compute the world space to tangent space matrix using the model's normal and tangent
 			mat3 getWorldToTangentSpaceMatrix(vec3 wsNormal, vec3 wsTangent)
@@ -245,10 +274,10 @@
 						vec3 specular	= material.specular;
 					#endif // SPECULAR_MAP
 				
-					lightsSpecular += phong_specularReflection(normal, lightVector1, eyeVector, specular * sponza.lightSpecular1, material.shininess) * attenuations.x;
-					lightsSpecular += phong_specularReflection(normal, lightVector2, eyeVector, specular * sponza.lightSpecular2, material.shininess) * attenuations.y;
-					lightsSpecular += phong_specularReflection(normal, lightVector3, eyeVector, specular * sponza.lightSpecular3, material.shininess) * attenuations.z;
-					lightsSpecular += phong_specularReflection(normal, lightVector4, eyeVector, specular * sponza.lightSpecular4, material.shininess) * attenuations.w;
+					lightsSpecular += phong_specularReflection(normal, lightVector1, eyeVector, specular * sponza.lightSpecular1, shininess) * attenuations.x;
+					lightsSpecular += phong_specularReflection(normal, lightVector2, eyeVector, specular * sponza.lightSpecular2, shininess) * attenuations.y;
+					lightsSpecular += phong_specularReflection(normal, lightVector3, eyeVector, specular * sponza.lightSpecular3, shininess) * attenuations.z;
+					lightsSpecular += phong_specularReflection(normal, lightVector4, eyeVector, specular * sponza.lightSpecular4, shininess) * attenuations.w;
 				#endif // SPECULAR || SPECULAR_MAP
 				
 				#ifdef ALPHA_MAP
