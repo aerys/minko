@@ -17,7 +17,8 @@
 		"diffuseMap"			: "material.diffuseMap",
 		"specularMap"			: "material.specularMap",
 		"normalMap"				: "material.normalMap",
-		"alphaMap"				: "material.alphaMap"
+		"alphaMap"				: "material.alphaMap",
+		"shininess"				: "material.shininess"
 	},
 	"stateBindings"	: {
 		"blendMode"				: "material.blendMode",
@@ -145,6 +146,7 @@
 			uniform DirectionalLight	light;
 			uniform SponzaLighting		sponza;
 			uniform vec3				cameraPosition;
+			uniform float				shininess;
 
 			varying vec3				worldPosition;
 			varying vec3				worldNormal;
@@ -272,10 +274,10 @@
 						vec3 specular	= material.specular;
 					#endif // SPECULAR_MAP
 				
-					lightsSpecular += phong_specularReflection(normal, lightVector1, eyeVector, specular * sponza.lightSpecular1, material.shininess) * attenuations.x;
-					lightsSpecular += phong_specularReflection(normal, lightVector2, eyeVector, specular * sponza.lightSpecular2, material.shininess) * attenuations.y;
-					lightsSpecular += phong_specularReflection(normal, lightVector3, eyeVector, specular * sponza.lightSpecular3, material.shininess) * attenuations.z;
-					lightsSpecular += phong_specularReflection(normal, lightVector4, eyeVector, specular * sponza.lightSpecular4, material.shininess) * attenuations.w;
+					lightsSpecular += phong_specularReflection(normal, lightVector1, eyeVector, specular * sponza.lightSpecular1, shininess) * attenuations.x;
+					lightsSpecular += phong_specularReflection(normal, lightVector2, eyeVector, specular * sponza.lightSpecular2, shininess) * attenuations.y;
+					lightsSpecular += phong_specularReflection(normal, lightVector3, eyeVector, specular * sponza.lightSpecular3, shininess) * attenuations.z;
+					lightsSpecular += phong_specularReflection(normal, lightVector4, eyeVector, specular * sponza.lightSpecular4, shininess) * attenuations.w;
 				#endif // SPECULAR || SPECULAR_MAP
 				
 				#ifdef ALPHA_MAP
