@@ -40,10 +40,10 @@
 	"triangleCulling"	: "none",
 	
 	"samplerStates"	: {
-		"alphaMap"		: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "none" },
-		"diffuseMap"	: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" },
-		"specularMap"	: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" },
-		"normalMap"		: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" }
+		"material.alphaMap"		: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "none" },
+		"material.diffuseMap"	: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" },
+		"material.specularMap"	: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" },
+		"material.normalMap"	: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" }
 	},
 
 	"passes"		: [{
