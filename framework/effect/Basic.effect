@@ -26,10 +26,10 @@
 	"priority"			: 0,
 	"blendMode"			: ["one", "zero"],
 	"depthTest"			: [true, "less_equal"],
-	"triangleCulling"	: "back",
+	"triangleCulling"	: "none",
 	
 	"samplerStates" : {
-		"diffuseMap"	: { "wrapMode" : "repeat", "mipFilter" : "linear" }
+		"diffuseMap"	: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" }
 	},
 	
 	"passes"	: [{	
