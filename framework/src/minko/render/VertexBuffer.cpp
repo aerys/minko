@@ -75,7 +75,7 @@ VertexBuffer::upload(uint offset, uint numVertices)
     _context->uploadVertexBufferData(
     	_id,
     	offset * _vertexSize,
-    	numVertices = 0 ? _data.size() : numVertices * _vertexSize,
+    	numVertices == 0 ? _data.size() : numVertices * _vertexSize,
     	&_data[0]
     );
 }
