@@ -223,7 +223,7 @@ package aerys.minko.type.loader.parser
 		private function defaultMaterialFunction(materialName	: String,
 												 material		: Material) : Material
 		{
-			return material;
+			return _material ? _material : material; // default material if nothing
 		}
     }
 }
