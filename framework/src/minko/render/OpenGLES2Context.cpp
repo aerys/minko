@@ -506,8 +506,6 @@ OpenGLES2Context::createTexture(unsigned int 	width,
 	// data Specifies a pointer to the image data in memory.
 	//
 	// glTexImage2D specify a two-dimensional texture image
-    auto format = optimizeForRenderToTexture ? GL_BGRA : GL_RGBA;
-
 	if (mipMapping)
     {
         unsigned int level = 0;
@@ -515,11 +513,11 @@ OpenGLES2Context::createTexture(unsigned int 	width,
 			 size > 0;
 			 size = size >> 1, width = width >> 1, height = height >> 1)
 		{
-			glTexImage2D(GL_TEXTURE_2D, level++, GL_RGBA, width, height, 0, format, GL_UNSIGNED_BYTE, 0);
+			glTexImage2D(GL_TEXTURE_2D, level++, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
 		}
     }
 	else
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, format, GL_UNSIGNED_BYTE, 0);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
 
     if (optimizeForRenderToTexture)
         createRTTBuffers(texture, width, height);
