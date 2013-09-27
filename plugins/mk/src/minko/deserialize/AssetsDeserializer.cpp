@@ -23,6 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/AbstractParser.hpp"
 #include "minko/render/Texture.hpp"
 #include "minko/deserialize/TypeDeserializer.hpp"
+#include "minko/file/Options.hpp"
 
 using namespace minko;
 
@@ -59,7 +60,13 @@ namespace minko
 					std::shared_ptr<file::AbstractParser>	pngParser		= _library->parser("png");
 					std::vector<unsigned char>&				uTextureData	= reinterpret_cast<std::vector<unsigned char>&>(*&textureData);
 
-					pngParser->parse(assetName, assetName, options, uTextureData, _library);
+					pngParser->parse(
+						assetName, 
+						assetName, 
+						options, 
+						uTextureData, 
+						_library
+					);
 
 					_idToTexture[assetId] = _library->texture(assetName);
 				}
@@ -67,9 +74,14 @@ namespace minko
 				{					
 					std::vector<Any>& properties = Any::cast<std::vector<Any>&>(assetData["bindings"]);
 
-					std::shared_ptr<data::Provider> material = TypeDeserializer::provider(properties, _idToTexture, nameConverter);
+					std::shared_ptr<data::Provider> material = TypeDeserializer::provider(
+						options->material(), 
+						properties, 
+						_idToTexture, 
+						nameConverter
+					);
 
-					_idToMaterial[assetId] = material;
+					_idToMaterial[assetId] = options->materialFunction()(assetName, material);
 				}
 			}
 		}

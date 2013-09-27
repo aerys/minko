@@ -28,6 +28,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/Shader.hpp"
 #include "minko/render/Effect.hpp"
 #include "minko/render/Blending.hpp"
+#include "minko/render/ProgramSignature.hpp"
 #include "minko/render/CompareMode.hpp"
 #include "minko/math/Vector2.hpp"
 #include "minko/math/Vector3.hpp"
@@ -37,6 +38,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/scene/Node.hpp"
 #include "minko/scene/NodeSet.hpp"
 #include "minko/data/Provider.hpp"
+#include "minko/data/ArrayProvider.hpp"
+#include "minko/data/StructureProvider.hpp"
 #include "minko/data/Value.hpp"
 #include "minko/data/Container.hpp"
 #include "minko/component/AbstractComponent.hpp"
@@ -62,20 +65,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/geometry/SphereGeometry.hpp"
 #include "minko/geometry/QuadGeometry.hpp"
 #include "minko/file/Options.hpp"
+#include "minko/file/AbstractLoader.hpp"
 #include "minko/file/Loader.hpp"
 #include "minko/file/AbstractParser.hpp"
 #include "minko/file/EffectParser.hpp"
 #include "minko/file/AssetLibrary.hpp"
-
-namespace minko
-{
-    class Minko
-	{
-	public:
-		static
-		void log(const std::string& message)
-		{
-			std::cout << message << std::endl;
-		}
-	};
-}
+#include "minko/material/Material.hpp"
