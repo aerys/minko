@@ -640,7 +640,6 @@ main(int argc, char** argv)
 
 		group->addComponent(Transform::create());
 		group->addChild(mk);
-		return;
 		scene::NodeSet::Ptr fireNodes = scene::NodeSet::create(group)
 			->descendants()
 			->where([](scene::Node::Ptr node)
