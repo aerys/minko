@@ -57,13 +57,16 @@ ParticleVertexBuffer::resize(unsigned int nParticles, unsigned int vertexSize)
 		auto attrs = attributes();
 		
 		dispose();
+		/*
 		for (auto& attr : attrs)
 		{
 			const std::string&	attrName	= std::get<0>(*attr);
 			unsigned int		attrSize	= std::get<1>(*attr);
 			unsigned int		attrOffset	= std::get<2>(*attr);
+
 			addAttribute(attrName, attrSize, attrOffset);
 		}
+		*/
 	}
 
 	vsData.resize(size);
