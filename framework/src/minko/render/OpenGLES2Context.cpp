@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /*
 Copyright (c) 2013 Aerys
 
@@ -29,6 +30,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #ifdef __APPLE__
 # include <OpenGL/gl.h>
 # include <GLUT/glut.h>
+#elif MINKO_ANGLE
+# include "GLES2/gl2.h"
+# include "minko/math/Matrix4x4.hpp"
 #elif _WIN32
 # include "GL/glew.h"
 #else
@@ -201,7 +205,11 @@ OpenGLES2Context::clear(float 			red,
 	// depth Specifies the depth value used when the depth buffer is cleared. The initial value is 1.
 	//
 	// glClearDepth specify the clear value for the depth buffer
+#ifdef GL_ES_VERSION_2_0
+	glClearDepthf(depth);
+#else
 	glClearDepth(depth);
+#endif
 
 	// http://www.opengl.org/sdk/docs/man/xhtml/glClearStencil.xml
 	//
@@ -1013,7 +1021,23 @@ OpenGLES2Context::setUniform(unsigned int location, float value1, float value2, 
 void
 OpenGLES2Context::setUniform(unsigned int location, unsigned int size, bool transpose, const float* values)
 {
+#ifdef GL_ES_VERSION_2_0
+    if (transpose)
+    {
+		float tmp[16];
+		for (int i = 0; i < 4; i++)
+			for (int j = 0; j < 4; j++)
+				tmp[i * 4 + j] = values[j * 4 + i];
+
+        glUniformMatrix4fv(location, size, false, tmp);
+    }
+    else
+    {
+        glUniformMatrix4fv(location, size, transpose, values);
+    }
+#else
 	glUniformMatrix4fv(location, size, transpose, values);
+#endif
 }
 
 void

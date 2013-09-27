@@ -24,8 +24,13 @@ using namespace minko::data;
 
 Provider::Provider() :
 	enable_shared_from_this(),
-	_propertyChanged(Signal<Ptr, const std::string&>::create()),
+	_names(),
+	_values(),
+	_valueChangedSlots(),
+	_referenceChangedSlots(),
 	_propertyAdded(Signal<Ptr, const std::string&>::create()),
+	_propValueChanged(Signal<Ptr, const std::string&>::create()),
+	_propReferenceChanged(Signal<Ptr, const std::string&>::create()),
 	_propertyRemoved(Signal<Ptr, const std::string&>::create())
 {
 }
@@ -33,29 +38,34 @@ Provider::Provider() :
 void
 Provider::unset(const std::string& propertyName)
 {
-	_values.erase(propertyName);
-	_changedSignalSlots.erase(propertyName);
+	auto formattedPropertyName = formatPropertyName(propertyName);
 
-	if (_values.count(propertyName) == 0)
+	_values.erase(formattedPropertyName);
+	_valueChangedSlots.erase(formattedPropertyName);
+	_referenceChangedSlots.erase(formattedPropertyName);
+
+	if (_values.count(formattedPropertyName) == 0)
 	{
-		_names.erase(std::find(_names.begin(), _names.end(), propertyName));
-		_propertyRemoved->execute(shared_from_this(), propertyName);
+		_names.erase(std::find(_names.begin(), _names.end(), formattedPropertyName));
+		_propertyRemoved->execute(shared_from_this(), formattedPropertyName);
 	}
 }
 
 void
-Provider::swap(const std::string& propertyName1, const std::string& propertyName2)
+Provider::swap(const std::string& propertyName1, const std::string& propertyName2, bool skipPropertyNameFormatting)
 {
-	auto hasProperty1 = hasProperty(propertyName1);
-	auto hasProperty2 = hasProperty(propertyName2);
+	auto formattedPropertyName1	= skipPropertyNameFormatting ? propertyName1 : formatPropertyName(propertyName1);
+	auto formattedPropertyName2	= skipPropertyNameFormatting ? propertyName2 : formatPropertyName(propertyName2);
+	auto hasProperty1			= hasProperty(formattedPropertyName1, true);
+	auto hasProperty2			= hasProperty(formattedPropertyName2, true);
 
 	if (!hasProperty1 && !hasProperty2)
 		throw;
 
 	if (!hasProperty1 || !hasProperty2)
 	{
-		auto source = hasProperty1 ? propertyName1 : propertyName2;
-		auto destination = hasProperty1 ? propertyName2 : propertyName1;
+		auto source = hasProperty1 ? formattedPropertyName1 : formattedPropertyName2;
+		auto destination = hasProperty1 ? formattedPropertyName2 : formattedPropertyName1;
 		auto namesIt = std::find(_names.begin(), _names.end(), source);
 
 		*namesIt = destination;
@@ -63,36 +73,53 @@ Provider::swap(const std::string& propertyName1, const std::string& propertyName
 		_values[destination] = _values[source];
 		_values.erase(source);
 
-		_changedSignalSlots[destination] = _changedSignalSlots[source];
-		_changedSignalSlots.erase(source);
+		_valueChangedSlots[destination] = _valueChangedSlots[source];
+		_valueChangedSlots.erase(source);
 
 		_propertyRemoved->execute(shared_from_this(), source);
 		_propertyAdded->execute(shared_from_this(), destination);
 	}
 	else
 	{
-		auto value = _values[propertyName1];
+		const auto	value1	= _values[formattedPropertyName1];
+		const auto	value2	= _values[formattedPropertyName2];
+		const bool	changed = !( (*value1) == (*value2) );
 
-		_values[propertyName1] = _values[propertyName2];
-		_values[propertyName2] = value;
+		_values[formattedPropertyName1] = value2;
+		_values[formattedPropertyName2] = value1;
 
-		_propertyChanged->execute(shared_from_this(), propertyName1);
-		_propertyChanged->execute(shared_from_this(), propertyName2);
+		_propValueChanged->execute(shared_from_this(), formattedPropertyName1);
+		_propValueChanged->execute(shared_from_this(), formattedPropertyName2);
+
+		if (changed)
+		{
+			_propReferenceChanged->execute(shared_from_this(), formattedPropertyName1);
+			_propReferenceChanged->execute(shared_from_this(), formattedPropertyName2);
+		}
 	}
 }
 
 void
-Provider::registerProperty(const std::string& propertyName, std::shared_ptr<Value> value)
+Provider::registerProperty(const std::string&		propertyName, 
+						   std::shared_ptr<Value>	value)
 {
-	bool isNewValue = _values.count(propertyName) == 0;
+	const auto	foundValueIt	= _values.find(propertyName);
+	const bool	isNewValue		= ( foundValueIt == _values.end() );
+//	bool		isNewValue		= _values.count(propertyName) == 0;
+	bool		changed			= false;
 
+	if (!isNewValue)
+		changed = !( (*value) == (*foundValueIt->second) );
+	
 	_values[propertyName] = value;
-    _changedSignalSlots[propertyName] = value->changed()->connect(std::bind(
+	
+    _valueChangedSlots[propertyName] = value->changed()->connect(std::bind(
 		&Signal<Provider::Ptr, const std::string&>::execute,
-		_propertyChanged,
+		_propValueChanged,
 		shared_from_this(),
 		propertyName
 	));
+	
 
 	if (isNewValue)
 	{
@@ -100,26 +127,22 @@ Provider::registerProperty(const std::string& propertyName, std::shared_ptr<Valu
 		_propertyAdded->execute(shared_from_this(), propertyName);
 	}
 	else
-		_propertyChanged->execute(shared_from_this(), propertyName);
+	{
+		_propValueChanged->execute(shared_from_this(), propertyName);
+
+		if (changed)
+			_propReferenceChanged->execute(shared_from_this(), propertyName);
+	}
 }
 
-
-void
-Provider::propertyWrapperInitHandler(const std::string& propertyName)
-{
-	_propertyAdded->execute(shared_from_this(), propertyName);
-
-	/*_values[propertyName] = Value::create(std::bind(
-		&Signal<ptr, const std::string&>::execute,
-		_propertyChanged,
-		shared_from_this(),
-		propertyName
-	));*/
-}
-
-			
 bool 
-Provider::hasProperty(const std::string& name) const
+Provider::hasProperty(const std::string& name, bool skipPropertyNameFormatting) const
 {
-	return std::find(_names.begin(), _names.end(), name) != _names.end();
+	auto it = std::find(
+		_names.begin(),
+		_names.end(),
+		skipPropertyNameFormatting ? name : formatPropertyName(name)
+	);
+
+	return it != _names.end();
 }

@@ -24,6 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/Blending.hpp"
 #include "minko/render/CompareMode.hpp"
 #include "minko/render/TriangleCulling.hpp"
+#include "minko/render/ProgramSignature.hpp"
 
 namespace minko
 {
@@ -35,19 +36,20 @@ namespace minko
 			typedef std::shared_ptr<Pass> Ptr;
 
 		private:
- 			typedef std::shared_ptr<Program>							    ProgramPtr;
-            typedef std::unordered_map<std::string, render::SamplerState>   SamplerStatesMap;
-			typedef std::shared_ptr<States>									StatesPtr;
+ 			typedef std::shared_ptr<Program>							ProgramPtr;
+            typedef std::unordered_map<std::string, SamplerState>		SamplerStatesMap;
+			typedef std::shared_ptr<States>								StatesPtr;
+			typedef std::unordered_map<ProgramSignature, ProgramPtr>	SignatureProgramMap;
 
 		private:
-			const std::string		            _name;
-			ProgramPtr				            _programTemplate;
-			data::BindingMap				    _attributeBindings;
-			data::BindingMap				    _uniformBindings;
-			data::BindingMap				    _stateBindings;
-			data::BindingMap				    _macroBindings;
-            StatesPtr           				_states;
-			std::map<unsigned int, ProgramPtr>	_signatureToProgram;
+			const std::string			_name;
+			ProgramPtr					_programTemplate;
+			data::BindingMap			_attributeBindings;
+			data::BindingMap			_uniformBindings;
+			data::BindingMap			_stateBindings;
+			data::BindingMap			_macroBindings;
+            StatesPtr           		_states;
+			SignatureProgramMap			_signatureToProgram;
 
 		public:
 			inline static
@@ -126,8 +128,8 @@ namespace minko
 			std::shared_ptr<Program>
 			selectProgram(std::shared_ptr<data::Container> 	data,
 						  std::shared_ptr<data::Container> 	rootData,
-						  std::list<std::string>&			 bindingDefines,
-						  std::list<std::string>&			 bindingValues);
+						  std::list<std::string>&			bindingDefines,
+						  std::list<std::string>&			bindingValues);
 
 			void
 			setUniform(const std::string& name, float value);
@@ -140,9 +142,6 @@ namespace minko
 				 const data::BindingMap&			stateBindings,
 				 const data::BindingMap&			macroBindings,
                  std::shared_ptr<States>            states);
-
-			const unsigned int
-			buildSignature(std::shared_ptr<data::Container> data, std::shared_ptr<data::Container> rootData);
 		};
 	}
 }
