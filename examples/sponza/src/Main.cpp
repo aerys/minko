@@ -637,8 +637,14 @@ main(int argc, char** argv)
 		scene::Node::Ptr mk = assets->node(MK_NAME);
 		initializeCamera(mk);
 
-		root->addComponent(component::AmbientLight::create());
-		root->addComponent(component::DirectionalLight::create());
+		auto lights = scene::Node::create();
+
+		lights
+			->addComponent(component::AmbientLight::create())
+			->addComponent(component::DirectionalLight::create())
+			->addComponent(component::Transform::create());
+		lights->component<Transform>()->transform()->lookAt(Vector3::zero(), Vector3::create(-1.f, -1.f, -1.f));
+		root->addChild(lights);
 
 		root->addChild(group);
 		root->addComponent(sceneManager);
