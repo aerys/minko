@@ -36,11 +36,8 @@ namespace minko
             public AbstractComponent,
             public std::enable_shared_from_this<AbstractRootDataComponent<ProviderClass>>
 	    {
-	    public:
-		    typedef std::shared_ptr<AbstractRootDataComponent>    Ptr;
-
         private:
-            typedef std::shared_ptr<scene::Node>                  NodePtr;
+            typedef std::shared_ptr<scene::Node>            NodePtr;
 
         private:
             std::shared_ptr<ProviderClass>                  _data;
