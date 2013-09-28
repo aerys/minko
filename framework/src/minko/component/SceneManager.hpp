@@ -36,7 +36,8 @@ namespace minko
 		    typedef std::shared_ptr<SceneManager> Ptr;
 
         private:
-            typedef std::shared_ptr<scene::Node>    NodePtr;
+            typedef std::shared_ptr<scene::Node>		NodePtr;
+			typedef std::shared_ptr<render::Texture>	TexturePtr;
 
         private:
             uint                                            _frameId;
@@ -46,8 +47,8 @@ namespace minko
             Signal<Ptr>::Ptr                                _frameEnd;
 			Signal<Ptr>::Ptr                                _cullBegin;
 			Signal<Ptr>::Ptr                                _cullEnd;
-			Signal<Ptr>::Ptr                                _renderBegin;
-			Signal<Ptr>::Ptr                                _renderEnd;
+			Signal<Ptr, uint, TexturePtr>::Ptr              _renderBegin;
+			Signal<Ptr, uint, TexturePtr>::Ptr              _renderEnd;
 
             Signal<AbstractComponent::Ptr, NodePtr>::Slot   _targetAddedSlot;
             Signal<AbstractComponent::Ptr, NodePtr>::Slot   _targetRemovedSlot;
@@ -112,14 +113,14 @@ namespace minko
 			}
 
 			inline
-			Signal<Ptr>::Ptr
+			Signal<Ptr, uint, TexturePtr>::Ptr
 			renderingBegin()
 			{
 				return _renderBegin;
 			}
 
 			inline
-			Signal<Ptr>::Ptr
+			Signal<Ptr, uint, TexturePtr>::Ptr
 			renderingEnd()
 			{
 				return _renderEnd;
@@ -130,6 +131,9 @@ namespace minko
 
             void
             nextFrame();
+
+			void
+			nextFrame(std::shared_ptr<render::Texture> renderTarget);
 
 	    private:
 		    SceneManager(const std::shared_ptr<render::AbstractContext>& context);
