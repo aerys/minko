@@ -84,6 +84,7 @@ namespace minko
 	namespace component
 	{
 		class AbstractComponent;
+		template <class ProviderClass, class Enable = void>
 	    class AbstractRootDataComponent;
 	    class SceneManager;
     	class Transform;

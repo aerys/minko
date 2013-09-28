@@ -43,6 +43,8 @@ namespace minko
 			std::list<ProviderPtr>											_providers;
 			std::unordered_map<std::string, ProviderPtr>					_propertyNameToProvider;
 
+			std::shared_ptr<Provider>										_arrayLengths;
+
 			std::unordered_map<std::string, PropertyChangedSignalPtr>		_propValueChanged;
 			std::unordered_map<std::string, PropertyChangedSignalPtr>		_propReferenceChanged;
 
@@ -55,14 +57,27 @@ namespace minko
 			Ptr
 			create()
 			{
-				return std::shared_ptr<Container>(new Container());
+				auto container = std::shared_ptr<Container>(new Container());
+
+				container->initialize();
+
+				return container;
 			}
+
+			void
+			initialize();
 
 			void
 			addProvider(std::shared_ptr<Provider> provider);
 
 			void
+			addProvider(std::shared_ptr<ArrayProvider> provider);
+
+			void
 			removeProvider(std::shared_ptr<Provider> provider);
+
+			void
+			removeProvider(std::shared_ptr<ArrayProvider> provider);
 
 			bool
 			hasProvider(std::shared_ptr<Provider> provider);
@@ -127,6 +142,26 @@ namespace minko
 
 			void
 			providerReferenceChangedHandler(ProviderPtr, const std::string& propertyName);
+
+			inline
+			void
+			assertProviderDoesNotExist(std::shared_ptr<Provider> provider)
+			{
+#ifdef DEBUG
+				if (hasProvider(provider))
+					throw std::invalid_argument("provider");
+#endif // DEBUG
+			}
+
+			inline
+			void
+			assertProviderExists(std::shared_ptr<Provider> provider)
+			{
+#ifdef DEBUG
+				if (!hasProvider(provider))
+					throw std::invalid_argument("provider");
+#endif // DEBUG
+			}
 		};
 	}
 }
