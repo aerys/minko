@@ -31,6 +31,7 @@ PerspectiveCamera::PerspectiveCamera(float fov,
                                      float aspectRatio,
                                      float zNear,
                                      float zFar) :
+    AbstractRootDataComponent<data::Provider>(data::Provider::create()),
     _enabled(true),
   	_view(Matrix4x4::create()),
   	_projection(Matrix4x4::create()->perspective(fov, aspectRatio, zNear, zFar)),
