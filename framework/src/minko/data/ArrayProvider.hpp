@@ -47,6 +47,13 @@ namespace minko
 			}
 
 			inline
+			const std::string&
+			arrayName() const
+			{
+				return _name;
+			}
+
+			inline
 			unsigned int
 			index() const
 			{

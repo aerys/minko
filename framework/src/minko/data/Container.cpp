@@ -19,6 +19,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "Container.hpp"
 
+#include "minko/data/ArrayProvider.hpp"
+#include "minko/data/Provider.hpp"
+
 using namespace minko;
 using namespace minko::data;
 
@@ -26,6 +29,7 @@ Container::Container() :
 	std::enable_shared_from_this<Container>(),
 	_providers(),
 	_propertyNameToProvider(),
+	_arrayLengths(data::Provider::create()),
 	_propValueChanged(),
 	_propReferenceChanged(),
 	_propertyAddedOrRemovedSlots(),
@@ -35,14 +39,15 @@ Container::Container() :
 }
 
 void
+Container::initialize()
+{
+	addProvider(_arrayLengths);
+}
+
+void
 Container::addProvider(std::shared_ptr<Provider> provider)
 {
-	std::list<std::shared_ptr<Provider>>::iterator it = std::find(
-		_providers.begin(), _providers.end(), provider
-	);
-
-	if (it != _providers.end())
-		throw std::invalid_argument("provider");
+	assertProviderDoesNotExist(provider);
 
 	_providers.push_back(provider);
 
@@ -72,16 +77,27 @@ Container::addProvider(std::shared_ptr<Provider> provider)
 }
 
 void
+Container::addProvider(std::shared_ptr<ArrayProvider> provider)
+{
+	assertProviderDoesNotExist(provider);
+
+	auto lengthPropertyName = provider->arrayName() + ".length";
+	int length = _arrayLengths->hasProperty(lengthPropertyName)
+		? _arrayLengths->get<int>(lengthPropertyName)
+		: 0;
+
+	provider->index(length);
+	_arrayLengths->set<int>(lengthPropertyName, ++length);
+
+	addProvider(std::dynamic_pointer_cast<Provider>(provider));
+}
+
+void
 Container::removeProvider(std::shared_ptr<Provider> provider)
 {
-	std::list<std::shared_ptr<Provider>>::iterator it = std::find(
-		_providers.begin(), _providers.end(), provider
-	);
+	assertProviderExists(provider);
 
-	if (it == _providers.end())
-		throw std::invalid_argument("provider");
-
-	_providers.erase(it);
+	_providers.erase(std::find(_providers.begin(), _providers.end(), provider));
 	_propertyAddedOrRemovedSlots.erase(provider);
 
 	for (auto property : provider->values())
@@ -91,6 +107,21 @@ Container::removeProvider(std::shared_ptr<Provider> provider)
 		_providerValueChangedSlot.erase(provider);
 
 	_providerValueChangedSlot.erase(provider);
+}
+
+void
+Container::removeProvider(std::shared_ptr<ArrayProvider> provider)
+{
+	assertProviderExists(provider);
+
+	auto lengthPropertyName = provider->arrayName() + ".length";
+	int length = _arrayLengths->hasProperty(lengthPropertyName)
+		? _arrayLengths->get<int>(lengthPropertyName)
+		: 0;
+
+	_arrayLengths->set<int>(lengthPropertyName, --length);
+
+	removeProvider(std::dynamic_pointer_cast<Provider>(provider));
 }
 
 bool

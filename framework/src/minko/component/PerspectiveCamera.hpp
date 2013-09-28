@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Common.hpp"
 
 #include "minko/component/AbstractRootDataComponent.hpp"
+#include "minko/data/Provider.hpp"
 #include "minko/data/Container.hpp"
 
 namespace minko
@@ -29,7 +30,7 @@ namespace minko
 	namespace component
 	{
 		class PerspectiveCamera :
-            public AbstractRootDataComponent
+            public AbstractRootDataComponent<data::Provider>
 		{
 		public:
 			typedef std::shared_ptr<PerspectiveCamera> Ptr;
