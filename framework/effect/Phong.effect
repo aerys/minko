@@ -14,7 +14,9 @@
 		"diffuseMap"				: "material.diffuseMap",
 		"normalMap"					: "material.normalMap",
 		"specularMap"				: "material.specularMap",
+		"alphaMap"					: "material.alphaMap",
 		"shininess"					: "material.shininess",
+		"alphaThreshold"			: "material.alphaThreshold",
 		"modelToWorldMatrix"		: "transform.modelToWorldMatrix",
 		"worldToScreenMatrix"		: "camera.worldToScreenMatrix",
 		"cameraPosition"			: "camera.position"
@@ -29,6 +31,8 @@
 		"DIFFUSE_MAP"				: "material.diffuseMap",
 		"NORMAL_MAP"				: "material.normalMap",
 		"SPECULAR_MAP"				: "material.specularMap",
+		"ALPHA_MAP"					: "material.alphaMap",
+		"ALPHA_THRESHOLD"			: "material.alphaThreshold",
 		"SHININESS"					: "material.shininess",
 		"MODEL_TO_WORLD"			: "transform.modelToWorldMatrix",
 		"NUM_AMBIENT_LIGHTS"		: "ambientLights.length",
@@ -39,7 +43,7 @@
 	},
 	
 	"priority"			: 0,
-	"blendMode"			: ["one", "zero"],
+	"blendMode"			: "alpha",//["one", "zero"],
 	"depthTest"			: [true, "less_equal"],
 	"triangleCulling"	: "back",
 	
@@ -133,8 +137,10 @@
 			uniform sampler2D diffuseMap;
 			uniform sampler2D normalMap;
 			uniform sampler2D specularMap;
+			uniform sampler2D alphaMap;
 			
 			uniform float shininess;
+			uniform float alphaThreshold;
 			uniform vec3 cameraPosition;
 			
 			varying vec3 vertexPosition;
@@ -149,6 +155,15 @@
 				#ifdef DIFFUSE_MAP
 					diffuse = texture2D(diffuseMap, vertexUV);
 				#endif // DIFFUSE_MAP
+
+				#ifdef ALPHA_MAP
+					diffuse.a = texture2D(alphaMap, vertexUV).r;
+				#endif // ALPHA_MAP
+
+				#ifdef ALPHA_THRESHOLD
+					if (diffuse.a < alphaThreshold)
+						discard;
+				#endif // ALPHA_THRESHOLD
 				
 				float specularIntensity = 1.0;
 				
