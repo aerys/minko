@@ -32,8 +32,8 @@ SceneManager::SceneManager(const std::shared_ptr<render::AbstractContext>& conte
     _frameEnd(Signal<Ptr>::create()),
 	_cullBegin(Signal<Ptr>::create()),
 	_cullEnd(Signal<Ptr>::create()),
-	_renderBegin(Signal<Ptr>::create()),
-	_renderEnd(Signal<Ptr>::create())
+	_renderBegin(Signal<Ptr, uint, TexturePtr>::create()),
+	_renderEnd(Signal<Ptr, uint, TexturePtr>::create())
 {
 }
 
@@ -81,12 +81,25 @@ SceneManager::addedHandler(NodePtr node, NodePtr target, NodePtr ancestor)
 void
 SceneManager::nextFrame()
 {
-    ++_frameId;
-
     _frameBegin->execute(shared_from_this());
     _frameEnd->execute(shared_from_this());
 	_cullBegin->execute(shared_from_this());
 	_cullEnd->execute(shared_from_this());
-	_renderBegin->execute(shared_from_this());
-	_renderEnd->execute(shared_from_this());
+	_renderBegin->execute(shared_from_this(), _frameId, nullptr);
+	_renderEnd->execute(shared_from_this(), _frameId, nullptr);
+
+	++_frameId;
+}
+
+void
+SceneManager::nextFrame(std::shared_ptr<render::Texture> renderTarget)
+{
+	_frameBegin->execute(shared_from_this());
+    _frameEnd->execute(shared_from_this());
+	_cullBegin->execute(shared_from_this());
+	_cullEnd->execute(shared_from_this());
+	_renderBegin->execute(shared_from_this(), _frameId, renderTarget);
+	_renderEnd->execute(shared_from_this(), _frameId, renderTarget);
+
+	++_frameId;
 }

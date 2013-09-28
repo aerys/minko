@@ -293,7 +293,11 @@ Renderer::setSceneManager(std::shared_ptr<SceneManager> sceneManager)
 		{
 			_sceneManager = sceneManager;
 			_renderingBeginSlot = _sceneManager->renderingBegin()->connect(std::bind(
-				&Renderer::sceneManagerRendererBeginHandler, shared_from_this(), std::placeholders::_1
+				&Renderer::sceneManagerRenderingBeginHandler,
+				shared_from_this(),
+				std::placeholders::_1,
+				std::placeholders::_2,
+				std::placeholders::_3
 			));
 		}
 		else
@@ -305,7 +309,9 @@ Renderer::setSceneManager(std::shared_ptr<SceneManager> sceneManager)
 }
 
 void
-Renderer::sceneManagerRendererBeginHandler(std::shared_ptr<SceneManager> sceneManager)
+Renderer::sceneManagerRenderingBeginHandler(std::shared_ptr<SceneManager>		sceneManager,
+										    uint								frameId,
+										    std::shared_ptr<render::Texture>	renderTarget)
 {
 	render();
 }
