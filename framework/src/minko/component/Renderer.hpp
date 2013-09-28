@@ -39,6 +39,9 @@ namespace minko
 			typedef std::shared_ptr<Surface>			SurfaceCtrlPtr;
 			typedef std::shared_ptr<render::DrawCall>	DrawCallPtr;
 			typedef std::list<DrawCallPtr>				DrawCallList;
+			typedef std::shared_ptr<SceneManager>		SceneManagerPtr;
+			typedef std::shared_ptr<render::Texture>	TexturePtr;
+
 		private:
 			std::list<DrawCallPtr>								_drawCalls;
 			std::unordered_map<SurfaceCtrlPtr, DrawCallList>	_surfaceDrawCalls; 
@@ -55,7 +58,7 @@ namespace minko
 			Signal<NodePtr, NodePtr, NodePtr>::Slot				_rootDescendantRemovedSlot;
 			Signal<NodePtr, NodePtr, AbsCtrlPtr>::Slot			_componentAddedSlot;
 			Signal<NodePtr, NodePtr, AbsCtrlPtr>::Slot			_componentRemovedSlot;
-			Signal<std::shared_ptr<SceneManager>>::Slot			_renderingBeginSlot;
+			Signal<SceneManagerPtr, uint, TexturePtr>::Slot		_renderingBeginSlot;
 
 		public:
 			static
@@ -150,7 +153,9 @@ namespace minko
             compareDrawCalls(DrawCallPtr& a, DrawCallPtr& b);
 
 			void
-			sceneManagerRendererBeginHandler(std::shared_ptr<SceneManager> sceneManager);
+			sceneManagerRenderingBeginHandler(std::shared_ptr<SceneManager>		sceneManager,
+											  uint								frameId,
+											  std::shared_ptr<render::Texture>	renderTarget);
 
 			void
 			findSceneManager();
