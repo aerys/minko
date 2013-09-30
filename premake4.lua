@@ -11,7 +11,7 @@ include 'examples/sponza'
 include 'examples/cube'
 --include 'examples/cube-offscreen'
 include 'examples/light'
-
+include 'examples/LeapMotion'
 -- core framework
 include 'framework'
 
