@@ -27,6 +27,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/data/Container.hpp"
 
 using namespace minko;
+using namespace minko::data;
 using namespace minko::component;
 using namespace minko::geometry;
 using namespace minko::render;
@@ -38,7 +39,9 @@ Surface::Surface(Geometry::Ptr 			geometry,
 	_geometry(geometry),
 	_material(material),
 	_effect(effect),
-	_drawCalls()
+	_drawCalls(),
+	_drawCallToPass(),
+	_macroPropertyNameToDrawCalls()
 {
 }
 
@@ -91,7 +94,6 @@ Surface::geometry(std::shared_ptr<geometry::Geometry> newGeometry)
 		target->data()->removeProvider(_geometry->data());
 		target->data()->addProvider(newGeometry->data());
 
-		deleteDrawCalls();
 		createDrawCalls();
 	}
 
@@ -125,39 +127,66 @@ Surface::targetAddedHandler(AbstractComponent::Ptr	ctrl,
 void
 Surface::createDrawCalls()
 {
+	deleteDrawCalls();
+
 	auto target = targets()[0];
 	std::list<std::string> bindingDefines;
 	std::list<std::string> bindingValues;
 
 	for (auto pass : _effect->passes())
+		_drawCalls.push_back(initializeDrawCall(pass));
+}
+
+DrawCall::Ptr
+Surface::initializeDrawCall(Pass::Ptr		pass, 
+							DrawCall::Ptr	drawcall)
+{
+	auto target = targets()[0];
+
+	std::list<std::string>	bindingDefines;
+	std::list<std::string>	bindingValues;
+
+	auto program = pass->selectProgram(target->data(), target->root()->data(), bindingDefines, bindingValues);
+
+	if (drawcall == nullptr)
 	{
-		auto drawCall = DrawCall::create(
+		drawcall = DrawCall::create(
 			pass->attributeBindings(),
 			pass->uniformBindings(),
 			pass->stateBindings(),
 			pass->states()
 		);
 
-		bindingDefines.clear();
-		bindingValues.clear();
-		drawCall->configure(
-			pass->selectProgram(target->data(), target->root()->data(), bindingDefines, bindingValues),
-			target->data(),
-			target->root()->data()
-		);
+		_drawCallToPass[drawcall] = pass;
 
 		for (auto& propertyName : bindingDefines)
-			_macroBindingPropertyToDrawCalls[propertyName].push_back(drawCall);
+			_macroPropertyNameToDrawCalls[propertyName].push_back(drawcall);
 
-		_drawCalls.push_back(drawCall);
+		for (auto& propertyName	: bindingValues)
+			_macroPropertyNameToDrawCalls[propertyName].push_back(drawcall);
 	}
+
+	drawcall->configure(program, target->data(), target->root()->data());
+
+	return drawcall;
+}
+
+void
+Surface::macroPropertyChangedHandler(Container::Ptr,
+									 const std::string& propertyName,
+									 Pass::Ptr pass)
+{
+	const auto& drawcalls	= _macroPropertyNameToDrawCalls[propertyName];
+	for (auto drawcall : drawcalls)
+		initializeDrawCall(_drawCallToPass[drawcall], drawcall);
 }
 
 void
 Surface::deleteDrawCalls()
 {
 	_drawCalls.clear();
-	_macroBindingPropertyToDrawCalls.clear();
+	_drawCallToPass.clear();
+	_macroPropertyNameToDrawCalls.clear();
 }
 
 void
@@ -183,7 +212,6 @@ Surface::addedOrRemovedHandler(NodePtr node, NodePtr target, NodePtr ancestor)
 	auto rootData = node->root()->data();
 	auto i = 0;
 
-	deleteDrawCalls();
 	createDrawCalls();
 }
 
