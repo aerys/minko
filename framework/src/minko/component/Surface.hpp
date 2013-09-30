@@ -36,6 +36,7 @@ namespace minko
 
 		private:
 			typedef std::shared_ptr<scene::Node>		NodePtr;
+			typedef std::shared_ptr<render::Pass>		PassPtr;
 			typedef std::shared_ptr<render::DrawCall>	DrawCallPtr;
 			typedef std::list<DrawCallPtr>				DrawCallList;
 
@@ -44,8 +45,9 @@ namespace minko
 			std::shared_ptr<data::Provider>					_material;
 			std::shared_ptr<render::Effect>					_effect;
 
-			std::list<DrawCallPtr>							_drawCalls;
-			std::unordered_map<std::string, DrawCallList>	_macroBindingPropertyToDrawCalls;
+			DrawCallList									_drawCalls;
+			std::unordered_map<DrawCallPtr, PassPtr>		_drawCallToPass;
+			std::unordered_map<std::string, DrawCallList>	_macroPropertyNameToDrawCalls;
 
 			Signal<AbstractComponent::Ptr, NodePtr>::Slot	_targetAddedSlot;
 			Signal<AbstractComponent::Ptr, NodePtr>::Slot	_targetRemovedSlot;
@@ -112,6 +114,9 @@ namespace minko
 			void
 			createDrawCalls();
 
+			std::shared_ptr<render::DrawCall>
+			initializeDrawCall(std::shared_ptr<render::Pass>, std::shared_ptr<render::DrawCall> drawcall = nullptr);
+
 			void
 			deleteDrawCalls();
 
@@ -135,6 +140,11 @@ namespace minko
             void
             propertyRemovedHandler(std::shared_ptr<data::Container>  data,
                                    const std::string&                propertyName);
+
+			void
+			macroPropertyChangedHandler(std::shared_ptr<data::Container>,
+										const std::string& propertyName,
+										std::shared_ptr<render::Pass>);
 		};
 	}
 }
