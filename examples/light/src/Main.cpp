@@ -144,6 +144,28 @@ printFramerate(const unsigned int delay = 1)
 	}
 }
 
+
+void
+SDL_KeyboardHandler(data::Provider::Ptr		data,
+					file::AssetLibrary::Ptr	assets)
+{
+	static const std::string& normalMapPropName	= "material.normalMap";
+	static const std::string& normalMapFilename	= "texture/normalmap-cells.png";
+	const Uint8* keyboardState = SDL_GetKeyboardState(NULL);
+	if (keyboardState[SDL_SCANCODE_SPACE])
+	{
+		bool hasNormalMap = data->hasProperty(normalMapPropName);
+
+		std::cout << "mesh does " << (!hasNormalMap ? "not" : "") << " have a normal map" << std::endl;
+		if (hasNormalMap)
+			data->unset(normalMapPropName);
+		else
+			data->set(normalMapPropName, assets->texture(normalMapFilename));
+	}
+}
+
+
+
 int main(int argc, char** argv)
 {
 #ifdef EMSCRIPTEN
@@ -180,6 +202,7 @@ int main(int argc, char** argv)
 
 	auto sceneManager		= SceneManager::create(render::OpenGLES2Context::create());
     auto mesh				= scene::Node::create("mesh");
+	auto meshData			= data::Provider::create();
 	auto ambientLightNode	= scene::Node::create("ambientLight");
     auto dirLightNode1		= scene::Node::create("directionalLight1");
 	auto dirLightNode2		= scene::Node::create("directionalLight2");
@@ -268,15 +291,18 @@ int main(int argc, char** argv)
 			->appendScale(boxScale, boxScale, boxScale)
 			->appendTranslation(0.0f, 0.f, 0.0f);
 
+		// setup mesh material
+		meshData
+			->set("material.diffuseColor",	Vector4::create(0.f, 0.f, 1.f, 1.f))
+			->set("material.diffuseMap",	assets->texture("texture/box.png"))
+			->set("material.normalMap",		assets->texture("texture/normalmap-cells.png"))
+			//->set("material.normalMap",		assets->texture("texture/normalmap-squares.png"))
+			//->set("material.specularMap",	assets->texture("texture/specularmap-squares.png"))
+			->set("material.shininess",		32.f);
+
 		mesh->addComponent(Surface::create(
 			assets->geometry("sphere"),
-			data::Provider::create()
-				->set("material.diffuseColor",	Vector4::create(0.f, 0.f, 1.f, 1.f))
-				->set("material.diffuseMap",	assets->texture("texture/box.png"))
-				->set("material.normalMap",		assets->texture("texture/normalmap-cells.png"))
-				//->set("material.normalMap",		assets->texture("texture/normalmap-squares.png"))
-				//->set("material.specularMap",	assets->texture("texture/specularmap-squares.png"))
-				->set("material.shininess",		32.f),
+			meshData,
 			assets->effect("effect/Phong.effect")
 		));
 		root->addChild(mesh);
@@ -296,10 +322,14 @@ int main(int argc, char** argv)
 			case SDL_QUIT:
 				done = true;
 				break;
+			case SDL_KEYDOWN:
+				SDL_KeyboardHandler(meshData, sceneManager->assets());
+				break;
 			default:
 				break;
 			}
 		}
+
 
 		dirLightNode1->component<Transform>()->transform()->prependRotationY(.01f);
 		pointLightNode->component<Transform>()->transform()->appendRotationY(.01f);
@@ -308,9 +338,9 @@ int main(int argc, char** argv)
 		const float	outerAng	= PI * 0.01f * (1.0f + 49.0f * ampl);
 		const float innerAng	= 0.8f * outerAng;
 
-		dirLightNode1->component<DirectionalLight>()->diffuse(ampl);
-		spotLightNode->component<SpotLight>()->innerConeAngle(innerAng);
-		spotLightNode->component<SpotLight>()->outerConeAngle(outerAng);
+		//dirLightNode1->component<DirectionalLight>()->diffuse(ampl);
+		//spotLightNode->component<SpotLight>()->innerConeAngle(innerAng);
+		//spotLightNode->component<SpotLight>()->outerConeAngle(outerAng);
 
 		sceneManager->nextFrame();
 		printFramerate();
