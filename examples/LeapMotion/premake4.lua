@@ -76,7 +76,7 @@ project "minko-example-leapmotion"
 			"SDL2.framework",
 			"Cocoa.framework",
 			"OpenGL.framework",
-			"IOKit.framework"
+			"IOKit.framework",
 		       "Leap"
 		}
 		libdirs {
