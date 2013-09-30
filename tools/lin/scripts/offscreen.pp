@@ -75,32 +75,6 @@ class software {
         unless => "g++ --version | grep '4\\.8'"
     }
 
-    exec { "/usr/bin/git clone https://github.com/glfw/glfw":
-        alias => "git-clone-glfw",
-        cwd => "/home/vagrant/src",
-        require => Exec["install-g++"],
-        creates => "/home/vagrant/src/glfw"
-    }
-
-    exec { "/usr/bin/git pull origin master":
-        cwd => "/home/vagrant/src/glfw",
-        alias => "git-pull-glfw",
-        require => Exec["git-clone-glfw"]
-    }
-
-    exec { "cmake . && make":
-        cwd => "/home/vagrant/src/glfw",
-        alias => "build-glfw",
-        require => Exec["git-pull-glfw"]
-    }
-
-    exec { "make install":
-        user => root,
-        cwd => "/home/vagrant/src/glfw",
-        alias => "install-glfw",
-        require => Exec["build-glfw"]
-    }
-
     exec { "/usr/bin/rsync -r --filter=':- .gitignore' /vagrant/ /home/vagrant/src/minko-cpp":
         alias => "copy-repository",
         cwd => "/home/vagrant/src",
@@ -115,8 +89,7 @@ class software {
         require => [
             Exec["copy-repository"],
             Exec["install-g++"],
-            Exec["install-gcc"],
-            Exec["install-glfw"]
+            Exec["install-gcc"]
         ]
     }
 
