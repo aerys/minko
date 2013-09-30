@@ -30,6 +30,8 @@ Container::Container() :
 	_providers(),
 	_propertyNameToProvider(),
 	_arrayLengths(data::Provider::create()),
+	_propertyAdded(Container::PropertyChangedSignal::create()),
+	_propertyRemoved(Container::PropertyChangedSignal::create()),
 	_propValueChanged(),
 	_propReferenceChanged(),
 	_propertyAddedOrRemovedSlots(),
@@ -227,6 +229,8 @@ Container::providerPropertyAddedHandler(std::shared_ptr<Provider> 	provider,
 			std::placeholders::_2
 		));
 
+	_propertyAdded->execute(shared_from_this(), propertyName);
+
 	providerValueChangedHandler(provider, propertyName);	
 }
 
@@ -245,4 +249,6 @@ Container::providerPropertyRemovedHandler(std::shared_ptr<Provider> provider,
 	_providerReferenceChangedSlot.erase(provider);
 
 	providerValueChangedHandler(provider, propertyName);
+
+	_propertyRemoved->execute(shared_from_this(), propertyName);
 }
