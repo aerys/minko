@@ -6,6 +6,7 @@
 #ifdef EMSCRIPTEN
 # include "SDL/SDL.h"
 #else
+# include "Leap/Leap.h"
 # include "SDL2/SDL.h"
 # ifdef MINKO_ANGLE
 #  include "SDL2/SDL_syswm.h"
@@ -85,7 +86,7 @@ int main(int argc, char** argv)
 		camera->addComponent(renderer);
 		camera->addComponent(Transform::create());
 		camera->component<Transform>()->transform()
-			->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 3.f));
+			->lookAt(Vector3::zero(), Vector3::create(0.f, 15.f, 30.f));
 		camera->addComponent(PerspectiveCamera::create(.785f, 800.f / 600.f, .1f, 1000.f));
 		root->addChild(camera);
 
@@ -102,6 +103,9 @@ int main(int argc, char** argv)
 	});
 
 	sceneManager->assets()->load();
+
+	Leap::Controller* controller = new Leap::Controller();
+	Leap::Frame lastFrame;
 
 	bool done = false;
 	while (!done)
@@ -120,7 +124,18 @@ int main(int argc, char** argv)
 			}
 		}
 
-		mesh->component<Transform>()->transform()->prependRotationY(.05f);
+		Leap::Frame frame = controller->frame();
+
+		Leap::PointableList& pointables = frame.pointables();
+
+		if (pointables.count() != 0)
+		{
+			const Leap::Pointable& pointable = pointables[0];
+			Leap::Vector tipPos = pointable.tipPosition() * 0.1f;
+			std::cout << tipPos.x << ":" << tipPos.y << ":" << tipPos.z << std::endl;
+
+			mesh->component<Transform>()->transform()->identity()->prependTranslation(tipPos.x, tipPos.y, tipPos.z);
+		}
 
 		sceneManager->nextFrame();
 #ifdef MINKO_ANGLE

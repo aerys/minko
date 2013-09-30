@@ -49,7 +49,7 @@ project "minko-example-leapmotion"
 
 	-- windows
 	configuration { "windows", "x32" }
-		links { "SDL2", "SDL2main" }
+		links { "SDL2", "SDL2main", "Leap" }
 		libdirs { "../../deps/win/lib" }
 		includedirs { "../../deps/win/include" }
 		if _OPTIONS[ "directX" ] then
