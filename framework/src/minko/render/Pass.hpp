@@ -122,9 +122,6 @@ namespace minko
 				return _states;
 			}
 
-			//std::shared_ptr<DrawCall>
-			//createDrawCall(std::shared_ptr<data::Container> data, std::shared_ptr<data::Container> rootData);
-
 			std::shared_ptr<Program>
 			selectProgram(std::shared_ptr<data::Container> 	data,
 						  std::shared_ptr<data::Container> 	rootData,
