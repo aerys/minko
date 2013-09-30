@@ -24,6 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/Effect.hpp"
 #include "minko/render/DrawCall.hpp"
 #include "minko/render/Pass.hpp"
+#include "minko/render/Program.hpp"
 #include "minko/data/Container.hpp"
 
 using namespace minko;
@@ -141,12 +142,14 @@ DrawCall::Ptr
 Surface::initializeDrawCall(Pass::Ptr		pass, 
 							DrawCall::Ptr	drawcall)
 {
-	auto target = targets()[0];
+	auto target		= targets()[0];
+	auto data		= target->data();
+	auto rootData	= target->root()->data();
 
 	std::list<std::string>	bindingDefines;
 	std::list<std::string>	bindingValues;
 
-	auto program = pass->selectProgram(target->data(), target->root()->data(), bindingDefines, bindingValues);
+	auto program = pass->selectProgram(data, rootData, bindingDefines, bindingValues);
 
 	if (drawcall == nullptr)
 	{
@@ -159,26 +162,101 @@ Surface::initializeDrawCall(Pass::Ptr		pass,
 
 		_drawCallToPass[drawcall] = pass;
 
-		for (auto& propertyName : bindingDefines)
-			_macroPropertyNameToDrawCalls[propertyName].push_back(drawcall);
+		for (const auto& binding : pass->macroBindings())
+		{
+			const auto& propertyName = binding.second;
 
-		for (auto& propertyName	: bindingValues)
+
+
+			// - watch macro binding in both containers.
+			if (_macroChangedSlots.count(propertyName) == 0)
+			{
+				/*
+				_macroChangedSlots[propertyName].push_back(
+					data->propertyReferenceChanged(propertyName)->connect(std::bind(
+							&Surface::macroPropertyChangedHandler,
+							shared_from_this(),
+							std::placeholders::_1,
+							std::placeholders::_2
+						)
+					));
+
+				_macroChangedSlots[propertyName].push_back(
+					rootData->propertyReferenceChanged(propertyName)->connect(std::bind(
+							&Surface::macroPropertyChangedHandler,
+							shared_from_this(),
+							std::placeholders::_1,
+							std::placeholders::_2
+						)
+					));
+					*/
+			}
+			// - important to have a drawcall entry for *all* macro bindings.
 			_macroPropertyNameToDrawCalls[propertyName].push_back(drawcall);
+		}
+
+		_macroAddedOrRemovedSlots.push_back(
+			data->propertyAdded()->connect(std::bind(
+				&Surface::macroPropertyChangedHandler,
+				shared_from_this(),
+				std::placeholders::_1,
+				std::placeholders::_2
+			))
+		);
+
+		_macroAddedOrRemovedSlots.push_back(
+			rootData->propertyAdded()->connect(std::bind(
+				&Surface::macroPropertyChangedHandler,
+				shared_from_this(),
+				std::placeholders::_1,
+				std::placeholders::_2
+			))
+		);
+
+		_macroAddedOrRemovedSlots.push_back(
+			data->propertyRemoved()->connect(std::bind(
+				&Surface::macroPropertyChangedHandler,
+				shared_from_this(),
+				std::placeholders::_1,
+				std::placeholders::_2
+			))
+		);
+
+		_macroAddedOrRemovedSlots.push_back(
+			rootData->propertyRemoved()->connect(std::bind(
+				&Surface::macroPropertyChangedHandler,
+				shared_from_this(),
+				std::placeholders::_1,
+				std::placeholders::_2
+			))
+		);
 	}
 
-	drawcall->configure(program, target->data(), target->root()->data());
+	drawcall->configure(program, data, rootData);
 
 	return drawcall;
 }
 
 void
 Surface::macroPropertyChangedHandler(Container::Ptr,
-									 const std::string& propertyName,
-									 Pass::Ptr pass)
+									 const std::string& propertyName)
 {
-	const auto& drawcalls	= _macroPropertyNameToDrawCalls[propertyName];
-	for (auto drawcall : drawcalls)
-		initializeDrawCall(_drawCallToPass[drawcall], drawcall);
+	const auto foundMacroDrawCallsIt = _macroPropertyNameToDrawCalls.find(propertyName);
+	if (foundMacroDrawCallsIt == _macroPropertyNameToDrawCalls.end())
+		return;
+
+	const auto& drawCalls = foundMacroDrawCallsIt->second;
+
+	for (auto& drawCall : drawCalls)
+	{
+#ifdef DEBUG
+		if (_drawCallToPass.count(drawCall) == 0)
+			throw std::logic_error("Current drawcall is not associated with any effect pass.");
+#endif // DEBUG
+
+		auto pass = _drawCallToPass[drawCall];
+		initializeDrawCall(pass, drawCall);
+	}
 }
 
 void
@@ -187,6 +265,8 @@ Surface::deleteDrawCalls()
 	_drawCalls.clear();
 	_drawCallToPass.clear();
 	_macroPropertyNameToDrawCalls.clear();
+	_macroChangedSlots.clear();
+	_macroAddedOrRemovedSlots.clear();
 }
 
 void
