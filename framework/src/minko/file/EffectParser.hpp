@@ -113,7 +113,9 @@ namespace minko
 			parseDefaultValues(Json::Value& root);
 
 			void
-			parsePasses(Json::Value& root, std::shared_ptr<file::Options> options);
+			parsePasses(Json::Value& 					root,
+						const std::string& 				resolvedFilename,
+						std::shared_ptr<file::Options> 	options);
 
 			void
 			parseBindings(Json::Value&      contextNode,
