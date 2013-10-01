@@ -42,9 +42,3 @@ ArrayProvider::index(unsigned int index)
 			true
 		);
 }
-
-std::string
-ArrayProvider::formatPropertyName(const std::string& propertyName) const
-{
-	return _name + "[" + std::to_string(_index) + "]." + propertyName;
-}

@@ -42,25 +42,22 @@ namespace minko
 					unsigned int							numMeridians	= 0,
 					bool									withNormals		= true)
 			{
-				return std::shared_ptr<SphereGeometry>(new SphereGeometry(
-					context,
-					numParallels,
-					numMeridians != 0 ? numMeridians : numParallels,
-					withNormals
-				));
+				numMeridians = numMeridians != 0 ? numMeridians : numParallels;
+
+				auto geom = std::shared_ptr<SphereGeometry>(new SphereGeometry());
+
+				geom->initializeVertices(context, numParallels, numMeridians, withNormals);
+				geom->initializeIndices(context, numParallels, numMeridians);
+
+				return geom;
 			}
 
 		private:
-			SphereGeometry(std::shared_ptr<render::AbstractContext>	context,
-							unsigned int							numParallels,
-							unsigned int							numMeridians,
-							bool									withNormals);
-
 			void
 			initializeVertices(std::shared_ptr<render::AbstractContext>	context,
-								unsigned int							numParallels,
-								unsigned int							numMeridians,
-								bool									withNormals);
+							   unsigned int								numParallels,
+							   unsigned int								numMeridians,
+							   bool										withNormals);
 
 			void
 			initializeIndices(std::shared_ptr<render::AbstractContext>	context,

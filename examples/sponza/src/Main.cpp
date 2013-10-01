@@ -25,7 +25,6 @@
 #include <GLES2/gl2ext.h>
 #endif
 
-#include "minko/component/SponzaLighting.hpp"
 #include "minko/component/Fire.hpp"
 
 using namespace minko;
@@ -36,7 +35,7 @@ const float WINDOW_WIDTH		= 1024.0f;
 const float WINDOW_HEIGHT		= 500.0f;
 
 const std::string MK_NAME			= "model/Sponza_lite_sphere.mk";
-const std::string DEFAULT_EFFECT	= "effect/SponzaLighting.effect";
+const std::string DEFAULT_EFFECT	= "effect/Phong.effect";
 const std::string CAMERA_NAME		= "camera";
 
 const float CAMERA_LIN_SPEED	= 0.05f;
@@ -45,7 +44,6 @@ const float CAMERA_MASS			= 50.0f;
 const float CAMERA_FRICTION		= 0.6f;
 
 Renderer::Ptr			renderer			= nullptr;
-auto					sponzaLighting		= SponzaLighting::create();
 auto					mesh				= scene::Node::create("mesh");
 auto					group				= scene::Node::create("group");
 auto					camera				= scene::Node::create("camera");
@@ -572,11 +570,12 @@ main(int argc, char** argv)
 	context = render::WebGLContext::create();
 #else
 	SDL_Window *window = SDL_CreateWindow("Minko - Sponza Example",
-			SDL_WINDOWPOS_UNDEFINED,
-			SDL_WINDOWPOS_UNDEFINED,
-			WINDOW_WIDTH,
-			WINDOW_HEIGHT,
-			SDL_WINDOW_OPENGL);
+		SDL_WINDOWPOS_UNDEFINED,
+		SDL_WINDOWPOS_UNDEFINED,
+		WINDOW_WIDTH,
+		WINDOW_HEIGHT,
+		SDL_WINDOW_OPENGL
+	);
 
 # ifdef MINKO_ANGLE
 	ESContext* escontext;
@@ -611,19 +610,23 @@ main(int argc, char** argv)
 	sceneManager->assets()->defaultOptions()->includePaths().insert("bin/release");
 #endif
 
+	auto options = sceneManager->assets()->defaultOptions();
+
+	options->material(data::Provider::create()->set("material.triangleCulling", render::TriangleCulling::FRONT));
+	options->generateMipmaps(true);
+
 	// load sponza lighting effect and set it as the default effect
 	sceneManager->assets()
-		->load("effect/SponzaLighting.effect")
+		->load("effect/Phong.effect")
 		->load("effect/Basic.effect");
-	sceneManager->assets()->defaultOptions()->effect(sceneManager->assets()->effect("effect/SponzaLighting.effect"));
+
+	options->effect(sceneManager->assets()->effect("effect/Phong.effect"));
 
 	// load other assets
 	sceneManager->assets()
 		->queue("texture/firefull.jpg")
 		->queue("effect/Particles.effect")
 		->queue(MK_NAME);
-
-	sceneManager->assets()->defaultOptions()->generateMipmaps(true);
 
 	renderer = Renderer::create();
 
@@ -634,13 +637,20 @@ main(int argc, char** argv)
 		scene::Node::Ptr mk = assets->node(MK_NAME);
 		initializeCamera(mk);
 
+		auto lights = scene::Node::create();
+
+		lights
+			->addComponent(component::AmbientLight::create())
+			->addComponent(component::DirectionalLight::create())
+			->addComponent(component::Transform::create());
+		lights->component<Transform>()->transform()->lookAt(Vector3::zero(), Vector3::create(-1.f, -1.f, -1.f));
+		root->addChild(lights);
+
 		root->addChild(group);
 		root->addComponent(sceneManager);
-		root->addComponent(sponzaLighting);
 
 		group->addComponent(Transform::create());
 		group->addChild(mk);
-		return;
 		scene::NodeSet::Ptr fireNodes = scene::NodeSet::create(group)
 			->descendants()
 			->where([](scene::Node::Ptr node)
@@ -734,7 +744,6 @@ main(int argc, char** argv)
 		
 		
 		sceneManager->nextFrame();
-		sponzaLighting->step();
 
 #ifdef MINKO_ANGLE
 		eglSwapBuffers(escontext->eglDisplay, escontext->eglSurface); 

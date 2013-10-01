@@ -25,12 +25,12 @@ using namespace minko;
 using namespace minko::render;
 
 void
-IndexBuffer::upload()
+IndexBuffer::upload(uint offset, uint count)
 {   
 	if (_id == -1)
     	_id = _context->createIndexBuffer(_data.size());
 	
-	_context->uploaderIndexBufferData(_id, 0, _data.size(), &_data[0]);
+	_context->uploaderIndexBufferData(_id, offset, count == 0 ? _data.size() : count, &_data[0]);
 }
 
 void

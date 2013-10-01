@@ -23,23 +23,24 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/component/AbstractComponent.hpp"
 #include "minko/Signal.hpp"
+#include "minko/data/Container.hpp"
+#include "minko/data/Provider.hpp"
+#include "minko/scene/Node.hpp"
 
 namespace minko
 {
     namespace component
     {
-	    class AbstractRootDataComponent :
+        template <class ProviderClass>
+	    class AbstractRootDataComponent<ProviderClass, typename std::enable_if<std::is_base_of<data::Provider, ProviderClass>::value>::type> :
             public AbstractComponent,
-            public std::enable_shared_from_this<AbstractRootDataComponent>
+            public std::enable_shared_from_this<AbstractRootDataComponent<ProviderClass>>
 	    {
-	    public:
-		    typedef std::shared_ptr<AbstractRootDataComponent> Ptr;
+        private:
+            typedef std::shared_ptr<scene::Node>            NodePtr;
 
         private:
-            typedef std::shared_ptr<scene::Node>    NodePtr;
-
-        private:
-            std::shared_ptr<data::Provider>                 _data;
+            std::shared_ptr<ProviderClass>                  _data;
             bool                                            _enabled;
             NodePtr                                         _root;
 
@@ -50,7 +51,7 @@ namespace minko
 
 	    protected:
             inline
-            std::shared_ptr<data::Provider>
+            std::shared_ptr<ProviderClass>
             data()
             {
                 return _data;
@@ -63,30 +64,81 @@ namespace minko
                 return _root;
             }
 
-		    AbstractRootDataComponent();
-
-            AbstractRootDataComponent(std::shared_ptr<data::Provider> provider);
-
-            virtual
-            void
-            initialize();
+            AbstractRootDataComponent(std::shared_ptr<ProviderClass> provider) :
+                _data(provider),
+                _enabled(true)
+            {
+            }
 
             virtual
             void
-            targetAddedHandler(AbstractComponent::Ptr ctrl, NodePtr target);
+            initialize()
+            {
+                _targetAddedSlot = targetAdded()->connect(std::bind(
+                    &AbstractRootDataComponent<ProviderClass>::targetAddedHandler,
+                    this->shared_from_this(),
+                    std::placeholders::_1,
+                    std::placeholders::_2
+                ));
+
+                _targetRemovedSlot = targetRemoved()->connect(std::bind(
+                    &AbstractRootDataComponent<ProviderClass>::targetRemovedHandler,
+                    this->shared_from_this(),
+                    std::placeholders::_1,
+                    std::placeholders::_2
+                ));
+            }
 
             virtual
             void
-            targetRemovedHandler(AbstractComponent::Ptr ctrl, NodePtr target);
+            targetAddedHandler(AbstractComponent::Ptr ctrl, NodePtr target)
+            {
+                if (targets().size() > 1)
+                    throw std::logic_error("This component cannot have more than 1 target.");
 
-        protected:
+                auto cb = std::bind(
+                    &AbstractRootDataComponent::addedOrRemovedHandler,
+                    this->shared_from_this(),
+                    std::placeholders::_1,
+                    std::placeholders::_2,
+                    std::placeholders::_3
+                );
+
+                _addedSlot = target->added()->connect(cb);
+                _removedSlot = target->removed()->connect(cb);
+
+                updateRoot(target->root());
+            }
+
             virtual
             void
-            updateRoot(NodePtr node);
+            targetRemovedHandler(AbstractComponent::Ptr ctrl, NodePtr target)
+            {
+                updateRoot(nullptr);
+            }
 
-        private:
+            virtual
             void
-            addedOrRemovedHandler(NodePtr node, NodePtr target, NodePtr ancestor);
+            addedOrRemovedHandler(NodePtr node, NodePtr target, NodePtr ancestor)
+            {
+                updateRoot(node->root());
+            }
+
+            virtual
+            void
+            updateRoot(NodePtr root)
+            {
+                if (root == _root)
+                    return;
+
+                if (_root)
+                    _root->data()->removeProvider(_data);
+                
+                _root = root;
+
+                if (_root)
+                    _root->data()->addProvider(_data);
+            }
 	    };
     }
 }
