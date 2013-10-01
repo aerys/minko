@@ -51,7 +51,8 @@ package aerys.minko.render.material.phong.multipass
 					lighting = lighting ? add(lighting, specular) : specular;
 				}
                 
-                diffuse = float4(multiply(diffuse.rgb, lighting.rgb), diffuse.a);
+				diffuse = float4(add(diffuse.rgb, lighting.rgb), diffuse.a);
+//                diffuse = float4(multiply(diffuse.rgb, lighting.rgb), diffuse.a);
             }
             
             return diffuse;

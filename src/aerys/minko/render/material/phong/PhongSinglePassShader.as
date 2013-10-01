@@ -23,10 +23,13 @@ package aerys.minko.render.material.phong
 
 		override protected function getPixelColor() : SFloat
 		{
-            var diffuse : SFloat = _diffuse.getDiffuseColor();
-            var phong   : SFloat = add(_phong.getDynamicLighting(), _phong.getStaticLighting());    
-            
-            return float4(multiply(diffuse.rgb, phong), diffuse.a);
+            var materialDiffuse : SFloat = _diffuse.getDiffuseColor();
+			var shading			: SFloat = add(
+				_phong.getStaticLighting(),
+				_phong.getDynamicLighting(-1, true, true, true, materialDiffuse)
+			);    
+			
+			return float4(shading.rgb, materialDiffuse.a);
 		}
 	}
 }

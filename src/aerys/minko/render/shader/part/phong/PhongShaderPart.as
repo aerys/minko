@@ -1,6 +1,7 @@
 package aerys.minko.render.shader.part.phong
 {
 	import aerys.minko.render.geometry.stream.format.VertexComponent;
+	import aerys.minko.render.material.Material;
 	import aerys.minko.render.material.phong.PhongProperties;
 	import aerys.minko.render.shader.SFloat;
 	import aerys.minko.render.shader.Shader;
@@ -172,19 +173,24 @@ package aerys.minko.render.shader.part.phong
 			return ambientLighting;
 		}
 		
-		public function getAmbientLightContribution(lightId : uint) : SFloat
+		private function getAmbientLightContribution(lightId 			: uint,
+													 materialAmbient	: SFloat = null) : SFloat
 		{
 			var ambient : SFloat = getLightParameter(lightId, 'ambient', 1);
 			
 			if (meshBindings.propertyExists(PhongProperties.AMBIENT_MULTIPLIER))
 				ambient.scaleBy(sceneBindings.getParameter(PhongProperties.AMBIENT_MULTIPLIER, 1));
 			
+			if (materialAmbient)
+				ambient = multiply(ambient, materialAmbient);
+			
 			return ambient;
 		}
 		
-		public function getDirectionalLightContribution(lightId     	: uint,
+		private function getDirectionalLightContribution(lightId     	: uint,
 														diffuse     	: Boolean   = true,
 														specular    	: Boolean   = true,
+														materialDiffuse	: SFloat	= null,
 														normal 			: SFloat	= null) : SFloat
 		{
 			var shadowCasting		: uint		= getLightProperty(lightId, 'shadowCastingType');
@@ -198,7 +204,7 @@ package aerys.minko.render.shader.part.phong
 			
 			if (diffuse)
 			{
-				var diffuseLighting     : SFloat    = getDirectionalLightDiffuse(lightId, normal);
+				var diffuseLighting     : SFloat    = getDirectionalLightDiffuse(lightId, materialDiffuse, normal);
 				
 				if (diffuseLighting)
 					contribution = diffuseLighting;
@@ -228,10 +234,11 @@ package aerys.minko.render.shader.part.phong
 			return contribution;
 		}
 		
-		public function getSpotLightContribution(lightId    : uint,
-												 diffuse    : Boolean   = true,
-												 specular   : Boolean   = true,
-												 normal 	: SFloat 	= null) : SFloat
+		private function getSpotLightContribution(lightId    		: uint,
+												 diffuse    		: Boolean   = true,
+												 specular   		: Boolean   = true,
+												 materialDiffuse	: SFloat	= null,
+												 normal 			: SFloat 	= null) : SFloat
 		{
 			var shadowCasting		: uint		= getLightProperty(lightId, 'shadowCastingType');
 			var isAttenuated		: Boolean	= getLightProperty(lightId, 'attenuationEnabled');
@@ -246,7 +253,7 @@ package aerys.minko.render.shader.part.phong
 			
 			if (diffuse)
 			{
-				var diffuseLighting     : SFloat    = getSpotLightDiffuse(lightId, normal);
+				var diffuseLighting     : SFloat    = getSpotLightDiffuse(lightId, materialDiffuse, normal);
 				
 				if (diffuseLighting)
 					contribution = diffuseLighting;
@@ -297,10 +304,11 @@ package aerys.minko.render.shader.part.phong
 			return contribution;
 		}
 		
-		public function getPointLightContribution(lightId   : uint,
-												  diffuse   : Boolean   = true,
-												  specular  : Boolean   = true,
-												  normal 	: SFloat 	= null) : SFloat
+		private function getPointLightContribution(lightId  			: uint,
+												  diffuse   		: Boolean	= true,
+												  specular  		: Boolean	= true,
+												  materialDiffuse	: SFloat	= null, 
+												  normal 			: SFloat 	= null) : SFloat
 		{
 			var shadowCasting		: uint		= getLightProperty(lightId, 'shadowCastingType');
 			var isAttenuated		: Boolean	= getLightProperty(lightId, 'attenuationEnabled');
@@ -315,7 +323,7 @@ package aerys.minko.render.shader.part.phong
 			
 			if (diffuse)
 			{
-				var diffuseLighting     : SFloat    = getPointLightDiffuse(lightId, normal);
+				var diffuseLighting     : SFloat    = getPointLightDiffuse(lightId, materialDiffuse, normal);
 				
 				if (diffuseLighting)
 					contribution = diffuseLighting;
@@ -364,7 +372,8 @@ package aerys.minko.render.shader.part.phong
 		}
 		
 		private function getDirectionalLightDiffuse(lightId 		: int,
-													normal	 		: SFloat  = null) : SFloat
+													materialDiffuse	: SFloat,
+													normal	 		: SFloat) : SFloat
 		{
 			if (getLightProperty(lightId, 'diffuseEnabled'))
 			{
@@ -373,41 +382,26 @@ package aerys.minko.render.shader.part.phong
 					NormalMappingType.NONE
 				);
 				
+				var lightDiffuse : SFloat = null;
+				
 				if (normal)
-				{
-					return infinitePart.computeDiffuseInWorldSpace(lightId, normal);
-				}
+					lightDiffuse = infinitePart.computeDiffuseInWorldSpace(lightId, normal);
 				else
-					return normalMappingType != NormalMappingType.NONE
+					lightDiffuse = normalMappingType != NormalMappingType.NONE
 						? infinitePart.computeDiffuseInTangentSpace(lightId)
 						: infinitePart.computeDiffuseInWorldSpace(lightId, infinitePart.fsWorldNormal);
+				
+				return materialDiffuse 
+					? multiply(materialDiffuse, lightDiffuse)
+					: lightDiffuse;
 			}
 			
 			return null;
 		}
 		
-		private function getSpotLightDiffuse(lightId 	: int,
-											 normal 	: SFloat) : SFloat
-		{
-			if (getLightProperty(lightId, 'diffuseEnabled'))
-			{
-				var normalMappingType   : uint  = meshBindings.getProperty(
-					PhongProperties.NORMAL_MAPPING_TYPE,
-					NormalMappingType.NONE
-				);
-				if (normal)
-					return localizedPart.computeDiffuseInWorldSpace(lightId, normal);
-				else
-					return normalMappingType != NormalMappingType.NONE
-						? localizedPart.computeDiffuseInTangentSpace(lightId)
-						: localizedPart.computeDiffuseInWorldSpace(lightId, localizedPart.fsWorldNormal);
-			}
-			
-			return null;
-		}
-		
-		private function getPointLightDiffuse(lightId 	: int,
-											  normal 	: SFloat) : SFloat
+		private function getSpotLightDiffuse(lightId 			: int,
+											 materialDiffuse	: SFloat,
+											 normal 			: SFloat) : SFloat
 		{
 			if (getLightProperty(lightId, 'diffuseEnabled'))
 			{
@@ -416,12 +410,46 @@ package aerys.minko.render.shader.part.phong
 					NormalMappingType.NONE
 				);
 				
+				var lightDiffuse : SFloat = null;
+				
 				if (normal)
-					return localizedPart.computeDiffuseInWorldSpace(lightId, normal);
+					lightDiffuse = localizedPart.computeDiffuseInWorldSpace(lightId, normal);
 				else
-					return normalMappingType != NormalMappingType.NONE
+					lightDiffuse = normalMappingType != NormalMappingType.NONE
 						? localizedPart.computeDiffuseInTangentSpace(lightId)
 						: localizedPart.computeDiffuseInWorldSpace(lightId, localizedPart.fsWorldNormal);
+				
+				return materialDiffuse 
+					? multiply(materialDiffuse, lightDiffuse)
+					: lightDiffuse;
+			}
+			
+			return null;
+		}
+		
+		private function getPointLightDiffuse(lightId 			: int,
+											  materialDiffuse	: SFloat,
+											  normal 			: SFloat) : SFloat
+		{
+			if (getLightProperty(lightId, 'diffuseEnabled'))
+			{
+				var normalMappingType   : uint  = meshBindings.getProperty(
+					PhongProperties.NORMAL_MAPPING_TYPE,
+					NormalMappingType.NONE
+				);
+				
+				var lightDiffuse : SFloat = null;
+				
+				if (normal)
+					lightDiffuse = localizedPart.computeDiffuseInWorldSpace(lightId, normal);
+				else
+					lightDiffuse = normalMappingType != NormalMappingType.NONE
+						? localizedPart.computeDiffuseInTangentSpace(lightId)
+						: localizedPart.computeDiffuseInWorldSpace(lightId, localizedPart.fsWorldNormal);
+				
+				return materialDiffuse 
+					? multiply(materialDiffuse, lightDiffuse)
+					: lightDiffuse;
 			}
 			
 			return null;
@@ -529,6 +557,7 @@ package aerys.minko.render.shader.part.phong
 										   ambient  		: Boolean   = true,
 										   diffuse  		: Boolean   = true,
 										   specular 		: Boolean   = true,
+										   materialDiffuse	: SFloat	= null,
 										   normal 			: SFloat	= null) : SFloat
 		{
 			var dynamicLighting     : SFloat	= float3(0, 0, 0);
@@ -556,13 +585,13 @@ package aerys.minko.render.shader.part.phong
 						var contribution    : SFloat    = null;
 						
 						if (type == AmbientLight.LIGHT_TYPE)
-							contribution = getAmbientLightContribution(lightId);
+							contribution = getAmbientLightContribution(lightId, materialDiffuse);
 						else if (type == DirectionalLight.LIGHT_TYPE)
-							contribution = getDirectionalLightContribution(lightId, diffuse, specular, normal);
+							contribution = getDirectionalLightContribution(lightId, diffuse, specular, materialDiffuse, normal);
 						else if (type == PointLight.LIGHT_TYPE)
-							contribution = getPointLightContribution(lightId, diffuse, specular, normal);
+							contribution = getPointLightContribution(lightId, diffuse, specular, materialDiffuse, normal);
 						else if (type == SpotLight.LIGHT_TYPE)
-							contribution = getSpotLightContribution(lightId, diffuse, specular, normal);
+							contribution = getSpotLightContribution(lightId, diffuse, specular, materialDiffuse, normal);
 						
 						if (contribution)
 							dynamicLighting.incrementBy(multiply(color.rgb, contribution));
