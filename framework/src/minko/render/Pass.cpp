@@ -118,12 +118,22 @@ Pass::selectProgram(std::shared_ptr<data::Container> data,
 		}
 	}
 
+	finalizeProgram(program);
+
+	return program;
+}
+
+void
+Pass::finalizeProgram(Program::Ptr program)
+{
 	if (!program->vertexShader()->isReady())
         program->vertexShader()->upload();
 	if (!program->fragmentShader()->isReady())
 	    program->fragmentShader()->upload();
 	if (!program->isReady())
+	{
 		program->upload();
-
-	return program;
+		for (auto& uniformNameAndFunction : _uniformFunctions)
+			uniformNameAndFunction.second(program);
+	}
 }
