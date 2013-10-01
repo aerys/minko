@@ -31,13 +31,6 @@ Effect::Effect() :
 }
 
 void
-Effect::setUniform(const std::string& name, float value)
-{
-	for (auto& pass : _passes)
-		pass->setUniform(name, value);
-}
-
-void
 Effect::addTechnique(const std::string& name, Technique& passes)
 {
 	if (_techniques.count(name) != 0)

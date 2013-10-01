@@ -21,6 +21,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 
+#include "minko/render/Pass.hpp"
+
 namespace minko
 {
 	namespace render
@@ -75,8 +77,13 @@ namespace minko
                 return _data;
             }
 
-            void
-            setUniform(const std::string& name, float value);
+            template <typename... T>
+			void
+			setUniform(const std::string& name, const T&... values)
+			{
+				for (auto& pass : _passes)
+					pass->setUniform(name, values...);
+			}
 
             void
             addTechnique(const std::string& name, Technique& passes);

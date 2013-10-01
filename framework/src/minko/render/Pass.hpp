@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/CompareMode.hpp"
 #include "minko/render/TriangleCulling.hpp"
 #include "minko/render/ProgramSignature.hpp"
+#include "minko/render/Program.hpp"
 
 namespace minko
 {
@@ -131,8 +132,13 @@ namespace minko
 						  std::list<std::string>&			bindingDefines,
 						  std::list<std::string>&			bindingValues);
 
+			template <typename... T>
 			void
-			setUniform(const std::string& name, float value);
+			setUniform(const std::string& name, const T&... values)
+			{
+				for (auto signatureAndProgram : _signatureToProgram)
+					signatureAndProgram.second->setUniform(name, values...);
+			}
 
 		private:
 			Pass(const std::string&					name,
