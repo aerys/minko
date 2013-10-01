@@ -508,11 +508,14 @@ OpenGLES2Context::createTexture(unsigned int 	width,
 	if (mipMapping)
     {
         unsigned int level = 0;
-		for (unsigned int size = width > height ? width : height;
+        uint h = height;
+        uint w = width;
+		
+		for (uint size = width > height ? width : height;
 			 size > 0;
-			 size = size >> 1, width = width >> 1, height = height >> 1)
+			 size = size >> 1, w = w >> 1, h = h >> 1)
 		{
-			glTexImage2D(GL_TEXTURE_2D, level++, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+			glTexImage2D(GL_TEXTURE_2D, level++, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
 		}
     }
 	else
@@ -715,7 +718,10 @@ OpenGLES2Context::compileShader(const unsigned int shader)
     auto errors = getShaderCompilationLogs(shader);
 
     if (!errors.empty())
+    {
 		std::cerr << errors << std::endl;
+		throw;
+	}
 #endif
 
     checkForErrors();
