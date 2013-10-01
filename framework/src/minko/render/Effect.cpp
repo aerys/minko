@@ -25,8 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::render;
 
-Effect::Effect(std::vector<PassPtr>& passes) :
-	_passes(passes),
+Effect::Effect() :
 	_data(data::Provider::create())
 {
 }
@@ -36,4 +35,22 @@ Effect::setUniform(const std::string& name, float value)
 {
 	for (auto& pass : _passes)
 		pass->setUniform(name, value);
+}
+
+void
+Effect::addTechnique(const std::string& name, Technique& passes)
+{
+	if (_techniques.count(name) != 0)
+		throw std::invalid_argument("name");
+
+	_techniques[name] = passes;
+}
+
+void
+Effect::removeTechnique(const std::string& name)
+{
+	if (_techniques.count(name) == 0 || _currentTechniqueName == name)
+		throw std::invalid_argument("name");
+
+	_techniques.erase(name);
 }
