@@ -163,12 +163,18 @@ DrawCall::bindVertexAttribute(Container::Ptr		container,
 		throw std::invalid_argument("location");
 	if (vertexBufferId < 0 || vertexBufferId >= MAX_NUM_VERTEXBUFFERS)
 		throw std::invalid_argument("vertexBufferId");
-	if (container==nullptr || !container->hasProperty(propertyName))
+	if (container == nullptr || !container->hasProperty(propertyName))
 		throw;
 #endif // DEBUG
 
 	auto vertexBuffer	= container->get<VertexBuffer::Ptr>(propertyName);
 	auto attributeName  = propertyName.substr(propertyName.find_last_of('.') + 1);
+
+#ifdef DEBUG
+	if (!vertexBuffer->hasAttribute(attributeName))
+		throw std::logic_error("missing required vertex attribute: " + attributeName);
+#endif
+
 	auto attribute		= vertexBuffer->attribute(attributeName);
 	
 	_vertexBuffers[vertexBufferId]			= vertexBuffer->id();
@@ -337,10 +343,19 @@ DrawCall::bindStates()
 }
 
 void
-DrawCall::render(const AbstractContext::Ptr& context)
+DrawCall::render(const AbstractContext::Ptr& context, std::shared_ptr<render::Texture> renderTarget)
 {
-    if (_target)
-        context->setRenderToTexture(_target->id(), true);
+	if (!renderTarget)
+		renderTarget = _target;
+
+    if (renderTarget)
+    {
+    	if (renderTarget->id() != context->renderTarget())
+    	{
+	        context->setRenderToTexture(renderTarget->id(), true);
+	        context->clear();
+	    }
+    }
     else
         context->setRenderToBackBuffer();
 
