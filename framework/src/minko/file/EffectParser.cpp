@@ -463,8 +463,12 @@ EffectParser::finalize()
     {
 		auto program = pass->program();
 
-		program->vertexShader()->source(_dependenciesCode + program->vertexShader()->source());
-		program->fragmentShader()->source(_dependenciesCode + program->fragmentShader()->source());
+		program->vertexShader()->source(
+			"#define VERTEX\r\n" + _dependenciesCode + program->vertexShader()->source()
+		);
+		program->fragmentShader()->source(
+			"#define FRAGMENT\r\n" + _dependenciesCode + program->fragmentShader()->source()
+		);
     }
 
 	_AssetLibrary->effect(_effectName, _effect);
