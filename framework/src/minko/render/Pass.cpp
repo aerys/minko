@@ -127,10 +127,3 @@ Pass::selectProgram(std::shared_ptr<data::Container> data,
 
 	return program;
 }
-
-void
-Pass::setUniform(const std::string& name, float value)
-{
-	for (auto signatureAndProgram : _signatureToProgram)
-		signatureAndProgram.second->setUniform(name, value);
-}
