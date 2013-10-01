@@ -124,6 +124,18 @@ Container::removeProvider(std::shared_ptr<ArrayProvider> provider)
 	_arrayLengths->set<int>(lengthPropertyName, --length);
 
 	removeProvider(std::dynamic_pointer_cast<Provider>(provider));
+
+	if (provider->index() != length)
+	{
+		auto last = std::dynamic_pointer_cast<ArrayProvider>(
+			*std::find(_providers.rend(), _providers.rbegin(), provider)
+		);
+
+		last->index(provider->index());
+	}
+
+	if (length == 0)
+		_arrayLengths->unset(lengthPropertyName);
 }
 
 bool
