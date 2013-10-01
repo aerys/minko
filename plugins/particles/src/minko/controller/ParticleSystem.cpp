@@ -585,37 +585,37 @@ ParticleSystem::addComponents(unsigned int components, bool blockVSInit)
 
 	vs->resetAttributes();
 
-	if (_format & VertexComponentFlags::SIZE)
+	if (_format & VertexComponentFlags::SIZE && !vs->hasAttribute("size"))
 	{
 		vs->addAttribute ("size", 1, vertexSize);
 		vertexSize += 1;
 	}
 
-	if (_format & VertexComponentFlags::COLOR)
+	if (_format & VertexComponentFlags::COLOR && !vs->hasAttribute("size"))
 	{
 		vs->addAttribute ("color", 3, vertexSize);
 		vertexSize += 3;
 	}
 
-	if (_format & VertexComponentFlags::TIME)
+	if (_format & VertexComponentFlags::TIME && !vs->hasAttribute("size"))
 	{
 		vs->addAttribute ("time", 1, vertexSize);
 		vertexSize += 1;
 	}
 
-	if (_format & VertexComponentFlags::OLD_POSITION)
+	if (_format & VertexComponentFlags::OLD_POSITION && !vs->hasAttribute("size"))
 	{
 		vs->addAttribute ("old_Position", 3, vertexSize);
 		vertexSize += 3;
 	}
 
-	if (_format & VertexComponentFlags::ROTATION)
+	if (_format & VertexComponentFlags::ROTATION && !vs->hasAttribute("size"))
 	{
 		vs->addAttribute ("rotation", 1, vertexSize);
 		vertexSize += 1;
 	}
 
-	if (_format & VertexComponentFlags::SPRITEINDEX)
+	if (_format & VertexComponentFlags::SPRITEINDEX && !vs->hasAttribute("size"))
 	{
 		vs->addAttribute ("spriteIndex", 1, vertexSize);
 		vertexSize += 1;
@@ -630,8 +630,13 @@ ParticleSystem::updateVertexFormat()
 {
 	_format = VertexComponentFlags::DEFAULT;
 	
-	_geometry->vertices()->addAttribute("offset", 2, 0);
-	_geometry->vertices()->addAttribute("position", 3, 2);
+	/*
+	auto vb = _geometry->vertices();
+	if (!vb->hasAttribute("offset"))
+		vb->addAttribute("offset", 2, 0);
+	if (!vb->hasAttribute("position@"))
+		vb->addAttribute("position", 3, 2);
+	*/
 
 	for (auto it = _initializers.begin();
 		 it != _initializers.end();
@@ -715,11 +720,13 @@ ParticleSystem::updateVertexBuffer()
 			vertexIterator += 4 * _geometry->vertexSize();
 		}
 	}
-	std::static_pointer_cast<render::ParticleVertexBuffer>(_geometry->vertices())->update(_liveCount, _geometry->vertexSize());
+	std::static_pointer_cast<render::ParticleVertexBuffer>(_geometry->vertices())->upload(
+		0, _liveCount * 4
+	);
 
 	if (_liveCount != _previousLiveCount)
 	{
-		std::static_pointer_cast<render::ParticleIndexBuffer>(_geometry->indices())->update(_liveCount);
+		std::static_pointer_cast<render::ParticleIndexBuffer>(_geometry->indices())->upload(0, _liveCount * 4);
 		_previousLiveCount = _liveCount;
 	}
 }

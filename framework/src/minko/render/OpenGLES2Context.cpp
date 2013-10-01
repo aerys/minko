@@ -117,7 +117,7 @@ OpenGLES2Context::OpenGLES2Context() :
     _currentDepthFunc(CompareMode::UNSET)
 {
 #if defined _WIN32 && !defined MINKO_ANGLE
-	glewInit();
+    glewInit();
 #endif
 
 	glEnable(GL_DEPTH_TEST);
@@ -239,7 +239,7 @@ OpenGLES2Context::present()
 	//
 	// force execution of GL commands in finite time
 	//glFlush();
-
+	
     setRenderToBackBuffer();
 }
 
@@ -372,6 +372,15 @@ OpenGLES2Context::setVertexBufferAt(const unsigned int	position,
 	_currentVertexStride[position] = stride;
 	_currentVertexOffset[position] = offset;
 
+	if (vertexBuffer > 0)
+		glEnableVertexAttribArray(position);
+	else
+	{
+		glDisableVertexAttribArray(position);
+		
+		return;
+	}
+
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
 
 	// http://www.khronos.org/opengles/sdk/docs/man/xhtml/glVertexAttribPointer.xml
@@ -383,9 +392,6 @@ OpenGLES2Context::setVertexBufferAt(const unsigned int	position,
 		sizeof(GLfloat) * stride,
 		(void*)(sizeof(GLfloat) * offset)
 	);
-
-	if (currentVertexBuffer < 0)
-		glEnableVertexAttribArray(position);
 
     checkForErrors();
 }
@@ -418,7 +424,7 @@ OpenGLES2Context::uploaderIndexBufferData(const unsigned int 	indexBuffer,
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
 
 	_currentIndexBuffer = indexBuffer;
-
+	
 	glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, offset * sizeof(GLushort), size * sizeof(GLushort), data);
 
     checkForErrors();
@@ -499,12 +505,6 @@ OpenGLES2Context::createTexture(unsigned int 	width,
 	// data Specifies a pointer to the image data in memory.
 	//
 	// glTexImage2D specify a two-dimensional texture image
-#ifdef GL_ES_VERSION_2_0
-	auto format = GL_RGBA;
-#else
-    auto format = optimizeForRenderToTexture ? GL_BGRA : GL_RGBA;
-#endif
-
 	if (mipMapping)
     {
         unsigned int level = 0;
@@ -512,11 +512,11 @@ OpenGLES2Context::createTexture(unsigned int 	width,
 			 size > 0;
 			 size = size >> 1, width = width >> 1, height = height >> 1)
 		{
-			glTexImage2D(GL_TEXTURE_2D, level++, GL_RGBA, width, height, 0, format, GL_UNSIGNED_BYTE, 0);
+			glTexImage2D(GL_TEXTURE_2D, level++, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
 		}
     }
 	else
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, format, GL_UNSIGNED_BYTE, 0);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
 
     if (optimizeForRenderToTexture)
         createRTTBuffers(texture, width, height);
@@ -767,7 +767,11 @@ OpenGLES2Context::setShaderSource(const unsigned int shader,
     glslopt_shader_delete(optimizedShader);
     glslopt_cleanup(glslOptimizer);
 #else
-    std::string src = "#version 100\n" + source;
+# ifdef GL_ES_VERSION_2_0
+	std::string src = "#version 100\n" + source;
+# else
+    std::string src = "#version 120\n" + source;
+#endif
 	const char* sourceString = src.c_str();
 
     glShaderSource(shader, 1, &sourceString, 0);
@@ -1178,7 +1182,11 @@ OpenGLES2Context::createRTTBuffers(unsigned int texture, unsigned int width, uns
     // bind renderbuffer
     glBindRenderbuffer(GL_RENDERBUFFER, renderBuffer);
     // init as a depth buffer
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, width, height);
+#ifdef GL_ES_VERSION_2_0
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, width, height);
+#else
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, width, height);
+#endif
     // attach to the FBO for depth
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, renderBuffer);
 

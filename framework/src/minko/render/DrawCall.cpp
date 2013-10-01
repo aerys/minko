@@ -131,7 +131,7 @@ DrawCall::bindProgramInputs()
 				const std::string&	propertyName	= propertyNameIt == _uniformBindings.end() ? inputName : propertyNameIt->second;
 				Container::Ptr		container		= getDataContainer(propertyName);
 				if (container)
-					bindTextureSampler2D(container, propertyName, location, textureId);
+					bindTextureSampler2D(container, inputName, propertyName, location, textureId);
 				++textureId;
 				break;
 			}
@@ -190,6 +190,7 @@ DrawCall::bindVertexAttribute(Container::Ptr		container,
 
 void
 DrawCall::bindTextureSampler2D(Container::Ptr		container,
+							   const std::string&	inputName,
 							   const std::string&	propertyName,
 							   int					location,
 							   int					textureId)
@@ -204,8 +205,8 @@ DrawCall::bindTextureSampler2D(Container::Ptr		container,
 #endif // DEBUG
 	
 	auto texture        = container->get<Texture::Ptr>(propertyName)->id();
-	auto& samplerState  = _states->samplers().count(propertyName)
-	    ? _states->samplers().at(propertyName)
+	auto& samplerState  = _states->samplers().count(inputName)
+	    ? _states->samplers().at(inputName)
 	    : _defaultSamplerState;
 	
 	_textures[textureId]			= texture;
@@ -219,6 +220,7 @@ DrawCall::bindTextureSampler2D(Container::Ptr		container,
 			&DrawCall::bindTextureSampler2D,
 			shared_from_this(),
 			std::placeholders::_1,
+			inputName,
 			std::placeholders::_2,
 			location,
 			textureId

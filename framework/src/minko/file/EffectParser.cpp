@@ -126,10 +126,10 @@ EffectParser::parse(const std::string&				    filename,
 
 	_defaultPriority = root.get("priority", 0.f).asFloat();
 	parseDefaultValues(root);
-	parsePasses(root, options);
 	parseDependencies(root, resolvedFilename, options);
+	parsePasses(root, resolvedFilename, options);
 	
-	if (_numDependencies == 0)
+	if (_numDependencies == _numLoadedDependencies)
 		finalize();
 }
 
@@ -154,7 +154,7 @@ EffectParser::parseDefaultValues(Json::Value& root)
 }
 
 void
-EffectParser::parsePasses(Json::Value& root, file::Options::Ptr options)
+EffectParser::parsePasses(Json::Value& root, const std::string& resolvedFilename, file::Options::Ptr options)
 {
 	std::vector<std::shared_ptr<render::Pass>> passes;
     std::unordered_map<std::string, std::shared_ptr<Texture>> targets;
@@ -197,12 +197,14 @@ EffectParser::parsePasses(Json::Value& root, file::Options::Ptr options)
 
         parseSamplerStates(pass, samplerStates);
 
+        parseDependencies(pass, resolvedFilename, options);
+
 		// program
 		auto vertexShader	= Shader::create(
-			options->context(), Shader::Type::VERTEX_SHADER, pass.get("vertexShader", 0).asString()
+			options->context(), Shader::Type::VERTEX_SHADER, pass.get("vertexShader", "").asString()
 		);
 		auto fragmentShader	= Shader::create(
-			options->context(), Shader::Type::FRAGMENT_SHADER, pass.get("fragmentShader", 0).asString()
+			options->context(), Shader::Type::FRAGMENT_SHADER, pass.get("fragmentShader", "").asString()
 		);
 
         std::string targetName;
@@ -446,7 +448,7 @@ EffectParser::dependencyCompleteHandler(std::shared_ptr<AbstractLoader> loader)
 
 	_dependenciesCode += std::string((char*)&loader->data()[0], loader->data().size()) + "\r\n";
 
-	if (_numDependencies == _numLoadedDependencies)
+	if (_numDependencies == _numLoadedDependencies && _effect)
 		finalize();
 }
 
@@ -463,8 +465,12 @@ EffectParser::finalize()
     {
 		auto program = pass->program();
 
-		program->vertexShader()->source(_dependenciesCode + program->vertexShader()->source());
-		program->fragmentShader()->source(_dependenciesCode + program->fragmentShader()->source());
+		program->vertexShader()->source(
+			"#define VERTEX\r\n" + _dependenciesCode + program->vertexShader()->source()
+		);
+		program->fragmentShader()->source(
+			"#define FRAGMENT\r\n" + _dependenciesCode + program->fragmentShader()->source()
+		);
     }
 
 	_AssetLibrary->effect(_effectName, _effect);
