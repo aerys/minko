@@ -7,6 +7,7 @@
 # include "SDL/SDL.h"
 #else
 # include "SDL2/SDL.h"
+
 # ifdef MINKO_ANGLE
 #  include "SDL2/SDL_syswm.h"
 #  include <EGL/egl.h>
@@ -140,7 +141,7 @@ int main(int argc, char** argv)
 		0, SDL_OPENGL);
 
 	std::cout << "WebGL context created" << std::endl;
-	//context = render::WebGLContext::create();
+	context = render::WebGLContext::create();
 #else
 	SDL_Window* window = SDL_CreateWindow(
 		"Minko - Cube Example",

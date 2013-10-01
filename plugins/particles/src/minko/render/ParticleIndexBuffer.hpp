@@ -45,8 +45,8 @@ namespace minko
 			}
 			
 			
-			void
-			update(unsigned int nParticles);
+			// void
+			// update(unsigned int nParticles);
 
 			void
 			resize(unsigned int nParticles);

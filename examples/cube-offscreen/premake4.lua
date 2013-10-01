@@ -41,7 +41,6 @@ project "minko-example-cube-offscreen"
 		links {
                    "GL",
                    "GLU",
-                   --"glfw3",
                    "m",
                    --"Xrandr",
                    --"Xxf86vm",
@@ -59,7 +58,7 @@ project "minko-example-cube-offscreen"
 
 	-- windows
 	configuration { "windows", "x32" }
-		links { "OpenGL32", "glfw3dll", "glew32" }
+		links { "OpenGL32", "glew32" }
 		libdirs { "../../deps/win/lib" }
 		includedirs { "../../deps/win/include" }
 		postbuildcommands {
@@ -77,7 +76,6 @@ project "minko-example-cube-offscreen"
 		linkoptions { "-std=c++11", "-stdlib=libc++" }
 		links {
 			"m",
-			"glfw3",
 			"Cocoa.framework",
 			"OpenGL.framework",
 			"IOKit.framework"

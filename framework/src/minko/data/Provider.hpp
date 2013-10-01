@@ -186,14 +186,14 @@ namespace minko
 			void
 			registerProperty(const std::string& propertyName, std::shared_ptr<Value> value);
 
-			virtual inline
+			virtual
 			std::string
 			formatPropertyName(const std::string& propertyName) const
 			{
 				return propertyName;
 			}
 
-			virtual inline
+			virtual
 			std::string
 			unformatPropertyName(const std::string& propertyName) const
 			{
