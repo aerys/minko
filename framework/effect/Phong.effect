@@ -43,7 +43,7 @@
 	},
 	
 	"priority"			: 0,
-	"blendMode"			: "alpha",//["one", "zero"],
+	"blendMode"			: ["one", "zero"],
 	"depthTest"			: [true, "less_equal"],
 	"triangleCulling"	: "back",
 	
@@ -53,7 +53,7 @@
 		"specularMap"	: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" }
 	},
 
-	"passes"	: [{	
+	"passes"	: [{
 		"vertexShader" : {
 			"includes" : [
 				"Phong.vertex.glsl"
