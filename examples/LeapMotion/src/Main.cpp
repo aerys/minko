@@ -1,4 +1,6 @@
 #include <time.h>
+#include <random>
+#include <chrono>
 
 #include "minko/Minko.hpp"
 #include "minko/MinkoPNG.hpp"
@@ -28,7 +30,7 @@ void explode(scene::Node::Ptr node, float magnitude)
 		auto cTransform = child->component<Transform>()->transform();
 		auto direction = cTransform->translation();
 		cTransform->appendTranslation(direction * magnitude);
-		explode(child, magnitude);
+		explode(child, magnitude * 0.5f);
 	}
 }
 
@@ -76,6 +78,45 @@ getBoundingBoxes(scene::Node::Ptr node, std::vector<boundingBox> boxList)
     }
     for (scene::Node::Ptr child : node->children())
         getBoundingBoxes(child, boxList);
+
+scene::Node::Ptr RandomScene(scene::Node::Ptr base, int depth, float radius,file::AssetLibrary::Ptr assets)
+{
+	if (depth == 0)
+		return base;
+	std::random_device rd;
+	std::default_random_engine generator (rd());
+	std::uniform_real_distribution<float> distribution(0.f, 1.f);
+	auto randf = std::bind (distribution, generator);
+
+	int numObjects = rand() % 6;
+	for (int i = 0; i < numObjects; i++)
+	{
+		auto node = scene::Node::create();
+
+		int type = rand() % 2;
+		if (type == 0)
+			node->addComponent(Surface::create(
+			assets->geometry("cube"),
+			data::Provider::create()
+			->set("material.diffuseColor",	Vector4::create(randf(), randf(), randf(), 1.f)),
+			assets->effect("effect/Basic.effect")
+			));
+		else
+			node->addComponent(Surface::create(
+			assets->geometry("sphere"),
+			data::Provider::create()
+			->set("material.diffuseColor",	Vector4::create(randf(), randf(), randf(), 1.f)),
+			assets->effect("effect/Basic.effect")
+			));
+
+		node->addComponent(Transform::create());
+		auto position = Vector3::create(randf() * 2.f - 1.f, randf() * 2.f - 1.f, randf() * 2.f - 1.f);
+		position = position * radius;
+		node->component<Transform>()->transform()->appendTranslation(position)->prependScale(depth / 2.f, depth /2.f, depth/2.f);
+		base->addChild(node);
+		RandomScene(node, depth - 1, radius / 2, assets);
+		}
+	return base;
 }
 
 int main(int argc, char** argv)
@@ -117,11 +158,9 @@ int main(int argc, char** argv)
 
 	auto sceneManager = SceneManager::create(render::OpenGLES2Context::create());
 	auto baseNode = scene::Node::create("baseNode");
-	auto mesh = scene::Node::create("mesh");
-	auto mesh2 = scene::Node::create("mesh2");
-	auto mesh3 = scene::Node::create("mesh3");
+	auto ambientLightNode	= scene::Node::create("ambientLight");
 	auto pointer = scene::Node::create("pointer");
-	auto selectedMesh = mesh;
+	auto selectedMesh = baseNode;
 
 	// setup assets
 	sceneManager->assets()->defaultOptions()->generateMipmaps(true);
@@ -151,42 +190,13 @@ int main(int argc, char** argv)
 		camera->addComponent(renderer);
 		camera->addComponent(Transform::create());
 		camera->component<Transform>()->transform()
-			->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 15.f));
+			->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 30.f));
 		camera->addComponent(PerspectiveCamera::create(.785f, 800.f / 600.f, .1f, 1000.f));
 		root->addChild(camera);
 
 		baseNode->addComponent(Transform::create());
 
-		// setup mesh
-		mesh->addComponent(Transform::create());
-		mesh->component<Transform>()->transform()->appendTranslation(2.5f, 0.f, 0.f);
-		mesh->addComponent(Surface::create(
-			assets->geometry("cube"),
-			data::Provider::create()
-				->set("material.diffuseColor",	Vector4::create(0.f, 0.f, 1.f, 1.f)),
-			assets->effect("effect/Basic.effect")
-		));
-		mesh2->addComponent(Transform::create());
-		mesh2->component<Transform>()->transform()->appendTranslation(-2.5f, 0.f, 0.f);
-		mesh2->addComponent(Surface::create(
-			assets->geometry("cube"),
-			data::Provider::create()
-				->set("material.diffuseColor",	Vector4::create(1.f, 0.f, 0.f, 1.f)),
-			assets->effect("effect/Basic.effect")
-		));
-
-		mesh3->addComponent(Transform::create());
-		mesh3->component<Transform>()->transform()->appendTranslation(0.f, -2.5f, 0.f);
-		mesh3->addComponent(Surface::create(
-			assets->geometry("cube"),
-			data::Provider::create()
-				->set("material.diffuseColor",	Vector4::create(0.f, 1.f, 0.f, 1.f)),
-			assets->effect("effect/Basic.effect")
-		));
-
-		baseNode->addChild(mesh);
-		baseNode->addChild(mesh2);
-		mesh2->addChild(mesh3);
+		RandomScene(baseNode, 3, 3.f, assets);
 
 		pointer->addComponent(Transform::create());
 		pointer->component<Transform>()->transform()->prependScale(0.3f, 0.3f, 0.3f)->appendTranslation(0, 0, 5.0f);
@@ -261,8 +271,6 @@ int main(int argc, char** argv)
 
 			}
 			lastgap = gap;
-
-			//auto rotation = mesh->component<Transform>()->transform()->rotationQuaternion();
 			
 		}
 		else
