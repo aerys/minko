@@ -34,17 +34,31 @@ namespace minko
 
 		private:
 			typedef std::shared_ptr<Pass>	PassPtr;
+			typedef std::vector<PassPtr> 	Technique;
 
 		private:
-			std::vector<PassPtr>			_passes;
-            std::shared_ptr<data::Provider> _data;
+			std::unordered_map<std::string, Technique> 	_techniques;
+			std::string									_currentTechniqueName;
+			Technique 									_passes;
+            std::shared_ptr<data::Provider> 			_data;
 
 		public:
 			inline static
 			Ptr
-			create(std::vector<PassPtr>&	passes)
+			create()
 			{
-				return std::shared_ptr<Effect>(new Effect(passes));
+				return std::shared_ptr<Effect>(new Effect());
+			}
+
+			inline static
+			Ptr
+			create(std::vector<PassPtr>& passes)
+			{
+				auto effect = create();
+
+				effect->_passes = effect->_techniques["default"] = passes;
+
+				return effect;
 			}
 
 			inline
@@ -64,8 +78,14 @@ namespace minko
             void
             setUniform(const std::string& name, float value);
 
+            void
+            addTechnique(const std::string& name, Technique& passes);
+
+            void
+            removeTechnique(const std::string& name);
+
 		private:
-			Effect(std::vector<PassPtr>&	passes);
+			Effect();
 		};		
 	}
 }
