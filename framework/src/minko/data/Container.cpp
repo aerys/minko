@@ -125,9 +125,16 @@ Container::removeProvider(std::shared_ptr<ArrayProvider> provider)
 
 	if (provider->index() != length)
 	{
-		auto last = std::dynamic_pointer_cast<ArrayProvider>(
-			*std::find(_providers.rend(), _providers.rbegin(), provider)
-		);
+		auto last = std::dynamic_pointer_cast<ArrayProvider>(*std::find_if(
+			_providers.rbegin(),
+			_providers.rend(),
+			[&](Provider::Ptr p)
+			{
+				auto arrayProvider = std::dynamic_pointer_cast<ArrayProvider>(p);
+
+				return arrayProvider && arrayProvider->arrayName() == provider->arrayName();	
+			}
+		));
 
 		last->index(provider->index());
 	}
