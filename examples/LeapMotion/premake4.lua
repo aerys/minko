@@ -77,7 +77,7 @@ project "minko-example-leapmotion"
 			"Cocoa.framework",
 			"OpenGL.framework",
 			"IOKit.framework",
-		       "Leap"
+		        "Leap"
 		}
 		libdirs {
 			"../../deps/mac/lib"
