@@ -140,7 +140,7 @@ namespace minko
 			dispose();
 
 			void
-			addAttribute(const std::string& name, const unsigned int size, const unsigned int offset);
+			addAttribute(const std::string& name, const unsigned int size, const unsigned int offset = 0);
 
 			void
 			removeAttribute(const std::string& name);
