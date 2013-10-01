@@ -32,9 +32,56 @@ void explode(scene::Node::Ptr node, float magnitude)
 	}
 }
 
+typedef struct s_boundingBox
+{
+    Vector3::Ptr        corner1;
+    Vector3::Ptr        corner2;
+    scene::Node::Ptr    node;
+}boundingBox;
+
+//std::vector<boundingBox>
+void
+getBoundingBoxes(scene::Node::Ptr node, std::vector<boundingBox> boxList)
+{
+    auto surface = node->component<Surface>();
+    if (surface != nullptr)
+    {
+        auto geometry = surface->geometry();
+        auto provider = geometry->data();
+        auto vertices = provider->get<render::VertexBuffer::Ptr>("geometry.vertex.attribute.position")->data();
+        Vector3::Ptr corner1 = Vector3::create(vertices[0], vertices[1], vertices[2]);
+        Vector3::Ptr corner2 = Vector3::create(vertices[0], vertices[1], vertices[2]);
+        
+        for (int i = 0; i < vertices.size(); i += 3)
+        {
+            if (vertices[i] > corner1->x())
+                corner1->x(vertices[i]);
+            if (vertices[i+1] > corner1->y())
+                corner1->y(vertices[i+1]);
+            if (vertices[i+2] > corner1->z())
+                corner1->z(vertices[i+2]);
+            
+            if (vertices[i] < corner2->x())
+                corner2->x(vertices[i]);
+            if (vertices[i+1] < corner1->y())
+                corner2->y(vertices[i+1]);
+            if (vertices[i+2] < corner1->z())
+                corner2->z(vertices[i+2]);
+        }
+        boundingBox box;
+        box.corner1 = corner1;
+        box.corner2 = corner2;
+        box.node = node;
+        boxList.push_back(box);
+    }
+    for (scene::Node::Ptr child : node->children())
+        getBoundingBoxes(child, boxList);
+}
+
 int main(int argc, char** argv)
 {
-	
+	std::vector<boundingBox>boxList;
+    
 	if (SDL_Init(SDL_INIT_VIDEO) == -1)
 		exit(-1);
 
@@ -104,7 +151,7 @@ int main(int argc, char** argv)
 		camera->addComponent(renderer);
 		camera->addComponent(Transform::create());
 		camera->component<Transform>()->transform()
-			->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 10.f));
+			->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 15.f));
 		camera->addComponent(PerspectiveCamera::create(.785f, 800.f / 600.f, .1f, 1000.f));
 		root->addChild(camera);
 
@@ -152,8 +199,10 @@ int main(int argc, char** argv)
 
 		root->addChild(baseNode);
 		root->addChild(pointer);
+        
+        getBoundingBoxes(root, boxList);
 	});
-
+    
 	sceneManager->assets()->load();
 
 	Leap::Controller* controller = new Leap::Controller();
@@ -227,11 +276,13 @@ int main(int argc, char** argv)
 					{
 						Leap::SwipeGesture swipe = gesture;
 						speed = speed + (swipe.speed() / 100.f * swipe.direction().x - speed) * 0.005f;
+                        std::cout << swipe.speed() << std::endl;
 						break;
 					}
 				case Leap::Gesture::TYPE_SCREEN_TAP:
 					{
 						pointer->component<Surface>()->material()->set("material.diffuseColor", Vector4::create(0.f, 1.f, 0.f, 0.5f));
+                        Leap::ScreenTapGesture screenTape = gesture;
 						break;
 					}
 				default:
