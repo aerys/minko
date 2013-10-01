@@ -20,6 +20,19 @@ using namespace minko;
 using namespace minko::component;
 using namespace minko::math;
 
+void explode(scene::Node::Ptr node, float magnitude)
+{
+	auto pTransform = node->component<Transform>()->transform();
+	for (scene::Node::Ptr child : node->children())
+	{
+		auto cTransform = child->component<Transform>()->transform();
+		auto direction = cTransform->translation() - pTransform->translation();
+		
+		explode(child, magnitude);
+		cTransform->appendTranslation(direction * magnitude);
+	}
+}
+
 int main(int argc, char** argv)
 {
 	
@@ -57,13 +70,19 @@ int main(int argc, char** argv)
 #endif
 
 	auto sceneManager = SceneManager::create(render::OpenGLES2Context::create());
+	auto baseNode = scene::Node::create("baseNode");
 	auto mesh = scene::Node::create("mesh");
+	auto mesh2 = scene::Node::create("mesh2");
+	auto mesh3 = scene::Node::create("mesh3");
+	auto pointer = scene::Node::create("pointer");
+	auto selectedMesh = mesh;
 
 	// setup assets
 	sceneManager->assets()->defaultOptions()->generateMipmaps(true);
 	sceneManager->assets()
 		->registerParser<file::PNGParser>("png")
 		->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()))
+		->geometry("sphere", geometry::SphereGeometry::create(sceneManager->assets()->context()))
 		->queue("texture/box.png")
 		->queue("effect/Basic.effect");
 
@@ -86,26 +105,66 @@ int main(int argc, char** argv)
 		camera->addComponent(renderer);
 		camera->addComponent(Transform::create());
 		camera->component<Transform>()->transform()
-			->lookAt(Vector3::zero(), Vector3::create(0.f, 15.f, 30.f));
+			->lookAt(Vector3::zero(), Vector3::create(0.f, 10.f, 0.f));
 		camera->addComponent(PerspectiveCamera::create(.785f, 800.f / 600.f, .1f, 1000.f));
 		root->addChild(camera);
 
+		baseNode->addComponent(Transform::create());
+
 		// setup mesh
 		mesh->addComponent(Transform::create());
+		mesh->component<Transform>()->transform()->appendTranslation(2.5f, 0.f, 0.f);
 		mesh->addComponent(Surface::create(
 			assets->geometry("cube"),
 			data::Provider::create()
-				->set("material.diffuseColor",	Vector4::create(0.f, 0.f, 1.f, 1.f))
-				->set("material.diffuseMap",	assets->texture("texture/box.png")),
+				->set("material.diffuseColor",	Vector4::create(0.f, 0.f, 1.f, 1.f)),
 			assets->effect("effect/Basic.effect")
 		));
-		root->addChild(mesh);
+		mesh2->addComponent(Transform::create());
+		mesh2->component<Transform>()->transform()->appendTranslation(-2.5f, 0.f, 0.f);
+		mesh2->addComponent(Surface::create(
+			assets->geometry("cube"),
+			data::Provider::create()
+				->set("material.diffuseColor",	Vector4::create(1.f, 0.f, 0.f, 1.f)),
+			assets->effect("effect/Basic.effect")
+		));
+
+		mesh3->addComponent(Transform::create());
+		mesh3->component<Transform>()->transform()->appendTranslation(0.f, -2.5f, 0.f);
+		mesh3->addComponent(Surface::create(
+			assets->geometry("cube"),
+			data::Provider::create()
+				->set("material.diffuseColor",	Vector4::create(0.f, 1.f, 0.f, 1.f)),
+			assets->effect("effect/Basic.effect")
+		));
+
+		baseNode->addChild(mesh);
+		baseNode->addChild(mesh2);
+		mesh2->addChild(mesh3);
+
+		pointer->addComponent(Transform::create());
+		pointer->component<Transform>()->transform()->prependScale(0.3f, 0.3f, 0.3f)->appendTranslation(0, 0, 5.0f);
+		pointer->addComponent(Surface::create(
+			assets->geometry("sphere"),
+			data::Provider::create()
+			->set("material.diffuseColor", Vector4::create(1.f, 1.f, 1.f, 0.5f)),
+			assets->effect("effect/Basic.effect")
+		));
+
+		root->addChild(baseNode);
+		root->addChild(pointer);
 	});
 
 	sceneManager->assets()->load();
 
 	Leap::Controller* controller = new Leap::Controller();
+	controller->enableGesture(Leap::Gesture::TYPE_SWIPE);
+	controller->enableGesture(Leap::Gesture::TYPE_SCREEN_TAP);
 	Leap::Frame lastFrame;
+	float speed = 0.f;
+	float scaleSpeed = 1.0f;
+	float lastgap = 0.0f;
+	const float delta = 5.f;
 
 	bool done = false;
 	while (!done)
@@ -126,18 +185,83 @@ int main(int argc, char** argv)
 
 		Leap::Frame frame = controller->frame();
 
-		Leap::PointableList& pointables = frame.pointables();
+		const Leap::GestureList gestures = frame.gestures();
 
-		if (pointables.count() != 0)
+		const Leap::HandList hands = frame.hands();
+
+		
+
+		if (hands.count() >= 2)
 		{
-			const Leap::Pointable& pointable = pointables[0];
-			Leap::Vector tipPos = pointable.tipPosition() * 0.1f;
-			std::cout << tipPos.x << ":" << tipPos.y << ":" << tipPos.z << std::endl;
+			Leap::Hand lhand = hands.leftmost();
+			Leap::Hand rhand = hands.rightmost();
 
-			mesh->component<Transform>()->transform()->identity()->prependTranslation(tipPos.x, tipPos.y, tipPos.z);
+			float gap = (rhand.palmPosition() - lhand.palmPosition()).magnitude();;
+
+			if (lhand.palmNormal().x > 0.7f && rhand.palmNormal().x < -0.7f)
+			{
+				if (gap > lastgap + delta)
+				{
+					explode(baseNode, 0.1f);
+					//scaleSpeed = scaleSpeed + (1.5f - scaleSpeed) * 0.01f;
+				}
+				else if (gap < lastgap - delta)
+				{
+					explode(baseNode, -0.1f);
+					//scaleSpeed = scaleSpeed + (0.5f - scaleSpeed) * 0.01f;
+				}
+
+			}
+			lastgap = gap;
+
+			//auto rotation = mesh->component<Transform>()->transform()->rotationQuaternion();
+			
+		}
+		else
+		{
+			for (int g = 0; g < gestures.count(); g++)
+			{
+				Leap::Gesture gesture = gestures[g];
+				switch (gesture.type())
+				{
+				case Leap::Gesture::TYPE_SWIPE:
+					{
+						Leap::SwipeGesture swipe = gesture;
+						speed = speed + (swipe.speed() / 100.f * swipe.direction().x - speed) * 0.005f;
+						break;
+					}
+				case Leap::Gesture::TYPE_SCREEN_TAP:
+					{
+						pointer->component<Surface>()->material()->set("material.diffuseColor", Vector4::create(0.f, 1.f, 0.f, 0.5f));
+						break;
+					}
+				default:
+					break;
+				}
+				
+			}
+
+			Leap::PointableList pointables = frame.pointables();
+			if (pointables.count() >=4)
+				speed = 0.f;
+			else if (pointables.count() >= 1)
+			{
+				auto finger = pointables[0];
+				auto tip = finger.tipPosition() * 0.1f;
+				tip.y -= 15.f;
+				pointer->component<Transform>()->transform()->identity()->prependScale(0.3f, 0.3f, 0.3f)->prependTranslation(tip.x, tip.y, 5.0f);
+			}
 		}
 
+		selectedMesh->component<Transform>()->transform()->prependRotationY(0.01f * speed)->prependScale(scaleSpeed, scaleSpeed, scaleSpeed);
+
+		speed = speed * 0.999f;
+		scaleSpeed = scaleSpeed + (1.f - scaleSpeed) * 0.1f;
+		//std::cout << scaleSpeed << std::endl;
+
 		sceneManager->nextFrame();
+
+		pointer->component<Surface>()->material()->set("material.diffuseColor", Vector4::create(1.f, 1.f, 1.f, 0.5f));
 #ifdef MINKO_ANGLE
 		eglSwapBuffers(context->eglDisplay, context->eglSurface);
 #elif defined(EMSCRIPTEN)
