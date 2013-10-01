@@ -228,6 +228,5 @@ Geometry::computeTangentSpace(bool doNormals)
 void
 Geometry::vertexSizeChanged(VertexBuffer::Ptr vertexBuffer, int offset)
 {
-	std::cout << "Geometry::vertexSizeChanged" << std::endl;
 	_vertexSize += offset;
 }
