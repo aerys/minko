@@ -30,16 +30,18 @@ void explode(scene::Node::Ptr node, float magnitude)
 		auto cTransform = child->component<Transform>()->transform();
 		auto direction = cTransform->translation();
 		cTransform->appendTranslation(direction * magnitude);
-		explode(child, magnitude);
+		explode(child, magnitude * 0.5f);
 	}
 }
 
-
-template <class T>
-scene::Node::Ptr RandomSceneRec(scene::Node::Ptr base, int depth, float radius,file::AssetLibrary::Ptr assets, T randf)
+scene::Node::Ptr RandomScene(scene::Node::Ptr base, int depth, float radius,file::AssetLibrary::Ptr assets)
 {
 	if (depth == 0)
 		return base;
+	std::random_device rd;
+	std::default_random_engine generator (rd());
+	std::uniform_real_distribution<float> distribution(0.f, 1.f);
+	auto randf = std::bind (distribution, generator);
 
 	int numObjects = rand() % 6;
 	for (int i = 0; i < numObjects; i++)
@@ -67,19 +69,9 @@ scene::Node::Ptr RandomSceneRec(scene::Node::Ptr base, int depth, float radius,f
 		position = position * radius;
 		node->component<Transform>()->transform()->appendTranslation(position)->prependScale(depth / 2.f, depth /2.f, depth/2.f);
 		base->addChild(node);
-		RandomSceneRec(node, depth - 1, radius / 2, assets, randf);
+		RandomScene(node, depth - 1, radius / 2, assets);
 		}
 	return base;
-}
-
-scene::Node::Ptr RandomScene(scene::Node::Ptr base, int depth, float radius,file::AssetLibrary::Ptr assets)
-{
-	unsigned seed = std::chrono::system_clock::now().time_since_epoch().count() + depth;
-	std::default_random_engine generator (seed);
-	std::uniform_real_distribution<float> distribution(0.f, 1.f);
-	auto randf = std::bind (distribution, generator);
-	
-	return RandomSceneRec(base, depth, radius, assets, randf);
 }
 
 int main(int argc, char** argv)
@@ -103,7 +95,7 @@ int main(int argc, char** argv)
 		"Minko - Cube Example",
 		SDL_WINDOWPOS_UNDEFINED,
 		SDL_WINDOWPOS_UNDEFINED,
-		800, 600,
+		1024, 768,
 		SDL_WINDOW_OPENGL
 	);
 
@@ -120,9 +112,7 @@ int main(int argc, char** argv)
 
 	auto sceneManager = SceneManager::create(render::OpenGLES2Context::create());
 	auto baseNode = scene::Node::create("baseNode");
-	auto mesh = scene::Node::create("mesh");
-	auto mesh2 = scene::Node::create("mesh2");
-	auto mesh3 = scene::Node::create("mesh3");
+	auto ambientLightNode	= scene::Node::create("ambientLight");
 	auto pointer = scene::Node::create("pointer");
 	auto selectedMesh = baseNode;
 
@@ -160,7 +150,7 @@ int main(int argc, char** argv)
 
 		baseNode->addComponent(Transform::create());
 
-		RandomScene(baseNode, 3, 5.f, assets);
+		RandomScene(baseNode, 3, 3.f, assets);
 
 		pointer->addComponent(Transform::create());
 		pointer->component<Transform>()->transform()->prependScale(0.3f, 0.3f, 0.3f)->appendTranslation(0, 0, 5.0f);
@@ -233,8 +223,6 @@ int main(int argc, char** argv)
 
 			}
 			lastgap = gap;
-
-			//auto rotation = mesh->component<Transform>()->transform()->rotationQuaternion();
 			
 		}
 		else
