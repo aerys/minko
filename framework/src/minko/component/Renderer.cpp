@@ -238,11 +238,9 @@ Renderer::removeSurfaceComponent(std::shared_ptr<Surface> ctrl)
 }
 
 void
-Renderer::render()
+Renderer::render(std::shared_ptr<render::AbstractContext> context, std::shared_ptr<render::Texture> renderTarget)
 {
 	_renderingBegin->execute(shared_from_this());
-
-	auto context = _sceneManager->assets()->context();
 
 	context->clear(
 		((_backgroundColor >> 24) & 0xff) / 255.f,
@@ -253,7 +251,7 @@ Renderer::render()
 
     _drawCalls.sort(&Renderer::compareDrawCalls);
 	for (auto& drawCall : _drawCalls)
-		drawCall->render(context);
+		drawCall->render(context, renderTarget);
 
 	context->present();
 
@@ -313,5 +311,5 @@ Renderer::sceneManagerRenderingBeginHandler(std::shared_ptr<SceneManager>		scene
 										    uint								frameId,
 										    std::shared_ptr<render::Texture>	renderTarget)
 {
-	render();
+	render(sceneManager->assets()->context(), renderTarget);
 }
