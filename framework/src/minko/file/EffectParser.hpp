@@ -23,6 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Signal.hpp"
 #include "minko/file/AbstractParser.hpp"
+#include "minko/file/Loader.hpp"
 #include "minko/render/Blending.hpp"
 #include "minko/render/Shader.hpp"
 
@@ -44,6 +45,9 @@ namespace minko
 
 		private:
 			typedef std::shared_ptr<AbstractLoader>			LoaderPtr;
+			typedef std::shared_ptr<render::Effect>			EffectPtr;
+			typedef std::shared_ptr<render::Pass>			PassPtr;
+			typedef std::shared_ptr<render::Shader>			ShaderPtr;
 
 		private:
 			static std::unordered_map<std::string, unsigned int>		_blendFactorMap;
@@ -68,9 +72,10 @@ namespace minko
 
 			unsigned int												_numDependencies;
 			unsigned int												_numLoadedDependencies;
-			std::shared_ptr<AssetLibrary>								_AssetLibrary;
-
-			std::string													_dependenciesCode;
+			std::shared_ptr<AssetLibrary>								_assetLibrary;
+			std::vector<LoaderPtr>										_effectIncludes;
+			std::unordered_map<PassPtr, std::vector<LoaderPtr>> 		_passIncludes;
+			std::unordered_map<ShaderPtr, std::vector<LoaderPtr>> 		_shaderIncludes;
 
 			std::unordered_map<LoaderPtr, Signal<LoaderPtr>::Slot>		_loaderCompleteSlots;
 			std::unordered_map<LoaderPtr, Signal<LoaderPtr>::Slot>		_loaderErrorSlots;
@@ -102,7 +107,7 @@ namespace minko
 				  const std::string&                resolvedFilename,
                   std::shared_ptr<Options>          options,
 				  const std::vector<unsigned char>&	data,
-				  std::shared_ptr<AssetLibrary>		AssetLibrary);
+				  std::shared_ptr<AssetLibrary>		assetLibrary);
 
 			void
 			finalize();
@@ -155,7 +160,10 @@ namespace minko
                         std::string&                                name);
 
 			void
-			parseDependencies(Json::Value& root, const std::string& filename, std::shared_ptr<file::Options> options);
+			parseDependencies(Json::Value& 						root,
+							  const std::string& 				filename,
+							  std::shared_ptr<file::Options> 	options,
+							  std::vector<LoaderPtr>& 			store);
 
 			void
 			dependencyCompleteHandler(std::shared_ptr<AbstractLoader> loader);
@@ -163,6 +171,9 @@ namespace minko
 
 			void
 			dependencyErrorHandler(std::shared_ptr<AbstractLoader> loader);
+
+			std::string
+			concatenateIncludes(std::vector<LoaderPtr>& store);
 
 			static
 			std::unordered_map<std::string, unsigned int>
