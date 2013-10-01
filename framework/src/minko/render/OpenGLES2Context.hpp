@@ -115,6 +115,13 @@ namespace minko
                 return _driverInfo;
             }
 
+            inline
+            uint
+            renderTarget()
+            {
+            	return _currentTarget;
+            }
+
 			void
 			configureViewport(const unsigned int x,
 							  const unsigned int y,

@@ -91,7 +91,8 @@ namespace minko
 			}
 
 			void
-			render();
+			render(std::shared_ptr<render::AbstractContext> context,
+				   std::shared_ptr<render::Texture> 		renderTarget = nullptr);
 
 			inline
 			Signal<Ptr>::Ptr
