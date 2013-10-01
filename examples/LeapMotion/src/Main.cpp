@@ -26,10 +26,9 @@ void explode(scene::Node::Ptr node, float magnitude)
 	for (scene::Node::Ptr child : node->children())
 	{
 		auto cTransform = child->component<Transform>()->transform();
-		auto direction = cTransform->translation() - pTransform->translation();
-		
-		explode(child, magnitude);
+		auto direction = cTransform->translation();
 		cTransform->appendTranslation(direction * magnitude);
+		explode(child, magnitude);
 	}
 }
 
@@ -105,7 +104,7 @@ int main(int argc, char** argv)
 		camera->addComponent(renderer);
 		camera->addComponent(Transform::create());
 		camera->component<Transform>()->transform()
-			->lookAt(Vector3::zero(), Vector3::create(0.f, 10.f, 0.f));
+			->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 10.f));
 		camera->addComponent(PerspectiveCamera::create(.785f, 800.f / 600.f, .1f, 1000.f));
 		root->addChild(camera);
 
