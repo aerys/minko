@@ -38,25 +38,32 @@ namespace minko
 			Ptr
 			create(std::shared_ptr<render::AbstractContext> context)
 			{
-				return std::shared_ptr<ParticleVertexBuffer>(new ParticleVertexBuffer(context));
+				auto vb = std::shared_ptr<ParticleVertexBuffer>(new ParticleVertexBuffer(context));
+
+				vb->initialize();
+
+				return vb;
 			}
-			
-			void
-			update(unsigned int	nParticles,
-				   unsigned int	vertexSize);
 
 			void
-			resize(unsigned int nParticles,
-				   unsigned int	vertexSize);
+			initialize();
+			
+			// void
+			// update(unsigned int	nParticles, unsigned int vertexSize);
+
+			void
+			resize(unsigned int nParticles, unsigned int vertexSize);
 
 			void
 			resetAttributes()
 			{
+				/*
 				attributes().resize(0);
 				vertexSize(0);
 				
 				addAttribute("offset", 2, 0);
 				addAttribute("position", 3, 2);
+				*/
 			};
 
 		private:

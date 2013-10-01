@@ -38,7 +38,7 @@ project "minko-example-light"
 
 	-- linux
 	configuration { "linux" }
-		links { "GL", "GLU", "glfw3", "m", "Xrandr", "Xxf86vm", "Xi", "rt", "X11", "pthread" }
+		links { "GL", "GLU", "SDL2", "m", "Xrandr", "Xxf86vm", "Xi", "rt", "X11", "pthread" }
 		libdirs { "../../deps/lin/lib" }
 		includedirs { "../../deps/lin/include" }
 		buildoptions { "-std=c++11" }
@@ -49,7 +49,7 @@ project "minko-example-light"
 
 	-- windows
 	configuration { "windows", "x32" }
-		links { "glfw3dll" }
+		links { "SDL2", "SDL2main" }
 		libdirs { "../../deps/win/lib" }
 		includedirs { "../../deps/win/include" }
 		if _OPTIONS[ "directX" ] then
@@ -73,7 +73,7 @@ project "minko-example-light"
 		linkoptions { "-std=c++11", "-stdlib=libc++" }
 		links {
 			"m",
-			"glfw3",
+			"SDL2.framework",
 			"Cocoa.framework",
 			"OpenGL.framework",
 			"IOKit.framework"

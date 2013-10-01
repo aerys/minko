@@ -9,6 +9,7 @@ end
 -- examples
 include 'examples/sponza'
 include 'examples/cube'
+include 'examples/light'
 --include 'examples/cube-offscreen'
 include 'examples/light'
 include 'examples/LeapMotion'
