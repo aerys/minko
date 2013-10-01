@@ -487,10 +487,10 @@ EffectParser::finalize()
 		auto program = pass->program();
 
 		program->vertexShader()->source(
-			"#define VERTEX\r\n" + _dependenciesCode + program->vertexShader()->source()
+			"#define VERTEX_SHADER\r\n" + _dependenciesCode + program->vertexShader()->source()
 		);
 		program->fragmentShader()->source(
-			"#define FRAGMENT\r\n" + _dependenciesCode + program->fragmentShader()->source()
+			"#define FRAGMENT_SHADER\r\n" + _dependenciesCode + program->fragmentShader()->source()
 		);
     }
 
