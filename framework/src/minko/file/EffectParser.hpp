@@ -24,6 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Signal.hpp"
 #include "minko/file/AbstractParser.hpp"
 #include "minko/render/Blending.hpp"
+#include "minko/render/Shader.hpp"
 
 namespace Json
 {
@@ -101,7 +102,7 @@ namespace minko
 				  const std::string&                resolvedFilename,
                   std::shared_ptr<Options>          options,
 				  const std::vector<unsigned char>&	data,
-				  std::shared_ptr<AssetLibrary>	AssetLibrary);
+				  std::shared_ptr<AssetLibrary>		AssetLibrary);
 
 			void
 			finalize();
@@ -116,6 +117,12 @@ namespace minko
 			parsePasses(Json::Value& 					root,
 						const std::string& 				resolvedFilename,
 						std::shared_ptr<file::Options> 	options);
+
+			std::shared_ptr<render::Shader>
+			parseShader(Json::Value& 					shaderNode,
+						const std::string&				resolvedFilename,
+						std::shared_ptr<file::Options>  options,
+						render::Shader::Type 			type);
 
 			void
 			parseBindings(Json::Value&      contextNode,
