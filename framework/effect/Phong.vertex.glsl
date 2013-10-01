@@ -1,4 +1,4 @@
-#ifdef VERTEX
+#ifdef VERTEX_SHADER
 
 #ifdef GL_ES
 	precision mediump float;
@@ -51,4 +51,4 @@ void main(void)
 	gl_Position =  worldToScreenMatrix * worldPosition;
 }
 
-#endif // VERTEX
+#endif // VERTEX_SHADER
