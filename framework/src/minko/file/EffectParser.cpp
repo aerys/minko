@@ -21,7 +21,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/data/Provider.hpp"
 #include "minko/render/Effect.hpp"
-#include "minko/render/Shader.hpp"
 #include "minko/render/Program.hpp"
 #include "minko/render/States.hpp"
 #include "minko/render/Effect.hpp"
@@ -92,6 +91,7 @@ EffectParser::initializeDepthFuncMap()
 }
 
 EffectParser::EffectParser() :
+	_effect(nullptr),
 	_numDependencies(0),
 	_numLoadedDependencies(0),
     _defaultPriority(0.f),
@@ -200,11 +200,14 @@ EffectParser::parsePasses(Json::Value& root, const std::string& resolvedFilename
         parseDependencies(pass, resolvedFilename, options);
 
 		// program
-		auto vertexShader	= Shader::create(
-			options->context(), Shader::Type::VERTEX_SHADER, pass.get("vertexShader", "").asString()
+		auto vertexShaderValue = pass.get("vertexShader", "");
+		auto vertexShader = parseShader(
+			vertexShaderValue, resolvedFilename, options, render::Shader::Type::VERTEX_SHADER
 		);
-		auto fragmentShader	= Shader::create(
-			options->context(), Shader::Type::FRAGMENT_SHADER, pass.get("fragmentShader", "").asString()
+		
+		auto fragmentShaderValue = pass.get("fragmentShader", "");
+		auto fragmentShader = parseShader(
+			fragmentShaderValue, resolvedFilename, options, render::Shader::Type::FRAGMENT_SHADER
 		);
 
         std::string targetName;
@@ -236,6 +239,24 @@ EffectParser::parsePasses(Json::Value& root, const std::string& resolvedFilename
 	_effect = render::Effect::create(passes);
     for (auto target : targets)
         _effect->data()->set(target.first, target.second);
+}
+
+render::Shader::Ptr
+EffectParser::parseShader(Json::Value& 			shaderNode,
+						  const std::string&	resolvedFilename,
+						  file::Options::Ptr    options,
+						  render::Shader::Type 	type)
+{
+	if (shaderNode.isObject())
+	{
+		parseDependencies(shaderNode, resolvedFilename, options);
+
+		return Shader::create(options->context(), type, shaderNode.get("code", "").asString());
+	}
+	else if (shaderNode.isString())
+		return Shader::create(options->context(), type, shaderNode.asString());
+
+	throw;
 }
 
 void
@@ -412,7 +433,7 @@ EffectParser::parseTarget(Json::Value&                      contextNode,
 void
 EffectParser::parseDependencies(Json::Value& root, const std::string& filename, file::Options::Ptr options)
 {
-	auto require	= root.get("includes", 0);
+	auto includes	= root.get("includes", 0);
 	int pos			= filename.find_last_of("/");
 
 	if (pos > 0)
@@ -421,11 +442,11 @@ EffectParser::parseDependencies(Json::Value& root, const std::string& filename, 
 		options->includePaths().insert(filename.substr(0, pos));
 	}
 
-	if (require.isArray())
+	if (includes.isArray())
 	{
-		_numDependencies = require.size();
+		_numDependencies += includes.size();
 
-		for (unsigned int requireId = 0; requireId < _numDependencies; requireId++)
+		for (auto include : includes)
 		{
 			auto loader = Loader::create();
 
@@ -436,7 +457,7 @@ EffectParser::parseDependencies(Json::Value& root, const std::string& filename, 
 				&EffectParser::dependencyErrorHandler, shared_from_this(), std::placeholders::_1
 			));
 
-			loader->load(require[requireId].asString(), options);
+			loader->load(include.asString(), options);
 		}
 	}
 }
@@ -455,7 +476,7 @@ EffectParser::dependencyCompleteHandler(std::shared_ptr<AbstractLoader> loader)
 void
 EffectParser::dependencyErrorHandler(std::shared_ptr<AbstractLoader> loader)
 {
-	std::cout << "error" << std::endl;
+	throw;
 }
 
 void
