@@ -24,6 +24,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/AbstractResource.hpp"
 #include "minko/render/ProgramInputs.hpp"
 
+#include "minko/render/AbstractContext.hpp"
+
 namespace minko
 {
 	namespace render
@@ -92,8 +94,13 @@ namespace minko
 			void
 			dispose();
 
+			template <typename... T>
 			void
-			setUniform(const std::string& name, float value);
+			setUniform(const std::string& name, const T&... values)
+			{
+				_context->setProgram(_id);
+				_context->setUniform(_inputs->location(name), values...);
+			}
 
 		private:
 			Program(AbstractContextPtr context);
