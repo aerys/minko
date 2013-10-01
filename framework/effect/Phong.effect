@@ -54,11 +54,17 @@
 	},
 
 	"passes"	: [{	
-		"includes" : [
-			"Phong.struct.glsl",
-			"Phong.function.glsl",
-			"Phong.vertex.glsl",
-			"Phong.fragment.glsl"
-		]
+		"vertexShader" : {
+			"includes" : [
+				"Phong.vertex.glsl"
+			]
+		},
+		"fragmentShader" : {
+			"includes" : [
+				"Phong.struct.glsl",
+				"Phong.function.glsl",
+				"Phong.fragment.glsl"
+			]
+		}
 	}]
 }
