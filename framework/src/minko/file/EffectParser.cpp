@@ -446,8 +446,6 @@ EffectParser::dependencyCompleteHandler(std::shared_ptr<AbstractLoader> loader)
 {
 	++_numLoadedDependencies;
 
-	std::cout << "loaded: " << loader->filename() << std::endl;
-
 	_dependenciesCode += std::string((char*)&loader->data()[0], loader->data().size()) + "\r\n";
 
 	if (_numDependencies == _numLoadedDependencies && _effect)
