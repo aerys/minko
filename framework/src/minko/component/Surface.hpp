@@ -35,21 +35,36 @@ namespace minko
 			typedef std::shared_ptr<Surface>	Ptr;
 
 		private:
-			typedef std::shared_ptr<scene::Node>			NodePtr;
-			typedef std::shared_ptr<render::Pass>			PassPtr;
-			typedef std::shared_ptr<render::DrawCall>		DrawCallPtr;
-			typedef std::list<DrawCallPtr>					DrawCallList;
+			typedef std::shared_ptr<scene::Node>				NodePtr;
+			typedef std::shared_ptr<data::Container>			ContainerPtr;
+			typedef std::shared_ptr<render::Pass>				PassPtr;
+			typedef std::shared_ptr<render::DrawCall>			DrawCallPtr;
+			typedef std::list<DrawCallPtr>						DrawCallList;
+			typedef Signal<ContainerPtr, const std::string&>	PropertyChangedSignal;
+			typedef PropertyChangedSignal::Slot					PropertyChangedSlot;
+
+			enum class MacroChange
+			{
+				REF_CHANGED	= 0,
+				ADDED		= 1,
+				REMOVED		= 2
+			};
 
 		private:
 			std::shared_ptr<geometry::Geometry>				_geometry;
 			std::shared_ptr<data::Provider>					_material;
 			std::shared_ptr<render::Effect>					_effect;
+			std::unordered_set<std::string>					_macroPropertyNames;
 
 			DrawCallList									_drawCalls;
 			std::unordered_map<DrawCallPtr, PassPtr>		_drawCallToPass;
 			std::unordered_map<std::string, DrawCallList>	_macroPropertyNameToDrawCalls;
-			std::unordered_map<std::string, std::list<Any>>	_macroChangedSlots;
-			std::list<Any>									_macroAddedOrRemovedSlots;
+
+			std::list<Any>											_macroAddedOrRemovedSlots;
+			std::unordered_map<std::string, PropertyChangedSlot>	_targetMacroChangedSlots;
+			std::unordered_map<std::string, uint>					_numTargetMacroListeners;
+			std::unordered_map<std::string, PropertyChangedSlot>	_rootMacroChangedSlots;
+			std::unordered_map<std::string, uint>					_numRootMacroListeners;
 
 			Signal<AbstractComponent::Ptr, NodePtr>::Slot	_targetAddedSlot;
 			Signal<AbstractComponent::Ptr, NodePtr>::Slot	_targetRemovedSlot;
@@ -132,20 +147,19 @@ namespace minko
 			addedOrRemovedHandler(NodePtr node, NodePtr target, NodePtr ancestor);
 
             void
-            propertyAddedHandler(std::shared_ptr<data::Container>  data,
-                                 const std::string&                propertyName);
+            propertyAddedHandler(ContainerPtr, const std::string& propertyName);
 
             void
-            propertyChangedHandler(std::shared_ptr<data::Container> data,
-                                   const std::string&  				propertyName);
+            propertyChangedHandler(ContainerPtr, const std::string& propertyName);
 
             void
-            propertyRemovedHandler(std::shared_ptr<data::Container>  data,
-                                   const std::string&                propertyName);
+            propertyRemovedHandler(ContainerPtr, const std::string& propertyName);
 
 			void
-			macroPropertyChangedHandler(std::shared_ptr<data::Container>,
-										const std::string& propertyName);
+			macroChangedHandler(ContainerPtr, const std::string& propertyName, MacroChange, bool countListeners);
+
+			ContainerPtr
+			getDataContainer(const std::string& propertyName) const;
 		};
 	}
 }
