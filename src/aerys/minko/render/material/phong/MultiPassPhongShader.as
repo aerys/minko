@@ -43,7 +43,10 @@ package aerys.minko.render.material.phong
         
         override protected function getPixelColor() : SFloat
         {
-            return float4(_phong.getDynamicLighting(_lightId, true), 1);
+			var materialDiffuse	: SFloat	= diffuse.getDiffuseColor();
+			var shading			: SFloat	= _phong.getDynamicLighting(_lightId, true, true, true, materialDiffuse);
+			
+            return float4(shading.rgb, 1);
         }
     }
 }

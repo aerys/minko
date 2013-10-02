@@ -54,15 +54,12 @@ package aerys.minko.render.material.realistic
 		
 		override protected function getPixelColor() : SFloat
 		{
-			var diffuse         : SFloat    = _diffuse.getDiffuseColor();
-			var alpha           : SFloat    = diffuse.a;
-			var phong           : SFloat    = add(_phong.getDynamicLighting(), _phong.getStaticLighting());
-			var env             : SFloat    = _environmentMapping.getEnvironmentColor();
+			var materialDiffuse : SFloat    = _diffuse.getDiffuseColor();			
+			var envColor        : SFloat    = _environmentMapping.getEnvironmentColor();
 			var envBlending     : uint      = meshBindings.getProperty(
 				EnvironmentMappingProperties.ENVIRONMENT_BLENDING, Blending.ALPHA
 			);
-			
-			var envDiffuse		: SFloat	= _blending.blend(env, diffuse, envBlending);
+			var finalDiffuse	: SFloat	= _blending.blend(envColor, materialDiffuse, envBlending);
 			
 			// BigPoint trick
 			if (meshBindings.propertyExists(PhongProperties.SPECULAR_MAP))
@@ -78,10 +75,15 @@ package aerys.minko.render.material.realistic
 				);
 				var envWeight	: SFloat	= sampleTexture(map, uv);
 				
-				envDiffuse	= mix(diffuse, envDiffuse, envWeight);
+				finalDiffuse	= mix(materialDiffuse, finalDiffuse, envWeight);
 			}
 			
-			return float4(multiply(envDiffuse.rgb, phong.rgb), alpha);
+			var shading	: SFloat	= add(
+				_phong.getStaticLighting(finalDiffuse),
+				_phong.getDynamicLighting(-1, true, true, true, finalDiffuse)
+			);
+			
+			return float4(shading.rgb, materialDiffuse.a);
 		}       
 	}
 }
