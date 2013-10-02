@@ -294,8 +294,13 @@ int main(int argc, char** argv)
 	Leap::Controller* controller = new Leap::Controller();
 	controller->enableGesture(Leap::Gesture::TYPE_SWIPE);
 	controller->enableGesture(Leap::Gesture::TYPE_SCREEN_TAP);
+
+
 	Leap::Frame lastFrame;
-	float speed = 0.f;
+	float angle = 0.f;
+	float targetAngle = 0.f;
+	bool inProgress = false;
+
 	Vector3::Ptr targetPos = Vector3::create();
 	float lastgap = 0.0f;
 	const float delta = 5.f;
@@ -359,8 +364,13 @@ int main(int argc, char** argv)
 				case Leap::Gesture::TYPE_SWIPE:
 					{
 						Leap::SwipeGesture swipe = gesture;
-						speed = speed + (swipe.speed() / 100.f * swipe.direction().x - speed) * 0.005f;
-                        std::cout << swipe.speed() << std::endl;
+						if (gesture.state() == Leap::Gesture::State::STATE_START && !inProgress)
+						{
+							inProgress = true;
+							targetAngle += PI / 2.f * ((0.f < swipe.direction().x) - (swipe.direction().x < 0.f));
+						}
+						if (gesture.state() == Leap::Gesture::State::STATE_STOP)
+							inProgress = false;
 						break;
 					}
 				case Leap::Gesture::TYPE_SCREEN_TAP:
@@ -385,9 +395,9 @@ int main(int argc, char** argv)
 			}
 
 			Leap::PointableList pointables = frame.pointables();
-			if (pointables.count() >=4)
-				speed = 0.f;
-			else if (pointables.count() >= 1)
+			//if (pointables.count() >=4)
+			//	speed = 0.f;
+			if (pointables.count() >= 1)
 			{
 				auto finger = pointables[0];
 				auto tip = finger.tipPosition() * 0.1f;
@@ -395,10 +405,10 @@ int main(int argc, char** argv)
 			}
 		}
 
-		selectedMesh->component<Transform>()->transform()->prependRotationY(0.01f * speed);
-		pointer->component<Transform>()->transform()->identity()->appendScale(0.3f, 0.3f, 0.3f)->prependTranslation(targetPos);
+		angle = angle + (targetAngle - angle) * 0.01f;
 
-		speed = speed * 0.999f;
+		selectedMesh->component<Transform>()->transform()->identity()->prependRotationY(angle);
+		pointer->component<Transform>()->transform()->identity()->appendScale(0.3f, 0.3f, 0.3f)->prependTranslation(targetPos);
 		//scaleSpeed = scaleSpeed + (1.f - scaleSpeed) * 0.1f;
 		//std::cout << scaleSpeed << std::endl;
 
