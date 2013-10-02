@@ -133,6 +133,11 @@ package aerys.minko.type.math
 			return _length;
 		}
 		
+		public function get norm() : Number
+		{
+			return length;
+		}
+		
 		public function get locked() : Boolean
 		{
 			return _locked;
