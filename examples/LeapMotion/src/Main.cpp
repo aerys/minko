@@ -296,7 +296,7 @@ int main(int argc, char** argv)
 	controller->enableGesture(Leap::Gesture::TYPE_SCREEN_TAP);
 	Leap::Frame lastFrame;
 	float speed = 0.f;
-	float scaleSpeed = 1.0f;
+	Vector3::Ptr targetPos = Vector3::create();
 	float lastgap = 0.0f;
 	const float delta = 5.f;
 
@@ -391,15 +391,15 @@ int main(int argc, char** argv)
 			{
 				auto finger = pointables[0];
 				auto tip = finger.tipPosition() * 0.1f;
-				tip.y -= 15.f;
-				pointer->component<Transform>()->transform()->identity()->prependScale(0.3f, 0.3f, 0.3f)->prependTranslation(tip.x, tip.y, 5.0f);
+				targetPos->lerp(Vector3::create(tip.x, tip.y - 30.f, 15.f), 0.05f);
 			}
 		}
 
-		selectedMesh->component<Transform>()->transform()->prependRotationY(0.01f * speed)->prependScale(scaleSpeed, scaleSpeed, scaleSpeed);
+		selectedMesh->component<Transform>()->transform()->prependRotationY(0.01f * speed);
+		pointer->component<Transform>()->transform()->identity()->appendScale(0.3f, 0.3f, 0.3f)->prependTranslation(targetPos);
 
 		speed = speed * 0.999f;
-		scaleSpeed = scaleSpeed + (1.f - scaleSpeed) * 0.1f;
+		//scaleSpeed = scaleSpeed + (1.f - scaleSpeed) * 0.1f;
 		//std::cout << scaleSpeed << std::endl;
 
 		sceneManager->nextFrame();
