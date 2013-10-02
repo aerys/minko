@@ -30,7 +30,7 @@ void explode(scene::Node::Ptr node, float magnitude)
 		auto cTransform = child->component<Transform>()->transform();
 		auto direction = cTransform->translation();
 		cTransform->appendTranslation(direction * magnitude);
-		explode(child, magnitude * 0.5f);
+		explode(child, magnitude * 0.8f);
 	}
 }
 
@@ -272,7 +272,7 @@ int main(int argc, char** argv)
 
 		baseNode->addComponent(Transform::create());
 
-		RandomScene(baseNode, 3, 3.f, assets);
+		RandomScene(baseNode, 3, 2.f, assets);
 
 		pointer->addComponent(Transform::create());
 		pointer->component<Transform>()->transform()->prependScale(0.3f, 0.3f, 0.3f)->appendTranslation(0, 0, 5.0f);
@@ -300,6 +300,11 @@ int main(int argc, char** argv)
 	float angle = 0.f;
 	float targetAngle = 0.f;
 	bool inProgress = false;
+	int totalMoveTime = 0;
+	int explodeThreshold = 10;
+	bool exploded = false;
+	float currentExplodeValue = 0.f;
+
 
 	Vector3::Ptr targetPos = Vector3::create();
 	float lastgap = 0.0f;
@@ -341,17 +346,24 @@ int main(int argc, char** argv)
 			{
 				if (gap > lastgap + delta)
 				{
-					explode(baseNode, 0.1f);
+					totalMoveTime += 5;
 					//scaleSpeed = scaleSpeed + (1.5f - scaleSpeed) * 0.01f;
 				}
 				else if (gap < lastgap - delta)
 				{
-					explode(baseNode, -0.1f);
+					totalMoveTime -= 5;
 					//scaleSpeed = scaleSpeed + (0.5f - scaleSpeed) * 0.01f;
 				}
 
+				if (totalMoveTime >= explodeThreshold)
+					exploded = true;
+				else if (totalMoveTime <= -explodeThreshold)
+					exploded = false;
+
+				
 			}
 			lastgap = gap;
+			totalMoveTime -= 1 * ((0 < totalMoveTime) - (0 > totalMoveTime));
 			
 		}
 		else
@@ -406,6 +418,12 @@ int main(int argc, char** argv)
 		}
 
 		angle = angle + (targetAngle - angle) * 0.01f;
+
+		float explodeTarget = exploded ? 1.f : 0.f;
+		std::cout << currentExplodeValue << std::endl;
+		float explodeDelta = currentExplodeValue + (explodeTarget - currentExplodeValue) * 0.01f;
+		explode(baseNode, explodeDelta - currentExplodeValue);
+		currentExplodeValue = explodeDelta;
 
 		selectedMesh->component<Transform>()->transform()->identity()->prependRotationY(angle);
 		pointer->component<Transform>()->transform()->identity()->appendScale(0.3f, 0.3f, 0.3f)->prependTranslation(targetPos);
