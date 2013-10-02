@@ -366,7 +366,7 @@ int main(int argc, char** argv)
 
 			float gap = (rhand.palmPosition() - lhand.palmPosition()).magnitude();;
 
-			if (lhand.palmNormal().x > 0.7f && rhand.palmNormal().x < -0.7f)
+			if (lhand.palmNormal().x > 0.5f && rhand.palmNormal().x < -0.5f)
 			{
 				if (gap > lastgap + delta)
 				{
@@ -378,17 +378,22 @@ int main(int argc, char** argv)
 					totalMoveTime -= 5;
 					//scaleSpeed = scaleSpeed + (0.5f - scaleSpeed) * 0.01f;
 				}
+					
 
 				if (totalMoveTime >= explodeThreshold)
+				{
 					exploded = true;
+					totalMoveTime = 0;
+				}
 				else if (totalMoveTime <= -explodeThreshold)
+				{
 					exploded = false;
-
-				
+					totalMoveTime = 0;
+				}
 			}
 			lastgap = gap;
+
 			totalMoveTime -= 1 * ((0 < totalMoveTime) - (0 > totalMoveTime));
-			
 		}
 		else
 		{
@@ -403,7 +408,8 @@ int main(int argc, char** argv)
 						if (gesture.state() == Leap::Gesture::State::STATE_START && !inProgress)
 						{
 							inProgress = true;
-							targetAngle += PI / 2.f * ((0.f < swipe.direction().x) - (swipe.direction().x < 0.f));
+							if (abs(angle - targetAngle) < PI / 10.f);
+								targetAngle += PI / 2.f * ((0.f < swipe.direction().x) - (swipe.direction().x < 0.f));
 						}
 						if (gesture.state() == Leap::Gesture::State::STATE_STOP)
 							inProgress = false;
@@ -445,7 +451,7 @@ int main(int argc, char** argv)
 		angle = angle + (targetAngle - angle) * 0.01f;
 
 		float explodeTarget = exploded ? 1.f : 0.f;
-		std::cout << currentExplodeValue << std::endl;
+
 		float explodeDelta = currentExplodeValue + (explodeTarget - currentExplodeValue) * 0.01f;
 		explode(baseNode, explodeDelta - currentExplodeValue);
 		currentExplodeValue = explodeDelta;
