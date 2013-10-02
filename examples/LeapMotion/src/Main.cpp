@@ -132,7 +132,8 @@ scene::Node::Ptr
 getTouchedMesh(scene::Node::Ptr camera, scene::Node::Ptr pointer, std::vector<boundingBox>& boxList)
 {
     scene::Node::Ptr result;
-
+    std::vector<scene::Node::Ptr> touchedNodes;
+    
     for (boundingBox box : boxList)
     {
         auto nodeTransform = box.node->component<Transform>();
@@ -145,8 +146,13 @@ getTouchedMesh(scene::Node::Ptr camera, scene::Node::Ptr pointer, std::vector<bo
         auto modelPointerTransform = Matrix4x4::create(pointer->component<Transform>()->transform());
         modelPointerTransform->append(worldToModel);
         
-        auto rayStart = modelCameraTransform->translation();
-        auto direction = (modelPointerTransform->translation() - modelCameraTransform->translation())->normalize();
+        auto rayOriginTransform = Matrix4x4::create(pointer->component<Transform>()->transform());
+        rayOriginTransform->appendTranslation(0.f, 0.f, 20.f);
+        rayOriginTransform->append(worldToModel);
+        
+        auto rayStart = rayOriginTransform->translation();
+        auto pointerTranslation =modelPointerTransform->translation();
+        auto direction = (modelPointerTransform->translation() - rayOriginTransform->translation())->normalize();
         
         float t0x, t0y, t0z,t1x, t1y, t1z;
         auto corner1 = box.corner1;
@@ -189,8 +195,26 @@ getTouchedMesh(scene::Node::Ptr camera, scene::Node::Ptr pointer, std::vector<bo
             tmin = t0z;
         if (t1z < tmax)
             tmax = t1z;
+ 
+        //result = box.node;
+        touchedNodes.push_back(box.node);
+    }
+    if (touchedNodes.size() > 0)
+        result = touchedNodes[0];
+    
+    for (int i= 0; i < touchedNodes.size(); i++)
+    {
+//        auto touchedNodeTransform = touchedNodes[i]->component<Transform>();
+//        auto resultNodeTransform = result->component<Transform>();
         
-        result = box.node;
+        auto touchedNodeTransform = Matrix4x4::create(touchedNodes[i]->component<Transform>()->transform());
+        auto resultNodeTransform = Matrix4x4::create(result->component<Transform>()->transform());
+
+        auto touchedNodeZ = touchedNodeTransform->append(touchedNodes[i]->component<Transform>()->modelToWorldMatrix())->translation()->z();
+        auto resultNodetZ = resultNodeTransform->append(result->component<Transform>()->modelToWorldMatrix())->translation()->z();
+        
+        if (touchedNodeZ > resultNodetZ)
+            result = touchedNodes[i];
     }
     return result;
 }
@@ -392,6 +416,7 @@ int main(int argc, char** argv)
                         
                         std::cout << screenTape.direction().x << ":"<< screenTape.direction().y <<":"<< screenTape.direction().z << std::endl;
                         std::cout << screenTape.position().x << ":"<< screenTape.position().y <<":"<< screenTape.position().z << std::endl;
+                        
                         
                         auto touche = getTouchedMesh(camera,
                                                      pointer,
