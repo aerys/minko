@@ -187,7 +187,7 @@ package aerys.minko.type.math
 			return this;
 		}
 
-		public function normalize(q : Quaternion) : Quaternion
+		public function normalize() : Quaternion
 		{
 			var l	: Number	= length;
 			
