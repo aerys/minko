@@ -1,6 +1,7 @@
 package aerys.minko.render.material.phong.multipass
 {
     import aerys.minko.render.RenderTarget;
+    import aerys.minko.render.material.Material;
     import aerys.minko.render.material.basic.BasicShader;
     import aerys.minko.render.resource.texture.ITextureResource;
     import aerys.minko.render.shader.SFloat;
@@ -31,7 +32,8 @@ package aerys.minko.render.material.phong.multipass
         
         override protected function getPixelColor() : SFloat
         {
-            var diffuse : SFloat = super.getPixelColor();
+			var materialDiffuse	: SFloat	= super.getPixelColor();
+            var shading 		: SFloat 	= materialDiffuse;
             
             if (_diffuseAccumulator || _specularAccumulator)
             {
@@ -39,23 +41,22 @@ package aerys.minko.render.material.phong.multipass
                 
                 uv = divide(uv.xy, uv.w);
                 uv = multiply(add(float2(uv.x, negate(uv.y)), 1), .5);
-                
-                var lighting : SFloat = null;
-				
+                				
 				if (_diffuseAccumulator)
-					lighting = sampleTexture(getTexture(_diffuseAccumulator, SamplerFiltering.LINEAR), uv);
+					shading = sampleTexture(getTexture(_diffuseAccumulator, SamplerFiltering.LINEAR), uv);
 				if (_specularAccumulator)
 				{
 					var specular : SFloat = sampleTexture(getTexture(_specularAccumulator), uv);
 					
-					lighting = lighting ? add(lighting, specular) : specular;
+					shading = shading ? add(shading, specular) : specular;
 				}
                 
-				diffuse = float4(add(diffuse.rgb, lighting.rgb), diffuse.a);
+				shading = float4(shading.rgb, materialDiffuse.a);
+//				diffuse = float4(add(diffuse.rgb, lighting.rgb), diffuse.a);
 //                diffuse = float4(multiply(diffuse.rgb, lighting.rgb), diffuse.a);
             }
             
-            return diffuse;
+            return shading;
         }
     }
 }

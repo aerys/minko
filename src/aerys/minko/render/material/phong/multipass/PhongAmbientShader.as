@@ -5,12 +5,14 @@ package aerys.minko.render.material.phong.multipass
     import aerys.minko.render.shader.SFloat;
     import aerys.minko.render.shader.Shader;
     import aerys.minko.render.shader.ShaderSettings;
+    import aerys.minko.render.shader.part.DiffuseShaderPart;
     import aerys.minko.render.shader.part.animation.VertexAnimationShaderPart;
     import aerys.minko.render.shader.part.phong.PhongShaderPart;
     import aerys.minko.type.enum.DepthTest;
     
     public class PhongAmbientShader extends Shader
     {
+		private var _diffuse				: DiffuseShaderPart;
         private var _phong  				: PhongShaderPart;
         private var _vertexAnimationPart	: VertexAnimationShaderPart;
         
@@ -19,8 +21,9 @@ package aerys.minko.render.material.phong.multipass
         {
             super(renderTarget, priority);
             
-			_vertexAnimationPart = new VertexAnimationShaderPart(this);
-            _phong = new PhongShaderPart(this);
+			_diffuse				= new DiffuseShaderPart(this);
+			_vertexAnimationPart	= new VertexAnimationShaderPart(this);
+            _phong					= new PhongShaderPart(this);
         }
         
         override protected function initializeSettings(settings : ShaderSettings) : void
@@ -39,7 +42,13 @@ package aerys.minko.render.material.phong.multipass
         
         override protected function getPixelColor() : SFloat
         {
-            return float4(add(_phong.getAmbientLighting(), _phong.getStaticLighting()), 1);
+			var materialDiffuse	: SFloat	= _diffuse.getDiffuseColor();
+			var shading			: SFloat	= multiply(
+				add(_phong.getStaticLighting(null), _phong.getAmbientLighting(null)),
+				materialDiffuse
+			);
+			
+            return float4(shading.rgb, 1);
         }
     }
 }

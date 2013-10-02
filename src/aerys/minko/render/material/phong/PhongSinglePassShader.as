@@ -25,7 +25,7 @@ package aerys.minko.render.material.phong
 		{
             var materialDiffuse : SFloat = _diffuse.getDiffuseColor();
 			var shading			: SFloat = add(
-				_phong.getStaticLighting(),
+				_phong.getStaticLighting(materialDiffuse),
 				_phong.getDynamicLighting(-1, true, true, true, materialDiffuse)
 			);    
 			

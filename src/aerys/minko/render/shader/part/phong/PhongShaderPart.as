@@ -108,7 +108,7 @@ package aerys.minko.render.shader.part.phong
 			super(main);
 		}
 		
-		public function getStaticLighting() : SFloat
+		public function getStaticLighting(materialDiffuse	: SFloat = null) : SFloat
 		{
 			var contribution : SFloat;
 			
@@ -136,12 +136,14 @@ package aerys.minko.render.shader.part.phong
 			else
 				contribution = float3(0, 0, 0);
 			
-			return contribution;
+			return materialDiffuse 
+				? multiply(contribution, materialDiffuse)
+				: contribution;
 		}
 		
-		public function getAmbientLighting() : SFloat
+		public function getAmbientLighting(materialDiffuse	: SFloat = null) : SFloat
 		{
-			var ambientLighting : SFloat    = float3(0., 0., 0.);
+			var ambient			: SFloat    = float3(0., 0., 0.);
 			var lightId         : uint      = 0;
 			var receptionMask	: uint		= meshBindings.getProperty(
 				PhongProperties.RECEPTION_MASK,
@@ -162,29 +164,33 @@ package aerys.minko.render.shader.part.phong
 						continue;
 					
 					var color			: SFloat	= getLightParameter(lightId, 'color', 4);
-					var contribution	: SFloat	= getAmbientLightContribution(lightId);
+					var contribution	: SFloat	= getAmbientLightContribution(lightId, null);
 					
-					ambientLighting.incrementBy(multiply(color.rgb, contribution));
+					ambient.incrementBy(multiply(color.rgb, contribution));
 				}
 				
 				++lightId;
 			}
 			
-			return ambientLighting;
+			return materialDiffuse 
+				? multiply(ambient, materialDiffuse) 
+				: ambient;
 		}
 		
 		private function getAmbientLightContribution(lightId 			: uint,
-													 materialAmbient	: SFloat = null) : SFloat
+													 materialDiffuse	: SFloat = null) : SFloat
 		{
 			var ambient : SFloat = getLightParameter(lightId, 'ambient', 1);
 			
 			if (meshBindings.propertyExists(PhongProperties.AMBIENT_MULTIPLIER))
 				ambient.scaleBy(sceneBindings.getParameter(PhongProperties.AMBIENT_MULTIPLIER, 1));
 			
-			if (materialAmbient)
-				ambient = multiply(ambient, materialAmbient);
+			if (materialDiffuse)
+				ambient = multiply(ambient, materialDiffuse);
 			
-			return ambient;
+			return materialDiffuse 
+				? multiply(ambient, materialDiffuse) 
+				: ambient;
 		}
 		
 		private function getDirectionalLightContribution(lightId     	: uint,
@@ -392,7 +398,7 @@ package aerys.minko.render.shader.part.phong
 						: infinitePart.computeDiffuseInWorldSpace(lightId, infinitePart.fsWorldNormal);
 				
 				return materialDiffuse 
-					? multiply(materialDiffuse, lightDiffuse)
+					? multiply(lightDiffuse, materialDiffuse)
 					: lightDiffuse;
 			}
 			
