@@ -34,16 +34,17 @@ void explode(scene::Node::Ptr node, float magnitude)
 	}
 }
 
-typedef struct s_boundingBox
+class boundingBox
 {
+public:
     Vector3::Ptr        corner1;
     Vector3::Ptr        corner2;
     scene::Node::Ptr    node;
-}boundingBox;
+};
 
 //std::vector<boundingBox>
 void
-getBoundingBoxes(scene::Node::Ptr node, std::vector<boundingBox> boxList)
+getBoundingBoxes(scene::Node::Ptr node, std::vector<boundingBox>& boxList)
 {
     auto surface = node->component<Surface>();
     if (surface != nullptr)
@@ -65,20 +66,21 @@ getBoundingBoxes(scene::Node::Ptr node, std::vector<boundingBox> boxList)
             
             if (vertices[i] < corner2->x())
                 corner2->x(vertices[i]);
-            if (vertices[i+1] < corner1->y())
+            if (vertices[i+1] < corner2->y())
                 corner2->y(vertices[i+1]);
-            if (vertices[i+2] < corner1->z())
+            if (vertices[i+2] < corner2->z())
                 corner2->z(vertices[i+2]);
         }
-        boundingBox box;
-        box.corner1 = corner1;
-        box.corner2 = corner2;
-        box.node = node;
-        boxList.push_back(box);
+        boundingBox *box = new boundingBox();
+        
+        box->corner1 = corner1;
+        box->corner2 = corner2;
+        box->node = node;
+        boxList.push_back(*box);
     }
     for (scene::Node::Ptr child : node->children())
         getBoundingBoxes(child, boxList);
-
+}
 scene::Node::Ptr RandomScene(scene::Node::Ptr base, int depth, float radius,file::AssetLibrary::Ptr assets)
 {
 	if (depth == 0)
@@ -88,7 +90,7 @@ scene::Node::Ptr RandomScene(scene::Node::Ptr base, int depth, float radius,file
 	std::uniform_real_distribution<float> distribution(0.f, 1.f);
 	auto randf = std::bind (distribution, generator);
 
-	int numObjects = rand() % 6;
+	int numObjects = rand() % 2  + 4;
 	for (int i = 0; i < numObjects; i++)
 	{
 		auto node = scene::Node::create();
@@ -112,16 +114,90 @@ scene::Node::Ptr RandomScene(scene::Node::Ptr base, int depth, float radius,file
 		node->addComponent(Transform::create());
 		auto position = Vector3::create(randf() * 2.f - 1.f, randf() * 2.f - 1.f, randf() * 2.f - 1.f);
 		position = position * radius;
-		node->component<Transform>()->transform()->appendTranslation(position)->prependScale(depth / 2.f, depth /2.f, depth/2.f);
+		node->component<Transform>()->transform()->appendTranslation(position)->prependScale(depth / 2.f, depth / 2.f, depth / 2.f);
 		base->addChild(node);
 		RandomScene(node, depth - 1, radius / 2, assets);
 		}
 	return base;
 }
 
+void swap(float *v1, float *v2)
+{
+    float tmp = *v1;
+    *v1 = *v2;
+    *v2 = tmp;
+}
+
+scene::Node::Ptr
+getTouchedMesh(scene::Node::Ptr camera, scene::Node::Ptr pointer, std::vector<boundingBox>& boxList)
+{
+    scene::Node::Ptr result;
+
+    for (boundingBox box : boxList)
+    {
+        auto nodeTransform = box.node->component<Transform>();
+        auto modelToWorldMat = nodeTransform->modelToWorldMatrix();
+        auto worldToModel = modelToWorldMat->invert();
+        
+        auto modelCameraTransform = Matrix4x4::create(camera->component<Transform>()->transform());
+        modelCameraTransform->append(worldToModel);
+        
+        auto modelPointerTransform = Matrix4x4::create(pointer->component<Transform>()->transform());
+        modelPointerTransform->append(worldToModel);
+        
+        auto rayStart = modelCameraTransform->translation();
+        auto direction = (modelPointerTransform->translation() - modelCameraTransform->translation())->normalize();
+        
+        float t0x, t0y, t0z,t1x, t1y, t1z;
+        auto corner1 = box.corner1;
+        auto corner2 = box.corner2;
+        
+        Vector3::Ptr nearCorner, farCorner;
+        if (corner1->z() > corner2->z())
+        {
+            nearCorner = corner1;
+            farCorner = corner2;
+        }
+        else
+        {
+            nearCorner = corner2;
+            farCorner = corner1;
+        }
+        float tmin, tmax;
+        t0x = (nearCorner->x() - rayStart->x()) / direction->x();
+        t1x = (farCorner->x() - rayStart->x()) / direction->x();
+        if (t0x > t1x) swap(&t0x, &t1x);
+        tmin = t0x;
+        tmax = t1x;
+        
+        t0y = (nearCorner->y() - rayStart->y()) / direction->y();
+        t1y = (farCorner->y() - rayStart->y()) / direction->y();
+        if (t0y > t1y) swap(&t0y, &t1y);
+        if (t0y > tmax || tmin > t1y)
+            continue;
+        if (t0y > tmin)
+            tmin = t0y;
+        if (t1y < tmax)
+            tmax = t1y;
+        
+        t0z = (nearCorner->z() - rayStart->z()) / direction->z();
+        t1z = (farCorner->z() - rayStart->z()) / direction->z();
+        if (t0z > t1z) swap(&t0z, &t1z);
+        if (t0z > tmax || tmin > t1z)
+            continue;
+        if (t0z > tmin)
+            tmin = t0z;
+        if (t1z < tmax)
+            tmax = t1z;
+        
+        result = box.node;
+    }
+    return result;
+}
+
 int main(int argc, char** argv)
 {
-	std::vector<boundingBox>boxList;
+	std::vector<boundingBox>* boxList = new std::vector<boundingBox>();
     
 	if (SDL_Init(SDL_INIT_VIDEO) == -1)
 		exit(-1);
@@ -176,11 +252,11 @@ int main(int argc, char** argv)
 #else 
 	sceneManager->assets()->defaultOptions()->includePaths().insert("bin/release");
 #endif
-
+    auto root   = scene::Node::create("root");
+    auto camera	= scene::Node::create("camera");
 	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
 	{
-		auto root   = scene::Node::create("root");
-		auto camera	= scene::Node::create("camera");
+		
 		
 		root->addComponent(sceneManager);
 
@@ -190,7 +266,7 @@ int main(int argc, char** argv)
 		camera->addComponent(renderer);
 		camera->addComponent(Transform::create());
 		camera->component<Transform>()->transform()
-			->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 30.f));
+			->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 20.f));
 		camera->addComponent(PerspectiveCamera::create(.785f, 800.f / 600.f, .1f, 1000.f));
 		root->addChild(camera);
 
@@ -210,7 +286,7 @@ int main(int argc, char** argv)
 		root->addChild(baseNode);
 		root->addChild(pointer);
         
-        getBoundingBoxes(root, boxList);
+        getBoundingBoxes(baseNode, *boxList);
 	});
     
 	sceneManager->assets()->load();
@@ -291,7 +367,16 @@ int main(int argc, char** argv)
 					{
 						pointer->component<Surface>()->material()->set("material.diffuseColor", Vector4::create(0.f, 1.f, 0.f, 0.5f));
                         Leap::ScreenTapGesture screenTape = gesture;
-						break;
+                        
+                        std::cout << screenTape.direction().x << ":"<< screenTape.direction().y <<":"<< screenTape.direction().z << std::endl;
+                        std::cout << screenTape.position().x << ":"<< screenTape.position().y <<":"<< screenTape.position().z << std::endl;
+                        
+                        auto touche = getTouchedMesh(camera,
+                                                     pointer,
+                                                     *boxList);
+                        if (touche)
+                        touche->component<Surface>()->material()->set("material.diffuseColor", Vector4::create(0.f, 1.f, 0.f, 0.5f));
+                        break;
 					}
 				default:
 					break;
