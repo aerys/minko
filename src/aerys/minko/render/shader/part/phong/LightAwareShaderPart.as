@@ -228,10 +228,15 @@ package aerys.minko.render.shader.part.phong
 			{
 				var shadowColorRGBA	: SFloat = getLightParameter(lightId, 'shadowColor', 4);
 				var shadowColor 	: SFloat = shadowColorRGBA.rgb;
+		
+				return add(shadowColor, subtract(shadow, multiply(shadowColor, shadow)));
+
+				// FIXME: Here's the original code, triggering a compiler bug (no crash).
+				// shadowColor = subtract(float3(1, 1, 1), shadowColor);
+				// return subtract(float3(1, 1, 1), multiply(shadowColor, subtract(float3(1, 1, 1), shadow)));
 				
-				shadowColor = subtract(float3(1, 1, 1), shadowColor);
-				
-				return subtract(1, multiply(shadowColor, subtract(1, shadow)));
+				// We could refactor the expression because:
+				// 1 - (1 - shadowColor) * (1 - shadow) = shadowColor + shadow - shadowColor * shadow
 			}
 			
 			return shadow;

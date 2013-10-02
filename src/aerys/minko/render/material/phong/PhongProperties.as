@@ -33,6 +33,7 @@ package aerys.minko.render.material.phong
 		public static const PARALLAX_MAPPING_BUMP_SCALE	: String = 'parallaxMappingBumpScale';
 		
 		public static const SHADOW_BIAS					: String = 'shadowBias';
+		public static const SHADOW_COLOR				: String = 'shadowColor';
 		public static const CAST_SHADOWS				: String = 'castShadows';
 		public static const RECEIVE_SHADOWS				: String = 'receiveShadows';
 	}
