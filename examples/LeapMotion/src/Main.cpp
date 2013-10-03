@@ -376,7 +376,7 @@ int main(int argc, char** argv)
 			assets->geometry("sphere"),
 			data::Provider::create()
 			->set("material.diffuseColor", Vector4::create(1.f, 1.f, 1.f, 0.5f)),
-			assets->effect("effect/Basic.effect")
+			assets->effect("effect/Phong.effect")
 		));
 
 		root->addChild(baseNode);
@@ -399,11 +399,13 @@ int main(int argc, char** argv)
 	float angle = 0.f;
 	float targetAngle = 0.f;
 	bool inProgress = false;
-	int totalMoveTime = 0;
-	int explodeThreshold = 7;
+	float totalMoveTime = 0;
+	float explodeThreshold = 0.5f;
 	bool exploded = false;
 	float currentExplodeValue = 0.f;
     int fingerID = -1;
+	Uint32 lastTicks;
+	float frameTime;
     
 	Vector3::Ptr targetPos = Vector3::create();
 	float lastgap = 0.0f;
@@ -413,6 +415,10 @@ int main(int argc, char** argv)
 	while (!done)
 	{
 		SDL_Event event;
+
+		Uint32 ticks = SDL_GetTicks();
+		frameTime = (ticks - lastTicks) / 1000.f;
+		lastTicks = ticks;
         
 		while (SDL_PollEvent(&event))
 		{
@@ -445,12 +451,12 @@ int main(int argc, char** argv)
 			{
 				if (gap > lastgap + delta)
 				{
-					totalMoveTime += 7;
+					totalMoveTime += 10 * frameTime;
 					//scaleSpeed = scaleSpeed + (1.5f - scaleSpeed) * 0.01f;
 				}
 				else if (gap < lastgap - delta)
 				{
-					totalMoveTime -= 7;
+					totalMoveTime -= 10 * frameTime;
 					//scaleSpeed = scaleSpeed + (0.5f - scaleSpeed) * 0.01f;
 				}
                 
@@ -470,7 +476,7 @@ int main(int argc, char** argv)
 			}
 			lastgap = gap;
             
-			totalMoveTime -= 1 * ((0 < totalMoveTime) - (0 > totalMoveTime));
+			totalMoveTime -= 0.5 * frameTime * ((0 < totalMoveTime) - (0 > totalMoveTime));
 			std::cout << totalMoveTime << ":" << gap << std::endl;
 		}
 		else
@@ -527,18 +533,18 @@ int main(int argc, char** argv)
 			if (finger.isValid())
 			{
 				auto tip = finger.tipPosition() * 0.1f;
-				targetPos->lerp(Vector3::create(tip.x, tip.y - 30.f, 15.f), 0.05f);
+				targetPos->lerp(Vector3::create(tip.x, tip.y - 30.f, 15.f), frameTime * 2);
 			}
 			else
 				fingerID = -1;
 		}
         
-		angle = angle + (targetAngle - angle) * 0.01f;
+		angle = angle + (targetAngle - angle) * frameTime * 2;
 
 
 		float explodeTarget = exploded ? 1.5f : 0.f;
 
-		float explodeDelta = currentExplodeValue + (explodeTarget - currentExplodeValue) * 0.01f;
+		float explodeDelta = currentExplodeValue + (explodeTarget - currentExplodeValue) * frameTime * 2;
 		explode(baseNode, explodeDelta - currentExplodeValue);
 		currentExplodeValue = explodeDelta;
         
