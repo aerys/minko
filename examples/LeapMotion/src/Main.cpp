@@ -4,6 +4,7 @@
 
 #include "minko/Minko.hpp"
 #include "minko/MinkoPNG.hpp"
+#include "minko/MinkoMk.hpp"
 
 #ifdef EMSCRIPTEN
 # include "SDL/SDL.h"
@@ -22,15 +23,22 @@ using namespace minko;
 using namespace minko::component;
 using namespace minko::math;
 
+const std::string MK_NAME			= "model/airplane_engine_n.mk";
+const std::string DEFAULT_EFFECT	= "effect/Basic.effect";
+
 void explode(scene::Node::Ptr node, float magnitude)
 {
-	auto pTransform = node->component<Transform>()->transform();
 	for (scene::Node::Ptr child : node->children())
 	{
-		auto cTransform = child->component<Transform>()->transform();
-		auto direction = cTransform->translation();
-		cTransform->appendTranslation(direction * magnitude);
-		explode(child, magnitude * 0.8f);
+		if (child->component<Transform>())
+		{
+			auto cTransform = child->component<Transform>()->transform();
+			auto direction = cTransform->translation();
+			cTransform->appendTranslation(direction * magnitude);
+			explode(child, magnitude * 0.8f);
+		}
+		else
+			explode(child, magnitude);
 	}
 }
 
@@ -133,7 +141,7 @@ getTouchedMesh(scene::Node::Ptr camera, scene::Node::Ptr pointer, std::vector<bo
 {
     scene::Node::Ptr result;
     std::vector<scene::Node::Ptr> touchedNodes;
-    
+
     for (boundingBox box : boxList)
     {
         auto nodeTransform = box.node->component<Transform>();
@@ -195,7 +203,7 @@ getTouchedMesh(scene::Node::Ptr camera, scene::Node::Ptr pointer, std::vector<bo
             tmin = t0z;
         if (t1z < tmax)
             tmax = t1z;
- 
+        
         //result = box.node;
         touchedNodes.push_back(box.node);
     }
@@ -266,21 +274,36 @@ int main(int argc, char** argv)
 	sceneManager->assets()->defaultOptions()->generateMipmaps(true);
 	sceneManager->assets()
 		->registerParser<file::PNGParser>("png")
+		->registerParser<file::MkParser>("mk")
 		->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()))
-		->geometry("sphere", geometry::SphereGeometry::create(sceneManager->assets()->context()))
-		->queue("texture/box.png")
-		->queue("effect/Basic.effect");
+		->geometry("sphere", geometry::SphereGeometry::create(sceneManager->assets()->context()));
 
 #ifdef DEBUG
 	sceneManager->assets()->defaultOptions()->includePaths().insert("bin/debug");
 #else 
 	sceneManager->assets()->defaultOptions()->includePaths().insert("bin/release");
 #endif
+
+	auto options = sceneManager->assets()->defaultOptions();
+
+	options->material(data::Provider::create()->set("material.triangleCulling", render::TriangleCulling::FRONT));
+	options->generateMipmaps(true);
+
+		sceneManager->assets()
+		->load("effect/Phong.effect")
+		->load("effect/Basic.effect");
+
+	options->effect(sceneManager->assets()->effect("effect/Phong.effect"));
+
+	sceneManager->assets()
+		->queue(MK_NAME);
+
+
     auto root   = scene::Node::create("root");
     auto camera	= scene::Node::create("camera");
 	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
 	{
-		
+		scene::Node::Ptr mk = assets->node(MK_NAME);
 		
 		root->addComponent(sceneManager);
 
@@ -296,7 +319,8 @@ int main(int argc, char** argv)
 
 		baseNode->addComponent(Transform::create());
 
-		RandomScene(baseNode, 3, 2.f, assets);
+		//RandomScene(baseNode, 3, 2.f, assets);
+		baseNode->addChild(mk);
 
 		pointer->addComponent(Transform::create());
 		pointer->component<Transform>()->transform()->prependScale(0.3f, 0.3f, 0.3f)->appendTranslation(0, 0, 5.0f);
@@ -310,7 +334,7 @@ int main(int argc, char** argv)
 		root->addChild(baseNode);
 		root->addChild(pointer);
         
-        getBoundingBoxes(baseNode, *boxList);
+        //getBoundingBoxes(baseNode, *boxList);
 	});
     
 	sceneManager->assets()->load();
@@ -325,7 +349,7 @@ int main(int argc, char** argv)
 	float targetAngle = 0.f;
 	bool inProgress = false;
 	int totalMoveTime = 0;
-	int explodeThreshold = 10;
+	int explodeThreshold = 7;
 	bool exploded = false;
 	float currentExplodeValue = 0.f;
 
@@ -370,12 +394,12 @@ int main(int argc, char** argv)
 			{
 				if (gap > lastgap + delta)
 				{
-					totalMoveTime += 5;
+					totalMoveTime += 7;
 					//scaleSpeed = scaleSpeed + (1.5f - scaleSpeed) * 0.01f;
 				}
 				else if (gap < lastgap - delta)
 				{
-					totalMoveTime -= 5;
+					totalMoveTime -= 7;
 					//scaleSpeed = scaleSpeed + (0.5f - scaleSpeed) * 0.01f;
 				}
 					
@@ -384,16 +408,19 @@ int main(int argc, char** argv)
 				{
 					exploded = true;
 					totalMoveTime = 0;
+					std::cout << "explode" << std::endl;
 				}
 				else if (totalMoveTime <= -explodeThreshold)
 				{
 					exploded = false;
 					totalMoveTime = 0;
+					std::cout << "unexplode" << std::endl;
 				}
 			}
 			lastgap = gap;
 
 			totalMoveTime -= 1 * ((0 < totalMoveTime) - (0 > totalMoveTime));
+			std::cout << totalMoveTime << ":" << gap << std::endl;
 		}
 		else
 		{
@@ -423,7 +450,6 @@ int main(int argc, char** argv)
                         std::cout << screenTape.direction().x << ":"<< screenTape.direction().y <<":"<< screenTape.direction().z << std::endl;
                         std::cout << screenTape.position().x << ":"<< screenTape.position().y <<":"<< screenTape.position().z << std::endl;
                         
-                        
                         auto touche = getTouchedMesh(camera,
                                                      pointer,
                                                      *boxList);
@@ -450,7 +476,7 @@ int main(int argc, char** argv)
 
 		angle = angle + (targetAngle - angle) * 0.01f;
 
-		float explodeTarget = exploded ? 1.f : 0.f;
+		float explodeTarget = exploded ? 2.f : 0.f;
 
 		float explodeDelta = currentExplodeValue + (explodeTarget - currentExplodeValue) * 0.01f;
 		explode(baseNode, explodeDelta - currentExplodeValue);
