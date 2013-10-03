@@ -263,7 +263,7 @@ getTouchedMesh(scene::Node::Ptr camera, scene::Node::Ptr pointer, std::vector<bo
         auto touchedNodeZ = touchedNodeTransform->append(touchedNodes[i]->component<Transform>()->modelToWorldMatrix())->translation()->z();
         auto resultNodetZ = resultNodeTransform->append(result->component<Transform>()->modelToWorldMatrix())->translation()->z();
         
-        if (touchedNodeZ < resultNodetZ)
+        if (touchedNodeZ > resultNodetZ)
             result = touchedNodes[i];
     }
     return result;
