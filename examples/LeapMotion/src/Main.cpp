@@ -28,7 +28,6 @@ const std::string DEFAULT_EFFECT	= "effect/Basic.effect";
 
 void explode(scene::Node::Ptr node, float magnitude)
 {
-	auto pTransform = node->component<Transform>()->transform();
 	for (scene::Node::Ptr child : node->children())
 	{
 		if (child->component<Transform>())
@@ -317,8 +316,6 @@ int main(int argc, char** argv)
 		->registerParser<file::MkParser>("mk")
 		->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()))
 		->geometry("sphere", geometry::SphereGeometry::create(sceneManager->assets()->context()));
-		->queue("texture/box.png")
-		->queue("effect/Basic.effect");
 
 #ifdef DEBUG
 	sceneManager->assets()->defaultOptions()->includePaths().insert("bin/debug");
@@ -385,13 +382,13 @@ int main(int argc, char** argv)
 		root->addChild(baseNode);
 		root->addChild(pointer);
         
-        //getBoundingBoxes(baseNode, *boxList);
+        getBoundingBoxes(baseNode, *boxList);
 	});
     
 	sceneManager->assets()->load();
     
     PerspectiveCamera::Ptr cam = camera->component<PerspectiveCamera>();
-    worldToScreen = Matrix4x4::create(cam->viewProjection());
+    auto worldToScreen = Matrix4x4::create(cam->viewProjection());
     
 	Leap::Controller* controller = new Leap::Controller();
 	controller->enableGesture(Leap::Gesture::TYPE_SWIPE);
@@ -530,15 +527,10 @@ int main(int argc, char** argv)
 		}
         
 		angle = angle + (targetAngle - angle) * 0.01f;
-<<<<<<< 9b7fb038e113fc891df89802c3f76c36504c8c62
-        
-		float explodeTarget = exploded ? 2.f : 0.f;
-        
-=======
+
 
 		float explodeTarget = exploded ? 1.5f : 0.f;
 
->>>>>>> dc36d33d67d05d55b9540e6281e960b013ae9a54
 		float explodeDelta = currentExplodeValue + (explodeTarget - currentExplodeValue) * 0.01f;
 		explode(baseNode, explodeDelta - currentExplodeValue);
 		currentExplodeValue = explodeDelta;
