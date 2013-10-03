@@ -86,7 +86,13 @@ namespace std
 			size_t seed = std::hash<minko::uint>()(x.mask());
 
 			for (unsigned int i=0; i < x.values().size(); ++i)
-				hash_combine(seed, x.values()[i]);
+			{
+				const int value = (x.mask() >> i) != 0 
+					? x.values()[i]
+					: 0;
+
+				hash_combine(seed, value);
+			}
 
 			return seed;
 		}

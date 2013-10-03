@@ -156,7 +156,7 @@ namespace minko
             propertyRemovedHandler(ContainerPtr, const std::string& propertyName);
 
 			void
-			macroChangedHandler(ContainerPtr, const std::string& propertyName, MacroChange, bool countListeners);
+			macroChangedHandler(ContainerPtr, const std::string& propertyName, MacroChange);
 
 			ContainerPtr
 			getDataContainer(const std::string& propertyName) const;
