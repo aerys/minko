@@ -66,6 +66,9 @@ namespace minko
 			{
 			}
 
+            std::shared_ptr<math::Matrix4x4>
+            viewProjection();
+            
         protected:
             void
             targetAddedHandler(AbstractComponent::Ptr ctrl, NodePtr target);
