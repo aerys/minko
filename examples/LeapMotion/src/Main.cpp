@@ -344,40 +344,49 @@ int main(int argc, char** argv)
     auto root   = scene::Node::create("root");
     auto camera	= scene::Node::create("camera");
 	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
-                                                         {
-                                                             scene::Node::Ptr mk = assets->node(MK_NAME);
-                                                             
-                                                             root->addComponent(sceneManager);
-                                                             
-                                                             // setup camera
-                                                             auto renderer = Renderer::create();
-                                                             renderer->backgroundColor(0x7F7F7FFF);
-                                                             camera->addComponent(renderer);
-                                                             camera->addComponent(Transform::create());
-                                                             camera->component<Transform>()->transform()
-                                                             ->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 20.f));
-                                                             camera->addComponent(PerspectiveCamera::create(.785f, 800.f / 600.f, .1f, 1000.f));
-                                                             root->addChild(camera);
-                                                             
-                                                             baseNode->addComponent(Transform::create());
-                                                             
-                                                             //RandomScene(baseNode, 3, 2.f, assets);
-                                                             baseNode->addChild(mk);
-                                                             
-                                                             pointer->addComponent(Transform::create());
-                                                             pointer->component<Transform>()->transform()->prependScale(0.3f, 0.3f, 0.3f)->appendTranslation(0, 0, 5.0f);
-                                                             pointer->addComponent(Surface::create(
-                                                                                                   assets->geometry("sphere"),
-                                                                                                   data::Provider::create()
-                                                                                                   ->set("material.diffuseColor", Vector4::create(1.f, 1.f, 1.f, 0.5f)),
-                                                                                                   assets->effect("effect/Basic.effect")
-                                                                                                   ));
-                                                             
-                                                             root->addChild(baseNode);
-                                                             root->addChild(pointer);
-                                                             
-                                                             //getBoundingBoxes(baseNode, *boxList);
-                                                         });
+	{
+		scene::Node::Ptr mk = assets->node(MK_NAME);
+		
+		root->addComponent(sceneManager);
+
+		auto lights = scene::Node::create();
+
+		lights
+			->addComponent(component::AmbientLight::create())
+			->addComponent(component::DirectionalLight::create())
+			->addComponent(component::Transform::create());
+		lights->component<Transform>()->transform()->lookAt(Vector3::zero(), Vector3::create(-1.f, -1.f, -1.f));
+		root->addChild(lights);
+
+		// setup camera
+		auto renderer = Renderer::create();
+		renderer->backgroundColor(0x7F7F7FFF);
+		camera->addComponent(renderer);
+		camera->addComponent(Transform::create());
+		camera->component<Transform>()->transform()
+			->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 20.f));
+		camera->addComponent(PerspectiveCamera::create(.785f, 800.f / 600.f, .1f, 1000.f));
+		root->addChild(camera);
+
+		baseNode->addComponent(Transform::create());
+
+		//RandomScene(baseNode, 3, 2.f, assets);
+		baseNode->addChild(mk);
+
+		pointer->addComponent(Transform::create());
+		pointer->component<Transform>()->transform()->prependScale(0.3f, 0.3f, 0.3f)->appendTranslation(0, 0, 5.0f);
+		pointer->addComponent(Surface::create(
+			assets->geometry("sphere"),
+			data::Provider::create()
+			->set("material.diffuseColor", Vector4::create(1.f, 1.f, 1.f, 0.5f)),
+			assets->effect("effect/Basic.effect")
+		));
+
+		root->addChild(baseNode);
+		root->addChild(pointer);
+        
+        //getBoundingBoxes(baseNode, *boxList);
+	});
     
 	sceneManager->assets()->load();
     
@@ -521,9 +530,15 @@ int main(int argc, char** argv)
 		}
         
 		angle = angle + (targetAngle - angle) * 0.01f;
+<<<<<<< 9b7fb038e113fc891df89802c3f76c36504c8c62
         
 		float explodeTarget = exploded ? 2.f : 0.f;
         
+=======
+
+		float explodeTarget = exploded ? 1.5f : 0.f;
+
+>>>>>>> dc36d33d67d05d55b9540e6281e960b013ae9a54
 		float explodeDelta = currentExplodeValue + (explodeTarget - currentExplodeValue) * 0.01f;
 		explode(baseNode, explodeDelta - currentExplodeValue);
 		currentExplodeValue = explodeDelta;
