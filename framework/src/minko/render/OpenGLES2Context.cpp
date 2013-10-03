@@ -693,7 +693,9 @@ OpenGLES2Context::linkProgram(const unsigned int program)
     auto errors = getProgramInfoLogs(program);
 
     if (!errors.empty())
+	{
     	std::cout << errors << std::endl;
+	}
 #endif
 
     checkForErrors();
@@ -719,7 +721,15 @@ OpenGLES2Context::compileShader(const unsigned int shader)
 
     if (!errors.empty())
     {
+		std::stringstream	stream;
+		stream << "glShaderSource_" << shader << ".txt";
+
+		const std::string&	filename	= stream.str();
+
+		saveShaderSourceToFile(filename, shader);
+
 		std::cerr << errors << std::endl;
+		std::cerr << "\nerrorneous shader source saved to \'" << filename << "\'" << std::endl;
 		throw;
 	}
 #endif
@@ -784,6 +794,35 @@ OpenGLES2Context::setShaderSource(const unsigned int shader,
 #endif
 
     checkForErrors();
+}
+
+void
+OpenGLES2Context::saveShaderSourceToFile(const std::string& filename, unsigned int shader)
+{
+	std::string		source;
+	std::ofstream	file;
+
+	file.open(filename.c_str());
+	if (!file.is_open())
+		return;
+
+	getShaderSource(shader, source);
+
+	file << source;
+	file.close();
+}
+
+void
+OpenGLES2Context::getShaderSource(unsigned int shader, std::string& source)
+{
+	static const unsigned int BUFFER_SIZE = 5000;
+	
+	GLchar	buffer[BUFFER_SIZE];
+	GLsizei	length = 0;
+
+	glGetShaderSource(shader, BUFFER_SIZE, &length, &buffer[0]);
+
+	source = std::string(buffer);
 }
 
 const unsigned int
