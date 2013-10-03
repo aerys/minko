@@ -79,7 +79,7 @@ TypeDeserializer::number(std::map<int, render::Texture::Ptr>&	idToTexture,
 						 Qark::Map&								object,
 						 std::shared_ptr<NameConverter>			nameConverter)
 {
-	if (propertyName == "diffuseColor" || propertyName == "specular")
+	if (propertyName == "diffuseColor" /*|| propertyName == "specular"*/)
 	{
 	    unsigned int color = 0;
 	    if (typeid(unsigned int) == object["value"].type())

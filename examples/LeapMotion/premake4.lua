@@ -19,6 +19,9 @@ project "minko-example-leapmotion"
 	-- minko-png
 	links { "minko-png" }
 	includedirs { "../../plugins/png/src" }
+	-- minko-mk
+	includedirs { "../../plugins/mk/src" }
+	links { "minko-mk" }
 	-- minko-framework
 	links { "minko-framework" }
 	includedirs { "../../framework/src" }
@@ -77,7 +80,7 @@ project "minko-example-leapmotion"
 			"Cocoa.framework",
 			"OpenGL.framework",
 			"IOKit.framework",
-		        "Leap"
+		       "Leap"
 		}
 		libdirs {
 			"../../deps/mac/lib"
