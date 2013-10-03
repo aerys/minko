@@ -260,7 +260,7 @@ getTouchedMesh(scene::Node::Ptr camera, scene::Node::Ptr pointer, std::vector<bo
         auto touchedNodeZ = touchedNodeTransform->append(touchedNodes[i]->component<Transform>()->modelToWorldMatrix())->translation()->z();
         auto resultNodetZ = resultNodeTransform->append(result->component<Transform>()->modelToWorldMatrix())->translation()->z();
         
-        if (touchedNodeZ > resultNodetZ)
+        if (touchedNodeZ < resultNodetZ)
             result = touchedNodes[i];
     }
     return result;
@@ -403,7 +403,7 @@ int main(int argc, char** argv)
 	int explodeThreshold = 7;
 	bool exploded = false;
 	float currentExplodeValue = 0.f;
-    
+    int fingerID = -1;
     
 	Vector3::Ptr targetPos = Vector3::create();
 	float lastgap = 0.0f;
@@ -514,16 +514,23 @@ int main(int argc, char** argv)
 				}
 				
 			}
-            
-			Leap::PointableList pointables = frame.pointables();
-			//if (pointables.count() >=4)
-			//	speed = 0.f;
-			if (pointables.count() >= 1)
+			Leap::Pointable finger = frame.finger(fingerID);
+			if (!finger.isValid())
 			{
-				auto finger = pointables[0];
+				Leap::PointableList pointables = frame.pointables();
+				if (pointables.count() >= 1)
+				{
+					finger = pointables[0];
+					fingerID = finger.id();
+				}
+			}
+			if (finger.isValid())
+			{
 				auto tip = finger.tipPosition() * 0.1f;
 				targetPos->lerp(Vector3::create(tip.x, tip.y - 30.f, 15.f), 0.05f);
 			}
+			else
+				fingerID = -1;
 		}
         
 		angle = angle + (targetAngle - angle) * 0.01f;
