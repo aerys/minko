@@ -176,7 +176,6 @@ Renderer::rootDescendantRemovedHandler(std::shared_ptr<Node> node,
 									    std::shared_ptr<Node> target,
 									    std::shared_ptr<Node> parent)
 {
-	_drawCalls.clear();
 	auto surfaceNodes = NodeSet::create(target)
 		->descendants(true)
         ->where([](scene::Node::Ptr node)
