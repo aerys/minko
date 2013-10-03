@@ -79,13 +79,15 @@ TypeDeserializer::number(std::map<int, render::Texture::Ptr>&	idToTexture,
 						 Qark::Map&								object,
 						 std::shared_ptr<NameConverter>			nameConverter)
 {
-	if (propertyName == "diffuseColor" /*|| propertyName == "specular"*/)
+	if (propertyName == "diffuseColor" || propertyName == "specular")
 	{
 	    unsigned int color = 0;
 	    if (typeid(unsigned int) == object["value"].type())
 		    color = Any::cast<unsigned int>(object["value"]);
-	    else 
+	    else if (typeid(int) == object["value"].type())
 		    color = Any::cast<int>(object["value"]);
+		else
+			return;
 	
 	    unsigned int red	= (color & 0xFF000000) >> 24;
 	    unsigned int blue	= (color & 0x00FF0000) >> 16;
