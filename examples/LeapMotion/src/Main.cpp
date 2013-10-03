@@ -28,6 +28,7 @@ const std::string DEFAULT_EFFECT	= "effect/Basic.effect";
 
 void explode(scene::Node::Ptr node, float magnitude)
 {
+	auto pTransform = node->component<Transform>()->transform();
 	for (scene::Node::Ptr child : node->children())
 	{
 		if (child->component<Transform>())
@@ -63,7 +64,8 @@ getBoundingBoxes(scene::Node::Ptr node, std::vector<boundingBox>& boxList)
         Vector3::Ptr corner1 = Vector3::create(vertices[0], vertices[1], vertices[2]);
         Vector3::Ptr corner2 = Vector3::create(vertices[0], vertices[1], vertices[2]);
         
-        for (int i = 0; i < vertices.size(); i += 3)
+        unsigned int vertexSize = provider->get<render::VertexBuffer::Ptr>("geometry.vertex.attribute.position")->vertexSize();
+        for (int i = 0; i < vertices.size(); i +=vertexSize)
         {
             if (vertices[i] > corner1->x())
                 corner1->x(vertices[i]);
@@ -98,7 +100,7 @@ scene::Node::Ptr RandomScene(scene::Node::Ptr base, int depth, float radius,file
 	std::uniform_real_distribution<float> distribution(0.f, 1.f);
 	auto randf = std::bind (distribution, generator);
 
-	int numObjects = rand() % 2  + 4;
+	int numObjects = rand() % 6;
 	for (int i = 0; i < numObjects; i++)
 	{
 		auto node = scene::Node::create();
@@ -137,11 +139,11 @@ void swap(float *v1, float *v2)
 }
 
 scene::Node::Ptr
-getTouchedMesh(scene::Node::Ptr camera, scene::Node::Ptr pointer, std::vector<boundingBox>& boxList)
+getTouchedMesh(scene::Node::Ptr camera, scene::Node::Ptr pointer, std::vector<boundingBox>& boxList, math::Matrix4x4::Ptr worldToScreen)
 {
     scene::Node::Ptr result;
     std::vector<scene::Node::Ptr> touchedNodes;
-
+    
     for (boundingBox box : boxList)
     {
         auto nodeTransform = box.node->component<Transform>();
@@ -158,9 +160,10 @@ getTouchedMesh(scene::Node::Ptr camera, scene::Node::Ptr pointer, std::vector<bo
         rayOriginTransform->appendTranslation(0.f, 0.f, 20.f);
         rayOriginTransform->append(worldToModel);
         
-        auto rayStart = rayOriginTransform->translation();
+        auto rayStart = modelCameraTransform->translation();
         auto pointerTranslation =modelPointerTransform->translation();
-        auto direction = (modelPointerTransform->translation() - rayOriginTransform->translation())->normalize();
+        
+        auto direction = (modelPointerTransform->translation() - modelCameraTransform->translation())->normalize();
         
         float t0x, t0y, t0z,t1x, t1y, t1z;
         auto corner1 = box.corner1;
@@ -203,18 +206,55 @@ getTouchedMesh(scene::Node::Ptr camera, scene::Node::Ptr pointer, std::vector<bo
             tmin = t0z;
         if (t1z < tmax)
             tmax = t1z;
-        
+ 
         //result = box.node;
         touchedNodes.push_back(box.node);
     }
+    
+//    for (boundingBox box : boxList)
+//    {
+//        auto nodeTransform = Matrix4x4::create(box.node->component<Transform>()->transform());
+//        auto modelToWorldMat = box.node->component<Transform>()->modelToWorldMatrix();
+//        auto modelPointerTransform = Matrix4x4::create(pointer->component<Transform>()->transform());
+//        
+//        nodeTransform->append(modelToWorldMat);
+//        nodeTransform->append(worldToScreen);
+//        modelPointerTransform->append(pointer->component<Transform>()->modelToWorldMatrix());
+//        modelPointerTransform->append(worldToScreen);
+//        
+//        auto corner1 = nodeTransform->transform(box.corner1);
+//        auto corner2 = nodeTransform->transform(box.corner2);
+//    
+//        Vector3::Ptr nearCorner, farCorner;
+//        if (corner1->x() > corner2->x())
+//        {
+//            nearCorner = corner1;
+//            farCorner = corner2;
+//        }
+//        else
+//        {
+//            nearCorner = corner2;
+//            farCorner = corner1;
+//        }
+//
+//        if (modelPointerTransform->translation()->x() > farCorner->x()
+//            && modelPointerTransform->translation()->x() < nearCorner->x())
+//        {
+//            if (modelPointerTransform->translation()->y() > farCorner->y()
+//                && modelPointerTransform->translation()->y() < nearCorner->y())
+//            {
+//                touchedNodes.push_back(box.node);
+//                result = box.node;
+//            }
+//        }
+//    }
+    
+    //Get only the nearest mesh
     if (touchedNodes.size() > 0)
         result = touchedNodes[0];
     
     for (int i= 0; i < touchedNodes.size(); i++)
     {
-//        auto touchedNodeTransform = touchedNodes[i]->component<Transform>();
-//        auto resultNodeTransform = result->component<Transform>();
-        
         auto touchedNodeTransform = Matrix4x4::create(touchedNodes[i]->component<Transform>()->transform());
         auto resultNodeTransform = Matrix4x4::create(result->component<Transform>()->transform());
 
@@ -277,73 +317,78 @@ int main(int argc, char** argv)
 		->registerParser<file::MkParser>("mk")
 		->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()))
 		->geometry("sphere", geometry::SphereGeometry::create(sceneManager->assets()->context()));
+		->queue("texture/box.png")
+		->queue("effect/Basic.effect");
 
 #ifdef DEBUG
 	sceneManager->assets()->defaultOptions()->includePaths().insert("bin/debug");
-#else 
+#else
 	sceneManager->assets()->defaultOptions()->includePaths().insert("bin/release");
 #endif
-
+    
 	auto options = sceneManager->assets()->defaultOptions();
-
+    
 	options->material(data::Provider::create()->set("material.triangleCulling", render::TriangleCulling::FRONT));
 	options->generateMipmaps(true);
-
-		sceneManager->assets()
-		->load("effect/Phong.effect")
-		->load("effect/Basic.effect");
-
+    
+    sceneManager->assets()
+    ->load("effect/Phong.effect")
+    ->load("effect/Basic.effect");
+    
 	options->effect(sceneManager->assets()->effect("effect/Phong.effect"));
-
+    
 	sceneManager->assets()
-		->queue(MK_NAME);
-
-
+    ->queue(MK_NAME);
+    
+    
     auto root   = scene::Node::create("root");
     auto camera	= scene::Node::create("camera");
 	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
-	{
-		scene::Node::Ptr mk = assets->node(MK_NAME);
-		
-		root->addComponent(sceneManager);
-
-		// setup camera
-		auto renderer = Renderer::create();
-		renderer->backgroundColor(0x7F7F7FFF);
-		camera->addComponent(renderer);
-		camera->addComponent(Transform::create());
-		camera->component<Transform>()->transform()
-			->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 20.f));
-		camera->addComponent(PerspectiveCamera::create(.785f, 800.f / 600.f, .1f, 1000.f));
-		root->addChild(camera);
-
-		baseNode->addComponent(Transform::create());
-
-		//RandomScene(baseNode, 3, 2.f, assets);
-		baseNode->addChild(mk);
-
-		pointer->addComponent(Transform::create());
-		pointer->component<Transform>()->transform()->prependScale(0.3f, 0.3f, 0.3f)->appendTranslation(0, 0, 5.0f);
-		pointer->addComponent(Surface::create(
-			assets->geometry("sphere"),
-			data::Provider::create()
-			->set("material.diffuseColor", Vector4::create(1.f, 1.f, 1.f, 0.5f)),
-			assets->effect("effect/Basic.effect")
-		));
-
-		root->addChild(baseNode);
-		root->addChild(pointer);
-        
-        //getBoundingBoxes(baseNode, *boxList);
-	});
+                                                         {
+                                                             scene::Node::Ptr mk = assets->node(MK_NAME);
+                                                             
+                                                             root->addComponent(sceneManager);
+                                                             
+                                                             // setup camera
+                                                             auto renderer = Renderer::create();
+                                                             renderer->backgroundColor(0x7F7F7FFF);
+                                                             camera->addComponent(renderer);
+                                                             camera->addComponent(Transform::create());
+                                                             camera->component<Transform>()->transform()
+                                                             ->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 20.f));
+                                                             camera->addComponent(PerspectiveCamera::create(.785f, 800.f / 600.f, .1f, 1000.f));
+                                                             root->addChild(camera);
+                                                             
+                                                             baseNode->addComponent(Transform::create());
+                                                             
+                                                             //RandomScene(baseNode, 3, 2.f, assets);
+                                                             baseNode->addChild(mk);
+                                                             
+                                                             pointer->addComponent(Transform::create());
+                                                             pointer->component<Transform>()->transform()->prependScale(0.3f, 0.3f, 0.3f)->appendTranslation(0, 0, 5.0f);
+                                                             pointer->addComponent(Surface::create(
+                                                                                                   assets->geometry("sphere"),
+                                                                                                   data::Provider::create()
+                                                                                                   ->set("material.diffuseColor", Vector4::create(1.f, 1.f, 1.f, 0.5f)),
+                                                                                                   assets->effect("effect/Basic.effect")
+                                                                                                   ));
+                                                             
+                                                             root->addChild(baseNode);
+                                                             root->addChild(pointer);
+                                                             
+                                                             //getBoundingBoxes(baseNode, *boxList);
+                                                         });
     
 	sceneManager->assets()->load();
-
+    
+    PerspectiveCamera::Ptr cam = camera->component<PerspectiveCamera>();
+    worldToScreen = Matrix4x4::create(cam->viewProjection());
+    
 	Leap::Controller* controller = new Leap::Controller();
 	controller->enableGesture(Leap::Gesture::TYPE_SWIPE);
 	controller->enableGesture(Leap::Gesture::TYPE_SCREEN_TAP);
-
-
+    
+    
 	Leap::Frame lastFrame;
 	float angle = 0.f;
 	float targetAngle = 0.f;
@@ -352,44 +397,44 @@ int main(int argc, char** argv)
 	int explodeThreshold = 7;
 	bool exploded = false;
 	float currentExplodeValue = 0.f;
-
-
+    
+    
 	Vector3::Ptr targetPos = Vector3::create();
 	float lastgap = 0.0f;
 	const float delta = 5.f;
-
+    
 	bool done = false;
 	while (!done)
 	{
 		SDL_Event event;
-
+        
 		while (SDL_PollEvent(&event))
 		{
 			switch (event.type)
 			{
-			case SDL_QUIT:
-				done = true;
-				break;
-			default:
-				break;
+                case SDL_QUIT:
+                    done = true;
+                    break;
+                default:
+                    break;
 			}
 		}
-
+        
 		Leap::Frame frame = controller->frame();
-
+        
 		const Leap::GestureList gestures = frame.gestures();
-
+        
 		const Leap::HandList hands = frame.hands();
-
+        
 		
-
+        
 		if (hands.count() >= 2)
 		{
 			Leap::Hand lhand = hands.leftmost();
 			Leap::Hand rhand = hands.rightmost();
-
+            
 			float gap = (rhand.palmPosition() - lhand.palmPosition()).magnitude();;
-
+            
 			if (lhand.palmNormal().x > 0.5f && rhand.palmNormal().x < -0.5f)
 			{
 				if (gap > lastgap + delta)
@@ -402,8 +447,8 @@ int main(int argc, char** argv)
 					totalMoveTime -= 7;
 					//scaleSpeed = scaleSpeed + (0.5f - scaleSpeed) * 0.01f;
 				}
-					
-
+                
+                
 				if (totalMoveTime >= explodeThreshold)
 				{
 					exploded = true;
@@ -418,7 +463,7 @@ int main(int argc, char** argv)
 				}
 			}
 			lastgap = gap;
-
+            
 			totalMoveTime -= 1 * ((0 < totalMoveTime) - (0 > totalMoveTime));
 			std::cout << totalMoveTime << ":" << gap << std::endl;
 		}
@@ -429,20 +474,20 @@ int main(int argc, char** argv)
 				Leap::Gesture gesture = gestures[g];
 				switch (gesture.type())
 				{
-				case Leap::Gesture::TYPE_SWIPE:
+                    case Leap::Gesture::TYPE_SWIPE:
 					{
 						Leap::SwipeGesture swipe = gesture;
 						if (gesture.state() == Leap::Gesture::State::STATE_START && !inProgress)
 						{
 							inProgress = true;
 							if (abs(angle - targetAngle) < PI / 10.f);
-								targetAngle += PI / 2.f * ((0.f < swipe.direction().x) - (swipe.direction().x < 0.f));
+                            targetAngle += PI / 2.f * ((0.f < swipe.direction().x) - (swipe.direction().x < 0.f));
 						}
 						if (gesture.state() == Leap::Gesture::State::STATE_STOP)
 							inProgress = false;
 						break;
 					}
-				case Leap::Gesture::TYPE_SCREEN_TAP:
+                    case Leap::Gesture::TYPE_SCREEN_TAP:
 					{
 						pointer->component<Surface>()->material()->set("material.diffuseColor", Vector4::create(0.f, 1.f, 0.f, 0.5f));
                         Leap::ScreenTapGesture screenTape = gesture;
@@ -452,17 +497,18 @@ int main(int argc, char** argv)
                         
                         auto touche = getTouchedMesh(camera,
                                                      pointer,
-                                                     *boxList);
+                                                     *boxList,
+                                                     worldToScreen);
                         if (touche)
-                        touche->component<Surface>()->material()->set("material.diffuseColor", Vector4::create(0.f, 1.f, 0.f, 0.5f));
+                            touche->component<Surface>()->material()->set("material.diffuseColor", Vector4::create(0.f, 1.f, 0.f, 0.5f));
                         break;
 					}
-				default:
-					break;
+                    default:
+                        break;
 				}
 				
 			}
-
+            
 			Leap::PointableList pointables = frame.pointables();
 			//if (pointables.count() >=4)
 			//	speed = 0.f;
@@ -473,22 +519,22 @@ int main(int argc, char** argv)
 				targetPos->lerp(Vector3::create(tip.x, tip.y - 30.f, 15.f), 0.05f);
 			}
 		}
-
+        
 		angle = angle + (targetAngle - angle) * 0.01f;
-
+        
 		float explodeTarget = exploded ? 2.f : 0.f;
-
+        
 		float explodeDelta = currentExplodeValue + (explodeTarget - currentExplodeValue) * 0.01f;
 		explode(baseNode, explodeDelta - currentExplodeValue);
 		currentExplodeValue = explodeDelta;
-
+        
 		selectedMesh->component<Transform>()->transform()->identity()->prependRotationY(angle);
 		pointer->component<Transform>()->transform()->identity()->appendScale(0.3f, 0.3f, 0.3f)->prependTranslation(targetPos);
 		//scaleSpeed = scaleSpeed + (1.f - scaleSpeed) * 0.1f;
 		//std::cout << scaleSpeed << std::endl;
-
+        
 		sceneManager->nextFrame();
-
+        
 		pointer->component<Surface>()->material()->set("material.diffuseColor", Vector4::create(1.f, 1.f, 1.f, 0.5f));
 #ifdef MINKO_ANGLE
 		eglSwapBuffers(context->eglDisplay, context->eglSurface);
@@ -498,8 +544,8 @@ int main(int argc, char** argv)
 		SDL_GL_SwapWindow(window);
 #endif
 	}
-
+    
 	SDL_Quit();
-
+    
 	exit(EXIT_SUCCESS);
 }
