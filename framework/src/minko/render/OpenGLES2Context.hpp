@@ -309,6 +309,12 @@ namespace minko
             void
             createRTTBuffers(unsigned int texture, unsigned int width, unsigned int height);
 
+			void
+			getShaderSource(unsigned int shader, std::string&);
+
+			void
+			saveShaderSourceToFile(const std::string& filename, unsigned int shader);
+
             inline
             void
             checkForErrors()
