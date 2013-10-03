@@ -489,14 +489,17 @@ int main(int argc, char** argv)
                     case Leap::Gesture::TYPE_SWIPE:
 					{
 						Leap::SwipeGesture swipe = gesture;
-						if (gesture.state() == Leap::Gesture::State::STATE_START && !inProgress)
+						if (abs(swipe.direction().x) > 0.5f)
 						{
-							inProgress = true;
-							if (abs(angle - targetAngle) < PI / 10.f);
-                            targetAngle += PI / 2.f * ((0.f < swipe.direction().x) - (swipe.direction().x < 0.f));
+							if (gesture.state() == Leap::Gesture::State::STATE_START && !inProgress)
+							{
+								inProgress = true;
+								if (abs(angle - targetAngle) < PI / 10.f);
+								targetAngle += PI / 2.f * ((0.f < swipe.direction().x) - (swipe.direction().x < 0.f));
+							}
+							if (gesture.state() == Leap::Gesture::State::STATE_STOP)
+								inProgress = false;
 						}
-						if (gesture.state() == Leap::Gesture::State::STATE_STOP)
-							inProgress = false;
 						break;
 					}
                     case Leap::Gesture::TYPE_SCREEN_TAP:
