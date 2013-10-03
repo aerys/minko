@@ -77,3 +77,15 @@ PerspectiveCamera::updateMatrices(std::shared_ptr<Matrix4x4> modelToWorldMatrix)
 
     _viewProjection->copyFrom(_view)->append(_projection);
 }
+
+std::shared_ptr<math::Matrix4x4>
+PerspectiveCamera::viewProjection()
+{
+    if (_projection == nullptr)
+        std::cout << "world to screen matrix PTR is NULL"<< std::endl;
+    else
+        std::cout << "worldToScreen Matrix is not NULL"<< std::endl;
+    
+    //auto res = Matrix4x4::create()->copyFrom(_viewProjection);
+    return _viewProjection;
+}
