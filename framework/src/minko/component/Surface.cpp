@@ -143,7 +143,7 @@ Surface::targetAddedHandler(AbstractComponent::Ptr	ctrl,
     targetData->addProvider(_effect->data());
 
 	watchMacroAdditionOrDeletion();
-	// createDrawCalls(); // dynamic update in the Renderer needed to allow this line for the moment
+	// createDrawCalls();
 }
 
 void
