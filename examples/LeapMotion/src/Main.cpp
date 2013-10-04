@@ -50,6 +50,8 @@ public:
     scene::Node::Ptr    node;
 };
 
+static const float cameraAngle = 35.f * PI / 180.f;  
+
 //std::vector<boundingBox>
 void
 getBoundingBoxes(scene::Node::Ptr node, std::vector<boundingBox>& boxList)
@@ -361,7 +363,7 @@ int main(int argc, char** argv)
 		camera->addComponent(renderer);
 		camera->addComponent(Transform::create());
 		camera->component<Transform>()->transform()
-			->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 20.f));
+			->lookAt(Vector3::zero(), Vector3::create(0.f, 20.f * sin(cameraAngle), 20.f * cos(cameraAngle)));
 		camera->addComponent(PerspectiveCamera::create(.785f, 800.f / 600.f, .1f, 1000.f));
 		root->addChild(camera);
 
@@ -404,7 +406,7 @@ int main(int argc, char** argv)
 	bool exploded = false;
 	float currentExplodeValue = 0.f;
     int fingerID = -1;
-	Uint32 lastTicks;
+	Uint32 lastTicks = 0;
 	float frameTime;
     
 	Vector3::Ptr targetPos = Vector3::create();
