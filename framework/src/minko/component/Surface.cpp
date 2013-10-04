@@ -48,7 +48,9 @@ Surface::Surface(Geometry::Ptr 			geometry,
 	_targetMacroChangedSlots(),
 	_numTargetMacroListeners(),
 	_rootMacroChangedSlots(),
-	_numRootMacroListeners()
+	_numRootMacroListeners(),
+	_drawCallAdded(DrawCallChangedSignal::create()),
+	_drawCallRemoved(DrawCallChangedSignal::create())
 {
 }
 
@@ -117,40 +119,65 @@ Surface::targetAddedHandler(AbstractComponent::Ptr	ctrl,
 							scene::Node::Ptr		target)
 
 {
-	auto nodeData	= target->data();
+	auto targetData	= target->data();
 	// at this point, target->root()->data() is irrelevant
 
-	auto addedOrRemovedHandler = std::bind(
-		&Surface::addedOrRemovedHandler,
+	_addedSlot		= target->added()->connect(std::bind(
+		&Surface::addedHandler,
 		shared_from_this(),
 		std::placeholders::_1,
 		std::placeholders::_2,
 		std::placeholders::_3
-	);
+	));
 
-	_addedSlot		= target->added()->connect(addedOrRemovedHandler);
-	_removedSlot	= target->removed()->connect(addedOrRemovedHandler);
+	_removedSlot	= target->removed()->connect(std::bind(
+		&Surface::removedHandler,
+		shared_from_this(),
+		std::placeholders::_1,
+		std::placeholders::_2,
+		std::placeholders::_3
+	));
 
-	nodeData->addProvider(_material);
-	nodeData->addProvider(_geometry->data());
-    nodeData->addProvider(_effect->data());
+	targetData->addProvider(_material);
+	targetData->addProvider(_geometry->data());
+    targetData->addProvider(_effect->data());
 
-   // createDrawCalls();
+	watchMacroAdditionOrDeletion();
+	//createDrawCalls();
 }
 
 void
-Surface::addedOrRemovedHandler(NodePtr node, NodePtr target, NodePtr ancestor)
+Surface::addedHandler(NodePtr node, NodePtr target, NodePtr ancestor)
 {
-	auto nodeData	= node->data();
-	auto rootData	= node->root()->data();
+	watchMacroAdditionOrDeletion();
+	createDrawCalls();
+}
 
-	std::cout << "\nSURFACE:addedOrRemovedHandler nodeCont[" << nodeData.get() << "]\trootCont[" << rootData.get() << "]\n" << std::endl;
+void
+Surface::removedHandler(NodePtr node, NodePtr target, NodePtr ancestor)
+{
+	deleteDrawCalls();
+	_macroAddedOrRemovedSlots.clear();
+}
 
-	// watch for the addition/deletion of properties from the data containers
+void
+Surface::watchMacroAdditionOrDeletion()
+{
 	_macroAddedOrRemovedSlots.clear();
 
+	if (targets().empty())
+		return;
+
+	auto&	target		= targets().front();
+	auto&	targetData	= target->data();
+	auto&	rootData	= target->root()->data();
+
+#ifdef DEBUG_SHADER_FORK
+	std::cout << "\n----- ADD/REM MACRO HANDLERS-- targetData[" << targetData.get() << "] -- rootData[" << rootData.get() << "] -----" << std::endl; 
+#endif // DEBUG_SHADER_FORK
+
 	_macroAddedOrRemovedSlots.push_back(
-		nodeData->propertyAdded()->connect(std::bind(
+		targetData->propertyAdded()->connect(std::bind(
 			&Surface::macroChangedHandler,
 			shared_from_this(),
 			std::placeholders::_1,
@@ -160,7 +187,7 @@ Surface::addedOrRemovedHandler(NodePtr node, NodePtr target, NodePtr ancestor)
 	);
 
 	_macroAddedOrRemovedSlots.push_back(
-		nodeData->propertyRemoved()->connect(std::bind(
+		targetData->propertyRemoved()->connect(std::bind(
 			&Surface::macroChangedHandler,
 			shared_from_this(),
 			std::placeholders::_1,
@@ -188,8 +215,23 @@ Surface::addedOrRemovedHandler(NodePtr node, NodePtr target, NodePtr ancestor)
 			MacroChange::REMOVED
 		))
 	);
+}
 
-	createDrawCalls();
+void
+Surface::deleteDrawCalls()
+{
+	while (!_drawCalls.empty())
+	{
+		auto drawCall = _drawCalls.front();
+
+		_drawCallRemoved->execute(shared_from_this(), drawCall);
+		_drawCalls.pop_front();
+	}
+	_drawCallToPass.clear();
+
+	_macroPropertyNameToDrawCalls.clear();
+	_targetMacroChangedSlots.clear();
+	_rootMacroChangedSlots.clear();
 }
 
 void
@@ -198,7 +240,12 @@ Surface::createDrawCalls()
 	deleteDrawCalls();
 
 	for (auto pass : _effect->passes())
-		_drawCalls.push_back(initializeDrawCall(pass));
+	{
+		auto drawCall  = initializeDrawCall(pass);
+
+		_drawCalls.push_back(drawCall);
+		_drawCallAdded->execute(shared_from_this(), drawCall);
+	}
 }
 
 DrawCall::Ptr
@@ -243,20 +290,12 @@ Surface::initializeDrawCall(Pass::Ptr		pass,
 			{
 				std::cout << "macro '" << propertyName << "' is neither in Cont[" << targetData.get() << "] nor Cont[" << rootData.get() << "]" << std::endl;
 			}
-			/*
-			const int	numTargetListeners	= _numTargetMacroListeners.count(propertyName) == 0 ? 0 : _numTargetMacroListeners[propertyName];
-			if (numTargetListeners == 0)
-				macroChangedHandler(targetData, propertyName, MacroChange::ADDED);
-
-			const int	numRootListeners	= _numRootMacroListeners.count(propertyName) == 0 ? 0 : _numRootMacroListeners[propertyName];
-			if (numRootListeners == 0)
-				macroChangedHandler(rootData, propertyName, MacroChange::ADDED);
-			*/
 
 			if (data == targetData || data == rootData)
 			{
 				auto&		listeners		= (data == targetData ? _numTargetMacroListeners : _numRootMacroListeners);
 				const int	numListeners	= listeners.count(propertyName) == 0 ? 0 : listeners[propertyName];
+
 				if (numListeners == 0)
 					macroChangedHandler(data, propertyName, MacroChange::ADDED);
 			}
@@ -313,11 +352,11 @@ Surface::macroChangedHandler(Container::Ptr		data,
 		{
 			if (numListeners == 0)
 				slots[propertyName] = data->propertyReferenceChanged(propertyName)->connect(std::bind(
-				&Surface::macroChangedHandler,
-				shared_from_this(),
-				data,
-				propertyName,
-				MacroChange::REF_CHANGED
+					&Surface::macroChangedHandler,
+					shared_from_this(),
+					data,
+					propertyName,
+					MacroChange::REF_CHANGED
 				));
 
 			listeners[propertyName] = numListeners + 1;
@@ -343,16 +382,6 @@ Surface::macroChangedHandler(Container::Ptr		data,
 }
 
 void
-Surface::deleteDrawCalls()
-{
-	_drawCalls.clear();
-	_drawCallToPass.clear();
-	_macroPropertyNameToDrawCalls.clear();
-	_targetMacroChangedSlots.clear();
-	_rootMacroChangedSlots.clear();
-}
-
-void
 Surface::targetRemovedHandler(AbstractComponent::Ptr	ctrl,
 							  scene::Node::Ptr			target)
 {
@@ -367,20 +396,6 @@ Surface::targetRemovedHandler(AbstractComponent::Ptr	ctrl,
     data->removeProvider(_effect->data());
 
 	deleteDrawCalls();
-}
-
-void
-Surface::propertyAddedHandler(std::shared_ptr<data::Container>  data,
-                              const std::string&                propertyName)
-{
-
-}
-
-void
-Surface::propertyRemovedHandler(std::shared_ptr<data::Container>  data,
-                                const std::string&                propertyName)
-{
-    
 }
 
 Container::Ptr
