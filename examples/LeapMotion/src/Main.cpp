@@ -41,7 +41,7 @@ void explode(scene::Node::Ptr node, float magnitude)
 			explode(child, magnitude);
 	}
 }
-
+  
 class boundingBox
 {
 public:
