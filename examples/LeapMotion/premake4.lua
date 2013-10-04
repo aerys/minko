@@ -88,8 +88,19 @@ project "minko-example-leapmotion"
 		includedirs {
 			"../../deps/mac/include"
 		}
+	       postbuildcommands {
+			-- 'cp -r ../../framework/effect ${TARGET_BUILD_DIR}',
+			-- 'cp -r asset/* ${TARGET_BUILD_DIR}'
+			'cp -r ../../framework/effect/* effect/',
+			'cp -r asset/* .'
+	       }
+
+	-- xcode
+	configuration { "xcode" }
 		postbuildcommands {
-			'cp -r ../../framework/effect .',
+			-- 'cp -r ../../framework/effect ${TARGET_BUILD_DIR}',
+			-- 'cp -r asset/* ${TARGET_BUILD_DIR}'
+			'cp -r ../../framework/effect/* effect/',
 			'cp -r asset/* .'
 		}
 
@@ -104,4 +115,4 @@ project "minko-example-leapmotion"
 			'cp ' .. bin .. ' ' .. bin .. '.bc',
 			'emcc ' .. bin .. '.bc -o ' .. bin .. '.js -O1 -s ASM_JS=1 -s TOTAL_MEMORY=1073741824 --preload-dir effect --preload-dir texture',
 			'emcc ' .. bin .. '.bc -o ' .. bin .. '.html -O1 -s ASM_JS=1 -s TOTAL_MEMORY=1073741824 --preload-dir effect --preload-dir texture'
-		}
+		}	
