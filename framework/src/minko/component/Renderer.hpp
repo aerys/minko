@@ -36,15 +36,17 @@ namespace minko
 		private:
 			typedef std::shared_ptr<scene::Node>		NodePtr;
 			typedef std::shared_ptr<AbstractComponent>	AbsCtrlPtr;
-			typedef std::shared_ptr<Surface>			SurfaceCtrlPtr;
+			typedef std::shared_ptr<Surface>			SurfacePtr;
 			typedef std::shared_ptr<render::DrawCall>	DrawCallPtr;
 			typedef std::list<DrawCallPtr>				DrawCallList;
 			typedef std::shared_ptr<SceneManager>		SceneManagerPtr;
 			typedef std::shared_ptr<render::Texture>	TexturePtr;
 
+			typedef Signal<SurfacePtr, DrawCallPtr>		SurfaceDrawCallChangedSignal;
+
 		private:
 			std::list<DrawCallPtr>								_drawCalls;
-			std::unordered_map<SurfaceCtrlPtr, DrawCallList>	_surfaceDrawCalls; 
+			std::unordered_map<SurfacePtr, DrawCallList>		_surfaceDrawCalls; 
 			unsigned int										_backgroundColor;
 			std::shared_ptr<SceneManager>						_sceneManager;
 			Signal<Ptr>::Ptr									_renderingBegin;
@@ -59,6 +61,9 @@ namespace minko
 			Signal<NodePtr, NodePtr, AbsCtrlPtr>::Slot			_componentAddedSlot;
 			Signal<NodePtr, NodePtr, AbsCtrlPtr>::Slot			_componentRemovedSlot;
 			Signal<SceneManagerPtr, uint, TexturePtr>::Slot		_renderingBeginSlot;
+
+			std::unordered_map<SurfacePtr, SurfaceDrawCallChangedSignal::Slot>	_surfaceDrawCallAddedSlot;
+			std::unordered_map<SurfacePtr, SurfaceDrawCallChangedSignal::Slot>	_surfaceDrawCallRemovedSlot;
 
 		public:
 			static
@@ -131,6 +136,7 @@ namespace minko
 
 			void
 			rootDescendantRemovedHandler(NodePtr node, NodePtr target, NodePtr parent);
+
 			void
 			componentAddedHandler(NodePtr node, NodePtr target, AbsCtrlPtr	ctrl);
 
@@ -138,16 +144,22 @@ namespace minko
 			componentRemovedHandler(NodePtr node, NodePtr target, AbsCtrlPtr ctrl);
 
 			void
-			addSurfaceComponent(SurfaceCtrlPtr ctrl);
+			addSurfaceComponent(SurfacePtr ctrl);
 
 			void
-			removeSurfaceComponent(SurfaceCtrlPtr ctrl);
+			removeSurfaceComponent(SurfacePtr ctrl);
 
 			void
-			geometryChanged(SurfaceCtrlPtr ctrl);
+			surfaceDrawCallAddedHandler(SurfacePtr, DrawCallPtr);
 
 			void
-			materialChanged(SurfaceCtrlPtr ctrl);
+			surfaceDrawCallRemovedHandler(SurfacePtr, DrawCallPtr);
+
+			void
+			geometryChanged(SurfacePtr ctrl);
+
+			void
+			materialChanged(SurfacePtr ctrl);
 
             static
             bool

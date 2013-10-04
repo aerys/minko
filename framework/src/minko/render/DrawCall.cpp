@@ -140,9 +140,6 @@ DrawCall::bindProgramInputs()
 			{
 				auto				propertyNameIt	= _uniformBindings.find(inputName);
 				const std::string&	propertyName	= propertyNameIt == _uniformBindings.end() ? inputName : propertyNameIt->second;
-
-				std::cout << inputName << " <- " << propertyName << std::endl;
-
 				Container::Ptr		container		= getDataContainer(propertyName);
 				if (container)
 					bindUniform(container, propertyName, type, location);
@@ -260,45 +257,18 @@ DrawCall::bindUniform(Container::Ptr		container,
 	if (!container->hasProperty(propertyName))
 		return;
 
-	std::cout << "--------BIND [" << this << "]\t UNI '" << propertyName << "'\t:= ";
-
 	if (type == ProgramInputs::Type::float1)
-	{
 	     _uniformFloat[location] = container->get<float>(propertyName);
-
-		 std::cout << _uniformFloat[location];
-	}
 	else if (type == ProgramInputs::Type::float2)
-	{
 	     _uniformFloat2[location] = container->get<std::shared_ptr<Vector2>>(propertyName);
-
-		 std::cout << _uniformFloat2[location]->x() << ", " << _uniformFloat2[location]->y();
-	}
 	else if (type == ProgramInputs::Type::float3)
-	{
 	     _uniformFloat3[location] = container->get<std::shared_ptr<Vector3>>(propertyName);
-
-		 std::cout << _uniformFloat3[location]->x() << ", " << _uniformFloat3[location]->y() << ", " << _uniformFloat3[location]->z() ;
-	}
 	else if (type == ProgramInputs::Type::float4)
-	{
 		_uniformFloat4[location] = container->get<std::shared_ptr<Vector4>>(propertyName);	
-
-		std::cout << _uniformFloat4[location]->x() << ", " << _uniformFloat4[location]->y() << ", " << _uniformFloat4[location]->z() << ", " << _uniformFloat4[location]->w();
-	}
 	else if (type == ProgramInputs::Type::float16)
-	{
 	     _uniformFloat16[location] = &(container->get<Matrix4x4::Ptr>(propertyName)->data()[0]);
-
-		 std::cout << _uniformFloat16[location][0] << ", " << _uniformFloat16[location][1] << ", " << _uniformFloat16[location][2] << ", " << _uniformFloat16[location][3] << "; "
-			 << _uniformFloat16[location][4] << ", " << _uniformFloat16[location][5] << ", " << _uniformFloat16[location][6] << ", " << _uniformFloat16[location][7] << ";" 
-			 << _uniformFloat16[location][8] << ", " << _uniformFloat16[location][9] << ", " << _uniformFloat16[location][10] << ", " << _uniformFloat16[location][11] << ";" 
-			 << _uniformFloat16[location][12] << ", " << _uniformFloat16[location][13] << ", " << _uniformFloat16[location][14] << ", " << _uniformFloat16[location][15];
-	}
 	else
 		throw std::logic_error("unsupported uniform type.");
-
-	std::cout << std::endl;
 
 	if (_referenceChangedSlots.count(propertyName) == 0)
 		_referenceChangedSlots[propertyName] = container->propertyReferenceChanged(propertyName)->connect(std::bind(
