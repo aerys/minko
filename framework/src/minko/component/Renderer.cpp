@@ -170,11 +170,7 @@ Renderer::rootDescendantAddedHandler(std::shared_ptr<Node> node,
 
 	for (auto surfaceNode : surfaceNodes->nodes())
 		for (auto surface : surfaceNode->components<Surface>())
-		{
 			addSurfaceComponent(surface);
-
-
-		}
 }
 
 void
