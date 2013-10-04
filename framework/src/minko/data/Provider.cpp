@@ -47,7 +47,9 @@ Provider::unset(const std::string& propertyName)
 	if (_values.count(formattedPropertyName) == 0)
 	{
 		_names.erase(std::find(_names.begin(), _names.end(), formattedPropertyName));
+
 		_propertyRemoved->execute(shared_from_this(), formattedPropertyName);
+		_propReferenceChanged->execute(shared_from_this(), formattedPropertyName);
 	}
 }
 
@@ -106,10 +108,8 @@ Provider::registerProperty(const std::string&		propertyName,
 	const auto	foundValueIt	= _values.find(propertyName);
 	const bool	isNewValue		= ( foundValueIt == _values.end() );
 //	bool		isNewValue		= _values.count(propertyName) == 0;
-	bool		changed			= false;
 
-	if (!isNewValue)
-		changed = !( (*value) == (*foundValueIt->second) );
+	const bool	changed			= isNewValue || !( (*value) == (*foundValueIt->second) );
 	
 	_values[propertyName] = value;
 	
@@ -120,19 +120,17 @@ Provider::registerProperty(const std::string&		propertyName,
 		propertyName
 	));
 	
-
 	if (isNewValue)
 	{
 		_names.push_back(propertyName);
+
 		_propertyAdded->execute(shared_from_this(), propertyName);
 	}
 	else
-	{
 		_propValueChanged->execute(shared_from_this(), propertyName);
 
-		if (changed)
-			_propReferenceChanged->execute(shared_from_this(), propertyName);
-	}
+	if (changed)
+		_propReferenceChanged->execute(shared_from_this(), propertyName);
 }
 
 bool 
