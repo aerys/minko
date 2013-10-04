@@ -145,9 +145,11 @@ namespace minko
 			setUniform(const std::string& name, const T&... values)
 			{
 				_uniformFunctions[name] = std::bind(
-					&Pass::setUniformOnProgram, shared_from_this(), std::placeholders::_1, name, values...
+					&Pass::setUniformOnProgram<T...>, shared_from_this(), std::placeholders::_1, name, values...
 				);
 
+				if (_programTemplate->isReady())
+					_programTemplate->setUniform(name, values...);
 				for (auto signatureAndProgram : _signatureToProgram)
 					signatureAndProgram.second->setUniform(name, values...);
 			}
