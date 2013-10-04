@@ -159,16 +159,25 @@ DrawCall::bindVertexAttribute(Container::Ptr		container,
 							  int					vertexBufferId)
 {
 #ifdef DEBUG
+	if (container==nullptr)
+		throw std::invalid_argument("container");
 	if (location < 0)
 		throw std::invalid_argument("location");
 	if (vertexBufferId < 0 || vertexBufferId >= MAX_NUM_VERTEXBUFFERS)
 		throw std::invalid_argument("vertexBufferId");
-	if (container==nullptr || !container->hasProperty(propertyName))
-		throw;
 #endif // DEBUG
+
+	if (!container->hasProperty(propertyName))
+		return;
 
 	auto vertexBuffer	= container->get<VertexBuffer::Ptr>(propertyName);
 	auto attributeName  = propertyName.substr(propertyName.find_last_of('.') + 1);
+
+#ifdef DEBUG
+	if (!vertexBuffer->hasAttribute(attributeName))
+		throw std::logic_error("missing required vertex attribute: " + attributeName);
+#endif
+
 	auto attribute		= vertexBuffer->attribute(attributeName);
 	
 	_vertexBuffers[vertexBufferId]			= vertexBuffer->id();
@@ -196,13 +205,16 @@ DrawCall::bindTextureSampler2D(Container::Ptr		container,
 							   int					textureId)
 {
 #ifdef DEBUG
+	if (container==nullptr)
+		throw std::invalid_argument("container");
 	if (location < 0)
 		throw std::invalid_argument("location");
 	if (textureId < 0 || textureId >= MAX_NUM_TEXTURES)
 		throw std::invalid_argument("textureId");
-	if (container==nullptr || !container->hasProperty(propertyName))
-		throw;
 #endif // DEBUG
+
+	if (!container->hasProperty(propertyName))
+		return;
 	
 	auto texture        = container->get<Texture::Ptr>(propertyName)->id();
 	auto& samplerState  = _states->samplers().count(inputName)
@@ -234,13 +246,16 @@ DrawCall::bindUniform(Container::Ptr		container,
 					  int					location)
 {
 #ifdef DEBUG
+	if (container==nullptr)
+		throw std::invalid_argument("container");
 	if (type == ProgramInputs::Type::sampler2d || type == ProgramInputs::Type::attribute)
 		throw std::invalid_argument("type");
 	if (location < 0)
 		throw std::invalid_argument("location");
-	if (container==nullptr || !container->hasProperty(propertyName))
-		throw;
 #endif // DEBUG
+
+	if (!container->hasProperty(propertyName))
+		return;
 
 	if (type == ProgramInputs::Type::float1)
 	     _uniformFloat[location] = container->get<float>(propertyName);
@@ -249,7 +264,7 @@ DrawCall::bindUniform(Container::Ptr		container,
 	else if (type == ProgramInputs::Type::float3)
 	     _uniformFloat3[location] = container->get<std::shared_ptr<Vector3>>(propertyName);
 	else if (type == ProgramInputs::Type::float4)
-	     _uniformFloat4[location] = container->get<std::shared_ptr<Vector4>>(propertyName);
+		_uniformFloat4[location] = container->get<std::shared_ptr<Vector4>>(propertyName);	
 	else if (type == ProgramInputs::Type::float16)
 	     _uniformFloat16[location] = &(container->get<Matrix4x4::Ptr>(propertyName)->data()[0]);
 	else
@@ -337,10 +352,19 @@ DrawCall::bindStates()
 }
 
 void
-DrawCall::render(const AbstractContext::Ptr& context)
+DrawCall::render(const AbstractContext::Ptr& context, std::shared_ptr<render::Texture> renderTarget)
 {
-    if (_target)
-        context->setRenderToTexture(_target->id(), true);
+	if (!renderTarget)
+		renderTarget = _target;
+
+    if (renderTarget)
+    {
+    	if (renderTarget->id() != context->renderTarget())
+    	{
+	        context->setRenderToTexture(renderTarget->id(), true);
+	        context->clear();
+	    }
+    }
     else
         context->setRenderToBackBuffer();
 

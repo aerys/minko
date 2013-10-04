@@ -43,7 +43,7 @@
 	},
 	
 	"priority"			: 0,
-	"blendMode"			: "alpha",//["one", "zero"],
+	"blendMode"			: ["one", "zero"],
 	"depthTest"			: [true, "less_equal"],
 	"triangleCulling"	: "back",
 	
@@ -53,12 +53,18 @@
 		"specularMap"	: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" }
 	},
 
-	"passes"	: [{	
-		"includes" : [
-			"Phong.struct.glsl",
-			"Phong.function.glsl",
-			"Phong.vertex.glsl",
-			"Phong.fragment.glsl"
-		]
+	"passes"	: [{
+		"vertexShader" : {
+			"includes" : [
+				"Phong.vertex.glsl"
+			]
+		},
+		"fragmentShader" : {
+			"includes" : [
+				"Phong.struct.glsl",
+				"Phong.function.glsl",
+				"Phong.fragment.glsl"
+			]
+		}
 	}]
 }

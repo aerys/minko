@@ -115,6 +115,27 @@ namespace minko
                 return _driverInfo;
             }
 
+            inline
+            uint
+            renderTarget()
+            {
+            	return _currentTarget;
+            }
+
+            inline
+            uint
+            viewportWidth()
+            {
+            	return _viewportWidth;
+            }
+
+            inline
+            uint
+            viewportHeight()
+            {
+            	return _viewportHeight;
+            }
+
 			void
 			configureViewport(const unsigned int x,
 							  const unsigned int y,
@@ -301,6 +322,12 @@ namespace minko
 
             void
             createRTTBuffers(unsigned int texture, unsigned int width, unsigned int height);
+
+			void
+			getShaderSource(unsigned int shader, std::string&);
+
+			void
+			saveShaderSourceToFile(const std::string& filename, unsigned int shader);
 
             inline
             void
