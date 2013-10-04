@@ -332,7 +332,7 @@ int main(int argc, char** argv)
     
 	auto options = sceneManager->assets()->defaultOptions();
     
-	options->material(data::Provider::create()->set("material.triangleCulling", render::TriangleCulling::FRONT));
+	options->material(data::Provider::create()->set("material.triangleCulling", render::TriangleCulling::NONE));
 	options->generateMipmaps(true);
     
     sceneManager->assets()
@@ -458,32 +458,31 @@ int main(int argc, char** argv)
             
 			float gap = (rhand.palmPosition() - lhand.palmPosition()).magnitude();;
             
-			if (lhand.palmNormal().x > 0.5f && rhand.palmNormal().x < -0.5f)
+			if (gap > lastgap + delta)
 			{
-				if (gap > lastgap + delta)
-				{
-					totalMoveTime += 10 * frameTime;
-					//scaleSpeed = scaleSpeed + (1.5f - scaleSpeed) * 0.01f;
-				}
-				else if (gap < lastgap - delta)
-				{
-					totalMoveTime -= 10 * frameTime;
-					//scaleSpeed = scaleSpeed + (0.5f - scaleSpeed) * 0.01f;
-				}
-                
-                
-				if (totalMoveTime >= explodeThreshold)
-				{
-					exploded = true;
-					totalMoveTime = 0;
-					std::cout << "explode" << std::endl;
-				}
-				else if (totalMoveTime <= -explodeThreshold)
-				{
-					exploded = false;
-					totalMoveTime = 0;
-					std::cout << "unexplode" << std::endl;
-				}
+				totalMoveTime += 10 * frameTime;
+				//scaleSpeed = scaleSpeed + (1.5f - scaleSpeed) * 0.01f;
+			}
+			else if (gap < lastgap - delta)
+			{
+				totalMoveTime -= 10 * frameTime;
+				//scaleSpeed = scaleSpeed + (0.5f - scaleSpeed) * 0.01f;
+			}
+
+			if(!inProgress)
+			if (totalMoveTime >= explodeThreshold)
+			{
+				inProgress = true;
+				exploded = true;
+				totalMoveTime = 0;
+				std::cout << "explode" << std::endl;
+			}
+			else if (totalMoveTime <= -explodeThreshold)
+			{
+				inProgress = true;
+				exploded = false;
+				totalMoveTime = 0;
+				std::cout << "unexplode" << std::endl;
 			}
 			lastgap = gap;
             
@@ -500,16 +499,11 @@ int main(int argc, char** argv)
                     case Leap::Gesture::TYPE_SWIPE:
 					{
 						Leap::SwipeGesture swipe = gesture;
-						if (abs(swipe.direction().x) > 0.5f)
+						if (gesture.state() == Leap::Gesture::State::STATE_START && !inProgress)
 						{
-							if (gesture.state() == Leap::Gesture::State::STATE_START && !inProgress)
-							{
-								inProgress = true;
-								if (abs(angle - targetAngle) < PI / 10.f);
-								targetAngle += PI / 2.f * ((0.f < swipe.direction().x) - (swipe.direction().x < 0.f));
-							}
-							if (gesture.state() == Leap::Gesture::State::STATE_STOP)
-								inProgress = false;
+							inProgress = true;
+							if (abs(angle - targetAngle) < PI / 10.f);
+							targetAngle += PI / 2.f * ((0.f < swipe.direction().x) - (swipe.direction().x < 0.f));
 						}
 						break;
 					}
@@ -552,17 +546,27 @@ int main(int argc, char** argv)
 			else
 				fingerID = -1;
 		}
+        if (abs(targetAngle - angle) > PI / 2 * 0.01f)
+		{
+			angle = angle + (targetAngle - angle) * frameTime * 2;
+			selectedMesh->component<Transform>()->transform()->identity()->prependRotationY(angle);
+		}
+		else
+		{
+			float explodeTarget = exploded ? 1.5f : 0.f;
+
+			if (abs(explodeTarget - currentExplodeValue) > 0.01f)
+			{
+				float explodeDelta = currentExplodeValue + (explodeTarget - currentExplodeValue) * frameTime * 2;
+				explode(baseNode, explodeDelta - currentExplodeValue);
+				currentExplodeValue = explodeDelta;
+			}
+			else
+				inProgress = false;
+		}
+		
         
-		angle = angle + (targetAngle - angle) * frameTime * 2;
-
-
-		float explodeTarget = exploded ? 1.5f : 0.f;
-
-		float explodeDelta = currentExplodeValue + (explodeTarget - currentExplodeValue) * frameTime * 2;
-		explode(baseNode, explodeDelta - currentExplodeValue);
-		currentExplodeValue = explodeDelta;
-        
-		selectedMesh->component<Transform>()->transform()->identity()->prependRotationY(angle);
+		
 		pointer->component<Transform>()->transform()->identity()->appendScale(0.3f, 0.3f, 0.3f)->prependTranslation(targetPos);
 		//scaleSpeed = scaleSpeed + (1.f - scaleSpeed) * 0.1f;
 		//std::cout << scaleSpeed << std::endl;
