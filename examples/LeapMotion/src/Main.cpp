@@ -576,7 +576,6 @@ int main(int argc, char** argv)
         if (abs(targetAngle - angle) > PI / 2 * 0.01f)
 		{
 			angle = angle + (targetAngle - angle) * frameTime * 2;
-			selectedMesh->component<Transform>()->transform()->identity()->prependRotationY(angle);
 		}
 		else
 		{
@@ -595,9 +594,9 @@ int main(int argc, char** argv)
 		targetcameraDistance = zoomed ? 10.f : 20.f;
 		cameraDistance = cameraDistance + (targetcameraDistance - cameraDistance) * frameTime * 2;
         camera->component<Transform>()->transform()->identity()
-			->lookAt(Vector3::zero(), Vector3::create(cameraDistance * sin(cameraYAngle),
-													  cameraDistance * sin(cameraXAngle) * cos(cameraXAngle),
-													  cameraDistance * cos(cameraXAngle)));
+			->lookAt(Vector3::zero(), Vector3::create(cameraDistance * sin(cameraYAngle + angle),
+													  cameraDistance * sin(cameraXAngle) * cos(cameraYAngle),
+													  cameraDistance * cos(cameraXAngle + angle)));
 		
 		pointer->component<Transform>()->transform()->identity()->appendScale(0.3f, 0.3f, 0.3f)->prependTranslation(targetPos);
 		//scaleSpeed = scaleSpeed + (1.f - scaleSpeed) * 0.1f;
