@@ -122,6 +122,20 @@ namespace minko
             	return _currentTarget;
             }
 
+            inline
+            uint
+            viewportWidth()
+            {
+            	return _viewportWidth;
+            }
+
+            inline
+            uint
+            viewportHeight()
+            {
+            	return _viewportHeight;
+            }
+
 			void
 			configureViewport(const unsigned int x,
 							  const unsigned int y,
