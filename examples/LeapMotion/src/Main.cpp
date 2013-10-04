@@ -275,6 +275,9 @@ int main(int argc, char** argv)
 	if (SDL_Init(SDL_INIT_VIDEO) == -1)
 		exit(-1);
 
+	int windowWidth;
+	int windowHeight;
+
 #ifdef EMSCRIPTEN
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
@@ -287,11 +290,11 @@ int main(int argc, char** argv)
 	//context = render::WebGLContext::create();
 #else
 	SDL_Window* window = SDL_CreateWindow(
-		"Minko - Cube Example",
+		"Minko - Leap Motion Example",
 		SDL_WINDOWPOS_UNDEFINED,
 		SDL_WINDOWPOS_UNDEFINED,
-		800, 600,
-		SDL_WINDOW_OPENGL
+		0, 0,
+		SDL_WINDOW_OPENGL | SDL_WINDOW_FULLSCREEN_DESKTOP
 	);
 
 # ifdef MINKO_ANGLE
@@ -304,6 +307,8 @@ int main(int argc, char** argv)
 	SDL_GLContext glcontext = SDL_GL_CreateContext(window);
 # endif
 #endif
+
+	SDL_GetWindowSize(window, &windowWidth, &windowHeight);
 
 	auto sceneManager = SceneManager::create(render::OpenGLES2Context::create());
 	auto baseNode = scene::Node::create("baseNode");
@@ -364,7 +369,7 @@ int main(int argc, char** argv)
 		camera->addComponent(Transform::create());
 		camera->component<Transform>()->transform()
 			->lookAt(Vector3::zero(), Vector3::create(0.f, 20.f * sin(cameraAngle), 20.f * cos(cameraAngle)));
-		camera->addComponent(PerspectiveCamera::create(.785f, 800.f / 600.f, .1f, 1000.f));
+		camera->addComponent(PerspectiveCamera::create(.785f, windowWidth * 1.0f / windowHeight, .1f, 1000.f));
 		root->addChild(camera);
 
 		baseNode->addComponent(Transform::create());
@@ -433,6 +438,10 @@ int main(int argc, char** argv)
                     break;
 			}
 		}
+
+		const Uint8* keyboardState = SDL_GetKeyboardState(NULL);
+		if (keyboardState[SDL_SCANCODE_ESCAPE])
+			done = true;
         
 		Leap::Frame frame = controller->frame();
         
