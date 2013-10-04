@@ -433,7 +433,7 @@ int main(int argc, char** argv)
 	float targetcameraDistance = 20.f;
 	bool inProgress = false;
 	float totalMoveTime = 0;
-	float explodeThreshold = 0.5f;
+	float explodeThreshold = 2.f;
 	bool exploded = false;
 	float currentExplodeValue = 0.f;
 	bool zoomed = false;
@@ -541,10 +541,8 @@ int main(int argc, char** argv)
 						}
 						else
 						{
-							if (swipe.direction().y > 0)
-								zoomed = false;
-							else
-								zoomed = true;
+							if (fabs(swipe.direction().y) > 0.7)
+								zoomed = swipe.direction().y < 0;
 						}
 						break;
 					}
