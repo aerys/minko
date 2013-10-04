@@ -34,7 +34,10 @@ void explode(scene::Node::Ptr node, float magnitude)
 		{
 			auto cTransform = child->component<Transform>()->transform();
 			auto direction = cTransform->translation();
-			cTransform->appendTranslation(direction * magnitude);
+			if (magnitude > 0.f)
+				cTransform->appendTranslation(direction * magnitude);
+			else
+				cTransform->appendTranslation((direction * magnitude) * (1.f /(magnitude - 1.f)) * -1);
 			explode(child, magnitude * 0.8f);
 		}
 		else
@@ -594,7 +597,7 @@ int main(int argc, char** argv)
 		{
 			float explodeTarget = exploded ? 1.5f : 0.f;
 
-			if (abs(explodeTarget - currentExplodeValue) > 0.05f)
+			if (abs(explodeTarget - currentExplodeValue) > 0.01f)
 			{
 				float explodeDelta = currentExplodeValue + (explodeTarget - currentExplodeValue) * frameTime * 2;
 				explode(baseNode, explodeDelta - currentExplodeValue);
