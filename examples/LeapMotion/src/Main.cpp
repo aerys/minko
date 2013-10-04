@@ -335,6 +335,9 @@ int main(int argc, char** argv)
 #endif
     
 	auto options = sceneManager->assets()->defaultOptions();
+	auto defaultMaterial = material::Material::create()
+		->set("diffuseColor", Vector4::create(1.f, 1.f, 1.f, 1.f))
+		->set("triangleCulling", render::TriangleCulling::NONE);
     
 	options->material(data::Provider::create()->set("material.triangleCulling", render::TriangleCulling::NONE));
 	options->generateMipmaps(true);
@@ -342,7 +345,9 @@ int main(int argc, char** argv)
     sceneManager->assets()
     ->load("effect/Phong.effect")
     ->load("effect/Basic.effect");
-    
+    options->materialFunction([&](const std::string&, data::Provider::Ptr){
+		return defaultMaterial;
+	});
 	options->effect(sceneManager->assets()->effect("effect/Phong.effect"));
     
 	sceneManager->assets()
