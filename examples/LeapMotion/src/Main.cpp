@@ -404,25 +404,14 @@ int main(int argc, char** argv)
 		));
         pLight1->addComponent(component::PointLight::create());
         pLight1->addComponent(component::Transform::create());
-        pLight1->component<Transform>()->transform()->appendTranslation(0.f, 5.f, 0.f);
-        pLight1->component<PointLight>()->color()->setTo(0.f, 0.f, 1.f);
-        pLight1->addComponent(Surface::create(
-                                              assets->geometry("sphere"),
-                                              data::Provider::create()
-                                              ->set("material.diffuseColor", Vector4::create(1.f, 0.f, 0.f, 0.f)),
-                                              assets->effect("effect/Phong.effect")
-                                              ));
-        
-        pLight2->addComponent(component::PointLight::create());
-        pLight2->addComponent(component::Transform::create());
-        pLight2->component<Transform>()->transform()->appendTranslation(0.f, 5.f, 0.f);
-        pLight2->component<PointLight>()->color()->setTo(1.f, 0.f, 0.f);
-        pLight2->addComponent(Surface::create(
-                                              assets->geometry("sphere"),
-                                              data::Provider::create()
-                                              ->set("material.diffuseColor", Vector4::create(0.f, 0.f, 0.f, 1.f)),
-                                              assets->effect("effect/Phong.effect")
-                                              ));
+        pLight1->component<Transform>()->transform()->appendTranslation(0.f, 10.f, 0.f);
+        pLight1->component<PointLight>()->color()->setTo(1.f, 1.f, 1.f);
+		/*pLight1->addComponent(Surface::create(
+			assets->geometry("sphere"),
+			data::Provider::create()
+			->set("material.diffuseColor", Vector4::create(1.f, 0.f, 0.f, 0.f)),
+			assets->effect("effect/Phong.effect")
+			));*/
         
         skybox->addComponent(Transform::create());
         skybox->component<Transform>()->transform()->prependScale(60.0f, 60.0f, 60.0f);
@@ -438,9 +427,8 @@ int main(int argc, char** argv)
         
         root->addChild(skybox);
 		root->addChild(baseNode);
-		camera->addChild(pointer);
-        camera->addChild(pLight1);
-        camera->addChild(pLight2);
+		//camera->addChild(pointer);
+        root->addChild(pLight1);
         
         getBoundingBoxes(baseNode, *boxList);
 	});
@@ -546,16 +534,6 @@ int main(int argc, char** argv)
 			lastgap = gap;
             
 			totalMoveTime -= 0.5 * frameTime * ((0 < totalMoveTime) - (0 > totalMoveTime));
-			std::cout << totalMoveTime << ":" << gap << std::endl;
-            
-            pLight1->component<Transform>()->transform()->identity()->appendTranslation(lhand.palmPosition().x,
-                                                                                        lhand.palmPosition().y,
-                                                                                        lhand.palmPosition().z);
-            
-            std::cout << "LEFT HAND "<< lhand.palmPosition().x << " : " << lhand.palmPosition().y << " : " <<lhand.palmPosition().z << std::endl;
-            pLight2->component<Transform>()->transform()->identity()->appendTranslation(rhand.palmPosition().x,
-                                                                                        rhand.palmPosition().y,
-                                                                                        rhand.palmPosition().z);
 		}
 		else
 		{
@@ -649,13 +627,13 @@ int main(int argc, char** argv)
 													  cameraDistance * sin(cameraXAngle) * cos(cameraYAngle),
 													  cameraDistance * cos(cameraXAngle + angle)));
 		
-		pointer->component<Transform>()->transform()->identity()->appendScale(0.1f, 0.1f, 0.1f)->prependTranslation(targetPos);
+		//pointer->component<Transform>()->transform()->identity()->appendScale(0.1f, 0.1f, 0.1f)->prependTranslation(targetPos);
 		//scaleSpeed = scaleSpeed + (1.f - scaleSpeed) * 0.1f;
 		//std::cout << scaleSpeed << std::endl;
         
 		sceneManager->nextFrame();
         
-		pointer->component<Surface>()->material()->set("material.diffuseColor", Vector4::create(1.f, 1.f, 1.f, 0.5f));
+		//pointer->component<Surface>()->material()->set("material.diffuseColor", Vector4::create(1.f, 1.f, 1.f, 0.5f));
 #ifdef MINKO_ANGLE
 		eglSwapBuffers(context->eglDisplay, context->eglSurface);
 #elif defined(EMSCRIPTEN)
