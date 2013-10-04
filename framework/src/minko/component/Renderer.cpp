@@ -63,7 +63,7 @@ Renderer::initialize()
 
 void
 Renderer::targetAddedHandler(std::shared_ptr<AbstractComponent> ctrl,
-							  std::shared_ptr<Node> 			 target)
+							 std::shared_ptr<Node> 			target)
 {
 	if (target->components<Renderer>().size() > 1)
 		throw std::logic_error("There cannot be two Renderer on the same node.");
@@ -176,7 +176,6 @@ Renderer::rootDescendantRemovedHandler(std::shared_ptr<Node> node,
 									    std::shared_ptr<Node> target,
 									    std::shared_ptr<Node> parent)
 {
-	_drawCalls.clear();
 	auto surfaceNodes = NodeSet::create(target)
 		->descendants(true)
         ->where([](scene::Node::Ptr node)
@@ -218,17 +217,17 @@ Renderer::componentRemovedHandler(std::shared_ptr<Node>				node,
 }
 
 void
-Renderer::addSurfaceComponent(std::shared_ptr<Surface> ctrl)
+Renderer::addSurfaceComponent(std::shared_ptr<Surface> surface)
 {
-	_surfaceDrawCalls[ctrl]	= ctrl->drawCalls();
+	_surfaceDrawCalls[surface]	= surface->drawCalls();
 
-	_drawCalls.insert(_drawCalls.end(), ctrl->drawCalls().begin(), ctrl->drawCalls().end());
+	_drawCalls.insert(_drawCalls.end(), surface->drawCalls().begin(), surface->drawCalls().end());
 }
 
 void
-Renderer::removeSurfaceComponent(std::shared_ptr<Surface> ctrl)
+Renderer::removeSurfaceComponent(std::shared_ptr<Surface> surface)
 {
-	auto ctrlDrawCalls	= _surfaceDrawCalls.find(ctrl);
+	auto ctrlDrawCalls	= _surfaceDrawCalls.find(surface);
 	if (ctrlDrawCalls == _surfaceDrawCalls.end())
 		return;
 

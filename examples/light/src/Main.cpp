@@ -144,6 +144,73 @@ printFramerate(const unsigned int delay = 1)
 	}
 }
 
+#ifndef EMSCRIPTEN
+void
+SDL_KeyboardHandler(scene::Node::Ptr		root,
+					data::Provider::Ptr		data,
+					file::AssetLibrary::Ptr	assets)
+{
+	static const std::string& normalMapPropName	= "material.normalMap";
+	static const std::string& normalMapFilename	= "texture/normalmap-cells.png";
+
+	static const uint MAX_NUM_LIGHTS	= 4;
+	static std::vector<scene::Node::Ptr> newLights;
+
+	const Uint8* keyboardState = SDL_GetKeyboardState(NULL);
+	if (keyboardState[SDL_SCANCODE_SPACE])
+	{
+		bool hasNormalMap = data->hasProperty(normalMapPropName);
+
+		std::cout << "mesh does" << (!hasNormalMap ? " not " : " ") << "have a normal map" << std::endl;
+		if (hasNormalMap)
+			data->unset(normalMapPropName);
+		else
+			data->set(normalMapPropName, assets->texture(normalMapFilename));
+	}
+	else if (keyboardState[SDL_SCANCODE_R])
+	{
+		if (newLights.empty())
+		{
+			std::cout << "no random light to remove" << std::endl;
+			return;
+		}
+
+		root->removeChild(newLights.back());
+		newLights.resize(newLights.size()-1);
+	}
+	else if (keyboardState[SDL_SCANCODE_A])
+	{
+		if (newLights.size() == MAX_NUM_LIGHTS)
+		{
+			std::cout << "cannot add more lights" << std::endl;
+			return;
+		}
+
+		std::stringstream stream;
+		stream << "newLight_" << newLights.size();
+		
+		newLights.push_back(scene::Node::create(stream.str()));
+
+		auto pointLight = PointLight::create();
+		pointLight->color()->setTo(rand()/(float)RAND_MAX, rand()/(float)RAND_MAX, rand()/(float)RAND_MAX);
+
+		newLights.back()->addComponent(pointLight);
+
+		const float	theta		= 2.0f * PI * rand() / (float)RAND_MAX;
+		const float	phi			= PI * rand() / (float)RAND_MAX;
+		auto		direction	= Vector3::create(cosf(theta)*sinf(phi), sinf(theta)*sinf(phi), cosf(phi));
+		direction				= direction * 5.0;
+
+		newLights.back()->addComponent(Transform::create());
+		newLights.back()->component<Transform>()->transform()
+			->appendTranslation(direction);
+
+		root->addChild(newLights.back());
+	}
+}
+#endif // EMSCRIPTEN
+
+
 int main(int argc, char** argv)
 {
 #ifdef EMSCRIPTEN
@@ -179,13 +246,19 @@ int main(int argc, char** argv)
 	const clock_t startTime	= clock();
 
 	auto sceneManager		= SceneManager::create(render::OpenGLES2Context::create());
+	auto root				= scene::Node::create("root");
     auto mesh				= scene::Node::create("mesh");
+	auto meshData			= data::Provider::create();
 	auto ambientLightNode	= scene::Node::create("ambientLight");
     auto dirLightNode1		= scene::Node::create("directionalLight1");
 	auto dirLightNode2		= scene::Node::create("directionalLight2");
 	auto pointLightNode		= scene::Node::create("pointLight");
 	auto spotLightNode		= scene::Node::create("spotLight");
 	auto sphereGeometry		= geometry::SphereGeometry::create(sceneManager->assets()->context(), 32, 16, true);
+
+	const bool blackOut = false;
+	std::cout << "Press [SPACE]\tto toogle normal mapping\nPress [A]\tto add random light\nPress [R}\tto remove random light" << std::endl;
+
 
 	sphereGeometry->computeTangentSpace(false);
 
@@ -211,20 +284,21 @@ int main(int argc, char** argv)
 
     auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
 	{
-		auto root   = scene::Node::create("root");
         auto camera	= scene::Node::create("camera");
  
 		root->addComponent(sceneManager);
 		
 		// ambient light
 		ambientLightNode->addComponent(AmbientLight::create(0.8f));
-		root->addChild(ambientLightNode);
+		if (!blackOut)
+			root->addChild(ambientLightNode);
 
 		// directional light
 		auto directionalLight = DirectionalLight::create();
 		dirLightNode1->addComponent(Transform::create());
 		dirLightNode1->addComponent(directionalLight);
-		root->addChild(dirLightNode1);
+		if (!blackOut)
+			root->addChild(dirLightNode1);
 
 		// directional light 2
 		directionalLight = DirectionalLight::create();
@@ -233,7 +307,8 @@ int main(int argc, char** argv)
 		dirLightNode2->addComponent(Transform::create());
 		dirLightNode2->component<Transform>()->transform()
 			->lookAt(Vector3::zero(), Vector3::create(0.f, -1.f, 1.f));
-		root->addChild(dirLightNode2);
+		if (!blackOut)
+			root->addChild(dirLightNode2);
 
 		// setup point light 1
 		auto pointLight	= component::PointLight::create();
@@ -241,7 +316,8 @@ int main(int argc, char** argv)
 		pointLightNode->addComponent(pointLight);
 		pointLightNode->addComponent(Transform::create());
 		pointLightNode->component<Transform>()->transform()->appendTranslation(boxScale, 0.0f, 0.0f);
-		root->addChild(pointLightNode);
+		if (!blackOut)
+			root->addChild(pointLightNode);
 		 
 		// setup spot light
 		auto spotLight	= component::SpotLight::create(0.05f*PI, 0.075f*PI);
@@ -250,7 +326,8 @@ int main(int argc, char** argv)
 		spotLightNode->addComponent(Transform::create());
 		spotLightNode->component<Transform>()->transform()
 			->lookAt(Vector3::zero(), Vector3::create(0.0f, 5.0f, 0.0f), Vector3::create(-1.0, 0.0, 0.0));
-		root->addChild(spotLightNode);
+		if (!blackOut)
+			root->addChild(spotLightNode);
 
 		// setup camera
         auto renderingComponent = Renderer::create();
@@ -268,15 +345,18 @@ int main(int argc, char** argv)
 			->appendScale(boxScale, boxScale, boxScale)
 			->appendTranslation(0.0f, 0.f, 0.0f);
 
+		// setup mesh material
+		meshData
+			->set("material.diffuseColor",	Vector4::create(0.f, 0.f, 1.f, 1.f))
+			->set("material.diffuseMap",	assets->texture("texture/box.png"))
+			->set("material.normalMap",		assets->texture("texture/normalmap-cells.png"))
+			//->set("material.normalMap",		assets->texture("texture/normalmap-squares.png"))
+			//->set("material.specularMap",	assets->texture("texture/specularmap-squares.png"))
+			->set("material.shininess",		32.f);
+
 		mesh->addComponent(Surface::create(
 			assets->geometry("sphere"),
-			data::Provider::create()
-				->set("material.diffuseColor",	Vector4::create(0.f, 0.f, 1.f, 1.f))
-				->set("material.diffuseMap",	assets->texture("texture/box.png"))
-				->set("material.normalMap",		assets->texture("texture/normalmap-cells.png"))
-				//->set("material.normalMap",		assets->texture("texture/normalmap-squares.png"))
-				//->set("material.specularMap",	assets->texture("texture/specularmap-squares.png"))
-				->set("material.shininess",		32.f),
+			meshData,
 			assets->effect("effect/Phong.effect")
 		));
 		root->addChild(mesh);
@@ -296,10 +376,16 @@ int main(int argc, char** argv)
 			case SDL_QUIT:
 				done = true;
 				break;
+			case SDL_KEYDOWN:
+#ifndef EMSCRIPTEN
+				SDL_KeyboardHandler(root, meshData, sceneManager->assets());
+#endif // EMSCRIPTEN
+				break;
 			default:
 				break;
 			}
 		}
+
 
 		dirLightNode1->component<Transform>()->transform()->prependRotationY(.01f);
 		pointLightNode->component<Transform>()->transform()->appendRotationY(.01f);
@@ -313,7 +399,7 @@ int main(int argc, char** argv)
 		spotLightNode->component<SpotLight>()->outerConeAngle(outerAng);
 
 		sceneManager->nextFrame();
-		printFramerate();
+		//printFramerate();
 
 #ifdef MINKO_ANGLE
 		eglSwapBuffers(context->eglDisplay, context->eglSurface);
