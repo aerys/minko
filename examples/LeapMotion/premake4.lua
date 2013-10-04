@@ -91,8 +91,8 @@ project "minko-example-leapmotion"
 	       postbuildcommands {
 			-- 'cp -r ../../framework/effect ${TARGET_BUILD_DIR}',
 			-- 'cp -r asset/* ${TARGET_BUILD_DIR}'
-			'cp -r ../../framework/effect/* effect/',
-			'cp -r asset/* .'
+			'cp -r ../../framework/effect bin/debug/',
+			'cp -r asset/* bin/debug/'
 	       }
 
 	-- xcode
@@ -100,8 +100,8 @@ project "minko-example-leapmotion"
 		postbuildcommands {
 			-- 'cp -r ../../framework/effect ${TARGET_BUILD_DIR}',
 			-- 'cp -r asset/* ${TARGET_BUILD_DIR}'
-			'cp -r ../../framework/effect/* effect/',
-			'cp -r asset/* .'
+			'cp -r ../../framework/effect bin/debug/',
+			'cp -r asset/* bin/debug/'
 		}
 
 	-- emscripten
