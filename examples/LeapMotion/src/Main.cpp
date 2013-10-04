@@ -318,6 +318,7 @@ int main(int argc, char** argv)
 	auto baseNode = scene::Node::create("baseNode");
 	auto ambientLightNode	= scene::Node::create("ambientLight");
 	auto pointer = scene::Node::create("pointer");
+    auto skybox = scene::Node::create("skybox");
 	auto selectedMesh = baseNode;
 
 	// setup assets
@@ -326,8 +327,10 @@ int main(int argc, char** argv)
 		->registerParser<file::PNGParser>("png")
 		->registerParser<file::MkParser>("mk")
 		->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()))
-		->geometry("sphere", geometry::SphereGeometry::create(sceneManager->assets()->context()));
-
+		->geometry("sphere", geometry::SphereGeometry::create(sceneManager->assets()->context()))
+    ->geometry("skybox", geometry::SphereGeometry::create(sceneManager->assets()->context(), 80, 80, true))
+        ->queue("texture/hangar.png");
+  
 #ifdef DEBUG
 	sceneManager->assets()->defaultOptions()->includePaths().insert("bin/debug");
 #else
@@ -394,7 +397,19 @@ int main(int argc, char** argv)
 			->set("material.diffuseColor", Vector4::create(1.f, 1.f, 1.f, 0.5f)),
 			assets->effect("effect/Phong.effect")
 		));
-
+        
+        skybox->addComponent(Transform::create());
+        skybox->component<Transform>()->transform()->prependScale(35.0f, 35.0f, 35.0f);
+        skybox->addComponent(Surface::create(
+             assets->geometry("skybox"),
+             data::Provider::create()
+             
+             ->set("material.diffuseColor", Vector4::create(1.f, 1.f, 1.f, 1.f))
+             ->set("material.diffuseMap",	assets->texture("texture/hangar.png"))
+             ->set("material.triangleCulling", render::TriangleCulling::FRONT),
+             assets->effect("effect/Basic.effect")
+                             ));
+        root->addChild(skybox);
 		root->addChild(baseNode);
 		camera->addChild(pointer);
         
