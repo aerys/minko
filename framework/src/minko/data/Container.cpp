@@ -30,6 +30,8 @@ Container::Container() :
 	_providers(),
 	_propertyNameToProvider(),
 	_arrayLengths(data::Provider::create()),
+	_propertyAdded(Container::PropertyChangedSignal::create()),
+	_propertyRemoved(Container::PropertyChangedSignal::create()),
 	_propValueChanged(),
 	_propReferenceChanged(),
 	_propertyAddedOrRemovedSlots(),
@@ -45,7 +47,7 @@ Container::initialize()
 }
 
 void
-Container::addProvider(std::shared_ptr<Provider> provider)
+Container::addProvider(Provider::Ptr provider)
 {
 	assertProviderDoesNotExist(provider);
 
@@ -77,29 +79,20 @@ Container::addProvider(std::shared_ptr<Provider> provider)
 }
 
 void
-Container::addProvider(std::shared_ptr<ArrayProvider> provider)
-{
-	assertProviderDoesNotExist(provider);
-
-	auto lengthPropertyName = provider->arrayName() + ".length";
-	int length = _arrayLengths->hasProperty(lengthPropertyName)
-		? _arrayLengths->get<int>(lengthPropertyName)
-		: 0;
-
-	provider->index(length);
-	_arrayLengths->set<int>(lengthPropertyName, ++length);
-
-	addProvider(std::dynamic_pointer_cast<Provider>(provider));
-}
-
-void
-Container::removeProvider(std::shared_ptr<Provider> provider)
+Container::removeProvider(Provider::Ptr provider)
 {
 	assertProviderExists(provider);
 
-	_providers.erase(std::find(_providers.begin(), _providers.end(), provider));
+	for (auto property : provider->values())
+		providerPropertyRemovedHandler(provider, property.first);
+	
 	_propertyAddedOrRemovedSlots.erase(provider);
+	_providerValueChangedSlot.erase(provider);
+	_providerReferenceChangedSlot.erase(provider);
 
+	_providers.erase(std::find(_providers.begin(), _providers.end(), provider));
+
+	/*
 	for (auto property : provider->values())
 		_propertyNameToProvider.erase(property.first);
 
@@ -107,6 +100,27 @@ Container::removeProvider(std::shared_ptr<Provider> provider)
 		_providerValueChangedSlot.erase(provider);
 
 	_providerValueChangedSlot.erase(provider);
+	*/
+}
+
+void
+Container::addProvider(std::shared_ptr<ArrayProvider> provider)
+{
+	assertProviderDoesNotExist(provider);
+
+	// Warning: the instruction order is very important here.
+
+	const auto	lengthPropertyName	= provider->arrayName() + ".length";
+	int			length				= _arrayLengths->hasProperty(lengthPropertyName)
+		? _arrayLengths->get<int>(lengthPropertyName)
+		: 0;
+
+	provider->index(length);
+	addProvider(std::dynamic_pointer_cast<Provider>(provider));
+
+	_arrayLengths->set<int>(lengthPropertyName, ++length);
+	// must come last because will trigger a program signature update which must 
+
 }
 
 void
@@ -114,24 +128,30 @@ Container::removeProvider(std::shared_ptr<ArrayProvider> provider)
 {
 	assertProviderExists(provider);
 
-	auto lengthPropertyName = provider->arrayName() + ".length";
-	int length = _arrayLengths->hasProperty(lengthPropertyName)
+	auto	lengthPropertyName	= provider->arrayName() + ".length";
+	int		length				= _arrayLengths->hasProperty(lengthPropertyName)
 		? _arrayLengths->get<int>(lengthPropertyName)
 		: 0;
 
-	_arrayLengths->set<int>(lengthPropertyName, --length);
-
-	removeProvider(std::dynamic_pointer_cast<Provider>(provider));
-
-	if (provider->index() != length)
+	if (provider->index() != length-1)
 	{
-		auto last = std::dynamic_pointer_cast<ArrayProvider>(
-			*std::find(_providers.rend(), _providers.rbegin(), provider)
-		);
+		auto last = std::dynamic_pointer_cast<ArrayProvider>(*std::find_if(
+			_providers.rbegin(),
+			_providers.rend(),
+			[&](Provider::Ptr p)
+			{
+				auto arrayProvider = std::dynamic_pointer_cast<ArrayProvider>(p);
+
+				return arrayProvider && arrayProvider->arrayName() == provider->arrayName();	
+			}
+		));
 
 		last->index(provider->index());
 	}
 
+	removeProvider(std::dynamic_pointer_cast<Provider>(provider));
+
+	_arrayLengths->set<int>(lengthPropertyName, --length);
 	if (length == 0)
 		_arrayLengths->unset(lengthPropertyName);
 }
@@ -239,6 +259,8 @@ Container::providerPropertyAddedHandler(std::shared_ptr<Provider> 	provider,
 			std::placeholders::_2
 		));
 
+	_propertyAdded->execute(shared_from_this(), propertyName);
+
 	providerValueChangedHandler(provider, propertyName);	
 }
 
@@ -248,13 +270,20 @@ Container::providerPropertyRemovedHandler(std::shared_ptr<Provider> provider,
 {
 	_propertyNameToProvider.erase(propertyName);
 
+	providerReferenceChangedHandler(provider, propertyName);
+	_propValueChanged.erase(propertyName);
+	_propReferenceChanged.erase(propertyName);
+
+	/*
 	if (_providerValueChangedSlot.count(provider) != 0)
 		for (auto property : provider->values())
 			if (_propValueChanged.count(property.first) != 0)
 				return;
 
-	_providerValueChangedSlot.erase(provider);
-	_providerReferenceChangedSlot.erase(provider);
-
 	providerValueChangedHandler(provider, propertyName);
+
+	std::cout << "cont[" << this << "] removes '" << propertyName << "'" << std::endl;
+	*/
+
+	_propertyRemoved->execute(shared_from_this(), propertyName);
 }
