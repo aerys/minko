@@ -133,6 +133,7 @@ Pass::finalizeProgram(Program::Ptr program)
 	if (!program->isReady())
 	{
 		program->upload();
+
 		for (auto& uniformNameAndFunction : _uniformFunctions)
 			uniformNameAndFunction.second(program);
 	}
