@@ -294,7 +294,7 @@ int main(int argc, char** argv)
 		"Minko - Leap Motion Example",
 		SDL_WINDOWPOS_UNDEFINED,
 		SDL_WINDOWPOS_UNDEFINED,
-		0, 0,
+		800, 640,
 		SDL_WINDOW_OPENGL | SDL_WINDOW_FULLSCREEN_DESKTOP
 	);
 
@@ -406,11 +406,14 @@ int main(int argc, char** argv)
 	Leap::Frame lastFrame;
 	float angle = 0.f;
 	float targetAngle = 0.f;
+	float cameraDistance = 20.f;
+	float targetcameraDistance = 20.f;
 	bool inProgress = false;
 	float totalMoveTime = 0;
 	float explodeThreshold = 0.5f;
 	bool exploded = false;
 	float currentExplodeValue = 0.f;
+	bool zoomed = false;
     int fingerID = -1;
 	Uint32 lastTicks = 0;
 	float frameTime;
@@ -458,7 +461,10 @@ int main(int argc, char** argv)
 			Leap::Hand rhand = hands.rightmost();
             
 			float gap = (rhand.palmPosition() - lhand.palmPosition()).magnitude();;
-            
+            if (lastgap < 0)
+			{
+				lastgap = gap;
+			}
 			if (gap > lastgap + delta)
 			{
 				totalMoveTime += 10 * frameTime;
@@ -492,6 +498,7 @@ int main(int argc, char** argv)
 		}
 		else
 		{
+			lastgap = -1;
 			for (int g = 0; g < gestures.count(); g++)
 			{
 				Leap::Gesture gesture = gestures[g];
@@ -500,11 +507,21 @@ int main(int argc, char** argv)
                     case Leap::Gesture::TYPE_SWIPE:
 					{
 						Leap::SwipeGesture swipe = gesture;
-						if (gesture.state() == Leap::Gesture::State::STATE_START && !inProgress)
+						if (abs(swipe.direction().x) > 0.5f)
 						{
-							inProgress = true;
-							if (abs(angle - targetAngle) < PI / 10.f);
-							targetAngle += PI / 2.f * ((0.f < swipe.direction().x) - (swipe.direction().x < 0.f));
+							if (gesture.state() == Leap::Gesture::State::STATE_START && !inProgress)
+							{
+								inProgress = true;
+								if (abs(angle - targetAngle) < PI / 10.f);
+								targetAngle += PI / 2.f * ((0.f < swipe.direction().x) - (swipe.direction().x < 0.f));
+							}
+						}
+						else
+						{
+							if (swipe.direction().y > 0)
+								zoomed = false;
+							else
+								zoomed = true;
 						}
 						break;
 					}
@@ -516,12 +533,12 @@ int main(int argc, char** argv)
                         std::cout << screenTape.direction().x << ":"<< screenTape.direction().y <<":"<< screenTape.direction().z << std::endl;
                         std::cout << screenTape.position().x << ":"<< screenTape.position().y <<":"<< screenTape.position().z << std::endl;
                         
-                        auto touche = getTouchedMesh(camera,
+                        /*auto touche = getTouchedMesh(camera,
                                                      pointer,
                                                      *boxList,
                                                      worldToScreen);
                         if (touche)
-                            touche->component<Surface>()->material()->set("material.diffuseColor", Vector4::create(0.f, 1.f, 0.f, 0.5f));
+                            touche->component<Surface>()->material()->set("material.diffuseColor", Vector4::create(0.f, 1.f, 0.f, 0.5f));*/
                         break;
 					}
                     default:
@@ -529,10 +546,11 @@ int main(int argc, char** argv)
 				}
 				
 			}
+
+			Leap::PointableList pointables = frame.pointables();
 			Leap::Pointable finger = frame.finger(fingerID);
 			if (!finger.isValid())
 			{
-				Leap::PointableList pointables = frame.pointables();
 				if (pointables.count() >= 1)
 				{
 					finger = pointables[0];
@@ -565,8 +583,13 @@ int main(int argc, char** argv)
 			else
 				inProgress = false;
 		}
-		
-        
+
+		targetcameraDistance = zoomed ? 10.f : 20.f;
+		cameraDistance = cameraDistance + (targetcameraDistance - cameraDistance) * frameTime * 2;
+        camera->component<Transform>()->transform()->identity()
+			->lookAt(Vector3::zero(), Vector3::create(cameraDistance * sin(cameraYAngle),
+													  cameraDistance * sin(cameraXAngle) * cos(cameraXAngle),
+													  cameraDistance * cos(cameraXAngle)));
 		
 		pointer->component<Transform>()->transform()->identity()->appendScale(0.3f, 0.3f, 0.3f)->prependTranslation(targetPos);
 		//scaleSpeed = scaleSpeed + (1.f - scaleSpeed) * 0.1f;
