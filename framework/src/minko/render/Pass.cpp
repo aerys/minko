@@ -53,6 +53,9 @@ Pass::selectProgram(std::shared_ptr<data::Container> data,
 					std::list<std::string>&			 bindingDefines,
 					std::list<std::string>&			 bindingValues)
 {
+	bindingDefines.clear();
+	bindingValues.clear();
+
 	Program::Ptr program;
 
 	if (_macroBindings.size() == 0)
@@ -70,29 +73,33 @@ Pass::selectProgram(std::shared_ptr<data::Container> data,
 		{
 			const uint				signatureMask	= signature.mask();
 			const std::vector<int>&	signatureValues	= signature.values();
-
-			std::string defines = "";
-			uint i = 0;
+			std::string				defines			= "";
+			uint					i				= 0;
 
 			// create shader header with #defines
-			for (auto& macroBinding : _macroBindings)
+			for (const auto& macroBinding : _macroBindings)
             {
 				if (signatureMask & (1 << i))
 				{
-					const auto& propertyName = macroBinding.second;
-					auto& container = data->hasProperty(propertyName) ? data : rootData;
+					const auto&	propertyName	= macroBinding.second;
+					auto&		container		= data->hasProperty(propertyName) 
+						? data 
+						: rootData;
 
-					defines += "#define " + macroBinding.first;
+					// warning: integer macros corresponding to array lengths must be POSITIVE!
 					if (container->propertyHasType<int>(propertyName))
 					{
-						//defines += " " + std::to_string(container->get<int>(propertyName));
-						defines += " " + std::to_string(signatureValues[i]);
-						bindingValues.push_back(propertyName);
+						if (signatureValues[i] > 0)
+						{
+							defines += "#define " + macroBinding.first + " " + std::to_string(signatureValues[i]) + "\n";
+							bindingValues.push_back(propertyName);
+						}
 					}
 					else
+					{
+						defines += "#define " + macroBinding.first + "\n";
 						bindingDefines.push_back(propertyName);
-
-					defines += "\n";
+					}
 				}
 				++i;
 				if (i == signatureValues.size())
@@ -118,19 +125,23 @@ Pass::selectProgram(std::shared_ptr<data::Container> data,
 		}
 	}
 
-	if (!program->vertexShader()->isReady())
-        program->vertexShader()->upload();
-	if (!program->fragmentShader()->isReady())
-	    program->fragmentShader()->upload();
-	if (!program->isReady())
-		program->upload();
+	finalizeProgram(program);
 
 	return program;
 }
 
 void
-Pass::setUniform(const std::string& name, float value)
+Pass::finalizeProgram(Program::Ptr program)
 {
-	for (auto signatureAndProgram : _signatureToProgram)
-		signatureAndProgram.second->setUniform(name, value);
+	if (!program->vertexShader()->isReady())
+        program->vertexShader()->upload();
+	if (!program->fragmentShader()->isReady())
+	    program->fragmentShader()->upload();
+	if (!program->isReady())
+	{
+		program->upload();
+
+		for (auto& uniformNameAndFunction : _uniformFunctions)
+			uniformNameAndFunction.second(program);
+	}
 }

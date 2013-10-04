@@ -21,7 +21,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/data/Provider.hpp"
 #include "minko/render/Effect.hpp"
-#include "minko/render/Shader.hpp"
 #include "minko/render/Program.hpp"
 #include "minko/render/States.hpp"
 #include "minko/render/Effect.hpp"
@@ -92,6 +91,7 @@ EffectParser::initializeDepthFuncMap()
 }
 
 EffectParser::EffectParser() :
+	_effect(nullptr),
 	_numDependencies(0),
 	_numLoadedDependencies(0),
     _defaultPriority(0.f),
@@ -108,7 +108,7 @@ EffectParser::parse(const std::string&				    filename,
 				    const std::string&                  resolvedFilename,
                     std::shared_ptr<Options>            options,
 				    const std::vector<unsigned char>&	data,
-				    std::shared_ptr<AssetLibrary>	    AssetLibrary)
+				    std::shared_ptr<AssetLibrary>	    assetLibrary)
 {
 	Json::Value root;
 	Json::Reader reader;
@@ -121,14 +121,14 @@ EffectParser::parse(const std::string&				    filename,
     }
 
     _filename = filename;
-	_AssetLibrary = AssetLibrary;
+	_assetLibrary = assetLibrary;
 	_effectName = root.get("name", filename).asString();
 
 	_defaultPriority = root.get("priority", 0.f).asFloat();
 	parseDefaultValues(root);
-	parseDependencies(root, resolvedFilename, options);
 	parsePasses(root, resolvedFilename, options);
-	
+	parseDependencies(root, resolvedFilename, options, _effectIncludes);
+
 	if (_numDependencies == _numLoadedDependencies)
 		finalize();
 }
@@ -160,9 +160,9 @@ EffectParser::parsePasses(Json::Value& root, const std::string& resolvedFilename
     std::unordered_map<std::string, std::shared_ptr<Texture>> targets;
 	auto passId = 0;
 
-	for (auto pass : root.get("passes", 0))
+	for (auto passValue : root.get("passes", 0))
 	{
-		auto name = pass.get("name", std::to_string(passId++)).asString();
+		auto name = passValue.get("name", std::to_string(passId++)).asString();
 
 		// pass bindings
 		data::BindingMap	attributeBindings(_defaultAttributeBindings);
@@ -170,50 +170,51 @@ EffectParser::parsePasses(Json::Value& root, const std::string& resolvedFilename
 		data::BindingMap	stateBindings(_defaultStateBindings);
 		data::BindingMap	macroBindings(_defaultMacroBindings);
         
-		parseBindings(pass, attributeBindings, uniformBindings, stateBindings, macroBindings);
+		parseBindings(passValue, attributeBindings, uniformBindings, stateBindings, macroBindings);
 
 		// pass priority
-		auto priority = pass.get("priority", _defaultPriority).asFloat();
+		auto priority = passValue.get("priority", _defaultPriority).asFloat();
 
 		// blendMode
 		auto blendSrcFactor	= _defaultBlendSrcFactor;
 		auto blendDstFactor	= _defaultBlendDstFactor;
 
-		parseBlendMode(pass, blendSrcFactor, blendDstFactor);
+		parseBlendMode(passValue, blendSrcFactor, blendDstFactor);
 
 		// depthTest
 		auto depthMask	= _defaultDepthMask;
 		auto depthFunc	= _defaultDepthFunc;
 
-		parseDepthTest(pass, depthMask, depthFunc);
+		parseDepthTest(passValue, depthMask, depthFunc);
 
         // triangle culling
         auto triangleCulling  = _defaultTriangleCulling;
 
-        parseTriangleCulling(pass, triangleCulling);
+        parseTriangleCulling(passValue, triangleCulling);
 
         // sampler states
         std::unordered_map<std::string, SamplerState>   samplerStates(_defaultSamplerStates);
 
-        parseSamplerStates(pass, samplerStates);
-
-        parseDependencies(pass, resolvedFilename, options);
+        parseSamplerStates(passValue, samplerStates);
 
 		// program
-		auto vertexShader	= Shader::create(
-			options->context(), Shader::Type::VERTEX_SHADER, pass.get("vertexShader", "").asString()
+		auto vertexShaderValue = passValue.get("vertexShader", "");
+		auto vertexShader = parseShader(
+			vertexShaderValue, resolvedFilename, options, render::Shader::Type::VERTEX_SHADER
 		);
-		auto fragmentShader	= Shader::create(
-			options->context(), Shader::Type::FRAGMENT_SHADER, pass.get("fragmentShader", "").asString()
+		
+		auto fragmentShaderValue = passValue.get("fragmentShader", "");
+		auto fragmentShader = parseShader(
+			fragmentShaderValue, resolvedFilename, options, render::Shader::Type::FRAGMENT_SHADER
 		);
 
         std::string targetName;
-        auto target = parseTarget(pass, options->context(), targetName);
+        auto target = parseTarget(passValue, options->context(), targetName);
 
         if (!targetName.empty())
             targets[targetName] = target;
 
-        passes.push_back(render::Pass::create(
+        auto pass = render::Pass::create(
 			name,
 			Program::create(options->context(), vertexShader, fragmentShader),
 			attributeBindings,
@@ -230,12 +231,36 @@ EffectParser::parsePasses(Json::Value& root, const std::string& resolvedFilename
                 triangleCulling,
                 target
             )
-		));
+		);
+
+        passes.push_back(pass);
+
+		parseDependencies(passValue, resolvedFilename, options, _passIncludes[pass]);
 	}
 
 	_effect = render::Effect::create(passes);
     for (auto target : targets)
         _effect->data()->set(target.first, target.second);
+}
+
+render::Shader::Ptr
+EffectParser::parseShader(Json::Value& 			shaderNode,
+						  const std::string&	resolvedFilename,
+						  file::Options::Ptr    options,
+						  render::Shader::Type 	type)
+{
+	if (shaderNode.isObject())
+	{
+		auto shader = Shader::create(options->context(), type, shaderNode.get("code", "").asString());
+
+		parseDependencies(shaderNode, resolvedFilename, options, _shaderIncludes[shader]);
+
+		return shader;
+	}
+	else if (shaderNode.isString())
+		return Shader::create(options->context(), type, shaderNode.asString());
+
+	throw;
 }
 
 void
@@ -383,8 +408,8 @@ EffectParser::parseTarget(Json::Value&                      contextNode,
         if (nameValue.isString())
         {
             name = nameValue.asString();
-            if (_AssetLibrary->texture(name))
-                return _AssetLibrary->texture(name);
+            if (_assetLibrary->texture(name))
+                return _assetLibrary->texture(name);
         }
 
         auto sizeValue  = targetValue.get("size", 0);
@@ -401,7 +426,7 @@ EffectParser::parseTarget(Json::Value&                      contextNode,
 
         auto target     = render::Texture::create(context, width, height, true);
 
-        _AssetLibrary->texture(name, target);
+        _assetLibrary->texture(name, target);
 
         return target;
     }
@@ -410,9 +435,12 @@ EffectParser::parseTarget(Json::Value&                      contextNode,
 }
 
 void
-EffectParser::parseDependencies(Json::Value& root, const std::string& filename, file::Options::Ptr options)
+EffectParser::parseDependencies(Json::Value& 				root,
+								const std::string& 			filename,
+								file::Options::Ptr 			options,
+								std::vector<LoaderPtr>& 	store)
 {
-	auto require	= root.get("includes", 0);
+	auto includes	= root.get("includes", 0);
 	int pos			= filename.find_last_of("/");
 
 	if (pos > 0)
@@ -421,11 +449,11 @@ EffectParser::parseDependencies(Json::Value& root, const std::string& filename, 
 		options->includePaths().insert(filename.substr(0, pos));
 	}
 
-	if (require.isArray())
+	if (includes.isArray())
 	{
-		_numDependencies = require.size();
+		_numDependencies += includes.size();
 
-		for (unsigned int requireId = 0; requireId < _numDependencies; requireId++)
+		for (auto include : includes)
 		{
 			auto loader = Loader::create();
 
@@ -436,7 +464,8 @@ EffectParser::parseDependencies(Json::Value& root, const std::string& filename, 
 				&EffectParser::dependencyErrorHandler, shared_from_this(), std::placeholders::_1
 			));
 
-			loader->load(require[requireId].asString(), options);
+			store.push_back(loader);
+			loader->load(include.asString(), options);
 		}
 	}
 }
@@ -446,8 +475,6 @@ EffectParser::dependencyCompleteHandler(std::shared_ptr<AbstractLoader> loader)
 {
 	++_numLoadedDependencies;
 
-	_dependenciesCode += std::string((char*)&loader->data()[0], loader->data().size()) + "\r\n";
-
 	if (_numDependencies == _numLoadedDependencies && _effect)
 		finalize();
 }
@@ -455,26 +482,48 @@ EffectParser::dependencyCompleteHandler(std::shared_ptr<AbstractLoader> loader)
 void
 EffectParser::dependencyErrorHandler(std::shared_ptr<AbstractLoader> loader)
 {
-	std::cout << "error" << std::endl;
+	throw;
+}
+
+std::string
+EffectParser::concatenateIncludes(std::vector<LoaderPtr>& store)
+{
+	std::string code = "";
+
+	for (auto loader : store)
+		code += std::string((char*)&loader->data()[0], loader->data().size()) + "\r\n";
+
+	return code;
 }
 
 void
 EffectParser::finalize()
 {
+	auto effectIncludes = concatenateIncludes(_effectIncludes);
+
 	for (auto& pass : _effect->passes())
     {
 		auto program = pass->program();
+		auto passIncludes = concatenateIncludes(_passIncludes[pass]);
 
 		program->vertexShader()->source(
-			"#define VERTEX\r\n" + _dependenciesCode + program->vertexShader()->source()
+			"#define VERTEX_SHADER\r\n"
+			+ effectIncludes
+			+ passIncludes
+			+ concatenateIncludes(_shaderIncludes[program->vertexShader()])
+			+ program->vertexShader()->source()
 		);
 		program->fragmentShader()->source(
-			"#define FRAGMENT\r\n" + _dependenciesCode + program->fragmentShader()->source()
+			"#define FRAGMENT_SHADER\r\n"
+			+ effectIncludes
+			+ passIncludes
+			+ concatenateIncludes(_shaderIncludes[program->fragmentShader()])
+			+ program->fragmentShader()->source()
 		);
     }
 
-	_AssetLibrary->effect(_effectName, _effect);
-    _AssetLibrary->effect(_filename, _effect);
+	_assetLibrary->effect(_effectName, _effect);
+    _assetLibrary->effect(_filename, _effect);
 
 	_complete->execute(shared_from_this());
 }
