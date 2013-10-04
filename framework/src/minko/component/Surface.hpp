@@ -32,16 +32,17 @@ namespace minko
 			public std::enable_shared_from_this<Surface>
 		{
 		public:
-			typedef std::shared_ptr<Surface>	Ptr;
+			typedef std::shared_ptr<Surface>						Ptr;
+			typedef Signal<Ptr, std::shared_ptr<render::DrawCall>>	DrawCallChangedSignal;
 
 		private:
-			typedef std::shared_ptr<scene::Node>				NodePtr;
-			typedef std::shared_ptr<data::Container>			ContainerPtr;
-			typedef std::shared_ptr<render::Pass>				PassPtr;
-			typedef std::shared_ptr<render::DrawCall>			DrawCallPtr;
-			typedef std::list<DrawCallPtr>						DrawCallList;
-			typedef Signal<ContainerPtr, const std::string&>	PropertyChangedSignal;
-			typedef PropertyChangedSignal::Slot					PropertyChangedSlot;
+			typedef std::shared_ptr<scene::Node>					NodePtr;
+			typedef std::shared_ptr<data::Container>				ContainerPtr;
+			typedef std::shared_ptr<render::Pass>					PassPtr;
+			typedef std::shared_ptr<render::DrawCall>				DrawCallPtr;
+			typedef std::list<DrawCallPtr>							DrawCallList;
+			typedef Signal<ContainerPtr, const std::string&>		PropertyChangedSignal;
+			typedef PropertyChangedSignal::Slot						PropertyChangedSlot;
 
 			enum class MacroChange
 			{
@@ -51,25 +52,28 @@ namespace minko
 			};
 
 		private:
-			std::shared_ptr<geometry::Geometry>				_geometry;
-			std::shared_ptr<data::Provider>					_material;
-			std::shared_ptr<render::Effect>					_effect;
-			std::unordered_set<std::string>					_macroPropertyNames;
+			std::shared_ptr<geometry::Geometry>						_geometry;
+			std::shared_ptr<data::Provider>							_material;
+			std::shared_ptr<render::Effect>							_effect;
+			std::unordered_set<std::string>							_macroPropertyNames;
 
-			DrawCallList									_drawCalls;
-			std::unordered_map<DrawCallPtr, PassPtr>		_drawCallToPass;
-			std::unordered_map<std::string, DrawCallList>	_macroPropertyNameToDrawCalls;
+			DrawCallList											_drawCalls;
+			std::unordered_map<DrawCallPtr, PassPtr>				_drawCallToPass;
+			std::unordered_map<std::string, DrawCallList>			_macroPropertyNameToDrawCalls;
 
 			std::list<Any>											_macroAddedOrRemovedSlots;
 			std::unordered_map<std::string, PropertyChangedSlot>	_targetMacroChangedSlots;
 			std::unordered_map<std::string, uint>					_numTargetMacroListeners;
 			std::unordered_map<std::string, PropertyChangedSlot>	_rootMacroChangedSlots;
 			std::unordered_map<std::string, uint>					_numRootMacroListeners;
+			
+			std::shared_ptr<DrawCallChangedSignal>					_drawCallAdded;
+			std::shared_ptr<DrawCallChangedSignal>					_drawCallRemoved;
 
-			Signal<AbstractComponent::Ptr, NodePtr>::Slot	_targetAddedSlot;
-			Signal<AbstractComponent::Ptr, NodePtr>::Slot	_targetRemovedSlot;
-			Signal<NodePtr, NodePtr, NodePtr>::Slot			_addedSlot;
-			Signal<NodePtr, NodePtr, NodePtr>::Slot			_removedSlot;
+			Signal<AbstractComponent::Ptr, NodePtr>::Slot			_targetAddedSlot;
+			Signal<AbstractComponent::Ptr, NodePtr>::Slot			_targetRemovedSlot;
+			Signal<NodePtr, NodePtr, NodePtr>::Slot					_addedSlot;
+			Signal<NodePtr, NodePtr, NodePtr>::Slot					_removedSlot;
 
 		public:
 			static
@@ -144,22 +148,19 @@ namespace minko
 			targetRemovedHandler(AbstractComponent::Ptr ctrl, NodePtr target);
 
 			void
-			addedOrRemovedHandler(NodePtr node, NodePtr target, NodePtr ancestor);
-
-            void
-            propertyAddedHandler(ContainerPtr, const std::string& propertyName);
-
-            void
-            propertyChangedHandler(ContainerPtr, const std::string& propertyName);
-
-            void
-            propertyRemovedHandler(ContainerPtr, const std::string& propertyName);
+			addedHandler(NodePtr node, NodePtr target, NodePtr ancestor);
 
 			void
-			macroChangedHandler(ContainerPtr, const std::string& propertyName, MacroChange);
+			removedHandler(NodePtr node, NodePtr target, NodePtr ancestor);
 
 			ContainerPtr
 			getDataContainer(const std::string& propertyName) const;
+
+			void
+			watchMacroAdditionOrDeletion();
+
+			void
+			macroChangedHandler(ContainerPtr, const std::string& propertyName, MacroChange);
 		};
 	}
 }
