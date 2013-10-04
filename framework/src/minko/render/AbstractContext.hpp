@@ -53,6 +53,14 @@ namespace minko
             uint
             renderTarget() = 0;
 
+            virtual
+            uint
+            viewportWidth() = 0;
+
+            virtual
+            uint
+            viewportHeight() = 0;
+
 			virtual
 			void
 			configureViewport(const unsigned int x,
