@@ -550,11 +550,11 @@ int main(int argc, char** argv)
 					}
                     case Leap::Gesture::TYPE_SCREEN_TAP:
 					{
-						pointer->component<Surface>()->material()->set("material.diffuseColor", Vector4::create(0.f, 1.f, 0.f, 0.5f));
-                        Leap::ScreenTapGesture screenTape = gesture;
+						//pointer->component<Surface>()->material()->set("material.diffuseColor", Vector4::create(0.f, 1.f, 0.f, 0.5f));
+                        //Leap::ScreenTapGesture screenTape = gesture;
                         
-                        std::cout << screenTape.direction().x << ":"<< screenTape.direction().y <<":"<< screenTape.direction().z << std::endl;
-                        std::cout << screenTape.position().x << ":"<< screenTape.position().y <<":"<< screenTape.position().z << std::endl;
+                        //std::cout << screenTape.direction().x << ":"<< screenTape.direction().y <<":"<< screenTape.direction().z << std::endl;
+                        //std::cout << screenTape.position().x << ":"<< screenTape.position().y <<":"<< screenTape.position().z << std::endl;
                         
                         /*auto touche = getTouchedMesh(camera,
                                                      pointer,
@@ -582,7 +582,7 @@ int main(int argc, char** argv)
 			}
 			if (finger.isValid())
 			{
-				auto tip = finger.tipPosition() * 0.01f;
+				auto tip = finger.tipPosition() * 0.05f;
 				targetPos->lerp(Vector3::create(tip.x, tip.y, -15.f), frameTime * 2);
 			}
 			else
@@ -613,7 +613,7 @@ int main(int argc, char** argv)
 													  cameraDistance * sin(cameraXAngle) * cos(cameraYAngle),
 													  cameraDistance * cos(cameraXAngle + angle)));
 		
-		pointer->component<Transform>()->transform()->identity()->appendScale(0.3f, 0.3f, 0.3f)->prependTranslation(targetPos);
+		pointer->component<Transform>()->transform()->identity()->appendScale(0.1f, 0.1f, 0.1f)->prependTranslation(targetPos);
 		//scaleSpeed = scaleSpeed + (1.f - scaleSpeed) * 0.1f;
 		//std::cout << scaleSpeed << std::endl;
         
