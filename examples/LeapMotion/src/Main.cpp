@@ -624,23 +624,23 @@ int main(int argc, char** argv)
 			else
 				fingerID = -1;
 		}
+
+		float explodeTarget = exploded ? 1.5f : 0.f;
         if (fabs((targetAngle - angle)) > PI / 2 * 0.01f)
 		{
 			angle = angle + (targetAngle - angle) * frameTime * 2;
 		}
 		else
 		{
-			float explodeTarget = exploded ? 1.5f : 0.f;
 
-			if (fabs((explodeTarget - currentExplodeValue)) > 0.05f)
-			{
-				float explodeDelta = currentExplodeValue + (explodeTarget - currentExplodeValue) * frameTime * 2;
-				explode(baseNode, explodeDelta - currentExplodeValue);
-				currentExplodeValue = explodeDelta;
-			}
-			else
+			if (fabs((explodeTarget - currentExplodeValue)) < 0.05f)
 				inProgress = false;
 		}
+
+		
+		float explodeDelta = currentExplodeValue + (explodeTarget - currentExplodeValue) * frameTime * 2;
+		explode(baseNode, explodeDelta - currentExplodeValue);
+		currentExplodeValue = explodeDelta;
 
 		targetcameraDistance = zoomed ? 10.f : 20.f;
 		cameraDistance = cameraDistance + (targetcameraDistance - cameraDistance) * frameTime * 2;
