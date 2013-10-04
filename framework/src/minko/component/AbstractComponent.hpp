@@ -51,35 +51,35 @@ namespace minko
 
 			inline
 			const std::vector<std::shared_ptr<scene::Node>>&
-			targets()
+			targets() const
 			{
 				return _targets;
 			}
 
 			inline
 			const unsigned int
-			numTargets()
+			numTargets() const
 			{
 				return _targets.size();
 			}
 
 			inline
 			std::shared_ptr<scene::Node>
-			getTarget(unsigned int index)
+			getTarget(unsigned int index) const
 			{
 				return _targets[index];
 			}
 
 			inline
 			Signal<Ptr, std::shared_ptr<scene::Node>>::Ptr
-			targetAdded()
+			targetAdded() const
 			{
 				return _targetAdded;
 			}
 
 			inline
 			Signal<Ptr, std::shared_ptr<scene::Node>>::Ptr
-			targetRemoved()
+			targetRemoved() const
 			{
 				return _targetRemoved;
 			}
