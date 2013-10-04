@@ -39,9 +39,7 @@ Renderer::Renderer() :
     _backgroundColor(0),
 	_renderingBegin(Signal<Ptr>::create()),
 	_renderingEnd(Signal<Ptr>::create()),
-	_surfaceDrawCalls(),
-	_surfaceDrawCallAddedSlot(),
-	_surfaceDrawCallRemovedSlot()
+	_surfaceDrawCalls()
 {
 }
 
@@ -224,22 +222,6 @@ Renderer::addSurfaceComponent(std::shared_ptr<Surface> surface)
 	_surfaceDrawCalls[surface]	= surface->drawCalls();
 
 	_drawCalls.insert(_drawCalls.end(), surface->drawCalls().begin(), surface->drawCalls().end());
-
-	if (_surfaceDrawCallAddedSlot.count(surface) == 0)
-		_surfaceDrawCallAddedSlot[surface] = surface->drawCallAdded()->connect(std::bind(
-			&Renderer::surfaceDrawCallAddedHandler,
-			shared_from_this(),
-			std::placeholders::_1,
-			std::placeholders::_2
-		));
-
-	if (_surfaceDrawCallRemovedSlot.count(surface) == 0)
-		_surfaceDrawCallRemovedSlot[surface] = surface->drawCallRemoved()->connect(std::bind(
-			&Renderer::surfaceDrawCallRemovedHandler,
-			shared_from_this(),
-			std::placeholders::_1,
-			std::placeholders::_2
-		));
 }
 
 void
@@ -252,23 +234,6 @@ Renderer::removeSurfaceComponent(std::shared_ptr<Surface> surface)
 	for (auto drawCall : ctrlDrawCalls->second)
 		_drawCalls.remove(drawCall);
 	_surfaceDrawCalls.erase(ctrlDrawCalls);
-
-	if (_surfaceDrawCallAddedSlot.count(surface) != 0)
-		_surfaceDrawCallAddedSlot.erase(surface);
-	if (_surfaceDrawCallRemovedSlot.count(surface) != 0)
-		_surfaceDrawCallRemovedSlot.erase(surface);
-}
-
-void
-Renderer::surfaceDrawCallAddedHandler(Surface::Ptr surface, DrawCall::Ptr drawCall)
-{
-	// FIXME
-}
-
-void
-Renderer::surfaceDrawCallRemovedHandler(Surface::Ptr surface, DrawCall::Ptr drawCall)
-{
-	// FIXME
 }
 
 void
