@@ -169,8 +169,8 @@ Surface::watchMacroAdditionOrDeletion()
 		return;
 
 	auto&	target		= targets().front();
-	auto&	targetData	= target->data();
-	auto&	rootData	= target->root()->data();
+	auto	targetData	= target->data();
+	auto	rootData	= target->root()->data();
 
 #ifdef DEBUG_SHADER_FORK
 	std::cout << "\n----- ADD/REM MACRO HANDLERS-- targetData[" << targetData.get() << "] -- rootData[" << rootData.get() << "] -----" << std::endl; 
@@ -398,11 +398,11 @@ Surface::getDataContainer(const std::string& propertyName) const
 	if (targets().empty())
 		return nullptr;
 	
-	auto& data	= targets().front()->data();
+	auto data	= targets().front()->data();
 	if (data->hasProperty(propertyName))
 		return data;
 
-	auto& rootData = targets().front()->root()->data();
+	auto rootData = targets().front()->root()->data();
 	if (rootData->hasProperty(propertyName))
 		return rootData;
 
