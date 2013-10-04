@@ -323,7 +323,9 @@ int main(int argc, char** argv)
 	auto pointer = scene::Node::create("pointer");
     auto skybox = scene::Node::create("skybox");
 	auto selectedMesh = baseNode;
-
+    auto pLight1 = scene::Node::create("pointLight1");
+    auto pLight2 = scene::Node::create("pointLight2");
+    
 	// setup assets
 	sceneManager->assets()->defaultOptions()->generateMipmaps(true);
 	sceneManager->assets()
@@ -371,7 +373,7 @@ int main(int argc, char** argv)
 		auto lights = scene::Node::create();
 
 		lights
-			->addComponent(component::AmbientLight::create())
+			//->addComponent(component::AmbientLight::create())
 			->addComponent(component::DirectionalLight::create())
 			->addComponent(component::Transform::create());
 		lights->component<Transform>()->transform()->lookAt(Vector3::zero(), Vector3::create(-1.f, -1.f, -1.f));
@@ -400,9 +402,30 @@ int main(int argc, char** argv)
 			->set("material.diffuseColor", Vector4::create(1.f, 1.f, 1.f, 0.5f)),
 			assets->effect("effect/Phong.effect")
 		));
+        pLight1->addComponent(component::PointLight::create());
+        pLight1->addComponent(component::Transform::create());
+        pLight1->component<Transform>()->transform()->appendTranslation(0.f, 5.f, 0.f);
+        pLight1->component<PointLight>()->color()->setTo(0.f, 0.f, 1.f);
+        pLight1->addComponent(Surface::create(
+                                              assets->geometry("sphere"),
+                                              data::Provider::create()
+                                              ->set("material.diffuseColor", Vector4::create(1.f, 0.f, 0.f, 0.f)),
+                                              assets->effect("effect/Phong.effect")
+                                              ));
+        
+        pLight2->addComponent(component::PointLight::create());
+        pLight2->addComponent(component::Transform::create());
+        pLight2->component<Transform>()->transform()->appendTranslation(0.f, 5.f, 0.f);
+        pLight2->component<PointLight>()->color()->setTo(1.f, 0.f, 0.f);
+        pLight2->addComponent(Surface::create(
+                                              assets->geometry("sphere"),
+                                              data::Provider::create()
+                                              ->set("material.diffuseColor", Vector4::create(0.f, 0.f, 0.f, 1.f)),
+                                              assets->effect("effect/Phong.effect")
+                                              ));
         
         skybox->addComponent(Transform::create());
-        skybox->component<Transform>()->transform()->prependScale(35.0f, 35.0f, 35.0f);
+        skybox->component<Transform>()->transform()->prependScale(60.0f, 60.0f, 60.0f);
         skybox->addComponent(Surface::create(
              assets->geometry("skybox"),
              data::Provider::create()
@@ -412,9 +435,12 @@ int main(int argc, char** argv)
              ->set("material.triangleCulling", render::TriangleCulling::FRONT),
              assets->effect("effect/Basic.effect")
                              ));
+        
         root->addChild(skybox);
 		root->addChild(baseNode);
 		camera->addChild(pointer);
+        camera->addChild(pLight1);
+        camera->addChild(pLight2);
         
         getBoundingBoxes(baseNode, *boxList);
 	});
@@ -521,6 +547,15 @@ int main(int argc, char** argv)
             
 			totalMoveTime -= 0.5 * frameTime * ((0 < totalMoveTime) - (0 > totalMoveTime));
 			std::cout << totalMoveTime << ":" << gap << std::endl;
+            
+            pLight1->component<Transform>()->transform()->identity()->appendTranslation(lhand.palmPosition().x,
+                                                                                        lhand.palmPosition().y,
+                                                                                        lhand.palmPosition().z);
+            
+            std::cout << "LEFT HAND "<< lhand.palmPosition().x << " : " << lhand.palmPosition().y << " : " <<lhand.palmPosition().z << std::endl;
+            pLight2->component<Transform>()->transform()->identity()->appendTranslation(rhand.palmPosition().x,
+                                                                                        rhand.palmPosition().y,
+                                                                                        rhand.palmPosition().z);
 		}
 		else
 		{
@@ -533,12 +568,12 @@ int main(int argc, char** argv)
                     case Leap::Gesture::TYPE_SWIPE:
 					{
 						Leap::SwipeGesture swipe = gesture;
-						if (abs(swipe.direction().x) > 0.5f)
+						if (fabs((swipe.direction().x)) > 0.5f)
 						{
 							if (gesture.state() == Leap::Gesture::State::STATE_START && !inProgress)
 							{
 								inProgress = true;
-								if (abs(angle - targetAngle) < PI / 10.f);
+								if (fabs((angle - targetAngle)) < PI / 10.f);
 								targetAngle += PI / 2.f * ((0.f < swipe.direction().x) - (swipe.direction().x < 0.f));
 							}
 						}
@@ -589,7 +624,7 @@ int main(int argc, char** argv)
 			else
 				fingerID = -1;
 		}
-        if (abs(targetAngle - angle) > PI / 2 * 0.01f)
+        if (fabs((targetAngle - angle)) > PI / 2 * 0.01f)
 		{
 			angle = angle + (targetAngle - angle) * frameTime * 2;
 		}
@@ -597,7 +632,7 @@ int main(int argc, char** argv)
 		{
 			float explodeTarget = exploded ? 1.5f : 0.f;
 
-			if (abs(explodeTarget - currentExplodeValue) > 0.01f)
+			if (fabs((explodeTarget - currentExplodeValue)) > 0.05f)
 			{
 				float explodeDelta = currentExplodeValue + (explodeTarget - currentExplodeValue) * frameTime * 2;
 				explode(baseNode, explodeDelta - currentExplodeValue);
