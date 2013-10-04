@@ -45,6 +45,8 @@ namespace minko
 
 			std::shared_ptr<Provider>										_arrayLengths;
 
+			PropertyChangedSignalPtr										_propertyAdded;
+			PropertyChangedSignalPtr										_propertyRemoved;
 			std::unordered_map<std::string, PropertyChangedSignalPtr>		_propValueChanged;
 			std::unordered_map<std::string, PropertyChangedSignalPtr>		_propReferenceChanged;
 
@@ -110,6 +112,20 @@ namespace minko
 				assertPropertyExists(propertyName);
 
 				return _propertyNameToProvider[propertyName]->propertyHasType<T>(propertyName);
+			}
+
+			inline
+			PropertyChangedSignalPtr
+			propertyAdded() const
+			{
+				return _propertyAdded;
+			}
+
+			inline
+			PropertyChangedSignalPtr
+			propertyRemoved() const
+			{
+				return _propertyRemoved;
 			}
 
 			PropertyChangedSignalPtr

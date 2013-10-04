@@ -30,6 +30,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include <memory>
 #include <set>
 #include <sstream>
+#include <fstream>
 #include <stdexcept>
 #include <string>
 #include <unordered_map>
