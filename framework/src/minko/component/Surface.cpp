@@ -143,7 +143,7 @@ Surface::targetAddedHandler(AbstractComponent::Ptr	ctrl,
     targetData->addProvider(_effect->data());
 
 	watchMacroAdditionOrDeletion();
-	//createDrawCalls();
+	// createDrawCalls(); // dynamic update in the Renderer needed to allow this line for the moment
 }
 
 void
@@ -257,8 +257,6 @@ Surface::initializeDrawCall(Pass::Ptr		pass,
 		throw std::invalid_argument("pass");
 #endif // DEBUG
 
-	std::cout << "\n\n\n--------------- DRAWCALL [" << drawcall.get() << "]-------------------------" << std::endl;
-
 	const auto target		= targets()[0];
 	const auto targetData	= target->data();
 	const auto rootData		= target->root()->data();
@@ -286,11 +284,6 @@ Surface::initializeDrawCall(Pass::Ptr		pass,
 
 			_macroPropertyNameToDrawCalls[propertyName].push_back(drawcall);
 
-			if (data == nullptr)
-			{
-				std::cout << "macro '" << propertyName << "' is neither in Cont[" << targetData.get() << "] nor Cont[" << rootData.get() << "]" << std::endl;
-			}
-
 			if (data == targetData || data == rootData)
 			{
 				auto&		listeners		= (data == targetData ? _numTargetMacroListeners : _numRootMacroListeners);
@@ -314,9 +307,9 @@ Surface::macroChangedHandler(Container::Ptr		data,
 {
 	if (change == MacroChange::REF_CHANGED && !_drawCalls.empty())
 	{
+#ifdef DEBUG_SHADER_FORK
 		std::cout << "# Macro '" << propertyName << "' CHANGED -> reinit drawcalls" << std::endl;
 
-#ifdef DEBUG_SHADER_FORK
 		if (_macroPropertyNameToDrawCalls.count(propertyName) == 0)
 			throw std::logic_error("Failed to retrieve the drawcalls associated with macro.");
 #endif // DEBUG_SHADER_FORK
@@ -338,11 +331,12 @@ Surface::macroChangedHandler(Container::Ptr		data,
 	else if (_macroPropertyNames.find(propertyName) != _macroPropertyNames.end())
 	{
 #ifdef DEBUG_SHADER_FORK
+		std::cout << "# Macro '" << propertyName << "' " << (change == MacroChange::ADDED ? "ADDED" : "REMOVED") << " -> update changed listeners" << std::endl;
+
 		if (data != targets()[0]->data() && data != targets()[0]->root()->data())
 			throw;
 #endif // DEBUG_SHADER_FORK
 
-		std::cout << "# Macro '" << propertyName << "' " << (change == MacroChange::ADDED ? "ADDED" : "REMOVED") << " -> update changed listeners" << std::endl;
 
 		auto&	slots			= (data == targets()[0]->data()	? _targetMacroChangedSlots : _rootMacroChangedSlots);
 		auto&	listeners		= (data == targets()[0]->data() ? _numTargetMacroListeners : _numRootMacroListeners);

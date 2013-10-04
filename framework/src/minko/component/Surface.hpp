@@ -67,8 +67,8 @@ namespace minko
 			std::unordered_map<std::string, PropertyChangedSlot>	_rootMacroChangedSlots;
 			std::unordered_map<std::string, uint>					_numRootMacroListeners;
 			
-			std::shared_ptr<DrawCallChangedSignal>					_drawCallAdded;
-			std::shared_ptr<DrawCallChangedSignal>					_drawCallRemoved;
+			DrawCallChangedSignal::Ptr								_drawCallAdded;
+			DrawCallChangedSignal::Ptr								_drawCallRemoved;
 
 			Signal<AbstractComponent::Ptr, NodePtr>::Slot			_targetAddedSlot;
 			Signal<AbstractComponent::Ptr, NodePtr>::Slot			_targetRemovedSlot;
@@ -122,6 +122,20 @@ namespace minko
 			drawCalls()
 			{
 				return _drawCalls;
+			}
+
+			inline
+			DrawCallChangedSignal::Ptr
+			drawCallAdded() const
+			{
+				return _drawCallAdded;
+			}
+
+			inline
+			DrawCallChangedSignal::Ptr
+			drawCallRemoved() const
+			{
+				return _drawCallRemoved;
 			}
 
 		private:
