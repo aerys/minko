@@ -39,7 +39,9 @@ Renderer::Renderer() :
     _backgroundColor(0),
 	_renderingBegin(Signal<Ptr>::create()),
 	_renderingEnd(Signal<Ptr>::create()),
-	_surfaceDrawCalls()
+	_surfaceDrawCalls(),
+	_surfaceDrawCallAddedSlot(),
+	_surfaceDrawCallRemovedSlot()
 {
 }
 
@@ -63,7 +65,7 @@ Renderer::initialize()
 
 void
 Renderer::targetAddedHandler(std::shared_ptr<AbstractComponent> ctrl,
-							  std::shared_ptr<Node> 			 target)
+							 std::shared_ptr<Node> 			target)
 {
 	if (target->components<Renderer>().size() > 1)
 		throw std::logic_error("There cannot be two Renderer on the same node.");
@@ -168,7 +170,11 @@ Renderer::rootDescendantAddedHandler(std::shared_ptr<Node> node,
 
 	for (auto surfaceNode : surfaceNodes->nodes())
 		for (auto surface : surfaceNode->components<Surface>())
+		{
 			addSurfaceComponent(surface);
+
+
+		}
 }
 
 void
@@ -217,23 +223,56 @@ Renderer::componentRemovedHandler(std::shared_ptr<Node>				node,
 }
 
 void
-Renderer::addSurfaceComponent(std::shared_ptr<Surface> ctrl)
+Renderer::addSurfaceComponent(std::shared_ptr<Surface> surface)
 {
-	_surfaceDrawCalls[ctrl]	= ctrl->drawCalls();
+	_surfaceDrawCalls[surface]	= surface->drawCalls();
 
-	_drawCalls.insert(_drawCalls.end(), ctrl->drawCalls().begin(), ctrl->drawCalls().end());
+	_drawCalls.insert(_drawCalls.end(), surface->drawCalls().begin(), surface->drawCalls().end());
+
+	if (_surfaceDrawCallAddedSlot.count(surface) == 0)
+		_surfaceDrawCallAddedSlot[surface] = surface->drawCallAdded()->connect(std::bind(
+			&Renderer::surfaceDrawCallAddedHandler,
+			shared_from_this(),
+			std::placeholders::_1,
+			std::placeholders::_2
+		));
+
+	if (_surfaceDrawCallRemovedSlot.count(surface) == 0)
+		_surfaceDrawCallRemovedSlot[surface] = surface->drawCallRemoved()->connect(std::bind(
+			&Renderer::surfaceDrawCallRemovedHandler,
+			shared_from_this(),
+			std::placeholders::_1,
+			std::placeholders::_2
+		));
 }
 
 void
-Renderer::removeSurfaceComponent(std::shared_ptr<Surface> ctrl)
+Renderer::removeSurfaceComponent(std::shared_ptr<Surface> surface)
 {
-	auto ctrlDrawCalls	= _surfaceDrawCalls.find(ctrl);
+	auto ctrlDrawCalls	= _surfaceDrawCalls.find(surface);
 	if (ctrlDrawCalls == _surfaceDrawCalls.end())
 		return;
 
 	for (auto drawCall : ctrlDrawCalls->second)
 		_drawCalls.remove(drawCall);
 	_surfaceDrawCalls.erase(ctrlDrawCalls);
+
+	if (_surfaceDrawCallAddedSlot.count(surface) != 0)
+		_surfaceDrawCallAddedSlot.erase(surface);
+	if (_surfaceDrawCallRemovedSlot.count(surface) != 0)
+		_surfaceDrawCallRemovedSlot.erase(surface);
+}
+
+void
+Renderer::surfaceDrawCallAddedHandler(Surface::Ptr surface, DrawCall::Ptr drawCall)
+{
+	// FIXME
+}
+
+void
+Renderer::surfaceDrawCallRemovedHandler(Surface::Ptr surface, DrawCall::Ptr drawCall)
+{
+	// FIXME
 }
 
 void

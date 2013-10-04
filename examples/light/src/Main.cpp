@@ -144,7 +144,7 @@ printFramerate(const unsigned int delay = 1)
 	}
 }
 
-
+#ifndef EMSCRIPTEN
 void
 SDL_KeyboardHandler(scene::Node::Ptr		root,
 					data::Provider::Ptr		data,
@@ -161,14 +161,20 @@ SDL_KeyboardHandler(scene::Node::Ptr		root,
 	{
 		bool hasNormalMap = data->hasProperty(normalMapPropName);
 
-		std::cout << "mesh does " << (!hasNormalMap ? "not" : "") << " have a normal map" << std::endl;
+		std::cout << "mesh does" << (!hasNormalMap ? " not " : " ") << "have a normal map" << std::endl;
 		if (hasNormalMap)
 			data->unset(normalMapPropName);
 		else
 			data->set(normalMapPropName, assets->texture(normalMapFilename));
 	}
-	else if (keyboardState[SDL_SCANCODE_R] && !newLights.empty())
+	else if (keyboardState[SDL_SCANCODE_R])
 	{
+		if (newLights.empty())
+		{
+			std::cout << "no random light to remove" << std::endl;
+			return;
+		}
+
 		root->removeChild(newLights.back());
 		newLights.resize(newLights.size()-1);
 	}
@@ -202,7 +208,7 @@ SDL_KeyboardHandler(scene::Node::Ptr		root,
 		root->addChild(newLights.back());
 	}
 }
-
+#endif // EMSCRIPTEN
 
 
 int main(int argc, char** argv)
@@ -251,6 +257,8 @@ int main(int argc, char** argv)
 	auto sphereGeometry		= geometry::SphereGeometry::create(sceneManager->assets()->context(), 32, 16, true);
 
 	const bool blackOut = false;
+	std::cout << "Press [SPACE]\tto toogle normal mapping\nPress [A]\tto add random light\nPress [R}\tto remove random light" << std::endl;
+
 
 	sphereGeometry->computeTangentSpace(false);
 
@@ -369,7 +377,9 @@ int main(int argc, char** argv)
 				done = true;
 				break;
 			case SDL_KEYDOWN:
+#ifndef EMSCRIPTEN
 				SDL_KeyboardHandler(root, meshData, sceneManager->assets());
+#endif // EMSCRIPTEN
 				break;
 			default:
 				break;
@@ -384,9 +394,9 @@ int main(int argc, char** argv)
 		const float	outerAng	= PI * 0.01f * (1.0f + 49.0f * ampl);
 		const float innerAng	= 0.8f * outerAng;
 
-		//dirLightNode1->component<DirectionalLight>()->diffuse(ampl);
-		//spotLightNode->component<SpotLight>()->innerConeAngle(innerAng);
-		//spotLightNode->component<SpotLight>()->outerConeAngle(outerAng);
+		dirLightNode1->component<DirectionalLight>()->diffuse(ampl);
+		spotLightNode->component<SpotLight>()->innerConeAngle(innerAng);
+		spotLightNode->component<SpotLight>()->outerConeAngle(outerAng);
 
 		sceneManager->nextFrame();
 		//printFramerate();
