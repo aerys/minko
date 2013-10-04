@@ -67,9 +67,12 @@ ProgramSignature::operator==(const ProgramSignature& x) const
 {
 	if (_mask != x._mask)
 		return false;
-	for (unsigned int i = 0; i < MAX_NUM_BINDINGS; ++i)
-		if (_values[i] != x._values[i])
-			return false;
 
+	for (unsigned int i = 0; i < MAX_NUM_BINDINGS; ++i)
+	{
+		if ((_mask >> i) != 0 
+			&& _values[i] != x._values[i])
+			return false;
+	}
 	return true;
 }
