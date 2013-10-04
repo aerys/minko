@@ -508,11 +508,14 @@ OpenGLES2Context::createTexture(unsigned int 	width,
 	if (mipMapping)
     {
         unsigned int level = 0;
-		for (unsigned int size = width > height ? width : height;
+        uint h = height;
+        uint w = width;
+		
+		for (uint size = width > height ? width : height;
 			 size > 0;
-			 size = size >> 1, width = width >> 1, height = height >> 1)
+			 size = size >> 1, w = w >> 1, h = h >> 1)
 		{
-			glTexImage2D(GL_TEXTURE_2D, level++, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+			glTexImage2D(GL_TEXTURE_2D, level++, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
 		}
     }
 	else
@@ -690,7 +693,9 @@ OpenGLES2Context::linkProgram(const unsigned int program)
     auto errors = getProgramInfoLogs(program);
 
     if (!errors.empty())
+	{
     	std::cout << errors << std::endl;
+	}
 #endif
 
     checkForErrors();
@@ -715,7 +720,18 @@ OpenGLES2Context::compileShader(const unsigned int shader)
     auto errors = getShaderCompilationLogs(shader);
 
     if (!errors.empty())
+    {
+		std::stringstream	stream;
+		stream << "glShaderSource_" << shader << ".txt";
+
+		const std::string&	filename	= stream.str();
+
+		saveShaderSourceToFile(filename, shader);
+
 		std::cerr << errors << std::endl;
+		std::cerr << "\nerrorneous shader source saved to \'" << filename << "\'" << std::endl;
+		throw;
+	}
 #endif
 
     checkForErrors();
@@ -778,6 +794,35 @@ OpenGLES2Context::setShaderSource(const unsigned int shader,
 #endif
 
     checkForErrors();
+}
+
+void
+OpenGLES2Context::saveShaderSourceToFile(const std::string& filename, unsigned int shader)
+{
+	std::string		source;
+	std::ofstream	file;
+
+	file.open(filename.c_str());
+	if (!file.is_open())
+		return;
+
+	getShaderSource(shader, source);
+
+	file << source;
+	file.close();
+}
+
+void
+OpenGLES2Context::getShaderSource(unsigned int shader, std::string& source)
+{
+	static const unsigned int BUFFER_SIZE = 5000;
+	
+	GLchar	buffer[BUFFER_SIZE];
+	GLsizei	length = 0;
+
+	glGetShaderSource(shader, BUFFER_SIZE, &length, &buffer[0]);
+
+	source = std::string(buffer);
 }
 
 const unsigned int

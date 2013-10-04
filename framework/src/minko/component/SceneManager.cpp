@@ -21,6 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/file/AssetLibrary.hpp"
 #include "minko/scene/Node.hpp"
+#include "minko/render/Texture.hpp"
 
 using namespace minko;
 using namespace minko::component;

@@ -1,4 +1,4 @@
-#ifdef FRAGMENT
+#ifdef FRAGMENT_SHADER
 
 #ifdef GL_ES
 	precision mediump float;
@@ -208,4 +208,4 @@ void main(void)
 	gl_FragColor = diffuse;
 }
 
-#endif // FRAGMENT
+#endif // FRAGMENT_SHADER

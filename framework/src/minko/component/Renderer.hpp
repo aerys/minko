@@ -36,15 +36,17 @@ namespace minko
 		private:
 			typedef std::shared_ptr<scene::Node>		NodePtr;
 			typedef std::shared_ptr<AbstractComponent>	AbsCtrlPtr;
-			typedef std::shared_ptr<Surface>			SurfaceCtrlPtr;
+			typedef std::shared_ptr<Surface>			SurfacePtr;
 			typedef std::shared_ptr<render::DrawCall>	DrawCallPtr;
 			typedef std::list<DrawCallPtr>				DrawCallList;
 			typedef std::shared_ptr<SceneManager>		SceneManagerPtr;
 			typedef std::shared_ptr<render::Texture>	TexturePtr;
 
+			typedef Signal<SurfacePtr, DrawCallPtr>		SurfaceDrawCallChangedSignal;
+
 		private:
 			std::list<DrawCallPtr>								_drawCalls;
-			std::unordered_map<SurfaceCtrlPtr, DrawCallList>	_surfaceDrawCalls; 
+			std::unordered_map<SurfacePtr, DrawCallList>		_surfaceDrawCalls; 
 			unsigned int										_backgroundColor;
 			std::shared_ptr<SceneManager>						_sceneManager;
 			Signal<Ptr>::Ptr									_renderingBegin;
@@ -91,7 +93,8 @@ namespace minko
 			}
 
 			void
-			render();
+			render(std::shared_ptr<render::AbstractContext> context,
+				   std::shared_ptr<render::Texture> 		renderTarget = nullptr);
 
 			inline
 			Signal<Ptr>::Ptr
@@ -130,6 +133,7 @@ namespace minko
 
 			void
 			rootDescendantRemovedHandler(NodePtr node, NodePtr target, NodePtr parent);
+
 			void
 			componentAddedHandler(NodePtr node, NodePtr target, AbsCtrlPtr	ctrl);
 
@@ -137,16 +141,16 @@ namespace minko
 			componentRemovedHandler(NodePtr node, NodePtr target, AbsCtrlPtr ctrl);
 
 			void
-			addSurfaceComponent(SurfaceCtrlPtr ctrl);
+			addSurfaceComponent(SurfacePtr ctrl);
 
 			void
-			removeSurfaceComponent(SurfaceCtrlPtr ctrl);
+			removeSurfaceComponent(SurfacePtr ctrl);
 
 			void
-			geometryChanged(SurfaceCtrlPtr ctrl);
+			geometryChanged(SurfacePtr ctrl);
 
 			void
-			materialChanged(SurfaceCtrlPtr ctrl);
+			materialChanged(SurfacePtr ctrl);
 
             static
             bool

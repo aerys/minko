@@ -532,12 +532,6 @@ Matrix4x4::rotationQuaternion(Quaternion::Ptr output) const
 	return ret->fromMatrix(shared_from_this());
 }
 
-Vector3::Ptr
-Matrix4x4::translation(Vector3::Ptr output) const
-{
-	return output == 0 ? Vector3::create(_m[3], _m[7], _m[11]) : output->setTo(_m[3], _m[7], _m[11]);
-}
-
 Matrix4x4::Ptr
 Matrix4x4::copyFrom(Matrix4x4::Ptr source)
 {
