@@ -278,6 +278,9 @@ int main(int argc, char** argv)
 
 	int windowWidth;
 	int windowHeight;
+	bool fullscreen = false;
+	if (argc >= 2 && strcmp(argv[1], "--fullscreen") == 0)
+		fullscreen = true;
 
 #ifdef EMSCRIPTEN
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
@@ -295,7 +298,7 @@ int main(int argc, char** argv)
 		SDL_WINDOWPOS_UNDEFINED,
 		SDL_WINDOWPOS_UNDEFINED,
 		800, 640,
-		SDL_WINDOW_OPENGL | SDL_WINDOW_FULLSCREEN_DESKTOP
+		SDL_WINDOW_OPENGL | (fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0)
 	);
 
 # ifdef MINKO_ANGLE
