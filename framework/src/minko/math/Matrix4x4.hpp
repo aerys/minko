@@ -246,8 +246,30 @@ namespace minko
 			Quaternion::Ptr
 			rotationQuaternion(Quaternion::Ptr output = nullptr) const;
 
+			inline
 			Vector3::Ptr
-			translation(Vector3::Ptr output = nullptr) const;
+			translation() const
+			{
+				return Vector3::create(_m[3], _m[7], _m[11]);
+			}
+
+			inline
+			void
+			translation(float x, float y, float z)
+			{
+				_m[3] = x;
+				_m[7] = y;
+				_m[11] = z;				
+			}
+
+			inline
+			void
+			translation(Vector3::Ptr translation)
+			{
+				_m[3] = translation->x();
+				_m[7] = translation->y();
+				_m[11] = translation->z();
+			}
 
 			Ptr
 			copyFrom(Matrix4x4::Ptr source);
