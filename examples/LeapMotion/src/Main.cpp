@@ -387,7 +387,7 @@ int main(int argc, char** argv)
 		baseNode->addChild(mk);
 
 		pointer->addComponent(Transform::create());
-		pointer->component<Transform>()->transform()->prependScale(0.3f, 0.3f, 0.3f)->appendTranslation(0, 0, 5.0f);
+		pointer->component<Transform>()->transform()->prependScale(0.3f, 0.3f, 0.3f)->appendTranslation(0, 0, -5.0f);
 		pointer->addComponent(Surface::create(
 			assets->geometry("sphere"),
 			data::Provider::create()
@@ -396,7 +396,7 @@ int main(int argc, char** argv)
 		));
 
 		root->addChild(baseNode);
-		root->addChild(pointer);
+		camera->addChild(pointer);
         
         getBoundingBoxes(baseNode, *boxList);
 	});
@@ -567,8 +567,8 @@ int main(int argc, char** argv)
 			}
 			if (finger.isValid())
 			{
-				auto tip = finger.tipPosition() * 0.1f;
-				targetPos->lerp(Vector3::create(tip.x, tip.y - 30.f, 15.f), frameTime * 2);
+				auto tip = finger.tipPosition() * 0.01f;
+				targetPos->lerp(Vector3::create(tip.x, tip.y, -15.f), frameTime * 2);
 			}
 			else
 				fingerID = -1;
@@ -581,7 +581,7 @@ int main(int argc, char** argv)
 		{
 			float explodeTarget = exploded ? 1.5f : 0.f;
 
-			if (abs(explodeTarget - currentExplodeValue) > 0.01f)
+			if (abs(explodeTarget - currentExplodeValue) > 0.05f)
 			{
 				float explodeDelta = currentExplodeValue + (explodeTarget - currentExplodeValue) * frameTime * 2;
 				explode(baseNode, explodeDelta - currentExplodeValue);
