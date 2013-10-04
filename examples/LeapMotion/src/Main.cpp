@@ -50,7 +50,8 @@ public:
     scene::Node::Ptr    node;
 };
 
-static const float cameraAngle = 35.f * PI / 180.f;  
+static const float cameraXAngle = 35.f * PI / 180.f;
+static const float cameraYAngle = 45.f * PI / 180.f;  
 
 //std::vector<boundingBox>
 void
@@ -368,7 +369,7 @@ int main(int argc, char** argv)
 		camera->addComponent(renderer);
 		camera->addComponent(Transform::create());
 		camera->component<Transform>()->transform()
-			->lookAt(Vector3::zero(), Vector3::create(0.f, 20.f * sin(cameraAngle), 20.f * cos(cameraAngle)));
+			->lookAt(Vector3::zero(), Vector3::create(20.f * sin(cameraYAngle), 20.f * sin(cameraXAngle) * cos(cameraXAngle), 20.f * cos(cameraXAngle)));
 		camera->addComponent(PerspectiveCamera::create(.785f, windowWidth * 1.0f / windowHeight, .1f, 1000.f));
 		root->addChild(camera);
 
