@@ -62,9 +62,6 @@ namespace minko
 			Signal<NodePtr, NodePtr, AbsCtrlPtr>::Slot			_componentRemovedSlot;
 			Signal<SceneManagerPtr, uint, TexturePtr>::Slot		_renderingBeginSlot;
 
-			std::unordered_map<SurfacePtr, SurfaceDrawCallChangedSignal::Slot>	_surfaceDrawCallAddedSlot;
-			std::unordered_map<SurfacePtr, SurfaceDrawCallChangedSignal::Slot>	_surfaceDrawCallRemovedSlot;
-
 		public:
 			static
 			Ptr
@@ -148,12 +145,6 @@ namespace minko
 
 			void
 			removeSurfaceComponent(SurfacePtr ctrl);
-
-			void
-			surfaceDrawCallAddedHandler(SurfacePtr, DrawCallPtr);
-
-			void
-			surfaceDrawCallRemovedHandler(SurfacePtr, DrawCallPtr);
 
 			void
 			geometryChanged(SurfacePtr ctrl);
