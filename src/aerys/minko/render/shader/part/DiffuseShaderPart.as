@@ -38,7 +38,8 @@ package aerys.minko.render.shader.part
 			if (useVertexUv)
 				uv = interpolate(uv);
 			
-			if (meshBindings.propertyExists(BasicProperties.DIFFUSE_MAP) && meshBindings.propertyExists(VertexComponent.UV.toString()))
+			if (meshBindings.propertyExists(BasicProperties.DIFFUSE_MAP) && 
+				(meshBindings.propertyExists(VertexComponent.UV.toString()) || meshBindings.propertyExists(VertexComponent.XY.toString()))) // uv or sprite
 			{
 				var diffuseMap	: SFloat	= meshBindings.getTextureParameter(
 					BasicProperties.DIFFUSE_MAP,
