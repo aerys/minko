@@ -199,7 +199,7 @@ package aerys.minko.render.shader.part.phong
 														materialDiffuse	: SFloat	= null,
 														normal 			: SFloat	= null) : SFloat
 		{
-			var shadowCasting		: uint		= getLightProperty(lightId, 'shadowCastingType');
+			var shadowCasting		: uint		= getLightProperty(lightId, 'shadowMappingType');
 			var meshReceiveShadows	: Boolean	= meshBindings.getProperty(
 				PhongProperties.RECEIVE_SHADOWS,
 				false
@@ -246,7 +246,7 @@ package aerys.minko.render.shader.part.phong
 												 materialDiffuse	: SFloat	= null,
 												 normal 			: SFloat 	= null) : SFloat
 		{
-			var shadowCasting		: uint		= getLightProperty(lightId, 'shadowCastingType');
+			var shadowCasting		: uint		= getLightProperty(lightId, 'shadowMappingType');
 			var isAttenuated		: Boolean	= getLightProperty(lightId, 'attenuationEnabled');
 			var lightHasSmoothEdge	: Boolean	= getLightProperty(lightId, 'smoothRadius');
 			var meshReceiveShadows	: Boolean	= meshBindings.getProperty(
@@ -316,7 +316,7 @@ package aerys.minko.render.shader.part.phong
 												  materialDiffuse	: SFloat	= null, 
 												  normal 			: SFloat 	= null) : SFloat
 		{
-			var shadowCasting		: uint		= getLightProperty(lightId, 'shadowCastingType');
+			var shadowCasting		: uint		= getLightProperty(lightId, 'shadowMappingType');
 			var isAttenuated		: Boolean	= getLightProperty(lightId, 'attenuationEnabled');
 			var meshReceiveShadows	: Boolean	= meshBindings.getProperty(
 				PhongProperties.RECEIVE_SHADOWS,

@@ -75,11 +75,11 @@ package aerys.minko.render.material.phong
                     && getLightProperty(sceneBindings, lightId, 'enabled');
                 ++lightId)
             {
-                if (lightPropertyExists(sceneBindings, lightId, 'shadowCastingType'))
+                if (lightPropertyExists(sceneBindings, lightId, 'shadowMappingType'))
                 {
                     var lightType			: uint	= getLightProperty(sceneBindings, lightId, 'type');
                     var shadowMappingType 	: uint	= getLightProperty(
-                        sceneBindings, lightId, 'shadowCastingType'
+                        sceneBindings, lightId, 'shadowMappingType'
                     );
                     
                     switch (shadowMappingType)
@@ -155,10 +155,10 @@ package aerys.minko.render.material.phong
                         new PhongAdditionalShader(lightId, false, true, _specularRenderTarget, _id + .5)
                     );
                 
-				if (lightPropertyExists(sceneBindings, lightId, 'shadowCastingType'))
+				if (lightPropertyExists(sceneBindings, lightId, 'shadowMappingType'))
 				{
 					var shadowMappingType 	: uint	= getLightProperty(
-						sceneBindings, lightId, 'shadowCastingType'
+						sceneBindings, lightId, 'shadowMappingType'
 					);
 					
 					switch (shadowMappingType)

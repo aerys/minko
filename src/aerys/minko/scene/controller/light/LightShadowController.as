@@ -49,7 +49,7 @@ package aerys.minko.scene.controller.light
 			
 			// must update the shadowMap property
 			if (propertyName == 'shadowMapSize' ||
-				propertyName == 'shadowCastingType' ||
+				propertyName == 'shadowMappingType' ||
 				propertyName == 'shadowQuality')
 				updateShadowMap();
 		}
@@ -60,7 +60,7 @@ package aerys.minko.scene.controller.light
 		 */
 		protected function updateShadowMap() : void
 		{
-			var shadowMappingType	: uint				= lightData.getLightProperty('shadowCastingType');
+			var shadowMappingType	: uint				= lightData.getLightProperty('shadowMappingType');
 			var shadowMapSize		: uint				= lightData.getLightProperty('shadowMapSize');
 			var shadowMap			: ITextureResource	= lightData.getLightProperty('shadowMap')
 				as TextureResource;

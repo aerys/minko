@@ -104,13 +104,13 @@ package aerys.minko.scene.node.light
 			lightData.setLightProperty('shadowZFar', v);
 		}
 		
-		public function get shadowCastingType() : uint
+		public function get shadowMappingType() : uint
 		{
-			return lightData.getLightProperty('shadowCastingType');
+			return lightData.getLightProperty('shadowMappingType');
 		}
-		public function set shadowCastingType(value : uint) : void
+		public function set shadowMappingType(value : uint) : void
 		{
-			lightData.setLightProperty('shadowCastingType', value);
+			lightData.setLightProperty('shadowMappingType', value);
 		}
         
         public function get shadowBias() : Number
@@ -128,7 +128,7 @@ package aerys.minko.scene.node.light
 								   shininess			: Number	= 64,
 								   attenuationDistance	: Number	= 0,
 								   emissionMask			: uint		= 0x1,
-								   shadowCastingType	: uint		= 0,
+								   shadowMappingType	: uint		= 0,
 								   shadowMapSize		: uint		= 512,
 								   shadowZNear			: Number	= 0.1,
 								   shadowZFar			: Number	= 1000.,
@@ -146,7 +146,7 @@ package aerys.minko.scene.node.light
 			this.specular				= specular;
 			this.shininess				= shininess;
 			this.attenuationDistance	= attenuationDistance;
-			this.shadowCastingType		= shadowCastingType;
+			this.shadowMappingType		= shadowMappingType;
             this.shadowMapSize          = shadowMapSize;
 			this.shadowZNear			= shadowZNear;
 			this.shadowZFar		    	= shadowZFar;
@@ -163,7 +163,7 @@ package aerys.minko.scene.node.light
 				shininess, 
 				attenuationDistance,
 				emissionMask, 
-				shadowCastingType,
+				shadowMappingType,
 				shadowMapSize,
 				shadowZFar,
 				shadowZNear,
