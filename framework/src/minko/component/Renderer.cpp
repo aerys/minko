@@ -136,7 +136,7 @@ Renderer::addedHandler(std::shared_ptr<Node> node,
 		std::placeholders::_3
 	));
 
-	rootDescendantAddedHandler(nullptr, target->root(), nullptr);
+	rootDescendantAddedHandler(nullptr, target, nullptr);
 }
 
 void
@@ -151,7 +151,7 @@ Renderer::removedHandler(std::shared_ptr<Node> node,
 	_componentAddedSlot = nullptr;
 	_componentRemovedSlot = nullptr;
 
-	rootDescendantRemovedHandler(nullptr, target->root(), nullptr);
+	rootDescendantRemovedHandler(nullptr, target, nullptr);
 }
 
 void
