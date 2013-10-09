@@ -94,12 +94,7 @@ EffectParser::EffectParser() :
 	_effect(render::Effect::create()),
 	_numDependencies(0),
 	_numLoadedDependencies(0),
-    _defaultPriority(0.f),
-    _defaultBlendSrcFactor(Blending::Source::ONE),
-    _defaultBlendDstFactor(Blending::Destination::ZERO),
-    _defaultDepthMask(true),
-    _defaultDepthFunc(CompareMode::LESS),
-    _defaultTriangleCulling(TriangleCulling::BACK)
+	_defaultStates(render::States::create())
 {
 }
 
@@ -124,13 +119,27 @@ EffectParser::parse(const std::string&				    filename,
 	_assetLibrary = assetLibrary;
 	_effectName = root.get("name", filename).asString();
 	_defaultTechnique = root.get("defaultTechnique", "default").asString();
-	_defaultPriority = root.get("priority", 0.f).asFloat();
+
+	auto context = _assetLibrary->context();
 
 	// parse default values for bindings and states
-	parseDefaultValues(root);
+	parseRenderStates(root, context, _globalTargets, _defaultStates);
+	parseBindings(root, _defaultAttributeBindings, _defaultUniformBindings, _defaultStateBindings, _defaultMacroBindings);
 
 	// parse a global list of passes
-	parsePasses(root, filename, options, _globalPasses, _globalTargets);
+	parsePasses(
+		root,
+		filename,
+		options,
+		context,
+		_globalPasses,
+		_globalTargets,
+		_defaultAttributeBindings,
+		_defaultUniformBindings,
+		_defaultStateBindings,
+		_defaultAttributeBindings,
+		_defaultStates
+	);
 
 	// parse a global list of dependencies
 	parseDependencies(root, resolvedFilename, options, _effectIncludes);
@@ -140,42 +149,62 @@ EffectParser::parse(const std::string&				    filename,
 
 	if (targetsValue.isArray())
 		for (auto targetValue : targetsValue)
-			parseTarget(targetValue, assetLibrary->context(), _globalTargets);
+			parseTarget(targetValue, context, _globalTargets);
 
 	// parse the list of techniques, if no "techniques" directive is found then
 	// the global list of passes becomes the "default" techinque
-	parseTechniques(root, resolvedFilename, options);
+	parseTechniques(root, resolvedFilename, options, context);
 
 	if (_numDependencies == _numLoadedDependencies)
 		finalize();
 }
 
-void
-EffectParser::parseDefaultValues(Json::Value& root)
+render::States::Ptr
+EffectParser::parseRenderStates(Json::Value&			root,
+								AbstractContext::Ptr	context,
+								TexturePtrMap&			targets,
+								render::States::Ptr		default)
 {
-	parseBindings(
-		root,
-		_defaultAttributeBindings,
-		_defaultUniformBindings,
-		_defaultStateBindings,
-		_defaultMacroBindings
+	auto priority = root.get("priority", default->priority()).asFloat();
+	auto blendSrcFactor	= default->blendingSourceFactor();
+	auto blendDstFactor	= default->blendingDestinationFactor();
+	auto depthMask = default->depthMask();
+	auto depthFunc = default->depthFunc();
+    auto triangleCulling = default->triangleCulling();
+	
+	render::Texture::Ptr target = default->target();
+	std::unordered_map<std::string, SamplerState> samplerStates = default->samplers();
+
+	parseBlendMode(root, blendSrcFactor, blendDstFactor);
+	parseDepthTest(root, depthMask, depthFunc);
+	parseTriangleCulling(root, triangleCulling);
+    parseSamplerStates(root, samplerStates);
+	parseTarget(root, context, targets);
+
+	return render::States::create(
+		samplerStates,
+		priority,
+		blendSrcFactor,
+		blendDstFactor,
+		depthMask,
+		depthFunc,
+		triangleCulling,
+		target
 	);
-
-	parseBlendMode(root, _defaultBlendSrcFactor, _defaultBlendDstFactor);
-
-	parseDepthTest(root, _defaultDepthMask, _defaultDepthFunc);
-
-    parseTriangleCulling(root, _defaultTriangleCulling);
-
-    parseSamplerStates(root, _defaultSamplerStates);
 }
 
 void
 EffectParser::parsePasses(Json::Value&				root,
 						  const std::string&		resolvedFilename,
 						  file::Options::Ptr		options,
+						  AbstractContext::Ptr		context,
 						  std::vector<Pass::Ptr>&	passes,
-						  TexturePtrMap&			targets)
+						  TexturePtrMap&			targets,
+						  data::BindingMap&			defaultAttributeBindings,
+						  data::BindingMap&			defaultUniformBindings,
+						  data::BindingMap&			defaultStateBindings,
+						  data::BindingMap&			defaultMacroBindings,
+						  render::States::Ptr		defaultStates)
 {
 	auto passId = 0;
 
@@ -202,37 +231,15 @@ EffectParser::parsePasses(Json::Value&				root,
 		auto name = passValue.get("name", std::to_string(passId++)).asString();
 
 		// pass bindings
-		data::BindingMap	attributeBindings(_defaultAttributeBindings);
-		data::BindingMap	uniformBindings(_defaultUniformBindings);
-		data::BindingMap	stateBindings(_defaultStateBindings);
-		data::BindingMap	macroBindings(_defaultMacroBindings);
+		data::BindingMap	attributeBindings(defaultAttributeBindings);
+		data::BindingMap	uniformBindings(defaultUniformBindings);
+		data::BindingMap	stateBindings(defaultStateBindings);
+		data::BindingMap	macroBindings(defaultMacroBindings);
         
 		parseBindings(passValue, attributeBindings, uniformBindings, stateBindings, macroBindings);
 
-		// pass priority
-		auto priority = passValue.get("priority", _defaultPriority).asFloat();
-
-		// blendMode
-		auto blendSrcFactor	= _defaultBlendSrcFactor;
-		auto blendDstFactor	= _defaultBlendDstFactor;
-
-		parseBlendMode(passValue, blendSrcFactor, blendDstFactor);
-
-		// depthTest
-		auto depthMask	= _defaultDepthMask;
-		auto depthFunc	= _defaultDepthFunc;
-
-		parseDepthTest(passValue, depthMask, depthFunc);
-
-        // triangle culling
-        auto triangleCulling  = _defaultTriangleCulling;
-
-        parseTriangleCulling(passValue, triangleCulling);
-
-        // sampler states
-        std::unordered_map<std::string, SamplerState>   samplerStates(_defaultSamplerStates);
-
-        parseSamplerStates(passValue, samplerStates);
+		// render states
+		auto states = parseRenderStates(passValue, context, targets, defaultStates);
 
 		// program
 		auto vertexShaderValue = passValue.get("vertexShader", "");
@@ -253,16 +260,7 @@ EffectParser::parsePasses(Json::Value&				root,
 			uniformBindings,
 			stateBindings,
 			macroBindings,
-            States::create(
-                samplerStates,
-			    priority,
-			    blendSrcFactor,
-			    blendDstFactor,
-			    depthMask,
-			    depthFunc,
-                triangleCulling,
-                target
-            )
+            states
 		);
 
         passes.push_back(pass);
@@ -517,7 +515,8 @@ EffectParser::parseDependencies(Json::Value& 				root,
 void
 EffectParser::parseTechniques(Json::Value&						root,
 							  const std::string&				filename,
-							  std::shared_ptr<file::Options>	options)
+							  std::shared_ptr<file::Options>	options,
+							  render::AbstractContext::Ptr		context)
 {
 	auto techniquesValues = root.get("techniques", 0);
 
@@ -531,7 +530,30 @@ EffectParser::parseTechniques(Json::Value&						root,
 				auto& targets		= _techniqueTargets[techniqueName];
 				auto& passes		= _techniquePasses[techniqueName];
 
-				parsePasses(techniqueValue, filename, options, passes, targets);
+				data::BindingMap	attributeBindings(_defaultAttributeBindings);
+				data::BindingMap	uniformBindings(_defaultUniformBindings);
+				data::BindingMap	stateBindings(_defaultStateBindings);
+				data::BindingMap	macroBindings(_defaultMacroBindings);
+        
+				// bindings
+				parseBindings(techniqueValue, _defaultAttributeBindings, _defaultUniformBindings, _defaultStateBindings, _defaultMacroBindings);
+
+				// render states
+				auto states = parseRenderStates(techniqueValue, context, _globalTargets, _defaultStates);
+
+				parsePasses(
+					techniqueValue,
+					filename,
+					options,
+					context,
+					passes,
+					targets,
+					attributeBindings,
+					uniformBindings,
+					stateBindings,
+					macroBindings,
+					states
+				);
 			}
 		}
 	}
