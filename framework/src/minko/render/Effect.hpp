@@ -85,6 +85,24 @@ namespace minko
 					pass->setUniform(name, values...);
 			}
 
+			inline
+			const std::string&
+			technique()
+			{
+				return _currentTechniqueName;
+			}
+
+			inline
+			void
+			technique(const std::string& technique)
+			{
+				if (_techniques.count(technique) == 0)
+					throw std::invalid_argument("technique = " + technique);
+
+				_currentTechniqueName = technique;
+				_passes = _techniques[technique];
+			}
+
             void
             addTechnique(const std::string& name, Technique& passes);
 
