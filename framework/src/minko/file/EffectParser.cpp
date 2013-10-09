@@ -91,7 +91,7 @@ EffectParser::initializeDepthFuncMap()
 }
 
 EffectParser::EffectParser() :
-	_effect(nullptr),
+	_effect(render::Effect::create()),
 	_numDependencies(0),
 	_numLoadedDependencies(0),
     _defaultPriority(0.f),
@@ -123,11 +123,28 @@ EffectParser::parse(const std::string&				    filename,
     _filename = filename;
 	_assetLibrary = assetLibrary;
 	_effectName = root.get("name", filename).asString();
-
+	_defaultTechnique = root.get("defaultTechnique", "default").asString();
 	_defaultPriority = root.get("priority", 0.f).asFloat();
+
+	// parse default values for bindings and states
 	parseDefaultValues(root);
-	parsePasses(root, resolvedFilename, options);
+
+	// parse a global list of passes
+	parsePasses(root, filename, options, _globalPasses, _globalTargets);
+
+	// parse a global list of dependencies
 	parseDependencies(root, resolvedFilename, options, _effectIncludes);
+
+	// parse a global list of render targets
+	auto targetsValue = root.get("targets", 0);
+
+	if (targetsValue.isArray())
+		for (auto targetValue : targetsValue)
+			parseTarget(targetValue, assetLibrary->context(), _globalTargets);
+
+	// parse the list of techniques, if no "techniques" directive is found then
+	// the global list of passes becomes the "default" techinque
+	parseTechniques(root, resolvedFilename, options);
 
 	if (_numDependencies == _numLoadedDependencies)
 		finalize();
@@ -154,14 +171,34 @@ EffectParser::parseDefaultValues(Json::Value& root)
 }
 
 void
-EffectParser::parsePasses(Json::Value& root, const std::string& resolvedFilename, file::Options::Ptr options)
+EffectParser::parsePasses(Json::Value&				root,
+						  const std::string&		resolvedFilename,
+						  file::Options::Ptr		options,
+						  std::vector<Pass::Ptr>&	passes,
+						  TexturePtrMap&			targets)
 {
-	std::vector<std::shared_ptr<render::Pass>> passes;
-    std::unordered_map<std::string, std::shared_ptr<Texture>> targets;
 	auto passId = 0;
 
 	for (auto passValue : root.get("passes", 0))
 	{
+		if (passValue.isString())
+		{
+			auto name = passValue.asString();
+			auto pass = std::find_if(
+				_globalPasses.begin(),
+				_globalPasses.end(),
+				[&](Pass::Ptr pass)
+				{
+					return pass->name() == name;
+				}
+			);
+
+			if (pass != _globalPasses.end())
+				throw std::logic_error("Pass '" + name + "' does not exist.");
+
+			passes.push_back(*pass);
+		}
+
 		auto name = passValue.get("name", std::to_string(passId++)).asString();
 
 		// pass bindings
@@ -208,13 +245,8 @@ EffectParser::parsePasses(Json::Value& root, const std::string& resolvedFilename
 			fragmentShaderValue, resolvedFilename, options, render::Shader::Type::FRAGMENT_SHADER
 		);
 
-        std::string targetName;
-        auto target = parseTarget(passValue, options->context(), targetName);
-
-        if (!targetName.empty())
-            targets[targetName] = target;
-
-        auto pass = render::Pass::create(
+        auto target = parseTarget(passValue, options->context(), targets);
+		auto pass = render::Pass::create(
 			name,
 			Program::create(options->context(), vertexShader, fragmentShader),
 			attributeBindings,
@@ -237,10 +269,6 @@ EffectParser::parsePasses(Json::Value& root, const std::string& resolvedFilename
 
 		parseDependencies(passValue, resolvedFilename, options, _passIncludes[pass]);
 	}
-
-	_effect = render::Effect::create(passes);
-    for (auto target : targets)
-        _effect->data()->set(target.first, target.second);
 }
 
 render::Shader::Ptr
@@ -397,19 +425,27 @@ EffectParser::parseSamplerStates(Json::Value&                                   
 std::shared_ptr<render::Texture>
 EffectParser::parseTarget(Json::Value&                      contextNode,
                           std::shared_ptr<AbstractContext>  context,
-                          std::string&                      name)
+                          TexturePtrMap&                    targets)
 {
     auto targetValue = contextNode.get("target", 0);
 
     if (targetValue.isObject())
     {
         auto nameValue  = targetValue.get("name", 0);
+		std::string name;
 
         if (nameValue.isString())
         {
             name = nameValue.asString();
-            if (_assetLibrary->texture(name))
-                return _assetLibrary->texture(name);
+
+			auto target = _assetLibrary->texture(name);
+
+            if (target)
+			{
+				_effect->data()->set(name, target);
+
+                return target;
+			}
         }
 
         auto sizeValue  = targetValue.get("size", 0);
@@ -424,12 +460,20 @@ EffectParser::parseTarget(Json::Value&                      contextNode,
             height = targetValue.get("height", 0).asUInt();
         }
 
-        auto target     = render::Texture::create(context, width, height, true);
+        auto target = render::Texture::create(context, width, height, true);
 
-        _assetLibrary->texture(name, target);
+		if (name.length())
+		{
+	        _assetLibrary->texture(name, target);
+			_effect->data()->set(name, target);
+		}
 
         return target;
     }
+	else if (targetValue.isString())
+	{
+		return _assetLibrary->texture(targetValue.asString());
+	}
 
     return nullptr;
 }
@@ -471,6 +515,34 @@ EffectParser::parseDependencies(Json::Value& 				root,
 }
 
 void
+EffectParser::parseTechniques(Json::Value&						root,
+							  const std::string&				filename,
+							  std::shared_ptr<file::Options>	options)
+{
+	auto techniquesValues = root.get("techniques", 0);
+
+	if (techniquesValues.isArray())
+	{
+		for (auto techniqueValue : techniquesValues)
+		{
+			if (techniqueValue.isObject())
+			{
+				auto techniqueName	= techniqueValue.get("name", "default").asString();
+				auto& targets		= _techniqueTargets[techniqueName];
+				auto& passes		= _techniquePasses[techniqueName];
+
+				parsePasses(techniqueValue, filename, options, passes, targets);
+			}
+		}
+	}
+	else
+	{
+		_techniquePasses["default"] = _globalPasses;
+		_techniqueTargets["default"] = _globalTargets;
+	}
+}
+
+void
 EffectParser::dependencyCompleteHandler(std::shared_ptr<AbstractLoader> loader)
 {
 	++_numLoadedDependencies;
@@ -501,26 +573,35 @@ EffectParser::finalize()
 {
 	auto effectIncludes = concatenateIncludes(_effectIncludes);
 
-	for (auto& pass : _effect->passes())
+	for (auto& technique : _techniquePasses)
     {
-		auto program = pass->program();
-		auto passIncludes = concatenateIncludes(_passIncludes[pass]);
+		auto passes = technique.second;
 
-		program->vertexShader()->source(
-			"#define VERTEX_SHADER\r\n"
-			+ effectIncludes
-			+ passIncludes
-			+ concatenateIncludes(_shaderIncludes[program->vertexShader()])
-			+ program->vertexShader()->source()
-		);
-		program->fragmentShader()->source(
-			"#define FRAGMENT_SHADER\r\n"
-			+ effectIncludes
-			+ passIncludes
-			+ concatenateIncludes(_shaderIncludes[program->fragmentShader()])
-			+ program->fragmentShader()->source()
-		);
+		for (auto& pass : passes)
+		{
+			auto program = pass->program();
+			auto passIncludes = concatenateIncludes(_passIncludes[pass]);
+
+			program->vertexShader()->source(
+				"#define VERTEX_SHADER\r\n"
+				+ effectIncludes
+				+ passIncludes
+				+ concatenateIncludes(_shaderIncludes[program->vertexShader()])
+				+ program->vertexShader()->source()
+			);
+			program->fragmentShader()->source(
+				"#define FRAGMENT_SHADER\r\n"
+				+ effectIncludes
+				+ passIncludes
+				+ concatenateIncludes(_shaderIncludes[program->fragmentShader()])
+				+ program->fragmentShader()->source()
+			);
+		}
+
+		_effect->addTechnique(technique.first, passes);
     }
+
+	_effect->technique(_defaultTechnique);
 
 	_assetLibrary->effect(_effectName, _effect);
     _assetLibrary->effect(_filename, _effect);
