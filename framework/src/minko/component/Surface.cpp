@@ -143,7 +143,7 @@ Surface::targetAddedHandler(AbstractComponent::Ptr	ctrl,
     targetData->addProvider(_effect->data());
 
 	watchMacroAdditionOrDeletion();
-	// createDrawCalls();
+	createDrawCalls();
 }
 
 void
