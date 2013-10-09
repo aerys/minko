@@ -60,13 +60,7 @@ namespace minko
 			std::string													_effectName;
 			
 			std::string													_defaultTechnique;
-			float														_defaultPriority;
-			render::Blending::Source									_defaultBlendSrcFactor;
-			render::Blending::Destination								_defaultBlendDstFactor;
-			bool														_defaultDepthMask;
-			render::CompareMode											_defaultDepthFunc;
-            render::TriangleCulling                                     _defaultTriangleCulling;
-            std::unordered_map<std::string, render::SamplerState>       _defaultSamplerStates;
+			std::shared_ptr<render::States>								_defaultStates;
 
             data::BindingMap				                            _defaultAttributeBindings;
 			data::BindingMap				                            _defaultUniformBindings;
@@ -123,15 +117,27 @@ namespace minko
 		private:
 			EffectParser();
 
+			std::shared_ptr<render::States>
+			parseRenderStates(Json::Value&								root,
+							  std::shared_ptr<render::AbstractContext>	context,
+							  TexturePtrMap&							targets,
+							  std::shared_ptr<render::States>			default);
+
 			void
 			parseDefaultValues(Json::Value& root);
 
 			void
-			parsePasses(Json::Value& 						root,
-						const std::string& 					resolvedFilename,
-						std::shared_ptr<file::Options> 		options,
-						std::vector<PassPtr>&				passes,
-						TexturePtrMap&						targets);
+			parsePasses(Json::Value& 								root,
+						const std::string& 							resolvedFilename,
+						std::shared_ptr<file::Options> 				options,
+						std::shared_ptr<render::AbstractContext>	context,
+						std::vector<PassPtr>&						passes,
+						TexturePtrMap&								targets,
+						data::BindingMap&							defaultAttributeBindings,
+						data::BindingMap&							defaultUniformBindings,
+						data::BindingMap&							defaultStateBindings,
+						data::BindingMap&							defaultMacroBindings,
+						std::shared_ptr<render::States>				defaultStates);
 
 			std::shared_ptr<render::Shader>
 			parseShader(Json::Value& 					shaderNode,
@@ -176,9 +182,10 @@ namespace minko
 							  std::vector<LoaderPtr>& 			store);
 
 			void
-			parseTechniques(Json::Value&					root,
-							const std::string&				filename,
-							std::shared_ptr<file::Options>	options);
+			parseTechniques(Json::Value&								root,
+							const std::string&							filename,
+							std::shared_ptr<file::Options>				options,
+							std::shared_ptr<render::AbstractContext>	context);
 
 			void
 			dependencyCompleteHandler(std::shared_ptr<AbstractLoader> loader);
