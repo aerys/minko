@@ -380,7 +380,7 @@ EffectParser::parseSamplerStates(Json::Value&                                   
             {
                 auto wrapModeStr        = samplerStateValue.get("wrapMode", "clamp").asString();
                 auto textureFilterStr   = samplerStateValue.get("textureFilter", "nearest").asString();
-                auto mipFilterStr       = samplerStateValue.get("mipFilter", "linear").asString();
+                auto mipFilterStr       = samplerStateValue.get("mipFilter", "none").asString();
                 auto wrapMode           = wrapModeStr == "repeat" ? WrapMode::REPEAT : WrapMode::CLAMP;
                 auto textureFilter      = textureFilterStr == "linear"
                     ? TextureFilter::LINEAR
