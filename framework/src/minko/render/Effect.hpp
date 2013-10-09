@@ -27,7 +27,6 @@ namespace minko
 {
 	namespace render
 	{
-
 		class Effect :
 			public std::enable_shared_from_this<Effect>
 		{
