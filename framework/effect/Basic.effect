@@ -15,7 +15,8 @@
     },
     
     "stateBindings" : {
-        "blendMode"             : "material.blendMode"
+        "blendMode"             : "material.blendMode",
+        "triangleCulling"       : "material.triangleCulling"
     },
 
     "macroBindings" : {
