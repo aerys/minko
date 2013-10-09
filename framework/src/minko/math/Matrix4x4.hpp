@@ -259,16 +259,17 @@ namespace minko
 			{
 				_m[3] = x;
 				_m[7] = y;
-				_m[11] = z;				
+				_m[11] = z;
+
+				changed()->execute(shared_from_this());
+				_hasChanged = true;		
 			}
 
 			inline
 			void
-			translation(Vector3::Ptr translation)
+			translation(Vector3::Ptr t)
 			{
-				_m[3] = translation->x();
-				_m[7] = translation->y();
-				_m[11] = translation->z();
+				translation(t->x(), t->y(), t->z());
 			}
 
 			Ptr
