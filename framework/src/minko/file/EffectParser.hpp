@@ -121,7 +121,7 @@ namespace minko
 			parseRenderStates(Json::Value&								root,
 							  std::shared_ptr<render::AbstractContext>	context,
 							  TexturePtrMap&							targets,
-							  std::shared_ptr<render::States>			default);
+							  std::shared_ptr<render::States>			defaultStates);
 
 			void
 			parseDefaultValues(Json::Value& root);
