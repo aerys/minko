@@ -163,17 +163,17 @@ render::States::Ptr
 EffectParser::parseRenderStates(Json::Value&			root,
 								AbstractContext::Ptr	context,
 								TexturePtrMap&			targets,
-								render::States::Ptr		default)
+								render::States::Ptr		defaultStates)
 {
-	auto priority = root.get("priority", default->priority()).asFloat();
-	auto blendSrcFactor	= default->blendingSourceFactor();
-	auto blendDstFactor	= default->blendingDestinationFactor();
-	auto depthMask = default->depthMask();
-	auto depthFunc = default->depthFunc();
-    auto triangleCulling = default->triangleCulling();
+	auto priority = root.get("priority", defaultStates->priority()).asFloat();
+	auto blendSrcFactor	= defaultStates->blendingSourceFactor();
+	auto blendDstFactor	= defaultStates->blendingDestinationFactor();
+	auto depthMask = defaultStates->depthMask();
+	auto depthFunc = defaultStates->depthFunc();
+    auto triangleCulling = defaultStates->triangleCulling();
 	
-	render::Texture::Ptr target = default->target();
-	std::unordered_map<std::string, SamplerState> samplerStates = default->samplers();
+	render::Texture::Ptr target = defaultStates->target();
+	std::unordered_map<std::string, SamplerState> samplerStates = defaultStates->samplers();
 
 	parseBlendMode(root, blendSrcFactor, blendDstFactor);
 	parseDepthTest(root, depthMask, depthFunc);
