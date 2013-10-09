@@ -69,6 +69,13 @@ namespace minko
                 ));
 		    }
 
+			inline static
+		    Ptr
+		    create()
+		    {
+			    return create(SamplerStates());
+		    }
+
             inline
             float
             priority() const
@@ -99,7 +106,7 @@ namespace minko
 
             inline
             CompareMode
-            depthFun() const
+            depthFunc() const
             {
                 return _depthFunc;
             }
