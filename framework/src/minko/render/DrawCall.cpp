@@ -334,7 +334,7 @@ DrawCall::bindStates()
 	);
 	_depthFunc = getDataProperty<CompareMode>(
 		_stateBindings.count("depthFunc") ? _stateBindings.at("depthFunc") : "depthFunc",
-        _states->depthFun()
+        _states->depthFunc()
 	);
 
     _triangleCulling = getDataProperty<TriangleCulling>(
