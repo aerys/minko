@@ -44,10 +44,12 @@ namespace minko
 			typedef std::shared_ptr<EffectParser>	Ptr;
 
 		private:
-			typedef std::shared_ptr<AbstractLoader>			LoaderPtr;
-			typedef std::shared_ptr<render::Effect>			EffectPtr;
-			typedef std::shared_ptr<render::Pass>			PassPtr;
-			typedef std::shared_ptr<render::Shader>			ShaderPtr;
+			typedef std::shared_ptr<AbstractLoader>				LoaderPtr;
+			typedef std::shared_ptr<render::Effect>				EffectPtr;
+			typedef std::shared_ptr<render::Pass>				PassPtr;
+			typedef std::shared_ptr<render::Shader>				ShaderPtr;
+			typedef std::shared_ptr<render::Texture>			TexturePtr;
+			typedef std::unordered_map<std::string, TexturePtr>	TexturePtrMap;
 
 		private:
 			static std::unordered_map<std::string, unsigned int>		_blendFactorMap;
@@ -57,6 +59,7 @@ namespace minko
 			std::shared_ptr<render::Effect>								_effect;
 			std::string													_effectName;
 			
+			std::string													_defaultTechnique;
 			float														_defaultPriority;
 			render::Blending::Source									_defaultBlendSrcFactor;
 			render::Blending::Destination								_defaultBlendDstFactor;
@@ -77,6 +80,11 @@ namespace minko
 			std::unordered_map<PassPtr, std::vector<LoaderPtr>> 		_passIncludes;
 			std::unordered_map<ShaderPtr, std::vector<LoaderPtr>> 		_shaderIncludes;
 
+			std::vector<PassPtr>										_globalPasses;
+			std::unordered_map<std::string, TexturePtr>					_globalTargets;
+			std::unordered_map<std::string, TexturePtrMap>				_techniqueTargets;
+			std::unordered_map<std::string, std::vector<PassPtr>>		_techniquePasses;
+			
 			std::unordered_map<LoaderPtr, Signal<LoaderPtr>::Slot>		_loaderCompleteSlots;
 			std::unordered_map<LoaderPtr, Signal<LoaderPtr>::Slot>		_loaderErrorSlots;
 
@@ -119,9 +127,11 @@ namespace minko
 			parseDefaultValues(Json::Value& root);
 
 			void
-			parsePasses(Json::Value& 					root,
-						const std::string& 				resolvedFilename,
-						std::shared_ptr<file::Options> 	options);
+			parsePasses(Json::Value& 						root,
+						const std::string& 					resolvedFilename,
+						std::shared_ptr<file::Options> 		options,
+						std::vector<PassPtr>&				passes,
+						TexturePtrMap&						targets);
 
 			std::shared_ptr<render::Shader>
 			parseShader(Json::Value& 					shaderNode,
@@ -157,13 +167,18 @@ namespace minko
             std::shared_ptr<render::Texture>
             parseTarget(Json::Value&                                contextNode,
                         std::shared_ptr<render::AbstractContext>    context,
-                        std::string&                                name);
+                        TexturePtrMap&								targets);
 
 			void
 			parseDependencies(Json::Value& 						root,
 							  const std::string& 				filename,
 							  std::shared_ptr<file::Options> 	options,
 							  std::vector<LoaderPtr>& 			store);
+
+			void
+			parseTechniques(Json::Value&					root,
+							const std::string&				filename,
+							std::shared_ptr<file::Options>	options);
 
 			void
 			dependencyCompleteHandler(std::shared_ptr<AbstractLoader> loader);
