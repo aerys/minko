@@ -91,7 +91,7 @@ EffectParser::initializeDepthFuncMap()
 }
 
 EffectParser::EffectParser() :
-	_effect(render::Effect::create()),
+	_effect(nullptr),
 	_numDependencies(0),
 	_numLoadedDependencies(0),
 	_defaultStates(render::States::create())
@@ -129,7 +129,7 @@ EffectParser::parse(const std::string&				    filename,
 	// parse a global list of passes
 	parsePasses(
 		root,
-		filename,
+		resolvedFilename,
 		options,
 		context,
 		_globalPasses,
@@ -137,7 +137,7 @@ EffectParser::parse(const std::string&				    filename,
 		_defaultAttributeBindings,
 		_defaultUniformBindings,
 		_defaultStateBindings,
-		_defaultAttributeBindings,
+		_defaultMacroBindings,
 		_defaultStates
 	);
 
@@ -154,6 +154,8 @@ EffectParser::parse(const std::string&				    filename,
 	// parse the list of techniques, if no "techniques" directive is found then
 	// the global list of passes becomes the "default" techinque
 	parseTechniques(root, resolvedFilename, options, context);
+
+	_effect = render::Effect::create();
 
 	if (_numDependencies == _numLoadedDependencies)
 		finalize();
@@ -576,6 +578,7 @@ EffectParser::dependencyCompleteHandler(std::shared_ptr<AbstractLoader> loader)
 void
 EffectParser::dependencyErrorHandler(std::shared_ptr<AbstractLoader> loader)
 {
+	std::cerr << "Unable to load dependency '" << loader->filename() << "'" << std::endl;
 	throw;
 }
 
