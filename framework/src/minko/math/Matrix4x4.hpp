@@ -272,6 +272,13 @@ namespace minko
 				translation(t->x(), t->y(), t->z());
 			}
 
+			inline
+			void
+			copyTranslation(Vector3::Ptr t)
+			{
+				t->setTo(_m[3], _m[7], _m[11]);
+			}
+
 			Ptr
 			copyFrom(Matrix4x4::Ptr source);
 
