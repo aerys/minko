@@ -24,6 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/Blending.hpp"
 #include "minko/render/TriangleCulling.hpp"
 #include "minko/render/CompareMode.hpp"
+#include "minko/render/Texture.hpp"
 
 namespace minko
 {
@@ -73,7 +74,9 @@ namespace minko
 		    Ptr
 		    create()
 		    {
-			    return create(SamplerStates());
+				SamplerStates states;
+
+			    return create(states);
 		    }
 
             inline
