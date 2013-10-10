@@ -47,7 +47,7 @@ SpotLight::SpotLight(float innerAngleRadians,
 void
 SpotLight::updateModelToWorldMatrix(std::shared_ptr<math::Matrix4x4> modelToWorld)
 {
-	modelToWorld->translation(_worldPosition);
+	modelToWorld->copyTranslation(_worldPosition);
 	modelToWorld->deltaTransform(Vector3::zAxis(), _worldDirection);
 }
 
