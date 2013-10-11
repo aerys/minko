@@ -132,7 +132,7 @@ project "minko-example-sponza"
 		flags { "Optimize" }
 		buildoptions { "-std=c++11" }
 		-- webgl plugin
-		includedirs { "../../plugins/webgl/src" }
+		includedirs { "../../plugins/webgl/src", "../../deps/emscripten/include" }
 
 		local bin = "bin/release/" .. project().name
 		postbuildcommands {
