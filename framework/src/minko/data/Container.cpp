@@ -239,7 +239,8 @@ void
 Container::providerReferenceChangedHandler(Provider::Ptr		provider,
 										   const std::string&	propertyName)
 {
-	propertyReferenceChanged(propertyName)->execute(shared_from_this(), propertyName);
+	if (_propReferenceChanged.count(propertyName))
+		propertyReferenceChanged(propertyName)->execute(shared_from_this(), propertyName);
 }
 
 void
@@ -261,7 +262,7 @@ Container::providerPropertyAddedHandler(std::shared_ptr<Provider> 	provider,
 
 	_propertyAdded->execute(shared_from_this(), propertyName);
 
-	providerValueChangedHandler(provider, propertyName);	
+	providerValueChangedHandler(provider, propertyName);
 }
 
 void
@@ -270,9 +271,14 @@ Container::providerPropertyRemovedHandler(std::shared_ptr<Provider> provider,
 {
 	_propertyNameToProvider.erase(propertyName);
 
-	providerReferenceChangedHandler(provider, propertyName);
-	_propValueChanged.erase(propertyName);
-	_propReferenceChanged.erase(propertyName);
+	if (_propValueChanged.count(propertyName) && _propValueChanged[propertyName]->numCallbacks() == 0)
+		_propValueChanged.erase(propertyName);
+
+	if (_propReferenceChanged.count(propertyName) && _propReferenceChanged[propertyName]->numCallbacks() == 0)
+		_propReferenceChanged.erase(propertyName);
+
+	//_propValueChanged.erase(propertyName);
+	//_propReferenceChanged.erase(propertyName);
 
 	/*
 	if (_providerValueChangedSlot.count(provider) != 0)
