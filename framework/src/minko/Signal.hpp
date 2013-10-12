@@ -91,6 +91,13 @@ namespace minko
 			return std::shared_ptr<Signal<A...>>(new Signal<A...>());
 		}
 
+		inline
+		uint
+		numCallbacks() const
+		{
+			return _callbacks.size();
+		}
+
 		Slot
 		connect(Callback callback)
 		{
