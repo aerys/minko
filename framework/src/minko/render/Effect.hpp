@@ -21,6 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 
+#include "minko/Signal.hpp"
 #include "minko/render/Pass.hpp"
 
 namespace minko
@@ -34,14 +35,17 @@ namespace minko
 			typedef std::shared_ptr<Effect>	Ptr;
 
 		private:
-			typedef std::shared_ptr<Pass>	PassPtr;
-			typedef std::vector<PassPtr> 	Technique;
+			typedef std::shared_ptr<Pass>										PassPtr;
+			typedef std::vector<PassPtr> 										Technique;
+			typedef Signal<Ptr, const std::string&, const std::string&>::Ptr	TechniqueChangedSignalPtr;
 
 		private:
-			std::unordered_map<std::string, Technique> 	_techniques;
-			std::string									_currentTechniqueName;
-			Technique 									_passes;
-            std::shared_ptr<data::Provider> 			_data;
+			std::unordered_map<std::string, Technique> 			_techniques;
+			std::string											_currentTechniqueName;
+			Technique 											_passes;
+            std::shared_ptr<data::Provider> 					_data;
+
+			TechniqueChangedSignalPtr							_techniqueChanged;
 
 		public:
 			inline static
@@ -100,6 +104,13 @@ namespace minko
 
 				_currentTechniqueName = technique;
 				_passes = _techniques[technique];
+			}
+
+			inline
+			Signal<Ptr, const std::string&, const std::string&>::Ptr
+			techniqueChanged() const
+			{
+				return _techniqueChanged;
 			}
 
             void
