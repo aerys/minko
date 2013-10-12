@@ -119,14 +119,14 @@ AssetLibrary::blob(const std::string& name, const std::vector<unsigned char>& bl
 }
 
 const unsigned int
-AssetLibrary::layer(const std::string& name)
+AssetLibrary::layout(const std::string& name)
 {
-	if (_layers.count(name) == 0)
+	if (_layouts.count(name) == 0)
 	{
 		unsigned int existingMask = 0;
 
-		for (auto layer : _layers)
-			existingMask |= layer.second;
+		for (auto layout : _layouts)
+			existingMask |= layout.second;
 
 		auto mask = 1;
 		for (auto i = 0; i < 32 && (existingMask & mask); ++i, mask <<= 1)
@@ -135,16 +135,16 @@ AssetLibrary::layer(const std::string& name)
 		if (mask == 0)
 			throw;
 
-		_layers[name] = mask;
+		_layouts[name] = mask;
 	}
 
-	return _layers[name];
+	return _layouts[name];
 }
 
 AssetLibrary::Ptr
-AssetLibrary::layer(const std::string& name, const unsigned int mask)
+AssetLibrary::layout(const std::string& name, const unsigned int mask)
 {
-	_layers[name] = mask;
+	_layouts[name] = mask;
 
 	return shared_from_this();
 }
