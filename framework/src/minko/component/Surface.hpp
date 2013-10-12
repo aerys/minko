@@ -43,6 +43,8 @@ namespace minko
 			typedef std::list<DrawCallPtr>							DrawCallList;
 			typedef Signal<ContainerPtr, const std::string&>		PropertyChangedSignal;
 			typedef PropertyChangedSignal::Slot						PropertyChangedSlot;
+			typedef std::shared_ptr<render::Effect>					EffectPtr;
+			typedef const std::string&								StringRef;
 
 			enum class MacroChange
 			{
@@ -72,8 +74,8 @@ namespace minko
 
 			Signal<AbstractComponent::Ptr, NodePtr>::Slot			_targetAddedSlot;
 			Signal<AbstractComponent::Ptr, NodePtr>::Slot			_targetRemovedSlot;
-			Signal<NodePtr, NodePtr, NodePtr>::Slot					_addedSlot;
 			Signal<NodePtr, NodePtr, NodePtr>::Slot					_removedSlot;
+			Signal<EffectPtr, StringRef, StringRef>::Slot			_techniqueChangedSlot;
 
 		public:
 			static
@@ -138,6 +140,12 @@ namespace minko
 				return _drawCallRemoved;
 			}
 
+			DrawCallList
+			createDrawCalls(std::shared_ptr<data::Container> rendererData);
+
+			void
+			deleteDrawCalls();
+
 		private:
 			Surface(std::shared_ptr<geometry::Geometry> geometry,
 					std::shared_ptr<data::Provider>		material,
@@ -146,23 +154,14 @@ namespace minko
 			void
 			initialize();
 
-			void
-			createDrawCalls();
-
 			std::shared_ptr<render::DrawCall>
 			initializeDrawCall(std::shared_ptr<render::Pass>, std::shared_ptr<render::DrawCall> drawcall = nullptr);
-
-			void
-			deleteDrawCalls();
 
 			void
 			targetAddedHandler(AbstractComponent::Ptr ctrl, NodePtr target);
 
 			void
 			targetRemovedHandler(AbstractComponent::Ptr ctrl, NodePtr target);
-
-			void
-			addedHandler(NodePtr node, NodePtr target, NodePtr ancestor);
 
 			void
 			removedHandler(NodePtr node, NodePtr target, NodePtr ancestor);
@@ -175,6 +174,11 @@ namespace minko
 
 			void
 			macroChangedHandler(ContainerPtr, const std::string& propertyName, MacroChange);
+
+			void
+			techniqueChangedHandler(EffectPtr			effect,
+									const std::string&	oldTechnique,
+									const std::string&	newTechnique);
 		};
 	}
 }
