@@ -219,9 +219,11 @@ Renderer::componentRemovedHandler(std::shared_ptr<Node>				node,
 void
 Renderer::addSurfaceComponent(std::shared_ptr<Surface> surface)
 {
-	_surfaceDrawCalls[surface]	= surface->drawCalls();
+	auto drawCalls = surface->createDrawCalls(targets()[0]->data());
 
-	_drawCalls.insert(_drawCalls.end(), surface->drawCalls().begin(), surface->drawCalls().end());
+	_surfaceDrawCalls[surface] = drawCalls;
+
+	_drawCalls.insert(_drawCalls.end(), drawCalls.begin(), drawCalls.end());
 }
 
 void
