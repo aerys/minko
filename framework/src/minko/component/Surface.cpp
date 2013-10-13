@@ -118,7 +118,6 @@ Surface::targetAddedHandler(AbstractComponent::Ptr	ctrl,
 
 	targetData->addProvider(_material);
 	targetData->addProvider(_geometry->data());
-    targetData->addProvider(_effect->data());
 }
 
 void
@@ -357,7 +356,6 @@ Surface::targetRemovedHandler(AbstractComponent::Ptr	ctrl,
 
 	data->removeProvider(_material);
 	data->removeProvider(_geometry->data());
-    data->removeProvider(_effect->data());
 
 	deleteDrawCalls();
 }
