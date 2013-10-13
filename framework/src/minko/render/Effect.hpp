@@ -45,6 +45,8 @@ namespace minko
 			Technique 											_passes;
             std::shared_ptr<data::Provider> 					_data;
 
+			std::list<std::function<void(PassPtr)>>				_uniformFunctions;
+
 			TechniqueChangedSignalPtr							_techniqueChanged;
 
 		public:
@@ -84,8 +86,13 @@ namespace minko
 			void
 			setUniform(const std::string& name, const T&... values)
 			{
-				for (auto& pass : _passes)
-					pass->setUniform(name, values...);
+				_uniformFunctions.push_back(std::bind(
+					&Effect::setUniformOnPass<T...>, shared_from_this(), std::placeholders::_1, name, values...
+				));
+
+				for (auto technique : _techniques)
+					for (auto& pass : technique.second)
+						pass->setUniform(name, values...);
 			}
 
 			inline
@@ -121,6 +128,13 @@ namespace minko
 
 		private:
 			Effect();
+
+			template <typename... T>
+			void
+			setUniformOnPass(std::shared_ptr<Pass> pass, const std::string& name, const T&... values)
+			{
+				pass->setUniform(name, values...);
+			}
 		};		
 	}
 }
