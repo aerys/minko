@@ -42,8 +42,7 @@ namespace minko
             typedef std::unordered_map<std::string, SamplerState>		SamplerStatesMap;
 			typedef std::shared_ptr<States>								StatesPtr;
 			typedef std::unordered_map<ProgramSignature, ProgramPtr>	SignatureProgramMap;
-			typedef std::function<void(ProgramPtr)>						SetUniformFct;
-			typedef std::unordered_map<std::string, SetUniformFct>		UniformFctMap;
+			typedef std::list<std::function<void(ProgramPtr)>>			UniformFctList;
 
 		private:
 			const std::string	_name;
@@ -55,7 +54,7 @@ namespace minko
             StatesPtr           _states;
 			SignatureProgramMap	_signatureToProgram;
 
-			UniformFctMap		_uniformFunctions;
+			UniformFctList		_uniformFunctions;
 
 		public:
 			inline static
@@ -141,21 +140,14 @@ namespace minko
 			void
 			setUniform(const std::string& name, const T&... values)
 			{
-				_uniformFunctions[name] = std::bind(
+				_uniformFunctions.push_back(std::bind(
 					&Pass::setUniformOnProgram<T...>, shared_from_this(), std::placeholders::_1, name, values...
-				);
+				));
 
 				if (_programTemplate->isReady())
 					_programTemplate->setUniform(name, values...);
 				for (auto signatureAndProgram : _signatureToProgram)
 					signatureAndProgram.second->setUniform(name, values...);
-			}
-
-			template <typename... T>
-			void
-			setUniformOnProgram(std::shared_ptr<Program> program, const std::string& name, const T&... values)
-			{
-				program->setUniform(name, values...);
 			}
 
 		private:
@@ -166,6 +158,14 @@ namespace minko
 				 const data::BindingMap&			stateBindings,
 				 const data::BindingMap&			macroBindings,
                  std::shared_ptr<States>            states);
+
+			template <typename... T>
+			void
+			setUniformOnProgram(std::shared_ptr<Program> program, const std::string& name, const T&... values)
+			{
+				program->setUniform(name, values...);
+			}
+
 		};
 	}
 }
