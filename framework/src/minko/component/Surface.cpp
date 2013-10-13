@@ -214,6 +214,8 @@ Surface::createDrawCalls(std::shared_ptr<data::Container> rendererData)
 		_drawCallAdded->execute(shared_from_this(), drawCall);
 	}
 
+	watchMacroAdditionOrDeletion();
+
 	return _drawCalls;
 }
 
