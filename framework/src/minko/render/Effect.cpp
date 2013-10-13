@@ -26,7 +26,6 @@ using namespace minko;
 using namespace minko::render;
 
 Effect::Effect() :
-	_data(data::Provider::create()),
 	_techniqueChanged(Signal<Ptr, const std::string&, const std::string&>::create())
 {
 }

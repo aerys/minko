@@ -43,7 +43,6 @@ namespace minko
 			std::unordered_map<std::string, Technique> 			_techniques;
 			std::string											_currentTechniqueName;
 			Technique 											_passes;
-            std::shared_ptr<data::Provider> 					_data;
 
 			std::list<std::function<void(PassPtr)>>				_uniformFunctions;
 
@@ -74,13 +73,6 @@ namespace minko
 			{
 				return _passes;
 			}
-
-            inline
-            std::shared_ptr<data::Provider>
-            data()
-            {
-                return _data;
-            }
 
             template <typename... T>
 			void
