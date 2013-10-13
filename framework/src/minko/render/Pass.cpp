@@ -141,7 +141,7 @@ Pass::finalizeProgram(Program::Ptr program)
 	{
 		program->upload();
 
-		for (auto& uniformNameAndFunction : _uniformFunctions)
-			uniformNameAndFunction.second(program);
+		for (auto& func : _uniformFunctions)
+			func(program);
 	}
 }
