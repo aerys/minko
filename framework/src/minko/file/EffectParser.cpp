@@ -429,24 +429,15 @@ EffectParser::parseTarget(Json::Value&                      contextNode,
 {
     auto targetValue = contextNode.get("target", 0);
 
+	std::shared_ptr<render::Texture> target;
+	std::string targetName;
+
     if (targetValue.isObject())
     {
         auto nameValue  = targetValue.get("name", 0);
-		std::string name;
 
         if (nameValue.isString())
-        {
-            name = nameValue.asString();
-
-			auto target = _assetLibrary->texture(name);
-
-            if (target)
-			{
-				_effect->data()->set(name, target);
-
-                return target;
-			}
-        }
+			targetName = nameValue.asString();
 
         auto sizeValue  = targetValue.get("size", 0);
         auto width      = 0;
@@ -460,22 +451,23 @@ EffectParser::parseTarget(Json::Value&                      contextNode,
             height = targetValue.get("height", 0).asUInt();
         }
 
-        auto target = render::Texture::create(context, width, height, true);
+        target = render::Texture::create(context, width, height, true);
 
-		if (name.length())
-		{
-	        _assetLibrary->texture(name, target);
-			_effect->data()->set(name, target);
-		}
+		if (targetName.length())
+	        _assetLibrary->texture(targetName, target);
 
         return target;
     }
 	else if (targetValue.isString())
 	{
-		return _assetLibrary->texture(targetValue.asString());
+		targetName = targetValue.asString();
+		target = _assetLibrary->texture(targetName);
 	}
 
-    return nullptr;
+	if (target && targetName.length())
+		targets[targetName] = target;
+
+    return target;
 }
 
 void
