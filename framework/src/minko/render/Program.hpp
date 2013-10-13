@@ -23,7 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/render/AbstractResource.hpp"
 #include "minko/render/ProgramInputs.hpp"
-
+#include "minko/render/Texture.hpp"
 #include "minko/render/AbstractContext.hpp"
 
 namespace minko
@@ -41,9 +41,11 @@ namespace minko
 			typedef std::shared_ptr<render::ProgramInputs>		ProgramInputsPtr;
 
 		private:
-			std::shared_ptr<Shader>	_vertexShader;
-			std::shared_ptr<Shader>	_fragmentShader;
-			ProgramInputsPtr		_inputs;
+			std::shared_ptr<Shader>			_vertexShader;
+			std::shared_ptr<Shader>			_fragmentShader;
+			ProgramInputsPtr				_inputs;
+
+			std::unordered_map<int, uint>	_textureId;
 
 		public:
 			inline static
@@ -98,8 +100,23 @@ namespace minko
 			void
 			setUniform(const std::string& name, const T&... values)
 			{
+				if (!_inputs->hasName(name))
+					throw;
+
 				_context->setProgram(_id);
 				_context->setUniform(_inputs->location(name), values...);
+			}
+
+			void
+			setUniform(const std::string& name, std::shared_ptr<render::Texture> texture)
+			{
+				if (!_inputs->hasName(name))
+					throw;
+
+				if (!_textureId.count(texture->id()))
+					_textureId[texture->id()] = _textureId.size();
+
+				_context->setTextureAt(_textureId[texture->id()], texture->id(), _inputs->location(name));
 			}
 
 		private:
