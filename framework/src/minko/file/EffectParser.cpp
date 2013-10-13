@@ -627,6 +627,9 @@ EffectParser::finalize()
     }
 
 	_effect->technique(_defaultTechnique);
+	for (auto& targets : _techniqueTargets)
+		for (auto& target : targets.second)
+			_effect->setUniform(target.first, target.second);
 
 	_assetLibrary->effect(_effectName, _effect);
     _assetLibrary->effect(_filename, _effect);
