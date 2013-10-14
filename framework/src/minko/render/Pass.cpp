@@ -89,7 +89,14 @@ Pass::selectProgram(std::shared_ptr<data::Container> data,
 					{
 						if (signatureValues[i] > 0)
 						{
-							defines += "#define " + macroBinding.first + " " + std::to_string(signatureValues[i]) + "\n";
+							auto value = signatureValues[i];
+							auto min = std::get<1>(macroBinding.second);
+							auto max = std::get<2>(macroBinding.second);
+
+							if ((min != -1 && value < min) || (max != -1 && value > max))
+								return nullptr;
+
+							defines += "#define " + macroBinding.first + " " + std::to_string(value) + "\n";
 							bindingValues.push_back(propertyName);
 						}
 					}
