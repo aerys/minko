@@ -269,27 +269,30 @@ void
 Container::providerPropertyRemovedHandler(std::shared_ptr<Provider> provider,
 										  const std::string&		propertyName)
 {
-	_propertyNameToProvider.erase(propertyName);
-
-	if (_propValueChanged.count(propertyName) && _propValueChanged[propertyName]->numCallbacks() == 0)
-		_propValueChanged.erase(propertyName);
-
-	if (_propReferenceChanged.count(propertyName) && _propReferenceChanged[propertyName]->numCallbacks() == 0)
-		_propReferenceChanged.erase(propertyName);
-
-	//_propValueChanged.erase(propertyName);
-	//_propReferenceChanged.erase(propertyName);
-
-	/*
-	if (_providerValueChangedSlot.count(provider) != 0)
-		for (auto property : provider->values())
-			if (_propValueChanged.count(property.first) != 0)
-				return;
-
-	providerValueChangedHandler(provider, propertyName);
-
-	std::cout << "cont[" << this << "] removes '" << propertyName << "'" << std::endl;
-	*/
-
-	_propertyRemoved->execute(shared_from_this(), propertyName);
+	if (_propertyNameToProvider.count(propertyName) != 0)
+	{
+		_propertyNameToProvider.erase(propertyName);
+	
+		if (_propValueChanged.count(propertyName) && _propValueChanged[propertyName]->numCallbacks() == 0)
+			_propValueChanged.erase(propertyName);
+	
+		if (_propReferenceChanged.count(propertyName) && _propReferenceChanged[propertyName]->numCallbacks() == 0)
+			_propReferenceChanged.erase(propertyName);
+	
+		//_propValueChanged.erase(propertyName);
+		//_propReferenceChanged.erase(propertyName);
+	
+		/*
+		if (_providerValueChangedSlot.count(provider) != 0)
+			for (auto property : provider->values())
+				if (_propValueChanged.count(property.first) != 0)
+					return;
+	
+		providerValueChangedHandler(provider, propertyName);
+	
+		std::cout << "cont[" << this << "] removes '" << propertyName << "'" << std::endl;
+		*/
+	
+		_propertyRemoved->execute(shared_from_this(), propertyName);
+	}
 }
