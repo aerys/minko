@@ -34,7 +34,7 @@ Pass::Pass(const std::string&				name,
 		   const data::BindingMap&			attributeBindings,
 		   const data::BindingMap&			uniformBindings,
 		   const data::BindingMap&			stateBindings,
-		   const data::BindingMap&			macroBindings,
+		   const data::MacroBindingMap&		macroBindings,
            std::shared_ptr<States>          states) :
 	_name(name),
 	_programTemplate(program),
@@ -81,10 +81,8 @@ Pass::selectProgram(std::shared_ptr<data::Container> data,
             {
 				if (signatureMask & (1 << i))
 				{
-					const auto&	propertyName	= macroBinding.second;
-					auto&		container		= data->hasProperty(propertyName) 
-						? data 
-						: rootData;
+					const auto&	propertyName	= std::get<0>(macroBinding.second);
+					auto&		container		= data->hasProperty(propertyName) ? data : rootData;
 
 					// warning: integer macros corresponding to array lengths must be POSITIVE!
 					if (container->propertyHasType<int>(propertyName))
