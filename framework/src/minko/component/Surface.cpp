@@ -82,7 +82,7 @@ Surface::initialize()
 	_macroPropertyNames.clear();
 	for (const auto& pass : _effect->passes())
 		for (const auto& binding : pass->macroBindings())
-			_macroPropertyNames.insert(binding.second);
+			_macroPropertyNames.insert(std::get<0>(binding.second));
 }
 
 void
@@ -250,7 +250,7 @@ Surface::initializeDrawCall(Pass::Ptr		pass,
 
 		for (const auto& binding : pass->macroBindings())
 		{
-			const std::string&	propertyName	= binding.second;
+			const std::string&	propertyName	= std::get<0>(binding.second);
 			Container::Ptr		data			= getDataContainer(propertyName);
 
 			_macroPropertyNameToDrawCalls[propertyName].push_back(drawcall);

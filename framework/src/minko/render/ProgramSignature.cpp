@@ -28,7 +28,7 @@ using namespace minko::data;
 /*static*/ const uint ProgramSignature::MAX_NUM_BINDINGS = 32;
 
 void
-ProgramSignature::build(const BindingMap&		macroBindings,
+ProgramSignature::build(const MacroBindingMap&	macroBindings,
 						data::Container::Ptr	data,
 						data::Container::Ptr	rootData)
 {
@@ -40,7 +40,7 @@ ProgramSignature::build(const BindingMap&		macroBindings,
 
 	for (auto& macroBinding : macroBindings)
     {
-        auto& propertyName = macroBinding.second;
+        auto& propertyName = std::get<0>(macroBinding.second);
 
 		const bool dataHasBinding		= data->hasProperty(propertyName);
 		const bool rootDataHasBinding	= rootData->hasProperty(propertyName);
