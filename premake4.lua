@@ -30,3 +30,4 @@ include 'plugins/particles'
 dofile('tools/all/lib/library.lua')
 dofile('tools/all/lib/platform.lua')
 dofile('tools/all/lib/vs.lua')
+dofile('tools/all/lib/doxygen.lua')
