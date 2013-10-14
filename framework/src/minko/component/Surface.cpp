@@ -279,6 +279,7 @@ Surface::macroChangedHandler(Container::Ptr		data,
 #ifdef DEBUG_SHADER_FORK
 	std::cout << "Surface::macroChangedHandler('" << propertyName << "')" << std::endl;
 #endif
+
 	if (change == MacroChange::REF_CHANGED && !_drawCalls.empty())
 	{
 #ifdef DEBUG_SHADER_FORK
@@ -329,6 +330,8 @@ Surface::macroChangedHandler(Container::Ptr		data,
 		}
 		else if (change == MacroChange::REMOVED)
 		{
+			macroChangedHandler(data, propertyName, MacroChange::REF_CHANGED);
+
 			listeners[propertyName] = numListeners - 1;
 
 			if (listeners[propertyName] == 0)
