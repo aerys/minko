@@ -20,3 +20,4 @@ Makefile
 *.lastbuildstate
 *.vsglog
 *.cache
+doc
