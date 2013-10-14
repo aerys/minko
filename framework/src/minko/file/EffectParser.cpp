@@ -205,7 +205,7 @@ EffectParser::parsePasses(Json::Value&				root,
 						  data::BindingMap&			defaultAttributeBindings,
 						  data::BindingMap&			defaultUniformBindings,
 						  data::BindingMap&			defaultStateBindings,
-						  data::BindingMap&			defaultMacroBindings,
+						  data::MacroBindingMap&	defaultMacroBindings,
 						  render::States::Ptr		defaultStates)
 {
 	auto passId = 0;
@@ -233,10 +233,10 @@ EffectParser::parsePasses(Json::Value&				root,
 		auto name = passValue.get("name", std::to_string(passId++)).asString();
 
 		// pass bindings
-		data::BindingMap	attributeBindings(defaultAttributeBindings);
-		data::BindingMap	uniformBindings(defaultUniformBindings);
-		data::BindingMap	stateBindings(defaultStateBindings);
-		data::BindingMap	macroBindings(defaultMacroBindings);
+		data::BindingMap		attributeBindings(defaultAttributeBindings);
+		data::BindingMap		uniformBindings(defaultUniformBindings);
+		data::BindingMap		stateBindings(defaultStateBindings);
+		data::MacroBindingMap	macroBindings(defaultMacroBindings);
         
 		parseBindings(passValue, attributeBindings, uniformBindings, stateBindings, macroBindings);
 
@@ -366,11 +366,11 @@ EffectParser::parseTriangleCulling(Json::Value& contextNode, TriangleCulling& tr
 }
 
 void
-EffectParser::parseBindings(Json::Value&	    contextNode,
-						    data::BindingMap&   attributeBindings,
-						    data::BindingMap&	uniformBindings,
-						    data::BindingMap&	stateBindings,
-							data::BindingMap&	macroBindings)
+EffectParser::parseBindings(Json::Value&			contextNode,
+						    data::BindingMap&		attributeBindings,
+						    data::BindingMap&		uniformBindings,
+						    data::BindingMap&		stateBindings,
+							data::MacroBindingMap&	macroBindings)
 {
 	auto attributeBindingsValue = contextNode.get("attributeBindings", 0);
 	if (attributeBindingsValue.isObject())
@@ -390,7 +390,27 @@ EffectParser::parseBindings(Json::Value&	    contextNode,
 	auto macroBindingsValue = contextNode.get("macroBindings", 0);
 	if (macroBindingsValue.isObject())
 		for (auto propertyName : macroBindingsValue.getMemberNames())
-			macroBindings[propertyName] = macroBindingsValue.get(propertyName, 0).asString();
+		{
+			auto macroBindingValue = macroBindingsValue.get(propertyName, 0);
+
+			if (macroBindingValue.isString())
+				macroBindings[propertyName] = std::tuple<std::string, int, int>(macroBindingValue.asString(), -1, -1);
+			else if (macroBindingValue.isObject())
+			{
+				auto nameValue = macroBindingValue.get("name", 0);
+				auto minValue = macroBindingsValue.get("min", -1);
+				auto maxValue = macroBindingsValue.get("max", -1);
+
+				if (!nameValue.isString() || !minValue.isInt() ||!maxValue.isInt())
+					throw;
+
+				macroBindings[propertyName] = std::tuple<std::string, int, int>(
+					nameValue.asString(),
+					minValue.asInt(),
+					maxValue.asInt()
+				);
+			}
+		}
 }
 
 void
@@ -524,10 +544,10 @@ EffectParser::parseTechniques(Json::Value&						root,
 				auto& targets		= _techniqueTargets[techniqueName];
 				auto& passes		= _techniquePasses[techniqueName];
 
-				data::BindingMap	attributeBindings(_defaultAttributeBindings);
-				data::BindingMap	uniformBindings(_defaultUniformBindings);
-				data::BindingMap	stateBindings(_defaultStateBindings);
-				data::BindingMap	macroBindings(_defaultMacroBindings);
+				data::BindingMap		attributeBindings(_defaultAttributeBindings);
+				data::BindingMap		uniformBindings(_defaultUniformBindings);
+				data::BindingMap		stateBindings(_defaultStateBindings);
+				data::MacroBindingMap	macroBindings(_defaultMacroBindings);
         
 				// bindings
 				parseBindings(techniqueValue, _defaultAttributeBindings, _defaultUniformBindings, _defaultStateBindings, _defaultMacroBindings);
