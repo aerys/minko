@@ -38,18 +38,16 @@ Provider::Provider() :
 void
 Provider::unset(const std::string& propertyName)
 {
-	auto formattedPropertyName = formatPropertyName(propertyName);
-
-	_values.erase(formattedPropertyName);
-	_valueChangedSlots.erase(formattedPropertyName);
-	_referenceChangedSlots.erase(formattedPropertyName);
-
-	if (_values.count(formattedPropertyName) == 0)
+	const auto& formattedPropertyName = formatPropertyName(propertyName);
+	
+	if (_values.count(formattedPropertyName) != 0)
 	{
 		_names.erase(std::find(_names.begin(), _names.end(), formattedPropertyName));
+		_values.erase(formattedPropertyName);
+		_valueChangedSlots.erase(formattedPropertyName);
+		_referenceChangedSlots.erase(formattedPropertyName);
 
 		_propertyRemoved->execute(shared_from_this(), formattedPropertyName);
-		_propReferenceChanged->execute(shared_from_this(), formattedPropertyName);
 	}
 }
 
