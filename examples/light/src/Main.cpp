@@ -161,7 +161,7 @@ SDL_KeyboardHandler(scene::Node::Ptr		root,
 	{
 		bool hasNormalMap = data->hasProperty(normalMapPropName);
 
-		std::cout << "mesh does" << (!hasNormalMap ? " not " : " ") << "have a normal map" << std::endl;
+		std::cout << "mesh does" << (!hasNormalMap ? " not " : " ") << "have a normal map:\t" << (hasNormalMap ? "remove" : "add") << " it" << std::endl;
 		if (hasNormalMap)
 			data->unset(normalMapPropName);
 		else
@@ -257,7 +257,7 @@ int main(int argc, char** argv)
 	auto sphereGeometry		= geometry::SphereGeometry::create(sceneManager->assets()->context(), 32, 16, true);
 
 	const bool blackOut = false;
-	std::cout << "Press [SPACE]\tto toogle normal mapping\nPress [A]\tto add random light\nPress [R}\tto remove random light" << std::endl;
+	std::cout << "Press [SPACE]\tto toogle normal mapping\nPress [A]\tto add random light\nPress [R]\tto remove random light" << std::endl;
 
 
 	sphereGeometry->computeTangentSpace(false);
