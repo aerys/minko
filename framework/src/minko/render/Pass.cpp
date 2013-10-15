@@ -130,23 +130,36 @@ Pass::selectProgram(std::shared_ptr<data::Container> data,
 		}
 	}
 
-	finalizeProgram(program);
-
-	return program;
+	return finalizeProgram(program);
 }
 
-void
+Program::Ptr
 Pass::finalizeProgram(Program::Ptr program)
 {
-	if (!program->vertexShader()->isReady())
-        program->vertexShader()->upload();
-	if (!program->fragmentShader()->isReady())
-	    program->fragmentShader()->upload();
-	if (!program->isReady())
+	if (program)
 	{
-		program->upload();
+		try
+		{
+			if (!program->vertexShader()->isReady())
+				program->vertexShader()->upload();
+			if (!program->fragmentShader()->isReady())
+				program->fragmentShader()->upload();
+			if (!program->isReady())
+			{
+				program->upload();
 
-		for (auto& func : _uniformFunctions)
-			func(program);
+				for (auto& func : _uniformFunctions)
+					func(program);
+			}
+		}
+		catch (std::exception& e)
+		{
+			if (_fallback.length())
+				return nullptr;
+
+			throw e;
+		}
 	}
+
+	return program;
 }
