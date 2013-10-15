@@ -237,6 +237,24 @@ Surface::initializeDrawCall(Pass::Ptr		pass,
 
 	auto program = pass->selectProgram(targetData, rootData, bindingDefines, bindingValues);
 
+	while (!program)
+	{
+		auto fallbackIt = std::find_if(
+			_effect->passes().begin(),
+			_effect->passes().end(),
+			[&](const Pass::Ptr& p)
+			{
+				return p->name() == pass->fallback();
+			}
+		);
+
+		if (fallbackIt == _effect->passes().end())
+			throw;
+
+		pass = *fallbackIt;
+		program = pass->selectProgram(targetData, rootData, bindingDefines, bindingValues);
+	}
+
 	if (drawcall == nullptr)
 	{
 		drawcall = DrawCall::create(
