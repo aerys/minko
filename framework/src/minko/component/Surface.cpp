@@ -235,25 +235,7 @@ Surface::initializeDrawCall(Pass::Ptr		pass,
 	std::list<std::string>	bindingDefines;
 	std::list<std::string>	bindingValues;
 
-	auto program = pass->selectProgram(targetData, rootData, bindingDefines, bindingValues);
-
-	while (!program)
-	{
-		auto fallbackIt = std::find_if(
-			_effect->passes().begin(),
-			_effect->passes().end(),
-			[&](const Pass::Ptr& p)
-			{
-				return p->name() == pass->fallback();
-			}
-		);
-
-		if (fallbackIt == _effect->passes().end())
-			throw;
-
-		pass = *fallbackIt;
-		program = pass->selectProgram(targetData, rootData, bindingDefines, bindingValues);
-	}
+	auto program = getWorkingProgram(pass, targetData, rootData, bindingDefines, bindingValues);
 
 	if (drawcall == nullptr)
 	{
@@ -287,6 +269,36 @@ Surface::initializeDrawCall(Pass::Ptr		pass,
 	drawcall->configure(program, targetData, rootData);
 
 	return drawcall;
+}
+
+std::shared_ptr<Program>
+Surface::getWorkingProgram(std::shared_ptr<Pass>	pass,
+						   data::Container::Ptr		targetData,
+						   data::Container::Ptr		rootData,
+						   std::list<std::string>&	bindingDefines,
+						   std::list<std::string>&	bindingValues)
+{
+	auto program = pass->selectProgram(targetData, rootData, bindingDefines, bindingValues);
+
+	while (!program)
+	{
+		auto fallbackIt = std::find_if(
+			_effect->passes().begin(),
+			_effect->passes().end(),
+			[&](const Pass::Ptr& p)
+			{
+				return p->name() == pass->fallback();
+			}
+		);
+
+		if (fallbackIt == _effect->passes().end())
+			throw;
+
+		pass = *fallbackIt;
+		program = pass->selectProgram(targetData, rootData, bindingDefines, bindingValues);
+	}
+
+	return program;
 }
 
 void
