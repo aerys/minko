@@ -52,8 +52,8 @@ namespace minko
 			data::BindingMap		_stateBindings;
 			data::MacroBindingMap	_macroBindings;
             StatesPtr				_states;
+			std::string				_fallback;
 			SignatureProgramMap		_signatureToProgram;
-
 			UniformFctList			_uniformFunctions;
 
 		public:
@@ -127,15 +127,19 @@ namespace minko
 				return _states;
 			}
 
+			inline
+			const std::string&
+			fallback()
+			{
+				return _fallback;
+			}
+
 			std::shared_ptr<Program>
 			selectProgram(std::shared_ptr<data::Container> 	data,
 						  std::shared_ptr<data::Container> 	rootData,
 						  std::list<std::string>&			bindingDefines,
 						  std::list<std::string>&			bindingValues);
-
-			void
-			finalizeProgram(ProgramPtr program);
-
+			
 			template <typename... T>
 			void
 			setUniform(const std::string& name, const T&... values)
@@ -166,6 +170,8 @@ namespace minko
 				program->setUniform(name, values...);
 			}
 
+			ProgramPtr
+			finalizeProgram(ProgramPtr program);
 		};
 	}
 }
