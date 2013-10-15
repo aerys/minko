@@ -179,6 +179,13 @@ namespace minko
 			techniqueChangedHandler(EffectPtr			effect,
 									const std::string&	oldTechnique,
 									const std::string&	newTechnique);
+
+			std::shared_ptr<render::Program>
+			getWorkingProgram(std::shared_ptr<render::Pass>	pass,
+							  ContainerPtr					targetData,
+							  ContainerPtr					rootData,
+							  std::list<std::string>&		bindingDefines,
+							  std::list<std::string>&		bindingValues);
 		};
 	}
 }
