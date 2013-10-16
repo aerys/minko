@@ -124,8 +124,8 @@ Provider::registerProperty(const std::string&		propertyName,
 
 		_propertyAdded->execute(shared_from_this(), propertyName);
 	}
-	else
-		_propValueChanged->execute(shared_from_this(), propertyName);
+
+	_propValueChanged->execute(shared_from_this(), propertyName);
 
 	if (changed)
 		_propReferenceChanged->execute(shared_from_this(), propertyName);
