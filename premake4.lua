@@ -26,6 +26,9 @@ include 'plugins/mk'
 include 'plugins/bullet'
 include 'plugins/particles'
 
+-- test
+include 'tests'
+
 -- support for new actions
 dofile('tools/all/lib/library.lua')
 dofile('tools/all/lib/platform.lua')
