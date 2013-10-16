@@ -15,7 +15,7 @@ project "minko-tests"
 	-- googletest framework
 	links { "googletest" }
 	includedirs { "lib/googletest/include" }
-	
+
 	-- minko-webgl
 	-- ugly, but couldn't find a better solution to maintain linking order.
 	if _OPTIONS["platform"] == "emscripten" then
