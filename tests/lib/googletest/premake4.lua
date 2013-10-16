@@ -7,7 +7,6 @@ project "googletest"
 	}
 	includedirs {
 		".",
-		"src",
 		"include"
 	}
 	
@@ -22,13 +21,13 @@ project "googletest"
 		targetdir "bin/release"
 
 	-- linux
-	configuration { "linux" }
+	--configuration { "linux" }
 
 	-- windows
-	configuration { "windows", "x32" }
+	--configuration { "windows", "x32" }
 
 	-- macos
-	configuration { "macosx" }
+	--configuration { "macosx" }
 
 	-- emscripten
-	configuration { "emscripten" }
+	--	configuration { "emscripten" }
