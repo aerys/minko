@@ -9,12 +9,12 @@ project "minko-tests"
 	}
 	includedirs {
 		"src",
-		"../deps/all/include",
-		"lib/googletest/include"
+		"../deps/all/include"
 	}
-	links {
-		"googletest"
-	}
+
+	-- googletest framework
+	links { "googletest" }
+	includedirs { "lib/googletest/include" }
 	
 	-- minko-webgl
 	-- ugly, but couldn't find a better solution to maintain linking order.
@@ -25,6 +25,7 @@ project "minko-tests"
 	-- minko-png
 	links { "minko-png" }
 	includedirs { "../plugins/png/src" }
+
 	-- minko-framework
 	links { "minko-framework" }
 	includedirs { "../framework/src" }
@@ -44,7 +45,17 @@ project "minko-tests"
 
 	-- linux
 	configuration { "linux" }
-		links { "GL", "GLU", "SDL2", "m", "Xrandr", "Xxf86vm", "Xi", "rt", "X11", "pthread" }
+		links {
+			"GL",
+			"SDL2",
+			"m",
+			"Xrandr",
+			"Xxf86vm",
+			"Xi",
+			"rt",
+			"X11",
+			"pthread"
+		}
 		libdirs { "../deps/lin/lib" }
 		includedirs { "../deps/lin/include" }
 		buildoptions { "-std=c++11" }
