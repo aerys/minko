@@ -21,3 +21,4 @@ Makefile
 *.vsglog
 *.cache
 doc
+remove.me
