@@ -2,14 +2,14 @@ project "googletest"
 	kind "StaticLib"
 	language "C++"
 	files {
-		"src/**.h",
-		"src/**.cc"
+		"src/gtest-all.cc"
 	}
 	includedirs {
-		".",
-		"include"
+		"."
 	}
-	
+
+	buildoptions { "-std=c++11", "-stdlib=libc++", "-isystem include", "-pthread" }
+
 	configuration { "debug"}
 		defines { "DEBUG", "_DEBUG" }
 		flags { "Symbols" }
