@@ -8,7 +8,7 @@ project "googletest"
 		"."
 	}
 
-	buildoptions { "-std=c++11", "-stdlib=libc++", "-isystem include", "-pthread" }
+	buildoptions { "-std=c++11", "-isystem include", "-pthread" }
 
 	configuration { "debug"}
 		defines { "DEBUG", "_DEBUG" }
