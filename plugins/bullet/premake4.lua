@@ -39,7 +39,7 @@ project "minko-bullet"
 		
 	-- linux
 	configuration { "linux" }
-		buildoptions { "-std=c++11 -Wno-narrowing" }
+		buildoptions { "-std=c++11 -Wno-narrowing -Wno-int-to-pointer-cast" }
 
 	-- windows
 	configuration { "windows", "x32" }
