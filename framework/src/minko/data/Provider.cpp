@@ -108,25 +108,26 @@ Provider::registerProperty(const std::string&		propertyName,
 	const bool	changed			= isNewValue || !((*value) == (*foundValueIt->second));
 	
 	_values[propertyName] = value;
-	
-    _valueChangedSlots[propertyName] = value->changed()->connect(std::bind(
-		&Signal<Provider::Ptr, const std::string&>::execute,
-		_propValueChanged,
-		shared_from_this(),
-		propertyName
-	));
-	
+		
 	if (isNewValue)
 	{
+	    _valueChangedSlots[propertyName] = value->changed()->connect(std::bind(
+			&Signal<Provider::Ptr, const std::string&>::execute,
+			_propValueChanged,
+			shared_from_this(),
+			propertyName
+		));
+
 		_names.push_back(propertyName);
 
 		_propertyAdded->execute(shared_from_this(), propertyName);
 	}
 
-	_propValueChanged->execute(shared_from_this(), propertyName);
-
 	if (changed)
+	{
 		_propReferenceChanged->execute(shared_from_this(), propertyName);
+		_propValueChanged->execute(shared_from_this(), propertyName);
+	}
 }
 
 bool 
