@@ -19,6 +19,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "ProviderTest.hpp"
 
+using namespace minko;
 using namespace minko::data;
 
 TEST_F(ProviderTest, Create)
