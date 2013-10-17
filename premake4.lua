@@ -26,8 +26,10 @@ include 'plugins/mk'
 include 'plugins/bullet'
 include 'plugins/particles'
 
--- test
-include 'tests'
+-- tests
+if _ACTION ~= "vs2010" then
+	include 'tests'
+end
 
 -- support for new actions
 dofile('tools/all/lib/library.lua')
