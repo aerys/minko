@@ -104,10 +104,8 @@ Provider::registerProperty(const std::string&		propertyName,
 						   std::shared_ptr<Value>	value)
 {
 	const auto	foundValueIt	= _values.find(propertyName);
-	const bool	isNewValue		= ( foundValueIt == _values.end() );
-//	bool		isNewValue		= _values.count(propertyName) == 0;
-
-	const bool	changed			= isNewValue || !( (*value) == (*foundValueIt->second) );
+	const bool	isNewValue		= (foundValueIt == _values.end());
+	const bool	changed			= isNewValue || !((*value) == (*foundValueIt->second));
 	
 	_values[propertyName] = value;
 	
