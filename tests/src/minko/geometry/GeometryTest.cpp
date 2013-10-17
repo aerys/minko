@@ -19,6 +19,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "GeometryTest.hpp"
 
+#include "minko/MinkoTests.hpp"
+
+using namespace minko;
 using namespace minko::geometry;
 
 TEST_F(GeometryTest, Create)
@@ -33,6 +36,97 @@ TEST_F(GeometryTest, Create)
 	}
 }
 
-//TEST_F(GeometryTest, )
-//{
-//}
+TEST_F(GeometryTest, AddVertexBuffer)
+{
+	auto g = Geometry::create();
+	float vertices[9] = {0.f, .5f, 0.f, .5f, -.5f, .0f, -.5f, -.5f, 0.f};
+	auto vb = render::VertexBuffer::create(MinkoTests::context(), std::begin(vertices), std::end(vertices));
+
+	vb->addAttribute("position", 3);
+
+	g->addVertexBuffer(vb);
+
+	ASSERT_TRUE(std::find(g->vertexBuffers().begin(), g->vertexBuffers().end(), vb) != g->vertexBuffers().end());
+}
+
+TEST_F(GeometryTest, RemoveVertexBuffer)
+{
+	auto g = Geometry::create();
+	float vertices[9] = {0.f, .5f, 0.f, .5f, -.5f, .0f, -.5f, -.5f, 0.f};
+	auto vb = render::VertexBuffer::create(MinkoTests::context(), std::begin(vertices), std::end(vertices));
+
+	vb->addAttribute("position", 3);
+
+	g->addVertexBuffer(vb);
+	g->removeVertexBuffer(vb);
+
+	ASSERT_FALSE(std::find(g->vertexBuffers().begin(), g->vertexBuffers().end(), vb) != g->vertexBuffers().end());
+}
+
+TEST_F(GeometryTest, RemoveVertexBufferByAttributeName)
+{
+	auto g = Geometry::create();
+	float vertices[9] = {0.f, .5f, 0.f, .5f, -.5f, .0f, -.5f, -.5f, 0.f};
+	auto vb = render::VertexBuffer::create(MinkoTests::context(), std::begin(vertices), std::end(vertices));
+
+	vb->addAttribute("position", 3);
+
+	g->addVertexBuffer(vb);
+	g->removeVertexBuffer("position");
+
+	ASSERT_FALSE(std::find(g->vertexBuffers().begin(), g->vertexBuffers().end(), vb) != g->vertexBuffers().end());
+}
+
+TEST_F(GeometryTest, HasVertexBuffer)
+{
+	auto g = Geometry::create();
+	float vertices[9] = {0.f, .5f, 0.f, .5f, -.5f, .0f, -.5f, -.5f, 0.f};
+	auto vb = render::VertexBuffer::create(MinkoTests::context(), std::begin(vertices), std::end(vertices));
+
+	vb->addAttribute("position", 3);
+
+	g->addVertexBuffer(vb);
+
+	ASSERT_TRUE(g->hasVertexBuffer(vb));
+}
+
+TEST_F(GeometryTest, HasVertexAttribute)
+{
+	auto g = Geometry::create();
+	float vertices[9] = {0.f, .5f, 0.f, .5f, -.5f, .0f, -.5f, -.5f, 0.f};
+	auto vb = render::VertexBuffer::create(MinkoTests::context(), std::begin(vertices), std::end(vertices));
+
+	vb->addAttribute("position", 3);
+
+	g->addVertexBuffer(vb);
+
+	ASSERT_TRUE(g->hasVertexAttribute("position"));
+}
+
+TEST_F(GeometryTest, VertexBufferAddedInData)
+{
+	auto g = Geometry::create();
+	float vertices[9] = {0.f, .5f, 0.f, .5f, -.5f, .0f, -.5f, -.5f, 0.f};
+	auto vb = render::VertexBuffer::create(MinkoTests::context(), std::begin(vertices), std::end(vertices));
+
+	vb->addAttribute("position", 3);
+
+	g->addVertexBuffer(vb);
+
+	ASSERT_TRUE(g->data()->hasProperty("geometry.vertex.attribute.position"));
+	ASSERT_TRUE(g->data()->get<render::VertexBuffer::Ptr>("geometry.vertex.attribute.position") == vb);
+}
+
+TEST_F(GeometryTest, VertexBufferRemovedFromData)
+{
+	auto g = Geometry::create();
+	float vertices[9] = {0.f, .5f, 0.f, .5f, -.5f, .0f, -.5f, -.5f, 0.f};
+	auto vb = render::VertexBuffer::create(MinkoTests::context(), std::begin(vertices), std::end(vertices));
+
+	vb->addAttribute("position", 3);
+
+	g->addVertexBuffer(vb);
+	g->removeVertexBuffer(vb);
+
+	ASSERT_FALSE(g->data()->hasProperty("geometry.vertex.attribute.position"));
+}
