@@ -6,6 +6,6 @@ newaction {
 	trigger = "doxygen",
 	description = "Create developer reference.",
 	execute = function()
-		os.execute("doxygen Doxyfile")
+		os.execute("doxygen")
 	end
 }
