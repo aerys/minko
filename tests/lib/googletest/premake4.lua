@@ -8,8 +8,6 @@ project "googletest"
 		"."
 	}
 
-	buildoptions { "-std=c++11", "-isystem include", "-pthread" }
-
 	configuration { "debug"}
 		defines { "DEBUG", "_DEBUG" }
 		flags { "Symbols" }
@@ -21,13 +19,16 @@ project "googletest"
 		targetdir "bin/release"
 
 	-- linux
-	--configuration { "linux" }
+	configuration { "linux" }
+		buildoptions { "-std=c++11", "-isystem include", "-pthread" }
 
 	-- windows
 	--configuration { "windows", "x32" }
 
 	-- macos
-	--configuration { "macosx" }
+	configuration { "macosx" }
+		buildoptions { "-std=c++11", "-isystem include", "-pthread" }
 
 	-- emscripten
-	--	configuration { "emscripten" }
+	configuration { "emscripten" }
+		buildoptions { "-std=c++11", "-isystem include", "-pthread" }
