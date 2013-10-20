@@ -89,14 +89,14 @@ package aerys.minko.scene.controller
                     'The same ScriptController instance can not be used in more than one scene ' +
                     'at a time.'
                 );
-
+			
+			_scene = scene;
+			
 			if (!_started[target])
 			{
 				_started[target] = true;
 				start(target);
 			}
-
-			_scene = scene;
         }
 
 		override protected function targetRemovedFromScene(target 	: ISceneNode,
