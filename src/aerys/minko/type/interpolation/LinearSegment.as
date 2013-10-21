@@ -92,7 +92,8 @@ package aerys.minko.type.interpolation
 		protected function update() : void
 		{
 			Vector4.subtract(_end, _start, _tmpTangent);
-			_length = _tmpTangent.length;
+			
+			_length		= _tmpTangent.length;
 			_tmpTangent	= _tmpTangent.normalize();
 		}
 	}

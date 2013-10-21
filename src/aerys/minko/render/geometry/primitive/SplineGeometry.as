@@ -16,29 +16,42 @@ package aerys.minko.render.geometry.primitive
 		
 		public function SplineGeometry(path					: IInterpolation,
 									   width				: Number			= 0.05,
-									   chunks				: uint				= 80,
+									   numChunks			: uint				= 80,
 									   vertexStreamUsage	: uint				= 3, // StreamUsage.DYNAMIC
 									   indexStreamUsage		: uint 				= 3)
 		{
 			var indexData 		: Vector.<uint>		= new Vector.<uint>;
 			var vertexData		: Vector.<Number>	= new Vector.<Number>;
+		
+			var totalLength				: Number	= path.length;
+			var invSquaredTotalLength	: Number	= totalLength > 1e-6 ? 1.0 / (totalLength * totalLength) : 0.0;
+			var	squaredLength			: Number	= 0.0;
 			
 			path.position(0, TMP1);
 			vertexData.push(
-				/* xyz */ TMP1.x - width, TMP1.y - width, TMP1.z,	/* uv */ 0, 0,
-				/* xyz */ TMP1.x, TMP1.y + width, TMP1.z,			/* uv */ 1, 0,
-				/* xyz */ TMP1.x + width, TMP1.y - width, TMP1.z,	/* uv */ 0, 1
+				/* xyz */ TMP1.x - width,	TMP1.y - width, TMP1.z,	/* uv */ 0.0, 0.0,
+				/* xyz */ TMP1.x,			TMP1.y + width, TMP1.z,	/* uv */ 0.0, 1.0,
+				/* xyz */ TMP1.x + width,	TMP1.y - width, TMP1.z,	/* uv */ 0.0, 0.0
 			);
 			
-			for (var chunk : uint = 0; chunk < chunks; ++chunk)
+			for (var chunk:uint = 0; chunk < numChunks; ++chunk)
 			{
-				var t		: Number = (chunk + 1) / chunks;
+				var t	: Number = (chunk + 1) / numChunks;
+				
 				path.position(t, TMP2);
 				
+				var dx	: Number = TMP2.x - TMP1.x;
+				var dy	: Number = TMP2.y - TMP1.y;
+				var dz	: Number = TMP2.z - TMP1.z;
+				
+				squaredLength += dx*dx + dy*dy + dz*dz;
+				
+				var texcoordU : Number = squaredLength * invSquaredTotalLength;
+				
 				vertexData.push(
-					/* xyz */ TMP2.x - width, TMP2.y - width, TMP2.z,	/* uv */ 0, 0,
-					/* xyz */ TMP2.x, TMP2.y + width, TMP2.z, 			/* uv */ 1, 0,
-					/* xyz */ TMP2.x + width, TMP2.y - width, TMP2.z,	/* uv */ 0, 1
+					/* xyz */ TMP2.x - width,	TMP2.y - width, TMP2.z,	/* uv */ texcoordU, 0.0,
+					/* xyz */ TMP2.x,			TMP2.y + width, TMP2.z, /* uv */ texcoordU, 1.0,
+					/* xyz */ TMP2.x + width,	TMP2.y - width, TMP2.z,	/* uv */ texcoordU, 0.0
 				);
 				
 				var j : uint = vertexData.length / 5 - 6;

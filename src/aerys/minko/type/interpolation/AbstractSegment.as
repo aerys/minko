@@ -72,20 +72,24 @@ package aerys.minko.type.interpolation
 				var tmpVector1 		: Vector4	= new Vector4();
 				var tmpVector2 		: Vector4	= new Vector4();
 				var tmpVectorDiff	: Vector4	= new Vector4();
-			
-				var len : Number = 0.0;
+				var squaredLength	: Number 	= 0.0;
+				
 				position(0, tmpVector1);
+				
 				for (var i : int = 0; i < ITERATIONS; ++i)
 				{
-					position((i + 1) / ITERATIONS, tmpVector2);
-					Vector4.subtract(tmpVector2, tmpVector1, tmpVectorDiff);
+					var t	: Number = (i + 1) / ITERATIONS;
+					position(t, tmpVector2);
 					
-					_length += tmpVectorDiff.length; 
-					len += tmpVectorDiff.length;
+					var dx	: Number	= tmpVector2.x - tmpVector1.x;
+					var dy	: Number	= tmpVector2.y - tmpVector1.y;
+					var dz	: Number	= tmpVector2.z - tmpVector1.z;
 					
-					tmpVector2.copyFrom(tmpVector1);
+					squaredLength += dx*dx + dy*dy + dz*dz;
+					
+					tmpVector1.copyFrom(tmpVector2);
 				}	
-				_length = len;
+				_length = Math.sqrt(squaredLength);
 			}
 			
 			return _length;
