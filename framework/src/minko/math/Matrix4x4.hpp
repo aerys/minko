@@ -160,6 +160,20 @@ namespace minko
 			Ptr
 			prependScale(float x, float y, float z);
 
+			inline
+			Ptr
+			appendScale(float scale)
+			{
+				return appendScale(scale, scale, scale);
+			}
+
+			inline
+			Ptr
+			prependScale(float scale)
+			{
+				return prependScale(scale, scale, scale);
+			}
+
 			float
 			determinant();
 
