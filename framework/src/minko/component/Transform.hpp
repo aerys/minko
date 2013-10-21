@@ -65,6 +65,17 @@ namespace minko
 				return ctrl;
 			}
 
+			inline static
+			Ptr
+			create(std::shared_ptr<math::Matrix4x4> transform)
+			{
+				auto ctrl = create();
+
+				ctrl->_transform->copyFrom(transform);
+
+				return ctrl;
+			}
+
 			~Transform()
 			{
 			}
