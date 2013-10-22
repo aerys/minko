@@ -166,8 +166,9 @@ private:
 
 		_context = minko::render::OpenGLES2Context::create();
 #else
-		SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+		//SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
+		SDL_Init(SDL_INIT_VIDEO);
 		SDL_WM_SetCaption(windowTitle.c_str(), "Minko");
 		SDL_Surface *screen = SDL_SetVideoMode(width, height, 0, SDL_OPENGL);
 
