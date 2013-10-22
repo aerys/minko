@@ -118,11 +118,19 @@ namespace minko
 			Ptr
 			prependTranslation(float x, float y, float z);
 
+			inline
 			Ptr
-			appendTranslation(Vector3Ptr);
+			appendTranslation(Vector3Ptr value)
+			{
+				return appendTranslation(value->x(), value->y(), value->z());
+			}
 
+			inline
 			Ptr
-			prependTranslation(Vector3Ptr);
+			prependTranslation(Vector3Ptr value)
+			{
+				return prependTranslation(value->x(), value->y(), value->z());
+			}
 
 			Ptr
 			appendRotationX(float radians);
