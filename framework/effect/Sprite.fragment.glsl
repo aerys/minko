@@ -1,5 +1,9 @@
 #ifdef FRAGMENT_SHADER
 
+#ifdef GL_ES
+	precision mediump float;
+#endif
+
 uniform vec4 uDiffuseColor;
 
 #ifdef DIFFUSE_MAP
@@ -14,15 +18,19 @@ uniform vec4 uDiffuseColor;
 
 void main()
 {
+	vec4 diffuse = vec4(0.);
+	
 	#ifdef DIFFUSE_MAP
-		gl_FragColor = texture2D(uDiffuseMap, vUV);
+		diffuse = texture2D(uDiffuseMap, vUV);
 	#else
-		gl_FragColor = uDiffuseColor;
+		diffuse = uDiffuseColor;
 	#endif
 	
 	#ifdef DIFFUSE_TINT
-		gl_FragColor *= uDiffuseTint;
+		diffuse *= uDiffuseTint;
 	#endif
+	
+	gl_FragColor = diffuse;
 }
 
 #endif
