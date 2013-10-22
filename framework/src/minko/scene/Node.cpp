@@ -89,7 +89,7 @@ Node::addChild(Node::Ptr child)
 Node::Ptr
 Node::removeChild(Node::Ptr child)
 {
-	std::list<Node::Ptr>::iterator it = std::find(_children.begin(), _children.end(), child);
+	auto it = std::find(_children.begin(), _children.end(), child);
 
 	if (it == _children.end())
 		throw std::invalid_argument("child");
