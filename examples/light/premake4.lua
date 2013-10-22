@@ -12,9 +12,9 @@ project "minko-example-light"
 	
 	-- minko-webgl
 	-- ugly, but couldn't find a better solution to maintain linking order.
-	if _OPTIONS["platform"] == "emscripten" then
-		links { "minko-webgl" }
-	end
+	--if _OPTIONS["platform"] == "emscripten" then
+	--	links { "minko-webgl" }
+	--end
 
 	-- minko-png
 	links { "minko-png" }
@@ -92,12 +92,18 @@ project "minko-example-light"
 	-- emscripten
 	configuration { "emscripten" }
 		flags { "Optimize" }
+
+		-- minko-webgl
 		links { "minko-webgl" }
 		includedirs { "../../plugins/webgl/src" }
+
+		includedirs { "../../deps/emscripten/include" }
+		defines { "HAVE_M_PI" }
 		buildoptions { "-std=c++11" }
+		
 		local bin = "bin/release/" .. project().name
 		postbuildcommands {
 			'cp ' .. bin .. ' ' .. bin .. '.bc',
-			'emcc ' .. bin .. '.bc -o ' .. bin .. '.js -O1 -s ASM_JS=1 -s TOTAL_MEMORY=1073741824 --preload-dir effect --preload-dir texture',
-			'emcc ' .. bin .. '.bc -o ' .. bin .. '.html -O1 -s ASM_JS=1 -s TOTAL_MEMORY=1073741824 --preload-dir effect --preload-dir texture'
+			'cp -r asset/* bin/release/',
+			'cd bin/release && emcc ' .. project().name .. '.bc -o ' .. project().name .. '.html -O2 -s ASM_JS=1 -s TOTAL_MEMORY=268435456 --preload-file effect --preload-file texture --compression /home/vagrant/src/emscripten/third_party/lzma.js/lzma-native,/home/vagrant/src/emscripten/third_party/lzma.js/lzma-decoder.js,LZMA.decompress',
 		}
