@@ -128,12 +128,15 @@ Container::removeProvider(std::shared_ptr<ArrayProvider> provider)
 {
 	assertProviderExists(provider);
 
+	auto	index				= provider->index();
 	auto	lengthPropertyName	= provider->arrayName() + ".length";
 	int		length				= _arrayLengths->hasProperty(lengthPropertyName)
 		? _arrayLengths->get<int>(lengthPropertyName)
 		: 0;
 
-	if (provider->index() != length-1)
+	removeProvider(std::dynamic_pointer_cast<Provider>(provider));
+
+	if (provider->index() != length - 1)
 	{
 		auto last = std::dynamic_pointer_cast<ArrayProvider>(*std::find_if(
 			_providers.rbegin(),
@@ -146,10 +149,8 @@ Container::removeProvider(std::shared_ptr<ArrayProvider> provider)
 			}
 		));
 
-		last->index(provider->index());
+		last->index(index);
 	}
-
-	removeProvider(std::dynamic_pointer_cast<Provider>(provider));
 
 	_arrayLengths->set<int>(lengthPropertyName, --length);
 	if (length == 0)
