@@ -64,14 +64,14 @@ namespace minko
         Blending::Mode
         operator|(Blending::Source s, Blending::Destination d)
         {
-            return static_cast<Blending::Mode>(static_cast<uint>(s) | static_cast<uint>(d));
+            return static_cast<Blending::Mode>(static_cast<unsigned int>(s) | static_cast<unsigned int>(d));
         }
 
         inline
-        uint
+        unsigned int
         operator&(Blending::Mode& mode, int mask)
         {
-            return static_cast<uint>(mode) & mask;
+            return static_cast<unsigned int>(mode) & mask;
         }
     }
 }
