@@ -1,0 +1,268 @@
+
+#include "minko/Minko.hpp"
+#include "minko/Signal.hpp"
+#include "minko/render/AbstractContext.hpp"
+#include "minko/render/OpenGLES2Context.hpp"
+
+#ifdef EMSCRIPTEN
+# include "minko/MinkoWebGL.hpp"
+# include "SDL/SDL.h"
+# include "emscripten.h"
+#else
+# include "SDL2/SDL.h"
+
+# ifdef MINKO_ANGLE
+#  include "SDL2/SDL_syswm.h"
+#  include <EGL/egl.h>
+#  include <GLES2/gl2.h>
+#  include <GLES2/gl2ext.h>
+# endif
+#endif
+
+class SDLStage :
+	public std::enable_shared_from_this<SDLStage>
+{
+public:
+
+private:
+	static bool									_active;
+
+	static minko::Signal<>::Ptr					_enterFrame;
+	static minko::Signal<>::Ptr					_keyDown;
+	static minko::render::AbstractContext::Ptr	_context;
+
+	static SDL_Window*							_window;
+
+#ifdef MINKO_ANGLE
+	typedef struct
+	{
+	   /// Window width
+	   GLint       width;
+	   /// Window height
+	   GLint       height;
+	   /// Window handle
+	   EGLNativeWindowType  hWnd;
+	   /// EGL display
+	   EGLDisplay  eglDisplay;
+	   /// EGL context
+	   EGLContext  eglContext;
+	   /// EGL surface
+	   EGLSurface  eglSurface;
+	} ESContext; 
+
+	ESContext*							_angleContext;
+#endif
+
+
+public:
+	inline static
+	bool
+	active()
+	{
+		return _active;
+	}
+
+	inline static
+	minko::Signal<>::Ptr
+	enterFrame()
+	{
+		return _enterFrame;
+	}
+
+	inline static
+	minko::Signal<>::Ptr
+	keyDown()
+	{
+		return _keyDown;
+	}
+
+	inline static
+	minko::render::AbstractContext::Ptr
+	context()
+	{
+		return _context;
+	}
+
+	static
+	void
+	run()
+	{
+		_active = true;
+
+#ifdef EMSCRIPTEN
+		emscripten_set_main_loop(SDLStage::step, 0, 1);
+#else
+		while (_active)
+			step();
+#endif
+	}
+
+	static
+	void
+	initialize(const std::string& windowTitle, unsigned int width, unsigned int height)
+	{
+		_active = false;
+		_enterFrame = minko::Signal<>::create();
+		_keyDown = minko::Signal<>::create();
+
+		initializeContext(windowTitle, width, height);
+	}
+
+private:
+	static
+	void
+	step()
+	{
+		SDL_Event event;
+		
+		SDL_PollEvent(&event);
+
+		switch (event.type)
+		{
+			case SDL_QUIT:
+				_active = false;
+				break;
+
+			case SDL_KEYDOWN:
+				_keyDown->execute();
+				break;
+
+			default:
+				break;
+		}
+
+		_enterFrame->execute();
+
+		// swap buffers
+#ifdef MINKO_ANGLE
+		eglSwapBuffers(context->eglDisplay, context->eglSurface);
+#else
+		SDL_GL_SwapWindow(_window);
+#endif
+
+#ifdef EMSCRIPTEN
+		SDL_GL_SwapBuffers();
+#endif
+	}
+
+	static
+	void
+	initializeContext(const std::string& windowTitle, unsigned int width, unsigned int height)
+	{
+#ifndef EMSCRIPTEN
+		_window = SDL_CreateWindow(
+			windowTitle.c_str(),
+			SDL_WINDOWPOS_UNDEFINED,
+			SDL_WINDOWPOS_UNDEFINED,
+			width, height,
+			SDL_WINDOW_OPENGL
+		);
+# ifdef MINKO_ANGLE
+		if (!(_angleContext = initContext(_window)))
+			throw std::runtime_error("Could not create eglContext");
+# else
+		SDL_GLContext glcontext = SDL_GL_CreateContext(_window);
+# endif // MINKO_ANGLE
+
+		_context = minko::render::OpenGLES2Context::create();
+#else
+		SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+
+		SDL_WM_SetCaption(windowTitle.c_str(), "Minko");
+		SDL_Surface *screen = SDL_SetVideoMode(width, height, 0, SDL_OPENGL);
+
+		_context = minko::render::WebGLContext::create();
+#endif // EMSCRIPTEN
+	}
+
+#ifdef MINKO_ANGLE
+	ESContext* initContext(SDL_Window* window)
+	{
+		EGLint configAttribList[] =
+		{
+			EGL_RED_SIZE,       8,
+			EGL_GREEN_SIZE,     8,
+			EGL_BLUE_SIZE,      8,
+			EGL_ALPHA_SIZE,     8,
+			EGL_DEPTH_SIZE,     16,
+			EGL_STENCIL_SIZE,   8,
+			EGL_SAMPLE_BUFFERS, 0,
+			EGL_NONE
+		};
+		EGLint surfaceAttribList[] =
+		{
+			EGL_RENDER_BUFFER, EGL_BACK_BUFFER,
+			EGL_NONE, EGL_NONE
+		};
+
+		SDL_SysWMinfo info;
+		SDL_VERSION(&info.version);
+		if (!SDL_GetWindowWMInfo(window, &info))
+			return GL_FALSE;
+		EGLNativeWindowType hWnd = info.info.win.window;
+
+		ESContext* es_context = new ESContext();
+		es_context->width = width;
+		es_context->height = height;
+		es_context->hWnd = hWnd;
+
+		EGLDisplay display;
+		EGLint numConfigs;
+		EGLint majorVersion;
+		EGLint minorVersion;
+		EGLContext context;
+		EGLSurface surface;
+		EGLConfig config;
+		EGLint contextAttribs[] = { EGL_CONTEXT_CLIENT_VERSION, 2, EGL_NONE, EGL_NONE }; 
+
+		display = eglGetDisplay(GetDC(hWnd)); // EGL_DEFAULT_DISPLAY
+		if ( display == EGL_NO_DISPLAY )
+		{
+			return EGL_FALSE;
+		}
+
+		// Initialize EGL
+		if ( !eglInitialize(display, &majorVersion, &minorVersion) )
+		{
+			return EGL_FALSE;
+		}
+
+		// Get configs
+		if ( !eglGetConfigs(display, NULL, 0, &numConfigs) )
+		{
+			return EGL_FALSE;
+		}
+
+		// Choose config
+		if ( !eglChooseConfig(display, configAttribList, &config, 1, &numConfigs) )
+		{
+			return EGL_FALSE;
+		}
+
+		// Create a surface
+		surface = eglCreateWindowSurface(display, config, (EGLNativeWindowType)hWnd, surfaceAttribList);
+		if ( surface == EGL_NO_SURFACE )
+		{
+			return EGL_FALSE;
+		}
+
+		// Create a GL context
+		context = eglCreateContext(display, config, EGL_NO_CONTEXT, contextAttribs );
+		if ( context == EGL_NO_CONTEXT )
+		{
+			return EGL_FALSE;
+		}   
+
+		// Make the context current
+		if ( !eglMakeCurrent(display, surface, surface, context) )
+		{
+			return EGL_FALSE;
+		}
+		es_context->eglDisplay = display;
+		es_context->eglSurface = surface;
+		es_context->eglContext = context;
+
+		return es_context;
+	}
+#endif
+};
