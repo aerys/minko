@@ -232,6 +232,7 @@ namespace minko
 			void
 			setProgram(const unsigned int program);
 
+			virtual
 			void
 			setShaderSource(const unsigned int shader, const std::string& source);
 
