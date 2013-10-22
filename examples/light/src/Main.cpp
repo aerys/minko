@@ -3,128 +3,11 @@
 #include "minko/Minko.hpp"
 #include "minko/MinkoPNG.hpp"
 
-#ifdef EMSCRIPTEN
-# include "SDL/SDL.h"
-#else
-# include "SDL2/SDL.h"
-
-# ifdef MINKO_ANGLE
-#  include "SDL2/SDL_syswm.h"
-#  include <EGL/egl.h>
-#  include <GLES2/gl2.h>
-#  include <GLES2/gl2ext.h>
-# endif
-#endif
+#include "SDLStage.hpp"
 
 using namespace minko;
 using namespace minko::component;
 using namespace minko::math;
-
-#ifdef MINKO_ANGLE
-typedef struct
-{
-   /// Window width
-   GLint       width;
-   /// Window height
-   GLint       height;
-   /// Window handle
-   EGLNativeWindowType  hWnd;
-   /// EGL display
-   EGLDisplay  eglDisplay;
-   /// EGL context
-   EGLContext  eglContext;
-   /// EGL surface
-   EGLSurface  eglSurface;
-} ESContext; 
-
-ESContext* initContext(SDL_Window* window)
-{
-	EGLint configAttribList[] =
-	{
-		EGL_RED_SIZE,       8,
-		EGL_GREEN_SIZE,     8,
-		EGL_BLUE_SIZE,      8,
-		EGL_ALPHA_SIZE,     8,
-		EGL_DEPTH_SIZE,     16,
-		EGL_STENCIL_SIZE,   8,
-		EGL_SAMPLE_BUFFERS, 0,
-		EGL_NONE
-	};
-	EGLint surfaceAttribList[] =
-	{
-		EGL_RENDER_BUFFER, EGL_BACK_BUFFER,
-		EGL_NONE, EGL_NONE
-	};
-
-	SDL_SysWMinfo info;
-	SDL_VERSION(&info.version);
-	if (!SDL_GetWindowWMInfo(window, &info))
-		return GL_FALSE;
-	EGLNativeWindowType hWnd = info.info.win.window;
-
-	ESContext* es_context = new ESContext();
-	es_context->width = 800;
-	es_context->height = 600;
-	es_context->hWnd = hWnd;
-
-	EGLDisplay display;
-	EGLint numConfigs;
-	EGLint majorVersion;
-	EGLint minorVersion;
-	EGLContext context;
-	EGLSurface surface;
-	EGLConfig config;
-	EGLint contextAttribs[] = { EGL_CONTEXT_CLIENT_VERSION, 2, EGL_NONE, EGL_NONE }; 
-
-	display = eglGetDisplay(GetDC(hWnd)); // EGL_DEFAULT_DISPLAY
-	if ( display == EGL_NO_DISPLAY )
-	{
-		return EGL_FALSE;
-	}
-
-	// Initialize EGL
-	if ( !eglInitialize(display, &majorVersion, &minorVersion) )
-	{
-		return EGL_FALSE;
-	}
-
-	// Get configs
-	if ( !eglGetConfigs(display, NULL, 0, &numConfigs) )
-	{
-		return EGL_FALSE;
-	}
-
-	// Choose config
-	if ( !eglChooseConfig(display, configAttribList, &config, 1, &numConfigs) )
-	{
-		return EGL_FALSE;
-	}
-
-	// Create a surface
-	surface = eglCreateWindowSurface(display, config, (EGLNativeWindowType)hWnd, surfaceAttribList);
-	if ( surface == EGL_NO_SURFACE )
-	{
-		return EGL_FALSE;
-	}
-
-	// Create a GL context
-	context = eglCreateContext(display, config, EGL_NO_CONTEXT, contextAttribs );
-	if ( context == EGL_NO_CONTEXT )
-	{
-		return EGL_FALSE;
-	}   
-
-	// Make the context current
-	if ( !eglMakeCurrent(display, surface, surface, context) )
-	{
-		return EGL_FALSE;
-	}
-	es_context->eglDisplay = display;
-	es_context->eglSurface = surface;
-	es_context->eglContext = context;
-	return es_context;
-}
-#endif
 
 void
 printFramerate(const unsigned int delay = 1)
@@ -259,39 +142,11 @@ SDL_KeyboardHandler(scene::Node::Ptr		root,
 
 int main(int argc, char** argv)
 {
-#ifdef EMSCRIPTEN
-	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-
-	SDL_WM_SetCaption("Minko - Light Example", "Minko");
-	SDL_Surface *screen = SDL_SetVideoMode(800,
-		600,
-		0, SDL_OPENGL);
-
-	std::cout << "WebGL context created" << std::endl;
-	context = render::WebGLContext::create();
-#else
-	SDL_Window* window = SDL_CreateWindow(
-		"Minko - Light Example",
-		SDL_WINDOWPOS_UNDEFINED,
-		SDL_WINDOWPOS_UNDEFINED,
-		800, 600,
-		SDL_WINDOW_OPENGL
-	);
-
-# ifdef MINKO_ANGLE
-	ESContext* context;
-	if (!(context = initContext(window)))
-		throw std::runtime_error("Could not create eglContext");
-
-	std::cout << "EGLContext Initialized" << std::endl;
-# else
-	SDL_GLContext glcontext = SDL_GL_CreateContext(window);
-# endif
-#endif
+	SDLStage::initialize("Minko Examples - Light", 800, 600);
 
 	const clock_t startTime	= clock();
 
-	auto sceneManager		= SceneManager::create(render::OpenGLES2Context::create());
+	auto sceneManager		= SceneManager::create(SDLStage::context());
 	auto root				= scene::Node::create("root")->addComponent(sceneManager);
 	auto sphereGeometry		= geometry::SphereGeometry::create(sceneManager->assets()->context(), 32, 32, true);
 	auto sphereMaterial		= material::Material::create()
@@ -367,48 +222,45 @@ int main(int argc, char** argv)
 
 		lights->addComponent(Transform::create());
 		root->addChild(lights);
+
+		auto keyDown = SDLStage::keyDown()->connect([&]()
+		{
+			const auto MAX_NUM_LIGHTS = 40;
+
+			if (root->children()[4]->children().size() == MAX_NUM_LIGHTS)
+			{
+				std::cout << "cannot add more lights" << std::endl;
+				return;
+			}
+
+			auto r = rand() / (float)RAND_MAX;
+			auto theta = 2.0f * PI *  r;
+			auto color = hslToRgb(r, 1.f, .5f);
+			auto pos = Vector3::create(
+				cosf(theta) * 5.f + rand() / ((float)RAND_MAX * 3.f),
+				2.5f + rand() / (float)RAND_MAX,
+				sinf(theta) * 5.f + rand() / ((float)RAND_MAX * 3.f)
+			);
+
+			root->children()[4]->addChild(createPointLight(color, pos, sceneManager->assets()));
+		});
+		auto enterFrame = SDLStage::enterFrame()->connect([&]()
+		{
+			lights->component<Transform>()->transform()->appendRotationY(.005f);
+
+			sceneManager->nextFrame();
+
+			printFramerate();
+		});
+
+		for (auto i = 0; i < 10; ++i)
+			SDLStage::keyDown()->execute();
+
+		SDLStage::run();
+
 	});
 
 	sceneManager->assets()->load();
 
-	bool done = false;
-	while (!done)
-	{
-		SDL_Event event;
-
-		while (SDL_PollEvent(&event))
-		{
-			switch (event.type)
-			{
-			case SDL_QUIT:
-				done = true;
-				break;
-			case SDL_KEYDOWN:
-#ifndef EMSCRIPTEN
-				SDL_KeyboardHandler(root, sphereMaterial, sceneManager->assets());
-#endif // EMSCRIPTEN
-				break;
-			default:
-				break;
-			}
-		}
-
-		lights->component<Transform>()->transform()->appendRotationY(.005f);
-
-		sceneManager->nextFrame();
-		//printFramerate();
-
-#ifdef MINKO_ANGLE
-		eglSwapBuffers(context->eglDisplay, context->eglSurface);
-#elif defined(EMSCRIPTEN)
-		SDL_GL_SwapBuffers();
-#else
-		SDL_GL_SwapWindow(window);
-#endif
-	}
-
-	SDL_Quit();
-
 	exit(EXIT_SUCCESS);
-
 }
