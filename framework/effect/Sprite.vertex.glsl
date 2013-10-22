@@ -1,5 +1,9 @@
 #ifdef VERTEX_SHADER
 
+#ifdef GL_ES
+	precision mediump float;
+#endif
+
 attribute vec3 	aPosition;
 
 uniform mat4 	uModelToWorldMatrix;
