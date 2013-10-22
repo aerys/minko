@@ -37,7 +37,7 @@ namespace minko
 
 		protected:
 			std::string 									_name;
-			std::list<Ptr>									_children;
+			std::vector<Ptr>								_children;
 
 		private:
 			static unsigned int								_id;
@@ -141,7 +141,7 @@ namespace minko
 			}
 
 			inline
-			const std::list<Ptr>&
+			const std::vector<Ptr>&
 			children()
 			{
 				return _children;
