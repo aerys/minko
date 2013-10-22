@@ -39,9 +39,9 @@ PerspectiveCamera::PerspectiveCamera(float fov,
     _position(Vector3::create())
 {
 	data()
-      ->set("camera.position",            _position)
-  		->set("camera.viewMatrix",			    _view)
-  		->set("camera.projectionMatrix",	  _projection)
+		->set("camera.position",            _position)
+  		->set("camera.viewMatrix",			_view)
+  		->set("camera.projectionMatrix",	_projection)
   		->set("camera.worldToScreenMatrix",	_viewProjection);
 }
 
