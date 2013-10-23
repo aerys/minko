@@ -91,14 +91,14 @@ namespace minko
 			bool
 			hasTechnique(const std::string& techniqueName)
 			{
-				return _techniques.count(techniqueName);
+				return _techniques.count(techniqueName) != 0;
 			}
 
 			inline
 			bool
 			hasFallback(const std::string& techniqueName)
 			{
-				return _fallback.count(techniqueName);
+				return _fallback.count(techniqueName) != 0;
 			}
 
             template <typename... T>
