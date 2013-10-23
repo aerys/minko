@@ -40,13 +40,9 @@ namespace minko
 			typedef Signal<Ptr, const std::string&, const std::string&>::Ptr	TechniqueChangedSignalPtr;
 
 		private:
-			std::unordered_map<std::string, Technique> 			_techniques;
-			std::string											_currentTechniqueName;
-			Technique 											_passes;
-
-			std::list<std::function<void(PassPtr)>>				_uniformFunctions;
-
-			TechniqueChangedSignalPtr							_techniqueChanged;
+			std::unordered_map<std::string, Technique>		_techniques;
+			std::unordered_map<std::string, std::string>	_fallback;
+			std::list<std::function<void(PassPtr)>>			_uniformFunctions;
 
 		public:
 			inline static
@@ -62,16 +58,47 @@ namespace minko
 			{
 				auto effect = create();
 
-				effect->_passes = effect->_techniques["default"] = passes;
+				effect->_techniques["default"] = passes;
 
 				return effect;
 			}
 
 			inline
-			const std::vector<PassPtr>&
-			passes()
+			const std::unordered_map<std::string, Technique>&
+			techniques()
 			{
-				return _passes;
+				return _techniques;
+			}
+
+			inline
+			const Technique&
+			technique(const std::string& techniqueName)
+			{
+				if (!hasTechnique(techniqueName))
+					throw std::invalid_argument("techniqueName = " + techniqueName);
+
+				return _techniques[techniqueName];
+			}
+
+			inline
+			const std::string&
+			fallback(const std::string& techniqueName)
+			{
+				return _fallback[techniqueName];
+			}
+
+			inline
+			bool
+			hasTechnique(const std::string& techniqueName)
+			{
+				return _techniques.count(techniqueName);
+			}
+
+			inline
+			bool
+			hasFallback(const std::string& techniqueName)
+			{
+				return _fallback.count(techniqueName);
 			}
 
             template <typename... T>
@@ -87,40 +114,16 @@ namespace minko
 						pass->setUniform(name, values...);
 			}
 
-			inline
-			const std::string&
-			technique()
-			{
-				return _currentTechniqueName;
-			}
-
-			inline
-			void
-			technique(const std::string& technique)
-			{
-				if (_techniques.count(technique) == 0)
-					throw std::invalid_argument("technique = " + technique);
-
-				_currentTechniqueName = technique;
-				_passes = _techniques[technique];
-			}
-
-			inline
-			Signal<Ptr, const std::string&, const std::string&>::Ptr
-			techniqueChanged() const
-			{
-				return _techniqueChanged;
-			}
-
             void
             addTechnique(const std::string& name, Technique& passes);
+
+            void
+            addTechnique(const std::string& name, Technique& passes, const std::string& fallback);
 
             void
             removeTechnique(const std::string& name);
 
 		private:
-			Effect();
-
 			template <typename... T>
 			void
 			setUniformOnPass(std::shared_ptr<Pass> pass, const std::string& name, const T&... values)

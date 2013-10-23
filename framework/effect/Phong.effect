@@ -37,40 +37,49 @@
 		"MODEL_TO_WORLD"			: "transform.modelToWorldMatrix",
 		"NUM_AMBIENT_LIGHTS"		: "ambientLights.length",
 		"PRECOMPUTED_AMBIENT"		: "sumAmbients",
-		"NUM_DIRECTIONAL_LIGHTS"	: "directionalLights.length",
-		"NUM_POINT_LIGHTS"			: "pointLights.length",
-		"NUM_SPOT_LIGHTS"			: "spotLights.length"
+		"NUM_DIRECTIONAL_LIGHTS"	: { "property" : "directionalLights.length", "max" : 8 },
+		"NUM_POINT_LIGHTS"			: { "property" : "pointLights.length", "max" : 8 },
+		"NUM_SPOT_LIGHTS"			: { "property" : "spotLights.length", "max" : 8 }
 	},
 
-	"defaultTechnique" : "single_pass",
+	"defaultTechnique" : "single-pass",
 	
-	"techniques" : [{
-		"name"	: "single_pass",
+	"samplerStates" : {
+		"diffuseMap"	: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" },
+		"normalMap"		: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" },
+		"specularMap"	: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" }
+	},
 
-		"priority"			: 0,
-		"blendMode"			: ["one", "zero"],
-		"depthTest"			: [true, "less_equal"],
-		"triangleCulling"	: "back",
+	"techniques" : [
+		{
+			"name"	: "single-pass",
 
-		"samplerStates" : {
-			"diffuseMap"	: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" },
-			"normalMap"		: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" },
-			"specularMap"	: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" }
+			"priority"			: 0,
+			"blendMode"			: ["one", "zero"],
+			"depthTest"			: [true, "less_equal"],
+			"triangleCulling"	: "back",
+
+			"passes"	: [{
+				"vertexShader" : {
+					"includes" : [
+						"Phong.vertex.glsl"
+					]
+				},
+				"fragmentShader" : {
+					"includes" : [
+						"Phong.struct.glsl",
+						"Phong.function.glsl",
+						"Phong.fragment.glsl"
+					]
+				}
+			}]
 		},
+		{
+			"name" 		: "multi-pass",
 
-		"passes"	: [{
-			"vertexShader" : {
-				"includes" : [
-					"Phong.vertex.glsl"
-				]
-			},
-			"fragmentShader" : {
-				"includes" : [
-					"Phong.struct.glsl",
-					"Phong.function.glsl",
-					"Phong.fragment.glsl"
-				]
-			}
-		}]
-	}]
+			"passes" 	: [{
+				"includes" : [ "Basic.vertex.glsl", "Basic.fragment.glsl" ]
+			}]
+		}
+	]
 }
