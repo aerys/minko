@@ -42,18 +42,20 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 class SDLStage :
 	public std::enable_shared_from_this<SDLStage>
 {
-public:
+private:
+	typedef unsigned int	uint;
 
 private:
 	static bool									_active;
+	static minko::render::AbstractContext::Ptr	_context;
+#ifndef EMSCRIPTEN
+	static SDL_Window*							_window;
+#endif
+	static float								_framerate;
 
 	static minko::Signal<>::Ptr					_enterFrame;
 	static minko::Signal<>::Ptr					_keyDown;
-	static minko::render::AbstractContext::Ptr	_context;
-
-	static SDL_Window*							_window;
-
-	static float								_framerate;
+	static minko::Signal<uint, uint>::Ptr		_resized;
 
 #ifdef MINKO_ANGLE
 	typedef struct
@@ -99,6 +101,13 @@ public:
 	}
 
 	inline static
+	minko::Signal<uint, uint>::Ptr
+	resized()
+	{
+		return _resized;
+	}
+
+	inline static
 	minko::render::AbstractContext::Ptr
 	context()
 	{
@@ -129,12 +138,13 @@ public:
 
 	static
 	void
-	initialize(const std::string& windowTitle, unsigned int width, unsigned int height)
+	initialize(const std::string& windowTitle, unsigned int width = 0, unsigned int height = 0)
 	{
 		_active = false;
 		_framerate = 0.f;
 		_enterFrame = minko::Signal<>::create();
 		_keyDown = minko::Signal<>::create();
+		_resized = minko::Signal<uint, uint>::create();
 
 		initializeContext(windowTitle, width, height);
 	}
@@ -158,6 +168,19 @@ private:
 
 			case SDL_KEYDOWN:
 				_keyDown->execute();
+				break;
+
+			case SDL_WINDOWEVENT:
+				switch (event.window.event)
+				{
+					case SDL_WINDOWEVENT_RESIZED:
+						_context->configureViewport(0, 0, event.window.data1, event.window.data2);
+						_resized->execute(event.window.data1, event.window.data2);
+						break;
+					default:
+						break;
+				}
+				
 				break;
 
 			default:
@@ -190,7 +213,7 @@ private:
 			SDL_WINDOWPOS_UNDEFINED,
 			SDL_WINDOWPOS_UNDEFINED,
 			width, height,
-			SDL_WINDOW_OPENGL
+			SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE
 		);
 # ifdef MINKO_ANGLE
 		if (!(_angleContext = initContext(_window)))
@@ -204,7 +227,7 @@ private:
 		//SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
 		SDL_Init(SDL_INIT_VIDEO);
-		SDL_WM_SetCaption(windowTitle.c_str(), "Minko");
+		SDL_WM_SetCaption(windowTitle.c_str(), NULL);
 		SDL_Surface *screen = SDL_SetVideoMode(width, height, 0, SDL_OPENGL);
 
 		_context = minko::render::WebGLContext::create();
