@@ -35,11 +35,13 @@ using namespace minko::render;
 
 Surface::Surface(Geometry::Ptr 			geometry,
 				 data::Provider::Ptr 	material,
-				 Effect::Ptr			effect) :
+				 Effect::Ptr			effect,
+				 const std::string&		technique) :
 	AbstractComponent(),
 	_geometry(geometry),
 	_material(material),
 	_effect(effect),
+	_technique(technique),
 	_macroPropertyNames(),
 	_drawCalls(),
 	_drawCallToPass(),
@@ -71,16 +73,13 @@ Surface::initialize()
 		std::placeholders::_2
 	));
 
-	_techniqueChangedSlot = _effect->techniqueChanged()->connect(std::bind(
-		&Surface::techniqueChangedHandler,
-		shared_from_this(),
-		std::placeholders::_1,
-		std::placeholders::_2,
-		std::placeholders::_3
-	));
+	auto techniques = _effect->techniques();
+
+	if (techniques.count(_technique) == 0)
+		throw std::logic_error("The technique '" + _technique + "' does not exist.");
 
 	_macroPropertyNames.clear();
-	for (const auto& pass : _effect->passes())
+	for (const auto& pass : techniques[_technique])
 		for (const auto& binding : pass->macroBindings())
 			_macroPropertyNames.insert(std::get<0>(binding.second));
 }
@@ -206,9 +205,18 @@ Surface::createDrawCalls(std::shared_ptr<data::Container> rendererData)
 {
 	deleteDrawCalls();
 
-	for (auto pass : _effect->passes())
+	const auto& passes = _effect->technique(_technique);
+
+	for (const auto& pass : passes)
 	{
 		auto drawCall  = initializeDrawCall(pass);
+
+		if (!drawCall)
+		{
+			switchToFallbackTechnique();
+
+			return createDrawCalls(rendererData);
+		}
 
 		_drawCalls.push_back(drawCall);
 		_drawCallAdded->execute(shared_from_this(), drawCall);
@@ -236,6 +244,9 @@ Surface::initializeDrawCall(Pass::Ptr		pass,
 	std::list<std::string>	bindingValues;
 
 	auto program = getWorkingProgram(pass, targetData, rootData, bindingDefines, bindingValues);
+
+	if (!program)
+		return nullptr;
 
 	if (drawcall == nullptr)
 	{
@@ -282,16 +293,17 @@ Surface::getWorkingProgram(std::shared_ptr<Pass>	pass,
 
 	while (!program)
 	{
+		auto passes = _effect->technique(_technique);
 		auto fallbackIt = std::find_if(
-			_effect->passes().begin(),
-			_effect->passes().end(),
+			passes.begin(),
+			passes.end(),
 			[&](const Pass::Ptr& p)
 			{
 				return p->name() == pass->fallback();
 			}
 		);
 
-		if (fallbackIt == _effect->passes().end())
+		if (fallbackIt == passes.end())
 			throw;
 
 		pass = *fallbackIt;
@@ -329,7 +341,15 @@ Surface::macroChangedHandler(Container::Ptr		data,
 #endif // DEBUG_SHADER_FORK
 
 			auto pass = _drawCallToPass[drawCall];
-			initializeDrawCall(pass, drawCall);
+
+			if (!initializeDrawCall(pass, drawCall))
+			{
+				switchToFallbackTechnique();
+
+				deleteDrawCalls();
+				// FIXME: should pass a valid renderData instead of nullptr
+				createDrawCalls(nullptr);
+			}
 		}
 	}
 	else if (_macroPropertyNames.find(propertyName) != _macroPropertyNames.end())
@@ -413,7 +433,15 @@ Surface::getDataContainer(const std::string& propertyName) const
 }
 
 void
-Surface::techniqueChangedHandler(Effect::Ptr effect, const std::string& oldTechnique, const std::string& newTechnique)
+Surface::switchToFallbackTechnique()
 {
-	std::cout << "technique changed" << std::endl;
+#ifdef DEBUG_SHADER_FORK
+	std::cout << "fallback for technique '" << _technique << "': ";
+#endif
+	if (_effect->hasFallback(_technique))
+		_technique = _effect->fallback(_technique);
+
+#ifdef DEBUG_SHADER_FORK
+	std::cout << "'" << _technique << "'" << std::endl;
+#endif	
 }
