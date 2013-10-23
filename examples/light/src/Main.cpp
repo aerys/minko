@@ -9,24 +9,6 @@ using namespace minko;
 using namespace minko::component;
 using namespace minko::math;
 
-void
-printFramerate(const unsigned int delay = 1)
-{
-	static auto start = time(NULL);
-	static auto numFrames = 0;
-
-	int secondTime = time(NULL);
-
-	++numFrames;
-
-	if ((secondTime - start) >= 1)
-	{
-		std::cout << numFrames << " fps." << std::endl;
-		start = time(NULL);
-		numFrames = 0;
-	}
-}
-
 scene::Node::Ptr
 createPointLight(Vector3::Ptr color, Vector3::Ptr position, file::AssetLibrary::Ptr assets)
 {
@@ -223,6 +205,11 @@ int main(int argc, char** argv)
 		lights->addComponent(Transform::create());
 		root->addChild(lights);
 
+		auto resized = SDLStage::resized()->connect([&](unsigned int width, unsigned int height)
+		{
+			camera->component<PerspectiveCamera>()->aspectRatio((float)width / (float)height);
+		});
+
 		auto keyDown = SDLStage::keyDown()->connect([&]()
 		{
 			const auto MAX_NUM_LIGHTS = 40;
@@ -250,11 +237,11 @@ int main(int argc, char** argv)
 
 			sceneManager->nextFrame();
 
-			printFramerate();
+			//std::cout << SDLStage::framerate() << std::endl;
 		});
 
-		for (auto i = 0; i < 10; ++i)
-			SDLStage::keyDown()->execute();
+		//for (auto i = 0; i < 10; ++i)
+			//SDLStage::keyDown()->execute();
 
 		SDLStage::run();
 
