@@ -78,6 +78,7 @@ namespace minko
 			std::unordered_map<std::string, TexturePtr>					_globalTargets;
 			std::unordered_map<std::string, TexturePtrMap>				_techniqueTargets;
 			std::unordered_map<std::string, std::vector<PassPtr>>		_techniquePasses;
+			std::unordered_map<std::string, std::string>				_techniqueFallback;
 			
 			std::unordered_map<LoaderPtr, Signal<LoaderPtr>::Slot>		_loaderCompleteSlots;
 			std::unordered_map<LoaderPtr, Signal<LoaderPtr>::Slot>		_loaderErrorSlots;

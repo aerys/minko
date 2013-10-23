@@ -25,11 +25,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::render;
 
-Effect::Effect() :
-	_techniqueChanged(Signal<Ptr, const std::string&, const std::string&>::create())
-{
-}
-
 void
 Effect::addTechnique(const std::string& name, Technique& passes)
 {
@@ -44,10 +39,19 @@ Effect::addTechnique(const std::string& name, Technique& passes)
 }
 
 void
+Effect::addTechnique(const std::string& name, Technique& passes, const std::string& fallback)
+{
+	_fallback[name] = fallback;
+
+	addTechnique(name, passes);
+}
+
+void
 Effect::removeTechnique(const std::string& name)
 {
-	if (_techniques.count(name) == 0 || _currentTechniqueName == name)
+	if (_techniques.count(name) == 0)
 		throw std::logic_error("The technique named '" + name + "' does not exist.");
 
 	_techniques.erase(name);
+	_fallback.erase(name);
 }
