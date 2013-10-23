@@ -397,12 +397,12 @@ EffectParser::parseBindings(Json::Value&			contextNode,
 				macroBindings[propertyName] = std::tuple<std::string, int, int>(macroBindingValue.asString(), -1, -1);
 			else if (macroBindingValue.isObject())
 			{
-				auto nameValue = macroBindingValue.get("name", 0);
+				auto nameValue = macroBindingValue.get("property", 0);
 				auto minValue = macroBindingsValue.get("min", -1);
 				auto maxValue = macroBindingsValue.get("max", -1);
 
-				if (!nameValue.isString() || !minValue.isInt() ||!maxValue.isInt())
-					throw;
+				//if (!nameValue.isString() || !minValue.isInt() || !maxValue.isInt())
+				//	throw;
 
 				macroBindings[propertyName] = std::tuple<std::string, int, int>(
 					nameValue.asString(),
@@ -543,6 +543,10 @@ EffectParser::parseTechniques(Json::Value&						root,
 				auto techniqueName	= techniqueValue.get("name", "default").asString();
 				auto& targets		= _techniqueTargets[techniqueName];
 				auto& passes		= _techniquePasses[techniqueName];
+				auto fallbackValue	= techniqueValue.get("fallback", 0);
+
+				if (fallbackValue.isString() && fallbackValue.asString().length())
+					_techniqueFallback[techniqueName] = fallbackValue.asString();
 
 				data::BindingMap		attributeBindings(_defaultAttributeBindings);
 				data::BindingMap		uniformBindings(_defaultUniformBindings);
@@ -612,6 +616,7 @@ EffectParser::finalize()
 
 	for (auto& technique : _techniquePasses)
     {
+    	auto techniqueName = technique.first;
 		auto passes = technique.second;
 
 		for (auto& pass : passes)
@@ -635,10 +640,20 @@ EffectParser::finalize()
 			);
 		}
 
-		_effect->addTechnique(technique.first, passes);
+		if (_techniqueFallback.count(techniqueName))
+		{
+			_effect->addTechnique(techniqueName, passes, _techniqueFallback[techniqueName]);
+			if (techniqueName != "default" && techniqueName == _defaultTechnique)
+				_effect->addTechnique("default", passes, _techniqueFallback[techniqueName]);
+		}
+		else
+		{
+			_effect->addTechnique(techniqueName, passes);
+			if (techniqueName != "default" && techniqueName == _defaultTechnique)
+				_effect->addTechnique("default", passes);
+		}
     }
 
-	_effect->technique(_defaultTechnique);
 	for (auto& targets : _techniqueTargets)
 		for (auto& target : targets.second)
 			_effect->setUniform(target.first, target.second);

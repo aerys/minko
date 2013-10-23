@@ -57,6 +57,7 @@ namespace minko
 			std::shared_ptr<geometry::Geometry>						_geometry;
 			std::shared_ptr<data::Provider>							_material;
 			std::shared_ptr<render::Effect>							_effect;
+			std::string 											_technique;
 			std::unordered_set<std::string>							_macroPropertyNames;
 
 			DrawCallList											_drawCalls;
@@ -82,9 +83,10 @@ namespace minko
 			Ptr
 			create(std::shared_ptr<geometry::Geometry> 	geometry,
 				   std::shared_ptr<data::Provider>		material,
-				   std::shared_ptr<render::Effect>		effect)
+				   std::shared_ptr<render::Effect>		effect,
+				   const std::string&					technique = "default")
 			{
-				Ptr surface(new Surface(geometry, material, effect));
+				Ptr surface(new Surface(geometry, material, effect, technique));
 
 				surface->initialize();
 
@@ -120,6 +122,13 @@ namespace minko
 			}
 
 			inline
+			const std::string&
+			technique()
+			{
+				return _technique;
+			}
+
+			inline
 			const std::list<DrawCallPtr>&
 			drawCalls()
 			{
@@ -149,7 +158,8 @@ namespace minko
 		private:
 			Surface(std::shared_ptr<geometry::Geometry> geometry,
 					std::shared_ptr<data::Provider>		material,
-					std::shared_ptr<render::Effect>		effect);
+					std::shared_ptr<render::Effect>		effect,
+					const std::string&					technique);
 
 			void
 			initialize();
@@ -175,17 +185,15 @@ namespace minko
 			void
 			macroChangedHandler(ContainerPtr, const std::string& propertyName, MacroChange);
 
-			void
-			techniqueChangedHandler(EffectPtr			effect,
-									const std::string&	oldTechnique,
-									const std::string&	newTechnique);
-
 			std::shared_ptr<render::Program>
 			getWorkingProgram(std::shared_ptr<render::Pass>	pass,
 							  ContainerPtr					targetData,
 							  ContainerPtr					rootData,
 							  std::list<std::string>&		bindingDefines,
 							  std::list<std::string>&		bindingValues);
+
+			void
+			switchToFallbackTechnique();
 		};
 	}
 }
