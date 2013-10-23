@@ -41,7 +41,10 @@ namespace minko
             typedef std::shared_ptr<scene::NodeSet>     NodeSetPtr;
 
 		private:
-            bool                                            _enabled;
+			float											_fov;
+			float											_aspectRatio;
+			float											_zNear;
+			float											_zFar;
 
 			std::shared_ptr<math::Matrix4x4>				_view;
 			std::shared_ptr<math::Matrix4x4>				_projection;
@@ -62,9 +65,84 @@ namespace minko
 				return ctrl;
 			}
 
+			inline
+			float
+			fieldOfView() const
+			{
+				return _fov;
+			}
+
+			inline
+			void
+			fieldOfView(float fov)
+			{
+				if (fov != _fov)
+				{
+					_fov = fov;
+					updateProjection(_fov, _aspectRatio, _zNear, _zFar);
+				}
+			}
+
+			inline
+			float
+			aspectRatio() const
+			{
+				return _aspectRatio;
+			}
+
+			inline
+			void
+			aspectRatio(float aspectRatio)
+			{
+				if (aspectRatio != _aspectRatio)
+				{
+					_aspectRatio = aspectRatio;
+					updateProjection(_fov, _aspectRatio, _zNear, _zFar);
+				}
+			}
+
+			inline
+			float
+			zNear() const
+			{
+				return _zNear;
+			}
+
+			inline
+			void
+			zNear(float zNear)
+			{
+				if (zNear != _zNear)
+				{
+					_zNear = zNear;
+					updateProjection(_fov, _aspectRatio, _zNear, _zFar);
+				}
+			}
+
+			inline
+			float
+			zFar() const
+			{
+				return _zFar;
+			}
+
+			inline
+			void
+			zFar(float zFar)
+			{
+				if (zFar != _zFar)
+				{
+					_zFar = zFar;
+					updateProjection(_fov, _aspectRatio, _zNear, _zFar);
+				}
+			}
+
 			~PerspectiveCamera()
 			{
 			}
+
+			void
+			updateProjection(float fieldOfView, float aspectRatio, float zNear, float zFar);
 
         protected:
             void
@@ -79,6 +157,7 @@ namespace minko
 
             void
             updateMatrices(std::shared_ptr<math::Matrix4x4> modelToWorldMatrix);
+
 		};
 	}
 }
