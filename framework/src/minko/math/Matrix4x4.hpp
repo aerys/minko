@@ -118,11 +118,19 @@ namespace minko
 			Ptr
 			prependTranslation(float x, float y, float z);
 
+			inline
 			Ptr
-			appendTranslation(Vector3Ptr);
+			appendTranslation(Vector3Ptr value)
+			{
+				return appendTranslation(value->x(), value->y(), value->z());
+			}
 
+			inline
 			Ptr
-			prependTranslation(Vector3Ptr);
+			prependTranslation(Vector3Ptr value)
+			{
+				return prependTranslation(value->x(), value->y(), value->z());
+			}
 
 			Ptr
 			appendRotationX(float radians);
@@ -159,6 +167,20 @@ namespace minko
 
 			Ptr
 			prependScale(float x, float y, float z);
+
+			inline
+			Ptr
+			appendScale(float scale)
+			{
+				return appendScale(scale, scale, scale);
+			}
+
+			inline
+			Ptr
+			prependScale(float scale)
+			{
+				return prependScale(scale, scale, scale);
+			}
 
 			float
 			determinant();
@@ -270,6 +292,13 @@ namespace minko
 			translation(Vector3::Ptr t)
 			{
 				translation(t->x(), t->y(), t->z());
+			}
+
+			inline
+			void
+			copyTranslation(Vector3::Ptr t)
+			{
+				t->setTo(_m[3], _m[7], _m[11]);
 			}
 
 			Ptr

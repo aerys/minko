@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/AbstractComponent.hpp"
 #include "minko/component/Renderer.hpp"
 #include "minko/Any.hpp"
+#include "minko/math/Matrix4x4.hpp"
 
 namespace minko
 {
@@ -61,6 +62,17 @@ namespace minko
 				Ptr ctrl = std::shared_ptr<Transform>(new Transform());
 
 				ctrl->initialize();
+
+				return ctrl;
+			}
+
+			inline static
+			Ptr
+			create(std::shared_ptr<math::Matrix4x4> transform)
+			{
+				auto ctrl = create();
+
+				ctrl->_transform->copyFrom(transform);
 
 				return ctrl;
 			}

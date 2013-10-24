@@ -60,6 +60,13 @@ namespace minko
 				return _color;
 			}
 
+			inline
+			void
+			color(std::shared_ptr<math::Vector3> color)
+			{
+				_color->copyFrom(color);
+			}
+
 		protected:
 			AbstractLight(const std::string& arrayName);
 		};
