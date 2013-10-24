@@ -344,7 +344,7 @@ printFramerate(const unsigned int delay = 1)
 int
 main(int argc, char** argv)
 {
-	MinkoSDL::initialize("Minko Example - Sponza", 1024, 768);
+	MinkoSDL::initialize("Minko Example - Sponza", WINDOW_WIDTH, WINDOW_HEIGHT);
 
 	file::MkParser::registerController(
 		"colliderController",
