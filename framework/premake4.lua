@@ -1,4 +1,4 @@
-if not _OPTIONS["no-glsl-optimizer"] then
+if _OPTIONS["with-glsl-optimizer"] then
 	include "lib/glsl-optimizer"
 end
 
@@ -26,12 +26,9 @@ project "minko-framework"
 	defines {
 		"JSON_IS_AMALGAMATION"
 	}
-	-- glsl-optimizer
-	if not _OPTIONS["no-glsl-optimizer"] then
-		links { "glsl-optimizer" }
-		defines { "MINKO_GLSL_OPTIMIZER" }
-		includedirs { "lib/glsl-optimizer/src/glsl" }
-	end
+	
+	-- plugins
+	minko.plugin.import("angle")
 
 	configuration { "debug"}
 		defines { "DEBUG" }
@@ -52,12 +49,6 @@ project "minko-framework"
 	configuration { "windows", "x32" }
 		includedirs { "../deps/win/include" }
 		libdirs { "../deps/win/lib" }
-		if _OPTIONS[ "directX" ] then
-			defines { "MINKO_ANGLE" }
-			links { "libGLESv2", "libEGL" }
-		else
-			links { "OpenGL32", "glew32" }
-		end
 
 	-- visual studio
 	configuration { "vs*" }
@@ -75,11 +66,6 @@ project "minko-framework"
 		flags { "Optimize" }
 
 	newoption {
-		trigger     = "no-glsl-optimizer",
-		description = "Disable the GLSL optimizer."
-	}
-
-	newoption {
-		trigger		= "directX",
-		description = "Enable directX rendering with ANGLE"
+		trigger     = "with-glsl-optimizer",
+		description = "Enable the GLSL optimizer."
 	}
