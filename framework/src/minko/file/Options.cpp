@@ -29,8 +29,14 @@ Options::Options(std::shared_ptr<render::AbstractContext> context) :
     _generateMipMaps(false),
 	_material(data::Provider::create())
 {
+#ifdef DEBUG
+	includePaths().insert("bin/debug");
+#else
+	includePaths().insert("bin/release");
+#endif
+
 	_materialFunction = ([] (const std::string&, data::Provider::Ptr material) -> data::Provider::Ptr 
 	{ 
 		return material;
-	} ); 
+	}); 
 }
