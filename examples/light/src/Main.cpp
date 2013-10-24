@@ -3,7 +3,7 @@
 #include "minko/Minko.hpp"
 #include "minko/MinkoPNG.hpp"
 
-#include "SDLStage.hpp"
+#include "minko/MinkoSDL.hpp"
 
 using namespace minko;
 using namespace minko::component;
@@ -124,11 +124,11 @@ SDL_KeyboardHandler(scene::Node::Ptr		root,
 
 int main(int argc, char** argv)
 {
-	SDLStage::initialize("Minko Examples - Light", 800, 600);
+	MinkoSDL::initialize("Minko Examples - Light", 800, 600);
 
 	const clock_t startTime	= clock();
 
-	auto sceneManager		= SceneManager::create(SDLStage::context());
+	auto sceneManager		= SceneManager::create(MinkoSDL::context());
 	auto root				= scene::Node::create("root")->addComponent(sceneManager);
 	auto sphereGeometry		= geometry::SphereGeometry::create(sceneManager->assets()->context(), 32, 32, true);
 	auto sphereMaterial		= material::Material::create()
@@ -148,20 +148,11 @@ int main(int argc, char** argv)
 		->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()))
 		->geometry("quad", geometry::QuadGeometry::create(sceneManager->assets()->context()))
 		->geometry("sphere", sphereGeometry)
-		//->queue("texture/box.png")
 		->queue("texture/normalmap-cells.png")
-		->queue("texture/window-normal.png")
-		//->queue("texture/specularmap-squares.png")
 		->queue("texture/sprite-pointlight.png")
 		->queue("effect/Basic.effect")
 		->queue("effect/Sprite.effect")
 		->queue("effect/Phong.effect");
-
-#ifdef DEBUG
-    sceneManager->assets()->defaultOptions()->includePaths().insert("bin/debug");
-#else
-	sceneManager->assets()->defaultOptions()->includePaths().insert("bin/release");
-#endif
 
     auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
 	{
@@ -205,16 +196,16 @@ int main(int argc, char** argv)
 		lights->addComponent(Transform::create());
 		root->addChild(lights);
 
-		auto resized = SDLStage::resized()->connect([&](unsigned int width, unsigned int height)
+		auto resized = MinkoSDL::resized()->connect([&](unsigned int width, unsigned int height)
 		{
 			camera->component<PerspectiveCamera>()->aspectRatio((float)width / (float)height);
 		});
 
-		auto keyDown = SDLStage::keyDown()->connect([&]()
+		auto keyDown = MinkoSDL::keyDown()->connect([&]()
 		{
-			const auto MAX_NUM_LIGHTS = 40;
+			const auto MAX_NUM_LIGHTS = 1000;
 
-			if (root->children()[4]->children().size() == MAX_NUM_LIGHTS)
+			if (lights->children().size() == MAX_NUM_LIGHTS)
 			{
 				std::cout << "cannot add more lights" << std::endl;
 				return;
@@ -229,21 +220,23 @@ int main(int argc, char** argv)
 				sinf(theta) * 5.f + rand() / ((float)RAND_MAX * 3.f)
 			);
 
-			root->children()[4]->addChild(createPointLight(color, pos, sceneManager->assets()));
+			lights->addChild(createPointLight(color, pos, sceneManager->assets()));
+
+			std::cout << lights->children().size() << " lights" << std::endl;
 		});
-		auto enterFrame = SDLStage::enterFrame()->connect([&]()
+		auto enterFrame = MinkoSDL::enterFrame()->connect([&]()
 		{
 			lights->component<Transform>()->transform()->appendRotationY(.005f);
 
 			sceneManager->nextFrame();
 
-			//std::cout << SDLStage::framerate() << std::endl;
+			//std::cout << MinkoSDL::framerate() << std::endl;
 		});
 
 		//for (auto i = 0; i < 10; ++i)
-			//SDLStage::keyDown()->execute();
+			//MinkoSDL::keyDown()->execute();
 
-		SDLStage::run();
+		MinkoSDL::run();
 
 	});
 
