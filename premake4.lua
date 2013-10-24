@@ -19,12 +19,12 @@ if _OPTIONS["platform"] == "emscripten" then
 end
 
 -- examples
---include 'examples/sponza'
+include 'examples/sponza'
 include 'examples/cube'
 include 'examples/light'
 --include 'examples/cube-offscreen'
 
 -- tests
-if _ACTION ~= "vs2010" then
+if _ACTION ~= "vs2010" and _OPTIONS["platform"] ~= "emscripten" then
 	include 'tests'
 end
