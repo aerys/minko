@@ -123,7 +123,7 @@ EffectParser::parse(const std::string&				    filename,
 	auto context = _assetLibrary->context();
 
 	// parse default values for bindings and states
-	parseRenderStates(root, context, _globalTargets, _defaultStates);
+	_defaultStates = parseRenderStates(root, context, _globalTargets, _defaultStates);
 	parseBindings(root, _defaultAttributeBindings, _defaultUniformBindings, _defaultStateBindings, _defaultMacroBindings);
 
 	// parse a global list of passes
