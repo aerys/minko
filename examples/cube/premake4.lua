@@ -25,5 +25,5 @@ minko.project.application "minko-example-cube"
 		postbuildcommands {
 			'cp ' .. bin .. ' ' .. bin .. '.bc',
 			'emcc ' .. bin .. '.bc -o ' .. bin .. '.js -O1 -s ASM_JS=1 -s TOTAL_MEMORY=1073741824 --preload-dir effect --preload-dir texture',
-			'emcc ' .. bin .. '.bc -o ' .. bin .. '.html -O1 -s ASM_JS=1 -s TOTAL_MEMORY=1073741824 --preload-dir effect --preload-dir texture'
+			'emcc ' .. bin .. '.bc -o index.html -O1 -s ASM_JS=1 -s TOTAL_MEMORY=1073741824 --preload-dir effect --preload-dir texture'
 		}
