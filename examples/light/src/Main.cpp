@@ -1,4 +1,21 @@
-#include <ctime>
+/*
+Copyright (c) 2013 Aerys
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
+associated documentation files (the "Software"), to deal in the Software without restriction,
+including without limitation the rights to use, copy, modify, merge, publish, distribute,
+sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or
+substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
 
 #include "minko/Minko.hpp"
 #include "minko/MinkoPNG.hpp"
@@ -108,13 +125,13 @@ SDL_KeyboardHandler(scene::Node::Ptr		root,
 			return;
 		}
 
-		auto r = rand() / (float)RAND_MAX;
-		auto theta = 2.0f * PI *  r;
+		auto r = (float)rand() / (float)RAND_MAX;
+		auto theta = 2.0f * (float)PI *  r;
 		auto color = hslToRgb(r, 1.f, .5f);
 		auto pos = Vector3::create(
-			cosf(theta) * 5.f + rand() / ((float)RAND_MAX * 3.f),
+			cosf(theta) * 5.f + (float)rand() / ((float)RAND_MAX * 3.f),
 			2.5f + rand() / (float)RAND_MAX,
-			sinf(theta) * 5.f + rand() / ((float)RAND_MAX * 3.f)
+			sinf(theta) * 5.f + (float)rand() / ((float)RAND_MAX * 3.f)
 		);
 
 		root->children()[4]->addChild(createPointLight(color, pos, assets));
@@ -201,28 +218,55 @@ int main(int argc, char** argv)
 			camera->component<PerspectiveCamera>()->aspectRatio((float)width / (float)height);
 		});
 
-		auto keyDown = MinkoSDL::keyDown()->connect([&]()
+		auto keyDown = MinkoSDL::keyDown()->connect([&](const Uint8* keyboard)
 		{
-			const auto MAX_NUM_LIGHTS = 1000;
-
-			if (lights->children().size() == MAX_NUM_LIGHTS)
+			if (keyboard[SDL_SCANCODE_A])
 			{
-				std::cout << "cannot add more lights" << std::endl;
-				return;
+				const auto MAX_NUM_LIGHTS = 40;
+
+				if (lights->children().size() == MAX_NUM_LIGHTS)
+				{
+					std::cout << "cannot add more lights" << std::endl;
+					return;
+				}
+
+				auto r = rand() / (float)RAND_MAX;
+				auto theta = 2.0f * PI *  r;
+				auto color = hslToRgb(r, 1.f, .5f);
+				auto pos = Vector3::create(
+					cosf(theta) * 5.f + rand() / ((float)RAND_MAX * 3.f),
+					2.5f + rand() / (float)RAND_MAX,
+					sinf(theta) * 5.f + rand() / ((float)RAND_MAX * 3.f)
+					);
+
+				lights->addChild(createPointLight(color, pos, sceneManager->assets()));
+
+				std::cout << lights->children().size() << " lights" << std::endl;
 			}
+			if (keyboard[SDL_SCANCODE_R])
+			{
+				auto lights = root->children()[4];
 
-			auto r = rand() / (float)RAND_MAX;
-			auto theta = 2.0f * PI *  r;
-			auto color = hslToRgb(r, 1.f, .5f);
-			auto pos = Vector3::create(
-				cosf(theta) * 5.f + rand() / ((float)RAND_MAX * 3.f),
-				2.5f + rand() / (float)RAND_MAX,
-				sinf(theta) * 5.f + rand() / ((float)RAND_MAX * 3.f)
-			);
+				if (lights->children().size() == 0)
+					return;
+				
+				lights->removeChild(lights->children().back());
+				std::cout << lights->children().size() << " lights" << std::endl;
+			}
+			if (keyboard[SDL_SCANCODE_SPACE])
+			{
+				auto data = sphere->component<Surface>()->material();
+				bool hasNormalMap = data->hasProperty("normalMap");
 
-			lights->addChild(createPointLight(color, pos, sceneManager->assets()));
+				std::cout << "mesh does" << (!hasNormalMap ? " not " : " ")
+					<< "have a normal map:\t" << (hasNormalMap ? "remove" : "add")
+					<< " it" << std::endl;
 
-			std::cout << lights->children().size() << " lights" << std::endl;
+				if (hasNormalMap)
+					data->unset("normalMap");
+				else
+					data->set("normalMap", assets->texture("texture/normalmap-cells.png"));
+			}
 		});
 		auto enterFrame = MinkoSDL::enterFrame()->connect([&]()
 		{

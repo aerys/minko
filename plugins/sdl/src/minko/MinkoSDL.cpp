@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 bool MinkoSDL::_active = false;
 
 minko::Signal<>::Ptr MinkoSDL::_enterFrame = nullptr;
-minko::Signal<>::Ptr MinkoSDL::_keyDown = nullptr;
+minko::Signal<const Uint8*>::Ptr MinkoSDL::_keyDown = nullptr;
 minko::Signal<MinkoSDL::uint, MinkoSDL::uint>::Ptr MinkoSDL::_resized = nullptr;
 minko::render::AbstractContext::Ptr	MinkoSDL::_context = nullptr;
 float MinkoSDL::_framerate = 0.f;
