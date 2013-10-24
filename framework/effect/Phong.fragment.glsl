@@ -1,9 +1,5 @@
 #ifdef FRAGMENT_SHADER
 
-#ifdef GL_ES
-	precision mediump float;
-#endif
-
 #ifdef NUM_AMBIENT_LIGHTS
 	uniform AmbientLight ambientLights[NUM_AMBIENT_LIGHTS];
 #endif // NUM_AMBIENT_LIGHTS

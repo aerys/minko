@@ -26,7 +26,13 @@ include 'plugins/mk'
 include 'plugins/bullet'
 include 'plugins/particles'
 
+-- tests
+if _ACTION ~= "vs2010" then
+	include 'tests'
+end
+
 -- support for new actions
 dofile('tools/all/lib/library.lua')
 dofile('tools/all/lib/platform.lua')
 dofile('tools/all/lib/vs.lua')
+dofile('tools/all/lib/doxygen.lua')
