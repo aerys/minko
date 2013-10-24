@@ -29,10 +29,10 @@ void
 QuadGeometry::initialize(std::shared_ptr<render::AbstractContext> context)
 {
     float xyzData[]         = {
-    	-.5f, .5f, 0.f,		0.f, 0.f,
-    	-.5f, -.5f, 0.f,	0.f, 1.f,
-    	.5f, .5f, 0.f,		1.f, 0.f,
-    	.5f, -.5f, 0.f,		1.f, 1.f
+    	-.5f, .5f, 0.f,		0.f, 0.f,	0.f, 0.f, 1.f,
+    	-.5f, -.5f, 0.f,	0.f, 1.f,	0.f, 0.f, 1.f,
+    	.5f, .5f, 0.f,		1.f, 0.f,	0.f, 0.f, 1.f,
+    	.5f, -.5f, 0.f,		1.f, 1.f,	0.f, 0.f, 1.f
     };
     unsigned short ind[]    = { 0, 1, 2, 2, 1, 3 };
     auto vertexBuffer       = render::VertexBuffer::create(context, std::begin(xyzData), std::end(xyzData));
@@ -40,6 +40,7 @@ QuadGeometry::initialize(std::shared_ptr<render::AbstractContext> context)
 
     vertexBuffer->addAttribute("position", 3);
     vertexBuffer->addAttribute("uv", 2);
+	vertexBuffer->addAttribute("normal", 3);
     addVertexBuffer(vertexBuffer);
 
     indices(indexBuffer);

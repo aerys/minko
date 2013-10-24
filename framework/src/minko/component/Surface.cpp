@@ -35,11 +35,13 @@ using namespace minko::render;
 
 Surface::Surface(Geometry::Ptr 			geometry,
 				 data::Provider::Ptr 	material,
-				 Effect::Ptr			effect) :
+				 Effect::Ptr			effect,
+				 const std::string&		technique) :
 	AbstractComponent(),
 	_geometry(geometry),
 	_material(material),
 	_effect(effect),
+	_technique(technique),
 	_macroPropertyNames(),
 	_drawCalls(),
 	_drawCallToPass(),
@@ -71,32 +73,16 @@ Surface::initialize()
 		std::placeholders::_2
 	));
 
+	auto techniques = _effect->techniques();
+
+	if (techniques.count(_technique) == 0)
+		throw std::logic_error("The technique '" + _technique + "' does not exist.");
+
 	_macroPropertyNames.clear();
-	for (const auto& pass : _effect->passes())
+	for (const auto& pass : techniques[_technique])
 		for (const auto& binding : pass->macroBindings())
-			_macroPropertyNames.insert(binding.second);
+			_macroPropertyNames.insert(std::get<0>(binding.second));
 }
-
-/*
-void
-Surface::geometry(std::shared_ptr<geometry::Geometry> newGeometry)
-{
-	for (unsigned int i = 0; i < numTargets(); ++i)
-	{
-		std::shared_ptr<scene::Node> target = getTarget(i);
-
-		target->data()->removeProvider(_geometry->data());
-		target->data()->addProvider(newGeometry->data());
-
-		_drawCalls.clear();
-
-		for (auto pass : _effect->passes())
-			_drawCalls.push_back(pass->createDrawCall(target->data(), target->root()->data()));
-	}
-
-	_geometry = newGeometry;
-}
-*/
 
 void
 Surface::geometry(std::shared_ptr<geometry::Geometry> newGeometry)
@@ -108,7 +94,7 @@ Surface::geometry(std::shared_ptr<geometry::Geometry> newGeometry)
 		target->data()->removeProvider(_geometry->data());
 		target->data()->addProvider(newGeometry->data());
 
-		createDrawCalls();
+		//createDrawCalls();
 	}
 
 	_geometry = newGeometry;
@@ -120,17 +106,8 @@ Surface::targetAddedHandler(AbstractComponent::Ptr	ctrl,
 
 {
 	auto targetData	= target->data();
-	// at this point, target->root()->data() is irrelevant
 
-	_addedSlot		= target->added()->connect(std::bind(
-		&Surface::addedHandler,
-		shared_from_this(),
-		std::placeholders::_1,
-		std::placeholders::_2,
-		std::placeholders::_3
-	));
-
-	_removedSlot	= target->removed()->connect(std::bind(
+	_removedSlot = target->removed()->connect(std::bind(
 		&Surface::removedHandler,
 		shared_from_this(),
 		std::placeholders::_1,
@@ -140,17 +117,6 @@ Surface::targetAddedHandler(AbstractComponent::Ptr	ctrl,
 
 	targetData->addProvider(_material);
 	targetData->addProvider(_geometry->data());
-    targetData->addProvider(_effect->data());
-
-	watchMacroAdditionOrDeletion();
-	createDrawCalls();
-}
-
-void
-Surface::addedHandler(NodePtr node, NodePtr target, NodePtr ancestor)
-{
-	watchMacroAdditionOrDeletion();
-	createDrawCalls();
 }
 
 void
@@ -203,7 +169,7 @@ Surface::watchMacroAdditionOrDeletion()
 			std::placeholders::_1,
 			std::placeholders::_2,
 			MacroChange::ADDED
-			))
+		))
 	);
 
 	_macroAddedOrRemovedSlots.push_back(
@@ -234,18 +200,31 @@ Surface::deleteDrawCalls()
 	_rootMacroChangedSlots.clear();
 }
 
-void
-Surface::createDrawCalls()
+Surface::DrawCallList
+Surface::createDrawCalls(std::shared_ptr<data::Container> rendererData)
 {
 	deleteDrawCalls();
 
-	for (auto pass : _effect->passes())
+	const auto& passes = _effect->technique(_technique);
+
+	for (const auto& pass : passes)
 	{
 		auto drawCall  = initializeDrawCall(pass);
+
+		if (!drawCall)
+		{
+			switchToFallbackTechnique();
+
+			return createDrawCalls(rendererData);
+		}
 
 		_drawCalls.push_back(drawCall);
 		_drawCallAdded->execute(shared_from_this(), drawCall);
 	}
+
+	watchMacroAdditionOrDeletion();
+
+	return _drawCalls;
 }
 
 DrawCall::Ptr
@@ -264,7 +243,10 @@ Surface::initializeDrawCall(Pass::Ptr		pass,
 	std::list<std::string>	bindingDefines;
 	std::list<std::string>	bindingValues;
 
-	auto program = pass->selectProgram(targetData, rootData, bindingDefines, bindingValues);
+	auto program = getWorkingProgram(pass, targetData, rootData, bindingDefines, bindingValues);
+
+	if (!program)
+		return nullptr;
 
 	if (drawcall == nullptr)
 	{
@@ -279,7 +261,7 @@ Surface::initializeDrawCall(Pass::Ptr		pass,
 
 		for (const auto& binding : pass->macroBindings())
 		{
-			const std::string&	propertyName	= binding.second;
+			const std::string&	propertyName	= std::get<0>(binding.second);
 			Container::Ptr		data			= getDataContainer(propertyName);
 
 			_macroPropertyNameToDrawCalls[propertyName].push_back(drawcall);
@@ -300,11 +282,46 @@ Surface::initializeDrawCall(Pass::Ptr		pass,
 	return drawcall;
 }
 
+std::shared_ptr<Program>
+Surface::getWorkingProgram(std::shared_ptr<Pass>	pass,
+						   data::Container::Ptr		targetData,
+						   data::Container::Ptr		rootData,
+						   std::list<std::string>&	bindingDefines,
+						   std::list<std::string>&	bindingValues)
+{
+	auto program = pass->selectProgram(targetData, rootData, bindingDefines, bindingValues);
+
+	while (!program)
+	{
+		auto passes = _effect->technique(_technique);
+		auto fallbackIt = std::find_if(
+			passes.begin(),
+			passes.end(),
+			[&](const Pass::Ptr& p)
+			{
+				return p->name() == pass->fallback();
+			}
+		);
+
+		if (fallbackIt == passes.end())
+			throw;
+
+		pass = *fallbackIt;
+		program = pass->selectProgram(targetData, rootData, bindingDefines, bindingValues);
+	}
+
+	return program;
+}
+
 void
 Surface::macroChangedHandler(Container::Ptr		data,
 					 		 const std::string&	propertyName,
 							 MacroChange		change)
 {
+#ifdef DEBUG_SHADER_FORK
+	std::cout << "Surface::macroChangedHandler('" << propertyName << "')" << std::endl;
+#endif
+
 	if (change == MacroChange::REF_CHANGED && !_drawCalls.empty())
 	{
 #ifdef DEBUG_SHADER_FORK
@@ -324,10 +341,17 @@ Surface::macroChangedHandler(Container::Ptr		data,
 #endif // DEBUG_SHADER_FORK
 
 			auto pass = _drawCallToPass[drawCall];
-			initializeDrawCall(pass, drawCall);
+
+			if (!initializeDrawCall(pass, drawCall))
+			{
+				switchToFallbackTechnique();
+
+				deleteDrawCalls();
+				// FIXME: should pass a valid renderData instead of nullptr
+				createDrawCalls(nullptr);
+			}
 		}
 	}
-
 	else if (_macroPropertyNames.find(propertyName) != _macroPropertyNames.end())
 	{
 #ifdef DEBUG_SHADER_FORK
@@ -336,7 +360,6 @@ Surface::macroChangedHandler(Container::Ptr		data,
 		if (data != targets()[0]->data() && data != targets()[0]->root()->data())
 			throw;
 #endif // DEBUG_SHADER_FORK
-
 
 		auto&	slots			= (data == targets()[0]->data()	? _targetMacroChangedSlots : _rootMacroChangedSlots);
 		auto&	listeners		= (data == targets()[0]->data() ? _numTargetMacroListeners : _numRootMacroListeners);
@@ -357,6 +380,8 @@ Surface::macroChangedHandler(Container::Ptr		data,
 		}
 		else if (change == MacroChange::REMOVED)
 		{
+			macroChangedHandler(data, propertyName, MacroChange::REF_CHANGED);
+
 			listeners[propertyName] = numListeners - 1;
 
 			if (listeners[propertyName] == 0)
@@ -381,13 +406,11 @@ Surface::targetRemovedHandler(AbstractComponent::Ptr	ctrl,
 {
 	auto data = target->data();
 
-	_addedSlot		= nullptr;
 	_removedSlot	= nullptr;
 	_macroAddedOrRemovedSlots.clear();
 
 	data->removeProvider(_material);
 	data->removeProvider(_geometry->data());
-    data->removeProvider(_effect->data());
 
 	deleteDrawCalls();
 }
@@ -407,4 +430,18 @@ Surface::getDataContainer(const std::string& propertyName) const
 		return rootData;
 
 	return nullptr;
+}
+
+void
+Surface::switchToFallbackTechnique()
+{
+#ifdef DEBUG_SHADER_FORK
+	std::cout << "fallback for technique '" << _technique << "': ";
+#endif
+	if (_effect->hasFallback(_technique))
+		_technique = _effect->fallback(_technique);
+
+#ifdef DEBUG_SHADER_FORK
+	std::cout << "'" << _technique << "'" << std::endl;
+#endif	
 }

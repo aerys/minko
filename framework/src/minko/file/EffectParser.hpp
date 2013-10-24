@@ -65,7 +65,7 @@ namespace minko
             data::BindingMap				                            _defaultAttributeBindings;
 			data::BindingMap				                            _defaultUniformBindings;
 			data::BindingMap				                            _defaultStateBindings;
-			data::BindingMap                              				_defaultMacroBindings;
+			data::MacroBindingMap                              			_defaultMacroBindings;
 
 			unsigned int												_numDependencies;
 			unsigned int												_numLoadedDependencies;
@@ -78,6 +78,7 @@ namespace minko
 			std::unordered_map<std::string, TexturePtr>					_globalTargets;
 			std::unordered_map<std::string, TexturePtrMap>				_techniqueTargets;
 			std::unordered_map<std::string, std::vector<PassPtr>>		_techniquePasses;
+			std::unordered_map<std::string, std::string>				_techniqueFallback;
 			
 			std::unordered_map<LoaderPtr, Signal<LoaderPtr>::Slot>		_loaderCompleteSlots;
 			std::unordered_map<LoaderPtr, Signal<LoaderPtr>::Slot>		_loaderErrorSlots;
@@ -136,7 +137,7 @@ namespace minko
 						data::BindingMap&							defaultAttributeBindings,
 						data::BindingMap&							defaultUniformBindings,
 						data::BindingMap&							defaultStateBindings,
-						data::BindingMap&							defaultMacroBindings,
+						data::MacroBindingMap&						defaultMacroBindings,
 						std::shared_ptr<render::States>				defaultStates);
 
 			std::shared_ptr<render::Shader>
@@ -146,11 +147,11 @@ namespace minko
 						render::Shader::Type 			type);
 
 			void
-			parseBindings(Json::Value&      contextNode,
-						  data::BindingMap&	attributeBindings,
-						  data::BindingMap&	uniformBindings,
-						  data::BindingMap&	stateBindings,
-						  data::BindingMap&	macroBindings);
+			parseBindings(Json::Value&				contextNode,
+						  data::BindingMap&			attributeBindings,
+						  data::BindingMap&			uniformBindings,
+						  data::BindingMap&			stateBindings,
+						  data::MacroBindingMap&	macroBindings);
 
 			void
 			parseBlendMode(Json::Value&						contextNode,
