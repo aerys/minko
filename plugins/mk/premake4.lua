@@ -1,12 +1,25 @@
+if not _OPTIONS["no-msgpack"] then
+	include "lib/msgpack-c"
+end
+
 project "minko-mk"
 	kind "StaticLib"
 	language "C++"
-	files { "**.hpp", "**.h", "**.cpp", "**.c" }
+	files {
+		"src/**.hpp",
+		"src/**.h",
+		"src/**.cpp",
+		"src/**.c"
+	}
 	includedirs {
 		"src",
+		"lib/msgpack-c/src",
 		"../../framework/src"
 	}
-	links { "minko-framework" }
+	links {
+		"minko-framework",
+		"msgpack-c"
+	}
 
 	configuration { "debug"}
 		defines { "DEBUG" }
