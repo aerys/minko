@@ -612,7 +612,7 @@ main(int argc, char** argv)
 
 	auto options = sceneManager->assets()->defaultOptions();
 
-	options->material(data::Provider::create()->set("material.triangleCulling", render::TriangleCulling::FRONT));
+	options->material(material::Material::create()->set("triangleCulling", render::TriangleCulling::FRONT));
 	options->generateMipmaps(true);
 
 	// load sponza lighting effect and set it as the default effect
@@ -644,7 +644,7 @@ main(int argc, char** argv)
 			->addComponent(component::DirectionalLight::create())
 			->addComponent(component::Transform::create());
 		lights->component<Transform>()->transform()->lookAt(Vector3::zero(), Vector3::create(-1.f, -1.f, -1.f));
-		root->addChild(lights);
+		//root->addChild(lights);
 
 		root->addChild(group);
 		root->addComponent(sceneManager);
