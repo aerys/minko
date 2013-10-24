@@ -375,7 +375,7 @@ main(int argc, char** argv)
 		->load("effect/Phong.effect")
 		->load("effect/Basic.effect");
 
-	options->effect(sceneManager->assets()->effect("effect/Basic.effect"));
+	options->effect(sceneManager->assets()->effect("effect/Phong.effect"));
 
 	// load other assets
 	sceneManager->assets()
@@ -399,7 +399,7 @@ main(int argc, char** argv)
 			->addComponent(component::DirectionalLight::create())
 			->addComponent(component::Transform::create());
 		lights->component<Transform>()->transform()->lookAt(Vector3::zero(), Vector3::create(-1.f, -1.f, -1.f));
-		//root->addChild(lights);
+		root->addChild(lights);
 
 		root->addChild(group);
 		root->addComponent(sceneManager);
@@ -462,6 +462,8 @@ main(int argc, char** argv)
 
 				if (keyboard[SDL_SCANCODE_SPACE] && eye->y() <= 0.5f)
 					cameraTransform->prependTranslation(0.0f, 4 * CAMERA_LIN_SPEED, 0.0f);
+
+				cameraCollider->synchronizePhysicsWithGraphics();
 			}
 		});
 
