@@ -52,7 +52,7 @@ private:
 	static float								_framerate;
 
 	static minko::Signal<>::Ptr					_enterFrame;
-	static minko::Signal<>::Ptr					_keyDown;
+	static minko::Signal<const Uint8*>::Ptr		_keyDown;
 	static minko::Signal<uint, uint>::Ptr		_resized;
 
 #ifdef MINKO_ANGLE
@@ -92,7 +92,7 @@ public:
 	}
 
 	inline static
-	minko::Signal<>::Ptr
+	minko::Signal<const Uint8*>::Ptr
 	keyDown()
 	{
 		return _keyDown;
@@ -141,7 +141,7 @@ public:
 		_active = false;
 		_framerate = 0.f;
 		_enterFrame = minko::Signal<>::create();
-		_keyDown = minko::Signal<>::create();
+		_keyDown = minko::Signal<const Uint8*>::create();
 		_resized = minko::Signal<uint, uint>::create();
 
 		initializeContext(windowTitle, width, height);
@@ -165,8 +165,12 @@ private:
 				break;
 
 			case SDL_KEYDOWN:
-				_keyDown->execute();
+			{
+				const Uint8* keyboardState = SDL_GetKeyboardState(NULL);
+
+				_keyDown->execute(keyboardState);
 				break;
+			}
 
 			case SDL_WINDOWEVENT:
 				switch (event.window.event)
