@@ -46,8 +46,7 @@ minko.project.application = function(name)
 	configuration { "windows" }
 		postbuildcommands {
 			'xcopy /y /i ' .. minko.sdk.path('/framework/effect') .. ' "$(TargetDir)\\effect"',
-			'xcopy /y /s asset\\* "$(TargetDir)"',
-			minko.vs.getdllscopycommand(minko.sdk.path('/deps/win/lib'))
+			'xcopy /y /s asset\\* "$(TargetDir)"'
 		}
 		
 	configuration { "linux" }
