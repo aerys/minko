@@ -4,7 +4,7 @@ minko.project.library = function(name)
 	project(name)
 	
 	links { "minko-framework" }
-	includedirs { "../../framework/src" }
+	includedirs { minko.sdk.path("/framework/src") }
 	
 	configuration { "windows" }
 		links { "OpenGL32", "glew32" }
