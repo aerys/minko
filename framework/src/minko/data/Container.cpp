@@ -128,12 +128,15 @@ Container::removeProvider(std::shared_ptr<ArrayProvider> provider)
 {
 	assertProviderExists(provider);
 
+	auto	index				= provider->index();
 	auto	lengthPropertyName	= provider->arrayName() + ".length";
 	int		length				= _arrayLengths->hasProperty(lengthPropertyName)
 		? _arrayLengths->get<int>(lengthPropertyName)
 		: 0;
 
-	if (provider->index() != length-1)
+	removeProvider(std::dynamic_pointer_cast<Provider>(provider));
+
+	if (provider->index() != length - 1)
 	{
 		auto last = std::dynamic_pointer_cast<ArrayProvider>(*std::find_if(
 			_providers.rbegin(),
@@ -146,10 +149,8 @@ Container::removeProvider(std::shared_ptr<ArrayProvider> provider)
 			}
 		));
 
-		last->index(provider->index());
+		last->index(index);
 	}
-
-	removeProvider(std::dynamic_pointer_cast<Provider>(provider));
 
 	_arrayLengths->set<int>(lengthPropertyName, --length);
 	if (length == 0)
@@ -239,7 +240,8 @@ void
 Container::providerReferenceChangedHandler(Provider::Ptr		provider,
 										   const std::string&	propertyName)
 {
-	propertyReferenceChanged(propertyName)->execute(shared_from_this(), propertyName);
+	if (_propReferenceChanged.count(propertyName))
+		propertyReferenceChanged(propertyName)->execute(shared_from_this(), propertyName);
 }
 
 void
@@ -261,29 +263,37 @@ Container::providerPropertyAddedHandler(std::shared_ptr<Provider> 	provider,
 
 	_propertyAdded->execute(shared_from_this(), propertyName);
 
-	providerValueChangedHandler(provider, propertyName);	
+	providerValueChangedHandler(provider, propertyName);
 }
 
 void
 Container::providerPropertyRemovedHandler(std::shared_ptr<Provider> provider,
 										  const std::string&		propertyName)
 {
-	_propertyNameToProvider.erase(propertyName);
-
-	providerReferenceChangedHandler(provider, propertyName);
-	_propValueChanged.erase(propertyName);
-	_propReferenceChanged.erase(propertyName);
-
-	/*
-	if (_providerValueChangedSlot.count(provider) != 0)
-		for (auto property : provider->values())
-			if (_propValueChanged.count(property.first) != 0)
-				return;
-
-	providerValueChangedHandler(provider, propertyName);
-
-	std::cout << "cont[" << this << "] removes '" << propertyName << "'" << std::endl;
-	*/
-
-	_propertyRemoved->execute(shared_from_this(), propertyName);
+	if (_propertyNameToProvider.count(propertyName) != 0)
+	{
+		_propertyNameToProvider.erase(propertyName);
+	
+		if (_propValueChanged.count(propertyName) && _propValueChanged[propertyName]->numCallbacks() == 0)
+			_propValueChanged.erase(propertyName);
+	
+		if (_propReferenceChanged.count(propertyName) && _propReferenceChanged[propertyName]->numCallbacks() == 0)
+			_propReferenceChanged.erase(propertyName);
+	
+		//_propValueChanged.erase(propertyName);
+		//_propReferenceChanged.erase(propertyName);
+	
+		/*
+		if (_providerValueChangedSlot.count(provider) != 0)
+			for (auto property : provider->values())
+				if (_propValueChanged.count(property.first) != 0)
+					return;
+	
+		providerValueChangedHandler(provider, propertyName);
+	
+		std::cout << "cont[" << this << "] removes '" << propertyName << "'" << std::endl;
+		*/
+	
+		_propertyRemoved->execute(shared_from_this(), propertyName);
+	}
 }

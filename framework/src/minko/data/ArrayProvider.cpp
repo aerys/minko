@@ -35,10 +35,12 @@ ArrayProvider::index(unsigned int index)
 		return;
 
 	_index = index;
-	for (auto& propertyName : propertyNames())
-		swap(
-			propertyName,
-			formatPropertyName(propertyName.substr(propertyName.find_first_of(']') + 2)),
-			true
-		);
+
+	auto names = propertyNames();
+	for (auto& propertyName : names)
+	{
+		auto newPropertyName = formatPropertyName(propertyName.substr(propertyName.find_first_of(']') + 2));
+
+		swap(propertyName, newPropertyName, true);
+	}
 }

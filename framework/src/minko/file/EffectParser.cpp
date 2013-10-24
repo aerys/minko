@@ -91,7 +91,7 @@ EffectParser::initializeDepthFuncMap()
 }
 
 EffectParser::EffectParser() :
-	_effect(render::Effect::create()),
+	_effect(nullptr),
 	_numDependencies(0),
 	_numLoadedDependencies(0),
 	_defaultStates(render::States::create())
@@ -129,7 +129,7 @@ EffectParser::parse(const std::string&				    filename,
 	// parse a global list of passes
 	parsePasses(
 		root,
-		filename,
+		resolvedFilename,
 		options,
 		context,
 		_globalPasses,
@@ -137,7 +137,7 @@ EffectParser::parse(const std::string&				    filename,
 		_defaultAttributeBindings,
 		_defaultUniformBindings,
 		_defaultStateBindings,
-		_defaultAttributeBindings,
+		_defaultMacroBindings,
 		_defaultStates
 	);
 
@@ -154,6 +154,8 @@ EffectParser::parse(const std::string&				    filename,
 	// parse the list of techniques, if no "techniques" directive is found then
 	// the global list of passes becomes the "default" techinque
 	parseTechniques(root, resolvedFilename, options, context);
+
+	_effect = render::Effect::create();
 
 	if (_numDependencies == _numLoadedDependencies)
 		finalize();
@@ -203,7 +205,7 @@ EffectParser::parsePasses(Json::Value&				root,
 						  data::BindingMap&			defaultAttributeBindings,
 						  data::BindingMap&			defaultUniformBindings,
 						  data::BindingMap&			defaultStateBindings,
-						  data::BindingMap&			defaultMacroBindings,
+						  data::MacroBindingMap&	defaultMacroBindings,
 						  render::States::Ptr		defaultStates)
 {
 	auto passId = 0;
@@ -231,10 +233,10 @@ EffectParser::parsePasses(Json::Value&				root,
 		auto name = passValue.get("name", std::to_string(passId++)).asString();
 
 		// pass bindings
-		data::BindingMap	attributeBindings(defaultAttributeBindings);
-		data::BindingMap	uniformBindings(defaultUniformBindings);
-		data::BindingMap	stateBindings(defaultStateBindings);
-		data::BindingMap	macroBindings(defaultMacroBindings);
+		data::BindingMap		attributeBindings(defaultAttributeBindings);
+		data::BindingMap		uniformBindings(defaultUniformBindings);
+		data::BindingMap		stateBindings(defaultStateBindings);
+		data::MacroBindingMap	macroBindings(defaultMacroBindings);
         
 		parseBindings(passValue, attributeBindings, uniformBindings, stateBindings, macroBindings);
 
@@ -364,11 +366,11 @@ EffectParser::parseTriangleCulling(Json::Value& contextNode, TriangleCulling& tr
 }
 
 void
-EffectParser::parseBindings(Json::Value&	    contextNode,
-						    data::BindingMap&   attributeBindings,
-						    data::BindingMap&	uniformBindings,
-						    data::BindingMap&	stateBindings,
-							data::BindingMap&	macroBindings)
+EffectParser::parseBindings(Json::Value&			contextNode,
+						    data::BindingMap&		attributeBindings,
+						    data::BindingMap&		uniformBindings,
+						    data::BindingMap&		stateBindings,
+							data::MacroBindingMap&	macroBindings)
 {
 	auto attributeBindingsValue = contextNode.get("attributeBindings", 0);
 	if (attributeBindingsValue.isObject())
@@ -388,7 +390,27 @@ EffectParser::parseBindings(Json::Value&	    contextNode,
 	auto macroBindingsValue = contextNode.get("macroBindings", 0);
 	if (macroBindingsValue.isObject())
 		for (auto propertyName : macroBindingsValue.getMemberNames())
-			macroBindings[propertyName] = macroBindingsValue.get(propertyName, 0).asString();
+		{
+			auto macroBindingValue = macroBindingsValue.get(propertyName, 0);
+
+			if (macroBindingValue.isString())
+				macroBindings[propertyName] = std::tuple<std::string, int, int>(macroBindingValue.asString(), -1, -1);
+			else if (macroBindingValue.isObject())
+			{
+				auto nameValue = macroBindingValue.get("property", 0);
+				auto minValue = macroBindingsValue.get("min", -1);
+				auto maxValue = macroBindingsValue.get("max", -1);
+
+				//if (!nameValue.isString() || !minValue.isInt() || !maxValue.isInt())
+				//	throw;
+
+				macroBindings[propertyName] = std::tuple<std::string, int, int>(
+					nameValue.asString(),
+					minValue.asInt(),
+					maxValue.asInt()
+				);
+			}
+		}
 }
 
 void
@@ -427,24 +449,15 @@ EffectParser::parseTarget(Json::Value&                      contextNode,
 {
     auto targetValue = contextNode.get("target", 0);
 
+	std::shared_ptr<render::Texture> target;
+	std::string targetName;
+
     if (targetValue.isObject())
     {
         auto nameValue  = targetValue.get("name", 0);
-		std::string name;
 
         if (nameValue.isString())
-        {
-            name = nameValue.asString();
-
-			auto target = _assetLibrary->texture(name);
-
-            if (target)
-			{
-				_effect->data()->set(name, target);
-
-                return target;
-			}
-        }
+			targetName = nameValue.asString();
 
         auto sizeValue  = targetValue.get("size", 0);
         auto width      = 0;
@@ -458,22 +471,23 @@ EffectParser::parseTarget(Json::Value&                      contextNode,
             height = targetValue.get("height", 0).asUInt();
         }
 
-        auto target = render::Texture::create(context, width, height, true);
+        target = render::Texture::create(context, width, height, true);
 
-		if (name.length())
-		{
-	        _assetLibrary->texture(name, target);
-			_effect->data()->set(name, target);
-		}
+		if (targetName.length())
+	        _assetLibrary->texture(targetName, target);
 
         return target;
     }
 	else if (targetValue.isString())
 	{
-		return _assetLibrary->texture(targetValue.asString());
+		targetName = targetValue.asString();
+		target = _assetLibrary->texture(targetName);
 	}
 
-    return nullptr;
+	if (target && targetName.length())
+		targets[targetName] = target;
+
+    return target;
 }
 
 void
@@ -529,11 +543,15 @@ EffectParser::parseTechniques(Json::Value&						root,
 				auto techniqueName	= techniqueValue.get("name", "default").asString();
 				auto& targets		= _techniqueTargets[techniqueName];
 				auto& passes		= _techniquePasses[techniqueName];
+				auto fallbackValue	= techniqueValue.get("fallback", 0);
 
-				data::BindingMap	attributeBindings(_defaultAttributeBindings);
-				data::BindingMap	uniformBindings(_defaultUniformBindings);
-				data::BindingMap	stateBindings(_defaultStateBindings);
-				data::BindingMap	macroBindings(_defaultMacroBindings);
+				if (fallbackValue.isString() && fallbackValue.asString().length())
+					_techniqueFallback[techniqueName] = fallbackValue.asString();
+
+				data::BindingMap		attributeBindings(_defaultAttributeBindings);
+				data::BindingMap		uniformBindings(_defaultUniformBindings);
+				data::BindingMap		stateBindings(_defaultStateBindings);
+				data::MacroBindingMap	macroBindings(_defaultMacroBindings);
         
 				// bindings
 				parseBindings(techniqueValue, _defaultAttributeBindings, _defaultUniformBindings, _defaultStateBindings, _defaultMacroBindings);
@@ -576,6 +594,7 @@ EffectParser::dependencyCompleteHandler(std::shared_ptr<AbstractLoader> loader)
 void
 EffectParser::dependencyErrorHandler(std::shared_ptr<AbstractLoader> loader)
 {
+	std::cerr << "Unable to load dependency '" << loader->filename() << "'" << std::endl;
 	throw;
 }
 
@@ -597,6 +616,7 @@ EffectParser::finalize()
 
 	for (auto& technique : _techniquePasses)
     {
+    	auto techniqueName = technique.first;
 		auto passes = technique.second;
 
 		for (auto& pass : passes)
@@ -620,10 +640,23 @@ EffectParser::finalize()
 			);
 		}
 
-		_effect->addTechnique(technique.first, passes);
+		if (_techniqueFallback.count(techniqueName))
+		{
+			_effect->addTechnique(techniqueName, passes, _techniqueFallback[techniqueName]);
+			if (techniqueName != "default" && techniqueName == _defaultTechnique)
+				_effect->addTechnique("default", passes, _techniqueFallback[techniqueName]);
+		}
+		else
+		{
+			_effect->addTechnique(techniqueName, passes);
+			if (techniqueName != "default" && techniqueName == _defaultTechnique)
+				_effect->addTechnique("default", passes);
+		}
     }
 
-	_effect->technique(_defaultTechnique);
+	for (auto& targets : _techniqueTargets)
+		for (auto& target : targets.second)
+			_effect->setUniform(target.first, target.second);
 
 	_assetLibrary->effect(_effectName, _effect);
     _assetLibrary->effect(_filename, _effect);

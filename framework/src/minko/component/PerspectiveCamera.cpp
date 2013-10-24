@@ -32,16 +32,19 @@ PerspectiveCamera::PerspectiveCamera(float fov,
                                      float zNear,
                                      float zFar) :
     AbstractRootDataComponent<data::Provider>(data::Provider::create()),
-    _enabled(true),
+	_fov(fov),
+	_aspectRatio(aspectRatio),
+	_zNear(zNear),
+	_zFar(zFar),
   	_view(Matrix4x4::create()),
   	_projection(Matrix4x4::create()->perspective(fov, aspectRatio, zNear, zFar)),
   	_viewProjection(Matrix4x4::create()->copyFrom(_projection)),
     _position(Vector3::create())
 {
 	data()
-      ->set("camera.position",            _position)
-  		->set("camera.viewMatrix",			    _view)
-  		->set("camera.projectionMatrix",	  _projection)
+		->set("camera.position",            _position)
+  		->set("camera.viewMatrix",			_view)
+  		->set("camera.projectionMatrix",	_projection)
   		->set("camera.worldToScreenMatrix",	_viewProjection);
 }
 
@@ -51,10 +54,10 @@ PerspectiveCamera::targetAddedHandler(AbstractComponent::Ptr ctrl, NodePtr targe
     AbstractRootDataComponent::targetAddedHandler(ctrl, target);
 
   	_modelToWorldChangedSlot = target->data()->propertyValueChanged("transform.modelToWorldMatrix")->connect(std::bind(
-    		&PerspectiveCamera::localToWorldChangedHandler,
-        std::dynamic_pointer_cast<PerspectiveCamera>(shared_from_this()),
-    		std::placeholders::_1,
-    		std::placeholders::_2
+    	&PerspectiveCamera::localToWorldChangedHandler,
+		std::dynamic_pointer_cast<PerspectiveCamera>(shared_from_this()),
+    	std::placeholders::_1,
+    	std::placeholders::_2
   	));
 
     if (target->data()->hasProperty("transform.modelToWorldMatrix"))
@@ -75,5 +78,12 @@ PerspectiveCamera::updateMatrices(std::shared_ptr<Matrix4x4> modelToWorldMatrix)
     _view->transform(Vector3::zero(), _position);
     _view->invert();
 
-    _viewProjection->copyFrom(_view)->append(_projection);
+	updateProjection(_fov, _aspectRatio, _zNear, _zFar);
+}
+
+void
+PerspectiveCamera::updateProjection(float fieldOfView, float aspectRatio, float zNear, float zFar)
+{
+	_projection->perspective(_fov, _aspectRatio, _zNear, _zFar);
+	_viewProjection->copyFrom(_view)->append(_projection);
 }

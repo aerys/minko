@@ -43,6 +43,8 @@ namespace minko
 			typedef std::list<DrawCallPtr>							DrawCallList;
 			typedef Signal<ContainerPtr, const std::string&>		PropertyChangedSignal;
 			typedef PropertyChangedSignal::Slot						PropertyChangedSlot;
+			typedef std::shared_ptr<render::Effect>					EffectPtr;
+			typedef const std::string&								StringRef;
 
 			enum class MacroChange
 			{
@@ -55,6 +57,7 @@ namespace minko
 			std::shared_ptr<geometry::Geometry>						_geometry;
 			std::shared_ptr<data::Provider>							_material;
 			std::shared_ptr<render::Effect>							_effect;
+			std::string 											_technique;
 			std::unordered_set<std::string>							_macroPropertyNames;
 
 			DrawCallList											_drawCalls;
@@ -72,17 +75,18 @@ namespace minko
 
 			Signal<AbstractComponent::Ptr, NodePtr>::Slot			_targetAddedSlot;
 			Signal<AbstractComponent::Ptr, NodePtr>::Slot			_targetRemovedSlot;
-			Signal<NodePtr, NodePtr, NodePtr>::Slot					_addedSlot;
 			Signal<NodePtr, NodePtr, NodePtr>::Slot					_removedSlot;
+			Signal<EffectPtr, StringRef, StringRef>::Slot			_techniqueChangedSlot;
 
 		public:
 			static
 			Ptr
 			create(std::shared_ptr<geometry::Geometry> 	geometry,
 				   std::shared_ptr<data::Provider>		material,
-				   std::shared_ptr<render::Effect>		effect)
+				   std::shared_ptr<render::Effect>		effect,
+				   const std::string&					technique = "default")
 			{
-				Ptr surface(new Surface(geometry, material, effect));
+				Ptr surface(new Surface(geometry, material, effect, technique));
 
 				surface->initialize();
 
@@ -118,6 +122,13 @@ namespace minko
 			}
 
 			inline
+			const std::string&
+			technique()
+			{
+				return _technique;
+			}
+
+			inline
 			const std::list<DrawCallPtr>&
 			drawCalls()
 			{
@@ -138,31 +149,29 @@ namespace minko
 				return _drawCallRemoved;
 			}
 
+			DrawCallList
+			createDrawCalls(std::shared_ptr<data::Container> rendererData);
+
+			void
+			deleteDrawCalls();
+
 		private:
 			Surface(std::shared_ptr<geometry::Geometry> geometry,
 					std::shared_ptr<data::Provider>		material,
-					std::shared_ptr<render::Effect>		effect);
+					std::shared_ptr<render::Effect>		effect,
+					const std::string&					technique);
 
 			void
 			initialize();
 
-			void
-			createDrawCalls();
-
 			std::shared_ptr<render::DrawCall>
 			initializeDrawCall(std::shared_ptr<render::Pass>, std::shared_ptr<render::DrawCall> drawcall = nullptr);
-
-			void
-			deleteDrawCalls();
 
 			void
 			targetAddedHandler(AbstractComponent::Ptr ctrl, NodePtr target);
 
 			void
 			targetRemovedHandler(AbstractComponent::Ptr ctrl, NodePtr target);
-
-			void
-			addedHandler(NodePtr node, NodePtr target, NodePtr ancestor);
 
 			void
 			removedHandler(NodePtr node, NodePtr target, NodePtr ancestor);
@@ -175,6 +184,16 @@ namespace minko
 
 			void
 			macroChangedHandler(ContainerPtr, const std::string& propertyName, MacroChange);
+
+			std::shared_ptr<render::Program>
+			getWorkingProgram(std::shared_ptr<render::Pass>	pass,
+							  ContainerPtr					targetData,
+							  ContainerPtr					rootData,
+							  std::list<std::string>&		bindingDefines,
+							  std::list<std::string>&		bindingValues);
+
+			void
+			switchToFallbackTechnique();
 		};
 	}
 }
