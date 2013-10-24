@@ -1,4 +1,3 @@
 bin
 obj
-effect
-texture
+./texture
