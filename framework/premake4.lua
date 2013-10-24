@@ -32,7 +32,7 @@ project "minko-framework"
 		defines { "MINKO_GLSL_OPTIMIZER" }
 		includedirs { "lib/glsl-optimizer/src/glsl" }
 	end
-	
+
 	configuration { "debug"}
 		defines { "DEBUG" }
 		flags { "Symbols" }
@@ -58,7 +58,7 @@ project "minko-framework"
 		else
 			links { "OpenGL32", "glew32" }
 		end
-		
+
 	-- visual studio
 	configuration { "vs*" }
 		-- fix for faux variadic templates limited to 5 arguments by default
@@ -78,7 +78,7 @@ project "minko-framework"
 		trigger     = "no-glsl-optimizer",
 		description = "Disable the GLSL optimizer."
 	}
-	
+
 	newoption {
 		trigger		= "directX",
 		description = "Enable directX rendering with ANGLE"

@@ -42,20 +42,19 @@ namespace minko
             typedef std::unordered_map<std::string, SamplerState>		SamplerStatesMap;
 			typedef std::shared_ptr<States>								StatesPtr;
 			typedef std::unordered_map<ProgramSignature, ProgramPtr>	SignatureProgramMap;
-			typedef std::function<void(ProgramPtr)>						SetUniformFct;
-			typedef std::unordered_map<std::string, SetUniformFct>		UniformFctMap;
+			typedef std::list<std::function<void(ProgramPtr)>>			UniformFctList;
 
 		private:
-			const std::string	_name;
-			ProgramPtr			_programTemplate;
-			data::BindingMap	_attributeBindings;
-			data::BindingMap	_uniformBindings;
-			data::BindingMap	_stateBindings;
-			data::BindingMap	_macroBindings;
-            StatesPtr           _states;
-			SignatureProgramMap	_signatureToProgram;
-
-			UniformFctMap		_uniformFunctions;
+			const std::string		_name;
+			ProgramPtr				_programTemplate;
+			data::BindingMap		_attributeBindings;
+			data::BindingMap		_uniformBindings;
+			data::BindingMap		_stateBindings;
+			data::MacroBindingMap	_macroBindings;
+            StatesPtr				_states;
+			std::string				_fallback;
+			SignatureProgramMap		_signatureToProgram;
+			UniformFctList			_uniformFunctions;
 
 		public:
 			inline static
@@ -65,7 +64,7 @@ namespace minko
 				   const data::BindingMap&			attributeBindings,
 				   const data::BindingMap&			uniformBindings,
 				   const data::BindingMap&			stateBindings,
-				   const data::BindingMap&			macroBindings,
+				   const data::MacroBindingMap&		macroBindings,
                    StatesPtr         				states)
 			{
 				return std::shared_ptr<Pass>(new Pass(
@@ -115,7 +114,7 @@ namespace minko
 			}
 
 			inline
-			const data::BindingMap&
+			const data::MacroBindingMap&
 			macroBindings() const
 			{
 				return _macroBindings;
@@ -128,34 +127,31 @@ namespace minko
 				return _states;
 			}
 
+			inline
+			const std::string&
+			fallback()
+			{
+				return _fallback;
+			}
+
 			std::shared_ptr<Program>
 			selectProgram(std::shared_ptr<data::Container> 	data,
 						  std::shared_ptr<data::Container> 	rootData,
 						  std::list<std::string>&			bindingDefines,
 						  std::list<std::string>&			bindingValues);
-
-			void
-			finalizeProgram(ProgramPtr program);
-
+			
 			template <typename... T>
 			void
 			setUniform(const std::string& name, const T&... values)
 			{
-				_uniformFunctions[name] = std::bind(
+				_uniformFunctions.push_back(std::bind(
 					&Pass::setUniformOnProgram<T...>, shared_from_this(), std::placeholders::_1, name, values...
-				);
+				));
 
 				if (_programTemplate->isReady())
 					_programTemplate->setUniform(name, values...);
 				for (auto signatureAndProgram : _signatureToProgram)
 					signatureAndProgram.second->setUniform(name, values...);
-			}
-
-			template <typename... T>
-			void
-			setUniformOnProgram(std::shared_ptr<Program> program, const std::string& name, const T&... values)
-			{
-				program->setUniform(name, values...);
 			}
 
 		private:
@@ -164,8 +160,18 @@ namespace minko
 				 const data::BindingMap&			attributeBindings,
 				 const data::BindingMap&			uniformBindings,
 				 const data::BindingMap&			stateBindings,
-				 const data::BindingMap&			macroBindings,
+				 const data::MacroBindingMap&		macroBindings,
                  std::shared_ptr<States>            states);
+
+			template <typename... T>
+			void
+			setUniformOnProgram(std::shared_ptr<Program> program, const std::string& name, const T&... values)
+			{
+				program->setUniform(name, values...);
+			}
+
+			ProgramPtr
+			finalizeProgram(ProgramPtr program);
 		};
 	}
 }

@@ -111,6 +111,7 @@ namespace minko
 		class Value;
 		class Container;
         typedef std::unordered_map<std::string, std::string> BindingMap;
+		typedef std::unordered_map<std::string, std::tuple<std::string, int, int>> MacroBindingMap;
 	}
 
 	namespace geometry
