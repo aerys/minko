@@ -25,6 +25,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::render;
 
+Effect::Effect() :
+_data(data::Provider::create())
+{
+
+}
+
 void
 Effect::addTechnique(const std::string& name, Technique& passes)
 {
