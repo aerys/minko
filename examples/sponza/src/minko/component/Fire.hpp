@@ -53,13 +53,13 @@ namespace minko
                     assets->context(),
 		            assets,
 		            200,
-		            particle::sampler::RandomValue<float>::create(1, 1.3),
-		            particle::shape::Sphere::create(1 * 0.05),
+		            particle::sampler::RandomValue<float>::create(1, 1.3f),
+		            particle::shape::Sphere::create(0.05f),
 		            particle::StartDirection::NONE,
 		            0
                 )
 		    {
-                const float SCALE = 0.05;
+                const float SCALE = 0.05f;
 
                 material()
 		            ->set("material.diffuseColor",	math::Vector4::create(.3f, .07f, .02f, 1.f))
