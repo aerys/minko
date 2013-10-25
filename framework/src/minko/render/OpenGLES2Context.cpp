@@ -163,10 +163,10 @@ OpenGLES2Context::~OpenGLES2Context()
 }
 
 void
-OpenGLES2Context::configureViewport(const unsigned int x,
-				  				    const unsigned int y,
-				  				    const unsigned int width,
-				  				    const unsigned int height)
+OpenGLES2Context::configureViewport(const uint x,
+				  				    const uint y,
+				  				    const uint width,
+				  				    const uint height)
 {
 	if (x != _viewportX || y != _viewportY || width != _viewportWidth || height != _viewportHeight)
 	{
@@ -185,8 +185,8 @@ OpenGLES2Context::clear(float 			red,
 					    float 			blue,
 					    float 			alpha,
 					    float 			depth,
-					    unsigned int 	stencil,
-					    unsigned int 	mask)
+					    uint 	stencil,
+					    uint 	mask)
 {
 	// http://www.opengl.org/sdk/docs/man/xhtml/glClearColor.xml
 	//
@@ -244,7 +244,7 @@ OpenGLES2Context::present()
 }
 
 void
-OpenGLES2Context::drawTriangles(const unsigned int indexBuffer, const int numTriangles)
+OpenGLES2Context::drawTriangles(const uint indexBuffer, const int numTriangles)
 {
 	if (_currentIndexBuffer != indexBuffer)
 	{
@@ -267,10 +267,10 @@ OpenGLES2Context::drawTriangles(const unsigned int indexBuffer, const int numTri
     checkForErrors();
 }
 
-const unsigned int
-OpenGLES2Context::createVertexBuffer(const unsigned int size)
+const uint
+OpenGLES2Context::createVertexBuffer(const uint size)
 {
-	unsigned int vertexBuffer;
+	uint vertexBuffer;
 
 	// http://www.opengl.org/sdk/docs/man/xhtml/glGenBuffers.xml
 	//
@@ -312,9 +312,9 @@ OpenGLES2Context::createVertexBuffer(const unsigned int size)
 }
 
 void
-OpenGLES2Context::uploadVertexBufferData(const unsigned int vertexBuffer,
-									     const unsigned int offset,
-									     const unsigned int size,
+OpenGLES2Context::uploadVertexBufferData(const uint vertexBuffer,
+									     const uint offset,
+									     const uint size,
 									     void* 				data)
 {
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
@@ -334,7 +334,7 @@ OpenGLES2Context::uploadVertexBufferData(const unsigned int vertexBuffer,
 }
 
 void
-OpenGLES2Context::deleteVertexBuffer(const unsigned int vertexBuffer)
+OpenGLES2Context::deleteVertexBuffer(const uint vertexBuffer)
 {
 	_vertexBuffers.erase(std::find(_vertexBuffers.begin(), _vertexBuffers.end(), vertexBuffer));
 
@@ -353,11 +353,11 @@ OpenGLES2Context::deleteVertexBuffer(const unsigned int vertexBuffer)
 }
 
 void
-OpenGLES2Context::setVertexBufferAt(const unsigned int	position,
-								    const unsigned int	vertexBuffer,
-								    const unsigned int	size,
-								    const unsigned int	stride,
-								    const unsigned int	offset)
+OpenGLES2Context::setVertexBufferAt(const uint	position,
+								    const uint	vertexBuffer,
+								    const uint	size,
+								    const uint	stride,
+								    const uint	offset)
 {
 	auto currentVertexBuffer = _currentVertexBuffer[position];
 
@@ -396,10 +396,10 @@ OpenGLES2Context::setVertexBufferAt(const unsigned int	position,
     checkForErrors();
 }
 
-const unsigned int
-OpenGLES2Context::createIndexBuffer(const unsigned int size)
+const uint
+OpenGLES2Context::createIndexBuffer(const uint size)
 {
-	unsigned int indexBuffer;
+	uint indexBuffer;
 
 	glGenBuffers(1, &indexBuffer);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
@@ -416,9 +416,9 @@ OpenGLES2Context::createIndexBuffer(const unsigned int size)
 }
 
 void
-OpenGLES2Context::uploaderIndexBufferData(const unsigned int 	indexBuffer,
-										  const unsigned int 	offset,
-										  const unsigned int 	size,
+OpenGLES2Context::uploaderIndexBufferData(const uint 	indexBuffer,
+										  const uint 	offset,
+										  const uint 	size,
 										  void*					data)
 {
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
@@ -431,7 +431,7 @@ OpenGLES2Context::uploaderIndexBufferData(const unsigned int 	indexBuffer,
 }
 
 void
-OpenGLES2Context::deleteIndexBuffer(const unsigned int indexBuffer)
+OpenGLES2Context::deleteIndexBuffer(const uint indexBuffer)
 {
 	_indexBuffers.erase(std::find(_indexBuffers.begin(), _indexBuffers.end(), indexBuffer));
 
@@ -440,13 +440,13 @@ OpenGLES2Context::deleteIndexBuffer(const unsigned int indexBuffer)
     checkForErrors();
 }
 
-const unsigned int
-OpenGLES2Context::createTexture(unsigned int 	width,
-							    unsigned int 	height,
+const uint
+OpenGLES2Context::createTexture(uint 	width,
+							    uint 	height,
 							    bool			mipMapping,
                                 bool            optimizeForRenderToTexture)
 {
-	unsigned int texture;
+	uint texture;
 
 	// make sure width is a power of 2
 	if (!((width != 0) && !(width & (width - 1))))
@@ -507,7 +507,7 @@ OpenGLES2Context::createTexture(unsigned int 	width,
 	// glTexImage2D specify a two-dimensional texture image
 	if (mipMapping)
     {
-        unsigned int level = 0;
+        uint level = 0;
         uint h = height;
         uint w = width;
 		
@@ -530,10 +530,10 @@ OpenGLES2Context::createTexture(unsigned int 	width,
 }
 
 void
-OpenGLES2Context::uploadTextureData(const unsigned int 	texture,
-								    unsigned int 		width,
-								    unsigned int 		height,
-								    unsigned int 		mipLevel,
+OpenGLES2Context::uploadTextureData(const uint 	texture,
+								    uint 		width,
+								    uint 		height,
+								    uint 		mipLevel,
 								    void*				data)
 {
 	glBindTexture(GL_TEXTURE_2D, texture);
@@ -543,7 +543,7 @@ OpenGLES2Context::uploadTextureData(const unsigned int 	texture,
 }
 
 void
-OpenGLES2Context::deleteTexture(const unsigned int texture)
+OpenGLES2Context::deleteTexture(const uint texture)
 {
 	_textures.erase(std::find(_textures.begin(), _textures.end(), texture));
 
@@ -568,7 +568,7 @@ OpenGLES2Context::deleteTexture(const unsigned int texture)
 }
 
 void
-OpenGLES2Context::setTextureAt(const unsigned int	position,
+OpenGLES2Context::setTextureAt(const uint	position,
 							   const int			texture,
 							   const int			location)
 {
@@ -589,7 +589,7 @@ OpenGLES2Context::setTextureAt(const unsigned int	position,
 }
 
 void
-OpenGLES2Context::setSamplerStateAt(const unsigned int position, WrapMode wrapping, TextureFilter filtering, MipFilter mipFiltering)
+OpenGLES2Context::setSamplerStateAt(const uint position, WrapMode wrapping, TextureFilter filtering, MipFilter mipFiltering)
 {
     auto texture    = _currentTexture[position];
     auto active     = false;
@@ -666,18 +666,19 @@ OpenGLES2Context::setSamplerStateAt(const unsigned int position, WrapMode wrappi
     checkForErrors();
 }
 
-const unsigned int
+const uint
 OpenGLES2Context::createProgram()
 {
 	auto handle = glCreateProgram();
 	
+	checkForErrors();
 	_programs.push_back(handle);
 
 	return handle;
 }
 
 void
-OpenGLES2Context::attachShader(const unsigned int program, const unsigned int shader)
+OpenGLES2Context::attachShader(const uint program, const uint shader)
 {
 	glAttachShader(program, shader);
 
@@ -685,7 +686,7 @@ OpenGLES2Context::attachShader(const unsigned int program, const unsigned int sh
 }
 
 void
-OpenGLES2Context::linkProgram(const unsigned int program)
+OpenGLES2Context::linkProgram(const uint program)
 {
 	glLinkProgram(program);
 
@@ -702,7 +703,7 @@ OpenGLES2Context::linkProgram(const unsigned int program)
 }
 
 void
-OpenGLES2Context::deleteProgram(const unsigned int program)
+OpenGLES2Context::deleteProgram(const uint program)
 {
 	_programs.erase(std::find(_programs.begin(), _programs.end(), program));
 
@@ -712,7 +713,7 @@ OpenGLES2Context::deleteProgram(const unsigned int program)
 }
 
 void
-OpenGLES2Context::compileShader(const unsigned int shader)
+OpenGLES2Context::compileShader(const uint shader)
 {
 	glCompileShader(shader);
 
@@ -738,7 +739,7 @@ OpenGLES2Context::compileShader(const unsigned int shader)
 }
 
 void
-OpenGLES2Context::setProgram(const unsigned int program)
+OpenGLES2Context::setProgram(const uint program)
 {
 	if (_currentProgram == program)
 		return;
@@ -751,7 +752,7 @@ OpenGLES2Context::setProgram(const unsigned int program)
 }
 
 void
-OpenGLES2Context::setShaderSource(const unsigned int shader,
+OpenGLES2Context::setShaderSource(const uint shader,
 							      const std::string& source)
 {
 #ifdef MINKO_GLSL_OPTIMIZER
@@ -797,7 +798,7 @@ OpenGLES2Context::setShaderSource(const unsigned int shader,
 }
 
 void
-OpenGLES2Context::saveShaderSourceToFile(const std::string& filename, unsigned int shader)
+OpenGLES2Context::saveShaderSourceToFile(const std::string& filename, uint shader)
 {
 	std::string		source;
 	std::ofstream	file;
@@ -813,30 +814,33 @@ OpenGLES2Context::saveShaderSourceToFile(const std::string& filename, unsigned i
 }
 
 void
-OpenGLES2Context::getShaderSource(unsigned int shader, std::string& source)
+OpenGLES2Context::getShaderSource(uint shader, std::string& source)
 {
-	static const unsigned int BUFFER_SIZE = 5000;
+	static const uint BUFFER_SIZE = 5000;
 	
 	GLchar	buffer[BUFFER_SIZE];
 	GLsizei	length = 0;
 
 	glGetShaderSource(shader, BUFFER_SIZE, &length, &buffer[0]);
+	checkForErrors();
 
 	source = std::string(buffer);
 }
 
-const unsigned int
+const uint
 OpenGLES2Context::createVertexShader()
 {
-	unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
+	uint vertexShader = glCreateShader(GL_VERTEX_SHADER);
 
 	_vertexShaders.push_back(vertexShader);
+
+	checkForErrors();
 
 	return vertexShader;
 }
 
 void
-OpenGLES2Context::deleteVertexShader(const unsigned int vertexShader)
+OpenGLES2Context::deleteVertexShader(const uint vertexShader)
 {
 	_vertexShaders.erase(std::find(_vertexShaders.begin(), _vertexShaders.end(), vertexShader));
 
@@ -845,18 +849,20 @@ OpenGLES2Context::deleteVertexShader(const unsigned int vertexShader)
     checkForErrors();
 }
 
-const unsigned int
+const uint
 OpenGLES2Context::createFragmentShader()
 {
-	unsigned int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+	uint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
 
 	_fragmentShaders.push_back(fragmentShader);
+
+	checkForErrors();
 
 	return fragmentShader;
 }
 
 void
-OpenGLES2Context::deleteFragmentShader(const unsigned int fragmentShader)
+OpenGLES2Context::deleteFragmentShader(const uint fragmentShader)
 {
 	_fragmentShaders.erase(std::find(_fragmentShaders.begin(), _fragmentShaders.end(), fragmentShader));
 
@@ -866,11 +872,11 @@ OpenGLES2Context::deleteFragmentShader(const unsigned int fragmentShader)
 }
 
 std::shared_ptr<ProgramInputs>
-OpenGLES2Context::getProgramInputs(const unsigned int program)
+OpenGLES2Context::getProgramInputs(const uint program)
 {
 	std::vector<std::string> names;
 	std::vector<ProgramInputs::Type> types;
-	std::vector<unsigned int> locations;
+	std::vector<uint> locations;
 
 	glUseProgram(program);
 	fillUniformInputs(program, names, types, locations);
@@ -880,10 +886,10 @@ OpenGLES2Context::getProgramInputs(const unsigned int program)
 }
 
 void
-OpenGLES2Context::fillUniformInputs(const unsigned int					program,
+OpenGLES2Context::fillUniformInputs(const uint					program,
 								    std::vector<std::string>&			names,
 								    std::vector<ProgramInputs::Type>&	types,
-								    std::vector<unsigned int>&			locations)
+								    std::vector<uint>&			locations)
 {
 	int total = -1;
 	int maxUniformNameLength = -1;
@@ -956,10 +962,10 @@ OpenGLES2Context::fillUniformInputs(const unsigned int					program,
 }
 
 void
-OpenGLES2Context::fillAttributeInputs(const unsigned int				program,
+OpenGLES2Context::fillAttributeInputs(const uint				program,
 									 std::vector<std::string>&			names,
 								     std::vector<ProgramInputs::Type>&	types,
-								     std::vector<unsigned int>&			locations)
+								     std::vector<uint>&			locations)
 {
 	int total = -1;
 	int maxAttributeNameLength = -1;
@@ -993,7 +999,7 @@ OpenGLES2Context::fillAttributeInputs(const unsigned int				program,
 }
 
 std::string
-OpenGLES2Context::getShaderCompilationLogs(const unsigned int shader)
+OpenGLES2Context::getShaderCompilationLogs(const uint shader)
 {
 	int compileStatus = -1;
 
@@ -1023,7 +1029,7 @@ OpenGLES2Context::getShaderCompilationLogs(const unsigned int shader)
 }
 
 std::string
-OpenGLES2Context::getProgramInfoLogs(const unsigned int program)
+OpenGLES2Context::getProgramInfoLogs(const uint program)
 {
 	int programInfoMaxLength = -1;
 	int programInfoLength = -1;
@@ -1041,31 +1047,63 @@ OpenGLES2Context::getProgramInfoLogs(const unsigned int program)
 }
 
 void
-OpenGLES2Context::setUniform(unsigned int location, float value)
+OpenGLES2Context::setUniform(const uint& location, const int& value)
+{
+	glUniform1i(location, value);
+	checkForErrors();
+}
+
+void
+OpenGLES2Context::setUniform(const uint& location, const int& v1, const int& v2)
+{
+	glUniform2i(location, v1, v2);
+	checkForErrors();
+}
+
+void
+OpenGLES2Context::setUniform(const uint& location, const int& v1, const int& v2, const int& v3)
+{
+	glUniform3i(location, v1, v2, v3);
+	checkForErrors();
+}
+
+void
+OpenGLES2Context::setUniform(const uint& location, const int& v1, const int& v2, const int& v3, const int& v4)
+{
+	glUniform4i(location, v1, v2, v3, v4);
+	checkForErrors();
+}
+
+void
+OpenGLES2Context::setUniform(const uint& location, const float& value)
 {
 	glUniform1f(location, value);
+	checkForErrors();
 }
 
 void
-OpenGLES2Context::setUniform(unsigned int location, float value1, float value2)
+OpenGLES2Context::setUniform(const uint& location, const float& v1, const float& v2)
 {
-	glUniform2f(location, value1, value2);
+	glUniform2f(location, v1, v2);
+	checkForErrors();
 }
 
 void
-OpenGLES2Context::setUniform(unsigned int location, float value1, float value2, float value3)
+OpenGLES2Context::setUniform(const uint& location, const float& v1, const float& v2, const float& v3)
 {
-	glUniform3f(location, value1, value2, value3);
+	glUniform3f(location, v1, v2, v3);
+	checkForErrors();
 }
 
 void
-OpenGLES2Context::setUniform(unsigned int location, float value1, float value2, float value3, float value4)
+OpenGLES2Context::setUniform(const uint& location, const float& v1, const float& v2, const float& v3, const float& v4)
 {
-	glUniform4f(location, value1, value2, value3, value4);
+	glUniform4f(location, v1, v2, v3, v4);
+	checkForErrors();
 }
 
 void
-OpenGLES2Context::setUniform(unsigned int location, unsigned int size, bool transpose, const float* values)
+OpenGLES2Context::setUniform(const uint& location, const uint& size, bool transpose, const float* values)
 {
 #ifdef GL_ES_VERSION_2_0
     if (transpose)
@@ -1084,6 +1122,7 @@ OpenGLES2Context::setUniform(unsigned int location, unsigned int size, bool tran
 #else
 	glUniformMatrix4fv(location, size, transpose, values);
 #endif
+	checkForErrors();
 }
 
 void
@@ -1186,7 +1225,7 @@ OpenGLES2Context::setRenderToBackBuffer()
 }
 
 void
-OpenGLES2Context::setRenderToTexture(unsigned int texture, bool enableDepthAndStencil)
+OpenGLES2Context::setRenderToTexture(uint texture, bool enableDepthAndStencil)
 {
     if (texture == _currentTarget)
         return;
@@ -1196,22 +1235,24 @@ OpenGLES2Context::setRenderToTexture(unsigned int texture, bool enableDepthAndSt
 
     _currentTarget = texture;
 
-    glBindFramebuffer(GL_FRAMEBUFFER, _frameBuffers[texture]);
+	glBindFramebuffer(GL_FRAMEBUFFER, _frameBuffers[texture]);
+	checkForErrors();
+
     if (enableDepthAndStencil)
-        glBindRenderbuffer(GL_RENDERBUFFER, _renderBuffers[texture]);
+		glBindRenderbuffer(GL_RENDERBUFFER, _renderBuffers[texture]);
+	checkForErrors();
 
     auto textureSize = _textureSizes[texture];
 
     glViewport(0, 0, textureSize.first, textureSize.second);
-    clear();
 
     checkForErrors();
 }
 
 void
-OpenGLES2Context::createRTTBuffers(unsigned int texture, unsigned int width, unsigned int height)
+OpenGLES2Context::createRTTBuffers(uint texture, uint width, uint height)
 {
-    unsigned int frameBuffer = -1;
+    uint frameBuffer = -1;
 
     // create a framebuffer object
     glGenFramebuffers(1, &frameBuffer);
@@ -1220,7 +1261,7 @@ OpenGLES2Context::createRTTBuffers(unsigned int texture, unsigned int width, uns
     // attach a texture to the FBO
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
 
-    unsigned int renderBuffer = -1;
+    uint renderBuffer = -1;
 
     // gen renderbuffer
     glGenRenderbuffers(1, &renderBuffer);
@@ -1249,7 +1290,7 @@ OpenGLES2Context::createRTTBuffers(unsigned int texture, unsigned int width, uns
     checkForErrors();
 }
 
-unsigned int
+uint
 OpenGLES2Context::getError()
 {
 	auto error = glGetError();
@@ -1279,7 +1320,7 @@ OpenGLES2Context::getError()
 }
 
 void
-OpenGLES2Context::generateMipmaps(unsigned int texture)
+OpenGLES2Context::generateMipmaps(uint texture)
 {
     glBindTexture(GL_TEXTURE_2D, texture);
     glGenerateMipmap(GL_TEXTURE_2D);
