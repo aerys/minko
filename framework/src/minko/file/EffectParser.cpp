@@ -189,7 +189,7 @@ EffectParser::parseRenderStates(Json::Value&			root,
 	parseDepthTest(root, depthMask, depthFunc);
 	parseTriangleCulling(root, triangleCulling);
     parseSamplerStates(root, samplerStates);
-	parseTarget(root, context, targets);
+	target = parseTarget(root, context, targets);
 
 	return render::States::create(
 		samplerStates,
@@ -271,7 +271,6 @@ EffectParser::parsePasses(Json::Value&				root,
 			fragmentShaderValue, resolvedFilename, options, render::Shader::Type::FRAGMENT_SHADER
 		);
 
-        auto target = parseTarget(passValue, options->context(), targets);
 		auto pass = render::Pass::create(
 			name,
 			Program::create(options->context(), vertexShader, fragmentShader),
@@ -520,7 +519,7 @@ EffectParser::parseTarget(Json::Value&                      contextNode,
         auto width      = 0;
         auto height     = 0;
 
-        if (!sizeValue.empty())
+        if (sizeValue.asUInt() != 0)
             width = height = sizeValue.asUInt();
         else
         {
@@ -528,12 +527,11 @@ EffectParser::parseTarget(Json::Value&                      contextNode,
             height = targetValue.get("height", 0).asUInt();
         }
 
-        target = render::Texture::create(context, width, height, true);
+        target = render::Texture::create(context, width, height, false, true);
+		target->upload();
 
 		if (targetName.length())
 	        _assetLibrary->texture(targetName, target);
-
-        return target;
     }
 	else if (targetValue.isString())
 	{
@@ -722,7 +720,7 @@ EffectParser::finalize()
 
 	for (auto& targets : _techniqueTargets)
 		for (auto& target : targets.second)
-			_effect->setUniform(target.first, target.second);
+			_effect->data()->set(target.first, target.second);
 
 	_assetLibrary->effect(_effectName, _effect);
     _assetLibrary->effect(_filename, _effect);

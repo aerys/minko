@@ -43,6 +43,7 @@ namespace minko
 			std::unordered_map<std::string, Technique>		_techniques;
 			std::unordered_map<std::string, std::string>	_fallback;
 			std::list<std::function<void(PassPtr)>>			_uniformFunctions;
+			std::shared_ptr<data::Provider>					_data;
 
 		public:
 			inline static
@@ -68,6 +69,13 @@ namespace minko
 			techniques()
 			{
 				return _techniques;
+			}
+
+			inline
+			std::shared_ptr<data::Provider>
+			data() const
+			{
+				return _data;
 			}
 
 			inline
@@ -124,6 +132,8 @@ namespace minko
             removeTechnique(const std::string& name);
 
 		private:
+			Effect();
+
 			template <typename... T>
 			void
 			setUniformOnPass(std::shared_ptr<Pass> pass, const std::string& name, const T&... values)
