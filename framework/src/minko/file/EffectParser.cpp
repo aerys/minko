@@ -282,7 +282,7 @@ EffectParser::parsePasses(Json::Value&				root,
 		);
 
 		// set uniform default values
-		for (auto nameAndValues : uniformDefaultValues)
+		for (auto& nameAndValues : uniformDefaultValues)
 			setUniformDefaultValueOnPass(
 				pass,
 				nameAndValues.first,
@@ -490,26 +490,26 @@ EffectParser::parseUniformBindings(Json::Value&			contextNode,
 {
 	auto uniformBindingsValue = contextNode.get("uniformBindings", 0);
 	if (uniformBindingsValue.isObject())
-	for (auto propertyName : uniformBindingsValue.getMemberNames())
-	{
-		auto uniformBindingValue = uniformBindingsValue.get(propertyName, 0);
-
-		if (uniformBindingValue.isString())
-			uniformBindings[propertyName] = uniformBindingValue.asString();
-		else if (uniformBindingValue.isObject())
+		for (auto propertyName : uniformBindingsValue.getMemberNames())
 		{
-			auto nameValue = uniformBindingValue.get("property", 0);
-			auto defaultValue = uniformBindingValue.get("default", "");
+			auto uniformBindingValue = uniformBindingsValue.get(propertyName, 0);
 
-			if (nameValue.isString())
-				uniformBindings[propertyName] = nameValue.asString();
+			if (uniformBindingValue.isString())
+				uniformBindings[propertyName] = uniformBindingValue.asString();
+			else if (uniformBindingValue.isObject())
+			{
+				auto nameValue = uniformBindingValue.get("property", 0);
+				auto defaultValue = uniformBindingValue.get("default", "");
 
-			if (defaultValue.isArray() || defaultValue.isNumeric())
-				parseUniformDefaultValues(defaultValue, uniformDefaultValues[propertyName]);
+				if (nameValue.isString())
+					uniformBindings[propertyName] = nameValue.asString();
+
+				if (defaultValue.isArray() || defaultValue.isNumeric())
+					parseUniformDefaultValues(defaultValue, uniformDefaultValues[propertyName]);
+			}
+			else if (uniformBindingValue.isArray() || uniformBindingValue.isNumeric())
+				parseUniformDefaultValues(uniformBindingValue, uniformDefaultValues[propertyName]);
 		}
-		else if (uniformBindingsValue.isArray() || uniformBindingValue.isNumeric())
-			parseUniformDefaultValues(uniformBindingValue, uniformDefaultValues[propertyName]);
-	}
 }
 
 void
@@ -519,7 +519,7 @@ EffectParser::parseUniformDefaultValues(Json::Value&			contextNode,
 	if (contextNode.isArray())
 	{
 		for (auto value : contextNode)
-			parseUniformDefaultValues(contextNode, uniformTypeAndValue);
+			parseUniformDefaultValues(value, uniformTypeAndValue);
 
 		return;
 	}
