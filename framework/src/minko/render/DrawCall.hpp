@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/Blending.hpp"
 #include "minko/data/Container.hpp"
 #include "minko/render/ProgramInputs.hpp"
+#include "minko/render/States.hpp"
 
 namespace minko
 {
@@ -97,10 +98,17 @@ namespace minko
 
             inline
             std::shared_ptr<Texture>
-            target()
+            target() const
             {
                 return _target;
             }
+
+			inline
+			float
+			priority() const
+			{
+				return _states->priority();
+			}
 
             void
             configure(std::shared_ptr<Program>  program,
