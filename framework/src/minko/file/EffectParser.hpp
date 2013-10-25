@@ -44,13 +44,27 @@ namespace minko
 			typedef std::shared_ptr<EffectParser>	Ptr;
 
 		private:
-			typedef std::shared_ptr<AbstractLoader>						LoaderPtr;
-			typedef std::shared_ptr<render::Effect>						EffectPtr;
-			typedef std::shared_ptr<render::Pass>						PassPtr;
-			typedef std::shared_ptr<render::Shader>						ShaderPtr;
-			typedef std::shared_ptr<render::Texture>					TexturePtr;
-			typedef std::unordered_map<std::string, TexturePtr>			TexturePtrMap;
-			typedef std::unordered_map<std::string, std::vector<float>>	StringToFloatsMap;
+			union UniformValue
+			{
+				int intValue;
+				float floatValue;
+			};
+
+			enum class UniformType
+			{
+				UNSET,
+				INT,
+				FLOAT
+			};
+
+			typedef std::shared_ptr<AbstractLoader>							LoaderPtr;
+			typedef std::shared_ptr<render::Effect>							EffectPtr;
+			typedef std::shared_ptr<render::Pass>							PassPtr;
+			typedef std::shared_ptr<render::Shader>							ShaderPtr;
+			typedef std::shared_ptr<render::Texture>						TexturePtr;
+			typedef std::unordered_map<std::string, TexturePtr>				TexturePtrMap;
+			typedef std::pair<UniformType, std::vector<UniformValue>>		UniformTypeAndValue;
+			typedef std::unordered_map<std::string, UniformTypeAndValue>	UniformValues;
 
 		private:
 			static std::unordered_map<std::string, unsigned int>		_blendFactorMap;
@@ -67,7 +81,7 @@ namespace minko
 			data::BindingMap				                            _defaultUniformBindings;
 			data::BindingMap				                            _defaultStateBindings;
 			data::MacroBindingMap                              			_defaultMacroBindings;
-			std::unordered_map<std::string, std::vector<float>>			_defaultUniformValues;
+			UniformValues												_defaultUniformValues;
 
 			unsigned int												_numDependencies;
 			unsigned int												_numLoadedDependencies;
@@ -124,7 +138,8 @@ namespace minko
 			parseRenderStates(Json::Value&								root,
 							  std::shared_ptr<render::AbstractContext>	context,
 							  TexturePtrMap&							targets,
-							  std::shared_ptr<render::States>			defaultStates);
+							  std::shared_ptr<render::States>			defaultStates,
+							  unsigned int								priority);
 
 			void
 			parseDefaultValues(Json::Value& root);
@@ -141,7 +156,13 @@ namespace minko
 						data::BindingMap&							defaultStateBindings,
 						data::MacroBindingMap&						defaultMacroBindings,
 						std::shared_ptr<render::States>				defaultStates,
-						StringToFloatsMap&							defaultUniformDefaultValues);
+						UniformValues&								defaultUniformDefaultValues);
+
+			void
+			setUniformDefaultValueOnPass(PassPtr					pass,
+										 const std::string&			name,
+										 UniformType				type,
+										 std::vector<UniformValue>& value);
 
 			std::shared_ptr<render::Shader>
 			parseShader(Json::Value& 					shaderNode,
@@ -155,7 +176,16 @@ namespace minko
 						  data::BindingMap&			uniformBindings,
 						  data::BindingMap&			stateBindings,
 						  data::MacroBindingMap&	macroBindings,
-						  StringToFloatsMap&		uniformDefaultValues);
+						  UniformValues&			uniformDefaultValues);
+
+			void
+			parseUniformBindings(Json::Value&			contextNode,
+							 	 data::BindingMap&		uniformBindings,
+								 UniformValues&			uniformDefaultValues);
+
+			void
+			parseUniformDefaultValues(Json::Value&			contextNode,
+									  UniformTypeAndValue&	uniformTypeAndValue);
 
 			void
 			parseBlendMode(Json::Value&						contextNode,
