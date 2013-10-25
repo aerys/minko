@@ -32,5 +32,5 @@ newaction {
 }
 
 minko.vs.getdllscopycommand = function(sourceDir)
-	return 'xcopy /y ' .. path.translate(sourceDir, '\\') .. '\\*.dll "$(TargetDir)"'
+	return 'xcopy /y "' .. path.translate(sourceDir, '\\') .. '\\*.dll" "$(TargetDir)"'
 end
