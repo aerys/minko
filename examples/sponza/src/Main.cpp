@@ -41,7 +41,7 @@ const std::string DEFAULT_EFFECT	= "effect/Phong.effect";
 const std::string CAMERA_NAME		= "camera";
 
 const float CAMERA_LIN_SPEED	= 0.05f;
-const float CAMERA_ANG_SPEED	= PI * 2.f / 180.0f;
+const float CAMERA_ANG_SPEED	= (float)PI * 2.f / 180.0f;
 const float CAMERA_MASS			= 50.0f;
 const float CAMERA_FRICTION		= 0.6f;
 
@@ -105,11 +105,11 @@ deserializeShape(Qark::Map&			shapeData,
 
 	int type = Any::cast<int>(shapeData["type"]);
 
-	double rx	= 0.0;
-	double ry	= 0.0;
-	double rz	= 0.0;
-	double h	= 0.0;
-	double r	= 0.0;
+	auto rx	= 0.f;
+	auto ry = 0.f;
+	auto rz = 0.f;
+	auto h = 0.f;
+	auto r = 0.f;
 
 	std::stringstream stream;
 	switch (type)
@@ -209,7 +209,7 @@ deserializeBullet(Qark::Map&						nodeInformation,
 		stream.write(&*materialProfileData.begin(), materialProfileData.size());
 
 		double density	= readAndSwap<double>(stream);
-		mass			= density * shape->volume();
+		mass			= (float)density * shape->volume();
 		friction		= readAndSwap<double>(stream);
 		restitution		= readAndSwap<double>(stream);
 	}
