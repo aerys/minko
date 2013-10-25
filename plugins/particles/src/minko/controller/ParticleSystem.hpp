@@ -208,7 +208,7 @@ namespace minko
 			void
 			updateRate(unsigned int updatesPerSecond)
 			{
-				_updateStep = 1. / updatesPerSecond;
+				_updateStep = 1.f / (float)updatesPerSecond;
 			}
 
 			inline

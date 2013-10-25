@@ -67,7 +67,7 @@ namespace minko
 				volume() const
 				{
 					const float radius	= _radius + _margin;
-					const float volume	= (PI * 4.0f / 3.0f) * radius * radius * radius;
+					const float volume	= ((float)PI * 4.0f / 3.0f) * radius * radius * radius;
 					
 					return volume * _volumeScaling;
 				}
