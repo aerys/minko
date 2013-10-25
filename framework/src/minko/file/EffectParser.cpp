@@ -123,7 +123,7 @@ EffectParser::parse(const std::string&				    filename,
 	auto context = _assetLibrary->context();
 
 	// parse default values for bindings and states
-	_defaultStates = parseRenderStates(root, context, _globalTargets, _defaultStates);
+	_defaultStates = parseRenderStates(root, context, _globalTargets, _defaultStates, 0);
 	parseBindings(
 		root,
 		_defaultAttributeBindings,
@@ -173,9 +173,9 @@ render::States::Ptr
 EffectParser::parseRenderStates(Json::Value&			root,
 								AbstractContext::Ptr	context,
 								TexturePtrMap&			targets,
-								render::States::Ptr		defaultStates)
+								render::States::Ptr		defaultStates,
+								unsigned int			priority)
 {
-	auto priority = root.get("priority", defaultStates->priority()).asFloat();
 	auto blendSrcFactor	= defaultStates->blendingSourceFactor();
 	auto blendDstFactor	= defaultStates->blendingDestinationFactor();
 	auto depthMask = defaultStates->depthMask();
@@ -193,7 +193,7 @@ EffectParser::parseRenderStates(Json::Value&			root,
 
 	return render::States::create(
 		samplerStates,
-		priority,
+		(float)priority,
 		blendSrcFactor,
 		blendDstFactor,
 		depthMask,
@@ -215,7 +215,7 @@ EffectParser::parsePasses(Json::Value&				root,
 						  data::BindingMap&			defaultStateBindings,
 						  data::MacroBindingMap&	defaultMacroBindings,
 						  render::States::Ptr		defaultStates,
-						  StringToFloatsMap&		defaultUniformDefaultValues)
+						  UniformValues&			defaultUniformDefaultValues)
 {
 	auto passId = 0;
 
@@ -246,7 +246,7 @@ EffectParser::parsePasses(Json::Value&				root,
 		data::BindingMap		uniformBindings(defaultUniformBindings);
 		data::BindingMap		stateBindings(defaultStateBindings);
 		data::MacroBindingMap	macroBindings(defaultMacroBindings);
-		StringToFloatsMap		uniformDefaultValues(defaultUniformDefaultValues);
+		UniformValues			uniformDefaultValues(defaultUniformDefaultValues);
         
 		parseBindings(
 			passValue,
@@ -258,7 +258,7 @@ EffectParser::parsePasses(Json::Value&				root,
 		);
 
 		// render states
-		auto states = parseRenderStates(passValue, context, targets, defaultStates);
+		auto states = parseRenderStates(passValue, context, targets, defaultStates, passId);
 
 		// program
 		auto vertexShaderValue = passValue.get("vertexShader", "");
@@ -283,22 +283,63 @@ EffectParser::parsePasses(Json::Value&				root,
 
 		// set uniform default values
 		for (auto nameAndValues : uniformDefaultValues)
-		{
-			auto& values = nameAndValues.second;
-
-			if (values.size() == 1)
-				pass->setUniform(nameAndValues.first, values[0]);
-			else if (values.size() == 2)
-				pass->setUniform(nameAndValues.first, values[0], values[1]);
-			else if (values.size() == 3)
-				pass->setUniform(nameAndValues.first, values[0], values[1], values[2]);
-			else if (values.size() == 4)
-				pass->setUniform(nameAndValues.first, values[0], values[1], values[2], values[3]);
-		}
+			setUniformDefaultValueOnPass(
+				pass,
+				nameAndValues.first,
+				nameAndValues.second.first,
+				nameAndValues.second.second
+			);
 
         passes.push_back(pass);
 
 		parseDependencies(passValue, resolvedFilename, options, _passIncludes[pass]);
+	}
+}
+
+void
+EffectParser::setUniformDefaultValueOnPass(render::Pass::Ptr			pass,
+										   const std::string&			name,
+										   UniformType					type,
+										   std::vector<UniformValue>&	value)
+{
+	if (type == UniformType::INT)
+	{
+		if (value.size() == 1)
+			pass->setUniform(name, value[0].intValue);
+		else if (value.size() == 2)
+			pass->setUniform(name, value[0].intValue, value[1].intValue);
+		else if (value.size() == 3)
+			pass->setUniform(name, value[0].intValue, value[1].intValue, value[2].intValue);
+		else if (value.size() == 4)
+			pass->setUniform(
+				name,
+				value[0].intValue,
+				value[1].intValue,
+				value[2].intValue,
+				value[3].intValue
+			);
+	}
+	else if (type == UniformType::FLOAT)
+	{
+		if (value.size() == 1)
+			pass->setUniform(name, value[0].floatValue);
+		else if (value.size() == 2)
+			pass->setUniform(name, value[0].floatValue, value[1].floatValue);
+		else if (value.size() == 3)
+			pass->setUniform(
+				name,
+				value[0].floatValue,
+				value[1].floatValue,
+				value[2].floatValue
+			);
+		else if (value.size() == 4)
+			pass->setUniform(
+				name,
+				value[0].floatValue,
+				value[1].floatValue,
+				value[2].floatValue,
+				value[3].floatValue
+			);
 	}
 }
 
@@ -397,46 +438,19 @@ EffectParser::parseTriangleCulling(Json::Value& contextNode, TriangleCulling& tr
 }
 
 void
-EffectParser::parseBindings(Json::Value&											contextNode,
-						    data::BindingMap&										attributeBindings,
-						    data::BindingMap&										uniformBindings,
-						    data::BindingMap&										stateBindings,
-							data::MacroBindingMap&									macroBindings,
-							std::unordered_map<std::string, std::vector<float>>&	uniformDefaultValues)
+EffectParser::parseBindings(Json::Value&			contextNode,
+						    data::BindingMap&		attributeBindings,
+						    data::BindingMap&		uniformBindings,
+						    data::BindingMap&		stateBindings,
+							data::MacroBindingMap&	macroBindings,
+							UniformValues&			uniformDefaultValues)
 {
 	auto attributeBindingsValue = contextNode.get("attributeBindings", 0);
 	if (attributeBindingsValue.isObject())
 		for (auto propertyName : attributeBindingsValue.getMemberNames())
 			attributeBindings[propertyName] = attributeBindingsValue.get(propertyName, 0).asString();
 
-	auto uniformBindingsValue = contextNode.get("uniformBindings", 0);
-	if (uniformBindingsValue.isObject())
-		for (auto propertyName : uniformBindingsValue.getMemberNames())
-		{
-			auto uniformBindingValue = uniformBindingsValue.get(propertyName, 0);
-
-			if (uniformBindingValue.isString())
-				uniformBindings[propertyName] = uniformBindingValue.asString();
-			else if (uniformBindingValue.isObject())
-			{
-				auto nameValue = uniformBindingValue.get("property", 0);
-				auto defaultValue = uniformBindingValue.get("default", 0);
-				
-				if (nameValue.isString())
-					uniformBindings[propertyName] = nameValue.asString();
-
-				if (defaultValue.isNumeric())
-					uniformDefaultValues[propertyName].push_back(defaultValue.asFloat());
-				else if (defaultValue.isArray())
-					for (auto value : defaultValue)
-						uniformDefaultValues[propertyName].push_back(value.asFloat());
-			}
-			else if (uniformBindingValue.isNumeric())
-				uniformDefaultValues[propertyName].push_back(uniformBindingValue.asFloat());
-			else if (uniformBindingValue.isArray())
-				for (auto value : uniformBindingValue)
-					uniformDefaultValues[propertyName].push_back(value.asFloat());
-		}
+	parseUniformBindings(contextNode, uniformBindings, uniformDefaultValues);
 			
 	auto stateBindingsValue = contextNode.get("stateBindings", 0);
 	if (stateBindingsValue.isObject())
@@ -467,6 +481,63 @@ EffectParser::parseBindings(Json::Value&											contextNode,
 				);
 			}
 		}
+}
+
+void
+EffectParser::parseUniformBindings(Json::Value&			contextNode,
+								   data::BindingMap&	uniformBindings,
+								   UniformValues&		uniformDefaultValues)
+{
+	auto uniformBindingsValue = contextNode.get("uniformBindings", 0);
+	if (uniformBindingsValue.isObject())
+	for (auto propertyName : uniformBindingsValue.getMemberNames())
+	{
+		auto uniformBindingValue = uniformBindingsValue.get(propertyName, 0);
+
+		if (uniformBindingValue.isString())
+			uniformBindings[propertyName] = uniformBindingValue.asString();
+		else if (uniformBindingValue.isObject())
+		{
+			auto nameValue = uniformBindingValue.get("property", 0);
+			auto defaultValue = uniformBindingValue.get("default", "");
+
+			if (nameValue.isString())
+				uniformBindings[propertyName] = nameValue.asString();
+
+			if (defaultValue.isArray() || defaultValue.isNumeric())
+				parseUniformDefaultValues(defaultValue, uniformDefaultValues[propertyName]);
+		}
+		else if (uniformBindingsValue.isArray() || uniformBindingValue.isNumeric())
+			parseUniformDefaultValues(uniformBindingValue, uniformDefaultValues[propertyName]);
+	}
+}
+
+void
+EffectParser::parseUniformDefaultValues(Json::Value&			contextNode,
+										UniformTypeAndValue&	uniformTypeAndValue)
+{
+	if (contextNode.isArray())
+	{
+		for (auto value : contextNode)
+			parseUniformDefaultValues(contextNode, uniformTypeAndValue);
+
+		return;
+	}
+
+	UniformValue v;
+
+	if (contextNode.isDouble())
+	{
+		v.floatValue = contextNode.asFloat();
+		uniformTypeAndValue.first = UniformType::FLOAT;
+	}
+	else if (contextNode.isInt())
+	{
+		v.intValue = contextNode.asInt();
+		uniformTypeAndValue.first = UniformType::INT;
+	}
+
+	uniformTypeAndValue.second.push_back(v);
 }
 
 void
@@ -607,7 +678,7 @@ EffectParser::parseTechniques(Json::Value&						root,
 				data::BindingMap		uniformBindings(_defaultUniformBindings);
 				data::BindingMap		stateBindings(_defaultStateBindings);
 				data::MacroBindingMap	macroBindings(_defaultMacroBindings);
-				StringToFloatsMap		uniformDefaultValues(_defaultUniformValues);
+				UniformValues			uniformDefaultValues(_defaultUniformValues);
         
 				// bindings
 				parseBindings(
@@ -620,7 +691,7 @@ EffectParser::parseTechniques(Json::Value&						root,
 				);
 
 				// render states
-				auto states = parseRenderStates(techniqueValue, context, _globalTargets, _defaultStates);
+				auto states = parseRenderStates(techniqueValue, context, _globalTargets, _defaultStates, 0);
 
 				parsePasses(
 					techniqueValue,
