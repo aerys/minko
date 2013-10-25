@@ -44,12 +44,13 @@ namespace minko
 			typedef std::shared_ptr<EffectParser>	Ptr;
 
 		private:
-			typedef std::shared_ptr<AbstractLoader>				LoaderPtr;
-			typedef std::shared_ptr<render::Effect>				EffectPtr;
-			typedef std::shared_ptr<render::Pass>				PassPtr;
-			typedef std::shared_ptr<render::Shader>				ShaderPtr;
-			typedef std::shared_ptr<render::Texture>			TexturePtr;
-			typedef std::unordered_map<std::string, TexturePtr>	TexturePtrMap;
+			typedef std::shared_ptr<AbstractLoader>						LoaderPtr;
+			typedef std::shared_ptr<render::Effect>						EffectPtr;
+			typedef std::shared_ptr<render::Pass>						PassPtr;
+			typedef std::shared_ptr<render::Shader>						ShaderPtr;
+			typedef std::shared_ptr<render::Texture>					TexturePtr;
+			typedef std::unordered_map<std::string, TexturePtr>			TexturePtrMap;
+			typedef std::unordered_map<std::string, std::vector<float>>	StringToFloatsMap;
 
 		private:
 			static std::unordered_map<std::string, unsigned int>		_blendFactorMap;
@@ -66,6 +67,7 @@ namespace minko
 			data::BindingMap				                            _defaultUniformBindings;
 			data::BindingMap				                            _defaultStateBindings;
 			data::MacroBindingMap                              			_defaultMacroBindings;
+			std::unordered_map<std::string, std::vector<float>>			_defaultUniformValues;
 
 			unsigned int												_numDependencies;
 			unsigned int												_numLoadedDependencies;
@@ -138,7 +140,8 @@ namespace minko
 						data::BindingMap&							defaultUniformBindings,
 						data::BindingMap&							defaultStateBindings,
 						data::MacroBindingMap&						defaultMacroBindings,
-						std::shared_ptr<render::States>				defaultStates);
+						std::shared_ptr<render::States>				defaultStates,
+						StringToFloatsMap&							defaultUniformDefaultValues);
 
 			std::shared_ptr<render::Shader>
 			parseShader(Json::Value& 					shaderNode,
@@ -151,7 +154,8 @@ namespace minko
 						  data::BindingMap&			attributeBindings,
 						  data::BindingMap&			uniformBindings,
 						  data::BindingMap&			stateBindings,
-						  data::MacroBindingMap&	macroBindings);
+						  data::MacroBindingMap&	macroBindings,
+						  StringToFloatsMap&		uniformDefaultValues);
 
 			void
 			parseBlendMode(Json::Value&						contextNode,
