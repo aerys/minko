@@ -82,66 +82,10 @@ hslToRgb(float h, float s, float l)
 	return Vector3::create(r, g, b);
 }
 
-#ifndef EMSCRIPTEN
-void
-SDL_KeyboardHandler(scene::Node::Ptr		root,
-					data::Provider::Ptr		data,
-					file::AssetLibrary::Ptr	assets)
-{
-	static const std::string& normalMapPropName	= "normalMap";
-	static const std::string& normalMapFilename	= "texture/normalmap-cells.png";
-
-	static const uint MAX_NUM_LIGHTS	= 40;
-	static std::vector<scene::Node::Ptr> newLights;
-
-	const Uint8* keyboardState = SDL_GetKeyboardState(NULL);
-	if (keyboardState[SDL_SCANCODE_SPACE])
-	{
-		bool hasNormalMap = data->hasProperty(normalMapPropName);
-
-		std::cout << "mesh does" << (!hasNormalMap ? " not " : " ") << "have a normal map:\t" << (hasNormalMap ? "remove" : "add") << " it" << std::endl;
-		if (hasNormalMap)
-			data->unset(normalMapPropName);
-		else
-			data->set(normalMapPropName, assets->texture(normalMapFilename));
-	}
-	else if (keyboardState[SDL_SCANCODE_R])
-	{
-		auto lights = root->children()[4];
-
-		if (lights->children().size() == 0)
-		{
-			std::cout << "no random light to remove" << std::endl;
-			return;
-		}
-
-		lights->removeChild(lights->children().back());
-	}
-	else if (keyboardState[SDL_SCANCODE_A])
-	{
-		if (root->children()[4]->children().size() == MAX_NUM_LIGHTS)
-		{
-			std::cout << "cannot add more lights" << std::endl;
-			return;
-		}
-
-		auto r = (float)rand() / (float)RAND_MAX;
-		auto theta = 2.0f * (float)PI *  r;
-		auto color = hslToRgb(r, 1.f, .5f);
-		auto pos = Vector3::create(
-			cosf(theta) * 5.f + (float)rand() / ((float)RAND_MAX * 3.f),
-			2.5f + rand() / (float)RAND_MAX,
-			sinf(theta) * 5.f + (float)rand() / ((float)RAND_MAX * 3.f)
-		);
-
-		root->children()[4]->addChild(createPointLight(color, pos, assets));
-	}
-}
-#endif // EMSCRIPTEN
-
 int main(int argc, char** argv)
 {
 	MinkoSDL::initialize("Minko Examples - Light", 800, 600);
+	MinkoSDL::context()->errorsEnabled(true);
 
 	const clock_t startTime	= clock();
 
@@ -169,7 +113,8 @@ int main(int argc, char** argv)
 		->queue("texture/sprite-pointlight.png")
 		->queue("effect/Basic.effect")
 		->queue("effect/Sprite.effect")
-		->queue("effect/Phong.effect");
+		->queue("effect/Phong.effect")
+		->queue("effect/PseudoLensFlare.effect");
 
     auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
 	{
@@ -212,6 +157,21 @@ int main(int argc, char** argv)
 
 		lights->addComponent(Transform::create());
 		root->addChild(lights);
+
+		// post-processing
+		auto ppTarget = render::Texture::create(assets->context(), 1024, 1024, false, true);
+
+		ppTarget->upload();
+
+		auto ppFx = assets->effect("effect/PseudoLensFlare.effect");
+		auto ppRenderer = Renderer::create();
+		auto ppScene = scene::Node::create()
+			->addComponent(ppRenderer)
+			->addComponent(Surface::create(
+				geometry::QuadGeometry::create(assets->context()),
+				data::Provider::create()->set("backbuffer", ppTarget),
+				ppFx
+			));
 
 		auto resized = MinkoSDL::resized()->connect([&](unsigned int width, unsigned int height)
 		{
@@ -270,10 +230,18 @@ int main(int argc, char** argv)
 		});
 		auto enterFrame = MinkoSDL::enterFrame()->connect([&]()
 		{
+			auto pp = true;
+
 			lights->component<Transform>()->transform()->appendRotationY(.005f);
 
-			sceneManager->nextFrame();
-
+			if (pp)
+			{
+				sceneManager->nextFrame(ppTarget);
+				ppRenderer->render(assets->context());
+			}
+			else
+				sceneManager->nextFrame();
+			
 			//std::cout << MinkoSDL::framerate() << std::endl;
 		});
 
