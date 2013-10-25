@@ -101,7 +101,7 @@ namespace minko
 			setUniform(const std::string& name, const T&... values)
 			{
 				if (!_inputs->hasName(name))
-					throw;
+					return;
 
 				_context->setProgram(_id);
 				_context->setUniform(_inputs->location(name), values...);
