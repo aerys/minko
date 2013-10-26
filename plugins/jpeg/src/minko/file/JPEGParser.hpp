@@ -31,7 +31,8 @@ namespace minko
 	namespace file
 	{
 		class JPEGParser :
-			public AbstractParser
+			public AbstractParser,
+			public std::enable_shared_from_this<JPEGParser>
 		{
 		public:
 			typedef std::shared_ptr<JPEGParser> Ptr;
