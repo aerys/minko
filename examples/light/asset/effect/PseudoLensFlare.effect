@@ -12,11 +12,14 @@
 			"name" : "downsample and threshold",
 			"uniformBindings" : {
 				"uInputTex"		: "backbuffer",
-				"uScale"		: [0.5, 0.5, 0.5, 1.0],
-				"uBias"			: [-0.2, -.2, -.2, 0.0]
+				"uScale"		: [ 5., 5., 5., 1.0 ],
+				"uBias"			: [ -0.99, -0.99, -0.99, 0.0 ]
 			},
 			"triangleCulling" : "none",
-			"target" : { "name" : "lensflare_downsample", "size" : 256 },
+			"target" : { "name" : "lensflare_downsample", "size" : 512 },
+			"samplerStates" : {
+				"uInputTex"	: { "textureFilter" : "linear" }
+			},
 			"vertexShader" : {
 				"includes"	: [ "PseudoLensFlare.vertex.glsl" ]
 			},
@@ -28,13 +31,16 @@
 			"name" : "lens features",
 			"uniformBindings" : {
 				"uInputTex"			: "lensflare_downsample",
-				"uGhosts"			: 5,
-				"uGhostDispersal"	: 0.1,
-				"uTextureSize"		: [ 256., 256. ],
+				"uGhosts"			: 3,
+				"uGhostDispersal"	: 0.3,
+				"uTextureSize"		: [ 512., 512. ],
 				"uHaloWidth"		: 0.5
 			},
 			"triangleCulling" : "none",
-			"target" : { "name" : "lensflare_features", "size" : 256 },
+			"target" : { "name" : "lensflare_features", "size" : 512 },
+			"samplerStates" : {
+				"uInputTex"	: { "textureFilter" : "linear" }
+			},
 			"vertexShader" : {
 				"includes"	: [ "PseudoLensFlare.vertex.glsl" ]
 			},
@@ -49,6 +55,10 @@
 				"uFeatures"		: "lensflare_features"
 			},
 			"triangleCulling" : "none",
+			"samplerStates" : {
+				"uBackbuffer"	: { "textureFilter" : "linear" },
+				"uFeatures"		: { "textureFilter" : "linear" }
+			},
 			"vertexShader" : {
 				"includes" : [ "PseudoLensFlare.vertex.glsl" ]
 			},
