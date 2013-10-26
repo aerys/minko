@@ -62,6 +62,10 @@ namespace minko
             viewportHeight() = 0;
 
 			virtual
+			uint
+			currentProgram() = 0;
+
+			virtual
 			void
 			configureViewport(const uint x,
 							  const uint y,
