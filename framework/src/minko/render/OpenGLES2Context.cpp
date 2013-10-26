@@ -101,13 +101,13 @@ OpenGLES2Context::OpenGLES2Context() :
 	_viewportWidth(0),
 	_viewportHeight(0),
 	_currentTarget(0),
-	_currentIndexBuffer(-1),
-	_currentVertexBuffer(8, -1),
+	_currentIndexBuffer(0),
+	_currentVertexBuffer(8, 0),
 	_currentVertexSize(8, -1),
 	_currentVertexStride(8, -1),
 	_currentVertexOffset(8, -1),
-	_currentTexture(8, -1),
-	_currentProgram(-1),
+	_currentTexture(8, 0),
+	_currentProgram(0),
     _currentTriangleCulling(TriangleCulling::BACK),
     _currentWrapMode(),
     _currentTextureFilter(),
@@ -569,8 +569,8 @@ OpenGLES2Context::deleteTexture(const uint texture)
 
 void
 OpenGLES2Context::setTextureAt(const uint	position,
-							   const int			texture,
-							   const int			location)
+							   const int	texture,
+							   const int	location)
 {
 	auto textureIsValid = texture > 0;
 
