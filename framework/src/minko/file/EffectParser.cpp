@@ -116,6 +116,8 @@ EffectParser::parse(const std::string&				    filename,
     }
 
     _filename = filename;
+	_resolvedFilename = resolvedFilename;
+	_options = options;
 	_assetLibrary = assetLibrary;
 	_effectName = root.get("name", filename).asString();
 	_defaultTechnique = root.get("defaultTechnique", "default").asString();
@@ -218,8 +220,9 @@ EffectParser::parsePasses(Json::Value&				root,
 						  UniformValues&			defaultUniformDefaultValues)
 {
 	auto passId = 0;
+	auto passesValue = root.get("passes", 0);
 
-	for (auto passValue : root.get("passes", 0))
+	for (auto passValue : passesValue)
 	{
 		if (passValue.isString())
 		{
@@ -258,7 +261,7 @@ EffectParser::parsePasses(Json::Value&				root,
 		);
 
 		// render states
-		auto states = parseRenderStates(passValue, context, targets, defaultStates, passId);
+		auto states = parseRenderStates(passValue, context, targets, defaultStates, passesValue.size() - passId);
 
 		// program
 		auto vertexShaderValue = passValue.get("vertexShader", "");
@@ -297,50 +300,39 @@ EffectParser::parsePasses(Json::Value&				root,
 }
 
 void
-EffectParser::setUniformDefaultValueOnPass(render::Pass::Ptr			pass,
-										   const std::string&			name,
-										   UniformType					type,
-										   std::vector<UniformValue>&	value)
+EffectParser::setUniformDefaultValueOnPass(render::Pass::Ptr	pass,
+										   const std::string&	name,
+										   UniformType			type,
+										   UniformValue&		value)
 {
 	if (type == UniformType::INT)
 	{
-		if (value.size() == 1)
-			pass->setUniform(name, value[0].intValue);
-		else if (value.size() == 2)
-			pass->setUniform(name, value[0].intValue, value[1].intValue);
-		else if (value.size() == 3)
-			pass->setUniform(name, value[0].intValue, value[1].intValue, value[2].intValue);
-		else if (value.size() == 4)
-			pass->setUniform(
-				name,
-				value[0].intValue,
-				value[1].intValue,
-				value[2].intValue,
-				value[3].intValue
-			);
+		auto& nv = value.numericValue;
+
+		if (nv.size() == 1)
+			pass->setUniform(name, nv[0].intValue);
+		else if (nv.size() == 2)
+			pass->setUniform(name, nv[0].intValue, nv[1].intValue);
+		else if (nv.size() == 3)
+			pass->setUniform(name, nv[0].intValue, nv[1].intValue, nv[2].intValue);
+		else if (nv.size() == 4)
+			pass->setUniform(name, nv[0].intValue, nv[1].intValue, nv[2].intValue, nv[3].intValue);
 	}
 	else if (type == UniformType::FLOAT)
 	{
-		if (value.size() == 1)
-			pass->setUniform(name, value[0].floatValue);
-		else if (value.size() == 2)
-			pass->setUniform(name, value[0].floatValue, value[1].floatValue);
-		else if (value.size() == 3)
-			pass->setUniform(
-				name,
-				value[0].floatValue,
-				value[1].floatValue,
-				value[2].floatValue
-			);
-		else if (value.size() == 4)
-			pass->setUniform(
-				name,
-				value[0].floatValue,
-				value[1].floatValue,
-				value[2].floatValue,
-				value[3].floatValue
-			);
+		auto& nv = value.numericValue;
+
+		if (nv.size() == 1)
+			pass->setUniform(name, nv[0].floatValue);
+		else if (nv.size() == 2)
+			pass->setUniform(name, nv[0].floatValue, nv[1].floatValue);
+		else if (nv.size() == 3)
+			pass->setUniform(name, nv[0].floatValue, nv[1].floatValue, nv[2].floatValue);
+		else if (nv.size() == 4)
+			pass->setUniform(name, nv[0].floatValue, nv[1].floatValue, nv[2].floatValue, nv[3].floatValue);
 	}
+	else if (type == UniformType::TEXTURE)
+		pass->setUniform(name, value.textureValue);
 }
 
 render::Shader::Ptr
@@ -504,7 +496,7 @@ EffectParser::parseUniformBindings(Json::Value&			contextNode,
 				if (nameValue.isString())
 					uniformBindings[propertyName] = nameValue.asString();
 
-				if (defaultValue.isArray() || defaultValue.isNumeric())
+				if (defaultValue.isArray() || defaultValue.isNumeric() || defaultValue.isString())
 					parseUniformDefaultValues(defaultValue, uniformDefaultValues[propertyName]);
 			}
 			else if (uniformBindingValue.isArray() || uniformBindingValue.isNumeric())
@@ -524,20 +516,98 @@ EffectParser::parseUniformDefaultValues(Json::Value&			contextNode,
 		return;
 	}
 
-	UniformValue v;
+	UniformValue& v = uniformTypeAndValue.second;
 
-	if (contextNode.isDouble())
+	if (contextNode.isNumeric())
 	{
-		v.floatValue = contextNode.asFloat();
-		uniformTypeAndValue.first = UniformType::FLOAT;
-	}
-	else if (contextNode.isInt())
-	{
-		v.intValue = contextNode.asInt();
-		uniformTypeAndValue.first = UniformType::INT;
-	}
+		UniformNumericValue nv;
 
-	uniformTypeAndValue.second.push_back(v);
+		if (contextNode.isDouble())
+		{
+			nv.floatValue = contextNode.asFloat();
+			uniformTypeAndValue.first = UniformType::FLOAT;
+		}
+		else if (contextNode.isInt())
+		{
+			nv.intValue = contextNode.asInt();
+			uniformTypeAndValue.first = UniformType::INT;
+		}
+
+		v.numericValue.push_back(nv);
+	}
+	else if (contextNode.isString())
+	{
+		auto textureFilename = contextNode.asString();
+		int pos = _resolvedFilename.find_last_of("/");
+		auto options = _options;
+
+		uniformTypeAndValue.first = UniformType::TEXTURE;
+		uniformTypeAndValue.second.textureValue = nullptr;
+
+		if (pos > 0)
+		{
+			options = file::Options::create(_options);
+			options->includePaths().insert(_resolvedFilename.substr(0, pos));
+		}
+
+		uniformTypeAndValue.second.textureValue = _assetLibrary->texture(textureFilename);
+		for (auto& path : options->includePaths())
+		{
+			uniformTypeAndValue.second.textureValue = _assetLibrary->texture(path + "/" + textureFilename);
+			if (uniformTypeAndValue.second.textureValue)
+				break;
+		}
+
+		if (!uniformTypeAndValue.second.textureValue)
+			loadTexture(textureFilename, uniformTypeAndValue, options);
+	}
+}
+
+void
+EffectParser::loadTexture(const std::string&	textureFilename,
+						  UniformTypeAndValue&	uniformTypeAndValue,
+						  Options::Ptr			options)
+{
+	auto loader = _options->loaderFunction()(textureFilename);
+
+	_numDependencies++;
+
+	_loaderCompleteSlots[loader] = loader->complete()->connect([&](file::AbstractLoader::Ptr loader)
+	{
+		auto pos = loader->resolvedFilename().find_last_of('.');
+		auto extension = loader->resolvedFilename().substr(pos + 1);
+		auto parser = _assetLibrary->parser(extension);
+
+		auto completeSlote = parser->complete()->connect([&](file::AbstractParser::Ptr parser)
+		{
+			uniformTypeAndValue.second.textureValue = _assetLibrary->texture(textureFilename);
+			uniformTypeAndValue.second.textureValue->upload();
+
+			_numLoadedDependencies++;
+
+			if (_numDependencies == _numLoadedDependencies && _effect)
+				finalize();
+		});
+
+		parser->parse(
+			loader->filename(),
+			loader->resolvedFilename(),
+			loader->options(), loader->data(),
+			_assetLibrary
+			);
+	});
+
+	_loaderErrorSlots[loader] = loader->error()->connect(std::bind(
+		&EffectParser::textureErrorHandler, shared_from_this(), std::placeholders::_1
+	));
+
+	loader->load(textureFilename, options);
+}
+
+void
+EffectParser::textureErrorHandler(file::AbstractLoader::Ptr loader)
+{
+	throw;
 }
 
 void
