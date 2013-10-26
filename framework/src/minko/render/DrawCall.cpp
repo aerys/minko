@@ -52,12 +52,12 @@ DrawCall::DrawCall(const data::BindingMap&	attributeBindings,
 	_uniformBindings(uniformBindings),
 	_stateBindings(stateBindings),
     _states(states),
-    _textures(MAX_NUM_TEXTURES, -1),
+    _textures(MAX_NUM_TEXTURES, 0),
     _textureLocations(MAX_NUM_TEXTURES, -1),
     _textureWrapMode(MAX_NUM_TEXTURES, WrapMode::CLAMP),
     _textureFilters(MAX_NUM_TEXTURES, TextureFilter::NEAREST),
     _textureMipFilters(MAX_NUM_TEXTURES, MipFilter::NONE),
-    _vertexBuffers(MAX_NUM_VERTEXBUFFERS, -1),
+    _vertexBuffers(MAX_NUM_VERTEXBUFFERS, 0),
     _vertexBufferLocations(MAX_NUM_VERTEXBUFFERS, -1),
     _vertexSizes(MAX_NUM_VERTEXBUFFERS, -1),
     _vertexAttributeSizes(MAX_NUM_VERTEXBUFFERS, -1),
@@ -106,6 +106,7 @@ DrawCall::bindProgramInputs()
 	
 	unsigned int					vertexBufferId		= 0;
 	unsigned int					textureId			= 0;
+	
 	for (unsigned int inputId = 0; inputId < inputNames.size(); ++inputId)
 	{
 		const std::string&	inputName	= inputNames[inputId];
@@ -220,7 +221,7 @@ DrawCall::bindTextureSampler2D(Container::Ptr		container,
 	auto& samplerState  = _states->samplers().count(inputName)
 	    ? _states->samplers().at(inputName)
 	    : _defaultSamplerState;
-	
+
 	_textures[textureId]			= texture;
 	_textureLocations[textureId]	= location;
 	_textureWrapMode[textureId]		= std::get<0>(samplerState);
@@ -298,7 +299,7 @@ DrawCall::reset()
 	_textureFilters		.clear();
 	_textureMipFilters	.clear();
 
-	_textures			.resize(MAX_NUM_TEXTURES, -1);
+	_textures			.resize(MAX_NUM_TEXTURES, 0);
 	_textureLocations	.resize(MAX_NUM_TEXTURES, -1);
 	_textureWrapMode	.resize(MAX_NUM_TEXTURES, WrapMode::CLAMP);
 	_textureFilters		.resize(MAX_NUM_TEXTURES, TextureFilter::NEAREST);
@@ -310,7 +311,7 @@ DrawCall::reset()
 	_vertexAttributeSizes	.clear();
 	_vertexAttributeOffsets	.clear();
 
-	_vertexBuffers			.resize(MAX_NUM_VERTEXBUFFERS, -1);
+	_vertexBuffers			.resize(MAX_NUM_VERTEXBUFFERS, 0);
 	_vertexBufferLocations	.resize(MAX_NUM_VERTEXBUFFERS, -1);
 	_vertexSizes			.resize(MAX_NUM_VERTEXBUFFERS, -1);
 	_vertexAttributeSizes	.resize(MAX_NUM_VERTEXBUFFERS, -1);
@@ -393,14 +394,18 @@ DrawCall::render(const AbstractContext::Ptr& context, std::shared_ptr<render::Te
     for (auto& uniformFloat16 : _uniformFloat16)
         context->setUniform(uniformFloat16.first, 1, true, uniformFloat16.second);
 
-    for (uint textureId = 0; textureId < _textures.size(); ++textureId)
+	auto textureOffset = 0;
+	for (auto textureLocationAndPtr : _program->textures())
+		context->setTextureAt(textureOffset++, textureLocationAndPtr.second->id(), textureLocationAndPtr.first);
+
+	for (uint textureId = 0; textureId < _textures.size() - textureOffset; ++textureId)
     {
         auto texture = _textures[textureId];
 
-        context->setTextureAt(textureId, texture, _textureLocations[textureId]);
+        context->setTextureAt(textureOffset + textureId, texture, _textureLocations[textureId]);
         if (texture > 0)
             context->setSamplerStateAt(
-                textureId, _textureWrapMode[textureId], _textureFilters[textureId], _textureMipFilters[textureId]
+				textureOffset + textureId, _textureWrapMode[textureId], _textureFilters[textureId], _textureMipFilters[textureId]
             );
     }
 
