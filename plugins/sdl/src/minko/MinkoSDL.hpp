@@ -55,6 +55,9 @@ private:
 
 	static minko::Signal<>::Ptr					_enterFrame;
 	static minko::Signal<const Uint8*>::Ptr		_keyDown;
+	static minko::Signal<uint, uint>::Ptr		_mouseMove;
+	static minko::Signal<uint, uint>::Ptr		_mouseLeftButtonDown;
+	static minko::Signal<uint, uint>::Ptr		_mouseLeftButtonUp;
 	static minko::Signal<uint, uint>::Ptr		_resized;
 
 #ifdef MINKO_ANGLE
@@ -102,6 +105,27 @@ public:
 
 	inline static
 	minko::Signal<uint, uint>::Ptr
+	mouseMove()
+	{
+		return _mouseMove;
+	}
+
+	inline static
+	minko::Signal<uint, uint>::Ptr
+	mouseLeftButtonDown()
+	{
+		return _mouseLeftButtonDown;
+	}
+
+	inline static
+	minko::Signal<uint, uint>::Ptr
+	mouseLeftButtonUp()
+	{
+		return _mouseLeftButtonUp;
+	}
+
+	inline static
+	minko::Signal<uint, uint>::Ptr
 	resized()
 	{
 		return _resized;
@@ -142,8 +166,15 @@ public:
 	{
 		_active = false;
 		_framerate = 0.f;
+		
 		_enterFrame = minko::Signal<>::create();
+		
 		_keyDown = minko::Signal<const Uint8*>::create();
+
+		_mouseMove = minko::Signal<uint, uint>::create();
+		_mouseLeftButtonDown = minko::Signal<uint, uint>::create();
+		_mouseLeftButtonUp = minko::Signal<uint, uint>::create();
+
 		_resized = minko::Signal<uint, uint>::create();
 
 		initializeContext(windowTitle, width, height);
@@ -173,6 +204,18 @@ private:
 				_keyDown->execute(keyboardState);
 				break;
 			}
+
+			case SDL_MOUSEMOTION:
+				_mouseMove->execute(event.motion.x, event.motion.y);
+				break;
+
+			case SDL_MOUSEBUTTONDOWN:
+				_mouseLeftButtonDown->execute(event.motion.x, event.motion.y);
+				break;
+
+			case SDL_MOUSEBUTTONUP:
+				_mouseLeftButtonUp->execute(event.motion.x, event.motion.y);
+				break;
 
 			case SDL_WINDOWEVENT:
 				switch (event.window.event)
