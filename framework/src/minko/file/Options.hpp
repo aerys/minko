@@ -27,12 +27,14 @@ namespace minko
 	{
 		class Options
 		{
-		public:
-			typedef std::shared_ptr<Options>			Ptr;
-
 		private:
+			typedef std::shared_ptr<AbstractLoader>								AbsLoaderPtr;
 			typedef std::shared_ptr<data::Provider>								ProviderPtr;
+
+		public:
+			typedef std::shared_ptr<Options>									Ptr;
 			typedef std::function<ProviderPtr(const std::string&, ProviderPtr)> MaterialFunction;
+			typedef std::function<AbsLoaderPtr(const std::string&)>				LoaderFunction;
 
 		private:
 			std::shared_ptr<render::AbstractContext>	_context;
@@ -42,6 +44,7 @@ namespace minko
             std::shared_ptr<render::Effect>             _effect;
 			std::shared_ptr<data::Provider>				_material;
 			MaterialFunction							_materialFunction;
+			LoaderFunction								_loaderFunction;
 
 		public:
 			inline static
@@ -125,6 +128,13 @@ namespace minko
 			materialFunction() const
 			{
 				return _materialFunction;
+			}
+
+			inline
+			const LoaderFunction&
+			loaderFunction() const
+			{
+				return _loaderFunction;
 			}
 
 			inline
