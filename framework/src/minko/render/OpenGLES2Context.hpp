@@ -136,6 +136,13 @@ namespace minko
             	return _viewportHeight;
             }
 
+			inline
+			uint
+			currentProgram()
+			{
+				return _currentProgram;
+			}
+
 			void
 			configureViewport(const uint x,
 							  const uint y,
