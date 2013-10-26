@@ -46,7 +46,7 @@ project "minko-framework"
 		buildoptions { "-std=c++11" }
 
 	-- windows
-	configuration { "windows", "x32" }
+	configuration { "windows" }
 		includedirs { "../deps/win/include" }
 		libdirs { "../deps/win/lib" }
 
