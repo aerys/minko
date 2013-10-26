@@ -114,7 +114,7 @@ int main(int argc, char** argv)
 		->queue("effect/Basic.effect")
 		->queue("effect/Sprite.effect")
 		->queue("effect/Phong.effect")
-		->queue("effect/PseudoLensFlare.effect");
+		->queue("effect/pseudolensflare/PseudoLensFlare.effect");
 
     auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
 	{
@@ -163,7 +163,7 @@ int main(int argc, char** argv)
 
 		ppTarget->upload();
 
-		auto ppFx = assets->effect("effect/PseudoLensFlare.effect");
+		auto ppFx = assets->effect("effect/pseudolensflare/PseudoLensFlare.effect");
 		auto ppRenderer = Renderer::create();
 		auto ppScene = scene::Node::create()
 			->addComponent(ppRenderer)
@@ -178,6 +178,28 @@ int main(int argc, char** argv)
 			camera->component<PerspectiveCamera>()->aspectRatio((float)width / (float)height);
 		});
 
+		// handle mouse signals
+		minko::Signal<uint, uint>::Slot mouseMove;
+		int oldX = 0;
+		float cameraRotationYSpeed = 0.f;
+		
+		auto mouseDown = MinkoSDL::mouseLeftButtonDown()->connect([&](unsigned int x, unsigned int y)
+		{
+			oldX = x;
+
+			mouseMove = MinkoSDL::mouseMove()->connect([&](unsigned int x, unsigned int y)
+			{
+				cameraRotationYSpeed = (float)((int)x - oldX) * .01f;
+				oldX = x;
+			});
+		});
+
+		auto mouseUp = MinkoSDL::mouseLeftButtonUp()->connect([&](unsigned int x, unsigned int y)
+		{
+			mouseMove = nullptr;
+		});
+
+		// handle keyboard signals
 		auto keyDown = MinkoSDL::keyDown()->connect([&](const Uint8* keyboard)
 		{
 			if (keyboard[SDL_SCANCODE_A])
@@ -197,7 +219,7 @@ int main(int argc, char** argv)
 					cosf(theta) * 5.f + rand() / ((float)RAND_MAX * 3.f),
 					2.5f + rand() / (float)RAND_MAX,
 					sinf(theta) * 5.f + rand() / ((float)RAND_MAX * 3.f)
-					);
+				);
 
 				lights->addChild(createPointLight(color, pos, sceneManager->assets()));
 
@@ -231,6 +253,9 @@ int main(int argc, char** argv)
 		auto enterFrame = MinkoSDL::enterFrame()->connect([&]()
 		{
 			auto pp = true;
+
+			camera->component<Transform>()->transform()->appendRotationY(cameraRotationYSpeed);
+			cameraRotationYSpeed *= 0.9f;
 
 			lights->component<Transform>()->transform()->appendRotationY(.005f);
 
