@@ -44,26 +44,34 @@ namespace minko
 			typedef std::shared_ptr<EffectParser>	Ptr;
 
 		private:
-			union UniformValue
+			typedef std::shared_ptr<render::Texture>						TexturePtr;
+
+			union UniformNumericValue
 			{
 				int intValue;
 				float floatValue;
+			};
+			
+			struct UniformValue
+			{
+				std::vector<UniformNumericValue> numericValue;
+				TexturePtr textureValue;
 			};
 
 			enum class UniformType
 			{
 				UNSET,
 				INT,
-				FLOAT
+				FLOAT,
+				TEXTURE
 			};
 
 			typedef std::shared_ptr<AbstractLoader>							LoaderPtr;
 			typedef std::shared_ptr<render::Effect>							EffectPtr;
 			typedef std::shared_ptr<render::Pass>							PassPtr;
 			typedef std::shared_ptr<render::Shader>							ShaderPtr;
-			typedef std::shared_ptr<render::Texture>						TexturePtr;
 			typedef std::unordered_map<std::string, TexturePtr>				TexturePtrMap;
-			typedef std::pair<UniformType, std::vector<UniformValue>>		UniformTypeAndValue;
+			typedef std::pair<UniformType, UniformValue>					UniformTypeAndValue;
 			typedef std::unordered_map<std::string, UniformTypeAndValue>	UniformValues;
 
 		private:
@@ -71,6 +79,8 @@ namespace minko
 			static std::unordered_map<std::string, render::CompareMode>	_depthFuncMap;
 
             std::string                                                 _filename;
+			std::string                                                 _resolvedFilename;
+			std::shared_ptr<file::Options>								_options;
 			std::shared_ptr<render::Effect>								_effect;
 			std::string													_effectName;
 			
@@ -162,7 +172,7 @@ namespace minko
 			setUniformDefaultValueOnPass(PassPtr					pass,
 										 const std::string&			name,
 										 UniformType				type,
-										 std::vector<UniformValue>& value);
+										 UniformValue&				value);
 
 			std::shared_ptr<render::Shader>
 			parseShader(Json::Value& 					shaderNode,
@@ -186,6 +196,11 @@ namespace minko
 			void
 			parseUniformDefaultValues(Json::Value&			contextNode,
 									  UniformTypeAndValue&	uniformTypeAndValue);
+
+			void
+			loadTexture(const std::string&				textureFilename,
+						UniformTypeAndValue&			uniformTypeAndValue,
+						std::shared_ptr<file::Options>	options);
 
 			void
 			parseBlendMode(Json::Value&						contextNode,
@@ -228,6 +243,9 @@ namespace minko
 
 			void
 			dependencyErrorHandler(std::shared_ptr<AbstractLoader> loader);
+
+			void
+			textureErrorHandler(std::shared_ptr<AbstractLoader> loader);
 
 			std::string
 			concatenateIncludes(std::vector<LoaderPtr>& store);
