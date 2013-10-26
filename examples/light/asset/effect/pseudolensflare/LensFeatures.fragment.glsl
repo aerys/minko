@@ -37,6 +37,8 @@ uniform float uGhostDispersal;
 
 uniform float uHaloWidth;
 
+uniform float uDistortion;
+
 uniform vec2 uTextureSize;
 
 varying vec2 vTexcoord;
@@ -57,12 +59,16 @@ void main()
 {
 	vec2 texcoord = -vTexcoord + vec2(1.0);
 	vec2 texelSize = 1.0 / uTextureSize;
-
+	
 	// ghost vector to image centre:
 	vec2 ghostVec = (vec2(0.5) - texcoord) * uGhostDispersal;
+	
+	// chromatic distortion parameters
+	vec3 distortion = vec3(-texelSize.x * uDistortion, 0.0, texelSize.x * uDistortion);
+	vec2 direction = normalize(ghostVec);
 
 	// sample ghosts:  
-	vec4 result = vec4(0.0);
+	vec3 result = vec3(0.0);
 	for (int i = 0; i < uGhosts; ++i)
 	{	
 		vec2 offset = fract(texcoord + ghostVec * float(i));
@@ -70,7 +76,7 @@ void main()
 		float weight = length(vec2(0.5) - offset) / length(vec2(0.5));
 		weight = pow(1.0 - weight, 10.0);
   
-		result += texture2D(uInputTex, offset) * weight;
+		result += textureDistorted(uInputTex, offset, direction, distortion) * weight;
 	}
 
 	// sample halo:
@@ -78,9 +84,9 @@ void main()
 	float weight = length(vec2(0.5) - fract(texcoord + haloVec)) / length(vec2(0.5));
 	weight = pow(1.0 - weight, 5.0);
 	
-	result += texture2D(uInputTex, texcoord + haloVec) * weight;
+	result += textureDistorted(uInputTex, texcoord + haloVec, direction, distortion) * weight;
 	
-	gl_FragColor = result;
+	gl_FragColor = vec4(result, 1);
 }
 
 #endif
