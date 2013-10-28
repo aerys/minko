@@ -1228,7 +1228,7 @@ package aerys.minko.render.geometry
 					
 					var uvData 			: ByteArray = uvStream == xyzStream ? xyzData : uvStream.lock();
 					var uvVertexSize 	: uint 		= uvStream.format.numBytesPerVertex;
-					var uvOffset 		: uint 		= uvStream.format.getOffsetForComponent(VertexComponent.UV);
+					var uvOffset 		: uint 		= uvStream.format.getBytesOffsetForComponent(VertexComponent.UV);
 					
 					indicesData.position = triangleIndice * 2;
 					
@@ -1242,7 +1242,7 @@ package aerys.minko.render.geometry
 					
 					uvData.position = indicesData.readUnsignedShort() * uvVertexSize + uvOffset;
 					var u2  : Number = uvData.readFloat();
-					var v2  : Number = uvData.readFloat(); 
+					var v2  : Number = uvData.readFloat();
 					
 					lambda.z = 1 - lambda.x - lambda.y;
 					
