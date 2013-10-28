@@ -3,7 +3,6 @@ package aerys.minko.scene.node
 	import aerys.minko.ns.minko_scene;
 	import aerys.minko.render.geometry.Geometry;
 	import aerys.minko.render.material.Material;
-	import aerys.minko.render.material.basic.BasicMaterial;
 	import aerys.minko.scene.controller.mesh.MeshController;
 	import aerys.minko.scene.controller.mesh.MeshVisibilityController;
 	import aerys.minko.type.Signal;

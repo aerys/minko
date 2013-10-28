@@ -1076,6 +1076,8 @@ package aerys.minko.render.geometry
 
 				localDirection = transform.deltaTransformVector(ray.direction);
 				localDirection.normalize();
+				
+				transform = transform.invert();
 			}
 			
 			var vertexStream 	: IVertexStream = getVertexStream(0);
@@ -1206,6 +1208,15 @@ package aerys.minko.render.geometry
 					hitXYZ.x = localOrigin.x + minDistance * localDirection.x;
 					hitXYZ.y = localOrigin.y + minDistance * localDirection.y;
 					hitXYZ.z = localOrigin.z + minDistance * localDirection.z;
+					
+					if (transform)
+					{
+						var transformedXYZ : Vector4 = transform.transformVector(hitXYZ);
+						
+						hitXYZ.x = transformedXYZ.x;
+						hitXYZ.y = transformedXYZ.y;
+						hitXYZ.z = transformedXYZ.z;
+					}
 				}
 				
 				if (hitUV)
