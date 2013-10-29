@@ -345,6 +345,26 @@ DrawCall::bindStates()
         _states->triangleCulling()
 	);
 
+	_stencilFunc = getDataProperty<CompareMode>(
+		_stateBindings.count("stencilFunc") ? _stateBindings.at("stencilFunc") : "stencilFunc",
+		_states->stencilFunction()
+	);
+
+	_stencilRef = getDataProperty<int>(
+		_stateBindings.count("stencilRef") ? _stateBindings.at("stencilRef") : "stencilRef",
+		_states->stencilReference()
+	);
+
+	_stencilMask = getDataProperty<uint>(
+		_stateBindings.count("stencilMask") ? _stateBindings.at("stencilMask") : "stencilMask",
+		_states->stencilMask()
+	);
+
+	_stencilOps = getDataProperty<StencilOperations>(
+		_stateBindings.count("stencilOps") ? _stateBindings.at("stencilOps") : "stencilOps",
+		_states->stencilOperations()
+	);
+
     _target = getDataProperty<Texture::Ptr>(
     	_stateBindings.count("target") ? _stateBindings.at("target") : "target",
         _states->target()
