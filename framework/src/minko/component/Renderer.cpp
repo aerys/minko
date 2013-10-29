@@ -136,7 +136,7 @@ Renderer::addedHandler(std::shared_ptr<Node> node,
 		std::placeholders::_3
 	));
 
-	rootDescendantAddedHandler(nullptr, target, nullptr);
+	rootDescendantAddedHandler(nullptr, target->root(), nullptr);
 }
 
 void
@@ -151,7 +151,7 @@ Renderer::removedHandler(std::shared_ptr<Node> node,
 	_componentAddedSlot = nullptr;
 	_componentRemovedSlot = nullptr;
 
-	rootDescendantRemovedHandler(nullptr, target, nullptr);
+	rootDescendantRemovedHandler(nullptr, target->root(), nullptr);
 }
 
 void
@@ -242,6 +242,9 @@ void
 Renderer::render(std::shared_ptr<render::AbstractContext> context, std::shared_ptr<render::Texture> renderTarget)
 {
 	_renderingBegin->execute(shared_from_this());
+
+	if (!renderTarget)
+		renderTarget = _renderTarget;
 
 	context->clear(
 		((_backgroundColor >> 24) & 0xff) / 255.f,

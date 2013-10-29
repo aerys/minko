@@ -62,13 +62,12 @@ namespace minko
 
 			DrawCallList											_drawCalls;
 			std::unordered_map<DrawCallPtr, PassPtr>				_drawCallToPass;
+			std::unordered_map<DrawCallPtr, ContainerPtr>			_drawCallToRendererData;
 			std::unordered_map<std::string, DrawCallList>			_macroPropertyNameToDrawCalls;
 
 			std::list<Any>											_macroAddedOrRemovedSlots;
-			std::unordered_map<std::string, PropertyChangedSlot>	_targetMacroChangedSlots;
-			std::unordered_map<std::string, uint>					_numTargetMacroListeners;
-			std::unordered_map<std::string, PropertyChangedSlot>	_rootMacroChangedSlots;
-			std::unordered_map<std::string, uint>					_numRootMacroListeners;
+			std::unordered_map<std::string, PropertyChangedSlot>	_macroChangedSlots;
+			std::unordered_map<std::string, uint>					_numMacroListeners;
 			
 			DrawCallChangedSignal::Ptr								_drawCallAdded;
 			DrawCallChangedSignal::Ptr								_drawCallRemoved;
@@ -165,7 +164,9 @@ namespace minko
 			initialize();
 
 			std::shared_ptr<render::DrawCall>
-			initializeDrawCall(std::shared_ptr<render::Pass>, std::shared_ptr<render::DrawCall> drawcall = nullptr);
+			initializeDrawCall(std::shared_ptr<render::Pass>		pass,
+							   std::shared_ptr<data::Container>		rendererData,
+							   std::shared_ptr<render::DrawCall>	drawcall = nullptr);
 
 			void
 			targetAddedHandler(AbstractComponent::Ptr ctrl, NodePtr target);
@@ -177,10 +178,10 @@ namespace minko
 			removedHandler(NodePtr node, NodePtr target, NodePtr ancestor);
 
 			ContainerPtr
-			getDataContainer(const std::string& propertyName) const;
+			getDataContainer(const std::string& propertyName, std::shared_ptr<data::Container> rendererData) const;
 
 			void
-			watchMacroAdditionOrDeletion();
+			watchMacroAdditionOrDeletion(ContainerPtr rendererData);
 
 			void
 			macroChangedHandler(ContainerPtr, const std::string& propertyName, MacroChange);
@@ -188,6 +189,7 @@ namespace minko
 			std::shared_ptr<render::Program>
 			getWorkingProgram(std::shared_ptr<render::Pass>	pass,
 							  ContainerPtr					targetData,
+							  ContainerPtr					rendererData,
 							  ContainerPtr					rootData,
 							  std::list<std::string>&		bindingDefines,
 							  std::list<std::string>&		bindingValues);

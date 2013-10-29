@@ -69,20 +69,22 @@ DrawCall::DrawCall(const data::BindingMap&	attributeBindings,
 
 void
 DrawCall::configure(std::shared_ptr<Program>  program,
-                    ContainerPtr              data,
+					ContainerPtr              data,
+					ContainerPtr              rendererData,
                     ContainerPtr              rootData)
 {
     _program = program;
-    bind(data, rootData);
+    bind(data, rendererData, rootData);
 }
 
 void
-DrawCall::bind(ContainerPtr data, ContainerPtr rootData)
+DrawCall::bind(ContainerPtr data, ContainerPtr rendererData, ContainerPtr rootData)
 {
 	reset();
 
-	_data		= data;
-	_rootData	= rootData;
+	_data			= data;
+	_rendererData	= rendererData;
+	_rootData		= rootData;
 
 	auto indexBuffer	= getDataProperty<IndexBuffer::Ptr>("geometry.indices");
 
@@ -455,10 +457,12 @@ DrawCall::propertyChangedHandler(std::shared_ptr<data::Container>  data,
 Container::Ptr
 DrawCall::getDataContainer(const std::string& propertyName) const
 {
-	if (_data == nullptr || _rootData == nullptr)
+	if (_data == nullptr || _rootData == nullptr || _rendererData == nullptr)
 		return nullptr;
 	else if (_data->hasProperty(propertyName))
 		return _data;
+	else if (_rendererData->hasProperty(propertyName))
+		return _rendererData;
 	else if (_rootData->hasProperty(propertyName))
 		return _rootData;
 	else
