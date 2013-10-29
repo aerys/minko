@@ -60,7 +60,7 @@ namespace minko
 			std::string 											_technique;
 			std::unordered_set<std::string>							_macroPropertyNames;
 
-			DrawCallList											_drawCalls;
+			std::unordered_map<ContainerPtr, DrawCallList>			_drawCalls;
 			std::unordered_map<DrawCallPtr, PassPtr>				_drawCallToPass;
 			std::unordered_map<DrawCallPtr, ContainerPtr>			_drawCallToRendererData;
 			std::unordered_map<std::string, DrawCallList>			_macroPropertyNameToDrawCalls;
@@ -128,13 +128,6 @@ namespace minko
 			}
 
 			inline
-			const std::list<DrawCallPtr>&
-			drawCalls()
-			{
-				return _drawCalls;
-			}
-
-			inline
 			DrawCallChangedSignal::Ptr
 			drawCallAdded() const
 			{
@@ -152,7 +145,7 @@ namespace minko
 			createDrawCalls(std::shared_ptr<data::Container> rendererData);
 
 			void
-			deleteDrawCalls();
+			deleteDrawCalls(std::shared_ptr<data::Container> rendererData);
 
 		private:
 			Surface(std::shared_ptr<geometry::Geometry> geometry,
@@ -196,6 +189,9 @@ namespace minko
 
 			void
 			switchToFallbackTechnique();
+
+			void
+			deleteAllDrawCalls();
 		};
 	}
 }
