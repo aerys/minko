@@ -75,8 +75,9 @@ namespace minko
 			typedef std::unordered_map<std::string, UniformTypeAndValue>	UniformValues;
 
 		private:
-			static std::unordered_map<std::string, unsigned int>		_blendFactorMap;
-			static std::unordered_map<std::string, render::CompareMode>	_depthFuncMap;
+			static std::unordered_map<std::string, unsigned int>				_blendFactorMap;
+			static std::unordered_map<std::string, render::CompareMode>			_compareFuncMap;
+			static std::unordered_map<std::string, render::StencilOperation>	_stencilOpMap;
 
             std::string                                                 _filename;
 			std::string                                                 _resolvedFilename;
@@ -145,17 +146,17 @@ namespace minko
 			EffectParser();
 
 			std::shared_ptr<render::States>
-			parseRenderStates(Json::Value&								root,
+			parseRenderStates(const Json::Value&						root,
 							  std::shared_ptr<render::AbstractContext>	context,
 							  TexturePtrMap&							targets,
 							  std::shared_ptr<render::States>			defaultStates,
 							  unsigned int								priority);
 
 			void
-			parseDefaultValues(Json::Value& root);
+			parseDefaultValues(const Json::Value& root);
 
 			void
-			parsePasses(Json::Value& 								root,
+			parsePasses(const Json::Value& 							root,
 						const std::string& 							resolvedFilename,
 						std::shared_ptr<file::Options> 				options,
 						std::shared_ptr<render::AbstractContext>	context,
@@ -175,13 +176,13 @@ namespace minko
 										 UniformValue&				value);
 
 			std::shared_ptr<render::Shader>
-			parseShader(Json::Value& 					shaderNode,
+			parseShader(const Json::Value& 				shaderNode,
 						const std::string&				resolvedFilename,
 						std::shared_ptr<file::Options>  options,
 						render::Shader::Type 			type);
 
 			void
-			parseBindings(Json::Value&				contextNode,
+			parseBindings(const Json::Value&		contextNode,
 						  data::BindingMap&			attributeBindings,
 						  data::BindingMap&			uniformBindings,
 						  data::BindingMap&			stateBindings,
@@ -189,12 +190,12 @@ namespace minko
 						  UniformValues&			uniformDefaultValues);
 
 			void
-			parseUniformBindings(Json::Value&			contextNode,
+			parseUniformBindings(const Json::Value&		contextNode,
 							 	 data::BindingMap&		uniformBindings,
 								 UniformValues&			uniformDefaultValues);
 
 			void
-			parseUniformDefaultValues(Json::Value&			contextNode,
+			parseUniformDefaultValues(const Json::Value&	contextNode,
 									  UniformTypeAndValue&	uniformTypeAndValue);
 
 			void
@@ -203,36 +204,43 @@ namespace minko
 						std::shared_ptr<file::Options>	options);
 
 			void
-			parseBlendMode(Json::Value&						contextNode,
+			parseBlendMode(const Json::Value&				contextNode,
 						   render::Blending::Source&		srcFactor,
 						   render::Blending::Destination&	dstFactor);
 
 			void
-			parseDepthTest(Json::Value&			contextNode,
+			parseDepthTest(const Json::Value&	contextNode,
 						   bool&				depthMask,
 						   render::CompareMode&	depthFunc);
 
             void
-            parseTriangleCulling(Json::Value&               contextNode,
+            parseTriangleCulling(const Json::Value&         contextNode,
                                  render::TriangleCulling&   triangleCulling);
 
             void
-            parseSamplerStates(Json::Value&                                             contextNode,
+            parseSamplerStates(const Json::Value&                                       contextNode,
                                std::unordered_map<std::string, render::SamplerState>&   samplerStates);
 
+			void
+			parseStencilState(const Json::Value&, 
+							  render::CompareMode& stencilFunc, int& stencilRef, uint& stencilMask, render::StencilOperations&) const;
+
+			void
+			parseStencilOperations(const Json::Value&, render::StencilOperations&) const;
+
             std::shared_ptr<render::Texture>
-            parseTarget(Json::Value&                                contextNode,
+            parseTarget(const Json::Value&                          contextNode,
                         std::shared_ptr<render::AbstractContext>    context,
                         TexturePtrMap&								targets);
 
 			void
-			parseDependencies(Json::Value& 						root,
+			parseDependencies(const Json::Value& 				root,
 							  const std::string& 				filename,
 							  std::shared_ptr<file::Options> 	options,
 							  std::vector<LoaderPtr>& 			store);
 
 			void
-			parseTechniques(Json::Value&								root,
+			parseTechniques(const Json::Value&							root,
 							const std::string&							filename,
 							std::shared_ptr<file::Options>				options,
 							std::shared_ptr<render::AbstractContext>	context);
@@ -256,7 +264,11 @@ namespace minko
 
 			static
 			std::unordered_map<std::string, render::CompareMode>
-			initializeDepthFuncMap();
+			initializeCompareFuncMap();
+
+			static
+			std::unordered_map<std::string, render::StencilOperation>
+			initializeStencilOperationMap();
 		};
 	}
 }
