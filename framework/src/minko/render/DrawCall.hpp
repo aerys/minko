@@ -51,6 +51,7 @@ namespace minko
 
 			std::shared_ptr<Program>									_program;
 			std::shared_ptr<data::Container>					        _data;
+			std::shared_ptr<data::Container>					        _rendererData;
             std::shared_ptr<data::Container>					        _rootData;
             const data::BindingMap&	                                    _attributeBindings;
 			const data::BindingMap&	                                    _uniformBindings;
@@ -113,6 +114,7 @@ namespace minko
             void
             configure(std::shared_ptr<Program>  program,
                       ContainerPtr              data,
+					  ContainerPtr              rendererData,
                       ContainerPtr              rootData);
 
 			void
@@ -132,7 +134,7 @@ namespace minko
 			reset();
 
 			void
-            bind(ContainerPtr data, ContainerPtr rootData);
+            bind(ContainerPtr data, ContainerPtr rendererData, ContainerPtr rootData);
 
 			void
 			bindProgramInputs();

@@ -30,6 +30,7 @@ using namespace minko::data;
 void
 ProgramSignature::build(const MacroBindingMap&	macroBindings,
 						data::Container::Ptr	data,
+						data::Container::Ptr	rendererData,
 						data::Container::Ptr	rootData)
 {
 	_mask = 0;
@@ -42,9 +43,11 @@ ProgramSignature::build(const MacroBindingMap&	macroBindings,
     {
         auto& propertyName = std::get<0>(macroBinding.second);
 
-		const bool dataHasBinding		= data->hasProperty(propertyName);
-		const bool rootDataHasBinding	= rootData->hasProperty(propertyName);
-        if (dataHasBinding || rootDataHasBinding)
+		const bool dataHasBinding			= data->hasProperty(propertyName);
+		const bool rendererDataHasBinding	= rendererData->hasProperty(propertyName);
+		const bool rootDataHasBinding		= rootData->hasProperty(propertyName);
+
+        if (dataHasBinding || rendererDataHasBinding || rootDataHasBinding)
 		{
 			// WARNING: we do not support more than 32 macro bindings
 			if (i == MAX_NUM_BINDINGS)
@@ -55,6 +58,8 @@ ProgramSignature::build(const MacroBindingMap&	macroBindings,
 
 		if (dataHasBinding && data->propertyHasType<int>(propertyName))
 			_values[i] = data->get<int>(propertyName);
+		else if (rendererDataHasBinding && rendererData->propertyHasType<int>(propertyName))
+			_values[i] = rendererData->get<int>(propertyName);
 		else if (rootDataHasBinding && rootData->propertyHasType<int>(propertyName))
 			_values[i] = rootData->get<int>(propertyName);
 
