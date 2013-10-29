@@ -43,41 +43,44 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 class MinkoSDL
 {
 private:
-	typedef unsigned int	uint;
+	typedef unsigned int    uint;
 
 private:
-	static bool									_active;
-	static minko::render::AbstractContext::Ptr	_context;
+	static bool                                 _active;
+	static minko::render::AbstractContext::Ptr  _context;
 #ifndef EMSCRIPTEN
-	static SDL_Window*							_window;
+	static SDL_Window*                          _window;
 #endif
-	static float								_framerate;
+	static float                                _framerate;
 
-	static minko::Signal<>::Ptr					_enterFrame;
-	static minko::Signal<const Uint8*>::Ptr		_keyDown;
-	static minko::Signal<uint, uint>::Ptr		_mouseMove;
-	static minko::Signal<uint, uint>::Ptr		_mouseLeftButtonDown;
-	static minko::Signal<uint, uint>::Ptr		_mouseLeftButtonUp;
-	static minko::Signal<uint, uint>::Ptr		_resized;
+	static minko::Signal<>::Ptr                 _enterFrame;
+	static minko::Signal<const Uint8*>::Ptr     _keyDown;
+	static minko::Signal<int, int, int>::Ptr    _joystickMotion;
+	static minko::Signal<int>::Ptr              _joystickButtonDown;
+	static minko::Signal<int>::Ptr              _joystickButtonUp;
+	static minko::Signal<uint, uint>::Ptr       _mouseMove;
+	static minko::Signal<uint, uint>::Ptr       _mouseLeftButtonDown;
+	static minko::Signal<uint, uint>::Ptr       _mouseLeftButtonUp;
+	static minko::Signal<uint, uint>::Ptr       _resized;
 
 #ifdef MINKO_ANGLE
 	typedef struct
 	{
 		/// Window width
-		GLint				width;
+		GLint               width;
 		/// Window height
-		GLint				height;
+		GLint               height;
 		/// Window handle
 		EGLNativeWindowType  hWnd;
 		/// EGL display
-		EGLDisplay			eglDisplay;
+		EGLDisplay          eglDisplay;
 		/// EGL context
-		EGLContext			eglContext;
+		EGLContext          eglContext;
 		/// EGL surface
-		EGLSurface			eglSurface;
-	} ESContext; 
+		EGLSurface          eglSurface;
+	} ESContext;
 
-	static ESContext*	_angleContext;
+	static ESContext*   _angleContext;
 #endif
 
 
@@ -101,6 +104,27 @@ public:
 	keyDown()
 	{
 		return _keyDown;
+	}
+
+	inline static
+	minko::Signal<int, int, int>::Ptr
+	joystickMotion()
+	{
+		return _joystickMotion;
+	}
+
+	inline static
+	minko::Signal<int>::Ptr
+	joystickButtonDown()
+	{
+		return _joystickButtonDown;
+	}
+
+	inline static
+	minko::Signal<int>::Ptr
+	joystickButtonUp()
+	{
+		return _joystickButtonUp;
 	}
 
 	inline static
@@ -166,10 +190,14 @@ public:
 	{
 		_active = false;
 		_framerate = 0.f;
-		
+
 		_enterFrame = minko::Signal<>::create();
-		
+
 		_keyDown = minko::Signal<const Uint8*>::create();
+
+		_joystickMotion = minko::Signal<int, int, int>::create();
+		_joystickButtonDown = minko::Signal<int>::create();
+		_joystickButtonUp = minko::Signal<int>::create();
 
 		_mouseMove = minko::Signal<uint, uint>::create();
 		_mouseLeftButtonDown = minko::Signal<uint, uint>::create();
@@ -178,6 +206,7 @@ public:
 		_resized = minko::Signal<uint, uint>::create();
 
 		initializeContext(windowTitle, width, height);
+		initializeJoysticks();
 	}
 
 private:
@@ -188,11 +217,12 @@ private:
 		auto stepStartTime = std::clock();
 
 		SDL_Event event;
-		
-		SDL_PollEvent(&event);
 
-		switch (event.type)
+		while (SDL_PollEvent(&event))
 		{
+
+			switch (event.type)
+			{
 			case SDL_QUIT:
 				_active = false;
 				break;
@@ -217,22 +247,36 @@ private:
 				_mouseLeftButtonUp->execute(event.motion.x, event.motion.y);
 				break;
 
+			case SDL_JOYAXISMOTION:
+				_joystickMotion->execute(event.jaxis.which, event.jaxis.axis, event.jaxis.value);
+				break;
+
+			case SDL_JOYBUTTONDOWN:
+				_joystickButtonDown->execute(event.jbutton.button);
+				break;
+
+			case SDL_JOYBUTTONUP:
+				_joystickButtonUp->execute(event.jbutton.button);
+				break;
+
 			case SDL_WINDOWEVENT:
 				switch (event.window.event)
 				{
-					case SDL_WINDOWEVENT_RESIZED:
-						_context->configureViewport(0, 0, event.window.data1, event.window.data2);
-						_resized->execute(event.window.data1, event.window.data2);
-						break;
-					default:
-						break;
+				case SDL_WINDOWEVENT_RESIZED:
+					_context->configureViewport(0, 0, event.window.data1, event.window.data2);
+					_resized->execute(event.window.data1, event.window.data2);
+					break;
+				default:
+					break;
 				}
-				
+
 				break;
 
 			default:
 				break;
+			}
 		}
+
 
 		_enterFrame->execute();
 
@@ -250,16 +294,33 @@ private:
 
 	static
 	void
+	initializeJoysticks()
+	{
+		for (int i = 0; i < SDL_NumJoysticks(); ++i)
+		{
+			SDL_Joystick* joystick = SDL_JoystickOpen(i);
+
+			if (!joystick)
+				continue;
+		}
+
+	}
+
+	static
+	void
 	initializeContext(const std::string& windowTitle, unsigned int width, unsigned int height)
 	{
 #ifndef EMSCRIPTEN
+		SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK);
+
 		_window = SDL_CreateWindow(
-			windowTitle.c_str(),
-			SDL_WINDOWPOS_UNDEFINED,
-			SDL_WINDOWPOS_UNDEFINED,
-			width, height,
-			SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE
-		);
+		              windowTitle.c_str(),
+		              SDL_WINDOWPOS_UNDEFINED,
+		              SDL_WINDOWPOS_UNDEFINED,
+		              width, height,
+		              SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE
+		          );
+
 # ifdef MINKO_ANGLE
 		if (!(_angleContext = initContext(_window, width, height)))
 			throw std::runtime_error("Could not create eglContext");
@@ -273,7 +334,7 @@ private:
 
 		SDL_Init(SDL_INIT_VIDEO);
 		SDL_WM_SetCaption(windowTitle.c_str(), NULL);
-		SDL_Surface *screen = SDL_SetVideoMode(width, height, 0, SDL_OPENGL);
+		SDL_Surface* screen = SDL_SetVideoMode(width, height, 0, SDL_OPENGL);
 
 		_context = minko::render::WebGLContext::create();
 #endif // EMSCRIPTEN
@@ -319,7 +380,7 @@ private:
 		EGLContext context;
 		EGLSurface surface;
 		EGLConfig config;
-		EGLint contextAttribs[] = { EGL_CONTEXT_CLIENT_VERSION, 2, EGL_NONE, EGL_NONE }; 
+		EGLint contextAttribs[] = { EGL_CONTEXT_CLIENT_VERSION, 2, EGL_NONE, EGL_NONE };
 
 		display = eglGetDisplay(GetDC(hWnd)); // EGL_DEFAULT_DISPLAY
 		if ( display == EGL_NO_DISPLAY )
@@ -357,7 +418,7 @@ private:
 		if ( context == EGL_NO_CONTEXT )
 		{
 			return EGL_FALSE;
-		}   
+		}
 
 		// Make the context current
 		if ( !eglMakeCurrent(display, surface, surface, context) )
