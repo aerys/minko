@@ -49,6 +49,7 @@ Pass::Pass(const std::string&				name,
 
 std::shared_ptr<Program>
 Pass::selectProgram(std::shared_ptr<data::Container> data,
+					std::shared_ptr<data::Container> rendererData,
 					std::shared_ptr<data::Container> rootData,
 					std::list<std::string>&			 bindingDefines,
 					std::list<std::string>&			 bindingValues)
@@ -63,7 +64,7 @@ Pass::selectProgram(std::shared_ptr<data::Container> data,
 	else
 	{
 		ProgramSignature signature;
-		signature.build(_macroBindings, data, rootData);
+		signature.build(_macroBindings, data, rendererData, rootData);
 
 		const auto foundProgramIt = _signatureToProgram.find(signature);
 
@@ -82,7 +83,8 @@ Pass::selectProgram(std::shared_ptr<data::Container> data,
 				if (signatureMask & (1 << i))
 				{
 					const auto&	propertyName	= std::get<0>(macroBinding.second);
-					auto&		container		= data->hasProperty(propertyName) ? data : rootData;
+					auto&		container		= data->hasProperty(propertyName) ? data
+						: (rendererData->hasProperty(propertyName) ? rendererData : rootData);
 
 					// warning: integer macros corresponding to array lengths must be POSITIVE!
 					if (container->propertyHasType<int>(propertyName))
