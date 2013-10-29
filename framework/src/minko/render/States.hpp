@@ -24,6 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/Blending.hpp"
 #include "minko/render/TriangleCulling.hpp"
 #include "minko/render/CompareMode.hpp"
+#include "minko/render/StencilOperation.hpp"
 #include "minko/render/Texture.hpp"
 
 namespace minko
@@ -43,6 +44,10 @@ namespace minko
 		    bool					    _depthMask;
 		    CompareMode		    		_depthFunc;
             TriangleCulling             _triangleCulling;
+			CompareMode					_stencilFunction;
+			int							_stencilReference;
+			uint						_stencilMask;
+			StencilOperations			_stencilOperations;
             SamplerStates               _samplerStates;
             std::shared_ptr<Texture>    _target;
 
@@ -56,6 +61,10 @@ namespace minko
 				   bool						depthMask					= true,
 				   CompareMode				depthFunc					= CompareMode::LESS,
                    TriangleCulling          triangleCulling             = TriangleCulling::BACK,
+				   CompareMode				stencilFunc					= CompareMode::ALWAYS,
+				   int						stencilRef					= 0,
+				   uint						stencilMask					= 0x1,
+				   const StencilOperations&	stencilOps					= std::make_tuple(StencilOperation::KEEP, StencilOperation::KEEP, StencilOperation::KEEP),
                    std::shared_ptr<Texture> target                      = nullptr)
 		    {
 			    return std::shared_ptr<States>(new States(
@@ -66,6 +75,10 @@ namespace minko
                     depthMask,
                     depthFunc,
                     triangleCulling,
+					stencilFunc,
+					stencilRef,
+					stencilMask,
+					stencilOps,
                     target
                 ));
 		    }
@@ -121,6 +134,34 @@ namespace minko
                 return _triangleCulling;
             }
 
+			inline
+			CompareMode
+			stencilFunction() const
+			{
+				return _stencilFunction;
+			}
+
+			inline
+			int
+			stencilReference() const
+			{
+				return _stencilReference;
+			}
+
+			inline
+			uint
+			stencilMask() const
+			{
+				return _stencilMask;
+			}
+
+			inline
+			const StencilOperations&
+			stencilOperations() const
+			{
+				return _stencilOperations;
+			}
+
             inline
             const SamplerStates&
             samplers() const
@@ -143,6 +184,10 @@ namespace minko
 				   bool					    depthMask,
 				   CompareMode			    depthFunc,
                    TriangleCulling          triangleCulling,
+				   CompareMode				stencilFunc,
+				   int						stencilRef,
+				   uint						stencilMask,
+				   const StencilOperations&	stencilOps,
                    std::shared_ptr<Texture> target) :
                 _samplerStates(samplerSates),
                 _priority(priority),
@@ -151,6 +196,10 @@ namespace minko
                 _depthMask(depthMask),
                 _depthFunc(depthFunc),
                 _triangleCulling(triangleCulling),
+				_stencilFunction(stencilFunc),
+				_stencilReference(stencilRef),
+				_stencilMask(stencilMask),
+				_stencilOperations(stencilOps),
                 _target(target)
 		    {
 		    }

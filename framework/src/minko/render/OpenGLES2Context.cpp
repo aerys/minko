@@ -24,6 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/TextureFilter.hpp"
 #include "minko/render/MipFilter.hpp"
 #include "minko/render/TriangleCulling.hpp"
+#include "minko/render/StencilOperation.hpp"
 
 #define GL_GLEXT_PROTOTYPES
 #ifdef __APPLE__
@@ -73,11 +74,11 @@ OpenGLES2Context::initializeBlendFactorsMap()
     return m;
 }
 
-OpenGLES2Context::DepthFuncsMap OpenGLES2Context::_depthFuncs = OpenGLES2Context::initializeDepthFuncsMap();
-OpenGLES2Context::DepthFuncsMap
+OpenGLES2Context::CompareFuncsMap OpenGLES2Context::_compareFuncs = OpenGLES2Context::initializeDepthFuncsMap();
+OpenGLES2Context::CompareFuncsMap
 OpenGLES2Context::initializeDepthFuncsMap()
 {
-	DepthFuncsMap m;
+	CompareFuncsMap m;
 
 	m[CompareMode::ALWAYS]			= GL_ALWAYS;
 	m[CompareMode::EQUAL]			= GL_EQUAL;
@@ -87,6 +88,24 @@ OpenGLES2Context::initializeDepthFuncsMap()
 	m[CompareMode::LESS_EQUAL]		= GL_LEQUAL;
 	m[CompareMode::NEVER]			= GL_NEVER;
 	m[CompareMode::NOT_EQUAL]		= GL_NOTEQUAL;
+
+	return m;
+}
+
+OpenGLES2Context::StencilOperationMap OpenGLES2Context::_stencilOps = OpenGLES2Context::initializeStencilOperationsMap();
+OpenGLES2Context::StencilOperationMap
+OpenGLES2Context::initializeStencilOperationsMap()
+{
+	StencilOperationMap m;
+
+	m[StencilOperation::KEEP]		= GL_KEEP;
+	m[StencilOperation::ZERO]		= GL_ZERO;
+	m[StencilOperation::REPLACE]	= GL_REPLACE;
+	m[StencilOperation::INCR]		= GL_INCR;
+	m[StencilOperation::INCR_WRAP]	= GL_INCR_WRAP;
+	m[StencilOperation::DECR]		= GL_DECR;
+	m[StencilOperation::DECR_WRAP]	= GL_DECR_WRAP;
+	m[StencilOperation::INVERT]		= GL_INVERT;
 
 	return m;
 }
@@ -114,13 +133,18 @@ OpenGLES2Context::OpenGLES2Context() :
     _currentMipFilter(),
     _currentBlendMode(Blending::Mode::DEFAULT),
     _currentDepthMask(true),
-    _currentDepthFunc(CompareMode::UNSET)
+    _currentDepthFunc(CompareMode::UNSET),
+	_currentStencilFunc(CompareMode::UNSET),
+	_currentStencilRef(0),
+	_currentStencilMask(0x1),
+	_currentStencilOps(std::make_tuple(StencilOperation::UNSET, StencilOperation::UNSET, StencilOperation::UNSET))
 {
 #if defined _WIN32 && !defined MINKO_ANGLE
     glewInit();
 #endif
 
 	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_STENCIL_TEST);
     glEnable(GL_BLEND);
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
@@ -139,6 +163,7 @@ OpenGLES2Context::OpenGLES2Context() :
 	_viewportHeight = viewportSettings[3];
 
 	setDepthTest(true, CompareMode::LESS);
+	setStencilTest(CompareMode::ALWAYS, 0, 0x1, StencilOperations(StencilOperation::KEEP, StencilOperation::KEEP, StencilOperation::KEEP));
 }
 
 OpenGLES2Context::~OpenGLES2Context()
@@ -1166,10 +1191,45 @@ OpenGLES2Context::setDepthTest(bool depthMask, CompareMode depthFunc)
 		_currentDepthFunc = depthFunc;
 
 		glDepthMask(depthMask);
-		glDepthFunc(_depthFuncs[depthFunc]);
+		glDepthFunc(_compareFuncs[depthFunc]);
 	}
 
     checkForErrors();
+}
+
+void
+OpenGLES2Context::setStencilTest(CompareMode stencilFunc, 
+								 int stencilRef, 
+								 uint stencilMask, 
+								 const StencilOperations& stencilOps)
+{
+	if (stencilFunc != _currentStencilFunc 
+		|| stencilRef != _currentStencilRef 
+		|| stencilMask != _currentStencilMask)
+	{
+		_currentStencilFunc	= stencilFunc;
+		_currentStencilRef	= stencilRef;
+		_currentStencilMask	= stencilMask;
+
+		glStencilFunc(_compareFuncs[stencilFunc], stencilRef, stencilMask);
+	}
+
+	checkForErrors();
+
+	auto sfail	= std::get<0>(stencilOps);
+	auto dpfail	= std::get<1>(stencilOps);
+	auto dppass	= std::get<2>(stencilOps);
+
+	if (sfail != std::get<0>(_currentStencilOps)
+		|| dpfail != std::get<1>(_currentStencilOps)
+		|| dppass != std::get<2>(_currentStencilOps))
+	{
+		_currentStencilOps = stencilOps;
+
+		glStencilOp(_stencilOps[sfail], _stencilOps[dpfail], _stencilOps[dppass]);
+	}
+
+	checkForErrors();
 }
 
 void
