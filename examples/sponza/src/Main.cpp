@@ -33,32 +33,32 @@ using namespace minko;
 using namespace minko::component;
 using namespace minko::math;
 
-const float WINDOW_WIDTH		= 1024.0f;
-const float WINDOW_HEIGHT		= 500.0f;
+const float WINDOW_WIDTH        = 1024.0f;
+const float WINDOW_HEIGHT       = 500.0f;
 
-const std::string MK_NAME			= "model/Sponza_lite_sphere.mk";
-const std::string DEFAULT_EFFECT	= "effect/Phong.effect";
-const std::string CAMERA_NAME		= "camera";
+const std::string MK_NAME           = "model/Sponza_lite_sphere.mk";
+const std::string DEFAULT_EFFECT    = "effect/Phong.effect";
+const std::string CAMERA_NAME       = "camera";
 
-const float CAMERA_LIN_SPEED	= 0.05f;
-const float CAMERA_ANG_SPEED	= (float)PI * 2.f / 180.0f;
-const float CAMERA_MASS			= 50.0f;
-const float CAMERA_FRICTION		= 0.6f;
+const float CAMERA_LIN_SPEED    = 0.05f;
+const float CAMERA_ANG_SPEED    = (float)PI * 2.f / 180.0f;
+const float CAMERA_MASS         = 50.0f;
+const float CAMERA_FRICTION     = 0.6f;
 
-Renderer::Ptr			renderer			= nullptr;
-auto					mesh				= scene::Node::create("mesh");
-auto					group				= scene::Node::create("group");
-auto					camera				= scene::Node::create("camera");
-auto					root				= scene::Node::create("root");
-auto					speed				= 0.0f;
-auto					angSpeed			= 0.0f;
-float					rotationX			= 0.0f;
-float					rotationY			= 0.0f;
-float					mousePositionX		= 0.0f;
-float					mousePositionY		= 0.0f;
-Vector3::Ptr			target				= Vector3::create();
-Vector3::Ptr			eye					= Vector3::create();
-bullet::Collider::Ptr	cameraCollider		= nullptr;
+Renderer::Ptr           renderer            = nullptr;
+auto                    mesh                = scene::Node::create("mesh");
+auto                    group               = scene::Node::create("group");
+auto                    camera              = scene::Node::create("camera");
+auto                    root                = scene::Node::create("root");
+auto                    speed               = 0.0f;
+auto                    angSpeed            = 0.0f;
+float                   rotationX           = 0.0f;
+float                   rotationY           = 0.0f;
+float                   mousePositionX      = 0.0f;
+float                   mousePositionY      = 0.0f;
+Vector3::Ptr            target              = Vector3::create();
+Vector3::Ptr            eye                 = Vector3::create();
+bullet::Collider::Ptr   cameraCollider      = nullptr;
 
 template <typename T>
 static
@@ -98,14 +98,14 @@ readAndSwap(std::stringstream& stream)
 }
 
 bullet::AbstractPhysicsShape::Ptr
-deserializeShape(Qark::Map&			shapeData,
-				 scene::Node::Ptr&	node)
+deserializeShape(Qark::Map&         shapeData,
+                 scene::Node::Ptr&  node)
 {
 	bullet::AbstractPhysicsShape::Ptr deserializedShape;
 
 	int type = Any::cast<int>(shapeData["type"]);
 
-	auto rx	= 0.f;
+	auto rx = 0.f;
 	auto ry = 0.f;
 	auto rz = 0.f;
 	auto h = 0.f;
@@ -118,59 +118,59 @@ deserializeShape(Qark::Map&			shapeData,
 		deserializedShape = deserializeShape(Any::cast<Qark::Map&>(shapeData["shape"]), node);
 		break;
 	case 2: // BOX
-		{
-			Qark::ByteArray& source = Any::cast<Qark::ByteArray&>(shapeData["data"]);
-			stream.write(&*source.begin(), source.size());
+	{
+		Qark::ByteArray& source = Any::cast<Qark::ByteArray&>(shapeData["data"]);
+		stream.write(&*source.begin(), source.size());
 
-			rx = readAndSwap<double>(stream);
-			ry = readAndSwap<double>(stream);
-			rz = readAndSwap<double>(stream);
+		rx = readAndSwap<double>(stream);
+		ry = readAndSwap<double>(stream);
+		rz = readAndSwap<double>(stream);
 
-			deserializedShape = bullet::BoxShape::create(rx, ry, rz);
-		}
-		break;
+		deserializedShape = bullet::BoxShape::create(rx, ry, rz);
+	}
+	break;
 	case 5 : // CONE
-		{
-			Qark::ByteArray& source = Any::cast<Qark::ByteArray&>(shapeData["data"]);
-			stream.write(&*source.begin(), source.size());
+	{
+		Qark::ByteArray& source = Any::cast<Qark::ByteArray&>(shapeData["data"]);
+		stream.write(&*source.begin(), source.size());
 
-			r = readAndSwap<double>(stream);
-			h = readAndSwap<double>(stream);
+		r = readAndSwap<double>(stream);
+		h = readAndSwap<double>(stream);
 
-			deserializedShape = bullet::ConeShape::create(r, h);
-		}
-		break;
+		deserializedShape = bullet::ConeShape::create(r, h);
+	}
+	break;
 	case 6 : // BALL
-		{
-			Qark::ByteArray& source = Any::cast<Qark::ByteArray&>(shapeData["data"]);
-			stream.write(&*source.begin(), source.size());
+	{
+		Qark::ByteArray& source = Any::cast<Qark::ByteArray&>(shapeData["data"]);
+		stream.write(&*source.begin(), source.size());
 
-			r = readAndSwap<double>(stream);
+		r = readAndSwap<double>(stream);
 
-			deserializedShape = bullet::SphereShape::create(r);
-		}
-		break;
+		deserializedShape = bullet::SphereShape::create(r);
+	}
+	break;
 	case 7 : // CYLINDER
-		{
-			Qark::ByteArray& source = Any::cast<Qark::ByteArray&>(shapeData["data"]);
-			stream.write(&*source.begin(), source.size());
+	{
+		Qark::ByteArray& source = Any::cast<Qark::ByteArray&>(shapeData["data"]);
+		stream.write(&*source.begin(), source.size());
 
-			r = readAndSwap<double>(stream);
-			h = readAndSwap<double>(stream);
+		r = readAndSwap<double>(stream);
+		h = readAndSwap<double>(stream);
 
-			deserializedShape = bullet::CylinderShape::create(r, h, r);
-		}
-		break;
+		deserializedShape = bullet::CylinderShape::create(r, h, r);
+	}
+	break;
 	case 100 : // TRANSFORM
-		{
-			deserializedShape		= deserializeShape(Any::cast<Qark::Map&>(shapeData["subGeometry"]), node);
+	{
+		deserializedShape       = deserializeShape(Any::cast<Qark::Map&>(shapeData["subGeometry"]), node);
 
-			auto delta				= deserialize::TypeDeserializer::matrix4x4(shapeData["delta"]);
-			auto modelToWorld		= node->component<Transform>()->modelToWorldMatrix(true);
+		auto delta              = deserialize::TypeDeserializer::matrix4x4(shapeData["delta"]);
+		auto modelToWorld       = node->component<Transform>()->modelToWorldMatrix(true);
 
-			deserializedShape->initialize(delta, modelToWorld);
-		}
-		break;
+		deserializedShape->initialize(delta, modelToWorld);
+	}
+	break;
 	default:
 		deserializedShape = nullptr;
 	}
@@ -179,48 +179,48 @@ deserializeShape(Qark::Map&			shapeData,
 }
 
 std::shared_ptr<bullet::Collider>
-deserializeBullet(Qark::Map&						nodeInformation,
-				  file::MkParser::ControllerMap&	controllerMap,
-				  file::MkParser::NodeMap&			nodeMap,
-				  scene::Node::Ptr&					node)
+deserializeBullet(Qark::Map&                        nodeInformation,
+                  file::MkParser::ControllerMap&    controllerMap,
+                  file::MkParser::NodeMap&          nodeMap,
+                  scene::Node::Ptr&                 node)
 {
 	Qark::Map& colliderData = Any::cast<Qark::Map&>(nodeInformation["defaultCollider"]);
-	Qark::Map& shapeData	= Any::cast<Qark::Map&>(colliderData["shape"]);
+	Qark::Map& shapeData    = Any::cast<Qark::Map&>(colliderData["shape"]);
 
 	bullet::AbstractPhysicsShape::Ptr shape = deserializeShape(shapeData, node);
 
-	float mass			= 1.0f;
-	double vx			= 0.0;
-	double vy			= 0.0;
-	double vz			= 0.0;
-	double avx			= 0.0;
-	double avy			= 0.0;
-	double avz			= 0.0;
-	bool sleep			= false;
-	bool rotate			= false;
-	bool trigger		= false;
-	double friction		= 0.5; // bullet's advices
-	double restitution	= 0.0; // bullet's advices
+	float mass          = 1.0f;
+	double vx           = 0.0;
+	double vy           = 0.0;
+	double vz           = 0.0;
+	double avx          = 0.0;
+	double avy          = 0.0;
+	double avz          = 0.0;
+	bool sleep          = false;
+	bool rotate         = false;
+	bool trigger        = false;
+	double friction     = 0.5; // bullet's advices
+	double restitution  = 0.0; // bullet's advices
 
 	if (shapeData.find("materialProfile") != shapeData.end())
 	{
 		Qark::ByteArray& materialProfileData = Any::cast<Qark::ByteArray&>(shapeData["materialProfile"]);
-		std::stringstream	stream;
+		std::stringstream   stream;
 		stream.write(&*materialProfileData.begin(), materialProfileData.size());
 
-		double density	= readAndSwap<double>(stream);
-		mass			= (float)density * shape->volume();
-		friction		= readAndSwap<double>(stream);
-		restitution		= readAndSwap<double>(stream);
+		double density  = readAndSwap<double>(stream);
+		mass            = (float)density * shape->volume();
+		friction        = readAndSwap<double>(stream);
+		restitution     = readAndSwap<double>(stream);
 	}
 
 	if (shapeData.find("logicProfile") != shapeData.end())
 	{
 		Qark::ByteArray& logicProfileData = Any::cast<Qark::ByteArray&>(shapeData["logicProfile"]);
-		std::stringstream	stream;
+		std::stringstream   stream;
 		stream.write(&*logicProfileData.begin(), logicProfileData.size());
 
-		trigger	= readAndSwap<bool>(stream);
+		trigger = readAndSwap<bool>(stream);
 	}
 
 	if (colliderData.find("dynamics") == colliderData.end())
@@ -228,17 +228,17 @@ deserializeBullet(Qark::Map&						nodeInformation,
 	else
 	{
 		Qark::ByteArray& dynamicsData = Any::cast<Qark::ByteArray&>(colliderData["dynamics"]);
-		std::stringstream	stream;
+		std::stringstream   stream;
 		stream.write(&*dynamicsData.begin(), dynamicsData.size());
 
-		vx		= readAndSwap<double>(stream);
-		vy		= readAndSwap<double>(stream);
-		vz		= readAndSwap<double>(stream);
-		avx		= readAndSwap<double>(stream);
-		avy		= readAndSwap<double>(stream);
-		avz		= readAndSwap<double>(stream);
-		sleep	= readAndSwap<bool>(stream);
-		rotate	= readAndSwap<bool>(stream);
+		vx      = readAndSwap<double>(stream);
+		vy      = readAndSwap<double>(stream);
+		vz      = readAndSwap<double>(stream);
+		avx     = readAndSwap<double>(stream);
+		avy     = readAndSwap<double>(stream);
+		avz     = readAndSwap<double>(stream);
+		sleep   = readAndSwap<bool>(stream);
+		rotate  = readAndSwap<bool>(stream);
 	}
 
 
@@ -261,8 +261,8 @@ deserializeBullet(Qark::Map&						nodeInformation,
 component::bullet::Collider::Ptr
 initializeDefaultCameraCollider()
 {
-	auto shape		= bullet::BoxShape::create(0.2f, 0.3f, 0.2f);
-	auto data		= bullet::ColliderData::create(CAMERA_MASS, shape);
+	auto shape      = bullet::BoxShape::create(0.2f, 0.3f, 0.2f);
+	auto data       = bullet::ColliderData::create(CAMERA_MASS, shape);
 
 	data->restitution(0.5f);
 	data->angularFactor(0.0f, 0.0f, 0.0f);
@@ -276,11 +276,11 @@ void
 initializeCamera(scene::Node::Ptr group)
 {
 	auto cameras = scene::NodeSet::create(group)
-		->descendants(true)
-		->where([](scene::Node::Ptr node)
-				{
-					return node->name() == CAMERA_NAME;
-				});
+	               ->descendants(true)
+	               ->where([](scene::Node::Ptr node)
+	{
+		return node->name() == CAMERA_NAME;
+	});
 
 	bool cameraInGroup = false;
 	if (cameras->nodes().empty())
@@ -290,8 +290,8 @@ initializeCamera(scene::Node::Ptr group)
 
 		camera->addComponent(Transform::create());
 		camera->component<Transform>()->transform()
-			->appendTranslation(0.0f, 0.75f, 5.0f)
-			->appendRotationY(PI * 0.5);
+		->appendTranslation(0.0f, 0.75f, 5.0f)
+		->appendRotationY(PI * 0.5);
 
 		cameraCollider = initializeDefaultCameraCollider();
 		camera->addComponent(cameraCollider);
@@ -347,23 +347,23 @@ main(int argc, char** argv)
 	MinkoSDL::initialize("Minko Example - Sponza", WINDOW_WIDTH, WINDOW_HEIGHT);
 
 	file::MkParser::registerController(
-		"colliderController",
-		std::bind(
-			deserializeBullet,
-			std::placeholders::_1,
-			std::placeholders::_2,
-			std::placeholders::_3,
-			std::placeholders::_4
-		)
+	    "colliderController",
+	    std::bind(
+	        deserializeBullet,
+	        std::placeholders::_1,
+	        std::placeholders::_2,
+	        std::placeholders::_3,
+	        std::placeholders::_4
+	    )
 	);
 
 	auto sceneManager = SceneManager::create(MinkoSDL::context());
 
 	sceneManager->assets()
-		->registerParser<file::PNGParser>("png")
-		->registerParser<file::JPEGParser>("jpg")
-		->registerParser<file::MkParser>("mk")
-		->geometry("cube", geometry::CubeGeometry::create(MinkoSDL::context()));
+	->registerParser<file::PNGParser>("png")
+	->registerParser<file::JPEGParser>("jpg")
+	->registerParser<file::MkParser>("mk")
+	->geometry("cube", geometry::CubeGeometry::create(MinkoSDL::context()));
 
 	auto options = sceneManager->assets()->defaultOptions();
 
@@ -372,22 +372,22 @@ main(int argc, char** argv)
 
 	// load sponza lighting effect and set it as the default effect
 	sceneManager->assets()
-		->load("effect/Phong.effect")
-		->load("effect/Basic.effect");
+	->load("effect/Phong.effect")
+	->load("effect/Basic.effect");
 
 	options->effect(sceneManager->assets()->effect("effect/Phong.effect"));
 
 	// load other assets
 	sceneManager->assets()
-		->queue("texture/firefull.jpg")
-		->queue("effect/Particles.effect")
-		->queue(MK_NAME);
+	->queue("texture/firefull.jpg")
+	->queue("effect/Particles.effect")
+	->queue(MK_NAME);
 
 	renderer = Renderer::create();
 
 	initializePhysics();
 
-	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
+	auto _ = sceneManager->assets()->complete()->connect([ = ](file::AssetLibrary::Ptr assets)
 	{
 		scene::Node::Ptr mk = assets->node(MK_NAME);
 		initializeCamera(mk);
@@ -395,9 +395,9 @@ main(int argc, char** argv)
 		auto lights = scene::Node::create();
 
 		lights
-			->addComponent(component::AmbientLight::create())
-			->addComponent(component::DirectionalLight::create())
-			->addComponent(component::Transform::create());
+		->addComponent(component::AmbientLight::create())
+		->addComponent(component::DirectionalLight::create())
+		->addComponent(component::Transform::create());
 		lights->component<Transform>()->transform()->lookAt(Vector3::zero(), Vector3::create(-1.f, -1.f, -1.f));
 		root->addChild(lights);
 
@@ -407,8 +407,8 @@ main(int argc, char** argv)
 		group->addComponent(Transform::create());
 		group->addChild(mk);
 		scene::NodeSet::Ptr fireNodes = scene::NodeSet::create(group)
-			->descendants()
-			->where([](scene::Node::Ptr node)
+		                                ->descendants()
+		                                ->where([](scene::Node::Ptr node)
 		{
 			return node->name() == "fire";
 		});
@@ -417,7 +417,7 @@ main(int argc, char** argv)
 		for (auto fireNode : fireNodes->nodes())
 			fireNode->addComponent(fire);
 
-		auto keyDown = MinkoSDL::keyDown()->connect([&](const Uint8* keyboard)
+		auto keyDown = MinkoSDL::keyDown()->connect([&](const Uint8 * keyboard)
 		{
 			auto collider = true;
 			auto cameraTransform = camera->component<Transform>()->transform();
@@ -425,37 +425,37 @@ main(int argc, char** argv)
 			if (!collider)
 			{
 				if (keyboard[SDL_SCANCODE_UP] ||
-					keyboard[SDL_SCANCODE_W] ||
-					keyboard[SDL_SCANCODE_Z])
+				    keyboard[SDL_SCANCODE_W] ||
+				    keyboard[SDL_SCANCODE_Z])
 					cameraTransform->prependTranslation(0.f, 0.f, -CAMERA_LIN_SPEED);
 				else if (keyboard[SDL_SCANCODE_DOWN] ||
-					keyboard[SDL_SCANCODE_S])
+				         keyboard[SDL_SCANCODE_S])
 					cameraTransform->prependTranslation(0.f, 0.f, CAMERA_LIN_SPEED);
 				if (keyboard[SDL_SCANCODE_LEFT] ||
-					keyboard[SDL_SCANCODE_A] ||
-					keyboard[SDL_SCANCODE_Q])
+				    keyboard[SDL_SCANCODE_A] ||
+				    keyboard[SDL_SCANCODE_Q])
 					cameraTransform->prependRotation(-CAMERA_ANG_SPEED, Vector3::yAxis());
 				else if (keyboard[SDL_SCANCODE_RIGHT] ||
-					keyboard[SDL_SCANCODE_D])
+				         keyboard[SDL_SCANCODE_D])
 					cameraTransform->prependRotation(CAMERA_ANG_SPEED, Vector3::yAxis());
 			}
 			else
 			{
 				if (keyboard[SDL_SCANCODE_UP] ||
-					keyboard[SDL_SCANCODE_W] ||
-					keyboard[SDL_SCANCODE_Z])
+				    keyboard[SDL_SCANCODE_W] ||
+				    keyboard[SDL_SCANCODE_Z])
 					// go forward
 					cameraTransform->prependTranslation(Vector3::create(0.0f, 0.0f, -CAMERA_LIN_SPEED));
 				else if (keyboard[SDL_SCANCODE_DOWN] ||
-					keyboard[SDL_SCANCODE_S])
+				         keyboard[SDL_SCANCODE_S])
 					// go backward
 					cameraTransform->prependTranslation(Vector3::create(0.0f, 0.0f, CAMERA_LIN_SPEED));
 				if (keyboard[SDL_SCANCODE_LEFT] ||
-					keyboard[SDL_SCANCODE_A] ||
-					keyboard[SDL_SCANCODE_Q])
+				    keyboard[SDL_SCANCODE_A] ||
+				    keyboard[SDL_SCANCODE_Q])
 					cameraTransform->prependTranslation(-CAMERA_LIN_SPEED, 0.0f, 0.0f);
 				else if (keyboard[SDL_SCANCODE_RIGHT] ||
-					keyboard[SDL_SCANCODE_D])
+				         keyboard[SDL_SCANCODE_D])
 					cameraTransform->prependTranslation(CAMERA_LIN_SPEED, 0.0f, 0.0f);
 
 				eye = cameraTransform->translation();
@@ -465,6 +465,21 @@ main(int argc, char** argv)
 
 				cameraCollider->synchronizePhysicsWithGraphics();
 			}
+		});
+
+		auto joystickMotion = MinkoSDL::joystickMotion()->connect([&](int which, int axis, int value)
+		{
+			auto cameraTransform = camera->component<Transform>()->transform();
+			float percent = float(value) / 32768.f;
+
+			if (axis == 1)
+				cameraTransform->prependTranslation(0.0f, 0.0f, CAMERA_LIN_SPEED * percent);
+			if (axis == 0)
+				cameraTransform->prependTranslation(CAMERA_LIN_SPEED * percent, 0.0f, 0.0f);
+
+			eye = cameraTransform->translation();
+
+			cameraCollider->synchronizePhysicsWithGraphics();
 		});
 
 		auto enterFrame = MinkoSDL::enterFrame()->connect([&]()
