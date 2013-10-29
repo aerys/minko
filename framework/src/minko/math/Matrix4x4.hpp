@@ -113,10 +113,10 @@ namespace minko
 			prepend(Ptr matrix);
 
 			Ptr
-			appendTranslation(float x, float y, float z);
+			appendTranslation(float x, float y = 0.f, float z = 0.f);
 
 			Ptr
-			prependTranslation(float x, float y, float z);
+			prependTranslation(float x, float y = 0.f, float z = 0.f);
 
 			inline
 			Ptr
