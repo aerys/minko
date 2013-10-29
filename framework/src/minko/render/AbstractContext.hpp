@@ -257,6 +257,10 @@ namespace minko
 
 			virtual
 			void
+			setStencilTest(CompareMode stencilFunc, int stencilRef, uint stencilMask, const StencilOperations&) = 0;
+
+			virtual
+			void
 			readPixels(unsigned char* pixels) = 0;
 
             virtual
