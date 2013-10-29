@@ -23,6 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Signal.hpp"
 #include "minko/component/AbstractComponent.hpp"
+#include "minko/component/PerspectiveCamera.hpp"
 
 namespace minko
 {
@@ -38,34 +39,67 @@ namespace minko
 		private:
 			typedef std::shared_ptr<scene::Node>		NodePtr;
 			typedef std::shared_ptr<AbstractComponent>	AbsCmpPtr;
+			typedef std::shared_ptr<SceneManager>		SceneMgrPtr;
+			typedef std::shared_ptr<render::Texture>	TexturePtr;
 
 		private:
-			float								_aspectRatio;
+			float										_aspectRatio;
 
-			Signal<NodePtr, AbsCmpPtr>::Slot	_targetAddedSlot;
-			Signal<NodePtr, AbsCmpPtr>::Slot	_targetRemovedSlot;
+			NodePtr										_root;
+			std::shared_ptr<PerspectiveCamera>			_leftCamera;
+			std::shared_ptr<PerspectiveCamera>			_rightCamera;
+			std::shared_ptr<Renderer>					_renderer;
+
+			Signal<AbsCmpPtr, NodePtr>::Slot			_targetAddedSlot;
+			Signal<AbsCmpPtr, NodePtr>::Slot			_targetRemovedSlot;
+			Signal<SceneMgrPtr, uint, TexturePtr>::Slot	_renderEndSlot;
 
 		public:
 			inline static
 			Ptr
 			create(float aspectRatio)
 			{
-				auto oc = std::shared_ptr<OculusVRCamera>(new OculusVRCamera);
+				auto oc = std::shared_ptr<OculusVRCamera>(new OculusVRCamera(aspectRatio));
 
 				oc->initialize();
 
 				return oc;
 			}
 
+			inline
+			float
+			aspectRatio()
+			{
+				return _aspectRatio;
+			}
+
+			inline
+			void
+			aspectRatio(float ratio)
+			{
+				if (ratio != _aspectRatio)
+				{
+					_aspectRatio = ratio;
+
+					_leftCamera->aspectRatio(ratio);
+					_rightCamera->aspectRatio(ratio);
+				}
+			}
+
 		private:
+			OculusVRCamera(float aspectRatio);
+
 			void
 			initialize();
 
 			void
-			targetAddedHandler(AbsCmpPtr component, NodePtr node);
+			targetAddedHandler(AbsCmpPtr component, NodePtr target);
 
 			void
-			targetRemovedHandler(AbsCmpPtr component, NodePtr node);
+			targetRemovedHandler(AbsCmpPtr component, NodePtr target);
+
+			void
+			renderEndHandler(SceneMgrPtr sceneManager, uint frameId, TexturePtr	renderTarget);
 		};
 	}
 }
