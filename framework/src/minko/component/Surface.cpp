@@ -121,8 +121,7 @@ Surface::targetAddedHandler(AbstractComponent::Ptr	ctrl,
 void
 Surface::removedHandler(NodePtr node, NodePtr target, NodePtr ancestor)
 {
-	deleteDrawCalls();
-	_macroAddedOrRemovedSlots.clear();
+	deleteAllDrawCalls();
 }
 
 void
@@ -203,28 +202,61 @@ Surface::watchMacroAdditionOrDeletion(std::shared_ptr<data::Container> rendererD
 }
 
 void
-Surface::deleteDrawCalls()
+Surface::deleteAllDrawCalls()
 {
-	while (!_drawCalls.empty())
-	{
-		auto drawCall = _drawCalls.front();
+	auto drawCallsMap = _drawCalls;
 
-		_drawCallRemoved->execute(shared_from_this(), drawCall);
-		_drawCalls.pop_front();
-	}
-	_drawCallToPass.clear();
-	_drawCallToRendererData.clear();
+	for (auto& drawCalls : drawCallsMap)
+		deleteDrawCalls(drawCalls.first);
 
 	_macroPropertyNameToDrawCalls.clear();
 	_macroChangedSlots.clear();
 }
 
+void
+Surface::deleteDrawCalls(std::shared_ptr<data::Container> rendererData)
+{
+	auto& drawCalls = _drawCalls[rendererData];
+
+	while (!drawCalls.empty())
+	{
+		auto drawCall = drawCalls.front();
+
+		_drawCallRemoved->execute(shared_from_this(), drawCall);
+		drawCalls.pop_front();
+
+		_drawCallToPass.erase(drawCall);
+		_drawCallToRendererData.erase(drawCall);
+
+		auto macroPropertyNameToDrawCalls = _macroPropertyNameToDrawCalls;
+		for (auto propertyNameAndDrawCall : macroPropertyNameToDrawCalls)
+		{
+			auto& dcs = propertyNameAndDrawCall.second;
+			auto it = std::find(dcs.begin(), dcs.end(), drawCall);
+			
+			dcs.erase(it);
+
+			if (dcs.size() == 0)
+			{
+				auto& propertyName = propertyNameAndDrawCall.first;
+
+				_macroPropertyNameToDrawCalls.erase(propertyName);
+				_macroChangedSlots.erase(propertyName);
+			}
+		}
+	}
+
+	_drawCalls.erase(rendererData);
+}
+
 Surface::DrawCallList
 Surface::createDrawCalls(std::shared_ptr<data::Container> rendererData)
 {
-	deleteDrawCalls();
+	if (_drawCalls.count(rendererData) != 0)
+		deleteDrawCalls(rendererData);
 
 	const auto& passes = _effect->technique(_technique);
+	auto& drawCalls = _drawCalls[rendererData];
 
 	for (const auto& pass : passes)
 	{
@@ -237,13 +269,13 @@ Surface::createDrawCalls(std::shared_ptr<data::Container> rendererData)
 			return createDrawCalls(rendererData);
 		}
 
-		_drawCalls.push_back(drawCall);
+		drawCalls.push_back(drawCall);
 		_drawCallAdded->execute(shared_from_this(), drawCall);
 	}
 
 	watchMacroAdditionOrDeletion(rendererData);
 
-	return _drawCalls;
+	return drawCalls;
 }
 
 DrawCall::Ptr
@@ -353,7 +385,7 @@ Surface::macroChangedHandler(Container::Ptr		data,
 			{
 				switchToFallbackTechnique();
 
-				deleteDrawCalls();
+				deleteDrawCalls(rendererData);
 				createDrawCalls(rendererData);
 			}
 		}
@@ -400,7 +432,7 @@ Surface::targetRemovedHandler(AbstractComponent::Ptr	ctrl,
 	data->removeProvider(_geometry->data());
 	data->removeProvider(_geometry->data());
 
-	deleteDrawCalls();
+	deleteAllDrawCalls();
 }
 
 Container::Ptr
