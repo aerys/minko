@@ -482,6 +482,15 @@ main(int argc, char** argv)
 			cameraCollider->synchronizePhysicsWithGraphics();
 		});
 
+		auto joystickButtonDown = MinkoSDL::joystickButtonDown()->connect([&](int which)
+		{
+			auto cameraTransform = camera->component<Transform>()->transform();
+
+			cameraTransform->prependTranslation(0.0f, 4 * CAMERA_LIN_SPEED, 0.0f);
+
+			cameraCollider->synchronizePhysicsWithGraphics();
+		});
+
 		auto enterFrame = MinkoSDL::enterFrame()->connect([&]()
 		{
 			sceneManager->nextFrame();
