@@ -186,7 +186,7 @@ public:
 
 	static
 	void
-	initialize(const std::string& windowTitle, unsigned int width = 0, unsigned int height = 0)
+	initialize(const std::string& windowTitle, unsigned int width = 0, unsigned int height = 0, bool useStencil = false)
 	{
 		_active = false;
 		_framerate = 0.f;
@@ -205,7 +205,7 @@ public:
 
 		_resized = minko::Signal<uint, uint>::create();
 
-		initializeContext(windowTitle, width, height);
+		initializeContext(windowTitle, width, height, useStencil);
 		initializeJoysticks();
 	}
 
@@ -308,10 +308,13 @@ private:
 
 	static
 	void
-	initializeContext(const std::string& windowTitle, unsigned int width, unsigned int height)
+	initializeContext(const std::string& windowTitle, unsigned int width, unsigned int height, bool useStencil)
 	{
 #ifndef EMSCRIPTEN
 		SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK);
+
+		if (useStencil)
+			SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 
 		_window = SDL_CreateWindow(
 		              windowTitle.c_str(),
