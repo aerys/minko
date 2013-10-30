@@ -615,6 +615,7 @@ package aerys.minko.render.geometry.stream
 				_localDispose = true;
 			else
 			{
+				_data.clear();
 				_data = null;
 				_usage = StreamUsage.STATIC;
 			}
@@ -727,7 +728,12 @@ package aerys.minko.render.geometry.stream
 			
 			data.position = data.length;
 			for  (i = 1; i < numStreams; ++i)
-				data.writeBytes(extractSubStream(streams[i], usage, format)._data);
+			{
+				var subStream : VertexStream = extractSubStream(streams[i], usage, format);
+				data.writeBytes(subStream._data);
+				subStream.disposeLocalData(false);
+				subStream.dispose();
+			}
 			data.position = 0;
             stream.updateMinMax(true);
 

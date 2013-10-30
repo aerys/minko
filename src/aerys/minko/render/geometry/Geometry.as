@@ -972,17 +972,28 @@ package aerys.minko.render.geometry
 			
 			if (vertexStreamsToConcat.length != 0)
 			{
-				_vertexStreams = new <IVertexStream>[
+				vertexStreamsToConcat = new <IVertexStream>[
 					VertexStream.concat(vertexStreamsToConcat, vertexStreamUsage)
 				];
+				if (numVertexStreams != 0)
+				{
+					_vertexStreams[0].disposeLocalData(false);
+					_vertexStreams[0].dispose();
+				}
+				_vertexStreams = vertexStreamsToConcat;
 			}
 			
-			_indexStream = _indexStream != null
+			var indexStream = _indexStream != null
 				? _indexStream.clone(indexStreamUsage)
 				: new IndexStream(indexStreamUsage);
 			
+			_indexStream.disposeLocalData();
+			_indexStream.dispose();
+			
 			if (geometry._indexStream != null)
-				_indexStream = _indexStream.concat(geometry._indexStream, 0, 0, indexOffset);
+				_indexStream = indexStream.concat(geometry._indexStream, 0, 0, indexOffset);
+			else
+				_indexStream = indexStream;
 			
 			updateBoundingVolumes();
 			
