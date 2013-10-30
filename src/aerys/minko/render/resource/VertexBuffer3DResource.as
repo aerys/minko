@@ -18,16 +18,18 @@ package aerys.minko.render.resource
 	{
 		use namespace minko_stream;
 
-		private var _stream			: VertexStream		= null;
-		private var _update			: Boolean			= true;
-		private var _lengthChanged	: Boolean			= true;
-		private var _vertexBuffer	: VertexBuffer3D	= null;
-		private var _numVertices	: uint				= 0;
+		private var _stream						: VertexStream		= null;
+		private var _update						: Boolean			= true;
+		private var _lengthChanged				: Boolean			= true;
+		private var _vertexBuffer				: VertexBuffer3D	= null;
+		private var _numVertices				: uint				= 0;
 		
-		private var _disposed		: Boolean			= false;
+		private var _disposed					: Boolean			= false;
 		
-		private var _uploaded		: Signal			= new Signal('VertexBuffer3DResource.uploaded');
-		private var _contextLost	: Signal			= new Signal('VertexBuffer3DResource.contextLost');
+		private var _uploaded					: Signal			= new Signal('VertexBuffer3DResource.uploaded');
+		private var _contextLost				: Signal			= new Signal('VertexBuffer3DResource.contextLost');
+		
+		private var _contextLostHandlerAdded	: Boolean			= false;
 		
 		public function get contextLost():Signal
 		{
@@ -68,8 +70,11 @@ package aerys.minko.render.resource
 
 		public function getVertexBuffer3D(context : Context3DResource) : VertexBuffer3D
 		{
-			if (!context.contextChanged.hasCallback(contextLostHandler))
+			if (!_contextLostHandlerAdded)
+			{
 				context.contextChanged.add(contextLostHandler);
+				_contextLostHandlerAdded = true;
+			}
 			
 			var update	: Boolean	= _update;
 			

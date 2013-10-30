@@ -32,24 +32,25 @@ package aerys.minko.render.resource.texture
 			TEXTURE_FORMAT_TO_SAMPLER[FORMAT_COMPRESSED_ALPHA] 	= SamplerFormat.COMPRESSED_ALPHA;
 		}
 		
-		private var _name 			: String = "";
+		private var _name 						: String		= "";
 		
-		private var _texture		: Texture;
-		private var _mipmap			: Boolean;
+		private var _texture					: Texture;
+		private var _mipmap						: Boolean;
 
-		private var _bitmapData		: BitmapData;
-		private var _atf			: ByteArray;
-		private var _atfFormat		: uint;
-		private var _format 		: String;
+		private var _bitmapData					: BitmapData;
+		private var _atf						: ByteArray;
+		private var _atfFormat					: uint;
+		private var _format 					: String;
 
-		private var _width			: Number;
-		private var _height			: Number;
+		private var _width						: Number;
+		private var _height						: Number;
 
-		private var _update			: Boolean;
+		private var _update						: Boolean;
 		
-		private var _disposed		: Boolean;
+		private var _disposed					: Boolean;
 		
-		private var _contextLost	: Signal = new Signal("TextureResource.contextLost");
+		private var _contextLost				: Signal		= new Signal("TextureResource.contextLost");
+		private var _contextLostHandlerAdded	: Boolean		= false;
 		
 		public function get name():String
 		{
@@ -215,8 +216,11 @@ package aerys.minko.render.resource.texture
 
 		public function getTexture(context : Context3DResource) : TextureBase
 		{
-			if (!context.contextChanged.hasCallback(contextLostHandler))
+			if (!_contextLostHandlerAdded)
+			{
 				context.contextChanged.add(contextLostHandler);
+				_contextLostHandlerAdded = true;
+			}
 			
 			if (!_texture && _width && _height)
 			{

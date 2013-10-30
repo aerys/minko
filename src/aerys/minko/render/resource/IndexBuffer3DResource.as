@@ -18,15 +18,16 @@ package aerys.minko.render.resource
 	{
 		use namespace minko_stream;
 
-		private var _stream			: IndexStream	= null;
-		private var _update			: Boolean		= true;
-		private var _lengthChanged	: Boolean		= true;
-		private var _indexBuffer	: IndexBuffer3D	= null;
-		private var _numIndices		: uint			= 0;
+		private var _stream						: IndexStream	= null;
+		private var _update						: Boolean		= true;
+		private var _lengthChanged				: Boolean		= true;
+		private var _indexBuffer				: IndexBuffer3D	= null;
+		private var _numIndices					: uint			= 0;
 		
-		private var _disposed		: Boolean		= false;
+		private var _disposed					: Boolean		= false;
 		
-		private var _contextLost	: Signal		= new Signal("IndexBuffer3DResource.contextLost");
+		private var _contextLost				: Signal		= new Signal("IndexBuffer3DResource.contextLost");
+		private var _contextLostHandlerAdded	: Boolean		= false;
 
 		public function get contextLost():Signal
 		{
@@ -62,8 +63,11 @@ package aerys.minko.render.resource
 
 		public function getIndexBuffer3D(context : Context3DResource) : IndexBuffer3D
 		{
-			if (!context.contextChanged.hasCallback(contextLostHandler))
+			if (!_contextLostHandlerAdded)
+			{
 				context.contextChanged.add(contextLostHandler);
+				_contextLostHandlerAdded = true;
+			}
 			
 			var update : Boolean	= _update;
 			
