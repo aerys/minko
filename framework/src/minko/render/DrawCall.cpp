@@ -23,6 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/CompareMode.hpp"
 #include "minko/render/WrapMode.hpp"
 #include "minko/render/TextureFilter.hpp"
+#include "minko/render/StencilOperation.hpp"
 #include "minko/render/MipFilter.hpp"
 #include "minko/render/Blending.hpp"
 #include "minko/render/TriangleCulling.hpp"
@@ -331,6 +332,11 @@ DrawCall::bindStates()
         _states->blendingSourceFactor() | _states->blendingDestinationFactor()
     );
 
+	_colorMask = getDataProperty<bool>(
+		_stateBindings.count("colorMask") ? _stateBindings.at("colorMask") : "colorMask",
+		_states->colorMask()
+	);
+
 	_depthMask = getDataProperty<bool>(
 		_stateBindings.count("depthMask") ? _stateBindings.at("depthMask") : "depthMask",
         _states->depthMask()
@@ -343,6 +349,36 @@ DrawCall::bindStates()
     _triangleCulling = getDataProperty<TriangleCulling>(
 		_stateBindings.count("triangleCulling") ? _stateBindings.at("triangleCulling") : "triangleCulling",
         _states->triangleCulling()
+	);
+
+	_stencilFunc = getDataProperty<CompareMode>(
+		_stateBindings.count("stencilFunc") ? _stateBindings.at("stencilFunc") : "stencilFunc",
+		_states->stencilFunction()
+	);
+
+	_stencilRef = getDataProperty<int>(
+		_stateBindings.count("stencilRef") ? _stateBindings.at("stencilRef") : "stencilRef",
+		_states->stencilReference()
+	);
+
+	_stencilMask = getDataProperty<uint>(
+		_stateBindings.count("stencilMask") ? _stateBindings.at("stencilMask") : "stencilMask",
+		_states->stencilMask()
+	);
+
+	_stencilFailOp = getDataProperty<StencilOperation>(
+		_stateBindings.count("stencilFailOp") ? _stateBindings.at("stencilFailOp") : "stencilFailOp",
+		_states->stencilFailOperation()
+	);
+
+	_stencilZFailOp = getDataProperty<StencilOperation>(
+		_stateBindings.count("stencilZFailOp") ? _stateBindings.at("stencilZFailOp") : "stencilZFailOp",
+		_states->stencilDepthFailOperation()
+	);
+
+	_stencilZPassOp = getDataProperty<StencilOperation>(
+		_stateBindings.count("stencilZPassOp") ? _stateBindings.at("stencilZPassOp") : "stencilZPassOp",
+		_states->stencilDepthPassOperation()
 	);
 
     _target = getDataProperty<Texture::Ptr>(
@@ -425,8 +461,11 @@ DrawCall::render(const AbstractContext::Ptr& context, std::shared_ptr<render::Te
             );
     }
 
+	context->setColorMask(_colorMask);
 	context->setBlendMode(_blendMode);
 	context->setDepthTest(_depthMask, _depthFunc);
+	context->setStencilTest(_stencilFunc, _stencilRef, _stencilMask, _stencilFailOp, _stencilZFailOp, _stencilZPassOp);
+
     context->setTriangleCulling(_triangleCulling);
 
     context->drawTriangles(_indexBuffer, _numIndices / 3);
