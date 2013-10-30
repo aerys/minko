@@ -51,7 +51,7 @@ int main(int argc, char** argv)
 			->addComponent(Transform::create(
 				Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 3.f))
 			))
-			->addComponent(PerspectiveCamera::create(.785f, 800.f / 600.f, .1f, 1000.f))
+			->addComponent(PerspectiveCamera::create(800.f / 600.f, PI * 0.25f, .1f, 1000.f))
 		);
 		
 		// setup mesh
