@@ -198,22 +198,26 @@ EffectParser::parseRenderStates(const Json::Value&		root,
 {
 	auto blendSrcFactor		= defaultStates->blendingSourceFactor();
 	auto blendDstFactor		= defaultStates->blendingDestinationFactor();
+	auto colorMask			= defaultStates->colorMask();
 	auto depthMask			= defaultStates->depthMask();
 	auto depthFunc			= defaultStates->depthFunc();
     auto triangleCulling	= defaultStates->triangleCulling();
 	auto stencilFunc		= defaultStates->stencilFunction();
 	auto stencilRef			= defaultStates->stencilReference();
 	auto stencilMask		= defaultStates->stencilMask();
-	auto stencilOps			= defaultStates->stencilOperations();
-	
+	auto stencilFailOp		= defaultStates->stencilFailOperation();
+	auto stencilZFailOp		= defaultStates->stencilDepthFailOperation();
+	auto stencilZPassOp		= defaultStates->stencilDepthPassOperation();
+
 	render::Texture::Ptr target = defaultStates->target();
 	std::unordered_map<std::string, SamplerState> samplerStates = defaultStates->samplers();
 
 	parseBlendMode(root, blendSrcFactor, blendDstFactor);
+	parseColorMask(root, colorMask);
 	parseDepthTest(root, depthMask, depthFunc);
 	parseTriangleCulling(root, triangleCulling);
     parseSamplerStates(root, samplerStates);
-	parseStencilState(root, stencilFunc, stencilRef, stencilMask, stencilOps);
+	parseStencilState(root, stencilFunc, stencilRef, stencilMask, stencilFailOp, stencilZFailOp, stencilZPassOp);
 	target = parseTarget(root, context, targets);
 
 	return render::States::create(
@@ -221,13 +225,16 @@ EffectParser::parseRenderStates(const Json::Value&		root,
 		(float)priority,
 		blendSrcFactor,
 		blendDstFactor,
+		colorMask,
 		depthMask,
 		depthFunc,
 		triangleCulling,
 		stencilFunc,
 		stencilRef,
 		stencilMask,
-		stencilOps,
+		stencilFailOp,
+		stencilZFailOp,
+		stencilZPassOp,
 		target
 	);
 }
@@ -411,6 +418,16 @@ EffectParser::parseBlendMode(const Json::Value&				contextNode,
 			dstFactor = static_cast<render::Blending::Destination>(blendMode & 0xff00);
 		}
 	}
+}
+
+void
+EffectParser::parseColorMask(const Json::Value&	contextNode,
+						     bool& colorMask) const
+{
+	auto colorMaskValue	= contextNode.get("colorMask", 0);
+
+	if (colorMaskValue.isBool())
+		colorMask = colorMaskValue.asBool();
 }
 
 void
@@ -674,7 +691,9 @@ EffectParser::parseStencilState(const Json::Value& contextNode,
 								CompareMode& stencilFunc, 
 								int& stencilRef, 
 								uint& stencilMask, 
-								StencilOperations& stencilOps) const
+								StencilOperation& stencilFailOp,
+								StencilOperation& stencilZFailOp,
+								StencilOperation& stencilZPassOp) const
 {
 	auto stencilTest	= contextNode.get("stencilTest", 0);
 	
@@ -691,42 +710,44 @@ EffectParser::parseStencilState(const Json::Value& contextNode,
 			stencilRef	= stencilRefValue.asInt();
 		if (stencilMaskValue.isUInt())
 			stencilMask	= stencilMaskValue.asUInt();
-		parseStencilOperations(stencilOpsValue, stencilOps);
+		parseStencilOperations(stencilOpsValue, stencilFailOp, stencilZFailOp, stencilZPassOp);
 	}
     else if (stencilTest.isArray())
     {
 		stencilFunc = _compareFuncMap[stencilTest[0].asString()];
 		stencilRef	= stencilTest[1].asInt();
 		stencilMask	= stencilTest[2].asUInt();
-		parseStencilOperations(stencilTest[3], stencilOps);
+		parseStencilOperations(stencilTest[3], stencilFailOp, stencilZFailOp, stencilZPassOp);
     }
 }
 
 void
 EffectParser::parseStencilOperations(const Json::Value& contextNode,
-									StencilOperations& stencilOps) const
+									StencilOperation& stencilFailOp,
+									StencilOperation& stencilZFailOp,
+									StencilOperation& stencilZPassOp) const
 {
 	if (contextNode.isArray())
 	{
 		if (contextNode[0].isString())
-			std::get<0>(stencilOps) = _stencilOpMap[contextNode[0].asString()];
+			stencilFailOp = _stencilOpMap[contextNode[0].asString()];
 		if (contextNode[1].isString())
-			std::get<1>(stencilOps) = _stencilOpMap[contextNode[1].asString()];
+			stencilZFailOp = _stencilOpMap[contextNode[1].asString()];
 		if (contextNode[2].isString())
-			std::get<2>(stencilOps) = _stencilOpMap[contextNode[2].asString()];
+			stencilZPassOp = _stencilOpMap[contextNode[2].asString()];
 	}
 	else
 	{
-		auto sfailValue		= contextNode.get("sfail", 0);
-		auto dpfailValue	= contextNode.get("dpfail", 0);
-		auto dppassValue	= contextNode.get("dppass", 0);
+		auto failValue		= contextNode.get("fail", 0);
+		auto zfailValue	= contextNode.get("zfail", 0);
+		auto zpassValue	= contextNode.get("zpass", 0);
 
-		if (sfailValue.isString())
-			std::get<0>(stencilOps) = _stencilOpMap[sfailValue.asString()];
-		if (dpfailValue.isString())
-			std::get<1>(stencilOps) = _stencilOpMap[dpfailValue.asString()];
-		if (dppassValue.isString())
-			std::get<2>(stencilOps) = _stencilOpMap[dppassValue.asString()];
+		if (failValue.isString())
+			stencilFailOp = _stencilOpMap[failValue.asString()];
+		if (zfailValue.isString())
+			stencilZFailOp = _stencilOpMap[zfailValue.asString()];
+		if (zpassValue.isString())
+			stencilZPassOp = _stencilOpMap[zpassValue.asString()];
 	}
 }
 
