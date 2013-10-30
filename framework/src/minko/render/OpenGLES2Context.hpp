@@ -82,13 +82,16 @@ namespace minko
             std::unordered_map<uint, MipFilter>     _currentMipFilter;
 			int						                _currentProgram;
 			Blending::Mode			                _currentBlendMode;
+			bool									_currentColorMask;
 			bool					                _currentDepthMask;
 			CompareMode				                _currentDepthFunc;
             TriangleCulling                         _currentTriangleCulling;
 			CompareMode								_currentStencilFunc;
 			int										_currentStencilRef;
 			uint									_currentStencilMask;
-			StencilOperations						_currentStencilOps;
+			StencilOperation						_currentStencilFailOp;
+			StencilOperation						_currentStencilZFailOp;
+			StencilOperation						_currentStencilZPassOp;
 
 		public:
 			~OpenGLES2Context();
@@ -307,7 +310,15 @@ namespace minko
 			setDepthTest(bool depthMask, CompareMode depthFunc);
 
 			void
-			setStencilTest(CompareMode stencilFunc, int stencilRef, uint stencilMask, const StencilOperations&);
+			setColorMask(bool);
+
+			void
+			setStencilTest(CompareMode		stencilFunc, 
+						   int				stencilRef, 
+						   uint				stencilMask,
+						   StencilOperation	stencilFailOp,
+						   StencilOperation	stencilZFailOp,
+						   StencilOperation	stencilZPassOp);
 
 			void
 			readPixels(unsigned char* pixels);

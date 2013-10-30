@@ -251,13 +251,22 @@ namespace minko
             void
             setBlendMode(Blending::Mode blendMode) = 0;
 
+			virtual 
+			void
+			setColorMask(bool) = 0;
+
 			virtual
 			void
 			setDepthTest(bool depthMask, CompareMode depthFunc) = 0;
 
 			virtual
 			void
-			setStencilTest(CompareMode stencilFunc, int stencilRef, uint stencilMask, const StencilOperations&) = 0;
+			setStencilTest(CompareMode		stencilFunc, 
+						   int				stencilRef, 
+						   uint				stencilMask,
+						   StencilOperation	stencilFailOp,
+						   StencilOperation	stencilZFailOp,
+						   StencilOperation	stencilZPassOp) = 0;
 
 			virtual
 			void

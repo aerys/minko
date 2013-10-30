@@ -72,13 +72,16 @@ namespace minko
             uint                                                        _indexBuffer;
             std::shared_ptr<render::Texture>                            _target;
             render::Blending::Mode                                      _blendMode;
+			bool														_colorMask;
             bool                                                        _depthMask;
             render::CompareMode                                         _depthFunc;
             render::TriangleCulling                                     _triangleCulling;
 			render::CompareMode											_stencilFunc;
 			int															_stencilRef;
 			uint														_stencilMask;
-			render::StencilOperations									_stencilOps;
+			render::StencilOperation									_stencilFailOp;
+			render::StencilOperation									_stencilZFailOp;
+			render::StencilOperation									_stencilZPassOp;
             std::unordered_map<uint, float>                             _uniformFloat;
             std::unordered_map<uint, std::shared_ptr<math::Vector2>>    _uniformFloat2;
             std::unordered_map<uint, std::shared_ptr<math::Vector3>>    _uniformFloat3;

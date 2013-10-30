@@ -59,8 +59,7 @@ namespace minko
         enum class TextureFilter;
         enum class MipFilter;
 		enum class StencilOperation;
-        typedef std::tuple<WrapMode, TextureFilter, MipFilter>						SamplerState;
-		typedef std::tuple<StencilOperation, StencilOperation, StencilOperation>	StencilOperations;
+        typedef std::tuple<WrapMode, TextureFilter, MipFilter>	SamplerState;
 
         class States;
 		class DrawCall;
