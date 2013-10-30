@@ -40,14 +40,21 @@ namespace minko
 				   float									outerRadius, 
 				   float									innerRadius)
 			{
-				return std::shared_ptr<StarGeometry>(new StarGeometry(context, numBranches, outerRadius, innerRadius));
+				Ptr ptr = std::shared_ptr<StarGeometry>(new StarGeometry());
+
+				ptr->initialize(context, numBranches, outerRadius, innerRadius);
+
+				return ptr;
 			}
 	
 		private:
-			StarGeometry(std::shared_ptr<render::AbstractContext>	context,
-						 unsigned int								numBranches, 
-						 float										outerRadius, 
-						 float										innerRadius);
+			StarGeometry();
+
+			void
+			initialize(std::shared_ptr<render::AbstractContext>	context,
+					   unsigned int								numBranches, 
+					   float									outerRadius, 
+					   float									innerRadius);
 		};
 	}
 }

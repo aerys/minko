@@ -23,6 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/CompareMode.hpp"
 #include "minko/render/WrapMode.hpp"
 #include "minko/render/TextureFilter.hpp"
+#include "minko/render/StencilOperation.hpp"
 #include "minko/render/MipFilter.hpp"
 #include "minko/render/Blending.hpp"
 #include "minko/render/TriangleCulling.hpp"
@@ -331,6 +332,11 @@ DrawCall::bindStates()
         _states->blendingSourceFactor() | _states->blendingDestinationFactor()
     );
 
+	_colorMask = getDataProperty<bool>(
+		_stateBindings.count("colorMask") ? _stateBindings.at("colorMask") : "colorMask",
+		_states->colorMask()
+	);
+
 	_depthMask = getDataProperty<bool>(
 		_stateBindings.count("depthMask") ? _stateBindings.at("depthMask") : "depthMask",
         _states->depthMask()
@@ -360,9 +366,19 @@ DrawCall::bindStates()
 		_states->stencilMask()
 	);
 
-	_stencilOps = getDataProperty<StencilOperations>(
-		_stateBindings.count("stencilOps") ? _stateBindings.at("stencilOps") : "stencilOps",
-		_states->stencilOperations()
+	_stencilFailOp = getDataProperty<StencilOperation>(
+		_stateBindings.count("stencilFailOp") ? _stateBindings.at("stencilFailOp") : "stencilFailOp",
+		_states->stencilFailOperation()
+	);
+
+	_stencilZFailOp = getDataProperty<StencilOperation>(
+		_stateBindings.count("stencilZFailOp") ? _stateBindings.at("stencilZFailOp") : "stencilZFailOp",
+		_states->stencilDepthFailOperation()
+	);
+
+	_stencilZPassOp = getDataProperty<StencilOperation>(
+		_stateBindings.count("stencilZPassOp") ? _stateBindings.at("stencilZPassOp") : "stencilZPassOp",
+		_states->stencilDepthPassOperation()
 	);
 
     _target = getDataProperty<Texture::Ptr>(
@@ -445,8 +461,11 @@ DrawCall::render(const AbstractContext::Ptr& context, std::shared_ptr<render::Te
             );
     }
 
+	context->setColorMask(_colorMask);
 	context->setBlendMode(_blendMode);
 	context->setDepthTest(_depthMask, _depthFunc);
+	context->setStencilTest(_stencilFunc, _stencilRef, _stencilMask, _stencilFailOp, _stencilZFailOp, _stencilZPassOp);
+
     context->setTriangleCulling(_triangleCulling);
 
     context->drawTriangles(_indexBuffer, _numIndices / 3);

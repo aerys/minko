@@ -209,6 +209,10 @@ namespace minko
 						   render::Blending::Destination&	dstFactor);
 
 			void
+			parseColorMask(const Json::Value&	contextNode,
+						   bool& colorMask) const;
+
+			void
 			parseDepthTest(const Json::Value&	contextNode,
 						   bool&				depthMask,
 						   render::CompareMode&	depthFunc);
@@ -223,10 +227,18 @@ namespace minko
 
 			void
 			parseStencilState(const Json::Value&, 
-							  render::CompareMode& stencilFunc, int& stencilRef, uint& stencilMask, render::StencilOperations&) const;
+							  render::CompareMode& stencilFunc, 
+							  int& stencilRef, 
+							  uint& stencilMask, 
+							  render::StencilOperation& stencilFailOp,
+							  render::StencilOperation& stencilZFailOp,
+							  render::StencilOperation& stencilZPassOp) const;
 
 			void
-			parseStencilOperations(const Json::Value&, render::StencilOperations&) const;
+			parseStencilOperations(const Json::Value&, 
+								   render::StencilOperation& stencilFailOp,
+								   render::StencilOperation& stencilZFailOp,
+								   render::StencilOperation& stencilZPassOp) const;
 
             std::shared_ptr<render::Texture>
             parseTarget(const Json::Value&                          contextNode,

@@ -132,12 +132,15 @@ OpenGLES2Context::OpenGLES2Context() :
     _currentTextureFilter(),
     _currentMipFilter(),
     _currentBlendMode(Blending::Mode::DEFAULT),
+	_currentColorMask(true),
     _currentDepthMask(true),
     _currentDepthFunc(CompareMode::UNSET),
 	_currentStencilFunc(CompareMode::UNSET),
 	_currentStencilRef(0),
 	_currentStencilMask(0x1),
-	_currentStencilOps(std::make_tuple(StencilOperation::UNSET, StencilOperation::UNSET, StencilOperation::UNSET))
+	_currentStencilFailOp(StencilOperation::UNSET),
+	_currentStencilZFailOp(StencilOperation::UNSET),
+	_currentStencilZPassOp(StencilOperation::UNSET)
 {
 #if defined _WIN32 && !defined MINKO_ANGLE
     glewInit();
@@ -162,8 +165,9 @@ OpenGLES2Context::OpenGLES2Context() :
 	_viewportWidth = viewportSettings[2];
 	_viewportHeight = viewportSettings[3];
 
+	setColorMask(true);
 	setDepthTest(true, CompareMode::LESS);
-	setStencilTest(CompareMode::ALWAYS, 0, 0x1, StencilOperations(StencilOperation::KEEP, StencilOperation::KEEP, StencilOperation::KEEP));
+	setStencilTest(CompareMode::ALWAYS, 0, 0x1, StencilOperation::KEEP, StencilOperation::KEEP, StencilOperation::KEEP);
 }
 
 OpenGLES2Context::~OpenGLES2Context()
@@ -1198,10 +1202,25 @@ OpenGLES2Context::setDepthTest(bool depthMask, CompareMode depthFunc)
 }
 
 void
+OpenGLES2Context::setColorMask(bool colorMask)
+{
+	if (_currentColorMask != colorMask)
+	{
+		_currentColorMask = colorMask;
+
+		glColorMask(colorMask, colorMask, colorMask, colorMask);
+	}
+
+	checkForErrors();
+}
+
+void
 OpenGLES2Context::setStencilTest(CompareMode stencilFunc, 
 								 int stencilRef, 
 								 uint stencilMask, 
-								 const StencilOperations& stencilOps)
+								 StencilOperation stencilFailOp,
+								 StencilOperation stencilZFailOp,
+								 StencilOperation stencilZPassOp)
 {
 	if (stencilFunc != _currentStencilFunc 
 		|| stencilRef != _currentStencilRef 
@@ -1216,17 +1235,15 @@ OpenGLES2Context::setStencilTest(CompareMode stencilFunc,
 
 	checkForErrors();
 
-	auto sfail	= std::get<0>(stencilOps);
-	auto dpfail	= std::get<1>(stencilOps);
-	auto dppass	= std::get<2>(stencilOps);
-
-	if (sfail != std::get<0>(_currentStencilOps)
-		|| dpfail != std::get<1>(_currentStencilOps)
-		|| dppass != std::get<2>(_currentStencilOps))
+	if (stencilFailOp != _currentStencilFailOp
+		|| stencilZFailOp != _currentStencilZFailOp
+		|| stencilZPassOp != _currentStencilZPassOp)
 	{
-		_currentStencilOps = stencilOps;
+		_currentStencilFailOp	= stencilFailOp;
+		_currentStencilZFailOp	= stencilZFailOp;
+		_currentStencilZPassOp	= stencilZPassOp;
 
-		glStencilOp(_stencilOps[sfail], _stencilOps[dpfail], _stencilOps[dppass]);
+		glStencilOp(_stencilOps[stencilFailOp], _stencilOps[stencilZFailOp], _stencilOps[stencilZPassOp]);
 	}
 
 	checkForErrors();
