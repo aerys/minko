@@ -37,16 +37,18 @@ namespace minko
 			typedef std::shared_ptr<OpenGLES2Context> Ptr;
 
         private:
-            typedef std::unordered_map<unsigned int, unsigned int>	BlendFactorsMap;
-			typedef std::unordered_map<CompareMode, unsigned int>	DepthFuncsMap;
-            typedef std::unordered_map<unsigned int, unsigned int>  TextureToBufferMap;
-			typedef std::pair<uint, uint>							TextureSize;
+            typedef std::unordered_map<unsigned int, unsigned int>		BlendFactorsMap;
+			typedef std::unordered_map<CompareMode, unsigned int>		CompareFuncsMap;
+			typedef std::unordered_map<StencilOperation, unsigned int>	StencilOperationMap;
+            typedef std::unordered_map<unsigned int, unsigned int>		TextureToBufferMap;
+			typedef std::pair<uint, uint>								TextureSize;
 
 		protected:
 			bool									_errorsEnabled;
 
 	        static BlendFactorsMap					_blendingFactors;
-			static DepthFuncsMap					_depthFuncs;
+			static CompareFuncsMap					_compareFuncs;
+			static StencilOperationMap				_stencilOps;
 
 			std::list<unsigned int>	                _textures;
             std::unordered_map<uint, TextureSize>	_textureSizes;
@@ -80,9 +82,16 @@ namespace minko
             std::unordered_map<uint, MipFilter>     _currentMipFilter;
 			int						                _currentProgram;
 			Blending::Mode			                _currentBlendMode;
+			bool									_currentColorMask;
 			bool					                _currentDepthMask;
 			CompareMode				                _currentDepthFunc;
             TriangleCulling                         _currentTriangleCulling;
+			CompareMode								_currentStencilFunc;
+			int										_currentStencilRef;
+			uint									_currentStencilMask;
+			StencilOperation						_currentStencilFailOp;
+			StencilOperation						_currentStencilZFailOp;
+			StencilOperation						_currentStencilZPassOp;
 
 		public:
 			~OpenGLES2Context();
@@ -301,6 +310,17 @@ namespace minko
 			setDepthTest(bool depthMask, CompareMode depthFunc);
 
 			void
+			setColorMask(bool);
+
+			void
+			setStencilTest(CompareMode		stencilFunc, 
+						   int				stencilRef, 
+						   uint				stencilMask,
+						   StencilOperation	stencilFailOp,
+						   StencilOperation	stencilZFailOp,
+						   StencilOperation	stencilZPassOp);
+
+			void
 			readPixels(unsigned char* pixels);
 
             void
@@ -337,8 +357,12 @@ namespace minko
             initializeBlendFactorsMap();
 
 			static
-            DepthFuncsMap
+            CompareFuncsMap
             initializeDepthFuncsMap();
+
+			static
+			StencilOperationMap
+			initializeStencilOperationsMap();
 
             void
             createRTTBuffers(unsigned int texture, unsigned int width, unsigned int height);
