@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/scene/Node.hpp"
 #include "minko/component/Surface.hpp"
 #include "minko/math/Matrix4x4.hpp"
-#include "minko/data/structureProvider.hpp"
+#include "minko/data/StructureProvider.hpp"
 
 using namespace minko;
 using namespace minko::component;
