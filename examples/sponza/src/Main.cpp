@@ -310,7 +310,7 @@ initializeCamera(scene::Node::Ptr group)
 		throw std::logic_error("Camera (deserialized or created) must have a Transform.");
 
 	camera->addComponent(renderer);
-	camera->addComponent(PerspectiveCamera::create(.785f, WINDOW_WIDTH / WINDOW_HEIGHT, .1f, 1000.f));
+	camera->addComponent(PerspectiveCamera::create(WINDOW_WIDTH / WINDOW_HEIGHT, .785f, .1f, 1000.f));
 	root->addChild(camera);
 }
 
@@ -413,9 +413,8 @@ main(int argc, char** argv)
 			return node->name() == "fire";
 		});
 
-		auto fire = Fire::create(assets);
 		for (auto fireNode : fireNodes->nodes())
-			fireNode->addComponent(fire);
+			fireNode->addComponent(Fire::create(assets));
 
 		auto keyDown = MinkoSDL::keyDown()->connect([&](const Uint8 * keyboard)
 		{
