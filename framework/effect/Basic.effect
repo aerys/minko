@@ -31,7 +31,6 @@
         "MODEL_TO_WORLD"        : "transform.modelToWorldMatrix"
     },
     
-    "priority"          : 0,
     "blendMode"         : ["one", "zero"],
     "depthTest"         : [true, "less_equal"],
     "triangleCulling"   : "none",
