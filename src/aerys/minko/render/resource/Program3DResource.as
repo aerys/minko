@@ -40,6 +40,8 @@ package aerys.minko.render.resource
 		
 		minko_render var _bindings				: Object					= null;
 		
+		private var _contextLostHandlerAdded	: Boolean					= false;
+		
 		public function get name() : String
 		{
 			return _name;
@@ -86,8 +88,13 @@ package aerys.minko.render.resource
 		public function prepareContext(context 		: Context3DResource,
 									   previous		: Program3DResource) : void
 		{
-			if (!context.contextChanged.hasCallback(contextLostHandler))
+			
+			if (!_contextLostHandlerAdded)
+			{
 				context.contextChanged.add(contextLostHandler);
+				_contextLostHandlerAdded = true;
+			}
+			
 			if (!_nativeProgram)
 			{
 				_nativeProgram = context.createProgram();
