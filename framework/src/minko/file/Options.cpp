@@ -45,4 +45,26 @@ Options::Options(std::shared_ptr<render::AbstractContext> context) :
 	{
 		return Loader::create();
 	};
+
+	initializePlatforms();
+}
+
+void
+Options::initializePlatforms()
+{
+#if defined(_WIN32) || defined(_WIN64)
+	_platforms.push_back("windows");
+#endif
+#ifdef TARGET_OS_IPHONE
+	_platforms.push_back("iphone");
+#endif
+#ifdef TARGET_OS_MAC
+	_platforms.push_back("macosx");
+#endif
+#ifdef __ANDROID_API__
+	_platforms.push_back("android");
+#endif
+#ifdef EMSCRIPTEN
+	_platforms.push_back("web");
+#endif
 }
