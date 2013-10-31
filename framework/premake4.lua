@@ -2,7 +2,7 @@ if _OPTIONS["with-glsl-optimizer"] then
 	include "lib/glsl-optimizer"
 end
 
-project "minko-framework"
+project "framework"
 	kind "StaticLib"
 	language "C++"
 	files {
