@@ -50,14 +50,14 @@ minko.project.application = function(name)
 		
 	configuration { "linux" }
 		postbuildcommands {
-			'cp -r ' .. minko.sdk.path('/framework/effect') .. ' ${TARGETDIR}',
-			'cp -r asset/* ${TARGETDIR}'
+			'cp -r ' .. minko.sdk.path('/framework/effect') .. ' ${TARGETDIR} || :',
+			'cp -r asset/* ${TARGETDIR} || :'
 		}
 	
 	configuration { "macosx" }
 		postbuildcommands {
-			'cp -r ' .. minko.sdk.path('/framework/effect') .. ' .',
-			'cp -r asset/* .'
+			'cp -r ' .. minko.sdk.path('/framework/effect') .. ' . || :',
+			'cp -r asset/* . || :'
 		}
 		
 	configuration { }
