@@ -22,6 +22,7 @@ end
 include 'examples/sponza'
 include 'examples/cube'
 include 'examples/light'
+include 'examples/stencil'
 --include 'examples/cube-offscreen'
 
 -- tests
