@@ -57,7 +57,7 @@ project "minko-framework"
 
 	-- macos
 	configuration { "macosx" }
-		buildoptions { "-std=c++11", "-stdlib=libc++" }
+		buildoptions { "-std=c++11" }
 		includedirs { "../deps/mac/include" }
 		libdirs { "../deps/mac/lib" }
 
