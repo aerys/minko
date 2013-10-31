@@ -33,7 +33,7 @@ using namespace minko::render;
 Vector4::Ptr
 generateColor()
 {
-	return Color::hslToRgb(rand() / (float)RAND_MAX, 0.75f, 0.5f);
+	return Color::hslaToRgba(rand() / (float)RAND_MAX, 0.75f, 0.5f);
 }
 
 uint

@@ -25,7 +25,7 @@ using namespace minko::math;
 #include "minko/math/Vector4.hpp"
 
 Vector4::Ptr
-Color::hslToRgb(float h, float s, float l, Vector4::Ptr out)
+Color::hslaToRgba(float h, float s, float l, float a, Vector4::Ptr out)
 {
 	float r, g, b;
 
@@ -41,7 +41,7 @@ Color::hslToRgb(float h, float s, float l, Vector4::Ptr out)
 		b = hueToRgb(p, q, h - 1.f / 3.f);
 	}
 
-	return Vector4::create(r, g, b, 1.0f);
+	return Vector4::create(r, g, b, a);
 }
 
 float
