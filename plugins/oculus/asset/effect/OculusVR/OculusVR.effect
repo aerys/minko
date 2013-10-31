@@ -18,7 +18,7 @@
 			"name" : "oculus vr left",
 			"uniformBindings" : {
 				"uTex"			: "oculusvr.leftEyeTexture",
-				"uLensCenter"	: [ 0.2863248, 0.5 ],
+				"uLensCenter"	: "oculusvr.leftLensCenter",
 				"uScreenCenter"	: [ 0.25, 0.5 ],
 				"uOffset"		: 0.
 			},	
@@ -34,9 +34,8 @@
 			"blendMode" : "additive",
 			"uniformBindings" : {
 				"uTex"			: "oculusvr.rightEyeTexture",
-				"uLensCenter"	: [ 0.7136753, 0.5 ],
+				"uLensCenter"	: "oculusvr.rightLensCenter",
 				"uScreenCenter"	: [ 0.75, 0.5 ],
-				//"uScreenCenter"	: [ 0.25, 0.5 ],
 				"uOffset"		: -0.5
 			},
 			"vertexShader" : {
