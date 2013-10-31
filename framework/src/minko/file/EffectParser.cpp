@@ -72,9 +72,9 @@ EffectParser::initializeBlendFactorMap()
 	return m;
 }
 
-std::unordered_map<std::string, render::CompareMode> EffectParser::_depthFuncMap = EffectParser::initializeDepthFuncMap();
+std::unordered_map<std::string, render::CompareMode> EffectParser::_compareFuncMap = EffectParser::initializeCompareFuncMap();
 std::unordered_map<std::string, render::CompareMode>
-EffectParser::initializeDepthFuncMap()
+EffectParser::initializeCompareFuncMap()
 {
 	std::unordered_map<std::string, render::CompareMode> m;
 
@@ -86,6 +86,24 @@ EffectParser::initializeDepthFuncMap()
 	m["less_equal"]		= render::CompareMode::LESS_EQUAL;
 	m["never"]			= render::CompareMode::NEVER;
 	m["not_equal"]		= render::CompareMode::NOT_EQUAL;
+
+	return m;
+}
+
+std::unordered_map<std::string, render::StencilOperation> EffectParser::_stencilOpMap = EffectParser::initializeStencilOperationMap();
+std::unordered_map<std::string, render::StencilOperation>
+EffectParser::initializeStencilOperationMap()
+{
+	std::unordered_map<std::string, render::StencilOperation> m;
+
+	m["keep"]			= render::StencilOperation::KEEP;
+	m["zero"]			= render::StencilOperation::ZERO;
+	m["replace"]		= render::StencilOperation::REPLACE;
+	m["incr"]			= render::StencilOperation::INCR;
+	m["incr_wrap"]		= render::StencilOperation::INCR_WRAP;
+	m["decr"]			= render::StencilOperation::DECR;
+	m["decr_wrap"]		= render::StencilOperation::DECR_WRAP;
+	m["invert"]			= render::StencilOperation::INVERT;
 
 	return m;
 }
@@ -172,25 +190,34 @@ EffectParser::parse(const std::string&				    filename,
 }
 
 render::States::Ptr
-EffectParser::parseRenderStates(Json::Value&			root,
+EffectParser::parseRenderStates(const Json::Value&		root,
 								AbstractContext::Ptr	context,
 								TexturePtrMap&			targets,
 								render::States::Ptr		defaultStates,
 								unsigned int			priority)
 {
-	auto blendSrcFactor	= defaultStates->blendingSourceFactor();
-	auto blendDstFactor	= defaultStates->blendingDestinationFactor();
-	auto depthMask = defaultStates->depthMask();
-	auto depthFunc = defaultStates->depthFunc();
-    auto triangleCulling = defaultStates->triangleCulling();
-	
+	auto blendSrcFactor		= defaultStates->blendingSourceFactor();
+	auto blendDstFactor		= defaultStates->blendingDestinationFactor();
+	auto colorMask			= defaultStates->colorMask();
+	auto depthMask			= defaultStates->depthMask();
+	auto depthFunc			= defaultStates->depthFunc();
+    auto triangleCulling	= defaultStates->triangleCulling();
+	auto stencilFunc		= defaultStates->stencilFunction();
+	auto stencilRef			= defaultStates->stencilReference();
+	auto stencilMask		= defaultStates->stencilMask();
+	auto stencilFailOp		= defaultStates->stencilFailOperation();
+	auto stencilZFailOp		= defaultStates->stencilDepthFailOperation();
+	auto stencilZPassOp		= defaultStates->stencilDepthPassOperation();
+
 	render::Texture::Ptr target = defaultStates->target();
 	std::unordered_map<std::string, SamplerState> samplerStates = defaultStates->samplers();
 
 	parseBlendMode(root, blendSrcFactor, blendDstFactor);
+	parseColorMask(root, colorMask);
 	parseDepthTest(root, depthMask, depthFunc);
 	parseTriangleCulling(root, triangleCulling);
     parseSamplerStates(root, samplerStates);
+	parseStencilState(root, stencilFunc, stencilRef, stencilMask, stencilFailOp, stencilZFailOp, stencilZPassOp);
 	target = parseTarget(root, context, targets);
 
 	return render::States::create(
@@ -198,15 +225,22 @@ EffectParser::parseRenderStates(Json::Value&			root,
 		(float)priority,
 		blendSrcFactor,
 		blendDstFactor,
+		colorMask,
 		depthMask,
 		depthFunc,
 		triangleCulling,
+		stencilFunc,
+		stencilRef,
+		stencilMask,
+		stencilFailOp,
+		stencilZFailOp,
+		stencilZPassOp,
 		target
 	);
 }
 
 void
-EffectParser::parsePasses(Json::Value&				root,
+EffectParser::parsePasses(const Json::Value&		root,
 						  const std::string&		resolvedFilename,
 						  file::Options::Ptr		options,
 						  AbstractContext::Ptr		context,
@@ -336,7 +370,7 @@ EffectParser::setUniformDefaultValueOnPass(render::Pass::Ptr	pass,
 }
 
 render::Shader::Ptr
-EffectParser::parseShader(Json::Value& 			shaderNode,
+EffectParser::parseShader(const Json::Value& 	shaderNode,
 						  const std::string&	resolvedFilename,
 						  file::Options::Ptr    options,
 						  render::Shader::Type 	type)
@@ -356,7 +390,7 @@ EffectParser::parseShader(Json::Value& 			shaderNode,
 }
 
 void
-EffectParser::parseBlendMode(Json::Value&					contextNode,
+EffectParser::parseBlendMode(const Json::Value&				contextNode,
 						     render::Blending::Source&		srcFactor,
 						     render::Blending::Destination&	dstFactor)
 {
@@ -387,7 +421,19 @@ EffectParser::parseBlendMode(Json::Value&					contextNode,
 }
 
 void
-EffectParser::parseDepthTest(Json::Value& contextNode, bool& depthMask, render::CompareMode& depthFunc)
+EffectParser::parseColorMask(const Json::Value&	contextNode,
+						     bool& colorMask) const
+{
+	auto colorMaskValue	= contextNode.get("colorMask", 0);
+
+	if (colorMaskValue.isBool())
+		colorMask = colorMaskValue.asBool();
+}
+
+void
+EffectParser::parseDepthTest(const Json::Value& contextNode, 
+							 bool& depthMask, 
+							 render::CompareMode& depthFunc)
 {
 	auto depthTest	= contextNode.get("depthTest", 0);
 	
@@ -400,17 +446,18 @@ EffectParser::parseDepthTest(Json::Value& contextNode, bool& depthMask, render::
             depthMask = depthMaskValue.asBool();
 
         if (depthFuncValue.isString())
-    		depthFunc = _depthFuncMap[depthFuncValue.asString()];
+    		depthFunc = _compareFuncMap[depthFuncValue.asString()];
 	}
     else if (depthTest.isArray())
     {
         depthMask = depthTest[0].asBool();
-		depthFunc = _depthFuncMap[depthTest[1].asString()];
+		depthFunc = _compareFuncMap[depthTest[1].asString()];
     }
 }
 
 void
-EffectParser::parseTriangleCulling(Json::Value& contextNode, TriangleCulling& triangleCulling)
+EffectParser::parseTriangleCulling(const Json::Value& contextNode, 
+								   TriangleCulling& triangleCulling)
 {
     auto triangleCullingValue   = contextNode.get("triangleCulling", 0);
 
@@ -430,7 +477,7 @@ EffectParser::parseTriangleCulling(Json::Value& contextNode, TriangleCulling& tr
 }
 
 void
-EffectParser::parseBindings(Json::Value&			contextNode,
+EffectParser::parseBindings(const Json::Value&		contextNode,
 						    data::BindingMap&		attributeBindings,
 						    data::BindingMap&		uniformBindings,
 						    data::BindingMap&		stateBindings,
@@ -476,7 +523,7 @@ EffectParser::parseBindings(Json::Value&			contextNode,
 }
 
 void
-EffectParser::parseUniformBindings(Json::Value&			contextNode,
+EffectParser::parseUniformBindings(const Json::Value&	contextNode,
 								   data::BindingMap&	uniformBindings,
 								   UniformValues&		uniformDefaultValues)
 {
@@ -505,7 +552,7 @@ EffectParser::parseUniformBindings(Json::Value&			contextNode,
 }
 
 void
-EffectParser::parseUniformDefaultValues(Json::Value&			contextNode,
+EffectParser::parseUniformDefaultValues(const Json::Value&		contextNode,
 										UniformTypeAndValue&	uniformTypeAndValue)
 {
 	if (contextNode.isArray())
@@ -611,7 +658,7 @@ EffectParser::textureErrorHandler(file::AbstractLoader::Ptr loader)
 }
 
 void
-EffectParser::parseSamplerStates(Json::Value&                                           contextNode,
+EffectParser::parseSamplerStates(const Json::Value&                                     contextNode,
                                  std::unordered_map<std::string, render::SamplerState>& samplerStates)
 {
     auto samplerStatesValue = contextNode.get("samplerStates", 0);
@@ -639,8 +686,73 @@ EffectParser::parseSamplerStates(Json::Value&                                   
         }
 }
 
+void
+EffectParser::parseStencilState(const Json::Value& contextNode, 
+								CompareMode& stencilFunc, 
+								int& stencilRef, 
+								uint& stencilMask, 
+								StencilOperation& stencilFailOp,
+								StencilOperation& stencilZFailOp,
+								StencilOperation& stencilZPassOp) const
+{
+	auto stencilTest	= contextNode.get("stencilTest", 0);
+	
+	if (stencilTest.isObject())
+	{
+        auto stencilFuncValue	= stencilTest.get("stencilFunc", 0);
+		auto stencilRefValue	= stencilTest.get("stencilRef", 0);
+		auto stencilMaskValue	= stencilTest.get("stencilMask", 0);
+		auto stencilOpsValue	= stencilTest.get("stencilOps", 0);
+
+		if (stencilFuncValue.isString())
+			stencilFunc	= _compareFuncMap[stencilFuncValue.asString()];
+		if (stencilRefValue.isInt())
+			stencilRef	= stencilRefValue.asInt();
+		if (stencilMaskValue.isUInt())
+			stencilMask	= stencilMaskValue.asUInt();
+		parseStencilOperations(stencilOpsValue, stencilFailOp, stencilZFailOp, stencilZPassOp);
+	}
+    else if (stencilTest.isArray())
+    {
+		stencilFunc = _compareFuncMap[stencilTest[0].asString()];
+		stencilRef	= stencilTest[1].asInt();
+		stencilMask	= stencilTest[2].asUInt();
+		parseStencilOperations(stencilTest[3], stencilFailOp, stencilZFailOp, stencilZPassOp);
+    }
+}
+
+void
+EffectParser::parseStencilOperations(const Json::Value& contextNode,
+									StencilOperation& stencilFailOp,
+									StencilOperation& stencilZFailOp,
+									StencilOperation& stencilZPassOp) const
+{
+	if (contextNode.isArray())
+	{
+		if (contextNode[0].isString())
+			stencilFailOp = _stencilOpMap[contextNode[0].asString()];
+		if (contextNode[1].isString())
+			stencilZFailOp = _stencilOpMap[contextNode[1].asString()];
+		if (contextNode[2].isString())
+			stencilZPassOp = _stencilOpMap[contextNode[2].asString()];
+	}
+	else
+	{
+		auto failValue		= contextNode.get("fail", 0);
+		auto zfailValue	= contextNode.get("zfail", 0);
+		auto zpassValue	= contextNode.get("zpass", 0);
+
+		if (failValue.isString())
+			stencilFailOp = _stencilOpMap[failValue.asString()];
+		if (zfailValue.isString())
+			stencilZFailOp = _stencilOpMap[zfailValue.asString()];
+		if (zpassValue.isString())
+			stencilZPassOp = _stencilOpMap[zpassValue.asString()];
+	}
+}
+
 std::shared_ptr<render::Texture>
-EffectParser::parseTarget(Json::Value&                      contextNode,
+EffectParser::parseTarget(const Json::Value&                contextNode,
                           std::shared_ptr<AbstractContext>  context,
                           TexturePtrMap&                    targets)
 {
@@ -687,7 +799,7 @@ EffectParser::parseTarget(Json::Value&                      contextNode,
 }
 
 void
-EffectParser::parseDependencies(Json::Value& 				root,
+EffectParser::parseDependencies(const Json::Value& 			root,
 								const std::string& 			filename,
 								file::Options::Ptr 			options,
 								std::vector<LoaderPtr>& 	store)
@@ -723,7 +835,7 @@ EffectParser::parseDependencies(Json::Value& 				root,
 }
 
 void
-EffectParser::parseTechniques(Json::Value&						root,
+EffectParser::parseTechniques(const Json::Value&				root,
 							  const std::string&				filename,
 							  std::shared_ptr<file::Options>	options,
 							  render::AbstractContext::Ptr		context)
