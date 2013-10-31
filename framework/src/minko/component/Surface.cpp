@@ -358,7 +358,7 @@ Surface::getWorkingProgram(std::shared_ptr<Pass>	pass,
 		);
 
 		if (fallbackIt == passes.end())
-			throw;
+			return nullptr;
 
 		pass = *fallbackIt;
 		program = pass->selectProgram(targetData, rootData, rendererData, bindingDefines, bindingValues);
@@ -374,7 +374,7 @@ Surface::macroChangedHandler(Container::Ptr		data,
 {
 	if (change == MacroChange::REF_CHANGED && !_drawCalls.empty())
 	{
-		const auto&	drawCalls = _macroPropertyNameToDrawCalls[propertyName];
+		const auto	drawCalls = _macroPropertyNameToDrawCalls[propertyName];
 
 		for (auto& drawCall : drawCalls)
 		{
