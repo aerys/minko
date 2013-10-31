@@ -270,11 +270,16 @@ EffectParser::parsePasses(const Json::Value&		root,
 				}
 			);
 
-			if (pass != _globalPasses.end())
+			if (pass == _globalPasses.end())
 				throw std::logic_error("Pass '" + name + "' does not exist.");
 
 			passes.push_back(*pass);
+
+			continue;
 		}
+
+		if (!parseConfiguration(passValue))
+			continue;
 
 		auto name = passValue.get("name", std::to_string(passId++)).asString();
 
@@ -846,6 +851,9 @@ EffectParser::parseTechniques(const Json::Value&				root,
 	{
 		for (auto techniqueValue : techniquesValues)
 		{
+			if (!parseConfiguration(techniqueValue))
+				continue;
+
 			if (techniqueValue.isObject())
 			{
 				auto techniqueName	= techniqueValue.get("name", "default").asString();
@@ -897,6 +905,41 @@ EffectParser::parseTechniques(const Json::Value&				root,
 		_techniquePasses["default"] = _globalPasses;
 		_techniqueTargets["default"] = _globalTargets;
 	}
+}
+
+bool
+EffectParser::parseConfiguration(const Json::Value&	root)
+{
+	auto confValue = root.get("configuration", 0);
+	auto p = _options->platforms();
+	auto r = false;
+
+	if (confValue.isArray())
+	{
+		for (auto value : confValue)
+		{
+			// if the config. token is a string and we can find it in the list of platforms,
+			// then the configuration is ok and we return true
+			if (value.isString() && std::find(p.begin(), p.end(), value.asString()) != p.end())
+				return true;
+			else if (value.isArray())
+			{
+				// if the config. token is an array, we check that *all* the string tokens are in
+				// the platforms list; if a single of them is not there then the config. token
+				// is considered to be false
+				for (auto str : value)
+				if (str.isString() && std::find(p.begin(), p.end(), str.asString()) == p.end())
+				{
+					r = r || false;
+					break;
+				}
+			}
+		}
+	}
+	else
+		return true;
+
+	return r;
 }
 
 void
