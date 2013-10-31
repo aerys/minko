@@ -1,4 +1,4 @@
-minko.project.application "minko-example-stencil"
+minko.project.application "example-stencil"
 	kind "ConsoleApp"
 	language "C++"
 	files { "src/**.hpp", "src/**.cpp" }
