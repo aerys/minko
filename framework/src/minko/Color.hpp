@@ -26,7 +26,7 @@ namespace minko
 	public:
 		static
 		std::shared_ptr<math::Vector4>
-		hslToRgb(float h, float s, float l, std::shared_ptr<math::Vector4> out = nullptr);
+		hslaToRgba(float h, float s, float l, float a = 1.f, std::shared_ptr<math::Vector4> out = nullptr);
 
 	private:
 		static
