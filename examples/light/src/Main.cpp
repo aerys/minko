@@ -237,14 +237,6 @@ int main(int argc, char** argv)
 		minko::Signal<uint, uint>::Slot mouseMove;
 		int oldX = 0;
 
-		/*
-		auto camera = scene::Node::create("camera")
-			->addComponent(Renderer::create())
-			->addComponent(PerspectiveCamera::create((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT))
-			->addComponent(Transform::create(Matrix4x4::create()->lookAt(Vector3::create(0.f, 2.f), Vector3::create(10.f, 10.f, 10.f))));
-		root->addChild(camera);
-		*/
-		
 		auto mouseDown = MinkoSDL::mouseLeftButtonDown()->connect([&](unsigned int x, unsigned int y)
 		{
 			oldX = x;
@@ -310,81 +302,44 @@ int main(int argc, char** argv)
 					data->set("normalMap", assets->texture("texture/normalmap-cells.png"));
 			}
 			if (keyboard[SDL_SCANCODE_UP])
-				camera->component<Transform>()->transform()->prependTranslation(0.f, 0.f, -.1f);
+				camera->component<Transform>()->transform()->prependTranslation(0.f, 0.f, -1.f);
 			if (keyboard[SDL_SCANCODE_DOWN])
-				camera->component<Transform>()->transform()->prependTranslation(0.f, 0.f, .1f);
+				camera->component<Transform>()->transform()->prependTranslation(0.f, 0.f, 1.f);
 		});
 
+
+		// camera init
+		camera = scene::Node::create("camera");
+		root->addChild(camera);
 		if (OCULUS_ENABLED)
-		{
-			camera = scene::Node::create("camera")->addComponent(
-				Transform::create(Matrix4x4::create()->lookAt(Vector3::create(0.f, 2.f), Vector3::create(10.f, 10.f, 10.f)))
-			);
-			root->addChild(camera);
 			camera->addComponent(OculusVRCamera::create((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT));
-
-			auto resized = MinkoSDL::resized()->connect([&](uint width, uint height)
-			{
-				camera->component<OculusVRCamera>()->aspectRatio((float)width / (float)height);
-			});
-
-			auto enterFrame = MinkoSDL::enterFrame()->connect([&]()
-			{
-				camera->component<Transform>()->transform()->appendRotationY(cameraRotationYSpeed);
-				cameraRotationYSpeed *= 0.9f;
-
-				lights->component<Transform>()->transform()->appendRotationY(.005f);
-
-				sceneManager->nextFrame();
-			});
-
-			MinkoSDL::run();
-		}
-
-		/*
-		auto ppTarget = render::Texture::create(assets->context(), 1024, 1024, false, true);
-
-		ppTarget->upload();
-
-		auto ppFx = assets->effect("effect/pseudolensflare/PseudoLensFlare.effect");
-		auto ppRenderer = Renderer::create();
-		auto ppScene = scene::Node::create()
-			->addComponent(ppRenderer)
-			->addComponent(Surface::create(
-				geometry::QuadGeometry::create(assets->context()),
-				data::Provider::create()->set("backbuffer", ppTarget),
-				ppFx
-			));
-		*/
-
-		/*
+		else
+			camera
+				->addComponent(Renderer::create())
+				->addComponent(PerspectiveCamera::create((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT));
+		camera->addComponent(Transform::create(
+			Matrix4x4::create()->lookAt(Vector3::create(0.f, 2.f), Vector3::create(10.f, 10.f, 10.f))
+		));
+		
 		auto resized = MinkoSDL::resized()->connect([&](unsigned int width, unsigned int height)
 		{
-			camera->component<PerspectiveCamera>()->aspectRatio((float)width / (float)height);
+			if (camera->component<PerspectiveCamera>())
+				camera->component<PerspectiveCamera>()->aspectRatio((float)width / (float)height);
+			else if (camera->component<OculusVRCamera>())
+				camera->component<OculusVRCamera>()->aspectRatio((float)width / (float)height);
 		});
 
 		auto enterFrame = MinkoSDL::enterFrame()->connect([&]()
 		{
-			auto pp = false;
-
 			camera->component<Transform>()->transform()->appendRotationY(cameraRotationYSpeed);
 			cameraRotationYSpeed *= 0.9f;
 
 			lights->component<Transform>()->transform()->appendRotationY(.005f);
 
-			if (pp)
-			{
-				//sceneManager->nextFrame(ppTarget);
-				//ppRenderer->render(assets->context());
-			}
-			else
-				sceneManager->nextFrame();
-
-			//std::cout << MinkoSDL::framerate() << std::endl;
+			sceneManager->nextFrame();
 		});
-		
+				
 		MinkoSDL::run();
-		*/
 	});
 
 	sceneManager->assets()->load();
