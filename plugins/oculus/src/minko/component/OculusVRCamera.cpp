@@ -30,6 +30,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/Texture.hpp"
 #include "minko/file/AssetLibrary.hpp"
 #include "minko/math/Matrix4x4.hpp"
+#include "minko/component/OculusPerspectiveCamera.hpp"
+#include "minko/render/Effect.hpp"
 
 using namespace minko;
 using namespace minko::component;
@@ -66,33 +68,51 @@ OculusVRCamera::targetAddedHandler(AbsCmpPtr component, NodePtr target)
 
 	auto context = sceneManager->assets()->context();
 	const uint targetSize = 2048;
-	const auto lensSeparationDistance = 6.4f;
+	const float worldFactor = 1.f;
+
+	_hmd = {
+		1280.f,
+		800.f,
+		0.14976f,
+		0.0936f,
+		0.064f,
+		0.0635f,
+		0.041f,
+		Vector4::create(1.0, 0.22, 0.24, 0.0)
+	};
+
+	auto aspect = _hmd.hResolution / (2.f * _hmd.vResolution);
+	auto lensShift = 1.f - 2.f * _hmd.lensSeparationDistance / _hmd.hScreenSize;
+	auto s = -1.f - lensShift;
+	auto distScale = _hmd.distortionK->x() + _hmd.distortionK->y() * powf(s, 2) + _hmd.distortionK->z() * powf(s, 4)
+		+ _hmd.distortionK->w() * powf(s, 6);
+	auto fov = 2. * atanf((distScale * _hmd.vScreenSize / 2.f) / _hmd.eyeToScreenDistance);
 
 	// left eye
 	auto leftEye = scene::Node::create();
 	auto leftEyeTexture = render::Texture::create(context, targetSize, targetSize, false, true);
 	auto leftRenderer = Renderer::create();
 	
-	_leftCamera = PerspectiveCamera::create(_aspectRatio);
+	_leftCamera = PerspectiveCamera::create(1.f, fov);
 
 	leftEyeTexture->upload();
 	leftRenderer->target(leftEyeTexture);
 	leftEye->addComponent(leftRenderer);
 	leftEye->addComponent(_leftCamera);
-	leftEye->addComponent(Transform::create(Matrix4x4::create()->appendTranslation(-lensSeparationDistance * .5f)));
+	leftEye->addComponent(Transform::create(Matrix4x4::create()->appendTranslation(-_hmd.interpupillaryDistance * worldFactor * .5f)));
 
 	// right eye
 	auto rightEye = scene::Node::create();
 	auto rightEyeTexture = render::Texture::create(context, targetSize, targetSize, false, true);
 	auto rightRenderer = Renderer::create();
-	
-	_rightCamera = PerspectiveCamera::create(_aspectRatio);
+
+	_rightCamera = PerspectiveCamera::create(1.f, fov);
 
 	rightEyeTexture->upload();
 	rightRenderer->target(rightEyeTexture);
 	rightEye->addComponent(rightRenderer);
 	rightEye->addComponent(_rightCamera);
-	rightEye->addComponent(Transform::create(Matrix4x4::create()->appendTranslation(lensSeparationDistance * .5f)));
+	rightEye->addComponent(Transform::create(Matrix4x4::create()->appendTranslation(_hmd.interpupillaryDistance * worldFactor * .5f)));
 
 	_root = scene::Node::create("oculus vr");
 	_root->addChild(leftEye)->addChild(rightEye);
@@ -112,9 +132,15 @@ OculusVRCamera::targetAddedHandler(AbsCmpPtr component, NodePtr target)
 			geometry::QuadGeometry::create(sceneManager->assets()->context()),
 			data::StructureProvider::create("oculusvr")
 				->set("leftEyeTexture",		leftEyeTexture)
-				->set("rightEyeTexture",	rightEyeTexture),
+				->set("leftLensCenter",		Vector2::create(.25f + lensShift * .5f, .5f))
+				->set("rightEyeTexture",	rightEyeTexture)
+				->set("rightLensCenter",	Vector2::create(.75f - lensShift * .5f, .5f)),
 			ppFx
 		));
+
+	ppFx->setUniform("uScaleIn", 4.f, 2.f);
+	ppFx->setUniform("uScale", .25f, .5f);
+	ppFx->setUniform("uHmdWarpParam", _hmd.distortionK->x(), _hmd.distortionK->y(), _hmd.distortionK->z(), _hmd.distortionK->w());
 
 	_renderEndSlot = sceneManager->renderingEnd()->connect(std::bind(
 		&OculusVRCamera::renderEndHandler,
