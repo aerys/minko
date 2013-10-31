@@ -3,7 +3,7 @@ newoption {
 	description	= "Enable the Minko Bullet plugin."
 }
 
-minko.project.library "minko-bullet"
+minko.project.library "plugin-bullet"
 	kind "StaticLib"
 	language "C++"
 	files { "**.hpp", "**.h", "**.cpp", "**.c" }

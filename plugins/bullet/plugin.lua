@@ -1,8 +1,8 @@
 -- bullet plugin
 if minko.plugin.enabled("bullet") then
 
-	links { "minko-bullet" }
+	links { "plugin-bullet" }
 	includedirs { minko.sdk.path("plugins/bullet/src") }
-	defines { "MINKO_BULLET" }
+	defines { "MINKO_PLUGIN_BULLET" }
 
 end
