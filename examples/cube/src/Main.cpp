@@ -29,9 +29,8 @@ int main(int argc, char** argv)
 {
 	MinkoSDL::initialize("Minko Example - Cube", 800, 600);
 
-	auto sceneManager = SceneManager::create(render::OpenGLES2Context::create());
-	auto mesh = scene::Node::create("mesh");
-
+	auto sceneManager = SceneManager::create(MinkoSDL::context());
+	
 	// setup assets
 	sceneManager->assets()->defaultOptions()->generateMipmaps(true);
 	sceneManager->assets()
@@ -42,27 +41,26 @@ int main(int argc, char** argv)
 
 	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
 	{
-		auto root   = scene::Node::create("root")
+		auto root = scene::Node::create("root")
 			->addComponent(sceneManager);
 
-		// setup camera
-		root->addChild(scene::Node::create("camera")
+		auto camera = scene::Node::create("camera")
 			->addComponent(Renderer::create(0x7f7f7fff))
 			->addComponent(Transform::create(
 				Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 3.f))
 			))
-			->addComponent(PerspectiveCamera::create(800.f / 600.f, PI * 0.25f, .1f, 1000.f))
-		);
+			->addComponent(PerspectiveCamera::create(800.f / 600.f, PI * 0.25f, .1f, 1000.f));
+		root->addChild(camera);
 		
-		// setup mesh
-		mesh->addComponent(Transform::create());
-		mesh->addComponent(Surface::create(
-			assets->geometry("cube"),
-			material::Material::create()
-				->set("diffuseColor",	Vector4::create(0.f, 0.f, 1.f, 1.f))
-				->set("diffuseMap",		assets->texture("texture/box.png")),
-			assets->effect("effect/Basic.effect")
-		));
+		auto mesh = scene::Node::create("mesh")
+			->addComponent(Transform::create())
+			->addComponent(Surface::create(
+				assets->geometry("cube"),
+				material::Material::create()
+					->set("diffuseColor",	Vector4::create(0.f, 0.f, 1.f, 1.f))
+					->set("diffuseMap",		assets->texture("texture/box.png")),
+				assets->effect("effect/Basic.effect")
+			));
 		root->addChild(mesh);
 
 		auto resized = MinkoSDL::resized()->connect([&](uint w, uint h)
