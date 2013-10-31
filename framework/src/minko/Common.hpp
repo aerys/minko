@@ -46,6 +46,7 @@ namespace minko
 	class Any;
 	template<typename... A>
 	class Signal;
+	class Color;
     
 	namespace render
 	{
