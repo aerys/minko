@@ -983,14 +983,17 @@ package aerys.minko.render.geometry
 				_vertexStreams = vertexStreamsToConcat;
 			}
 			
-			var indexStream = _indexStream != null
+			var indexStream : IndexStream = _indexStream != null
 				? _indexStream.clone(indexStreamUsage)
 				: new IndexStream(indexStreamUsage);
 			
-			_indexStream.disposeLocalData();
-			_indexStream.dispose();
+			if (_indexStream)
+			{
+				_indexStream.disposeLocalData();
+				_indexStream.dispose();
+			}
 			
-			if (geometry._indexStream != null)
+			if (geometry._indexStream)
 				_indexStream = indexStream.concat(geometry._indexStream, 0, 0, indexOffset);
 			else
 				_indexStream = indexStream;
