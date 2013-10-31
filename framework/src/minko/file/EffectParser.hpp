@@ -190,6 +190,10 @@ namespace minko
 						  UniformValues&			uniformDefaultValues);
 
 			void
+			parseMacroBindings(const Json::Value&		contextNode,
+							   data::MacroBindingMap&	macroBindings);
+
+			void
 			parseUniformBindings(const Json::Value&		contextNode,
 							 	 data::BindingMap&		uniformBindings,
 								 UniformValues&			uniformDefaultValues);
