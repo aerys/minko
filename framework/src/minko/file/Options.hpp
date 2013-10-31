@@ -39,6 +39,7 @@ namespace minko
 		private:
 			std::shared_ptr<render::AbstractContext>	_context;
 			std::set<std::string>						_includePaths;
+			std::list<std::string>						_platforms;
 
             bool                                        _generateMipMaps;
             std::shared_ptr<render::Effect>             _effect;
@@ -79,6 +80,13 @@ namespace minko
 			includePaths()
 			{
 				return _includePaths;
+			}
+
+			inline
+			std::list<std::string>&
+			platforms()
+			{
+				return _platforms;
 			}
 
             inline
@@ -146,6 +154,9 @@ namespace minko
 
 		private:
 			Options(std::shared_ptr<render::AbstractContext> context);
+
+			void
+			initializePlatforms();
 		};
 	}
 }
