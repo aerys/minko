@@ -257,6 +257,9 @@ namespace minko
 							std::shared_ptr<file::Options>				options,
 							std::shared_ptr<render::AbstractContext>	context);
 
+			bool
+			parseConfiguration(const Json::Value&	root);
+
 			void
 			dependencyCompleteHandler(std::shared_ptr<AbstractLoader> loader);
 
