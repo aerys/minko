@@ -30,47 +30,10 @@ using namespace minko::geometry;
 using namespace minko::component;
 using namespace minko::render;
 
-float
-hue2rgb(float p, float q, float t)
-{
-	if (t < 0.f)
-		t += 1.f;
-	if (t > 1.f)
-		t -= 1.f;
-	if (t < 1.f/6.f)
-		return p + (q - p) * 6.f * t;
-	if (t < 1.f/2.f)
-		return q;
-	if (t < 2.f/3.f)
-		return p + (q - p) * (2.f/3.f - t) * 6.f;
-
-	return p;
-}
-
-Vector4::Ptr
-hslToRgb(float h, float s, float l)
-{
-    float r, g, b;
-
-    if (s == 0)
-        r = g = b = l; // achromatic
-    else
-	{
-        float q = l < 0.5f ? l * (1.f + s) : l + s - l * s;
-        float p = 2.f * l - q;
-
-        r = hue2rgb(p, q, h + 1.f/3.f);
-        g = hue2rgb(p, q, h);
-        b = hue2rgb(p, q, h - 1.f/3.f);
-    }
-
-	return Vector4::create(r, g, b, 1.0f);
-}
-
 Vector4::Ptr
 generateColor()
 {
-	return hslToRgb(rand() / (float)RAND_MAX, 0.75f, 0.5f);
+	return Color::hslToRgb(rand() / (float)RAND_MAX, 0.75f, 0.5f);
 }
 
 uint
