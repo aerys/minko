@@ -14,8 +14,7 @@ minko.project.library = function(name)
 	configuration { "macosx" }
 		libdirs { "/deps/mac/lib" }
 		includedirs { minko.sdk.path("/deps/mac/include") }
-		buildoptions { "-std=c++11", "-stdlib=libc++" }
-		linkoptions { "-std=c++11", "-stdlib=libc++" }
+		buildoptions { "-std=c++11" }
 		links {
 			"m",
 			"SDL2.framework",
