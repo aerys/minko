@@ -30,7 +30,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/Texture.hpp"
 #include "minko/file/AssetLibrary.hpp"
 #include "minko/math/Matrix4x4.hpp"
-#include "minko/component/OculusPerspectiveCamera.hpp"
 #include "minko/render/Effect.hpp"
 
 using namespace minko;
