@@ -3,7 +3,7 @@ newoption {
 	description	= "Enable the Minko JPEG plugin."
 }
 
-minko.project.library "minko-jpeg"
+minko.project.library "plugin-jpeg"
 	kind "StaticLib"
 	language "C++"
 	files { "**.hpp", "**.h", "**.cpp", "**.c" }

@@ -3,7 +3,7 @@ minko.project = {}
 minko.project.library = function(name)
 	project(name)
 	
-	links { "minko-framework" }
+	links { "framework" }
 	includedirs { minko.sdk.path("/framework/src") }
 	
 	configuration { "windows" }
@@ -48,7 +48,7 @@ minko.project.application = function(name)
 	configuration { "windows" }
 		postbuildcommands {
 			'xcopy /y /i "' .. minko.sdk.path('/framework/effect') .. '" "$(TargetDir)\\effect"',
-			'xcopy /y /s asset\\* "$(TargetDir)"'
+			'xcopy /y /s asset\\* "$(TargetDir)"',
 			minko.vs.getdllscopycommand(minko.sdk.path('/deps/win/lib'))
 		}
 		

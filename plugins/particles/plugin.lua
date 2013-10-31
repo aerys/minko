@@ -1,7 +1,8 @@
 -- particles plugin
 if minko.plugin.enabled("particles") then
-	links { "minko-particles" }
+	links { "plugin-particles" }
 	includedirs { minko.sdk.path("plugins/particles/src") }
+	defines { "MINKO_PLUGIN_PARTICES" }
 	
 	configuration { "windows" }
 		postbuildcommands {

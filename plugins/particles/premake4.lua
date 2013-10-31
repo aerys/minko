@@ -3,7 +3,7 @@ newoption {
 	description	= "Enable the Minko particles plugin."
 }
 
-minko.project.library "minko-particles"
+minko.project.library "plugin-particles"
 	kind "StaticLib"
 	language "C++"
 	files { "**.hpp", "**.h", "**.cpp", "**.c" }

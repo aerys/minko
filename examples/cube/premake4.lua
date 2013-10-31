@@ -1,4 +1,4 @@
-minko.project.application "minko-example-cube"
+minko.project.application "example-cube"
 	kind "ConsoleApp"
 	language "C++"
 	files { "src/**.hpp", "src/**.cpp" }
