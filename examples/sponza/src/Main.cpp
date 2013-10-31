@@ -24,6 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/MinkoBullet.hpp"
 #include "minko/MinkoParticles.hpp"
 #include "minko/MinkoSDL.hpp"
+#include "minko/MinkoOculus.hpp"
 
 #include "minko/deserialize/TypeDeserializer.hpp"
 
@@ -33,8 +34,9 @@ using namespace minko;
 using namespace minko::component;
 using namespace minko::math;
 
-const float WINDOW_WIDTH        = 1024.0f;
-const float WINDOW_HEIGHT       = 500.0f;
+const float WINDOW_WIDTH        = 1600.0f;
+const float WINDOW_HEIGHT       = 800.0f;
+const bool	OCULUS_ENABLED		= true;
 
 const std::string MK_NAME           = "model/Sponza_lite_sphere.mk";
 const std::string DEFAULT_EFFECT    = "effect/Phong.effect";
@@ -276,8 +278,8 @@ void
 initializeCamera(scene::Node::Ptr group)
 {
 	auto cameras = scene::NodeSet::create(group)
-	               ->descendants(true)
-	               ->where([](scene::Node::Ptr node)
+	    ->descendants(true)
+	    ->where([](scene::Node::Ptr node)
 	{
 		return node->name() == CAMERA_NAME;
 	});
@@ -290,8 +292,8 @@ initializeCamera(scene::Node::Ptr group)
 
 		camera->addComponent(Transform::create());
 		camera->component<Transform>()->transform()
-		->appendTranslation(0.0f, 0.75f, 5.0f)
-		->appendRotationY(PI * 0.5);
+			->appendTranslation(0.0f, 0.75f, 5.0f)
+			->appendRotationY(PI * 0.5);
 
 		cameraCollider = initializeDefaultCameraCollider();
 		camera->addComponent(cameraCollider);
@@ -310,8 +312,12 @@ initializeCamera(scene::Node::Ptr group)
 		throw std::logic_error("Camera (deserialized or created) must have a Transform.");
 
 	camera->addComponent(renderer);
-	camera->addComponent(PerspectiveCamera::create(WINDOW_WIDTH / WINDOW_HEIGHT, .785f, .1f, 1000.f));
 	root->addChild(camera);
+
+	if (OCULUS_ENABLED)
+		camera->addComponent(OculusVRCamera::create((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT));
+	else
+		camera->addComponent(PerspectiveCamera::create((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT));
 }
 
 void
@@ -359,11 +365,12 @@ main(int argc, char** argv)
 
 	auto sceneManager = SceneManager::create(MinkoSDL::context());
 
+	root->addComponent(sceneManager);
 	sceneManager->assets()
-	->registerParser<file::PNGParser>("png")
-	->registerParser<file::JPEGParser>("jpg")
-	->registerParser<file::MkParser>("mk")
-	->geometry("cube", geometry::CubeGeometry::create(MinkoSDL::context()));
+		->registerParser<file::PNGParser>("png")
+		->registerParser<file::JPEGParser>("jpg")
+		->registerParser<file::MkParser>("mk")
+		->geometry("cube", geometry::CubeGeometry::create(MinkoSDL::context()));
 
 	auto options = sceneManager->assets()->defaultOptions();
 
@@ -372,16 +379,17 @@ main(int argc, char** argv)
 
 	// load sponza lighting effect and set it as the default effect
 	sceneManager->assets()
-	->load("effect/Phong.effect")
-	->load("effect/Basic.effect");
+		->load("effect/Phong.effect")
+		->load("effect/Basic.effect");
 
 	options->effect(sceneManager->assets()->effect("effect/Phong.effect"));
 
 	// load other assets
 	sceneManager->assets()
-	->queue("texture/firefull.jpg")
-	->queue("effect/Particles.effect")
-	->queue(MK_NAME);
+		->queue("texture/firefull.jpg")
+		->queue("effect/Particles.effect")
+		->queue("effect/OculusVR/OculusVR.effect")
+		->queue(MK_NAME);
 
 	renderer = Renderer::create();
 
@@ -402,8 +410,7 @@ main(int argc, char** argv)
 		root->addChild(lights);
 
 		root->addChild(group);
-		root->addComponent(sceneManager);
-
+		
 		group->addComponent(Transform::create());
 		group->addChild(mk);
 		scene::NodeSet::Ptr fireNodes = scene::NodeSet::create(group)
@@ -413,8 +420,9 @@ main(int argc, char** argv)
 			return node->name() == "fire";
 		});
 
+		auto fire = Fire::create(assets);
 		for (auto fireNode : fireNodes->nodes())
-			fireNode->addComponent(Fire::create(assets));
+			fireNode->addComponent(fire);
 
 		auto keyDown = MinkoSDL::keyDown()->connect([&](const Uint8 * keyboard)
 		{
@@ -488,6 +496,14 @@ main(int argc, char** argv)
 			cameraTransform->prependTranslation(0.0f, 4 * CAMERA_LIN_SPEED, 0.0f);
 
 			cameraCollider->synchronizePhysicsWithGraphics();
+		});
+
+		auto resized = MinkoSDL::resized()->connect([&](unsigned int width, unsigned int height)
+		{
+			if (camera->component<PerspectiveCamera>())
+				camera->component<PerspectiveCamera>()->aspectRatio((float)width / (float)height);
+			else if (camera->component<OculusVRCamera>())
+				camera->component<OculusVRCamera>()->aspectRatio(((float)width * .5f) / (float)height);
 		});
 
 		auto enterFrame = MinkoSDL::enterFrame()->connect([&]()
