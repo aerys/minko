@@ -37,6 +37,19 @@ namespace minko
 			typedef std::shared_ptr<OculusVRCamera>	Ptr;
 
 		private:
+			struct HMD
+			{
+				float hResolution;
+				float vResolution;
+				float hScreenSize;
+				float vScreenSize;
+				float interpupillaryDistance;
+				float lensSeparationDistance;
+				float eyeToScreenDistance;
+				std::shared_ptr<math::Vector4> distortionK;
+			};
+
+		private:
 			typedef std::shared_ptr<scene::Node>		NodePtr;
 			typedef std::shared_ptr<AbstractComponent>	AbsCmpPtr;
 			typedef std::shared_ptr<SceneManager>		SceneMgrPtr;
@@ -44,6 +57,7 @@ namespace minko
 
 		private:
 			float										_aspectRatio;
+			HMD											_hmd;
 
 			NodePtr										_root;
 			std::shared_ptr<PerspectiveCamera>			_leftCamera;
@@ -79,10 +93,10 @@ namespace minko
 			{
 				if (ratio != _aspectRatio)
 				{
-					_aspectRatio = ratio;
+					//_aspectRatio = ratio;
 
-					_leftCamera->aspectRatio(ratio);
-					_rightCamera->aspectRatio(ratio);
+					//_leftCamera->aspectRatio(ratio);
+					//_rightCamera->aspectRatio(ratio);
 				}
 			}
 
