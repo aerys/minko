@@ -24,6 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/Blending.hpp"
 #include "minko/render/TriangleCulling.hpp"
 #include "minko/render/CompareMode.hpp"
+#include "minko/render/StencilOperation.hpp"
 #include "minko/render/Texture.hpp"
 
 namespace minko
@@ -40,9 +41,16 @@ namespace minko
             float				        _priority;
 		    Blending::Source		    _blendingSourceFactor;
 		    Blending::Destination	    _blendingDestinationFactor;
+			bool						_colorMask;
 		    bool					    _depthMask;
 		    CompareMode		    		_depthFunc;
             TriangleCulling             _triangleCulling;
+			CompareMode					_stencilFunction;
+			int							_stencilReference;
+			uint						_stencilMask;
+			StencilOperation			_stencilFailOp;
+			StencilOperation			_stencilZFailOp;
+			StencilOperation			_stencilZPassOp;
             SamplerStates               _samplerStates;
             std::shared_ptr<Texture>    _target;
 
@@ -53,9 +61,16 @@ namespace minko
 				   const float				priority					= 0.f,
 				   Blending::Source			blendingSourceFactor		= Blending::Source::ONE,
 				   Blending::Destination	blendingDestinationFactor	= Blending::Destination::ZERO,
+				   bool						colorMask					= true,
 				   bool						depthMask					= true,
 				   CompareMode				depthFunc					= CompareMode::LESS,
                    TriangleCulling          triangleCulling             = TriangleCulling::BACK,
+				   CompareMode				stencilFunc					= CompareMode::ALWAYS,
+				   int						stencilRef					= 0,
+				   uint						stencilMask					= 0x1,
+				   StencilOperation			stencilFailOp				= StencilOperation::KEEP, 
+				   StencilOperation			stencilZFailOp				= StencilOperation::KEEP, 
+				   StencilOperation			stencilZPassOp				= StencilOperation::KEEP, 
                    std::shared_ptr<Texture> target                      = nullptr)
 		    {
 			    return std::shared_ptr<States>(new States(
@@ -63,9 +78,16 @@ namespace minko
                     priority,
                     blendingSourceFactor,
                     blendingDestinationFactor,
+					colorMask,
                     depthMask,
                     depthFunc,
                     triangleCulling,
+					stencilFunc,
+					stencilRef,
+					stencilMask,
+					stencilFailOp,
+					stencilZFailOp,
+					stencilZPassOp,
                     target
                 ));
 		    }
@@ -100,6 +122,13 @@ namespace minko
                 return _blendingDestinationFactor;
             }
 
+			inline
+			bool
+			colorMask() const
+			{
+				return _colorMask;
+			}
+
             inline
             bool
             depthMask() const
@@ -121,6 +150,48 @@ namespace minko
                 return _triangleCulling;
             }
 
+			inline
+			CompareMode
+			stencilFunction() const
+			{
+				return _stencilFunction;
+			}
+
+			inline
+			int
+			stencilReference() const
+			{
+				return _stencilReference;
+			}
+
+			inline
+			uint
+			stencilMask() const
+			{
+				return _stencilMask;
+			}
+
+			inline
+			StencilOperation
+			stencilFailOperation() const
+			{
+				return _stencilFailOp;
+			}
+
+			inline
+			StencilOperation
+			stencilDepthFailOperation() const
+			{
+				return _stencilZFailOp;
+			}
+
+			inline
+			StencilOperation
+			stencilDepthPassOperation() const
+			{
+				return _stencilZPassOp;
+			}
+
             inline
             const SamplerStates&
             samplers() const
@@ -140,17 +211,31 @@ namespace minko
 				   const float			    priority,
 				   Blending::Source		    blendingSourceFactor,
 				   Blending::Destination    blendingDestinationFactor,
+				   bool						colorMask,
 				   bool					    depthMask,
 				   CompareMode			    depthFunc,
                    TriangleCulling          triangleCulling,
+				   CompareMode				stencilFunc,
+				   int						stencilRef,
+				   uint						stencilMask,
+				   StencilOperation			stencilFailOp,
+				   StencilOperation			stencilZFailOp,
+				   StencilOperation			stencilZPassOp,
                    std::shared_ptr<Texture> target) :
                 _samplerStates(samplerSates),
                 _priority(priority),
                 _blendingSourceFactor(blendingSourceFactor),
                 _blendingDestinationFactor(blendingDestinationFactor),
+				_colorMask(colorMask),
                 _depthMask(depthMask),
                 _depthFunc(depthFunc),
                 _triangleCulling(triangleCulling),
+				_stencilFunction(stencilFunc),
+				_stencilReference(stencilRef),
+				_stencilMask(stencilMask),
+				_stencilFailOp(stencilFailOp),
+				_stencilZFailOp(stencilZFailOp),
+				_stencilZPassOp(stencilZPassOp),
                 _target(target)
 		    {
 		    }

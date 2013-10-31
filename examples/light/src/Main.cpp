@@ -121,7 +121,7 @@ int main(int argc, char** argv)
 		// camera
         auto camera	= scene::Node::create("camera")
 			->addComponent(Renderer::create())
-			->addComponent(PerspectiveCamera::create(.785f, 800.f / 600.f, .1f, 1000.f))
+			->addComponent(PerspectiveCamera::create(800.f / 600.f, PI * 0.25f, .1f, 1000.f))
 			->addComponent(Transform::create(Matrix4x4::create()->lookAt(Vector3::create(0.f, 2.f), Vector3::create(10.f, 10.f, 10.f))));
 		//camera->component<Renderer>()->backgroundColor(0x7f7f7fff);
 		root->addChild(camera);
