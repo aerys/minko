@@ -29,7 +29,7 @@ minko.sdk.newplatform {
 		cc = "clang",
 		cxx = "clang++",
 		ar = "ar",
-		cppflags = "-MMD",
+		cppflags = "-MMD -stdlib=libc++",
 		ldflags = "-stdlib=libc++"
 	}
 }
