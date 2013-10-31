@@ -3,7 +3,7 @@ newoption {
 	description		= "Enable the Minko PNG plugin."
 }
 
-minko.project.library "minko-png"
+minko.project.library "plugin-png"
 	kind "StaticLib"
 	language "C++"
 	files { "**.hpp", "**.h", "**.cpp", "**.c" }

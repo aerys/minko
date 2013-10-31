@@ -1,4 +1,4 @@
-minko.project.application "minko-example-sponza"
+minko.project.application "example-sponza"
 	kind "ConsoleApp"
 	language "C++"
 	files {

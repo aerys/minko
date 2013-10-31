@@ -1,10 +1,6 @@
 -- png plugin
 if minko.plugin.enabled("png") then
-	configuration { "debug" }
-		links { "minko-png" }
-		includedirs { minko.sdk.path("plugins/png/src") }
-		
-	configuration { "release" }
-		links { "minko-png" }
-		includedirs { minko.sdk.path("plugins/png/src") }
+	links { "plugin-png" }
+	includedirs { minko.sdk.path("plugins/png/src") }
+	defines { "MINKO_PLUGIN_PNG" }
 end

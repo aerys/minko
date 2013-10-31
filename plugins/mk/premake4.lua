@@ -3,7 +3,7 @@ newoption {
 	description	= "Enable the Minko MK plugin."
 }
 
-minko.project.library "minko-mk"
+minko.project.library "plugin-mk"
 	kind "StaticLib"
 	language "C++"
 	files {
