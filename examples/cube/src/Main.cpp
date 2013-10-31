@@ -65,7 +65,12 @@ int main(int argc, char** argv)
 		));
 		root->addChild(mesh);
 
-		auto _ = MinkoSDL::enterFrame()->connect([&]()
+		auto resized = MinkoSDL::resized()->connect([&](uint w, uint h)
+		{
+			root->children()[0]->component<PerspectiveCamera>()->aspectRatio((float)w / (float)h);
+		});
+
+		auto enterFrame = MinkoSDL::enterFrame()->connect([&]()
 		{
 			mesh->component<Transform>()->transform()->appendRotationY(.01f);
 			sceneManager->nextFrame();
