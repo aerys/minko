@@ -501,30 +501,36 @@ EffectParser::parseBindings(const Json::Value&		contextNode,
 		for (auto propertyName : stateBindingsValue.getMemberNames())
 			stateBindings[propertyName] = stateBindingsValue.get(propertyName, 0).asString();
 
+	parseMacroBindings(contextNode, macroBindings);
+}
+
+void
+EffectParser::parseMacroBindings(const Json::Value&	contextNode, data::MacroBindingMap&	macroBindings)
+{
 	auto macroBindingsValue = contextNode.get("macroBindings", 0);
 	if (macroBindingsValue.isObject())
-		for (auto propertyName : macroBindingsValue.getMemberNames())
+	for (auto propertyName : macroBindingsValue.getMemberNames())
+	{
+		auto macroBindingValue = macroBindingsValue.get(propertyName, 0);
+
+		if (macroBindingValue.isString())
+			macroBindings[propertyName] = std::tuple<std::string, int, int>(macroBindingValue.asString(), -1, -1);
+		else if (macroBindingValue.isObject())
 		{
-			auto macroBindingValue = macroBindingsValue.get(propertyName, 0);
+			auto nameValue = macroBindingValue.get("property", 0);
+			auto minValue = macroBindingValue.get("min", -1);
+			auto maxValue = macroBindingValue.get("max", -1);
 
-			if (macroBindingValue.isString())
-				macroBindings[propertyName] = std::tuple<std::string, int, int>(macroBindingValue.asString(), -1, -1);
-			else if (macroBindingValue.isObject())
-			{
-				auto nameValue = macroBindingValue.get("property", 0);
-				auto minValue = macroBindingsValue.get("min", -1);
-				auto maxValue = macroBindingsValue.get("max", -1);
+			//if (!nameValue.isString() || !minValue.isInt() || !maxValue.isInt())
+			//	throw;
 
-				//if (!nameValue.isString() || !minValue.isInt() || !maxValue.isInt())
-				//	throw;
-
-				macroBindings[propertyName] = std::tuple<std::string, int, int>(
-					nameValue.asString(),
-					minValue.asInt(),
-					maxValue.asInt()
-				);
-			}
+			macroBindings[propertyName] = std::tuple<std::string, int, int>(
+				nameValue.asString(),
+				minValue.asInt(),
+				maxValue.asInt()
+			);
 		}
+	}
 }
 
 void
