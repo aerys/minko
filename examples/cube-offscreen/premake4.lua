@@ -1,4 +1,4 @@
-project "minko-example-cube-offscreen"
+project "example-cube-offscreen"
 	kind "ConsoleApp"
 	language "C++"
 	files {

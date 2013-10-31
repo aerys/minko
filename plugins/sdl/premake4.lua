@@ -3,7 +3,7 @@ newoption {
 	description		= "Enable the Minko SDL plugin."
 }
 
-minko.project.library "minko-sdl"
+minko.project.library "plugin-sdl"
 	kind "StaticLib"
 	language "C++"
 	files { "**.hpp", "**.h", "**.cpp", "**.c" }
