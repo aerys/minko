@@ -2,9 +2,9 @@
 if minko.plugin.enabled("oculus") then
 	local assetDir = '/plugins/oculus/asset';
 
-	links { "minko-oculus" }
+	links { "plugin-oculus" }
 	includedirs { minko.sdk.path("plugins/oculus/src") }
-	defines { "MINKO_OCULUS" }
+	defines { "MINKO_PLUGIN_OCULUS" }
 	
 	configuration { "windows" }
 		postbuildcommands {

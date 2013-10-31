@@ -1,4 +1,4 @@
-minko.project.application "minko-example-light"
+minko.project.application "example-light"
 	kind "ConsoleApp"
 	language "C++"
 	files { "src/**.hpp", "src/**.cpp" }
