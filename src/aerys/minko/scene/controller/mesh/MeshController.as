@@ -36,7 +36,7 @@ package aerys.minko.scene.controller.mesh
 			
 			_geometry = value;
 			
-			if (_mesh)
+			if (_mesh && _geometry)
 				_mesh.bindings.addProvider(_geometry.geometryDataProvider);
 			
 			if (_data)
