@@ -33,6 +33,8 @@
     
     "blendMode"         : ["one", "zero"],
     "depthTest"         : [true, "less_equal"],
+	"colorMask"			: true,
+	"stencilTest"		: ["always", 0, 1, ["keep", "keep", "keep"]],
     "triangleCulling"   : "none",
     
     "samplerStates" : {
