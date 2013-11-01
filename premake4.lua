@@ -24,7 +24,7 @@ include 'examples/sponza'
 include 'examples/cube'
 include 'examples/light'
 include 'examples/stencil'
-include 'examples/effect-config'
+--include 'examples/effect-config'
 --include 'examples/cube-offscreen'
 
 -- tests
