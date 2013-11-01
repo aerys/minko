@@ -20,8 +20,15 @@
 	},
 	
 	"stateBindings"	: {
-		"blendMode"					: "material.blendMode",
-		"triangleCulling"			: "material.triangleCulling"
+		"blendMode"				: "material.blendMode",
+		"colorMask"				: "material.colorMask",
+		"stencilFunc"			: "material.stencilFunc",
+		"stencilRef"			: "material.stencilRef",
+		"stencilMask"			: "material.stencilMask",
+		"stencilFailOp"			: "material.stencilFailOp",
+		"stencilZFailOp"		: "material.stencilZFailOp",
+		"stencilZPassOp"		: "material.stencilZPassOp",
+		"triangleCulling"		: "material.triangleCulling"
 	},
 
 	"macroBindings"	: {
@@ -39,7 +46,9 @@
 	},
 	
 	"defaultTechnique" : "single-pass",
-
+	"colorMask"			: true,
+	"stencilTest"		: ["always", 0, 1, ["keep", "keep", "keep"]],
+	
 	"techniques" : [
 		{
 			"name"				: "single-pass",
