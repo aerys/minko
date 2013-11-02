@@ -303,7 +303,7 @@ TEST_F(Matrix4x4Test, TransformRotationZPi)
 
 TEST_F(Matrix4x4Test, TransformRotationXRandom)
 {
-	auto m1 = randomMatrix();
+	auto m1 = Matrix4x4::create();
 	auto m2 = Matrix4x4::create(m1);
 	uint r = ((uint)((rand() / (float)RAND_MAX) * 100) / 2) * 2;
 	std::vector<Vector3::Ptr> v;
@@ -318,10 +318,57 @@ TEST_F(Matrix4x4Test, TransformRotationXRandom)
 		ASSERT_TRUE(nearEqual(m1->data()[i], m2->data()[i]));
 	for (auto i = 0; i < r / 2; ++i)
 	{
-		ASSERT_TRUE(nearEqual(v[i]->x(), -v[i + r / 2]->x()));
-		ASSERT_TRUE(nearEqual(v[i]->y(), 0.f));
-		ASSERT_TRUE(nearEqual(v[i + r / 2]->y(), 0.f));
+		ASSERT_EQ(v[i]->x(), 0.f);
+		ASSERT_EQ(-v[i + r / 2]->x(), 0.f);
+		ASSERT_TRUE(nearEqual(v[i]->y(), -v[i + r / 2]->y()));
 		ASSERT_TRUE(nearEqual(v[i]->z(), -v[i + r / 2]->z()));
 	}
 }
 
+TEST_F(Matrix4x4Test, TransformRotationYRandom)
+{
+	auto m1 = Matrix4x4::create();
+	auto m2 = Matrix4x4::create(m1);
+	uint r = ((uint)((rand() / (float)RAND_MAX) * 100) / 2) * 2;
+	std::vector<Vector3::Ptr> v;
+
+	for (uint i = 0; i < r; ++i)
+	{
+		v.push_back(m1->transform(Vector3::xAxis()));
+		m1->appendRotationY(PI * 2.f / (float)r);
+	}
+
+	for (auto i = 0; i < 16; ++i)
+		ASSERT_TRUE(nearEqual(m1->data()[i], m2->data()[i]));
+	for (auto i = 0; i < r / 2; ++i)
+	{
+		ASSERT_EQ(v[i]->y(), 0.f);
+		ASSERT_EQ(-v[i + r / 2]->y(), 0.f);
+		ASSERT_TRUE(nearEqual(v[i]->x(), -v[i + r / 2]->x()));
+		ASSERT_TRUE(nearEqual(v[i]->z(), -v[i + r / 2]->z()));
+	}
+}
+
+TEST_F(Matrix4x4Test, TransformRotationZRandom)
+{
+	auto m1 = Matrix4x4::create();
+	auto m2 = Matrix4x4::create(m1);
+	uint r = ((uint)((rand() / (float)RAND_MAX) * 100) / 2) * 2;
+	std::vector<Vector3::Ptr> v;
+
+	for (uint i = 0; i < r; ++i)
+	{
+		v.push_back(m1->transform(Vector3::yAxis()));
+		m1->appendRotationZ(PI * 2.f / (float)r);
+	}
+
+	for (auto i = 0; i < 16; ++i)
+		ASSERT_TRUE(nearEqual(m1->data()[i], m2->data()[i]));
+	for (auto i = 0; i < r / 2; ++i)
+	{
+		ASSERT_EQ(v[i]->z(), 0.f);
+		ASSERT_EQ(-v[i + r / 2]->z(), 0.f);
+		ASSERT_TRUE(nearEqual(v[i]->x(), -v[i + r / 2]->x()));
+		ASSERT_TRUE(nearEqual(v[i]->y(), -v[i + r / 2]->y()));
+	}
+}
