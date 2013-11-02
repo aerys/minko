@@ -54,7 +54,7 @@ namespace minko
 
 			static inline
 			bool
-			nearEqual(float x, float y, float epsilon = 1e-10)
+			nearEqual(float x, float y, float epsilon = 1e-15)
 			{
 				return abs(x - y) < epsilon;
 			}
