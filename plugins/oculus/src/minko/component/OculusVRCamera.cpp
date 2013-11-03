@@ -98,7 +98,9 @@ OculusVRCamera::targetAddedHandler(AbsCmpPtr component, NodePtr target)
 	leftRenderer->target(leftEyeTexture);
 	leftEye->addComponent(leftRenderer);
 	leftEye->addComponent(_leftCamera);
-	leftEye->addComponent(Transform::create(Matrix4x4::create()->appendTranslation(-_hmd.interpupillaryDistance * worldFactor * .5f)));
+	leftEye->addComponent(Transform::create(
+		Matrix4x4::create()->appendTranslation(-_hmd.interpupillaryDistance * worldFactor * .5f)
+	));
 
 	// right eye
 	auto rightEye = scene::Node::create();
@@ -111,7 +113,9 @@ OculusVRCamera::targetAddedHandler(AbsCmpPtr component, NodePtr target)
 	rightRenderer->target(rightEyeTexture);
 	rightEye->addComponent(rightRenderer);
 	rightEye->addComponent(_rightCamera);
-	rightEye->addComponent(Transform::create(Matrix4x4::create()->appendTranslation(_hmd.interpupillaryDistance * worldFactor * .5f)));
+	rightEye->addComponent(Transform::create(
+		Matrix4x4::create()->appendTranslation(_hmd.interpupillaryDistance * worldFactor * .5f)
+	));
 
 	_root = scene::Node::create("oculus vr");
 	_root->addChild(leftEye)->addChild(rightEye);
