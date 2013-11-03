@@ -258,10 +258,12 @@ EffectParser::parsePasses(const Json::Value&		root,
 
 	for (auto passValue : passesValue)
 	{
+		passId++;
+
 		if (passValue.isString())
 		{
 			auto name = passValue.asString();
-			auto pass = std::find_if(
+			auto passIt = std::find_if(
 				_globalPasses.begin(),
 				_globalPasses.end(),
 				[&](Pass::Ptr pass)
@@ -270,10 +272,18 @@ EffectParser::parsePasses(const Json::Value&		root,
 				}
 			);
 
-			if (pass == _globalPasses.end())
+			if (passIt == _globalPasses.end())
 				throw std::logic_error("Pass '" + name + "' does not exist.");
 
-			passes.push_back(*pass);
+			auto pass = *passIt;
+			auto passCopy = Pass::create(pass, true);
+
+			_passIncludes[passCopy] = _passIncludes[pass];
+			_shaderIncludes[passCopy->program()->vertexShader()] = _shaderIncludes[pass->program()->vertexShader()];
+			_shaderIncludes[passCopy->program()->fragmentShader()] = _shaderIncludes[pass->program()->fragmentShader()];
+			passCopy->states()->priority(passesValue.size() - passId);
+
+			passes.push_back(passCopy);
 
 			continue;
 		}
@@ -281,7 +291,7 @@ EffectParser::parsePasses(const Json::Value&		root,
 		if (!parseConfiguration(passValue))
 			continue;
 
-		auto name = passValue.get("name", std::to_string(passId++)).asString();
+		auto name = passValue.get("name", std::to_string(passId)).asString();
 
 		// pass bindings
 		data::BindingMap		attributeBindings(defaultAttributeBindings);
@@ -652,7 +662,7 @@ EffectParser::loadTexture(const std::string&	textureFilename,
 			loader->resolvedFilename(),
 			loader->options(), loader->data(),
 			_assetLibrary
-			);
+		);
 	});
 
 	_loaderErrorSlots[loader] = loader->error()->connect(std::bind(
@@ -734,9 +744,9 @@ EffectParser::parseStencilState(const Json::Value& contextNode,
 
 void
 EffectParser::parseStencilOperations(const Json::Value& contextNode,
-									StencilOperation& stencilFailOp,
-									StencilOperation& stencilZFailOp,
-									StencilOperation& stencilZPassOp) const
+									 StencilOperation& 	stencilFailOp,
+									 StencilOperation& 	stencilZFailOp,
+									 StencilOperation& 	stencilZPassOp) const
 {
 	if (contextNode.isArray())
 	{
@@ -749,7 +759,7 @@ EffectParser::parseStencilOperations(const Json::Value& contextNode,
 	}
 	else
 	{
-		auto failValue		= contextNode.get("fail", 0);
+		auto failValue	= contextNode.get("fail", 0);
 		auto zfailValue	= contextNode.get("zfail", 0);
 		auto zpassValue	= contextNode.get("zpass", 0);
 
@@ -810,10 +820,10 @@ EffectParser::parseTarget(const Json::Value&                contextNode,
 }
 
 void
-EffectParser::parseDependencies(const Json::Value& 			root,
-								const std::string& 			filename,
-								file::Options::Ptr 			options,
-								std::vector<LoaderPtr>& 	store)
+EffectParser::parseDependencies(const Json::Value& 		root,
+								const std::string& 		filename,
+								file::Options::Ptr 		options,
+								std::vector<LoaderPtr>& store)
 {
 	auto includes	= root.get("includes", 0);
 	int pos			= filename.find_last_of("/");
@@ -1024,6 +1034,9 @@ EffectParser::finalize()
 		for (auto& target : targets.second)
 			_effect->data()->set(target.first, target.second);
 
+	for (auto& targetNameAndPtr : _globalTargets)
+		_effect->data()->set(targetNameAndPtr.first, targetNameAndPtr.second);
+	
 	_assetLibrary->effect(_effectName, _effect);
     _assetLibrary->effect(_filename, _effect);
 
