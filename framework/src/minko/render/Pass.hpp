@@ -26,6 +26,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/TriangleCulling.hpp"
 #include "minko/render/ProgramSignature.hpp"
 #include "minko/render/Program.hpp"
+#include "minko/render/States.hpp"
 
 namespace minko
 {
@@ -76,6 +77,31 @@ namespace minko
 					macroBindings,
                     states
 				));
+			}
+
+			inline static
+			Ptr
+			create(Ptr pass, bool deepCopy = false)
+			{
+				auto p = create(
+					pass->_name,
+					deepCopy ? Program::create(pass->_programTemplate, deepCopy) : pass->_programTemplate,
+					pass->_attributeBindings,
+					pass->_uniformBindings,
+					pass->_stateBindings,
+					pass->_macroBindings,
+					deepCopy ? States::create(pass->_states) : pass->_states
+				);
+
+				p->_fallback = pass->_fallback;
+				p->_signatureToProgram = pass->_signatureToProgram;
+
+				p->_uniformFunctions = pass->_uniformFunctions;
+				if (pass->_programTemplate->isReady())
+					for (auto& f : p->_uniformFunctions)
+						f(pass->_programTemplate);
+
+				return p;
 			}
 
 			inline
@@ -146,7 +172,7 @@ namespace minko
 			setUniform(const std::string& name, const T&... values)
 			{
 				_uniformFunctions.push_back(std::bind(
-					&Pass::setUniformOnProgram<T...>, shared_from_this(), std::placeholders::_1, name, values...
+					&Pass::setUniformOnProgram<T...>, std::placeholders::_1, name, values...
 				));
 
 				if (_programTemplate->isReady())
@@ -165,6 +191,7 @@ namespace minko
                  std::shared_ptr<States>            states);
 
 			template <typename... T>
+			static
 			void
 			setUniformOnProgram(std::shared_ptr<Program> program, const std::string& name, const T&... values)
 			{
