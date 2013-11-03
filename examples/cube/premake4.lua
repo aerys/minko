@@ -9,6 +9,8 @@ minko.project.application "example-cube"
 	
 	minko.plugin.import("angle")
 	
+	links { "framework" }
+
 	configuration { "debug"}
 		defines { "DEBUG" }
 		flags { "Symbols" }
