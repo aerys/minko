@@ -10,6 +10,8 @@ minko.project.application "example-light"
 	minko.plugin.enable("oculus")
 	
 	minko.plugin.import("angle")
+
+	links { "framework" }
 	
 	-- debug configuration
 	configuration { "debug"}
