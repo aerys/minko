@@ -125,9 +125,6 @@
 				{
 					gl_FragColor = texture2D(uFeatures, vTexcoord) * (texture2D(uDirt, vTexcoord) + texture2D(uBurst, vTexcoord));
 					gl_FragColor += texture2D(uBackbuffer, vTexcoord);
-				
-					//gl_FragColor = texture2D(uBackbuffer, vTexcoord) + texture2D(uFeatures, vTexcoord);
-						//* texture2D(uDirt, vTexcoord);
 				}
 			"
 		}
