@@ -2,8 +2,7 @@ minko.project = {}
 
 minko.project.library = function(name)
 	project(name)
-	
-	links { "framework" }
+
 	includedirs { minko.sdk.path("/framework/src") }
 	
 	configuration { "windows" }
@@ -44,6 +43,8 @@ end
 
 minko.project.application = function(name)
 	minko.project.library(name)
+
+	--links { "framework" }
 	
 	configuration { "windows" }
 		postbuildcommands {
