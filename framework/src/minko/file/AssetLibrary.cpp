@@ -25,6 +25,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/AbstractParser.hpp"
 #include "minko/file/EffectParser.hpp"
 #include "minko/render/Texture.hpp"
+#include "minko/render/Effect.hpp"
+#include "minko/geometry/Geometry.hpp"
 
 using namespace minko;
 using namespace minko::render;
