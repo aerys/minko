@@ -22,7 +22,9 @@ Original "Faster Gaussian Blur" implementation by Nilson Souto
 http://xissburg.com/faster-gaussian-blur-in-glsl/
 */
 
+#ifdef GL_ES
 precision mediump float;
+#endif
  
 uniform sampler2D s_texture;
  
