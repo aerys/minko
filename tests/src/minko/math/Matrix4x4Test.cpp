@@ -301,7 +301,7 @@ TEST_F(Matrix4x4Test, TransformRotationZPi)
 	ASSERT_TRUE(nearEqual(zAxis->z(), 1.f));
 }
 
-TEST_F(Matrix4x4Test, TransformRotationXRandom)
+TEST_F(Matrix4x4Test, TransformAppendRotationXRandom)
 {
 	auto m1 = Matrix4x4::create();
 	auto m2 = Matrix4x4::create(m1);
@@ -325,7 +325,7 @@ TEST_F(Matrix4x4Test, TransformRotationXRandom)
 	}
 }
 
-TEST_F(Matrix4x4Test, TransformRotationYRandom)
+TEST_F(Matrix4x4Test, TransformAppendRotationYRandom)
 {
 	auto m1 = Matrix4x4::create();
 	auto m2 = Matrix4x4::create(m1);
@@ -349,7 +349,7 @@ TEST_F(Matrix4x4Test, TransformRotationYRandom)
 	}
 }
 
-TEST_F(Matrix4x4Test, TransformRotationZRandom)
+TEST_F(Matrix4x4Test, TransformAppendRotationZRandom)
 {
 	auto m1 = Matrix4x4::create();
 	auto m2 = Matrix4x4::create(m1);
@@ -360,6 +360,78 @@ TEST_F(Matrix4x4Test, TransformRotationZRandom)
 	{
 		v.push_back(m1->transform(Vector3::yAxis()));
 		m1->appendRotationZ(PI * 2.f / (float)r);
+	}
+
+	for (auto i = 0; i < 16; ++i)
+		ASSERT_TRUE(nearEqual(m1->data()[i], m2->data()[i]));
+	for (auto i = 0; i < r / 2; ++i)
+	{
+		ASSERT_EQ(v[i]->z(), 0.f);
+		ASSERT_EQ(-v[i + r / 2]->z(), 0.f);
+		ASSERT_TRUE(nearEqual(v[i]->x(), -v[i + r / 2]->x()));
+		ASSERT_TRUE(nearEqual(v[i]->y(), -v[i + r / 2]->y()));
+	}
+}
+
+TEST_F(Matrix4x4Test, TransformPrependRotationXRandom)
+{
+	auto m1 = Matrix4x4::create();
+	auto m2 = Matrix4x4::create(m1);
+	uint r = ((uint)((rand() / (float)RAND_MAX) * 100) / 2) * 2;
+	std::vector<Vector3::Ptr> v;
+
+	for (uint i = 0; i < r; ++i)
+	{
+		v.push_back(m1->transform(Vector3::zAxis()));
+		m1->prependRotationX(PI * 2.f / (float)r);
+	}
+
+	for (auto i = 0; i < 16; ++i)
+		ASSERT_TRUE(nearEqual(m1->data()[i], m2->data()[i]));
+	for (auto i = 0; i < r / 2; ++i)
+	{
+		ASSERT_EQ(v[i]->x(), 0.f);
+		ASSERT_EQ(-v[i + r / 2]->x(), 0.f);
+		ASSERT_TRUE(nearEqual(v[i]->y(), -v[i + r / 2]->y()));
+		ASSERT_TRUE(nearEqual(v[i]->z(), -v[i + r / 2]->z()));
+	}
+}
+
+TEST_F(Matrix4x4Test, TransformPrependRotationYRandom)
+{
+	auto m1 = Matrix4x4::create();
+	auto m2 = Matrix4x4::create(m1);
+	uint r = ((uint)((rand() / (float)RAND_MAX) * 100) / 2) * 2;
+	std::vector<Vector3::Ptr> v;
+
+	for (uint i = 0; i < r; ++i)
+	{
+		v.push_back(m1->transform(Vector3::xAxis()));
+		m1->prependRotationY(PI * 2.f / (float)r);
+	}
+
+	for (auto i = 0; i < 16; ++i)
+		ASSERT_TRUE(nearEqual(m1->data()[i], m2->data()[i]));
+	for (auto i = 0; i < r / 2; ++i)
+	{
+		ASSERT_EQ(v[i]->y(), 0.f);
+		ASSERT_EQ(-v[i + r / 2]->y(), 0.f);
+		ASSERT_TRUE(nearEqual(v[i]->x(), -v[i + r / 2]->x()));
+		ASSERT_TRUE(nearEqual(v[i]->z(), -v[i + r / 2]->z()));
+	}
+}
+
+TEST_F(Matrix4x4Test, TransformPrependRotationZRandom)
+{
+	auto m1 = Matrix4x4::create();
+	auto m2 = Matrix4x4::create(m1);
+	uint r = ((uint)((rand() / (float)RAND_MAX) * 100) / 2) * 2;
+	std::vector<Vector3::Ptr> v;
+
+	for (uint i = 0; i < r; ++i)
+	{
+		v.push_back(m1->transform(Vector3::yAxis()));
+		m1->prependRotationZ(PI * 2.f / (float)r);
 	}
 
 	for (auto i = 0; i < 16; ++i)
