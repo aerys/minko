@@ -57,7 +57,7 @@ namespace minko
 	    public:
 		    inline static
 		    Ptr
-		    create(const SamplerStates&     samplerSates,
+		    create(const SamplerStates&     samplerStates,
 				   const float				priority					= 0.f,
 				   Blending::Source			blendingSourceFactor		= Blending::Source::ONE,
 				   Blending::Destination	blendingDestinationFactor	= Blending::Destination::ZERO,
@@ -65,7 +65,7 @@ namespace minko
 				   bool						depthMask					= true,
 				   CompareMode				depthFunc					= CompareMode::LESS,
                    TriangleCulling          triangleCulling             = TriangleCulling::BACK,
-				   CompareMode				stencilFunc					= CompareMode::ALWAYS,
+				   CompareMode				stencilFunction				= CompareMode::ALWAYS,
 				   int						stencilRef					= 0,
 				   uint						stencilMask					= 0x1,
 				   StencilOperation			stencilFailOp				= StencilOperation::KEEP, 
@@ -74,7 +74,7 @@ namespace minko
                    std::shared_ptr<Texture> target                      = nullptr)
 		    {
 			    return std::shared_ptr<States>(new States(
-                    samplerSates,
+                    samplerStates,
                     priority,
                     blendingSourceFactor,
                     blendingDestinationFactor,
@@ -82,13 +82,36 @@ namespace minko
                     depthMask,
                     depthFunc,
                     triangleCulling,
-					stencilFunc,
+					stencilFunction,
 					stencilRef,
 					stencilMask,
 					stencilFailOp,
 					stencilZFailOp,
 					stencilZPassOp,
                     target
+                ));
+		    }
+
+		    inline static
+		    Ptr
+		    create(Ptr states)
+		    {
+		    	return std::shared_ptr<States>(new States(
+                    states->_samplerStates,
+                    states->_priority,
+                    states->_blendingSourceFactor,
+                    states->_blendingDestinationFactor,
+					states->_colorMask,
+                    states->_depthMask,
+                    states->_depthFunc,
+                    states->_triangleCulling,
+					states->_stencilFunction,
+					states->_stencilReference,
+					states->_stencilMask,
+					states->_stencilFailOp,
+					states->_stencilZFailOp,
+					states->_stencilZPassOp,
+                    states->_target
                 ));
 		    }
 
@@ -106,6 +129,13 @@ namespace minko
             priority() const
             {
                 return _priority;
+            }
+
+            inline
+            void
+            priority(float priority)
+            {
+            	_priority = priority;
             }
 
             inline
