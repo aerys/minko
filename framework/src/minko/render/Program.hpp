@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/ProgramInputs.hpp"
 #include "minko/render/Texture.hpp"
 #include "minko/render/AbstractContext.hpp"
+#include "minko/render/Shader.hpp"
 
 namespace minko
 {
@@ -54,6 +55,20 @@ namespace minko
 			create(AbstractContextPtr context)
 			{
 				return std::shared_ptr<Program>(new Program(context));
+			}
+
+			inline static
+			Ptr
+			create(Ptr program, bool deepCopy = false)
+			{
+				auto p = create(program->_context);
+
+				p->_vertexShader = deepCopy ? Shader::create(program->_vertexShader) : program->_vertexShader;
+				p->_fragmentShader = deepCopy ? Shader::create(program->_fragmentShader) : program->_fragmentShader;
+				p->_inputs = program->inputs();
+				p->_textures = program->_textures;
+
+				return p;
 			}
 
 			inline static
