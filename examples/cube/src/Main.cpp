@@ -25,7 +25,8 @@ using namespace minko;
 using namespace minko::component;
 using namespace minko::math;
 
-const std::string PROP_NAME = "myFloat";
+const std::string	PROP_NAME	= "alpha";
+const float			PERIOD		= 2.0; // in seconds
 
 int main(int argc, char** argv)
 {
@@ -40,10 +41,12 @@ int main(int argc, char** argv)
 		->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()))
 		->queue("texture/box.png")
 		//->queue("effect/Basic.effect")
-		->queue("effect/myFloat.effect");
+		->queue("effect/AlphaBasic.effect");
 
 	const clock_t	start	= clock();
 	const float		period	= 2.0f;
+
+	std::cout << "Press [Space] to inject a temporally-varying property to the root's data container" << std::endl;
 
 	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
 	{
@@ -55,16 +58,17 @@ int main(int argc, char** argv)
 			->addComponent(Transform::create(
 				Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 3.f))
 			))
-			->addComponent(PerspectiveCamera::create(800.f / 600.f, PI * 0.25f, .1f, 1000.f));
+			->addComponent(PerspectiveCamera::create(800.f / 600.f, (float)PI * 0.25f, .1f, 1000.f));
 		
 		auto mesh = scene::Node::create("mesh")
 			->addComponent(Transform::create())
 			->addComponent(Surface::create(
 				assets->geometry("cube"),
 				material::Material::create()
-					->set("diffuseColor",	Vector4::create(0.f, 0.f, 1.f, 1.f))
+					->set("blendMode",		render::Blending::Mode::ALPHA)
+					->set("diffuseColor",	Vector4::create(1.f, 1.f, 1.f, 1.f))
 					->set("diffuseMap",		assets->texture("texture/box.png")),
-				assets->effect("my-float")
+				assets->effect("alphaBasic")
 			));
 
 		// handle keyboard signals
@@ -72,10 +76,10 @@ int main(int argc, char** argv)
 		{
 			if (!root->data()->hasProperty(PROP_NAME))
 			{
-				std::cout << "add property to root" << std::endl;
+				std::cout << "add property '" << PROP_NAME << "' to root's container" << std::endl;
 	
 				auto provider = data::Provider::create();
-				provider->set(PROP_NAME, 0.0f);
+				provider->set(PROP_NAME, 1.0f);
 				root->data()->addProvider(provider);
 			}
 		});
@@ -93,7 +97,7 @@ int main(int argc, char** argv)
 			if (root->data()->hasProperty(PROP_NAME))
 			{
 				float value	= (float)(clock() - start) / (float)CLOCKS_PER_SEC;
-				value		/= period;
+				value		/= PERIOD;
 				value		-= floorf(value);
 
 				root->data()->set<float>(PROP_NAME, value);
