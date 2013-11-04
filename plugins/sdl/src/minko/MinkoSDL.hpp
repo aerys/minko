@@ -61,6 +61,7 @@ private:
 	static minko::Signal<uint, uint>::Ptr       _mouseMove;
 	static minko::Signal<uint, uint>::Ptr       _mouseLeftButtonDown;
 	static minko::Signal<uint, uint>::Ptr       _mouseLeftButtonUp;
+	static minko::Signal<int, int>::Ptr			_mouseWheel;
 	static minko::Signal<uint, uint>::Ptr       _resized;
 
 #ifdef MINKO_ANGLE
@@ -149,6 +150,13 @@ public:
 	}
 
 	inline static
+	minko::Signal<int, int>::Ptr
+	mouseWheel()
+	{
+		return _mouseWheel;
+	}
+
+	inline static
 	minko::Signal<uint, uint>::Ptr
 	resized()
 	{
@@ -202,6 +210,7 @@ public:
 		_mouseMove = minko::Signal<uint, uint>::create();
 		_mouseLeftButtonDown = minko::Signal<uint, uint>::create();
 		_mouseLeftButtonUp = minko::Signal<uint, uint>::create();
+		_mouseWheel = minko::Signal<int, int>::create();
 
 		_resized = minko::Signal<uint, uint>::create();
 
@@ -245,6 +254,10 @@ private:
 
 			case SDL_MOUSEBUTTONUP:
 				_mouseLeftButtonUp->execute(event.motion.x, event.motion.y);
+				break;
+
+			case SDL_MOUSEWHEEL:
+				_mouseWheel->execute(event.wheel.x, event.wheel.y);
 				break;
 
 			case SDL_JOYAXISMOTION:

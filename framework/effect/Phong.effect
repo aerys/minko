@@ -10,21 +10,25 @@
 	},
 	
 	"uniformBindings"	: {
+		"modelToWorldMatrix"		: "transform.modelToWorldMatrix",
 		"diffuseColor"				: "material.diffuseColor",
 		"diffuseMap"				: "material.diffuseMap",
-		"normalMap"					: "material.normalMap",
-		"specularMap"				: "material.specularMap",
 		"alphaMap"					: "material.alphaMap",
-		"shininess"					: "material.shininess",
 		"alphaThreshold"			: "material.alphaThreshold",
-		"modelToWorldMatrix"		: "transform.modelToWorldMatrix",
-		"worldToScreenMatrix"		: "camera.worldToScreenMatrix",
-		"cameraPosition"			: "camera.position"
+		"cameraPosition"			: "camera.position",
+		"worldToScreenMatrix"		: "camera.worldToScreenMatrix"
 	},
 	
 	"stateBindings"	: {
-		"blendMode"					: "material.blendMode",
-		"triangleCulling"			: "material.triangleCulling"
+		"blendMode"				: "material.blendMode",
+		"colorMask"				: "material.colorMask",
+		"stencilFunc"			: "material.stencilFunc",
+		"stencilRef"			: "material.stencilRef",
+		"stencilMask"			: "material.stencilMask",
+		"stencilFailOp"			: "material.stencilFailOp",
+		"stencilZFailOp"		: "material.stencilZFailOp",
+		"stencilZPassOp"		: "material.stencilZPassOp",
+		"triangleCulling"		: "material.triangleCulling"
 	},
 
 	"macroBindings"	: {
@@ -32,46 +36,46 @@
 		"NORMAL_MAP"				: "material.normalMap",
 		"SPECULAR_MAP"				: "material.specularMap",
 		"ALPHA_MAP"					: "material.alphaMap",
-		"ALPHA_THRESHOLD"			: "material.alphaThreshold",
-		"SHININESS"					: "material.shininess",
-		"MODEL_TO_WORLD"			: "transform.modelToWorldMatrix",
-		"NUM_AMBIENT_LIGHTS"		: "ambientLights.length",
-		"PRECOMPUTED_AMBIENT"		: "sumAmbients",
-		"NUM_DIRECTIONAL_LIGHTS"	: { "property" : "directionalLights.length", "max" : 8 },
-		"NUM_POINT_LIGHTS"			: { "property" : "pointLights.length", "max" : 8 },
-		"NUM_SPOT_LIGHTS"			: { "property" : "spotLights.length", "max" : 8 }
+		"ALPHA_THRESHOLD"			: "material.alphaThreshold"
 	},
 
-	"defaultTechnique" : "single-pass",
-	
 	"samplerStates" : {
 		"diffuseMap"	: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" },
 		"normalMap"		: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" },
 		"specularMap"	: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" }
 	},
-
+	
+	"defaultTechnique" : "single-pass",
+	"colorMask"			: true,
+	"stencilTest"		: ["always", 0, 1, ["keep", "keep", "keep"]],
+	
 	"techniques" : [
 		{
-			"name"	: "single-pass",
-
-			"priority"			: 0,
+			"name"				: "single-pass",
+			"fallback" 			: "multi-pass",
 			"blendMode"			: ["one", "zero"],
 			"depthTest"			: [true, "less_equal"],
 			"triangleCulling"	: "back",
-
+			
+			"uniformBindings" : {
+				"normalMap"					: "material.normalMap",
+				"specularMap"				: "material.specularMap",
+				"shininess"					: "material.shininess"
+			},
+			
+			"macroBindings" : {
+				"SHININESS"					: "material.shininess",
+				"MODEL_TO_WORLD"			: "transform.modelToWorldMatrix",
+				"NUM_AMBIENT_LIGHTS"		: "ambientLights.length",
+				"PRECOMPUTED_AMBIENT"		: "sumAmbients",
+				"NUM_DIRECTIONAL_LIGHTS"	: { "property" : "directionalLights.length", "max" : 8 },
+				"NUM_POINT_LIGHTS"			: { "property" : "pointLights.length", "max" : 8 },
+				"NUM_SPOT_LIGHTS"			: { "property" : "spotLights.length", "max" : 8 }
+			},
+				
 			"passes"	: [{
-				"vertexShader" : {
-					"includes" : [
-						"Phong.vertex.glsl"
-					]
-				},
-				"fragmentShader" : {
-					"includes" : [
-						"Phong.struct.glsl",
-						"Phong.function.glsl",
-						"Phong.fragment.glsl"
-					]
-				}
+				"vertexShader" : { "includes" : [ "Phong.vertex.glsl" ] },
+				"fragmentShader" : { "includes" : [ "Phong.struct.glsl", "Phong.function.glsl", "Phong.fragment.glsl" ] }
 			}]
 		},
 		{
