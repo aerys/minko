@@ -511,5 +511,6 @@ DrawCall::getDataContainer(const std::string& propertyName) const
 bool
 DrawCall::dataHasProperty(const std::string& propertyName)
 {
-    return _data->hasProperty(propertyName) || _rootData->hasProperty(propertyName);
+    return _data->hasProperty(propertyName) || _rendererData->hasProperty(propertyName)
+		|| _rootData->hasProperty(propertyName);
 }
