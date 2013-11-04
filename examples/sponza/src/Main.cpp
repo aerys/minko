@@ -24,7 +24,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/MinkoBullet.hpp"
 #include "minko/MinkoParticles.hpp"
 #include "minko/MinkoSDL.hpp"
-#include "minko/MinkoOculus.hpp"
 
 #include "minko/deserialize/TypeDeserializer.hpp"
 
@@ -36,7 +35,6 @@ using namespace minko::math;
 
 const float WINDOW_WIDTH        = 1600.0f;
 const float WINDOW_HEIGHT       = 800.0f;
-const bool	OCULUS_ENABLED		= true;
 
 const std::string MK_NAME           = "model/Sponza_lite_sphere.mk";
 const std::string DEFAULT_EFFECT    = "effect/Phong.effect";
@@ -314,10 +312,7 @@ initializeCamera(scene::Node::Ptr group)
 	camera->addComponent(renderer);
 	root->addChild(camera);
 
-	if (OCULUS_ENABLED)
-		camera->addComponent(OculusVRCamera::create((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT));
-	else
-		camera->addComponent(PerspectiveCamera::create((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT));
+	camera->addComponent(PerspectiveCamera::create((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT));
 }
 
 void
@@ -388,7 +383,7 @@ main(int argc, char** argv)
 	sceneManager->assets()
 		->queue("texture/firefull.jpg")
 		->queue("effect/Particles.effect")
-		->queue("effect/OculusVR/OculusVR.effect")
+		//->queue("effect/OculusVR/OculusVR.effect")
 		->queue(MK_NAME);
 
 	renderer = Renderer::create();
@@ -500,10 +495,7 @@ main(int argc, char** argv)
 
 		auto resized = MinkoSDL::resized()->connect([&](unsigned int width, unsigned int height)
 		{
-			if (camera->component<PerspectiveCamera>())
-				camera->component<PerspectiveCamera>()->aspectRatio((float)width / (float)height);
-			else if (camera->component<OculusVRCamera>())
-				camera->component<OculusVRCamera>()->aspectRatio(((float)width * .5f) / (float)height);
+			camera->component<PerspectiveCamera>()->aspectRatio((float)width / (float)height);
 		});
 
 		auto enterFrame = MinkoSDL::enterFrame()->connect([&]()

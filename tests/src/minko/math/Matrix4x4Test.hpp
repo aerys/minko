@@ -19,4 +19,45 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #pragma once
 
-#include "minko/component/OculusVRCamera.hpp"
+#include "minko/Minko.hpp"
+
+#include "gtest/gtest.h"
+
+#include "minko/math/Matrix4x4.hpp"
+
+namespace minko
+{
+	namespace math
+	{
+		class Matrix4x4Test :
+			public ::testing::Test
+		{
+		public:
+			static inline
+			float
+			random(float max = 1000.f)
+			{
+				return rand() / (float)RAND_MAX * 1000.f;
+			}
+
+			static inline
+			std::shared_ptr<Matrix4x4>
+			randomMatrix(float max = 1000.f)
+			{
+				return Matrix4x4::create()->initialize(
+					random(max), random(max), random(max), random(max),
+					random(max), random(max), random(max), random(max),
+					random(max), random(max), random(max), random(max),
+					random(max), random(max), random(max), random(max)
+				);
+			}
+
+			static inline
+			bool
+			nearEqual(float x, float y, float epsilon = 1e-15)
+			{
+				return abs(x - y) < epsilon;
+			}
+		};
+	}
+}
