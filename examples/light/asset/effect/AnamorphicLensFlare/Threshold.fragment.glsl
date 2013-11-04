@@ -17,31 +17,27 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "MinkoSDL.hpp"
+/*
+Original "Pseudo Lens Flare" implementation by John Chapman
+http://john-chapman-graphics.blogspot.co.uk/2013/02/pseudo-lens-flare.html
+*/
 
-bool MinkoSDL::_active = false;
+#ifdef FRAGMENT_SHADER
 
-minko::Signal<>::Ptr MinkoSDL::_enterFrame = nullptr;
-
-minko::Signal<const Uint8*>::Ptr MinkoSDL::_keyDown = nullptr;
-
-minko::Signal<MinkoSDL::uint, MinkoSDL::uint>::Ptr MinkoSDL::_mouseMove = nullptr;
-minko::Signal<MinkoSDL::uint, MinkoSDL::uint>::Ptr MinkoSDL::_mouseLeftButtonDown = nullptr;
-minko::Signal<MinkoSDL::uint, MinkoSDL::uint>::Ptr MinkoSDL::_mouseLeftButtonUp = nullptr;
-minko::Signal<int, int>::Ptr MinkoSDL::_mouseWheel = nullptr;
-minko::Signal<int, int, int>::Ptr MinkoSDL::_joystickMotion = nullptr;
-minko::Signal<int>::Ptr MinkoSDL::_joystickButtonDown = nullptr;
-minko::Signal<int>::Ptr MinkoSDL::_joystickButtonUp = nullptr;
-
-minko::Signal<MinkoSDL::uint, MinkoSDL::uint>::Ptr MinkoSDL::_resized = nullptr;
-
-minko::render::AbstractContext::Ptr MinkoSDL::_context = nullptr;
-float MinkoSDL::_framerate = 0.f;
-
-#ifndef EMSCRIPTEN
-SDL_Window* MinkoSDL::_window = 0;
+#ifdef GL_ES
+precision mediump float;
 #endif
 
-#ifdef MINKO_ANGLE
-MinkoSDL::ESContext* MinkoSDL::_angleContext = 0;
+uniform sampler2D uInputTex;
+
+uniform vec4 uScale;
+uniform vec4 uBias;
+
+varying vec2 vTexcoord;
+
+void main()
+{
+	gl_FragColor = max(vec4(0.0), texture2D(uInputTex, vTexcoord) + uBias) * uScale;
+}
+
 #endif

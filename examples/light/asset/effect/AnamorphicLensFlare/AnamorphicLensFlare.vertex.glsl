@@ -17,31 +17,22 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "MinkoSDL.hpp"
+#ifdef VERTEX_SHADER
 
-bool MinkoSDL::_active = false;
-
-minko::Signal<>::Ptr MinkoSDL::_enterFrame = nullptr;
-
-minko::Signal<const Uint8*>::Ptr MinkoSDL::_keyDown = nullptr;
-
-minko::Signal<MinkoSDL::uint, MinkoSDL::uint>::Ptr MinkoSDL::_mouseMove = nullptr;
-minko::Signal<MinkoSDL::uint, MinkoSDL::uint>::Ptr MinkoSDL::_mouseLeftButtonDown = nullptr;
-minko::Signal<MinkoSDL::uint, MinkoSDL::uint>::Ptr MinkoSDL::_mouseLeftButtonUp = nullptr;
-minko::Signal<int, int>::Ptr MinkoSDL::_mouseWheel = nullptr;
-minko::Signal<int, int, int>::Ptr MinkoSDL::_joystickMotion = nullptr;
-minko::Signal<int>::Ptr MinkoSDL::_joystickButtonDown = nullptr;
-minko::Signal<int>::Ptr MinkoSDL::_joystickButtonUp = nullptr;
-
-minko::Signal<MinkoSDL::uint, MinkoSDL::uint>::Ptr MinkoSDL::_resized = nullptr;
-
-minko::render::AbstractContext::Ptr MinkoSDL::_context = nullptr;
-float MinkoSDL::_framerate = 0.f;
-
-#ifndef EMSCRIPTEN
-SDL_Window* MinkoSDL::_window = 0;
+#ifdef GL_ES
+precision mediump float;
 #endif
 
-#ifdef MINKO_ANGLE
-MinkoSDL::ESContext* MinkoSDL::_angleContext = 0;
+attribute vec3 aPosition;
+attribute vec2 aUv;
+
+varying vec2 vTexcoord;
+
+void main(void)
+{
+	vTexcoord = aUv;
+	
+	gl_Position = vec4(aPosition, 1) * vec4(1, -1, 1, .5);
+}
+
 #endif

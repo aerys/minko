@@ -2,8 +2,8 @@ minko.project.application "example-sponza"
 	kind "ConsoleApp"
 	language "C++"
 	files {
-		"**.hpp",
-		"**.cpp"
+		"src/**.hpp",
+		"src/**.cpp"
 	}
 	includedirs { "src" }
 
@@ -14,9 +14,10 @@ minko.project.application "example-sponza"
 	minko.plugin.enable("jpeg")
 	minko.plugin.enable("particles")
 	minko.plugin.enable("sdl")
-	minko.plugin.enable("oculus")
 	
 	minko.plugin.import("angle")
+
+	links { "framework" }
 
 	-- configurations
 	configuration { "debug"}
