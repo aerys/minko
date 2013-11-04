@@ -290,6 +290,20 @@ package aerys.minko.render.resource.texture
 			}
 		}
 		
+		public function disposeLocalData() : void
+		{
+			if (_atf)
+			{
+				_atf.clear();
+				_atf = null;
+			}
+			if (_bitmapData)
+			{
+				_bitmapData.dispose();
+				_bitmapData = null;
+			}
+		}
+		
 		public function dispose() : void
 		{
 			_disposed = true;
