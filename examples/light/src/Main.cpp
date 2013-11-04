@@ -25,7 +25,7 @@ using namespace minko;
 using namespace minko::component;
 using namespace minko::math;
 
-#define POST_PROCESSING true
+#define POST_PROCESSING 1
 #define WINDOW_WIDTH  	800
 #define WINDOW_HEIGHT 	600
 
