@@ -523,7 +523,7 @@ EffectParser::parseMacroBindings(const Json::Value&	contextNode, data::MacroBind
 	{
 		auto macroBindingValue = macroBindingsValue.get(propertyName, 0);
 		minko::data::MacroBindingDefault bindingDefault;
-
+		
 		bindingDefault.semantic = data::MacroBindingDefaultValueSemantic::UNSET;
 
 		if (macroBindingValue.isString())
@@ -555,6 +555,20 @@ EffectParser::parseMacroBindings(const Json::Value&	contextNode, data::MacroBind
 				minValue.asInt(),
 				maxValue.asInt()
 			);
+		}
+		else if (macroBindingValue.isInt())
+		{
+			bindingDefault.semantic = data::MacroBindingDefaultValueSemantic::VALUE;
+			bindingDefault.value.value = macroBindingValue.asInt();
+
+			macroBindings[propertyName] = data::MacroBinding("", bindingDefault, -1, -1);
+		}
+		else if (macroBindingValue.isBool())
+		{
+			bindingDefault.semantic = data::MacroBindingDefaultValueSemantic::PROPERTY_EXISTS;
+			bindingDefault.value.propertyExists = macroBindingValue.asBool();
+
+			macroBindings[propertyName] = data::MacroBinding("", bindingDefault, -1, -1);
 		}
 	}
 }
