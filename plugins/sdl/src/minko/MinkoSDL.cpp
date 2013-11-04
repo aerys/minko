@@ -28,6 +28,7 @@ minko::Signal<const Uint8*>::Ptr MinkoSDL::_keyDown = nullptr;
 minko::Signal<MinkoSDL::uint, MinkoSDL::uint>::Ptr MinkoSDL::_mouseMove = nullptr;
 minko::Signal<MinkoSDL::uint, MinkoSDL::uint>::Ptr MinkoSDL::_mouseLeftButtonDown = nullptr;
 minko::Signal<MinkoSDL::uint, MinkoSDL::uint>::Ptr MinkoSDL::_mouseLeftButtonUp = nullptr;
+minko::Signal<int, int>::Ptr MinkoSDL::_mouseWheel = nullptr;
 minko::Signal<int, int, int>::Ptr MinkoSDL::_joystickMotion = nullptr;
 minko::Signal<int>::Ptr MinkoSDL::_joystickButtonDown = nullptr;
 minko::Signal<int>::Ptr MinkoSDL::_joystickButtonUp = nullptr;
