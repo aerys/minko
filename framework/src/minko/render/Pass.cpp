@@ -87,19 +87,20 @@ Pass::selectProgram(std::shared_ptr<data::Container> data,
 				{
 					const auto&	propertyName = std::get<0>(macroBinding.second);
 					const auto propetyExists = defaultValue.semantic == data::MacroBindingDefaultValueSemantic::PROPERTY_EXISTS;
-					const auto& container = hasDefaultValue ? nullptr
+					const auto& container = propertyName.empty() ? nullptr
 						: data->hasProperty(propertyName) ? data
 						: rendererData->hasProperty(propertyName) ? rendererData
-						: rootData;
+						: rootData->hasProperty(propertyName) ? rootData
+						: nullptr;
 
 					if (defaultValue.semantic == data::MacroBindingDefaultValueSemantic::VALUE
-						|| container->propertyHasType<int>(propertyName))
+						|| container && container->propertyHasType<int>(propertyName))
 					{
 						const auto defaultIntValue = defaultValue.value.value;
 
 						if ((defaultIntValue > 0) || signatureValues[i] > 0)
 						{
-							auto value	= hasDefaultValue ? defaultIntValue : signatureValues[i];
+							auto value	= container ? signatureValues[i] : defaultIntValue;
 							auto min	= std::get<2>(macroBinding.second);
 							auto max	= std::get<3>(macroBinding.second);
 
