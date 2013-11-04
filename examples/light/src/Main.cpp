@@ -137,6 +137,11 @@ int main(int argc, char** argv)
 			mouseMove = nullptr;
 		});
 
+		auto mouseWheel = MinkoSDL::mouseWheel()->connect([&](int x, int y)
+		{
+			camera->component<Transform>()->transform()->prependTranslation(0.f, 0.f, (float)y / 10.f);
+		});
+
 		// handle keyboard signals
 		auto keyDown = MinkoSDL::keyDown()->connect([&](const Uint8* keyboard)
 		{
