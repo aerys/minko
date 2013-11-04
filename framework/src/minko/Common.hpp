@@ -113,7 +113,29 @@ namespace minko
 		class Value;
 		class Container;
         typedef std::unordered_map<std::string, std::string> BindingMap;
-		typedef std::unordered_map<std::string, std::tuple<std::string, int, int>> MacroBindingMap;
+
+		enum class MacroBindingDefaultValueSemantic
+		{
+			UNSET,
+			VALUE,
+			PROPERTY_EXISTS
+		};
+
+		union MacroBindingDefaultValue
+		{
+			bool propertyExists;
+			int value;
+		};
+
+		struct MacroBindingDefault
+		{
+			MacroBindingDefaultValueSemantic semantic;
+			MacroBindingDefaultValue value;
+		};
+
+		typedef std::tuple<std::string, MacroBindingDefault, int, int>	MacroBinding;
+
+		typedef std::unordered_map<std::string, MacroBinding> MacroBindingMap;
 	}
 
 	namespace geometry

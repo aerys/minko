@@ -1,16 +1,14 @@
-minko.project.application "example-cube"
+minko.project.application "example-effect-config"
 	kind "ConsoleApp"
 	language "C++"
 	files { "src/**.hpp", "src/**.cpp" }
 	includedirs { "src"	}
 	
 	minko.plugin.enable("sdl")
-	minko.plugin.enable("png")
-	
-	minko.plugin.import("angle")
-	
-	links { "framework" }
+	minko.plugin.enable("jpeg")
 
+	links { "framework" }
+	
 	configuration { "debug"}
 		defines { "DEBUG" }
 		flags { "Symbols" }
