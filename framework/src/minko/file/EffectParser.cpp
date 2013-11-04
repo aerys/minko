@@ -522,20 +522,36 @@ EffectParser::parseMacroBindings(const Json::Value&	contextNode, data::MacroBind
 	for (auto propertyName : macroBindingsValue.getMemberNames())
 	{
 		auto macroBindingValue = macroBindingsValue.get(propertyName, 0);
+		minko::data::MacroBindingDefault bindingDefault;
+
+		bindingDefault.semantic = data::MacroBindingDefaultValueSemantic::UNSET;
 
 		if (macroBindingValue.isString())
-			macroBindings[propertyName] = std::tuple<std::string, int, int>(macroBindingValue.asString(), -1, -1);
+			macroBindings[propertyName] = data::MacroBinding(macroBindingValue.asString(), bindingDefault, -1, -1);
 		else if (macroBindingValue.isObject())
 		{
 			auto nameValue = macroBindingValue.get("property", 0);
 			auto minValue = macroBindingValue.get("min", -1);
 			auto maxValue = macroBindingValue.get("max", -1);
+			auto defaultValue = macroBindingValue.get("default", "");
+
+			if (defaultValue.isInt())
+			{
+				bindingDefault.semantic = data::MacroBindingDefaultValueSemantic::VALUE;
+				bindingDefault.value.value = defaultValue.asInt();
+			}
+			else if (defaultValue.isBool())
+			{
+				bindingDefault.semantic = data::MacroBindingDefaultValueSemantic::PROPERTY_EXISTS;
+				bindingDefault.value.propertyExists = defaultValue.asBool();
+			}
 
 			//if (!nameValue.isString() || !minValue.isInt() || !maxValue.isInt())
 			//	throw;
 
-			macroBindings[propertyName] = std::tuple<std::string, int, int>(
+			macroBindings[propertyName] = data::MacroBinding(
 				nameValue.asString(),
+				bindingDefault,
 				minValue.asInt(),
 				maxValue.asInt()
 			);
