@@ -7,7 +7,7 @@ minko.project.application "example-light"
 	-- plugins
 	minko.plugin.enable("sdl")
 	minko.plugin.enable("png")
-	minko.plugin.enable("oculus")
+	--minko.plugin.enable("oculus")
 	
 	minko.plugin.import("angle")
 
