@@ -258,10 +258,12 @@ EffectParser::parsePasses(const Json::Value&		root,
 
 	for (auto passValue : passesValue)
 	{
+		passId++;
+
 		if (passValue.isString())
 		{
 			auto name = passValue.asString();
-			auto pass = std::find_if(
+			auto passIt = std::find_if(
 				_globalPasses.begin(),
 				_globalPasses.end(),
 				[&](Pass::Ptr pass)
@@ -270,10 +272,18 @@ EffectParser::parsePasses(const Json::Value&		root,
 				}
 			);
 
-			if (pass == _globalPasses.end())
+			if (passIt == _globalPasses.end())
 				throw std::logic_error("Pass '" + name + "' does not exist.");
 
-			passes.push_back(*pass);
+			auto pass = *passIt;
+			auto passCopy = Pass::create(pass, true);
+
+			_passIncludes[passCopy] = _passIncludes[pass];
+			_shaderIncludes[passCopy->program()->vertexShader()] = _shaderIncludes[pass->program()->vertexShader()];
+			_shaderIncludes[passCopy->program()->fragmentShader()] = _shaderIncludes[pass->program()->fragmentShader()];
+			passCopy->states()->priority((float)(passesValue.size() - passId));
+
+			passes.push_back(passCopy);
 
 			continue;
 		}
@@ -281,7 +291,7 @@ EffectParser::parsePasses(const Json::Value&		root,
 		if (!parseConfiguration(passValue))
 			continue;
 
-		auto name = passValue.get("name", std::to_string(passId++)).asString();
+		auto name = passValue.get("name", std::to_string(passId)).asString();
 
 		// pass bindings
 		data::BindingMap		attributeBindings(defaultAttributeBindings);
@@ -501,30 +511,66 @@ EffectParser::parseBindings(const Json::Value&		contextNode,
 		for (auto propertyName : stateBindingsValue.getMemberNames())
 			stateBindings[propertyName] = stateBindingsValue.get(propertyName, 0).asString();
 
+	parseMacroBindings(contextNode, macroBindings);
+}
+
+void
+EffectParser::parseMacroBindings(const Json::Value&	contextNode, data::MacroBindingMap&	macroBindings)
+{
 	auto macroBindingsValue = contextNode.get("macroBindings", 0);
 	if (macroBindingsValue.isObject())
-		for (auto propertyName : macroBindingsValue.getMemberNames())
+	for (auto propertyName : macroBindingsValue.getMemberNames())
+	{
+		auto macroBindingValue = macroBindingsValue.get(propertyName, 0);
+		minko::data::MacroBindingDefault bindingDefault;
+		
+		bindingDefault.semantic = data::MacroBindingDefaultValueSemantic::UNSET;
+
+		if (macroBindingValue.isString())
+			macroBindings[propertyName] = data::MacroBinding(macroBindingValue.asString(), bindingDefault, -1, -1);
+		else if (macroBindingValue.isObject())
 		{
-			auto macroBindingValue = macroBindingsValue.get(propertyName, 0);
+			auto nameValue = macroBindingValue.get("property", 0);
+			auto minValue = macroBindingValue.get("min", -1);
+			auto maxValue = macroBindingValue.get("max", -1);
+			auto defaultValue = macroBindingValue.get("default", "");
 
-			if (macroBindingValue.isString())
-				macroBindings[propertyName] = std::tuple<std::string, int, int>(macroBindingValue.asString(), -1, -1);
-			else if (macroBindingValue.isObject())
+			if (defaultValue.isInt())
 			{
-				auto nameValue = macroBindingValue.get("property", 0);
-				auto minValue = macroBindingsValue.get("min", -1);
-				auto maxValue = macroBindingsValue.get("max", -1);
-
-				//if (!nameValue.isString() || !minValue.isInt() || !maxValue.isInt())
-				//	throw;
-
-				macroBindings[propertyName] = std::tuple<std::string, int, int>(
-					nameValue.asString(),
-					minValue.asInt(),
-					maxValue.asInt()
-				);
+				bindingDefault.semantic = data::MacroBindingDefaultValueSemantic::VALUE;
+				bindingDefault.value.value = defaultValue.asInt();
 			}
+			else if (defaultValue.isBool())
+			{
+				bindingDefault.semantic = data::MacroBindingDefaultValueSemantic::PROPERTY_EXISTS;
+				bindingDefault.value.propertyExists = defaultValue.asBool();
+			}
+
+			//if (!nameValue.isString() || !minValue.isInt() || !maxValue.isInt())
+			//	throw;
+
+			macroBindings[propertyName] = data::MacroBinding(
+				nameValue.asString(),
+				bindingDefault,
+				minValue.asInt(),
+				maxValue.asInt()
+			);
 		}
+		else if (macroBindingValue.isInt())
+		{
+			bindingDefault.semantic = data::MacroBindingDefaultValueSemantic::VALUE;
+			bindingDefault.value.value = macroBindingValue.asInt();
+
+			macroBindings[propertyName] = data::MacroBinding("", bindingDefault, -1, -1);
+		}
+		else if (macroBindingValue.isBool())
+		{
+			bindingDefault.semantic = data::MacroBindingDefaultValueSemantic::PROPERTY_EXISTS;
+			bindingDefault.value.propertyExists = macroBindingValue.asBool();
+
+			macroBindings[propertyName] = data::MacroBinding("", bindingDefault, -1, -1);
+		}
+	}
 }
 
 void
@@ -646,7 +692,7 @@ EffectParser::loadTexture(const std::string&	textureFilename,
 			loader->resolvedFilename(),
 			loader->options(), loader->data(),
 			_assetLibrary
-			);
+		);
 	});
 
 	_loaderErrorSlots[loader] = loader->error()->connect(std::bind(
@@ -728,9 +774,9 @@ EffectParser::parseStencilState(const Json::Value& contextNode,
 
 void
 EffectParser::parseStencilOperations(const Json::Value& contextNode,
-									StencilOperation& stencilFailOp,
-									StencilOperation& stencilZFailOp,
-									StencilOperation& stencilZPassOp) const
+									 StencilOperation& 	stencilFailOp,
+									 StencilOperation& 	stencilZFailOp,
+									 StencilOperation& 	stencilZPassOp) const
 {
 	if (contextNode.isArray())
 	{
@@ -743,7 +789,7 @@ EffectParser::parseStencilOperations(const Json::Value& contextNode,
 	}
 	else
 	{
-		auto failValue		= contextNode.get("fail", 0);
+		auto failValue	= contextNode.get("fail", 0);
 		auto zfailValue	= contextNode.get("zfail", 0);
 		auto zpassValue	= contextNode.get("zpass", 0);
 
@@ -804,10 +850,10 @@ EffectParser::parseTarget(const Json::Value&                contextNode,
 }
 
 void
-EffectParser::parseDependencies(const Json::Value& 			root,
-								const std::string& 			filename,
-								file::Options::Ptr 			options,
-								std::vector<LoaderPtr>& 	store)
+EffectParser::parseDependencies(const Json::Value& 		root,
+								const std::string& 		filename,
+								file::Options::Ptr 		options,
+								std::vector<LoaderPtr>& store)
 {
 	auto includes	= root.get("includes", 0);
 	int pos			= filename.find_last_of("/");
@@ -1018,6 +1064,9 @@ EffectParser::finalize()
 		for (auto& target : targets.second)
 			_effect->data()->set(target.first, target.second);
 
+	for (auto& targetNameAndPtr : _globalTargets)
+		_effect->data()->set(targetNameAndPtr.first, targetNameAndPtr.second);
+	
 	_assetLibrary->effect(_effectName, _effect);
     _assetLibrary->effect(_filename, _effect);
 

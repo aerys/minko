@@ -88,8 +88,7 @@ namespace minko
             std::unordered_map<uint, std::shared_ptr<math::Vector4>>    _uniformFloat4;
             std::unordered_map<uint, const float*>                      _uniformFloat16;
 
-            std::list<ContainerPropertyChangedSlot>							_propertyChangedSlots;
-			std::unordered_map<std::string, ContainerPropertyChangedSlot>	_referenceChangedSlots;
+			std::unordered_map<std::string, std::list<Any>>				_referenceChangedSlots; // Any = ContainerPropertyChangedSlot
 
 		public:
 			static inline
@@ -150,13 +149,22 @@ namespace minko
 			bindStates();
 
 			void
-			bindVertexAttribute(ContainerPtr, const std::string& propertyName, int location, int vertexBufferId);
+			bindVertexAttribute(const std::string& propertyName, int location, int vertexBufferId);
 
 			void
-			bindTextureSampler2D(ContainerPtr, const std::string& inputName, const std::string& propertyName, int location, int textureId);
+			watchVertexAttributeRefChange(ContainerPtr, const std::string& propertyName, int location, int vertexBufferId);
 
 			void
-			bindUniform(ContainerPtr, const std::string& propertyName, ProgramInputs::Type, int location);
+			bindTextureSampler2D(const std::string& propertyName, int location, int textureId, const SamplerState&);
+
+			void
+			watchTextureSampler2DRefChange(ContainerPtr, const std::string& propertyName, int location, int textureId, const SamplerState&);
+
+			void
+			bindUniform(const std::string& propertyName, ProgramInputs::Type, int location);
+
+			void
+			watchUniformRefChange(ContainerPtr, const std::string& propertyName, ProgramInputs::Type, int location);
 
             template <typename T>
             T
@@ -190,13 +198,6 @@ namespace minko
 
             bool
             dataHasProperty(const std::string& propertyName);
-
-            void
-            watchProperty(const std::string& propertyName);
-
-            void
-            propertyChangedHandler(ContainerPtr        data,
-                                   const std::string&  propertyName);
 		};		
 	}
 }

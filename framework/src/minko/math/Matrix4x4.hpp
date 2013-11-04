@@ -222,18 +222,12 @@ namespace minko
 
 				return shared_from_this();
 			}
-
+			
 			inline
 			bool
 			operator==(Matrix4x4& value)
 			{
-				std::vector<float> m = value._m;
-
-				for (auto i = 0; i < 16; ++i)
-					if (_m[i] != m[i])
-						return false;
-
-				return true;
+				return _m == value._m;
 			}
 
 			Ptr
@@ -299,6 +293,13 @@ namespace minko
 			copyTranslation(Vector3::Ptr t)
 			{
 				t->setTo(_m[3], _m[7], _m[11]);
+			}
+
+			inline
+			bool
+			equals(Ptr matrix)
+			{
+				return _m == matrix->_m;
 			}
 
 			Ptr
