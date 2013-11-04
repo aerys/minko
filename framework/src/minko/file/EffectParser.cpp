@@ -281,7 +281,7 @@ EffectParser::parsePasses(const Json::Value&		root,
 			_passIncludes[passCopy] = _passIncludes[pass];
 			_shaderIncludes[passCopy->program()->vertexShader()] = _shaderIncludes[pass->program()->vertexShader()];
 			_shaderIncludes[passCopy->program()->fragmentShader()] = _shaderIncludes[pass->program()->fragmentShader()];
-			passCopy->states()->priority(passesValue.size() - passId);
+			passCopy->states()->priority((float)(passesValue.size() - passId));
 
 			passes.push_back(passCopy);
 
