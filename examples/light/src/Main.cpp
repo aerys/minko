@@ -20,16 +20,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Minko.hpp"
 #include "minko/MinkoPNG.hpp"
 #include "minko/MinkoSDL.hpp"
-#ifdef MINKO_PLUGIN_OCULUS
-	#include "minko/MinkoOculus.hpp"
-#endif // MINKO_PLUGIN_OCULUS
 
 using namespace minko;
 using namespace minko::component;
 using namespace minko::math;
 
-const int WINDOW_WIDTH = 800;
-const int WINDOW_HEIGHT = 600;
+#define POST_PROCESSING true
+#define WINDOW_WIDTH  	800
+#define WINDOW_HEIGHT 	600
 
 float cameraRotationYSpeed = 0.f;
 scene::Node::Ptr camera = nullptr;
@@ -53,118 +51,6 @@ createPointLight(Vector3::Ptr color, Vector3::Ptr position, file::AssetLibrary::
 	return pointLight;
 }
 
-float
-hue2rgb(float p, float q, float t)
-{
-	if (t < 0.f)
-		t += 1.f;
-	if (t > 1.f)
-		t -= 1.f;
-	if (t < 1.f/6.f)
-		return p + (q - p) * 6.f * t;
-	if (t < 1.f/2.f)
-		return q;
-	if (t < 2.f/3.f)
-		return p + (q - p) * (2.f/3.f - t) * 6.f;
-
-	return p;
-}
-
-Vector3::Ptr
-hslToRgb(float h, float s, float l)
-{
-    float r, g, b;
-
-    if (s == 0)
-        r = g = b = l; // achromatic
-    else
-	{
-        float q = l < 0.5f ? l * (1.f + s) : l + s - l * s;
-        float p = 2.f * l - q;
-
-        r = hue2rgb(p, q, h + 1.f/3.f);
-        g = hue2rgb(p, q, h);
-        b = hue2rgb(p, q, h - 1.f/3.f);
-    }
-
-	return Vector3::create(r, g, b);
-}
-
-/*
-void
-initializeOculus(SceneManager::Ptr sceneManager, scene::Node::Ptr root)
-{
-	const auto lensSeparationDistance = 6.4f;
-	const uint targetSize = 2048;
-	auto context = sceneManager->assets()->context();
-
-	// left eye
-	auto leftEye = scene::Node::create();
-	auto leftEyeTexture = render::Texture::create(context, targetSize, targetSize, false, true);
-	auto leftRenderer = Renderer::create();
-	auto leftCamera = PerspectiveCamera::create((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT);
-
-	leftEyeTexture->upload();
-	leftRenderer->target(leftEyeTexture);
-	leftEye->addComponent(leftRenderer);
-	leftEye->addComponent(leftCamera);
-	leftEye->addComponent(Transform::create(Matrix4x4::create()->appendTranslation(-lensSeparationDistance * .5f)));
-
-	// right eye
-	auto rightEye = scene::Node::create();
-	auto rightEyeTexture = render::Texture::create(context, targetSize, targetSize, false, true);
-	auto rightRenderer = Renderer::create();
-	auto rightCamera = PerspectiveCamera::create((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT);
-
-	rightEyeTexture->upload();
-	rightRenderer->target(rightEyeTexture);
-	rightEye->addComponent(rightRenderer);
-	rightEye->addComponent(rightCamera);
-	rightEye->addComponent(Transform::create(Matrix4x4::create()->appendTranslation(lensSeparationDistance * .5f)));
-
-	// camera
-	camera = scene::Node::create()
-		->addComponent(Transform::create(
-			Matrix4x4::create()->lookAt(Vector3::create(0.f, 2.f), Vector3::create(10.f, 10.f, 10.f))
-		))
-		->addChild(rightEye)
-		->addChild(leftEye);
-	root->addChild(camera);
-
-	// post processing effect
-	auto ppFx = sceneManager->assets()->effect("effect/oculusvr/OculusVR.effect");
-	auto ppRenderer = Renderer::create();
-	auto ppScene = scene::Node::create()
-		->addComponent(ppRenderer)
-		->addComponent(Surface::create(
-			geometry::QuadGeometry::create(sceneManager->assets()->context()),
-			data::StructureProvider::create("oculusvr")
-				->set("leftEyeTexture",		leftEyeTexture)
-				->set("rightEyeTexture",	rightEyeTexture),
-			ppFx
-		));
-
-	auto resized = MinkoSDL::resized()->connect([&](unsigned int width, unsigned int height)
-	{
-		auto r = (float)width / (float)height;
-
-		leftCamera->aspectRatio(r);
-		rightCamera->aspectRatio(r);
-	});
-
-	auto enterFrame = MinkoSDL::enterFrame()->connect([&]()
-	{
-		camera->component<Transform>()->transform()->appendRotationY(cameraRotationYSpeed);
-		cameraRotationYSpeed *= 0.9f;
-
-		sceneManager->nextFrame();
-		ppRenderer->render(sceneManager->assets()->context());
-	});
-
-	MinkoSDL::run();
-}
-*/
-
 int main(int argc, char** argv)
 {
 	MinkoSDL::initialize("Minko Examples - Light", WINDOW_WIDTH, WINDOW_HEIGHT);
@@ -178,7 +64,6 @@ int main(int argc, char** argv)
 	auto sphereMaterial		= material::Material::create()
 		->set("diffuseColor",	Vector4::create(1.f, 1.f, 1.f, 1.f))
 		->set("shininess",		16.f);
-		//->set("normalMap",		assets->texture("texture/normalmap-cells.png")),
 	auto lights				= scene::Node::create("lights");
 
 	std::cout << "Press [SPACE]\tto toogle normal mapping\nPress [A]\tto add random light\nPress [R]\tto remove random light" << std::endl;
@@ -197,11 +82,7 @@ int main(int argc, char** argv)
 		->queue("effect/Basic.effect")
 		->queue("effect/Sprite.effect")
 		->queue("effect/Phong.effect")
-		->queue("effect/pseudolensflare/PseudoLensFlare.effect")
-#ifdef MINKO_PLUGIN_OCULUS
-		->queue("effect/OculusVR/OculusVR.effect")
-#endif // MINKO_PLUGIN_OCULUS
-		;
+		->queue("effect/AnamorphicLensFlare/AnamorphicLensFlare.effect");
 
     auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
 	{
@@ -211,7 +92,6 @@ int main(int argc, char** argv)
 				assets->geometry("quad"),
 				material::Material::create()
 					->set("diffuseColor",	Vector4::create(1.f, 1.f, 1.f, 1.f)),
-					//->set("normalMap",		assets->texture("texture/window-normal.png")),
 				assets->effect("effect/Phong.effect")
 			))
 			->addComponent(Transform::create(Matrix4x4::create()->appendScale(50.f)->appendRotationX(-1.57f)));
@@ -272,7 +152,7 @@ int main(int argc, char** argv)
 
 				auto r = rand() / (float)RAND_MAX;
 				auto theta = 2.0f * PI *  r;
-				auto color = hslToRgb(r, 1.f, .5f);
+				auto color = Color::hslaToRgba(r, 1.f, .5f);
 				auto pos = Vector3::create(
 					cosf(theta) * 5.f + rand() / ((float)RAND_MAX * 3.f),
 					2.5f + rand() / (float)RAND_MAX,
@@ -311,30 +191,40 @@ int main(int argc, char** argv)
 				camera->component<Transform>()->transform()->prependTranslation(0.f, 0.f, 1.f);
 		});
 
-
 		// camera init
-		camera = scene::Node::create("camera");
+		camera = scene::Node::create("camera")
+			->addComponent(Renderer::create())
+			->addComponent(PerspectiveCamera::create((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT))
+			->addComponent(Transform::create(
+				Matrix4x4::create()->lookAt(Vector3::create(0.f, 2.f), Vector3::create(10.f, 10.f, 10.f))
+			));
 		root->addChild(camera);
 
-#ifdef MINKO_PLUGIN_OCULUS
-			camera->addComponent(OculusVRCamera::create((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT));
-#else
-			camera
-				->addComponent(Renderer::create())
-				->addComponent(PerspectiveCamera::create((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT));
-#endif // MINKO_PLUGIN_OCULUS
+		// initialize post processing
+#if POST_PROCESSING
+		auto ppFx = sceneManager->assets()->effect("effect/AnamorphicLensFlare/AnamorphicLensFlare.effect");
 
-		camera->addComponent(Transform::create(
-			Matrix4x4::create()->lookAt(Vector3::create(0.f, 2.f), Vector3::create(10.f, 10.f, 10.f))
-		));
+		if (!ppFx)
+			throw std::logic_error("AnamorphicLensFlare.effect has not been loaded.");
+
+		auto ppTarget = render::Texture::create(assets->context(), 1024, 1024, false, true);
+
+		ppTarget->upload();
+
+		auto ppRenderer = Renderer::create();
+		auto ppScene = scene::Node::create()
+			->addComponent(ppRenderer)
+			->addComponent(Surface::create(
+				geometry::QuadGeometry::create(sceneManager->assets()->context()),
+				data::Provider::create()
+					->set("backbuffer", ppTarget),
+				ppFx
+			));
+#endif
 		
 		auto resized = MinkoSDL::resized()->connect([&](unsigned int width, unsigned int height)
 		{
-#ifdef MINKO_PLUGIN_OCULUS
-			camera->component<OculusVRCamera>()->aspectRatio((float)width / (float)height);
-#else
 			camera->component<PerspectiveCamera>()->aspectRatio((float)width / (float)height);
-#endif // MINKO_PLUGIN_OCULUS
 		});
 
 		auto enterFrame = MinkoSDL::enterFrame()->connect([&]()
@@ -344,9 +234,14 @@ int main(int argc, char** argv)
 
 			lights->component<Transform>()->transform()->appendRotationY(.005f);
 
+#if POST_PROCESSING
+			sceneManager->nextFrame(ppTarget);
+			ppRenderer->render(assets->context());
+#else
 			sceneManager->nextFrame();
+#endif
 		});
-				
+
 		MinkoSDL::run();
 	});
 
