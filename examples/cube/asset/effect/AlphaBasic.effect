@@ -1,0 +1,122 @@
+// cameraValue effect
+{
+	"name"	: "alphaBasic",
+	
+	"attributeBindings"	: {
+		"position"				: "geometry.vertex.attribute.position",
+		"uv"					: "geometry.vertex.attribute.uv"
+	},
+	
+	"uniformBindings"	: {
+		"diffuseColor"			: "material.diffuseColor",
+		"diffuseMap"			: "material.diffuseMap",
+		"uvScaling"				: "material.uvScaling",
+		"uvOffset"				: "material.uvOffset",
+		"modelToWorldMatrix"	: "transform.modelToWorldMatrix",
+		"worldToScreenMatrix"	: "camera.worldToScreenMatrix",
+		"alpha"					: "alpha"
+	},
+	
+	"stateBindings"	: {
+		"triangleCulling"		: "material.triangleCulling",
+		"blendMode"				: "material.blendMode",
+		"colorMask"				: "material.colorMask",
+		"stencilFunc"			: "material.stencilFunc",
+		"stencilRef"			: "material.stencilRef",
+		"stencilMask"			: "material.stencilMask",
+		"stencilFailOp"			: "material.stencilFailOp",
+		"stencilZFailOp"		: "material.stencilZFailOp",
+		"stencilZPassOp"		: "material.stencilZPassOp",
+		"depthMask"				: "material.depthMask",
+		"depthFunc"				: "material.depthFunc",
+		"target"				: "material.renderTarget"
+	},
+
+	"macroBindings"	: {
+		"TECHNIQUE_DIFFUSE_MAP"		: "material.diffuseMap",
+		"HAS_MODEL_TO_WORLD"		: "transform.modelToWorldMatrix",
+		"HAS_UV_SCALING"			: "material.uvScaling",
+		"HAS_UV_OFFSET"				: "material.uvOffset",
+		"HAS_ALPHA"					: "alpha"
+	},
+	
+	"priority"			: 0,
+	"blendMode"			: ["one", "zero"],
+	"depthTest"			: [true, "less_equal"],
+	"triangleCulling"	: "back",
+	
+	"samplerStates" : {
+		"diffuseMap"	: { "textureFilter" : "linear", "mipFilter" : "linear" }
+	},
+	
+	"passes"	: [{	
+		"vertexShader"	: "
+			#ifdef GL_ES
+				precision mediump float;
+			#endif
+		
+			attribute 	vec3	position;
+			attribute 	vec2	uv;
+			
+			uniform 	vec2	uvScaling;
+			uniform 	vec2	uvOffset;
+			uniform 	mat4	modelToWorldMatrix;
+			uniform 	mat4	worldToScreenMatrix;
+			
+			varying		vec2	vertexUV;
+
+			void main(void)
+			{
+				#ifdef TECHNIQUE_DIFFUSE_MAP
+					vertexUV = uv;
+					
+					#ifdef HAS_UV_SCALING
+						vertexUV *= uvScaling;
+					#endif // HAS_UV_SCALING
+					
+					#ifdef HAS_UV_OFFSET
+						vertexUV += uvOffset;
+					#endif // HAS_UV_OFFSET
+					
+				#endif // TECHNIQUE_DIFFUSE_MAP
+
+				vec4 pos = vec4(position, 1.0);
+				
+				#ifdef HAS_MODEL_TO_WORLD
+					pos = modelToWorldMatrix * pos;
+				#endif
+				
+				pos = worldToScreenMatrix * pos;
+				
+				gl_Position =  pos;
+			}
+		",
+		"fragmentShader"	: "
+			#ifdef GL_ES
+				precision mediump float;
+			#endif
+
+			uniform vec4 			diffuseColor;
+			uniform sampler2D 		diffuseMap;
+			
+			uniform float			alpha;
+			
+			varying	vec2 			vertexUV;
+
+			void main(void)
+			{
+				vec4 color = diffuseColor;
+
+				#ifdef TECHNIQUE_DIFFUSE_MAP
+					color *= texture2D(diffuseMap, vertexUV);
+				#endif // TECHNIQUE_DIFFUSE_MAP
+				
+				#ifdef HAS_ALPHA
+					gl_FragColor = vec4(color.xyz, alpha);
+				#else
+					gl_FragColor = color;
+				#endif // HAS_ALPHA
+			}
+		"
+	}]
+}
