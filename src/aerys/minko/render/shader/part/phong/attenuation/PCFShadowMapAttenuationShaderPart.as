@@ -5,6 +5,7 @@ package aerys.minko.render.shader.part.phong.attenuation
 	import aerys.minko.render.shader.Shader;
 	import aerys.minko.render.shader.part.phong.LightAwareShaderPart;
 	import aerys.minko.render.shader.part.phong.depth.LinearDepthFromLightShaderPart;
+	import aerys.minko.scene.data.LightDataProvider;
 	import aerys.minko.scene.node.light.PointLight;
 	import aerys.minko.type.enum.SamplerDimension;
 	import aerys.minko.type.enum.SamplerFiltering;
@@ -39,6 +40,7 @@ package aerys.minko.render.shader.part.phong.attenuation
 			
 			// retrieve depthmap matrix
 			var lightType			: uint		= getLightProperty(lightId, 'type');
+						
 			var depthMap	: SFloat = getLightTextureParameter(
 				lightId,
 				'shadowMap', 
@@ -61,10 +63,7 @@ package aerys.minko.render.shader.part.phong.attenuation
 			var quality				: uint		= getLightProperty(lightId, 'shadowQuality');
 			if (quality != ShadowMappingQuality.HARD)
 			{
-				var invertSize	: SFloat			= divide(
-					getLightParameter(lightId, 'shadowSpread', 1),
-					getLightParameter(lightId, 'shadowMapSize', 1)
-				);
+				var invertSize	: Number = getLightProperty(lightId, 'shadowSpread', 1) / getLightProperty(lightId, 'shadowMapSize', 2048);
 				
 				var uvs 		: Vector.<SFloat>	= new <SFloat>[];
 				var uvDelta		: SFloat;
