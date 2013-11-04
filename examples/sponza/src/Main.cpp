@@ -383,7 +383,7 @@ main(int argc, char** argv)
 	sceneManager->assets()
 		->queue("texture/firefull.jpg")
 		->queue("effect/Particles.effect")
-		->queue("effect/OculusVR/OculusVR.effect")
+		//->queue("effect/OculusVR/OculusVR.effect")
 		->queue(MK_NAME);
 
 	renderer = Renderer::create();
