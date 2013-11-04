@@ -69,16 +69,25 @@ OculusVRCamera::targetAddedHandler(AbsCmpPtr component, NodePtr target)
 	const uint targetSize = 2048;
 	const float worldFactor = 1.f;
 
-	_hmd = {
-		1280.f,
-		800.f,
-		0.14976f,
-		0.0936f,
-		0.064f,
-		0.0635f,
-		0.041f,
-		Vector4::create(1.0, 0.22, 0.24, 0.0)
-	};
+	_hmd.hResolution			= 1280.f;
+	_hmd.vResolution			= 800.f;
+	_hmd.hScreenSize			= 0.14976f;
+	_hmd.vScreenSize			= 0.0936f;
+	_hmd.interpupillaryDistance	= 0.064f;
+	_hmd.lensSeparationDistance	= 0.0635f;
+	_hmd.eyeToScreenDistance	= 0.041f;
+	_hmd.distortionK			= Vector4::create(1.0, 0.22, 0.24, 0.0);
+
+	//_hmd = {
+	//	1280.f,
+	//	800.f,
+	//	0.14976f,
+	//	0.0936f,
+	//	0.064f,
+	//	0.0635f,
+	//	0.041f,
+	//	Vector4::create(1.0, 0.22, 0.24, 0.0)
+	//};
 
 	auto aspect = _hmd.hResolution / (2.f * _hmd.vResolution);
 	auto lensShift = 1.f - 2.f * _hmd.lensSeparationDistance / _hmd.hScreenSize;

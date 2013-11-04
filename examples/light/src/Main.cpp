@@ -19,8 +19,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Minko.hpp"
 #include "minko/MinkoPNG.hpp"
-#include "minko/MinkoOculus.hpp"
 #include "minko/MinkoSDL.hpp"
+#ifdef MINKO_PLUGIN_OCULUS
+	#include "minko/MinkoOculus.hpp"
+#endif // MINKO_PLUGIN_OCULUS
 
 using namespace minko;
 using namespace minko::component;
@@ -28,7 +30,6 @@ using namespace minko::math;
 
 const int WINDOW_WIDTH = 800;
 const int WINDOW_HEIGHT = 600;
-const bool OCULUS_ENABLED = true;
 
 float cameraRotationYSpeed = 0.f;
 scene::Node::Ptr camera = nullptr;
@@ -197,7 +198,10 @@ int main(int argc, char** argv)
 		->queue("effect/Sprite.effect")
 		->queue("effect/Phong.effect")
 		->queue("effect/pseudolensflare/PseudoLensFlare.effect")
-		->queue("effect/OculusVR/OculusVR.effect");
+#ifdef MINKO_PLUGIN_OCULUS
+		->queue("effect/OculusVR/OculusVR.effect")
+#endif // MINKO_PLUGIN_OCULUS
+		;
 
     auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
 	{
@@ -311,22 +315,26 @@ int main(int argc, char** argv)
 		// camera init
 		camera = scene::Node::create("camera");
 		root->addChild(camera);
-		if (OCULUS_ENABLED)
+
+#ifdef MINKO_PLUGIN_OCULUS
 			camera->addComponent(OculusVRCamera::create((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT));
-		else
+#else
 			camera
 				->addComponent(Renderer::create())
 				->addComponent(PerspectiveCamera::create((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT));
+#endif // MINKO_PLUGIN_OCULUS
+
 		camera->addComponent(Transform::create(
 			Matrix4x4::create()->lookAt(Vector3::create(0.f, 2.f), Vector3::create(10.f, 10.f, 10.f))
 		));
 		
 		auto resized = MinkoSDL::resized()->connect([&](unsigned int width, unsigned int height)
 		{
-			if (camera->component<PerspectiveCamera>())
-				camera->component<PerspectiveCamera>()->aspectRatio((float)width / (float)height);
-			else if (camera->component<OculusVRCamera>())
-				camera->component<OculusVRCamera>()->aspectRatio((float)width / (float)height);
+#ifdef MINKO_PLUGIN_OCULUS
+			camera->component<OculusVRCamera>()->aspectRatio((float)width / (float)height);
+#else
+			camera->component<PerspectiveCamera>()->aspectRatio((float)width / (float)height);
+#endif // MINKO_PLUGIN_OCULUS
 		});
 
 		auto enterFrame = MinkoSDL::enterFrame()->connect([&]()

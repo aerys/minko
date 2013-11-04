@@ -14,7 +14,7 @@ include 'plugins/bullet'
 include 'plugins/particles'
 include 'plugins/sdl'
 include 'plugins/angle'
-include 'plugins/oculus'
+--include 'plugins/oculus'
 if _OPTIONS["platform"] == "emscripten" then
 	include 'plugins/webgl'
 end
