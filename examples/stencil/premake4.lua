@@ -8,7 +8,9 @@ minko.project.application "example-stencil"
 	minko.plugin.enable("png")
 	
 	minko.plugin.import("angle")
-	
+
+	links { "framework" }
+
 	configuration { "debug"}
 		defines { "DEBUG" }
 		flags { "Symbols" }

@@ -62,6 +62,13 @@ namespace minko
 				return s;
 			}
 
+			inline static
+			Ptr
+			create(Ptr shader)
+			{
+				return create(shader->_context, shader->_type, shader->_source);
+			}
+
 			inline
 			Type
 			type() const

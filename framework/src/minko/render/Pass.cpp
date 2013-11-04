@@ -80,20 +80,29 @@ Pass::selectProgram(std::shared_ptr<data::Container> data,
 			// create shader header with #defines
 			for (const auto& macroBinding : _macroBindings)
             {
-				if (signatureMask & (1 << i))
-				{
-					const auto&	propertyName	= std::get<0>(macroBinding.second);
-					auto&		container		= data->hasProperty(propertyName) ? data
-						: (rendererData->hasProperty(propertyName) ? rendererData : rootData);
+				const auto& defaultValue = std::get<1>(macroBinding.second);
+				const auto hasDefaultValue = defaultValue.semantic != data::MacroBindingDefaultValueSemantic::UNSET;
 
-					// warning: integer macros corresponding to array lengths must be POSITIVE!
-					if (container->propertyHasType<int>(propertyName))
+				if (hasDefaultValue || signatureMask & (1 << i))
+				{
+					const auto&	propertyName = std::get<0>(macroBinding.second);
+					const auto propetyExists = defaultValue.semantic == data::MacroBindingDefaultValueSemantic::PROPERTY_EXISTS;
+					const auto& container = propertyName.empty() ? nullptr
+						: data->hasProperty(propertyName) ? data
+						: rendererData->hasProperty(propertyName) ? rendererData
+						: rootData->hasProperty(propertyName) ? rootData
+						: nullptr;
+
+					if (defaultValue.semantic == data::MacroBindingDefaultValueSemantic::VALUE
+						|| container && container->propertyHasType<int>(propertyName))
 					{
-						if (signatureValues[i] > 0)
+						const auto defaultIntValue = defaultValue.value.value;
+
+						if ((defaultIntValue > 0) || signatureValues[i] > 0)
 						{
-							auto value = signatureValues[i];
-							auto min = std::get<1>(macroBinding.second);
-							auto max = std::get<2>(macroBinding.second);
+							auto value	= container ? signatureValues[i] : defaultIntValue;
+							auto min	= std::get<2>(macroBinding.second);
+							auto max	= std::get<3>(macroBinding.second);
 
 							if ((min != -1 && value < min) || (max != -1 && value > max))
 								return nullptr;
@@ -102,7 +111,9 @@ Pass::selectProgram(std::shared_ptr<data::Container> data,
 							bindingValues.push_back(propertyName);
 						}
 					}
-					else
+					else if ((defaultValue.semantic == data::MacroBindingDefaultValueSemantic::PROPERTY_EXISTS
+							  && defaultValue.value.propertyExists)
+							 || container)
 					{
 						defines += "#define " + macroBinding.first + "\n";
 						bindingDefines.push_back(propertyName);
