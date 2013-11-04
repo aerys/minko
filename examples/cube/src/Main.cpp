@@ -25,6 +25,8 @@ using namespace minko;
 using namespace minko::component;
 using namespace minko::math;
 
+const std::string PROP_NAME = "myFloat";
+
 int main(int argc, char** argv)
 {
 	MinkoSDL::initialize("Minko Example - Cube", 800, 600);
@@ -37,7 +39,11 @@ int main(int argc, char** argv)
 		->registerParser<file::PNGParser>("png")
 		->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()))
 		->queue("texture/box.png")
-		->queue("effect/Basic.effect");
+		//->queue("effect/Basic.effect")
+		->queue("effect/myFloat.effect");
+
+	const clock_t	start	= clock();
+	const float		period	= 2.0f;
 
 	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
 	{
@@ -50,7 +56,6 @@ int main(int argc, char** argv)
 				Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 3.f))
 			))
 			->addComponent(PerspectiveCamera::create(800.f / 600.f, PI * 0.25f, .1f, 1000.f));
-		root->addChild(camera);
 		
 		auto mesh = scene::Node::create("mesh")
 			->addComponent(Transform::create())
@@ -59,9 +64,22 @@ int main(int argc, char** argv)
 				material::Material::create()
 					->set("diffuseColor",	Vector4::create(0.f, 0.f, 1.f, 1.f))
 					->set("diffuseMap",		assets->texture("texture/box.png")),
-				assets->effect("effect/Basic.effect")
+				assets->effect("my-float")
 			));
-		root->addChild(mesh);
+
+		// handle keyboard signals
+		auto keyDown = MinkoSDL::keyDown()->connect([&](const Uint8* keyboard)
+		{
+			if (!root->data()->hasProperty(PROP_NAME))
+			{
+				std::cout << "add property to root" << std::endl;
+	
+				auto provider = data::Provider::create();
+				provider->set(PROP_NAME, 0.0f);
+				root->data()->addProvider(provider);
+			}
+		});
+
 
 		auto resized = MinkoSDL::resized()->connect([&](uint w, uint h)
 		{
@@ -71,8 +89,21 @@ int main(int argc, char** argv)
 		auto enterFrame = MinkoSDL::enterFrame()->connect([&]()
 		{
 			mesh->component<Transform>()->transform()->appendRotationY(.01f);
+
+			if (root->data()->hasProperty(PROP_NAME))
+			{
+				float value	= (float)(clock() - start) / (float)CLOCKS_PER_SEC;
+				value		/= period;
+				value		-= floorf(value);
+
+				root->data()->set<float>(PROP_NAME, value);
+			}
+
 			sceneManager->nextFrame();
 		});
+
+		root->addChild(mesh);
+		root->addChild(camera);
 
 		MinkoSDL::run();
 	});
@@ -81,3 +112,5 @@ int main(int argc, char** argv)
 
 	return 0;
 }
+
+
