@@ -67,4 +67,7 @@ Options::initializePlatforms()
 #ifdef EMSCRIPTEN
 	_platforms.push_back("web");
 #endif
+#if defined(LINUX) || defined(__unix__)
+	_platforms.push_back("linux");
+#endif
 }
