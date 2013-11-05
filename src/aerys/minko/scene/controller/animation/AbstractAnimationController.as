@@ -43,6 +43,7 @@ package aerys.minko.scene.controller.animation
 		protected var _timeFunction				: Function;
 		
 		protected var _lastTime					: int;
+		protected var _lastTimeUntransformed	: int;
 		
 		protected var _labelNames				: Vector.<String>;
 		protected var _labelTimes				: Vector.<Number>;
@@ -63,6 +64,12 @@ package aerys.minko.scene.controller.animation
 		
 		public function set reverse(value:Boolean):void
 		{
+			if (_reverse != value)
+			{
+				_lastTime = -_lastTime;
+				_lastTimeUntransformed = -_lastTimeUntransformed;
+			}
+			
 			_reverse = value;
 			updateNextLabel(_currentTime);
 		}
@@ -79,6 +86,22 @@ package aerys.minko.scene.controller.animation
 		
 		public function set timeFunction(value : Function) : void
 		{
+			if (value != null && _timeFunction == null)
+			{
+				_lastTime = value(_lastTime);
+			}
+			else if (_timeFunction != null)
+			{
+				var time		: int = _reverse ? -getTimer() : getTimer();
+				var prevTime	: int = _timeFunction(time);
+				var prevDeltaT	: int = prevTime - _lastTime;
+				
+				if (value != null)
+					time = value(time);
+				
+				_lastTime = time - prevDeltaT;
+			}
+			
 			_timeFunction = value;
 		}
 		
