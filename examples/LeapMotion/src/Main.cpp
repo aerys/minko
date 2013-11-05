@@ -450,10 +450,11 @@ int main(int argc, char** argv)
 	float targetcameraDistance = 20.f;
 	bool inProgress = false;
 	float totalMoveTime = 0;
-	float explodeThreshold = 2.f;
+	float explodeThreshold = 1.f;
 	bool exploded = false;
 	float currentExplodeValue = 0.f;
 	bool zoomed = false;
+
     int fingerID = -1;
 	Uint32 lastTicks = 0;
 	float frameTime;
@@ -608,12 +609,10 @@ int main(int argc, char** argv)
 		{
 			angle = angle + (targetAngle - angle) * frameTime * 2;
 		}
-		else
-		{
-
-			if (fabs((explodeTarget - currentExplodeValue)) < 0.05f)
+		
+		if (fabs((targetAngle - angle)) < PI / 2 * 0.1f
+			&& fabs((explodeTarget - currentExplodeValue)) < 0.05f)
 				inProgress = false;
-		}
 
 		
 		float explodeDelta = currentExplodeValue + (explodeTarget - currentExplodeValue) * frameTime * 2;
