@@ -51,6 +51,7 @@ namespace minko
 			std::shared_ptr<SceneManager>						_sceneManager;
 			Signal<Ptr>::Ptr									_renderingBegin;
 			Signal<Ptr>::Ptr									_renderingEnd;
+			std::shared_ptr<render::Texture>					_renderTarget;
 
 			Signal<AbsCtrlPtr, NodePtr>::Slot					_targetAddedSlot;
 			Signal<AbsCtrlPtr, NodePtr>::Slot					_targetRemovedSlot;
@@ -63,13 +64,25 @@ namespace minko
 			Signal<SceneManagerPtr, uint, TexturePtr>::Slot		_renderingBeginSlot;
 
 		public:
-			static
+			inline static
 			Ptr
 			create()
 			{
 				auto ctrl = std::shared_ptr<Renderer>(new Renderer());
 
 				ctrl->initialize();
+
+				return ctrl;
+			}
+
+			inline static
+			Ptr
+			create(uint backgroundColor)
+			{
+				auto ctrl = std::shared_ptr<Renderer>(new Renderer());
+
+				ctrl->initialize();
+				ctrl->backgroundColor(backgroundColor);
 
 				return ctrl;
 			}
@@ -90,6 +103,20 @@ namespace minko
 			backgroundColor(const unsigned int backgroundColor)
 			{
 				_backgroundColor = backgroundColor;
+			}
+
+			inline
+			std::shared_ptr<render::Texture>
+			target()
+			{
+				return _renderTarget;
+			}
+
+			inline
+			void
+			target(std::shared_ptr<render::Texture> target)
+			{
+				_renderTarget = target;
 			}
 
 			void

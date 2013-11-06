@@ -26,14 +26,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/AbstractComponent.hpp"
 #include "minko/file/MkOptions.hpp"
 
-
-
 namespace minko
 {
 	namespace file
 	{
 		class MkParser :
-            public AbstractParser
+            public AbstractParser,
+			public std::enable_shared_from_this<MkParser>
 		{
 		public:
 			typedef std::shared_ptr<scene::Node>															NodePtr;

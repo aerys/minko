@@ -34,7 +34,7 @@ Pass::Pass(const std::string&				name,
 		   const data::BindingMap&			attributeBindings,
 		   const data::BindingMap&			uniformBindings,
 		   const data::BindingMap&			stateBindings,
-		   const data::BindingMap&			macroBindings,
+		   const data::MacroBindingMap&		macroBindings,
            std::shared_ptr<States>          states) :
 	_name(name),
 	_programTemplate(program),
@@ -49,6 +49,7 @@ Pass::Pass(const std::string&				name,
 
 std::shared_ptr<Program>
 Pass::selectProgram(std::shared_ptr<data::Container> data,
+					std::shared_ptr<data::Container> rendererData,
 					std::shared_ptr<data::Container> rootData,
 					std::list<std::string>&			 bindingDefines,
 					std::list<std::string>&			 bindingValues)
@@ -63,7 +64,7 @@ Pass::selectProgram(std::shared_ptr<data::Container> data,
 	else
 	{
 		ProgramSignature signature;
-		signature.build(_macroBindings, data, rootData);
+		signature.build(_macroBindings, data, rendererData, rootData);
 
 		const auto foundProgramIt = _signatureToProgram.find(signature);
 
@@ -79,23 +80,40 @@ Pass::selectProgram(std::shared_ptr<data::Container> data,
 			// create shader header with #defines
 			for (const auto& macroBinding : _macroBindings)
             {
-				if (signatureMask & (1 << i))
-				{
-					const auto&	propertyName	= macroBinding.second;
-					auto&		container		= data->hasProperty(propertyName) 
-						? data 
-						: rootData;
+				const auto& defaultValue = std::get<1>(macroBinding.second);
+				const auto hasDefaultValue = defaultValue.semantic != data::MacroBindingDefaultValueSemantic::UNSET;
 
-					// warning: integer macros corresponding to array lengths must be POSITIVE!
-					if (container->propertyHasType<int>(propertyName))
+				if (hasDefaultValue || signatureMask & (1 << i))
+				{
+					const auto&	propertyName = std::get<0>(macroBinding.second);
+					const auto propetyExists = defaultValue.semantic == data::MacroBindingDefaultValueSemantic::PROPERTY_EXISTS;
+					const auto& container = propertyName.empty() ? nullptr
+						: data->hasProperty(propertyName) ? data
+						: rendererData->hasProperty(propertyName) ? rendererData
+						: rootData->hasProperty(propertyName) ? rootData
+						: nullptr;
+
+					if (defaultValue.semantic == data::MacroBindingDefaultValueSemantic::VALUE
+						|| container && container->propertyHasType<int>(propertyName))
 					{
-						if (signatureValues[i] > 0)
+						const auto defaultIntValue = defaultValue.value.value;
+
+						if ((defaultIntValue > 0) || signatureValues[i] > 0)
 						{
-							defines += "#define " + macroBinding.first + " " + std::to_string(signatureValues[i]) + "\n";
+							auto value	= container ? signatureValues[i] : defaultIntValue;
+							auto min	= std::get<2>(macroBinding.second);
+							auto max	= std::get<3>(macroBinding.second);
+
+							if ((min != -1 && value < min) || (max != -1 && value > max))
+								return nullptr;
+
+							defines += "#define " + macroBinding.first + " " + std::to_string(value) + "\n";
 							bindingValues.push_back(propertyName);
 						}
 					}
-					else
+					else if ((defaultValue.semantic == data::MacroBindingDefaultValueSemantic::PROPERTY_EXISTS
+							  && defaultValue.value.propertyExists)
+							 || container)
 					{
 						defines += "#define " + macroBinding.first + "\n";
 						bindingDefines.push_back(propertyName);
@@ -125,23 +143,36 @@ Pass::selectProgram(std::shared_ptr<data::Container> data,
 		}
 	}
 
-	finalizeProgram(program);
-
-	return program;
+	return finalizeProgram(program);
 }
 
-void
+Program::Ptr
 Pass::finalizeProgram(Program::Ptr program)
 {
-	if (!program->vertexShader()->isReady())
-        program->vertexShader()->upload();
-	if (!program->fragmentShader()->isReady())
-	    program->fragmentShader()->upload();
-	if (!program->isReady())
+	if (program)
 	{
-		program->upload();
+		try
+		{
+			if (!program->vertexShader()->isReady())
+				program->vertexShader()->upload();
+			if (!program->fragmentShader()->isReady())
+				program->fragmentShader()->upload();
+			if (!program->isReady())
+			{
+				program->upload();
 
-		for (auto& uniformNameAndFunction : _uniformFunctions)
-			uniformNameAndFunction.second(program);
+				for (auto& func : _uniformFunctions)
+					func(program);
+			}
+		}
+		catch (std::exception& e)
+		{
+			if (_fallback.length())
+				return nullptr;
+
+			throw e;
+		}
 	}
+
+	return program;
 }

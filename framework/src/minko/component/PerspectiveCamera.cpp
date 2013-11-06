@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/scene/Node.hpp"
 #include "minko/component/Surface.hpp"
 #include "minko/math/Matrix4x4.hpp"
+#include "minko/data/StructureProvider.hpp"
 
 using namespace minko;
 using namespace minko::component;
@@ -31,34 +32,61 @@ PerspectiveCamera::PerspectiveCamera(float fov,
                                      float aspectRatio,
                                      float zNear,
                                      float zFar) :
-    AbstractRootDataComponent<data::Provider>(data::Provider::create()),
-    _enabled(true),
+	_data(data::StructureProvider::create("camera")),
+	_fov(fov),
+	_aspectRatio(aspectRatio),
+	_zNear(zNear),
+	_zFar(zFar),
   	_view(Matrix4x4::create()),
   	_projection(Matrix4x4::create()->perspective(fov, aspectRatio, zNear, zFar)),
   	_viewProjection(Matrix4x4::create()->copyFrom(_projection)),
     _position(Vector3::create())
 {
-	data()
-      ->set("camera.position",            _position)
-  		->set("camera.viewMatrix",			    _view)
-  		->set("camera.projectionMatrix",	  _projection)
-  		->set("camera.worldToScreenMatrix",	_viewProjection);
+	_data
+		->set("position",				_position)
+  		->set("viewMatrix",				_view)
+  		->set("projectionMatrix",		_projection)
+  		->set("worldToScreenMatrix",	_viewProjection);
+}
+
+void
+PerspectiveCamera::initialize()
+{
+	_targetAddedSlot = targetAdded()->connect(std::bind(
+		&PerspectiveCamera::targetAddedHandler,
+		shared_from_this(),
+		std::placeholders::_1,
+		std::placeholders::_2
+	));
+
+	_targetRemovedSlot = targetRemoved()->connect(std::bind(
+		&PerspectiveCamera::targetRemovedHandler,
+		shared_from_this(),
+		std::placeholders::_1,
+		std::placeholders::_2
+	));
 }
 
 void
 PerspectiveCamera::targetAddedHandler(AbstractComponent::Ptr ctrl, NodePtr target)
 {
-    AbstractRootDataComponent::targetAddedHandler(ctrl, target);
+	target->data()->addProvider(_data);
 
   	_modelToWorldChangedSlot = target->data()->propertyValueChanged("transform.modelToWorldMatrix")->connect(std::bind(
-    		&PerspectiveCamera::localToWorldChangedHandler,
-        std::dynamic_pointer_cast<PerspectiveCamera>(shared_from_this()),
-    		std::placeholders::_1,
-    		std::placeholders::_2
+    	&PerspectiveCamera::localToWorldChangedHandler,
+		shared_from_this(),
+    	std::placeholders::_1,
+    	std::placeholders::_2
   	));
 
     if (target->data()->hasProperty("transform.modelToWorldMatrix"))
         updateMatrices(target->data()->get<Matrix4x4::Ptr>("transform.modelToWorldMatrix"));
+}
+
+void
+PerspectiveCamera::targetRemovedHandler(AbstractComponent::Ptr ctrl, NodePtr target)
+{
+	target->data()->removeProvider(_data);
 }
 
 void
@@ -75,7 +103,14 @@ PerspectiveCamera::updateMatrices(std::shared_ptr<Matrix4x4> modelToWorldMatrix)
     _view->transform(Vector3::zero(), _position);
     _view->invert();
 
-    _viewProjection->copyFrom(_view)->append(_projection);
+	updateProjection(_fov, _aspectRatio, _zNear, _zFar);
+}
+
+void
+PerspectiveCamera::updateProjection(float fieldOfView, float aspectRatio, float zNear, float zFar)
+{
+	_projection->perspective(_fov, _aspectRatio, _zNear, _zFar);
+	_viewProjection->copyFrom(_view)->append(_projection);
 }
 
 std::shared_ptr<math::Matrix4x4>

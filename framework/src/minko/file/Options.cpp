@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "Options.hpp"
 
 #include "minko/data/Provider.hpp"
+#include "minko/file/Loader.hpp"
 
 using namespace minko;
 using namespace minko::file;
@@ -29,8 +30,44 @@ Options::Options(std::shared_ptr<render::AbstractContext> context) :
     _generateMipMaps(false),
 	_material(data::Provider::create())
 {
-	_materialFunction = ([] (const std::string&, data::Provider::Ptr material) -> data::Provider::Ptr 
+#ifdef DEBUG
+	includePaths().insert("bin/debug");
+#else
+	includePaths().insert("bin/release");
+#endif
+
+	_materialFunction = [](const std::string&, data::Provider::Ptr material) -> data::Provider::Ptr
 	{ 
 		return material;
-	} ); 
+	};
+
+	_loaderFunction = [](const std::string&) -> std::shared_ptr<AbstractLoader>
+	{
+		return Loader::create();
+	};
+
+	initializePlatforms();
+}
+
+void
+Options::initializePlatforms()
+{
+#if defined(_WIN32) || defined(_WIN64)
+	_platforms.push_back("windows");
+#endif
+#ifdef TARGET_OS_IPHONE
+	_platforms.push_back("iphone");
+#endif
+#ifdef TARGET_OS_MAC
+	_platforms.push_back("macosx");
+#endif
+#ifdef __ANDROID_API__
+	_platforms.push_back("android");
+#endif
+#ifdef EMSCRIPTEN
+	_platforms.push_back("web");
+#endif
+#if defined(LINUX) || defined(__unix__)
+	_platforms.push_back("linux");
+#endif
 }

@@ -61,6 +61,8 @@ MkParser::parse(const std::string&				    filename,
 	AssetLibrary->node(filename, node);
 
 	std::cout << "parse MK" << std::endl << std::flush;
+
+	complete()->execute(shared_from_this());
 }
 
 void

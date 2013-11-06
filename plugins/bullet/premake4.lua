@@ -1,11 +1,15 @@
-project "minko-bullet"
+newoption {
+	trigger		= "with-bullet",
+	description	= "Enable the Minko Bullet plugin."
+}
+
+minko.project.library "plugin-bullet"
 	kind "StaticLib"
 	language "C++"
 	files { "**.hpp", "**.h", "**.cpp", "**.c" }
 	includedirs {
 		"src",
-		"lib/bullet2/src",
-		"../../framework/src"
+		"lib/bullet2/src"
 	}
 	excludes {
 		"lib/bullet2/src/BulletMultiThreaded/*.h",
@@ -25,8 +29,8 @@ project "minko-bullet"
 		"lib/bullet2/src/BulletMultiThreaded/SpuSampleTask/*.h",
 		"lib/bullet2/src/BulletMultiThreaded/SpuSampleTask/*.cpp"
 	}
-	links { "minko-framework" }
 
+	-- configurations
 	configuration { "debug"}
 		defines { "DEBUG" }
 		flags { "Symbols" }
@@ -39,17 +43,19 @@ project "minko-bullet"
 		
 	-- linux
 	configuration { "linux" }
-		buildoptions { "-std=c++11 -Wno-narrowing" }
+		buildoptions { "-Wno-narrowing -Wno-int-to-pointer-cast" }
 
 	-- windows
-	configuration { "windows", "x32" }
+	configuration { "windows" }
+		defines {
+			"_CRT_SECURE_NO_WARNINGS",
+			"_CRT_SECURE_NO_DEPRECATE"
+		}
 
-	-- macos
+	-- macosx
 	configuration { "macosx" }
-		buildoptions { "-std=c++11", "-stdlib=libc++", "-Wno-narrowing" }
-		-- flags { "OptimizeSpeed" } -- causes crash at compilation
+		buildoptions { "-Wno-narrowing -Wno-int-to-pointer-cast" }
 
 	-- emscripten
 	configuration { "emscripten" }
-		flags { "Optimize" }
-		buildoptions { "-Wno-narrowing" }
+		buildoptions { "-Wno-narrowing -Wno-int-to-pointer-cast" }

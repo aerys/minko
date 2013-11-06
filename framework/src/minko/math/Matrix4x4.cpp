@@ -282,18 +282,6 @@ Matrix4x4::prependTranslation(float x, float y, float z)
 }
 
 Matrix4x4::Ptr
-Matrix4x4::appendTranslation(Vector3::Ptr value)
-{
-	return appendTranslation(value->x(), value->y(), value->z());
-}
-
-Matrix4x4::Ptr
-Matrix4x4::prependTranslation(Vector3::Ptr value)
-{
-	return prependTranslation(value->x(), value->y(), value->z());
-}
-
-Matrix4x4::Ptr
 Matrix4x4::appendRotationX(float radians)
 {
 	return append(

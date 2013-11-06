@@ -113,16 +113,24 @@ namespace minko
 			prepend(Ptr matrix);
 
 			Ptr
-			appendTranslation(float x, float y, float z);
+			appendTranslation(float x, float y = 0.f, float z = 0.f);
 
 			Ptr
-			prependTranslation(float x, float y, float z);
+			prependTranslation(float x, float y = 0.f, float z = 0.f);
 
+			inline
 			Ptr
-			appendTranslation(Vector3Ptr);
+			appendTranslation(Vector3Ptr value)
+			{
+				return appendTranslation(value->x(), value->y(), value->z());
+			}
 
+			inline
 			Ptr
-			prependTranslation(Vector3Ptr);
+			prependTranslation(Vector3Ptr value)
+			{
+				return prependTranslation(value->x(), value->y(), value->z());
+			}
 
 			Ptr
 			appendRotationX(float radians);
@@ -159,6 +167,20 @@ namespace minko
 
 			Ptr
 			prependScale(float x, float y, float z);
+
+			inline
+			Ptr
+			appendScale(float scale)
+			{
+				return appendScale(scale, scale, scale);
+			}
+
+			inline
+			Ptr
+			prependScale(float scale)
+			{
+				return prependScale(scale, scale, scale);
+			}
 
 			float
 			determinant();
@@ -200,18 +222,12 @@ namespace minko
 
 				return shared_from_this();
 			}
-
+			
 			inline
 			bool
 			operator==(Matrix4x4& value)
 			{
-				std::vector<float> m = value._m;
-
-				for (auto i = 0; i < 16; ++i)
-					if (_m[i] != m[i])
-						return false;
-
-				return true;
+				return _m == value._m;
 			}
 
 			Ptr
@@ -259,16 +275,31 @@ namespace minko
 			{
 				_m[3] = x;
 				_m[7] = y;
-				_m[11] = z;				
+				_m[11] = z;
+
+				changed()->execute(shared_from_this());
+				_hasChanged = true;		
 			}
 
 			inline
 			void
-			translation(Vector3::Ptr translation)
+			translation(Vector3::Ptr t)
 			{
-				_m[3] = translation->x();
-				_m[7] = translation->y();
-				_m[11] = translation->z();
+				translation(t->x(), t->y(), t->z());
+			}
+
+			inline
+			void
+			copyTranslation(Vector3::Ptr t)
+			{
+				t->setTo(_m[3], _m[7], _m[11]);
+			}
+
+			inline
+			bool
+			equals(Ptr matrix)
+			{
+				return _m == matrix->_m;
 			}
 
 			Ptr

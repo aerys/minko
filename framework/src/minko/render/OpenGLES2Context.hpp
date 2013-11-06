@@ -37,16 +37,18 @@ namespace minko
 			typedef std::shared_ptr<OpenGLES2Context> Ptr;
 
         private:
-            typedef std::unordered_map<unsigned int, unsigned int>	BlendFactorsMap;
-			typedef std::unordered_map<CompareMode, unsigned int>	DepthFuncsMap;
-            typedef std::unordered_map<unsigned int, unsigned int>  TextureToBufferMap;
-			typedef std::pair<uint, uint>							TextureSize;
+            typedef std::unordered_map<unsigned int, unsigned int>		BlendFactorsMap;
+			typedef std::unordered_map<CompareMode, unsigned int>		CompareFuncsMap;
+			typedef std::unordered_map<StencilOperation, unsigned int>	StencilOperationMap;
+            typedef std::unordered_map<unsigned int, unsigned int>		TextureToBufferMap;
+			typedef std::pair<uint, uint>								TextureSize;
 
 		protected:
 			bool									_errorsEnabled;
 
 	        static BlendFactorsMap					_blendingFactors;
-			static DepthFuncsMap					_depthFuncs;
+			static CompareFuncsMap					_compareFuncs;
+			static StencilOperationMap				_stencilOps;
 
 			std::list<unsigned int>	                _textures;
             std::unordered_map<uint, TextureSize>	_textureSizes;
@@ -80,9 +82,16 @@ namespace minko
             std::unordered_map<uint, MipFilter>     _currentMipFilter;
 			int						                _currentProgram;
 			Blending::Mode			                _currentBlendMode;
+			bool									_currentColorMask;
 			bool					                _currentDepthMask;
 			CompareMode				                _currentDepthFunc;
             TriangleCulling                         _currentTriangleCulling;
+			CompareMode								_currentStencilFunc;
+			int										_currentStencilRef;
+			uint									_currentStencilMask;
+			StencilOperation						_currentStencilFailOp;
+			StencilOperation						_currentStencilZFailOp;
+			StencilOperation						_currentStencilZPassOp;
 
 		public:
 			~OpenGLES2Context();
@@ -136,11 +145,18 @@ namespace minko
             	return _viewportHeight;
             }
 
+			inline
+			uint
+			currentProgram()
+			{
+				return _currentProgram;
+			}
+
 			void
-			configureViewport(const unsigned int x,
-							  const unsigned int y,
-							  const unsigned int with,
-							  const unsigned int height);
+			configureViewport(const uint x,
+							  const uint y,
+							  const uint with,
+							  const uint height);
 
 			void
 			clear(float red 			= 0.f,
@@ -155,121 +171,134 @@ namespace minko
 			present();
 
 			void
-			drawTriangles(const unsigned int indexBuffer, const int numTriangles);
+			drawTriangles(const uint indexBuffer, const int numTriangles);
 
-			const unsigned int
-			createVertexBuffer(const unsigned int size);
+			const uint
+			createVertexBuffer(const uint size);
 
 			void
-			setVertexBufferAt(const unsigned int	position,
-							  const unsigned int	vertexBuffer,
-							  const unsigned int	size,
-							  const unsigned int	stride,
-							  const unsigned int	offset);
+			setVertexBufferAt(const uint	position,
+							  const uint	vertexBuffer,
+							  const uint	size,
+							  const uint	stride,
+							  const uint	offset);
 			void
-			uploadVertexBufferData(const unsigned int 	vertexBuffer,
-								   const unsigned int 	offset,
-								   const unsigned int 	size,
+			uploadVertexBufferData(const uint 	vertexBuffer,
+								   const uint 	offset,
+								   const uint 	size,
 								   void* 				data);
 
 			void
-			deleteVertexBuffer(const unsigned int vertexBuffer);
+			deleteVertexBuffer(const uint vertexBuffer);
 
-			const unsigned int
-			createIndexBuffer(const unsigned int size);
+			const uint
+			createIndexBuffer(const uint size);
 
 			void
-			uploaderIndexBufferData(const unsigned int 	indexBuffer,
-									const unsigned int 	offset,
-									const unsigned int 	size,
+			uploaderIndexBufferData(const uint 	indexBuffer,
+									const uint 	offset,
+									const uint 	size,
 									void*				data);
 
 			void
-			deleteIndexBuffer(const unsigned int indexBuffer);
+			deleteIndexBuffer(const uint indexBuffer);
 
-			const unsigned int
+			const uint
 			createTexture(unsigned int  width,
 						  unsigned int  height,
 						  bool		    mipMapping,
                           bool          optimizeForRenderToTexture = false);
 
 			void
-			uploadTextureData(const unsigned int texture,
+			uploadTextureData(const uint texture,
 							  unsigned int 		 width,
 							  unsigned int 		 height,
 							  unsigned int 		 mipLevel,
 							  void*				 data);
 
 			void
-			deleteTexture(const unsigned int texture);
+			deleteTexture(const uint texture);
 
 			void
-			setTextureAt(const unsigned int	position,
+			setTextureAt(const uint	position,
 						 const int			texture		= 0,
 						 const int			location	= -1);
 
             void
-            setSamplerStateAt(const unsigned int    position,
+            setSamplerStateAt(const uint    position,
                               WrapMode              wrapping,
                               TextureFilter         filtering,
                               MipFilter             mipFiltering);
 
-			const unsigned int
+			const uint
 			createProgram();
 
 			void
-			attachShader(const unsigned int program, const unsigned int shader);
+			attachShader(const uint program, const uint shader);
 
 			void
-			linkProgram(const unsigned int program);
+			linkProgram(const uint program);
 
 			void
-			deleteProgram(const unsigned int program);
+			deleteProgram(const uint program);
 
 			void
-			compileShader(const unsigned int shader);
+			compileShader(const uint shader);
 
 			void
-			setProgram(const unsigned int program);
+			setProgram(const uint program);
 
+			virtual
 			void
-			setShaderSource(const unsigned int shader, const std::string& source);
+			setShaderSource(const uint shader, const std::string& source);
 
-			const unsigned int
+			const uint
 			createVertexShader();
 
 			void
-			deleteVertexShader(const unsigned int vertexShader);
+			deleteVertexShader(const uint vertexShader);
 
-			const unsigned int
+			const uint
 			createFragmentShader();
 
 			void
-			deleteFragmentShader(const unsigned int fragmentShader);
+			deleteFragmentShader(const uint fragmentShader);
 
 			std::shared_ptr<ProgramInputs>
-			getProgramInputs(const unsigned int program);
+			getProgramInputs(const uint program);
 
 			std::string
-			getShaderCompilationLogs(const unsigned int shader);
+			getShaderCompilationLogs(const uint shader);
 
 			std::string
-			getProgramInfoLogs(const unsigned int program);
+			getProgramInfoLogs(const uint program);
 
 			void
-			setUniform(unsigned int location, float value);
+			setUniform(const uint& location, const int& value);
 
 			void
-			setUniform(unsigned int location, float value1, float value2);
+			setUniform(const uint& location, const int& v1, const int& v2);
 
 			void
-			setUniform(unsigned int location, float value1, float value2, float value3);
+			setUniform(const uint& location, const int& v1, const int& v2, const int& v3);
 
 			void
-			setUniform(unsigned int location, float value1, float value2, float value3, float value4);
+			setUniform(const uint& location, const int& v1, const int& v2, const int& v3, const int& v4);
 
 			void
-			setUniform(unsigned int location, unsigned int size, bool transpose, const float* values);
+			setUniform(const uint& location, const float& value);
+
+			void
+			setUniform(const uint& location, const float& v1, const float& v2);
+
+			void
+			setUniform(const uint& location, const float& v1, const float& v2, const float& v3);
+
+			void
+			setUniform(const uint& location, const float& v1, const float& v2, const float& v3, const float& v4);
+
+			void
+			setUniform(const uint& location, const uint& size, bool transpose, const float* values);
 
             void
             setBlendMode(Blending::Source source, Blending::Destination destination);
@@ -279,6 +308,17 @@ namespace minko
 
 			void
 			setDepthTest(bool depthMask, CompareMode depthFunc);
+
+			void
+			setColorMask(bool);
+
+			void
+			setStencilTest(CompareMode		stencilFunc, 
+						   int				stencilRef, 
+						   uint				stencilMask,
+						   StencilOperation	stencilFailOp,
+						   StencilOperation	stencilZFailOp,
+						   StencilOperation	stencilZPassOp);
 
 			void
 			readPixels(unsigned char* pixels);
@@ -300,14 +340,14 @@ namespace minko
 
 			virtual
 			void
-			fillUniformInputs(const unsigned int				program,
+			fillUniformInputs(const uint				program,
 							  std::vector<std::string>&			names,
 							  std::vector<ProgramInputs::Type>&	types,
 							  std::vector<unsigned int>&		locations);
 
 			virtual
 			void
-			fillAttributeInputs(const unsigned int					program,
+			fillAttributeInputs(const uint					program,
 								std::vector<std::string>&			names,
 								std::vector<ProgramInputs::Type>&	types,
 								std::vector<unsigned int>&			locations);
@@ -317,8 +357,12 @@ namespace minko
             initializeBlendFactorsMap();
 
 			static
-            DepthFuncsMap
+            CompareFuncsMap
             initializeDepthFuncsMap();
+
+			static
+			StencilOperationMap
+			initializeStencilOperationsMap();
 
             void
             createRTTBuffers(unsigned int texture, unsigned int width, unsigned int height);
