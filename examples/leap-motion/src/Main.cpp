@@ -386,7 +386,7 @@ int main(int argc, char** argv)
 		camera->addComponent(Transform::create());
 		camera->component<Transform>()->transform()
 			->lookAt(Vector3::zero(), Vector3::create(20.f * sin(cameraYAngle), 20.f * sin(cameraXAngle) * cos(cameraXAngle), 20.f * cos(cameraXAngle)));
-		camera->addComponent(PerspectiveCamera::create(.785f, windowWidth * 1.0f / windowHeight, .1f, 1000.f));
+		camera->addComponent(PerspectiveCamera::create(windowWidth * 1.0f / windowHeight));
 		root->addChild(camera);
 
 		baseNode->addComponent(Transform::create());
@@ -436,7 +436,6 @@ int main(int argc, char** argv)
 	sceneManager->assets()->load();
     
     PerspectiveCamera::Ptr cam = camera->component<PerspectiveCamera>();
-    auto worldToScreen = Matrix4x4::create(cam->viewProjection());
     
 	Leap::Controller* controller = new Leap::Controller();
 	controller->enableGesture(Leap::Gesture::TYPE_SWIPE);
