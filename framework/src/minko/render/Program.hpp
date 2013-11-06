@@ -23,8 +23,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/render/AbstractResource.hpp"
 #include "minko/render/ProgramInputs.hpp"
-
+#include "minko/render/Texture.hpp"
 #include "minko/render/AbstractContext.hpp"
+#include "minko/render/Shader.hpp"
 
 namespace minko
 {
@@ -39,11 +40,14 @@ namespace minko
 		private:
 			typedef std::shared_ptr<render::AbstractContext>	AbstractContextPtr;
 			typedef std::shared_ptr<render::ProgramInputs>		ProgramInputsPtr;
+			typedef std::shared_ptr<Texture>					TexturePtr;
 
 		private:
-			std::shared_ptr<Shader>	_vertexShader;
-			std::shared_ptr<Shader>	_fragmentShader;
-			ProgramInputsPtr		_inputs;
+			std::shared_ptr<Shader>				_vertexShader;
+			std::shared_ptr<Shader>				_fragmentShader;
+			ProgramInputsPtr					_inputs;
+
+			std::unordered_map<int, TexturePtr> _textures;
 
 		public:
 			inline static
@@ -51,6 +55,20 @@ namespace minko
 			create(AbstractContextPtr context)
 			{
 				return std::shared_ptr<Program>(new Program(context));
+			}
+
+			inline static
+			Ptr
+			create(Ptr program, bool deepCopy = false)
+			{
+				auto p = create(program->_context);
+
+				p->_vertexShader = deepCopy ? Shader::create(program->_vertexShader) : program->_vertexShader;
+				p->_fragmentShader = deepCopy ? Shader::create(program->_fragmentShader) : program->_fragmentShader;
+				p->_inputs = program->inputs();
+				p->_textures = program->_textures;
+
+				return p;
 			}
 
 			inline static
@@ -69,23 +87,30 @@ namespace minko
 
 			inline
 			std::shared_ptr<Shader>
-			vertexShader()
+			vertexShader() const
 			{
 				return _vertexShader;
 			}
 
 			inline
 			std::shared_ptr<Shader>
-			fragmentShader()
+			fragmentShader() const
 			{
 				return _fragmentShader;
 			}
 
 			inline
 			ProgramInputsPtr
-			inputs()
+			inputs() const
 			{
 				return _inputs;
+			}
+
+			inline
+			const std::unordered_map<int, TexturePtr>
+			textures() const
+			{
+				return _textures;
 			}
 
 			void
@@ -98,8 +123,23 @@ namespace minko
 			void
 			setUniform(const std::string& name, const T&... values)
 			{
+				if (!_inputs->hasName(name))
+					return;
+
+				auto oldProgram = _context->currentProgram();
+
 				_context->setProgram(_id);
 				_context->setUniform(_inputs->location(name), values...);
+				_context->setProgram(oldProgram);
+			}
+
+			void
+			setUniform(const std::string& name, std::shared_ptr<render::Texture> texture)
+			{
+				if (!_inputs->hasName(name))
+					return;
+
+				_textures[_inputs->location(name)] = texture;
 			}
 
 		private:

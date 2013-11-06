@@ -25,6 +25,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/AbstractParser.hpp"
 #include "minko/file/EffectParser.hpp"
 #include "minko/render/Texture.hpp"
+#include "minko/render/Effect.hpp"
+#include "minko/geometry/Geometry.hpp"
 
 using namespace minko;
 using namespace minko::render;
@@ -51,7 +53,7 @@ AssetLibrary::AssetLibrary(std::shared_ptr<AbstractContext> context) :
 AssetLibrary::GeometryPtr
 AssetLibrary::geometry(const std::string& name)
 {
-	return _geometries[name];
+	return _geometries.count(name) ? _geometries[name] : nullptr;
 }
 
 AssetLibrary::Ptr
@@ -65,7 +67,7 @@ AssetLibrary::geometry(const std::string& name, std::shared_ptr<Geometry> geomet
 render::Texture::Ptr
 AssetLibrary::texture(const std::string& name)
 {
-	return _textures[name];
+	return _textures.count(name) ? _textures[name] : nullptr;
 }
 
 AssetLibrary::Ptr
@@ -79,7 +81,7 @@ AssetLibrary::texture(const std::string& name, render::Texture::Ptr texture)
 scene::Node::Ptr
 AssetLibrary::node(const std::string& name)
 {
-	return _nodes[name];
+	return _nodes.count(name) ? _nodes[name] : nullptr;
 }
 
 AssetLibrary::Ptr
@@ -93,7 +95,7 @@ AssetLibrary::node(const std::string& name, scene::Node::Ptr node)
 AssetLibrary::EffectPtr
 AssetLibrary::effect(const std::string& name)
 {
-	return _effects[name];
+	return _effects.count(name) ? _effects[name] : nullptr;
 }
 
 AssetLibrary::Ptr
@@ -107,6 +109,9 @@ AssetLibrary::effect(const std::string& name, std::shared_ptr<Effect> effect)
 const std::vector<unsigned char>&
 AssetLibrary::blob(const std::string& name)
 {
+	if (!_blobs.count(name))
+		throw;
+
 	return _blobs[name];
 }
 
@@ -119,14 +124,14 @@ AssetLibrary::blob(const std::string& name, const std::vector<unsigned char>& bl
 }
 
 const unsigned int
-AssetLibrary::layer(const std::string& name)
+AssetLibrary::layout(const std::string& name)
 {
-	if (_layers.count(name) == 0)
+	if (_layouts.count(name) == 0)
 	{
 		unsigned int existingMask = 0;
 
-		for (auto layer : _layers)
-			existingMask |= layer.second;
+		for (auto layout : _layouts)
+			existingMask |= layout.second;
 
 		auto mask = 1;
 		for (auto i = 0; i < 32 && (existingMask & mask); ++i, mask <<= 1)
@@ -135,39 +140,64 @@ AssetLibrary::layer(const std::string& name)
 		if (mask == 0)
 			throw;
 
-		_layers[name] = mask;
+		_layouts[name] = mask;
 	}
 
-	return _layers[name];
+	return _layouts[name];
 }
 
 AssetLibrary::Ptr
-AssetLibrary::layer(const std::string& name, const unsigned int mask)
+AssetLibrary::layout(const std::string& name, const unsigned int mask)
 {
-	_layers[name] = mask;
+	_layouts[name] = mask;
 
 	return shared_from_this();
 }
 
 AssetLibrary::Ptr
-AssetLibrary::queue(const std::string& filename, std::shared_ptr<file::Options> options)
+AssetLibrary::queue(const std::string&						filename,
+				    std::shared_ptr<file::Options>			options,
+					std::shared_ptr<file::AbstractLoader>	loader)
 {
 	_filesQueue.push_back(filename);
-	_filenameToOptions[filename] = options ? options : _defaultOptions;
+
+	if (options)
+		_filenameToOptions[filename] = options;
+
+	if (loader)
+		_filenameToLoader[filename] = loader;
 
 	return shared_from_this();
 }
 
-AssetLibrary::Ptr
-AssetLibrary::load(const std::string& filename, std::shared_ptr<file::Options> options)
-{
-	return load<file::Loader>(filename, options);
-}
 
 AssetLibrary::Ptr
 AssetLibrary::load()
 {
-    return load<file::Loader>();
+	std::list<std::string> queue = _filesQueue;
+
+	for (auto& filename : queue)
+	{
+		auto options = _filenameToOptions.count(filename)
+			? _filenameToOptions[filename]
+			: _filenameToOptions[filename] = _defaultOptions;
+		auto loader = _filenameToLoader.count(filename)
+			? _filenameToLoader[filename]
+			: _filenameToLoader[filename] = options->loaderFunction()(filename);
+
+		_filesQueue.erase(std::find(_filesQueue.begin(), _filesQueue.end(), filename));
+		_loading.push_back(filename);
+
+		_loaderSlots.push_back(loader->error()->connect(std::bind(
+			&AssetLibrary::loaderErrorHandler, shared_from_this(), std::placeholders::_1
+		)));
+		_loaderSlots.push_back(loader->complete()->connect(std::bind(
+			&AssetLibrary::loaderCompleteHandler, shared_from_this(), std::placeholders::_1
+		)));
+		loader->load(filename, options);
+	}
+
+	return shared_from_this();
 }
 
 void
@@ -182,13 +212,14 @@ AssetLibrary::loaderCompleteHandler(std::shared_ptr<file::AbstractLoader> loader
 	auto filename = loader->filename();
 	auto extension = filename.substr(filename.find_last_of('.') + 1);
 
-	_filesQueue.erase(std::find(_filesQueue.begin(), _filesQueue.end(), filename));
-	_filenameToLoader.erase(filename);
-
 	if (_parsers.count(extension))
 	{
 		auto parser = _parsers[extension]();
-		
+		auto completeSlot = parser->complete()->connect([&](AbstractParser::Ptr)
+		{
+			finalize(filename);
+		});
+
 		parser->parse(
             loader->filename(),
             loader->resolvedFilename(),
@@ -198,9 +229,20 @@ AssetLibrary::loaderCompleteHandler(std::shared_ptr<file::AbstractLoader> loader
         );
 	}
 	else
+	{
 		blob(filename, loader->data());
+		finalize(filename);
+	}
+}
 
-	if (_filesQueue.size() == 0)
+void
+AssetLibrary::finalize(const std::string& filename)
+{
+	_loading.erase(std::find(_loading.begin(), _loading.end(), filename));
+	_filenameToLoader.erase(filename);
+	_filenameToOptions.erase(filename);
+
+	if (_loading.size() == 0 && _filesQueue.size() == 0)
 	{
 		_loaderSlots.clear();
 		_filenameToLoader.clear();
@@ -213,5 +255,8 @@ AssetLibrary::loaderCompleteHandler(std::shared_ptr<file::AbstractLoader> loader
 AssetLibrary::AbsParserPtr
 AssetLibrary::parser(std::string extension)
 {
+	if (_parsers.count(extension) == 0)
+		throw std::invalid_argument("No parser found for extension '" + extension + "'");
+
 	return _parsers[extension]();
 }

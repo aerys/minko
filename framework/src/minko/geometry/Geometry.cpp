@@ -28,9 +28,20 @@ using namespace minko::math;
 using namespace minko::geometry;
 using namespace minko::render;
 
+Geometry::Geometry() :
+	_data(data::Provider::create()),
+	_vertexSize(0),
+	_numVertices(0),
+	_indexBuffer(nullptr)
+{
+}
+
 void
 Geometry::addVertexBuffer(render::VertexBuffer::Ptr vertexBuffer)
 {
+	if (hasVertexBuffer(vertexBuffer))
+		throw std::invalid_argument("vertexBuffer");
+
 	const unsigned bufVertexSize	= vertexBuffer->vertexSize();
 	const unsigned bufNumVertices	= vertexBuffer->numVertices();
 
@@ -39,11 +50,12 @@ Geometry::addVertexBuffer(render::VertexBuffer::Ptr vertexBuffer)
 	_vertexSize	+= bufVertexSize;
 	_data->set("geometry.vertex.size", _vertexSize);
 
-	if (_numVertexBuffers > 0 && _numVertices != bufNumVertices)
+	if (_vertexBuffers.size() > 0 && _numVertices != bufNumVertices)
 		throw std::logic_error("inconsistent number of vertices between the geometry's vertex streams.");
-	else if (_numVertexBuffers == 0)
-		_numVertices	= bufNumVertices;
-	++_numVertexBuffers;
+	else if (_vertexBuffers.size() == 0)
+		_numVertices = bufNumVertices;
+
+	_vertexBuffers.push_back(vertexBuffer);
 
 	_vbToVertexSizeChangedSlot[vertexBuffer] = vertexBuffer->vertexSizeChanged()->connect(std::bind(
 		&Geometry::vertexSizeChanged,
@@ -54,23 +66,45 @@ Geometry::addVertexBuffer(render::VertexBuffer::Ptr vertexBuffer)
 }
 
 void
-Geometry::removeVertexBuffer(const std::string& name)
+Geometry::removeVertexBuffer(std::list<render::VertexBuffer::Ptr>::iterator vertexBufferIt)
 {
-	if (!_data->hasProperty(name))
-		return;
-
-	VertexBuffer::Ptr vertexBuffer	= _data->get<VertexBuffer::Ptr>(name);
+	VertexBuffer::Ptr vertexBuffer	= *vertexBufferIt;
 	for (auto attribute : vertexBuffer->attributes())
 		_data->unset("geometry.vertex.attribute." + std::get<0>(*attribute));
 
 	_vertexSize	-= vertexBuffer->vertexSize();
 	_data->set("geometry.vertex.size", _vertexSize);
 
-	--_numVertexBuffers;
-	if (_numVertexBuffers == 0)
-		_numVertices	= 0;
+	_vertexBuffers.erase(vertexBufferIt);
 
-	_vbToVertexSizeChangedSlot.erase(vertexBuffer);
+	if (_vertexBuffers.size() == 0)
+		_numVertices = 0;
+
+	_vbToVertexSizeChangedSlot.erase(vertexBuffer);	
+}
+
+void
+Geometry::removeVertexBuffer(render::VertexBuffer::Ptr vertexBuffer)
+{
+	if (!hasVertexBuffer(vertexBuffer))
+		throw std::invalid_argument("vertexBuffer");
+
+	removeVertexBuffer(std::find(_vertexBuffers.begin(), _vertexBuffers.end(), vertexBuffer));
+}
+
+void
+Geometry::removeVertexBuffer(const std::string& attributeName)
+{
+	auto vertexBufferIt = std::find_if(
+		_vertexBuffers.begin(),
+		_vertexBuffers.end(),
+		[&](render::VertexBuffer::Ptr vb) { return vb->hasAttribute(attributeName); }
+	);
+
+	if (vertexBufferIt == _vertexBuffers.end())
+		throw std::invalid_argument("attributeName = " + attributeName);
+
+	removeVertexBuffer(vertexBufferIt);
 }
 
 Geometry::Ptr

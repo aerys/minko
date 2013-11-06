@@ -1,13 +1,16 @@
-project "minko-png"
+newoption {
+	trigger			= "with-png",
+	description		= "Enable the Minko PNG plugin."
+}
+
+minko.project.library "plugin-png"
 	kind "StaticLib"
 	language "C++"
 	files { "**.hpp", "**.h", "**.cpp", "**.c" }
 	includedirs {
 		"src",
-		"lib/lodepng/src",
-		"../../framework/src"
+		"lib/lodepng/src"
 	}
-	links { "minko-framework" }
 	defines
 	{
 		"LODEPNG_NO_COMPILE_ENCODER",
@@ -23,18 +26,3 @@ project "minko-png"
 		defines { "NDEBUG" }
 		flags { "OptimizeSpeed" }
 		targetdir "bin/release"
-
-	-- linux
-	configuration { "linux" }
-		buildoptions { "-std=c++11" }
-
-	-- windows
-	configuration { "windows", "x32" }
-
-	-- macos
-	configuration { "macosx" }
-		buildoptions { "-std=c++11", "-stdlib=libc++" }
-
-	-- emscripten
-	configuration { "emscripten" }
-		flags { "Optimize" }

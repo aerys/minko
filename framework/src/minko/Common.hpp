@@ -46,6 +46,7 @@ namespace minko
 	class Any;
 	template<typename... A>
 	class Signal;
+	class Color;
     
 	namespace render
 	{
@@ -58,7 +59,8 @@ namespace minko
         enum class WrapMode;
         enum class TextureFilter;
         enum class MipFilter;
-        typedef std::tuple<WrapMode, TextureFilter, MipFilter> SamplerState;
+		enum class StencilOperation;
+        typedef std::tuple<WrapMode, TextureFilter, MipFilter>	SamplerState;
 
         class States;
 		class DrawCall;
@@ -111,6 +113,29 @@ namespace minko
 		class Value;
 		class Container;
         typedef std::unordered_map<std::string, std::string> BindingMap;
+
+		enum class MacroBindingDefaultValueSemantic
+		{
+			UNSET,
+			VALUE,
+			PROPERTY_EXISTS
+		};
+
+		union MacroBindingDefaultValue
+		{
+			bool propertyExists;
+			int value;
+		};
+
+		struct MacroBindingDefault
+		{
+			MacroBindingDefaultValueSemantic semantic;
+			MacroBindingDefaultValue value;
+		};
+
+		typedef std::tuple<std::string, MacroBindingDefault, int, int>	MacroBinding;
+
+		typedef std::unordered_map<std::string, MacroBinding> MacroBindingMap;
 	}
 
 	namespace geometry

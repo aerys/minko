@@ -62,11 +62,15 @@ namespace minko
             viewportHeight() = 0;
 
 			virtual
+			uint
+			currentProgram() = 0;
+
+			virtual
 			void
-			configureViewport(const unsigned int x,
-							  const unsigned int y,
-							  const unsigned int with,
-							  const unsigned int height) = 0;
+			configureViewport(const uint x,
+							  const uint y,
+							  const uint with,
+							  const uint height) = 0;
 
 			virtual
 			void
@@ -84,48 +88,48 @@ namespace minko
 
 			virtual
 			void
-			drawTriangles(const unsigned int indexBuffer, const int numTriangles) = 0;
+			drawTriangles(const uint indexBuffer, const int numTriangles) = 0;
 
 			virtual
-			const unsigned int
-			createVertexBuffer(const unsigned int size) = 0;
-
-			virtual
-			void
-			setVertexBufferAt(const unsigned int	position,
-						      const unsigned int	vertexBuffer,
-							  const unsigned int	size,
-							  const unsigned int	stride,
-							  const unsigned int	offset) = 0;
+			const uint
+			createVertexBuffer(const uint size) = 0;
 
 			virtual
 			void
-			uploadVertexBufferData(const unsigned int 	vertexBuffer,
-								   const unsigned int 	offset,
-								   const unsigned int 	size,
+			setVertexBufferAt(const uint	position,
+						      const uint	vertexBuffer,
+							  const uint	size,
+							  const uint	stride,
+							  const uint	offset) = 0;
+
+			virtual
+			void
+			uploadVertexBufferData(const uint 	vertexBuffer,
+								   const uint 	offset,
+								   const uint 	size,
 								   void* 				data) = 0;
 
 			virtual	
 			void
-			deleteVertexBuffer(const unsigned int vertexBuffer) = 0;
+			deleteVertexBuffer(const uint vertexBuffer) = 0;
 				
 			virtual
-			const unsigned int
-			createIndexBuffer(const unsigned int size) = 0;
+			const uint
+			createIndexBuffer(const uint size) = 0;
 
 			virtual
 			void
-			uploaderIndexBufferData(const unsigned int 	indexBuffer,
-									const unsigned int 	offset,
-									const unsigned int 	size,
+			uploaderIndexBufferData(const uint 	indexBuffer,
+									const uint 	offset,
+									const uint 	size,
 									void*				data) = 0;
 
 			virtual
 			void
-			deleteIndexBuffer(const unsigned int indexBuffer) = 0;
+			deleteIndexBuffer(const uint indexBuffer) = 0;
 
 			virtual
-			const unsigned int
+			const uint
 			createTexture(unsigned int  width,
 						  unsigned int  height,
 						  bool		    mipMapping,
@@ -133,7 +137,7 @@ namespace minko
 
 			virtual
 			void
-			uploadTextureData(const unsigned int texture,
+			uploadTextureData(const uint texture,
 							  unsigned int 		 width,
 							  unsigned int 		 height,
 							  unsigned int 		 mipLevel,
@@ -141,94 +145,103 @@ namespace minko
 
 			virtual
 			void
-			deleteTexture(const unsigned int texture) = 0;
+			deleteTexture(const uint texture) = 0;
 
 			virtual
 			void
-			setTextureAt(const unsigned int	position,
+			setTextureAt(const uint	position,
 						 const int			texture		= 0,
 						 const int			location	= -1) = 0;
 
             virtual
             void
-            setSamplerStateAt(const unsigned int    position,
+            setSamplerStateAt(const uint    position,
                               WrapMode              wrapping,
                               TextureFilter         filtering,
                               MipFilter             mipFiltering) = 0;
 
 			virtual
-			const unsigned int
+			const uint
 			createProgram() = 0;
 
 			virtual
 			void
-			attachShader(const unsigned int program, const unsigned int shader) = 0;
+			attachShader(const uint program, const uint shader) = 0;
 
 			virtual
 			void
-			linkProgram(const unsigned int program) = 0;
+			linkProgram(const uint program) = 0;
 
 			virtual
 			void
-			deleteProgram(const unsigned int program) = 0;
+			deleteProgram(const uint program) = 0;
 
 			virtual void
-			setProgram(const unsigned int program) = 0;
+			setProgram(const uint program) = 0;
 
 			virtual
 			void
-			compileShader(const unsigned int shader) = 0;
+			compileShader(const uint shader) = 0;
 
 			virtual
 			void
-			setShaderSource(const unsigned int shader, const std::string& source) = 0;
+			setShaderSource(const uint shader, const std::string& source) = 0;
 
 			virtual
-			const unsigned int
+			const uint
 			createVertexShader() = 0;
 
 			virtual
 			void
-			deleteVertexShader(const unsigned int vertexShader) = 0;
+			deleteVertexShader(const uint vertexShader) = 0;
 
 			virtual
-			const unsigned int
+			const uint
 			createFragmentShader() = 0;
 
 			virtual
 			void
-			deleteFragmentShader(const unsigned int fragmentShader) = 0;
+			deleteFragmentShader(const uint fragmentShader) = 0;
 
 			virtual
 			std::shared_ptr<ProgramInputs>
-			getProgramInputs(const unsigned int program) = 0;
+			getProgramInputs(const uint program) = 0;
 
 			virtual
 			void
-			setUniform(unsigned int location, float value) = 0;
+			setUniform(const uint& location, const int& value) = 0;
 
 			virtual
 			void
-			setUniform(unsigned int location, float value1, float value2) = 0;
+			setUniform(const uint& location, const int& v1, const int& v2) = 0;
 
 			virtual
 			void
-			setUniform(unsigned int location, float value1, float value2, float value3) = 0;
+			setUniform(const uint& location, const int& v1, const int& v2, const int& v3) = 0;
 
 			virtual
 			void
-			setUniform(unsigned int location,
-                       float        value1,
-                       float        value2,
-                       float        value3,
-                       float        value4) = 0;
+			setUniform(const uint& location, const int& v1, const int& v2, const int& v3, const int& v4) = 0;
 
 			virtual
 			void
-			setUniform(unsigned int    location,
-                       unsigned int    size,
-                       bool            transpose,
-                       const float*    values) = 0;
+			setUniform(const uint& location, const float& value) = 0;
+
+			virtual
+			void
+			setUniform(const uint& location, const float& v1, const float& v2) = 0;
+
+			virtual
+			void
+			setUniform(const uint& location, const float& v1, const float& v2, const float& v3) = 0;
+
+			virtual
+			void
+			setUniform(const uint& location, const float& v1, const float& v2, const float& v3, const float& v4) = 0;
+
+			virtual
+			void
+			setUniform(const uint& location, const uint& size, bool transpose, const float* values) = 0;
 
             virtual
             void
@@ -238,9 +251,22 @@ namespace minko
             void
             setBlendMode(Blending::Mode blendMode) = 0;
 
+			virtual 
+			void
+			setColorMask(bool) = 0;
+
 			virtual
 			void
 			setDepthTest(bool depthMask, CompareMode depthFunc) = 0;
+
+			virtual
+			void
+			setStencilTest(CompareMode		stencilFunc, 
+						   int				stencilRef, 
+						   uint				stencilMask,
+						   StencilOperation	stencilFailOp,
+						   StencilOperation	stencilZFailOp,
+						   StencilOperation	stencilZPassOp) = 0;
 
 			virtual
 			void

@@ -31,7 +31,7 @@ void
 Cone::initParticle(ParticleData& particle,
 				   bool direction) const
 {
-	float theta		= (rand01() * 2 - 1) * PI;
+	float theta		= (rand01() * 2.f - 1.f) * (float)PI;
 	
 	float cosTheta	= cos(theta);
 	float sinTheta	= sin(theta);

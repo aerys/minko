@@ -46,24 +46,25 @@ namespace minko
 			typedef std::shared_ptr<scene::Node>				NodePtr;
 
 		private:
-			AbsContextPtr													_context;
-			std::shared_ptr<file::Options>									_defaultOptions;
-			std::unordered_map<std::string, Handler>						_parsers;
+			AbsContextPtr															_context;
+			std::shared_ptr<file::Options>											_defaultOptions;
+			std::unordered_map<std::string, Handler>								_parsers;
 
-			std::unordered_map<std::string, GeometryPtr>					_geometries;
-			std::unordered_map<std::string, EffectPtr>						_effects;
-			std::unordered_map<std::string, TexturePtr>						_textures;
-			std::unordered_map<std::string, NodePtr>						_nodes;
-			std::unordered_map<std::string, std::vector<unsigned char>>		_blobs;
-			std::unordered_map<std::string, uint>							_layers;
+			std::unordered_map<std::string, GeometryPtr>							_geometries;
+			std::unordered_map<std::string, EffectPtr>								_effects;
+			std::unordered_map<std::string, TexturePtr>								_textures;
+			std::unordered_map<std::string, NodePtr>								_nodes;
+			std::unordered_map<std::string, std::vector<unsigned char>>				_blobs;
+			std::unordered_map<std::string, uint>									_layouts;
 
-			std::list<std::string>											_filesQueue;
-			std::unordered_map<std::string, std::shared_ptr<file::Options>>	_filenameToOptions;
+			std::list<std::string>													_filesQueue;
+			std::list<std::string>													_loading;
+			std::unordered_map<std::string, std::shared_ptr<file::Options>>			_filenameToOptions;
 			std::unordered_map<std::string, std::shared_ptr<file::AbstractLoader>>	_filenameToLoader;
 
 			std::vector<Signal<std::shared_ptr<file::AbstractLoader>>::Slot>		_loaderSlots;
 
-			std::shared_ptr<Signal<Ptr>>									_complete;
+			std::shared_ptr<Signal<Ptr>>											_complete;
 
 		public:
 			// fixme cyclic reference
@@ -123,10 +124,10 @@ namespace minko
 			blob(const std::string& name, const std::vector<unsigned char>& blob);
 
 			const unsigned int
-			layer(const std::string& name);
+			layout(const std::string& name);
 
 			Ptr
-			layer(const std::string& name, const unsigned int mask);
+			layout(const std::string& name, const unsigned int mask);
 
 			template <typename T>
 			typename std::enable_if<std::is_base_of<file::AbstractParser, T>::value, Ptr>::type
@@ -138,46 +139,21 @@ namespace minko
 			}
 
 			Ptr
-			queue(const std::string& filename, std::shared_ptr<file::Options> options = nullptr);
+			queue(const std::string&				filename,
+				  std::shared_ptr<Options>			options = nullptr,
+				  std::shared_ptr<AbstractLoader>	loader = nullptr);
 
-			template <typename T>
-			typename std::enable_if<std::is_base_of<file::AbstractLoader, T>::value, Ptr>::type
-			load(const std::string& filename, std::shared_ptr<file::Options> options = nullptr)
-					{
-						queue(filename, options);
-						load<T>();
-
-						return shared_from_this();
-					};
-
+			inline
 			Ptr
-			load(const std::string& filename, std::shared_ptr<file::Options> options = nullptr);
+			load(const std::string&					filename,
+				 std::shared_ptr<file::Options>		options = nullptr,
+				 std::shared_ptr<AbstractLoader>	loader	= nullptr)
+			{
+				queue(filename, options, loader);
+				load();
 
-			template <typename T>
-			typename std::enable_if<std::is_base_of<file::AbstractLoader, T>::value, Ptr>::type
-			load()
-					{
-						std::list<std::string> queue = _filesQueue;
-
-						for (auto& filename : queue)
-						{
-							if (_filenameToLoader.count(filename) == 0)
-							{
-								auto loader = T::create();
-
-								_filenameToLoader[filename] = loader;
-								_loaderSlots.push_back(loader->error()->connect(std::bind(
-												&AssetLibrary::loaderErrorHandler, shared_from_this(), std::placeholders::_1
-												)));
-								_loaderSlots.push_back(loader->complete()->connect(std::bind(
-												&AssetLibrary::loaderCompleteHandler, shared_from_this(), std::placeholders::_1
-												)));
-								loader->load(filename, _defaultOptions);
-							}
-						}
-
-						return shared_from_this();
-					};
+				return shared_from_this();
+			};
 
 			Ptr
 			load();
@@ -193,6 +169,9 @@ namespace minko
 
 			void
 			loaderCompleteHandler(std::shared_ptr<file::AbstractLoader> loader);
+
+			void
+			finalize(const std::string& filename);
 		};
 	}
 }
