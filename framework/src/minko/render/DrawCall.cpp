@@ -23,6 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/CompareMode.hpp"
 #include "minko/render/WrapMode.hpp"
 #include "minko/render/TextureFilter.hpp"
+#include "minko/render/StencilOperation.hpp"
 #include "minko/render/MipFilter.hpp"
 #include "minko/render/Blending.hpp"
 #include "minko/render/TriangleCulling.hpp"
@@ -52,12 +53,12 @@ DrawCall::DrawCall(const data::BindingMap&	attributeBindings,
 	_uniformBindings(uniformBindings),
 	_stateBindings(stateBindings),
     _states(states),
-    _textures(MAX_NUM_TEXTURES, -1),
+    _textures(MAX_NUM_TEXTURES, 0),
     _textureLocations(MAX_NUM_TEXTURES, -1),
     _textureWrapMode(MAX_NUM_TEXTURES, WrapMode::CLAMP),
     _textureFilters(MAX_NUM_TEXTURES, TextureFilter::NEAREST),
     _textureMipFilters(MAX_NUM_TEXTURES, MipFilter::NONE),
-    _vertexBuffers(MAX_NUM_VERTEXBUFFERS, -1),
+    _vertexBuffers(MAX_NUM_VERTEXBUFFERS, 0),
     _vertexBufferLocations(MAX_NUM_VERTEXBUFFERS, -1),
     _vertexSizes(MAX_NUM_VERTEXBUFFERS, -1),
     _vertexAttributeSizes(MAX_NUM_VERTEXBUFFERS, -1),
@@ -69,20 +70,22 @@ DrawCall::DrawCall(const data::BindingMap&	attributeBindings,
 
 void
 DrawCall::configure(std::shared_ptr<Program>  program,
-                    ContainerPtr              data,
+					ContainerPtr              data,
+					ContainerPtr              rendererData,
                     ContainerPtr              rootData)
 {
     _program = program;
-    bind(data, rootData);
+    bind(data, rendererData, rootData);
 }
 
 void
-DrawCall::bind(ContainerPtr data, ContainerPtr rootData)
+DrawCall::bind(ContainerPtr data, ContainerPtr rendererData, ContainerPtr rootData)
 {
 	reset();
 
-	_data		= data;
-	_rootData	= rootData;
+	_data			= data;
+	_rendererData	= rendererData;
+	_rootData		= rootData;
 
 	auto indexBuffer	= getDataProperty<IndexBuffer::Ptr>("geometry.indices");
 
@@ -106,6 +109,7 @@ DrawCall::bindProgramInputs()
 	
 	unsigned int					vertexBufferId		= 0;
 	unsigned int					textureId			= 0;
+	
 	for (unsigned int inputId = 0; inputId < inputNames.size(); ++inputId)
 	{
 		const std::string&	inputName	= inputNames[inputId];
@@ -118,9 +122,8 @@ DrawCall::bindProgramInputs()
 			{
 				auto				propertyNameIt	= _attributeBindings.find(inputName);
 				const std::string&	propertyName	= propertyNameIt == _attributeBindings.end() ? inputName : propertyNameIt->second;
-				Container::Ptr		container		= getDataContainer(propertyName);
-				if (container)
-					bindVertexAttribute(container, propertyName, location, vertexBufferId);
+				
+				bindVertexAttribute(propertyName, location, vertexBufferId);
 				++vertexBufferId;
 				break;
 			}
@@ -129,9 +132,11 @@ DrawCall::bindProgramInputs()
 			{
 				auto				propertyNameIt	= _uniformBindings.find(inputName);
 				const std::string&	propertyName	= propertyNameIt == _uniformBindings.end() ? inputName : propertyNameIt->second;
-				Container::Ptr		container		= getDataContainer(propertyName);
-				if (container)
-					bindTextureSampler2D(container, inputName, propertyName, location, textureId);
+				auto&				samplerState	= _states->samplers().count(inputName)
+					? _states->samplers().at(inputName)
+					: _defaultSamplerState;
+
+				bindTextureSampler2D(propertyName, location, textureId, samplerState);
 				++textureId;
 				break;
 			}
@@ -140,9 +145,8 @@ DrawCall::bindProgramInputs()
 			{
 				auto				propertyNameIt	= _uniformBindings.find(inputName);
 				const std::string&	propertyName	= propertyNameIt == _uniformBindings.end() ? inputName : propertyNameIt->second;
-				Container::Ptr		container		= getDataContainer(propertyName);
-				if (container)
-					bindUniform(container, propertyName, type, location);
+
+				bindUniform(propertyName, type, location);
 				break;
 			}
 	
@@ -153,132 +157,195 @@ DrawCall::bindProgramInputs()
 }
 
 void
-DrawCall::bindVertexAttribute(Container::Ptr		container,
-							  const std::string&	propertyName,
+DrawCall::bindVertexAttribute(const std::string&	propertyName,
 							  int					location,
 							  int					vertexBufferId)
 {
 #ifdef DEBUG
-	if (container==nullptr)
-		throw std::invalid_argument("container");
 	if (location < 0)
 		throw std::invalid_argument("location");
 	if (vertexBufferId < 0 || vertexBufferId >= MAX_NUM_VERTEXBUFFERS)
 		throw std::invalid_argument("vertexBufferId");
 #endif // DEBUG
+	
+	auto container	= getDataContainer(propertyName);
 
-	if (!container->hasProperty(propertyName))
-		return;
-
-	auto vertexBuffer	= container->get<VertexBuffer::Ptr>(propertyName);
-	auto attributeName  = propertyName.substr(propertyName.find_last_of('.') + 1);
+	if (container)
+	{
+		auto vertexBuffer	= container->get<VertexBuffer::Ptr>(propertyName);
+		auto attributeName  = propertyName.substr(propertyName.find_last_of('.') + 1);
 
 #ifdef DEBUG
-	if (!vertexBuffer->hasAttribute(attributeName))
-		throw std::logic_error("missing required vertex attribute: " + attributeName);
+		if (!vertexBuffer->hasAttribute(attributeName))
+			throw std::logic_error("missing required vertex attribute: " + attributeName);
 #endif
 
-	auto attribute		= vertexBuffer->attribute(attributeName);
+		auto attribute		= vertexBuffer->attribute(attributeName);
 	
-	_vertexBuffers[vertexBufferId]			= vertexBuffer->id();
-	_vertexBufferLocations[vertexBufferId]	= location;
-	_vertexAttributeSizes[vertexBufferId]	= std::get<1>(*attribute);
-	_vertexSizes[vertexBufferId]			= vertexBuffer->vertexSize();
-	_vertexAttributeOffsets[vertexBufferId]	= std::get<2>(*attribute);
+		_vertexBuffers[vertexBufferId]			= vertexBuffer->id();
+		_vertexBufferLocations[vertexBufferId]	= location;
+		_vertexAttributeSizes[vertexBufferId]	= std::get<1>(*attribute);
+		_vertexSizes[vertexBufferId]			= vertexBuffer->vertexSize();
+		_vertexAttributeOffsets[vertexBufferId]	= std::get<2>(*attribute);
+	}
 
-	if (_referenceChangedSlots.count(propertyName) == 0)
-		_referenceChangedSlots[propertyName] = container->propertyReferenceChanged(propertyName)->connect(std::bind(
-			&DrawCall::bindVertexAttribute,
-			shared_from_this(),
-			std::placeholders::_1,
-			std::placeholders::_2,
-			location,
-			vertexBufferId
-		));
+	watchVertexAttributeRefChange(container, propertyName, location, vertexBufferId);
 }
 
 void
-DrawCall::bindTextureSampler2D(Container::Ptr		container,
-							   const std::string&	inputName,
-							   const std::string&	propertyName,
+DrawCall::watchVertexAttributeRefChange(Container::Ptr		container, 
+									    const std::string&	propertyName, 
+										int					location, 
+										int					vertexBufferId)
+{
+	if (_referenceChangedSlots.count(propertyName) != 0)
+		return;
+
+	if (container)
+		_referenceChangedSlots[propertyName].push_back(container->propertyReferenceChanged(propertyName)->connect(std::bind(
+			&DrawCall::bindVertexAttribute,	shared_from_this(), propertyName, location, vertexBufferId
+		)));
+	else
+	{
+		// property may be added later on
+		if (_data)
+			_referenceChangedSlots[propertyName].push_back(_data->propertyReferenceChanged(propertyName)->connect(std::bind(
+				&DrawCall::bindVertexAttribute,	shared_from_this(), propertyName, location, vertexBufferId
+			)));
+		if (_rendererData)
+			_referenceChangedSlots[propertyName].push_back(_rendererData->propertyReferenceChanged(propertyName)->connect(std::bind(
+				&DrawCall::bindVertexAttribute,	shared_from_this(), propertyName, location, vertexBufferId
+			)));
+		if (_rootData)
+			_referenceChangedSlots[propertyName].push_back(_rootData->propertyReferenceChanged(propertyName)->connect(std::bind(
+				&DrawCall::bindVertexAttribute,	shared_from_this(), propertyName, location, vertexBufferId
+			)));
+	}
+}
+
+void
+DrawCall::bindTextureSampler2D(const std::string&	propertyName,
 							   int					location,
-							   int					textureId)
+							   int					textureId,
+   							   const SamplerState&	samplerState)
 {
 #ifdef DEBUG
-	if (container==nullptr)
-		throw std::invalid_argument("container");
 	if (location < 0)
 		throw std::invalid_argument("location");
 	if (textureId < 0 || textureId >= MAX_NUM_TEXTURES)
 		throw std::invalid_argument("textureId");
 #endif // DEBUG
 
-	if (!container->hasProperty(propertyName))
-		return;
-	
-	auto texture        = container->get<Texture::Ptr>(propertyName)->id();
-	auto& samplerState  = _states->samplers().count(inputName)
-	    ? _states->samplers().at(inputName)
-	    : _defaultSamplerState;
-	
-	_textures[textureId]			= texture;
-	_textureLocations[textureId]	= location;
-	_textureWrapMode[textureId]		= std::get<0>(samplerState);
-	_textureFilters[textureId]		= std::get<1>(samplerState);
-	_textureMipFilters[textureId]	= std::get<2>(samplerState);
+	auto container = getDataContainer(propertyName);
 
-	if (_referenceChangedSlots.count(propertyName) == 0)
-		_referenceChangedSlots[propertyName] = container->propertyReferenceChanged(propertyName)->connect(std::bind(
-			&DrawCall::bindTextureSampler2D,
-			shared_from_this(),
-			std::placeholders::_1,
-			inputName,
-			std::placeholders::_2,
-			location,
-			textureId
-		));
+	if (container)
+	{
+		auto texture = container->get<Texture::Ptr>(propertyName)->id();
+
+		_textures[textureId]			= texture;
+		_textureLocations[textureId]	= location;
+		_textureWrapMode[textureId]		= std::get<0>(samplerState);
+		_textureFilters[textureId]		= std::get<1>(samplerState);
+		_textureMipFilters[textureId]	= std::get<2>(samplerState);
+	}
+
+	watchTextureSampler2DRefChange(container, propertyName, location, textureId, samplerState);
 }
 
 void
-DrawCall::bindUniform(Container::Ptr		container,
-					  const std::string&	propertyName,
+DrawCall::watchTextureSampler2DRefChange(Container::Ptr			container,
+										 const std::string&		propertyName,
+										 int					location,
+										 int					textureId,
+ 										 const SamplerState&	samplerState)
+{
+	if (_referenceChangedSlots.count(propertyName) != 0)
+		return;
+
+	if (container)
+		_referenceChangedSlots[propertyName].push_back(container->propertyReferenceChanged(propertyName)->connect(std::bind(
+				&DrawCall::bindTextureSampler2D, shared_from_this(), propertyName, location, textureId, samplerState
+		)));
+	else
+	{
+		// property may be added later on
+		if (_data)
+			_referenceChangedSlots[propertyName].push_back(_data->propertyReferenceChanged(propertyName)->connect(std::bind(
+					&DrawCall::bindTextureSampler2D, shared_from_this(), propertyName, location, textureId, samplerState
+			)));
+		if (_rendererData)
+			_referenceChangedSlots[propertyName].push_back(_rendererData->propertyReferenceChanged(propertyName)->connect(std::bind(
+					&DrawCall::bindTextureSampler2D, shared_from_this(), propertyName, location, textureId, samplerState
+			)));
+		if (_rootData)
+			_referenceChangedSlots[propertyName].push_back(_rootData->propertyReferenceChanged(propertyName)->connect(std::bind(
+					&DrawCall::bindTextureSampler2D, shared_from_this(), propertyName, location, textureId, samplerState
+			)));
+	}
+}
+
+void
+DrawCall::bindUniform(const std::string&	propertyName,
 					  ProgramInputs::Type	type,
 					  int					location)
 {
 #ifdef DEBUG
-	if (container==nullptr)
-		throw std::invalid_argument("container");
 	if (type == ProgramInputs::Type::sampler2d || type == ProgramInputs::Type::attribute)
 		throw std::invalid_argument("type");
 	if (location < 0)
 		throw std::invalid_argument("location");
 #endif // DEBUG
 
-	if (!container->hasProperty(propertyName))
+	auto container	= getDataContainer(propertyName);
+
+	if (container)
+	{
+		if (type == ProgramInputs::Type::float1)
+		     _uniformFloat[location] = container->get<float>(propertyName);
+		else if (type == ProgramInputs::Type::float2)
+		     _uniformFloat2[location] = container->get<std::shared_ptr<Vector2>>(propertyName);
+		else if (type == ProgramInputs::Type::float3)
+		     _uniformFloat3[location] = container->get<std::shared_ptr<Vector3>>(propertyName);
+		else if (type == ProgramInputs::Type::float4)
+			_uniformFloat4[location] = container->get<std::shared_ptr<Vector4>>(propertyName);	
+		else if (type == ProgramInputs::Type::float16)
+		     _uniformFloat16[location] = &(container->get<Matrix4x4::Ptr>(propertyName)->data()[0]);
+		else
+			throw std::logic_error("unsupported uniform type.");
+	}
+
+	watchUniformRefChange(container, propertyName, type, location);
+}
+
+void
+DrawCall::watchUniformRefChange(ContainerPtr		container, 
+								const std::string&	propertyName, 
+								ProgramInputs::Type	type, 
+								int					location)
+{
+	if (_referenceChangedSlots.count(propertyName) != 0)
 		return;
 
-	if (type == ProgramInputs::Type::float1)
-	     _uniformFloat[location] = container->get<float>(propertyName);
-	else if (type == ProgramInputs::Type::float2)
-	     _uniformFloat2[location] = container->get<std::shared_ptr<Vector2>>(propertyName);
-	else if (type == ProgramInputs::Type::float3)
-	     _uniformFloat3[location] = container->get<std::shared_ptr<Vector3>>(propertyName);
-	else if (type == ProgramInputs::Type::float4)
-		_uniformFloat4[location] = container->get<std::shared_ptr<Vector4>>(propertyName);	
-	else if (type == ProgramInputs::Type::float16)
-	     _uniformFloat16[location] = &(container->get<Matrix4x4::Ptr>(propertyName)->data()[0]);
+	if (container)
+		_referenceChangedSlots[propertyName].push_back(container->propertyReferenceChanged(propertyName)->connect(std::bind(
+				&DrawCall::bindUniform,	shared_from_this(), propertyName, type, location
+		)));
 	else
-		throw std::logic_error("unsupported uniform type.");
-
-	if (_referenceChangedSlots.count(propertyName) == 0)
-		_referenceChangedSlots[propertyName] = container->propertyReferenceChanged(propertyName)->connect(std::bind(
-			&DrawCall::bindUniform,
-			shared_from_this(),
-			std::placeholders::_1,
-			std::placeholders::_2,
-			type,
-			location
-		));
+	{
+		// property may be added later on
+		if (_data)
+			_referenceChangedSlots[propertyName].push_back(_data->propertyReferenceChanged(propertyName)->connect(std::bind(
+					&DrawCall::bindUniform,	shared_from_this(), propertyName, type, location
+			)));
+		if (_rendererData)
+			_referenceChangedSlots[propertyName].push_back(_rendererData->propertyReferenceChanged(propertyName)->connect(std::bind(
+					&DrawCall::bindUniform,	shared_from_this(), propertyName, type, location
+			)));
+		if (_rootData)
+			_referenceChangedSlots[propertyName].push_back(_rootData->propertyReferenceChanged(propertyName)->connect(std::bind(
+					&DrawCall::bindUniform,	shared_from_this(), propertyName, type, location
+			)));
+	}
 }
 
 void
@@ -298,7 +365,7 @@ DrawCall::reset()
 	_textureFilters		.clear();
 	_textureMipFilters	.clear();
 
-	_textures			.resize(MAX_NUM_TEXTURES, -1);
+	_textures			.resize(MAX_NUM_TEXTURES, 0);
 	_textureLocations	.resize(MAX_NUM_TEXTURES, -1);
 	_textureWrapMode	.resize(MAX_NUM_TEXTURES, WrapMode::CLAMP);
 	_textureFilters		.resize(MAX_NUM_TEXTURES, TextureFilter::NEAREST);
@@ -310,13 +377,12 @@ DrawCall::reset()
 	_vertexAttributeSizes	.clear();
 	_vertexAttributeOffsets	.clear();
 
-	_vertexBuffers			.resize(MAX_NUM_VERTEXBUFFERS, -1);
+	_vertexBuffers			.resize(MAX_NUM_VERTEXBUFFERS, 0);
 	_vertexBufferLocations	.resize(MAX_NUM_VERTEXBUFFERS, -1);
 	_vertexSizes			.resize(MAX_NUM_VERTEXBUFFERS, -1);
 	_vertexAttributeSizes	.resize(MAX_NUM_VERTEXBUFFERS, -1);
 	_vertexAttributeOffsets	.resize(MAX_NUM_VERTEXBUFFERS, -1);
 
-	_propertyChangedSlots.clear();
 	_referenceChangedSlots.clear();
 }
 
@@ -328,18 +394,53 @@ DrawCall::bindStates()
         _states->blendingSourceFactor() | _states->blendingDestinationFactor()
     );
 
+	_colorMask = getDataProperty<bool>(
+		_stateBindings.count("colorMask") ? _stateBindings.at("colorMask") : "colorMask",
+		_states->colorMask()
+	);
+
 	_depthMask = getDataProperty<bool>(
 		_stateBindings.count("depthMask") ? _stateBindings.at("depthMask") : "depthMask",
         _states->depthMask()
 	);
 	_depthFunc = getDataProperty<CompareMode>(
 		_stateBindings.count("depthFunc") ? _stateBindings.at("depthFunc") : "depthFunc",
-        _states->depthFun()
+        _states->depthFunc()
 	);
 
     _triangleCulling = getDataProperty<TriangleCulling>(
 		_stateBindings.count("triangleCulling") ? _stateBindings.at("triangleCulling") : "triangleCulling",
         _states->triangleCulling()
+	);
+
+	_stencilFunc = getDataProperty<CompareMode>(
+		_stateBindings.count("stencilFunc") ? _stateBindings.at("stencilFunc") : "stencilFunc",
+		_states->stencilFunction()
+	);
+
+	_stencilRef = getDataProperty<int>(
+		_stateBindings.count("stencilRef") ? _stateBindings.at("stencilRef") : "stencilRef",
+		_states->stencilReference()
+	);
+
+	_stencilMask = getDataProperty<uint>(
+		_stateBindings.count("stencilMask") ? _stateBindings.at("stencilMask") : "stencilMask",
+		_states->stencilMask()
+	);
+
+	_stencilFailOp = getDataProperty<StencilOperation>(
+		_stateBindings.count("stencilFailOp") ? _stateBindings.at("stencilFailOp") : "stencilFailOp",
+		_states->stencilFailOperation()
+	);
+
+	_stencilZFailOp = getDataProperty<StencilOperation>(
+		_stateBindings.count("stencilZFailOp") ? _stateBindings.at("stencilZFailOp") : "stencilZFailOp",
+		_states->stencilDepthFailOperation()
+	);
+
+	_stencilZPassOp = getDataProperty<StencilOperation>(
+		_stateBindings.count("stencilZPassOp") ? _stateBindings.at("stencilZPassOp") : "stencilZPassOp",
+		_states->stencilDepthPassOperation()
 	);
 
     _target = getDataProperty<Texture::Ptr>(
@@ -393,14 +494,18 @@ DrawCall::render(const AbstractContext::Ptr& context, std::shared_ptr<render::Te
     for (auto& uniformFloat16 : _uniformFloat16)
         context->setUniform(uniformFloat16.first, 1, true, uniformFloat16.second);
 
-    for (uint textureId = 0; textureId < _textures.size(); ++textureId)
+	auto textureOffset = 0;
+	for (auto textureLocationAndPtr : _program->textures())
+		context->setTextureAt(textureOffset++, textureLocationAndPtr.second->id(), textureLocationAndPtr.first);
+
+	for (uint textureId = 0; textureId < _textures.size() - textureOffset; ++textureId)
     {
         auto texture = _textures[textureId];
 
-        context->setTextureAt(textureId, texture, _textureLocations[textureId]);
+        context->setTextureAt(textureOffset + textureId, texture, _textureLocations[textureId]);
         if (texture > 0)
             context->setSamplerStateAt(
-                textureId, _textureWrapMode[textureId], _textureFilters[textureId], _textureMipFilters[textureId]
+				textureOffset + textureId, _textureWrapMode[textureId], _textureFilters[textureId], _textureMipFilters[textureId]
             );
     }
 
@@ -418,42 +523,25 @@ DrawCall::render(const AbstractContext::Ptr& context, std::shared_ptr<render::Te
             );
     }
 
+	context->setColorMask(_colorMask);
 	context->setBlendMode(_blendMode);
 	context->setDepthTest(_depthMask, _depthFunc);
+	context->setStencilTest(_stencilFunc, _stencilRef, _stencilMask, _stencilFailOp, _stencilZFailOp, _stencilZPassOp);
+
     context->setTriangleCulling(_triangleCulling);
 
     context->drawTriangles(_indexBuffer, _numIndices / 3);
 }
 
-void
-DrawCall::watchProperty(const std::string& propertyName)
-{
-    /*
-    _propertyChangedSlots.push_back(_data->propertyChanged(propertyName)->connect(std::bind(
-        &DrawCall::boundPropertyChangedHandler,
-        shared_from_this(),
-        std::placeholders::_1,
-        std::placeholders::_2
-    )));
-    */
-}
-
-
-
-void
-DrawCall::propertyChangedHandler(std::shared_ptr<data::Container>  data,
-                                 const std::string&                propertyName)
-{
-
-}
-
 Container::Ptr
 DrawCall::getDataContainer(const std::string& propertyName) const
 {
-	if (_data == nullptr || _rootData == nullptr)
+	if (_data == nullptr || _rootData == nullptr || _rendererData == nullptr)
 		return nullptr;
 	else if (_data->hasProperty(propertyName))
 		return _data;
+	else if (_rendererData->hasProperty(propertyName))
+		return _rendererData;
 	else if (_rootData->hasProperty(propertyName))
 		return _rootData;
 	else
@@ -463,5 +551,6 @@ DrawCall::getDataContainer(const std::string& propertyName) const
 bool
 DrawCall::dataHasProperty(const std::string& propertyName)
 {
-    return _data->hasProperty(propertyName) || _rootData->hasProperty(propertyName);
+    return _data->hasProperty(propertyName) || _rendererData->hasProperty(propertyName)
+		|| _rootData->hasProperty(propertyName);
 }

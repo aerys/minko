@@ -46,6 +46,8 @@ PNGParser::parse(const std::string&				    filename,
 	texture->upload();
 
 	AssetLibrary->texture(filename, texture);
+
+	complete()->execute(shared_from_this());
 }
 
 

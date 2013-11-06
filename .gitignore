@@ -20,3 +20,5 @@ Makefile
 *.lastbuildstate
 *.vsglog
 *.cache
+doc
+remove.me

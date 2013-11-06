@@ -40,14 +40,15 @@ namespace minko
 			std::shared_ptr<data::Provider>						_data;
 			unsigned int										_vertexSize;
 			unsigned int										_numVertices;
-			unsigned int										_numVertexBuffers;
+			std::list<VBPtr>									_vertexBuffers;
+			std::shared_ptr<render::IndexBuffer>				_indexBuffer;
 
 			std::unordered_map<VBPtr, Signal<VBPtr, int>::Slot>	_vbToVertexSizeChangedSlot;
 
 		public:
 			inline
 			std::shared_ptr<data::Provider>
-			data()
+			data() const
 			{
 				return _data;
 			}
@@ -60,31 +61,65 @@ namespace minko
 			}
 
 			inline
-			std::shared_ptr<data::Provider>
-			vertices()
+			const std::list<VBPtr>&
+			vertexBuffers() const
 			{
-				return _data;
+				return _vertexBuffers;
+			}
+
+			inline
+			VBPtr
+			vertexBuffer(const std::string& vertexAttributeName)
+			{
+				auto vertexBufferIt = std::find_if(
+					_vertexBuffers.begin(),
+					_vertexBuffers.end(),
+					[&](render::VertexBuffer::Ptr vb) { return vb->hasAttribute(vertexAttributeName); }
+				);
+
+				if (vertexBufferIt == _vertexBuffers.end())
+					throw std::invalid_argument("vertexAttributeName = " + vertexAttributeName);
+
+				return *vertexBufferIt;
+			}
+
+			inline
+			bool
+			hasVertexBuffer(VBPtr vertexBuffer) const
+			{
+				return std::find(_vertexBuffers.begin(), _vertexBuffers.end(), vertexBuffer) != _vertexBuffers.end();
+			}
+
+			inline
+			bool
+			hasVertexAttribute(const std::string& vertexAttributeName) const
+			{
+				return _data->hasProperty("geometry.vertex.attribute." + vertexAttributeName);
 			}
 
 			inline
 			void
 			indices(std::shared_ptr<render::IndexBuffer> indices)
 			{
+				_indexBuffer = indices;
 				_data->set("geometry.indices", indices);
 			}
 
 			inline
 			std::shared_ptr<render::IndexBuffer>
-			indices()
+			indices() const
 			{
-				return _data->get<std::shared_ptr<render::IndexBuffer>>("geometry.indices");
+				return _indexBuffer;
 			}
 
 			void
 			addVertexBuffer(std::shared_ptr<render::VertexBuffer>);
 
 			void
-			removeVertexBuffer(const std::string&);
+			removeVertexBuffer(VBPtr vertexBuffer);
+
+			void
+			removeVertexBuffer(const std::string& vertexAttributeName);
 
 			inline 
 			unsigned int
@@ -95,7 +130,7 @@ namespace minko
 			
 			inline
 			unsigned int
-			vertexSize()
+			vertexSize() const
 			{
 				return _vertexSize;
 			};
@@ -107,13 +142,7 @@ namespace minko
 			computeTangentSpace(bool computeNormals);
 
 		protected:
-			Geometry() :
-				_data(data::Provider::create()),
-				_vertexSize(0),
-				_numVertices(0),
-				_numVertexBuffers(0)
-			{
-			}
+			Geometry();
 
 			inline
 			void
@@ -124,6 +153,10 @@ namespace minko
 
 			void
 			vertexSizeChanged(VBPtr vertexBuffer, int offset);
+
+		private:
+			void
+			removeVertexBuffer(std::list<VBPtr>::iterator vertexBufferIt);
 		};
 	}
 }

@@ -41,12 +41,12 @@ namespace minko
 				return std::shared_ptr<WebGLContext>(new WebGLContext());
 			}
 
+		protected:
+			WebGLContext();
+			
 			void
 			setShaderSource(const unsigned int shader,
 							const std::string& source);
-
-		protected:
-			WebGLContext();
 
 			void
 			fillUniformInputs(const unsigned int				program,
@@ -65,19 +65,6 @@ namespace minko
 					   unsigned int	size,
 					   bool			transpose,
 					   const float*	values);
-
-			void
-			uploadVertexBufferData(const unsigned int	vertexBuffer,
-									 const unsigned int offset,
-									 const unsigned int size,
-									 void* 				data);
-
-			void
-			uploaderIndexBufferData(const unsigned int 		indexBuffer,
-									  const unsigned int 	offset,
-									  const unsigned int 	size,
-									  void*					data);
-
 		};
 	}
 }

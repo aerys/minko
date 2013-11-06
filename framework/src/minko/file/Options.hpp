@@ -27,21 +27,25 @@ namespace minko
 	{
 		class Options
 		{
-		public:
-			typedef std::shared_ptr<Options>			Ptr;
-
 		private:
+			typedef std::shared_ptr<AbstractLoader>								AbsLoaderPtr;
 			typedef std::shared_ptr<data::Provider>								ProviderPtr;
+
+		public:
+			typedef std::shared_ptr<Options>									Ptr;
 			typedef std::function<ProviderPtr(const std::string&, ProviderPtr)> MaterialFunction;
+			typedef std::function<AbsLoaderPtr(const std::string&)>				LoaderFunction;
 
 		private:
 			std::shared_ptr<render::AbstractContext>	_context;
 			std::set<std::string>						_includePaths;
+			std::list<std::string>						_platforms;
 
             bool                                        _generateMipMaps;
             std::shared_ptr<render::Effect>             _effect;
 			std::shared_ptr<data::Provider>				_material;
 			MaterialFunction							_materialFunction;
+			LoaderFunction								_loaderFunction;
 
 		public:
 			inline static
@@ -76,6 +80,13 @@ namespace minko
 			includePaths()
 			{
 				return _includePaths;
+			}
+
+			inline
+			std::list<std::string>&
+			platforms()
+			{
+				return _platforms;
 			}
 
             inline
@@ -128,6 +139,13 @@ namespace minko
 			}
 
 			inline
+			const LoaderFunction&
+			loaderFunction() const
+			{
+				return _loaderFunction;
+			}
+
+			inline
 			void
 			materialFunction(const MaterialFunction& func)
 			{
@@ -136,6 +154,9 @@ namespace minko
 
 		private:
 			Options(std::shared_ptr<render::AbstractContext> context);
+
+			void
+			initializePlatforms();
 		};
 	}
 }

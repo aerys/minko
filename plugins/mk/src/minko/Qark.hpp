@@ -9,6 +9,7 @@
 #include "minko/Any.hpp"
 //#include "miniz.c"
 
+#include "msgpack.hpp"
 
 namespace minko
 {
@@ -32,18 +33,50 @@ namespace minko
 		static const int                  TYPE_BOOLEAN            = 8;
 		static const int                  TYPE_BITMAP_DATA        = 9;
 
-		typedef std::vector<char>			ByteArray;
-		typedef minko::Any					Object;
-		typedef std::string					String;
-		typedef std::vector<Object>			Array;
-		typedef std::map<String, Object>	Map;
-		typedef unsigned char				uint8;
+		typedef std::vector<char>           ByteArray;
+		typedef minko::Any                  Object;
+		typedef std::string                 String;
+		typedef std::vector<Object>         Array;
+		typedef std::map<String, Object>    Map;
+		typedef unsigned char               uint8;
 
 		typedef void (*Encoder)(std::stringstream&, const Object&);
 		typedef void (*Decoder)(std::stringstream&, Object&);
 
 	public:
-		static 
+		static
+		void
+		test()
+		{
+			msgpack::type::tuple<int, bool, std::string> src(1, true, "example");
+
+			// serialize the object into the buffer.
+			// any classes that implements write(const char*,size_t) can be a buffer.
+			std::stringstream buffer;
+			msgpack::pack(buffer, src);
+
+			// send the buffer ...
+			buffer.seekg(0);
+
+			// deserialize the buffer into msgpack::object instance.
+			std::string str(buffer.str());
+
+			// deserialized object is valid during the msgpack::zone instance alive.
+			msgpack::zone mempool;
+
+			msgpack::object deserialized;
+			msgpack::unpack(str.data(), str.size(), NULL, &mempool, &deserialized);
+
+			// msgpack::object supports ostream.
+			std::cout << deserialized << std::endl;
+
+			// convert msgpack::object instance into the original type.
+			// if the type is mismatched, it throws msgpack::type_error exception.
+			msgpack::type::tuple<int, bool, std::string> dst;
+			deserialized.convert(&dst);
+		}
+
+		static
 		ByteArray
 		encode(const Object& source)
 		{
@@ -62,8 +95,8 @@ namespace minko
 			return ByteArray(data, data + size);
 		}
 
-		static 
-		void 
+		static
+		void
 		decode(const ByteArray& source, Object& obj)
 		{
 			std::stringstream stream;
@@ -80,11 +113,11 @@ namespace minko
 			{
 				std::cout << "zlib method detected " << std::endl << std::flush;
 				/*uint step = 0;
-				int	cmpStatus;
-				
-				unsigned long srcLen			= (unsigned long)(source.size() - 5);
-				unsigned long compressLen		= compressBound(srcLen);
-				unsigned long unCompressLength	= srcLen;
+				int cmpStatus;
+
+				unsigned long srcLen            = (unsigned long)(source.size() - 5);
+				unsigned long compressLen       = compressBound(srcLen);
+				unsigned long unCompressLength  = srcLen;
 
 				uint8 *pCmp, *pUncomp;
 
@@ -111,8 +144,8 @@ namespace minko
 		}
 
 	private:
-		static 
-		int 
+		static
+		int
 		getType(const Object& source)
 		{
 			if (source.type() == typeid(int))
@@ -135,62 +168,62 @@ namespace minko
 			return TYPE_CUSTOM;
 		}
 
-		static 
-		Encoder 
+		static
+		Encoder
 		getEncoder(char flag)
 		{
 			static std::map<char, Encoder> encoders;
 
 			if (encoders.empty())
 			{
-				encoders[TYPE_INT]			= &Qark::encodeTrivial<int>;
-				encoders[TYPE_UINT]			= &Qark::encodeTrivial<unsigned int>;
-				encoders[TYPE_FLOAT]		= &Qark::encodeTrivial<float>;
-				encoders[TYPE_BOOLEAN]		= &Qark::encodeTrivial<bool>;
-				encoders[TYPE_STRING]		= &Qark::encodeString;
-				encoders[TYPE_OBJECT]		= &Qark::encodeMap;
-				encoders[TYPE_ARRAY]		= &Qark::encodeArray;
-				encoders[TYPE_BYTES]		= &Qark::encodeBytes;
+				encoders[TYPE_INT]          = &Qark::encodeTrivial<int>;
+				encoders[TYPE_UINT]         = &Qark::encodeTrivial<unsigned int>;
+				encoders[TYPE_FLOAT]        = &Qark::encodeTrivial<float>;
+				encoders[TYPE_BOOLEAN]      = &Qark::encodeTrivial<bool>;
+				encoders[TYPE_STRING]       = &Qark::encodeString;
+				encoders[TYPE_OBJECT]       = &Qark::encodeMap;
+				encoders[TYPE_ARRAY]        = &Qark::encodeArray;
+				encoders[TYPE_BYTES]        = &Qark::encodeBytes;
 			}
 
 			return encoders[flag];
 		}
 
-		static 
-		Decoder 
+		static
+		Decoder
 		getDecoder(char flag)
 		{
 			static std::map<char, Decoder> decoders;
 
 			if (decoders.empty())
 			{
-				decoders[TYPE_INT]			= &Qark::decodeTrivial<int>;
-				decoders[TYPE_UINT]			= &Qark::decodeTrivial<unsigned int>;
-				decoders[TYPE_FLOAT]		= &Qark::decodeTrivial<float>;
-				decoders[TYPE_BOOLEAN]		= &Qark::decodeTrivial<bool>;
-				decoders[TYPE_STRING]		= &Qark::decodeString;
-				decoders[TYPE_OBJECT]		= &Qark::decodeMap;
-				decoders[TYPE_CUSTOM]		= &Qark::decodeMap;
-				decoders[TYPE_ARRAY]		= &Qark::decodeArray;
-				decoders[TYPE_BYTES]		= &Qark::decodeBytes;
+				decoders[TYPE_INT]          = &Qark::decodeTrivial<int>;
+				decoders[TYPE_UINT]         = &Qark::decodeTrivial<unsigned int>;
+				decoders[TYPE_FLOAT]        = &Qark::decodeTrivial<float>;
+				decoders[TYPE_BOOLEAN]      = &Qark::decodeTrivial<bool>;
+				decoders[TYPE_STRING]       = &Qark::decodeString;
+				decoders[TYPE_OBJECT]       = &Qark::decodeMap;
+				decoders[TYPE_CUSTOM]       = &Qark::decodeMap;
+				decoders[TYPE_ARRAY]        = &Qark::decodeArray;
+				decoders[TYPE_BYTES]        = &Qark::decodeBytes;
 			}
 
 			return decoders[flag];
 		}
 
-		static 
-		void 
+		static
+		void
 		encodeRecursive(std::stringstream& target, const Object& source)
 		{
 			char flag = getType(source);
-			
+
 			write(target, flag);
 			Encoder f = getEncoder(flag);
 			f(target, source);
 		}
 
-		static 
-		void 
+		static
+		void
 		decodeRecursive(std::stringstream& source, Object& target)
 		{
 			char flag = 0;
@@ -229,7 +262,7 @@ namespace minko
 			read(stream, minko::Any::cast<T&>(value));
 		}
 
-		static 
+		static
 		void
 		encodeString(std::stringstream& stream, const Object& value)
 		{
@@ -238,8 +271,8 @@ namespace minko
 			encodeString(stream, str);
 		}
 
-		static 
-		void 
+		static
+		void
 		encodeString(std::stringstream& stream, const String& value)
 		{
 			unsigned short size = value.size();
@@ -249,7 +282,7 @@ namespace minko
 		}
 
 
-		static 
+		static
 		void
 		decodeString(std::stringstream& stream, Object& value)
 		{
@@ -262,7 +295,7 @@ namespace minko
 			value = std::string(str);
 		}
 
-		static 
+		static
 		void
 		decodeString(std::stringstream& stream, String& value)
 		{
@@ -278,12 +311,12 @@ namespace minko
 		}
 
 
-		static 
-		void 
+		static
+		void
 		encodeMap(std::stringstream& stream, const Object& value)
 		{
-			std::map<std::string, Object> map	= minko::Any::cast<std::map<std::string, Object>>(value);
-			unsigned short				  size	= map.size();
+			std::map<std::string, Object> map   = minko::Any::cast<std::map<std::string, Object>>(value);
+			unsigned short                size  = map.size();
 
 			write(stream, size);
 
@@ -298,7 +331,7 @@ namespace minko
 		void
 		decodeMap(std::stringstream& stream, Object& value)
 		{
-			unsigned short			size = 0;
+			unsigned short          size = 0;
 
 			value = Map();
 			Map& map = Any::cast<Map&>(value);
@@ -310,8 +343,8 @@ namespace minko
 			while (size > 0)
 			{
 				std::string key;
-				Any			mappedValue = 0;
-				
+				Any         mappedValue = 0;
+
 				decodeString(stream, key);
 
 				map[key] = 0;
@@ -345,7 +378,7 @@ namespace minko
 		void
 		decodeArray(std::stringstream& stream, Object& value)
 		{
-			unsigned short	size = 0;
+			unsigned short  size = 0;
 
 			value = Array();
 			Array& list = Any::cast<Array&>(value);

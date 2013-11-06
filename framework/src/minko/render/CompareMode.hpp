@@ -49,7 +49,7 @@ namespace std
 	{
 		size_t operator()(const minko::render::CompareMode& v) const
 		{
-			return hash<uint>()(static_cast<uint>(v));
+			return hash<unsigned int>()(static_cast<unsigned int>(v));
 		}
 	};
 }

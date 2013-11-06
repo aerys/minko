@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/Blending.hpp"
 #include "minko/data/Container.hpp"
 #include "minko/render/ProgramInputs.hpp"
+#include "minko/render/States.hpp"
 
 namespace minko
 {
@@ -50,6 +51,7 @@ namespace minko
 
 			std::shared_ptr<Program>									_program;
 			std::shared_ptr<data::Container>					        _data;
+			std::shared_ptr<data::Container>					        _rendererData;
             std::shared_ptr<data::Container>					        _rootData;
             const data::BindingMap&	                                    _attributeBindings;
 			const data::BindingMap&	                                    _uniformBindings;
@@ -70,17 +72,23 @@ namespace minko
             uint                                                        _indexBuffer;
             std::shared_ptr<render::Texture>                            _target;
             render::Blending::Mode                                      _blendMode;
+			bool														_colorMask;
             bool                                                        _depthMask;
             render::CompareMode                                         _depthFunc;
             render::TriangleCulling                                     _triangleCulling;
+			render::CompareMode											_stencilFunc;
+			int															_stencilRef;
+			uint														_stencilMask;
+			render::StencilOperation									_stencilFailOp;
+			render::StencilOperation									_stencilZFailOp;
+			render::StencilOperation									_stencilZPassOp;
             std::unordered_map<uint, float>                             _uniformFloat;
             std::unordered_map<uint, std::shared_ptr<math::Vector2>>    _uniformFloat2;
             std::unordered_map<uint, std::shared_ptr<math::Vector3>>    _uniformFloat3;
             std::unordered_map<uint, std::shared_ptr<math::Vector4>>    _uniformFloat4;
             std::unordered_map<uint, const float*>                      _uniformFloat16;
 
-            std::list<ContainerPropertyChangedSlot>							_propertyChangedSlots;
-			std::unordered_map<std::string, ContainerPropertyChangedSlot>	_referenceChangedSlots;
+			std::unordered_map<std::string, std::list<Any>>				_referenceChangedSlots; // Any = ContainerPropertyChangedSlot
 
 		public:
 			static inline
@@ -97,14 +105,22 @@ namespace minko
 
             inline
             std::shared_ptr<Texture>
-            target()
+            target() const
             {
                 return _target;
             }
 
+			inline
+			float
+			priority() const
+			{
+				return _states->priority();
+			}
+
             void
             configure(std::shared_ptr<Program>  program,
                       ContainerPtr              data,
+					  ContainerPtr              rendererData,
                       ContainerPtr              rootData);
 
 			void
@@ -124,7 +140,7 @@ namespace minko
 			reset();
 
 			void
-            bind(ContainerPtr data, ContainerPtr rootData);
+            bind(ContainerPtr data, ContainerPtr rendererData, ContainerPtr rootData);
 
 			void
 			bindProgramInputs();
@@ -133,13 +149,22 @@ namespace minko
 			bindStates();
 
 			void
-			bindVertexAttribute(ContainerPtr, const std::string& propertyName, int location, int vertexBufferId);
+			bindVertexAttribute(const std::string& propertyName, int location, int vertexBufferId);
 
 			void
-			bindTextureSampler2D(ContainerPtr, const std::string& inputName, const std::string& propertyName, int location, int textureId);
+			watchVertexAttributeRefChange(ContainerPtr, const std::string& propertyName, int location, int vertexBufferId);
 
 			void
-			bindUniform(ContainerPtr, const std::string& propertyName, ProgramInputs::Type, int location);
+			bindTextureSampler2D(const std::string& propertyName, int location, int textureId, const SamplerState&);
+
+			void
+			watchTextureSampler2DRefChange(ContainerPtr, const std::string& propertyName, int location, int textureId, const SamplerState&);
+
+			void
+			bindUniform(const std::string& propertyName, ProgramInputs::Type, int location);
+
+			void
+			watchUniformRefChange(ContainerPtr, const std::string& propertyName, ProgramInputs::Type, int location);
 
             template <typename T>
             T
@@ -173,13 +198,6 @@ namespace minko
 
             bool
             dataHasProperty(const std::string& propertyName);
-
-            void
-            watchProperty(const std::string& propertyName);
-
-            void
-            propertyChangedHandler(ContainerPtr        data,
-                                   const std::string&  propertyName);
 		};		
 	}
 }

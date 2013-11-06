@@ -203,9 +203,9 @@ Renderer::componentAddedHandler(std::shared_ptr<Node>				node,
 }
 
 void
-Renderer::componentRemovedHandler(std::shared_ptr<Node>				node,
-								   std::shared_ptr<Node>				target,
-								   std::shared_ptr<AbstractComponent>	ctrl)
+Renderer::componentRemovedHandler(std::shared_ptr<Node>					node,
+								  std::shared_ptr<Node>					target,
+								  std::shared_ptr<AbstractComponent>	ctrl)
 {
 	auto surfaceCtrl = std::dynamic_pointer_cast<Surface>(ctrl);
 	auto sceneManager = std::dynamic_pointer_cast<SceneManager>(ctrl);
@@ -219,9 +219,11 @@ Renderer::componentRemovedHandler(std::shared_ptr<Node>				node,
 void
 Renderer::addSurfaceComponent(std::shared_ptr<Surface> surface)
 {
-	_surfaceDrawCalls[surface]	= surface->drawCalls();
+	auto drawCalls = surface->createDrawCalls(targets()[0]->data());
 
-	_drawCalls.insert(_drawCalls.end(), surface->drawCalls().begin(), surface->drawCalls().end());
+	_surfaceDrawCalls[surface] = drawCalls;
+
+	_drawCalls.insert(_drawCalls.end(), drawCalls.begin(), drawCalls.end());
 }
 
 void
@@ -240,6 +242,9 @@ void
 Renderer::render(std::shared_ptr<render::AbstractContext> context, std::shared_ptr<render::Texture> renderTarget)
 {
 	_renderingBegin->execute(shared_from_this());
+
+	if (!renderTarget)
+		renderTarget = _renderTarget;
 
 	context->clear(
 		((_backgroundColor >> 24) & 0xff) / 255.f,
@@ -260,7 +265,10 @@ Renderer::render(std::shared_ptr<render::AbstractContext> context, std::shared_p
 bool
 Renderer::compareDrawCalls(DrawCallPtr& a, DrawCallPtr& b)
 {
-    return a->target() && (!b->target() || (a->target()->id() > b->target()->id()));
+	if (a->priority() == b->priority())
+		return a->target() && (!b->target() || (a->target()->id() > b->target()->id()));
+
+    return a->priority() > b->priority();
 }
 
 void
