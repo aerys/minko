@@ -1,14 +1,14 @@
-project "minko-webgl"
+newoption {
+	trigger			= "with-webgl",
+	description		= "Enable the Minko WebGL plugin."
+}
+
+minko.project.library "plugin-webgl"
 	kind "StaticLib"
 	language "C++"
 	files { "**.hpp", "**.h", "**.cpp", "**.c" }
-	includedirs {
-		"src",
-		"../../framework/src",
-		"../../framework/lib/glew/include"
-	}
-	links { "minko-framework" }
-
+	includedirs { "src" }
+	
 	configuration { "debug"}
 		defines { "DEBUG" }
 		flags { "Symbols" }
@@ -18,19 +18,3 @@ project "minko-webgl"
 		defines { "NDEBUG" }
 		flags { "OptimizeSpeed" }
 		targetdir "bin/release"
-
-	-- linux
-	configuration { "linux" }
-		buildoptions { "-std=c++11" }
-
-	-- windows
-	configuration { "windows", "x32" }
-		includedirs { "../../deps/win/include" }
-
-	-- macos
-	configuration { "macosx" }
-		buildoptions { "-std=c++11", "-stdlib=libc++" }
-
-	-- emscripten
-	configuration { "emscripten" }
-		flags { "Optimize" }

@@ -102,7 +102,7 @@ namespace minko
 				float
 				volume() const
 				{
-					const float volume	= PI * (_halfExtentX + _margin) * (_halfExtentZ + _margin) // elliptical basis area approx
+					const float volume	= (float)PI * (_halfExtentX + _margin) * (_halfExtentZ + _margin) // elliptical basis area approx
 						* (_halfExtentY + _margin);
 
 					return volume * _volumeScaling;

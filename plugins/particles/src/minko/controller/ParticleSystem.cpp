@@ -308,7 +308,7 @@ ParticleSystem::fastForward(float time, unsigned int updatesPerSecond)
 	float updateStep = _updateStep;
 
 	if (updatesPerSecond != 0)
-		updateStep = 1. / updatesPerSecond;
+		updateStep = 1.f / updatesPerSecond;
 
 	while(time > updateStep)
 	{
@@ -485,7 +485,7 @@ ParticleSystem::killParticle(unsigned int	particleIndex)
 void
 ParticleSystem::updateMaxParticlesCount()
 {
-	unsigned int value = ceilf(_lifetime->max() / _rate - EPSILON);
+	auto value = (unsigned int)(ceilf(_lifetime->max() / _rate - (float)EPSILON));
 	value = value > _countLimit ? _countLimit : value;
 	
 	if (_maxCount == value)

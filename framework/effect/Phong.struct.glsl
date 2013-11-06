@@ -1,3 +1,9 @@
+#ifdef FRAGMENT_SHADER
+
+#ifdef GL_ES
+	precision mediump float;
+#endif
+
 struct AmbientLight
 {
 	vec3 color;
@@ -32,3 +38,5 @@ struct SpotLight
 	float cosInnerConeAngle;
 	float cosOuterConeAngle;
 };
+
+#endif

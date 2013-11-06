@@ -26,24 +26,38 @@ using namespace minko;
 using namespace minko::render;
 
 Effect::Effect() :
-	_data(data::Provider::create())
+_data(data::Provider::create())
 {
+
 }
 
 void
 Effect::addTechnique(const std::string& name, Technique& passes)
 {
 	if (_techniques.count(name) != 0)
-		throw std::invalid_argument("name");
+		throw std::logic_error("A technique named '" + name + "' already exists.");
+
+	for (auto& pass : passes)
+		for (auto& func : _uniformFunctions)
+			func(pass);
 
 	_techniques[name] = passes;
 }
 
 void
+Effect::addTechnique(const std::string& name, Technique& passes, const std::string& fallback)
+{
+	_fallback[name] = fallback;
+
+	addTechnique(name, passes);
+}
+
+void
 Effect::removeTechnique(const std::string& name)
 {
-	if (_techniques.count(name) == 0 || _currentTechniqueName == name)
-		throw std::invalid_argument("name");
+	if (_techniques.count(name) == 0)
+		throw std::logic_error("The technique named '" + name + "' does not exist.");
 
 	_techniques.erase(name);
+	_fallback.erase(name);
 }

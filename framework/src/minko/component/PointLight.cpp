@@ -41,7 +41,7 @@ PointLight::PointLight(float attenuationDist):
 void
 PointLight::updateModelToWorldMatrix(std::shared_ptr<math::Matrix4x4> modelToWorld)
 {
-	modelToWorld->translation(_worldPosition);
+	modelToWorld->copyTranslation(_worldPosition);
 }
 
 void

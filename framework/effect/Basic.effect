@@ -15,7 +15,15 @@
     },
     
     "stateBindings" : {
-        "blendMode"             : "material.blendMode"
+        "blendMode"             : "material.blendMode",
+		"colorMask"				: "material.colorMask",
+		"stencilFunc"			: "material.stencilFunc",
+		"stencilRef"			: "material.stencilRef",
+		"stencilMask"			: "material.stencilMask",
+		"stencilFailOp"			: "material.stencilFailOp",
+		"stencilZFailOp"		: "material.stencilZFailOp",
+		"stencilZPassOp"		: "material.stencilZPassOp",
+        "triangleCulling"       : "material.triangleCulling"
     },
 
     "macroBindings" : {
@@ -23,62 +31,19 @@
         "MODEL_TO_WORLD"        : "transform.modelToWorldMatrix"
     },
     
-    "priority"          : 0,
     "blendMode"         : ["one", "zero"],
     "depthTest"         : [true, "less_equal"],
+	"colorMask"			: true,
+	"stencilTest"		: ["always", 0, 1, ["keep", "keep", "keep"]],
     "triangleCulling"   : "none",
     
     "samplerStates" : {
         "diffuseMap"    : { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" }
     },
     
-    "passes"    : [{    
-        "vertexShader"  : "
-            #ifdef GL_ES
-                precision mediump float;
-            #endif
-        
-            attribute vec3 position;
-            attribute vec2 uv;
-
-            uniform mat4 modelToWorldMatrix;
-            uniform mat4 worldToScreenMatrix;
-
-            varying vec2 vertexUV;
-
-            void main(void)
-            {
-                #ifdef DIFFUSE_MAP
-                    vertexUV = uv;
-                #endif
-
-                vec4 pos = vec4(position, 1.0);
-                
-                #ifdef MODEL_TO_WORLD
-                    pos = modelToWorldMatrix * pos;
-                #endif
-                
-                gl_Position =  worldToScreenMatrix * pos;
-            }
-        ",
-        "fragmentShader"    : "
-            #ifdef GL_ES
-                precision mediump float;
-            #endif
-            
-            uniform vec4        diffuseColor;
-            uniform sampler2D   diffuseMap;
-            
-            varying vec2 vertexUV;
-
-            void main(void)
-            {
-                #ifdef DIFFUSE_MAP
-                    gl_FragColor = texture2D(diffuseMap, vertexUV);
-                #else
-                    gl_FragColor = diffuseColor;
-                #endif
-            }
-        "
-    }]
+	"techniques" : [{
+		"passes"    : [{
+			"includes" : [ "Basic.vertex.glsl", "Basic.fragment.glsl" ]
+		}]
+	}]
 }

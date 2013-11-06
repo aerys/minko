@@ -1,12 +1,13 @@
-project "minko-particles"
+newoption {
+	trigger		= "with-particles",
+	description	= "Enable the Minko particles plugin."
+}
+
+minko.project.library "plugin-particles"
 	kind "StaticLib"
 	language "C++"
 	files { "**.hpp", "**.h", "**.cpp", "**.c" }
-	includedirs {
-		"src",
-		"../../framework/src"
-	}
-	links { "minko-framework" }
+	includedirs { "src" }
 
 	configuration { "debug"}
 		defines { "DEBUG" }
@@ -17,18 +18,4 @@ project "minko-particles"
 		defines { "NDEBUG" }
 		flags { "OptimizeSpeed" }
 		targetdir "bin/release"
-
-	-- linux
-	configuration { "linux" }
-		buildoptions "-std=c++11"
-
-	-- windows
-	configuration { "windows", "x32" }
-
-	-- macos
-	configuration { "macosx" }
-		buildoptions { "-std=c++11", "-stdlib=libc++" }
-
-	-- emscripten
-	configuration { "emscripten" }
-		flags { "Optimize" }
+	

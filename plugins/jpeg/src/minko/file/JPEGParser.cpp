@@ -58,4 +58,6 @@ JPEGParser::parse(const std::string&				filename,
 	AssetLibrary->texture(filename, texture);
 
 	free(bmpData);
+
+	complete()->execute(shared_from_this());
 }

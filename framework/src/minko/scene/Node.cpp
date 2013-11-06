@@ -31,7 +31,7 @@ unsigned int Node::_id = 0;
 
 Node::Node() :
 	_name("Node_" + std::to_string(Node::_id++)),
-	_layers(1),
+	_layouts(1),
 	_root(nullptr),
 	_parent(nullptr),
 	_container(data::Container::create()),
@@ -39,26 +39,26 @@ Node::Node() :
 	_removed(Signal<Ptr, Ptr, Ptr>::create()),
 	_componentAdded(Signal<Ptr, Ptr, Node::AbsCtrlPtr>::create()),
 	_componentRemoved(Signal<Ptr, Ptr, Node::AbsCtrlPtr>::create()),
-	_layersChanged(Signal<Ptr, Ptr>::create())
+	_layoutsChanged(Signal<Ptr, Ptr>::create())
 {
 }
 
 void
-Node::layers(unsigned int layers)
+Node::layouts(unsigned int layouts)
 {
-	if (_layers != layers)
+	if (_layouts != layouts)
 	{
-		_layers = layers;
+		_layouts = layouts;
 
 		// bubble down
         auto descendants = NodeSet::create(shared_from_this())->descendants(true);
 		for (auto descendant : descendants->nodes())
-			descendant->_layersChanged->execute(descendant, shared_from_this());
+			descendant->_layoutsChanged->execute(descendant, shared_from_this());
 
 		// bubble up
 		auto ancestors = NodeSet::create(shared_from_this())->ancestors();
 		for (auto ancestor : ancestors->nodes())
-			ancestor->_layersChanged->execute(ancestor, shared_from_this());
+			ancestor->_layoutsChanged->execute(ancestor, shared_from_this());
 	}
 }
 
@@ -89,7 +89,7 @@ Node::addChild(Node::Ptr child)
 Node::Ptr
 Node::removeChild(Node::Ptr child)
 {
-	std::list<Node::Ptr>::iterator it = std::find(_children.begin(), _children.end(), child);
+	auto it = std::find(_children.begin(), _children.end(), child);
 
 	if (it == _children.end())
 		throw std::invalid_argument("child");

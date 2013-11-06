@@ -21,16 +21,19 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 
-#include "minko/component/AbstractRootDataComponent.hpp"
+//#include "minko/component/AbstractRootDataComponent.hpp"
+#include "minko/component/AbstractComponent.hpp"
 #include "minko/data/Provider.hpp"
 #include "minko/data/Container.hpp"
+#include "minko/Signal.hpp"
 
 namespace minko
 {
 	namespace component
 	{
 		class PerspectiveCamera :
-            public AbstractRootDataComponent<data::Provider>
+            public AbstractComponent,
+			public std::enable_shared_from_this<PerspectiveCamera>
 		{
 		public:
 			typedef std::shared_ptr<PerspectiveCamera> Ptr;
@@ -41,19 +44,25 @@ namespace minko
             typedef std::shared_ptr<scene::NodeSet>     NodeSetPtr;
 
 		private:
-            bool                                            _enabled;
+			std::shared_ptr<data::StructureProvider>		_data;
+			float											_fov;
+			float											_aspectRatio;
+			float											_zNear;
+			float											_zFar;
 
 			std::shared_ptr<math::Matrix4x4>				_view;
 			std::shared_ptr<math::Matrix4x4>				_projection;
 			std::shared_ptr<math::Matrix4x4>				_viewProjection;
             std::shared_ptr<math::Vector3>                  _position;
 
+			Signal<AbsCtrlPtr, NodePtr>::Slot				_targetAddedSlot;
+			Signal<AbsCtrlPtr, NodePtr>::Slot				_targetRemovedSlot;
 			data::Container::PropertyChangedSignal::Slot	_modelToWorldChangedSlot;
 
 		public:
 			inline static
 			Ptr
-			create(float fov, float aspectRatio, float zNear, float zFar)
+			create(float aspectRatio, float fov = .785f, float zNear = 0.1f, float zFar = 1000.f)
 			{
 				auto ctrl  = std::shared_ptr<PerspectiveCamera>(new PerspectiveCamera(fov, aspectRatio, zNear, zFar));
 
@@ -62,19 +71,97 @@ namespace minko
 				return ctrl;
 			}
 
+			inline
+			float
+			fieldOfView() const
+			{
+				return _fov;
+			}
+
+			inline
+			void
+			fieldOfView(float fov)
+			{
+				if (fov != _fov)
+				{
+					_fov = fov;
+					updateProjection(_fov, _aspectRatio, _zNear, _zFar);
+				}
+			}
+
+			inline
+			float
+			aspectRatio() const
+			{
+				return _aspectRatio;
+			}
+
+			inline
+			void
+			aspectRatio(float aspectRatio)
+			{
+				if (aspectRatio != _aspectRatio)
+				{
+					_aspectRatio = aspectRatio;
+					updateProjection(_fov, _aspectRatio, _zNear, _zFar);
+				}
+			}
+
+			inline
+			float
+			zNear() const
+			{
+				return _zNear;
+			}
+
+			inline
+			void
+			zNear(float zNear)
+			{
+				if (zNear != _zNear)
+				{
+					_zNear = zNear;
+					updateProjection(_fov, _aspectRatio, _zNear, _zFar);
+				}
+			}
+
+			inline
+			float
+			zFar() const
+			{
+				return _zFar;
+			}
+
+			inline
+			void
+			zFar(float zFar)
+			{
+				if (zFar != _zFar)
+				{
+					_zFar = zFar;
+					updateProjection(_fov, _aspectRatio, _zNear, _zFar);
+				}
+			}
+
 			~PerspectiveCamera()
 			{
 			}
 
-            std::shared_ptr<math::Matrix4x4>
-            viewProjection();
-            
+			void
+			updateProjection(float fieldOfView, float aspectRatio, float zNear, float zFar);
+
         protected:
             void
             targetAddedHandler(AbstractComponent::Ptr ctrl, NodePtr target);
 
+			void
+			targetRemovedHandler(AbstractComponent::Ptr ctrl, NodePtr target);
+
 		private:
 			PerspectiveCamera(float fov, float aspectRatio, float zNear, float zFar);
+
+			void
+			initialize();
 
 			void
 			localToWorldChangedHandler(std::shared_ptr<data::Container> data,
@@ -82,6 +169,7 @@ namespace minko
 
             void
             updateMatrices(std::shared_ptr<math::Matrix4x4> modelToWorldMatrix);
+
 		};
 	}
 }
