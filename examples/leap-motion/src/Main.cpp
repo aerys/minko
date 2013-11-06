@@ -352,7 +352,8 @@ int main(int argc, char** argv)
     
     sceneManager->assets()
     ->load("effect/Phong.effect")
-    ->load("effect/Basic.effect");
+    ->load("effect/Basic.effect")
+	->load("effect/fxaa.effect");
     options->materialFunction([&](const std::string&, data::Provider::Ptr){
 		return defaultMaterial;
 	});
@@ -364,6 +365,8 @@ int main(int argc, char** argv)
     
     auto root   = scene::Node::create("root");
     auto camera	= scene::Node::create("camera");
+	auto ppRenderer = Renderer::create();
+	auto ppTarget = render::Texture::create(sceneManager->assets()->context(), 2048, 2048, false, true);;
 	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
 	{
 		scene::Node::Ptr mk = assets->node(MK_NAME);
@@ -406,12 +409,6 @@ int main(int argc, char** argv)
         pLight1->addComponent(component::Transform::create());
         pLight1->component<Transform>()->transform()->appendTranslation(0.f, 10.f, 0.f);
         pLight1->component<PointLight>()->color()->setTo(1.f, 1.f, 1.f);
-		/*pLight1->addComponent(Surface::create(
-			assets->geometry("sphere"),
-			data::Provider::create()
-			->set("material.diffuseColor", Vector4::create(1.f, 0.f, 0.f, 0.f)),
-			assets->effect("effect/Phong.effect")
-			));*/
         
         skybox->addComponent(Transform::create());
         skybox->component<Transform>()->transform()->prependScale(60.0f, 60.0f, 60.0f);
@@ -427,10 +424,27 @@ int main(int argc, char** argv)
         
         root->addChild(skybox);
 		root->addChild(baseNode);
-		//camera->addChild(pointer);
         root->addChild(pLight1);
         
-        getBoundingBoxes(baseNode, *boxList);
+		auto ppFx = sceneManager->assets()->effect("effect/fxaa.effect");
+
+		if (!ppFx)
+			throw std::logic_error("fxaa.effect has not been loaded.");
+
+		ppTarget->upload();
+
+		sceneManager->assets()->context()->errorsEnabled(true);
+		auto ppScene = scene::Node::create()
+			->addComponent(ppRenderer)
+			->addComponent(Surface::create(
+				geometry::QuadGeometry::create(sceneManager->assets()->context()),
+				data::Provider::create()
+					->set("backbuffer", ppTarget)
+					->set("texcoordOffset", Vector2::create(1.f/2048.f, 1.f/2048)),
+				ppFx
+			));
+
+        //getBoundingBoxes(baseNode, *boxList);
 	});
     
 	sceneManager->assets()->load();
@@ -629,7 +643,8 @@ int main(int argc, char** argv)
 		//scaleSpeed = scaleSpeed + (1.f - scaleSpeed) * 0.1f;
 		//std::cout << scaleSpeed << std::endl;
         
-		sceneManager->nextFrame();
+		sceneManager->nextFrame(ppTarget);
+		ppRenderer->render(sceneManager->assets()->context());
         
 		//pointer->component<Surface>()->material()->set("material.diffuseColor", Vector4::create(1.f, 1.f, 1.f, 0.5f));
 #ifdef MINKO_ANGLE
