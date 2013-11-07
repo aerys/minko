@@ -191,12 +191,12 @@ int main(int argc, char** argv)
 		ppTarget->upload();
 
 		auto ppRenderer = Renderer::create();
+		auto ppData = data::Provider::create()->set("backbuffer", ppTarget);
 		auto ppScene = scene::Node::create()
 			->addComponent(ppRenderer)
 			->addComponent(Surface::create(
 				geometry::QuadGeometry::create(sceneManager->assets()->context()),
-				data::Provider::create()
-					->set("backbuffer", ppTarget),
+				ppData,
 				ppFx
 			));
 #endif
@@ -204,6 +204,12 @@ int main(int argc, char** argv)
 		auto resized = MinkoSDL::resized()->connect([&](unsigned int width, unsigned int height)
 		{
 			camera->component<PerspectiveCamera>()->aspectRatio((float)width / (float)height);
+
+			auto oldTarget = ppTarget;
+
+			ppTarget = render::Texture::create(assets->context(), clp2(width), clp2(height), false, true);
+			ppTarget->upload();
+			ppData->set("backbuffer", ppTarget);
 		});
 
 		auto yaw = 0.f;
