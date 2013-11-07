@@ -58,6 +58,16 @@ namespace minko
 			{
 				return abs(x - y) < epsilon;
 			}
+
+			static inline
+			bool
+			nearEqual(std::shared_ptr<Matrix4x4> m1, std::shared_ptr<Matrix4x4> m2, float epsilon = 1e-15)
+			{
+				for (auto i = 0; i < 16; ++i)
+					if (!nearEqual(m1->data()[i], m2->data()[i], epsilon))
+						return false;
+				return true;
+			}
 		};
 	}
 }
