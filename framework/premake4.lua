@@ -64,6 +64,7 @@ project "framework"
 	-- emscripten
 	configuration { "emscripten" }
 		flags { "Optimize" }
+		defines { "EMSCRIPTEN" }
 
 	newoption {
 		trigger     = "with-glsl-optimizer",

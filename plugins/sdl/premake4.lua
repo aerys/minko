@@ -35,5 +35,6 @@ minko.project.library "plugin-sdl"
 
 	-- emscripten
 	configuration { "emscripten" }
+		defines { "EMSCRIPTEN" }
 		flags { "Optimize" }
 		includedirs { "lib/emscripten/SDL/include" }
