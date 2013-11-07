@@ -34,6 +34,7 @@ Transform::Transform() :
 	minko::component::AbstractComponent(),
 	_transform(Matrix4x4::create()),
 	_modelToWorld(Matrix4x4::create()),
+	_worldToModel(Matrix4x4::create()),
 	_data(data::Provider::create())
 {
 }

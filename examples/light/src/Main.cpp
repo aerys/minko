@@ -29,7 +29,6 @@ using namespace minko::math;
 #define WINDOW_WIDTH  	800
 #define WINDOW_HEIGHT 	600
 
-float cameraRotationYSpeed = 0.f;
 scene::Node::Ptr camera = nullptr;
 
 scene::Node::Ptr
@@ -117,31 +116,6 @@ int main(int argc, char** argv)
 		lights->addComponent(Transform::create());
 		root->addChild(lights);
 
-		// handle mouse signals
-		minko::Signal<uint, uint>::Slot mouseMove;
-		int oldX = 0;
-
-		auto mouseDown = MinkoSDL::mouseLeftButtonDown()->connect([&](unsigned int x, unsigned int y)
-		{
-			oldX = x;
-
-			mouseMove = MinkoSDL::mouseMove()->connect([&](unsigned int x, unsigned int y)
-			{
-				cameraRotationYSpeed = (float)((int)x - oldX) * .01f;
-				oldX = x;
-			});
-		});
-
-		auto mouseUp = MinkoSDL::mouseLeftButtonUp()->connect([&](unsigned int x, unsigned int y)
-		{
-			mouseMove = nullptr;
-		});
-
-		auto mouseWheel = MinkoSDL::mouseWheel()->connect([&](int x, int y)
-		{
-			camera->component<Transform>()->transform()->prependTranslation(0.f, 0.f, (float)y / 10.f);
-		});
-
 		// handle keyboard signals
 		auto keyDown = MinkoSDL::keyDown()->connect([&](const Uint8* keyboard)
 		{
@@ -217,12 +191,12 @@ int main(int argc, char** argv)
 		ppTarget->upload();
 
 		auto ppRenderer = Renderer::create();
+		auto ppData = data::Provider::create()->set("backbuffer", ppTarget);
 		auto ppScene = scene::Node::create()
 			->addComponent(ppRenderer)
 			->addComponent(Surface::create(
 				geometry::QuadGeometry::create(sceneManager->assets()->context()),
-				data::Provider::create()
-					->set("backbuffer", ppTarget),
+				ppData,
 				ppFx
 			));
 #endif
@@ -230,12 +204,74 @@ int main(int argc, char** argv)
 		auto resized = MinkoSDL::resized()->connect([&](unsigned int width, unsigned int height)
 		{
 			camera->component<PerspectiveCamera>()->aspectRatio((float)width / (float)height);
+
+			auto oldTarget = ppTarget;
+
+			ppTarget = render::Texture::create(assets->context(), clp2(width), clp2(height), false, true);
+			ppTarget->upload();
+			ppData->set("backbuffer", ppTarget);
 		});
+
+		auto yaw = 0.f;
+		auto pitch = PI * .5f;
+		auto roll = 0.f;
+		auto minPitch = 0.f + 1e-10;
+		auto maxPitch = PI * .5f;
+		auto lookAt = Vector3::create(0.f, 2.f, 0.f);
+		auto distance = 20.f;
+
+		// handle mouse signals
+		auto mouseWheel = MinkoSDL::mouseWheel()->connect([&](int x, int y)
+		{
+			distance += (float)y / 10.f;
+		});
+
+		minko::Signal<uint, uint>::Slot mouseMove;
+		auto cameraRotationXSpeed = 0.f;
+		auto cameraRotationYSpeed = 0.f;
+		int oldX = 0;
+		int oldY = 0;
+
+		auto mouseDown = MinkoSDL::mouseLeftButtonDown()->connect([&](unsigned int x, unsigned int y)
+		{
+			oldX = x;
+			oldY = y;
+
+			mouseMove = MinkoSDL::mouseMove()->connect([&](unsigned int x, unsigned int y)
+			{
+				cameraRotationYSpeed = (float)((int)x - oldX) * .01f;
+				cameraRotationXSpeed = (float)((int)y - oldY) * -.01f;
+				oldX = x;
+				oldY = y;
+			});
+		});
+
+		auto mouseUp = MinkoSDL::mouseLeftButtonUp()->connect([&](unsigned int x, unsigned int y)
+		{
+			mouseMove = nullptr;
+		});
+
 
 		auto enterFrame = MinkoSDL::enterFrame()->connect([&]()
 		{
-			camera->component<Transform>()->transform()->appendRotationY(cameraRotationYSpeed);
+			yaw += cameraRotationYSpeed;
 			cameraRotationYSpeed *= 0.9f;
+
+			pitch += cameraRotationXSpeed;
+			cameraRotationXSpeed *= 0.9f;
+			if (pitch > maxPitch)
+				pitch = maxPitch;
+			else if (pitch < minPitch)
+				pitch = minPitch;
+
+			camera->component<Transform>()->transform()->lookAt(
+				lookAt,
+				Vector3::create(
+					lookAt->x() + distance * cosf(yaw) * sinf(pitch),
+					lookAt->y() + distance * cosf(pitch),
+					lookAt->z() + distance * sinf(yaw) * sinf(pitch)
+				)
+			);
 
 			lights->component<Transform>()->transform()->appendRotationY(.005f);
 
