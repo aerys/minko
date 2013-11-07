@@ -89,6 +89,34 @@ namespace minko
 			}
 
 			inline
+			std::shared_ptr<math::Vector3>
+			modelToWorld(std::shared_ptr<math::Vector3> v)
+			{
+				return _modelToWorld->transform(v);
+			}
+
+			inline
+			std::shared_ptr<math::Vector3>
+			deltaModelToWorld(std::shared_ptr<math::Vector3> v)
+			{
+				return _modelToWorld->deltaTransform(v);
+			}
+
+			inline
+			std::shared_ptr<math::Vector3>
+			worldToModel(std::shared_ptr<math::Vector3> v)
+			{
+				return _worldToModel->copyFrom(_modelToWorld)->invert()->transform(v);
+			}
+
+			inline
+			std::shared_ptr<math::Vector3>
+			deltaWorldToModel(std::shared_ptr<math::Vector3> v)
+			{
+				return _worldToModel->copyFrom(_modelToWorld)->invert()->deltaTransform(v);
+			}
+
+			inline
 			std::shared_ptr<math::Matrix4x4>
 			modelToWorldMatrix(bool forceUpdate = false)
 			{
