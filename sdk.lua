@@ -54,7 +54,7 @@ minko.sdk.newplatform {
 		cc = 'gcc',
 		cxx = 'g++',
 		ar = 'ar',
-		cppflags = '',
+		cppflags = '-MMD',
 		ldflags = ''
 	}
 }
