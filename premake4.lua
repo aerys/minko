@@ -3,6 +3,10 @@ solution "minko"
 
 dofile('sdk.lua')
 
+if _OPTIONS["no-stencil"] then
+	defines { "MINKO_NO_STENCIL" }
+end
+
 -- core framework
 include 'framework'
 
