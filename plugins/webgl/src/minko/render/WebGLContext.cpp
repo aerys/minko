@@ -160,7 +160,7 @@ WebGLContext::fillAttributeInputs(const unsigned int							program,
 }
 
 void
-WebGLContext::setUniform(unsigned int location, unsigned int size, bool transpose, const float* values)
+WebGLContext::setUniform(const unsigned int& location, const unsigned int& size, bool transpose, const float* values)
 {
 	if (transpose)
 	{
