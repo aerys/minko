@@ -44,6 +44,11 @@ namespace minko
 			std::shared_ptr<Signal<Ptr, int>>	_vertexSizeChanged;
 
 		public:
+			~VertexBuffer()
+			{
+				dispose();
+			}
+
 			inline static
 			Ptr
 			create(std::shared_ptr<render::AbstractContext> context)
