@@ -141,6 +141,15 @@ namespace minko
 			Ptr
 			computeTangentSpace(bool computeNormals);
 
+			void
+			removeDuplicatedVertices();
+
+			static
+			void
+			removeDuplicatedVertices(std::vector<unsigned short>&		indices,
+									 std::vector<std::vector<float>>&	vertices,
+									 uint								numVertices);
+
 		protected:
 			Geometry();
 

@@ -264,3 +264,73 @@ Geometry::vertexSizeChanged(VertexBuffer::Ptr vertexBuffer, int offset)
 {
 	_vertexSize += offset;
 }
+
+void
+Geometry::removeDuplicatedVertices()
+{
+	std::vector<std::vector<float>> vertices;
+
+	for (auto vb : _vertexBuffers)
+		vertices.push_back(vb->data());
+
+	removeDuplicatedVertices(_indexBuffer->data(),	vertices, numVertices());
+}
+
+void
+Geometry::removeDuplicatedVertices(std::vector<unsigned short>&		indices,
+								   std::vector<std::vector<float>>&	vertices,
+								   uint								numVertices)
+{
+	auto numIndices = indices.size();
+	auto newVertexCount = 0;
+	auto newLimit = 0;
+
+	std::unordered_map<std::string, uint> hashToNewVertexId;
+	std::unordered_map<uint, uint> oldVertexIdToNewVertexId;
+
+	for (uint oldVertexId = 0; oldVertexId < numVertices; ++oldVertexId)
+	{
+		std::string hash;
+
+		for (auto& vb : vertices)
+		{
+			auto vertexSize = vb.size() / numVertices;
+
+			for (uint i = 0; i < vertexSize; ++i)
+				hash += std::to_string(vb[oldVertexId * vertexSize + i]) + " ";
+		}
+
+		auto newVertexId = 0;
+
+		if (!hashToNewVertexId.count(hash))
+		{
+			newVertexId = newVertexCount++;
+			hashToNewVertexId[hash] = newVertexId;
+			newLimit = 1 + newVertexId;
+
+			if (newVertexId != oldVertexId)
+			{
+				for (auto& vb : vertices)
+				{
+					auto vertexSize = vb.size() / numVertices;
+
+					std::copy(
+						vb.begin() + oldVertexId * vertexSize,
+						vb.begin() + (oldVertexId + 1) * vertexSize,
+						vb.begin() + newVertexId * vertexSize
+					);
+				}
+			}
+		}
+		else
+			newVertexId = hashToNewVertexId[hash];
+
+		oldVertexIdToNewVertexId[oldVertexId] = newVertexId;
+	}
+
+	for (auto& vb : vertices)
+		vb.resize(newLimit * vb.size() / numVertices);
+
+	for (auto& index : indices)
+		index = oldVertexIdToNewVertexId[index];
+}
