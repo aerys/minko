@@ -39,7 +39,8 @@ Renderer::Renderer() :
     _backgroundColor(0),
 	_renderingBegin(Signal<Ptr>::create()),
 	_renderingEnd(Signal<Ptr>::create()),
-	_surfaceDrawCalls()
+	_surfaceDrawCalls(),
+	_surfaceTechniqueChangedSlot()
 {
 }
 
@@ -168,7 +169,7 @@ Renderer::rootDescendantAddedHandler(std::shared_ptr<Node> node,
 
 	for (auto surfaceNode : surfaceNodes->nodes())
 		for (auto surface : surfaceNode->components<Surface>())
-			addSurfaceComponent(surface);
+			addSurface(surface);
 }
 
 void
@@ -185,7 +186,7 @@ Renderer::rootDescendantRemovedHandler(std::shared_ptr<Node> node,
 
 	for (auto surfaceNode : surfaceNodes->nodes())
 		for (auto surface : surfaceNode->components<Surface>())
-			removeSurfaceComponent(surface);
+			removeSurface(surface);
 }
 
 void
@@ -197,7 +198,7 @@ Renderer::componentAddedHandler(std::shared_ptr<Node>				node,
 	auto sceneManager = std::dynamic_pointer_cast<SceneManager>(ctrl);
 	
 	if (surfaceCtrl)
-		addSurfaceComponent(surfaceCtrl);
+		addSurface(surfaceCtrl);
 	else if (sceneManager)
 		setSceneManager(sceneManager);
 }
@@ -211,31 +212,57 @@ Renderer::componentRemovedHandler(std::shared_ptr<Node>					node,
 	auto sceneManager = std::dynamic_pointer_cast<SceneManager>(ctrl);
 
 	if (surfaceCtrl)
-		removeSurfaceComponent(surfaceCtrl);
+		removeSurface(surfaceCtrl);
 	else if (sceneManager)
 		setSceneManager(nullptr);
 }
 
 void
-Renderer::addSurfaceComponent(std::shared_ptr<Surface> surface)
+Renderer::addSurface(Surface::Ptr surface)
 {
-	auto drawCalls = surface->createDrawCalls(targets()[0]->data());
+	_surfaceTechniqueChangedSlot[surface]	= surface->techniqueChanged()->connect(std::bind(
+		&Renderer::surfaceTechniqueChanged,
+		shared_from_this(),
+		surface,
+		std::placeholders::_2
+	));
 
-	_surfaceDrawCalls[surface] = drawCalls;
-
-	_drawCalls.insert(_drawCalls.end(), drawCalls.begin(), drawCalls.end());
+	addSurfaceDrawcalls(surface);
 }
 
 void
-Renderer::removeSurfaceComponent(std::shared_ptr<Surface> surface)
+Renderer::addSurfaceDrawcalls(Surface::Ptr surface)
 {
-	auto ctrlDrawCalls	= _surfaceDrawCalls.find(surface);
-	if (ctrlDrawCalls == _surfaceDrawCalls.end())
+	removeSurfaceDrawcalls(surface);
+
+	_surfaceDrawCalls[surface]	= surface->createDrawCalls(targets()[0]->data());
+
+	_drawCalls.insert(
+		_drawCalls.end(), 
+		_surfaceDrawCalls[surface].begin(), 
+		_surfaceDrawCalls[surface].end()
+	);
+}
+
+void
+Renderer::removeSurface(Surface::Ptr surface)
+{
+	removeSurfaceDrawcalls(surface);
+	_surfaceTechniqueChangedSlot.erase(surface);
+}
+
+void
+Renderer::removeSurfaceDrawcalls(Surface::Ptr surface)
+{
+	auto foundDrawcallsIt			= _surfaceDrawCalls.find(surface);
+	if (foundDrawcallsIt == _surfaceDrawCalls.end())
 		return;
 
-	for (auto drawCall : ctrlDrawCalls->second)
+	const DrawCallList& drawcalls	= foundDrawcallsIt->second;
+	for (auto& drawCall : drawcalls)
 		_drawCalls.remove(drawCall);
-	_surfaceDrawCalls.erase(ctrlDrawCalls);
+
+	_surfaceDrawCalls.erase(foundDrawcallsIt);
 }
 
 void
@@ -319,4 +346,11 @@ Renderer::sceneManagerRenderingBeginHandler(std::shared_ptr<SceneManager>		scene
 										    std::shared_ptr<render::Texture>	renderTarget)
 {
 	render(sceneManager->assets()->context(), renderTarget);
+}
+
+void
+Renderer::surfaceTechniqueChanged(Surface::Ptr			surface, 
+								  const std::string&	technique)
+{
+	addSurfaceDrawcalls(surface);
 }
