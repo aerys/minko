@@ -133,7 +133,7 @@ EffectParser::parse(const std::string&				    filename,
 		throw std::invalid_argument("data");
     }
 
-    _filename = filename;
+	_filename = filename;
 	_resolvedFilename = resolvedFilename;
 	_options = options;
 	_assetLibrary = assetLibrary;
