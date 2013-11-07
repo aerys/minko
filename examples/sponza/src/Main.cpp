@@ -383,7 +383,6 @@ main(int argc, char** argv)
 	sceneManager->assets()
 		->queue("texture/firefull.jpg")
 		->queue("effect/Particles.effect")
-		//->queue("effect/OculusVR/OculusVR.effect")
 		->queue(MK_NAME);
 
 	renderer = Renderer::create();
@@ -398,9 +397,9 @@ main(int argc, char** argv)
 		auto lights = scene::Node::create();
 
 		lights
-		->addComponent(component::AmbientLight::create())
-		->addComponent(component::DirectionalLight::create())
-		->addComponent(component::Transform::create());
+			->addComponent(component::AmbientLight::create())
+			->addComponent(component::DirectionalLight::create())
+			->addComponent(component::Transform::create());
 		lights->component<Transform>()->transform()->lookAt(Vector3::zero(), Vector3::create(-1.f, -1.f, -1.f));
 		root->addChild(lights);
 
