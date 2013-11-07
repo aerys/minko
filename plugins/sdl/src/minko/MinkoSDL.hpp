@@ -349,6 +349,10 @@ private:
 		//SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
 		SDL_Init(SDL_INIT_VIDEO);
+
+		if (useStencil)
+			SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
+
 		SDL_WM_SetCaption(windowTitle.c_str(), NULL);
 		SDL_Surface* screen = SDL_SetVideoMode(width, height, 0, SDL_OPENGL);
 

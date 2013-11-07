@@ -61,8 +61,8 @@ namespace minko
 								std::vector<unsigned int>&			locations);
 
 			void
-			setUniform(unsigned int	location,
-					   unsigned int	size,
+			setUniform(const unsigned int&	location,
+					   const unsigned int&	size,
 					   bool			transpose,
 					   const float*	values);
 		};
