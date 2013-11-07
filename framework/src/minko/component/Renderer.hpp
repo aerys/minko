@@ -31,37 +31,38 @@ namespace minko
 			public std::enable_shared_from_this<Renderer>
 		{
 		public:
-			typedef std::shared_ptr<Renderer>			Ptr;
+			typedef std::shared_ptr<Renderer>							Ptr;
 
 		private:
-			typedef std::shared_ptr<scene::Node>		NodePtr;
-			typedef std::shared_ptr<AbstractComponent>	AbsCtrlPtr;
-			typedef std::shared_ptr<Surface>			SurfacePtr;
-			typedef std::shared_ptr<render::DrawCall>	DrawCallPtr;
-			typedef std::list<DrawCallPtr>				DrawCallList;
-			typedef std::shared_ptr<SceneManager>		SceneManagerPtr;
-			typedef std::shared_ptr<render::Texture>	TexturePtr;
-
-			typedef Signal<SurfacePtr, DrawCallPtr>		SurfaceDrawCallChangedSignal;
+			typedef std::shared_ptr<scene::Node>						NodePtr;
+			typedef std::shared_ptr<AbstractComponent>					AbsCtrlPtr;
+			typedef std::shared_ptr<Surface>							SurfacePtr;
+			typedef std::shared_ptr<render::DrawCall>					DrawCallPtr;
+			typedef std::list<DrawCallPtr>								DrawCallList;
+			typedef std::shared_ptr<SceneManager>						SceneManagerPtr;
+			typedef std::shared_ptr<render::Texture>					TexturePtr;
+			typedef Signal<SurfacePtr, const std::string&>::Slot		SurfaceTechniqueChangedSlot;
 
 		private:
-			std::list<DrawCallPtr>								_drawCalls;
-			std::unordered_map<SurfacePtr, DrawCallList>		_surfaceDrawCalls; 
-			unsigned int										_backgroundColor;
-			std::shared_ptr<SceneManager>						_sceneManager;
-			Signal<Ptr>::Ptr									_renderingBegin;
-			Signal<Ptr>::Ptr									_renderingEnd;
-			std::shared_ptr<render::Texture>					_renderTarget;
+			std::list<DrawCallPtr>										_drawCalls;
+			std::unordered_map<SurfacePtr, DrawCallList>				_surfaceDrawCalls; 
 
-			Signal<AbsCtrlPtr, NodePtr>::Slot					_targetAddedSlot;
-			Signal<AbsCtrlPtr, NodePtr>::Slot					_targetRemovedSlot;
-			Signal<NodePtr, NodePtr, NodePtr>::Slot				_addedSlot;
-			Signal<NodePtr, NodePtr, NodePtr>::Slot				_removedSlot;
-			Signal<NodePtr, NodePtr, NodePtr>::Slot				_rootDescendantAddedSlot;
-			Signal<NodePtr, NodePtr, NodePtr>::Slot				_rootDescendantRemovedSlot;
-			Signal<NodePtr, NodePtr, AbsCtrlPtr>::Slot			_componentAddedSlot;
-			Signal<NodePtr, NodePtr, AbsCtrlPtr>::Slot			_componentRemovedSlot;
-			Signal<SceneManagerPtr, uint, TexturePtr>::Slot		_renderingBeginSlot;
+			unsigned int												_backgroundColor;
+			std::shared_ptr<SceneManager>								_sceneManager;
+			Signal<Ptr>::Ptr											_renderingBegin;
+			Signal<Ptr>::Ptr											_renderingEnd;
+			std::shared_ptr<render::Texture>							_renderTarget;
+
+			Signal<AbsCtrlPtr, NodePtr>::Slot							_targetAddedSlot;
+			Signal<AbsCtrlPtr, NodePtr>::Slot							_targetRemovedSlot;
+			Signal<NodePtr, NodePtr, NodePtr>::Slot						_addedSlot;
+			Signal<NodePtr, NodePtr, NodePtr>::Slot						_removedSlot;
+			Signal<NodePtr, NodePtr, NodePtr>::Slot						_rootDescendantAddedSlot;
+			Signal<NodePtr, NodePtr, NodePtr>::Slot						_rootDescendantRemovedSlot;
+			Signal<NodePtr, NodePtr, AbsCtrlPtr>::Slot					_componentAddedSlot;
+			Signal<NodePtr, NodePtr, AbsCtrlPtr>::Slot					_componentRemovedSlot;
+			Signal<SceneManagerPtr, uint, TexturePtr>::Slot				_renderingBeginSlot;
+			std::unordered_map<SurfacePtr, SurfaceTechniqueChangedSlot>	_surfaceTechniqueChangedSlot;
 
 		public:
 			inline static
@@ -168,13 +169,22 @@ namespace minko
 			componentRemovedHandler(NodePtr node, NodePtr target, AbsCtrlPtr ctrl);
 
 			void
-			addSurfaceComponent(SurfacePtr ctrl);
+			addSurface(SurfacePtr);
 
 			void
-			removeSurfaceComponent(SurfacePtr ctrl);
+			addSurfaceDrawcalls(SurfacePtr);
+
+			void
+			removeSurface(SurfacePtr);
+
+			void
+			removeSurfaceDrawcalls(SurfacePtr);
 
 			void
 			geometryChanged(SurfacePtr ctrl);
+
+			void
+			surfaceTechniqueChanged(SurfacePtr, const std::string& technique);
 
 			void
 			materialChanged(SurfacePtr ctrl);
