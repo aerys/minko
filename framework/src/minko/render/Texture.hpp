@@ -47,6 +47,11 @@ namespace minko
 			std::vector<unsigned char>	_data;
 
 		public:
+			~Texture()
+			{
+				dispose();
+			}
+
 			inline static
 			Ptr
 			create(std::shared_ptr<render::AbstractContext> context,
