@@ -297,6 +297,7 @@ namespace minko
 			void
 			setUniform(const uint& location, const float& v1, const float& v2, const float& v3, const float& v4);
 
+			virtual
 			void
 			setUniform(const uint& location, const uint& size, bool transpose, const float* values);
 
