@@ -19,6 +19,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "OpenGLES2Context.hpp"
 
+#include <iomanip>
 #include "minko/render/CompareMode.hpp"
 #include "minko/render/WrapMode.hpp"
 #include "minko/render/TextureFilter.hpp"
@@ -35,6 +36,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 # include "minko/math/Matrix4x4.hpp"
 #elif _WIN32
 # include "GL/glew.h"
+#elif EMSCRIPTEN
+# include <GLES2/gl2.h>
+# include <EGL/egl.h>
 #else
 # include <GL/gl.h>
 # include <GL/glu.h>
@@ -760,7 +764,7 @@ OpenGLES2Context::compileShader(const uint shader)
 
 		saveShaderSourceToFile(filename, shader);
 
-		std::cerr << errors << std::endl;
+		std::cerr << "\nERRORS\n------\n" << errors << std::endl;
 		std::cerr << "\nerrorneous shader source saved to \'" << filename << "\'" << std::endl;
 		throw;
 	}
@@ -831,32 +835,59 @@ OpenGLES2Context::setShaderSource(const uint shader,
 void
 OpenGLES2Context::saveShaderSourceToFile(const std::string& filename, uint shader)
 {
-	std::string		source;
+	std::string	source;
+	getShaderSource(shader, source);
+
+#ifndef MINKO_GLSL_OPTIMIZER
+	std::cout << "\nSHADER SOURCE\n-------------" << std::endl;
+	unsigned int i		= 0;
+	unsigned int line	= 1;
+	while(i < source.size())
+	{
+		std::string lineString;
+		while(i < source.size() && source[i] != '\n')
+			lineString.push_back(source[i++]);
+		++i;
+
+#ifndef EMSCRIPTEN
+		std::cerr
+#else
+		std::cout
+#endif // EMSCRIPTEN
+			<< "(" << std::setfill('0') << std::setw(4) << line << ") " << lineString << std::endl;
+
+		++line;
+	}
+#endif //MINKO_GLSL_OPTIMIZER
+
+#ifndef EMSCRIPTEN
 	std::ofstream	file;
 
 	file.open(filename.c_str());
 	if (!file.is_open())
 		return;
-
-	getShaderSource(shader, source);
-
 	file << source;
 	file.close();
+#endif // EMSCRIPTEN
 }
 
 void
 OpenGLES2Context::getShaderSource(uint shader, std::string& source)
 {
-	static const uint BUFFER_SIZE = 5000;
-	
-	GLchar	buffer[BUFFER_SIZE];
-	GLsizei	length = 0;
+	source.clear();
 
-	glGetShaderSource(shader, BUFFER_SIZE, &length, &buffer[0]);
+	GLint	bufferSize	= 0;
+	GLsizei	length		= 0;
+
+	glGetShaderiv(shader, GL_SHADER_SOURCE_LENGTH, &bufferSize);
+	if (bufferSize == 0)
+		return;
+
+	source.resize(bufferSize);
+	glGetShaderSource(shader, bufferSize, &length, &source[0]);
 	checkForErrors();
-
-	source = std::string(buffer);
 }
+
 
 const uint
 OpenGLES2Context::createVertexShader()
