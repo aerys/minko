@@ -50,7 +50,8 @@ Surface::Surface(Geometry::Ptr 			geometry,
 	_macroChangedSlots(),
 	_numMacroListeners(),
 	_drawCallAdded(DrawCallChangedSignal::create()),
-	_drawCallRemoved(DrawCallChangedSignal::create())
+	_drawCallRemoved(DrawCallChangedSignal::create()),
+	_techniqueChanged(TechniqueChangedSignal::create())
 {
 }
 
@@ -249,31 +250,37 @@ Surface::deleteDrawCalls(std::shared_ptr<data::Container> rendererData)
 	_drawCalls.erase(rendererData);
 }
 
-Surface::DrawCallList
-Surface::createDrawCalls(std::shared_ptr<data::Container> rendererData)
+const Surface::DrawCallList&	
+Surface::createDrawCalls(std::shared_ptr<data::Container>	rendererData)
 {
 	if (_drawCalls.count(rendererData) != 0)
 		deleteDrawCalls(rendererData);
 
-	const auto& passes = _effect->technique(_technique);
-	auto& drawCalls = _drawCalls[rendererData];
+	const auto&	passes		= _effect->technique(_technique);
+	auto&		drawCalls	= _drawCalls[rendererData];
+	bool		doFallback	= false;
 
 	for (const auto& pass : passes)
 	{
-		auto drawCall  = initializeDrawCall(pass, rendererData);
+		auto drawCall		= initializeDrawCall(pass, rendererData);
 
-		if (!drawCall)
+		if (drawCall)
 		{
-			switchToFallbackTechnique();
-
-			return createDrawCalls(rendererData);
+			drawCalls.push_back(drawCall);
+			_drawCallAdded->execute(shared_from_this(), drawCall);
 		}
-
-		drawCalls.push_back(drawCall);
-		_drawCallAdded->execute(shared_from_this(), drawCall);
+		else
+		{
+			doFallback		= true;
+			if (_drawCalls.count(rendererData) != 0)
+				deleteDrawCalls(rendererData);
+		}
 	}
 
-	watchMacroAdditionOrDeletion(rendererData);
+	if (!doFallback)
+		watchMacroAdditionOrDeletion(rendererData);
+	else
+		switchToFallbackTechnique();
 
 	return drawCalls;
 }
@@ -374,19 +381,20 @@ Surface::macroChangedHandler(Container::Ptr		data,
 {
 	if (change == MacroChange::REF_CHANGED && !_drawCalls.empty())
 	{
-		const auto	drawCalls = _macroPropertyNameToDrawCalls[propertyName];
+		const auto	drawCalls	= _macroPropertyNameToDrawCalls[propertyName];
 
 		for (auto& drawCall : drawCalls)
 		{
-			auto pass = _drawCallToPass[drawCall];
-			auto rendererData = _drawCallToRendererData[drawCall];
-
+			auto	pass			= _drawCallToPass[drawCall];
+			auto	rendererData	= _drawCallToRendererData[drawCall];
+	
 			if (!initializeDrawCall(pass, rendererData, drawCall))
 			{
-				switchToFallbackTechnique();
+				if (_drawCalls.count(rendererData) != 0)
+					deleteDrawCalls(rendererData);
 
-				deleteDrawCalls(rendererData);
-				createDrawCalls(rendererData);
+				switchToFallbackTechnique();
+				break;
 			}
 		}
 	}
@@ -462,7 +470,12 @@ Surface::switchToFallbackTechnique()
 	std::cout << "fallback for technique '" << _technique << "': ";
 #endif
 	if (_effect->hasFallback(_technique))
+	{
+		_macroAddedOrRemovedSlots.clear();
+
 		_technique = _effect->fallback(_technique);
+		_techniqueChanged->execute(shared_from_this(), _technique);
+	}
 
 #ifdef DEBUG_SHADER_FORK
 	std::cout << "'" << _technique << "'" << std::endl;
