@@ -36,7 +36,8 @@
 		"NORMAL_MAP"				: "material.normalMap",
 		"SPECULAR_MAP"				: "material.specularMap",
 		"ALPHA_MAP"					: "material.alphaMap",
-		"ALPHA_THRESHOLD"			: "material.alphaThreshold"
+		"ALPHA_THRESHOLD"			: "material.alphaThreshold",
+		"MODEL_TO_WORLD"			: "transform.modelToWorldMatrix"
 	},
 
 	"samplerStates" : {
@@ -52,7 +53,8 @@
 	"techniques" : [
 		{
 			"name"				: "single-pass",
-			"fallback" 			: "multi-pass",
+			//"fallback" 			: "multi-pass",
+			"fallback" 			: "basic",
 			"blendMode"			: ["one", "zero"],
 			"depthTest"			: [true, "less_equal"],
 			"triangleCulling"	: "back",
@@ -80,6 +82,13 @@
 		},
 		{
 			"name" 		: "multi-pass",
+
+			"passes" 	: [{
+				"includes" : [ "Basic.vertex.glsl", "Basic.fragment.glsl" ]
+			}]
+		},
+		{
+			"name" 		: "basic",
 
 			"passes" 	: [{
 				"includes" : [ "Basic.vertex.glsl", "Basic.fragment.glsl" ]

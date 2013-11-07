@@ -34,6 +34,7 @@ namespace minko
 		public:
 			typedef std::shared_ptr<Surface>						Ptr;
 			typedef Signal<Ptr, std::shared_ptr<render::DrawCall>>	DrawCallChangedSignal;
+			typedef Signal<Ptr, const std::string&>					TechniqueChangedSignal;			
 
 		private:
 			typedef std::shared_ptr<scene::Node>					NodePtr;
@@ -71,6 +72,7 @@ namespace minko
 			
 			DrawCallChangedSignal::Ptr								_drawCallAdded;
 			DrawCallChangedSignal::Ptr								_drawCallRemoved;
+			TechniqueChangedSignal::Ptr								_techniqueChanged;
 
 			Signal<AbstractComponent::Ptr, NodePtr>::Slot			_targetAddedSlot;
 			Signal<AbstractComponent::Ptr, NodePtr>::Slot			_targetRemovedSlot;
@@ -120,6 +122,9 @@ namespace minko
 				return _effect;
 			}
 
+			void
+			technique(const std::string&);
+
 			inline
 			const std::string&
 			technique()
@@ -141,11 +146,18 @@ namespace minko
 				return _drawCallRemoved;
 			}
 
-			DrawCallList
-			createDrawCalls(std::shared_ptr<data::Container> rendererData);
+			const DrawCallList&
+			createDrawCalls(std::shared_ptr<data::Container>	rendererData);
 
 			void
-			deleteDrawCalls(std::shared_ptr<data::Container> rendererData);
+			deleteDrawCalls(std::shared_ptr<data::Container>	rendererData);
+
+			inline
+			TechniqueChangedSignal::Ptr	
+			techniqueChanged() const
+			{
+				return _techniqueChanged;
+			}
 
 		private:
 			Surface(std::shared_ptr<geometry::Geometry> geometry,
