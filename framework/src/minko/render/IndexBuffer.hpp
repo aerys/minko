@@ -37,6 +37,11 @@ namespace minko
 			std::vector<unsigned short>	_data;
 
 		public:
+			~IndexBuffer()
+			{
+				dispose();
+			}
+
 			inline static
 			Ptr
 			create(std::shared_ptr<render::AbstractContext> context,
