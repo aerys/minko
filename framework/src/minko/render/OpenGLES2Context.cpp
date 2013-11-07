@@ -245,7 +245,9 @@ OpenGLES2Context::clear(float 			red,
 	// Specifies the index used when the stencil buffer is cleared. The initial value is 0.
 	//
 	// glClearStencil specify the clear value for the stencil buffer
+#ifndef MINKO_NO_STENCIL
 	glClearStencil(stencil);
+#endif
 
 	// http://www.opengl.org/sdk/docs/man/xhtml/glClear.xml
 	//
@@ -1222,6 +1224,7 @@ OpenGLES2Context::setStencilTest(CompareMode stencilFunc,
 								 StencilOperation stencilZFailOp,
 								 StencilOperation stencilZPassOp)
 {
+#ifndef MINKO_NO_STENCIL
 	if (stencilFunc != _currentStencilFunc 
 		|| stencilRef != _currentStencilRef 
 		|| stencilMask != _currentStencilMask)
@@ -1247,6 +1250,7 @@ OpenGLES2Context::setStencilTest(CompareMode stencilFunc,
 	}
 
 	checkForErrors();
+#endif
 }
 
 void
@@ -1350,6 +1354,8 @@ OpenGLES2Context::createRTTBuffers(uint texture, uint width, uint height)
 #else
     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, width, height);
 #endif
+	// FIXME: create & attach stencil buffer
+
     // attach to the FBO for depth
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, renderBuffer);
 
