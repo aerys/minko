@@ -19,6 +19,11 @@ dofile(MINKO_HOME .. '/tools/all/lib/minko.plugin.lua')
 dofile(MINKO_HOME .. '/tools/all/lib/minko.vs.lua')
 dofile(MINKO_HOME .. '/tools/all/lib/minko.project.lua')
 
+newoption {
+	trigger	= "no-stencil",
+	description = "Disable all stencil operations."
+}
+
 minko.sdk.newplatform {
 	name = 'emscripten',
 	description = 'Emscripten C++ to JS toolchain',
