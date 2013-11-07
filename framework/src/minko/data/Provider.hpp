@@ -84,7 +84,7 @@ namespace minko
 
 			inline
 			const std::unordered_map<std::string, std::shared_ptr<Value>>&
-			values()
+			values() const
 			{
 				return _values;
 			}
@@ -126,20 +126,30 @@ namespace minko
 
 			template <typename T>
 			typename std::enable_if<std::is_convertible<T, std::shared_ptr<Value>>::value, T>::type
-			get(const std::string& propertyName, bool skipPropertyNameFormatting = false)
+			get(const std::string& propertyName, bool skipPropertyNameFormatting = false) const
 			{
-				const std::string& formattedName = skipPropertyNameFormatting ? propertyName : formatPropertyName(propertyName);
+				const std::string&	formattedName	= skipPropertyNameFormatting ? propertyName : formatPropertyName(propertyName);
+				auto				foundIt			= values().find(formattedName);
 
-				return std::dynamic_pointer_cast<typename T::element_type>(_values[formattedName]);
+				return foundIt != values().end()
+					? std::dynamic_pointer_cast<typename T::element_type>(foundIt->second)
+					: nullptr;
+
+				// return std::dynamic_pointer_cast<typename T::element_type>(_values[formattedName]);
 			}
 
 			template <typename T>
 			typename std::enable_if<!std::is_convertible<T, std::shared_ptr<Value>>::value, T>::type
-			get(const std::string& propertyName, bool skipPropertyNameFormatting = false)
+			get(const std::string& propertyName, bool skipPropertyNameFormatting = false) const
 			{
-				const std::string& formattedName = skipPropertyNameFormatting ? propertyName : formatPropertyName(propertyName);
+				const std::string&	formattedName	= skipPropertyNameFormatting ? propertyName : formatPropertyName(propertyName);
+				auto				foundIt			= values().find(formattedName);
 
-				return std::dynamic_pointer_cast<ValueWrapper<T>>(_values[formattedName])->value();
+				return foundIt != values().end()
+					? std::dynamic_pointer_cast<ValueWrapper<T>>(foundIt->second)->value()
+					: T();
+
+				// return std::dynamic_pointer_cast<ValueWrapper<T>>(_values[formattedName])->value();
 			}
 
 			template <typename T>
