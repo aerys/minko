@@ -44,7 +44,11 @@ end
 minko.project.application = function(name)
 	minko.project.library(name)
 
-	--links { "framework" }
+	if MINKO_EXTERNAL_APP then	
+		include(minko.sdk.path("/framework"))
+		project(name)
+		links { "framework" }
+	end
 	
 	configuration { "windows" }
 		postbuildcommands {
@@ -66,4 +70,5 @@ minko.project.application = function(name)
 		}
 		
 	configuration { }
+	
 end
