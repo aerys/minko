@@ -2,6 +2,7 @@ solution "minko"
    configurations { "debug", "release" }
 
 dofile('sdk.lua')
+MINKO_EXTERNAL_APP = false
 
 if _OPTIONS["no-stencil"] then
 	defines { "MINKO_NO_STENCIL" }
