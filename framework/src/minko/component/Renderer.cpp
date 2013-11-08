@@ -227,7 +227,7 @@ Renderer::addSurface(Surface::Ptr surface)
 		std::placeholders::_2
 	));
 
-	addSurfaceDrawcalls(surface);
+	_toCollect.push_front(surface);
 }
 
 void
@@ -268,6 +268,10 @@ Renderer::removeSurfaceDrawcalls(Surface::Ptr surface)
 void
 Renderer::render(std::shared_ptr<render::AbstractContext> context, std::shared_ptr<render::Texture> renderTarget)
 {
+	for (auto& surface : _toCollect)
+		addSurfaceDrawcalls(surface);
+	_toCollect.clear();
+
 	_renderingBegin->execute(shared_from_this());
 
 	if (!renderTarget)
@@ -352,5 +356,5 @@ void
 Renderer::surfaceTechniqueChanged(Surface::Ptr			surface, 
 								  const std::string&	technique)
 {
-	addSurfaceDrawcalls(surface);
+	_toCollect.push_front(surface);
 }
