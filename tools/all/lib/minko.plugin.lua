@@ -1,16 +1,23 @@
 minko.plugin = {}
 
 minko.plugin.import = function(name)
-	local terms = configuration()["terms"]
-	
-	dofile(MINKO_HOME .. "/plugins/" .. name .."/plugin.lua")
-
-	configuration { unpack(terms) }
+	include(minko.sdk.path("/plugins/" .. name))
 end
 
 minko.plugin.enable = function(name)
-	_OPTIONS["with-" .. name] = "true"
+	local projectName = project()["name"]
+	local terms = configuration()["terms"]
+
 	minko.plugin.import(name)
+	
+	project(projectName)
+	configuration { unpack(terms) }
+	
+	_OPTIONS["with-" .. name] = "true"
+	
+	dofile(minko.sdk.path("/plugins/" .. name .."/plugin.lua"))
+
+	configuration { unpack(terms) }
 end
 
 minko.plugin.enabled = function(name)

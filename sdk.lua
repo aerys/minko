@@ -8,6 +8,8 @@ if not os.isfile(MINKO_HOME .. '/sdk.lua') then
 	printf('Running premake4 from outside Minko SDK. You must define the environment variable MINKO_HOME.')
 end
 
+MINKO_EXTERNAL_APP = true
+
 printf('Minko SDK home directory: ' .. MINKO_HOME)
 
 -- support for new actions
