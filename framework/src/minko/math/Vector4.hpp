@@ -43,6 +43,13 @@ namespace minko
 				return std::shared_ptr<Vector4>(new Vector4(x, y, z, w));
 			}
 
+			inline static
+			Ptr
+			create(Ptr v)
+			{
+				return create(v->x(), v->y(), v->z(), v->w());
+			}
+
 			inline
 			float
 			w()
