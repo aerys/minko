@@ -1,3 +1,4 @@
+-- set MINKO_HOME
 if os.getenv('MINKO_HOME') then
 	MINKO_HOME = os.getenv('MINKO_HOME');
 else
@@ -8,11 +9,9 @@ if not os.isfile(MINKO_HOME .. '/sdk.lua') then
 	printf('Running premake4 from outside Minko SDK. You must define the environment variable MINKO_HOME.')
 end
 
-MINKO_EXTERNAL_APP = true
-
 printf('Minko SDK home directory: ' .. MINKO_HOME)
 
--- support for new actions
+-- import build system utilities
 dofile(MINKO_HOME .. '/tools/all/lib/minko.lua')
 dofile(MINKO_HOME .. '/tools/all/lib/minko.sdk.lua')
 dofile(MINKO_HOME .. '/tools/all/lib/minko.os.lua')
@@ -21,11 +20,7 @@ dofile(MINKO_HOME .. '/tools/all/lib/minko.plugin.lua')
 dofile(MINKO_HOME .. '/tools/all/lib/minko.vs.lua')
 dofile(MINKO_HOME .. '/tools/all/lib/minko.project.lua')
 
-newoption {
-	trigger	= "no-stencil",
-	description = "Disable all stencil operations."
-}
-
+-- add new platforms
 minko.sdk.newplatform {
 	name = 'emscripten',
 	description = 'Emscripten C++ to JS toolchain',
@@ -61,8 +56,18 @@ minko.sdk.newplatform {
 	}
 }
 
+-- options
 if _OPTIONS.platform then
 	print('Selected target platform: ' .. _OPTIONS['platform'])
     -- overwrite the native platform with the options::platform
     premake.gcc.platforms['Native'] = premake.gcc.platforms[_OPTIONS.platform]
 end
+
+newoption {
+	trigger	= "no-stencil",
+	description = "Disable all stencil operations."
+}
+if _OPTIONS["no-stencil"] then
+	defines { "MINKO_NO_STENCIL" }
+end
+

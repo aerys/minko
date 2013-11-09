@@ -7,8 +7,6 @@ minko.project.application "example-effect-config"
 	minko.plugin.enable("sdl")
 	minko.plugin.enable("jpeg")
 
-	links { "framework" }
-	
 	configuration { "debug"}
 		defines { "DEBUG" }
 		flags { "Symbols" }
