@@ -25,9 +25,6 @@ using namespace minko;
 using namespace minko::component;
 using namespace minko::math;
 
-const std::string	PROP_NAME	= "alpha";
-const float			PERIOD		= 2.0; // in seconds
-
 int main(int argc, char** argv)
 {
 	auto canvas = Canvas::create("Minko Example - Cube", 800, 600);
@@ -40,11 +37,6 @@ int main(int argc, char** argv)
 		->registerParser<file::PNGParser>("png")
 		->queue("texture/box.png")
 		->queue("effect/Basic.effect");
-
-	const clock_t	start	= clock();
-	const float		period	= 2.0f;
-
-	std::cout << "Press [Space] to inject a temporally-varying property to the root's data container" << std::endl;
 
 	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
 	{
