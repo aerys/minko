@@ -9,18 +9,6 @@ minko.project.application "example-cube"
 	
 	minko.plugin.import("angle")
 	
-	links { "framework" }
-
-	configuration { "debug"}
-		defines { "DEBUG" }
-		flags { "Symbols" }
-		targetdir "bin/debug"
-
-	configuration { "release" }
-		defines { "NDEBUG" }
-		flags { "OptimizeSpeed" }
-		targetdir "bin/release"
-
 	-- emscripten
 	configuration { "emscripten" }
 		local bin = "bin/release/" .. project().name
