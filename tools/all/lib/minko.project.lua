@@ -42,13 +42,20 @@ minko.project.library = function(name)
 end
 
 minko.project.application = function(name)
+
 	minko.project.library(name)
 
-	if MINKO_EXTERNAL_APP then	
-		include(minko.sdk.path("/framework"))
-		project(name)
-		links { "framework" }
-	end
+	links { "framework" }
+
+	configuration { "debug"}
+		defines { "DEBUG" }
+		flags { "Symbols" }
+		targetdir "bin/debug"
+
+	configuration { "release" }
+		defines { "NDEBUG" }
+		flags { "OptimizeSpeed" }
+		targetdir "bin/release"
 	
 	configuration { "windows" }
 		postbuildcommands {
@@ -71,4 +78,11 @@ minko.project.application = function(name)
 		
 	configuration { }
 	
+end
+
+minko.project.solution = function(name)
+	solution(name)
+	configurations { "debug", "release" }
+
+	include(minko.sdk.path("framework"))
 end
