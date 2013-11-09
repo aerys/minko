@@ -9,8 +9,6 @@ minko.project.application "example-light"
 	minko.plugin.enable("png")
 	
 	minko.plugin.import("angle")
-
-	links { "framework" }
 	
 	-- debug configuration
 	configuration { "debug"}
