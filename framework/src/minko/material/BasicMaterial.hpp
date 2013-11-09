@@ -21,30 +21,72 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 
-#include "minko/data/StructureProvider.hpp"
+#include "minko/material/Material.hpp"
 
 namespace minko
 {
 	namespace material
 	{
-		class Material :
-			public data::StructureProvider
+		class BasicMaterial :
+			public Material
 		{
 		public:
-			typedef std::shared_ptr<Material> Ptr;
+			typedef std::shared_ptr<BasicMaterial>	Ptr;
 
 		public:
 			inline static
 			Ptr
 			create()
 			{
-				return std::shared_ptr<Material>(new Material());
+				return std::shared_ptr<BasicMaterial>(new BasicMaterial());
 			}
 
-		protected:
-			Material() :
-				data::StructureProvider("material")
+			inline
+			Ptr
+			diffuseColor(std::shared_ptr<math::Vector4> color)
 			{
+				set("diffuseColor", color);
+
+				return std::dynamic_pointer_cast<BasicMaterial>(shared_from_this());
+			}
+
+			inline
+			Ptr
+			diffuseColor(const uint rgba)
+			{
+				return diffuseColor(math::Vector4::create(
+					((rgba >> 24) & 0xff) / 255.f,
+					((rgba >> 16) & 0xff) / 255.f,
+					((rgba >> 8) & 0xff) / 255.f,
+					(rgba & 0xff) / 255.f
+				));
+			}
+
+			inline
+			Ptr
+			diffuseMap(std::shared_ptr<render::Texture> diffuseMap)
+			{
+				set("diffuseMap", diffuseMap);
+
+				return std::dynamic_pointer_cast<BasicMaterial>(shared_from_this());
+			}
+
+			inline
+			Ptr
+			blendMode(render::Blending::Mode blendMode)
+			{
+				set("blendMode", blendMode);
+
+				return std::dynamic_pointer_cast<BasicMaterial>(shared_from_this());
+			}
+
+			inline
+			Ptr
+			triangleCulling(render::TriangleCulling culling)
+			{
+				set("triangleCulling", culling);
+
+				return std::dynamic_pointer_cast<BasicMaterial>(shared_from_this());
 			}
 		};
 	}
