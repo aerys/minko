@@ -197,6 +197,7 @@ namespace minko
 	namespace material
 	{
 		class Material;
+		class BasicMaterial;
 	}
 }
 
