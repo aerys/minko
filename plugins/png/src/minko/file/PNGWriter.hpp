@@ -19,5 +19,36 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #pragma once
 
-#include "minko/file/PNGParser.hpp"
-#include "minko/file/PNGWriter.hpp"
+#include "minko/Common.hpp"
+
+namespace minko
+{
+	namespace file
+	{
+		class PNGWriter :
+			public std::enable_shared_from_this<PNGWriter>
+		{
+		public:
+			typedef std::shared_ptr<PNGWriter> Ptr;
+
+		public:
+			inline static
+			Ptr
+			create()
+			{
+				return std::shared_ptr<PNGWriter>(new PNGWriter());
+			}
+
+			void
+			write(const std::string&                 filename,
+			      const std::vector<unsigned char>&  data,
+			      minko::uint                        width,
+			      minko::uint                        height);
+
+		private:
+			PNGWriter()
+			{
+			}
+		};
+	}
+}
