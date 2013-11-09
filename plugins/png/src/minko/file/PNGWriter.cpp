@@ -17,7 +17,21 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#pragma once
+#include "PNGWriter.hpp"
 
-#include "minko/file/PNGParser.hpp"
-#include "minko/file/PNGWriter.hpp"
+#include "lodepng.h"
+
+using namespace minko::file;
+
+void
+PNGWriter::write(const std::string&                 filename,
+                 const std::vector<unsigned char>&  data,
+                 minko::uint                        width,
+                 minko::uint                        height)
+{
+	unsigned error = lodepng::encode(filename, data, width, height);
+
+	if (error)
+		throw std::runtime_error(std::string("PNGWriter::write: ") + lodepng_error_text(error));
+}
+
