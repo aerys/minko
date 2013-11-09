@@ -17,8 +17,6 @@ minko.project.application "example-sponza"
 	
 	minko.plugin.import("angle")
 
-	links { "framework" }
-
 	-- configurations
 	configuration { "debug"}
 		defines { "DEBUG" }
