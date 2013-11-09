@@ -177,6 +177,9 @@ namespace minko
 		void
 		run();
 
+		void
+		quit();
+
 	private:
 		Canvas(const std::string& name, const uint width, const uint height, bool useStencil = false);
 
