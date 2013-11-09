@@ -30,9 +30,9 @@ const float			PERIOD		= 2.0; // in seconds
 
 int main(int argc, char** argv)
 {
-	MinkoSDL::initialize("Minko Example - Cube", 800, 600);
+	auto canvas = Canvas::create("Minko Example - Cube", 800, 600);
 
-	auto sceneManager = SceneManager::create(MinkoSDL::context());
+	auto sceneManager = SceneManager::create(canvas->context());
 	
 	// setup assets
 	sceneManager->assets()->defaultOptions()->generateMipmaps(true);
@@ -72,7 +72,7 @@ int main(int argc, char** argv)
 			));
 
 		// handle keyboard signals
-		auto keyDown = MinkoSDL::keyDown()->connect([&](const Uint8* keyboard)
+		auto keyDown = canvas->keyDown()->connect([&](Canvas::Ptr canvas, const Uint8* keyboard)
 		{
 			if (!root->data()->hasProperty(PROP_NAME))
 			{
@@ -84,13 +84,12 @@ int main(int argc, char** argv)
 			}
 		});
 
-
-		auto resized = MinkoSDL::resized()->connect([&](uint w, uint h)
+		auto resized = canvas->resized()->connect([&](Canvas::Ptr canvas, uint w, uint h)
 		{
 			root->children()[0]->component<PerspectiveCamera>()->aspectRatio((float)w / (float)h);
 		});
 
-		auto enterFrame = MinkoSDL::enterFrame()->connect([&]()
+		auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas)
 		{
 			mesh->component<Transform>()->transform()->appendRotationY(.01f);
 
@@ -109,7 +108,7 @@ int main(int argc, char** argv)
 		root->addChild(mesh);
 		root->addChild(camera);
 
-		MinkoSDL::run();
+		canvas->run();
 	});
 
 	sceneManager->assets()->load();
