@@ -39,14 +39,14 @@ namespace minko
 		public:
 			inline static
 			Ptr
-			create(float x = 0., float y = 0., float z = 0.)
+			create(float x = 0.f, float y = 0.f, float z = 0.f)
 			{
 				return std::shared_ptr<Vector3>(new Vector3(x, y, z));
 			}
 
 			inline static
 			ConstPtr
-			createConst(float x = 0., float y = 0., float z = 0.)
+			createConst(float x = 0.f, float y = 0.f, float z = 0.f)
 			{
 				return std::shared_ptr<Vector3>(new Vector3(x, y, z));
 			}
@@ -55,7 +55,7 @@ namespace minko
 			ConstPtr
 			upAxis()
 			{
-				static ConstPtr upAxis = createConst(0., 1., 0.);
+				static ConstPtr upAxis = createConst(0.f, 1.f, 0.f);
 
 				return upAxis;
 			}
@@ -64,7 +64,7 @@ namespace minko
 			ConstPtr
 			xAxis()
 			{
-				static ConstPtr xAxis = createConst(1., 0., 0.);
+				static ConstPtr xAxis = createConst(1.f, 0.f, 0.f);
 
 				return xAxis;
 			}
@@ -73,7 +73,7 @@ namespace minko
 			ConstPtr
 			yAxis()
 			{
-				static ConstPtr yAxis = createConst(0., 1., 0.);
+				static ConstPtr yAxis = createConst(0.f, 1.f, 0.f);
 
 				return yAxis;
 			}
@@ -82,7 +82,7 @@ namespace minko
 			ConstPtr
 			zAxis()
 			{
-				static ConstPtr zAxis = createConst(0., 0., 1.);
+				static ConstPtr zAxis = createConst(0.f, 0.f, 1.f);
 
 				return zAxis;
 			}
@@ -91,9 +91,18 @@ namespace minko
 			ConstPtr
 			zero()
 			{
-				static ConstPtr zero = createConst(0., 0., 0.);
+				static ConstPtr zero = createConst(0.f, 0.f, 0.f);
 
 				return zero;
+			}
+
+			inline static
+			ConstPtr
+			one()
+			{
+				static ConstPtr one = createConst(1.f, 1.f, 1.f);
+
+				return one;
 			}
 
 			inline
