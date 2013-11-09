@@ -97,8 +97,7 @@ generateStars(unsigned int numStars,
 int
 main(int argc, char** argv)
 {
-	MinkoSDL::initialize("Minko Example - Stencil", 800, 600, true);
-
+	auto canvas = Canvas::create("Minko Example - Stencil", 800, 600, true);
 	auto sceneManager = SceneManager::create(OpenGLES2Context::create());
 	
 	// setup assets
@@ -174,7 +173,7 @@ main(int argc, char** argv)
 		for (auto& star : smallStars)
 			root->addChild(star);
 		
-		auto _ = MinkoSDL::enterFrame()->connect([&]()
+		auto _ = canvas->enterFrame()->connect([&](Canvas::Ptr canvas)
 		{
 			bigStarNode->component<Transform>()->transform()->appendRotationZ(.001f);
 			for (auto& star : smallStars)
@@ -184,7 +183,7 @@ main(int argc, char** argv)
 			sceneManager->nextFrame();
 		});
 
-		MinkoSDL::run();
+		canvas->run();
 	});
 
 	sceneManager->assets()->load();
