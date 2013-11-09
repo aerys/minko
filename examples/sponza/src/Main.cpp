@@ -345,7 +345,7 @@ printFramerate(const unsigned int delay = 1)
 int
 main(int argc, char** argv)
 {
-	MinkoSDL::initialize("Minko Example - Sponza", WINDOW_WIDTH, WINDOW_HEIGHT);
+	auto canvas = Canvas::create("Minko Example - Sponza", WINDOW_WIDTH, WINDOW_HEIGHT);
 
 	file::MkParser::registerController(
 	    "colliderController",
@@ -358,14 +358,14 @@ main(int argc, char** argv)
 	    )
 	);
 
-	auto sceneManager = SceneManager::create(MinkoSDL::context());
+	auto sceneManager = SceneManager::create(canvas->context());
 
 	root->addComponent(sceneManager);
 	sceneManager->assets()
 		->registerParser<file::PNGParser>("png")
 		->registerParser<file::JPEGParser>("jpg")
 		->registerParser<file::MkParser>("mk")
-		->geometry("cube", geometry::CubeGeometry::create(MinkoSDL::context()));
+		->geometry("cube", geometry::CubeGeometry::create(canvas->context()));
 
 	auto options = sceneManager->assets()->defaultOptions();
 
@@ -418,7 +418,7 @@ main(int argc, char** argv)
 		for (auto fireNode : fireNodes->nodes())
 			fireNode->addComponent(fire);
 
-		auto keyDown = MinkoSDL::keyDown()->connect([&](const Uint8 * keyboard)
+		auto keyDown = canvas->keyDown()->connect([&](Canvas::Ptr canvas, const Uint8 * keyboard)
 		{
 			auto collider = true;
 			auto cameraTransform = camera->component<Transform>()->transform();
@@ -468,7 +468,7 @@ main(int argc, char** argv)
 			}
 		});
 
-		auto joystickMotion = MinkoSDL::joystickMotion()->connect([&](int which, int axis, int value)
+		auto joystickMotion = canvas->joystickMotion()->connect([&](Canvas::Ptr canvas, int which, int axis, int value)
 		{
 			auto cameraTransform = camera->component<Transform>()->transform();
 			float percent = float(value) / 32768.f;
@@ -483,7 +483,7 @@ main(int argc, char** argv)
 			cameraCollider->synchronizePhysicsWithGraphics();
 		});
 
-		auto joystickButtonDown = MinkoSDL::joystickButtonDown()->connect([&](int which)
+		auto joystickButtonDown = canvas->joystickButtonDown()->connect([&](Canvas::Ptr canvas, int which)
 		{
 			auto cameraTransform = camera->component<Transform>()->transform();
 
@@ -492,17 +492,17 @@ main(int argc, char** argv)
 			cameraCollider->synchronizePhysicsWithGraphics();
 		});
 
-		auto resized = MinkoSDL::resized()->connect([&](unsigned int width, unsigned int height)
+		auto resized = canvas->resized()->connect([&](Canvas::Ptr canvas, unsigned int width, unsigned int height)
 		{
 			camera->component<PerspectiveCamera>()->aspectRatio((float)width / (float)height);
 		});
 
-		auto enterFrame = MinkoSDL::enterFrame()->connect([&]()
+		auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas)
 		{
 			sceneManager->nextFrame();
 		});
 
-		MinkoSDL::run();
+		canvas->run();
 	});
 
 	sceneManager->assets()->load();
