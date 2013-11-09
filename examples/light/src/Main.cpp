@@ -52,12 +52,13 @@ createPointLight(Vector3::Ptr color, Vector3::Ptr position, file::AssetLibrary::
 
 int main(int argc, char** argv)
 {
-	MinkoSDL::initialize("Minko Examples - Light", WINDOW_WIDTH, WINDOW_HEIGHT);
-	MinkoSDL::context()->errorsEnabled(true);
+	auto canvas = Canvas::create("Minko Examples - Light", WINDOW_WIDTH, WINDOW_HEIGHT);
+
+	canvas->context()->errorsEnabled(true);
 
 	const clock_t startTime	= clock();
 
-	auto sceneManager		= SceneManager::create(MinkoSDL::context());
+	auto sceneManager		= SceneManager::create(canvas->context());
 	auto root				= scene::Node::create("root")->addComponent(sceneManager);
 	auto sphereGeometry		= geometry::SphereGeometry::create(sceneManager->assets()->context(), 32, 32, true);
 	auto sphereMaterial		= material::Material::create()
@@ -117,7 +118,7 @@ int main(int argc, char** argv)
 		root->addChild(lights);
 
 		// handle keyboard signals
-		auto keyDown = MinkoSDL::keyDown()->connect([&](const Uint8* keyboard)
+		auto keyDown = canvas->keyDown()->connect([&](Canvas::Ptr canvas, const Uint8* keyboard)
 		{
 			if (keyboard[SDL_SCANCODE_A])
 			{
@@ -201,7 +202,7 @@ int main(int argc, char** argv)
 			));
 #endif
 		
-		auto resized = MinkoSDL::resized()->connect([&](unsigned int width, unsigned int height)
+		auto resized = canvas->resized()->connect([&](Canvas::Ptr canvas, unsigned int width, unsigned int height)
 		{
 			camera->component<PerspectiveCamera>()->aspectRatio((float)width / (float)height);
 
@@ -221,23 +222,23 @@ int main(int argc, char** argv)
 		auto distance = 20.f;
 
 		// handle mouse signals
-		auto mouseWheel = MinkoSDL::mouseWheel()->connect([&](int x, int y)
+		auto mouseWheel = canvas->mouseWheel()->connect([&](Canvas::Ptr canvas, int x, int y)
 		{
 			distance += (float)y / 10.f;
 		});
 
-		minko::Signal<uint, uint>::Slot mouseMove;
+		minko::Signal<Canvas::Ptr, uint, uint>::Slot mouseMove;
 		auto cameraRotationXSpeed = 0.f;
 		auto cameraRotationYSpeed = 0.f;
 		int oldX = 0;
 		int oldY = 0;
 
-		auto mouseDown = MinkoSDL::mouseLeftButtonDown()->connect([&](unsigned int x, unsigned int y)
+		auto mouseDown = canvas->mouseLeftButtonDown()->connect([&](Canvas::Ptr canvas, unsigned int x, unsigned int y)
 		{
 			oldX = x;
 			oldY = y;
 
-			mouseMove = MinkoSDL::mouseMove()->connect([&](unsigned int x, unsigned int y)
+			mouseMove = canvas->mouseMove()->connect([&](Canvas::Ptr canvas, unsigned int x, unsigned int y)
 			{
 				cameraRotationYSpeed = (float)((int)x - oldX) * .01f;
 				cameraRotationXSpeed = (float)((int)y - oldY) * -.01f;
@@ -246,13 +247,12 @@ int main(int argc, char** argv)
 			});
 		});
 
-		auto mouseUp = MinkoSDL::mouseLeftButtonUp()->connect([&](unsigned int x, unsigned int y)
+		auto mouseUp = canvas->mouseLeftButtonUp()->connect([&](Canvas::Ptr canvas, unsigned int x, unsigned int y)
 		{
 			mouseMove = nullptr;
 		});
 
-
-		auto enterFrame = MinkoSDL::enterFrame()->connect([&]()
+		auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas)
 		{
 			yaw += cameraRotationYSpeed;
 			cameraRotationYSpeed *= 0.9f;
@@ -283,7 +283,7 @@ int main(int argc, char** argv)
 #endif
 		});
 
-		MinkoSDL::run();
+		canvas->run();
 	});
 
 	sceneManager->assets()->load();
