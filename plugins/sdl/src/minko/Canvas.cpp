@@ -295,3 +295,9 @@ Canvas::emscriptenMainLoop()
 		canvas->step();
 }
 #endif
+
+void
+Canvas::quit()
+{
+	_active = false;
+}
