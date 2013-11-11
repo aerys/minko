@@ -3,6 +3,8 @@ solution "minko"
 
 	dofile('sdk.lua')
 	
+	include 'framework'
+	
 	-- plugins
 	include 'plugins/jpeg'
 	include 'plugins/png'
