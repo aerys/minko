@@ -17,31 +17,38 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "MinkoSDL.hpp"
+#pragma once
 
-bool MinkoSDL::_active = false;
+#include "minko/Common.hpp"
 
-minko::Signal<>::Ptr MinkoSDL::_enterFrame = nullptr;
+namespace minko
+{
+	namespace file
+	{
+		class PNGWriter :
+			public std::enable_shared_from_this<PNGWriter>
+		{
+		public:
+			typedef std::shared_ptr<PNGWriter> Ptr;
 
-minko::Signal<const Uint8*>::Ptr MinkoSDL::_keyDown = nullptr;
+		public:
+			inline static
+			Ptr
+			create()
+			{
+				return std::shared_ptr<PNGWriter>(new PNGWriter());
+			}
 
-minko::Signal<MinkoSDL::uint, MinkoSDL::uint>::Ptr MinkoSDL::_mouseMove = nullptr;
-minko::Signal<MinkoSDL::uint, MinkoSDL::uint>::Ptr MinkoSDL::_mouseLeftButtonDown = nullptr;
-minko::Signal<MinkoSDL::uint, MinkoSDL::uint>::Ptr MinkoSDL::_mouseLeftButtonUp = nullptr;
-minko::Signal<int, int>::Ptr MinkoSDL::_mouseWheel = nullptr;
-minko::Signal<int, int, int>::Ptr MinkoSDL::_joystickMotion = nullptr;
-minko::Signal<int>::Ptr MinkoSDL::_joystickButtonDown = nullptr;
-minko::Signal<int>::Ptr MinkoSDL::_joystickButtonUp = nullptr;
+			void
+			write(const std::string&                 filename,
+			      const std::vector<unsigned char>&  data,
+			      minko::uint                        width,
+			      minko::uint                        height);
 
-minko::Signal<MinkoSDL::uint, MinkoSDL::uint>::Ptr MinkoSDL::_resized = nullptr;
-
-minko::render::AbstractContext::Ptr MinkoSDL::_context = nullptr;
-float MinkoSDL::_framerate = 0.f;
-
-#ifndef EMSCRIPTEN
-SDL_Window* MinkoSDL::_window = 0;
-#endif
-
-#ifdef MINKO_ANGLE
-MinkoSDL::ESContext* MinkoSDL::_angleContext = 0;
-#endif
+		private:
+			PNGWriter()
+			{
+			}
+		};
+	}
+}
