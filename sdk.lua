@@ -49,7 +49,7 @@ minko.sdk.newplatform {
 	description = 'GCC',
 	gcc = {
 		cc = 'gcc',
-		cxx = 'g++',
+		cxx = MINKO_HOME .. '/tools/lin/bin/g++-ld.sh',
 		ar = 'ar',
 		cppflags = '-MMD',
 		ldflags = ''
