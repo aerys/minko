@@ -1,7 +1,8 @@
-dofile('sdk.lua')
+solution "minko"
+	configurations { "debug", "release" }
 
-minko.project.solution "minko"
-
+	dofile('sdk.lua')
+	
 	-- plugins
 	include 'plugins/jpeg'
 	include 'plugins/png'
