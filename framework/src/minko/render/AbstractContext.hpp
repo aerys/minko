@@ -33,6 +33,7 @@ namespace minko
 			typedef std::shared_ptr<AbstractContext>	Ptr;
 
 		public:
+			virtual
 			~AbstractContext()
 			{
 			}
