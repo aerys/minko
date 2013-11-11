@@ -29,9 +29,8 @@ const uint WINDOW_HEIGHT	= 600;
 
 int main(int argc, char** argv)
 {
-	MinkoSDL::initialize("Minko Application", WINDOW_WIDTH, WINDOW_HEIGHT);
-
-	auto sceneManager = SceneManager::create(MinkoSDL::context());
+	auto canvas = Canvas::create("Minko Application", WINDOW_WIDTH, WINDOW_HEIGHT);
+	auto sceneManager = SceneManager::create(canvas->context());
 	
 	sceneManager->assets()
 		->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()))
@@ -70,18 +69,18 @@ int main(int argc, char** argv)
 			));
 		root->addChild(light);
 
-		auto resized = MinkoSDL::resized()->connect([&](uint w, uint h)
+		auto resized = canvas->resized()->connect([&](Canvas::Ptr canvas, uint w, uint h)
 		{
 			camera->component<PerspectiveCamera>()->aspectRatio((float)w / (float)h);
 		});
 
-		auto enterFrame = MinkoSDL::enterFrame()->connect([&]()
+		auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas)
 		{
 			mesh->component<Transform>()->transform()->appendRotationY(.01f);
 			sceneManager->nextFrame();
 		});
 
-		MinkoSDL::run();
+		canvas->run();
 	});
 
 	sceneManager->assets()->load();

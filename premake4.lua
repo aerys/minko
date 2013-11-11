@@ -10,6 +10,7 @@ minko.project.solution "minko"
 	include 'plugins/particles'
 	include 'plugins/sdl'
 	include 'plugins/angle'
+	--include 'plugins/offscreen'
 	if _OPTIONS["platform"] == "emscripten" then
 		include 'plugins/webgl'
 	end
