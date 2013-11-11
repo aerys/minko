@@ -41,7 +41,7 @@ namespace minko
 				return std::shared_ptr<Material>(new Material());
 			}
 
-		private:
+		protected:
 			Material() :
 				data::StructureProvider("material")
 			{

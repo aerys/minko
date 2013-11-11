@@ -27,9 +27,8 @@ using namespace minko::math;
 
 int main(int argc, char** argv)
 {
-	MinkoSDL::initialize("Minko Example - Effect Config", 800, 600);
-
-	auto sceneManager = SceneManager::create(MinkoSDL::context());
+	auto canvas = Canvas::create("Minko Example - Effect Config", 800, 600);
+	auto sceneManager = SceneManager::create(canvas->context());
 	
 	// setup assets
 	sceneManager->assets()->defaultOptions()->generateMipmaps(true);
@@ -49,7 +48,7 @@ int main(int argc, char** argv)
 			->addComponent(Transform::create(
 				Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 3.f))
 			))
-			->addComponent(PerspectiveCamera::create(800.f / 600.f, PI * 0.25f, .1f, 1000.f));
+			->addComponent(PerspectiveCamera::create(800.f / 600.f, (float)PI * 0.25f, .1f, 1000.f));
 		root->addChild(camera);
 
 		auto mesh = scene::Node::create("mesh")
@@ -61,18 +60,18 @@ int main(int argc, char** argv)
 			));
 		root->addChild(mesh);
 
-		auto resized = MinkoSDL::resized()->connect([&](uint w, uint h)
+		auto resized = canvas->resized()->connect([&](Canvas::Ptr canvas, uint w, uint h)
 		{
 			root->children()[0]->component<PerspectiveCamera>()->aspectRatio((float)w / (float)h);
 		});
 
-		auto enterFrame = MinkoSDL::enterFrame()->connect([&]()
+		auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas)
 		{
 			mesh->component<Transform>()->transform()->appendRotationY(.01f);
 			sceneManager->nextFrame();
 		});
 
-		MinkoSDL::run();
+		canvas->run();
 	});
 
 	sceneManager->assets()->load();
