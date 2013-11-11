@@ -57,7 +57,6 @@ int main(int argc, char** argv)
 			->addComponent(Surface::create(
 				assets->geometry("cube"),
 				material::Material::create(),
-					//->set("diffuseMap", assets->texture("effect/windows.jpg")),
 				assets->effect("effect/PlatformTexture.effect")
 			));
 		root->addChild(mesh);
