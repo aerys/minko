@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BIN="echo g++"
+BIN="g++"
 ARGS=""
 
 STATIC_LIBS=""
