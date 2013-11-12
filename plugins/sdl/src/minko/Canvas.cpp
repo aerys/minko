@@ -27,6 +27,7 @@ Canvas::Canvas(const std::string& name, const uint width, const uint height, boo
 	_height(height),
 	_active(false),
 	_framerate(0.f),
+	_desiredFramerate(60.f),
 	_enterFrame(Signal<Canvas::Ptr>::create()),
 	_keyDown(Signal<Canvas::Ptr, const Uint8*>::create()),
 	_joystickMotion(Signal<Canvas::Ptr, int, int, int>::create()),
@@ -268,7 +269,14 @@ Canvas::step()
 	SDL_GL_SwapWindow(_window);
 #endif
 
-	_framerate = 1000.f / (1000.f * (std::clock() - stepStartTime) / CLOCKS_PER_SEC);
+	auto frameTime = (1000.f * (std::clock() - stepStartTime) / CLOCKS_PER_SEC);
+
+	_framerate = 1000.f / frameTime;
+
+	if (_framerate > _desiredFramerate)
+	{
+		SDL_Delay((uint)((1000.f / _desiredFramerate) - frameTime));
+	}
 }
 
 void
