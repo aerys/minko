@@ -84,92 +84,113 @@ namespace minko
 		}
 
 		inline
+		const std::string&
+		name() const
+		{
+			return _name;
+		}
+
+		inline
+		uint
+		width() const
+		{
+			return _width;
+		}
+
+		inline
+		uint
+		height() const
+		{
+			return _height;
+		}
+
+		inline
 		bool
-		active()
+		active() const
 		{
 			return _active;
 		}
 
 		inline
 		Signal<Ptr>::Ptr
-		enterFrame()
+		enterFrame() const
 		{
 			return _enterFrame;
 		}
 
 		inline
 		Signal<Ptr, const Uint8*>::Ptr
-		keyDown()
+		keyDown() const
 		{
 			return _keyDown;
 		}
 
 		inline
 		Signal<Ptr, int, int, int>::Ptr
-		joystickMotion()
+		joystickMotion() const
 		{
 			return _joystickMotion;
 		}
 
 		inline
 		Signal<Ptr, int>::Ptr
-		joystickButtonDown()
+		joystickButtonDown() const
 		{
 			return _joystickButtonDown;
 		}
 
 		inline
 		Signal<Ptr, int>::Ptr
-		joystickButtonUp()
+		joystickButtonUp() const
 		{
 			return _joystickButtonUp;
 		}
 
 		inline
 		Signal<Ptr, uint, uint>::Ptr
-		mouseMove()
+		mouseMove() const
 		{
 			return _mouseMove;
 		}
 
 		inline
 		Signal<Ptr, uint, uint>::Ptr
-		mouseLeftButtonDown()
+		mouseLeftButtonDown() const
 		{
 			return _mouseLeftButtonDown;
 		}
 
 		inline
 		Signal<Ptr, uint, uint>::Ptr
-		mouseLeftButtonUp()
+		mouseLeftButtonUp() const
 		{
 			return _mouseLeftButtonUp;
 		}
 
 		inline
 		Signal<Ptr, int, int>::Ptr
-		mouseWheel()
+		mouseWheel() const
 		{
 			return _mouseWheel;
 		}
 
 		inline
 		Signal<Ptr, uint, uint>::Ptr
-		resized()
+		resized() const
 		{
 			return _resized;
 		}
 
 		inline
 		minko::render::AbstractContext::Ptr
-		context()
+		context() const
 		{
 			return _context;
 		}
 
 		inline
 		float
-		framerate()
+		framerate() const
 		{
 			return _framerate;
 		}

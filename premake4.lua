@@ -24,6 +24,7 @@ solution "minko"
 	include 'examples/light'
 	include 'examples/stencil'
 	include 'examples/effect-config'
+	include 'examples/raycasting'
 	--include 'examples/cube-offscreen'
 
 	-- tests

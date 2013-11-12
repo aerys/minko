@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Common.hpp"
 
 #include "minko/math/AbstractShape.hpp"
+#include "minko/math/Vector3.hpp"
 
 namespace minko
 {
@@ -34,9 +35,8 @@ namespace minko
 			typedef std::shared_ptr<Box>	Ptr;
 
 		private:
-			float	_width;
-			float	_height;
-			float	_depth;
+			std::shared_ptr<Vector3>	_topRight;
+			std::shared_ptr<Vector3>	_bottomLeft;
 
 		public:
 			inline static
@@ -46,29 +46,37 @@ namespace minko
 				return std::shared_ptr<Box>(new Box());
 			}
 
-			inline
-			float
-			width() const
+			inline static
+			Ptr
+			create(std::shared_ptr<math::Vector3> topRight, std::shared_ptr<math::Vector3> bottomLeft)
 			{
-				return _width;
+				auto box = std::shared_ptr<Box>(new Box());
+
+				box->_topRight->copyFrom(topRight);
+				box->_bottomLeft->copyFrom(bottomLeft);
+
+				return box;
 			}
 
 			inline
-			float
-			height() const
+			std::shared_ptr<Vector3>
+			topRight() const
 			{
-				return _height;
+				return _topRight;
 			}
 
 			inline
-			float
-			depth() const
+			std::shared_ptr<Vector3>
+			bottomLeft() const
 			{
-				return _depth;
+				return _bottomLeft;
 			}
 
-			float
-			cast(std::shared_ptr<Ray> ray);
+			bool
+			cast(std::shared_ptr<Ray> ray, float& distance);
+
+		private:
+			Box();
 		};
 	}
 }
