@@ -32,8 +32,8 @@ namespace minko
 
 		public:
 			virtual
-			float
-			cast(std::shared_ptr<Ray> ray) = 0;
+			bool
+			cast(std::shared_ptr<Ray> ray, float& distance) = 0;
 		};
 	}
 }

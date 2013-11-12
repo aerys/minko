@@ -13,8 +13,8 @@ minko.project.library "plugin-png"
 	}
 	defines
 	{
-		-- "LODEPNG_NO_COMPILE_ENCODER",
-		-- "LODEPNG_NO_COMPILE_DISK"
+		"LODEPNG_NO_COMPILE_ENCODER",
+		"LODEPNG_NO_COMPILE_DISK"
 	}
 
 	configuration { "debug"}

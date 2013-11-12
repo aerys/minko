@@ -45,6 +45,13 @@ namespace minko
 			}
 
 			inline static
+			Ptr
+			create(Ptr v)
+			{
+				return std::shared_ptr<Vector3>(new Vector3(v->_x, v->_y, v->_z));
+			}
+
+			inline static
 			ConstPtr
 			createConst(float x = 0.f, float y = 0.f, float z = 0.f)
 			{
