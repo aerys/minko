@@ -90,30 +90,30 @@ namespace minko
 
 			inline
 			std::shared_ptr<math::Vector3>
-			modelToWorld(std::shared_ptr<math::Vector3> v)
+			modelToWorld(std::shared_ptr<math::Vector3> v, std::shared_ptr<math::Vector3> out = nullptr)
 			{
-				return _modelToWorld->transform(v);
+				return _modelToWorld->transform(v, out);
 			}
 
 			inline
 			std::shared_ptr<math::Vector3>
-			deltaModelToWorld(std::shared_ptr<math::Vector3> v)
+			deltaModelToWorld(std::shared_ptr<math::Vector3> v, std::shared_ptr<math::Vector3> out = nullptr)
 			{
-				return _modelToWorld->deltaTransform(v);
+				return _modelToWorld->deltaTransform(v, out);
 			}
 
 			inline
 			std::shared_ptr<math::Vector3>
-			worldToModel(std::shared_ptr<math::Vector3> v)
+			worldToModel(std::shared_ptr<math::Vector3> v, std::shared_ptr<math::Vector3> out = nullptr)
 			{
-				return _worldToModel->copyFrom(_modelToWorld)->invert()->transform(v);
+				return _worldToModel->copyFrom(_modelToWorld)->invert()->transform(v, out);
 			}
 
 			inline
 			std::shared_ptr<math::Vector3>
-			deltaWorldToModel(std::shared_ptr<math::Vector3> v)
+			deltaWorldToModel(std::shared_ptr<math::Vector3> v, std::shared_ptr<math::Vector3> out = nullptr)
 			{
-				return _worldToModel->copyFrom(_modelToWorld)->invert()->deltaTransform(v);
+				return _worldToModel->copyFrom(_modelToWorld)->invert()->deltaTransform(v, out);
 			}
 
 			inline
