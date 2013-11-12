@@ -34,6 +34,7 @@ package aerys.minko.type.loader.parser
 		private var _indexStreamUsage			: uint;
 		private var _parser						: Class;
 		private var _assets						: AssetsLibrary;
+		private var _interpolateAnimations		: Boolean;
 		
 		public function get skinningMethod() : uint
 		{
@@ -154,6 +155,16 @@ package aerys.minko.type.loader.parser
 		{
 			_assets = value;
 		}
+		
+		public function get interpolateAnimations():Boolean
+		{
+			return _interpolateAnimations;
+		}
+		
+		public function set interpolateAnimations(value:Boolean):void
+		{
+			_interpolateAnimations = value;
+		}
 
 		public function clone() : ParserOptions
 		{
@@ -169,7 +180,8 @@ package aerys.minko.type.loader.parser
 				_vertexStreamUsage,
 				_indexStreamUsage,
 				_parser,
-				_assets
+				_assets,
+				_interpolateAnimations
 			);
 		}
 		
@@ -184,7 +196,8 @@ package aerys.minko.type.loader.parser
 									  vertexStreamUsage			: uint 			= 0,
 									  indexStreamUsage			: uint 			= 0,
 									  parser					: Class			= null,
-									  assets					: AssetsLibrary	= null)
+									  assets					: AssetsLibrary	= null,
+									  interpolateAnimations		: Boolean		= false)
 		{
 			_dependencyLoaderFunction	= dependencyLoaderFunction 	|| defaultDependencyLoaderFunction;
 			_materialFunction			= materialFunction			|| defaultMaterialFunction;
@@ -198,6 +211,7 @@ package aerys.minko.type.loader.parser
 			_indexStreamUsage			= indexStreamUsage;
 			_parser						= parser;
 			_assets						= assets;
+			_interpolateAnimations		= interpolateAnimations;
 		}
 		
 		private function defaultDependencyLoaderFunction(dependencyId	: String,
