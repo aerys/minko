@@ -1,5 +1,7 @@
 package aerys.minko.render.shader
 {
+	import flash.utils.getQualifiedClassName;
+	
 	import aerys.minko.ns.minko_render;
 	import aerys.minko.ns.minko_shader;
 	import aerys.minko.render.RenderTarget;
@@ -12,8 +14,6 @@ package aerys.minko.render.shader
 	import aerys.minko.type.Signal;
 	import aerys.minko.type.binding.DataBindings;
 	import aerys.minko.type.binding.Signature;
-	
-	import flash.utils.getQualifiedClassName;
 	
 	use namespace minko_shader;
 	
@@ -52,6 +52,18 @@ package aerys.minko.render.shader
 		private var _end					: Signal;
         private var _compilationFailed      : Signal;
 		
+		private var _optimization 			: uint = 0;
+		
+		public function get optimization():uint
+		{
+			return _optimization;
+		}
+
+		public function set optimization(value:uint):void
+		{
+			_optimization = value;
+		}
+
 		/**
 		 * The name of the shader. Default value is the qualified name of the
 		 * ActionScript shader class (example: "aerys.minko.render.effect.basic::BasicShader"). 
@@ -284,7 +296,7 @@ package aerys.minko.render.shader
 			
 			var vertexPosition	: AbstractNode	= getVertexPosition()._node;
 			var pixelColor		: AbstractNode	= getPixelColor()._node;
-			var shaderGraph		: ShaderGraph	= new ShaderGraph(vertexPosition, pixelColor, _kills);
+			var shaderGraph		: ShaderGraph	= new ShaderGraph(vertexPosition, pixelColor, _kills, optimization);
 			
             try
             {

@@ -1,20 +1,34 @@
 package aerys.minko.render.shader.compiler.graph
 {
+	import flash.utils.ByteArray;
+	import flash.utils.Endian;
+	
 	import aerys.minko.Minko;
 	import aerys.minko.render.Profile;
 	import aerys.minko.render.geometry.stream.format.VertexComponent;
 	import aerys.minko.render.resource.Program3DResource;
 	import aerys.minko.render.resource.texture.ITextureResource;
+	import aerys.minko.render.shader.ShaderOptimization;
 	import aerys.minko.render.shader.compiler.ShaderCompilerError;
 	import aerys.minko.render.shader.compiler.graph.nodes.AbstractNode;
-	import aerys.minko.render.shader.compiler.graph.visitors.*;
+	import aerys.minko.render.shader.compiler.graph.visitors.AllocationVisitor;
+	import aerys.minko.render.shader.compiler.graph.visitors.ConstantGrouperVisitor;
+	import aerys.minko.render.shader.compiler.graph.visitors.ConstantPackerVisitor;
+	import aerys.minko.render.shader.compiler.graph.visitors.CopyInserterVisitor;
+	import aerys.minko.render.shader.compiler.graph.visitors.InterpolateFinder;
+	import aerys.minko.render.shader.compiler.graph.visitors.MatrixTransformationGrouper;
+	import aerys.minko.render.shader.compiler.graph.visitors.MergeVisitor;
+	import aerys.minko.render.shader.compiler.graph.visitors.OverwriterCleanerVisitor;
+	import aerys.minko.render.shader.compiler.graph.visitors.RemoveExtractsVisitor;
+	import aerys.minko.render.shader.compiler.graph.visitors.RemoveUselessComputation;
+	import aerys.minko.render.shader.compiler.graph.visitors.ResolveConstantComputationVisitor;
+	import aerys.minko.render.shader.compiler.graph.visitors.ResolveParametrizedComputationVisitor;
+	import aerys.minko.render.shader.compiler.graph.visitors.SplitterVisitor;
+	import aerys.minko.render.shader.compiler.graph.visitors.WriteDot;
 	import aerys.minko.render.shader.compiler.register.Components;
 	import aerys.minko.render.shader.compiler.sequence.AgalInstruction;
 	import aerys.minko.type.binding.Signature;
 	import aerys.minko.type.log.DebugLevel;
-	
-	import flash.utils.ByteArray;
-	import flash.utils.Endian;
 
 	/**
 	 * @private
@@ -58,6 +72,8 @@ package aerys.minko.render.shader.compiler.graph
 		private var _vsConstants			: Vector.<Number>;
 		private var _fsConstants			: Vector.<Number>;
 		private var _textures				: Vector.<ITextureResource>;
+		
+		private var _optimizationMode 		: uint = 0xFFFFFFFF;
 		
 		public function get position() : AbstractNode
 		{
@@ -115,12 +131,14 @@ package aerys.minko.render.shader.compiler.graph
 			return _computableConstants;
 		}
 		
-		public function ShaderGraph(position	: AbstractNode,
-									color		: AbstractNode,
-									kills		: Vector.<AbstractNode>)
+		public function ShaderGraph(position			: AbstractNode,
+									color				: AbstractNode,
+									kills				: Vector.<AbstractNode>,
+									optimizationMode	: uint)
 		{
 			_isCompiled				= false;
 			
+			_optimizationMode 		= optimizationMode
 			_position				= position;
 			_positionComponents		= Components.createContinuous(0, 0, 4, position.size);
 			_interpolates			= new Vector.<AbstractNode>();
@@ -191,7 +209,8 @@ package aerys.minko.render.shader.compiler.graph
 			RESOLVE_CONSTANT		.process(this);	// resolve constant computation
 			CONSTANT_PACKER			.process(this);	// pack constants [0,0,0,1] => [0,1].xxxy
 //			REMOVE_USELESS			.process(this);	// remove some useless operations (add 0, mul 0, mul 1...)
-//			RESOLVE_PARAMETRIZED	.process(this);	// replace computations that depend on parameters by evalexp parameters
+			if (_optimizationMode & ShaderOptimization.RESOLVED_PARAMETRIZATION)
+				RESOLVE_PARAMETRIZED	.process(this);	// replace computations that depend on parameters by evalexp parameters
 //			MATRIX_TRANSFORMATION	.process(this);	// replace ((vector * matrix1) * matrix2) by vector * (matrix1 * matrix2) to save registers on GPU
 			COPY_INSERTER			.process(this);	// ensure there are no operations between constants
 			SPLITTER				.process(this);	// clone nodes that are shared between vertex and fragment shader

@@ -3,6 +3,7 @@ package aerys.minko.render.material.realistic
     import aerys.minko.render.RenderTarget;
     import aerys.minko.render.material.basic.BasicShader;
     import aerys.minko.render.shader.SFloat;
+    import aerys.minko.render.shader.ShaderOptimization;
     import aerys.minko.render.shader.ShaderSettings;
     import aerys.minko.render.shader.part.environment.EnvironmentMappingShaderPart;
     import aerys.minko.render.shader.part.phong.PhongShaderPart;
@@ -17,6 +18,8 @@ package aerys.minko.render.material.realistic
         {
             super(target, priority);
             
+			optimization |= ShaderOptimization.RESOLVED_PARAMETRIZATION;
+			
             _phong = new PhongShaderPart(this);
             _envMapping = new EnvironmentMappingShaderPart(this);
         }

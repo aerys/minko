@@ -5,16 +5,13 @@ package aerys.minko.render.material.realistic
 	import aerys.minko.render.material.basic.BasicShader;
 	import aerys.minko.render.material.environment.EnvironmentMappingProperties;
 	import aerys.minko.render.material.phong.PhongProperties;
-	import aerys.minko.render.material.phong.PhongSinglePassShader;
 	import aerys.minko.render.shader.SFloat;
-	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Sampler;
+	import aerys.minko.render.shader.ShaderOptimization;
 	import aerys.minko.render.shader.part.BlendingShaderPart;
 	import aerys.minko.render.shader.part.DiffuseShaderPart;
 	import aerys.minko.render.shader.part.environment.EnvironmentMappingShaderPart;
 	import aerys.minko.render.shader.part.phong.PhongShaderPart;
 	import aerys.minko.type.enum.Blending;
-	import aerys.minko.type.enum.BlendingDestination;
-	import aerys.minko.type.enum.BlendingSource;
 	import aerys.minko.type.enum.SamplerFiltering;
 	import aerys.minko.type.enum.SamplerFormat;
 	import aerys.minko.type.enum.SamplerMipMapping;
@@ -32,6 +29,8 @@ package aerys.minko.render.material.realistic
 												  priority    : Number        = 0.)
 		{
 			super(target, priority);
+			
+			optimization |= ShaderOptimization.RESOLVED_PARAMETRIZATION;
 			
 			_diffuse = new DiffuseShaderPart(this);
 			_phong = new PhongShaderPart(this);
