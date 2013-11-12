@@ -146,6 +146,9 @@ namespace minko
 			bindProgramInputs();
 
 			void
+			bindIndexBuffer();
+
+			void
 			bindStates();
 
 			void
