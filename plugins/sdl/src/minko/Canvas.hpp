@@ -63,6 +63,7 @@ namespace minko
 		SDL_Window*                     _window;
 #endif
 		float							_framerate;
+		float							_desiredFramerate;
 
 		Signal<Ptr>::Ptr				_enterFrame;
 		Signal<Ptr, const Uint8*>::Ptr	_keyDown;
@@ -193,6 +194,20 @@ namespace minko
 		framerate() const
 		{
 			return _framerate;
+		}
+
+		inline
+		float
+		desiredFramerate() const
+		{
+			return _desiredFramerate;
+		}
+
+		inline
+		void
+		desiredFramerate(float desiredFramerate)
+		{
+			_desiredFramerate = desiredFramerate;
 		}
 
 		void
