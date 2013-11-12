@@ -270,7 +270,7 @@ namespace minko
 			}
 
 			inline
-			void
+			Ptr
 			translation(float x, float y, float z)
 			{
 				_m[3] = x;
@@ -279,13 +279,17 @@ namespace minko
 
 				changed()->execute(shared_from_this());
 				_hasChanged = true;		
+
+				return shared_from_this();
 			}
 
 			inline
-			void
+			Ptr
 			translation(Vector3::Ptr t)
 			{
 				translation(t->x(), t->y(), t->z());
+
+				return shared_from_this();
 			}
 
 			inline
