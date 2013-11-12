@@ -87,6 +87,13 @@ namespace minko
 			void
 			data(unsigned char* data, DataFormat format = DataFormat::RGBA);
 
+			inline
+			std::vector<unsigned char>&
+			data()
+			{
+				return _data;
+			}
+
 			void
 			dispose();
 
