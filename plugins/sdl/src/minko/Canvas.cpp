@@ -28,6 +28,8 @@ Canvas::Canvas(const std::string& name, const uint width, const uint height, boo
 	_active(false),
 	_framerate(0.f),
 	_desiredFramerate(60.f),
+	_mouseX(0),
+	_mouseY(0),
 	_enterFrame(Signal<Canvas::Ptr>::create()),
 	_keyDown(Signal<Canvas::Ptr, const Uint8*>::create()),
 	_joystickMotion(Signal<Canvas::Ptr, int, int, int>::create()),
@@ -213,7 +215,9 @@ Canvas::step()
 		}
 
 		case SDL_MOUSEMOTION:
-			_mouseMove->execute(shared_from_this(), event.motion.x, event.motion.y);
+			_mouseX = event.motion.x;
+			_mouseY = event.motion.y;
+			_mouseMove->execute(shared_from_this(), _mouseX, _mouseY);
 			break;
 
 		case SDL_MOUSEBUTTONDOWN:
