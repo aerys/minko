@@ -154,6 +154,8 @@ namespace minko
 		class Vector4;
 		class Matrix4x4;
 		class Quaternion;
+		class Ray;
+		class AbstractShape;
 
 		inline
 		unsigned int
