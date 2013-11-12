@@ -371,6 +371,10 @@ OpenGLES2Context::uploadVertexBufferData(const uint vertexBuffer,
 void
 OpenGLES2Context::deleteVertexBuffer(const uint vertexBuffer)
 {
+	for (auto& currentVertexBuffer : _currentVertexBuffer)
+		if (currentVertexBuffer == vertexBuffer)
+			currentVertexBuffer = 0;
+
 	_vertexBuffers.erase(std::find(_vertexBuffers.begin(), _vertexBuffers.end(), vertexBuffer));
 
 	// http://www.opengl.org/sdk/docs/man/xhtml/glDeleteBuffers.xml
@@ -468,6 +472,9 @@ OpenGLES2Context::uploaderIndexBufferData(const uint 	indexBuffer,
 void
 OpenGLES2Context::deleteIndexBuffer(const uint indexBuffer)
 {
+	if (_currentIndexBuffer == indexBuffer)
+		_currentIndexBuffer = 0;
+
 	_indexBuffers.erase(std::find(_indexBuffers.begin(), _indexBuffers.end(), indexBuffer));
 
 	glDeleteBuffers(1, &indexBuffer);
