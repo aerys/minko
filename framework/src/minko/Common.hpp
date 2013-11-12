@@ -20,7 +20,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include <algorithm>
-#include <array>
 #include <cmath>
 #include <cstring>
 #include <exception>
