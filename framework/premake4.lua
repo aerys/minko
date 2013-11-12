@@ -57,7 +57,7 @@ project "framework"
 
 	-- macos
 	configuration { "macosx" }
-		buildoptions { "-std=c++11" }
+		buildoptions { "-std=c++11 -stdlib=libc++" }
 		includedirs { "../deps/mac/include" }
 		libdirs { "../deps/mac/lib" }
 
