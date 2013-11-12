@@ -92,7 +92,7 @@ PerspectiveCamera::targetRemovedHandler(AbstractComponent::Ptr ctrl, NodePtr tar
 
 void
 PerspectiveCamera::localToWorldChangedHandler(data::Container::Ptr	data,
-											                        const std::string&	  propertyName)
+											  const std::string&	propertyName)
 {
     updateMatrices(data->get<Matrix4x4::Ptr>("transform.modelToWorldMatrix"));
 }
