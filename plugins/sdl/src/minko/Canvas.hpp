@@ -65,6 +65,9 @@ namespace minko
 		float							_framerate;
 		float							_desiredFramerate;
 
+		uint							_mouseX;
+		uint							_mouseY;
+
 		Signal<Ptr>::Ptr				_enterFrame;
 		Signal<Ptr, const Uint8*>::Ptr	_keyDown;
 		Signal<Ptr, int, int, int>::Ptr	_joystickMotion;
@@ -208,6 +211,34 @@ namespace minko
 		desiredFramerate(float desiredFramerate)
 		{
 			_desiredFramerate = desiredFramerate;
+		}
+
+		inline
+		uint
+		mouseX() const
+		{
+			return _mouseX;
+		}
+
+		inline
+		uint
+		mouseY() const
+		{
+			return _mouseY;
+		}
+
+		inline
+		float
+		normalizedMouseX() const
+		{
+			return 2.f * ((float)_mouseX / _width - .5f);
+		}
+
+		inline
+		float
+		normalizedMouseY() const
+		{
+			return 2.f * ((float)_mouseY / _height - .5f);
 		}
 
 		void
