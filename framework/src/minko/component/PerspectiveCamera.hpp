@@ -150,6 +150,9 @@ namespace minko
 			void
 			updateProjection(float fieldOfView, float aspectRatio, float zNear, float zFar);
 
+			std::shared_ptr<math::Ray>
+			unproject(float x, float y, std::shared_ptr<math::Ray> out = nullptr);
+
         protected:
             void
             targetAddedHandler(AbstractComponent::Ptr ctrl, NodePtr target);
