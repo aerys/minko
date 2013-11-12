@@ -87,13 +87,41 @@ DrawCall::bind(ContainerPtr data, ContainerPtr rendererData, ContainerPtr rootDa
 	_rendererData	= rendererData;
 	_rootData		= rootData;
 
-	auto indexBuffer	= getDataProperty<IndexBuffer::Ptr>("geometry.indices");
+	bindIndexBuffer();
 
-    _indexBuffer	= indexBuffer->id();
-    _numIndices		= indexBuffer->data().size();
+	//auto indexBuffer	= getDataProperty<IndexBuffer::Ptr>("geometry.indices");
+
+    //_indexBuffer	= indexBuffer->id();
+    //_numIndices		= indexBuffer->data().size();
 
 	bindProgramInputs();
 	bindStates();
+}
+
+void
+DrawCall::bindIndexBuffer()
+{
+	static const std::string propertyName = "geometry.indices";
+
+	_indexBuffer	= -1;
+	_numIndices		= 0;
+
+	// Note: index buffer can only be held by the target node's data container!
+	if (_data->hasProperty(propertyName))
+	{
+		auto indexBuffer	= _data->get<IndexBuffer::Ptr>(propertyName);
+		_indexBuffer		= indexBuffer->id();
+		_numIndices			= indexBuffer->data().size();
+
+		std::cout << "bind index buffer = " << _indexBuffer << "\t#indices = " << _numIndices << std::endl;
+	}
+
+	if (_referenceChangedSlots.count(propertyName) == 0)
+	{
+		_referenceChangedSlots[propertyName] = _data->propertyReferenceChanged(propertyName)->connect(std::bind(
+			&DrawCall::bindIndexBuffer,
+			shared_from_this()));
+	}
 }
 
 void
@@ -530,7 +558,8 @@ DrawCall::render(const AbstractContext::Ptr& context, std::shared_ptr<render::Te
 
     context->setTriangleCulling(_triangleCulling);
 
-    context->drawTriangles(_indexBuffer, _numIndices / 3);
+	if (_indexBuffer != -1)
+		context->drawTriangles(_indexBuffer, _numIndices / 3);
 }
 
 Container::Ptr
