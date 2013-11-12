@@ -70,12 +70,16 @@ int main(int argc, char** argv)
 			));
 		//root->addChild(hit);
 
-		auto mouseMove = canvas->mouseMove()->connect([&](Canvas::Ptr canvas, uint x, uint y)
+		auto resized = canvas->resized()->connect([&](Canvas::Ptr canvas, uint w, uint h)
+		{
+			camera->component<PerspectiveCamera>()->aspectRatio((float)w / (float)h);
+		});
+
+		auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas)
 		{
 			auto distance = 0.f;
 			auto ray = camera->component<PerspectiveCamera>()->unproject(
-				2.f * ((float)x / canvas->width() - .5f),
-				2.f * ((float)y / canvas->height() - .5f)
+				canvas->normalizedMouseX(), canvas->normalizedMouseY()
 			);
 
 			if (mesh->component<BoundingBox>()->shape()->cast(ray, distance))
@@ -93,15 +97,7 @@ int main(int argc, char** argv)
 			}
 			else if (hit->parent() == root)
 				root->removeChild(hit);
-		});
 
-		auto resized = canvas->resized()->connect([&](Canvas::Ptr canvas, uint w, uint h)
-		{
-			camera->component<PerspectiveCamera>()->aspectRatio((float)w / (float)h);
-		});
-
-		auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas)
-		{
 			camera->component<Transform>()->transform()->appendRotationY(.01f);
 			sceneManager->nextFrame();
 		});
