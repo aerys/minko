@@ -71,6 +71,8 @@ void
 Geometry::removeVertexBuffer(std::list<render::VertexBuffer::Ptr>::iterator vertexBufferIt)
 {
 	VertexBuffer::Ptr vertexBuffer	= *vertexBufferIt;
+	vertexBuffer->dispose();
+
 	for (auto attribute : vertexBuffer->attributes())
 		_data->unset("geometry.vertex.attribute." + std::get<0>(*attribute));
 
