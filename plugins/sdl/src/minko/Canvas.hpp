@@ -68,7 +68,7 @@ namespace minko
 		uint							_mouseX;
 		uint							_mouseY;
 
-		Signal<Ptr>::Ptr				_enterFrame;
+		Signal<Ptr, uint, uint>::Ptr	_enterFrame;
 		Signal<Ptr, const Uint8*>::Ptr	_keyDown;
 		Signal<Ptr, int, int, int>::Ptr	_joystickMotion;
 		Signal<Ptr, int>::Ptr			_joystickButtonDown;
@@ -116,7 +116,7 @@ namespace minko
 		}
 
 		inline
-		Signal<Ptr>::Ptr
+		Signal<Ptr, uint, uint>::Ptr
 		enterFrame() const
 		{
 			return _enterFrame;

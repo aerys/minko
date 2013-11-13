@@ -173,7 +173,7 @@ main(int argc, char** argv)
 		for (auto& star : smallStars)
 			root->addChild(star);
 		
-		auto _ = canvas->enterFrame()->connect([&](Canvas::Ptr canvas)
+		auto _ = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, uint deltaTime)
 		{
 			bigStarNode->component<Transform>()->transform()->appendRotationZ(.001f);
 			for (auto& star : smallStars)
