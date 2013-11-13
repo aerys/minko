@@ -93,7 +93,8 @@ Box::cast(Ray::Ptr ray, float& distance)
 std::array<std::shared_ptr<Vector3>, 8>
 Box::getVertices()
 {
-	return { {
+	std::array<std::shared_ptr<Vector3>, 8> vertices = 
+	 { {
 		Vector3::create(_topRight),
 		Vector3::create(_topRight->x() - width(), _topRight->y(), _topRight->z()),
 		Vector3::create(_topRight->x() - width(), _topRight->y(), _topRight->z() - depth()),
@@ -104,4 +105,6 @@ Box::getVertices()
 		Vector3::create(_bottomLeft->x() + width(), _bottomLeft->y(), _bottomLeft->z() + depth()),
 		Vector3::create(_bottomLeft->x(), _bottomLeft->y(), _bottomLeft->z() + depth()),
 	} };
+
+	return vertices;
 }
