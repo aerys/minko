@@ -112,8 +112,6 @@ DrawCall::bindIndexBuffer()
 		auto indexBuffer	= _data->get<IndexBuffer::Ptr>(propertyName);
 		_indexBuffer		= indexBuffer->id();
 		_numIndices			= indexBuffer->data().size();
-
-		std::cout << "bind index buffer = " << _indexBuffer << "\t#indices = " << _numIndices << std::endl;
 	}
 
 	if (_referenceChangedSlots.count(propertyName) == 0)
