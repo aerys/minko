@@ -39,22 +39,30 @@ namespace minko
 		private:
 			typedef std::shared_ptr<scene::Node>		NodePtr;
 			typedef std::shared_ptr<AbstractComponent>	AbsCmpPtr;
+			typedef std::shared_ptr<data::Container>	ContainerPtr;
 
 		private:
-			const bool							_fixed;
+			const bool										_fixed;
 
-			std::shared_ptr<math::Box>			_box;
-			std::shared_ptr<math::Box>			_worldSpaceBox;
+			std::shared_ptr<math::Box>						_box;
+			std::shared_ptr<math::Box>						_worldSpaceBox;
 
-			Signal<AbsCmpPtr, NodePtr>::Slot	_targetAddedSlot;
-			Signal<AbsCmpPtr, NodePtr>::Slot	_targetRemovedSlot;
+			Signal<AbsCmpPtr, NodePtr>::Slot				_targetAddedSlot;
+			Signal<AbsCmpPtr, NodePtr>::Slot				_targetRemovedSlot;
+			Signal<NodePtr, NodePtr, AbsCmpPtr>::Slot		_componentAddedSlot;
+			Signal<NodePtr, NodePtr, AbsCmpPtr>::Slot		_componentRemovedSlot;
+			Signal<ContainerPtr, const std::string&>::Slot	_modelToWorldChangedSlot;
 
 		public:
 			inline static
 			Ptr
 			create()
 			{
-				return std::shared_ptr<BoundingBox>(new BoundingBox());
+				auto bb = std::shared_ptr<BoundingBox>(new BoundingBox());
+
+				bb->initialize();
+
+				return bb;
 			}
 
 			inline static
@@ -82,7 +90,11 @@ namespace minko
 			Ptr
 			create(std::shared_ptr<math::Vector3> topRight, std::shared_ptr<math::Vector3> bottomLeft)
 			{
-				return std::shared_ptr<BoundingBox>(new BoundingBox(topRight, bottomLeft));
+				auto bb = std::shared_ptr<BoundingBox>(new BoundingBox(topRight, bottomLeft));
+
+				bb->initialize();
+
+				return bb;
 			}
 
 			inline
@@ -109,6 +121,9 @@ namespace minko
 
 			void
 			initialize();
+
+			void
+			updateWorldSpaceBox();
 		};
 	}
 }
