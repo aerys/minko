@@ -18,7 +18,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "minko/Minko.hpp"
-#include "minko/MinkoJPEG.hpp"
+#include "minko/MinkoPNG.hpp"
 #include "minko/MinkoSDL.hpp"
 
 using namespace minko;
@@ -27,16 +27,16 @@ using namespace minko::math;
 
 int main(int argc, char** argv)
 {
-	auto canvas = Canvas::create("Minko Example - Effect Config", 800, 600);
+	auto canvas = Canvas::create("Minko Example - Ray Casting", 800, 600);
+
 	auto sceneManager = SceneManager::create(canvas->context());
 	
 	// setup assets
 	sceneManager->assets()->defaultOptions()->generateMipmaps(true);
 	sceneManager->assets()
-		->registerParser<file::JPEGParser>("jpg")
-		->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()))
-		->queue("effect/windows.jpg")
-		->queue("effect/PlatformTexture.effect");
+		->registerParser<file::PNGParser>("png")
+		->queue("texture/box.png")
+		->queue("effect/Basic.effect");
 
 	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
 	{
@@ -46,28 +46,63 @@ int main(int argc, char** argv)
 		auto camera = scene::Node::create("camera")
 			->addComponent(Renderer::create(0x7f7f7fff))
 			->addComponent(Transform::create(
-				Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 3.f))
+				Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 1.f, 3.f))
 			))
 			->addComponent(PerspectiveCamera::create(800.f / 600.f, (float)PI * 0.25f, .1f, 1000.f));
 		root->addChild(camera);
-
+		
 		auto mesh = scene::Node::create("mesh")
 			->addComponent(Transform::create())
+			->addComponent(BoundingBox::create())
 			->addComponent(Surface::create(
-				assets->geometry("cube"),
-				material::Material::create(),
-				assets->effect("effect/PlatformTexture.effect")
+				geometry::CubeGeometry::create(sceneManager->assets()->context()),
+				material::BasicMaterial::create()->diffuseMap(assets->texture("texture/box.png")),
+				assets->effect("effect/Basic.effect")
 			));
 		root->addChild(mesh);
 
+		auto hit = scene::Node::create()
+			->addComponent(Transform::create())
+			->addComponent(Surface::create(
+				geometry::CubeGeometry::create(sceneManager->assets()->context()),
+				material::BasicMaterial::create()->diffuseColor(0x00ff00ff),
+				assets->effect("effect/Basic.effect")
+			));
+		//root->addChild(hit);
+
 		auto resized = canvas->resized()->connect([&](Canvas::Ptr canvas, uint w, uint h)
 		{
-			root->children()[0]->component<PerspectiveCamera>()->aspectRatio((float)w / (float)h);
+			camera->component<PerspectiveCamera>()->aspectRatio((float)w / (float)h);
 		});
 
 		auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, uint deltaTime)
 		{
-			mesh->component<Transform>()->transform()->appendRotationY(.01f);
+			auto distance = 0.f;
+			auto ray = camera->component<PerspectiveCamera>()->unproject(
+				canvas->normalizedMouseX(), canvas->normalizedMouseY()
+			);
+
+			mesh->component<Transform>()->transform()
+				//->translation(sinf((float)time * .001f), 0.f, 0.f);
+				->prependRotationY(.01f);
+
+			if (mesh->component<BoundingBox>()->shape()->cast(ray, distance))
+			{
+				if (hit->parent() != root)
+					root->addChild(hit);
+				hit->component<Transform>()->transform()
+					->identity()
+					->appendScale(.1f)
+					->translation(
+						ray->origin()->x() + ray->direction()->x() * distance,
+						ray->origin()->y() + ray->direction()->y() * distance,
+						ray->origin()->z() + ray->direction()->z() * distance
+					);
+			}
+			else if (hit->parent() == root)
+				root->removeChild(hit);
+
+			//camera->component<Transform>()->transform()->appendRotationY(.01f);
 			sceneManager->nextFrame();
 		});
 
@@ -78,3 +113,5 @@ int main(int argc, char** argv)
 
 	return 0;
 }
+
+
