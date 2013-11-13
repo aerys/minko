@@ -58,20 +58,23 @@ BoundingBox::initialize()
 		_modelToWorldChangedSlot = target->data()->propertyValueChanged("transform.modelToWorldMatrix")->connect(
 			[&](data::Container::Ptr data, const std::string& propertyName)
 			{
-				updateWorldSpaceBox();
+				_invalidWorldSpaceBox = true;
 			}
 		);
 
 		auto componentAddedOrRemovedCallback = [&](scene::Node::Ptr node, scene::Node::Ptr target, AbstractComponent::Ptr cmp)
 		{
 			if (std::dynamic_pointer_cast<Surface>(cmp))
-				update();
+			{
+				_invalidBox = true;
+				_invalidWorldSpaceBox = true;
+			}
 		};
 
 		_componentAddedSlot = target->componentAdded()->connect(componentAddedOrRemovedCallback);
 		_componentRemovedSlot = target->componentAdded()->connect(componentAddedOrRemovedCallback);
 
-		update();
+		_invalidBox = true;
 	});
 
 	_targetRemovedSlot = targetRemoved()->connect([&](AbstractComponent::Ptr cmp, scene::Node::Ptr target)
@@ -84,6 +87,8 @@ BoundingBox::initialize()
 void
 BoundingBox::update()
 {
+	_invalidBox = false;
+
 	auto target = targets()[0];
 	auto surfaces = target->components<Surface>();
 
@@ -142,12 +147,17 @@ BoundingBox::update()
 		}
 	}
 
-	updateWorldSpaceBox();
+	_invalidWorldSpaceBox = true;
 }
 
 void
 BoundingBox::updateWorldSpaceBox()
 {
+	if (_invalidBox)
+		update();
+
+	_invalidWorldSpaceBox = false;
+
 	if (!targets()[0]->data()->hasProperty("transform.modelToWorldMatrix"))
 	{
 		_worldSpaceBox->topRight()->copyFrom(_box->topRight());

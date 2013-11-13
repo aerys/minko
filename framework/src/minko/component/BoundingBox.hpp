@@ -47,6 +47,9 @@ namespace minko
 			std::shared_ptr<math::Box>						_box;
 			std::shared_ptr<math::Box>						_worldSpaceBox;
 
+			bool											_invalidBox;
+			bool											_invalidWorldSpaceBox;
+
 			Signal<AbsCmpPtr, NodePtr>::Slot				_targetAddedSlot;
 			Signal<AbsCmpPtr, NodePtr>::Slot				_targetRemovedSlot;
 			Signal<NodePtr, NodePtr, AbsCmpPtr>::Slot		_componentAddedSlot;
@@ -101,13 +104,16 @@ namespace minko
 			std::shared_ptr<math::AbstractShape>
 			shape()
 			{
-				return std::static_pointer_cast<math::AbstractShape>(_worldSpaceBox);
+				return std::static_pointer_cast<math::AbstractShape>(box());
 			}
 
 			inline
 			std::shared_ptr<math::Box>
 			box()
 			{
+				if (_invalidWorldSpaceBox)
+					updateWorldSpaceBox();
+
 				return _worldSpaceBox;
 			}
 
