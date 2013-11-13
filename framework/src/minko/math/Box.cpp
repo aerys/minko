@@ -89,3 +89,19 @@ Box::cast(Ray::Ptr ray, float& distance)
 
 	return true;
 }
+
+std::array<std::shared_ptr<Vector3>, 8>
+Box::getVertices()
+{
+	return { {
+		Vector3::create(_topRight),
+		Vector3::create(_topRight->x() - width(), _topRight->y(), _topRight->z()),
+		Vector3::create(_topRight->x() - width(), _topRight->y(), _topRight->z() - depth()),
+		Vector3::create(_topRight->x(), _topRight->y(), _topRight->z() - depth()),
+
+		Vector3::create(_bottomLeft),
+		Vector3::create(_bottomLeft->x() + width(), _bottomLeft->y(), _bottomLeft->z()),
+		Vector3::create(_bottomLeft->x() + width(), _bottomLeft->y(), _bottomLeft->z() + depth()),
+		Vector3::create(_bottomLeft->x(), _bottomLeft->y(), _bottomLeft->z() + depth()),
+	} };
+}

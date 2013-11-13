@@ -72,8 +72,32 @@ namespace minko
 				return _bottomLeft;
 			}
 
+			inline
+			float
+			width() const
+			{
+				return _topRight->x() - _bottomLeft->x();
+			}
+
+			inline
+			float
+			height() const
+			{
+				return _topRight->y() - _bottomLeft->y();
+			}
+
+			inline
+			float
+			depth() const
+			{
+				return _topRight->z() - _bottomLeft->z();
+			}
+
 			bool
 			cast(std::shared_ptr<Ray> ray, float& distance);
+
+			std::array<std::shared_ptr<Vector3>, 8>
+			getVertices();
 
 		private:
 			Box();
