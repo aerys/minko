@@ -53,7 +53,7 @@ int main(int argc, char** argv)
 		
 		auto mesh = scene::Node::create("mesh")
 			->addComponent(Transform::create())
-			->addComponent(BoundingBox::create(1.f, Vector3::zero()))
+			->addComponent(BoundingBox::create())
 			->addComponent(Surface::create(
 				geometry::CubeGeometry::create(sceneManager->assets()->context()),
 				material::BasicMaterial::create()->diffuseMap(assets->texture("texture/box.png")),
@@ -75,12 +75,16 @@ int main(int argc, char** argv)
 			camera->component<PerspectiveCamera>()->aspectRatio((float)w / (float)h);
 		});
 
-		auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas)
+		auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, uint deltaTime)
 		{
 			auto distance = 0.f;
 			auto ray = camera->component<PerspectiveCamera>()->unproject(
 				canvas->normalizedMouseX(), canvas->normalizedMouseY()
 			);
+
+			mesh->component<Transform>()->transform()
+				//->translation(sinf((float)time * .001f), 0.f, 0.f);
+				->prependRotationY(.01f);
 
 			if (mesh->component<BoundingBox>()->shape()->cast(ray, distance))
 			{
@@ -98,7 +102,7 @@ int main(int argc, char** argv)
 			else if (hit->parent() == root)
 				root->removeChild(hit);
 
-			camera->component<Transform>()->transform()->appendRotationY(.01f);
+			//camera->component<Transform>()->transform()->appendRotationY(.01f);
 			sceneManager->nextFrame();
 		});
 

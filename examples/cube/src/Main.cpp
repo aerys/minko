@@ -38,8 +38,13 @@ int main(int argc, char** argv)
 		->queue("texture/box.png")
 		->queue("effect/Basic.effect");
 
+	sceneManager->assets()->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()));
+	
+
 	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
 	{
+		auto cubeMaterial = material::BasicMaterial::create()->diffuseMap(assets->texture("texture/box.png"));
+
 		auto root = scene::Node::create("root")
 			->addComponent(sceneManager);
 
@@ -65,11 +70,29 @@ int main(int argc, char** argv)
 			root->children()[0]->component<PerspectiveCamera>()->aspectRatio((float)w / (float)h);
 		});
 
-		auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas)
+		auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, uint deltaTime)
 		{
 			mesh->component<Transform>()->transform()->appendRotationY(.01f);
 
 			sceneManager->nextFrame();
+
+			if (canvas->framerate() > 30.f)
+			{
+				for (auto i = 0; i < 100; ++i)
+				{
+					auto mesh = scene::Node::create("mesh")
+						->addComponent(Transform::create())
+						->addComponent(Surface::create(
+							assets->geometry("cube"),
+							cubeMaterial,
+							assets->effect("effect/Basic.effect")
+						));
+					root->addChild(mesh);
+				}
+			}
+			else
+				std::cout << root->children().size() << std::endl;
+
 		});
 
 		canvas->run();
