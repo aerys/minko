@@ -42,11 +42,6 @@ PerspectiveCamera::PerspectiveCamera(float fov,
   	_viewProjection(Matrix4x4::create()->copyFrom(_projection)),
     _position(Vector3::create())
 {
-	_data
-		->set("position",				_position)
-  		->set("viewMatrix",				_view)
-  		->set("projectionMatrix",		_projection)
-  		->set("worldToScreenMatrix",	_viewProjection);
 }
 
 void
@@ -65,6 +60,12 @@ PerspectiveCamera::initialize()
 		std::placeholders::_1,
 		std::placeholders::_2
 	));
+
+	_data
+		->set("position",				_position)
+  		->set("viewMatrix",				_view)
+  		->set("projectionMatrix",		_projection)
+  		->set("worldToScreenMatrix",	_viewProjection);
 }
 
 void
