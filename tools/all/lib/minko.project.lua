@@ -16,7 +16,7 @@ minko.project.library = function(name)
 	configuration { "macosx" }
 		libdirs { "/deps/mac/lib" }
 		includedirs { minko.sdk.path("/deps/mac/include") }
-		buildoptions { "-std=c++11" }
+		buildoptions { "-std=c++11 -stdlib=libc++" }
 		links {
 			"m",
 			"SDL2.framework",
@@ -71,6 +71,7 @@ minko.project.application = function(name)
 		}
 	
 	configuration { "macosx" }
+		linkoptions { "-stdlib=libc++" }
 		postbuildcommands {
 			'cp -r ' .. minko.sdk.path('/framework/effect') .. ' . || :',
 			'cp -r asset/* . || :'

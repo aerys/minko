@@ -27,7 +27,10 @@ Canvas::Canvas(const std::string& name, const uint width, const uint height, boo
 	_height(height),
 	_active(false),
 	_framerate(0.f),
-	_enterFrame(Signal<Canvas::Ptr>::create()),
+	_desiredFramerate(60.f),
+	_mouseX(0),
+	_mouseY(0),
+	_enterFrame(Signal<Canvas::Ptr, uint, uint>::create()),
 	_keyDown(Signal<Canvas::Ptr, const Uint8*>::create()),
 	_joystickMotion(Signal<Canvas::Ptr, int, int, int>::create()),
 	_joystickButtonDown(Signal<Canvas::Ptr, int>::create()),
@@ -212,7 +215,9 @@ Canvas::step()
 		}
 
 		case SDL_MOUSEMOTION:
-			_mouseMove->execute(shared_from_this(), event.motion.x, event.motion.y);
+			_mouseX = event.motion.x;
+			_mouseY = event.motion.y;
+			_mouseMove->execute(shared_from_this(), _mouseX, _mouseY);
 			break;
 
 		case SDL_MOUSEBUTTONDOWN:
@@ -243,8 +248,10 @@ Canvas::step()
 			switch (event.window.event)
 			{
 			case SDL_WINDOWEVENT_RESIZED:
-				_context->configureViewport(0, 0, event.window.data1, event.window.data2);
-				_resized->execute(shared_from_this(), event.window.data1, event.window.data2);
+				_width = event.window.data1;
+				_height = event.window.data2;
+				_context->configureViewport(0, 0, _width, _height);
+				_resized->execute(shared_from_this(), _width, _height);
 				break;
 			default:
 				break;
@@ -257,7 +264,10 @@ Canvas::step()
 		}
 	}
 
-	_enterFrame->execute(shared_from_this());
+	auto time = std::clock();
+	auto frameTime = (1000.f * (time - stepStartTime) / CLOCKS_PER_SEC);
+
+	_enterFrame->execute(shared_from_this(), (uint)time, (uint)frameTime);
 
 	// swap buffers
 #ifdef MINKO_ANGLE
@@ -268,7 +278,10 @@ Canvas::step()
 	SDL_GL_SwapWindow(_window);
 #endif
 
-	_framerate = 1000.f / (1000.f * (std::clock() - stepStartTime) / CLOCKS_PER_SEC);
+	_framerate = 1000.f / frameTime;
+
+	if (_framerate > _desiredFramerate)
+		SDL_Delay((uint)((1000.f / _desiredFramerate) - frameTime));
 }
 
 void
