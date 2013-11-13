@@ -18,7 +18,7 @@ minko.project.library "plugin-mk"
 		"src",
 		"lib/msgpack-c/src"
 	}
-	
+
 	configuration { "debug"}
 		defines { "DEBUG" }
 		flags { "Symbols" }
@@ -46,4 +46,9 @@ minko.project.library "plugin-mk"
 			"/wd4996",
 			"/wd4273",
 			"/wd4503"
+		}
+
+	configuration { "linux" }
+		buildoptions {
+			"-Wdeprecated-declarations"
 		}
