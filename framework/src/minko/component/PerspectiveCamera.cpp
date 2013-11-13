@@ -20,9 +20,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "PerspectiveCamera.hpp"
 
 #include "minko/scene/Node.hpp"
-#include "minko/component/Surface.hpp"
 #include "minko/math/Matrix4x4.hpp"
 #include "minko/data/StructureProvider.hpp"
+#include "minko/math/Ray.hpp"
+#include "minko/component/Transform.hpp"
 
 using namespace minko;
 using namespace minko::component;
@@ -92,7 +93,7 @@ PerspectiveCamera::targetRemovedHandler(AbstractComponent::Ptr ctrl, NodePtr tar
 
 void
 PerspectiveCamera::localToWorldChangedHandler(data::Container::Ptr	data,
-											                        const std::string&	  propertyName)
+											  const std::string&	propertyName)
 {
     updateMatrices(data->get<Matrix4x4::Ptr>("transform.modelToWorldMatrix"));
 }
@@ -112,4 +113,29 @@ PerspectiveCamera::updateProjection(float fieldOfView, float aspectRatio, float 
 {
 	_projection->perspective(_fov, _aspectRatio, _zNear, _zFar);
 	_viewProjection->copyFrom(_view)->append(_projection);
+}
+
+std::shared_ptr<math::Ray>
+PerspectiveCamera::unproject(float x, float y, std::shared_ptr<math::Ray> out)
+{
+	if (!out)
+		out = Ray::create();
+
+	auto fovDiv2 = _fov * .5f;
+	auto dx = tanf(fovDiv2) * x * _aspectRatio;
+	auto dy = -tanf(fovDiv2) * y;
+
+	out->origin()->setTo(dx * _zNear, dy * _zNear, -_zNear);
+	out->direction()->setTo(dx * _zNear, dy * _zNear, -_zNear)->normalize();
+
+	auto t = targets()[0]->component<Transform>();
+
+	if (t)
+	{
+		t->modelToWorld(out->origin(), out->origin());
+		t->deltaModelToWorld(out->direction(), out->direction());
+		out->direction()->normalize();
+	}
+
+	return out;
 }

@@ -188,6 +188,7 @@ void
 Node::updateRoot()
 {
 	_root = _parent ? (_parent->_root ? _parent->_root : _parent) : shared_from_this();
+	_depth = _parent ? _parent->_depth + 1 : 0;
 
 	for (auto child : _children)
 		child->updateRoot();
