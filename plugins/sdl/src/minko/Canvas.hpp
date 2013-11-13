@@ -63,8 +63,12 @@ namespace minko
 		SDL_Window*                     _window;
 #endif
 		float							_framerate;
+		float							_desiredFramerate;
 
-		Signal<Ptr>::Ptr				_enterFrame;
+		uint							_mouseX;
+		uint							_mouseY;
+
+		Signal<Ptr, uint, uint>::Ptr	_enterFrame;
 		Signal<Ptr, const Uint8*>::Ptr	_keyDown;
 		Signal<Ptr, int, int, int>::Ptr	_joystickMotion;
 		Signal<Ptr, int>::Ptr			_joystickButtonDown;
@@ -84,94 +88,157 @@ namespace minko
 		}
 
 		inline
+		const std::string&
+		name() const
+		{
+			return _name;
+		}
+
+		inline
+		uint
+		width() const
+		{
+			return _width;
+		}
+
+		inline
+		uint
+		height() const
+		{
+			return _height;
+		}
+
+		inline
 		bool
-		active()
+		active() const
 		{
 			return _active;
 		}
 
 		inline
-		Signal<Ptr>::Ptr
-		enterFrame()
+		Signal<Ptr, uint, uint>::Ptr
+		enterFrame() const
 		{
 			return _enterFrame;
 		}
 
 		inline
 		Signal<Ptr, const Uint8*>::Ptr
-		keyDown()
+		keyDown() const
 		{
 			return _keyDown;
 		}
 
 		inline
 		Signal<Ptr, int, int, int>::Ptr
-		joystickMotion()
+		joystickMotion() const
 		{
 			return _joystickMotion;
 		}
 
 		inline
 		Signal<Ptr, int>::Ptr
-		joystickButtonDown()
+		joystickButtonDown() const
 		{
 			return _joystickButtonDown;
 		}
 
 		inline
 		Signal<Ptr, int>::Ptr
-		joystickButtonUp()
+		joystickButtonUp() const
 		{
 			return _joystickButtonUp;
 		}
 
 		inline
 		Signal<Ptr, uint, uint>::Ptr
-		mouseMove()
+		mouseMove() const
 		{
 			return _mouseMove;
 		}
 
 		inline
 		Signal<Ptr, uint, uint>::Ptr
-		mouseLeftButtonDown()
+		mouseLeftButtonDown() const
 		{
 			return _mouseLeftButtonDown;
 		}
 
 		inline
 		Signal<Ptr, uint, uint>::Ptr
-		mouseLeftButtonUp()
+		mouseLeftButtonUp() const
 		{
 			return _mouseLeftButtonUp;
 		}
 
 		inline
 		Signal<Ptr, int, int>::Ptr
-		mouseWheel()
+		mouseWheel() const
 		{
 			return _mouseWheel;
 		}
 
 		inline
 		Signal<Ptr, uint, uint>::Ptr
-		resized()
+		resized() const
 		{
 			return _resized;
 		}
 
 		inline
 		minko::render::AbstractContext::Ptr
-		context()
+		context() const
 		{
 			return _context;
 		}
 
 		inline
 		float
-		framerate()
+		framerate() const
 		{
 			return _framerate;
+		}
+
+		inline
+		float
+		desiredFramerate() const
+		{
+			return _desiredFramerate;
+		}
+
+		inline
+		void
+		desiredFramerate(float desiredFramerate)
+		{
+			_desiredFramerate = desiredFramerate;
+		}
+
+		inline
+		uint
+		mouseX() const
+		{
+			return _mouseX;
+		}
+
+		inline
+		uint
+		mouseY() const
+		{
+			return _mouseY;
+		}
+
+		inline
+		float
+		normalizedMouseX() const
+		{
+			return 2.f * ((float)_mouseX / _width - .5f);
+		}
+
+		inline
+		float
+		normalizedMouseY() const
+		{
+			return 2.f * ((float)_mouseY / _height - .5f);
 		}
 
 		void
