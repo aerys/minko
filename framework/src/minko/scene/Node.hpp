@@ -42,11 +42,13 @@ namespace minko
 		private:
 			static unsigned int								_id;
 
-			unsigned int									_layouts;
+			uint											_layouts;
 			Ptr 											_root;
 			Ptr												_parent;
 			std::shared_ptr<data::Container>				_container;
 			std::list<AbsCtrlPtr>							_components;
+
+			uint											_depth;
 
 			std::shared_ptr<Signal<Ptr, Ptr, Ptr>>			_added;
 			std::shared_ptr<Signal<Ptr, Ptr, Ptr>>			_removed;
@@ -152,6 +154,13 @@ namespace minko
 			data()
 			{
 				return _container;
+			}
+
+			inline
+			uint
+			depth() const
+			{
+				return _depth;
 			}
 
 			inline
