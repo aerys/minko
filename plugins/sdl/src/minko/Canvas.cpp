@@ -248,8 +248,10 @@ Canvas::step()
 			switch (event.window.event)
 			{
 			case SDL_WINDOWEVENT_RESIZED:
-				_context->configureViewport(0, 0, event.window.data1, event.window.data2);
-				_resized->execute(shared_from_this(), event.window.data1, event.window.data2);
+				_width = event.window.data1;
+				_height = event.window.data2;
+				_context->configureViewport(0, 0, _width, _height);
+				_resized->execute(shared_from_this(), _width, _height);
 				break;
 			default:
 				break;
