@@ -30,7 +30,7 @@ Canvas::Canvas(const std::string& name, const uint width, const uint height, boo
 	_desiredFramerate(60.f),
 	_mouseX(0),
 	_mouseY(0),
-	_enterFrame(Signal<Canvas::Ptr>::create()),
+	_enterFrame(Signal<Canvas::Ptr, uint, uint>::create()),
 	_keyDown(Signal<Canvas::Ptr, const Uint8*>::create()),
 	_joystickMotion(Signal<Canvas::Ptr, int, int, int>::create()),
 	_joystickButtonDown(Signal<Canvas::Ptr, int>::create()),
@@ -264,7 +264,10 @@ Canvas::step()
 		}
 	}
 
-	_enterFrame->execute(shared_from_this());
+	auto time = std::clock();
+	auto frameTime = (1000.f * (time - stepStartTime) / CLOCKS_PER_SEC);
+
+	_enterFrame->execute(shared_from_this(), (uint)time, (uint)frameTime);
 
 	// swap buffers
 #ifdef MINKO_ANGLE
@@ -275,14 +278,10 @@ Canvas::step()
 	SDL_GL_SwapWindow(_window);
 #endif
 
-	auto frameTime = (1000.f * (std::clock() - stepStartTime) / CLOCKS_PER_SEC);
-
 	_framerate = 1000.f / frameTime;
 
 	if (_framerate > _desiredFramerate)
-	{
 		SDL_Delay((uint)((1000.f / _desiredFramerate) - frameTime));
-	}
 }
 
 void
