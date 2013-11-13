@@ -103,6 +103,8 @@ namespace minko
         class DirectionalLight;
 		class SpotLight;
 		class PointLight;
+
+		class BoundingBox;
 	}
 
 	namespace data
@@ -155,6 +157,9 @@ namespace minko
 		class Vector4;
 		class Matrix4x4;
 		class Quaternion;
+		class Ray;
+		class AbstractShape;
+		class Box;
 
 		inline
 		unsigned int

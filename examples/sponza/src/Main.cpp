@@ -497,7 +497,7 @@ main(int argc, char** argv)
 			camera->component<PerspectiveCamera>()->aspectRatio((float)width / (float)height);
 		});
 
-		auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas)
+		auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, uint deltaTime)
 		{
 			sceneManager->nextFrame();
 		});
