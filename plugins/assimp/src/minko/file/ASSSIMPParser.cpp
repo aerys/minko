@@ -37,11 +37,14 @@ ASSIMPParser::parse(const std::string&				filename,
     
     //Init the assimp scene
     Assimp::Importer importer;
-    const aiScene *scene = importer.ReadFile(filename.c_str(),aiProcess_CalcTangentSpace        |
-                                             aiProcess_Triangulate                              |
-                                             aiProcess_JoinIdenticalVertices                    |
-                                             aiProcess_FlipUVs                                  |
-                                             aiProcess_SortByPType);//aiProcessPreset_TargetRealtime_Fast has the configs we'll need
+    const aiScene *scene = importer.ReadFile(
+		filename.c_str(),
+		aiProcess_CalcTangentSpace
+			| aiProcess_Triangulate
+			| aiProcess_JoinIdenticalVertices
+			| aiProcess_FlipUVs
+			| aiProcess_SortByPType
+	);//aiProcessPreset_TargetRealtime_Fast has the configs we'll need
     if (!scene)
     {
         std::cout << importer.GetErrorString() << std::endl;
@@ -50,7 +53,7 @@ ASSIMPParser::parse(const std::string&				filename,
     else
         _aiscene = scene;
     
-    parseDependencies(resolvedFilename, options, _effectIncludes);
+    parseDependencies(resolvedFilename, options, _dependencies);
     
 	if (_numDependencies == _numLoadedDependencies)
 		finalize();
@@ -221,33 +224,41 @@ ASSIMPParser::createLights(scene::Node::Ptr minkoRoot)
             case aiLightSource_DIRECTIONAL:
             {
                 light->addComponent(DirectionalLight::create());
-                light->component<DirectionalLight>()->color()->setTo(ailight->mColorDiffuse.r,
-                                                                     ailight->mColorDiffuse.g,
-                                                                     ailight->mColorDiffuse.b);
+                light->component<DirectionalLight>()->color()->setTo(
+					ailight->mColorDiffuse.r,
+                    ailight->mColorDiffuse.g,
+                    ailight->mColorDiffuse.b
+				);
                 break;
             }
             case aiLightSource_POINT:
             {
                 light->addComponent(PointLight::create());
-                light->component<PointLight>()->color()->setTo(ailight->mColorDiffuse.r,
-                                                               ailight->mColorDiffuse.g,
-                                                               ailight->mColorDiffuse.b);
+                light->component<PointLight>()->color()->setTo(
+					ailight->mColorDiffuse.r,
+                    ailight->mColorDiffuse.g,
+                    ailight->mColorDiffuse.b
+				);
                 break;
             }
             case aiLightSource_SPOT:
             {
                 light->addComponent(SpotLight::create());
-                light->component<PointLight>()->color()->setTo(ailight->mColorDiffuse.r,
-                                                               ailight->mColorDiffuse.g,
-                                                               ailight->mColorDiffuse.b);
+                light->component<PointLight>()->color()->setTo(
+					ailight->mColorDiffuse.r,
+                    ailight->mColorDiffuse.g,
+                    ailight->mColorDiffuse.b
+				);
                 break;
             }
             default:
                 light->addComponent(AmbientLight::create());
                 light->component<AmbientLight>()->ambient(1.0f);
-                light->component<PointLight>()->color()->setTo(ailight->mColorAmbient.r,
-                                                               ailight->mColorAmbient.g,
-                                                               ailight->mColorAmbient.b);
+                light->component<PointLight>()->color()->setTo(
+					ailight->mColorAmbient.r,
+                    ailight->mColorAmbient.g,
+                    ailight->mColorAmbient.b
+				);
                 break;
         }
         //minkoRoot->addChild(light);
@@ -278,10 +289,12 @@ ASSIMPParser::getTransformFromAssimp(aiNode* ainode)
 {
     aiMatrix4x4 aiTransform = ainode->mTransformation;
     Transform::Ptr result = Transform::create();
-    result->transform()->initialize(aiTransform.a1, aiTransform.a2, aiTransform.a3, aiTransform.a4,
-                                    aiTransform.b1, aiTransform.b2, aiTransform.b3, aiTransform.b4,
-                                    aiTransform.c1, aiTransform.c2, aiTransform.c3, aiTransform.c4,
-                                    aiTransform.d1, aiTransform.d2, aiTransform.d3, aiTransform.d4);
+    result->transform()->initialize(
+		aiTransform.a1, aiTransform.a2, aiTransform.a3, aiTransform.a4,
+        aiTransform.b1, aiTransform.b2, aiTransform.b3, aiTransform.b4,
+        aiTransform.c1, aiTransform.c2, aiTransform.c3, aiTransform.c4,
+        aiTransform.d1, aiTransform.d2, aiTransform.d3, aiTransform.d4
+	);
     
     return result;
 }
