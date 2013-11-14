@@ -52,6 +52,13 @@ namespace minko
 			}
 
 			inline static
+			Ptr
+			create(float* data)
+			{
+				return create(*data, *(data + 1), *(data + 2));
+			}
+
+			inline static
 			ConstPtr
 			createConst(float x = 0.f, float y = 0.f, float z = 0.f)
 			{
