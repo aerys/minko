@@ -50,5 +50,5 @@ minko.project.library "plugin-mk"
 
 	configuration { "linux" }
 		buildoptions {
-			"-Wdeprecated-declarations"
+			"-Wno-deprecated-declarations"
 		}
