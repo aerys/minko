@@ -51,7 +51,7 @@ namespace minko
 			std::shared_ptr<Signal<Ptr, const std::string&>>		_propReferenceChanged;
 			std::shared_ptr<Signal<Ptr, const std::string&>>		_propertyRemoved;
 
-		protected:
+		public:
 			static const std::string NO_STRUCT_SEP;
 
 		public:
