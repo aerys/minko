@@ -54,14 +54,15 @@ ASSIMPParser::parse(const std::string&					filename,
     
     //Init the assimp scene
     Assimp::Importer importer;
-    const aiScene *scene = importer.ReadFile(
-		filename.c_str(),
+	const aiScene* scene = importer.ReadFileFromMemory(
+		&data[0],
+		data.size(),
 		aiProcess_CalcTangentSpace
-			| aiProcess_Triangulate
-			| aiProcess_JoinIdenticalVertices
-			| aiProcess_FlipUVs
-			| aiProcess_SortByPType
-	);//aiProcessPreset_TargetRealtime_Fast has the configs we'll need
+		| aiProcess_Triangulate
+		| aiProcess_JoinIdenticalVertices
+		| aiProcess_FlipUVs
+		| aiProcess_SortByPType
+	);
     if (!scene)
     {
         std::cout << importer.GetErrorString() << std::endl;
@@ -71,13 +72,18 @@ ASSIMPParser::parse(const std::string&					filename,
         _aiscene = scene;
     
     parseDependencies(resolvedFilename, options, _dependencies);
+
+	auto root = scene::Node::create(_filename);
+
+	_symbol = root;
+	createSceneTree(root, scene->mRootNode);
     
 	if (_numDependencies == _numLoadedDependencies)
 		finalize();
 }
 
 void
-ASSIMPParser::createSceneTree(scene::Node::Ptr minkoNode, aiNode* ainode, component::SceneManager::Ptr sceneManager)
+ASSIMPParser::createSceneTree(scene::Node::Ptr minkoNode, aiNode* ainode)
 {
     for (uint i = 0; i < ainode->mNumChildren; i++)
     {
@@ -89,19 +95,19 @@ ASSIMPParser::createSceneTree(scene::Node::Ptr minkoNode, aiNode* ainode, compon
         minkoNode->addChild(child);
         
         //Recursive call
-        createSceneTree(child, ainode->mChildren[i], sceneManager);
+        createSceneTree(child, ainode->mChildren[i]);
     }
     
     for (uint j = 0; j < ainode->mNumMeshes; j++)
     {
         aiMesh *mesh = _aiscene->mMeshes[ainode->mMeshes[j]];
-        createMeshGeometry(minkoNode, mesh, sceneManager);
-        createMeshSurface(minkoNode, mesh, sceneManager);
+        createMeshGeometry(minkoNode, mesh);
+        createMeshSurface(minkoNode, mesh);
     }
 }
 
 void
-ASSIMPParser::createMeshGeometry(scene::Node::Ptr minkoNode ,aiMesh* mesh, SceneManager::Ptr sceneManager)
+ASSIMPParser::createMeshGeometry(scene::Node::Ptr minkoNode, aiMesh* mesh)
 {
     float *vertexArray;
     int numVertex;
@@ -159,8 +165,8 @@ ASSIMPParser::createMeshGeometry(scene::Node::Ptr minkoNode ,aiMesh* mesh, Scene
     for (int k = 0; k < numVertex*vertexSize; k++)
         vertexVector.push_back(vertexArray[k]);
     
-    auto vBuffer = render::VertexBuffer::create(sceneManager->assets()->context(), vertexVector);
-    auto iBuffer = render::IndexBuffer::create(sceneManager->assets()->context(), indiceArray);
+    auto vBuffer = render::VertexBuffer::create(_assetLibrary->context(), vertexVector);
+    auto iBuffer = render::IndexBuffer::create(_assetLibrary->context(), indiceArray);
     if (mesh->HasPositions())
         vBuffer->addAttribute("position", 3, 0);
     if (mesh->HasNormals())
@@ -169,13 +175,13 @@ ASSIMPParser::createMeshGeometry(scene::Node::Ptr minkoNode ,aiMesh* mesh, Scene
         vBuffer->addAttribute("uv", 2, 6);
     
     std::string meshGeometryName = std::string(mesh->mName.data);
-    sceneManager->assets()->geometry(meshGeometryName, geometry::Geometry::create());
-    sceneManager->assets()->geometry(meshGeometryName)->addVertexBuffer(vBuffer);
-    sceneManager->assets()->geometry(meshGeometryName)->indices(iBuffer);
+    _assetLibrary->geometry(meshGeometryName, geometry::Geometry::create());
+    _assetLibrary->geometry(meshGeometryName)->addVertexBuffer(vBuffer);
+    _assetLibrary->geometry(meshGeometryName)->indices(iBuffer);
 }
 
 void
-ASSIMPParser::createMeshSurface(scene::Node::Ptr minkoNode, aiMesh* mesh, SceneManager::Ptr sceneManager)
+ASSIMPParser::createMeshSurface(scene::Node::Ptr minkoNode, aiMesh* mesh)
 {
     auto provider = material::Material::create();
     aiMaterial* material = _aiscene->mMaterials[mesh->mMaterialIndex];
@@ -215,16 +221,16 @@ ASSIMPParser::createMeshSurface(scene::Node::Ptr minkoNode, aiMesh* mesh, SceneM
         auto texturePath = std::string(path.data);
         auto textPath  = std::string("texture/ducktexture.png");
         std::cout << "Path of texture in .DAE : " << texturePath << std::endl;
-        //sceneManager->assets()->queue(textPath);
-        provider->set("diffuseMap", sceneManager->assets()->texture(textPath));
+        //_assetLibrary->queue(textPath);
+        provider->set("diffuseMap", _assetLibrary->texture(textPath));
         texIndex++;
         texFound = material->GetTexture(aiTextureType_DIFFUSE, texIndex, &path);
     }
     
     minkoNode->addComponent(Surface::create(
-		sceneManager->assets()->geometry(std::string(mesh->mName.data)),
+		_assetLibrary->geometry(std::string(mesh->mName.data)),
 		provider,
-		sceneManager->assets()->effect("effect/Basic.effect")
+		_assetLibrary->effect("effect/Basic.effect")
     ));
 }
 
@@ -335,7 +341,7 @@ ASSIMPParser::queueAssimpTexture(SceneManager::Ptr sceneManager)
         {
             auto textPath  = std::string(path.data);//std::string("texture/");
             std::cout << "texture path from assimp: " << textPath << std::endl;
-            sceneManager->assets()->queue(textPath);
+            _assetLibrary->queue(textPath);
             texIndex++;
             texFound = material->GetTexture(aiTextureType_DIFFUSE, texIndex, &path);
         }
@@ -353,5 +359,7 @@ ASSIMPParser::parseDependencies(const std::string& 				filename,
 void
 ASSIMPParser::finalize()
 {
+	_assetLibrary->node(_filename, _symbol);
 
+	complete()->execute(shared_from_this());
 }

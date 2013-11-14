@@ -48,6 +48,7 @@ namespace minko
             std::string                     _filename;
             std::shared_ptr<AssetLibrary>   _assetLibrary;
 			std::vector<LoaderPtr>			_dependencies;
+			NodePtr							_symbol;
             
 		public:
 			inline static
@@ -70,16 +71,16 @@ namespace minko
 			}
 
             void
-			createSceneTree(NodePtr minkoNode, aiNode* ainode, SceneManagerPtr sceneManager);
+			createSceneTree(NodePtr minkoNode, aiNode* ainode);
 
             void
-            createMeshGeometry(NodePtr minkoNode, aiMesh* mesh, SceneManagerPtr sceneManager);
+            createMeshGeometry(NodePtr minkoNode, aiMesh* mesh);
             
             std::shared_ptr<component::Transform>
             getTransformFromAssimp(aiNode* ainode);
             
             void
-            createMeshSurface(NodePtr minkoNode, aiMesh* mesh, SceneManagerPtr sceneManager);
+            createMeshSurface(NodePtr minkoNode, aiMesh* mesh);
 
             void
             createLights(NodePtr minkoRoot);
