@@ -24,6 +24,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/AbstractComponent.hpp"
 #include "minko/Signal.hpp"
 #include "minko/math/Vector3.hpp"
+#include "minko/math/AbstractShape.hpp"
+#include "minko/math/Box.hpp"
 
 namespace minko
 {
