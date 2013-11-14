@@ -16,6 +16,7 @@ minko.project.library "plugin-assimp"
 		"lib/assimp/code/**.cpp",
 		"lib/assimp/code/**.hpp",
 		"lib/assimp/contrib/**.c",
+		"lib/assimp/contrib/**.cc",
 		"lib/assimp/contrib/**.h",
 		"lib/assimp/contrib/**.cpp",
 		"lib/assimp/contrib/**.hpp",

@@ -19,6 +19,23 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "ASSIMPParser.hpp"
 
+#include "assimp/Importer.hpp"      // C++ importer interface
+#include "assimp/scene.h"           // Output data structure
+#include "assimp/postprocess.h"     // Post processing flags
+
+#include "minko/scene/Node.hpp"
+#include "minko/component/Transform.hpp"
+#include "minko/component/AmbientLight.hpp"
+#include "minko/component/DirectionalLight.hpp"
+#include "minko/component/SpotLight.hpp"
+#include "minko/component/PointLight.hpp"
+#include "minko/component/SceneManager.hpp"
+#include "minko/component/Surface.hpp"
+#include "minko/render/VertexBuffer.hpp"
+#include "minko/render/IndexBuffer.hpp"
+#include "minko/geometry/Geometry.hpp"
+#include "minko/material/Material.hpp"
+#include "minko/file/AssetLibrary.hpp"
 
 using namespace minko;
 using namespace minko::component;
@@ -26,11 +43,11 @@ using namespace minko::math;
 using namespace minko::file;
 
 void
-ASSIMPParser::parse(const std::string&				filename,
-				 const std::string&                 resolvedFilename,
-                 std::shared_ptr<Options>           options,
-				 const std::vector<unsigned char>&	data,
-				 std::shared_ptr<AssetLibrary>	    assetLibrary)
+ASSIMPParser::parse(const std::string&					filename,
+					const std::string&					resolvedFilename,
+					std::shared_ptr<Options>			options,
+					const std::vector<unsigned char>&	data,
+					std::shared_ptr<AssetLibrary>	    assetLibrary)
 {
     _filename = filename;
 	_assetLibrary = assetLibrary;
@@ -62,7 +79,7 @@ ASSIMPParser::parse(const std::string&				filename,
 void
 ASSIMPParser::createSceneTree(scene::Node::Ptr minkoNode, aiNode* ainode, component::SceneManager::Ptr sceneManager)
 {
-    for (int i = 0; i < ainode->mNumChildren; i++)
+    for (uint i = 0; i < ainode->mNumChildren; i++)
     {
         auto childName = std::string(ainode->mChildren[i]->mName.data);
         auto child = scene::Node::create(childName);
@@ -75,7 +92,7 @@ ASSIMPParser::createSceneTree(scene::Node::Ptr minkoNode, aiNode* ainode, compon
         createSceneTree(child, ainode->mChildren[i], sceneManager);
     }
     
-    for (int j = 0; j < ainode->mNumMeshes; j++)
+    for (uint j = 0; j < ainode->mNumMeshes; j++)
     {
         aiMesh *mesh = _aiscene->mMeshes[ainode->mMeshes[j]];
         createMeshGeometry(minkoNode, mesh, sceneManager);
@@ -205,16 +222,16 @@ ASSIMPParser::createMeshSurface(scene::Node::Ptr minkoNode, aiMesh* mesh, SceneM
     }
     
     minkoNode->addComponent(Surface::create(
-                                            sceneManager->assets()->geometry(std::string(mesh->mName.data)),
-                                            provider,
-                                            sceneManager->assets()->effect("effect/Basic.effect")
-                                            ));
+		sceneManager->assets()->geometry(std::string(mesh->mName.data)),
+		provider,
+		sceneManager->assets()->effect("effect/Basic.effect")
+    ));
 }
 
 void
 ASSIMPParser::createLights(scene::Node::Ptr minkoRoot)
 {
-    for (int i = 0; i < _aiscene->mNumLights; i++)
+    for (uint i = 0; i < _aiscene->mNumLights; i++)
     {
         auto ailight = _aiscene->mLights[i];
         auto light = findNode(std::string(ailight->mName.data), minkoRoot);
@@ -289,6 +306,7 @@ ASSIMPParser::getTransformFromAssimp(aiNode* ainode)
 {
     aiMatrix4x4 aiTransform = ainode->mTransformation;
     Transform::Ptr result = Transform::create();
+
     result->transform()->initialize(
 		aiTransform.a1, aiTransform.a2, aiTransform.a3, aiTransform.a4,
         aiTransform.b1, aiTransform.b2, aiTransform.b3, aiTransform.b4,
@@ -302,7 +320,7 @@ ASSIMPParser::getTransformFromAssimp(aiNode* ainode)
 void
 ASSIMPParser::queueAssimpTexture(SceneManager::Ptr sceneManager)
 {
-    for (int i = 0; i < _aiscene->mNumMeshes; i++)
+    for (uint i = 0; i < _aiscene->mNumMeshes; i++)
     {
         aiMesh* mesh = _aiscene->mMeshes[i];
         
@@ -322,4 +340,18 @@ ASSIMPParser::queueAssimpTexture(SceneManager::Ptr sceneManager)
             texFound = material->GetTexture(aiTextureType_DIFFUSE, texIndex, &path);
         }
     }
+}
+
+void
+ASSIMPParser::parseDependencies(const std::string& 				filename,
+							    std::shared_ptr<file::Options> 	options,
+								std::vector<LoaderPtr>& 		store)
+{
+
+}
+
+void
+ASSIMPParser::finalize()
+{
+
 }
