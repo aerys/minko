@@ -24,7 +24,7 @@ package aerys.minko.scene.controller.animation
 		protected var _previousTime				: int;
 		protected var _totalTime				: int;
 		
-		private function get loopBeginTime():int
+		minko_animation function get loopBeginTime():int
 		{
 			if (!_reverse)
 				return _loopBeginTime;
@@ -32,7 +32,7 @@ package aerys.minko.scene.controller.animation
 				return _loopEndTime;
 		}
 		
-		private function get loopEndTime():int
+		minko_animation function get loopEndTime():int
 		{
 			if (!_reverse)
 				return _loopEndTime;

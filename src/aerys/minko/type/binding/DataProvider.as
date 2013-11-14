@@ -225,7 +225,10 @@ package aerys.minko.type.binding
 		
 		public function propertyExists(name : String) : Boolean
 		{
-			return _descriptor.hasOwnProperty(name);
+			if (_descriptor)
+				return _descriptor.hasOwnProperty(name);
+			else
+				return null;
 		}
 		
 		public function invalidate() : DataProvider
