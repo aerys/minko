@@ -257,6 +257,13 @@ namespace minko
 			}
 
 			inline
+			bool
+			equals(Ptr v)
+			{
+				return _x == v->_x && _y == v->_y && _z == v->_z;
+			}
+
+			inline
 			Ptr
 			lerp(Ptr target, float ratio)
 			{
