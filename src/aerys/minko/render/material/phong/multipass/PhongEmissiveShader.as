@@ -5,6 +5,7 @@ package aerys.minko.render.material.phong.multipass
     import aerys.minko.render.material.basic.BasicShader;
     import aerys.minko.render.resource.texture.ITextureResource;
     import aerys.minko.render.shader.SFloat;
+    import aerys.minko.render.shader.ShaderOptimization;
     import aerys.minko.type.enum.SamplerFiltering;
     
     public class PhongEmissiveShader extends BasicShader
@@ -21,6 +22,8 @@ package aerys.minko.render.material.phong.multipass
         {
             super(renderTarget, priority);
             
+			optimization |= ShaderOptimization.RESOLVED_PARAMETRIZATION;
+			
             _diffuseAccumulator = diffuseAccumulator;
 			_specularAccumulator = specularAccumulator;
         }

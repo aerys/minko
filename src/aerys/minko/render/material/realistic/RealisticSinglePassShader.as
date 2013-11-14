@@ -78,7 +78,7 @@ package aerys.minko.render.material.realistic
 			}
 			
 			var shading	: SFloat	= add(
-				_phong.getStaticLighting(finalDiffuse),
+				_phong.getStaticLighting(float4(1, 1, 1, 1)),
 				_phong.getDynamicLighting(-1, true, true, true, finalDiffuse)
 			);
 			
