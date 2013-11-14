@@ -4,39 +4,43 @@
 	precision mediump float;
 #endif
 
-struct AmbientLight
-{
-	vec3 color;
-	float ambient;	
-};
+#ifndef MINKO_NO_GLSL_STRUCT
 
-struct DirectionalLight
-{
-	vec3 color;
-	float diffuse;
-	float specular;
-	vec3 direction;	
-};
+	struct AmbientLight
+	{
+		vec3 color;
+		float ambient;	
+	};
 
-struct PointLight
-{
-	vec3 color;
-	float diffuse;
-	float specular;
-	float attenuationDistance;
-	vec3 position;
-};
+	struct DirectionalLight
+	{
+		vec3 color;
+		float diffuse;
+		float specular;
+		vec3 direction;	
+	};
 
-struct SpotLight
-{
-	vec3 color;
-	float diffuse;
-	float specular;
-	float attenuationDistance;
-	vec3 position;
-	vec3 direction;
-	float cosInnerConeAngle;
-	float cosOuterConeAngle;
-};
+	struct PointLight
+	{
+		vec3 color;
+		float diffuse;
+		float specular;
+		float attenuationDistance;
+		vec3 position;
+	};
 
-#endif
+	struct SpotLight
+	{
+		vec3 color;
+		float diffuse;
+		float specular;
+		float attenuationDistance;
+		vec3 position;
+		vec3 direction;
+		float cosInnerConeAngle;
+		float cosOuterConeAngle;
+	};
+
+#endif // 	MINKO_NO_GLSL_STRUCT
+
+#endif // FRAGMENT_SHADER
