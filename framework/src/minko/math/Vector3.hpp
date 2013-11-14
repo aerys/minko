@@ -144,6 +144,13 @@ namespace minko
 
 			inline
 			Ptr
+			copyFrom(float* data)
+			{
+				return setTo(*data, *(data + 1), *(data + 2));
+			}
+
+			inline
+			Ptr
 			setTo(float x, float y, float z)
 			{
 				_x = x;
@@ -151,6 +158,20 @@ namespace minko
 				_z = z;
 
 				return std::static_pointer_cast<Vector3>(shared_from_this());
+			}
+
+			inline
+			Ptr
+			substract(Ptr v)
+			{
+				return setTo(_x - v->_x, _y - v->_y, _z - v->_z);
+			}
+
+			inline
+			Ptr
+			add(Ptr v)
+			{
+				return setTo(_x + v->_x, _y + v->_y, _z + v->_z);
 			}
 
 			inline
@@ -200,7 +221,6 @@ namespace minko
 
 				return stream.str();
 			}
-
 
 			inline
 			Ptr
