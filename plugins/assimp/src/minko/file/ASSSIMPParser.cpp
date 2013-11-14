@@ -19,6 +19,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "ASSIMPParser.hpp"
 
+#include "IOHandler.hpp"
+
 #include "assimp/Importer.hpp"      // C++ importer interface
 #include "assimp/scene.h"           // Output data structure
 #include "assimp/postprocess.h"     // Post processing flags
@@ -49,11 +51,23 @@ ASSIMPParser::parse(const std::string&					filename,
 					const std::vector<unsigned char>&	data,
 					std::shared_ptr<AssetLibrary>	    assetLibrary)
 {
+	int pos = resolvedFilename.find_last_of("/");
+
+	if (pos > 0)
+	{
+		options = file::Options::create(options);
+		options->includePaths().insert(resolvedFilename.substr(0, pos));
+	}
+
     _filename = filename;
 	_assetLibrary = assetLibrary;
+	_options = options;
     
     //Init the assimp scene
     Assimp::Importer importer;
+
+	//importer.SetIOHandler(new IOHandler(options));
+
 	const aiScene* scene = importer.ReadFileFromMemory(
 		&data[0],
 		data.size(),
@@ -63,6 +77,7 @@ ASSIMPParser::parse(const std::string&					filename,
 		| aiProcess_FlipUVs
 		| aiProcess_SortByPType
 	);
+	
     if (!scene)
     {
         std::cout << importer.GetErrorString() << std::endl;
@@ -71,7 +86,7 @@ ASSIMPParser::parse(const std::string&					filename,
     else
         _aiscene = scene;
     
-    parseDependencies(resolvedFilename, options, _dependencies);
+    parseDependencies(resolvedFilename, _dependencies, scene);
 
 	auto root = scene::Node::create(_filename);
 
@@ -157,7 +172,7 @@ ASSIMPParser::createMeshGeometry(scene::Node::Ptr minkoNode, aiMesh* mesh)
         }
     }
     
-    vertexArray-=numVertex*vertexSize;
+    vertexArray -= numVertex*vertexSize;
     
     for (unsigned short l = 0; l < numVertex; l++)
         indiceArray.push_back(l);
@@ -191,40 +206,43 @@ ASSIMPParser::createMeshSurface(scene::Node::Ptr minkoNode, aiMesh* mesh)
     if (AI_SUCCESS == material->Get(AI_MATKEY_COLOR_DIFFUSE, diffuse))
         provider->set("diffuseColor", Vector4::create(diffuse.r, diffuse.g, diffuse.b, diffuse.a));
     
-    //Ambient color
-    aiColor4D ambient;
-    if (AI_SUCCESS == material->Get(AI_MATKEY_COLOR_AMBIENT, ambient))
-        provider->set("ambientColor", Vector4::create(ambient.r, ambient.g, ambient.b, ambient.a));
-    
     //Specular color
     aiColor4D specular;
     if (AI_SUCCESS == material->Get(AI_MATKEY_COLOR_SPECULAR, specular))
         provider->set("specularColor", Vector4::create(specular.r, specular.g, specular.b, specular.a));
     
     //Emissive color
+	/*
     aiColor4D emissive;
     if (AI_SUCCESS == material->Get(AI_MATKEY_COLOR_EMISSIVE, emissive))
         provider->set("emissiveColor", Vector4::create(emissive.r, emissive.g, emissive.b, emissive.a));
-    
+	//Ambient color
+	aiColor4D ambient;
+	if (AI_SUCCESS == material->Get(AI_MATKEY_COLOR_AMBIENT, ambient))
+		provider->set("ambientColor", Vector4::create(ambient.r, ambient.g, ambient.b, ambient.a));
+	*/
+
+	/*
     //Shininess
-    float shininess;
+	float shininess;
     if (AI_SUCCESS == material->Get(AI_MATKEY_COLOR_EMISSIVE, shininess))
         provider->set("shininess", shininess);
-    
+    */
+
     int texIndex = 0;
     aiString path;
-    aiReturn texFound = material->GetTexture(aiTextureType_DIFFUSE, texIndex, &path);
+    aiReturn texFound = AI_SUCCESS;
     
-    
-    while (AI_SUCCESS == texFound)
+	if (texFound == AI_SUCCESS)
     {
+		texFound = material->GetTexture(aiTextureType_DIFFUSE, texIndex, &path);
+
         auto texturePath = std::string(path.data);
-        auto textPath  = std::string("texture/ducktexture.png");
-        std::cout << "Path of texture in .DAE : " << texturePath << std::endl;
-        //_assetLibrary->queue(textPath);
-        provider->set("diffuseMap", _assetLibrary->texture(textPath));
+
+		if (!texturePath.empty() && _assetLibrary->texture(texturePath))
+			provider->set("diffuseMap", _assetLibrary->texture(texturePath));
+
         texIndex++;
-        texFound = material->GetTexture(aiTextureType_DIFFUSE, texIndex, &path);
     }
     
     minkoNode->addComponent(Surface::create(
@@ -324,42 +342,81 @@ ASSIMPParser::getTransformFromAssimp(aiNode* ainode)
 }
 
 void
-ASSIMPParser::queueAssimpTexture(SceneManager::Ptr sceneManager)
+ASSIMPParser::parseDependencies(const std::string& 		filename,
+								std::vector<LoaderPtr>&	store,
+								const aiScene*			scene)
 {
-    for (uint i = 0; i < _aiscene->mNumMeshes; i++)
-    {
-        aiMesh* mesh = _aiscene->mMeshes[i];
-        
-        aiMaterial* material = _aiscene->mMaterials[mesh->mMaterialIndex];
-        
-        int texIndex = 0;
-        aiString path;
-        aiReturn texFound = material->GetTexture(aiTextureType_DIFFUSE, texIndex, &path);
-        
-        
-        while (AI_SUCCESS == texFound)
-        {
-            auto textPath  = std::string(path.data);//std::string("texture/");
-            std::cout << "texture path from assimp: " << textPath << std::endl;
-            _assetLibrary->queue(textPath);
-            texIndex++;
-            texFound = material->GetTexture(aiTextureType_DIFFUSE, texIndex, &path);
-        }
-    }
-}
+	std::list<std::string> loading;
 
-void
-ASSIMPParser::parseDependencies(const std::string& 				filename,
-							    std::shared_ptr<file::Options> 	options,
-								std::vector<LoaderPtr>& 		store)
-{
+	for (unsigned int m = 0; m < scene->mNumMaterials; m++)
+	{
+		int texIndex = 0;
+		aiReturn texFound = AI_SUCCESS;
+		aiString path;
 
+		while (texFound == AI_SUCCESS)
+		{
+			texFound = scene->mMaterials[m]->GetTexture(aiTextureType_DIFFUSE, texIndex, &path);
+			std::string filename(path.data);
+
+			if (!filename.empty() && std::find(loading.begin(), loading.end(), filename) == loading.end())
+			{
+				loading.push_back(filename);
+				loadTexture(filename, _options);
+			}
+
+			texIndex++;
+		}
+	}
 }
 
 void
 ASSIMPParser::finalize()
 {
+	_loaderErrorSlots.clear();
+	_loaderCompleteSlots.clear();
+
 	_assetLibrary->node(_filename, _symbol);
 
 	complete()->execute(shared_from_this());
+}
+
+void
+ASSIMPParser::loadTexture(const std::string&	textureFilename,
+						  Options::Ptr			options)
+{
+	auto loader = _options->loaderFunction()(textureFilename);
+
+	_numDependencies++;
+
+	_loaderCompleteSlots[loader] = loader->complete()->connect([&](file::AbstractLoader::Ptr loader)
+	{
+		auto pos = loader->resolvedFilename().find_last_of('.');
+		auto extension = loader->resolvedFilename().substr(pos + 1);
+		auto parser = _assetLibrary->parser(extension);
+
+		auto complete = parser->complete()->connect([&](file::AbstractParser::Ptr parser)
+		{
+			_numLoadedDependencies++;
+
+			if (_numDependencies == _numLoadedDependencies && _symbol)
+				finalize();
+		});
+
+		parser->parse(
+			loader->filename(),
+			loader->resolvedFilename(),
+			loader->options(),
+			loader->data(),
+			_assetLibrary
+		);
+	});
+
+	_loaderErrorSlots[loader] = loader->error()->connect([&](file::AbstractLoader::Ptr loader)
+	{
+		_numLoadedDependencies++;
+		std::cerr << "unable to find texture with filename '" << loader->filename() << "'" << std::endl;
+	});
+
+	loader->load(textureFilename, options);
 }

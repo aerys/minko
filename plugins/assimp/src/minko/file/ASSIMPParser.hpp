@@ -37,18 +37,23 @@ namespace minko
 			typedef std::shared_ptr<ASSIMPParser> Ptr;
 
         private:
-            typedef std::shared_ptr<AbstractLoader>				LoaderPtr;
-			typedef std::shared_ptr<scene::Node>				NodePtr;
-			typedef std::shared_ptr<component::SceneManager>	SceneManagerPtr;
-            
+            typedef std::shared_ptr<AbstractLoader>					LoaderPtr;
+			typedef std::shared_ptr<scene::Node>					NodePtr;
+			typedef std::shared_ptr<component::SceneManager>		SceneManagerPtr;
+			typedef Signal<LoaderPtr>::Slot							LoaderSignalSlot;
+			typedef std::unordered_map<LoaderPtr, LoaderSignalSlot>	LoaderToSlotMap;
+
         private:
             const aiScene*                  _aiscene;
             unsigned int                    _numDependencies;
 			unsigned int                    _numLoadedDependencies;
             std::string                     _filename;
             std::shared_ptr<AssetLibrary>   _assetLibrary;
+			std::shared_ptr<file::Options>	_options;
 			std::vector<LoaderPtr>			_dependencies;
 			NodePtr							_symbol;
+			LoaderToSlotMap					_loaderCompleteSlots;
+			LoaderToSlotMap					_loaderErrorSlots;
             
 		public:
 			inline static
@@ -89,15 +94,16 @@ namespace minko
             findNode(std::string name, NodePtr root);
             
             void
-            queueAssimpTexture(SceneManagerPtr sceneManager);
-            
-            void
-			parseDependencies(const std::string& 				filename,
-							  std::shared_ptr<file::Options> 	options,
-							  std::vector<LoaderPtr>& 			store);
+			parseDependencies(const std::string& 		filename,
+							  std::vector<LoaderPtr>& 	store,
+							  const aiScene*			scene);
             
             void
 			finalize();
+
+			void
+			loadTexture(const std::string&				textureFilename,
+						std::shared_ptr<file::Options>	options);
 		};
 	}
 }
