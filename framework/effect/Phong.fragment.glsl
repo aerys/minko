@@ -1,25 +1,62 @@
 #ifdef FRAGMENT_SHADER
 
-#ifdef NUM_AMBIENT_LIGHTS
-	uniform AmbientLight ambientLights[NUM_AMBIENT_LIGHTS];
-#endif // NUM_AMBIENT_LIGHTS
-
 #ifdef PRECOMPUTED_AMBIENT
 	uniform vec3 sumAmbients;
 #endif // PRECOMPUTED_AMBIENT
+	
+#ifndef MINKO_NO_GLSL_STRUCT
 
-#ifdef NUM_DIRECTIONAL_LIGHTS
-	uniform DirectionalLight directionalLights[NUM_DIRECTIONAL_LIGHTS];
-#endif // NUM_DIRECTIONAL_LIGHTS
+	#ifdef NUM_AMBIENT_LIGHTS
+		uniform AmbientLight		ambientLights[NUM_AMBIENT_LIGHTS];
+	#endif // NUM_AMBIENT_LIGHTS
 
-#ifdef NUM_POINT_LIGHTS
-	uniform PointLight pointLights[NUM_POINT_LIGHTS];
-#endif // NUM_POINT_LIGHTS
+	#ifdef NUM_DIRECTIONAL_LIGHTS
+		uniform DirectionalLight	directionalLights[NUM_DIRECTIONAL_LIGHTS];
+	#endif // NUM_DIRECTIONAL_LIGHTS
 
-#ifdef NUM_SPOT_LIGHTS
-	uniform SpotLight spotLights[NUM_SPOT_LIGHTS];
-#endif // NUM_SPOT_LIGHTS
+	#ifdef NUM_POINT_LIGHTS
+		uniform PointLight			pointLights[NUM_POINT_LIGHTS];
+	#endif // NUM_POINT_LIGHTS
 
+	#ifdef NUM_SPOT_LIGHTS
+		uniform SpotLight			spotLights[NUM_SPOT_LIGHTS];
+	#endif // NUM_SPOT_LIGHTS
+
+#else
+
+	#ifdef NUM_AMBIENT_LIGHTS
+		uniform vec3	ambientLights_color[NUM_AMBIENT_LIGHTS];
+		uniform float	ambientLights_ambient[NUM_AMBIENT_LIGHTS];
+	#endif // NUM_AMBIENT_LIGHTS
+
+	#ifdef NUM_DIRECTIONAL_LIGHTS
+		uniform vec3	directionalLights_color[NUM_DIRECTIONAL_LIGHTS];
+		uniform float	directionalLights_diffuse[NUM_DIRECTIONAL_LIGHTS];
+		uniform float	directionalLights_specular[NUM_DIRECTIONAL_LIGHTS];
+		uniform vec3	directionalLights_direction[NUM_DIRECTIONAL_LIGHTS];
+	#endif // NUM_DIRECTIONAL_LIGHTS
+
+	#ifdef NUM_POINT_LIGHTS
+		uniform vec3	pointLights_color[NUM_POINT_LIGHTS];
+		uniform float	pointLights_diffuse[NUM_POINT_LIGHTS];
+		uniform float	pointLights_specular[NUM_POINT_LIGHTS];
+		uniform float	pointLights_attenuationDistance[NUM_POINT_LIGHTS];
+		uniform vec3	pointLights_position[NUM_POINT_LIGHTS];
+	#endif // NUM_POINT_LIGHTS
+
+	#ifdef NUM_SPOT_LIGHTS
+		uniform vec3	spotLights_color[NUM_SPOT_LIGHTS];
+		uniform float	spotLights_diffuse[NUM_SPOT_LIGHTS];
+		uniform float	spotLights_specular[NUM_SPOT_LIGHTS];
+		uniform float	spotLights_attenuationDistance[NUM_SPOT_LIGHTS];
+		uniform vec3	spotLights_position[NUM_SPOT_LIGHTS];
+		uniform vec3	spotLights_direction[NUM_SPOT_LIGHTS];
+		uniform float	spotLights_cosInnerConeAngle[NUM_SPOT_LIGHTS];
+		uniform float	spotLights_cosOuterConeAngle[NUM_SPOT_LIGHTS];
+	#endif // NUM_SPOT_LIGHTS
+	
+#endif // MINKO_NO_GLSL_STRUCT
+	
 uniform vec4 diffuseColor;
 uniform sampler2D diffuseMap;
 uniform sampler2D normalMap;
@@ -70,7 +107,11 @@ void main(void)
 		#ifdef NUM_AMBIENT_LIGHTS
 			for (int i = 0; i < NUM_AMBIENT_LIGHTS; ++i)
 			{
-				phong += ambientLights[i].color * ambientLights[i].ambient;
+				#ifndef MINKO_NO_GLSL_STRUCT
+					phong += ambientLights[i].color * ambientLights[i].ambient;
+				#else
+					phong += ambientLights_color[i] * ambientLights_ambient[i];
+				#endif // MINKO_NO_GLSL_STRUCT
 			}
 		#endif // NUM_AMBIENT_LIGHTS
 
@@ -107,10 +148,17 @@ void main(void)
 		//---------------------------
 		for (int i = 0; i < NUM_DIRECTIONAL_LIGHTS; ++i)
 		{
-			lightColor			= directionalLights[i].color;
-			lightDiffuseCoeff	= directionalLights[i].diffuse;
-			lightSpecularCoeff	= directionalLights[i].specular;
-			lightDirection		= directionalLights[i].direction;
+			#ifndef MINKO_NO_GLSL_STRUCT
+				lightColor			= directionalLights[i].color;
+				lightDiffuseCoeff	= directionalLights[i].diffuse;
+				lightSpecularCoeff	= directionalLights[i].specular;
+				lightDirection		= directionalLights[i].direction;
+			#else
+				lightColor			= directionalLights_color[i];
+				lightDiffuseCoeff	= directionalLights_diffuse[i];
+				lightSpecularCoeff	= directionalLights_specular[i];
+				lightDirection		= directionalLights_direction[i];
+			#endif // MINKO_NO_GLSL_STRUCT
 	
 		
 			lightDirection	= normalize(-lightDirection);
@@ -137,11 +185,19 @@ void main(void)
 		//---------------------
 		for (int i = 0; i < NUM_POINT_LIGHTS; ++i)
 		{
-			lightColor				= pointLights[i].color;
-			lightDiffuseCoeff		= pointLights[i].diffuse;
-			lightSpecularCoeff		= pointLights[i].specular;
-			lightAttenuationDist	= pointLights[i].attenuationDistance;
-			lightPosition			= pointLights[i].position;
+			#ifndef MINKO_NO_GLSL_STRUCT
+				lightColor				= pointLights[i].color;
+				lightDiffuseCoeff		= pointLights[i].diffuse;
+				lightSpecularCoeff		= pointLights[i].specular;
+				lightAttenuationDist	= pointLights[i].attenuationDistance;
+				lightPosition			= pointLights[i].position;
+			#else
+				lightColor				= pointLights_color[i];
+				lightDiffuseCoeff		= pointLights_diffuse[i];
+				lightSpecularCoeff		= pointLights_specular[i];
+				lightAttenuationDist	= pointLights_attenuationDistance[i];
+				lightPosition			= pointLights_position[i];
+			#endif // MINKO_NO_GLSL_STRUCT
 		
 			lightDirection			= lightPosition - vertexPosition;
 			float distanceToLight 	= length(lightDirection);
@@ -173,14 +229,25 @@ void main(void)
 		//--------------------
 		for (int i = 0; i < NUM_SPOT_LIGHTS; ++i)
 		{
-			lightColor				= spotLights[i].color;
-			lightDiffuseCoeff		= spotLights[i].diffuse;
-			lightSpecularCoeff		= spotLights[i].specular;
-			lightAttenuationDist	= spotLights[i].attenuationDistance;
-			lightPosition			= spotLights[i].position;
-			lightSpotDirection		= spotLights[i].direction;
-			lightCosInnerAng		= spotLights[i].cosInnerConeAngle;
-			lightCosOuterAng		= spotLights[i].cosOuterConeAngle;
+			#ifndef MINKO_NO_GLSL_STRUCT
+				lightColor				= spotLights[i].color;
+				lightDiffuseCoeff		= spotLights[i].diffuse;
+				lightSpecularCoeff		= spotLights[i].specular;
+				lightAttenuationDist	= spotLights[i].attenuationDistance;
+				lightPosition			= spotLights[i].position;
+				lightSpotDirection		= spotLights[i].direction;
+				lightCosInnerAng		= spotLights[i].cosInnerConeAngle;
+				lightCosOuterAng		= spotLights[i].cosOuterConeAngle;
+			#else
+				lightColor				= spotLights_color[i];
+				lightDiffuseCoeff		= spotLights_diffuse[i];
+				lightSpecularCoeff		= spotLights_specular[i];
+				lightAttenuationDist	= spotLights_attenuationDistance[i];
+				lightPosition			= spotLights_position[i];
+				lightSpotDirection		= spotLights_direction[i];
+				lightCosInnerAng		= spotLights_cosInnerConeAngle[i];
+				lightCosOuterAng		= spotLights_cosOuterConeAngle[i];
+			#endif // MINKO_NO_GLSL_STRUCT
 			
 			
 			lightDirection			= lightPosition - vertexPosition;
