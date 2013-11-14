@@ -3,6 +3,7 @@ package aerys.minko.render.material.phong
 	import aerys.minko.render.RenderTarget;
 	import aerys.minko.render.material.basic.BasicShader;
 	import aerys.minko.render.shader.SFloat;
+	import aerys.minko.render.shader.ShaderOptimization;
 	import aerys.minko.render.shader.part.phong.LightAwareDiffuseShaderPart;
 	import aerys.minko.render.shader.part.phong.PhongShaderPart;
 	
@@ -15,6 +16,8 @@ package aerys.minko.render.material.phong
                                               priority		: Number			= 0.)
 		{
 			super(renderTarget, priority);
+			
+			optimization |= ShaderOptimization.RESOLVED_PARAMETRIZATION;
 			
 			// init shader parts
 			_diffuse	= new LightAwareDiffuseShaderPart(this);

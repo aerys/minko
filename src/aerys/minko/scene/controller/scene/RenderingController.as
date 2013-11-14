@@ -940,7 +940,6 @@ package aerys.minko.scene.controller.scene
     			passInstance.release();
     			// update indexes
     			delete _drawCallToPassInstance[drawCall];
-            }
 			
 			delete _drawCallToMeshBindings[drawCall];
 			
@@ -958,6 +957,7 @@ package aerys.minko.scene.controller.scene
 				delete _passInstanceToDrawCalls[passInstance];
 				_passes.splice(_passes.indexOf(passInstance), 1);
 			}
+            }
 		}
 		
 		private function unwatchSignature(signature 	: Signature,

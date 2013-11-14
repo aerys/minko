@@ -189,16 +189,16 @@ package aerys.minko.render.shader.compiler.allocation
 				// if the previous loop are not broken, we are out of registers!
 				if (regOffset == _offsetLimit && localOffset == maxLocalOffset + 1)
 				{
-//					var registerType	: String = RegisterType.stringifyType(_type, _isVertexShader);
-//					var numRegisters	: String = (_offsetLimit / 4).toString();
-//					var allocSize		: String = (alloc.maxSize).toString();
-//					var alignement		: String = alloc.aligned ? 'aligned' : 'non-aligned';
-//					
-//					var errorMessage	: String = 'Unable to allocate: all "' + registerType + '" ' +
-//						numRegisters + ' registers are full, or too fragmented to allocate ' +
-//						allocSize + ' contiguous ' + alignement + ' floats';
-//					
-//					throw new Error(errorMessage);
+					var registerType	: String = RegisterType.stringifyType(_type, _isVertexShader);
+					var numRegisters	: String = (_offsetLimit / 4).toString();
+					var allocSize		: String = (alloc.maxSize).toString();
+					var alignement		: String = alloc.aligned ? 'aligned' : 'non-aligned';
+					
+					var errorMessage	: String = 'Unable to allocate: all "' + registerType + '" ' +
+						numRegisters + ' registers are full, or too fragmented to allocate ' +
+						allocSize + ' contiguous ' + alignement + ' floats';
+					
+					throw new Error(errorMessage);
                     
                     if (_type == RegisterType.VARYING)
                         throw new ShaderCompilerError(ShaderCompilerError.TOO_MANY_VARYINGS);
