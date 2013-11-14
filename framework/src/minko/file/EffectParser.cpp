@@ -696,7 +696,9 @@ EffectParser::loadTexture(const std::string&	textureFilename,
 	});
 
 	_loaderErrorSlots[loader] = loader->error()->connect(std::bind(
-		&EffectParser::textureErrorHandler, shared_from_this(), std::placeholders::_1
+		&EffectParser::textureErrorHandler,
+		std::static_pointer_cast<EffectParser>(shared_from_this()),
+		std::placeholders::_1
 	));
 
 	loader->load(textureFilename, options);
@@ -873,10 +875,14 @@ EffectParser::parseDependencies(const Json::Value& 		root,
 			auto loader = Loader::create();
 
 			_loaderCompleteSlots[loader] = loader->complete()->connect(std::bind(
-				&EffectParser::dependencyCompleteHandler, shared_from_this(), std::placeholders::_1
+				&EffectParser::dependencyCompleteHandler,
+				std::static_pointer_cast<EffectParser>(shared_from_this()),
+				std::placeholders::_1
 			));
 			_loaderErrorSlots[loader] = loader->error()->connect(std::bind(
-				&EffectParser::dependencyErrorHandler, shared_from_this(), std::placeholders::_1
+				&EffectParser::dependencyErrorHandler,
+				std::static_pointer_cast<EffectParser>(shared_from_this()),
+				std::placeholders::_1
 			));
 
 			store.push_back(loader);

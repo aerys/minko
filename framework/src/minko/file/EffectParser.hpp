@@ -37,7 +37,6 @@ namespace minko
 	namespace file
 	{
 		class EffectParser :
-			public std::enable_shared_from_this<EffectParser>,
 			public AbstractParser
 		{
 		public:
