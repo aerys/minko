@@ -150,6 +150,13 @@ namespace minko
 									 std::vector<std::vector<float>>&	vertices,
 									 uint								numVertices);
 
+			bool
+			cast(std::shared_ptr<math::Ray> ray,
+				 uint&						triangle,
+				 std::shared_ptr<Vector3>	hitXyz		= nullptr,
+				 std::shared_ptr<Vector2>	hitUv		= nullptr,
+				 std::shared_ptr<Vector3>	hitNormal	= nullptr);
+
 		protected:
 			Geometry();
 
@@ -166,6 +173,12 @@ namespace minko
 		private:
 			void
 			removeVertexBuffer(std::list<VBPtr>::iterator vertexBufferIt);
+
+			void
+			getHitUv(uint triangle, std::shared_ptr<Vector2> lambda, std::shared_ptr<Vector2> hitUv);
+
+			void
+			getHitNormal(uint triangle, std::shared_ptr<Vector3> hitNormal);
 		};
 	}
 }
