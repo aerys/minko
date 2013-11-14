@@ -108,6 +108,8 @@ namespace minko
 		class PointLight;
 
 		class BoundingBox;
+
+		class MousePicking;
 	}
 
 	namespace data
