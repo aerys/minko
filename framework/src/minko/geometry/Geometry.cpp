@@ -340,9 +340,9 @@ Geometry::removeDuplicatedVertices(std::vector<unsigned short>&		indices,
 bool
 Geometry::cast(std::shared_ptr<math::Ray>	ray,
 			   uint&						triangle,
-			   std::shared_ptr<Vector3>		hitXyz		= nullptr,
-			   std::shared_ptr<Vector2>		hitUv		= nullptr,
-			   std::shared_ptr<Vector3>		hitNormal	= nullptr)
+			   std::shared_ptr<Vector3>		hitXyz,
+			   std::shared_ptr<Vector2>		hitUv,
+			   std::shared_ptr<Vector3>		hitNormal)
 {
 	static const auto EPSILON = 0.00001f;
 
