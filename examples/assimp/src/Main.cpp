@@ -38,10 +38,10 @@ int main(int argc, char** argv)
 	sceneManager->assets()
 		->registerParser<file::ASSIMPParser>("obj")
 		->registerParser<file::ASSIMPParser>("dae")
-		->queue("effect/Basic.effect");
+		->queue("effect/Basic.effect")
+		->queue("male02.obj");
 
 	sceneManager->assets()->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()));
-	
 
 	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
 	{
@@ -51,12 +51,17 @@ int main(int argc, char** argv)
 		auto camera = scene::Node::create("camera")
 			->addComponent(Renderer::create(0x7f7f7fff))
 			->addComponent(Transform::create(
-				Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 3.f))
+				Matrix4x4::create()->lookAt(Vector3::create(0.f, 1.f, 0.f), Vector3::create(0.f, 1.5f, 3.f))
 			))
 			->addComponent(PerspectiveCamera::create(
 				(float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, (float)PI * 0.25f, .1f, 1000.f)
 			);
 		root->addChild(camera);
+
+		auto model = assets->node("male02.obj")
+			->addComponent(Transform::create(Matrix4x4::create()->appendScale(.01f)));
+
+		root->addChild(model);
 		
 		auto resized = canvas->resized()->connect([&](Canvas::Ptr canvas, uint w, uint h)
 		{
