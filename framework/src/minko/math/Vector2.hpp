@@ -38,9 +38,16 @@ namespace minko
 		public:
 			inline static
 			Ptr
-			create(float x, float y)
+			create(float x = 0.f, float y = 0.f)
 			{
 				return std::shared_ptr<Vector2>(new Vector2(x, y));
+			}
+
+			inline static
+			Ptr
+			create(float* data)
+			{
+				return create(*data, *(data + 1));
 			}
 
 			inline
@@ -76,6 +83,13 @@ namespace minko
 			copyFrom(Ptr value)
 			{
 				return setTo(value->_x, value->_y);
+			}
+
+			inline
+			Ptr
+			copyFrom(float* data)
+			{
+				return setTo(*data, *(data + 1));
 			}
 
 			inline
