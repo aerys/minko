@@ -34,7 +34,8 @@ minko.project.library "plugin-assimp"
 	}
 	defines {
 		"ASSIMP_BUILD_BOOST_WORKAROUND",
-		"_CRT_SECURE_NO_WARNINGS"
+		"_CRT_SECURE_NO_WARNINGS",
+		"_SCL_SECURE_NO_WARNINGS"
 	}
 
 	configuration { "debug"}
