@@ -35,6 +35,7 @@ namespace minko
 			typedef std::shared_ptr<Options>									Ptr;
 			typedef std::function<ProviderPtr(const std::string&, ProviderPtr)> MaterialFunction;
 			typedef std::function<AbsLoaderPtr(const std::string&)>				LoaderFunction;
+			typedef std::function<const std::string(const std::string&)>		UriFunction;
 
 		private:
 			std::shared_ptr<render::AbstractContext>	_context;
@@ -46,6 +47,7 @@ namespace minko
 			std::shared_ptr<data::Provider>				_material;
 			MaterialFunction							_materialFunction;
 			LoaderFunction								_loaderFunction;
+			UriFunction									_uriFunction;
 
 		public:
 			inline static
@@ -64,6 +66,9 @@ namespace minko
 				opt->_includePaths.insert(options->_includePaths.begin(), options->_includePaths.end());
                 opt->_generateMipMaps = options->_generateMipMaps;
                 opt->_effect = options->_effect;
+				opt->_materialFunction = options->_materialFunction;
+				opt->_loaderFunction = options->_loaderFunction;
+				opt->_uriFunction = options->_uriFunction;
 
 				return opt;
 			}
@@ -150,6 +155,20 @@ namespace minko
 			materialFunction(const MaterialFunction& func)
 			{
 				_materialFunction = func;
+			}
+
+			inline
+			const UriFunction&
+			uriFunction()
+			{
+				return _uriFunction;
+			}
+
+			inline
+			void
+			uriFunction(const UriFunction& func)
+			{
+				_uriFunction = func;
 			}
 
 		private:
