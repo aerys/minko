@@ -15,6 +15,7 @@ minko.project.library "plugin-png"
 	{
 		--"LODEPNG_NO_COMPILE_ENCODER"
 		--"LODEPNG_NO_COMPILE_DISK"
+		"_CRT_SECURE_NO_WARNINGS"
 	}
 
 	configuration { "debug"}
