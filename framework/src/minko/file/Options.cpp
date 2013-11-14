@@ -70,4 +70,7 @@ Options::initializePlatforms()
 #if defined(LINUX) || defined(__unix__)
 	_platforms.push_back("linux");
 #endif
+#ifdef MINKO_NO_GLSL_STRUCT
+	_platforms.push_back("no-glsl-struct");
+#endif // MINKO_NO_GLSL_STRUCT
 }

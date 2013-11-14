@@ -1060,6 +1060,24 @@ EffectParser::finalize()
 		}
     }
 
+	if (!_effect->techniques().empty() && _effect->techniques().count("default") == 0)
+	{
+#ifdef DEBUG
+		std::cerr << "Warning:\tEffect '" << _effectName << "' does not provide achievable default technique ('" << _defaultTechnique << "')" << std::endl;
+#endif // DEBUG
+
+		// FIXME // FIXME // FIXME // FIXME
+		const std::string&		viableTechniqueName = _effect->techniques().begin()->first; 
+		std::vector<Pass::Ptr>	viableTechnique		(_effect->technique(viableTechniqueName));
+
+		if (_effect->hasFallback(viableTechniqueName))
+			_effect->addTechnique("default", viableTechnique, _effect->fallback(viableTechniqueName));
+		else
+			_effect->addTechnique("default", viableTechnique);
+		// FIXME // FIXME // FIXME // FIXME
+	}
+
+
 	for (auto& targets : _techniqueTargets)
 		for (auto& target : targets.second)
 			_effect->data()->set(target.first, target.second);
@@ -1069,6 +1087,9 @@ EffectParser::finalize()
 	
 	_assetLibrary->effect(_effectName, _effect);
     _assetLibrary->effect(_filename, _effect);
+
+
+
 
 	_complete->execute(shared_from_this());
 }
