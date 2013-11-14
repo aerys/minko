@@ -64,13 +64,13 @@ namespace minko
 			formatPropertyName(const std::string& propertyName) const
 			{
 				return _structureName + '.' + propertyName;
-				/*
+				/***
 #ifndef MINKO_NO_GLSL_STRUCT
 				return _structureName + '.' + propertyName;
 #else
 				return _structureName + NO_STRUCT_SEP + propertyName;
 #endif // MINKO_NO_GLSL_STRUCT
-				*/
+				***/
 			}
 
 			inline
@@ -82,8 +82,8 @@ namespace minko
 					return Provider::unformatPropertyName(formattedPropertyName);
 				++pos;
 				return formattedPropertyName.substr(pos);
-
-				/*
+	
+				/***
 #ifndef MINKO_NO_GLSL_STRUCT
 				std::size_t pos = formattedPropertyName.find_first_of('.');
 #else
@@ -100,7 +100,7 @@ namespace minko
 #endif // MINKO_NO_GLSL_STRUCT
 
 				return formattedPropertyName.substr(pos);
-				*/
+				***/
 			}
 		};
 	}
