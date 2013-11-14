@@ -71,3 +71,10 @@ if _OPTIONS["no-stencil"] then
 	defines { "MINKO_NO_STENCIL" }
 end
 
+newoption {
+	trigger	= "no-glsl-struct",
+	description = "Disable GLSL structures."
+}
+if _OPTIONS["no-glsl-struct"] then
+	defines { "MINKO_NO_GLSL_STRUCT" }
+end
