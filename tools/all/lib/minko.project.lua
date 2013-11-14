@@ -9,9 +9,6 @@ minko.project.library = function(name)
 		links { "OpenGL32", "glew32" }
 		libdirs { minko.sdk.path("/deps/win/lib") }
 		includedirs { minko.sdk.path("/deps/win/include") }
-		postbuildcommands {
-			minko.vs.getdllscopycommand(minko.sdk.path("deps/win/lib"))
-		}
 		
 	configuration { "macosx" }
 		libdirs { "/deps/mac/lib" }
