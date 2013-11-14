@@ -66,12 +66,11 @@ namespace minko
 		private:
 			ArrayProvider(const std::string& name, uint index);
 
-			inline
 			std::string
-			formatPropertyName(const std::string& propertyName) const
-			{
-				return _name + "[" + std::to_string(_index) + "]." + propertyName;
-			}
+			formatPropertyName(const std::string&) const;
+
+			std::string
+			unformatPropertyName(const std::string&) const;
 		};
 	}
 }

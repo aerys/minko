@@ -40,7 +40,7 @@ namespace minko
 			inline static
 			Ptr
 			create(const std::string& structureName)
-			{
+			{				
 				return std::shared_ptr<StructureProvider>(new StructureProvider(structureName));
 			}
 
@@ -55,13 +55,41 @@ namespace minko
 			StructureProvider(const std::string& name) :
 				_structureName(name)
 			{
+				if (_structureName.find(NO_STRUCT_SEP) != std::string::npos)
+					throw new std::invalid_argument("The name of a StructureProvider cannot contain the following character sequence: " + NO_STRUCT_SEP);
 			}
 
 			inline
 			std::string
 			formatPropertyName(const std::string& propertyName) const
 			{
-				return _structureName + "." + propertyName;
+#ifndef MINKO_NO_GLSL_STRUCT
+				return _structureName + '.' + propertyName;
+#else
+				return _structureName + NO_STRUCT_SEP + propertyName;
+#endif // MINKO_NO_GLSL_STRUCT
+			}
+
+			inline
+			std::string
+			unformatPropertyName(const std::string& formattedPropertyName) const
+			{
+#ifndef MINKO_NO_GLSL_STRUCT
+				std::size_t pos = formattedPropertyName.find_first_of('.');
+#else
+				std::size_t pos = formattedPropertyName.find_first_of(NO_STRUCT_SEP);
+#endif // MINKO_NO_GLSL_STRUCT
+
+				if (pos == std::string::npos || formattedPropertyName.substr(0, pos) != _structureName)
+					return Provider::unformatPropertyName(formattedPropertyName);
+
+#ifndef MINKO_NO_GLSL_STRUCT
+				++pos;
+#else
+				pos += NO_STRUCT_SEP.size();
+#endif // MINKO_NO_GLSL_STRUCT
+
+				return formattedPropertyName.substr(pos);
 			}
 		};
 	}
