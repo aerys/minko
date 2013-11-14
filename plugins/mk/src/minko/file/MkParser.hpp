@@ -31,8 +31,7 @@ namespace minko
 	namespace file
 	{
 		class MkParser :
-            public AbstractParser,
-			public std::enable_shared_from_this<MkParser>
+            public AbstractParser
 		{
 		public:
 			typedef std::shared_ptr<scene::Node>															NodePtr;
