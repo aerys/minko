@@ -18,15 +18,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 #pragma once
 
-#include <assimp/Importer.hpp>      // C++ importer interface
-#include <assimp/scene.h>           // Output data structure
-#include <assimp/postprocess.h>     // Post processing flags
-
 #include "minko/Common.hpp"
 #include "minko/file/AbstractParser.hpp"
 #include "minko/file/Loader.hpp"
 
-#include "minko/Minko.hpp"
+struct aiMesh;
+struct aiNode;
+struct aiScene;
 
 namespace minko
 {
@@ -39,7 +37,9 @@ namespace minko
 			typedef std::shared_ptr<ASSIMPParser> Ptr;
 
         private:
-            typedef std::shared_ptr<AbstractLoader>			LoaderPtr;
+            typedef std::shared_ptr<AbstractLoader>				LoaderPtr;
+			typedef std::shared_ptr<scene::Node>				NodePtr;
+			typedef std::shared_ptr<component::SceneManager>	SceneManagerPtr;
             
         private:
             const aiScene*                  _aiscene;
@@ -70,25 +70,25 @@ namespace minko
 			}
 
             void
-            createSceneTree(scene::Node::Ptr minkoNode, aiNode* ainode, component::SceneManager::Ptr sceneManager);
+			createSceneTree(NodePtr minkoNode, aiNode* ainode, SceneManagerPtr sceneManager);
 
             void
-            createMeshGeometry(scene::Node::Ptr minkoNode ,aiMesh* mesh, component::SceneManager::Ptr sceneManager);
+            createMeshGeometry(NodePtr minkoNode, aiMesh* mesh, SceneManagerPtr sceneManager);
             
-            component::Transform::Ptr
+            std::shared_ptr<component::Transform>
             getTransformFromAssimp(aiNode* ainode);
             
             void
-            createMeshSurface(scene::Node::Ptr minkoNode, aiMesh* mesh, component::SceneManager::Ptr sceneManager);
+            createMeshSurface(NodePtr minkoNode, aiMesh* mesh, SceneManagerPtr sceneManager);
 
             void
-            createLights(scene::Node::Ptr minkoRoot);
+            createLights(NodePtr minkoRoot);
             
-            scene::Node::Ptr
-            findNode(std::string name, scene::Node::Ptr root);
+            NodePtr
+            findNode(std::string name, NodePtr root);
             
             void
-            queueAssimpTexture(component::SceneManager::Ptr sceneManager);
+            queueAssimpTexture(SceneManagerPtr sceneManager);
             
             void
 			parseDependencies(const std::string& 				filename,
