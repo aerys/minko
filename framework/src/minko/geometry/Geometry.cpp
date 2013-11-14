@@ -19,9 +19,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "Geometry.hpp"
 
-#include <minko/math/Vector3.hpp>
-#include <minko/render/IndexBuffer.hpp>
-#include <minko/render/VertexBuffer.hpp>
+#include "minko/math/Vector2.hpp"
+#include "minko/math/Vector3.hpp"
+#include "minko/math/Ray.hpp"
+#include "minko/render/IndexBuffer.hpp"
+#include "minko/render/VertexBuffer.hpp"
 
 using namespace minko;
 using namespace minko::math;
@@ -333,4 +335,144 @@ Geometry::removeDuplicatedVertices(std::vector<unsigned short>&		indices,
 
 	for (auto& index : indices)
 		index = oldVertexIdToNewVertexId[index];
+}
+
+bool
+Geometry::cast(std::shared_ptr<math::Ray>	ray,
+			   uint&						triangle,
+			   std::shared_ptr<Vector3>		hitXyz		= nullptr,
+			   std::shared_ptr<Vector2>		hitUv		= nullptr,
+			   std::shared_ptr<Vector3>		hitNormal	= nullptr)
+{
+	static const auto EPSILON = 0.00001f;
+
+	auto& indicesData = _indexBuffer->data();
+	auto numIndices = indicesData.size();
+
+	auto xyzBuffer = vertexBuffer("position");
+	auto& xyzData = xyzBuffer->data();
+	auto xyzPtr = &xyzData[0];
+	auto xyzVertexSize = xyzBuffer->vertexSize();
+	auto xyzOffset = std::get<2>(*xyzBuffer->attribute("position"));
+
+	auto minDistance = std::numeric_limits<float>::lowest();
+	auto lambda = hitUv ? Vector2::create() : nullptr;
+	auto triangleIndice = -3;
+
+	auto v0 = Vector3::create();
+	auto v1 = Vector3::create();
+	auto v2 = Vector3::create();
+	auto edge1 = Vector3::create();
+	auto edge2 = Vector3::create();
+	auto pvec = Vector3::create();
+	auto tvec = Vector3::create();
+	auto qvec = Vector3::create();
+	auto dot = 0.f;
+	auto invDot = 0.f;
+	auto u = 0.f;
+	auto v = 0.f;
+	auto t = 0.f;
+
+	for (auto i = 0; i < numIndices; i += 3)
+	{
+		v0->copyFrom(xyzPtr + indicesData[i] * xyzVertexSize);
+		v1->copyFrom(xyzPtr + indicesData[i + 1] * xyzVertexSize);
+		v2->copyFrom(xyzPtr + indicesData[i + 2] * xyzVertexSize);
+
+		edge1->copyFrom(v1)->substract(v0);
+		edge2->copyFrom(v2)->substract(v0);
+
+		pvec->copyFrom(ray->direction())->cross(edge2);
+		dot = edge1->dot(pvec);
+
+		if (dot > -EPSILON && dot < EPSILON)
+			continue;
+
+		invDot = 1.f / dot;
+
+		tvec->copyFrom(ray->origin())->substract(v0);
+		u = tvec->dot(pvec) * invDot;
+		if (u < 0.f || u > 1.f)
+			continue;
+
+		qvec->copyFrom(tvec)->cross(edge1);
+		v = ray->origin()->dot(qvec) * invDot;
+		if (v < 0.f || u + v > 1.f)
+			continue;
+
+		t = edge2->dot(qvec) * invDot;
+		if (t < minDistance)
+		{
+			minDistance = t;
+			triangle = i;
+
+			if (hitUv)
+			{
+				lambda->x(u);
+				lambda->y(v);
+			}
+		}
+
+		if (hitXyz)
+		{
+			hitXyz->setTo(
+				ray->origin()->x() + minDistance * ray->direction()->x(),
+				ray->origin()->y() + minDistance * ray->direction()->y(),
+				ray->origin()->z() + minDistance * ray->direction()->z()
+			);
+		}
+
+		if (hitUv)
+			getHitUv(triangle, lambda, hitUv);
+
+		if (hitNormal)
+			getHitNormal(triangle, hitNormal);
+	}
+}
+
+void
+Geometry::getHitUv(uint triangle, Vector2::Ptr lambda, Vector2::Ptr hitUv)
+{
+	auto uvBuffer = vertexBuffer("uv");
+	auto& uvData = uvBuffer->data();
+	auto uvPtr = &uvData[0];
+	auto uvVertexSize = uvBuffer->vertexSize();
+	auto uvOffset = std::get<2>(*uvBuffer->attribute("uv"));
+	auto& indicesData = _indexBuffer->data();
+
+	auto u0 = uvData[indicesData[triangle] * uvVertexSize + uvOffset];
+	auto v0 = uvData[indicesData[triangle] * uvVertexSize + uvOffset + 1];
+
+	auto u1 = uvData[indicesData[triangle + 1] * uvVertexSize + uvOffset];
+	auto v1 = uvData[indicesData[triangle + 1] * uvVertexSize + uvOffset + 1];
+
+	auto u2 = uvData[indicesData[triangle + 2] * uvVertexSize + uvOffset];
+	auto v2 = uvData[indicesData[triangle + 2] * uvVertexSize + uvOffset + 1];
+
+	auto z = 1.f - lambda->x() - lambda->y();
+
+	hitUv->setTo(
+		z * u0 + lambda->x() * u1 + lambda->y() * u2,
+		z * v0 + lambda->x() * v1 + lambda->y() * v2
+	);
+}
+
+void
+Geometry::getHitNormal(uint triangle, Vector3::Ptr hitNormal)
+{
+	auto normalBuffer = vertexBuffer("normal");
+	auto& normalData = normalBuffer->data();
+	auto normalPtr = &normalData[0];
+	auto normalVertexSize = normalBuffer->vertexSize();
+	auto normalOffset = std::get<2>(*normalBuffer->attribute("normal"));
+	auto& indicesData = _indexBuffer->data();
+
+	auto v0 = Vector3::create(normalPtr + indicesData[triangle] * normalVertexSize + normalOffset);
+	auto v1 = Vector3::create(normalPtr + indicesData[triangle] * normalVertexSize + normalOffset);
+	auto v2 = Vector3::create(normalPtr + indicesData[triangle] * normalVertexSize + normalOffset);
+
+	auto edge1 = Vector3::create(v1)->substract(v0)->normalize();
+	auto edge2 = Vector3::create(v2)->substract(v0)->normalize();
+
+	hitNormal->copyFrom(edge2)->cross(edge1);
 }
