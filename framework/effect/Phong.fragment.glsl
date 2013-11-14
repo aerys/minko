@@ -143,8 +143,8 @@ void main(void)
 				) * pointLights[i].specular * specularIntensity;
 			#endif // SHININESS
 			
-			float attenuation = pointLights[i].attenuationDistance.x > 0.0
-				? max(0.0, 1.0 - distanceToLight / pointLights[i].attenuationDistance.x) 
+			float attenuation = pointLights[i].attenuationDistance > 0.0
+				? max(0.0, 1.0 - distanceToLight / pointLights[i].attenuationDistance) 
 				: 1.0;
 				
 			phong += attenuation * contribution * pointLights[i].color;
