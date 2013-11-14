@@ -14,6 +14,7 @@ solution "minko"
 	include 'plugins/sdl'
 	include 'plugins/angle'
 	include 'plugins/fx'
+	include 'plugins/assimp'
 	--include 'plugins/offscreen'
 	if _OPTIONS["platform"] == "emscripten" then
 		include 'plugins/webgl'
