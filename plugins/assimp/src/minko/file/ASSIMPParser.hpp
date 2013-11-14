@@ -47,6 +47,7 @@ namespace minko
 			unsigned int                    _numLoadedDependencies;
             std::string                     _filename;
             std::shared_ptr<AssetLibrary>   _assetLibrary;
+			std::vector<LoaderPtr>			_dependencies;
             
 		public:
 			inline static
@@ -61,7 +62,7 @@ namespace minko
 				  const std::string&                resolvedFilename,
                   std::shared_ptr<Options>          options,
 				  const std::vector<unsigned char>&	data,
-				  std::shared_ptr<AssetLibrary>	AssetLibrary);
+				  std::shared_ptr<AssetLibrary>		assetLibrary);
 
 		private:
 			ASSIMPParser()
