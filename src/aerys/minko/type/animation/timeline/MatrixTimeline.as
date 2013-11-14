@@ -97,7 +97,6 @@ package aerys.minko.type.animation.timeline
                 else
                     out.copyFrom(_values[uint(timeId - 1)]);
             }
-
 		}
 
 		private function getIndexForTime(t : uint) : uint

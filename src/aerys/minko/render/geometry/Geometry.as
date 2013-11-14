@@ -248,7 +248,9 @@ package aerys.minko.render.geometry
 				_vertexStreams[streamId].dispose();
 			_vertexStreams.length = 0;
 			
-			_indexStream.dispose();
+			if (_indexStream)
+				_indexStream.dispose();
+			
 			_indexStream = null;
 		}
 		
@@ -259,7 +261,8 @@ package aerys.minko.render.geometry
 			for (var streamId : uint = 0; streamId < numStreams; ++streamId)
 				_vertexStreams[streamId].disposeLocalData(waitForUpload);
 			
-			_indexStream.disposeLocalData(waitForUpload);
+			if (_indexStream)
+				_indexStream.disposeLocalData(waitForUpload);
 			
 			return this;
 		}

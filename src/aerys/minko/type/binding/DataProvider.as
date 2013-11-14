@@ -96,7 +96,10 @@ package aerys.minko.type.binding
 		
 		public function getProperty(name : String) : *
 		{
-			return _nameToProperty[name];
+			if (_nameToProperty)
+				return _nameToProperty[name];
+			else
+				return null;
 		}
 		
 		public function setProperty(name : String, newValue : Object) : DataProvider
