@@ -70,6 +70,23 @@ int main(int argc, char** argv)
 			));
 		//root->addChild(hit);
 
+		root->addComponent(MousePicking::create());
+		auto mouseOver = root->component<MousePicking>()->move()->connect(
+			[&](MousePicking::Ptr mp, MousePicking::HitList& hits, Ray::Ptr ray)
+			{
+				if (hit->parent() != root)
+					root->addChild(hit);
+				hit->component<Transform>()->transform()
+					->identity()
+					->appendScale(.1f)
+					->translation(
+						ray->origin()->x() + ray->direction()->x() * hits.front().second,
+						ray->origin()->y() + ray->direction()->y() * hits.front().second,
+						ray->origin()->z() + ray->direction()->z() * hits.front().second
+					);
+			}
+		);
+
 		auto resized = canvas->resized()->connect([&](Canvas::Ptr canvas, uint w, uint h)
 		{
 			camera->component<PerspectiveCamera>()->aspectRatio((float)w / (float)h);
@@ -86,6 +103,9 @@ int main(int argc, char** argv)
 				//->translation(sinf((float)time * .001f), 0.f, 0.f);
 				->prependRotationY(.01f);
 
+			root->component<MousePicking>()->pick(ray);
+
+			/*
 			if (mesh->component<BoundingBox>()->shape()->cast(ray, distance))
 			{
 				if (hit->parent() != root)
@@ -101,7 +121,7 @@ int main(int argc, char** argv)
 			}
 			else if (hit->parent() == root)
 				root->removeChild(hit);
-
+			*/
 			//camera->component<Transform>()->transform()->appendRotationY(.01f);
 			sceneManager->nextFrame();
 		});
