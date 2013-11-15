@@ -956,8 +956,9 @@ EffectParser::parseTechniques(const Json::Value&				root,
 bool
 EffectParser::parseConfiguration(const Json::Value&	root)
 {
-	auto confValue = root.get("configuration", 0);
-	auto p = _options->platforms();
+	auto confValue	= root.get("configuration", 0);
+	auto platforms	= _options->platforms();
+	auto userFlags	= _options->userFlags();
 	auto r = false;
 
 	if (confValue.isArray())
@@ -966,7 +967,9 @@ EffectParser::parseConfiguration(const Json::Value&	root)
 		{
 			// if the config. token is a string and we can find it in the list of platforms,
 			// then the configuration is ok and we return true
-			if (value.isString() && std::find(p.begin(), p.end(), value.asString()) != p.end())
+			if (value.isString() && 
+				(std::find(platforms.begin(), platforms.end(), value.asString()) != platforms.end() || 
+				std::find(userFlags.begin(), userFlags.end(), value.asString()) != userFlags.end()))
 				return true;
 			else if (value.isArray())
 			{
@@ -974,7 +977,9 @@ EffectParser::parseConfiguration(const Json::Value&	root)
 				// the platforms list; if a single of them is not there then the config. token
 				// is considered to be false
 				for (auto str : value)
-				if (str.isString() && std::find(p.begin(), p.end(), str.asString()) == p.end())
+				if (str.isString() && 
+					(std::find(platforms.begin(), platforms.end(), str.asString()) == platforms.end() ||
+					std::find(userFlags.begin(), userFlags.end(), str.asString()) != userFlags.end()))
 				{
 					r = r || false;
 					break;
@@ -1062,11 +1067,7 @@ EffectParser::finalize()
 
 	if (!_effect->techniques().empty() && _effect->techniques().count("default") == 0)
 	{
-#ifdef DEBUG
-		std::cerr << "Warning:\tEffect '" << _effectName << "' does not provide achievable default technique ('" << _defaultTechnique << "')" << std::endl;
-#endif // DEBUG
-
-		// FIXME // FIXME // FIXME // FIXME
+		// FIXME 
 		const std::string&		viableTechniqueName = _effect->techniques().begin()->first; 
 		std::vector<Pass::Ptr>	viableTechnique		(_effect->technique(viableTechniqueName));
 
@@ -1074,7 +1075,10 @@ EffectParser::finalize()
 			_effect->addTechnique("default", viableTechnique, _effect->fallback(viableTechniqueName));
 		else
 			_effect->addTechnique("default", viableTechnique);
-		// FIXME // FIXME // FIXME // FIXME
+
+#ifdef DEBUG
+		std::cerr << "Warning:\tEffect '" << _effectName << "' does not provide achievable default technique ('" << _defaultTechnique << "'), switched to '" << viableTechniqueName << "'" << std::endl;
+#endif // DEBUG
 	}
 
 
