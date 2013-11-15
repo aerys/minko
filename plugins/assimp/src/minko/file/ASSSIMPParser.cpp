@@ -111,20 +111,18 @@ ASSIMPParser::parse(const std::string&					filename,
         std::cout << importer.GetErrorString() << std::endl;
         throw;
     }
-    else
-        _aiscene = scene;
     
-    parseDependencies(resolvedFilename, _dependencies, scene);
+    parseDependencies(resolvedFilename, scene);
 
 	_symbol = scene::Node::create(_filename);
-	createSceneTree(_symbol, scene->mRootNode);
+	createSceneTree(_symbol, scene, scene->mRootNode);
 	
 	if (_numDependencies == _numLoadedDependencies)
 		finalize();
 }
 
 void
-ASSIMPParser::createSceneTree(scene::Node::Ptr minkoNode, aiNode* ainode)
+ASSIMPParser::createSceneTree(scene::Node::Ptr minkoNode, const aiScene* scene, aiNode* ainode)
 {
     for (uint i = 0; i < ainode->mNumChildren; i++)
     {
@@ -136,14 +134,14 @@ ASSIMPParser::createSceneTree(scene::Node::Ptr minkoNode, aiNode* ainode)
         minkoNode->addChild(child);
         
         //Recursive call
-        createSceneTree(child, ainode->mChildren[i]);
+        createSceneTree(child, scene, ainode->mChildren[i]);
     }
     
     for (uint j = 0; j < ainode->mNumMeshes; j++)
     {
-        aiMesh *mesh = _aiscene->mMeshes[ainode->mMeshes[j]];
+        aiMesh *mesh = scene->mMeshes[ainode->mMeshes[j]];
         createMeshGeometry(minkoNode, mesh);
-        createMeshSurface(minkoNode, mesh);
+        createMeshSurface(minkoNode, scene, mesh);
     }
 }
 
@@ -222,10 +220,10 @@ ASSIMPParser::createMeshGeometry(scene::Node::Ptr minkoNode, aiMesh* mesh)
 }
 
 void
-ASSIMPParser::createMeshSurface(scene::Node::Ptr minkoNode, aiMesh* mesh)
+ASSIMPParser::createMeshSurface(scene::Node::Ptr minkoNode, const aiScene* scene, aiMesh* mesh)
 {
     auto provider = material::Material::create();
-    aiMaterial* material = _aiscene->mMaterials[mesh->mMaterialIndex];
+    aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
     
     //Diffuse color
     aiColor4D diffuse;
@@ -281,11 +279,11 @@ ASSIMPParser::createMeshSurface(scene::Node::Ptr minkoNode, aiMesh* mesh)
 }
 
 void
-ASSIMPParser::createLights(scene::Node::Ptr minkoRoot)
+ASSIMPParser::createLights(scene::Node::Ptr minkoRoot, const aiScene* scene)
 {
-    for (uint i = 0; i < _aiscene->mNumLights; i++)
+    for (uint i = 0; i < scene->mNumLights; i++)
     {
-        auto ailight = _aiscene->mLights[i];
+        auto ailight = scene->mLights[i];
         auto light = findNode(std::string(ailight->mName.data), minkoRoot);
         
         switch (ailight->mType)
@@ -370,9 +368,8 @@ ASSIMPParser::getTransformFromAssimp(aiNode* ainode)
 }
 
 void
-ASSIMPParser::parseDependencies(const std::string& 		filename,
-								std::vector<LoaderPtr>&	store,
-								const aiScene*			scene)
+ASSIMPParser::parseDependencies(const std::string& 	filename,
+								const aiScene*		scene)
 {
 	std::list<std::string> loading;
 
