@@ -63,6 +63,10 @@ namespace minko
 				return std::shared_ptr<ASSIMPParser>(new ASSIMPParser());
 			}
 
+			static
+			std::set<std::string>
+			getSupportedFileExensions();
+
 			void
 			parse(const std::string&				filename,
 				  const std::string&                resolvedFilename,
