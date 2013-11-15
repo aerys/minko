@@ -27,6 +27,9 @@ using namespace minko::file;
 
 Options::Options(std::shared_ptr<render::AbstractContext> context) :
 	_context(context),
+	_includePaths(),
+	_platforms(),
+	_userFlags(),
     _generateMipMaps(false),
 	_material(data::Provider::create())
 {
@@ -47,6 +50,7 @@ Options::Options(std::shared_ptr<render::AbstractContext> context) :
 	};
 
 	initializePlatforms();
+	initializeUserFlags();
 }
 
 void
@@ -70,7 +74,12 @@ Options::initializePlatforms()
 #if defined(LINUX) || defined(__unix__)
 	_platforms.push_back("linux");
 #endif
+}
+
+void
+Options::initializeUserFlags()
+{
 #ifdef MINKO_NO_GLSL_STRUCT
-	_platforms.push_back("no-glsl-struct");
+	_userFlags.push_back("no-glsl-struct");
 #endif // MINKO_NO_GLSL_STRUCT
 }
