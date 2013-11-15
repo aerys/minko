@@ -46,6 +46,11 @@ Options::Options(std::shared_ptr<render::AbstractContext> context) :
 		return Loader::create();
 	};
 
+	_uriFunction = [](const std::string& uri) -> const std::string
+	{
+		return uri;
+	};
+
 	initializePlatforms();
 }
 
