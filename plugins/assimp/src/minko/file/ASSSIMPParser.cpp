@@ -44,6 +44,12 @@ using namespace minko::component;
 using namespace minko::math;
 using namespace minko::file;
 
+ASSIMPParser::ASSIMPParser() :
+	_numDependencies(0),
+	_numLoadedDependencies(0)
+{
+}
+
 std::set<std::string>
 ASSIMPParser::getSupportedFileExensions()
 {
@@ -110,11 +116,9 @@ ASSIMPParser::parse(const std::string&					filename,
     
     parseDependencies(resolvedFilename, _dependencies, scene);
 
-	auto root = scene::Node::create(_filename);
-
-	_symbol = root;
-	createSceneTree(root, scene->mRootNode);
-    
+	_symbol = scene::Node::create(_filename);
+	createSceneTree(_symbol, scene->mRootNode);
+	
 	if (_numDependencies == _numLoadedDependencies)
 		finalize();
 }
@@ -225,8 +229,10 @@ ASSIMPParser::createMeshSurface(scene::Node::Ptr minkoNode, aiMesh* mesh)
     
     //Diffuse color
     aiColor4D diffuse;
-    if (AI_SUCCESS == material->Get(AI_MATKEY_COLOR_DIFFUSE, diffuse))
-        provider->set("diffuseColor", Vector4::create(diffuse.r, diffuse.g, diffuse.b, diffuse.a));
+	if (AI_SUCCESS == material->Get(AI_MATKEY_COLOR_DIFFUSE, diffuse))
+		provider->set("diffuseColor", Vector4::create(diffuse.r, diffuse.g, diffuse.b, diffuse.a));
+	else
+		provider->set("diffuseColor", Vector4::create(0.f, 0.f, 0.f, 1.f));
     
     //Specular color
     aiColor4D specular;
@@ -399,7 +405,7 @@ ASSIMPParser::finalize()
 	_loaderCompleteSlots.clear();
 
 	_assetLibrary->node(_filename, _symbol);
-
+	
 	complete()->execute(shared_from_this());
 }
 
