@@ -8,7 +8,7 @@ if minko.plugin.enabled("offscreen") then
 	links { "minko-offscreen", "OSMesa" }
 	includedirs {
 		"/opt/local/include",
-		minko.sdk.path("plugins/sdl/lib/osmesa/include"),
+		minko.sdk.path("plugins/offscreen/lib/osmesa/include"),
 		minko.sdk.path("plugins/offscreen/src")
 	}
 end
