@@ -44,13 +44,11 @@ namespace minko
 			typedef std::unordered_map<LoaderPtr, LoaderSignalSlot>	LoaderToSlotMap;
 
         private:
-            const aiScene*                  _aiscene;
             unsigned int                    _numDependencies;
 			unsigned int                    _numLoadedDependencies;
             std::string                     _filename;
             std::shared_ptr<AssetLibrary>   _assetLibrary;
 			std::shared_ptr<file::Options>	_options;
-			std::vector<LoaderPtr>			_dependencies;
 			NodePtr							_symbol;
 			LoaderToSlotMap					_loaderCompleteSlots;
 			LoaderToSlotMap					_loaderErrorSlots;
@@ -78,7 +76,7 @@ namespace minko
 			ASSIMPParser();
 
             void
-			createSceneTree(NodePtr minkoNode, aiNode* ainode);
+			createSceneTree(NodePtr minkoNode, const aiScene* scene, aiNode* ainode);
 
             void
             createMeshGeometry(NodePtr minkoNode, aiMesh* mesh);
@@ -87,18 +85,16 @@ namespace minko
             getTransformFromAssimp(aiNode* ainode);
             
             void
-            createMeshSurface(NodePtr minkoNode, aiMesh* mesh);
+            createMeshSurface(NodePtr minkoNode, const aiScene* scene, aiMesh* mesh);
 
             void
-            createLights(NodePtr minkoRoot);
+			createLights(NodePtr minkoRoot, const aiScene* scene);
             
             NodePtr
             findNode(std::string name, NodePtr root);
             
             void
-			parseDependencies(const std::string& 		filename,
-							  std::vector<LoaderPtr>& 	store,
-							  const aiScene*			scene);
+			parseDependencies(const std::string& filename, const aiScene* scene);
             
             void
 			finalize();
