@@ -219,6 +219,8 @@ AssetLibrary::loaderCompleteHandler(std::shared_ptr<file::AbstractLoader> loader
 	auto filename = loader->filename();
 	auto extension = filename.substr(filename.find_last_of('.') + 1);
 
+	std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
+
 	if (_parsers.count(extension))
 	{
 		auto parser = _parsers[extension]();
