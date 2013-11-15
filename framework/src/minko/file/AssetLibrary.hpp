@@ -67,7 +67,6 @@ namespace minko
 			std::shared_ptr<Signal<Ptr>>											_complete;
 
 		public:
-			// fixme cyclic reference
 			static
 			Ptr
 			create(AbsContextPtr context);
@@ -133,6 +132,8 @@ namespace minko
 			typename std::enable_if<std::is_base_of<file::AbstractParser, T>::value, Ptr>::type
 			registerParser(const std::string& extension)
 			{
+				std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
+
 				_parsers[extension] = T::create;
 
 				return shared_from_this();
