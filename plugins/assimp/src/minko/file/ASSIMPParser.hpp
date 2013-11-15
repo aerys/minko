@@ -75,9 +75,7 @@ namespace minko
 				  std::shared_ptr<AssetLibrary>		assetLibrary);
 
 		private:
-			ASSIMPParser()
-			{
-			}
+			ASSIMPParser();
 
             void
 			createSceneTree(NodePtr minkoNode, aiNode* ainode);
