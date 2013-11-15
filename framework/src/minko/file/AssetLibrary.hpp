@@ -132,9 +132,11 @@ namespace minko
 			typename std::enable_if<std::is_base_of<file::AbstractParser, T>::value, Ptr>::type
 			registerParser(const std::string& extension)
 			{
-				std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
+				std::string ext(extension);
 
-				_parsers[extension] = T::create;
+				std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
+
+				_parsers[ext] = T::create;
 
 				return shared_from_this();
 			}
