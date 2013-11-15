@@ -197,6 +197,12 @@ namespace minko
 		class AbstractParser;
 		class EffectParser;
         class AssetLibrary;
+
+#ifdef _WIN32
+		const char separator = '\\';
+#else
+		const char separator = '/';
+#endif
 	}
 
 	namespace material
