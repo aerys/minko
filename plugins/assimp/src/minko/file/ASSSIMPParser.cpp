@@ -44,6 +44,28 @@ using namespace minko::component;
 using namespace minko::math;
 using namespace minko::file;
 
+std::set<std::string>
+ASSIMPParser::getSupportedFileExensions()
+{
+	Assimp::Importer importer;
+	std::string list;
+	std::set<std::string> result;
+
+	importer.GetExtensionList(list);
+
+	auto pos = list.find_first_of(";");
+	while (pos != std::string::npos)
+	{
+		result.insert(list.substr(2, pos - 2));
+		list = list.substr(pos + 1);
+		pos = list.find_first_of(";");
+	}
+	if (!list.empty())
+		result.insert(list.substr(2));
+
+	return result;
+}
+
 void
 ASSIMPParser::parse(const std::string&					filename,
 					const std::string&					resolvedFilename,
