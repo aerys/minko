@@ -140,8 +140,11 @@ ASSIMPParser::createSceneTree(scene::Node::Ptr minkoNode, const aiScene* scene, 
     for (uint j = 0; j < ainode->mNumMeshes; j++)
     {
         aiMesh *mesh = scene->mMeshes[ainode->mMeshes[j]];
-        createMeshGeometry(minkoNode, mesh);
-        createMeshSurface(minkoNode, scene, mesh);
+		auto minkoMesh = scene::Node::create(mesh->mName.C_Str());
+
+		createMeshGeometry(minkoMesh, mesh);
+		createMeshSurface(minkoMesh, scene, mesh);
+		minkoNode->addChild(minkoMesh);
     }
 }
 
