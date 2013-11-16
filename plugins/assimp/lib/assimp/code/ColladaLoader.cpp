@@ -487,7 +487,7 @@ void ColladaLoader::BuildMeshesForNode( const ColladaParser& pParser, const Coll
 			else
 				matIdx = 0;
 
-			if (table && !table->mMap.empty() ) {
+			if (table && !table->mMap.empty() && newMats.size() > matIdx) {
 				std::pair<Collada::Effect*, aiMaterial*>&  mat = newMats[matIdx];
 
 				// Iterate through all texture channels assigned to the effect and
