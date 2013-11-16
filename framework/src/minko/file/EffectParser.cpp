@@ -636,7 +636,7 @@ EffectParser::parseUniformDefaultValues(const Json::Value&		contextNode,
 	else if (contextNode.isString())
 	{
 		auto textureFilename = contextNode.asString();
-		int pos = _resolvedFilename.find_last_of("/");
+		int pos = _resolvedFilename.find_last_of(file::separator);
 		auto options = _options;
 
 		uniformTypeAndValue.first = UniformType::TEXTURE;
