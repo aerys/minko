@@ -112,6 +112,15 @@ namespace minko
 				return one;
 			}
 
+			inline static
+			ConstPtr
+			forward()
+			{
+				static ConstPtr forward = createConst(0.f, 0.f, -1.f);
+
+				return forward;
+			}
+
 			inline
 			float
 			z()
