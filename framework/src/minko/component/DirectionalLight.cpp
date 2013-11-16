@@ -27,7 +27,7 @@ using namespace minko::math;
 
 DirectionalLight::DirectionalLight() :
 	AbstractDiscreteLight("directionalLights"),
-	_worldDirection(Vector3::create(-1.f, 0.f, -1.f))
+	_worldDirection(Vector3::create(0.f, 0.f, -1.f))
 {
 	diffuse(1.f);
 	specular(1.f);
@@ -38,5 +38,5 @@ DirectionalLight::DirectionalLight() :
 void
 DirectionalLight::updateModelToWorldMatrix(std::shared_ptr<Matrix4x4> modelToWorld)
 {
-	modelToWorld->deltaTransform(Vector3::zAxis(), _worldDirection);
+	modelToWorld->deltaTransform(Vector3::forward(), _worldDirection);
 }
