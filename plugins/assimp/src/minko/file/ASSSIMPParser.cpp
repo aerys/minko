@@ -274,7 +274,7 @@ ASSIMPParser::createMeshSurface(scene::Node::Ptr minkoNode, const aiScene* scene
     minkoNode->addComponent(Surface::create(
 		_assetLibrary->geometry(std::string(mesh->mName.data)),
 		provider,
-		_assetLibrary->effect("effect/Basic.effect")
+		_options->effect()
     ));
 }
 
