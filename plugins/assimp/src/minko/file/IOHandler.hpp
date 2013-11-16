@@ -74,11 +74,15 @@ namespace minko
 				auto filename = std::string(pFile);
 				auto loader = _options->loaderFunction()(filename);
 				
-				Assimp::IOStream* stream;
+				Assimp::IOStream* stream = 0;
 
 				auto complete = loader->complete()->connect([&](file::AbstractLoader::Ptr loader)
 				{
 					stream = new minko::file::IOStream(loader->data());
+				});
+				auto error = loader->error()->connect([&](file::AbstractLoader::Ptr loader)
+				{
+					std::cerr << "error: could not load file '" << filename << "'" << std::endl;
 				});
 
 				loader->load(filename, _options);
