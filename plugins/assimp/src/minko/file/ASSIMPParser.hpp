@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 struct aiMesh;
 struct aiNode;
 struct aiScene;
+enum aiTextureType;
 
 namespace minko
 {
@@ -42,16 +43,19 @@ namespace minko
 			typedef std::shared_ptr<component::SceneManager>		SceneManagerPtr;
 			typedef Signal<LoaderPtr>::Slot							LoaderSignalSlot;
 			typedef std::unordered_map<LoaderPtr, LoaderSignalSlot>	LoaderToSlotMap;
+			typedef std::unordered_map<aiTextureType, std::string>	TextureTypeToName;
 
         private:
-            unsigned int                    _numDependencies;
-			unsigned int                    _numLoadedDependencies;
-            std::string                     _filename;
-            std::shared_ptr<AssetLibrary>   _assetLibrary;
-			std::shared_ptr<file::Options>	_options;
-			NodePtr							_symbol;
-			LoaderToSlotMap					_loaderCompleteSlots;
-			LoaderToSlotMap					_loaderErrorSlots;
+			static const TextureTypeToName			_textureTypeToName;
+
+            unsigned int							_numDependencies;
+			unsigned int							_numLoadedDependencies;
+            std::string								_filename;
+            std::shared_ptr<AssetLibrary>			_assetLibrary;
+			std::shared_ptr<file::Options>			_options;
+			NodePtr									_symbol;
+			LoaderToSlotMap							_loaderCompleteSlots;
+			LoaderToSlotMap							_loaderErrorSlots;
             
 		public:
 			inline static
@@ -74,6 +78,10 @@ namespace minko
 
 		private:
 			ASSIMPParser();
+
+			static
+			TextureTypeToName
+			initializeTextureTypeToName();
 
             void
 			createSceneTree(NodePtr minkoNode, const aiScene* scene, aiNode* ainode);

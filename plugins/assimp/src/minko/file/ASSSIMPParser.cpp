@@ -44,6 +44,18 @@ using namespace minko::component;
 using namespace minko::math;
 using namespace minko::file;
 
+const ASSIMPParser::TextureTypeToName ASSIMPParser::_textureTypeToName = ASSIMPParser::initializeTextureTypeToName();
+ASSIMPParser::TextureTypeToName
+ASSIMPParser::initializeTextureTypeToName()
+{
+	TextureTypeToName typeToString;
+
+	typeToString[aiTextureType_DIFFUSE] = "diffuseMap";
+	typeToString[aiTextureType_NORMALS] = "normalMap";
+
+	return typeToString;
+}
+
 ASSIMPParser::ASSIMPParser() :
 	_numDependencies(0),
 	_numLoadedDependencies(0)
@@ -142,6 +154,7 @@ ASSIMPParser::createSceneTree(scene::Node::Ptr minkoNode, const aiScene* scene, 
         aiMesh *mesh = scene->mMeshes[ainode->mMeshes[j]];
 		auto minkoMesh = scene::Node::create(mesh->mName.C_Str());
 
+		minkoMesh->addComponent(Transform::create());
 		createMeshGeometry(minkoMesh, mesh);
 		createMeshSurface(minkoMesh, scene, mesh);
 		minkoNode->addChild(minkoMesh);
@@ -261,19 +274,19 @@ ASSIMPParser::createMeshSurface(scene::Node::Ptr minkoNode, const aiScene* scene
     int texIndex = 0;
     aiString path;
     aiReturn texFound = AI_SUCCESS;
-    
-	if (texFound == AI_SUCCESS)
-    {
-		texFound = material->GetTexture(aiTextureType_DIFFUSE, texIndex, &path);
 
-        auto texturePath = std::string(path.data);
+	for (auto& typeAndString : _textureTypeToName)
+	{
+		if ((texFound = material->GetTexture(typeAndString.first, 0, &path)) == AI_SUCCESS)
+		{
+			auto texturePath = std::string(path.data);
+			auto texture = _assetLibrary->texture(texturePath);
 
-		if (!texturePath.empty() && _assetLibrary->texture(texturePath))
-			provider->set("diffuseMap", _assetLibrary->texture(texturePath));
+			if (!texturePath.empty() && texture)
+				provider->set(typeAndString.second, texture);
+		}
+	}
 
-        texIndex++;
-    }
-    
     minkoNode->addComponent(Surface::create(
 		_assetLibrary->geometry(std::string(mesh->mName.data)),
 		provider,
@@ -375,25 +388,24 @@ ASSIMPParser::parseDependencies(const std::string& 	filename,
 								const aiScene*		scene)
 {
 	std::list<std::string> loading;
+	aiString path;
 
 	for (unsigned int m = 0; m < scene->mNumMaterials; m++)
 	{
-		int texIndex = 0;
-		aiReturn texFound = AI_SUCCESS;
-		aiString path;
-
-		while (texFound == AI_SUCCESS)
+		for (auto& textureTypeAndName : _textureTypeToName)
 		{
-			texFound = scene->mMaterials[m]->GetTexture(aiTextureType_DIFFUSE, texIndex, &path);
-			std::string filename(path.data);
+			aiReturn texFound = scene->mMaterials[m]->GetTexture(textureTypeAndName.first, 0, &path);
 
-			if (!filename.empty() && std::find(loading.begin(), loading.end(), filename) == loading.end())
+			if (texFound == AI_SUCCESS)
 			{
-				loading.push_back(filename);
-				loadTexture(filename, _options);
-			}
+				std::string filename(path.data);
 
-			texIndex++;
+				if (!filename.empty() && std::find(loading.begin(), loading.end(), filename) == loading.end())
+				{
+					loading.push_back(filename);
+					loadTexture(filename, _options);
+				}
+			}
 		}
 	}
 }
