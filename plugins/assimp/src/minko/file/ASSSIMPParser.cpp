@@ -106,7 +106,7 @@ ASSIMPParser::parse(const std::string&					filename,
     //Init the assimp scene
     Assimp::Importer importer;
 
-	//importer.SetIOHandler(new IOHandler(options));
+	importer.SetIOHandler(new IOHandler(options));
 
 	const aiScene* scene = importer.ReadFileFromMemory(
 		&data[0],
@@ -399,6 +399,8 @@ ASSIMPParser::parseDependencies(const std::string& 	filename,
 			if (texFound == AI_SUCCESS)
 			{
 				std::string filename(path.data);
+
+				std::cout << textureTypeAndName.second << ": " << filename << std::endl;
 
 				if (!filename.empty() && std::find(loading.begin(), loading.end(), filename) == loading.end())
 				{
