@@ -91,7 +91,7 @@ ASSIMPParser::parse(const std::string&					filename,
 					const std::vector<unsigned char>&	data,
 					std::shared_ptr<AssetLibrary>	    assetLibrary)
 {
-	int pos = resolvedFilename.find_last_of("/");
+	int pos = resolvedFilename.find_last_of(file::separator);
 
 	if (pos > 0)
 	{
