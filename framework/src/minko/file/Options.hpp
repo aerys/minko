@@ -30,10 +30,11 @@ namespace minko
 		private:
 			typedef std::shared_ptr<AbstractLoader>								AbsLoaderPtr;
 			typedef std::shared_ptr<data::Provider>								ProviderPtr;
+			typedef std::shared_ptr<material::Material>							MaterialPtr;
 
 		public:
 			typedef std::shared_ptr<Options>									Ptr;
-			typedef std::function<ProviderPtr(const std::string&, ProviderPtr)> MaterialFunction;
+			typedef std::function<MaterialPtr(const std::string&, MaterialPtr)> MaterialFunction;
 			typedef std::function<AbsLoaderPtr(const std::string&)>				LoaderFunction;
 			typedef std::function<const std::string(const std::string&)>		UriFunction;
 
@@ -44,7 +45,7 @@ namespace minko
 
             bool                                        _generateMipMaps;
             std::shared_ptr<render::Effect>             _effect;
-			std::shared_ptr<data::Provider>				_material;
+			MaterialPtr									_material;
 			MaterialFunction							_materialFunction;
 			LoaderFunction								_loaderFunction;
 			UriFunction									_uriFunction;
@@ -123,7 +124,7 @@ namespace minko
             }
 
 			inline
-			std::shared_ptr<data::Provider>
+			MaterialPtr
 			material()
 			{
 				return _material;
@@ -131,7 +132,7 @@ namespace minko
 
 			inline
 			void
-			material(std::shared_ptr<data::Provider> material)
+			material(MaterialPtr material)
 			{
 				_material = material;
 			}
