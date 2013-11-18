@@ -124,6 +124,10 @@ Pass::selectProgram(std::shared_ptr<data::Container> data,
 					break;
             }
 
+#ifdef MINKO_NO_GLSL_STRUCT
+			defines += "#define MINKO_NO_GLSL_STRUCT\n";
+#endif // MINKO_NO_GLSL_STRUCT
+
 			// for program template by adding #defines
 			auto vs = Shader::create(
 				_programTemplate->context(),
