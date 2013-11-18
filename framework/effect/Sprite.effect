@@ -12,8 +12,8 @@
 		"uDiffuseMap"			: "material.diffuseMap",
 		"uDiffuseTint"			: "material.diffuseTint",
 		"uModelToWorldMatrix"	: "transform.modelToWorldMatrix",
-		"uViewMatrix"			: "camera.viewMatrix",
-		"uProjectionMatrix"		: "camera.projectionMatrix"
+		"uViewMatrix"			: { "property" : "camera.viewMatrix", "source" : "renderer" },
+		"uProjectionMatrix"		: { "property" : "camera.projectionMatrix", "source" : "renderer" }
 	},
 	
 	"macroBindings"	: {
