@@ -53,7 +53,7 @@ namespace minko
 			Signal<Ptr>::Ptr											_renderingEnd;
 			std::shared_ptr<render::Texture>							_renderTarget;
 
-			std::list<std::shared_ptr<Surface>>							_toCollect;
+			std::set<std::shared_ptr<Surface>>							_toCollect;
 
 			Signal<AbsCtrlPtr, NodePtr>::Slot							_targetAddedSlot;
 			Signal<AbsCtrlPtr, NodePtr>::Slot							_targetRemovedSlot;
