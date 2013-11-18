@@ -52,6 +52,9 @@ namespace minko
 			std::shared_ptr<Signal<Ptr, const std::string&>>		_propertyRemoved;
 
 		public:
+			static const std::string NO_STRUCT_SEP;
+
+		public:
 			static
 			Ptr
 			create()

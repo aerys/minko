@@ -22,6 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::data;
 
+/*static*/ const std::string Provider::NO_STRUCT_SEP = "_";
+
 Provider::Provider() :
 	enable_shared_from_this(),
 	_names(),
