@@ -83,7 +83,7 @@ DrawCall::bind(ContainerPtr data, ContainerPtr rendererData, ContainerPtr rootDa
 {
 	reset();
 
-	_data			= data;
+	_targetData		= data;
 	_rendererData	= rendererData;
 	_rootData		= rootData;
 
@@ -107,9 +107,9 @@ DrawCall::bindIndexBuffer()
 	_numIndices		= 0;
 
 	// Note: index buffer can only be held by the target node's data container!
-	if (_data->hasProperty(propertyName))
+	if (_targetData->hasProperty(propertyName))
 	{
-		auto indexBuffer	= _data->get<IndexBuffer::Ptr>(propertyName);
+		auto indexBuffer	= _targetData->get<IndexBuffer::Ptr>(propertyName);
 		_indexBuffer		= indexBuffer->id();
 		_numIndices			= indexBuffer->data().size();
 	}
@@ -117,7 +117,7 @@ DrawCall::bindIndexBuffer()
 	if (_referenceChangedSlots.count(propertyName) == 0)
 	{
 		_referenceChangedSlots[propertyName].push_back(
-			_data->propertyReferenceChanged(propertyName)->connect(std::bind(
+			_targetData->propertyReferenceChanged(propertyName)->connect(std::bind(
 				&DrawCall::bindIndexBuffer,
 				shared_from_this())
 			)
@@ -480,7 +480,7 @@ Container::Ptr
 DrawCall::getDataContainer(const data::BindingSource& source) const
 {
 	if (source == data::BindingSource::TARGET)
-		return _data;
+		return _targetData;
 	else if (source == data::BindingSource::RENDERER)
 		return _rendererData;
 	else if (source == data::BindingSource::ROOT)
@@ -493,7 +493,7 @@ DrawCall::getDataContainer(const data::BindingSource& source) const
 bool
 DrawCall::dataHasProperty(const std::string& propertyName)
 {
-    return _data->hasProperty(propertyName) || _rendererData->hasProperty(propertyName)
+    return _targetData->hasProperty(propertyName) || _rendererData->hasProperty(propertyName)
 		|| _rootData->hasProperty(propertyName);
 }
 */
