@@ -373,6 +373,8 @@ Geometry::cast(std::shared_ptr<math::Ray>	ray,
 	auto v = 0.f;
 	auto t = 0.f;
 
+	bool intersect = false;
+
 	for (auto i = 0; i < numIndices; i += 3)
 	{
 		v0->copyFrom(xyzPtr + indicesData[i] * xyzVertexSize);
@@ -399,6 +401,8 @@ Geometry::cast(std::shared_ptr<math::Ray>	ray,
 		v = ray->origin()->dot(qvec) * invDot;
 		if (v < 0.f || u + v > 1.f)
 			continue;
+
+		intersect = true;
 
 		t = edge2->dot(qvec) * invDot;
 		if (t < minDistance)
@@ -428,6 +432,8 @@ Geometry::cast(std::shared_ptr<math::Ray>	ray,
 		if (hitNormal)
 			getHitNormal(triangle, hitNormal);
 	}
+
+	return intersect;
 }
 
 void
