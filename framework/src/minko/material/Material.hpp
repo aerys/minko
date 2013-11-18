@@ -41,6 +41,17 @@ namespace minko
 				return std::shared_ptr<Material>(new Material());
 			}
 
+			inline static
+			Ptr
+			create(Ptr source)
+			{
+				auto mat = create();
+
+				mat->copyFrom(source);
+
+				return mat;
+			}
+
 		protected:
 			Material() :
 				data::StructureProvider("material")
