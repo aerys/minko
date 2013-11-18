@@ -213,11 +213,11 @@ OpenGLES2Context::configureViewport(const uint x,
 }
 
 void
-OpenGLES2Context::clear(float 			red,
-					    float 			green,
-					    float 			blue,
-					    float 			alpha,
-					    float 			depth,
+OpenGLES2Context::clear(float 	red,
+					    float 	green,
+					    float 	blue,
+					    float 	alpha,
+					    float 	depth,
 					    uint 	stencil,
 					    uint 	mask)
 {
