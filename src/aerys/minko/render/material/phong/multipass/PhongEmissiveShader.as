@@ -1,7 +1,6 @@
 package aerys.minko.render.material.phong.multipass
 {
     import aerys.minko.render.RenderTarget;
-    import aerys.minko.render.material.Material;
     import aerys.minko.render.material.basic.BasicShader;
     import aerys.minko.render.resource.texture.ITextureResource;
     import aerys.minko.render.shader.SFloat;
