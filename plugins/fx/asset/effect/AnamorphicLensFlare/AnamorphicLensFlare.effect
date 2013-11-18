@@ -98,8 +98,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 			"name" : "threshold",
 			"uniformBindings" : {
 				"uInputTex"		: "backbuffer",
-				"uScale"		: [ 200.0, 200.0, 200.0, 1.0 ],
-				"uBias"			: [ -0.99, -0.99, -0.99, 0.0 ]
+				"uScale"		: { "property" : "thresholdScale", "default" : [ 200.0, 200.0, 200.0, 1.0 ] },
+				"uBias"			: { "property" : "thresholdBias", "default" : [-0.99, -0.99, -0.99, 0.0 ] }
 			},
 			"target" : { "name" : "blur input 1", "width" : 256, "height" : 256 },
 			"samplerStates" : { "uInputTex"	: { "textureFilter" : "linear" } },
