@@ -63,12 +63,7 @@ namespace minko
 			Ptr
 			create(Ptr source)
 			{
-				auto provider = create();
-
-				provider->_names = source->_names;
-				provider->_values = source->_values;
-
-				return provider;
+				return create()->copyFrom(source);
 			}
 
 			inline
@@ -188,6 +183,9 @@ namespace minko
 
 			void
 			swap(const std::string& propertyName1, const std::string& propertyName2, bool skipPropertyNameFormatting = false);
+
+			Ptr
+			copyFrom(Ptr source);
 
 		protected:
 			Provider();
