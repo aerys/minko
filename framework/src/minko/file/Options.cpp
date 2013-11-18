@@ -19,7 +19,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "Options.hpp"
 
-#include "minko/data/Provider.hpp"
+#include "minko/material/Material.hpp"
 #include "minko/file/Loader.hpp"
 
 using namespace minko;
@@ -28,7 +28,7 @@ using namespace minko::file;
 Options::Options(std::shared_ptr<render::AbstractContext> context) :
 	_context(context),
     _generateMipMaps(false),
-	_material(data::Provider::create())
+	_material(material::Material::create())
 {
 #ifdef DEBUG
 	includePaths().insert("bin/debug");
@@ -36,7 +36,7 @@ Options::Options(std::shared_ptr<render::AbstractContext> context) :
 	includePaths().insert("bin/release");
 #endif
 
-	_materialFunction = [](const std::string&, data::Provider::Ptr material) -> data::Provider::Ptr
+	_materialFunction = [](const std::string&, material::Material::Ptr material) -> material::Material::Ptr
 	{ 
 		return material;
 	};
