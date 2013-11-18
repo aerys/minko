@@ -348,6 +348,7 @@ Geometry::cast(std::shared_ptr<math::Ray>	ray,
 {
 	static const auto EPSILON = 0.00001f;
 
+	auto hit = false;
 	auto& indicesData = _indexBuffer->data();
 	auto numIndices = indicesData.size();
 
@@ -374,8 +375,6 @@ Geometry::cast(std::shared_ptr<math::Ray>	ray,
 	auto u = 0.f;
 	auto v = 0.f;
 	auto t = 0.f;
-
-	bool intersect = false;
 
 	for (auto i = 0; i < numIndices; i += 3)
 	{
@@ -404,13 +403,12 @@ Geometry::cast(std::shared_ptr<math::Ray>	ray,
 		if (v < 0.f || u + v > 1.f)
 			continue;
 
-		intersect = true;
-
 		t = edge2->dot(qvec) * invDot;
 		if (t < minDistance)
 		{
 			minDistance = t;
 			triangle = i;
+			hit = true;
 
 			if (hitUv)
 			{
@@ -435,7 +433,7 @@ Geometry::cast(std::shared_ptr<math::Ray>	ray,
 			getHitNormal(triangle, hitNormal);
 	}
 
-	return intersect;
+	return hit;
 }
 
 void
