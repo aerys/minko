@@ -117,7 +117,16 @@ namespace minko
 		class ValueBase;
 		class Value;
 		class Container;
-        typedef std::unordered_map<std::string, std::string> BindingMap;
+        
+		enum class BindingSource
+		{
+			TARGET,
+			RENDERER,
+			ROOT
+		};
+
+		typedef std::pair<std::string, BindingSource> Binding;
+		typedef std::unordered_map<std::string, Binding> BindingMap;
 
 		enum class MacroBindingDefaultValueSemantic
 		{
@@ -138,7 +147,7 @@ namespace minko
 			MacroBindingDefaultValue value;
 		};
 
-		typedef std::tuple<std::string, MacroBindingDefault, int, int>	MacroBinding;
+		typedef std::tuple<std::string, BindingSource, MacroBindingDefault, int, int>	MacroBinding;
 
 		typedef std::unordered_map<std::string, MacroBinding> MacroBindingMap;
 	}
