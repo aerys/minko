@@ -238,8 +238,11 @@ ASSIMPParser::createMeshGeometry(scene::Node::Ptr minkoNode, aiMesh* mesh)
 void
 ASSIMPParser::createMeshSurface(scene::Node::Ptr minkoNode, const aiScene* scene, aiMesh* mesh)
 {
-    auto provider = material::Material::create();
+    auto provider = material::Material::create(_options->material());
+	aiString materialName;
     aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
+
+	material->Get(AI_MATKEY_NAME, materialName);
     
     //Diffuse color
     aiColor4D diffuse;
@@ -270,6 +273,8 @@ ASSIMPParser::createMeshSurface(scene::Node::Ptr minkoNode, const aiScene* scene
     if (AI_SUCCESS == material->Get(AI_MATKEY_COLOR_EMISSIVE, shininess))
         provider->set("shininess", shininess);
     */
+
+	provider = _options->materialFunction()(materialName.C_Str(), provider);
 
     int texIndex = 0;
     aiString path;
