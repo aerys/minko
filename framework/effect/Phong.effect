@@ -58,9 +58,7 @@
 			"blendMode"			: ["one", "zero"],
 			"depthTest"			: [true, "less_equal"],
 			"triangleCulling"	: "back",
-			
-			"configuration"		: [ "toto" ],
-			
+						
 			"uniformBindings" : {
 				"normalMap"					: "material.normalMap",
 				"specularMap"				: "material.specularMap",
