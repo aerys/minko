@@ -369,7 +369,9 @@ main(int argc, char** argv)
 
 	auto options = sceneManager->assets()->defaultOptions();
 
-	options->material(material::Material::create()->set("triangleCulling", render::TriangleCulling::FRONT));
+	options->material(std::static_pointer_cast<material::Material>(
+		material::Material::create()->set("triangleCulling", render::TriangleCulling::FRONT)
+	));
 	options->generateMipmaps(true);
 
 	// load sponza lighting effect and set it as the default effect
