@@ -40,8 +40,8 @@ ArrayProvider::index(unsigned int index)
 
 	for (auto& formattedPropertyName : propertyNames())
 	{
-		auto&	propertyName				= unformatPropertyName(formattedPropertyName);
-		auto&	newFormattedPropertyName	= formatPropertyName(propertyName);
+		auto propertyName				= unformatPropertyName(formattedPropertyName);
+		auto newFormattedPropertyName	= formatPropertyName(propertyName);
 
 		swap(formattedPropertyName, newFormattedPropertyName, true);
 	}
