@@ -492,6 +492,36 @@ EffectParser::parseTriangleCulling(const Json::Value& contextNode,
 }
 
 void
+EffectParser::parseBindingNameAndSource(const Json::Value& contextNode, std::string& propertyName, data::BindingSource& source)
+{
+	source = data::BindingSource::TARGET;
+	if (contextNode.isString())
+		propertyName = contextNode.asString();
+	else if (contextNode.isObject())
+	{
+		auto propertyValue = contextNode.get("property", 0);
+		auto sourceValue = contextNode.get("source", 0);
+
+		if (propertyValue.isString())
+			propertyName = propertyValue.asString();
+		else
+			throw;
+
+		if (sourceValue.isString())
+		{
+			auto sourceString = sourceValue.asString();
+
+			if (sourceString == "target")
+				source = data::BindingSource::TARGET;
+			else if (sourceString == "renderer")
+				source = data::BindingSource::RENDERER;
+			else if (sourceString == "root")
+				source = data::BindingSource::ROOT;
+		}
+	}
+}
+
+void
 EffectParser::parseBindings(const Json::Value&		contextNode,
 						    data::BindingMap&		attributeBindings,
 						    data::BindingMap&		uniformBindings,
@@ -502,15 +532,23 @@ EffectParser::parseBindings(const Json::Value&		contextNode,
 	auto attributeBindingsValue = contextNode.get("attributeBindings", 0);
 	if (attributeBindingsValue.isObject())
 		for (auto propertyName : attributeBindingsValue.getMemberNames())
-			attributeBindings[propertyName] = attributeBindingsValue.get(propertyName, 0).asString();
+			parseBindingNameAndSource(
+				attributeBindingsValue.get(propertyName, 0),
+				attributeBindings[propertyName].first,
+				attributeBindings[propertyName].second
+			);
 
 	parseUniformBindings(contextNode, uniformBindings, uniformDefaultValues);
 			
 	auto stateBindingsValue = contextNode.get("stateBindings", 0);
 	if (stateBindingsValue.isObject())
 		for (auto propertyName : stateBindingsValue.getMemberNames())
-			stateBindings[propertyName] = stateBindingsValue.get(propertyName, 0).asString();
-
+			parseBindingNameAndSource(
+				stateBindingsValue.get(propertyName, 0),
+				stateBindings[propertyName].first,
+				stateBindings[propertyName].second
+			);
+	
 	parseMacroBindings(contextNode, macroBindings);
 }
 
@@ -518,57 +556,59 @@ void
 EffectParser::parseMacroBindings(const Json::Value&	contextNode, data::MacroBindingMap&	macroBindings)
 {
 	auto macroBindingsValue = contextNode.get("macroBindings", 0);
+
 	if (macroBindingsValue.isObject())
-	for (auto propertyName : macroBindingsValue.getMemberNames())
 	{
-		auto macroBindingValue = macroBindingsValue.get(propertyName, 0);
-		minko::data::MacroBindingDefault bindingDefault;
-		
-		bindingDefault.semantic = data::MacroBindingDefaultValueSemantic::UNSET;
-
-		if (macroBindingValue.isString())
-			macroBindings[propertyName] = data::MacroBinding(macroBindingValue.asString(), bindingDefault, -1, -1);
-		else if (macroBindingValue.isObject())
+		for (auto propertyName : macroBindingsValue.getMemberNames())
 		{
-			auto nameValue = macroBindingValue.get("property", 0);
-			auto minValue = macroBindingValue.get("min", -1);
-			auto maxValue = macroBindingValue.get("max", -1);
-			auto defaultValue = macroBindingValue.get("default", "");
+			auto macroBindingValue = macroBindingsValue.get(propertyName, 0);
+			minko::data::MacroBindingDefault bindingDefault = std::get<2>(macroBindings[propertyName]);
+		
+			bindingDefault.semantic = data::MacroBindingDefaultValueSemantic::UNSET;
 
-			if (defaultValue.isInt())
+			parseBindingNameAndSource(
+				macroBindingValue,
+				std::get<0>(macroBindings[propertyName]),
+				std::get<1>(macroBindings[propertyName])
+			);
+
+			if (macroBindingValue.isObject())
+			{
+				auto nameValue = macroBindingValue.get("property", 0);
+				auto minValue = macroBindingValue.get("min", -1);
+				auto maxValue = macroBindingValue.get("max", -1);
+				auto defaultValue = macroBindingValue.get("default", "");
+
+				if (defaultValue.isInt())
+				{
+					bindingDefault.semantic = data::MacroBindingDefaultValueSemantic::VALUE;
+					bindingDefault.value.value = defaultValue.asInt();
+				}
+				else if (defaultValue.isBool())
+				{
+					bindingDefault.semantic = data::MacroBindingDefaultValueSemantic::PROPERTY_EXISTS;
+					bindingDefault.value.propertyExists = defaultValue.asBool();
+				}
+
+				//if (!nameValue.isString() || !minValue.isInt() || !maxValue.isInt())
+				//	throw;
+
+				auto& min = std::get<3>(macroBindings[propertyName]);
+				auto& max = std::get<4>(macroBindings[propertyName]);
+
+				min = minValue.asInt();
+				max = maxValue.asInt();
+			}
+			else if (macroBindingValue.isInt())
 			{
 				bindingDefault.semantic = data::MacroBindingDefaultValueSemantic::VALUE;
-				bindingDefault.value.value = defaultValue.asInt();
+				bindingDefault.value.value = macroBindingValue.asInt();
 			}
-			else if (defaultValue.isBool())
+			else if (macroBindingValue.isBool())
 			{
 				bindingDefault.semantic = data::MacroBindingDefaultValueSemantic::PROPERTY_EXISTS;
-				bindingDefault.value.propertyExists = defaultValue.asBool();
+				bindingDefault.value.propertyExists = macroBindingValue.asBool();
 			}
-
-			//if (!nameValue.isString() || !minValue.isInt() || !maxValue.isInt())
-			//	throw;
-
-			macroBindings[propertyName] = data::MacroBinding(
-				nameValue.asString(),
-				bindingDefault,
-				minValue.asInt(),
-				maxValue.asInt()
-			);
-		}
-		else if (macroBindingValue.isInt())
-		{
-			bindingDefault.semantic = data::MacroBindingDefaultValueSemantic::VALUE;
-			bindingDefault.value.value = macroBindingValue.asInt();
-
-			macroBindings[propertyName] = data::MacroBinding("", bindingDefault, -1, -1);
-		}
-		else if (macroBindingValue.isBool())
-		{
-			bindingDefault.semantic = data::MacroBindingDefaultValueSemantic::PROPERTY_EXISTS;
-			bindingDefault.value.propertyExists = macroBindingValue.asBool();
-
-			macroBindings[propertyName] = data::MacroBinding("", bindingDefault, -1, -1);
 		}
 	}
 }
@@ -584,18 +624,22 @@ EffectParser::parseUniformBindings(const Json::Value&	contextNode,
 		{
 			auto uniformBindingValue = uniformBindingsValue.get(propertyName, 0);
 
-			if (uniformBindingValue.isString())
-				uniformBindings[propertyName] = uniformBindingValue.asString();
-			else if (uniformBindingValue.isObject())
+			parseBindingNameAndSource(
+				uniformBindingValue,
+				uniformBindings[propertyName].first,
+				uniformBindings[propertyName].second
+			);
+			
+			if (uniformBindingValue.isObject())
 			{
 				auto nameValue = uniformBindingValue.get("property", 0);
 				auto defaultValue = uniformBindingValue.get("default", "");
 
-				if (nameValue.isString())
-					uniformBindings[propertyName] = nameValue.asString();
-
-				if (defaultValue.isArray() || defaultValue.isNumeric() || defaultValue.isString())
+				if (defaultValue.isArray() || defaultValue.isNumeric()
+					|| (defaultValue.isString() && !defaultValue.asString().empty()))
+				{
 					parseUniformDefaultValues(defaultValue, uniformDefaultValues[propertyName]);
+				}
 			}
 			else if (uniformBindingValue.isArray() || uniformBindingValue.isNumeric())
 				parseUniformDefaultValues(uniformBindingValue, uniformDefaultValues[propertyName]);

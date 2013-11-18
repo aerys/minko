@@ -150,18 +150,12 @@ namespace minko
 
 			void
 			bindStates();
-
+			
 			void
-			bindVertexAttribute(const std::string& propertyName, int location, int vertexBufferId);
-
+			bindVertexAttribute(const std::string& propertyName, int location, uint& vertexBufferId);
+			
 			void
-			watchVertexAttributeRefChange(ContainerPtr, const std::string& propertyName, int location, int vertexBufferId);
-
-			void
-			bindTextureSampler2D(const std::string& propertyName, int location, int textureId, const SamplerState&);
-
-			void
-			watchTextureSampler2DRefChange(ContainerPtr, const std::string& propertyName, int location, int textureId, const SamplerState&);
+			bindTextureSampler2D(const std::string& propertyName, int location, uint& textureId, const SamplerState&);
 
 			void
 			bindUniform(const std::string& propertyName, ProgramInputs::Type, int location);
@@ -169,38 +163,46 @@ namespace minko
 			void
 			watchUniformRefChange(ContainerPtr, const std::string& propertyName, ProgramInputs::Type, int location);
 
-            template <typename T>
-            T
-            getDataProperty(const std::string& propertyName)
-            {
-                //watchProperty(propertyName);
-
-                if (_data->hasProperty(propertyName))
-                    return _data->get<T>(propertyName);
-
-                if (_rootData->hasProperty(propertyName))
-                    return _rootData->get<T>(propertyName);
-
-				std::stringstream stream;
-				stream << "failed to find property \'" << propertyName << "' in drawcall's providers." << std::endl;
-				throw std::logic_error(stream.str());
-            }
-
 			template <typename T>
             T
-            getDataProperty(const std::string& propertyName, T defaultValue)
+            getDataProperty(const data::BindingMap&		bindings,
+							std::string					propertyName,
+							T							defaultValue)
             {
-				if (dataHasProperty(propertyName))
-					return _data->get<T>(propertyName);
+				if (bindings.count(propertyName))
+				{
+					auto &binding = bindings.at(propertyName);
+					const data::BindingSource&	source = std::get<1>(binding);
+
+					propertyName = std::get<0>(binding);
+
+					switch (source)
+					{
+					case data::BindingSource::TARGET:
+						if (_data->hasProperty(propertyName))
+							return _data->get<T>(propertyName);
+						break;
+					case data::BindingSource::RENDERER:
+						if (_rendererData->hasProperty(propertyName))
+							return _rendererData->get<T>(propertyName);
+						break;
+					case data::BindingSource::ROOT:
+						if (_rootData->hasProperty(propertyName))
+							return _rootData->get<T>(propertyName);
+						break;
+					}
+				}
 
 				return defaultValue;
             }
 
 			ContainerPtr
-			getDataContainer(const std::string& propertyName) const;
+			getDataContainer(const data::BindingSource& source) const;
 
+			/*
             bool
             dataHasProperty(const std::string& propertyName);
+			*/
 		};		
 	}
 }
