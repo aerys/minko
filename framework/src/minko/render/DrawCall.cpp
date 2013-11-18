@@ -116,9 +116,12 @@ DrawCall::bindIndexBuffer()
 
 	if (_referenceChangedSlots.count(propertyName) == 0)
 	{
-		_referenceChangedSlots[propertyName] = _data->propertyReferenceChanged(propertyName)->connect(std::bind(
-			&DrawCall::bindIndexBuffer,
-			shared_from_this()));
+		_referenceChangedSlots[propertyName].push_back(
+			_data->propertyReferenceChanged(propertyName)->connect(std::bind(
+				&DrawCall::bindIndexBuffer,
+				shared_from_this())
+			)
+		);
 	}
 }
 
