@@ -227,7 +227,7 @@ Renderer::addSurface(Surface::Ptr surface)
 		std::placeholders::_2
 	));
 
-	_toCollect.push_front(surface);
+	_toCollect.insert(surface);
 }
 
 void
@@ -254,7 +254,8 @@ Renderer::removeSurface(Surface::Ptr surface)
 void
 Renderer::removeSurfaceDrawcalls(Surface::Ptr surface)
 {
-	auto foundDrawcallsIt			= _surfaceDrawCalls.find(surface);
+	auto foundDrawcallsIt	= _surfaceDrawCalls.find(surface);
+
 	if (foundDrawcallsIt == _surfaceDrawCalls.end())
 		return;
 
@@ -356,5 +357,6 @@ void
 Renderer::surfaceTechniqueChanged(Surface::Ptr			surface, 
 								  const std::string&	technique)
 {
-	_toCollect.push_front(surface);
+	removeSurfaceDrawcalls(surface);
+	_toCollect.insert(surface);
 }
