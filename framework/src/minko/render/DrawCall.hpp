@@ -50,7 +50,7 @@ namespace minko
             static SamplerState                                         _defaultSamplerState;
 
 			std::shared_ptr<Program>									_program;
-			std::shared_ptr<data::Container>					        _data;
+			std::shared_ptr<data::Container>					        _targetData;
 			std::shared_ptr<data::Container>					        _rendererData;
             std::shared_ptr<data::Container>					        _rootData;
             const data::BindingMap&	                                    _attributeBindings;
@@ -179,8 +179,8 @@ namespace minko
 					switch (source)
 					{
 					case data::BindingSource::TARGET:
-						if (_data->hasProperty(propertyName))
-							return _data->get<T>(propertyName);
+						if (_targetData->hasProperty(propertyName))
+							return _targetData->get<T>(propertyName);
 						break;
 					case data::BindingSource::RENDERER:
 						if (_rendererData->hasProperty(propertyName))
