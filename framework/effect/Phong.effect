@@ -15,8 +15,8 @@
 		"diffuseMap"				: "material.diffuseMap",
 		"alphaMap"					: "material.alphaMap",
 		"alphaThreshold"			: "material.alphaThreshold",
-		"cameraPosition"			: "camera.position",
-		"worldToScreenMatrix"		: "camera.worldToScreenMatrix"
+		"worldToScreenMatrix"		: { "property" : "camera.worldToScreenMatrix", "source" : "renderer" },
+		"cameraPosition"			: { "property" : "camera.position", "source" : "renderer" }
 	},
 	
 	"stateBindings"	: {
@@ -32,12 +32,13 @@
 	},
 
 	"macroBindings"	: {
-		"DIFFUSE_MAP"				: "material.diffuseMap",
-		"NORMAL_MAP"				: "material.normalMap",
-		"SPECULAR_MAP"				: "material.specularMap",
-		"ALPHA_MAP"					: "material.alphaMap",
-		"ALPHA_THRESHOLD"			: "material.alphaThreshold",
-		"MODEL_TO_WORLD"			: "transform.modelToWorldMatrix"
+		"DIFFUSE_MAP"			: "material.diffuseMap",
+		"NORMAL_MAP"			: "material.normalMap",
+		"SPECULAR_MAP"			: "material.specularMap",
+		"ALPHA_MAP"				: "material.alphaMap",
+		"ALPHA_THRESHOLD"		: "material.alphaThreshold",
+		"MODEL_TO_WORLD"		: "transform.modelToWorldMatrix",
+		"SHININESS"				: "material.shininess"
 	},
 
 	"samplerStates" : {
@@ -93,17 +94,19 @@
 			"uniformBindings" : {
 				"normalMap"					: "material.normalMap",
 				"specularMap"				: "material.specularMap",
-				"shininess"					: "material.shininess"
+				"shininess"					: "material.shininess",
+				"ambientLights"				: { "property" : "ambientLights", "source" : "root" },
+				"directionalLights"			: { "property" : "directionalLights", "source" : "root" },
+				"spotLights"				: { "property" : "spotLights", "source" : "root" },
+				"pointLights"				: { "property" : "pointLights", "source" : "root" }
 			},
 			
 			"macroBindings" : {
-				"SHININESS"					: "material.shininess",
-				"MODEL_TO_WORLD"			: "transform.modelToWorldMatrix",
-				"NUM_AMBIENT_LIGHTS"		: "ambientLights.length",
-				"PRECOMPUTED_AMBIENT"		: "sumAmbients",
-				"NUM_DIRECTIONAL_LIGHTS"	: { "property" : "directionalLights.length", "max" : 8 },
-				"NUM_POINT_LIGHTS"			: { "property" : "pointLights.length", "max" : 8 },
-				"NUM_SPOT_LIGHTS"			: { "property" : "spotLights.length", "max" : 8 }
+				"NUM_AMBIENT_LIGHTS"		: { "property" : "ambientLights.length", "source" : "root" },
+				"PRECOMPUTED_AMBIENT"		: { "property" : "sumAmbients", "source" : "root" },
+				"NUM_DIRECTIONAL_LIGHTS"	: { "property" : "directionalLights.length", "source" : "root", "max" : 8 },
+				"NUM_POINT_LIGHTS"			: { "property" : "pointLights.length", "source" : "root", "max" : 8 },
+				"NUM_SPOT_LIGHTS"			: { "property" : "spotLights.length", "source" : "root", "max" : 8 }
 			},
 				
 			"passes"	: [{

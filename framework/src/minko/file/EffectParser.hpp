@@ -182,6 +182,9 @@ namespace minko
 						render::Shader::Type 			type);
 
 			void
+				parseBindingNameAndSource(const Json::Value& contextNode, std::string& name, data::BindingSource& source);
+
+			void
 			parseBindings(const Json::Value&		contextNode,
 						  data::BindingMap&			attributeBindings,
 						  data::BindingMap&			uniformBindings,
