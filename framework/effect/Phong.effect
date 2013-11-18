@@ -59,6 +59,39 @@
 			"depthTest"			: [true, "less_equal"],
 			"triangleCulling"	: "back",
 			
+			"configuration"		: [ "toto" ],
+			
+			"uniformBindings" : {
+				"normalMap"					: "material.normalMap",
+				"specularMap"				: "material.specularMap",
+				"shininess"					: "material.shininess"
+			},
+			
+			"macroBindings" : {
+				"SHININESS"					: "material.shininess",
+				"MODEL_TO_WORLD"			: "transform.modelToWorldMatrix",
+				"NUM_AMBIENT_LIGHTS"		: "ambientLights.length",
+				"PRECOMPUTED_AMBIENT"		: "sumAmbients",
+				"NUM_DIRECTIONAL_LIGHTS"	: { "property" : "directionalLights.length", "max" : 8 },
+				"NUM_POINT_LIGHTS"			: { "property" : "pointLights.length", "max" : 8 },
+				"NUM_SPOT_LIGHTS"			: { "property" : "spotLights.length", "max" : 8 }
+			},
+				
+			"passes"	: [{
+				"vertexShader" : { "includes" : [ "Phong.vertex.glsl" ] },
+				"fragmentShader" : { "includes" : [ "Phong.struct.glsl", "Phong.function.glsl", "Phong.fragment.glsl" ] }
+			}]
+		},
+		{
+			"name"				: "single-pass-no-glsl-struct",
+			//"fallback" 			: "multi-pass",
+			"fallback" 			: "basic",
+			"blendMode"			: ["one", "zero"],
+			"depthTest"			: [true, "less_equal"],
+			"triangleCulling"	: "back",
+			
+			"configuration"		: [ "no-glsl-struct" ],
+			
 			"uniformBindings" : {
 				"normalMap"					: "material.normalMap",
 				"specularMap"				: "material.specularMap",
