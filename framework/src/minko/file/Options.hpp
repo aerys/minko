@@ -41,6 +41,7 @@ namespace minko
 			std::shared_ptr<render::AbstractContext>	_context;
 			std::set<std::string>						_includePaths;
 			std::list<std::string>						_platforms;
+			std::list<std::string>						_userFlags;
 
             bool                                        _generateMipMaps;
             std::shared_ptr<render::Effect>             _effect;
@@ -92,6 +93,13 @@ namespace minko
 			platforms()
 			{
 				return _platforms;
+			}
+
+			inline
+			std::list<std::string>&
+			userFlags()
+			{
+				return _userFlags;
 			}
 
             inline
@@ -176,6 +184,9 @@ namespace minko
 
 			void
 			initializePlatforms();
+
+			void
+			initializeUserFlags();
 		};
 	}
 }

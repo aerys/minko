@@ -1,25 +1,62 @@
 #ifdef FRAGMENT_SHADER
 
-#ifdef NUM_AMBIENT_LIGHTS
-	uniform AmbientLight ambientLights[NUM_AMBIENT_LIGHTS];
-#endif // NUM_AMBIENT_LIGHTS
-
 #ifdef PRECOMPUTED_AMBIENT
 	uniform vec3 sumAmbients;
 #endif // PRECOMPUTED_AMBIENT
+	
+#ifndef MINKO_NO_GLSL_STRUCT
 
-#ifdef NUM_DIRECTIONAL_LIGHTS
-	uniform DirectionalLight directionalLights[NUM_DIRECTIONAL_LIGHTS];
-#endif // NUM_DIRECTIONAL_LIGHTS
+	#ifdef NUM_AMBIENT_LIGHTS
+		uniform AmbientLight		ambientLights[NUM_AMBIENT_LIGHTS];
+	#endif // NUM_AMBIENT_LIGHTS
 
-#ifdef NUM_POINT_LIGHTS
-	uniform PointLight pointLights[NUM_POINT_LIGHTS];
-#endif // NUM_POINT_LIGHTS
+	#ifdef NUM_DIRECTIONAL_LIGHTS
+		uniform DirectionalLight	directionalLights[NUM_DIRECTIONAL_LIGHTS];
+	#endif // NUM_DIRECTIONAL_LIGHTS
 
-#ifdef NUM_SPOT_LIGHTS
-	uniform SpotLight spotLights[NUM_SPOT_LIGHTS];
-#endif // NUM_SPOT_LIGHTS
+	#ifdef NUM_POINT_LIGHTS
+		uniform PointLight			pointLights[NUM_POINT_LIGHTS];
+	#endif // NUM_POINT_LIGHTS
 
+	#ifdef NUM_SPOT_LIGHTS
+		uniform SpotLight			spotLights[NUM_SPOT_LIGHTS];
+	#endif // NUM_SPOT_LIGHTS
+
+#else
+
+	#ifdef NUM_AMBIENT_LIGHTS
+		uniform vec3	ambientLights_color[NUM_AMBIENT_LIGHTS];
+		uniform float	ambientLights_ambient[NUM_AMBIENT_LIGHTS];
+	#endif // NUM_AMBIENT_LIGHTS
+
+	#ifdef NUM_DIRECTIONAL_LIGHTS
+		uniform vec3	directionalLights_color[NUM_DIRECTIONAL_LIGHTS];
+		uniform float	directionalLights_diffuse[NUM_DIRECTIONAL_LIGHTS];
+		uniform float	directionalLights_specular[NUM_DIRECTIONAL_LIGHTS];
+		uniform vec3	directionalLights_direction[NUM_DIRECTIONAL_LIGHTS];
+	#endif // NUM_DIRECTIONAL_LIGHTS
+
+	#ifdef NUM_POINT_LIGHTS
+		uniform vec3	pointLights_color[NUM_POINT_LIGHTS];
+		uniform float	pointLights_diffuse[NUM_POINT_LIGHTS];
+		uniform float	pointLights_specular[NUM_POINT_LIGHTS];
+		uniform float	pointLights_attenuationDistance[NUM_POINT_LIGHTS];
+		uniform vec3	pointLights_position[NUM_POINT_LIGHTS];
+	#endif // NUM_POINT_LIGHTS
+
+	#ifdef NUM_SPOT_LIGHTS
+		uniform vec3	spotLights_color[NUM_SPOT_LIGHTS];
+		uniform float	spotLights_diffuse[NUM_SPOT_LIGHTS];
+		uniform float	spotLights_specular[NUM_SPOT_LIGHTS];
+		uniform float	spotLights_attenuationDistance[NUM_SPOT_LIGHTS];
+		uniform vec3	spotLights_position[NUM_SPOT_LIGHTS];
+		uniform vec3	spotLights_direction[NUM_SPOT_LIGHTS];
+		uniform float	spotLights_cosInnerConeAngle[NUM_SPOT_LIGHTS];
+		uniform float	spotLights_cosOuterConeAngle[NUM_SPOT_LIGHTS];
+	#endif // NUM_SPOT_LIGHTS
+	
+#endif // MINKO_NO_GLSL_STRUCT
+	
 uniform vec4 diffuseColor;
 uniform sampler2D diffuseMap;
 uniform sampler2D normalMap;
@@ -70,7 +107,11 @@ void main(void)
 		#ifdef NUM_AMBIENT_LIGHTS
 			for (int i = 0; i < NUM_AMBIENT_LIGHTS; ++i)
 			{
-				phong += ambientLights[i].color * ambientLights[i].ambient;
+				#ifndef MINKO_NO_GLSL_STRUCT
+					phong += ambientLights[i].color * ambientLights[i].ambient;
+				#else
+					phong += ambientLights_color[i] * ambientLights_ambient[i];
+				#endif // MINKO_NO_GLSL_STRUCT
 			}
 		#endif // NUM_AMBIENT_LIGHTS
 
@@ -79,11 +120,19 @@ void main(void)
 	
 	#if defined NUM_DIRECTIONAL_LIGHTS || defined NUM_POINT_LIGHTS || defined NUM_SPOT_LIGHTS
 		
-		vec3 lightDirection	= vec3(0.0);
-		float contribution	= 0.0;
+		vec3	lightColor				= vec3(0.0);
+		vec3 	lightDirection			= vec3(0.0);
+		vec3	lightSpotDirection		= vec3(0.0);
+		vec3 	lightPosition			= vec3(0.0);
+		float	lightDiffuseCoeff		= 1.0;
+		float	lightSpecularCoeff		= 1.0;
+		float	lightAttenuationDist	= -1.0;
+		float	lightCosInnerAng		= 0.0;
+		float	lightCosOuterAng		= 0.0;
+		float 	contribution			= 0.0;
 		
-		vec3 normal		= normalize(vertexNormal);
-		vec3 eyeVector	= cameraPosition - vertexPosition;
+		vec3 	normal					= normalize(vertexNormal);
+		vec3 	eyeVector				= cameraPosition - vertexPosition;
 
 		#ifdef NORMAL_MAP
 			// warning: the normal vector must be normalized at this point!
@@ -99,13 +148,25 @@ void main(void)
 		//---------------------------
 		for (int i = 0; i < NUM_DIRECTIONAL_LIGHTS; ++i)
 		{
-			lightDirection	= normalize(-directionalLights[i].direction);
+			#ifndef MINKO_NO_GLSL_STRUCT
+				lightColor			= directionalLights[i].color;
+				lightDiffuseCoeff	= directionalLights[i].diffuse;
+				lightSpecularCoeff	= directionalLights[i].specular;
+				lightDirection		= directionalLights[i].direction;
+			#else
+				lightColor			= directionalLights_color[i];
+				lightDiffuseCoeff	= directionalLights_diffuse[i];
+				lightSpecularCoeff	= directionalLights_specular[i];
+				lightDirection		= directionalLights_direction[i];
+			#endif // MINKO_NO_GLSL_STRUCT
+	
+		
+			lightDirection	= normalize(-lightDirection);
 			#ifdef NORMAL_MAP
 				lightDirection = worldToTangentMatrix * lightDirection;
 			#endif // NORMAL_MAP
 			
-			contribution	= phong_diffuseReflection(normal, lightDirection)
-				* directionalLights[i].diffuse;
+			contribution = phong_diffuseReflection(normal, lightDirection) * lightDiffuseCoeff;
 
 			#ifdef SHININESS
 				contribution += phong_specularReflection(
@@ -113,10 +174,10 @@ void main(void)
 					lightDirection,
 					eyeVector,
 					shininess
-				) * directionalLights[i].specular * specularIntensity;
+				) * lightSpecularCoeff * specularIntensity;
 			#endif // SHININESS
 
-			phong += contribution * directionalLights[i].color;
+			phong += contribution * lightColor;
 		}
 		#endif // NUM_DIRECTIONAL_LIGHTS
 		
@@ -124,15 +185,28 @@ void main(void)
 		//---------------------
 		for (int i = 0; i < NUM_POINT_LIGHTS; ++i)
 		{
-			lightDirection			= pointLights[i].position - vertexPosition;
+			#ifndef MINKO_NO_GLSL_STRUCT
+				lightColor				= pointLights[i].color;
+				lightDiffuseCoeff		= pointLights[i].diffuse;
+				lightSpecularCoeff		= pointLights[i].specular;
+				lightAttenuationDist	= pointLights[i].attenuationDistance;
+				lightPosition			= pointLights[i].position;
+			#else
+				lightColor				= pointLights_color[i];
+				lightDiffuseCoeff		= pointLights_diffuse[i];
+				lightSpecularCoeff		= pointLights_specular[i];
+				lightAttenuationDist	= pointLights_attenuationDistance[i];
+				lightPosition			= pointLights_position[i];
+			#endif // MINKO_NO_GLSL_STRUCT
+		
+			lightDirection			= lightPosition - vertexPosition;
 			float distanceToLight 	= length(lightDirection);
 			lightDirection 			/= distanceToLight;
 			#ifdef NORMAL_MAP
 				lightDirection = worldToTangentMatrix * lightDirection;
 			#endif // NORMAL_MAP
 			
-			contribution	= phong_diffuseReflection(normal, lightDirection)
-				* pointLights[i].diffuse;
+			contribution	= phong_diffuseReflection(normal, lightDirection) * lightDiffuseCoeff;
 
 			#ifdef SHININESS
 				contribution += phong_specularReflection(
@@ -140,14 +214,14 @@ void main(void)
 					lightDirection,
 					eyeVector,
 					shininess
-				) * pointLights[i].specular * specularIntensity;
+				) * lightSpecularCoeff * specularIntensity;
 			#endif // SHININESS
 			
-			float attenuation = pointLights[i].attenuationDistance.x > 0.0
-				? max(0.0, 1.0 - distanceToLight / pointLights[i].attenuationDistance.x) 
+			float attenuation = lightAttenuationDist > 0.0
+				? max(0.0, 1.0 - distanceToLight / lightAttenuationDist) 
 				: 1.0;
 				
-			phong += attenuation * contribution * pointLights[i].color;
+			phong += attenuation * contribution * lightColor;
 		}
 		#endif // NUM_POINT_LIGHTS
 		
@@ -155,23 +229,43 @@ void main(void)
 		//--------------------
 		for (int i = 0; i < NUM_SPOT_LIGHTS; ++i)
 		{
-			lightDirection			= spotLights[i].position - vertexPosition;
+			#ifndef MINKO_NO_GLSL_STRUCT
+				lightColor				= spotLights[i].color;
+				lightDiffuseCoeff		= spotLights[i].diffuse;
+				lightSpecularCoeff		= spotLights[i].specular;
+				lightAttenuationDist	= spotLights[i].attenuationDistance;
+				lightPosition			= spotLights[i].position;
+				lightSpotDirection		= spotLights[i].direction;
+				lightCosInnerAng		= spotLights[i].cosInnerConeAngle;
+				lightCosOuterAng		= spotLights[i].cosOuterConeAngle;
+			#else
+				lightColor				= spotLights_color[i];
+				lightDiffuseCoeff		= spotLights_diffuse[i];
+				lightSpecularCoeff		= spotLights_specular[i];
+				lightAttenuationDist	= spotLights_attenuationDistance[i];
+				lightPosition			= spotLights_position[i];
+				lightSpotDirection		= spotLights_direction[i];
+				lightCosInnerAng		= spotLights_cosInnerConeAngle[i];
+				lightCosOuterAng		= spotLights_cosOuterConeAngle[i];
+			#endif // MINKO_NO_GLSL_STRUCT
+			
+			
+			lightDirection			= lightPosition - vertexPosition;
 			float distanceToLight	= length(lightDirection);
 			lightDirection			/= distanceToLight;
 			
-			vec3  spotDirection	= normalize(-spotLights[i].direction);						
-			float cosSpot		= dot(-lightDirection, spotDirection);
-			float cosOuter		= spotLights[i].cosOuterConeAngle;
+			lightSpotDirection	= normalize(-lightSpotDirection);						
+			float cosSpot		= dot(-lightDirection, lightSpotDirection);
 
-			if (cosOuter < cosSpot)
+			if (lightCosOuterAng < cosSpot)
 			{
 				#ifdef NORMAL_MAP
-					lightDirection	= worldToTangentMatrix * lightDirection;
-					spotDirection	= worldToTangentMatrix * spotDirection;
+					lightDirection		= worldToTangentMatrix * lightDirection;
+					// lightSpotDirection	= worldToTangentMatrix * lightSpotDirection;
 				#endif // NORMAL_MAP
 			
 				contribution	= phong_diffuseReflection(normal, lightDirection)
-					* spotLights[i].diffuse;
+					* lightDiffuseCoeff;
 
 				#ifdef SHININESS
 					contribution += phong_specularReflection(
@@ -179,20 +273,19 @@ void main(void)
 						lightDirection,
 						eyeVector,
 						shininess
-					) * spotLights[i].specular * specularIntensity;
+					) * lightSpecularCoeff * specularIntensity;
 				#endif // SHININESS
 				
-				float cosInner	= spotLights[i].cosInnerConeAngle;
-				float cutoff	= cosSpot < cosInner && cosOuter < cosInner 
-								? (cosSpot - cosOuter) / (cosInner - cosOuter) 
+				float cutoff	= cosSpot < lightCosInnerAng && lightCosOuterAng < lightCosInnerAng 
+								? (cosSpot - lightCosOuterAng) / (lightCosInnerAng - lightCosOuterAng) 
 								: 1.0;
 				contribution	*= cutoff;
 				
-				float attenuation = spotLights[i].attenuationDistance > 0.0
-					? max(0.0, 1.0 - distanceToLight / spotLights[i].attenuationDistance)
+				float attenuation = lightAttenuationDist > 0.0
+					? max(0.0, 1.0 - distanceToLight / lightAttenuationDist)
 					: 1.0;
 				
-				phong += attenuation * contribution * spotLights[i].color;
+				phong += attenuation * contribution * lightColor;
 			}
 		}
 		#endif // NUM_SPOT_LIGHTS
