@@ -165,18 +165,18 @@ package aerys.minko.render.material.phong
 					{
 						case ShadowMappingType.PCF:
 							if (lightType == PointLight.LIGHT_TYPE)
-								pushCubeShadowMappingPass(sceneBindings, lightId, passes);
+								pushCubeShadowMappingPass(sceneBindings, lightId, passes, true);
 							else
-								pushPCFShadowMappingPass(sceneBindings, lightId, passes);
+								pushPCFShadowMappingPass(sceneBindings, lightId, passes, true);
 							break ;
 						case ShadowMappingType.DUAL_PARABOLOID:
-							pushDualParaboloidShadowMappingPass(sceneBindings, lightId, passes);
+							pushDualParaboloidShadowMappingPass(sceneBindings, lightId, passes, true);
 							break ;
 						case ShadowMappingType.VARIANCE:
-							pushVarianceShadowMappingPass(sceneBindings, lightId, passes);
+							pushVarianceShadowMappingPass(sceneBindings, lightId, passes, true);
 							break ;
 						case ShadowMappingType.EXPONENTIAL:
-							pushExponentialShadowMappingPass(sceneBindings, lightId, passes);
+							pushExponentialShadowMappingPass(sceneBindings, lightId, passes, true);
 							break ;
 					}
 				}
@@ -194,7 +194,8 @@ package aerys.minko.render.material.phong
 		
 		private function pushPCFShadowMappingPass(sceneBindings	: DataBindingsProxy,
                                                   lightId 		: uint,
-                                                  passes 		: Vector.<Shader>) : void
+                                                  passes 		: Vector.<Shader>,
+												  fallback 		: Boolean = false) : void
 		{
 			var textureResource : TextureResource	= getLightProperty(
 				sceneBindings, lightId, 'shadowMap'
@@ -203,12 +204,13 @@ package aerys.minko.render.material.phong
 				textureResource.width, textureResource.height, textureResource, 0, 0xffffffff
 			);
 			
-			passes.push(new PCFShadowMapShader(lightId, lightId + 1, renderTarget));
+			passes.push(new PCFShadowMapShader(lightId, lightId + 1 + (fallback ? _id : 0), renderTarget));
 		}
 		
 		private function pushDualParaboloidShadowMappingPass(sceneBindings	: DataBindingsProxy,
 															 lightId 		: uint,
-															 passes 		: Vector.<Shader>) : void
+															 passes 		: Vector.<Shader>,
+															 fallback 		: Boolean = false) : void
 		{
 			var frontTextureResource : TextureResource	= getLightProperty(
 				sceneBindings, lightId, 'shadowMapFront'
@@ -225,14 +227,15 @@ package aerys.minko.render.material.phong
 			);
 			
 			passes.push(
-				new ParaboloidShadowMapShader(lightId, true, lightId + 0.5, frontRenderTarget),
-				new ParaboloidShadowMapShader(lightId, false, lightId + 1, backRenderTarget)
+				new ParaboloidShadowMapShader(lightId, true, lightId + 0.5 + (fallback ? _id : 0), frontRenderTarget),
+				new ParaboloidShadowMapShader(lightId, false, lightId + 1 + (fallback ? _id : 0), backRenderTarget)
 			);
 		}
 		
 		private function pushCubeShadowMappingPass(sceneBindings	: DataBindingsProxy,
 												   lightId 			: uint,
-												   passes 			: Vector.<Shader>) : void
+												   passes 			: Vector.<Shader>,
+												   fallback 		: Boolean = false) : void
 		{
 			var cubeTexture	: CubeTextureResource	= getLightProperty(
 				sceneBindings, lightId, 'shadowMap'
@@ -242,7 +245,7 @@ package aerys.minko.render.material.phong
 			for (var i : uint = 0; i < 6; ++i)
 				passes.push(new PCFShadowMapShader(
 					lightId,
-					lightId + .1 * i,
+					lightId + .1 * i + (fallback ? _id : 0),
 					new RenderTarget(textureSize, textureSize, cubeTexture, i, 0xffffffff),
 					i
 				));
@@ -250,7 +253,8 @@ package aerys.minko.render.material.phong
 		
 		private function pushVarianceShadowMappingPass(sceneBindings	: DataBindingsProxy,
 													   lightId 			: uint,
-													   passes 			: Vector.<Shader>) : void
+													   passes 			: Vector.<Shader>,
+													   fallback 		: Boolean = false) : void
 		{
 			var lightType	: uint	= getLightProperty(
 				sceneBindings, lightId, 'type'
@@ -270,7 +274,7 @@ package aerys.minko.render.material.phong
 					textureResource.width, textureResource.height, textureResource, 0, 0xffffffff
 				);
 				
-				passes.push(new VarianceShadowMapShader(lightId, 4, lightId + 1, renderTarget));
+				passes.push(new VarianceShadowMapShader(lightId, 4, lightId + 1 + (fallback ? _id : 0), renderTarget));
 			}
 			else
 			{
@@ -283,7 +287,7 @@ package aerys.minko.render.material.phong
 					passes.push(new VarianceShadowMapShader(
                         lightId,
                         i,
-                        lightId + .1 * i,
+                        lightId + .1 * i + (fallback ? _id : 0),
                         new RenderTarget(textureSize, textureSize, cubeTexture, i, 0xffffffff)
 					));
 			}
@@ -291,7 +295,8 @@ package aerys.minko.render.material.phong
 		
 		private function pushExponentialShadowMappingPass(sceneBindings	: DataBindingsProxy,
 														  lightId 		: uint,
-														  passes 		: Vector.<Shader>):void
+														  passes 		: Vector.<Shader>,
+														  fallback 		: Boolean = false):void
 		{
 			var lightType	: uint	= getLightProperty(
 				sceneBindings, lightId, 'type'
@@ -311,7 +316,7 @@ package aerys.minko.render.material.phong
 					textureResource.width, textureResource.height, textureResource, 0, 0xffffffff
 				);
 				
-				passes.push(new ExponentialShadowMapShader(lightId, 4, lightId + 1, renderTarget));
+				passes.push(new ExponentialShadowMapShader(lightId, 4, lightId + 1 + (fallback ? _id : 0), renderTarget));
 			}
 			else
 			{

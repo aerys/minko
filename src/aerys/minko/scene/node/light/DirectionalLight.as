@@ -4,6 +4,7 @@ package aerys.minko.scene.node.light
 	import aerys.minko.render.material.phong.PhongProperties;
 	import aerys.minko.scene.controller.light.DirectionalLightController;
 	import aerys.minko.scene.node.AbstractSceneNode;
+	import aerys.minko.type.enum.ShadowMappingType;
 	import aerys.minko.type.math.Vector4;
 
 	use namespace minko_scene;
@@ -158,7 +159,7 @@ package aerys.minko.scene.node.light
 				specular,
 				shininess,
 				emissionMask,
-				shadowMappingType,
+				ShadowMappingType.NONE, // @fixme clone light with shadow triggered errors
 				shadowMapSize,
 				shadowZFar,
 				shadowWidth,
