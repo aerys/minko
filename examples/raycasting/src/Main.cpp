@@ -79,14 +79,14 @@ int main(int argc, char** argv)
 		{
 			auto distance = 0.f;
 			auto ray = camera->component<PerspectiveCamera>()->unproject(
-				canvas->normalizedMouseX(), canvas->normalizedMouseY()
+				canvas->mouse()->normalizedX(), canvas->mouse()->normalizedY()
 			);
 
 			mesh->component<Transform>()->transform()
 				//->translation(sinf((float)time * .001f), 0.f, 0.f);
 				->prependRotationY(.01f);
 
-			if (mesh->component<BoundingBox>()->shape()->cast(ray, distance))
+			if (mesh->component<BoundingBox>()->box()->cast(ray, distance))
 			{
 				if (hit->parent() != root)
 					root->addChild(hit);
