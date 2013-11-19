@@ -129,7 +129,7 @@ void main(void)
 					lightDirection,
 					tangentSpaceEyeVector,
 					shininess
-				) * directionalLights[i].specular * specular.rgb * specular.a;
+				) * directionalLights[i].specular * specular.a;
 			#endif // SHININESS
 
 			phong += contribution * directionalLights[i].color;
@@ -156,7 +156,7 @@ void main(void)
 					lightDirection,
 					tangentSpaceEyeVector,
 					shininess
-				) * pointLights[i].specular * specular.rgb * specular.a;
+				) * pointLights[i].specular * specular.a;
 			#endif // SHININESS
 			
 			float attenuation = pointLights[i].attenuationDistance.x > 0.0
@@ -195,7 +195,7 @@ void main(void)
 						lightDirection,
 						tangentSpaceEyeVector,
 						shininess
-					) * spotLights[i].specular * specular.rgb * specular.a;
+					) * spotLights[i].specular * specular.a;
 				#endif // SHININESS
 				
 				float cosInner	= spotLights[i].cosInnerConeAngle;
