@@ -341,6 +341,7 @@ Geometry::removeDuplicatedVertices(std::vector<unsigned short>&		indices,
 
 bool
 Geometry::cast(std::shared_ptr<math::Ray>	ray,
+			   float&						distance,
 			   uint&						triangle,
 			   std::shared_ptr<Vector3>		hitXyz,
 			   std::shared_ptr<Vector2>		hitUv,
@@ -376,7 +377,7 @@ Geometry::cast(std::shared_ptr<math::Ray>	ray,
 	auto v = 0.f;
 	auto t = 0.f;
 
-	for (auto i = 0; i < numIndices; i += 3)
+	for (uint i = 0; i < numIndices; i += 3)
 	{
 		v0->copyFrom(xyzPtr + indicesData[i] * xyzVertexSize);
 		v1->copyFrom(xyzPtr + indicesData[i + 1] * xyzVertexSize);
@@ -407,6 +408,7 @@ Geometry::cast(std::shared_ptr<math::Ray>	ray,
 		if (t < minDistance)
 		{
 			minDistance = t;
+			distance = t;
 			triangle = i;
 			hit = true;
 
