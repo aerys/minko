@@ -26,7 +26,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/AbstractContext.hpp"
 #include "minko/render/OpenGLES2Context.hpp"
 
-#ifdef EMSCRIPTEN
+#if defined(EMSCRIPTEN)
 # include "minko/MinkoWebGL.hpp"
 # include "SDL/SDL.h"
 # include "emscripten.h"
@@ -262,6 +262,7 @@ namespace minko
 #endif
 
 #ifdef EMSCRIPTEN
+	public:
 		static
 		void
 		emscriptenMainLoop();
