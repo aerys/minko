@@ -48,6 +48,7 @@ namespace minko
 	template<typename... A>
 	class Signal;
 	class Color;
+	class AbstractCanvas;
     
 	namespace render
 	{
@@ -209,6 +210,11 @@ namespace minko
 	{
 		class Material;
 		class BasicMaterial;
+	}
+
+	namespace input
+	{
+		class Mouse;
 	}
 }
 
