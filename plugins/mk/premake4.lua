@@ -10,9 +10,9 @@ minko.project.library "plugin-mk"
 		"src/**.hpp",
 		"src/**.h",
 		"src/**.cpp",
-		"src/**.c",
-		"lib/msgpack-c/src/**.cpp",
-		"lib/msgpack-c/src/**.h"
+		"src/**.c"
+		-- "lib/msgpack-c/src/**.cpp",
+		-- "lib/msgpack-c/src/**.h"
 	}
 	includedirs {
 		"src",
