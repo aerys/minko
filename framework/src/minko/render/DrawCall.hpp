@@ -143,6 +143,9 @@ namespace minko
             bind(ContainerPtr data, ContainerPtr rendererData, ContainerPtr rootData);
 
 			void
+			bindIndexBuffer();
+
+			void
 			bindProgramInputs();
 
 			void
