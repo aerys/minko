@@ -18,7 +18,7 @@ minko.project.library "plugin-png"
 		"_CRT_SECURE_NO_WARNINGS"
 	}
 
-	configuration { "debug"}
+	configuration { "debug" }
 		defines { "DEBUG" }
 		flags { "Symbols" }
 		targetdir "bin/debug"
