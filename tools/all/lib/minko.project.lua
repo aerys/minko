@@ -30,7 +30,7 @@ minko.project.library = function(name)
 		
 	if _OPTIONS["platform"] == "emscripten" then
 		configuration { "emscripten" }
-			minko.plugin.enable("webgl")
+			-- minko.plugin.enable("webgl")
 			flags { "Optimize" }
 			buildoptions { "-std=c++11" }
 	end	
