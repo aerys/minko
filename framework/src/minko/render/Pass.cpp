@@ -80,7 +80,7 @@ Pass::selectProgram(std::shared_ptr<data::Container> data,
 			// create shader header with #defines
 			for (const auto& macroBinding : _macroBindings)
             {
-				const auto& defaultValue = std::get<1>(macroBinding.second);
+				const auto& defaultValue = std::get<2>(macroBinding.second);
 				const auto hasDefaultValue = defaultValue.semantic != data::MacroBindingDefaultValueSemantic::UNSET;
 
 				if (hasDefaultValue || signatureMask & (1 << i))
@@ -101,8 +101,8 @@ Pass::selectProgram(std::shared_ptr<data::Container> data,
 						if ((defaultIntValue > 0) || signatureValues[i] > 0)
 						{
 							auto value	= container ? signatureValues[i] : defaultIntValue;
-							auto min	= std::get<2>(macroBinding.second);
-							auto max	= std::get<3>(macroBinding.second);
+							auto min	= std::get<3>(macroBinding.second);
+							auto max	= std::get<4>(macroBinding.second);
 
 							if ((min != -1 && value < min) || (max != -1 && value > max))
 								return nullptr;
