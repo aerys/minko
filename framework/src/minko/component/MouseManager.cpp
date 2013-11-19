@@ -26,6 +26,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/math/Box.hpp"
 #include "minko/math/Ray.hpp"
 #include "minko/component/MousePicking.hpp"
+#include "minko/component/Surface.hpp"
+#include "minko/geometry/Geometry.hpp"
+#include "minko/component/Transform.hpp"
 
 using namespace minko;
 using namespace minko::component;
@@ -73,20 +76,43 @@ MouseManager::pick(std::shared_ptr<math::Ray> ray)
 {
 	MouseManager::HitList hits;
 
-	auto descendants = scene::NodeSet::create(targets()[0]->root())
+	auto target = targets()[0];
+	auto descendants = scene::NodeSet::create(target->root())
 		->descendants(true)
 		->where([&](scene::Node::Ptr node) { return node->hasComponent<BoundingBox>(); });
 
 	std::unordered_map<scene::Node::Ptr, float> distance;
+	math::Ray::Ptr localRay = math::Ray::create();
 
 	for (auto& descendant : descendants->nodes())
-		for (auto& bbox : descendant->components<BoundingBox>())
-		{
-			auto distance = 0.f;
+	{
+		auto bboxHit = false;
+		auto distance = 0.f;
 
-			if (bbox->box()->cast(ray, distance))
-				hits.push_back(Hit(descendant, distance));
+		if (descendant->component<BoundingBox>()->box()->cast(ray, distance))
+		{
+			hits.push_back(Hit(descendant, distance));
+
+			/*
+			auto transform = descendant->component<Transform>();
+			uint triangleId = 0;
+
+			if (transform)
+			{
+				transform->worldToModel(ray->origin(), localRay->origin());
+				transform->deltaWorldToModel(ray->direction(), localRay->direction());
+			}
+
+			for (auto& surface : descendant->components<Surface>())
+			{
+				if (surface->geometry()->cast(transform ? localRay : ray, distance, triangleId))
+				{
+					hits.push_back(Hit(descendant, distance));
+				}
+			}
+			*/
 		}
+	}
 
 	hits.sort([&](Hit& a, Hit& b) { return a.second < b.second; });
 
