@@ -108,6 +108,7 @@ namespace minko
 		class BoundingBox;
 
 		class MousePicking;
+		class MouseManager;
 	}
 
 	namespace data
