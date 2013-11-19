@@ -43,7 +43,7 @@ minko.project.library "plugin-bullet"
 		
 	-- linux
 	configuration { "linux" }
-		buildoptions { "-Wno-narrowing -Wno-int-to-pointer-cast" }
+		buildoptions { "-Wno-narrowing -Wno-int-to-pointer-cast -Wno-undefined-inline" }
 
 	-- windows
 	configuration { "windows" }
@@ -54,8 +54,8 @@ minko.project.library "plugin-bullet"
 
 	-- macosx
 	configuration { "macosx" }
-		buildoptions { "-Wno-narrowing -Wno-int-to-pointer-cast" }
+		buildoptions { "-Wno-narrowing -Wno-int-to-pointer-cast -Wno-undefined-inline" }
 
 	-- emscripten
 	configuration { "emscripten" }
-		buildoptions { "-Wno-narrowing -Wno-int-to-pointer-cast" }
+		buildoptions { "-Wno-narrowing -Wno-int-to-pointer-cast -Wno-undefined-inline" }
