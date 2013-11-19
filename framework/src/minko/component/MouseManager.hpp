@@ -17,78 +17,72 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#pragma once
-
 #include "minko/Common.hpp"
 
-#include "minko/component/AbstractComponent.hpp"
 #include "minko/Signal.hpp"
+#include "minko/component/AbstractComponent.hpp"
+#include "minko/input/Mouse.hpp"
+#include "minko/component/PerspectiveCamera.hpp"
+#include "minko/scene/Node.hpp"
 
 namespace minko
 {
 	namespace component
 	{
-		class MousePicking :
-			public AbstractComponent,
-			public std::enable_shared_from_this<MousePicking>
+		class MouseManager :
+			public AbstractComponent
 		{
 		private:
 			typedef std::shared_ptr<scene::Node>	NodePtr;
 			typedef std::shared_ptr<math::Ray>		RayPtr;
+			typedef std::shared_ptr<input::Mouse>	MousePtr;
 
 		public:
-			typedef std::pair<NodePtr, float>			Hit;
-			typedef std::list<Hit>						HitList;
-			typedef std::shared_ptr<MousePicking>		Ptr;
-			typedef Signal<Ptr, const HitList&, RayPtr>	MouseSignal;
-			typedef MouseSignal::Ptr					MouseSignalPtr;
+			typedef std::pair<NodePtr, float>		Hit;
+			typedef std::list<Hit>					HitList;
+			typedef std::shared_ptr<MouseManager>	Ptr;
 
 		private:
-			MouseSignalPtr									_move;
-			MouseSignalPtr									_over;
-			MouseSignalPtr									_out;
-			MouseSignalPtr									_rollOver;
-			MouseSignalPtr									_rollOut;
-			MouseSignalPtr									_leftButtonUp;
-			MouseSignalPtr									_leftButtonDown;
-
+			MousePtr										_mouse;
 			std::shared_ptr<math::Vector3>					_previousRayOrigin;
 			NodePtr											_lastItemUnderCursor;
 
+			RayPtr											_ray;
+
 			Signal<AbstractComponent::Ptr, NodePtr>::Slot	_targetAddedSlot;
 			Signal<AbstractComponent::Ptr, NodePtr>::Slot	_targetRemovedSlot;
+			Signal<MousePtr, int, int>::Slot				_mouseMoveSlot;
+			Signal<MousePtr>::Slot							_mouseLeftButtonDownSlot;
 
 		public:
 			inline static
 			Ptr
 			create()
 			{
-				auto mp = std::shared_ptr<MousePicking>(new MousePicking());
+				auto mm = std::shared_ptr<MouseManager>(new MouseManager());
 
-				mp->initialize();
+				mm->initialize();
 
-				return mp;
+				return mm;
 			}
 
-			inline
-			MouseSignalPtr
-			move()
+			inline static
+			Ptr
+			create(std::shared_ptr<input::Mouse> mouse)
 			{
-				return _move;
-			}
+				auto mm = std::shared_ptr<MouseManager>(new MouseManager());
 
-			inline
-			MouseSignalPtr
-			over()
-			{
-				return _over;
+				mm->_mouse = mouse;
+				mm->initialize();
+
+				return mm;
 			}
 
 			void
-			pick(RayPtr ray);
+			pick(std::shared_ptr<math::Ray> ray);
 
 		private:
-			MousePicking();
+			MouseManager();
 
 			void
 			initialize();
