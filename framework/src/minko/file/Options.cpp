@@ -52,6 +52,11 @@ Options::Options(std::shared_ptr<render::AbstractContext> context) :
 		return uri;
 	};
 
+	_nodeFunction = [](NodePtr node) -> NodePtr
+	{
+		return node;
+	};
+
 	initializePlatforms();
 }
 
