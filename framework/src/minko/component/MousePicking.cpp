@@ -56,37 +56,3 @@ MousePicking::initialize()
 	});
 	*/
 }
-
-void
-MousePicking::pick(std::shared_ptr<math::Ray> ray)
-{
-	MousePicking::HitList hits;
-
-	auto descendants = scene::NodeSet::create(targets())
-		->descendants(true)
-		->where([&](scene::Node::Ptr node) { return node->hasComponent<BoundingBox>(); });
-	
-	std::unordered_map<scene::Node::Ptr, float> distance;
-
-	for (auto& descendant : descendants->nodes())
-		for (auto& box : descendant->components<BoundingBox>())
-		{
-			auto distance = 0.f;
-
-			if (box->shape()->cast(ray, distance))
-				hits.push_back(Hit(descendant, distance));
-		}
-
-	hits.sort([&](Hit& a, Hit& b) { return a.second < b.second; });
-
-	if (!hits.empty())
-	{
-		if (!_previousRayOrigin->equals(ray->origin()))
-		{
-			_move->execute(shared_from_this(), hits, ray);
-			_previousRayOrigin->copyFrom(ray->origin());
-		}
-
-		_over->execute(shared_from_this(), hits, ray);
-	}
-}
