@@ -222,32 +222,25 @@ int main(int argc, char** argv)
 		auto distance = 20.f;
 
 		// handle mouse signals
-		auto mouseWheel = canvas->mouseWheel()->connect([&](Canvas::Ptr canvas, int x, int y)
+		auto mouseWheel = canvas->mouse()->wheel()->connect([&](input::Mouse::Ptr m, int h, int v)
 		{
-			distance += (float)y / 10.f;
+			distance += (float)v / 10.f;
 		});
 
-		minko::Signal<Canvas::Ptr, uint, uint>::Slot mouseMove;
+		Signal<input::Mouse::Ptr, int, int>::Slot mouseMove;
 		auto cameraRotationXSpeed = 0.f;
 		auto cameraRotationYSpeed = 0.f;
-		int oldX = 0;
-		int oldY = 0;
 
-		auto mouseDown = canvas->mouseLeftButtonDown()->connect([&](Canvas::Ptr canvas, unsigned int x, unsigned int y)
+		auto mouseDown = canvas->mouse()->leftButtonDown()->connect([&](input::Mouse::Ptr m)
 		{
-			oldX = x;
-			oldY = y;
-
-			mouseMove = canvas->mouseMove()->connect([&](Canvas::Ptr canvas, unsigned int x, unsigned int y)
+			mouseMove = canvas->mouse()->move()->connect([&](input::Mouse::Ptr, unsigned int dx, unsigned int dy)
 			{
-				cameraRotationYSpeed = (float)((int)x - oldX) * .01f;
-				cameraRotationXSpeed = (float)((int)y - oldY) * -.01f;
-				oldX = x;
-				oldY = y;
+				cameraRotationYSpeed = (float)dx * .01f;
+				cameraRotationXSpeed = (float)dy * -.01f;
 			});
 		});
 
-		auto mouseUp = canvas->mouseLeftButtonUp()->connect([&](Canvas::Ptr canvas, unsigned int x, unsigned int y)
+		auto mouseUp = canvas->mouse()->leftButtonUp()->connect([&](input::Mouse::Ptr m)
 		{
 			mouseMove = nullptr;
 		});
