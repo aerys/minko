@@ -71,6 +71,8 @@ void
 Geometry::removeVertexBuffer(std::list<render::VertexBuffer::Ptr>::iterator vertexBufferIt)
 {
 	VertexBuffer::Ptr vertexBuffer	= *vertexBufferIt;
+	vertexBuffer->dispose();
+
 	for (auto attribute : vertexBuffer->attributes())
 		_data->unset("geometry.vertex.attribute." + std::get<0>(*attribute));
 
@@ -346,6 +348,7 @@ Geometry::cast(std::shared_ptr<math::Ray>	ray,
 {
 	static const auto EPSILON = 0.00001f;
 
+	auto hit = false;
 	auto& indicesData = _indexBuffer->data();
 	auto numIndices = indicesData.size();
 
@@ -405,6 +408,7 @@ Geometry::cast(std::shared_ptr<math::Ray>	ray,
 		{
 			minDistance = t;
 			triangle = i;
+			hit = true;
 
 			if (hitUv)
 			{
@@ -428,6 +432,8 @@ Geometry::cast(std::shared_ptr<math::Ray>	ray,
 		if (hitNormal)
 			getHitNormal(triangle, hitNormal);
 	}
+
+	return hit;
 }
 
 void
