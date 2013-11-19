@@ -128,6 +128,7 @@ ASSIMPParser::parse(const std::string&					filename,
 
 	_symbol = scene::Node::create(_filename);
 	createSceneTree(_symbol, scene, scene->mRootNode);
+	_symbol = _options->nodeFunction()(_symbol);
 	
 	if (_numDependencies == _numLoadedDependencies)
 		finalize();
@@ -157,8 +158,12 @@ ASSIMPParser::createSceneTree(scene::Node::Ptr minkoNode, const aiScene* scene, 
 		minkoMesh->addComponent(Transform::create());
 		createMeshGeometry(minkoMesh, mesh);
 		createMeshSurface(minkoMesh, scene, mesh);
+		_options->nodeFunction()(minkoMesh);
+
 		minkoNode->addChild(minkoMesh);
     }
+
+	_options->nodeFunction()(minkoNode);
 }
 
 void
