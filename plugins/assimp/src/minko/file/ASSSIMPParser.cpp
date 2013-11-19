@@ -141,7 +141,7 @@ ASSIMPParser::createSceneTree(scene::Node::Ptr minkoNode, const aiScene* scene, 
     {
         auto childName = std::string(ainode->mChildren[i]->mName.data);
         auto child = scene::Node::create(childName);
-        
+		
         child->addComponent(getTransformFromAssimp(ainode->mChildren[i]));
         
         minkoNode->addChild(child);
@@ -153,8 +153,12 @@ ASSIMPParser::createSceneTree(scene::Node::Ptr minkoNode, const aiScene* scene, 
     for (uint j = 0; j < ainode->mNumMeshes; j++)
     {
         aiMesh *mesh = scene->mMeshes[ainode->mMeshes[j]];
-		auto minkoMesh = scene::Node::create(mesh->mName.C_Str());
+		std::string meshName(mesh->mName.C_Str());
+		auto minkoMesh = scene::Node::create();
 
+		if (!meshName.empty())
+			minkoMesh->name(meshName);
+		
 		minkoMesh->addComponent(Transform::create());
 		createMeshGeometry(minkoMesh, mesh);
 		createMeshSurface(minkoMesh, scene, mesh);
