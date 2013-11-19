@@ -183,7 +183,7 @@ DrawCall::bindVertexAttribute(const std::string&	inputName,
 #ifdef DEBUG
 	if (location < 0)
 		throw std::invalid_argument("location");
-	if (vertexBufferId < 0 || vertexBufferId >= MAX_NUM_VERTEXBUFFERS)
+	if (vertexBufferId >= MAX_NUM_VERTEXBUFFERS)
 		throw std::invalid_argument("vertexBufferId");
 #endif // DEBUG
 	
@@ -229,7 +229,7 @@ DrawCall::bindTextureSampler2D(const std::string&	inputName,
 #ifdef DEBUG
 	if (location < 0)
 		throw std::invalid_argument("location");
-	if (textureId < 0 || textureId >= MAX_NUM_TEXTURES)
+	if (textureId >= MAX_NUM_TEXTURES)
 		throw std::invalid_argument("textureId");
 #endif // DEBUG
 
