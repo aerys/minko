@@ -19,30 +19,39 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "Canvas.hpp"
 
+#include "minko/input/Mouse.hpp"
+
 using namespace minko;
 
 Canvas::Canvas(const std::string& name, const uint width, const uint height, bool useStencil) :
 	_name(name),
 	_width(width),
 	_height(height),
+	_useStencil(useStencil),
 	_active(false),
 	_framerate(0.f),
 	_desiredFramerate(60.f),
-	_mouseX(0),
-	_mouseY(0),
 	_enterFrame(Signal<Canvas::Ptr, uint, uint>::create()),
 	_keyDown(Signal<Canvas::Ptr, const Uint8*>::create()),
 	_joystickMotion(Signal<Canvas::Ptr, int, int, int>::create()),
 	_joystickButtonDown(Signal<Canvas::Ptr, int>::create()),
 	_joystickButtonUp(Signal<Canvas::Ptr, int>::create()),
-	_mouseMove(Signal<Canvas::Ptr, uint, uint>::create()),
-	_mouseLeftButtonDown(Signal<Canvas::Ptr, uint, uint>::create()),
-	_mouseLeftButtonUp(Signal<Canvas::Ptr, uint, uint>::create()),
-	_mouseWheel(Signal<Canvas::Ptr, int, int>::create()),
 	_resized(Signal<Canvas::Ptr, uint, uint>::create())
 {
-	initializeContext(name, width, height, useStencil);
+}
+
+void
+Canvas::initialize()
+{
+	initializeContext(_name, _width, _height, _useStencil);
+	initializeMouse();
 	initializeJoysticks();
+}
+
+void
+Canvas::initializeMouse()
+{
+	_mouse = Canvas::SDLMouse::create(shared_from_this());
 }
 
 void
@@ -215,21 +224,31 @@ Canvas::step()
 		}
 
 		case SDL_MOUSEMOTION:
-			_mouseX = event.motion.x;
-			_mouseY = event.motion.y;
-			_mouseMove->execute(shared_from_this(), _mouseX, _mouseY);
-			break;
+		{
+			auto oldX = mouse()->x();
+			auto oldY = mouse()->y();
 
+			_mouse->x(event.motion.x);
+			_mouse->y(event.motion.y);
+			_mouse->move()->execute(_mouse, event.motion.x - oldX, event.motion.y - oldY);
+			//_mouseX = event.motion.x;
+			//_mouseY = event.motion.y;
+			//_mouseMove->execute(shared_from_this(), _mouseX, _mouseY);
+			break;
+		}
 		case SDL_MOUSEBUTTONDOWN:
-			_mouseLeftButtonDown->execute(shared_from_this(), event.motion.x, event.motion.y);
+			_mouse->leftButtonDown()->execute(_mouse);
+			//_mouseLeftButtonDown->execute(shared_from_this(), event.motion.x, event.motion.y);
 			break;
 
 		case SDL_MOUSEBUTTONUP:
-			_mouseLeftButtonUp->execute(shared_from_this(), event.motion.x, event.motion.y);
+			_mouse->leftButtonUp()->execute(_mouse);
+			//_mouseLeftButtonUp->execute(shared_from_this(), event.motion.x, event.motion.y);
 			break;
 
 		case SDL_MOUSEWHEEL:
-			_mouseWheel->execute(shared_from_this(), event.wheel.x, event.wheel.y);
+			_mouse->wheel()->execute(_mouse, event.wheel.x, event.wheel.y);
+			//_mouseWheel->execute(shared_from_this(), event.wheel.x, event.wheel.y);
 			break;
 
 		case SDL_JOYAXISMOTION:
