@@ -94,7 +94,7 @@ Pass::selectProgram(std::shared_ptr<data::Container> data,
 						: nullptr;
 
 					if (defaultValue.semantic == data::MacroBindingDefaultValueSemantic::VALUE
-						|| container && container->propertyHasType<int>(propertyName))
+						|| (container && container->propertyHasType<int>(propertyName)))
 					{
 						const auto defaultIntValue = defaultValue.value.value;
 
