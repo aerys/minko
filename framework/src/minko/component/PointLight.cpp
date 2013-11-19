@@ -47,6 +47,6 @@ PointLight::updateModelToWorldMatrix(std::shared_ptr<math::Matrix4x4> modelToWor
 void
 PointLight::attenuationDistance(float value)
 {
-	_attenuationDistance = value > 1e-6f ? value : -1.0f, 0.0f;
+	_attenuationDistance = value > 1e-6f ? value : -1.0f;
 	data()->set("attenuationDistance", _attenuationDistance);
 }
