@@ -3,20 +3,23 @@
 	"name"	: "phong",
 	
 	"attributeBindings"	: {
-		"position"					: "geometry.vertex.attribute.position",
-		"uv"						: "geometry.vertex.attribute.uv",
-		"normal"					: "geometry.vertex.attribute.normal",
-		"tangent"					: "geometry.vertex.attribute.tangent"
+		"position"				: "geometry.vertex.attribute.position",
+		"uv"					: "geometry.vertex.attribute.uv",
+		"normal"				: "geometry.vertex.attribute.normal",
+		"tangent"				: "geometry.vertex.attribute.tangent"
 	},
 	
 	"uniformBindings"	: {
-		"modelToWorldMatrix"		: "transform.modelToWorldMatrix",
-		"diffuseColor"				: "material.diffuseColor",
-		"diffuseMap"				: "material.diffuseMap",
-		"alphaMap"					: "material.alphaMap",
-		"alphaThreshold"			: "material.alphaThreshold",
-		"worldToScreenMatrix"		: { "property" : "camera.worldToScreenMatrix", "source" : "renderer" },
-		"cameraPosition"			: { "property" : "camera.position", "source" : "renderer" }
+		"diffuseColor"			: "material.diffuseColor",
+		"diffuseMap"			: "material.diffuseMap",
+		"alphaMap"				: "material.alphaMap",
+		"alphaThreshold"		: "material.alphaThreshold",
+		"normalMap"				: "material.normalMap",
+		"specularMap"			: "material.specularMap",
+		"shininess"				: "material.shininess",
+		"modelToWorldMatrix"	: "transform.modelToWorldMatrix",
+		"worldToScreenMatrix"	: { "property" : "camera.worldToScreenMatrix", "source" : "renderer" },
+		"cameraPosition"		: { "property" : "camera.position", "source" : "renderer" }
 	},
 	
 	"stateBindings"	: {
@@ -37,8 +40,8 @@
 		"SPECULAR_MAP"			: "material.specularMap",
 		"ALPHA_MAP"				: "material.alphaMap",
 		"ALPHA_THRESHOLD"		: "material.alphaThreshold",
-		"MODEL_TO_WORLD"		: "transform.modelToWorldMatrix",
-		"SHININESS"				: "material.shininess"
+		"SHININESS"				: "material.shininess",
+		"MODEL_TO_WORLD"		: "transform.modelToWorldMatrix"
 	},
 
 	"samplerStates" : {
@@ -59,21 +62,20 @@
 			"blendMode"			: ["one", "zero"],
 			"depthTest"			: [true, "less_equal"],
 			"triangleCulling"	: "back",
-						
+			
 			"uniformBindings" : {
-				"normalMap"					: "material.normalMap",
-				"specularMap"				: "material.specularMap",
-				"shininess"					: "material.shininess"
+				"ambientLights"				: { "property" : "ambientLights", "source" : "root" },
+				"directionalLights"			: { "property" : "directionalLights", "source" : "root" },
+				"spotLights"				: { "property" : "spotLights", "source" : "root" },
+				"pointLights"				: { "property" : "pointLights", "source" : "root" }
 			},
 			
 			"macroBindings" : {
-				"SHININESS"					: "material.shininess",
-				"MODEL_TO_WORLD"			: "transform.modelToWorldMatrix",
-				"NUM_AMBIENT_LIGHTS"		: "ambientLights.length",
-				"PRECOMPUTED_AMBIENT"		: "sumAmbients",
-				"NUM_DIRECTIONAL_LIGHTS"	: { "property" : "directionalLights.length", "max" : 8 },
-				"NUM_POINT_LIGHTS"			: { "property" : "pointLights.length", "max" : 8 },
-				"NUM_SPOT_LIGHTS"			: { "property" : "spotLights.length", "max" : 8 }
+				"NUM_AMBIENT_LIGHTS"		: { "property" : "ambientLights.length", "source" : "root" },
+				"PRECOMPUTED_AMBIENT"		: { "property" : "sumAmbients", "source" : "root" },
+				"NUM_DIRECTIONAL_LIGHTS"	: { "property" : "directionalLights.length", "source" : "root", "max" : 8 },
+				"NUM_POINT_LIGHTS"			: { "property" : "pointLights.length", "source" : "root", "max" : 8 },
+				"NUM_SPOT_LIGHTS"			: { "property" : "spotLights.length", "source" : "root", "max" : 8 }
 			},
 				
 			"passes"	: [{
@@ -92,9 +94,6 @@
 			"configuration"		: [ "no-glsl-struct" ],
 			
 			"uniformBindings" : {
-				"normalMap"					: "material.normalMap",
-				"specularMap"				: "material.specularMap",
-				"shininess"					: "material.shininess",
 				"ambientLights"				: { "property" : "ambientLights", "source" : "root" },
 				"directionalLights"			: { "property" : "directionalLights", "source" : "root" },
 				"spotLights"				: { "property" : "spotLights", "source" : "root" },
