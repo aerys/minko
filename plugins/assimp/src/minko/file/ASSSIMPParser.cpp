@@ -43,6 +43,13 @@ using namespace minko;
 using namespace minko::component;
 using namespace minko::math;
 using namespace minko::file;
+using namespace minko::scene;
+
+/*static*/	Vector3::Ptr		ASSIMPParser::_TMP_POSITION			= Vector3::create();
+/*static*/	Quaternion::Ptr		ASSIMPParser::_TMP_ROTATION			= Quaternion::create();
+/*static*/	Matrix4x4::Ptr		ASSIMPParser::_TMP_ROTATION_MATRIX	= Matrix4x4::create();
+/*static*/	Vector3::Ptr		ASSIMPParser::_TMP_SCALING			= Vector3::create();
+/*static*/	Matrix4x4::Ptr		ASSIMPParser::_TMP_MATRIX			= Matrix4x4::create();
 
 const ASSIMPParser::TextureTypeToName ASSIMPParser::_textureTypeToName = ASSIMPParser::initializeTextureTypeToName();
 ASSIMPParser::TextureTypeToName
@@ -58,7 +65,16 @@ ASSIMPParser::initializeTextureTypeToName()
 
 ASSIMPParser::ASSIMPParser() :
 	_numDependencies(0),
-	_numLoadedDependencies(0)
+	_numLoadedDependencies(0),
+	_filename(),
+	_assetLibrary(nullptr),
+	_options(nullptr),
+	_symbol(nullptr),
+	_nameToNode(),
+	_nameToMesh(),
+	_nameToAnimation(),
+	_loaderCompleteSlots(),
+	_loaderErrorSlots()
 {
 }
 
@@ -91,6 +107,8 @@ ASSIMPParser::parse(const std::string&					filename,
 					const std::vector<unsigned char>&	data,
 					std::shared_ptr<AssetLibrary>	    assetLibrary)
 {
+	resetParser();
+
 	int pos = resolvedFilename.find_last_of(file::separator);
 
 	if (pos > 0)
@@ -127,8 +145,12 @@ ASSIMPParser::parse(const std::string&					filename,
     parseDependencies(resolvedFilename, scene);
 
 	_symbol = scene::Node::create(_filename);
+
+	const unsigned int numFPS = 30;
+
 	createSceneTree(_symbol, scene, scene->mRootNode);
-	
+	getSkinningFromAssimp(scene, numFPS);
+
 	if (_numDependencies == _numLoadedDependencies)
 		finalize();
 }
@@ -144,7 +166,9 @@ ASSIMPParser::createSceneTree(scene::Node::Ptr minkoNode, const aiScene* scene, 
         child->addComponent(getTransformFromAssimp(ainode->mChildren[i]));
         
         minkoNode->addChild(child);
-        
+		_nameToNode[child->name()]	= child;
+		std::cout << "'" << child->name() << "' in nodemap" << std::endl;
+
         //Recursive call
         createSceneTree(child, scene, ainode->mChildren[i]);
     }
@@ -157,8 +181,25 @@ ASSIMPParser::createSceneTree(scene::Node::Ptr minkoNode, const aiScene* scene, 
 		minkoMesh->addComponent(Transform::create());
 		createMeshGeometry(minkoMesh, mesh);
 		createMeshSurface(minkoMesh, scene, mesh);
+
 		minkoNode->addChild(minkoMesh);
+		_nameToMesh[minkoMesh->name()]	= minkoMesh;
+		std::cout << "'" << minkoMesh->name() << "' in meshmap" << std::endl;
     }
+}
+
+void
+ASSIMPParser::getSkinningFromAssimp(const aiScene* aiscene, unsigned int numFPS)
+{
+	buildAnimationMap(aiscene);
+
+	for (uint meshId = 0; meshId < aiscene->mNumMeshes; ++meshId)
+	{
+		const auto	aimesh		= aiscene->mMeshes[meshId];
+
+		Skin skin;
+		getSkinningFromAssimp(aimesh, skin);
+	}
 }
 
 void
@@ -375,6 +416,8 @@ ASSIMPParser::findNode(std::string name, scene::Node::Ptr root)
 Transform::Ptr
 ASSIMPParser::getTransformFromAssimp(aiNode* ainode)
 {
+	return Transform::create(convert(ainode->mTransformation));
+	/*
     aiMatrix4x4 aiTransform = ainode->mTransformation;
     Transform::Ptr result = Transform::create();
 
@@ -386,6 +429,7 @@ ASSIMPParser::getTransformFromAssimp(aiNode* ainode)
 	);
     
     return result;
+	*/
 }
 
 void
@@ -466,4 +510,401 @@ ASSIMPParser::loadTexture(const std::string&	textureFilename,
 	});
 
 	loader->load(textureFilename, options);
+}
+
+void
+ASSIMPParser::resetParser()
+{
+	_numDependencies		= 0;
+	_numLoadedDependencies	= 0;
+	_filename.clear();
+	_symbol	= nullptr;
+	_nameToNode.clear();
+	_nameToMesh.clear();
+	_nameToAnimation.clear();
+	_nameToAnimMatrices.clear();
+}
+
+void
+ASSIMPParser::buildAnimationMap(const aiScene* scene)
+{
+	_nameToAnimation.clear();
+
+	if (scene == nullptr)
+		return;
+
+	for (unsigned int animId = 0; animId < scene->mNumAnimations; ++animId)
+	{
+		const auto anim = scene->mAnimations[animId];
+		assert(anim != nullptr);
+
+		sampleAnimation(anim, 30);
+
+		for (unsigned int channelId = 0; channelId < anim->mNumChannels; ++channelId)
+		{
+			const auto nodeAnim = anim->mChannels[channelId];
+			assert(nodeAnim != nullptr);
+
+			_nameToAnimation[std::string(nodeAnim->mNodeName.C_Str())] = std::make_pair(anim, nodeAnim);
+		}
+	}
+}
+
+unsigned int
+ASSIMPParser::getNumFrames(const aiMesh* aimesh) const
+{
+	assert(aimesh);
+
+	unsigned int	numFrames	= 0;
+
+	const auto		meshName	= std::string(aimesh->mName.C_Str());
+	assert(_nameToMesh.count(meshName) > 0);
+
+	const auto		minkoMesh	= _nameToMesh.find(meshName)->second;
+	const auto		meshNode	= minkoMesh->parent();
+	assert(meshNode && _nameToNode.count(meshNode->name()));
+
+	for (unsigned int boneId = 0; boneId < aimesh->mNumBones; ++boneId)
+	{
+		const auto	boneName	= std::string(aimesh->mBones[boneId]->mName.C_Str());
+		assert(_nameToNode.count(boneName) > 0);
+		auto		currentNode	= _nameToNode.find(boneName)->second;
+		do
+		{
+			if (currentNode == nullptr)
+				break;
+
+			if (_nameToAnimMatrices.count(currentNode->name()) > 0)
+			{
+				const unsigned int numNodeFrames = _nameToAnimMatrices.find(currentNode->name())->second.size();
+				assert(numNodeFrames > 0);
+
+				if (numFrames == 0)
+					numFrames = numNodeFrames;
+				else if (numFrames != numNodeFrames)
+					return 0;
+			}
+			currentNode = currentNode->parent();
+		}
+		while(currentNode != meshNode && currentNode != meshNode->parent());
+	}
+
+	return numFrames;
+}
+
+void
+ASSIMPParser::getSkinningFromAssimp(const aiMesh*	aimesh, 
+									Skin&			skin) const
+{
+	skin.clear();
+
+	if (aimesh == nullptr || aimesh->mNumBones == 0)
+		return;
+
+	const unsigned int numFrames = getNumFrames(aimesh);
+	if (numFrames == 0)
+	{
+		std::cerr << "Failed to flatten skinning information. Most likely involved nodes do not share a common animation." << std::endl;
+		return;
+	}
+	
+	skin.bones				 .resize(aimesh->mNumBones);
+	skin.boneMatricesPerFrame.resize(numFrames, std::vector<Matrix4x4::Ptr>(aimesh->mNumBones));
+
+
+	const auto	meshName	= std::string(aimesh->mName.C_Str());
+	assert(_nameToMesh.count(meshName) > 0);
+
+	const auto	minkoMesh	= _nameToMesh.find(meshName)->second;
+	const auto	meshNode	= minkoMesh->parent();
+	assert(meshNode && _nameToNode.count(meshNode->name()));
+
+
+	for (unsigned int boneId = 0; boneId < aimesh->mNumBones; ++boneId)
+	{
+		const auto	aibone		= aimesh->mBones[boneId];
+		const auto	boneName	= std::string(aibone->mName.C_Str());
+		assert(_nameToNode.count(boneName) > 0);
+
+		const auto	boneNode	= _nameToNode.find(boneName)->second;
+		assert(boneNode);
+		skin.bones[boneId]		= boneNode;
+
+		for (unsigned int frameId = 0; frameId < numFrames; ++frameId)
+		{
+			auto boneLocalToObject	= Matrix4x4::create();
+			auto currentNode		= boneNode;
+
+			// manually compute the bone's local-to-object matrix at specified frame
+			do
+			{
+				if (currentNode == nullptr)
+					break;
+				assert(_nameToNode.count(currentNode->name()) > 0);
+
+				Matrix4x4::Ptr currentTransform = nullptr;
+
+				if (_nameToAnimMatrices.count(currentNode->name()) > 0)
+					currentTransform = _nameToAnimMatrices.find(currentNode->name())->second[frameId];
+				else
+					currentTransform = currentNode->component<Transform>()->transform();
+
+				boneLocalToObject->append(currentTransform);
+				currentNode = currentNode->parent();
+			} while(currentNode != meshNode && currentNode != meshNode->parent());
+
+			// compute the matrix from bind space to object space at specified frame
+			convert(aibone->mOffsetMatrix, _TMP_MATRIX);
+			boneLocalToObject->prepend(_TMP_MATRIX);
+
+			skin.boneMatricesPerFrame[frameId][boneId] = boneLocalToObject;
+ 		}
+	}
+}
+
+/*
+const aiAnimation*
+ASSIMPParser::getSkeletonAnimation(const aiMesh* aimesh)
+{
+	const aiAnimation* ret = nullptr;
+
+	if (aimesh)
+	{
+		const auto meshNode = _nameToNode[std::string(aimesh->mName.C_Str())];
+
+		for (unsigned int boneId = 0; boneId < aimesh->mNumBones; ++boneId)
+		{
+			auto current = _nameToNode[std::string(aimesh->mBones[boneId]->mName.C_Str())];
+			do
+			{
+				if (current == nullptr)
+					break;
+
+				const auto foundAnimIt = _nameToAnimation.find(current->name());
+				if (foundAnimIt != _nameToAnimation.end())
+				{
+					if (ret == nullptr)
+						ret = foundAnimIt->second.first;
+					else if (ret != foundAnimIt->second.first)
+					{
+						std::cerr << "All bones of a mesh must correspond to the channels of a same animation." << std::endl;
+						throw;
+					}
+				}
+
+				current = current->parent();
+			} while(current != meshNode && current != meshNode->parent());
+		}
+	}
+	return ret;
+}
+*/
+
+void
+ASSIMPParser::sampleAnimation(const aiAnimation*	animation,
+							  unsigned int			numFPS)
+{
+	std::unordered_map<std::string, std::vector<Matrix4x4::Ptr>> _nodeMatrices;
+	if (animation == nullptr || animation->mTicksPerSecond < 1e-6)
+		return;
+
+	unsigned int numFrames	= (unsigned int)ceil((double)numFPS * animation->mDuration / animation->mTicksPerSecond);
+	numFrames				= numFrames < 2 ? 2 : numFrames;
+
+	const float			timeStep	= (float)animation->mDuration / (float)numFrames;
+	std::vector<float>	sampleTimes	(numFrames, 0.0f);
+	for (unsigned int frameId = 1; frameId < numFrames; ++frameId)
+	{
+		sampleTimes[frameId] = sampleTimes[frameId - 1] + timeStep; 
+	}
+
+	for (unsigned int channelId = 0; channelId < animation->mNumChannels; ++channelId)
+	{
+		const auto nodeAnimation	= animation->mChannels[channelId];
+		const auto nodeName			= nodeAnimation->mNodeName.C_Str();
+		std::cout << "'" << nodeAnimation->mNodeName.C_Str() << "' animated" << std::endl;
+
+		_nameToAnimMatrices[nodeName] = std::vector<Matrix4x4::Ptr>();
+
+		sample(nodeAnimation, sampleTimes, _nameToAnimMatrices[nodeName]);
+	}
+
+}
+
+/*static*/
+void
+ASSIMPParser::sample(const aiNodeAnim*				nodeAnimation, 
+					 const std::vector<float>&		times, 
+					 std::vector<Matrix4x4::Ptr>&	matrices)
+{
+	assert(nodeAnimation);
+
+	matrices.resize(times.size());
+
+	// precompute time factors
+	std::vector<float> positionKeyTimeFactors;
+	std::vector<float> rotationKeyTimeFactors;
+	std::vector<float> scalingKeyTimeFactors;
+
+	computeTimeFactors(nodeAnimation->mNumPositionKeys,	nodeAnimation->mPositionKeys,	positionKeyTimeFactors);
+	computeTimeFactors(nodeAnimation->mNumRotationKeys,	nodeAnimation->mRotationKeys,	rotationKeyTimeFactors);
+	computeTimeFactors(nodeAnimation->mNumScalingKeys,	nodeAnimation->mScalingKeys,	scalingKeyTimeFactors);
+
+	for (unsigned int frameId = 0; frameId < times.size(); ++frameId)
+	{
+		const float time = times[frameId];
+
+		// sample position from keys
+		sample(nodeAnimation->mPositionKeys, positionKeyTimeFactors, time, _TMP_POSITION);
+
+		// sample rotation from keys
+		sample(nodeAnimation->mRotationKeys, rotationKeyTimeFactors, time, _TMP_ROTATION);
+		_TMP_ROTATION->toMatrix(_TMP_ROTATION_MATRIX);
+
+		const std::vector<float>&	rotation	= _TMP_ROTATION_MATRIX->data();
+
+		// sample scaling from keys
+		sample(nodeAnimation->mScalingKeys, scalingKeyTimeFactors, time, _TMP_SCALING);
+
+		// recompose the interpolated matrix at the specified frame
+		matrices[frameId] = Matrix4x4::create()
+			->initialize(
+				_TMP_SCALING->x() * rotation[0], _TMP_SCALING->y() * rotation[1], _TMP_SCALING->z() * rotation[2],  _TMP_POSITION->x(),
+				_TMP_SCALING->x() * rotation[4], _TMP_SCALING->y() * rotation[5], _TMP_SCALING->z() * rotation[6],  _TMP_POSITION->y(),
+				_TMP_SCALING->x() * rotation[8], _TMP_SCALING->y() * rotation[9], _TMP_SCALING->z() * rotation[10], _TMP_POSITION->z(),
+				0.0, 0.0, 0.0, 1.0f
+			);
+	}
+}
+
+/*static*/
+Vector3::Ptr
+ASSIMPParser::sample(const aiVectorKey*			keys,
+					 const std::vector<float>&	keyTimeFactors,
+					 float						time,
+					 Vector3::Ptr				output)
+{
+	if (output == nullptr)
+		output = Vector3::create(0.0f, 0.0f, 0.0f);
+
+	const unsigned int	numKeys	= keyTimeFactors.size();
+	const unsigned int	id		= getIndexForTime(numKeys, keys, time);
+	const aiVector3D&	value0	= keys[id].mValue;
+
+	if (id == numKeys - 1)
+		output->setTo(value0.x, value0.y, value0.z);
+	else
+	{
+		const float			w1		= (time - (float)keys[id].mTime) * keyTimeFactors[id];
+		const float			w0		= 1.0f - w1;
+		const aiVector3D&	value1	= keys[id+1].mValue;
+
+		output->setTo(
+			w0 * value0.x + w1 * value1.x, 
+			w0 * value0.y + w1 * value1.y, 
+			w0 * value0.z + w1 * value1.z
+		);
+	}
+
+	return output;
+}
+
+/*static*/
+Quaternion::Ptr
+ASSIMPParser::sample(const aiQuatKey*			keys, 
+					 const std::vector<float>&	keyTimeFactors,
+					 float						time, 
+					 Quaternion::Ptr			output)
+{
+	if (output == nullptr)
+		output = Quaternion::create();
+
+	const unsigned int	numKeys	= keyTimeFactors.size();
+	const unsigned int	id		= getIndexForTime(numKeys, keys, time);
+	const aiQuaternion&	value0	= keys[id].mValue;
+
+	if (id == numKeys - 1)
+		output->setTo(value0.x, value0.y, value0.z, value0.w);
+	else
+	{
+		const float			w1		= (time - (float)keys[id].mTime) * keyTimeFactors[id];
+		const float			w0		= 1.0f - w1;
+		const aiQuaternion&	value1	= keys[id+1].mValue;
+
+		// normalized linear interpolation, should do spherical but too costly
+		const float	qi			= w0 * value0.x + w1 * value1.x;
+		const float	qj			= w0 * value0.y + w1 * value1.y;
+		const float	qk			= w0 * value0.z + w1 * value1.z;
+		const float	qr			= w0 * value0.w + w1 * value1.w;
+		const float length		= sqrtf(qi * qi + qj * qj + qk * qk + qr * qr);
+
+		if (length > 1e-3f)
+		{
+			const float invLength	= 1.0f / length;
+			output->setTo(qi * invLength, qj * invLength, qk * invLength, qr * invLength);
+		}
+		else
+			output->identity();
+	}
+
+	return output;
+}
+
+template<class AiKey>
+/*static*/
+void
+ASSIMPParser::computeTimeFactors(unsigned int			numKeys,
+								 const AiKey*			keys,
+								 std::vector<float>&	keyTimeFactors)
+{
+	keyTimeFactors.resize(numKeys);
+
+	if (numKeys == 0 || keys == nullptr)
+		return;
+
+	for (unsigned int keyId = 0; keyId < numKeys - 1; ++keyId)
+		keyTimeFactors[keyId] = (float)(1.0 / (keys[keyId + 1].mTime - keys[keyId].mTime + 1e-6f));
+	keyTimeFactors.back() = 1.0f;
+}
+
+template<class AiKey>
+/*static*/
+unsigned int
+ASSIMPParser::getIndexForTime(unsigned int	numKeys,
+							  const AiKey*	keys,
+							  double		time)
+{
+	if (numKeys == 0 || keys == nullptr)
+		return 0;
+
+	unsigned int id			= 0;
+	unsigned int lowerId	= 0;
+	unsigned int upperId	= numKeys - 1;
+	while(upperId - lowerId > 1)
+	{
+		id = (lowerId + upperId) >> 1;
+		if (keys[id].mTime > time)
+			upperId = id;
+		else
+			lowerId = id;
+	}
+
+	return lowerId;
+}
+
+/*static*/
+Matrix4x4::Ptr
+ASSIMPParser::convert(const aiMatrix4x4& matrix, Matrix4x4::Ptr output)
+{
+	if (output == nullptr)
+		output = Matrix4x4::create();
+
+    output->initialize(
+		matrix.a1, matrix.a2, matrix.a3, matrix.a4,
+        matrix.b1, matrix.b2, matrix.b3, matrix.b4,
+        matrix.c1, matrix.c2, matrix.c3, matrix.c4,
+        matrix.d1, matrix.d2, matrix.d3, matrix.d4
+	);
+    
+	return output;
 }

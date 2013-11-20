@@ -9,6 +9,8 @@ minko.project.library "plugin-assimp"
 	files { "src/**.hpp", "src/**.h", "src/**.cpp", "src/**.c" }
 	includedirs { "src" }
 	
+	defines { "DEBUG_SKINNING" }
+	
 	-- assimp lib
 	files {
 		"lib/assimp/code/**.c",
