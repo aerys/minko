@@ -75,24 +75,6 @@ int main(int argc, char** argv)
 			mesh->component<Transform>()->transform()->appendRotationY(.01f);
 
 			sceneManager->nextFrame();
-
-			if (canvas->framerate() > 30.f)
-			{
-				for (auto i = 0; i < 100; ++i)
-				{
-					auto mesh = scene::Node::create("mesh")
-						->addComponent(Transform::create())
-						->addComponent(Surface::create(
-							assets->geometry("cube"),
-							cubeMaterial,
-							assets->effect("effect/Basic.effect")
-						));
-					root->addChild(mesh);
-				}
-			}
-			else
-				std::cout << root->children().size() << std::endl;
-
 		});
 
 		canvas->run();
