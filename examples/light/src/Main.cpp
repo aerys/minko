@@ -216,8 +216,8 @@ int main(int argc, char** argv)
 		auto yaw = 0.f;
 		auto pitch = PI * .5f;
 		auto roll = 0.f;
-		auto minPitch = 0.f + 1e-10;
-		auto maxPitch = PI * .5f;
+		auto minPitch = 0.f + 1e-5;
+		auto maxPitch = (float)PI - 1e-5;
 		auto lookAt = Vector3::create(0.f, 2.f, 0.f);
 		auto distance = 20.f;
 
@@ -233,7 +233,7 @@ int main(int argc, char** argv)
 
 		auto mouseDown = canvas->mouse()->leftButtonDown()->connect([&](input::Mouse::Ptr m)
 		{
-			mouseMove = canvas->mouse()->move()->connect([&](input::Mouse::Ptr, unsigned int dx, unsigned int dy)
+			mouseMove = canvas->mouse()->move()->connect([&](input::Mouse::Ptr, int dx, int dy)
 			{
 				cameraRotationYSpeed = (float)dx * .01f;
 				cameraRotationXSpeed = (float)dy * -.01f;
