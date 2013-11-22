@@ -109,6 +109,7 @@ namespace minko
 
 			void
 			loadTexture(const std::string&				textureFilename,
+						const std::string&				assetName,
 						std::shared_ptr<file::Options>	options);
 		};
 	}
