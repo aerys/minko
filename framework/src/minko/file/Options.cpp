@@ -70,20 +70,25 @@ Options::initializePlatforms()
 {
 #if defined(_WIN32) || defined(_WIN64)
 	_platforms.push_back("windows");
+	_platforms.push_back("desktop");
 #endif
 #ifdef TARGET_OS_IPHONE
 	_platforms.push_back("iphone");
+	_platforms.push_back("mobile");
 #endif
 #ifdef TARGET_OS_MAC
 	_platforms.push_back("macosx");
+	_platforms.push_back("desktop");
 #endif
 #ifdef __ANDROID_API__
 	_platforms.push_back("android");
+	_platforms.push_back("mobile");
 #endif
 #ifdef EMSCRIPTEN
 	_platforms.push_back("web");
 #endif
 #if defined(LINUX) || defined(__unix__)
 	_platforms.push_back("linux");
+	_platforms.push_back("desktop");
 #endif
 }
