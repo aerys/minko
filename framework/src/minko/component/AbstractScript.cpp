@@ -20,9 +20,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "AbstractScript.hpp"
 
 #include "minko/scene/Node.hpp"
+#include "minko/scene/NodeSet.hpp"
 #include "minko/component/SceneManager.hpp"
 
 using namespace minko;
+using namespace minko::scene;
 using namespace minko::component;
 
 void
@@ -62,8 +64,8 @@ AbstractScript::targetAddedHandler(AbstractComponent::Ptr cmp, scene::Node::Ptr 
 void
 AbstractScript::targetRemovedHandler(AbstractComponent::Ptr cmp, scene::Node::Ptr target)
 {
-	_componentAddedSlot = nullptr;
-	_componentAddedSlot = nullptr;
+	_componentAddedSlot		= nullptr;
+	_componentRemovedSlot	= nullptr;
 }
 
 void
@@ -71,10 +73,12 @@ AbstractScript::componentAddedHandler(scene::Node::Ptr			node,
 									  scene::Node::Ptr			target,
 									  AbstractComponent::Ptr	component)
 {
-	auto sceneManager = std::dynamic_pointer_cast<SceneManager>(component);
+	findSceneManager();
 
-	if (sceneManager)
-		setSceneManager(sceneManager);
+	//auto sceneManager = std::dynamic_pointer_cast<SceneManager>(component);
+
+	//if (sceneManager)
+	//	setSceneManager(sceneManager);
 }
 
 void
@@ -82,10 +86,12 @@ AbstractScript::componentRemovedHandler(scene::Node::Ptr		node,
 										scene::Node::Ptr		target,
 										AbstractComponent::Ptr	component)
 {
-	auto sceneManager = std::dynamic_pointer_cast<SceneManager>(component);
+	findSceneManager();
 
-	if (sceneManager)
-		setSceneManager(nullptr);
+	//auto sceneManager = std::dynamic_pointer_cast<SceneManager>(component);
+
+	//if (sceneManager)
+	//	setSceneManager(nullptr);
 }
 
 void
@@ -102,6 +108,24 @@ AbstractScript::frameBeginHandler(SceneManager::Ptr sceneManager)
 
 		update(target);
 	}
+}
+
+void
+AbstractScript::findSceneManager()
+{
+	NodeSet::Ptr roots = NodeSet::create(targets())
+		->roots()
+		->where([](NodePtr node)
+		{
+			return node->hasComponent<SceneManager>();
+		});
+
+	if (roots->nodes().size() > 1)
+		throw std::logic_error("Renderer cannot be in two separate scenes.");
+	else if (roots->nodes().size() == 1)
+		setSceneManager(roots->nodes()[0]->component<SceneManager>());		
+	else
+		setSceneManager(nullptr);
 }
 
 void
