@@ -17,13 +17,3 @@ minko.project.library "plugin-png"
 		--"LODEPNG_NO_COMPILE_DISK"
 		"_CRT_SECURE_NO_WARNINGS"
 	}
-
-	configuration { "debug" }
-		defines { "DEBUG" }
-		flags { "Symbols" }
-		targetdir "bin/debug"
-
-	configuration { "release" }
-		defines { "NDEBUG" }
-		flags { "OptimizeSpeed" }
-		targetdir "bin/release"
