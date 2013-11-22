@@ -32,6 +32,7 @@ namespace minko
 			typedef std::shared_ptr<data::Provider>								ProviderPtr;
 			typedef std::shared_ptr<material::Material>							MaterialPtr;
 			typedef std::shared_ptr<scene::Node>								NodePtr;
+			typedef std::shared_ptr<render::Effect>								EffectPtr;
 
 		public:
 			typedef std::shared_ptr<Options>									Ptr;
@@ -39,6 +40,7 @@ namespace minko
 			typedef std::function<AbsLoaderPtr(const std::string&)>				LoaderFunction;
 			typedef std::function<const std::string(const std::string&)>		UriFunction;
 			typedef std::function<NodePtr(NodePtr)>								NodeFunction;
+			typedef std::function<EffectPtr(EffectPtr)>							EffectFunction;
 
 		private:
 			std::shared_ptr<render::AbstractContext>	_context;
@@ -53,6 +55,7 @@ namespace minko
 			LoaderFunction								_loaderFunction;
 			UriFunction									_uriFunction;
 			NodeFunction								_nodeFunction;
+			EffectFunction								_effectFunction;
 
 		public:
 			inline static
@@ -203,6 +206,20 @@ namespace minko
 			nodeFunction(const NodeFunction& func)
 			{
 				_nodeFunction = func;
+			}
+
+			inline
+			const EffectFunction&
+			effectFunction()
+			{
+				return _effectFunction;
+			}
+
+			inline
+			void
+			effectFunction(const EffectFunction& func)
+			{
+				_effectFunction = func;
 			}
 
 		private:

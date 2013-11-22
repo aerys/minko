@@ -57,6 +57,11 @@ Options::Options(std::shared_ptr<render::AbstractContext> context) :
 		return node;
 	};
 
+	_effectFunction = [](EffectPtr effect) -> EffectPtr
+	{
+		return effect;
+	};
+
 	initializePlatforms();
 }
 
