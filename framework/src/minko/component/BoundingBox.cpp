@@ -34,7 +34,9 @@ using namespace minko::component;
 BoundingBox::BoundingBox(Vector3::Ptr topRight, Vector3::Ptr bottomLeft) :
 	_fixed(true),
 	_box(math::Box::create(topRight, bottomLeft)),
-	_worldSpaceBox(math::Box::create(topRight, bottomLeft))
+	_worldSpaceBox(math::Box::create(topRight, bottomLeft)),
+	_invalidBox(true),
+	_invalidWorldSpaceBox(true)
 {
 
 }
@@ -42,7 +44,9 @@ BoundingBox::BoundingBox(Vector3::Ptr topRight, Vector3::Ptr bottomLeft) :
 BoundingBox::BoundingBox() :
 	_fixed(false),
 	_box(math::Box::create()),
-	_worldSpaceBox(math::Box::create())
+	_worldSpaceBox(math::Box::create()),
+	_invalidBox(true),
+	_invalidWorldSpaceBox(true)
 {
 
 }
