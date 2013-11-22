@@ -213,10 +213,22 @@ DrawCall::bindVertexAttribute(const std::string&	inputName,
 			_vertexAttributeOffsets[vertexBufferId] = std::get<2>(*attribute);
 		}
 
+#if defined(EMSCRIPTEN)
+// See issue #1848 in Emscripten: https://github.com/kripken/emscripten/issues/1848
 		if (_referenceChangedSlots.count(propertyName) == 0)
 			_referenceChangedSlots[propertyName].push_back(container->propertyReferenceChanged(propertyName)->connect(std::bind(
 				&DrawCall::bindVertexAttribute, shared_from_this(), propertyName, location, vertexBufferId
 			)));
+#else
+		if (_referenceChangedSlots.count(propertyName) == 0)
+		{
+			auto that = shared_from_this();
+			_referenceChangedSlots[propertyName].push_back(container->propertyReferenceChanged(propertyName)->connect([&, that](Container::Ptr, const std::string&) {
+				that->bindVertexAttribute(propertyName, location, vertexBufferId);
+			}));
+
+		}
+#endif
 	}
 }
 
@@ -251,10 +263,21 @@ DrawCall::bindTextureSampler2D(const std::string&	inputName,
 			_textureMipFilters[textureId] = std::get<2>(samplerState);
 		}
 
-		if (_referenceChangedSlots.count(propertyName) == 0)
+#if defined(EMSCRIPTEN)
+// See issue #1848 in Emscripten: https://github.com/kripken/emscripten/issues/1848
+		if (_referenceChangedSlots.count(propertyName) == 0)			
+		{
+			auto that = shared_from_this();
+			_referenceChangedSlots[propertyName].push_back(container->propertyReferenceChanged(propertyName)->connect([&, that](Container::Ptr, const std::string&) {
+				that->bindTextureSampler2D(propertyName, location, textureId, samplerState);
+			}));
+		}
+#else
+		if (_referenceChangedSlots.count(propertyName) == 0)			
 			_referenceChangedSlots[propertyName].push_back(container->propertyReferenceChanged(propertyName)->connect(std::bind(
 				&DrawCall::bindTextureSampler2D, shared_from_this(), propertyName, location, textureId, samplerState
 			)));
+#endif
 	}
 }
 
@@ -305,10 +328,21 @@ DrawCall::bindUniform(const std::string&	inputName,
 				throw std::logic_error("unsupported uniform type.");
 		}
 
+#if defined(EMSCRIPTEN)
+// See issue #1848 in Emscripten: https://github.com/kripken/emscripten/issues/1848
+		if (_referenceChangedSlots.count(propertyName) == 0)			
+		{
+			auto that = shared_from_this();
+			_referenceChangedSlots[propertyName].push_back(container->propertyReferenceChanged(propertyName)->connect([&, that](Container::Ptr, const std::string&) {
+				that->bindUniform(propertyName, type, location);
+			}));
+		}
+#else
 		if (_referenceChangedSlots.count(propertyName) == 0)
 			_referenceChangedSlots[propertyName].push_back(container->propertyReferenceChanged(propertyName)->connect(std::bind(
 				&DrawCall::bindUniform, shared_from_this(), propertyName, type, location
 			)));
+#endif		
 	}
 }
 

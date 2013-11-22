@@ -113,12 +113,19 @@ Provider::registerProperty(const std::string&		propertyName,
 		
 	if (isNewValue)
 	{
-	    _valueChangedSlots[propertyName] = value->changed()->connect(std::bind(
+#if defined(EMSCRIPTEN)
+		auto that = shared_from_this();
+		_valueChangedSlots[propertyName] = value->changed()->connect([&, that, this](Value::Ptr) {
+			_propValueChanged->execute(that, propertyName);
+		});
+#else
+		_valueChangedSlots[propertyName] = value->changed()->connect(std::bind(
 			&Signal<Provider::Ptr, const std::string&>::execute,
 			_propValueChanged,
 			shared_from_this(),
 			propertyName
 		));
+#endif
 
 		_names.push_back(propertyName);
 
