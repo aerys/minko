@@ -3,50 +3,50 @@
 	"name"	: "phong",
 	
 	"attributeBindings"	: {
-		"position"					: "geometry.vertex.attribute.position",
-		"uv"						: "geometry.vertex.attribute.uv",
-		"normal"					: "geometry.vertex.attribute.normal",
-		"tangent"					: "geometry.vertex.attribute.tangent"
+		"position"				: "geometry.vertex.attribute.position",
+		"uv"					: "geometry.vertex.attribute.uv",
+		"normal"				: "geometry.vertex.attribute.normal",
+		"tangent"				: "geometry.vertex.attribute.tangent"
 	},
 	
 	"uniformBindings"	: {
-		"diffuseColor"				: "material.diffuseColor",
-		"diffuseMap"				: "material.diffuseMap",
-		"alphaMap"					: "material.alphaMap",
-		"environmentMap"			: "material.environmentMap",
-		"environmentAlpha"			: "material.environmentAlpha",
-		"alphaThreshold"			: "material.alphaThreshold",
-		"normalMap"					: "material.normalMap",
-		"specularMap"				: "material.specularMap",
-		"shininess"					: "material.shininess",
-		"specularColor"				: { "property" : "material.specularColor", "default" : [ 1.0, 1.0, 1.0, 1.0 ] },
-		"modelToWorldMatrix"		: "transform.modelToWorldMatrix",
-		"cameraPosition"			: { "property" : "camera.position", "source" : "renderer" },
-		"worldToScreenMatrix"		: { "property" : "camera.worldToScreenMatrix", "source" : "renderer" }
+		"diffuseColor"			: "material.diffuseColor",
+		"diffuseMap"			: "material.diffuseMap",
+		"alphaMap"				: "material.alphaMap",
+		"environmentMap"		: "material.environmentMap",
+		"environmentAlpha"		: "material.environmentAlpha",
+		"alphaThreshold"		: "material.alphaThreshold",
+		"normalMap"				: "material.normalMap",
+		"specularMap"			: "material.specularMap",
+		"shininess"				: "material.shininess",
+		"specularColor"			: { "property" : "material.specularColor", "default" : [ 1.0, 1.0, 1.0, 1.0 ] },
+		"modelToWorldMatrix"	: "transform.modelToWorldMatrix",
+		"cameraPosition"		: { "property" : "camera.position", "source" : "renderer" },
+		"worldToScreenMatrix"	: { "property" : "camera.worldToScreenMatrix", "source" : "renderer" }
 	},
 	
 	"stateBindings"	: {
-		"blendMode"					: "material.blendMode",
-		"colorMask"					: "material.colorMask",
-		"stencilFunc"				: "material.stencilFunc",
-		"stencilRef"				: "material.stencilRef",
-		"stencilMask"				: "material.stencilMask",
-		"stencilFailOp"				: "material.stencilFailOp",
-		"stencilZFailOp"			: "material.stencilZFailOp",
-		"stencilZPassOp"			: "material.stencilZPassOp",
-		"triangleCulling"			: "material.triangleCulling"
+		"blendMode"				: "material.blendMode",
+		"colorMask"				: "material.colorMask",
+		"stencilFunc"			: "material.stencilFunc",
+		"stencilRef"			: "material.stencilRef",
+		"stencilMask"			: "material.stencilMask",
+		"stencilFailOp"			: "material.stencilFailOp",
+		"stencilZFailOp"		: "material.stencilZFailOp",
+		"stencilZPassOp"		: "material.stencilZPassOp",
+		"triangleCulling"		: "material.triangleCulling"
 	},
 
 	"macroBindings"	: {
-		"DIFFUSE_MAP"				: "material.diffuseMap",
-		"NORMAL_MAP"				: "material.normalMap",
-		"SPECULAR_MAP"				: "material.specularMap",
-		"ALPHA_MAP"					: "material.alphaMap",
-		"ENVIRONMENT_MAP"			: "material.environmentMap",
-		"ENVIRONMENT_ALPHA"			: "material.environmentAlpha",
-		"ALPHA_THRESHOLD"			: "material.alphaThreshold",
-		"SHININESS"					: "material.shininess",
-		"MODEL_TO_WORLD"			: "transform.modelToWorldMatrix"
+		"DIFFUSE_MAP"			: "material.diffuseMap",
+		"NORMAL_MAP"			: "material.normalMap",
+		"SPECULAR_MAP"			: "material.specularMap",
+		"ALPHA_MAP"				: "material.alphaMap",
+		"ENVIRONMENT_MAP"		: "material.environmentMap",
+		"ENVIRONMENT_ALPHA"		: "material.environmentAlpha",
+		"ALPHA_THRESHOLD"		: "material.alphaThreshold",
+		"SHININESS"				: "material.shininess",
+		"MODEL_TO_WORLD"		: "transform.modelToWorldMatrix"
 	},
 
 	"samplerStates" : {
