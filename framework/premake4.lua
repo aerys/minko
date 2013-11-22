@@ -30,16 +30,6 @@ project "framework"
 	-- plugins
 	minko.plugin.import("angle")
 
-	configuration { "debug"}
-		defines { "DEBUG" }
-		flags { "Symbols" }
-		targetdir "bin/debug"
-
-	configuration { "release" }
-		defines { "NDEBUG" }
-		flags { "OptimizeSpeed" }
-		targetdir "bin/release"
-
 	-- linux
 	configuration { "linux" }
 		links { "GL", "GLU" }
