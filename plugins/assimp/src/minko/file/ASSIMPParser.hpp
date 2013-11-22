@@ -21,9 +21,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Common.hpp"
 #include "minko/file/AbstractParser.hpp"
 #include "minko/file/Loader.hpp"
+#include "minko/component/Skin.hpp"
 
 struct	aiMesh;
 struct	aiNode;
+struct	aiBone;
 struct	aiScene;
 struct	aiAnimation;
 struct	aiNodeAnim;
@@ -31,6 +33,7 @@ struct	aiVectorKey;
 struct	aiQuatKey;
 template<typename> class aiMatrix4x4t;
 enum	aiTextureType;
+
 
 namespace minko
 {
@@ -57,23 +60,6 @@ namespace minko
 			typedef std::unordered_map<aiTextureType, std::string>	TextureTypeToName;
 			typedef std::unordered_map<std::string, NodePtr>		NodeMap;
 			typedef std::unordered_map<std::string, std::vector<Matrix4x4Ptr>>	MatrixNodeMap;
-			typedef std::unordered_map<std::string, std::pair<const aiAnimation*, const aiNodeAnim*>>	NodeAnimMap;
-
-
-		private:
-
-			struct Skin
-			{
-				std::vector<NodePtr>					bones;
-				std::vector<std::vector<Matrix4x4Ptr>>	boneMatricesPerFrame;
-
-				void
-				clear()
-				{
-					bones.clear();
-					boneMatricesPerFrame.clear();
-				}
-			};
 
         private:
 			static const TextureTypeToName			_textureTypeToName;
@@ -88,7 +74,6 @@ namespace minko
 
 			NodeMap									_nameToNode;
 			NodeMap									_nameToMesh;
-			NodeAnimMap								_nameToAnimation;
 			MatrixNodeMap							_nameToAnimMatrices;
 
 			std::vector<NodePtr>					_bones;
@@ -162,18 +147,20 @@ namespace minko
 			void
 			getSkinningFromAssimp(const aiScene*, unsigned int numFPS);
 
-			void
-			getSkinningFromAssimp(const aiMesh*, Skin&) const;
+			bool
+			getSkinningFromAssimp(const aiMesh*, component::Skin&) const;
+
+			void 
+			getSkinningFromAssimp(const aiBone*, component::Bone&) const;
 
 			unsigned int
 			getNumFrames(const aiMesh*) const;
 
 			void
-			buildAnimationMap(const aiScene*);
+			sampleAnimations(const aiScene*, unsigned int numFPS);
 
 			void
-			sampleAnimation(const aiAnimation*	animation,
-							unsigned int		numFPS);
+			sampleAnimation(const aiAnimation*, unsigned int numFPS);
 
 			static
 			Vector3Ptr
