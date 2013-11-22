@@ -11,9 +11,8 @@ minko.project.application "example-raycasting"
 	
 	-- emscripten
 	configuration { "emscripten" }
-		local bin = "bin/release/" .. project().name
 		postbuildcommands {
-			'cp ' .. bin .. ' ' .. bin .. '.bc',
-			'emcc ' .. bin .. '.bc -o ' .. bin .. '.js -O1 -s ASM_JS=1 -s TOTAL_MEMORY=1073741824 --preload-dir effect --preload-dir texture',
-			'emcc ' .. bin .. '.bc -o index.html -O1 -s ASM_JS=1 -s TOTAL_MEMORY=1073741824 --preload-dir effect --preload-dir texture'
+			'cd ${TARGETDIR} ; cp ' .. project().name .. ' ' .. project().name .. '.bc',
+			'cp -r asset/* ${TARGETDIR} || :',
+			'cd ${TARGETDIR} ; emcc ' .. project().name .. '.bc -o ' .. project().name .. '.html -O2 -s ASM_JS=0 -s TOTAL_MEMORY=1073741824 --preload-file effect --preload-file texture'
 		}
