@@ -451,10 +451,18 @@ ASSIMPParser::loadTexture(const std::string&	textureFilename,
 		auto extension = loader->resolvedFilename().substr(pos + 1);
 		auto parser = _assetLibrary->parser(extension);
 
+		if (!parser)
+		{
+			_numLoadedDependencies++;
+			if (_numDependencies == _numLoadedDependencies && _symbol)
+				finalize();
+
+			return;
+		}
+
 		auto complete = parser->complete()->connect([&](file::AbstractParser::Ptr parser)
 		{
 			_numLoadedDependencies++;
-
 			if (_numDependencies == _numLoadedDependencies && _symbol)
 				finalize();
 		});
