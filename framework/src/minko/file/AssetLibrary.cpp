@@ -265,8 +265,10 @@ AssetLibrary::finalize(const std::string& filename)
 AssetLibrary::AbsParserPtr
 AssetLibrary::parser(std::string extension)
 {
-	if (_parsers.count(extension) == 0)
+	/*
+	if ()
 		throw std::invalid_argument("No parser found for extension '" + extension + "'");
+	*/
 
-	return _parsers[extension]();
+	return _parsers.count(extension) == 0 ? nullptr : _parsers[extension]();
 }
