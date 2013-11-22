@@ -120,8 +120,7 @@ ASSIMPParser::parse(const std::string&					filename,
 	
     if (!scene)
     {
-        std::cout << importer.GetErrorString() << std::endl;
-        throw;
+		throw std::runtime_error(importer.GetErrorString());
     }
     
     parseDependencies(resolvedFilename, scene);
@@ -198,7 +197,7 @@ ASSIMPParser::createMeshGeometry(scene::Node::Ptr minkoNode, aiMesh* mesh)
         const aiFace& face = mesh->mFaces[i];
         
         //foreach index
-        for(int j=0;j<3;j++)//assume all faces are triangulated
+        for(int j = 0; j < 3; j++)//assume all faces are triangulated
         {
             if (mesh->HasPositions())
             {
@@ -419,7 +418,8 @@ ASSIMPParser::parseDependencies(const std::string& 	filename,
 				if (!filename.empty() && std::find(loading.begin(), loading.end(), filename) == loading.end())
 				{
 					loading.push_back(filename);
-					loadTexture(filename, _options);
+					_numDependencies++;
+					loadTexture(filename, filename, _options);
 				}
 			}
 		}
@@ -439,11 +439,10 @@ ASSIMPParser::finalize()
 
 void
 ASSIMPParser::loadTexture(const std::string&	textureFilename,
+						  const std::string&	assetName,
 						  Options::Ptr			options)
 {
 	auto loader = _options->loaderFunction()(textureFilename);
-
-	_numDependencies++;
 
 	_loaderCompleteSlots[loader] = loader->complete()->connect([&](file::AbstractLoader::Ptr loader)
 	{
@@ -468,7 +467,7 @@ ASSIMPParser::loadTexture(const std::string&	textureFilename,
 		});
 
 		parser->parse(
-			loader->filename(),
+			assetName,
 			loader->resolvedFilename(),
 			loader->options(),
 			loader->data(),
@@ -478,8 +477,17 @@ ASSIMPParser::loadTexture(const std::string&	textureFilename,
 
 	_loaderErrorSlots[loader] = loader->error()->connect([&](file::AbstractLoader::Ptr loader)
 	{
-		_numLoadedDependencies++;
-		std::cerr << "unable to find texture with filename '" << loader->filename() << "'" << std::endl;
+		auto pos = loader->filename().find_last_of(file::separator);
+
+		if (pos != std::string::npos)
+		{
+			loadTexture(loader->filename().substr(pos + 1), assetName, options);
+		}
+		else
+		{
+			_numLoadedDependencies++;
+			std::cerr << "unable to find texture with filename '" << loader->filename() << "'" << std::endl;
+		}
 	});
 
 	loader->load(textureFilename, options);
