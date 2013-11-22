@@ -169,7 +169,7 @@ namespace minko
 
 			inline
 			Ptr
-			substract(Ptr v)
+			subtract(Ptr v)
 			{
 				return setTo(_x - v->_x, _y - v->_y, _z - v->_z);
 			}
@@ -305,7 +305,7 @@ namespace minko
 			float
 			lengthSquared() const
 			{
-				return _x*_x + _y*_y + _z*_z;
+				return _x * _x + _y * _y + _z * _z;
 			}
 
 			inline
@@ -313,6 +313,17 @@ namespace minko
 			length() const
 			{
 				return sqrtf(lengthSquared());
+			}
+
+			inline
+			Ptr
+			scaleBy(float scale)
+			{
+				_x *= scale;
+				_y *= scale;
+				_z *= scale;
+
+				return std::static_pointer_cast<Vector3>(shared_from_this());
 			}
 
 		protected:
