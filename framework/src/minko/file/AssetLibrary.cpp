@@ -196,10 +196,10 @@ AssetLibrary::load()
 
 			_loaderSlots.push_back(loader->error()->connect(std::bind(
 				&AssetLibrary::loaderErrorHandler, shared_from_this(), std::placeholders::_1
-				)));
+			)));
 			_loaderSlots.push_back(loader->complete()->connect(std::bind(
 				&AssetLibrary::loaderCompleteHandler, shared_from_this(), std::placeholders::_1
-				)));
+			)));
 			loader->load(filename, options);
 		}
 	}
