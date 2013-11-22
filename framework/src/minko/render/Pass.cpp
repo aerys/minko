@@ -86,11 +86,12 @@ Pass::selectProgram(std::shared_ptr<data::Container> data,
 				if (hasDefaultValue || signatureMask & (1 << i))
 				{
 					const auto&	propertyName = std::get<0>(macroBinding.second);
+					const auto& bindingSource = std::get<1>(macroBinding.second);
 					const auto propetyExists = defaultValue.semantic == data::MacroBindingDefaultValueSemantic::PROPERTY_EXISTS;
 					const auto& container = propertyName.empty() ? nullptr
-						: data->hasProperty(propertyName) ? data
-						: rendererData->hasProperty(propertyName) ? rendererData
-						: rootData->hasProperty(propertyName) ? rootData
+						: bindingSource == data::BindingSource::TARGET && data->hasProperty(propertyName) ? data
+						: bindingSource == data::BindingSource::RENDERER && rendererData->hasProperty(propertyName) ? rendererData
+						: bindingSource == data::BindingSource::ROOT && rootData->hasProperty(propertyName) ? rootData
 						: nullptr;
 
 					if (defaultValue.semantic == data::MacroBindingDefaultValueSemantic::VALUE
@@ -113,7 +114,7 @@ Pass::selectProgram(std::shared_ptr<data::Container> data,
 					}
 					else if ((defaultValue.semantic == data::MacroBindingDefaultValueSemantic::PROPERTY_EXISTS
 							  && defaultValue.value.propertyExists)
-							 || container)
+							 || (container && container->hasProperty(propertyName)))
 					{
 						defines += "#define " + macroBinding.first + "\n";
 						bindingDefines.push_back(propertyName);
