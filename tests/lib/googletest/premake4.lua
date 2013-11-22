@@ -9,14 +9,7 @@ project "googletest"
 	}
 
 	configuration { "debug"}
-		defines { "DEBUG", "_DEBUG" }
-		flags { "Symbols" }
-		targetdir "bin/debug"
-
-	configuration { "release" }
-		defines { "NDEBUG" }
-		flags { "OptimizeSpeed" }
-		targetdir "bin/release"
+		defines { "_DEBUG" }
 
 	-- linux
 	configuration { "linux" }
