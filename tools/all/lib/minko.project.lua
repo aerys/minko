@@ -5,6 +5,16 @@ minko.project.library = function(name)
 
 	includedirs { minko.sdk.path("/framework/src") }
 	
+	configuration { "debug"}
+		defines { "DEBUG" }
+		flags { "Symbols" }
+		targetdir "bin/debug"
+
+	configuration { "release" }
+		defines { "NDEBUG" }
+		flags { "Optimize" } -- { "OptimizeSpeed" }
+		targetdir "bin/release"
+	
 	configuration { "windows" }
 		links { "OpenGL32", "glew32" }
 		libdirs { minko.sdk.path("/deps/win/lib") }
@@ -33,7 +43,6 @@ minko.project.library = function(name)
 			if name ~= 'plugin-webgl' then
 				minko.plugin.enable("webgl")
 			end
-			flags { "Optimize" }
 			buildoptions { "-std=c++11" }
 	end	
 	
@@ -46,16 +55,6 @@ minko.project.application = function(name)
 
 	links { "framework" }
 
-	configuration { "debug"}
-		defines { "DEBUG" }
-		flags { "Symbols" }
-		targetdir "bin/debug"
-
-	configuration { "release" }
-		defines { "NDEBUG" }
-		flags { "OptimizeSpeed" }
-		targetdir "bin/release"
-	
 	configuration { "windows" }
 		postbuildcommands {
 			'xcopy /y /i "' .. minko.sdk.path('/framework/effect') .. '" "$(TargetDir)\\effect"',
@@ -72,8 +71,8 @@ minko.project.application = function(name)
 	configuration { "macosx" }
 		linkoptions { "-stdlib=libc++" }
 		postbuildcommands {
-			'cp -r ' .. minko.sdk.path('/framework/effect') .. ' . || :',
-			'cp -r asset/* . || :'
+			'cp -r ' .. minko.sdk.path('/framework/effect') .. ' ${TARGETDIR} || :',
+			'cp -r asset/* ${TARGETDIR} || :'
 		}
 		
 	configuration { }

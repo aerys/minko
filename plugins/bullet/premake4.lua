@@ -30,17 +30,6 @@ minko.project.library "plugin-bullet"
 		"lib/bullet2/src/BulletMultiThreaded/SpuSampleTask/*.cpp"
 	}
 
-	-- configurations
-	configuration { "debug"}
-		defines { "DEBUG" }
-		flags { "Symbols" }
-		targetdir "bin/debug"
-
-	configuration { "release" }
-		defines { "NDEBUG" }
-		targetdir "bin/release"
-		flags { "OptimizeSpeed" }
-		
 	-- linux
 	configuration { "linux" }
 		buildoptions { "-Wno-narrowing -Wno-int-to-pointer-cast -Wno-undefined-inline" }
