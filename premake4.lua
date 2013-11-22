@@ -3,22 +3,6 @@ solution "minko"
 
 	dofile('sdk.lua')
 	
-	include 'framework'
-	
-	-- plugins
-	include 'plugins/jpeg'
-	include 'plugins/png'
-	include 'plugins/mk'
-	include 'plugins/bullet'
-	include 'plugins/particles'
-	include 'plugins/sdl'
-	include 'plugins/angle'
-	include 'plugins/fx'
-	--include 'plugins/offscreen'
-	if _OPTIONS["platform"] == "emscripten" then
-		include 'plugins/webgl'
-	end
-
 	-- examples
 	include 'examples/sponza'
 	include 'examples/cube'

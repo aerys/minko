@@ -19,16 +19,6 @@ minko.project.library "plugin-mk"
 		"lib/msgpack-c/src"
 	}
 
-	configuration { "debug"}
-		defines { "DEBUG" }
-		flags { "Symbols" }
-		targetdir "bin/debug"
-
-	configuration { "release" }
-		defines { "NDEBUG" }
-		flags { "OptimizeSpeed" }
-		targetdir "bin/release"
-
 	configuration { "windows" }
 		-- msgpack
 		defines {
