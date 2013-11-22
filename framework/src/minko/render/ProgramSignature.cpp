@@ -29,7 +29,7 @@ using namespace minko::data;
 
 void
 ProgramSignature::build(const MacroBindingMap&	macroBindings,
-						data::Container::Ptr	data,
+						data::Container::Ptr	targetData,
 						data::Container::Ptr	rendererData,
 						data::Container::Ptr	rootData)
 {
@@ -42,12 +42,14 @@ ProgramSignature::build(const MacroBindingMap&	macroBindings,
 	for (auto& macroBinding : macroBindings)
     {
         auto& propertyName = std::get<0>(macroBinding.second);
+		const auto& bindingSource = std::get<1>(macroBinding.second);
+		const auto& container = propertyName.empty() ? nullptr
+			: bindingSource == data::BindingSource::TARGET && targetData->hasProperty(propertyName) ? targetData
+			: bindingSource == data::BindingSource::RENDERER && rendererData->hasProperty(propertyName) ? rendererData
+			: bindingSource == data::BindingSource::ROOT && rootData->hasProperty(propertyName) ? rootData
+			: nullptr;
 
-		const bool dataHasBinding			= data->hasProperty(propertyName);
-		const bool rendererDataHasBinding	= rendererData->hasProperty(propertyName);
-		const bool rootDataHasBinding		= rootData->hasProperty(propertyName);
-
-        if (dataHasBinding || rendererDataHasBinding || rootDataHasBinding)
+        if (container && container->hasProperty(propertyName))
 		{
 			// WARNING: we do not support more than 32 macro bindings
 			if (i == MAX_NUM_BINDINGS)
@@ -56,12 +58,8 @@ ProgramSignature::build(const MacroBindingMap&	macroBindings,
 			_mask |= 1 << i;
 		}
 
-		if (dataHasBinding && data->propertyHasType<int>(propertyName))
-			_values[i] = data->get<int>(propertyName);
-		else if (rendererDataHasBinding && rendererData->propertyHasType<int>(propertyName))
-			_values[i] = rendererData->get<int>(propertyName);
-		else if (rootDataHasBinding && rootData->propertyHasType<int>(propertyName))
-			_values[i] = rootData->get<int>(propertyName);
+		if (container && container->hasProperty(propertyName) && container->propertyHasType<int>(propertyName))
+			_values[i] = container->get<int>(propertyName);
 
         ++i;
     }
