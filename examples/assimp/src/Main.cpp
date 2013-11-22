@@ -69,6 +69,19 @@ int main(int argc, char** argv)
 
 		root->addChild(model);
 		
+		auto skinnedNodes = scene::NodeSet::create(model)
+			->descendants(true)
+			->where([](scene::Node::Ptr n){ return n->hasComponent<Skinning>(); });
+
+		
+		for (auto& skinnedNode : skinnedNodes->nodes())
+		{
+			//skinnedNode->component<Skinning>()->start();
+		}
+			
+		std::cout << "#skinned = " << skinnedNodes->nodes().size() << std::endl;
+
+
 		auto resized = canvas->resized()->connect([&](Canvas::Ptr canvas, uint w, uint h)
 		{
 			camera->component<PerspectiveCamera>()->aspectRatio((float)w / (float)h);
