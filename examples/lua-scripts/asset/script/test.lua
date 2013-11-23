@@ -1,5 +1,5 @@
 test = {}
 
 function test.update()
-	print("update"))
+	print("update")
 end
