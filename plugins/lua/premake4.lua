@@ -10,7 +10,7 @@ minko.project.library "plugin-lua"
 	includedirs { "src" }
 	
 	-- lua
-	files { "lib/lua/src/**.c", "lua/src/**.h" }
+	files { "lib/lua/src/**.cpp", "lua/src/**.h" }
 	includedirs { "lib/lua/src" }
 	
 	-- luaglue
