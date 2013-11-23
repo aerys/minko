@@ -23,8 +23,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/AssetLibrary.hpp"
 
 #include "lua.hpp"
-#include "lualib.h"
-#include "lauxlib.h"
 
 #define constexpr const
 #define uint unsigned int
