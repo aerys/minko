@@ -109,6 +109,8 @@ namespace minko
 
 		class MousePicking;
 		class MouseManager;
+
+        class AbstractScript;
 	}
 
 	namespace data
@@ -210,12 +212,6 @@ namespace minko
 		class AbstractParser;
 		class EffectParser;
         class AssetLibrary;
-
-#ifdef _WIN32
-		const char separator = '\\';
-#else
-		const char separator = '/';
-#endif
 	}
 
 	namespace material
