@@ -50,7 +50,7 @@ LUAScriptParser::parse(const std::string&				    filename,
         .Class<scene::Node>("Node")
 //            .method<const std::string&, void>("getName", &scene::Node::name)
 //            .method<const std::string&>("setName", &scene::Node::name)
-              .method<const std::string&>("setName", &scene::Node::name)
+//              .method("setName", &scene::Node::name)
         .end()
         .open()
         .glue();
