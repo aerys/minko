@@ -44,6 +44,8 @@ namespace minko
 
 			Signal<AbsCmpPtr, NodePtr>::Slot				_targetAddedSlot;
 			Signal<AbsCmpPtr, NodePtr>::Slot				_targetRemovedSlot;
+            Signal<NodePtr, NodePtr, NodePtr>::Slot         _addedSlot;
+            Signal<NodePtr, NodePtr, NodePtr>::Slot         _removedSlot;
 			Signal<NodePtr, NodePtr, AbsCmpPtr>::Slot		_componentAddedSlot;
 			Signal<NodePtr, NodePtr, AbsCmpPtr>::Slot		_componentRemovedSlot;
 			Signal<std::shared_ptr<SceneManager>>::Slot		_frameBeginSlot;
@@ -79,6 +81,9 @@ namespace minko
 
 			void
 			targetRemovedHandler(AbsCmpPtr cmp, NodePtr node);
+
+            void
+            addedOrRemovedHandler(NodePtr node, NodePtr target, NodePtr parent);
 
 			void
 			componentAddedHandler(NodePtr node, NodePtr	target, AbsCmpPtr component);
