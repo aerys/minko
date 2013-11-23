@@ -78,3 +78,5 @@ newoption {
 if _OPTIONS["no-glsl-struct"] then
 	defines { "MINKO_NO_GLSL_STRUCT" }
 end
+
+include 'framework'
