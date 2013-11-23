@@ -123,6 +123,20 @@ AssetLibrary::blob(const std::string& name, const std::vector<unsigned char>& bl
 	return shared_from_this();
 }
 
+AssetLibrary::AbsScriptPtr
+AssetLibrary::script(const std::string& name)
+{
+    return _scripts.count(name) ? _scripts[name] : nullptr;
+}
+
+AssetLibrary::Ptr
+AssetLibrary::script(const std::string& name, AbsScriptPtr script)
+{
+    _scripts[name] = script;
+
+    return shared_from_this();
+}
+
 const unsigned int
 AssetLibrary::layout(const std::string& name)
 {

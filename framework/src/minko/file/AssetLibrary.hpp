@@ -44,6 +44,7 @@ namespace minko
 			typedef std::shared_ptr<file::AbstractParser>		AbsParserPtr;
 			typedef std::function<AbsParserPtr(void)>			Handler;
 			typedef std::shared_ptr<scene::Node>				NodePtr;
+            typedef std::shared_ptr<component::AbstractScript>  AbsScriptPtr;
 
 		private:
 			AbsContextPtr															_context;
@@ -55,7 +56,9 @@ namespace minko
 			std::unordered_map<std::string, TexturePtr>								_textures;
 			std::unordered_map<std::string, NodePtr>								_nodes;
 			std::unordered_map<std::string, std::vector<unsigned char>>				_blobs;
-			std::unordered_map<std::string, uint>									_layouts;
+            std::unordered_map<std::string, AbsScriptPtr>                           _scripts;
+
+            std::unordered_map<std::string, uint>									_layouts;
 
 			std::list<std::string>													_filesQueue;
 			std::list<std::string>													_loading;
@@ -121,6 +124,12 @@ namespace minko
 
 			Ptr
 			blob(const std::string& name, const std::vector<unsigned char>& blob);
+
+            AbsScriptPtr
+            script(const std::string& name);
+
+            AssetLibrary::Ptr
+            script(const std::string& name, AbsScriptPtr script);
 
 			const unsigned int
 			layout(const std::string& name);
