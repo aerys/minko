@@ -126,7 +126,7 @@ EffectParser::parse(const std::string&				    filename,
 	Json::Value root;
 	Json::Reader reader;
 
-	if (!reader.parse((const char*)&data[0], (const char*)&data[data.size() - 1],	root, false))
+	if (!reader.parse((const char*)&data[0], (const char*)&data[data.size() - 1], root, false))
     {
         std::cerr << resolvedFilename << ":" << reader.getFormattedErrorMessages() << std::endl;
 
@@ -680,7 +680,7 @@ EffectParser::parseUniformDefaultValues(const Json::Value&		contextNode,
 	else if (contextNode.isString())
 	{
 		auto textureFilename = contextNode.asString();
-		int pos = _resolvedFilename.find_last_of(file::separator);
+		int pos = _resolvedFilename.find_last_of("/\\");
 		auto options = _options;
 
 		uniformTypeAndValue.first = UniformType::TEXTURE;
@@ -902,7 +902,7 @@ EffectParser::parseDependencies(const Json::Value& 		root,
 								std::vector<LoaderPtr>& store)
 {
 	auto includes	= root.get("includes", 0);
-	int pos			= filename.find_last_of("/");
+	int pos			= filename.find_last_of("/\\");
 
 	if (pos > 0)
 	{
