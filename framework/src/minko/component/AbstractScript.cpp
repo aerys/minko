@@ -56,7 +56,29 @@ AbstractScript::targetAddedHandler(AbstractComponent::Ptr cmp, scene::Node::Ptr 
 		std::placeholders::_3
 	));
 
+    auto addedOrRemovedCallback = std::bind(
+        &AbstractScript::addedOrRemovedHandler,
+        shared_from_this(),
+        std::placeholders::_1,
+        std::placeholders::_2,
+        std::placeholders::_3
+    );
+    _addedSlot = target->added()->connect(addedOrRemovedCallback);
+    _removedSlot = target->removed()->connect(addedOrRemovedCallback);
+
 	_started[target] = false;
+
+    if (target->root()->hasComponent<SceneManager>())
+        setSceneManager(target->root()->component<SceneManager>());
+}
+
+void
+AbstractScript::addedOrRemovedHandler(scene::Node::Ptr node, scene::Node::Ptr target, scene::Node::Ptr parent)
+{
+    if (target->root()->hasComponent<SceneManager>())
+        setSceneManager(target->root()->component<SceneManager>());
+    else
+        setSceneManager(nullptr);
 }
 
 void
@@ -64,6 +86,7 @@ AbstractScript::targetRemovedHandler(AbstractComponent::Ptr cmp, scene::Node::Pt
 {
 	_componentAddedSlot = nullptr;
 	_componentAddedSlot = nullptr;
+    _frameBeginSlot = nullptr;
 }
 
 void
