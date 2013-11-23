@@ -26,13 +26,22 @@ project "framework"
 	defines {
 		"JSON_IS_AMALGAMATION"
 	}
+
+	configuration { "debug"}
+		defines { "DEBUG" }
+		flags { "Symbols" }
+		targetdir "bin/debug"
+
+	configuration { "release" }
+		defines { "NDEBUG" }
+		flags { "Optimize" } -- { "OptimizeSpeed" }
+		targetdir "bin/release"
 	
 	-- plugins
 	minko.plugin.import("angle")
 
 	-- linux
 	configuration { "linux" }
-		links { "GL", "GLU" }
 		buildoptions { "-std=c++11" }
 
 	-- windows
@@ -49,7 +58,6 @@ project "framework"
 	configuration { "macosx" }
 		buildoptions { "-std=c++11 -stdlib=libc++" }
 		includedirs { "../deps/mac/include" }
-		libdirs { "../deps/mac/lib" }
 
 	-- emscripten
 	configuration { "emscripten" }
