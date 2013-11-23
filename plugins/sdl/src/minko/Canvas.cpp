@@ -284,15 +284,6 @@ Canvas::step()
 		SDL_Delay((uint)((1000.f / _desiredFramerate) - frameTime));
 }
 
-namespace {
-	static Canvas::Ptr myUglyCanvas;
-	void
-	myUglyLoop()
-	{
-		myUglyCanvas->emscriptenMainLoop();
-	}	
-}
-
 void
 Canvas::run()
 {
@@ -301,7 +292,6 @@ Canvas::run()
 
 #ifdef EMSCRIPTEN
 	_canvases.push_back(shared_from_this());
-	myUglyCanvas = shared_from_this();
 	if (_canvases.size() == 1)
 		emscripten_set_main_loop(myUglyLoop, 0, 1);
 #else
