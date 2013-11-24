@@ -57,21 +57,15 @@ namespace minko
         protected:
             virtual
 			void
-			start(NodePtr target)
-			{
-				// nothing
-			}
+			start(NodePtr target);
 
 			virtual
 			void
 			update(NodePtr target);
 
-			virtual
-			void
-			stop(NodePtr target)
-			{
-				// nothing
-			}
+            virtual
+            void
+            stop(NodePtr target);
 
         private:
             LUAScript(lua_State* state, const std::string& name) :
@@ -80,6 +74,9 @@ namespace minko
             {
 
             }
+
+            void
+            runScriptMethod(const std::string& methodName, NodePtr target);
         };
     }
 }
