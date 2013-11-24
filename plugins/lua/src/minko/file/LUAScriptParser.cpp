@@ -49,7 +49,7 @@ LUAScriptParser::parse(const std::string&				    filename,
     if (luaL_loadstring(state.state(), std::string((char*)&data[0], data.size()).c_str()))
     {
         auto error = lua_tostring(state.state(), -1);
-
+        
         std::cerr << error << std::endl;
         throw std::runtime_error(error);
     }
