@@ -17,16 +17,27 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ]]--
 
-test = {}
+framerate = {
+	previousTime = 0,
+	numFrames = 0
+}
 
-function test:start(nodeName)
-	print("test.start")
+function framerate:start(nodeName)
+	self.previousTime = os.clock();
 end
 
-function test:update(nodeName)
-	print("test.update")
+function framerate:update(nodeName)
+	local time = os.clock();
+	local deltaTime = time - self.previousTime;
+
+	if deltaTime > 5 then
+		print("framerate: " .. string.format("%g", self.numFrames / deltaTime))
+		self.numFrames = 0;
+		self.previousTime = time;
+	end
+
+	self.numFrames = self.numFrames + 1
 end
 
-function test:stop(nodeName)
-	print("test.stop")
-end
+--function framerate:stop(nodeName)
+--end
