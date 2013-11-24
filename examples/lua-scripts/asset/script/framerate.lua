@@ -27,13 +27,13 @@ function framerate:start(nodeName)
 end
 
 function framerate:update(nodeName)
-	local time = os.clock();
-	local deltaTime = time - self.previousTime;
+	local time = os.clock()
+	local deltaTime = time - self.previousTime
 
 	if deltaTime > 5 then
 		print("framerate: " .. string.format("%g", self.numFrames / deltaTime))
-		self.numFrames = 0;
-		self.previousTime = time;
+		self.numFrames = 0
+		self.previousTime = time
 	end
 
 	self.numFrames = self.numFrames + 1
