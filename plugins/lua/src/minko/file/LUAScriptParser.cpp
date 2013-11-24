@@ -21,16 +21,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/component/LUAScript.hpp"
 #include "minko/file/AssetLibrary.hpp"
-
-#include "lua.hpp"
-
-#define constexpr const
-#define uint unsigned int
-#include "LuaGlue/LuaGlue.h"
-#undef constexpr
-#undef uint
-
 #include "minko/scene/Node.hpp"
+
+#include "LuaGlue/LuaGlue.h"
 
 using namespace minko;
 using namespace minko::file;

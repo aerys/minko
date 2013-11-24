@@ -22,8 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/scene/Node.hpp"
 
 #include "lua.hpp"
-#include "lualib.h"
-#include "lauxlib.h"
 
 using namespace minko;
 using namespace minko::component;

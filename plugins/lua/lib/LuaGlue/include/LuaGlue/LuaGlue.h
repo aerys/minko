@@ -1,6 +1,8 @@
 #ifndef LUAGLUE_H_GUARD
 #define LUAGLUE_H_GUARD
 
+#include "LuaGlueCompat.h"
+
 #include <lua.hpp>
 #include <string>
 #include <map>

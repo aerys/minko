@@ -6,12 +6,14 @@ newoption {
 minko.project.library "plugin-lua"
 	kind "StaticLib"
 	language "C++"
-	files { "src/**.hpp", "src/**.h", "src/**.cpp", "src/**.c" }
+	files { "src/**.hpp", "src/**.cpp" }
 	includedirs { "src" }
 	
 	-- lua
-	files { "lib/lua/src/**.cpp", "lua/src/**.h" }
+	files { "lib/lua/src/**.c", "lua/src/**.h" }
 	includedirs { "lib/lua/src" }
+	excludes { "lib/lua/src/luac.c" }
+	defines { "_CRT_SECURE_NO_WARNINGS" }
 	
 	-- luaglue
 	includedirs { "lib/LuaGlue/include" }
