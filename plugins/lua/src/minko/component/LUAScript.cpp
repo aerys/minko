@@ -27,11 +27,34 @@ using namespace minko;
 using namespace minko::component;
 
 void
-LUAScript::update(scene::Node::Ptr node)
+LUAScript::runScriptMethod(const std::string& methodName, scene::Node::Ptr target)
 {
     lua_getglobal(_luaState, _scriptName.c_str());
     auto index = lua_gettop(_luaState);
-    lua_getfield(_luaState, index, "update");
-    if (lua_pcall(_luaState, 0, 0, 0) != 0)
-        std::cerr << "error running function `update': " << lua_tostring(_luaState, -1) << std::endl;
+    lua_getfield(_luaState, index, methodName.c_str());
+    if (lua_isfunction(_luaState, -1))
+    {
+        lua_pushvalue(_luaState, -2);
+        lua_pushstring(_luaState, target->name().c_str());
+        if (lua_pcall(_luaState, 2, 0, 0) != 0)
+            std::cerr << "error running function '" << methodName << "': " << lua_tostring(_luaState, -1) << std::endl;
+    }
+}
+
+void
+LUAScript::start(scene::Node::Ptr node)
+{
+    runScriptMethod("start", node);
+}
+
+void
+LUAScript::update(scene::Node::Ptr node)
+{
+    runScriptMethod("update", node);
+}
+
+void
+LUAScript::stop(scene::Node::Ptr node)
+{
+    runScriptMethod("stop", node);
 }
