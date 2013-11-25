@@ -59,6 +59,7 @@ class LuaGlueProperty : public LuaGluePropertyBase
 		{
 			//printf("getProp: %s::%s\n", glueClass->name().c_str(), name_.c_str());
 			getReturnVal(state, obj, std::is_pointer<_Type>());
+			//returnValue<_Type>(glueClass->luaGlue(), state, obj->*prop_);
 		}
 		
 		void setProp(lua_State *state, _Class *obj, std::true_type)

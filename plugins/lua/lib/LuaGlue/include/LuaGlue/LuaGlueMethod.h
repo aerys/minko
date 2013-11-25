@@ -55,7 +55,7 @@ class LuaGlueMethod : public LuaGlueMethodBase
 			ClassType *obj = *(ClassType **)lua_touserdata(state, 1);
 #endif
 			ReturnType ret = applyTuple(glueClass->luaGlue(), state, (_Class *)obj, fn, args);
-			if(Arg_Count_) lua_pop(state, Arg_Count_);
+			if(Arg_Count_) lua_pop(state, (int)Arg_Count_);
 			
 			returnValue(glueClass->luaGlue(), state, ret);
 			return 1;
