@@ -17,33 +17,21 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "DevILParser.hpp"
+#include "DevILWriter.hpp"
 
-#include "minko/file/Options.hpp"
-#include "minko/file/AssetLibrary.hpp"
-#include "minko/render/Texture.hpp"
-
-#include <IL/il.h>
-#include <IL/ilu.h>
-#include <IL/ilut.h>
+#include "IL/il.h"
+#include "IL/ilu.h"
+#include "IL/ilut.h"
 
 using namespace minko::file;
 
 void
-DevILParser::parse(const std::string&                 filename,
-                 const std::string&                 resolvedFilename,
-                 std::shared_ptr<Options>           options,
+DevILWriter::write(const std::string&                 filename,
                  const std::vector<unsigned char>&  data,
-                 std::shared_ptr<AssetLibrary>      AssetLibrary)
+                 minko::uint                        width,
+                 minko::uint                        height)
 {
 	ILuint devilID;
-	ILuint error;
-
-	int width = -1;
-	int height = -1;
-	int format = -1;
-	
-	// DevIL reference : http://www-f9.ijs.si/~matevz/docs/DevIL/apireference.html
 
 	ilInit();
 	iluInit();
@@ -52,44 +40,21 @@ DevILParser::parse(const std::string&                 filename,
 	ilBindImage(devilID);
 
 	ilLoadL(IL_TYPE_UNKNOWN, &data[0], data.size());
-
 	checkError();
 
-	width = ilGetInteger(IL_IMAGE_WIDTH);
-	height = ilGetInteger(IL_IMAGE_HEIGHT);
-
-	format = ilGetInteger(IL_IMAGE_FORMAT);
-
-
-	if (format == IL_BGR || format == IL_BGRA)
-		iluSwapColours();
-
+	ilEnable(IL_FILE_OVERWRITE);
+	ilSaveImage(filename.c_str());
 	checkError();
-
-	format = ilGetInteger(IL_IMAGE_FORMAT);
-
-	auto bmpData = ilGetData();
-
-	checkError();
-
-	auto texture = render::Texture::create(options->context(), width, height, options->generateMipmaps());
-
-	texture->data(bmpData, format == IL_RGBA ? minko::render::Texture::RGBA : minko::render::Texture::RGB);
-	texture->upload();
-
-	AssetLibrary->texture(filename, texture);
-		
-	complete()->execute(shared_from_this());
 
 	ilShutDown();
 }
 
-
 void
-DevILParser::checkError()
+DevILWriter::checkError()
 {
 	ILuint error = ilGetError();
 
 	if (error != IL_NO_ERROR)
-		throw std::runtime_error(std::string("DevILParser::parse"));
+		throw std::runtime_error(std::string("DevILWriter::write"));
 }
+
