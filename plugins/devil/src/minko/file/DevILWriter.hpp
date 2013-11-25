@@ -21,36 +21,32 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 
-#include "minko/file/AbstractParser.hpp"
-
 namespace minko
 {
 	namespace file
 	{
-		class DevILParser :
-			public AbstractParser,
-			public std::enable_shared_from_this<DevILParser>
+		class DevILWriter :
+			public std::enable_shared_from_this<DevILWriter>
 		{
 		public:
-			typedef std::shared_ptr<DevILParser> Ptr;
+			typedef std::shared_ptr<DevILWriter> Ptr;
 
 		public:
 			inline static
 			Ptr
 			create()
 			{
-				return std::shared_ptr<DevILParser>(new DevILParser());
+				return std::shared_ptr<DevILWriter>(new DevILWriter());
 			}
 
 			void
-			parse(const std::string&				filename,
-				  const std::string&                resolvedFilename,
-                  std::shared_ptr<Options>          options,
-				  const std::vector<unsigned char>&	data,
-				  std::shared_ptr<AssetLibrary>	AssetLibrary);
+			write(const std::string&                 filename,
+			      const std::vector<unsigned char>&  data,
+			      minko::uint                        width,
+			      minko::uint                        height);
 
 		private:
-			DevILParser()
+			DevILWriter()
 			{
 			}
 
