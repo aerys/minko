@@ -29,11 +29,11 @@ namespace minko
 {
     namespace component
     {
-        class LUAScript :
+        class LuaScript :
             public AbstractScript
         {
         public:
-            typedef std::shared_ptr<LUAScript>  Ptr;
+            typedef std::shared_ptr<LuaScript>  Ptr;
 
         private:
             typedef std::shared_ptr<scene::Node>    NodePtr;
@@ -47,7 +47,7 @@ namespace minko
             Ptr
             create(lua_State* luaState, const std::string& name)
             {
-                auto script = std::shared_ptr<LUAScript>(new LUAScript(luaState, name));
+                auto script = std::shared_ptr<LuaScript>(new LuaScript(luaState, name));
 
                 script->initialize();
 
@@ -68,7 +68,7 @@ namespace minko
             stop(NodePtr target);
 
         private:
-            LUAScript(lua_State* state, const std::string& name) :
+            LuaScript(lua_State* state, const std::string& name) :
                 _luaState(state),
                 _scriptName(name)
             {
