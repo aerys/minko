@@ -162,7 +162,7 @@ class LuaGlueSymTab
 		
 		const Symbol &findSym(int idx)
 		{
-			if(idx < 0 || (unsigned int)idx > items.size())
+			if(idx < 0 || idx > (int)items.size())
 			{
 				//printf("findSym(%i): not found\n", idx);
 				return nullSymbol;
