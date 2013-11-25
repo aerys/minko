@@ -1,8 +1,13 @@
 minko.project = {}
 
 minko.project.library = function(name)
-	project(name)
 
+	if solution()["projects"]["framework"] == nil then
+		include(minko.sdk.path('framework'))
+	end
+
+	project(name)
+	
 	includedirs { minko.sdk.path("/framework/src") }
 	
 	configuration { "debug"}
@@ -40,8 +45,6 @@ end
 minko.project.application = function(name)
 
 	minko.project.library(name)
-
-	links { "framework" }
 
 	configuration { "windows" }
 		links { "OpenGL32", "glew32" }
