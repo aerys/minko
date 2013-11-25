@@ -19,5 +19,5 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #pragma once
 
-#include "minko/component/LUAScript.hpp"
-#include "minko/file/LUAScriptParser.hpp"
+#include "minko/component/LuaScript.hpp"
+#include "minko/file/LuaScriptParser.hpp"
