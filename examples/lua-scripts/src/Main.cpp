@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Minko.hpp"
 #include "minko/MinkoPNG.hpp"
 #include "minko/MinkoSDL.hpp"
-#include "minko/MinkoLUA.hpp"
+#include "minko/MinkoLua.hpp"
 
 using namespace minko;
 using namespace minko::component;
@@ -36,7 +36,7 @@ int main(int argc, char** argv)
 	sceneManager->assets()->defaultOptions()->generateMipmaps(true);
 	sceneManager->assets()
 		->registerParser<file::PNGParser>("png")
-        ->registerParser<file::LUAScriptParser>("lua")
+        ->registerParser<file::LuaScriptParser>("lua")
         ->queue("script/test.lua")
         ->queue("script/framerate.lua")
 		->queue("texture/box.png")
