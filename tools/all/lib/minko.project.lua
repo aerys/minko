@@ -45,6 +45,8 @@ end
 minko.project.application = function(name)
 
 	minko.project.library(name)
+	
+	links { "framework" }
 
 	configuration { "windows" }
 		links { "OpenGL32", "glew32" }
