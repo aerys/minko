@@ -27,18 +27,18 @@ namespace minko
 {
     namespace file
     {
-        class LUAScriptParser :
+        class LuaScriptParser :
             public AbstractParser
         {
         public:
-            typedef std::shared_ptr<LUAScriptParser>    Ptr;
+            typedef std::shared_ptr<LuaScriptParser>    Ptr;
 
         public:
             static inline
             Ptr
             create()
             {
-                return std::shared_ptr<LUAScriptParser>(new LUAScriptParser());
+                return std::shared_ptr<LuaScriptParser>(new LuaScriptParser());
             }
 
             void
