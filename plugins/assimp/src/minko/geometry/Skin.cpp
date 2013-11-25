@@ -21,7 +21,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include <minko/scene/Node.hpp>
 #include <minko/math/Matrix4x4.hpp>
-#include
+#include <minko/geometry/Bone.hpp>
+
 using namespace minko;
 using namespace minko::scene;
 using namespace minko::math;
@@ -41,21 +42,21 @@ Skin::clear()
 void
 Skin::reorganizeByVertices()
 {
-	numVertexBones.clear();
-	vertexBones.clear();
-	vertexBoneWeights.clear();
+	_numVertexBones.clear();
+	_vertexBones.clear();
+	_vertexBoneWeights.clear();
 
 	const unsigned int lastId		= lastVertexId();
 	const unsigned int numVertices	= lastId + 1;
-	const unsigned int numBones		= bones.size();
+	const unsigned int numBones		= _bones.size();
 
-	numVertexBones		.resize(numVertices,			0);
-	vertexBones			.resize(numVertices * numBones, 0);
-	vertexBoneWeights	.resize(numVertices * numBones, 0.0f);
+	_numVertexBones		.resize(numVertices,			0);
+	_vertexBones		.resize(numVertices * numBones, 0);
+	_vertexBoneWeights	.resize(numVertices * numBones, 0.0f);
 
 	for (unsigned int boneId = 0; boneId < numBones; ++boneId)
 	{
-		auto				bone			= bones[boneId];
+		auto				bone			= _bones[boneId];
 		const unsigned int	numBoneVertices = bone->vertexIds().size();
 
 		assert(bone.vertexWeight.size() == numBoneVertices);
