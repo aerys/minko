@@ -2,7 +2,7 @@ solution "minko"
 	configurations { "debug", "release" }
 
 	dofile('sdk.lua')
-	
+
 	-- examples
 	include 'examples/sponza'
 	include 'examples/cube'
