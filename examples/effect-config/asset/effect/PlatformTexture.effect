@@ -11,7 +11,7 @@
     
     "uniformBindings"   : {
         "modelToWorldMatrix"    : "transform.modelToWorldMatrix",
-        "worldToScreenMatrix"   : "camera.worldToScreenMatrix"
+        "worldToScreenMatrix"   : { "property" : "camera.worldToScreenMatrix", "source" : "renderer" }
     },
 	
 	"macroBindings" : {
@@ -29,6 +29,7 @@
     
 	"techniques" : [
 		{
+			"name" : "windows",
 			"configuration" : [ "windows" ],
 			"uniformBindings" : {
 				"diffuseMap"	: { "property" : "material.diffuseMap", "default" : "windows.jpg" }
@@ -36,6 +37,7 @@
 			"passes" : [ "basic pass" ]
 		},
 		{
+			"name" : "macosx",
 			"configuration" : [ "macosx" ],
 			"uniformBindings" : {
 				"diffuseMap"	: { "property" : "material.diffuseMap", "default" : "macosx.jpg" }
@@ -43,6 +45,7 @@
 			"passes" : [ "basic pass" ]
 		},
 		{
+			"name" : "linux",
 			"configuration" : [ "linux" ],
 			"uniformBindings" : {
 				"diffuseMap"	: { "property" : "material.diffuseMap", "default" : "linux.jpg" }
