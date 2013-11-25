@@ -17,7 +17,7 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "LUAScript.hpp"
+#include "LuaScript.hpp"
 
 #include "minko/scene/Node.hpp"
 
@@ -27,7 +27,7 @@ using namespace minko;
 using namespace minko::component;
 
 void
-LUAScript::runScriptMethod(const std::string& methodName, scene::Node::Ptr target)
+LuaScript::runScriptMethod(const std::string& methodName, scene::Node::Ptr target)
 {
     lua_getglobal(_luaState, _scriptName.c_str());
     auto index = lua_gettop(_luaState);
@@ -42,19 +42,19 @@ LUAScript::runScriptMethod(const std::string& methodName, scene::Node::Ptr targe
 }
 
 void
-LUAScript::start(scene::Node::Ptr node)
+LuaScript::start(scene::Node::Ptr node)
 {
     runScriptMethod("start", node);
 }
 
 void
-LUAScript::update(scene::Node::Ptr node)
+LuaScript::update(scene::Node::Ptr node)
 {
     runScriptMethod("update", node);
 }
 
 void
-LUAScript::stop(scene::Node::Ptr node)
+LuaScript::stop(scene::Node::Ptr node)
 {
     runScriptMethod("stop", node);
 }
