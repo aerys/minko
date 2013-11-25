@@ -62,15 +62,55 @@ class LuaGlueClass : public LuaGlueClassBase
 		const std::string &name() { return name_; }
 		
 		template<typename _Ret, typename... _Args>
-		_Ret invokeLuaMethod(const std::string &name, _Class *obj, _Args... args)
+		_Ret invokeMethod(const std::string &name, _Class *obj, _Args... args)
 		{
-			// TODO: maybe add LuaGlueObject wrapper, so we can create a single userdata
-			//  and just pass it around.
+			const unsigned int Arg_Count_ = sizeof...(_Args);
+			
+			// note, there is no direct support for overridden methods. each method registered with LuaGlue
+			//  must have a different "name" when registered.
+			
+			pushInstance(luaGlue_->state(), obj);
+			//printf("attempting to get method %s::%s\n", name_.c_str(), name.c_str());
+			lua_getfield(luaGlue_->state(), -1, name.c_str());
+			//lua_dump_stack(luaGlue_->state());
+		
+			lua_pushvalue(luaGlue_->state(), -2);
+			applyTuple(*luaGlue_, luaGlue_->state(), args...);
+			
+			//using Alias=char[];
+			//Alias{ (returnValue(*luaGlue_, luaGlue_->state(), args), void(), '\0')... };
+			
+			lua_call(luaGlue_->state(), Arg_Count_+1, 1);
+			lua_remove(luaGlue_->state(), -2);
+			return getValue<_Ret>(*luaGlue_, luaGlue_->state(), -1);
+		}
+		
+		template<typename... _Args>
+		void invokeVoidMethod(const std::string &name, _Class *obj, _Args... args)
+		{
+			const unsigned int Arg_Count_ = sizeof...(_Args);
+			
+			// note, there is no direct support for overridden methods. each method registered with LuaGlue
+			//  must have a different "name" when registered.
+			
+			pushInstance(luaGlue_->state(), obj);
+			//printf("attempting to get method %s::%s\n", name_.c_str(), name.c_str());
+			lua_getfield(luaGlue_->state(), -1, name.c_str());
+			//lua_dump_stack(luaGlue_->state());
+		
+			lua_pushvalue(luaGlue_->state(), -2);
+			applyTuple(*luaGlue_, luaGlue_->state(), args...);
+			
+			//using Alias=char[];
+			//Alias{ (returnValue(*luaGlue_, luaGlue_->state(), args), void(), '\0')... };
+			
+			lua_call(luaGlue_->state(), Arg_Count_+1, 0);
+			lua_pop(luaGlue_->state(), 1);
 		}
 		
 		LuaGlueClass<_Class> &pushInstance(_Class *obj)
 		{
-			return pushInstance(luaGlue->state(), obj);
+			return pushInstance(luaGlue_->state(), obj);
 		}
 		
 		LuaGlueClass<_Class> &pushInstance(lua_State *state, _Class *obj)
@@ -155,7 +195,7 @@ class LuaGlueClass : public LuaGlueClassBase
 			
 			return *this;
 		}
-
+		
 		template<typename... _Args>
 		LuaGlueClass<_Class> &method(const std::string &name, void (_Class::*fn)(_Args...))
 		{
@@ -215,8 +255,6 @@ class LuaGlueClass : public LuaGlueClassBase
 		{
 			lua_createtable(luaGlue->state(), 0, 0);
 			//int lib_id = lua_gettop(luaGlue->state());
-			lua_pushvalue(luaGlue->state(), -1);
-			lua_setglobal(luaGlue->state(), name_.c_str());
 			
 			for(auto &method: static_methods)
 			{
@@ -257,7 +295,7 @@ class LuaGlueClass : public LuaGlueClassBase
 			lua_pushcclosure(luaGlue->state(), &lua_newindex, 1);
 			lua_setfield(luaGlue->state(), meta_id, "__newindex");
 			
-			lua_pushvalue(luaGlue->state(), -1);
+			lua_pushvalue(luaGlue->state(), -2);
 			lua_setfield(luaGlue->state(), meta_id, "__metatable");
 			
 			for(auto &method: methods)
@@ -281,11 +319,14 @@ class LuaGlueClass : public LuaGlueClassBase
 					return false;
 			}
 			
-			lua_pushvalue(luaGlue->state(), -1);
+			//lua_pushvalue(luaGlue->state(), -1);
 			lua_setmetatable(luaGlue->state(), -2);
 			
-			lua_pop(luaGlue->state(), 2);
-			//lua_stack_dump(luaGlue->state());
+			lua_pushvalue(luaGlue->state(), -1);
+			lua_setglobal(luaGlue->state(), name_.c_str());
+			
+			//lua_pop(luaGlue->state(), 2);
+
 			//printf("done.\n");
 			return true;
 		}
@@ -309,35 +350,30 @@ class LuaGlueClass : public LuaGlueClassBase
 		int index(lua_State *state)
 		{
 			//printf("index!\n");
+			
 			int type = lua_type(state, 2);
 			if(type == LUA_TSTRING)
 			{
 				const char *key = lua_tostring(state, 2);
-				//printf("index: got a string: %s\n", key);
-				luaL_getmetatable(state, this->name().c_str());
-				//lua_pushstring(state, key);
-				lua_pushvalue(state, 2);
-				lua_rawget(state, -2);
-				lua_remove(state, -2);
-				lua_remove(state, -2);
+
+				lua_getmetatable(state, 1);
+				lua_pushvalue(state, 2); // push key
 				
+				lua_rawget(state, -2); // get function
+				lua_remove(state, -2); // remove metatable
+					
 				if(properties_.exists(key))
 				{
 					//printf("prop!\n");
-					lua_pushvalue(state, 1);
+					lua_pushvalue(state, 1); // push args
 					lua_pushvalue(state, 2);
-					lua_call(state, 2, 1);
-					
-					//lua_dump_stack(state);
+					lua_call(state, 2, 1); // call function
 				}
 				
 			}
 			else if(type == LUA_TNUMBER)
 			{
-				//int idx = lua_tointeger(state, 2);
-				//printf("index: got a number: %d\n", idx);
-				
-				luaL_getmetatable(state, this->name().c_str());
+				lua_getmetatable(state, 1);
 				lua_pushstring(state, "m__index");
 				
 				lua_rawget(state, -2); // get m__index method from metatable
@@ -363,37 +399,45 @@ class LuaGlueClass : public LuaGlueClassBase
 		
 		int newindex(lua_State *state)
 		{
-			//printf("newindex begin!\n");
 			int type = lua_type(state, 2);
 			if(type == LUA_TSTRING)
 			{
 				const char *key = lua_tostring(state, 2);
-				//printf("newindex: got a string: %s\n", key);
-				luaL_getmetatable(state, this->name().c_str());
-				//lua_pushstring(state, key);
-				lua_pushvalue(state, 2);
-				lua_rawget(state, -2);
-				lua_remove(state, -2);
+
+				lua_getmetatable(state, 1); // get metatable
 				
 				if(properties_.exists(key))
 				{
+					lua_pushvalue(state, 2); // push key
+					lua_rawget(state, -2); // get field
+					lua_remove(state, -2); // remove metatable
+				
 					lua_pushvalue(state, 1); // push self
 					lua_pushvalue(state, 2); // push key
 					lua_pushvalue(state, 3); // push value
 				
-					lua_call(state, 3, 0);
+					lua_call(state, 3, 0); // call function from field above
 					
 					//lua_dump_stack(state);
 				}
+				else
+				{
+					lua_pushvalue(state, 2); // push key
+					lua_pushvalue(state, 3); // push value
+					
+					//lua_dump_stack(state);
+					lua_rawset(state, -3);
+					//lua_dump_stack(state);
+				}
+				
+				lua_pop(state, 1);
 			}
 			else if(type == LUA_TNUMBER)
 			{
-				//int idx = lua_tointeger(state, 2);
-				//printf("newindex: got a number: %d == %s\n", idx, lua_tostring(state, 3));
+				lua_getmetatable(state, 1);
 				
-				luaL_getmetatable(state, this->name().c_str());
 				lua_pushstring(state, "m__newindex");
-				lua_rawget(state, -2);
+				lua_rawget(state, -2); // get method
 				lua_remove(state, -2); // remove metatable
 				
 				if(lua_isfunction(state, -1)) {

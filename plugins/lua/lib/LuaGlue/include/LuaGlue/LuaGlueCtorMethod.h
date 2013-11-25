@@ -42,11 +42,13 @@ class LuaGlueCtorMethod : public LuaGlueMethodBase
 		
 		int invoke(lua_State *state)
 		{
+			
 			_Class *obj = applyTuple<_Class>(glueClass->luaGlue(), state, args);
 			lua_pop(state, Arg_Count_);
 			_Class **udata = (_Class **)lua_newuserdata(state, sizeof(_Class *));
 			*udata = obj;
 			
+			//lua_getmetatable(state, 1);
 			luaL_getmetatable(state, glueClass->name().c_str());
 			lua_setmetatable(state, -2);
 
