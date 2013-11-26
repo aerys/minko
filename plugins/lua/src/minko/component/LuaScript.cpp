@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/scene/Node.hpp"
 
-#include "lua.hpp"
+#include "LuaGlue/LuaGlue.h"
 
 using namespace minko;
 using namespace minko::component;
@@ -29,15 +29,15 @@ using namespace minko::component;
 void
 LuaScript::runScriptMethod(const std::string& methodName, scene::Node::Ptr target)
 {
-    lua_getglobal(_luaState, _scriptName.c_str());
-    auto index = lua_gettop(_luaState);
-    lua_getfield(_luaState, index, methodName.c_str());
-    if (lua_isfunction(_luaState, -1))
+    lua_getglobal(_state.state(), _scriptName.c_str());
+    auto index = lua_gettop(_state.state());
+    lua_getfield(_state.state(), index, methodName.c_str());
+    if (lua_isfunction(_state.state(), -1))
     {
-        lua_pushvalue(_luaState, -2);
-        lua_pushstring(_luaState, target->name().c_str());
-        if (lua_pcall(_luaState, 2, 0, 0) != 0)
-            std::cerr << "error running function '" << methodName << "': " << lua_tostring(_luaState, -1) << std::endl;
+        lua_pushvalue(_state.state(), -2);
+        lua_pushstring(_state.state(), target->name().c_str());
+        if (lua_pcall(_state.state(), 2, 0, 0) != 0)
+            std::cerr << "error running function '" << methodName << "': " << lua_tostring(_state.state(), -1) << std::endl;
     }
 }
 
