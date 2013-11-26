@@ -58,3 +58,36 @@ DevILWriter::checkError()
 		throw std::runtime_error(std::string("DevILWriter::write"));
 }
 
+std::set<std::string>
+DevILWriter::getSupportedFileExensions()
+{
+	std::set<std::string> result;
+
+	result.insert("bmp");
+	result.insert("dds");
+	//result.insert("exr");
+	result.insert("h");
+	result.insert("hdr");
+	result.insert("jpg");
+	result.insert("jpe");
+	result.insert("jpeg");
+	result.insert("jp2");
+	result.insert("pal");
+	result.insert("pcx");
+	result.insert("png");
+	result.insert("pbm");
+	result.insert("pgm");
+	result.insert("pnm");
+	result.insert("psd");
+	result.insert("raw");
+	result.insert("sgi");
+	result.insert("bw");
+	result.insert("rgb");
+	result.insert("rgba");
+	result.insert("tga");
+	result.insert("tif");
+	result.insert("vtf");
+
+	return result;
+}
+
