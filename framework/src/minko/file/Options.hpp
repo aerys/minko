@@ -48,6 +48,7 @@ namespace minko
 			std::list<std::string>						_platforms;
 
             bool                                        _generateMipMaps;
+			unsigned int								_skinningNumFPS;
             std::shared_ptr<render::Effect>             _effect;
 			MaterialPtr									_material;
 			MaterialFunction							_materialFunction;
@@ -115,6 +116,20 @@ namespace minko
             {
                 _generateMipMaps = generateMipmaps;
             }
+
+			inline
+			unsigned int
+			skinningNumFPS() const
+			{
+				return _skinningNumFPS;
+			}
+
+			inline
+			void
+			skinningNumFPS(unsigned int value)
+			{
+				_skinningNumFPS = value;
+			}
 
             inline
             std::shared_ptr<render::Effect>
