@@ -36,5 +36,9 @@ Bone::Bone(Node::Ptr							node,
 	_vertexIds(vertexIds),
 	_vertexWeights(vertexWeights)
 {
+	if (_node == nullptr)
+		throw std::invalid_argument("node");
 
+	if (_vertexIds.size() != _vertexWeights.size())
+		throw std::logic_error("A bone's arrays of vertex indices and vertex weights must have the same size.");
 }

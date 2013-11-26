@@ -21,7 +21,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Common.hpp"
 #include "minko/file/AbstractParser.hpp"
 #include "minko/file/Loader.hpp"
-#include "minko/component/Skin.hpp"
 
 struct	aiMesh;
 struct	aiNode;
@@ -37,6 +36,12 @@ enum	aiTextureType;
 
 namespace minko
 {
+	namespace geometry
+	{
+		class Bone;
+		class Skin;
+	}
+
 	namespace file
 	{
 		class ASSIMPParser :
@@ -49,7 +54,9 @@ namespace minko
             typedef std::shared_ptr<AbstractLoader>					LoaderPtr;
 			typedef std::shared_ptr<scene::Node>					NodePtr;
 			typedef std::shared_ptr<component::SceneManager>		SceneManagerPtr;
-
+			typedef std::shared_ptr<geometry::Geometry>				GeometryPtr;
+			typedef std::shared_ptr<geometry::Bone>					BonePtr;
+			typedef std::shared_ptr<geometry::Skin>					SkinPtr;
 			typedef std::shared_ptr<math::Vector3>					Vector3Ptr;
 			typedef std::shared_ptr<math::Quaternion>				QuaternionPtr;
 			typedef std::shared_ptr<math::Matrix4x4>				Matrix4x4Ptr;
@@ -75,8 +82,6 @@ namespace minko
 			NodeMap									_nameToNode;
 			NodeMap									_nameToMesh;
 			MatrixNodeMap							_nameToAnimMatrices;
-
-			std::vector<NodePtr>					_bones;
 
 			LoaderToSlotMap							_loaderCompleteSlots;
 			LoaderToSlotMap							_loaderErrorSlots;
@@ -119,8 +124,8 @@ namespace minko
             void
 			createSceneTree(NodePtr minkoNode, const aiScene* scene, aiNode* ainode);
 
-            void
-            createMeshGeometry(NodePtr minkoNode, aiMesh* mesh);
+            GeometryPtr
+            createMeshGeometry(NodePtr, aiMesh*);
             
             std::shared_ptr<component::Transform>
             getTransformFromAssimp(aiNode* ainode);
@@ -147,11 +152,11 @@ namespace minko
 			void
 			getSkinningFromAssimp(const aiScene*, unsigned int numFPS);
 
-			bool
-			getSkinningFromAssimp(const aiMesh*, component::Skin&) const;
+			SkinPtr
+			getSkinningFromAssimp(const aiMesh*) const;
 
-			void 
-			getSkinningFromAssimp(const aiBone*, component::Bone&) const;
+			BonePtr 
+			getSkinningFromAssimp(const aiBone*) const;
 
 			unsigned int
 			getNumFrames(const aiMesh*) const;
