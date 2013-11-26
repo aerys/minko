@@ -43,18 +43,38 @@ namespace minko
 		private:
 			typedef std::shared_ptr<scene::Node>					NodePtr;
 			typedef std::shared_ptr<math::Matrix4x4>				Matrix4x4Ptr;
+			typedef std::shared_ptr<render::AbstractContext>		AbstractContextPtr;
 			typedef std::shared_ptr<render::VertexBuffer>			VertexBufferPtr;
 			typedef std::shared_ptr<component::AbstractComponent>	AbsCmpPtr;
 			typedef std::shared_ptr<component::SceneManager>		SceneManagerPtr;
 			typedef std::shared_ptr<geometry::Geometry>				GeometryPtr;
 			typedef std::shared_ptr<geometry::Skin>					SkinPtr;
+			typedef std::shared_ptr<data::Provider>					ProviderPtr;
+			typedef std::shared_ptr<data::ArrayProvider>			ArrayProviderPtr;
 
 			typedef Signal<AbsCmpPtr, NodePtr>						TargetAddedOrRemovedSignal;
 			typedef Signal<NodePtr, NodePtr, NodePtr>				AddedOrRemovedSignal;
 			typedef Signal<SceneManagerPtr>							SceneManagerSignal;
 
+		public:
+			static const std::string								PNAME_BONE_MATRICES;
+			static const std::string								ATTRNAME_BONE_IDS_A;
+			static const std::string								ATTRNAME_BONE_IDS_B;
+			static const std::string								ATTRNAME_BONE_WEIGHTS_A;
+			static const std::string								ATTRNAME_BONE_WEIGHTS_B;
+			static const unsigned int								MAX_NUM_BONES_PER_VERTEX;
+
+		private:
+			static const std::string								ATTRNAME_POSITION;
+			static const std::string								ATTRNAME_NORMAL;
+
 		private:
 			const SkinPtr											_skin;
+			AbstractContextPtr										_context;
+
+			ArrayProviderPtr										_boneMatricesData; // current frame
+			render::VertexBuffer::Ptr								_boneVertexBuffer; // vertex buffer storing vertex attributes
+			//ProviderPtr												_
 
 			std::unordered_map<NodePtr, GeometryPtr>				_targetGeometry;
 			std::unordered_map<NodePtr, clock_t>					_targetStartTime;
@@ -71,9 +91,9 @@ namespace minko
 		public:
 			inline static
 			Ptr
-			create(SkinPtr skin)
+			create(const SkinPtr skin, AbstractContextPtr context)
 			{
-				Ptr ptr(new Skinning(skin));
+				Ptr ptr(new Skinning(skin, context));
 
 				ptr->initialize();
 
@@ -91,7 +111,7 @@ namespace minko
 			}
 
 		private:
-			explicit Skinning(SkinPtr);
+			Skinning(const SkinPtr, AbstractContextPtr);
 
 			void
 			initialize();
@@ -129,6 +149,9 @@ namespace minko
 									const std::vector<float>&, 
 									const std::vector<Matrix4x4Ptr>&, 
 									bool doDeltaTransform);
+
+			render::VertexBuffer::Ptr
+			createVertexBufferForBones() const;
 		};
 	}
 }
