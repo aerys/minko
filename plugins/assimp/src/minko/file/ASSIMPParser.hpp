@@ -48,25 +48,25 @@ namespace minko
 			public AbstractParser
 		{
 		public:
-			typedef std::shared_ptr<ASSIMPParser> Ptr;
+			typedef std::shared_ptr<ASSIMPParser>								Ptr;
 
         private:
-            typedef std::shared_ptr<AbstractLoader>					LoaderPtr;
-			typedef std::shared_ptr<scene::Node>					NodePtr;
-			typedef std::shared_ptr<component::SceneManager>		SceneManagerPtr;
-			typedef std::shared_ptr<geometry::Geometry>				GeometryPtr;
-			typedef std::shared_ptr<geometry::Bone>					BonePtr;
-			typedef std::shared_ptr<geometry::Skin>					SkinPtr;
-			typedef std::shared_ptr<math::Vector3>					Vector3Ptr;
-			typedef std::shared_ptr<math::Quaternion>				QuaternionPtr;
-			typedef std::shared_ptr<math::Matrix4x4>				Matrix4x4Ptr;
+            typedef std::shared_ptr<AbstractLoader>								LoaderPtr;
+			typedef std::shared_ptr<scene::Node>								NodePtr;
+			typedef std::shared_ptr<component::SceneManager>					SceneManagerPtr;
+			typedef std::shared_ptr<geometry::Geometry>							GeometryPtr;
+			typedef std::shared_ptr<geometry::Bone>								BonePtr;
+			typedef std::shared_ptr<geometry::Skin>								SkinPtr;
+			typedef std::shared_ptr<math::Vector3>								Vector3Ptr;
+			typedef std::shared_ptr<math::Quaternion>							QuaternionPtr;
+			typedef std::shared_ptr<math::Matrix4x4>							Matrix4x4Ptr;
 
-			typedef Signal<LoaderPtr>::Slot							LoaderSignalSlot;
+			typedef Signal<LoaderPtr>::Slot										LoaderSignalSlot;
 
-			typedef std::unordered_map<LoaderPtr, LoaderSignalSlot>	LoaderToSlotMap;
-			typedef std::unordered_map<aiTextureType, std::string>	TextureTypeToName;
-			typedef std::unordered_map<std::string, NodePtr>		NodeMap;
-			typedef std::unordered_map<std::string, std::vector<Matrix4x4Ptr>>	MatrixNodeMap;
+			typedef std::unordered_map<LoaderPtr, LoaderSignalSlot>				LoaderToSlotMap;
+			typedef std::unordered_map<aiTextureType, std::string>				TextureTypeToName;
+			typedef std::unordered_map<std::string, NodePtr>					NodeMap;
+			typedef std::unordered_map<std::string, std::vector<Matrix4x4Ptr>>	NodeMatrixMap;
 
         private:
 			static const TextureTypeToName			_textureTypeToName;
@@ -81,7 +81,7 @@ namespace minko
 
 			NodeMap									_nameToNode;
 			NodeMap									_nameToMesh;
-			MatrixNodeMap							_nameToAnimMatrices;
+			NodeMatrixMap							_nameToAnimMatrices;
 
 			LoaderToSlotMap							_loaderCompleteSlots;
 			LoaderToSlotMap							_loaderErrorSlots;
@@ -150,7 +150,7 @@ namespace minko
 						std::shared_ptr<file::Options>	options);
 
 			void
-			getSkinningFromAssimp(const aiScene*, unsigned int numFPS);
+			getSkinningFromAssimp(const aiScene*);
 
 			SkinPtr
 			getSkinningFromAssimp(const aiMesh*) const;
@@ -162,10 +162,10 @@ namespace minko
 			getNumFrames(const aiMesh*) const;
 
 			void
-			sampleAnimations(const aiScene*, unsigned int numFPS);
+			sampleAnimations(const aiScene*);
 
 			void
-			sampleAnimation(const aiAnimation*, unsigned int numFPS);
+			sampleAnimation(const aiAnimation*);
 
 			static
 			Vector3Ptr
