@@ -23,7 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/component/AbstractScript.hpp"
 
-struct lua_State;
+class LuaGlue;
 
 namespace minko
 {
@@ -39,15 +39,15 @@ namespace minko
             typedef std::shared_ptr<scene::Node>    NodePtr;
 
         private:
-            lua_State*      _luaState;
+            LuaGlue&        _state;
             std::string     _scriptName;
 
         public:
             static inline
             Ptr
-            create(lua_State* luaState, const std::string& name)
+            create(LuaGlue& state, const std::string& name)
             {
-                auto script = std::shared_ptr<LuaScript>(new LuaScript(luaState, name));
+                auto script = std::shared_ptr<LuaScript>(new LuaScript(state, name));
 
                 script->initialize();
 
@@ -68,8 +68,8 @@ namespace minko
             stop(NodePtr target);
 
         private:
-            LuaScript(lua_State* state, const std::string& name) :
-                _luaState(state),
+            LuaScript(LuaGlue& state, const std::string& name) :
+                _state(state),
                 _scriptName(name)
             {
 
