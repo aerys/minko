@@ -25,8 +25,10 @@ using namespace minko;
 using namespace minko::component;
 using namespace minko::math;
 
-const uint WINDOW_WIDTH = 800;
-const uint WINDOW_HEIGHT = 600;
+const uint			WINDOW_WIDTH	= 800;
+const uint			WINDOW_HEIGHT	= 600;
+const std::string	DEFAULT_EFFECT	= "effect/SkinnedBasic.effect";
+const std::string	MODEL_FILENAME	= "pirate.dae";
 
 int main(int argc, char** argv)
 {
@@ -38,8 +40,13 @@ int main(int argc, char** argv)
 	sceneManager->assets()
 		->registerParser<file::ASSIMPParser>("obj")
 		->registerParser<file::ASSIMPParser>("dae")
-		->queue("effect/Basic.effect")
-		->queue("male02.obj");
+		->load(DEFAULT_EFFECT);
+
+	sceneManager->assets()->defaultOptions()->skinningNumFPS(30);
+	sceneManager->assets()->defaultOptions()->effect(sceneManager->assets()->effect(DEFAULT_EFFECT));
+	sceneManager->assets()->defaultOptions()->material()->set("diffuseColor", Vector4::create(0.8, 0.1, 0.1, 1.0));
+	sceneManager->assets()
+		->queue(MODEL_FILENAME);
 
 	sceneManager->assets()->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()));
 
@@ -51,18 +58,31 @@ int main(int argc, char** argv)
 		auto camera = scene::Node::create("camera")
 			->addComponent(Renderer::create(0x7f7f7fff))
 			->addComponent(Transform::create(
-				Matrix4x4::create()->lookAt(Vector3::create(0.f, 1.f, 0.f), Vector3::create(0.f, 1.5f, 3.f))
+				Matrix4x4::create()->lookAt(Vector3::create(0.f, 0.f, 0.f), Vector3::create(0.f, 1.5f, 3.f))
 			))
 			->addComponent(PerspectiveCamera::create(
 				(float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, (float)PI * 0.25f, .1f, 1000.f)
 			);
 		root->addChild(camera);
 
-		auto model = assets->node("male02.obj")
+		auto model = assets->node(MODEL_FILENAME)
 			->addComponent(Transform::create(Matrix4x4::create()->appendScale(.01f)));
 
 		root->addChild(model);
 		
+		auto skinnedNodes = scene::NodeSet::create(model)
+			->descendants(true)
+			->where([](scene::Node::Ptr n){ return n->hasComponent<Skinning>(); });
+
+		
+		for (auto& skinnedNode : skinnedNodes->nodes())
+		{
+			//skinnedNode->component<Skinning>()->start();
+		}
+			
+		std::cout << "#skinned = " << skinnedNodes->nodes().size() << std::endl;
+
+
 		auto resized = canvas->resized()->connect([&](Canvas::Ptr canvas, uint w, uint h)
 		{
 			camera->component<PerspectiveCamera>()->aspectRatio((float)w / (float)h);
@@ -80,5 +100,3 @@ int main(int argc, char** argv)
 
 	return 0;
 }
-
-
