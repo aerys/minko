@@ -152,7 +152,7 @@ ASSIMPParser::parse(const std::string&					filename,
 	const unsigned int numFPS = 1;
 
 	createSceneTree(_symbol, scene, scene->mRootNode);
-	getSkinningFromAssimp(scene, numFPS);
+	getSkinningFromAssimp(scene);
 
 	if (_numDependencies == _numLoadedDependencies)
 		finalize();
@@ -201,32 +201,6 @@ ASSIMPParser::createSceneTree(scene::Node::Ptr minkoNode, const aiScene* scene, 
 		std::cout << "meshmap\t<- '" << minkoMesh->name() << "'" << std::endl;
 #endif // DEBUG_SKINNING
     }
-}
-
-void
-ASSIMPParser::getSkinningFromAssimp(const aiScene* aiscene, unsigned int numFPS)
-{
-	// resample all animations with the specified temporal precision 
-	// and store them in the _nameToAnimMatrices map.
-	sampleAnimations(aiscene, numFPS);
-
-	// add a Skinning component to all animated mesh
-	for (unsigned int meshId = 0; meshId < aiscene->mNumMeshes; ++meshId)
-	{
-		const auto	aimesh		= aiscene->mMeshes[meshId];
-		const auto	meshName	= std::string(aimesh->mName.C_Str());
-		const auto	skin		= getSkinningFromAssimp(aimesh);
-		
-		if (skin)
-		{
-			assert(_nameToMesh.count(meshName) > 0);
-			auto	meshNode	= _nameToMesh.find(meshName)->second;
-
-			skin->duration(skin->numFrames() / (float)numFPS);
-
-			meshNode->addComponent(Skinning::create(skin));
-		}
-	}
 }
 
 Geometry::Ptr
@@ -597,6 +571,35 @@ ASSIMPParser::getNumFrames(const aiMesh* aimesh) const
 	return numFrames;
 }
 
+void
+ASSIMPParser::getSkinningFromAssimp(const aiScene* aiscene)
+{
+	if (_options->skinningNumFPS() == 0)
+		return;
+
+	// resample all animations with the specified temporal precision 
+	// and store them in the _nameToAnimMatrices map.
+	sampleAnimations(aiscene);
+
+	// add a Skinning component to all animated mesh
+	for (unsigned int meshId = 0; meshId < aiscene->mNumMeshes; ++meshId)
+	{
+		const auto	aimesh		= aiscene->mMeshes[meshId];
+		const auto	meshName	= std::string(aimesh->mName.C_Str());
+		const auto	skin		= getSkinningFromAssimp(aimesh);
+		
+		if (skin)
+		{
+			assert(_nameToMesh.count(meshName) > 0);
+			auto	meshNode	= _nameToMesh.find(meshName)->second;
+
+			skin->duration(skin->numFrames() / (float)_options->skinningNumFPS());
+
+			meshNode->addComponent(Skinning::create(skin));
+		}
+	}
+}
+
 Skin::Ptr
 ASSIMPParser::getSkinningFromAssimp(const aiMesh* aimesh) const
 {
@@ -694,47 +697,8 @@ ASSIMPParser::getSkinningFromAssimp(const aiBone* aibone) const
 	return Bone::create(node, offsetMatrix, boneVertexIds, boneVertexWeights);
 }
 
-/*
-const aiAnimation*
-ASSIMPParser::getSkeletonAnimation(const aiMesh* aimesh)
-{
-	const aiAnimation* ret = nullptr;
-
-	if (aimesh)
-	{
-		const auto meshNode = _nameToNode[std::string(aimesh->mName.C_Str())];
-
-		for (unsigned int boneId = 0; boneId < aimesh->mNumBones; ++boneId)
-		{
-			auto current = _nameToNode[std::string(aimesh->mBones[boneId]->mName.C_Str())];
-			do
-			{
-				if (current == nullptr)
-					break;
-
-				const auto foundAnimIt = _nameToAnimation.find(current->name());
-				if (foundAnimIt != _nameToAnimation.end())
-				{
-					if (ret == nullptr)
-						ret = foundAnimIt->second.first;
-					else if (ret != foundAnimIt->second.first)
-					{
-						std::cerr << "All bones of a mesh must correspond to the channels of a same animation." << std::endl;
-						throw;
-					}
-				}
-
-				current = current->parent();
-			} while(current != meshNode && current != meshNode->parent());
-		}
-	}
-	return ret;
-}
-*/
-
 void
-ASSIMPParser::sampleAnimations(const aiScene*	scene, 
-							   unsigned int		numFPS)
+ASSIMPParser::sampleAnimations(const aiScene*	scene)
 {
 	_nameToAnimMatrices.clear();
 
@@ -742,17 +706,16 @@ ASSIMPParser::sampleAnimations(const aiScene*	scene,
 		return;
 
 	for (unsigned int animId = 0; animId < scene->mNumAnimations; ++animId)
-		sampleAnimation(scene->mAnimations[animId], numFPS);
+		sampleAnimation(scene->mAnimations[animId]);
 }
 
 void
-ASSIMPParser::sampleAnimation(const aiAnimation*	animation,
-							  unsigned int			numFPS)
+ASSIMPParser::sampleAnimation(const aiAnimation*	animation)
 {
-	if (animation == nullptr || animation->mTicksPerSecond < 1e-6 || numFPS == 0)
+	if (animation == nullptr || animation->mTicksPerSecond < 1e-6 || _options->skinningNumFPS() == 0)
 		return;
 
-	unsigned int numFrames	= (unsigned int)floor((double)numFPS * animation->mDuration / animation->mTicksPerSecond);
+	unsigned int numFrames	= (unsigned int)floor((float)_options->skinningNumFPS() * animation->mDuration / animation->mTicksPerSecond);
 	numFrames				= numFrames < 2 ? 2 : numFrames;
 
 	const float			timeStep	= (float)animation->mDuration / (float)(numFrames - 1);
