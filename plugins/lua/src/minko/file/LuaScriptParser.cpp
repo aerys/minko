@@ -41,9 +41,44 @@ LuaScriptParser::parse(const std::string&				    filename,
                        const std::vector<unsigned char>&	data,
                        std::shared_ptr<AssetLibrary>	    assetLibrary)
 {
-    static LuaGlue state;
+    if (!_initialized)
+        initializeLuaBindings();
 
-    state
+    if (luaL_loadstring(_state.state(), std::string((char*)&data[0], data.size()).c_str()))
+    {
+        auto error = lua_tostring(_state.state(), -1);
+        
+        std::cerr << error << std::endl;
+        throw std::runtime_error(error);
+    }
+    if (lua_pcall(_state.state(), 0, 0, 0))
+    {
+        auto error = lua_tostring(_state.state(), -1);
+
+        std::cerr << error << std::endl;
+        throw std::runtime_error(error);
+    }
+
+    auto sepPos = resolvedFilename.find_last_of("/\\");
+    auto dotPos = resolvedFilename.find_last_of('.');
+    auto start = sepPos == std::string::npos ? 0 : sepPos + 1;
+    auto length = dotPos - start;
+    auto scriptName = resolvedFilename.substr(start, length);
+
+    auto script = component::LuaScript::create(_state, scriptName);
+
+    assetLibrary->script(filename, script);
+
+    _complete->execute(shared_from_this());
+}
+
+
+void
+LuaScriptParser::initializeLuaBindings()
+{
+    _initialized = true;
+
+    _state
         .Class<math::Vector2>("Vector2")
             .method("setX", static_cast<float (math::Vector2::*)(void)>(&math::Vector2::x))
             .method("setX", static_cast<void (math::Vector2::*)(float)>(&math::Vector2::x))
@@ -100,31 +135,4 @@ LuaScriptParser::parse(const std::string&				    filename,
         .end()
         .open()
         .glue();
-
-    if (luaL_loadstring(state.state(), std::string((char*)&data[0], data.size()).c_str()))
-    {
-        auto error = lua_tostring(state.state(), -1);
-        
-        std::cerr << error << std::endl;
-        throw std::runtime_error(error);
-    }
-    if (lua_pcall(state.state(), 0, 0, 0))
-    {
-        auto error = lua_tostring(state.state(), -1);
-
-        std::cerr << error << std::endl;
-        throw std::runtime_error(error);
-    }
-
-    auto sepPos = resolvedFilename.find_last_of("/\\");
-    auto dotPos = resolvedFilename.find_last_of('.');
-    auto start = sepPos == std::string::npos ? 0 : sepPos + 1;
-    auto length = dotPos - start;
-    auto scriptName = resolvedFilename.substr(start, length);
-
-    auto script = component::LuaScript::create(state.state(), scriptName);
-
-    assetLibrary->script(filename, script);
-
-    _complete->execute(shared_from_this());
 }
