@@ -56,6 +56,9 @@ namespace minko
 
 			void
 			checkError();
+
+			std::set<std::string>
+			getSupportedFileExensions();
 		};
 	}
 }
