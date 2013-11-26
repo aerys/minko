@@ -27,7 +27,7 @@ using namespace minko::math;
 
 const uint			WINDOW_WIDTH	= 800;
 const uint			WINDOW_HEIGHT	= 600;
-const std::string	DEFAULT_EFFECT	= "effect/Basic.effect";
+const std::string	DEFAULT_EFFECT	= "effect/SkinnedBasic.effect";
 const std::string	MODEL_FILENAME	= "pirate.dae";
 
 int main(int argc, char** argv)
