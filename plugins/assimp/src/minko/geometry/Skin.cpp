@@ -28,18 +28,40 @@ using namespace minko::scene;
 using namespace minko::math;
 using namespace minko::geometry;
 
+Skin::Skin(unsigned int numBones, unsigned int numFrames):
+	_bones(numBones, nullptr),
+	_duration(0.0f),
+	_timeFactor(0.0f),
+	_boneMatricesPerFrame(numFrames, std::vector<Matrix4x4::Ptr>(numBones, nullptr)),
+	_numVertexBones(),
+	_vertexBones(),
+	_vertexBoneWeights()
+{
+}
+
 void
 Skin::clear()
 {
 	_bones.clear();
 	_boneMatricesPerFrame.clear();
-	_duration = 0.0f;
+	_duration	= 0.0f;
+	_timeFactor	= 0.0f;
 	_numVertexBones.clear();
 	_vertexBones.clear();
 	_vertexBoneWeights.clear();
 }
 
 void
+Skin::duration(float value)
+{
+	if (value < 1e-6f)
+		throw std::invalid_argument("value");
+
+	_duration	= value;
+	_timeFactor	= numFrames() / _duration; 
+}
+
+Skin::Ptr
 Skin::reorganizeByVertices()
 {
 	_numVertexBones.clear();
@@ -56,22 +78,45 @@ Skin::reorganizeByVertices()
 
 	for (unsigned int boneId = 0; boneId < numBones; ++boneId)
 	{
-		auto				bone			= _bones[boneId];
-		const unsigned int	numBoneVertices = bone->vertexIds().size();
+		auto bone = _bones[boneId];
 
-		assert(bone.vertexWeight.size() == numBoneVertices);
+		const std::vector<unsigned short>&	vertexIds		= bone->vertexIds();
+		const std::vector<float>&			vertexWeights	= bone->vertexWeights();
 
-		for (unsigned int i = 0; i < numBoneVertices; ++i)
+		for (unsigned int i = 0; i < vertexIds.size(); ++i)
 		{
-			const unsigned short	vId		= bone.vertexId[i];
-			const unsigned int		index	= vId + numVertices * numVertexBones[vId];
+			const unsigned short	vId		= vertexIds[i];
+#ifdef DEBUG_SKINNING
+			assert(vId < numVertices);
+#endif // DEBUG_SKINNING
 
-			vertexBones[index]			= boneId;
-			vertexBoneWeights[index]	= bone.vertexWeight[i];
+			const unsigned int		j		= _numVertexBones[vId];
 
-			++numVertexBones[vId];
+			++_numVertexBones[vId];
+
+			const unsigned int		index	= vertexArraysIndex(vId, j);
+			
+			_vertexBones[index]				= boneId;
+			_vertexBoneWeights[index]		= vertexWeights[i];
 		}
 	}
+
+	for (unsigned int vId = 0; vId < numVertices; ++vId)
+	{
+		float sumWeights = 0.0f;
+
+
+		for (unsigned int j = 0; j < numVertexBones(vId); ++j)
+		{
+			unsigned int	bId		= 0;
+			float			bWeight = 0.0f;
+			vertexBoneData(vId, j, bId, bWeight); 
+
+			sumWeights += bWeight;
+		}
+	}
+
+	return shared_from_this();
 }
 
 unsigned short
@@ -79,9 +124,10 @@ Skin::lastVertexId() const
 {
 	unsigned short lastId = 0;
 
-	for (unsigned int boneId = 0; boneId < bones.size(); ++boneId)
+	for (unsigned int boneId = 0; boneId < _bones.size(); ++boneId)
 	{
-		const std::vector<unsigned short>& vertexId = bones[boneId].vertexId;
+		const std::vector<unsigned short>& vertexId = _bones[boneId]->vertexIds();
+
 		for (unsigned int i = 0; i < vertexId.size(); ++i)
 			lastId = std::max(lastId, vertexId[i]);
 	}
@@ -89,8 +135,29 @@ Skin::lastVertexId() const
 	return lastId;
 }
 
-Bone::Ptr
-Skin::bone(unsigned int i)
+unsigned int
+Skin::getFrameId(float time) const
 {
+	if (_duration < 1e-6f)
+		return 0;
+	
+	const float	t = fmod(time, _duration);
+	
+	return (unsigned int)floorf(t * _timeFactor) % numFrames();
+}
 
+void
+Skin::vertexBoneData(unsigned int	vertexId, 
+					 unsigned int	j, 
+					 unsigned int&	boneId, 
+					 float&			boneWeight) const
+{
+#ifdef DEBUG_SKINNING
+	assert(vertexId < numVertices() && j < _numVertexBones[vertexId]);
+#endif // DEBUG_SKINNING
+
+	const unsigned int index = vertexArraysIndex(vertexId, j);
+
+	boneId		= _vertexBones[index];
+	boneWeight	= _vertexBoneWeights[index];
 }

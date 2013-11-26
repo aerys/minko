@@ -22,10 +22,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Common.hpp"
 
 #include <minko/component/AbstractComponent.hpp>
-#include "minko/component/Skin.hpp"
+#include <minko/render/VertexBuffer.hpp>
 
 namespace minko
 {
+	namespace geometry
+	{
+		class Skin;
+	};
+
 	namespace component
 	{
 		class Skinning:
@@ -37,30 +42,36 @@ namespace minko
 	
 		private:
 			typedef std::shared_ptr<scene::Node>					NodePtr;
+			typedef std::shared_ptr<math::Matrix4x4>				Matrix4x4Ptr;
+			typedef std::shared_ptr<render::VertexBuffer>			VertexBufferPtr;
 			typedef std::shared_ptr<component::AbstractComponent>	AbsCmpPtr;
 			typedef std::shared_ptr<component::SceneManager>		SceneManagerPtr;
 			typedef std::shared_ptr<geometry::Geometry>				GeometryPtr;
+			typedef std::shared_ptr<geometry::Skin>					SkinPtr;
 
 			typedef Signal<AbsCmpPtr, NodePtr>						TargetAddedOrRemovedSignal;
 			typedef Signal<NodePtr, NodePtr, NodePtr>				AddedOrRemovedSignal;
 			typedef Signal<SceneManagerPtr>							SceneManagerSignal;
 
 		private:
-			const Skin									_skin;
+			const SkinPtr											_skin;
 
-			std::unordered_map<NodePtr, GeometryPtr>	_targetGeometry;
-			std::unordered_map<NodePtr, clock_t>		_targetStartTime;
-			
-			TargetAddedOrRemovedSignal::Slot			_targetAddedSlot;
-			TargetAddedOrRemovedSignal::Slot			_targetRemovedSlot;
-			AddedOrRemovedSignal::Slot					_addedSlot;
-			AddedOrRemovedSignal::Slot					_removedSlot;
-			SceneManagerSignal::Slot					_frameBeginSlot;
+			std::unordered_map<NodePtr, GeometryPtr>				_targetGeometry;
+			std::unordered_map<NodePtr, clock_t>					_targetStartTime;
+
+			std::unordered_map<NodePtr,	std::vector<float>>			_targetInputPositions;	// only for software skinning
+			std::unordered_map<NodePtr,	std::vector<float>>			_targetInputNormals;	// only for software skinning
+
+			TargetAddedOrRemovedSignal::Slot						_targetAddedSlot;
+			TargetAddedOrRemovedSignal::Slot						_targetRemovedSlot;
+			AddedOrRemovedSignal::Slot								_addedSlot;
+			AddedOrRemovedSignal::Slot								_removedSlot;
+			SceneManagerSignal::Slot								_frameBeginSlot;
 
 		public:
 			inline static
 			Ptr
-			create(const Skin& skin)
+			create(SkinPtr skin)
 			{
 				Ptr ptr(new Skinning(skin));
 
@@ -69,8 +80,18 @@ namespace minko
 				return ptr;
 			}
 
+			inline
+			~Skinning()
+			{
+				_targetAddedSlot	= nullptr;
+				_targetRemovedSlot	= nullptr;
+				_addedSlot			= nullptr;
+				_removedSlot		= nullptr;
+				_frameBeginSlot		= nullptr;
+			}
+
 		private:
-			Skinning(const Skin& skin);
+			explicit Skinning(SkinPtr);
 
 			void
 			initialize();
@@ -97,11 +118,17 @@ namespace minko
 			frameBeginHandler(SceneManagerPtr);
 
 			void
-			update(NodePtr, float time);
-
-			void
 			updateFrame(NodePtr, unsigned int frameId);
 
+			void
+			performSoftwareSkinning(NodePtr, const std::vector<Matrix4x4Ptr>&);
+
+			void
+			performSoftwareSkinning(render::VertexBuffer::AttributePtr, 
+									render::VertexBuffer::Ptr, 
+									const std::vector<float>&, 
+									const std::vector<Matrix4x4Ptr>&, 
+									bool doDeltaTransform);
 		};
 	}
 }

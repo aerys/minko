@@ -44,6 +44,7 @@ namespace minko
 			std::vector<BonePtr>						_bones;
 
 			float										_duration;				// in seconds
+			float										_timeFactor;
 			std::vector<Matrices4x4Ptr>					_boneMatricesPerFrame;
 
 			std::vector<unsigned int>					_numVertexBones;		// size = #vertices
@@ -54,9 +55,9 @@ namespace minko
 			inline
 			static
 			Ptr
-			create()
+			create(unsigned int numBones, unsigned int numFrames)
 			{
-				return std::shared_ptr<Skin>(new Skin());
+				return std::shared_ptr<Skin>(new Skin(numBones, numFrames));
 			}
 
 			inline
@@ -66,8 +67,19 @@ namespace minko
 				return _bones;
 			}
 
+			inline
 			BonePtr
-			bone(unsigned int i);
+			bone(unsigned int boneId) const
+			{
+				return _bones[boneId];
+			}
+
+			inline
+			void
+			bone(unsigned int boneId, BonePtr value)
+			{
+				_bones[boneId] = value;
+			}
 
 			inline
 			float
@@ -76,24 +88,81 @@ namespace minko
 				return _duration;
 			}
 
-			inline
+			unsigned int
+			getFrameId(float) const;
+
 			void
-			duration(float value)
+			duration(float);
+
+			inline
+			unsigned int
+			numFrames() const
 			{
-				_duration = value;
+				return _boneMatricesPerFrame.size();
+			}
+
+			inline
+			const std::vector<Matrix4x4Ptr>&
+			matrices(unsigned int frameId) const
+			{
+				return _boneMatricesPerFrame[frameId];
 			}
 
 			void
+			matrix(unsigned int frameId, unsigned int boneId, Matrix4x4Ptr value)
+			{
+				_boneMatricesPerFrame[frameId][boneId] = value;
+			}
+
+			Matrix4x4Ptr
+			matrix(unsigned int frameId, unsigned int boneId) const
+			{
+				return _boneMatricesPerFrame[frameId][boneId];
+			}
+
+			inline
+			unsigned int
+			numVertices() const
+			{
+				return _numVertexBones.size();
+			}
+
+			inline
+			unsigned int
+			numVertexBones(unsigned int vertexId) const
+			{
+#ifdef DEBUG_SKINNING
+				assert(vertexId < numVertices());
+#endif // DEBUG_SKINNING
+
+				return _numVertexBones[vertexId];
+			}
+
+			void
+			vertexBoneData(unsigned int vertexId, unsigned int j, unsigned int& boneId, float& boneWeight) const;
+
+			Ptr
 			reorganizeByVertices();
 
 		private:
-			Skin();
+			Skin(unsigned int numBones, unsigned int numFrames);
 
 			void
 			clear();
 			
 			unsigned short
 			lastVertexId() const;
+
+			inline
+			unsigned int
+			vertexArraysIndex(unsigned int vertexId, unsigned int j) const
+			{
+#ifdef DEBUG_SKINNING
+				assert(vertexId < numVertices() && j < numVertexBones(vertexId));
+#endif // DEBUG_SKINNING
+
+				return j + _bones.size() * vertexId;
+			}
 		};
 	}
 }
