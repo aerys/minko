@@ -34,6 +34,7 @@ Skin::Skin(unsigned int numBones, unsigned int numFrames):
 	_duration(0.0f),
 	_timeFactor(0.0f),
 	_boneMatricesPerFrame(numFrames, std::vector<Matrix4x4::Ptr>(numBones, nullptr)),
+	_maxNumVertexBones(0),
 	_numVertexBones(),
 	_vertexBones(),
 	_vertexBoneWeights()
@@ -47,6 +48,7 @@ Skin::clear()
 	_boneMatricesPerFrame.clear();
 	_duration	= 0.0f;
 	_timeFactor	= 0.0f;
+	_maxNumVertexBones	= 0;
 	_numVertexBones.clear();
 	_vertexBones.clear();
 	_vertexBoneWeights.clear();
@@ -85,37 +87,27 @@ Skin::reorganizeByVertices()
 		const std::vector<float>&			vertexWeights	= bone->vertexWeights();
 
 		for (unsigned int i = 0; i < vertexIds.size(); ++i)
-		{
-			const unsigned short	vId		= vertexIds[i];
+			if (vertexWeights[i] > 0.0f)
+			{
+				const unsigned short	vId		= vertexIds[i];
 #ifdef DEBUG_SKINNING
-			assert(vId < numVertices);
+				assert(vId < numVertices);
 #endif // DEBUG_SKINNING
 
-			const unsigned int		j		= _numVertexBones[vId];
-
-			++_numVertexBones[vId];
-
-			const unsigned int		index	= vertexArraysIndex(vId, j);
-			
-			_vertexBones[index]				= boneId;
-			_vertexBoneWeights[index]		= vertexWeights[i];
-		}
+				const unsigned int		j		= _numVertexBones[vId];
+	
+				++_numVertexBones[vId];
+	
+				const unsigned int		index	= vertexArraysIndex(vId, j);
+				
+				_vertexBones[index]				= boneId;
+				_vertexBoneWeights[index]		= vertexWeights[i];
+			}
 	}
 
+	_maxNumVertexBones = 0;
 	for (unsigned int vId = 0; vId < numVertices; ++vId)
-	{
-		float sumWeights = 0.0f;
-
-
-		for (unsigned int j = 0; j < numVertexBones(vId); ++j)
-		{
-			unsigned int	bId		= 0;
-			float			bWeight = 0.0f;
-			vertexBoneData(vId, j, bId, bWeight); 
-
-			sumWeights += bWeight;
-		}
-	}
+		_maxNumVertexBones = std::max(_maxNumVertexBones, _numVertexBones[vId]);
 
 	return shared_from_this();
 }
@@ -153,14 +145,22 @@ Skin::vertexBoneData(unsigned int	vertexId,
 					 unsigned int&	boneId, 
 					 float&			boneWeight) const
 {
-#ifdef DEBUG_SKINNING
-	assert(vertexId < numVertices() && j < _numVertexBones[vertexId]);
-#endif // DEBUG_SKINNING
-
 	const unsigned int index = vertexArraysIndex(vertexId, j);
 
 	boneId		= _vertexBones[index];
 	boneWeight	= _vertexBoneWeights[index];
+}
+
+unsigned int
+Skin::vertexBoneId(unsigned int vertexId, unsigned int j) const
+{
+	return _vertexBones[vertexArraysIndex(vertexId, j)];
+}
+
+float 
+Skin::vertexBoneWeight(unsigned int vertexId, unsigned int j) const
+{
+	return _vertexBoneWeights[vertexArraysIndex(vertexId, j)];
 }
 
 Skin::Ptr
