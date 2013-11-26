@@ -149,13 +149,15 @@ ASSIMPParser::parse(const std::string&					filename,
 
 	_symbol = scene::Node::create(_filename);
 
-	const unsigned int numFPS = 30;
+	const unsigned int numFPS = 1;
 
 	createSceneTree(_symbol, scene, scene->mRootNode);
 	getSkinningFromAssimp(scene, numFPS);
 
 	if (_numDependencies == _numLoadedDependencies)
 		finalize();
+
+	disposeNodeMaps();
 }
 
 void
@@ -172,7 +174,10 @@ ASSIMPParser::createSceneTree(scene::Node::Ptr minkoNode, const aiScene* scene, 
 
 		assert(!child->name().empty() && _nameToNode.count(child->name()) == 0);
 		_nameToNode[child->name()]	= child;
-		std::cout << "'" << child->name() << "' in nodemap" << std::endl;
+
+#ifdef DEBUG_SKINNING
+		std::cout << "nodemap\t<- '" << child->name() << "'" << std::endl;
+#endif // DEBUG_SKINNING
 
         //Recursive call
         createSceneTree(child, scene, ainode->mChildren[i]);
@@ -191,7 +196,10 @@ ASSIMPParser::createSceneTree(scene::Node::Ptr minkoNode, const aiScene* scene, 
 
 		assert(!minkoMesh->name().empty() && _nameToMesh.count(minkoMesh->name()) == 0);
 		_nameToMesh[minkoMesh->name()]	= minkoMesh;
-		std::cout << "'" << minkoMesh->name() << "' in meshmap" << std::endl;
+
+#ifdef DEBUG_SKINNING
+		std::cout << "meshmap\t<- '" << minkoMesh->name() << "'" << std::endl;
+#endif // DEBUG_SKINNING
     }
 }
 
@@ -447,19 +455,6 @@ Transform::Ptr
 ASSIMPParser::getTransformFromAssimp(aiNode* ainode)
 {
 	return Transform::create(convert(ainode->mTransformation));
-	/*
-    aiMatrix4x4 aiTransform = ainode->mTransformation;
-    Transform::Ptr result = Transform::create();
-
-    result->transform()->initialize(
-		aiTransform.a1, aiTransform.a2, aiTransform.a3, aiTransform.a4,
-        aiTransform.b1, aiTransform.b2, aiTransform.b3, aiTransform.b4,
-        aiTransform.c1, aiTransform.c2, aiTransform.c3, aiTransform.c4,
-        aiTransform.d1, aiTransform.d2, aiTransform.d3, aiTransform.d4
-	);
-    
-    return result;
-	*/
 }
 
 void
@@ -549,6 +544,12 @@ ASSIMPParser::resetParser()
 	_numLoadedDependencies	= 0;
 	_filename.clear();
 	_symbol	= nullptr;
+
+	disposeNodeMaps();
+}
+void
+ASSIMPParser::disposeNodeMaps()
+{
 	_nameToNode.clear();
 	_nameToMesh.clear();
 	_nameToAnimMatrices.clear();
@@ -668,7 +669,7 @@ ASSIMPParser::getSkinningFromAssimp(const aiMesh* aimesh) const
  		}
 	}
 
-	return skin->reorganizeByVertices();
+	return skin->reorganizeByVertices()->disposeBones();
 }
 
 Bone::Ptr 

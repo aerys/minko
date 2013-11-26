@@ -107,10 +107,10 @@ Skinning::performSoftwareSkinning(VertexBuffer::AttributePtr			attr,
 #ifdef DEBUG_SKINNING
 	assert(vertexBuffer && vertexBuffer->data().size() == inputData.size());
 	assert(attr && std::get<1>(*attr) == 3);
-	assert(skinningMatrices.size() == _skin->bones().size());
+	assert(skinningMatrices.size() == _skin->numBones());
 #endif // DEBUG_SKINNING
 
-	const unsigned int	numBones		= _skin->bones().size();
+	const unsigned int	numBones		= _skin->numBones();
 	const unsigned int	vertexSize		= vertexBuffer->vertexSize();
 	std::vector<float>&	outputData		= vertexBuffer->data();
 	const unsigned int	numVertices		= outputData.size() / vertexSize;
@@ -153,8 +153,6 @@ Skinning::performSoftwareSkinning(VertexBuffer::AttributePtr			attr,
 				z2 += boneWeight * (skinningMatrix[8] * x1 + skinningMatrix[9] * y1 + skinningMatrix[10] * z1);
 			}
 		}
-
-		//std::cout << "frameId = " << frameId << "\t(" << x1 << ", " << y1 << ", " << z1 << ")\t=> (" << x2 << ", " << y2 << ", " << z2 << ")" << std::endl;
 
 		outputData[index]	= x2;
 		outputData[index+1]	= y2;
@@ -236,7 +234,7 @@ Skinning::addedHandler(Node::Ptr node, Node::Ptr target, Node::Ptr parent)
 		if (geometry->hasVertexAttribute("position"))
 		{
 			_targetGeometry[node]			= geometry;
-			_targetStartTime[node]			= (float)clock() / (float)CLOCKS_PER_SEC;
+			_targetStartTime[node]			= (clock_t)(clock() / (float)CLOCKS_PER_SEC);
 
 			_targetInputPositions[node]		= geometry->vertexBuffer("position")->data();			
 			if (geometry->hasVertexAttribute("normal"))
