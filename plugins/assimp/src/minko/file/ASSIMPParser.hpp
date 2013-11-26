@@ -192,6 +192,9 @@ namespace minko
 			static
 			Matrix4x4Ptr
 			convert(const aiMatrix4x4t<float>&, Matrix4x4Ptr output = nullptr);
+
+			void
+			disposeNodeMaps();
 		};
 	}
 }
