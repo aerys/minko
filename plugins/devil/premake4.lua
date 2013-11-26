@@ -13,7 +13,13 @@ minko.project.library "plugin-devil"
 		"lib/devil/src/src-IL/include",
 		"lib/devil/src/src-ILU/include",
 		"lib/devil/src/src-ILUT/include",
-		"lib/devil/lib/include"
+		"lib/devil/lib/include",
+		"lib/devil/lib/libjpeg",
+		"lib/devil/lib/libtiff",
+		"lib/devil/lib/libpng",
+		"lib/devil/lib/zlib",
+		"lib/devil/lib/libjasper/include",
+		"lib/devil/lib/lcms/include"
 	}
 	defines
 	{
