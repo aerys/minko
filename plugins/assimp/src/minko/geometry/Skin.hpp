@@ -41,6 +41,7 @@ namespace minko
 			typedef std::vector<Matrix4x4Ptr>			Matrices4x4Ptr;
 
 		private:
+			const unsigned int							_numBones;
 			std::vector<BonePtr>						_bones;
 
 			float										_duration;				// in seconds
@@ -58,6 +59,13 @@ namespace minko
 			create(unsigned int numBones, unsigned int numFrames)
 			{
 				return std::shared_ptr<Skin>(new Skin(numBones, numFrames));
+			}
+
+			inline
+			unsigned int
+			numBones() const
+			{
+				return _numBones;
 			}
 
 			inline
@@ -144,6 +152,9 @@ namespace minko
 			Ptr
 			reorganizeByVertices();
 
+			Ptr
+			disposeBones();
+
 		private:
 			Skin(unsigned int numBones, unsigned int numFrames);
 
@@ -161,7 +172,7 @@ namespace minko
 				assert(vertexId < numVertices() && j < numVertexBones(vertexId));
 #endif // DEBUG_SKINNING
 
-				return j + _bones.size() * vertexId;
+				return j + _numBones * vertexId;
 			}
 		};
 	}
