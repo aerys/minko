@@ -28,6 +28,7 @@ using namespace minko::file;
 Options::Options(std::shared_ptr<render::AbstractContext> context) :
 	_context(context),
     _generateMipMaps(false),
+	_skinningNumFPS(30),
 	_material(material::Material::create())
 {
 #ifdef DEBUG
