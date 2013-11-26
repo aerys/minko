@@ -112,10 +112,31 @@ template<typename T>
 void returnValue(LuaGlue &, lua_State *, T);
 
 template<>
+void returnValue(LuaGlue &, lua_State *state, bool v)
+{
+	//printf("returnValue: v=%d\n", v);
+	lua_pushboolean(state, v);
+}
+
+template<>
 void returnValue(LuaGlue &, lua_State *state, int v)
 {
 	//printf("returnValue: v=%d\n", v);
 	lua_pushinteger(state, v);
+}
+
+template<>
+void returnValue(LuaGlue &, lua_State *state, unsigned int v)
+{
+	//printf("returnValue: v=%d\n", v);
+	lua_pushinteger(state, v);
+}
+
+template<>
+void returnValue(LuaGlue &, lua_State *state, float v)
+{
+	//printf("returnValue: v=%d\n", v);
+	lua_pushnumber(state, v);
 }
 
 template<>
