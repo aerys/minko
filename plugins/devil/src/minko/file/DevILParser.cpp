@@ -37,7 +37,6 @@ DevILParser::parse(const std::string&                 filename,
                  std::shared_ptr<AssetLibrary>      AssetLibrary)
 {
 	ILuint devilID;
-	ILuint error;
 
 	int width = -1;
 	int height = -1;
@@ -92,4 +91,66 @@ DevILParser::checkError()
 
 	if (error != IL_NO_ERROR)
 		throw std::runtime_error(std::string("DevILParser::parse"));
+}
+
+std::set<std::string>
+DevILParser::getSupportedFileExensions()
+{
+	std::set<std::string> result;
+
+	result.insert("bmp");
+	result.insert("cut");
+	result.insert("dcx");
+	result.insert("dicom");
+	result.insert("dcm");
+	result.insert("dds");
+	//result.insert("exr");
+	result.insert("fits");
+	result.insert("fit");
+	result.insert("ftx");
+	result.insert("hdr");
+	result.insert("icns");
+	result.insert("ico");
+	result.insert("cur");
+	result.insert("iff");
+	result.insert("iwi");
+	result.insert("gif");
+	result.insert("jpg");
+	result.insert("jpe");
+	result.insert("jpeg");
+	result.insert("jp2");
+	result.insert("lbm");
+	result.insert("lif");
+	result.insert("mdl");
+	result.insert("mp3");
+	result.insert("pal");
+	result.insert("pcd");
+	result.insert("pcx");
+	result.insert("pic");
+	result.insert("png");
+	result.insert("pbm");
+	result.insert("pgm");
+	result.insert("pnm");
+	result.insert("pix");
+	result.insert("psd");
+	result.insert("psp");
+	result.insert("pxr");
+	result.insert("raw");
+	result.insert("rot");
+	result.insert("sgi");
+	result.insert("bw");
+	result.insert("rgb");
+	result.insert("rgba");
+	result.insert("texture");
+	result.insert("tga");
+	result.insert("tif");
+	result.insert("tpl");
+	result.insert("utx");
+	result.insert("wal");
+	result.insert("vtf");
+	//result.insert("wdp");
+	result.insert("hdp");
+	result.insert("xpm");
+
+	return result;
 }
