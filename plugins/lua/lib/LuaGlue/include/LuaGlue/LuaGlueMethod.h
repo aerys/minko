@@ -8,6 +8,7 @@
 
 #include "LuaGlue/LuaGlueMethodBase.h"
 #include "LuaGlue/LuaGlueApplyTuple.h"
+#include "LuaGlue/LuaGlueUtils.h"
 
 class LuaGlue;
 
@@ -17,6 +18,9 @@ class LuaGlueClass;
 template<typename _Ret, typename _Class, typename... _Args>
 class LuaGlueMethod : public LuaGlueMethodBase
 {
+	private:
+		template <typename... T>
+		using tuple = std::tuple<typename std::remove_const<typename std::remove_reference<T>::type>::type...>;
 	
 	public:
 		typedef _Class ClassType;
@@ -42,7 +46,7 @@ class LuaGlueMethod : public LuaGlueMethodBase
 		LuaGlueClass<_Class> *glueClass;
 		std::string name_;
 		MethodType fn;
-		std::tuple<_Args...> args;
+		tuple<_Args...> args;
 		static const unsigned int Arg_Count_ = sizeof...(_Args);
 		
 	public:
@@ -72,7 +76,10 @@ class LuaGlueMethod : public LuaGlueMethodBase
 template<typename _Class, typename... _Args>
 class LuaGlueMethod<void, _Class, _Args...> : public LuaGlueMethodBase
 {
-	
+	private:
+		template <typename... T>
+		using tuple = std::tuple<typename std::remove_const<typename std::remove_reference<T>::type>::type...>;
+
 	public:
 		typedef _Class ClassType;
 		typedef void (_Class::*MethodType)(_Args...);
@@ -96,7 +103,7 @@ class LuaGlueMethod<void, _Class, _Args...> : public LuaGlueMethodBase
 		LuaGlueClass<_Class> *glueClass;
 		std::string name_;
 		MethodType fn;
-		std::tuple<_Args...> args;
+		tuple<_Args...> args;
 		static const unsigned int Arg_Count_ = sizeof...(_Args);
 	
 	public:
