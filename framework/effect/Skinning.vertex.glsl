@@ -4,25 +4,23 @@
 	precision mediump float;
 #endif
 
-attribute vec3 position;
-attribute vec2 uv;
+attribute	vec3	position;
+attribute	vec2 	uv;
 
-attribute vec4 boneIdsA;
-attribute vec4 boneIdsB;
-attribute vec4 boneWeightsA;
-attribute vec4 boneWeightsB;
+attribute	vec4	boneIdsA;
+attribute	vec4	boneIdsB;
+attribute	vec4	boneWeightsA;
+attribute	vec4	boneWeightsB;
 
-uniform mat4 modelToWorldMatrix;
-uniform mat4 worldToScreenMatrix;
+uniform		mat4	modelToWorldMatrix;
+uniform		mat4	worldToScreenMatrix;
 
-varying vec2 vertexUV;
+varying 	vec2 	vertexUV;
 
-#ifdef IS_MODEL_SKINNED
-varying vec4 interpBoneIdsA;
-varying vec4 interpBoneIdsB;
-varying vec4 interpBoneWeightsA;
-varying vec4 interpBoneWeightsB;
-#endif // IS_MODEL_SKINNED
+varying 	vec4 	interpBoneIdsA;
+//varying vec4 interpBoneIdsB;
+//varying vec4 interpBoneWeightsA;
+//varying vec4 interpBoneWeightsB;
 
 void main(void)
 {
@@ -38,13 +36,13 @@ void main(void)
 
 	gl_Position =  worldToScreenMatrix * pos;
 	
-	#ifdef IS_MODEL_SKINNED
-		// for bebugging purposes only
+	#ifdef IS_SKINNED
+		// for debugging purposes only
 		interpBoneIdsA = boneIdsA;
-		interpBoneIdsB = boneIdsB;
-		interpBoneWeightsA = boneWeightsA;
-		interpBoneWeightsB = boneWeightsB;
-	#endif // IS_MODEL_SKINNED
+		//interpBoneIdsB = boneIdsB;
+		//interpBoneWeightsA = boneWeightsA;
+		//interpBoneWeightsB = boneWeightsB;
+	#endif // IS_SKINNED
 }
 
 #endif // VERTEX_SHADER

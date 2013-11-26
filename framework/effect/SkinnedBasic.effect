@@ -5,17 +5,14 @@
     "attributeBindings" : {
         "position"              : "geometry.vertex.attribute.position",
         "uv"                    : "geometry.vertex.attribute.uv",
-		"boneIdsA"				: "geometry.vertex.attribute.boneIdsA",
-		"boneIdsB"				: "geometry.vertex.attribute.boneIdsB",
-		"boneWeightsA"			: "geometry.vertex.attribute.boneWeightsA",
-		"boneWeightsB"			: "geometry.vertex.attribute.boneWeightsB"
+		"boneIdsA"				: "geometry.vertex.attribute.boneIdsA"
     },
     
     "uniformBindings"   : {
         "diffuseColor"          : "material.diffuseColor",
         "diffuseMap"            : "material.diffuseMap",
         "modelToWorldMatrix"    : "transform.modelToWorldMatrix",
-        "worldToScreenMatrix"   : "camera.worldToScreenMatrix"
+        "worldToScreenMatrix"   : { "property" : "camera.worldToScreenMatrix", "source" : "renderer" }
     },
     
     "stateBindings" : {
@@ -33,7 +30,7 @@
     "macroBindings" : {
         "DIFFUSE_MAP"           : "material.diffuseMap",
         "MODEL_TO_WORLD"        : "transform.modelToWorldMatrix",
-		"IS_MODEL_SKINNED"		: "geometry.vertex.attribute.boneIdsA"
+		"IS_SKINNED"			: "geometry.vertex.attribute.boneIdsA"
     },
     
     "blendMode"         : ["one", "zero"],
