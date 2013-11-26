@@ -595,7 +595,7 @@ ASSIMPParser::getSkinningFromAssimp(const aiScene* aiscene)
 
 			skin->duration(skin->numFrames() / (float)_options->skinningNumFPS());
 
-			meshNode->addComponent(Skinning::create(skin));
+			meshNode->addComponent( Skinning::create(skin, _assetLibrary->context()));
 		}
 	}
 }
