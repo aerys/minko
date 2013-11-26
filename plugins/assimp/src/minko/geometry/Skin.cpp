@@ -30,6 +30,7 @@ using namespace minko::geometry;
 
 Skin::Skin(unsigned int numBones, unsigned int numFrames):
 	_bones(numBones, nullptr),
+	_numBones(numBones),
 	_duration(0.0f),
 	_timeFactor(0.0f),
 	_boneMatricesPerFrame(numFrames, std::vector<Matrix4x4::Ptr>(numBones, nullptr)),
@@ -160,4 +161,13 @@ Skin::vertexBoneData(unsigned int	vertexId,
 
 	boneId		= _vertexBones[index];
 	boneWeight	= _vertexBoneWeights[index];
+}
+
+Skin::Ptr
+Skin::disposeBones()
+{
+	_bones.clear();
+	_bones.shrink_to_fit();
+
+	return shared_from_this();
 }
