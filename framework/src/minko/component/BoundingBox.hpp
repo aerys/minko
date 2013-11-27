@@ -27,6 +27,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/math/AbstractShape.hpp"
 #include "minko/math/Box.hpp"
 
+
 namespace minko
 {
 	namespace component

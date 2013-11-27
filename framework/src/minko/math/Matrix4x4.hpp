@@ -66,7 +66,7 @@ namespace minko
 
 			inline
 			const std::vector<float>&
-			data()
+			data() const
 			{
 				return _m;
 			}
