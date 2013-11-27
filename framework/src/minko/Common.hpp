@@ -129,8 +129,11 @@ namespace minko
 			ROOT
 		};
 
-		typedef std::pair<std::string, BindingSource> Binding;
-		typedef std::unordered_map<std::string, Binding> BindingMap;
+		typedef std::pair<std::string, BindingSource>		Binding;
+		typedef std::unordered_map<std::string, Binding>	BindingMap;
+
+		typedef std::vector<float>							FloatArray;
+		typedef std::shared_ptr<FloatArray>					FloatArrayPtr;
 
 		enum class MacroBindingDefaultValueSemantic
 		{

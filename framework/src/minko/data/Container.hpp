@@ -107,11 +107,11 @@ namespace minko
 
 			template <typename T>
 			bool
-			propertyHasType(const std::string& propertyName)
+			propertyHasType(const std::string& propertyName, bool skipPropertyNameFormatting = false)
 			{
 				assertPropertyExists(propertyName);
 
-				return _propertyNameToProvider[propertyName]->propertyHasType<T>(propertyName);
+				return _propertyNameToProvider[propertyName]->propertyHasType<T>(propertyName, skipPropertyNameFormatting);
 			}
 
 			inline
