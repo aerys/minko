@@ -16,6 +16,9 @@
 		"alphaThreshold"		: "material.alphaThreshold",
 		"normalMap"				: "material.normalMap",
 		"specularMap"			: "material.specularMap",
+		"specularColor"			: { "property" : "material.specularColor", "default" : [ 1.0, 1.0, 1.0, 1.0 ] },
+		"environmentMap"		: "material.environmentMap",
+		"environmentAlpha"		: "material.environmentAlpha",
 		"shininess"				: "material.shininess",
 		"modelToWorldMatrix"	: "transform.modelToWorldMatrix",
 		"worldToScreenMatrix"	: { "property" : "camera.worldToScreenMatrix", "source" : "renderer" },
@@ -40,6 +43,8 @@
 		"SPECULAR_MAP"			: "material.specularMap",
 		"ALPHA_MAP"				: "material.alphaMap",
 		"ALPHA_THRESHOLD"		: "material.alphaThreshold",
+		"ENVIRONMENT_MAP"		: "material.environmentMap",
+		"ENVIRONMENT_ALPHA"		: "material.environmentAlpha",
 		"SHININESS"				: "material.shininess",
 		"MODEL_TO_WORLD"		: "transform.modelToWorldMatrix"
 	},

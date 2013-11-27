@@ -39,3 +39,20 @@ mat3 getWorldToTangentSpaceMatrix(vec3 worldNormal, vec3 worldTangent)
 
 	return transpose;
 }
+
+vec3 phong_cartesian3DToSpherical3D(vec3 xyz)
+{
+	return vec3(
+		sqrt(xyz.x * xyz.x + xyz.y * xyz.y + xyz.z * xyz.z),
+		atan(xyz.x, xyz.y),
+		acos(xyz.z)
+	);
+}
+
+vec2 phong_spherical3DToCartesian2D(float theta, float phi)
+{
+	return vec2(
+		cos(theta) * cos(phi),
+		sin(theta) * cos(phi)
+	);
+}

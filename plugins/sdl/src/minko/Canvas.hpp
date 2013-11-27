@@ -25,6 +25,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Signal.hpp"
 #include "minko/render/AbstractContext.hpp"
 #include "minko/render/OpenGLES2Context.hpp"
+#include "minko/AbstractCanvas.hpp"
+#include "minko/input/Mouse.hpp"
 
 #if defined(EMSCRIPTEN)
 # include "minko/MinkoWebGL.hpp"
@@ -43,48 +45,83 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 namespace minko
 {
 	class Canvas :
+		public AbstractCanvas,
 		public std::enable_shared_from_this<Canvas>
 	{
 	public:
 		typedef std::shared_ptr<Canvas>	Ptr;
 
 	private:
+		class SDLMouse :
+			public input::Mouse
+		{
+			friend class Canvas;
+
+		public:
+			static inline
+			std::shared_ptr<SDLMouse>
+			create(Canvas::Ptr canvas)
+			{
+				return std::shared_ptr<SDLMouse>(new SDLMouse(canvas));
+			}
+
+		private:
+			SDLMouse(Canvas::Ptr canvas) :
+				input::Mouse(canvas)
+			{
+			}
+
+			void
+			x(uint x)
+			{
+				_x = x;
+			}
+
+			void
+			y(uint y)
+			{
+				_y = y;
+			}
+		};
+
+	private:
 #ifdef EMSCRIPTEN
-		static std::list<Ptr>			_canvases;
+		static std::list<Ptr>				_canvases;
 #endif
 
-		std::string						_name;
-		uint							_width;
-		uint							_height;
+		std::string							_name;
+		uint								_x;
+		uint								_y;
+		uint								_width;
+		uint								_height;
+		bool								_useStencil;
 
-		bool							_active;
-		render::AbstractContext::Ptr	_context;
+		bool								_active;
+		render::AbstractContext::Ptr		_context;
 #ifndef EMSCRIPTEN
-		SDL_Window*                     _window;
+		SDL_Window*							_window;
 #endif
-		float							_framerate;
-		float							_desiredFramerate;
+		float								_framerate;
+		float								_desiredFramerate;
 
-		uint							_mouseX;
-		uint							_mouseY;
-
-		Signal<Ptr, uint, uint>::Ptr	_enterFrame;
-		Signal<Ptr, const Uint8*>::Ptr	_keyDown;
-		Signal<Ptr, int, int, int>::Ptr	_joystickMotion;
-		Signal<Ptr, int>::Ptr			_joystickButtonDown;
-		Signal<Ptr, int>::Ptr			_joystickButtonUp;
-		Signal<Ptr, uint, uint>::Ptr	_mouseMove;
-		Signal<Ptr, uint, uint>::Ptr	_mouseLeftButtonDown;
-		Signal<Ptr, uint, uint>::Ptr	_mouseLeftButtonUp;
-		Signal<Ptr, int, int>::Ptr		_mouseWheel;
-		Signal<Ptr, uint, uint>::Ptr	_resized;
+		Signal<Ptr, uint, uint>::Ptr		_enterFrame;
+		Signal<Ptr, const Uint8*>::Ptr		_keyDown;
+		Signal<Ptr, int, int, int>::Ptr		_joystickMotion;
+		Signal<Ptr, int>::Ptr				_joystickButtonDown;
+		Signal<Ptr, int>::Ptr				_joystickButtonUp;
+		Signal<Ptr, uint, uint>::Ptr		_resized;
+		std::shared_ptr<SDLMouse>			_mouse;
 
 	public:
 		static inline
 		Ptr
 		create(const std::string& name, const uint width, const uint height, bool useStencil = false)
 		{
-			return std::shared_ptr<Canvas>(new Canvas(name, width, height, useStencil));
+			auto canvas = std::shared_ptr<Canvas>(new Canvas(name, width, height, useStencil));
+
+			canvas->initialize();
+
+			return canvas;
 		}
 
 		inline
@@ -96,14 +133,28 @@ namespace minko
 
 		inline
 		uint
-		width() const
+		x()
+		{
+			return _x;
+		}
+
+		inline
+		uint
+		y()
+		{
+			return _y;
+		}
+
+		inline
+		uint
+		width()
 		{
 			return _width;
 		}
 
 		inline
 		uint
-		height() const
+		height()
 		{
 			return _height;
 		}
@@ -151,31 +202,10 @@ namespace minko
 		}
 
 		inline
-		Signal<Ptr, uint, uint>::Ptr
-		mouseMove() const
+		std::shared_ptr<input::Mouse>
+		mouse()
 		{
-			return _mouseMove;
-		}
-
-		inline
-		Signal<Ptr, uint, uint>::Ptr
-		mouseLeftButtonDown() const
-		{
-			return _mouseLeftButtonDown;
-		}
-
-		inline
-		Signal<Ptr, uint, uint>::Ptr
-		mouseLeftButtonUp() const
-		{
-			return _mouseLeftButtonUp;
-		}
-
-		inline
-		Signal<Ptr, int, int>::Ptr
-		mouseWheel() const
-		{
-			return _mouseWheel;
+			return _mouse;
 		}
 
 		inline
@@ -214,31 +244,17 @@ namespace minko
 		}
 
 		inline
-		uint
-		mouseX() const
-		{
-			return _mouseX;
-		}
-
-		inline
-		uint
-		mouseY() const
-		{
-			return _mouseY;
-		}
-
-		inline
 		float
 		normalizedMouseX() const
 		{
-			return 2.f * ((float)_mouseX / _width - .5f);
+			return 2.f * ((float)_x / _width - .5f);
 		}
 
 		inline
 		float
 		normalizedMouseY() const
 		{
-			return 2.f * ((float)_mouseY / _height - .5f);
+			return 2.f * ((float)_y / _height - .5f);
 		}
 
 		void
@@ -249,6 +265,12 @@ namespace minko
 
 	private:
 		Canvas(const std::string& name, const uint width, const uint height, bool useStencil = false);
+
+		void
+		initialize();
+
+		void
+		initializeMouse();
 
 		void
 		initializeContext(const std::string& windowTitle, unsigned int width, unsigned int height, bool useStencil);

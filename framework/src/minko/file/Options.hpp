@@ -30,12 +30,17 @@ namespace minko
 		private:
 			typedef std::shared_ptr<AbstractLoader>								AbsLoaderPtr;
 			typedef std::shared_ptr<data::Provider>								ProviderPtr;
+			typedef std::shared_ptr<material::Material>							MaterialPtr;
+			typedef std::shared_ptr<scene::Node>								NodePtr;
+			typedef std::shared_ptr<render::Effect>								EffectPtr;
 
 		public:
 			typedef std::shared_ptr<Options>									Ptr;
-			typedef std::function<ProviderPtr(const std::string&, ProviderPtr)> MaterialFunction;
+			typedef std::function<MaterialPtr(const std::string&, MaterialPtr)> MaterialFunction;
 			typedef std::function<AbsLoaderPtr(const std::string&)>				LoaderFunction;
 			typedef std::function<const std::string(const std::string&)>		UriFunction;
+			typedef std::function<NodePtr(NodePtr)>								NodeFunction;
+			typedef std::function<EffectPtr(EffectPtr)>							EffectFunction;
 
 		private:
 			std::shared_ptr<render::AbstractContext>	_context;
@@ -44,11 +49,14 @@ namespace minko
 			std::list<std::string>						_userFlags;
 
             bool                                        _generateMipMaps;
+			unsigned int								_skinningNumFPS;
             std::shared_ptr<render::Effect>             _effect;
-			std::shared_ptr<data::Provider>				_material;
+			MaterialPtr									_material;
 			MaterialFunction							_materialFunction;
 			LoaderFunction								_loaderFunction;
 			UriFunction									_uriFunction;
+			NodeFunction								_nodeFunction;
+			EffectFunction								_effectFunction;
 
 		public:
 			inline static
@@ -70,6 +78,7 @@ namespace minko
 				opt->_materialFunction = options->_materialFunction;
 				opt->_loaderFunction = options->_loaderFunction;
 				opt->_uriFunction = options->_uriFunction;
+				opt->_nodeFunction = options->_nodeFunction;
 
 				return opt;
 			}
@@ -116,6 +125,20 @@ namespace minko
                 _generateMipMaps = generateMipmaps;
             }
 
+			inline
+			unsigned int
+			skinningNumFPS() const
+			{
+				return _skinningNumFPS;
+			}
+
+			inline
+			void
+			skinningNumFPS(unsigned int value)
+			{
+				_skinningNumFPS = value;
+			}
+
             inline
             std::shared_ptr<render::Effect>
             effect()
@@ -131,7 +154,7 @@ namespace minko
             }
 
 			inline
-			std::shared_ptr<data::Provider>
+			MaterialPtr
 			material()
 			{
 				return _material;
@@ -139,7 +162,7 @@ namespace minko
 
 			inline
 			void
-			material(std::shared_ptr<data::Provider> material)
+			material(MaterialPtr material)
 			{
 				_material = material;
 			}
@@ -177,6 +200,34 @@ namespace minko
 			uriFunction(const UriFunction& func)
 			{
 				_uriFunction = func;
+			}
+
+			inline
+			const NodeFunction&
+			nodeFunction()
+			{
+				return _nodeFunction;
+			}
+
+			inline
+			void
+			nodeFunction(const NodeFunction& func)
+			{
+				_nodeFunction = func;
+			}
+
+			inline
+			const EffectFunction&
+			effectFunction()
+			{
+				return _effectFunction;
+			}
+
+			inline
+			void
+			effectFunction(const EffectFunction& func)
+			{
+				_effectFunction = func;
 			}
 
 		private:
