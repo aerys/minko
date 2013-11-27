@@ -61,6 +61,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/PointLight.hpp"
 #include "minko/component/BoundingBox.hpp"
 #include "minko/component/MousePicking.hpp"
+#include "minko/component/MouseManager.hpp"
 #include "minko/render/AbstractResource.hpp"
 #include "minko/render/Program.hpp"
 #include "minko/render/VertexBuffer.hpp"
@@ -79,3 +80,4 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/AssetLibrary.hpp"
 #include "minko/material/Material.hpp"
 #include "minko/material/BasicMaterial.hpp"
+#include "minko/input/Mouse.hpp"

@@ -10,6 +10,7 @@ solution "minko"
 	include 'examples/stencil'
 	include 'examples/effect-config'
 	include 'examples/raycasting'
+	include 'examples/assimp'
 	--include 'examples/cube-offscreen'
 
 	-- tests

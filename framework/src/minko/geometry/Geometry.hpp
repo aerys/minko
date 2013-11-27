@@ -152,10 +152,11 @@ namespace minko
 
 			bool
 			cast(std::shared_ptr<math::Ray>		ray,
+				 float&							distance,
 				 uint&							triangle,
 				 std::shared_ptr<math::Vector3>	hitXyz		= nullptr,
-				 std::shared_ptr<math::Vector2>	hitUv		= nullptr,
-				 std::shared_ptr<math::Vector3>	hitNormal	= nullptr);
+				 std::shared_ptr<math::Vector2>	hitUv = nullptr,
+				 std::shared_ptr<math::Vector3>	hitNormal = nullptr);
 
 		protected:
 			Geometry();

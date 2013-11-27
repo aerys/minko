@@ -563,6 +563,7 @@ EffectParser::parseMacroBindings(const Json::Value&	contextNode, data::MacroBind
 		{
 			auto macroBindingValue = macroBindingsValue.get(propertyName, 0);
 			minko::data::MacroBindingDefault& bindingDefault = std::get<2>(macroBindings[propertyName]);
+
 		
 			bindingDefault.semantic = data::MacroBindingDefaultValueSemantic::UNSET;
 
@@ -680,7 +681,7 @@ EffectParser::parseUniformDefaultValues(const Json::Value&		contextNode,
 	else if (contextNode.isString())
 	{
 		auto textureFilename = contextNode.asString();
-		int pos = _resolvedFilename.find_last_of("/\\");
+		int pos = _resolvedFilename.find_last_of(file::separator);
 		auto options = _options;
 
 		uniformTypeAndValue.first = UniformType::TEXTURE;
@@ -740,7 +741,9 @@ EffectParser::loadTexture(const std::string&	textureFilename,
 	});
 
 	_loaderErrorSlots[loader] = loader->error()->connect(std::bind(
-		&EffectParser::textureErrorHandler, shared_from_this(), std::placeholders::_1
+		&EffectParser::textureErrorHandler,
+		std::static_pointer_cast<EffectParser>(shared_from_this()),
+		std::placeholders::_1
 	));
 
 	loader->load(textureFilename, options);
@@ -917,10 +920,14 @@ EffectParser::parseDependencies(const Json::Value& 		root,
 			auto loader = Loader::create();
 
 			_loaderCompleteSlots[loader] = loader->complete()->connect(std::bind(
-				&EffectParser::dependencyCompleteHandler, shared_from_this(), std::placeholders::_1
+				&EffectParser::dependencyCompleteHandler,
+				std::static_pointer_cast<EffectParser>(shared_from_this()),
+				std::placeholders::_1
 			));
 			_loaderErrorSlots[loader] = loader->error()->connect(std::bind(
-				&EffectParser::dependencyErrorHandler, shared_from_this(), std::placeholders::_1
+				&EffectParser::dependencyErrorHandler,
+				std::static_pointer_cast<EffectParser>(shared_from_this()),
+				std::placeholders::_1
 			));
 
 			store.push_back(loader);

@@ -108,3 +108,24 @@ Box::getVertices()
 
 	return vertices;
 }
+
+Box::Ptr
+Box::merge(Ptr box1, Ptr box2, Ptr out)
+{
+	if (out == nullptr)
+	out = create();
+
+	out->topRight()->setTo(
+		std::max(box1->_topRight->x(), box2->_topRight->x()),
+		std::max(box1->_topRight->y(), box2->_topRight->y()),
+		std::max(box1->_topRight->z(), box2->_topRight->z())
+	);
+
+	out->bottomLeft()->setTo(
+		std::min(box1->_bottomLeft->x(), box2->_bottomLeft->x()),
+		std::min(box1->_bottomLeft->y(), box2->_bottomLeft->y()),
+		std::min(box1->_bottomLeft->z(), box2->_bottomLeft->z())
+	);
+
+	return out;
+}
