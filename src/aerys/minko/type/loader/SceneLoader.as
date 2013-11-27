@@ -40,6 +40,11 @@ package aerys.minko.type.loader
 		private var _currentProgressChanged : Boolean;
 		private var _isComplete				: Boolean;
 		
+		public function get parser():IParser
+		{
+			return _parser;
+		}
+
 		public function get error() : Signal
 		{
 			return _error;
@@ -224,9 +229,7 @@ package aerys.minko.type.loader
 		{
 			_isComplete = true;
 			_data = loadedData;
-            
-            _parser = null;
-			
+            			
 			// call later to make sure the loading is always seen as asynchronous
 			setTimeout(callLaterComplete, 0, loadedData);
 		}
@@ -234,6 +237,7 @@ package aerys.minko.type.loader
 		private function callLaterComplete(loadedData : ISceneNode) : void
 		{
 			_complete.execute(this, loadedData);
+			_parser = null;
 		}
 	}
 }

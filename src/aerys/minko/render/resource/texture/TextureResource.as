@@ -240,10 +240,6 @@ package aerys.minko.render.resource.texture
 				_update = false;
 				uploadBitmapDataWithMipMaps();
 			}
-
-			_atf = null;
-			_bitmapData = null;
-			
 			
 			return _texture;
 		}
@@ -281,26 +277,14 @@ package aerys.minko.render.resource.texture
 				}
 				
 				_bitmapData.dispose();
+				_bitmapData = null;
 			}
 			else if (_atf)
 			{
 				_texture.uploadCompressedTextureFromByteArray(_atf, 0);
 				
-                _atf = null;
-			}
-		}
-		
-		public function disposeLocalData() : void
-		{
-			if (_atf)
-			{
 				_atf.clear();
-				_atf = null;
-			}
-			if (_bitmapData)
-			{
-				_bitmapData.dispose();
-				_bitmapData = null;
+                _atf = null;
 			}
 		}
 		
