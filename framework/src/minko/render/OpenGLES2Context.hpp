@@ -297,6 +297,18 @@ namespace minko
 			void
 			setUniform(const uint& location, const float& v1, const float& v2, const float& v3, const float& v4);
 
+			void
+			setUniforms(uint location, uint size, const float* values);
+
+			void
+			setUniforms2(uint location, uint size, const float* values);
+
+			void
+			setUniforms3(uint location, uint size, const float* values);
+
+			void
+			setUniforms4(uint location, uint size, const float* values);
+
 			virtual
 			void
 			setUniform(const uint& location, const uint& size, bool transpose, const float* values);

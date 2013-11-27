@@ -290,39 +290,60 @@ DrawCall::bindUniform(const std::string&	inputName,
 		throw std::invalid_argument("location");
 #endif // DEBUG
 
-	bool isArray = false;
-	auto pos = inputName.find_first_of('[');
-	std::string bindingName = inputName;
+	bool		isArray		= false;
+	auto		pos			= inputName.find_first_of('[');
+	std::string	bindingName	= inputName;
 
 	if (pos != std::string::npos)
 	{
 		bindingName = inputName.substr(0, pos);
 		isArray = true;
 	}
-
+	
 	if (_uniformBindings.count(bindingName))
 	{	
-		auto propertyName = std::get<0>(_uniformBindings.at(bindingName));
-		auto& source = std::get<1>(_uniformBindings.at(bindingName));
-		auto& container = getDataContainer(source);
+		auto	propertyName	= std::get<0>(_uniformBindings.at(bindingName));
+		auto&	source			= std::get<1>(_uniformBindings.at(bindingName));
+		auto&	container		= getDataContainer(source);
 
-		if (isArray)
-			propertyName += inputName.substr(pos);
-		
-		if (container && container->hasProperty(propertyName))
+		if (container)
 		{
-			if (type == ProgramInputs::Type::float1)
-				_uniformFloat[location] = container->get<float>(propertyName);
-			else if (type == ProgramInputs::Type::float2)
-				_uniformFloat2[location] = container->get<std::shared_ptr<Vector2>>(propertyName);
-			else if (type == ProgramInputs::Type::float3)
-				_uniformFloat3[location] = container->get<std::shared_ptr<Vector3>>(propertyName);
-			else if (type == ProgramInputs::Type::float4)
-				_uniformFloat4[location] = container->get<std::shared_ptr<Vector4>>(propertyName);
-			else if (type == ProgramInputs::Type::float16)
-				_uniformFloat16[location] = &(container->get<Matrix4x4::Ptr>(propertyName)->data()[0]);
-			else
-				throw std::logic_error("unsupported uniform type.");
+			if (isArray)
+				propertyName += inputName.substr(pos); // way to handle array of GLSL structs
+
+			if (container->hasProperty(propertyName))
+			{
+				// This case corresponds to base types uniforms or individual members of an GLSL struct array.
+
+				if (type == ProgramInputs::Type::float1 
+					/*&& container->propertyHasType<float>(propertyName, true)*/)
+						_uniformFloat[location]		= container->get<float>(propertyName);
+				else if (type == ProgramInputs::Type::float2 
+					/*&& container->propertyHasType<Vector2::Ptr>(propertyName, true)*/)
+						_uniformFloat2[location]	= container->get<Vector2::Ptr>(propertyName);
+				else if (type == ProgramInputs::Type::float3
+					/*&& container->propertyHasType<Vector3::Ptr>(propertyName, true)*/)
+						_uniformFloat3[location]	= container->get<Vector3::Ptr>(propertyName);
+				else if (type == ProgramInputs::Type::float4
+					/*&& container->propertyHasType<Vector4::Ptr>(propertyName, true)*/)
+						_uniformFloat4[location]	= container->get<Vector4::Ptr>(propertyName);
+				else if (type == ProgramInputs::Type::float16 
+					/*&& container->propertyHasType<Matrix4x4::Ptr>(propertyName, true)*/)
+						_uniformFloat16[location]	= &(container->get<Matrix4x4::Ptr>(propertyName)->data()[0]);
+				else
+					throw std::logic_error("unsupported uniform type.");
+			}
+			else if (isArray)
+			{
+				// This case corresponds to continuous base type arrays that are stored in data providers as std::vector<float>.
+
+				bindUniformArray(
+					std::get<0>(_uniformBindings.at(bindingName)),
+					container,
+					type,
+					location
+				);
+			}
 		}
 
 		if (_referenceChangedSlots.count(propertyName) == 0)			
@@ -343,6 +364,58 @@ DrawCall::bindUniform(const std::string&	inputName,
 }
 
 void
+DrawCall::bindUniformArray(const std::string&	propertyName,
+						   Container::Ptr		container,
+						   ProgramInputs::Type	type,
+						   int					location)
+{
+	if (!container || 
+		!container->hasProperty(propertyName) || 
+		!container->propertyHasType<FloatArrayPtr>(propertyName, true))
+		return;
+
+	auto& data = container->get<FloatArrayPtr>(propertyName);
+	if (data->empty())
+		return;
+
+	unsigned int typeSize = 0;
+	if (type == ProgramInputs::Type::float1)
+	{
+		_uniformFloats[location] = data;
+	}
+	else if (type == ProgramInputs::Type::float2)
+	{
+		if (data->size() % 2 != 0)
+			throw std::logic_error("The array size (float-wise) for property '" + propertyName + "' must be a multiple of 2.");
+
+		_uniformFloats2[location] = data;
+	}
+	else if (type == ProgramInputs::Type::float3)
+	{
+		if (data->size() % 3 != 0)
+			throw std::logic_error("The array size (float-wise) for property '" + propertyName + "' must be a multiple of 3.");
+
+		_uniformFloats3[location] = data;
+	}
+	else if (type == ProgramInputs::Type::float4)
+	{
+		if (data->size() % 4 != 0)
+			throw std::logic_error("The array size (float-wise) for property '" + propertyName + "' must be a multiple of 4.");
+
+		_uniformFloats4[location] = data;
+	}
+	else if (type == ProgramInputs::Type::float16)
+	{
+		if (data->size() % 16 != 0)
+			throw std::logic_error("The array size (float-wise) for property '" + propertyName + "' must be a multiple of 16.");
+
+		_uniformFloats16[location] = data;
+	}
+	else
+		throw std::logic_error("unsupported uniform type.");
+}
+
+void
 DrawCall::reset()
 {
 	_target = nullptr;
@@ -352,6 +425,12 @@ DrawCall::reset()
 	_uniformFloat3.clear();
 	_uniformFloat4.clear();
 	_uniformFloat16.clear();
+
+	_uniformFloats.clear();
+	_uniformFloats2.clear();
+	_uniformFloats3.clear();
+	_uniformFloats4.clear();
+	_uniformFloats16.clear();
 
 	_textures			.clear();
 	_textureLocations	.clear();
@@ -465,6 +544,17 @@ DrawCall::render(const AbstractContext::Ptr& context, std::shared_ptr<render::Te
     }
     for (auto& uniformFloat16 : _uniformFloat16)
         context->setUniform(uniformFloat16.first, 1, true, uniformFloat16.second);
+
+	for (auto& uniformFloats : _uniformFloats)
+		context->setUniforms	(uniformFloats.first,	uniformFloats.second->size(),			&(*uniformFloats.second)[0]);
+	for (auto& uniformFloats2 : _uniformFloats2)
+		context->setUniforms2	(uniformFloats2.first,	uniformFloats2.second->size() >> 1,		&(*uniformFloats2.second)[0]);
+	for (auto& uniformFloats3 : _uniformFloats3)
+		context->setUniforms3	(uniformFloats3.first,	uniformFloats3.second->size() / 3,		&(*uniformFloats3.second)[0]);
+	for (auto& uniformFloats4 : _uniformFloats4)
+		context->setUniforms4	(uniformFloats4.first,	uniformFloats4.second->size() >> 2,		&(*uniformFloats4.second)[0]);
+	for (auto& uniformFloats16 : _uniformFloats16)
+		context->setUniform		(uniformFloats16.first,	uniformFloats16.second->size() >> 4, true, &(*uniformFloats16.second)[0]);
 
 	auto textureOffset = 0;
 	for (auto textureLocationAndPtr : _program->textures())
