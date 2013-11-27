@@ -26,7 +26,8 @@ namespace minko
 {
 	namespace file
 	{
-		class AbstractParser
+		class AbstractParser :
+			public std::enable_shared_from_this<AbstractParser>
 		{
 		public:
 			typedef std::shared_ptr<AbstractParser>				Ptr;
@@ -47,7 +48,7 @@ namespace minko
 				  const std::string&                resolvedFilename,
                   std::shared_ptr<Options>          options,
 				  const std::vector<unsigned char>&	data,
-				  std::shared_ptr<AssetLibrary>	AssetLibrary) = 0;
+				  std::shared_ptr<AssetLibrary>		assetLibrary) = 0;
 
 		protected:
 			AbstractParser() :

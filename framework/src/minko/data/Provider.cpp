@@ -150,3 +150,12 @@ Provider::hasProperty(const std::string& name, bool skipPropertyNameFormatting) 
 
 	return it != _names.end();
 }
+
+Provider::Ptr
+Provider::copyFrom(Provider::Ptr source)
+{
+	_names = source->_names;
+	_values = source->_values;
+
+	return shared_from_this();
+}

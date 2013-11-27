@@ -37,6 +37,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
+#include <cassert>
+#include <ctime>
 
 #define PI 3.1415926535897932384626433832795
 
@@ -48,6 +50,7 @@ namespace minko
 	template<typename... A>
 	class Signal;
 	class Color;
+	class AbstractCanvas;
     
 	namespace render
 	{
@@ -107,6 +110,7 @@ namespace minko
 		class BoundingBox;
 
 		class MousePicking;
+		class MouseManager;
 	}
 
 	namespace data
@@ -208,12 +212,23 @@ namespace minko
 		class AbstractParser;
 		class EffectParser;
         class AssetLibrary;
+
+#ifdef _WIN32
+		const char separator = '\\';
+#else
+		const char separator = '/';
+#endif
 	}
 
 	namespace material
 	{
 		class Material;
 		class BasicMaterial;
+	}
+
+	namespace input
+	{
+		class Mouse;
 	}
 }
 

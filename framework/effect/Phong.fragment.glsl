@@ -57,15 +57,24 @@
 	
 #endif // MINKO_NO_GLSL_STRUCT
 	
+// diffuse
 uniform vec4 diffuseColor;
 uniform sampler2D diffuseMap;
+
+// alpha
+uniform sampler2D alphaMap;
+uniform float alphaThreshold;
+
+// phong
+uniform vec4 specularColor;
 uniform sampler2D normalMap;
 uniform sampler2D specularMap;
-uniform sampler2D alphaMap;
-
 uniform float shininess;
-uniform float alphaThreshold;
 uniform vec3 cameraPosition;
+
+// env. mapping
+uniform sampler2D environmentMap;
+uniform float environmentAlpha;
 
 varying vec3 vertexPosition;
 varying vec2 vertexUV;
@@ -89,13 +98,16 @@ void main(void)
 			discard;
 	#endif // ALPHA_THRESHOLD
 	
-	float specularIntensity = 1.0;
-	
-	#ifdef SPECULAR_MAP
-		specularIntensity = texture2D(specularMap, vertexUV).r;
-	#elif defined NORMAL_MAP
-		specularIntensity = texture2D(normalMap, vertexUV).a;
-	#endif // SPECULAR_MAP
+	#if defined(SHININESS) || (defined(ENVIRONMENT_MAP) && !defined(ENVIRONMENT_ALPHA))
+		vec4 specular = specularColor;
+
+		#ifdef SPECULAR_MAP
+			specular = texture2D(specularMap, vertexUV);
+		#elif defined NORMAL_MAP
+			specular.a = texture2D(normalMap, vertexUV).a;
+		#endif // SPECULAR_MAP
+		
+	#endif
 	
 	vec3 phong = vec3(0.);
 	
@@ -117,7 +129,12 @@ void main(void)
 
 	#endif // PRECOMPUTED_AMBIENT
 	
-	
+	#if defined NUM_DIRECTIONAL_LIGHTS || defined NUM_POINT_LIGHTS || defined NUM_SPOT_LIGHTS || defined ENVIRONMENT_MAP
+
+	vec3 eyeVector	= normalize(cameraPosition - vertexPosition);
+
+	#endif // NUM_DIRECTIONAL_LIGHTS || NUM_POINT_LIGHTS || NUM_SPOT_LIGHTS || ENVIRONMENT_MAP
+
 	#if defined NUM_DIRECTIONAL_LIGHTS || defined NUM_POINT_LIGHTS || defined NUM_SPOT_LIGHTS
 		
 		vec3	lightColor				= vec3(0.0);
@@ -132,17 +149,17 @@ void main(void)
 		float 	contribution			= 0.0;
 		
 		vec3 	normal					= normalize(vertexNormal);
-		vec3 	eyeVector				= cameraPosition - vertexPosition;
-
+		vec3	phongEyeVector			= eyeVector;
+		
 		#ifdef NORMAL_MAP
 			// warning: the normal vector must be normalized at this point!
-			mat3 worldToTangentMatrix = getWorldToTangentSpaceMatrix(normal, vertexTangent);
+			mat3 worldToTangentMatrix 	= getWorldToTangentSpaceMatrix(normal, vertexTangent);
 			
-			normal		= normalize(2.0*texture2D(normalMap, vertexUV).xyz - 1.0);
-			eyeVector	= worldToTangentMatrix * eyeVector;
+			normal						= normalize(2.0*texture2D(normalMap, vertexUV).xyz - 1.0);
+			phongEyeVector				= worldToTangentMatrix * eyeVector;
 		#endif // NORMAL_MAP
 		
-		eyeVector	= normalize(eyeVector);
+		// phongEyeVector	= normalize(phongEyeVector);
 		
 		#ifdef NUM_DIRECTIONAL_LIGHTS
 		//---------------------------
@@ -172,9 +189,9 @@ void main(void)
 				contribution += phong_specularReflection(
 					normal,
 					lightDirection,
-					eyeVector,
+					phongEyeVector,
 					shininess
-				) * lightSpecularCoeff * specularIntensity;
+				) * lightSpecularCoeff * specular.a;
 			#endif // SHININESS
 
 			phong += contribution * lightColor;
@@ -212,9 +229,9 @@ void main(void)
 				contribution += phong_specularReflection(
 					normal,
 					lightDirection,
-					eyeVector,
+					phongEyeVector,
 					shininess
-				) * lightSpecularCoeff * specularIntensity;
+				) * lightSpecularCoeff * specular.a;
 			#endif // SHININESS
 			
 			float attenuation = lightAttenuationDist > 0.0
@@ -271,9 +288,9 @@ void main(void)
 					contribution += phong_specularReflection(
 						normal,
 						lightDirection,
-						eyeVector,
+						phongEyeVector,
 						shininess
-					) * lightSpecularCoeff * specularIntensity;
+					) * lightSpecularCoeff * specular.a;
 				#endif // SHININESS
 				
 				float cutoff	= cosSpot < lightCosInnerAng && lightCosOuterAng < lightCosInnerAng 
@@ -291,6 +308,20 @@ void main(void)
 		#endif // NUM_SPOT_LIGHTS
 		
 	#endif // defined NUM_DIRECTIONAL_LIGHTS || defined NUM_POINT_LIGHTS || defined NUM_SPOT_LIGHTS
+	
+	#ifdef ENVIRONMENT_MAP
+		vec3 ref			= reflect(eyeVector, vertexNormal);
+		vec3 refSpherical	= phong_cartesian3DToSpherical3D(ref);
+		vec4 env			= texture2D(environmentMap, phong_spherical3DToCartesian2D(ref.y, ref.z));
+
+		#ifdef ENVIRONMENT_ALPHA
+			env *= environmentAlpha;
+		#else
+			env *= specular.a;
+		#endif // ENVIRONMENT_ALPHA
+
+		diffuse = vec4(diffuse.rgb + env.rgb, diffuse.a);
+	#endif // defined ENVIRONMENT_MAP
 	
 	diffuse = vec4(diffuse.rgb * phong, diffuse.a);
 	

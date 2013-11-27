@@ -24,6 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/Texture.hpp"
 #include "minko/deserialize/TypeDeserializer.hpp"
 #include "minko/file/Options.hpp"
+#include "minko/material/Material.hpp"
 
 using namespace minko;
 
@@ -81,7 +82,10 @@ namespace minko
 						nameConverter
 					);
 
-					_idToMaterial[assetId] = options->materialFunction()(assetName, material);
+					_idToMaterial[assetId]	= options->materialFunction()(
+						assetName, 
+						std::static_pointer_cast<material::Material>(material)
+					);
 				}
 			}
 		}
