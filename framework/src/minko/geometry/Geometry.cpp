@@ -341,6 +341,7 @@ Geometry::removeDuplicatedVertices(std::vector<unsigned short>&		indices,
 
 bool
 Geometry::cast(std::shared_ptr<math::Ray>	ray,
+			   float&						distance,
 			   uint&						triangle,
 			   std::shared_ptr<Vector3>		hitXyz,
 			   std::shared_ptr<Vector2>		hitUv,
@@ -376,14 +377,14 @@ Geometry::cast(std::shared_ptr<math::Ray>	ray,
 	auto v = 0.f;
 	auto t = 0.f;
 
-	for (auto i = 0; i < numIndices; i += 3)
+	for (uint i = 0; i < numIndices; i += 3)
 	{
 		v0->copyFrom(xyzPtr + indicesData[i] * xyzVertexSize);
 		v1->copyFrom(xyzPtr + indicesData[i + 1] * xyzVertexSize);
 		v2->copyFrom(xyzPtr + indicesData[i + 2] * xyzVertexSize);
 
-		edge1->copyFrom(v1)->substract(v0);
-		edge2->copyFrom(v2)->substract(v0);
+		edge1->copyFrom(v1)->subtract(v0);
+		edge2->copyFrom(v2)->subtract(v0);
 
 		pvec->copyFrom(ray->direction())->cross(edge2);
 		dot = edge1->dot(pvec);
@@ -393,7 +394,7 @@ Geometry::cast(std::shared_ptr<math::Ray>	ray,
 
 		invDot = 1.f / dot;
 
-		tvec->copyFrom(ray->origin())->substract(v0);
+		tvec->copyFrom(ray->origin())->subtract(v0);
 		u = tvec->dot(pvec) * invDot;
 		if (u < 0.f || u > 1.f)
 			continue;
@@ -407,6 +408,7 @@ Geometry::cast(std::shared_ptr<math::Ray>	ray,
 		if (t < minDistance)
 		{
 			minDistance = t;
+			distance = t;
 			triangle = i;
 			hit = true;
 
@@ -477,8 +479,8 @@ Geometry::getHitNormal(uint triangle, Vector3::Ptr hitNormal)
 	auto v1 = Vector3::create(normalPtr + indicesData[triangle] * normalVertexSize + normalOffset);
 	auto v2 = Vector3::create(normalPtr + indicesData[triangle] * normalVertexSize + normalOffset);
 
-	auto edge1 = Vector3::create(v1)->substract(v0)->normalize();
-	auto edge2 = Vector3::create(v2)->substract(v0)->normalize();
+	auto edge1 = Vector3::create(v1)->subtract(v0)->normalize();
+	auto edge2 = Vector3::create(v2)->subtract(v0)->normalize();
 
 	hitNormal->copyFrom(edge2)->cross(edge1);
 }

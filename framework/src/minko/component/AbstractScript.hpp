@@ -71,9 +71,11 @@ namespace minko
 			}
 
 		public:
+			virtual
 			void
 			initialize();
 
+			virtual
 			void
 			targetAddedHandler(AbsCmpPtr cmp, NodePtr node);
 
@@ -88,6 +90,9 @@ namespace minko
 
 			void
 			frameBeginHandler(std::shared_ptr<SceneManager> sceneManager);
+
+			void
+			findSceneManager();
 
 			void
 			setSceneManager(std::shared_ptr<SceneManager> sceneManager);

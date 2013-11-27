@@ -63,6 +63,7 @@ int main(int argc, char** argv)
 	auto sphereGeometry		= geometry::SphereGeometry::create(sceneManager->assets()->context(), 32, 32, true);
 	auto sphereMaterial		= material::Material::create()
 		->set("diffuseColor",	Vector4::create(1.f, 1.f, 1.f, 1.f))
+		->set("specularColor",	Vector4::create(0.0f, 1.0f, 1.0f, 1.0f))
 		->set("shininess",		16.f);
 	auto lights				= scene::Node::create("lights");
 
@@ -100,11 +101,11 @@ int main(int argc, char** argv)
 		// sphere
 		auto sphere = scene::Node::create("sphere")
 			->addComponent(Surface::create(
-				assets->geometry("sphere"),
-				sphereMaterial,
-				assets->effect("effect/Phong.effect")
-			))
-			->addComponent(Transform::create(Matrix4x4::create()->appendTranslation(0.f, 2.f, 0.f)->prependScale(3.f)));
+			assets->geometry("sphere"),
+			sphereMaterial,
+			assets->effect("effect/Phong.effect")
+			));
+			//->addComponent(Transform::create(Matrix4x4::create()->appendTranslation(0.f, 2.f, 0.f)->prependScale(3.f)));
 		root->addChild(sphere);
 
 		// spotLight
@@ -216,38 +217,31 @@ int main(int argc, char** argv)
 		auto yaw = 0.f;
 		auto pitch = PI * .5f;
 		auto roll = 0.f;
-		auto minPitch = 0.f + 1e-10;
-		auto maxPitch = PI * .5f;
+		auto minPitch = 0.f + 1e-5;
+		auto maxPitch = (float)PI - 1e-5;
 		auto lookAt = Vector3::create(0.f, 2.f, 0.f);
 		auto distance = 20.f;
 
 		// handle mouse signals
-		auto mouseWheel = canvas->mouseWheel()->connect([&](Canvas::Ptr canvas, int x, int y)
+		auto mouseWheel = canvas->mouse()->wheel()->connect([&](input::Mouse::Ptr m, int h, int v)
 		{
-			distance += (float)y / 10.f;
+			distance += (float)v / 10.f;
 		});
 
-		minko::Signal<Canvas::Ptr, uint, uint>::Slot mouseMove;
+		Signal<input::Mouse::Ptr, int, int>::Slot mouseMove;
 		auto cameraRotationXSpeed = 0.f;
 		auto cameraRotationYSpeed = 0.f;
-		int oldX = 0;
-		int oldY = 0;
 
-		auto mouseDown = canvas->mouseLeftButtonDown()->connect([&](Canvas::Ptr canvas, unsigned int x, unsigned int y)
+		auto mouseDown = canvas->mouse()->leftButtonDown()->connect([&](input::Mouse::Ptr m)
 		{
-			oldX = x;
-			oldY = y;
-
-			mouseMove = canvas->mouseMove()->connect([&](Canvas::Ptr canvas, unsigned int x, unsigned int y)
+			mouseMove = canvas->mouse()->move()->connect([&](input::Mouse::Ptr, int dx, int dy)
 			{
-				cameraRotationYSpeed = (float)((int)x - oldX) * .01f;
-				cameraRotationXSpeed = (float)((int)y - oldY) * -.01f;
-				oldX = x;
-				oldY = y;
+				cameraRotationYSpeed = (float)dx * .01f;
+				cameraRotationXSpeed = (float)dy * -.01f;
 			});
 		});
 
-		auto mouseUp = canvas->mouseLeftButtonUp()->connect([&](Canvas::Ptr canvas, unsigned int x, unsigned int y)
+		auto mouseUp = canvas->mouse()->leftButtonUp()->connect([&](input::Mouse::Ptr m)
 		{
 			mouseMove = nullptr;
 		});

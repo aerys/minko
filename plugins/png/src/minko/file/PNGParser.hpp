@@ -28,8 +28,7 @@ namespace minko
 	namespace file
 	{
 		class PNGParser :
-			public AbstractParser,
-			public std::enable_shared_from_this<PNGParser>
+			public AbstractParser
 		{
 		public:
 			typedef std::shared_ptr<PNGParser> Ptr;
