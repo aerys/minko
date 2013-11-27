@@ -244,6 +244,22 @@ namespace minko
 			void
 			setUniform(const uint& location, const uint& size, bool transpose, const float* values) = 0;
 
+			virtual
+			void
+			setUniforms(uint location, uint size, const float* values) = 0;
+
+			virtual
+			void
+			setUniforms2(uint location, uint size, const float* values) = 0;
+
+			virtual
+			void
+			setUniforms3(uint location, uint size, const float* values) = 0;
+
+			virtual
+			void
+			setUniforms4(uint location, uint size, const float* values) = 0;
+
             virtual
             void
             setBlendMode(Blending::Source source, Blending::Destination destination) = 0;
