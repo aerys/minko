@@ -6,7 +6,8 @@
 	},
 
 	"uniformBindings" : {
-		"textureSampler"	: "backbuffer"
+		"textureSampler"	: "backbuffer",
+		"texcoordOffset"	: "invBackbufferSize"
 	},
 
 	"samplerStates" : {

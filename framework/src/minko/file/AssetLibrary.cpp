@@ -176,25 +176,32 @@ AssetLibrary::load()
 {
 	std::list<std::string> queue = _filesQueue;
 
-	for (auto& filename : queue)
+	if (queue.empty())
 	{
-		auto options = _filenameToOptions.count(filename)
-			? _filenameToOptions[filename]
-			: _filenameToOptions[filename] = _defaultOptions;
-		auto loader = _filenameToLoader.count(filename)
-			? _filenameToLoader[filename]
-			: _filenameToLoader[filename] = options->loaderFunction()(filename);
+		_complete->execute(shared_from_this());
+	}
+	else
+	{
+		for (auto& filename : queue)
+		{
+			auto options = _filenameToOptions.count(filename)
+				? _filenameToOptions[filename]
+				: _filenameToOptions[filename] = _defaultOptions;
+			auto loader = _filenameToLoader.count(filename)
+				? _filenameToLoader[filename]
+				: _filenameToLoader[filename] = options->loaderFunction()(filename);
 
-		_filesQueue.erase(std::find(_filesQueue.begin(), _filesQueue.end(), filename));
-		_loading.push_back(filename);
+			_filesQueue.erase(std::find(_filesQueue.begin(), _filesQueue.end(), filename));
+			_loading.push_back(filename);
 
-		_loaderSlots.push_back(loader->error()->connect(std::bind(
-			&AssetLibrary::loaderErrorHandler, shared_from_this(), std::placeholders::_1
-		)));
-		_loaderSlots.push_back(loader->complete()->connect(std::bind(
-			&AssetLibrary::loaderCompleteHandler, shared_from_this(), std::placeholders::_1
-		)));
-		loader->load(filename, options);
+			_loaderSlots.push_back(loader->error()->connect(std::bind(
+				&AssetLibrary::loaderErrorHandler, shared_from_this(), std::placeholders::_1
+			)));
+			_loaderSlots.push_back(loader->complete()->connect(std::bind(
+				&AssetLibrary::loaderCompleteHandler, shared_from_this(), std::placeholders::_1
+			)));
+			loader->load(filename, options);
+		}
 	}
 
 	return shared_from_this();
@@ -211,6 +218,8 @@ AssetLibrary::loaderCompleteHandler(std::shared_ptr<file::AbstractLoader> loader
 {
 	auto filename = loader->filename();
 	auto extension = filename.substr(filename.find_last_of('.') + 1);
+
+	std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
 
 	if (_parsers.count(extension))
 	{
@@ -230,6 +239,7 @@ AssetLibrary::loaderCompleteHandler(std::shared_ptr<file::AbstractLoader> loader
 	}
 	else
 	{
+		std::cerr << "warning: no parser found for file extesntion '" << extension << "'" << std::endl;
 		blob(filename, loader->data());
 		finalize(filename);
 	}
@@ -255,8 +265,10 @@ AssetLibrary::finalize(const std::string& filename)
 AssetLibrary::AbsParserPtr
 AssetLibrary::parser(std::string extension)
 {
-	if (_parsers.count(extension) == 0)
+	/*
+	if ()
 		throw std::invalid_argument("No parser found for extension '" + extension + "'");
+	*/
 
-	return _parsers[extension]();
+	return _parsers.count(extension) == 0 ? nullptr : _parsers[extension]();
 }

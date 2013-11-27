@@ -58,6 +58,10 @@ namespace minko
 				return box;
 			}
 
+			static
+			Ptr
+			merge(Ptr box1, Ptr box2, Ptr out = nullptr);
+			
 			inline
 			std::shared_ptr<Vector3>
 			topRight() const
