@@ -88,11 +88,11 @@ namespace minko
             std::unordered_map<uint, std::shared_ptr<math::Vector4>>    _uniformFloat4;
             std::unordered_map<uint, const float*>                      _uniformFloat16;
 
-			std::unordered_map<uint, data::FloatArrayPtr>				_uniformFloats;
-			std::unordered_map<uint, data::FloatArrayPtr>				_uniformFloats2;
-			std::unordered_map<uint, data::FloatArrayPtr>				_uniformFloats3;
-			std::unordered_map<uint, data::FloatArrayPtr>				_uniformFloats4;
-			std::unordered_map<uint, data::FloatArrayPtr>				_uniformFloats16;
+			std::unordered_map<uint, data::UniformArrayPtr>				_uniformFloats;
+			std::unordered_map<uint, data::UniformArrayPtr>				_uniformFloats2;
+			std::unordered_map<uint, data::UniformArrayPtr>				_uniformFloats3;
+			std::unordered_map<uint, data::UniformArrayPtr>				_uniformFloats4;
+			std::unordered_map<uint, data::UniformArrayPtr>				_uniformFloats16;
 
 			std::unordered_map<std::string, std::list<Any>>				_referenceChangedSlots; // Any = ContainerPropertyChangedSlot
 
