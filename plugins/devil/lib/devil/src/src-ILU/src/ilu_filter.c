@@ -378,14 +378,14 @@ ILubyte *Filter(ILimage *Image, const ILint *matrix, ILint scale, ILint bias)
 			}
 			for (c = 0; c < Image->Bpp; c++) {
 				Num =   Image->Data[y - Image->Bps + c] * matrix[0] +
-						Image->Data[y - Image->Bps + Image->Bpp + c] * matrix[1]+
-						Image->Data[y - Image->Bps + 2 * Image->Bpp + c] * matrix[2]+
+						Image->Data[y - Image->Bps - Image->Bpp + c] * matrix[1]+
+						Image->Data[y - Image->Bps - 2 * Image->Bpp + c] * matrix[2]+
 						Image->Data[y + c] * matrix[3]+
-						Image->Data[y + Image->Bpp + c] * matrix[4]+
-						Image->Data[y + 2 * Image->Bpp + c] * matrix[5]+
+						Image->Data[y - Image->Bpp + c] * matrix[4]+
+						Image->Data[y - 2 * Image->Bpp + c] * matrix[5]+
 						Image->Data[y + Image->Bps + c] * matrix[6]+
-						Image->Data[y + Image->Bps + Image->Bpp + c] * matrix[7]+
-						Image->Data[y + Image->Bps + 2 * Image->Bpp + c] * matrix[8];
+						Image->Data[y + Image->Bps - Image->Bpp + c] * matrix[7]+
+						Image->Data[y + Image->Bps - 2 * Image->Bpp + c] * matrix[8];
 
 					Temp = (ILuint)fabs((Num / (ILdouble)scale) + bias);
 					if (Temp > 255)

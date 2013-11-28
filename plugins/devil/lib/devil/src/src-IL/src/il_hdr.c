@@ -137,8 +137,8 @@ ILboolean iIsValidHdr()
 		return IL_FALSE;
 
 	return
-		strnicmp(Head, "#?RADIANCE", 10) == 0
-		|| strnicmp(Head, "#?RGBE", 6) == 0;
+		_strnicmp(Head, "#?RADIANCE", 10) == 0
+		|| _strnicmp(Head, "#?RGBE", 6) == 0;
 }
 
 
@@ -146,8 +146,8 @@ ILboolean iIsValidHdr()
 ILboolean iCheckHdr(HDRHEADER *Header)
 {
 	return
-		strnicmp(Header->Signature, "#?RADIANCE", 10) == 0
-		|| strnicmp(Header->Signature, "#?RGBE", 6) == 0;
+		_strnicmp(Header->Signature, "#?RADIANCE", 10) == 0
+		|| _strnicmp(Header->Signature, "#?RGBE", 6) == 0;
 }
 
 

@@ -45,7 +45,7 @@ ILimage *iConvertPalette(ILimage *Image, ILenum DestFormat)
 		if (DestFormat == IL_LUMINANCE_ALPHA)
 			LumBpp = 2;
 
-		switch (iCurImage->Pal.PalType)
+		switch (Image->Pal.PalType)
 		{
 			case IL_PAL_RGB24:
 			case IL_PAL_RGB32:
@@ -62,7 +62,7 @@ ILimage *iConvertPalette(ILimage *Image, ILenum DestFormat)
 					}
 					Temp[k] = (ILubyte)Resultf;
 					if (LumBpp == 2) {
-						if (iCurImage->Pal.PalType == IL_PAL_RGBA32)
+						if (Image->Pal.PalType == IL_PAL_RGBA32)
 							Temp[k+1] = Image->Pal.Palette[i + 3];
 						else
 							Temp[k+1] = 0xff;
@@ -86,7 +86,7 @@ ILimage *iConvertPalette(ILimage *Image, ILenum DestFormat)
 					}
 					Temp[k] = (ILubyte)Resultf;
 					if (LumBpp == 2) {
-						if (iCurImage->Pal.PalType == IL_PAL_RGBA32)
+						if (Image->Pal.PalType == IL_PAL_BGRA32)
 							Temp[k+1] = Image->Pal.Palette[i + 3];
 						else
 							Temp[k+1] = 0xff;
@@ -127,7 +127,7 @@ ILimage *iConvertPalette(ILimage *Image, ILenum DestFormat)
 		if (NewImage->Pal.Palette)
 			ifree(NewImage->Pal.Palette);
 
-		switch (iCurImage->Pal.PalType)
+		switch (Image->Pal.PalType)
 		{
 			// Opaque, so all the values are 0xFF.
 			case IL_PAL_RGB24:

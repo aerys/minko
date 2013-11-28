@@ -219,6 +219,9 @@ ILboolean iLoadTargaInternal()
 			ilSetError(IL_ILLEGAL_FILE_VALUE);
 			return IL_FALSE;
 	}
+
+	if (bTarga==IL_FALSE)
+		return IL_FALSE;
 	
 	// @JASON Extra Code to manipulate the image depending on
 	// the Image Descriptor's origin bits.
