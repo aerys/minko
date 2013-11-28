@@ -338,7 +338,7 @@ ILboolean XpmPredefCol(char *Buff, XpmPixel *Colour)
 	ILint len;
 	ILint val = 128;
 
-	if (!stricmp(Buff, "none")) {
+	if (!_stricmp(Buff, "none")) {
 		(*Colour)[0] = 0;
 		(*Colour)[1] = 0;
 		(*Colour)[2] = 0;
@@ -348,49 +348,49 @@ ILboolean XpmPredefCol(char *Buff, XpmPixel *Colour)
 
 	(*Colour)[3] = 255;
 
-	if (!stricmp(Buff, "black")) {
+	if (!_stricmp(Buff, "black")) {
 		(*Colour)[0] = 0;
 		(*Colour)[1] = 0;
 		(*Colour)[2] = 0;
 		return IL_TRUE;
 	}
-	if (!stricmp(Buff, "white")) {
+	if (!_stricmp(Buff, "white")) {
 		(*Colour)[0] = 255;
 		(*Colour)[1] = 255;
 		(*Colour)[2] = 255;
 		return IL_TRUE;
 	}
-	if (!stricmp(Buff, "red")) {
+	if (!_stricmp(Buff, "red")) {
 		(*Colour)[0] = 255;
 		(*Colour)[1] = 0;
 		(*Colour)[2] = 0;
 		return IL_TRUE;
 	}
-	if (!stricmp(Buff, "green")) {
+	if (!_stricmp(Buff, "green")) {
 		(*Colour)[0] = 0;
 		(*Colour)[1] = 255;
 		(*Colour)[2] = 0;
 		return IL_TRUE;
 	}
-	if (!stricmp(Buff, "blue")) {
+	if (!_stricmp(Buff, "blue")) {
 		(*Colour)[0] = 0;
 		(*Colour)[1] = 0;
 		(*Colour)[2] = 255;
 		return IL_TRUE;
 	}
-	if (!stricmp(Buff, "yellow")) {
+	if (!_stricmp(Buff, "yellow")) {
 		(*Colour)[0] = 255;
 		(*Colour)[1] = 255;
 		(*Colour)[2] = 0;
 		return IL_TRUE;
 	}
-	if (!stricmp(Buff, "cyan")) {
+	if (!_stricmp(Buff, "cyan")) {
 		(*Colour)[0] = 0;
 		(*Colour)[1] = 255;
 		(*Colour)[2] = 255;
 		return IL_TRUE;
 	}
-	if (!stricmp(Buff, "gray")) {
+	if (!_stricmp(Buff, "gray")) {
 		(*Colour)[0] = 128;
 		(*Colour)[1] = 128;
 		(*Colour)[2] = 128;

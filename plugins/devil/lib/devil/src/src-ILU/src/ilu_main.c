@@ -30,7 +30,7 @@
 #if defined(_WIN32) && defined(_MSC_VER)
 
 #ifndef IL_STATIC_LIB
-/*BOOL APIENTRY DllMain(HANDLE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
+BOOL APIENTRY DllMain(HANDLE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
 {
 	hModule;  ul_reason_for_call;  lpReserved;
 	
@@ -39,7 +39,7 @@
 	}
 
 	return TRUE;
-}*/
+}
 
 #endif
 #endif

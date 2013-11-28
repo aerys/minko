@@ -472,7 +472,7 @@ typedef long long unsigned int ILuint64;
 	#define IL_PACKSTRUCT
 #endif
 
-/*// This is from Win32's <wingdi.h> and <winnt.h>
+// This is from Win32's <wingdi.h> and <winnt.h>
 #if defined(__LCC__)
 	#define ILAPI __stdcall
 #elif defined(_WIN32) //changed 20031221 to fix bug 840421
@@ -482,16 +482,14 @@ typedef long long unsigned int ILuint64;
 		#ifdef _IL_BUILD_LIBRARY
 			#define ILAPI __declspec(dllexport)
 		#else
-			#define ILAPI __declspec(dllimport)
+			#define ILAPI 
 		#endif
 	#endif
 #elif __APPLE__
 	#define ILAPI extern
 #else
 	#define ILAPI
-#endif*/
-
-#define ILAPI
+#endif
 
 
 #define IL_SEEK_SET	0

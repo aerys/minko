@@ -116,7 +116,7 @@ ILboolean iLoadIconInternal()
 		// 08-22-2008: Adding test for compressed PNG data
 		igetc(); // Skip the first character...seems to vary.
 		iread(PNGTest, 3, 1);
-		if (!strnicmp((char*)PNGTest, "PNG", 3))  // Characters 'P', 'N', 'G' for PNG header
+		if (!_strnicmp((char*)PNGTest, "PNG", 3))  // Characters 'P', 'N', 'G' for PNG header
 		{
 #ifdef IL_NO_PNG
 			ilSetError(IL_FORMAT_NOT_SUPPORTED);  // Cannot handle these without libpng.

@@ -18,7 +18,27 @@
 #undef  PACKAGE_NAME
 #endif
 
-#include <lcms2.h>
+#if (!defined(_WIN32) && !defined(_WIN64))
+	#define NON_WINDOWS 1
+	#ifdef LCMS_NODIRINCLUDE
+		#include <lcms.h>
+	#else
+		#include <lcms/lcms.h>
+	#endif
+	
+#else
+	#if defined(IL_USE_PRAGMA_LIBS)
+		#if defined(_MSC_VER) || defined(__BORLANDC__)
+			#ifndef _DEBUG
+				#pragma comment(lib, "lcms.lib")
+			#else
+				#pragma comment(lib, "lcms-d.lib")
+			#endif
+		#endif
+	#endif
+
+	#include <lcms2.h>
+#endif//_WIN32
 
 #ifdef PACKAGE_NAME
 #undef PACKAGE_NAME
