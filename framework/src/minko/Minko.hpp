@@ -62,6 +62,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/BoundingBox.hpp"
 #include "minko/component/MousePicking.hpp"
 #include "minko/component/MouseManager.hpp"
+#include "minko/component/SkinningMethod.hpp"
 #include "minko/render/AbstractResource.hpp"
 #include "minko/render/Program.hpp"
 #include "minko/render/VertexBuffer.hpp"
