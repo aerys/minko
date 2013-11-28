@@ -110,7 +110,7 @@ ILboolean iCheckLif(LIF_HEAD *Header)
 {
 	if (Header->Version != 260 || Header->Flags != 50)
 		return IL_FALSE;
-	if (stricmp(Header->Id, "Willy 7"))
+	if (_stricmp(Header->Id, "Willy 7"))
 		return IL_FALSE;
 	return IL_TRUE;
 }

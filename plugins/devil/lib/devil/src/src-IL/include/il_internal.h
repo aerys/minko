@@ -11,8 +11,7 @@
 //-----------------------------------------------------------------------------
 #ifndef INTERNAL_H
 #define INTERNAL_H
-#define IL_STATIC_LIB
-//#define _IL_BUILD_LIBRARY
+#define _IL_BUILD_LIBRARY
 
 
 // Local headers
@@ -47,6 +46,7 @@ extern "C" {
 #endif//_WIN32
 
 // If we do not want support for game image formats, this define removes them all.
+#undef IL_NO_GAMES
 #ifdef IL_NO_GAMES
 	#define IL_NO_BLP
 	#define IL_NO_DOOM
@@ -295,9 +295,9 @@ ILboolean ilLoadFtxL(const void *Lump, ILuint Size);
 ILboolean ilIsValidGif(ILconst_string FileName);
 ILboolean ilIsValidGifF(ILHANDLE File);
 ILboolean ilIsValidGifL(const void *Lump, ILuint Size);
-ILboolean ilLoadGif(ILconst_string FileName);
-ILboolean ilLoadGifF(ILHANDLE File);
-ILboolean ilLoadGifL(const void *Lump, ILuint Size);
+ILboolean ilLoadGif(ILconst_string FileName, ILimage* image);
+ILboolean ilLoadGifF(ILHANDLE File, ILimage* image);
+ILboolean ilLoadGifL(ILimage* image, const void *Lump, ILuint Size);
 ILboolean ilIsValidHdr(ILconst_string FileName);
 ILboolean ilIsValidHdrF(ILHANDLE File);
 ILboolean ilIsValidHdrL(const void *Lump, ILuint Size);

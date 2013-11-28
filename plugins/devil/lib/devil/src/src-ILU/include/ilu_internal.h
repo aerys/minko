@@ -31,9 +31,6 @@
 #include <math.h>
 #include <string.h>
 
-#define IL_STATIC_LIB
-#define ILU_STATIC_LIB
-
 // Local headers
 #define _IL_BUILD_LIBRARY
 #define _ILU_BUILD_LIBRARY

@@ -1,5 +1,5 @@
-/* jconfig.vc --- jconfig.h for Microsoft Visual C++ on Windows 95 or NT. */
-/* see jconfig.doc for explanations */
+/* jconfig.mc6 --- jconfig.h for Microsoft C on MS-DOS, version 6.00A & up. */
+/* see jconfig.txt for explanations */
 
 #define HAVE_PROTOTYPES
 #define HAVE_UNSIGNED_CHAR
@@ -11,11 +11,11 @@
 #define HAVE_STDLIB_H
 #undef NEED_BSD_STRINGS
 #undef NEED_SYS_TYPES_H
-#undef NEED_FAR_POINTERS	/* we presume a 32-bit flat memory model */
+//#define NEED_FAR_POINTERS	/* for small or medium memory model */
 #undef NEED_SHORT_EXTERNAL_NAMES
 #undef INCOMPLETE_TYPES_BROKEN
 
-/* Define "boolean" as unsigned char, not int, per Windows custom */
+/* Define "boolean" as unsigned char, not enum, per Windows custom */
 #ifndef __RPCNDR_H__		/* don't conflict if rpcndr.h already read */
 typedef unsigned char boolean;
 #endif
@@ -26,19 +26,33 @@ typedef unsigned char boolean;
 
 #undef RIGHT_SHIFT_IS_UNSIGNED
 
+//#define USE_MSDOS_MEMMGR	/* Define this if you use jmemdos.c */
+
+#define MAX_ALLOC_CHUNK 65520L	/* Maximum request to malloc() */
+
+#define USE_FMEM		/* Microsoft has _fmemcpy() and _fmemset() */
+
+#define NEED_FHEAPMIN		/* far heap management routines are broken */
+
+#define SHORTxLCONST_32		/* enable compiler-specific DCT optimization */
+/* Note: the above define is known to improve the code with Microsoft C 6.00A.
+ * I do not know whether it is good for later compiler versions.
+ * Please report any info on this point to jpeg-info@jpegclub.org.
+ */
+
 #endif /* JPEG_INTERNALS */
 
 #ifdef JPEG_CJPEG_DJPEG
 
-#undef BMP_SUPPORTED		/* BMP image file format */
-#undef GIF_SUPPORTED		/* GIF image file format */
-#undef PPM_SUPPORTED		/* PBMPLUS PPM/PGM image file format */
+#define BMP_SUPPORTED		/* BMP image file format */
+#define GIF_SUPPORTED		/* GIF image file format */
+#define PPM_SUPPORTED		/* PBMPLUS PPM/PGM image file format */
 #undef RLE_SUPPORTED		/* Utah RLE image file format */
-#undef TARGA_SUPPORTED		/* Targa image file format */
+#define TARGA_SUPPORTED		/* Targa image file format */
 
-#define TWO_FILE_COMMANDLINE	/* optional */
+#define TWO_FILE_COMMANDLINE
 #define USE_SETMODE		/* Microsoft has setmode() */
-#undef NEED_SIGNAL_CATCHER
+#define NEED_SIGNAL_CATCHER	/* Define this if you use jmemdos.c */
 #undef DONT_USE_B_MODE
 #undef PROGRESS_REPORT		/* optional */
 

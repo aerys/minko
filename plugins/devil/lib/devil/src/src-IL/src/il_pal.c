@@ -99,11 +99,11 @@ ILboolean ilLoadJascPal(ILconst_string FileName)
 	}
 
 	iFgetw(Buff, BUFFLEN, PalFile);
-	if (stricmp((const char*)Buff, "JASC-PAL")) {
+	if (_stricmp((const char*)Buff, "JASC-PAL")) {
 		Error = IL_TRUE;
 	}
 	iFgetw(Buff, BUFFLEN, PalFile);
-	if (stricmp((const char*)Buff, "0100")) {
+	if (_stricmp((const char*)Buff, "0100")) {
 		Error = IL_TRUE;
 	}
 
