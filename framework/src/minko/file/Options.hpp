@@ -21,6 +21,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 
+#include "minko/component/SkinningMethod.hpp"
+
 namespace minko
 {
 	namespace file
@@ -50,6 +52,7 @@ namespace minko
 
             bool                                        _generateMipMaps;
 			unsigned int								_skinningNumFPS;
+			component::SkinningMethod					_skinningMethod;
             std::shared_ptr<render::Effect>             _effect;
 			MaterialPtr									_material;
 			MaterialFunction							_materialFunction;
@@ -137,6 +140,20 @@ namespace minko
 			skinningNumFPS(unsigned int value)
 			{
 				_skinningNumFPS = value;
+			}
+
+			inline
+			component::SkinningMethod
+			skinningMethod() const
+			{
+				return _skinningMethod;
+			}
+
+			inline
+			void
+			skinningMethod(component::SkinningMethod value)
+			{
+				_skinningMethod	= value;
 			}
 
             inline
@@ -229,7 +246,7 @@ namespace minko
 			{
 				_effectFunction = func;
 			}
-
+			
 		private:
 			Options(std::shared_ptr<render::AbstractContext> context);
 
