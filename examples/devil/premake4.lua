@@ -1,11 +1,10 @@
-minko.project.application "example-cube"
+minko.project.application "example-devil"
 	kind "ConsoleApp"
 	language "C++"
 	files { "src/**.hpp", "src/**.cpp" }
 	includedirs { "src"	}
 	
 	minko.plugin.enable("sdl")
-	minko.plugin.enable("png")
 	minko.plugin.enable("devil")
 	
 	minko.plugin.import("angle")

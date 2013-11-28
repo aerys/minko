@@ -28,8 +28,7 @@ namespace minko
 	namespace file
 	{
 		class DevILParser :
-			public AbstractParser,
-			public std::enable_shared_from_this<DevILParser>
+			public AbstractParser
 		{
 		public:
 			typedef std::shared_ptr<DevILParser> Ptr;
@@ -47,7 +46,11 @@ namespace minko
 				  const std::string&                resolvedFilename,
                   std::shared_ptr<Options>          options,
 				  const std::vector<unsigned char>&	data,
-				  std::shared_ptr<AssetLibrary>	AssetLibrary);
+				  std::shared_ptr<AssetLibrary>		AssetLibrary);
+
+			static
+			std::vector<std::string>
+			getSupportedFileExensions();
 
 		private:
 			DevILParser()
@@ -56,9 +59,6 @@ namespace minko
 
 			void
 			checkError();
-
-			std::set<std::string>
-			getSupportedFileExensions();
 		};
 	}
 }
