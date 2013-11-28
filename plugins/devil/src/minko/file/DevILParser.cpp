@@ -36,15 +36,10 @@ DevILParser::parse(const std::string&                 filename,
                  const std::vector<unsigned char>&  data,
                  std::shared_ptr<AssetLibrary>      AssetLibrary)
 {
-	ILuint devilID;
-
-	int width = -1;
-	int height = -1;
-	int format = -1;
-	int origin = -1;
-	
 	// DevIL reference : http://www-f9.ijs.si/~matevz/docs/DevIL/apireference.html
 
+	ILuint devilID;
+	
 	ilInit();
 	iluInit();
 
@@ -52,31 +47,29 @@ DevILParser::parse(const std::string&                 filename,
 	ilBindImage(devilID);
 
 	ilLoadL(IL_TYPE_UNKNOWN, &data[0], data.size());
-	
 	checkError();
-
-	origin = ilGetInteger(IL_IMAGE_ORIGIN);
-
-	if (origin == IL_ORIGIN_LOWER_LEFT)
-		iluFlipImage();
-
-	width = ilGetInteger(IL_IMAGE_WIDTH);
-	height = ilGetInteger(IL_IMAGE_HEIGHT);
-
-	format = ilGetInteger(IL_IMAGE_FORMAT);
-
-	format = ilGetInteger(IL_IMAGE_FORMAT);
+	
+	int format = ilGetInteger(IL_IMAGE_FORMAT);
 
 	if (format == IL_BGR || format == IL_BGRA)
+	{
 		iluSwapColours();
+		checkError();
+		format = ilGetInteger(IL_IMAGE_FORMAT);
+	}
 
-	checkError();
+	if (ilGetInteger(IL_IMAGE_ORIGIN) == IL_ORIGIN_LOWER_LEFT)
+	{
+		iluFlipImage();
+		checkError();
+	}
+
+	computeDimensions();
 
 	auto bmpData = ilGetData();
-
 	checkError();
 
-	auto texture = render::Texture::create(options->context(), width, height, options->generateMipmaps());
+	auto texture = render::Texture::create(options->context(), ilGetInteger(IL_IMAGE_WIDTH), ilGetInteger(IL_IMAGE_HEIGHT), options->generateMipmaps());
 
 	texture->data(bmpData, format == IL_RGBA ? minko::render::Texture::RGBA : minko::render::Texture::RGB);
 	texture->upload();
@@ -86,6 +79,40 @@ DevILParser::parse(const std::string&                 filename,
 	complete()->execute(shared_from_this());
 
 	ilShutDown();
+}
+
+void
+DevILParser::computeDimensions()
+{
+	int width = ilGetInteger(IL_IMAGE_WIDTH);
+	int height = ilGetInteger(IL_IMAGE_HEIGHT);
+
+	int w = std::ceil(std::log(double(width)) / std::log(double(2u)));
+	int h = std::ceil(std::log(double(height)) / std::log(double(2u)));
+
+	w = std::pow(2.f, w);
+	h = std::pow(2.f, h);
+
+	if (w > width)
+		w--;
+
+	if (h > height)
+		h--;
+
+	int pow = max(w, h);
+
+	if (pow < 1)
+		pow = 1;
+
+	w = std::pow(2.f, pow);
+	h = w;
+
+	if (w != width || h != height)
+	{
+		iluImageParameter(ILU_FILTER, ILU_BILINEAR);
+		iluScale(w, h, ilGetInteger(IL_IMAGE_DEPTH));
+		checkError();
+	}
 }
 
 
