@@ -995,7 +995,7 @@ ILboolean ILAPIENTRY ilLoad(ILenum Type, ILconst_string FileName)
 
 		#ifndef IL_NO_GIF
 		case IL_GIF:
-			bRet = ilLoadGif(FileName);
+			bRet = ilLoadGif(FileName, iCurImage);
 			break;
 		#endif
 
@@ -1333,7 +1333,7 @@ ILboolean ILAPIENTRY ilLoadF(ILenum Type, ILHANDLE File)
 
 		#ifndef IL_NO_GIF
 		case IL_GIF:
-			return ilLoadGifF(File);
+			return ilLoadGifF(File, iCurImage);
 		#endif
 
 		#ifndef IL_NO_HDR
@@ -1491,6 +1491,8 @@ ILboolean ILAPIENTRY ilLoadF(ILenum Type, ILHANDLE File)
 	return IL_FALSE;
 }
 
+// Forward...
+ILboolean __stdcall skiaLoadImage(void* buf, size_t bufSize);
 
 //! Attempts to load an image from a memory buffer.  The file format is specified by the user.
 /*! \param Type Format of this file.  Acceptable values are IL_BLP, IL_BMP, IL_CUT, IL_DCX, IL_DDS,
@@ -1508,6 +1510,10 @@ ILboolean ILAPIENTRY ilLoadL(ILenum Type, const void *Lump, ILuint Size)
 		ilSetError(IL_INVALID_PARAM);
 		return IL_FALSE;
 	}
+
+   /*if (skiaLoadImage(Lump, Size)) {
+      return IL_TRUE;
+   }*/
 
 	if (Type == IL_TYPE_UNKNOWN)
 		Type = ilDetermineTypeL(Lump, Size);
@@ -1591,7 +1597,7 @@ ILboolean ILAPIENTRY ilLoadL(ILenum Type, const void *Lump, ILuint Size)
 
 		#ifndef IL_NO_GIF
 		case IL_GIF:
-			return ilLoadGifL(Lump, Size);
+			return ilLoadGifL(iCurImage, Lump, Size);
 		#endif
 
 		#ifndef IL_NO_HDR
@@ -1852,7 +1858,7 @@ ILboolean ILAPIENTRY ilLoadImage(ILconst_string FileName)
 
 		#ifndef IL_NO_GIF
 		if (!iStrCmp(Ext, IL_TEXT("gif"))) {
-			bRet = ilLoadGif(FileName);
+			bRet = ilLoadGif(FileName, iCurImage);
 			goto finish;
 		}
 		#endif

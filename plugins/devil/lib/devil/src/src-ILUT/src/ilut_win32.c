@@ -726,7 +726,7 @@ ILboolean ILAPIENTRY ilutWinPrint(ILuint XPos, ILuint YPos, ILuint Width, ILuint
 	Pd.nMinPage = 1;
 	Pd.nMaxPage = 0xFFFF;
 
-	if (!PrintDlg(&Pd))
+	//if (!PrintDlg(&Pd))
 		return (0L);
 
 	Di.cbSize = sizeof(DOCINFO);

@@ -52,7 +52,7 @@ ILimage *iCurImage = NULL;
 #ifdef _UNICODE
 	int iStrCmp(ILconst_string src1, ILconst_string src2)
 	{
-		return wcsicmp(src1, src2);
+		return _wcsicmp(src1, src2);
 	}
 #else
 	int iStrCmp(ILconst_string src1, ILconst_string src2)

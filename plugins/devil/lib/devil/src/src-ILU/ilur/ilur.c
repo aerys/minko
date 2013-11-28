@@ -176,7 +176,7 @@ int parse_function(const char * string, char * name, char * params)
  * \param string The input string
  * \param nonwhitespaced The 'cleaned' string
  */
-void remove_whitespaces(const char * string, char * nonwhitespaced)
+int remove_whitespaces(const char * string, char * nonwhitespaced)
 {
 	strncpy(nonwhitespaced, string, strlen(string) + 1);
 	int i;
@@ -199,7 +199,7 @@ void remove_whitespaces(const char * string, char * nonwhitespaced)
 
 /** How to fill our Params structure?
  */
-void parse_arguments(int argc, const char * argv[], Params * parameters)
+int parse_arguments(int argc, const char * argv[], Params * parameters)
 {
 	/* How many ILU functions are we going to apply to the image? */
 	int calls_count = 0;
