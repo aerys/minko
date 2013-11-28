@@ -41,6 +41,7 @@ DevILParser::parse(const std::string&                 filename,
 	int width = -1;
 	int height = -1;
 	int format = -1;
+	int origin = -1;
 	
 	// DevIL reference : http://www-f9.ijs.si/~matevz/docs/DevIL/apireference.html
 
@@ -51,21 +52,25 @@ DevILParser::parse(const std::string&                 filename,
 	ilBindImage(devilID);
 
 	ilLoadL(IL_TYPE_UNKNOWN, &data[0], data.size());
-
+	
 	checkError();
+
+	origin = ilGetInteger(IL_IMAGE_ORIGIN);
+
+	if (origin == IL_ORIGIN_LOWER_LEFT)
+		iluFlipImage();
 
 	width = ilGetInteger(IL_IMAGE_WIDTH);
 	height = ilGetInteger(IL_IMAGE_HEIGHT);
 
 	format = ilGetInteger(IL_IMAGE_FORMAT);
 
+	format = ilGetInteger(IL_IMAGE_FORMAT);
 
 	if (format == IL_BGR || format == IL_BGRA)
 		iluSwapColours();
 
 	checkError();
-
-	format = ilGetInteger(IL_IMAGE_FORMAT);
 
 	auto bmpData = ilGetData();
 
@@ -93,64 +98,64 @@ DevILParser::checkError()
 		throw std::runtime_error(std::string("DevILParser::parse"));
 }
 
-std::set<std::string>
+std::vector<std::string>
 DevILParser::getSupportedFileExensions()
 {
-	std::set<std::string> result;
+	std::vector<std::string> result;
 
-	result.insert("bmp");
-	result.insert("cut");
-	result.insert("dcx");
-	result.insert("dicom");
-	result.insert("dcm");
-	result.insert("dds");
-	//result.insert("exr");
-	result.insert("fits");
-	result.insert("fit");
-	result.insert("ftx");
-	result.insert("hdr");
-	result.insert("icns");
-	result.insert("ico");
-	result.insert("cur");
-	result.insert("iff");
-	result.insert("iwi");
-	result.insert("gif");
-	result.insert("jpg");
-	result.insert("jpe");
-	result.insert("jpeg");
-	result.insert("jp2");
-	result.insert("lbm");
-	result.insert("lif");
-	result.insert("mdl");
-	result.insert("mp3");
-	result.insert("pal");
-	result.insert("pcd");
-	result.insert("pcx");
-	result.insert("pic");
-	result.insert("png");
-	result.insert("pbm");
-	result.insert("pgm");
-	result.insert("pnm");
-	result.insert("pix");
-	result.insert("psd");
-	result.insert("psp");
-	result.insert("pxr");
-	result.insert("raw");
-	result.insert("rot");
-	result.insert("sgi");
-	result.insert("bw");
-	result.insert("rgb");
-	result.insert("rgba");
-	result.insert("texture");
-	result.insert("tga");
-	result.insert("tif");
-	result.insert("tpl");
-	result.insert("utx");
-	result.insert("wal");
-	result.insert("vtf");
-	//result.insert("wdp");
-	result.insert("hdp");
-	result.insert("xpm");
+	result.push_back("bmp");
+	result.push_back("cut");
+	result.push_back("dcx");
+	result.push_back("dicom");
+	result.push_back("dcm");
+	result.push_back("dds");
+	//result.push_back("exr");
+	result.push_back("fits");
+	result.push_back("fit");
+	result.push_back("ftx");
+	result.push_back("hdr");
+	result.push_back("icns");
+	result.push_back("ico");
+	result.push_back("cur");
+	result.push_back("iff");
+	result.push_back("iwi");
+	result.push_back("gif");
+	result.push_back("jpg");
+	result.push_back("jpe");
+	result.push_back("jpeg");
+	result.push_back("jp2");
+	result.push_back("lbm");
+	result.push_back("lif");
+	result.push_back("mdl");
+	result.push_back("mp3");
+	result.push_back("pal");
+	result.push_back("pcd");
+	result.push_back("pcx");
+	result.push_back("pic");
+	result.push_back("png");
+	result.push_back("pbm");
+	result.push_back("pgm");
+	result.push_back("pnm");
+	result.push_back("pix");
+	result.push_back("psd");
+	result.push_back("psp");
+	result.push_back("pxr");
+	result.push_back("raw");
+	result.push_back("rot");
+	result.push_back("sgi");
+	result.push_back("bw");
+	result.push_back("rgb");
+	result.push_back("rgba");
+	result.push_back("texture");
+	result.push_back("tga");
+	result.push_back("tif");
+	result.push_back("tpl");
+	result.push_back("utx");
+	result.push_back("wal");
+	result.push_back("vtf");
+	//result.push_back("wdp");
+	result.push_back("hdp");
+	result.push_back("xpm");
 
 	return result;
 }

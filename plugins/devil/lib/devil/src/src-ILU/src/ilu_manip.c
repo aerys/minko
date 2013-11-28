@@ -481,8 +481,8 @@ ILboolean ILAPIENTRY iluSwapColours() {
 	// Use ilConvert or other like that to convert the data?
 	// and extend that function to work even on paletted data
 	
-	ILimage *img = ilGetCurImage();
-	if( img == NULL ) {
+	ILimage *iluCurImage = ilGetCurImage();
+	if (iluCurImage == NULL) {
 		ilSetError(ILU_ILLEGAL_OPERATION);
 		return IL_FALSE;
 	}
@@ -493,7 +493,7 @@ ILboolean ILAPIENTRY iluSwapColours() {
 			return IL_FALSE;
 		}
 		
-		switch( img->Pal.PalType ) {
+		switch (iluCurImage->Pal.PalType) {
 			case IL_PAL_RGB24:
 				return ilConvertPal(IL_PAL_BGR24);
 			case IL_PAL_RGB32:
@@ -512,15 +512,15 @@ ILboolean ILAPIENTRY iluSwapColours() {
 		}
 	}
 
-	switch( img->Format) {
+	switch (iluCurImage->Format) {
 		case IL_RGB:
-			return ilConvertImage(IL_BGR, img->Type);
+			return ilConvertImage(IL_BGR, iluCurImage->Type);
 		case IL_RGBA:
-			return ilConvertImage(IL_BGRA, img->Type);
+			return ilConvertImage(IL_BGRA, iluCurImage->Type);
 		case IL_BGR:
-			return ilConvertImage(IL_RGB, img->Type);
+			return ilConvertImage(IL_RGB, iluCurImage->Type);
 		case IL_BGRA:
-			return ilConvertImage(IL_RGBA, img->Type);
+			return ilConvertImage(IL_RGBA, iluCurImage->Type);
 	}
 
 	ilSetError(ILU_INTERNAL_ERROR);
