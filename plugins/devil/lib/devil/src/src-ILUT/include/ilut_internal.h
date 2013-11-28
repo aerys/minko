@@ -14,10 +14,6 @@
 #ifndef INTERNAL_H
 #define INTERNAL_H
 
-#define IL_STATIC_LIB
-#define ILU_STATIC_LIB
-#define ILUT_STATIC_LIB
-
 #define _IL_BUILD_LIBRARY
 #define _ILU_BUILD_LIBRARY
 #define _ILUT_BUILD_LIBRARY

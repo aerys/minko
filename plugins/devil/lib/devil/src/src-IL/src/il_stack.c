@@ -64,7 +64,6 @@ ILuint ILAPIENTRY ilGenImage()
 //! Makes Image the current active image - similar to glBindTexture().
 void ILAPIENTRY ilBindImage(ILuint Image)
 {
-
 	if (ImageStack == NULL || StackSize == 0) {
 		if (!iEnlargeStack()) {
 			return;

@@ -410,7 +410,7 @@ keymatch (char * arg, const char * keyword, int minchars)
  */
 
 int
-mainWjpgCom (int argc, char **argv)
+main (int argc, char **argv)
 {
   int argn;
   char * arg;
