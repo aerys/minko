@@ -88,12 +88,6 @@ DrawCall::bind(ContainerPtr data, ContainerPtr rendererData, ContainerPtr rootDa
 	_rootData		= rootData;
 
 	bindIndexBuffer();
-
-	//auto indexBuffer	= getDataProperty<IndexBuffer::Ptr>("geometry.indices");
-
-    //_indexBuffer	= indexBuffer->id();
-    //_numIndices		= indexBuffer->data().size();
-
 	bindProgramInputs();
 	bindStates();
 }
@@ -219,11 +213,11 @@ DrawCall::bindVertexAttribute(const std::string&	inputName,
 			// See issue #1848 in Emscripten: https://github.com/kripken/emscripten/issues/1848
 			auto that = shared_from_this();
 			_referenceChangedSlots[propertyName].push_back(container->propertyReferenceChanged(propertyName)->connect([&, that](Container::Ptr, const std::string&) {
-				that->bindVertexAttribute(propertyName, location, vertexBufferId);
+				that->bindVertexAttribute(inputName, location, vertexBufferId);
 			}));
 #else
 			_referenceChangedSlots[propertyName].push_back(container->propertyReferenceChanged(propertyName)->connect(std::bind(
-				&DrawCall::bindVertexAttribute, shared_from_this(), propertyName, location, vertexBufferId
+				&DrawCall::bindVertexAttribute, shared_from_this(), inputName, location, vertexBufferId
 			)));
 #endif
 		}
@@ -267,11 +261,11 @@ DrawCall::bindTextureSampler2D(const std::string&	inputName,
 			// See issue #1848 in Emscripten: https://github.com/kripken/emscripten/issues/1848
 			auto that = shared_from_this();
 			_referenceChangedSlots[propertyName].push_back(container->propertyReferenceChanged(propertyName)->connect([&, that](Container::Ptr, const std::string&) {
-				that->bindTextureSampler2D(propertyName, location, textureId, samplerState);
+				that->bindTextureSampler2D(inputName, location, textureId, samplerState);
 			}));
 #else
 			_referenceChangedSlots[propertyName].push_back(container->propertyReferenceChanged(propertyName)->connect(std::bind(
-				&DrawCall::bindTextureSampler2D, shared_from_this(), propertyName, location, textureId, samplerState
+				&DrawCall::bindTextureSampler2D, shared_from_this(), inputName, location, textureId, samplerState
 			)));
 #endif
 		}
@@ -290,39 +284,56 @@ DrawCall::bindUniform(const std::string&	inputName,
 		throw std::invalid_argument("location");
 #endif // DEBUG
 
-	bool isArray = false;
-	auto pos = inputName.find_first_of('[');
-	std::string bindingName = inputName;
+	bool		isArray		= false;
+	auto		pos			= inputName.find_first_of('[');
+	std::string	bindingName	= inputName;
 
 	if (pos != std::string::npos)
 	{
 		bindingName = inputName.substr(0, pos);
 		isArray = true;
 	}
-
+	
 	if (_uniformBindings.count(bindingName))
 	{	
-		auto propertyName = std::get<0>(_uniformBindings.at(bindingName));
-		auto& source = std::get<1>(_uniformBindings.at(bindingName));
-		auto& container = getDataContainer(source);
+		auto	propertyName	= std::get<0>(_uniformBindings.at(bindingName));
+		auto&	source			= std::get<1>(_uniformBindings.at(bindingName));
+		auto&	container		= getDataContainer(source);
 
-		if (isArray)
-			propertyName += inputName.substr(pos);
-		
-		if (container && container->hasProperty(propertyName))
+		if (container)
 		{
-			if (type == ProgramInputs::Type::float1)
-				_uniformFloat[location] = container->get<float>(propertyName);
-			else if (type == ProgramInputs::Type::float2)
-				_uniformFloat2[location] = container->get<std::shared_ptr<Vector2>>(propertyName);
-			else if (type == ProgramInputs::Type::float3)
-				_uniformFloat3[location] = container->get<std::shared_ptr<Vector3>>(propertyName);
-			else if (type == ProgramInputs::Type::float4)
-				_uniformFloat4[location] = container->get<std::shared_ptr<Vector4>>(propertyName);
-			else if (type == ProgramInputs::Type::float16)
-				_uniformFloat16[location] = &(container->get<Matrix4x4::Ptr>(propertyName)->data()[0]);
-			else
-				throw std::logic_error("unsupported uniform type.");
+			if (isArray)
+				propertyName += inputName.substr(pos); // way to handle array of GLSL structs
+
+			if (container->hasProperty(propertyName))
+			{
+				// This case corresponds to base types uniforms or individual members of an GLSL struct array.
+
+				if (type == ProgramInputs::Type::float1 
+					/*&& container->propertyHasType<float>(propertyName, true)*/)
+						_uniformFloat[location]		= container->get<float>(propertyName);
+				else if (type == ProgramInputs::Type::float2 
+					/*&& container->propertyHasType<Vector2::Ptr>(propertyName, true)*/)
+						_uniformFloat2[location]	= container->get<Vector2::Ptr>(propertyName);
+				else if (type == ProgramInputs::Type::float3
+					/*&& container->propertyHasType<Vector3::Ptr>(propertyName, true)*/)
+						_uniformFloat3[location]	= container->get<Vector3::Ptr>(propertyName);
+				else if (type == ProgramInputs::Type::float4
+					/*&& container->propertyHasType<Vector4::Ptr>(propertyName, true)*/)
+						_uniformFloat4[location]	= container->get<Vector4::Ptr>(propertyName);
+				else if (type == ProgramInputs::Type::float16 
+					/*&& container->propertyHasType<Matrix4x4::Ptr>(propertyName, true)*/)
+						_uniformFloat16[location]	= &(container->get<Matrix4x4::Ptr>(propertyName)->data()[0]);
+				else
+					throw std::logic_error("unsupported uniform type.");
+			}
+			else if (isArray)
+			{
+				// This case corresponds to continuous base type arrays that are stored in data providers as std::vector<float>.
+				propertyName	= std::get<0>(_uniformBindings.at(bindingName));
+
+				bindUniformArray(propertyName, container, type, location);
+			}
 		}
 
 		if (_referenceChangedSlots.count(propertyName) == 0)			
@@ -331,15 +342,44 @@ DrawCall::bindUniform(const std::string&	inputName,
 			// See issue #1848 in Emscripten: https://github.com/kripken/emscripten/issues/1848
 			auto that = shared_from_this();
 			_referenceChangedSlots[propertyName].push_back(container->propertyReferenceChanged(propertyName)->connect([&, that](Container::Ptr, const std::string&) {
-				that->bindUniform(propertyName, type, location);
+				that->bindUniform(inputName, type, location);
 			}));
 #else
 			_referenceChangedSlots[propertyName].push_back(container->propertyReferenceChanged(propertyName)->connect(std::bind(
-				&DrawCall::bindUniform, shared_from_this(), propertyName, type, location
+				&DrawCall::bindUniform, shared_from_this(), inputName, type, location
 			)));
 #endif		
 		}
 	}
+}
+
+void
+DrawCall::bindUniformArray(const std::string&	propertyName,
+						   Container::Ptr		container,
+						   ProgramInputs::Type	type,
+						   int					location)
+{
+	if (!container || 
+		!container->hasProperty(propertyName) || 
+		!container->propertyHasType<UniformArrayPtr>(propertyName, true))
+		return;
+
+	auto& uniformArray = container->get<UniformArrayPtr>(propertyName);
+	if (uniformArray->first == 0 || uniformArray->second == nullptr)
+		return;
+
+	if (type == ProgramInputs::Type::float1)
+		_uniformFloats[location] = uniformArray;
+	else if (type == ProgramInputs::Type::float2)
+		_uniformFloats2[location] = uniformArray;
+	else if (type == ProgramInputs::Type::float3)
+		_uniformFloats3[location] = uniformArray;
+	else if (type == ProgramInputs::Type::float4)
+		_uniformFloats4[location] = uniformArray;
+	else if (type == ProgramInputs::Type::float16)
+		_uniformFloats16[location] = uniformArray;
+	else
+		throw std::logic_error("unsupported uniform type.");
 }
 
 void
@@ -352,6 +392,12 @@ DrawCall::reset()
 	_uniformFloat3.clear();
 	_uniformFloat4.clear();
 	_uniformFloat16.clear();
+
+	_uniformFloats.clear();
+	_uniformFloats2.clear();
+	_uniformFloats3.clear();
+	_uniformFloats4.clear();
+	_uniformFloats16.clear();
 
 	_textures			.clear();
 	_textureLocations	.clear();
@@ -465,6 +511,17 @@ DrawCall::render(const AbstractContext::Ptr& context, std::shared_ptr<render::Te
     }
     for (auto& uniformFloat16 : _uniformFloat16)
         context->setUniform(uniformFloat16.first, 1, true, uniformFloat16.second);
+
+	for (auto& uniformFloats : _uniformFloats)
+		context->setUniforms	(uniformFloats.first,	uniformFloats.second->first,			uniformFloats.second->second);
+	for (auto& uniformFloats2 : _uniformFloats2)
+		context->setUniforms2	(uniformFloats2.first,	uniformFloats2.second->first,			uniformFloats2.second->second);
+	for (auto& uniformFloats3 : _uniformFloats3)
+		context->setUniforms3	(uniformFloats3.first,	uniformFloats3.second->first,			uniformFloats3.second->second);
+	for (auto& uniformFloats4 : _uniformFloats4)
+		context->setUniforms4	(uniformFloats4.first,	uniformFloats4.second->first,			uniformFloats4.second->second);
+	for (auto& uniformFloats16 : _uniformFloats16)
+		context->setUniform		(uniformFloats16.first,	uniformFloats16.second->first, true,	uniformFloats16.second->second);
 
 	auto textureOffset = 0;
 	for (auto textureLocationAndPtr : _program->textures())

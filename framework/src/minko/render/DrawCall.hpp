@@ -35,7 +35,7 @@ namespace minko
             public std::enable_shared_from_this<DrawCall>
 		{
 		public:
-			typedef std::shared_ptr<DrawCall> Ptr;
+			typedef std::shared_ptr<DrawCall>						Ptr;
 
 		private:
             typedef std::shared_ptr<AbstractContext>				AbsCtxPtr;
@@ -87,6 +87,12 @@ namespace minko
             std::unordered_map<uint, std::shared_ptr<math::Vector3>>    _uniformFloat3;
             std::unordered_map<uint, std::shared_ptr<math::Vector4>>    _uniformFloat4;
             std::unordered_map<uint, const float*>                      _uniformFloat16;
+
+			std::unordered_map<uint, data::UniformArrayPtr>				_uniformFloats;
+			std::unordered_map<uint, data::UniformArrayPtr>				_uniformFloats2;
+			std::unordered_map<uint, data::UniformArrayPtr>				_uniformFloats3;
+			std::unordered_map<uint, data::UniformArrayPtr>				_uniformFloats4;
+			std::unordered_map<uint, data::UniformArrayPtr>				_uniformFloats16;
 
 			std::unordered_map<std::string, std::list<Any>>				_referenceChangedSlots; // Any = ContainerPropertyChangedSlot
 
@@ -159,6 +165,9 @@ namespace minko
 
 			void
 			bindUniform(const std::string& propertyName, ProgramInputs::Type, int location);
+
+			void
+			bindUniformArray(const std::string&	propertyName, ContainerPtr, ProgramInputs::Type, int location);
 
 			void
 			watchUniformRefChange(ContainerPtr, const std::string& propertyName, ProgramInputs::Type, int location);

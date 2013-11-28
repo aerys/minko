@@ -1172,6 +1172,34 @@ OpenGLES2Context::setUniform(const uint& location, const float& v1, const float&
 }
 
 void
+OpenGLES2Context::setUniforms(uint location, uint size, const float* values)
+{
+	glUniform1fv(location, size, values);
+	checkForErrors();
+}
+
+void
+OpenGLES2Context::setUniforms2(uint location, uint size, const float* values)
+{
+	glUniform2fv(location, size, values);
+	checkForErrors();
+}
+
+void
+OpenGLES2Context::setUniforms3(uint location, uint size, const float* values)
+{
+	glUniform3fv(location, size, values);
+	checkForErrors();
+}
+
+void
+OpenGLES2Context::setUniforms4(uint location, uint size, const float* values)
+{
+	glUniform4fv(location, size, values);
+	checkForErrors();
+}
+
+void
 OpenGLES2Context::setUniform(const uint& location, const uint& size, bool transpose, const float* values)
 {
 #ifdef GL_ES_VERSION_2_0
@@ -1189,6 +1217,7 @@ OpenGLES2Context::setUniform(const uint& location, const uint& size, bool transp
         glUniformMatrix4fv(location, size, transpose, values);
     }
 #else
+
 	glUniformMatrix4fv(location, size, transpose, values);
 #endif
 	checkForErrors();
