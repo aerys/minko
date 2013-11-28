@@ -109,7 +109,7 @@ ILboolean iIsValidPsp()
 // Internal function used to check if the HEADER is a valid Psp header.
 ILboolean iCheckPsp()
 {
-	if (stricmp(Header.FileSig, "Paint Shop Pro Image File\n\x1a"))
+	if (_stricmp(Header.FileSig, "Paint Shop Pro Image File\n\x1a"))
 		return IL_FALSE;
 	if (Header.MajorVersion < 3 || Header.MajorVersion > 5)
 		return IL_FALSE;

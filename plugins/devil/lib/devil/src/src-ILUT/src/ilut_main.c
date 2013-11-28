@@ -29,7 +29,7 @@
 
 
 
-/*BOOL APIENTRY DllMain(HANDLE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
+BOOL APIENTRY DllMain(HANDLE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
 {
 	hModule;  lpReserved;
 
@@ -40,17 +40,17 @@
 	}
 
 	return TRUE;
-}*/
+}
 #endif
 
 #else  // Should check if gcc?
 
 // Should be able to condense this...
-/*static void GccMain() __attribute__((constructor));
+static void GccMain() __attribute__((constructor));
 static void GccMain()
 {
 	//ilutInit();
-}*/
+}
 
 #endif
 

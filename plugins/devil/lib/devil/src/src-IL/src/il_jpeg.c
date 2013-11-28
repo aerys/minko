@@ -925,7 +925,7 @@ ILboolean ilSaveFromJpegStruct(void *_JpegInfo)
 {
 #ifndef IL_NO_JPG
 #ifndef IL_USE_IJL
-	void (*errorHandler)();
+	//void (*errorHandler)();
 	JSAMPROW	row_pointer[1];
 	ILimage		*TempImage;
 	ILubyte		*TempData;
@@ -939,7 +939,7 @@ ILboolean ilSaveFromJpegStruct(void *_JpegInfo)
 	//added on 2003-08-31 as explained in SF bug 596793
 	jpgErrorOccured = IL_FALSE;
 
-	errorHandler = JpegInfo->err->error_exit;
+	//errorHandler = JpegInfo->err->error_exit;
 	JpegInfo->err->error_exit = ExitErrorHandle;
 
 

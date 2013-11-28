@@ -23,7 +23,7 @@
 #define MAGIC_HEADER2	0x4D4D
 
 
-/*#if (defined(_WIN32) || defined(_WIN64)) && defined(IL_USE_PRAGMA_LIBS)
+#if (defined(_WIN32) || defined(_WIN64)) && defined(IL_USE_PRAGMA_LIBS)
 	#if defined(_MSC_VER) || defined(__BORLANDC__)
 		#ifndef _DEBUG
 			#pragma comment(lib, "libtiff.lib")
@@ -31,7 +31,7 @@
 			#pragma comment(lib, "libtiff-d.lib")
 		#endif
 	#endif
-#endif*/
+#endif
 
 
 /*----------------------------------------------------------------------------*/
@@ -987,11 +987,15 @@ ILboolean iSaveTiffInternal(/*ILconst_string Filename*/)
 	TIFFSetField(File, TIFFTAG_IMAGEWIDTH, TempImage->Width);
 	TIFFSetField(File, TIFFTAG_IMAGELENGTH, TempImage->Height);
 	TIFFSetField(File, TIFFTAG_COMPRESSION, Compression);
-	TIFFSetField(File, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_RGB);
+	if((TempImage->Format == IL_LUMINANCE) || (TempImage->Format == IL_LUMINANCE_ALPHA))
+		TIFFSetField(File, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_MINISBLACK);
+	else
+		TIFFSetField(File, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_RGB);
 	TIFFSetField(File, TIFFTAG_BITSPERSAMPLE, TempImage->Bpc << 3);
 	TIFFSetField(File, TIFFTAG_SAMPLESPERPIXEL, TempImage->Bpp);
-	if (TempImage->Bpp == 4) //TODO: LUMINANCE, LUMINANCE_ALPHA
-		TIFFSetField(File, TIFFTAG_MATTEING, 1);
+	if ((TempImage->Bpp == ilGetBppFormat(IL_RGBA)) ||
+			(TempImage->Bpp == ilGetBppFormat(IL_LUMINANCE_ALPHA)))
+		TIFFSetField(File, TIFFTAG_EXTRASAMPLES, EXTRASAMPLE_ASSOCALPHA);
 	TIFFSetField(File, TIFFTAG_PLANARCONFIG, PLANARCONFIG_CONTIG);
 	TIFFSetField(File, TIFFTAG_ROWSPERSTRIP, 1);
 	TIFFSetField(File, TIFFTAG_SOFTWARE, ilGetString(IL_VERSION_NUM));
