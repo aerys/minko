@@ -1217,20 +1217,6 @@ OpenGLES2Context::setUniform(const uint& location, const uint& size, bool transp
         glUniformMatrix4fv(location, size, transpose, values);
     }
 #else
-	/*
-	if (size > 1)
-	{
-	for (unsigned int i = 0 ; i < size; ++i)
-	{
-		std::cout << "mat[" << i << "] = " << std::endl;
-		for (unsigned int j = 0; j < 16; ++j)
-		{
-			std::cout << values[16*i + j] << " ";
-		}
-		std::cout << std::endl;
-	}
-	}
-	*/
 
 	glUniformMatrix4fv(location, size, transpose, values);
 #endif

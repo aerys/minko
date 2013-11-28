@@ -111,6 +111,7 @@ namespace minko
 
 		class MousePicking;
 		class MouseManager;
+		enum class SkinningMethod;
 	}
 
 	namespace data
@@ -132,8 +133,8 @@ namespace minko
 		typedef std::pair<std::string, BindingSource>		Binding;
 		typedef std::unordered_map<std::string, Binding>	BindingMap;
 
-		typedef std::vector<float>							FloatArray;
-		typedef std::shared_ptr<FloatArray>					FloatArrayPtr;
+		typedef std::pair<uint, const float*>				UniformArray;
+		typedef std::shared_ptr<UniformArray>				UniformArrayPtr;
 
 		enum class MacroBindingDefaultValueSemantic
 		{
