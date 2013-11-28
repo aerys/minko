@@ -59,6 +59,9 @@ namespace minko
 
 			void
 			checkError();
+
+			void
+			computeDimensions();
 		};
 	}
 }
