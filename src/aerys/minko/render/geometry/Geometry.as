@@ -562,27 +562,37 @@ package aerys.minko.render.geometry
 			
 			normalsData = normalsStream == xyzStream ? xyzData : normalsStream.lock();
 			
-			for (i = 0; i < numTriangles; ++i)
+			if (normalsData == xyzData)
 			{
-				ii = triangles ? triangles[i] * 3 : i * 3;
-				i0 = indices.readUnsignedShort();
-				i1 = indices.readUnsignedShort();
-				i2 = indices.readUnsignedShort();
+				for (i = 0; i < numTriangles; ++i)
+				{
+					ii = triangles ? triangles[i] * 3 : i * 3;
+					i0 = indices.readUnsignedShort();
+					i1 = indices.readUnsignedShort();
+					i2 = indices.readUnsignedShort();
+					
+					normalsData.position = i0 * normalsVertexSize + normalsOffset;
+					normalsData.writeFloat(0.);
+					normalsData.writeFloat(0.);
+					normalsData.writeFloat(0.);
+					
+					normalsData.position = i1 * normalsVertexSize + normalsOffset;
+					normalsData.writeFloat(0.);
+					normalsData.writeFloat(0.);
+					normalsData.writeFloat(0.);
+					
+					normalsData.position = i2 * normalsVertexSize + normalsOffset;
+					normalsData.writeFloat(0.);
+					normalsData.writeFloat(0.);
+					normalsData.writeFloat(0.);
+				}
+			}
+			else
+			{
+				var normalSize : uint = (xyzData.length / xyzStream.format.numBytesPerVertex) * 3;
 				
-				normalsData.position = i0 * normalsVertexSize + normalsOffset;
-				normalsData.writeFloat(0.);
-				normalsData.writeFloat(0.);
-				normalsData.writeFloat(0.);
-				
-				normalsData.position = i1 * normalsVertexSize + normalsOffset;
-				normalsData.writeFloat(0.);
-				normalsData.writeFloat(0.);
-				normalsData.writeFloat(0.);
-				
-				normalsData.position = i2 * normalsVertexSize + normalsOffset;
-				normalsData.writeFloat(0.);
-				normalsData.writeFloat(0.);
-				normalsData.writeFloat(0.);
+				for (i = 0; i < normalSize; ++i)
+					normalsData.writeFloat(0.);
 			}
 			
 			for (i = 0; i < numTriangles; ++i)
