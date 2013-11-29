@@ -101,11 +101,11 @@ int main(int argc, char** argv)
 		// sphere
 		auto sphere = scene::Node::create("sphere")
 			->addComponent(Surface::create(
-			assets->geometry("sphere"),
-			sphereMaterial,
-			assets->effect("effect/Phong.effect")
-			));
-			//->addComponent(Transform::create(Matrix4x4::create()->appendTranslation(0.f, 2.f, 0.f)->prependScale(3.f)));
+			    assets->geometry("sphere"),
+			    sphereMaterial,
+			    assets->effect("effect/Phong.effect")
+			))
+			->addComponent(Transform::create(Matrix4x4::create()->appendTranslation(0.f, 2.f, 0.f)->prependScale(3.f)));
 		root->addChild(sphere);
 
 		// spotLight
