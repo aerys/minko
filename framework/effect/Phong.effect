@@ -6,7 +6,11 @@
 		"position"				: "geometry.vertex.attribute.position",
 		"uv"					: "geometry.vertex.attribute.uv",
 		"normal"				: "geometry.vertex.attribute.normal",
-		"tangent"				: "geometry.vertex.attribute.tangent"
+		"tangent"				: "geometry.vertex.attribute.tangent",
+		"boneIdsA"				: "geometry.vertex.attribute.boneIdsA",
+		"boneIdsB"				: "geometry.vertex.attribute.boneIdsB",		
+		"boneWeightsA"			: "geometry.vertex.attribute.boneWeightsA",
+		"boneWeightsB"			: "geometry.vertex.attribute.boneWeightsB"
 	},
 	
 	"uniformBindings"	: {
@@ -21,8 +25,10 @@
 		"environmentAlpha"		: "material.environmentAlpha",
 		"shininess"				: "material.shininess",
 		"modelToWorldMatrix"	: "transform.modelToWorldMatrix",
-		"worldToScreenMatrix"	: { "property" : "camera.worldToScreenMatrix", "source" : "renderer" },
-		"cameraPosition"		: { "property" : "camera.position", "source" : "renderer" }
+		"worldToScreenMatrix"	: { "property" : "camera.worldToScreenMatrix", 		"source" : "renderer" },
+		"cameraPosition"		: { "property" : "camera.position", 				"source" : "renderer" },
+		"boneMatrices"			: { "property" : "geometry.boneMatrices",			"source" : "target" },
+		"numBones"				: { "property" : "geometry.numBones",				"source" : "target" }
 	},
 	
 	"stateBindings"	: {
@@ -46,7 +52,8 @@
 		"ENVIRONMENT_MAP"		: "material.environmentMap",
 		"ENVIRONMENT_ALPHA"		: "material.environmentAlpha",
 		"SHININESS"				: "material.shininess",
-		"MODEL_TO_WORLD"		: "transform.modelToWorldMatrix"
+		"MODEL_TO_WORLD"		: "transform.modelToWorldMatrix",
+		"NUM_BONES"				: { "property" : "geometry.numBones",	"source" : "target" }
 	},
 
 	"samplerStates" : {
@@ -84,7 +91,7 @@
 			},
 				
 			"passes"	: [{
-				"vertexShader" : { "includes" : [ "Phong.vertex.glsl" ] },
+				"vertexShader" : { "includes" : [ "Skinning.function.glsl", "Phong.vertex.glsl" ] },
 				"fragmentShader" : { "includes" : [ "Phong.struct.glsl", "Phong.function.glsl", "Phong.fragment.glsl" ] }
 			}]
 		},
@@ -114,7 +121,7 @@
 			},
 				
 			"passes"	: [{
-				"vertexShader" : { "includes" : [ "Phong.vertex.glsl" ] },
+				"vertexShader" : { "includes" : [ "Skinning.function.glsl", "Phong.vertex.glsl" ] },
 				"fragmentShader" : { "includes" : [ "Phong.struct.glsl", "Phong.function.glsl", "Phong.fragment.glsl" ] }
 			}]
 		},
@@ -122,14 +129,14 @@
 			"name" 		: "multi-pass",
 
 			"passes" 	: [{
-				"includes" : [ "Basic.vertex.glsl", "Basic.fragment.glsl" ]
+				"includes" : [ "Skinning.vertex.glsl", "Basic.vertex.glsl", "Basic.fragment.glsl" ]
 			}]
 		},
 		{
 			"name" 		: "basic",
 
 			"passes" 	: [{
-				"includes" : [ "Basic.vertex.glsl", "Basic.fragment.glsl" ]
+				"includes" : [ "Skinning.vertex.glsl", "Basic.vertex.glsl", "Basic.fragment.glsl" ]
 			}]
 		}
 	]
