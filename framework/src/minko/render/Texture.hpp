@@ -40,8 +40,10 @@ namespace minko
 			};
 
 		private:
-			const unsigned int			_width;
-			const unsigned int			_height;
+			const unsigned int			_width;		
+			const unsigned int			_height;	
+			const unsigned int			_widthGPU;	// always power of 2
+			const unsigned int			_heightGPU;	// always power of 2
             bool                        _mipMapping;
             bool                        _optimizeForRenderToTexture;
 			std::vector<unsigned char>	_data;
@@ -106,6 +108,9 @@ namespace minko
 					const unsigned int							height,
                     bool                                        mipMapping,
                     bool                                        optimizeForRenderToTexture);
+
+			void
+			processData(std::vector<unsigned char>& inData, std::vector<unsigned char>& outData) const;
 		};
 	}
 }

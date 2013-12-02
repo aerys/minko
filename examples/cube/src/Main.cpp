@@ -36,6 +36,7 @@ int main(int argc, char** argv)
 	sceneManager->assets()
 		->registerParser<file::PNGParser>("png")
 		->queue("texture/box.png")
+		->queue("texture/box_notPower2.png")
 		->queue("effect/Basic.effect");
 
 	sceneManager->assets()->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()));
@@ -43,7 +44,7 @@ int main(int argc, char** argv)
 
 	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
 	{
-		auto cubeMaterial = material::BasicMaterial::create()->diffuseMap(assets->texture("texture/box.png"));
+		auto cubeMaterial = material::BasicMaterial::create()->diffuseMap(assets->texture("texture/box_notPower2.png"));
 
 		auto root = scene::Node::create("root")
 			->addComponent(sceneManager);
