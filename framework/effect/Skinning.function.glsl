@@ -10,7 +10,7 @@
 	attribute	vec4	boneWeightsA;
 	attribute	vec4	boneWeightsB;
 
-	vec4 performSkinning(vec4 inputVec)
+	vec4 skinning_moveVertex(vec4 inputVec)
 	{
 		vec4 outputVec = vec4(0.0);
 	
