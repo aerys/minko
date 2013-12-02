@@ -120,7 +120,7 @@ Texture::processData(std::vector<unsigned char>&	inData,
 				const uint ijBL = j < _height - 1						? ijTL + (_width << 2)			: ijTL;
 				const uint ijBR = (i < _width - 1) && (j < _height - 1)	? ijTL + ((_width + 1) << 2)	: ijTL;
 
-				const float	wTL	= 1.0 - dx - dy + dxy; 
+				const float	wTL	= 1.0f - dx - dy + dxy; 
 				const float wTR = dx - dxy;
 				const float wBL = dy - dxy;
 				const float wBR = dxy;
