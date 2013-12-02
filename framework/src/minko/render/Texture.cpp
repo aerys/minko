@@ -28,14 +28,16 @@ Texture::Texture(std::shared_ptr<render::AbstractContext>	context,
 				 const unsigned int							width,
 				 const unsigned int							height,
                  bool                                       mipMapping,
-                 bool                                       optimizeForRenderToTexture) :
+                 bool                                       optimizeForRenderToTexture,
+				 bool										resizeSmoothly) :
 	AbstractResource(context),
 	_width(width),
 	_height(height),
 	_widthGPU(math::clp2(width)),
 	_heightGPU(math::clp2(height)),
     _mipMapping(mipMapping),
-    _optimizeForRenderToTexture(optimizeForRenderToTexture)
+    _optimizeForRenderToTexture(optimizeForRenderToTexture),
+	_resizeSmoothly(resizeSmoothly)
 {
 }
 
@@ -102,29 +104,43 @@ Texture::processData(std::vector<unsigned char>&	inData,
 		for (uint p = 0; p < _widthGPU; ++p)
 		{
 			uint		i	= (uint)floorf(x);
-			const float dx	= x - (float)i;
-			const float dxy = dx * dy;
 			if (i >= _width)
 				i = _width - 1;
 
 			const uint ijTL	= (i + _width * j) << 2;
-			const uint ijTR	= i < _width - 1						? ijTL + 4						: ijTL;
-			const uint ijBL = j < _height - 1						? ijTL + (_width << 2)			: ijTL;
-			const uint ijBR = (i < _width - 1) && (j < _height - 1)	? ijTL + ((_width + 1) << 2)	: ijTL;
 
-			const float	wTL	= 1.0 - dx - dy + dxy; 
-			const float wTR = dx - dxy;
-			const float wBL = dy - dxy;
-			const float wBR = dxy;
-			
-			for (uint k = 0; k < 4; ++k)
+			if (_resizeSmoothly)
 			{
-				const float color = wTL * inData[ijTL + k] + 
-					wTR * inData[ijTR + k] + 
-					wBL * inData[ijBL + k] + 
-					wBR * inData[ijBR + k];
+				// bilinear interpolation
 
-				outData[idx + k] = (unsigned char)floorf(color);
+				const float dx	= x - (float)i;
+				const float dxy = dx * dy;
+
+				const uint ijTR	= i < _width - 1						? ijTL + 4						: ijTL;
+				const uint ijBL = j < _height - 1						? ijTL + (_width << 2)			: ijTL;
+				const uint ijBR = (i < _width - 1) && (j < _height - 1)	? ijTL + ((_width + 1) << 2)	: ijTL;
+
+				const float	wTL	= 1.0 - dx - dy + dxy; 
+				const float wTR = dx - dxy;
+				const float wBL = dy - dxy;
+				const float wBR = dxy;
+			
+				for (uint k = 0; k < 4; ++k)
+				{
+					const float color = wTL * inData[ijTL + k] + 
+						wTR * inData[ijTR + k] + 
+						wBL * inData[ijBL + k] + 
+						wBR * inData[ijBR + k];
+	
+					outData[idx + k] = (unsigned char)floorf(color);
+				}
+			}
+			else
+			{
+				// nearest pixel color
+
+				for (uint k = 0; k < 4; ++k)
+					outData[idx + k] = inData[ijTL + k];
 			}
 
 			idx	+= 4;

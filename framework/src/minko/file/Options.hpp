@@ -51,6 +51,7 @@ namespace minko
 			std::list<std::string>						_userFlags;
 
             bool                                        _generateMipMaps;
+			bool										_resizeSmoothly;
 			unsigned int								_skinningNumFPS;
 			component::SkinningMethod					_skinningMethod;
             std::shared_ptr<render::Effect>             _effect;
@@ -127,6 +128,20 @@ namespace minko
             {
                 _generateMipMaps = generateMipmaps;
             }
+
+			inline
+			bool
+			resizeSmoothly() const
+			{
+				return _resizeSmoothly;
+			}
+
+			inline
+			void
+			resizeSmoothly(bool value)
+			{
+				_resizeSmoothly = value;
+			}
 
 			inline
 			unsigned int
