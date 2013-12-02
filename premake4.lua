@@ -9,6 +9,7 @@ solution "minko"
 	include 'examples/light'
 	include 'examples/stencil'
 	include 'examples/effect-config'
+	include 'examples/assimp'
 	--include 'examples/raycasting'
 	--include 'examples/devil'
 	--include 'examples/cube-offscreen'
