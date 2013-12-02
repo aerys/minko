@@ -46,6 +46,7 @@ namespace minko
 			const unsigned int			_heightGPU;	// always power of 2
             bool                        _mipMapping;
             bool                        _optimizeForRenderToTexture;
+			const bool					_resizeSmoothly;
 			std::vector<unsigned char>	_data;
 
 		public:
@@ -60,9 +61,10 @@ namespace minko
 				   const unsigned int						width,
 				   const unsigned int						height,
                    bool                                     mipMapping                  = false,
-                   bool                                     optimizeForRenderToTexture  = false)
+                   bool                                     optimizeForRenderToTexture  = false,
+				   bool										resizeSmoothly				= true)
 			{
-				return std::shared_ptr<Texture>(new Texture(context, width, height, mipMapping, optimizeForRenderToTexture));
+				return std::shared_ptr<Texture>(new Texture(context, width, height, mipMapping, optimizeForRenderToTexture, resizeSmoothly));
 			}
 
 			inline
@@ -107,7 +109,8 @@ namespace minko
 					const unsigned int							width,
 					const unsigned int							height,
                     bool                                        mipMapping,
-                    bool                                        optimizeForRenderToTexture);
+                    bool                                        optimizeForRenderToTexture,
+					bool										resizeSmoothly);
 
 			void
 			processData(std::vector<unsigned char>& inData, std::vector<unsigned char>& outData) const;
