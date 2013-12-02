@@ -145,7 +145,7 @@ Texture::upload()
     if (_id == -1)
     	_id = _context->createTexture(_widthGPU, _heightGPU, _mipMapping, _optimizeForRenderToTexture);
 	
-    if (_data.size())
+    if (!_data.empty())
     {
         _context->uploadTextureData(_id, _widthGPU, _heightGPU, 0, &_data[0]);
         if (_mipMapping)
