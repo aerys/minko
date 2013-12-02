@@ -25,6 +25,9 @@ using namespace minko;
 using namespace minko::component;
 using namespace minko::math;
 
+//const std::string TEXTURE_FILENAME = "texture/box.png";
+const std::string TEXTURE_FILENAME = "texture/box_notPower2.png";
+
 int main(int argc, char** argv)
 {
 	auto canvas = Canvas::create("Minko Example - Cube", 800, 600);
@@ -35,8 +38,8 @@ int main(int argc, char** argv)
 	sceneManager->assets()->defaultOptions()->generateMipmaps(true);
 	sceneManager->assets()
 		->registerParser<file::PNGParser>("png")
-		->queue("texture/box.png")
-		->queue("texture/box_notPower2.png")
+		//->queue("texture/box.png")
+		->queue(TEXTURE_FILENAME)
 		->queue("effect/Basic.effect");
 
 	sceneManager->assets()->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()));
@@ -44,7 +47,7 @@ int main(int argc, char** argv)
 
 	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
 	{
-		auto cubeMaterial = material::BasicMaterial::create()->diffuseMap(assets->texture("texture/box_notPower2.png"));
+		auto cubeMaterial = material::BasicMaterial::create()->diffuseMap(assets->texture(TEXTURE_FILENAME));
 
 		auto root = scene::Node::create("root")
 			->addComponent(sceneManager);
@@ -61,7 +64,7 @@ int main(int argc, char** argv)
 			->addComponent(Transform::create())
 			->addComponent(Surface::create(
 				geometry::CubeGeometry::create(sceneManager->assets()->context()),
-				material::BasicMaterial::create()->diffuseMap(assets->texture("texture/box.png")),
+				material::BasicMaterial::create()->diffuseMap(assets->texture(TEXTURE_FILENAME)),
 				assets->effect("effect/Basic.effect")
 			));
 		root->addChild(mesh);
