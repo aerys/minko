@@ -41,7 +41,7 @@ package aerys.minko.render.shader.part.environment
 			// compute reflected vector
 			var cWorldCameraPosition	: SFloat = this.cameraPosition;
 			var vsWorldVertexToCamera	: SFloat = normalize(subtract(cWorldCameraPosition, vsWorldPosition));
-			var reflected				: SFloat = normalize(interpolate(reflect(vsWorldVertexToCamera.xyzz, vsWorldNormal.xyzz)));
+			var reflected				: SFloat = normalize(interpolate(reflect(vsWorldNormal.xyzz, vsWorldVertexToCamera.xyzz)));
 			var reflectionType 			: int	 = meshBindings.getProperty(
 				EnvironmentMappingProperties.ENVIRONMENT_MAPPING_TYPE
 			);
