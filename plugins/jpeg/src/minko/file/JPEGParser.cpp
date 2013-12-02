@@ -46,9 +46,10 @@ JPEGParser::parse(const std::string&				filename,
 	auto bmpData = jpgd::decompress_jpeg_image_from_memory(
 		(const unsigned char*)&data[0], data.size(), &width, &height, &comps, 3
 	);
-	auto format = comps == 3
-		? render::Texture::DataFormat::RGB
-		: render::Texture::DataFormat::RGBA;
+
+	auto format = render::Texture::DataFormat::RGBA;
+	if (comps == 3 || comps == 1)
+		format	= render::Texture::DataFormat::RGB;
 
 	auto texture = render::Texture::create(options->context(), width, height, options->generateMipmaps());
 
