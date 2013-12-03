@@ -24,6 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/AbstractScript.hpp"
 
 class LuaGlue;
+class LuaGlueClassBase;
 
 namespace minko
 {
@@ -38,20 +39,30 @@ namespace minko
         private:
             typedef std::shared_ptr<scene::Node>    NodePtr;
 
+            class LuaStub
+            {
+
+            };
+
         private:
-            LuaGlue&        _state;
-            std::string     _scriptName;
+            static bool             _initialized;
+            static LuaGlue          _state;
+
+            std::string             _scriptName;
+            LuaGlueClassBase*       _class;
+            LuaStub                 _stub;
 
         public:
             static inline
             Ptr
-            create(LuaGlue& state, const std::string& name)
+            create(const std::string& name, const std::string& script)
             {
-                auto script = std::shared_ptr<LuaScript>(new LuaScript(state, name));
+                auto s = std::shared_ptr<LuaScript>(new LuaScript(name));
 
-                script->initialize();
+                s->initialize();
+                s->loadScript(script);
 
-                return script;
+                return s;
             }
 
         protected:
@@ -67,16 +78,22 @@ namespace minko
             void
             stop(NodePtr target);
 
-        private:
-            LuaScript(LuaGlue& state, const std::string& name) :
-                _state(state),
-                _scriptName(name)
-            {
+            void
+            initialize();
 
-            }
+            void
+            loadScript(const std::string& script);
+
+        private:
+            LuaScript(const std::string& name);
 
             void
             runScriptMethod(const std::string& methodName, NodePtr target);
+
+            static
+            void
+            initializeLuaBindings();
+
         };
     }
 }
