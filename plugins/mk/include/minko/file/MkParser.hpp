@@ -21,10 +21,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 #include "minko/Any.hpp"
-#include "minko/Qark.hpp"
-#include "minko/deserialize/SceneDeserializer.hpp"
 #include "minko/component/AbstractComponent.hpp"
-#include "minko/file/MkOptions.hpp"
+#include "minko/file/AbstractParser.hpp"
+#include "minko/Qark.hpp"
 
 namespace minko
 {
