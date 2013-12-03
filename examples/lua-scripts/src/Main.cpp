@@ -76,7 +76,7 @@ int main(int argc, char** argv)
 
 		auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, uint deltaTime)
 		{
-			mesh->component<Transform>()->transform()->appendRotationY(.01f);
+			//mesh->component<Transform>()->transform()->appendRotationY(.01f);
 
 			sceneManager->nextFrame();
 		});
