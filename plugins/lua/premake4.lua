@@ -1,6 +1,6 @@
 newoption {
 	trigger		= "with-lua",
-	description	= "Enable the Minko LUA plugin."
+	description	= "Enable the Minko Lua plugin."
 }
 
 minko.project.library "plugin-lua"
@@ -10,7 +10,7 @@ minko.project.library "plugin-lua"
 	includedirs { "src" }
 	
 	-- lua
-	files { "lib/lua/src/**.c", "lua/src/**.h" }
+	files { "lib/lua/src/**.c", "lib/lua/src/**.h" }
 	includedirs { "lib/lua/src" }
 	excludes { "lib/lua/src/luac.c" }
 	defines { "_CRT_SECURE_NO_WARNINGS" }
