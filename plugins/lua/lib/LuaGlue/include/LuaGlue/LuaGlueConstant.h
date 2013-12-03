@@ -5,7 +5,7 @@
 #include <stdexcept>
 #include <lua.hpp>
 
-class LuaGlue;
+#include "LuaGlue/LuaGlueBase.h"
 
 class LuaGlueConstant
 {
@@ -49,7 +49,7 @@ class LuaGlueConstant
 		
 		const std::string &name() const { return name_; }
 		
-		bool glue(LuaGlue *luaGlue)
+		bool glue(LuaGlueBase *luaGlue)
 		{
 			switch(type_)
 			{
