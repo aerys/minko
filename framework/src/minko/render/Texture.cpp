@@ -59,7 +59,7 @@ Texture::data(unsigned char* data, DataFormat format)
 			rgba[j]		= data[i];
 			rgba[j + 1] = data[i + 1];
 			rgba[j + 2] = data[i + 2];
-			rgba[j + 3] = UCHAR_MAX;
+			rgba[j + 3] = std::numeric_limits<unsigned char>::max();
 		}
 	}
 
