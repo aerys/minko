@@ -6,9 +6,10 @@
 #include <tuple>
 #include <utility>
 
+#include "LuaGlue/LuaGlueObject.h"
 #include "LuaGlue/LuaGlueApplyTuple.h"
+#include "LuaGlue/LuaGlueBase.h"
 
-class LuaGlue;
 template<typename _Class>
 class LuaGlueClass;
 
@@ -26,7 +27,7 @@ class LuaGlueDtorMethod : public LuaGlueMethodBase
 		
 		std::string name() { return name_; }
 		
-		bool glue(LuaGlue *luaGlue)
+		bool glue(LuaGlueBase *luaGlue)
 		{
 			lua_pushlightuserdata(luaGlue->state(), this);
 			lua_pushcclosure(luaGlue->state(), &lua_call_func, 1);
@@ -42,11 +43,12 @@ class LuaGlueDtorMethod : public LuaGlueMethodBase
 		int invoke(lua_State *state)
 		{
 #ifdef LUAGLUE_TYPECHECK
-			ClassType *obj = *(ClassType **)luaL_checkudata(state, 1, glueClass->name().c_str());
+			LuaGlueObject<ClassType> obj = *(LuaGlueObject<ClassType> *)luaL_checkudata(state, 1, glueClass->name().c_str());
 #else
-			ClassType *obj = *(ClassType **)lua_touserdata(state, 1);
+			LuaGlueObject<ClassType> obj = *(LuaGlueObject<ClassType> *)lua_touserdata(state, 1);
 #endif
-			(obj->*fn)();
+			ClassType *ptr = obj.ptr();
+			(ptr->*fn)();
 
 			return 0;
 		}
