@@ -21,8 +21,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 #include "minko/component/AbstractComponent.hpp"
-#include "minko/component/bullet/ColliderData.hpp"
 
+namespace minko
+{
+	namespace Component
+	{
+		class ColliderData;
+	}
+}
 
 namespace minko
 {
