@@ -5,6 +5,8 @@
 #include <vector>
 #include <typeinfo>
 
+#include "LuaGlue/LuaGlueCompat.h"
+
 // NOTE: hashing algorithm used is FNV-1a
 
 // FNV-1a constants
@@ -58,6 +60,11 @@ class LuaGlueSymTab
 		
 	public:
 		LuaGlueSymTab() { }
+		~LuaGlueSymTab()
+		{
+			for(auto &i: items)
+				delete i.ptr;
+		}
 		
 		template<class C>
 		void addSymbol(const char *name, C *ptr)
@@ -160,7 +167,7 @@ class LuaGlueSymTab
 			return nullSymbol;
 		}
 		
-		const Symbol &findSym(int idx)
+		const Symbol &findSym(uint32_t idx)
 		{
 			if(idx < 0 || idx > (int)items.size())
 			{
