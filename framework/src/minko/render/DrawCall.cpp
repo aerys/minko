@@ -184,7 +184,7 @@ DrawCall::bindVertexAttribute(const std::string&	inputName,
 	if (_attributeBindings.count(inputName))
 	{
 		auto& propertyName = std::get<0>(_attributeBindings.at(inputName));
-		auto& container = getDataContainer(std::get<1>(_attributeBindings.at(inputName)));
+		const auto& container = getDataContainer(std::get<1>(_attributeBindings.at(inputName)));
 
 		++vertexBufferId;
 
@@ -242,7 +242,7 @@ DrawCall::bindTextureSampler2D(const std::string&	inputName,
 		++textureId;
 
 		auto& propertyName = std::get<0>(_uniformBindings.at(inputName));
-		auto& container = getDataContainer(std::get<1>(_uniformBindings.at(inputName)));
+		const auto& container = getDataContainer(std::get<1>(_uniformBindings.at(inputName)));
 
 		if (container && container->hasProperty(propertyName))
 		{
@@ -298,7 +298,7 @@ DrawCall::bindUniform(const std::string&	inputName,
 	{	
 		auto	propertyName	= std::get<0>(_uniformBindings.at(bindingName));
 		auto&	source			= std::get<1>(_uniformBindings.at(bindingName));
-		auto&	container		= getDataContainer(source);
+		const auto&	container	= getDataContainer(source);
 
 		if (container)
 		{
@@ -364,7 +364,7 @@ DrawCall::bindUniformArray(const std::string&	propertyName,
 		!container->propertyHasType<UniformArrayPtr>(propertyName, true))
 		return;
 
-	auto& uniformArray = container->get<UniformArrayPtr>(propertyName);
+	const auto& uniformArray = container->get<UniformArrayPtr>(propertyName);
 	if (uniformArray->first == 0 || uniformArray->second == nullptr)
 		return;
 
