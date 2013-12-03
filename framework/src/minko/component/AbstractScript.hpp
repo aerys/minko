@@ -72,7 +72,7 @@ namespace minko
 				// nothing
 			}
 
-		public:
+			virtual
 			void
 			initialize();
 
