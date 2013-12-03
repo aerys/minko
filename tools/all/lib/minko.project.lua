@@ -5,6 +5,16 @@ minko.project.library = function(name)
 
 	includedirs { minko.sdk.path("/framework/src") }
 	
+	configuration { "debug"}
+		defines { "DEBUG" }
+		flags { "Symbols" }
+		targetdir "bin/debug"
+
+	configuration { "release" }
+		defines { "NDEBUG" }
+		flags { "Optimize" } -- { "OptimizeSpeed" }
+		targetdir "bin/release"
+	
 	configuration { "windows" }
 		includedirs { minko.sdk.path("/deps/win/include") }
 		
