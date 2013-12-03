@@ -17,7 +17,7 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "PNGParser.hpp"
+#include "minko/file/PNGParser.hpp"
 
 #include "minko/file/Options.hpp"
 #include "minko/file/AssetLibrary.hpp"
