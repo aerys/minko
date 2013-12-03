@@ -5,19 +5,22 @@
 #include <string>
 #include <map>
 #include <typeinfo>
+#include <memory>
 
-#include "LuaGlue/LuaGlueCompat.h"
-
+#include "LuaGlue/LuaGlueBase.h"
 #include "LuaGlue/LuaGlueClassBase.h"
+#include "LuaGlue/LuaGlueFunction.h"
 #include "LuaGlue/LuaGlueSymTab.h"
 
-template<typename _Class> class LuaGlueClass;
+template<typename _Class>
+class LuaGlueClass;
 
-class LuaGlue
+class LuaGlue : public LuaGlueBase
 {
 	public:
+		
 		LuaGlue(lua_State *state = 0) : state_(state) { }
-		~LuaGlue() { }
+		~LuaGlue() { if(state_) lua_close(state_); }
 		
 		LuaGlue &open(lua_State *state) { state_ = state; return *this; }
 		LuaGlue &open()
@@ -36,6 +39,36 @@ class LuaGlue
 			return *new_class;
 		}
 		
+		template<typename _Ret, typename... _Args>
+		LuaGlue &func(const std::string &name, _Ret (*fn)(_Args...))
+		{
+			auto new_func = new LuaGlueFunction<_Ret, _Args...>(this, name, std::forward<decltype(fn)>(fn));
+			functions.addSymbol(name.c_str(), new_func);
+			return *this;
+		}
+		
+		template<typename _Ret, typename... _Args>
+		_Ret invokeFunction(const std::string &name, _Args... args)
+		{
+			const unsigned int Arg_Count_ = sizeof...(_Args);
+			
+			lua_getglobal(state_, name.c_str());
+			applyTuple(this, state_, args...);
+			lua_call(state_, Arg_Count_, 1);
+			return stack<_Ret>::get(this, state_, -1);
+		}
+		
+		template<typename... _Args>
+		void invokeVoidFunction(const std::string &name, _Args... args)
+		{
+			const unsigned int Arg_Count_ = sizeof...(_Args);
+			
+			lua_getglobal(state_, name.c_str());
+			applyTuple(this, state_, args...);
+			lua_call(state_, Arg_Count_, 0);
+			lua_pop(state_, 1);
+		}
+		
 		lua_State *state() { return state_; }
 		
 		bool glue()
@@ -47,7 +80,45 @@ class LuaGlue
 					return false;
 			}
 			
+			for(auto &c: functions)
+			{
+				if(!c.ptr->glue(this))
+					return false;
+			}
+			
 			return true;
+		}
+		
+		bool doFile(const std::string &path)
+		{
+			bool success = !luaL_dofile(state_, path.c_str());
+			if(!success)
+			{
+				const char *err = luaL_checkstring(state_, -1);
+				last_error = std::string(err);
+			}
+			else
+			{
+				last_error = std::string("success");
+			}
+			
+			return success;
+		}
+		
+		bool doString(const std::string &script)
+		{
+			bool success = !luaL_dostring(state_, script.c_str());
+			if(!success)
+			{
+				const char *err = luaL_checkstring(state_, -1);
+				last_error = std::string(err);
+			}
+			else
+			{
+				last_error = std::string("success");
+			}
+			
+			return success;
 		}
 		
 		LuaGlueClassBase *lookupClass(const char *name, bool internal_name = false)
@@ -63,9 +134,13 @@ class LuaGlue
 		
 		LuaGlueSymTab<LuaGlueClassBase *> &getSymTab() { return classes; }
 		
+		const std::string &lastError() { return last_error; }
 	private:
 		lua_State *state_;
 		LuaGlueSymTab<LuaGlueClassBase *> classes;
+		LuaGlueSymTab<LuaGlueFunctionBase *> functions;
+		
+		std::string last_error;
 };
 
 #include "LuaGlue/LuaGlueClass.h"
@@ -73,6 +148,7 @@ class LuaGlue
 #include "LuaGlue/LuaGlueCtorMethod.h"
 #include "LuaGlue/LuaGlueDtorMethod.h"
 #include "LuaGlue/LuaGlueMethod.h"
+#include "LuaGlue/LuaGlueFunction.h"
 #include "LuaGlue/LuaGlueStaticMethod.h"
 #include "LuaGlue/LuaGlueIndexMethod.h"
 #include "LuaGlue/LuaGlueNewIndexMethod.h"

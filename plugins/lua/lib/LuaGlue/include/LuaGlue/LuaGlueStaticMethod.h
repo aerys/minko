@@ -6,9 +6,9 @@
 #include <tuple>
 #include <utility>
 
+#include "LuaGlue/LuaGlueObject.h"
 #include "LuaGlue/LuaGlueApplyTuple.h"
-
-class LuaGlue;
+#include "LuaGlue/LuaGlueBase.h"
 
 template<typename _Class>
 class LuaGlueClass;
@@ -29,7 +29,7 @@ class LuaGlueStaticMethod : public LuaGlueMethodBase
 		
 		std::string name() { return name_; }
 		
-		bool glue(LuaGlue *luaGlue)
+		bool glue(LuaGlueBase *luaGlue)
 		{
 			lua_pushlightuserdata(luaGlue->state(), this);
 			lua_pushcclosure(luaGlue->state(), &lua_call_func, 1);
@@ -48,7 +48,7 @@ class LuaGlueStaticMethod : public LuaGlueMethodBase
 		{
 			ReturnType ret = applyTuple(glueClass->luaGlue(), state, fn, args);
 			lua_pop(state, Arg_Count_);
-			returnValue(glueClass->luaGlue(), state, ret);
+			stack<_Ret>::put(glueClass->luaGlue(), state, ret);
 			return 1;
 		}
 		
@@ -75,7 +75,7 @@ class LuaGlueStaticMethod<void, _Class, _Args...> : public LuaGlueMethodBase
 		
 		std::string name() { return name_; }
 		
-		bool glue(LuaGlue *luaGlue)
+		bool glue(LuaGlueBase *luaGlue)
 		{
 			lua_pushlightuserdata(luaGlue->state(), this);
 			lua_pushcclosure(luaGlue->state(), &lua_call_func, 1);
