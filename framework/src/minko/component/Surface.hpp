@@ -60,8 +60,9 @@ namespace minko
 			std::shared_ptr<geometry::Geometry>						_geometry;
 			std::shared_ptr<data::Provider>							_material;
 			std::shared_ptr<render::Effect>							_effect;
-			std::string 											_technique;
-			std::unordered_map<std::string, std::unordered_set<std::string>> _techniqueMacroNames;
+
+			std::string 															_technique;
+			std::unordered_map<std::string, std::unordered_set<std::string>>		_techniqueMacroNames;
 
 			std::unordered_map<ContainerPtr, DrawCallList>							_drawCalls;
 			std::unordered_map<DrawCallPtr, PassPtr>								_drawCallToPass;

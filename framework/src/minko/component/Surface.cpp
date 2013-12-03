@@ -295,7 +295,10 @@ Surface::createDrawCalls(std::shared_ptr<data::Container>	rendererData)
 	if (!doFallback)
 		watchMacroAdditionOrDeletion(rendererData);
 	else
+	{
+		drawCalls.clear();
 		switchToFallbackTechnique();
+	}
 
 	return drawCalls;
 }
@@ -533,7 +536,7 @@ Surface::setTechnique(const std::string& technique)
 		return;
 
 #ifdef DEBUG_FALLBACK
-	std::cout << "change technique\t'" << _technique << "'\t-> '" << technique << "'" << std::endl;
+	std::cout << "surf[" << this << "]\tchange technique\t'" << _technique << "'\t-> '" << technique << "'" << std::endl;
 #endif	
 
 	_technique = technique;
