@@ -1,19 +1,20 @@
-minko.project.application "example-raycasting"
+PROJECT_NAME = path.getname(os.getcwd())
+
+minko.project.application(PROJECT_NAME)
+
+	language "c++"
 	kind "ConsoleApp"
-	language "C++"
-	files { "src/**.hpp", "src/**.cpp" }
-	includedirs { "src"	}
-	
+
+	files { "src/**.cpp", "src/**.hpp", "asset/**" }
+	includedirs { "src" }
+
+	-- plugins
 	minko.plugin.enable("sdl")
+	--minko.plugin.enable("bullet")
+	--minko.plugin.enable("jpeg")
+	--minko.plugin.enable("mk")
+	--minko.plugin.enable("particles")
 	minko.plugin.enable("png")
+	--minko.plugin.enable("fx")
 	
 	minko.plugin.import("angle")
-	
-	-- emscripten
-	configuration { "emscripten" }
-		local bin = "bin/release/" .. project().name
-		postbuildcommands {
-			'cp ' .. bin .. ' ' .. bin .. '.bc',
-			'emcc ' .. bin .. '.bc -o ' .. bin .. '.js -O1 -s ASM_JS=1 -s TOTAL_MEMORY=1073741824 --preload-dir effect --preload-dir texture',
-			'emcc ' .. bin .. '.bc -o index.html -O1 -s ASM_JS=1 -s TOTAL_MEMORY=1073741824 --preload-dir effect --preload-dir texture'
-		}
