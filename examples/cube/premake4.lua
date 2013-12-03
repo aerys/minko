@@ -1,6 +1,6 @@
 dofile(os.getenv("MINKO_HOME") .. "/sdk.lua")
 
-PROJECT_NAME = path.getname(os.getcwd())
+PROJECT_NAME = "minko-example-" .. path.getname(os.getcwd())
 
 minko.project.solution(PROJECT_NAME)
 
