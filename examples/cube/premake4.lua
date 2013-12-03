@@ -1,19 +1,23 @@
-minko.project.application "example-cube"
-	kind "ConsoleApp"
-	language "C++"
-	files { "src/**.hpp", "src/**.cpp" }
-	includedirs { "src"	}
-	
-	minko.plugin.enable("sdl")
-	minko.plugin.enable("png")
-	
-	minko.plugin.import("angle")
-	
-	-- emscripten
-	configuration { "emscripten" }
-		local bin = "bin/release/" .. project().name
-		postbuildcommands {
-			'cp ' .. bin .. ' ' .. bin .. '.bc',
-			'emcc ' .. bin .. '.bc -o ' .. bin .. '.js -O1 -s ASM_JS=1 -s TOTAL_MEMORY=1073741824 --preload-dir effect --preload-dir texture',
-			'emcc ' .. bin .. '.bc -o index.html -O1 -s ASM_JS=1 -s TOTAL_MEMORY=1073741824 --preload-dir effect --preload-dir texture'
-		}
+dofile(os.getenv("MINKO_HOME") .. "/sdk.lua")
+
+PROJECT_NAME = path.getname(os.getcwd())
+
+minko.project.solution(PROJECT_NAME)
+
+	minko.project.application(PROJECT_NAME)
+
+		language "c++"
+		kind "ConsoleApp"
+
+		files { "src/**.cpp", "src/**.hpp", "asset/**" }
+		includedirs { "src" }
+
+		-- plugins
+		minko.plugin.enable("sdl")
+		--minko.plugin.enable("bullet")
+		--minko.plugin.enable("jpeg")
+		--minko.plugin.enable("mk")
+		--minko.plugin.enable("particles")
+		minko.plugin.enable("png")
+		
+		minko.plugin.import("angle")
