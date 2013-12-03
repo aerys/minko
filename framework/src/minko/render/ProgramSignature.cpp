@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "ProgramSignature.hpp"
 
 #include "minko/data/Container.hpp"
+#include "minko/data/ContainerProperty.hpp"
 
 using namespace minko;
 using namespace minko::render;
@@ -41,15 +42,9 @@ ProgramSignature::build(const MacroBindingMap&	macroBindings,
 
 	for (auto& macroBinding : macroBindings)
     {
-        auto& propertyName = std::get<0>(macroBinding.second);
-		const auto& bindingSource = std::get<1>(macroBinding.second);
-		const auto& container = propertyName.empty() ? nullptr
-			: bindingSource == data::BindingSource::TARGET && targetData->hasProperty(propertyName) ? targetData
-			: bindingSource == data::BindingSource::RENDERER && rendererData->hasProperty(propertyName) ? rendererData
-			: bindingSource == data::BindingSource::ROOT && rootData->hasProperty(propertyName) ? rootData
-			: nullptr;
+		ContainerProperty prop(macroBinding.second, targetData, rendererData, rootData);
 
-        if (container && container->hasProperty(propertyName))
+		if (prop.container()/* && container->hasProperty(propertyName)*/)
 		{
 			// WARNING: we do not support more than 32 macro bindings
 			if (i == MAX_NUM_BINDINGS)
@@ -58,8 +53,8 @@ ProgramSignature::build(const MacroBindingMap&	macroBindings,
 			_mask |= 1 << i;
 		}
 
-		if (container && container->hasProperty(propertyName) && container->propertyHasType<int>(propertyName))
-			_values[i] = container->get<int>(propertyName);
+		if (prop.container() /*&& container->hasProperty(propertyName)*/ && prop.container()->propertyHasType<int>(prop.name()))
+			_values[i] = prop.container()->get<int>(prop.name());
 
         ++i;
     }
