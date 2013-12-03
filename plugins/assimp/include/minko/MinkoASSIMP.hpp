@@ -20,4 +20,3 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/file/ASSIMPParser.hpp"
-#include "minko/component/Skinning.hpp"
