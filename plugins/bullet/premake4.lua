@@ -8,6 +8,7 @@ minko.project.library "plugin-bullet"
 	language "C++"
 	files { "**.hpp", "**.h", "**.cpp", "**.c" }
 	includedirs {
+		"include",
 		"src",
 		"lib/bullet2/src"
 	}

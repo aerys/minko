@@ -8,6 +8,7 @@ minko.project.library "plugin-jpeg"
 	language "C++"
 	files { "**.hpp", "**.h", "**.cpp", "**.c" }
 	includedirs {
+		"include",
 		"src",
 		"lib/jpeg-compressor/src"
 	}
