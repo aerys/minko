@@ -1,10 +1,9 @@
-minko.project.application "example-sponza"
+PROJECT_NAME = path.getname(os.getcwd())
+
+minko.project.application(PROJECT_NAME)
 	kind "ConsoleApp"
 	language "C++"
-	files {
-		"src/**.hpp",
-		"src/**.cpp"
-	}
+	files { "src/**.hpp", "src/**.cpp", "asset/**" }
 	includedirs { "src" }
 
 	-- plugins 
@@ -16,17 +15,6 @@ minko.project.application "example-sponza"
 	minko.plugin.enable("sdl")
 	
 	minko.plugin.import("angle")
-
-	-- configurations
-	configuration { "debug"}
-		defines { "DEBUG" }
-		flags { "Symbols" }
-		targetdir "bin/debug"
-
-	configuration { "release" }
-		defines { "NDEBUG" }
-		flags { "OptimizeSpeed" }
-		targetdir "bin/release"
 
 	-- emscripten
 	configuration { "emscripten" }
