@@ -1,5 +1,9 @@
 package aerys.minko.render.shader.part.environment
 {
+	import flash.geom.Rectangle;
+	
+	import mx.messaging.SubscriptionInfo;
+	
 	import aerys.minko.render.material.environment.EnvironmentMappingProperties;
 	import aerys.minko.render.shader.SFloat;
 	import aerys.minko.render.shader.Shader;
@@ -14,8 +18,6 @@ package aerys.minko.render.shader.part.environment
 	import aerys.minko.type.enum.SamplerFormat;
 	import aerys.minko.type.enum.SamplerMipMapping;
 	import aerys.minko.type.enum.SamplerWrapping;
-	
-	import flash.geom.Rectangle;
 	
 	public class EnvironmentMappingShaderPart extends LightAwareShaderPart
 	{
@@ -40,8 +42,8 @@ package aerys.minko.render.shader.part.environment
             
 			// compute reflected vector
 			var cWorldCameraPosition	: SFloat = this.cameraPosition;
-			var vsWorldVertexToCamera	: SFloat = normalize(subtract(cWorldCameraPosition, vsWorldPosition));
-			var reflected				: SFloat = normalize(interpolate(reflect(vsWorldNormal.xyzz, vsWorldVertexToCamera.xyzz)));
+			var vsWorldVertexToCamera	: SFloat = normalize(subtract(vsWorldPosition, cWorldCameraPosition));
+			var reflected				: SFloat = normalize(interpolate(reflect(vsWorldVertexToCamera.xyzz, vsWorldNormal.xyzz)));
 			var reflectionType 			: int	 = meshBindings.getProperty(
 				EnvironmentMappingProperties.ENVIRONMENT_MAPPING_TYPE
 			);
