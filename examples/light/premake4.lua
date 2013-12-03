@@ -11,10 +11,10 @@ minko.project.application(PROJECT_NAME)
 	-- plugins
 	minko.plugin.enable("sdl")
 	--minko.plugin.enable("bullet")
-	minko.plugin.enable("jpeg")
+	--minko.plugin.enable("jpeg")
 	--minko.plugin.enable("mk")
 	--minko.plugin.enable("particles")
-	--minko.plugin.enable("png")
+	minko.plugin.enable("png")
 	minko.plugin.enable("fx")
 	
 	minko.plugin.import("angle")
