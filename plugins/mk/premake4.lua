@@ -15,6 +15,7 @@ minko.project.library "plugin-mk"
 		"lib/msgpack-c/src/**.h"
 	}
 	includedirs {
+		"include",
 		"src",
 		"lib/msgpack-c/src"
 	}
