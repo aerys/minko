@@ -22,6 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/AssetLibrary.hpp"
 #include "minko/file/Options.hpp"
 #include "minko/scene/Node.hpp"
+#include "minko/file/MkOptions.hpp"
+#include "minko/deserialize/SceneDeserializer.hpp"
 
 using namespace minko;
 using namespace minko::file;
