@@ -101,8 +101,6 @@ newaction {
 		minko.os.copyfiles('deps', 'dist/deps')
 		
 		for i, v in ipairs(solution()['projects']) do
-			print(v['basedir'])
-
 			-- plugins
 			if string.startswith(v['name'], "plugin-") then
 				local dir = 'dist/plugin/' .. path.getbasename(v['basedir'])
