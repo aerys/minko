@@ -9,7 +9,7 @@ if minko.plugin.enabled("sdl") then
 		libdirs { minko.sdk.path("plugins/sdl/lib/win/SDL/lib") }
 		includedirs {
 			minko.sdk.path("plugins/sdl/lib/SDL2/include"),
-			minko.sdk.path("plugins/sdl/src")
+			minko.sdk.path("plugins/sdl/include")
 		}
 		postbuildcommands {
 			minko.vs.getdllscopycommand(minko.sdk.path("plugins/sdl/lib/win/SDL/lib"))
@@ -19,20 +19,20 @@ if minko.plugin.enabled("sdl") then
 		links { "SDL2" }
 		includedirs {
 			minko.sdk.path("plugins/sdl/lib/SDL2/include"),
-			minko.sdk.path("plugins/sdl/src")
+			minko.sdk.path("plugins/sdl/include")
 		}
 
 	configuration { "macosx" }
 		links { "SDL2.framework" }
 		includedirs {
 			minko.sdk.path("plugins/sdl/lib/SDL2/include"),
-			minko.sdk.path("plugins/sdl/src")
+			minko.sdk.path("plugins/sdl/include")
 		}
 
 	configuration { "emscripten" }
 		defines { "HAVE_M_PI" }
 		includedirs {
 			minko.sdk.path("plugins/sdl/lib/emscripten/SDL/include"),
-			minko.sdk.path("plugins/sdl/src")
+			minko.sdk.path("plugins/sdl/include")
 		}
 end

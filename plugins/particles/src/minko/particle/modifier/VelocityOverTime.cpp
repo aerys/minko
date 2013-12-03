@@ -1,4 +1,4 @@
-#include "VelocityOverTime.hpp"
+#include "minko/particle/modifier/VelocityOverTime.hpp"
 #include "minko/particle/ParticleData.hpp"
 #include "minko/particle/sampler/Sampler.hpp"
 #include "minko/particle/tools/VertexComponentFlags.hpp"
