@@ -23,7 +23,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/ParticlesCommon.hpp"
 #include "minko/component/AbstractComponent.hpp"
-
 #include "minko/geometry/ParticlesGeometry.hpp"
 #include "minko/particle/ParticleData.hpp"
 
@@ -153,10 +152,6 @@ namespace minko
 
 				return system;
 			};
-
-			~ParticleSystem()
-			{
-			}
 
 			inline
 			ProviderPtr
