@@ -21,11 +21,11 @@ solution "minko"
 	end
 
 	-- examples
-	-- include 'examples/sponza'
-	-- include 'examples/cube'
-	-- include 'examples/light'
-	-- include 'examples/stencil'
-	-- include 'examples/effect-config'
+	include 'examples/sponza'
+	--include 'examples/cube'
+	include 'examples/light'
+	include 'examples/stencil'
+	include 'examples/effect-config'
 	--include 'examples/raycasting'
 	include 'examples/assimp'
 	--include 'examples/cube-offscreen'
