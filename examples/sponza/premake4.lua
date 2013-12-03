@@ -1,10 +1,9 @@
-minko.project.application "example-sponza"
+PROJECT_NAME = path.getname(os.getcwd())
+
+minko.project.application(PROJECT_NAME)
 	kind "ConsoleApp"
 	language "C++"
-	files {
-		"src/**.hpp",
-		"src/**.cpp"
-	}
+	files { "src/**.hpp", "src/**.cpp", "asset/**" }
 	includedirs { "src" }
 
 	-- plugins 
