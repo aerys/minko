@@ -305,9 +305,9 @@ Skinning::updateFrame(Node::Ptr		target,
 	{
 		geometry->data()->set<int>(PNAME_NUM_BONES,	_skin->numBones());
 	
-		auto& uniformArray		= geometry->data()->get<UniformArrayPtr>	(PNAME_BONE_MATRICES);
-		uniformArray->first		= _skin->numBones();
-		uniformArray->second	= &(boneMatrices[0]); 
+		const auto& uniformArray	= geometry->data()->get<UniformArrayPtr>	(PNAME_BONE_MATRICES);
+		uniformArray->first			= _skin->numBones();
+		uniformArray->second		= &(boneMatrices[0]); 
 	}
 	else
 		performSoftwareSkinning(target, boneMatrices);
