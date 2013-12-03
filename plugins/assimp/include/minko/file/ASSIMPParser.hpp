@@ -31,9 +31,8 @@ struct	aiAnimation;
 struct	aiNodeAnim;
 struct	aiVectorKey;
 struct	aiQuatKey;
-template<typename> class aiMatrix4x4t;
-enum	aiTextureType;
-
+template<typename>
+class aiMatrix4x4t;
 
 namespace minko
 {
@@ -65,7 +64,7 @@ namespace minko
 			typedef Signal<LoaderPtr>::Slot										LoaderSignalSlot;
 
 			typedef std::unordered_map<LoaderPtr, LoaderSignalSlot>				LoaderToSlotMap;
-			typedef std::unordered_map<aiTextureType, std::string>				TextureTypeToName;
+			typedef std::unordered_map<unsigned int, std::string>				TextureTypeToName;
 			typedef std::unordered_map<std::string, NodePtr>					NodeMap;
 			typedef std::unordered_map<std::string, std::vector<Matrix4x4Ptr>>	NodeMatrixMap;
 
