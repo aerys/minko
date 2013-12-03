@@ -17,10 +17,10 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "AbstractPhysicsShape.hpp"
+#include "minko/component/bullet/AbstractPhysicsShape.hpp"
 
-#include <minko/math/Matrix4x4.hpp>
-#include <minko/component/bullet/PhysicsWorld.hpp>
+#include "minko/math/Matrix4x4.hpp"
+#include "minko/component/bullet/PhysicsWorld.hpp"
 
 using namespace minko;
 using namespace minko::math;
