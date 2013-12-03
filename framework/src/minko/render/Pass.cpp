@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "Pass.hpp"
 
 #include "minko/data/Container.hpp"
+#include "minko/data/ContainerProperty.hpp"
 #include "minko/render/Program.hpp"
 #include "minko/render/Shader.hpp"
 #include "minko/render/DrawCall.hpp"
@@ -48,14 +49,16 @@ Pass::Pass(const std::string&				name,
 }
 
 std::shared_ptr<Program>
-Pass::selectProgram(std::shared_ptr<data::Container> data,
-					std::shared_ptr<data::Container> rendererData,
-					std::shared_ptr<data::Container> rootData,
-					std::list<std::string>&			 bindingDefines,
-					std::list<std::string>&			 bindingValues)
+Pass::selectProgram(std::shared_ptr<data::Container>	data,
+					std::shared_ptr<data::Container>	rendererData,
+					std::shared_ptr<data::Container>	rootData,
+					std::list<data::ContainerProperty>&	booleanMacros,
+					std::list<data::ContainerProperty>&	integerMacros,
+					std::list<data::ContainerProperty>&	incorrectIntegerMacros)
 {
-	bindingDefines.clear();
-	bindingValues.clear();
+	booleanMacros.clear();
+	integerMacros.clear();
+	incorrectIntegerMacros.clear();
 
 	Program::Ptr program;
 
@@ -85,6 +88,8 @@ Pass::selectProgram(std::shared_ptr<data::Container> data,
 
 				if (hasDefaultValue || signatureMask & (1 << i))
 				{
+					const data::ContainerProperty macro(macroBinding.second, data, rendererData, rootData);
+					/*
 					const auto&	propertyName = std::get<0>(macroBinding.second);
 					const auto& bindingSource = std::get<1>(macroBinding.second);
 					const auto propetyExists = defaultValue.semantic == data::MacroBindingDefaultValueSemantic::PROPERTY_EXISTS;
@@ -93,37 +98,51 @@ Pass::selectProgram(std::shared_ptr<data::Container> data,
 						: bindingSource == data::BindingSource::RENDERER && rendererData->hasProperty(propertyName) ? rendererData
 						: bindingSource == data::BindingSource::ROOT && rootData->hasProperty(propertyName) ? rootData
 						: nullptr;
+						*/
 
 					if (defaultValue.semantic == data::MacroBindingDefaultValueSemantic::VALUE
-						|| (container && container->propertyHasType<int>(propertyName)))
+						|| (macro.container() && macro.container()->propertyHasType<int>(macro.name())))
 					{
 						const auto defaultIntValue = defaultValue.value.value;
 
 						if ((defaultIntValue > 0) || signatureValues[i] > 0)
 						{
-							auto value	= container ? signatureValues[i] : defaultIntValue;
+							auto value	= macro.container() ? signatureValues[i] : defaultIntValue;
 							auto min	= std::get<3>(macroBinding.second);
 							auto max	= std::get<4>(macroBinding.second);
 
 							if ((min != -1 && value < min) || (max != -1 && value > max))
-								return nullptr;
+							{
+								// out-of-bounds integer macro
+								if (macro.container())
+									incorrectIntegerMacros.push_back(macro);
+							}
+							else
+							{
+								defines += "#define " + macroBinding.first + " " + std::to_string(value) + "\n";
 
-							defines += "#define " + macroBinding.first + " " + std::to_string(value) + "\n";
-							bindingValues.push_back(propertyName);
+								if (macro.container())
+									integerMacros.push_back(macro);
+							}
 						}
 					}
 					else if ((defaultValue.semantic == data::MacroBindingDefaultValueSemantic::PROPERTY_EXISTS
 							  && defaultValue.value.propertyExists)
-							 || (container && container->hasProperty(propertyName)))
+							  || (macro.container()))
 					{
 						defines += "#define " + macroBinding.first + "\n";
-						bindingDefines.push_back(propertyName);
+
+						if (macro.container())
+							booleanMacros.push_back(macro);
 					}
 				}
 				++i;
 				if (i == signatureValues.size())
 					break;
             }
+
+			if (!incorrectIntegerMacros.empty())
+				return nullptr;
 
 #ifdef MINKO_NO_GLSL_STRUCT
 			defines += "#define MINKO_NO_GLSL_STRUCT\n";

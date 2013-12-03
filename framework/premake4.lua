@@ -29,6 +29,7 @@ project "framework"
 
 	configuration { "debug"}
 		defines { "DEBUG" }
+		defines { "DEBUG_FALLBACK" }
 		flags { "Symbols" }
 		targetdir "bin/debug"
 
