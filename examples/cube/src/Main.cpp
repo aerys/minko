@@ -20,7 +20,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Minko.hpp"
 #include "minko/MinkoPNG.hpp"
 #include "minko/MinkoSDL.hpp"
-#include "minko/MinkoJPEG.hpp"
 
 using namespace minko;
 using namespace minko::component;
@@ -42,7 +41,6 @@ int main(int argc, char** argv)
 	sceneManager->assets()->defaultOptions()->generateMipmaps(true);
 	sceneManager->assets()
 		->registerParser<file::PNGParser>("png")
-		->registerParser<file::JPEGParser>("jpeg")
 		->queue(TEXTURE_FILENAME)
 		->queue("effect/Basic.effect");
 
