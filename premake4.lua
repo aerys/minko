@@ -38,6 +38,8 @@ newaction {
 		os.mkdir('dist/framework/include')
 		os.mkdir('dist/plugin')
 		
+		os.copyfile('sdk.lua', 'dist/sdk.lua')
+
 		-- skeleton
 		os.mkdir('dist/skeleton')
 		minko.os.copyfiles('skeleton', 'dist/skeleton')
@@ -47,7 +49,8 @@ newaction {
 		minko.os.copyfiles('doc/html', 'dist/doc')
 		
 		-- tools
-		os.mkdir('dist/tool/' .. os.get())
+		os.mkdir('dist/tools/')
+		minko.os.copyfiles('tools', 'dist/tools')
 		
 		-- deps
 		os.mkdir('dist/deps')
