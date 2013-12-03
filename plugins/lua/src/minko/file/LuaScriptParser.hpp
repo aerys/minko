@@ -23,8 +23,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/file/AbstractParser.hpp"
 
-class LuaGlue;
-
 namespace minko
 {
     namespace file
@@ -49,14 +47,6 @@ namespace minko
                   std::shared_ptr<Options>          options,
                   const std::vector<unsigned char>&	data,
                   std::shared_ptr<AssetLibrary>	    assetLibrary);
-
-        private:
-            static bool     _initialized;
-            static LuaGlue  _state;
-
-            static
-            void
-            initializeLuaBindings();
 
         };
     }
