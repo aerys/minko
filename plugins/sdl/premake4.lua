@@ -7,7 +7,7 @@ minko.project.library "plugin-sdl"
 	kind "StaticLib"
 	language "C++"
 	files { "**.hpp", "**.h", "**.cpp", "**.c" }
-	includedirs { "src"	}
+	includedirs { "include", "src"	}
 	
 	minko.plugin.import("angle")
 

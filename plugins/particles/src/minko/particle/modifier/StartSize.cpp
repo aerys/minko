@@ -1,4 +1,4 @@
-#include "StartSize.hpp"
+#include "minko/particle/modifier/StartSize.hpp"
 #include "minko/particle/ParticleData.hpp"
 #include "minko/particle/sampler/Sampler.hpp"
 #include "minko/particle/tools/VertexComponentFlags.hpp"
