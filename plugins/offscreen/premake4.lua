@@ -7,7 +7,7 @@ minko.project.library "minko-offscreen"
 	kind "StaticLib"
 	language "C++"
 	files { "**.hpp", "**.h", "**.cpp", "**.c" }
-	includedirs { "src", "lib/osmesa/include" }
+	includedirs { "include", "src", "lib/osmesa/include" }
 	
 	configuration { "debug"}
 		defines { "DEBUG" }
