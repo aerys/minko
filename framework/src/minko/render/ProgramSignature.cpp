@@ -29,37 +29,140 @@ using namespace minko::data;
 /*static*/ const uint ProgramSignature::MAX_NUM_BINDINGS = 32;
 
 void
-ProgramSignature::build(const MacroBindingMap&	macroBindings,
-						data::Container::Ptr	targetData,
-						data::Container::Ptr	rendererData,
-						data::Container::Ptr	rootData)
+ProgramSignature::build(const MacroBindingMap&			macroBindings,
+						data::Container::Ptr			targetData,
+						data::Container::Ptr			rendererData,
+						data::Container::Ptr			rootData,
+						std::string&					defines,
+						std::list<ContainerProperty>&	booleanMacros,
+						std::list<ContainerProperty>&	integerMacros,
+						std::list<ContainerProperty>&	incorrectIntegerMacros)
 {
 	_mask = 0;
 	_values.clear();
 	_values.resize(MAX_NUM_BINDINGS, 0);
 
-	unsigned int i = 0;
+	defines.clear();
+
+	booleanMacros.clear();
+	integerMacros.clear();
+	incorrectIntegerMacros.clear();
+
+	unsigned int macroId = 0;
 
 	for (auto& macroBinding : macroBindings)
     {
-		ContainerProperty prop(macroBinding.second, targetData, rendererData, rootData);
+		ContainerProperty	macro					(macroBinding.second, targetData, rendererData, rootData);
+		const bool			macroExists				= (macro.container() != nullptr); 
+		const bool			isMacroInteger			= macroExists && macro.container()->propertyHasType<int>(macro.name());
 
-		if (prop.container()/* && container->hasProperty(propertyName)*/)
+		const auto&			defaultMacro			= std::get<2>(macroBinding.second);
+		const auto			defaultMacroExists		= defaultMacro.semantic == data::MacroBindingDefaultValueSemantic::PROPERTY_EXISTS;
+		const bool			isDefaultMacroInteger	= defaultMacro.semantic == data::MacroBindingDefaultValueSemantic::VALUE;
+		const bool			canUseDefaultMacro		= defaultMacroExists || isDefaultMacroInteger;
+
+		if (macroExists || canUseDefaultMacro)
 		{
 			// WARNING: we do not support more than 32 macro bindings
-			if (i == MAX_NUM_BINDINGS)
+			if (macroId == MAX_NUM_BINDINGS)
 				throw;
 
-			_mask |= 1 << i;
+			_mask |= 1 << macroId; // update program signature
+
+
+			if (isMacroInteger || isDefaultMacroInteger)
+			{
+				const int value	= isMacroInteger 
+					? macro.container()->get<int>(macro.name())
+					: defaultMacro.value.value;
+
+				if (value > 0)
+				{
+					_values[macroId]	= value; // update program signature
+
+					const int min	= std::get<3>(macroBinding.second);
+					const int max	= std::get<4>(macroBinding.second);
+
+					if ((min != -1 && value < min) || (max != -1 && value > max))
+					{
+						if (macroExists)
+							incorrectIntegerMacros.push_back(macro);
+					}
+					else
+					{
+						defines += "#define " + macroBinding.first + " " + std::to_string(value) + "\n";
+
+						if (macroExists)
+							integerMacros.push_back(macro);
+					}
+				}
+			}
+			else if (macroExists || defaultMacroExists)
+			{
+				defines += "#define " + macroBinding.first + "\n";
+
+				if (macroExists)
+					booleanMacros.push_back(macro);
+			}
 		}
+		++macroId;
+	}
 
-		if (prop.container() /*&& container->hasProperty(propertyName)*/ && prop.container()->propertyHasType<int>(prop.name()))
-			_values[i] = prop.container()->get<int>(prop.name());
 
-        ++i;
-    }
+	std::cout << "\n\defines\n" << defines << std::endl;
+	std::cout << incorrectIntegerMacros.size() << " incorrect macros" << std::endl;
+	for (auto& m : incorrectIntegerMacros)
+		std::cout << "\t- " << m.name() << std::endl;
 }
 
+
+
+/****
+const auto& defaultValue = std::get<2>(macroBinding.second);
+				const auto hasDefaultValue = defaultValue.semantic != data::MacroBindingDefaultValueSemantic::UNSET;
+
+				if (hasDefaultValue || signatureMask & (1 << i))
+				{
+					const data::ContainerProperty macro(macroBinding.second, data, rendererData, rootData);
+
+
+					if (defaultValue.semantic == data::MacroBindingDefaultValueSemantic::VALUE
+						|| (macro.container() && macro.container()->propertyHasType<int>(macro.name())))
+					{
+						const auto defaultIntValue = defaultValue.value.value;
+
+						if ((defaultIntValue > 0) || signatureValues[i] > 0)
+						{
+							auto value	= macro.container() ? signatureValues[i] : defaultIntValue;
+							auto min	= std::get<3>(macroBinding.second);
+							auto max	= std::get<4>(macroBinding.second);
+
+							if ((min != -1 && value < min) || (max != -1 && value > max))
+							{
+								// out-of-bounds integer macro
+								if (macro.container())
+									incorrectIntegerMacros.push_back(macro);
+							}
+							else
+							{
+								defines += "#define " + macroBinding.first + " " + std::to_string(value) + "\n";
+
+								if (macro.container())
+									integerMacros.push_back(macro);
+							}
+						}
+					}
+					else if ((defaultValue.semantic == data::MacroBindingDefaultValueSemantic::PROPERTY_EXISTS
+							  && defaultValue.value.propertyExists)
+							  || (macro.container()))
+					{
+						defines += "#define " + macroBinding.first + "\n";
+
+						if (macro.container())
+							booleanMacros.push_back(macro);
+					}
+				}
+****/
 bool 
 ProgramSignature::operator==(const ProgramSignature& x) const
 {
