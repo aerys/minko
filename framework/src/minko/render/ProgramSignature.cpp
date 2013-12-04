@@ -115,54 +115,6 @@ ProgramSignature::build(const MacroBindingMap&			macroBindings,
 		std::cout << "\t- " << m.name() << std::endl;
 }
 
-
-
-/****
-const auto& defaultValue = std::get<2>(macroBinding.second);
-				const auto hasDefaultValue = defaultValue.semantic != data::MacroBindingDefaultValueSemantic::UNSET;
-
-				if (hasDefaultValue || signatureMask & (1 << i))
-				{
-					const data::ContainerProperty macro(macroBinding.second, data, rendererData, rootData);
-
-
-					if (defaultValue.semantic == data::MacroBindingDefaultValueSemantic::VALUE
-						|| (macro.container() && macro.container()->propertyHasType<int>(macro.name())))
-					{
-						const auto defaultIntValue = defaultValue.value.value;
-
-						if ((defaultIntValue > 0) || signatureValues[i] > 0)
-						{
-							auto value	= macro.container() ? signatureValues[i] : defaultIntValue;
-							auto min	= std::get<3>(macroBinding.second);
-							auto max	= std::get<4>(macroBinding.second);
-
-							if ((min != -1 && value < min) || (max != -1 && value > max))
-							{
-								// out-of-bounds integer macro
-								if (macro.container())
-									incorrectIntegerMacros.push_back(macro);
-							}
-							else
-							{
-								defines += "#define " + macroBinding.first + " " + std::to_string(value) + "\n";
-
-								if (macro.container())
-									integerMacros.push_back(macro);
-							}
-						}
-					}
-					else if ((defaultValue.semantic == data::MacroBindingDefaultValueSemantic::PROPERTY_EXISTS
-							  && defaultValue.value.propertyExists)
-							  || (macro.container()))
-					{
-						defines += "#define " + macroBinding.first + "\n";
-
-						if (macro.container())
-							booleanMacros.push_back(macro);
-					}
-				}
-****/
 bool 
 ProgramSignature::operator==(const ProgramSignature& x) const
 {
