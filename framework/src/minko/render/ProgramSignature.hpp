@@ -42,10 +42,14 @@ namespace minko
 			}
 			
 			void
-			build(const data::MacroBindingMap&		macroBindings,
-				  std::shared_ptr<data::Container>	data,
-				  std::shared_ptr<data::Container>	rendererData,
-				  std::shared_ptr<data::Container>	rootData);
+			build(const data::MacroBindingMap&			macroBindings,
+				  std::shared_ptr<data::Container>		data,
+				  std::shared_ptr<data::Container>		rendererData,
+				  std::shared_ptr<data::Container>		rootData,
+				  std::string&							defines,
+				  std::list<data::ContainerProperty>&	booleanMacros,
+				  std::list<data::ContainerProperty>&	integerMacros,
+				  std::list<data::ContainerProperty>&	incorrectIntegerMacros);
 
 			bool 
 			operator==(const ProgramSignature&) const;
