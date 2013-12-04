@@ -17,7 +17,7 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "BoundingBox.hpp"
+#include "minko/component/BoundingBox.hpp"
 
 #include "minko/math/Box.hpp"
 #include "minko/math/Vector3.hpp"
