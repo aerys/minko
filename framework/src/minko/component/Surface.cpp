@@ -271,6 +271,10 @@ Surface::createDrawCalls(std::shared_ptr<data::Container>	rendererData)
 	if (_drawCalls.count(rendererData) != 0)
 		deleteDrawCalls(rendererData);
 
+#ifdef DEBUG_FALLBACK
+	assert(_drawCalls.count(rendererData) == 0);
+#endif // DEBUG_FALLBACK
+
 	const auto&	passes		= _effect->technique(_technique);
 	auto&		drawCalls	= _drawCalls[rendererData];
 	bool		doFallback	= false;
@@ -552,7 +556,10 @@ void
 Surface::badMacroChangedHandler(const data::ContainerProperty& macro)
 {
 	if (_incorrectMacroToPasses.count(macro) > 0)
+	{
+		std::cout << "bad macro '" << macro.name() << "' changed -> try to switch to '" << _incorrectMacroToPasses[macro].front().first << "'" << std::endl;
 		setTechnique(_incorrectMacroToPasses[macro].front().first);
+	}
 }
 
 void

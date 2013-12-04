@@ -66,8 +66,22 @@ Pass::selectProgram(std::shared_ptr<data::Container>	data,
 		program = _programTemplate;
 	else
 	{
-		ProgramSignature signature;
-		signature.build(_macroBindings, data, rendererData, rootData);
+		std::string			defines = "";
+		ProgramSignature	signature;
+
+		signature.build(
+			_macroBindings, 
+			data, 
+			rendererData, 
+			rootData, 
+			defines, 
+			booleanMacros,
+			integerMacros,
+			incorrectIntegerMacros
+		);
+
+		if (!incorrectIntegerMacros.empty())
+			return nullptr;
 
 		const auto foundProgramIt = _signatureToProgram.find(signature);
 
@@ -75,80 +89,12 @@ Pass::selectProgram(std::shared_ptr<data::Container>	data,
 			program = foundProgramIt->second;
 		else
 		{
-			const uint				signatureMask	= signature.mask();
-			const std::vector<int>&	signatureValues	= signature.values();
-			std::string				defines			= "";
-			uint					i				= 0;
-
-			// create shader header with #defines
-			for (const auto& macroBinding : _macroBindings)
-            {
-				const auto& defaultValue = std::get<2>(macroBinding.second);
-				const auto hasDefaultValue = defaultValue.semantic != data::MacroBindingDefaultValueSemantic::UNSET;
-
-				if (hasDefaultValue || signatureMask & (1 << i))
-				{
-					const data::ContainerProperty macro(macroBinding.second, data, rendererData, rootData);
-					/*
-					const auto&	propertyName = std::get<0>(macroBinding.second);
-					const auto& bindingSource = std::get<1>(macroBinding.second);
-					const auto propetyExists = defaultValue.semantic == data::MacroBindingDefaultValueSemantic::PROPERTY_EXISTS;
-					const auto& container = propertyName.empty() ? nullptr
-						: bindingSource == data::BindingSource::TARGET && data->hasProperty(propertyName) ? data
-						: bindingSource == data::BindingSource::RENDERER && rendererData->hasProperty(propertyName) ? rendererData
-						: bindingSource == data::BindingSource::ROOT && rootData->hasProperty(propertyName) ? rootData
-						: nullptr;
-						*/
-
-					if (defaultValue.semantic == data::MacroBindingDefaultValueSemantic::VALUE
-						|| (macro.container() && macro.container()->propertyHasType<int>(macro.name())))
-					{
-						const auto defaultIntValue = defaultValue.value.value;
-
-						if ((defaultIntValue > 0) || signatureValues[i] > 0)
-						{
-							auto value	= macro.container() ? signatureValues[i] : defaultIntValue;
-							auto min	= std::get<3>(macroBinding.second);
-							auto max	= std::get<4>(macroBinding.second);
-
-							if ((min != -1 && value < min) || (max != -1 && value > max))
-							{
-								// out-of-bounds integer macro
-								if (macro.container())
-									incorrectIntegerMacros.push_back(macro);
-							}
-							else
-							{
-								defines += "#define " + macroBinding.first + " " + std::to_string(value) + "\n";
-
-								if (macro.container())
-									integerMacros.push_back(macro);
-							}
-						}
-					}
-					else if ((defaultValue.semantic == data::MacroBindingDefaultValueSemantic::PROPERTY_EXISTS
-							  && defaultValue.value.propertyExists)
-							  || (macro.container()))
-					{
-						defines += "#define " + macroBinding.first + "\n";
-
-						if (macro.container())
-							booleanMacros.push_back(macro);
-					}
-				}
-				++i;
-				if (i == signatureValues.size())
-					break;
-            }
-
-			if (!incorrectIntegerMacros.empty())
-				return nullptr;
+			// compile a new shader program from template with macros
 
 #ifdef MINKO_NO_GLSL_STRUCT
 			defines += "#define MINKO_NO_GLSL_STRUCT\n";
 #endif // MINKO_NO_GLSL_STRUCT
 
-			// for program template by adding #defines
 			auto vs = Shader::create(
 				_programTemplate->context(),
 				Shader::Type::VERTEX_SHADER,
@@ -160,10 +106,8 @@ Pass::selectProgram(std::shared_ptr<data::Container>	data,
 				defines + _programTemplate->fragmentShader()->source()
 			);
 
-			program = Program::create(_programTemplate->context(), vs, fs);
-
-			// register the program to this signature
-			_signatureToProgram[signature] = program;
+			program							= Program::create(_programTemplate->context(), vs, fs);
+			_signatureToProgram[signature]	= program;
 		}
 	}
 
