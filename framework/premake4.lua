@@ -11,8 +11,10 @@ project "framework"
 		"assets/**"
 	}
 	includedirs {
+		"include",
 		"src"
 	}
+	
 	-- json cpp
 	files {
 		"lib/jsoncpp/src/**.cpp",
@@ -30,12 +32,12 @@ project "framework"
 	configuration { "debug"}
 		defines { "DEBUG" }
 		flags { "Symbols" }
-		targetdir "bin/debug"
+		targetdir("bin/debug/" .. os.get())
 
 	configuration { "release" }
 		defines { "NDEBUG" }
 		flags { "Optimize" } -- { "OptimizeSpeed" }
-		targetdir "bin/release"
+		targetdir("bin/release/" .. os.get())
 	
 	-- plugins
 	minko.plugin.import("angle")
