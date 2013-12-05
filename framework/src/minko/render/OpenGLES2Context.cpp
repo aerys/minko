@@ -947,7 +947,7 @@ OpenGLES2Context::getProgramInputs(const uint program)
 	std::vector<ProgramInputs::Type> types;
 	std::vector<uint> locations;
 
-	glUseProgram(program);
+	setProgram(program);
 	fillUniformInputs(program, names, types, locations);
 	fillAttributeInputs(program, names, types, locations);
 
