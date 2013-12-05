@@ -235,13 +235,16 @@ Renderer::addSurfaceDrawcalls(Surface::Ptr surface)
 {
 	removeSurfaceDrawcalls(surface);
 
-	_surfaceDrawCalls[surface]	= surface->createDrawCalls(targets()[0]->data());
+	auto& drawcalls = surface->createDrawCalls(targets()[0]->data());
 
-	_drawCalls.insert(
-		_drawCalls.end(), 
-		_surfaceDrawCalls[surface].begin(), 
-		_surfaceDrawCalls[surface].end()
-	);
+	_surfaceDrawCalls[surface]	= drawcalls;
+
+	if (!drawcalls.empty())
+		_drawCalls.insert(
+			_drawCalls.end(), 
+			_surfaceDrawCalls[surface].begin(), 
+			_surfaceDrawCalls[surface].end()
+		);
 }
 
 void
@@ -269,9 +272,13 @@ Renderer::removeSurfaceDrawcalls(Surface::Ptr surface)
 void
 Renderer::render(std::shared_ptr<render::AbstractContext> context, std::shared_ptr<render::Texture> renderTarget)
 {
-	for (auto& surface : _toCollect)
-		addSurfaceDrawcalls(surface);
-	_toCollect.clear();
+	while(!_toCollect.empty())
+	{
+		auto surface = *_toCollect.begin();
+		_toCollect.erase(_toCollect.begin());
+
+		addSurfaceDrawcalls(surface); // may had surface back in _toCollect as long as fallback techniques are possible
+	}
 
 	_renderingBegin->execute(shared_from_this());
 

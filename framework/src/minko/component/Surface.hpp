@@ -57,33 +57,34 @@ namespace minko
 			};
 
 		private:
-			std::shared_ptr<geometry::Geometry>						_geometry;
-			std::shared_ptr<data::Provider>							_material;
-			std::shared_ptr<render::Effect>							_effect;
+			std::shared_ptr<geometry::Geometry>										_geometry;
+			std::shared_ptr<data::Provider>											_material;
+			std::shared_ptr<render::Effect>											_effect;
+			std::unordered_map<std::string, std::unordered_set<std::string>>		_techniqueToMacroNames;
 
 			std::string 															_technique;
-			std::unordered_map<std::string, std::unordered_set<std::string>>		_techniqueMacroNames;
-
 			std::unordered_map<ContainerPtr, DrawCallList>							_drawCalls;
 			std::unordered_map<DrawCallPtr, PassPtr>								_drawCallToPass;
 			std::unordered_map<DrawCallPtr, ContainerPtr>							_drawCallToRendererData;
-			std::unordered_map<std::string, DrawCallList>							_macroPropertyNameToDrawCalls;
+			std::unordered_map<std::string, DrawCallList>							_macroNameToDrawCalls;
 
+			// current technique-related members
 			std::list<Any>															_macroAddedOrRemovedSlots;
 			std::unordered_map<data::ContainerProperty, PropertyChangedSlot>		_macroChangedSlots;
 			std::unordered_map<data::ContainerProperty, uint>						_numMacroListeners;
 			
+			// cross-technique members
 			std::unordered_map<data::ContainerProperty, std::list<TechniquePass>>	_incorrectMacroToPasses;
 			std::unordered_map<data::ContainerProperty, PropertyChangedSlot>		_incorrectMacroChangedSlot;
 
-			DrawCallChangedSignal::Ptr								_drawCallAdded;
-			DrawCallChangedSignal::Ptr								_drawCallRemoved;
-			TechniqueChangedSignal::Ptr								_techniqueChanged;
+			DrawCallChangedSignal::Ptr												_drawCallAdded;
+			DrawCallChangedSignal::Ptr												_drawCallRemoved;
+			TechniqueChangedSignal::Ptr												_techniqueChanged;
 
-			Signal<AbstractComponent::Ptr, NodePtr>::Slot			_targetAddedSlot;
-			Signal<AbstractComponent::Ptr, NodePtr>::Slot			_targetRemovedSlot;
-			Signal<NodePtr, NodePtr, NodePtr>::Slot					_removedSlot;
-			Signal<EffectPtr, StringRef, StringRef>::Slot			_techniqueChangedSlot;
+			Signal<AbstractComponent::Ptr, NodePtr>::Slot							_targetAddedSlot;
+			Signal<AbstractComponent::Ptr, NodePtr>::Slot							_targetRemovedSlot;
+			Signal<NodePtr, NodePtr, NodePtr>::Slot									_removedSlot;
+			Signal<EffectPtr, StringRef, StringRef>::Slot							_techniqueChangedSlot;
 
 		public:
 			static
@@ -222,7 +223,7 @@ namespace minko
 						const TechniquePass&);
 
 			void
-			badMacroChangedHandler(const data::ContainerProperty&);
+			incorrectMacroChangedHandler(const data::ContainerProperty&);
 
 			void
 			deleteAllDrawCalls();

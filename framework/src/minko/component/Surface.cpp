@@ -41,11 +41,11 @@ Surface::Surface(Geometry::Ptr 			geometry,
 	_geometry(geometry),
 	_material(material),
 	_effect(effect),
+	_techniqueToMacroNames(),
 	_technique(technique),
-	_techniqueMacroNames(),
 	_drawCalls(),
 	_drawCallToPass(),
-	_macroPropertyNameToDrawCalls(),
+	_macroNameToDrawCalls(),
 	_macroAddedOrRemovedSlots(),
 	_macroChangedSlots(),
 	_numMacroListeners(),
@@ -55,6 +55,21 @@ Surface::Surface(Geometry::Ptr 			geometry,
 	_drawCallRemoved(DrawCallChangedSignal::create()),
 	_techniqueChanged(TechniqueChangedSignal::create())
 {
+}
+
+void
+Surface::initializeTechniqueMacroNames()
+{
+	_techniqueToMacroNames.clear();
+
+	for (auto& technique : _effect->techniques())
+	{
+		auto& techniqueName = technique.first;
+
+		for (auto& pass : technique.second)
+			for (auto& macroBinding : pass->macroBindings())
+				_techniqueToMacroNames[techniqueName].insert(std::get<0>(macroBinding.second));
+	}
 }
 
 void
@@ -74,30 +89,10 @@ Surface::initialize()
 		std::placeholders::_2
 	));
 
-	auto techniques = _effect->techniques();
-
-	if (techniques.count(_technique) == 0)
-		throw std::logic_error("The technique '" + _technique + "' does not exist.");
-
 	initializeTechniqueMacroNames();
 
-}
-
-void
-Surface::initializeTechniqueMacroNames()
-{
-	_techniqueMacroNames.clear();
-
-	for (auto& technique : _effect->techniques())
-	{
-		auto& techniqueName = technique.first;
-
-		for (auto& pass : technique.second)
-			for (auto& macroBinding : pass->macroBindings())
-			{
-				_techniqueMacroNames[techniqueName].insert(std::get<0>(macroBinding.second));
-			}
-	}
+	if (_effect->techniques().count(_technique) == 0)
+		throw std::logic_error("The technique '" + _technique + "' does not exist.");
 }
 
 void
@@ -140,6 +135,11 @@ void
 Surface::removedHandler(NodePtr node, NodePtr target, NodePtr ancestor)
 {
 	deleteAllDrawCalls();
+
+	_macroChangedSlots.clear();
+
+	_incorrectMacroToPasses.clear();
+	_incorrectMacroChangedSlot.clear();
 }
 
 void
@@ -223,8 +223,12 @@ Surface::deleteAllDrawCalls()
 	for (auto& drawCalls : drawCallsMap)
 		deleteDrawCalls(drawCalls.first);
 
-	_macroPropertyNameToDrawCalls.clear();
-	_macroChangedSlots.clear();
+#ifdef DEBUG_FALLBACK
+	assert(_drawCalls.empty());
+	assert(_drawCallToPass.empty());
+	assert(_drawCallToRendererData.empty());
+	assert(_macroNameToDrawCalls.empty());
+#endif // DEBUG_FALLBACK
 }
 
 void
@@ -242,7 +246,7 @@ Surface::deleteDrawCalls(std::shared_ptr<data::Container> rendererData)
 		_drawCallToPass.erase(drawCall);
 		_drawCallToRendererData.erase(drawCall);
 
-		for (auto& drawcallsIt : _macroPropertyNameToDrawCalls)
+		for (auto& drawcallsIt : _macroNameToDrawCalls)
 		{
 			auto& macroName			= drawcallsIt.first;
 			auto& macroDrawcalls	= drawcallsIt.second;
@@ -254,11 +258,11 @@ Surface::deleteDrawCalls(std::shared_ptr<data::Container> rendererData)
 	}
 
 	// erase in a subsequent step the entries corresponding to macro names which do not monitor any drawcall anymore.
-	for (std::unordered_map<std::string, DrawCallList>::iterator drawcallsIt = _macroPropertyNameToDrawCalls.begin();
-		drawcallsIt != _macroPropertyNameToDrawCalls.end();
+	for (std::unordered_map<std::string, DrawCallList>::iterator drawcallsIt = _macroNameToDrawCalls.begin();
+		drawcallsIt != _macroNameToDrawCalls.end();
 		)
 		if (drawcallsIt->second.empty())
-			drawcallsIt = _macroPropertyNameToDrawCalls.erase(drawcallsIt);
+			drawcallsIt = _macroNameToDrawCalls.erase(drawcallsIt);
 		else
 			++drawcallsIt;
 
@@ -273,38 +277,46 @@ Surface::createDrawCalls(std::shared_ptr<data::Container>	rendererData)
 
 #ifdef DEBUG_FALLBACK
 	assert(_drawCalls.count(rendererData) == 0);
+	assert(_macroAddedOrRemovedSlots.empty());
+	assert(_macroChangedSlots.empty());
+	assert(_numMacroListeners.empty());
 #endif // DEBUG_FALLBACK
 
-	const auto&	passes		= _effect->technique(_technique);
-	auto&		drawCalls	= _drawCalls[rendererData];
-	bool		doFallback	= false;
+	bool		mustFallback	= false;
+	_drawCalls[rendererData]	= std::list<DrawCall::Ptr>();
 
-	for (const auto& pass : passes)
+	for (const auto& pass : _effect->technique(_technique))
 	{
-		auto drawCall		= initializeDrawCall(pass, rendererData);
+		auto drawCall = initializeDrawCall(pass, rendererData);
 
 		if (drawCall)
 		{
-			drawCalls.push_back(drawCall);
+			_drawCalls[rendererData].push_back(drawCall);
 			_drawCallAdded->execute(shared_from_this(), drawCall);
 		}
 		else
 		{
-			doFallback		= true;
-			if (_drawCalls.count(rendererData) != 0)
-				deleteDrawCalls(rendererData);
+			mustFallback = true;
+			break;
 		}
 	}
 
-	if (!doFallback)
-		watchMacroAdditionOrDeletion(rendererData);
-	else
+	if (mustFallback)
 	{
-		drawCalls.clear();
+		_drawCalls[rendererData].clear();
+
 		switchToFallbackTechnique();
 	}
+	else
+	{
+#ifdef DEBUG_FALLBACK
+		std::cout << "surf[" << this << "] managed to proceed to '" << _technique << "'" << std::endl;
+#endif // DEBUG_FALLBACK
 
-	return drawCalls;
+		watchMacroAdditionOrDeletion(rendererData);
+	}
+
+	return _drawCalls[rendererData];
 }
 
 DrawCall::Ptr
@@ -361,7 +373,7 @@ Surface::initializeDrawCall(Pass::Ptr		pass,
 		{
 			data::ContainerProperty macro(binding.second, targetData, rendererData, rootData);
 
-			_macroPropertyNameToDrawCalls[macro.name()].push_back(drawcall);
+			_macroNameToDrawCalls[macro.name()].push_back(drawcall);
 
 			if (macro.container())
 			{
@@ -424,31 +436,6 @@ Surface::getWorkingProgram(std::shared_ptr<Pass>				pass,
 	while(true);
 
 	return program;
-
-	/***
-	auto program = pass->selectProgram(targetData, rendererData, rootData, bindingDefines, bindingValues);
-
-	while (!program)
-	{
-		auto passes = _effect->technique(_technique);
-		auto fallbackIt = std::find_if(
-			passes.begin(),
-			passes.end(),
-			[&](const Pass::Ptr& p)
-			{
-				return p->name() == pass->fallback();
-			}
-		);
-
-		if (fallbackIt == passes.end())
-			return nullptr;
-
-		pass = *fallbackIt;
-		program = pass->selectProgram(targetData, rootData, rendererData, bindingDefines, bindingValues);
-	}
-
-	return program;
-	***/
 }
 
 void
@@ -463,25 +450,29 @@ Surface::macroChangedHandler(Container::Ptr		container,
 	const data::ContainerProperty	macro		(propertyName, container);
 	if (change == MacroChange::REF_CHANGED && !_drawCalls.empty())
 	{
-		const auto	drawCalls		= _macroPropertyNameToDrawCalls[macro.name()];
+		const auto	drawCalls		= _macroNameToDrawCalls[macro.name()];
 
+		std::unordered_set<Container::Ptr>	failedDrawcallRendererData;
 		for (auto& drawCall : drawCalls)
 		{
 			auto	pass			= _drawCallToPass[drawCall];
 			auto	rendererData	= _drawCallToRendererData[drawCall];
 	
 			if (!initializeDrawCall(pass, rendererData, drawCall))
-			{
-				if (_drawCalls.count(rendererData) != 0)
+				failedDrawcallRendererData.insert(rendererData);
+		}
+
+		if (!failedDrawcallRendererData.empty())
+		{
+			for (auto& rendererData : failedDrawcallRendererData)
+				if (_drawCalls.count(rendererData) > 0)
 					deleteDrawCalls(rendererData);
 
-				switchToFallbackTechnique();
-				break;
-			}
+			switchToFallbackTechnique();
 		}
 	}
-	else if (_techniqueMacroNames.count(_technique) != 0 
-		&&   _techniqueMacroNames[_technique].find(macro.name()) != _techniqueMacroNames[_technique].end())
+	else if (_techniqueToMacroNames.count(_technique) != 0 
+		&&   _techniqueToMacroNames[_technique].find(macro.name()) != _techniqueToMacroNames[_technique].end())
 	{
 		int numListeners = _numMacroListeners.count(macro) == 0 ? 0 : _numMacroListeners[macro];
 
@@ -548,16 +539,22 @@ Surface::setTechnique(const std::string& technique)
 	if (!_effect->hasTechnique(_technique))
 		throw std::logic_error("The technique '" + _technique + "' does not exist.");
 
-	//_macroAddedOrRemovedSlots.clear();
+	_macroAddedOrRemovedSlots.clear();
+	_macroChangedSlots.clear();
+	_numMacroListeners.clear();
+
 	_techniqueChanged->execute(shared_from_this(), _technique);
 }
 
 void
-Surface::badMacroChangedHandler(const data::ContainerProperty& macro)
+Surface::incorrectMacroChangedHandler(const data::ContainerProperty& macro)
 {
 	if (_incorrectMacroToPasses.count(macro) > 0)
 	{
-		std::cout << "bad macro '" << macro.name() << "' changed -> try to switch to '" << _incorrectMacroToPasses[macro].front().first << "'" << std::endl;
+#ifdef DEBUG_FALLBACK
+		std::cout << "surf[" << this << "]\tincorrect macro '" << macro.name() << "' changed -> try back technique '" << _incorrectMacroToPasses[macro].front().first << "'" << std::endl;
+#endif // DEBUG_FALLBACK
+
 		setTechnique(_incorrectMacroToPasses[macro].front().first);
 	}
 }
@@ -584,7 +581,7 @@ Surface::blameMacros(const std::list<data::ContainerProperty>& incorrectIntegerM
 		if (_incorrectMacroChangedSlot.count(macro) == 0)
 		{
 			_incorrectMacroChangedSlot[macro] = macro.container()->propertyReferenceChanged(macro.name())->connect(std::bind(
-				&Surface::badMacroChangedHandler,
+				&Surface::incorrectMacroChangedHandler,
 				shared_from_this(),
 				macro
 			));
