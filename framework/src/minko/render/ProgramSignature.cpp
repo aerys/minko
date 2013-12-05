@@ -107,12 +107,6 @@ ProgramSignature::build(const MacroBindingMap&			macroBindings,
 		}
 		++macroId;
 	}
-
-
-	std::cout << "\n\defines\n" << defines << std::endl;
-	std::cout << incorrectIntegerMacros.size() << " incorrect macros" << std::endl;
-	for (auto& m : incorrectIntegerMacros)
-		std::cout << "\t- " << m.name() << std::endl;
 }
 
 bool 
