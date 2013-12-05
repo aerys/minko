@@ -80,6 +80,14 @@ Pass::selectProgram(std::shared_ptr<data::Container>	data,
 			incorrectIntegerMacros
 		);
 
+#ifdef DEBUG_FALLBACK
+		if (!incorrectIntegerMacros.empty())
+			for (auto& m : incorrectIntegerMacros)
+				std::cout << "- incorrect macro\t'" << m.name() << "' from container[" << m.container().get() << "]" << std::endl;
+		if (!defines.empty())
+			std::cout << "MACRO DEFINES\n" << defines << std::endl;
+#endif // DEBUG_FALLBACK
+
 		if (!incorrectIntegerMacros.empty())
 			return nullptr;
 
