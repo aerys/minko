@@ -17,13 +17,13 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "Transform.hpp"
+#include "minko/component/Transform.hpp"
 
 #include "minko/math/Matrix4x4.hpp"
 #include "minko/scene/Node.hpp"
 #include "minko/scene/NodeSet.hpp"
 #include "minko/data/Container.hpp"
-#include "minko/data/Provider.hpp"
+#include "minko/data/StructureProvider.hpp"
 #include "minko/component/SceneManager.hpp"
 
 using namespace minko;
@@ -35,7 +35,7 @@ Transform::Transform() :
 	_transform(Matrix4x4::create()),
 	_modelToWorld(Matrix4x4::create()),
 	_worldToModel(Matrix4x4::create()),
-	_data(data::Provider::create())
+	_data(data::StructureProvider::create("transform"))
 {
 }
 
@@ -56,7 +56,7 @@ Transform::initialize()
 		std::placeholders::_2
 	));
 
-	_data->set<Matrix4x4::Ptr>("transform.modelToWorldMatrix", _modelToWorld);
+	_data->set<Matrix4x4::Ptr>("modelToWorldMatrix", _modelToWorld);
 	//_data->set("transform/worldToModelMatrix", _worldToModel);
 }
 

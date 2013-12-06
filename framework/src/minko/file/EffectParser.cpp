@@ -17,7 +17,7 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "EffectParser.hpp"
+#include "minko/file/EffectParser.hpp"
 
 #include "minko/data/Provider.hpp"
 #include "minko/render/Effect.hpp"
@@ -256,95 +256,95 @@ EffectParser::parsePasses(const Json::Value&		root,
 	auto passId = 0;
 	auto passesValue = root.get("passes", 0);
 
-	for (auto passValue : passesValue)
-	{
-		passId++;
+    for (auto passValue : passesValue)
+    {
+        passId++;
 
-		if (passValue.isString())
-		{
-			auto name = passValue.asString();
-			auto passIt = std::find_if(
-				_globalPasses.begin(),
-				_globalPasses.end(),
-				[&](Pass::Ptr pass)
-				{
-					return pass->name() == name;
-				}
-			);
+        if (passValue.isString())
+        {
+            auto name = passValue.asString();
+            auto passIt = std::find_if(
+                _globalPasses.begin(),
+                _globalPasses.end(),
+                [&](Pass::Ptr pass)
+            {
+                return pass->name() == name;
+            }
+            );
 
-			if (passIt == _globalPasses.end())
-				throw std::logic_error("Pass '" + name + "' does not exist.");
+            if (passIt == _globalPasses.end())
+                throw std::logic_error("Pass '" + name + "' does not exist.");
 
-			auto pass = *passIt;
-			auto passCopy = Pass::create(pass, true);
+            auto pass = *passIt;
+            auto passCopy = Pass::create(pass, true);
 
-			_passIncludes[passCopy] = _passIncludes[pass];
-			_shaderIncludes[passCopy->program()->vertexShader()] = _shaderIncludes[pass->program()->vertexShader()];
-			_shaderIncludes[passCopy->program()->fragmentShader()] = _shaderIncludes[pass->program()->fragmentShader()];
-			passCopy->states()->priority((float)(passesValue.size() - passId));
+            _passIncludes[passCopy] = _passIncludes[pass];
+            _shaderIncludes[passCopy->program()->vertexShader()] = _shaderIncludes[pass->program()->vertexShader()];
+            _shaderIncludes[passCopy->program()->fragmentShader()] = _shaderIncludes[pass->program()->fragmentShader()];
+            passCopy->states()->priority((float)(passesValue.size() - passId));
 
-			passes.push_back(passCopy);
+            // set uniform default values
+            for (auto& nameAndValues : defaultUniformDefaultValues)
+                setUniformDefaultValueOnPass(
+                    passCopy,
+                    nameAndValues.first,
+                    nameAndValues.second.first,
+                    nameAndValues.second.second
+                );
 
-			continue;
-		}
+            passes.push_back(passCopy);
+        }
+        else
+        {
+            if (!parseConfiguration(passValue))
+                continue;
 
-		if (!parseConfiguration(passValue))
-			continue;
+            auto name = passValue.get("name", std::to_string(passId)).asString();
 
-		auto name = passValue.get("name", std::to_string(passId)).asString();
+            // pass bindings
+            data::BindingMap		attributeBindings(defaultAttributeBindings);
+            data::BindingMap		uniformBindings(defaultUniformBindings);
+            data::BindingMap		stateBindings(defaultStateBindings);
+            data::MacroBindingMap	macroBindings(defaultMacroBindings);
+            UniformValues			uniformDefaultValues(defaultUniformDefaultValues);
 
-		// pass bindings
-		data::BindingMap		attributeBindings(defaultAttributeBindings);
-		data::BindingMap		uniformBindings(defaultUniformBindings);
-		data::BindingMap		stateBindings(defaultStateBindings);
-		data::MacroBindingMap	macroBindings(defaultMacroBindings);
-		UniformValues			uniformDefaultValues(defaultUniformDefaultValues);
-        
-		parseBindings(
-			passValue,
-			attributeBindings,
-			uniformBindings,
-			stateBindings,
-			macroBindings,
-			uniformDefaultValues
-		);
+            parseBindings(
+                passValue,
+                attributeBindings,
+                uniformBindings,
+                stateBindings,
+                macroBindings,
+                uniformDefaultValues
+            );
 
-		// render states
-		auto states = parseRenderStates(passValue, context, targets, defaultStates, passesValue.size() - passId);
+            // render states
+            auto states = parseRenderStates(passValue, context, targets, defaultStates, passesValue.size() - passId);
 
-		// program
-		auto vertexShaderValue = passValue.get("vertexShader", "");
-		auto vertexShader = parseShader(
-			vertexShaderValue, resolvedFilename, options, render::Shader::Type::VERTEX_SHADER
-		);
-		
-		auto fragmentShaderValue = passValue.get("fragmentShader", "");
-		auto fragmentShader = parseShader(
-			fragmentShaderValue, resolvedFilename, options, render::Shader::Type::FRAGMENT_SHADER
-		);
+            // program
+            auto vertexShaderValue = passValue.get("vertexShader", "");
+            auto vertexShader = parseShader(
+                vertexShaderValue, resolvedFilename, options, render::Shader::Type::VERTEX_SHADER
+            );
 
-		auto pass = render::Pass::create(
-			name,
-			Program::create(options->context(), vertexShader, fragmentShader),
-			attributeBindings,
-			uniformBindings,
-			stateBindings,
-			macroBindings,
-            states
-		);
+            auto fragmentShaderValue = passValue.get("fragmentShader", "");
+            auto fragmentShader = parseShader(
+                fragmentShaderValue, resolvedFilename, options, render::Shader::Type::FRAGMENT_SHADER
+            );
 
-		// set uniform default values
-		for (auto& nameAndValues : uniformDefaultValues)
-			setUniformDefaultValueOnPass(
-				pass,
-				nameAndValues.first,
-				nameAndValues.second.first,
-				nameAndValues.second.second
-			);
+            auto pass = render::Pass::create(
+                name,
+                Program::create(options->context(), vertexShader, fragmentShader),
+                attributeBindings,
+                uniformBindings,
+                stateBindings,
+                macroBindings,
+                states
+            );
 
-        passes.push_back(pass);
+            passes.push_back(pass);
 
-		parseDependencies(passValue, resolvedFilename, options, _passIncludes[pass]);
+            parseDependencies(passValue, resolvedFilename, options, _passIncludes[pass]);
+        }
 	}
 }
 
@@ -562,7 +562,8 @@ EffectParser::parseMacroBindings(const Json::Value&	contextNode, data::MacroBind
 		for (auto propertyName : macroBindingsValue.getMemberNames())
 		{
 			auto macroBindingValue = macroBindingsValue.get(propertyName, 0);
-			minko::data::MacroBindingDefault bindingDefault = std::get<2>(macroBindings[propertyName]);
+			minko::data::MacroBindingDefault& bindingDefault = std::get<2>(macroBindings[propertyName]);
+
 		
 			bindingDefault.semantic = data::MacroBindingDefaultValueSemantic::UNSET;
 
@@ -1006,8 +1007,9 @@ EffectParser::parseTechniques(const Json::Value&				root,
 bool
 EffectParser::parseConfiguration(const Json::Value&	root)
 {
-	auto confValue = root.get("configuration", 0);
-	auto p = _options->platforms();
+	auto confValue	= root.get("configuration", 0);
+	auto platforms	= _options->platforms();
+	auto userFlags	= _options->userFlags();
 	auto r = false;
 
 	if (confValue.isArray())
@@ -1016,7 +1018,9 @@ EffectParser::parseConfiguration(const Json::Value&	root)
 		{
 			// if the config. token is a string and we can find it in the list of platforms,
 			// then the configuration is ok and we return true
-			if (value.isString() && std::find(p.begin(), p.end(), value.asString()) != p.end())
+			if (value.isString() && 
+				(std::find(platforms.begin(), platforms.end(), value.asString()) != platforms.end() || 
+				std::find(userFlags.begin(), userFlags.end(), value.asString()) != userFlags.end()))
 				return true;
 			else if (value.isArray())
 			{
@@ -1024,7 +1028,9 @@ EffectParser::parseConfiguration(const Json::Value&	root)
 				// the platforms list; if a single of them is not there then the config. token
 				// is considered to be false
 				for (auto str : value)
-				if (str.isString() && std::find(p.begin(), p.end(), str.asString()) == p.end())
+				if (str.isString() && 
+					(std::find(platforms.begin(), platforms.end(), str.asString()) == platforms.end() ||
+					std::find(userFlags.begin(), userFlags.end(), str.asString()) != userFlags.end()))
 				{
 					r = r || false;
 					break;
@@ -1109,6 +1115,23 @@ EffectParser::finalize()
 				_effect->addTechnique("default", passes);
 		}
     }
+
+	if (!_effect->techniques().empty() && _effect->techniques().count("default") == 0)
+	{
+		// FIXME 
+		const std::string&		viableTechniqueName = _effect->techniques().begin()->first; 
+		std::vector<Pass::Ptr>	viableTechnique		(_effect->technique(viableTechniqueName));
+
+		if (_effect->hasFallback(viableTechniqueName))
+			_effect->addTechnique("default", viableTechnique, _effect->fallback(viableTechniqueName));
+		else
+			_effect->addTechnique("default", viableTechnique);
+
+#ifdef DEBUG
+		std::cerr << "Warning:\tEffect '" << _effectName << "' does not provide achievable default technique ('" << _defaultTechnique << "'), switched to '" << viableTechniqueName << "'" << std::endl;
+#endif // DEBUG
+	}
+
 
 	for (auto& targets : _techniqueTargets)
 		for (auto& target : targets.second)
