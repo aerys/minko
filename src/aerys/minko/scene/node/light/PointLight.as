@@ -151,7 +151,9 @@ package aerys.minko.scene.node.light
 			this.shadowZNear			= shadowZNear;
 			this.shadowZFar		    	= shadowZFar;
             this.shadowBias             = shadowBias;
-			this.shadowColor			= shadowColor;
+			
+			if (shadowColor != 0)
+				this.shadowColor			= shadowColor;
 		}
 		
 		override minko_scene function cloneNode() : AbstractSceneNode

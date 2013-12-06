@@ -58,7 +58,7 @@ package aerys.minko.render.shader.part.phong.depth
 			var zFarName			: String	= LightDataProvider.getLightPropertyName('shadowZFar', lightId);
 			var zFar				: SFloat	= sceneBindings.getParameter(zFarName, 1);
 			var zNearName			: String	= LightDataProvider.getLightPropertyName('shadowZNear', lightId);
-			var zNear				: SFloat	= sceneBindings.getParameter(zNearName, 1);
+			var zNear				: Number	= sceneBindings.getProperty(zNearName, 0);
 			var lightSpacePosition	: SFloat	= interpolate(_lightSpacePosition);
 			var depth				: SFloat	= length(lightSpacePosition);
 			depth								= divide(depth, subtract(zFar, zNear));
@@ -88,7 +88,7 @@ package aerys.minko.render.shader.part.phong.depth
 			var worldToLight		: SFloat	= sceneBindings.getParameter(worldToLightName, 16);
 			var posLightSpace		: SFloat	= multiply4x4(fsWorldPosition, worldToLight);
 			var zFar				: SFloat	= sceneBindings.getParameter(zFarName, 1);
-			var zNear				: SFloat	= sceneBindings.getParameter(zNearName, 1);
+			var zNear				: Number	= sceneBindings.getProperty(zNearName, 0);
 			var depth				: SFloat	= length(posLightSpace);
 			depth								= divide(depth, subtract(zFar, zNear));
 

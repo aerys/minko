@@ -1,12 +1,14 @@
 package aerys.minko.render.shader.compiler.allocation
 {
+	import flash.utils.Dictionary;
+	
 	import aerys.minko.render.shader.compiler.ShaderCompilerError;
 	import aerys.minko.render.shader.compiler.graph.nodes.AbstractNode;
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Instruction;
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Overwriter;
 	import aerys.minko.render.shader.compiler.register.RegisterType;
 	
-	import flash.utils.Dictionary;
+	import avmplus.getQualifiedClassName;
 
 	/**
 	 * This class meant to allocate shader registries in the AllocationVisitor.
@@ -189,17 +191,24 @@ package aerys.minko.render.shader.compiler.allocation
 				// if the previous loop are not broken, we are out of registers!
 				if (regOffset == _offsetLimit && localOffset == maxLocalOffset + 1)
 				{
-//					var registerType	: String = RegisterType.stringifyType(_type, _isVertexShader);
-//					var numRegisters	: String = (_offsetLimit / 4).toString();
-//					var allocSize		: String = (alloc.maxSize).toString();
-//					var alignement		: String = alloc.aligned ? 'aligned' : 'non-aligned';
-//					
-//					var errorMessage	: String = 'Unable to allocate: all "' + registerType + '" ' +
-//						numRegisters + ' registers are full, or too fragmented to allocate ' +
-//						allocSize + ' contiguous ' + alignement + ' floats';
-//					
-//					throw new Error(errorMessage);
+					/*
+					var registerType	: String = RegisterType.stringifyType(_type, _isVertexShader);
+					var numRegisters	: String = (_offsetLimit / 4).toString();
+					var allocSize		: String = (alloc.maxSize).toString();
+					var alignement		: String = alloc.aligned ? 'aligned' : 'non-aligned';
+					
+					var errorMessage	: String = 'Unable to allocate: all "' + registerType + '" ' +
+						numRegisters + ' registers are full, or too fragmented to allocate ' +
+						allocSize + ' contiguous ' + alignement + ' floats';
                     
+					trace(errorMessage);
+					
+					for (var i : uint = 0; i < allocationId; ++i)
+					{
+						trace("    ", _allocations[i].maxSize, " " , getQualifiedClassName(allocations[i]));
+					}
+					*/
+					
                     if (_type == RegisterType.VARYING)
                         throw new ShaderCompilerError(ShaderCompilerError.TOO_MANY_VARYINGS);
                     
