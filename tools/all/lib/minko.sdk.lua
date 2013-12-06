@@ -29,3 +29,11 @@ minko.sdk.newplatform = function(platform)
   premake.gcc.platforms[name] = platform.gcc
   --other compilers (?)
 end
+
+minko.sdk.gettargetplatform = function()
+  if _OPTIONS['platforms'] then
+    return _OPTIONS['platforms']
+  else
+    return os.get()
+  end
+end
