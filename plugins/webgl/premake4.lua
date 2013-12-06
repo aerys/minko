@@ -7,7 +7,7 @@ minko.project.library "plugin-webgl"
 	kind "StaticLib"
 	language "C++"
 	files { "**.hpp", "**.h", "**.cpp", "**.c" }
-	includedirs { "src" }
+	includedirs { "include", "src" }
 	
 	configuration { "debug"}
 		defines { "DEBUG" }

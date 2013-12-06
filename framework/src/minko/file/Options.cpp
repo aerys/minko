@@ -17,7 +17,7 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "Options.hpp"
+#include "minko/file/Options.hpp"
 
 #include "minko/material/Material.hpp"
 #include "minko/file/Loader.hpp"
@@ -27,7 +27,12 @@ using namespace minko::file;
 
 Options::Options(std::shared_ptr<render::AbstractContext> context) :
 	_context(context),
+	_includePaths(),
+	_platforms(),
+	_userFlags(),
     _generateMipMaps(false),
+	_skinningNumFPS(30),
+	_skinningMethod(component::SkinningMethod::HARDWARE),
 	_material(material::Material::create())
 {
 #ifdef DEBUG
@@ -62,6 +67,7 @@ Options::Options(std::shared_ptr<render::AbstractContext> context) :
 	};
 
 	initializePlatforms();
+	initializeUserFlags();
 }
 
 void
@@ -90,4 +96,12 @@ Options::initializePlatforms()
 	_platforms.push_back("linux");
 	_platforms.push_back("desktop");
 #endif
+}
+
+void
+Options::initializeUserFlags()
+{
+#ifdef MINKO_NO_GLSL_STRUCT
+	_userFlags.push_back("no-glsl-struct");
+#endif // MINKO_NO_GLSL_STRUCT
 }

@@ -1,10 +1,9 @@
-minko.project.application "example-sponza"
+PROJECT_NAME = path.getname(os.getcwd())
+
+minko.project.application(PROJECT_NAME)
 	kind "ConsoleApp"
 	language "C++"
-	files {
-		"src/**.hpp",
-		"src/**.cpp"
-	}
+	files { "src/**.hpp", "src/**.cpp", "asset/**" }
 	includedirs { "src" }
 
 	-- plugins 
@@ -17,24 +16,11 @@ minko.project.application "example-sponza"
 	
 	minko.plugin.import("angle")
 
-	-- configurations
-	configuration { "debug"}
-		defines { "DEBUG" }
-		flags { "Symbols" }
-		targetdir "bin/debug"
-
-	configuration { "release" }
-		defines { "NDEBUG" }
-		flags { "OptimizeSpeed" }
-		targetdir "bin/release"
-
 	-- emscripten
 	configuration { "emscripten" }
-		local bin = "bin/release/" .. project().name
 		postbuildcommands {
-			'cp ' .. bin .. ' ' .. bin .. '.bc',
-			'cp -r asset/* bin/release/ || :',
-			'rm bin/release/model/Sponza_lite.mks',
-			'cd bin/release && emcc ' .. project().name .. '.bc -o ' .. project().name .. '.html -O2 -s ASM_JS=1 -s TOTAL_MEMORY=268435456 --preload-file effect --preload-file texture --preload-file model --compression /home/vagrant/src/emscripten/third_party/lzma.js/lzma-native,/home/vagrant/src/emscripten/third_party/lzma.js/lzma-decoder.js,LZMA.decompress',
---			'emcc ' .. bin .. '.bc -o ' .. bin .. '.js -O2 -s ASM_JS=1 -s TOTAL_MEMORY=268435456 --preload-file effect --preload-file texture --preload-file model'
+			'cd ${TARGETDIR} ; cp ' .. project().name .. ' ' .. project().name .. '.bc',
+			'cp -r asset/* ${TARGETDIR} || :',
+			-- 'rm bin/release/model/Sponza_lite.mks',
+			'cd ${TARGETDIR} ; emcc ' .. project().name .. '.bc -o ' .. project().name .. '.html -O2 -s ASM_JS=0 -s TOTAL_MEMORY=1073741824 --preload-file effect --preload-file texture  --compression /home/vagrant/src/emscripten/third_party/lzma.js/lzma-native,/home/vagrant/src/emscripten/third_party/lzma.js/lzma-decoder.js,LZMA.decompress'
 		}

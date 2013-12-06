@@ -17,7 +17,7 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "Pass.hpp"
+#include "minko/render/Pass.hpp"
 
 #include "minko/data/Container.hpp"
 #include "minko/render/Program.hpp"
@@ -95,7 +95,7 @@ Pass::selectProgram(std::shared_ptr<data::Container> data,
 						: nullptr;
 
 					if (defaultValue.semantic == data::MacroBindingDefaultValueSemantic::VALUE
-						|| container && container->propertyHasType<int>(propertyName))
+						|| (container && container->propertyHasType<int>(propertyName)))
 					{
 						const auto defaultIntValue = defaultValue.value.value;
 
@@ -124,6 +124,10 @@ Pass::selectProgram(std::shared_ptr<data::Container> data,
 				if (i == signatureValues.size())
 					break;
             }
+
+#ifdef MINKO_NO_GLSL_STRUCT
+			defines += "#define MINKO_NO_GLSL_STRUCT\n";
+#endif // MINKO_NO_GLSL_STRUCT
 
 			// for program template by adding #defines
 			auto vs = Shader::create(

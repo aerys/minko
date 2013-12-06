@@ -17,7 +17,7 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "OpenGLES2Context.hpp"
+#include "minko/render/OpenGLES2Context.hpp"
 
 #include <iomanip>
 #include "minko/render/CompareMode.hpp"
@@ -371,6 +371,10 @@ OpenGLES2Context::uploadVertexBufferData(const uint vertexBuffer,
 void
 OpenGLES2Context::deleteVertexBuffer(const uint vertexBuffer)
 {
+	for (auto& currentVertexBuffer : _currentVertexBuffer)
+		if (currentVertexBuffer == vertexBuffer)
+			currentVertexBuffer = 0;
+
 	_vertexBuffers.erase(std::find(_vertexBuffers.begin(), _vertexBuffers.end(), vertexBuffer));
 
 	// http://www.opengl.org/sdk/docs/man/xhtml/glDeleteBuffers.xml
@@ -468,6 +472,9 @@ OpenGLES2Context::uploaderIndexBufferData(const uint 	indexBuffer,
 void
 OpenGLES2Context::deleteIndexBuffer(const uint indexBuffer)
 {
+	if (_currentIndexBuffer == indexBuffer)
+		_currentIndexBuffer = 0;
+
 	_indexBuffers.erase(std::find(_indexBuffers.begin(), _indexBuffers.end(), indexBuffer));
 
 	glDeleteBuffers(1, &indexBuffer);
@@ -1165,6 +1172,34 @@ OpenGLES2Context::setUniform(const uint& location, const float& v1, const float&
 }
 
 void
+OpenGLES2Context::setUniforms(uint location, uint size, const float* values)
+{
+	glUniform1fv(location, size, values);
+	checkForErrors();
+}
+
+void
+OpenGLES2Context::setUniforms2(uint location, uint size, const float* values)
+{
+	glUniform2fv(location, size, values);
+	checkForErrors();
+}
+
+void
+OpenGLES2Context::setUniforms3(uint location, uint size, const float* values)
+{
+	glUniform3fv(location, size, values);
+	checkForErrors();
+}
+
+void
+OpenGLES2Context::setUniforms4(uint location, uint size, const float* values)
+{
+	glUniform4fv(location, size, values);
+	checkForErrors();
+}
+
+void
 OpenGLES2Context::setUniform(const uint& location, const uint& size, bool transpose, const float* values)
 {
 #ifdef GL_ES_VERSION_2_0
@@ -1182,6 +1217,7 @@ OpenGLES2Context::setUniform(const uint& location, const uint& size, bool transp
         glUniformMatrix4fv(location, size, transpose, values);
     }
 #else
+
 	glUniformMatrix4fv(location, size, transpose, values);
 #endif
 	checkForErrors();

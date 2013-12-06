@@ -17,7 +17,7 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "Canvas.hpp"
+#include "minko/Canvas.hpp"
 
 #include "minko/input/Mouse.hpp"
 
@@ -312,7 +312,7 @@ Canvas::run()
 #ifdef EMSCRIPTEN
 	_canvases.push_back(shared_from_this());
 	if (_canvases.size() == 1)
-		emscripten_set_main_loop(Canvas::step, 0, 1);
+		emscripten_set_main_loop(myUglyLoop, 0, 1);
 #else
 	while (_active)
 		step();

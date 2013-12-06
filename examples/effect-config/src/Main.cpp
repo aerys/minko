@@ -35,7 +35,6 @@ int main(int argc, char** argv)
 	sceneManager->assets()
 		->registerParser<file::JPEGParser>("jpg")
 		->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()))
-		->queue("effect/windows.jpg")
 		->queue("effect/PlatformTexture.effect");
 
 	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
@@ -55,7 +54,7 @@ int main(int argc, char** argv)
 			->addComponent(Transform::create())
 			->addComponent(Surface::create(
 				assets->geometry("cube"),
-				material::Material::create(),
+				material::Material::create()->set("diffuseColor", Vector4::one),
 				assets->effect("effect/PlatformTexture.effect")
 			));
 		root->addChild(mesh);

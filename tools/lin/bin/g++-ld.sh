@@ -7,9 +7,9 @@ STATIC_LIBS=""
 SHARED_LIBS=""
 
 for ARG in "$@"; do
-	if [[ $ARG = *.a ]]; then # Option is not supported
+	if [[ $ARG = *.a ]]; then
 		STATIC_LIBS="${STATIC_LIBS} ${ARG}"
-	elif [[ $ARG = -l* ]]; then # -O3 is not recommended for emscripten
+	elif [[ $ARG = -l* ]]; then
 		SHARED_LIBS="${SHARED_LIBS} ${ARG}"
 	else
 		ARGS="${ARGS} ${ARG}"
