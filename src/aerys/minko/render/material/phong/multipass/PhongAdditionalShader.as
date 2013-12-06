@@ -15,14 +15,14 @@ package aerys.minko.render.material.phong.multipass
         private var _lightId    : int;
         private var _diffuse    : Boolean;
         private var _specular   : Boolean;
-        
+		
         public function PhongAdditionalShader(lightId        : int,
                                               diffuse        : Boolean,
                                               specular       : Boolean,
                                               renderTarget   : RenderTarget  = null,
                                               priority       : Number        = 0.0)
         {
-            super(renderTarget, priority);
+			super(renderTarget, priority);
             
             _phong = new PhongShaderPart(this);
             
@@ -32,11 +32,13 @@ package aerys.minko.render.material.phong.multipass
         }
         
         override protected function initializeSettings(settings : ShaderSettings) : void
-        {
-            super.initializeSettings(settings);
-            
-			settings.blending = Blending.ADDITIVE;
-            settings.depthTest = DepthTest.LESS | DepthTest.EQUAL;
+        {           
+			super.initializeSettings(settings);			
+			
+			settings.blending 	= Blending.ADDITIVE;
+			settings.depthTest 	= DepthTest.LESS | DepthTest.EQUAL;
+			
+			//settings.priority = _priority;
         }
         
         override protected function getPixelColor() : SFloat

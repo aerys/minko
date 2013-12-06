@@ -1,5 +1,7 @@
 package aerys.minko.render.shader.part
 {
+	import flash.geom.Rectangle;
+	
 	import aerys.minko.ns.minko_shader;
 	import aerys.minko.render.geometry.stream.format.VertexComponent;
 	import aerys.minko.render.resource.texture.ITextureResource;
@@ -17,14 +19,7 @@ package aerys.minko.render.shader.part
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Overwriter;
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.VariadicExtract;
 	import aerys.minko.render.shader.compiler.register.Components;
-	import aerys.minko.type.enum.SamplerDimension;
-	import aerys.minko.type.enum.SamplerFiltering;
-	import aerys.minko.type.enum.SamplerFormat;
-	import aerys.minko.type.enum.SamplerMipMapping;
-	import aerys.minko.type.enum.SamplerWrapping;
 	import aerys.minko.type.math.Matrix4x4;
-	
-	import flash.geom.Rectangle;
 
 	/**
 	 * The base class to create ActionScript shader parts.
