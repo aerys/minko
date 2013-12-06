@@ -1,6 +1,6 @@
 -- particles plugin
 if minko.plugin.enabled("particles") then
-	links { "plugin-particles" }
+	minko.plugin.links { "particles" }
 	includedirs { minko.sdk.path("plugins/particles/include") }
 	defines { "MINKO_PLUGIN_PARTICES" }
 	

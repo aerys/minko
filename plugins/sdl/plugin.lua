@@ -1,7 +1,7 @@
 -- sdl plugin
 if minko.plugin.enabled("sdl") then
 
-	links { "plugin-sdl" }
+	minko.plugin.links { "sdl" }
 	defines { "MINKO_PLUGIN_SDL" }
 
 	configuration { "windows" }
