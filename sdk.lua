@@ -1,8 +1,10 @@
 -- set MINKO_HOME
-if os.getenv('MINKO_HOME') then
-	MINKO_HOME = os.getenv('MINKO_HOME');
-else
-	MINKO_HOME = path.getabsolute(os.getcwd())
+if not MINKO_HOME then
+	if os.getenv('MINKO_HOME') then
+		MINKO_HOME = os.getenv('MINKO_HOME');
+	else
+		MINKO_HOME = path.getabsolute(os.getcwd())
+	end
 end
 
 if not os.isfile(MINKO_HOME .. '/sdk.lua') then
@@ -10,6 +12,9 @@ if not os.isfile(MINKO_HOME .. '/sdk.lua') then
 end
 
 printf('Minko SDK home directory: ' .. MINKO_HOME)
+
+-- distributable SDK
+MINKO_SDK_DIST = true
 
 -- import build system utilities
 dofile(MINKO_HOME .. '/tools/all/lib/minko.lua')
