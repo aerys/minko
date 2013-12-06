@@ -1,8 +1,8 @@
 minko.os = {}
 
 minko.os.copyfiles = function(src, dst)
-  assert(os.isdir(src), 'bad argument #1 to os.copyfiles (directory expected)')
-  assert(os.isdir(dst), 'bad argument #2 to os.copyfiles (directory expected)')
+  assert(os.isdir(src), 'bad argument #1 to os.copyfiles "' .. src .. '" (directory expected)')
+  assert(os.isdir(dst), 'bad argument #2 to os.copyfiles "' .. dst .. ' (directory expected)')
   local list = os.matchfiles(path.join(src, '**'))
   
   for _, v in pairs(list) do
