@@ -3,6 +3,7 @@ package aerys.minko.render.material.phong.multipass
     import aerys.minko.render.RenderTarget;
     import aerys.minko.render.material.basic.BasicShader;
     import aerys.minko.render.shader.SFloat;
+    import aerys.minko.render.shader.ShaderOptimization;
     import aerys.minko.render.shader.ShaderSettings;
     import aerys.minko.render.shader.part.phong.PhongShaderPart;
     import aerys.minko.type.enum.Blending;
@@ -24,6 +25,8 @@ package aerys.minko.render.material.phong.multipass
         {
 			super(renderTarget, priority);
             
+			optimization |= ShaderOptimization.RESOLVED_PARAMETRIZATION;
+			
             _phong = new PhongShaderPart(this);
             
             _lightId = lightId;

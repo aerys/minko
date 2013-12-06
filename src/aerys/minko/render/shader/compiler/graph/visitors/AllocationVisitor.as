@@ -3,14 +3,39 @@ package aerys.minko.render.shader.compiler.graph.visitors
 	import aerys.minko.render.Profile;
 	import aerys.minko.render.geometry.stream.format.VertexComponent;
 	import aerys.minko.render.resource.texture.ITextureResource;
-	import aerys.minko.render.shader.binding.*;
-	import aerys.minko.render.shader.compiler.allocation.*;
+	import aerys.minko.render.shader.binding.ConstantBinder;
+	import aerys.minko.render.shader.binding.EvalExp;
+	import aerys.minko.render.shader.binding.EvalExpConstantBinder;
+	import aerys.minko.render.shader.binding.IBinder;
+	import aerys.minko.render.shader.binding.ProxyConstantBinder;
+	import aerys.minko.render.shader.binding.TextureBinder;
+	import aerys.minko.render.shader.compiler.allocation.AllocationStore;
+	import aerys.minko.render.shader.compiler.allocation.Allocator;
+	import aerys.minko.render.shader.compiler.allocation.IAllocation;
+	import aerys.minko.render.shader.compiler.allocation.SimpleAllocation;
 	import aerys.minko.render.shader.compiler.graph.ShaderGraph;
 	import aerys.minko.render.shader.compiler.graph.nodes.AbstractNode;
-	import aerys.minko.render.shader.compiler.graph.nodes.leaf.*;
-	import aerys.minko.render.shader.compiler.graph.nodes.vertex.*;
-	import aerys.minko.render.shader.compiler.register.*;
-	import aerys.minko.render.shader.compiler.sequence.*;
+	import aerys.minko.render.shader.compiler.graph.nodes.leaf.AbstractSampler;
+	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Attribute;
+	import aerys.minko.render.shader.compiler.graph.nodes.leaf.BindableConstant;
+	import aerys.minko.render.shader.compiler.graph.nodes.leaf.BindableSampler;
+	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Constant;
+	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Sampler;
+	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Extract;
+	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Instruction;
+	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Interpolate;
+	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Overwriter;
+	import aerys.minko.render.shader.compiler.graph.nodes.vertex.VariadicExtract;
+	import aerys.minko.render.shader.compiler.register.Components;
+	import aerys.minko.render.shader.compiler.register.RegisterType;
+	import aerys.minko.render.shader.compiler.sequence.AgalDestination;
+	import aerys.minko.render.shader.compiler.sequence.AgalInstruction;
+	import aerys.minko.render.shader.compiler.sequence.AgalSourceCommon;
+	import aerys.minko.render.shader.compiler.sequence.AgalSourceEmpty;
+	import aerys.minko.render.shader.compiler.sequence.AgalSourceSampler;
+	import aerys.minko.render.shader.compiler.sequence.IAgalToken;
+	
+	import avmplus.getQualifiedClassName;
 
 	/**
 	 * @private

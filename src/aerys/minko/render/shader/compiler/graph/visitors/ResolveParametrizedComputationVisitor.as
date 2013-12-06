@@ -115,6 +115,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 				_isComputable[instruction] = _isComputable[instruction.argument1];
 			else
 				_isComputable[instruction] = _isComputable[instruction.argument1] && _isComputable[instruction.argument2];
+
 		}
 		
 		override protected function visitOverwriter(overwriter	   : Overwriter, 
