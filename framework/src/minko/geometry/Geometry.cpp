@@ -17,7 +17,7 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "Geometry.hpp"
+#include "minko/geometry/Geometry.hpp"
 
 #include "minko/math/Vector2.hpp"
 #include "minko/math/Vector3.hpp"

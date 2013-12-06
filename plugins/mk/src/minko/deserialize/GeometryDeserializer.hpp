@@ -20,10 +20,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
-#include "minko/Qark.hpp"
 #include "minko/file/AssetLibrary.hpp"
 #include "minko/file/Options.hpp"
 #include "minko/render/VertexBuffer.hpp"
+#include "minko/Qark.hpp"
 
 namespace minko
 {

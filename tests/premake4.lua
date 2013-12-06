@@ -16,15 +16,7 @@ minko.project.application "minko-tests"
 	links { "googletest" }
 	includedirs { "lib/googletest/include" }
 
-	links { "framework" }
-
-	-- configurations
-	configuration { "debug"}
-		defines { "DEBUG" }
-		flags { "Symbols" }
-		targetdir "bin/debug"
-
-	configuration { "release" }
-		defines { "NDEBUG" }
-		flags { "OptimizeSpeed" }
-		targetdir "bin/release"
+	links {
+		"framework",
+		"pthread"
+	}

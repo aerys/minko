@@ -8,10 +8,11 @@ using namespace minko;
 
 int main(int argc, char **argv)
 {
-	MinkoSDL::initialize("Minko Tests", 640, 480);
+	auto canvas = Canvas::create("Minko Tests", 640, 480);
+
 	::testing::InitGoogleTest(&argc, argv);
 
-	MinkoTests::context(MinkoSDL::context());
+	MinkoTests::context(canvas->context());
 
 	return RUN_ALL_TESTS();
 }

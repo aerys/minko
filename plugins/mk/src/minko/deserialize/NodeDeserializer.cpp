@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/Surface.hpp"
 #include "minko/component/Transform.hpp"
 #include "minko/math/Matrix4x4.hpp"
-
+#include "minko/Qark.hpp"
 #include "minko/deserialize/GeometryDeserializer.hpp"
 #include "minko/deserialize/TypeDeserializer.hpp"
 #include "minko/file/MkOptions.hpp"

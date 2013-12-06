@@ -10,24 +10,15 @@ minko.project.library "plugin-mk"
 		"src/**.hpp",
 		"src/**.h",
 		"src/**.cpp",
-		"src/**.c",
-		"lib/msgpack-c/src/**.cpp",
-		"lib/msgpack-c/src/**.h"
+		"src/**.c"
+		-- "lib/msgpack-c/src/**.cpp",
+		-- "lib/msgpack-c/src/**.h"
 	}
 	includedirs {
+		"include",
 		"src",
 		"lib/msgpack-c/src"
 	}
-
-	configuration { "debug"}
-		defines { "DEBUG" }
-		flags { "Symbols" }
-		targetdir "bin/debug"
-
-	configuration { "release" }
-		defines { "NDEBUG" }
-		flags { "OptimizeSpeed" }
-		targetdir "bin/release"
 
 	configuration { "windows" }
 		-- msgpack
@@ -50,5 +41,5 @@ minko.project.library "plugin-mk"
 
 	configuration { "linux" }
 		buildoptions {
-			"-Wdeprecated-declarations"
+			"-Wno-deprecated-declarations"
 		}

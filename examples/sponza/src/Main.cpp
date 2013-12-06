@@ -26,6 +26,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/MinkoSDL.hpp"
 
 #include "minko/deserialize/TypeDeserializer.hpp"
+#include "minko/component/bullet/ColliderData.hpp"
 
 #include "minko/component/Fire.hpp"
 
