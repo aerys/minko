@@ -11,8 +11,10 @@ project "framework"
 		"assets/**"
 	}
 	includedirs {
+		"include",
 		"src"
 	}
+	
 	-- json cpp
 	files {
 		"lib/jsoncpp/src/**.cpp",
@@ -26,23 +28,22 @@ project "framework"
 	defines {
 		"JSON_IS_AMALGAMATION"
 	}
-	
-	-- plugins
-	minko.plugin.import("angle")
 
 	configuration { "debug"}
 		defines { "DEBUG" }
 		flags { "Symbols" }
-		targetdir "bin/debug"
+		targetdir("bin/debug/" .. os.get())
 
 	configuration { "release" }
 		defines { "NDEBUG" }
-		flags { "OptimizeSpeed" }
-		targetdir "bin/release"
+		flags { "Optimize" } -- { "OptimizeSpeed" }
+		targetdir("bin/release/" .. os.get())
+	
+	-- plugins
+	minko.plugin.import("angle")
 
 	-- linux
 	configuration { "linux" }
-		links { "GL", "GLU" }
 		buildoptions { "-std=c++11" }
 
 	-- windows
@@ -59,7 +60,6 @@ project "framework"
 	configuration { "macosx" }
 		buildoptions { "-std=c++11 -stdlib=libc++" }
 		includedirs { "../deps/mac/include" }
-		libdirs { "../deps/mac/lib" }
 
 	-- emscripten
 	configuration { "emscripten" }

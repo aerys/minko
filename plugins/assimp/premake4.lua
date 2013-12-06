@@ -7,7 +7,12 @@ minko.project.library "plugin-assimp"
 	kind "StaticLib"
 	language "C++"
 	files { "src/**.hpp", "src/**.h", "src/**.cpp", "src/**.c" }
-	includedirs { "src" }
+	includedirs {
+		"include",
+		"src"
+	}
+	
+	defines { "DEBUG_SKINNING" }
 	
 	-- assimp lib
 	files {

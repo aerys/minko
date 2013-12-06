@@ -17,7 +17,7 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "PerspectiveCamera.hpp"
+#include "minko/component/PerspectiveCamera.hpp"
 
 #include "minko/scene/Node.hpp"
 #include "minko/math/Matrix4x4.hpp"
@@ -43,11 +43,6 @@ PerspectiveCamera::PerspectiveCamera(float fov,
   	_viewProjection(Matrix4x4::create()->copyFrom(_projection)),
     _position(Vector3::create())
 {
-	_data
-		->set("position",				_position)
-  		->set("viewMatrix",				_view)
-  		->set("projectionMatrix",		_projection)
-  		->set("worldToScreenMatrix",	_viewProjection);
 }
 
 void
@@ -66,6 +61,12 @@ PerspectiveCamera::initialize()
 		std::placeholders::_1,
 		std::placeholders::_2
 	));
+
+	_data
+		->set("position",				_position)
+  		->set("viewMatrix",				_view)
+  		->set("projectionMatrix",		_projection)
+  		->set("worldToScreenMatrix",	_viewProjection);
 }
 
 void

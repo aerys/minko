@@ -63,6 +63,7 @@ int main(int argc, char** argv)
 	auto sphereGeometry		= geometry::SphereGeometry::create(sceneManager->assets()->context(), 32, 32, true);
 	auto sphereMaterial		= material::Material::create()
 		->set("diffuseColor",	Vector4::create(1.f, 1.f, 1.f, 1.f))
+		->set("specularColor",	Vector4::create(0.0f, 1.0f, 1.0f, 1.0f))
 		->set("shininess",		16.f);
 	auto lights				= scene::Node::create("lights");
 
