@@ -16,4 +16,7 @@ minko.project.application "minko-tests"
 	links { "googletest" }
 	includedirs { "lib/googletest/include" }
 
-	links { "framework" }
+	links {
+		"framework",
+		"pthread"
+	}
