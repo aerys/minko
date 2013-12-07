@@ -8,6 +8,7 @@ project "minko-framework"
 	files {
 		"src/**.hpp",
 		"src/**.cpp",
+		"include/**.hpp",
 		"assets/**"
 	}
 	includedirs {
