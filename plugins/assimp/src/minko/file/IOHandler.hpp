@@ -53,9 +53,9 @@ namespace minko
 			bool
 			Exists(const char*  pFile) const
 			{
-				std::ifstream f(std::string(pFile));
+				std::ifstream f(pFile);
 
-				return !!f;
+				return (bool)f;
 			}
 
 			char
