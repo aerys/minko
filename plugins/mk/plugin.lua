@@ -1,7 +1,7 @@
 -- mk plugin
 if minko.plugin.enabled("mk") then
 
-	links { "plugin-mk" }
+	minko.plugin.links { "mk" }
 	includedirs {
 		minko.sdk.path("plugins/mk/include"),
 		minko.sdk.path("plugins/mk/lib/msgpack-c/src")
