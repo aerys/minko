@@ -23,20 +23,30 @@ void main(void)
 		vertexUV = uv;
 	#endif // defined DIFFUSE_MAP || defined NORMAL_MAP || defined SPECULAR_MAP
 
-	vec4 worldPosition = vec4(position, 1.0);
+	vec4 worldPosition 	= vec4(position, 1.0);
+	
+	#ifdef NUM_BONES
+		worldPosition	= skinning_moveVertex(worldPosition);
+	#endif // NUM_BONES
+	
 	#ifdef MODEL_TO_WORLD
-		worldPosition = modelToWorldMatrix * worldPosition;
+		worldPosition 	= modelToWorldMatrix * worldPosition;
 	#endif // MODEL_TO_WORLD
 	
 	#if defined NUM_DIRECTIONAL_LIGHTS || defined NUM_POINT_LIGHTS || defined NUM_SPOT_LIGHTS
 	
 		vertexPosition	= worldPosition.xyz;
 		
-		vertexNormal = normal;				
+		vertexNormal	= normal;		
+
+		#ifdef NUM_BONES
+			vertexNormal	= skinning_moveVertex(vec4(normal, 0.0)).xyz;
+		#endif // NUM_BONES
+		
 		#ifdef MODEL_TO_WORLD
-			vertexNormal = mat3(modelToWorldMatrix) * vertexNormal;
+			vertexNormal 	= mat3(modelToWorldMatrix) * vertexNormal;
 		#endif // MODEL_TO_WORLD
-		vertexNormal = normalize(vertexNormal);
+		vertexNormal 	= normalize(vertexNormal);
 		
 		#ifdef NORMAL_MAP
 			vertexTangent = tangent;
