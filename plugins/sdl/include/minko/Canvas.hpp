@@ -28,19 +28,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/AbstractCanvas.hpp"
 #include "minko/input/Mouse.hpp"
 
-#if defined(EMSCRIPTEN)
-# include "minko/MinkoWebGL.hpp"
-# include "SDL/SDL.h"
-# include "emscripten.h"
-#elif defined(MINKO_ANGLE)
-# include "SDL2/SDL.h"
-# include "SDL2/SDL_syswm.h"
-# include <EGL/egl.h>
-# include <GLES2/gl2.h>
-# include <GLES2/gl2ext.h>
-#else
-# include "SDL2/SDL.h"
-#endif
+struct SDL_Window;
+typedef unsigned char Uint8;
 
 namespace minko
 {
