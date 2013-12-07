@@ -1,4 +1,4 @@
-#include "StartSprite.hpp"
+#include "minko/particle/modifier/StartSprite.hpp"
 #include "minko/data/Provider.hpp"
 #include "minko/particle/ParticleData.hpp"
 #include "minko/particle/sampler/Sampler.hpp"
