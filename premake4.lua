@@ -111,7 +111,7 @@ newaction {
 			os.mkdir(dir)
 			os.copyfile(basedir .. '/plugin.lua', dir .. '/plugin.lua')
 
-			if solution()['projects']['plugin-' .. pluginName] then
+			if solution()['projects']['minko-plugin-' .. pluginName] then
 				-- bin
 				assert(os.isdir(basedir .. '/bin/debug'), 'missing debug folder')
 				assert(os.isdir(basedir .. '/bin/release'), 'missing release folder')
