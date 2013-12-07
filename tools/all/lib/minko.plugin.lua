@@ -36,7 +36,7 @@ minko.plugin.links = function(names)
 
 	for _, name in ipairs(names) do
 
-		local projectName = "plugin-" .. name
+		local projectName = "minko-plugin-" .. name
 
 		if MINKO_SDK_DIST then
 			configuration { 'debug' }
@@ -44,7 +44,7 @@ minko.plugin.links = function(names)
 			configuration { 'release' }
 				links { minko.sdk.path('plugins/' .. name .. '/bin/release/' .. minko.sdk.gettargetplatform() .. '/' .. projectName) }
 		else
-			links { "plugin-" .. name }
+			links { projectName }
 		end
 
 	end
