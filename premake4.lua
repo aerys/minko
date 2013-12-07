@@ -30,7 +30,9 @@ solution "minko"
 	include 'plugins/angle'
 	include 'plugins/fx'
 	include 'plugins/assimp'
-	include 'plugins/offscreen'
+	if os.get() == 'linux' then
+		include 'plugins/offscreen'
+	end
 	if _OPTIONS["platform"] == "emscripten" then
 		include 'plugins/webgl'
 	end
