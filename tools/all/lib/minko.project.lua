@@ -46,7 +46,7 @@ minko.project.application = function(name)
 		configuration { "release"}
 			links { minko.sdk.path("framework/bin/release/" .. minko.sdk.gettargetplatform() .. "/framework") }
 	else
-		links { "framework" }
+		links { "minko-framework" }
 	end
 
 	configuration { "debug"}

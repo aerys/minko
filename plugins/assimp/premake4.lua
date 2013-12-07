@@ -3,7 +3,9 @@ newoption {
 	description = "Enable the Minko ASSIMP plugin."
 }
 
-minko.project.library "plugin-assimp"
+PROJECT_NAME = path.getname(os.getcwd())
+
+minko.project.library("minko-plugin-" .. PROJECT_NAME)
 	kind "StaticLib"
 	language "C++"
 	files { "src/**.hpp", "src/**.h", "src/**.cpp", "src/**.c" }
