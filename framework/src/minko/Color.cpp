@@ -19,10 +19,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Color.hpp"
 
+#include "minko/math/Vector4.hpp"
+
 using namespace minko;
 using namespace minko::math;
-
-#include "minko/math/Vector4.hpp"
 
 Vector4::Ptr
 Color::hslaToRgba(float h, float s, float l, float a, Vector4::Ptr out)

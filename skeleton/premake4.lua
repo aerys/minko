@@ -19,5 +19,4 @@ minko.project.solution(PROJECT_NAME)
 		--minko.plugin.enable("mk")
 		--minko.plugin.enable("particles")
 		--minko.plugin.enable("png")
-		--minko.plugin.enable("sdl")
 

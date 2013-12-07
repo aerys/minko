@@ -27,9 +27,9 @@ void main(void)
 
 	#ifdef NUM_BONES
 	
-		posVector = performSkinning(posVector);
+		posVector = skinning_moveVertex(posVector);
 		#ifdef HAS_NORMAL
-			normalVec = normalize(performSkinning(normalVec));
+			normalVec = normalize(skinning_moveVertex(normalVec));
 		#endif // HAS_NORMAL
 		
 	#endif // NUM_BONES
