@@ -17,7 +17,7 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "PointLight.hpp"
+#include "minko/component/PointLight.hpp"
 
 #include "minko/math/Vector4.hpp"
 #include "minko/math/Matrix4x4.hpp"

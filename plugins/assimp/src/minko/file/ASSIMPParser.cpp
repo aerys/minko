@@ -17,13 +17,14 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "ASSIMPParser.hpp"
+#include "minko/file/ASSIMPParser.hpp"
 
 #include "IOHandler.hpp"
 
 #include "assimp/Importer.hpp"      // C++ importer interface
 #include "assimp/scene.h"           // Output data structure
 #include "assimp/postprocess.h"     // Post processing flags
+#include "assimp/material.h"
 
 #include "minko/scene/Node.hpp"
 #include "minko/component/Transform.hpp"
@@ -340,7 +341,7 @@ ASSIMPParser::createMeshSurface(scene::Node::Ptr minkoNode, const aiScene* scene
 
 	for (auto& typeAndString : _textureTypeToName)
 	{
-		if ((texFound = material->GetTexture(typeAndString.first, 0, &path)) == AI_SUCCESS)
+		if ((texFound = material->GetTexture(static_cast<aiTextureType>(typeAndString.first), 0, &path)) == AI_SUCCESS)
 		{
 			auto texturePath = std::string(path.data);
 			auto texture = _assetLibrary->texture(texturePath);
@@ -447,7 +448,7 @@ ASSIMPParser::parseDependencies(const std::string& 	filename,
 	{
 		for (auto& textureTypeAndName : _textureTypeToName)
 		{
-			aiReturn texFound = scene->mMaterials[m]->GetTexture(textureTypeAndName.first, 0, &path);
+			aiReturn texFound = scene->mMaterials[m]->GetTexture(static_cast<aiTextureType>(textureTypeAndName.first), 0, &path);
 
 			if (texFound == AI_SUCCESS)
 			{
