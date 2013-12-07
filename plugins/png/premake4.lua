@@ -8,6 +8,7 @@ minko.project.library "plugin-png"
 	language "C++"
 	files { "**.hpp", "**.h", "**.cpp", "**.c" }
 	includedirs {
+		"include",
 		"src",
 		"lib/lodepng/src"
 	}

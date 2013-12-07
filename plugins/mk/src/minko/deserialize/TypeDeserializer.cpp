@@ -17,7 +17,7 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "TypeDeserializer.hpp"
+#include "minko/deserialize/TypeDeserializer.hpp"
 #include "minko/math/Matrix4x4.hpp"
 #include "minko/Any.hpp"
 #include "minko/data/Provider.hpp"
