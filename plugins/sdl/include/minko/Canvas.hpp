@@ -94,12 +94,12 @@ namespace minko
 		float								_desiredFramerate;
 
 		Signal<Ptr, uint, uint>::Ptr		_enterFrame;
-		Signal<Ptr, const Uint8*>::Ptr		_keyDown;
 		Signal<Ptr, int, int, int>::Ptr		_joystickMotion;
 		Signal<Ptr, int>::Ptr				_joystickButtonDown;
 		Signal<Ptr, int>::Ptr				_joystickButtonUp;
 		Signal<Ptr, uint, uint>::Ptr		_resized;
 		std::shared_ptr<SDLMouse>			_mouse;
+        std::shared_ptr<input::Keyboard>    _keyboard;
 
 	public:
 		static inline
@@ -163,13 +163,6 @@ namespace minko
 		}
 
 		inline
-		Signal<Ptr, const Uint8*>::Ptr
-		keyDown() const
-		{
-			return _keyDown;
-		}
-
-		inline
 		Signal<Ptr, int, int, int>::Ptr
 		joystickMotion() const
 		{
@@ -196,6 +189,13 @@ namespace minko
 		{
 			return _mouse;
 		}
+
+        inline
+        std::shared_ptr<input::Keyboard>
+        keyboard()
+        {
+            return _keyboard;
+        }
 
 		inline
 		Signal<Ptr, uint, uint>::Ptr
@@ -259,13 +259,10 @@ namespace minko
 		initialize();
 
 		void
-		initializeMouse();
+		initializeInputs();
 
 		void
 		initializeContext(const std::string& windowTitle, unsigned int width, unsigned int height, bool useStencil);
-
-		void
-		initializeJoysticks();
 
 #ifdef MINKO_ANGLE
 		ESContext*
