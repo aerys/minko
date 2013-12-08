@@ -233,6 +233,7 @@ namespace minko
 	namespace input
 	{
 		class Mouse;
+        class Keyboard;
 	}
 }
 
