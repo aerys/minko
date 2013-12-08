@@ -19,6 +19,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Canvas.hpp"
 #include "minko/input/Mouse.hpp"
+#include "minko/input/Keyboard.hpp"
 
 #if defined(EMSCRIPTEN)
 # include "minko/MinkoWebGL.hpp"
@@ -45,7 +46,6 @@ Canvas::Canvas(const std::string& name, const uint width, const uint height, boo
 	_framerate(0.f),
 	_desiredFramerate(60.f),
 	_enterFrame(Signal<Canvas::Ptr, uint, uint>::create()),
-	_keyDown(Signal<Canvas::Ptr, const Uint8*>::create()),
 	_joystickMotion(Signal<Canvas::Ptr, int, int, int>::create()),
 	_joystickButtonDown(Signal<Canvas::Ptr, int>::create()),
 	_joystickButtonUp(Signal<Canvas::Ptr, int>::create()),
@@ -57,14 +57,22 @@ void
 Canvas::initialize()
 {
 	initializeContext(_name, _width, _height, _useStencil);
-	initializeMouse();
-	initializeJoysticks();
+	initializeInputs();
 }
 
 void
-Canvas::initializeMouse()
+Canvas::initializeInputs()
 {
 	_mouse = Canvas::SDLMouse::create(shared_from_this());
+    _keyboard = input::Keyboard::create();
+
+    for (int i = 0; i < SDL_NumJoysticks(); ++i)
+    {
+        SDL_Joystick* joystick = SDL_JoystickOpen(i);
+
+        if (!joystick)
+            continue;
+    }
 }
 
 void
@@ -200,19 +208,6 @@ Canvas::initContext(SDL_Window* window, unsigned int width, unsigned int height)
 #endif
 
 void
-Canvas::initializeJoysticks()
-{
-	for (int i = 0; i < SDL_NumJoysticks(); ++i)
-	{
-		SDL_Joystick* joystick = SDL_JoystickOpen(i);
-
-		if (!joystick)
-			continue;
-	}
-
-}
-
-void
 Canvas::step()
 {
 	auto stepStartTime = std::clock();
@@ -232,9 +227,19 @@ Canvas::step()
 		{
 			const Uint8* keyboardState = SDL_GetKeyboardState(NULL);
 
-			_keyDown->execute(shared_from_this(), keyboardState);
+			//_keyDown->execute(shared_from_this(), keyboardState);
+            _keyboard->keyDown()->execute(_keyboard, keyboardState);
 			break;
 		}
+
+        case SDL_KEYUP:
+        {
+            const Uint8* keyboardState = SDL_GetKeyboardState(NULL);
+
+            //_keyDown->execute(shared_from_this(), keyboardState);
+            _keyboard->keyUp()->execute(_keyboard, keyboardState);
+            break;
+        }
 
 		case SDL_MOUSEMOTION:
 		{

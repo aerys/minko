@@ -52,5 +52,9 @@ namespace minko
 		virtual
 		std::shared_ptr<input::Mouse>
 		mouse() = 0;
+
+        virtual
+        std::shared_ptr<input::Keyboard>
+        keyboard() = 0;
 	};
 }

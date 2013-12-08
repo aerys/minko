@@ -119,9 +119,9 @@ int main(int argc, char** argv)
 		root->addChild(lights);
 
 		// handle keyboard signals
-		auto keyDown = canvas->keyDown()->connect([&](Canvas::Ptr canvas, const Uint8* keyboard)
+		auto keyDown = canvas->keyboard()->keyDown()->connect([&](input::Keyboard::Ptr k, input::Keyboard::State s)
 		{
-			if (keyboard[SDL_SCANCODE_A])
+			if (s[input::Keyboard::ScanCode::A])
 			{
 				const auto MAX_NUM_LIGHTS = 40;
 
@@ -144,7 +144,7 @@ int main(int argc, char** argv)
 
 				std::cout << lights->children().size() << " lights" << std::endl;
 			}
-			if (keyboard[SDL_SCANCODE_R])
+			if (s[input::Keyboard::ScanCode::R])
 			{
 				if (lights->children().size() == 0)
 					return;
@@ -152,7 +152,7 @@ int main(int argc, char** argv)
 				lights->removeChild(lights->children().back());
 				std::cout << lights->children().size() << " lights" << std::endl;
 			}
-			if (keyboard[SDL_SCANCODE_SPACE])
+			if (s[input::Keyboard::ScanCode::SPACE])
 			{
 				auto data = sphere->component<Surface>()->material();
 				bool hasNormalMap = data->hasProperty("normalMap");
@@ -166,9 +166,9 @@ int main(int argc, char** argv)
 				else
 					data->set("normalMap", assets->texture("texture/normalmap-cells.png"));
 			}
-			if (keyboard[SDL_SCANCODE_UP])
+			if (s[input::Keyboard::ScanCode::UP])
 				camera->component<Transform>()->transform()->prependTranslation(0.f, 0.f, -1.f);
-			if (keyboard[SDL_SCANCODE_DOWN])
+			if (s[input::Keyboard::ScanCode::DOWN])
 				camera->component<Transform>()->transform()->prependTranslation(0.f, 0.f, 1.f);
 		});
 
