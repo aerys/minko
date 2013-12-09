@@ -50,8 +50,7 @@ LuaScript::initialize()
 
     auto name = _scriptName.c_str();
 
-    _state.Class<LuaStub>(name);
-    _state.open().glue();
+    _state.Class<LuaStub>(name).end().glue();
 
     _class = _state.lookupClass(name);
 }
@@ -59,41 +58,15 @@ LuaScript::initialize()
 void
 LuaScript::loadScript(const std::string& script)
 {
-    if (luaL_loadstring(_state.state(), script.c_str()))
-    {
-        auto error = lua_tostring(_state.state(), -1);
-        
-        std::cerr << error << std::endl;
-        throw std::runtime_error(error);
-    }
-    if (lua_pcall(_state.state(), 0, 0, 0))
-    {
-        auto error = lua_tostring(_state.state(), -1);
-
-        std::cerr << error << std::endl;
-        throw std::runtime_error(error);
-    }
+    if(!_state.doString(script))
+        printf("err: %s\n", _state.lastError().c_str());
 }
 
 void
 LuaScript::runScriptMethod(const std::string& methodName, scene::Node::Ptr target)
 {
     //std::cout << "lua: " << methodName << ", " << target.get() << std::endl;
-    dynamic_cast<LuaGlueClass<LuaScript::LuaStub>*>(_class)->invokeVoidMethod(methodName.c_str(), &_stub, target);
-    //class->invokeVoidMethod(methodName.c_str(), &_stub, target);
-
-    /*
-    lua_getglobal(_state.state(), _scriptName.c_str());
-    auto index = lua_gettop(_state.state());
-    lua_getfield(_state.state(), index, methodName.c_str());
-    if (lua_isfunction(_state.state(), -1))
-    {
-        lua_pushvalue(_state.state(), -2);
-        lua_pushstring(_state.state(), target->name().c_str());
-        if (lua_pcall(_state.state(), 2, 0, 0) != 0)
-            std::cerr << "error running function '" << methodName << "': " << lua_tostring(_state.state(), -1) << std::endl;
-    }
-    */
+    dynamic_cast<LuaGlueClass<LuaScript::LuaStub>*>(_class)->invokeVoidMethod(methodName, &_stub, target);
 }
 
 void
@@ -164,14 +137,14 @@ LuaScript::initializeLuaBindings()
         .end()
         .Class<data::Container>("Container")
             //.method("create",       &data::Container::create)
-            .method("hasProperty",  &data::Container::hasProperty)
+            //.method("hasProperty",  &data::Container::hasProperty)
             .method("getFloat",     &data::Container::get<float>)
             .method("getInt",       &data::Container::get<int>)
             .method("getUint",      &data::Container::get<unsigned int>)
             .method("getMatrix4x4", &data::Container::get<math::Matrix4x4::Ptr>)
         .end()
         .Class<scene::Node>("Node")
-            .method("getName",          static_cast<const std::string& (scene::Node::*)(void)>(&scene::Node::name))
+            //.method("getName",          static_cast<const std::string& (scene::Node::*)(void)>(&scene::Node::name))
             .method("setName",          static_cast<void (scene::Node::*)(const std::string&)>(&scene::Node::name))
             .method("getData",          &scene::Node::data)
             .method("addChild",         &scene::Node::addChild)
