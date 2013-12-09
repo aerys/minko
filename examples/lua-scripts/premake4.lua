@@ -1,7 +1,7 @@
 minko.project.application "example-lua-scripts"
 	kind "ConsoleApp"
 	language "C++"
-	files { "src/**.hpp", "src/**.cpp" }
+	files { "src/**.hpp", "src/**.cpp", "asset/**" }
 	includedirs { "src"	}
 	
 	minko.plugin.enable("sdl")
