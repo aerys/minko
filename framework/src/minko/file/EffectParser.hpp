@@ -149,7 +149,7 @@ namespace minko
 							  std::shared_ptr<render::AbstractContext>	context,
 							  TexturePtrMap&							targets,
 							  std::shared_ptr<render::States>			defaultStates,
-							  unsigned int								priority);
+							  float										priority);
 
 			void
 			parseDefaultValues(const Json::Value& root);
@@ -181,7 +181,7 @@ namespace minko
 						render::Shader::Type 			type);
 
 			void
-				parseBindingNameAndSource(const Json::Value& contextNode, std::string& name, data::BindingSource& source);
+			parseBindingNameAndSource(const Json::Value& contextNode, std::string& name, data::BindingSource& source);
 
 			void
 			parseBindings(const Json::Value&		contextNode,
@@ -208,6 +208,9 @@ namespace minko
 			loadTexture(const std::string&				textureFilename,
 						UniformTypeAndValue&			uniformTypeAndValue,
 						std::shared_ptr<file::Options>	options);
+
+			float
+			parsePriority(const Json::Value&, float defaultPriority);
 
 			void
 			parseBlendMode(const Json::Value&				contextNode,
