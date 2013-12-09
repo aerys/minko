@@ -113,7 +113,7 @@ ASSIMPParser::parse(const std::string&					filename,
 {
 	resetParser();
 
-	int pos = resolvedFilename.find_last_of(file::separator);
+	int pos = resolvedFilename.find_last_of("\\/");
 
 	if (pos > 0)
 	{
@@ -518,7 +518,7 @@ ASSIMPParser::loadTexture(const std::string&	textureFilename,
 
 	_loaderErrorSlots[loader] = loader->error()->connect([&](file::AbstractLoader::Ptr loader)
 	{
-		auto pos = loader->filename().find_last_of(file::separator);
+		auto pos = loader->filename().find_last_of("\\/");
 
 		if (pos != std::string::npos)
 		{
