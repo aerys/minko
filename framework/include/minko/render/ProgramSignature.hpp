@@ -42,10 +42,14 @@ namespace minko
 			}
 			
 			void
-			build(const data::MacroBindingMap&		macroBindings,
-				  std::shared_ptr<data::Container>	data,
-				  std::shared_ptr<data::Container>	rendererData,
-				  std::shared_ptr<data::Container>	rootData);
+			build(const data::MacroBindingMap&			macroBindings,
+				  std::shared_ptr<data::Container>		data,
+				  std::shared_ptr<data::Container>		rendererData,
+				  std::shared_ptr<data::Container>		rootData,
+				  std::string&							defines,
+				  std::list<data::ContainerProperty>&	booleanMacros,
+				  std::list<data::ContainerProperty>&	integerMacros,
+				  std::list<data::ContainerProperty>&	incorrectIntegerMacros);
 
 			bool 
 			operator==(const ProgramSignature&) const;
@@ -69,15 +73,6 @@ namespace minko
 
 namespace std
 {
-	template <class T>
-	inline 
-	void 
-	hash_combine(std::size_t & seed, const T& v)
-	{
-		std::hash<T> hasher;
-		seed ^= hasher(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-	}
-
 	template<> struct hash<minko::render::ProgramSignature>
 	{
 		inline
