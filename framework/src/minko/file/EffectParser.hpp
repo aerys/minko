@@ -149,7 +149,7 @@ namespace minko
 							  std::shared_ptr<render::AbstractContext>	context,
 							  TexturePtrMap&							targets,
 							  std::shared_ptr<render::States>			defaultStates,
-							  float										priority);
+							  float										priorityOffset);
 
 			void
 			parseDefaultValues(const Json::Value& root);
