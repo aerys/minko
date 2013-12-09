@@ -1,0 +1,160 @@
+// phong effect used for fallback tests
+{
+	"name"	: "phong-fallback",
+	
+	"attributeBindings"	: {
+		"position"				: "geometry.vertex.attribute.position",
+		"uv"					: "geometry.vertex.attribute.uv",
+		"normal"				: "geometry.vertex.attribute.normal",
+		"tangent"				: "geometry.vertex.attribute.tangent"
+	},
+	
+	"uniformBindings"	: {
+		"diffuseColor"			: "material.diffuseColor",
+		"diffuseMap"			: "material.diffuseMap",
+		"alphaMap"				: "material.alphaMap",
+		"alphaThreshold"		: "material.alphaThreshold",
+		"normalMap"				: "material.normalMap",
+		"specularMap"			: "material.specularMap",
+		"specularColor"			: { "property" : "material.specularColor", "default" : [ 1.0, 1.0, 1.0, 1.0 ] },
+		"environmentMap"		: "material.environmentMap",
+		"environmentAlpha"		: "material.environmentAlpha",
+		"shininess"				: "material.shininess",
+		"modelToWorldMatrix"	: "transform.modelToWorldMatrix",
+		"worldToScreenMatrix"	: { "property" : "camera.worldToScreenMatrix", "source" : "renderer" },
+		"cameraPosition"		: { "property" : "camera.position", "source" : "renderer" }
+	},
+	
+	"stateBindings"	: {
+		"blendMode"				: "material.blendMode",
+		"colorMask"				: "material.colorMask",
+		"stencilFunc"			: "material.stencilFunc",
+		"stencilRef"			: "material.stencilRef",
+		"stencilMask"			: "material.stencilMask",
+		"stencilFailOp"			: "material.stencilFailOp",
+		"stencilZFailOp"		: "material.stencilZFailOp",
+		"stencilZPassOp"		: "material.stencilZPassOp",
+		"triangleCulling"		: "material.triangleCulling"
+	},
+
+	"macroBindings"	: {
+		"DIFFUSE_MAP"			: "material.diffuseMap",
+		"NORMAL_MAP"			: "material.normalMap",
+		"SPECULAR_MAP"			: "material.specularMap",
+		"ALPHA_MAP"				: "material.alphaMap",
+		"ALPHA_THRESHOLD"		: "material.alphaThreshold",
+		"ENVIRONMENT_MAP"		: "material.environmentMap",
+		"ENVIRONMENT_ALPHA"		: "material.environmentAlpha",
+		"SHININESS"				: "material.shininess",
+		"MODEL_TO_WORLD"		: "transform.modelToWorldMatrix"
+	},
+
+	"samplerStates" : {
+		"diffuseMap"	: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" },
+		"normalMap"		: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" },
+		"specularMap"	: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" }
+	},
+	
+	"defaultTechnique" : "single-pass",
+	"colorMask"			: true,
+	"stencilTest"		: ["always", 0, 1, ["keep", "keep", "keep"]],
+	
+	"passes" : [
+		{
+			"name"	: "inaccessible-global-fallback-pass",
+			"vertexShader"		: { "includes"	: ["Basic.vertex.glsl"] },
+			"fragmentShader"	: { "includes"	: ["Basic.fragment.glsl"] }
+		}
+	],
+	
+	"techniques" : [
+		{
+			"name"				: "single-pass",
+			"fallback" 			: "constrained-grey-basic",
+			"blendMode"			: ["one", "zero"],
+			"depthTest"			: [true, "less_equal"],
+			"triangleCulling"	: "back",
+			
+			"uniformBindings" : {
+				"ambientLights"				: { "property" : "ambientLights", "source" : "root" },
+				"directionalLights"			: { "property" : "directionalLights", "source" : "root" },
+				"spotLights"				: { "property" : "spotLights", "source" : "root" },
+				"pointLights"				: { "property" : "pointLights", "source" : "root" }
+			},
+			
+			"macroBindings" : {
+				"NUM_AMBIENT_LIGHTS"		: { "property" : "ambientLights.length", "source" : "root" },
+				"PRECOMPUTED_AMBIENT"		: { "property" : "sumAmbients", "source" : "root" },
+				"NUM_DIRECTIONAL_LIGHTS"	: { "property" : "directionalLights.length", "source" : "root", "max" : 8 },
+				"NUM_POINT_LIGHTS"			: { "property" : "pointLights.length", "source" : "root", "max" : 8 },
+				"NUM_SPOT_LIGHTS"			: { "property" : "spotLights.length", "source" : "root", "max" : 8 }
+			},
+				
+			"passes"	: [{
+				"vertexShader" : { "includes" : [ "Phong.vertex.glsl" ] },
+				"fragmentShader" : { "includes" : [ "Phong.struct.glsl", "Phong.function.glsl", "Phong.fragment.glsl" ] }
+			}]
+		},
+		{
+			"name"				: "single-pass-no-glsl-struct",
+			"fallback" 			: "constrained-grey-basic",
+			"blendMode"			: ["one", "zero"],
+			"depthTest"			: [true, "less_equal"],
+			"triangleCulling"	: "back",
+			
+			"configuration"		: [ "no-glsl-struct" ],
+			
+			"uniformBindings" : {
+				"ambientLights"				: { "property" : "ambientLights", "source" : "root" },
+				"directionalLights"			: { "property" : "directionalLights", "source" : "root" },
+				"spotLights"				: { "property" : "spotLights", "source" : "root" },
+				"pointLights"				: { "property" : "pointLights", "source" : "root" }
+			},
+			
+			"macroBindings" : {
+				"NUM_AMBIENT_LIGHTS"		: { "property" : "ambientLights.length", "source" : "root" },
+				"PRECOMPUTED_AMBIENT"		: { "property" : "sumAmbients", "source" : "root" },
+				"NUM_DIRECTIONAL_LIGHTS"	: { "property" : "directionalLights.length", "source" : "root", "max" : 8 },
+				"NUM_POINT_LIGHTS"			: { "property" : "pointLights.length", "source" : "root", "max" : 8 },
+				"NUM_SPOT_LIGHTS"			: { "property" : "spotLights.length", "source" : "root", "max" : 8 }
+			},
+				
+			"passes"	: [{
+				"vertexShader" : { "includes" : [ "Phong.vertex.glsl" ] },
+				"fragmentShader" : { "includes" : [ "Phong.struct.glsl", "Phong.function.glsl", "Phong.fragment.glsl" ] }
+			}]
+		},
+		{
+			"name" 		: "constrained-grey-basic",
+			"fallback"	: "basic",
+			
+			"passes" 	: [{
+				"name"				: "constrained-basic-pass",
+				"priority"			: 25.0,
+				"fallback"			: "inaccessible-global-fallback-pass",
+				"macroBindings"		: { 
+					"NUM_SPOT_LIGHTS"	: { "property" : "pointLights.length", "source" : "root", "max" : 9 }
+				},
+				"vertexShader"		: { "includes"	: ["Basic.vertex.glsl"] },
+				"fragmentShader"	: 
+				"
+#ifdef GL_ES
+	precision mediump float;
+#endif
+void main(void)
+{
+	gl_FragColor = vec4(0.5, 0.5, 0.5, 1.0);
+}
+				"				
+			}]
+		},
+		{
+			"name" 		: "basic",
+			
+			"passes" 	: [{
+				"vertexShader"		: { "includes"	: ["Basic.vertex.glsl"] },
+				"fragmentShader"	: { "includes"	: ["Basic.fragment.glsl"] }
+			}]
+		}
+	]
+}
