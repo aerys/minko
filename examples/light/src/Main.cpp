@@ -68,6 +68,7 @@ int main(int argc, char** argv)
 	auto lights				= scene::Node::create("lights");
 
 	std::cout << "Press [SPACE]\tto toogle normal mapping\nPress [A]\tto add random light\nPress [R]\tto remove random light" << std::endl;
+	std::cout << "Fallbacks\n\t- up to 8 lights,\tphong effect\n\t- up to 9 lights,\tbasic grey\n\t- otherwise,\tbasic diffuse (most likely white)" << std::endl;
 
 	sphereGeometry->computeTangentSpace(false);
 
