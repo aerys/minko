@@ -138,13 +138,18 @@ EffectParser::parse(const std::string&				    filename,
 	_resolvedFilename = resolvedFilename;
 	_options = options;
 	_assetLibrary = assetLibrary;
-	_effectName = root.get("name", filename).asString();
-	_defaultTechnique = root.get("defaultTechnique", "default").asString();
-
+	_effectName			= root.get("name", filename).asString();
+	_defaultTechnique	= root.get("defaultTechnique", "default").asString();
+	
 	auto context = _assetLibrary->context();
 
 	// parse default values for bindings and states
+
+	auto defaultLayout	= root.get("layout", render::layoutName(render::Layout::OPAQUE)).asString();
+	_defaultStates->priority(render::layoutValue(defaultLayout));
+	
 	_defaultStates = parseRenderStates(root, context, _globalTargets, _defaultStates, 0.0f);
+
 	parseBindings(
 		root,
 		_defaultAttributeBindings,
@@ -195,7 +200,7 @@ EffectParser::parseRenderStates(const Json::Value&		root,
 								AbstractContext::Ptr	context,
 								TexturePtrMap&			targets,
 								render::States::Ptr		defaultStates,
-								float					defaultPriority)
+								float					priorityOffset)
 {
 	auto blendSrcFactor		= defaultStates->blendingSourceFactor();
 	auto blendDstFactor		= defaultStates->blendingDestinationFactor();
@@ -213,7 +218,7 @@ EffectParser::parseRenderStates(const Json::Value&		root,
 	render::Texture::Ptr target = defaultStates->target();
 	std::unordered_map<std::string, SamplerState> samplerStates = defaultStates->samplers();
 
-	const float priority = parsePriority(root, defaultPriority);
+	const float priority = parsePriority(root, defaultStates->priority() + priorityOffset);
 	parseBlendMode(root, blendSrcFactor, blendDstFactor);
 	parseColorMask(root, colorMask);
 	parseDepthTest(root, depthMask, depthFunc);
@@ -255,12 +260,13 @@ EffectParser::parsePasses(const Json::Value&		root,
 						  render::States::Ptr		defaultStates,
 						  UniformValues&			defaultUniformDefaultValues)
 {
-	auto passId = 0;
-	auto passesValue = root.get("passes", 0);
+	auto passId				= 0;
+	auto passesValue		= root.get("passes", 0);
 
     for (auto passValue : passesValue)
     {
         passId++;
+		const auto priorityOffset = (float)(passesValue.size() - passId);
 
         if (passValue.isString())
         {
@@ -283,7 +289,7 @@ EffectParser::parsePasses(const Json::Value&		root,
             _passIncludes[passCopy] = _passIncludes[pass];
             _shaderIncludes[passCopy->program()->vertexShader()] = _shaderIncludes[pass->program()->vertexShader()];
             _shaderIncludes[passCopy->program()->fragmentShader()] = _shaderIncludes[pass->program()->fragmentShader()];
-            passCopy->states()->priority((float)(passesValue.size() - passId));
+			passCopy->states()->priority(defaultStates->priority() + priorityOffset);
 
             // set uniform default values
             for (auto& nameAndValues : defaultUniformDefaultValues)
@@ -321,7 +327,7 @@ EffectParser::parsePasses(const Json::Value&		root,
             );
 
             // render states
-            auto states = parseRenderStates(passValue, context, targets, defaultStates, (float)(passesValue.size() - passId));
+            auto states = parseRenderStates(passValue, context, targets, defaultStates, priorityOffset);
 
             // program
             auto vertexShaderValue = passValue.get("vertexShader", "");
