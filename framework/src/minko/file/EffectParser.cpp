@@ -301,7 +301,8 @@ EffectParser::parsePasses(const Json::Value&		root,
             if (!parseConfiguration(passValue))
                 continue;
 
-            auto name = passValue.get("name", std::to_string(passId)).asString();
+            auto	name		= passValue.get("name", std::to_string(passId)).asString();
+			auto	fallback	= passValue.get("fallback", std::string()).asString();
 
             // pass bindings
             data::BindingMap		attributeBindings(defaultAttributeBindings);
@@ -340,7 +341,8 @@ EffectParser::parsePasses(const Json::Value&		root,
                 uniformBindings,
                 stateBindings,
                 macroBindings,
-                states
+                states,
+				fallback
             );
 
             passes.push_back(pass);

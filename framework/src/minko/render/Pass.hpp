@@ -66,7 +66,8 @@ namespace minko
 				   const data::BindingMap&			uniformBindings,
 				   const data::BindingMap&			stateBindings,
 				   const data::MacroBindingMap&		macroBindings,
-                   StatesPtr         				states)
+                   StatesPtr         				states,
+				   const std::string&				fallback)
 			{
 				return std::shared_ptr<Pass>(new Pass(
 					name,
@@ -75,7 +76,8 @@ namespace minko
 					uniformBindings,
 					stateBindings,
 					macroBindings,
-                    states
+                    states,
+					fallback
 				));
 			}
 
@@ -90,10 +92,10 @@ namespace minko
 					pass->_uniformBindings,
 					pass->_stateBindings,
 					pass->_macroBindings,
-					deepCopy ? States::create(pass->_states) : pass->_states
+					deepCopy ? States::create(pass->_states) : pass->_states,
+					pass->_fallback
 				);
 
-				p->_fallback = pass->_fallback;
 				p->_signatureToProgram = pass->_signatureToProgram;
 
 				p->_uniformFunctions = pass->_uniformFunctions;
@@ -189,7 +191,8 @@ namespace minko
 				 const data::BindingMap&			uniformBindings,
 				 const data::BindingMap&			stateBindings,
 				 const data::MacroBindingMap&		macroBindings,
-                 std::shared_ptr<States>            states);
+                 std::shared_ptr<States>            states,
+				 const std::string&					fallback);
 
 			template <typename... T>
 			static
