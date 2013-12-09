@@ -22,7 +22,7 @@
 	},
 	
 	"passes" : [{
-		"priority"          : 0,
+		"priority"			: [ "transparent", 0.0 ],
 		"blendMode"         : "additive",
 		"depthTest"         : [ false, "less_equal" ],
 		"triangleCulling"   : "none",
