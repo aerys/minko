@@ -251,7 +251,11 @@ void
 Renderer::removeSurface(Surface::Ptr surface)
 {
 	removeSurfaceDrawcalls(surface);
+
 	_surfaceTechniqueChangedSlot.erase(surface);
+
+	if (_surfaceDrawCalls.count(surface) > 0)
+		_surfaceDrawCalls.erase(surface);
 }
 
 void
@@ -262,23 +266,31 @@ Renderer::removeSurfaceDrawcalls(Surface::Ptr surface)
 	if (foundDrawcallsIt == _surfaceDrawCalls.end())
 		return;
 
-	const DrawCallList& drawcalls	= foundDrawcallsIt->second;
-	for (auto& drawCall : drawcalls)
-		_drawCalls.remove(drawCall);
+	const DrawCallList& surfaceDrawcalls = foundDrawcallsIt->second;
+	if (surfaceDrawcalls.empty())
+		return;
 
-	_surfaceDrawCalls.erase(foundDrawcallsIt);
+	for (DrawCallList::iterator it = _drawCalls.begin(); it != _drawCalls.end(); )
+	{
+		auto foundSurfaceDrawcallIt = std::find(surfaceDrawcalls.begin(), surfaceDrawcalls.end(), *it);
+
+		if (foundSurfaceDrawcallIt != surfaceDrawcalls.end())
+			it = _drawCalls.erase(it);
+		else
+			++it;
+	}
+
+	_surfaceDrawCalls.erase(surface);
 }
 
 void
 Renderer::render(std::shared_ptr<render::AbstractContext> context, std::shared_ptr<render::Texture> renderTarget)
 {
-	while(!_toCollect.empty())
-	{
-		auto surface = *_toCollect.begin();
-		_toCollect.erase(_toCollect.begin());
+	std::set<Surface::Ptr> toCollect;
+	_toCollect.swap(toCollect); // _toCollect now empty
 
-		addSurfaceDrawcalls(surface); // may had surface back in _toCollect as long as fallback techniques are possible
-	}
+	for (auto surface : toCollect)
+		addSurfaceDrawcalls(surface); // warning: may add drawcalls in the _toCollect structure, hence the separate toCollect.
 
 	_renderingBegin->execute(shared_from_this());
 
@@ -307,7 +319,7 @@ Renderer::compareDrawCalls(DrawCallPtr& a, DrawCallPtr& b)
 	if (a->priority() == b->priority())
 		return a->target() && (!b->target() || (a->target()->id() > b->target()->id()));
 
-    return a->priority() > b->priority();
+    return a->priority() < b->priority();
 }
 
 void
