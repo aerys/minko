@@ -36,7 +36,8 @@ Pass::Pass(const std::string&				name,
 		   const data::BindingMap&			uniformBindings,
 		   const data::BindingMap&			stateBindings,
 		   const data::MacroBindingMap&		macroBindings,
-           std::shared_ptr<States>          states) :
+           std::shared_ptr<States>          states,
+		   const std::string&				fallback) :
 	_name(name),
 	_programTemplate(program),
 	_attributeBindings(attributeBindings),
@@ -44,6 +45,7 @@ Pass::Pass(const std::string&				name,
 	_stateBindings(stateBindings),
 	_macroBindings(macroBindings),
     _states(states),
+	_fallback(fallback),
 	_signatureToProgram()
 {
 }
