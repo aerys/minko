@@ -189,19 +189,6 @@ struct stack<LuaGlueObject<T>> {
 };
 
 template<>
-struct stack<bool> {
-	static bool get(LuaGlueBase *, lua_State *s, unsigned int idx)
-	{
-		return lua_toboolean(s, idx);
-	}
-	
-	static void put(LuaGlueBase *, lua_State *s, bool v)
-	{
-		lua_pushboolean(s, v);
-	}
-};
-
-template<>
 struct stack<int> {
 	static int get(LuaGlueBase *, lua_State *s, unsigned int idx)
 	{
@@ -254,6 +241,19 @@ struct stack<double> {
 };
 
 template<>
+struct stack<bool> {
+	static bool get(LuaGlueBase *, lua_State *s, unsigned int idx)
+	{
+		return lua_toboolean(s, idx);
+	}
+	
+	static void put(LuaGlueBase *, lua_State *s, bool v)
+	{
+		lua_pushboolean(s, v);
+	}
+};
+
+template<>
 struct stack<const char *> {
 	static const char *get(LuaGlueBase *, lua_State *s, unsigned int idx)
 	{
@@ -270,7 +270,7 @@ template<>
 struct stack<std::string> {
 	static std::string get(LuaGlueBase *, lua_State *s, unsigned int idx)
 	{
-		return std::string(luaL_checkstring(s, (int)idx));
+		return luaL_checkstring(s, (int)idx);
 	}
 	
 	static void put(LuaGlueBase *, lua_State *s, std::string v)
