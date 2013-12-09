@@ -1,18 +1,12 @@
-// phong effect
+// phong effect used for fallback tests
 {
-	"name"	: "phong",
-	
-	"layout"	: "opaque",
+	"name"	: "phong-fallback",
 	
 	"attributeBindings"	: {
 		"position"				: "geometry.vertex.attribute.position",
 		"uv"					: "geometry.vertex.attribute.uv",
 		"normal"				: "geometry.vertex.attribute.normal",
-		"tangent"				: "geometry.vertex.attribute.tangent",
-		"boneIdsA"				: "geometry.vertex.attribute.boneIdsA",
-		"boneIdsB"				: "geometry.vertex.attribute.boneIdsB",		
-		"boneWeightsA"			: "geometry.vertex.attribute.boneWeightsA",
-		"boneWeightsB"			: "geometry.vertex.attribute.boneWeightsB"
+		"tangent"				: "geometry.vertex.attribute.tangent"
 	},
 	
 	"uniformBindings"	: {
@@ -27,10 +21,8 @@
 		"environmentAlpha"		: "material.environmentAlpha",
 		"shininess"				: "material.shininess",
 		"modelToWorldMatrix"	: "transform.modelToWorldMatrix",
-		"worldToScreenMatrix"	: { "property" : "camera.worldToScreenMatrix", 		"source" : "renderer" },
-		"cameraPosition"		: { "property" : "camera.position", 				"source" : "renderer" },
-		"boneMatrices"			: { "property" : "geometry.boneMatrices",			"source" : "target" },
-		"numBones"				: { "property" : "geometry.numBones",				"source" : "target" }
+		"worldToScreenMatrix"	: { "property" : "camera.worldToScreenMatrix", "source" : "renderer" },
+		"cameraPosition"		: { "property" : "camera.position", "source" : "renderer" }
 	},
 	
 	"stateBindings"	: {
@@ -54,8 +46,7 @@
 		"ENVIRONMENT_MAP"		: "material.environmentMap",
 		"ENVIRONMENT_ALPHA"		: "material.environmentAlpha",
 		"SHININESS"				: "material.shininess",
-		"MODEL_TO_WORLD"		: "transform.modelToWorldMatrix",
-		"NUM_BONES"				: { "property" : "geometry.numBones",	"source" : "target" }
+		"MODEL_TO_WORLD"		: "transform.modelToWorldMatrix"
 	},
 
 	"samplerStates" : {
@@ -68,11 +59,18 @@
 	"colorMask"			: true,
 	"stencilTest"		: ["always", 0, 1, ["keep", "keep", "keep"]],
 	
+	"passes" : [
+		{
+			"name"	: "inaccessible-global-fallback-pass",
+			"vertexShader"		: { "includes"	: ["Basic.vertex.glsl"] },
+			"fragmentShader"	: { "includes"	: ["Basic.fragment.glsl"] }
+		}
+	],
+	
 	"techniques" : [
 		{
 			"name"				: "single-pass",
-			//"fallback" 			: "multi-pass",
-			"fallback" 			: "basic",
+			"fallback" 			: "constrained-grey-basic",
 			"blendMode"			: ["one", "zero"],
 			"depthTest"			: [true, "less_equal"],
 			"triangleCulling"	: "back",
@@ -93,14 +91,13 @@
 			},
 				
 			"passes"	: [{
-				"vertexShader" : { "includes" : [ "Skinning.function.glsl", "Phong.vertex.glsl" ] },
+				"vertexShader" : { "includes" : [ "Phong.vertex.glsl" ] },
 				"fragmentShader" : { "includes" : [ "Phong.struct.glsl", "Phong.function.glsl", "Phong.fragment.glsl" ] }
 			}]
 		},
 		{
 			"name"				: "single-pass-no-glsl-struct",
-			//"fallback" 			: "multi-pass",
-			"fallback" 			: "basic",
+			"fallback" 			: "constrained-grey-basic",
 			"blendMode"			: ["one", "zero"],
 			"depthTest"			: [true, "less_equal"],
 			"triangleCulling"	: "back",
@@ -123,22 +120,40 @@
 			},
 				
 			"passes"	: [{
-				"vertexShader" : { "includes" : [ "Skinning.function.glsl", "Phong.vertex.glsl" ] },
+				"vertexShader" : { "includes" : [ "Phong.vertex.glsl" ] },
 				"fragmentShader" : { "includes" : [ "Phong.struct.glsl", "Phong.function.glsl", "Phong.fragment.glsl" ] }
 			}]
 		},
 		{
-			"name" 		: "multi-pass",
-
+			"name" 		: "constrained-grey-basic",
+			"fallback"	: "basic",
+			
 			"passes" 	: [{
-				"includes" : [ "Skinning.function.glsl", "Basic.vertex.glsl", "Basic.fragment.glsl" ]
+				"name"				: "constrained-basic-pass",
+				"priority"			: 25.0,
+				"fallback"			: "inaccessible-global-fallback-pass",
+				"macroBindings"		: { 
+					"NUM_SPOT_LIGHTS"	: { "property" : "pointLights.length", "source" : "root", "max" : 9 }
+				},
+				"vertexShader"		: { "includes"	: ["Basic.vertex.glsl"] },
+				"fragmentShader"	: 
+				"
+#ifdef GL_ES
+	precision mediump float;
+#endif
+void main(void)
+{
+	gl_FragColor = vec4(0.5, 0.5, 0.5, 1.0);
+}
+				"				
 			}]
 		},
 		{
 			"name" 		: "basic",
-
+			
 			"passes" 	: [{
-				"includes" : [ "Skinning.function.glsl", "Basic.vertex.glsl", "Basic.fragment.glsl" ]
+				"vertexShader"		: { "includes"	: ["Basic.vertex.glsl"] },
+				"fragmentShader"	: { "includes"	: ["Basic.fragment.glsl"] }
 			}]
 		}
 	]
