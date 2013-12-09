@@ -421,9 +421,8 @@ Surface::getWorkingProgram(std::shared_ptr<Pass>				pass,
 			break;
 		else
 		{
-#ifdef DEBUG_FALLBACK
-			std::cout << "\t- fallback pass '" << pass->name() << "'\t-> '" << pass->fallback() << "'" << std::endl;
-#endif // DEBUG_FALLBACK
+			if (!pass->fallback().empty())
+				std::cerr << "Warning: Fallback between passes ('" << pass->name() << "' -> '" << pass->fallback() << "') is not supported yet. Rendering relies on fallback between techniques instead." << std::endl;
 
 			const std::vector<Pass::Ptr>& passes = _effect->technique(_technique);
 			auto fallbackIt = std::find_if(passes.begin(), passes.end(), [&](const Pass::Ptr& p)
