@@ -32,6 +32,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/TriangleCulling.hpp"
 #include "minko/render/Texture.hpp"
 #include "minko/render/Pass.hpp"
+#include "minko/render/Layout.hpp"
 #include "minko/file/Loader.hpp"
 #include "minko/file/Options.hpp"
 #include "minko/file/AssetLibrary.hpp"
@@ -137,13 +138,18 @@ EffectParser::parse(const std::string&				    filename,
 	_resolvedFilename = resolvedFilename;
 	_options = options;
 	_assetLibrary = assetLibrary;
-	_effectName = root.get("name", filename).asString();
-	_defaultTechnique = root.get("defaultTechnique", "default").asString();
-
+	_effectName			= root.get("name", filename).asString();
+	_defaultTechnique	= root.get("defaultTechnique", "default").asString();
+	
 	auto context = _assetLibrary->context();
 
 	// parse default values for bindings and states
-	_defaultStates = parseRenderStates(root, context, _globalTargets, _defaultStates, 0);
+
+	auto defaultLayout	= root.get("layout", render::layoutName(render::Layout::OPAQUE)).asString();
+	_defaultStates->priority(render::layoutValue(defaultLayout));
+	
+	_defaultStates = parseRenderStates(root, context, _globalTargets, _defaultStates, 0.0f);
+
 	parseBindings(
 		root,
 		_defaultAttributeBindings,
@@ -194,7 +200,7 @@ EffectParser::parseRenderStates(const Json::Value&		root,
 								AbstractContext::Ptr	context,
 								TexturePtrMap&			targets,
 								render::States::Ptr		defaultStates,
-								unsigned int			priority)
+								float					priorityOffset)
 {
 	auto blendSrcFactor		= defaultStates->blendingSourceFactor();
 	auto blendDstFactor		= defaultStates->blendingDestinationFactor();
@@ -212,6 +218,7 @@ EffectParser::parseRenderStates(const Json::Value&		root,
 	render::Texture::Ptr target = defaultStates->target();
 	std::unordered_map<std::string, SamplerState> samplerStates = defaultStates->samplers();
 
+	const float priority = parsePriority(root, defaultStates->priority() + priorityOffset);
 	parseBlendMode(root, blendSrcFactor, blendDstFactor);
 	parseColorMask(root, colorMask);
 	parseDepthTest(root, depthMask, depthFunc);
@@ -253,12 +260,13 @@ EffectParser::parsePasses(const Json::Value&		root,
 						  render::States::Ptr		defaultStates,
 						  UniformValues&			defaultUniformDefaultValues)
 {
-	auto passId = 0;
-	auto passesValue = root.get("passes", 0);
+	auto passId				= 0;
+	auto passesValue		= root.get("passes", 0);
 
     for (auto passValue : passesValue)
     {
         passId++;
+		const auto priorityOffset = (float)(passesValue.size() - passId);
 
         if (passValue.isString())
         {
@@ -281,7 +289,7 @@ EffectParser::parsePasses(const Json::Value&		root,
             _passIncludes[passCopy] = _passIncludes[pass];
             _shaderIncludes[passCopy->program()->vertexShader()] = _shaderIncludes[pass->program()->vertexShader()];
             _shaderIncludes[passCopy->program()->fragmentShader()] = _shaderIncludes[pass->program()->fragmentShader()];
-            passCopy->states()->priority((float)(passesValue.size() - passId));
+			passCopy->states()->priority(defaultStates->priority() + priorityOffset);
 
             // set uniform default values
             for (auto& nameAndValues : defaultUniformDefaultValues)
@@ -299,7 +307,8 @@ EffectParser::parsePasses(const Json::Value&		root,
             if (!parseConfiguration(passValue))
                 continue;
 
-            auto name = passValue.get("name", std::to_string(passId)).asString();
+            auto	name		= passValue.get("name", std::to_string(passId)).asString();
+			auto	fallback	= passValue.get("fallback", std::string()).asString();
 
             // pass bindings
             data::BindingMap		attributeBindings(defaultAttributeBindings);
@@ -318,7 +327,7 @@ EffectParser::parsePasses(const Json::Value&		root,
             );
 
             // render states
-            auto states = parseRenderStates(passValue, context, targets, defaultStates, passesValue.size() - passId);
+            auto states = parseRenderStates(passValue, context, targets, defaultStates, priorityOffset);
 
             // program
             auto vertexShaderValue = passValue.get("vertexShader", "");
@@ -338,7 +347,8 @@ EffectParser::parsePasses(const Json::Value&		root,
                 uniformBindings,
                 stateBindings,
                 macroBindings,
-                states
+                states,
+				fallback
             );
 
             passes.push_back(pass);
@@ -489,6 +499,29 @@ EffectParser::parseTriangleCulling(const Json::Value& contextNode,
         else if (triangleCullingString == "none")
             triangleCulling = TriangleCulling::NONE;
     }
+}
+
+float
+EffectParser::parsePriority(const Json::Value& contextNode, 
+							float defaultPriority)
+{
+	auto	priorityNode	= contextNode.get("priority", defaultPriority);
+	float	priority		= defaultPriority;
+
+	if (!priorityNode.isNull())
+	{
+		if (priorityNode.isInt())
+			priority = (float)priorityNode.asInt();
+		else if (priorityNode.isDouble())
+			priority = (float)priorityNode.asDouble();
+		else if (priorityNode.isArray())
+		{
+			if (priorityNode[0].isString() && priorityNode[1].isDouble())
+				priority = render::layoutValue(priorityNode[0].asString()) + (float)priorityNode[1].asDouble();
+		}
+	}
+
+	return priority;
 }
 
 void
@@ -978,7 +1011,7 @@ EffectParser::parseTechniques(const Json::Value&				root,
 				);
 
 				// render states
-				auto states = parseRenderStates(techniqueValue, context, _globalTargets, _defaultStates, 0);
+				auto states = parseRenderStates(techniqueValue, context, _globalTargets, _defaultStates, 0.0f);
 
 				parsePasses(
 					techniqueValue,
@@ -1132,6 +1165,26 @@ EffectParser::finalize()
 #endif // DEBUG
 	}
 
+#ifdef DEBUG_FALLBACK
+	std::cout << "\nfinalize '" << _effectName << "'" << std::endl;
+	for (auto& technique : _effect->techniques())
+	{
+		std::cout << "\t- technique '" << technique.first << "'";
+		if (_effect->hasFallback(technique.first))
+			std::cout << "\t-> '" << _effect->fallback(technique.first) << "'" << std::endl;
+		else
+			std::cout << std::endl;
+
+		for (auto& pass : technique.second)
+		{
+			std::cout << "\t\t- pass '" << pass->name() << "'\tpriority = " << pass->states()->priority();
+			if (!pass->fallback().empty())
+				std::cout << "\t-> '" << pass->fallback() << "'" << std::endl;
+			else
+				std::cout << std::endl;
+		}
+	}
+#endif // DEBUG_FALLBACK
 
 	for (auto& targets : _techniqueTargets)
 		for (auto& target : targets.second)

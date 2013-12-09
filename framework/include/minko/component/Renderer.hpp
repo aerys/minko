@@ -44,7 +44,7 @@ namespace minko
 			typedef Signal<SurfacePtr, const std::string&>::Slot		SurfaceTechniqueChangedSlot;
 
 		private:
-			std::list<DrawCallPtr>										_drawCalls;
+			DrawCallList												_drawCalls;
 			std::unordered_map<SurfacePtr, DrawCallList>				_surfaceDrawCalls; 
 
 			unsigned int												_backgroundColor;

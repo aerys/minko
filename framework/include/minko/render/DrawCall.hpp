@@ -123,6 +123,13 @@ namespace minko
 				return _states->priority();
 			}
 
+			inline
+			void
+			priority(float value)
+			{
+				_states->priority(value);
+			}
+
             void
             configure(std::shared_ptr<Program>  program,
                       ContainerPtr              data,
