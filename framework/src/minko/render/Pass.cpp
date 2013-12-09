@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/Pass.hpp"
 
 #include "minko/data/Container.hpp"
+#include "minko/data/ContainerProperty.hpp"
 #include "minko/render/Program.hpp"
 #include "minko/render/Shader.hpp"
 #include "minko/render/DrawCall.hpp"
@@ -35,7 +36,8 @@ Pass::Pass(const std::string&				name,
 		   const data::BindingMap&			uniformBindings,
 		   const data::BindingMap&			stateBindings,
 		   const data::MacroBindingMap&		macroBindings,
-           std::shared_ptr<States>          states) :
+           std::shared_ptr<States>          states,
+		   const std::string&				fallback) :
 	_name(name),
 	_programTemplate(program),
 	_attributeBindings(attributeBindings),
@@ -43,19 +45,22 @@ Pass::Pass(const std::string&				name,
 	_stateBindings(stateBindings),
 	_macroBindings(macroBindings),
     _states(states),
+	_fallback(fallback),
 	_signatureToProgram()
 {
 }
 
 std::shared_ptr<Program>
-Pass::selectProgram(std::shared_ptr<data::Container> data,
-					std::shared_ptr<data::Container> rendererData,
-					std::shared_ptr<data::Container> rootData,
-					std::list<std::string>&			 bindingDefines,
-					std::list<std::string>&			 bindingValues)
+Pass::selectProgram(std::shared_ptr<data::Container>	data,
+					std::shared_ptr<data::Container>	rendererData,
+					std::shared_ptr<data::Container>	rootData,
+					std::list<data::ContainerProperty>&	booleanMacros,
+					std::list<data::ContainerProperty>&	integerMacros,
+					std::list<data::ContainerProperty>&	incorrectIntegerMacros)
 {
-	bindingDefines.clear();
-	bindingValues.clear();
+	booleanMacros.clear();
+	integerMacros.clear();
+	incorrectIntegerMacros.clear();
 
 	Program::Ptr program;
 
@@ -63,8 +68,30 @@ Pass::selectProgram(std::shared_ptr<data::Container> data,
 		program = _programTemplate;
 	else
 	{
-		ProgramSignature signature;
-		signature.build(_macroBindings, data, rendererData, rootData);
+		std::string			defines = "";
+		ProgramSignature	signature;
+
+		signature.build(
+			_macroBindings, 
+			data, 
+			rendererData, 
+			rootData, 
+			defines, 
+			booleanMacros,
+			integerMacros,
+			incorrectIntegerMacros
+		);
+
+#ifdef DEBUG_FALLBACK
+		if (!incorrectIntegerMacros.empty())
+			for (auto& m : incorrectIntegerMacros)
+				std::cout << "- incorrect macro\t'" << m.name() << "' from container[" << m.container().get() << "]" << std::endl;
+		if (!defines.empty())
+			std::cout << "MACRO DEFINES\n" << defines << std::endl;
+#endif // DEBUG_FALLBACK
+
+		if (!incorrectIntegerMacros.empty())
+			return nullptr;
 
 		const auto foundProgramIt = _signatureToProgram.find(signature);
 
@@ -72,64 +99,12 @@ Pass::selectProgram(std::shared_ptr<data::Container> data,
 			program = foundProgramIt->second;
 		else
 		{
-			const uint				signatureMask	= signature.mask();
-			const std::vector<int>&	signatureValues	= signature.values();
-			std::string				defines			= "";
-			uint					i				= 0;
-
-			// create shader header with #defines
-			for (const auto& macroBinding : _macroBindings)
-            {
-				const auto& defaultValue = std::get<2>(macroBinding.second);
-				const auto hasDefaultValue = defaultValue.semantic != data::MacroBindingDefaultValueSemantic::UNSET;
-
-				if (hasDefaultValue || signatureMask & (1 << i))
-				{
-					const auto&	propertyName = std::get<0>(macroBinding.second);
-					const auto& bindingSource = std::get<1>(macroBinding.second);
-					const auto propetyExists = defaultValue.semantic == data::MacroBindingDefaultValueSemantic::PROPERTY_EXISTS;
-					const auto& container = propertyName.empty() ? nullptr
-						: bindingSource == data::BindingSource::TARGET && data->hasProperty(propertyName) ? data
-						: bindingSource == data::BindingSource::RENDERER && rendererData->hasProperty(propertyName) ? rendererData
-						: bindingSource == data::BindingSource::ROOT && rootData->hasProperty(propertyName) ? rootData
-						: nullptr;
-
-					if (defaultValue.semantic == data::MacroBindingDefaultValueSemantic::VALUE
-						|| (container && container->propertyHasType<int>(propertyName)))
-					{
-						const auto defaultIntValue = defaultValue.value.value;
-
-						if ((defaultIntValue > 0) || signatureValues[i] > 0)
-						{
-							auto value	= container ? signatureValues[i] : defaultIntValue;
-							auto min	= std::get<3>(macroBinding.second);
-							auto max	= std::get<4>(macroBinding.second);
-
-							if ((min != -1 && value < min) || (max != -1 && value > max))
-								return nullptr;
-
-							defines += "#define " + macroBinding.first + " " + std::to_string(value) + "\n";
-							bindingValues.push_back(propertyName);
-						}
-					}
-					else if ((defaultValue.semantic == data::MacroBindingDefaultValueSemantic::PROPERTY_EXISTS
-							  && defaultValue.value.propertyExists)
-							 || (container && container->hasProperty(propertyName)))
-					{
-						defines += "#define " + macroBinding.first + "\n";
-						bindingDefines.push_back(propertyName);
-					}
-				}
-				++i;
-				if (i == signatureValues.size())
-					break;
-            }
+			// compile a new shader program from template with macros
 
 #ifdef MINKO_NO_GLSL_STRUCT
 			defines += "#define MINKO_NO_GLSL_STRUCT\n";
 #endif // MINKO_NO_GLSL_STRUCT
 
-			// for program template by adding #defines
 			auto vs = Shader::create(
 				_programTemplate->context(),
 				Shader::Type::VERTEX_SHADER,
@@ -141,10 +116,8 @@ Pass::selectProgram(std::shared_ptr<data::Container> data,
 				defines + _programTemplate->fragmentShader()->source()
 			);
 
-			program = Program::create(_programTemplate->context(), vs, fs);
-
-			// register the program to this signature
-			_signatureToProgram[signature] = program;
+			program							= Program::create(_programTemplate->context(), vs, fs);
+			_signatureToProgram[signature]	= program;
 		}
 	}
 
