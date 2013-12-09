@@ -22,10 +22,10 @@ class LuaGlueMethod : public LuaGlueMethodBase
 	private:
 		template <typename... T>
  		using tuple = std::tuple<typename std::remove_const<typename std::remove_reference<T>::type>::type...>;
-
+	
 	public:
 		typedef _Class ClassType;
-		typedef typename std::remove_reference<typename std::remove_const<_Ret>::type>::type ReturnType;
+		typedef _Ret ReturnType;
 		typedef _Ret (_Class::*MethodType)( _Args... );
 		
 		LuaGlueMethod(LuaGlueClass<_Class> *luaClass, const std::string &name, MethodType &&fn) : glueClass(luaClass), name_(name), fn(std::forward<decltype(fn)>(fn))
@@ -80,7 +80,7 @@ class LuaGlueMethod<void, _Class, _Args...> : public LuaGlueMethodBase
 	private:
 		template <typename... T>
  		using tuple = std::tuple<typename std::remove_const<typename std::remove_reference<T>::type>::type...>;
-	
+
 	public:
 		typedef _Class ClassType;
 		typedef void (_Class::*MethodType)(_Args...);
@@ -136,10 +136,10 @@ class LuaGlueConstMethod : public LuaGlueMethodBase
 	private:
 		template <typename... T>
  		using tuple = std::tuple<typename std::remove_const<typename std::remove_reference<T>::type>::type...>;
-	
+
 	public:
 		typedef _Class ClassType;
-		typedef typename std::remove_reference<typename std::remove_const<_Ret>::type>::type ReturnType;
+		typedef _Ret ReturnType;
 		typedef _Ret (_Class::*MethodType)( _Args... ) const;
 		
 		LuaGlueConstMethod(LuaGlueClass<_Class> *luaClass, const std::string &name, MethodType &&fn) : glueClass(luaClass), name_(name), fn(std::forward<decltype(fn)>(fn))
@@ -194,7 +194,7 @@ class LuaGlueConstMethod<void, _Class, _Args...> : public LuaGlueMethodBase
 	private:
 		template <typename... T>
  		using tuple = std::tuple<typename std::remove_const<typename std::remove_reference<T>::type>::type...>;
-	
+
 	public:
 		typedef _Class ClassType;
 		typedef void (_Class::*MethodType)(_Args...) const;
@@ -252,11 +252,11 @@ class LuaGlueMethod<_Ret, std::shared_ptr<_Class>, _Args...> : public LuaGlueMet
 	private:
 		template <typename... T>
  		using tuple = std::tuple<typename std::remove_const<typename std::remove_reference<T>::type>::type...>;
-	
+
 	public:
 		typedef _Class ClassType;
 		typedef std::shared_ptr<_Class> SharedType;
-		typedef typename std::remove_reference<typename std::remove_const<_Ret>::type>::type ReturnType;
+		typedef _Ret ReturnType;
 		typedef _Ret (_Class::*MethodType)( _Args... );
 		
 		LuaGlueMethod(LuaGlueClass<ClassType> *luaClass, const std::string &name, MethodType &&fn) : glueClass(luaClass), name_(name), fn(std::forward<decltype(fn)>(fn))
@@ -311,7 +311,7 @@ class LuaGlueMethod<void, std::shared_ptr<_Class>, _Args...> : public LuaGlueMet
 	private:
 		template <typename... T>
  		using tuple = std::tuple<typename std::remove_const<typename std::remove_reference<T>::type>::type...>;
-	
+
 	public:
 		typedef _Class ClassType;
 		typedef std::shared_ptr<_Class> SharedType;

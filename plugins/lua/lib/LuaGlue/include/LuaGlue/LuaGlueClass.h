@@ -248,7 +248,7 @@ class LuaGlueClass : public LuaGlueClassBase
 		}
 		
 		template<typename _Ret, typename... _Args>
-		LuaGlueClass<_Class> &constMethod(const std::string &name, _Ret (_Class::*fn)(_Args...) const)
+		LuaGlueClass<_Class> &method(const std::string &name, _Ret (_Class::*fn)(_Args...) const)
 		{
 			//printf("method(%s)\n", name.c_str());
 			auto impl = new LuaGlueConstMethod<_Ret, _Class, _Args...>(this, name, std::forward<decltype(fn)>(fn));
@@ -268,7 +268,7 @@ class LuaGlueClass : public LuaGlueClassBase
 		}
 		
 		template<typename... _Args>
-		LuaGlueClass<_Class> &constMethod(const std::string &name, void (_Class::*fn)(_Args...) const)
+		LuaGlueClass<_Class> &method(const std::string &name, void (_Class::*fn)(_Args...) const)
 		{
 			//printf("method(%s)\n", name.c_str());
 			auto impl = new LuaGlueConstMethod<void, _Class, _Args...>(this, name, std::forward<decltype(fn)>(fn));

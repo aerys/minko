@@ -60,24 +60,7 @@ class LuaGlueObjectImpl : public virtual LuaGlueObjectImplBase
 			owner = false;
 		}
 		
-		/*
 		void *vget()
-		{
-			_ref_cnt++;
-			//LG_Debug("inc: %i", _ref_cnt.load());
-			return _ptr;
-		}
-		*/
-		typename std::enable_if<!std::is_const<_Class>::value, void *>::type
-		vget()
-		{
-			_ref_cnt++;
-			//LG_Debug("inc: %i", _ref_cnt.load());
-			return _ptr;
-		}
-
-		typename std::enable_if<std::is_const<_Class>::value, void *>::type
-		vget()
 		{
 			_ref_cnt++;
 			//LG_Debug("inc: %i", _ref_cnt.load());
