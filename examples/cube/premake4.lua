@@ -6,7 +6,7 @@ minko.project.application "example-cube"
 	
 	minko.plugin.enable("sdl")
 	minko.plugin.enable("png")
-	minko.plugin.enable("devil")
+	--minko.plugin.enable("devil")
 	
 	minko.plugin.import("angle")
 	
