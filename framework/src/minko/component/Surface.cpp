@@ -282,7 +282,7 @@ Surface::createDrawCalls(std::shared_ptr<data::Container>	rendererData)
 	assert(_numMacroListeners.empty());
 #endif // DEBUG_FALLBACK
 
-	bool		mustFallback	= false;
+	bool mustFallbackTechnique	= false;
 	_drawCalls[rendererData]	= std::list<DrawCall::Ptr>();
 
 	for (const auto& pass : _effect->technique(_technique))
@@ -296,21 +296,23 @@ Surface::createDrawCalls(std::shared_ptr<data::Container>	rendererData)
 		}
 		else
 		{
-			mustFallback = true;
+			// one pass failed without any viable fallback, fallback the whole technique then.
+			mustFallbackTechnique = true;
 			break;
 		}
 	}
 
-	if (mustFallback)
+	if (mustFallbackTechnique)
 	{
 		_drawCalls[rendererData].clear();
-
 		switchToFallbackTechnique();
 	}
 	else
 	{
 #ifdef DEBUG_FALLBACK
-		std::cout << "surf[" << this << "] managed to proceed to '" << _technique << "'" << std::endl;
+		std::cout << "surf [" << this << "] managed to proceed to '" << _technique << "'" << std::endl;
+		for (auto& drawcall : _drawCalls[rendererData])
+			std::cout << "\t- drawcall [" << drawcall.get() << "]" << std::endl;
 #endif // DEBUG_FALLBACK
 
 		watchMacroAdditionOrDeletion(rendererData);
@@ -329,9 +331,10 @@ Surface::initializeDrawCall(Pass::Ptr		pass,
 		throw std::invalid_argument("pass");
 #endif // DEBUG
 
-	const auto target		= targets()[0];
-	const auto targetData	= target->data();
-	const auto rootData		= target->root()->data();
+	const float	priority	= drawcall ? drawcall->priority() : pass->states()->priority();
+	const auto	target		= targets()[0];
+	const auto	targetData	= target->data();
+	const auto	rootData	= target->root()->data();
 
 	std::list<data::ContainerProperty>	booleanMacros;
 	std::list<data::ContainerProperty>	integerMacros;
@@ -346,13 +349,6 @@ Surface::initializeDrawCall(Pass::Ptr		pass,
 		integerMacros,
 		incorrectIntegerMacros
 	);
-
-#ifdef DEBUG_FALLBACK
-	assert(incorrectIntegerMacros.empty() != (program==nullptr));
-#endif // DEBUG_FALLBACK
-
-	forgiveMacros	(booleanMacros, integerMacros,	TechniquePass(_technique, pass));
-	blameMacros		(incorrectIntegerMacros,		TechniquePass(_technique, pass));
 
 	if (!program)
 		return nullptr;
@@ -387,6 +383,7 @@ Surface::initializeDrawCall(Pass::Ptr		pass,
 	}
 
 	drawcall->configure(program, targetData, rendererData, rootData);
+	drawcall->priority(priority);
 
 	return drawcall;
 }
@@ -412,6 +409,13 @@ Surface::getWorkingProgram(std::shared_ptr<Pass>				pass,
 			integerMacros, 
 			incorrectIntegerMacros
 		);
+
+#ifdef DEBUG_FALLBACK
+	assert(incorrectIntegerMacros.empty() != (program==nullptr));
+#endif // DEBUG_FALLBACK
+
+		forgiveMacros	(booleanMacros, integerMacros,	TechniquePass(_technique, pass));
+		blameMacros		(incorrectIntegerMacros,		TechniquePass(_technique, pass));
 
 		if (program)
 			break;
@@ -453,10 +457,11 @@ Surface::macroChangedHandler(Container::Ptr		container,
 		const auto	drawCalls		= _macroNameToDrawCalls[macro.name()];
 
 		std::unordered_set<Container::Ptr>	failedDrawcallRendererData;
+
 		for (auto& drawCall : drawCalls)
 		{
-			auto	pass			= _drawCallToPass[drawCall];
 			auto	rendererData	= _drawCallToRendererData[drawCall];
+			auto	pass			= _drawCallToPass[drawCall];
 	
 			if (!initializeDrawCall(pass, rendererData, drawCall))
 				failedDrawcallRendererData.insert(rendererData);
@@ -464,6 +469,7 @@ Surface::macroChangedHandler(Container::Ptr		container,
 
 		if (!failedDrawcallRendererData.empty())
 		{
+			// at least, one pass failed for good. must fallback the whole technique.
 			for (auto& rendererData : failedDrawcallRendererData)
 				if (_drawCalls.count(rendererData) > 0)
 					deleteDrawCalls(rendererData);
@@ -532,7 +538,7 @@ Surface::setTechnique(const std::string& technique)
 
 #ifdef DEBUG_FALLBACK
 	std::cout << "surf[" << this << "]\tchange technique\t'" << _technique << "'\t-> '" << technique << "'" << std::endl;
-#endif	
+#endif // DEBUG_FALLBACK
 
 	_technique = technique;
 

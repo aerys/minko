@@ -69,6 +69,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/VertexBuffer.hpp"
 #include "minko/render/IndexBuffer.hpp"
 #include "minko/render/Texture.hpp"
+#include "minko/render/Layout.hpp"
 #include "minko/geometry/Geometry.hpp"
 #include "minko/geometry/CubeGeometry.hpp"
 #include "minko/geometry/SphereGeometry.hpp"
