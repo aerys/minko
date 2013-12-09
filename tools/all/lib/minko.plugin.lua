@@ -6,6 +6,10 @@ minko.plugin.import = function(name)
 	if not MINKO_SDK_DIST then
 		include(minko.sdk.path("/plugins/" .. name))
 	end
+
+	if minko.plugin[name] and minko.plugin[name].import then
+		minko.plugin[name]:import()
+	end
 end
 
 minko.plugin.enable = function(name)
@@ -13,13 +17,15 @@ minko.plugin.enable = function(name)
 	local terms = configuration()["terms"]
 
 	minko.plugin._enabled[name] = true
-
-	minko.plugin.import(name)
+	minko.plugin.import(name)	
 	
 	project(projectName)
 	configuration { unpack(terms) }
-	
+
 	dofile(minko.sdk.path("/plugins/" .. name .."/plugin.lua"))
+	if minko.plugin[name] and minko.plugin[name].enable then
+		minko.plugin[name]:enable()
+	end
 
 	configuration { unpack(terms) }
 end
