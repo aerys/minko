@@ -25,7 +25,7 @@ using namespace minko;
 using namespace minko::component;
 using namespace minko::math;
 
-#define POST_PROCESSING 1
+#define POST_PROCESSING 0
 #define WINDOW_WIDTH  	800
 #define WINDOW_HEIGHT 	600
 
@@ -68,6 +68,7 @@ int main(int argc, char** argv)
 	auto lights				= scene::Node::create("lights");
 
 	std::cout << "Press [SPACE]\tto toogle normal mapping\nPress [A]\tto add random light\nPress [R]\tto remove random light" << std::endl;
+	std::cout << "Fallbacks\n\t- up to 8 lights,\tphong effect\n\t- up to 9 lights,\tbasic grey\n\t- otherwise,\tbasic diffuse (most likely white)" << std::endl;
 
 	sphereGeometry->computeTangentSpace(false);
 
@@ -82,10 +83,10 @@ int main(int argc, char** argv)
 		->queue("texture/sprite-pointlight.png")
 		->queue("effect/Basic.effect")
 		->queue("effect/Sprite.effect")
-		->queue("effect/Phong.effect")
+		->queue("effect/PhongWithFallbackTest.effect")
 		->queue("effect/AnamorphicLensFlare/AnamorphicLensFlare.effect");
 
-    auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
+	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
 	{
 		// ground
 		auto ground = scene::Node::create("ground")
@@ -93,7 +94,7 @@ int main(int argc, char** argv)
 				assets->geometry("quad"),
 				material::Material::create()
 					->set("diffuseColor",	Vector4::create(1.f, 1.f, 1.f, 1.f)),
-				assets->effect("effect/Phong.effect")
+				assets->effect("phong-fallback")
 			))
 			->addComponent(Transform::create(Matrix4x4::create()->appendScale(50.f)->appendRotationX(-1.57f)));
 		root->addChild(ground);
@@ -101,9 +102,9 @@ int main(int argc, char** argv)
 		// sphere
 		auto sphere = scene::Node::create("sphere")
 			->addComponent(Surface::create(
-			    assets->geometry("sphere"),
-			    sphereMaterial,
-			    assets->effect("effect/Phong.effect")
+				assets->geometry("sphere"),
+				sphereMaterial,
+				assets->effect("phong-fallback")
 			))
 			->addComponent(Transform::create(Matrix4x4::create()->appendTranslation(0.f, 2.f, 0.f)->prependScale(3.f)));
 		root->addChild(sphere);
@@ -207,11 +208,13 @@ int main(int argc, char** argv)
 		{
 			camera->component<PerspectiveCamera>()->aspectRatio((float)width / (float)height);
 
+#if POST_PROCESSING
 			auto oldTarget = ppTarget;
 
 			ppTarget = render::Texture::create(assets->context(), clp2(width), clp2(height), false, true);
 			ppTarget->upload();
 			ppData->set("backbuffer", ppTarget);
+#endif //POST_PROCESSING
 		});
 
 		auto yaw = 0.f;
