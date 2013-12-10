@@ -25,10 +25,7 @@ using namespace minko;
 using namespace minko::component;
 using namespace minko::math;
 
-//const std::string TEXTURE_FILENAME = "texture/box.png";
-//const std::string TEXTURE_FILENAME = "texture/box.jpeg";
-//const std::string TEXTURE_FILENAME = "texture/box_noPow2.jpeg";
-const std::string TEXTURE_FILENAME = "texture/box_noPow2.png";
+const std::string TEXTURE_FILENAME = "texture/box.png";
 
 int main(int argc, char** argv)
 {
