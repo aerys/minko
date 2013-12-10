@@ -68,7 +68,6 @@ int main(int argc, char** argv)
 	auto lights				= scene::Node::create("lights");
 
 	std::cout << "Press [SPACE]\tto toogle normal mapping\nPress [A]\tto add random light\nPress [R]\tto remove random light" << std::endl;
-	std::cout << "Fallbacks\n\t- up to 8 lights,\tphong effect\n\t- up to 9 lights,\tbasic grey\n\t- otherwise,\tbasic diffuse (most likely white)" << std::endl;
 
 	sphereGeometry->computeTangentSpace(false);
 
@@ -83,7 +82,7 @@ int main(int argc, char** argv)
 		->queue("texture/sprite-pointlight.png")
 		->queue("effect/Basic.effect")
 		->queue("effect/Sprite.effect")
-		->queue("effect/PhongWithFallbackTest.effect")
+		->queue("effect/Phong.effect")
 		->queue("effect/AnamorphicLensFlare/AnamorphicLensFlare.effect");
 
 	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
@@ -94,7 +93,7 @@ int main(int argc, char** argv)
 				assets->geometry("quad"),
 				material::Material::create()
 					->set("diffuseColor",	Vector4::create(1.f, 1.f, 1.f, 1.f)),
-				assets->effect("phong-fallback")
+				assets->effect("phong")
 			))
 			->addComponent(Transform::create(Matrix4x4::create()->appendScale(50.f)->appendRotationX(-1.57f)));
 		root->addChild(ground);
@@ -104,7 +103,7 @@ int main(int argc, char** argv)
 			->addComponent(Surface::create(
 				assets->geometry("sphere"),
 				sphereMaterial,
-				assets->effect("phong-fallback")
+				assets->effect("phong")
 			))
 			->addComponent(Transform::create(Matrix4x4::create()->appendTranslation(0.f, 2.f, 0.f)->prependScale(3.f)));
 		root->addChild(sphere);
