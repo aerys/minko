@@ -77,6 +77,7 @@ namespace minko
 			static std::unordered_map<std::string, unsigned int>				_blendFactorMap;
 			static std::unordered_map<std::string, render::CompareMode>			_compareFuncMap;
 			static std::unordered_map<std::string, render::StencilOperation>	_stencilOpMap;
+			static std::unordered_map<std::string, float>						_layoutPriorityMap;
 
             std::string                                                 _filename;
 			std::string                                                 _resolvedFilename;
@@ -293,6 +294,14 @@ namespace minko
 			static
 			std::unordered_map<std::string, render::StencilOperation>
 			initializeStencilOperationMap();
+
+			static
+			std::unordered_map<std::string, float>
+			initializeLayoutPriorityMap();
+
+			static
+			float
+			layoutPriority(const std::string&);
 		};
 	}
 }
