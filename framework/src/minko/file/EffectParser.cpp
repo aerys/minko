@@ -32,7 +32,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/TriangleCulling.hpp"
 #include "minko/render/Texture.hpp"
 #include "minko/render/Pass.hpp"
-#include "minko/render/Layout.hpp"
 #include "minko/file/Loader.hpp"
 #include "minko/file/Options.hpp"
 #include "minko/file/AssetLibrary.hpp"
@@ -109,6 +108,30 @@ EffectParser::initializeStencilOperationMap()
 	return m;
 }
 
+std::unordered_map<std::string, float> EffectParser::_layoutPriorityMap = EffectParser::initializeLayoutPriorityMap();
+std::unordered_map<std::string, float>
+EffectParser::initializeLayoutPriorityMap()
+{
+	std::unordered_map<std::string, float> m;
+
+	m["first"]			= 0.0f;
+	m["opaque"]			= 1000.0f;
+	m["transparent"]	= 2000.0f;
+	m["last"]			= 3000.0f;
+
+	return m;
+}
+
+float
+EffectParser::layoutPriority(const std::string& layout)
+{
+	auto foundLayoutIt = _layoutPriorityMap.find(layout);
+
+	return foundLayoutIt != _layoutPriorityMap.end()
+		? foundLayoutIt->second
+		: _layoutPriorityMap["opaque"];
+}
+
 EffectParser::EffectParser() :
 	_effect(nullptr),
 	_numDependencies(0),
@@ -145,8 +168,8 @@ EffectParser::parse(const std::string&				    filename,
 
 	// parse default values for bindings and states
 
-	auto defaultLayout	= root.get("layout", render::layoutName(render::Layout::OPAQUE)).asString();
-	_defaultStates->priority(render::layoutValue(defaultLayout));
+	auto defaultLayout	= root.get("layout", "opaque").asString();
+	_defaultStates->priority(layoutPriority(defaultLayout));
 	
 	_defaultStates = parseRenderStates(root, context, _globalTargets, _defaultStates, 0.0f);
 
@@ -517,7 +540,7 @@ EffectParser::parsePriority(const Json::Value& contextNode,
 		else if (priorityNode.isArray())
 		{
 			if (priorityNode[0].isString() && priorityNode[1].isDouble())
-				priority = render::layoutValue(priorityNode[0].asString()) + (float)priorityNode[1].asDouble();
+				priority = layoutPriority(priorityNode[0].asString()) + (float)priorityNode[1].asDouble();
 		}
 	}
 
