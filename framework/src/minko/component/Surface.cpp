@@ -417,12 +417,16 @@ Surface::getWorkingProgram(std::shared_ptr<Pass>				pass,
 		forgiveMacros	(booleanMacros, integerMacros,	TechniquePass(_technique, pass));
 		blameMacros		(incorrectIntegerMacros,		TechniquePass(_technique, pass));
 
+		break;
+
+		/*
 		if (program)
 			break;
 		else
 		{
-			if (!pass->fallback().empty())
-				std::cerr << "Warning: Fallback between passes ('" << pass->name() << "' -> '" << pass->fallback() << "') is not supported yet. Rendering relies on fallback between techniques instead." << std::endl;
+#ifdef DEBUG_FALLBACK
+			std::cout << "fallback:\tpass '" << pass->name() << "'\t-> pass '" << pass->fallback() << "'" << std::endl;
+#endif // DEBUG_FALLBACK
 
 			const std::vector<Pass::Ptr>& passes = _effect->technique(_technique);
 			auto fallbackIt = std::find_if(passes.begin(), passes.end(), [&](const Pass::Ptr& p)
@@ -435,6 +439,7 @@ Surface::getWorkingProgram(std::shared_ptr<Pass>				pass,
 			else
 				pass = *fallbackIt;
 		}
+		*/
 	}
 	while(true);
 
