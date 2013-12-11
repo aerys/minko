@@ -347,7 +347,7 @@ package aerys.minko.type.math
                                                 y : Number = 0.,
                                                 z : Number = 0.) : Matrix4x4
 		{
-			_invalidComponents = COMPONENT_TRANSLATION;
+			_invalidComponents |= COMPONENT_TRANSLATION;
 			_matrix.appendTranslation(x, y, z);
 			
 			TMP_VECTOR4.set(x, y, z);
@@ -407,7 +407,7 @@ package aerys.minko.type.math
                                                  y : Number	= 1.,
                                                  z : Number	= 1.) : Matrix4x4
 		{
-			_invalidComponents = COMPONENT_TRANSLATION;
+			_invalidComponents |= COMPONENT_TRANSLATION;
 			_matrix.prependTranslation(x, y, z);
 			
 			_hasChanged = true;
