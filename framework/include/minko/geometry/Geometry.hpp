@@ -46,11 +46,10 @@ namespace minko
 			std::unordered_map<VBPtr, Signal<VBPtr, int>::Slot>	_vbToVertexSizeChangedSlot;
 
 		public:
-			inline
-			std::shared_ptr<data::Provider>
-			data() const
+			virtual
+			~Geometry()
 			{
-				return _data;
+				
 			}
 
 			static
@@ -58,6 +57,13 @@ namespace minko
 			create()
 			{
 				return std::shared_ptr<Geometry>(new Geometry());
+			}
+
+			inline
+			std::shared_ptr<data::Provider>
+			data() const
+			{
+				return _data;
 			}
 
 			inline
@@ -155,8 +161,8 @@ namespace minko
 				 float&							distance,
 				 uint&							triangle,
 				 std::shared_ptr<math::Vector3>	hitXyz		= nullptr,
-				 std::shared_ptr<math::Vector2>	hitUv = nullptr,
-				 std::shared_ptr<math::Vector3>	hitNormal = nullptr);
+				 std::shared_ptr<math::Vector2>	hitUv 		= nullptr,
+				 std::shared_ptr<math::Vector3>	hitNormal 	= nullptr);
 
 		protected:
 			Geometry();
