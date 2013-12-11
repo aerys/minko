@@ -319,7 +319,7 @@ Renderer::compareDrawCalls(DrawCallPtr& a, DrawCallPtr& b)
 	if (a->priority() == b->priority())
 		return a->target() && (!b->target() || (a->target()->id() > b->target()->id()));
 
-    return a->priority() < b->priority();
+    return a->priority() > b->priority();
 }
 
 void
