@@ -44,6 +44,13 @@ namespace minko
 
 			inline static
 			Ptr
+			create(std::shared_ptr<render::AbstractContext> context)
+			{
+				return std::shared_ptr<IndexBuffer>(new IndexBuffer(context));
+			}
+
+			inline static
+			Ptr
 			create(std::shared_ptr<render::AbstractContext> context,
 				   const std::vector<unsigned short>&		data)
 			{
@@ -79,9 +86,14 @@ namespace minko
 			dispose();
 
 		protected:
+			IndexBuffer(std::shared_ptr<render::AbstractContext> context) :
+				AbstractResource(context)
+			{
+
+			}
+
 			IndexBuffer(std::shared_ptr<render::AbstractContext>	context,
 						const std::vector<unsigned short>&			data) :
-
 				AbstractResource(context),
 				_data(data)
 			{
