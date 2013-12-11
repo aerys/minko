@@ -35,6 +35,8 @@ using namespace minko::component;
 using namespace minko::scene;
 using namespace minko::render;
 
+const unsigned int Renderer::NUM_FALLBACK_ATTEMPTS = 32;
+
 Renderer::Renderer() :
     _backgroundColor(0),
 	_renderingBegin(Signal<Ptr>::create()),
@@ -224,7 +226,8 @@ Renderer::addSurface(Surface::Ptr surface)
 		&Renderer::surfaceTechniqueChanged,
 		shared_from_this(),
 		surface,
-		std::placeholders::_2
+		std::placeholders::_2,
+		std::placeholders::_3
 	));
 
 	_toCollect.insert(surface);
@@ -235,7 +238,7 @@ Renderer::addSurfaceDrawcalls(Surface::Ptr surface)
 {
 	removeSurfaceDrawcalls(surface);
 
-	auto& drawcalls = surface->createDrawCalls(targets()[0]->data());
+	auto& drawcalls = surface->createDrawCalls(targets()[0]->data(), NUM_FALLBACK_ATTEMPTS);
 
 	_surfaceDrawCalls[surface]	= drawcalls;
 
@@ -374,8 +377,12 @@ Renderer::sceneManagerRenderingBeginHandler(std::shared_ptr<SceneManager>		scene
 
 void
 Renderer::surfaceTechniqueChanged(Surface::Ptr			surface, 
-								  const std::string&	technique)
+								  const std::string&	technique,
+								  bool					updateSurfaceDrawcalls)
 {
-	removeSurfaceDrawcalls(surface);
-	_toCollect.insert(surface);
+	if (updateSurfaceDrawcalls)
+	{
+		removeSurfaceDrawcalls(surface);
+		_toCollect.insert(surface);
+	}
 }

@@ -270,7 +270,8 @@ Surface::deleteDrawCalls(std::shared_ptr<data::Container> rendererData)
 }
 
 const Surface::DrawCallList&	
-Surface::createDrawCalls(std::shared_ptr<data::Container>	rendererData)
+Surface::createDrawCalls(data::Container::Ptr	rendererData,
+						 unsigned int			numAttempts)
 {
 	if (_drawCalls.count(rendererData) != 0)
 		deleteDrawCalls(rendererData);
@@ -305,7 +306,18 @@ Surface::createDrawCalls(std::shared_ptr<data::Container>	rendererData)
 	if (mustFallbackTechnique)
 	{
 		_drawCalls[rendererData].clear();
-		switchToFallbackTechnique();
+
+		// switch to next fallback technique if possible
+		_macroAddedOrRemovedSlots.clear();
+		_macroChangedSlots.clear();
+		_numMacroListeners.clear();
+
+		if (numAttempts > 0 && _effect->hasFallback(_technique))
+		{
+			setTechnique(_effect->fallback(_technique), false);
+
+			return createDrawCalls(rendererData, numAttempts - 1);
+		}
 	}
 	else
 	{
@@ -478,7 +490,8 @@ Surface::macroChangedHandler(Container::Ptr		container,
 				if (_drawCalls.count(rendererData) > 0)
 					deleteDrawCalls(rendererData);
 
-			switchToFallbackTechnique();
+			if (_effect->hasFallback(_technique))
+				setTechnique(_effect->fallback(_technique), true);
 		}
 	}
 	else if (_techniqueToMacroNames.count(_technique) != 0 
@@ -528,14 +541,8 @@ Surface::targetRemovedHandler(AbstractComponent::Ptr	ctrl,
 }
 
 void
-Surface::switchToFallbackTechnique()
-{
-	if (_effect->hasFallback(_technique))
-		setTechnique(_effect->fallback(_technique));
-}
-
-void
-Surface::setTechnique(const std::string& technique)
+Surface::setTechnique(const std::string&	technique,
+					  bool					updateDrawcalls)
 {
 	if (_technique == technique)
 		return;
@@ -553,7 +560,7 @@ Surface::setTechnique(const std::string& technique)
 	_macroChangedSlots.clear();
 	_numMacroListeners.clear();
 
-	_techniqueChanged->execute(shared_from_this(), _technique);
+	_techniqueChanged->execute(shared_from_this(), _technique, updateDrawcalls);
 }
 
 void
@@ -565,7 +572,7 @@ Surface::incorrectMacroChangedHandler(const data::ContainerProperty& macro)
 		std::cout << "surf[" << this << "]\tincorrect macro '" << macro.name() << "' changed -> try back technique '" << _incorrectMacroToPasses[macro].front().first << "'" << std::endl;
 #endif // DEBUG_FALLBACK
 
-		setTechnique(_incorrectMacroToPasses[macro].front().first);
+		setTechnique(_incorrectMacroToPasses[macro].front().first, true); // FIXME
 	}
 }
 
