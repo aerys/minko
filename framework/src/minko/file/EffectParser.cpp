@@ -114,10 +114,11 @@ EffectParser::initializeLayoutPriorityMap()
 {
 	std::unordered_map<std::string, float> m;
 
-	m["first"]			= 0.0f;
-	m["opaque"]			= 1000.0f;
-	m["transparent"]	= 2000.0f;
-	m["last"]			= 3000.0f;
+	// The higher the priority, the earlier the drawcall is rendered.
+	m["first"]			= 3000.0f;
+	m["opaque"]			= 2000.0f;
+	m["transparent"]	= 1000.0f;
+	m["last"]			=    0.0f;
 
 	return m;
 }
