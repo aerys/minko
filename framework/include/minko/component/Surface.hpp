@@ -36,7 +36,7 @@ namespace minko
 		public:
 			typedef std::shared_ptr<Surface>						Ptr;
 			typedef Signal<Ptr, std::shared_ptr<render::DrawCall>>	DrawCallChangedSignal;
-			typedef Signal<Ptr, const std::string&>					TechniqueChangedSignal;			
+			typedef Signal<Ptr, const std::string&, bool>			TechniqueChangedSignal;			
 
 		private:
 			typedef std::shared_ptr<scene::Node>					NodePtr;
@@ -129,9 +129,6 @@ namespace minko
 				return _effect;
 			}
 
-			void
-			technique(const std::string&);
-
 			inline
 			const std::string&
 			technique()
@@ -154,7 +151,7 @@ namespace minko
 			}
 
 			const DrawCallList&
-			createDrawCalls(std::shared_ptr<data::Container>	rendererData);
+			createDrawCalls(std::shared_ptr<data::Container>	rendererData, unsigned int numAttempts);
 
 			void
 			deleteDrawCalls(std::shared_ptr<data::Container>	rendererData);
@@ -208,10 +205,7 @@ namespace minko
 							  std::list<data::ContainerProperty>&	incorrectIntegerMacros);
 
 			void
-			switchToFallbackTechnique();
-
-			void
-			setTechnique(const std::string&);
+			setTechnique(const std::string&, bool updateDrawcalls = true);
 
 			void
 			forgiveMacros(const std::list<data::ContainerProperty>& booleanMacros,
