@@ -17,16 +17,12 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ]]--
 
-framerate = {
-	previousTime = 0,
-	numFrames = 0
-}
-
-function framerate:start(nodeName)
-	self.previousTime = os.clock();
+function framerate:start(node)
+	self.previousTime = os.clock()
+	self.numFrames = 0
 end
 
-function framerate:update(nodeName)
+function framerate:update(node)
 	local time = os.clock()
 	local deltaTime = time - self.previousTime
 
