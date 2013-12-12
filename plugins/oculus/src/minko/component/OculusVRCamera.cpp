@@ -69,16 +69,14 @@ OculusVRCamera::targetAddedHandler(AbsCmpPtr component, NodePtr target)
 	const uint targetSize = 2048;
 	const float worldFactor = 1.f;
 
-	_hmd = {
-		1280.f,
-		800.f,
-		0.14976f,
-		0.0936f,
-		0.064f,
-		0.0635f,
-		0.041f,
-		Vector4::create(1.0, 0.22, 0.24, 0.0)
-	};
+	_hmd.hResolution			= 1280.0f;
+	_hmd.vResolution			= 800.0f;
+	_hmd.hScreenSize			= 0.14976f;
+	_hmd.vScreenSize			= 0.0936f;
+	_hmd.interpupillaryDistance	= 0.064f;
+	_hmd.lensSeparationDistance	= 0.0635f;
+	_hmd.eyeToScreenDistance	= 0.041f;
+	_hmd.distortionK			= Vector4::create(1.0f, 0.22f, 0.24f, 0.0f);
 
 	auto aspect = _hmd.hResolution / (2.f * _hmd.vResolution);
 	auto lensShift = 1.f - 2.f * _hmd.lensSeparationDistance / _hmd.hScreenSize;
@@ -143,7 +141,9 @@ OculusVRCamera::targetAddedHandler(AbsCmpPtr component, NodePtr target)
 
 	ppFx->setUniform("uScaleIn", 4.f, 2.f);
 	ppFx->setUniform("uScale", .25f, .5f);
-	ppFx->setUniform("uHmdWarpParam", _hmd.distortionK->x(), _hmd.distortionK->y(), _hmd.distortionK->z(), _hmd.distortionK->w());
+	ppFx->setUniform("uDistortionK01", _hmd.distortionK->x(), _hmd.distortionK->y());
+	ppFx->setUniform("uDistortionK23", _hmd.distortionK->z(), _hmd.distortionK->w());
+	//ppFx->setUniform("uHmdWarpParam", _hmd.distortionK->x(), _hmd.distortionK->y(), _hmd.distortionK->z(), _hmd.distortionK->w());
 
 	_renderEndSlot = sceneManager->renderingEnd()->connect(std::bind(
 		&OculusVRCamera::renderEndHandler,
