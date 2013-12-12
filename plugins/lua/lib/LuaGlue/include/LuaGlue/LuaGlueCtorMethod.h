@@ -45,7 +45,7 @@ class LuaGlueCtorMethod : public LuaGlueMethodBase
 		int invoke(lua_State *state)
 		{
 			_Class *obj = applyTuple<_Class>(glueClass->luaGlue(), state, args);
-			lua_pop(state, Arg_Count_);
+			lua_pop(state, (int)Arg_Count_);
 			
 			LuaGlueObject<ClassType> *udata = (LuaGlueObject<ClassType> *)lua_newuserdata(state, sizeof(LuaGlueObject<ClassType>));
 			new (udata) LuaGlueObject<ClassType>(obj, glueClass, true); // TODO: mark this as owned by LuaGlue? maybe have an option to do so?

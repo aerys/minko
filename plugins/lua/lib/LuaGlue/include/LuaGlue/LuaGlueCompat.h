@@ -1,7 +1,7 @@
 #ifndef LUAGLUE_COMPAT_H_GUARD
 #define LUAGLUE_COMPAT_H_GUARD
 
-#if _MSC_VER
+#if defined(_MSC_VER)
 
 // TODO: at some point MSVC will fully support constexpr.
 //  http://herbsutter.com/2013/11/18/visual-c-compiler-november-2013-ctp/

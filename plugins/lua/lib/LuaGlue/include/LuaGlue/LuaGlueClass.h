@@ -115,7 +115,7 @@ class LuaGlueClass : public LuaGlueClassBase
 			//Alias{ (returnValue(*luaGlue_, luaGlue_->state(), args), void(), '\0')... };
 			
 			lua_call(luaGlue_->state(), Arg_Count_+1, 0);
-			lua_pop(luaGlue_->state(), 1);
+			//lua_pop(luaGlue_->state(), 1);
 		}
 		
 		LuaGlueClass<_Class> &pushInstance(_Class *obj)
@@ -415,6 +415,7 @@ class LuaGlueClass : public LuaGlueClassBase
 		void _impl_dtor(_Class *)
 		{
 			// ???
+			LG_Debug("impl dtor!");
 			//printf("LuaGlueClass<%s>::_impl_dtor\n", name_.c_str());
 			//delete p;
 		}
@@ -550,6 +551,7 @@ class LuaGlueClass : public LuaGlueClassBase
 		{
 			if(lua_isuserdata(state, -1))
 			{
+				LG_Debug("about to gc!");
 				LuaGlueObjectBase *obj = (LuaGlueObjectBase *)lua_touserdata(state, -1);
 				obj->put();
 			}
