@@ -66,7 +66,11 @@ void
 LuaScript::runScriptMethod(const std::string& methodName, scene::Node::Ptr target)
 {
     //std::cout << "lua: " << methodName << ", " << target.get() << std::endl;
+    std::cout << "target: " << target.get() << std::endl;
+    std::cout << "stub: " << &_stub << std::endl;
     dynamic_cast<LuaGlueClass<LuaScript::LuaStub>*>(_class)->invokeVoidMethod(methodName, &_stub, target);
+
+    //dynamic_cast<LuaGlueClass<LuaScript::LuaStub>*>(_class)->invokeVoidMethod(methodName, &_stub, 1);
 }
 
 void
