@@ -201,7 +201,7 @@ int main(int argc, char** argv)
 		root->addChild(camera);
 
 		// initialize post processing
-#if POST_PROCESSING
+#ifdef POST_PROCESSING
 		auto ppFx = sceneManager->assets()->effect("effect/AnamorphicLensFlare/AnamorphicLensFlare.effect");
 
 		if (!ppFx)
@@ -234,7 +234,7 @@ int main(int argc, char** argv)
 
 			lights->component<Transform>()->transform()->appendRotationY(.005f);
 
-#if POST_PROCESSING
+#ifdef POST_PROCESSING
 			sceneManager->nextFrame(ppTarget);
 			ppRenderer->render(assets->context());
 #else
