@@ -12,7 +12,7 @@ class LuaGlueBase
 		virtual lua_State *state() = 0;
 		virtual bool glue() = 0;
 		virtual LuaGlueClassBase *lookupClass(const char *name, bool internal_name = false) = 0;
-		virtual LuaGlueClassBase *lookupClass(int idx) = 0;
+		virtual LuaGlueClassBase *lookupClass(uint32_t idx) = 0;
 		virtual LuaGlueSymTab<LuaGlueClassBase *> &getSymTab() = 0;
 };
 

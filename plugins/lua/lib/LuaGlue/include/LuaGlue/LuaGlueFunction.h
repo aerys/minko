@@ -18,8 +18,8 @@ class LuaGlueFunction : public LuaGlueFunctionBase
 		typedef _Ret ReturnType;
 		typedef _Ret (*MethodType)( _Args... );
 		
-		LuaGlueFunction(LuaGlueBase *g, const std::string &name, MethodType &&fn) :
-			g(g), name_(name), fn(std::forward<decltype(fn)>(fn))
+		LuaGlueFunction(LuaGlueBase *lg, const std::string &n, MethodType &&fn) :
+			g(lg), name_(n), fn_(std::forward<decltype(fn)>(fn))
 		{ }
 		
 		~LuaGlueFunction() {}
@@ -38,13 +38,13 @@ class LuaGlueFunction : public LuaGlueFunctionBase
 	private:
 		LuaGlueBase *g;
 		std::string name_;
-		MethodType fn;
+		MethodType fn_;
 		std::tuple<_Args...> args;
 		static const unsigned int Arg_Count_ = sizeof...(_Args);
 		
 		int invoke(lua_State *state)
 		{
-			ReturnType ret = applyTuple(g, state, fn, args);
+			ReturnType ret = applyTuple(g, state, fn_, args);
 			lua_pop(state, Arg_Count_);
 			stack<_Ret>::put(g, state, ret);
 			return 1;
@@ -64,8 +64,8 @@ class LuaGlueFunction<void, _Args...> : public LuaGlueFunctionBase
 		typedef void ReturnType;
 		typedef void (*MethodType)( _Args... );
 		
-		LuaGlueFunction(LuaGlueBase *g, const std::string &name, MethodType &&fn) :
-			g(g), name_(name), fn(std::forward<decltype(fn)>(fn))
+		LuaGlueFunction(LuaGlueBase *lg, const std::string &n, MethodType &&fn) :
+			g(lg), name_(n), fn_(std::forward<decltype(fn)>(fn))
 		{ }
 		
 		~LuaGlueFunction() {}
@@ -84,14 +84,14 @@ class LuaGlueFunction<void, _Args...> : public LuaGlueFunctionBase
 	private:
 		LuaGlueBase *g;
 		std::string name_;
-		MethodType fn;
+		MethodType fn_;
 		std::tuple<_Args...> args;
 		static const unsigned int Arg_Count_ = sizeof...(_Args);
 		
 		int invoke(lua_State *state)
 		{
-			applyTuple(g, state, fn, args);
-			if(Arg_Count_) lua_pop(state, Arg_Count_);
+			applyTuple(g, state, fn_, args);
+			if(Arg_Count_) lua_pop(state, (int)Arg_Count_);
 			return 0;
 		}
 		

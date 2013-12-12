@@ -19,10 +19,10 @@ class LuaGlue : public LuaGlueBase
 {
 	public:
 		
-		LuaGlue(lua_State *state = 0) : state_(state) { }
+		LuaGlue(lua_State *s = 0) : state_(s) { }
 		~LuaGlue() { if(state_) lua_close(state_); }
 		
-		LuaGlue &open(lua_State *state) { state_ = state; return *this; }
+		LuaGlue &open(lua_State *s) { state_ = s; return *this; }
 		LuaGlue &open()
 		{
 			state_ = luaL_newstate();
@@ -66,7 +66,6 @@ class LuaGlue : public LuaGlueBase
 			lua_getglobal(state_, name.c_str());
 			applyTuple(this, state_, args...);
 			lua_call(state_, Arg_Count_, 0);
-			lua_pop(state_, 1);
 		}
 		
 		lua_State *state() { return state_; }
@@ -127,7 +126,7 @@ class LuaGlue : public LuaGlueBase
 		}
 		
 		//LuaGlueClassBase *lookupClass(const std::string &name);
-		LuaGlueClassBase *lookupClass(int idx)
+		LuaGlueClassBase *lookupClass(uint32_t idx)
 		{
 			return classes.lookup(idx);
 		}
