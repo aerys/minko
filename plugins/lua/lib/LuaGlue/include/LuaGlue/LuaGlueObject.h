@@ -40,7 +40,7 @@ class LuaGlueObjectImpl : public virtual LuaGlueObjectImplBase
 {
 	public:
 		typedef _Class Type;
-		LuaGlueObjectImpl(Type *ptr, LuaGlueClass<_Class> *clss, bool owner = false) : _ref_cnt(1), _clss(clss), _ptr(ptr), owner(owner)
+		LuaGlueObjectImpl(Type *p, LuaGlueClass<_Class> *clss, bool owner = false) : _ref_cnt(1), _clss(clss), _ptr(p), _owner(owner)
 		{
 			//LG_Debug("ctor");
 		}
@@ -48,7 +48,7 @@ class LuaGlueObjectImpl : public virtual LuaGlueObjectImplBase
 		~LuaGlueObjectImpl()
 		{
 			if(_clss) _clss->_impl_dtor(_ptr); 
-			if(owner)
+			if(_owner)
 			{
 				//LG_Debug("we're owner, delete");
 				delete _ptr;
@@ -57,7 +57,7 @@ class LuaGlueObjectImpl : public virtual LuaGlueObjectImplBase
 			_ref_cnt = 0;
 			_clss = 0;
 			_ptr = 0;
-			owner = false;
+			_owner = false;
 		}
 		
 		void *vget()
@@ -80,7 +80,7 @@ class LuaGlueObjectImpl : public virtual LuaGlueObjectImplBase
 		std::atomic_int _ref_cnt;
 		LuaGlueClass<Type> *_clss;
 		Type *_ptr;
-		bool owner;
+		bool _owner;
 };
 
 template<class _Class>
@@ -89,7 +89,7 @@ class LuaGlueObjectImpl<std::shared_ptr<_Class>> : public virtual LuaGlueObjectI
 	public:
 		typedef std::shared_ptr<_Class> Type;
 		typedef _Class ClassType;
-		LuaGlueObjectImpl(Type *ptr, LuaGlueClass<_Class> *clss, bool owner = false) : _ref_cnt(1), _clss(clss), _ptr(ptr), owner(owner)
+		LuaGlueObjectImpl(Type *p, LuaGlueClass<_Class> *clss, bool owner = false) : _ref_cnt(1), _clss(clss), _ptr(p), _owner(owner)
 		{
 			//LG_Debug("ctor");
 		}
@@ -97,7 +97,7 @@ class LuaGlueObjectImpl<std::shared_ptr<_Class>> : public virtual LuaGlueObjectI
 		~LuaGlueObjectImpl()
 		{
 			if(_clss) _clss->_impl_dtor(_ptr); 
-			if(owner)
+			if(_owner)
 			{
 				//LG_Debug("we're owner, delete");
 				delete _ptr;
@@ -106,7 +106,7 @@ class LuaGlueObjectImpl<std::shared_ptr<_Class>> : public virtual LuaGlueObjectI
 			_ref_cnt = 0;
 			_clss = 0;
 			_ptr = 0;
-			owner = false;
+			_owner = false;
 		}
 		
 		void *vget()
@@ -127,7 +127,7 @@ class LuaGlueObjectImpl<std::shared_ptr<_Class>> : public virtual LuaGlueObjectI
 		std::atomic_int _ref_cnt;
 		LuaGlueClass<ClassType> *_clss;
 		Type *_ptr;
-		bool owner;
+		bool _owner;
 };
 
 template<class _Class>
@@ -141,7 +141,7 @@ class LuaGlueObject : public virtual LuaGlueObjectBase
 			//LG_Debug("ctor()");
 		}
 		
-		LuaGlueObject(Type *ptr, LuaGlueClass<Type> *clss = nullptr, bool owner = false) : p(new LuaGlueObjectImpl<Type>(ptr, clss, owner))
+		LuaGlueObject(Type *optr, LuaGlueClass<Type> *clss = nullptr, bool owner = false) : p(new LuaGlueObjectImpl<Type>(optr, clss, owner))
 		{
 			//LG_Debug("ctor(%p, %s, %i)", ptr, clss->name().c_str(), owner);
 		}
@@ -211,7 +211,7 @@ class LuaGlueObject<std::shared_ptr<_Class>> : public virtual LuaGlueObjectBase
 			//LG_Debug("ctor()");
 		}
 		
-		LuaGlueObject(Type *ptr, LuaGlueClass<ClassType> *clss = nullptr, bool owner = false) : p(new LuaGlueObjectImpl<Type>(ptr, clss, owner))
+		LuaGlueObject(Type *optr, LuaGlueClass<ClassType> *clss = nullptr, bool owner = false) : p(new LuaGlueObjectImpl<Type>(optr, clss, owner))
 		{
 			//LG_Debug("ctor(%p, %s, %i)", ptr, clss->name().c_str(), owner);
 		}

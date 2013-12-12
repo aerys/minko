@@ -31,12 +31,16 @@ class LuaGlueConstant
 				case CTYPE_STR:
 					str_value_ = new std::string(c.str_value_->c_str());
 					break;
+					
+				default:
+					LG_Error("unknown constant type");
+					break;
 			}
 		}
 		
-		LuaGlueConstant(const std::string &name, int v) : name_(name), int_value_(v), type_(CTYPE_INT) { }
-		LuaGlueConstant(const std::string &name, double v) : name_(name), num_value_(v), type_(CTYPE_NUM) { }
-		LuaGlueConstant(const std::string &name, const std::string &v) : name_(name), str_value_(new std::string(v)), type_(CTYPE_STR) { }
+		LuaGlueConstant(const std::string &n, int v) : name_(n), int_value_(v), type_(CTYPE_INT) { }
+		LuaGlueConstant(const std::string &n, double v) : name_(n), num_value_(v), type_(CTYPE_NUM) { }
+		LuaGlueConstant(const std::string &n, const std::string &v) : name_(n), str_value_(new std::string(v)), type_(CTYPE_STR) { }
 		~LuaGlueConstant()
 		{
 			if(type_ == CTYPE_STR)
@@ -66,6 +70,7 @@ class LuaGlueConstant
 					break;
 					
 				default:
+					LG_Error("unknown constant type");
 					return false;
 			}
 			

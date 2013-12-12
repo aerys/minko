@@ -34,7 +34,7 @@ inline void lua_dump_stack_(int line, const char *func, lua_State *L)
 	printf("\n");  /* end the listing */
 }
 
-void lua_dump_table(lua_State *L, int index)
+inline void lua_dump_table(lua_State *L, int index)
 {
 	/* table is in the stack at index 'idx' */
 	lua_pushvalue(L, index);
