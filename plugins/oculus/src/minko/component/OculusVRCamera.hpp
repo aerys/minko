@@ -43,6 +43,7 @@ namespace minko
 				float vResolution;
 				float hScreenSize;
 				float vScreenSize;
+				float vScreenCenter;
 				float interpupillaryDistance;
 				float lensSeparationDistance;
 				float eyeToScreenDistance;
@@ -56,7 +57,12 @@ namespace minko
 			typedef std::shared_ptr<render::Texture>	TexturePtr;
 
 		private:
+			static const float							WORLD_UNIT;
+			static const unsigned int					TARGET_SIZE;
+
 			float										_aspectRatio;
+			float										_zNear;
+			float										_zFar;
 			HMD											_hmd;
 
 			SceneMgrPtr									_sceneManager;
@@ -74,9 +80,11 @@ namespace minko
 		public:
 			inline static
 			Ptr
-			create(float aspectRatio)
+			create(float aspectRatio,
+				   float zNear			= 0.1f,
+				   float zFar			= 1000.0f)
 			{
-				auto oc = std::shared_ptr<OculusVRCamera>(new OculusVRCamera(aspectRatio));
+				auto oc = std::shared_ptr<OculusVRCamera>(new OculusVRCamera(aspectRatio, zNear, zFar));
 
 				oc->initialize();
 
@@ -104,7 +112,7 @@ namespace minko
 			}
 
 		private:
-			OculusVRCamera(float aspectRatio);
+			OculusVRCamera(float aspectRatio, float zNear, float zFar);
 
 			void
 			initialize();
@@ -129,6 +137,12 @@ namespace minko
 
 			void
 			setSceneManager(SceneMgrPtr);
+
+			bool
+			getHMDInfo(HMD&) const;
+
+			float
+			distort(float) const;
 		};
 	}
 }

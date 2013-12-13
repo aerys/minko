@@ -38,8 +38,13 @@ using namespace minko::scene;
 using namespace minko::component;
 using namespace minko::math;
 
-OculusVRCamera::OculusVRCamera(float aspectRatio) :
+/*static*/ const float			OculusVRCamera::WORLD_UNIT	= 1.0f;
+/*static*/ const unsigned int	OculusVRCamera::TARGET_SIZE	= 2048;
+
+OculusVRCamera::OculusVRCamera(float aspectRatio, float zNear, float zFar) :
 	_aspectRatio(aspectRatio),
+	_zNear(zNear),
+	_zFar(zFar),
 	_sceneManager(nullptr),
 	_root(nullptr),
 	_leftCamera(nullptr),
@@ -154,62 +159,99 @@ OculusVRCamera::setSceneManager(SceneManager::Ptr sceneManager)
 	}
 
 	_sceneManager	= sceneManager;
+	auto context	= _sceneManager->assets()->context();
 
-	auto context = _sceneManager->assets()->context();
-	const uint targetSize = 2048;
-	const float worldFactor = 1.f;
+	getHMDInfo(_hmd);
 
-	_hmd.hResolution			= 1280.0f;
-	_hmd.vResolution			= 800.0f;
-	_hmd.hScreenSize			= 0.14976f;
-	_hmd.vScreenSize			= 0.0936f;
-	_hmd.interpupillaryDistance	= 0.064f;
-	_hmd.lensSeparationDistance	= 0.0635f;
-	_hmd.eyeToScreenDistance	= 0.041f;
-	_hmd.distortionK			= Vector4::create(1.0f, 0.22f, 0.24f, 0.0f);
+	const auto distortionLensShift	= 1.0f - 2.0f * _hmd.lensSeparationDistance / _hmd.hScreenSize;
+	const auto fitRadius			= abs(- 1.0f - distortionLensShift);
+	const auto distortionScale		= distort(fitRadius) / fitRadius;
 
-	auto aspect = _hmd.hResolution / (2.f * _hmd.vResolution);
-	auto lensShift = 1.f - 2.f * _hmd.lensSeparationDistance / _hmd.hScreenSize;
-	auto s = -1.f - lensShift;
-	auto distScale = _hmd.distortionK->x() + _hmd.distortionK->y() * powf(s, 2) + _hmd.distortionK->z() * powf(s, 4)
-		+ _hmd.distortionK->w() * powf(s, 6);
-	auto fov = 2. * atanf((distScale * _hmd.vScreenSize / 2.f) / _hmd.eyeToScreenDistance);
+	// distortion scale
+	//const auto distortionScale			= distort(-1.0f - );
+
+	// projection matrix 
+	const auto screenAspectRatio		= (_hmd.hResolution * 0.5f) / _hmd.vResolution;
+	const auto screenFOV				= 2.0f * atanf(distortionScale * (_hmd.vScreenSize * 0.5f) / _hmd.eyeToScreenDistance);
+
+	const auto viewCenter				= _hmd.hScreenSize * 0.25f;
+	const auto eyeProjectionShift		= viewCenter - _hmd.lensSeparationDistance * 0.5f;
+	const auto projectionCenterOffset	= 4.0f * eyeProjectionShift / _hmd.hScreenSize; // in clip coordinates
+
+	// view transform translation in world units
+	const auto halfIPD					= 0.5f * _hmd.interpupillaryDistance * WORLD_UNIT;
+
+
+	//auto s = -1.f - lensShift;
+	//auto distScale = _hmd.distortionK->x() + _hmd.distortionK->y() * powf(s, 2) + _hmd.distortionK->z() * powf(s, 4)
+	//	+ _hmd.distortionK->w() * powf(s, 6);
 
 	// left eye
-	auto leftEye = scene::Node::create();
-	auto leftEyeTexture = render::Texture::create(context, targetSize, targetSize, false, true);
-	auto leftRenderer = Renderer::create();
-	
-	_leftCamera = PerspectiveCamera::create(1.f, fov);
+	auto leftEye			= scene::Node::create();
+	auto leftEyeTexture		= render::Texture::create(context, TARGET_SIZE, TARGET_SIZE, false, true);
+	auto leftRenderer		= Renderer::create();
+	auto leftPostProjection	= Matrix4x4::create()->appendTranslation(+ projectionCenterOffset, 0.0f, 0.0f);
+
+	_leftCamera = PerspectiveCamera::create(screenAspectRatio, screenFOV, _zNear, _zFar, leftPostProjection);
 
 	leftEyeTexture->upload();
 	leftRenderer->target(leftEyeTexture);
 	leftEye->addComponent(leftRenderer);
 	leftEye->addComponent(_leftCamera);
 	leftEye->addComponent(Transform::create(
-		Matrix4x4::create()->appendTranslation(-_hmd.interpupillaryDistance * worldFactor * .5f)
+		Matrix4x4::create()->appendTranslation(- halfIPD, 0.0f, 0.0f) // view transform
 	));
 
 	// right eye
-	auto rightEye = scene::Node::create();
-	auto rightEyeTexture = render::Texture::create(context, targetSize, targetSize, false, true);
-	auto rightRenderer = Renderer::create();
+	auto rightEye				= scene::Node::create();
+	auto rightEyeTexture		= render::Texture::create(context, TARGET_SIZE, TARGET_SIZE, false, true);
+	auto rightRenderer			= Renderer::create();
+	auto rightPostProjection	= Matrix4x4::create()->appendTranslation(- projectionCenterOffset, 0.0f, 0.0f);
 
-	_rightCamera = PerspectiveCamera::create(1.f, fov);
+	_rightCamera = PerspectiveCamera::create(screenAspectRatio, screenFOV, _zNear, _zFar, rightPostProjection);
 
 	rightEyeTexture->upload();
 	rightRenderer->target(rightEyeTexture);
 	rightEye->addComponent(rightRenderer);
 	rightEye->addComponent(_rightCamera);
 	rightEye->addComponent(Transform::create(
-		Matrix4x4::create()->appendTranslation(_hmd.interpupillaryDistance * worldFactor * .5f)
+		Matrix4x4::create()->appendTranslation(+ halfIPD, 0.0f, 0.0f) // view transform
 	));
 
-	_root = scene::Node::create("oculus vr");
+	_root = scene::Node::create("oculusvr");
 	_root->addChild(leftEye)->addChild(rightEye);
 	targets().front()->addChild(_root);
 
 	// post processing effect
+	const auto clipWidth			= 0.5f;
+	const auto clipHeight			= 1.0f;
+
+	auto leftScreenCorner	= Vector2::create(0.0f, 0.0f);
+	auto leftScreenCenter	= leftScreenCorner + Vector2::create(clipWidth * 0.5f, clipHeight * 0.5f);
+	auto leftLensCenter		= leftScreenCorner + Vector2::create(
+		(clipWidth + distortionLensShift * 0.5f) * 0.5f,
+		clipHeight * 0.5f
+	);
+
+	auto rightScreenCorner	= Vector2::create(0.5f, 0.0f);
+	auto rightScreenCenter	= rightScreenCorner + Vector2::create(clipWidth * 0.5f, clipHeight * 0.5f);
+	auto rightLensCenter	= rightScreenCorner + Vector2::create(
+		(clipWidth - distortionLensShift * 0.5f) * 0.5f,
+		clipHeight * 0.5f
+	);
+
+	auto scalePriorDistortion	= Vector2::create(2.0f / clipWidth, (2.0f / clipHeight) / screenAspectRatio);
+	auto scaleAfterDistortion	= Vector2::create((clipWidth * 0.5f) / distortionScale, ((clipHeight * 0.5f) * screenAspectRatio / distortionScale));
+
+#ifdef DEBUG_OCULUS
+	std::cout << "- distortion lens shift\t= " << distortionLensShift << std::endl;
+	std::cout << "- distortion scale\t= " << distortionScale << std::endl;
+	std::cout << "- radial distortion\t= " << _hmd.distortionK->toString() << std::endl;
+	std::cout << "- left lens center\t= " << leftLensCenter->toString() << "\n- left screen center\t= " << leftScreenCenter->toString() << "\n- left screen corner\t= " << leftScreenCorner->toString() << std::endl;
+	std::cout << "- right lens center\t= " << rightLensCenter->toString() << "\n- right screen center\t= " << rightScreenCenter->toString() << "\n- right screen corner\t= " << rightScreenCorner->toString() << std::endl;
+	std::cout << "- scale prior distortion\t= " << scalePriorDistortion->toString() << "\n- scale after distortion\t= " << scaleAfterDistortion->toString() << std::endl;
+#endif // DEBUG_OCULUS
+
 	_renderer = Renderer::create();
 
 	auto ppFx = _sceneManager->assets()->effect("effect/OculusVR/OculusVR.effect");
@@ -222,17 +264,26 @@ OculusVRCamera::setSceneManager(SceneManager::Ptr sceneManager)
 		->addComponent(Surface::create(
 			geometry::QuadGeometry::create(_sceneManager->assets()->context()),
 			data::StructureProvider::create("oculusvr")
-				->set("leftEyeTexture",		leftEyeTexture)
-				->set("leftLensCenter",		Vector2::create(.25f + lensShift * .5f, .5f))
-				->set("rightEyeTexture",	rightEyeTexture)
-				->set("rightLensCenter",	Vector2::create(.75f - lensShift * .5f, .5f)),
+				->set("distortionK",			_hmd.distortionK)
+				->set("scalePriorDistortion",	scalePriorDistortion)
+				->set("scaleAfterDistortion",	scaleAfterDistortion)
+				->set("leftEyeTexture",			leftEyeTexture)
+				->set("leftLensCenter",			leftLensCenter)
+				->set("leftScreenCorner",		leftScreenCorner)
+				->set("leftScreenCenter",		leftScreenCenter)
+				->set("rightEyeTexture",		rightEyeTexture)
+				->set("rightLensCenter",		rightLensCenter)
+				->set("rightScreenCorner",		rightScreenCorner)
+				->set("rightScreenCenter",		rightScreenCenter),
 			ppFx
 		));
 
-	ppFx->setUniform("uScaleIn", 4.f, 2.f);
-	ppFx->setUniform("uScale", .25f, .5f);
+	/*
+	ppFx->setUniform("uScaleIn", 2.f, 2.f);
+	ppFx->setUniform("uScale", .5f, .5f);
 	ppFx->setUniform("uDistortionK01", _hmd.distortionK->x(), _hmd.distortionK->y());
 	ppFx->setUniform("uDistortionK23", _hmd.distortionK->z(), _hmd.distortionK->w());
+	*/
 	//ppFx->setUniform("uHmdWarpParam", _hmd.distortionK->x(), _hmd.distortionK->y(), _hmd.distortionK->z(), _hmd.distortionK->w());
 
 	_renderEndSlot = sceneManager->renderingEnd()->connect(std::bind(
@@ -250,4 +301,37 @@ OculusVRCamera::renderEndHandler(std::shared_ptr<SceneManager>		sceneManager,
 								 std::shared_ptr<render::Texture>	renderTarget)
 {
 	_renderer->render(sceneManager->assets()->context());
+}
+
+bool
+OculusVRCamera::getHMDInfo(HMD& hmd) const
+{
+	// should retrieve the device's physical parameters dynamically
+	// fake values for the time being
+	hmd.hResolution				= 1280.0f;
+	hmd.vResolution				= 800.0f;
+	hmd.hScreenSize				= 0.14976f;
+	hmd.vScreenSize				= hmd.hScreenSize / (1280.0f / 800.0f);
+	hmd.vScreenCenter			= 0.5f * hmd.vScreenSize;
+	hmd.interpupillaryDistance	= 0.064f;
+	hmd.lensSeparationDistance	= 0.0635f;
+	hmd.eyeToScreenDistance		= 0.041f;
+	hmd.distortionK				= Vector4::create(1.0f, 0.22f, 0.24f, 0.0f);
+
+	return false;
+}
+
+float
+OculusVRCamera::distort(float r) const
+{
+	const float r2 = r * r;
+	const float r4 = r2 * r2;
+	const float r6 = r4 * r2;
+
+	return r * (
+		_hmd.distortionK->x()
+		+ r2 * _hmd.distortionK->y()
+		+ r4 * _hmd.distortionK->z()
+		+ r6 * _hmd.distortionK->w()
+	);
 }

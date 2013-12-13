@@ -1,55 +1,58 @@
 #ifdef GL_ES
-precision mediump float;
+	precision mediump float;
 #endif
 
-uniform sampler2D uTex;
-uniform vec2 uLensCenter;
-uniform vec2 uScreenCenter;
-uniform float uOffset;
-uniform vec2 uScaleIn;
-uniform vec2 uScale;
-//uniform vec4 uHmdWarpParam;
-uniform vec2 uDistortionK01;
-uniform vec2 uDistortionK23;
+uniform sampler2D	uTex;
+uniform vec2		uLensCenter;
+uniform vec2		uScreenCorner;
+uniform vec2		uScreenCenter;
+uniform float		uOffset;
+uniform vec2		uScaleIn;
+uniform vec2		uScale;
+uniform	vec4		uDistortionK;
+uniform vec2		uScalePriorDistortion;
+uniform vec2		uScaleAfterDistortion;
 
 varying vec2 vUv;
 
-vec2 HmdWarp(vec2 in01, vec2 LensCenter)
+float
+distort(float r)
 {
-   vec2		theta			= (in01 - LensCenter) * uScaleIn; // Scales to [-1, 1]
-   
-   float 	rSq				= theta.x * theta.x + theta.y * theta.y;
-   float	distortionK0	= uDistortionK01.x; // uHmdWarpParam.x
-   float	distortionK1	= uDistortionK01.y; // uHmdWarpParam.y
-   float	distortionK2	= uDistortionK23.x; // uHmdWarpParam.z
-   float	distortionK3	= uDistortionK23.y; // uHmdWarpParam.w
-   
-   vec2 rvector = theta * (
-		distortionK0 + 
-		distortionK1 * rSq +
-		distortionK2 * rSq * rSq +
-		distortionK3 * rSq * rSq * rSq
+	float	r2	= r * r;
+	float	r4	= r2 * r2;
+	float	r6	= r4 * r2;
+	
+	return r * (
+		uDistortionK.x 
+		+ r2 * uDistortionK.y
+		+ r4 * uDistortionK.z
+		+ r6 * uDistortionK.w
 	);
-	  
-   return LensCenter + uScale * rvector;
+}
+
+vec2 distortUV(vec2 uv)
+{
+   vec2		vec				= (uv - uLensCenter) * uScalePriorDistortion; // in [-1, 1]
+   float	vecLength		= length(vec);
+   vec		/= vecLength;
+   vec2		distortedVec	= distort(vecLength) * vec;
+   
+   return uLensCenter + distortedVec * uScaleAfterDistortion;
 }
 
 void main(void)
 {
-	vec2 tc = HmdWarp(vUv, uLensCenter);
+	vec2 uv				= distortUV(vUv); // same as in the Oculus Rift SDK
 	
-	if (any(bvec2(clamp(tc, uScreenCenter - vec2(0.25,0.5), uScreenCenter + vec2(0.25,0.5)) - tc)))
-		gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+	if (abs(uScreenCenter.x - vUv.x) > 0.25 
+		|| any(bvec2(clamp(uv, uScreenCenter - vec2(0.25, 0.5), uScreenCenter + vec2(0.25, 0.5)) - uv)))
+		gl_FragColor 	= vec4(0.0, 0.0, 0.0, 1.0);
 	else
-		gl_FragColor = texture2D(uTex, vec2((tc.x + uOffset) * 2, tc.y));
-
-	/*
-	vec2 tc = HmdWarp(vUv.xy, uLensCenter);
-	
-	if ((vUv.x - uScreenCenter.x > 0.25 || vUv.x - uScreenCenter.x < -0.25)
-		|| any(bvec2(clamp(tc, uScreenCenter - vec2(0.25,0.5), uScreenCenter + vec2(0.25,0.5)) - tc)))
-		gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
-	else
-		gl_FragColor = texture2D(uTex, vec2((tc.x + uOffset) * 2., tc.y));
-	*/
+	{
+		// scale the texture coordinates to handle the fact
+		// the split screens take the whole screen.
+		vec2 finalUV	= vec2(2.0, 1.0) * (uv - uScreenCorner);
+		
+		gl_FragColor	= texture2D(uTex, finalUV);
+	}
 }
