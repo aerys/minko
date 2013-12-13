@@ -20,17 +20,20 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Minko.hpp"
 #include "minko/MinkoPNG.hpp"
 #include "minko/MinkoSDL.hpp"
+#ifdef MINKO_PLUGIN_OCULUS
+	#include "minko/MinkoOculus.hpp"
+#endif // MINKO_PLUGIN_OCULUS
 
 using namespace minko;
 using namespace minko::component;
 using namespace minko::math;
 
-#define POST_PROCESSING true
+//#define POST_PROCESSING true
 #define WINDOW_WIDTH  	800
 #define WINDOW_HEIGHT 	600
 
-float cameraRotationYSpeed = 0.f;
-scene::Node::Ptr camera = nullptr;
+scene::Node::Ptr camera		= nullptr;
+float cameraRotationYSpeed	= 0.f;
 
 scene::Node::Ptr
 createPointLight(Vector3::Ptr color, Vector3::Ptr position, file::AssetLibrary::Ptr assets)
@@ -82,9 +85,12 @@ int main(int argc, char** argv)
 		->queue("effect/Basic.effect")
 		->queue("effect/Sprite.effect")
 		->queue("effect/Phong.effect")
+#ifdef MINKO_PLUGIN_OCULUS
+		->queue("effect/OculusVR/OculusVR.effect")
+#endif // MINKO_PLUGIN_OCULUS
 		->queue("effect/AnamorphicLensFlare/AnamorphicLensFlare.effect");
 
-    auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
+	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
 	{
 		// ground
 		auto ground = scene::Node::create("ground")
@@ -92,7 +98,7 @@ int main(int argc, char** argv)
 				assets->geometry("quad"),
 				material::Material::create()
 					->set("diffuseColor",	Vector4::create(1.f, 1.f, 1.f, 1.f)),
-				assets->effect("effect/Phong.effect")
+				assets->effect("basic")
 			))
 			->addComponent(Transform::create(Matrix4x4::create()->appendScale(50.f)->appendRotationX(-1.57f)));
 		root->addChild(ground);
@@ -193,8 +199,12 @@ int main(int argc, char** argv)
 
 		// camera init
 		camera = scene::Node::create("camera")
-			->addComponent(Renderer::create())
+			->addComponent(Renderer::create(0xffffffff))
+#ifdef MINKO_PLUGIN_OCULUS
+			->addComponent(OculusVRCamera::create((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT))
+#else
 			->addComponent(PerspectiveCamera::create((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT))
+#endif // MINKO_PLUGIN_OCULUS
 			->addComponent(Transform::create(
 				Matrix4x4::create()->lookAt(Vector3::create(0.f, 2.f), Vector3::create(10.f, 10.f, 10.f))
 			));
@@ -224,7 +234,10 @@ int main(int argc, char** argv)
 		
 		auto resized = MinkoSDL::resized()->connect([&](unsigned int width, unsigned int height)
 		{
-			camera->component<PerspectiveCamera>()->aspectRatio((float)width / (float)height);
+			if (camera->component<PerspectiveCamera>())
+				camera->component<PerspectiveCamera>()->aspectRatio((float)width / (float)height);
+			else if (camera->component<OculusVRCamera>())
+				camera->component<OculusVRCamera>()->aspectRatio(((float)width * .5f) / (float)height);
 		});
 
 		auto enterFrame = MinkoSDL::enterFrame()->connect([&]()

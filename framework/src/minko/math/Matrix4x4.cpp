@@ -438,14 +438,26 @@ Matrix4x4::perspective(float fov,
                        float zNear,
                        float zFar)
 {
-	float fd = 1.f / tanf(fov * .5f);
+	const float invHalfFOV	= 1.0f / tanf(fov * .5f);
+	const float	invZRange	= 1.0f / (zNear - zFar);
 
+	/*
+	// oculus rift's expected perspective transform
 	return initialize(
-		fd / ratio,	0.f,	0.f,								0.f,
-		0.f,		fd,		0.f,								0.f,
-		0.f,		0.f,	(zFar + zNear) / (zNear - zFar),	2.f * zNear * zFar / (zNear- zFar),
-		0.f,		0.f,	-1.f,								0.f
+		invHalfFOV / ratio,	0.f,		0.f,				0.f,
+		0.f,				invHalfFOV,	0.f,				0.f,
+		0.f,				0.f,		zFar * invZRange,	zNear * zFar * invZRange,
+		0.f,				0.f,		-1.f,				0.f	
 	);
+	*/
+	
+	return initialize(
+		invHalfFOV / ratio,	0.f,		0.f,						0.f,
+		0.f,				invHalfFOV,	0.f,						0.f,
+		0.f,				0.f,		(zFar + zNear) * invZRange,	2.f * zNear * zFar * invZRange,
+		0.f,				0.f,		-1.f,						0.f
+	);
+	
 }
 
 Matrix4x4::Ptr
