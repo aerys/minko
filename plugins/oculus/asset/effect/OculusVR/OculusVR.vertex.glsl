@@ -2,10 +2,10 @@
 precision mediump float;
 #endif
 
-attribute vec3 aPosition;
-attribute vec2 aUv;
+attribute 	vec3	aPosition;
+attribute 	vec2	aUv;
 
-varying vec2 vUv;
+varying		vec2 	vUv;
 
 void main(void)
 {
