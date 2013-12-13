@@ -228,7 +228,7 @@ package aerys.minko.type.binding
 			if (_descriptor)
 				return _descriptor.hasOwnProperty(name);
 			else
-				return null;
+				return false;
 		}
 		
 		public function invalidate() : DataProvider
