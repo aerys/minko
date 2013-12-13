@@ -1,8 +1,5 @@
 package aerys.minko.type.loader
 {
-	import aerys.minko.render.resource.texture.TextureResource;
-	import aerys.minko.type.Signal;
-	
 	import flash.display.Bitmap;
 	import flash.display.BitmapData;
 	import flash.display.DisplayObject;
@@ -16,6 +13,9 @@ package aerys.minko.type.loader
 	import flash.net.URLRequest;
 	import flash.utils.ByteArray;
 	import flash.utils.getQualifiedClassName;
+	
+	import aerys.minko.render.resource.texture.TextureResource;
+	import aerys.minko.type.Signal;
 
 	public class TextureLoader implements ILoader
 	{
@@ -54,16 +54,16 @@ package aerys.minko.type.loader
 			return _textureResource;
 		}
 		
-		public function TextureLoader(enableMipmapping : Boolean = true)
+		public function TextureLoader(enableMipmapping : Boolean = true, textureResource : TextureResource = null)
 		{
 			_mipMapping	= enableMipmapping;
 			
-			initialize();
+			initialize(textureResource);
 		}
 		
-		private function initialize() : void
+		private function initialize(textureResource : TextureResource) : void
 		{
-			_textureResource 	= new TextureResource();
+			_textureResource 	= textureResource ? textureResource : new TextureResource();
 			_textureResource.setContentFromBitmapData(TextureResource.EMPTY_BITMAPDATA, _mipMapping);
 			
 			_isComplete 		= false;
