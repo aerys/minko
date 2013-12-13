@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "OculusVRCamera.hpp"
 
 #include "minko/scene/Node.hpp"
+#include "minko/scene/NodeSet.hpp"
 #include "minko/component/SceneManager.hpp"
 #include "minko/component/Renderer.hpp"
 #include "minko/component/PerspectiveCamera.hpp"
@@ -33,11 +34,22 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/Effect.hpp"
 
 using namespace minko;
+using namespace minko::scene;
 using namespace minko::component;
 using namespace minko::math;
 
 OculusVRCamera::OculusVRCamera(float aspectRatio) :
-	_aspectRatio(aspectRatio)
+	_aspectRatio(aspectRatio),
+	_sceneManager(nullptr),
+	_root(nullptr),
+	_leftCamera(nullptr),
+	_rightCamera(nullptr),
+	_renderer(nullptr),
+	_targetAddedSlot(nullptr),
+	_targetRemovedSlot(nullptr),
+	_addedSlot(nullptr),
+	_removedSlot(nullptr),
+	_renderEndSlot(nullptr)
 {
 
 }
@@ -60,12 +72,90 @@ OculusVRCamera::targetAddedHandler(AbsCmpPtr component, NodePtr target)
 	if (targets().size() > 1)
 		throw std::logic_error("The OculusVRCamera component cannot have more than 1 target.");
 
-	auto sceneManager = target->root()->component<SceneManager>();
+	_addedSlot = target->added()->connect(std::bind(
+		&OculusVRCamera::addedHandler,
+		shared_from_this(),
+		std::placeholders::_1,
+		std::placeholders::_2,
+		std::placeholders::_3
+	));
 
-	if (!sceneManager)
-		throw std::logic_error("Unable to find the SceneManager.");
+	_removedSlot = target->removed()->connect(std::bind(
+		&OculusVRCamera::removedHandler,
+		shared_from_this(),
+		std::placeholders::_1,
+		std::placeholders::_2,
+		std::placeholders::_3
+	));
 
-	auto context = sceneManager->assets()->context();
+	addedHandler(target->root(), target, target->parent());
+}
+
+
+void
+OculusVRCamera::targetRemovedHandler(AbsCmpPtr component, NodePtr target)
+{
+	_addedSlot		= nullptr;
+	_removedSlot	= nullptr;
+
+	removedHandler(target->root(), target, target->parent());
+}
+
+void
+OculusVRCamera::addedHandler(NodePtr node, NodePtr target, NodePtr parent)
+{
+	findSceneManager();
+}
+
+void
+OculusVRCamera::removedHandler(NodePtr node, NodePtr target, NodePtr parent)
+{
+	findSceneManager();
+}
+
+void
+OculusVRCamera::findSceneManager()
+{
+	NodeSet::Ptr roots = NodeSet::create(targets())
+		->roots()
+		->where([](NodePtr node)
+		{
+			return node->hasComponent<SceneManager>();
+		});
+
+	if (roots->nodes().size() > 1)
+		throw std::logic_error("OculusVRCamera cannot be in two separate scenes.");
+	else if (roots->nodes().size() == 1)
+		setSceneManager(roots->nodes()[0]->component<SceneManager>());		
+	else
+		setSceneManager(nullptr);
+}
+
+void
+OculusVRCamera::setSceneManager(SceneManager::Ptr sceneManager)
+{
+	if (_sceneManager == sceneManager)
+		return;
+
+	if (sceneManager == nullptr)
+	{
+		_sceneManager	= nullptr;
+		_renderer		= nullptr;
+		_leftCamera		= nullptr;
+		_rightCamera	= nullptr;
+
+		if (_root)
+			targets().front()->removeChild(_root);
+
+		_root			= nullptr;
+		_renderEndSlot	= nullptr;
+
+		return;
+	}
+
+	_sceneManager	= sceneManager;
+
+	auto context = _sceneManager->assets()->context();
 	const uint targetSize = 2048;
 	const float worldFactor = 1.f;
 
@@ -117,12 +207,12 @@ OculusVRCamera::targetAddedHandler(AbsCmpPtr component, NodePtr target)
 
 	_root = scene::Node::create("oculus vr");
 	_root->addChild(leftEye)->addChild(rightEye);
-	target->addChild(_root);
+	targets().front()->addChild(_root);
 
 	// post processing effect
 	_renderer = Renderer::create();
 
-	auto ppFx = sceneManager->assets()->effect("effect/OculusVR/OculusVR.effect");
+	auto ppFx = _sceneManager->assets()->effect("effect/OculusVR/OculusVR.effect");
 
 	if (!ppFx)
 		throw std::logic_error("OculusVR.effect has not been loaded.");
@@ -130,7 +220,7 @@ OculusVRCamera::targetAddedHandler(AbsCmpPtr component, NodePtr target)
 	auto ppScene = scene::Node::create()
 		->addComponent(_renderer)
 		->addComponent(Surface::create(
-			geometry::QuadGeometry::create(sceneManager->assets()->context()),
+			geometry::QuadGeometry::create(_sceneManager->assets()->context()),
 			data::StructureProvider::create("oculusvr")
 				->set("leftEyeTexture",		leftEyeTexture)
 				->set("leftLensCenter",		Vector2::create(.25f + lensShift * .5f, .5f))
@@ -152,13 +242,6 @@ OculusVRCamera::targetAddedHandler(AbsCmpPtr component, NodePtr target)
 		std::placeholders::_2,
 		std::placeholders::_3
 	));
-}
-
-void
-OculusVRCamera::targetRemovedHandler(AbsCmpPtr component, NodePtr target)
-{
-	target->removeChild(_root);
-	_renderEndSlot = nullptr;
 }
 
 void
