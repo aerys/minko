@@ -59,6 +59,7 @@ namespace minko
 			float										_aspectRatio;
 			HMD											_hmd;
 
+			SceneMgrPtr									_sceneManager;
 			NodePtr										_root;
 			std::shared_ptr<PerspectiveCamera>			_leftCamera;
 			std::shared_ptr<PerspectiveCamera>			_rightCamera;
@@ -66,6 +67,8 @@ namespace minko
 
 			Signal<AbsCmpPtr, NodePtr>::Slot			_targetAddedSlot;
 			Signal<AbsCmpPtr, NodePtr>::Slot			_targetRemovedSlot;
+			Signal<NodePtr, NodePtr, NodePtr>::Slot		_addedSlot;
+			Signal<NodePtr, NodePtr, NodePtr>::Slot		_removedSlot;
 			Signal<SceneMgrPtr, uint, TexturePtr>::Slot	_renderEndSlot;
 
 		public:
@@ -113,7 +116,19 @@ namespace minko
 			targetRemovedHandler(AbsCmpPtr component, NodePtr target);
 
 			void
+			addedHandler(NodePtr, NodePtr, NodePtr);
+
+			void
+			removedHandler(NodePtr, NodePtr, NodePtr);
+
+			void
 			renderEndHandler(SceneMgrPtr sceneManager, uint frameId, TexturePtr	renderTarget);
+
+			void
+			findSceneManager();
+
+			void
+			setSceneManager(SceneMgrPtr);
 		};
 	}
 }
