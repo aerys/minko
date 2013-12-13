@@ -511,8 +511,6 @@ package aerys.minko.render.shader.part.phong
 				
 				if (normal)
 				{
-					infinitePart.customNormal = normal;
-
 					return normalMappingType != NormalMappingType.NONE 
 						? infinitePart.computeSpecularInTangentSpace(lightId)
 						: infinitePart.computeSpecularInWorldSpace(lightId, normal);

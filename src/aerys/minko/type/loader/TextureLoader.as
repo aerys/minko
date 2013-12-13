@@ -85,6 +85,12 @@ package aerys.minko.type.loader
 			loader.addEventListener(Event.COMPLETE, loadCompleteHandler);
 			loader.addEventListener(IOErrorEvent.IO_ERROR, loadIoErrorHandler);
 			loader.load(request);
+			
+			if (!_textureResource.contextLost.hasCallback(urlRequestTexturecontextLostHandler))
+			{
+				_textureResourceToRequest[_textureResource] = request;
+				_textureResource.contextLost.add(urlRequestTexturecontextLostHandler)
+			}
 		}
 		
 		private function loadIoErrorHandler(e : IOErrorEvent) : void
@@ -108,7 +114,7 @@ package aerys.minko.type.loader
 		}
 		
 		public function loadClass(classObject : Class) : void
-		{
+		{			
 			var assetObject : Object		= new classObject();
 			
 			if (assetObject is Bitmap || assetObject is BitmapData)
@@ -136,6 +142,12 @@ package aerys.minko.type.loader
 				_isComplete = true;
 				
 				throw new Error('No texture can be created from an object of type \'' + className + '\'');
+			}
+			
+			if (!_textureResource.contextLost.hasCallback(classTexturecontextLostHandler))
+			{
+				_textureResourceToClass[_textureResource] = classObject;
+				_textureResource.contextLost.add(classTexturecontextLostHandler);
 			}
 		}
 		
@@ -198,12 +210,6 @@ package aerys.minko.type.loader
 			
 			textureLoader.loadClass(classObject);
 			
-			if (!textureLoader.textureResource.contextLost.hasCallback(classTexturecontextLostHandler))
-			{
-				_textureResourceToClass[textureLoader.textureResource] = classObject;
-				textureLoader.textureResource.contextLost.add(classTexturecontextLostHandler);
-			}
-			
 			return textureLoader.textureResource;
 		}
 		
@@ -214,13 +220,7 @@ package aerys.minko.type.loader
 			var textureLoader : TextureLoader = new TextureLoader(enableMipMapping, textureResource);
 			
 			textureLoader.load(request);
-			
-			if (!textureLoader.textureResource.contextLost.hasCallback(urlRequestTexturecontextLostHandler))
-			{
-				_textureResourceToRequest[textureLoader.textureResource] = request;
-				textureLoader.textureResource.contextLost.add(urlRequestTexturecontextLostHandler)
-			}
-			
+						
 			return textureLoader.textureResource;
 		}
 		
