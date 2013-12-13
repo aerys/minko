@@ -13,14 +13,20 @@
 		"uTex"	: { "textureFilter" : "linear" }
 	},
 	
+	"uniformBindings" : {
+		"uDistortionK"			: "oculusvr.distortionK",
+		"uScalePriorDistortion"	: "oculusvr.scalePriorDistortion",
+		"uScaleAfterDistortion"	: "oculusvr.scaleAfterDistortion"
+	},
+	
 	"passes" : [
 		{
 			"name" : "oculus vr left",
 			"uniformBindings" : {
-				"uTex"			: "oculusvr.leftEyeTexture",
-				"uLensCenter"	: "oculusvr.leftLensCenter",
-				"uScreenCenter"	: [ 0.25, 0.5 ],
-				"uOffset"		: 0.
+				"uTex"					: "oculusvr.leftEyeTexture",
+				"uLensCenter"			: "oculusvr.leftLensCenter",
+				"uScreenCenter"			: "oculusvr.leftScreenCenter",
+				"uScreenCorner"			: "oculusvr.leftScreenCorner"
 			},	
 			"vertexShader" : {
 				"includes" : [ "OculusVR.vertex.glsl" ]
@@ -33,10 +39,10 @@
 			"name" : "oculus vr right",
 			"blendMode" : "additive",
 			"uniformBindings" : {
-				"uTex"			: "oculusvr.rightEyeTexture",
-				"uLensCenter"	: "oculusvr.rightLensCenter",
-				"uScreenCenter"	: [ 0.75, 0.5 ],
-				"uOffset"		: -0.5
+				"uTex"					: "oculusvr.rightEyeTexture",
+				"uLensCenter"			: "oculusvr.rightLensCenter",
+				"uScreenCenter"			: "oculusvr.rightScreenCenter",
+				"uScreenCorner"			: "oculusvr.rightScreenCorner"
 			},
 			"vertexShader" : {
 				"includes" : [ "OculusVR.vertex.glsl" ]
