@@ -37,6 +37,7 @@ namespace minko
 
 		private:
 			std::vector<float>	_m;
+			bool				_lock;
 			bool				_hasChanged;
 
 		public:
@@ -202,6 +203,12 @@ namespace minko
 
 			std::shared_ptr<Vector3>
             deltaTransform(std::shared_ptr<Vector3> v, std::shared_ptr<Vector3> output = nullptr);            
+
+			Ptr
+			lock();
+
+			Ptr
+			unlock();
 
 			inline
 			Ptr
