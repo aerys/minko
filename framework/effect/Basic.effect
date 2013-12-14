@@ -2,7 +2,7 @@
 {
     "name"  	: "basic",
     
-	"layout"	: "opaque",
+	"priority"	: "opaque",
 	
     "attributeBindings" : {
         "position"              : "geometry.vertex.attribute.position",
