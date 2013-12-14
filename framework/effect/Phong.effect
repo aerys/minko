@@ -2,7 +2,7 @@
 {
 	"name"	: "phong",
 	
-	"layout"	: "opaque",
+	"priority"	: "opaque",
 	
 	"attributeBindings"	: {
 		"position"				: "geometry.vertex.attribute.position",
