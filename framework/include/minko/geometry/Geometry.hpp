@@ -164,6 +164,9 @@ namespace minko
 				 std::shared_ptr<math::Vector2>	hitUv 		= nullptr,
 				 std::shared_ptr<math::Vector3>	hitNormal 	= nullptr);
 
+			void
+			upload();
+
 		protected:
 			Geometry();
 
