@@ -42,12 +42,19 @@ class LuaGlueDtorMethod : public LuaGlueMethodBase
 		
 		int invoke(lua_State *state)
 		{
-#ifdef LUAGLUE_TYPECHECK
-			LuaGlueObject<ClassType> obj = *(LuaGlueObject<ClassType> *)luaL_checkudata(state, 1, glueClass->name().c_str());
-#else
-			LuaGlueObject<ClassType> obj = *(LuaGlueObject<ClassType> *)lua_touserdata(state, 1);
-#endif
-			ClassType *ptr = obj.ptr();
+			ClassType *ptr = nullptr;
+			auto base = GetLuaUdata(state, 1, glueClass->name().c_str());
+			if(base->isSharedPtr())
+			{
+				auto obj = *CastLuaGlueObjectShared(ClassType, base);
+				ptr = obj.ptr();
+			}
+			else
+			{
+				auto obj = *CastLuaGlueObject(ClassType, base);
+				ptr = obj.ptr();
+			}
+			
 			(ptr->*fn)();
 
 			return 0;
