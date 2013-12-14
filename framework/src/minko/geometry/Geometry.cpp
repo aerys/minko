@@ -484,3 +484,12 @@ Geometry::getHitNormal(uint triangle, Vector3::Ptr hitNormal)
 
 	hitNormal->copyFrom(edge2)->cross(edge1);
 }
+
+void
+Geometry::upload()
+{
+	for (const auto& vb : _vertexBuffers)
+		vb->upload();
+
+	_indexBuffer->upload();
+}
