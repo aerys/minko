@@ -108,28 +108,29 @@ EffectParser::initializeStencilOperationMap()
 	return m;
 }
 
-std::unordered_map<std::string, float> EffectParser::_layoutPriorityMap = EffectParser::initializeLayoutPriorityMap();
+std::unordered_map<std::string, float> EffectParser::_priorityMap = EffectParser::initializePriorityMap();
 std::unordered_map<std::string, float>
-EffectParser::initializeLayoutPriorityMap()
+EffectParser::initializePriorityMap()
 {
 	std::unordered_map<std::string, float> m;
 
-	m["first"]			= 0.0f;
-	m["opaque"]			= 1000.0f;
-	m["transparent"]	= 2000.0f;
-	m["last"]			= 3000.0f;
+	// The higher the priority, the earlier the drawcall is rendered.
+	m["first"]			= 3000.0f;
+	m["opaque"]			= 2000.0f;
+	m["transparent"]	= 1000.0f;
+	m["last"]			=    0.0f;
 
 	return m;
 }
 
 float
-EffectParser::layoutPriority(const std::string& layout)
+EffectParser::priority(const std::string& name)
 {
-	auto foundLayoutIt = _layoutPriorityMap.find(layout);
+	auto foundPriorityIt = _priorityMap.find(name);
 
-	return foundLayoutIt != _layoutPriorityMap.end()
-		? foundLayoutIt->second
-		: _layoutPriorityMap["opaque"];
+	return foundPriorityIt != _priorityMap.end()
+		? foundPriorityIt->second
+		: _priorityMap["opaque"];
 }
 
 EffectParser::EffectParser() :
@@ -167,10 +168,10 @@ EffectParser::parse(const std::string&				    filename,
 	auto context = _assetLibrary->context();
 
 	// parse default values for bindings and states
-
-	auto defaultLayout	= root.get("layout", "opaque").asString();
-	_defaultStates->priority(layoutPriority(defaultLayout));
-	
+	/*
+	auto defaultQueue = root.get("queue", "opaque").asString();
+	_defaultStates->priority(priority(defaultQueue));
+	*/
 	_defaultStates = parseRenderStates(root, context, _globalTargets, _defaultStates, 0.0f);
 
 	parseBindings(
@@ -529,22 +530,24 @@ EffectParser::parsePriority(const Json::Value& contextNode,
 							float defaultPriority)
 {
 	auto	priorityNode	= contextNode.get("priority", defaultPriority);
-	float	priority		= defaultPriority;
+	float	ret				= defaultPriority;
 
 	if (!priorityNode.isNull())
 	{
 		if (priorityNode.isInt())
-			priority = (float)priorityNode.asInt();
+			ret = (float)priorityNode.asInt();
 		else if (priorityNode.isDouble())
-			priority = (float)priorityNode.asDouble();
+			ret = (float)priorityNode.asDouble();
+		else if (priorityNode.isString())
+			ret = priority(priorityNode.asString());
 		else if (priorityNode.isArray())
 		{
 			if (priorityNode[0].isString() && priorityNode[1].isDouble())
-				priority = layoutPriority(priorityNode[0].asString()) + (float)priorityNode[1].asDouble();
+				ret = priority(priorityNode[0].asString()) + (float)priorityNode[1].asDouble();
 		}
 	}
 
-	return priority;
+	return ret;
 }
 
 void
