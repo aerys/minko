@@ -41,7 +41,7 @@ namespace minko
 			typedef std::list<DrawCallPtr>								DrawCallList;
 			typedef std::shared_ptr<SceneManager>						SceneManagerPtr;
 			typedef std::shared_ptr<render::Texture>					TexturePtr;
-			typedef Signal<SurfacePtr, const std::string&>::Slot		SurfaceTechniqueChangedSlot;
+			typedef Signal<SurfacePtr, const std::string&, bool>::Slot	SurfaceTechniqueChangedSlot;
 
 		private:
 			DrawCallList												_drawCalls;
@@ -65,6 +65,8 @@ namespace minko
 			Signal<NodePtr, NodePtr, AbsCtrlPtr>::Slot					_componentRemovedSlot;
 			Signal<SceneManagerPtr, uint, TexturePtr>::Slot				_renderingBeginSlot;
 			std::unordered_map<SurfacePtr, SurfaceTechniqueChangedSlot>	_surfaceTechniqueChangedSlot;
+
+			static const unsigned int									NUM_FALLBACK_ATTEMPTS;
 
 		public:
 			inline static
@@ -186,7 +188,7 @@ namespace minko
 			geometryChanged(SurfacePtr ctrl);
 
 			void
-			surfaceTechniqueChanged(SurfacePtr, const std::string& technique);
+			surfaceTechniqueChanged(SurfacePtr, const std::string& technique, bool updateSurfaceDrawcalls);
 
 			void
 			materialChanged(SurfacePtr ctrl);
