@@ -83,22 +83,30 @@ class LuaGlueDirectProperty : public LuaGluePropertyBase
 		{
 			//printf("accessImpl: class\n");
 			int nargs = lua_gettop(state);
-#ifdef LUAGLUE_TYPECHECK
-			LuaGlueObject<_Class> obj = *(LuaGlueObject<_Class> *)luaL_checkudata(state, 1, glueClass->name().c_str());
-#else
-			LuaGlueObject<_Class> obj = *(LuaGlueObject<_Class> *)lua_touserdata(state, 1);
-#endif
+
+			_Class *ptr = nullptr;
+			auto base = GetLuaUdata(state, 1, glueClass->name().c_str());
+			if(base->isSharedPtr())
+			{
+				auto obj = *CastLuaGlueObjectShared(_Class, base);
+				ptr = obj.ptr();
+			}
+			else
+			{
+				auto obj = *CastLuaGlueObject(_Class, base);
+				ptr = obj.ptr();
+			}
 			
 			if(nargs == 2)
 			{
 				// get
-				getReturnVal(state, obj.ptr());
+				getReturnVal(state, ptr);
 				return 1;
 			}
 			else if(nargs == 3)
 			{
 				// set
-				setProp(state, obj.ptr());
+				setProp(state, ptr);
 				return 0;
 			}
 			
@@ -109,11 +117,18 @@ class LuaGlueDirectProperty : public LuaGluePropertyBase
 		{
 			int nargs = lua_gettop(state);
 			
-#ifdef LUAGLUE_TYPECHECK
-			LuaGlueObject<_Class> obj = *(LuaGlueObject<_Class> *)luaL_checkudata(state, 1, glueClass->name().c_str());
-#else
-			LuaGlueObject<_Class> obj = *(LuaGlueObject<_Class> *)lua_touserdata(state, 1);
-#endif
+			_Class *ptr = nullptr;
+			auto base = GetLuaUdata(state, 1, glueClass->name().c_str());
+			if(base->isSharedPtr())
+			{
+				auto obj = *CastLuaGlueObjectShared(_Class, base);
+				ptr = obj.ptr();
+			}
+			else
+			{
+				auto obj = *CastLuaGlueObject(_Class, base);
+				ptr = obj.ptr();
+			}
 			
 			//printf("accessImpl: %p pod nargs:%i '%s'\n", obj, nargs, lua_tostring(state, -1));
 			
@@ -121,7 +136,7 @@ class LuaGlueDirectProperty : public LuaGluePropertyBase
 			{
 				// get
 				//printf("type: %s\n", typeid(decltype((obj->*prop_))).name());
-				_Type val = (obj.ptr()->*prop_);
+				_Type val = (ptr->*prop_);
 				stack<_Type>::put(glueClass->luaGlue(), state, val);
 				return 1;
 			}
@@ -129,7 +144,7 @@ class LuaGlueDirectProperty : public LuaGluePropertyBase
 			{
 				// set
 				_Type val = stack<_Type>::get(glueClass->luaGlue(), state, 3);
-				(obj.ptr()->*prop_) = val;
+				(ptr->*prop_) = val;
 				//printf("set prop to %d\n", (obj->*prop_));
 				return 0;
 			}
@@ -177,16 +192,24 @@ class LuaGlueProperty : public LuaGluePropertyBase
 		int access(lua_State *state)
 		{
 			int nargs = lua_gettop(state);
-#ifdef LUAGLUE_TYPECHECK
-			LuaGlueObject<_Class> obj = *(LuaGlueObject<_Class> *)luaL_checkudata(state, 1, glueClass->name().c_str());
-#else
-			LuaGlueObject<_Class> obj = *(LuaGlueObject<_Class> *)lua_touserdata(state, 1);
-#endif
+
+			_Class *ptr = nullptr;
+			auto base = GetLuaUdata(state, 1, glueClass->name().c_str());
+			if(base->isSharedPtr())
+			{
+				auto obj = *CastLuaGlueObjectShared(_Class, base);
+				ptr = obj.ptr();
+			}
+			else
+			{
+				auto obj = *CastLuaGlueObject(_Class, base);
+				ptr = obj.ptr();
+			}
 			
 			if(nargs == 2)
 			{
 				// get
-				_Type ret = (obj.ptr()->*getter)();
+				_Type ret = (ptr->*getter)();
 				stack<_Type>::put(glueClass->luaGlue(), state, ret);
 				return 1;
 			}
@@ -194,7 +217,7 @@ class LuaGlueProperty : public LuaGluePropertyBase
 			{
 				// set
 				_Type arg = stack<_Type>::get(glueClass->luaGlue(), state, -1);
-				(obj.ptr()->*setter)(arg);
+				(ptr->*setter)(arg);
 				return 0;
 			}
 			
