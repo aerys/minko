@@ -43,17 +43,21 @@ class LuaGlueNewIndexMethod : public LuaGlueMethodBase
 		
 		int invoke(lua_State *state)
 		{
-#ifdef LUAGLUE_TYPECHECK
-			LuaGlueObject<ClassType> obj = *(LuaGlueObject<ClassType> *)luaL_checkudata(state, 1, glueClass->name().c_str());
-#else
-			LuaGlueObject<ClassType> obj = *(LuaGlueObject<ClassType> *)lua_touserdata(state, 1);
-#endif
-			if(lua_istable(state, 1))
-				printf("got table as arg1\n");
 			
-			lua_remove(state, 1);
+			auto base = GetLuaUdata(state, 1, glueClass->name().c_str());
+			if(base->isSharedPtr())
+			{
+				auto obj = *CastLuaGlueObjectShared(ClassType, base);
+				lua_remove(state, 1);
+				applyTuple(glueClass->luaGlue(), state, obj, fn, args);
+			}
+			else
+			{
+				auto obj = *CastLuaGlueObject(ClassType, base);
+				lua_remove(state, 1);
+				applyTuple(glueClass->luaGlue(), state, obj, fn, args);
+			}
 			
-			applyTuple(glueClass->luaGlue(), state, obj, fn, args);
 			lua_pop(state, 2);
 			
 			return 0;

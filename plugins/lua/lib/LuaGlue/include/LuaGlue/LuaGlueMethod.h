@@ -53,13 +53,22 @@ class LuaGlueMethod : public LuaGlueMethodBase
 	public:
 		int invoke(lua_State *state)
 		{
-			//printf("invoker: %s::%s\n", typeid(*glueClass).name(), name_.c_str());
-#ifdef LUAGLUE_TYPECHECK
-			LuaGlueObject<ClassType> obj = *(LuaGlueObject<ClassType> *)luaL_checkudata(state, 1, glueClass->name().c_str());
-#else
-			LuaGlueObject<ClassType> obj = *(LuaGlueObject<ClassType> *)lua_touserdata(state, 1);
-#endif
-			ReturnType ret = applyTuple(glueClass->luaGlue(), state, obj, fn, args);
+			LG_Debug("invoke: %s::%s", typeid(*glueClass).name(), name_.c_str());
+
+			ReturnType ret;
+			
+			auto base = GetLuaUdata(state, 1, glueClass->name().c_str());
+			if(base->isSharedPtr())
+			{
+				auto obj = *CastLuaGlueObjectShared(ClassType, base);
+				ret = applyTuple(glueClass->luaGlue(), state, obj, fn, args);
+			}
+			else
+			{
+				auto obj = *CastLuaGlueObject(ClassType, base);
+				ret = applyTuple(glueClass->luaGlue(), state, obj, fn, args);
+			}
+			
 			if(Arg_Count_) lua_pop(state, (int)Arg_Count_);
 			
 			stack<ReturnType>::put(glueClass->luaGlue(), state, ret);
@@ -111,13 +120,19 @@ class LuaGlueMethod<void, _Class, _Args...> : public LuaGlueMethodBase
 		int invoke(lua_State *state)
 		{
 			//printf("invokev: %s::%s\n", typeid(*glueClass).name(), name_.c_str());
-#ifdef LUAGLUE_TYPECHECK
-			LuaGlueObject<ClassType> obj = *(LuaGlueObject<ClassType> *)luaL_checkudata(state, 1, glueClass->name().c_str());
-#else
-			LuaGlueObject<ClassType> obj = *(LuaGlueObject<ClassType> *)lua_touserdata(state, 1);
-#endif
-			//printf("obj: %p\n", obj);
-			applyTuple(glueClass->luaGlue(), state, obj, fn, args);
+			
+			auto base = GetLuaUdata(state, 1, glueClass->name().c_str());
+			if(base->isSharedPtr())
+			{
+				auto obj = *CastLuaGlueObjectShared(ClassType, base);
+				applyTuple(glueClass->luaGlue(), state, obj, fn, args);
+			}
+			else
+			{
+				auto obj = *CastLuaGlueObject(ClassType, base);
+				applyTuple(glueClass->luaGlue(), state, obj, fn, args);
+			}
+			
 			if(Arg_Count_) lua_pop(state, (int)Arg_Count_);
 			return 0;
 		}
@@ -168,12 +183,20 @@ class LuaGlueConstMethod : public LuaGlueMethodBase
 		int invoke(lua_State *state)
 		{
 			//printf("invoker: %s::%s\n", typeid(*glueClass).name(), name_.c_str());
-#ifdef LUAGLUE_TYPECHECK
-			LuaGlueObject<ClassType> obj = *(LuaGlueObject<ClassType> *)luaL_checkudata(state, 1, glueClass->name().c_str());
-#else
-			LuaGlueObject<ClassType> obj = *(LuaGlueObject<ClassType> *)lua_touserdata(state, 1);
-#endif
-			ReturnType ret = applyTuple(glueClass->luaGlue(), state, obj, fn, args);
+			
+			ReturnType ret;
+			auto base = GetLuaUdata(state, 1, glueClass->name().c_str());
+			if(base->isSharedPtr())
+			{
+				LuaGlueObject<std::shared_ptr<ClassType>> obj = *CastLuaGlueObjectShared(ClassType, base);
+				ret = applyTuple(glueClass->luaGlue(), state, obj, fn, args);
+			}
+			else
+			{
+				auto obj = *CastLuaGlueObject(ClassType, base);
+				ret = applyTuple(glueClass->luaGlue(), state, obj, fn, args);
+			}
+			
 			if(Arg_Count_) lua_pop(state, (int)Arg_Count_);
 			
 			stack<ReturnType>::put(glueClass->luaGlue(), state, ret);
@@ -225,13 +248,19 @@ class LuaGlueConstMethod<void, _Class, _Args...> : public LuaGlueMethodBase
 		int invoke(lua_State *state)
 		{
 			//printf("invokev: %s::%s\n", typeid(*glueClass).name(), name_.c_str());
-#ifdef LUAGLUE_TYPECHECK
-			LuaGlueObject<ClassType> obj = *(LuaGlueObject<ClassType> *)luaL_checkudata(state, 1, glueClass->name().c_str());
-#else
-			LuaGlueObject<ClassType> obj = *(LuaGlueObject<ClassType> *)lua_touserdata(state, 1);
-#endif
-			//printf("obj: %p\n", obj);
-			applyTuple(glueClass->luaGlue(), state, obj, fn, args);
+
+			auto base = GetLuaUdata(state, 1, glueClass->name().c_str());
+			if(base->isSharedPtr())
+			{
+				auto obj = *CastLuaGlueObjectShared(ClassType, base);
+				applyTuple(glueClass->luaGlue(), state, obj, fn, args);
+			}
+			else
+			{
+				auto obj = *CastLuaGlueObject(ClassType, base);
+				applyTuple(glueClass->luaGlue(), state, obj, fn, args);
+			}
+			
 			if(Arg_Count_) lua_pop(state, (int)Arg_Count_);
 			return 0;
 		}
@@ -284,13 +313,22 @@ class LuaGlueMethod<_Ret, std::shared_ptr<_Class>, _Args...> : public LuaGlueMet
 	public:
 		int invoke(lua_State *state)
 		{
+			LG_Debug("invoke shared class method");
 			//printf("invoker: %s::%s\n", typeid(*glueClass).name(), name_.c_str());
-#ifdef LUAGLUE_TYPECHECK
-			LuaGlueObject<SharedType> obj = *(LuaGlueObject<SharedType> *)luaL_checkudata(state, 1, glueClass->name().c_str());
-#else
-			LuaGlueObject<SharedType> obj = *(LuaGlueObject<SharedType> *)lua_touserdata(state, 1);
-#endif
-			ReturnType ret = applyTuple(glueClass->luaGlue(), state, obj, fn, args);
+
+			ReturnType ret;
+			auto base = GetLuaUdata(state, 1, glueClass->name().c_str());
+			if(base->isSharedPtr())
+			{
+				auto obj = *CastLuaGlueObjectShared(ClassType, base);
+				ret = applyTuple(glueClass->luaGlue(), state, obj, fn, args);
+			}
+			else
+			{
+				auto obj = *CastLuaGlueObject(ClassType, base);
+				ret = applyTuple(glueClass->luaGlue(), state, obj, fn, args);
+			}
+			
 			if(Arg_Count_) lua_pop(state, (int)Arg_Count_);
 			
 			stack<ReturnType>::put(glueClass->luaGlue(), state, ret);
@@ -343,13 +381,19 @@ class LuaGlueMethod<void, std::shared_ptr<_Class>, _Args...> : public LuaGlueMet
 		int invoke(lua_State *state)
 		{
 			//printf("invokev: %s::%s\n", typeid(*glueClass).name(), name_.c_str());
-#ifdef LUAGLUE_TYPECHECK
-			LuaGlueObject<SharedType> obj = *(LuaGlueObject<SharedType> *)luaL_checkudata(state, 1, glueClass->name().c_str());
-#else
-			LuaGlueObject<SharedType> obj = *(LuaGlueObject<SharedType> *)lua_touserdata(state, 1);
-#endif
-			//printf("obj: %p\n", obj);
-			applyTuple(glueClass->luaGlue(), state, obj, fn, args);
+
+			auto base = GetLuaUdata(state, 1, glueClass->name().c_str());
+			if(base->isSharedPtr())
+			{
+				auto obj = *CastLuaGlueObjectShared(ClassType, base);
+				applyTuple(glueClass->luaGlue(), state, obj, fn, args);
+			}
+			else
+			{
+				auto obj = *CastLuaGlueObject(ClassType, base);
+				applyTuple(glueClass->luaGlue(), state, obj, fn, args);
+			}
+			
 			if(Arg_Count_) lua_pop(state, (int)Arg_Count_);
 			return 0;
 		}
