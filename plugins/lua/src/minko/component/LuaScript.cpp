@@ -35,7 +35,10 @@ LuaGlue LuaScript::_state;
 bool LuaScript::_initialized = false;
 
 LuaScript::LuaScript(const std::string& name) :
-    _scriptName(name)
+    _scriptName(name),
+    _hasStartMethod(false),
+    _hasUpdateMethod(false),
+    _hasStopMethod(false)
 {
 
 }
@@ -51,7 +54,6 @@ LuaScript::initialize()
     auto name = _scriptName.c_str();
 
     _state.Class<LuaStub>(name).end().glue();
-
     _class = _state.lookupClass(name);
 }
 
@@ -60,35 +62,32 @@ LuaScript::loadScript(const std::string& script)
 {
     if(!_state.doString(script))
         printf("err: %s\n", _state.lastError().c_str());
-}
 
-void
-LuaScript::runScriptMethod(const std::string& methodName, scene::Node::Ptr target)
-{
-    //std::cout << "lua: " << methodName << ", " << target.get() << std::endl;
-    std::cout << "target: " << target.get() << std::endl;
-    std::cout << "stub: " << &_stub << std::endl;
-    dynamic_cast<LuaGlueClass<LuaScript::LuaStub>*>(_class)->invokeVoidMethod(methodName, &_stub, target);
-
-    //dynamic_cast<LuaGlueClass<LuaScript::LuaStub>*>(_class)->invokeVoidMethod(methodName, &_stub, 1);
+    auto c = dynamic_cast<LuaGlueClass<LuaScript::LuaStub>*>(_class);
+    _hasStartMethod = c->hasMethod("start");
+    _hasUpdateMethod = c->hasMethod("update");
+    _hasStopMethod = c->hasMethod("stop");
 }
 
 void
 LuaScript::start(scene::Node::Ptr node)
 {
-    runScriptMethod("start", node);
+    if (_hasStartMethod)
+        dynamic_cast<LuaGlueClass<LuaScript::LuaStub>*>(_class)->invokeVoidMethod("start", &_stub, node);
 }
 
 void
 LuaScript::update(scene::Node::Ptr node)
 {
-    runScriptMethod("update", node);
+    if (_hasUpdateMethod)
+        dynamic_cast<LuaGlueClass<LuaScript::LuaStub>*>(_class)->invokeVoidMethod("update", &_stub, node);
 }
 
 void
 LuaScript::stop(scene::Node::Ptr node)
 {
-    runScriptMethod("stop", node);
+    if (_hasStopMethod)
+        dynamic_cast<LuaGlueClass<LuaScript::LuaStub>*>(_class)->invokeVoidMethod("stop", &_stub, node);
 }
 
 
