@@ -26,9 +26,9 @@ using namespace minko;
 using namespace minko::file;
 
 void
-LuaScriptParser::parse(const std::string&				    filename,
-                       const std::string&                   resolvedFilename,
-                       std::shared_ptr<Options>             options,
+LuaScriptParser::parse(const std::string&				          filename,
+                       const std::string&                 resolvedFilename,
+                       std::shared_ptr<Options>           options,
                        const std::vector<unsigned char>&	data,
                        std::shared_ptr<AssetLibrary>	    assetLibrary)
 {
