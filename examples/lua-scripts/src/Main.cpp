@@ -39,6 +39,7 @@ int main(int argc, char** argv)
         ->registerParser<file::LuaScriptParser>("lua")
         ->queue("script/test.lua")
         ->queue("script/framerate.lua")
+        ->queue("script/rotate.lua")
 		->queue("texture/box.png")
 		->queue("effect/Basic.effect");
 
@@ -66,7 +67,7 @@ int main(int argc, char** argv)
 				material::BasicMaterial::create()->diffuseMap(assets->texture("texture/box.png")),
 				assets->effect("effect/Basic.effect")
 			))
-            ->addComponent(assets->script("script/framerate.lua"));
+            ->addComponent(assets->script("script/rotate.lua"));
 		root->addChild(mesh);
 
 		auto resized = canvas->resized()->connect([&](Canvas::Ptr canvas, uint w, uint h)
