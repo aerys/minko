@@ -17,7 +17,7 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "LuaScript.hpp"
+#include "minko/component/LuaScript.hpp"
 
 #include "LuaGlue/LuaGlue.h"
 
@@ -27,6 +27,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/math/Vector4.hpp"
 #include "minko/math/Matrix4x4.hpp"
 #include "minko/data/Container.hpp"
+#include "minko/input/Mouse.hpp"
+#include "minko/AbstractCanvas.hpp"
 
 using namespace minko;
 using namespace minko::component;
@@ -155,6 +157,13 @@ LuaScript::initializeLuaBindings()
             .method("contains",         &scene::Node::contains)
             .method("addComponent",     &scene::Node::addComponent)
             .method("removeComponent",  &scene::Node::removeComponent)
+        .end()
+        .Class<AbstractCanvas>("AbstractCanvas")
+            .method("getMouse", &AbstractCanvas::mouse)
+        .end()
+        .Class<input::Mouse>("Mouse")
+            .method("getX", &input::Mouse::x)
+            .method("getY", &input::Mouse::y)
         .end()
         .open()
         .glue();

@@ -43,6 +43,9 @@ namespace minko
             {
             public:
                 LuaStub() {}
+                
+            private:
+
             };
 
         private:
