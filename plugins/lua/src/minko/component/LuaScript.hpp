@@ -53,6 +53,10 @@ namespace minko
             LuaGlueClassBase*       _class;
             LuaStub                 _stub;
 
+            bool                    _hasStartMethod;
+            bool                    _hasUpdateMethod;
+            bool                    _hasStopMethod;
+
         public:
             static inline
             Ptr
@@ -87,9 +91,6 @@ namespace minko
 
         private:
             LuaScript(const std::string& name);
-
-            void
-            runScriptMethod(const std::string& methodName, NodePtr target);
 
             static
             void

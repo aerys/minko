@@ -296,6 +296,27 @@ class LuaGlueClass : public LuaGlueClassBase
 			
 			return *this;
 		}
+
+		bool hasMethod(const std::string& methodName)
+		{
+			auto state = luaGlue_->state();
+
+			lua_getglobal(state, name_.c_str());
+			if (!lua_istable(state, -1))
+			{
+				lua_pop(state, 1);
+
+				return false;
+			}
+
+		    lua_getfield(state, -1, methodName.c_str());
+
+		    bool exists = lua_isfunction(state, -1);
+
+			lua_pop(state, 2);
+
+		    return exists;
+		}
 		
 		template<typename T>
 		LuaGlueClass<_Class> &constant(const std::string &name, T v)

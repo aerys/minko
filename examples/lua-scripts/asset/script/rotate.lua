@@ -17,21 +17,6 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ]]--
 
---rotate = { }
-
-function rotate:start(node)
-	print("start")
-	--node:getData()--:getMatrix4x4("transform.modelToWorldMatrix")
-end
-
 function rotate:update(node)
-	--print("update")
-	--print(node)
-	node:setName("test")
-	--node:getData()--:getMatrix4x4("transform.modelToWorldMatrix")
-end
-
-function rotate:stop(node)
-	print("stop")
-	--node:getData()--:getMatrix4x4("transform.modelToWorldMatrix")
+	node:getData():getMatrix4x4("transform.modelToWorldMatrix"):appendRotationY(0.2)
 end
