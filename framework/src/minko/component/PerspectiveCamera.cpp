@@ -29,10 +29,11 @@ using namespace minko;
 using namespace minko::component;
 using namespace minko::math;
 
-PerspectiveCamera::PerspectiveCamera(float fov,
-                                     float aspectRatio,
-                                     float zNear,
-                                     float zFar) :
+PerspectiveCamera::PerspectiveCamera(float			fov,
+                                     float			aspectRatio,
+                                     float			zNear,
+                                     float			zFar,
+									 Matrix4x4::Ptr	postPerspective) :
 	_data(data::StructureProvider::create("camera")),
 	_fov(fov),
 	_aspectRatio(aspectRatio),
@@ -41,7 +42,8 @@ PerspectiveCamera::PerspectiveCamera(float fov,
   	_view(Matrix4x4::create()),
   	_projection(Matrix4x4::create()->perspective(fov, aspectRatio, zNear, zFar)),
   	_viewProjection(Matrix4x4::create()->copyFrom(_projection)),
-    _position(Vector3::create())
+    _position(Vector3::create()),
+	_postProjection(postPerspective)
 {
 }
 
@@ -112,6 +114,10 @@ void
 PerspectiveCamera::updateProjection(float fieldOfView, float aspectRatio, float zNear, float zFar)
 {
 	_projection->perspective(_fov, _aspectRatio, _zNear, _zFar);
+
+	if (_postProjection)
+		_projection->append(_postProjection);
+
 	_viewProjection->copyFrom(_view)->append(_projection);
 }
 
