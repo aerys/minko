@@ -13,6 +13,7 @@ minko.project.application("minko-example-" .. PROJECT_NAME)
 	minko.plugin.enable("jpeg")
 	minko.plugin.enable("particles")
 	minko.plugin.enable("sdl")
+	minko.plugin.enable("oculus")
 	
 	minko.plugin.import("angle")
 
