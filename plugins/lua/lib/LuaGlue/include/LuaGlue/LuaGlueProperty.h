@@ -166,6 +166,11 @@ class LuaGlueProperty : public LuaGluePropertyBase
 		typedef _Type (_Class::*GetterType)();
 		typedef void (_Class::*SetterType)(_Type);
 		
+		LuaGlueProperty(LuaGlueClass<_Class> *luaClass, const std::string &name, GetterType getter) : name_(name), getter(getter), glueClass(luaClass)
+		{
+			
+		}
+
 		LuaGlueProperty(LuaGlueClass<_Class> *luaClass, const std::string &name, GetterType getter, SetterType setter) : name_(name), getter(getter), setter(setter), glueClass(luaClass)
 		{
 			
