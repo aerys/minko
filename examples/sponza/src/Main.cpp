@@ -421,50 +421,50 @@ main(int argc, char** argv)
 		for (auto fireNode : fireNodes->nodes())
 			fireNode->addComponent(fire);
 
-		auto keyDown = canvas->keyDown()->connect([&](Canvas::Ptr canvas, const Uint8 * keyboard)
+		auto keyDown = canvas->keyboard()->keyDown()->connect([&](input::Keyboard::Ptr k, input::Keyboard::State s)
 		{
 			auto collider = true;
 			auto cameraTransform = camera->component<Transform>()->transform();
 
 			if (!collider)
 			{
-				if (keyboard[SDL_SCANCODE_UP] ||
-				    keyboard[SDL_SCANCODE_W] ||
-				    keyboard[SDL_SCANCODE_Z])
+				if (s[input::Keyboard::ScanCode::UP] ||
+				    s[input::Keyboard::ScanCode::W] ||
+				    s[input::Keyboard::ScanCode::Z])
 					cameraTransform->prependTranslation(0.f, 0.f, -CAMERA_LIN_SPEED);
-				else if (keyboard[SDL_SCANCODE_DOWN] ||
-				         keyboard[SDL_SCANCODE_S])
+				else if (s[input::Keyboard::ScanCode::DOWN] ||
+				         s[input::Keyboard::ScanCode::S])
 					cameraTransform->prependTranslation(0.f, 0.f, CAMERA_LIN_SPEED);
-				if (keyboard[SDL_SCANCODE_LEFT] ||
-				    keyboard[SDL_SCANCODE_A] ||
-				    keyboard[SDL_SCANCODE_Q])
+				if (s[input::Keyboard::ScanCode::LEFT] ||
+				    s[input::Keyboard::ScanCode::A] ||
+				    s[input::Keyboard::ScanCode::Q])
 					cameraTransform->prependRotation(-CAMERA_ANG_SPEED, Vector3::yAxis());
-				else if (keyboard[SDL_SCANCODE_RIGHT] ||
-				         keyboard[SDL_SCANCODE_D])
+				else if (s[input::Keyboard::ScanCode::RIGHT] ||
+				         s[input::Keyboard::ScanCode::D])
 					cameraTransform->prependRotation(CAMERA_ANG_SPEED, Vector3::yAxis());
 			}
 			else
 			{
-				if (keyboard[SDL_SCANCODE_UP] ||
-				    keyboard[SDL_SCANCODE_W] ||
-				    keyboard[SDL_SCANCODE_Z])
+				if (s[input::Keyboard::ScanCode::UP] ||
+				    s[input::Keyboard::ScanCode::W] ||
+				    s[input::Keyboard::ScanCode::Z])
 					// go forward
 					cameraTransform->prependTranslation(Vector3::create(0.0f, 0.0f, -CAMERA_LIN_SPEED));
-				else if (keyboard[SDL_SCANCODE_DOWN] ||
-				         keyboard[SDL_SCANCODE_S])
+				else if (s[input::Keyboard::ScanCode::DOWN] ||
+				         s[input::Keyboard::ScanCode::S])
 					// go backward
 					cameraTransform->prependTranslation(Vector3::create(0.0f, 0.0f, CAMERA_LIN_SPEED));
-				if (keyboard[SDL_SCANCODE_LEFT] ||
-				    keyboard[SDL_SCANCODE_A] ||
-				    keyboard[SDL_SCANCODE_Q])
+				if (s[input::Keyboard::ScanCode::LEFT] ||
+				    s[input::Keyboard::ScanCode::A] ||
+				    s[input::Keyboard::ScanCode::Q])
 					cameraTransform->prependTranslation(-CAMERA_LIN_SPEED, 0.0f, 0.0f);
-				else if (keyboard[SDL_SCANCODE_RIGHT] ||
-				         keyboard[SDL_SCANCODE_D])
+				else if (s[input::Keyboard::ScanCode::RIGHT] ||
+				         s[input::Keyboard::ScanCode::D])
 					cameraTransform->prependTranslation(CAMERA_LIN_SPEED, 0.0f, 0.0f);
 
 				eye = cameraTransform->translation();
 
-				if (keyboard[SDL_SCANCODE_SPACE] && eye->y() <= 0.5f)
+				if (s[input::Keyboard::ScanCode::SPACE] && eye->y() <= 0.5f)
 					cameraTransform->prependTranslation(0.0f, 4 * CAMERA_LIN_SPEED, 0.0f);
 
 				cameraCollider->synchronizePhysicsWithGraphics();

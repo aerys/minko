@@ -35,6 +35,8 @@ using namespace minko::component;
 using namespace minko::scene;
 using namespace minko::render;
 
+const unsigned int Renderer::NUM_FALLBACK_ATTEMPTS = 32;
+
 Renderer::Renderer() :
     _backgroundColor(0),
 	_renderingBegin(Signal<Ptr>::create()),
@@ -224,7 +226,8 @@ Renderer::addSurface(Surface::Ptr surface)
 		&Renderer::surfaceTechniqueChanged,
 		shared_from_this(),
 		surface,
-		std::placeholders::_2
+		std::placeholders::_2,
+		std::placeholders::_3
 	));
 
 	_toCollect.insert(surface);
@@ -235,20 +238,27 @@ Renderer::addSurfaceDrawcalls(Surface::Ptr surface)
 {
 	removeSurfaceDrawcalls(surface);
 
-	_surfaceDrawCalls[surface]	= surface->createDrawCalls(targets()[0]->data());
+	auto& drawcalls = surface->createDrawCalls(targets()[0]->data(), NUM_FALLBACK_ATTEMPTS);
 
-	_drawCalls.insert(
-		_drawCalls.end(), 
-		_surfaceDrawCalls[surface].begin(), 
-		_surfaceDrawCalls[surface].end()
-	);
+	_surfaceDrawCalls[surface]	= drawcalls;
+
+	if (!drawcalls.empty())
+		_drawCalls.insert(
+			_drawCalls.end(), 
+			_surfaceDrawCalls[surface].begin(), 
+			_surfaceDrawCalls[surface].end()
+		);
 }
 
 void
 Renderer::removeSurface(Surface::Ptr surface)
 {
 	removeSurfaceDrawcalls(surface);
+
 	_surfaceTechniqueChangedSlot.erase(surface);
+
+	if (_surfaceDrawCalls.count(surface) > 0)
+		_surfaceDrawCalls.erase(surface);
 }
 
 void
@@ -259,19 +269,31 @@ Renderer::removeSurfaceDrawcalls(Surface::Ptr surface)
 	if (foundDrawcallsIt == _surfaceDrawCalls.end())
 		return;
 
-	const DrawCallList& drawcalls	= foundDrawcallsIt->second;
-	for (auto& drawCall : drawcalls)
-		_drawCalls.remove(drawCall);
+	const DrawCallList& surfaceDrawcalls = foundDrawcallsIt->second;
+	if (surfaceDrawcalls.empty())
+		return;
 
-	_surfaceDrawCalls.erase(foundDrawcallsIt);
+	for (DrawCallList::iterator it = _drawCalls.begin(); it != _drawCalls.end(); )
+	{
+		auto foundSurfaceDrawcallIt = std::find(surfaceDrawcalls.begin(), surfaceDrawcalls.end(), *it);
+
+		if (foundSurfaceDrawcallIt != surfaceDrawcalls.end())
+			it = _drawCalls.erase(it);
+		else
+			++it;
+	}
+
+	_surfaceDrawCalls.erase(surface);
 }
 
 void
 Renderer::render(std::shared_ptr<render::AbstractContext> context, std::shared_ptr<render::Texture> renderTarget)
 {
-	for (auto& surface : _toCollect)
-		addSurfaceDrawcalls(surface);
-	_toCollect.clear();
+	std::set<Surface::Ptr> toCollect;
+	_toCollect.swap(toCollect); // _toCollect now empty
+
+	for (auto surface : toCollect)
+		addSurfaceDrawcalls(surface); // warning: may add drawcalls in the _toCollect structure, hence the separate toCollect.
 
 	_renderingBegin->execute(shared_from_this());
 
@@ -355,8 +377,12 @@ Renderer::sceneManagerRenderingBeginHandler(std::shared_ptr<SceneManager>		scene
 
 void
 Renderer::surfaceTechniqueChanged(Surface::Ptr			surface, 
-								  const std::string&	technique)
+								  const std::string&	technique,
+								  bool					updateSurfaceDrawcalls)
 {
-	removeSurfaceDrawcalls(surface);
-	_toCollect.insert(surface);
+	if (updateSurfaceDrawcalls)
+	{
+		removeSurfaceDrawcalls(surface);
+		_toCollect.insert(surface);
+	}
 }
