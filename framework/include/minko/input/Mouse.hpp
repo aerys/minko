@@ -23,6 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Signal.hpp"
 #include "minko/AbstractCanvas.hpp"
+#include "minko/Any.hpp"
 
 namespace minko
 {
@@ -30,15 +31,18 @@ namespace minko
 	{
 		class Mouse
 		{
-			friend class AbstractCanvas;
-
 		public:
 			typedef std::shared_ptr<Mouse>	Ptr;
 
 		protected:
 			std::shared_ptr<AbstractCanvas>	_canvas;
+			
 			uint							_x;
 			uint							_y;
+
+			bool							_leftButtonIsDown;
+			bool							_rightButtonIsDown;
+
 			Signal<Ptr, int, int>::Ptr		_mouseMove;
 			Signal<Ptr, int, int>::Ptr		_mouseWheel;
 			Signal<Ptr>::Ptr				_mouseLeftButtonDown;
@@ -47,6 +51,8 @@ namespace minko
 			Signal<Ptr>::Ptr				_mouseRightButtonUp;
 			Signal<Ptr>::Ptr				_mouseMiddleButtonDown;
 			Signal<Ptr>::Ptr				_mouseMiddleButtonUp;
+
+			std::list<Any>					_slots;
 
 		public:
 			inline static
@@ -68,6 +74,20 @@ namespace minko
 			y()
 			{
 				return _y;
+			}
+
+			inline
+			bool
+			leftButtonIsDown()
+			{
+				return _leftButtonIsDown;
+			}
+
+			inline
+			bool
+			rightButtonIsDown()
+			{
+				return _rightButtonIsDown;
 			}
 
 			inline
