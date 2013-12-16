@@ -151,9 +151,21 @@ namespace minko
 			}
 
 			Ptr
+			queue(const std::string& filename);
+			Ptr
+			queue(const std::string& filename, std::shared_ptr<file::Options> options);
+
+			Ptr
+			queue(const std::string&				filename,
+				  std::shared_ptr<Options>			options,
+				  std::shared_ptr<AbstractLoader>	loader);
+
+			/*
+			Ptr
 			queue(const std::string&				filename,
 				  std::shared_ptr<Options>			options = nullptr,
-				  std::shared_ptr<AbstractLoader>	loader = nullptr);
+				  std::shared_ptr<AbstractLoader>	loader 	= nullptr);
+			*/
 
 			inline
 			Ptr
