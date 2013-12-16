@@ -35,6 +35,7 @@ solution "minko"
 	include 'plugins/angle'
 	include 'plugins/fx'
 	include 'plugins/assimp'
+	include 'plugins/oculus'
 	if os.get() == 'linux' then
 		include 'plugins/offscreen'
 	end
