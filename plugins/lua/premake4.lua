@@ -7,7 +7,7 @@ minko.project.library "plugin-lua"
 	kind "StaticLib"
 	language "C++"
 	files { "src/**.hpp", "src/**.cpp" }
-	includedirs { "src" }
+	includedirs { "src", "include" }
 	
 	-- lua
 	files { "lib/lua/src/**.c", "lib/lua/src/**.h" }
