@@ -159,6 +159,8 @@ namespace minko
 		typedef std::tuple<std::string, BindingSource, MacroBindingDefault, int, int>	MacroBinding;
 
 		typedef std::unordered_map<std::string, MacroBinding> MacroBindingMap;
+
+		class ContainerProperty;
 	}
 
 	namespace geometry
@@ -228,6 +230,7 @@ namespace minko
 	namespace input
 	{
 		class Mouse;
+        class Keyboard;
 	}
 }
 
@@ -287,4 +290,15 @@ operator-=(std::shared_ptr<T> a, std::shared_ptr<T> b)
 	return *a -= b;
 }
 
+namespace std
+{
+	template <class T>
+	inline 
+	void 
+	hash_combine(std::size_t & seed, const T& v)
+	{
+		std::hash<T> hasher;
+		seed ^= hasher(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+	}
+}
 //using namespace minko;

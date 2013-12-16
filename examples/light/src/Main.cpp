@@ -25,7 +25,7 @@ using namespace minko;
 using namespace minko::component;
 using namespace minko::math;
 
-#define POST_PROCESSING 1
+#define POST_PROCESSING 0
 #define WINDOW_WIDTH  	800
 #define WINDOW_HEIGHT 	600
 
@@ -85,7 +85,7 @@ int main(int argc, char** argv)
 		->queue("effect/Phong.effect")
 		->queue("effect/AnamorphicLensFlare/AnamorphicLensFlare.effect");
 
-    auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
+	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
 	{
 		// ground
 		auto ground = scene::Node::create("ground")
@@ -93,7 +93,7 @@ int main(int argc, char** argv)
 				assets->geometry("quad"),
 				material::Material::create()
 					->set("diffuseColor",	Vector4::create(1.f, 1.f, 1.f, 1.f)),
-				assets->effect("effect/Phong.effect")
+				assets->effect("phong")
 			))
 			->addComponent(Transform::create(Matrix4x4::create()->appendScale(50.f)->appendRotationX(-1.57f)));
 		root->addChild(ground);
@@ -101,11 +101,11 @@ int main(int argc, char** argv)
 		// sphere
 		auto sphere = scene::Node::create("sphere")
 			->addComponent(Surface::create(
-			assets->geometry("sphere"),
-			sphereMaterial,
-			assets->effect("effect/Phong.effect")
-			));
-			//->addComponent(Transform::create(Matrix4x4::create()->appendTranslation(0.f, 2.f, 0.f)->prependScale(3.f)));
+				assets->geometry("sphere"),
+				sphereMaterial,
+				assets->effect("phong")
+			))
+			->addComponent(Transform::create(Matrix4x4::create()->appendTranslation(0.f, 2.f, 0.f)->prependScale(3.f)));
 		root->addChild(sphere);
 
 		// spotLight
@@ -119,9 +119,9 @@ int main(int argc, char** argv)
 		root->addChild(lights);
 
 		// handle keyboard signals
-		auto keyDown = canvas->keyDown()->connect([&](Canvas::Ptr canvas, const Uint8* keyboard)
+		auto keyDown = canvas->keyboard()->keyDown()->connect([&](input::Keyboard::Ptr k, input::Keyboard::State s)
 		{
-			if (keyboard[SDL_SCANCODE_A])
+			if (s[input::Keyboard::ScanCode::A])
 			{
 				const auto MAX_NUM_LIGHTS = 40;
 
@@ -144,7 +144,7 @@ int main(int argc, char** argv)
 
 				std::cout << lights->children().size() << " lights" << std::endl;
 			}
-			if (keyboard[SDL_SCANCODE_R])
+			if (s[input::Keyboard::ScanCode::R])
 			{
 				if (lights->children().size() == 0)
 					return;
@@ -152,7 +152,7 @@ int main(int argc, char** argv)
 				lights->removeChild(lights->children().back());
 				std::cout << lights->children().size() << " lights" << std::endl;
 			}
-			if (keyboard[SDL_SCANCODE_SPACE])
+			if (s[input::Keyboard::ScanCode::SPACE])
 			{
 				auto data = sphere->component<Surface>()->material();
 				bool hasNormalMap = data->hasProperty("normalMap");
@@ -166,9 +166,9 @@ int main(int argc, char** argv)
 				else
 					data->set("normalMap", assets->texture("texture/normalmap-cells.png"));
 			}
-			if (keyboard[SDL_SCANCODE_UP])
+			if (s[input::Keyboard::ScanCode::UP])
 				camera->component<Transform>()->transform()->prependTranslation(0.f, 0.f, -1.f);
-			if (keyboard[SDL_SCANCODE_DOWN])
+			if (s[input::Keyboard::ScanCode::DOWN])
 				camera->component<Transform>()->transform()->prependTranslation(0.f, 0.f, 1.f);
 		});
 
@@ -207,11 +207,13 @@ int main(int argc, char** argv)
 		{
 			camera->component<PerspectiveCamera>()->aspectRatio((float)width / (float)height);
 
+#if POST_PROCESSING
 			auto oldTarget = ppTarget;
 
 			ppTarget = render::Texture::create(assets->context(), clp2(width), clp2(height), false, true);
 			ppTarget->upload();
 			ppData->set("backbuffer", ppTarget);
+#endif //POST_PROCESSING
 		});
 
 		auto yaw = 0.f;
