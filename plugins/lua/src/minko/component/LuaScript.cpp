@@ -27,14 +27,64 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/math/Vector4.hpp"
 #include "minko/math/Matrix4x4.hpp"
 #include "minko/data/Container.hpp"
+#include "minko/data/Provider.hpp"
 #include "minko/input/Mouse.hpp"
 #include "minko/AbstractCanvas.hpp"
+#include "minko/component/SceneManager.hpp"
+#include "minko/component/MouseManager.hpp"
+#include "minko/component/Surface.hpp"
+#include "minko/component/Transform.hpp"
+#include "minko/file/AssetLibrary.hpp"
+#include "minko/render/AbstractContext.hpp"
+#include "minko/render/Effect.hpp"
+#include "minko/render/Texture.hpp"
+#include "minko/material/Material.hpp"
+#include "minko/geometry/Geometry.hpp"
+#include "minko/geometry/CubeGeometry.hpp"
+#include "minko/geometry/SphereGeometry.hpp"
+#include "minko/component/AmbientLight.hpp"
+#include "minko/component/DirectionalLight.hpp"
+#include "minko/component/SpotLight.hpp"
+#include "minko/component/PointLight.hpp"
+
+#define BIND_SIGNAL(...) \
+    {                                                                                               \
+        _state.Class<std::function<void (__VA_ARGS__)>>("std::function<void(" #__VA_ARGS__ ")>");   \
+        auto& s = _state.Class<Signal<__VA_ARGS__>>("Signal<" #__VA_ARGS__ ">");                    \
+        _state.Class<Signal<__VA_ARGS__>::Slot>("Signal<" #__VA_ARGS__ ">::Slot");                  \
+        s.method("connect", &Signal<__VA_ARGS__>::connect);                                         \
+    }
+    
 
 using namespace minko;
 using namespace minko::component;
 
 LuaGlue LuaScript::_state;
 bool LuaScript::_initialized = false;
+
+std::shared_ptr<input::Mouse>
+LuaScript::LuaStub::getMouse()
+{
+    return _target->root()->component<MouseManager>()->mouse();
+}
+
+std::shared_ptr<math::Matrix4x4>
+LuaScript::LuaStub::getModelToWorldMatrix(std::shared_ptr<scene::Node> node)
+{
+    return (node ? node : _target)->data()->get<std::shared_ptr<math::Matrix4x4>>("transform.modelToWorldMatrix");
+}
+
+std::shared_ptr<file::AssetLibrary>
+LuaScript::LuaStub::getAssetLibrary()
+{
+    return getSceneManager()->assets();
+}
+
+std::shared_ptr<SceneManager>
+LuaScript::LuaStub::getSceneManager()
+{
+    return _target->root()->component<SceneManager>();
+}
 
 LuaScript::LuaScript(const std::string& name) :
     _scriptName(name),
@@ -55,7 +105,15 @@ LuaScript::initialize()
 
     auto name = _scriptName.c_str();
 
-    _state.Class<LuaStub>(name).end().glue();
+    _state
+        .Class<LuaStub>(name)
+            .property("sceneManager",            &LuaStub::getSceneManager)
+            .property("mouse",                   &LuaStub::getMouse)
+            .property("assets",                  &LuaStub::getAssetLibrary)
+            .method("getModelToWorldMatrix",     &LuaStub::getModelToWorldMatrix)
+        .end()
+        .glue();
+
     _class = _state.lookupClass(name);
 }
 
@@ -74,24 +132,33 @@ LuaScript::loadScript(const std::string& script)
 void
 LuaScript::start(scene::Node::Ptr node)
 {
+    auto stub = _targetToStub.count(node) == 0
+        ? _targetToStub[node] = new LuaStub(node)
+        : _targetToStub[node];
+
     if (_hasStartMethod)
-        dynamic_cast<LuaGlueClass<LuaScript::LuaStub>*>(_class)->invokeVoidMethod("start", &_stub, node);
+        dynamic_cast<LuaGlueClass<LuaScript::LuaStub>*>(_class)->invokeVoidMethod("start", stub, node);
 }
 
 void
 LuaScript::update(scene::Node::Ptr node)
 {
+    auto stub = _targetToStub[node];
+
     if (_hasUpdateMethod)
-        dynamic_cast<LuaGlueClass<LuaScript::LuaStub>*>(_class)->invokeVoidMethod("update", &_stub, node);
+        dynamic_cast<LuaGlueClass<LuaScript::LuaStub>*>(_class)->invokeVoidMethod("update", stub, node);
 }
 
 void
 LuaScript::stop(scene::Node::Ptr node)
 {
-    if (_hasStopMethod)
-        dynamic_cast<LuaGlueClass<LuaScript::LuaStub>*>(_class)->invokeVoidMethod("stop", &_stub, node);
-}
+    auto stub = _targetToStub[node];
 
+    if (_hasStopMethod)
+        dynamic_cast<LuaGlueClass<LuaScript::LuaStub>*>(_class)->invokeVoidMethod("stop", stub, node);
+
+    delete stub;
+}
 
 void
 LuaScript::initializeLuaBindings()
@@ -99,34 +166,42 @@ LuaScript::initializeLuaBindings()
     _initialized = true;
 
     _state
+        .Class<render::Texture>("Texture")
+            //.property("width",  &render::Texture::width)
+            //.property("height", &render::Texture::height)
+        .end()
         .Class<math::Vector2>("Vector2")
-            .method("getX", static_cast<float (math::Vector2::*)(void)>(&math::Vector2::x))
-            .method("setX", static_cast<void (math::Vector2::*)(float)>(&math::Vector2::x))
-            .method("getY", static_cast<float (math::Vector2::*)(void)>(&math::Vector2::y))
-            .method("setY", static_cast<void (math::Vector2::*)(float)>(&math::Vector2::y))
+            .method("create",   static_cast<math::Vector2::Ptr (*)(float, float)>(&math::Vector2::create))
             .method("toString", &math::Vector2::toString)
+            .property("x",      static_cast<float (math::Vector2::*)(void)>(&math::Vector2::x), static_cast<void (math::Vector2::*)(float)>(&math::Vector2::x))
+            .property("y",      static_cast<float (math::Vector2::*)(void)>(&math::Vector2::y), static_cast<void (math::Vector2::*)(float)>(&math::Vector2::y))
         .end()
         .Class<math::Vector3>("Vector3")
-            .method("getX", static_cast<float (math::Vector3::*)(void)>(&math::Vector3::x))
-            .method("setX", static_cast<void (math::Vector3::*)(float)>(&math::Vector3::x))
-            .method("getY", static_cast<float (math::Vector3::*)(void)>(&math::Vector3::y))
-            .method("setY", static_cast<void (math::Vector3::*)(float)>(&math::Vector3::y))
-            .method("getZ", static_cast<float (math::Vector3::*)(void)>(&math::Vector3::z))
-            .method("setZ", static_cast<void (math::Vector3::*)(float)>(&math::Vector3::z))
+            .method("create",   static_cast<math::Vector3::Ptr (*)(float, float, float)>(&math::Vector3::create))
             .method("toString", &math::Vector3::toString)
+            .method("zero",     &math::Vector3::zero)
+            .method("one",      &math::Vector3::one)
+            .method("up",       &math::Vector3::up)
+            .method("forward",  &math::Vector3::forward)
+            .method("xAxis",    &math::Vector3::xAxis)
+            .method("yAxis",    &math::Vector3::yAxis)
+            .method("zAxis",    &math::Vector3::zAxis)
+            .property("x",      static_cast<float (math::Vector3::*)(void)>(&math::Vector3::x), static_cast<void (math::Vector3::*)(float)>(&math::Vector3::x))
+            .property("y",      static_cast<float (math::Vector3::*)(void)>(&math::Vector3::y), static_cast<void (math::Vector3::*)(float)>(&math::Vector3::y))
+            .property("z",      static_cast<float (math::Vector3::*)(void)>(&math::Vector3::z), static_cast<void (math::Vector3::*)(float)>(&math::Vector3::z))
         .end()
         .Class<math::Vector4>("Vector4")
-            .method("getX", static_cast<float (math::Vector4::*)(void)>(&math::Vector4::x))
-            .method("setX", static_cast<void (math::Vector4::*)(float)>(&math::Vector4::x))
-            .method("getY", static_cast<float (math::Vector4::*)(void)>(&math::Vector4::y))
-            .method("setY", static_cast<void (math::Vector4::*)(float)>(&math::Vector4::y))
-            .method("getZ", static_cast<float (math::Vector4::*)(void)>(&math::Vector4::z))
-            .method("setZ", static_cast<void (math::Vector4::*)(float)>(&math::Vector4::z))
-            .method("getW", static_cast<float (math::Vector4::*)(void)>(&math::Vector4::w))
-            .method("setW", static_cast<void (math::Vector4::*)(float)>(&math::Vector4::w))
+            .method("create",   static_cast<math::Vector4::Ptr (*)(float, float, float, float)>(&math::Vector4::create))
             .method("toString", &math::Vector4::toString)
+            .property("x",      static_cast<float (math::Vector4::*)(void)>(&math::Vector4::x), static_cast<void (math::Vector4::*)(float)>(&math::Vector4::x))
+            .property("y",      static_cast<float (math::Vector4::*)(void)>(&math::Vector4::y), static_cast<void (math::Vector4::*)(float)>(&math::Vector4::y))
+            .property("z",      static_cast<float (math::Vector4::*)(void)>(&math::Vector4::z), static_cast<void (math::Vector4::*)(float)>(&math::Vector4::z))
+            .property("w",      static_cast<float (math::Vector4::*)(void)>(&math::Vector4::w), static_cast<void (math::Vector4::*)(float)>(&math::Vector4::w))
         .end()
         .Class<math::Matrix4x4>("Matrix4x4")
+            .method("create",               static_cast<math::Matrix4x4::Ptr (*)()>(&math::Matrix4x4::create))
+            .method("lookAt",               &math::Matrix4x4::lookAt)
+            .method("identity",             &math::Matrix4x4::identity)
             .method("appendRotationX",      &math::Matrix4x4::appendRotationX)
             .method("appendRotationY",      &math::Matrix4x4::appendRotationY)
             .method("appendRotationZ",      &math::Matrix4x4::appendRotationZ)
@@ -150,21 +225,97 @@ LuaScript::initializeLuaBindings()
         .end()
         .Class<scene::Node>("Node")
             //.method("getName",          static_cast<const std::string& (scene::Node::*)(void)>(&scene::Node::name))
-            .method("setName",          static_cast<void (scene::Node::*)(const std::string&)>(&scene::Node::name))
-            .method("getData",          &scene::Node::data)
+            //.method("setName",          static_cast<void (scene::Node::*)(const std::string&)>(&scene::Node::name))
+            //.prop("name", &scene::Node::name, &scene::Node::name)
+            .method("create",           static_cast<scene::Node::Ptr (*)(void)>(&scene::Node::create))
             .method("addChild",         &scene::Node::addChild)
             .method("removeChild",      &scene::Node::removeChild)
             .method("contains",         &scene::Node::contains)
             .method("addComponent",     &scene::Node::addComponent)
             .method("removeComponent",  &scene::Node::removeComponent)
+            .property("data",           &scene::Node::data)
+            .property("root",           &scene::Node::root)
         .end()
-        .Class<AbstractCanvas>("AbstractCanvas")
-            .method("getMouse", &AbstractCanvas::mouse)
+        .Class<geometry::Geometry>("Geometry")
         .end()
-        .Class<input::Mouse>("Mouse")
-            .method("getX", &input::Mouse::x)
-            .method("getY", &input::Mouse::y)
+        .Class<geometry::CubeGeometry>("CubeGeometry")
+            .method("create", &geometry::CubeGeometry::create)
         .end()
-        .open()
-        .glue();
+        .Class<geometry::SphereGeometry>("SphereGeometry")
+            .method("create", &geometry::SphereGeometry::create)
+        .end()
+        .Class<material::Material>("Material")
+            .method("create",       static_cast<material::Material::Ptr (*)(void)>(&material::Material::create))
+            .method("setTexture",   static_cast<data::Provider::Ptr (material::Material::*)(const std::string&, render::Texture::Ptr)>(&data::Provider::set<render::Texture::Ptr>))
+            .method("setInt",       static_cast<data::Provider::Ptr (material::Material::*)(const std::string&, int)>(&data::Provider::set<int>))
+            .method("setUint",      static_cast<data::Provider::Ptr (material::Material::*)(const std::string&, unsigned int)>(&data::Provider::set<unsigned int>))
+            .method("setFloat",     static_cast<data::Provider::Ptr (material::Material::*)(const std::string&, float)>(&data::Provider::set<float>))
+            .method("setVector2",   static_cast<data::Provider::Ptr (material::Material::*)(const std::string&, math::Vector2::Ptr)>(&data::Provider::set<math::Vector2::Ptr>))
+            .method("setVector3",   static_cast<data::Provider::Ptr (material::Material::*)(const std::string&, math::Vector3::Ptr)>(&data::Provider::set<math::Vector3::Ptr>))
+            .method("setVector4",   static_cast<data::Provider::Ptr (material::Material::*)(const std::string&, math::Vector4::Ptr)>(&data::Provider::set<math::Vector4::Ptr>))
+            .method("setMatrix4x4", static_cast<data::Provider::Ptr (material::Material::*)(const std::string&, math::Matrix4x4::Ptr)>(&data::Provider::set<math::Matrix4x4::Ptr>))
+            .method("getTexture",   static_cast<render::Texture::Ptr (material::Material::*)(const std::string&)>(&material::Material::get<render::Texture::Ptr>))
+            .method("getInt",       static_cast<int (material::Material::*)(const std::string&)>(&data::Provider::get<int>))
+            .method("getUint",      static_cast<unsigned int (material::Material::*)(const std::string&)>(&data::Provider::get<unsigned int>))
+            .method("getFloat",     static_cast<float (material::Material::*)(const std::string&)>(&data::Provider::get<float>))
+            .method("getVector2",   static_cast<math::Vector2::Ptr (material::Material::*)(const std::string&)>(&data::Provider::get<math::Vector2::Ptr>))
+            .method("getVector3",   static_cast<math::Vector3::Ptr (material::Material::*)(const std::string&)>(&data::Provider::get<math::Vector3::Ptr>))
+            .method("getVector4",   static_cast<math::Vector4::Ptr (material::Material::*)(const std::string&)>(&data::Provider::get<math::Vector4::Ptr>))
+            .method("getMatrix4x4", static_cast<math::Matrix4x4::Ptr (material::Material::*)(const std::string&)>(&data::Provider::get<math::Matrix4x4::Ptr>))
+        .end()
+        .Class<render::Effect>("Effect")
+        .end()
+        .Class<Surface>("Surface")
+            .method("create", static_cast<Surface::Ptr (*)(geometry::Geometry::Ptr, data::Provider::Ptr, render::Effect::Ptr)>(&Surface::create))
+        .end()
+        .Class<render::AbstractContext>("AbstractContext")
+        .end()
+        .Class<SceneManager>("SceneManager")
+            .property("assets",     &SceneManager::assets)
+        .end()
+        .Class<Transform>("Transform")
+            .method("create",           static_cast<Transform::Ptr (*)(void)>(&Transform::create))
+            .method("createFromMatrix", static_cast<Transform::Ptr (*)(math::Matrix4x4::Ptr)>(&Transform::create))
+        .end()
+        .Class<PerspectiveCamera>("PerspectiveCamera")
+            .method("create",           &PerspectiveCamera::create)
+            .method("updateProjection", &PerspectiveCamera::updateProjection)
+        .end()
+        .Class<Renderer>("Renderer")
+            .method("create",               static_cast<Renderer::Ptr (*)(void)>(&Renderer::create))
+            .property("backgroundColor",    &Renderer::backgroundColor, &Renderer::backgroundColor)
+        .end()
+        .Class<AmbientLight>("AmbientLight")
+            .method("create", &AmbientLight::create)
+        .end()
+        .Class<DirectionalLight>("DirectionalLight")
+            .method("create", &DirectionalLight::create)
+        .end()
+        .Class<AmbientLight>("SpotLight")
+            .method("create", &SpotLight::create)
+        .end()
+        .Class<AmbientLight>("PointLight")
+            .method("create", &PointLight::create)
+        .end();
+
+    auto& input_mouse = _state.Class<input::Mouse>("Mouse")
+        .property("x",                  &input::Mouse::x)
+        .property("y",                  &input::Mouse::y)
+        .property("leftButtonIsDown",   &input::Mouse::leftButtonIsDown)
+        .property("rightButtonIsDown",  &input::Mouse::rightButtonIsDown);
+    //BIND_SIGNAL(input::Mouse::Ptr);
+    //input_mouse.property("leftButtonDown", &input::Mouse::leftButtonDown);
+
+    auto& file_assetlibrary = _state.Class<file::AssetLibrary>("AssetLibrary")
+        .method("queue",        static_cast<file::AssetLibrary::Ptr (file::AssetLibrary::*)(const std::string&)>(&file::AssetLibrary::queue))
+        .method("load",         static_cast<file::AssetLibrary::Ptr (file::AssetLibrary::*)(void)>(&file::AssetLibrary::load))
+        .method("geometry",     static_cast<geometry::Geometry::Ptr (file::AssetLibrary::*)(const std::string&)>(&file::AssetLibrary::geometry))
+        .method("effect",       static_cast<render::Effect::Ptr (file::AssetLibrary::*)(const std::string&)>(&file::AssetLibrary::effect))
+        .method("texture",      static_cast<render::Texture::Ptr (file::AssetLibrary::*)(const std::string&)>(&file::AssetLibrary::texture))
+        .method("script",       static_cast<AbstractScript::Ptr (file::AssetLibrary::*)(const std::string&)>(&file::AssetLibrary::script))
+        .property("context",    &file::AssetLibrary::context);
+    //BIND_SIGNAL(file::AssetLibrary::Ptr);
+    //file_assetlibrary.property("complete", &file::AssetLibrary::complete);
+
+    _state.open().glue();
 }
