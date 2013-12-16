@@ -226,6 +226,16 @@ class LuaGlueClass : public LuaGlueClassBase
 			
 			return *this;
 		}
+
+		template<typename _Type>
+		LuaGlueClass<_Class> &property(const std::string &name, _Type (_Class::*getter)())
+		{
+			//printf("property(%s)\n", name.c_str());
+			auto impl = new LuaGlueProperty<_Type, _Class>(this, name, getter);
+			properties_.addSymbol(name.c_str(), impl);
+			
+			return *this;
+		}
 		
 		template<typename _Type>
 		LuaGlueClass<_Class> &prop(const std::string &name, _Type (_Class::*getter)(), void (_Class::*setter)(_Type))
@@ -239,6 +249,17 @@ class LuaGlueClass : public LuaGlueClassBase
 		
 		template<typename _Ret, typename... _Args>
 		LuaGlueClass<_Class> &method(const std::string &name, _Ret (_Class::*fn)(_Args...))
+		{
+			//printf("method(%s)\n", name.c_str());
+			auto impl = new LuaGlueMethod<_Ret, _Class, _Args...>(this, name, std::forward<decltype(fn)>(fn));
+			methods.addSymbol(name.c_str(), impl);
+			
+			return *this;
+		}
+
+		template<typename _Ret, typename _BaseClass, typename... _Args>
+		typename std::enable_if<std::is_convertible<_Class, _BaseClass>::value, LuaGlueClass<_Class>&>::type
+		method(const std::string &name, _Ret (_BaseClass::*fn)(_Args...))
 		{
 			//printf("method(%s)\n", name.c_str());
 			auto impl = new LuaGlueMethod<_Ret, _Class, _Args...>(this, name, std::forward<decltype(fn)>(fn));
