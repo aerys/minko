@@ -20,16 +20,20 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Minko.hpp"
 #include "minko/MinkoPNG.hpp"
 #include "minko/MinkoSDL.hpp"
+#ifdef MINKO_PLUGIN_OCULUS
+	#include "minko/MinkoOculus.hpp"
+#endif // MINKO_PLUGIN_OCULUS
 
 using namespace minko;
 using namespace minko::component;
 using namespace minko::math;
 
-#define POST_PROCESSING 0
+//#define POST_PROCESSING true
 #define WINDOW_WIDTH  	800
 #define WINDOW_HEIGHT 	600
 
-scene::Node::Ptr camera = nullptr;
+scene::Node::Ptr camera		= nullptr;
+float cameraRotationYSpeed	= 0.f;
 
 scene::Node::Ptr
 createPointLight(Vector3::Ptr color, Vector3::Ptr position, file::AssetLibrary::Ptr assets)
@@ -52,18 +56,16 @@ createPointLight(Vector3::Ptr color, Vector3::Ptr position, file::AssetLibrary::
 
 int main(int argc, char** argv)
 {
-	auto canvas = Canvas::create("Minko Examples - Light", WINDOW_WIDTH, WINDOW_HEIGHT);
-
-	canvas->context()->errorsEnabled(true);
+	MinkoSDL::initialize("Minko Examples - Light", WINDOW_WIDTH, WINDOW_HEIGHT);
+	MinkoSDL::context()->errorsEnabled(true);
 
 	const clock_t startTime	= clock();
 
-	auto sceneManager		= SceneManager::create(canvas->context());
+	auto sceneManager		= SceneManager::create(MinkoSDL::context());
 	auto root				= scene::Node::create("root")->addComponent(sceneManager);
 	auto sphereGeometry		= geometry::SphereGeometry::create(sceneManager->assets()->context(), 32, 32, true);
 	auto sphereMaterial		= material::Material::create()
 		->set("diffuseColor",	Vector4::create(1.f, 1.f, 1.f, 1.f))
-		->set("specularColor",	Vector4::create(0.0f, 1.0f, 1.0f, 1.0f))
 		->set("shininess",		16.f);
 	auto lights				= scene::Node::create("lights");
 
@@ -83,6 +85,9 @@ int main(int argc, char** argv)
 		->queue("effect/Basic.effect")
 		->queue("effect/Sprite.effect")
 		->queue("effect/Phong.effect")
+#ifdef MINKO_PLUGIN_OCULUS
+		->queue("effect/OculusVR/OculusVR.effect")
+#endif // MINKO_PLUGIN_OCULUS
 		->queue("effect/AnamorphicLensFlare/AnamorphicLensFlare.effect");
 
 	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
@@ -93,7 +98,7 @@ int main(int argc, char** argv)
 				assets->geometry("quad"),
 				material::Material::create()
 					->set("diffuseColor",	Vector4::create(1.f, 1.f, 1.f, 1.f)),
-				assets->effect("phong")
+				assets->effect("basic")
 			))
 			->addComponent(Transform::create(Matrix4x4::create()->appendScale(50.f)->appendRotationX(-1.57f)));
 		root->addChild(ground);
@@ -103,7 +108,7 @@ int main(int argc, char** argv)
 			->addComponent(Surface::create(
 				assets->geometry("sphere"),
 				sphereMaterial,
-				assets->effect("phong")
+				assets->effect("effect/Phong.effect")
 			))
 			->addComponent(Transform::create(Matrix4x4::create()->appendTranslation(0.f, 2.f, 0.f)->prependScale(3.f)));
 		root->addChild(sphere);
@@ -118,10 +123,30 @@ int main(int argc, char** argv)
 		lights->addComponent(Transform::create());
 		root->addChild(lights);
 
-		// handle keyboard signals
-		auto keyDown = canvas->keyboard()->keyDown()->connect([&](input::Keyboard::Ptr k, input::Keyboard::State s)
+		// handle mouse signals
+		minko::Signal<uint, uint>::Slot mouseMove;
+		int oldX = 0;
+
+		auto mouseDown = MinkoSDL::mouseLeftButtonDown()->connect([&](unsigned int x, unsigned int y)
 		{
-			if (s[input::Keyboard::ScanCode::A])
+			oldX = x;
+
+			mouseMove = MinkoSDL::mouseMove()->connect([&](unsigned int x, unsigned int y)
+			{
+				cameraRotationYSpeed = (float)((int)x - oldX) * .01f;
+				oldX = x;
+			});
+		});
+
+		auto mouseUp = MinkoSDL::mouseLeftButtonUp()->connect([&](unsigned int x, unsigned int y)
+		{
+			mouseMove = nullptr;
+		});
+
+		// handle keyboard signals
+		auto keyDown = MinkoSDL::keyDown()->connect([&](const Uint8* keyboard)
+		{
+			if (keyboard[SDL_SCANCODE_A])
 			{
 				const auto MAX_NUM_LIGHTS = 40;
 
@@ -144,7 +169,7 @@ int main(int argc, char** argv)
 
 				std::cout << lights->children().size() << " lights" << std::endl;
 			}
-			if (s[input::Keyboard::ScanCode::R])
+			if (keyboard[SDL_SCANCODE_R])
 			{
 				if (lights->children().size() == 0)
 					return;
@@ -152,7 +177,7 @@ int main(int argc, char** argv)
 				lights->removeChild(lights->children().back());
 				std::cout << lights->children().size() << " lights" << std::endl;
 			}
-			if (s[input::Keyboard::ScanCode::SPACE])
+			if (keyboard[SDL_SCANCODE_SPACE])
 			{
 				auto data = sphere->component<Surface>()->material();
 				bool hasNormalMap = data->hasProperty("normalMap");
@@ -166,23 +191,27 @@ int main(int argc, char** argv)
 				else
 					data->set("normalMap", assets->texture("texture/normalmap-cells.png"));
 			}
-			if (s[input::Keyboard::ScanCode::UP])
+			if (keyboard[SDL_SCANCODE_UP])
 				camera->component<Transform>()->transform()->prependTranslation(0.f, 0.f, -1.f);
-			if (s[input::Keyboard::ScanCode::DOWN])
+			if (keyboard[SDL_SCANCODE_DOWN])
 				camera->component<Transform>()->transform()->prependTranslation(0.f, 0.f, 1.f);
 		});
 
 		// camera init
 		camera = scene::Node::create("camera")
-			->addComponent(Renderer::create())
+			->addComponent(Renderer::create(0xffffffff))
+#ifdef MINKO_PLUGIN_OCULUS
+			->addComponent(OculusVRCamera::create((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT))
+#else
 			->addComponent(PerspectiveCamera::create((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT))
+#endif // MINKO_PLUGIN_OCULUS
 			->addComponent(Transform::create(
 				Matrix4x4::create()->lookAt(Vector3::create(0.f, 2.f), Vector3::create(10.f, 10.f, 10.f))
 			));
 		root->addChild(camera);
 
 		// initialize post processing
-#if POST_PROCESSING
+#ifdef POST_PROCESSING
 		auto ppFx = sceneManager->assets()->effect("effect/AnamorphicLensFlare/AnamorphicLensFlare.effect");
 
 		if (!ppFx)
@@ -193,85 +222,32 @@ int main(int argc, char** argv)
 		ppTarget->upload();
 
 		auto ppRenderer = Renderer::create();
-		auto ppData = data::Provider::create()->set("backbuffer", ppTarget);
 		auto ppScene = scene::Node::create()
 			->addComponent(ppRenderer)
 			->addComponent(Surface::create(
 				geometry::QuadGeometry::create(sceneManager->assets()->context()),
-				ppData,
+				data::Provider::create()
+					->set("backbuffer", ppTarget),
 				ppFx
 			));
 #endif
 		
-		auto resized = canvas->resized()->connect([&](Canvas::Ptr canvas, unsigned int width, unsigned int height)
+		auto resized = MinkoSDL::resized()->connect([&](unsigned int width, unsigned int height)
 		{
-			camera->component<PerspectiveCamera>()->aspectRatio((float)width / (float)height);
-
-#if POST_PROCESSING
-			auto oldTarget = ppTarget;
-
-			ppTarget = render::Texture::create(assets->context(), clp2(width), clp2(height), false, true);
-			ppTarget->upload();
-			ppData->set("backbuffer", ppTarget);
-#endif //POST_PROCESSING
+			if (camera->component<PerspectiveCamera>())
+				camera->component<PerspectiveCamera>()->aspectRatio((float)width / (float)height);
+			else if (camera->component<OculusVRCamera>())
+				camera->component<OculusVRCamera>()->aspectRatio(((float)width * .5f) / (float)height);
 		});
 
-		auto yaw = 0.f;
-		auto pitch = PI * .5f;
-		auto roll = 0.f;
-		auto minPitch = 0.f + 1e-5;
-		auto maxPitch = (float)PI - 1e-5;
-		auto lookAt = Vector3::create(0.f, 2.f, 0.f);
-		auto distance = 20.f;
-
-		// handle mouse signals
-		auto mouseWheel = canvas->mouse()->wheel()->connect([&](input::Mouse::Ptr m, int h, int v)
+		auto enterFrame = MinkoSDL::enterFrame()->connect([&]()
 		{
-			distance += (float)v / 10.f;
-		});
-
-		Signal<input::Mouse::Ptr, int, int>::Slot mouseMove;
-		auto cameraRotationXSpeed = 0.f;
-		auto cameraRotationYSpeed = 0.f;
-
-		auto mouseDown = canvas->mouse()->leftButtonDown()->connect([&](input::Mouse::Ptr m)
-		{
-			mouseMove = canvas->mouse()->move()->connect([&](input::Mouse::Ptr, int dx, int dy)
-			{
-				cameraRotationYSpeed = (float)dx * .01f;
-				cameraRotationXSpeed = (float)dy * -.01f;
-			});
-		});
-
-		auto mouseUp = canvas->mouse()->leftButtonUp()->connect([&](input::Mouse::Ptr m)
-		{
-			mouseMove = nullptr;
-		});
-
-		auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, uint deltaTime)
-		{
-			yaw += cameraRotationYSpeed;
+			camera->component<Transform>()->transform()->appendRotationY(cameraRotationYSpeed);
 			cameraRotationYSpeed *= 0.9f;
-
-			pitch += cameraRotationXSpeed;
-			cameraRotationXSpeed *= 0.9f;
-			if (pitch > maxPitch)
-				pitch = maxPitch;
-			else if (pitch < minPitch)
-				pitch = minPitch;
-
-			camera->component<Transform>()->transform()->lookAt(
-				lookAt,
-				Vector3::create(
-					lookAt->x() + distance * cosf(yaw) * sinf(pitch),
-					lookAt->y() + distance * cosf(pitch),
-					lookAt->z() + distance * sinf(yaw) * sinf(pitch)
-				)
-			);
 
 			lights->component<Transform>()->transform()->appendRotationY(.005f);
 
-#if POST_PROCESSING
+#ifdef POST_PROCESSING
 			sceneManager->nextFrame(ppTarget);
 			ppRenderer->render(assets->context());
 #else
@@ -279,7 +255,7 @@ int main(int argc, char** argv)
 #endif
 		});
 
-		canvas->run();
+		MinkoSDL::run();
 	});
 
 	sceneManager->assets()->load();
