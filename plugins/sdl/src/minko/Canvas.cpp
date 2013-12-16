@@ -46,9 +46,6 @@ Canvas::Canvas(const std::string& name, const uint width, const uint height, boo
 	_framerate(0.f),
 	_desiredFramerate(60.f),
 	_enterFrame(Signal<Canvas::Ptr, uint, uint>::create()),
-	_joystickMotion(Signal<Canvas::Ptr, int, int, int>::create()),
-	_joystickButtonDown(Signal<Canvas::Ptr, int>::create()),
-	_joystickButtonUp(Signal<Canvas::Ptr, int>::create()),
 	_resized(Signal<Canvas::Ptr, uint, uint>::create())
 {
 }
@@ -63,8 +60,8 @@ Canvas::initialize()
 void
 Canvas::initializeInputs()
 {
-	_mouse = Canvas::SDLMouse::create(shared_from_this());
-    _keyboard = input::Keyboard::create();
+	_mouse		= Canvas::SDLMouse::create(shared_from_this());
+    _keyboard	= input::Keyboard::create();
 
     for (int i = 0; i < SDL_NumJoysticks(); ++i)
     {
@@ -72,6 +69,8 @@ Canvas::initializeInputs()
 
         if (!joystick)
             continue;
+		else
+			_joysticks.push_back(Canvas::SDLJoystick::create(shared_from_this()));
     }
 }
 
@@ -270,15 +269,19 @@ Canvas::step()
 			break;
 
 		case SDL_JOYAXISMOTION:
-			_joystickMotion->execute(shared_from_this(), event.jaxis.which, event.jaxis.axis, event.jaxis.value);
+			_joysticks[event.jaxis.which]->joystickAxisMotion()->execute(_joysticks[event.jaxis.which], event.jaxis.which, event.jaxis.axis, event.jaxis.value);
 			break;
 
 		case SDL_JOYBUTTONDOWN:
-			_joystickButtonDown->execute(shared_from_this(), event.jbutton.button);
+			_joysticks[event.jaxis.which]->joystickButtonDown()->execute(_joysticks[event.jaxis.which], event.button.which, event.jbutton.button);
 			break;
 
 		case SDL_JOYBUTTONUP:
-			_joystickButtonUp->execute(shared_from_this(), event.jbutton.button);
+			_joysticks[event.jaxis.which]->joystickButtonUp()->execute(_joysticks[event.jaxis.which], event.button.which, event.jbutton.button);
+			break;
+
+		case SDL_JOYHATMOTION:
+			_joysticks[event.jaxis.which]->joystickHatMotion()->execute(_joysticks[event.jaxis.which], event.jhat.which, event.jhat.hat, event.jhat.value);
 			break;
 
 		case SDL_WINDOWEVENT:
