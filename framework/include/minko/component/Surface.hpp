@@ -84,8 +84,17 @@ namespace minko
 			Ptr
 			create(std::shared_ptr<geometry::Geometry> 	geometry,
 				   std::shared_ptr<data::Provider>		material,
+				   std::shared_ptr<render::Effect>		effect)
+			{
+				return create(geometry, material, effect, "default");
+			}
+
+			static
+			Ptr
+			create(std::shared_ptr<geometry::Geometry> 	geometry,
+				   std::shared_ptr<data::Provider>		material,
 				   std::shared_ptr<render::Effect>		effect,
-				   const std::string&					technique = "default")
+				   const std::string&					technique)
 			{
 				Ptr surface(new Surface(geometry, material, effect, technique));
 
