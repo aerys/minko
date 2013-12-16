@@ -124,7 +124,7 @@ namespace minko
 
 			template <typename T>
 			typename std::enable_if<std::is_convertible<T, std::shared_ptr<Value>>::value, T>::type
-			get(const std::string& propertyName, bool skipPropertyNameFormatting = false) const
+			get(const std::string& propertyName, bool skipPropertyNameFormatting)
 			{
 				const std::string&	formattedName	= skipPropertyNameFormatting ? propertyName : formatPropertyName(propertyName);
 				auto				foundIt			= values().find(formattedName);
@@ -136,9 +136,18 @@ namespace minko
 				// return std::dynamic_pointer_cast<typename T::element_type>(_values[formattedName]);
 			}
 
+			/*
+			template <typename T>
+			typename std::enable_if<std::is_convertible<T, std::shared_ptr<Value>>::value, T>::type
+			get(const std::string& propertyName)
+			{
+				return get<T>(propertyName, false);
+			}
+			*/
+
 			template <typename T>
 			typename std::enable_if<!std::is_convertible<T, std::shared_ptr<Value>>::value, T>::type
-			get(const std::string& propertyName, bool skipPropertyNameFormatting = false) const
+			get(const std::string& propertyName, bool skipPropertyNameFormatting)
 			{
 				const std::string&	formattedName	= skipPropertyNameFormatting ? propertyName : formatPropertyName(propertyName);
 				auto				foundIt			= values().find(formattedName);
@@ -148,6 +157,14 @@ namespace minko
 					: T();
 
 				// return std::dynamic_pointer_cast<ValueWrapper<T>>(_values[formattedName])->value();
+			}
+
+			template <typename T>
+			inline
+			T
+			get(const std::string& propertyName)
+			{
+				return get<T>(propertyName, false);
 			}
 
 			template <typename T>
@@ -170,7 +187,7 @@ namespace minko
 
 			template <typename T>
 			Ptr
-			set(const std::string& propertyName, T value, bool skipPropertyNameFormatting = false)
+			set(const std::string& propertyName, T value, bool skipPropertyNameFormatting)
 			{
 				registerProperty(
 					skipPropertyNameFormatting ? propertyName : formatPropertyName(propertyName),
@@ -178,6 +195,14 @@ namespace minko
 				);
 
 				return shared_from_this();
+			}
+
+			template <typename T>
+			inline
+			Ptr
+			set(const std::string& propertyName, T value)
+			{
+				return set<T>(propertyName, value, false);
 			}
 
 			virtual
