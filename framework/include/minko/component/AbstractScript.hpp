@@ -72,7 +72,7 @@ namespace minko
 				// nothing
 			}
 
-		public:
+		protected:
 			virtual
 			void
 			initialize();
@@ -81,6 +81,7 @@ namespace minko
 			void
 			targetAddedHandler(AbsCmpPtr cmp, NodePtr node);
 
+			virtual
 			void
 			targetRemovedHandler(AbsCmpPtr cmp, NodePtr node);
 
