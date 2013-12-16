@@ -28,64 +28,42 @@ using namespace minko::math;
 
 int main(int argc, char** argv)
 {
-	auto canvas = Canvas::create("Minko Example - Cube", 800, 600);
-
+	auto canvas = Canvas::create("Minko Example - Lua Scripts", 800, 600);
 	auto sceneManager = SceneManager::create(canvas->context());
-	
+	auto root = scene::Node::create("root")
+		->addComponent(sceneManager)
+		->addComponent(MouseManager::create(canvas->mouse()));
+
 	// setup assets
 	sceneManager->assets()->defaultOptions()->generateMipmaps(true);
 	sceneManager->assets()
 		->registerParser<file::PNGParser>("png")
         ->registerParser<file::LuaScriptParser>("lua")
-        ->queue("script/test.lua")
-        ->queue("script/framerate.lua")
-        ->queue("script/rotate.lua")
-		->queue("texture/box.png")
-		->queue("effect/Basic.effect");
+        ->queue("script/main.lua");
 
-	sceneManager->assets()->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()));
-	
-	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
-	{
-		auto cubeMaterial = material::BasicMaterial::create()->diffuseMap(assets->texture("texture/box.png"));
-
-		auto root = scene::Node::create("root")
-			->addComponent(sceneManager);
-
-		auto camera = scene::Node::create("camera")
-			->addComponent(Renderer::create(0x7f7f7fff))
-			->addComponent(Transform::create(
-				Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 3.f))
-			))
-			->addComponent(PerspectiveCamera::create(800.f / 600.f, (float)PI * 0.25f, .1f, 1000.f));
-		root->addChild(camera);
-		
-		auto mesh = scene::Node::create("mesh")
-			->addComponent(Transform::create())
-			->addComponent(Surface::create(
-				geometry::CubeGeometry::create(sceneManager->assets()->context()),
-				material::BasicMaterial::create()->diffuseMap(assets->texture("texture/box.png")),
-				assets->effect("effect/Basic.effect")
-			))
-            ->addComponent(assets->script("script/rotate.lua"));
-		root->addChild(mesh);
-
-		auto resized = canvas->resized()->connect([&](Canvas::Ptr canvas, uint w, uint h)
+	Signal<file::AssetLibrary::Ptr>::Slot loaded = sceneManager->assets()->complete()->connect(
+		[&](file::AssetLibrary::Ptr assets)
 		{
-			camera->component<PerspectiveCamera>()->aspectRatio((float)w / (float)h);
-		});
-
-		auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, uint deltaTime)
-		{
-			//mesh->component<Transform>()->transform()->appendRotationY(.01f);
-
-			sceneManager->nextFrame();
-		});
-
-		canvas->run();
-	});
+			root->addComponent(assets->script("script/main.lua"));
+			loaded = nullptr;
+		}
+	);
 
 	sceneManager->assets()->load();
+
+	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, uint deltaTime)
+	{
+		sceneManager->nextFrame();
+	});
+
+	/*
+	auto resized = canvas->resized()->connect([&](Canvas::Ptr canvas, uint w, uint h)
+	{
+		camera->component<PerspectiveCamera>()->aspectRatio((float)w / (float)h);
+	});
+	*/
+
+	canvas->run();
 
 	return 0;
 }
