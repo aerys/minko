@@ -27,7 +27,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/OpenGLES2Context.hpp"
 #include "minko/AbstractCanvas.hpp"
 #include "minko/input/Mouse.hpp"
-#include "minko/input/Joystick.hpp"
+
 
 struct SDL_Window;
 typedef unsigned char Uint8;
@@ -74,7 +74,7 @@ namespace minko
 			}
 		};
 
-		class SDLJoystick : 
+		/*class SDLJoystick : 
 			public input::Joystick
 		{
 			friend class Canvas;
@@ -91,7 +91,7 @@ namespace minko
 				input::Joystick(canvas)
 			{
 			}
-		};
+		};*/
 
 	private:
 #ifdef EMSCRIPTEN
@@ -116,7 +116,7 @@ namespace minko
 		Signal<Ptr, uint, uint>::Ptr				_enterFrame;
 		Signal<Ptr, uint, uint>::Ptr				_resized;
 		std::shared_ptr<SDLMouse>					_mouse;
-		std::vector<std::shared_ptr<SDLJoystick>>	_joysticks;
+		//std::vector<std::shared_ptr<SDLJoystick>>	_joysticks;
         std::shared_ptr<input::Keyboard>			_keyboard;
 
 	public:
@@ -194,12 +194,12 @@ namespace minko
             return _keyboard;
         }
 		
-		inline
+		/*inline
 		std::shared_ptr<input::Joystick>
         joystick(int id)
         {
 			return _joysticks[id];
-        }
+        }*/
 
 		inline
 		Signal<Ptr, uint, uint>::Ptr

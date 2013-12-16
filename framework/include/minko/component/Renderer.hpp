@@ -42,6 +42,7 @@ namespace minko
 			typedef std::shared_ptr<SceneManager>						SceneManagerPtr;
 			typedef std::shared_ptr<render::Texture>					TexturePtr;
 			typedef Signal<SurfacePtr, const std::string&, bool>::Slot	SurfaceTechniqueChangedSlot;
+			typedef std::shared_ptr<render::DrawCallOrganizer>			DrawCallFactoryPtr;
 
 		private:
 			DrawCallList												_drawCalls;
@@ -54,6 +55,7 @@ namespace minko
 			std::shared_ptr<render::Texture>							_renderTarget;
 
 			std::set<std::shared_ptr<Surface>>							_toCollect;
+			std::shared_ptr<render::Effect>								_effect;
 
 			Signal<AbsCtrlPtr, NodePtr>::Slot							_targetAddedSlot;
 			Signal<AbsCtrlPtr, NodePtr>::Slot							_targetRemovedSlot;
@@ -66,14 +68,16 @@ namespace minko
 			Signal<SceneManagerPtr, uint, TexturePtr>::Slot				_renderingBeginSlot;
 			std::unordered_map<SurfacePtr, SurfaceTechniqueChangedSlot>	_surfaceTechniqueChangedSlot;
 
+			DrawCallFactoryPtr											_drawCallFactory;
+
 			static const unsigned int									NUM_FALLBACK_ATTEMPTS;
 
 		public:
 			inline static
 			Ptr
-			create()
+			create(std::shared_ptr<render::Effect> effect= nullptr)
 			{
-				auto ctrl = std::shared_ptr<Renderer>(new Renderer());
+				auto ctrl = std::shared_ptr<Renderer>(new Renderer(effect));
 
 				ctrl->initialize();
 
@@ -82,9 +86,9 @@ namespace minko
 
 			inline static
 			Ptr
-			create(uint backgroundColor)
+			create(uint backgroundColor, std::shared_ptr<render::Effect> effect= nullptr)
 			{
-				auto ctrl = std::shared_ptr<Renderer>(new Renderer());
+				auto ctrl = std::shared_ptr<Renderer>(new Renderer(effect));
 
 				ctrl->initialize();
 				ctrl->backgroundColor(backgroundColor);
@@ -94,6 +98,13 @@ namespace minko
 
 			~Renderer()
 			{
+			}
+
+			inline
+			std::shared_ptr<render::Effect>
+			effect()
+			{
+				return _effect;
 			}
 
 			inline
@@ -143,7 +154,7 @@ namespace minko
 			}
 
 		private:
-			Renderer();
+			Renderer(std::shared_ptr<render::Effect> effect);
 
 			void
 			initialize();

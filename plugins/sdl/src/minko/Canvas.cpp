@@ -67,10 +67,10 @@ Canvas::initializeInputs()
     {
         SDL_Joystick* joystick = SDL_JoystickOpen(i);
 
-        if (!joystick)
+    /*    if (!joystick)
             continue;
 		else
-			_joysticks.push_back(Canvas::SDLJoystick::create(shared_from_this()));
+			_joysticks.push_back(Canvas::SDLJoystick::create(shared_from_this()));*/
     }
 }
 
@@ -268,7 +268,7 @@ Canvas::step()
 			//_mouseWheel->execute(shared_from_this(), event.wheel.x, event.wheel.y);
 			break;
 
-		case SDL_JOYAXISMOTION:
+		/*case SDL_JOYAXISMOTION:
 			_joysticks[event.jaxis.which]->joystickAxisMotion()->execute(_joysticks[event.jaxis.which], event.jaxis.which, event.jaxis.axis, event.jaxis.value);
 			break;
 
@@ -283,7 +283,7 @@ Canvas::step()
 		case SDL_JOYHATMOTION:
 			_joysticks[event.jaxis.which]->joystickHatMotion()->execute(_joysticks[event.jaxis.which], event.jhat.which, event.jhat.hat, event.jhat.value);
 			break;
-
+			*/
 		case SDL_WINDOWEVENT:
 			switch (event.window.event)
 			{
