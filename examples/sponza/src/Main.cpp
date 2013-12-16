@@ -24,6 +24,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/MinkoBullet.hpp"
 #include "minko/MinkoParticles.hpp"
 #include "minko/MinkoSDL.hpp"
+#ifdef MINKO_PLUGIN_OCULUS
+#include "minko/MinkoOculus.hpp"
+#endif // MINKO_PLUGIN_OCULUS
 
 #include "minko/deserialize/TypeDeserializer.hpp"
 #include "minko/component/bullet/ColliderData.hpp"
@@ -313,7 +316,11 @@ initializeCamera(scene::Node::Ptr group)
 	camera->addComponent(renderer);
 	root->addChild(camera);
 
+#ifdef MINKO_PLUGIN_OCULUS
+	camera->addComponent(OculusVRCamera::create((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT));
+#else
 	camera->addComponent(PerspectiveCamera::create((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT));
+#endif //MINKO_PLUGIN_OCULUS
 }
 
 void
@@ -386,6 +393,9 @@ main(int argc, char** argv)
 	sceneManager->assets()
 		->queue("texture/firefull.jpg")
 		->queue("effect/Particles.effect")
+#ifdef MINKO_PLUGIN_OCULUS
+		->queue("effect/OculusVR/OculusVR.effect")
+#endif // MINKO_PLUGIN_OCULUS
 		->queue(MK_NAME);
 
 	renderer = Renderer::create();
@@ -497,7 +507,9 @@ main(int argc, char** argv)
 
 		auto resized = canvas->resized()->connect([&](Canvas::Ptr canvas, unsigned int width, unsigned int height)
 		{
+#ifndef MINKO_PLUGIN_OCULUS
 			camera->component<PerspectiveCamera>()->aspectRatio((float)width / (float)height);
+#endif // MINKO_PLUGIN_OCULUS
 		});
 
 		auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, uint deltaTime)
