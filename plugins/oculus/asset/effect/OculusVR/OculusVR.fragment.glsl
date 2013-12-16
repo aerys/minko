@@ -12,6 +12,7 @@ uniform vec2		uScale;
 uniform	vec4		uDistortionK;
 uniform vec2		uScalePriorDistortion;
 uniform vec2		uScaleAfterDistortion;
+uniform vec2		uPixelOffset;
 
 varying vec2 vUv;
 
@@ -30,7 +31,8 @@ distort(float r)
 	);
 }
 
-vec2 distortUV(vec2 uv)
+vec2 
+distortUV(vec2 uv)
 {
    vec2		vec				= (uv - uLensCenter) * uScalePriorDistortion; // in [-1, 1]
    float	vecLength		= length(vec);
@@ -40,7 +42,8 @@ vec2 distortUV(vec2 uv)
    return uLensCenter + distortedVec * uScaleAfterDistortion;
 }
 
-void main(void)
+void 
+main(void)
 {
 	vec2 uv				= distortUV(vUv); // same as in the Oculus Rift SDK
 	
@@ -53,6 +56,7 @@ void main(void)
 		// the split screens take the whole screen.
 		vec2 finalUV	= vec2(2.0, 1.0) * (uv - uScreenCorner);
 		
-		gl_FragColor	= texture2D(uTex, finalUV);
+		//gl_FragColor	= texture2D(uTex, finalUV);
+		gl_FragColor	= fxaa_texture2D(uTex, finalUV, uPixelOffset);
 	}
 }
