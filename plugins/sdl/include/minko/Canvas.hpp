@@ -27,6 +27,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/OpenGLES2Context.hpp"
 #include "minko/AbstractCanvas.hpp"
 #include "minko/input/Mouse.hpp"
+#include "minko/input/Joystick.hpp"
 
 struct SDL_Window;
 typedef unsigned char Uint8;
@@ -73,6 +74,25 @@ namespace minko
 			}
 		};
 
+		class SDLJoystick : 
+			public input::Joystick
+		{
+			friend class Canvas;
+
+		public :
+			static inline
+			std::shared_ptr<SDLJoystick>
+			create(Canvas::Ptr canvas)
+			{
+				return std::shared_ptr<SDLJoystick>(new SDLJoystick(canvas));
+			}
+		private:
+			SDLJoystick(Canvas::Ptr canvas) :
+				input::Joystick(canvas)
+			{
+			}
+		};
+
 	private:
 #ifdef EMSCRIPTEN
 		static std::list<Ptr>				_canvases;
@@ -93,13 +113,11 @@ namespace minko
 		float								_framerate;
 		float								_desiredFramerate;
 
-		Signal<Ptr, uint, uint>::Ptr		_enterFrame;
-		Signal<Ptr, int, int, int>::Ptr		_joystickMotion;
-		Signal<Ptr, int>::Ptr				_joystickButtonDown;
-		Signal<Ptr, int>::Ptr				_joystickButtonUp;
-		Signal<Ptr, uint, uint>::Ptr		_resized;
-		std::shared_ptr<SDLMouse>			_mouse;
-        std::shared_ptr<input::Keyboard>    _keyboard;
+		Signal<Ptr, uint, uint>::Ptr				_enterFrame;
+		Signal<Ptr, uint, uint>::Ptr				_resized;
+		std::shared_ptr<SDLMouse>					_mouse;
+		std::vector<std::shared_ptr<SDLJoystick>>	_joysticks;
+        std::shared_ptr<input::Keyboard>			_keyboard;
 
 	public:
 		static inline
@@ -163,27 +181,6 @@ namespace minko
 		}
 
 		inline
-		Signal<Ptr, int, int, int>::Ptr
-		joystickMotion() const
-		{
-			return _joystickMotion;
-		}
-
-		inline
-		Signal<Ptr, int>::Ptr
-		joystickButtonDown() const
-		{
-			return _joystickButtonDown;
-		}
-
-		inline
-		Signal<Ptr, int>::Ptr
-		joystickButtonUp() const
-		{
-			return _joystickButtonUp;
-		}
-
-		inline
 		std::shared_ptr<input::Mouse>
 		mouse()
 		{
@@ -195,6 +192,13 @@ namespace minko
         keyboard()
         {
             return _keyboard;
+        }
+		
+		inline
+		std::shared_ptr<input::Joystick>
+        joystick(int id)
+        {
+			return _joysticks[id];
         }
 
 		inline
