@@ -57,8 +57,8 @@ namespace minko
         std::shared_ptr<input::Keyboard>
         keyboard() = 0;
 
-		virtual
+	/*	virtual
 		std::shared_ptr<input::Joystick>
-		joystick(int id) = 0;
+		joystick(int id) = 0;*/
 	};
 }
