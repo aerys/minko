@@ -29,7 +29,7 @@ class btConstraintSolver;
 class btDispatcher;
 class btCollisionShape;
 class btMotionState;
-class btDefaultMotionState;
+struct btDefaultMotionState;
 class btCollisionObject;
 class btTransform;
 class btRigidBody;

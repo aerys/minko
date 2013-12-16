@@ -3,10 +3,12 @@ newoption {
 	description = "Enable the Minko ASSIMP plugin."
 }
 
-minko.project.library "plugin-assimp"
+PROJECT_NAME = path.getname(os.getcwd())
+
+minko.project.library("minko-plugin-" .. PROJECT_NAME)
 	kind "StaticLib"
 	language "C++"
-	files { "src/**.hpp", "src/**.h", "src/**.cpp", "src/**.c" }
+	files { "src/**.hpp", "src/**.h", "src/**.cpp", "src/**.c", "include/**.hpp" }
 	includedirs {
 		"include",
 		"src"
@@ -42,13 +44,3 @@ minko.project.library "plugin-assimp"
 		"_CRT_SECURE_NO_WARNINGS",
 		"_SCL_SECURE_NO_WARNINGS"
 	}
-
-	configuration { "debug"}
-		defines { "DEBUG" }
-		flags { "Symbols" }
-		targetdir "bin/debug"
-
-	configuration { "release" }
-		defines { "NDEBUG" }
-		flags { "OptimizeSpeed" }
-		targetdir "bin/release"

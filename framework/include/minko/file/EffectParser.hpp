@@ -77,6 +77,7 @@ namespace minko
 			static std::unordered_map<std::string, unsigned int>				_blendFactorMap;
 			static std::unordered_map<std::string, render::CompareMode>			_compareFuncMap;
 			static std::unordered_map<std::string, render::StencilOperation>	_stencilOpMap;
+			static std::unordered_map<std::string, float>						_priorityMap;
 
             std::string                                                 _filename;
 			std::string                                                 _resolvedFilename;
@@ -149,7 +150,7 @@ namespace minko
 							  std::shared_ptr<render::AbstractContext>	context,
 							  TexturePtrMap&							targets,
 							  std::shared_ptr<render::States>			defaultStates,
-							  unsigned int								priority);
+							  float										priorityOffset);
 
 			void
 			parseDefaultValues(const Json::Value& root);
@@ -181,7 +182,7 @@ namespace minko
 						render::Shader::Type 			type);
 
 			void
-				parseBindingNameAndSource(const Json::Value& contextNode, std::string& name, data::BindingSource& source);
+			parseBindingNameAndSource(const Json::Value& contextNode, std::string& name, data::BindingSource& source);
 
 			void
 			parseBindings(const Json::Value&		contextNode,
@@ -208,6 +209,9 @@ namespace minko
 			loadTexture(const std::string&				textureFilename,
 						UniformTypeAndValue&			uniformTypeAndValue,
 						std::shared_ptr<file::Options>	options);
+
+			float
+			parsePriority(const Json::Value&, float defaultPriority);
 
 			void
 			parseBlendMode(const Json::Value&				contextNode,
@@ -290,6 +294,14 @@ namespace minko
 			static
 			std::unordered_map<std::string, render::StencilOperation>
 			initializeStencilOperationMap();
+
+			static
+			std::unordered_map<std::string, float>
+			initializePriorityMap();
+
+			static
+			float
+			priority(const std::string&);
 		};
 	}
 }

@@ -23,6 +23,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/component/AbstractComponent.hpp"
 
+#include "minko/data/ContainerProperty.hpp"
+
 namespace minko
 {
 	namespace component
@@ -34,7 +36,7 @@ namespace minko
 		public:
 			typedef std::shared_ptr<Surface>						Ptr;
 			typedef Signal<Ptr, std::shared_ptr<render::DrawCall>>	DrawCallChangedSignal;
-			typedef Signal<Ptr, const std::string&>					TechniqueChangedSignal;			
+			typedef Signal<Ptr, const std::string&, bool>			TechniqueChangedSignal;			
 
 		private:
 			typedef std::shared_ptr<scene::Node>					NodePtr;
@@ -46,7 +48,7 @@ namespace minko
 			typedef PropertyChangedSignal::Slot						PropertyChangedSlot;
 			typedef std::shared_ptr<render::Effect>					EffectPtr;
 			typedef const std::string&								StringRef;
-
+			typedef std::pair<std::string, PassPtr>					TechniquePass;
 			enum class MacroChange
 			{
 				REF_CHANGED	= 0,
@@ -55,29 +57,34 @@ namespace minko
 			};
 
 		private:
-			std::shared_ptr<geometry::Geometry>						_geometry;
-			std::shared_ptr<data::Provider>							_material;
-			std::shared_ptr<render::Effect>							_effect;
-			std::string 											_technique;
-			std::unordered_set<std::string>							_macroPropertyNames;
+			std::shared_ptr<geometry::Geometry>										_geometry;
+			std::shared_ptr<data::Provider>											_material;
+			std::shared_ptr<render::Effect>											_effect;
+			std::unordered_map<std::string, std::unordered_set<std::string>>		_techniqueToMacroNames;
 
-			std::unordered_map<ContainerPtr, DrawCallList>			_drawCalls;
-			std::unordered_map<DrawCallPtr, PassPtr>				_drawCallToPass;
-			std::unordered_map<DrawCallPtr, ContainerPtr>			_drawCallToRendererData;
-			std::unordered_map<std::string, DrawCallList>			_macroPropertyNameToDrawCalls;
+			std::string 															_technique;
+			std::unordered_map<ContainerPtr, DrawCallList>							_drawCalls;
+			std::unordered_map<DrawCallPtr, PassPtr>								_drawCallToPass;
+			std::unordered_map<DrawCallPtr, ContainerPtr>							_drawCallToRendererData;
+			std::unordered_map<std::string, DrawCallList>							_macroNameToDrawCalls;
 
-			std::list<Any>											_macroAddedOrRemovedSlots;
-			std::unordered_map<std::string, PropertyChangedSlot>	_macroChangedSlots;
-			std::unordered_map<std::string, uint>					_numMacroListeners;
+			// current technique-related members
+			std::list<Any>															_macroAddedOrRemovedSlots;
+			std::unordered_map<data::ContainerProperty, PropertyChangedSlot>		_macroChangedSlots;
+			std::unordered_map<data::ContainerProperty, uint>						_numMacroListeners;
 			
-			DrawCallChangedSignal::Ptr								_drawCallAdded;
-			DrawCallChangedSignal::Ptr								_drawCallRemoved;
-			TechniqueChangedSignal::Ptr								_techniqueChanged;
+			// cross-technique members
+			std::unordered_map<data::ContainerProperty, std::list<TechniquePass>>	_incorrectMacroToPasses;
+			std::unordered_map<data::ContainerProperty, PropertyChangedSlot>		_incorrectMacroChangedSlot;
 
-			Signal<AbstractComponent::Ptr, NodePtr>::Slot			_targetAddedSlot;
-			Signal<AbstractComponent::Ptr, NodePtr>::Slot			_targetRemovedSlot;
-			Signal<NodePtr, NodePtr, NodePtr>::Slot					_removedSlot;
-			Signal<EffectPtr, StringRef, StringRef>::Slot			_techniqueChangedSlot;
+			DrawCallChangedSignal::Ptr												_drawCallAdded;
+			DrawCallChangedSignal::Ptr												_drawCallRemoved;
+			TechniqueChangedSignal::Ptr												_techniqueChanged;
+
+			Signal<AbstractComponent::Ptr, NodePtr>::Slot							_targetAddedSlot;
+			Signal<AbstractComponent::Ptr, NodePtr>::Slot							_targetRemovedSlot;
+			Signal<NodePtr, NodePtr, NodePtr>::Slot									_removedSlot;
+			Signal<EffectPtr, StringRef, StringRef>::Slot							_techniqueChangedSlot;
 
 		public:
 			static
@@ -131,9 +138,6 @@ namespace minko
 				return _effect;
 			}
 
-			void
-			technique(const std::string&);
-
 			inline
 			const std::string&
 			technique()
@@ -156,7 +160,7 @@ namespace minko
 			}
 
 			const DrawCallList&
-			createDrawCalls(std::shared_ptr<data::Container>	rendererData);
+			createDrawCalls(std::shared_ptr<data::Container>	rendererData, unsigned int numAttempts);
 
 			void
 			deleteDrawCalls(std::shared_ptr<data::Container>	rendererData);
@@ -177,6 +181,9 @@ namespace minko
 			void
 			initialize();
 
+			void
+			initializeTechniqueMacroNames();
+
 			std::shared_ptr<render::DrawCall>
 			initializeDrawCall(std::shared_ptr<render::Pass>		pass,
 							   std::shared_ptr<data::Container>		rendererData,
@@ -191,9 +198,6 @@ namespace minko
 			void
 			removedHandler(NodePtr node, NodePtr target, NodePtr ancestor);
 
-			ContainerPtr
-			getDataContainer(const std::string& propertyName, std::shared_ptr<data::Container> rendererData) const;
-
 			void
 			watchMacroAdditionOrDeletion(ContainerPtr rendererData);
 
@@ -201,15 +205,28 @@ namespace minko
 			macroChangedHandler(ContainerPtr, const std::string& propertyName, MacroChange);
 
 			std::shared_ptr<render::Program>
-			getWorkingProgram(std::shared_ptr<render::Pass>	pass,
-							  ContainerPtr					targetData,
-							  ContainerPtr					rendererData,
-							  ContainerPtr					rootData,
-							  std::list<std::string>&		bindingDefines,
-							  std::list<std::string>&		bindingValues);
+			getWorkingProgram(std::shared_ptr<render::Pass>			pass,
+							  ContainerPtr							targetData,
+							  ContainerPtr							rendererData,
+							  ContainerPtr							rootData,
+							  std::list<data::ContainerProperty>&	booleanMacros,
+							  std::list<data::ContainerProperty>&	integerMacros,
+							  std::list<data::ContainerProperty>&	incorrectIntegerMacros);
 
 			void
-			switchToFallbackTechnique();
+			setTechnique(const std::string&, bool updateDrawcalls = true);
+
+			void
+			forgiveMacros(const std::list<data::ContainerProperty>& booleanMacros,
+						  const std::list<data::ContainerProperty>& integerMacros,
+						  const TechniquePass&);
+
+			void
+			blameMacros(const std::list<data::ContainerProperty>& incorrectIntegerMacros,
+						const TechniquePass&);
+
+			void
+			incorrectMacroChangedHandler(const data::ContainerProperty&);
 
 			void
 			deleteAllDrawCalls();

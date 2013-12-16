@@ -8,6 +8,11 @@ newoption {
 	description = 'Disable tests.'
 }
 
+newoption {
+	trigger = 'dist-dir',
+	description = 'Output folder for the redistributable SDL built with the \'dist\' action.'
+}
+
 solution "minko"
 	configurations { "debug", "release" }
 
@@ -32,6 +37,9 @@ solution "minko"
 	--include 'plugins/assimp'
 	include 'plugins/lua'
 	--include 'plugins/offscreen'
+	if os.get() == 'linux' then
+		include 'plugins/offscreen'
+	end
 	if _OPTIONS["platform"] == "emscripten" then
 		include 'plugins/webgl'
 	end
@@ -55,55 +63,61 @@ solution "minko"
 	end
 
 newaction {
-	trigger		= "dist",
-	description	= "Generate the distributable version of the Minko SDK.",
+	trigger		= 'dist',
+	description	= 'Generate the distributable version of the Minko SDK.',
 	execute		= function()
 	
-		os.rmdir('dist')
+		local distDir = 'dist'
+		
+		if _OPTIONS['dist-dir'] then
+			distDir = _OPTIONS['dist-dir']
+		end
+		
+		os.rmdir(distDir)
 
-		os.mkdir('dist')
-		os.copyfile('sdk.lua', 'dist/sdk.lua')
+		os.mkdir(distDir)
+		os.copyfile('sdk.lua', distDir .. '/sdk.lua')
 
 		print("Packaging core framework...")
 		
 		-- framework
-		os.mkdir('dist/framework')
-		os.mkdir('dist/framework/bin/release')
-		minko.os.copyfiles('framework/bin/release', 'dist/framework/bin/release')
-		os.mkdir('dist/framework/bin/debug')
-		minko.os.copyfiles('framework/bin/debug', 'dist/framework/bin/debug')
-		os.mkdir('dist/framework/include')
-		minko.os.copyfiles('framework/include', 'dist/framework/include')
-		os.mkdir('dist/framework/effect')
-		minko.os.copyfiles('framework/effect', 'dist/framework/effect')
+		os.mkdir(distDir .. '/framework')
+		os.mkdir(distDir .. '/framework/bin/release')
+		minko.os.copyfiles('framework/bin/release', distDir .. '/framework/bin/release')
+		os.mkdir(distDir .. '/framework/bin/debug')
+		minko.os.copyfiles('framework/bin/debug', distDir .. '/framework/bin/debug')
+		os.mkdir(distDir .. '/framework/include')
+		minko.os.copyfiles('framework/include', distDir .. '/framework/include')
+		os.mkdir(distDir .. '/framework/effect')
+		minko.os.copyfiles('framework/effect', distDir .. '/framework/effect')
 
 		-- skeleton
-		os.mkdir('dist/skeleton')
-		minko.os.copyfiles('skeleton', 'dist/skeleton')
+		os.mkdir(distDir .. '/skeleton')
+		minko.os.copyfiles('skeleton', distDir .. '/skeleton')
 		
 		-- docs
-		os.mkdir('dist/doc')
-		minko.os.copyfiles('doc/html', 'dist/doc')
+		os.mkdir(distDir .. '/doc')
+		minko.os.copyfiles('doc/html', distDir .. '/doc')
 		
 		-- tools
-		os.mkdir('dist/tools/')
-		minko.os.copyfiles('tools', 'dist/tools')
+		os.mkdir(distDir .. '/tools/')
+		minko.os.copyfiles('tools', distDir .. '/tools')
 		
 		-- deps
-		os.mkdir('dist/deps')
-		minko.os.copyfiles('deps', 'dist/deps')
+		os.mkdir(distDir .. '/deps')
+		minko.os.copyfiles('deps', distDir .. '/deps')
 		
 		-- plugins
 		local plugins = os.matchdirs('plugins/*')
 
-		os.mkdir('dist/plugins')
+		os.mkdir(distDir .. '/plugins')
 		for i, basedir in ipairs(plugins) do
 			local pluginName = path.getbasename(basedir)
 
 			print('Packaging plugin "' .. pluginName .. '"...')
 
 			-- plugins
-			local dir = 'dist/plugins/' .. path.getbasename(basedir)
+			local dir = distDir .. '/plugins/' .. path.getbasename(basedir)
 			local binDir = dir .. '/bin'
 
 			-- plugin.lua
@@ -111,7 +125,12 @@ newaction {
 			os.mkdir(dir)
 			os.copyfile(basedir .. '/plugin.lua', dir .. '/plugin.lua')
 
-			if solution()['projects']['plugin-' .. pluginName] then
+			dofile(dir .. '/plugin.lua')
+			if minko.plugin[pluginName] and minko.plugin[pluginName].dist then
+				minko.plugin[pluginName]:dist(dir)
+			end
+
+			if solution()['projects']['minko-plugin-' .. pluginName] then
 				-- bin
 				assert(os.isdir(basedir .. '/bin/debug'), 'missing debug folder')
 				assert(os.isdir(basedir .. '/bin/release'), 'missing release folder')
