@@ -33,6 +33,8 @@ namespace minko
 			public AbstractComponent,
 			public std::enable_shared_from_this<Surface>
 		{
+			friend render::DrawCallOrganizer;
+
 		public:
 			typedef std::shared_ptr<Surface>						Ptr;
 			typedef Signal<Ptr, std::shared_ptr<render::DrawCall>>	DrawCallChangedSignal;
