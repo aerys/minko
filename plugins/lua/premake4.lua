@@ -3,7 +3,9 @@ newoption {
 	description	= "Enable the Minko Lua plugin."
 }
 
-minko.project.library "plugin-lua"
+PROJECT_NAME = path.getname(os.getcwd())
+
+minko.project.library("minko-plugin-" .. PROJECT_NAME)
 	kind "StaticLib"
 	language "C++"
 	files { "src/**.hpp", "src/**.cpp" }
@@ -17,13 +19,3 @@ minko.project.library "plugin-lua"
 	
 	-- luaglue
 	includedirs { "lib/LuaGlue/include" }
-			
-	configuration { "debug"}
-		defines { "DEBUG" }
-		flags { "Symbols" }
-		targetdir "bin/debug"
-
-	configuration { "release" }
-		defines { "NDEBUG" }
-		flags { "OptimizeSpeed" }
-		targetdir "bin/release"
