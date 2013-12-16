@@ -67,7 +67,7 @@ namespace minko
 
 			inline static
 			ConstPtr
-			upAxis()
+			up()
 			{
 				static ConstPtr upAxis = createConst(0.f, 1.f, 0.f);
 
