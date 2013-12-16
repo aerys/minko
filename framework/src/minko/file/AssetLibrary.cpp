@@ -45,8 +45,8 @@ AssetLibrary::create(AbsContextPtr context)
 
 AssetLibrary::AssetLibrary(std::shared_ptr<AbstractContext> context) :
 	_context(context),
-	_complete(Signal<Ptr>::create()),
-	_defaultOptions(file::Options::create(context))
+	_defaultOptions(file::Options::create(context)),
+	_complete(Signal<Ptr>::create())
 {
 }
 
@@ -169,6 +169,18 @@ AssetLibrary::layout(const std::string& name, const unsigned int mask)
 }
 
 AssetLibrary::Ptr
+AssetLibrary::queue(const std::string& filename)
+{
+	return queue(filename, nullptr, nullptr);
+}
+
+AssetLibrary::Ptr
+AssetLibrary::queue(const std::string& filename, std::shared_ptr<file::Options> options)
+{
+	return queue(filename, options, nullptr);
+}
+
+AssetLibrary::Ptr
 AssetLibrary::queue(const std::string&						filename,
 				    std::shared_ptr<file::Options>			options,
 					std::shared_ptr<file::AbstractLoader>	loader)
@@ -188,7 +200,7 @@ AssetLibrary::queue(const std::string&						filename,
 AssetLibrary::Ptr
 AssetLibrary::load()
 {
-	std::list<std::string> queue = _filesQueue;
+	std::list<std::string> queue(_filesQueue);
 
 	if (queue.empty())
 	{
@@ -238,7 +250,7 @@ AssetLibrary::loaderCompleteHandler(std::shared_ptr<file::AbstractLoader> loader
 	if (_parsers.count(extension))
 	{
 		auto parser = _parsers[extension]();
-		auto completeSlot = parser->complete()->connect([&](AbstractParser::Ptr)
+		auto completeSlot = parser->complete()->connect([=](AbstractParser::Ptr)
 		{
 			finalize(filename);
 		});
