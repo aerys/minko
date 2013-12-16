@@ -1,6 +1,6 @@
 PROJECT_NAME = path.getname(os.getcwd())
 
-minko.project.application(PROJECT_NAME)
+minko.project.application("minko-example-" .. PROJECT_NAME)
 
 	language "c++"
 	kind "ConsoleApp"
