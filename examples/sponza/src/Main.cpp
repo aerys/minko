@@ -479,6 +479,14 @@ main(int argc, char** argv)
 
 				cameraCollider->synchronizePhysicsWithGraphics();
 			}
+
+#ifdef MINKO_PLUGIN_OCULUS
+			if (s[input::Keyboard::ScanCode::R] && camera->component<OculusVRCamera>())
+			{
+				std::cout << "reset head tracking" << std::endl;
+				camera->component<OculusVRCamera>()->resetHeadTracking();
+			}
+#endif // MINKO_PLUGIN_OCULUS
 		});
 
 		auto joystickMotion = canvas->joystickMotion()->connect([&](Canvas::Ptr canvas, int which, int axis, int value)
@@ -516,6 +524,11 @@ main(int argc, char** argv)
 		{
 			sceneManager->nextFrame();
 		});
+
+#ifdef MINKO_PLUGIN_OCULUS
+		if (camera->component<OculusVRCamera>()->sensorDeviceDetected())
+			std::cout << "Rift's sensor device correctly detected.\n\tReset head tracking with [R] key." << std::endl;
+#endif // MINKO_PLUGIN_OCULUS
 
 		canvas->run();
 	});
