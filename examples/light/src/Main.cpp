@@ -272,7 +272,10 @@ int main(int argc, char** argv)
 			else if (pitch < minPitch)
 				pitch = minPitch;
 
-			/*
+#ifdef MINKO_PLUGIN_OCULUS
+			if (!camera->component<OculusVRCamera>()->sensorDeviceDetected())
+			{
+#endif // MINKO_PLUGIN_OCULUS
 			camera->component<Transform>()->transform()->lookAt(
 				lookAt,
 				Vector3::create(
@@ -281,7 +284,9 @@ int main(int argc, char** argv)
 					lookAt->z() + distance * sinf(yaw) * sinf(pitch)
 				)
 			);
-			*/
+#ifdef MINKO_PLUGIN_OCULUS
+			}
+#endif // MINKO_PLUGIN_OCULUS
 
 			lights->component<Transform>()->transform()->appendRotationY(.005f);
 
