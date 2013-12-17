@@ -79,15 +79,15 @@ AssetLibrary::texture(const std::string& name, render::Texture::Ptr texture)
 }
 
 scene::Node::Ptr
-AssetLibrary::node(const std::string& name)
+AssetLibrary::symbol(const std::string& name)
 {
-	return _nodes.count(name) ? _nodes[name] : nullptr;
+	return _symbols.count(name) ? _symbols[name] : nullptr;
 }
 
 AssetLibrary::Ptr
-AssetLibrary::node(const std::string& name, scene::Node::Ptr node)
+AssetLibrary::symbol(const std::string& name, scene::Node::Ptr node)
 {
-	_nodes[name] = node;
+	_symbols[name] = node;
 
 	return shared_from_this();
 }

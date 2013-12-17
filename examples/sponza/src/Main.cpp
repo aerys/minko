@@ -394,7 +394,7 @@ main(int argc, char** argv)
 
 	auto _ = sceneManager->assets()->complete()->connect([ = ](file::AssetLibrary::Ptr assets)
 	{
-		scene::Node::Ptr mk = assets->node(MK_NAME);
+		scene::Node::Ptr mk = assets->symbol(MK_NAME);
 		initializeCamera(mk);
 
 		auto lights = scene::Node::create();
@@ -471,30 +471,32 @@ main(int argc, char** argv)
 			}
 		});
 
-		auto joystickMotion = canvas->joystickMotion()->connect([&](Canvas::Ptr canvas, int which, int axis, int value)
+		if (canvas->numJoysticks() > 0)
 		{
-			auto cameraTransform = camera->component<Transform>()->transform();
-			float percent = float(value) / 32768.f;
+			auto joystickMotion = canvas->joystick(0)->joystickButtonDown()->connect([&](Canvas::Ptr canvas, int which, int axis, int value)
+			{
+				auto cameraTransform = camera->component<Transform>()->transform();
+				float percent = float(value) / 32768.f;
 
-			if (axis == 1)
-				cameraTransform->prependTranslation(0.0f, 0.0f, CAMERA_LIN_SPEED * percent);
-			if (axis == 0)
-				cameraTransform->prependTranslation(CAMERA_LIN_SPEED * percent, 0.0f, 0.0f);
+				if (axis == 1)
+					cameraTransform->prependTranslation(0.0f, 0.0f, CAMERA_LIN_SPEED * percent);
+				if (axis == 0)
+					cameraTransform->prependTranslation(CAMERA_LIN_SPEED * percent, 0.0f, 0.0f);
 
-			eye = cameraTransform->translation();
+				eye = cameraTransform->translation();
 
-			cameraCollider->synchronizePhysicsWithGraphics();
-		});
+				cameraCollider->synchronizePhysicsWithGraphics();
+			});
 
-		auto joystickButtonDown = canvas->joystickButtonDown()->connect([&](Canvas::Ptr canvas, int which)
-		{
-			auto cameraTransform = camera->component<Transform>()->transform();
+			auto joystickButtonDown = canvas->joystick(0)->joystickButtonDown()->connect([&](Canvas::Ptr canvas, int which)
+			{
+				auto cameraTransform = camera->component<Transform>()->transform();
 
-			cameraTransform->prependTranslation(0.0f, 4 * CAMERA_LIN_SPEED, 0.0f);
+				cameraTransform->prependTranslation(0.0f, 4 * CAMERA_LIN_SPEED, 0.0f);
 
-			cameraCollider->synchronizePhysicsWithGraphics();
-		});
-
+				cameraCollider->synchronizePhysicsWithGraphics();
+			});
+		}
 		auto resized = canvas->resized()->connect([&](Canvas::Ptr canvas, unsigned int width, unsigned int height)
 		{
 			camera->component<PerspectiveCamera>()->aspectRatio((float)width / (float)height);
