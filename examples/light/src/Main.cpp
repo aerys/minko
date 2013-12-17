@@ -167,9 +167,9 @@ int main(int argc, char** argv)
 					data->set("normalMap", assets->texture("texture/normalmap-cells.png"));
 			}
 			if (s[input::Keyboard::ScanCode::UP])
-				camera->component<Transform>()->transform()->prependTranslation(0.f, 0.f, -1.f);
+				camera->component<Transform>()->matrix()->prependTranslation(0.f, 0.f, -1.f);
 			if (s[input::Keyboard::ScanCode::DOWN])
-				camera->component<Transform>()->transform()->prependTranslation(0.f, 0.f, 1.f);
+				camera->component<Transform>()->matrix()->prependTranslation(0.f, 0.f, 1.f);
 		});
 
 		// camera init
@@ -260,7 +260,7 @@ int main(int argc, char** argv)
 			else if (pitch < minPitch)
 				pitch = minPitch;
 
-			camera->component<Transform>()->transform()->lookAt(
+			camera->component<Transform>()->matrix()->lookAt(
 				lookAt,
 				Vector3::create(
 					lookAt->x() + distance * cosf(yaw) * sinf(pitch),
@@ -269,7 +269,7 @@ int main(int argc, char** argv)
 				)
 			);
 
-			lights->component<Transform>()->transform()->appendRotationY(.005f);
+			lights->component<Transform>()->matrix()->appendRotationY(.005f);
 
 #if POST_PROCESSING
 			sceneManager->nextFrame(ppTarget);

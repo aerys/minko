@@ -76,7 +76,7 @@ int main(int argc, char** argv)
 			{
 				if (hit->parent() != root)
 					root->addChild(hit);
-				hit->component<Transform>()->transform()
+				hit->component<Transform>()->matrix()
 					->identity()
 					->appendScale(.1f)
 					->translation(
@@ -99,7 +99,7 @@ int main(int argc, char** argv)
 				canvas->normalizedMouseX(), canvas->normalizedMouseY()
 			);
 
-			mesh->component<Transform>()->transform()
+			mesh->component<Transform>()->matrix()
 				//->translation(sinf((float)time * .001f), 0.f, 0.f);
 				->prependRotationY(.01f);
 
@@ -122,7 +122,7 @@ int main(int argc, char** argv)
 			else if (hit->parent() == root)
 				root->removeChild(hit);
 			*/
-			//camera->component<Transform>()->transform()->appendRotationY(.01f);
+			//camera->component<Transform>()->matrix()->appendRotationY(.01f);
 			sceneManager->nextFrame();
 		});
 
