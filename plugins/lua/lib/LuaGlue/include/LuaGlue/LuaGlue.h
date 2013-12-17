@@ -75,20 +75,12 @@ class LuaGlue : public LuaGlueBase
 			//printf("LuaGlue.glue()\n");
 			for(auto &c: classes)
 			{
-				if (std::find(gluedClasses.begin(), gluedClasses.end(), c.ptr) != gluedClasses.end())
-					continue;
-				gluedClasses.push_front(c.ptr);
-
 				if(!c.ptr->glue(this))
 					return false;
 			}
 			
 			for(auto &c: functions)
 			{
-				if (std::find(gluedFunctions.begin(), gluedFunctions.end(), c.ptr) != gluedFunctions.end())
-					continue;
-				gluedFunctions.push_front(c.ptr);
-
 				if(!c.ptr->glue(this))
 					return false;
 			}
@@ -146,9 +138,6 @@ class LuaGlue : public LuaGlueBase
 		lua_State *state_;
 		LuaGlueSymTab<LuaGlueClassBase *> classes;
 		LuaGlueSymTab<LuaGlueFunctionBase *> functions;
-
-		std::list<LuaGlueClassBase *> gluedClasses;
-		std::list<LuaGlueFunctionBase *> gluedFunctions;
 		
 		std::string last_error;
 };
