@@ -110,11 +110,10 @@ LuaScript::initialize()
             .property("sceneManager",            &LuaStub::getSceneManager)
             .property("mouse",                   &LuaStub::getMouse)
             .property("assets",                  &LuaStub::getAssetLibrary)
-            .method("getModelToWorldMatrix",     &LuaStub::getModelToWorldMatrix)
-        .end()
-        .glue();
+            .method("getModelToWorldMatrix",     &LuaStub::getModelToWorldMatrix);
 
     _class = _state.lookupClass(name);
+    _class->glue(&_state);
 }
 
 void
