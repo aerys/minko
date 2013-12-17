@@ -157,7 +157,7 @@ ASSIMPParser::parse(const std::string&					filename,
 
 	const unsigned int numFPS = 1;
 
-	createSceneTree(_symbol, scene, scene->mRootNode);
+	createSceneTree(_symbol, scene, scene->mRootNode, assetLibrary);
 	getSkinningFromAssimp(scene);
 
 	if (_numDependencies == _numLoadedDependencies)
@@ -167,7 +167,7 @@ ASSIMPParser::parse(const std::string&					filename,
 }
 
 void
-ASSIMPParser::createSceneTree(scene::Node::Ptr minkoNode, const aiScene* scene, aiNode* ainode)
+ASSIMPParser::createSceneTree(scene::Node::Ptr minkoNode, const aiScene* scene, aiNode* ainode, std::shared_ptr<AssetLibrary> assets)
 {
 	for (uint i = 0; i < ainode->mNumChildren; i++)
     {
@@ -186,7 +186,7 @@ ASSIMPParser::createSceneTree(scene::Node::Ptr minkoNode, const aiScene* scene, 
 #endif // DEBUG_SKINNING
 
         //Recursive call
-        createSceneTree(child, scene, ainode->mChildren[i]);
+		createSceneTree(child, scene, ainode->mChildren[i], assets);
     }
     
     for (uint j = 0; j < ainode->mNumMeshes; j++)
@@ -196,7 +196,7 @@ ASSIMPParser::createSceneTree(scene::Node::Ptr minkoNode, const aiScene* scene, 
 
 		minkoMesh->addComponent(Transform::create());
 		createMeshGeometry(minkoMesh, mesh);
-		createMeshSurface(minkoMesh, scene, mesh);
+		createMeshSurface(minkoMesh, scene, mesh, assets);
 
 		minkoNode->addChild(minkoMesh);
 
@@ -295,7 +295,7 @@ ASSIMPParser::createMeshGeometry(scene::Node::Ptr minkoNode, aiMesh* mesh)
 }
 
 void
-ASSIMPParser::createMeshSurface(scene::Node::Ptr minkoNode, const aiScene* scene, aiMesh* mesh)
+ASSIMPParser::createMeshSurface(scene::Node::Ptr minkoNode, const aiScene* scene, aiMesh* mesh, std::shared_ptr<AssetLibrary> assets)
 {
     auto provider = material::Material::create(_options->material());
 	aiString materialName;
@@ -473,7 +473,7 @@ ASSIMPParser::finalize()
 	_loaderErrorSlots.clear();
 	_loaderCompleteSlots.clear();
 
-	_assetLibrary->node(_filename, _symbol);
+	_assetLibrary->symbol(_filename, _symbol);
 	
 	complete()->execute(shared_from_this());
 }
@@ -679,7 +679,7 @@ ASSIMPParser::getSkinningFromAssimp(const aiMesh* aimesh) const
 					currentTransform = _nameToAnimMatrices.find(currentNode->name())->second[frameId];
 				else
 					// get the constant node's transform
-					currentTransform = currentNode->component<Transform>()->transform();
+					currentTransform = currentNode->component<Transform>()->matrix();
 
 				boneLocalToObject->append(currentTransform);
 
