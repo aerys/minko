@@ -272,6 +272,7 @@ int main(int argc, char** argv)
 			else if (pitch < minPitch)
 				pitch = minPitch;
 
+			/*
 			camera->component<Transform>()->transform()->lookAt(
 				lookAt,
 				Vector3::create(
@@ -280,6 +281,7 @@ int main(int argc, char** argv)
 					lookAt->z() + distance * sinf(yaw) * sinf(pitch)
 				)
 			);
+			*/
 
 			lights->component<Transform>()->transform()->appendRotationY(.005f);
 
