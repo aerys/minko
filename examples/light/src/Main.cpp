@@ -20,6 +20,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Minko.hpp"
 #include "minko/MinkoPNG.hpp"
 #include "minko/MinkoSDL.hpp"
+#ifdef MINKO_PLUGIN_OCULUS
+#include "minko/MinkoOculus.hpp"
+#endif // MINKO_PLUGIN_OCULUS
 
 using namespace minko;
 using namespace minko::component;
@@ -83,6 +86,9 @@ int main(int argc, char** argv)
 		->queue("effect/Basic.effect")
 		->queue("effect/Sprite.effect")
 		->queue("effect/Phong.effect")
+#ifdef MINKO_PLUGIN_OCULUS
+		->queue("effect/OculusVR/OculusVR.effect")
+#endif // MINKO_PLUGIN_OCULUS
 		->queue("effect/AnamorphicLensFlare/AnamorphicLensFlare.effect");
 
 	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
@@ -175,7 +181,11 @@ int main(int argc, char** argv)
 		// camera init
 		camera = scene::Node::create("camera")
 			->addComponent(Renderer::create())
+#ifdef MINKO_PLUGIN_OCULUS
+			->addComponent(OculusVRCamera::create((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT))
+#else 
 			->addComponent(PerspectiveCamera::create((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT))
+#endif // MINKO_PLUGIN_OCULUS
 			->addComponent(Transform::create(
 				Matrix4x4::create()->lookAt(Vector3::create(0.f, 2.f), Vector3::create(10.f, 10.f, 10.f))
 			));
@@ -205,7 +215,9 @@ int main(int argc, char** argv)
 		
 		auto resized = canvas->resized()->connect([&](Canvas::Ptr canvas, unsigned int width, unsigned int height)
 		{
+#ifndef MINKO_PLUGIN_OCULUS
 			camera->component<PerspectiveCamera>()->aspectRatio((float)width / (float)height);
+#endif // MINKO_PLUGIN_OCULUS
 
 #if POST_PROCESSING
 			auto oldTarget = ppTarget;
