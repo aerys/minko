@@ -25,6 +25,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/AbstractComponent.hpp"
 #include "minko/component/PerspectiveCamera.hpp"
 
+namespace OVR
+{
+	class System;
+}
+
 namespace minko
 {
 	namespace component
@@ -63,7 +68,8 @@ namespace minko
 			float										_aspectRatio;
 			float										_zNear;
 			float										_zFar;
-			HMD											_hmd;
+			OVR::System*								_ovrSystem;
+			HMD											_hmdInfo;
 
 			SceneMgrPtr									_sceneManager;
 			NodePtr										_root;
@@ -84,35 +90,45 @@ namespace minko
 				   float zNear			= 0.1f,
 				   float zFar			= 1000.0f)
 			{
-				auto oc = std::shared_ptr<OculusVRCamera>(new OculusVRCamera(aspectRatio, zNear, zFar));
+				auto ptr = std::shared_ptr<OculusVRCamera>(new OculusVRCamera(aspectRatio, zNear, zFar));
 
-				oc->initialize();
+				ptr->initialize();
 
-				return oc;
+				return ptr;
 			}
 
 			inline
 			float
-			aspectRatio()
+			aspectRatio() const
 			{
 				return _aspectRatio;
 			}
 
 			inline
-			void
-			aspectRatio(float ratio)
+			float
+			zNear() const
 			{
-				if (ratio != _aspectRatio)
-				{
-					//_aspectRatio = ratio;
-
-					//_leftCamera->aspectRatio(ratio);
-					//_rightCamera->aspectRatio(ratio);
-				}
+				return _zNear;
 			}
+
+			inline
+			float
+			zFar() const
+			{
+				return _zFar;
+			}
+
+		public:
+			~OculusVRCamera(); // temporary solution
 
 		private:
 			OculusVRCamera(float aspectRatio, float zNear, float zFar);
+
+			void
+			resetOVRDevice();
+
+			bool
+			initializeOVRDevice();
 
 			void
 			initialize();
