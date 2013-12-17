@@ -60,5 +60,9 @@ namespace minko
 		virtual
 		std::shared_ptr<input::Joystick>
 		joystick(int id) = 0;
+
+		virtual
+		uint
+		numJoysticks() = 0;
 	};
 }

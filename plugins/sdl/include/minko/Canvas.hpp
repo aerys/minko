@@ -202,6 +202,13 @@ namespace minko
         }
 
 		inline
+		uint
+		numJoysticks()
+		{
+			return _joysticks.size();
+		}
+
+		inline
 		Signal<Ptr, uint, uint>::Ptr
 		resized() const
 		{
