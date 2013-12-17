@@ -122,7 +122,7 @@ namespace minko
 			resetParser();
 
             void
-			createSceneTree(NodePtr minkoNode, const aiScene* scene, aiNode* ainode);
+			createSceneTree(NodePtr minkoNode, const aiScene* scene, aiNode* ainode, std::shared_ptr<AssetLibrary> assets);
 
             GeometryPtr
             createMeshGeometry(NodePtr, aiMesh*);
@@ -131,7 +131,7 @@ namespace minko
             getTransformFromAssimp(aiNode* ainode);
 
             void
-            createMeshSurface(NodePtr minkoNode, const aiScene* scene, aiMesh* mesh);
+            createMeshSurface(NodePtr minkoNode, const aiScene* scene, aiMesh* mesh, std::shared_ptr<AssetLibrary> assets);
 
             void
 			createLights(NodePtr minkoRoot, const aiScene* scene);

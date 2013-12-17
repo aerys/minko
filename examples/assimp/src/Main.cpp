@@ -68,7 +68,7 @@ int main(int argc, char** argv)
 			);
 		root->addChild(camera);
 
-		auto model = assets->node(MODEL_FILENAME)
+		auto model = assets->symbol(MODEL_FILENAME)
 			->addComponent(Transform::create(Matrix4x4::create()->appendScale(.01f)));
 
 		auto surfaceNodeSet = scene::NodeSet::create(model)
