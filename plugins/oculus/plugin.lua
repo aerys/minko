@@ -22,10 +22,13 @@ minko.plugin.oculus = {}
 
 function minko.plugin.oculus:enable()
 	minko.plugin.links { "oculus" }
-	includedirs { minko.sdk.path("plugins/oculus/include") }
+	includedirs { 
+		minko.sdk.path("plugins/oculus/include")
+	}
 	defines { "MINKO_PLUGIN_OCULUS" }
 	
 	configuration { "windows" }
+		links { "winmm", "setupapi" }
 		postbuildcommands {
 			'xcopy /y /i /s "' .. minko.sdk.path('/plugins/oculus/asset/effect/*') .. '" "$(TargetDir)\\effect"',
 		}
