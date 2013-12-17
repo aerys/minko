@@ -28,6 +28,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 namespace OVR
 {
 	class System;
+	class HMDDevice;
+	class SensorDevice;
+	class SensorFusion;
 }
 
 namespace minko
@@ -42,7 +45,7 @@ namespace minko
 			typedef std::shared_ptr<OculusVRCamera>	Ptr;
 
 		private:
-			struct HMD
+			struct HMDInfo
 			{
 				float hResolution;
 				float vResolution;
@@ -68,8 +71,16 @@ namespace minko
 			float										_aspectRatio;
 			float										_zNear;
 			float										_zFar;
-			OVR::System*								_ovrSystem;
-			HMD											_hmdInfo;
+			HMDInfo										_hmdInfo;
+
+			std::shared_ptr<OVR::System>				_ovrSystem;
+			std::shared_ptr<OVR::HMDDevice>				_ovrHMDDevice;
+			std::shared_ptr<OVR::SensorDevice>			_ovrSensorDevice;
+			std::shared_ptr<OVR::SensorFusion>			_ovrSensorFusion;
+
+			std::shared_ptr<Transform>					_targetTransform;
+			std::shared_ptr<math::Vector3>				_eyePosition;
+			std::shared_ptr<math::Matrix4x4>			_eyeOrientation;
 
 			SceneMgrPtr									_sceneManager;
 			NodePtr										_root;
@@ -81,6 +92,8 @@ namespace minko
 			Signal<AbsCmpPtr, NodePtr>::Slot			_targetRemovedSlot;
 			Signal<NodePtr, NodePtr, NodePtr>::Slot		_addedSlot;
 			Signal<NodePtr, NodePtr, NodePtr>::Slot		_removedSlot;
+			Signal<NodePtr, NodePtr, AbsCmpPtr>::Slot	_targetComponentAddedHandler;
+			Signal<NodePtr, NodePtr, AbsCmpPtr>::Slot	_targetComponentRemovedHandler;
 			Signal<SceneMgrPtr, uint, TexturePtr>::Slot	_renderEndSlot;
 
 		public:
@@ -118,6 +131,15 @@ namespace minko
 				return _zFar;
 			}
 
+			void
+			resetHeadTracking();
+
+			bool
+			HMDDeviceDetected() const;
+
+			bool
+			sensorDeviceDetected() const;
+
 		public:
 			~OculusVRCamera(); // temporary solution
 
@@ -127,11 +149,14 @@ namespace minko
 			void
 			resetOVRDevice();
 
-			bool
+			void
 			initializeOVRDevice();
 
 			void
 			initialize();
+
+			void
+			updateCameraOrientation();
 
 			void
 			targetAddedHandler(AbsCmpPtr component, NodePtr target);
@@ -149,16 +174,23 @@ namespace minko
 			renderEndHandler(SceneMgrPtr sceneManager, uint frameId, TexturePtr	renderTarget);
 
 			void
+			targetComponentAddedHandler(NodePtr, NodePtr, AbsCmpPtr);
+
+			void
+			targetComponentRemovedHandler(NodePtr, NodePtr, AbsCmpPtr);
+
+			void
 			findSceneManager();
 
 			void
 			setSceneManager(SceneMgrPtr);
 
-			bool
-			getHMDInfo(HMD&) const;
+			void
+			getHMDInfo(HMDInfo&) const;
 
+			static
 			float
-			distort(float) const;
+			distort(float, std::shared_ptr<math::Vector4>);
 		};
 	}
 }
