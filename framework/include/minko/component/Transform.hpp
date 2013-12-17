@@ -44,7 +44,7 @@ namespace minko
 			typedef std::shared_ptr<AbstractComponent>		AbsCtrlPtr;
 
 		private:
-			std::shared_ptr<math::Matrix4x4>			_transform;
+			std::shared_ptr<math::Matrix4x4>			_matrix;
 			std::shared_ptr<math::Matrix4x4>			_modelToWorld;
 			std::shared_ptr<math::Matrix4x4>			_worldToModel;
 			std::shared_ptr<data::StructureProvider>	_data;
@@ -72,7 +72,7 @@ namespace minko
 			{
 				auto ctrl = create();
 
-				ctrl->_transform->copyFrom(transform);
+				ctrl->_matrix->copyFrom(transform);
 
 				return ctrl;
 			}
@@ -83,9 +83,9 @@ namespace minko
 
 			inline
 			std::shared_ptr<math::Matrix4x4>
-			transform()
+			matrix()
 			{
-				return _transform;
+				return _matrix;
 			}
 
 			inline
@@ -174,7 +174,7 @@ namespace minko
 				forceUpdate(NodePtr node);
 
 			private:
-				std::vector<std::shared_ptr<math::Matrix4x4>>	_transform;
+				std::vector<std::shared_ptr<math::Matrix4x4>>	_transforms;
 				std::vector<std::shared_ptr<math::Matrix4x4>>	_modelToWorld;
 				//std::vector<std::shared_ptr<Matrix4x4>>		_worldToModel;
 
