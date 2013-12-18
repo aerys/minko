@@ -18,12 +18,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 ]]--
 
 function framerate:start(node)
-	self.previousTime = os.clock()
+	self.previousTime = os.time()
 	self.numFrames = 0
 end
 
 function framerate:update(node)
-	local time = os.clock()
+	local time = os.time()
 	local deltaTime = time - self.previousTime
 
 	if deltaTime > 5 then
@@ -34,6 +34,3 @@ function framerate:update(node)
 
 	self.numFrames = self.numFrames + 1
 end
-
---function framerate:stop(nodeName)
---end
