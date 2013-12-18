@@ -18,8 +18,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 ]]--
 
 function rotate:start(node)
-	self.oldX = self.mouse.x
-	self.oldY = self.mouse.y
+	self.oldX = getMouse().x
+	self.oldY = getMouse().y
 	self.rotationSpeedX = 0.
 	self.rotationSpeedY = 0.
 	self.distance = 3.
@@ -32,9 +32,9 @@ function rotate:start(node)
 end
 
 function rotate:update(node)
-	local x = self.mouse.x
-	local y = self.mouse.y
-	if self.mouse.leftButtonIsDown then
+	local x = getMouse().x
+	local y = getMouse().y
+	if getMouse().leftButtonIsDown then
 		self.rotationSpeedX = self.rotationSpeedX + (x - self.oldX) / 1000
 		self.rotationSpeedY = self.rotationSpeedY + (y - self.oldY) / 1000
 	end
@@ -48,7 +48,7 @@ function rotate:update(node)
 	self.pitch = math.min(math.max(self.pitch, self.minPitch), self.maxPitch)
 	self.rotationSpeedY = self.rotationSpeedY * .9
 
-	self:getModelToWorldMatrix(node):lookAt(
+	getModelToWorldMatrix(node):lookAt(
 		self.lookAt,
 		Vector3.create(
 			self.lookAt.x + self.distance * math.cos(self.yaw) * math.sin(self.pitch),

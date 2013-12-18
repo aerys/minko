@@ -17,22 +17,18 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ]]--
 
-function main:start(node)
-	self.assets
+function main:start(root)
+	local assets = 	getSceneManager().assets
+
+	assets
 		:queue('effect/Basic.effect')
 		:queue('effect/Phong.effect')
 		:queue('texture/box.png')
 		:queue('script/rotate.lua')
+		:queue('script/framerate.lua')
 		:load()
-	
-	local cube = Node.create()
-		:addComponent(Transform.create())
-		:addComponent(Surface.create(
-			CubeGeometry.create(self.assets.context),
-			Material.create():setTexture('diffuseMap', self.assets:texture('texture/box.png')),
-			self.assets:effect('effect/Phong.effect')
-		))
-	node:addChild(cube)
+
+	--root:addComponent(assets:script('script/framerate.lua'))
 
 	self.camera = Node.create()
 		:addComponent(Renderer.create())
@@ -42,12 +38,21 @@ function main:start(node)
 			Vector3.up()
 		)))
 		:addComponent(PerspectiveCamera.create(800. / 600., math.pi * .25, .1, 1000.))
-		:addComponent(self.assets:script('script/rotate.lua'))
+		:addComponent(assets:script('script/rotate.lua'))
 		:addComponent(DirectionalLight.create(.4))
-	node:addChild(self.camera)
+	root:addChild(self.camera)
 
 	local lights = Node.create()
 		:addComponent(AmbientLight.create(.2))
 		:addComponent(DirectionalLight.create(.4))
-	node:addChild(lights)
+	root:addChild(lights)
+
+	local cube = Node.create()
+		:addComponent(Transform.create())
+		:addComponent(Surface.create(
+			CubeGeometry.create(assets.context),
+			Material.create():setTexture('diffuseMap', assets:texture('texture/box.png')),
+			assets:effect('effect/Phong.effect')
+		))
+	root:addChild(cube)
 end

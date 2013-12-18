@@ -41,34 +41,27 @@ namespace minko
 
             class LuaStub
             {
-            public:
-                LuaStub() {}
-                
-            private:
-
             };
 
         private:
-            static bool             _initialized;
-            static LuaGlue          _state;
+            std::string                             _scriptName;
+            std::string                             _script;
 
-            std::string             _scriptName;
-            LuaGlueClassBase*       _class;
-            LuaStub                 _stub;
-
-            bool                    _hasStartMethod;
-            bool                    _hasUpdateMethod;
-            bool                    _hasStopMethod;
+            LuaGlue*                                _state;
+            LuaGlueClassBase*                       _class;
+            std::unordered_map<NodePtr, LuaStub*>   _targetToStub;
+            bool                                    _hasStartMethod;
+            bool                                    _hasUpdateMethod;
+            bool                                    _hasStopMethod;
 
         public:
             static inline
             Ptr
             create(const std::string& name, const std::string& script)
             {
-                auto s = std::shared_ptr<LuaScript>(new LuaScript(name));
+                auto s = std::shared_ptr<LuaScript>(new LuaScript(name, script));
 
                 s->initialize();
-                s->loadScript(script);
 
                 return s;
             }
@@ -86,14 +79,8 @@ namespace minko
             void
             stop(NodePtr target);
 
-            void
-            initialize();
-
-            void
-            loadScript(const std::string& script);
-
         private:
-            LuaScript(const std::string& name);
+            LuaScript(const std::string& name, const std::string& script);
 
             static
             void
