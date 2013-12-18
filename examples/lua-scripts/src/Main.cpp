@@ -32,6 +32,7 @@ int main(int argc, char** argv)
 	auto sceneManager = SceneManager::create(canvas->context());
 	auto root = scene::Node::create("root")
 		->addComponent(sceneManager)
+		->addComponent(LuaScriptManager::create())
 		->addComponent(MouseManager::create(canvas->mouse()));
 
 	// setup assets
