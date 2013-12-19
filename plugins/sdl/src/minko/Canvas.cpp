@@ -20,6 +20,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Canvas.hpp"
 #include "minko/input/Mouse.hpp"
 #include "minko/input/Keyboard.hpp"
+#include "minko/data/Provider.hpp"
+#include "minko/math/Vector4.hpp"
 
 #if defined(EMSCRIPTEN)
 # include "minko/MinkoWebGL.hpp"
@@ -36,24 +38,25 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #endif
 
 using namespace minko;
+using namespace minko::math;
 
 Canvas::Canvas(const std::string& name, const uint width, const uint height, bool useStencil) :
 	_name(name),
-	_width(width),
-	_height(height),
 	_useStencil(useStencil),
+	_data(data::Provider::create()),
 	_active(false),
 	_framerate(0.f),
 	_desiredFramerate(60.f),
 	_enterFrame(Signal<Canvas::Ptr, uint, uint>::create()),
 	_resized(Signal<Canvas::Ptr, uint, uint>::create())
 {
+	_data->set<math::Vector4::Ptr>("canvas.viewport", Vector4::create(0.0f, 0.0f, (float)width, (float)height));
 }
 
 void
 Canvas::initialize()
 {
-	initializeContext(_name, _width, _height, _useStencil);
+	initializeContext(_name, width(), height(), _useStencil);
 	initializeInputs();
 }
 
@@ -112,12 +115,18 @@ Canvas::initializeContext(const std::string& windowTitle, unsigned int width, un
 
 	_context = minko::render::WebGLContext::create();
 #endif // EMSCRIPTEN
+
+	this->width(width);
+	this->height(height);
 }
 
 #ifdef MINKO_ANGLE
 ESContext*
 Canvas::initContext(SDL_Window* window, unsigned int width, unsigned int height)
 {
+	this->width(0);
+	this->height(0);
+
 	EGLint configAttribList[] =
 	{
 		EGL_RED_SIZE, 8,
@@ -202,9 +211,68 @@ Canvas::initContext(SDL_Window* window, unsigned int width, unsigned int height)
 	es_context->eglSurface = surface;
 	es_context->eglContext = context;
 
+	this->width(width);
+	this->height(height);
+
 	return es_context;
 }
 #endif
+
+uint
+Canvas::x() const
+{
+	return _data->get<math::Vector4::Ptr>("canvas.viewport")->x();
+}
+
+uint
+Canvas::y() const
+{
+	return _data->get<math::Vector4::Ptr>("canvas.viewport")->y();
+}
+
+uint
+Canvas::width() const
+{
+	return _data->get<math::Vector4::Ptr>("canvas.viewport")->z();
+}
+
+uint
+Canvas::height() const
+{
+	return _data->get<math::Vector4::Ptr>("canvas.viewport")->w();
+}
+
+void
+Canvas::x(uint value)
+{
+	auto viewport = _data->get<math::Vector4::Ptr>("canvas.viewport");
+
+	viewport->setTo((float)value, viewport->y(), viewport->z(), viewport->w());
+}
+
+void
+Canvas::y(uint value)
+{
+	auto viewport = _data->get<math::Vector4::Ptr>("canvas.viewport");
+
+	viewport->setTo(viewport->x(), (float)value, viewport->z(), viewport->w());
+}
+
+void
+Canvas::width(uint value)
+{
+	auto viewport = _data->get<math::Vector4::Ptr>("canvas.viewport");
+
+	viewport->setTo(viewport->x(), viewport->y(), (float)value, viewport->w());
+}
+
+void 
+Canvas::height(uint value)
+{
+	auto viewport = _data->get<math::Vector4::Ptr>("canvas.viewport");
+
+	viewport->setTo(viewport->x(), viewport->y(), viewport->z(), (float)value);
+}
 
 void
 Canvas::step()
@@ -288,10 +356,11 @@ Canvas::step()
 			switch (event.window.event)
 			{
 			case SDL_WINDOWEVENT_RESIZED:
-				_width = event.window.data1;
-				_height = event.window.data2;
-				_context->configureViewport(0, 0, _width, _height);
-				_resized->execute(shared_from_this(), _width, _height);
+				width(event.window.data1);
+				height(event.window.data2);
+
+				_context->configureViewport(x(), y(), width(), height());
+				_resized->execute(shared_from_this(), width(), height());
 				break;
 			default:
 				break;
@@ -354,3 +423,5 @@ Canvas::quit()
 {
 	_active = false;
 }
+
+

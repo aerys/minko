@@ -95,23 +95,21 @@ namespace minko
 
 	private:
 #ifdef EMSCRIPTEN
-		static std::list<Ptr>				_canvases;
+		static std::list<Ptr>						_canvases;
 #endif
+		
+		std::string									_name;
+		std::shared_ptr<data::Provider>				_data;
+		bool										_useStencil;
 
-		std::string							_name;
-		uint								_x;
-		uint								_y;
-		uint								_width;
-		uint								_height;
-		bool								_useStencil;
 
-		bool								_active;
-		render::AbstractContext::Ptr		_context;
+		bool										_active;
+		render::AbstractContext::Ptr				_context;
 #ifndef EMSCRIPTEN
-		SDL_Window*							_window;
+		SDL_Window*									_window;
 #endif
-		float								_framerate;
-		float								_desiredFramerate;
+		float										_framerate;
+		float										_desiredFramerate;
 
 		Signal<Ptr, uint, uint>::Ptr				_enterFrame;
 		Signal<Ptr, uint, uint>::Ptr				_resized;
@@ -140,30 +138,25 @@ namespace minko
 
 		inline
 		uint
-		x()
-		{
-			return _x;
-		}
+		x() const;
 
 		inline
 		uint
-		y()
-		{
-			return _y;
-		}
+		y() const;
 
 		inline
 		uint
-		width()
-		{
-			return _width;
-		}
+		width() const;
 
 		inline
 		uint
-		height()
+		height() const;
+
+		inline
+		std::shared_ptr<data::Provider>
+		data() const
 		{
-			return _height;
+			return _data;
 		}
 
 		inline
@@ -247,14 +240,14 @@ namespace minko
 		float
 		normalizedMouseX() const
 		{
-			return 2.f * ((float)_x / _width - .5f);
+			return 2.f * ((float)x() / width() - .5f);
 		}
 
 		inline
 		float
 		normalizedMouseY() const
 		{
-			return 2.f * ((float)_y / _height - .5f);
+			return 2.f * ((float)y() / height() - .5f);
 		}
 
 		void
@@ -265,6 +258,18 @@ namespace minko
 
 	private:
 		Canvas(const std::string& name, const uint width, const uint height, bool useStencil = false);
+
+		void
+		x(uint);
+
+		void
+		y(uint);
+
+		void
+		width(uint);
+
+		void 
+		height(uint);
 
 		void
 		initialize();
