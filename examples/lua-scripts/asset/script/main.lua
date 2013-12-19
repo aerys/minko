@@ -20,8 +20,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 function main:start(root)
 	local assets = 	getSceneManager().assets
 	
-	self.slot = assets.complete:connect(function(assets)
-		self.slot:disconnect()
+	self.assetsComplete = assets.complete:connect(function(assets)
+		self.assetsComplete:disconnect()
 
 		self.camera = Node.create()
 			:addComponent(Renderer.create())
