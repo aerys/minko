@@ -66,15 +66,16 @@ namespace minko
 			};
 
 		private:
+			std::shared_ptr<AbstractCanvas>										_canvas;
 			LuaGlue*															_state;
 			Signal<AbstractComponent::Ptr, std::shared_ptr<scene::Node>>::Slot 	_targetAddedSlot;
 
 		public:
 			inline static
 			Ptr
-			create()
+			create(std::shared_ptr<AbstractCanvas> canvas)
 			{
-				auto sm = std::shared_ptr<LuaScriptManager>(new LuaScriptManager());
+				auto sm = std::shared_ptr<LuaScriptManager>(new LuaScriptManager(canvas));
 
 				sm->initialize();
 
@@ -82,6 +83,12 @@ namespace minko
 			}
 
 		private:
+			LuaScriptManager(std::shared_ptr<AbstractCanvas> canvas) :
+				_canvas(canvas)
+			{
+
+			}
+
 			void
 			targetAddedHandler(AbstractComponent::Ptr cmp, std::shared_ptr<scene::Node> target);
 
@@ -90,10 +97,6 @@ namespace minko
 
 			void
 			initializeBindings();
-
-			static
-			int
-			stubSelfTest(Signal<std::shared_ptr<file::AssetLibrary>>::Ptr s, std::shared_ptr<LuaGlueFunctionRef> p);
 
 			template <typename... Args>
 			static

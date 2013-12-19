@@ -103,14 +103,6 @@ LuaScriptManager::targetAddedHandler(AbstractComponent::Ptr cmp, scene::Node::Pt
     LuaGlobalStub::_root = target->root();
 }
 
-int
-LuaScriptManager::stubSelfTest(Signal<file::AssetLibrary::Ptr>::Ptr s, LuaGlueFunctionRef::Ptr p)
-{
-    p->invokeVoid();
-
-    return s->numCallbacks();
-}
-
 void
 LuaScriptManager::initializeBindings()
 {
