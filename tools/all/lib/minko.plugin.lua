@@ -14,7 +14,7 @@ end
 
 minko.plugin.enable = function(name)
 	local projectName = project()["name"]
-	local terms = configuration()["terms"]
+	local terms = configuration()["terms"] or {}
 
 	minko.plugin._enabled[name] = true
 	minko.plugin.import(name)	
@@ -35,13 +35,11 @@ minko.plugin.enabled = function(name)
 end
 
 minko.plugin.links = function(names)
-
-	local terms = configuration()["terms"]
+	local terms = configuration()["terms"] or {}
 
 	configuration {}
 
 	for _, name in ipairs(names) do
-
 		local projectName = "minko-plugin-" .. name
 
 		if MINKO_SDK_DIST then
@@ -52,9 +50,7 @@ minko.plugin.links = function(names)
 		else
 			links { projectName }
 		end
-
 	end
 
 	configuration { unpack(terms) }
-
 end
