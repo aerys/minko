@@ -35,19 +35,19 @@ namespace minko
 	public:
 		virtual
 		uint
-		x() = 0;
+		x() const = 0;
 
 		virtual
 		uint
-		y() = 0;
+		y() const = 0;
 
 		virtual
 		uint
-		width() = 0;
+		width() const = 0;
 
 		virtual
 		uint
-		height() = 0;
+		height() const = 0;
 
 		virtual
 		std::shared_ptr<input::Mouse>
