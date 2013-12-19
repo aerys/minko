@@ -17,42 +17,51 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ]]--
 
+function test_function()
+	print("test!")
+end
+
 function main:start(root)
 	local assets = 	getSceneManager().assets
+	
+	self.slot = assets.complete:connect(function(assets)
+		self.slot:disconnect()
+
+		self.camera = Node.create()
+			:addComponent(Renderer.create())
+			:addComponent(Transform.createFromMatrix(Matrix4x4.create():lookAt(
+				Vector3.zero(),
+				Vector3.create(0., 0., 3.),
+				Vector3.up()
+			)))
+			:addComponent(PerspectiveCamera.create(800. / 600., math.pi * .25, .1, 1000.))
+			:addComponent(assets:script('script/rotate.lua'))
+			:addComponent(DirectionalLight.create(.4))
+		root:addChild(self.camera)
+
+		local lights = Node.create()
+			:addComponent(AmbientLight.create(.2))
+			:addComponent(DirectionalLight.create(.4))
+		root:addChild(lights)
+
+		local cube = Node.create()
+			:addComponent(Transform.create())
+			:addComponent(Surface.create(
+				CubeGeometry.create(assets.context),
+				Material.create():setTexture('diffuseMap', assets:texture('texture/box.png')),
+				assets:effect('effect/Phong.effect')
+			))
+		root:addChild(cube)
+	end)
 
 	assets
 		:queue('effect/Basic.effect')
 		:queue('effect/Phong.effect')
 		:queue('texture/box.png')
 		:queue('script/rotate.lua')
-		:queue('script/framerate.lua')
 		:load()
 
-	--root:addComponent(assets:script('script/framerate.lua'))
-
-	self.camera = Node.create()
-		:addComponent(Renderer.create())
-		:addComponent(Transform.createFromMatrix(Matrix4x4.create():lookAt(
-			Vector3.zero(),
-			Vector3.create(0., 0., 3.),
-			Vector3.up()
-		)))
-		:addComponent(PerspectiveCamera.create(800. / 600., math.pi * .25, .1, 1000.))
-		:addComponent(assets:script('script/rotate.lua'))
-		:addComponent(DirectionalLight.create(.4))
-	root:addChild(self.camera)
-
-	local lights = Node.create()
-		:addComponent(AmbientLight.create(.2))
-		:addComponent(DirectionalLight.create(.4))
-	root:addChild(lights)
-
-	local cube = Node.create()
-		:addComponent(Transform.create())
-		:addComponent(Surface.create(
-			CubeGeometry.create(assets.context),
-			Material.create():setTexture('diffuseMap', assets:texture('texture/box.png')),
-			assets:effect('effect/Phong.effect')
-		))
-	root:addChild(cube)
+	assets
+		:queue('script/framerate.lua')
+		:load()
 end
