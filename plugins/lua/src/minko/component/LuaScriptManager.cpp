@@ -19,8 +19,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/component/LuaScriptManager.hpp"
 
-#include "LuaGlue/LuaGlue.h"
-
 #include "minko/scene/Node.hpp"
 #include "minko/math/Vector2.hpp"
 #include "minko/math/Vector3.hpp"
@@ -51,10 +49,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #define BIND_SIGNAL(...) \
     {                                                                                               \
-        _state.Class<std::function<void (__VA_ARGS__)>>("std::function<void(" #__VA_ARGS__ ")>");   \
-        auto& s = _state.Class<Signal<__VA_ARGS__>>("Signal<" #__VA_ARGS__ ">");                    \
-        _state.Class<Signal<__VA_ARGS__>::Slot>("Signal<" #__VA_ARGS__ ">::Slot");                  \
-        s.method("connect", &Signal<__VA_ARGS__>::connect);                                         \
+        _state->Class<Signal<__VA_ARGS__>>("Signal<" #__VA_ARGS__ ">")                              \
+            .method("connect", &LuaScriptManager::wrapSignalConnect<__VA_ARGS__>);                  \
+        _state->Class<Signal<__VA_ARGS__>::Slot::element_type>("SignalSlot<" #__VA_ARGS__ ">")      \
+            .method("disconnect", &LuaScriptManager::wrapSignalDisconnect<__VA_ARGS__>);            \
     }
 
 using namespace minko;
@@ -105,10 +103,20 @@ LuaScriptManager::targetAddedHandler(AbstractComponent::Ptr cmp, scene::Node::Pt
     LuaGlobalStub::_root = target->root();
 }
 
+int
+LuaScriptManager::stubSelfTest(Signal<file::AssetLibrary::Ptr>::Ptr s, LuaGlueFunctionRef::Ptr p)
+{
+    p->invokeVoid();
+
+    return s->numCallbacks();
+}
+
 void
 LuaScriptManager::initializeBindings()
 {
     _state = new LuaGlue();
+    _state->open();
+
 	_state
         ->Class<render::Texture>("Texture")
             //.property("width",  &render::Texture::width)
@@ -247,8 +255,8 @@ LuaScriptManager::initializeBindings()
         .property("y",                  &input::Mouse::y)
         .property("leftButtonIsDown",   &input::Mouse::leftButtonIsDown)
         .property("rightButtonIsDown",  &input::Mouse::rightButtonIsDown);
-    //BIND_SIGNAL(input::Mouse::Ptr);
-    //input_mouse.property("leftButtonDown", &input::Mouse::leftButtonDown);
+    BIND_SIGNAL(input::Mouse::Ptr);
+    input_mouse.property("leftButtonDown", &input::Mouse::leftButtonDown);
 
     auto& file_assetlibrary = _state->Class<file::AssetLibrary>("AssetLibrary")
         .method("queue",        static_cast<file::AssetLibrary::Ptr (file::AssetLibrary::*)(const std::string&)>(&file::AssetLibrary::queue))
@@ -258,10 +266,8 @@ LuaScriptManager::initializeBindings()
         .method("texture",      static_cast<render::Texture::Ptr (file::AssetLibrary::*)(const std::string&)>(&file::AssetLibrary::texture))
         .method("script",       static_cast<AbstractScript::Ptr (file::AssetLibrary::*)(const std::string&)>(&file::AssetLibrary::script))
         .property("context",    &file::AssetLibrary::context);
-    //BIND_SIGNAL(file::AssetLibrary::Ptr);
-    //file_assetlibrary.property("complete", &file::AssetLibrary::complete);
-
-    
+    BIND_SIGNAL(file::AssetLibrary::Ptr);
+    file_assetlibrary.property("complete", &file::AssetLibrary::complete);
 
     _state
         ->func("getMouse",              &LuaGlobalStub::getMouse)
@@ -269,6 +275,5 @@ LuaScriptManager::initializeBindings()
         .func("getSceneManager",        &LuaGlobalStub::getSceneManager)
         .func("getModelToWorldMatrix",  &LuaGlobalStub::getModelToWorldMatrix);
 
-    _state->open().glue();
+    _state->glue();
 }
-
