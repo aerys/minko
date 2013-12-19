@@ -13,6 +13,27 @@ end
 
 printf('Minko SDK home directory: ' .. MINKO_HOME)
 
+require 'copy'
+require 'inspect'
+require 'emscripten'
+require 'android'
+
+premake.tools.gcc.cxxflags.system = {
+	linux = { "-MMD", "-MP", "-std=c++11" },
+	macosx = { "-MMD", "-MP", "-std=c++11" },
+	emscripten = { "-MMD", "-MP", "-std=c++11" }
+}
+
+premake.tools.clang.cxxflags.system = {
+	macosx = { "-MMD", "-MP", "-std=c++11", "-stdlib=libc++" }
+}
+
+premake.tools.clang.ldflags.system.macosx = {
+	macosx = { "-stdlib=libc++" }
+}
+
+-- print(table.inspect(premake.tools.clang))
+
 -- distributable SDK
 MINKO_SDK_DIST = true
 
@@ -25,41 +46,42 @@ dofile(MINKO_HOME .. '/tools/all/lib/minko.plugin.lua')
 dofile(MINKO_HOME .. '/tools/all/lib/minko.vs.lua')
 dofile(MINKO_HOME .. '/tools/all/lib/minko.project.lua')
 
+
 -- add new platforms
-minko.sdk.newplatform {
-	name = 'emscripten',
-	description = 'Emscripten C++ to JS toolchain',
-	gcc = {
-		cc = MINKO_HOME .. '/tools/lin/bin/emcc.sh',
-		cxx = MINKO_HOME .. '/tools/lin/bin/em++.sh',
-		ar = MINKO_HOME .. '/tools/lin/bin/emar.sh',
-		cppflags = '-MMD -DEMSCRIPTEN'
-	}
-}
+-- minko.sdk.newplatform {
+-- 	name = 'emscripten',
+-- 	description = 'Emscripten C++ to JS toolchain',
+-- 	gcc = {
+-- 		cc = MINKO_HOME .. '/tools/lin/bin/emcc.sh',
+-- 		cxx = MINKO_HOME .. '/tools/lin/bin/em++.sh',
+-- 		ar = MINKO_HOME .. '/tools/lin/bin/emar.sh',
+-- 		cppflags = '-MMD -DEMSCRIPTEN'
+-- 	}
+-- }
 
-minko.sdk.newplatform {
-	name = 'clang',
-	description = 'Clang',
-	gcc = {
-		cc = 'clang',
-		cxx = 'clang++',
-		ar = 'ar',
-		cppflags = '-stdlib=libc++',
-		ldflags = '-stdlib=libc++'
-	}
-}
+-- minko.sdk.newplatform {
+-- 	name = 'clang',
+-- 	description = 'Clang',
+-- 	gcc = {
+-- 		cc = 'clang',
+-- 		cxx = 'clang++',
+-- 		ar = 'ar',
+-- 		cppflags = '-stdlib=libc++',
+-- 		ldflags = '-stdlib=libc++'
+-- 	}
+-- }
 
-minko.sdk.newplatform {
-	name = 'gcc',
-	description = 'GCC',
-	gcc = {
-		cc = 'gcc',
-		cxx = MINKO_HOME .. '/tools/lin/bin/g++-ld.sh',
-		ar = 'ar',
-		cppflags = '-MMD',
-		ldflags = ''
-	}
-}
+-- minko.sdk.newplatform {
+-- 	name = 'gcc',
+-- 	description = 'GCC',
+-- 	gcc = {
+-- 		cc = 'gcc',
+-- 		cxx = MINKO_HOME .. '/tools/lin/bin/g++-ld.sh',
+-- 		ar = 'ar',
+-- 		cppflags = '-MMD',
+-- 		ldflags = ''
+-- 	}
+-- }
 
 -- options
 if _OPTIONS.platform then

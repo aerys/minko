@@ -56,5 +56,5 @@ project "glsl-optimizer"
 
 	-- emscripten
 	configuration { "emscripten" }
-		flags { "Optimize" }
+		optimize "On"
 		buildoptions { "-Wno-narrowing" }

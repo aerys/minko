@@ -3,34 +3,30 @@ minko.project = {}
 minko.project.library = function(name)
 	project(name)
 
+	location "."
 	includedirs { minko.sdk.path("/framework/include") }
 	
 	configuration { "debug"}
 		defines { "DEBUG" }
 		flags { "Symbols" }
-		targetdir("bin/debug/" .. os.get())
 
 	configuration { "release" }
 		defines { "NDEBUG" }
-		flags { "Optimize" } -- { "OptimizeSpeed" }
-		targetdir("bin/release/" .. os.get())
+		optimize "On"
 	
 	configuration { "windows" }
 		includedirs { minko.sdk.path("/deps/win/include") }
 		
 	configuration { "macosx" }
 		includedirs { minko.sdk.path("/deps/mac/include") }
-		buildoptions { "-std=c++11" }
 	
 	configuration { "linux" }
 		includedirs { minko.sdk.path("/deps/lin/include") }
-		buildoptions { "-std=c++11" }		
 		
 	if _OPTIONS["platform"] == "emscripten" then
 		configuration { "emscripten" }
 			minko.plugin.enable("webgl")
-			flags { "Optimize" }
-			buildoptions { "-std=c++11" }
+			optimize "On"
 	end	
 	
 	configuration { }
@@ -49,16 +45,6 @@ minko.project.application = function(name)
 		links { "minko-framework" }
 	end
 
-	configuration { "debug"}
-		defines { "DEBUG" }
-		flags { "Symbols" }
-		targetdir "bin/debug"
-
-	configuration { "release" }
-		defines { "NDEBUG" }
-		flags { "OptimizeSpeed" }
-		targetdir "bin/release"
-	
 	configuration { "windows" }
 		libdirs { minko.sdk.path("/deps/win/lib") }
 		links {
@@ -85,7 +71,6 @@ minko.project.application = function(name)
 	
 	configuration { "macosx" }
 		libdirs { "/deps/mac/lib" }
-		linkoptions { "-stdlib=libc++" }
 		links {
 			"m",
 			"SDL2.framework",
