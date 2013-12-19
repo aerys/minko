@@ -28,5 +28,5 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 	-- emscripten
 	configuration { "emscripten" }
 		defines { "EMSCRIPTEN" }
-		flags { "Optimize" }
+		optimize "On"
 		includedirs { "lib/emscripten/SDL/include" }

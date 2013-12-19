@@ -4,6 +4,7 @@ end
 
 project "minko-framework"
 	kind "StaticLib"
+	location "."
 	language "C++"
 	files {
 		"src/**.hpp",
@@ -33,12 +34,10 @@ project "minko-framework"
 	configuration { "debug"}
 		defines { "DEBUG" }
 		flags { "Symbols" }
-		targetdir("bin/debug/" .. os.get())
 
 	configuration { "release" }
 		defines { "NDEBUG" }
 		optimize "On"
-		targetdir("bin/release/" .. os.get())
 	
 	-- plugins
 	minko.plugin.import("angle")
@@ -59,7 +58,6 @@ project "minko-framework"
 
 	-- macos
 	configuration { "macosx" }
-		buildoptions { "-std=c++11" }
 		includedirs { "../deps/mac/include" }
 
 	-- emscripten
