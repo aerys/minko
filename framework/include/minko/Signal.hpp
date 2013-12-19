@@ -167,13 +167,19 @@ namespace minko
 				return _signal;
 			}
 
-			~SignalSlot()
+			void
+			disconnect()
 			{
 				if (_signal != nullptr)
 				{
 					_signal->removeConnectionById(_id);
 					_signal = nullptr;
-				}
+				}				
+			}
+
+			~SignalSlot()
+			{
+				disconnect();
 			}
 
 		private:
