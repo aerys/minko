@@ -20,7 +20,7 @@ minko.project.library = function(name)
 		
 	configuration { "macosx" }
 		includedirs { minko.sdk.path("/deps/mac/include") }
-		buildoptions { "-std=c++11 -stdlib=libc++" }
+		buildoptions { "-std=c++11" }
 	
 	configuration { "linux" }
 		includedirs { minko.sdk.path("/deps/lin/include") }
