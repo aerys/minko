@@ -10,6 +10,7 @@
 #include "LuaGlue/LuaGlueBase.h"
 #include "LuaGlue/LuaGlueClassBase.h"
 #include "LuaGlue/LuaGlueFunction.h"
+#include "LuaGlue/LuaGlueFunctionRef.h"
 #include "LuaGlue/LuaGlueSymTab.h"
 
 template<typename _Class>

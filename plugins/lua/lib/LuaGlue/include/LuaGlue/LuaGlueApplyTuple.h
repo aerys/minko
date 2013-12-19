@@ -194,19 +194,6 @@ struct stack<LuaGlueObject<T>> {
 };
 
 template<>
-struct stack<int> {
-	static int get(LuaGlueBase *, lua_State *s, int idx)
-	{
-		return luaL_checkint(s, idx);
-	}
-	
-	static void put(LuaGlueBase *, lua_State *s, int v)
-	{
-		lua_pushinteger(s, v);
-	}
-};
-
-template<>
 struct stack<unsigned int> {
 	static unsigned int get(LuaGlueBase *, lua_State *s, int idx)
 	{

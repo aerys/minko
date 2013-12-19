@@ -22,6 +22,10 @@ minko.plugin.lua = {}
 
 function minko.plugin.lua:enable()
 	minko.plugin.links { "lua" }
-	includedirs { minko.sdk.path("plugins/lua/include") }
+	includedirs {
+		minko.sdk.path("plugins/lua/include"),
+		minko.sdk.path("plugins/lua/lib/lua/src"),
+		minko.sdk.path("plugins/lua/lib/LuaGlue/include"),
+	}
 	defines { "MINKO_PLUGIN_LUA" }
 end

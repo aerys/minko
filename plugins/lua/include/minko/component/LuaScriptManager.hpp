@@ -22,7 +22,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Common.hpp"
 #include "minko/component/AbstractComponent.hpp"
 
+#include "LuaGlue/LuaGlue.h"
+
+#include "minko/Signal.hpp"
+
 class LuaGlue;
+class lua_State;
 
 namespace minko
 {
@@ -85,6 +90,26 @@ namespace minko
 
 			void
 			initializeBindings();
+
+			static
+			int
+			stubSelfTest(Signal<std::shared_ptr<file::AssetLibrary>>::Ptr s, std::shared_ptr<LuaGlueFunctionRef> p);
+
+			template <typename... Args>
+			static
+			typename Signal<Args...>::Slot
+			wrapSignalConnect(typename Signal<Args...>::Ptr s, std::shared_ptr<LuaGlueFunctionRef> p)
+			{
+				return s->connect([=](Args... args) { p->invokeVoid(args...); });
+			}
+
+			template <typename... Args>
+			static
+			void
+			wrapSignalDisconnect(typename Signal<Args...>::Slot s)
+			{
+				s->disconnect();
+			}
 		};
 	}
 }
