@@ -52,7 +52,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
         _state->Class<Signal<__VA_ARGS__>>("Signal<" #__VA_ARGS__ ">")                              \
             .method("connect", &LuaScriptManager::wrapSignalConnect<__VA_ARGS__>);                  \
         _state->Class<Signal<__VA_ARGS__>::Slot::element_type>("SignalSlot<" #__VA_ARGS__ ">")      \
-            .method("disconnect", &LuaScriptManager::wrapSignalDisconnect<__VA_ARGS__>);            \
+            .method("disconnect", &Signal<__VA_ARGS__>::Slot::element_type::disconnect);            \
     }
 
 using namespace minko;

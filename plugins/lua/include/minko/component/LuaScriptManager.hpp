@@ -102,14 +102,6 @@ namespace minko
 			{
 				return s->connect([=](Args... args) { p->invokeVoid(args...); });
 			}
-
-			template <typename... Args>
-			static
-			void
-			wrapSignalDisconnect(typename Signal<Args...>::Slot s)
-			{
-				s->disconnect();
-			}
 		};
 	}
 }
