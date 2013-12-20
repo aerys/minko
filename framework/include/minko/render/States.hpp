@@ -36,6 +36,7 @@ namespace minko
 	    public:
 		    typedef std::shared_ptr<States>                                 Ptr;
             typedef std::unordered_map<std::string, render::SamplerState>   SamplerStates;
+			typedef std::shared_ptr<math::Vector4>							Vector4Ptr;
 
         private:
             float				        _priority;
@@ -51,10 +52,12 @@ namespace minko
 			StencilOperation			_stencilFailOp;
 			StencilOperation			_stencilZFailOp;
 			StencilOperation			_stencilZPassOp;
+			bool						_scissorTest;
+			ScissorBox					_scissorBox;
             SamplerStates               _samplerStates;
             std::shared_ptr<Texture>    _target;
 
-	    public:
+		public:
 		    inline static
 		    Ptr
 		    create(const SamplerStates&     samplerStates,
@@ -71,6 +74,8 @@ namespace minko
 				   StencilOperation			stencilFailOp				= StencilOperation::KEEP, 
 				   StencilOperation			stencilZFailOp				= StencilOperation::KEEP, 
 				   StencilOperation			stencilZPassOp				= StencilOperation::KEEP, 
+				   bool						scissorTest					= false,
+				   const ScissorBox&		scissorBox					= ScissorBox(),
                    std::shared_ptr<Texture> target                      = nullptr)
 		    {
 			    return std::shared_ptr<States>(new States(
@@ -88,6 +93,8 @@ namespace minko
 					stencilFailOp,
 					stencilZFailOp,
 					stencilZPassOp,
+					scissorTest,
+					scissorBox,
                     target
                 ));
 		    }
@@ -111,6 +118,8 @@ namespace minko
 					states->_stencilFailOp,
 					states->_stencilZFailOp,
 					states->_stencilZPassOp,
+					states->_scissorTest,
+					states->_scissorBox,
                     states->_target
                 ));
 		    }
@@ -222,6 +231,20 @@ namespace minko
 				return _stencilZPassOp;
 			}
 
+			inline
+			bool
+			scissorTest() const
+			{
+				return _scissorTest;
+			}
+
+			inline
+			const ScissorBox&
+			scissorBox() const
+			{
+				return _scissorBox;
+			}
+			
             inline
             const SamplerStates&
             samplers() const
@@ -251,6 +274,8 @@ namespace minko
 				   StencilOperation			stencilFailOp,
 				   StencilOperation			stencilZFailOp,
 				   StencilOperation			stencilZPassOp,
+				   bool						scissorTest,
+				   const ScissorBox&		scissorBox,
                    std::shared_ptr<Texture> target) :
                 _samplerStates(samplerSates),
                 _priority(priority),
@@ -266,6 +291,8 @@ namespace minko
 				_stencilFailOp(stencilFailOp),
 				_stencilZFailOp(stencilZFailOp),
 				_stencilZPassOp(stencilZPassOp),
+				_scissorTest(scissorTest),
+				_scissorBox(scissorBox),
                 _target(target)
 		    {
 		    }
