@@ -67,6 +67,8 @@
 	"defaultTechnique" : "single-pass",
 	"colorMask"			: true,
 	"stencilTest"		: ["always", 0, 1, ["keep", "keep", "keep"]],
+	"scissorTest"		: false,
+	"scissorBox"		: [0, 0, -1, -1],
 	
 	"techniques" : [
 		{

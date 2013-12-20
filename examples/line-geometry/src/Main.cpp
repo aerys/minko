@@ -120,7 +120,7 @@ addStar(Node::Ptr root, file::AssetLibrary::Ptr assets, std::vector<Star>& stars
 				->set("material.lineThickness",	1.0f + 3.0f * (rand() / (float)RAND_MAX)),
 			assets->effect("line")
 		))
-		->addComponent(Transform::create(Matrix4x4::create()->appendRotationZ(2.0f * PI * rand() / (float)RAND_MAX)));
+		->addComponent(Transform::create(Matrix4x4::create()->appendRotationZ(2.0f * (float)PI * rand() / (float)RAND_MAX)));
 	
 	stars.push_back(Star());
 	
@@ -142,8 +142,8 @@ createStarLineGeometry(unsigned int numStarBranches,
 	const unsigned int	numBranches = std::max((unsigned int)3, numStarBranches);
 	const float			innerRadius	= std::min(inRadius, outRadius);
 	const float			outerRadius	= std::max(inRadius, outRadius);
-	const float			cStep		= cosf(PI / (float)numBranches);
-	const float			sStep		= sinf(PI / (float)numBranches);
+	const float			cStep		= cosf((float)PI / (float)numBranches);
+	const float			sStep		= sinf((float)PI / (float)numBranches);
 
 	LineGeometry::Ptr	lines		= LineGeometry::create(context);
 
