@@ -42,6 +42,8 @@
 	"colorMask"			: true,
 	"stencilTest"		: ["always", 0, 1, ["keep", "keep", "keep"]],
     "triangleCulling"   : "none",
+	"scissorTest"		: false,
+	"scissorBox"		: [0, 0, -1, -1],
     
 	"techniques" : [{
 		"passes"    : [{
