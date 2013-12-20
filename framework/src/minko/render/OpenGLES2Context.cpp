@@ -1321,6 +1321,42 @@ OpenGLES2Context::setStencilTest(CompareMode stencilFunc,
 }
 
 void
+OpenGLES2Context::setScissorTest(bool						scissorTest, 
+								 const render::ScissorBox&	scissorBox)
+{
+	if (scissorTest)
+	{
+		glEnable(GL_SCISSOR_TEST);
+
+		int		x = 0;
+		int		y = 0;
+		uint	width = 0;
+		uint	height = 0;
+
+		if (scissorBox.width < 0 || scissorBox.height < 0)
+		{
+			x		= _viewportX;
+			y		= _viewportY;
+			width	= _viewportWidth;
+			height	= _viewportHeight;
+		}
+		else
+		{
+			x		= scissorBox.x;
+			y		= scissorBox.y;
+			width	= scissorBox.width;
+			height	= scissorBox.height;
+		}
+
+		glScissor(x, y, width, height);
+	}
+	else
+		glDisable(GL_SCISSOR_TEST);
+
+	checkForErrors();
+}
+
+void
 OpenGLES2Context::readPixels(unsigned char* pixels)
 {
 	glReadPixels(_viewportX, _viewportY, _viewportWidth, _viewportHeight, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
