@@ -80,6 +80,17 @@ namespace minko
 		class VertexBuffer;
 		class IndexBuffer;
 		class Texture;
+
+		struct ScissorBox
+		{
+			int		x, y;
+			int	width, height;
+
+			inline
+			ScissorBox(): x(0), y(0), width(-1), height(-1)
+			{
+			}
+		};
 	}
 
 	namespace scene
@@ -145,14 +156,14 @@ namespace minko
 
 		union MacroBindingDefaultValue
 		{
-			bool propertyExists;
-			int value;
+			bool	propertyExists;
+			int		value;
 		};
 
 		struct MacroBindingDefault
 		{
-			MacroBindingDefaultValueSemantic semantic;
-			MacroBindingDefaultValue value;
+			MacroBindingDefaultValueSemantic	semantic;
+			MacroBindingDefaultValue			value;
 		};
 
 		typedef std::tuple<std::string, BindingSource, MacroBindingDefault, int, int>	MacroBinding;

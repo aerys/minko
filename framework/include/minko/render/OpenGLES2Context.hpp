@@ -334,6 +334,9 @@ namespace minko
 						   StencilOperation	stencilZPassOp);
 
 			void
+			setScissorTest(bool	scissorTest, const render::ScissorBox& scissorBox);
+
+			void
 			readPixels(unsigned char* pixels);
 
             void
