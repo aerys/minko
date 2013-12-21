@@ -568,8 +568,8 @@ EffectParser::parseBindingNameAndSource(const Json::Value& contextNode, std::str
 
 		if (propertyValue.isString())
 			propertyName = propertyValue.asString();
-		else
-			throw;
+		//else
+		//	throw;
 
 		if (sourceValue.isString())
 		{
