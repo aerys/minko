@@ -17,44 +17,67 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ]]--
 
+rotate.MIN_PITCH = 0.00001
+rotate.MAX_PITCH = math.pi - rotate.MIN_PITCH
+
 function rotate:start(node)
-	self.oldX = getMouse().x
-	self.oldY = getMouse().y
-	self.rotationSpeedX = 0.
-	self.rotationSpeedY = 0.
-	self.distance = 3.
-	self.lookAt = Vector3.create(0., 0., 0.)
-	self.up = Vector3.create(0., 1., 0.)
-	self.yaw = 0.
-	self.pitch = math.pi * .5
-	self.minPitch = 0.00001
-	self.maxPitch = math.pi - self.minPitch
+	self.mouseHandler = coroutine.create(function() self:handleMouse(node) end)
+	coroutine.resume(self.mouseHandler)
 end
 
-function rotate:update(node)
-	local x = getMouse().x
-	local y = getMouse().y
-	if getMouse().leftButtonIsDown then
-		self.rotationSpeedX = self.rotationSpeedX + (x - self.oldX) / 1000
-		self.rotationSpeedY = self.rotationSpeedY + (y - self.oldY) / 1000
-	end
-	self.oldX = x
-	self.oldY = y
-
-	self.yaw = self.yaw + self.rotationSpeedX
-	self.rotationSpeedX = self.rotationSpeedX * .9
-
-	self.pitch = self.pitch - self.rotationSpeedY
-	self.pitch = math.min(math.max(self.pitch, self.minPitch), self.maxPitch)
-	self.rotationSpeedY = self.rotationSpeedY * .9
-
+function rotate:applyRotation(node, lookAt, yaw, pitch, distance)
 	getModelToWorldMatrix(node):lookAt(
-		self.lookAt,
+		lookAt,
 		Vector3.create(
-			self.lookAt.x + self.distance * math.cos(self.yaw) * math.sin(self.pitch),
-			self.lookAt.y + self.distance * math.cos(self.pitch),
-			self.lookAt.z + self.distance * math.sin(self.yaw) * math.sin(self.pitch)
+			lookAt.x + distance * math.cos(yaw) * math.sin(pitch),
+			lookAt.y + distance * math.cos(pitch),
+			lookAt.z + distance * math.sin(yaw) * math.sin(pitch)
 		),
-		self.up
+		Vector3.up()
 	)
+end
+
+function rotate:handleMouse(node)
+	local lookAt = Vector3.create(0., 0., 0.)
+	local distance = 3.
+	local yaw = 0.
+	local pitch = math.pi * .5
+	local rotationSpeedX = 0.
+	local rotationSpeedY = 0.
+
+	self:applyRotation(node, lookAt, yaw, pitch, distance)
+
+	while self.running do
+		wait(getMouse().leftButtonDown)
+		wait(getMouse().move)
+
+		local oldX = getMouse().x
+		local oldY = getMouse().y
+
+		repeat
+			local x = getMouse().x
+			local y = getMouse().y
+			
+			if getMouse().leftButtonIsDown then
+				rotationSpeedX = rotationSpeedX + (x - oldX) / 1000
+				rotationSpeedY = rotationSpeedY + (y - oldY) / 1000
+			end
+			oldX = x
+			oldY = y
+
+			yaw = yaw + rotationSpeedX
+			rotationSpeedX = rotationSpeedX * .9
+
+			pitch = pitch - rotationSpeedY
+			pitch = math.min(math.max(pitch, rotate.MIN_PITCH), rotate.MAX_PITCH)
+			rotationSpeedY = rotationSpeedY * .9
+
+			self:applyRotation(node, lookAt, yaw, pitch, distance)
+
+			wait(getSceneManager().nextFrame)
+		until
+			not getMouse().leftButtonIsDown
+			and math.abs(rotationSpeedX) < 0.001
+			and math.abs(rotationSpeedY) < 0.001
+	end
 end
