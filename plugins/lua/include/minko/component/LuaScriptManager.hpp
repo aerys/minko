@@ -20,11 +20,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
-#include "minko/component/AbstractComponent.hpp"
+#include "minko/component/AbstractScript.hpp"
 
 #include "LuaGlue/LuaGlue.h"
 
 #include "minko/Signal.hpp"
+#include "minko/input/Keyboard.hpp"
+
+#include <chrono>
 
 class LuaGlue;
 class lua_State;
@@ -34,19 +37,23 @@ namespace minko
 	namespace component
 	{
 		class LuaScriptManager :
-			public AbstractComponent,
-			public std::enable_shared_from_this<LuaScriptManager>
+			public AbstractScript
 		{
 			friend class LuaScript;
 
 		public:
-			typedef std::shared_ptr<LuaScriptManager> 	Ptr;
+			typedef std::shared_ptr<LuaScriptManager> 		Ptr;
+
+		private:
+			typedef std::shared_ptr<file::AbstractLoader>			AbsLoaderPtr;
+			typedef std::chrono::high_resolution_clock::time_point	time_point;
 
 		private:
 			class LuaGlobalStub
 			{
 			public:
-				static std::shared_ptr<scene::Node>	_root;
+				static std::shared_ptr<scene::Node>		_root;
+				static std::shared_ptr<AbstractCanvas>	_canvas;
 
 				static
 				std::shared_ptr<SceneManager>
@@ -66,9 +73,14 @@ namespace minko
 			};
 
 		private:
-			std::shared_ptr<AbstractCanvas>										_canvas;
-			LuaGlue*															_state;
-			Signal<AbstractComponent::Ptr, std::shared_ptr<scene::Node>>::Slot 	_targetAddedSlot;
+			std::shared_ptr<AbstractCanvas>			_canvas;
+			LuaGlue									_state;
+			time_point								_previousTime;
+
+			bool									_ready;
+			uint									_numDependencies;
+			uint									_numLoadedDependencies;
+			std::list<Signal<AbsLoaderPtr>::Slot>	_dependencySlots;
 
 		public:
 			inline static
@@ -82,9 +94,23 @@ namespace minko
 				return sm;
 			}
 
+			inline
+			bool
+			ready(std::shared_ptr<scene::Node> node)
+			{
+				return _numDependencies == _numLoadedDependencies;
+			}
+
+			void
+			update(std::shared_ptr<scene::Node> target);
+
 		private:
 			LuaScriptManager(std::shared_ptr<AbstractCanvas> canvas) :
-				_canvas(canvas)
+				_canvas(canvas),
+				_state(),
+				_ready(false),
+				_numDependencies(0),
+				_numLoadedDependencies(0)
 			{
 
 			}
@@ -98,13 +124,19 @@ namespace minko
 			void
 			initializeBindings();
 
-			template <typename... Args>
+			void
+			loadStandardLibrary();
+
+			void
+			dependencyLoadedHandler(AbsLoaderPtr loader);
+
 			static
-			typename Signal<Args...>::Slot
-			wrapSignalConnect(typename Signal<Args...>::Ptr s, std::shared_ptr<LuaGlueFunctionRef> p)
-			{
-				return s->connect([=](Args... args) { p->invokeVoid(args...); });
-			}
+			Signal<input::Keyboard::Ptr, uint>::Ptr
+			wrapKeyboardKeyDown(input::Keyboard::Ptr k, uint s);
+
+			static
+			Signal<input::Keyboard::Ptr, uint>::Ptr
+			wrapKeyboardKeyUp(input::Keyboard::Ptr k, uint s);
 		};
 	}
 }
