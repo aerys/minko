@@ -225,18 +225,6 @@ LuaScriptManager::initializeBindings()
     MINKO_LUAGLUE_BIND_SIGNAL(_state, SceneManager::Ptr);
     sceneManager.property("nextFrame",  &SceneManager::frameBegin);
 
-    auto& input_mouse = _state.Class<input::Mouse>("Mouse")
-        .property("x",                  &input::Mouse::x)
-        .property("y",                  &input::Mouse::y)
-        .property("leftButtonIsDown",   &input::Mouse::leftButtonIsDown)
-        .property("rightButtonIsDown",  &input::Mouse::rightButtonIsDown);
-    MINKO_LUAGLUE_BIND_SIGNAL(_state, input::Mouse::Ptr);
-    MINKO_LUAGLUE_BIND_SIGNAL(_state, input::Mouse::Ptr, int, int);
-    input_mouse
-        .property("leftButtonDown",     &input::Mouse::leftButtonDown)
-        .property("rightButtonDown",    &input::Mouse::rightButtonDown)
-        .property("move",               &input::Mouse::move);
-
     auto& abstractCanvas = _state.Class<AbstractCanvas>("AbstractCanvas");
     MINKO_LUAGLUE_BIND_SIGNAL(_state, AbstractCanvas::Ptr);
 
