@@ -56,5 +56,9 @@ namespace minko
         virtual
         std::shared_ptr<input::Keyboard>
         keyboard() = 0;
+
+        virtual
+		Signal<Ptr, uint, uint>::Ptr
+		resized() = 0;
 	};
 }
