@@ -252,6 +252,8 @@ AssetLibrary::loaderCompleteHandler(std::shared_ptr<file::AbstractLoader> loader
 		auto parser = _parsers[extension]();
 		auto completeSlot = parser->complete()->connect([=](AbstractParser::Ptr)
 		{
+			loader->parserComplete()->execute(loader, parser, shared_from_this());
+
 			finalize(filename);
 		});
 
