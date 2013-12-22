@@ -24,8 +24,36 @@ function minko.plugin.lua:enable()
 	minko.plugin.links { "lua" }
 	includedirs {
 		minko.sdk.path("plugins/lua/include"),
-		minko.sdk.path("plugins/lua/lib/lua/src"),
+		minko.sdk.path("plugins/lua/lib/lua/include"),
 		minko.sdk.path("plugins/lua/lib/LuaGlue/include"),
 	}
 	defines { "MINKO_PLUGIN_LUA" }
+
+	configuration { "windows" }
+		postbuildcommands {
+			'xcopy /y /i /s "' .. minko.sdk.path('/plugins/lua/asset/script/*') .. '" "$(TargetDir)\\script"',
+		}
+		
+	configuration { "linux" }
+		postbuildcommands {
+			'cp -r ' .. minko.sdk.path('/plugins/lua/asset/script') .. ' ${TARGETDIR} || :',
+		}
+	
+	configuration { "macosx" }
+		postbuildcommands {
+			'cp -r ' .. minko.sdk.path('/plugins/lua/asset/script') .. ' . || :',
+		}
+end
+
+function minko.plugin.lua:dist(pluginDistDir)
+	os.mkdir(pluginDistDir .. '/lib/lua/include')
+	minko.os.copyfiles(
+		minko.sdk.path('/plugins/lua/lib/lua/include'),
+		pluginDistDir .. '/lib/lua/include'
+	)
+	os.mkdir(pluginDistDir .. '/lib/LuaGlue/include')
+	minko.os.copyfiles(
+		minko.sdk.path('/plugins/lua/lib/LuaGlue/include'),
+		pluginDistDir .. '/lib/LuaGlue/include'
+	)
 end
