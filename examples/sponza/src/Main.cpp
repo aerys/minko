@@ -495,7 +495,7 @@ main(int argc, char** argv)
 			cameraCollider->synchronizePhysicsWithGraphics();
 		});
 
-		auto resized = canvas->resized()->connect([&](Canvas::Ptr canvas, unsigned int width, unsigned int height)
+		auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, unsigned int width, unsigned int height)
 		{
 			camera->component<PerspectiveCamera>()->aspectRatio((float)width / (float)height);
 		});
