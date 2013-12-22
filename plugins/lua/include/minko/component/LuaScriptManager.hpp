@@ -129,14 +129,6 @@ namespace minko
 
 			void
 			dependencyLoadedHandler(AbsLoaderPtr loader);
-
-			static
-			Signal<input::Keyboard::Ptr, uint>::Ptr
-			wrapKeyboardKeyDown(input::Keyboard::Ptr k, uint s);
-
-			static
-			Signal<input::Keyboard::Ptr, uint>::Ptr
-			wrapKeyboardKeyUp(input::Keyboard::Ptr k, uint s);
 		};
 	}
 }
