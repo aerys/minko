@@ -20,7 +20,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/LuaScriptManager.hpp"
 
 #include "minko/data/Provider.hpp"
-#include "minko/AbstractCanvas.hpp"
 #include "minko/file/Options.hpp"
 #include "minko/file/Loader.hpp"
 #include "minko/render/AbstractContext.hpp"
@@ -52,6 +51,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/LuaAssetLibrary.hpp"
 #include "minko/input/LuaKeyboard.hpp"
 #include "minko/input/LuaMouse.hpp"
+#include "minko/LuaAbstractCanvas.hpp"
 
 using namespace minko;
 using namespace minko::component;
@@ -214,14 +214,12 @@ LuaScriptManager::initializeBindings()
     file::LuaAssetLibrary::bind(_state);
     input::LuaMouse::bind(_state);
     input::LuaKeyboard::bind(_state);
+    LuaAbstractCanvas::bind(_state);
 
     auto& sceneManager = _state.Class<SceneManager>("SceneManager")
         .property("assets",     &SceneManager::assets);
     MINKO_LUAGLUE_BIND_SIGNAL(_state, SceneManager::Ptr);
     sceneManager.property("nextFrame",  &SceneManager::frameBegin);
-
-    auto& abstractCanvas = _state.Class<AbstractCanvas>("AbstractCanvas");
-    MINKO_LUAGLUE_BIND_SIGNAL(_state, AbstractCanvas::Ptr);
 
     _state
         .func("getMouse",               &LuaGlobalStub::getMouse)
