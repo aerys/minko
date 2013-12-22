@@ -73,7 +73,7 @@ namespace minko
 
 			inline
 			float
-			fieldOfView() const
+			fieldOfView()
 			{
 				return _fov;
 			}
@@ -91,7 +91,7 @@ namespace minko
 
 			inline
 			float
-			aspectRatio() const
+			aspectRatio()
 			{
 				return _aspectRatio;
 			}
@@ -109,7 +109,7 @@ namespace minko
 
 			inline
 			float
-			zNear() const
+			zNear()
 			{
 				return _zNear;
 			}
@@ -127,7 +127,7 @@ namespace minko
 
 			inline
 			float
-			zFar() const
+			zFar()
 			{
 				return _zFar;
 			}
@@ -148,7 +148,7 @@ namespace minko
 			}
 
 			void
-			updateProjection(float fieldOfView, float aspectRatio, float zNear, float zFar);
+			updateProjection(float aspectRatio, float fieldOfView, float zNear, float zFar);
 
 			std::shared_ptr<math::Ray>
 			unproject(float x, float y, std::shared_ptr<math::Ray> out = nullptr);
