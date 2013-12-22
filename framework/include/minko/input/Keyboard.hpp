@@ -32,7 +32,6 @@ namespace minko
         {
         public:
             typedef std::shared_ptr<Keyboard>   Ptr;
-            typedef const unsigned char*        State;
 
             // from SDL_scancode.h
             enum ScanCode
@@ -382,7 +381,7 @@ namespace minko
                 /**< display mirroring/dual display
                 switch, video mode switch */
                 DISPLAYSWITCH = 277, 
-                KBDILLUMTOGGLE = 27,
+                KBDILLUMTOGGLE = 278,
                 KBDILLUMDOWN = 279,
                 KBDILLUMUP = 280,
                 EJECT = 281,
@@ -393,34 +392,84 @@ namespace minko
             };
 
         private:
-            Signal<Ptr, State>::Ptr  _keyDown;
-            Signal<Ptr, State>::Ptr  _keyUp;
+            typedef std::array<std::string, 285>    ScanCodeToNameArray;
+
+        public:
+            static const uint NUM_KEYS;
+
+        private:
+            static const ScanCodeToNameArray                    _scanCodeToName;
+
+        protected:
+            std::unordered_map<uint, Signal<Ptr, uint>::Ptr>    _keyDown;
+            std::unordered_map<uint, Signal<Ptr, uint>::Ptr>    _keyUp;
+
+            Signal<Ptr>::Ptr                                    _down;
+            Signal<Ptr>::Ptr                                    _up;
 
         public:
             inline static
-            Ptr
-            create()
+            const std::string&
+            getKeyName(ScanCode scanCode)
             {
-                return std::shared_ptr<Keyboard>(new Keyboard());
+                return _scanCodeToName[static_cast<int>(scanCode)];
             }
 
-            Signal<Ptr, State>::Ptr
+            inline static
+            const std::string&
+            getKeyName(uint scanCode)
+            {
+                return _scanCodeToName[scanCode];
+            }            
+
+            virtual
+            Signal<Ptr>::Ptr
             keyDown()
             {
-                return _keyDown;
+                return _down;
             }
 
-            Signal<Ptr, State>::Ptr
+            virtual
+            Signal<Ptr, uint>::Ptr
+            keyDown(ScanCode scanCode)
+            {
+                auto index = static_cast<int>(scanCode);
+
+                if (_keyDown.count(index) == 0)
+                    _keyDown[index] = Signal<Ptr, uint>::create();
+
+                return _keyDown[index];
+            }
+
+            virtual
+            Signal<Ptr>::Ptr
             keyUp()
             {
-                return _keyUp;
+                return _up;
             }
 
+            Signal<Ptr, uint>::Ptr
+            keyUp(ScanCode scanCode)
+            {
+                auto index = static_cast<int>(scanCode);
+
+                if (_keyUp.count(index) == 0)
+                    _keyUp[index] = Signal<Ptr, uint>::create();
+
+                return _keyUp[index];
+            }
+
+            virtual
+            bool
+            keyIsDown(ScanCode scanCode) = 0;
+
+        protected:
+            Keyboard();
+
         private:
-            Keyboard() : 
-                _keyDown(Signal<Ptr, State>::create()),
-                _keyUp(Signal<Ptr, State>::create())
-            {}
-        };
+            static
+            const ScanCodeToNameArray
+            initializeKeyNames();
+         };
     }
 }
