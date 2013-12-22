@@ -19,7 +19,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/component/LuaScriptManager.hpp"
 
-#include "minko/data/Container.hpp"
 #include "minko/data/Provider.hpp"
 #include "minko/AbstractCanvas.hpp"
 #include "minko/file/Options.hpp"
@@ -46,6 +45,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/math/LuaVector3.hpp"
 #include "minko/math/LuaVector4.hpp"
 #include "minko/math/LuaMatrix4x4.hpp"
+#include "minko/data/LuaContainer.hpp"
 #include "minko/scene/LuaNode.hpp"
 #include "minko/scene/LuaNodeSet.hpp"
 #include "minko/material/LuaMaterial.hpp"
@@ -159,14 +159,6 @@ LuaScriptManager::initializeBindings()
             //.property("width",  &render::Texture::width)
             //.property("height", &render::Texture::height)
         .end()
-        .Class<data::Container>("Container")
-            //.method("create",       &data::Container::create)
-            //.method("hasProperty",  &data::Container::hasProperty)
-            .method("getFloat",     &data::Container::get<float>)
-            .method("getInt",       &data::Container::get<int>)
-            .method("getUint",      &data::Container::get<unsigned int>)
-            .method("getMatrix4x4", &data::Container::get<math::Matrix4x4::Ptr>)
-        .end()
         .Class<geometry::Geometry>("Geometry")
         .end()
         .Class<geometry::CubeGeometry>("CubeGeometry")
@@ -215,6 +207,7 @@ LuaScriptManager::initializeBindings()
     math::LuaVector2::bind(_state);
     math::LuaVector3::bind(_state);
     math::LuaVector4::bind(_state);
+    data::LuaContainer::bind(_state);
     scene::LuaNode::bind(_state);
     scene::LuaNodeSet::bind(_state);
     material::LuaMaterial::bind(_state);
