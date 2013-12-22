@@ -15,15 +15,20 @@ namespace minko
         public:
             typedef std::shared_ptr<AbstractLoader> Ptr;
 
-        protected:
-            std::vector<unsigned char>      _data;
-            std::shared_ptr<Options>        _options;
-            std::string                     _filename;
-            std::string                     _resolvedFilename;
+        private:
+            typedef std::shared_ptr<AbstractParser> AbsParserPtr;
+            typedef std::shared_ptr<AssetLibrary>   AssetLibraryPtr;
 
-            std::shared_ptr<Signal<Ptr>>    _complete;
-            std::shared_ptr<Signal<Ptr>>    _progress;
-            std::shared_ptr<Signal<Ptr>>    _error;
+        protected:
+            std::vector<unsigned char>                      _data;
+            std::shared_ptr<Options>                        _options;
+            std::string                                     _filename;
+            std::string                                     _resolvedFilename;
+
+            Signal<Ptr>::Ptr                                _complete;
+            Signal<Ptr>::Ptr                                _progress;
+            Signal<Ptr>::Ptr                                _error;
+            Signal<Ptr, AbsParserPtr, AssetLibraryPtr>::Ptr _parserComplete;
 
         public:
             static Ptr create();
@@ -64,6 +69,13 @@ namespace minko
             }
 
             inline
+            Signal<Ptr, AbsParserPtr, AssetLibraryPtr>::Ptr
+            parserComplete()
+            {
+                return _parserComplete;
+            }
+
+            inline
             std::shared_ptr<Signal<Ptr>>
             progress()
             {
@@ -95,7 +107,8 @@ namespace minko
             AbstractLoader():
                 _complete(Signal<Ptr>::create()),
                 _progress(Signal<Ptr>::create()),
-                _error(Signal<Ptr>::create())
+                _error(Signal<Ptr>::create()),
+                _parserComplete(Signal<Ptr, AbsParserPtr, AssetLibraryPtr>::create())
             {
             }
 
