@@ -452,7 +452,7 @@ class LuaGlueClass : public LuaGlueClassBase
 			lua_pushvalue(luaGlue->state(), -1);
 			lua_setglobal(luaGlue->state(), name_.c_str());
 			
-			//lua_pop(luaGlue->state(), 2);
+			lua_pop(luaGlue->state(), 1);
 
 			//printf("done.\n");
 			return true;
