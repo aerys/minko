@@ -49,7 +49,7 @@ Canvas::Canvas(const std::string& name, const uint width, const uint height, boo
 	_joystickMotion(Signal<Canvas::Ptr, int, int, int>::create()),
 	_joystickButtonDown(Signal<Canvas::Ptr, int>::create()),
 	_joystickButtonUp(Signal<Canvas::Ptr, int>::create()),
-	_resized(Signal<Canvas::Ptr, uint, uint>::create())
+	_resized(Signal<AbstractCanvas::Ptr, uint, uint>::create())
 {
 }
 

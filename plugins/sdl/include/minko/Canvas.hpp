@@ -113,31 +113,31 @@ namespace minko
 
 	private:
 #ifdef EMSCRIPTEN
-		static std::list<Ptr>				_canvases;
+		static std::list<Ptr>							_canvases;
 #endif
 
-		std::string							_name;
-		uint								_x;
-		uint								_y;
-		uint								_width;
-		uint								_height;
-		bool								_useStencil;
+		std::string										_name;
+		uint											_x;
+		uint											_y;
+		uint											_width;
+		uint											_height;
+		bool											_useStencil;
 
-		bool								_active;
-		render::AbstractContext::Ptr		_context;
+		bool											_active;
+		render::AbstractContext::Ptr					_context;
 #ifndef EMSCRIPTEN
-		SDL_Window*							_window;
+		SDL_Window*										_window;
 #endif
-		float								_framerate;
-		float								_desiredFramerate;
+		float											_framerate;
+		float											_desiredFramerate;
 
-		Signal<Ptr, uint, uint>::Ptr		_enterFrame;
-		Signal<Ptr, int, int, int>::Ptr		_joystickMotion;
-		Signal<Ptr, int>::Ptr				_joystickButtonDown;
-		Signal<Ptr, int>::Ptr				_joystickButtonUp;
-		Signal<Ptr, uint, uint>::Ptr		_resized;
-		std::shared_ptr<SDLMouse>			_mouse;
-        std::shared_ptr<SDLKeyboard>    	_keyboard;
+		Signal<Ptr, uint, uint>::Ptr					_enterFrame;
+		Signal<Ptr, int, int, int>::Ptr					_joystickMotion;
+		Signal<Ptr, int>::Ptr							_joystickButtonDown;
+		Signal<Ptr, int>::Ptr							_joystickButtonUp;
+		Signal<AbstractCanvas::Ptr, uint, uint>::Ptr	_resized;
+		std::shared_ptr<SDLMouse>						_mouse;
+        std::shared_ptr<SDLKeyboard>    				_keyboard;
 
 	public:
 		static inline
@@ -236,8 +236,8 @@ namespace minko
         }
 
 		inline
-		Signal<Ptr, uint, uint>::Ptr
-		resized() const
+		Signal<AbstractCanvas::Ptr, uint, uint>::Ptr
+		resized()
 		{
 			return _resized;
 		}
