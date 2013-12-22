@@ -27,6 +27,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/OpenGLES2Context.hpp"
 #include "minko/AbstractCanvas.hpp"
 #include "minko/input/Mouse.hpp"
+#include "minko/input/Keyboard.hpp"
 
 struct SDL_Window;
 typedef unsigned char Uint8;
@@ -73,6 +74,43 @@ namespace minko
 			}
 		};
 
+		class SDLKeyboard :
+			public input::Keyboard
+		{
+			friend class Canvas;
+
+		private:
+			const unsigned char* _keyboardState;
+
+		public:
+			static inline
+			std::shared_ptr<SDLKeyboard>
+			create()
+			{
+				return std::shared_ptr<SDLKeyboard>(new SDLKeyboard());
+			}
+
+		public:
+			bool
+			keyIsDown(input::Keyboard::ScanCode scanCode)
+			{
+				return _keyboardState[static_cast<int>(scanCode)];
+			}
+
+		private:
+			bool
+			hasKeyDownSignal(input::Keyboard::ScanCode scanCode)
+			{
+				return _keyDown.count(static_cast<int>(scanCode));
+			}
+
+			bool
+			hasKeyUpSignal(input::Keyboard::ScanCode scanCode)
+			{
+				return _keyUp.count(static_cast<int>(scanCode));
+			}			
+		};
+
 	private:
 #ifdef EMSCRIPTEN
 		static std::list<Ptr>				_canvases;
@@ -99,7 +137,7 @@ namespace minko
 		Signal<Ptr, int>::Ptr				_joystickButtonUp;
 		Signal<Ptr, uint, uint>::Ptr		_resized;
 		std::shared_ptr<SDLMouse>			_mouse;
-        std::shared_ptr<input::Keyboard>    _keyboard;
+        std::shared_ptr<SDLKeyboard>    	_keyboard;
 
 	public:
 		static inline
