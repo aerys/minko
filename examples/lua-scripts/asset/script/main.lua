@@ -18,21 +18,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 ]]--
 
 function main:start(root)
-	local lights = Node.create()
-		:addComponent(AmbientLight.create(.2))
-		:addComponent(DirectionalLight.create(.4))
-	root:addChild(lights)
-
-	self.camera = Node.create()
-		:addComponent(Renderer.create())
-		:addComponent(Transform.createFromMatrix(Matrix4x4.create():lookAt(
-			Vector3.zero(),
-			Vector3.create(0., 0., 3.),
-			Vector3.up()
-		)))
-		:addComponent(PerspectiveCamera.create(800. / 600., math.pi * .25, .1, 1000.))
-		:addComponent(DirectionalLight.create(.4))
-	root:addChild(self.camera)
+	self.camera = self:initializeCamera(root)
+	self.lights = self:initializeLights(root)
 
 	local assets = 	getSceneManager().assets
 
@@ -45,6 +32,7 @@ function main:start(root)
 	
 	self.assetsComplete = assets.complete:connect(function(assets)
 		self.assetsComplete:disconnect()
+		self.assetsComplete = nil
 
 		self.camera:addComponent(assets:script('script/rotate.lua'))
 
@@ -59,4 +47,34 @@ function main:start(root)
 	end)
 
 	assets:load()
+end
+
+function main:initializeCamera(root)
+	local canvas = getCanvas()
+	local cameraComp = PerspectiveCamera.create(canvas.width / canvas.height, math.pi * .25, .1, 1000.)
+	local camera = Node.create()
+		:addComponent(Renderer.create())
+		:addComponent(Transform.createFromMatrix(Matrix4x4.create():lookAt(
+			Vector3.zero(),
+			Vector3.create(0., 0., 3.),
+			Vector3.up()
+		)))
+		:addComponent(cameraComp)
+		:addComponent(DirectionalLight.create(.4))
+	root:addChild(camera)
+
+	self.canvasResizedSlot = getCanvas().resized:connect(function(canvas, width, height)
+		cameraComp.aspectRatio = width / height
+	end)
+
+	return camera
+end
+
+function main:initializeLights(root)
+	local lights = Node.create()
+		:addComponent(AmbientLight.create(.2))
+		:addComponent(DirectionalLight.create(.4))
+	root:addChild(lights)
+
+	return lights
 end
