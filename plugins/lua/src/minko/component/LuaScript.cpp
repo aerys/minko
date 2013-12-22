@@ -36,16 +36,23 @@ LuaScript::LuaScript(const std::string& name, const std::string& script) :
 {
 }
 
+bool
+LuaScript::ready(scene::Node::Ptr target)
+{
+    return target->root()->component<LuaScriptManager>()->ready(nullptr);
+}
+
 void
 LuaScript::start(scene::Node::Ptr node)
 {
     if (!_script.empty())
     {
-        _state = node->root()->component<LuaScriptManager>()->_state;
+        _state = &(node->root()->component<LuaScriptManager>()->_state);
 
         auto name = _scriptName.c_str();
 
-        _state->Class<LuaStub>(name);
+        _state->Class<LuaStub>(name)
+            .property("running", &LuaStub::_running);
         _class = _state->lookupClass(name);
         _class->glue(_state);
 
@@ -80,6 +87,8 @@ void
 LuaScript::stop(scene::Node::Ptr node)
 {
     auto stub = _targetToStub[node];
+
+    _targetToStub[node]->_running = false;
 
     if (_hasStopMethod)
         dynamic_cast<LuaGlueClass<LuaScript::LuaStub>*>(_class)->invokeVoidMethod("stop", stub, node);

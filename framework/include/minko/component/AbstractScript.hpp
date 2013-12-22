@@ -72,6 +72,20 @@ namespace minko
 				// nothing
 			}
 
+			virtual
+			bool
+			ready(NodePtr target)
+			{
+				return true;
+			}
+
+			virtual
+			bool
+			running(NodePtr target)
+			{
+				return true;
+			}
+
 		protected:
 			virtual
 			void
