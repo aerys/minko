@@ -52,12 +52,19 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/input/LuaKeyboard.hpp"
 #include "minko/input/LuaMouse.hpp"
 #include "minko/LuaAbstractCanvas.hpp"
+#include "minko/component/LuaPerspectiveCamera.hpp"
 
 using namespace minko;
 using namespace minko::component;
 
 std::shared_ptr<scene::Node> LuaScriptManager::LuaGlobalStub::_root = nullptr;
 std::shared_ptr<AbstractCanvas> LuaScriptManager::LuaGlobalStub::_canvas = nullptr;
+
+AbstractCanvas::Ptr
+LuaScriptManager::LuaGlobalStub::getCanvas()
+{
+    return _canvas;
+}
 
 SceneManager::Ptr
 LuaScriptManager::LuaGlobalStub::getSceneManager()
@@ -174,13 +181,11 @@ LuaScriptManager::initializeBindings()
         .end()
         .Class<render::AbstractContext>("AbstractContext")
         .end()
+        .Class<AbstractComponent>("AbstractComponent")
+        .end()
         .Class<Transform>("Transform")
             .method("create",           static_cast<Transform::Ptr (*)(void)>(&Transform::create))
             .method("createFromMatrix", static_cast<Transform::Ptr (*)(math::Matrix4x4::Ptr)>(&Transform::create))
-        .end()
-        .Class<PerspectiveCamera>("PerspectiveCamera")
-            .method("create",           &PerspectiveCamera::create)
-            .method("updateProjection", &PerspectiveCamera::updateProjection)
         .end()
         .Class<Renderer>("Renderer")
             .method("create",               static_cast<Renderer::Ptr (*)(void)>(&Renderer::create))
@@ -214,6 +219,7 @@ LuaScriptManager::initializeBindings()
     file::LuaAssetLibrary::bind(_state);
     input::LuaMouse::bind(_state);
     input::LuaKeyboard::bind(_state);
+    component::LuaPerspectiveCamera::bind(_state);
     LuaAbstractCanvas::bind(_state);
 
     auto& sceneManager = _state.Class<SceneManager>("SceneManager")
@@ -222,6 +228,7 @@ LuaScriptManager::initializeBindings()
     sceneManager.property("nextFrame",  &SceneManager::frameBegin);
 
     _state
+        .func("getCanvas",              &LuaGlobalStub::getCanvas)
         .func("getMouse",               &LuaGlobalStub::getMouse)
         .func("getKeyboard",            &LuaGlobalStub::getKeyboard)
         .func("getSceneManager",        &LuaGlobalStub::getSceneManager)

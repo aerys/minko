@@ -56,6 +56,10 @@ namespace minko
 				static std::shared_ptr<AbstractCanvas>	_canvas;
 
 				static
+				std::shared_ptr<AbstractCanvas>
+				getCanvas();
+
+				static
 				std::shared_ptr<SceneManager>
 				getSceneManager();
 
