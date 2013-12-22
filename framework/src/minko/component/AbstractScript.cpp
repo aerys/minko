@@ -122,14 +122,17 @@ AbstractScript::frameBeginHandler(SceneManager::Ptr sceneManager)
 {
 	for (auto& target : targets())
 	{
-		if (!_started[target])
+		if (!_started[target] && ready(target))
 		{
 			_started[target] = true;
 
 			start(target);
 		}
 
-		update(target);
+		if (running(target))
+			update(target);
+		else
+			_started[target] = false;
 	}
 }
 
