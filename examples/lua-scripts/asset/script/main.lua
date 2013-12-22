@@ -18,27 +18,35 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 ]]--
 
 function main:start(root)
+	local lights = Node.create()
+		:addComponent(AmbientLight.create(.2))
+		:addComponent(DirectionalLight.create(.4))
+	root:addChild(lights)
+
+	self.camera = Node.create()
+		:addComponent(Renderer.create())
+		:addComponent(Transform.createFromMatrix(Matrix4x4.create():lookAt(
+			Vector3.zero(),
+			Vector3.create(0., 0., 3.),
+			Vector3.up()
+		)))
+		:addComponent(PerspectiveCamera.create(800. / 600., math.pi * .25, .1, 1000.))
+		:addComponent(DirectionalLight.create(.4))
+	root:addChild(self.camera)
+
 	local assets = 	getSceneManager().assets
+
+	assets
+		:queue('effect/Basic.effect')
+		:queue('effect/Phong.effect')
+		:queue('texture/box.png')
+		:queue('script/rotate.lua')
+		:queue('script/framerate.lua')
 	
 	self.assetsComplete = assets.complete:connect(function(assets)
 		self.assetsComplete:disconnect()
 
-		self.camera = Node.create()
-			:addComponent(Renderer.create())
-			:addComponent(Transform.createFromMatrix(Matrix4x4.create():lookAt(
-				Vector3.zero(),
-				Vector3.create(0., 0., 3.),
-				Vector3.up()
-			)))
-			:addComponent(PerspectiveCamera.create(800. / 600., math.pi * .25, .1, 1000.))
-			:addComponent(assets:script('script/rotate.lua'))
-			:addComponent(DirectionalLight.create(.4))
-		root:addChild(self.camera)
-
-		local lights = Node.create()
-			:addComponent(AmbientLight.create(.2))
-			:addComponent(DirectionalLight.create(.4))
-		root:addChild(lights)
+		self.camera:addComponent(assets:script('script/rotate.lua'))
 
 		local cube = Node.create()
 			:addComponent(Transform.create())
@@ -50,14 +58,5 @@ function main:start(root)
 		root:addChild(cube)
 	end)
 
-	assets
-		:queue('effect/Basic.effect')
-		:queue('effect/Phong.effect')
-		:queue('texture/box.png')
-		:queue('script/rotate.lua')
-		:load()
-
-	assets
-		:queue('script/framerate.lua')
-		:load()
+	assets:load()
 end
