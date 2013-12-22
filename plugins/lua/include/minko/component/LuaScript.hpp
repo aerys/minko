@@ -41,6 +41,10 @@ namespace minko
 
             class LuaStub
             {
+            public:
+                LuaStub() : _running(true) {}
+
+                bool _running;
             };
 
         private:
@@ -78,6 +82,10 @@ namespace minko
             virtual
             void
             stop(NodePtr target);
+
+            virtual
+            bool
+            ready(NodePtr target);
 
         private:
             LuaScript(const std::string& name, const std::string& script);
