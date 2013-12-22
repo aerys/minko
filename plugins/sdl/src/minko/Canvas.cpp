@@ -64,7 +64,7 @@ void
 Canvas::initializeInputs()
 {
 	_mouse = Canvas::SDLMouse::create(shared_from_this());
-    _keyboard = input::Keyboard::create();
+    _keyboard = Canvas::SDLKeyboard::create();
 
     for (int i = 0; i < SDL_NumJoysticks(); ++i)
     {
@@ -225,19 +225,31 @@ Canvas::step()
 
 		case SDL_KEYDOWN:
 		{
-			const Uint8* keyboardState = SDL_GetKeyboardState(NULL);
+			_keyboard->_keyboardState = SDL_GetKeyboardState(NULL);
 
 			//_keyDown->execute(shared_from_this(), keyboardState);
-            _keyboard->keyDown()->execute(_keyboard, keyboardState);
+            _keyboard->keyDown()->execute(_keyboard);
+            for (uint i = 0; i < input::Keyboard::NUM_KEYS; ++i)
+            {
+            	auto code = static_cast<input::Keyboard::ScanCode>(i);
+            	if (_keyboard->_keyboardState[i] && _keyboard->hasKeyDownSignal(code))
+            		_keyboard->keyDown(code)->execute(_keyboard, i);
+            }
 			break;
 		}
 
         case SDL_KEYUP:
         {
-            const Uint8* keyboardState = SDL_GetKeyboardState(NULL);
+            _keyboard->_keyboardState = SDL_GetKeyboardState(NULL);
 
             //_keyDown->execute(shared_from_this(), keyboardState);
-            _keyboard->keyUp()->execute(_keyboard, keyboardState);
+            _keyboard->keyUp()->execute(_keyboard);
+            for (uint i = 0; i < input::Keyboard::NUM_KEYS; ++i)
+            {
+            	auto code = static_cast<input::Keyboard::ScanCode>(i);
+            	if (_keyboard->_keyboardState[i] && _keyboard->hasKeyUpSignal(code))
+            		_keyboard->keyUp(code)->execute(_keyboard, i);
+            }
             break;
         }
 
