@@ -47,13 +47,25 @@ namespace minko
 			    MINKO_LUAGLUE_BIND_SIGNAL(state, input::Keyboard::Ptr, uint);
 			    MINKO_LUAGLUE_BIND_SIGNAL(state, input::Keyboard::Ptr);
 			    input_keyboard
-			        .method("keyDown",          &LuaScriptManager::wrapKeyboardKeyDown)
-			        .method("keyUp",            &LuaScriptManager::wrapKeyboardKeyUp)
+			        .method("keyDown",          &LuaKeyboard::keyboardKeyDownWrapper)
+			        .method("keyUp",            &LuaKeyboard::keyboardKeyUpWrapper)
 			        .method("keyIsDown",        &input::Keyboard::keyIsDown)
 			        .property("anyKeyDown",     &input::Keyboard::keyDown)
 			        .property("anyKeyUp",       &input::Keyboard::keyUp);
+			}
 
+			static
+			Signal<input::Keyboard::Ptr, uint>::Ptr
+			keyboardKeyDownWrapper(input::Keyboard::Ptr k, uint s)
+			{
+				return k->keyDown(static_cast<input::Keyboard::ScanCode>(s));
+			}
 
+			static
+			Signal<input::Keyboard::Ptr, uint>::Ptr
+			keyboardKeyUpWrapper(input::Keyboard::Ptr k, uint s)
+			{
+				return k->keyUp(static_cast<input::Keyboard::ScanCode>(s));
 			}
 		};
 	}

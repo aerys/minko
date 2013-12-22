@@ -21,7 +21,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/data/Container.hpp"
 #include "minko/data/Provider.hpp"
-#include "minko/input/Mouse.hpp"
 #include "minko/AbstractCanvas.hpp"
 #include "minko/file/Options.hpp"
 #include "minko/file/Loader.hpp"
@@ -52,6 +51,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/material/LuaMaterial.hpp"
 #include "minko/file/LuaAssetLibrary.hpp"
 #include "minko/input/LuaKeyboard.hpp"
+#include "minko/input/LuaMouse.hpp"
 
 using namespace minko;
 using namespace minko::component;
@@ -219,6 +219,8 @@ LuaScriptManager::initializeBindings()
     scene::LuaNodeSet::bind(_state);
     material::LuaMaterial::bind(_state);
     file::LuaAssetLibrary::bind(_state);
+    input::LuaMouse::bind(_state);
+    input::LuaKeyboard::bind(_state);
 
     auto& sceneManager = _state.Class<SceneManager>("SceneManager")
         .property("assets",     &SceneManager::assets);
@@ -236,16 +238,3 @@ LuaScriptManager::initializeBindings()
 
     _state.open().glue();
 }
-
-Signal<input::Keyboard::Ptr, uint>::Ptr
-LuaScriptManager::wrapKeyboardKeyDown(input::Keyboard::Ptr k, uint s)
-{
-    return k->keyDown(static_cast<input::Keyboard::ScanCode>(s));
-}
-
-Signal<input::Keyboard::Ptr, uint>::Ptr
-LuaScriptManager::wrapKeyboardKeyUp(input::Keyboard::Ptr k, uint s)
-{
-    return k->keyUp(static_cast<input::Keyboard::ScanCode>(s));
-}
-
