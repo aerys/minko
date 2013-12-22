@@ -22,7 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/data/Container.hpp"
 #include "minko/data/Provider.hpp"
 #include "minko/input/Mouse.hpp"
-#include "minko/input/Keyboard.hpp"
 #include "minko/AbstractCanvas.hpp"
 #include "minko/file/Options.hpp"
 #include "minko/file/Loader.hpp"
@@ -52,6 +51,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/scene/LuaNodeSet.hpp"
 #include "minko/material/LuaMaterial.hpp"
 #include "minko/file/LuaAssetLibrary.hpp"
+#include "minko/input/LuaKeyboard.hpp"
 
 using namespace minko;
 using namespace minko::component;
@@ -236,23 +236,6 @@ LuaScriptManager::initializeBindings()
         .property("leftButtonDown",     &input::Mouse::leftButtonDown)
         .property("rightButtonDown",    &input::Mouse::rightButtonDown)
         .property("move",               &input::Mouse::move);
-
-    auto& input_keyboard = _state.Class<input::Keyboard>("Keyboard");
-    for (int key = 0; key < (int)input::Keyboard::NUM_KEYS; ++key)
-    {
-        auto& keyName = input::Keyboard::getKeyName(static_cast<input::Keyboard::ScanCode>(key));
-
-        if (keyName.size())
-            input_keyboard.constant(keyName, key);
-    }
-    MINKO_LUAGLUE_BIND_SIGNAL(_state, input::Keyboard::Ptr, uint);
-    MINKO_LUAGLUE_BIND_SIGNAL(_state, input::Keyboard::Ptr);
-    input_keyboard
-        .method("keyDown",          &LuaScriptManager::wrapKeyboardKeyDown)
-        .method("keyUp",            &LuaScriptManager::wrapKeyboardKeyUp)
-        .method("keyIsDown",        &input::Keyboard::keyIsDown)
-        .property("anyKeyDown",     &input::Keyboard::keyDown)
-        .property("anyKeyUp",       &input::Keyboard::keyUp);
 
     auto& abstractCanvas = _state.Class<AbstractCanvas>("AbstractCanvas");
     MINKO_LUAGLUE_BIND_SIGNAL(_state, AbstractCanvas::Ptr);
