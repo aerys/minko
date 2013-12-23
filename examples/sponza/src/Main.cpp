@@ -290,7 +290,7 @@ initializeCamera(scene::Node::Ptr group)
 		camera = scene::Node::create(CAMERA_NAME);
 
 		camera->addComponent(Transform::create());
-		camera->component<Transform>()->transform()
+		camera->component<Transform>()->matrix()
 			->appendTranslation(0.0f, 0.75f, 5.0f)
 			->appendRotationY(PI * 0.5);
 
@@ -394,7 +394,7 @@ main(int argc, char** argv)
 
 	auto _ = sceneManager->assets()->complete()->connect([ = ](file::AssetLibrary::Ptr assets)
 	{
-		scene::Node::Ptr mk = assets->node(MK_NAME);
+		scene::Node::Ptr mk = assets->symbol(MK_NAME);
 		initializeCamera(mk);
 
 		auto lights = scene::Node::create();
@@ -403,7 +403,7 @@ main(int argc, char** argv)
 			->addComponent(component::AmbientLight::create())
 			->addComponent(component::DirectionalLight::create())
 			->addComponent(component::Transform::create());
-		lights->component<Transform>()->transform()->lookAt(Vector3::zero(), Vector3::create(-1.f, -1.f, -1.f));
+		lights->component<Transform>()->matrix()->lookAt(Vector3::zero(), Vector3::create(-1.f, -1.f, -1.f));
 		root->addChild(lights);
 
 		root->addChild(group);
@@ -424,7 +424,7 @@ main(int argc, char** argv)
 		auto keyDown = canvas->keyboard()->keyDown()->connect([&](input::Keyboard::Ptr k)
 		{
 			auto collider = true;
-			auto cameraTransform = camera->component<Transform>()->transform();
+			auto cameraTransform = camera->component<Transform>()->matrix();
 
 			if (!collider)
 			{
@@ -471,29 +471,31 @@ main(int argc, char** argv)
 			}
 		});
 
-		auto joystickMotion = canvas->joystickMotion()->connect([&](Canvas::Ptr canvas, int which, int axis, int value)
+		if (canvas->numJoysticks() > 0)
 		{
-			auto cameraTransform = camera->component<Transform>()->transform();
-			float percent = float(value) / 32768.f;
+			auto joystickMotion = canvas->joystick(0)->joystickAxisMotion()->connect([&](input::Joystick::Ptr, int which, int axis, int value)
+			{
+				auto cameraTransform = camera->component<Transform>()->matrix();
+				float percent = float(value) / 32768.f;
 
-			if (axis == 1)
-				cameraTransform->prependTranslation(0.0f, 0.0f, CAMERA_LIN_SPEED * percent);
-			if (axis == 0)
-				cameraTransform->prependTranslation(CAMERA_LIN_SPEED * percent, 0.0f, 0.0f);
+				if (axis == 1)
+					cameraTransform->prependTranslation(0.0f, 0.0f, CAMERA_LIN_SPEED * percent);
+				if (axis == 0)
+					cameraTransform->prependTranslation(CAMERA_LIN_SPEED * percent, 0.0f, 0.0f);
 
-			eye = cameraTransform->translation();
+				eye = cameraTransform->translation();
 
-			cameraCollider->synchronizePhysicsWithGraphics();
-		});
+				cameraCollider->synchronizePhysicsWithGraphics();
+			});
 
-		auto joystickButtonDown = canvas->joystickButtonDown()->connect([&](Canvas::Ptr canvas, int which)
-		{
-			auto cameraTransform = camera->component<Transform>()->transform();
+			auto joystickButtonDown = canvas->joystick(0)->joystickButtonDown()->connect([&](input::Joystick::Ptr joystick, int which, int buttonId)
+			{
+				auto cameraTransform = camera->component<Transform>()->matrix();
 
-			cameraTransform->prependTranslation(0.0f, 4 * CAMERA_LIN_SPEED, 0.0f);
-
-			cameraCollider->synchronizePhysicsWithGraphics();
-		});
+				cameraTransform->prependTranslation(0.0f, 4 * CAMERA_LIN_SPEED, 0.0f);
+				cameraCollider->synchronizePhysicsWithGraphics();
+			});
+		}
 
 		auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, unsigned int width, unsigned int height)
 		{

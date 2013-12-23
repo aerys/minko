@@ -17,56 +17,12 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#pragma once
+#include "minko/input/Joystick.hpp"
 
-#include "minko/Common.hpp"
+using namespace minko;
+using namespace minko::input;
 
-#include "minko/Signal.hpp"
-
-namespace minko
+Joystick::Joystick(std::shared_ptr<AbstractCanvas> canvas) :
+	_canvas(canvas)
 {
-	class AbstractCanvas
-	{
-	public:
-		typedef std::shared_ptr<AbstractCanvas>	Ptr;
-
-	private:
-
-	public:
-		virtual
-		uint
-		x() const = 0;
-
-		virtual
-		uint
-		y() const = 0;
-
-		virtual
-		uint
-		width() const = 0;
-
-		virtual
-		uint
-		height() const = 0;
-
-		virtual
-		std::shared_ptr<input::Mouse>
-		mouse() = 0;
-
-        virtual
-        std::shared_ptr<input::Keyboard>
-        keyboard() = 0;
-
-		virtual
-		std::shared_ptr<input::Joystick>
-		joystick(int id) = 0;
-
-		virtual
-		uint
-		numJoysticks() = 0;
-
-        virtual
-		Signal<Ptr, uint, uint>::Ptr
-		resized() = 0;
-	};
 }

@@ -74,6 +74,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/geometry/SphereGeometry.hpp"
 #include "minko/geometry/QuadGeometry.hpp"
 #include "minko/geometry/TeapotGeometry.hpp"
+#include "minko/geometry/LineGeometry.hpp"
 #include "minko/file/Options.hpp"
 #include "minko/file/AbstractLoader.hpp"
 #include "minko/file/Loader.hpp"
@@ -84,3 +85,4 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/material/BasicMaterial.hpp"
 #include "minko/input/Mouse.hpp"
 #include "minko/input/Keyboard.hpp"
+#include "minko/input/Joystick.hpp"

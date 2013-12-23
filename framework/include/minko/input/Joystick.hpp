@@ -20,53 +20,65 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
-
 #include "minko/Signal.hpp"
+#include "minko/AbstractCanvas.hpp"
 
 namespace minko
 {
-	class AbstractCanvas
+	namespace input
 	{
-	public:
-		typedef std::shared_ptr<AbstractCanvas>	Ptr;
+		class Joystick
+		{
+		public:
+			typedef std::shared_ptr<Joystick> Ptr;
 
-	private:
+		private:
+			std::shared_ptr<AbstractCanvas> _canvas;
 
-	public:
-		virtual
-		uint
-		x() const = 0;
+			Signal<Ptr, int, int, int>::Ptr		_joystickAxisMotion;
+			Signal<Ptr, int, int, int>::Ptr		_joystickHatMotion;
+			Signal<Ptr, int, int>::Ptr			_joystickButtonDown;
+			Signal<Ptr, int, int>::Ptr			_joystickButtonUp;
 
-		virtual
-		uint
-		y() const = 0;
+		public:
+			inline static
+			Ptr
+			create(std::shared_ptr<AbstractCanvas> canvas)
+			{
+				return std::shared_ptr<Joystick>(new Joystick(canvas));
+			}
 
-		virtual
-		uint
-		width() const = 0;
+			inline
+			Signal<Ptr, int, int, int>::Ptr
+			joystickAxisMotion() const
+			{
+				return _joystickAxisMotion;
+			}
 
-		virtual
-		uint
-		height() const = 0;
+			inline
+			Signal<Ptr, int, int, int>::Ptr
+			joystickHatMotion() const
+			{
+				return _joystickHatMotion;
+			}
 
-		virtual
-		std::shared_ptr<input::Mouse>
-		mouse() = 0;
 
-        virtual
-        std::shared_ptr<input::Keyboard>
-        keyboard() = 0;
+			inline
+			Signal<Ptr, int, int>::Ptr
+			joystickButtonDown() const
+			{
+				return _joystickButtonDown;
+			}
 
-		virtual
-		std::shared_ptr<input::Joystick>
-		joystick(int id) = 0;
+			inline
+			Signal<Ptr, int, int>::Ptr
+			joystickButtonUp() const
+			{
+				return _joystickButtonUp;
+			}
 
-		virtual
-		uint
-		numJoysticks() = 0;
-
-        virtual
-		Signal<Ptr, uint, uint>::Ptr
-		resized() = 0;
-	};
+		protected:
+			Joystick(std::shared_ptr<AbstractCanvas> canvas);
+		};
+	}
 }

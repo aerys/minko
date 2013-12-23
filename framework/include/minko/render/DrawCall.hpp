@@ -82,6 +82,8 @@ namespace minko
 			render::StencilOperation									_stencilFailOp;
 			render::StencilOperation									_stencilZFailOp;
 			render::StencilOperation									_stencilZPassOp;
+			bool														_scissorTest;
+			render::ScissorBox											_scissorBox;
             std::unordered_map<uint, float>                             _uniformFloat;
             std::unordered_map<uint, std::shared_ptr<math::Vector2>>    _uniformFloat2;
             std::unordered_map<uint, std::shared_ptr<math::Vector3>>    _uniformFloat3;
