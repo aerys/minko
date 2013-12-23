@@ -137,6 +137,12 @@ struct stack<std::shared_ptr<T>> {
 			lgc->pushInstance(s, v);
 			return;
 		}
+
+		if (!v)
+		{
+			lua_pushnil(s);
+			return;
+		}
 		
 		// otherwise push onto stack as light user data
 		//printf("stack::put<T>: lud!\n");
@@ -194,17 +200,24 @@ struct stack<LuaGlueObject<T>> {
 };
 
 template<>
-struct stack<unsigned int> {
-	static unsigned int get(LuaGlueBase *, lua_State *s, int idx)
+struct stack<int> {
+	static int get(LuaGlueBase *, lua_State *s, int idx)
 	{
-		return luaL_checkinteger(s, idx);
+		return luaL_checkint(s, idx);
 	}
 	
-	static void put(LuaGlueBase *, lua_State *s, unsigned int v)
+	static void put(LuaGlueBase *, lua_State *s, int v)
 	{
 		lua_pushinteger(s, v);
 	}
 };
+
+template<>
+struct stack<long int> : public stack<int> {};
+template<>
+struct stack<unsigned int> : public stack<int> {};
+template<>
+struct stack<long unsigned int> : public stack<int> {};
 
 template<>
 struct stack<float> {
