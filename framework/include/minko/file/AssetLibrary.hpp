@@ -54,7 +54,7 @@ namespace minko
 			std::unordered_map<std::string, GeometryPtr>							_geometries;
 			std::unordered_map<std::string, EffectPtr>								_effects;
 			std::unordered_map<std::string, TexturePtr>								_textures;
-			std::unordered_map<std::string, NodePtr>								_nodes;
+			std::unordered_map<std::string, NodePtr>								_symbols;
 			std::unordered_map<std::string, std::vector<unsigned char>>				_blobs;
             std::unordered_map<std::string, AbsScriptPtr>                           _scripts;
 
@@ -108,10 +108,10 @@ namespace minko
 			texture(const std::string& name, TexturePtr texture);
 
 			NodePtr
-			node(const std::string& name);
+			symbol(const std::string& name);
 
 			Ptr
-			node(const std::string& name, NodePtr node);
+			symbol(const std::string& name, NodePtr symbol);
 
 			EffectPtr
 			effect(const std::string& name);

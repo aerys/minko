@@ -239,10 +239,10 @@ bullet::Collider::graphicsWorldTransformChangedHandler(ColliderData::Ptr collide
 	_TMP_MATRIX
 		->copyFrom(_targetTransform->modelToWorldMatrix(true))
 		->invert()
-		->append(_targetTransform->transform());
+		->append(_targetTransform->matrix());
 	// _TMP_MATRIX = worldToParent
 
-	_targetTransform->transform()
+	_targetTransform->matrix()
 		->copyFrom(graphicsTransform)
 		->append(_TMP_MATRIX);
 }
