@@ -236,4 +236,81 @@ class LuaGlueProperty : public LuaGluePropertyBase
 		}
 };
 
+template<typename _Type, typename _Class>
+class LuaGlueConstProperty : public LuaGluePropertyBase
+{
+	public:
+		typedef _Type (_Class::*GetterType)() const;
+		typedef void (_Class::*SetterType)(_Type);
+		
+		LuaGlueConstProperty(LuaGlueClass<_Class> *luaClass, const std::string &name, GetterType getter) : name_(name), getter(getter), glueClass(luaClass)
+		{
+			
+		}
+
+		LuaGlueConstProperty(LuaGlueClass<_Class> *luaClass, const std::string &name, GetterType getter, SetterType setter) : name_(name), getter(getter), setter(setter), glueClass(luaClass)
+		{
+			
+		}
+		
+		~LuaGlueConstProperty() { }
+		
+		std::string name() { return name_; }
+		
+		bool glue(LuaGlueBase *luaGlue)
+		{
+			lua_pushlightuserdata(luaGlue->state(), this);
+			lua_pushcclosure(luaGlue->state(), &lua_access, 1);
+			lua_setfield(luaGlue->state(), -2, name_.c_str());
+			return true;
+		}
+		
+	private:
+		std::string name_;
+		GetterType getter;
+		SetterType setter;
+		LuaGlueClass<_Class> *glueClass;
+		
+		int access(lua_State *state)
+		{
+			int nargs = lua_gettop(state);
+
+			_Class *ptr = nullptr;
+			auto base = GetLuaUdata(state, 1, glueClass->name().c_str());
+			if(base->isSharedPtr())
+			{
+				auto obj = *CastLuaGlueObjectShared(_Class, base);
+				ptr = obj.ptr();
+			}
+			else
+			{
+				auto obj = *CastLuaGlueObject(_Class, base);
+				ptr = obj.ptr();
+			}
+			
+			if(nargs == 2)
+			{
+				// get
+				_Type ret = (ptr->*getter)();
+				stack<_Type>::put(glueClass->luaGlue(), state, ret);
+				return 1;
+			}
+			else if(nargs == 3)
+			{
+				// set
+				_Type arg = stack<_Type>::get(glueClass->luaGlue(), state, -1);
+				(ptr->*setter)(arg);
+				return 0;
+			}
+			
+			return 0;
+		}
+		
+		static int lua_access(lua_State *state)
+		{
+			auto pimp = (LuaGlueConstProperty<_Type, _Class> *)lua_touserdata(state, lua_upvalueindex(1));
+			return pimp->access(state);
+		}
+};
+
 #endif /* LUAGLUE_PROPERTY_H_GUARD */
