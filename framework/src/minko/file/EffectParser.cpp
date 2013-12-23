@@ -238,6 +238,8 @@ EffectParser::parseRenderStates(const Json::Value&		root,
 	auto stencilFailOp		= defaultStates->stencilFailOperation();
 	auto stencilZFailOp		= defaultStates->stencilDepthFailOperation();
 	auto stencilZPassOp		= defaultStates->stencilDepthPassOperation();
+	auto scissorTest		= defaultStates->scissorTest();
+	auto scissorBox			= defaultStates->scissorBox();
 
 	render::Texture::Ptr target = defaultStates->target();
 	std::unordered_map<std::string, SamplerState> samplerStates = defaultStates->samplers();
@@ -249,6 +251,7 @@ EffectParser::parseRenderStates(const Json::Value&		root,
 	parseTriangleCulling(root, triangleCulling);
     parseSamplerStates(root, samplerStates);
 	parseStencilState(root, stencilFunc, stencilRef, stencilMask, stencilFailOp, stencilZFailOp, stencilZPassOp);
+	parseScissorTest(root, scissorTest, scissorBox);
 	target = parseTarget(root, context, targets);
 
 	return render::States::create(
@@ -266,6 +269,8 @@ EffectParser::parseRenderStates(const Json::Value&		root,
 		stencilFailOp,
 		stencilZFailOp,
 		stencilZPassOp,
+		scissorTest,
+		scissorBox,
 		target
 	);
 }
@@ -876,6 +881,31 @@ EffectParser::parseStencilState(const Json::Value& contextNode,
 		stencilMask	= stencilTest[2].asUInt();
 		parseStencilOperations(stencilTest[3], stencilFailOp, stencilZFailOp, stencilZPassOp);
     }
+}
+
+void
+EffectParser::parseScissorTest(const Json::Value& contextNode,
+								bool&			  scissorTest,
+								ScissorBox&	      scissorBox) const
+{
+	auto scissorTestNode		= contextNode.get("scissorTest", 0);
+
+	if (!scissorTestNode.isNull() && scissorTestNode.isBool())
+		scissorTest = scissorTestNode.asBool();
+
+	auto scissorBoxNode			= contextNode.get("scissorBox", 0);
+
+	if (!scissorBoxNode.isNull() && scissorBoxNode.isArray())
+	{
+		if (scissorBoxNode[0].isInt())
+			scissorBox.x		= scissorBoxNode[0].asInt();
+		if (scissorBoxNode[1].isInt())
+			scissorBox.y		= scissorBoxNode[1].asInt();
+		if (scissorBoxNode[2].isInt())
+			scissorBox.width	= scissorBoxNode[2].asInt();
+		if (scissorBoxNode[3].isInt())
+			scissorBox.height	= scissorBoxNode[3].asInt();
+	}
 }
 
 void

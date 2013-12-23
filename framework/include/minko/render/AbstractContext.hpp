@@ -287,6 +287,10 @@ namespace minko
 
 			virtual
 			void
+			setScissorTest(bool	scissorTest, const render::ScissorBox&) = 0;
+
+			virtual
+			void
 			readPixels(unsigned char* pixels) = 0;
 
             virtual

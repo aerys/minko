@@ -54,6 +54,7 @@ solution "minko"
 		include('examples/sponza')
 		include('examples/stencil')
 		include 'examples/lua-scripts'
+		include('examples/line-geometry')
 	end
 
 	-- tests

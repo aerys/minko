@@ -426,7 +426,7 @@ ParticleSystem::createParticle(unsigned int 				particleIndex,
 
 	if (_isInWorldSpace)
 	{
-		const std::vector<float>& transform = _toWorld->transform()->data();
+		const std::vector<float>& transform = _toWorld->matrix()->data();
 
 		float x = particle.x;
 		float y = particle.y;

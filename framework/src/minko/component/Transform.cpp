@@ -32,7 +32,7 @@ using namespace minko::math;
 
 Transform::Transform() :
 	minko::component::AbstractComponent(),
-	_transform(Matrix4x4::create()),
+	_matrix(Matrix4x4::create()),
 	_modelToWorld(Matrix4x4::create()),
 	_worldToModel(Matrix4x4::create()),
 	_data(data::StructureProvider::create("transform"))
@@ -239,7 +239,7 @@ Transform::RootTransform::updateTransformsList()
 	unsigned int nodeId = 0;
 
 	_idToNode.clear();
-	_transform.clear();
+	_transforms.clear();
 	_modelToWorld.clear();
 	_numChildren.clear();
 	_firstChildId.clear();
@@ -258,7 +258,7 @@ Transform::RootTransform::updateTransformsList()
 		_nodeToId[node] = nodeId;
 
 		_idToNode.push_back(node);
-		_transform.push_back(transformCtrl->_transform);
+		_transforms.push_back(transformCtrl->_matrix);
 		_modelToWorld.push_back(transformCtrl->_modelToWorld);
 		_numChildren.push_back(0);
 		_firstChildId.push_back(0);
@@ -288,7 +288,7 @@ Transform::RootTransform::updateTransformsList()
 void
 Transform::RootTransform::updateTransforms()
 {
-	unsigned int numNodes 	= _transform.size();
+	unsigned int numNodes 	= _transforms.size();
 	unsigned int nodeId 	= 0;
 
 	while (nodeId < numNodes)
@@ -304,7 +304,7 @@ Transform::RootTransform::updateTransforms()
 
 		if (parentId == -1)
 		{
-            auto parentTransform = _transform[nodeId];
+            auto parentTransform = _transforms[nodeId];
 
             if (parentTransform->_hasChanged)
             {
@@ -318,7 +318,7 @@ Transform::RootTransform::updateTransforms()
 		for (auto childId = firstChildId; childId < lastChildId; ++childId)
 		{
 			auto modelToWorld   = _modelToWorld[childId];
-            auto transform      = _transform[childId];
+            auto transform      = _transforms[childId];
 
             if (transform->_hasChanged || parentTransformChanged)
             {
@@ -345,7 +345,7 @@ Transform::RootTransform::forceUpdate(scene::Node::Ptr node)
 	// find the "dirty" root and build the path to get back to the target node
 	while (nodeId >= 0)
 	{
-		if ((_transform[nodeId]->_hasChanged)
+		if ((_transforms[nodeId]->_hasChanged)
 			|| (nodeId != targetNodeId && _modelToWorld[nodeId]->_hasChanged))
 			dirtyRoot = nodeId;
 
@@ -361,7 +361,7 @@ Transform::RootTransform::forceUpdate(scene::Node::Ptr node)
 		auto parentId		= _parentId[dirtyNodeId];
 		auto modelToWorld	= _modelToWorld[dirtyNodeId];
 
-		modelToWorld->copyFrom(_transform[dirtyNodeId]);
+		modelToWorld->copyFrom(_transforms[dirtyNodeId]);
 		if (parentId != -1)
 			modelToWorld->append(_modelToWorld[parentId]);
 		modelToWorld->_hasChanged = false;

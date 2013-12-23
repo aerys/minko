@@ -50,7 +50,7 @@ NodeDeserializer::deserializeGroup(NodeInfo&		nodeInfo,
 	shared_ptr<math::Matrix4x4>	transformMatrix = TypeDeserializer::matrix4x4(nodeInfo["transformation"]);
 
 	group->addComponent(component::Transform::create());
-	group->component<component::Transform>()->transform()->copyFrom(transformMatrix);
+	group->component<component::Transform>()->matrix()->copyFrom(transformMatrix);
 
 	return group;
 }
@@ -65,7 +65,7 @@ NodeDeserializer::deserializeMesh(NodeInfo&			nodeInfo,
 	shared_ptr<math::Matrix4x4>	transformMatrix = TypeDeserializer::matrix4x4(nodeInfo["transform"]);
 
 	mesh->addComponent(component::Transform::create());
-	mesh->component<component::Transform>()->transform()->copyFrom(transformMatrix);
+	mesh->component<component::Transform>()->matrix()->copyFrom(transformMatrix);
     
 	Qark::ByteArray		geometryObject;
 	int					copyId			= -1;
@@ -133,8 +133,8 @@ NodeDeserializer::deserializeCamera(NodeInfo&		nodeInfo,
 	shared_ptr<math::Matrix4x4>	transformMatrix = TypeDeserializer::matrix4x4(nodeInfo["transform"]);
 
 	camera->addComponent(component::Transform::create());
-	camera->component<component::Transform>()->transform()->copyFrom(transformMatrix);
-	camera->component<component::Transform>()->transform()->prependRotationY(PI); // otherwise the camera points the other way
+	camera->component<component::Transform>()->matrix()->copyFrom(transformMatrix);
+	camera->component<component::Transform>()->matrix()->prependRotationY(PI); // otherwise the camera points the other way
 
 	// extract camera information
 
