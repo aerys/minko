@@ -19,6 +19,7 @@ class LuaGlueIndexMethod : public LuaGlueMethodBase
 {
 	public:
 		typedef _Class ClassType;
+		typedef typename std::remove_reference<_Value>::type ValueType;
 		typedef _Value (_Class::*MethodType)(_Key);
 		
 		LuaGlueIndexMethod(LuaGlueClass<_Class> *luaClass, const std::string &name, MethodType &&fn) : glueClass(luaClass), name_(name), fn(std::forward<MethodType>(fn))
@@ -36,15 +37,9 @@ class LuaGlueIndexMethod : public LuaGlueMethodBase
 			return true;
 		}
 		
-	private:
-		LuaGlueClass<_Class> *glueClass;
-		std::string name_;
-		MethodType fn;
-		std::tuple<_Key> args;
-		
 		int invoke(lua_State *state)
 		{
-			_Value ret;
+			ValueType ret;
 			
 			auto base = GetLuaUdata(state, 1, glueClass->name().c_str());
 			if(base->isSharedPtr())
@@ -62,10 +57,16 @@ class LuaGlueIndexMethod : public LuaGlueMethodBase
 			
 			lua_pop(state, 2);
 			
-			stack<_Value>::put(glueClass->luaGlue(), state, ret);
+			stack<ValueType>::put(glueClass->luaGlue(), state, ret);
 			
 			return 1;
 		}
+		
+	private:
+		LuaGlueClass<_Class> *glueClass;
+		std::string name_;
+		MethodType fn;
+		std::tuple<_Key> args;
 		
 		static int lua_call_func(lua_State *state)
 		{
