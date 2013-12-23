@@ -148,12 +148,20 @@ class LuaGlueClass : public LuaGlueClassBase
 		LuaGlueClass<_Class> &pushInstance(lua_State *state, std::shared_ptr<_Class> obj)
 		{
 			LG_Debug("pushInstance");
-			std::shared_ptr<_Class> *ptr_ptr = new std::shared_ptr<_Class>(obj);
-			LuaGlueObject<std::shared_ptr<_Class>> *udata = (LuaGlueObject<std::shared_ptr<_Class>> *)lua_newuserdata(state, sizeof(LuaGlueObject<std::shared_ptr<_Class>>));
-			new (udata) LuaGlueObject<std::shared_ptr<_Class>>(ptr_ptr, this, true); // placement new to initialize object
-			
-			luaL_getmetatable(state, name_.c_str());
-			lua_setmetatable(state, -2);
+
+			if (obj == nullptr)
+			{
+				lua_pushnil(state);				
+			}
+			else
+			{
+				std::shared_ptr<_Class> *ptr_ptr = new std::shared_ptr<_Class>(obj);
+				LuaGlueObject<std::shared_ptr<_Class>> *udata = (LuaGlueObject<std::shared_ptr<_Class>> *)lua_newuserdata(state, sizeof(LuaGlueObject<std::shared_ptr<_Class>>));
+				new (udata) LuaGlueObject<std::shared_ptr<_Class>>(ptr_ptr, this, true); // placement new to initialize object
+				
+				luaL_getmetatable(state, name_.c_str());
+				lua_setmetatable(state, -2);				
+			}
 			
 			return *this;
 		}
@@ -228,10 +236,30 @@ class LuaGlueClass : public LuaGlueClassBase
 		}
 
 		template<typename _Type>
+		LuaGlueClass<_Class> &property(const std::string &name, _Type (_Class::*getter)() const, void (_Class::*setter)(_Type))
+		{
+			//printf("property(%s)\n", name.c_str());
+			auto impl = new LuaGlueConstProperty<_Type, _Class>(this, name, getter, setter);
+			properties_.addSymbol(name.c_str(), impl);
+			
+			return *this;
+		}
+
+		template<typename _Type>
 		LuaGlueClass<_Class> &property(const std::string &name, _Type (_Class::*getter)())
 		{
 			//printf("property(%s)\n", name.c_str());
 			auto impl = new LuaGlueProperty<_Type, _Class>(this, name, getter);
+			properties_.addSymbol(name.c_str(), impl);
+			
+			return *this;
+		}
+
+		template<typename _Type>
+		LuaGlueClass<_Class> &property(const std::string &name, _Type (_Class::*getter)() const)
+		{
+			//printf("property(%s)\n", name.c_str());
+			auto impl = new LuaGlueConstProperty<_Type, _Class>(this, name, getter);
 			properties_.addSymbol(name.c_str(), impl);
 			
 			return *this;
