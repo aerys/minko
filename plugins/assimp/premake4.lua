@@ -14,7 +14,7 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		"src"
 	}
 	
-	defines { "DEBUG_SKINNING" }
+	--defines { "DEBUG_SKINNING" }
 	
 	-- assimp lib
 	files {
