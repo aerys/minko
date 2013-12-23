@@ -115,7 +115,8 @@ EffectParser::initializePriorityMap()
 	std::unordered_map<std::string, float> m;
 
 	// The higher the priority, the earlier the drawcall is rendered.
-	m["first"]			= 3000.0f;
+	m["first"]			= 4000.0f;
+	m["background"]		= 3000.0f;
 	m["opaque"]			= 2000.0f;
 	m["transparent"]	= 1000.0f;
 	m["last"]			=    0.0f;
@@ -506,6 +507,16 @@ EffectParser::parseDepthTest(const Json::Value& contextNode,
     {
         depthMask = depthTest[0].asBool();
 		depthFunc = _compareFuncMap[depthTest[1].asString()];
+    }
+    else
+    {
+    	auto depthMaskValue = contextNode.get("depthMask", 0);
+    	auto depthFuncValue = contextNode.get("depthFunc", 0);
+
+    	if (depthMaskValue.isBool())
+    		depthMask = depthMaskValue.asBool();
+    	if (depthFuncValue.isString())
+    		depthFunc = _compareFuncMap[depthFuncValue.asString()];
     }
 }
 
