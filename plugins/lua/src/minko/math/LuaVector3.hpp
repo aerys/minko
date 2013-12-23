@@ -39,6 +39,8 @@ namespace minko
 		        state.Class<math::Vector3>("Vector3")
 		            .method("create",   static_cast<math::Vector3::Ptr (*)(float, float, float)>(&math::Vector3::create))
 		            .method("toString", &math::Vector3::toString)
+		            .method("max",     	&math::Vector3::min)
+		            .method("min",     	&math::Vector3::max)
 		            .method("zero",     &math::Vector3::zero)
 		            .method("one",      &math::Vector3::one)
 		            .method("up",       &math::Vector3::up)
