@@ -41,7 +41,10 @@ namespace minko
 			        .method("descendants",	&LuaNodeSet::descendantsWrapper)
 			        .method("ancestors",	&LuaNodeSet::ancestorsWrapper)
 			        .method("children",		&LuaNodeSet::childrenWrapper)
-			        .method("roots",		&LuaNodeSet::rootsWrapper);
+			        .method("roots",		&LuaNodeSet::rootsWrapper)
+			        .method("where",		&LuaNodeSet::whereWrapper)
+			        .method("get",			&LuaNodeSet::getWrapper)
+			        .method("size",			&LuaNodeSet::sizeWrapper);
 			}
 
 			static
@@ -70,6 +73,31 @@ namespace minko
 			rootsWrapper(NodeSet::Ptr nodeSet)
 			{
 				return nodeSet->roots();
+			}
+
+			static
+			NodeSet::Ptr
+			whereWrapper(NodeSet::Ptr nodeSet, std::shared_ptr<LuaGlueFunctionRef> p)
+			{
+				return nodeSet->where(std::bind(
+					&LuaGlueFunctionRef::invoke<bool, std::shared_ptr<Node>>,
+					p,
+					std::placeholders::_1
+				));
+			}
+
+			static
+			std::shared_ptr<Node>
+			getWrapper(NodeSet::Ptr nodeSet, int index)
+			{
+				return nodeSet->nodes().at(index - 1);
+			}
+
+			static
+			unsigned int
+			sizeWrapper(NodeSet::Ptr nodeSet)
+			{
+				return nodeSet->nodes().size();
 			}
 		};
 	}
