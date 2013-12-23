@@ -66,6 +66,28 @@ namespace minko
 			}
 
 			inline static
+			Ptr
+			min()
+			{
+				return create(
+					std::numeric_limits<float>::min(),
+					std::numeric_limits<float>::min(),
+					std::numeric_limits<float>::min()
+				);
+			}
+
+			inline static
+			Ptr
+			max()
+			{
+				return create(
+					std::numeric_limits<float>::max(),
+					std::numeric_limits<float>::max(),
+					std::numeric_limits<float>::max()
+				);
+			}
+
+			inline static
 			ConstPtr
 			up()
 			{
