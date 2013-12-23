@@ -101,9 +101,11 @@ PerspectiveCamera::localToWorldChangedHandler(data::Container::Ptr	data,
 void
 PerspectiveCamera::updateMatrices(std::shared_ptr<Matrix4x4> modelToWorldMatrix)
 {
+	_view->lock();
   	_view->copyFrom(modelToWorldMatrix);
     _view->transform(Vector3::zero(), _position);
     _view->invert();
+	_view->unlock();
 
 	updateProjection(_fov, _aspectRatio, _zNear, _zFar);
 }
@@ -112,7 +114,7 @@ void
 PerspectiveCamera::updateProjection(float fieldOfView, float aspectRatio, float zNear, float zFar)
 {
 	_projection->perspective(_fov, _aspectRatio, _zNear, _zFar);
-	_viewProjection->copyFrom(_view)->append(_projection);
+	_viewProjection->lock()->copyFrom(_view)->append(_projection)->unlock();
 }
 
 std::shared_ptr<math::Ray>
