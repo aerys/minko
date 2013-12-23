@@ -44,7 +44,11 @@ public:
 		applyTuple(_state, _state->state(), args...);
 		lua_call(_state->state(), Arg_Count_, 1);
 
-		return stack<_Ret>::get(_state, _state->state(), -1);
+		auto result = stack<_Ret>::get(_state, _state->state(), -1);
+
+		lua_pop(_state->state(), 1);
+
+		return result;
 	}
 
 	template<typename... _Args>
