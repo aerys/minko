@@ -28,6 +28,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/AbstractCanvas.hpp"
 #include "minko/input/Mouse.hpp"
 #include "minko/input/Keyboard.hpp"
+#include "minko/input/Joystick.hpp"
 
 struct SDL_Window;
 typedef unsigned char Uint8;
@@ -108,19 +109,39 @@ namespace minko
 			hasKeyUpSignal(input::Keyboard::ScanCode scanCode)
 			{
 				return _keyUp.count(static_cast<int>(scanCode));
-			}			
+			}
+		};
+
+		class SDLJoystick : 
+			public input::Joystick
+		{
+			friend class Canvas;
+
+		public :
+			static inline
+			std::shared_ptr<SDLJoystick>
+			create(Canvas::Ptr canvas)
+			{
+				return std::shared_ptr<SDLJoystick>(new SDLJoystick(canvas));
+			}
+		private:
+			SDLJoystick(Canvas::Ptr canvas) :
+				input::Joystick(canvas)
+			{
+			}
 		};
 
 	private:
 #ifdef EMSCRIPTEN
 		static std::list<Ptr>							_canvases;
 #endif
-
+		
 		std::string										_name;
 		uint											_x;
 		uint											_y;
 		uint											_width;
 		uint											_height;
+		std::shared_ptr<data::Provider>					_data;
 		bool											_useStencil;
 
 		bool											_active;
@@ -137,6 +158,7 @@ namespace minko
 		Signal<Ptr, int>::Ptr							_joystickButtonUp;
 		Signal<AbstractCanvas::Ptr, uint, uint>::Ptr	_resized;
 		std::shared_ptr<SDLMouse>						_mouse;
+		std::vector<std::shared_ptr<SDLJoystick>>		_joysticks;
         std::shared_ptr<SDLKeyboard>    				_keyboard;
 
 	public:
@@ -158,32 +180,23 @@ namespace minko
 			return _name;
 		}
 
-		inline
 		uint
-		x()
-		{
-			return _x;
-		}
+		x();
+
+		uint
+		y();
+
+		uint
+		width();
+
+		uint
+		height();
 
 		inline
-		uint
-		y()
+		std::shared_ptr<data::Provider>
+		data() const
 		{
-			return _y;
-		}
-
-		inline
-		uint
-		width()
-		{
-			return _width;
-		}
-
-		inline
-		uint
-		height()
-		{
-			return _height;
+			return _data;
 		}
 
 		inline
@@ -201,27 +214,6 @@ namespace minko
 		}
 
 		inline
-		Signal<Ptr, int, int, int>::Ptr
-		joystickMotion() const
-		{
-			return _joystickMotion;
-		}
-
-		inline
-		Signal<Ptr, int>::Ptr
-		joystickButtonDown() const
-		{
-			return _joystickButtonDown;
-		}
-
-		inline
-		Signal<Ptr, int>::Ptr
-		joystickButtonUp() const
-		{
-			return _joystickButtonUp;
-		}
-
-		inline
 		std::shared_ptr<input::Mouse>
 		mouse()
 		{
@@ -234,6 +226,20 @@ namespace minko
         {
             return _keyboard;
         }
+		
+		inline
+		std::shared_ptr<input::Joystick>
+        joystick(int id)
+        {
+			return _joysticks[id];
+        }
+
+		inline
+		uint
+		numJoysticks()
+		{
+			return _joysticks.size();
+		}
 
 		inline
 		Signal<AbstractCanvas::Ptr, uint, uint>::Ptr
@@ -244,21 +250,21 @@ namespace minko
 
 		inline
 		minko::render::AbstractContext::Ptr
-		context() const
+		context()
 		{
 			return _context;
 		}
 
 		inline
 		float
-		framerate() const
+		framerate()
 		{
 			return _framerate;
 		}
 
 		inline
 		float
-		desiredFramerate() const
+		desiredFramerate()
 		{
 			return _desiredFramerate;
 		}
@@ -270,20 +276,6 @@ namespace minko
 			_desiredFramerate = desiredFramerate;
 		}
 
-		inline
-		float
-		normalizedMouseX() const
-		{
-			return 2.f * ((float)_x / _width - .5f);
-		}
-
-		inline
-		float
-		normalizedMouseY() const
-		{
-			return 2.f * ((float)_y / _height - .5f);
-		}
-
 		void
 		run();
 
@@ -292,6 +284,18 @@ namespace minko
 
 	private:
 		Canvas(const std::string& name, const uint width, const uint height, bool useStencil = false);
+
+		void
+		x(uint);
+
+		void
+		y(uint);
+
+		void
+		width(uint);
+
+		void 
+		height(uint);
 
 		void
 		initialize();

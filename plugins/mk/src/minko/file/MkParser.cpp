@@ -60,7 +60,7 @@ MkParser::parse(const std::string&				    filename,
 
 	auto node = sceneDeserializer->deserializeScene(qarkData["scene"], qarkData["assets"], mkOptions, _controllerMap, _nodeMap);
 	
-	AssetLibrary->node(filename, node);
+	AssetLibrary->symbol(filename, node);
 
 	std::cout << "parse MK" << std::endl << std::flush;
 

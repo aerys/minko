@@ -250,6 +250,11 @@ namespace minko
 								   render::StencilOperation& stencilZFailOp,
 								   render::StencilOperation& stencilZPassOp) const;
 
+			void
+			parseScissorTest(const Json::Value&,
+							 bool&					scissorTest,
+							 render::ScissorBox&	scissorBox) const;
+
             std::shared_ptr<render::Texture>
             parseTarget(const Json::Value&                          contextNode,
                         std::shared_ptr<render::AbstractContext>    context,
