@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Common.hpp"
 
 #include "minko/scene/Node.hpp"
+#include "minko/component/BoundingBox.hpp"
 
 #include "minko/LuaWrapper.hpp"
 
@@ -36,18 +37,39 @@ namespace minko
 			void
 			bind(LuaGlue& state)
 			{
-				state.Class<scene::Node>("Node")
-		            //.method("getName",          static_cast<const std::string& (scene::Node::*)(void)>(&scene::Node::name))
-		            //.method("setName",          static_cast<void (scene::Node::*)(const std::string&)>(&scene::Node::name))
-		            //.prop("name", &scene::Node::name, &scene::Node::name)
-		            .method("create",           static_cast<scene::Node::Ptr (*)(void)>(&scene::Node::create))
-		            .method("addChild",         &scene::Node::addChild)
-		            .method("removeChild",      &scene::Node::removeChild)
-		            .method("contains",         &scene::Node::contains)
-		            .method("addComponent",     &scene::Node::addComponent)
-		            .method("removeComponent",  &scene::Node::removeComponent)
-		            .property("data",           &scene::Node::data)
-		            .property("root",           &scene::Node::root);
+				state.Class<std::vector<std::shared_ptr<Node>>>("std__vector_scene__Node__Ptr_")
+					.index(&std::vector<std::shared_ptr<Node>>::at)
+					.method("getSize", &std::vector<std::shared_ptr<Node>>::size);
+
+				state.Class<Node>("Node")
+		            //.method("getName",          static_cast<const std::string& (Node::*)(void)>(&Node::name))
+		            //.method("setName",          static_cast<void (Node::*)(const std::string&)>(&Node::name))
+		            //.prop("name", &Node::name, &Node::name)
+		            .method("create",           static_cast<Node::Ptr (*)(void)>(&Node::create))
+		            .method("addChild",         &Node::addChild)
+		            .method("removeChild",      &Node::removeChild)
+		            .method("contains",         &Node::contains)
+		            .method("addComponent",     &Node::addComponent)
+		            .method("removeComponent",  &Node::removeComponent)
+		            .method("getChildren",		&LuaNode::childrenWrapper)
+		            .method("getBoundingBox",	&LuaNode::getBoundingBoxWrapper)
+		            .property("data",           &Node::data)
+		            .property("root",           &Node::root);
+		            //.property("name",			&Node::name, &Node::name);
+			}
+
+			static
+			std::vector<std::shared_ptr<Node>>*
+			childrenWrapper(Node::Ptr node)
+			{
+				return const_cast<std::vector<std::shared_ptr<Node>>*>(&(node->children()));
+			}
+
+			static
+			std::shared_ptr<component::BoundingBox>
+			getBoundingBoxWrapper(Node::Ptr node)
+			{
+				return node->component<component::BoundingBox>();
 			}
 		};
 	}
