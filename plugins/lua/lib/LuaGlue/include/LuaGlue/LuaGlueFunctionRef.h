@@ -79,17 +79,4 @@ struct stack<LuaGlueFunctionRef::Ptr> {
 	}
 };
 
-template<>
-struct stack<int> {
-	static int get(LuaGlueBase *, lua_State *s, int idx)
-	{
-		return luaL_checkint(s, idx);
-	}
-	
-	static void put(LuaGlueBase *, lua_State *s, int v)
-	{
-		lua_pushinteger(s, v);
-	}
-};
-
 #endif /* LUAGLUE_FUNCTION_REF_H_GUARD */
