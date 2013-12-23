@@ -178,7 +178,7 @@ ASSIMPParser::createSceneTree(scene::Node::Ptr minkoNode, const aiScene* scene, 
         
         minkoNode->addChild(child);
 
-		assert(!child->name().empty() && _nameToNode.count(child->name()) == 0);
+		//assert(!child->name().empty() && _nameToNode.count(child->name()) == 0);
 		_nameToNode[child->name()]	= child;
 
 #ifdef DEBUG_SKINNING
@@ -200,8 +200,9 @@ ASSIMPParser::createSceneTree(scene::Node::Ptr minkoNode, const aiScene* scene, 
 
 		minkoNode->addChild(minkoMesh);
 
-		assert(!minkoMesh->name().empty() && _nameToMesh.count(minkoMesh->name()) == 0);
-		_nameToMesh[minkoMesh->name()]	= minkoMesh;
+		//assert(!minkoMesh->name().empty() && _nameToMesh.count(minkoMesh->name()) == 0);
+		if (!minkoMesh->name().empty())
+			_nameToMesh[minkoMesh->name()]	= minkoMesh;
 
 #ifdef DEBUG_SKINNING
 		std::cout << "meshmap\t<- '" << minkoMesh->name() << "'" << std::endl;
