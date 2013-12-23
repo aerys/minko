@@ -18,6 +18,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "minko/component/LuaScriptManager.hpp"
+#include "minko/component/LuaScript.hpp"
 
 #include "minko/data/Provider.hpp"
 #include "minko/file/Options.hpp"
@@ -27,6 +28,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/Texture.hpp"
 #include "minko/geometry/Geometry.hpp"
 #include "minko/geometry/CubeGeometry.hpp"
+#include "minko/geometry/QuadGeometry.hpp"
 #include "minko/geometry/SphereGeometry.hpp"
 #include "minko/component/SceneManager.hpp"
 #include "minko/component/MouseManager.hpp"
@@ -36,7 +38,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/DirectionalLight.hpp"
 #include "minko/component/SpotLight.hpp"
 #include "minko/component/PointLight.hpp"
-#include "minko/component/LuaScript.hpp"
+#include "minko/component/BoundingBox.hpp"
+#include "minko/math/Box.hpp"
 
 #include "minko/LuaWrapper.hpp"
 
@@ -166,6 +169,14 @@ LuaScriptManager::initializeBindings()
             //.property("width",  &render::Texture::width)
             //.property("height", &render::Texture::height)
         .end()
+        .Class<math::Box>("Box")
+            .method("merge",        &math::Box::merge)
+            .property("width",      &math::Box::width)
+            .property("height",     &math::Box::height)
+            .property("depth",      &math::Box::depth)
+            .property("topRight",   &math::Box::topRight)
+            .property("bottomLeft", &math::Box::bottomLeft)
+        .end()
         .Class<geometry::Geometry>("Geometry")
         .end()
         .Class<geometry::CubeGeometry>("CubeGeometry")
@@ -174,6 +185,9 @@ LuaScriptManager::initializeBindings()
         .Class<geometry::SphereGeometry>("SphereGeometry")
             .method("create", &geometry::SphereGeometry::create)
         .end()
+        .Class<geometry::QuadGeometry>("QuadGeometry")
+            .method("create", &geometry::QuadGeometry::create)
+        .end()
         .Class<render::Effect>("Effect")
         .end()
         .Class<Surface>("Surface")
@@ -181,7 +195,8 @@ LuaScriptManager::initializeBindings()
         .end()
         .Class<render::AbstractContext>("AbstractContext")
         .end()
-        .Class<AbstractComponent>("AbstractComponent")
+        .Class<BoundingBox>("BoundingBox")
+            .property("box",    &BoundingBox::box)
         .end()
         .Class<Transform>("Transform")
             .method("create",           static_cast<Transform::Ptr (*)(void)>(&Transform::create))
