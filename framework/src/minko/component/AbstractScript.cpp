@@ -147,7 +147,7 @@ AbstractScript::findSceneManager()
 		});
 
 	if (roots->nodes().size() > 1)
-		throw std::logic_error("Renderer cannot be in two separate scenes.");
+		throw std::logic_error("The same script cannot be in two separate scenes.");
 	else if (roots->nodes().size() == 1)
 		setSceneManager(roots->nodes()[0]->component<SceneManager>());		
 	else
