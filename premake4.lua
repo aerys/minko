@@ -51,6 +51,7 @@ solution "minko"
 		include('examples/raycasting')
 		include('examples/sponza')
 		include('examples/stencil')
+		include('examples/frustum')
 	end
 
 	-- tests

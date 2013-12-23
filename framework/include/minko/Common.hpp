@@ -99,6 +99,7 @@ namespace minko
 		class Surface;
 		class Renderer;
 		class PerspectiveCamera;
+		class FrustumCulling;
 
         class LightManager;
         class AbstractLight;
@@ -182,6 +183,8 @@ namespace minko
 		class Ray;
 		class AbstractShape;
 		class Box;
+		class Frustum;
+		class OctTree;
 
 		inline
 		unsigned int
