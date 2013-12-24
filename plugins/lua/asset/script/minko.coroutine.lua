@@ -26,7 +26,7 @@ mc.WAITING_ON_TIME = {}
 mc.WAITING_ON_SIGNAL = {}
 mc.CURRENT_TIME = 0
 
-function mc.wait(secondsOrSignal)
+function mc.wait(secondsOrSignal, ...)
     local co = coroutine.running()
 
     assert(co ~= nil, "The main thread cannot wait!")
@@ -36,11 +36,20 @@ function mc.wait(secondsOrSignal)
 
         mc.WAITING_ON_TIME[co] = wakeupTime
     else
-        mc.WAITING_ON_SIGNAL[co] = secondsOrSignal:connect(function(...)
-            mc.WAITING_ON_SIGNAL[co]:disconnect()
+        mc.WAITING_ON_SIGNAL[co] = {}
+
+        local callback = function(...)
+            for _, slot in ipairs(mc.WAITING_ON_SIGNAL[co]) do
+                slot:disconnect()
+            end
             mc.WAITING_ON_SIGNAL[co] = nil
+
             coroutine.resume(co, table.unpack({...}))
-        end)
+        end
+
+        for _, signal in ipairs({secondsOrSignal, ...}) do
+            table.insert(mc.WAITING_ON_SIGNAL[co], signal:connect(callback))
+        end
     end
 
     return coroutine.yield(co)
@@ -62,5 +71,14 @@ function mc.wakeUpWaitingThreads(deltaTime)
     end
 end
 
+--[[
+function mc.start(f, ...)
+    local co = coroutine.create(function() f(...) end)
+
+    return coroutine.resume(co)
+end
+]]
+
 wait = mc.wait
 wakeUpWaitingThreads = mc.wakeUpWaitingThreads
+--coroutine.start = mc.start
