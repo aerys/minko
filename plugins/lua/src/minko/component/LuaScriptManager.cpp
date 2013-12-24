@@ -39,13 +39,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/SpotLight.hpp"
 #include "minko/component/PointLight.hpp"
 #include "minko/component/BoundingBox.hpp"
-#include "minko/math/Box.hpp"
 
 #include "minko/LuaWrapper.hpp"
 
 #include "minko/math/LuaVector2.hpp"
 #include "minko/math/LuaVector3.hpp"
 #include "minko/math/LuaVector4.hpp"
+#include "minko/math/LuaBox.hpp"
 #include "minko/math/LuaMatrix4x4.hpp"
 #include "minko/data/LuaContainer.hpp"
 #include "minko/scene/LuaNode.hpp"
@@ -169,14 +169,6 @@ LuaScriptManager::initializeBindings()
             //.property("width",  &render::Texture::width)
             //.property("height", &render::Texture::height)
         .end()
-        .Class<math::Box>("Box")
-            .method("merge",        &math::Box::merge)
-            .property("width",      &math::Box::width)
-            .property("height",     &math::Box::height)
-            .property("depth",      &math::Box::depth)
-            .property("topRight",   &math::Box::topRight)
-            .property("bottomLeft", &math::Box::bottomLeft)
-        .end()
         .Class<geometry::Geometry>("Geometry")
         .end()
         .Class<geometry::CubeGeometry>("CubeGeometry")
@@ -227,6 +219,7 @@ LuaScriptManager::initializeBindings()
     math::LuaVector2::bind(_state);
     math::LuaVector3::bind(_state);
     math::LuaVector4::bind(_state);
+    math::LuaBox::bind(_state);
     data::LuaContainer::bind(_state);
     scene::LuaNode::bind(_state);
     scene::LuaNodeSet::bind(_state);
