@@ -36,21 +36,23 @@ namespace minko
 			void
 			bind(LuaGlue& state)
 			{
-		        state.Class<math::Vector3>("Vector3")
-		            .method("create",   static_cast<math::Vector3::Ptr (*)(float, float, float)>(&math::Vector3::create))
-		            .method("toString", &math::Vector3::toString)
-		            .method("max",     	&math::Vector3::min)
-		            .method("min",     	&math::Vector3::max)
-		            .method("zero",     &math::Vector3::zero)
-		            .method("one",      &math::Vector3::one)
-		            .method("up",       &math::Vector3::up)
-		            .method("forward",  &math::Vector3::forward)
-		            .method("xAxis",    &math::Vector3::xAxis)
-		            .method("yAxis",    &math::Vector3::yAxis)
-		            .method("zAxis",    &math::Vector3::zAxis)
-		            .property("x",      static_cast<float (math::Vector3::*)(void)>(&math::Vector3::x), static_cast<void (math::Vector3::*)(float)>(&math::Vector3::x))
-		            .property("y",      static_cast<float (math::Vector3::*)(void)>(&math::Vector3::y), static_cast<void (math::Vector3::*)(float)>(&math::Vector3::y))
-		            .property("z",      static_cast<float (math::Vector3::*)(void)>(&math::Vector3::z), static_cast<void (math::Vector3::*)(float)>(&math::Vector3::z));
+		        state.Class<Vector3>("Vector3")
+		            .method("create",   static_cast<Vector3::Ptr (*)(float, float, float)>(&Vector3::create))
+		            .method("toString", &Vector3::toString)
+		            .method("setTo",	&Vector3::setTo)
+		            .method("copyFrom",	static_cast<Vector3::Ptr (Vector3::*)(Vector3::Ptr)>(&Vector3::copyFrom))
+		            .method("max",     	&Vector3::min)
+		            .method("min",     	&Vector3::max)
+		            .method("zero",     &Vector3::zero)
+		            .method("one",      &Vector3::one)
+		            .method("up",       &Vector3::up)
+		            .method("forward",  &Vector3::forward)
+		            .method("xAxis",    &Vector3::xAxis)
+		            .method("yAxis",    &Vector3::yAxis)
+		            .method("zAxis",    &Vector3::zAxis)
+		            .property("x",      static_cast<float (Vector3::*)(void)>(&Vector3::x), static_cast<void (Vector3::*)(float)>(&Vector3::x))
+		            .property("y",      static_cast<float (Vector3::*)(void)>(&Vector3::y), static_cast<void (Vector3::*)(float)>(&Vector3::y))
+		            .property("z",      static_cast<float (Vector3::*)(void)>(&Vector3::z), static_cast<void (Vector3::*)(float)>(&Vector3::z));
 			}
 		};
 	}

@@ -36,13 +36,15 @@ namespace minko
 			void
 			bind(LuaGlue& state)
 			{
-				state.Class<math::Vector4>("Vector4")
-		            .method("create",   static_cast<math::Vector4::Ptr (*)(float, float, float, float)>(&math::Vector4::create))
-		            .method("toString", &math::Vector4::toString)
-		            .property("x",      static_cast<float (math::Vector4::*)(void)>(&math::Vector4::x), static_cast<void (math::Vector4::*)(float)>(&math::Vector4::x))
-		            .property("y",      static_cast<float (math::Vector4::*)(void)>(&math::Vector4::y), static_cast<void (math::Vector4::*)(float)>(&math::Vector4::y))
-		            .property("z",      static_cast<float (math::Vector4::*)(void)>(&math::Vector4::z), static_cast<void (math::Vector4::*)(float)>(&math::Vector4::z))
-		            .property("w",      static_cast<float (math::Vector4::*)(void)>(&math::Vector4::w), static_cast<void (math::Vector4::*)(float)>(&math::Vector4::w));
+				state.Class<Vector4>("Vector4")
+		            .method("create",   static_cast<Vector4::Ptr (*)(float, float, float, float)>(&Vector4::create))
+		            .method("toString", &Vector4::toString)
+		            .method("setTo",	&Vector4::setTo)
+		            .method("copyFrom",	static_cast<Vector4::Ptr (Vector4::*)(Vector4::Ptr)>(&Vector4::copyFrom))
+		            .property("x",      static_cast<float (Vector4::*)(void)>(&Vector4::x), static_cast<void (Vector4::*)(float)>(&Vector4::x))
+		            .property("y",      static_cast<float (Vector4::*)(void)>(&Vector4::y), static_cast<void (Vector4::*)(float)>(&Vector4::y))
+		            .property("z",      static_cast<float (Vector4::*)(void)>(&Vector4::z), static_cast<void (Vector4::*)(float)>(&Vector4::z))
+		            .property("w",      static_cast<float (Vector4::*)(void)>(&Vector4::w), static_cast<void (Vector4::*)(float)>(&Vector4::w));
 			}
 		};
 	}
