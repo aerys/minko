@@ -70,9 +70,9 @@ namespace minko
 			min()
 			{
 				return create(
-					std::numeric_limits<float>::min(),
-					std::numeric_limits<float>::min(),
-					std::numeric_limits<float>::min()
+					-std::numeric_limits<float>::max(),
+					-std::numeric_limits<float>::max(),
+					-std::numeric_limits<float>::max()
 				);
 			}
 
