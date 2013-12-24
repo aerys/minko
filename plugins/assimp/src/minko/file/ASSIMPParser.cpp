@@ -154,10 +154,9 @@ ASSIMPParser::parse(const std::string&					filename,
     parseDependencies(resolvedFilename, scene);
 
 	_symbol = scene::Node::create(_filename);
-
-	const unsigned int numFPS = 1;
-
 	createSceneTree(_symbol, scene, scene->mRootNode, assetLibrary);
+	_symbol = _options->nodeFunction()(_symbol);
+
 	getSkinningFromAssimp(scene);
 
 	if (_numDependencies == _numLoadedDependencies)
@@ -176,8 +175,6 @@ ASSIMPParser::createSceneTree(scene::Node::Ptr minkoNode, const aiScene* scene, 
         
         child->addComponent(getTransformFromAssimp(ainode->mChildren[i]));
         
-        minkoNode->addChild(child);
-
 		//assert(!child->name().empty() && _nameToNode.count(child->name()) == 0);
 		_nameToNode[child->name()]	= child;
 
@@ -187,6 +184,8 @@ ASSIMPParser::createSceneTree(scene::Node::Ptr minkoNode, const aiScene* scene, 
 
         //Recursive call
 		createSceneTree(child, scene, ainode->mChildren[i], assets);
+
+        minkoNode->addChild(_options->nodeFunction()(child));
     }
     
     for (uint j = 0; j < ainode->mNumMeshes; j++)
@@ -198,7 +197,7 @@ ASSIMPParser::createSceneTree(scene::Node::Ptr minkoNode, const aiScene* scene, 
 		createMeshGeometry(minkoMesh, mesh);
 		createMeshSurface(minkoMesh, scene, mesh, assets);
 
-		minkoNode->addChild(minkoMesh);
+		minkoNode->addChild(_options->nodeFunction()(minkoMesh));
 
 		//assert(!minkoMesh->name().empty() && _nameToMesh.count(minkoMesh->name()) == 0);
 		if (!minkoMesh->name().empty())
