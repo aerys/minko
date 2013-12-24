@@ -36,11 +36,13 @@ namespace minko
 			void
 			bind(LuaGlue& state)
 			{
-				state.Class<math::Vector2>("Vector2")
-		            .method("create",   static_cast<math::Vector2::Ptr (*)(float, float)>(&math::Vector2::create))
-		            .method("toString", &math::Vector2::toString)
-		            .property("x",      static_cast<float (math::Vector2::*)(void)>(&math::Vector2::x), static_cast<void (math::Vector2::*)(float)>(&math::Vector2::x))
-		            .property("y",      static_cast<float (math::Vector2::*)(void)>(&math::Vector2::y), static_cast<void (math::Vector2::*)(float)>(&math::Vector2::y));
+				state.Class<Vector2>("Vector2")
+		            .method("create",   static_cast<Vector2::Ptr (*)(float, float)>(&Vector2::create))
+		            .method("toString", &Vector2::toString)
+		            .method("setTo",	&Vector2::setTo)
+		            .method("copyFrom",	static_cast<Vector2::Ptr (Vector2::*)(Vector2::Ptr)>(&Vector2::copyFrom))
+		            .property("x",      static_cast<float (Vector2::*)(void)>(&Vector2::x), static_cast<void (Vector2::*)(float)>(&Vector2::x))
+		            .property("y",      static_cast<float (Vector2::*)(void)>(&Vector2::y), static_cast<void (Vector2::*)(float)>(&Vector2::y));
 			}
 		};
 	}
