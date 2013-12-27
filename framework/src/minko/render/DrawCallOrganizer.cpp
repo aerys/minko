@@ -40,21 +40,23 @@ std::list<std::shared_ptr<DrawCall>>
 DrawCallOrganizer::drawCalls()
 {
 	unsigned int _numToCollect				= _toCollect.size();
-	
-	if (_numToCollect == 0)
+	unsigned int _numToRemove				= _toRemove.size();
+
+	if (_numToCollect == 0 && _numToRemove == 0)
 		return _drawCalls;
 	
-	unsigned int _lastFrameDrawCallsSize 	= _drawCalls.size();
+	for (uint removedSurfaceIndex = 0; removedSurfaceIndex < _numToRemove; ++removedSurfaceIndex)
+		deleteDrawCalls(_toRemove[removedSurfaceIndex]);
 
 	for (uint surfaceIndex = 0; surfaceIndex < _numToCollect; ++surfaceIndex)
 	{
-		
 		auto& newDrawCalls = generateDrawCall(_toCollect[surfaceIndex], NUM_FALLBACK_ATTEMPTS);
 		_drawCalls.insert(_drawCalls.end(), newDrawCalls.begin(), newDrawCalls.end());
 	}
 	
 	_drawCalls.sort(&DrawCallOrganizer::compareDrawCalls);
 
+	_toRemove.resize(0);
 	_toCollect.erase(_toCollect.begin(), _toCollect.begin() + _numToCollect);
 
 	return _drawCalls;
@@ -73,6 +75,7 @@ DrawCallOrganizer::compareDrawCalls(DrawCallPtr& a, DrawCallPtr& b)
 void
 DrawCallOrganizer::addSurface(SurfacePtr surface)
 {
+
 	_surfaceToTechniqueChangedSlot[surface] = surface->techniqueChanged()->connect(std::bind(
 		&DrawCallOrganizer::techniqueChanged,
 		shared_from_this(),
@@ -81,6 +84,18 @@ DrawCallOrganizer::addSurface(SurfacePtr surface)
 		std::placeholders::_3));
 
 	_techniqueToMacroNames[surface].clear();
+
+	_surfaceToVisibilityChangedSlot.insert(std::pair<SurfacePtr, VisibilityChangedSlot>(surface, surface->visibilityChanged()->connect(std::bind(
+		&DrawCallOrganizer::visibilityChanged,
+		shared_from_this(),
+		std::placeholders::_1,
+		std::placeholders::_2))));
+
+	_surfaceToVisibilityChangedSlot.insert(std::pair<SurfacePtr, VisibilityChangedSlot>(surface, surface->computedVisibilityChanged()->connect(std::bind(
+		&DrawCallOrganizer::visibilityChanged,
+		shared_from_this(),
+		std::placeholders::_1,
+		std::placeholders::_2))));
 
 	Effect::Ptr effect = (_renderer->effect() ? _renderer->effect() : surface->effect());
 
@@ -92,28 +107,47 @@ DrawCallOrganizer::addSurface(SurfacePtr surface)
 			for (auto& macroBinding : pass->macroBindings())
 				_techniqueToMacroNames[surface][techniqueName].insert(std::get<0>(macroBinding.second));
 	}
+
 	_toCollect.push_back(surface);
 }
 
 void
 DrawCallOrganizer::removeSurface(SurfacePtr surface)
 {
-	deleteDrawCalls(surface);
-
+	_toRemove.push_back(surface);
 	_surfaceToTechniqueChangedSlot.erase(surface);
 	_surfaceToDrawCalls[surface].clear();
 	_macroAddedOrRemovedSlots[surface].clear();
 	_macroChangedSlots[surface].clear();
 	_numMacroListeners[surface].clear();
+	_surfaceToDrawCalls[surface].clear();
 }
 
 void
 DrawCallOrganizer::techniqueChanged(SurfacePtr surface, const std::string& technique, bool updateDrawCall)
 {
-	removeSurface(surface);
+	_toRemove.push_back(surface);
 
 	if (updateDrawCall)
 		_toCollect.push_back(surface);
+}
+
+void
+DrawCallOrganizer::visibilityChanged(SurfacePtr surface, bool value)
+{
+	bool visible = surface->visible() && surface->computedVisibility();
+
+	if (visible && _invisibleSurfaces.find(surface) != _invisibleSurfaces.end()) // visible and already wasn't visible before
+	{
+		_toCollect.push_back(surface);
+		_invisibleSurfaces.erase(surface);
+	}
+	else if (!visible && _invisibleSurfaces.find(surface) == _invisibleSurfaces.end()) // not visible but was visible before
+	{
+		_toRemove.push_back(surface);
+		_invisibleSurfaces.insert(surface);
+	}
+	
 }
 
 DrawCallOrganizer::DrawCallList
