@@ -26,7 +26,8 @@ namespace minko
 	namespace math
 	{
 		class Vector2 :
-			public std::enable_shared_from_this<Vector2>
+			public std::enable_shared_from_this<Vector2>,
+			public Convertible<Vector2>
 		{
 		public:
 			typedef std::shared_ptr<Vector2>	Ptr;
@@ -192,6 +193,13 @@ namespace minko
 			lerp(Ptr target, float ratio)
 			{
 				return setTo(_x + (target->_x - _x) * ratio, _y + (target->_y - _y) * ratio);
+			}
+
+			bool
+			equals(std::shared_ptr<Vector2> vect2)
+			{
+				return vect2->x() == _x && 
+					   vect2->y() == _y;
 			}
 
 		protected:
