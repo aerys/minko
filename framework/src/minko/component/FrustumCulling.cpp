@@ -26,6 +26,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/math/Vector3.hpp"
 #include "minko/component/PerspectiveCamera.hpp"
 #include "minko/component/SceneManager.hpp"
+#include "minko/component/Surface.hpp"
 
 using namespace minko;
 using namespace minko::component;
@@ -132,6 +133,7 @@ FrustumCulling::layoutChanged(NodePtr node, NodePtr target)
 void
 FrustumCulling::worldToScreenChanged(std::shared_ptr<data::Container> data, const std::string& propertyName)
 {
+	//std::cout << "update octTree" << std::endl;
 	_frustum->updateFromMatrix(data->get<std::shared_ptr<math::Matrix4x4>>(propertyName));
 	
 	_octTree->testFrustum(
@@ -139,11 +141,11 @@ FrustumCulling::worldToScreenChanged(std::shared_ptr<data::Container> data, cons
 		[](NodePtr node)
 		{
 			//std::cout << 1 << std::endl;
-			//node->computedVisibility(false);
+			node->component<Surface>()->computedVisibility(true);
 		},
 		[](NodePtr node)
 		{
 			//std::cout << 0 << std::endl;
-			//node->computedVisibility(true);
+			node->component<Surface>()->computedVisibility(false);
 		});
 }
