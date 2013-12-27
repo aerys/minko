@@ -198,7 +198,7 @@ void
 OctTree::nodeModelToWorldChanged(data::Container::Ptr	data,
 								  const std::string&	propertyName)
 {
-	auto node		= _matrixToNode[data->get<std::shared_ptr<math::Matrix4x4>>(propertyName)];
+	/*auto node		= _matrixToNode[data->get<std::shared_ptr<math::Matrix4x4>>(propertyName)];
 	auto octant		= _nodeToOctant[node];
 
 	if (node && nodeChangedOctant(node)) // node is no more in the octant
@@ -207,7 +207,7 @@ OctTree::nodeModelToWorldChanged(data::Container::Ptr	data,
 		_nodeToOctant.erase(node);
 		octant->_content.remove(node);
 		insert(node);
-	}
+	}*/
 }
 
 void
@@ -217,54 +217,25 @@ OctTree::testFrustum(std::shared_ptr<math::Frustum>						frustum,
 {
 	FrustumPosition result					= frustum->testBoundingBox(_octantBox);
 	
-	if (result == FrustumPosition::INSIDE || result == FrustumPosition::AROUND)
-	{	
-		
-		for (auto node : _content)
-			insideFrustumCallback(node);
-
+	if (result == FrustumPosition::AROUND || result == FrustumPosition::INSIDE)
+	{
 		if (_splitted)
 		{
 			for (auto octantChild : _children)
 				octantChild->testFrustum(frustum, insideFrustumCallback, outsideFustumCallback);
 		}
+
+		for (auto node : _content)
+			insideFrustumCallback(node);
 	}
 	else
 	{
 		for (auto node : _childrenContent)
 			outsideFustumCallback(node);
+		for (auto node : _content)
+			insideFrustumCallback(node);
 	}
 }
-
-uint
-OctTree::testFrustum(std::shared_ptr<math::Frustum> frustum)
-{
-	FrustumPosition result					= frustum->testBoundingBox(_octantBox);
-	uint			numVisibleEltInOctant	= 0;
-
-	if (result == FrustumPosition::INSIDE || result == FrustumPosition::AROUND)
-	{	
-		numVisibleEltInOctant += _content.size();
-
-		// apply operation on content
-
-		if (debugNode)
-			debugNode->component<component::Surface>()->material()->set("diffuseColor", math::Vector4::create(0, 0, 1, 0.2));
-
-		if (_splitted)
-		{
-			for (auto octantChild : _children)
-			{
-				if (octantChild->_content.size() > 0)
-					octantChild->debugNode->component<component::Surface>()->material()->set("diffuseColor", math::Vector4::create(1, 0, 0, 0.2));
-				numVisibleEltInOctant += octantChild->testFrustum(frustum);
-			}
-		}
-	}
-
-	return numVisibleEltInOctant;
-}
-
 
 OctTree::Ptr
 OctTree::remove(std::shared_ptr<scene::Node> node)
