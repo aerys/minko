@@ -34,7 +34,7 @@ scene::Node::Ptr camera = nullptr;
 
 int main(int argc, char** argv)
 {
-	auto canvas		= Canvas::create("Minko Examples - Light", WINDOW_WIDTH, WINDOW_HEIGHT);
+	auto canvas		= Canvas::create("Minko Examples - Frustum", WINDOW_WIDTH, WINDOW_HEIGHT);
 	
 	canvas->context()->errorsEnabled(true);
 
@@ -63,7 +63,7 @@ int main(int argc, char** argv)
 		{
 			auto mesh = scene::Node::create("mesh")
 				->addComponent(Transform::create(math::Matrix4x4::create()
-					->appendTranslation(rand() % 100 - 50, rand() % 100 - 50, rand() % 100 - 50)
+					->appendTranslation(rand() % 200 - 100, rand() % 200 - 100, rand() % 200 - 100)
 					))
 				->addComponent(Surface::create(
 					assets->geometry("cube"),
@@ -81,7 +81,7 @@ int main(int argc, char** argv)
 			->addComponent(PerspectiveCamera::create((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT))
 			->addComponent(FrustumCulling::create())
 			->addComponent(Transform::create(
-				Matrix4x4::create()->lookAt(Vector3::create(0.f, 2.f), Vector3::create(10.f, 10.f, 10.f))
+				Matrix4x4::create()->lookAt(Vector3::create(0.f, 0.f), Vector3::create(rand() % 200 - 100, rand() % 200 - 100, rand() % 200 - 100))
 			));
 
 		root->addChild(camera);
@@ -92,61 +92,11 @@ int main(int argc, char** argv)
 			camera->component<PerspectiveCamera>()->aspectRatio((float)width / (float)height);
 		});
 
-		auto yaw = 0.f;
-		auto pitch = PI * .5f;
-		auto roll = 0.f;
-		auto minPitch = 0.f + 1e-5;
-		auto maxPitch = (float)PI - 1e-5;
-		auto lookAt = Vector3::create(0.f, 2.f, 0.f);
-		auto distance = 150.f;
-
-		// handle mouse signals
-		auto mouseWheel = canvas->mouse()->wheel()->connect([&](input::Mouse::Ptr m, int h, int v)
-		{
-			distance += (float)v ;
-		});
-
-		Signal<input::Mouse::Ptr, int, int>::Slot mouseMove;
-		auto cameraRotationXSpeed = 0.f;
-		auto cameraRotationYSpeed = 0.f;
-
-		auto mouseDown = canvas->mouse()->leftButtonDown()->connect([&](input::Mouse::Ptr m)
-		{
-			mouseMove = canvas->mouse()->move()->connect([&](input::Mouse::Ptr, int dx, int dy)
-			{
-				cameraRotationYSpeed = (float)dx * .01f;
-				cameraRotationXSpeed = (float)dy * -.01f;
-			});
-		});
-
-		auto mouseUp = canvas->mouse()->leftButtonUp()->connect([&](input::Mouse::Ptr m)
-		{
-			mouseMove = nullptr;
-		});
-
 		auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, uint deltaTime)
 		{
-			yaw += cameraRotationYSpeed;
-			cameraRotationYSpeed *= 0.9f;
-
-			pitch += cameraRotationXSpeed;
-			cameraRotationXSpeed *= 0.9f;
-			if (pitch > maxPitch)
-				pitch = maxPitch;
-			else if (pitch < minPitch)
-				pitch = minPitch;
-
-			
-			camera->component<Transform>()->transform()->lookAt(
-				lookAt,
-				Vector3::create(
-					lookAt->x() + distance * cosf(yaw) * sinf(pitch),
-					lookAt->y() + distance * cosf(pitch),
-					lookAt->z() + distance * sinf(yaw) * sinf(pitch)
-				)
-			);
-
+			camera->component<Transform>()->transform()->lock()->appendRotationY(0.02)->appendRotationZ(-0.014)->unlock();
 			sceneManager->nextFrame();
+			std::cout << "Num drawCalls : " << camera->component<Renderer>()->numDrawCalls() << std::endl;
 		});
 		
 		canvas->run();
