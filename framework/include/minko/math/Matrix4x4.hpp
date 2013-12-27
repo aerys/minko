@@ -31,7 +31,8 @@ namespace minko
 	{
 		class Matrix4x4 :
 			public std::enable_shared_from_this<Matrix4x4>,
-			public data::Value
+			public data::Value,
+			public Convertible<Matrix4x4>
 		{
 			friend component::Transform;
 
