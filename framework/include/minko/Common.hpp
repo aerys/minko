@@ -39,6 +39,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include <vector>
 #include <cassert>
 #include <ctime>
+#include <type_traits>
+#include "minko/math/Convertible.hpp"
 
 #define PI 3.1415926535897932384626433832795
 
