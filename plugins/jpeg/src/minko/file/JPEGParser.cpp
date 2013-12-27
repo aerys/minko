@@ -51,7 +51,7 @@ JPEGParser::parse(const std::string&				filename,
 	if (comps == 3 || comps == 1)
 		format	= render::Texture::DataFormat::RGB;
 
-	auto texture = render::Texture::create(options->context(), width, height, options->generateMipmaps(), false, options->resizeSmoothly());
+	auto texture = render::Texture::create(options->context(), width, height, options->generateMipmaps(), false, options->resizeSmoothly(), filename);
 
 	texture->data(bmpData, format);
 	texture->upload();
