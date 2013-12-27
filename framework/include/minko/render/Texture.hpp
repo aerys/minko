@@ -48,6 +48,7 @@ namespace minko
             bool                        _optimizeForRenderToTexture;
 			const bool					_resizeSmoothly;
 			std::vector<unsigned char>	_data;
+			std::string					_filename;
 
 		public:
 			~Texture()
@@ -62,9 +63,10 @@ namespace minko
 				   const unsigned int						height,
                    bool                                     mipMapping                  = false,
                    bool                                     optimizeForRenderToTexture  = false,
-				   bool										resizeSmoothly				= true)
+				   bool										resizeSmoothly				= true,
+				   std::string								filename					= "")
 			{
-				return std::shared_ptr<Texture>(new Texture(context, width, height, mipMapping, optimizeForRenderToTexture, resizeSmoothly));
+				return std::shared_ptr<Texture>(new Texture(context, width, height, mipMapping, optimizeForRenderToTexture, resizeSmoothly, filename));
 			}
 
 			inline
@@ -110,7 +112,8 @@ namespace minko
 					const unsigned int							height,
                     bool                                        mipMapping,
                     bool                                        optimizeForRenderToTexture,
-					bool										resizeSmoothly);
+					bool										resizeSmoothly,
+				   std::string									filename					= "");
 
 			void
 			processData(std::vector<unsigned char>& inData, std::vector<unsigned char>& outData) const;
