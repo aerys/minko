@@ -68,7 +68,7 @@ namespace minko
 			Signal<SceneManagerPtr, uint, TexturePtr>::Slot				_renderingBeginSlot;
 			std::unordered_map<SurfacePtr, SurfaceTechniqueChangedSlot>	_surfaceTechniqueChangedSlot;
 
-			DrawCallFactoryPtr											_drawCallFactory;
+			DrawCallFactoryPtr											_drawCallPool;
 
 			static const unsigned int									NUM_FALLBACK_ATTEMPTS;
 
@@ -105,6 +105,13 @@ namespace minko
 			effect()
 			{
 				return _effect;
+			}
+
+			inline
+			unsigned int
+			numDrawCalls()
+			{
+				return _drawCalls.size();
 			}
 
 			inline
@@ -187,26 +194,13 @@ namespace minko
 			addSurface(SurfacePtr);
 
 			void
-			addSurfaceDrawcalls(SurfacePtr);
-
-			void
 			removeSurface(SurfacePtr);
-
-			void
-			removeSurfaceDrawcalls(SurfacePtr);
 
 			void
 			geometryChanged(SurfacePtr ctrl);
 
 			void
-			surfaceTechniqueChanged(SurfacePtr, const std::string& technique, bool updateSurfaceDrawcalls);
-
-			void
 			materialChanged(SurfacePtr ctrl);
-
-            static
-            bool
-            compareDrawCalls(DrawCallPtr& a, DrawCallPtr& b);
 
 			void
 			sceneManagerRenderingBeginHandler(std::shared_ptr<SceneManager>		sceneManager,

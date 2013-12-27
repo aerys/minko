@@ -40,6 +40,7 @@ namespace minko
 
 			typedef Signal<ContainerPtr, const std::string&>			PropertyChangedSignal;
 			typedef Signal<SurfacePtr, const std::string&, bool>::Slot	TechniqueChangeSlot;
+			typedef Signal<SurfacePtr, bool>::Slot						VisibilityChangedSlot;
 			typedef PropertyChangedSignal::Slot							PropertyChangedSlot;
 			typedef std::shared_ptr<render::Pass>						PassPtr;
 			
@@ -58,32 +59,35 @@ namespace minko
 		private:
 			static const unsigned int NUM_FALLBACK_ATTEMPTS;
 
-			std::shared_ptr<component::Renderer>				_renderer;
+			std::shared_ptr<component::Renderer>																	_renderer;
 
-			std::unordered_map<SurfacePtr, TechniqueChangeSlot>													_surfaceToTechniqueChangedSlot;
+			std::unordered_map<SurfacePtr, TechniqueChangeSlot>														_surfaceToTechniqueChangedSlot;
+			std::unordered_multimap<SurfacePtr, VisibilityChangedSlot>												_surfaceToVisibilityChangedSlot;
 
-			DrawCallChangedSignal::Ptr							_drawCallAdded;
-			DrawCallChangedSignal::Ptr							_drawCallRemoved;
+			DrawCallChangedSignal::Ptr																				_drawCallAdded;
+			DrawCallChangedSignal::Ptr																				_drawCallRemoved;
 
-			std::unordered_map<SurfacePtr, std::list<Any>>														_macroAddedOrRemovedSlots;
-			std::unordered_map<SurfacePtr, std::unordered_map<data::ContainerProperty, PropertyChangedSlot>>	_macroChangedSlots;
-			std::unordered_map<SurfacePtr, std::unordered_map<data::ContainerProperty, uint>>					_numMacroListeners;
+			std::unordered_map<SurfacePtr, std::list<Any>>															_macroAddedOrRemovedSlots;
+			std::unordered_map<SurfacePtr, std::unordered_map<data::ContainerProperty, PropertyChangedSlot>>		_macroChangedSlots;
+			std::unordered_map<SurfacePtr, std::unordered_map<data::ContainerProperty, uint>>						_numMacroListeners;
 			
 			
-			std::unordered_map<SurfacePtr, std::unordered_map<DrawCallPtr, PassPtr>>							_drawCallToPass;
-			std::unordered_map<SurfacePtr, std::unordered_map<DrawCallPtr, ContainerPtr>>						_drawCallToRendererData;
-			std::unordered_map<SurfacePtr, std::unordered_map<std::string, DrawCallList>>						_macroNameToDrawCalls;
-			std::unordered_map<SurfacePtr, std::unordered_map<std::string, std::unordered_set<std::string>>>	_techniqueToMacroNames;
+			std::unordered_map<SurfacePtr, std::unordered_map<DrawCallPtr, PassPtr>>								_drawCallToPass;
+			std::unordered_map<SurfacePtr, std::unordered_map<DrawCallPtr, ContainerPtr>>							_drawCallToRendererData;
+			std::unordered_map<SurfacePtr, std::unordered_map<std::string, DrawCallList>>							_macroNameToDrawCalls;
+			std::unordered_map<SurfacePtr, std::unordered_map<std::string, std::unordered_set<std::string>>>		_techniqueToMacroNames;
 
 			std::unordered_map<SurfacePtr, std::unordered_map<data::ContainerProperty, std::list<TechniquePass>>>	_incorrectMacroToPasses;
 			std::unordered_map<SurfacePtr, std::unordered_map<data::ContainerProperty, PropertyChangedSlot>>		_incorrectMacroChangedSlot;
 
 			// surface that will generate new draw call next frame
-			std::vector<SurfacePtr>																				_toCollect;
-			
+			std::vector<SurfacePtr>																					_toCollect;
+			std::vector<SurfacePtr>																					_toRemove;
+			std::set<SurfacePtr>																					_invisibleSurfaces;
+
 			// draw call list for renderer
-			std::unordered_map<SurfacePtr, DrawCallList>														_surfaceToDrawCalls;
-			std::list<DrawCallPtr>																				_drawCalls;
+			std::unordered_map<SurfacePtr, DrawCallList>															_surfaceToDrawCalls;
+			std::list<DrawCallPtr>																					_drawCalls;
 
 		public:
 			inline static
@@ -112,6 +116,9 @@ namespace minko
 
 			void
 			techniqueChanged(SurfacePtr surface, const std::string& technique, bool updateDrawCall);
+
+			void
+			visibilityChanged(SurfacePtr surface, bool visibility);
 
 			// generate draw call for one mesh
 			std::shared_ptr<DrawCall>
