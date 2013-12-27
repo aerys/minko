@@ -44,18 +44,45 @@ Frustum::testBoundingBox(std::shared_ptr<math::Box> box)
 {
 	int result = 0;
 	
-	float x1 = box->bottomLeft()->x();
-	float y1 = box->bottomLeft()->y();
-	float z1 = box->bottomLeft()->z();
+	// bottom left front
+	float xblf = box->bottomLeft()->x();
+	float yblf = box->bottomLeft()->y();
+	float zblf = box->bottomLeft()->z();
 
-	float x2 = box->topRight()->x();
-	float y2 = box->topRight()->y();
-	float z2 = box->topRight()->z();
+	// top right back
+	float xtrb = box->topRight()->x();
+	float ytrb = box->topRight()->y();
+	float ztrb = box->topRight()->z();
 
-	std::unordered_map<FrustumPosition, bool> blResult;
-	std::unordered_map<FrustumPosition, bool> trResult;
+	// bottom right front
+	float xbrf = xtrb;
+	float ybrf = yblf;
+	float zbrf = zblf;
 
-	uint numOutside = 0;
+	// bottom left back
+	float xblb = xblf;
+	float yblb = yblf;
+	float zblb = ztrb;
+
+	// bottom right back
+	float xbrb = xtrb;
+	float ybrb = yblf;
+	float zbrb = ztrb;
+
+	// top left back
+	float xtlb = xblf;
+	float ytlb = ytrb;
+	float ztlb = ztrb;
+
+	// top left front
+	float xtlf = xtrb;
+	float ytlf = ytrb;
+	float ztlf = zblf;
+
+	// top right front
+	float xtrf = xblf;
+	float ytrf = ytrb;
+	float ztrf = zblf;
 
 	for (auto it = _planes.begin(); it != _planes.end(); ++it)
 	{
@@ -64,19 +91,35 @@ Frustum::testBoundingBox(std::shared_ptr<math::Box> box)
 		float pc = it->second->z();
 		float pd = it->second->w();
 
-		blResult[it->first] = pa * x1 + pb * y1 + pc * z1 + pd < 0.;
-		trResult[it->first] = pa * x2 + pb * y2 + pc * z2 + pd < 0.;
+		
+		_blfResult[it->first] = pa * xblf + pb * yblf + pc * zblf + pd < 0.;
+		_brfResult[it->first] = pa * xbrf + pb * ybrf + pc * zbrf + pd < 0.;
+		_blbResult[it->first] = pa * xblb + pb * yblb + pc * zblb + pd < 0.;
+		_brbResult[it->first] = pa * xbrb + pb * ybrb + pc * zbrb + pd < 0.;
+		
+		_tlfResult[it->first] = pa * xtlf + pb * ytlf + pc * ztlf + pd < 0.;
+		_trfResult[it->first] = pa * xtrf + pb * ytrf + pc * ztrf + pd < 0.;
+		_tlbResult[it->first] = pa * xtlb + pb * ytlb + pc * ztlb + pd < 0.;
+		_trbResult[it->first] = pa * xtrb + pb * ytrb + pc * ztrb + pd < 0.;
 	}
 
-	if (blResult[FrustumPosition::LEFT] && trResult[FrustumPosition::RIGHT] ||
-		blResult[FrustumPosition::RIGHT] && trResult[FrustumPosition::LEFT] ||
-		blResult[FrustumPosition::TOP] && trResult[FrustumPosition::BOTTOM] ||
-		blResult[FrustumPosition::BOTTOM] && trResult[FrustumPosition::TOP])
+	if (_blfResult[FrustumPosition::LEFT]	&& _trbResult[FrustumPosition::RIGHT] ||
+		_blfResult[FrustumPosition::RIGHT]	&& _trbResult[FrustumPosition::LEFT] ||
+		_blfResult[FrustumPosition::TOP]	&& _trbResult[FrustumPosition::BOTTOM] ||
+		_blfResult[FrustumPosition::BOTTOM]	&& _trbResult[FrustumPosition::TOP])
 		return FrustumPosition::AROUND;
 
-	for (auto it2 = blResult.begin(); it2 != blResult.end(); ++it2)
+	for (auto it2 = _blfResult.begin(); it2 != _blfResult.end(); ++it2)
 	{
-		if (blResult[it2->first] && trResult[it2->first])
+		if (_blfResult[it2->first] && 
+			_brfResult[it2->first] &&
+			_blbResult[it2->first] && 
+			_brbResult[it2->first] &&
+			_tlfResult[it2->first] && 
+			_trfResult[it2->first] &&
+			_tlbResult[it2->first] && 
+			_trbResult[it2->first]
+			)
 			return it2->first;
 	}
 
