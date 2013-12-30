@@ -40,6 +40,7 @@ namespace minko
 		            .method("create",   static_cast<Vector2::Ptr (*)(float, float)>(&Vector2::create))
 		            .method("toString", &Vector2::toString)
 		            .method("setTo",	&Vector2::setTo)
+		            .method("scaleBy",	&Vector2::scaleBy)
 		            .method("copyFrom",	static_cast<Vector2::Ptr (Vector2::*)(Vector2::Ptr)>(&Vector2::copyFrom))
 		            .property("x",      static_cast<float (Vector2::*)(void)>(&Vector2::x), static_cast<void (Vector2::*)(float)>(&Vector2::x))
 		            .property("y",      static_cast<float (Vector2::*)(void)>(&Vector2::y), static_cast<void (Vector2::*)(float)>(&Vector2::y));

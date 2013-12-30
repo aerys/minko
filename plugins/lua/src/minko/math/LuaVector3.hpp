@@ -41,6 +41,7 @@ namespace minko
 		            .method("toString", &Vector3::toString)
 		            .method("setTo",	&Vector3::setTo)
 		            .method("copyFrom",	static_cast<Vector3::Ptr (Vector3::*)(Vector3::Ptr)>(&Vector3::copyFrom))
+		            .method("scaleBy",	&Vector3::scaleBy)
 		            .method("max",     	&Vector3::min)
 		            .method("min",     	&Vector3::max)
 		            .method("zero",     &Vector3::zero)
