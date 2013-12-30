@@ -67,8 +67,11 @@ minko.project.application = function(name)
 		}
 		postbuildcommands {
 			'xcopy /y /i "' .. minko.sdk.path('/framework/effect') .. '" "$(TargetDir)\\effect"',
-			'xcopy /y /s asset\\* "$(TargetDir)"',
 			minko.vs.getdllscopycommand(minko.sdk.path('/deps/win/lib'))
+		}
+	configuration { "windows", "release" }
+		postbuildcommands {
+			'xcopy /y /s asset\\* "$(TargetDir)"'
 		}
 		
 	configuration { "linux" }
@@ -79,7 +82,10 @@ minko.project.application = function(name)
 			"m"
 		}
 		postbuildcommands {
-			'cp -r ' .. minko.sdk.path('/framework/effect') .. ' ${TARGETDIR} || :',
+			'cp -r ' .. minko.sdk.path('/framework/effect') .. ' ${TARGETDIR} || :'
+		}
+	configuration { "linux", "release" }
+		postbuildcommands {
 			'cp -r asset/* ${TARGETDIR} || :'
 		}
 	
@@ -93,10 +99,13 @@ minko.project.application = function(name)
 			"IOKit.framework"
 		}
 		postbuildcommands {
-			'cp -r ' .. minko.sdk.path('/framework/effect') .. ' . || :',
+			'cp -r ' .. minko.sdk.path('/framework/effect') .. ' . || :'
+		}
+	configuration { "macosx", "release" }
+		postbuildcommands {
 			'cp -r asset/* . || :'
 		}
-		
+
 	configuration { }
 	
 end
