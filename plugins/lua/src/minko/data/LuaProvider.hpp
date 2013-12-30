@@ -42,7 +42,7 @@ namespace minko
 			bind(LuaGlue& state)
 			{
 				state.Class<Provider>("Provider")
-					.method("create", 		&Provider::create)
+					.method("create", 		static_cast<Provider::Ptr (*)()>(&Provider::create))
 					.method("setTexture",   static_cast<Provider::Ptr (Provider::*)(const std::string&, render::Texture::Ptr)>(&Provider::set<render::Texture::Ptr>))
 		            .method("setInt",       static_cast<Provider::Ptr (Provider::*)(const std::string&, int)>(&Provider::set<int>))
 		            .method("setUint",      static_cast<Provider::Ptr (Provider::*)(const std::string&, unsigned int)>(&Provider::set<unsigned int>))
