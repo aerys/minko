@@ -27,11 +27,11 @@ namespace minko
 {
 	namespace render
 	{
-		class DrawCallOrganizer :
-			public std::enable_shared_from_this<DrawCallOrganizer>
+		class DrawCallPool :
+			public std::enable_shared_from_this<DrawCallPool>
 		{
 		public:
-			typedef std::shared_ptr<DrawCallOrganizer>					Ptr;
+			typedef std::shared_ptr<DrawCallPool>						Ptr;
 			typedef std::shared_ptr<component::Renderer>				RendererPtr;
 			typedef std::shared_ptr<component::Surface>					SurfacePtr;
 			typedef std::list<std::shared_ptr<DrawCall>>				DrawCallList;
@@ -94,7 +94,7 @@ namespace minko
 			Ptr
 			create(RendererPtr renderer)
 			{
-				return std::shared_ptr<DrawCallOrganizer>(new DrawCallOrganizer(renderer));
+				return std::shared_ptr<DrawCallPool>(new DrawCallPool(renderer));
 			}
 
 			std::list<std::shared_ptr<DrawCall>>
@@ -112,7 +112,7 @@ namespace minko
 			
 		private:
 			
-			DrawCallOrganizer(RendererPtr renderer);
+			DrawCallPool(RendererPtr renderer);
 
 			void
 			techniqueChanged(SurfacePtr surface, const std::string& technique, bool updateDrawCall);
