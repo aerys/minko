@@ -36,16 +36,26 @@ namespace minko
         public:
             typedef std::shared_ptr<LuaScript>  Ptr;
 
-        private:
-            typedef std::shared_ptr<scene::Node>    NodePtr;
-
             class LuaStub
             {
+                friend class LuaScript;
+
             public:
                 LuaStub() : _running(true) {}
 
+                bool
+                running()
+                {
+                    return _running;
+                }
+
+            private:
                 bool _running;
             };
+
+        private:
+            typedef std::shared_ptr<scene::Node>    NodePtr;
+
 
         private:
             std::string                             _scriptName;
