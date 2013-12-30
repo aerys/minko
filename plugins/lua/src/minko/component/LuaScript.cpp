@@ -52,7 +52,7 @@ LuaScript::start(scene::Node::Ptr node)
         auto name = _scriptName.c_str();
 
         _state->Class<LuaStub>(name)
-            .property("running", &LuaStub::_running);
+            .property("running", &LuaStub::running);
         _class = _state->lookupClass(name);
         _class->glue(_state);
 
