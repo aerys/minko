@@ -44,6 +44,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/math/LuaVector4.hpp"
 #include "minko/math/LuaBox.hpp"
 #include "minko/math/LuaMatrix4x4.hpp"
+#include "minko/data/LuaProvider.hpp"
 #include "minko/data/LuaContainer.hpp"
 #include "minko/scene/LuaNode.hpp"
 #include "minko/scene/LuaNodeSet.hpp"
@@ -207,6 +208,7 @@ LuaScriptManager::initializeBindings()
     math::LuaVector3::bind(_state);
     math::LuaVector4::bind(_state);
     math::LuaBox::bind(_state);
+    data::LuaProvider::bind(_state);
     data::LuaContainer::bind(_state);
     scene::LuaNode::bind(_state);
     scene::LuaNodeSet::bind(_state);
