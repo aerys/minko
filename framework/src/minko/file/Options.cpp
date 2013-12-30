@@ -47,6 +47,11 @@ Options::Options(std::shared_ptr<render::AbstractContext> context) :
 		return material;
 	};
 
+	_geometryFunction = [](const std::string&, GeomPtr geom) -> GeomPtr
+	{
+		return geom;
+	};
+
 	_loaderFunction = [](const std::string&) -> std::shared_ptr<AbstractLoader>
 	{
 		return Loader::create();
