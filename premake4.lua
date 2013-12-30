@@ -54,6 +54,7 @@ solution "minko"
 		include('examples/stencil')
 		include('examples/frustum')
 		include('examples/serializer')
+		include('examples/picking')
 	end
 
 	-- tests
