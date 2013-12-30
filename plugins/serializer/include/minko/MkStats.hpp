@@ -118,7 +118,7 @@ namespace minko
 			void
 			printValidation(std::shared_ptr<geometry::Geometry> originalAsset, std::string assetName, file::AssetLibrary::Ptr assets)
 			{
-				std::cout << "	Valid : " << originalAsset->equal(assets->geometry(assetName)) << std::endl;
+				std::cout << "	Valid : " << originalAsset->equals(assets->geometry(assetName)) << std::endl;
 			}
 
 			void
