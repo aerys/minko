@@ -36,9 +36,10 @@ Options::Options(std::shared_ptr<render::AbstractContext> context) :
 	_material(material::Material::create())
 {
 #ifdef DEBUG
-	includePaths().insert("bin/debug");
+	includePaths().push_back("asset");
+	includePaths().push_back("bin/debug");
 #else
-	includePaths().insert("bin/release");
+	includePaths().push_back("bin/release");
 #endif
 
 	_materialFunction = [](const std::string&, material::Material::Ptr material) -> material::Material::Ptr
