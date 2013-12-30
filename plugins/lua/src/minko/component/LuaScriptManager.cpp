@@ -89,7 +89,9 @@ LuaScriptManager::LuaGlobalStub::getKeyboard()
 math::Matrix4x4::Ptr
 LuaScriptManager::LuaGlobalStub::getModelToWorldMatrix(std::shared_ptr<scene::Node> n)
 {
-    return n->data()->get<math::Matrix4x4::Ptr>("transform.modelToWorldMatrix");
+    return n->data()->hasProperty("transform.modelToWorldMatrix")
+        ? n->data()->get<math::Matrix4x4::Ptr>("transform.modelToWorldMatrix")
+        : nullptr;
 }
 
 void
