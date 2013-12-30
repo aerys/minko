@@ -3,7 +3,9 @@ minko.plugin.serializer = {}
 
 function minko.plugin.serializer:enable()
 	minko.plugin.links { "serializer" }
-	includedirs { minko.sdk.path("plugins/serializer/include") }
+	includedirs { 
+		minko.sdk.path("plugins/serializer/include"),
+		minko.sdk.path("plugins/serializer/lib/msgpack-c/include") }
 	defines { "MINKO_PLUGIN_SERIALIZER" }
 end
 
