@@ -26,10 +26,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/AbstractContext.hpp"
 #include "minko/render/Effect.hpp"
 #include "minko/render/Texture.hpp"
-#include "minko/geometry/Geometry.hpp"
-#include "minko/geometry/CubeGeometry.hpp"
-#include "minko/geometry/QuadGeometry.hpp"
-#include "minko/geometry/SphereGeometry.hpp"
+
 #include "minko/component/SceneManager.hpp"
 #include "minko/component/MouseManager.hpp"
 #include "minko/component/Surface.hpp"
@@ -50,6 +47,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/data/LuaContainer.hpp"
 #include "minko/scene/LuaNode.hpp"
 #include "minko/scene/LuaNodeSet.hpp"
+#include "minko/geometry/LuaGeometry.hpp"
 #include "minko/material/LuaMaterial.hpp"
 #include "minko/file/LuaAssetLibrary.hpp"
 #include "minko/input/LuaKeyboard.hpp"
@@ -169,17 +167,6 @@ LuaScriptManager::initializeBindings()
             //.property("width",  &render::Texture::width)
             //.property("height", &render::Texture::height)
         .end()
-        .Class<geometry::Geometry>("Geometry")
-        .end()
-        .Class<geometry::CubeGeometry>("CubeGeometry")
-            .method("create", &geometry::CubeGeometry::create)
-        .end()
-        .Class<geometry::SphereGeometry>("SphereGeometry")
-            .method("create", &geometry::SphereGeometry::create)
-        .end()
-        .Class<geometry::QuadGeometry>("QuadGeometry")
-            .method("create", &geometry::QuadGeometry::create)
-        .end()
         .Class<render::Effect>("Effect")
         .end()
         .Class<Surface>("Surface")
@@ -223,6 +210,7 @@ LuaScriptManager::initializeBindings()
     data::LuaContainer::bind(_state);
     scene::LuaNode::bind(_state);
     scene::LuaNodeSet::bind(_state);
+    geometry::LuaGeometry::bind(_state);
     material::LuaMaterial::bind(_state);
     file::LuaAssetLibrary::bind(_state);
     input::LuaMouse::bind(_state);
