@@ -131,7 +131,7 @@ namespace minko
             getTransformFromAssimp(aiNode* ainode);
 
             void
-            createMeshSurface(NodePtr minkoNode, const aiScene* scene, aiMesh* mesh, std::shared_ptr<AssetLibrary> assets);
+            createMeshSurface(NodePtr minkoNode, const aiScene* scene, aiMesh* mesh);
 
             void
 			createLights(NodePtr minkoRoot, const aiScene* scene);
