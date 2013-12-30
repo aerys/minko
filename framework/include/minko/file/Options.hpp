@@ -46,7 +46,7 @@ namespace minko
 
 		private:
 			std::shared_ptr<render::AbstractContext>	_context;
-			std::set<std::string>						_includePaths;
+			std::list<std::string>						_includePaths;
 			std::list<std::string>						_platforms;
 			std::list<std::string>						_userFlags;
 
@@ -76,7 +76,7 @@ namespace minko
 			{
 				auto opt = std::shared_ptr<Options>(new Options(options->_context));
 
-				opt->_includePaths.insert(options->_includePaths.begin(), options->_includePaths.end());
+				opt->_includePaths = options->_includePaths;
                 opt->_generateMipMaps = options->_generateMipMaps;
                 opt->_effect = options->_effect;
 				opt->_materialFunction = options->_materialFunction;
@@ -95,7 +95,7 @@ namespace minko
 			}
 			
 			inline
-			std::set<std::string>&
+			std::list<std::string>&
 			includePaths()
 			{
 				return _includePaths;
