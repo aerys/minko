@@ -765,7 +765,7 @@ EffectParser::parseUniformDefaultValues(const Json::Value&		contextNode,
 		if (pos > 0)
 		{
 			options = file::Options::create(_options);
-			options->includePaths().insert(_resolvedFilename.substr(0, pos));
+			options->includePaths().push_back(_resolvedFilename.substr(0, pos));
 		}
 
 		uniformTypeAndValue.second.textureValue = _assetLibrary->texture(textureFilename);
@@ -1008,7 +1008,7 @@ EffectParser::parseDependencies(const Json::Value& 		root,
 	if (pos > 0)
 	{
 		options = file::Options::create(options);
-		options->includePaths().insert(filename.substr(0, pos));
+		options->includePaths().push_back(filename.substr(0, pos));
 	}
 
 	if (includes.isArray())
