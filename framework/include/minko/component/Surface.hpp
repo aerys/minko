@@ -33,7 +33,7 @@ namespace minko
 			public AbstractComponent,
 			public std::enable_shared_from_this<Surface>
 		{
-			friend render::DrawCallOrganizer;
+			friend render::DrawCallPool;
 
 		public:
 			typedef std::shared_ptr<Surface>						Ptr;
