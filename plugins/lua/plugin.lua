@@ -27,7 +27,10 @@ function minko.plugin.lua:enable()
 		minko.sdk.path("plugins/lua/lib/lua/include"),
 		minko.sdk.path("plugins/lua/lib/LuaGlue/include"),
 	}
-	defines { "MINKO_PLUGIN_LUA" }
+	defines {
+		"MINKO_PLUGIN_LUA",
+		"LUA_USE_POSIX"
+	}
 
 	configuration { "windows" }
 		postbuildcommands {
