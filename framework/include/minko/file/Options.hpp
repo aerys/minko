@@ -33,12 +33,14 @@ namespace minko
 			typedef std::shared_ptr<AbstractLoader>								AbsLoaderPtr;
 			typedef std::shared_ptr<data::Provider>								ProviderPtr;
 			typedef std::shared_ptr<material::Material>							MaterialPtr;
+			typedef std::shared_ptr<geometry::Geometry>							GeomPtr;
 			typedef std::shared_ptr<scene::Node>								NodePtr;
 			typedef std::shared_ptr<render::Effect>								EffectPtr;
 
 		public:
 			typedef std::shared_ptr<Options>									Ptr;
 			typedef std::function<MaterialPtr(const std::string&, MaterialPtr)> MaterialFunction;
+			typedef std::function<GeomPtr(const std::string&, GeomPtr)> 		GeometryFunction;
 			typedef std::function<AbsLoaderPtr(const std::string&)>				LoaderFunction;
 			typedef std::function<const std::string(const std::string&)>		UriFunction;
 			typedef std::function<NodePtr(NodePtr)>								NodeFunction;
@@ -57,6 +59,7 @@ namespace minko
             std::shared_ptr<render::Effect>             _effect;
 			MaterialPtr									_material;
 			MaterialFunction							_materialFunction;
+			GeometryFunction							_geometryFunction;
 			LoaderFunction								_loaderFunction;
 			UriFunction									_uriFunction;
 			NodeFunction								_nodeFunction;
@@ -80,6 +83,7 @@ namespace minko
                 opt->_generateMipMaps = options->_generateMipMaps;
                 opt->_effect = options->_effect;
 				opt->_materialFunction = options->_materialFunction;
+				opt->_geometryFunction = options->_geometryFunction;
 				opt->_loaderFunction = options->_loaderFunction;
 				opt->_uriFunction = options->_uriFunction;
 				opt->_nodeFunction = options->_nodeFunction;
@@ -200,13 +204,6 @@ namespace minko
 			}
 
 			inline
-			const MaterialFunction&
-			materialFunction() const
-			{
-				return _materialFunction;
-			}
-
-			inline
 			const LoaderFunction&
 			loaderFunction() const
 			{
@@ -215,9 +212,37 @@ namespace minko
 
 			inline
 			void
+			loaderFunction(const LoaderFunction& func)
+			{
+				_loaderFunction = func;
+			}
+
+			inline
+			const MaterialFunction&
+			materialFunction() const
+			{
+				return _materialFunction;
+			}
+
+			inline
+			void
 			materialFunction(const MaterialFunction& func)
 			{
 				_materialFunction = func;
+			}
+
+			inline
+			const GeometryFunction&
+			geometryFunction()
+			{
+				return _geometryFunction;
+			}
+
+			inline
+			void
+			geometryFunction(const GeometryFunction& func)
+			{
+				_geometryFunction = func;
 			}
 
 			inline
