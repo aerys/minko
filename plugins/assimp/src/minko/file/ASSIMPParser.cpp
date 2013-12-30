@@ -166,7 +166,10 @@ ASSIMPParser::parse(const std::string&					filename,
 }
 
 void
-ASSIMPParser::createSceneTree(scene::Node::Ptr minkoNode, const aiScene* scene, aiNode* ainode, std::shared_ptr<AssetLibrary> assets)
+ASSIMPParser::createSceneTree(scene::Node::Ptr 				minkoNode,
+							  const aiScene* 				scene,
+							  aiNode* 						ainode,
+							  std::shared_ptr<AssetLibrary> assets)
 {
 	for (uint i = 0; i < ainode->mNumChildren; i++)
     {
@@ -286,8 +289,11 @@ ASSIMPParser::createMeshGeometry(scene::Node::Ptr minkoNode, aiMesh* mesh)
 	geometry->addVertexBuffer(vertexBuffer);
 	geometry->indices(render::IndexBuffer::create(_assetLibrary->context(), indexData));
 
-	// save the geometry in the assets library
 	const std::string meshName = std::string(mesh->mName.C_Str());
+
+	geometry = _options->geometryFunction()(meshName, geometry);
+
+	// save the geometry in the assets library
 	if (!meshName.empty())
 		_assetLibrary->geometry(meshName, geometry);
 
