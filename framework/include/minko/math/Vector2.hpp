@@ -194,6 +194,16 @@ namespace minko
 				return setTo(_x + (target->_x - _x) * ratio, _y + (target->_y - _y) * ratio);
 			}
 
+			inline
+			Ptr
+			scaleBy(float scale)
+			{
+				_x *= scale;
+				_y *= scale;
+
+				return std::static_pointer_cast<Vector2>(shared_from_this());
+			}
+
 		protected:
 			Vector2(float x, float y) :
 				_x(x),
