@@ -34,22 +34,26 @@ namespace minko
 			void
 			bind(LuaGlue& state)
 			{
-				state.Class<math::Matrix4x4>("Matrix4x4")
-		            .method("create",               static_cast<math::Matrix4x4::Ptr (*)()>(&math::Matrix4x4::create))
-		            .method("lookAt",               &math::Matrix4x4::lookAt)
-		            .method("identity",             &math::Matrix4x4::identity)
-		            .method("appendRotationX",      &math::Matrix4x4::appendRotationX)
-		            .method("appendRotationY",      &math::Matrix4x4::appendRotationY)
-		            .method("appendRotationZ",      &math::Matrix4x4::appendRotationZ)
-		            .method("appendRotation",       &math::Matrix4x4::appendRotation)
-		            .method("appendTranslation",    static_cast<math::Matrix4x4::Ptr (math::Matrix4x4::*)(float, float, float)>(&math::Matrix4x4::appendTranslation))
-		            .method("appendTranslation",    static_cast<math::Matrix4x4::Ptr(math::Matrix4x4::*)(math::Vector3::Ptr)>(&math::Matrix4x4::appendTranslation))
-		            .method("prependRotationX",     &math::Matrix4x4::prependRotationX)
-		            .method("prependRotationY",     &math::Matrix4x4::prependRotationY)
-		            .method("prependRotationZ",     &math::Matrix4x4::prependRotationZ)
-		            .method("prependRotation",      &math::Matrix4x4::prependRotation)
-		            .method("prependTranslation",   static_cast<math::Matrix4x4::Ptr(math::Matrix4x4::*)(float, float, float)>(&math::Matrix4x4::prependTranslation))
-		            .method("prependTranslation",   static_cast<math::Matrix4x4::Ptr(math::Matrix4x4::*)(math::Vector3::Ptr)>(&math::Matrix4x4::prependTranslation));
+				state.Class<Matrix4x4>("Matrix4x4")
+		            .method("create",               static_cast<Matrix4x4::Ptr (*)()>(&Matrix4x4::create))
+		            .method("lookAt",               &Matrix4x4::lookAt)
+		            .method("identity",             &Matrix4x4::identity)
+		            .method("appendUniformScale",	static_cast<Matrix4x4::Ptr (Matrix4x4::*)(float)>(&Matrix4x4::appendScale))
+		            .method("appendScale",			static_cast<Matrix4x4::Ptr (Matrix4x4::*)(float, float, float)>(&Matrix4x4::appendScale))
+		            .method("appendRotationX",      &Matrix4x4::appendRotationX)
+		            .method("appendRotationY",      &Matrix4x4::appendRotationY)
+		            .method("appendRotationZ",      &Matrix4x4::appendRotationZ)
+		            .method("appendRotation",       &Matrix4x4::appendRotation)
+		            .method("appendTranslation",    static_cast<Matrix4x4::Ptr (Matrix4x4::*)(float, float, float)>(&Matrix4x4::appendTranslation))
+		            .method("appendTranslation",    static_cast<Matrix4x4::Ptr(Matrix4x4::*)(Vector3::Ptr)>(&Matrix4x4::appendTranslation))
+		            .method("prependUniformScale",	static_cast<Matrix4x4::Ptr (Matrix4x4::*)(float)>(&Matrix4x4::prependScale))
+		            .method("prependScale",			static_cast<Matrix4x4::Ptr (Matrix4x4::*)(float, float, float)>(&Matrix4x4::prependScale))
+		            .method("prependRotationX",     &Matrix4x4::prependRotationX)
+		            .method("prependRotationY",     &Matrix4x4::prependRotationY)
+		            .method("prependRotationZ",     &Matrix4x4::prependRotationZ)
+		            .method("prependRotation",      &Matrix4x4::prependRotation)
+		            .method("prependTranslation",   static_cast<Matrix4x4::Ptr(Matrix4x4::*)(float, float, float)>(&Matrix4x4::prependTranslation))
+		            .method("prependTranslation",   static_cast<Matrix4x4::Ptr(Matrix4x4::*)(Vector3::Ptr)>(&Matrix4x4::prependTranslation));
 			}
 		};
 	}
