@@ -148,8 +148,8 @@ Geometry::computeNormals()
 		}
 
 		Vector3::Ptr faceNormal = Vector3::create()
-			->copyFrom(xyz[0] - xyz[2])
-			->cross(xyz[0] - xyz[1]);
+			->copyFrom(xyz[0] - xyz[1])
+			->cross(xyz[0] - xyz[2]);
 
  		for (unsigned int k = 0; k < 3; ++k)
 		{
