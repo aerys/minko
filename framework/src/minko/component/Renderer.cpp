@@ -29,7 +29,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/AbstractContext.hpp"
 #include "minko/component/SceneManager.hpp"
 #include "minko/file/AssetLibrary.hpp"
-#include "minko/render/DrawCallOrganizer.hpp"
+#include "minko/render/DrawCallPool.hpp"
 
 using namespace minko;
 using namespace minko::component;
@@ -51,7 +51,7 @@ Renderer::Renderer(std::shared_ptr<render::Effect> effect) :
 void
 Renderer::initialize()
 {
-	_drawCallPool = DrawCallOrganizer::create(shared_from_this());
+	_drawCallPool = DrawCallPool::create(shared_from_this());
 
 	_targetAddedSlot = targetAdded()->connect(std::bind(
 		&Renderer::targetAddedHandler,
