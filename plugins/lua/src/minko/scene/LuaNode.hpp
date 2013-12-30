@@ -37,9 +37,9 @@ namespace minko
 			void
 			bind(LuaGlue& state)
 			{
-				state.Class<std::vector<std::shared_ptr<Node>>>("std__vector_scene__Node__Ptr_")
-					.index(&std::vector<std::shared_ptr<Node>>::at)
-					.method("getSize", &std::vector<std::shared_ptr<Node>>::size);
+				state.Class<std::vector<Node::Ptr>>("std__vector_scene__Node__Ptr_")
+					.method("get",		&LuaNode::getWrapper)
+					.property("size", 	&std::vector<Node::Ptr>::size);
 
 				state.Class<Node>("Node")
 		            //.method("getName",          static_cast<const std::string& (Node::*)(void)>(&Node::name))
@@ -59,10 +59,17 @@ namespace minko
 			}
 
 			static
-			std::vector<std::shared_ptr<Node>>*
+			Node::Ptr
+			getWrapper(std::vector<Node::Ptr>* v, uint index)
+			{
+				return (*v)[index - 1];
+			}
+
+			static
+			std::vector<Node::Ptr>*
 			childrenWrapper(Node::Ptr node)
 			{
-				return const_cast<std::vector<std::shared_ptr<Node>>*>(&(node->children()));
+				return const_cast<std::vector<Node::Ptr>*>(&(node->children()));
 			}
 
 			static
