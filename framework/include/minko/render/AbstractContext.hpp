@@ -289,6 +289,10 @@ namespace minko
 			void
 			readPixels(unsigned char* pixels) = 0;
 
+			virtual
+			void
+			readPixels(unsigned int x, unsigned int y, unsigned int width, unsigned int height, unsigned char* pixels) = 0;
+
             virtual
             void
             setTriangleCulling(TriangleCulling triangleCulling) = 0;
