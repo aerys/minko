@@ -334,6 +334,9 @@ namespace minko
 						   StencilOperation	stencilZPassOp);
 
 			void
+			readPixels(unsigned int x, unsigned int y, unsigned int width, unsigned int height, unsigned char* pixels);
+
+			void
 			readPixels(unsigned char* pixels);
 
             void
