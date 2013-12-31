@@ -77,11 +77,9 @@ namespace minko
 			Ptr
 			create(std::shared_ptr<render::Texture> renderTarget = nullptr, std::shared_ptr<render::Effect> effect= nullptr)
 			{
-				auto ctrl = std::shared_ptr<Renderer>(new Renderer(effect));
+				auto ctrl = std::shared_ptr<Renderer>(new Renderer(renderTarget, effect));
 
 				ctrl->initialize();
-				ctrl->_renderTarget = renderTarget;
-
 				return ctrl;
 			}
 
@@ -89,11 +87,10 @@ namespace minko
 			Ptr
 			create(uint backgroundColor, std::shared_ptr<render::Texture> renderTarget = nullptr, std::shared_ptr<render::Effect> effect= nullptr)
 			{
-				auto ctrl = std::shared_ptr<Renderer>(new Renderer(effect));
+				auto ctrl = std::shared_ptr<Renderer>(new Renderer(renderTarget, effect));
 
 				ctrl->initialize();
 				ctrl->backgroundColor(backgroundColor);
-				ctrl->_renderTarget = renderTarget;
 
 				return ctrl;
 			}
@@ -163,7 +160,7 @@ namespace minko
 			}
 
 		private:
-			Renderer(std::shared_ptr<render::Effect> effect);
+			Renderer(std::shared_ptr<render::Texture> renderTarget, std::shared_ptr<render::Effect> effect);
 
 			void
 			initialize();
