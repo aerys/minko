@@ -38,7 +38,8 @@ using namespace minko::render;
 
 const unsigned int Renderer::NUM_FALLBACK_ATTEMPTS = 32;
 
-Renderer::Renderer(std::shared_ptr<render::Effect> effect) :
+Renderer::Renderer(std::shared_ptr<render::Texture> renderTarget,
+				   std::shared_ptr<render::Effect>	effect) :
     _backgroundColor(0),
 	_renderingBegin(Signal<Ptr>::create()),
 	_renderingEnd(Signal<Ptr>::create()),
@@ -46,6 +47,11 @@ Renderer::Renderer(std::shared_ptr<render::Effect> effect) :
 	_surfaceTechniqueChangedSlot(),
 	_effect(effect)
 {
+	if (renderTarget)
+	{
+		renderTarget->upload();
+		_renderTarget = renderTarget;
+	}
 }
 
 void
