@@ -102,6 +102,7 @@ namespace minko
 		class Renderer;
 		class PerspectiveCamera;
 		class FrustumCulling;
+		class Picking;
 
         class LightManager;
         class AbstractLight;
