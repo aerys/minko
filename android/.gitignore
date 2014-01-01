@@ -1,0 +1,11 @@
+*/bin/
+*/obj/
+*/libs/
+*/gen/
+*/assets/
+.metadata
+*/.*
+
+*/jni/
+
+*/local.properties
