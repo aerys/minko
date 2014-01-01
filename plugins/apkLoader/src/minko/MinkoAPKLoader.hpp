@@ -19,30 +19,4 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #pragma once
 
-#include "minko/Common.hpp"
-#include "minko/file/AbstractLoader.hpp"
-
-namespace minko
-{
-	namespace file
-	{
-		class Loader :
-		    public AbstractLoader
-		{
-		public:
-		    inline static
-            Ptr
-            create()
-            {
-                return std::shared_ptr<Loader>(new Loader());
-            }
-
-			typedef std::shared_ptr<Loader>	Ptr;
-			void
-			load(const std::string& filename, std::shared_ptr<Options> options);
-
-		protected:
-			Loader();
-		};
-	}
-}
+#include "minko/file/APKLoader.hpp"
