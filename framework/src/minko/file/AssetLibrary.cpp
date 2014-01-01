@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/AssetLibrary.hpp"
 
 #include "minko/scene/Node.hpp"
-#include "minko/file/Loader.hpp"
+#include "minko/file/AbstractLoader.hpp"
 #include "minko/file/Options.hpp"
 #include "minko/file/AbstractParser.hpp"
 #include "minko/file/EffectParser.hpp"
