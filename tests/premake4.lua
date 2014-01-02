@@ -9,6 +9,8 @@ minko.project.application "minko-tests"
 	}
 	includedirs { "src" }
 
+	defines { "MINKO_TESTS" }
+
 	-- plugins
 	minko.plugin.enable("sdl");
 
