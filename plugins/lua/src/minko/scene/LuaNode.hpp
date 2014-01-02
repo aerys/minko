@@ -53,6 +53,7 @@ namespace minko
 		            .method("removeComponent",  &Node::removeComponent)
 		            .method("getChildren",		&LuaNode::childrenWrapper)
 		            .method("getBoundingBox",	&LuaNode::getBoundingBoxWrapper)
+		            .method("getTransform",		&LuaNode::getTransformWrapper)
 		            .property("data",           &Node::data)
 		            .property("root",           &Node::root);
 		            //.property("name",			&Node::name, &Node::name);
@@ -77,6 +78,13 @@ namespace minko
 			getBoundingBoxWrapper(Node::Ptr node)
 			{
 				return node->component<component::BoundingBox>();
+			}
+
+			static
+			std::shared_ptr<component::Transform>
+			getTransformWrapper(Node::Ptr node)
+			{
+				return node->component<component::Transform>();
 			}
 		};
 	}
