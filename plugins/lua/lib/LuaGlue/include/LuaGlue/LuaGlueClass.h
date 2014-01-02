@@ -99,7 +99,7 @@ class LuaGlueClass : public LuaGlueClassBase
 		void invokeVoidMethod(const std::string &name, _Class *obj, _Args... args)
 		{
 			const unsigned int Arg_Count_ = sizeof...(_Args);
-			
+
 			// note, there is no direct support for overridden methods. each method registered with LuaGlue
 			//  must have a different "name" when registered.
 			
@@ -116,6 +116,7 @@ class LuaGlueClass : public LuaGlueClassBase
 			
 			lua_call(luaGlue_->state(), Arg_Count_+1, 0);
 			//lua_pop(luaGlue_->state(), 1);
+			lua_remove(luaGlue_->state(), -1);
 		}
 		
 		LuaGlueClass<_Class> &pushInstance(_Class *obj)
