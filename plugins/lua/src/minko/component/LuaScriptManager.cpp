@@ -54,6 +54,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/input/LuaMouse.hpp"
 #include "minko/LuaAbstractCanvas.hpp"
 #include "minko/component/LuaPerspectiveCamera.hpp"
+#include "minko/component/LuaTransform.hpp"
 
 using namespace minko;
 using namespace minko::component;
@@ -83,14 +84,6 @@ input::Keyboard::Ptr
 LuaScriptManager::LuaGlobalStub::getKeyboard()
 {
 	return _canvas->keyboard();
-}
-
-math::Matrix4x4::Ptr
-LuaScriptManager::LuaGlobalStub::getModelToWorldMatrix(std::shared_ptr<scene::Node> n)
-{
-    return n->data()->hasProperty("transform.modelToWorldMatrix")
-        ? n->data()->get<math::Matrix4x4::Ptr>("transform.modelToWorldMatrix")
-        : nullptr;
 }
 
 void
@@ -179,10 +172,6 @@ LuaScriptManager::initializeBindings()
         .Class<BoundingBox>("BoundingBox")
             .property("box",    &BoundingBox::box)
         .end()
-        .Class<Transform>("Transform")
-            .method("create",           static_cast<Transform::Ptr (*)(void)>(&Transform::create))
-            .method("createFromMatrix", static_cast<Transform::Ptr (*)(math::Matrix4x4::Ptr)>(&Transform::create))
-        .end()
         .Class<Renderer>("Renderer")
             .method("create",               static_cast<Renderer::Ptr (*)(void)>(&Renderer::create))
             .property("backgroundColor",    &Renderer::backgroundColor, &Renderer::backgroundColor)
@@ -211,15 +200,16 @@ LuaScriptManager::initializeBindings()
     math::LuaBox::bind(_state);
     data::LuaProvider::bind(_state);
     data::LuaContainer::bind(_state);
-    scene::LuaNode::bind(_state);
-    scene::LuaNodeSet::bind(_state);
     geometry::LuaGeometry::bind(_state);
     material::LuaMaterial::bind(_state);
     file::LuaAssetLibrary::bind(_state);
     input::LuaMouse::bind(_state);
     input::LuaKeyboard::bind(_state);
-    component::LuaPerspectiveCamera::bind(_state);
     LuaAbstractCanvas::bind(_state);
+    component::LuaPerspectiveCamera::bind(_state);
+    component::LuaTransform::bind(_state);
+    scene::LuaNode::bind(_state);
+    scene::LuaNodeSet::bind(_state);
 
     auto& sceneManager = _state.Class<SceneManager>("SceneManager")
         .property("assets",     &SceneManager::assets);
@@ -230,8 +220,7 @@ LuaScriptManager::initializeBindings()
         .func("getCanvas",              &LuaGlobalStub::getCanvas)
         .func("getMouse",               &LuaGlobalStub::getMouse)
         .func("getKeyboard",            &LuaGlobalStub::getKeyboard)
-        .func("getSceneManager",        &LuaGlobalStub::getSceneManager)
-        .func("getModelToWorldMatrix",  &LuaGlobalStub::getModelToWorldMatrix);
+        .func("getSceneManager",        &LuaGlobalStub::getSceneManager);
 
     _state.open().glue();
 }
