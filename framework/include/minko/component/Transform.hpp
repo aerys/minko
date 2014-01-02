@@ -118,7 +118,14 @@ namespace minko
 
 			inline
 			std::shared_ptr<math::Matrix4x4>
-			modelToWorldMatrix(bool forceUpdate = false)
+			modelToWorldMatrix()
+			{
+				return modelToWorldMatrix(false);
+			}
+
+			inline
+			std::shared_ptr<math::Matrix4x4>
+			modelToWorldMatrix(bool forceUpdate)
 			{
 				if (forceUpdate)
 				{
@@ -146,7 +153,11 @@ namespace minko
 			void
 			addedOrRemovedHandler(NodePtr node, NodePtr target, NodePtr ancestor);
 
+#ifdef MINKO_TESTS
+		public:
+#else
 		private:
+#endif // MINKO_TESTS
 			class RootTransform :
 				public std::enable_shared_from_this<RootTransform>,
 				public AbstractComponent
@@ -155,8 +166,8 @@ namespace minko
 				typedef std::shared_ptr<RootTransform> Ptr;
 
 			private:
-				typedef std::shared_ptr<Renderer>	RendererCtrlPtr;
-				typedef Signal<RendererCtrlPtr>::Slot 			EnterFrameCallback;
+				typedef std::shared_ptr<Renderer>		RendererCtrlPtr;
+				typedef Signal<RendererCtrlPtr>::Slot 	EnterFrameCallback;
 
 			public:
 				inline static
