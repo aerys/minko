@@ -36,7 +36,6 @@ Options::Options(std::shared_ptr<render::AbstractContext> context) :
 	_material(material::Material::create())
 {
 #ifdef DEBUG
-	includePaths().push_back("asset");
 	includePaths().push_back("bin/debug");
 #else
 	includePaths().push_back("bin/release");
