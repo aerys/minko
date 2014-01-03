@@ -161,7 +161,7 @@ class emscripten {
         require => Exec["wget-clang-llvm"]
     }
 
-    exec { "/usr/bin/rsync --delete --ignore-errors -l -t -p -c -r --filter=':- .gitignore' /vagrant/ ${MINKO_HOME}":
+    exec { "/usr/bin/rsync --delete --ignore-errors -l -p -c -r --filter=':- .gitignore' /vagrant/ ${MINKO_HOME}":
         alias => "copy-repository",
         cwd => "/home/vagrant/src",
         environment => ["PWD=/home/vagrant/src", "HOME=/home/vagrant"]
