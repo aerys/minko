@@ -27,7 +27,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	class LuaAbstractCanvas
+	class LuaAbstractCanvas :
+		public LuaWrapper
 	{
 	public:
 		static
