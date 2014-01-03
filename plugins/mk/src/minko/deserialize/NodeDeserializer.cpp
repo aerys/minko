@@ -43,7 +43,6 @@ NodeDeserializer::extractName(NodeInfo& nodeInfo)
 shared_ptr<scene::Node>
 NodeDeserializer::deserializeGroup(NodeInfo&		nodeInfo,
 								   OptionsPtr		options,
-								   ControllerMap&	controllerMap,
 								   NodeMap&			nodeMap)
 {
 	shared_ptr<scene::Node>		group			= scene::Node::create(extractName(nodeInfo));
@@ -58,7 +57,6 @@ NodeDeserializer::deserializeGroup(NodeInfo&		nodeInfo,
 shared_ptr<scene::Node>
 NodeDeserializer::deserializeMesh(NodeInfo&			nodeInfo,
 								  OptionsPtr		options,
-								  ControllerMap&	controllerMap,
 								  NodeMap&			nodeMap)
 {
 	shared_ptr<scene::Node>		mesh			= scene::Node::create(extractName(nodeInfo));
@@ -121,7 +119,6 @@ NodeDeserializer::deserializeMesh(NodeInfo&			nodeInfo,
 shared_ptr<scene::Node>
 NodeDeserializer::deserializeLight(NodeInfo&		nodeInfo,
 								   OptionsPtr		options,
-								   ControllerMap&	controllerMap,
 								   NodeMap&			nodeMap)
 {
 	shared_ptr<scene::Node> light = scene::Node::create(extractName(nodeInfo));
@@ -134,7 +131,6 @@ NodeDeserializer::deserializeLight(NodeInfo&		nodeInfo,
 shared_ptr<scene::Node>
 NodeDeserializer::deserializeCamera(NodeInfo&		nodeInfo,
 									OptionsPtr	    options,
-									ControllerMap&	controllerMap,
 									NodeMap&		nodeMap)
 {
 	shared_ptr<scene::Node>		camera			= scene::Node::create(extractName(nodeInfo));
