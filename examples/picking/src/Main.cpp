@@ -37,6 +37,7 @@ int main(int argc, char** argv)
 	sceneManager->assets()
 		->registerParser<file::PNGParser>("png")
 		->queue("effect/Basic.effect")
+		->queue("effect/Red.effect")
 		->queue("effect/Picking.effect");
 
 	sceneManager->assets()
@@ -62,7 +63,7 @@ int main(int argc, char** argv)
 				assets->material("redMaterial"),
 				assets->effect("effect/Basic.effect")))
 			->addComponent(Transform::create(Matrix4x4::create()->appendTranslation(Vector3::create(-1.4f))));
-
+			
 		auto sphere = scene::Node::create("sphereNode")
 			->addComponent(Surface::create(
 				assets->geometry("sphere"),
@@ -76,7 +77,7 @@ int main(int argc, char** argv)
 				assets->material("blueMaterial"),
 				assets->effect("effect/Basic.effect")))
 			->addComponent(Transform::create(Matrix4x4::create()->appendTranslation(Vector3::create(1.4f))));
-
+			
 		auto camera = scene::Node::create("camera")
 			->addComponent(Transform::create(
 				Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 4.f))
@@ -88,8 +89,28 @@ int main(int argc, char** argv)
 			->addChild(sphere)
 			->addChild(teapot);
 
-		root->addComponent(Picking::create(sceneManager, canvas->mouse(), camera));
+		root->addComponent(Picking::create(sceneManager, canvas, camera));
 		camera->addComponent(Renderer::create(0x7f7f7fff));
+
+		auto pickingMouseClick = root->component<Picking>()->mouseClick()->connect([&](scene::Node::Ptr node)
+		{
+			std::cout << "Click : " << node->name() << std::endl;
+		});
+
+		auto pickingMouseRightClick = root->component<Picking>()->mouseRightClick()->connect([&](scene::Node::Ptr node)
+		{
+			std::cout << "Right Click : " << node->name() << std::endl;
+		});
+
+		auto pickingMouseOver = root->component<Picking>()->mouseOver()->connect([&](scene::Node::Ptr node)
+		{
+			std::cout << "Over : " << node->name() << std::endl;
+		});
+
+		auto pickingMouseOut = root->component<Picking>()->mouseOut()->connect([&](scene::Node::Ptr node)
+		{
+			std::cout << "Out : " << node->name() << std::endl;
+		});
 
 		auto resized = canvas->resized()->connect([&](Canvas::Ptr canvas, uint w, uint h)
 		{
