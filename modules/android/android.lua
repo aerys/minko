@@ -55,3 +55,9 @@ require 'jni'
 require 'jni_cpp'
 require 'jni_solution'
 require 'jni_makefile'
+
+if os.getenv('ANDROID_HOME') then
+	ANDROID_HOME = os.getenv('ANDROID_HOME');
+else
+	print(color.fg.yellow .. 'You must define the environment variable ANDROID_HOME to be able to target Android.' .. color.reset)
+end
