@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 
-#include "minko/input/Mouse.hpp"
+#include "minko/input/Joystick.hpp"
 
 #include "minko/LuaWrapper.hpp"
 
@@ -29,7 +29,7 @@ namespace minko
 {
 	namespace input
 	{
-		class LuaMouse :
+		class LuaJoystick :
 			public LuaWrapper
 		{
 		public:
@@ -37,18 +37,16 @@ namespace minko
 			void
 			bind(LuaGlue& state)
 			{
-			    auto& input_mouse = state.Class<input::Mouse>("Mouse")
-			        .property("x",                  &input::Mouse::x)
-			        .property("y",                  &input::Mouse::y)
-			        .property("leftButtonIsDown",   &input::Mouse::leftButtonIsDown)
-			        .property("rightButtonIsDown",  &input::Mouse::rightButtonIsDown);
-			    MINKO_LUAGLUE_BIND_SIGNAL(state, input::Mouse::Ptr);
-			    MINKO_LUAGLUE_BIND_SIGNAL(state, input::Mouse::Ptr, int, int);
-			    input_mouse
-			        .property("leftButtonDown",     &input::Mouse::leftButtonDown)
-			        .property("rightButtonDown",    &input::Mouse::rightButtonDown)
-			        .property("move",               &input::Mouse::move)
-			        .property("wheel",				&input::Mouse::wheel);
+				auto& inputJoystick = state.Class<Joystick>("Joystick");
+
+				MINKO_LUAGLUE_BIND_SIGNAL(state, Joystick::Ptr, int, int, int);
+				MINKO_LUAGLUE_BIND_SIGNAL(state, Joystick::Ptr, int, int);
+
+				inputJoystick
+					.property("joystickAxisMotion", &Joystick::joystickAxisMotion)
+					.property("joystickHatMotion",	&Joystick::joystickHatMotion)
+					.property("joystickButtonDown", &Joystick::joystickButtonDown)
+					.property("joystickButtonUp",	&Joystick::joystickButtonUp);
 			}
 		};
 	}

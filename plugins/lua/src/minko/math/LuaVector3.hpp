@@ -29,7 +29,8 @@ namespace minko
 {
 	namespace math
 	{
-		class LuaVector3
+		class LuaVector3 :
+			public LuaWrapper
 		{
 		public:
 			static
