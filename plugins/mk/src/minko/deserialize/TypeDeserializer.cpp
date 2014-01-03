@@ -231,8 +231,6 @@ TypeDeserializer::provider(data::Provider::Ptr					defaultValues,
 		std::string&	propertyName	= Any::cast<std::string&>(property["name"]);
 		int&			type			= Any::cast<int&>(propertyValue["type"]);
 
-		std::cout << propertyName << std::endl;
-
 		if (_typeToReadFunc.find(type) != _typeToReadFunc.end())
 		{
 			_typeToReadFunc[type](idToTexture, propertyName, material, propertyValue, nameConverter);
