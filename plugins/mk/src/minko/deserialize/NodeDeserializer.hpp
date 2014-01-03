@@ -39,28 +39,24 @@ namespace minko
 			std::shared_ptr<scene::Node>
 			deserializeGroup(NodeInfo&		nodeInfo,
 							 OptionsPtr		options,
-							 ControllerMap&	controllerMap,
 							 NodeMap&		nodeMap);
 
 			static
 			std::shared_ptr<scene::Node>
 			deserializeMesh(NodeInfo&		nodeInfo,
 							OptionsPtr		options,
-							ControllerMap&	controllerMap,
 							NodeMap&		nodeMap);
 
 			static
 			std::shared_ptr<scene::Node>
 			deserializeLight(NodeInfo&		nodeInfo,
 							 OptionsPtr		options,
-							 ControllerMap&	controllerMap,
 							 NodeMap&		nodeMap);
 
 			static
 			std::shared_ptr<scene::Node>
 			deserializeCamera(NodeInfo&		    nodeInfo,
 							  OptionsPtr	    options,
-							  ControllerMap&	controllerMap,
 							  NodeMap&		    nodeMap);
 		};
 	}
