@@ -114,6 +114,8 @@ GeometryDeserializer::readIndexStream(std::stringstream&				stream,
 
 	stream.read(reinterpret_cast<char*>(&*data.begin()), numIndices * 2);
 
+	std::reverse(data.begin(), data.end());
+
 	return render::IndexBuffer::create(options->context(), data);
 }
 
