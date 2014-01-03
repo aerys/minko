@@ -62,7 +62,6 @@ project "minko-framework"
 
 	-- html5
 	configuration { "html5" }
-		optimize "On"
 
 	newoption {
 		trigger     = "with-glsl-optimizer",
