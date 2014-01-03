@@ -25,7 +25,8 @@ for ARG in "$@"; do
 	fi
 done
 
-EXPECTED_ORDER="webgl sdl framework"
+#EXPECTED_ORDER="webgl sdl framework"
+EXPECTED_ORDER="sdl webgl framework"
 
 NEW_STATIC_LIBS=""
 
