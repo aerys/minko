@@ -14,6 +14,9 @@
 template<typename _Ret, typename... _Args>
 class LuaGlueFunction : public LuaGlueFunctionBase
 {
+	private:
+		typedef std::tuple<typename std::remove_const<typename std::remove_reference<_Args>::type>::type...> ArgsTuple;
+
 	public:
 		typedef _Ret ReturnType;
 		typedef _Ret (*MethodType)( _Args... );
@@ -39,7 +42,7 @@ class LuaGlueFunction : public LuaGlueFunctionBase
 		LuaGlueBase *g;
 		std::string name_;
 		MethodType fn_;
-		std::tuple<_Args...> args;
+		ArgsTuple args;
 		static const unsigned int Arg_Count_ = sizeof...(_Args);
 		
 		int invoke(lua_State *state)
@@ -60,6 +63,9 @@ class LuaGlueFunction : public LuaGlueFunctionBase
 template<typename... _Args>
 class LuaGlueFunction<void, _Args...> : public LuaGlueFunctionBase
 {
+	private:
+		typedef std::tuple<typename std::remove_const<typename std::remove_reference<_Args>::type>::type...> ArgsTuple;
+
 	public:
 		typedef void ReturnType;
 		typedef void (*MethodType)( _Args... );
@@ -85,7 +91,7 @@ class LuaGlueFunction<void, _Args...> : public LuaGlueFunctionBase
 		LuaGlueBase *g;
 		std::string name_;
 		MethodType fn_;
-		std::tuple<_Args...> args;
+		ArgsTuple args;
 		static const unsigned int Arg_Count_ = sizeof...(_Args);
 		
 		int invoke(lua_State *state)
