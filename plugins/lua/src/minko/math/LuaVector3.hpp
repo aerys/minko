@@ -42,8 +42,6 @@ namespace minko
 		            .method("setTo",	&Vector3::setTo)
 		            .method("copyFrom",	static_cast<Vector3::Ptr (Vector3::*)(Vector3::Ptr)>(&Vector3::copyFrom))
 		            .method("scaleBy",	&Vector3::scaleBy)
-		            .method("max",     	&Vector3::min)
-		            .method("min",     	&Vector3::max)
 		            .method("zero",     &Vector3::zero)
 		            .method("one",      &Vector3::one)
 		            .method("up",       &Vector3::up)
@@ -51,6 +49,8 @@ namespace minko
 		            .method("xAxis",    &Vector3::xAxis)
 		            .method("yAxis",    &Vector3::yAxis)
 		            .method("zAxis",    &Vector3::zAxis)
+		            .method("max",     	&Vector3::min)
+		            .method("min",     	&Vector3::max)
 		            .property("x",      static_cast<float (Vector3::*)(void)>(&Vector3::x), static_cast<void (Vector3::*)(float)>(&Vector3::x))
 		            .property("y",      static_cast<float (Vector3::*)(void)>(&Vector3::y), static_cast<void (Vector3::*)(float)>(&Vector3::y))
 		            .property("z",      static_cast<float (Vector3::*)(void)>(&Vector3::z), static_cast<void (Vector3::*)(float)>(&Vector3::z));
