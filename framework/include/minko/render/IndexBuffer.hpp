@@ -28,7 +28,8 @@ namespace minko
 	namespace render
 	{
 		class IndexBuffer :
-			public AbstractResource
+			public AbstractResource,
+			public Convertible<IndexBuffer>
 		{
 		public:
 			typedef std::shared_ptr<IndexBuffer>	Ptr;
@@ -85,6 +86,11 @@ namespace minko
 			void
 			dispose();
 
+			bool
+			equals(std::shared_ptr<IndexBuffer> indexBuffer)
+			{
+				return _data == indexBuffer->_data;
+			}
 		protected:
 			IndexBuffer(std::shared_ptr<render::AbstractContext> context) :
 				AbstractResource(context)

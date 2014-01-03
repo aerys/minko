@@ -19,6 +19,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/file/AssetLibrary.hpp"
 
+#include "minko/material/Material.hpp"
 #include "minko/scene/Node.hpp"
 #include "minko/file/Loader.hpp"
 #include "minko/file/Options.hpp"
@@ -64,6 +65,18 @@ AssetLibrary::geometry(const std::string& name, std::shared_ptr<Geometry> geomet
 	return shared_from_this();
 }
 
+const std::string&
+AssetLibrary::geometry(GeometryPtr geometry)
+{
+	for (auto it = _geometries.begin(); it != _geometries.end(); ++it)
+	{
+		if (it->second == geometry)
+			return it->first;
+	}
+
+	return nullptr;
+}
+
 render::Texture::Ptr
 AssetLibrary::texture(const std::string& name)
 {
@@ -76,6 +89,18 @@ AssetLibrary::texture(const std::string& name, render::Texture::Ptr texture)
 	_textures[name] = texture;
 
 	return shared_from_this();
+}
+
+const std::string&
+AssetLibrary::texture(TexturePtr texture)
+{
+	for (auto it = _textures.begin(); it != _textures.end(); ++it)
+	{
+		if (it->second == texture)
+			return it->first;
+	}
+
+	return nullptr;
 }
 
 scene::Node::Ptr
@@ -92,6 +117,51 @@ AssetLibrary::symbol(const std::string& name, scene::Node::Ptr node)
 	return shared_from_this();
 }
 
+const std::string&
+AssetLibrary::node(NodePtr node)
+{
+	for (auto it = _nodes.begin(); it != _nodes.end(); ++it)
+	{
+		if (it->second == node)
+			return it->first;
+	}
+
+	return nullptr;
+}
+
+material::Material::Ptr
+AssetLibrary::material(const std::string& name)
+{
+	return _materials.count(name) ? std::dynamic_pointer_cast<material::Material>(_materials[name]) : nullptr;
+}
+
+AssetLibrary::Ptr
+AssetLibrary::material(const std::string& name, MaterialPtr material)
+{
+	material::Material::Ptr mat = std::dynamic_pointer_cast<material::Material>(material);
+
+#ifdef DEBUG
+	if (mat == nullptr)
+		throw std::invalid_argument("material");
+#endif
+
+	_materials[name] = material;
+
+	return shared_from_this();
+}
+
+const std::string&
+AssetLibrary::material(MaterialPtr material)
+{
+	for (auto it = _materials.begin(); it != _materials.end(); ++it)
+	{
+		if (it->second == material)
+			return it->first;
+	}
+
+	return nullptr;
+}
+
 AssetLibrary::EffectPtr
 AssetLibrary::effect(const std::string& name)
 {
@@ -104,6 +174,18 @@ AssetLibrary::effect(const std::string& name, std::shared_ptr<Effect> effect)
 	_effects[name] = effect;
 
 	return shared_from_this();
+}
+
+const std::string&
+AssetLibrary::effect(EffectPtr effect)
+{
+	for (auto it = _effects.begin(); it != _effects.end(); ++it)
+	{
+		if (it->second == effect && it->first.find(".") !=std::string::npos)
+			return it->first;
+	}
+
+	return nullptr;
 }
 
 const std::vector<unsigned char>&

@@ -181,7 +181,6 @@ deserializeShape(Qark::Map&         shapeData,
 
 std::shared_ptr<bullet::Collider>
 deserializeBullet(Qark::Map&                        nodeInformation,
-                  file::MkParser::ControllerMap&    controllerMap,
                   file::MkParser::NodeMap&          nodeMap,
                   scene::Node::Ptr&                 node)
 {
@@ -354,8 +353,7 @@ main(int argc, char** argv)
 	        deserializeBullet,
 	        std::placeholders::_1,
 	        std::placeholders::_2,
-	        std::placeholders::_3,
-	        std::placeholders::_4
+	        std::placeholders::_3
 	    )
 	);
 

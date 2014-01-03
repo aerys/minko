@@ -204,6 +204,9 @@ namespace minko
 			Ptr
 			removeChild(Ptr Node);
 
+			Ptr
+			removeChildren();
+
 			bool
 			contains(Ptr Node);
 

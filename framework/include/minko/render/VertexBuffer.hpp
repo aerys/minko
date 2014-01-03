@@ -156,6 +156,12 @@ namespace minko
 			AttributePtr
 			attribute(const std::string& attributeName);
 
+			bool
+			equals(std::shared_ptr<VertexBuffer> vertexBuffer)
+			{
+				return _data == vertexBuffer->_data;
+			}
+
 		protected:
 			VertexBuffer(std::shared_ptr<render::AbstractContext> context);
 

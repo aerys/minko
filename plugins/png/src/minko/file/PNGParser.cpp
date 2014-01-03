@@ -40,7 +40,7 @@ PNGParser::parse(const std::string&                 filename,
 
 	lodepng::decode(out, width, height, &data[0], data.size());
 
-	auto texture = render::Texture::create(options->context(), width, height, options->generateMipmaps(), false, options->resizeSmoothly());
+	auto texture = render::Texture::create(options->context(), width, height, options->generateMipmaps(), false, options->resizeSmoothly(), filename);
 
 	texture->data(&out[0]);
 	texture->upload();
