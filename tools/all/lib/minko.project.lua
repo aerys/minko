@@ -22,6 +22,9 @@ minko.project.library = function(name)
 	
 	configuration { "linux" }
 		includedirs { minko.sdk.path("/deps/lin/include") }
+
+	configuration { "html5" }
+		optimize "On"
 		
 	configuration { }
 end
