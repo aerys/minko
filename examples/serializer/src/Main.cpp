@@ -130,6 +130,23 @@ unitTest(std::shared_ptr<file::AssetLibrary> assets, std::shared_ptr<render::Abs
 		assets->material("boxMaterial"));*/
 }
 
+void
+serializeSceneExample(std::shared_ptr<file::AssetLibrary>		assets,
+					  std::shared_ptr<scene::Node>				root,
+					  std::shared_ptr<render::AbstractContext>	context)
+{
+	std::shared_ptr<file::SceneWriter> sceneWriter = file::SceneWriter::create();
+	sceneWriter->data(root);
+	sceneWriter->write("subScene.scene", assets, file::Options::create(context));
+}
+
+void
+openSceneExample(std::shared_ptr<file::AssetLibrary>	assets, 
+				 std::shared_ptr<scene::Node>			root)
+{
+	root->addChild(assets->node("test9/NewScene.scene"));
+}
+
 int loaded = 0;
 
 int main(int argc, char** argv)
@@ -144,6 +161,7 @@ int main(int argc, char** argv)
 		->registerParser<file::PNGParser>("png")
 		->registerParser<file::SceneParser>("scene")
 		->queue("texture/box.png")
+		->queue("test9/NewScene.scene")
 		//->queue("subScene.scene");
 		->queue("effect/Basic.effect");
 
@@ -197,17 +215,15 @@ int main(int argc, char** argv)
 		auto root = scene::Node::create("root")
 			->addComponent(sceneManager);
 
-		root->addChild(mesh);
-		root->addChild(mesh2);
-		root->addChild(mesh3);
+		//root->addChild(mesh);
+		//root->addChild(mesh2);
+		//root->addChild(mesh3);
 		
 		mesh2->component<Transform>()->transform()->appendTranslation(0, 1, 0);
 		mesh3->component<Transform>()->transform()->appendTranslation(0, -1, 0);
 		
 		unitTest(assets, canvas->context());
 		
-		//assets->load("subScene.scene");
-
 		auto camera = scene::Node::create("camera")
 			->addComponent(Renderer::create(0x7f7f7fff))
 			->addComponent(Transform::create(
@@ -216,8 +232,6 @@ int main(int argc, char** argv)
 			->addComponent(PerspectiveCamera::create(800.f / 600.f, (float)PI * 0.25f, .1f, 1000.f));
 		root->addChild(camera);
 
-		//root->addChild(assets->node("subScene.scene"));
-		
 		auto resized = canvas->resized()->connect([&](Canvas::Ptr canvas, uint w, uint h)
 		{
 			root->children()[0]->children()[0]->component<PerspectiveCamera>()->aspectRatio((float)w / (float)h);
@@ -232,9 +246,8 @@ int main(int argc, char** argv)
 
 			if (frameId == 3)
 			{
-				std::shared_ptr<file::SceneWriter> sceneWriter = file::SceneWriter::create();
-				sceneWriter->data(root);
-				sceneWriter->write("subScene.scene", assets, file::Options::create(canvas->context()));
+				//serializeSceneExample(assets, root, canvas->context());
+				openSceneExample(assets, root);
 			}
 		});
 
