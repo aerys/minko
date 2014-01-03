@@ -30,7 +30,8 @@ namespace minko
 {
 	namespace component
 	{
-		class LuaTransform
+		class LuaTransform :
+			public LuaWrapper
 		{
 		public:
 			static
