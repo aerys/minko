@@ -7,6 +7,10 @@
 
 #include "LuaGlue/LuaGlueCompat.h"
 
+#pragma warning(push)
+// strcpy is considered as deprecated/unsafe by MSVC
+#pragma warning(disable: 4996)
+
 // NOTE: hashing algorithm used is FNV-1a
 
 // FNV-1a constants
@@ -52,7 +56,7 @@ class LuaGlueSymTab
 			T ptr; int idx;
 			
 			Symbol(const char *n = nullptr, const char *tn = nullptr, T p = nullptr, int i = -1)
-				: name(n), typeid_name(tn), ptr(p), idx(i)
+				: name(n ? strcpy(new char[strlen(n)], n) : nullptr), typeid_name(tn), ptr(p), idx(i)
 			{
 				//printf("new Symbol(\"%s\", \"%s\", %p, %i)\n", n, tn, p, idx);
 			}
@@ -62,8 +66,11 @@ class LuaGlueSymTab
 		LuaGlueSymTab() { }
 		~LuaGlueSymTab()
 		{
-			for(auto &i: items)
+			for (auto &i : items)
+			{
+				delete i.name;
 				delete i.ptr;
+			}
 		}
 		
 		template<class C>
@@ -182,5 +189,7 @@ class LuaGlueSymTab
 
 template<typename T>
 const typename LuaGlueSymTab<T>::Symbol LuaGlueSymTab<T>::nullSymbol;
+
+#pragma warning(pop)
 
 #endif /* LUAGLUE_SYMTAB_H_GUARD */
