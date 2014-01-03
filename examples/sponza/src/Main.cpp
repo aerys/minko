@@ -34,8 +34,8 @@ using namespace minko;
 using namespace minko::component;
 using namespace minko::math;
 
-const float WINDOW_WIDTH        = 1600.0f;
-const float WINDOW_HEIGHT       = 800.0f;
+const float WINDOW_WIDTH        = 1600;
+const float WINDOW_HEIGHT       = 800;
 
 const std::string MK_NAME           = "model/Sponza_lite_sphere.mk";
 const std::string DEFAULT_EFFECT    = "effect/Phong.effect";
@@ -330,7 +330,7 @@ printFramerate(const unsigned int delay = 1)
 	static auto start = time(NULL);
 	static auto numFrames = 0;
 
-	int secondTime = time(NULL);
+	auto secondTime = time(NULL);
 
 	++numFrames;
 

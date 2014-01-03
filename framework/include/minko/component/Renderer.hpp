@@ -76,9 +76,9 @@ namespace minko
 		public:
 			inline static
 			Ptr
-			create(std::shared_ptr<render::Texture> renderTarget = nullptr, std::shared_ptr<render::Effect> effect= nullptr)
+			create()
 			{
-				auto ctrl = std::shared_ptr<Renderer>(new Renderer(renderTarget, effect));
+				auto ctrl = std::shared_ptr<Renderer>(new Renderer());
 
 				ctrl->initialize();
 				return ctrl;
@@ -168,7 +168,7 @@ namespace minko
 			}
 
 		private:
-			Renderer(std::shared_ptr<render::Texture> renderTarget, std::shared_ptr<render::Effect> effect);
+			Renderer(std::shared_ptr<render::Texture> renderTarget = nullptr, std::shared_ptr<render::Effect> effect = nullptr);
 
 			void
 			initialize();
