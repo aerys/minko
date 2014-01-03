@@ -29,7 +29,8 @@ namespace minko
 {
 	namespace input
 	{
-		class LuaKeyboard
+		class LuaKeyboard :
+			public LuaWrapper
 		{
 		public:
 			static

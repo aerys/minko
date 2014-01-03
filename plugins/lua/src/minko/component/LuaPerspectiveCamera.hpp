@@ -29,7 +29,8 @@ namespace minko
 {
 	namespace component
 	{
-		class LuaPerspectiveCamera
+		class LuaPerspectiveCamera :
+			public LuaWrapper
 		{
 		public:
 			static
