@@ -14,10 +14,14 @@
     },
     
     "uniformBindings"   : {
+        "pickingColor"          : "picking.color",
         "modelToWorldMatrix"    : "transform.modelToWorldMatrix",
-        "worldToScreenMatrix"   : { "property" : "camera.worldToScreenMatrix",      "source" : "renderer" },
-		"boneMatrices"			: { "property" : "geometry.boneMatrices",			"source" : "target" },
-		"numBones"				: { "property" : "geometry.numBones",				"source" : "target" }
+        "worldToViewMatrix"     : { "property" : "camera.viewMatrix",           "source" : "renderer"},
+        "worldToScreenMatrix"   : { "property" : "camera.worldToScreenMatrix",  "source" : "renderer" },
+        "pickingProjection"     : { "property" : "picking.projection",          "source" : "renderer"},
+        "cameraProjection"      : { "property" : "camera.projectionMatrix",     "source" : "renderer"},
+		"boneMatrices"			: { "property" : "geometry.boneMatrices",		"source" : "target" },
+		"numBones"				: { "property" : "geometry.numBones",			"source" : "target" }
     },
     
     "stateBindings" : {
@@ -50,7 +54,7 @@
     
 	"techniques" : [{
 		"passes"    : [{
-			"includes" : [ "Skinning.function.glsl", "Basic.vertex.glsl", "Picking.fragment.glsl" ]
+			"includes" : [ "Skinning.function.glsl", "Picking.vertex.glsl", "Picking.fragment.glsl" ]
 		}]
 	}]
 }
