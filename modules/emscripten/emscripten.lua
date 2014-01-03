@@ -1,34 +1,32 @@
---
--- Create an emscripten namespace to isolate the additions
---
+premake.extensions.emscripten = {}
 
-	premake.extensions.emscripten = {}
+local emscripten = premake.extensions.emscripten
+local project = premake.project
+local api = premake.api
 
-	if os.getenv('EMSCRIPTEN_HOME') then
-		EMSCRIPTEN_HOME = os.getenv('EMSCRIPTEN_HOME');
-	else
-		print(color.fg.red .. 'You must define the environment variable EMSCRIPTEN_HOME.' .. color.reset)
-		os.exit(1)
-	end
+api.addAllowed("system", { "emscripten" })
 
-	local emscripten = premake.extensions.emscripten
-	local project = premake.project
-	local api = premake.api
+local make = premake.make
+local cpp = premake.make.cpp
+local project = premake.project
+local config = premake.config
+local fileconfig = premake.fileconfig
 
-	api.addAllowed("system", { "emscripten" })
+local insert = require 'insert'
 
-	local make = premake.make
-	local cpp = premake.make.cpp
-	local project = premake.project
-	local config = premake.config
-	local fileconfig = premake.fileconfig
+insert.insert(premake.tools.gcc, 'tools.emscripten', {
+	cc = MINKO_HOME .. '/tools/lin/bin/emcc.sh',
+	cxx = MINKO_HOME .. '/tools/lin/bin/em++.sh',
+	ar = MINKO_HOME .. '/tools/lin/bin/emar.sh'
+})
 
-	local gcc = premake.tools.gcc
+insert.insert(premake.tools.gcc, 'cppflags.system.emscripten', {
+	'-MMD',
+	'-DEMSCRIPTEN'
+})
 
-	gcc.tools.emscripten = {
-		cc = MINKO_HOME .. '/tools/lin/bin/emcc.sh',
-		cxx = MINKO_HOME .. '/tools/lin/bin/em++.sh',
-		ar = MINKO_HOME .. '/tools/lin/bin/emar.sh'
-	}
-
-	gcc.cppflags.system.emscripten = { '-MMD', '-DEMSCRIPTEN' }
+if os.getenv('EMSCRIPTEN_HOME') then
+	EMSCRIPTEN_HOME = os.getenv('EMSCRIPTEN_HOME');
+else
+	print(color.fg.yellow .. 'You must define the environment variable EMSCRIPTEN_HOME to be able to target HTML5.' .. color.reset)
+end
