@@ -35,7 +35,7 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 
 	-- linux
 	configuration { "linux" }
-		buildoptions { "-Wno-narrowing -Wno-int-to-pointer-cast -Wno-undefined-inline" }
+		buildoptions { "-Wno-narrowing -Wno-int-to-pointer-cast" }
 
 	-- windows
 	configuration { "windows" }
@@ -46,8 +46,8 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 
 	-- macosx
 	configuration { "macosx" }
-		buildoptions { "-Wno-narrowing -Wno-int-to-pointer-cast -Wno-undefined-inline" }
+		buildoptions { "-Wno-narrowing -Wno-int-to-pointer-cast" }
 
 	-- emscripten
 	configuration { "emscripten" }
-		buildoptions { "-Wno-narrowing -Wno-int-to-pointer-cast -Wno-undefined-inline" }
+		buildoptions { "-Wno-narrowing -Wno-int-to-pointer-cast" }
