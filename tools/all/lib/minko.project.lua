@@ -14,10 +14,10 @@ minko.project.library = function(name)
 		defines { "NDEBUG" }
 		optimize "On"
 	
-	configuration { "windows" }
+	configuration { "win" }
 		includedirs { minko.sdk.path("/deps/win/include") }
 		
-	configuration { "macosx" }
+	configuration { "osx" }
 		includedirs { minko.sdk.path("/deps/mac/include") }
 	
 	configuration { "linux" }
@@ -42,7 +42,7 @@ minko.project.application = function(name)
 		links { "minko-framework" }
 	end
 
-	configuration { "windows" }
+	configuration { "win" }
 		libdirs { minko.sdk.path("/deps/win/lib") }
 		links {
 			"OpenGL32",
@@ -66,7 +66,7 @@ minko.project.application = function(name)
 			'cp -r asset/* ${TARGETDIR} || :'
 		}
 	
-	configuration { "macosx" }
+	configuration { "osx" }
 		libdirs { "/deps/mac/lib" }
 		links {
 			"m",
@@ -80,7 +80,7 @@ minko.project.application = function(name)
 			'cp -r asset/* . || ' .. minko.fail()
 		}
 
-	configuration { "emscripten" }
+	configuration { "html5" }
 		postbuildcommands {
 			'cp -r asset/* ${TARGETDIR} || ' .. minko.fail(),
 			'cd ${TARGETDIR} && cp ' .. name .. ' ' .. name .. '.bc || ' .. minko.fail(),			 
