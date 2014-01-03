@@ -154,6 +154,18 @@ Surface::watchMacroAdditionOrDeletion(std::shared_ptr<data::Container> rendererD
 	auto	targetData	= target->data();
 	auto	rootData	= target->root()->data();
 
+
+#if defined(EMSCRIPTEN)
+	{
+		// See issue #1848 in Emscripten: https://github.com/kripken/emscripten/issues/1848
+		auto that = shared_from_this();
+		_macroAddedOrRemovedSlots.push_back(
+			targetData->propertyAdded()->connect([&, that](Container::Ptr container, const std::string& propertyName) {
+				that->macroChangedHandler(container, propertyName, MacroChange::ADDED);
+			})
+		);
+	}
+#else
 	_macroAddedOrRemovedSlots.push_back(
 		targetData->propertyAdded()->connect(std::bind(
 			&Surface::macroChangedHandler,
@@ -163,7 +175,19 @@ Surface::watchMacroAdditionOrDeletion(std::shared_ptr<data::Container> rendererD
 			MacroChange::ADDED
 		))
 	);
+#endif
 
+#if defined(EMSCRIPTEN)
+	{
+		// See issue #1848 in Emscripten: https://github.com/kripken/emscripten/issues/1848
+		auto that = shared_from_this();
+		_macroAddedOrRemovedSlots.push_back(
+			targetData->propertyRemoved()->connect([&, that](Container::Ptr container, const std::string& propertyName) {
+				that->macroChangedHandler(container, propertyName, MacroChange::REMOVED);
+			})
+		);
+	}
+#else
 	_macroAddedOrRemovedSlots.push_back(
 		targetData->propertyRemoved()->connect(std::bind(
 			&Surface::macroChangedHandler,
@@ -173,7 +197,19 @@ Surface::watchMacroAdditionOrDeletion(std::shared_ptr<data::Container> rendererD
 			MacroChange::REMOVED
 		))
 	);
+#endif
 
+#if defined(EMSCRIPTEN)
+	{
+		// See issue #1848 in Emscripten: https://github.com/kripken/emscripten/issues/1848
+		auto that = shared_from_this();
+		_macroAddedOrRemovedSlots.push_back(
+			rendererData->propertyAdded()->connect([&, that](Container::Ptr container, const std::string& propertyName) {
+				that->macroChangedHandler(container, propertyName, MacroChange::ADDED);
+			})
+		);
+	}
+#else
 	_macroAddedOrRemovedSlots.push_back(
 		rendererData->propertyAdded()->connect(std::bind(
 			&Surface::macroChangedHandler,
@@ -183,7 +219,19 @@ Surface::watchMacroAdditionOrDeletion(std::shared_ptr<data::Container> rendererD
 			MacroChange::ADDED
 		))
 	);
+#endif
 
+#if defined(EMSCRIPTEN)
+	{
+		// See issue #1848 in Emscripten: https://github.com/kripken/emscripten/issues/1848
+		auto that = shared_from_this();
+		_macroAddedOrRemovedSlots.push_back(
+			rendererData->propertyRemoved()->connect([&, that](Container::Ptr container, const std::string& propertyName) {
+				that->macroChangedHandler(container, propertyName, MacroChange::REMOVED);
+			})
+		);
+	}
+#else
 	_macroAddedOrRemovedSlots.push_back(
 		rendererData->propertyRemoved()->connect(std::bind(
 			&Surface::macroChangedHandler,
@@ -193,7 +241,19 @@ Surface::watchMacroAdditionOrDeletion(std::shared_ptr<data::Container> rendererD
 			MacroChange::REMOVED
 		))
 	);
+#endif
 
+#if defined(EMSCRIPTEN)
+	{
+		// See issue #1848 in Emscripten: https://github.com/kripken/emscripten/issues/1848
+		auto that = shared_from_this();
+		_macroAddedOrRemovedSlots.push_back(
+			rootData->propertyAdded()->connect([&, that](Container::Ptr container, const std::string& propertyName) {
+				that->macroChangedHandler(container, propertyName, MacroChange::ADDED);
+			})
+		);
+	}
+#else
 	_macroAddedOrRemovedSlots.push_back(
 		rootData->propertyAdded()->connect(std::bind(
 			&Surface::macroChangedHandler,
@@ -203,7 +263,19 @@ Surface::watchMacroAdditionOrDeletion(std::shared_ptr<data::Container> rendererD
 			MacroChange::ADDED
 		))
 	);
+#endif
 
+#if defined(EMSCRIPTEN)
+	{
+		// See issue #1848 in Emscripten: https://github.com/kripken/emscripten/issues/1848
+		auto that = shared_from_this();
+		_macroAddedOrRemovedSlots.push_back(
+			rootData->propertyRemoved()->connect([&, that](Container::Ptr container, const std::string& propertyName) {
+				that->macroChangedHandler(container, propertyName, MacroChange::REMOVED);
+			})
+		);
+	}
+#else
 	_macroAddedOrRemovedSlots.push_back(
 		rootData->propertyRemoved()->connect(std::bind(
 			&Surface::macroChangedHandler,
@@ -213,6 +285,7 @@ Surface::watchMacroAdditionOrDeletion(std::shared_ptr<data::Container> rendererD
 			MacroChange::REMOVED
 		))
 	);
+#endif
 }
 
 void
@@ -502,6 +575,14 @@ Surface::macroChangedHandler(Container::Ptr		container,
 		if (change == MacroChange::ADDED)
 		{
 			if (numListeners == 0)
+			{
+#if defined(EMSCRIPTEN)
+				// See issue #1848 in Emscripten: https://github.com/kripken/emscripten/issues/1848
+				auto that = shared_from_this();
+				_macroChangedSlots[macro] = macro.container()->propertyReferenceChanged(macro.name())->connect([&, that](Container::Ptr container, const std::string& propertyName) {
+					that->macroChangedHandler(container, propertyName, MacroChange::REF_CHANGED);
+				});
+#else
 				_macroChangedSlots[macro] = macro.container()->propertyReferenceChanged(macro.name())->connect(std::bind(
 					&Surface::macroChangedHandler,
 					shared_from_this(),
@@ -509,6 +590,8 @@ Surface::macroChangedHandler(Container::Ptr		container,
 					macro.name(),
 					MacroChange::REF_CHANGED
 				));
+#endif
+			}
 
 			_numMacroListeners[macro] = numListeners + 1;
 		}
@@ -597,11 +680,19 @@ Surface::blameMacros(const std::list<data::ContainerProperty>& incorrectIntegerM
 	
 		if (_incorrectMacroChangedSlot.count(macro) == 0)
 		{
+#if defined(EMSCRIPTEN)
+			// See issue #1848 in Emscripten: https://github.com/kripken/emscripten/issues/1848
+			auto that = shared_from_this();
+			_incorrectMacroChangedSlot[macro] = macro.container()->propertyReferenceChanged(macro.name())->connect([&, that, macro](Container::Ptr container, const std::string& propertyName) {
+				that->incorrectMacroChangedHandler(macro);
+			});
+#else
 			_incorrectMacroChangedSlot[macro] = macro.container()->propertyReferenceChanged(macro.name())->connect(std::bind(
 				&Surface::incorrectMacroChangedHandler,
 				shared_from_this(),
 				macro
 			));
+#endif
 		}
 	}
 }
