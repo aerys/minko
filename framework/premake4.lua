@@ -55,7 +55,7 @@ project "minko-framework"
 	-- visual studio
 	configuration { "vs*" }
 		-- fix for faux variadic templates limited to 5 arguments by default
-		defines { "_VARIADIC_MAX=10" }
+		--defines { "_VARIADIC_MAX=10" }
 
 	-- macos
 	configuration { "macosx" }
