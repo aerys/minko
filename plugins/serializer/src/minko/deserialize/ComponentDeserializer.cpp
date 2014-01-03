@@ -78,6 +78,8 @@ ComponentDeserializer::deserializeAmbientLight(std::string							serializedAmbie
 	std::shared_ptr<component::AmbientLight>			ambientLight = component::AmbientLight::create();
 	
 	msgpack::unpack(serializedAmbientLight.data(), serializedAmbientLight.size() - 1, NULL, &mempool, &deserialized);
+	deserialized.convert(&dst);
+
 	ambientLight->ambient(dst.a0);
 	ambientLight->color()->setTo(dst.a1, dst.a2, dst.a3);
 
@@ -95,6 +97,8 @@ ComponentDeserializer::deserializeDirectionalLight(std::string							serializedD
 	std::shared_ptr<component::DirectionalLight>			directionalLight = component::DirectionalLight::create();
 	
 	msgpack::unpack(serializedDirectionalLight.data(), serializedDirectionalLight.size() - 1, NULL, &mempool, &deserialized);
+	deserialized.convert(&dst);
+	
 	directionalLight->diffuse(dst.a0);
 	directionalLight->specular(dst.a1);
 	directionalLight->color()->setTo(dst.a2, dst.a3, dst.a4);
@@ -113,6 +117,8 @@ ComponentDeserializer::deserializePointLight(std::string							serializedPointLi
 	std::shared_ptr<component::PointLight>							pointLight = component::PointLight::create();
 	
 	msgpack::unpack(serializedPointLight.data(), serializedPointLight.size() - 1, NULL, &mempool, &deserialized);
+	deserialized.convert(&dst);
+
 	pointLight->diffuse(dst.a0);
 	pointLight->specular(dst.a1);
 	pointLight->attenuationDistance(dst.a2);
@@ -132,6 +138,8 @@ ComponentDeserializer::deserializeSpotLight(std::string							serializedSpotLigh
 	std::shared_ptr<component::SpotLight>											spotLight = component::SpotLight::create();
 	
 	msgpack::unpack(serializedSpotLight.data(), serializedSpotLight.size() - 1, NULL, &mempool, &deserialized);
+	deserialized.convert(&dst);
+
 	spotLight->diffuse(dst.a0);
 	spotLight->specular(dst.a1);
 	spotLight->attenuationDistance(dst.a2);
