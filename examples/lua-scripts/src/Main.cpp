@@ -45,11 +45,17 @@ int main(int argc, char** argv)
         ->registerParser<file::LuaScriptParser>("lua")
         ->queue("script/main.lua");
 
+	Signal<Canvas::Ptr, uint, uint>::Slot nextFrame;
 	Signal<file::AssetLibrary::Ptr>::Slot loaded = sceneManager->assets()->complete()->connect(
 		[&](file::AssetLibrary::Ptr assets)
 		{
-			root->addComponent(assets->script("script/main.lua"));
 			loaded = nullptr;
+
+			nextFrame = canvas->enterFrame()->connect([&](Canvas::Ptr, uint, uint)
+			{
+				nextFrame = nullptr;
+				root->addComponent(sceneManager->assets()->script("script/main.lua"));
+			});
 		}
 	);
 
