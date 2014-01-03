@@ -30,7 +30,8 @@ namespace minko
 {
 	namespace math
 	{
-		class LuaBox
+		class LuaBox :
+			public LuaWrapper
 		{
 		public:
 			static
