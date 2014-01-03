@@ -19,7 +19,46 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #pragma once
 
-#include "minko/LuaContext.hpp"
+#include "minko/Common.hpp"
+
 #include "minko/component/LuaScriptManager.hpp"
-#include "minko/component/LuaScript.hpp"
-#include "minko/file/LuaScriptParser.hpp"
+
+namespace minko
+{
+	class LuaContext
+	{
+		friend class component::LuaScriptManager;
+
+	private:
+		static int								_argc;
+		static char**							_argv;
+		static std::shared_ptr<scene::Node>		_root;
+		static std::shared_ptr<AbstractCanvas>	_canvas;
+
+	public:
+		static
+		void
+		initialize(int argc, char** argv, std::shared_ptr<scene::Node> root, std::shared_ptr<AbstractCanvas> canvas);
+
+	private:
+		static
+		std::shared_ptr<AbstractCanvas>
+		getCanvas();
+
+		static
+		std::shared_ptr<component::SceneManager>
+		getSceneManager();
+
+		static
+		std::shared_ptr<input::Mouse>
+		getMouse();
+
+		static
+		std::shared_ptr<input::Keyboard>
+		getKeyboard();
+
+		static
+		bool
+		getOption(const std::string& optionName);
+	};
+}

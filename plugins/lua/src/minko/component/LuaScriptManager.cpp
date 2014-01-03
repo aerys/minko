@@ -36,6 +36,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/PointLight.hpp"
 #include "minko/component/BoundingBox.hpp"
 
+#include "minko/LuaContext.hpp"
 #include "minko/LuaWrapper.hpp"
 
 #include "minko/math/LuaVector2.hpp"
@@ -59,33 +60,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::component;
 
-std::shared_ptr<scene::Node> LuaScriptManager::LuaGlobalStub::_root = nullptr;
-std::shared_ptr<AbstractCanvas> LuaScriptManager::LuaGlobalStub::_canvas = nullptr;
-
-AbstractCanvas::Ptr
-LuaScriptManager::LuaGlobalStub::getCanvas()
-{
-    return _canvas;
-}
-
-SceneManager::Ptr
-LuaScriptManager::LuaGlobalStub::getSceneManager()
-{
-	return _root->component<SceneManager>();
-}
-
-input::Mouse::Ptr
-LuaScriptManager::LuaGlobalStub::getMouse()
-{
-	return _root->component<MouseManager>()->mouse();
-}
-
-input::Keyboard::Ptr
-LuaScriptManager::LuaGlobalStub::getKeyboard()
-{
-	return _canvas->keyboard();
-}
-
 void
 LuaScriptManager::initialize()
 {
@@ -101,9 +75,6 @@ LuaScriptManager::targetAddedHandler(AbstractComponent::Ptr cmp, scene::Node::Pt
 
     if (targets().size() > 1)
         throw;
-
-    LuaGlobalStub::_root = target->root();
-    LuaGlobalStub::_canvas = _canvas;
 
     loadStandardLibrary();
 }
@@ -217,10 +188,11 @@ LuaScriptManager::initializeBindings()
     sceneManager.property("nextFrame",  &SceneManager::frameBegin);
 
     _state
-        .func("getCanvas",              &LuaGlobalStub::getCanvas)
-        .func("getMouse",               &LuaGlobalStub::getMouse)
-        .func("getKeyboard",            &LuaGlobalStub::getKeyboard)
-        .func("getSceneManager",        &LuaGlobalStub::getSceneManager);
+        .func("getCanvas",          &LuaContext::getCanvas)
+        .func("getMouse",           &LuaContext::getMouse)
+        .func("getKeyboard",        &LuaContext::getKeyboard)
+        .func("getSceneManager",    &LuaContext::getSceneManager)
+        .func("getOption",          &LuaContext::getOption);
 
     _state.open().glue();
 }
