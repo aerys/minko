@@ -30,7 +30,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include <chrono>
 
 class LuaGlue;
-class lua_State;
+struct lua_State;
 
 namespace minko
 {
