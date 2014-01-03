@@ -29,14 +29,14 @@ solution "minko"
 	include 'plugins/jpeg'
 	include 'plugins/png'
 	include 'plugins/mk'
-	--include 'plugins/bullet'
-	--include 'plugins/particles'
+	include 'plugins/bullet'
+	include 'plugins/particles'
 	include 'plugins/sdl'
-	--include 'plugins/angle'
-	--include 'plugins/fx'
-	--include 'plugins/assimp'
+	include 'plugins/angle'
+	include 'plugins/fx'
+	include 'plugins/assimp'
 	include 'plugins/lua'
-	--include 'plugins/offscreen'
+	include 'plugins/offscreen'
 	include 'plugins/assimp'
 	include 'plugins/serializer'
 	if os.get() == 'linux' then
@@ -127,7 +127,7 @@ newaction {
 			local binDir = dir .. '/bin'
 
 			-- plugin.lua
-			assert(os.isfile(basedir .. '/plugin.lua'), 'missing plugin.lua')			
+			assert(os.isfile(basedir .. '/plugin.lua'), basedir .. ' missing plugin.lua')			
 			os.mkdir(dir)
 			os.copyfile(basedir .. '/plugin.lua', dir .. '/plugin.lua')
 
@@ -138,8 +138,8 @@ newaction {
 
 			if solution()['projects']['minko-plugin-' .. pluginName] then
 				-- bin
-				assert(os.isdir(basedir .. '/bin/debug'), 'missing debug folder')
-				assert(os.isdir(basedir .. '/bin/release'), 'missing release folder')
+				assert(os.isdir(basedir .. '/bin/debug'), basedir .. ' missing debug folder')
+				assert(os.isdir(basedir .. '/bin/release'), basedir .. ' missing release folder')
 
 				os.mkdir(binDir .. '/debug')
 				os.mkdir(binDir .. '/release')
