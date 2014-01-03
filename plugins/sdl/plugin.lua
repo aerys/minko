@@ -29,7 +29,7 @@ function minko.plugin.sdl:enable()
 	defines { "MINKO_PLUGIN_SDL" }
 	includedirs { minko.sdk.path("plugins/sdl/include") }
 
-	configuration { "windows" }
+	configuration { "win" }
 		links { "SDL2", "SDL2main" }
 		libdirs { minko.sdk.path("plugins/sdl/lib/win/SDL/lib") }
 		postbuildcommands {
@@ -39,10 +39,10 @@ function minko.plugin.sdl:enable()
 	configuration { "linux" }
 		links { "SDL2" }
 
-	configuration { "macosx" }
+	configuration { "osx" }
 		links { "SDL2.framework" }
 
-	configuration { "emscripten" }
+	configuration { "html5" }
 		defines { "HAVE_M_PI" }
 end
 

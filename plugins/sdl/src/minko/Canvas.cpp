@@ -273,11 +273,15 @@ Canvas::step()
 			break;
 
 		case SDL_JOYBUTTONDOWN:
+#if !defined(EMSCRIPTEN)
 			_joysticks[event.jaxis.which]->joystickButtonDown()->execute(_joysticks[event.jaxis.which], event.button.which, event.jbutton.button);
+#endif
 			break;
 
 		case SDL_JOYBUTTONUP:
+#if !defined(EMSCRIPTEN)
 			_joysticks[event.jaxis.which]->joystickButtonUp()->execute(_joysticks[event.jaxis.which], event.button.which, event.jbutton.button);
+#endif
 			break;
 
 		case SDL_JOYHATMOTION:
@@ -310,9 +314,9 @@ Canvas::step()
 	_enterFrame->execute(shared_from_this(), (uint)time, (uint)frameTime);
 
 	// swap buffers
-#ifdef MINKO_ANGLE
+#if defined(MINKO_ANGLE)
 	eglSwapBuffers(_angleContext->eglDisplay, _angleContext->eglSurface);
-#elif defined EMSCRIPTEN
+#elif defined(EMSCRIPTEN)
 	SDL_GL_SwapBuffers();
 #else
 	SDL_GL_SwapWindow(_window);
@@ -330,17 +334,17 @@ Canvas::run()
 	_active = true;
 	_framerate = 0.f;
 
-#ifdef EMSCRIPTEN
+#if defined(EMSCRIPTEN)
 	_canvases.push_back(shared_from_this());
-	if (_canvases.size() == 1)
-		emscripten_set_main_loop(myUglyLoop, 0, 1);
+
+	emscripten_set_main_loop(&Canvas::emscriptenMainLoop, 0, 1);
 #else
 	while (_active)
 		step();
 #endif
 }
 
-#ifdef EMSCRIPTEN
+#if defined(EMSCRIPTEN)
 void
 Canvas::emscriptenMainLoop()
 {

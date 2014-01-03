@@ -23,12 +23,6 @@ minko.project.library = function(name)
 	configuration { "linux" }
 		includedirs { minko.sdk.path("/deps/lin/include") }
 		
-	if _OPTIONS["platform"] == "emscripten" then
-		configuration { "emscripten" }
-			minko.plugin.enable("webgl")
-			optimize "On"
-	end	
-	
 	configuration { }
 end
 
@@ -79,9 +73,18 @@ minko.project.application = function(name)
 			"IOKit.framework"
 		}
 		postbuildcommands {
-			'cp -r ' .. minko.sdk.path('/framework/effect') .. ' . || :',
-			'cp -r asset/* . || :'
+			'cp -r ' .. minko.sdk.path('/framework/effect') .. ' . || ' .. minko.fail(),
+			'cp -r asset/* . || ' .. minko.fail()
 		}
+
+	configuration { "emscripten" }
+		postbuildcommands {
+			'cp -r asset/* ${TARGETDIR} || ' .. minko.fail(),
+			'cd ${TARGETDIR} && cp ' .. name .. ' ' .. name .. '.bc || ' .. minko.fail(),			 
+			'cd ${TARGETDIR} && emcc ' .. name .. '.bc -o ' .. name .. '.html -O2 -s CLOSURE_ANNOTATIONS=0 -s ASM_JS=0 -s TOTAL_MEMORY=268435456 -s ALLOW_MEMORY_GROWTH=1 --preload-file effect --preload-file texture  --compression ${EMSCRIPTEN_HOME}/third_party/lzma.js/lzma-native,${EMSCRIPTEN_HOME}/third_party/lzma.js/lzma-decoder.js,LZMA.decompress || ' .. minko.fail(),
+			'cd ${TARGETDIR} && emcc ' .. name .. '.bc -o ' .. name .. '.js -O2 -s CLOSURE_ANNOTATIONS=0 -s ASM_JS=0 -s TOTAL_MEMORY=268435456 -s ALLOW_MEMORY_GROWTH=1 --preload-file effect --preload-file texture  --compression ${EMSCRIPTEN_HOME}/third_party/lzma.js/lzma-native,${EMSCRIPTEN_HOME}/third_party/lzma.js/lzma-decoder.js,LZMA.decompress || ' .. minko.fail()
+		}
+
 		
 	configuration { }
 	

@@ -1,36 +1,57 @@
---
--- Create an android namespace to isolate the additions
---
+local insert = require 'insert'
+local inspect = require 'inspect'
 
-	premake.extensions.android = {}
+premake.extensions.android = {}
 
-	local android = premake.extensions.android
-	local project = premake.project
-	local api = premake.api
+local android = premake.extensions.android
+local project = premake.project
+local api = premake.api
 
-	api.addAllowed('system', { 'android' })
+api.addAllowed('system', { 'android' })
 
-	local make = premake.make
-	local cpp = premake.make.cpp
-	local project = premake.project
-	local config = premake.config
-	local fileconfig = premake.fileconfig
+local make = premake.make
+local cpp = premake.make.cpp
+local project = premake.project
+local config = premake.config
+local fileconfig = premake.fileconfig
 
-	local gcc = premake.tools.gcc
+insert.insert(premake.tools.gcc, 'tools.android', {
+	cc			= 'arm-linux-androideabi-gcc',
+	cxx			= 'arm-linux-androideabi-g++',
+	ar			= 'arm-linux-androideabi-ar',
+	ld			= 'arm-linux-androideabi-ld',
+	ranlib		= 'arm-linux-androideabi-ranlib',
+	strip		= 'arm-linux-androideabi-strip',
+})
 
-	gcc.tools.android = {
-		cc			= ANDROID_HOME .. '/bin/arm-linux-androideabi-gcc',
-		cxx			= ANDROID_HOME .. '/bin/arm-linux-androideabi-g++',
-		ar			= ANDROID_HOME .. '/bin/arm-linux-androideabi-ar',
-		ld			= ANDROID_HOME .. '/bin/arm-linux-androideabi-ld',
-		ranlib		= ANDROID_HOME .. '/bin/arm-linux-androideabi-ranlib',
-		strip		= ANDROID_HOME .. '/bin/arm-linux-androideabi-strip',
-	}
+insert.insert(premake.tools.gcc, 'cppflags.system.android', {
+})
 
-	gcc.cppflags.system.android = { }
-	gcc.cxxflags.system.android = { '--sysroot=' .. ANDROID_HOME .. '/sysroot/', '-fno-rtti', '-fno-exceptions' }
-	gcc.ldflags.system.android = { '-L' .. ANDROID_HOME .. '/sysroot/usr/lib' }
+insert.insert(premake.tools.gcc, 'cxxflags.system.android', {
+	'--sysroot=/sysroot/',
+	'-fno-rtti',
+	'-fno-exceptions'
+})
 
-	-- targetprefix "lib"
-	-- targetextension ".so"
-	-- linkoptions { "-llog", "-lGLESv1_CM", "-lz", "-s", "-shared" }
+insert.insert(premake.tools.gcc, 'ldflags.system.android', {
+	'-L/sysroot/usr/lib'
+})
+
+-- print(inspect.inspect(premake.tools.gcc))
+
+-- targetprefix "lib"
+-- targetextension ".so"
+-- linkoptions { "-llog", "-lGLESv1_CM", "-lz", "-s", "-shared" }
+
+if not os.isfile(premake.tools.gcc.tools.android.cc) then
+	-- print(color.fg.red ..'Cannot find GCC for Android. Make sure arm-linux-androideabi-gcc is in your PATH.' .. color.reset)
+	-- os.exit(1)
+end
+
+local this_dir = debug.getinfo(1, "S").source:match[[^@?(.*[\/])[^\/]-$]];
+package.path = this_dir .. "actions/?.lua;".. package.path
+
+require 'jni'
+require 'jni_cpp'
+require 'jni_solution'
+require 'jni_makefile'

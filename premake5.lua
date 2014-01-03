@@ -1,3 +1,5 @@
+require 'color'
+
 newoption {
 	trigger	= 'no-examples',
 	description = 'Disable examples.'
@@ -15,7 +17,7 @@ newoption {
 
 solution "minko"
 	configurations { "debug", "release" }
-	platforms { "win", "osx", "html5", "ios", "android" }
+	platforms { "linux", "win", "osx", "html5", "ios", "android" }
 
 	MINKO_HOME = path.getabsolute(os.getcwd())
 
@@ -43,17 +45,12 @@ solution "minko"
 	include 'plugins/mk'
 	include 'plugins/bullet'
 	include 'plugins/particles'
+	include 'plugins/webgl'
 	include 'plugins/sdl'
 	include 'plugins/angle'
 	include 'plugins/fx'
 	include 'plugins/assimp'
-
-	if os.get() == 'linux' then
-		include 'plugins/offscreen'
-	end
-	if _OPTIONS["platform"] == "emscripten" then
-		include 'plugins/webgl'
-	end
+	include 'plugins/offscreen'
 
 	-- examples
 	if not _OPTIONS['no-examples'] then
@@ -68,7 +65,6 @@ solution "minko"
 
 	-- tests
 	if not _OPTIONS['no-tests'] then
-	--if _ACTION ~= "vs2010" and _OPTIONS["platform"] ~= "emscripten" then
 		include 'tests'
 	end
 
@@ -171,5 +167,18 @@ newaction {
 	description		= "Create developer reference.",
 	execute			= function()
 		os.execute("doxygen")
+	end
+}
+
+newaction {
+	trigger			= "clean",
+	description		= "Remove generated files.",
+	execute			= function()
+	local prjs = solution().projects
+		for i, prj in ipairs(prjs) do
+			os.rmdir(prj.basedir .. "/bin")
+			os.rmdir(prj.basedir .. "/obj")
+		end
+		os.rmdir(solution().basedir .. "/doc")
 	end
 }
