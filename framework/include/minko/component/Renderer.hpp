@@ -42,6 +42,7 @@ namespace minko
 			typedef std::shared_ptr<SceneManager>						SceneManagerPtr;
 			typedef std::shared_ptr<render::Texture>					TexturePtr;
 			typedef Signal<SurfacePtr, const std::string&, bool>::Slot	SurfaceTechniqueChangedSlot;
+			typedef std::shared_ptr<render::DrawCallPool>			DrawCallFactoryPtr;
 
 		private:
 			DrawCallList												_drawCalls;
@@ -51,9 +52,11 @@ namespace minko
 			std::shared_ptr<SceneManager>								_sceneManager;
 			Signal<Ptr>::Ptr											_renderingBegin;
 			Signal<Ptr>::Ptr											_renderingEnd;
+			Signal<Ptr>::Ptr											_beforePresent;
 			std::shared_ptr<render::Texture>							_renderTarget;
 
 			std::set<std::shared_ptr<Surface>>							_toCollect;
+			std::shared_ptr<render::Effect>								_effect;
 
 			Signal<AbsCtrlPtr, NodePtr>::Slot							_targetAddedSlot;
 			Signal<AbsCtrlPtr, NodePtr>::Slot							_targetRemovedSlot;
@@ -66,25 +69,26 @@ namespace minko
 			Signal<SceneManagerPtr, uint, TexturePtr>::Slot				_renderingBeginSlot;
 			std::unordered_map<SurfacePtr, SurfaceTechniqueChangedSlot>	_surfaceTechniqueChangedSlot;
 
+			DrawCallFactoryPtr											_drawCallPool;
+
 			static const unsigned int									NUM_FALLBACK_ATTEMPTS;
 
 		public:
 			inline static
 			Ptr
-			create()
+			create(std::shared_ptr<render::Texture> renderTarget = nullptr, std::shared_ptr<render::Effect> effect= nullptr)
 			{
-				auto ctrl = std::shared_ptr<Renderer>(new Renderer());
+				auto ctrl = std::shared_ptr<Renderer>(new Renderer(renderTarget, effect));
 
 				ctrl->initialize();
-
 				return ctrl;
 			}
 
 			inline static
 			Ptr
-			create(uint backgroundColor)
+			create(uint backgroundColor, std::shared_ptr<render::Texture> renderTarget = nullptr, std::shared_ptr<render::Effect> effect= nullptr)
 			{
-				auto ctrl = std::shared_ptr<Renderer>(new Renderer());
+				auto ctrl = std::shared_ptr<Renderer>(new Renderer(renderTarget, effect));
 
 				ctrl->initialize();
 				ctrl->backgroundColor(backgroundColor);
@@ -94,6 +98,20 @@ namespace minko
 
 			~Renderer()
 			{
+			}
+
+			inline
+			std::shared_ptr<render::Effect>
+			effect()
+			{
+				return _effect;
+			}
+
+			inline
+			unsigned int
+			numDrawCalls()
+			{
+				return _drawCalls.size();
 			}
 
 			inline
@@ -137,13 +155,20 @@ namespace minko
 
 			inline
 			Signal<Ptr>::Ptr
+			beforePresent()
+			{
+				return _beforePresent;
+			}
+
+			inline
+			Signal<Ptr>::Ptr
 			renderingEnd()
 			{
 				return _renderingEnd;
 			}
 
 		private:
-			Renderer();
+			Renderer(std::shared_ptr<render::Texture> renderTarget, std::shared_ptr<render::Effect> effect);
 
 			void
 			initialize();
@@ -176,26 +201,13 @@ namespace minko
 			addSurface(SurfacePtr);
 
 			void
-			addSurfaceDrawcalls(SurfacePtr);
-
-			void
 			removeSurface(SurfacePtr);
-
-			void
-			removeSurfaceDrawcalls(SurfacePtr);
 
 			void
 			geometryChanged(SurfacePtr ctrl);
 
 			void
-			surfaceTechniqueChanged(SurfacePtr, const std::string& technique, bool updateSurfaceDrawcalls);
-
-			void
 			materialChanged(SurfacePtr ctrl);
-
-            static
-            bool
-            compareDrawCalls(DrawCallPtr& a, DrawCallPtr& b);
 
 			void
 			sceneManagerRenderingBeginHandler(std::shared_ptr<SceneManager>		sceneManager,

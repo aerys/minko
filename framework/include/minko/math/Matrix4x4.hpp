@@ -31,12 +31,14 @@ namespace minko
 	{
 		class Matrix4x4 :
 			public std::enable_shared_from_this<Matrix4x4>,
-			public data::Value
+			public data::Value,
+			public Convertible<Matrix4x4>
 		{
 			friend component::Transform;
 
 		private:
 			std::vector<float>	_m;
+			bool				_lock;
 			bool				_hasChanged;
 
 		public:
@@ -202,6 +204,12 @@ namespace minko
 
 			std::shared_ptr<Vector3>
             deltaTransform(std::shared_ptr<Vector3> v, std::shared_ptr<Vector3> output = nullptr);            
+
+			Ptr
+			lock();
+
+			Ptr
+			unlock();
 
 			inline
 			Ptr

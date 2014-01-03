@@ -1320,6 +1320,15 @@ OpenGLES2Context::setStencilTest(CompareMode stencilFunc,
 #endif
 }
 
+
+void
+OpenGLES2Context::readPixels(unsigned int x, unsigned int y, unsigned int width, unsigned int height, unsigned char* pixels)
+{
+	glReadPixels(x, y, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+
+	checkForErrors();
+}
+
 void
 OpenGLES2Context::setScissorTest(bool						scissorTest, 
 								 const render::ScissorBox&	scissorBox)
