@@ -157,41 +157,28 @@ LuaScriptManager::update(scene::Node::Ptr target)
 void
 LuaScriptManager::initializeBindings()
 {
-	_state
-        .Class<render::Texture>("Texture")
-            //.property("width",  &render::Texture::width)
-            //.property("height", &render::Texture::height)
-        .end()
-        .Class<render::Effect>("Effect")
-        .end()
-        .Class<Surface>("Surface")
-            .method("create", static_cast<Surface::Ptr (*)(geometry::Geometry::Ptr, data::Provider::Ptr, render::Effect::Ptr)>(&Surface::create))
-        .end()
-        .Class<render::AbstractContext>("AbstractContext")
-        .end()
-        .Class<BoundingBox>("BoundingBox")
-            .property("box",    &BoundingBox::box)
-        .end()
-        .Class<Renderer>("Renderer")
-            .method("create",               static_cast<Renderer::Ptr (*)(void)>(&Renderer::create))
-            .property("backgroundColor",    &Renderer::backgroundColor, &Renderer::backgroundColor)
-        .end()
-        .Class<AmbientLight>("AmbientLight")
-            .method("create",   &AmbientLight::create)
-            .property("color",  static_cast<math::Vector3::Ptr (AmbientLight::*)()>(&AbstractLight::color))
-        .end()
-        .Class<DirectionalLight>("DirectionalLight")
-            .method("create",   &DirectionalLight::create)
-            .property("color",  static_cast<math::Vector3::Ptr (DirectionalLight::*)()>(&AbstractLight::color))
-        .end()
-        .Class<SpotLight>("SpotLight")
-            .method("create",   &SpotLight::create)
-            .property("color",  static_cast<math::Vector3::Ptr (SpotLight::*)()>(&AbstractLight::color))
-        .end()
-        .Class<PointLight>("PointLight")
-            .method("create",   &PointLight::create)
-            .property("color",  static_cast<math::Vector3::Ptr (PointLight::*)()>(&AbstractLight::color))
-        .end();
+	_state.Class<render::Texture>("Texture");
+	_state.Class<render::Effect>("Effect");
+	_state.Class<Surface>("Surface")
+		.method("create", static_cast<Surface::Ptr(*)(geometry::Geometry::Ptr, data::Provider::Ptr, render::Effect::Ptr)>(&Surface::create));
+	_state.Class<render::AbstractContext>("AbstractContext");
+	_state.Class<BoundingBox>("BoundingBox")
+		.property("box", &BoundingBox::box);
+	_state.Class<Renderer>("Renderer")
+		.method("create", static_cast<Renderer::Ptr(*)(void)>(&Renderer::create))
+		.property("backgroundColor", &Renderer::backgroundColor, &Renderer::backgroundColor);
+	_state.Class<AmbientLight>("AmbientLight")
+		.method("create", &AmbientLight::create)
+		.property("color", static_cast<math::Vector3::Ptr(AmbientLight::*)()>(&AbstractLight::color));
+	_state.Class<DirectionalLight>("DirectionalLight")
+		.method("create", &DirectionalLight::create)
+		.property("color", static_cast<math::Vector3::Ptr(DirectionalLight::*)()>(&AbstractLight::color));
+	_state.Class<SpotLight>("SpotLight")
+		.method("create", &SpotLight::create)
+		.property("color", static_cast<math::Vector3::Ptr(SpotLight::*)()>(&AbstractLight::color));
+	_state.Class<PointLight>("PointLight")
+		.method("create", &PointLight::create)
+		.property("color", static_cast<math::Vector3::Ptr(PointLight::*)()>(&AbstractLight::color));
 
     math::LuaMatrix4x4::bind(_state);
     math::LuaVector2::bind(_state);
