@@ -114,7 +114,7 @@ FrustumCulling::addedHandler(NodePtr node, NodePtr target, NodePtr ancestor)
 {
 	scene::NodeSet::Ptr nodeSet = scene::NodeSet::create(target)->descendants(true)->where([](NodePtr descendant)
 	{
-		return descendant->layouts() & (1u << 17);
+		return (descendant->layouts() & (1u << 17)) != 0;
 	});
 
 	for (auto n : nodeSet->nodes())
