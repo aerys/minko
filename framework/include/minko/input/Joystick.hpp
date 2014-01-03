@@ -41,13 +41,6 @@ namespace minko
 			Signal<Ptr, int, int>::Ptr			_joystickButtonUp;
 
 		public:
-			inline static
-			Ptr
-			create(std::shared_ptr<AbstractCanvas> canvas)
-			{
-				return std::shared_ptr<Joystick>(new Joystick(canvas));
-			}
-
 			inline
 			Signal<Ptr, int, int, int>::Ptr
 			joystickAxisMotion() const
