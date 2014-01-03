@@ -39,6 +39,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include <vector>
 #include <cassert>
 #include <ctime>
+#include <type_traits>
+#include "minko/math/Convertible.hpp"
 
 #define PI 3.1415926535897932384626433832795
 
@@ -54,6 +56,7 @@ namespace minko
     
 	namespace render
 	{
+		class DrawCallPool;
 		class AbstractContext;
 		class OpenGLES2Context;
         class Blending;
@@ -109,6 +112,8 @@ namespace minko
 		class Surface;
 		class Renderer;
 		class PerspectiveCamera;
+		class FrustumCulling;
+		class Picking;
 
         class LightManager;
         class AbstractLight;
@@ -193,6 +198,8 @@ namespace minko
 		class Ray;
 		class AbstractShape;
 		class Box;
+		class Frustum;
+		class OctTree;
 
 		inline
 		unsigned int

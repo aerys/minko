@@ -30,6 +30,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/input/Keyboard.hpp"
 #include "minko/input/Joystick.hpp"
 
+
 struct SDL_Window;
 typedef unsigned char Uint8;
 
@@ -227,12 +228,12 @@ namespace minko
             return _keyboard;
         }
 		
-		inline
+		/*inline
 		std::shared_ptr<input::Joystick>
         joystick(int id)
         {
 			return _joysticks[id];
-        }
+        }*/
 
 		inline
 		uint

@@ -28,7 +28,8 @@ namespace minko
 	namespace geometry
 	{
 		class Geometry :
-			public std::enable_shared_from_this<Geometry>
+			public std::enable_shared_from_this<Geometry>,
+			public Convertible<Geometry>
 		{
 		public:
 			typedef std::shared_ptr<Geometry> Ptr;
@@ -166,6 +167,13 @@ namespace minko
 
 			void
 			upload();
+
+			inline
+			bool
+			equals(Ptr geom)
+			{
+				return _vertexBuffers == geom->_vertexBuffers && _indexBuffer == geom->_indexBuffer;
+			}
 
 		protected:
 			Geometry();

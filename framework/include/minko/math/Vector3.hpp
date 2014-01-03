@@ -27,7 +27,8 @@ namespace minko
 	namespace math
 	{
 		class Vector3 :
-			public Vector2
+			public Vector2,
+			public Convertible<Vector3>
 		{
 		public:
 			typedef std::shared_ptr<Vector3>	Ptr;
