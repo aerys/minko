@@ -30,11 +30,11 @@ function minko.plugin.fx:enable()
 		
 	configuration { "linux" }
 		postbuildcommands {
-			'cp -r ' .. minko.sdk.path('/plugins/fx/asset/effect') .. ' ${TARGETDIR} || :',
+			'cp -r ' .. minko.sdk.path('/plugins/fx/asset/effect') .. ' ${TARGETDIR} || ' .. minko.fail(),
 		}
 	
 	configuration { "macosx" }
 		postbuildcommands {
-			'cp -r ' .. minko.sdk.path('/plugins/fx/asset/effect') .. ' . || :',
+			'cp -r ' .. minko.sdk.path('/plugins/fx/asset/effect') .. ' . || ' .. minko.fail(),
 		}	
 end

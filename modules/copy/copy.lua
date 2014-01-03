@@ -1,4 +1,6 @@
-function copy (t) -- shallow-copy a table
+local copy = {}
+
+function copy.copy (t) -- shallow-copy a table
     if type(t) ~= "table" then return t end
     local meta = getmetatable(t)
     local target = {}
@@ -7,7 +9,7 @@ function copy (t) -- shallow-copy a table
     return target
 end
 
-function clone (t) -- deep-copy a table
+function copy.clone (t) -- deep-copy a table
     if type(t) ~= "table" then return t end
     local meta = getmetatable(t)
     local target = {}
@@ -21,3 +23,5 @@ function clone (t) -- deep-copy a table
     setmetatable(target, meta)
     return target
 end
+
+return copy

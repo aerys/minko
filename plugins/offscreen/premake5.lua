@@ -1,16 +1,14 @@
 newoption {
-	trigger			= "with-webgl",
-	description		= "Enable the Minko WebGL plugin."
+	trigger			= "with-offscreen",
+	description		= "Enable the Minko Offscreen plugin."
 }
 
 PROJECT_NAME = path.getname(os.getcwd())
 
 minko.project.library("minko-plugin-" .. PROJECT_NAME)
-	removeplatforms { "osx", "win", "ios", "android" }
-
+	platforms { "win", "osx", "html5", "ios", "android" }
+	
 	kind "StaticLib"
 	language "C++"
 	files { "**.hpp", "**.h", "**.cpp", "**.c", "include/**.hpp" }
-	includedirs { "include" }
-
-	minko.plugin.import("sdl")
+	includedirs { "include", "src", "lib/osmesa/include" }
