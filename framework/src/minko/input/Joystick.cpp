@@ -23,6 +23,10 @@ using namespace minko;
 using namespace minko::input;
 
 Joystick::Joystick(std::shared_ptr<AbstractCanvas> canvas) :
-	_canvas(canvas)
+	_canvas(canvas),
+	_joystickAxisMotion(Signal<Ptr, int, int, int>::create()),
+	_joystickHatMotion(Signal<Ptr, int, int, int>::create()),
+	_joystickButtonUp(Signal<Ptr, int, int>::create()),
+	_joystickButtonDown(Signal<Ptr, int, int>::create())
 {
 }
