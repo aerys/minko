@@ -65,7 +65,7 @@ OctTree::generateVisual(std::shared_ptr<file::AssetLibrary>	assetLibrary,
 	if (_content.size() > 0)
 	{
 		node->addComponent(component::Transform::create(math::Matrix4x4::create()
-						->appendScale(edgeLength() * 2 - 0.1)
+						->appendScale(edgeLength() * 2.f - 0.1f)
 						->appendTranslation(_center->x(), _center->y(), _center->z())))
 					->addComponent(component::Surface::create(
 						geometry::CubeGeometry::create(assetLibrary->context()),
@@ -93,7 +93,7 @@ OctTree::split()
 {
 	this->_children.resize(8);
 
-	float size = _k * _worldSize / (pow(2, _depth));
+	float size = _k * _worldSize / (powf(2.f, _depth));
 
 	for (uint x = 0; x < 2; ++x)
 	{
@@ -267,13 +267,13 @@ OctTree::computeDepth(std::shared_ptr<scene::Node> node)
 float
 OctTree::computeRadius(std::shared_ptr<component::BoundingBox> boundingBox)
 {
-	return std::max(boundingBox->box()->width() / 2,  std::max(boundingBox->box()->height() / 2, boundingBox->box()->depth() / 2)); 
+	return std::max(boundingBox->box()->width() / 2.f,  std::max(boundingBox->box()->height() / 2.f, boundingBox->box()->depth() / 2.f)); 
 }
 
 float
 OctTree::edgeLength()
 {
-	return _k * (_worldSize / pow(2, _depth));
+	return _k * (_worldSize / pow(2.f, _depth));
 }
 
 

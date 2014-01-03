@@ -51,7 +51,7 @@ SceneParser::parse(const std::string&					filename,
 	msgpack::type::tuple<std::vector<std::string>, std::vector<SerializedNode>> dst;
 	deserialized.convert(&dst);
 
-	assetLibrary->node(filename, parseNode(dst.a1, dst.a0, assetLibrary));
+	assetLibrary->symbol(filename, parseNode(dst.a1, dst.a0, assetLibrary));
 
 	complete()->execute(shared_from_this());
 }

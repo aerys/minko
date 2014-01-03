@@ -300,10 +300,8 @@ Transform::RootTransform::updateTransforms()
 		{
             auto parentTransform = _transforms[nodeId];
 	        
-            if (parentTransform->_hasChanged)
+            if (parentTransformChanged)
             {
-                parentTransformChanged = true;
-
 			    parentModelToWorldMatrix->copyFrom(parentTransform);
                 parentTransform->_hasChanged = false;
             }
