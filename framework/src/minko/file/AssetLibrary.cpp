@@ -118,9 +118,9 @@ AssetLibrary::symbol(const std::string& name, scene::Node::Ptr node)
 }
 
 const std::string&
-AssetLibrary::node(NodePtr node)
+AssetLibrary::symbol(NodePtr node)
 {
-	for (auto it = _nodes.begin(); it != _nodes.end(); ++it)
+	for (auto it = _symbols.begin(); it != _symbols.end(); ++it)
 	{
 		if (it->second == node)
 			return it->first;

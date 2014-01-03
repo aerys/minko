@@ -49,7 +49,7 @@ unitTest(std::shared_ptr<file::AssetLibrary> assets, std::shared_ptr<render::Abs
 		"Vector2 init");
 
 	mkStat->compressionStat<math::Vector2::Ptr, msgpack::type::tuple<uint, std::string>>(
-		math::Vector2::create(rand(), rand()), 
+		math::Vector2::create((float)rand(), (float)rand()),
 		std::bind(&serialize::TypeSerializer::serializeVector2, std::placeholders::_1), 
 		std::bind(&deserialize::TypeDeserializer::deserializeVector2, std::placeholders::_1),
 		"Vector2");
@@ -61,7 +61,7 @@ unitTest(std::shared_ptr<file::AssetLibrary> assets, std::shared_ptr<render::Abs
 		"Vector3 init");
 
 	mkStat->compressionStat<math::Vector3::Ptr, msgpack::type::tuple<uint, std::string>>(
-		math::Vector3::create(rand(), rand(), rand()), 
+		math::Vector3::create((float)rand(), (float)rand(), (float)rand()),
 		std::bind(&serialize::TypeSerializer::serializeVector3, std::placeholders::_1), 
 		std::bind(&deserialize::TypeDeserializer::deserializeVector3, std::placeholders::_1),
 		"Vector3");
@@ -73,7 +73,7 @@ unitTest(std::shared_ptr<file::AssetLibrary> assets, std::shared_ptr<render::Abs
 		"Vector4 init");
 
 	mkStat->compressionStat<math::Vector4::Ptr, msgpack::type::tuple<uint, std::string>>(
-		math::Vector4::create(rand(), rand(), rand(), rand()), 
+		math::Vector4::create((float)rand(), (float)rand(), (float)rand(), (float)rand()),
 		std::bind(&serialize::TypeSerializer::serializeVector4, std::placeholders::_1), 
 		std::bind(&deserialize::TypeDeserializer::deserializeVector4, std::placeholders::_1),
 		"Vector4");
@@ -85,13 +85,13 @@ unitTest(std::shared_ptr<file::AssetLibrary> assets, std::shared_ptr<render::Abs
 		"Matrix4x4 init");
 
 	mkStat->compressionStat<math::Matrix4x4::Ptr, msgpack::type::tuple<uint, std::string>>(
-		math::Matrix4x4::create()->appendTranslation(rand(), rand(), rand()), 
+		math::Matrix4x4::create()->appendTranslation((float)rand(), (float)rand(), (float)rand()),
 		std::bind(&serialize::TypeSerializer::serializeMatrix4x4, std::placeholders::_1), 
 		std::bind(&deserialize::TypeDeserializer::deserializeMatrix4x4, std::placeholders::_1),
 		"Matrix4x4 translation");
 
 	mkStat->compressionStat<math::Matrix4x4::Ptr, msgpack::type::tuple<uint, std::string>>(
-		math::Matrix4x4::create()->appendRotation(rand(), math::Vector3::create(1, 0, 0)),
+		math::Matrix4x4::create()->appendRotation((float)rand(), math::Vector3::create(1, 0, 0)),
 		std::bind(&serialize::TypeSerializer::serializeMatrix4x4, std::placeholders::_1), 
 		std::bind(&deserialize::TypeDeserializer::deserializeMatrix4x4, std::placeholders::_1),
 		"Matrix4x4 rotation Xaxis");
@@ -144,7 +144,7 @@ void
 openSceneExample(std::shared_ptr<file::AssetLibrary>	assets, 
 				 std::shared_ptr<scene::Node>			root)
 {
-	root->addChild(assets->node("test9/NewScene.scene"));
+	root->addChild(assets->symbol("test9/NewScene.scene"));
 }
 
 int loaded = 0;
@@ -219,8 +219,8 @@ int main(int argc, char** argv)
 		//root->addChild(mesh2);
 		//root->addChild(mesh3);
 		
-		mesh2->component<Transform>()->transform()->appendTranslation(0, 1, 0);
-		mesh3->component<Transform>()->transform()->appendTranslation(0, -1, 0);
+		mesh2->component<Transform>()->matrix()->appendTranslation(0, 1, 0);
+		mesh3->component<Transform>()->matrix()->appendTranslation(0, -1, 0);
 		
 		unitTest(assets, canvas->context());
 		
@@ -232,14 +232,14 @@ int main(int argc, char** argv)
 			->addComponent(PerspectiveCamera::create(800.f / 600.f, (float)PI * 0.25f, .1f, 1000.f));
 		root->addChild(camera);
 
-		auto resized = canvas->resized()->connect([&](Canvas::Ptr canvas, uint w, uint h)
+		auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
 		{
 			root->children()[0]->children()[0]->component<PerspectiveCamera>()->aspectRatio((float)w / (float)h);
 		});
 
 		int frameId = 0;
 
-		auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, uint deltaTime)
+		auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr canvas, uint time, uint deltaTime)
 		{
 			sceneManager->nextFrame();
 			frameId++;

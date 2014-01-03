@@ -70,10 +70,10 @@ Canvas::initializeInputs()
     {
         SDL_Joystick* joystick = SDL_JoystickOpen(i);
 
-    /*    if (!joystick)
+        if (!joystick)
             continue;
 		else
-			_joysticks.push_back(Canvas::SDLJoystick::create(shared_from_this()));*/
+			_joysticks.push_back(Canvas::SDLJoystick::create(shared_from_this()));
     }
 }
 

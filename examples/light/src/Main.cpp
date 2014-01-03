@@ -217,7 +217,7 @@ int main(int argc, char** argv)
 		});
 
 		auto yaw = 0.f;
-		auto pitch = PI * .5f;
+		auto pitch = (float)PI * .5f;
 		auto roll = 0.f;
 		auto minPitch = 0.f + 1e-5;
 		auto maxPitch = (float)PI - 1e-5;
