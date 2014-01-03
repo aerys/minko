@@ -21,7 +21,6 @@ insert.insert(premake.tools.gcc, 'tools.emscripten', {
 })
 
 insert.insert(premake.tools.gcc, 'cppflags.system.emscripten', {
-	'-MMD',
 	'-DEMSCRIPTEN'
 })
 
