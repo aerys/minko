@@ -7,7 +7,7 @@ if [[ -z "${TARGET}" ]]; then
 	exit 1
 fi
 
-RED=${txtbld}$(tput setaf 1)
+RED=$(tput setaf 1)
 RESET=$(tput sgr0)
 
 echo "${RED}Post-build command failed for project ${TARGET}${RESET}" > /dev/stderr
