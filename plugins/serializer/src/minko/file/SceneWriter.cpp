@@ -47,7 +47,6 @@ SceneWriter::embed(std::shared_ptr<AssetLibrary>	assetLibrary,
 	std::vector<SerializedNode>										nodePack;
 	std::vector<std::string>										serializedControllerList;
 	std::map<std::shared_ptr<component::AbstractComponent>, int>	controllerMap;
-	std::map<std::tuple<uint, uint>, std::string>					serializedAssetMap;
 
 	queue.push(data());
 
