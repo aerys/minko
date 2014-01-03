@@ -223,7 +223,7 @@ template<>
 struct stack<float> {
 	static float get(LuaGlueBase *, lua_State *s, int idx)
 	{
-		return luaL_checknumber(s, idx);
+		return (float)luaL_checknumber(s, idx);
 	}
 	
 	static void put(LuaGlueBase *, lua_State *s, float v)
@@ -249,7 +249,7 @@ template<>
 struct stack<bool> {
 	static bool get(LuaGlueBase *, lua_State *s, int idx)
 	{
-		return lua_toboolean(s, idx);
+		return lua_toboolean(s, idx) != 0;
 	}
 	
 	static void put(LuaGlueBase *, lua_State *s, bool v)
