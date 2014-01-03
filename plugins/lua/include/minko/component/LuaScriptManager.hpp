@@ -42,42 +42,13 @@ namespace minko
 			friend class LuaScript;
 
 		public:
-			typedef std::shared_ptr<LuaScriptManager> 		Ptr;
+			typedef std::shared_ptr<LuaScriptManager> 				Ptr;
 
 		private:
 			typedef std::shared_ptr<file::AbstractLoader>			AbsLoaderPtr;
 			typedef std::chrono::high_resolution_clock::time_point	time_point;
 
 		private:
-			class LuaGlobalStub
-			{
-			public:
-				static std::shared_ptr<scene::Node>		_root;
-				static std::shared_ptr<AbstractCanvas>	_canvas;
-
-				static
-				std::shared_ptr<AbstractCanvas>
-				getCanvas();
-
-				static
-				std::shared_ptr<SceneManager>
-				getSceneManager();
-
-				static
-				std::shared_ptr<input::Mouse>
-				getMouse();
-
-				static
-				std::shared_ptr<input::Keyboard>
-				getKeyboard();
-
-				static
-				std::shared_ptr<math::Matrix4x4>
-				getModelToWorldMatrix(std::shared_ptr<scene::Node> n);
-			};
-
-		private:
-			std::shared_ptr<AbstractCanvas>			_canvas;
 			LuaGlue									_state;
 			time_point								_previousTime;
 
@@ -89,9 +60,9 @@ namespace minko
 		public:
 			inline static
 			Ptr
-			create(std::shared_ptr<AbstractCanvas> canvas)
+			create()
 			{
-				auto sm = std::shared_ptr<LuaScriptManager>(new LuaScriptManager(canvas));
+				auto sm = std::shared_ptr<LuaScriptManager>(new LuaScriptManager());
 
 				sm->initialize();
 
@@ -109,8 +80,7 @@ namespace minko
 			update(std::shared_ptr<scene::Node> target);
 
 		private:
-			LuaScriptManager(std::shared_ptr<AbstractCanvas> canvas) :
-				_canvas(canvas),
+			LuaScriptManager() :
 				_state(),
 				_ready(false),
 				_numDependencies(0),
