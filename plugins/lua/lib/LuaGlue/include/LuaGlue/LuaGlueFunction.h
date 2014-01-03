@@ -45,7 +45,7 @@ class LuaGlueFunction : public LuaGlueFunctionBase
 		int invoke(lua_State *state)
 		{
 			ReturnType ret = applyTuple(g, state, fn_, args);
-			lua_pop(state, Arg_Count_);
+			lua_pop(state, (int)Arg_Count_);
 			stack<_Ret>::put(g, state, ret);
 			return 1;
 		}
