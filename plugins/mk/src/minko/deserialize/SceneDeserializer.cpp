@@ -41,7 +41,6 @@ namespace minko
 		SceneDeserializer::deserializeScene(Qark::Object&		sceneObject,
 										    Qark::Object&		assetsObject,
 										    OptionsPtr			options,
-										    ControllerMap&		controllerMap,
 										    NodeMap&			nodeMap)
 		{
 			initializeNodeDeserializer();
@@ -51,7 +50,7 @@ namespace minko
 			assetsDeserializer->extract(options->parseOptions(), options->nameConverter());
 			options->deserializedAssets(assetsDeserializer);
 
-			std::shared_ptr<scene::Node> root = deserializeNode(sceneObject, options, controllerMap, nodeMap);
+			std::shared_ptr<scene::Node> root = deserializeNode(sceneObject, options,  nodeMap);
 
 			for (std::map<std::shared_ptr<scene::Node>, NodeInfo&>::iterator controllersIt = _pluginControllers.begin(); 
 				controllersIt != _pluginControllers.end();
@@ -68,7 +67,7 @@ namespace minko
 					{
 						//_pluginControllers[node] = nodeInformation;
 
-						node->addComponent(it->second(Any::cast<NodeInfo&>(nodeInformation[it->first]), controllerMap, nodeMap, node));
+						node->addComponent(it->second(Any::cast<NodeInfo&>(nodeInformation[it->first]), nodeMap, node));
 					}
 				}
 			}
@@ -79,23 +78,22 @@ namespace minko
 		void
 		SceneDeserializer::initializeNodeDeserializer()
 		{
-			_nodeDeserializer[MkTypes::GROUP]	= std::bind(&SceneDeserializer::deserializeGroup, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
-			_nodeDeserializer[MkTypes::MESH]	= std::bind(&SceneDeserializer::deserializeMesh, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
-			_nodeDeserializer[MkTypes::LIGHT]	= std::bind(&SceneDeserializer::deserializeLight, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
-			_nodeDeserializer[MkTypes::CAMERA]	= std::bind(&SceneDeserializer::deserializeCamera, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
+			_nodeDeserializer[MkTypes::GROUP]	= std::bind(&SceneDeserializer::deserializeGroup, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
+			_nodeDeserializer[MkTypes::MESH]	= std::bind(&SceneDeserializer::deserializeMesh, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
+			_nodeDeserializer[MkTypes::LIGHT]	= std::bind(&SceneDeserializer::deserializeLight, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
+			_nodeDeserializer[MkTypes::CAMERA]	= std::bind(&SceneDeserializer::deserializeCamera, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
 		}
 
 		std::shared_ptr<scene::Node>
 		SceneDeserializer::deserializeNode(Qark::Object&		nodeObject,
 										   OptionsPtr			options,
-										   ControllerMap&		controllerMap,
 										   NodeMap&				nodeMap)
 		{
 			NodeInfo&					nodeInformation = Any::cast<NodeInfo&>(nodeObject);
 			int&						type			= Any::cast<int&>(nodeInformation["type"]);
 			NodeDeserializerFunc		f				= _nodeDeserializer[type];
 			
-			std::shared_ptr<scene::Node> node			= f(nodeInformation, options, controllerMap, nodeMap);
+			std::shared_ptr<scene::Node> node			= f(nodeInformation, options, nodeMap);
 
 			// iterate throw register plugin
 			for (std::map<std::string, file::MkOptions::DeserializeFunction>::iterator it = options->pluginEntryToFunction()->begin(); 
@@ -118,14 +116,13 @@ namespace minko
 		std::shared_ptr<scene::Node>
 		SceneDeserializer::deserializeGroup(NodeInfo&		nodeInfo,
 											OptionsPtr		options,
-											ControllerMap&	controllerMap,
 											NodeMap&		nodeMap)
 		{
-			std::shared_ptr<scene::Node>	node		= NodeDeserializer::deserializeGroup(nodeInfo, options, controllerMap, nodeMap);
+			std::shared_ptr<scene::Node>	node		= NodeDeserializer::deserializeGroup(nodeInfo, options, nodeMap);
 			std::vector<Any>&				children	= Any::cast<std::vector<Any>&>(nodeInfo["children"]);
 
 			for (unsigned int i = 0; i < children.size(); ++i)
-				node->addChild(deserializeNode(children[i], options, controllerMap, nodeMap));
+				node->addChild(deserializeNode(children[i], options, nodeMap));
 
 			return node;
 		}
@@ -133,10 +130,9 @@ namespace minko
 		std::shared_ptr<scene::Node>
 		SceneDeserializer::deserializeMesh(NodeInfo&		nodeInfo,
 										   OptionsPtr		options,
-										   ControllerMap&	controllerMap,
 										   NodeMap&			nodeMap)
 		{
-			std::shared_ptr<scene::Node> node = NodeDeserializer::deserializeMesh(nodeInfo, options, controllerMap, nodeMap);
+			std::shared_ptr<scene::Node> node = NodeDeserializer::deserializeMesh(nodeInfo, options, nodeMap);
 			
 			return node;
 		}
@@ -144,10 +140,9 @@ namespace minko
 		std::shared_ptr<scene::Node>
 		SceneDeserializer::deserializeCamera(NodeInfo&		nodeInfo,
 										     OptionsPtr		options,
-											 ControllerMap&	controllerMap,
 											 NodeMap&		nodeMap)
 		{
-			std::shared_ptr<scene::Node> node = NodeDeserializer::deserializeCamera(nodeInfo, options, controllerMap, nodeMap);
+			std::shared_ptr<scene::Node> node = NodeDeserializer::deserializeCamera(nodeInfo, options, nodeMap);
 
 			return node;
 		}
@@ -155,10 +150,9 @@ namespace minko
 		std::shared_ptr<scene::Node>
 		SceneDeserializer::deserializeLight(NodeInfo&		nodeInfo,
 										    OptionsPtr		options,
-											ControllerMap&	controllerMap,
 											NodeMap&		nodeMap)
 		{
-			std::shared_ptr<scene::Node> node = NodeDeserializer::deserializeLight(nodeInfo, options, controllerMap, nodeMap);
+			std::shared_ptr<scene::Node> node = NodeDeserializer::deserializeLight(nodeInfo, options, nodeMap);
 
 			return node;
 		}
