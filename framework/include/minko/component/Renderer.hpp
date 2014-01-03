@@ -52,6 +52,7 @@ namespace minko
 			std::shared_ptr<SceneManager>								_sceneManager;
 			Signal<Ptr>::Ptr											_renderingBegin;
 			Signal<Ptr>::Ptr											_renderingEnd;
+			Signal<Ptr>::Ptr											_beforePresent;
 			std::shared_ptr<render::Texture>							_renderTarget;
 
 			std::set<std::shared_ptr<Surface>>							_toCollect;
@@ -150,6 +151,13 @@ namespace minko
 			renderingBegin()
 			{
 				return _renderingBegin;
+			}
+
+			inline
+			Signal<Ptr>::Ptr
+			beforePresent()
+			{
+				return _beforePresent;
 			}
 
 			inline
