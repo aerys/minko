@@ -4,6 +4,13 @@
 
 	premake.extensions.emscripten = {}
 
+	if os.getenv('EMSCRIPTEN_HOME') then
+		EMSCRIPTEN_HOME = os.getenv('EMSCRIPTEN_HOME');
+	else
+		print(color.fg.red .. 'You must define the environment variable EMSCRIPTEN_HOME.' .. color.reset)
+		os.exit(1)
+	end
+
 	local emscripten = premake.extensions.emscripten
 	local project = premake.project
 	local api = premake.api

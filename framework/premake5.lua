@@ -47,7 +47,7 @@ project "minko-framework"
 		buildoptions { "-std=c++11" }
 
 	-- windows
-	configuration { "windows" }
+	configuration { "win" }
 		includedirs { "../deps/win/include" }
 		libdirs { "../deps/win/lib" }
 
@@ -57,13 +57,12 @@ project "minko-framework"
 		defines { "_VARIADIC_MAX=10" }
 
 	-- macos
-	configuration { "macosx" }
+	configuration { "osx" }
 		includedirs { "../deps/mac/include" }
 
-	-- emscripten
-	configuration { "emscripten" }
+	-- html5
+	configuration { "html5" }
 		optimize "On"
-		defines { "EMSCRIPTEN" }
 
 	newoption {
 		trigger     = "with-glsl-optimizer",

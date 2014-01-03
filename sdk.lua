@@ -1,36 +1,35 @@
--- set MINKO_HOME
-if not MINKO_HOME then
-	if os.getenv('MINKO_HOME') then
-		MINKO_HOME = os.getenv('MINKO_HOME');
-	else
-		MINKO_HOME = path.getabsolute(os.getcwd())
-	end
+if os.getenv('MINKO_HOME') then
+	MINKO_HOME = os.getenv('MINKO_HOME');
+else
+	print(color.fg.red .. 'You must define the environment variable MINKO_HOME.' .. color.reset)
+	os.exit(1)
 end
 
 if not os.isfile(MINKO_HOME .. '/sdk.lua') then
-	printf('Running premake4 from outside Minko SDK. You must define the environment variable MINKO_HOME.')
+	print(color.fg.red ..'MINKO_HOME does not point to a valid Minko SDK.' .. color.reset)
+	os.exit(1)
 end
 
-printf('Minko SDK home directory: ' .. MINKO_HOME)
+print('Minko SDK home directory: ' .. MINKO_HOME)
 
-require 'copy'
-require 'inspect'
 require 'emscripten'
 require 'android'
 
-premake.tools.gcc.cxxflags.system = {
+local insert = require 'insert'
+
+insert.insert(premake.tools.gcc, 'cxxflags.system', {
 	linux = { "-MMD", "-MP", "-std=c++11" },
 	macosx = { "-MMD", "-MP", "-std=c++11" },
 	emscripten = { "-MMD", "-MP", "-std=c++11" }
-}
+})
 
-premake.tools.clang.cxxflags.system = {
+insert.insert(premake.tools.clang, 'cxxflags.system', {
 	macosx = { "-MMD", "-MP", "-std=c++11", "-stdlib=libc++" }
-}
+})
 
-premake.tools.clang.ldflags.system.macosx = {
+insert.insert(premake.tools.clang, 'ldflags.system.macosx', {
 	macosx = { "-stdlib=libc++" }
-}
+})
 
 -- print(table.inspect(premake.tools.clang))
 
@@ -47,47 +46,11 @@ dofile(MINKO_HOME .. '/tools/all/lib/minko.vs.lua')
 dofile(MINKO_HOME .. '/tools/all/lib/minko.project.lua')
 
 
--- add new platforms
--- minko.sdk.newplatform {
--- 	name = 'emscripten',
--- 	description = 'Emscripten C++ to JS toolchain',
--- 	gcc = {
--- 		cc = MINKO_HOME .. '/tools/lin/bin/emcc.sh',
--- 		cxx = MINKO_HOME .. '/tools/lin/bin/em++.sh',
--- 		ar = MINKO_HOME .. '/tools/lin/bin/emar.sh',
--- 		cppflags = '-MMD -DEMSCRIPTEN'
--- 	}
--- }
-
--- minko.sdk.newplatform {
--- 	name = 'clang',
--- 	description = 'Clang',
--- 	gcc = {
--- 		cc = 'clang',
--- 		cxx = 'clang++',
--- 		ar = 'ar',
--- 		cppflags = '-stdlib=libc++',
--- 		ldflags = '-stdlib=libc++'
--- 	}
--- }
-
--- minko.sdk.newplatform {
--- 	name = 'gcc',
--- 	description = 'GCC',
--- 	gcc = {
--- 		cc = 'gcc',
--- 		cxx = MINKO_HOME .. '/tools/lin/bin/g++-ld.sh',
--- 		ar = 'ar',
--- 		cppflags = '-MMD',
--- 		ldflags = ''
--- 	}
--- }
-
 -- options
 if _OPTIONS.platform then
 	print('Selected target platform: ' .. _OPTIONS['platform'])
-    -- overwrite the native platform with the options::platform
-    premake.gcc.platforms['Native'] = premake.gcc.platforms[_OPTIONS.platform]
+	-- overwrite the native platform with the options::platform
+	premake.gcc.platforms['Native'] = premake.gcc.platforms[_OPTIONS.platform]
 end
 
 newoption {
