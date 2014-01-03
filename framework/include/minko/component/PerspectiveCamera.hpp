@@ -143,6 +143,13 @@ namespace minko
 				}
 			}
 
+			inline
+			std::shared_ptr<data::StructureProvider>
+			data()
+			{
+				return _data;
+			}
+
 			~PerspectiveCamera()
 			{
 			}

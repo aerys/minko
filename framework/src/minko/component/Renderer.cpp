@@ -43,6 +43,7 @@ Renderer::Renderer(std::shared_ptr<render::Texture> renderTarget,
     _backgroundColor(0),
 	_renderingBegin(Signal<Ptr>::create()),
 	_renderingEnd(Signal<Ptr>::create()),
+	_beforePresent(Signal<Ptr>::create()),
 	_surfaceDrawCalls(),
 	_surfaceTechniqueChangedSlot(),
 	_effect(effect)
@@ -260,6 +261,8 @@ Renderer::render(std::shared_ptr<render::AbstractContext> context, std::shared_p
 
 	for (auto& drawCall : _drawCalls)
 		drawCall->render(context, renderTarget);
+
+	_beforePresent->execute(shared_from_this());
 
 	context->present();
 

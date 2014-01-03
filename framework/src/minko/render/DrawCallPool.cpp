@@ -75,7 +75,6 @@ DrawCallPool::compareDrawCalls(DrawCallPtr& a, DrawCallPtr& b)
 void
 DrawCallPool::addSurface(SurfacePtr surface)
 {
-
 	_surfaceToTechniqueChangedSlot[surface] = surface->techniqueChanged()->connect(std::bind(
 		&DrawCallPool::techniqueChanged,
 		shared_from_this(),
@@ -204,7 +203,7 @@ DrawCallPool::generateDrawCall(SurfacePtr	surface,
 }
 
 std::shared_ptr<DrawCall>
-DrawCallPool::initializeDrawCall(std::shared_ptr<render::Pass>		pass, 
+DrawCallPool::initializeDrawCall(std::shared_ptr<render::Pass>			pass, 
 									std::shared_ptr<component::Surface>	surface,
 									std::shared_ptr<DrawCall>			drawcall)
 {
