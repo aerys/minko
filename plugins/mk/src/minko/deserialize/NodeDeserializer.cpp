@@ -85,8 +85,16 @@ NodeDeserializer::deserializeMesh(NodeInfo&			nodeInfo,
 		copyId			= Any::cast<int&>(nodeInfo["geometryId"]);
 	}
 
-	if (nodeInfo.find("geometryName") != nodeInfo.end())
-		geometryName = Any::cast<string&>(nodeInfo["geometryName"]);
+
+	try
+	{
+		if (nodeInfo.find("geometryName") != nodeInfo.end())
+			geometryName = Any::cast<string&>(nodeInfo["geometryName"]);
+	}
+	catch (...)
+	{
+		geometryName = ("noName" + std::to_string(rand()));
+	}
 
 	vector<Any>&	bindingsId	= Any::cast<vector<Any>&>(nodeInfo["bindingsIds"]);
 	int				materialId	= Any::cast<int&>(bindingsId[0]);

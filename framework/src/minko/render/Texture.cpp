@@ -29,7 +29,8 @@ Texture::Texture(std::shared_ptr<render::AbstractContext>	context,
 				 const unsigned int							height,
                  bool                                       mipMapping,
                  bool                                       optimizeForRenderToTexture,
-				 bool										resizeSmoothly) :
+				 bool										resizeSmoothly,
+				 std::string								filename) :
 	AbstractResource(context),
 	_width(width),
 	_height(height),
@@ -37,7 +38,8 @@ Texture::Texture(std::shared_ptr<render::AbstractContext>	context,
 	_heightGPU(math::clp2(height)),
     _mipMapping(mipMapping),
     _optimizeForRenderToTexture(optimizeForRenderToTexture),
-	_resizeSmoothly(resizeSmoothly)
+	_resizeSmoothly(resizeSmoothly),
+	_filename(filename)
 {
 }
 

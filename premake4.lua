@@ -28,7 +28,7 @@ solution "minko"
 	-- plugins
 	include 'plugins/jpeg'
 	include 'plugins/png'
-	--include 'plugins/mk'
+	include 'plugins/mk'
 	--include 'plugins/bullet'
 	--include 'plugins/particles'
 	include 'plugins/sdl'
@@ -37,6 +37,8 @@ solution "minko"
 	--include 'plugins/assimp'
 	include 'plugins/lua'
 	--include 'plugins/offscreen'
+	include 'plugins/assimp'
+	include 'plugins/serializer'
 	if os.get() == 'linux' then
 		include 'plugins/offscreen'
 	end
@@ -55,6 +57,9 @@ solution "minko"
 		include('examples/stencil')
 		include 'examples/lua-scripts'
 		include('examples/line-geometry')
+		include('examples/frustum')
+		include('examples/serializer')
+		include('examples/picking')
 	end
 
 	-- tests

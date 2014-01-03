@@ -39,6 +39,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/math/AbstractShape.hpp"
 #include "minko/math/Box.hpp"
 #include "minko/math/Ray.hpp"
+#include "minko/math/Frustum.hpp"
 #include "minko/Signal.hpp"
 #include "minko/scene/Node.hpp"
 #include "minko/scene/NodeSet.hpp"
@@ -64,6 +65,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/MousePicking.hpp"
 #include "minko/component/MouseManager.hpp"
 #include "minko/component/SkinningMethod.hpp"
+#include "minko/component/FrustumCulling.hpp"
+#include "minko/component/Picking.hpp"
 #include "minko/render/AbstractResource.hpp"
 #include "minko/render/Program.hpp"
 #include "minko/render/VertexBuffer.hpp"
@@ -85,4 +88,4 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/material/BasicMaterial.hpp"
 #include "minko/input/Mouse.hpp"
 #include "minko/input/Keyboard.hpp"
-#include "minko/input/Joystick.hpp"
+
