@@ -30,7 +30,6 @@ namespace minko
 	}
 }
 
-typedef std::map<std::shared_ptr<minko::scene::Node>, std::vector<minko::component::AbstractComponent>>	ControllerMap;
 typedef std::map<std::shared_ptr<minko::scene::Node>, minko::uint>										NodeMap;
 typedef std::shared_ptr<minko::file::MkOptions>															OptionsPtr;
 typedef	std::map<std::string, minko::Any>																NodeInfo;

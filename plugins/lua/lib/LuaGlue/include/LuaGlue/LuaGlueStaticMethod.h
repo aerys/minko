@@ -16,9 +16,7 @@ class LuaGlueClass;
 template<typename _Ret, typename _Class, typename... _Args>
 class LuaGlueStaticMethod : public LuaGlueMethodBase
 {
-	private:
-		template <typename... T>
- 		using tuple = std::tuple<typename std::remove_const<typename std::remove_reference<T>::type>::type...>;
+	typedef std::tuple<typename std::remove_const<typename std::remove_reference<_Args>::type>::type...> ArgsTuple;
 
 	public:
 		typedef _Class ClassType;
@@ -45,7 +43,7 @@ class LuaGlueStaticMethod : public LuaGlueMethodBase
 		LuaGlueClass<_Class> *glueClass;
 		std::string name_;
 		MethodType fn;
-		tuple<_Args...> args;
+		ArgsTuple args;
 		static const unsigned int Arg_Count_ = sizeof...(_Args);
 		
 		int invoke(lua_State *state)
@@ -67,8 +65,7 @@ template<typename _Class, typename... _Args>
 class LuaGlueStaticMethod<void, _Class, _Args...> : public LuaGlueMethodBase
 {
 	private:
-		template <typename... T>
- 		using tuple = std::tuple<typename std::remove_const<typename std::remove_reference<T>::type>::type...>;
+		typedef std::tuple<typename std::remove_const<typename std::remove_reference<_Args>::type>::type...> ArgsTuple;
 
 	public:
 		typedef _Class ClassType;
@@ -95,7 +92,7 @@ class LuaGlueStaticMethod<void, _Class, _Args...> : public LuaGlueMethodBase
 		LuaGlueClass<_Class> *glueClass;
 		std::string name_;
 		MethodType fn;
-		tuple<_Args...> args;
+		ArgsTuple args;
 		static const unsigned int Arg_Count_ = sizeof...(_Args);
 		
 		int invoke(lua_State *state)

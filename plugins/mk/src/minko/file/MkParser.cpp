@@ -58,7 +58,7 @@ MkParser::parse(const std::string&				    filename,
 
 	std::shared_ptr<deserialize::SceneDeserializer> sceneDeserializer = deserialize::SceneDeserializer::create(options->context());
 
-	auto node = sceneDeserializer->deserializeScene(qarkData["scene"], qarkData["assets"], mkOptions, _controllerMap, _nodeMap);
+	auto node = sceneDeserializer->deserializeScene(qarkData["scene"], qarkData["assets"], mkOptions, _nodeMap);
 	
 	AssetLibrary->symbol(filename, node);
 
