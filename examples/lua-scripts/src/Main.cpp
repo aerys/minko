@@ -32,8 +32,11 @@ int main(int argc, char** argv)
 	auto sceneManager = SceneManager::create(canvas->context());
 	auto root = scene::Node::create("root")
 		->addComponent(sceneManager)
-		->addComponent(LuaScriptManager::create(canvas))
 		->addComponent(MouseManager::create(canvas->mouse()));
+
+	// init. lua
+	LuaContext::initialize(argc, argv, root, canvas);
+	root->addComponent(LuaScriptManager::create());
 
 	// setup assets
 	sceneManager->assets()->defaultOptions()->generateMipmaps(true);
@@ -56,13 +59,6 @@ int main(int argc, char** argv)
 	{
 		sceneManager->nextFrame();
 	});
-
-	/*
-	auto resized = canvas->resized()->connect([&](Canvas::Ptr canvas, uint w, uint h)
-	{
-		camera->component<PerspectiveCamera>()->aspectRatio((float)w / (float)h);
-	});
-	*/
 
 	canvas->run();
 

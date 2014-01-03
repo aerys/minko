@@ -45,7 +45,7 @@ ComponentSerializer::serializeTransform(std::shared_ptr<scene::Node>	node, std::
 	int8_t												type = mk::TRANSFORM;
 	std::shared_ptr<component::Transform>				transform = node->component<component::Transform>();
 	std::stringstream									buffer;
-	msgpack::type::tuple<uint, std::string>		src = serialize::TypeSerializer::serializeMatrix4x4(transform->transform());
+	msgpack::type::tuple<uint, std::string>		src = serialize::TypeSerializer::serializeMatrix4x4(transform->matrix());
 
 	msgpack::pack(buffer, src);
 	msgpack::pack(buffer, type);

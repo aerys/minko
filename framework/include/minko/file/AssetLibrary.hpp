@@ -131,7 +131,7 @@ namespace minko
 			symbol(const std::string& name, NodePtr symbol);
 
 			const std::string&
-			node(NodePtr node);
+			symbol(NodePtr node);
 
 			EffectPtr
 			effect(const std::string& name);

@@ -228,12 +228,12 @@ namespace minko
             return _keyboard;
         }
 		
-		/*inline
+		inline
 		std::shared_ptr<input::Joystick>
         joystick(int id)
         {
 			return _joysticks[id];
-        }*/
+        }
 
 		inline
 		uint

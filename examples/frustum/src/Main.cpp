@@ -63,7 +63,7 @@ int main(int argc, char** argv)
 		{
 			auto mesh = scene::Node::create("mesh")
 				->addComponent(Transform::create(math::Matrix4x4::create()
-					->appendTranslation(rand() % 200 - 100, rand() % 200 - 100, rand() % 200 - 100)
+					->appendTranslation(rand() % 200 - 100.f, rand() % 200 - 100.f, rand() % 200 - 100.f)
 					))
 				->addComponent(Surface::create(
 					assets->geometry("cube"),
@@ -81,20 +81,20 @@ int main(int argc, char** argv)
 			->addComponent(PerspectiveCamera::create((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT))
 			->addComponent(FrustumCulling::create())
 			->addComponent(Transform::create(
-				Matrix4x4::create()->lookAt(Vector3::create(0.f, 0.f), Vector3::create(rand() % 200 - 100, rand() % 200 - 100, rand() % 200 - 100))
+				Matrix4x4::create()->lookAt(Vector3::create(0.f, 0.f), Vector3::create(rand() % 200 - 100.f, rand() % 200 - 100.f, rand() % 200 - 100.f))
 			));
 
 		root->addChild(camera);
 		root->addChild(cubeGroup);
 		
-		auto resized = canvas->resized()->connect([&](Canvas::Ptr canvas, unsigned int width, unsigned int height)
+		auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, unsigned int width, unsigned int height)
 		{
 			camera->component<PerspectiveCamera>()->aspectRatio((float)width / (float)height);
 		});
 
-		auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, uint deltaTime)
+		auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr canvas, uint time, uint deltaTime)
 		{
-			camera->component<Transform>()->transform()->lock()->appendRotationY(0.02)->appendRotationZ(-0.014)->unlock();
+			camera->component<Transform>()->matrix()->lock()->appendRotationY(0.02)->appendRotationZ(-0.014)->unlock();
 			sceneManager->nextFrame();
 			std::cout << "Num drawCalls : " << camera->component<Renderer>()->numDrawCalls() << std::endl;
 		});
