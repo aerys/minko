@@ -348,22 +348,22 @@ Canvas::step()
 			//_mouseWheel->execute(shared_from_this(), event.wheel.x, event.wheel.y);
 			break;
 
-		/*case SDL_JOYAXISMOTION:
+		case SDL_JOYAXISMOTION:
 			_joysticks[event.jaxis.which]->joystickAxisMotion()->execute(_joysticks[event.jaxis.which], event.jaxis.which, event.jaxis.axis, event.jaxis.value);
 			break;
 
 		case SDL_JOYBUTTONDOWN:
-			_joysticks[event.jaxis.which]->joystickButtonDown()->execute(_joysticks[event.jaxis.which], event.button.which, event.jbutton.button);
+			_joysticks[event.button.which]->joystickButtonDown()->execute(_joysticks[event.button.which], event.button.which, event.jbutton.button);
 			break;
 
 		case SDL_JOYBUTTONUP:
-			_joysticks[event.jaxis.which]->joystickButtonUp()->execute(_joysticks[event.jaxis.which], event.button.which, event.jbutton.button);
+			_joysticks[event.button.which]->joystickButtonUp()->execute(_joysticks[event.button.which], event.button.which, event.jbutton.button);
 			break;
 
 		case SDL_JOYHATMOTION:
-			_joysticks[event.jaxis.which]->joystickHatMotion()->execute(_joysticks[event.jaxis.which], event.jhat.which, event.jhat.hat, event.jhat.value);
+			_joysticks[event.jhat.which]->joystickHatMotion()->execute(_joysticks[event.jhat.which], event.jhat.which, event.jhat.hat, event.jhat.value);
 			break;
-			*/
+			
 		case SDL_WINDOWEVENT:
 			switch (event.window.event)
 			{
