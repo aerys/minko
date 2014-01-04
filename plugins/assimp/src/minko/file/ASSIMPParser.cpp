@@ -117,14 +117,8 @@ ASSIMPParser::parse(const std::string&					filename,
 
 	if (pos > 0)
 	{
-		auto	skinningNumFPS	= options->skinningNumFPS();
-		auto	skinningMethod	= options->skinningMethod();
-
-		options = file::Options::create(options); // ?
+		options = file::Options::create(options);
 		options->includePaths().push_back(resolvedFilename.substr(0, pos));
-
-		options->skinningNumFPS(skinningNumFPS);
-		options->skinningMethod(skinningMethod);
 	}
 
     _filename = filename;
