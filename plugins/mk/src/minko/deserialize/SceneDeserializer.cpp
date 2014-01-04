@@ -124,7 +124,7 @@ namespace minko
 			for (unsigned int i = 0; i < children.size(); ++i)
 				node->addChild(deserializeNode(children[i], options, nodeMap));
 
-			return node;
+			return options->parseOptions()->nodeFunction()(node);
 		}
 
 		std::shared_ptr<scene::Node>
@@ -134,7 +134,7 @@ namespace minko
 		{
 			std::shared_ptr<scene::Node> node = NodeDeserializer::deserializeMesh(nodeInfo, options, nodeMap);
 			
-			return node;
+			return options->parseOptions()->nodeFunction()(node);
 		}
 
 		std::shared_ptr<scene::Node>
@@ -144,7 +144,7 @@ namespace minko
 		{
 			std::shared_ptr<scene::Node> node = NodeDeserializer::deserializeCamera(nodeInfo, options, nodeMap);
 
-			return node;
+			return options->parseOptions()->nodeFunction()(node);
 		}
 
 		std::shared_ptr<scene::Node>
@@ -154,7 +154,7 @@ namespace minko
 		{
 			std::shared_ptr<scene::Node> node = NodeDeserializer::deserializeLight(nodeInfo, options, nodeMap);
 
-			return node;
+			return options->parseOptions()->nodeFunction()(node);
 		}
 	}
 }
