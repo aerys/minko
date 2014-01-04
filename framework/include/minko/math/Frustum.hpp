@@ -37,7 +37,27 @@ namespace minko
 			NEAR	= 4,
 			FAR		= 5
 		};
+	}
+}
 
+namespace std
+{
+	template<> 
+	struct hash<minko::math::FrustumPosition>
+	{
+	    inline
+	    size_t
+	    operator()(const minko::math::FrustumPosition& p) const
+	    {
+	        return static_cast<int>(p);
+	    }
+	};
+}
+
+namespace minko
+{
+	namespace math
+	{
 		class Frustum
 		{
 
@@ -76,3 +96,4 @@ namespace minko
 		};
 	}
 }
+

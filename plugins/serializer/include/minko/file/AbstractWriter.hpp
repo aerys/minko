@@ -85,7 +85,7 @@ namespace minko
 				else
 					std::cerr << "File " << filename << " can't be opened" << std::endl;
 
-				complete()->execute(shared_from_this());
+				complete()->execute(this->shared_from_this());
 			}
 
 			virtual

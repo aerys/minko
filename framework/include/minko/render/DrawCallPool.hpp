@@ -135,10 +135,8 @@ namespace minko
 						      std::list<data::ContainerProperty>&	booleanMacros,
 						      std::list<data::ContainerProperty>&	integerMacros,
 						      std::list<data::ContainerProperty>&	incorrectIntegerMacros);
-			
-		/*	
-			*/
-			DrawCallList
+						
+			DrawCallList&
 			generateDrawCall(SurfacePtr		surface,
 							 unsigned int	numAttempts); 
 			
