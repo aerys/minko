@@ -85,7 +85,7 @@ TypeSerializer::serializeVector3(Any value)
 msgpack::type::tuple<uint, std::string>
 TypeSerializer::serializeVector2(Any value)
 {
-	math::Vector2::Ptr vect2 = Any::cast<std::shared_ptr<math::Vector2>>(value);
+	math::Vector2::Ptr	vect2 = Any::cast<std::shared_ptr<math::Vector2>>(value);
 	std::vector<float>	res;
 	uint				type		= 0x00000000;
 	float				values[2]	= {vect2->x(), vect2->y()};
