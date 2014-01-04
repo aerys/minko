@@ -177,7 +177,7 @@ Dependency::serialize(std::shared_ptr<file::AssetLibrary>	assetLibrary,
 
 	while (itGeometry != _geometryDependencies.end())
 	{
-		std::string filename = assetLibrary->geometry(itGeometry->first) + ".geometry";
+		std::string filename = assetLibrary->geometryName(itGeometry->first) + ".geometry";
 
 		geometryWriter->data(itGeometry->first);
 		geometryWriter->write(filename, assetLibrary, options);
@@ -189,7 +189,7 @@ Dependency::serialize(std::shared_ptr<file::AssetLibrary>	assetLibrary,
 
 	while (itMaterial != _materialDependencies.end())
 	{
-		std::string filename = assetLibrary->material(itMaterial->first) + ".material";
+		std::string filename = assetLibrary->materialName(itMaterial->first) + ".material";
 
 		materialWriter->data(itMaterial->first);
 		materialWriter->write(filename, assetLibrary, options);
@@ -202,9 +202,9 @@ Dependency::serialize(std::shared_ptr<file::AssetLibrary>	assetLibrary,
 	while (itTexture != _textureDependencies.end())
 	{
 #ifdef DEBUG
-		std::string filenameInput	= "bin/debug/" + assetLibrary->texture(itTexture->first);
+		std::string filenameInput	= "asset/" + assetLibrary->textureName(itTexture->first);
 #else
-		std::string filenameInput	= assetLibrary->texture(itTexture->first);
+		std::string filenameInput	= assetLibrary->textureName(itTexture->first);
 #endif
 		std::string filenameOutput	= "";
 
@@ -227,9 +227,9 @@ Dependency::serialize(std::shared_ptr<file::AssetLibrary>	assetLibrary,
 	while (itEffect != _effectDependencies.end())
 	{
 #ifdef DEBUG
-		std::string filenameInput	= "bin/debug/" + assetLibrary->effect(itEffect->first);
+		std::string filenameInput	= "bin/debug/" + assetLibrary->effectName(itEffect->first);
 #else
-		std::string filenameInput	= assetLibrary->effect(itEffect->first);
+		std::string filenameInput	= assetLibrary->effectName(itEffect->first);
 #endif
 		std::string filenameOutput	= "";
 		copyEffectDependency(filenameInput, itEffect->first);
@@ -268,9 +268,7 @@ Dependency::copyEffectDependency(std::string effectFile, std::shared_ptr<render:
 		uint position = found;
 
 		while (effectContent.str()[position - 1] != '"')
-		{
 			position--;
-		}
 
 		std::string dependencyFile = effectContent.str().substr(position, found + 5 - position);
 
@@ -289,7 +287,7 @@ Dependency::copyEffectDependency(std::string effectFile, std::shared_ptr<render:
 		dependencySource.close();
 		dst.close();
 
-		i += (found + 6);
+		i = (found + 6);
 	}
 
 	source.close();
