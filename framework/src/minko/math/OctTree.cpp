@@ -93,7 +93,7 @@ OctTree::split()
 {
 	this->_children.resize(8);
 
-	float size = _k * _worldSize / (powf(2.f, _depth));
+	float size = (float)_k * _worldSize / (powf(2.f, (float)_depth));
 
 	for (uint x = 0; x < 2; ++x)
 	{
@@ -261,7 +261,7 @@ OctTree::computeDepth(std::shared_ptr<scene::Node> node)
 	component::Surface::Ptr surface = node->component<component::Surface>();
 	float					radius	= computeRadius(node->component<component::BoundingBox>());
 
-	return floor(log(_worldSize / radius) / log(2));
+	return (uint)floor(log(_worldSize / radius) / log(2));
 }
 
 float
@@ -273,7 +273,7 @@ OctTree::computeRadius(std::shared_ptr<component::BoundingBox> boundingBox)
 float
 OctTree::edgeLength()
 {
-	return _k * (_worldSize / pow(2.f, _depth));
+	return (float)_k * (_worldSize / powf(2.f, (float)_depth));
 }
 
 
