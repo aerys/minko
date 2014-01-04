@@ -36,7 +36,7 @@ namespace minko
 {
 	namespace file
 	{
-		static std::map<const type_info*, std::function<msgpack::type::tuple<uint, std::string>(Any)>> _typeToWriteFunction;
+		static std::map<const std::type_info*, std::function<msgpack::type::tuple<uint, std::string>(Any)>> _typeToWriteFunction;
 
 		class MaterialWriter:
 			public AbstractWriter<data::Provider::Ptr>
@@ -145,13 +145,36 @@ namespace minko
 			}
 
 			template <typename T>
-			typename std::enable_if<!std::is_arithmetic<T>::value, bool>::type
+			typename std::enable_if<std::is_base_of<std::shared_ptr<render::Texture>, T>::value, bool>::type
 			serializeMaterialValue(material::Material::Ptr																	material, 
 								   std::string																				propertyName,
 								   file::AssetLibrary::Ptr																	assets,
 								   std::vector<msgpack::type::tuple<std::string, msgpack::type::tuple<uint, std::string>>>	*complexSerializedProperties,
 								   std::vector<msgpack::type::tuple<std::string, float>>									*basicTypeSeriliazedProperties,
 								   Dependency::Ptr																			dependency)
+			{
+				if (material->propertyHasType<std::shared_ptr<render::Texture>>(propertyName))
+				{
+					msgpack::type::tuple<std::string, msgpack::type::tuple<uint, std::string>> serializedProperty(
+							propertyName,
+							serialize::TypeSerializer::serializeTexture(Any(dependency->registerDependency(material->get<std::shared_ptr<render::Texture>>(propertyName)))));
+							//static_cast<float>(dependency->registerDependency(material->get<std::shared_ptr<render::Texture>>(propertyName))));
+						complexSerializedProperties->push_back(serializedProperty);
+
+					return true;
+				}
+				
+				return false;
+			}
+
+			template <typename T>
+			typename std::enable_if<!std::is_arithmetic<T>::value && !std::is_base_of<std::shared_ptr<render::Texture>, T>::value, bool>::type
+			serializeMaterialValue(material::Material::Ptr																			material, 
+								   	std::string																				propertyName,
+								   	file::AssetLibrary::Ptr																	assets,
+								   	std::vector<msgpack::type::tuple<std::string, msgpack::type::tuple<uint, std::string>>>	*complexSerializedProperties,
+								   	std::vector<msgpack::type::tuple<std::string, float>>									*basicTypeSeriliazedProperties,
+								   	Dependency::Ptr																			dependency)
 			{
 				if (_typeToWriteFunction.find(&typeid(T)) != _typeToWriteFunction.end() &&
 					material->propertyHasType<T>(propertyName))
@@ -189,29 +212,7 @@ namespace minko
 				
 				return false;
 			}
-
-			template <>
-			bool
-			serializeMaterialValue<std::shared_ptr<render::Texture>>(material::Material::Ptr								material, 
-								   std::string																				propertyName,
-								   file::AssetLibrary::Ptr																	assets,
-								   std::vector<msgpack::type::tuple<std::string, msgpack::type::tuple<uint, std::string>>>	*complexSerializedProperties,
-								   std::vector<msgpack::type::tuple<std::string, float>>									*basicTypeSeriliazedProperties,
-								   Dependency::Ptr																			dependency)
-			{
-				if (material->propertyHasType<std::shared_ptr<render::Texture>>(propertyName))
-				{
-					msgpack::type::tuple<std::string, msgpack::type::tuple<uint, std::string>> serializedProperty(
-							propertyName,
-							serialize::TypeSerializer::serializeTexture(Any(dependency->registerDependency(material->get<std::shared_ptr<render::Texture>>(propertyName)))));
-							//static_cast<float>(dependency->registerDependency(material->get<std::shared_ptr<render::Texture>>(propertyName))));
-						complexSerializedProperties->push_back(serializedProperty);
-
-					return true;
-				}
-				
-				return false;
-			}
 		};
+
 	}
 }
