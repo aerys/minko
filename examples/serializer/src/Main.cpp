@@ -146,7 +146,7 @@ void
 openSceneExample(std::shared_ptr<file::AssetLibrary>	assets, 
 				 std::shared_ptr<scene::Node>			root)
 {
-	root->addChild(assets->symbol("test9/NewScene.scene"));
+	root->addChild(assets->symbol("subScene.scene"));
 }
 
 int loaded = 0;
@@ -163,7 +163,6 @@ int main(int argc, char** argv)
 		->registerParser<file::PNGParser>("png")
 		->registerParser<file::SceneParser>("scene")
 		->queue("texture/box.png")
-		->queue("test9/NewScene.scene")
 		//->queue("subScene.scene");
 		->queue("effect/Basic.effect");
 
@@ -217,9 +216,9 @@ int main(int argc, char** argv)
 		auto root = scene::Node::create("root")
 			->addComponent(sceneManager);
 
-		//root->addChild(mesh);
-		//root->addChild(mesh2);
-		//root->addChild(mesh3);
+		root->addChild(mesh);
+		root->addChild(mesh2);
+		root->addChild(mesh3);
 		
 		mesh2->component<Transform>()->matrix()->appendTranslation(0, 1, 0);
 		mesh3->component<Transform>()->matrix()->appendTranslation(0, -1, 0);
@@ -248,8 +247,8 @@ int main(int argc, char** argv)
 
 			if (frameId == 3)
 			{
-				//serializeSceneExample(assets, root, canvas->context());
-				openSceneExample(assets, root);
+				serializeSceneExample(assets, root, sceneManager->assets()->context());
+				//openSceneExample(assets, root);
 			}
 		});
 
