@@ -28,40 +28,49 @@ namespace minko
 		class ComponentSerializer
 		{
 		public:
-			typedef std::shared_ptr<scene::Node> NodePtr;
+			typedef std::shared_ptr<scene::Node>		NodePtr;
+			typedef std::shared_ptr<file::Dependency>	DependencyPtr;
 
 		public:
 			static
 			std::string
-			serializeTransform(NodePtr	node, std::shared_ptr<file::Dependency> dependencies);
+			serializeTransform(NodePtr			node, 
+							   DependencyPtr	dependencies);
 
 			static
 			std::string
-			serializePerspectiveCamera(NodePtr	node, std::shared_ptr<file::Dependency> dependencies);
+			serializePerspectiveCamera(NodePtr			node, 
+									   DependencyPtr	dependencies);
 
 			static
 			std::string
-			serializeAmbientLight(NodePtr	node, std::shared_ptr<file::Dependency> dependencies);
+			serializeAmbientLight(NodePtr		node, 
+								  DependencyPtr dependencies);
 
 			static
 			std::string
-			serializeDirectionalLight(NodePtr node, std::shared_ptr<file::Dependency> dependencies);
+			serializeDirectionalLight(NodePtr		node, 
+									  DependencyPtr dependencies);
 
 			static
 			std::string
-			serializePointLight(NodePtr node, std::shared_ptr<file::Dependency> dependencies);
+			serializePointLight(NodePtr			node, 
+								DependencyPtr	dependencies);
 
 			static
 			std::string
-			serializeSpotLight(NodePtr node, std::shared_ptr<file::Dependency> dependencies);
+			serializeSpotLight(NodePtr			node, 
+							   DependencyPtr	dependencies);
 
 			static
 			std::string
-			serializeSurface(NodePtr node, std::shared_ptr<file::Dependency> dependencies);
+			serializeSurface(NodePtr		node, 
+							 DependencyPtr	dependencies);
 
 			static
 			std::string
-			serializeRenderer(NodePtr node, std::shared_ptr<file::Dependency> dependencies);
+			serializeRenderer(NodePtr		node, 
+							  DependencyPtr dependencies);
 		};
 	}
 }
