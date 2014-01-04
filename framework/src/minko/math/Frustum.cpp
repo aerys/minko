@@ -31,16 +31,16 @@ Frustum::updateFromMatrix(std::shared_ptr<math::Matrix4x4> matrix)
 	std::shared_ptr<math::Matrix4x4>	clone	= math::Matrix4x4::create(matrix);
 	std::vector<float>					data	= clone->data();
 
-	_planes[FrustumPosition::LEFT]	->setTo(data[12] + data[0], data[13] + data[1], data[14] + data[2], data[15] + data[3])->normalize();
-	_planes[FrustumPosition::TOP]	->setTo(data[12] - data[4], data[13] - data[5], data[14] - data[6], data[15] - data[7])->normalize();
-	_planes[FrustumPosition::RIGHT]	->setTo(data[12] - data[0], data[13] - data[1], data[14] - data[2], data[15] - data[3])->normalize();
-	_planes[FrustumPosition::BOTTOM]->setTo(data[12] + data[4], data[13] + data[5], data[14] + data[6], data[15] + data[7])->normalize();
-	_planes[FrustumPosition::FAR]	->setTo(data[12] - data[8], data[13] - data[9], data[14] - data[10], data[15] - data[11])->normalize();
-	_planes[FrustumPosition::NEAR]	->setTo(data[8], data[9], data[10], data[11])->normalize();
+	_planes[(int)FrustumPosition::LEFT]	->setTo(data[12] + data[0], data[13] + data[1], data[14] + data[2], data[15] + data[3])->normalize();
+	_planes[(int)FrustumPosition::TOP]		->setTo(data[12] - data[4], data[13] - data[5], data[14] - data[6], data[15] - data[7])->normalize();
+	_planes[(int)FrustumPosition::RIGHT]	->setTo(data[12] - data[0], data[13] - data[1], data[14] - data[2], data[15] - data[3])->normalize();
+	_planes[(int)FrustumPosition::BOTTOM]	->setTo(data[12] + data[4], data[13] + data[5], data[14] + data[6], data[15] + data[7])->normalize();
+	_planes[(int)FrustumPosition::FAR]		->setTo(data[12] - data[8], data[13] - data[9], data[14] - data[10], data[15] - data[11])->normalize();
+	_planes[(int)FrustumPosition::NEAR]	->setTo(data[8], data[9], data[10], data[11])->normalize();
 }
 
 FrustumPosition
-Frustum::testBoundingBox(std::shared_ptr<math::Box> box)
+Frustum::testBoundingBox(math::Box::Ptr box)
 {
 	int result = 0;
 	
@@ -84,43 +84,43 @@ Frustum::testBoundingBox(std::shared_ptr<math::Box> box)
 	float ytrf = ytrb;
 	float ztrf = zblf;
 
-	for (auto it = _planes.begin(); it != _planes.end(); ++it)
+	for (uint planeId = 0; planeId < _planes.size(); ++planeId)
 	{
-		float pa = it->second->x();
-		float pb = it->second->y();
-		float pc = it->second->z();
-		float pd = it->second->w();
+		float pa = _planes[planeId]->x();
+		float pb = _planes[planeId]->y();
+		float pc = _planes[planeId]->z();
+		float pd = _planes[planeId]->w();
 
 		
-		_blfResult[it->first] = pa * xblf + pb * yblf + pc * zblf + pd < 0.;
-		_brfResult[it->first] = pa * xbrf + pb * ybrf + pc * zbrf + pd < 0.;
-		_blbResult[it->first] = pa * xblb + pb * yblb + pc * zblb + pd < 0.;
-		_brbResult[it->first] = pa * xbrb + pb * ybrb + pc * zbrb + pd < 0.;
+		_blfResult[planeId] = pa * xblf + pb * yblf + pc * zblf + pd < 0.;
+		_brfResult[planeId] = pa * xbrf + pb * ybrf + pc * zbrf + pd < 0.;
+		_blbResult[planeId] = pa * xblb + pb * yblb + pc * zblb + pd < 0.;
+		_brbResult[planeId] = pa * xbrb + pb * ybrb + pc * zbrb + pd < 0.;
 		
-		_tlfResult[it->first] = pa * xtlf + pb * ytlf + pc * ztlf + pd < 0.;
-		_trfResult[it->first] = pa * xtrf + pb * ytrf + pc * ztrf + pd < 0.;
-		_tlbResult[it->first] = pa * xtlb + pb * ytlb + pc * ztlb + pd < 0.;
-		_trbResult[it->first] = pa * xtrb + pb * ytrb + pc * ztrb + pd < 0.;
+		_tlfResult[planeId] = pa * xtlf + pb * ytlf + pc * ztlf + pd < 0.;
+		_trfResult[planeId] = pa * xtrf + pb * ytrf + pc * ztrf + pd < 0.;
+		_tlbResult[planeId] = pa * xtlb + pb * ytlb + pc * ztlb + pd < 0.;
+		_trbResult[planeId] = pa * xtrb + pb * ytrb + pc * ztrb + pd < 0.;
 	}
 
-	if (_blfResult[FrustumPosition::LEFT]	&& _trbResult[FrustumPosition::RIGHT] ||
-		_blfResult[FrustumPosition::RIGHT]	&& _trbResult[FrustumPosition::LEFT] ||
-		_blfResult[FrustumPosition::TOP]	&& _trbResult[FrustumPosition::BOTTOM] ||
-		_blfResult[FrustumPosition::BOTTOM]	&& _trbResult[FrustumPosition::TOP])
+	if (_blfResult[(int)FrustumPosition::LEFT]		&& _trbResult[(int)FrustumPosition::RIGHT] ||
+		_blfResult[(int)FrustumPosition::RIGHT]	&& _trbResult[(int)FrustumPosition::LEFT] ||
+		_blfResult[(int)FrustumPosition::TOP]		&& _trbResult[(int)FrustumPosition::BOTTOM] ||
+		_blfResult[(int)FrustumPosition::BOTTOM]	&& _trbResult[(int)FrustumPosition::TOP])
 		return FrustumPosition::AROUND;
 
-	for (auto it2 = _blfResult.begin(); it2 != _blfResult.end(); ++it2)
+	for (uint planeId = 0; planeId < _planes.size(); ++planeId)
 	{
-		if (_blfResult[it2->first] && 
-			_brfResult[it2->first] &&
-			_blbResult[it2->first] && 
-			_brbResult[it2->first] &&
-			_tlfResult[it2->first] && 
-			_trfResult[it2->first] &&
-			_tlbResult[it2->first] && 
-			_trbResult[it2->first]
+		if (_blfResult[planeId] &&
+			_brfResult[planeId] &&
+			_blbResult[planeId] &&
+			_brbResult[planeId] &&
+			_tlfResult[planeId] &&
+			_trfResult[planeId] &&
+			_tlbResult[planeId] &&
+			_trbResult[planeId]
 			)
-			return it2->first;
+			return static_cast<FrustumPosition>(planeId);
 	}
 
 	return FrustumPosition::INSIDE;
@@ -128,10 +128,10 @@ Frustum::testBoundingBox(std::shared_ptr<math::Box> box)
 
 Frustum::Frustum()
 {
-	_planes[FrustumPosition::LEFT]		= Vector4::create();
-	_planes[FrustumPosition::RIGHT]		= Vector4::create();
-	_planes[FrustumPosition::TOP]		= Vector4::create();
-	_planes[FrustumPosition::BOTTOM]	= Vector4::create();
-	_planes[FrustumPosition::FAR]		= Vector4::create();
-	_planes[FrustumPosition::NEAR]		= Vector4::create();
+	_planes[(int)FrustumPosition::LEFT]		= Vector4::create();
+	_planes[(int)FrustumPosition::RIGHT]	= Vector4::create();
+	_planes[(int)FrustumPosition::TOP]		= Vector4::create();
+	_planes[(int)FrustumPosition::BOTTOM]	= Vector4::create();
+	_planes[(int)FrustumPosition::FAR]		= Vector4::create();
+	_planes[(int)FrustumPosition::NEAR]		= Vector4::create();
 }
