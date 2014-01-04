@@ -88,18 +88,7 @@ namespace minko
             {
                 return _error;
             }
-
-            virtual
-            char
-            separator()
-            {
-#ifdef _WIN32
-                return '\\';
-#else
-                return '/';
-#endif
-            }
-
+			
             virtual void
             load(const std::string& filename, std::shared_ptr<Options> options) = 0;
 
@@ -116,14 +105,13 @@ namespace minko
             sanitizeFilename(const std::string& filename)
             {
                 auto f = filename;
-                auto sep = separator();
-                auto a = sep == '/' ? '\\' : '/';
+                auto a = '\\';
 
                 for (auto pos = f.find_first_of(a);
                      pos != std::string::npos;
                      pos = f.find_first_of(a))
                 {
-                    f = f.replace(pos, 1, 1, sep);
+                    f = f.replace(pos, 1, 1, '/');
                 }
 
                 return f;
