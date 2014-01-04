@@ -37,7 +37,6 @@ namespace minko
 				stream.write(reinterpret_cast<const char*>(&value), sizeof (ST));
 			}
 
-
 		public:
 
 			template <typename T, typename ST = T>
