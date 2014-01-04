@@ -45,7 +45,7 @@ Loader::load(const std::string& filename, std::shared_ptr<Options> options)
 	if (!file.is_open())
 		for (auto path : _options->includePaths())
 		{
-			auto testFilename = options->uriFunction()(sanitizeFilename(path + separator() + filename));
+			auto testFilename = options->uriFunction()(sanitizeFilename(path + '/' + filename));
 
 			file.open(testFilename, flags);
 			if (file.is_open())
