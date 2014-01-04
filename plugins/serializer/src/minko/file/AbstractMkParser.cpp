@@ -44,6 +44,16 @@ AbstractMkParser::AbstractMkParser()
 	_dependencies		= Dependency::create();
 }
 
+
+void
+AbstractMkParser::parse(const std::string&					filename,
+						const std::string&					resolvedFilename,
+						std::shared_ptr<Options>			options,
+						const std::vector<unsigned char>&	data,
+						std::shared_ptr<AssetLibrary>		assetLibrary)
+{
+}
+
 std::string
 AbstractMkParser::extractDependencies(std::shared_ptr<AssetLibrary>		assetLibrary,
 									  const std::vector<unsigned char>&	data,
