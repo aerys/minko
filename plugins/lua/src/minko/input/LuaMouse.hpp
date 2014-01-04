@@ -42,8 +42,10 @@ namespace minko
 			        .property("y",                  &input::Mouse::y)
 			        .property("leftButtonIsDown",   &input::Mouse::leftButtonIsDown)
 			        .property("rightButtonIsDown",  &input::Mouse::rightButtonIsDown);
+
 			    MINKO_LUAGLUE_BIND_SIGNAL(state, input::Mouse::Ptr);
 			    MINKO_LUAGLUE_BIND_SIGNAL(state, input::Mouse::Ptr, int, int);
+
 			    input_mouse
 			        .property("leftButtonDown",     &input::Mouse::leftButtonDown)
 			        .property("rightButtonDown",    &input::Mouse::rightButtonDown)
