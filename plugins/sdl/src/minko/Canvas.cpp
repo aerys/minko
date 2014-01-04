@@ -221,25 +221,25 @@ Canvas::initContext(SDL_Window* window, unsigned int width, unsigned int height)
 uint
 Canvas::x()
 {
-	return _data->get<math::Vector4::Ptr>("canvas.viewport")->x();
+	return (uint)_data->get<math::Vector4::Ptr>("canvas.viewport")->x();
 }
 
 uint
 Canvas::y()
 {
-	return _data->get<math::Vector4::Ptr>("canvas.viewport")->y();
+	return (uint)_data->get<math::Vector4::Ptr>("canvas.viewport")->y();
 }
 
 uint
 Canvas::width()
 {
-	return _data->get<math::Vector4::Ptr>("canvas.viewport")->z();
+	return (uint)_data->get<math::Vector4::Ptr>("canvas.viewport")->z();
 }
 
 uint
 Canvas::height()
 {
-	return _data->get<math::Vector4::Ptr>("canvas.viewport")->w();
+	return (uint)_data->get<math::Vector4::Ptr>("canvas.viewport")->w();
 }
 
 void
