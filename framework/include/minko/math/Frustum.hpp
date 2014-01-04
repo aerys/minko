@@ -66,16 +66,16 @@ namespace minko
 
 		private:
 			std::vector<std::shared_ptr<math::Vector3>>							_points;
-			std::unordered_map<FrustumPosition, std::shared_ptr<math::Vector4>> _planes;
+			std::array<std::shared_ptr<math::Vector4>, 6> _planes;
 			
-			std::unordered_map<FrustumPosition, bool> _blfResult;
-			std::unordered_map<FrustumPosition, bool> _blbResult;
-			std::unordered_map<FrustumPosition, bool> _brfResult;
-			std::unordered_map<FrustumPosition, bool> _brbResult;
-			std::unordered_map<FrustumPosition, bool> _tlfResult;
-			std::unordered_map<FrustumPosition, bool> _tlbResult;
-			std::unordered_map<FrustumPosition, bool> _trfResult;
-			std::unordered_map<FrustumPosition, bool> _trbResult;
+			std::array<bool, 6> _blfResult;
+			std::array<bool, 6> _blbResult;
+			std::array<bool, 6> _brfResult;
+			std::array<bool, 6> _brbResult;
+			std::array<bool, 6> _tlfResult;
+			std::array<bool, 6> _tlbResult;
+			std::array<bool, 6> _trfResult;
+			std::array<bool, 6> _trbResult;
 
 		public:
 			inline static
