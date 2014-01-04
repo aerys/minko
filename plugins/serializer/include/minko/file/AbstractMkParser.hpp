@@ -51,9 +51,7 @@ namespace minko
 				  const std::string&                resolvedFilename,
 				  std::shared_ptr<Options>          options,
 				  const std::vector<unsigned char>&	data,
-				  std::shared_ptr<AssetLibrary>		assetLibrary)
-			{
-			}
+				  std::shared_ptr<AssetLibrary>		assetLibrary);
 
 		protected:
 			std::string
