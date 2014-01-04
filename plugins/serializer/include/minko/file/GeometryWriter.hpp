@@ -64,7 +64,7 @@ namespace minko
 
 				msgpack::type::tuple<unsigned char, std::string, std::string, std::vector<std::string>> res(
 					metaByte,
-					assetLibrary->geometry(geometry), 
+					assetLibrary->geometryName(geometry), 
 					serializedIndexBuffer, 
 					serializedVertexBuffers);
 				msgpack::pack(sbuf, res);
