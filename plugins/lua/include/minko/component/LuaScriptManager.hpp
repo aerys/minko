@@ -49,12 +49,12 @@ namespace minko
 			typedef std::chrono::high_resolution_clock::time_point	time_point;
 
 		private:
-			LuaGlue									_state;
-			time_point								_previousTime;
-
 			bool									_ready;
 			uint									_numDependencies;
 			uint									_numLoadedDependencies;
+
+			LuaGlue									_state;
+			time_point								_previousTime;
 			std::list<Signal<AbsLoaderPtr>::Slot>	_dependencySlots;
 
 		public:
@@ -81,7 +81,6 @@ namespace minko
 
 		private:
 			LuaScriptManager() :
-				_state(),
 				_ready(false),
 				_numDependencies(0),
 				_numLoadedDependencies(0)
