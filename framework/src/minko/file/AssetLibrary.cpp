@@ -66,7 +66,7 @@ AssetLibrary::geometry(const std::string& name, std::shared_ptr<Geometry> geomet
 }
 
 const std::string&
-AssetLibrary::geometry(GeometryPtr geometry)
+AssetLibrary::geometryName(GeometryPtr geometry)
 {
 	for (auto it = _geometries.begin(); it != _geometries.end(); ++it)
 	{
@@ -92,7 +92,7 @@ AssetLibrary::texture(const std::string& name, render::Texture::Ptr texture)
 }
 
 const std::string&
-AssetLibrary::texture(TexturePtr texture)
+AssetLibrary::textureName(TexturePtr texture)
 {
 	for (auto it = _textures.begin(); it != _textures.end(); ++it)
 	{
@@ -100,7 +100,7 @@ AssetLibrary::texture(TexturePtr texture)
 			return it->first;
 	}
 
-	return nullptr;
+	return "";
 }
 
 scene::Node::Ptr
@@ -118,7 +118,7 @@ AssetLibrary::symbol(const std::string& name, scene::Node::Ptr node)
 }
 
 const std::string&
-AssetLibrary::symbol(NodePtr node)
+AssetLibrary::symbolName(NodePtr node)
 {
 	for (auto it = _symbols.begin(); it != _symbols.end(); ++it)
 	{
@@ -126,7 +126,7 @@ AssetLibrary::symbol(NodePtr node)
 			return it->first;
 	}
 
-	return nullptr;
+	return "";
 }
 
 material::Material::Ptr
@@ -151,7 +151,7 @@ AssetLibrary::material(const std::string& name, MaterialPtr material)
 }
 
 const std::string&
-AssetLibrary::material(MaterialPtr material)
+AssetLibrary::materialName(MaterialPtr material)
 {
 	for (auto it = _materials.begin(); it != _materials.end(); ++it)
 	{
@@ -159,7 +159,7 @@ AssetLibrary::material(MaterialPtr material)
 			return it->first;
 	}
 
-	return nullptr;
+	return "";
 }
 
 AssetLibrary::EffectPtr
@@ -177,7 +177,7 @@ AssetLibrary::effect(const std::string& name, std::shared_ptr<Effect> effect)
 }
 
 const std::string&
-AssetLibrary::effect(EffectPtr effect)
+AssetLibrary::effectName(EffectPtr effect)
 {
 	for (auto it = _effects.begin(); it != _effects.end(); ++it)
 	{
@@ -185,7 +185,7 @@ AssetLibrary::effect(EffectPtr effect)
 			return it->first;
 	}
 
-	return nullptr;
+	return "";
 }
 
 const std::vector<unsigned char>&
@@ -217,6 +217,18 @@ AssetLibrary::script(const std::string& name, AbsScriptPtr script)
     _scripts[name] = script;
 
     return shared_from_this();
+}
+
+const std::string&
+AssetLibrary::scriptName(AbsScriptPtr script)
+{
+	for (auto it = _scripts.begin(); it != _scripts.end(); ++it)
+	{
+		if (it->second == script)
+			return it->first;
+	}
+
+	return "";
 }
 
 const unsigned int
