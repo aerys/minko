@@ -149,9 +149,9 @@ DrawCallPool::visibilityChanged(SurfacePtr surface, bool value)
 	
 }
 
-DrawCallPool::DrawCallList
+DrawCallPool::DrawCallList&
 DrawCallPool::generateDrawCall(SurfacePtr	surface,
-								  unsigned int	numAttempts)
+							   unsigned int	numAttempts)
 {
 	if (_surfaceToDrawCalls.find(surface) != _surfaceToDrawCalls.end())
 		deleteDrawCalls(surface);

@@ -17,22 +17,98 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+#include "minko/file/SceneWriter.hpp"
+
 #include "minko/component/AbstractComponent.hpp"
-#include "minko/filE/SceneWriter.hpp"
+#include "minko/scene/Node.hpp"
+#include "minko/component/PerspectiveCamera.hpp"
+#include "minko/component/Transform.hpp"
+#include "minko/component/AmbientLight.hpp"
+#include "minko/component/DirectionalLight.hpp"
+#include "minko/component/SpotLight.hpp"
+#include "minko/component/PointLight.hpp"
+#include "minko/component/Surface.hpp"
+#include "minko/component/Renderer.hpp"
+
 #include <queue>
 #include <iostream>
 #include <fstream>
 
-
-
 using namespace minko;
 using namespace minko::file;
 
-std::map<const type_info*, std::function<std::string(std::shared_ptr<scene::Node>, std::shared_ptr<file::Dependency>)>> SceneWriter::_componentIdToWriteFunction;
+std::map<const std::type_info*, SceneWriter::NodeWriterFunc> SceneWriter::_componentIdToWriteFunction;
+
+SceneWriter::SceneWriter()
+{
+	registerComponent(
+		&typeid(component::PerspectiveCamera), 
+		std::bind(
+			&serialize::ComponentSerializer::serializePerspectiveCamera,
+			std::placeholders::_1, std::placeholders::_2
+		)
+	);
+	
+	registerComponent(
+		&typeid(component::Transform),
+		std::bind(
+			&serialize::ComponentSerializer::serializeTransform,
+			std::placeholders::_1, std::placeholders::_2
+		)
+	);
+
+	registerComponent(
+		&typeid(component::AmbientLight),
+		std::bind(
+			&serialize::ComponentSerializer::serializeAmbientLight,
+			std::placeholders::_1, std::placeholders::_2
+		)
+	);
+
+	registerComponent(
+		&typeid(component::DirectionalLight),
+		std::bind(
+			&serialize::ComponentSerializer::serializeDirectionalLight,
+			std::placeholders::_1, std::placeholders::_2
+		)
+	);
+
+	registerComponent(
+		&typeid(component::SpotLight),
+		std::bind(
+			&serialize::ComponentSerializer::serializeSpotLight,
+			std::placeholders::_1, std::placeholders::_2
+		)
+	);
+
+	registerComponent(
+		&typeid(component::PointLight),
+		std::bind(
+			&serialize::ComponentSerializer::serializePointLight,
+			std::placeholders::_1, std::placeholders::_2
+		)
+	);
+
+	registerComponent(
+		&typeid(component::Surface),
+		std::bind(
+			&serialize::ComponentSerializer::serializeSurface,
+			std::placeholders::_1, std::placeholders::_2
+		)
+	);
+
+	registerComponent(
+		&typeid(component::Renderer),
+		std::bind(
+			&serialize::ComponentSerializer::serializeRenderer,
+			std::placeholders::_1, std::placeholders::_2
+		)
+	);
+}
 
 void
-SceneWriter::registerComponent(const type_info*																				componentType,
-							  std::function<std::string(std::shared_ptr<scene::Node>, std::shared_ptr<file::Dependency>)>	readFunction)
+SceneWriter::registerComponent(const std::type_info*	componentType,
+							   NodeWriterFunc			readFunction)
 {
 	_componentIdToWriteFunction[componentType] = readFunction;
 }
@@ -88,7 +164,7 @@ SceneWriter::writeNode(std::shared_ptr<scene::Node>										node,
 			index = controllerMap[currentComponent];
 		else
 		{
-			const type_info* currentComponentType = &typeid(*currentComponent);
+			const std::type_info* currentComponentType = &typeid(*currentComponent);
 
 			if (_componentIdToWriteFunction.find(currentComponentType) != _componentIdToWriteFunction.end())
 			{

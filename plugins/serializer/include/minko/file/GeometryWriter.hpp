@@ -55,7 +55,7 @@ namespace minko
 			{
 				geometry::Geometry::Ptr		geometry = data();
 				uint						metaByte = computeMetaByte(geometry);
-				std::string&				serialiazedIndexBuffer = indexBufferWriterFunction(geometry->indices());
+				const std::string&			serializedIndexBuffer = indexBufferWriterFunction(geometry->indices());
 				std::vector<std::string>	serializedVertexBuffers;
 				std::stringstream			sbuf;
 
@@ -65,7 +65,7 @@ namespace minko
 				msgpack::type::tuple<unsigned char, std::string, std::string, std::vector<std::string>> res(
 					metaByte,
 					assetLibrary->geometry(geometry), 
-					serialiazedIndexBuffer, 
+					serializedIndexBuffer, 
 					serializedVertexBuffers);
 				msgpack::pack(sbuf, res);
 
