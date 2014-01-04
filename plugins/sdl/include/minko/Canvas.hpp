@@ -96,20 +96,20 @@ namespace minko
 			bool
 			keyIsDown(input::Keyboard::ScanCode scanCode)
 			{
-				return _keyboardState[static_cast<int>(scanCode)];
+				return _keyboardState[static_cast<int>(scanCode)] != 0;
 			}
 
 		private:
 			bool
 			hasKeyDownSignal(input::Keyboard::ScanCode scanCode)
 			{
-				return _keyDown.count(static_cast<int>(scanCode));
+				return _keyDown.count(static_cast<int>(scanCode)) != 0;
 			}
 
 			bool
 			hasKeyUpSignal(input::Keyboard::ScanCode scanCode)
 			{
-				return _keyUp.count(static_cast<int>(scanCode));
+				return _keyUp.count(static_cast<int>(scanCode)) != 0;
 			}
 		};
 
