@@ -65,6 +65,12 @@ LuaContext::getKeyboard()
 	return _canvas->keyboard();
 }
 
+std::shared_ptr<input::Joystick>
+LuaContext::getJoystick(int id)
+{
+	return _canvas->joystick(id);
+}
+
 bool
 LuaContext::getOption(const std::string& optionName)
 {
