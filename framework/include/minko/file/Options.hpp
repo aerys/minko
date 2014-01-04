@@ -81,6 +81,9 @@ namespace minko
 
 				opt->_includePaths = options->_includePaths;
                 opt->_generateMipMaps = options->_generateMipMaps;
+				opt->_resizeSmoothly = options->_resizeSmoothly;
+				opt->_skinningNumFPS = options->_skinningNumFPS;
+				opt->_skinningMethod = options->_skinningMethod;
                 opt->_effect = options->_effect;
 				opt->_materialFunction = options->_materialFunction;
 				opt->_geometryFunction = options->_geometryFunction;
