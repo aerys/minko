@@ -40,12 +40,13 @@ using namespace minko::serialize;
 
 
 std::string
-ComponentSerializer::serializeTransform(std::shared_ptr<scene::Node>	node, std::shared_ptr<file::Dependency> dependencies)
+ComponentSerializer::serializeTransform(NodePtr			node, 
+										DependencyPtr	dependencies)
 {
-	int8_t												type = mk::TRANSFORM;
-	std::shared_ptr<component::Transform>				transform = node->component<component::Transform>();
-	std::stringstream									buffer;
-	msgpack::type::tuple<uint, std::string>		src = serialize::TypeSerializer::serializeMatrix4x4(transform->matrix());
+	int8_t										type		= mk::TRANSFORM;
+	std::shared_ptr<component::Transform>		transform	= node->component<component::Transform>();
+	std::stringstream							buffer;
+	msgpack::type::tuple<uint, std::string>		src			= serialize::TypeSerializer::serializeMatrix4x4(transform->matrix());
 
 	msgpack::pack(buffer, src);
 	msgpack::pack(buffer, type);
@@ -54,7 +55,8 @@ ComponentSerializer::serializeTransform(std::shared_ptr<scene::Node>	node, std::
 }
 
 std::string
-ComponentSerializer::serializePerspectiveCamera(std::shared_ptr<scene::Node>	node, std::shared_ptr<file::Dependency> dependencies)
+ComponentSerializer::serializePerspectiveCamera(NodePtr			node, 
+												DependencyPtr	dependencies)
 {
 	int8_t											type = mk::PROJECTION_CAMERA;
 	std::shared_ptr<component::PerspectiveCamera>	perspectiveCamera = node->component<component::PerspectiveCamera>();
@@ -76,7 +78,8 @@ ComponentSerializer::serializePerspectiveCamera(std::shared_ptr<scene::Node>	nod
 
 
 std::string
-ComponentSerializer::serializeAmbientLight(NodePtr	node, std::shared_ptr<file::Dependency> dependencies)
+ComponentSerializer::serializeAmbientLight(NodePtr			node, 
+										   DependencyPtr	dependencies)
 {
 	int8_t												type		= mk::AMBIENT_LIGHT;
 	std::shared_ptr<component::AmbientLight>			ambient		= node->component<component::AmbientLight>();
@@ -94,7 +97,8 @@ ComponentSerializer::serializeAmbientLight(NodePtr	node, std::shared_ptr<file::D
 }
 			
 std::string
-ComponentSerializer::serializeDirectionalLight(NodePtr node, std::shared_ptr<file::Dependency> dependencies)
+ComponentSerializer::serializeDirectionalLight(NodePtr			node, 
+											   DependencyPtr	dependencies)
 {
 	int8_t													type		= mk::DIRECTIONAL_LIGHT;
 	std::shared_ptr<component::DirectionalLight>			directional	= node->component<component::DirectionalLight>();
@@ -114,7 +118,8 @@ ComponentSerializer::serializeDirectionalLight(NodePtr node, std::shared_ptr<fil
 
 
 std::string
-ComponentSerializer::serializePointLight(NodePtr node, std::shared_ptr<file::Dependency> dependencies)
+ComponentSerializer::serializePointLight(NodePtr		node, 
+										 DependencyPtr	dependencies)
 {
 	int8_t									type	= mk::POINT_LIGHT;
 	std::shared_ptr<component::PointLight>	point	= node->component<component::PointLight>();
@@ -134,7 +139,8 @@ ComponentSerializer::serializePointLight(NodePtr node, std::shared_ptr<file::Dep
 }
 
 std::string
-ComponentSerializer::serializeSpotLight(NodePtr node, std::shared_ptr<file::Dependency> dependencies)
+ComponentSerializer::serializeSpotLight(NodePtr			node, 
+										DependencyPtr	dependencies)
 {
 	int8_t										type	= mk::SPOT_LIGHT;
 	std::shared_ptr<component::SpotLight>		spot	= node->component<component::SpotLight>();
@@ -156,7 +162,8 @@ ComponentSerializer::serializeSpotLight(NodePtr node, std::shared_ptr<file::Depe
 }
 
 std::string
-ComponentSerializer::serializeSurface(NodePtr node, std::shared_ptr<file::Dependency> dependencies)
+ComponentSerializer::serializeSurface(NodePtr		node, 
+									  DependencyPtr dependencies)
 {
 	int8_t									type	= mk::SURFACE;
 	std::shared_ptr<component::Surface>		surface	= node->component<component::Surface>();
@@ -179,7 +186,8 @@ ComponentSerializer::serializeSurface(NodePtr node, std::shared_ptr<file::Depend
 }
 
 std::string
-ComponentSerializer::serializeRenderer(NodePtr node, std::shared_ptr<file::Dependency> dependencies)
+ComponentSerializer::serializeRenderer(NodePtr			node, 
+									   DependencyPtr	dependencies)
 {
 	int8_t									type		= mk::RENDERER;
 	std::shared_ptr<component::Renderer>	renderer	= node->component<component::Renderer>();
