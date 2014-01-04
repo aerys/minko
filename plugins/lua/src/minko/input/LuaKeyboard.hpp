@@ -37,36 +37,36 @@ namespace minko
 			void
 			bind(LuaGlue& state)
 			{
-				 auto& input_keyboard = state.Class<input::Keyboard>("Keyboard");
-			    for (int key = 0; key < (int)input::Keyboard::NUM_KEYS; ++key)
+				 auto& input_keyboard = state.Class<Keyboard>("Keyboard");
+			    for (int key = 0; key < (int)Keyboard::NUM_KEYS; ++key)
 			    {
-			        auto& keyName = input::Keyboard::getKeyName(static_cast<input::Keyboard::ScanCode>(key));
+			        auto& keyName = Keyboard::getKeyName(static_cast<Keyboard::ScanCode>(key));
 
 			        if (keyName.size())
 			            input_keyboard.constant(keyName, key);
 			    }
-			    MINKO_LUAGLUE_BIND_SIGNAL(state, input::Keyboard::Ptr, uint);
-			    MINKO_LUAGLUE_BIND_SIGNAL(state, input::Keyboard::Ptr);
+			    MINKO_LUAGLUE_BIND_SIGNAL(state, Keyboard::Ptr, uint);
+			    MINKO_LUAGLUE_BIND_SIGNAL(state, Keyboard::Ptr);
 			    input_keyboard
-			        .method("keyDown",          &LuaKeyboard::keyboardKeyDownWrapper)
-			        .method("keyUp",            &LuaKeyboard::keyboardKeyUpWrapper)
-			        .method("keyIsDown",        &input::Keyboard::keyIsDown)
-			        .property("anyKeyDown",     &input::Keyboard::keyDown)
-			        .property("anyKeyUp",       &input::Keyboard::keyUp);
+			        .method("keyDown",      &LuaKeyboard::keyboardKeyDownWrapper)
+			        .method("keyUp",        &LuaKeyboard::keyboardKeyUpWrapper)
+			        .method("keyIsDown",    &Keyboard::keyIsDown)
+			        .property("anyKeyDown",	&Keyboard::keyDown)
+			        .property("anyKeyUp",   &Keyboard::keyUp);
 			}
 
 			static
-			Signal<input::Keyboard::Ptr, uint>::Ptr
-			keyboardKeyDownWrapper(input::Keyboard::Ptr k, uint s)
+			Signal<Keyboard::Ptr, uint>::Ptr
+			keyboardKeyDownWrapper(Keyboard::Ptr k, uint s)
 			{
-				return k->keyDown(static_cast<input::Keyboard::ScanCode>(s));
+				return k->keyDown(static_cast<Keyboard::ScanCode>(s));
 			}
 
 			static
-			Signal<input::Keyboard::Ptr, uint>::Ptr
-			keyboardKeyUpWrapper(input::Keyboard::Ptr k, uint s)
+			Signal<Keyboard::Ptr, uint>::Ptr
+			keyboardKeyUpWrapper(Keyboard::Ptr k, uint s)
 			{
-				return k->keyUp(static_cast<input::Keyboard::ScanCode>(s));
+				return k->keyUp(static_cast<Keyboard::ScanCode>(s));
 			}
 		};
 	}
