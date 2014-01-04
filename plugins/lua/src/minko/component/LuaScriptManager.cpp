@@ -23,7 +23,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/Options.hpp"
 #include "minko/file/Loader.hpp"
 #include "minko/render/AbstractContext.hpp"
-#include "minko/render/Effect.hpp"
 #include "minko/render/Texture.hpp"
 
 #include "minko/component/SceneManager.hpp"
@@ -50,6 +49,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/scene/LuaNodeSet.hpp"
 #include "minko/geometry/LuaGeometry.hpp"
 #include "minko/material/LuaMaterial.hpp"
+#include "minko/render/LuaEffect.hpp"
 #include "minko/file/LuaAssetLibrary.hpp"
 #include "minko/input/LuaKeyboard.hpp"
 #include "minko/input/LuaMouse.hpp"
@@ -130,7 +130,6 @@ void
 LuaScriptManager::initializeBindings()
 {
 	_state.Class<render::Texture>("Texture");
-	_state.Class<render::Effect>("Effect");
 	_state.Class<Surface>("Surface")
 		.method("create", static_cast<Surface::Ptr(*)(geometry::Geometry::Ptr, data::Provider::Ptr, render::Effect::Ptr)>(&Surface::create));
 	_state.Class<render::AbstractContext>("AbstractContext");
@@ -161,6 +160,7 @@ LuaScriptManager::initializeBindings()
     data::LuaContainer::bind(_state);
     geometry::LuaGeometry::bind(_state);
     material::LuaMaterial::bind(_state);
+    render::LuaEffect::bind(_state);
     file::LuaAssetLibrary::bind(_state);
     input::LuaMouse::bind(_state);
     input::LuaKeyboard::bind(_state);
