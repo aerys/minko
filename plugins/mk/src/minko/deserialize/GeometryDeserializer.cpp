@@ -84,6 +84,8 @@ GeometryDeserializer::deserializeGeometry(bool						    		isCopy,
 		if (computeTangent && !vertexStream->hasAttribute("tangent"))
 			geometry->computeTangentSpace(!vertexStream->hasAttribute("normal"));
 
+		geometry = options->geometryFunction()(geometryName, geometry);
+
 		GeometryDeserializer::_geometryIdToName[copyId] = geometryName;
 		library->geometry(geometryName, geometry);
 
