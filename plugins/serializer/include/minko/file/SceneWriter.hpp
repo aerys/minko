@@ -19,9 +19,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #pragma once
 
-#include "msgpack.hpp"
-#include "minko/scene/Node.hpp"
 #include "minko/Common.hpp"
+
+#include "msgpack.hpp"
 #include "minko/file/AbstractWriter.hpp"
 #include "minko/serialize/ComponentSerializer.hpp"
 #include "minko/MkTypes.hpp"
@@ -40,16 +40,22 @@ namespace minko
 			typedef std::shared_ptr<SceneWriter>										Ptr;
 			typedef msgpack::type::tuple<std::string, uint, uint, std::vector<uint>>	SerializedNode;
 
+		private:
+			typedef std::shared_ptr<file::Dependency> 					DependencyPtr;
+			typedef std::shared_ptr<scene::Node> 						NodePtr;
+			typedef std::function<std::string(NodePtr, DependencyPtr)>	NodeWriterFunc;
+
 		// attributes
 		private:
-			static std::map<const type_info*, std::function<std::string(std::shared_ptr<scene::Node>, std::shared_ptr<file::Dependency>)>> _componentIdToWriteFunction;
+			static std::map<const std::type_info*, NodeWriterFunc> _componentIdToWriteFunction;
+
 		// methods
 		public:
 
 			static
 			void
-			registerComponent(const type_info*																				componentType,
-							  std::function<std::string(std::shared_ptr<scene::Node>, std::shared_ptr<file::Dependency>)>	readFunction);
+			registerComponent(const std::type_info*	componentType,
+							  NodeWriterFunc		readFunction);
 
 			inline static
 			Ptr
@@ -80,56 +86,7 @@ namespace minko
 			}
 
 		protected:
-			SceneWriter()
-			{
-				registerComponent(
-					&typeid(component::PerspectiveCamera), 
-					std::bind(
-						&serialize::ComponentSerializer::serializePerspectiveCamera,
-						std::placeholders::_1, std::placeholders::_2));
-				
-				registerComponent(
-					&typeid(component::Transform),
-					std::bind(
-						&serialize::ComponentSerializer::serializeTransform,
-						std::placeholders::_1, std::placeholders::_2));
-
-				registerComponent(
-					&typeid(component::AmbientLight),
-					std::bind(
-						&serialize::ComponentSerializer::serializeAmbientLight,
-						std::placeholders::_1, std::placeholders::_2));
-
-				registerComponent(
-					&typeid(component::DirectionalLight),
-					std::bind(
-						&serialize::ComponentSerializer::serializeDirectionalLight,
-						std::placeholders::_1, std::placeholders::_2));
-
-				registerComponent(
-					&typeid(component::SpotLight),
-					std::bind(
-						&serialize::ComponentSerializer::serializeSpotLight,
-						std::placeholders::_1, std::placeholders::_2));
-
-				registerComponent(
-					&typeid(component::PointLight),
-					std::bind(
-						&serialize::ComponentSerializer::serializePointLight,
-						std::placeholders::_1, std::placeholders::_2));
-
-				registerComponent(
-					&typeid(component::Surface),
-					std::bind(
-						&serialize::ComponentSerializer::serializeSurface,
-						std::placeholders::_1, std::placeholders::_2));
-
-				registerComponent(
-					&typeid(component::Renderer),
-					std::bind(
-						&serialize::ComponentSerializer::serializeRenderer,
-						std::placeholders::_1, std::placeholders::_2));
-			}
+			SceneWriter();
 		};
 	}
 }

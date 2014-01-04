@@ -18,7 +18,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "minko/file/MaterialParser.hpp"
-#include "minko/Material/Material.hpp"
+#include "minko/material/Material.hpp"
 #include "minko/MkTypes.hpp"
 #include "minko/deserialize/TypeDeserializer.hpp"
 #include "minko/file/AssetLibrary.hpp"

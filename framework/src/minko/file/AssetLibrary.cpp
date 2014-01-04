@@ -74,7 +74,7 @@ AssetLibrary::geometry(GeometryPtr geometry)
 			return it->first;
 	}
 
-	return nullptr;
+	return "";
 }
 
 render::Texture::Ptr
