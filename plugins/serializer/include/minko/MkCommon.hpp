@@ -26,7 +26,6 @@ namespace minko
 		class AbtractWriter;
 		class SceneParser;
 		class GeometryWriter;
-		class WriterOption;
 		class GeometryParser;
 		class MaterialParser;
 		class MaterialWriter;
@@ -40,6 +39,3 @@ namespace minko
 	}
 }
 
-typedef std::map<std::shared_ptr<minko::scene::Node>, std::vector<minko::component::AbstractComponent>>	ControllerMap;
-typedef std::map<std::shared_ptr<minko::scene::Node>, minko::uint>										NodeMap;
-typedef	std::map<std::string, minko::Any>																NodeInfo;
