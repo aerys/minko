@@ -104,7 +104,7 @@ namespace minko
 			geometry(const std::string& name, GeometryPtr geometry);
 
 			const std::string&
-			geometry(GeometryPtr geometry);
+			geometryName(GeometryPtr geometry);
 
 			TexturePtr
 			texture(const std::string& name);
@@ -113,7 +113,7 @@ namespace minko
 			texture(const std::string& name, TexturePtr texture);
 
 			const std::string&
-			texture(TexturePtr texture);
+			textureName(TexturePtr texture);
 
 			std::shared_ptr<material::Material>
 			material(const std::string& name);
@@ -122,7 +122,7 @@ namespace minko
 			material(const std::string& name, MaterialPtr material);
 
 			const std::string&
-			material(MaterialPtr material);
+			materialName(MaterialPtr material);
 
 			NodePtr
 			symbol(const std::string& name);
@@ -131,7 +131,7 @@ namespace minko
 			symbol(const std::string& name, NodePtr symbol);
 
 			const std::string&
-			symbol(NodePtr node);
+			symbolName(NodePtr node);
 
 			EffectPtr
 			effect(const std::string& name);
@@ -140,7 +140,7 @@ namespace minko
 			effect(const std::string& name, EffectPtr effect);
 
 			const std::string&
-			effect(EffectPtr effect);
+			effectName(EffectPtr effect);
 
 			const std::vector<unsigned char>&
 			blob(const std::string& name);
@@ -153,6 +153,9 @@ namespace minko
 
             AssetLibrary::Ptr
             script(const std::string& name, AbsScriptPtr script);
+
+			const std::string&
+			scriptName(AbsScriptPtr script);
 
 			const unsigned int
 			layout(const std::string& name);
