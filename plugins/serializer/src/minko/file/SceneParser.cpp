@@ -29,6 +29,61 @@ using namespace minko::math;
 
 static std::map<int8_t, SceneParser::ComponentReadFunction> _componentIdToReadFunction;
 
+
+SceneParser::SceneParser()
+{
+	_geometryParser = file::GeometryParser::create();
+	_materialParser = file::MaterialParser::create();
+
+	registerComponent(mk::PROJECTION_CAMERA,
+		std::bind(&deserialize::ComponentDeserializer::deserializeProjectionCamera,
+		std::placeholders::_1,
+		std::placeholders::_2,
+		std::placeholders::_3));
+
+	registerComponent(mk::TRANSFORM,
+		std::bind(&deserialize::ComponentDeserializer::deserializeTransform,
+		std::placeholders::_1,
+		std::placeholders::_2,
+		std::placeholders::_3));
+
+	registerComponent(mk::AMBIENT_LIGHT,
+		std::bind(&deserialize::ComponentDeserializer::deserializeAmbientLight,
+		std::placeholders::_1,
+		std::placeholders::_2,
+		std::placeholders::_3));
+
+	registerComponent(mk::DIRECTIONAL_LIGHT,
+		std::bind(&deserialize::ComponentDeserializer::deserializeDirectionalLight,
+		std::placeholders::_1,
+		std::placeholders::_2,
+		std::placeholders::_3));
+
+	registerComponent(mk::SPOT_LIGHT,
+		std::bind(&deserialize::ComponentDeserializer::deserializeSpotLight,
+		std::placeholders::_1,
+		std::placeholders::_2,
+		std::placeholders::_3));
+
+	registerComponent(mk::POINT_LIGHT,
+		std::bind(&deserialize::ComponentDeserializer::deserializePointLight,
+		std::placeholders::_1,
+		std::placeholders::_2,
+		std::placeholders::_3));
+
+	registerComponent(mk::SURFACE,
+		std::bind(&deserialize::ComponentDeserializer::deserializeSurface,
+		std::placeholders::_1,
+		std::placeholders::_2,
+		std::placeholders::_3));
+
+	registerComponent(mk::RENDERER,
+		std::bind(&deserialize::ComponentDeserializer::deserializeRenderer,
+		std::placeholders::_1,
+		std::placeholders::_2,
+		std::placeholders::_3));
+}
+
 void
 SceneParser::registerComponent(int8_t					componentId,
 							   ComponentReadFunction	readFunction)
@@ -41,7 +96,7 @@ SceneParser::parse(const std::string&					filename,
 				   const std::string&					resolvedFilename,
 				   std::shared_ptr<Options>				options,
 				   const std::vector<unsigned char>&	data,
-				   std::shared_ptr<AssetLibrary>		assetLibrary)
+				   AssetLibraryPtr					    assetLibrary)
 {
 	msgpack::object		deserialized;
 	msgpack::zone		mempool;
@@ -59,7 +114,7 @@ SceneParser::parse(const std::string&					filename,
 scene::Node::Ptr
 SceneParser::parseNode(std::vector<SerializedNode>			nodePack, 
 					   std::vector<std::string>				componentPack,
-					   std::shared_ptr<file::AssetLibrary>	assetLibrary)
+					   AssetLibraryPtr						assetLibrary)
 {
 	std::shared_ptr<scene::Node>								root;
 	std::stack<std::tuple<std::shared_ptr<scene::Node>, uint>>	nodeStack;
