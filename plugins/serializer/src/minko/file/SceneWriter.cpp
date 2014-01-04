@@ -29,6 +29,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/PointLight.hpp"
 #include "minko/component/Surface.hpp"
 #include "minko/component/Renderer.hpp"
+#include "minko/file/Dependency.hpp"
+#include "minko/serialize/ComponentSerializer.hpp"
+#include "minko/MkTypes.hpp"
 
 #include <queue>
 #include <iostream>
@@ -114,15 +117,15 @@ SceneWriter::registerComponent(const std::type_info*	componentType,
 }
 
 std::string
-SceneWriter::embed(std::shared_ptr<AssetLibrary>	assetLibrary,
-				  std::shared_ptr<Options>			options,
-				  Dependency::Ptr					dependency)
+SceneWriter::embed(AssetLibraryPtr		assetLibrary,
+				  OptionsPtr			options,
+				  DependencyPtr			dependency)
 {
-	std::stringstream												sbuf;
-	std::queue<std::shared_ptr<scene::Node>>						queue;
-	std::vector<SerializedNode>										nodePack;
-	std::vector<std::string>										serializedControllerList;
-	std::map<std::shared_ptr<component::AbstractComponent>, int>	controllerMap;
+	std::stringstream								sbuf;
+	std::queue<std::shared_ptr<scene::Node>>		queue;
+	std::vector<SerializedNode>						nodePack;
+	std::vector<std::string>						serializedControllerList;
+	std::map<AbsComponentPtr, int>					controllerMap;
 
 	queue.push(data());
 
@@ -145,17 +148,16 @@ SceneWriter::embed(std::shared_ptr<AssetLibrary>	assetLibrary,
 }
 
 SceneWriter::SerializedNode
-SceneWriter::writeNode(std::shared_ptr<scene::Node>										node,
-					  std::vector<std::string>&											serializedControllerList,
-					  std::map<std::shared_ptr<component::AbstractComponent>, int>&		controllerMap,
-					  std::shared_ptr<file::AssetLibrary>								assetLibrary,
-					  std::shared_ptr<Dependency>										dependency)
+SceneWriter::writeNode(std::shared_ptr<scene::Node>		node,
+					  std::vector<std::string>&			serializedControllerList,
+					  std::map<AbsComponentPtr, int>&	controllerMap,
+					  AssetLibraryPtr					assetLibrary,
+					  DependencyPtr						dependency)
 {
-	std::vector<uint>								componentsId;
-	int												componentIndex = 0;
-	std::shared_ptr<component::AbstractComponent>	currentComponent = node->component<component::AbstractComponent>(0);
-	auto copy	= _componentIdToWriteFunction;
-
+	std::vector<uint>	componentsId;
+	int					componentIndex = 0;
+	AbsComponentPtr		currentComponent = node->component<component::AbstractComponent>(0);
+	
 	while (currentComponent != nullptr)
 	{
 		int index = -1;
