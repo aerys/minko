@@ -41,6 +41,7 @@ namespace minko
 			typedef std::shared_ptr<SceneParser>																														Ptr;
 			typedef std::function<std::shared_ptr<component::AbstractComponent>(std::string, std::shared_ptr<file::AssetLibrary>, std::shared_ptr<file::Dependency>)>	ComponentReadFunction;
 			typedef msgpack::type::tuple<std::string, uint, uint, std::vector<uint>>																					SerializedNode;
+			typedef std::shared_ptr<AssetLibrary>																														AssetLibraryPtr;
 
 		// methods
 		public:
@@ -61,68 +62,16 @@ namespace minko
 				  const std::string&                resolvedFilename,
                   std::shared_ptr<Options>          options,
 				  const std::vector<unsigned char>&	data,
-				  std::shared_ptr<AssetLibrary>		assetLibrary);
+				  AssetLibraryPtr					assetLibrary);
 
 		private:
 
 			std::shared_ptr<scene::Node>
-			parseNode(std::vector<SerializedNode>			nodePack, 
-					  std::vector<std::string>				componentPack,
-					  std::shared_ptr<file::AssetLibrary>	assetLibrary);
+			parseNode(std::vector<SerializedNode>	nodePack, 
+					  std::vector<std::string>		componentPack,
+					  AssetLibraryPtr				assetLibrary);
 
-			SceneParser()
-			{
-				_geometryParser = file::GeometryParser::create();
-				_materialParser = file::MaterialParser::create();
-
-				registerComponent(mk::PROJECTION_CAMERA,
-					std::bind(&deserialize::ComponentDeserializer::deserializeProjectionCamera,
-							  std::placeholders::_1,
-							  std::placeholders::_2,
-							  std::placeholders::_3));
-			
-				registerComponent(mk::TRANSFORM,
-					std::bind(&deserialize::ComponentDeserializer::deserializeTransform,
-							  std::placeholders::_1,
-							  std::placeholders::_2,
-							  std::placeholders::_3));
-
-				registerComponent(mk::AMBIENT_LIGHT,
-					std::bind(&deserialize::ComponentDeserializer::deserializeAmbientLight,
-							  std::placeholders::_1,
-							  std::placeholders::_2,
-							  std::placeholders::_3));
-
-				registerComponent(mk::DIRECTIONAL_LIGHT,
-					std::bind(&deserialize::ComponentDeserializer::deserializeDirectionalLight,
-							  std::placeholders::_1,
-							  std::placeholders::_2,
-							  std::placeholders::_3));
-
-				registerComponent(mk::SPOT_LIGHT,
-					std::bind(&deserialize::ComponentDeserializer::deserializeSpotLight,
-							  std::placeholders::_1,
-							  std::placeholders::_2,
-							  std::placeholders::_3));
-
-				registerComponent(mk::POINT_LIGHT,
-					std::bind(&deserialize::ComponentDeserializer::deserializePointLight,
-							  std::placeholders::_1,
-							  std::placeholders::_2,
-							  std::placeholders::_3));
-
-				registerComponent(mk::SURFACE,
-					std::bind(&deserialize::ComponentDeserializer::deserializeSurface,
-							  std::placeholders::_1,
-							  std::placeholders::_2,
-							  std::placeholders::_3));
-
-				registerComponent(mk::RENDERER,
-					std::bind(&deserialize::ComponentDeserializer::deserializeRenderer,
-							  std::placeholders::_1,
-							  std::placeholders::_2,
-							  std::placeholders::_3));
-			}
+			SceneParser();
 		};
 	}
 }
