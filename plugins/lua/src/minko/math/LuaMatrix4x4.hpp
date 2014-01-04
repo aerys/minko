@@ -39,6 +39,7 @@ namespace minko
 		            .method("create",               static_cast<Matrix4x4::Ptr (*)()>(&Matrix4x4::create))
 		            .method("lookAt",               &Matrix4x4::lookAt)
 		            .method("identity",             &Matrix4x4::identity)
+		            .method("invert",				&Matrix4x4::invert)
 		            .method("appendUniformScale",	static_cast<Matrix4x4::Ptr (Matrix4x4::*)(float)>(&Matrix4x4::appendScale))
 		            .method("appendScale",			static_cast<Matrix4x4::Ptr (Matrix4x4::*)(float, float, float)>(&Matrix4x4::appendScale))
 		            .method("appendRotationX",      &Matrix4x4::appendRotationX)
