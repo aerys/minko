@@ -23,9 +23,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "msgpack.hpp"
 #include "minko/file/AbstractWriter.hpp"
-#include "minko/serialize/ComponentSerializer.hpp"
-#include "minko/MkTypes.hpp"
-#include "minko/file/Dependency.hpp"
 
 namespace minko
 {
@@ -44,6 +41,10 @@ namespace minko
 			typedef std::shared_ptr<file::Dependency> 					DependencyPtr;
 			typedef std::shared_ptr<scene::Node> 						NodePtr;
 			typedef std::function<std::string(NodePtr, DependencyPtr)>	NodeWriterFunc;
+			typedef std::shared_ptr<component::AbstractComponent>		AbsComponentPtr;
+			typedef std::shared_ptr<file::AssetLibrary>					AssetLibraryPtr;
+			typedef std::shared_ptr<Options>							OptionsPtr;
+
 
 		// attributes
 		private:
@@ -66,16 +67,16 @@ namespace minko
 			
 
 			std::string
-			embed(std::shared_ptr<AssetLibrary>		assetLibrary,
-				  std::shared_ptr<Options>			options,
-				  Dependency::Ptr					dependency);
+				embed(AssetLibraryPtr	assetLibrary,
+					  OptionsPtr		options,
+					  DependencyPtr		dependency);
 
 			SerializedNode
-			writeNode(std::shared_ptr<scene::Node>										node,
-					  std::vector<std::string>&											serializedControllerList,
-					  std::map<std::shared_ptr<component::AbstractComponent>, int>&		controllerMap,
-					  std::shared_ptr<file::AssetLibrary>								assetLibrary,
-					  std::shared_ptr<Dependency>										dependency);
+			writeNode(std::shared_ptr<scene::Node>			node,
+					  std::vector<std::string>&				serializedControllerList,
+					  std::map<AbsComponentPtr, int>&		controllerMap,
+					  AssetLibraryPtr						assetLibrary,
+					  DependencyPtr							dependency);
 
 		private :
 			inline
