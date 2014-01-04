@@ -42,7 +42,8 @@ unitTest(std::shared_ptr<file::AssetLibrary> assets, std::shared_ptr<render::Abs
 {
 	std::shared_ptr<mk::MkStats> mkStat = mk::MkStats::create();
 	
-	mkStat->compressionStat<math::Vector2::Ptr, msgpack::type::tuple<uint, std::string>>(
+	/*
+	mkStat->compressionStat(
 		math::Vector2::create(0, 0), 
 		std::bind(&serialize::TypeSerializer::serializeVector2, std::placeholders::_1), 
 		std::bind(&deserialize::TypeDeserializer::deserializeVector2, std::placeholders::_1),
@@ -107,6 +108,7 @@ unitTest(std::shared_ptr<file::AssetLibrary> assets, std::shared_ptr<render::Abs
 		std::bind(&serialize::TypeSerializer::serializeMatrix4x4, std::placeholders::_1), 
 		std::bind(&deserialize::TypeDeserializer::deserializeMatrix4x4, std::placeholders::_1),
 		"Matrix4x4 full transform");
+	*/
 		
 		
 /*	mkStat->assetStat<geometry::Geometry::Ptr, file::GeometryParser, file::GeometryWriter>(
