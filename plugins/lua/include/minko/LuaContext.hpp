@@ -58,6 +58,10 @@ namespace minko
 		getKeyboard();
 
 		static
+		std::shared_ptr<input::Joystick>
+		getJoystick(int id);
+
+		static
 		bool
 		getOption(const std::string& optionName);
 	};
