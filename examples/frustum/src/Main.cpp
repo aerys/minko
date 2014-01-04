@@ -94,7 +94,7 @@ int main(int argc, char** argv)
 
 		auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr canvas, uint time, uint deltaTime)
 		{
-			camera->component<Transform>()->matrix()->lock()->appendRotationY(0.02)->appendRotationZ(-0.014)->unlock();
+			camera->component<Transform>()->matrix()->lock()->appendRotationY(0.02f)->appendRotationZ(-0.014f)->unlock();
 			sceneManager->nextFrame();
 			std::cout << "Num drawCalls : " << camera->component<Renderer>()->numDrawCalls() << std::endl;
 		});
