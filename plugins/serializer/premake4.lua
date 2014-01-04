@@ -39,3 +39,6 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		buildoptions {
 			"-Wno-deprecated-declarations"
 		}
+		defines {
+			"__STDC_FORMAT_MACROS"
+		}

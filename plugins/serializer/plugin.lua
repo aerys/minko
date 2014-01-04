@@ -7,6 +7,11 @@ function minko.plugin.serializer:enable()
 		minko.sdk.path("plugins/serializer/include"),
 		minko.sdk.path("plugins/serializer/lib/msgpack-c/include") }
 	defines { "MINKO_PLUGIN_SERIALIZER" }
+
+	configuration { "linux" }
+		buildoptions {
+			"-Wno-deprecated-declarations"
+		}
 end
 
 function minko.plugin.serializer:dist(pluginDistDir)
