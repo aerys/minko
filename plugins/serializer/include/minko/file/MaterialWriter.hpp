@@ -23,27 +23,30 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/AbstractWriter.hpp"
 #include "minko/material/Material.hpp"
 #include "minko/data/Provider.hpp"
-#include "minko/render/Blending.hpp"
 #include "msgpack.hpp"
 #include "minko/file/AssetLibrary.hpp"
 #include "minko/file/Options.hpp"
 #include "minko/serialize/TypeSerializer.hpp"
-#include "minko/render/TriangleCulling.hpp"
 #include "minko/file/Dependency.hpp"
-#include "minko/data/Provider.hpp"
 
 namespace minko
 {
 	namespace file
 	{
-		static std::map<const std::type_info*, std::function<msgpack::type::tuple<uint, std::string>(Any)>> _typeToWriteFunction;
 
 		class MaterialWriter:
 			public AbstractWriter<data::Provider::Ptr>
 		{
 
 		public:
-			typedef std::shared_ptr<MaterialWriter> Ptr;
+			typedef std::shared_ptr<MaterialWriter>						Ptr;
+			typedef std::shared_ptr<render::Texture>					TexturePtr;
+			typedef msgpack::type::tuple<uint, std::string>				TupleIntString;
+			typedef msgpack::type::tuple<std::string, TupleIntString>	ComplexPropertyTuple;
+			typedef msgpack::type::tuple<std::string, float>			BasicPropertyTuple;
+
+		private:
+			static std::map<const std::type_info*, std::function<TupleIntString(Any)>> _typeToWriteFunction;
 
 		public:
 			inline static
@@ -56,114 +59,29 @@ namespace minko
 			std::string
 			embed(std::shared_ptr<AssetLibrary>		assetLibrary,
 				  std::shared_ptr<Options>			options,
-				  Dependency::Ptr					dependency)
-			{
-				material::Material::Ptr																	material = std::dynamic_pointer_cast<material::Material>(data());
-				std::vector<msgpack::type::tuple<std::string, msgpack::type::tuple<uint, std::string>>> serializedComplexProperties;
-				std::vector<msgpack::type::tuple<std::string, float>>									serializedBasicProperties;
-
-				for (std::string structuredPropertyName : material->propertyNames())
-				{
-					std::string propertyName = (structuredPropertyName).substr(material->structureName().size() + 1);
-
-					msgpack::type::tuple<std::string, msgpack::type::tuple<uint, std::string>> serializedProperty;
-
-					if (serializeMaterialValue<uint>(material, propertyName, assetLibrary, &serializedComplexProperties, &serializedBasicProperties, dependency))
-						continue;
-					else if (serializeMaterialValue<int>(material, propertyName, assetLibrary, &serializedComplexProperties, &serializedBasicProperties, dependency))
-						continue;
-					else if (serializeMaterialValue<unsigned short>(material, propertyName, assetLibrary, &serializedComplexProperties, &serializedBasicProperties, dependency))
-						continue;
-					else if (serializeMaterialValue<short>(material, propertyName, assetLibrary, &serializedComplexProperties, &serializedBasicProperties, dependency))
-						continue;
-					else if (serializeMaterialValue<unsigned char>(material, propertyName, assetLibrary, &serializedComplexProperties, &serializedBasicProperties, dependency))
-						continue;
-					else if (serializeMaterialValue<char>(material, propertyName, assetLibrary, &serializedComplexProperties, &serializedBasicProperties, dependency))
-						continue;
-					else if (serializeMaterialValue<float>(material, propertyName, assetLibrary, &serializedComplexProperties, &serializedBasicProperties, dependency))
-						continue;
-					else if (serializeMaterialValue<bool>(material, propertyName, assetLibrary, &serializedComplexProperties, &serializedBasicProperties, dependency))
-						continue;
-					else if (serializeMaterialValue<render::Blending::Mode>(material, propertyName, assetLibrary, &serializedComplexProperties, &serializedBasicProperties, dependency))
-						continue;
-					else if (serializeMaterialValue<render::TriangleCulling>(material, propertyName, assetLibrary, &serializedComplexProperties, &serializedBasicProperties, dependency))
-						continue;
-					else if (serializeMaterialValue<std::shared_ptr<math::Vector2>>(material, propertyName, assetLibrary, &serializedComplexProperties, &serializedBasicProperties, dependency))
-						continue;
-					else if (serializeMaterialValue<std::shared_ptr<math::Vector3>>(material, propertyName, assetLibrary, &serializedComplexProperties, &serializedBasicProperties, dependency))
-						continue;
-					else if (serializeMaterialValue<std::shared_ptr<math::Vector4>>(material, propertyName, assetLibrary, &serializedComplexProperties, &serializedBasicProperties, dependency))
-						continue;
-					else if (serializeMaterialValue<std::shared_ptr<math::Matrix4x4>>(material, propertyName, assetLibrary, &serializedComplexProperties, &serializedBasicProperties, dependency))
-						continue;
-					else if (serializeMaterialValue<std::shared_ptr<render::Texture>>(material, propertyName, assetLibrary, &serializedComplexProperties, &serializedBasicProperties, dependency))
-						continue;
-					else
-						std::cerr << propertyName << " can't be serialized : missing technique" << std::endl << std::endl;
-				}
-
-				auto it1 = serializedBasicProperties.begin();
-				auto it2 = serializedComplexProperties.begin();
-
-				std::cout << "Material : " << assetLibrary->material(material) << std::endl;
-
-				std::cout << "  Basic Type properties " << std::endl;
-
-				while (it1 != serializedBasicProperties.end())
-				{
-					std::cout << "	" << it1->a0 << std::endl;
-					it1++;
-				}
-
-				std::cout << "  Complex Type properties " << std::endl;
-
-				while (it2 != serializedComplexProperties.end())
-				{
-					std::cout << "	" << it2->a0 << std::endl;
-					it2++;
-				}
-
-				std::cout << std::endl;
-
-				msgpack::type::tuple<std::vector<msgpack::type::tuple<std::string, msgpack::type::tuple<uint, std::string>>>, std::vector<msgpack::type::tuple<std::string, float>>> res(
-					serializedComplexProperties, serializedBasicProperties);
-				std::stringstream sbuf;
-				msgpack::pack(sbuf, res);
-
-				return sbuf.str();
-			}
+				  Dependency::Ptr					dependency);
 
 		private:
-			MaterialWriter()
-			{
-				_typeToWriteFunction[&typeid(std::shared_ptr<math::Matrix4x4>)]		= std::bind(&serialize::TypeSerializer::serializeMatrix4x4, std::placeholders::_1);
-				_typeToWriteFunction[&typeid(std::shared_ptr<math::Vector2>)]		= std::bind(&serialize::TypeSerializer::serializeVector2, std::placeholders::_1);
-				_typeToWriteFunction[&typeid(std::shared_ptr<math::Vector3>)]		= std::bind(&serialize::TypeSerializer::serializeVector3, std::placeholders::_1);
-				_typeToWriteFunction[&typeid(std::shared_ptr<math::Vector4>)]		= std::bind(&serialize::TypeSerializer::serializeVector4, std::placeholders::_1);
-				_typeToWriteFunction[&typeid(render::Blending::Mode)]				= std::bind(&serialize::TypeSerializer::serializeBlending, std::placeholders::_1);
-				_typeToWriteFunction[&typeid(render::TriangleCulling)]				= std::bind(&serialize::TypeSerializer::serializeCulling, std::placeholders::_1);
-			}
+			MaterialWriter();
 
 			template <typename T>
-			typename std::enable_if<std::is_base_of<std::shared_ptr<render::Texture>, T>::value, bool>::type
-			serializeMaterialValue(material::Material::Ptr																	material, 
-								   std::string																				propertyName,
-								   file::AssetLibrary::Ptr																	assets,
-								   std::vector<msgpack::type::tuple<std::string, msgpack::type::tuple<uint, std::string>>>	*complexSerializedProperties,
-								   std::vector<msgpack::type::tuple<std::string, float>>									*basicTypeSeriliazedProperties,
-								   Dependency::Ptr																			dependency)
+			typename std::enable_if<std::is_base_of<TexturePtr, T>::value, bool>::type
+			serializeMaterialValue(material::Material::Ptr										material, 
+								   std::string													propertyName,
+								   file::AssetLibrary::Ptr										assets,
+								   std::vector<ComplexPropertyTuple>							*complexSerializedProperties,
+								   std::vector<BasicPropertyTuple>								*basicTypeSeriliazedProperties,
+								   Dependency::Ptr												dependency)
 			{
-				if (material->propertyHasType<std::shared_ptr<render::Texture>>(propertyName))
+				if (material->propertyHasType<TexturePtr>(propertyName))
 				{
-					msgpack::type::tuple<std::string, msgpack::type::tuple<uint, std::string>> serializedProperty(
+					ComplexPropertyTuple serializedProperty(
 							propertyName,
-							serialize::TypeSerializer::serializeTexture(Any(dependency->registerDependency(material->get<std::shared_ptr<render::Texture>>(propertyName)))));
-							//static_cast<float>(dependency->registerDependency(material->get<std::shared_ptr<render::Texture>>(propertyName))));
+							serialize::TypeSerializer::serializeTexture(Any(dependency->registerDependency(material->get<TexturePtr>(propertyName)))));
 						complexSerializedProperties->push_back(serializedProperty);
 
 					return true;
 				}
-				
 				return false;
 			}
 
@@ -172,8 +90,8 @@ namespace minko
 			serializeMaterialValue(material::Material::Ptr																			material, 
 								   	std::string																				propertyName,
 								   	file::AssetLibrary::Ptr																	assets,
-								   	std::vector<msgpack::type::tuple<std::string, msgpack::type::tuple<uint, std::string>>>	*complexSerializedProperties,
-								   	std::vector<msgpack::type::tuple<std::string, float>>									*basicTypeSeriliazedProperties,
+									std::vector<ComplexPropertyTuple>							*complexSerializedProperties,
+									std::vector<BasicPropertyTuple>								*basicTypeSeriliazedProperties,
 								   	Dependency::Ptr																			dependency)
 			{
 				if (_typeToWriteFunction.find(&typeid(T)) != _typeToWriteFunction.end() &&
@@ -181,7 +99,7 @@ namespace minko
 				{
 						Any propertyValue = material->get<T>(propertyName);
 
-						msgpack::type::tuple<std::string, msgpack::type::tuple<uint, std::string>> serializedProperty(
+						ComplexPropertyTuple serializedProperty(
 							propertyName,
 							_typeToWriteFunction[&typeid(T)](propertyValue));
 						complexSerializedProperties->push_back(serializedProperty);
@@ -193,16 +111,16 @@ namespace minko
 
 			template <typename T>
 			typename std::enable_if<std::is_arithmetic<T>::value, bool>::type
-			serializeMaterialValue(material::Material::Ptr																	material, 
-								   std::string																				propertyName,
-								   file::AssetLibrary::Ptr																	assets,
-								   std::vector<msgpack::type::tuple<std::string, msgpack::type::tuple<uint, std::string>>>	*complexSerializedProperties,
-								   std::vector<msgpack::type::tuple<std::string, float>>									*basicTypeSeriliazedProperties,
-								   Dependency::Ptr																			dependency)
+			serializeMaterialValue(material::Material::Ptr							material, 
+								   std::string										propertyName,
+								   file::AssetLibrary::Ptr							assets,
+								   std::vector<ComplexPropertyTuple>				*complexSerializedProperties,
+								   std::vector<BasicPropertyTuple>					*basicTypeSeriliazedProperties,
+								   Dependency::Ptr									dependency)
 			{
 				if (material->propertyHasType<T>(propertyName))
 				{
-					msgpack::type::tuple<std::string, float> basicTypeSerializedProperty(
+					BasicPropertyTuple basicTypeSerializedProperty(
 							propertyName,
 							static_cast<float>(material->get<T>(propertyName)));
 						basicTypeSeriliazedProperties->push_back(basicTypeSerializedProperty);
