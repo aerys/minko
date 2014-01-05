@@ -12,8 +12,8 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 
 	files {
 		"include/**.hpp",
-		"src/*.cpp",
-		"src/*.hpp",
+		"src/**.cpp",
+		"src/**.hpp",
 		"asset/**"
 	}
 
