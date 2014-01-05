@@ -462,14 +462,16 @@ OculusVRCamera::updateCameraOrientation()
 
 	const OVR::Quatf&	measurement	= _ovrSensorFusion->GetPredictedOrientation();
 	auto				quaternion	= math::Quaternion::create(measurement.x, measurement.y, measurement.z, measurement.w);
+	
 	quaternion->toMatrix(_eyeOrientation);
 
-
-	_targetTransform->matrix()->transform(Vector4::zero(), _eyePosition);
+	_targetTransform->matrix()->copyTranslation(_eyePosition);
 	
 	_targetTransform->matrix()
+		->lock()
 		->copyFrom(_eyeOrientation)
-		->appendTranslation(_eyePosition);
+		->appendTranslation(_eyePosition)
+		->unlock();
 }
 
 void
