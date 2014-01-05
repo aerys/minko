@@ -465,9 +465,9 @@ OculusVRCamera::updateCameraOrientation()
 	quaternion->toMatrix(_eyeOrientation);
 
 
-	_targetTransform->transform()->transform(Vector4::zero(), _eyePosition);
+	_targetTransform->matrix()->transform(Vector4::zero(), _eyePosition);
 	
-	_targetTransform->transform()
+	_targetTransform->matrix()
 		->copyFrom(_eyeOrientation)
 		->appendTranslation(_eyePosition);
 }
