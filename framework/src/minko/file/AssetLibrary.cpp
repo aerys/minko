@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/material/Material.hpp"
 #include "minko/scene/Node.hpp"
-#include "minko/file/Loader.hpp"
+#include "minko/file/AbstractLoader.hpp"
 #include "minko/file/Options.hpp"
 #include "minko/file/AbstractParser.hpp"
 #include "minko/file/EffectParser.hpp"
@@ -330,7 +330,11 @@ AssetLibrary::load()
 void
 AssetLibrary::loaderErrorHandler(std::shared_ptr<file::AbstractLoader> loader)
 {
-	throw std::invalid_argument(loader->filename());
+	auto filename = loader->filename();
+
+	std::cerr << "error: AssetLibrary::loaderErrorHandler(): " << filename << std::endl;
+
+	throw std::invalid_argument(filename);
 }
 
 void

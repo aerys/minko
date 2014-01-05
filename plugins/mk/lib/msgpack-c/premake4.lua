@@ -42,5 +42,5 @@ project "msgpack-c"
 
 	-- emscripten
 	configuration { "emscripten" }
-		flags { "Optimize" }
+		optimize "On"
 

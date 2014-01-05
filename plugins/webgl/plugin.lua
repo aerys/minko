@@ -21,8 +21,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 minko.plugin.webgl = {}
 
 function minko.plugin.webgl:enable()
-	defines { "MINKO_PLUGIN_WEBGL" }
-	configuration { "emscripten" }
+	configuration { "html5" }
+		defines { "MINKO_PLUGIN_WEBGL" }
 		minko.plugin.links { "webgl" }
 		includedirs { minko.sdk.path("plugins/webgl/include") }
 end

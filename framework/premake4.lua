@@ -37,7 +37,7 @@ project "minko-framework"
 
 	configuration { "release" }
 		defines { "NDEBUG" }
-		flags { "Optimize" } -- { "OptimizeSpeed" }
+		optimize "On"
 		targetdir("bin/release/" .. os.get())
 	
 	-- plugins
@@ -64,7 +64,7 @@ project "minko-framework"
 
 	-- emscripten
 	configuration { "emscripten" }
-		flags { "Optimize" }
+		optimize "On"
 		defines { "EMSCRIPTEN" }
 
 	newoption {

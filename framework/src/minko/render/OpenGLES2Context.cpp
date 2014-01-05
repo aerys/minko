@@ -19,13 +19,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/render/OpenGLES2Context.hpp"
 
-#include <iomanip>
 #include "minko/render/CompareMode.hpp"
 #include "minko/render/WrapMode.hpp"
 #include "minko/render/TextureFilter.hpp"
 #include "minko/render/MipFilter.hpp"
 #include "minko/render/TriangleCulling.hpp"
 #include "minko/render/StencilOperation.hpp"
+#include "minko/math/Matrix4x4.hpp"
+
+#include <iomanip>
 
 #define GL_GLEXT_PROTOTYPES
 #ifdef __APPLE__
@@ -33,12 +35,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 # include <GLUT/glut.h>
 #elif MINKO_ANGLE
 # include "GLES2/gl2.h"
-# include "minko/math/Matrix4x4.hpp"
 #elif _WIN32
 # include "GL/glew.h"
 #elif EMSCRIPTEN
 # include <GLES2/gl2.h>
 # include <EGL/egl.h>
+#elif __ANDROID__
+# include <GLES2/gl2.h>
 #else
 # include <GL/gl.h>
 # include <GL/glu.h>
@@ -115,7 +118,6 @@ OpenGLES2Context::initializeStencilOperationsMap()
 }
 
 OpenGLES2Context::OpenGLES2Context() :
-	_errorsEnabled(false),
 	_textures(),
     _textureSizes(),
     _textureHasMipmaps(),
@@ -1490,7 +1492,7 @@ OpenGLES2Context::getError()
 {
 	auto error = glGetError();
 
-	switch(error)
+	switch (error)
 	{
 	default:
 		break;
