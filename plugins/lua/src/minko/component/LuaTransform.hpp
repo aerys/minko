@@ -23,6 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/component/Transform.hpp"
 #include "minko/math/Matrix4x4.hpp"
+#include "minko/math/Vector3.hpp"
 
 #include "minko/LuaWrapper.hpp"
 
@@ -39,10 +40,43 @@ namespace minko
 			bind(LuaGlue& state)
 			{
 				state.Class<Transform>("Transform")
-					.method("create",           	static_cast<Transform::Ptr (*)(void)>(&Transform::create))
-		            .method("createFromMatrix", 	static_cast<Transform::Ptr (*)(math::Matrix4x4::Ptr)>(&Transform::create))
+					.method("create",				static_cast<Transform::Ptr(*)(void)>(&Transform::create))
+					.method("createFromMatrix",		static_cast<Transform::Ptr(*)(math::Matrix4x4::Ptr)>(&Transform::create))
+					.method("modelToWorld",			&LuaTransform::worldToModelWrapper)
+					.method("deltaModelToWorld",	&LuaTransform::deltaModelToWorldWrapper)
+					.method("worldToModel",			&LuaTransform::worldToModelWrapper)
+					.method("delta>orldToModel",	&LuaTransform::deltaWorldToModelWrapper)
 					.property("matrix", 			&Transform::matrix)
 					.property("modelToWorldMatrix",	static_cast<math::Matrix4x4::Ptr (Transform::*)()>(&Transform::modelToWorldMatrix));
+			}
+
+		private:
+			static
+			math::Vector3::Ptr
+			modelToWorldWrapper(Transform::Ptr t, math::Vector3::Ptr v)
+			{
+				return t->modelToWorld(v);
+			}
+
+			static
+			math::Vector3::Ptr
+			deltaModelToWorldWrapper(Transform::Ptr t, math::Vector3::Ptr v)
+			{
+				return t->deltaModelToWorld(v);
+			}
+
+			static
+			math::Vector3::Ptr
+			worldToModelWrapper(Transform::Ptr t, math::Vector3::Ptr v)
+			{
+				return t->worldToModel(v);
+			}
+
+			static
+			math::Vector3::Ptr
+			deltaWorldToModelWrapper(Transform::Ptr t, math::Vector3::Ptr v)
+			{
+				return t->deltaWorldToModel(v);
 			}
 		};
 	}
