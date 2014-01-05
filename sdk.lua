@@ -1,8 +1,10 @@
-if os.getenv('MINKO_HOME') then
-	MINKO_HOME = os.getenv('MINKO_HOME');
-else
-	print(color.fg.red .. 'You must define the environment variable MINKO_HOME.' .. color.reset)
-	os.exit(1)
+if not MINKO_HOME then
+	if os.getenv('MINKO_HOME') then
+		MINKO_HOME = os.getenv('MINKO_HOME');
+	else
+		print(color.fg.red .. 'You must define the environment variable MINKO_HOME.' .. color.reset)
+		os.exit(1)
+	end
 end
 
 if not os.isfile(MINKO_HOME .. '/sdk.lua') then
@@ -11,6 +13,8 @@ if not os.isfile(MINKO_HOME .. '/sdk.lua') then
 end
 
 print('Minko SDK home directory: ' .. MINKO_HOME)
+
+package.path = MINKO_HOME .. "/modules/?/?.lua;".. package.path
 
 require 'emscripten'
 require 'android'
