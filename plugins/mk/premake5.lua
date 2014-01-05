@@ -20,6 +20,11 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		"include/**.hpp"
 	}
 
+	excludes {
+		"lib/msgpack-c/test/**.cpp",
+		"lib/msgpack-c/test/**.c"
+	}
+
 	includedirs {
 		"include",
 		"src",
