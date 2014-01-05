@@ -1,6 +1,11 @@
 #!/bin/bash
 
-BIN="em++"
+if [[ -z "${EMSCRIPTEN_HOME}" ]]; then
+	echo "EMSCRIPTEN_HOME is not defined" > /dev/stderr
+	exit 1
+fi
+
+BIN="${EMSCRIPTEN_HOME}/em++"
 ARGS=""
 
 STATIC_LIBS=""
@@ -20,7 +25,8 @@ for ARG in "$@"; do
 	fi
 done
 
-EXPECTED_ORDER="webgl sdl framework"
+#EXPECTED_ORDER="webgl sdl framework"
+EXPECTED_ORDER="sdl webgl framework"
 
 NEW_STATIC_LIBS=""
 
@@ -43,7 +49,9 @@ for LIB in ${EXPECTED_ORDER}; do
 done
 
 if [[ -z "${NEW_STATIC_LIBS}" && -z "${SHARED_LIBS}" ]]; then
+	test "$verbose" != 0 && echo "${BIN} ${ARGS}"
 	${BIN} ${ARGS}
 else
+	test "$verbose" != 0 && echo "${BIN} ${ARGS} ${NEW_STATIC_LIBS} ${SHARED_LIBS}"
 	${BIN} ${ARGS} ${NEW_STATIC_LIBS} ${SHARED_LIBS}
 fi

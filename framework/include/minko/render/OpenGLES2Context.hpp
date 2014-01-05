@@ -44,8 +44,6 @@ namespace minko
 			typedef std::pair<uint, uint>								TextureSize;
 
 		protected:
-			bool									_errorsEnabled;
-
 	        static BlendFactorsMap					_blendingFactors;
 			static CompareFuncsMap					_compareFuncs;
 			static StencilOperationMap				_stencilOps;
