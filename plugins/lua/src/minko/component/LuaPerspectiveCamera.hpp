@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Common.hpp"
 
 #include "minko/component/PerspectiveCamera.hpp"
+#include "minko/math/Matrix4x4.hpp"
 
 #include "minko/LuaWrapper.hpp"
 
@@ -38,12 +39,13 @@ namespace minko
 			bind(LuaGlue& state)
 			{
 				state.Class<PerspectiveCamera>("PerspectiveCamera")
-		            .method("create",           &PerspectiveCamera::create)
-		            .method("updateProjection", &PerspectiveCamera::updateProjection)
-		            .property("fieldOfView",    &PerspectiveCamera::fieldOfView, &PerspectiveCamera::fieldOfView)
-		            .property("aspectRatio",    &PerspectiveCamera::aspectRatio, &PerspectiveCamera::aspectRatio)
-		            .property("zNear",          &PerspectiveCamera::zNear, &PerspectiveCamera::zNear)
-		            .property("zFar",           &PerspectiveCamera::zFar, &PerspectiveCamera::zFar);
+		            .method("create",					static_cast<PerspectiveCamera::Ptr (*)(float, float, float, float)>(&PerspectiveCamera::create))
+					.method("createWithPostProjection", static_cast<PerspectiveCamera::Ptr(*)(float, float, float, float, math::Matrix4x4::Ptr)>(&PerspectiveCamera::create))
+		            .method("updateProjection",			&PerspectiveCamera::updateProjection)
+		            .property("fieldOfView",			&PerspectiveCamera::fieldOfView, &PerspectiveCamera::fieldOfView)
+		            .property("aspectRatio",			&PerspectiveCamera::aspectRatio, &PerspectiveCamera::aspectRatio)
+		            .property("zNear",					&PerspectiveCamera::zNear, &PerspectiveCamera::zNear)
+		            .property("zFar",					&PerspectiveCamera::zFar, &PerspectiveCamera::zFar);
 			}
 		};
 	}
