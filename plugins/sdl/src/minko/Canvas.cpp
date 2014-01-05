@@ -324,9 +324,24 @@ Canvas::step()
 
 	_framerate = 1000.f / frameTime;
 
+#if !defined(EMSCRIPTEN)
 	if (_framerate > _desiredFramerate)
 		SDL_Delay((uint)((1000.f / _desiredFramerate) - frameTime));
+#endif
 }
+
+#if defined(EMSCRIPTEN)
+namespace
+{
+	Canvas::Ptr currentCanvas;
+
+	void
+	emscriptenMainLoop()
+	{
+		currentCanvas->step();
+	}
+}
+#endif
 
 void
 Canvas::run()
@@ -335,23 +350,16 @@ Canvas::run()
 	_framerate = 0.f;
 
 #if defined(EMSCRIPTEN)
-	_canvases.push_back(shared_from_this());
-
-	emscripten_set_main_loop(&Canvas::emscriptenMainLoop, 0, 1);
+	currentCanvas = shared_from_this();
+	emscripten_set_main_loop(emscriptenMainLoop, 0, 1);
 #else
 	while (_active)
+	{
 		step();
+		// usleep(1000000 / TARGET_FPS);
+	}
 #endif
 }
-
-#if defined(EMSCRIPTEN)
-void
-Canvas::emscriptenMainLoop()
-{
-	for (auto& canvas : _canvases)
-		canvas->step();
-}
-#endif
 
 void
 Canvas::quit()
