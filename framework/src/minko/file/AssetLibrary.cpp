@@ -34,6 +34,9 @@ using namespace minko::render;
 using namespace minko::geometry;
 using namespace minko::file;
 
+const std::string
+AssetLibrary::_defaultName = "";
+
 AssetLibrary::Ptr
 AssetLibrary::create(AbsContextPtr context)
 {
@@ -74,7 +77,7 @@ AssetLibrary::geometryName(GeometryPtr geometry)
 			return it->first;
 	}
 
-	return "";
+	return _defaultName;
 }
 
 render::Texture::Ptr
@@ -100,7 +103,7 @@ AssetLibrary::textureName(TexturePtr texture)
 			return it->first;
 	}
 
-	return "";
+	return _defaultName;
 }
 
 scene::Node::Ptr
@@ -126,7 +129,7 @@ AssetLibrary::symbolName(NodePtr node)
 			return it->first;
 	}
 
-	return "";
+	return _defaultName;
 }
 
 material::Material::Ptr
@@ -159,7 +162,7 @@ AssetLibrary::materialName(MaterialPtr material)
 			return it->first;
 	}
 
-	return "";
+	return _defaultName;
 }
 
 AssetLibrary::EffectPtr
@@ -185,7 +188,7 @@ AssetLibrary::effectName(EffectPtr effect)
 			return it->first;
 	}
 
-	return "";
+	return _defaultName;
 }
 
 const std::vector<unsigned char>&
@@ -228,7 +231,7 @@ AssetLibrary::scriptName(AbsScriptPtr script)
 			return it->first;
 	}
 
-	return "";
+	return _defaultName;
 }
 
 const unsigned int
