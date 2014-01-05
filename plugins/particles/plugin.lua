@@ -25,18 +25,23 @@ function minko.plugin.particles:enable()
 	includedirs { minko.sdk.path("plugins/particles/include") }
 	defines { "MINKO_PLUGIN_PARTICES" }
 	
-	configuration { "windows" }
+	configuration { "win" }
 		postbuildcommands {
 			'xcopy /y /i "' .. minko.sdk.path('/plugins/particles/asset/effect') .. '" "$(TargetDir)\\effect"',
 		}
 		
 	configuration { "linux" }
 		postbuildcommands {
-			'cp -r ' .. minko.sdk.path('/plugins/particles/asset/effect') .. ' ${TARGETDIR} || :',
+			'cp -r ' .. minko.sdk.path('/plugins/particles/asset/effect') .. ' ${TARGETDIR} || ' .. minko.fail(),
 		}
 	
-	configuration { "macosx" }
+	configuration { "osx" }
 		postbuildcommands {
-			'cp -r ' .. minko.sdk.path('/plugins/particles/asset/effect') .. ' . || :',
+			'cp -r ' .. minko.sdk.path('/plugins/particles/asset/effect') .. ' ${TARGETDIR} || ' .. minko.fail(),
+		}	
+
+	configuration { "html5" }
+		prelinkcommands {
+			'cp -r ' .. minko.sdk.path('/plugins/particles/asset/effect') .. ' ${TARGETDIR} || ' .. minko.fail(),
 		}	
 end
