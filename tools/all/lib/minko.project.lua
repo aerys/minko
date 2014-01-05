@@ -18,14 +18,13 @@ minko.project.library = function(name)
 		includedirs { minko.sdk.path("/deps/win/include") }
 		
 	configuration { "osx" }
-		includedirs { minko.sdk.path("/deps/mac/include") }
 	
 	configuration { "linux" }
-		includedirs { minko.sdk.path("/deps/lin/include") }
-
-	configuration { "html5" }
-		optimize "On"
 		
+	configuration { "html5" }
+		-- FIXME: Only enable in release when emscripten is finally able to successfully compile without -O2
+		optimize "On"
+
 	configuration { }
 end
 
