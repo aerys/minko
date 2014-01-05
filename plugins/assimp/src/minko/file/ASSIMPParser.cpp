@@ -452,9 +452,9 @@ ASSIMPParser::parseDependencies(const std::string& 	filename,
 
 				if (!filename.empty() && std::find(loading.begin(), loading.end(), filename) == loading.end())
 				{
-//#ifdef DEBUG
+#ifdef DEBUG
 					std::cout << "ASSIMParser: loading texture '" << filename << "'..." << std::endl;
-//#endif
+#endif
 
 					loading.push_back(filename);
 					_numDependencies++;
