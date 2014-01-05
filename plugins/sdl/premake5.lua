@@ -6,13 +6,22 @@ newoption {
 PROJECT_NAME = path.getname(os.getcwd())
 
 minko.project.library("minko-plugin-" .. PROJECT_NAME)
+
 	kind "StaticLib"
 	language "C++"
-	files { "**.hpp", "**.h", "**.cpp", "**.c", "include/**.hpp" }
-	includedirs { "include", "src"	}
+
+	files {
+		"lib/**.hpp",
+		"lib/**.h",
+		"lib/**.cpp",
+		"lib/**.c",
+		"include/**.hpp",
+		"src/**.cpp"
+	}
+
+	includedirs { "include" }
 	
 	minko.plugin.import("angle")
-	minko.plugin.import("webgl")
 	minko.plugin.enable("webgl")
 
 	-- linux
