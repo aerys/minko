@@ -55,6 +55,7 @@ using namespace Assimp;
 using namespace irr;
 using namespace irr::io;
 
+
 // zlib is needed for compressed XGL files 
 #ifndef ASSIMP_BUILD_NO_COMPRESSED_XGL
 #	ifdef ASSIMP_BUILD_NO_OWN_ZLIB

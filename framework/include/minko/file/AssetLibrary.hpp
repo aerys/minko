@@ -97,6 +97,13 @@ namespace minko
 				return _complete;
 			}
 
+			inline
+			const std::list<std::string>&
+			filesQueue()
+			{
+				return _filesQueue;
+			}
+
 			GeometryPtr
 			geometry(const std::string& name);
 
