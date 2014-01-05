@@ -1,6 +1,7 @@
 project "googletest"
 	kind "StaticLib"
 	language "C++"
+	location "."
 	files {
 		"src/gtest-all.cc"
 	}
