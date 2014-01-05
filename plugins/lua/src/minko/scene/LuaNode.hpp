@@ -45,17 +45,18 @@ namespace minko
 		            //.method("getName",          static_cast<const std::string& (Node::*)(void)>(&Node::name))
 		            //.method("setName",          static_cast<void (Node::*)(const std::string&)>(&Node::name))
 		            //.prop("name", &Node::name, &Node::name)
-		            .method("create",           static_cast<Node::Ptr (*)(void)>(&Node::create))
-		            .method("addChild",         &Node::addChild)
-		            .method("removeChild",      &Node::removeChild)
-		            .method("contains",         &Node::contains)
-		            .method("addComponent",     &Node::addComponent)
-		            .method("removeComponent",  &Node::removeComponent)
-		            .method("getChildren",		&LuaNode::childrenWrapper)
-		            .method("getBoundingBox",	&LuaNode::getBoundingBoxWrapper)
-		            .method("getTransform",		&LuaNode::getTransformWrapper)
-		            .property("data",           &Node::data)
-		            .property("root",           &Node::root);
+		            .method("create",				static_cast<Node::Ptr (*)(void)>(&Node::create))
+		            .method("addChild",				&Node::addChild)
+		            .method("removeChild",			&Node::removeChild)
+		            .method("contains",				&Node::contains)
+		            .method("addComponent",			&Node::addComponent)
+		            .method("removeComponent",		&Node::removeComponent)
+		            .method("getChildren",			&LuaNode::childrenWrapper)
+		            .method("getBoundingBox",		&LuaNode::getBoundingBoxWrapper)
+		            .method("getTransform",			&LuaNode::getTransformWrapper)
+					.method("getPerspectiveCamera",	&LuaNode::getPerspectiveCameraWrapper)
+		            .property("data",				&Node::data)
+		            .property("root",				&Node::root);
 		            //.property("name",			&Node::name, &Node::name);
 			}
 
@@ -85,6 +86,13 @@ namespace minko
 			getTransformWrapper(Node::Ptr node)
 			{
 				return node->component<component::Transform>();
+			}
+
+			static
+			std::shared_ptr<component::PerspectiveCamera>
+			getPerspectiveCameraWrapper(Node::Ptr node)
+			{
+				return node->component<component::PerspectiveCamera>();
 			}
 		};
 	}
