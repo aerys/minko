@@ -479,7 +479,7 @@ main(int argc, char** argv)
 			}
 
 #ifdef MINKO_PLUGIN_OCULUS
-			if (s[input::Keyboard::ScanCode::R] && camera->component<OculusVRCamera>())
+			if (k->keyIsDown(input::Keyboard::ScanCode::R) && camera->component<OculusVRCamera>())
 			{
 				std::cout << "reset head tracking" << std::endl;
 				camera->component<OculusVRCamera>()->resetHeadTracking();
