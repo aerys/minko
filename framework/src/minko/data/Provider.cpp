@@ -115,7 +115,7 @@ Provider::registerProperty(const std::string&		propertyName,
 	{
 #if defined(EMSCRIPTEN)
 		auto that = shared_from_this();
-		_valueChangedSlots[propertyName] = value->changed()->connect([&, that, this](Value::Ptr) {
+		_valueChangedSlots[propertyName] = value->changed()->connect([&, that, propertyName, this](Value::Ptr) {
 			_propValueChanged->execute(that, propertyName);
 		});
 #else

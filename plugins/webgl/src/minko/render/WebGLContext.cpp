@@ -33,8 +33,8 @@ using namespace minko::render;
 
 WebGLContext::WebGLContext() :
 	OpenGLES2Context()
-{}
-
+{
+}
 
 void
 WebGLContext::setShaderSource(const unsigned int shader,
