@@ -39,6 +39,9 @@ namespace minko
 				RGBA
 			};
 
+		public:
+			static const uint MAX_SIZE;
+
 		private:
 			const unsigned int			_width;		
 			const unsigned int			_height;	

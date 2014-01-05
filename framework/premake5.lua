@@ -50,6 +50,9 @@ project "minko-framework"
 	configuration { "win" }
 		includedirs { "../deps/win/include" }
 		libdirs { "../deps/win/lib" }
+		
+	configuration { "vs*" }
+		defines { "NOMINMAX" }
 
 	-- visual studio
 	configuration { "vs*" }

@@ -16,6 +16,8 @@ minko.project.library = function(name)
 	
 	configuration { "win" }
 		includedirs { minko.sdk.path("/deps/win/include") }
+	configuration { "vs*" }
+		defines { "NOMINMAX" }
 		
 	configuration { "osx" }
 	

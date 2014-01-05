@@ -80,10 +80,12 @@ namespace minko
 				{
 					stream = new minko::file::IOStream(loader->data());
 				});
+#ifdef DEBUG
 				auto error = loader->error()->connect([&](file::AbstractLoader::Ptr loader)
 				{
 					std::cerr << "error: could not load file '" << filename << "'" << std::endl;
 				});
+#endif
 
 				loader->load(filename, _options);
 

@@ -199,11 +199,25 @@ namespace minko
 			Ptr
 			transpose();
 
+			inline
+			std::shared_ptr<Vector3>
+			transform(std::shared_ptr<Vector3> v)
+			{
+				return transform(v, nullptr);
+			}
+
             std::shared_ptr<Vector3>
-            transform(std::shared_ptr<Vector3> v, std::shared_ptr<Vector3> output = nullptr);
+            transform(std::shared_ptr<Vector3> v, std::shared_ptr<Vector3> output);
+
+			inline
+			std::shared_ptr<Vector3>
+			deltaTransform(std::shared_ptr<Vector3> v)
+			{
+				return deltaTransform(v, nullptr);
+			}
 
 			std::shared_ptr<Vector3>
-            deltaTransform(std::shared_ptr<Vector3> v, std::shared_ptr<Vector3> output = nullptr);            
+            deltaTransform(std::shared_ptr<Vector3> v, std::shared_ptr<Vector3> output = nullptr);
 
 			Ptr
 			lock();
