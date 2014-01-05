@@ -121,7 +121,7 @@ int main(int argc, char** argv)
 		// handle keyboard signals
 		auto keyDown = canvas->keyboard()->keyDown()->connect([&](input::Keyboard::Ptr k)
 		{
-			if (k->keyIsDown(input::Keyboard::ScanCode::A))
+			if (k->keyIsDown(input::Keyboard::KeyCode::a))
 			{
 				const auto MAX_NUM_LIGHTS = 40;
 
@@ -144,7 +144,7 @@ int main(int argc, char** argv)
 
 				std::cout << lights->children().size() << " lights" << std::endl;
 			}
-			if (k->keyIsDown(input::Keyboard::ScanCode::R))
+			if (k->keyIsDown(input::Keyboard::KeyCode::r))
 			{
 				if (lights->children().size() == 0)
 					return;
@@ -152,7 +152,7 @@ int main(int argc, char** argv)
 				lights->removeChild(lights->children().back());
 				std::cout << lights->children().size() << " lights" << std::endl;
 			}
-			if (k->keyIsDown(input::Keyboard::ScanCode::SPACE))
+			if (k->keyIsDown(input::Keyboard::KeyCode::SPACE))
 			{
 				auto data = sphere->component<Surface>()->material();
 				bool hasNormalMap = data->hasProperty("normalMap");
