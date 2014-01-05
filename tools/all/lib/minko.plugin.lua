@@ -13,8 +13,10 @@ minko.plugin.import = function(name)
 end
 
 minko.plugin.enable = function(name)
-	local projectName = project()["name"]
-	local terms = configuration()["terms"] or {}
+	local cfg = configuration().configset._current
+
+	local projectName = project().name
+	local terms = cfg._criteria.terms
 
 	minko.plugin._enabled[name] = true
 	minko.plugin.import(name)	
@@ -23,6 +25,7 @@ minko.plugin.enable = function(name)
 	configuration { unpack(terms) }
 
 	dofile(minko.sdk.path("/plugins/" .. name .."/plugin.lua"))
+
 	if minko.plugin[name] and minko.plugin[name].enable then
 		minko.plugin[name]:enable()
 	end
@@ -35,7 +38,10 @@ minko.plugin.enabled = function(name)
 end
 
 minko.plugin.links = function(names)
-	local terms = configuration()["terms"] or {}
+	local cfg = configuration().configset._current
+
+	local projectName = project().name
+	local terms = cfg._criteria.terms
 
 	configuration {}
 
