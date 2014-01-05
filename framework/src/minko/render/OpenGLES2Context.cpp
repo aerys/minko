@@ -118,6 +118,7 @@ OpenGLES2Context::initializeStencilOperationsMap()
 }
 
 OpenGLES2Context::OpenGLES2Context() :
+	_errorsEnabled(false),
 	_textures(),
     _textureSizes(),
     _textureHasMipmaps(),
