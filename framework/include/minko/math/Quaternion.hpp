@@ -117,6 +117,16 @@ namespace minko
 			float 
 			length() const;
 
+			std::string
+			toString()
+			{
+				std::stringstream stream;
+
+				stream << "(" << _i << ", " << _j << ", " << _k << ", " << _r << ")";
+
+				return stream.str();
+
+			}
 		private:
 			Quaternion(float i = 1.0f, float j = 0.0f, float k = 0.0f, float r = 0.0f)
 				: _i(i), _j(j), _k(k), _r(r)
