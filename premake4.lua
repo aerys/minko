@@ -36,9 +36,11 @@ solution "minko"
 	include 'plugins/fx'
 	include 'plugins/assimp'
 	include 'plugins/lua'
-	include 'plugins/offscreen'
 	include 'plugins/assimp'
 	include 'plugins/serializer'
+	if os.get() == 'windows' then
+		include 'plugins/oculus'
+	end
 	if os.get() == 'linux' then
 		include 'plugins/offscreen'
 	end
@@ -55,7 +57,7 @@ solution "minko"
 		include('examples/raycasting')
 		include('examples/sponza')
 		include('examples/stencil')
-		include 'examples/lua-scripts'
+		include('examples/lua-scripts')
 		include('examples/line-geometry')
 		include('examples/frustum')
 		include('examples/serializer')

@@ -54,6 +54,8 @@ namespace minko
 			std::shared_ptr<math::Matrix4x4>				_projection;
 			std::shared_ptr<math::Matrix4x4>				_viewProjection;
             std::shared_ptr<math::Vector3>                  _position;
+			
+			std::shared_ptr<math::Matrix4x4>				_postProjection;
 
 			Signal<AbsCtrlPtr, NodePtr>::Slot				_targetAddedSlot;
 			Signal<AbsCtrlPtr, NodePtr>::Slot				_targetRemovedSlot;
@@ -62,9 +64,13 @@ namespace minko
 		public:
 			inline static
 			Ptr
-			create(float aspectRatio, float fov = .785f, float zNear = 0.1f, float zFar = 1000.f)
+			create(float aspectRatio, 
+				   float fov	= .785f, 
+				   float zNear	= 0.1f, 
+				   float zFar	= 1000.f, 
+				   std::shared_ptr<math::Matrix4x4> postProjection = nullptr)
 			{
-				auto ctrl  = std::shared_ptr<PerspectiveCamera>(new PerspectiveCamera(fov, aspectRatio, zNear, zFar));
+				auto ctrl  = std::shared_ptr<PerspectiveCamera>(new PerspectiveCamera(fov, aspectRatio, zNear, zFar, postProjection));
 
 				ctrl->initialize();
 
@@ -168,7 +174,7 @@ namespace minko
 			targetRemovedHandler(AbstractComponent::Ptr ctrl, NodePtr target);
 
 		private:
-			PerspectiveCamera(float fov, float aspectRatio, float zNear, float zFar);
+			PerspectiveCamera(float fov, float aspectRatio, float zNear, float zFar, std::shared_ptr<math::Matrix4x4> postPerspective);
 
 			void
 			initialize();
