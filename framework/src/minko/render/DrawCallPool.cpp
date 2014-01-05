@@ -537,12 +537,20 @@ DrawCallPool::blameMacros(SurfacePtr									surface,
 	
 		if (_incorrectMacroChangedSlot[surface].count(macro) == 0)
 		{
+#if defined(EMSCRIPTEN)
+			// See issue #1848 in Emscripten: https://github.com/kripken/emscripten/issues/1848
+			auto that = shared_from_this();
+			_incorrectMacroChangedSlot[surface][macro] = macro.container()->propertyReferenceChanged(macro.name())->connect([&, that, surface, macro](data::Container::Ptr container, const std::string& propertyName) {
+				that->incorrectMacroChangedHandler(surface, macro);
+			});
+#else
 			_incorrectMacroChangedSlot[surface][macro] = macro.container()->propertyReferenceChanged(macro.name())->connect(std::bind(
-				&DrawCallPool::incorrectMacroChangedHandler,
+				&Surface::incorrectMacroChangedHandler,
 				shared_from_this(),
 				surface,
 				macro
 			));
+#endif
 		}
 	}
 }

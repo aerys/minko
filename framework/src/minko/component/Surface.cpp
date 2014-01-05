@@ -41,35 +41,11 @@ Surface::Surface(Geometry::Ptr 			geometry,
 	_geometry(geometry),
 	_material(material),
 	_effect(effect),
-	_techniqueToMacroNames(),
 	_technique(technique),
-	_drawCalls(),
-	_drawCallToPass(),
-	_macroNameToDrawCalls(),
-	_macroAddedOrRemovedSlots(),
-	_macroChangedSlots(),
-	_numMacroListeners(),
-	_incorrectMacroToPasses(),
-	_incorrectMacroChangedSlot(),
-	_drawCallAdded(DrawCallChangedSignal::create()),
-	_drawCallRemoved(DrawCallChangedSignal::create()),
-	_techniqueChanged(TechniqueChangedSignal::create())
+	_techniqueChanged(TechniqueChangedSignal::create()),
+	_visibilityChanged(VisibilityChangedSignal::create()),
+	_computedVisibilityChanged(VisibilityChangedSignal::create())
 {
-}
-
-void
-Surface::initializeTechniqueMacroNames()
-{
-	_techniqueToMacroNames.clear();
-
-	for (auto& technique : _effect->techniques())
-	{
-		auto& techniqueName = technique.first;
-
-		for (auto& pass : technique.second)
-			for (auto& macroBinding : pass->macroBindings())
-				_techniqueToMacroNames[techniqueName].insert(std::get<0>(macroBinding.second));
-	}
 }
 
 void
@@ -89,10 +65,28 @@ Surface::initialize()
 		std::placeholders::_2
 	));
 
-	initializeTechniqueMacroNames();
-
 	if (_effect->techniques().count(_technique) == 0)
 		throw std::logic_error("The technique '" + _technique + "' does not exist.");
+}
+
+void
+Surface::visible(bool value)
+{
+	if (_visible != value)
+	{
+		_visible = value;
+		_visibilityChanged->execute(shared_from_this(), value);
+	}
+}
+
+void
+Surface::computedVisibility(bool value)
+{
+	if (_computedVisibility != value)
+	{
+		_computedVisibility = value;
+		_computedVisibilityChanged->execute(shared_from_this(), value);
+	}
 }
 
 void
@@ -134,477 +128,6 @@ Surface::targetAddedHandler(AbstractComponent::Ptr	ctrl,
 void
 Surface::removedHandler(NodePtr node, NodePtr target, NodePtr ancestor)
 {
-	deleteAllDrawCalls();
-
-	_macroChangedSlots.clear();
-
-	_incorrectMacroToPasses.clear();
-	_incorrectMacroChangedSlot.clear();
-}
-
-void
-Surface::watchMacroAdditionOrDeletion(std::shared_ptr<data::Container> rendererData)
-{
-	_macroAddedOrRemovedSlots.clear();
-
-	if (targets().empty())
-		return;
-
-	auto&	target		= targets().front();
-	auto	targetData	= target->data();
-	auto	rootData	= target->root()->data();
-
-
-#if defined(EMSCRIPTEN)
-	{
-		// See issue #1848 in Emscripten: https://github.com/kripken/emscripten/issues/1848
-		auto that = shared_from_this();
-		_macroAddedOrRemovedSlots.push_back(
-			targetData->propertyAdded()->connect([&, that](Container::Ptr container, const std::string& propertyName) {
-				that->macroChangedHandler(container, propertyName, MacroChange::ADDED);
-			})
-		);
-	}
-#else
-	_macroAddedOrRemovedSlots.push_back(
-		targetData->propertyAdded()->connect(std::bind(
-			&Surface::macroChangedHandler,
-			shared_from_this(),
-			std::placeholders::_1,
-			std::placeholders::_2,
-			MacroChange::ADDED
-		))
-	);
-#endif
-
-#if defined(EMSCRIPTEN)
-	{
-		// See issue #1848 in Emscripten: https://github.com/kripken/emscripten/issues/1848
-		auto that = shared_from_this();
-		_macroAddedOrRemovedSlots.push_back(
-			targetData->propertyRemoved()->connect([&, that](Container::Ptr container, const std::string& propertyName) {
-				that->macroChangedHandler(container, propertyName, MacroChange::REMOVED);
-			})
-		);
-	}
-#else
-	_macroAddedOrRemovedSlots.push_back(
-		targetData->propertyRemoved()->connect(std::bind(
-			&Surface::macroChangedHandler,
-			shared_from_this(),
-			std::placeholders::_1,
-			std::placeholders::_2,
-			MacroChange::REMOVED
-		))
-	);
-#endif
-
-#if defined(EMSCRIPTEN)
-	{
-		// See issue #1848 in Emscripten: https://github.com/kripken/emscripten/issues/1848
-		auto that = shared_from_this();
-		_macroAddedOrRemovedSlots.push_back(
-			rendererData->propertyAdded()->connect([&, that](Container::Ptr container, const std::string& propertyName) {
-				that->macroChangedHandler(container, propertyName, MacroChange::ADDED);
-			})
-		);
-	}
-#else
-	_macroAddedOrRemovedSlots.push_back(
-		rendererData->propertyAdded()->connect(std::bind(
-			&Surface::macroChangedHandler,
-			shared_from_this(),
-			std::placeholders::_1,
-			std::placeholders::_2,
-			MacroChange::ADDED
-		))
-	);
-#endif
-
-#if defined(EMSCRIPTEN)
-	{
-		// See issue #1848 in Emscripten: https://github.com/kripken/emscripten/issues/1848
-		auto that = shared_from_this();
-		_macroAddedOrRemovedSlots.push_back(
-			rendererData->propertyRemoved()->connect([&, that](Container::Ptr container, const std::string& propertyName) {
-				that->macroChangedHandler(container, propertyName, MacroChange::REMOVED);
-			})
-		);
-	}
-#else
-	_macroAddedOrRemovedSlots.push_back(
-		rendererData->propertyRemoved()->connect(std::bind(
-			&Surface::macroChangedHandler,
-			shared_from_this(),
-			std::placeholders::_1,
-			std::placeholders::_2,
-			MacroChange::REMOVED
-		))
-	);
-#endif
-
-#if defined(EMSCRIPTEN)
-	{
-		// See issue #1848 in Emscripten: https://github.com/kripken/emscripten/issues/1848
-		auto that = shared_from_this();
-		_macroAddedOrRemovedSlots.push_back(
-			rootData->propertyAdded()->connect([&, that](Container::Ptr container, const std::string& propertyName) {
-				that->macroChangedHandler(container, propertyName, MacroChange::ADDED);
-			})
-		);
-	}
-#else
-	_macroAddedOrRemovedSlots.push_back(
-		rootData->propertyAdded()->connect(std::bind(
-			&Surface::macroChangedHandler,
-			shared_from_this(),
-			std::placeholders::_1,
-			std::placeholders::_2,
-			MacroChange::ADDED
-		))
-	);
-#endif
-
-#if defined(EMSCRIPTEN)
-	{
-		// See issue #1848 in Emscripten: https://github.com/kripken/emscripten/issues/1848
-		auto that = shared_from_this();
-		_macroAddedOrRemovedSlots.push_back(
-			rootData->propertyRemoved()->connect([&, that](Container::Ptr container, const std::string& propertyName) {
-				that->macroChangedHandler(container, propertyName, MacroChange::REMOVED);
-			})
-		);
-	}
-#else
-	_macroAddedOrRemovedSlots.push_back(
-		rootData->propertyRemoved()->connect(std::bind(
-			&Surface::macroChangedHandler,
-			shared_from_this(),
-			std::placeholders::_1,
-			std::placeholders::_2,
-			MacroChange::REMOVED
-		))
-	);
-#endif
-}
-
-void
-Surface::deleteAllDrawCalls()
-{
-	auto drawCallsMap = _drawCalls;
-
-	for (auto& drawCalls : drawCallsMap)
-		deleteDrawCalls(drawCalls.first);
-
-#ifdef DEBUG_FALLBACK
-	assert(_drawCalls.empty());
-	assert(_drawCallToPass.empty());
-	assert(_drawCallToRendererData.empty());
-	assert(_macroNameToDrawCalls.empty());
-#endif // DEBUG_FALLBACK
-}
-
-void
-Surface::deleteDrawCalls(std::shared_ptr<data::Container> rendererData)
-{
-	auto& drawCalls = _drawCalls[rendererData];
-
-	while (!drawCalls.empty())
-	{
-		auto drawCall = drawCalls.front();
-
-		_drawCallRemoved->execute(shared_from_this(), drawCall);
-		drawCalls.pop_front();
-
-		_drawCallToPass.erase(drawCall);
-		_drawCallToRendererData.erase(drawCall);
-
-		for (auto& drawcallsIt : _macroNameToDrawCalls)
-		{
-			auto& macroName			= drawcallsIt.first;
-			auto& macroDrawcalls	= drawcallsIt.second;
-			auto  drawcallIt		= std::find(macroDrawcalls.begin(), macroDrawcalls.end(), drawCall);
-			
-			if (drawcallIt != macroDrawcalls.end())
-				macroDrawcalls.erase(drawcallIt);
-		}
-	}
-
-	// erase in a subsequent step the entries corresponding to macro names which do not monitor any drawcall anymore.
-	for (std::unordered_map<std::string, DrawCallList>::iterator drawcallsIt = _macroNameToDrawCalls.begin();
-		drawcallsIt != _macroNameToDrawCalls.end();
-		)
-		if (drawcallsIt->second.empty())
-			drawcallsIt = _macroNameToDrawCalls.erase(drawcallsIt);
-		else
-			++drawcallsIt;
-
-	_drawCalls.erase(rendererData);
-}
-
-const Surface::DrawCallList&	
-Surface::createDrawCalls(data::Container::Ptr	rendererData,
-						 unsigned int			numAttempts)
-{
-	if (_drawCalls.count(rendererData) != 0)
-		deleteDrawCalls(rendererData);
-
-#ifdef DEBUG_FALLBACK
-	assert(_drawCalls.count(rendererData) == 0);
-	assert(_macroAddedOrRemovedSlots.empty());
-	assert(_macroChangedSlots.empty());
-	assert(_numMacroListeners.empty());
-#endif // DEBUG_FALLBACK
-
-	bool mustFallbackTechnique	= false;
-	_drawCalls[rendererData]	= std::list<DrawCall::Ptr>();
-
-	for (const auto& pass : _effect->technique(_technique))
-	{
-		auto drawCall = initializeDrawCall(pass, rendererData);
-
-		if (drawCall)
-		{
-			_drawCalls[rendererData].push_back(drawCall);
-			_drawCallAdded->execute(shared_from_this(), drawCall);
-		}
-		else
-		{
-			// one pass failed without any viable fallback, fallback the whole technique then.
-			mustFallbackTechnique = true;
-			break;
-		}
-	}
-
-	if (mustFallbackTechnique)
-	{
-		_drawCalls[rendererData].clear();
-
-		// switch to next fallback technique if possible
-		_macroAddedOrRemovedSlots.clear();
-		_macroChangedSlots.clear();
-		_numMacroListeners.clear();
-
-		if (numAttempts > 0 && _effect->hasFallback(_technique))
-		{
-			setTechnique(_effect->fallback(_technique), false);
-
-			return createDrawCalls(rendererData, numAttempts - 1);
-		}
-	}
-	else
-	{
-#ifdef DEBUG_FALLBACK
-		std::cout << "surf [" << this << "] managed to proceed to '" << _technique << "'" << std::endl;
-		for (auto& drawcall : _drawCalls[rendererData])
-			std::cout << "\t- drawcall [" << drawcall.get() << "]" << std::endl;
-#endif // DEBUG_FALLBACK
-
-		watchMacroAdditionOrDeletion(rendererData);
-	}
-
-	return _drawCalls[rendererData];
-}
-
-DrawCall::Ptr
-Surface::initializeDrawCall(Pass::Ptr		pass, 
-							Container::Ptr	rendererData,
-							DrawCall::Ptr	drawcall)
-{
-#ifdef DEBUG
-	if (pass == nullptr)
-		throw std::invalid_argument("pass");
-#endif // DEBUG
-
-	const float	priority	= drawcall ? drawcall->priority() : pass->states()->priority();
-	const auto	target		= targets()[0];
-	const auto	targetData	= target->data();
-	const auto	rootData	= target->root()->data();
-
-	std::list<data::ContainerProperty>	booleanMacros;
-	std::list<data::ContainerProperty>	integerMacros;
-	std::list<data::ContainerProperty>	incorrectIntegerMacros;
-
-	auto program = getWorkingProgram(
-		pass, 
-		targetData, 
-		rendererData, 
-		rootData, 
-		booleanMacros, 
-		integerMacros,
-		incorrectIntegerMacros
-	);
-
-	if (!program)
-		return nullptr;
-	
-	if (drawcall == nullptr)
-	{
-		drawcall = DrawCall::create(
-			pass->attributeBindings(),
-			pass->uniformBindings(),
-			pass->stateBindings(),
-			pass->states()
-		);
-
-		_drawCallToPass[drawcall]			= pass;
-		_drawCallToRendererData[drawcall]	= rendererData;
-
-		for (const auto& binding : pass->macroBindings())
-		{
-			data::ContainerProperty macro(binding.second, targetData, rendererData, rootData);
-
-			_macroNameToDrawCalls[macro.name()].push_back(drawcall);
-
-			if (macro.container())
-			{
-				auto&		listeners		= _numMacroListeners;
-				const int	numListeners	= listeners.count(macro) == 0 ? 0 : listeners[macro];
-
-				if (numListeners == 0)
-					macroChangedHandler(macro.container(), macro.name(), MacroChange::ADDED);
-			}
-		}
-	}
-
-	drawcall->configure(program, targetData, rendererData, rootData);
-	drawcall->priority(priority);
-
-	return drawcall;
-}
-
-std::shared_ptr<Program>
-Surface::getWorkingProgram(std::shared_ptr<Pass>				pass,
-						   data::Container::Ptr					targetData,
-						   data::Container::Ptr					rendererData,
-						   data::Container::Ptr					rootData,
-						   std::list<data::ContainerProperty>&	booleanMacros,
-						   std::list<data::ContainerProperty>&	integerMacros,
-						   std::list<data::ContainerProperty>&	incorrectIntegerMacros)
-{
-	Program::Ptr program = nullptr;
-
-	do
-	{
-		program = pass->selectProgram(
-			targetData, 
-			rendererData, 
-			rootData, 
-			booleanMacros, 
-			integerMacros, 
-			incorrectIntegerMacros
-		);
-
-#ifdef DEBUG_FALLBACK
-	assert(incorrectIntegerMacros.empty() != (program==nullptr));
-#endif // DEBUG_FALLBACK
-
-		forgiveMacros	(booleanMacros, integerMacros,	TechniquePass(_technique, pass));
-		blameMacros		(incorrectIntegerMacros,		TechniquePass(_technique, pass));
-
-		break;
-
-		/*
-		if (program)
-			break;
-		else
-		{
-#ifdef DEBUG_FALLBACK
-			std::cout << "fallback:\tpass '" << pass->name() << "'\t-> pass '" << pass->fallback() << "'" << std::endl;
-#endif // DEBUG_FALLBACK
-
-			const std::vector<Pass::Ptr>& passes = _effect->technique(_technique);
-			auto fallbackIt = std::find_if(passes.begin(), passes.end(), [&](const Pass::Ptr& p)
-			{
-				return p->name() == pass->fallback();
-			});
-
-			if (fallbackIt == passes.end())
-				break;
-			else
-				pass = *fallbackIt;
-		}
-		*/
-	}
-	while(true);
-
-	return program;
-}
-
-void
-Surface::macroChangedHandler(Container::Ptr		container,
-							 const std::string&	propertyName,
-							 MacroChange		change)
-{
-#ifdef DEBUG_FALLBACK
-	assert(container);
-#endif // DEBUG_FALLBACK
-
-	const data::ContainerProperty	macro		(propertyName, container);
-	if (change == MacroChange::REF_CHANGED && !_drawCalls.empty())
-	{
-		const auto	drawCalls		= _macroNameToDrawCalls[macro.name()];
-
-		std::unordered_set<Container::Ptr>	failedDrawcallRendererData;
-
-		for (auto& drawCall : drawCalls)
-		{
-			auto	rendererData	= _drawCallToRendererData[drawCall];
-			auto	pass			= _drawCallToPass[drawCall];
-	
-			if (!initializeDrawCall(pass, rendererData, drawCall))
-				failedDrawcallRendererData.insert(rendererData);
-		}
-
-		if (!failedDrawcallRendererData.empty())
-		{
-			// at least, one pass failed for good. must fallback the whole technique.
-			for (auto& rendererData : failedDrawcallRendererData)
-				if (_drawCalls.count(rendererData) > 0)
-					deleteDrawCalls(rendererData);
-
-			if (_effect->hasFallback(_technique))
-				setTechnique(_effect->fallback(_technique), true);
-		}
-	}
-	else if (_techniqueToMacroNames.count(_technique) != 0 
-		&&   _techniqueToMacroNames[_technique].find(macro.name()) != _techniqueToMacroNames[_technique].end())
-	{
-		int numListeners = _numMacroListeners.count(macro) == 0 ? 0 : _numMacroListeners[macro];
-
-		if (change == MacroChange::ADDED)
-		{
-			if (numListeners == 0)
-			{
-#if defined(EMSCRIPTEN)
-				// See issue #1848 in Emscripten: https://github.com/kripken/emscripten/issues/1848
-				auto that = shared_from_this();
-				_macroChangedSlots[macro] = macro.container()->propertyReferenceChanged(macro.name())->connect([&, that](Container::Ptr container, const std::string& propertyName) {
-					that->macroChangedHandler(container, propertyName, MacroChange::REF_CHANGED);
-				});
-#else
-				_macroChangedSlots[macro] = macro.container()->propertyReferenceChanged(macro.name())->connect(std::bind(
-					&Surface::macroChangedHandler,
-					shared_from_this(),
-					macro.container(),
-					macro.name(),
-					MacroChange::REF_CHANGED
-				));
-#endif
-			}
-
-			_numMacroListeners[macro] = numListeners + 1;
-		}
-		else if (change == MacroChange::REMOVED)
-		{
-			macroChangedHandler(macro.container(), macro.name(), MacroChange::REF_CHANGED);
-
-			_numMacroListeners[macro] = numListeners - 1;
-
-			if (_numMacroListeners[macro] == 0)
-				_macroChangedSlots.erase(macro);
-		}
-	}
 }
 
 void
@@ -614,13 +137,10 @@ Surface::targetRemovedHandler(AbstractComponent::Ptr	ctrl,
 	auto data = target->data();
 
 	_removedSlot	= nullptr;
-	_macroAddedOrRemovedSlots.clear();
-
+	
 	data->removeProvider(_material);
 	data->removeProvider(_geometry->data());
 	data->removeProvider(_geometry->data());
-
-	deleteAllDrawCalls();
 }
 
 void
@@ -639,82 +159,5 @@ Surface::setTechnique(const std::string&	technique,
 	if (!_effect->hasTechnique(_technique))
 		throw std::logic_error("The technique '" + _technique + "' does not exist.");
 
-	_macroAddedOrRemovedSlots.clear();
-	_macroChangedSlots.clear();
-	_numMacroListeners.clear();
-
 	_techniqueChanged->execute(shared_from_this(), _technique, updateDrawcalls);
-}
-
-void
-Surface::incorrectMacroChangedHandler(const data::ContainerProperty& macro)
-{
-	if (_incorrectMacroToPasses.count(macro) > 0)
-	{
-#ifdef DEBUG_FALLBACK
-		std::cout << "surf[" << this << "]\tincorrect macro '" << macro.name() << "' changed -> try back technique '" << _incorrectMacroToPasses[macro].front().first << "'" << std::endl;
-#endif // DEBUG_FALLBACK
-
-		setTechnique(_incorrectMacroToPasses[macro].front().first, true); // FIXME
-	}
-}
-
-void
-Surface::blameMacros(const std::list<data::ContainerProperty>& incorrectIntegerMacros,
-					 const TechniquePass& pass)
-{
-	for (auto& macro : incorrectIntegerMacros)
-	{
-		auto&	failedPasses = _incorrectMacroToPasses[macro];
-		auto	failedPassIt = std::find(failedPasses.begin(), failedPasses.end(), pass);
-	
-		if (failedPassIt == failedPasses.end())
-		{
-			failedPasses.push_back(pass);
-	
-#ifdef DEBUG_FALLBACK
-			for (auto& techniqueName : _incorrectMacroToPasses[macro])
-				std::cout << "'" << macro.name() << "' made [technique '" << pass.first << "' | pass '" << pass.second.get() << "'] fail" << std::endl;
-#endif // DEBUG_FALLBACK
-		}
-	
-		if (_incorrectMacroChangedSlot.count(macro) == 0)
-		{
-#if defined(EMSCRIPTEN)
-			// See issue #1848 in Emscripten: https://github.com/kripken/emscripten/issues/1848
-			auto that = shared_from_this();
-			_incorrectMacroChangedSlot[macro] = macro.container()->propertyReferenceChanged(macro.name())->connect([&, that, macro](Container::Ptr container, const std::string& propertyName) {
-				that->incorrectMacroChangedHandler(macro);
-			});
-#else
-			_incorrectMacroChangedSlot[macro] = macro.container()->propertyReferenceChanged(macro.name())->connect(std::bind(
-				&Surface::incorrectMacroChangedHandler,
-				shared_from_this(),
-				macro
-			));
-#endif
-		}
-	}
-}
-
-void
-Surface::forgiveMacros(const std::list<data::ContainerProperty>&,
-					   const std::list<data::ContainerProperty>& integerMacros,
-					   const TechniquePass& pass)
-{
-	for (auto& macro : integerMacros)
-		if (_incorrectMacroToPasses.count(macro) > 0)
-		{
-			auto&	failedPasses	= _incorrectMacroToPasses[macro];
-			auto	failedPassIt	= std::find(failedPasses.begin(), failedPasses.end(), pass);
-
-			if (failedPassIt != failedPasses.end())
-			{
-				failedPasses.erase(failedPassIt);
-
-				if (failedPasses.empty() 
-					&& _incorrectMacroChangedSlot.count(macro) > 0)
-					_incorrectMacroChangedSlot.erase(macro);
-			}
-		}
 }

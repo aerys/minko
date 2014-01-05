@@ -48,6 +48,8 @@ namespace minko
 			static CompareFuncsMap					_compareFuncs;
 			static StencilOperationMap				_stencilOps;
 
+			bool									_errorsEnabled;
+
 			std::list<unsigned int>	                _textures;
             std::unordered_map<uint, TextureSize>	_textureSizes;
             std::unordered_map<uint, bool>          _textureHasMipmaps;
@@ -396,7 +398,10 @@ namespace minko
             {
 #ifdef DEBUG
 				if (_errorsEnabled && getError() != 0)
+				{
+					std::cout << "error: OpenGLES2Context::checkForErrors()" << std::endl;
 					throw;
+				}
 #endif
             }
 
