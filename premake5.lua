@@ -97,10 +97,8 @@ newaction {
 		
 		-- framework
 		os.mkdir(distDir .. '/framework')
-		os.mkdir(distDir .. '/framework/bin/release')
-		minko.os.copyfiles('framework/bin/release', distDir .. '/framework/bin/release')
-		os.mkdir(distDir .. '/framework/bin/debug')
-		minko.os.copyfiles('framework/bin/debug', distDir .. '/framework/bin/debug')
+		os.mkdir(distDir .. '/framework/bin')
+		minko.os.copyfiles('framework/bin', distDir .. '/framework/bin')
 		os.mkdir(distDir .. '/framework/include')
 		minko.os.copyfiles('framework/include', distDir .. '/framework/include')
 		os.mkdir(distDir .. '/framework/effect')
@@ -109,6 +107,10 @@ newaction {
 		-- skeleton
 		os.mkdir(distDir .. '/skeleton')
 		minko.os.copyfiles('skeleton', distDir .. '/skeleton')
+		
+		-- modules
+		os.mkdir(distDir .. '/modules')
+		minko.os.copyfiles('modules', distDir .. '/modules')
 		
 		-- docs
 		os.mkdir(distDir .. '/doc')
@@ -147,13 +149,10 @@ newaction {
 
 			if solution()['projects']['minko-plugin-' .. pluginName] then
 				-- bin
-				assert(os.isdir(basedir .. '/bin/debug'), 'missing debug folder')
-				assert(os.isdir(basedir .. '/bin/release'), 'missing release folder')
+				assert(os.isdir(basedir .. '/bin'), 'missing bin folder')
 
-				os.mkdir(binDir .. '/debug')
-				os.mkdir(binDir .. '/release')
-				minko.os.copyfiles(basedir .. '/bin/debug', binDir .. '/debug')
-				minko.os.copyfiles(basedir .. '/bin/release', binDir .. '/release')
+				os.mkdir(binDir)
+				minko.os.copyfiles(basedir .. '/bin', binDir)
 			end
 
 			-- includes
