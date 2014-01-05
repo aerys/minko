@@ -76,19 +76,43 @@ minko.project.application = function(name)
 			"IOKit.framework"
 		}
 		postbuildcommands {
-			'cp -r ' .. minko.sdk.path('/framework/effect') .. ' . || ' .. minko.fail(),
-			'cp -r asset/* . || ' .. minko.fail()
+			'cp -r ' .. minko.sdk.path('/framework/effect') .. ' ${TARGETDIR} || :',
+			'cp -r asset/* ${TARGETDIR} || :'
 		}
 
 	configuration { "html5" }
-		local emcc = premake.tools.gcc.tools.emscripten.cc
+		-- local inspect = require 'inspect'
+		-- print(inspect.inspect(configuration().configset._current))
 		minko.plugin.enable("webgl")
+
+		prelinkcommands {
+			'cp -r ' .. minko.sdk.path('/framework/effect') .. ' ${TARGETDIR} || :',
+			'cp -r asset/* ${TARGETDIR} || :'
+		}
+
 		postbuildcommands {
-			'cp -r asset/* ${TARGETDIR} || :',
-			'cd ${TARGETDIR} && cp ' .. name .. ' ' .. name .. '.bc || ' .. minko.fail(),			 
+			'cd ${TARGETDIR} && cp ' .. name .. ' ' .. name .. '.bc || ' .. minko.fail()	 
+			-- 'cd ${TARGETDIR}'
+			-- .. ' && ' .. emcc .. ' ' .. name .. '.bc -o ' .. name .. '.html -s DISABLE_EXCEPTION_CATCHING=0 -s CLOSURE_ANNOTATIONS=0 -s ASM_JS=0 -s TOTAL_MEMORY=268435456 -s ALLOW_MEMORY_GROWTH=1 --preload-file effect --preload-file texture  --compression ${EMSCRIPTEN_HOME}/third_party/lzma.js/lzma-native,${EMSCRIPTEN_HOME}/third_party/lzma.js/lzma-decoder.js,LZMA.decompress'
+			-- -- .. ' && ' .. emcc .. ' ' .. name .. '.bc -o ' .. name .. '.js -O2 -s CLOSURE_ANNOTATIONS=0 -s ASM_JS=0 -s TOTAL_MEMORY=268435456 -s ALLOW_MEMORY_GROWTH=1 --preload-file effect --preload-file texture'
+			-- .. ' || ' .. minko.fail()
+		}
+
+	configuration { "html5", "release" }
+		local emcc = premake.tools.gcc.tools.emscripten.cc
+
+		postbuildcommands {
 			'cd ${TARGETDIR}'
-			.. ' && ' .. emcc .. ' ' .. name .. '.bc -o ' .. name .. '.html -O2 -s DISABLE_EXCEPTION_CATCHING=0 -s CLOSURE_ANNOTATIONS=0 -s ASM_JS=0 -s TOTAL_MEMORY=268435456 -s ALLOW_MEMORY_GROWTH=1 --preload-file effect --preload-file texture  --compression ${EMSCRIPTEN_HOME}/third_party/lzma.js/lzma-native,${EMSCRIPTEN_HOME}/third_party/lzma.js/lzma-decoder.js,LZMA.decompress'
-			-- .. ' && ' .. emcc .. ' ' .. name .. '.bc -o ' .. name .. '.js -O2 -s CLOSURE_ANNOTATIONS=0 -s ASM_JS=0 -s TOTAL_MEMORY=268435456 -s ALLOW_MEMORY_GROWTH=1 --preload-file effect --preload-file texture'
+			.. ' && ' .. emcc .. ' ' .. name .. '.bc -o ' .. name .. '.html -O2 -s CLOSURE_ANNOTATIONS=1 -s DISABLE_EXCEPTION_CATCHING=0 -s ASM_JS=0 -s TOTAL_MEMORY=268435456 -s ALLOW_MEMORY_GROWTH=1 --preload-file effect --preload-file texture'
+			.. ' || ' .. minko.fail()
+		}
+
+	configuration { "html5", "debug" }
+		local emcc = premake.tools.gcc.tools.emscripten.cc
+
+		postbuildcommands {
+			'cd ${TARGETDIR}'
+			.. ' && ' .. emcc .. ' ' .. name .. '.bc -o ' .. name .. '.html -s DISABLE_EXCEPTION_CATCHING=0 -s ASM_JS=0 -s TOTAL_MEMORY=268435456 -s ALLOW_MEMORY_GROWTH=1 --preload-file effect --preload-file texture'
 			.. ' || ' .. minko.fail()
 		}
 
