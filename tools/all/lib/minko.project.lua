@@ -23,6 +23,7 @@ minko.project.library = function(name)
 		
 	configuration { "html5" }
 		includedirs { EMSCRIPTEN_HOME .. "/system/include" }
+		buildoptions { "-Wno-warn-absolute-paths" }
 		-- FIXME: Only enable in release when emscripten is finally able to successfully compile without -O2
 		optimize "On"
 
