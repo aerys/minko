@@ -16,10 +16,12 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		"lib/**.cpp",
 		"lib/**.c",
 		"src/**.cpp",
+		"src/**.hpp",
 		"include/**.hpp"
 	}
 
 	includedirs {
+		"src",
 		"include",
 		"lib/bullet2/src"
 	}
