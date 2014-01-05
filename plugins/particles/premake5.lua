@@ -1,16 +1,23 @@
 newoption {
-	trigger		= "with-jpeg",
-	description	= "Enable the Minko JPEG plugin."
+	trigger		= "with-particles",
+	description	= "Enable the Minko particles plugin."
 }
 
 PROJECT_NAME = path.getname(os.getcwd())
 
 minko.project.library("minko-plugin-" .. PROJECT_NAME)
+
 	kind "StaticLib"
 	language "C++"
-	files { "**.hpp", "**.h", "**.cpp", "**.c", "include/**.hpp" }
+
+	files {
+		"include/**.hpp",
+		"src/*.cpp",
+		"src/*.hpp",
+		"asset/**"
+	}
+
 	includedirs {
 		"include",
-		"src",
-		"lib/jpeg-compressor/src"
+		"src"
 	}

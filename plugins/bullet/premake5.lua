@@ -6,14 +6,24 @@ newoption {
 PROJECT_NAME = path.getname(os.getcwd())
 
 minko.project.library("minko-plugin-" .. PROJECT_NAME)
+
 	kind "StaticLib"
 	language "C++"
-	files { "**.hpp", "**.h", "**.cpp", "**.c", "include/**.hpp" }
+
+	files {
+		"lib/**.hpp",
+		"lib/**.h",
+		"lib/**.cpp",
+		"lib/**.c",
+		"src/**.cpp",
+		"include/**.hpp"
+	}
+
 	includedirs {
 		"include",
-		"src",
 		"lib/bullet2/src"
 	}
+
 	excludes {
 		"lib/bullet2/src/BulletMultiThreaded/*.h",
 		"lib/bullet2/src/BulletMultiThreaded/*.cpp",
@@ -38,16 +48,16 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		buildoptions { "-Wno-narrowing -Wno-int-to-pointer-cast" }
 
 	-- windows
-	configuration { "windows" }
+	configuration { "win" }
 		defines {
 			"_CRT_SECURE_NO_WARNINGS",
 			"_CRT_SECURE_NO_DEPRECATE"
 		}
 
 	-- macosx
-	configuration { "macosx" }
+	configuration { "osx" }
 		buildoptions { "-Wno-narrowing -Wno-int-to-pointer-cast" }
 
 	-- emscripten
-	configuration { "emscripten" }
+	configuration { "html5" }
 		buildoptions { "-Wno-narrowing -Wno-int-to-pointer-cast" }

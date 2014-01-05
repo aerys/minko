@@ -6,14 +6,25 @@ newoption {
 PROJECT_NAME = path.getname(os.getcwd())
 
 minko.project.library("minko-plugin-" .. PROJECT_NAME)
+
 	kind "StaticLib"
 	language "C++"
-	files { "**.hpp", "**.h", "**.cpp", "**.c", "include/**.hpp" }
+
+	files {
+		"lib/**.hpp",
+		"lib/**.h",
+		"lib/**.cpp",
+		"lib/**.c",
+		"src/**.cpp",
+		"include/**.hpp"
+	}
+
 	includedirs {
 		"include",
 		"src",
 		"lib/lodepng/src"
 	}
+
 	defines
 	{
 		--"LODEPNG_NO_COMPILE_ENCODER"
