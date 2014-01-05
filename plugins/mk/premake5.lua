@@ -6,22 +6,27 @@ newoption {
 PROJECT_NAME = path.getname(os.getcwd())
 
 minko.project.library("minko-plugin-" .. PROJECT_NAME)
+
 	kind "StaticLib"
 	language "C++"
+
 	files {
-		"src/**.hpp",
-		"src/**.h",
+		"lib/**.hpp",
+		"lib/**.h",
+		"lib/**.cpp",
+		"lib/**.c",
 		"src/**.cpp",
-		"src/**.c",
+		"src/**.hpp",
 		"include/**.hpp"
 	}
+
 	includedirs {
 		"include",
 		"src",
 		"lib/msgpack-c/src"
 	}
 
-	configuration { "windows" }
+	configuration { "win" }
 		-- msgpack
 		defines {
 			"_LIB",

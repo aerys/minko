@@ -1,13 +1,11 @@
 newoption {
-	trigger			= "with-webgl",
-	description		= "Enable the Minko WebGL plugin."
+	trigger		= "with-jpeg",
+	description	= "Enable the Minko JPEG plugin."
 }
 
 PROJECT_NAME = path.getname(os.getcwd())
 
 minko.project.library("minko-plugin-" .. PROJECT_NAME)
-
-	removeplatforms { "osx", "win", "ios", "android" }
 
 	kind "StaticLib"
 	language "C++"
@@ -21,6 +19,7 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		"src/**.cpp"
 	}
 
-	includedirs { "include" }
-
-	minko.plugin.import("sdl")
+	includedirs {
+		"include",
+		"lib/jpeg-compressor/src"
+	}
