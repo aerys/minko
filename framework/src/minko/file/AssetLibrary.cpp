@@ -210,7 +210,11 @@ AssetLibrary::load()
 void
 AssetLibrary::loaderErrorHandler(std::shared_ptr<file::AbstractLoader> loader)
 {
-	throw std::invalid_argument(loader->filename());
+	auto filename = loader->filename();
+
+	std::cerr << "error: AssetLibrary::loaderErrorHandler(): " << filename << std::endl;
+
+	throw std::invalid_argument(filename);
 }
 
 void
