@@ -22,6 +22,7 @@ minko.project.library = function(name)
 	configuration { "linux" }
 		
 	configuration { "html5" }
+		includedirs { EMSCRIPTEN_HOME .. "/system/include" }
 		-- FIXME: Only enable in release when emscripten is finally able to successfully compile without -O2
 		optimize "On"
 
@@ -111,7 +112,7 @@ minko.project.application = function(name)
 
 		postbuildcommands {
 			'cd ${TARGETDIR}'
-			.. ' && ' .. emcc .. ' ' .. name .. '.bc -o ' .. name .. '.html -s DISABLE_EXCEPTION_CATCHING=0 -s ASM_JS=0 -s TOTAL_MEMORY=268435456 -s ALLOW_MEMORY_GROWTH=1 --preload-file effect --preload-file texture'
+			.. ' && ' .. emcc .. ' ' .. name .. '.bc -o ' .. name .. '.html -O2 -s DISABLE_EXCEPTION_CATCHING=0 -s ASM_JS=0 -s TOTAL_MEMORY=268435456 -s ALLOW_MEMORY_GROWTH=1 --preload-file effect --preload-file texture'
 			.. ' || ' .. minko.fail()
 		}
 
