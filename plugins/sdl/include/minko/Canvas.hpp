@@ -96,7 +96,23 @@ namespace minko
 			bool
 			keyIsDown(input::Keyboard::ScanCode scanCode)
 			{
+#if defined(EMSCRIPTEN)
+				return _keyboardState[static_cast<int>(getKeyCodeFromScanCode(scanCode))] != 0;
+#else
+				return _keyboardState[static_cast<int>(scanCode)] != 0;				
+#endif
+			}
+
+			bool
+			keyIsDown(input::Keyboard::KeyCode keyCode)
+			{
+#if defined(EMSCRIPTEN)
+				// Note: bug in emscripten, GetKeyStates is indexed by key codes.
+				auto scanCode = keyCode;
 				return _keyboardState[static_cast<int>(scanCode)] != 0;
+#else
+				return _keyboardState[static_cast<int>(getScanCodeFromKeyCode(keyCode))] != 0;				
+#endif
 			}
 
 		private:
@@ -111,6 +127,14 @@ namespace minko
 			{
 				return _keyUp.count(static_cast<int>(scanCode)) != 0;
 			}
+
+			SDLKeyboard();
+
+			KeyCode
+			getKeyCodeFromScanCode(ScanCode scanCode);
+
+			ScanCode
+			getScanCodeFromKeyCode(KeyCode keyCode);
 		};
 
 		class SDLJoystick : 

@@ -26,7 +26,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #if defined(EMSCRIPTEN)
 # include "minko/MinkoWebGL.hpp"
 # include "SDL/SDL.h"
-# include "emscripten.h"
+# include "emscripten/emscripten.h"
 #elif defined(MINKO_ANGLE)
 # include "SDL2/SDL.h"
 # include "SDL2/SDL_syswm.h"
@@ -64,17 +64,17 @@ void
 Canvas::initializeInputs()
 {
 	_mouse = Canvas::SDLMouse::create(shared_from_this());
-    _keyboard = Canvas::SDLKeyboard::create();
+	_keyboard = Canvas::SDLKeyboard::create();
 
-    for (int i = 0; i < SDL_NumJoysticks(); ++i)
-    {
-        SDL_Joystick* joystick = SDL_JoystickOpen(i);
+	for (int i = 0; i < SDL_NumJoysticks(); ++i)
+	{
+		SDL_Joystick* joystick = SDL_JoystickOpen(i);
 
-        if (!joystick)
-            continue;
+		if (!joystick)
+			continue;
 		else
 			_joysticks.push_back(Canvas::SDLJoystick::create(shared_from_this()));
-    }
+	}
 }
 
 void
@@ -292,33 +292,27 @@ Canvas::step()
 
 		case SDL_KEYDOWN:
 		{
-			_keyboard->_keyboardState = SDL_GetKeyboardState(NULL);
-
-			//_keyDown->execute(shared_from_this(), keyboardState);
-            _keyboard->keyDown()->execute(_keyboard);
-            for (uint i = 0; i < input::Keyboard::NUM_KEYS; ++i)
-            {
-            	auto code = static_cast<input::Keyboard::ScanCode>(i);
-            	if (_keyboard->_keyboardState[i] && _keyboard->hasKeyDownSignal(code))
-            		_keyboard->keyDown(code)->execute(_keyboard, i);
-            }
+			_keyboard->keyDown()->execute(_keyboard);
+			for (uint i = 0; i < input::Keyboard::NUM_SCANCODES; ++i)
+			{
+				auto code = static_cast<input::Keyboard::ScanCode>(i);
+				if (_keyboard->_keyboardState[i] && _keyboard->hasKeyDownSignal(code))
+					_keyboard->keyDown(code)->execute(_keyboard, i);
+			}
 			break;
 		}
 
-        case SDL_KEYUP:
-        {
-            _keyboard->_keyboardState = SDL_GetKeyboardState(NULL);
-
-            //_keyDown->execute(shared_from_this(), keyboardState);
-            _keyboard->keyUp()->execute(_keyboard);
-            for (uint i = 0; i < input::Keyboard::NUM_KEYS; ++i)
-            {
-            	auto code = static_cast<input::Keyboard::ScanCode>(i);
-            	if (_keyboard->_keyboardState[i] && _keyboard->hasKeyUpSignal(code))
-            		_keyboard->keyUp(code)->execute(_keyboard, i);
-            }
-            break;
-        }
+		case SDL_KEYUP:
+		{
+			_keyboard->keyUp()->execute(_keyboard);
+			for (uint i = 0; i < input::Keyboard::NUM_SCANCODES; ++i)
+			{
+				auto code = static_cast<input::Keyboard::ScanCode>(i);
+				if (_keyboard->_keyboardState[i] && _keyboard->hasKeyUpSignal(code))
+					_keyboard->keyUp(code)->execute(_keyboard, i);
+			}
+			break;
+		}
 
 		case SDL_MOUSEMOTION:
 		{
@@ -450,4 +444,22 @@ Canvas::quit()
 	_active = false;
 }
 
+
+Canvas::SDLKeyboard::SDLKeyboard() :
+	input::Keyboard()
+{
+	_keyboardState = SDL_GetKeyboardState(NULL);
+}
+
+input::Keyboard::KeyCode
+Canvas::SDLKeyboard::getKeyCodeFromScanCode(input::Keyboard::ScanCode scanCode)
+{
+	return static_cast<input::Keyboard::KeyCode>(SDL_SCANCODE_TO_KEYCODE(static_cast<int>(scanCode)));
+}
+
+input::Keyboard::ScanCode
+Canvas::SDLKeyboard::getScanCodeFromKeyCode(input::Keyboard::KeyCode keyCode)
+{
+	return static_cast<input::Keyboard::ScanCode>(SDL_GetScancodeFromKey(static_cast<int>(keyCode)));
+}
 
