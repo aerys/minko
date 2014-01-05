@@ -133,10 +133,6 @@ namespace minko
 		};
 
 	private:
-#ifdef EMSCRIPTEN
-		static std::list<Ptr>							_canvases;
-#endif
-		
 		std::string										_name;
 		uint											_x;
 		uint											_y;
@@ -312,13 +308,7 @@ namespace minko
 		initContext(SDL_Window* window, unsigned int width, unsigned int height);
 #endif
 
-#ifdef EMSCRIPTEN
 	public:
-		static
-		void
-		emscriptenMainLoop();
-#endif
-
 		void
 		step();
 	};

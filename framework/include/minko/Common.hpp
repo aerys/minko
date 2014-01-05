@@ -42,6 +42,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include <type_traits>
 #include "minko/math/Convertible.hpp"
 
+#ifdef __ANDROID__
+# include "minko/to_string.hpp"
+#endif
+
 #define PI 3.1415926535897932384626433832795
 
 namespace minko
@@ -232,6 +236,8 @@ namespace minko
 	namespace file
 	{
 		class Options;
+		class AbstractLoader;
+		class APKLoader;
 		class Loader;
 		class AbstractLoader;
 		class AbstractParser;

@@ -349,15 +349,21 @@ Canvas::step()
 			break;
 
 		case SDL_JOYAXISMOTION:
+#if !defined(EMSCRIPTEN)
 			_joysticks[event.jaxis.which]->joystickAxisMotion()->execute(_joysticks[event.jaxis.which], event.jaxis.which, event.jaxis.axis, event.jaxis.value);
+#endif
 			break;
 
 		case SDL_JOYBUTTONDOWN:
+#if !defined(EMSCRIPTEN)
 			_joysticks[event.button.which]->joystickButtonDown()->execute(_joysticks[event.button.which], event.button.which, event.jbutton.button);
+#endif
 			break;
 
 		case SDL_JOYBUTTONUP:
+#if !defined(EMSCRIPTEN)
 			_joysticks[event.button.which]->joystickButtonUp()->execute(_joysticks[event.button.which], event.button.which, event.jbutton.button);
+#endif
 			break;
 
 		case SDL_JOYHATMOTION:
@@ -391,9 +397,9 @@ Canvas::step()
 	_enterFrame->execute(shared_from_this(), (uint)time, (uint)frameTime);
 
 	// swap buffers
-#ifdef MINKO_ANGLE
+#if defined(MINKO_ANGLE)
 	eglSwapBuffers(_angleContext->eglDisplay, _angleContext->eglSurface);
-#elif defined EMSCRIPTEN
+#elif defined(EMSCRIPTEN)
 	SDL_GL_SwapBuffers();
 #else
 	SDL_GL_SwapWindow(_window);
@@ -401,9 +407,24 @@ Canvas::step()
 
 	_framerate = 1000.f / frameTime;
 
+#if !defined(EMSCRIPTEN)
 	if (_framerate > _desiredFramerate)
 		SDL_Delay((uint)((1000.f / _desiredFramerate) - frameTime));
+#endif
 }
+
+#if defined(EMSCRIPTEN)
+namespace
+{
+	Canvas::Ptr currentCanvas;
+
+	void
+	emscriptenMainLoop()
+	{
+		currentCanvas->step();
+	}
+}
+#endif
 
 void
 Canvas::run()
@@ -411,24 +432,17 @@ Canvas::run()
 	_active = true;
 	_framerate = 0.f;
 
-#ifdef EMSCRIPTEN
-	_canvases.push_back(shared_from_this());
-	if (_canvases.size() == 1)
-		emscripten_set_main_loop(myUglyLoop, 0, 1);
+#if defined(EMSCRIPTEN)
+	currentCanvas = shared_from_this();
+	emscripten_set_main_loop(emscriptenMainLoop, 0, 1);
 #else
 	while (_active)
+	{
 		step();
+		// usleep(1000000 / TARGET_FPS);
+	}
 #endif
 }
-
-#ifdef EMSCRIPTEN
-void
-Canvas::emscriptenMainLoop()
-{
-	for (auto& canvas : _canvases)
-		canvas->step();
-}
-#endif
 
 void
 Canvas::quit()

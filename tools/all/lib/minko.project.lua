@@ -3,36 +3,28 @@ minko.project = {}
 minko.project.library = function(name)
 	project(name)
 
+	location "."
 	includedirs { minko.sdk.path("/framework/include") }
 	
 	configuration { "debug"}
 		defines { "DEBUG" }
 		flags { "Symbols" }
-		targetdir("bin/debug/" .. os.get())
 
 	configuration { "release" }
 		defines { "NDEBUG" }
-		flags { "Optimize" } -- { "OptimizeSpeed" }
-		targetdir("bin/release/" .. os.get())
+		optimize "On"
 	
-	configuration { "windows" }
+	configuration { "win" }
 		includedirs { minko.sdk.path("/deps/win/include") }
 		
-	configuration { "macosx" }
-		includedirs { minko.sdk.path("/deps/mac/include") }
-		buildoptions { "-std=c++11" }
+	configuration { "osx" }
 	
 	configuration { "linux" }
-		includedirs { minko.sdk.path("/deps/lin/include") }
-		buildoptions { "-std=c++11" }		
 		
-	if _OPTIONS["platform"] == "emscripten" then
-		configuration { "emscripten" }
-			minko.plugin.enable("webgl")
-			flags { "Optimize" }
-			buildoptions { "-std=c++11" }
-	end	
-	
+	configuration { "html5" }
+		-- FIXME: Only enable in release when emscripten is finally able to successfully compile without -O2
+		optimize "On"
+
 	configuration { }
 end
 
@@ -49,17 +41,7 @@ minko.project.application = function(name)
 		links { "minko-framework" }
 	end
 
-	configuration { "debug"}
-		defines { "DEBUG" }
-		flags { "Symbols" }
-		targetdir "bin/debug"
-
-	configuration { "release" }
-		defines { "NDEBUG" }
-		flags { "OptimizeSpeed" }
-		targetdir "bin/release"
-	
-	configuration { "windows" }
+	configuration { "win" }
 		libdirs { minko.sdk.path("/deps/win/lib") }
 		links {
 			"OpenGL32",
@@ -67,11 +49,8 @@ minko.project.application = function(name)
 		}
 		postbuildcommands {
 			'xcopy /y /i "' .. minko.sdk.path('/framework/effect') .. '" "$(TargetDir)\\effect"',
+			'xcopy /y /s asset\\* "$(TargetDir)"',
 			minko.vs.getdllscopycommand(minko.sdk.path('/deps/win/lib'))
-		}
-	configuration { "windows", "release" }
-		postbuildcommands {
-			'xcopy /y /s asset\\* "$(TargetDir)"'
 		}
 		
 	configuration { "linux" }
@@ -82,28 +61,58 @@ minko.project.application = function(name)
 			"m"
 		}
 		postbuildcommands {
-			'cp -r ' .. minko.sdk.path('/framework/effect') .. ' ${TARGETDIR} || :'
-		}
-	configuration { "linux", "release" }
-		postbuildcommands {
+			'cp -r ' .. minko.sdk.path('/framework/effect') .. ' ${TARGETDIR} || :',
 			'cp -r asset/* ${TARGETDIR} || :'
 		}
 	
-	configuration { "macosx" }
+	configuration { "osx" }
 		libdirs { "/deps/mac/lib" }
-		linkoptions { "-stdlib=libc++" }
 		links {
 			"m",
+			"SDL2.framework",
 			"Cocoa.framework",
 			"OpenGL.framework",
 			"IOKit.framework"
 		}
 		postbuildcommands {
-			'cp -r ' .. minko.sdk.path('/framework/effect') .. ' . || :'
+			'cp -r ' .. minko.sdk.path('/framework/effect') .. ' ${TARGETDIR} || :',
+			'cp -r asset/* ${TARGETDIR} || :'
 		}
-	configuration { "macosx", "release" }
+
+	configuration { "html5" }
+		-- local inspect = require 'inspect'
+		-- print(inspect.inspect(configuration().configset._current))
+		minko.plugin.enable("webgl")
+
+		prelinkcommands {
+			'cp -r ' .. minko.sdk.path('/framework/effect') .. ' ${TARGETDIR} || :',
+			'cp -r asset/* ${TARGETDIR} || :'
+		}
+
 		postbuildcommands {
-			'cp -r asset/* . || :'
+			'cd ${TARGETDIR} && cp ' .. name .. ' ' .. name .. '.bc || ' .. minko.fail()	 
+			-- 'cd ${TARGETDIR}'
+			-- .. ' && ' .. emcc .. ' ' .. name .. '.bc -o ' .. name .. '.html -s DISABLE_EXCEPTION_CATCHING=0 -s CLOSURE_ANNOTATIONS=0 -s ASM_JS=0 -s TOTAL_MEMORY=268435456 -s ALLOW_MEMORY_GROWTH=1 --preload-file effect --preload-file texture  --compression ${EMSCRIPTEN_HOME}/third_party/lzma.js/lzma-native,${EMSCRIPTEN_HOME}/third_party/lzma.js/lzma-decoder.js,LZMA.decompress'
+			-- -- .. ' && ' .. emcc .. ' ' .. name .. '.bc -o ' .. name .. '.js -O2 -s CLOSURE_ANNOTATIONS=0 -s ASM_JS=0 -s TOTAL_MEMORY=268435456 -s ALLOW_MEMORY_GROWTH=1 --preload-file effect --preload-file texture'
+			-- .. ' || ' .. minko.fail()
+		}
+
+	configuration { "html5", "release" }
+		local emcc = premake.tools.gcc.tools.emscripten.cc
+
+		postbuildcommands {
+			'cd ${TARGETDIR}'
+			.. ' && ' .. emcc .. ' ' .. name .. '.bc -o ' .. name .. '.html -O2 -s CLOSURE_ANNOTATIONS=1 -s DISABLE_EXCEPTION_CATCHING=0 -s ASM_JS=0 -s TOTAL_MEMORY=268435456 -s ALLOW_MEMORY_GROWTH=1 --preload-file effect --preload-file texture'
+			.. ' || ' .. minko.fail()
+		}
+
+	configuration { "html5", "debug" }
+		local emcc = premake.tools.gcc.tools.emscripten.cc
+
+		postbuildcommands {
+			'cd ${TARGETDIR}'
+			.. ' && ' .. emcc .. ' ' .. name .. '.bc -o ' .. name .. '.html -s DISABLE_EXCEPTION_CATCHING=0 -s ASM_JS=0 -s TOTAL_MEMORY=268435456 -s ALLOW_MEMORY_GROWTH=1 --preload-file effect --preload-file texture'
+			.. ' || ' .. minko.fail()
 		}
 
 	configuration { }
