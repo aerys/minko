@@ -117,14 +117,8 @@ ASSIMPParser::parse(const std::string&					filename,
 
 	if (pos > 0)
 	{
-		auto	skinningNumFPS	= options->skinningNumFPS();
-		auto	skinningMethod	= options->skinningMethod();
-
-		options = file::Options::create(options); // ?
+		options = file::Options::create(options);
 		options->includePaths().push_back(resolvedFilename.substr(0, pos));
-
-		options->skinningNumFPS(skinningNumFPS);
-		options->skinningMethod(skinningMethod);
 	}
 
     _filename = filename;
@@ -139,11 +133,8 @@ ASSIMPParser::parse(const std::string&					filename,
 	const aiScene* scene = importer.ReadFileFromMemory(
 		&data[0],
 		data.size(),
-		aiProcess_CalcTangentSpace
-		| aiProcess_Triangulate
-		| aiProcess_JoinIdenticalVertices
-		| aiProcess_FlipUVs
-		| aiProcess_SortByPType
+		aiProcessPreset_TargetRealtime_Fast,
+		resolvedFilename.c_str()
 	);
 	
     if (!scene)
@@ -461,6 +452,10 @@ ASSIMPParser::parseDependencies(const std::string& 	filename,
 
 				if (!filename.empty() && std::find(loading.begin(), loading.end(), filename) == loading.end())
 				{
+#ifdef DEBUG
+					std::cout << "ASSIMParser: loading texture '" << filename << "'..." << std::endl;
+#endif
+
 					loading.push_back(filename);
 					_numDependencies++;
 					loadTexture(filename, filename, _options);
@@ -505,6 +500,10 @@ ASSIMPParser::loadTexture(const std::string&	textureFilename,
 
 		auto complete = parser->complete()->connect([&](file::AbstractParser::Ptr parser)
 		{
+#ifdef DEBUG
+			std::cout << "ASSIMParser: texture '" << textureFilename << "' loaded" << std::endl;
+#endif
+
 			_numLoadedDependencies++;
 			if (_numDependencies == _numLoadedDependencies && _symbol)
 				finalize();
@@ -793,7 +792,12 @@ ASSIMPParser::sample(const aiNodeAnim*				nodeAnimation,
 
 		// sample rotation from keys
 		sample(nodeAnimation->mRotationKeys, rotationKeyTimeFactors, time, _TMP_ROTATION);
-		_TMP_ROTATION->toMatrix(_TMP_ROTATION_MATRIX);
+		_TMP_ROTATION->normalize();
+
+		if (_TMP_ROTATION->length() == 0.)
+			_TMP_ROTATION_MATRIX->identity();
+		else
+			_TMP_ROTATION->toMatrix(_TMP_ROTATION_MATRIX);
 
 		const std::vector<float>&	rotation	= _TMP_ROTATION_MATRIX->data();
 
