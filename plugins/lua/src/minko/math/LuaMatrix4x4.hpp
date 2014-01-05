@@ -37,9 +37,13 @@ namespace minko
 			{
 				state.Class<Matrix4x4>("Matrix4x4")
 		            .method("create",               static_cast<Matrix4x4::Ptr (*)()>(&Matrix4x4::create))
+					.method("copyFrom",				&Matrix4x4::copyFrom)
 		            .method("lookAt",               &Matrix4x4::lookAt)
 		            .method("identity",             &Matrix4x4::identity)
 		            .method("invert",				&Matrix4x4::invert)
+					.method("translation",			static_cast<Matrix4x4::Ptr (Matrix4x4::*)(float, float, float)>(&Matrix4x4::translation))
+					.method("transform",			static_cast<Vector3::Ptr (Matrix4x4::*)(Vector3::Ptr)>(&Matrix4x4::transform))
+					.method("deltaTransform",		static_cast<Vector3::Ptr(Matrix4x4::*)(Vector3::Ptr)>(&Matrix4x4::deltaTransform))
 		            .method("appendUniformScale",	static_cast<Matrix4x4::Ptr (Matrix4x4::*)(float)>(&Matrix4x4::appendScale))
 		            .method("appendScale",			static_cast<Matrix4x4::Ptr (Matrix4x4::*)(float, float, float)>(&Matrix4x4::appendScale))
 		            .method("appendRotationX",      &Matrix4x4::appendRotationX)
