@@ -355,14 +355,14 @@ Canvas::step()
 			break;
 
 		case SDL_JOYBUTTONDOWN:
-			_joysticks[event.button.which]->joystickButtonDown()->execute(
-				_joysticks[event.button.which], event.button.which, event.jbutton.button
+			_joysticks[event.jbutton.which]->joystickButtonDown()->execute(
+				_joysticks[event.jbutton.which], event.jbutton.which, event.jbutton.button
 			);
 			break;
 
 		case SDL_JOYBUTTONUP:
-			_joysticks[event.button.which]->joystickButtonUp()->execute(
-				_joysticks[event.button.which], event.button.which, event.jbutton.button
+			_joysticks[event.jbutton.which]->joystickButtonUp()->execute(
+				_joysticks[event.jbutton.which], event.jbutton.which, event.jbutton.button
 			);
 			break;
 
