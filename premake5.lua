@@ -51,6 +51,10 @@ solution "minko"
 	include 'plugins/fx'
 	include 'plugins/assimp'
 	include 'plugins/offscreen'
+	include 'plugins/lua'
+	include 'plugins/assimp'
+	include 'plugins/serializer'
+	include 'plugins/oculus'
 
 	-- examples
 	if not _OPTIONS['no-examples'] then
@@ -61,6 +65,11 @@ solution "minko"
 		include('examples/raycasting')
 		include('examples/sponza')
 		include('examples/stencil')
+		include('examples/lua-scripts')
+		include('examples/line-geometry')
+		include('examples/frustum')
+		include('examples/serializer')
+		include('examples/picking')
 	end
 
 	-- tests

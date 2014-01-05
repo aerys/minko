@@ -24,18 +24,20 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::render;
 
+const uint Texture::MAX_SIZE = 2048;
+
 Texture::Texture(std::shared_ptr<render::AbstractContext>	context,
-				 const unsigned int							width,
-				 const unsigned int							height,
-                 bool                                       mipMapping,
-                 bool                                       optimizeForRenderToTexture,
-				 bool										resizeSmoothly,
-				 std::string								filename) :
+	const unsigned int							width,
+	const unsigned int							height,
+	bool                                       mipMapping,
+	bool                                       optimizeForRenderToTexture,
+	bool										resizeSmoothly,
+	std::string								filename) :
 	AbstractResource(context),
 	_width(width),
 	_height(height),
-	_widthGPU(math::clp2(width)),
-	_heightGPU(math::clp2(height)),
+	_widthGPU(std::min(math::clp2(width), MAX_SIZE)),
+	_heightGPU(std::min(math::clp2(height), MAX_SIZE)),
     _mipMapping(mipMapping),
     _optimizeForRenderToTexture(optimizeForRenderToTexture),
 	_resizeSmoothly(resizeSmoothly),

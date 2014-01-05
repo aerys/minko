@@ -180,6 +180,7 @@ LuaScriptManager::initializeBindings()
         .func("getCanvas",          &LuaContext::getCanvas)
         .func("getMouse",           &LuaContext::getMouse)
         .func("getKeyboard",        &LuaContext::getKeyboard)
+		.func("getJoystick",		&LuaContext::getJoystick)
         .func("getSceneManager",    &LuaContext::getSceneManager)
         .func("getOption",          &LuaContext::getOption);
 
