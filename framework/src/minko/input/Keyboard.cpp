@@ -22,7 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::input;
 
-const uint Keyboard::NUM_KEYS = 285;
 const Keyboard::ScanCodeToNameArray Keyboard::_scanCodeToName = initializeKeyNames();
 
 const Keyboard::ScanCodeToNameArray
