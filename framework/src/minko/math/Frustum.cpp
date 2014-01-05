@@ -103,10 +103,10 @@ Frustum::testBoundingBox(math::Box::Ptr box)
 		_trbResult[planeId] = pa * xtrb + pb * ytrb + pc * ztrb + pd < 0.;
 	}
 
-	if (_blfResult[(int)FrustumPosition::LEFT]		&& _trbResult[(int)FrustumPosition::RIGHT] ||
-		_blfResult[(int)FrustumPosition::RIGHT]	&& _trbResult[(int)FrustumPosition::LEFT] ||
-		_blfResult[(int)FrustumPosition::TOP]		&& _trbResult[(int)FrustumPosition::BOTTOM] ||
-		_blfResult[(int)FrustumPosition::BOTTOM]	&& _trbResult[(int)FrustumPosition::TOP])
+	if ((_blfResult[(int)FrustumPosition::LEFT]		&& _trbResult[(int)FrustumPosition::RIGHT]) ||
+		(_blfResult[(int)FrustumPosition::RIGHT]	&& _trbResult[(int)FrustumPosition::LEFT]) ||
+		(_blfResult[(int)FrustumPosition::TOP]		&& _trbResult[(int)FrustumPosition::BOTTOM]) ||
+		(_blfResult[(int)FrustumPosition::BOTTOM]	&& _trbResult[(int)FrustumPosition::TOP]))
 		return FrustumPosition::AROUND;
 
 	for (uint planeId = 0; planeId < _planes.size(); ++planeId)
