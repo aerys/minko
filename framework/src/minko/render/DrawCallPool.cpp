@@ -545,7 +545,7 @@ DrawCallPool::blameMacros(SurfacePtr									surface,
 			});
 #else
 			_incorrectMacroChangedSlot[surface][macro] = macro.container()->propertyReferenceChanged(macro.name())->connect(std::bind(
-				&Surface::incorrectMacroChangedHandler,
+				&DrawCallPool::incorrectMacroChangedHandler,
 				shared_from_this(),
 				surface,
 				macro
