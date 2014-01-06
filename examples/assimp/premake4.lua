@@ -1,4 +1,6 @@
-minko.project.application "example-assimp"
+PROJECT_NAME = path.getname(os.getcwd())
+
+minko.project.application("minko-example-" .. PROJECT_NAME)
 	kind "ConsoleApp"
 	language "C++"
 	files { "src/**.hpp", "src/**.cpp" }
@@ -9,11 +11,3 @@ minko.project.application "example-assimp"
 	
 	minko.plugin.import("angle")
 	
-	-- emscripten
-	configuration { "emscripten" }
-		local bin = "bin/release/" .. project().name
-		postbuildcommands {
-			'cp ' .. bin .. ' ' .. bin .. '.bc',
-			'emcc ' .. bin .. '.bc -o ' .. bin .. '.js -O1 -s ASM_JS=1 -s TOTAL_MEMORY=1073741824 --preload-dir effect --preload-dir texture',
-			'emcc ' .. bin .. '.bc -o index.html -O1 -s ASM_JS=1 -s TOTAL_MEMORY=1073741824 --preload-dir effect --preload-dir texture'
-		}

@@ -1,4 +1,4 @@
-#include "Cylinder.hpp"
+#include "minko/particle/shape/Cylinder.hpp"
 #include "minko/particle/ParticleData.hpp"
 
 using namespace minko;

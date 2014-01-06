@@ -20,12 +20,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Minko.hpp"
 #include "minko/MinkoPNG.hpp"
 #include "minko/MinkoSDL.hpp"
+#ifdef MINKO_PLUGIN_OCULUS
+#include "minko/MinkoOculus.hpp"
+#endif // MINKO_PLUGIN_OCULUS
 
 using namespace minko;
 using namespace minko::component;
 using namespace minko::math;
 
-#define POST_PROCESSING 1
+#define POST_PROCESSING 0
 #define WINDOW_WIDTH  	800
 #define WINDOW_HEIGHT 	600
 
@@ -83,9 +86,12 @@ int main(int argc, char** argv)
 		->queue("effect/Basic.effect")
 		->queue("effect/Sprite.effect")
 		->queue("effect/Phong.effect")
+#ifdef MINKO_PLUGIN_OCULUS
+		->queue("effect/OculusVR/OculusVR.effect")
+#endif // MINKO_PLUGIN_OCULUS
 		->queue("effect/AnamorphicLensFlare/AnamorphicLensFlare.effect");
 
-    auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
+	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
 	{
 		// ground
 		auto ground = scene::Node::create("ground")
@@ -93,7 +99,7 @@ int main(int argc, char** argv)
 				assets->geometry("quad"),
 				material::Material::create()
 					->set("diffuseColor",	Vector4::create(1.f, 1.f, 1.f, 1.f)),
-				assets->effect("effect/Phong.effect")
+				assets->effect("phong")
 			))
 			->addComponent(Transform::create(Matrix4x4::create()->appendScale(50.f)->appendRotationX(-1.57f)));
 		root->addChild(ground);
@@ -101,11 +107,11 @@ int main(int argc, char** argv)
 		// sphere
 		auto sphere = scene::Node::create("sphere")
 			->addComponent(Surface::create(
-			assets->geometry("sphere"),
-			sphereMaterial,
-			assets->effect("effect/Phong.effect")
-			));
-			//->addComponent(Transform::create(Matrix4x4::create()->appendTranslation(0.f, 2.f, 0.f)->prependScale(3.f)));
+				assets->geometry("sphere"),
+				sphereMaterial,
+				assets->effect("phong")
+			))
+			->addComponent(Transform::create(Matrix4x4::create()->appendTranslation(0.f, 2.f, 0.f)->prependScale(3.f)));
 		root->addChild(sphere);
 
 		// spotLight
@@ -119,9 +125,9 @@ int main(int argc, char** argv)
 		root->addChild(lights);
 
 		// handle keyboard signals
-		auto keyDown = canvas->keyDown()->connect([&](Canvas::Ptr canvas, const Uint8* keyboard)
+		auto keyDown = canvas->keyboard()->keyDown()->connect([&](input::Keyboard::Ptr k)
 		{
-			if (keyboard[SDL_SCANCODE_A])
+			if (k->keyIsDown(input::Keyboard::ScanCode::A))
 			{
 				const auto MAX_NUM_LIGHTS = 40;
 
@@ -144,7 +150,7 @@ int main(int argc, char** argv)
 
 				std::cout << lights->children().size() << " lights" << std::endl;
 			}
-			if (keyboard[SDL_SCANCODE_R])
+			if (k->keyIsDown(input::Keyboard::ScanCode::R))
 			{
 				if (lights->children().size() == 0)
 					return;
@@ -152,7 +158,7 @@ int main(int argc, char** argv)
 				lights->removeChild(lights->children().back());
 				std::cout << lights->children().size() << " lights" << std::endl;
 			}
-			if (keyboard[SDL_SCANCODE_SPACE])
+			if (k->keyIsDown(input::Keyboard::ScanCode::SPACE))
 			{
 				auto data = sphere->component<Surface>()->material();
 				bool hasNormalMap = data->hasProperty("normalMap");
@@ -166,16 +172,20 @@ int main(int argc, char** argv)
 				else
 					data->set("normalMap", assets->texture("texture/normalmap-cells.png"));
 			}
-			if (keyboard[SDL_SCANCODE_UP])
-				camera->component<Transform>()->transform()->prependTranslation(0.f, 0.f, -1.f);
-			if (keyboard[SDL_SCANCODE_DOWN])
-				camera->component<Transform>()->transform()->prependTranslation(0.f, 0.f, 1.f);
+			if (k->keyIsDown(input::Keyboard::ScanCode::UP))
+				camera->component<Transform>()->matrix()->prependTranslation(0.f, 0.f, -1.f);
+			if (k->keyIsDown(input::Keyboard::ScanCode::DOWN))
+				camera->component<Transform>()->matrix()->prependTranslation(0.f, 0.f, 1.f);
 		});
 
 		// camera init
 		camera = scene::Node::create("camera")
 			->addComponent(Renderer::create())
+#ifdef MINKO_PLUGIN_OCULUS
+			->addComponent(OculusVRCamera::create((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT))
+#else 
 			->addComponent(PerspectiveCamera::create((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT))
+#endif // MINKO_PLUGIN_OCULUS
 			->addComponent(Transform::create(
 				Matrix4x4::create()->lookAt(Vector3::create(0.f, 2.f), Vector3::create(10.f, 10.f, 10.f))
 			));
@@ -203,19 +213,23 @@ int main(int argc, char** argv)
 			));
 #endif
 		
-		auto resized = canvas->resized()->connect([&](Canvas::Ptr canvas, unsigned int width, unsigned int height)
+		auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, unsigned int width, unsigned int height)
 		{
+#ifndef MINKO_PLUGIN_OCULUS
 			camera->component<PerspectiveCamera>()->aspectRatio((float)width / (float)height);
+#endif // MINKO_PLUGIN_OCULUS
 
+#if POST_PROCESSING
 			auto oldTarget = ppTarget;
 
 			ppTarget = render::Texture::create(assets->context(), clp2(width), clp2(height), false, true);
 			ppTarget->upload();
 			ppData->set("backbuffer", ppTarget);
+#endif //POST_PROCESSING
 		});
 
 		auto yaw = 0.f;
-		auto pitch = PI * .5f;
+		auto pitch = (float)PI * .5f;
 		auto roll = 0.f;
 		auto minPitch = 0.f + 1e-5;
 		auto maxPitch = (float)PI - 1e-5;
@@ -258,7 +272,11 @@ int main(int argc, char** argv)
 			else if (pitch < minPitch)
 				pitch = minPitch;
 
-			camera->component<Transform>()->transform()->lookAt(
+#ifdef MINKO_PLUGIN_OCULUS
+			if (!camera->component<OculusVRCamera>()->sensorDeviceDetected())
+			{
+#endif // MINKO_PLUGIN_OCULUS
+			camera->component<Transform>()->matrix()->lookAt(
 				lookAt,
 				Vector3::create(
 					lookAt->x() + distance * cosf(yaw) * sinf(pitch),
@@ -266,8 +284,11 @@ int main(int argc, char** argv)
 					lookAt->z() + distance * sinf(yaw) * sinf(pitch)
 				)
 			);
+#ifdef MINKO_PLUGIN_OCULUS
+			}
+#endif // MINKO_PLUGIN_OCULUS
 
-			lights->component<Transform>()->transform()->appendRotationY(.005f);
+			lights->component<Transform>()->matrix()->appendRotationY(.005f);
 
 #if POST_PROCESSING
 			sceneManager->nextFrame(ppTarget);

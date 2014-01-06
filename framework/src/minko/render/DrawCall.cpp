@@ -17,7 +17,7 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "DrawCall.hpp"
+#include "minko/render/DrawCall.hpp"
 
 #include "minko/render/AbstractContext.hpp"
 #include "minko/render/CompareMode.hpp"
@@ -184,7 +184,7 @@ DrawCall::bindVertexAttribute(const std::string&	inputName,
 	if (_attributeBindings.count(inputName))
 	{
 		auto& propertyName = std::get<0>(_attributeBindings.at(inputName));
-		auto& container = getDataContainer(std::get<1>(_attributeBindings.at(inputName)));
+		const auto& container = getDataContainer(std::get<1>(_attributeBindings.at(inputName)));
 
 		++vertexBufferId;
 
@@ -242,7 +242,7 @@ DrawCall::bindTextureSampler2D(const std::string&	inputName,
 		++textureId;
 
 		auto& propertyName = std::get<0>(_uniformBindings.at(inputName));
-		auto& container = getDataContainer(std::get<1>(_uniformBindings.at(inputName)));
+		const auto& container = getDataContainer(std::get<1>(_uniformBindings.at(inputName)));
 
 		if (container && container->hasProperty(propertyName))
 		{
@@ -298,7 +298,7 @@ DrawCall::bindUniform(const std::string&	inputName,
 	{	
 		auto	propertyName	= std::get<0>(_uniformBindings.at(bindingName));
 		auto&	source			= std::get<1>(_uniformBindings.at(bindingName));
-		auto&	container		= getDataContainer(source);
+		const auto&	container	= getDataContainer(source);
 
 		if (container)
 		{
@@ -364,7 +364,7 @@ DrawCall::bindUniformArray(const std::string&	propertyName,
 		!container->propertyHasType<UniformArrayPtr>(propertyName, true))
 		return;
 
-	auto& uniformArray = container->get<UniformArrayPtr>(propertyName);
+	const auto& uniformArray = container->get<UniformArrayPtr>(propertyName);
 	if (uniformArray->first == 0 || uniformArray->second == nullptr)
 		return;
 
@@ -462,6 +462,22 @@ DrawCall::bindStates()
 	_stencilZPassOp = getDataProperty<StencilOperation>(
 		_stateBindings, "stencilZPassOp", _states->stencilDepthPassOperation()
 	);
+	_scissorTest	= getDataProperty<bool>(
+		_stateBindings, "scissorTest", _states->scissorTest()
+	);
+	_scissorBox.x	= getDataProperty<int>(
+		_stateBindings, "scissorBox.x", _states->scissorBox().x
+	);
+	_scissorBox.y	= getDataProperty<int>(
+		_stateBindings, "scissorBox.y", _states->scissorBox().y
+	);
+	_scissorBox.width	= getDataProperty<int>(
+		_stateBindings, "scissorBox.width", _states->scissorBox().width
+	);
+	_scissorBox.height	= getDataProperty<int>(
+		_stateBindings, "scissorBox.height", _states->scissorBox().height
+	);
+
 	_target = getDataProperty<Texture::Ptr>(
 		_stateBindings, "target", _states->target()
 	);
@@ -556,7 +572,7 @@ DrawCall::render(const AbstractContext::Ptr& context, std::shared_ptr<render::Te
 	context->setBlendMode(_blendMode);
 	context->setDepthTest(_depthMask, _depthFunc);
 	context->setStencilTest(_stencilFunc, _stencilRef, _stencilMask, _stencilFailOp, _stencilZFailOp, _stencilZPassOp);
-
+	context->setScissorTest(_scissorTest, _scissorBox);
     context->setTriangleCulling(_triangleCulling);
 
 	if (_indexBuffer != -1)

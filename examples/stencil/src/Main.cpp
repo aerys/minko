@@ -83,7 +83,7 @@ generateStars(unsigned int numStars,
 		const float minY	= -1.0f;
 		const float rangeY	= 1.0f - minY;
 
-		starNodes[i]->component<Transform>()->transform()
+		starNodes[i]->component<Transform>()->matrix()
 			->appendScale(0.25f, 0.25f, 0.25f)
 			->appendRotationZ(2.0f * (float)PI * (rand() / (float)RAND_MAX))
 			->appendTranslation(
@@ -120,7 +120,7 @@ main(int argc, char** argv)
 			->addComponent(Renderer::create(generateHexColor()))
 			->addComponent(PerspectiveCamera::create(800.0f / 600.0f, (float)PI * 0.25f, 0.1f, 1000.0f))
 			->addComponent(Transform::create());
-		camera->component<Transform>()->transform()
+		camera->component<Transform>()->matrix()
 			->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 3.f));
 
 		auto bigStarNode = Node::create("bigStarNode");
@@ -140,7 +140,7 @@ main(int argc, char** argv)
 					->set("triangleCulling",	TriangleCulling::BACK),
 				assets->effect("basic")
 			));
-		bigStarNode->component<Transform>()->transform()->appendScale(2.5f, 2.5f, 2.5f);
+		bigStarNode->component<Transform>()->matrix()->appendScale(2.5f, 2.5f, 2.5f);
 
 		auto quadNode = Node::create("quadNode");
 		quadNode
@@ -159,7 +159,7 @@ main(int argc, char** argv)
 					->set("triangleCulling",	TriangleCulling::BACK),
 				assets->effect("basic")
 			));
-		quadNode->component<Transform>()->transform()
+		quadNode->component<Transform>()->matrix()
 			->appendScale(4.0f, 4.0f, 4.0f);
 
 		generateStars(numSmallStars, assets, smallStars);
@@ -175,9 +175,9 @@ main(int argc, char** argv)
 		
 		auto _ = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, uint deltaTime)
 		{
-			bigStarNode->component<Transform>()->transform()->appendRotationZ(.001f);
+			bigStarNode->component<Transform>()->matrix()->appendRotationZ(.001f);
 			for (auto& star : smallStars)
-				star->component<Transform>()->transform()
+				star->component<Transform>()->matrix()
 				->prependRotationZ(-0.025f);
 
 			sceneManager->nextFrame();

@@ -17,9 +17,9 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "Loader.hpp"
+#include "minko/file/Loader.hpp"
 
-#include "Options.hpp"
+#include "minko/file/Options.hpp"
 #include "minko/Signal.hpp"
 
 #include <fstream>
@@ -37,7 +37,7 @@ Loader::load(const std::string& filename, std::shared_ptr<Options> options)
 	auto flags = std::ios::in | std::ios::ate | std::ios::binary;
 
 	_filename = filename;
-    _resolvedFilename = options->uriFunction()(filename);
+    _resolvedFilename = options->uriFunction()(sanitizeFilename(filename));
 	_options = options;
 	
 	std::fstream file(filename, flags);
@@ -45,7 +45,7 @@ Loader::load(const std::string& filename, std::shared_ptr<Options> options)
 	if (!file.is_open())
 		for (auto path : _options->includePaths())
 		{
-			auto testFilename = options->uriFunction()(path + file::separator + filename);
+			auto testFilename = options->uriFunction()(sanitizeFilename(path + '/' + filename));
 
 			file.open(testFilename, flags);
 			if (file.is_open())

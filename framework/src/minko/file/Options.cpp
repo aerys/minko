@@ -17,7 +17,7 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "Options.hpp"
+#include "minko/file/Options.hpp"
 
 #include "minko/material/Material.hpp"
 #include "minko/file/Loader.hpp"
@@ -36,14 +36,21 @@ Options::Options(std::shared_ptr<render::AbstractContext> context) :
 	_material(material::Material::create())
 {
 #ifdef DEBUG
-	includePaths().insert("bin/debug");
+	includePaths().push_back("../../asset");
+	includePaths().push_back("asset");
+	includePaths().push_back("bin/debug");
 #else
-	includePaths().insert("bin/release");
+	includePaths().push_back("bin/release");
 #endif
 
 	_materialFunction = [](const std::string&, material::Material::Ptr material) -> material::Material::Ptr
 	{ 
 		return material;
+	};
+
+	_geometryFunction = [](const std::string&, GeomPtr geom) -> GeomPtr
+	{
+		return geom;
 	};
 
 	_loaderFunction = [](const std::string&) -> std::shared_ptr<AbstractLoader>
