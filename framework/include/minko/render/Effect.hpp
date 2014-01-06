@@ -113,9 +113,16 @@ namespace minko
 			void
 			setUniform(const std::string& name, const T&... values)
 			{
+#if defined(EMSCRIPTEN)
+				auto that = shared_from_this();
+				_uniformFunctions.push_back([=](std::shared_ptr<Pass> pass) {
+					that->setUniformOnPass<T...>(pass, name, values...);
+				});
+#else
 				_uniformFunctions.push_back(std::bind(
 					&Effect::setUniformOnPass<T...>, shared_from_this(), std::placeholders::_1, name, values...
 				));
+#endif
 
 				for (auto technique : _techniques)
 					for (auto& pass : technique.second)
