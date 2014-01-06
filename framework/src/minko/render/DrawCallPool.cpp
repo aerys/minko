@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/Program.hpp"
 #include "minko/data/Container.hpp"
 #include "minko/scene/Node.hpp"
+#include "minko/render/Blending.hpp"
 
 using namespace minko;
 using namespace minko::render;
@@ -69,10 +70,13 @@ DrawCallPool::drawCalls()
 bool
 DrawCallPool::compareDrawCalls(DrawCallPtr& a, DrawCallPtr& b)
 {
-	if (a->priority() == b->priority())
+	float aPriority = a->priority() - (a->blendMode() == render::Blending::Mode::ALPHA ? 0.5f : 0.f);
+	float bPriority = b->priority() - (b->blendMode() == render::Blending::Mode::ALPHA ? 0.5f : 0.f);
+
+	if (aPriority == bPriority)
 		return a->target() && (!b->target() || (a->target()->id() > b->target()->id()));
 
-    return a->priority() > b->priority();
+	return aPriority > bPriority;
 }
 
 void
