@@ -115,11 +115,10 @@ DrawCallPool::removeSurface(SurfacePtr surface)
 {
 	_toRemove.push_back(surface);
 	_surfaceToTechniqueChangedSlot.erase(surface);
-	_surfaceToDrawCalls[surface].clear();
+	//_surfaceToDrawCalls[surface].clear();
 	_macroAddedOrRemovedSlots[surface].clear();
 	_macroChangedSlots[surface].clear();
 	_numMacroListeners[surface].clear();
-	_surfaceToDrawCalls[surface].clear();
 }
 
 void
