@@ -34,6 +34,7 @@ $emscripten_home = "/home/vagrant/src/emscripten"
 Exec {
     user => "vagrant",
     cwd => "/vagrant",
+    environment => ["PWD=/vagrant", "HOME=/home/vagrant"],
     logoutput => on_failure,
     path => [
         "/bin/",
