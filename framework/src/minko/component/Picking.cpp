@@ -274,8 +274,8 @@ Picking::removedHandler(NodePtr node, NodePtr target, NodePtr parent)
 void
 Picking::renderingBegin(RendererPtr renderer)
 {
-	float mouseX = _mouse->x();
-	float mouseY = _mouse->y();
+	float mouseX = (float)_mouse->x();
+	float mouseY = (float)_mouse->y();
 	
 	auto perspectiveCamera	= _camera->component<component::PerspectiveCamera>();
 	auto projection			= math::Matrix4x4::create()->perspective(perspectiveCamera->fieldOfView(), perspectiveCamera->aspectRatio(), perspectiveCamera->zNear(), perspectiveCamera->zFar());
@@ -286,7 +286,6 @@ Picking::renderingBegin(RendererPtr renderer)
 	pickingProjectionData[6] = mouseY / _context->viewportHeight() * 2.f;
 
 	_pickingProjection->initialize(pickingProjectionData);
-
 }
 
 void
