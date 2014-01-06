@@ -43,13 +43,13 @@ minko.plugin.links = function(names)
 	local projectName = project().name
 	local terms = cfg._criteria.terms
 
-	configuration {}
-
 	for _, name in ipairs(names) do
+		configuration { unpack(terms) }
+
 		local projectName = "minko-plugin-" .. name
 
 		if MINKO_SDK_DIST then
-			minko.sdk.links("plugins/" .. projectName)
+			minko.sdk.links(projectName, "plugins/" .. name)
 		else
 			links { projectName }
 		end
