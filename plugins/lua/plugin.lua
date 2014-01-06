@@ -32,18 +32,18 @@ function minko.plugin.lua:enable()
 		"LUA_USE_POSIX"
 	}
 
-	configuration { "win" }
-		postbuildcommands {
+	configuration { "windows" }
+		prelinkcommands {
 			'xcopy /y /i /s "' .. minko.sdk.path('/plugins/lua/asset/script/*') .. '" "$(TargetDir)\\script"',
 		}
 		
 	configuration { "linux" }
-		postbuildcommands {
+		prelinkcommands {
 			'cp -r ' .. minko.sdk.path('/plugins/lua/asset/script') .. ' ${TARGETDIR} || :',
 		}
 	
-	configuration { "osx" }
-		postbuildcommands {
+	configuration { "macosx or html5" }
+		prelinkcommands {
 			'cp -r ' .. minko.sdk.path('/plugins/lua/asset/script') .. ' ${TARGETDIR} || :',
 		}
 end
