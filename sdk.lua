@@ -35,6 +35,17 @@ insert.insert(premake.tools.clang, 'ldflags.system.macosx', {
 	macosx = { "-stdlib=libc++" }
 })
 
+configuration { "osx" }
+	system "macosx"
+
+configuration { "html5" }
+	system "emscripten"
+
+configuration { "android"}
+	system "android"
+
+configuration {}
+
 -- print(table.inspect(premake.tools.clang))
 
 -- distributable SDK
@@ -49,18 +60,11 @@ dofile(MINKO_HOME .. '/tools/all/lib/minko.plugin.lua')
 dofile(MINKO_HOME .. '/tools/all/lib/minko.vs.lua')
 dofile(MINKO_HOME .. '/tools/all/lib/minko.project.lua')
 
-
--- options
-if _OPTIONS.platform then
-	print('Selected target platform: ' .. _OPTIONS['platform'])
-	-- overwrite the native platform with the options::platform
-	premake.gcc.platforms['Native'] = premake.gcc.platforms[_OPTIONS.platform]
-end
-
 newoption {
 	trigger	= "no-stencil",
 	description = "Disable all stencil operations."
 }
+
 if _OPTIONS["no-stencil"] then
 	defines { "MINKO_NO_STENCIL" }
 end
