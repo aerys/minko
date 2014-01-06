@@ -599,7 +599,7 @@ ASSIMPParser::getNumFrames(const aiMesh* aimesh) const
 void
 ASSIMPParser::getSkinningFromAssimp(const aiScene* aiscene)
 {
-	if (_options->skinningNumFPS() == 0)
+	if (_options->skinningFramerate() == 0)
 		return;
 
 	// resample all animations with the specified temporal precision 
@@ -618,7 +618,7 @@ ASSIMPParser::getSkinningFromAssimp(const aiScene* aiscene)
 			assert(_nameToMesh.count(meshName) > 0);
 			auto	meshNode	= _nameToMesh.find(meshName)->second;
 
-			skin->duration(skin->numFrames() / (float)_options->skinningNumFPS());
+			skin->duration(skin->numFrames() / (float)_options->skinningFramerate());
 
 			meshNode->addComponent(Skinning::create(skin, _options->skinningMethod(), _assetLibrary->context()));
 		}
@@ -735,12 +735,12 @@ ASSIMPParser::sampleAnimations(const aiScene*	scene)
 }
 
 void
-ASSIMPParser::sampleAnimation(const aiAnimation*	animation)
+ASSIMPParser::sampleAnimation(const aiAnimation* animation)
 {
-	if (animation == nullptr || animation->mTicksPerSecond < 1e-6 || _options->skinningNumFPS() == 0)
+	if (animation == nullptr || animation->mTicksPerSecond < 1e-6 || _options->skinningFramerate() == 0)
 		return;
 
-	unsigned int numFrames	= (unsigned int)floor((float)_options->skinningNumFPS() * animation->mDuration / animation->mTicksPerSecond);
+	unsigned int numFrames	= (unsigned int)floor((float)_options->skinningFramerate() * animation->mDuration / animation->mTicksPerSecond);
 	numFrames				= numFrames < 2 ? 2 : numFrames;
 
 	const float			timeStep	= (float)animation->mDuration / (float)(numFrames - 1);
