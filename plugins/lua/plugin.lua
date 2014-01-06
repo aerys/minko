@@ -32,7 +32,7 @@ function minko.plugin.lua:enable()
 		"LUA_USE_POSIX"
 	}
 
-	configuration { "windows" }
+	configuration { "win" }
 		postbuildcommands {
 			'xcopy /y /i /s "' .. minko.sdk.path('/plugins/lua/asset/script/*') .. '" "$(TargetDir)\\script"',
 		}
@@ -42,9 +42,9 @@ function minko.plugin.lua:enable()
 			'cp -r ' .. minko.sdk.path('/plugins/lua/asset/script') .. ' ${TARGETDIR} || :',
 		}
 	
-	configuration { "macosx" }
+	configuration { "osx" }
 		postbuildcommands {
-			'cp -r ' .. minko.sdk.path('/plugins/lua/asset/script') .. ' . || :',
+			'cp -r ' .. minko.sdk.path('/plugins/lua/asset/script') .. ' ${TARGETDIR} || :',
 		}
 end
 
