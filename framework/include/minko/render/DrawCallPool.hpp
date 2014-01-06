@@ -144,6 +144,9 @@ namespace minko
 			deleteDrawCalls(SurfacePtr surface);
 
 			void
+				cleanSurface(SurfacePtr surface);
+
+			void
 			macroChangedHandler(ContainerPtr		container, 
 							    const std::string&	propertyName, 
 								SurfacePtr			surface, 

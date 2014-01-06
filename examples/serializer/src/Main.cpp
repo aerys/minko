@@ -176,13 +176,13 @@ int main(int argc, char** argv)
 		loaded = 1;
 		auto cubeMaterial = material::BasicMaterial::create()
 			->diffuseMap(assets->texture("texture/box.png"))
-			->diffuseColor(math::Vector4::create(1, 0, 0, 1))
+			->diffuseColor(math::Vector4::create(1.f, 0.f, 0.f, 1.f))
 			->blendMode(render::Blending::Mode::DEFAULT)
 			->set<render::TriangleCulling>("triangleCulling", render::TriangleCulling::BACK);
 
 		auto sphereMaterial = material::BasicMaterial::create()
 			->diffuseMap(assets->texture("texture/box.png"))
-			->diffuseColor(math::Vector4::create(0, 1, 0, 0.2))
+			->diffuseColor(math::Vector4::create(0.f, 1.f, 0.f, 0.2f))
 			->blendMode(render::Blending::Mode::ALPHA)
 			->set<render::TriangleCulling>("triangleCulling", render::TriangleCulling::FRONT);
 

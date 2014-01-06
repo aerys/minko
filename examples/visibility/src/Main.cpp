@@ -18,89 +18,102 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "minko/Minko.hpp"
-#include "minko/MinkoASSIMP.hpp"
+#include "minko/MinkoPNG.hpp"
 #include "minko/MinkoSDL.hpp"
 
 using namespace minko;
 using namespace minko::component;
 using namespace minko::math;
 
-const uint			WINDOW_WIDTH	= 800;
-const uint			WINDOW_HEIGHT	= 600;
-const std::string	DEFAULT_EFFECT	= "effect/SkinnedBasic.effect";
-//const std::string	DEFAULT_EFFECT	= "effect/Basic.effect";
-//const std::string	DEFAULT_EFFECT	= "effect/Phong.effect";
-const std::string	MODEL_FILENAME	= "pirate.dae";
+const std::string TEXTURE_FILENAME = "texture/box.png";
 
 int main(int argc, char** argv)
 {
-	auto canvas = Canvas::create("Minko Example - Assimp", WINDOW_WIDTH, WINDOW_HEIGHT);
+	auto canvas = Canvas::create("Minko Example - Visibility", 800, 600);
+
 	auto sceneManager = SceneManager::create(canvas->context());
 	
 	// setup assets
+	sceneManager->assets()->defaultOptions()->resizeSmoothly(true);
 	sceneManager->assets()->defaultOptions()->generateMipmaps(true);
 	sceneManager->assets()
-		->registerParser<file::ASSIMPParser>("obj")
-		->registerParser<file::ASSIMPParser>("dae")
-		->load(DEFAULT_EFFECT);
-
-	sceneManager->assets()->defaultOptions()->skinningFramerate(30);
-	sceneManager->assets()->defaultOptions()->skinningMethod(SkinningMethod::HARDWARE);
-	sceneManager->assets()->defaultOptions()->effect(sceneManager->assets()->effect(DEFAULT_EFFECT));
-	sceneManager->assets()->defaultOptions()->material()->set("diffuseColor", Vector4::create(0.8, 0.1, 0.1, 1.0));
-	sceneManager->assets()
-		->queue(MODEL_FILENAME);
+		->registerParser<file::PNGParser>("png")
+		->queue(TEXTURE_FILENAME)
+		->queue("effect/Basic.effect");
 
 	sceneManager->assets()->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()));
 
+	std::cout << "Press [SPACE]\tto change a cube visibility" << std::endl;
+
 	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
 	{
+		assets->material("boxMaterial", material::BasicMaterial::create()->diffuseMap(assets->texture(TEXTURE_FILENAME)));
+		assets->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()));
+
 		auto root = scene::Node::create("root")
 			->addComponent(sceneManager);
 
 		auto camera = scene::Node::create("camera")
 			->addComponent(Renderer::create(0x7f7f7fff))
 			->addComponent(Transform::create(
-				Matrix4x4::create()->lookAt(Vector3::create(0.f, 0.f, 0.f), Vector3::create(0.f, 1.5f, 3.f))
+				Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 17.f))
 			))
-			->addComponent(PerspectiveCamera::create(
-				(float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, (float)PI * 0.25f, .1f, 1000.f)
-			);
+			->addComponent(PerspectiveCamera::create(800.f / 600.f, (float)PI * 0.25f, .1f, 1000.f));
 		root->addChild(camera);
 
-		auto model = assets->symbol(MODEL_FILENAME)
-			->addComponent(Transform::create(Matrix4x4::create()->appendScale(.01f)));
+		auto cubes = scene::Node::create("cubesContainer");
 
-		auto surfaceNodeSet = scene::NodeSet::create(model)
-			->descendants(true)
-			->where([](scene::Node::Ptr n)
+		for (int j = 3; j >= -3; --j)
 		{
-			return n->hasComponent<Surface>();
-		});
-
-		root->addChild(model);
-		
-		auto skinnedNodes = scene::NodeSet::create(model)
-			->descendants(true)
-			->where([](scene::Node::Ptr n){ return n->hasComponent<Skinning>(); });
-
-		
-		for (auto& skinnedNode : skinnedNodes->nodes())
-		{
-			//skinnedNode->component<Skinning>()->start();
+			for (int i = -3; i <= 3; ++i)
+			{
+				auto mesh = scene::Node::create("mesh")
+					->addComponent(Surface::create(
+						assets->geometry("cube"),
+						assets->material("boxMaterial"),
+						assets->effect("effect/Basic.effect")
+						))
+					->addComponent(Transform::create(Matrix4x4::create()->appendTranslation(i * 2.f, j * 2.f)));
+				cubes->addChild(mesh);
+			}
 		}
-			
-		std::cout << "#skinned = " << skinnedNodes->nodes().size() << std::endl;
 
+		root->addChild(cubes);
 
 		auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
 		{
 			camera->component<PerspectiveCamera>()->aspectRatio((float)w / (float)h);
 		});
 
+		auto keyDown = canvas->keyboard()->keyDown()->connect([&](input::Keyboard::Ptr k)
+		{
+			if (k->keyDown(input::Keyboard::SPACE))
+			{
+				auto numChildren = cubes->children().size();
+				auto randomChild = cubes->children()[rand() % numChildren];
+
+				randomChild->component<Surface>()->visible(!randomChild->component<Surface>()->visible());
+			}
+		});
+
+		int frameId = 0;
+		int cubeId = 0;
+
 		auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, uint deltaTime)
 		{
+			frameId++;
 			sceneManager->nextFrame();
+
+			if (frameId % 10 == 0)
+			{
+				cubeId++;
+				auto numChildren = cubes->children().size();
+				auto visibleChild = cubes->children()[(cubeId - 1) % numChildren];
+				auto invisibleChild = cubes->children()[cubeId % numChildren];
+
+				visibleChild->component<Surface>()->visible(true);
+				invisibleChild->component<Surface>()->visible(false);
+			}
 		});
 
 		canvas->run();
@@ -110,3 +123,5 @@ int main(int argc, char** argv)
 
 	return 0;
 }
+
+
