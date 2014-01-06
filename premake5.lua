@@ -23,17 +23,6 @@ solution "minko"
 
 	dofile('sdk.lua')
 
-	configuration { "osx" }
-		system "macosx"
-
-	configuration { "html5" }
-		system "emscripten"
-
-	configuration { "android"}
-		system "android"
-
-	configuration {}
-
 	-- buildable SDK
 	MINKO_SDK_DIST = false
 	
