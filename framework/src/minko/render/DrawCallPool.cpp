@@ -46,7 +46,10 @@ DrawCallPool::drawCalls()
 		return _drawCalls;
 	
 	for (uint removedSurfaceIndex = 0; removedSurfaceIndex < _numToRemove; ++removedSurfaceIndex)
+	{
 		deleteDrawCalls(_toRemove[removedSurfaceIndex]);
+		cleanSurface(_toRemove[removedSurfaceIndex]);
+	}
 
 	for (uint surfaceIndex = 0; surfaceIndex < _numToCollect; ++surfaceIndex)
 	{
@@ -114,8 +117,13 @@ void
 DrawCallPool::removeSurface(SurfacePtr surface)
 {
 	_toRemove.push_back(surface);
+}
+
+void
+DrawCallPool::cleanSurface(SurfacePtr surface)
+{
 	_surfaceToTechniqueChangedSlot.erase(surface);
-	//_surfaceToDrawCalls[surface].clear();
+	_surfaceToDrawCalls[surface].clear();
 	_macroAddedOrRemovedSlots[surface].clear();
 	_macroChangedSlots[surface].clear();
 	_numMacroListeners[surface].clear();
@@ -124,8 +132,8 @@ DrawCallPool::removeSurface(SurfacePtr surface)
 void
 DrawCallPool::techniqueChanged(SurfacePtr surface, const std::string& technique, bool updateDrawCall)
 {
-	_toRemove.push_back(surface);
-
+	//_toRemove.push_back(surface);
+	deleteDrawCalls(surface);
 	if (updateDrawCall)
 		_toCollect.push_back(surface);
 }
@@ -547,8 +555,8 @@ DrawCallPool::blameMacros(SurfacePtr									surface,
 }
 
 void
-DrawCallPool::incorrectMacroChangedHandler(SurfacePtr					surface,
-											  const data::ContainerProperty& macro)
+DrawCallPool::incorrectMacroChangedHandler(SurfacePtr						surface,
+										   const data::ContainerProperty&	macro)
 {
 	if (_incorrectMacroToPasses[surface].count(macro) > 0)
 	{
