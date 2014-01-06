@@ -17,3 +17,12 @@ minko.sdk.gettargetplatform = function()
     return os.get()
   end
 end
+
+minko.sdk.links = function(project)
+	for i, platform in ipairs(platforms()) do
+		for j, cfg in ipairs(configurations()) do
+			configuration { platform, cfg }
+				links { minko.sdk.path("framework/bin/" .. platform .. "/" .. cfg .. "/" .. project) }
+		end
+	end
+end

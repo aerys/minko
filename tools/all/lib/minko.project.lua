@@ -37,10 +37,7 @@ minko.project.application = function(name)
 	minko.project.library(name)
 
 	if MINKO_SDK_DIST then
-		configuration { "debug"}
-			links { minko.sdk.path("framework/bin/debug/" .. minko.sdk.gettargetplatform() .. "/minko-framework") }
-		configuration { "release"}
-			links { minko.sdk.path("framework/bin/release/" .. minko.sdk.gettargetplatform() .. "/minko-framework") }
+		minko.sdk.links("minko-framework")
 	else
 		links { "minko-framework" }
 	end
@@ -70,7 +67,6 @@ minko.project.application = function(name)
 		}
 	
 	configuration { "osx" }
-		libdirs { "/deps/mac/lib" }
 		links {
 			"m",
 			"SDL2.framework",
@@ -126,6 +122,9 @@ end
 minko.project.solution = function(name)
 	solution(name)
 	configurations { "debug", "release" }
+	platforms { "linux", "win", "osx", "html5", "ios", "android" }
+
+	print(name)
 
 	if not MINKO_SDK_DIST then
 		include(minko.sdk.path("framework"))
