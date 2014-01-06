@@ -61,7 +61,6 @@ project "minko-framework"
 
 	-- macos
 	configuration { "osx" }
-		includedirs { "../deps/mac/include" }
 
 	-- html5
 	configuration { "html5" }
