@@ -19,9 +19,9 @@ minko.sdk.links = function(project, path)
 			-- matching both the platform (windows, macosx...) and the config (debug, release)
 			-- but also the current scope configuration if there is one defined!
 			configuration { platform, cfg, unpack(terms) }
-				-- libdirs { minko.sdk.path(path .. "/bin/" .. platform .. "/" .. cfg) }
-				-- links { project }
-				linkoptions { minko.sdk.path(path .. "/bin/" .. platform .. "/" .. cfg) .. "/lib" .. project .. ".a" }
+				libdirs { minko.sdk.path(path .. "/bin/" .. platform .. "/" .. cfg) }
+				links { project }
+				-- linkoptions { minko.sdk.path(path .. "/bin/" .. platform .. "/" .. cfg) .. "/lib" .. project .. ".a" }
 		end
 	end
 end
