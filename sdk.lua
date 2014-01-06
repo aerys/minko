@@ -27,6 +27,11 @@ insert.insert(premake.tools.gcc, 'cxxflags.system', {
 	emscripten = { "-MMD", "-MP", "-std=c++11" }
 })
 
+insert.insert(premake.tools.gcc, 'tools.linux', {
+	ld = MINKO_HOME .. '/tools/lin/bin/g++-ld.sh',
+	cxx = MINKO_HOME .. '/tools/lin/bin/g++-ld.sh'
+})
+
 insert.insert(premake.tools.clang, 'cxxflags.system', {
 	macosx = { "-MMD", "-MP", "-std=c++11", "-stdlib=libc++" }
 })
