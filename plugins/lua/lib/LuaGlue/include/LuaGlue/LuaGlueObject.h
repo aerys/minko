@@ -1,7 +1,9 @@
 #ifndef LUAGLUE_OBJECT_BASE_H_GUARD
 #define LUAGLUE_OBJECT_BASE_H_GUARD
 
-#include <atomic>
+#if !defined(EMSCRIPTEN)
+# include <atomic>
+#endif
 #include <exception>
 
 #include "LuaGlue/LuaGlueDebug.h"
@@ -100,7 +102,11 @@ class LuaGlueObjectImpl : public virtual LuaGlueObjectImplBase
 		//Type &ref() { return *_ptr; }
 		void *vptr() { return _ptr; }
 	private:
+#if defined(EMSCRIPTEN)
+		int _ref_cnt;
+#else
 		std::atomic_int _ref_cnt;
+#endif
 		LuaGlueClass<Type> *_clss;
 		Type *_ptr;
 		bool _owner;
@@ -156,7 +162,11 @@ class LuaGlueObjectImpl<std::shared_ptr<_Class>> : public virtual LuaGlueObjectI
 		//Type &ref() { return *_ptr; }
 		void *vptr() { return _ptr; }
 	private:
+#if defined(EMSCRIPTEN)
+		int _ref_cnt;
+#else
 		std::atomic_int _ref_cnt;
+#endif
 		LuaGlueClass<ClassType> *_clss;
 		Type *_ptr;
 		bool _owner;
