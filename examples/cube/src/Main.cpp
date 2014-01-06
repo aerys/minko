@@ -20,16 +20,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Minko.hpp"
 #include "minko/MinkoPNG.hpp"
 #include "minko/MinkoSDL.hpp"
-#include "minko/MinkoJPEG.hpp"
 
 using namespace minko;
 using namespace minko::component;
 using namespace minko::math;
 
-//const std::string TEXTURE_FILENAME = "texture/box.png";
-//const std::string TEXTURE_FILENAME = "texture/box.jpeg";
-//const std::string TEXTURE_FILENAME = "texture/box_noPow2.jpeg";
-const std::string TEXTURE_FILENAME = "texture/box_noPow2.png";
+const std::string TEXTURE_FILENAME = "texture/box.png";
 
 int main(int argc, char** argv)
 {
@@ -42,7 +38,6 @@ int main(int argc, char** argv)
 	sceneManager->assets()->defaultOptions()->generateMipmaps(true);
 	sceneManager->assets()
 		->registerParser<file::PNGParser>("png")
-		->registerParser<file::JPEGParser>("jpeg")
 		->queue(TEXTURE_FILENAME)
 		->queue("effect/Basic.effect");
 
@@ -73,14 +68,14 @@ int main(int argc, char** argv)
 			));
 		root->addChild(mesh);
 
-		auto resized = canvas->resized()->connect([&](Canvas::Ptr canvas, uint w, uint h)
+		auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
 		{
 			camera->component<PerspectiveCamera>()->aspectRatio((float)w / (float)h);
 		});
 
 		auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, uint deltaTime)
 		{
-			mesh->component<Transform>()->transform()->appendRotationY(.01f);
+			mesh->component<Transform>()->matrix()->appendRotationY(.01f);
 
 			sceneManager->nextFrame();
 		});

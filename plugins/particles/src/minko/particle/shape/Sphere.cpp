@@ -1,4 +1,4 @@
-#include "Sphere.hpp"
+#include "minko/particle/shape/Sphere.hpp"
 #include "minko/particle/ParticleData.hpp"
 
 using namespace minko;

@@ -1,16 +1,19 @@
-minko.project.application "example-effect-config"
-	kind "ConsoleApp"
-	language "C++"
-	files { "src/**.hpp", "src/**.cpp" }
-	includedirs { "src"	}
-	
-	minko.plugin.enable("sdl")
-	minko.plugin.enable("jpeg")
+PROJECT_NAME = path.getname(os.getcwd())
 
-	-- emscripten
-	configuration { "emscripten" }
-		postbuildcommands {
-			'cd ${TARGETDIR} ; cp ' .. project().name .. ' ' .. project().name .. '.bc',
-			'cp -r asset/* ${TARGETDIR} || :',
-			'cd ${TARGETDIR} ; emcc ' .. project().name .. '.bc -o ' .. project().name .. '.html -O2 -s ASM_JS=0 -s TOTAL_MEMORY=1073741824 --preload-file effect --preload-file texture'
-		}
+minko.project.application("minko-example-" .. PROJECT_NAME)
+
+	language "c++"
+	kind "ConsoleApp"
+
+	files { "src/**.cpp", "src/**.hpp", "asset/**" }
+	includedirs { "src" }
+
+	-- plugins
+	minko.plugin.enable("sdl")
+	--minko.plugin.enable("bullet")
+	minko.plugin.enable("jpeg")
+	--minko.plugin.enable("mk")
+	--minko.plugin.enable("particles")
+	--minko.plugin.enable("png")
+	
+	minko.plugin.import("angle")

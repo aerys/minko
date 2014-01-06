@@ -17,27 +17,31 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "Texture.hpp"
+#include "minko/render/Texture.hpp"
 
 #include "minko/render/AbstractContext.hpp"
 
 using namespace minko;
 using namespace minko::render;
 
+const uint Texture::MAX_SIZE = 2048;
+
 Texture::Texture(std::shared_ptr<render::AbstractContext>	context,
-				 const unsigned int							width,
-				 const unsigned int							height,
-                 bool                                       mipMapping,
-                 bool                                       optimizeForRenderToTexture,
-				 bool										resizeSmoothly) :
+	const unsigned int							width,
+	const unsigned int							height,
+	bool                                       mipMapping,
+	bool                                       optimizeForRenderToTexture,
+	bool										resizeSmoothly,
+	std::string								filename) :
 	AbstractResource(context),
 	_width(width),
 	_height(height),
-	_widthGPU(math::clp2(width)),
-	_heightGPU(math::clp2(height)),
+	_widthGPU(std::min(math::clp2(width), MAX_SIZE)),
+	_heightGPU(std::min(math::clp2(height), MAX_SIZE)),
     _mipMapping(mipMapping),
     _optimizeForRenderToTexture(optimizeForRenderToTexture),
-	_resizeSmoothly(resizeSmoothly)
+	_resizeSmoothly(resizeSmoothly),
+	_filename(filename)
 {
 }
 
@@ -59,7 +63,7 @@ Texture::data(unsigned char* data, DataFormat format)
 			rgba[j]		= data[i];
 			rgba[j + 1] = data[i + 1];
 			rgba[j + 2] = data[i + 2];
-			rgba[j + 3] = UCHAR_MAX;
+			rgba[j + 3] = std::numeric_limits<unsigned char>::max();
 		}
 	}
 
@@ -120,7 +124,7 @@ Texture::processData(std::vector<unsigned char>&	inData,
 				const uint ijBL = j < _height - 1						? ijTL + (_width << 2)			: ijTL;
 				const uint ijBR = (i < _width - 1) && (j < _height - 1)	? ijTL + ((_width + 1) << 2)	: ijTL;
 
-				const float	wTL	= 1.0 - dx - dy + dxy; 
+				const float	wTL	= 1.0f - dx - dy + dxy; 
 				const float wTR = dx - dxy;
 				const float wBL = dy - dxy;
 				const float wBR = dxy;

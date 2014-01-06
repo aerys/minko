@@ -1,10 +1,9 @@
-minko.project.application "example-sponza"
+PROJECT_NAME = path.getname(os.getcwd())
+
+minko.project.application("minko-example-" .. PROJECT_NAME)
 	kind "ConsoleApp"
 	language "C++"
-	files {
-		"src/**.hpp",
-		"src/**.cpp"
-	}
+	files { "src/**.hpp", "src/**.cpp", "asset/**" }
 	includedirs { "src" }
 
 	-- plugins 
@@ -14,6 +13,7 @@ minko.project.application "example-sponza"
 	minko.plugin.enable("jpeg")
 	minko.plugin.enable("particles")
 	minko.plugin.enable("sdl")
+	minko.plugin.enable("oculus")
 	
 	minko.plugin.import("angle")
 

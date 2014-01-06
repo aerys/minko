@@ -2,6 +2,8 @@
 {
 	"name"	: "phong",
 	
+	"priority"	: "opaque",
+	
 	"attributeBindings"	: {
 		"position"				: "geometry.vertex.attribute.position",
 		"uv"					: "geometry.vertex.attribute.uv",
@@ -65,6 +67,8 @@
 	"defaultTechnique" : "single-pass",
 	"colorMask"			: true,
 	"stencilTest"		: ["always", 0, 1, ["keep", "keep", "keep"]],
+	"scissorTest"		: false,
+	"scissorBox"		: [0, 0, -1, -1],
 	
 	"techniques" : [
 		{
@@ -129,14 +133,14 @@
 			"name" 		: "multi-pass",
 
 			"passes" 	: [{
-				"includes" : [ "Skinning.vertex.glsl", "Basic.vertex.glsl", "Basic.fragment.glsl" ]
+				"includes" : [ "Skinning.function.glsl", "Basic.vertex.glsl", "Basic.fragment.glsl" ]
 			}]
 		},
 		{
 			"name" 		: "basic",
 
 			"passes" 	: [{
-				"includes" : [ "Skinning.vertex.glsl", "Basic.vertex.glsl", "Basic.fragment.glsl" ]
+				"includes" : [ "Skinning.function.glsl", "Basic.vertex.glsl", "Basic.fragment.glsl" ]
 			}]
 		}
 	]

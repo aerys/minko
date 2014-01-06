@@ -17,7 +17,8 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "Quaternion.hpp"
+#include "minko/math/Quaternion.hpp"
+
 #include <minko/math/Matrix4x4.hpp>
 
 using namespace minko;

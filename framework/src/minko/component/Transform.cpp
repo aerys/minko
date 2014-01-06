@@ -17,7 +17,7 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "Transform.hpp"
+#include "minko/component/Transform.hpp"
 
 #include "minko/math/Matrix4x4.hpp"
 #include "minko/scene/Node.hpp"
@@ -32,7 +32,7 @@ using namespace minko::math;
 
 Transform::Transform() :
 	minko::component::AbstractComponent(),
-	_transform(Matrix4x4::create()),
+	_matrix(Matrix4x4::create()),
 	_modelToWorld(Matrix4x4::create()),
 	_worldToModel(Matrix4x4::create()),
 	_data(data::StructureProvider::create("transform"))
@@ -80,7 +80,7 @@ Transform::targetAddedHandler(AbstractComponent::Ptr	ctrl,
 	);
 
 	_addedSlot = target->added()->connect(callback);
-	_removedSlot = target->removed()->connect(callback);
+	//_removedSlot = target->removed()->connect(callback);
 
 	addedOrRemovedHandler(nullptr, target, target->parent());
 }
@@ -90,8 +90,7 @@ Transform::addedOrRemovedHandler(scene::Node::Ptr node,
 								 scene::Node::Ptr target,
 								 scene::Node::Ptr parent)
 {
-	if (target == targets()[0] && !target->root()->component<RootTransform>()
-		&& (target != target->root() || target->children().size() != 0))
+	if (!target->root()->component<RootTransform>())
 		target->root()->addComponent(RootTransform::create());
 }
 
@@ -179,15 +178,12 @@ Transform::RootTransform::componentAddedHandler(scene::Node::Ptr		node,
 												scene::Node::Ptr 		target,
 												AbstractComponent::Ptr	ctrl)
 {
-	if (target->root() == target)
-	{
-		auto sceneManager = std::dynamic_pointer_cast<SceneManager>(ctrl);
+	auto sceneManager = std::dynamic_pointer_cast<SceneManager>(ctrl);
 
-		if (sceneManager != nullptr)
-			_frameEndSlot = sceneManager->frameEnd()->connect(std::bind(
-				&Transform::RootTransform::frameEndHandler, shared_from_this(), std::placeholders::_1
-			));
-	}
+	if (sceneManager != nullptr)
+		_frameEndSlot = sceneManager->frameEnd()->connect(std::bind(
+			&Transform::RootTransform::frameEndHandler, shared_from_this(), std::placeholders::_1
+		));
 	else if (std::dynamic_pointer_cast<Transform>(ctrl) != nullptr)
 		_invalidLists = true;
 }
@@ -197,13 +193,10 @@ Transform::RootTransform::componentRemovedHandler(scene::Node::Ptr			node,
 												  scene::Node::Ptr 			target,
 												  AbstractComponent::Ptr	ctrl)
 {
-	if (target->root() == target)
-	{
-		auto sceneManager = std::dynamic_pointer_cast<SceneManager>(ctrl);
+	auto sceneManager = std::dynamic_pointer_cast<SceneManager>(ctrl);
 
-		if (sceneManager != nullptr)
-			_frameEndSlot = nullptr;
-	}
+	if (sceneManager)
+		_frameEndSlot = nullptr;
 	else if (std::dynamic_pointer_cast<Transform>(ctrl) != nullptr)
 		_invalidLists = true;
 }
@@ -213,12 +206,12 @@ Transform::RootTransform::addedHandler(scene::Node::Ptr node,
 									   scene::Node::Ptr target,
 									   scene::Node::Ptr ancestor)
 {
-	auto descendants = scene::NodeSet::create(target)->descendants(true);
+	auto descendants = scene::NodeSet::create(target)->descendants();
 	for (auto descendant : descendants->nodes())
 	{
 		auto rootTransformCtrl = descendant->component<RootTransform>();
 
-		if (rootTransformCtrl && rootTransformCtrl != shared_from_this())
+		if (rootTransformCtrl)
 			descendant->removeComponent(rootTransformCtrl);
 	}
 
@@ -239,10 +232,11 @@ Transform::RootTransform::updateTransformsList()
 	unsigned int nodeId = 0;
 
 	_idToNode.clear();
-	_transform.clear();
+	_transforms.clear();
 	_modelToWorld.clear();
 	_numChildren.clear();
 	_firstChildId.clear();
+	_parentId.clear();
 
 	auto descendants = scene::NodeSet::create(targets())
 		->descendants(true, false)
@@ -258,7 +252,7 @@ Transform::RootTransform::updateTransformsList()
 		_nodeToId[node] = nodeId;
 
 		_idToNode.push_back(node);
-		_transform.push_back(transformCtrl->_transform);
+		_transforms.push_back(transformCtrl->_matrix);
 		_modelToWorld.push_back(transformCtrl->_modelToWorld);
 		_numChildren.push_back(0);
 		_firstChildId.push_back(0);
@@ -288,7 +282,7 @@ Transform::RootTransform::updateTransformsList()
 void
 Transform::RootTransform::updateTransforms()
 {
-	unsigned int numNodes 	= _transform.size();
+	unsigned int numNodes 	= _transforms.size();
 	unsigned int nodeId 	= 0;
 
 	while (nodeId < numNodes)
@@ -304,12 +298,10 @@ Transform::RootTransform::updateTransforms()
 
 		if (parentId == -1)
 		{
-            auto parentTransform = _transform[nodeId];
-
-            if (parentTransform->_hasChanged)
+            auto parentTransform = _transforms[nodeId];
+	        
+            if (parentTransformChanged)
             {
-                parentTransformChanged = true;
-
 			    parentModelToWorldMatrix->copyFrom(parentTransform);
                 parentTransform->_hasChanged = false;
             }
@@ -318,7 +310,7 @@ Transform::RootTransform::updateTransforms()
 		for (auto childId = firstChildId; childId < lastChildId; ++childId)
 		{
 			auto modelToWorld   = _modelToWorld[childId];
-            auto transform      = _transform[childId];
+            auto transform      = _transforms[childId];
 
             if (transform->_hasChanged || parentTransformChanged)
             {
@@ -345,7 +337,7 @@ Transform::RootTransform::forceUpdate(scene::Node::Ptr node)
 	// find the "dirty" root and build the path to get back to the target node
 	while (nodeId >= 0)
 	{
-		if ((_transform[nodeId]->_hasChanged)
+		if ((_transforms[nodeId]->_hasChanged)
 			|| (nodeId != targetNodeId && _modelToWorld[nodeId]->_hasChanged))
 			dirtyRoot = nodeId;
 
@@ -361,7 +353,7 @@ Transform::RootTransform::forceUpdate(scene::Node::Ptr node)
 		auto parentId		= _parentId[dirtyNodeId];
 		auto modelToWorld	= _modelToWorld[dirtyNodeId];
 
-		modelToWorld->copyFrom(_transform[dirtyNodeId]);
+		modelToWorld->copyFrom(_transforms[dirtyNodeId]);
 		if (parentId != -1)
 			modelToWorld->append(_modelToWorld[parentId]);
 		modelToWorld->_hasChanged = false;
