@@ -25,9 +25,14 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		"lib/lodepng/src"
 	}
 
+	configuration { "windows" }
+		defines {
+			"_CRT_SECURE_NO_WARNINGS"
+		}
+
+
 	defines
 	{
 		--"LODEPNG_NO_COMPILE_ENCODER"
 		--"LODEPNG_NO_COMPILE_DISK"
-		"_CRT_SECURE_NO_WARNINGS"
 	}
