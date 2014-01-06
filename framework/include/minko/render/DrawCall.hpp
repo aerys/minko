@@ -111,6 +111,13 @@ namespace minko
                 ));;
 			}
 
+			inline
+			Blending::Mode
+			blendMode() const
+			{
+				return _blendMode;
+			}
+
             inline
             std::shared_ptr<Texture>
             target() const

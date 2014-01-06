@@ -60,37 +60,37 @@ namespace minko
 			typedef std::shared_ptr<math::Vector3>								Vector3Ptr;
 			typedef std::shared_ptr<math::Quaternion>							QuaternionPtr;
 			typedef std::shared_ptr<math::Matrix4x4>							Matrix4x4Ptr;
+			typedef std::vector<Matrix4x4Ptr>									Matrices4x4;
 
 			typedef Signal<LoaderPtr>::Slot										LoaderSignalSlot;
 
 			typedef std::unordered_map<LoaderPtr, LoaderSignalSlot>				LoaderToSlotMap;
 			typedef std::unordered_map<unsigned int, std::string>				TextureTypeToName;
-			typedef std::unordered_map<std::string, NodePtr>					NodeMap;
-			typedef std::unordered_map<std::string, std::vector<Matrix4x4Ptr>>	NodeMatrixMap;
 
         private:
-			static const TextureTypeToName			_textureTypeToName;
+			static const TextureTypeToName					_textureTypeToName;
 
-            unsigned int							_numDependencies;
-			unsigned int							_numLoadedDependencies;
-            std::string								_filename;
-            std::shared_ptr<AssetLibrary>			_assetLibrary;
-			std::shared_ptr<file::Options>			_options;
+            unsigned int									_numDependencies;
+			unsigned int									_numLoadedDependencies;
+            std::string										_filename;
+            std::shared_ptr<AssetLibrary>					_assetLibrary;
+			std::shared_ptr<file::Options>					_options;
 			
-			NodePtr									_symbol;
+			NodePtr											_symbol;
 
-			NodeMap									_nameToNode;
-			NodeMap									_nameToMesh;
-			NodeMatrixMap							_nameToAnimMatrices;
+			std::unordered_map<const aiNode*, NodePtr>		_aiNodeToNode;
+			std::unordered_map<const aiMesh*, NodePtr>		_aiMeshToNode;
+			std::unordered_map<std::string, NodePtr>		_nameToNode;
+			std::unordered_map<std::string, Matrices4x4>	_nameToAnimMatrices;
 
-			LoaderToSlotMap							_loaderCompleteSlots;
-			LoaderToSlotMap							_loaderErrorSlots;
+			LoaderToSlotMap									_loaderCompleteSlots;
+			LoaderToSlotMap									_loaderErrorSlots;
             
-			static	Vector3Ptr						_TMP_POSITION;
-			static	QuaternionPtr					_TMP_ROTATION;
-			static	Matrix4x4Ptr					_TMP_ROTATION_MATRIX;
-			static	Vector3Ptr						_TMP_SCALING;
-			static	Matrix4x4Ptr					_TMP_MATRIX;
+			static	Vector3Ptr								_TMP_POSITION;
+			static	QuaternionPtr							_TMP_ROTATION;
+			static	Matrix4x4Ptr							_TMP_ROTATION_MATRIX;
+			static	Vector3Ptr								_TMP_SCALING;
+			static	Matrix4x4Ptr							_TMP_MATRIX;
 
 		public:
 			inline static

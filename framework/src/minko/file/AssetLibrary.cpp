@@ -34,9 +34,6 @@ using namespace minko::render;
 using namespace minko::geometry;
 using namespace minko::file;
 
-const std::string
-AssetLibrary::_defaultName = "";
-
 AssetLibrary::Ptr
 AssetLibrary::create(AbsContextPtr context)
 {
@@ -77,7 +74,7 @@ AssetLibrary::geometryName(GeometryPtr geometry)
 			return it->first;
 	}
 
-	return _defaultName;
+	throw new std::logic_error("AssetLibrary does not reference this geometry.");
 }
 
 render::Texture::Ptr
@@ -103,7 +100,7 @@ AssetLibrary::textureName(TexturePtr texture)
 			return it->first;
 	}
 
-	return _defaultName;
+	throw new std::logic_error("AssetLibrary does not reference this texture.");
 }
 
 scene::Node::Ptr
@@ -129,7 +126,7 @@ AssetLibrary::symbolName(NodePtr node)
 			return it->first;
 	}
 
-	return _defaultName;
+	throw new std::logic_error("AssetLibrary does not reference this symbol.");
 }
 
 material::Material::Ptr
@@ -162,7 +159,7 @@ AssetLibrary::materialName(MaterialPtr material)
 			return it->first;
 	}
 
-	return _defaultName;
+	throw new std::logic_error("AssetLibrary does not reference this material.");
 }
 
 AssetLibrary::EffectPtr
@@ -188,7 +185,7 @@ AssetLibrary::effectName(EffectPtr effect)
 			return it->first;
 	}
 
-	return _defaultName;
+	throw new std::logic_error("AssetLibrary does not reference this effect.");
 }
 
 const std::vector<unsigned char>&
@@ -231,7 +228,7 @@ AssetLibrary::scriptName(AbsScriptPtr script)
 			return it->first;
 	}
 
-	return _defaultName;
+	throw new std::logic_error("AssetLibrary does not reference this script.");
 }
 
 const unsigned int

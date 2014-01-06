@@ -59,6 +59,7 @@ solution "minko"
 		include('examples/frustum')
 		include('examples/serializer')
 		include('examples/picking')
+		include('examples/visibility')
 	end
 
 	-- tests
