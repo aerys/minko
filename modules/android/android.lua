@@ -1,5 +1,6 @@
 local insert = require 'insert'
 local inspect = require 'inspect'
+local color = require 'color'
 
 premake.extensions.android = {}
 
