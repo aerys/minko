@@ -17,7 +17,7 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "Renderer.hpp"
+#include "minko/component/Renderer.hpp"
 
 #include "minko/scene/Node.hpp"
 #include "minko/scene/NodeSet.hpp"
@@ -29,24 +29,37 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/AbstractContext.hpp"
 #include "minko/component/SceneManager.hpp"
 #include "minko/file/AssetLibrary.hpp"
+#include "minko/render/DrawCallPool.hpp"
 
 using namespace minko;
 using namespace minko::component;
 using namespace minko::scene;
 using namespace minko::render;
 
-Renderer::Renderer() :
+const unsigned int Renderer::NUM_FALLBACK_ATTEMPTS = 32;
+
+Renderer::Renderer(std::shared_ptr<render::Texture> renderTarget,
+				   std::shared_ptr<render::Effect>	effect) :
     _backgroundColor(0),
 	_renderingBegin(Signal<Ptr>::create()),
 	_renderingEnd(Signal<Ptr>::create()),
+	_beforePresent(Signal<Ptr>::create()),
 	_surfaceDrawCalls(),
-	_surfaceTechniqueChangedSlot()
+	_surfaceTechniqueChangedSlot(),
+	_effect(effect)
 {
+	if (renderTarget)
+	{
+		renderTarget->upload();
+		_renderTarget = renderTarget;
+	}
 }
 
 void
 Renderer::initialize()
 {
+	_drawCallPool = DrawCallPool::create(shared_from_this());
+
 	_targetAddedSlot = targetAdded()->connect(std::bind(
 		&Renderer::targetAddedHandler,
 		shared_from_this(),
@@ -220,58 +233,19 @@ Renderer::componentRemovedHandler(std::shared_ptr<Node>					node,
 void
 Renderer::addSurface(Surface::Ptr surface)
 {
-	_surfaceTechniqueChangedSlot[surface]	= surface->techniqueChanged()->connect(std::bind(
-		&Renderer::surfaceTechniqueChanged,
-		shared_from_this(),
-		surface,
-		std::placeholders::_2
-	));
-
-	_toCollect.insert(surface);
-}
-
-void
-Renderer::addSurfaceDrawcalls(Surface::Ptr surface)
-{
-	removeSurfaceDrawcalls(surface);
-
-	_surfaceDrawCalls[surface]	= surface->createDrawCalls(targets()[0]->data());
-
-	_drawCalls.insert(
-		_drawCalls.end(), 
-		_surfaceDrawCalls[surface].begin(), 
-		_surfaceDrawCalls[surface].end()
-	);
+	_drawCallPool->addSurface(surface);
 }
 
 void
 Renderer::removeSurface(Surface::Ptr surface)
 {
-	removeSurfaceDrawcalls(surface);
-	_surfaceTechniqueChangedSlot.erase(surface);
-}
-
-void
-Renderer::removeSurfaceDrawcalls(Surface::Ptr surface)
-{
-	auto foundDrawcallsIt	= _surfaceDrawCalls.find(surface);
-
-	if (foundDrawcallsIt == _surfaceDrawCalls.end())
-		return;
-
-	const DrawCallList& drawcalls	= foundDrawcallsIt->second;
-	for (auto& drawCall : drawcalls)
-		_drawCalls.remove(drawCall);
-
-	_surfaceDrawCalls.erase(foundDrawcallsIt);
+	_drawCallPool->removeSurface(surface);
 }
 
 void
 Renderer::render(std::shared_ptr<render::AbstractContext> context, std::shared_ptr<render::Texture> renderTarget)
 {
-	for (auto& surface : _toCollect)
-		addSurfaceDrawcalls(surface);
-	_toCollect.clear();
+	_drawCalls = _drawCallPool->drawCalls();
 
 	_renderingBegin->execute(shared_from_this());
 
@@ -285,22 +259,14 @@ Renderer::render(std::shared_ptr<render::AbstractContext> context, std::shared_p
 		(_backgroundColor & 0xff) / 255.f
 	);
 
-    _drawCalls.sort(&Renderer::compareDrawCalls);
 	for (auto& drawCall : _drawCalls)
 		drawCall->render(context, renderTarget);
+
+	_beforePresent->execute(shared_from_this());
 
 	context->present();
 
 	_renderingEnd->execute(shared_from_this());
-}
-
-bool
-Renderer::compareDrawCalls(DrawCallPtr& a, DrawCallPtr& b)
-{
-	if (a->priority() == b->priority())
-		return a->target() && (!b->target() || (a->target()->id() > b->target()->id()));
-
-    return a->priority() > b->priority();
 }
 
 void
@@ -351,12 +317,4 @@ Renderer::sceneManagerRenderingBeginHandler(std::shared_ptr<SceneManager>		scene
 										    std::shared_ptr<render::Texture>	renderTarget)
 {
 	render(sceneManager->assets()->context(), renderTarget);
-}
-
-void
-Renderer::surfaceTechniqueChanged(Surface::Ptr			surface, 
-								  const std::string&	technique)
-{
-	removeSurfaceDrawcalls(surface);
-	_toCollect.insert(surface);
 }

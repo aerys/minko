@@ -1,4 +1,4 @@
-#include "StartColor.hpp"
+#include "minko/particle/modifier/StartColor.hpp"
 #include "minko/particle/ParticleData.hpp"
 #include "minko/particle/tools/VertexComponentFlags.hpp"
 #include "minko/particle/sampler/Sampler.hpp"

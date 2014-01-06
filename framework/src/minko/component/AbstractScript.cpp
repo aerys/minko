@@ -17,7 +17,7 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "AbstractScript.hpp"
+#include "minko/component/AbstractScript.hpp"
 
 #include "minko/scene/Node.hpp"
 #include "minko/scene/NodeSet.hpp"
@@ -58,14 +58,37 @@ AbstractScript::targetAddedHandler(AbstractComponent::Ptr cmp, scene::Node::Ptr 
 		std::placeholders::_3
 	));
 
+    auto addedOrRemovedCallback = std::bind(
+        &AbstractScript::addedOrRemovedHandler,
+        shared_from_this(),
+        std::placeholders::_1,
+        std::placeholders::_2,
+        std::placeholders::_3
+    );
+    _addedSlot = target->added()->connect(addedOrRemovedCallback);
+    _removedSlot = target->removed()->connect(addedOrRemovedCallback);
+
 	_started[target] = false;
+
+    if (target->root()->hasComponent<SceneManager>())
+        setSceneManager(target->root()->component<SceneManager>());
+}
+
+void
+AbstractScript::addedOrRemovedHandler(scene::Node::Ptr node, scene::Node::Ptr target, scene::Node::Ptr parent)
+{
+    if (target->root()->hasComponent<SceneManager>())
+        setSceneManager(target->root()->component<SceneManager>());
+    else
+        setSceneManager(nullptr);
 }
 
 void
 AbstractScript::targetRemovedHandler(AbstractComponent::Ptr cmp, scene::Node::Ptr target)
 {
-	_componentAddedSlot		= nullptr;
-	_componentRemovedSlot	= nullptr;
+	_componentAddedSlot = nullptr;
+	_componentRemovedSlot = nullptr;
+    _frameBeginSlot = nullptr;
 }
 
 void
@@ -99,14 +122,17 @@ AbstractScript::frameBeginHandler(SceneManager::Ptr sceneManager)
 {
 	for (auto& target : targets())
 	{
-		if (!_started[target])
+		if (!_started[target] && ready(target))
 		{
 			_started[target] = true;
 
 			start(target);
 		}
 
-		update(target);
+		if (running(target))
+			update(target);
+		else
+			_started[target] = false;
 	}
 }
 
@@ -121,7 +147,7 @@ AbstractScript::findSceneManager()
 		});
 
 	if (roots->nodes().size() > 1)
-		throw std::logic_error("Renderer cannot be in two separate scenes.");
+		throw std::logic_error("The same script cannot be in two separate scenes.");
 	else if (roots->nodes().size() == 1)
 		setSceneManager(roots->nodes()[0]->component<SceneManager>());		
 	else
@@ -133,9 +159,10 @@ AbstractScript::setSceneManager(SceneManager::Ptr sceneManager)
 {
 	if (sceneManager)
 	{
-		_frameBeginSlot = sceneManager->frameBegin()->connect(std::bind(
-			&AbstractScript::frameBeginHandler, shared_from_this(), std::placeholders::_1
-		));
+		if (!_frameBeginSlot)
+			_frameBeginSlot = sceneManager->frameBegin()->connect(std::bind(
+				&AbstractScript::frameBeginHandler, shared_from_this(), std::placeholders::_1
+			));
 	}
 	else if (_frameBeginSlot)
 	{

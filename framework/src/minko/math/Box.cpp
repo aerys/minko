@@ -110,10 +110,16 @@ Box::getVertices()
 }
 
 Box::Ptr
+Box::merge(Ptr box2)
+{
+	return merge(shared_from_this(), box2, shared_from_this());
+}
+
+Box::Ptr
 Box::merge(Ptr box1, Ptr box2, Ptr out)
 {
 	if (out == nullptr)
-	out = create();
+		out = create();
 
 	out->topRight()->setTo(
 		std::max(box1->_topRight->x(), box2->_topRight->x()),

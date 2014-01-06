@@ -68,7 +68,7 @@ int main(int argc, char** argv)
 			);
 		root->addChild(camera);
 
-		auto model = assets->node(MODEL_FILENAME)
+		auto model = assets->symbol(MODEL_FILENAME)
 			->addComponent(Transform::create(Matrix4x4::create()->appendScale(.01f)));
 
 		auto surfaceNodeSet = scene::NodeSet::create(model)
@@ -93,7 +93,7 @@ int main(int argc, char** argv)
 		std::cout << "#skinned = " << skinnedNodes->nodes().size() << std::endl;
 
 
-		auto resized = canvas->resized()->connect([&](Canvas::Ptr canvas, uint w, uint h)
+		auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
 		{
 			camera->component<PerspectiveCamera>()->aspectRatio((float)w / (float)h);
 		});

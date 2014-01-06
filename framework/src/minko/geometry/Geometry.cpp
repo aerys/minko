@@ -17,7 +17,7 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "Geometry.hpp"
+#include "minko/geometry/Geometry.hpp"
 
 #include "minko/math/Vector2.hpp"
 #include "minko/math/Vector3.hpp"
@@ -148,8 +148,8 @@ Geometry::computeNormals()
 		}
 
 		Vector3::Ptr faceNormal = Vector3::create()
-			->copyFrom(xyz[0] - xyz[2])
-			->cross(xyz[0] - xyz[1]);
+			->copyFrom(xyz[0] - xyz[1])
+			->cross(xyz[0] - xyz[2]);
 
  		for (unsigned int k = 0; k < 3; ++k)
 		{
@@ -483,4 +483,13 @@ Geometry::getHitNormal(uint triangle, Vector3::Ptr hitNormal)
 	auto edge2 = Vector3::create(v2)->subtract(v0)->normalize();
 
 	hitNormal->copyFrom(edge2)->cross(edge1);
+}
+
+void
+Geometry::upload()
+{
+	for (const auto& vb : _vertexBuffers)
+		vb->upload();
+
+	_indexBuffer->upload();
 }

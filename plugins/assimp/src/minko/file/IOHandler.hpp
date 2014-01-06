@@ -53,9 +53,9 @@ namespace minko
 			bool
 			Exists(const char*  pFile) const
 			{
-				auto f = std::ifstream(std::string(pFile));
+				std::ifstream f(pFile);
 
-				return !!f;
+				return (bool)f;
 			}
 
 			char
@@ -69,7 +69,7 @@ namespace minko
 			}
 
 			Assimp::IOStream*
-			IOSystem::Open(const char* pFile, const char* pMode = "rb")
+			Open(const char* pFile, const char* pMode = "rb")
 			{
 				auto filename = std::string(pFile);
 				auto loader = _options->loaderFunction()(filename);
@@ -80,10 +80,12 @@ namespace minko
 				{
 					stream = new minko::file::IOStream(loader->data());
 				});
+#ifdef DEBUG
 				auto error = loader->error()->connect([&](file::AbstractLoader::Ptr loader)
 				{
 					std::cerr << "error: could not load file '" << filename << "'" << std::endl;
 				});
+#endif
 
 				loader->load(filename, _options);
 

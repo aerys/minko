@@ -43,8 +43,16 @@ namespace minko
 		AssetsDeserializer::extract(std::shared_ptr<file::Options>				options,
 									std::shared_ptr<deserialize::NameConverter> nameConverter)
 		{
-			std::map<std::string, Any>&	assetData	= Any::cast<std::map<std::string, Any>&>(_assetsData);
-			std::vector<Any>&			assetList	= Any::cast<std::vector<Any>&>(assetData["assets"]);
+			std::vector<Any>	assetList;
+			try
+			{
+				std::map<std::string, Any>&	assetData = Any::cast<std::map<std::string, Any>&>(_assetsData);
+				assetList = Any::cast<std::vector<Any>&>(assetData["assets"]);
+			}
+			catch (...)
+			{
+				assetList = Any::cast<std::vector<Any>&>(_assetsData);
+			}
 
 			for (unsigned int assetIndex = 0; assetIndex < assetList.size(); ++assetIndex)
 			{

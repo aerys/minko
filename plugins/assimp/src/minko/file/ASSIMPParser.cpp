@@ -17,13 +17,14 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "ASSIMPParser.hpp"
+#include "minko/file/ASSIMPParser.hpp"
 
 #include "IOHandler.hpp"
 
 #include "assimp/Importer.hpp"      // C++ importer interface
 #include "assimp/scene.h"           // Output data structure
 #include "assimp/postprocess.h"     // Post processing flags
+#include "assimp/material.h"
 
 #include "minko/scene/Node.hpp"
 #include "minko/component/Transform.hpp"
@@ -112,18 +113,12 @@ ASSIMPParser::parse(const std::string&					filename,
 {
 	resetParser();
 
-	int pos = resolvedFilename.find_last_of(file::separator);
+	int pos = resolvedFilename.find_last_of("\\/");
 
 	if (pos > 0)
 	{
-		auto	skinningNumFPS	= options->skinningNumFPS();
-		auto	skinningMethod	= options->skinningMethod();
-
-		options = file::Options::create(options); // ?
-		options->includePaths().insert(resolvedFilename.substr(0, pos));
-
-		options->skinningNumFPS(skinningNumFPS);
-		options->skinningMethod(skinningMethod);
+		options = file::Options::create(options);
+		options->includePaths().push_back(resolvedFilename.substr(0, pos));
 	}
 
     _filename = filename;
@@ -138,11 +133,8 @@ ASSIMPParser::parse(const std::string&					filename,
 	const aiScene* scene = importer.ReadFileFromMemory(
 		&data[0],
 		data.size(),
-		aiProcess_CalcTangentSpace
-		| aiProcess_Triangulate
-		| aiProcess_JoinIdenticalVertices
-		| aiProcess_FlipUVs
-		| aiProcess_SortByPType
+		aiProcessPreset_TargetRealtime_Fast,
+		resolvedFilename.c_str()
 	);
 	
     if (!scene)
@@ -153,10 +145,9 @@ ASSIMPParser::parse(const std::string&					filename,
     parseDependencies(resolvedFilename, scene);
 
 	_symbol = scene::Node::create(_filename);
+	createSceneTree(_symbol, scene, scene->mRootNode, assetLibrary);
+	_symbol = _options->nodeFunction()(_symbol);
 
-	const unsigned int numFPS = 1;
-
-	createSceneTree(_symbol, scene, scene->mRootNode);
 	getSkinningFromAssimp(scene);
 
 	if (_numDependencies == _numLoadedDependencies)
@@ -166,7 +157,10 @@ ASSIMPParser::parse(const std::string&					filename,
 }
 
 void
-ASSIMPParser::createSceneTree(scene::Node::Ptr minkoNode, const aiScene* scene, aiNode* ainode)
+ASSIMPParser::createSceneTree(scene::Node::Ptr 				minkoNode,
+							  const aiScene* 				scene,
+							  aiNode* 						ainode,
+							  std::shared_ptr<AssetLibrary> assets)
 {
 	for (uint i = 0; i < ainode->mNumChildren; i++)
     {
@@ -175,17 +169,17 @@ ASSIMPParser::createSceneTree(scene::Node::Ptr minkoNode, const aiScene* scene, 
         
         child->addComponent(getTransformFromAssimp(ainode->mChildren[i]));
         
-        minkoNode->addChild(child);
-
-		assert(!child->name().empty() && _nameToNode.count(child->name()) == 0);
-		_nameToNode[child->name()]	= child;
+		//assert(!child->name().empty() && _nameToNode.count(child->name()) == 0);
+		_nameToNode[child->name()] = child;
 
 #ifdef DEBUG_SKINNING
 		std::cout << "nodemap\t<- '" << child->name() << "'" << std::endl;
 #endif // DEBUG_SKINNING
 
         //Recursive call
-        createSceneTree(child, scene, ainode->mChildren[i]);
+		createSceneTree(child, scene, ainode->mChildren[i], assets);
+
+        minkoNode->addChild(_options->nodeFunction()(child));
     }
     
     for (uint j = 0; j < ainode->mNumMeshes; j++)
@@ -194,13 +188,13 @@ ASSIMPParser::createSceneTree(scene::Node::Ptr minkoNode, const aiScene* scene, 
 		auto minkoMesh = scene::Node::create(mesh->mName.C_Str());
 
 		minkoMesh->addComponent(Transform::create());
-		createMeshGeometry(minkoMesh, mesh);
 		createMeshSurface(minkoMesh, scene, mesh);
 
-		minkoNode->addChild(minkoMesh);
+		minkoNode->addChild(_options->nodeFunction()(minkoMesh));
 
-		assert(!minkoMesh->name().empty() && _nameToMesh.count(minkoMesh->name()) == 0);
-		_nameToMesh[minkoMesh->name()]	= minkoMesh;
+		//assert(!minkoMesh->name().empty() && _nameToMesh.count(minkoMesh->name()) == 0);
+		if (!minkoMesh->name().empty())
+			_nameToMesh[minkoMesh->name()]	= minkoMesh;
 
 #ifdef DEBUG_SKINNING
 		std::cout << "meshmap\t<- '" << minkoMesh->name() << "'" << std::endl;
@@ -286,16 +280,23 @@ ASSIMPParser::createMeshGeometry(scene::Node::Ptr minkoNode, aiMesh* mesh)
 	geometry->addVertexBuffer(vertexBuffer);
 	geometry->indices(render::IndexBuffer::create(_assetLibrary->context(), indexData));
 
-	// save the geometry in the assets library
 	const std::string meshName = std::string(mesh->mName.C_Str());
-	_assetLibrary->geometry(meshName, geometry);
+
+	geometry = _options->geometryFunction()(meshName, geometry);
+
+	// save the geometry in the assets library
+	if (!meshName.empty())
+		_assetLibrary->geometry(meshName, geometry);
 
 	return geometry;
 }
 
 void
-ASSIMPParser::createMeshSurface(scene::Node::Ptr minkoNode, const aiScene* scene, aiMesh* mesh)
+ASSIMPParser::createMeshSurface(scene::Node::Ptr 	minkoNode,
+								const aiScene* 		scene,
+								aiMesh* 			mesh)
 {
+	auto geom = createMeshGeometry(minkoNode, mesh);
     auto provider = material::Material::create(_options->material());
 	aiString materialName;
     aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
@@ -340,7 +341,7 @@ ASSIMPParser::createMeshSurface(scene::Node::Ptr minkoNode, const aiScene* scene
 
 	for (auto& typeAndString : _textureTypeToName)
 	{
-		if ((texFound = material->GetTexture(typeAndString.first, 0, &path)) == AI_SUCCESS)
+		if ((texFound = material->GetTexture(static_cast<aiTextureType>(typeAndString.first), 0, &path)) == AI_SUCCESS)
 		{
 			auto texturePath = std::string(path.data);
 			auto texture = _assetLibrary->texture(texturePath);
@@ -350,11 +351,7 @@ ASSIMPParser::createMeshSurface(scene::Node::Ptr minkoNode, const aiScene* scene
 		}
 	}
 
-    minkoNode->addComponent(Surface::create(
-		_assetLibrary->geometry(std::string(mesh->mName.data)),
-		provider,
-		_options->effect()
-    ));
+    minkoNode->addComponent(Surface::create(geom, provider, _options->effect()));
 }
 
 void
@@ -447,16 +444,18 @@ ASSIMPParser::parseDependencies(const std::string& 	filename,
 	{
 		for (auto& textureTypeAndName : _textureTypeToName)
 		{
-			aiReturn texFound = scene->mMaterials[m]->GetTexture(textureTypeAndName.first, 0, &path);
+			aiReturn texFound = scene->mMaterials[m]->GetTexture(static_cast<aiTextureType>(textureTypeAndName.first), 0, &path);
 
 			if (texFound == AI_SUCCESS)
 			{
 				std::string filename(path.data);
 
-				std::cout << textureTypeAndName.second << ": " << filename << std::endl;
-
 				if (!filename.empty() && std::find(loading.begin(), loading.end(), filename) == loading.end())
 				{
+#ifdef DEBUG
+					std::cout << "ASSIMParser: loading texture '" << filename << "'..." << std::endl;
+#endif
+
 					loading.push_back(filename);
 					_numDependencies++;
 					loadTexture(filename, filename, _options);
@@ -472,7 +471,7 @@ ASSIMPParser::finalize()
 	_loaderErrorSlots.clear();
 	_loaderCompleteSlots.clear();
 
-	_assetLibrary->node(_filename, _symbol);
+	_assetLibrary->symbol(_filename, _symbol);
 	
 	complete()->execute(shared_from_this());
 }
@@ -501,6 +500,10 @@ ASSIMPParser::loadTexture(const std::string&	textureFilename,
 
 		auto complete = parser->complete()->connect([&](file::AbstractParser::Ptr parser)
 		{
+#ifdef DEBUG
+			std::cout << "ASSIMParser: texture '" << textureFilename << "' loaded" << std::endl;
+#endif
+
 			_numLoadedDependencies++;
 			if (_numDependencies == _numLoadedDependencies && _symbol)
 				finalize();
@@ -517,7 +520,7 @@ ASSIMPParser::loadTexture(const std::string&	textureFilename,
 
 	_loaderErrorSlots[loader] = loader->error()->connect([&](file::AbstractLoader::Ptr loader)
 	{
-		auto pos = loader->filename().find_last_of(file::separator);
+		auto pos = loader->filename().find_last_of("\\/");
 
 		if (pos != std::string::npos)
 		{
@@ -617,7 +620,7 @@ ASSIMPParser::getSkinningFromAssimp(const aiScene* aiscene)
 
 			skin->duration(skin->numFrames() / (float)_options->skinningNumFPS());
 
-			meshNode->addComponent( Skinning::create(skin, _options->skinningMethod(), _assetLibrary->context()));
+			meshNode->addComponent(Skinning::create(skin, _options->skinningMethod(), _assetLibrary->context()));
 		}
 	}
 }
@@ -678,7 +681,7 @@ ASSIMPParser::getSkinningFromAssimp(const aiMesh* aimesh) const
 					currentTransform = _nameToAnimMatrices.find(currentNode->name())->second[frameId];
 				else
 					// get the constant node's transform
-					currentTransform = currentNode->component<Transform>()->transform();
+					currentTransform = currentNode->component<Transform>()->matrix();
 
 				boneLocalToObject->append(currentTransform);
 
@@ -789,7 +792,12 @@ ASSIMPParser::sample(const aiNodeAnim*				nodeAnimation,
 
 		// sample rotation from keys
 		sample(nodeAnimation->mRotationKeys, rotationKeyTimeFactors, time, _TMP_ROTATION);
-		_TMP_ROTATION->toMatrix(_TMP_ROTATION_MATRIX);
+		_TMP_ROTATION->normalize();
+
+		if (_TMP_ROTATION->length() == 0.)
+			_TMP_ROTATION_MATRIX->identity();
+		else
+			_TMP_ROTATION->toMatrix(_TMP_ROTATION_MATRIX);
 
 		const std::vector<float>&	rotation	= _TMP_ROTATION_MATRIX->data();
 
