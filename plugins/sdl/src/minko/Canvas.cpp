@@ -453,8 +453,7 @@ Canvas::quit()
 }
 
 
-Canvas::SDLKeyboard::SDLKeyboard() :
-	input::Keyboard()
+Canvas::SDLKeyboard::SDLKeyboard()
 {
 	_keyboardState = SDL_GetKeyboardState(NULL);
 }
