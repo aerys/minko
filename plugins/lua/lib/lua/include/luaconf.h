@@ -69,7 +69,9 @@
 #define LUA_USE_MKSTEMP
 #define LUA_USE_ISATTY
 #define LUA_USE_POPEN
-#define LUA_USE_ULONGJMP
+#if !defined(EMSCRIPTEN)
+# define LUA_USE_ULONGJMP
+#endif
 #define LUA_USE_GMTIME_R
 #endif
 
