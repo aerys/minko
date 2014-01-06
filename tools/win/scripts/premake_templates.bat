@@ -1,3 +1,3 @@
 chdir ..\..\..
-tools\win\bin\premake4.exe --os=windows --platform=x32 installTemplates
+tools\win\bin\premake5.exe installTemplates
 cd tools\win\scripts
