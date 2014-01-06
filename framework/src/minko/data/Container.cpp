@@ -136,25 +136,33 @@ Container::removeProvider(std::shared_ptr<ArrayProvider> provider)
 
 	removeProvider(std::dynamic_pointer_cast<Provider>(provider));
 
-	if (provider->index() != length - 1)
+#ifdef DEBUG
+	if (index >= (uint)length)
+		throw std::logic_error("ArrayProvider index is greater-equal than the array length");
+#endif
+
+	if (index != length - 1)
 	{
-		auto last = std::dynamic_pointer_cast<ArrayProvider>(*std::find_if(
-			_providers.rbegin(),
-			_providers.rend(),
+		auto lastIt = std::find_if(
+			_providers.begin(),
+			_providers.end(),
 			[&](Provider::Ptr p)
 			{
 				auto arrayProvider = std::dynamic_pointer_cast<ArrayProvider>(p);
 
-				return arrayProvider && arrayProvider->arrayName() == provider->arrayName();	
-			}
-		));
+				return arrayProvider && arrayProvider->index() == length - 1
+					&& arrayProvider->arrayName() == provider->arrayName();
+			});
+		auto last = std::dynamic_pointer_cast<ArrayProvider>(*lastIt);
 
 		last->index(index);
 	}
 
-	_arrayLengths->set<int>(lengthPropertyName, --length);
+	--length;
 	if (length == 0)
 		_arrayLengths->unset(lengthPropertyName);
+	else
+		_arrayLengths->set<int>(lengthPropertyName, length);
 }
 
 bool
