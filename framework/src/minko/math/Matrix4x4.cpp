@@ -17,7 +17,7 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "Matrix4x4.hpp"
+#include "minko/math/Matrix4x4.hpp"
 
 #include "minko/Signal.hpp"
 
@@ -25,7 +25,8 @@ using namespace minko;
 using namespace minko::math;
 
 Matrix4x4::Matrix4x4() :
-	_m(16)
+	_m(16),
+	_lock(false)
 {
 }
 
@@ -97,7 +98,8 @@ Matrix4x4::initialize(float m00, float m01, float m02, float m03,
 	_m[8] = m20;	_m[9] = m21; 	_m[10] = m22; 	_m[11] = m23;
 	_m[12] = m30; 	_m[13] = m31; 	_m[14] = m32; 	_m[15] = m33;
 
-	changed()->execute(shared_from_this());
+	if (!_lock)
+		changed()->execute(shared_from_this());
 	_hasChanged = true;
 
 	return shared_from_this();
@@ -438,14 +440,26 @@ Matrix4x4::perspective(float fov,
                        float zNear,
                        float zFar)
 {
-	float fd = 1.f / tanf(fov * .5f);
+	const float invHalfFOV	= 1.0f / tanf(fov * .5f);
+	const float	invZRange	= 1.0f / (zNear - zFar);
 
+	/*
+	// oculus rift's expected perspective transform
 	return initialize(
-		fd / ratio,	0.f,	0.f,								0.f,
-		0.f,		fd,		0.f,								0.f,
-		0.f,		0.f,	(zFar + zNear) / (zNear - zFar),	2.f * zNear * zFar / (zNear- zFar),
-		0.f,		0.f,	-1.f,								0.f
+		invHalfFOV / ratio,	0.f,		0.f,				0.f,
+		0.f,				invHalfFOV,	0.f,				0.f,
+		0.f,				0.f,		zFar * invZRange,	zNear * zFar * invZRange,
+		0.f,				0.f,		-1.f,				0.f	
 	);
+	*/
+	
+	return initialize(
+		invHalfFOV / ratio,	0.f,		0.f,						0.f,
+		0.f,				invHalfFOV,	0.f,						0.f,
+		0.f,				0.f,		(zFar + zNear) * invZRange,	2.f * zNear * zFar * invZRange,
+		0.f,				0.f,		-1.f,						0.f
+	);
+	
 }
 
 Matrix4x4::Ptr
@@ -503,8 +517,9 @@ Matrix4x4::lerp(Matrix4x4::Ptr target, float ratio)
 {
 	for (auto i = 0; i < 16; ++i)
 		_m[i] = _m[i] + (target->_m[i] - _m[i]) * ratio;
-
-	changed()->execute(shared_from_this());
+	
+	if (!_lock)
+		changed()->execute(shared_from_this());
 	_hasChanged = true;
 
 	return shared_from_this();
@@ -525,7 +540,8 @@ Matrix4x4::copyFrom(Matrix4x4::Ptr source)
 {
 	std::copy(source->_m.begin(), source->_m.end(), _m.begin());
 
-	changed()->execute(shared_from_this());
+	if (!_lock)
+		changed()->execute(shared_from_this());
 	_hasChanged = true;
 
 	return shared_from_this();
@@ -581,4 +597,21 @@ Matrix4x4::decomposeQR(Matrix4x4::Ptr matQ, Matrix4x4::Ptr matR) const
 	);
 
 	return std::pair<Matrix4x4::Ptr, Matrix4x4::Ptr>(matrixQ, matrixR);
+}
+
+Matrix4x4::Ptr
+Matrix4x4::lock()
+{
+	_lock = true;
+	return shared_from_this();
+}
+
+Matrix4x4::Ptr
+Matrix4x4::unlock()
+{
+	if (_hasChanged)
+		changed()->execute(shared_from_this());
+	_lock = false;
+
+	return shared_from_this();
 }

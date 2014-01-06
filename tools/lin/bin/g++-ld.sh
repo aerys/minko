@@ -19,5 +19,5 @@ done
 if [[ -z "${STATIC_LIBS}" && -z "${SHARED_LIBS}" ]]; then
 	${BIN} ${ARGS}
 else
-	${BIN} ${ARGS} "-Wl,--start-group" ${STATIC_LIBS} "-Wl,--end-group" ${SHARED_LIBS}
+	${BIN} ${ARGS} "-Wl,--start-group" ${STATIC_LIBS} ${SHARED_LIBS} "-Wl,--end-group"
 fi

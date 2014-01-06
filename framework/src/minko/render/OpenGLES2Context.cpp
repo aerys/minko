@@ -17,7 +17,7 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "OpenGLES2Context.hpp"
+#include "minko/render/OpenGLES2Context.hpp"
 
 #include <iomanip>
 #include "minko/render/CompareMode.hpp"
@@ -947,7 +947,7 @@ OpenGLES2Context::getProgramInputs(const uint program)
 	std::vector<ProgramInputs::Type> types;
 	std::vector<uint> locations;
 
-	glUseProgram(program);
+	setProgram(program);
 	fillUniformInputs(program, names, types, locations);
 	fillAttributeInputs(program, names, types, locations);
 
@@ -1318,6 +1318,51 @@ OpenGLES2Context::setStencilTest(CompareMode stencilFunc,
 
 	checkForErrors();
 #endif
+}
+
+
+void
+OpenGLES2Context::readPixels(unsigned int x, unsigned int y, unsigned int width, unsigned int height, unsigned char* pixels)
+{
+	glReadPixels(x, y, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+
+	checkForErrors();
+}
+
+void
+OpenGLES2Context::setScissorTest(bool						scissorTest, 
+								 const render::ScissorBox&	scissorBox)
+{
+	if (scissorTest)
+	{
+		glEnable(GL_SCISSOR_TEST);
+
+		int		x = 0;
+		int		y = 0;
+		uint	width = 0;
+		uint	height = 0;
+
+		if (scissorBox.width < 0 || scissorBox.height < 0)
+		{
+			x		= _viewportX;
+			y		= _viewportY;
+			width	= _viewportWidth;
+			height	= _viewportHeight;
+		}
+		else
+		{
+			x		= scissorBox.x;
+			y		= scissorBox.y;
+			width	= scissorBox.width;
+			height	= scissorBox.height;
+		}
+
+		glScissor(x, y, width, height);
+	}
+	else
+		glDisable(GL_SCISSOR_TEST);
+
+	checkForErrors();
 }
 
 void

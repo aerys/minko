@@ -17,7 +17,7 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "Collider.hpp"
+#include "minko/component/bullet/Collider.hpp"
 
 #include <minko/math/Matrix4x4.hpp>
 #include <minko/scene/Node.hpp>
@@ -239,10 +239,10 @@ bullet::Collider::graphicsWorldTransformChangedHandler(ColliderData::Ptr collide
 	_TMP_MATRIX
 		->copyFrom(_targetTransform->modelToWorldMatrix(true))
 		->invert()
-		->append(_targetTransform->transform());
+		->append(_targetTransform->matrix());
 	// _TMP_MATRIX = worldToParent
 
-	_targetTransform->transform()
+	_targetTransform->matrix()
 		->copyFrom(graphicsTransform)
 		->append(_TMP_MATRIX);
 }

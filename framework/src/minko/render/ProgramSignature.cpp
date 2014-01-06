@@ -17,9 +17,10 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "ProgramSignature.hpp"
+#include "minko/render/ProgramSignature.hpp"
 
 #include "minko/data/Container.hpp"
+#include "minko/data/ContainerProperty.hpp"
 
 using namespace minko;
 using namespace minko::render;
@@ -28,41 +29,84 @@ using namespace minko::data;
 /*static*/ const uint ProgramSignature::MAX_NUM_BINDINGS = 32;
 
 void
-ProgramSignature::build(const MacroBindingMap&	macroBindings,
-						data::Container::Ptr	targetData,
-						data::Container::Ptr	rendererData,
-						data::Container::Ptr	rootData)
+ProgramSignature::build(const MacroBindingMap&			macroBindings,
+						data::Container::Ptr			targetData,
+						data::Container::Ptr			rendererData,
+						data::Container::Ptr			rootData,
+						std::string&					defines,
+						std::list<ContainerProperty>&	booleanMacros,
+						std::list<ContainerProperty>&	integerMacros,
+						std::list<ContainerProperty>&	incorrectIntegerMacros)
 {
 	_mask = 0;
 	_values.clear();
 	_values.resize(MAX_NUM_BINDINGS, 0);
 
-	unsigned int i = 0;
+	defines.clear();
+
+	booleanMacros.clear();
+	integerMacros.clear();
+	incorrectIntegerMacros.clear();
+
+	unsigned int macroId = 0;
 
 	for (auto& macroBinding : macroBindings)
     {
-        auto& propertyName = std::get<0>(macroBinding.second);
-		const auto& bindingSource = std::get<1>(macroBinding.second);
-		const auto& container = propertyName.empty() ? nullptr
-			: bindingSource == data::BindingSource::TARGET && targetData->hasProperty(propertyName) ? targetData
-			: bindingSource == data::BindingSource::RENDERER && rendererData->hasProperty(propertyName) ? rendererData
-			: bindingSource == data::BindingSource::ROOT && rootData->hasProperty(propertyName) ? rootData
-			: nullptr;
+		ContainerProperty	macro					(macroBinding.second, targetData, rendererData, rootData);
+		const bool			macroExists				= (macro.container() != nullptr); 
+		const bool			isMacroInteger			= macroExists && macro.container()->propertyHasType<int>(macro.name());
 
-        if (container && container->hasProperty(propertyName))
+		const auto&			defaultMacro			= std::get<2>(macroBinding.second);
+		const auto			defaultMacroExists		= defaultMacro.semantic == data::MacroBindingDefaultValueSemantic::PROPERTY_EXISTS;
+		const bool			isDefaultMacroInteger	= defaultMacro.semantic == data::MacroBindingDefaultValueSemantic::VALUE;
+		const bool			canUseDefaultMacro		= defaultMacroExists || isDefaultMacroInteger;
+
+		if (macroExists || canUseDefaultMacro)
 		{
 			// WARNING: we do not support more than 32 macro bindings
-			if (i == MAX_NUM_BINDINGS)
+			if (macroId == MAX_NUM_BINDINGS)
 				throw;
 
-			_mask |= 1 << i;
+			_mask |= 1 << macroId; // update program signature
+
+
+			if (isMacroInteger || isDefaultMacroInteger)
+			{
+				const int value	= isMacroInteger 
+					? macro.container()->get<int>(macro.name())
+					: defaultMacro.value.value;
+
+				if (value > 0)
+				{
+					_values[macroId]	= value; // update program signature
+
+					const int min	= std::get<3>(macroBinding.second);
+					const int max	= std::get<4>(macroBinding.second);
+
+					if ((min != -1 && value < min) || (max != -1 && value > max))
+					{
+						if (macroExists)
+							incorrectIntegerMacros.push_back(macro);
+					}
+					else
+					{
+						defines += "#define " + macroBinding.first + " " + std::to_string(value) + "\n";
+
+						if (macroExists)
+							integerMacros.push_back(macro);
+					}
+				}
+			}
+			else if (macroExists || defaultMacroExists)
+			{
+				defines += "#define " + macroBinding.first + "\n";
+
+				if (macroExists)
+					booleanMacros.push_back(macro);
+			}
 		}
-
-		if (container && container->hasProperty(propertyName) && container->propertyHasType<int>(propertyName))
-			_values[i] = container->get<int>(propertyName);
-
-        ++i;
-    }
+		++macroId;
+	}
 }
 
 bool 

@@ -17,11 +17,13 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "MkParser.hpp"
+#include "minko/file/MkParser.hpp"
 
 #include "minko/file/AssetLibrary.hpp"
 #include "minko/file/Options.hpp"
 #include "minko/scene/Node.hpp"
+#include "minko/file/MkOptions.hpp"
+#include "minko/deserialize/SceneDeserializer.hpp"
 
 using namespace minko;
 using namespace minko::file;
@@ -56,9 +58,9 @@ MkParser::parse(const std::string&				    filename,
 
 	std::shared_ptr<deserialize::SceneDeserializer> sceneDeserializer = deserialize::SceneDeserializer::create(options->context());
 
-	auto node = sceneDeserializer->deserializeScene(qarkData["scene"], qarkData["assets"], mkOptions, _controllerMap, _nodeMap);
+	auto node = sceneDeserializer->deserializeScene(qarkData["scene"], qarkData["assets"], mkOptions, _nodeMap);
 	
-	AssetLibrary->node(filename, node);
+	AssetLibrary->symbol(filename, node);
 
 	std::cout << "parse MK" << std::endl << std::flush;
 

@@ -3,18 +3,20 @@ newoption {
 	description	= "Enable the Minko MK plugin."
 }
 
-minko.project.library "plugin-mk"
+PROJECT_NAME = path.getname(os.getcwd())
+
+minko.project.library("minko-plugin-" .. PROJECT_NAME)
 	kind "StaticLib"
 	language "C++"
 	files {
 		"src/**.hpp",
 		"src/**.h",
 		"src/**.cpp",
-		"src/**.c"
-		-- "lib/msgpack-c/src/**.cpp",
-		-- "lib/msgpack-c/src/**.h"
+		"src/**.c",
+		"include/**.hpp"
 	}
 	includedirs {
+		"include",
 		"src",
 		"lib/msgpack-c/src"
 	}

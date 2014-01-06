@@ -17,41 +17,64 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "Canvas.hpp"
-
+#include "minko/Canvas.hpp"
 #include "minko/input/Mouse.hpp"
+#include "minko/input/Keyboard.hpp"
+#include "minko/data/Provider.hpp"
+#include "minko/math/Vector4.hpp"
+
+#if defined(EMSCRIPTEN)
+# include "minko/MinkoWebGL.hpp"
+# include "SDL/SDL.h"
+# include "emscripten.h"
+#elif defined(MINKO_ANGLE)
+# include "SDL2/SDL.h"
+# include "SDL2/SDL_syswm.h"
+# include <EGL/egl.h>
+# include <GLES2/gl2.h>
+# include <GLES2/gl2ext.h>
+#else
+# include "SDL2/SDL.h"
+#endif
 
 using namespace minko;
+using namespace minko::math;
 
 Canvas::Canvas(const std::string& name, const uint width, const uint height, bool useStencil) :
 	_name(name),
-	_width(width),
-	_height(height),
 	_useStencil(useStencil),
+	_data(data::Provider::create()),
 	_active(false),
 	_framerate(0.f),
 	_desiredFramerate(60.f),
 	_enterFrame(Signal<Canvas::Ptr, uint, uint>::create()),
-	_keyDown(Signal<Canvas::Ptr, const Uint8*>::create()),
-	_joystickMotion(Signal<Canvas::Ptr, int, int, int>::create()),
-	_joystickButtonDown(Signal<Canvas::Ptr, int>::create()),
-	_joystickButtonUp(Signal<Canvas::Ptr, int>::create()),
-	_resized(Signal<Canvas::Ptr, uint, uint>::create())
+	_resized(Signal<AbstractCanvas::Ptr, uint, uint>::create())
 {
+	_data->set<math::Vector4::Ptr>("canvas.viewport", Vector4::create(0.0f, 0.0f, (float)width, (float)height));
 }
 
 void
 Canvas::initialize()
 {
-	initializeContext(_name, _width, _height, _useStencil);
-	initializeMouse();
-	initializeJoysticks();
+	initializeContext(_name, width(), height(), _useStencil);
+	initializeInputs();
 }
 
 void
-Canvas::initializeMouse()
+Canvas::initializeInputs()
 {
 	_mouse = Canvas::SDLMouse::create(shared_from_this());
+    _keyboard = Canvas::SDLKeyboard::create();
+
+    for (int i = 0; i < SDL_NumJoysticks(); ++i)
+    {
+        SDL_Joystick* joystick = SDL_JoystickOpen(i);
+
+        if (!joystick)
+            continue;
+		else
+			_joysticks.push_back(Canvas::SDLJoystick::create(shared_from_this()));
+    }
 }
 
 void
@@ -92,12 +115,18 @@ Canvas::initializeContext(const std::string& windowTitle, unsigned int width, un
 
 	_context = minko::render::WebGLContext::create();
 #endif // EMSCRIPTEN
+
+	this->width(width);
+	this->height(height);
 }
 
 #ifdef MINKO_ANGLE
 ESContext*
 Canvas::initContext(SDL_Window* window, unsigned int width, unsigned int height)
 {
+	this->width(0);
+	this->height(0);
+
 	EGLint configAttribList[] =
 	{
 		EGL_RED_SIZE, 8,
@@ -182,21 +211,67 @@ Canvas::initContext(SDL_Window* window, unsigned int width, unsigned int height)
 	es_context->eglSurface = surface;
 	es_context->eglContext = context;
 
+	this->width(width);
+	this->height(height);
+
 	return es_context;
 }
 #endif
 
-void
-Canvas::initializeJoysticks()
+uint
+Canvas::x()
 {
-	for (int i = 0; i < SDL_NumJoysticks(); ++i)
-	{
-		SDL_Joystick* joystick = SDL_JoystickOpen(i);
+	return (uint)_data->get<math::Vector4::Ptr>("canvas.viewport")->x();
+}
 
-		if (!joystick)
-			continue;
-	}
+uint
+Canvas::y()
+{
+	return (uint)_data->get<math::Vector4::Ptr>("canvas.viewport")->y();
+}
 
+uint
+Canvas::width()
+{
+	return (uint)_data->get<math::Vector4::Ptr>("canvas.viewport")->z();
+}
+
+uint
+Canvas::height()
+{
+	return (uint)_data->get<math::Vector4::Ptr>("canvas.viewport")->w();
+}
+
+void
+Canvas::x(uint value)
+{
+	auto viewport = _data->get<math::Vector4::Ptr>("canvas.viewport");
+
+	viewport->setTo((float)value, viewport->y(), viewport->z(), viewport->w());
+}
+
+void
+Canvas::y(uint value)
+{
+	auto viewport = _data->get<math::Vector4::Ptr>("canvas.viewport");
+
+	viewport->setTo(viewport->x(), (float)value, viewport->z(), viewport->w());
+}
+
+void
+Canvas::width(uint value)
+{
+	auto viewport = _data->get<math::Vector4::Ptr>("canvas.viewport");
+
+	viewport->setTo(viewport->x(), viewport->y(), (float)value, viewport->w());
+}
+
+void 
+Canvas::height(uint value)
+{
+	auto viewport = _data->get<math::Vector4::Ptr>("canvas.viewport");
+
+	viewport->setTo(viewport->x(), viewport->y(), viewport->z(), (float)value);
 }
 
 void
@@ -217,11 +292,33 @@ Canvas::step()
 
 		case SDL_KEYDOWN:
 		{
-			const Uint8* keyboardState = SDL_GetKeyboardState(NULL);
+			_keyboard->_keyboardState = SDL_GetKeyboardState(NULL);
 
-			_keyDown->execute(shared_from_this(), keyboardState);
+			//_keyDown->execute(shared_from_this(), keyboardState);
+            _keyboard->keyDown()->execute(_keyboard);
+            for (uint i = 0; i < input::Keyboard::NUM_KEYS; ++i)
+            {
+            	auto code = static_cast<input::Keyboard::ScanCode>(i);
+            	if (_keyboard->_keyboardState[i] && _keyboard->hasKeyDownSignal(code))
+            		_keyboard->keyDown(code)->execute(_keyboard, i);
+            }
 			break;
 		}
+
+        case SDL_KEYUP:
+        {
+            _keyboard->_keyboardState = SDL_GetKeyboardState(NULL);
+
+            //_keyDown->execute(shared_from_this(), keyboardState);
+            _keyboard->keyUp()->execute(_keyboard);
+            for (uint i = 0; i < input::Keyboard::NUM_KEYS; ++i)
+            {
+            	auto code = static_cast<input::Keyboard::ScanCode>(i);
+            	if (_keyboard->_keyboardState[i] && _keyboard->hasKeyUpSignal(code))
+            		_keyboard->keyUp(code)->execute(_keyboard, i);
+            }
+            break;
+        }
 
 		case SDL_MOUSEMOTION:
 		{
@@ -252,25 +349,38 @@ Canvas::step()
 			break;
 
 		case SDL_JOYAXISMOTION:
-			_joystickMotion->execute(shared_from_this(), event.jaxis.which, event.jaxis.axis, event.jaxis.value);
+			_joysticks[event.jaxis.which]->joystickAxisMotion()->execute(
+				_joysticks[event.jaxis.which], event.jaxis.which, event.jaxis.axis, event.jaxis.value
+			);
 			break;
 
 		case SDL_JOYBUTTONDOWN:
-			_joystickButtonDown->execute(shared_from_this(), event.jbutton.button);
+			_joysticks[event.jbutton.which]->joystickButtonDown()->execute(
+				_joysticks[event.jbutton.which], event.jbutton.which, event.jbutton.button
+			);
 			break;
 
 		case SDL_JOYBUTTONUP:
-			_joystickButtonUp->execute(shared_from_this(), event.jbutton.button);
+			_joysticks[event.jbutton.which]->joystickButtonUp()->execute(
+				_joysticks[event.jbutton.which], event.jbutton.which, event.jbutton.button
+			);
 			break;
 
+		case SDL_JOYHATMOTION:
+			_joysticks[event.jhat.which]->joystickHatMotion()->execute(
+				_joysticks[event.jhat.which], event.jhat.which, event.jhat.hat, event.jhat.value
+			);
+			break;
+			
 		case SDL_WINDOWEVENT:
 			switch (event.window.event)
 			{
 			case SDL_WINDOWEVENT_RESIZED:
-				_width = event.window.data1;
-				_height = event.window.data2;
-				_context->configureViewport(0, 0, _width, _height);
-				_resized->execute(shared_from_this(), _width, _height);
+				width(event.window.data1);
+				height(event.window.data2);
+
+				_context->configureViewport(x(), y(), width(), height());
+				_resized->execute(shared_from_this(), width(), height());
 				break;
 			default:
 				break;
@@ -333,3 +443,5 @@ Canvas::quit()
 {
 	_active = false;
 }
+
+

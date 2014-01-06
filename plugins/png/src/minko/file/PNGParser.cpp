@@ -17,7 +17,7 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "PNGParser.hpp"
+#include "minko/file/PNGParser.hpp"
 
 #include "minko/file/Options.hpp"
 #include "minko/file/AssetLibrary.hpp"
@@ -40,7 +40,7 @@ PNGParser::parse(const std::string&                 filename,
 
 	lodepng::decode(out, width, height, &data[0], data.size());
 
-	auto texture = render::Texture::create(options->context(), width, height, options->generateMipmaps(), false, options->resizeSmoothly());
+	auto texture = render::Texture::create(options->context(), width, height, options->generateMipmaps(), false, options->resizeSmoothly(), filename);
 
 	texture->data(&out[0]);
 	texture->upload();
