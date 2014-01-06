@@ -37,7 +37,7 @@ minko.project.application = function(name)
 	minko.project.library(name)
 
 	if MINKO_SDK_DIST then
-		minko.sdk.links("minko-framework")
+		minko.sdk.links("minko-framework", "framework")
 	else
 		links { "minko-framework" }
 	end
