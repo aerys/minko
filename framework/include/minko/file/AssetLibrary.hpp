@@ -229,9 +229,6 @@ namespace minko
 
 			void
 			finalize(const std::string& filename);
-
-		private:
-			static const std::string _defaultName;
 		};
 	}
 }
