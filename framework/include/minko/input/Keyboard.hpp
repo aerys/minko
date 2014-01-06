@@ -34,7 +34,7 @@ namespace minko
             typedef std::shared_ptr<Keyboard>   Ptr;
 
             // from SDL_scancode.h
-            enum ScanCode
+            enum class ScanCode
             {
                 UNKNOWN = 0,
 
