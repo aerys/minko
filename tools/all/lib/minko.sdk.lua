@@ -10,19 +10,17 @@ minko.sdk.path = function(p)
 	return p
 end
 
-minko.sdk.gettargetplatform = function()
-  if _OPTIONS['platforms'] then
-    return _OPTIONS['platforms']
-  else
-    return os.get()
-  end
-end
+minko.sdk.links = function(project, path)
+	local cfg = configuration().configset._current
+	local terms = cfg._criteria.terms
 
-minko.sdk.links = function(project)
 	for i, platform in ipairs(platforms()) do
 		for j, cfg in ipairs(configurations()) do
-			configuration { platform, cfg }
-				links { minko.sdk.path("framework/bin/" .. platform .. "/" .. cfg .. "/" .. project) }
+			-- matching both the platform (windows, macosx...) and the config (debug, release)
+			-- but also the current scope configuration if there is one defined!
+			configuration { platform, cfg, unpack(terms) }
+				libdirs { minko.sdk.path(path .. "/bin/" .. platform .. "/" .. cfg) }
+				links { project }
 		end
 	end
 end
