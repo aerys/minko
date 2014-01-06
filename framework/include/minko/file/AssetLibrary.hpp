@@ -104,6 +104,13 @@ namespace minko
 				return _filesQueue;
 			}
 
+			inline
+			bool
+			loading() const
+			{
+				return _filesQueue.size() > 0 || _loading.size() > 0;
+			}
+
 			GeometryPtr
 			geometry(const std::string& name);
 
