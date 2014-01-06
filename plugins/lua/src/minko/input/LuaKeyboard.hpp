@@ -38,7 +38,7 @@ namespace minko
 			bind(LuaGlue& state)
 			{
 				 auto& input_keyboard = state.Class<Keyboard>("Keyboard");
-			    for (int key = 0; key < (int)Keyboard::NUM_KEYS; ++key)
+			    for (int key = 0; key < (int) Keyboard::NUM_SCANCODES; ++key)
 			    {
 			        auto& keyName = Keyboard::getKeyName(static_cast<Keyboard::ScanCode>(key));
 
@@ -50,7 +50,7 @@ namespace minko
 			    input_keyboard
 			        .method("keyDown",      &LuaKeyboard::keyboardKeyDownWrapper)
 			        .method("keyUp",        &LuaKeyboard::keyboardKeyUpWrapper)
-			        .method("keyIsDown",    &Keyboard::keyIsDown)
+			        .method("keyIsDown",    static_cast<bool (Keyboard::*)(Keyboard::ScanCode)>(&Keyboard::keyIsDown))
 			        .property("anyKeyDown",	&Keyboard::keyDown)
 			        .property("anyKeyUp",   &Keyboard::keyUp);
 			}
