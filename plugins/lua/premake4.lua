@@ -19,9 +19,19 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 	files { "lib/lua/src/**.c", "lib/lua/include/**.h" }
 	includedirs { "lib/lua/include" }
 	excludes { "lib/lua/src/luac.c" }
-	defines { "_CRT_SECURE_NO_WARNINGS" }
+
 	configuration { "debug" }
 		defines { "LUA_USE_APICHECK" }
-	configuration { "not windows" }
+
+	configuration { "html5" }
 		defines { "LUA_USE_POSIX" }
-	
+
+	configuration { "linux" }
+		defines { "LUA_USE_LINUX" }
+
+	configuration { "win" }
+		defines { "LUA_USE_WIN" }
+		defines { "_CRT_SECURE_NO_WARNINGS" }
+
+	configuration { "osx" }
+		defines { "LUA_USE_MACOSX" }
