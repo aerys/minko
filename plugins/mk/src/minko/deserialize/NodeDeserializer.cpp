@@ -24,6 +24,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/data/Provider.hpp"
 #include "minko/component/Surface.hpp"
 #include "minko/component/Transform.hpp"
+#include "minko/component/AmbientLight.hpp"
+#include "minko/component/DirectionalLight.hpp"
+#include "minko/component/SpotLight.hpp"
+#include "minko/component/PointLight.hpp"
 #include "minko/math/Matrix4x4.hpp"
 #include "minko/Qark.hpp"
 #include "minko/deserialize/GeometryDeserializer.hpp"
@@ -122,8 +126,83 @@ NodeDeserializer::deserializeLight(NodeInfo&		nodeInfo,
 								   NodeMap&			nodeMap)
 {
 	shared_ptr<scene::Node> light = scene::Node::create(extractName(nodeInfo));
+	shared_ptr<math::Matrix4x4>	transformMatrix = TypeDeserializer::matrix4x4(nodeInfo["transform"]);
 
-	// extract light information
+	light->addComponent(component::Transform::create(transformMatrix));
+
+	auto lightType = Any::cast<int>(nodeInfo["subType"]);
+	auto color = Any::cast<uint>(nodeInfo["color"]);
+	auto colorVec = math::Vector3::create(
+		((color >> 24) & 0xff) / 255.f,
+		((color >> 16) & 0xff) / 255.f,
+		((color >> 8 )& 0xff) / 255.f
+	);
+
+	component::AbstractLight::Ptr lightComp = nullptr;
+
+	if (lightType == 10) // directional light
+		lightComp = component::DirectionalLight::create();
+	else if (lightType == 11) // point light
+	{
+		auto pointLightComp = component::PointLight::create();
+
+		try
+		{
+			pointLightComp->attenuationDistance(Any::cast<int>(nodeInfo["attenuationDistance"]));
+		}
+		catch (...)
+		{
+			pointLightComp->attenuationDistance(Any::cast<float>(nodeInfo["attenuationDistance"]));
+		}
+
+		lightComp = pointLightComp;
+	}
+	else if (lightType == 12) // spot light
+	{
+		auto spotLightComp = component::SpotLight::create();
+
+		spotLightComp->attenuationDistance(Any::cast<float>(nodeInfo["ambient"]));
+		spotLightComp->innerConeAngle(Any::cast<float>(nodeInfo["innerRadius"]));
+		spotLightComp->outerConeAngle(Any::cast<float>(nodeInfo["outerRadius"]));
+
+		lightComp = spotLightComp;
+	}
+	else if (lightType == 13) // ambient light
+	{
+		auto ambientComp = component::AmbientLight::create();
+
+		ambientComp->ambient(Any::cast<float>(nodeInfo["ambient"]));
+		lightComp = ambientComp;
+	}
+	
+	if (lightComp)
+	{
+		auto discreteLightComp = std::dynamic_pointer_cast<component::AbstractDiscreteLight>(lightComp);
+
+		lightComp->color(colorVec);
+		if (discreteLightComp)
+		{
+			try
+			{
+				discreteLightComp->diffuse(Any::cast<float>(nodeInfo["diffuse"]));
+			}
+			catch (...)
+			{
+				discreteLightComp->diffuse(Any::cast<int>(nodeInfo["diffuse"]));
+			}
+
+			try
+			{
+				discreteLightComp->specular(Any::cast<float>(nodeInfo["specular"]));
+			}
+			catch (...)
+			{
+				discreteLightComp->specular(Any::cast<int>(nodeInfo["specular"]));
+			}
+		}
+
+		light->addComponent(lightComp);
+	}
 
 	return light;
 }
