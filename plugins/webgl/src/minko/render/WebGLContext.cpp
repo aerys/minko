@@ -22,11 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #ifdef EMSCRIPTEN
 # include <GLES2/gl2.h>
 # include <EGL/egl.h>
-#elif __APPLE__
-# include <OpenGL/gl.h>
-# include <OpenGL/glu.h>
-#else
-# include <GL/glew.h>
 #endif // EMSCRIPTEN
 
 using namespace minko::render;
