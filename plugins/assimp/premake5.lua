@@ -40,10 +40,14 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		"lib/assimp/contrib/zlib"
 	}
 	defines {
-		"ASSIMP_BUILD_BOOST_WORKAROUND",
-		"_CRT_SECURE_NO_WARNINGS",
-		"_SCL_SECURE_NO_WARNINGS"
+		"ASSIMP_BUILD_BOOST_WORKAROUND"
 	}
+
+	configuration { "windows" }
+		defines {
+			"_CRT_SECURE_NO_WARNINGS",
+			"_SCL_SECURE_NO_WARNINGS"
+		}
 
 	configuration { "macosx or html5" }
 		buildoptions { "-Wno-attributes" }
