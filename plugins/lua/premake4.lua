@@ -27,7 +27,7 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		defines { "LUA_USE_POSIX" }
 
 	configuration { "linux" }
-		defines { "LUA_USE_LINUX" }
+		defines { "LUA_USE_POSIX" }
 
 	configuration { "win" }
 		defines { "LUA_USE_WIN" }
