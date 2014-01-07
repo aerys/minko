@@ -17,7 +17,7 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "Node.hpp"
+#include "minko/scene/Node.hpp"
 
 #include "minko/component/AbstractComponent.hpp"
 #include "minko/scene/NodeSet.hpp"
@@ -112,6 +112,17 @@ Node::removeChild(Node::Ptr child)
 	return shared_from_this();
 }
 
+Node::Ptr
+Node::removeChildren()
+{
+	int numChildren = _children.size();
+
+	for (int i = numChildren - 1; i >= 0; --i)
+		removeChild(_children[i]);
+
+	return shared_from_this();
+}
+
 bool
 Node::contains(Node::Ptr node)
 {
@@ -188,6 +199,7 @@ void
 Node::updateRoot()
 {
 	_root = _parent ? (_parent->_root ? _parent->_root : _parent) : shared_from_this();
+	_depth = _parent ? _parent->_depth + 1 : 0;
 
 	for (auto child : _children)
 		child->updateRoot();

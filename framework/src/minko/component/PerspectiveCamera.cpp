@@ -17,21 +17,23 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "PerspectiveCamera.hpp"
+#include "minko/component/PerspectiveCamera.hpp"
 
 #include "minko/scene/Node.hpp"
-#include "minko/component/Surface.hpp"
 #include "minko/math/Matrix4x4.hpp"
 #include "minko/data/StructureProvider.hpp"
+#include "minko/math/Ray.hpp"
+#include "minko/component/Transform.hpp"
 
 using namespace minko;
 using namespace minko::component;
 using namespace minko::math;
 
-PerspectiveCamera::PerspectiveCamera(float fov,
-                                     float aspectRatio,
-                                     float zNear,
-                                     float zFar) :
+PerspectiveCamera::PerspectiveCamera(float			fov,
+                                     float			aspectRatio,
+                                     float			zNear,
+                                     float			zFar,
+									 Matrix4x4::Ptr	postPerspective) :
 	_data(data::StructureProvider::create("camera")),
 	_fov(fov),
 	_aspectRatio(aspectRatio),
@@ -40,13 +42,9 @@ PerspectiveCamera::PerspectiveCamera(float fov,
   	_view(Matrix4x4::create()),
   	_projection(Matrix4x4::create()->perspective(fov, aspectRatio, zNear, zFar)),
   	_viewProjection(Matrix4x4::create()->copyFrom(_projection)),
-    _position(Vector3::create())
+    _position(Vector3::create()),
+	_postProjection(postPerspective)
 {
-	_data
-		->set("position",				_position)
-  		->set("viewMatrix",				_view)
-  		->set("projectionMatrix",		_projection)
-  		->set("worldToScreenMatrix",	_viewProjection);
 }
 
 void
@@ -65,6 +63,12 @@ PerspectiveCamera::initialize()
 		std::placeholders::_1,
 		std::placeholders::_2
 	));
+
+	_data
+		->set("position",				_position)
+  		->set("viewMatrix",				_view)
+  		->set("projectionMatrix",		_projection)
+  		->set("worldToScreenMatrix",	_viewProjection);
 }
 
 void
@@ -91,7 +95,7 @@ PerspectiveCamera::targetRemovedHandler(AbstractComponent::Ptr ctrl, NodePtr tar
 
 void
 PerspectiveCamera::localToWorldChangedHandler(data::Container::Ptr	data,
-											                        const std::string&	  propertyName)
+											  const std::string&	propertyName)
 {
     updateMatrices(data->get<Matrix4x4::Ptr>("transform.modelToWorldMatrix"));
 }
@@ -99,9 +103,11 @@ PerspectiveCamera::localToWorldChangedHandler(data::Container::Ptr	data,
 void
 PerspectiveCamera::updateMatrices(std::shared_ptr<Matrix4x4> modelToWorldMatrix)
 {
+	_view->lock();
   	_view->copyFrom(modelToWorldMatrix);
     _view->transform(Vector3::zero(), _position);
     _view->invert();
+	_view->unlock();
 
 	updateProjection(_fov, _aspectRatio, _zNear, _zFar);
 }
@@ -110,17 +116,34 @@ void
 PerspectiveCamera::updateProjection(float fieldOfView, float aspectRatio, float zNear, float zFar)
 {
 	_projection->perspective(_fov, _aspectRatio, _zNear, _zFar);
-	_viewProjection->copyFrom(_view)->append(_projection);
+
+	if (_postProjection)
+		_projection->append(_postProjection);
+
+	_viewProjection->lock()->copyFrom(_view)->append(_projection)->unlock();
 }
 
-std::shared_ptr<math::Matrix4x4>
-PerspectiveCamera::viewProjection()
+std::shared_ptr<math::Ray>
+PerspectiveCamera::unproject(float x, float y, std::shared_ptr<math::Ray> out)
 {
-    if (_projection == nullptr)
-        std::cout << "world to screen matrix PTR is NULL"<< std::endl;
-    else
-        std::cout << "worldToScreen Matrix is not NULL"<< std::endl;
-    
-    //auto res = Matrix4x4::create()->copyFrom(_viewProjection);
-    return _viewProjection;
+	if (!out)
+		out = Ray::create();
+
+	auto fovDiv2 = _fov * .5f;
+	auto dx = tanf(fovDiv2) * x * _aspectRatio;
+	auto dy = -tanf(fovDiv2) * y;
+
+	out->origin()->setTo(dx * _zNear, dy * _zNear, -_zNear);
+	out->direction()->setTo(dx * _zNear, dy * _zNear, -_zNear)->normalize();
+
+	auto t = targets()[0]->component<Transform>();
+
+	if (t)
+	{
+		t->modelToWorld(out->origin(), out->origin());
+		t->deltaModelToWorld(out->direction(), out->direction());
+		out->direction()->normalize();
+	}
+
+	return out;
 }

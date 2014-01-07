@@ -17,7 +17,7 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "ParticleSystem.hpp"
+#include "minko/controller/ParticleSystem.hpp"
 
 #include "minko/file/AssetLibrary.hpp"
 
@@ -426,7 +426,7 @@ ParticleSystem::createParticle(unsigned int 				particleIndex,
 
 	if (_isInWorldSpace)
 	{
-		const std::vector<float>& transform = _toWorld->transform()->data();
+		const std::vector<float>& transform = _toWorld->matrix()->data();
 
 		float x = particle.x;
 		float y = particle.y;

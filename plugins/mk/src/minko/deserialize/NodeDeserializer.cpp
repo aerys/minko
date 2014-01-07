@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/Surface.hpp"
 #include "minko/component/Transform.hpp"
 #include "minko/math/Matrix4x4.hpp"
-
+#include "minko/Qark.hpp"
 #include "minko/deserialize/GeometryDeserializer.hpp"
 #include "minko/deserialize/TypeDeserializer.hpp"
 #include "minko/file/MkOptions.hpp"
@@ -43,14 +43,13 @@ NodeDeserializer::extractName(NodeInfo& nodeInfo)
 shared_ptr<scene::Node>
 NodeDeserializer::deserializeGroup(NodeInfo&		nodeInfo,
 								   OptionsPtr		options,
-								   ControllerMap&	controllerMap,
 								   NodeMap&			nodeMap)
 {
 	shared_ptr<scene::Node>		group			= scene::Node::create(extractName(nodeInfo));
 	shared_ptr<math::Matrix4x4>	transformMatrix = TypeDeserializer::matrix4x4(nodeInfo["transformation"]);
 
 	group->addComponent(component::Transform::create());
-	group->component<component::Transform>()->transform()->copyFrom(transformMatrix);
+	group->component<component::Transform>()->matrix()->copyFrom(transformMatrix);
 
 	return group;
 }
@@ -58,14 +57,13 @@ NodeDeserializer::deserializeGroup(NodeInfo&		nodeInfo,
 shared_ptr<scene::Node>
 NodeDeserializer::deserializeMesh(NodeInfo&			nodeInfo,
 								  OptionsPtr		options,
-								  ControllerMap&	controllerMap,
 								  NodeMap&			nodeMap)
 {
 	shared_ptr<scene::Node>		mesh			= scene::Node::create(extractName(nodeInfo));
 	shared_ptr<math::Matrix4x4>	transformMatrix = TypeDeserializer::matrix4x4(nodeInfo["transform"]);
 
 	mesh->addComponent(component::Transform::create());
-	mesh->component<component::Transform>()->transform()->copyFrom(transformMatrix);
+	mesh->component<component::Transform>()->matrix()->copyFrom(transformMatrix);
     
 	Qark::ByteArray		geometryObject;
 	int					copyId			= -1;
@@ -87,8 +85,16 @@ NodeDeserializer::deserializeMesh(NodeInfo&			nodeInfo,
 		copyId			= Any::cast<int&>(nodeInfo["geometryId"]);
 	}
 
-	if (nodeInfo.find("geometryName") != nodeInfo.end())
-		geometryName = Any::cast<string&>(nodeInfo["geometryName"]);
+
+	try
+	{
+		if (nodeInfo.find("geometryName") != nodeInfo.end())
+			geometryName = Any::cast<string&>(nodeInfo["geometryName"]);
+	}
+	catch (...)
+	{
+		geometryName = ("noName" + std::to_string(rand()));
+	}
 
 	vector<Any>&	bindingsId	= Any::cast<vector<Any>&>(nodeInfo["bindingsIds"]);
 	int				materialId	= Any::cast<int&>(bindingsId[0]);
@@ -113,7 +119,6 @@ NodeDeserializer::deserializeMesh(NodeInfo&			nodeInfo,
 shared_ptr<scene::Node>
 NodeDeserializer::deserializeLight(NodeInfo&		nodeInfo,
 								   OptionsPtr		options,
-								   ControllerMap&	controllerMap,
 								   NodeMap&			nodeMap)
 {
 	shared_ptr<scene::Node> light = scene::Node::create(extractName(nodeInfo));
@@ -126,15 +131,14 @@ NodeDeserializer::deserializeLight(NodeInfo&		nodeInfo,
 shared_ptr<scene::Node>
 NodeDeserializer::deserializeCamera(NodeInfo&		nodeInfo,
 									OptionsPtr	    options,
-									ControllerMap&	controllerMap,
 									NodeMap&		nodeMap)
 {
 	shared_ptr<scene::Node>		camera			= scene::Node::create(extractName(nodeInfo));
 	shared_ptr<math::Matrix4x4>	transformMatrix = TypeDeserializer::matrix4x4(nodeInfo["transform"]);
 
 	camera->addComponent(component::Transform::create());
-	camera->component<component::Transform>()->transform()->copyFrom(transformMatrix);
-	camera->component<component::Transform>()->transform()->prependRotationY(PI); // otherwise the camera points the other way
+	camera->component<component::Transform>()->matrix()->copyFrom(transformMatrix);
+	camera->component<component::Transform>()->matrix()->prependRotationY(PI); // otherwise the camera points the other way
 
 	// extract camera information
 

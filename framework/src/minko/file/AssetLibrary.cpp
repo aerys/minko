@@ -17,8 +17,9 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "AssetLibrary.hpp"
+#include "minko/file/AssetLibrary.hpp"
 
+#include "minko/material/Material.hpp"
 #include "minko/scene/Node.hpp"
 #include "minko/file/Loader.hpp"
 #include "minko/file/Options.hpp"
@@ -45,8 +46,8 @@ AssetLibrary::create(AbsContextPtr context)
 
 AssetLibrary::AssetLibrary(std::shared_ptr<AbstractContext> context) :
 	_context(context),
-	_complete(Signal<Ptr>::create()),
-	_defaultOptions(file::Options::create(context))
+	_defaultOptions(file::Options::create(context)),
+	_complete(Signal<Ptr>::create())
 {
 }
 
@@ -64,6 +65,19 @@ AssetLibrary::geometry(const std::string& name, std::shared_ptr<Geometry> geomet
 	return shared_from_this();
 }
 
+const std::string&
+AssetLibrary::geometryName(GeometryPtr geometry)
+{
+	for (auto it = _geometries.begin(); it != _geometries.end(); ++it)
+	{
+		if (it->second == geometry)
+			return it->first;
+	}
+
+	throw new std::logic_error("AssetLibrary does not reference this geometry.");
+
+}
+
 render::Texture::Ptr
 AssetLibrary::texture(const std::string& name)
 {
@@ -78,18 +92,78 @@ AssetLibrary::texture(const std::string& name, render::Texture::Ptr texture)
 	return shared_from_this();
 }
 
-scene::Node::Ptr
-AssetLibrary::node(const std::string& name)
+const std::string&
+AssetLibrary::textureName(TexturePtr texture)
 {
-	return _nodes.count(name) ? _nodes[name] : nullptr;
+	for (auto it = _textures.begin(); it != _textures.end(); ++it)
+	{
+		if (it->second == texture)
+			return it->first;
+	}
+
+	throw new std::logic_error("AssetLibrary does not reference this texture.");
+
+}
+
+scene::Node::Ptr
+AssetLibrary::symbol(const std::string& name)
+{
+	return _symbols.count(name) ? _symbols[name] : nullptr;
 }
 
 AssetLibrary::Ptr
-AssetLibrary::node(const std::string& name, scene::Node::Ptr node)
+AssetLibrary::symbol(const std::string& name, scene::Node::Ptr node)
 {
-	_nodes[name] = node;
+	_symbols[name] = node;
 
 	return shared_from_this();
+}
+
+const std::string&
+AssetLibrary::symbolName(NodePtr node)
+{
+	for (auto it = _symbols.begin(); it != _symbols.end(); ++it)
+	{
+		if (it->second == node)
+			return it->first;
+	}
+
+	throw new std::logic_error("AssetLibrary does not reference this symbol.");
+
+}
+
+material::Material::Ptr
+AssetLibrary::material(const std::string& name)
+{
+	return _materials.count(name) ? std::dynamic_pointer_cast<material::Material>(_materials[name]) : nullptr;
+}
+
+AssetLibrary::Ptr
+AssetLibrary::material(const std::string& name, MaterialPtr material)
+{
+	material::Material::Ptr mat = std::dynamic_pointer_cast<material::Material>(material);
+
+#ifdef DEBUG
+	if (mat == nullptr)
+		throw std::invalid_argument("material");
+#endif
+
+	_materials[name] = material;
+
+	return shared_from_this();
+}
+
+const std::string&
+AssetLibrary::materialName(MaterialPtr material)
+{
+	for (auto it = _materials.begin(); it != _materials.end(); ++it)
+	{
+		if (it->second == material)
+			return it->first;
+	}
+
+	throw new std::logic_error("AssetLibrary does not reference this material.");
+
 }
 
 AssetLibrary::EffectPtr
@@ -104,6 +178,18 @@ AssetLibrary::effect(const std::string& name, std::shared_ptr<Effect> effect)
 	_effects[name] = effect;
 
 	return shared_from_this();
+}
+
+const std::string&
+AssetLibrary::effectName(EffectPtr effect)
+{
+	for (auto it = _effects.begin(); it != _effects.end(); ++it)
+	{
+		if (it->second == effect && it->first.find(".") !=std::string::npos)
+			return it->first;
+	}
+
+	throw new std::logic_error("AssetLibrary does not reference this effect.");
 }
 
 const std::vector<unsigned char>&
@@ -121,6 +207,32 @@ AssetLibrary::blob(const std::string& name, const std::vector<unsigned char>& bl
 	_blobs[name] = blob;
 
 	return shared_from_this();
+}
+
+AssetLibrary::AbsScriptPtr
+AssetLibrary::script(const std::string& name)
+{
+    return _scripts.count(name) ? _scripts[name] : nullptr;
+}
+
+AssetLibrary::Ptr
+AssetLibrary::script(const std::string& name, AbsScriptPtr script)
+{
+    _scripts[name] = script;
+
+    return shared_from_this();
+}
+
+const std::string&
+AssetLibrary::scriptName(AbsScriptPtr script)
+{
+	for (auto it = _scripts.begin(); it != _scripts.end(); ++it)
+	{
+		if (it->second == script)
+			return it->first;
+	}
+
+	throw new std::logic_error("AssetLibrary does not reference this script.");
 }
 
 const unsigned int
@@ -155,6 +267,18 @@ AssetLibrary::layout(const std::string& name, const unsigned int mask)
 }
 
 AssetLibrary::Ptr
+AssetLibrary::queue(const std::string& filename)
+{
+	return queue(filename, nullptr, nullptr);
+}
+
+AssetLibrary::Ptr
+AssetLibrary::queue(const std::string& filename, std::shared_ptr<file::Options> options)
+{
+	return queue(filename, options, nullptr);
+}
+
+AssetLibrary::Ptr
 AssetLibrary::queue(const std::string&						filename,
 				    std::shared_ptr<file::Options>			options,
 					std::shared_ptr<file::AbstractLoader>	loader)
@@ -174,27 +298,34 @@ AssetLibrary::queue(const std::string&						filename,
 AssetLibrary::Ptr
 AssetLibrary::load()
 {
-	std::list<std::string> queue = _filesQueue;
+	std::list<std::string> queue(_filesQueue);
 
-	for (auto& filename : queue)
+	if (queue.empty())
 	{
-		auto options = _filenameToOptions.count(filename)
-			? _filenameToOptions[filename]
-			: _filenameToOptions[filename] = _defaultOptions;
-		auto loader = _filenameToLoader.count(filename)
-			? _filenameToLoader[filename]
-			: _filenameToLoader[filename] = options->loaderFunction()(filename);
+		_complete->execute(shared_from_this());
+	}
+	else
+	{
+		for (auto& filename : queue)
+		{
+			auto options = _filenameToOptions.count(filename)
+				? _filenameToOptions[filename]
+				: _filenameToOptions[filename] = _defaultOptions;
+			auto loader = _filenameToLoader.count(filename)
+				? _filenameToLoader[filename]
+				: _filenameToLoader[filename] = options->loaderFunction()(filename);
 
-		_filesQueue.erase(std::find(_filesQueue.begin(), _filesQueue.end(), filename));
-		_loading.push_back(filename);
+			_filesQueue.erase(std::find(_filesQueue.begin(), _filesQueue.end(), filename));
+			_loading.push_back(filename);
 
-		_loaderSlots.push_back(loader->error()->connect(std::bind(
-			&AssetLibrary::loaderErrorHandler, shared_from_this(), std::placeholders::_1
-		)));
-		_loaderSlots.push_back(loader->complete()->connect(std::bind(
-			&AssetLibrary::loaderCompleteHandler, shared_from_this(), std::placeholders::_1
-		)));
-		loader->load(filename, options);
+			_loaderSlots.push_back(loader->error()->connect(std::bind(
+				&AssetLibrary::loaderErrorHandler, shared_from_this(), std::placeholders::_1
+			)));
+			_loaderSlots.push_back(loader->complete()->connect(std::bind(
+				&AssetLibrary::loaderCompleteHandler, shared_from_this(), std::placeholders::_1
+			)));
+			loader->load(filename, options);
+		}
 	}
 
 	return shared_from_this();
@@ -212,11 +343,15 @@ AssetLibrary::loaderCompleteHandler(std::shared_ptr<file::AbstractLoader> loader
 	auto filename = loader->filename();
 	auto extension = filename.substr(filename.find_last_of('.') + 1);
 
+	std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
+
 	if (_parsers.count(extension))
 	{
 		auto parser = _parsers[extension]();
-		auto completeSlot = parser->complete()->connect([&](AbstractParser::Ptr)
+		auto completeSlot = parser->complete()->connect([=](AbstractParser::Ptr)
 		{
+			loader->parserComplete()->execute(loader, parser, shared_from_this());
+
 			finalize(filename);
 		});
 
@@ -230,6 +365,7 @@ AssetLibrary::loaderCompleteHandler(std::shared_ptr<file::AbstractLoader> loader
 	}
 	else
 	{
+		std::cerr << "warning: no parser found for file extesntion '" << extension << "'" << std::endl;
 		blob(filename, loader->data());
 		finalize(filename);
 	}
@@ -255,8 +391,10 @@ AssetLibrary::finalize(const std::string& filename)
 AssetLibrary::AbsParserPtr
 AssetLibrary::parser(std::string extension)
 {
-	if (_parsers.count(extension) == 0)
+	/*
+	if ()
 		throw std::invalid_argument("No parser found for extension '" + extension + "'");
+	*/
 
-	return _parsers[extension]();
+	return _parsers.count(extension) == 0 ? nullptr : _parsers[extension]();
 }

@@ -1,4 +1,4 @@
-#include "EmitterShape.hpp"
+#include "minko/particle/shape/EmitterShape.hpp"
 #include "minko/particle/ParticleData.hpp"
 
 using namespace minko;

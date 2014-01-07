@@ -3,7 +3,9 @@ newoption {
 	description	= "Enable the Minko MK plugin."
 }
 
-minko.project.library "plugin-mk"
+PROJECT_NAME = path.getname(os.getcwd())
+
+minko.project.library("minko-plugin-" .. PROJECT_NAME)
 	kind "StaticLib"
 	language "C++"
 	files {
@@ -11,23 +13,13 @@ minko.project.library "plugin-mk"
 		"src/**.h",
 		"src/**.cpp",
 		"src/**.c",
-		"lib/msgpack-c/src/**.cpp",
-		"lib/msgpack-c/src/**.h"
+		"include/**.hpp"
 	}
 	includedirs {
+		"include",
 		"src",
 		"lib/msgpack-c/src"
 	}
-	
-	configuration { "debug"}
-		defines { "DEBUG" }
-		flags { "Symbols" }
-		targetdir "bin/debug"
-
-	configuration { "release" }
-		defines { "NDEBUG" }
-		flags { "OptimizeSpeed" }
-		targetdir "bin/release"
 
 	configuration { "windows" }
 		-- msgpack
@@ -46,4 +38,9 @@ minko.project.library "plugin-mk"
 			"/wd4996",
 			"/wd4273",
 			"/wd4503"
+		}
+
+	configuration { "linux" }
+		buildoptions {
+			"-Wno-deprecated-declarations"
 		}
