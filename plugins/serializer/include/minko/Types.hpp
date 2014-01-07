@@ -34,7 +34,8 @@ namespace minko
 			POINT_LIGHT			= 104,
 			SPOT_LIGHT			= 105,
 			SURFACE				= 106,
-			RENDERER			= 107
+			RENDERER			= 107,
+			BOUNDINGBOX			= 108
 		};
 
 		enum MinkoTypes
