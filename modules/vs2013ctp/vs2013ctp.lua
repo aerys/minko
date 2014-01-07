@@ -1,0 +1,68 @@
+--
+-- actions/vstudio/vs2013.lua
+-- Extend the existing exporters with support for Visual Studio 2013.
+-- Copyright (c) 2013 Jason Perkins and the Premake project
+--
+
+	local vstudio = premake.vstudio
+	local cs2005 = vstudio.cs2005
+	local vc2010 = vstudio.vc2010
+
+
+---
+-- Define the Visual Studio 2013 export action.
+---
+
+	newaction {
+		-- Metadata for the command line and help system
+
+		trigger     = "vs2013ctp",
+		shortname   = "Visual Studio 2013 CTP Nov 2013",
+		description = "Generate Visual Studio 2013 project files",
+
+		-- Visual Studio always uses Windows path and naming conventions
+
+		os = "windows",
+
+		-- The capabilities of this action
+
+		valid_kinds     = { "ConsoleApp", "WindowedApp", "StaticLib", "SharedLib", "Makefile", "None" },
+		valid_languages = { "C", "C++", "C#" },
+		valid_tools     = {
+			cc     = { "msc"   },
+			dotnet = { "msnet" },
+		},
+
+		-- Solution and project generation logic
+
+		onsolution = vstudio.vs2005.generateSolution,
+		onproject  = vstudio.vs2010.generateProject,
+
+		oncleansolution = vstudio.cleanSolution,
+		oncleanproject  = vstudio.cleanProject,
+		oncleantarget   = vstudio.cleanTarget,
+
+		-- This stuff is specific to the Visual Studio exporters
+
+		vstudio = {
+			solutionVersion = "12",
+			versionName     = "2013",
+			targetFramework = "4.5",
+			toolsVersion    = "12.0",
+		}
+	}
+
+
+---
+-- Add new elements to the configuration properties block of C++ projects.
+---
+
+	premake.override(vc2010, "platformToolset", function(orig, cfg)
+		if _ACTION == "vs2013ctp" then
+			_p(2,'<PlatformToolset>CTP_Nov2013</PlatformToolset>')
+		elseif _ACTION > "vs2012" then
+			_p(2,'<PlatformToolset>v120</PlatformToolset>')
+		else
+			orig(cfg)
+		end
+	end)
