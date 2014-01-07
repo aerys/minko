@@ -17,7 +17,7 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "PNGParser.hpp"
+#include "minko/file/PNGParser.hpp"
 
 #include "minko/file/Options.hpp"
 #include "minko/file/AssetLibrary.hpp"
@@ -28,11 +28,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko::file;
 
 void
-PNGParser::parse(const std::string&				    filename,
-				 const std::string&                 resolvedFilename,
+PNGParser::parse(const std::string&                 filename,
+                 const std::string&                 resolvedFilename,
                  std::shared_ptr<Options>           options,
-				 const std::vector<unsigned char>&	data,
-				 std::shared_ptr<AssetLibrary>	    AssetLibrary)
+                 const std::vector<unsigned char>&  data,
+                 std::shared_ptr<AssetLibrary>      AssetLibrary)
 {
 	std::vector<unsigned char> out;
 	unsigned int width;
@@ -40,8 +40,8 @@ PNGParser::parse(const std::string&				    filename,
 
 	lodepng::decode(out, width, height, &data[0], data.size());
 
-	auto texture = render::Texture::create(options->context(), width, height, options->generateMipmaps());
-	
+	auto texture = render::Texture::create(options->context(), width, height, options->generateMipmaps(), false, options->resizeSmoothly(), filename);
+
 	texture->data(&out[0]);
 	texture->upload();
 
@@ -49,5 +49,3 @@ PNGParser::parse(const std::string&				    filename,
 
 	complete()->execute(shared_from_this());
 }
-
-

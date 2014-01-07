@@ -17,7 +17,7 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "ColliderData.hpp"
+#include "minko/component/bullet/ColliderData.hpp"
 
 #include <minko/math/Matrix4x4.hpp>
 #include <minko/component/bullet/AbstractPhysicsShape.hpp>

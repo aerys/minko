@@ -3,11 +3,14 @@ newoption {
 	description	= "Enable the Minko Bullet plugin."
 }
 
-minko.project.library "plugin-bullet"
+PROJECT_NAME = path.getname(os.getcwd())
+
+minko.project.library("minko-plugin-" .. PROJECT_NAME)
 	kind "StaticLib"
 	language "C++"
-	files { "**.hpp", "**.h", "**.cpp", "**.c" }
+	files { "**.hpp", "**.h", "**.cpp", "**.c", "include/**.hpp" }
 	includedirs {
+		"include",
 		"src",
 		"lib/bullet2/src"
 	}
@@ -30,20 +33,9 @@ minko.project.library "plugin-bullet"
 		"lib/bullet2/src/BulletMultiThreaded/SpuSampleTask/*.cpp"
 	}
 
-	-- configurations
-	configuration { "debug"}
-		defines { "DEBUG" }
-		flags { "Symbols" }
-		targetdir "bin/debug"
-
-	configuration { "release" }
-		defines { "NDEBUG" }
-		targetdir "bin/release"
-		flags { "OptimizeSpeed" }
-		
 	-- linux
 	configuration { "linux" }
-		buildoptions { "-Wno-narrowing -Wno-int-to-pointer-cast" }
+		buildoptions { "-Wno-narrowing -Wno-int-to-pointer-cast -Wno-undefined-inline" }
 
 	-- windows
 	configuration { "windows" }
@@ -54,8 +46,8 @@ minko.project.library "plugin-bullet"
 
 	-- macosx
 	configuration { "macosx" }
-		buildoptions { "-Wno-narrowing -Wno-int-to-pointer-cast" }
+		buildoptions { "-Wno-narrowing -Wno-int-to-pointer-cast -Wno-undefined-inline" }
 
 	-- emscripten
 	configuration { "emscripten" }
-		buildoptions { "-Wno-narrowing -Wno-int-to-pointer-cast" }
+		buildoptions { "-Wno-narrowing -Wno-int-to-pointer-cast -Wno-undefined-inline" }

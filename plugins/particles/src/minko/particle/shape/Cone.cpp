@@ -1,4 +1,4 @@
-#include "Cone.hpp"
+#include "minko/particle/shape/Cone.hpp"
 #include "minko/particle/ParticleData.hpp"
 
 using namespace minko;

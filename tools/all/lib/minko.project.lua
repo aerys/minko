@@ -3,31 +3,28 @@ minko.project = {}
 minko.project.library = function(name)
 	project(name)
 
-	includedirs { minko.sdk.path("/framework/src") }
+	includedirs { minko.sdk.path("/framework/include") }
+	
+	configuration { "debug"}
+		defines { "DEBUG" }
+		flags { "Symbols" }
+		targetdir("bin/debug/" .. os.get())
+
+	configuration { "release" }
+		defines { "NDEBUG" }
+		flags { "Optimize" } -- { "OptimizeSpeed" }
+		targetdir("bin/release/" .. os.get())
 	
 	configuration { "windows" }
-		links { "OpenGL32", "glew32" }
-		libdirs { minko.sdk.path("/deps/win/lib") }
 		includedirs { minko.sdk.path("/deps/win/include") }
-		postbuildcommands {
-			minko.vs.getdllscopycommand(minko.sdk.path("deps/win/lib"))
-		}
+	configuration { "vs*" }
+		defines { "NOMINMAX" }
 		
 	configuration { "macosx" }
-		libdirs { "/deps/mac/lib" }
 		includedirs { minko.sdk.path("/deps/mac/include") }
 		buildoptions { "-std=c++11" }
-		links {
-			"m",
-			"SDL2.framework",
-			"Cocoa.framework",
-			"OpenGL.framework",
-			"IOKit.framework"
-		}
 	
 	configuration { "linux" }
-		links { "GL", "SDL2", "m", "Xrandr", "Xxf86vm", "Xi", "rt", "X11", "pthread" }
-		libdirs { minko.sdk.path("/deps/lin/lib") }
 		includedirs { minko.sdk.path("/deps/lin/include") }
 		buildoptions { "-std=c++11" }		
 		
@@ -42,28 +39,84 @@ minko.project.library = function(name)
 end
 
 minko.project.application = function(name)
+
 	minko.project.library(name)
 
-	--links { "framework" }
+	if MINKO_SDK_DIST then
+		configuration { "debug"}
+			links { minko.sdk.path("framework/bin/debug/" .. minko.sdk.gettargetplatform() .. "/minko-framework") }
+		configuration { "release"}
+			links { minko.sdk.path("framework/bin/release/" .. minko.sdk.gettargetplatform() .. "/minko-framework") }
+	else
+		links { "minko-framework" }
+	end
+
+	configuration { "debug"}
+		defines { "DEBUG" }
+		flags { "Symbols" }
+		targetdir "bin/debug"
+
+	configuration { "release" }
+		defines { "NDEBUG" }
+		flags { "OptimizeSpeed" }
+		targetdir "bin/release"
 	
 	configuration { "windows" }
+		libdirs { minko.sdk.path("/deps/win/lib") }
+		links {
+			"OpenGL32",
+			"glew32"
+		}
 		postbuildcommands {
 			'xcopy /y /i "' .. minko.sdk.path('/framework/effect') .. '" "$(TargetDir)\\effect"',
-			'xcopy /y /s asset\\* "$(TargetDir)"',
 			minko.vs.getdllscopycommand(minko.sdk.path('/deps/win/lib'))
+		}
+	configuration { "windows", "release" }
+		postbuildcommands {
+			'xcopy /y /s asset\\* "$(TargetDir)"'
 		}
 		
 	configuration { "linux" }
+		libdirs { minko.sdk.path("/deps/lin/lib") }
+		linkoptions { "-Wl,--no-as-needed" }
+		links {
+			"GL",
+			"m"
+		}
 		postbuildcommands {
-			'cp -r ' .. minko.sdk.path('/framework/effect') .. ' ${TARGETDIR} || :',
+			'cp -r ' .. minko.sdk.path('/framework/effect') .. ' ${TARGETDIR} || :'
+		}
+	configuration { "linux", "release" }
+		postbuildcommands {
 			'cp -r asset/* ${TARGETDIR} || :'
 		}
 	
 	configuration { "macosx" }
+		libdirs { "/deps/mac/lib" }
+		linkoptions { "-stdlib=libc++" }
+		links {
+			"m",
+			"Cocoa.framework",
+			"OpenGL.framework",
+			"IOKit.framework"
+		}
 		postbuildcommands {
-			'cp -r ' .. minko.sdk.path('/framework/effect') .. ' . || :',
+			'cp -r ' .. minko.sdk.path('/framework/effect') .. ' . || :'
+		}
+	configuration { "macosx", "release" }
+		postbuildcommands {
 			'cp -r asset/* . || :'
 		}
-		
+
 	configuration { }
+	
+end
+
+minko.project.solution = function(name)
+	solution(name)
+	configurations { "debug", "release" }
+
+	if not MINKO_SDK_DIST then
+		include(minko.sdk.path("framework"))
+	end
 end

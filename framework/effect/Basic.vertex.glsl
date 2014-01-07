@@ -20,10 +20,14 @@ void main(void)
 
 	vec4 pos = vec4(position, 1.0);
 
+	#ifdef NUM_BONES
+		pos = skinning_moveVertex(pos);
+	#endif // NUM_BONES
+	
 	#ifdef MODEL_TO_WORLD
 		pos = modelToWorldMatrix * pos;
 	#endif
-
+	
 	gl_Position =  worldToScreenMatrix * pos;
 }
 

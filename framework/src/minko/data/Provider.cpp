@@ -17,10 +17,12 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "Provider.hpp"
+#include "minko/data/Provider.hpp"
 
 using namespace minko;
 using namespace minko::data;
+
+/*static*/ const std::string Provider::NO_STRUCT_SEP = "_";
 
 Provider::Provider() :
 	enable_shared_from_this(),
@@ -111,12 +113,19 @@ Provider::registerProperty(const std::string&		propertyName,
 		
 	if (isNewValue)
 	{
-	    _valueChangedSlots[propertyName] = value->changed()->connect(std::bind(
+#if defined(EMSCRIPTEN)
+		auto that = shared_from_this();
+		_valueChangedSlots[propertyName] = value->changed()->connect([&, that, this](Value::Ptr) {
+			_propValueChanged->execute(that, propertyName);
+		});
+#else
+		_valueChangedSlots[propertyName] = value->changed()->connect(std::bind(
 			&Signal<Provider::Ptr, const std::string&>::execute,
 			_propValueChanged,
 			shared_from_this(),
 			propertyName
 		));
+#endif
 
 		_names.push_back(propertyName);
 
@@ -140,4 +149,13 @@ Provider::hasProperty(const std::string& name, bool skipPropertyNameFormatting) 
 	);
 
 	return it != _names.end();
+}
+
+Provider::Ptr
+Provider::copyFrom(Provider::Ptr source)
+{
+	_names = source->_names;
+	_values = source->_values;
+
+	return shared_from_this();
 }

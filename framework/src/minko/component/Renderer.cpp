@@ -17,7 +17,7 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "Renderer.hpp"
+#include "minko/component/Renderer.hpp"
 
 #include "minko/scene/Node.hpp"
 #include "minko/scene/NodeSet.hpp"
@@ -29,23 +29,37 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/AbstractContext.hpp"
 #include "minko/component/SceneManager.hpp"
 #include "minko/file/AssetLibrary.hpp"
+#include "minko/render/DrawCallPool.hpp"
 
 using namespace minko;
 using namespace minko::component;
 using namespace minko::scene;
 using namespace minko::render;
 
-Renderer::Renderer() :
+const unsigned int Renderer::NUM_FALLBACK_ATTEMPTS = 32;
+
+Renderer::Renderer(std::shared_ptr<render::Texture> renderTarget,
+				   std::shared_ptr<render::Effect>	effect) :
     _backgroundColor(0),
 	_renderingBegin(Signal<Ptr>::create()),
 	_renderingEnd(Signal<Ptr>::create()),
-	_surfaceDrawCalls()
+	_beforePresent(Signal<Ptr>::create()),
+	_surfaceDrawCalls(),
+	_surfaceTechniqueChangedSlot(),
+	_effect(effect)
 {
+	if (renderTarget)
+	{
+		renderTarget->upload();
+		_renderTarget = renderTarget;
+	}
 }
 
 void
 Renderer::initialize()
 {
+	_drawCallPool = DrawCallPool::create(shared_from_this());
+
 	_targetAddedSlot = targetAdded()->connect(std::bind(
 		&Renderer::targetAddedHandler,
 		shared_from_this(),
@@ -168,7 +182,7 @@ Renderer::rootDescendantAddedHandler(std::shared_ptr<Node> node,
 
 	for (auto surfaceNode : surfaceNodes->nodes())
 		for (auto surface : surfaceNode->components<Surface>())
-			addSurfaceComponent(surface);
+			addSurface(surface);
 }
 
 void
@@ -185,7 +199,7 @@ Renderer::rootDescendantRemovedHandler(std::shared_ptr<Node> node,
 
 	for (auto surfaceNode : surfaceNodes->nodes())
 		for (auto surface : surfaceNode->components<Surface>())
-			removeSurfaceComponent(surface);
+			removeSurface(surface);
 }
 
 void
@@ -197,7 +211,7 @@ Renderer::componentAddedHandler(std::shared_ptr<Node>				node,
 	auto sceneManager = std::dynamic_pointer_cast<SceneManager>(ctrl);
 	
 	if (surfaceCtrl)
-		addSurfaceComponent(surfaceCtrl);
+		addSurface(surfaceCtrl);
 	else if (sceneManager)
 		setSceneManager(sceneManager);
 }
@@ -211,36 +225,28 @@ Renderer::componentRemovedHandler(std::shared_ptr<Node>					node,
 	auto sceneManager = std::dynamic_pointer_cast<SceneManager>(ctrl);
 
 	if (surfaceCtrl)
-		removeSurfaceComponent(surfaceCtrl);
+		removeSurface(surfaceCtrl);
 	else if (sceneManager)
 		setSceneManager(nullptr);
 }
 
 void
-Renderer::addSurfaceComponent(std::shared_ptr<Surface> surface)
+Renderer::addSurface(Surface::Ptr surface)
 {
-	auto drawCalls = surface->createDrawCalls(targets()[0]->data());
-
-	_surfaceDrawCalls[surface] = drawCalls;
-
-	_drawCalls.insert(_drawCalls.end(), drawCalls.begin(), drawCalls.end());
+	_drawCallPool->addSurface(surface);
 }
 
 void
-Renderer::removeSurfaceComponent(std::shared_ptr<Surface> surface)
+Renderer::removeSurface(Surface::Ptr surface)
 {
-	auto ctrlDrawCalls	= _surfaceDrawCalls.find(surface);
-	if (ctrlDrawCalls == _surfaceDrawCalls.end())
-		return;
-
-	for (auto drawCall : ctrlDrawCalls->second)
-		_drawCalls.remove(drawCall);
-	_surfaceDrawCalls.erase(ctrlDrawCalls);
+	_drawCallPool->removeSurface(surface);
 }
 
 void
 Renderer::render(std::shared_ptr<render::AbstractContext> context, std::shared_ptr<render::Texture> renderTarget)
 {
+	_drawCalls = _drawCallPool->drawCalls();
+
 	_renderingBegin->execute(shared_from_this());
 
 	if (!renderTarget)
@@ -253,22 +259,14 @@ Renderer::render(std::shared_ptr<render::AbstractContext> context, std::shared_p
 		(_backgroundColor & 0xff) / 255.f
 	);
 
-    _drawCalls.sort(&Renderer::compareDrawCalls);
 	for (auto& drawCall : _drawCalls)
 		drawCall->render(context, renderTarget);
+
+	_beforePresent->execute(shared_from_this());
 
 	context->present();
 
 	_renderingEnd->execute(shared_from_this());
-}
-
-bool
-Renderer::compareDrawCalls(DrawCallPtr& a, DrawCallPtr& b)
-{
-	if (a->priority() == b->priority())
-		return a->target() && (!b->target() || (a->target()->id() > b->target()->id()));
-
-    return a->priority() > b->priority();
 }
 
 void

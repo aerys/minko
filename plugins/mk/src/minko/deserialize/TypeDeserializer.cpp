@@ -17,7 +17,7 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "TypeDeserializer.hpp"
+#include "minko/deserialize/TypeDeserializer.hpp"
 #include "minko/math/Matrix4x4.hpp"
 #include "minko/Any.hpp"
 #include "minko/data/Provider.hpp"
@@ -26,6 +26,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/math/Vector3.hpp"
 #include "minko/math/Vector4.hpp"
 #include "minko/render/Texture.hpp"
+#include "minko/render/Blending.hpp"
 
 using namespace minko;
 using namespace minko::deserialize;
@@ -84,10 +85,10 @@ TypeDeserializer::number(std::map<int, render::Texture::Ptr>&	idToTexture,
 	    unsigned int color = 0;
 	    if (typeid(unsigned int) == object["value"].type())
 		    color = Any::cast<unsigned int>(object["value"]);
-	    else if (typeid(int) == object["value"].type())
-		    color = Any::cast<int>(object["value"]);
+		else if (typeid(int) == object["value"].type())
+			color = Any::cast<int>(object["value"]);
 		else
-			return;
+			color = 0xFFFFFFFF;
 	
 	    unsigned int red	= (color & 0xFF000000) >> 24;
 	    unsigned int blue	= (color & 0x00FF0000) >> 16;
@@ -115,6 +116,7 @@ TypeDeserializer::number(std::map<int, render::Texture::Ptr>&	idToTexture,
 			material->set(nameConverter->convertString(propertyName), Any::cast<unsigned int>(object["value"]));
 
 	}
+
 }
 
 // tmp, will be removed when all mk write vector4 as vector4b
@@ -230,12 +232,20 @@ TypeDeserializer::provider(data::Provider::Ptr					defaultValues,
 		int&			type			= Any::cast<int&>(propertyValue["type"]);
 
 		if (_typeToReadFunc.find(type) != _typeToReadFunc.end())
+		{
 			_typeToReadFunc[type](idToTexture, propertyName, material, propertyValue, nameConverter);
+		}
 	}
 
 	if (!material->hasProperty("material.specular"))
 		material->set("material.specular", math::Vector3::create(.8f, .8f, .8f));
-	
+
+	if (material->hasProperty("material.environmentMap") && (!material->hasProperty("material.environmentAlpha")))
+		material->set("material.environmentAlpha", 0.5f);
+
+	if (material->hasProperty("material.blending"))
+		material->set("material.blendMode", render::Blending::Mode::ALPHA);
+
 	material->set("material.shininess", 10.f);
 	
 	return material;
