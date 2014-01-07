@@ -174,6 +174,42 @@ TEST_F(Matrix4x4Test, InvertTranslation)
 	ASSERT_EQ(m->data()[11], -z);
 }
 
+TEST_F(Matrix4x4Test, InvertRotationX)
+{
+	auto m1 = Matrix4x4::create();
+	auto m2 = Matrix4x4::create();
+	auto theta = random(2.f * PI);
+
+	m1->appendRotationX(theta);
+	m2->appendRotationX(-theta)->invert();
+
+	ASSERT_TRUE(nearEqual(m1, m2));
+}
+
+TEST_F(Matrix4x4Test, InvertRotationY)
+{
+	auto m1 = Matrix4x4::create();
+	auto m2 = Matrix4x4::create();
+	auto theta = random(2.f * PI);
+
+	m1->appendRotationY(theta);
+	m2->appendRotationY(-theta)->invert();
+
+	ASSERT_TRUE(nearEqual(m1, m2));
+}
+
+TEST_F(Matrix4x4Test, InvertRotationZ)
+{
+	auto m1 = Matrix4x4::create();
+	auto m2 = Matrix4x4::create();
+	auto theta = random(2.f * PI);
+
+	m1->appendRotationZ(theta);
+	m2->appendRotationZ(-theta)->invert();
+
+	ASSERT_TRUE(nearEqual(m1, m2));
+}
+
 TEST_F(Matrix4x4Test, TransposeIdentity)
 {
 	auto m1 = Matrix4x4::create();
@@ -314,8 +350,7 @@ TEST_F(Matrix4x4Test, TransformAppendRotationXRandom)
 		m1->appendRotationX(PI * 2.f / (float)r);
 	}
 
-	for (auto i = 0; i < 16; ++i)
-		ASSERT_TRUE(nearEqual(m1->data()[i], m2->data()[i]));
+	ASSERT_TRUE(nearEqual(m1, m2));
 	for (auto i = 0; i < r / 2; ++i)
 	{
 		ASSERT_EQ(v[i]->x(), 0.f);
@@ -338,8 +373,7 @@ TEST_F(Matrix4x4Test, TransformAppendRotationYRandom)
 		m1->appendRotationY(PI * 2.f / (float)r);
 	}
 
-	for (auto i = 0; i < 16; ++i)
-		ASSERT_TRUE(nearEqual(m1->data()[i], m2->data()[i]));
+	ASSERT_TRUE(nearEqual(m1, m2));
 	for (auto i = 0; i < r / 2; ++i)
 	{
 		ASSERT_EQ(v[i]->y(), 0.f);
@@ -362,8 +396,7 @@ TEST_F(Matrix4x4Test, TransformAppendRotationZRandom)
 		m1->appendRotationZ(PI * 2.f / (float)r);
 	}
 
-	for (auto i = 0; i < 16; ++i)
-		ASSERT_TRUE(nearEqual(m1->data()[i], m2->data()[i]));
+	ASSERT_TRUE(nearEqual(m1, m2));
 	for (auto i = 0; i < r / 2; ++i)
 	{
 		ASSERT_EQ(v[i]->z(), 0.f);
@@ -386,8 +419,7 @@ TEST_F(Matrix4x4Test, TransformPrependRotationXRandom)
 		m1->prependRotationX(PI * 2.f / (float)r);
 	}
 
-	for (auto i = 0; i < 16; ++i)
-		ASSERT_TRUE(nearEqual(m1->data()[i], m2->data()[i]));
+	ASSERT_TRUE(nearEqual(m1, m2));
 	for (auto i = 0; i < r / 2; ++i)
 	{
 		ASSERT_EQ(v[i]->x(), 0.f);
@@ -410,8 +442,7 @@ TEST_F(Matrix4x4Test, TransformPrependRotationYRandom)
 		m1->prependRotationY(PI * 2.f / (float)r);
 	}
 
-	for (auto i = 0; i < 16; ++i)
-		ASSERT_TRUE(nearEqual(m1->data()[i], m2->data()[i]));
+	ASSERT_TRUE(nearEqual(m1, m2));
 	for (auto i = 0; i < r / 2; ++i)
 	{
 		ASSERT_EQ(v[i]->y(), 0.f);
@@ -434,8 +465,7 @@ TEST_F(Matrix4x4Test, TransformPrependRotationZRandom)
 		m1->prependRotationZ(PI * 2.f / (float)r);
 	}
 
-	for (auto i = 0; i < 16; ++i)
-		ASSERT_TRUE(nearEqual(m1->data()[i], m2->data()[i]));
+	ASSERT_TRUE(nearEqual(m1, m2));
 	for (auto i = 0; i < r / 2; ++i)
 	{
 		ASSERT_EQ(v[i]->z(), 0.f);
@@ -444,3 +474,100 @@ TEST_F(Matrix4x4Test, TransformPrependRotationZRandom)
 		ASSERT_TRUE(nearEqual(v[i]->y(), -v[i + r / 2]->y()));
 	}
 }
+
+TEST_F(Matrix4x4Test, AppendRotationXVsAppendRotation)
+{
+	auto m1 = Matrix4x4::create();
+	auto m2 = Matrix4x4::create();
+	auto r = (uint)random(100.f);
+
+	for (uint i = 0; i < r; ++i)
+	{
+		m1->appendRotationX(PI * 2.f / (float)r);
+		m2->appendRotation(PI * 2.f / (float)r, Vector3::xAxis());
+
+		for (auto i = 0; i < 16; ++i)
+			ASSERT_TRUE(nearEqual(m1->data()[i], m2->data()[i]));
+	}
+}
+
+TEST_F(Matrix4x4Test, AppendRotationYVsAppendRotation)
+{
+	auto m1 = Matrix4x4::create();
+	auto m2 = Matrix4x4::create();
+	auto r = (uint)random(100.f);
+
+	for (uint i = 0; i < r; ++i)
+	{
+		m1->appendRotationY(PI * 2.f / (float)r);
+		m2->appendRotation(PI * 2.f / (float)r, Vector3::yAxis());
+
+		for (auto i = 0; i < 16; ++i)
+			ASSERT_TRUE(nearEqual(m1->data()[i], m2->data()[i]));
+	}
+}
+
+TEST_F(Matrix4x4Test, AppendRotationZVsAppendRotation)
+{
+	auto m1 = Matrix4x4::create();
+	auto m2 = Matrix4x4::create();
+	auto r = (uint)random(100.f);
+
+	for (uint i = 0; i < r; ++i)
+	{
+		m1->appendRotationZ(PI * 2.f / (float)r);
+		m2->appendRotation(PI * 2.f / (float)r, Vector3::zAxis());
+
+		for (auto i = 0; i < 16; ++i)
+			ASSERT_TRUE(nearEqual(m1->data()[i], m2->data()[i]));
+	}
+}
+
+TEST_F(Matrix4x4Test, PrependRotationXVsPrependRotation)
+{
+	auto m1 = Matrix4x4::create();
+	auto m2 = Matrix4x4::create();
+	auto r = (uint)random(100.f);
+
+	for (uint i = 0; i < r; ++i)
+	{
+		m1->prependRotationX(PI * 2.f / (float)r);
+		m2->prependRotation(PI * 2.f / (float)r, Vector3::xAxis());
+
+		for (auto i = 0; i < 16; ++i)
+			ASSERT_TRUE(nearEqual(m1->data()[i], m2->data()[i]));
+	}
+}
+
+TEST_F(Matrix4x4Test, PrependRotationYVsPrependRotation)
+{
+	auto m1 = Matrix4x4::create();
+	auto m2 = Matrix4x4::create();
+	auto r = (uint)random(100.f);
+
+	for (uint i = 0; i < r; ++i)
+	{
+		m1->prependRotationY(PI * 2.f / (float)r);
+		m2->prependRotation(PI * 2.f / (float)r, Vector3::yAxis());
+
+		for (auto i = 0; i < 16; ++i)
+			ASSERT_TRUE(nearEqual(m1->data()[i], m2->data()[i]));
+	}
+}
+
+TEST_F(Matrix4x4Test, PrependRotationZVsPrependRotation)
+{
+	auto m1 = Matrix4x4::create();
+	auto m2 = Matrix4x4::create();
+	auto r = (uint)random(100.f);
+
+	for (uint i = 0; i < r; ++i)
+	{
+		m1->prependRotationZ(PI * 2.f / (float)r);
+		m2->prependRotation(PI * 2.f / (float)r, Vector3::zAxis());
+
+		for (auto i = 0; i < 16; ++i)
+			ASSERT_TRUE(nearEqual(m1->data()[i], m2->data()[i]));
+	}
+}
+

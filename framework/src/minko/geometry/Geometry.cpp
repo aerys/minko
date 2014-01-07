@@ -17,11 +17,13 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "Geometry.hpp"
+#include "minko/geometry/Geometry.hpp"
 
-#include <minko/math/Vector3.hpp>
-#include <minko/render/IndexBuffer.hpp>
-#include <minko/render/VertexBuffer.hpp>
+#include "minko/math/Vector2.hpp"
+#include "minko/math/Vector3.hpp"
+#include "minko/math/Ray.hpp"
+#include "minko/render/IndexBuffer.hpp"
+#include "minko/render/VertexBuffer.hpp"
 
 using namespace minko;
 using namespace minko::math;
@@ -69,6 +71,8 @@ void
 Geometry::removeVertexBuffer(std::list<render::VertexBuffer::Ptr>::iterator vertexBufferIt)
 {
 	VertexBuffer::Ptr vertexBuffer	= *vertexBufferIt;
+	vertexBuffer->dispose();
+
 	for (auto attribute : vertexBuffer->attributes())
 		_data->unset("geometry.vertex.attribute." + std::get<0>(*attribute));
 
@@ -144,8 +148,8 @@ Geometry::computeNormals()
 		}
 
 		Vector3::Ptr faceNormal = Vector3::create()
-			->copyFrom(xyz[0] - xyz[2])
-			->cross(xyz[0] - xyz[1]);
+			->copyFrom(xyz[0] - xyz[1])
+			->cross(xyz[0] - xyz[2]);
 
  		for (unsigned int k = 0; k < 3; ++k)
 		{
@@ -263,4 +267,229 @@ void
 Geometry::vertexSizeChanged(VertexBuffer::Ptr vertexBuffer, int offset)
 {
 	_vertexSize += offset;
+}
+
+void
+Geometry::removeDuplicatedVertices()
+{
+	std::vector<std::vector<float>> vertices;
+
+	for (auto vb : _vertexBuffers)
+		vertices.push_back(vb->data());
+
+	removeDuplicatedVertices(_indexBuffer->data(),	vertices, numVertices());
+}
+
+void
+Geometry::removeDuplicatedVertices(std::vector<unsigned short>&		indices,
+								   std::vector<std::vector<float>>&	vertices,
+								   uint								numVertices)
+{
+	auto numIndices = indices.size();
+	auto newVertexCount = 0;
+	auto newLimit = 0;
+
+	std::unordered_map<std::string, uint> hashToNewVertexId;
+	std::unordered_map<uint, uint> oldVertexIdToNewVertexId;
+
+	for (uint oldVertexId = 0; oldVertexId < numVertices; ++oldVertexId)
+	{
+		std::string hash;
+
+		for (auto& vb : vertices)
+		{
+			auto vertexSize = vb.size() / numVertices;
+
+			for (uint i = 0; i < vertexSize; ++i)
+				hash += std::to_string(vb[oldVertexId * vertexSize + i]) + " ";
+		}
+
+		auto newVertexId = 0;
+
+		if (!hashToNewVertexId.count(hash))
+		{
+			newVertexId = newVertexCount++;
+			hashToNewVertexId[hash] = newVertexId;
+			newLimit = 1 + newVertexId;
+
+			if (newVertexId != oldVertexId)
+			{
+				for (auto& vb : vertices)
+				{
+					auto vertexSize = vb.size() / numVertices;
+
+					std::copy(
+						vb.begin() + oldVertexId * vertexSize,
+						vb.begin() + (oldVertexId + 1) * vertexSize,
+						vb.begin() + newVertexId * vertexSize
+					);
+				}
+			}
+		}
+		else
+			newVertexId = hashToNewVertexId[hash];
+
+		oldVertexIdToNewVertexId[oldVertexId] = newVertexId;
+	}
+
+	for (auto& vb : vertices)
+		vb.resize(newLimit * vb.size() / numVertices);
+
+	for (auto& index : indices)
+		index = oldVertexIdToNewVertexId[index];
+}
+
+bool
+Geometry::cast(std::shared_ptr<math::Ray>	ray,
+			   float&						distance,
+			   uint&						triangle,
+			   std::shared_ptr<Vector3>		hitXyz,
+			   std::shared_ptr<Vector2>		hitUv,
+			   std::shared_ptr<Vector3>		hitNormal)
+{
+	static const auto EPSILON = 0.00001f;
+
+	auto hit = false;
+	auto& indicesData = _indexBuffer->data();
+	auto numIndices = indicesData.size();
+
+	auto xyzBuffer = vertexBuffer("position");
+	auto& xyzData = xyzBuffer->data();
+	auto xyzPtr = &xyzData[0];
+	auto xyzVertexSize = xyzBuffer->vertexSize();
+	auto xyzOffset = std::get<2>(*xyzBuffer->attribute("position"));
+
+	auto minDistance = std::numeric_limits<float>::lowest();
+	auto lambda = hitUv ? Vector2::create() : nullptr;
+	auto triangleIndice = -3;
+
+	auto v0 = Vector3::create();
+	auto v1 = Vector3::create();
+	auto v2 = Vector3::create();
+	auto edge1 = Vector3::create();
+	auto edge2 = Vector3::create();
+	auto pvec = Vector3::create();
+	auto tvec = Vector3::create();
+	auto qvec = Vector3::create();
+	auto dot = 0.f;
+	auto invDot = 0.f;
+	auto u = 0.f;
+	auto v = 0.f;
+	auto t = 0.f;
+
+	for (uint i = 0; i < numIndices; i += 3)
+	{
+		v0->copyFrom(xyzPtr + indicesData[i] * xyzVertexSize);
+		v1->copyFrom(xyzPtr + indicesData[i + 1] * xyzVertexSize);
+		v2->copyFrom(xyzPtr + indicesData[i + 2] * xyzVertexSize);
+
+		edge1->copyFrom(v1)->subtract(v0);
+		edge2->copyFrom(v2)->subtract(v0);
+
+		pvec->copyFrom(ray->direction())->cross(edge2);
+		dot = edge1->dot(pvec);
+
+		if (dot > -EPSILON && dot < EPSILON)
+			continue;
+
+		invDot = 1.f / dot;
+
+		tvec->copyFrom(ray->origin())->subtract(v0);
+		u = tvec->dot(pvec) * invDot;
+		if (u < 0.f || u > 1.f)
+			continue;
+
+		qvec->copyFrom(tvec)->cross(edge1);
+		v = ray->origin()->dot(qvec) * invDot;
+		if (v < 0.f || u + v > 1.f)
+			continue;
+
+		t = edge2->dot(qvec) * invDot;
+		if (t < minDistance)
+		{
+			minDistance = t;
+			distance = t;
+			triangle = i;
+			hit = true;
+
+			if (hitUv)
+			{
+				lambda->x(u);
+				lambda->y(v);
+			}
+		}
+
+		if (hitXyz)
+		{
+			hitXyz->setTo(
+				ray->origin()->x() + minDistance * ray->direction()->x(),
+				ray->origin()->y() + minDistance * ray->direction()->y(),
+				ray->origin()->z() + minDistance * ray->direction()->z()
+			);
+		}
+
+		if (hitUv)
+			getHitUv(triangle, lambda, hitUv);
+
+		if (hitNormal)
+			getHitNormal(triangle, hitNormal);
+	}
+
+	return hit;
+}
+
+void
+Geometry::getHitUv(uint triangle, Vector2::Ptr lambda, Vector2::Ptr hitUv)
+{
+	auto uvBuffer = vertexBuffer("uv");
+	auto& uvData = uvBuffer->data();
+	auto uvPtr = &uvData[0];
+	auto uvVertexSize = uvBuffer->vertexSize();
+	auto uvOffset = std::get<2>(*uvBuffer->attribute("uv"));
+	auto& indicesData = _indexBuffer->data();
+
+	auto u0 = uvData[indicesData[triangle] * uvVertexSize + uvOffset];
+	auto v0 = uvData[indicesData[triangle] * uvVertexSize + uvOffset + 1];
+
+	auto u1 = uvData[indicesData[triangle + 1] * uvVertexSize + uvOffset];
+	auto v1 = uvData[indicesData[triangle + 1] * uvVertexSize + uvOffset + 1];
+
+	auto u2 = uvData[indicesData[triangle + 2] * uvVertexSize + uvOffset];
+	auto v2 = uvData[indicesData[triangle + 2] * uvVertexSize + uvOffset + 1];
+
+	auto z = 1.f - lambda->x() - lambda->y();
+
+	hitUv->setTo(
+		z * u0 + lambda->x() * u1 + lambda->y() * u2,
+		z * v0 + lambda->x() * v1 + lambda->y() * v2
+	);
+}
+
+void
+Geometry::getHitNormal(uint triangle, Vector3::Ptr hitNormal)
+{
+	auto normalBuffer = vertexBuffer("normal");
+	auto& normalData = normalBuffer->data();
+	auto normalPtr = &normalData[0];
+	auto normalVertexSize = normalBuffer->vertexSize();
+	auto normalOffset = std::get<2>(*normalBuffer->attribute("normal"));
+	auto& indicesData = _indexBuffer->data();
+
+	auto v0 = Vector3::create(normalPtr + indicesData[triangle] * normalVertexSize + normalOffset);
+	auto v1 = Vector3::create(normalPtr + indicesData[triangle] * normalVertexSize + normalOffset);
+	auto v2 = Vector3::create(normalPtr + indicesData[triangle] * normalVertexSize + normalOffset);
+
+	auto edge1 = Vector3::create(v1)->subtract(v0)->normalize();
+	auto edge2 = Vector3::create(v2)->subtract(v0)->normalize();
+
+	hitNormal->copyFrom(edge2)->cross(edge1);
+}
+
+void
+Geometry::upload()
+{
+	for (const auto& vb : _vertexBuffers)
+		vb->upload();
+
+	_indexBuffer->upload();
 }

@@ -24,8 +24,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/MinkoBullet.hpp"
 #include "minko/MinkoParticles.hpp"
 #include "minko/MinkoSDL.hpp"
+#ifdef MINKO_PLUGIN_OCULUS
+#include "minko/MinkoOculus.hpp"
+#endif // MINKO_PLUGIN_OCULUS
 
 #include "minko/deserialize/TypeDeserializer.hpp"
+#include "minko/component/bullet/ColliderData.hpp"
 
 #include "minko/component/Fire.hpp"
 
@@ -33,8 +37,8 @@ using namespace minko;
 using namespace minko::component;
 using namespace minko::math;
 
-const float WINDOW_WIDTH        = 1600.0f;
-const float WINDOW_HEIGHT       = 800.0f;
+const float WINDOW_WIDTH        = 1600;
+const float WINDOW_HEIGHT       = 800;
 
 const std::string MK_NAME           = "model/Sponza_lite_sphere.mk";
 const std::string DEFAULT_EFFECT    = "effect/Phong.effect";
@@ -180,7 +184,6 @@ deserializeShape(Qark::Map&         shapeData,
 
 std::shared_ptr<bullet::Collider>
 deserializeBullet(Qark::Map&                        nodeInformation,
-                  file::MkParser::ControllerMap&    controllerMap,
                   file::MkParser::NodeMap&          nodeMap,
                   scene::Node::Ptr&                 node)
 {
@@ -289,7 +292,7 @@ initializeCamera(scene::Node::Ptr group)
 		camera = scene::Node::create(CAMERA_NAME);
 
 		camera->addComponent(Transform::create());
-		camera->component<Transform>()->transform()
+		camera->component<Transform>()->matrix()
 			->appendTranslation(0.0f, 0.75f, 5.0f)
 			->appendRotationY(PI * 0.5);
 
@@ -312,7 +315,11 @@ initializeCamera(scene::Node::Ptr group)
 	camera->addComponent(renderer);
 	root->addChild(camera);
 
+#ifdef MINKO_PLUGIN_OCULUS
+	camera->addComponent(OculusVRCamera::create((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT));
+#else
 	camera->addComponent(PerspectiveCamera::create((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT));
+#endif //MINKO_PLUGIN_OCULUS
 }
 
 void
@@ -330,7 +337,7 @@ printFramerate(const unsigned int delay = 1)
 	static auto start = time(NULL);
 	static auto numFrames = 0;
 
-	int secondTime = time(NULL);
+	auto secondTime = time(NULL);
 
 	++numFrames;
 
@@ -345,7 +352,7 @@ printFramerate(const unsigned int delay = 1)
 int
 main(int argc, char** argv)
 {
-	MinkoSDL::initialize("Minko Example - Sponza", WINDOW_WIDTH, WINDOW_HEIGHT);
+	auto canvas = Canvas::create("Minko Example - Sponza", WINDOW_WIDTH, WINDOW_HEIGHT);
 
 	file::MkParser::registerController(
 	    "colliderController",
@@ -353,23 +360,24 @@ main(int argc, char** argv)
 	        deserializeBullet,
 	        std::placeholders::_1,
 	        std::placeholders::_2,
-	        std::placeholders::_3,
-	        std::placeholders::_4
+	        std::placeholders::_3
 	    )
 	);
 
-	auto sceneManager = SceneManager::create(MinkoSDL::context());
+	auto sceneManager = SceneManager::create(canvas->context());
 
 	root->addComponent(sceneManager);
 	sceneManager->assets()
 		->registerParser<file::PNGParser>("png")
 		->registerParser<file::JPEGParser>("jpg")
 		->registerParser<file::MkParser>("mk")
-		->geometry("cube", geometry::CubeGeometry::create(MinkoSDL::context()));
+		->geometry("cube", geometry::CubeGeometry::create(canvas->context()));
 
 	auto options = sceneManager->assets()->defaultOptions();
 
-	options->material(material::Material::create()->set("triangleCulling", render::TriangleCulling::FRONT));
+	options->material(std::static_pointer_cast<material::Material>(
+		material::Material::create()->set("triangleCulling", render::TriangleCulling::FRONT)
+	));
 	options->generateMipmaps(true);
 
 	// load sponza lighting effect and set it as the default effect
@@ -383,7 +391,9 @@ main(int argc, char** argv)
 	sceneManager->assets()
 		->queue("texture/firefull.jpg")
 		->queue("effect/Particles.effect")
-		//->queue("effect/OculusVR/OculusVR.effect")
+#ifdef MINKO_PLUGIN_OCULUS
+		->queue("effect/OculusVR/OculusVR.effect")
+#endif // MINKO_PLUGIN_OCULUS
 		->queue(MK_NAME);
 
 	renderer = Renderer::create();
@@ -392,16 +402,16 @@ main(int argc, char** argv)
 
 	auto _ = sceneManager->assets()->complete()->connect([ = ](file::AssetLibrary::Ptr assets)
 	{
-		scene::Node::Ptr mk = assets->node(MK_NAME);
+		scene::Node::Ptr mk = assets->symbol(MK_NAME);
 		initializeCamera(mk);
 
 		auto lights = scene::Node::create();
 
 		lights
-		->addComponent(component::AmbientLight::create())
-		->addComponent(component::DirectionalLight::create())
-		->addComponent(component::Transform::create());
-		lights->component<Transform>()->transform()->lookAt(Vector3::zero(), Vector3::create(-1.f, -1.f, -1.f));
+			->addComponent(component::AmbientLight::create())
+			->addComponent(component::DirectionalLight::create())
+			->addComponent(component::Transform::create());
+		lights->component<Transform>()->matrix()->lookAt(Vector3::zero(), Vector3::create(-1.f, -1.f, -1.f));
 		root->addChild(lights);
 
 		root->addChild(group);
@@ -419,91 +429,108 @@ main(int argc, char** argv)
 		for (auto fireNode : fireNodes->nodes())
 			fireNode->addComponent(fire);
 
-		auto keyDown = MinkoSDL::keyDown()->connect([&](const Uint8 * keyboard)
+		auto keyDown = canvas->keyboard()->keyDown()->connect([&](input::Keyboard::Ptr k)
 		{
 			auto collider = true;
-			auto cameraTransform = camera->component<Transform>()->transform();
+			auto cameraTransform = camera->component<Transform>()->matrix();
 
 			if (!collider)
 			{
-				if (keyboard[SDL_SCANCODE_UP] ||
-				    keyboard[SDL_SCANCODE_W] ||
-				    keyboard[SDL_SCANCODE_Z])
+				if (k->keyIsDown(input::Keyboard::ScanCode::UP) ||
+				    k->keyIsDown(input::Keyboard::ScanCode::W) ||
+				    k->keyIsDown(input::Keyboard::ScanCode::Z))
 					cameraTransform->prependTranslation(0.f, 0.f, -CAMERA_LIN_SPEED);
-				else if (keyboard[SDL_SCANCODE_DOWN] ||
-				         keyboard[SDL_SCANCODE_S])
+				else if (k->keyIsDown(input::Keyboard::ScanCode::DOWN) ||
+				         k->keyIsDown(input::Keyboard::ScanCode::S))
 					cameraTransform->prependTranslation(0.f, 0.f, CAMERA_LIN_SPEED);
-				if (keyboard[SDL_SCANCODE_LEFT] ||
-				    keyboard[SDL_SCANCODE_A] ||
-				    keyboard[SDL_SCANCODE_Q])
+				if (k->keyIsDown(input::Keyboard::ScanCode::LEFT) ||
+				    k->keyIsDown(input::Keyboard::ScanCode::A) ||
+				    k->keyIsDown(input::Keyboard::ScanCode::Q))
 					cameraTransform->prependRotation(-CAMERA_ANG_SPEED, Vector3::yAxis());
-				else if (keyboard[SDL_SCANCODE_RIGHT] ||
-				         keyboard[SDL_SCANCODE_D])
+				else if (k->keyIsDown(input::Keyboard::ScanCode::RIGHT) ||
+				         k->keyIsDown(input::Keyboard::ScanCode::D))
 					cameraTransform->prependRotation(CAMERA_ANG_SPEED, Vector3::yAxis());
 			}
 			else
 			{
-				if (keyboard[SDL_SCANCODE_UP] ||
-				    keyboard[SDL_SCANCODE_W] ||
-				    keyboard[SDL_SCANCODE_Z])
+				if (k->keyIsDown(input::Keyboard::ScanCode::UP) ||
+				    k->keyIsDown(input::Keyboard::ScanCode::W) ||
+				    k->keyIsDown(input::Keyboard::ScanCode::Z))
 					// go forward
 					cameraTransform->prependTranslation(Vector3::create(0.0f, 0.0f, -CAMERA_LIN_SPEED));
-				else if (keyboard[SDL_SCANCODE_DOWN] ||
-				         keyboard[SDL_SCANCODE_S])
+				else if (k->keyIsDown(input::Keyboard::ScanCode::DOWN) ||
+				         k->keyIsDown(input::Keyboard::ScanCode::S))
 					// go backward
 					cameraTransform->prependTranslation(Vector3::create(0.0f, 0.0f, CAMERA_LIN_SPEED));
-				if (keyboard[SDL_SCANCODE_LEFT] ||
-				    keyboard[SDL_SCANCODE_A] ||
-				    keyboard[SDL_SCANCODE_Q])
+				if (k->keyIsDown(input::Keyboard::ScanCode::LEFT) ||
+				    k->keyIsDown(input::Keyboard::ScanCode::A) ||
+				    k->keyIsDown(input::Keyboard::ScanCode::Q))
 					cameraTransform->prependTranslation(-CAMERA_LIN_SPEED, 0.0f, 0.0f);
-				else if (keyboard[SDL_SCANCODE_RIGHT] ||
-				         keyboard[SDL_SCANCODE_D])
+				else if (k->keyIsDown(input::Keyboard::ScanCode::RIGHT) ||
+				         k->keyIsDown(input::Keyboard::ScanCode::D))
 					cameraTransform->prependTranslation(CAMERA_LIN_SPEED, 0.0f, 0.0f);
 
 				eye = cameraTransform->translation();
 
-				if (keyboard[SDL_SCANCODE_SPACE] && eye->y() <= 0.5f)
+				if (k->keyIsDown(input::Keyboard::ScanCode::SPACE) && eye->y() <= 0.5f)
 					cameraTransform->prependTranslation(0.0f, 4 * CAMERA_LIN_SPEED, 0.0f);
 
 				cameraCollider->synchronizePhysicsWithGraphics();
 			}
+
+#ifdef MINKO_PLUGIN_OCULUS
+			if (k->keyIsDown(input::Keyboard::ScanCode::R) && camera->component<OculusVRCamera>())
+			{
+				std::cout << "reset head tracking" << std::endl;
+				camera->component<OculusVRCamera>()->resetHeadTracking();
+			}
+#endif // MINKO_PLUGIN_OCULUS
 		});
 
-		auto joystickMotion = MinkoSDL::joystickMotion()->connect([&](int which, int axis, int value)
+		if (canvas->numJoysticks() > 0)
 		{
-			auto cameraTransform = camera->component<Transform>()->transform();
-			float percent = float(value) / 32768.f;
+			auto joystickMotion = canvas->joystick(0)->joystickAxisMotion()->connect([&](input::Joystick::Ptr, int which, int axis, int value)
+			{
+				auto cameraTransform = camera->component<Transform>()->matrix();
+				float percent = float(value) / 32768.f;
 
-			if (axis == 1)
-				cameraTransform->prependTranslation(0.0f, 0.0f, CAMERA_LIN_SPEED * percent);
-			if (axis == 0)
-				cameraTransform->prependTranslation(CAMERA_LIN_SPEED * percent, 0.0f, 0.0f);
+				if (axis == 1)
+					cameraTransform->prependTranslation(0.0f, 0.0f, CAMERA_LIN_SPEED * percent);
+				if (axis == 0)
+					cameraTransform->prependTranslation(CAMERA_LIN_SPEED * percent, 0.0f, 0.0f);
 
-			eye = cameraTransform->translation();
+				eye = cameraTransform->translation();
 
-			cameraCollider->synchronizePhysicsWithGraphics();
-		});
+				cameraCollider->synchronizePhysicsWithGraphics();
+			});
 
-		auto joystickButtonDown = MinkoSDL::joystickButtonDown()->connect([&](int which)
+			auto joystickButtonDown = canvas->joystick(0)->joystickButtonDown()->connect([&](input::Joystick::Ptr joystick, int which, int buttonId)
+			{
+				auto cameraTransform = camera->component<Transform>()->matrix();
+
+				cameraTransform->prependTranslation(0.0f, 4 * CAMERA_LIN_SPEED, 0.0f);
+				cameraCollider->synchronizePhysicsWithGraphics();
+			});
+		}
+
+		auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, unsigned int width, unsigned int height)
 		{
-			auto cameraTransform = camera->component<Transform>()->transform();
-
-			cameraTransform->prependTranslation(0.0f, 4 * CAMERA_LIN_SPEED, 0.0f);
-
-			cameraCollider->synchronizePhysicsWithGraphics();
-		});
-
-		auto resized = MinkoSDL::resized()->connect([&](unsigned int width, unsigned int height)
-		{
+#ifndef MINKO_PLUGIN_OCULUS
 			camera->component<PerspectiveCamera>()->aspectRatio((float)width / (float)height);
+#endif // MINKO_PLUGIN_OCULUS
 		});
 
-		auto enterFrame = MinkoSDL::enterFrame()->connect([&]()
+		auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, uint deltaTime)
 		{
 			sceneManager->nextFrame();
 		});
 
-		MinkoSDL::run();
+#ifdef MINKO_PLUGIN_OCULUS
+		if (camera->component<OculusVRCamera>()->sensorDeviceDetected())
+			std::cout << "Rift's sensor device correctly detected.\n\tReset head tracking with [R] key." << std::endl;
+#endif // MINKO_PLUGIN_OCULUS
+
+		canvas->run();
 	});
 
 	sceneManager->assets()->load();

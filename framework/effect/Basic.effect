@@ -1,17 +1,25 @@
 // basic effect
 {
-    "name"  : "basic",
+    "name"  	: "basic",
     
+	"priority"	: "opaque",
+	
     "attributeBindings" : {
         "position"              : "geometry.vertex.attribute.position",
-        "uv"                    : "geometry.vertex.attribute.uv"
+        "uv"                    : "geometry.vertex.attribute.uv",
+		"boneIdsA"				: "geometry.vertex.attribute.boneIdsA",
+		"boneIdsB"				: "geometry.vertex.attribute.boneIdsB",		
+		"boneWeightsA"			: "geometry.vertex.attribute.boneWeightsA",
+		"boneWeightsB"			: "geometry.vertex.attribute.boneWeightsB"
     },
     
     "uniformBindings"   : {
         "diffuseColor"          : "material.diffuseColor",
         "diffuseMap"            : "material.diffuseMap",
         "modelToWorldMatrix"    : "transform.modelToWorldMatrix",
-        "worldToScreenMatrix"   : "camera.worldToScreenMatrix"
+        "worldToScreenMatrix"   : { "property" : "camera.worldToScreenMatrix", "source" : "renderer" },
+		"boneMatrices"			: { "property" : "geometry.boneMatrices",			"source" : "target" },
+		"numBones"				: { "property" : "geometry.numBones",				"source" : "target" }
     },
     
     "stateBindings" : {
@@ -28,7 +36,9 @@
 
     "macroBindings" : {
         "DIFFUSE_MAP"           : "material.diffuseMap",
-        "MODEL_TO_WORLD"        : "transform.modelToWorldMatrix"
+        "MODEL_TO_WORLD"        : "transform.modelToWorldMatrix",
+		"HAS_NORMAL"			: "geometry.vertex.attribute.normal",
+		"NUM_BONES"				: { "property" : "geometry.numBones",	"source" : "target" }
     },
     
     "blendMode"         : ["one", "zero"],
@@ -36,14 +46,16 @@
 	"colorMask"			: true,
 	"stencilTest"		: ["always", 0, 1, ["keep", "keep", "keep"]],
     "triangleCulling"   : "none",
-    
+    "scissorTest"		: false,
+	"scissorBox"		: [0, 0, -1, -1],
+	
     "samplerStates" : {
         "diffuseMap"    : { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" }
     },
     
 	"techniques" : [{
 		"passes"    : [{
-			"includes" : [ "Basic.vertex.glsl", "Basic.fragment.glsl" ]
+			"includes" : [ "Skinning.function.glsl", "Basic.vertex.glsl", "Basic.fragment.glsl" ]
 		}]
 	}]
 }
