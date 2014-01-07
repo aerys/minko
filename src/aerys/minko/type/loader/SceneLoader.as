@@ -142,7 +142,9 @@ package aerys.minko.type.loader
 		
 		public function loadClass(classObject : Class) : void
 		{
-			loadBytes(new classObject());
+			var bytes : ByteArray = new classObject() as ByteArray;
+			loadBytes(bytes);
+			bytes.clear();
 		}
 		
 		public function loadBytes(byteArray : ByteArray) : void
