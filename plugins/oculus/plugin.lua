@@ -20,18 +20,37 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 -- oculus plugin
 minko.plugin.oculus = {}
 
-function minko.plugin.oculus:enable()
-	configuration { "windows" }
-		defines { "MINKO_PLUGIN_OCULUS" }
+-- Note: if you see errors like this one:
+-- /System/Library/Frameworks/IOKit.framework/Headers/usb/USB.h:754:23: error: too many #pragma options align=reset
+-- please replace all occurences of #pragma options align=reset with:
+-- #if defined(__GNUC__)
+-- #pragma pack()
+-- #else
+-- #pragma options align=reset
+-- #endif
 
-		minko.plugin.links { "oculus" }
+function minko.plugin.oculus:enable()
+	defines { "MINKO_PLUGIN_OCULUS" }
+
+	minko.plugin.links { "oculus" }
+
+	includedirs {
+		minko.sdk.path("plugins/oculus/include")
+	}
+
+	configuration { "win" }
 		links { "winmm", "setupapi" }
 
+		postbuildcommands {
+			'xcopy /y /i /s "' .. minko.sdk.path('/plugins/oculus/asset/effect/*') .. '" "$(TargetDir)\\effect"',
+		}
+
+	configuration { "osx" }
 		includedirs { 
 			minko.sdk.path("plugins/oculus/include")
 		}
 
 		postbuildcommands {
-			'xcopy /y /i /s "' .. minko.sdk.path('/plugins/oculus/asset/effect/*') .. '" "$(TargetDir)\\effect"',
+			'cp -r ' .. minko.sdk.path('/plugins/oculus/asset/effect') .. ' ${TARGETDIR}',
 		}
 end
