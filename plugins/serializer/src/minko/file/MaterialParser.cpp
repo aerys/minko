@@ -19,7 +19,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/file/MaterialParser.hpp"
 #include "minko/material/Material.hpp"
-#include "minko/MkTypes.hpp"
+#include "minko/Types.hpp"
 #include "minko/deserialize/TypeDeserializer.hpp"
 #include "minko/file/AssetLibrary.hpp"
 #include "minko/math/Matrix4x4.hpp"
@@ -42,12 +42,12 @@ std::map<uint, std::function<Any(msgpack::type::tuple<uint, std::string>&)>> Mat
 
 MaterialParser::MaterialParser()
 {
-	_typeIdToReadFunction[mk::VECTOR4]			= std::bind(&deserialize::TypeDeserializer::deserializeVector4, std::placeholders::_1);
-	_typeIdToReadFunction[mk::MATRIX4X4]		= std::bind(&deserialize::TypeDeserializer::deserializeMatrix4x4, std::placeholders::_1);
-	_typeIdToReadFunction[mk::VECTOR3]			= std::bind(&deserialize::TypeDeserializer::deserializeVector3, std::placeholders::_1);
-	_typeIdToReadFunction[mk::VECTOR2]			= std::bind(&deserialize::TypeDeserializer::deserializeVector2, std::placeholders::_1);
-	_typeIdToReadFunction[mk::BLENDING]			= std::bind(&deserialize::TypeDeserializer::deserializeBlending, std::placeholders::_1);
-	_typeIdToReadFunction[mk::TRIANGLECULLING]	= std::bind(&deserialize::TypeDeserializer::deserializeTriangleCulling, std::placeholders::_1);
+	_typeIdToReadFunction[serializer::VECTOR4]			= std::bind(&deserialize::TypeDeserializer::deserializeVector4, std::placeholders::_1);
+	_typeIdToReadFunction[serializer::MATRIX4X4]		= std::bind(&deserialize::TypeDeserializer::deserializeMatrix4x4, std::placeholders::_1);
+	_typeIdToReadFunction[serializer::VECTOR3]			= std::bind(&deserialize::TypeDeserializer::deserializeVector3, std::placeholders::_1);
+	_typeIdToReadFunction[serializer::VECTOR2]			= std::bind(&deserialize::TypeDeserializer::deserializeVector2, std::placeholders::_1);
+	_typeIdToReadFunction[serializer::BLENDING]			= std::bind(&deserialize::TypeDeserializer::deserializeBlending, std::placeholders::_1);
+	_typeIdToReadFunction[serializer::TRIANGLECULLING]	= std::bind(&deserialize::TypeDeserializer::deserializeTriangleCulling, std::placeholders::_1);
 }
 
 void
@@ -86,31 +86,31 @@ MaterialParser::deserializeComplexProperty(std::shared_ptr<material::Material>		
 {
 	uint type = serializedProperty.a1.a0 >> 24;
 
-	if (type == mk::VECTOR4)
+	if (type == serializer::VECTOR4)
 		material->set<std::shared_ptr<math::Vector4>>(
 			serializedProperty.a0, 
 			Any::cast<std::shared_ptr<math::Vector4>>(deserialize::TypeDeserializer::deserializeVector4(serializedProperty.a1)));
-	else if (type == mk::MATRIX4X4)
+	else if (type == serializer::MATRIX4X4)
 		material->set<std::shared_ptr<math::Matrix4x4>>(
 			serializedProperty.a0, 
 			Any::cast<std::shared_ptr<math::Matrix4x4>>(deserialize::TypeDeserializer::deserializeMatrix4x4(serializedProperty.a1)));
-	else if (type == mk::VECTOR2)
+	else if (type == serializer::VECTOR2)
 		material->set<std::shared_ptr<math::Vector2>>(
 			serializedProperty.a0, 
 			Any::cast<std::shared_ptr<math::Vector2>>(deserialize::TypeDeserializer::deserializeVector2(serializedProperty.a1)));
-	else if (type == mk::VECTOR3)
+	else if (type == serializer::VECTOR3)
 		material->set<std::shared_ptr<math::Vector3>>(
 			serializedProperty.a0, 
 			Any::cast<std::shared_ptr<math::Vector3>>(deserialize::TypeDeserializer::deserializeVector3(serializedProperty.a1)));
-	else if (type == mk::BLENDING)
+	else if (type == serializer::BLENDING)
 		material->set<render::Blending::Mode>(
 			serializedProperty.a0, 
 			Any::cast<render::Blending::Mode>(deserialize::TypeDeserializer::deserializeBlending(serializedProperty.a1)));
-	else if (type == mk::TRIANGLECULLING)
+	else if (type == serializer::TRIANGLECULLING)
 		material->set<render::TriangleCulling>(
 			serializedProperty.a0, 
 			Any::cast<render::TriangleCulling>(deserialize::TypeDeserializer::deserializeTriangleCulling(serializedProperty.a1)));
-	else if (type == mk::TEXTURE)
+	else if (type == serializer::TEXTURE)
 		material->set<std::shared_ptr<render::Texture>>(
 			serializedProperty.a0,
 			_dependencies->getTextureReference(Any::cast<uint>(deserialize::TypeDeserializer::deserializeTextureId(serializedProperty.a1))));
