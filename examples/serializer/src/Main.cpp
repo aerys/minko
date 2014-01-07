@@ -28,7 +28,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/math/Matrix4x4.hpp"
 #include "minko/MkStats.hpp"
 
-#include "minko/MkTypes.hpp"
 #include "minko/serialize/TypeSerializer.hpp"
 #include "minko/deserialize/TypeDeserializer.hpp"
 #include "minko/geometry/SphereGeometry.hpp"
