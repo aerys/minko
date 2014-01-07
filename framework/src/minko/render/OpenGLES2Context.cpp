@@ -17,8 +17,9 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "OpenGLES2Context.hpp"
+#include "minko/render/OpenGLES2Context.hpp"
 
+#include <iomanip>
 #include "minko/render/CompareMode.hpp"
 #include "minko/render/WrapMode.hpp"
 #include "minko/render/TextureFilter.hpp"
@@ -35,6 +36,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 # include "minko/math/Matrix4x4.hpp"
 #elif _WIN32
 # include "GL/glew.h"
+#elif EMSCRIPTEN
+# include <GLES2/gl2.h>
+# include <EGL/egl.h>
 #else
 # include <GL/gl.h>
 # include <GL/glu.h>
@@ -209,11 +213,11 @@ OpenGLES2Context::configureViewport(const uint x,
 }
 
 void
-OpenGLES2Context::clear(float 			red,
-					    float 			green,
-					    float 			blue,
-					    float 			alpha,
-					    float 			depth,
+OpenGLES2Context::clear(float 	red,
+					    float 	green,
+					    float 	blue,
+					    float 	alpha,
+					    float 	depth,
 					    uint 	stencil,
 					    uint 	mask)
 {
@@ -245,7 +249,9 @@ OpenGLES2Context::clear(float 			red,
 	// Specifies the index used when the stencil buffer is cleared. The initial value is 0.
 	//
 	// glClearStencil specify the clear value for the stencil buffer
+#ifndef MINKO_NO_STENCIL
 	glClearStencil(stencil);
+#endif
 
 	// http://www.opengl.org/sdk/docs/man/xhtml/glClear.xml
 	//
@@ -365,6 +371,10 @@ OpenGLES2Context::uploadVertexBufferData(const uint vertexBuffer,
 void
 OpenGLES2Context::deleteVertexBuffer(const uint vertexBuffer)
 {
+	for (auto& currentVertexBuffer : _currentVertexBuffer)
+		if (currentVertexBuffer == vertexBuffer)
+			currentVertexBuffer = 0;
+
 	_vertexBuffers.erase(std::find(_vertexBuffers.begin(), _vertexBuffers.end(), vertexBuffer));
 
 	// http://www.opengl.org/sdk/docs/man/xhtml/glDeleteBuffers.xml
@@ -462,6 +472,9 @@ OpenGLES2Context::uploaderIndexBufferData(const uint 	indexBuffer,
 void
 OpenGLES2Context::deleteIndexBuffer(const uint indexBuffer)
 {
+	if (_currentIndexBuffer == indexBuffer)
+		_currentIndexBuffer = 0;
+
 	_indexBuffers.erase(std::find(_indexBuffers.begin(), _indexBuffers.end(), indexBuffer));
 
 	glDeleteBuffers(1, &indexBuffer);
@@ -758,7 +771,7 @@ OpenGLES2Context::compileShader(const uint shader)
 
 		saveShaderSourceToFile(filename, shader);
 
-		std::cerr << errors << std::endl;
+		std::cerr << "\nERRORS\n------\n" << errors << std::endl;
 		std::cerr << "\nerrorneous shader source saved to \'" << filename << "\'" << std::endl;
 		throw;
 	}
@@ -829,32 +842,59 @@ OpenGLES2Context::setShaderSource(const uint shader,
 void
 OpenGLES2Context::saveShaderSourceToFile(const std::string& filename, uint shader)
 {
-	std::string		source;
+	std::string	source;
+	getShaderSource(shader, source);
+
+#ifndef MINKO_GLSL_OPTIMIZER
+	std::cout << "\nSHADER SOURCE\n-------------" << std::endl;
+	unsigned int i		= 0;
+	unsigned int line	= 1;
+	while(i < source.size())
+	{
+		std::string lineString;
+		while(i < source.size() && source[i] != '\n')
+			lineString.push_back(source[i++]);
+		++i;
+
+#ifndef EMSCRIPTEN
+		std::cerr
+#else
+		std::cout
+#endif // EMSCRIPTEN
+			<< "(" << std::setfill('0') << std::setw(4) << line << ") " << lineString << std::endl;
+
+		++line;
+	}
+#endif //MINKO_GLSL_OPTIMIZER
+
+#ifndef EMSCRIPTEN
 	std::ofstream	file;
 
 	file.open(filename.c_str());
 	if (!file.is_open())
 		return;
-
-	getShaderSource(shader, source);
-
 	file << source;
 	file.close();
+#endif // EMSCRIPTEN
 }
 
 void
 OpenGLES2Context::getShaderSource(uint shader, std::string& source)
 {
-	static const uint BUFFER_SIZE = 5000;
-	
-	GLchar	buffer[BUFFER_SIZE];
-	GLsizei	length = 0;
+	source.clear();
 
-	glGetShaderSource(shader, BUFFER_SIZE, &length, &buffer[0]);
+	GLint	bufferSize	= 0;
+	GLsizei	length		= 0;
+
+	glGetShaderiv(shader, GL_SHADER_SOURCE_LENGTH, &bufferSize);
+	if (bufferSize == 0)
+		return;
+
+	source.resize(bufferSize);
+	glGetShaderSource(shader, bufferSize, &length, &source[0]);
 	checkForErrors();
-
-	source = std::string(buffer);
 }
+
 
 const uint
 OpenGLES2Context::createVertexShader()
@@ -907,7 +947,7 @@ OpenGLES2Context::getProgramInputs(const uint program)
 	std::vector<ProgramInputs::Type> types;
 	std::vector<uint> locations;
 
-	glUseProgram(program);
+	setProgram(program);
 	fillUniformInputs(program, names, types, locations);
 	fillAttributeInputs(program, names, types, locations);
 
@@ -1132,6 +1172,34 @@ OpenGLES2Context::setUniform(const uint& location, const float& v1, const float&
 }
 
 void
+OpenGLES2Context::setUniforms(uint location, uint size, const float* values)
+{
+	glUniform1fv(location, size, values);
+	checkForErrors();
+}
+
+void
+OpenGLES2Context::setUniforms2(uint location, uint size, const float* values)
+{
+	glUniform2fv(location, size, values);
+	checkForErrors();
+}
+
+void
+OpenGLES2Context::setUniforms3(uint location, uint size, const float* values)
+{
+	glUniform3fv(location, size, values);
+	checkForErrors();
+}
+
+void
+OpenGLES2Context::setUniforms4(uint location, uint size, const float* values)
+{
+	glUniform4fv(location, size, values);
+	checkForErrors();
+}
+
+void
 OpenGLES2Context::setUniform(const uint& location, const uint& size, bool transpose, const float* values)
 {
 #ifdef GL_ES_VERSION_2_0
@@ -1149,6 +1217,7 @@ OpenGLES2Context::setUniform(const uint& location, const uint& size, bool transp
         glUniformMatrix4fv(location, size, transpose, values);
     }
 #else
+
 	glUniformMatrix4fv(location, size, transpose, values);
 #endif
 	checkForErrors();
@@ -1222,6 +1291,7 @@ OpenGLES2Context::setStencilTest(CompareMode stencilFunc,
 								 StencilOperation stencilZFailOp,
 								 StencilOperation stencilZPassOp)
 {
+#ifndef MINKO_NO_STENCIL
 	if (stencilFunc != _currentStencilFunc 
 		|| stencilRef != _currentStencilRef 
 		|| stencilMask != _currentStencilMask)
@@ -1245,6 +1315,52 @@ OpenGLES2Context::setStencilTest(CompareMode stencilFunc,
 
 		glStencilOp(_stencilOps[stencilFailOp], _stencilOps[stencilZFailOp], _stencilOps[stencilZPassOp]);
 	}
+
+	checkForErrors();
+#endif
+}
+
+
+void
+OpenGLES2Context::readPixels(unsigned int x, unsigned int y, unsigned int width, unsigned int height, unsigned char* pixels)
+{
+	glReadPixels(x, y, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+
+	checkForErrors();
+}
+
+void
+OpenGLES2Context::setScissorTest(bool						scissorTest, 
+								 const render::ScissorBox&	scissorBox)
+{
+	if (scissorTest)
+	{
+		glEnable(GL_SCISSOR_TEST);
+
+		int		x = 0;
+		int		y = 0;
+		uint	width = 0;
+		uint	height = 0;
+
+		if (scissorBox.width < 0 || scissorBox.height < 0)
+		{
+			x		= _viewportX;
+			y		= _viewportY;
+			width	= _viewportWidth;
+			height	= _viewportHeight;
+		}
+		else
+		{
+			x		= scissorBox.x;
+			y		= scissorBox.y;
+			width	= scissorBox.width;
+			height	= scissorBox.height;
+		}
+
+		glScissor(x, y, width, height);
+	}
+	else
+		glDisable(GL_SCISSOR_TEST);
 
 	checkForErrors();
 }
@@ -1350,6 +1466,8 @@ OpenGLES2Context::createRTTBuffers(uint texture, uint width, uint height)
 #else
     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, width, height);
 #endif
+	// FIXME: create & attach stencil buffer
+
     // attach to the FBO for depth
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, renderBuffer);
 

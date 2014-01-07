@@ -35,7 +35,7 @@ namespace minko
 			typedef std::shared_ptr<render::AbstractContext>											ContextPtr;
 		
 		private:
-			typedef	std::function<std::shared_ptr<scene::Node>(NodeInfo&, OptionsPtr, ControllerMap&, NodeMap&)> NodeDeserializerFunc;
+			typedef	std::function<std::shared_ptr<scene::Node>(NodeInfo&, OptionsPtr, NodeMap&)> NodeDeserializerFunc;
 
 			// attributes
 		private:
@@ -64,39 +64,33 @@ namespace minko
 			deserializeScene(Qark::Object&	sceneObject,
 							 Qark::Object&	assetsObject,
 							 OptionsPtr		options,
-							 ControllerMap&	controllerMap,
 							 NodeMap&		nodeMap);
 
 		private:
 			std::shared_ptr<scene::Node>
 			deserializeNode(Qark::Object&	nodeObject,
 							OptionsPtr		options,
-							ControllerMap&	controllerMap,
 							NodeMap&		nodeMap);
 
 
 			std::shared_ptr<scene::Node>
 			deserializeGroup(NodeInfo&		nodeInfo,
 							 OptionsPtr		options,
-							 ControllerMap&	controllerMap,
 							 NodeMap&		nodeMap);
 
 			std::shared_ptr<scene::Node>
 			deserializeMesh(NodeInfo&		nodeInfo,
 							OptionsPtr		options,
-							ControllerMap&	controllerMap,
 							NodeMap&			nodeMap);
 
 			std::shared_ptr<scene::Node>
 			deserializeCamera(NodeInfo&			nodeInfo,
 							  OptionsPtr		options,
-							  ControllerMap&	controllerMap,
 							  NodeMap&			nodeMap);
 
 			std::shared_ptr<scene::Node>
 			deserializeLight(NodeInfo&		nodeInfo,
 							 OptionsPtr		options,
-							 ControllerMap&	controllerMap,
 							 NodeMap&		nodeMap);
 
 			void

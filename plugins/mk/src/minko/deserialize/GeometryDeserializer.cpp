@@ -84,6 +84,8 @@ GeometryDeserializer::deserializeGeometry(bool						    		isCopy,
 		if (computeTangent && !vertexStream->hasAttribute("tangent"))
 			geometry->computeTangentSpace(!vertexStream->hasAttribute("normal"));
 
+		geometry = options->geometryFunction()(geometryName, geometry);
+
 		GeometryDeserializer::_geometryIdToName[copyId] = geometryName;
 		library->geometry(geometryName, geometry);
 
@@ -113,6 +115,8 @@ GeometryDeserializer::readIndexStream(std::stringstream&				stream,
 	data.resize(numIndices);
 
 	stream.read(reinterpret_cast<char*>(&*data.begin()), numIndices * 2);
+
+	std::reverse(data.begin(), data.end());
 
 	return render::IndexBuffer::create(options->context(), data);
 }

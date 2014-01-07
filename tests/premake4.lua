@@ -9,6 +9,8 @@ minko.project.application "minko-tests"
 	}
 	includedirs { "src" }
 
+	defines { "MINKO_TESTS" }
+
 	-- plugins
 	minko.plugin.enable("sdl");
 
@@ -16,15 +18,4 @@ minko.project.application "minko-tests"
 	links { "googletest" }
 	includedirs { "lib/googletest/include" }
 
-	links { "framework" }
-
-	-- configurations
-	configuration { "debug"}
-		defines { "DEBUG" }
-		flags { "Symbols" }
-		targetdir "bin/debug"
-
-	configuration { "release" }
-		defines { "NDEBUG" }
-		flags { "OptimizeSpeed" }
-		targetdir "bin/release"
+	links { "pthread" }

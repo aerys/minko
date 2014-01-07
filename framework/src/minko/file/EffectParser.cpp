@@ -17,7 +17,7 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "EffectParser.hpp"
+#include "minko/file/EffectParser.hpp"
 
 #include "minko/data/Provider.hpp"
 #include "minko/render/Effect.hpp"
@@ -108,6 +108,32 @@ EffectParser::initializeStencilOperationMap()
 	return m;
 }
 
+std::unordered_map<std::string, float> EffectParser::_priorityMap = EffectParser::initializePriorityMap();
+std::unordered_map<std::string, float>
+EffectParser::initializePriorityMap()
+{
+	std::unordered_map<std::string, float> m;
+
+	// The higher the priority, the earlier the drawcall is rendered.
+	m["first"]			= 4000.0f;
+	m["background"]		= 3000.0f;
+	m["opaque"]			= 2000.0f;
+	m["transparent"]	= 1000.0f;
+	m["last"]			=    0.0f;
+
+	return m;
+}
+
+float
+EffectParser::priority(const std::string& name)
+{
+	auto foundPriorityIt = _priorityMap.find(name);
+
+	return foundPriorityIt != _priorityMap.end()
+		? foundPriorityIt->second
+		: _priorityMap["opaque"];
+}
+
 EffectParser::EffectParser() :
 	_effect(nullptr),
 	_numDependencies(0),
@@ -126,24 +152,29 @@ EffectParser::parse(const std::string&				    filename,
 	Json::Value root;
 	Json::Reader reader;
 
-	if (!reader.parse((const char*)&data[0], (const char*)&data[data.size() - 1],	root, false))
+	if (!reader.parse((const char*)&data[0], (const char*)&data[data.size() - 1], root, false))
     {
         std::cerr << resolvedFilename << ":" << reader.getFormattedErrorMessages() << std::endl;
 
 		throw std::invalid_argument("data");
     }
 
-    _filename = filename;
+	_filename = filename;
 	_resolvedFilename = resolvedFilename;
 	_options = options;
 	_assetLibrary = assetLibrary;
-	_effectName = root.get("name", filename).asString();
-	_defaultTechnique = root.get("defaultTechnique", "default").asString();
-
+	_effectName			= root.get("name", filename).asString();
+	_defaultTechnique	= root.get("defaultTechnique", "default").asString();
+	
 	auto context = _assetLibrary->context();
 
 	// parse default values for bindings and states
-	_defaultStates = parseRenderStates(root, context, _globalTargets, _defaultStates, 0);
+	/*
+	auto defaultQueue = root.get("queue", "opaque").asString();
+	_defaultStates->priority(priority(defaultQueue));
+	*/
+	_defaultStates = parseRenderStates(root, context, _globalTargets, _defaultStates, 0.0f);
+
 	parseBindings(
 		root,
 		_defaultAttributeBindings,
@@ -194,7 +225,7 @@ EffectParser::parseRenderStates(const Json::Value&		root,
 								AbstractContext::Ptr	context,
 								TexturePtrMap&			targets,
 								render::States::Ptr		defaultStates,
-								unsigned int			priority)
+								float					priorityOffset)
 {
 	auto blendSrcFactor		= defaultStates->blendingSourceFactor();
 	auto blendDstFactor		= defaultStates->blendingDestinationFactor();
@@ -208,16 +239,20 @@ EffectParser::parseRenderStates(const Json::Value&		root,
 	auto stencilFailOp		= defaultStates->stencilFailOperation();
 	auto stencilZFailOp		= defaultStates->stencilDepthFailOperation();
 	auto stencilZPassOp		= defaultStates->stencilDepthPassOperation();
+	auto scissorTest		= defaultStates->scissorTest();
+	auto scissorBox			= defaultStates->scissorBox();
 
 	render::Texture::Ptr target = defaultStates->target();
 	std::unordered_map<std::string, SamplerState> samplerStates = defaultStates->samplers();
 
+	const float priority = parsePriority(root, defaultStates->priority() + priorityOffset);
 	parseBlendMode(root, blendSrcFactor, blendDstFactor);
 	parseColorMask(root, colorMask);
 	parseDepthTest(root, depthMask, depthFunc);
 	parseTriangleCulling(root, triangleCulling);
     parseSamplerStates(root, samplerStates);
 	parseStencilState(root, stencilFunc, stencilRef, stencilMask, stencilFailOp, stencilZFailOp, stencilZPassOp);
+	parseScissorTest(root, scissorTest, scissorBox);
 	target = parseTarget(root, context, targets);
 
 	return render::States::create(
@@ -235,6 +270,8 @@ EffectParser::parseRenderStates(const Json::Value&		root,
 		stencilFailOp,
 		stencilZFailOp,
 		stencilZPassOp,
+		scissorTest,
+		scissorBox,
 		target
 	);
 }
@@ -253,98 +290,101 @@ EffectParser::parsePasses(const Json::Value&		root,
 						  render::States::Ptr		defaultStates,
 						  UniformValues&			defaultUniformDefaultValues)
 {
-	auto passId = 0;
-	auto passesValue = root.get("passes", 0);
+	auto passId				= 0;
+	auto passesValue		= root.get("passes", 0);
 
-	for (auto passValue : passesValue)
-	{
-		passId++;
+    for (auto passValue : passesValue)
+    {
+        passId++;
+		const auto priorityOffset = (float)(passesValue.size() - passId);
 
-		if (passValue.isString())
-		{
-			auto name = passValue.asString();
-			auto passIt = std::find_if(
-				_globalPasses.begin(),
-				_globalPasses.end(),
-				[&](Pass::Ptr pass)
-				{
-					return pass->name() == name;
-				}
-			);
+        if (passValue.isString())
+        {
+            auto name = passValue.asString();
+            auto passIt = std::find_if(
+                _globalPasses.begin(),
+                _globalPasses.end(),
+                [&](Pass::Ptr pass)
+            {
+                return pass->name() == name;
+            }
+            );
 
-			if (passIt == _globalPasses.end())
-				throw std::logic_error("Pass '" + name + "' does not exist.");
+            if (passIt == _globalPasses.end())
+                throw std::logic_error("Pass '" + name + "' does not exist.");
 
-			auto pass = *passIt;
-			auto passCopy = Pass::create(pass, true);
+            auto pass = *passIt;
+            auto passCopy = Pass::create(pass, true);
 
-			_passIncludes[passCopy] = _passIncludes[pass];
-			_shaderIncludes[passCopy->program()->vertexShader()] = _shaderIncludes[pass->program()->vertexShader()];
-			_shaderIncludes[passCopy->program()->fragmentShader()] = _shaderIncludes[pass->program()->fragmentShader()];
-			passCopy->states()->priority((float)(passesValue.size() - passId));
+            _passIncludes[passCopy] = _passIncludes[pass];
+            _shaderIncludes[passCopy->program()->vertexShader()] = _shaderIncludes[pass->program()->vertexShader()];
+            _shaderIncludes[passCopy->program()->fragmentShader()] = _shaderIncludes[pass->program()->fragmentShader()];
+			passCopy->states()->priority(defaultStates->priority() + priorityOffset);
 
-			passes.push_back(passCopy);
+            // set uniform default values
+            for (auto& nameAndValues : defaultUniformDefaultValues)
+                setUniformDefaultValueOnPass(
+                    passCopy,
+                    nameAndValues.first,
+                    nameAndValues.second.first,
+                    nameAndValues.second.second
+                );
 
-			continue;
-		}
+            passes.push_back(passCopy);
+        }
+        else
+        {
+            if (!parseConfiguration(passValue))
+                continue;
 
-		if (!parseConfiguration(passValue))
-			continue;
+            auto	name		= passValue.get("name", std::to_string(passId)).asString();
+			auto	fallback	= passValue.get("fallback", std::string()).asString();
 
-		auto name = passValue.get("name", std::to_string(passId)).asString();
+            // pass bindings
+            data::BindingMap		attributeBindings(defaultAttributeBindings);
+            data::BindingMap		uniformBindings(defaultUniformBindings);
+            data::BindingMap		stateBindings(defaultStateBindings);
+            data::MacroBindingMap	macroBindings(defaultMacroBindings);
+            UniformValues			uniformDefaultValues(defaultUniformDefaultValues);
 
-		// pass bindings
-		data::BindingMap		attributeBindings(defaultAttributeBindings);
-		data::BindingMap		uniformBindings(defaultUniformBindings);
-		data::BindingMap		stateBindings(defaultStateBindings);
-		data::MacroBindingMap	macroBindings(defaultMacroBindings);
-		UniformValues			uniformDefaultValues(defaultUniformDefaultValues);
-        
-		parseBindings(
-			passValue,
-			attributeBindings,
-			uniformBindings,
-			stateBindings,
-			macroBindings,
-			uniformDefaultValues
-		);
+            parseBindings(
+                passValue,
+                attributeBindings,
+                uniformBindings,
+                stateBindings,
+                macroBindings,
+                uniformDefaultValues
+            );
 
-		// render states
-		auto states = parseRenderStates(passValue, context, targets, defaultStates, passesValue.size() - passId);
+            // render states
+            auto states = parseRenderStates(passValue, context, targets, defaultStates, priorityOffset);
 
-		// program
-		auto vertexShaderValue = passValue.get("vertexShader", "");
-		auto vertexShader = parseShader(
-			vertexShaderValue, resolvedFilename, options, render::Shader::Type::VERTEX_SHADER
-		);
-		
-		auto fragmentShaderValue = passValue.get("fragmentShader", "");
-		auto fragmentShader = parseShader(
-			fragmentShaderValue, resolvedFilename, options, render::Shader::Type::FRAGMENT_SHADER
-		);
+            // program
+            auto vertexShaderValue = passValue.get("vertexShader", "");
+            auto vertexShader = parseShader(
+                vertexShaderValue, resolvedFilename, options, render::Shader::Type::VERTEX_SHADER
+            );
 
-		auto pass = render::Pass::create(
-			name,
-			Program::create(options->context(), vertexShader, fragmentShader),
-			attributeBindings,
-			uniformBindings,
-			stateBindings,
-			macroBindings,
-            states
-		);
+            auto fragmentShaderValue = passValue.get("fragmentShader", "");
+            auto fragmentShader = parseShader(
+                fragmentShaderValue, resolvedFilename, options, render::Shader::Type::FRAGMENT_SHADER
+            );
 
-		// set uniform default values
-		for (auto& nameAndValues : uniformDefaultValues)
-			setUniformDefaultValueOnPass(
-				pass,
-				nameAndValues.first,
-				nameAndValues.second.first,
-				nameAndValues.second.second
-			);
+            auto pass = render::Pass::create(
+                name,
+                Program::create(options->context(), vertexShader, fragmentShader),
+                attributeBindings,
+                uniformBindings,
+                stateBindings,
+                macroBindings,
+                states,
+				fallback
+            );
 
-        passes.push_back(pass);
+            passes.push_back(pass);
 
-		parseDependencies(passValue, resolvedFilename, options, _passIncludes[pass]);
+            parseDependencies(passValue, resolvedFilename, options, _passIncludes[pass]);
+        }
 	}
 }
 
@@ -468,6 +508,16 @@ EffectParser::parseDepthTest(const Json::Value& contextNode,
         depthMask = depthTest[0].asBool();
 		depthFunc = _compareFuncMap[depthTest[1].asString()];
     }
+    else
+    {
+    	auto depthMaskValue = contextNode.get("depthMask", 0);
+    	auto depthFuncValue = contextNode.get("depthFunc", 0);
+
+    	if (depthMaskValue.isBool())
+    		depthMask = depthMaskValue.asBool();
+    	if (depthFuncValue.isString())
+    		depthFunc = _compareFuncMap[depthFuncValue.asString()];
+    }
 }
 
 void
@@ -491,6 +541,59 @@ EffectParser::parseTriangleCulling(const Json::Value& contextNode,
     }
 }
 
+float
+EffectParser::parsePriority(const Json::Value& contextNode, 
+							float defaultPriority)
+{
+	auto	priorityNode	= contextNode.get("priority", defaultPriority);
+	float	ret				= defaultPriority;
+
+	if (!priorityNode.isNull())
+	{
+		if (priorityNode.isInt())
+			ret = (float)priorityNode.asInt();
+		else if (priorityNode.isDouble())
+			ret = (float)priorityNode.asDouble();
+		else if (priorityNode.isString())
+			ret = priority(priorityNode.asString());
+		else if (priorityNode.isArray())
+		{
+			if (priorityNode[0].isString() && priorityNode[1].isDouble())
+				ret = priority(priorityNode[0].asString()) + (float)priorityNode[1].asDouble();
+		}
+	}
+
+	return ret;
+}
+
+void
+EffectParser::parseBindingNameAndSource(const Json::Value& contextNode, std::string& propertyName, data::BindingSource& source)
+{
+	source = data::BindingSource::TARGET;
+	if (contextNode.isString())
+		propertyName = contextNode.asString();
+	else if (contextNode.isObject())
+	{
+		auto propertyValue = contextNode.get("property", 0);
+		auto sourceValue = contextNode.get("source", 0);
+
+		if (propertyValue.isString())
+			propertyName = propertyValue.asString();
+
+		if (sourceValue.isString())
+		{
+			auto sourceString = sourceValue.asString();
+
+			if (sourceString == "target")
+				source = data::BindingSource::TARGET;
+			else if (sourceString == "renderer")
+				source = data::BindingSource::RENDERER;
+			else if (sourceString == "root")
+				source = data::BindingSource::ROOT;
+		}
+	}
+}
+
 void
 EffectParser::parseBindings(const Json::Value&		contextNode,
 						    data::BindingMap&		attributeBindings,
@@ -502,15 +605,23 @@ EffectParser::parseBindings(const Json::Value&		contextNode,
 	auto attributeBindingsValue = contextNode.get("attributeBindings", 0);
 	if (attributeBindingsValue.isObject())
 		for (auto propertyName : attributeBindingsValue.getMemberNames())
-			attributeBindings[propertyName] = attributeBindingsValue.get(propertyName, 0).asString();
+			parseBindingNameAndSource(
+				attributeBindingsValue.get(propertyName, 0),
+				attributeBindings[propertyName].first,
+				attributeBindings[propertyName].second
+			);
 
 	parseUniformBindings(contextNode, uniformBindings, uniformDefaultValues);
 			
 	auto stateBindingsValue = contextNode.get("stateBindings", 0);
 	if (stateBindingsValue.isObject())
 		for (auto propertyName : stateBindingsValue.getMemberNames())
-			stateBindings[propertyName] = stateBindingsValue.get(propertyName, 0).asString();
-
+			parseBindingNameAndSource(
+				stateBindingsValue.get(propertyName, 0),
+				stateBindings[propertyName].first,
+				stateBindings[propertyName].second
+			);
+	
 	parseMacroBindings(contextNode, macroBindings);
 }
 
@@ -518,57 +629,60 @@ void
 EffectParser::parseMacroBindings(const Json::Value&	contextNode, data::MacroBindingMap&	macroBindings)
 {
 	auto macroBindingsValue = contextNode.get("macroBindings", 0);
+
 	if (macroBindingsValue.isObject())
-	for (auto propertyName : macroBindingsValue.getMemberNames())
 	{
-		auto macroBindingValue = macroBindingsValue.get(propertyName, 0);
-		minko::data::MacroBindingDefault bindingDefault;
-		
-		bindingDefault.semantic = data::MacroBindingDefaultValueSemantic::UNSET;
-
-		if (macroBindingValue.isString())
-			macroBindings[propertyName] = data::MacroBinding(macroBindingValue.asString(), bindingDefault, -1, -1);
-		else if (macroBindingValue.isObject())
+		for (auto propertyName : macroBindingsValue.getMemberNames())
 		{
-			auto nameValue = macroBindingValue.get("property", 0);
-			auto minValue = macroBindingValue.get("min", -1);
-			auto maxValue = macroBindingValue.get("max", -1);
-			auto defaultValue = macroBindingValue.get("default", "");
+			auto macroBindingValue = macroBindingsValue.get(propertyName, 0);
+			minko::data::MacroBindingDefault& bindingDefault = std::get<2>(macroBindings[propertyName]);
 
-			if (defaultValue.isInt())
+		
+			bindingDefault.semantic = data::MacroBindingDefaultValueSemantic::UNSET;
+
+			parseBindingNameAndSource(
+				macroBindingValue,
+				std::get<0>(macroBindings[propertyName]),
+				std::get<1>(macroBindings[propertyName])
+			);
+
+			if (macroBindingValue.isObject())
+			{
+				auto nameValue = macroBindingValue.get("property", 0);
+				auto minValue = macroBindingValue.get("min", -1);
+				auto maxValue = macroBindingValue.get("max", -1);
+				auto defaultValue = macroBindingValue.get("default", "");
+
+				if (defaultValue.isInt())
+				{
+					bindingDefault.semantic = data::MacroBindingDefaultValueSemantic::VALUE;
+					bindingDefault.value.value = defaultValue.asInt();
+				}
+				else if (defaultValue.isBool())
+				{
+					bindingDefault.semantic = data::MacroBindingDefaultValueSemantic::PROPERTY_EXISTS;
+					bindingDefault.value.propertyExists = defaultValue.asBool();
+				}
+
+				//if (!nameValue.isString() || !minValue.isInt() || !maxValue.isInt())
+				//	throw;
+
+				auto& min = std::get<3>(macroBindings[propertyName]);
+				auto& max = std::get<4>(macroBindings[propertyName]);
+
+				min = minValue.asInt();
+				max = maxValue.asInt();
+			}
+			else if (macroBindingValue.isInt())
 			{
 				bindingDefault.semantic = data::MacroBindingDefaultValueSemantic::VALUE;
-				bindingDefault.value.value = defaultValue.asInt();
+				bindingDefault.value.value = macroBindingValue.asInt();
 			}
-			else if (defaultValue.isBool())
+			else if (macroBindingValue.isBool())
 			{
 				bindingDefault.semantic = data::MacroBindingDefaultValueSemantic::PROPERTY_EXISTS;
-				bindingDefault.value.propertyExists = defaultValue.asBool();
+				bindingDefault.value.propertyExists = macroBindingValue.asBool();
 			}
-
-			//if (!nameValue.isString() || !minValue.isInt() || !maxValue.isInt())
-			//	throw;
-
-			macroBindings[propertyName] = data::MacroBinding(
-				nameValue.asString(),
-				bindingDefault,
-				minValue.asInt(),
-				maxValue.asInt()
-			);
-		}
-		else if (macroBindingValue.isInt())
-		{
-			bindingDefault.semantic = data::MacroBindingDefaultValueSemantic::VALUE;
-			bindingDefault.value.value = macroBindingValue.asInt();
-
-			macroBindings[propertyName] = data::MacroBinding("", bindingDefault, -1, -1);
-		}
-		else if (macroBindingValue.isBool())
-		{
-			bindingDefault.semantic = data::MacroBindingDefaultValueSemantic::PROPERTY_EXISTS;
-			bindingDefault.value.propertyExists = macroBindingValue.asBool();
-
-			macroBindings[propertyName] = data::MacroBinding("", bindingDefault, -1, -1);
 		}
 	}
 }
@@ -584,18 +698,22 @@ EffectParser::parseUniformBindings(const Json::Value&	contextNode,
 		{
 			auto uniformBindingValue = uniformBindingsValue.get(propertyName, 0);
 
-			if (uniformBindingValue.isString())
-				uniformBindings[propertyName] = uniformBindingValue.asString();
-			else if (uniformBindingValue.isObject())
+			parseBindingNameAndSource(
+				uniformBindingValue,
+				uniformBindings[propertyName].first,
+				uniformBindings[propertyName].second
+			);
+			
+			if (uniformBindingValue.isObject())
 			{
 				auto nameValue = uniformBindingValue.get("property", 0);
 				auto defaultValue = uniformBindingValue.get("default", "");
 
-				if (nameValue.isString())
-					uniformBindings[propertyName] = nameValue.asString();
-
-				if (defaultValue.isArray() || defaultValue.isNumeric() || defaultValue.isString())
+				if (defaultValue.isArray() || defaultValue.isNumeric()
+					|| (defaultValue.isString() && !defaultValue.asString().empty()))
+				{
 					parseUniformDefaultValues(defaultValue, uniformDefaultValues[propertyName]);
+				}
 			}
 			else if (uniformBindingValue.isArray() || uniformBindingValue.isNumeric())
 				parseUniformDefaultValues(uniformBindingValue, uniformDefaultValues[propertyName]);
@@ -636,7 +754,7 @@ EffectParser::parseUniformDefaultValues(const Json::Value&		contextNode,
 	else if (contextNode.isString())
 	{
 		auto textureFilename = contextNode.asString();
-		int pos = _resolvedFilename.find_last_of("/");
+		int pos = _resolvedFilename.find_last_of("/\\");
 		auto options = _options;
 
 		uniformTypeAndValue.first = UniformType::TEXTURE;
@@ -645,7 +763,7 @@ EffectParser::parseUniformDefaultValues(const Json::Value&		contextNode,
 		if (pos > 0)
 		{
 			options = file::Options::create(_options);
-			options->includePaths().insert(_resolvedFilename.substr(0, pos));
+			options->includePaths().push_back(_resolvedFilename.substr(0, pos));
 		}
 
 		uniformTypeAndValue.second.textureValue = _assetLibrary->texture(textureFilename);
@@ -696,7 +814,9 @@ EffectParser::loadTexture(const std::string&	textureFilename,
 	});
 
 	_loaderErrorSlots[loader] = loader->error()->connect(std::bind(
-		&EffectParser::textureErrorHandler, shared_from_this(), std::placeholders::_1
+		&EffectParser::textureErrorHandler,
+		std::static_pointer_cast<EffectParser>(shared_from_this()),
+		std::placeholders::_1
 	));
 
 	loader->load(textureFilename, options);
@@ -770,6 +890,31 @@ EffectParser::parseStencilState(const Json::Value& contextNode,
 		stencilMask	= stencilTest[2].asUInt();
 		parseStencilOperations(stencilTest[3], stencilFailOp, stencilZFailOp, stencilZPassOp);
     }
+}
+
+void
+EffectParser::parseScissorTest(const Json::Value& contextNode,
+								bool&			  scissorTest,
+								ScissorBox&	      scissorBox) const
+{
+	auto scissorTestNode		= contextNode.get("scissorTest", 0);
+
+	if (!scissorTestNode.isNull() && scissorTestNode.isBool())
+		scissorTest = scissorTestNode.asBool();
+
+	auto scissorBoxNode			= contextNode.get("scissorBox", 0);
+
+	if (!scissorBoxNode.isNull() && scissorBoxNode.isArray())
+	{
+		if (scissorBoxNode[0].isInt())
+			scissorBox.x		= scissorBoxNode[0].asInt();
+		if (scissorBoxNode[1].isInt())
+			scissorBox.y		= scissorBoxNode[1].asInt();
+		if (scissorBoxNode[2].isInt())
+			scissorBox.width	= scissorBoxNode[2].asInt();
+		if (scissorBoxNode[3].isInt())
+			scissorBox.height	= scissorBoxNode[3].asInt();
+	}
 }
 
 void
@@ -856,12 +1001,12 @@ EffectParser::parseDependencies(const Json::Value& 		root,
 								std::vector<LoaderPtr>& store)
 {
 	auto includes	= root.get("includes", 0);
-	int pos			= filename.find_last_of("/");
+	int pos			= filename.find_last_of("/\\");
 
 	if (pos > 0)
 	{
 		options = file::Options::create(options);
-		options->includePaths().insert(filename.substr(0, pos));
+		options->includePaths().push_back(filename.substr(0, pos));
 	}
 
 	if (includes.isArray())
@@ -873,10 +1018,14 @@ EffectParser::parseDependencies(const Json::Value& 		root,
 			auto loader = Loader::create();
 
 			_loaderCompleteSlots[loader] = loader->complete()->connect(std::bind(
-				&EffectParser::dependencyCompleteHandler, shared_from_this(), std::placeholders::_1
+				&EffectParser::dependencyCompleteHandler,
+				std::static_pointer_cast<EffectParser>(shared_from_this()),
+				std::placeholders::_1
 			));
 			_loaderErrorSlots[loader] = loader->error()->connect(std::bind(
-				&EffectParser::dependencyErrorHandler, shared_from_this(), std::placeholders::_1
+				&EffectParser::dependencyErrorHandler,
+				std::static_pointer_cast<EffectParser>(shared_from_this()),
+				std::placeholders::_1
 			));
 
 			store.push_back(loader);
@@ -927,7 +1076,7 @@ EffectParser::parseTechniques(const Json::Value&				root,
 				);
 
 				// render states
-				auto states = parseRenderStates(techniqueValue, context, _globalTargets, _defaultStates, 0);
+				auto states = parseRenderStates(techniqueValue, context, _globalTargets, _defaultStates, 0.0f);
 
 				parsePasses(
 					techniqueValue,
@@ -956,8 +1105,9 @@ EffectParser::parseTechniques(const Json::Value&				root,
 bool
 EffectParser::parseConfiguration(const Json::Value&	root)
 {
-	auto confValue = root.get("configuration", 0);
-	auto p = _options->platforms();
+	auto confValue	= root.get("configuration", 0);
+	auto platforms	= _options->platforms();
+	auto userFlags	= _options->userFlags();
 	auto r = false;
 
 	if (confValue.isArray())
@@ -966,7 +1116,9 @@ EffectParser::parseConfiguration(const Json::Value&	root)
 		{
 			// if the config. token is a string and we can find it in the list of platforms,
 			// then the configuration is ok and we return true
-			if (value.isString() && std::find(p.begin(), p.end(), value.asString()) != p.end())
+			if (value.isString() && 
+				(std::find(platforms.begin(), platforms.end(), value.asString()) != platforms.end() || 
+				std::find(userFlags.begin(), userFlags.end(), value.asString()) != userFlags.end()))
 				return true;
 			else if (value.isArray())
 			{
@@ -974,7 +1126,9 @@ EffectParser::parseConfiguration(const Json::Value&	root)
 				// the platforms list; if a single of them is not there then the config. token
 				// is considered to be false
 				for (auto str : value)
-				if (str.isString() && std::find(p.begin(), p.end(), str.asString()) == p.end())
+				if (str.isString() && 
+					(std::find(platforms.begin(), platforms.end(), str.asString()) == platforms.end() ||
+					std::find(userFlags.begin(), userFlags.end(), str.asString()) != userFlags.end()))
 				{
 					r = r || false;
 					break;
@@ -1059,6 +1213,43 @@ EffectParser::finalize()
 				_effect->addTechnique("default", passes);
 		}
     }
+
+	if (!_effect->techniques().empty() && _effect->techniques().count("default") == 0)
+	{
+		// FIXME 
+		const std::string&		viableTechniqueName = _effect->techniques().begin()->first; 
+		std::vector<Pass::Ptr>	viableTechnique		(_effect->technique(viableTechniqueName));
+
+		if (_effect->hasFallback(viableTechniqueName))
+			_effect->addTechnique("default", viableTechnique, _effect->fallback(viableTechniqueName));
+		else
+			_effect->addTechnique("default", viableTechnique);
+
+#ifdef DEBUG
+		std::cerr << "Warning:\tEffect '" << _effectName << "' does not provide achievable default technique ('" << _defaultTechnique << "'), switched to '" << viableTechniqueName << "'" << std::endl;
+#endif // DEBUG
+	}
+
+#ifdef DEBUG_FALLBACK
+	std::cout << "\nfinalize '" << _effectName << "'" << std::endl;
+	for (auto& technique : _effect->techniques())
+	{
+		std::cout << "\t- technique '" << technique.first << "'";
+		if (_effect->hasFallback(technique.first))
+			std::cout << "\t-> '" << _effect->fallback(technique.first) << "'" << std::endl;
+		else
+			std::cout << std::endl;
+
+		for (auto& pass : technique.second)
+		{
+			std::cout << "\t\t- pass '" << pass->name() << "'\tpriority = " << pass->states()->priority();
+			if (!pass->fallback().empty())
+				std::cout << "\t-> '" << pass->fallback() << "'" << std::endl;
+			else
+				std::cout << std::endl;
+		}
+	}
+#endif // DEBUG_FALLBACK
 
 	for (auto& targets : _techniqueTargets)
 		for (auto& target : targets.second)
