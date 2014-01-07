@@ -97,5 +97,17 @@ package aerys.minko.render.resource.texture
 			
 			return getRectangle(width, height, rootId * 2 + 2);
 		}
+		
+		public function disposeLocalData():void
+		{
+			for(var b : * in _bitmapDataToRectangle)
+			{
+				BitmapData(b).dispose();
+			}
+			_atlasBitmapData.dispose();
+			
+			_bitmapDataToRectangle = null;
+			_atlasBitmapData = null;
+		}
 	}
 }
