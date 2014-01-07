@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/math/Matrix4x4.hpp"
 #include "minko/render/Blending.hpp"
 #include "minko/render/TriangleCulling.hpp"
+#include "minko/Types.hpp"
 
 using namespace minko;
 using namespace minko::serialize;
@@ -38,7 +39,7 @@ TypeSerializer::serializeVector4(Any value)
 	float				values[4]	= {vect4->x(), vect4->y(), vect4->z(), vect4->w()};
 	std::stringstream	stream;
 
-	type += mk::VECTOR4 << 24;
+	type += serializer::VECTOR4 << 24;
 
 	for (uint i = 0; i < 4; ++i)
 	{
@@ -67,7 +68,7 @@ TypeSerializer::serializeVector3(Any value)
 	float				values[3]	= {vect3->x(), vect3->y(), vect3->z()};
 	std::stringstream	stream;
 
-	type += mk::VECTOR3 << 24;
+	type += serializer::VECTOR3 << 24;
 
 	for (uint i = 0; i < 3; ++i)
 	{
@@ -91,7 +92,7 @@ TypeSerializer::serializeVector2(Any value)
 	float				values[2]	= {vect2->x(), vect2->y()};
 	std::stringstream	stream;
 
-	type += mk::VECTOR2 << 24;
+	type += serializer::VECTOR2 << 24;
 
 	for (uint i = 0; i < 2; ++i)
 	{
@@ -116,7 +117,7 @@ TypeSerializer::serializeMatrix4x4(Any value)
 
 	uint type = 0x00000000;
 
-	type += mk::MATRIX4X4 << 24;
+	type += serializer::MATRIX4X4 << 24;
 
 	for (unsigned int i = 0; i < 16; ++i)
 	{
@@ -152,7 +153,7 @@ TypeSerializer::serializeBlending(Any value)
 
 	uint type = 0x00000000;
 
-	type += mk::BLENDING << 24;
+	type += serializer::BLENDING << 24;
 
 	return msgpack::type::tuple<uint, std::string>(type, res);
 }
@@ -175,7 +176,7 @@ TypeSerializer::serializeCulling(Any value)
 
 	uint type = 0x00000000;
 
-	type += mk::TRIANGLECULLING << 24;
+	type += serializer::TRIANGLECULLING << 24;
 
 	return msgpack::type::tuple<uint, std::string>(type, res);
 }
@@ -187,7 +188,7 @@ TypeSerializer::serializeTexture(Any value)
 
 	uint type = 0x00000000;
 
-	type += mk::TEXTURE << 24;
+	type += serializer::TEXTURE << 24;
 
 	type += textureId;
 
