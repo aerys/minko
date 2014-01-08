@@ -17,7 +17,7 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "minko/file/AbstractMkParser.hpp"
+#include "minko/file/AbstractSerializerParser.hpp"
 #include "msgpack.hpp"
 #include "minko/file/Options.hpp"
 #include "minko/file/AssetLibrary.hpp"
@@ -31,22 +31,22 @@ using namespace minko;
 using namespace minko::file;
 
 
-AbstractMkParser::Ptr
-AbstractMkParser::create()
+AbstractSerializerParser::Ptr
+AbstractSerializerParser::create()
 {
-	auto abstractParser = std::shared_ptr<AbstractMkParser>(new AbstractMkParser());
+	auto abstractParser = std::shared_ptr<AbstractSerializerParser>(new AbstractSerializerParser());
 	
 	return abstractParser;
 }
 
-AbstractMkParser::AbstractMkParser()
+AbstractSerializerParser::AbstractSerializerParser()
 {
 	_dependencies		= Dependency::create();
 }
 
 
 void
-AbstractMkParser::parse(const std::string&					filename,
+AbstractSerializerParser::parse(const std::string&					filename,
 						const std::string&					resolvedFilename,
 						std::shared_ptr<Options>			options,
 						const std::vector<unsigned char>&	data,
@@ -55,7 +55,7 @@ AbstractMkParser::parse(const std::string&					filename,
 }
 
 std::string
-AbstractMkParser::extractDependencies(std::shared_ptr<AssetLibrary>		assetLibrary,
+AbstractSerializerParser::extractDependencies(std::shared_ptr<AssetLibrary>		assetLibrary,
 									  const std::vector<unsigned char>&	data,
 									  std::shared_ptr<Options>			options)
 {
@@ -76,7 +76,7 @@ AbstractMkParser::extractDependencies(std::shared_ptr<AssetLibrary>		assetLibrar
 }
 
 void
-AbstractMkParser::deserializedAsset(msgpack::type::tuple<unsigned char, short, std::string>	asset,
+AbstractSerializerParser::deserializedAsset(msgpack::type::tuple<unsigned char, short, std::string>	asset,
 							  std::shared_ptr<AssetLibrary>									assetLibrary,
 							  std::shared_ptr<Options>										options)
 {

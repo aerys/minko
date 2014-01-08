@@ -1,6 +1,7 @@
 #pragma once
 
 #include "minko/file/AbstractWriter.hpp"
+
 #include "minko/file/SceneWriter.hpp"
 #include "minko/file/SceneParser.hpp"
 #include "minko/file/GeometryWriter.hpp"
