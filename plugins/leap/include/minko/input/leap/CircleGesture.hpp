@@ -1,5 +1,5 @@
---[[
-Copyright (c) 2013 Aerys
+/*
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -15,21 +15,62 @@ BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR P
 NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
 DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-]]--
+*/
 
--- leap plugin
-minko.plugin.leap = {}
+#pragma once
 
-function minko.plugin.leap:enable()
-	minko.plugin.links { "leap" }
-	defines { "MINKO_PLUGIN_LEAP" }
-	
-	includedirs { minko.sdk.path("plugins/leap/include") }
-	
-	configuration { "windows" }
-		links { "Leap", "Leapd" }
-		libdirs { minko.sdk.path("plugins/leap/lib/win/leap/lib") }
-		postbuildcommands {
-			minko.vs.getdllscopycommand(minko.sdk.path("plugins/leap/lib/win/leap/lib"))
+#include "minko/Common.hpp"
+#include "minko/Signal.hpp"
+
+#include "minko/input/leap/Gesture.hpp"
+
+namespace Leap
+{
+	class CircleGesture;
+}
+
+namespace minko
+{
+	namespace input
+	{
+		namespace leap
+		{
+			class CircleGesture : public Gesture
+			{
+				friend class Gesture; // Only a Gesture can instanciate a CircleGesture
+
+			public:
+				typedef std::shared_ptr<CircleGesture>	Ptr;
+
+			private:
+				typedef std::shared_ptr<math::Vector3>	Vector3Ptr;
+
+			private:
+				std::shared_ptr<Leap::CircleGesture>	_leapCircle;
+
+			public:
+				
+				Vector3Ptr
+				center(Vector3Ptr output = nullptr) const;
+				
+				Vector3Ptr
+				normal(Vector3Ptr output = nullptr) const;
+
+				float
+				progress() const;
+
+				float
+				radius() const;
+
+				uint32_t
+				pointableID() const;
+
+			private:
+				CircleGesture(); // no implementation
+
+				explicit
+				CircleGesture(const Gesture&);
+			};
 		}
-end
+	}
+}

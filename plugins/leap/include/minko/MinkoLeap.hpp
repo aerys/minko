@@ -1,4 +1,4 @@
---[[
+/*
 Copyright (c) 2013 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
@@ -15,21 +15,16 @@ BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR P
 NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
 DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-]]--
+*/
 
--- leap plugin
-minko.plugin.leap = {}
+#pragma once
 
-function minko.plugin.leap:enable()
-	minko.plugin.links { "leap" }
-	defines { "MINKO_PLUGIN_LEAP" }
-	
-	includedirs { minko.sdk.path("plugins/leap/include") }
-	
-	configuration { "windows" }
-		links { "Leap", "Leapd" }
-		libdirs { minko.sdk.path("plugins/leap/lib/win/leap/lib") }
-		postbuildcommands {
-			minko.vs.getdllscopycommand(minko.sdk.path("plugins/leap/lib/win/leap/lib"))
-		}
-end
+#include "minko/input/leap/Controller.hpp"
+#include "minko/input/leap/Frame.hpp"
+#include "minko/input/leap/Hand.hpp"
+#include "minko/input/leap/Gesture.hpp"
+#include "minko/input/leap/SwipeGesture.hpp"
+#include "minko/input/leap/CircleGesture.hpp"
+#include "minko/input/leap/ScreenTapGesture.hpp"
+#include "minko/input/leap/KeyTapGesture.hpp"
+#include "minko/input/leap/Pointable.hpp"
