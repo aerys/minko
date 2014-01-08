@@ -20,14 +20,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
-#include "minko/file/AbstractMkParser.hpp"
+#include "minko/file/AbstractSerializerParser.hpp"
 
 namespace minko
 {
 	namespace file
 	{
 	class GeometryParser:
-		public AbstractMkParser
+		public AbstractSerializerParser
 	{
 	public:
 		typedef std::shared_ptr<GeometryParser> Ptr;
