@@ -7,7 +7,8 @@ minko.project.application("minko-example-" .. PROJECT_NAME)
 
 	files { "src/**.cpp", "src/**.hpp", "asset/**" }
 	includedirs { "src" }
-
+	includedirs { minko.sdk.path("plugins/leap/lib/include") } -- FIXME shall disappear soon
+	
 	-- plugins
 	minko.plugin.enable("mk")
 	minko.plugin.enable("png")
