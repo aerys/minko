@@ -59,7 +59,7 @@ namespace minko
 
 		virtual
 		std::shared_ptr<input::Joystick>
-		joystick(int id) = 0;
+		joystick(uint id) = 0;
 
 		virtual
 		uint
