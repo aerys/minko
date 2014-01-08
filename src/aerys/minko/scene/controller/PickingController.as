@@ -578,7 +578,6 @@ package aerys.minko.scene.controller
 		private function addMesh(mesh : Mesh) : void
 		{
 			_pickingId += _pixelPickingIncrement;
-			trace("PICKING ID", _pickingId.toString(16), mesh.name);
 			_pickingIdToMesh[_pickingId] = mesh;
 			
 			var meshData : DataProvider = new DataProvider(
