@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Minko.hpp"
 #include "minko/MinkoPNG.hpp"
 #include "minko/MinkoSDL.hpp"
-#include "minko/MinkoMk.hpp"
+#include "minko/MinkoSerializer.hpp"
 #include "minko/Any.hpp"
 #include "minko/math/Vector4.hpp"
 #include "minko/math/Vector3.hpp"
@@ -39,7 +39,7 @@ using namespace minko::math;
 void
 unitTest(std::shared_ptr<file::AssetLibrary> assets, std::shared_ptr<render::AbstractContext> context)
 {
-	std::shared_ptr<mk::MkStats> mkStat = mk::MkStats::create();
+	std::shared_ptr<serializer::MkStats> mkStat = serializer::MkStats::create();
 	
 	/*
 	mkStat->compressionStat(
