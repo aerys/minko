@@ -34,7 +34,6 @@ package aerys.minko.scene.controller
 		
 		private static const PICKING_MAP			: BitmapData	= new BitmapData(1, 1, true, 0);
 		private static const SHADER					: Shader		= new PickingShader();
-		private static const ID_INCREMENT			: uint			= 1;
 		
 		private static const EFFECT_USE_COUNTER		: Dictionary	= new Dictionary(true);
 		
@@ -56,43 +55,45 @@ package aerys.minko.scene.controller
 		private static const EVENT_MIDDLE_DOWN		: uint 			= 1 << 14;
 		private static const EVENT_MIDDLE_UP		: uint 			= 1 << 15;
 		
-        private var _technique          : uint;
-		private var _pickingRate		: Number;
+        private var _technique          	: uint;
+		private var _pickingRate			: Number;
 		
-		private var _dispatchers		: Dictionary;
+		private var _dispatchers			: Dictionary;
         
-		private var _lastPickingTime	: uint;
-		private var _useHandCursor		: Boolean;
+		private var _lastPickingTime		: uint;
+		private var _useHandCursor			: Boolean;
 		
-		private var _toDispatch			: uint;
-		private var _sceneData			: DataProvider;
-		private var _meshData			: Dictionary;
-		private var _pickingIdToMesh	: Array;
+		private var _toDispatch				: uint;
+		private var _sceneData				: DataProvider;
+		private var _meshData				: Dictionary;
+		private var _pickingIdToMesh		: Array;
 		
-		private var _mouseX				: Number;
-		private var _mouseY				: Number;
-		private var _mouseWheelDelta	: Number;
-		private var _oldCursor			: String;
+		private var _mouseX					: Number;
+		private var _mouseY					: Number;
+		private var _mouseWheelDelta		: Number;
+		private var _oldCursor				: String;
 		
-		private var _currentMouseOver	: Mesh;
-		private var _lastMouseOver		: Mesh;
+		private var _currentMouseOver		: Mesh;
+		private var _lastMouseOver			: Mesh;
 		
-		private var _mouseClick			: Signal;
-		private var _mouseDoubleClick	: Signal;
-		private var _mouseDown			: Signal;
-		private var _mouseMove			: Signal;
-		private var _mouseUp			: Signal;
-		private var _mouseWheel			: Signal;
-		private var _mouseRollOver		: Signal;
-		private var _mouseRollOut		: Signal;
-		private var _mouseRightClick	: Signal;
-		private var _mouseRightDown		: Signal;
-		private var _mouseRightUp		: Signal;
-		private var _mouseMiddleClick	: Signal;
-		private var _mouseMiddleDown	: Signal;
-		private var _mouseMiddleUp		: Signal;
+		private var _mouseClick				: Signal;
+		private var _mouseDoubleClick		: Signal;
+		private var _mouseDown				: Signal;
+		private var _mouseMove				: Signal;
+		private var _mouseUp				: Signal;
+		private var _mouseWheel				: Signal;
+		private var _mouseRollOver			: Signal;
+		private var _mouseRollOut			: Signal;
+		private var _mouseRightClick		: Signal;
+		private var _mouseRightDown			: Signal;
+		private var _mouseRightUp			: Signal;
+		private var _mouseMiddleClick		: Signal;
+		private var _mouseMiddleDown		: Signal;
+		private var _mouseMiddleUp			: Signal;
 		
-		private var _tag				: uint;
+		private var _tag					: uint;
+		
+		private var _pixelPickingIncrement	: uint;
 		
         public function get pickingRate() : Number
         {
@@ -182,15 +183,17 @@ package aerys.minko.scene.controller
 			return _mouseRollOut;
 		}
 		
-		public function PickingController(pickingTechnique  : uint      = 1,
-                                          pickingRate       : Number    = 15.,
-										  tag				: uint		= 1)
+		public function PickingController(pickingTechnique  	: uint      = 1,
+                                          pickingRate       	: Number    = 15.,
+										  tag					: uint		= 1, 
+										  pixelPickingIncrement	: uint		= 1)
 		{
             super();
             
-            _technique		= pickingTechnique;
-			_pickingRate	= pickingRate;
-			_tag			= tag;
+            _technique				= pickingTechnique;
+			_pickingRate			= pickingRate;
+			_tag					= tag;
+			_pixelPickingIncrement	= pixelPickingIncrement;
             
 			initialize();
 		}
@@ -574,7 +577,8 @@ package aerys.minko.scene.controller
 		
 		private function addMesh(mesh : Mesh) : void
 		{
-			_pickingId += ID_INCREMENT;
+			_pickingId += _pixelPickingIncrement;
+			trace("PICKING ID", _pickingId.toString(16), mesh.name);
 			_pickingIdToMesh[_pickingId] = mesh;
 			
 			var meshData : DataProvider = new DataProvider(
