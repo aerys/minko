@@ -250,7 +250,7 @@ namespace minko
 		
 		inline
 		std::shared_ptr<input::Joystick>
-        joystick(int id)
+        joystick(uint id)
         {
 			return id < numJoysticks() ? _joysticks[id] : nullptr;
         }
