@@ -19,7 +19,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #pragma once
 
-#include "minko/MkCommon.hpp"
+#include "minko/SerializerCommon.hpp"
 #include "minko/file/AbstractParser.hpp"
 #include "msgpack.hpp"
 
@@ -27,11 +27,11 @@ namespace minko
 {
 	namespace file
 	{
-		class AbstractMkParser:
+		class AbstractSerializerParser:
 			public AbstractParser
 		{
 		public:
-			typedef std::shared_ptr<AbstractMkParser> Ptr;
+			typedef std::shared_ptr<AbstractSerializerParser> Ptr;
 		
 		protected:
 			std::shared_ptr<Dependency>		_dependencies;
@@ -67,7 +67,7 @@ namespace minko
 			}
 
 		protected:
-			AbstractMkParser();
+			AbstractSerializerParser();
 
 			void
 			deserializedAsset(msgpack::type::tuple<unsigned char, short, std::string>	asset,

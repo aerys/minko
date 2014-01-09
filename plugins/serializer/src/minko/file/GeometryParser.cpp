@@ -68,8 +68,6 @@ GeometryParser::deserializeIndexBuffer(std::string serializedIndexBuffer, std::s
 {
 	std::vector<unsigned short> vector = deserialize::TypeDeserializer::deserializeVector<unsigned short>(serializedIndexBuffer);
 
-	std::cout << "deserialize short" << std::endl;
-
 	return render::IndexBuffer::create(context, vector);
 }
 
@@ -77,8 +75,6 @@ std::shared_ptr<render::IndexBuffer>
 GeometryParser::deserializeIndexBufferChar(std::string serializedIndexBuffer, std::shared_ptr<render::AbstractContext> context)
 {
 	std::vector<unsigned short> vector = deserialize::TypeDeserializer::deserializeVector<unsigned short, unsigned char>(serializedIndexBuffer);
-
-	std::cout << "deserialize char" << std::endl;
 
 	return render::IndexBuffer::create(context, vector);
 }

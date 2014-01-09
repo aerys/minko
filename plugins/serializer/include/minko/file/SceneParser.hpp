@@ -20,9 +20,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
-#include "minko/MkTypes.hpp"
 #include "msgpack.hpp"
-#include "minko/file/AbstractMkParser.hpp"
+#include "minko/file/AbstractSerializerParser.hpp"
 #include "minko/deserialize/ComponentDeserializer.hpp"
 #include "minko/file/GeometryParser.hpp"
 #include "minko/file/MaterialParser.hpp"
@@ -33,7 +32,7 @@ namespace minko
 	namespace file
 	{
 		class SceneParser : 
-			public AbstractMkParser
+			public AbstractSerializerParser
 		{
 
 		//typedef
