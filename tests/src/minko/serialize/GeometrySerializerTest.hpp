@@ -19,58 +19,17 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #pragma once
 
-#include "minko/SerializerCommon.hpp"
+#include "minko/Minko.hpp"
+
+#include "gtest/gtest.h"
 
 namespace minko
 {
 	namespace serialize
 	{
-		class ComponentSerializer
+		class GeometrySerializerTest :
+			public ::testing::Test
 		{
-		public:
-			typedef std::shared_ptr<scene::Node>		NodePtr;
-			typedef std::shared_ptr<file::Dependency>	DependencyPtr;
-
-		public:
-			static
-			std::string
-			serializeTransform(NodePtr			node, 
-							   DependencyPtr	dependencies);
-
-			static
-			std::string
-			serializePerspectiveCamera(NodePtr			node, 
-									   DependencyPtr	dependencies);
-
-			static
-			std::string
-			serializeAmbientLight(NodePtr		node, 
-								  DependencyPtr dependencies);
-
-			static
-			std::string
-			serializeDirectionalLight(NodePtr		node, 
-									  DependencyPtr dependencies);
-
-			static
-			std::string
-			serializePointLight(NodePtr			node, 
-								DependencyPtr	dependencies);
-
-			static
-			std::string
-			serializeSpotLight(NodePtr			node, 
-							   DependencyPtr	dependencies);
-
-			static
-			std::string
-			serializeSurface(NodePtr		node, 
-							 DependencyPtr	dependencies);
-
-			static
-			std::string
-			serializeRenderer(NodePtr		node, 
-							  DependencyPtr dependencies);
 		};
 	}
 }

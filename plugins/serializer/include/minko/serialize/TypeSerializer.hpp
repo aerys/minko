@@ -20,8 +20,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
-#include "msgpack.hpp"
-#include "minko/MkTypes.hpp"
 
 namespace minko
 {
@@ -53,31 +51,31 @@ namespace minko
 			}
 
 			static
-			msgpack::type::tuple<uint, std::string>
+			std::tuple<uint, std::string>
 			serializeVector4(Any value);
 		
 			static
-			msgpack::type::tuple<uint, std::string>
+			std::tuple<uint, std::string>
 			serializeVector3(Any value);
 
 			static
-			msgpack::type::tuple<uint, std::string>
+			std::tuple<uint, std::string>
 			serializeVector2(Any value);
 
 			static
-			msgpack::type::tuple<uint, std::string>
+			std::tuple<uint, std::string>
 			serializeMatrix4x4(Any value);
 			
 			static
-			msgpack::type::tuple<uint, std::string>
+			std::tuple<uint, std::string>
 			serializeBlending(Any value);
 
 			static
-			msgpack::type::tuple<uint, std::string>
+			std::tuple<uint, std::string>
 			serializeCulling(Any value);
 
 			static
-			msgpack::type::tuple<uint, std::string>
+			std::tuple<uint, std::string>
 			serializeTexture(Any value);
 		};
 	}

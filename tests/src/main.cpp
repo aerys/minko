@@ -6,6 +6,12 @@
 
 using namespace minko;
 
+void wait()
+{
+	std::cout << "Press ENTER to continue...";
+	std::cin.ignore(std::numeric_limits <std::streamsize> ::max(), '\n');
+}
+
 int main(int argc, char **argv)
 {
 	auto canvas = Canvas::create("Minko Tests", 640, 480);
@@ -14,5 +20,9 @@ int main(int argc, char **argv)
 
 	MinkoTests::context(canvas->context());
 
-	return RUN_ALL_TESTS();
+	auto output = RUN_ALL_TESTS();
+
+	wait();
+
+	return output;
 }

@@ -5,9 +5,6 @@
 
 namespace minko
 {
-	class Qark;
-	class MkStats;
-
 	namespace data
 	{
 		class HalfEdge;
