@@ -18,20 +18,21 @@ namespace minko
 	public:
 		static const int                  MAGIC                   = 0x3121322b;
 
-		static const unsigned char        FLAG_NONE               = 0;
-		static const unsigned char        FLAG_GZIP               = 1;
-		static const unsigned char        FLAG_DEFLATE            = 2;
+		static const unsigned char	FLAG_NONE               = 0;
+		static const unsigned char	FLAG_GZIP               = 1;
+		static const unsigned char	FLAG_DEFLATE            = 2;
 
-		static const int                  TYPE_CUSTOM             = 0;
-		static const int                  TYPE_OBJECT             = 1;
-		static const int                  TYPE_ARRAY              = 2;
-		static const int                  TYPE_INT                = 3;
-		static const int                  TYPE_UINT               = 4;
-		static const int                  TYPE_FLOAT              = 5;
-		static const int                  TYPE_STRING             = 6;
-		static const int                  TYPE_BYTES              = 7;
-		static const int                  TYPE_BOOLEAN            = 8;
-		static const int                  TYPE_BITMAP_DATA        = 9;
+		static const int			TYPE_CUSTOM             = 0;
+		static const int			TYPE_OBJECT             = 1;
+		static const int			TYPE_ARRAY              = 2;
+		static const int			TYPE_INT                = 3;
+		static const int			TYPE_UINT               = 4;
+		static const int			TYPE_FLOAT              = 5;
+		static const int			TYPE_STRING             = 6;
+		static const int			TYPE_BYTES              = 7;
+		static const int			TYPE_BOOLEAN            = 8;
+		static const int			TYPE_BITMAP_DATA        = 9;
+		static const int			TYPE_NULL				= 10;
 
 		typedef std::vector<char>           ByteArray;
 		typedef minko::Any                  Object;
@@ -206,6 +207,7 @@ namespace minko
 				decoders[TYPE_CUSTOM]       = &Qark::decodeMap;
 				decoders[TYPE_ARRAY]        = &Qark::decodeArray;
 				decoders[TYPE_BYTES]        = &Qark::decodeBytes;
+				decoders[TYPE_NULL]			= &Qark::decodeNull;
 			}
 
 			return decoders[flag];
@@ -310,6 +312,12 @@ namespace minko
 			delete[] data;
 		}
 
+		static
+		void
+		decodeNull(std::stringstream& stream, Object& value)
+		{
+			value = std::string("");
+		}
 
 		static
 		void
