@@ -19,7 +19,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/serialize/ComponentSerializer.hpp"
 #include "msgpack.hpp"
-#include "minko/MkTypes.hpp"
+#include "minko/Types.hpp"
 #include "minko/component/Transform.hpp"
 #include "minko/component/PerspectiveCamera.hpp"
 #include "minko/component/AmbientLight.hpp"
@@ -43,10 +43,11 @@ std::string
 ComponentSerializer::serializeTransform(NodePtr			node, 
 										DependencyPtr	dependencies)
 {
-	int8_t										type		= mk::TRANSFORM;
+	int8_t										type		= serialize::TRANSFORM;
 	std::shared_ptr<component::Transform>		transform	= node->component<component::Transform>();
 	std::stringstream							buffer;
-	msgpack::type::tuple<uint, std::string>		src			= serialize::TypeSerializer::serializeMatrix4x4(transform->matrix());
+	std::tuple<uint, std::string>				serialized	= serialize::TypeSerializer::serializeMatrix4x4(transform->matrix());
+	msgpack::type::tuple<uint, std::string>		src(std::get<0>(serialized), std::get<1>(serialized));
 
 	msgpack::pack(buffer, src);
 	msgpack::pack(buffer, type);
@@ -58,7 +59,7 @@ std::string
 ComponentSerializer::serializePerspectiveCamera(NodePtr			node, 
 												DependencyPtr	dependencies)
 {
-	int8_t											type = mk::PROJECTION_CAMERA;
+	int8_t											type = serialize::PROJECTION_CAMERA;
 	std::shared_ptr<component::PerspectiveCamera>	perspectiveCamera = node->component<component::PerspectiveCamera>();
 	std::stringstream								buffer;
 	std::vector<float>								cameraDatas(4, 0);
@@ -81,7 +82,7 @@ std::string
 ComponentSerializer::serializeAmbientLight(NodePtr			node, 
 										   DependencyPtr	dependencies)
 {
-	int8_t												type		= mk::AMBIENT_LIGHT;
+	int8_t												type		= serialize::AMBIENT_LIGHT;
 	std::shared_ptr<component::AmbientLight>			ambient		= node->component<component::AmbientLight>();
 	std::stringstream									buffer;
 	msgpack::type::tuple<float, float, float, float>	src(
@@ -100,7 +101,7 @@ std::string
 ComponentSerializer::serializeDirectionalLight(NodePtr			node, 
 											   DependencyPtr	dependencies)
 {
-	int8_t													type		= mk::DIRECTIONAL_LIGHT;
+	int8_t													type		= serialize::DIRECTIONAL_LIGHT;
 	std::shared_ptr<component::DirectionalLight>			directional	= node->component<component::DirectionalLight>();
 	std::stringstream										buffer;
 	msgpack::type::tuple<float, float, float, float, float>	src(
@@ -121,7 +122,7 @@ std::string
 ComponentSerializer::serializePointLight(NodePtr		node, 
 										 DependencyPtr	dependencies)
 {
-	int8_t									type	= mk::POINT_LIGHT;
+	int8_t									type	= serialize::POINT_LIGHT;
 	std::shared_ptr<component::PointLight>	point	= node->component<component::PointLight>();
 	std::stringstream						buffer;
 	msgpack::type::tuple<float, float, float, float, float, float>	src(
@@ -142,7 +143,7 @@ std::string
 ComponentSerializer::serializeSpotLight(NodePtr			node, 
 										DependencyPtr	dependencies)
 {
-	int8_t										type	= mk::SPOT_LIGHT;
+	int8_t										type	= serialize::SPOT_LIGHT;
 	std::shared_ptr<component::SpotLight>		spot	= node->component<component::SpotLight>();
 	std::stringstream							buffer;
 	msgpack::type::tuple<float, float, float, float, float, float, float, float> src(
@@ -165,7 +166,7 @@ std::string
 ComponentSerializer::serializeSurface(NodePtr		node, 
 									  DependencyPtr dependencies)
 {
-	int8_t									type	= mk::SURFACE;
+	int8_t									type	= serialize::SURFACE;
 	std::shared_ptr<component::Surface>		surface	= node->component<component::Surface>();
 	std::stringstream						buffer;
 
@@ -189,7 +190,7 @@ std::string
 ComponentSerializer::serializeRenderer(NodePtr			node, 
 									   DependencyPtr	dependencies)
 {
-	int8_t									type		= mk::RENDERER;
+	int8_t									type		= serialize::RENDERER;
 	std::shared_ptr<component::Renderer>	renderer	= node->component<component::Renderer>();
 	std::stringstream						buffer;
 
