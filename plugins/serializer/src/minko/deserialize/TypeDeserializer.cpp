@@ -33,7 +33,7 @@ using namespace minko;
 using namespace minko::deserialize;
 
 Any
-TypeDeserializer::deserializeVector4(msgpack::type::tuple<uint, std::string>& serializedVector)
+TypeDeserializer::deserializeVector4(std::tuple<uint, std::string>& serializedVector)
 {
 	std::vector<float>	defaultValues(4, 0);
 	uint				serializedIndex = 0;
@@ -41,13 +41,11 @@ TypeDeserializer::deserializeVector4(msgpack::type::tuple<uint, std::string>& se
 	
 	defaultValues[3] = 1;
 
-	stream << serializedVector.a1;
+	stream << std::get<1>(serializedVector);
 
 	for (unsigned int i = 0; i < 4; ++i)
 	{
-		std::cout << i << " " << (serializedVector.a0 & (1u << serializedIndex)) << std::endl;
-
-		if (serializedVector.a0 & (1u << serializedIndex++))
+		if (std::get<0>(serializedVector) & (1u << serializedIndex++))
 			read(stream, defaultValues[i]);
 			//defaultValues[i] = serializedVector.a1[serializedIndex++];
 	}
@@ -56,18 +54,18 @@ TypeDeserializer::deserializeVector4(msgpack::type::tuple<uint, std::string>& se
 }
 		
 Any
-TypeDeserializer::deserializeVector3(msgpack::type::tuple<uint, std::string>& serializedVector)
+TypeDeserializer::deserializeVector3(std::tuple<uint, std::string>& serializedVector)
 {
 	std::vector<float>	defaultValues(3, 0);
 	uint				serializedIndex = 0;
 	std::stringstream	stream;
 	
-	stream << serializedVector.a1;//&*serializedVector.a1.begin(), serializedVector.a1.size());
+	stream << std::get<1>(serializedVector);//&*serializedVector.a1.begin(), serializedVector.a1.size());
 
 
 	for (unsigned int i = 0; i < 3; ++i)
 	{
-		if (serializedVector.a0 & (1u << serializedIndex++))
+		if (std::get<0>(serializedVector) & (1u << serializedIndex++))
 			read(stream, defaultValues[i]);
 //			defaultValues[i] = serializedVector.a1[serializedIndex++];
 	}
@@ -76,17 +74,17 @@ TypeDeserializer::deserializeVector3(msgpack::type::tuple<uint, std::string>& se
 }
 			
 Any
-TypeDeserializer::deserializeVector2(msgpack::type::tuple<uint, std::string>& serializedVector)
+TypeDeserializer::deserializeVector2(std::tuple<uint, std::string>& serializedVector)
 {
 	std::vector<float>	defaultValues(2, 0);
 	uint				serializedIndex = 0;
 	std::stringstream	stream;
 	
-	stream << serializedVector.a1;//(&*serializedVector.a1.begin(), serializedVector.a1.size());
+	stream << std::get<1>(serializedVector);//(&*serializedVector.a1.begin(), serializedVector.a1.size());
 
 	for (unsigned int i = 0; i < 2; ++i)
 	{
-		if (serializedVector.a0 & (1u << serializedIndex++))
+		if (std::get<0>(serializedVector) & (1u << serializedIndex++))
 			read(stream, defaultValues[i]);
 			//defaultValues[i] = serializedVector.a1[serializedIndex++];
 	}
@@ -95,12 +93,12 @@ TypeDeserializer::deserializeVector2(msgpack::type::tuple<uint, std::string>& se
 }
 
 Any
-TypeDeserializer::deserializeMatrix4x4(msgpack::type::tuple<uint, std::string>& serializeMatrix)
+TypeDeserializer::deserializeMatrix4x4(std::tuple<uint, std::string>& serializeMatrix)
 {
 	std::vector<float> matrixValues(16, 0);
 	std::stringstream	stream;
 	
-	stream << serializeMatrix.a1;
+	stream << std::get<1>(serializeMatrix);
 	//(&*serializeMatrix.a1.begin(), serializeMatrix.a1.size());
 	matrixValues[0] = 1;
 	matrixValues[5] = 1;
@@ -111,7 +109,7 @@ TypeDeserializer::deserializeMatrix4x4(msgpack::type::tuple<uint, std::string>& 
 
 	for (unsigned int i = 0; i < 16; ++i)
 	{
-		if (serializeMatrix.a0 & (1u << i))
+		if (std::get<0>(serializeMatrix) & (1u << i))
 			read(stream, matrixValues[i]);
 			//matrixValues[i] = serializeMatrix.a1[serializedIndex++];
 	}
@@ -120,31 +118,31 @@ TypeDeserializer::deserializeMatrix4x4(msgpack::type::tuple<uint, std::string>& 
 }
 
 Any
-TypeDeserializer::deserializeBlending(msgpack::type::tuple<uint, std::string>& seriliazedBlending)
+TypeDeserializer::deserializeBlending(std::tuple<uint, std::string>& seriliazedBlending)
 {
-	if (seriliazedBlending.a1 == "+")
+	if (std::get<1>(seriliazedBlending) == "+")
 		return Any(render::Blending::Mode::ADDITIVE);
 	
-	if (seriliazedBlending.a1 == "a")
+	if (std::get<1>(seriliazedBlending) == "a")
 		return Any(render::Blending::Mode::ALPHA);
 
 	return Any(render::Blending::Mode::DEFAULT);
 }
 
 Any
-TypeDeserializer::deserializeTriangleCulling(msgpack::type::tuple<uint, std::string>& seriliazedTriangleCulling)
+TypeDeserializer::deserializeTriangleCulling(std::tuple<uint, std::string>& seriliazedTriangleCulling)
 {
-	if (seriliazedTriangleCulling.a1 == "b")
+	if (std::get<1>(seriliazedTriangleCulling) == "b")
 		return Any(render::TriangleCulling::BACK);
-	if (seriliazedTriangleCulling.a1 == "u")
+	if (std::get<1>(seriliazedTriangleCulling) == "u")
 		return Any(render::TriangleCulling::BOTH);
-	if (seriliazedTriangleCulling.a1 == "f")
+	if (std::get<1>(seriliazedTriangleCulling) == "f")
 		return Any(render::TriangleCulling::FRONT);
 	return Any(render::TriangleCulling::NONE);
 }
 
 Any
-TypeDeserializer::deserializeTextureId(msgpack::type::tuple<uint, std::string>& seriliazedTextureId)
+TypeDeserializer::deserializeTextureId(std::tuple<uint, std::string>& seriliazedTextureId)
 {
-	return Any(seriliazedTextureId.a0 & 0x00FFFFFF);
+	return Any(std::get<0>(seriliazedTextureId) & 0x00FFFFFF);
 }
