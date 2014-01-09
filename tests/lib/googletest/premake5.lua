@@ -8,6 +8,7 @@ project "googletest"
 		"src/gtest-all.cc"
 	}
 	includedirs {
+		"include",
 		"."
 	}
 
