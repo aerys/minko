@@ -19,58 +19,37 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #pragma once
 
-#include "minko/SerializerCommon.hpp"
+#include "minko/Common.hpp"
 
 namespace minko
 {
 	namespace serialize
 	{
-		class ComponentSerializer
+		enum ComponentId
 		{
-		public:
-			typedef std::shared_ptr<scene::Node>		NodePtr;
-			typedef std::shared_ptr<file::Dependency>	DependencyPtr;
+			TRANSFORM			= 100,
+			PROJECTION_CAMERA	= 101,
+			AMBIENT_LIGHT		= 102,
+			DIRECTIONAL_LIGHT	= 103,
+			POINT_LIGHT			= 104,
+			SPOT_LIGHT			= 105,
+			SURFACE				= 106,
+			RENDERER			= 107,
+			BOUNDINGBOX			= 108
+		};
 
-		public:
-			static
-			std::string
-			serializeTransform(NodePtr			node, 
-							   DependencyPtr	dependencies);
-
-			static
-			std::string
-			serializePerspectiveCamera(NodePtr			node, 
-									   DependencyPtr	dependencies);
-
-			static
-			std::string
-			serializeAmbientLight(NodePtr		node, 
-								  DependencyPtr dependencies);
-
-			static
-			std::string
-			serializeDirectionalLight(NodePtr		node, 
-									  DependencyPtr dependencies);
-
-			static
-			std::string
-			serializePointLight(NodePtr			node, 
-								DependencyPtr	dependencies);
-
-			static
-			std::string
-			serializeSpotLight(NodePtr			node, 
-							   DependencyPtr	dependencies);
-
-			static
-			std::string
-			serializeSurface(NodePtr		node, 
-							 DependencyPtr	dependencies);
-
-			static
-			std::string
-			serializeRenderer(NodePtr		node, 
-							  DependencyPtr dependencies);
+		enum MinkoTypes
+		{
+			MATRIX4X4		= 0,
+			VECTOR4			= 3,
+			VECTOR3			= 1,
+			VECTOR2			= 2,
+			INT				= 4,
+			TEXTURE			= 5,
+			FLOAT			= 6,
+			BOOL			= 7,
+			BLENDING		= 8,
+			TRIANGLECULLING = 9
 		};
 	}
 }

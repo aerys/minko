@@ -19,36 +19,24 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #pragma once
 
-#include "minko/Common.hpp"
+#include "minko/Minko.hpp"
+
+#include "gtest/gtest.h"
 
 namespace minko
 {
-	namespace mk
+	namespace serialize
 	{
-		enum ComponentId
+		class MathTypeSerializerTest :
+			public ::testing::Test
 		{
-			TRANSFORM			= 100,
-			PROJECTION_CAMERA	= 101,
-			AMBIENT_LIGHT		= 102,
-			DIRECTIONAL_LIGHT	= 103,
-			POINT_LIGHT			= 104,
-			SPOT_LIGHT			= 105,
-			SURFACE				= 106,
-			RENDERER			= 107
-		};
-
-		enum MinkoTypes
-		{
-			MATRIX4X4		= 0,
-			VECTOR4			= 3,
-			VECTOR3			= 1,
-			VECTOR2			= 2,
-			INT				= 4,
-			TEXTURE			= 5,
-			FLOAT			= 6,
-			BOOL			= 7,
-			BLENDING		= 8,
-			TRIANGLECULLING = 9
+		public:
+			static inline
+			float
+			random(float max = 1000.f)
+			{
+				return rand() / (float)RAND_MAX * 1000.f;
+			}
 		};
 	}
 }

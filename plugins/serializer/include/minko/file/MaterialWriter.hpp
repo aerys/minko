@@ -46,7 +46,7 @@ namespace minko
 			typedef msgpack::type::tuple<std::string, float>			BasicPropertyTuple;
 
 		private:
-			static std::map<const std::type_info*, std::function<TupleIntString(Any)>> _typeToWriteFunction;
+			static std::map<const std::type_info*, std::function<std::tuple<uint, std::string>(Any)>> _typeToWriteFunction;
 
 		public:
 			inline static
@@ -75,10 +75,11 @@ namespace minko
 			{
 				if (material->propertyHasType<TexturePtr>(propertyName))
 				{
-					ComplexPropertyTuple serializedProperty(
-							propertyName,
-							serialize::TypeSerializer::serializeTexture(Any(dependency->registerDependency(material->get<TexturePtr>(propertyName)))));
-						complexSerializedProperties->push_back(serializedProperty);
+					std::tuple<uint, std::string> serializedTexture = serialize::TypeSerializer::serializeTexture(Any(dependency->registerDependency(material->get<TexturePtr>(propertyName))));
+					TupleIntString serializedMsgTexture(std::get<0>(serializedTexture), std::get<1>(serializedTexture));
+
+					ComplexPropertyTuple serializedProperty(propertyName, serializedMsgTexture);
+					complexSerializedProperties->push_back(serializedProperty);
 
 					return true;
 				}
@@ -97,13 +98,13 @@ namespace minko
 				if (_typeToWriteFunction.find(&typeid(T)) != _typeToWriteFunction.end() &&
 					material->propertyHasType<T>(propertyName))
 				{
-						Any propertyValue = material->get<T>(propertyName);
+					Any								propertyValue			= material->get<T>(propertyName);
+					std::tuple<uint, std::string>	serializedMaterialValue = _typeToWriteFunction[&typeid(T)](propertyValue);
+					TupleIntString					serializedMsgMaterialValue(std::get<0>(serializedMaterialValue), std::get<1>(serializedMaterialValue));
 
-						ComplexPropertyTuple serializedProperty(
-							propertyName,
-							_typeToWriteFunction[&typeid(T)](propertyValue));
-						complexSerializedProperties->push_back(serializedProperty);
-						return true;
+					ComplexPropertyTuple serializedProperty(propertyName, serializedMsgMaterialValue);
+					complexSerializedProperties->push_back(serializedProperty);
+					return true;
 				}
 				
 				return false;

@@ -21,6 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/SceneParser.hpp"
 #include "minko/scene/Node.hpp"
 #include "msgpack.hpp"
+#include "minko/Types.hpp"
 #include <stack>
 
 using namespace minko;
@@ -35,49 +36,49 @@ SceneParser::SceneParser()
 	_geometryParser = file::GeometryParser::create();
 	_materialParser = file::MaterialParser::create();
 
-	registerComponent(mk::PROJECTION_CAMERA,
+	registerComponent(serialize::PROJECTION_CAMERA,
 		std::bind(&deserialize::ComponentDeserializer::deserializeProjectionCamera,
 		std::placeholders::_1,
 		std::placeholders::_2,
 		std::placeholders::_3));
 
-	registerComponent(mk::TRANSFORM,
+	registerComponent(serialize::TRANSFORM,
 		std::bind(&deserialize::ComponentDeserializer::deserializeTransform,
 		std::placeholders::_1,
 		std::placeholders::_2,
 		std::placeholders::_3));
 
-	registerComponent(mk::AMBIENT_LIGHT,
+	registerComponent(serialize::AMBIENT_LIGHT,
 		std::bind(&deserialize::ComponentDeserializer::deserializeAmbientLight,
 		std::placeholders::_1,
 		std::placeholders::_2,
 		std::placeholders::_3));
 
-	registerComponent(mk::DIRECTIONAL_LIGHT,
+	registerComponent(serialize::DIRECTIONAL_LIGHT,
 		std::bind(&deserialize::ComponentDeserializer::deserializeDirectionalLight,
 		std::placeholders::_1,
 		std::placeholders::_2,
 		std::placeholders::_3));
 
-	registerComponent(mk::SPOT_LIGHT,
+	registerComponent(serialize::SPOT_LIGHT,
 		std::bind(&deserialize::ComponentDeserializer::deserializeSpotLight,
 		std::placeholders::_1,
 		std::placeholders::_2,
 		std::placeholders::_3));
 
-	registerComponent(mk::POINT_LIGHT,
+	registerComponent(serialize::POINT_LIGHT,
 		std::bind(&deserialize::ComponentDeserializer::deserializePointLight,
 		std::placeholders::_1,
 		std::placeholders::_2,
 		std::placeholders::_3));
 
-	registerComponent(mk::SURFACE,
+	registerComponent(serialize::SURFACE,
 		std::bind(&deserialize::ComponentDeserializer::deserializeSurface,
 		std::placeholders::_1,
 		std::placeholders::_2,
 		std::placeholders::_3));
 
-	registerComponent(mk::RENDERER,
+	registerComponent(serialize::RENDERER,
 		std::bind(&deserialize::ComponentDeserializer::deserializeRenderer,
 		std::placeholders::_1,
 		std::placeholders::_2,
