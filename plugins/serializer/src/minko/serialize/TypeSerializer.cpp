@@ -30,7 +30,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::serialize;
 
-msgpack::type::tuple<uint, std::string>
+std::tuple<uint, std::string>
 TypeSerializer::serializeVector4(Any value)
 {
 	math::Vector4::Ptr	vect4 = Any::cast<std::shared_ptr<math::Vector4>>(value);
@@ -39,7 +39,7 @@ TypeSerializer::serializeVector4(Any value)
 	float				values[4]	= {vect4->x(), vect4->y(), vect4->z(), vect4->w()};
 	std::stringstream	stream;
 
-	type += serializer::VECTOR4 << 24;
+	type += VECTOR4 << 24;
 
 	for (uint i = 0; i < 4; ++i)
 	{
@@ -56,10 +56,10 @@ TypeSerializer::serializeVector4(Any value)
 		}
 	}
 
-	return msgpack::type::tuple<uint, std::string>(type, stream.str());
+	return std::tuple<uint, std::string>(type, stream.str());
 }
 		
-msgpack::type::tuple<uint, std::string>
+std::tuple<uint, std::string>
 TypeSerializer::serializeVector3(Any value)
 {
 	math::Vector3::Ptr vect3 = Any::cast<std::shared_ptr<math::Vector3>>(value);
@@ -68,7 +68,7 @@ TypeSerializer::serializeVector3(Any value)
 	float				values[3]	= {vect3->x(), vect3->y(), vect3->z()};
 	std::stringstream	stream;
 
-	type += serializer::VECTOR3 << 24;
+	type += VECTOR3 << 24;
 
 	for (uint i = 0; i < 3; ++i)
 	{
@@ -80,10 +80,10 @@ TypeSerializer::serializeVector3(Any value)
 		}
 	}
 
-	return msgpack::type::tuple<uint, std::string>(type, stream.str());
+	return std::tuple<uint, std::string>(type, stream.str());
 }
 
-msgpack::type::tuple<uint, std::string>
+std::tuple<uint, std::string>
 TypeSerializer::serializeVector2(Any value)
 {
 	math::Vector2::Ptr	vect2 = Any::cast<std::shared_ptr<math::Vector2>>(value);
@@ -92,7 +92,7 @@ TypeSerializer::serializeVector2(Any value)
 	float				values[2]	= {vect2->x(), vect2->y()};
 	std::stringstream	stream;
 
-	type += serializer::VECTOR2 << 24;
+	type += VECTOR2 << 24;
 
 	for (uint i = 0; i < 2; ++i)
 	{
@@ -104,10 +104,10 @@ TypeSerializer::serializeVector2(Any value)
 		}
 	}
 
-	return msgpack::type::tuple<uint, std::string>(type, stream.str());
+	return std::tuple<uint, std::string>(type, stream.str());
 }
 
-msgpack::type::tuple<uint, std::string>
+std::tuple<uint, std::string>
 TypeSerializer::serializeMatrix4x4(Any value)
 {
 	math::Matrix4x4::Ptr		mat		= Any::cast<std::shared_ptr<math::Matrix4x4>>(value);
@@ -117,7 +117,7 @@ TypeSerializer::serializeMatrix4x4(Any value)
 
 	uint type = 0x00000000;
 
-	type += serializer::MATRIX4X4 << 24;
+	type += MATRIX4X4 << 24;
 
 	for (unsigned int i = 0; i < 16; ++i)
 	{
@@ -134,10 +134,10 @@ TypeSerializer::serializeMatrix4x4(Any value)
 		}
 	}
 
-	return msgpack::type::tuple<uint, std::string>(type, stream.str());
+	return std::tuple<uint, std::string>(type, stream.str());
 }
 
-msgpack::type::tuple<uint, std::string>
+std::tuple<uint, std::string>
 TypeSerializer::serializeBlending(Any value)
 {
 	render::Blending::Mode mode = Any::cast<render::Blending::Mode>(value);
@@ -153,12 +153,12 @@ TypeSerializer::serializeBlending(Any value)
 
 	uint type = 0x00000000;
 
-	type += serializer::BLENDING << 24;
+	type += BLENDING << 24;
 
-	return msgpack::type::tuple<uint, std::string>(type, res);
+	return std::tuple<uint, std::string>(type, res);
 }
 
-msgpack::type::tuple<uint, std::string>
+std::tuple<uint, std::string>
 TypeSerializer::serializeCulling(Any value)
 {
 	render::TriangleCulling tc = Any::cast<render::TriangleCulling>(value);
@@ -176,22 +176,22 @@ TypeSerializer::serializeCulling(Any value)
 
 	uint type = 0x00000000;
 
-	type += serializer::TRIANGLECULLING << 24;
+	type += TRIANGLECULLING << 24;
 
-	return msgpack::type::tuple<uint, std::string>(type, res);
+	return std::tuple<uint, std::string>(type, res);
 }
 
-msgpack::type::tuple<uint, std::string>
+std::tuple<uint, std::string>
 TypeSerializer::serializeTexture(Any value)
 {
 	short textureId = Any::cast<uint>(value);
 
 	uint type = 0x00000000;
 
-	type += serializer::TEXTURE << 24;
+	type += TEXTURE << 24;
 
 	type += textureId;
 
-	return msgpack::type::tuple<uint, std::string>(type, "");
+	return std::tuple<uint, std::string>(type, "");
 
 }

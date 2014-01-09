@@ -20,7 +20,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/SerializerCommon.hpp"
-#include "msgpack.hpp"
 
 namespace minko
 {
@@ -58,31 +57,31 @@ namespace minko
 
 			static
 			Any
-			deserializeVector4(msgpack::type::tuple<uint, std::string>& serializedVector);
+			deserializeVector4(std::tuple<uint, std::string>& serializedVector);
 		
 			static
 			Any
-			deserializeVector3(msgpack::type::tuple<uint, std::string>& serializedVector);
+			deserializeVector3(std::tuple<uint, std::string>& serializedVector);
 			
 			static
 			Any
-			deserializeVector2(msgpack::type::tuple<uint, std::string>& serializedVector);
+			deserializeVector2(std::tuple<uint, std::string>& serializedVector);
 
 			static
 			Any
-			deserializeMatrix4x4(msgpack::type::tuple<uint, std::string>& serializedMatrix);
+			deserializeMatrix4x4(std::tuple<uint, std::string>& serializedMatrix);
 
 			static
 			Any
-			deserializeBlending(msgpack::type::tuple<uint, std::string>& seriliazedBlending);
+			deserializeBlending(std::tuple<uint, std::string>& seriliazedBlending);
 
 			static
 			Any
-			deserializeTriangleCulling(msgpack::type::tuple<uint, std::string>& seriliazedTriangleCulling);
+			deserializeTriangleCulling(std::tuple<uint, std::string>& seriliazedTriangleCulling);
 
 			static
 			Any
-			deserializeTextureId(msgpack::type::tuple<uint, std::string>& seriliazedTextureId);
+			deserializeTextureId(std::tuple<uint, std::string>& seriliazedTextureId);
 		};
 	}
 }
