@@ -27,54 +27,61 @@ namespace minko
 	{
 		class ComponentDeserializer
 		{
+
+		private:
+			typedef std::shared_ptr<math::Matrix4x4>				Matrix4x4Ptr;
+			typedef std::shared_ptr<file::Dependency>				DependencyPtr;
+			typedef std::shared_ptr<file::AssetLibrary>				AssetLibraryPtr;
+			typedef std::shared_ptr<component::AbstractComponent>	AbsComponentPtr;
+
 		public:
 			static
-			std::shared_ptr<component::AbstractComponent>
-			deserializeTransform(std::string							serializedTransformData,
-								 std::shared_ptr<file::AssetLibrary>	assetLibrary,
-								 std::shared_ptr<file::Dependency>		dependencies);
+			AbsComponentPtr
+			deserializeTransform(std::string		serializedTransformData,
+								 AssetLibraryPtr	assetLibrary,
+								 DependencyPtr		dependencies);
 
 			static
-			std::shared_ptr<component::AbstractComponent>
-			deserializeProjectionCamera(std::string							serializedCameraData,
-										std::shared_ptr<file::AssetLibrary>	assetLibrary,
-										std::shared_ptr<file::Dependency>	dependencies);
+			AbsComponentPtr
+			deserializeProjectionCamera(std::string		serializedCameraData,
+										AssetLibraryPtr	assetLibrary,
+										DependencyPtr	dependencies);
 
 			static
-			std::shared_ptr<component::AbstractComponent>
-			deserializeAmbientLight(std::string							serializedAmbientLight,
-									std::shared_ptr<file::AssetLibrary>	assetLibrary,
-									std::shared_ptr<file::Dependency>	dependencies);
+			AbsComponentPtr
+			deserializeAmbientLight(std::string		serializedAmbientLight,
+									AssetLibraryPtr	assetLibrary,
+									DependencyPtr	dependencies);
 
 			static
-			std::shared_ptr<component::AbstractComponent>
-			deserializeDirectionalLight(std::string							serializedDirectionalLight,
-										std::shared_ptr<file::AssetLibrary>	assetLibrary,
-										std::shared_ptr<file::Dependency>	dependencies);
+			AbsComponentPtr
+			deserializeDirectionalLight(std::string		serializedDirectionalLight,
+										AssetLibraryPtr	assetLibrary,
+										DependencyPtr	dependencies);
 
 			static
-			std::shared_ptr<component::AbstractComponent>
-			deserializePointLight(std::string							serializedPointLight,
-								  std::shared_ptr<file::AssetLibrary>	assetLibrary,
-								  std::shared_ptr<file::Dependency>		dependencies);
+			AbsComponentPtr
+			deserializePointLight(std::string		serializedPointLight,
+								  AssetLibraryPtr	assetLibrary,
+								  DependencyPtr		dependencies);
 		
 			static
-			std::shared_ptr<component::AbstractComponent>
-			deserializeSpotLight(std::string							serializedSpotLight,
-								 std::shared_ptr<file::AssetLibrary>	assetLibrary,
-								 std::shared_ptr<file::Dependency>		dependencies);
+			AbsComponentPtr
+			deserializeSpotLight(std::string		serializedSpotLight,
+								 AssetLibraryPtr	assetLibrary,
+								 DependencyPtr		dependencies);
 
 			static
-			std::shared_ptr<component::AbstractComponent>
-			deserializeSurface(std::string							serializedSurface,
-							   std::shared_ptr<file::AssetLibrary>	assetLibrary,
-							   std::shared_ptr<file::Dependency>	dependencies);
+			AbsComponentPtr
+			deserializeSurface(std::string		serializedSurface,
+							   AssetLibraryPtr	assetLibrary,
+							   DependencyPtr	dependencies);
 
 			static
-			std::shared_ptr<component::AbstractComponent>
-			deserializeRenderer(std::string							serializedRenderer,
-							   std::shared_ptr<file::AssetLibrary>	assetLibrary,
-							   std::shared_ptr<file::Dependency>	dependencies);
+			AbsComponentPtr
+			deserializeRenderer(std::string		serializedRenderer,
+							   AssetLibraryPtr	assetLibrary,
+							   DependencyPtr	dependencies);
 		};
 	}
 }
