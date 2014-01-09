@@ -36,49 +36,49 @@ SceneParser::SceneParser()
 	_geometryParser = file::GeometryParser::create();
 	_materialParser = file::MaterialParser::create();
 
-	registerComponent(serializer::PROJECTION_CAMERA,
+	registerComponent(serialize::PROJECTION_CAMERA,
 		std::bind(&deserialize::ComponentDeserializer::deserializeProjectionCamera,
 		std::placeholders::_1,
 		std::placeholders::_2,
 		std::placeholders::_3));
 
-	registerComponent(serializer::TRANSFORM,
+	registerComponent(serialize::TRANSFORM,
 		std::bind(&deserialize::ComponentDeserializer::deserializeTransform,
 		std::placeholders::_1,
 		std::placeholders::_2,
 		std::placeholders::_3));
 
-	registerComponent(serializer::AMBIENT_LIGHT,
+	registerComponent(serialize::AMBIENT_LIGHT,
 		std::bind(&deserialize::ComponentDeserializer::deserializeAmbientLight,
 		std::placeholders::_1,
 		std::placeholders::_2,
 		std::placeholders::_3));
 
-	registerComponent(serializer::DIRECTIONAL_LIGHT,
+	registerComponent(serialize::DIRECTIONAL_LIGHT,
 		std::bind(&deserialize::ComponentDeserializer::deserializeDirectionalLight,
 		std::placeholders::_1,
 		std::placeholders::_2,
 		std::placeholders::_3));
 
-	registerComponent(serializer::SPOT_LIGHT,
+	registerComponent(serialize::SPOT_LIGHT,
 		std::bind(&deserialize::ComponentDeserializer::deserializeSpotLight,
 		std::placeholders::_1,
 		std::placeholders::_2,
 		std::placeholders::_3));
 
-	registerComponent(serializer::POINT_LIGHT,
+	registerComponent(serialize::POINT_LIGHT,
 		std::bind(&deserialize::ComponentDeserializer::deserializePointLight,
 		std::placeholders::_1,
 		std::placeholders::_2,
 		std::placeholders::_3));
 
-	registerComponent(serializer::SURFACE,
+	registerComponent(serialize::SURFACE,
 		std::bind(&deserialize::ComponentDeserializer::deserializeSurface,
 		std::placeholders::_1,
 		std::placeholders::_2,
 		std::placeholders::_3));
 
-	registerComponent(serializer::RENDERER,
+	registerComponent(serialize::RENDERER,
 		std::bind(&deserialize::ComponentDeserializer::deserializeRenderer,
 		std::placeholders::_1,
 		std::placeholders::_2,
