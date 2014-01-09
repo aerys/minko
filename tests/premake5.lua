@@ -1,7 +1,7 @@
 include "lib/googletest"
 
 minko.project.application "minko-tests"
-	removeplatforms { "html5" }
+	-- removeplatforms { "html5" } @fixme broken for Windows
 
 	kind "ConsoleApp"
 	language "C++"
@@ -13,10 +13,12 @@ minko.project.application "minko-tests"
 	defines { "MINKO_TESTS" }
 
 	-- plugins
-	minko.plugin.enable("sdl");
+	minko.plugin.enable("sdl")
+	minko.plugin.enable("serializer")
 
 	-- googletest framework
 	links { "googletest" }
 	includedirs { "lib/googletest/include" }
 
-	links { "pthread" }
+	configuration { "linux" }
+		links { "pthread" }
