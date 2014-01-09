@@ -56,8 +56,8 @@ AbstractSerializerParser::parse(const std::string&					filename,
 
 std::string
 AbstractSerializerParser::extractDependencies(std::shared_ptr<AssetLibrary>		assetLibrary,
-									  const std::vector<unsigned char>&	data,
-									  std::shared_ptr<Options>			options)
+									  const std::vector<unsigned char>&			data,
+									  std::shared_ptr<Options>					options)
 {
 	msgpack::object			msgpackObject;
 	msgpack::zone			mempool;
