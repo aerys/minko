@@ -40,6 +40,7 @@ namespace minko
 			typedef std::shared_ptr<render::Texture>	TexturePtr;
 
         private:
+			clock_t											_clockStart;
             uint                                            _frameId;
             std::shared_ptr<file::AssetLibrary>             _assets;
 
@@ -76,6 +77,9 @@ namespace minko
             {
                 return _frameId;
             }
+
+			uint
+			getTimer() const; // in milliseconds
 
             inline
             std::shared_ptr<file::AssetLibrary>
