@@ -756,7 +756,7 @@ ASSIMPParser::sampleAnimation(const aiAnimation* animation)
 	if (animation == nullptr || animation->mTicksPerSecond < 1e-6 || _options->skinningFramerate() == 0)
 		return;
 
-	unsigned int numFrames	= (unsigned int)floorf((float)_options->skinningFramerate() * animation->mDuration / animation->mTicksPerSecond);
+	unsigned int numFrames	= (unsigned int)floorf(float(_options->skinningFramerate() * animation->mDuration / animation->mTicksPerSecond));
 	numFrames				= numFrames < 2 ? 2 : numFrames;
 
 	const float			timeStep	= (float)animation->mDuration / (float)(numFrames - 1);
