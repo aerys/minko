@@ -32,7 +32,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/deserialize/TypeDeserializer.hpp"
 #include "minko/geometry/SphereGeometry.hpp"
 
-#define SERIALIZE; // comment to test deserialization
+#define SERIALIZE // comment to test deserialization
 
 using namespace minko;
 using namespace minko::component;
