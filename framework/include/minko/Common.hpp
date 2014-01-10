@@ -133,6 +133,9 @@ namespace minko
 		class MouseManager;
         class AbstractScript;
 		enum class SkinningMethod;
+
+		class AbstractAnimation;
+		class Animation;
 	}
 
 	namespace data
@@ -190,6 +193,12 @@ namespace minko
 		class SphereGeometry;
         class QuadGeometry;
 		class TeapotGeometry;
+	}
+
+	namespace animation
+	{
+		class AbstractTimeline;
+		class Matrix4x4Timeline;
 	}
 
 	namespace math

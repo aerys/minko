@@ -643,3 +643,12 @@ Matrix4x4::unlock()
 
 	return shared_from_this();
 }
+
+Matrix4x4::Ptr
+Matrix4x4::interpolateTo(Matrix4x4::Ptr	target, 
+						 float			ratio, 
+						 bool			interpolateScale,
+						 bool			interpolateTranslation)
+{
+	return shared_from_this(); // fixme
+}
