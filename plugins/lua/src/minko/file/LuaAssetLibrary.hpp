@@ -26,6 +26,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/Texture.hpp"
 #include "minko/geometry/Geometry.hpp"
 #include "minko/component/AbstractScript.hpp"
+#include "minko/scene/Node.hpp"
 
 #include "LuaGlue/LuaGlue.h"
 
@@ -47,7 +48,8 @@ namespace minko
 			        .method("effect",       static_cast<render::Effect::Ptr (file::AssetLibrary::*)(const std::string&)>(&file::AssetLibrary::effect))
 			        .method("texture",      static_cast<render::Texture::Ptr (file::AssetLibrary::*)(const std::string&)>(&file::AssetLibrary::texture))
 			        .method("script",       static_cast<component::AbstractScript::Ptr (file::AssetLibrary::*)(const std::string&)>(&file::AssetLibrary::script))
-			        .property("context",    &file::AssetLibrary::context);
+					.method("symbol",		static_cast<scene::Node::Ptr (file::AssetLibrary::*)(const std::string&)>(&file::AssetLibrary::symbol))
+					.property("context",    &file::AssetLibrary::context);
 
 			    MINKO_LUAGLUE_BIND_SIGNAL(state, file::AssetLibrary::Ptr);
 
