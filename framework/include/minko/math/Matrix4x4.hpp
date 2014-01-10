@@ -227,6 +227,12 @@ namespace minko
             deltaTransform(std::shared_ptr<Vector3> v, std::shared_ptr<Vector3> output = nullptr);
 
 			Ptr
+			interpolateTo(Ptr	target, 
+						  float	ratio, 
+						  bool	interpolateScale = true,
+						  bool	interpolateTranslation = true);
+
+			Ptr
 			lock();
 
 			Ptr
