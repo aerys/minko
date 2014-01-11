@@ -758,7 +758,7 @@ package aerys.minko.render.shader.part
 		
 		protected final function lessEqual(a : Object, b : Object) : SFloat
 		{
-			return or(lessThan(a, b), equal(a, b));
+			return add(lessThan(a, b), equal(a, b));
 		}
 
 		protected final function equal(a : Object, b : Object) : SFloat
