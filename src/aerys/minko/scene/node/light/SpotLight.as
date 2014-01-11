@@ -201,7 +201,9 @@ package aerys.minko.scene.node.light
 			this.shadowQuality			= shadowQuality;
 			this.shadowSpread	        = shadowSpread;
             this.shadowBias             = shadowBias;
-			this.shadowColor			= shadowColor;
+
+            if (shadowColor != 0)
+				this.shadowColor		= shadowColor;
 			
 			transform.lookAt(Vector4.Z_AXIS, Vector4.ZERO);
 		}
@@ -223,7 +225,8 @@ package aerys.minko.scene.node.light
 				shadowZFar,
 				shadowQuality,
 				shadowSpread,
-				shadowBias
+				shadowBias,
+				shadowColor
 			); 
 			
 			light.name = this.name;
