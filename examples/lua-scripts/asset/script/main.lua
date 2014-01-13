@@ -18,7 +18,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 ]]--
 
 function main:start(root)
-	self.camera = self:initializeCamera(root)
 	self.lights = self:initializeLights(root)
 
 	local assets = 	getSceneManager().assets
@@ -27,14 +26,16 @@ function main:start(root)
 		:queue('effect/Basic.effect')
 		:queue('effect/Phong.effect')
 		:queue('texture/box.png')
-		:queue('script/rotate.lua')
 		:queue('script/framerate.lua')
+		:queue('script/camera.lua')
 	
 	self.assetsComplete = assets.complete:connect(function(assets)
 		self.assetsComplete:disconnect()
 		self.assetsComplete = nil
 
-		self.camera:addComponent(assets:script('script/rotate.lua'))
+		self:initializeCamera(root, assets)
+
+		root:addComponent(assets:script('script/framerate.lua'))
 
 		local cube = Node.create()
 			:addComponent(Transform.create())
@@ -49,25 +50,11 @@ function main:start(root)
 	assets:load()
 end
 
-function main:initializeCamera(root)
-	local canvas = getCanvas()
-	local cameraComp = PerspectiveCamera.create(canvas.width / canvas.height, math.pi * .25, .1, 1000.)
-	local camera = Node.create()
-		:addComponent(Renderer.create())
-		:addComponent(Transform.createFromMatrix(Matrix4x4.create():lookAt(
-			Vector3.zero(),
-			Vector3.create(0., 0., 3.),
-			Vector3.up()
-		)))
-		:addComponent(cameraComp)
-		:addComponent(DirectionalLight.create(.4))
-	root:addChild(camera)
-
-	self.canvasResizedSlot = getCanvas().resized:connect(function(canvas, width, height)
-		cameraComp.aspectRatio = width / height
-	end)
-
-	return camera
+function main:initializeCamera(root, assets)
+	self.camera = Node.create()
+	self.camera.name = 'mainCamera'
+	self.camera:addComponent(assets:script('script/camera.lua'))
+	root:addChild(self.camera)
 end
 
 function main:initializeLights(root)
