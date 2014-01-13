@@ -13,7 +13,7 @@ template<typename _Type, typename _Class>
 class LuaGlueDirectProperty : public LuaGluePropertyBase
 {
 public:
-	typedef typename std::remove_const<typename std::remove_reference<_Type>::type>::type Type;
+	typedef typename luaglue_remove_const_reference<_Type>::type Type;
 	typedef _Type _Class::*PropType;
 
 	LuaGlueDirectProperty(LuaGlueClass<_Class> *luaClass, const std::string &name, PropType prop) : name_(name), prop_(prop), glueClass(luaClass)
@@ -183,9 +183,8 @@ template<typename _Type, typename _Class>
 class LuaGlueDirectProperty<std::shared_ptr<_Type>, _Class> : public LuaGluePropertyBase
 {
 public:
-	typedef std::shared_ptr<typename std::remove_reference<_Type>::type> SharedType;
-
-	typedef typename std::remove_const<typename std::remove_reference<_Type>::type>::type Type;
+	typedef typename luaglue_remove_const_reference<_Type>::type Type;
+	typedef std::shared_ptr<Type> SharedType;
 	typedef SharedType _Class::*PropType;
 
 	LuaGlueDirectProperty(LuaGlueClass<_Class> *luaClass, const std::string &name, PropType prop) : name_(name), prop_(prop), glueClass(luaClass)
@@ -322,7 +321,7 @@ template<typename _Type, typename _Class>
 class LuaGlueProperty : public LuaGluePropertyBase
 {
 public:
-	typedef typename std::remove_const<typename std::remove_reference<_Type>::type>::type Type;
+	typedef typename luaglue_remove_const_reference<_Type>::type Type;
 	typedef _Type(_Class::*GetterType)();
 	typedef _Type(_Class::*ConstGetterType)() const;
 	typedef void (_Class::*SetterType)(_Type);
