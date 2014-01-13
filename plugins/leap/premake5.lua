@@ -11,7 +11,7 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 	files { "src/**.hpp", "src/**.h", "src/**.cpp", "src/**.c", "include/**.hpp" }
 	includedirs { "include", "src" }
 
-	emoveplatforms { "linux", "html5", "ios", "android" }
+	removeplatforms { "linux", "html5", "ios", "android" }
 
 	-- windows
 	configuration { "windows" }
