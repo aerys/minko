@@ -64,8 +64,7 @@ project "minko-framework"
 
 	-- html5
 	configuration { "html5" }
-
-	newoption {
-		trigger     = "with-glsl-optimizer",
-		description = "Enable the GLSL optimizer."
-	}
+		buildoptions {
+			"-Wno-warn-absolute-paths",
+			"--closure 1"
+		}
