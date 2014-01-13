@@ -18,6 +18,7 @@ package.path = MINKO_HOME .. "/modules/?/?.lua;".. package.path
 
 require 'emscripten'
 require 'android'
+require 'vs2013ctp'
 
 local insert = require 'insert'
 

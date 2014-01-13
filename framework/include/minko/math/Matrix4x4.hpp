@@ -67,6 +67,13 @@ namespace minko
 			}
 
 			inline
+			std::vector<float>&
+			data()
+			{
+				return _m;
+			}
+
+			inline
 			const std::vector<float>&
 			data() const
 			{
@@ -280,6 +287,9 @@ namespace minko
 
 			Ptr
 			lerp(Matrix4x4::Ptr target, float ratio);
+
+			Ptr
+			fromQuaternion(Quaternion::Ptr quaternion);
 
 			Quaternion::Ptr
 			rotationQuaternion(Quaternion::Ptr output = nullptr) const;

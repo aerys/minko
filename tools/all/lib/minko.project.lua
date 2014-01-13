@@ -16,6 +16,7 @@ minko.project.library = function(name)
 	
 	configuration { "win" }
 		includedirs { minko.sdk.path("/deps/win/include") }
+
 	configuration { "vs*" }
 		defines { "NOMINMAX" }
 		
@@ -24,12 +25,12 @@ minko.project.library = function(name)
 	configuration { "linux" }
 		
 	configuration { "html5" }
-		includedirs { EMSCRIPTEN_HOME .. "/system/include" }
+		if EMSCRIPTEN_HOME then
+			includedirs { EMSCRIPTEN_HOME .. "/system/include" }
+		end
 		buildoptions {
-			"-Wno-warn-absolute-paths",
 			"--closure 1"
 		}
-		-- FIXME: Only enable in release when emscripten is finally able to successfully compile without -O2
 		optimize "On"
 
 	configuration { }
@@ -92,8 +93,6 @@ minko.project.application = function(name)
 		}
 
 	configuration { "html5" }
-		-- local inspect = require 'inspect'
-		-- print(inspect.inspect(configuration().configset._current))
 		minko.plugin.enable("webgl")
 
 		prelinkcommands {

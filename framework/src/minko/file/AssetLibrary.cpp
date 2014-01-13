@@ -34,9 +34,6 @@ using namespace minko::render;
 using namespace minko::geometry;
 using namespace minko::file;
 
-const std::string
-AssetLibrary::_defaultName = "";
-
 AssetLibrary::Ptr
 AssetLibrary::create(AbsContextPtr context)
 {
@@ -71,13 +68,15 @@ AssetLibrary::geometry(const std::string& name, std::shared_ptr<Geometry> geomet
 const std::string&
 AssetLibrary::geometryName(GeometryPtr geometry)
 {
-	for (auto it = _geometries.begin(); it != _geometries.end(); ++it)
+	auto it = std::find_if(_geometries.begin(), _geometries.end(), [&](std::pair<std::string, GeometryPtr> itr) -> bool
 	{
-		if (it->second == geometry)
-			return it->first;
-	}
+		return itr.second == geometry;
+	});
 
-	return _defaultName;
+	if (it != _geometries.end())
+		return it->first;
+
+	throw new std::logic_error("AssetLibrary does not reference this geometry.");
 }
 
 render::Texture::Ptr
@@ -97,13 +96,15 @@ AssetLibrary::texture(const std::string& name, render::Texture::Ptr texture)
 const std::string&
 AssetLibrary::textureName(TexturePtr texture)
 {
-	for (auto it = _textures.begin(); it != _textures.end(); ++it)
+	auto it = std::find_if(_textures.begin(), _textures.end(), [&](std::pair<std::string, TexturePtr> itr) -> bool
 	{
-		if (it->second == texture)
-			return it->first;
-	}
+		return itr.second == texture;
+	});
 
-	return _defaultName;
+	if (it != _textures.end())
+		return it->first;
+
+	throw new std::logic_error("AssetLibrary does not reference this texture.");
 }
 
 scene::Node::Ptr
@@ -123,13 +124,15 @@ AssetLibrary::symbol(const std::string& name, scene::Node::Ptr node)
 const std::string&
 AssetLibrary::symbolName(NodePtr node)
 {
-	for (auto it = _symbols.begin(); it != _symbols.end(); ++it)
+	auto it = std::find_if(_symbols.begin(), _symbols.end(), [&](std::pair<std::string, NodePtr> itr) -> bool
 	{
-		if (it->second == node)
-			return it->first;
-	}
+		return itr.second == node;
+	});
 
-	return _defaultName;
+	if (it != _symbols.end())
+		return it->first;
+
+	throw new std::logic_error("AssetLibrary does not reference this symbol.");
 }
 
 material::Material::Ptr
@@ -156,13 +159,15 @@ AssetLibrary::material(const std::string& name, MaterialPtr material)
 const std::string&
 AssetLibrary::materialName(MaterialPtr material)
 {
-	for (auto it = _materials.begin(); it != _materials.end(); ++it)
+	auto it = std::find_if(_materials.begin(), _materials.end(), [&](std::pair<std::string, MaterialPtr> itr) -> bool
 	{
-		if (it->second == material)
-			return it->first;
-	}
+		return itr.second == material;
+	});
 
-	return _defaultName;
+	if (it != _materials.end())
+		return it->first;
+
+	throw new std::logic_error("AssetLibrary does not reference this material.");
 }
 
 AssetLibrary::EffectPtr
@@ -182,13 +187,15 @@ AssetLibrary::effect(const std::string& name, std::shared_ptr<Effect> effect)
 const std::string&
 AssetLibrary::effectName(EffectPtr effect)
 {
-	for (auto it = _effects.begin(); it != _effects.end(); ++it)
+	auto it = std::find_if(_effects.begin(), _effects.end(), [&](std::pair<std::string, EffectPtr> itr) -> bool
 	{
-		if (it->second == effect && it->first.find(".") !=std::string::npos)
-			return it->first;
-	}
+		return itr.second == effect;
+	});
 
-	return _defaultName;
+	if (it != _effects.end())
+		return it->first;
+
+	throw new std::logic_error("AssetLibrary does not reference this effect.");
 }
 
 const std::vector<unsigned char>&
@@ -225,13 +232,15 @@ AssetLibrary::script(const std::string& name, AbsScriptPtr script)
 const std::string&
 AssetLibrary::scriptName(AbsScriptPtr script)
 {
-	for (auto it = _scripts.begin(); it != _scripts.end(); ++it)
+	auto it = std::find_if(_scripts.begin(), _scripts.end(), [&](std::pair<std::string, AbsScriptPtr> itr) -> bool
 	{
-		if (it->second == script)
-			return it->first;
-	}
+		return itr.second == script;
+	});
 
-	return _defaultName;
+	if (it != _scripts.end())
+		return it->first;
+
+	throw new std::logic_error("AssetLibrary does not reference this script.");
 }
 
 const unsigned int

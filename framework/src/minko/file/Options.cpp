@@ -31,7 +31,7 @@ Options::Options(std::shared_ptr<render::AbstractContext> context) :
 	_platforms(),
 	_userFlags(),
     _generateMipMaps(false),
-	_skinningNumFPS(30),
+	_skinningFramerate(30),
 	_skinningMethod(component::SkinningMethod::HARDWARE),
 	_material(material::Material::create())
 {
