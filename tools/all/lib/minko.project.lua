@@ -25,7 +25,10 @@ minko.project.library = function(name)
 		
 	configuration { "html5" }
 		includedirs { EMSCRIPTEN_HOME .. "/system/include" }
-		buildoptions { "-Wno-warn-absolute-paths" }
+		buildoptions {
+			"-Wno-warn-absolute-paths",
+			"--closure 1"
+		}
 		-- FIXME: Only enable in release when emscripten is finally able to successfully compile without -O2
 		optimize "On"
 
@@ -50,8 +53,11 @@ minko.project.application = function(name)
 		}
 		postbuildcommands {
 			'xcopy /y /i "' .. minko.sdk.path('/framework/effect') .. '" "$(TargetDir)\\effect"',
-			'xcopy /y /s asset\\* "$(TargetDir)"',
 			minko.vs.getdllscopycommand(minko.sdk.path('/deps/win/lib'))
+		}
+	configuration { "win", "release" }
+		postbuildcommands {
+			'xcopy /y /s asset\\* "$(TargetDir)"'
 		}
 		
 	configuration { "linux" }
@@ -62,7 +68,10 @@ minko.project.application = function(name)
 			"m"
 		}
 		postbuildcommands {
-			'cp -r ' .. minko.sdk.path('/framework/effect') .. ' ${TARGETDIR} || :',
+			'cp -r ' .. minko.sdk.path('/framework/effect') .. ' ${TARGETDIR} || :'
+		}
+	configuration { "linux", "release" }
+		postbuildcommands {
 			'cp -r asset/* ${TARGETDIR} || :'
 		}
 	
@@ -75,7 +84,10 @@ minko.project.application = function(name)
 			"IOKit.framework"
 		}
 		postbuildcommands {
-			'cp -r ' .. minko.sdk.path('/framework/effect') .. ' ${TARGETDIR} || :',
+			'cp -r ' .. minko.sdk.path('/framework/effect') .. ' ${TARGETDIR} || :'
+		}
+	configuration { "osx", "release" }
+		postbuildcommands {
 			'cp -r asset/* ${TARGETDIR} || :'
 		}
 
@@ -102,7 +114,7 @@ minko.project.application = function(name)
 
 		postbuildcommands {
 			'cd ${TARGETDIR}'
-			.. ' && ' .. emcc .. ' ' .. name .. '.bc -o ' .. name .. '.html -O2 -s CLOSURE_ANNOTATIONS=1 -s DISABLE_EXCEPTION_CATCHING=0 -s ASM_JS=0 -s TOTAL_MEMORY=268435456 -s ALLOW_MEMORY_GROWTH=1 --preload-file effect --preload-file texture --preload-file model --preload-file script --preload-file symbol'
+			.. ' && ' .. emcc .. ' ' .. name .. '.bc -o ' .. name .. '.html -O2 -s CLOSURE_ANNOTATIONS=1 -s DISABLE_EXCEPTION_CATCHING=0 -s TOTAL_MEMORY=268435456 --preload-file effect --preload-file texture --preload-file model --preload-file script --preload-file symbol'
 			.. ' || ' .. minko.fail()
 		}
 
@@ -111,7 +123,7 @@ minko.project.application = function(name)
 
 		postbuildcommands {
 			'cd ${TARGETDIR}'
-			.. ' && ' .. emcc .. ' ' .. name .. '.bc -o ' .. name .. '.html -O2 -s DISABLE_EXCEPTION_CATCHING=0 -s ASM_JS=0 -s TOTAL_MEMORY=268435456 -s ALLOW_MEMORY_GROWTH=1 --preload-file effect --preload-file texture --preload-file model --preload-file script --preload-file symbol'
+			.. ' && ' .. emcc .. ' ' .. name .. '.bc -o ' .. name .. '.html -O2 -s DISABLE_EXCEPTION_CATCHING=0 -s TOTAL_MEMORY=268435456 --closure 1 --preload-file effect --preload-file texture --preload-file model --preload-file script --preload-file symbol'
 			.. ' || ' .. minko.fail()
 		}
 
