@@ -2,7 +2,6 @@ package aerys.minko.render.shader.picking
 {
 	import flash.geom.Rectangle;
 	
-	import aerys.minko.render.RenderTarget;
 	import aerys.minko.render.shader.SFloat;
 	import aerys.minko.render.shader.Shader;
 	import aerys.minko.render.shader.ShaderSettings;

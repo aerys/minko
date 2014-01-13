@@ -269,6 +269,14 @@ package aerys.minko.scene.controller
 			if (!_dispatchers[viewport])
 				bindDefaultInputs(viewport);
 			
+			var antiAliasing : int = 0;
+			
+			if (viewport.antiAliasing && _technique & PickingTechnique.PIXEL_PICKING)
+			{
+				antiAliasing = viewport.antiAliasing;
+				viewport.antiAliasing = 0;
+			}
+			
 			// toggle picking pass
 			if (time - _lastPickingTime > 1000. / _pickingRate && _toDispatch != EVENT_NONE)
 			{
@@ -314,6 +322,7 @@ package aerys.minko.scene.controller
                                 {
 									if (!(_technique & PickingTechnique.PIXEL_PICKING))
 									{
+										trace(_lastMouseOver ?_lastMouseOver.name : "null", _currentMouseOver ? _currentMouseOver.name : "null", hits[0] ? hits[0].name : "null");
 										_lastMouseOver = _currentMouseOver;
 										_currentMouseOver = hits[0] as Mesh;
 									}
@@ -367,6 +376,11 @@ package aerys.minko.scene.controller
                     updateMouseCursor();
                     executeSignals();
                 }
+			}
+			
+			if (antiAliasing > 0)
+			{
+				viewport.antiAliasing = antiAliasing;
 			}
 		}
 		
