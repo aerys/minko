@@ -290,9 +290,12 @@ package aerys.minko.scene.controller
                 // raycast
                 if (_technique & PickingTechnique.RAYCASTING)
                 {
-                    var ray : Ray       = null;
-                    var hit : Boolean   = false;
-                    
+                    var ray					: Ray       = null;
+                    var hit					: Boolean   = false;
+                    var minDistance			: Number	= Number.POSITIVE_INFINITY;				
+					
+					var currentMouseOver	: Mesh		= _currentMouseOver;
+					
                     for (var targetId : uint = 0; targetId < numTargets && !hit; ++targetId)
                     {
                         var target  : ISceneNode    = getTarget(targetId);
@@ -310,11 +313,13 @@ package aerys.minko.scene.controller
                             if (target is Mesh)
                             {
 								var mesh : Mesh = target as Mesh;
-                                if (mesh.cast(ray, Number.POSITIVE_INFINITY, _tag) > 0.)
+								var distance : Number = mesh.cast(ray, Number.POSITIVE_INFINITY, _tag);
+                                if (distance > 0.)
                                 {
-									if (!(_technique & PickingTechnique.PIXEL_PICKING))
+									if (!(_technique & PickingTechnique.PIXEL_PICKING) && distance < minDistance)
 									{
-										_lastMouseOver = _currentMouseOver;
+										minDistance = distance;
+										_lastMouseOver = currentMouseOver;
 										_currentMouseOver = mesh;
 									}
                                     hit = true;
@@ -329,8 +334,12 @@ package aerys.minko.scene.controller
                                 {
 									if (!(_technique & PickingTechnique.PIXEL_PICKING))
 									{
-										_lastMouseOver = _currentMouseOver;
-										_currentMouseOver = hits[0] as Mesh;
+										_lastMouseOver = currentMouseOver;
+										if (Mesh(hits[0]).cast(ray, Number.POSITIVE_INFINITY, _tag) < minDistance)
+										{
+											minDistance = distance
+											_currentMouseOver = hits[0] as Mesh;
+										}
 									}
                                     hit = true;
                                 }
@@ -389,7 +398,7 @@ package aerys.minko.scene.controller
 												context		: Context3DResource,
 												backBuffer	: RenderTarget) : void
 		{
-			if (_disableAntiAliasing && backBuffer.antiAliasing != 0)
+			if (_disableAntiAliasing)
 				context.configureBackBuffer(backBuffer.width, backBuffer.height, 0, true);
 			
 			context.clear(0, 0, 0, 0);
@@ -409,7 +418,7 @@ package aerys.minko.scene.controller
 				(color & 0xff) / 255.
 			);
 			
-			if (_disableAntiAliasing && backBuffer.antiAliasing != _previousAntiAliasing)
+			if (_disableAntiAliasing)
 			{
 				context.configureBackBuffer(backBuffer.width, backBuffer.height, _previousAntiAliasing, true);
 				context.clear(0, 0, 0, 0);
@@ -436,7 +445,7 @@ package aerys.minko.scene.controller
 			{
 				var mesh	: Mesh	= _pickingIdToMesh[pixelColor & 0xFFFFFF];
 				
-				_currentMouseOver	= mesh && (mesh.tag & _tag) != 0 ? mesh : null;
+				_currentMouseOver = mesh && (mesh.tag & _tag) != 0 ? mesh : null;
 			}
 			else
 				_currentMouseOver = null; // wrong antialiasing color or nothing got picked
