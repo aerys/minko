@@ -28,8 +28,7 @@ namespace minko
 	namespace geometry
 	{
 		class Geometry :
-			public std::enable_shared_from_this<Geometry>,
-			public Convertible<Geometry>
+			public std::enable_shared_from_this<Geometry>
 		{
 		public:
 			typedef std::shared_ptr<Geometry> Ptr;
@@ -172,7 +171,22 @@ namespace minko
 			bool
 			equals(Ptr geom)
 			{
-				return _vertexBuffers == geom->_vertexBuffers && _indexBuffer == geom->_indexBuffer;
+				bool vertexEquality		= _vertexBuffers.size() == geom->_vertexBuffers.size();
+				bool indexEquality		= _indexBuffer == geom->_indexBuffer;
+				auto vertexBuffer1Start = _vertexBuffers.begin();
+				auto vertexBuffer2Start = geom->_vertexBuffers.begin();
+
+				if (vertexEquality)
+				{
+					for (uint i = 0; i < _vertexBuffers.size() && vertexEquality; ++i)
+					{
+						vertexEquality = vertexEquality && (*vertexBuffer1Start == *vertexBuffer2Start);
+						std::next(vertexBuffer1Start);
+						std::next(vertexBuffer2Start);
+					}
+				}
+
+				return vertexEquality && indexEquality;
 			}
 
 		protected:

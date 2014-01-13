@@ -37,7 +37,6 @@ int main(int argc, char** argv)
 	sceneManager->assets()
 		->registerParser<file::PNGParser>("png")
 		->queue("effect/Basic.effect")
-		->queue("effect/Red.effect")
 		->queue("effect/Picking.effect");
 
 	sceneManager->assets()
@@ -50,7 +49,7 @@ int main(int argc, char** argv)
 		->material("backgroundMaterial",	material::BasicMaterial::create()->diffuseMap(sceneManager->assets()->texture("renderTarget")))
 		->geometry("cube",					geometry::CubeGeometry::create(sceneManager->assets()->context()))
 		->geometry("sphere",				geometry::SphereGeometry::create(sceneManager->assets()->context()))
-		->geometry("teapot",				geometry::QuadGeometry::create(sceneManager->assets()->context()));
+		->geometry("plane",					geometry::QuadGeometry::create(sceneManager->assets()->context()));
 
 	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
 	{
@@ -71,9 +70,9 @@ int main(int argc, char** argv)
 				assets->effect("effect/Basic.effect")))
 			->addComponent(Transform::create());
 		
-		auto teapot = scene::Node::create("teapotNode")
+		auto teapot = scene::Node::create("planeNode")
 			->addComponent(Surface::create(
-				assets->geometry("teapot"),
+				assets->geometry("plane"),
 				assets->material("blueMaterial"),
 				assets->effect("effect/Basic.effect")))
 			->addComponent(Transform::create(Matrix4x4::create()->appendTranslation(Vector3::create(1.4f))));

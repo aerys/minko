@@ -37,15 +37,12 @@ GeometryWriter::initialize()
 std::string
 GeometryWriter::serializeIndexStream(std::shared_ptr<render::IndexBuffer> indexBuffer)
 {
-	std::cout << "index short" << std::endl;
 	return serialize::TypeSerializer::serializeVector<unsigned short>(indexBuffer->data());
 }
 
 std::string
 GeometryWriter::serializeIndexStreamChar(std::shared_ptr<render::IndexBuffer> indexBuffer)
 {
-
-	std::cout << "index char" << std::endl;
 	return serialize::TypeSerializer::serializeVector<unsigned short, unsigned char>(indexBuffer->data());
 }
 

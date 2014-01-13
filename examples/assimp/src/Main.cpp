@@ -44,7 +44,7 @@ int main(int argc, char** argv)
 		->registerParser<file::ASSIMPParser>("dae")
 		->load(DEFAULT_EFFECT);
 
-	sceneManager->assets()->defaultOptions()->skinningNumFPS(30);
+	sceneManager->assets()->defaultOptions()->skinningFramerate(30);
 	sceneManager->assets()->defaultOptions()->skinningMethod(SkinningMethod::HARDWARE);
 	sceneManager->assets()->defaultOptions()->effect(sceneManager->assets()->effect(DEFAULT_EFFECT));
 	sceneManager->assets()->defaultOptions()->material()->set("diffuseColor", Vector4::create(0.8, 0.1, 0.1, 1.0));

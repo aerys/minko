@@ -41,9 +41,9 @@ solution "minko"
 	include 'plugins/assimp'
 	include 'plugins/offscreen'
 	include 'plugins/lua'
-	include 'plugins/assimp'
 	include 'plugins/serializer'
 	include 'plugins/oculus'
+	include 'plugins/leap'
 
 	-- examples
 	if not _OPTIONS['no-examples'] then
@@ -59,6 +59,8 @@ solution "minko"
 		include('examples/frustum')
 		include('examples/serializer')
 		include('examples/picking')
+		include('examples/visibility')
+		include('examples/leap-motion')
 	end
 
 	-- tests

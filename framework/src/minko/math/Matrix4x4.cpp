@@ -525,6 +525,34 @@ Matrix4x4::lerp(Matrix4x4::Ptr target, float ratio)
 	return shared_from_this();
 }
 
+Matrix4x4::Ptr
+Matrix4x4::fromQuaternion(Quaternion::Ptr quaternion)
+{
+	float x = quaternion->i();
+	float y = quaternion->j();
+	float z = quaternion->k();
+	float w = quaternion->r();
+	float xy2 = 2.f * x * y;
+	float xz2 = 2.f * x * z;
+	float xw2 = 2.f * x * w;
+	float yz2 = 2.f * y * z;
+	float yw2 = 2.f * y * w;
+	float zw2 = 2.f * z * w;
+	float xx = x * x;
+	float yy = y * y;
+	float zz = z * z;
+	float ww = w * w;
+
+	initialize(
+		xx - yy - zz + ww, 	xy2 + zw2, 			xz2 - yw2, 			0.,
+		xy2 - zw2,			-xx + yy - zz + ww,	yz2 + xw2,			0.,
+		xz2 + yw2,			yz2 - xw2,			-xx - yy + zz + ww, 0.,
+		0.,					0.,					0.,					1.
+	);
+
+	return shared_from_this();
+}
+
 Quaternion::Ptr
 Matrix4x4::rotationQuaternion(Quaternion::Ptr output) const
 {

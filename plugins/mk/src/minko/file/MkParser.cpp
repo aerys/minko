@@ -36,8 +36,10 @@ MkParser::parse(const std::string&				    filename,
 				const std::string&                  resolvedFilename,
                 std::shared_ptr<Options>            options,
 				const std::vector<unsigned char>&	data,
-				std::shared_ptr<AssetLibrary>	    AssetLibrary)
+				std::shared_ptr<AssetLibrary>	    assetLibrary)
 {
+	std::cout << "MkParser::parse()" << std::endl;
+
 	std::vector<char> dataCopy(data.begin(), data.end());
 
 	minko::Qark::Object    obj;
@@ -46,13 +48,13 @@ MkParser::parse(const std::string&				    filename,
 
 	std::map<std::string, Any>& qarkData = minko::Any::cast<std::map<std::string, Any>&>(obj);
 
-	std::cout << "-------------------------------" << std::endl <<std::endl;
+	std::cout << "-------------------------------" << std::endl << std::endl;
 
 	std::cout << "Magic number   : " << minko::Any::cast<int>(qarkData["magicNumber"]) << std::endl;
 	std::cout << "Version        : " << minko::Any::cast<std::string>(qarkData["version"]) << std::endl;
 	std::cout << std::flush;
 
-	std::shared_ptr<file::MkOptions> mkOptions = file::MkOptions::create(options, AssetLibrary);
+	std::shared_ptr<file::MkOptions> mkOptions = file::MkOptions::create(options, assetLibrary);
 
 	mkOptions->pluginEntryToFunction(std::make_shared<std::map<std::string, file::MkOptions::DeserializeFunction>>(_pluginEntryToFunction));
 
@@ -60,9 +62,9 @@ MkParser::parse(const std::string&				    filename,
 
 	auto node = sceneDeserializer->deserializeScene(qarkData["scene"], qarkData["assets"], mkOptions, _nodeMap);
 	
-	AssetLibrary->symbol(filename, node);
+	assetLibrary->symbol(filename, node);
 
-	std::cout << "parse MK" << std::endl << std::flush;
+	std::cout << "MkParser::parse(): complete: " << filename << std::endl << std::flush;
 
 	complete()->execute(shared_from_this());
 }

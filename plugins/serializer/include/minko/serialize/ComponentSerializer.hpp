@@ -19,7 +19,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #pragma once
 
-#include "minko/MkCommon.hpp"
+#include "minko/SerializerCommon.hpp"
 
 namespace minko
 {
@@ -71,6 +71,11 @@ namespace minko
 			std::string
 			serializeRenderer(NodePtr		node, 
 							  DependencyPtr dependencies);
+
+			static
+			std::string
+			serializeBoundingBox(NodePtr 		node,
+								 DependencyPtr 	dependencies);
 		};
 	}
 }
