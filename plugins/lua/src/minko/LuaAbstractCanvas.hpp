@@ -36,11 +36,22 @@ namespace minko
 		bind(LuaGlue& state)
 		{
 			auto& abstractCanvas = state.Class<AbstractCanvas>("AbstractCanvas")
-				.property("width",	&AbstractCanvas::width)
-				.property("height",	&AbstractCanvas::height);
+				.property("width",		&AbstractCanvas::width)
+				.property("height",		&AbstractCanvas::height)
+				.property("mouse", 		&AbstractCanvas::mouse)
+				.property("keyboard",	&AbstractCanvas::keyboard)
+				.method("joystick",		&LuaAbstractCanvas::joystickWrapper);
 		    MINKO_LUAGLUE_BIND_SIGNAL(state, AbstractCanvas::Ptr);
 		    MINKO_LUAGLUE_BIND_SIGNAL(state, AbstractCanvas::Ptr, uint, uint);
 		    abstractCanvas.property("resized", &AbstractCanvas::resized);
+		}
+
+	private:
+		static
+		std::shared_ptr<input::Joystick>
+		joystickWrapper(AbstractCanvas::Ptr c, uint id)
+		{
+			return c->joystick(id - 1);
 		}
 	};
 }
