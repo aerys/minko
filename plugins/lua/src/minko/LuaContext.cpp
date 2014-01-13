@@ -53,24 +53,6 @@ LuaContext::getSceneManager()
 	return _root->component<component::SceneManager>();
 }
 
-std::shared_ptr<input::Mouse>
-LuaContext::getMouse()
-{
-	return _canvas->mouse();
-}
-
-std::shared_ptr<input::Keyboard>
-LuaContext::getKeyboard()
-{
-	return _canvas->keyboard();
-}
-
-std::shared_ptr<input::Joystick>
-LuaContext::getJoystick(int id)
-{
-	return _canvas->joystick(id);
-}
-
 bool
 LuaContext::getOption(const std::string& optionName)
 {
