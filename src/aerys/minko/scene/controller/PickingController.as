@@ -55,7 +55,8 @@ package aerys.minko.scene.controller
 		private static const EVENT_MIDDLE_DOWN		: uint 			= 1 << 14;
 		private static const EVENT_MIDDLE_UP		: uint 			= 1 << 15;
 		
-		private static var _previousAntiAliasing	: int = 0;
+		private static var _disableAntiAliasing		: Boolean		= false;
+		private static var _previousAntiAliasing	: int			= 0;
 		
         private var _technique          	: uint;
 		private var _pickingRate			: Number;
@@ -97,6 +98,16 @@ package aerys.minko.scene.controller
 		
 		private var _pixelPickingIncrement	: uint;
 		
+		public static function get disableAntiAliasing():Boolean
+		{
+			return _disableAntiAliasing;
+		}
+
+		public static function set disableAntiAliasing(value:Boolean):void
+		{
+			_disableAntiAliasing = value;
+		}
+
         public function get pickingRate() : Number
         {
             return _pickingRate;
@@ -378,7 +389,9 @@ package aerys.minko.scene.controller
 												context		: Context3DResource,
 												backBuffer	: RenderTarget) : void
 		{
-			context.configureBackBuffer(backBuffer.width, backBuffer.height, 0, true);
+			if (_disableAntiAliasing && backBuffer.antiAliasing != 0)
+				context.configureBackBuffer(backBuffer.width, backBuffer.height, 0, true);
+			
 			context.clear(0, 0, 0, 0);
 		}
 		
@@ -396,8 +409,11 @@ package aerys.minko.scene.controller
 				(color & 0xff) / 255.
 			);
 			
-			context.configureBackBuffer(backBuffer.width, backBuffer.height, _previousAntiAliasing, true);
-			context.clear(0, 0, 0, 0);
+			if (_disableAntiAliasing && backBuffer.antiAliasing != _previousAntiAliasing)
+			{
+				context.configureBackBuffer(backBuffer.width, backBuffer.height, _previousAntiAliasing, true);
+				context.clear(0, 0, 0, 0);
+			}
 			
 			SHADER.enabled = false;
 		}
