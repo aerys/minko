@@ -31,7 +31,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/material/Material.hpp"
 #include "minko/render/Effect.hpp"
 #include "minko/component/Renderer.hpp"
-
+#include "minko/component/BoundingBox.hpp"
+#include "minko/math/Vector3.hpp"
+#include "minko/math/Box.hpp"
 #include "minko/serialize/TypeSerializer.hpp"
 #include "minko/file/Dependency.hpp"
 
@@ -195,6 +197,36 @@ ComponentSerializer::serializeRenderer(NodePtr			node,
 	std::stringstream						buffer;
 
 	msgpack::type::tuple<unsigned int> src(renderer->backgroundColor());
+
+	msgpack::pack(buffer, src);
+	msgpack::pack(buffer, type);
+
+	return buffer.str();
+}
+
+
+std::string
+ComponentSerializer::serializeBoundingBox(NodePtr 			node,
+					 				      DependencyPtr 	dependencies)
+{
+	math::Box::Ptr 		box 		= node->component<component::BoundingBox>()->box();
+	math::Vector3::Ptr 	topRight 	= box->topRight();
+	math::Vector3::Ptr 	bottomLeft 	= box->bottomLeft();
+	int8_t 				type 		= serialize::BOUNDINGBOX;
+	std::stringstream	buffer;
+
+	float centerX = topRight->x() - bottomLeft->x();
+	float centerY = topRight->y() - bottomLeft->y();
+	float centerZ = topRight->z() - bottomLeft->z();
+
+	msgpack::type::tuple<float, float, float, float, float, float> src(
+		centerX,
+		centerY,
+		centerZ,
+		box->width(),
+		box->height(),
+		box->depth()
+		);
 
 	msgpack::pack(buffer, src);
 	msgpack::pack(buffer, type);
