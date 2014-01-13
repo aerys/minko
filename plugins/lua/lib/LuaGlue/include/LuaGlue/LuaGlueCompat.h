@@ -34,15 +34,15 @@ struct luaglue_remove_const_reference
 #else
 
 template <typename T>
-using luaglue_remove_reference<T> = std::remove_reference<T>;
+using luaglue_remove_reference = std::remove_reference<T>;
 
 template <typename T>
-using luaglue_remove_const<T> std::remove_const<T>;
+using luaglue_remove_const = std::remove_const<T>;
 
 template <typename T>
 struct luaglue_remove_const_reference
 {
-	typedef std::remove_const<typename std::remove_reference<T>::type>::type type;
+	typedef typename std::remove_const<typename std::remove_reference<T>::type>::type type;
 };
 
 #endif /* _MSC_VER */
