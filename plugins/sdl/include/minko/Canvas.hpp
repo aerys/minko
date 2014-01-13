@@ -32,6 +32,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 
 struct SDL_Window;
+struct SDL_Surface;
 typedef unsigned char Uint8;
 
 namespace minko
@@ -167,7 +168,9 @@ namespace minko
 
 		bool											_active;
 		render::AbstractContext::Ptr					_context;
-#ifndef EMSCRIPTEN
+#ifdef EMSCRIPTEN
+		SDL_Surface*									_screen;
+#else
 		SDL_Window*										_window;
 #endif
 		float											_framerate;
