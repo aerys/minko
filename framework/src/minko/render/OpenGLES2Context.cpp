@@ -47,10 +47,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 # include <GL/glu.h>
 #endif
 
-#ifdef MINKO_GLSL_OPTIMIZER
-# include "glsl_optimizer.h"
-#endif
-
 using namespace minko;
 using namespace minko::render;
 
@@ -800,44 +796,14 @@ void
 OpenGLES2Context::setShaderSource(const uint shader,
 								  const std::string& source)
 {
-#ifdef MINKO_GLSL_OPTIMIZER
-	glslopt_ctx* glslOptimizer = glslopt_initialize(true);
+#ifdef GL_ES_VERSION_2_0
 	std::string src = "#version 100\n" + source;
-	const char* sourceString = src.c_str();
-
-	auto type = std::find(_vertexShaders.begin(), _vertexShaders.end(), shader) != _vertexShaders.end()
-		? kGlslOptShaderVertex
-		: kGlslOptShaderFragment;
-
-	auto optimizedShader = glslopt_optimize(glslOptimizer, type, sourceString, 0);
-	if (glslopt_get_status(optimizedShader))
-	{
-		auto optimizedSource = glslopt_get_output(optimizedShader);
-		glShaderSource(shader, 1, &optimizedSource, 0);
-	}
-	else
-	{
-		std::stringstream stream(source);
-		std::string line;
-
-		std::cerr << glslopt_get_log(optimizedShader) << std::endl;
-		for (auto i = 0; std::getline(stream, line); ++i)
-			std::cerr << i << "\t" << line << std::endl;
-
-		throw std::invalid_argument("source");
-	}
-	glslopt_shader_delete(optimizedShader);
-	glslopt_cleanup(glslOptimizer);
 #else
-# ifdef GL_ES_VERSION_2_0
-	std::string src = "#version 100\n" + source;
-# else
 	std::string src = "#version 120\n" + source;
-#endif
+#endif // GL_ES_VERSION_2_0
 	const char* sourceString = src.c_str();
 
 	glShaderSource(shader, 1, &sourceString, 0);
-#endif
 
 	checkForErrors();
 }
