@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/Program.hpp"
 #include "minko/data/Container.hpp"
 #include "minko/scene/Node.hpp"
+#include "minko/render/Blending.hpp"
 
 using namespace minko;
 using namespace minko::render;
@@ -46,7 +47,10 @@ DrawCallPool::drawCalls()
 		return _drawCalls;
 	
 	for (uint removedSurfaceIndex = 0; removedSurfaceIndex < _numToRemove; ++removedSurfaceIndex)
+	{
 		deleteDrawCalls(_toRemove[removedSurfaceIndex]);
+		cleanSurface(_toRemove[removedSurfaceIndex]);
+	}
 
 	for (uint surfaceIndex = 0; surfaceIndex < _numToCollect; ++surfaceIndex)
 	{
@@ -66,10 +70,13 @@ DrawCallPool::drawCalls()
 bool
 DrawCallPool::compareDrawCalls(DrawCallPtr& a, DrawCallPtr& b)
 {
-	if (a->priority() == b->priority())
+	float aPriority = a->priority() - (a->blendMode() == render::Blending::Mode::ALPHA ? 0.5f : 0.f);
+	float bPriority = b->priority() - (b->blendMode() == render::Blending::Mode::ALPHA ? 0.5f : 0.f);
+
+	if (aPriority == bPriority)
 		return a->target() && (!b->target() || (a->target()->id() > b->target()->id()));
 
-    return a->priority() > b->priority();
+	return aPriority > bPriority;
 }
 
 void
@@ -114,19 +121,23 @@ void
 DrawCallPool::removeSurface(SurfacePtr surface)
 {
 	_toRemove.push_back(surface);
+}
+
+void
+DrawCallPool::cleanSurface(SurfacePtr surface)
+{
 	_surfaceToTechniqueChangedSlot.erase(surface);
 	_surfaceToDrawCalls[surface].clear();
 	_macroAddedOrRemovedSlots[surface].clear();
 	_macroChangedSlots[surface].clear();
 	_numMacroListeners[surface].clear();
-	_surfaceToDrawCalls[surface].clear();
 }
 
 void
 DrawCallPool::techniqueChanged(SurfacePtr surface, const std::string& technique, bool updateDrawCall)
 {
-	_toRemove.push_back(surface);
-
+	//_toRemove.push_back(surface);
+	deleteDrawCalls(surface);
 	if (updateDrawCall)
 		_toCollect.push_back(surface);
 }
@@ -556,8 +567,8 @@ DrawCallPool::blameMacros(SurfacePtr									surface,
 }
 
 void
-DrawCallPool::incorrectMacroChangedHandler(SurfacePtr					surface,
-											  const data::ContainerProperty& macro)
+DrawCallPool::incorrectMacroChangedHandler(SurfacePtr						surface,
+										   const data::ContainerProperty&	macro)
 {
 	if (_incorrectMacroToPasses[surface].count(macro) > 0)
 	{

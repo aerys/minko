@@ -13,6 +13,7 @@ local config = premake.config
 local fileconfig = premake.fileconfig
 
 local insert = require 'insert'
+local color = require 'color'
 
 insert.insert(premake.tools.gcc, 'tools.emscripten', {
 	cc = MINKO_HOME .. '/tools/lin/bin/emcc.sh',

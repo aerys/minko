@@ -104,6 +104,13 @@ namespace minko
 				return _filesQueue;
 			}
 
+			inline
+			bool
+			loading() const
+			{
+				return _filesQueue.size() > 0 || _loading.size() > 0;
+			}
+
 			GeometryPtr
 			geometry(const std::string& name);
 
@@ -229,9 +236,6 @@ namespace minko
 
 			void
 			finalize(const std::string& filename);
-
-		private:
-			static const std::string _defaultName;
 		};
 	}
 }

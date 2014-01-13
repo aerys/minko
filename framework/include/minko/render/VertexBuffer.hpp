@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Common.hpp"
 
 #include "minko/render/AbstractResource.hpp"
+#include "minko/math/Convertible.hpp"
 
 namespace minko
 {
@@ -29,7 +30,8 @@ namespace minko
 	{
 		class VertexBuffer :
 			public AbstractResource,
-			public std::enable_shared_from_this<VertexBuffer>
+			public std::enable_shared_from_this<VertexBuffer>,
+			public Convertible<VertexBuffer>
 		{
 		public:
 			typedef std::shared_ptr<VertexBuffer>								Ptr;
