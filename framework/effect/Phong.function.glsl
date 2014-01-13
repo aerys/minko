@@ -44,8 +44,8 @@ vec2 phong_blinnNewellSphericalProjection(vec3 xyz)
 {
 	float PI = 3.14159265358979323846264;
 
-	float u = (atan(xyz.x, xyz.z) + PI) / (2 * PI);
-	float v = (asin(xyz.y) + PI / 2) / PI;
+	float u = (atan(xyz.x, xyz.z) + PI) / (2. * PI);
+	float v = (asin(xyz.y) + PI / 2.) / PI;
 
 	return vec2(u, v);
 }
