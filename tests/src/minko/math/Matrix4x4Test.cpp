@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/math/Matrix4x4.hpp"
 #include "minko/math/Vector3.hpp"
 
+using namespace minko;
 using namespace minko::math;
 
 TEST_F(Matrix4x4Test, Create)
@@ -351,7 +352,7 @@ TEST_F(Matrix4x4Test, TransformAppendRotationXRandom)
 	}
 
 	ASSERT_TRUE(nearEqual(m1, m2));
-	for (auto i = 0; i < r / 2; ++i)
+	for (uint i = 0; i < r / 2; ++i)
 	{
 		ASSERT_EQ(v[i]->x(), 0.f);
 		ASSERT_EQ(-v[i + r / 2]->x(), 0.f);
@@ -374,7 +375,7 @@ TEST_F(Matrix4x4Test, TransformAppendRotationYRandom)
 	}
 
 	ASSERT_TRUE(nearEqual(m1, m2));
-	for (auto i = 0; i < r / 2; ++i)
+	for (uint i = 0; i < r / 2; ++i)
 	{
 		ASSERT_EQ(v[i]->y(), 0.f);
 		ASSERT_EQ(-v[i + r / 2]->y(), 0.f);
@@ -397,7 +398,7 @@ TEST_F(Matrix4x4Test, TransformAppendRotationZRandom)
 	}
 
 	ASSERT_TRUE(nearEqual(m1, m2));
-	for (auto i = 0; i < r / 2; ++i)
+	for (uint i = 0; i < r / 2; ++i)
 	{
 		ASSERT_EQ(v[i]->z(), 0.f);
 		ASSERT_EQ(-v[i + r / 2]->z(), 0.f);
@@ -420,7 +421,7 @@ TEST_F(Matrix4x4Test, TransformPrependRotationXRandom)
 	}
 
 	ASSERT_TRUE(nearEqual(m1, m2));
-	for (auto i = 0; i < r / 2; ++i)
+	for (uint i = 0; i < r / 2; ++i)
 	{
 		ASSERT_EQ(v[i]->x(), 0.f);
 		ASSERT_EQ(-v[i + r / 2]->x(), 0.f);
@@ -443,7 +444,7 @@ TEST_F(Matrix4x4Test, TransformPrependRotationYRandom)
 	}
 
 	ASSERT_TRUE(nearEqual(m1, m2));
-	for (auto i = 0; i < r / 2; ++i)
+	for (uint i = 0; i < r / 2; ++i)
 	{
 		ASSERT_EQ(v[i]->y(), 0.f);
 		ASSERT_EQ(-v[i + r / 2]->y(), 0.f);

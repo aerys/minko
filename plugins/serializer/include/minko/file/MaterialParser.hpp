@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
-#include "minko/file/AbstractMkParser.hpp"
+#include "minko/file/AbstractSerializerParser.hpp"
 #include "msgpack.hpp"
 
 namespace minko
@@ -28,13 +28,24 @@ namespace minko
 	namespace file
 	{
 		class MaterialParser :
-			public AbstractMkParser
+			public AbstractSerializerParser
 		{
-		public:
-			typedef std::shared_ptr<MaterialParser> Ptr;
+		private:
+			typedef msgpack::type::tuple<uint, std::string>						ComplexPropertyValue;
+			typedef std::shared_ptr<MaterialParser>								Ptr;
+			typedef msgpack::type::tuple<std::string, float>					BasicProperty;
+			typedef msgpack::type::tuple<std::string, ComplexPropertyValue>		ComplexProperty;
+			typedef std::shared_ptr<material::Material>							MaterialPtr;
+			typedef std::shared_ptr<AssetLibrary>								AssetLibraryPtr;
+			typedef std::shared_ptr<Options>									OptionsPtr;
+			typedef std::shared_ptr<math::Vector4>								Vector4Ptr;
+			typedef std::shared_ptr<math::Vector3>								Vector3Ptr;
+			typedef std::shared_ptr<math::Vector2>								Vector2Ptr;
+			typedef std::shared_ptr<math::Matrix4x4>							Matrix4x4Ptr;
+			typedef std::shared_ptr<render::Texture>							TexturePtr;
 
 		private:
-			static std::map<uint, std::function<Any(msgpack::type::tuple<uint, std::string>&)>> _typeIdToReadFunction;
+			static std::map<uint, std::function<Any(std::tuple<uint, std::string>&)>> _typeIdToReadFunction;
 
 		public:
 			inline static
@@ -47,18 +58,18 @@ namespace minko
 			void
 			parse(const std::string&				filename,
 				  const std::string&                resolvedFilename,
-				  std::shared_ptr<Options>          options,
+				  OptionsPtr						options,
 				  const std::vector<unsigned char>&	data,
-				  std::shared_ptr<AssetLibrary>		assetLibrary);
+				  AssetLibraryPtr					assetLibrary);
 
 		private:
 			void
-			deserializeComplexProperty(std::shared_ptr<material::Material>											material,
-										msgpack::type::tuple<std::string, msgpack::type::tuple<uint, std::string>>	serializedProperty);
+			deserializeComplexProperty(MaterialPtr			material,
+									   ComplexProperty		serializedProperty);
 
 			void
-			deserializeBasicProperty(std::shared_ptr<material::Material>		material,
-									 msgpack::type::tuple<std::string, float>	serializedProperty);
+			deserializeBasicProperty(MaterialPtr		material,
+									 BasicProperty		serializedProperty);
 
 			MaterialParser();
 		};

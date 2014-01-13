@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::file;
 
-std::map<const std::type_info*, std::function<msgpack::type::tuple<uint, std::string>(Any)>> MaterialWriter::_typeToWriteFunction;
+std::map<const std::type_info*, std::function<std::tuple<uint, std::string>(Any)>> MaterialWriter::_typeToWriteFunction;
 
 MaterialWriter::MaterialWriter()
 {

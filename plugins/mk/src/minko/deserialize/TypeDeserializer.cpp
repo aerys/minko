@@ -111,7 +111,7 @@ TypeDeserializer::number(std::map<int, render::Texture::Ptr>&	idToTexture,
 		if (object["value"].type() == typeid(float))
 			material->set(nameConverter->convertString(propertyName), Any::cast<float>(object["value"]));
 		else if (object["value"].type() == typeid(int))
-			material->set(nameConverter->convertString(propertyName), Any::cast<int>(object["value"]));
+			material->set(nameConverter->convertString(propertyName), static_cast<float>(Any::cast<int>(object["value"])));
 		else
 			material->set(nameConverter->convertString(propertyName), Any::cast<unsigned int>(object["value"]));
 

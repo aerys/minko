@@ -54,7 +54,7 @@ namespace minko
 
             bool                                        _generateMipMaps;
 			bool										_resizeSmoothly;
-			unsigned int								_skinningNumFPS;
+			unsigned int								_skinningFramerate;
 			component::SkinningMethod					_skinningMethod;
             std::shared_ptr<render::Effect>             _effect;
 			MaterialPtr									_material;
@@ -82,7 +82,7 @@ namespace minko
 				opt->_includePaths = options->_includePaths;
                 opt->_generateMipMaps = options->_generateMipMaps;
 				opt->_resizeSmoothly = options->_resizeSmoothly;
-				opt->_skinningNumFPS = options->_skinningNumFPS;
+				opt->_skinningFramerate = options->_skinningFramerate;
 				opt->_skinningMethod = options->_skinningMethod;
                 opt->_effect = options->_effect;
 				opt->_materialFunction = options->_materialFunction;
@@ -152,16 +152,16 @@ namespace minko
 
 			inline
 			unsigned int
-			skinningNumFPS() const
+			skinningFramerate() const
 			{
-				return _skinningNumFPS;
+				return _skinningFramerate;
 			}
 
 			inline
 			void
-			skinningNumFPS(unsigned int value)
+			skinningFramerate(unsigned int value)
 			{
-				_skinningNumFPS = value;
+				_skinningFramerate = value;
 			}
 
 			inline

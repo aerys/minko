@@ -46,10 +46,12 @@ int main(int argc, char** argv)
 
 	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
 	{
-		auto cubeMaterial = material::BasicMaterial::create()->diffuseMap(assets->texture(TEXTURE_FILENAME));
+		auto cubeGeometry = geometry::CubeGeometry::create(sceneManager->assets()->context());
 
 		auto root = scene::Node::create("root")
 			->addComponent(sceneManager);
+
+		assets->geometry("cubeGeometry", cubeGeometry);
 
 		auto camera = scene::Node::create("camera")
 			->addComponent(Renderer::create(0x7f7f7fff))
@@ -62,7 +64,7 @@ int main(int argc, char** argv)
 		auto mesh = scene::Node::create("mesh")
 			->addComponent(Transform::create())
 			->addComponent(Surface::create(
-				geometry::CubeGeometry::create(sceneManager->assets()->context()),
+				assets->geometry("cubeGeometry"),
 				material::BasicMaterial::create()->diffuseMap(assets->texture(TEXTURE_FILENAME)),
 				assets->effect("effect/Basic.effect")
 			));
