@@ -55,6 +55,8 @@ package aerys.minko.scene.controller
 		private static const EVENT_MIDDLE_DOWN		: uint 			= 1 << 14;
 		private static const EVENT_MIDDLE_UP		: uint 			= 1 << 15;
 		
+		private static var _previousAntiAliasing	: int = 0;
+		
         private var _technique          	: uint;
 		private var _pickingRate			: Number;
 		
@@ -269,13 +271,7 @@ package aerys.minko.scene.controller
 			if (!_dispatchers[viewport])
 				bindDefaultInputs(viewport);
 			
-			var antiAliasing : int = 0;
-			
-			if (viewport.antiAliasing && _technique & PickingTechnique.PIXEL_PICKING)
-			{
-				antiAliasing = viewport.antiAliasing;
-				viewport.antiAliasing = 0;
-			}
+			_previousAntiAliasing = viewport.antiAliasing;
 			
 			// toggle picking pass
 			if (time - _lastPickingTime > 1000. / _pickingRate && _toDispatch != EVENT_NONE)
@@ -322,7 +318,6 @@ package aerys.minko.scene.controller
                                 {
 									if (!(_technique & PickingTechnique.PIXEL_PICKING))
 									{
-										trace(_lastMouseOver ?_lastMouseOver.name : "null", _currentMouseOver ? _currentMouseOver.name : "null", hits[0] ? hits[0].name : "null");
 										_lastMouseOver = _currentMouseOver;
 										_currentMouseOver = hits[0] as Mesh;
 									}
@@ -377,17 +372,13 @@ package aerys.minko.scene.controller
                     executeSignals();
                 }
 			}
-			
-			if (antiAliasing > 0)
-			{
-				viewport.antiAliasing = antiAliasing;
-			}
 		}
 		
 		private static function cleanPickingMap(shader		: Shader,
 												context		: Context3DResource,
 												backBuffer	: RenderTarget) : void
 		{
+			context.configureBackBuffer(backBuffer.width, backBuffer.height, 0, true);
 			context.clear(0, 0, 0, 0);
 		}
 		
@@ -404,6 +395,9 @@ package aerys.minko.scene.controller
 				((color >> 8) & 0xff) / 255.,
 				(color & 0xff) / 255.
 			);
+			
+			context.configureBackBuffer(backBuffer.width, backBuffer.height, _previousAntiAliasing, true);
+			context.clear(0, 0, 0, 0);
 			
 			SHADER.enabled = false;
 		}
