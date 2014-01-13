@@ -1,7 +1,3 @@
-if _OPTIONS["with-glsl-optimizer"] then
-	include "lib/glsl-optimizer"
-end
-
 project "minko-framework"
 	kind "StaticLib"
 	location "."
