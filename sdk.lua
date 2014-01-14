@@ -16,6 +16,9 @@ print('Minko SDK home directory: ' .. MINKO_HOME)
 
 package.path = MINKO_HOME .. "/modules/?/?.lua;".. package.path
 
+configurations { "debug", "release" }
+platforms { "linux32", "linux64", "windows32", "windows64", "osx64", "html5", "ios", "android" }
+
 require 'emscripten'
 require 'android'
 require 'vs2013ctp'
@@ -41,7 +44,23 @@ insert.insert(premake.tools.clang, 'ldflags.system.macosx', {
 	macosx = { "-stdlib=libc++" }
 })
 
-configuration { "osx" }
+configuration { "windows32" }
+	system "windows"
+	architecture "x32"
+
+configuration { "windows64" }
+	system "windows"
+	architecture "x64"
+
+configuration { "linux32" }
+	system "linux"
+	architecture "x32"
+
+configuration { "linux64" }
+	system "linux"
+	architecture "x64"
+
+configuration { "osx64" }
 	system "macosx"
 
 configuration { "html5" }

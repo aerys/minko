@@ -47,7 +47,7 @@ project "minko-framework"
 		buildoptions { "-std=c++11" }
 
 	-- windows
-	configuration { "win" }
+	configuration { "windows" }
 		includedirs { "../deps/win/include" }
 		libdirs { "../deps/win/lib" }
 		
@@ -60,7 +60,7 @@ project "minko-framework"
 		defines { "_VARIADIC_MAX=10" }
 
 	-- macos
-	configuration { "osx" }
+	configuration { "macosx" }
 
 	-- html5
 	configuration { "html5" }

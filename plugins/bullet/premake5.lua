@@ -50,14 +50,14 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		buildoptions { "-Wno-narrowing -Wno-int-to-pointer-cast" }
 
 	-- windows
-	configuration { "win" }
+	configuration { "windows" }
 		defines {
 			"_CRT_SECURE_NO_WARNINGS",
 			"_CRT_SECURE_NO_DEPRECATE"
 		}
 
 	-- macosx
-	configuration { "osx" }
+	configuration { "macosx" }
 		buildoptions { "-Wno-narrowing -Wno-int-to-pointer-cast" }
 
 	-- emscripten

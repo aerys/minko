@@ -25,7 +25,7 @@ function minko.plugin.particles:enable()
 	includedirs { minko.sdk.path("plugins/particles/include") }
 	defines { "MINKO_PLUGIN_PARTICES" }
 	
-	configuration { "win" }
+	configuration { "windows" }
 		postbuildcommands {
 			'xcopy /y /i "' .. minko.sdk.path('/plugins/particles/asset/effect') .. '" "$(TargetDir)\\effect"',
 		}
@@ -35,7 +35,7 @@ function minko.plugin.particles:enable()
 			'cp -r ' .. minko.sdk.path('/plugins/particles/asset/effect') .. ' ${TARGETDIR} || ' .. minko.fail(),
 		}
 	
-	configuration { "osx" }
+	configuration { "macosx" }
 		postbuildcommands {
 			'cp -r ' .. minko.sdk.path('/plugins/particles/asset/effect') .. ' ${TARGETDIR} || ' .. minko.fail(),
 		}	
