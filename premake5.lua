@@ -16,9 +16,6 @@ newoption {
 }
 
 solution "minko"
-	configurations { "debug", "release" }
-	platforms { "linux", "win", "osx", "html5", "ios", "android" }
-
 	MINKO_HOME = path.getabsolute(os.getcwd())
 
 	dofile('sdk.lua')
@@ -40,7 +37,7 @@ solution "minko"
 	include 'plugins/fx'
 	include 'plugins/assimp'
 	include 'plugins/offscreen'
-	include 'plugins/lua'
+	-- include 'plugins/lua'
 	include 'plugins/serializer'
 	include 'plugins/oculus'
 	include 'plugins/leap'
@@ -54,7 +51,7 @@ solution "minko"
 		include('examples/raycasting')
 		include('examples/sponza')
 		include('examples/stencil')
-		include('examples/lua-scripts')
+		-- include('examples/lua-scripts')
 		include('examples/line-geometry')
 		include('examples/frustum')
 		include('examples/serializer')
@@ -103,9 +100,9 @@ newaction {
 		os.mkdir(distDir .. '/modules')
 		minko.os.copyfiles('modules', distDir .. '/modules')
 		
-		-- docs
-		os.mkdir(distDir .. '/doc')
-		minko.os.copyfiles('doc/html', distDir .. '/doc')
+		-- -- docs
+		-- os.mkdir(distDir .. '/doc')
+		-- minko.os.copyfiles('doc/html', distDir .. '/doc')
 		
 		-- tools
 		os.mkdir(distDir .. '/tools/')

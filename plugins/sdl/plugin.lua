@@ -27,26 +27,50 @@ end
 function minko.plugin.sdl:enable()
 	minko.plugin.links { "sdl" }
 	defines { "MINKO_PLUGIN_SDL" }
+
 	includedirs { minko.sdk.path("plugins/sdl/include") }
 
-	configuration { "win" }
+	configuration { "windows", "x32" }
 		links { "SDL2", "SDL2main" }
-		libdirs { minko.sdk.path("plugins/sdl/lib/win/SDL/lib") }
+		libdirs { minko.sdk.path("plugins/sdl/lib/sdl/windows32/lib") }
 		postbuildcommands {
-			minko.vs.getdllscopycommand(minko.sdk.path("plugins/sdl/lib/win/SDL/lib"))
+			minko.vs.getdllscopycommand(minko.sdk.path("plugins/sdl/lib/sdl/windows32/lib"))
+		}
+
+	configuration { "windows", "x64" }
+		links { "SDL2", "SDL2main" }
+		libdirs { minko.sdk.path("plugins/sdl/lib/sdl/windows64/lib") }
+		postbuildcommands {
+			minko.vs.getdllscopycommand(minko.sdk.path("plugins/sdl/lib/sdl/windows64/lib"))
 		}
 		
-	configuration { "linux" }
-		links { "SDL2" }
+	configuration { "linux", "x32" }
+		links { "SDL2", "SDL2main" }
+		libdirs { minko.sdk.path("plugins/sdl/lib/sdl/linux32/lib") }
 
-	configuration { "osx" }
+	configuration { "linux", "x64" }
+		links { "SDL2", "SDL2main" }
+		libdirs { minko.sdk.path("plugins/sdl/lib/sdl/linux64/lib") }
+
+	configuration { "macosx" }
 		links { "SDL2.framework" }
+		libdirs { minko.sdk.path("plugins/sdl/lib/sdl/osx64/lib") }
 
 	configuration { "html5" }
 		defines { "HAVE_M_PI" }
+
+
 end
 
 function minko.plugin.sdl:dist(pluginDistDir)
-	os.mkdir(pluginDistDir .. "/lib/win/SDL/lib")
-	minko.os.copyfiles(minko.sdk.path("plugins/sdl/lib/win/SDL/lib"), pluginDistDir .. "/lib/win/SDL/lib")
+	print("plugin-dist " .. pluginDistDir)
+	
+
+	configuration { "windows", "x32" }
+		os.mkdir(pluginDistDir .. "/lib/sdl/windows32/lib")
+		minko.os.copyfiles(minko.sdk.path("plugins/sdl/lib/sdl/windows32/lib"), pluginDistDir .. "/lib/sdl/windows32/lib")
+
+	configuration { "windows", "x64" }
+		os.mkdir(pluginDistDir .. "/lib/sdl/windows64/lib")
+		minko.os.copyfiles(minko.sdk.path("plugins/sdl/lib/sdl/windows64/lib"), pluginDistDir .. "/lib/sdl/windows64/lib")
 end
