@@ -705,7 +705,7 @@ package aerys.minko.type.math
 			var rotation	: Vector3D			= components[1];
 			
 			output ||= new Quaternion();
-			output.set(rotation[3], rotation[0], rotation[1], rotation[2]);
+			output.set(rotation.w, rotation.x, rotation.y, rotation.z);
 			
 			return output;
 		}
