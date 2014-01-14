@@ -29,9 +29,9 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 	configuration { "linux" }
 		defines { "LUA_USE_POSIX" }
 
-	configuration { "win" }
+	configuration { "windows" }
 		defines { "LUA_USE_WIN" }
 		defines { "_CRT_SECURE_NO_WARNINGS" }
 
-	configuration { "osx" }
+	configuration { "macosx" }
 		defines { "LUA_USE_MACOSX" }

@@ -22,9 +22,6 @@ minko.plugin.mk = {}
 
 function minko.plugin.mk:enable()
 	minko.plugin.links { "mk" }
-	includedirs {
-		minko.sdk.path("plugins/mk/include"),
-		minko.sdk.path("plugins/mk/lib/msgpack-c/src")
-	}
+	includedirs { minko.sdk.path("plugins/mk/include") }
 	defines { "MINKO_PLUGIN_MK" }
 end

@@ -25,18 +25,22 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 	minko.plugin.import("angle")
 	minko.plugin.enable("webgl")
 
-	-- linux
-	configuration { "linux" }
-		includedirs { "lib/SDL2/include" }
+	configuration { "windows", "x32" }
+		includedirs { minko.sdk.path("plugins/sdl/lib/sdl/windows32/include") }
 
-	-- windows
-	configuration { "win" }
-		includedirs { "lib/SDL2/include" }
+	configuration { "windows", "x64" }
+		includedirs { minko.sdk.path("plugins/sdl/lib/sdl/windows64/include") }
 		
-	-- macos
-	configuration { "osx" }
-		includedirs { "lib/SDL2/include" }
+	configuration { "linux", "x32" }
+		includedirs { minko.sdk.path("plugins/sdl/lib/sdl/linux32/include") }
 
-	-- emscripten
+	configuration { "linux", "x64" }
+		includedirs { minko.sdk.path("plugins/sdl/lib/sdl/linux64/include") }
+
+	configuration { "macosx" }
+		includedirs { minko.sdk.path("plugins/sdl/lib/sdl/linux64/include") } -- FIXME
+
 	configuration { "html5" }
-		includedirs { "lib/emscripten/SDL/include" }
+		if EMSCRIPTEN_HOME then
+			includedirs { EMSCRIPTEN_HOME .. "/system/include" }
+		end

@@ -14,13 +14,13 @@ minko.project.library = function(name)
 		defines { "NDEBUG" }
 		optimize "On"
 	
-	configuration { "win" }
+	configuration { "windows" }
 		includedirs { minko.sdk.path("/deps/win/include") }
 
 	configuration { "vs*" }
 		defines { "NOMINMAX" }
 		
-	configuration { "osx" }
+	configuration { "macosx" }
 	
 	configuration { "linux" }
 		
@@ -46,7 +46,7 @@ minko.project.application = function(name)
 		links { "minko-framework" }
 	end
 
-	configuration { "win" }
+	configuration { "windows" }
 		libdirs { minko.sdk.path("/deps/win/lib") }
 		links {
 			"OpenGL32",
@@ -56,7 +56,7 @@ minko.project.application = function(name)
 			'xcopy /y /i "' .. minko.sdk.path('/framework/effect') .. '" "$(TargetDir)\\effect"',
 			minko.vs.getdllscopycommand(minko.sdk.path('/deps/win/lib'))
 		}
-	configuration { "win", "release" }
+	configuration { "windows", "release" }
 		postbuildcommands {
 			'xcopy /y /s asset\\* "$(TargetDir)"'
 		}
@@ -76,10 +76,9 @@ minko.project.application = function(name)
 			'cp -r asset/* ${TARGETDIR} || :'
 		}
 	
-	configuration { "osx" }
+	configuration { "macosx" }
 		links {
 			"m",
-			"SDL2.framework",
 			"Cocoa.framework",
 			"OpenGL.framework",
 			"IOKit.framework"
@@ -87,7 +86,7 @@ minko.project.application = function(name)
 		postbuildcommands {
 			'cp -r ' .. minko.sdk.path('/framework/effect') .. ' ${TARGETDIR} || :'
 		}
-	configuration { "osx", "release" }
+	configuration { "macosx", "release" }
 		postbuildcommands {
 			'cp -r asset/* ${TARGETDIR} || :'
 		}
@@ -133,7 +132,7 @@ end
 minko.project.solution = function(name)
 	solution(name)
 	configurations { "debug", "release" }
-	platforms { "linux", "win", "osx", "html5", "ios", "android" }
+	platforms { "linux32", "linux64", "windows32", "windows64", "osx64", "html5", "ios", "android" }
 
 	print(name)
 
