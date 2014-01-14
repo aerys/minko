@@ -394,7 +394,7 @@ package aerys.minko.render
 			var backBufferHeight	: Number = _height * getGlobalScaleY();
 			
 			_stage3d.context3D.configureBackBuffer(backBufferWidth, backBufferHeight, _antiAliasing, true);
-			_backBuffer = new RenderTarget(backBufferWidth, backBufferHeight, null, 0, _backgroundColor);
+			_backBuffer = new RenderTarget(backBufferWidth, backBufferHeight, null, 0, _backgroundColor, true, _antiAliasing);
 			
 			graphics.clear();
 			graphics.beginFill(0, 0);
