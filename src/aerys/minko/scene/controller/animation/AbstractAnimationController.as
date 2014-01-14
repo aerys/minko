@@ -6,6 +6,7 @@ package aerys.minko.scene.controller.animation
 	import aerys.minko.scene.controller.AbstractController;
 	import aerys.minko.scene.controller.EnterFrameController;
 	import aerys.minko.scene.node.ISceneNode;
+	import aerys.minko.scene.node.Scene;
 	import aerys.minko.type.Signal;
 	
 	use namespace minko_animation;
@@ -361,7 +362,7 @@ package aerys.minko.scene.controller.animation
 			}
 			
 			_isPlaying = false;
-			_updateOneTime 	= true;
+			//_updateOneTime 	= true;
 			updateLastTime();
 			_stopped.execute(this);
 			
@@ -457,7 +458,7 @@ package aerys.minko.scene.controller.animation
 						return true;
 					}
 				}
-			}				
+			}
 			
 			_lastTime = time;
 			
@@ -628,6 +629,13 @@ package aerys.minko.scene.controller.animation
 			_looping		= from._looping;
 			_nextLabelIds	= from._nextLabelIds.concat();
 			_updateOneTime	= from._updateOneTime;
+			return this;
+		}
+		
+		public function updateNow(scene : Scene) : IAnimationController
+		{
+			_updateOneTime = true;
+			sceneEnterFrameHandler(scene, null, null, getTimer());
 			return this;
 		}
 	}

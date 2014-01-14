@@ -5,7 +5,6 @@ package aerys.minko.scene.controller.animation
 	import aerys.minko.ns.minko_animation;
 	import aerys.minko.render.Viewport;
 	import aerys.minko.scene.controller.AbstractController;
-	import aerys.minko.scene.controller.EnterFrameController;
 	import aerys.minko.scene.node.Group;
 	import aerys.minko.scene.node.ISceneNode;
 	import aerys.minko.scene.node.Scene;
@@ -140,7 +139,7 @@ package aerys.minko.scene.controller.animation
 				var ctrlTarget		: ISceneNode	= getTarget(j);
 				
 				if (ctrlTarget.root != scene)
-					continue ;
+					continue;
 				
 				var numTimelines 	: int 			= _timelines.length;
 				var group			: Group			= ctrlTarget as Group;
