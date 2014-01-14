@@ -632,10 +632,10 @@ package aerys.minko.scene.controller.animation
 			return this;
 		}
 		
-		public function updateNow(scene : Scene) : IAnimationController
+		public function updateNow() : IAnimationController
 		{
 			_updateOneTime = true;
-			sceneEnterFrameHandler(scene, null, null, getTimer());
+			sceneEnterFrameHandler(null, null, null, getTimer());
 			return this;
 		}
 	}

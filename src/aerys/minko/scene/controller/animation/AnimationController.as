@@ -120,17 +120,17 @@ package aerys.minko.scene.controller.animation
 				return;
 			
 			if (updateOnTime(time))
-				update(scene, time);
+				update(time, scene);
 		}
 		
 		override protected function targetAddedToScene(target:ISceneNode, scene:Scene):void
 		{
 			super.targetAddedToScene(target, scene);
-			update(scene, _lastTime);
+			update(_lastTime, scene);
 		}
 		
-		minko_animation function update(scene		: Scene,
-										time		: Number) : void
+		minko_animation function update(time		: Number,
+										scene		: Scene = null) : void
 		{
 			_updateOneTime = false;
 			
@@ -138,7 +138,7 @@ package aerys.minko.scene.controller.animation
 			{
 				var ctrlTarget		: ISceneNode	= getTarget(j);
 				
-				if (ctrlTarget.root != scene)
+				if (scene && ctrlTarget.root != scene)
 					continue;
 				
 				var numTimelines 	: int 			= _timelines.length;

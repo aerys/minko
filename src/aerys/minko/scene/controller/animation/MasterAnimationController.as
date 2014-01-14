@@ -181,7 +181,7 @@ package aerys.minko.scene.controller.animation
 			for (var animationId : uint = 0; animationId < numAnimations; ++animationId)
 			{
 				_animations[animationId].setCurrentTime(currentTime);
-				_animations[animationId].update(scene, time);
+				_animations[animationId].update(time, scene);
 			}
 		}
 		

@@ -1,6 +1,5 @@
 package aerys.minko.scene.controller.animation
 {
-	import aerys.minko.scene.node.Scene;
 	import aerys.minko.type.Signal;
 
     public interface IAnimationController
@@ -24,6 +23,6 @@ package aerys.minko.scene.controller.animation
 		function getLabelTimeByName(name : String) : Number;
 		function setTimeForLabel(name : String, newTime : Number) : IAnimationController;
 		function changeLabel(oldName : String, newName : String) : IAnimationController;
-		function updateNow(scene : Scene) : IAnimationController;
+		function updateNow() : IAnimationController;
     }
 }
