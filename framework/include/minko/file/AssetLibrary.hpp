@@ -190,6 +190,12 @@ namespace minko
 				return shared_from_this();
 			}
 
+			file::AbstractParser::Ptr
+			getParser(const std::string& extension)
+			{
+				return _parsers[extension]();
+			}
+
 			Ptr
 			queue(const std::string& filename);
 			Ptr
@@ -211,16 +217,17 @@ namespace minko
 			Ptr
 			load(const std::string&					filename,
 				 std::shared_ptr<file::Options>		options = nullptr,
-				 std::shared_ptr<AbstractLoader>	loader	= nullptr)
+				 std::shared_ptr<AbstractLoader>	loader	= nullptr,
+				 bool								executeCompleteSignal = true)
 			{
 				queue(filename, options, loader);
-				load();
+				load(executeCompleteSignal);
 
 				return shared_from_this();
 			};
 
 			Ptr
-			load();
+			load(bool executeCompleteSignal = true);
 
 			AbsParserPtr
 			parser(std::string extension);
