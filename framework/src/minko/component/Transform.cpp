@@ -206,7 +206,7 @@ Transform::RootTransform::addedHandler(scene::Node::Ptr node,
 									   scene::Node::Ptr target,
 									   scene::Node::Ptr ancestor)
 {
-	auto descendants = scene::NodeSet::create(target)->descendants();
+	auto descendants = scene::NodeSet::create(target->root())->descendants(false);
 	for (auto descendant : descendants->nodes())
 	{
 		auto rootTransformCtrl = descendant->component<RootTransform>();
