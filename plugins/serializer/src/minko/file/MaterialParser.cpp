@@ -61,7 +61,7 @@ MaterialParser::parse(const std::string&				filename,
 {
 	msgpack::object		msgpackObject;
 	msgpack::zone		mempool;
-	std::string			str = extractDependencies(assetLibrary, data, options);
+	std::string			str = extractDependencies(assetLibrary, data, options, extractFolderPath(filename));
 
 	msgpack::type::tuple<std::vector<ComplexProperty>, std::vector<BasicProperty>> serializedMaterial;
 	msgpack::unpack(str.data(), str.size(), NULL, &mempool, &msgpackObject);

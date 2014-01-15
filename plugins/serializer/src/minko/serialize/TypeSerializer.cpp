@@ -171,8 +171,10 @@ TypeSerializer::serializeCulling(Any value)
 		res = "u";
 	else if (tc == render::TriangleCulling::FRONT)
 		res = "f";
+	else if (tc == render::TriangleCulling::NONE)
+		res = "n";
 	else
-		res = "d";
+		res = "b";
 
 	uint type = 0x00000000;
 

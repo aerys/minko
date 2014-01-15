@@ -32,7 +32,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/deserialize/TypeDeserializer.hpp"
 #include "minko/geometry/SphereGeometry.hpp"
 
-#define SERIALIZE // comment to test deserialization
+const std::string MODEL_FILENAME = "model/test2/NewScene.scene";
+
+//#define SERIALIZE // comment to test deserialization
 
 using namespace minko;
 using namespace minko::component;
@@ -45,14 +47,14 @@ serializeSceneExample(std::shared_ptr<file::AssetLibrary>		assets,
 {
 	std::shared_ptr<file::SceneWriter> sceneWriter = file::SceneWriter::create();
 	sceneWriter->data(root);
-	sceneWriter->write("subScene.scene", assets, file::Options::create(context));
+	sceneWriter->write(MODEL_FILENAME, assets, file::Options::create(context));
 }
 
 void
 openSceneExample(std::shared_ptr<file::AssetLibrary>	assets, 
 				 std::shared_ptr<scene::Node>			root)
 {
-	root->addChild(assets->symbol("subScene.scene"));
+	root->addChild(assets->symbol(MODEL_FILENAME));
 }
 
 int loaded = 0;
@@ -63,30 +65,38 @@ int main(int argc, char** argv)
 
 	auto sceneManager = SceneManager::create(canvas->context());
 	
+
 	// setup assets
 	sceneManager->assets()->defaultOptions()->generateMipmaps(true);
+	sceneManager->assets()->material("defaultMaterial", material::BasicMaterial::create()->diffuseColor(0xFFFFFFFF));
+	sceneManager->assets()->geometry("defaultGeometry", geometry::CubeGeometry::create(sceneManager->assets()->context())),
 	sceneManager->assets()
 		->registerParser<file::PNGParser>("png")
 #ifdef SERIALIZE
-		->queue("texture/box.png")
 		->queue("effect/Basic.effect");
+		->queue("texture/box.png")
 		
 		sceneManager->assets()->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()));
 		sceneManager->assets()->geometry("sphere", geometry::SphereGeometry::create(sceneManager->assets()->context(), 20, 20));
 #else
 		->registerParser<file::SceneParser>("scene")
-		->queue("subScene.scene");
+		->queue("effect/Phong.effect")
+		->queue(MODEL_FILENAME);
 #endif
+
 
 	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
 	{
-		if (loaded == 1)
-			return;
-		loaded = 1;
-
 		auto root = scene::Node::create("root")
 			->addComponent(sceneManager);
 
+		auto camera = scene::Node::create("camera")
+			->addComponent(Renderer::create(0x7f7f7fff))
+			->addComponent(Transform::create(
+			Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 20.f))
+			))
+			->addComponent(PerspectiveCamera::create(800.f / 600.f, (float)PI * 0.25f, .1f, 1000.f));
+		root->addChild(camera);
 #ifdef SERIALIZE
 		auto cubeMaterial = material::BasicMaterial::create()
 			->diffuseMap(assets->texture("texture/box.png"))
@@ -133,18 +143,38 @@ int main(int argc, char** argv)
 		
 		mesh2->component<Transform>()->matrix()->appendTranslation(0, 1, 0);
 		mesh3->component<Transform>()->matrix()->appendTranslation(0, -1, 0);
-		
-		auto camera = scene::Node::create("camera")
-			->addComponent(Renderer::create(0x7f7f7fff))
-			->addComponent(Transform::create(
-				Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 3.f))
-			))
-			->addComponent(PerspectiveCamera::create(800.f / 600.f, (float)PI * 0.25f, .1f, 1000.f));
-		root->addChild(camera);
 #endif
+
+		auto yaw = 0.f;
+		auto pitch = (float)PI * .5f;
+		auto roll = 0.f;
+		auto minPitch = 0.f + 1e-5;
+		float maxPitch = (float)PI - 1e-5;
+		auto lookAt = Vector3::create(0.f, 0.f, 0.f);
+		auto distance = 20.f;
+
+		Signal<input::Mouse::Ptr, int, int>::Slot mouseMove;
+		auto cameraRotationXSpeed = 0.f;
+		auto cameraRotationYSpeed = 0.f;
+
+		// handle mouse signals
+		auto mouseWheel = canvas->mouse()->wheel()->connect([&](input::Mouse::Ptr m, int h, int v)
+		{
+			distance += (float)v / 5.f;
+		});
+
+		mouseMove = canvas->mouse()->move()->connect([&](input::Mouse::Ptr m, int dx, int dy)
+		{
+			if (m->leftButtonIsDown())
+			{
+				cameraRotationYSpeed = (float)dx * .01f;
+				cameraRotationXSpeed = (float)dy * -.01f;
+			}
+		});
+
 		auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
 		{
-			root->children()[0]->children()[0]->component<PerspectiveCamera>()->aspectRatio((float)w / (float)h);
+			root->children()[0]->component<PerspectiveCamera>()->aspectRatio((float)w / (float)h);
 		});
 
 #ifdef SERIALIZE
@@ -154,6 +184,26 @@ int main(int argc, char** argv)
 #endif
 		auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr canvas, uint time, uint deltaTime)
 		{
+
+			yaw += cameraRotationYSpeed;
+			cameraRotationYSpeed *= 0.9f;
+
+			pitch += cameraRotationXSpeed;
+			cameraRotationXSpeed *= 0.9f;
+			if (pitch > maxPitch)
+				pitch = maxPitch;
+			else if (pitch < minPitch)
+				pitch = minPitch;
+
+			camera->component<Transform>()->matrix()->lookAt(
+				lookAt,
+				Vector3::create(
+				lookAt->x() + distance * cosf(yaw) * sinf(pitch),
+				lookAt->y() + distance * cosf(pitch),
+				lookAt->z() + distance * sinf(yaw) * sinf(pitch)
+				)
+			);
+
 			sceneManager->nextFrame();
 		});
 
