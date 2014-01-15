@@ -148,7 +148,7 @@ NodeDeserializer::deserializeLight(NodeInfo&		nodeInfo,
 
 		try
 		{
-			pointLightComp->attenuationDistance(Any::cast<int>(nodeInfo["attenuationDistance"]));
+			pointLightComp->attenuationDistance(static_cast<float>(Any::cast<int>(nodeInfo["attenuationDistance"])));
 		}
 		catch (...)
 		{
@@ -188,7 +188,7 @@ NodeDeserializer::deserializeLight(NodeInfo&		nodeInfo,
 			}
 			catch (...)
 			{
-				discreteLightComp->diffuse(Any::cast<int>(nodeInfo["diffuse"]));
+				discreteLightComp->diffuse(static_cast<float>(Any::cast<int>(nodeInfo["diffuse"])));
 			}
 
 			try
@@ -197,7 +197,7 @@ NodeDeserializer::deserializeLight(NodeInfo&		nodeInfo,
 			}
 			catch (...)
 			{
-				discreteLightComp->specular(Any::cast<int>(nodeInfo["specular"]));
+				discreteLightComp->specular(static_cast<float>(Any::cast<int>(nodeInfo["specular"])));
 			}
 		}
 
