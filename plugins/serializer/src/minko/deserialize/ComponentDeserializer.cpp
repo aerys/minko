@@ -31,6 +31,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/deserialize/TypeDeserializer.hpp"
 #include "minko/file/Dependency.hpp"
 #include "minko/material/Material.hpp"
+#include "minko/geometry/Geometry.hpp"
+#include "minko/render/Effect.hpp"
 
 using namespace minko;
 using namespace minko::deserialize;
@@ -162,10 +164,14 @@ ComponentDeserializer::deserializeSurface(std::string							serializedSurface,
 	msgpack::unpack(serializedSurface.data(), serializedSurface.size() - 1, NULL, &mempool, &deserialized);
 	deserialized.convert(&dst);
 
+	geometry::Geometry::Ptr		geometry	= dependencies->getGeometryReference(dst.a0);
+	data::Provider::Ptr			material	= dependencies->getMaterialReference(dst.a1);
+	render::Effect::Ptr			effect = dependencies->getEffectReference(dst.a2);
+
 	std::shared_ptr<component::Surface>	surface = component::Surface::create(
-		dependencies->getGeometryReference(dst.a0),
-		dependencies->getMaterialReference(dst.a1),
-		dependencies->getEffectReference(dst.a2),
+		geometry,
+		(material != nullptr ? material : assetLibrary->material("defaultMaterial")),
+		(effect != nullptr ? effect : assetLibrary->effect("effect/Phong.effect")),
 		dst.a3);
 
 	return surface;
