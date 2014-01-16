@@ -48,13 +48,13 @@ int main(int argc, char** argv)
 	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
 	{
 		auto cubeGeometry	= geometry::CubeGeometry::create(sceneManager->assets()->context());
-		auto taskManager	= TaskManager::create(120);
+		auto taskManager	= TaskManager::create(60);
 
 		auto root = scene::Node::create("root")
 			->addComponent(sceneManager)
 			->addComponent(taskManager);
 
-		for (uint i = 0; i < 50; ++i)
+		for (uint i = 0; i < 1000; ++i)
 			taskManager->pushTask(CountTask::create());
 
 		assets->geometry("cubeGeometry", cubeGeometry);
@@ -83,7 +83,7 @@ int main(int argc, char** argv)
 
 		auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, uint deltaTime)
 		{
-			mesh->component<Transform>()->matrix()->appendRotationY(.01f);
+			mesh->component<Transform>()->matrix()->appendRotationY(.02f);
 
 			sceneManager->nextFrame();
 		});
