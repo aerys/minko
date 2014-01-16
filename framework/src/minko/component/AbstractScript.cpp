@@ -89,6 +89,7 @@ AbstractScript::targetRemovedHandler(AbstractComponent::Ptr cmp, scene::Node::Pt
 	_componentAddedSlot = nullptr;
 	_componentRemovedSlot = nullptr;
     _frameBeginSlot = nullptr;
+	_frameEndSlot = nullptr;
 }
 
 void
@@ -137,6 +138,16 @@ AbstractScript::frameBeginHandler(SceneManager::Ptr sceneManager)
 }
 
 void
+AbstractScript::frameEndHandler(std::shared_ptr<SceneManager> sceneManager)
+{
+	for (auto& target : targets())
+	{
+		if (running(target))
+			end(target);
+	}
+}
+
+void
 AbstractScript::findSceneManager()
 {
 	NodeSet::Ptr roots = NodeSet::create(targets())
@@ -163,6 +174,9 @@ AbstractScript::setSceneManager(SceneManager::Ptr sceneManager)
 			_frameBeginSlot = sceneManager->frameBegin()->connect(std::bind(
 				&AbstractScript::frameBeginHandler, shared_from_this(), std::placeholders::_1
 			));
+		if (!_frameEndSlot)
+			_frameEndSlot = sceneManager->frameEnd()->connect(std::bind(
+				&AbstractScript::frameEndHandler, shared_from_this(), std::placeholders::_1));
 	}
 	else if (_frameBeginSlot)
 	{
@@ -173,5 +187,6 @@ AbstractScript::setSceneManager(SceneManager::Ptr sceneManager)
 		}
 
 		_frameBeginSlot = nullptr;
+		_frameEndSlot = nullptr;
 	}
 }
