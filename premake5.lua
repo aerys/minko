@@ -56,6 +56,7 @@ solution "minko"
 		include('examples/picking')
 		include('examples/visibility')
 		include('examples/leap-motion')
+		include('examples/tasks')
 	end
 
 	-- tests
