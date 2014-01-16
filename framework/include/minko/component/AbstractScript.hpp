@@ -49,6 +49,7 @@ namespace minko
 			Signal<NodePtr, NodePtr, AbsCmpPtr>::Slot		_componentAddedSlot;
 			Signal<NodePtr, NodePtr, AbsCmpPtr>::Slot		_componentRemovedSlot;
 			Signal<std::shared_ptr<SceneManager>>::Slot		_frameBeginSlot;
+			Signal<std::shared_ptr<SceneManager>>::Slot		_frameEndSlot;
 
 		protected:
 			virtual
@@ -61,6 +62,13 @@ namespace minko
 			virtual
 			void
 			update(NodePtr target)
+			{
+				// nothing
+			}
+
+			virtual
+			void
+			end(NodePtr target)
 			{
 				// nothing
 			}
@@ -110,6 +118,9 @@ namespace minko
 
 			void
 			frameBeginHandler(std::shared_ptr<SceneManager> sceneManager);
+
+			void
+			frameEndHandler(std::shared_ptr<SceneManager> sceneManager);
 
 			void
 			findSceneManager();

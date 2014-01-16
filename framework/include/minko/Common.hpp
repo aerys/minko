@@ -29,6 +29,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include <list>
 #include <map>
 #include <memory>
+#include <queue>
 #include <set>
 #include <sstream>
 #include <fstream>
@@ -118,6 +119,7 @@ namespace minko
 		class PerspectiveCamera;
 		class FrustumCulling;
 		class Picking;
+		class TaskManager;
 
         class LightManager;
         class AbstractLight;
