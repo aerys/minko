@@ -150,7 +150,9 @@ OpenGLES2Context::OpenGLES2Context() :
 #endif
 
 	glEnable(GL_DEPTH_TEST);
+#ifndef MINKO_NO_STENCIL
 	glEnable(GL_STENCIL_TEST);
+#endif
 	glEnable(GL_BLEND);
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
