@@ -38,9 +38,25 @@ Options::Options(std::shared_ptr<render::AbstractContext> context) :
 #ifdef DEBUG
 	includePaths().push_back("../../../asset");
 	includePaths().push_back("asset");
-	includePaths().push_back("bin/debug");
+# if defined(_WIN32) || defined(_WIN64)
+	includePaths().push_back("bin/windows/debug");
+# elif defined(TARGET_OS_MAC)
+	includePaths().push_back("bin/macosx/debug");
+# elif defined(EMSCRIPTEN)
+	includePaths().push_back("bin/html5/debug");
+# elif defined(LINUX) || defined(__unix__)
+	includePaths().push_back("bin/linux/debug");
+# endif
 #else
-	includePaths().push_back("bin/release");
+# if defined(_WIN32) || defined(_WIN64)
+	includePaths().push_back("bin/windows/release");
+# elif defined(TARGET_OS_MAC)
+	includePaths().push_back("bin/macosx/release");
+# elif defined(EMSCRIPTEN)
+	includePaths().push_back("bin/html5/release");
+# elif defined(LINUX) || defined(__unix__)
+	includePaths().push_back("bin/linux/release");
+# endif
 #endif
 
 	_materialFunction = [](const std::string&, material::Material::Ptr material) -> material::Material::Ptr
