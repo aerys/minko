@@ -1,7 +1,3 @@
-if _OPTIONS["with-glsl-optimizer"] then
-	include "lib/glsl-optimizer"
-end
-
 project "minko-framework"
 	kind "StaticLib"
 	location "."
@@ -47,9 +43,14 @@ project "minko-framework"
 		buildoptions { "-std=c++11" }
 
 	-- windows
-	configuration { "win" }
-		includedirs { "../deps/win/include" }
-		libdirs { "../deps/win/lib" }
+	configuration { "windows32 or windows64" }
+		includedirs { "lib/glew/include" }
+		
+	configuration { "windows32" }
+		libdirs { "lib/glew/lib/windows32" }
+		
+	configuration { "windows64" }
+		libdirs { "lib/glew/lib/windows64" }
 		
 	configuration { "vs*" }
 		defines { "NOMINMAX" }
@@ -60,12 +61,11 @@ project "minko-framework"
 		defines { "_VARIADIC_MAX=10" }
 
 	-- macos
-	configuration { "osx" }
+	configuration { "macosx" }
 
 	-- html5
 	configuration { "html5" }
-
-	newoption {
-		trigger     = "with-glsl-optimizer",
-		description = "Enable the GLSL optimizer."
-	}
+		buildoptions {
+			"-Wno-warn-absolute-paths",
+			"--closure 1"
+		}

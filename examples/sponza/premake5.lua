@@ -22,3 +22,7 @@ minko.project.application("minko-example-" .. PROJECT_NAME)
 	minko.plugin.enable("sdl")
 	
 	minko.plugin.import("angle")
+
+	configuration { "windows or macosx"}
+		minko.plugin.enable("oculus")
+

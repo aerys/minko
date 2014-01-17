@@ -13,6 +13,7 @@ local config = premake.config
 local fileconfig = premake.fileconfig
 
 local insert = require 'insert'
+local color = require 'color'
 
 insert.insert(premake.tools.gcc, 'tools.emscripten', {
 	cc = MINKO_HOME .. '/tools/lin/bin/emcc.sh',
@@ -24,8 +25,8 @@ insert.insert(premake.tools.gcc, 'cppflags.system.emscripten', {
 	'-DEMSCRIPTEN'
 })
 
-if os.getenv('EMSCRIPTEN_HOME') then
-	EMSCRIPTEN_HOME = os.getenv('EMSCRIPTEN_HOME');
+if os.getenv('EMSCRIPTEN') then
+	EMSCRIPTEN = os.getenv('EMSCRIPTEN');
 else
-	print(color.fg.yellow .. 'You must define the environment variable EMSCRIPTEN_HOME to be able to target HTML5.' .. color.reset)
+	print(color.fg.yellow .. 'You must define the environment variable EMSCRIPTEN to be able to target HTML5.' .. color.reset)
 end
