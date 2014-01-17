@@ -315,7 +315,7 @@ void main(void)
 		vec2 environmentMapUv	= vec2(0.0);
 
 		#ifdef ENVIRONMENT_TYPE
-			if (environmentType > 0.0)
+			if (environmentType > 0.1)
 			{
 				vec3 refSpherical	= phong_cartesian3DToSpherical3D(ref);
 				environmentMapUv = phong_spherical3DToCartesian2D(refSpherical.y, refSpherical.z);
