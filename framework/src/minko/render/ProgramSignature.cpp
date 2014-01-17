@@ -54,7 +54,7 @@ ProgramSignature::build(const MacroBindingMap&			macroBindings,
     {
 		ContainerProperty	macro					(macroBinding.second, targetData, rendererData, rootData);
 		const bool			macroExists				= (macro.container() != nullptr); 
-		const bool			isMacroInteger			= macroExists && macro.container()->propertyHasType<int>(macro.name());
+		const bool			isMacroInteger			= macroExists && macro.container()->propertyHasType<int>(macro.name(), true);
 
 		const auto&			defaultMacro			= std::get<2>(macroBinding.second);
 		const auto			defaultMacroExists		= defaultMacro.semantic == data::MacroBindingDefaultValueSemantic::PROPERTY_EXISTS;
