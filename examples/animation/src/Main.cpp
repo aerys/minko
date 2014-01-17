@@ -44,7 +44,6 @@ int main(int argc, char** argv)
 
 	sceneManager->assets()->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()));
 	
-	/****
 	const unsigned int numKeys = 3;
 	
 	std::vector<uint>			timetable(numKeys);
@@ -58,12 +57,11 @@ int main(int argc, char** argv)
 	matrices[1] = Matrix4x4::create()->copyFrom(matrices[0])->appendRotationX(PI * 0.25f);
 	matrices[2] = Matrix4x4::create()->copyFrom(matrices[1])->appendRotationZ(PI * 0.25f);
 
-	auto timeline	= Matrix4x4Timeline::create("transform.modelToWorldMatrix", 2500, timetable, matrices);
+	auto timeline	= Matrix4x4Timeline::create("transform.matrix", 2500, timetable, matrices);
 
 	std::vector<AbstractTimeline::Ptr> timelines(1, timeline);
 
 	auto animation	= component::Animation::create(timelines, true); 
-	***/
 
 	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
 	{
@@ -90,7 +88,7 @@ int main(int argc, char** argv)
 				material::BasicMaterial::create()->diffuseMap(assets->texture(TEXTURE_FILENAME)),
 				assets->effect("effect/Basic.effect")
 			))
-			/*->addComponent(animation)*/;
+			->addComponent(animation);
 		root->addChild(mesh);
 
 
