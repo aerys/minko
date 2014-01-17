@@ -78,8 +78,6 @@ Matrix4x4Timeline::update(uint time,
 	if (data == nullptr || !data->hasProperty(_propertyName))
 		return;
 
-
-	return;
 	auto matrix	= data->get<Matrix4x4::Ptr>(_propertyName);
 
 	if (matrix == nullptr)
@@ -98,8 +96,6 @@ Matrix4x4Timeline::update(uint time,
 	}
 	else
 	{
-		//matrix->copyFrom(_matrices[keyId].second);
-
-		std::cout << "time = " << time << "\t[" << keyId << "]\tmat = " << matrix->toString() << std::endl;
+		matrix->copyFrom(_matrices[keyId].second);
 	}
 }
