@@ -124,7 +124,7 @@ namespace minko
 
 			template <typename T>
 			typename std::enable_if<std::is_convertible<T, std::shared_ptr<Value>>::value, T>::type
-			get(const std::string& propertyName, bool skipPropertyNameFormatting) const
+			get(const std::string& propertyName, bool skipPropertyNameFormatting) /*const*/
 			{
 				const std::string&	formattedName	= skipPropertyNameFormatting ? propertyName : formatPropertyName(propertyName);
 				auto				foundIt			= values().find(formattedName);
@@ -147,7 +147,7 @@ namespace minko
 
 			template <typename T>
 			typename std::enable_if<!std::is_convertible<T, std::shared_ptr<Value>>::value, T>::type
-			get(const std::string& propertyName, bool skipPropertyNameFormatting) const
+			get(const std::string& propertyName, bool skipPropertyNameFormatting) /*const*/
 			{
 				const std::string&	formattedName	= skipPropertyNameFormatting ? propertyName : formatPropertyName(propertyName);
 				auto				foundIt			= values().find(formattedName);
@@ -162,7 +162,7 @@ namespace minko
 			template <typename T>
 			inline
 			T
-			get(const std::string& propertyName) const
+			get(const std::string& propertyName) /*const*/
 			{
 				return get<T>(propertyName, false);
 			}
