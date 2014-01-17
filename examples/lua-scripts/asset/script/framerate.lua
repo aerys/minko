@@ -17,6 +17,8 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ]]--
 
+framerate.DELAY = 1
+
 function framerate:start(node)
 	self.previousTime = os.time()
 	self.numFrames = 0
@@ -26,7 +28,7 @@ function framerate:update(node)
 	local time = os.time()
 	local deltaTime = time - self.previousTime
 
-	if deltaTime > 5 then
+	if deltaTime > framerate.DELAY then
 		print("framerate: " .. string.format("%g", self.numFrames / deltaTime))
 		self.numFrames = 0
 		self.previousTime = time

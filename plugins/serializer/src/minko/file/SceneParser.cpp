@@ -23,12 +23,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "msgpack.hpp"
 #include "minko/Types.hpp"
 #include <stack>
+#include "minko/component/Transform.hpp"
 
 using namespace minko;
 using namespace minko::file;
 using namespace minko::math;
 
-static std::map<int8_t, SceneParser::ComponentReadFunction> _componentIdToReadFunction;
+std::unordered_map<int8_t, SceneParser::ComponentReadFunction> SceneParser::_componentIdToReadFunction;
 
 
 SceneParser::SceneParser()
@@ -71,7 +72,7 @@ SceneParser::SceneParser()
 		std::placeholders::_1,
 		std::placeholders::_2,
 		std::placeholders::_3));
-
+		
 	registerComponent(serialize::SURFACE,
 		std::bind(&deserialize::ComponentDeserializer::deserializeSurface,
 		std::placeholders::_1,
@@ -101,7 +102,7 @@ SceneParser::parse(const std::string&					filename,
 {
 	msgpack::object		deserialized;
 	msgpack::zone		mempool;
-	std::string			str = extractDependencies(assetLibrary, data, options);
+	std::string			str = extractDependencies(assetLibrary, data, options, extractFolderPath(filename));
 
 	msgpack::unpack(str.data(), str.size(), NULL, &mempool, &deserialized);
 	msgpack::type::tuple<std::vector<std::string>, std::vector<SerializedNode>> dst;
@@ -117,9 +118,9 @@ SceneParser::parseNode(std::vector<SerializedNode>			nodePack,
 					   std::vector<std::string>				componentPack,
 					   AssetLibraryPtr						assetLibrary)
 {
-	std::shared_ptr<scene::Node>								root;
-	std::stack<std::tuple<std::shared_ptr<scene::Node>, uint>>	nodeStack;
-	std::map<int, std::vector<std::shared_ptr<scene::Node>>>	componentIdToNodes;
+	scene::Node::Ptr									root;
+	std::queue<std::tuple<scene::Node::Ptr, uint>>		nodeStack;
+	std::map<int, std::vector<scene::Node::Ptr>>		componentIdToNodes;
 
 	for (uint i = 0; i < nodePack.size(); ++i)
 	{
@@ -138,12 +139,12 @@ SceneParser::parseNode(std::vector<SerializedNode>			nodePack,
 			root = newNode;
 		else
 		{
-			scene::Node::Ptr parent = std::get<0>(nodeStack.top());
+			scene::Node::Ptr parent = std::get<0>(nodeStack.front());
 
 			parent->addChild(newNode);
-			std::get<1>(nodeStack.top())--;
+			std::get<1>(nodeStack.front())--;
 
-			if (std::get<1>(nodeStack.top()) == 0)
+			if (std::get<1>(nodeStack.front()) == 0)
 				nodeStack.pop();
 		}
 
@@ -153,12 +154,7 @@ SceneParser::parseNode(std::vector<SerializedNode>			nodePack,
 
 	for (uint componentIndex = 0; componentIndex < componentPack.size(); ++componentIndex)
 	{
-		msgpack::zone	mempool;
-		msgpack::object deseriliazedIndex;
-		int8_t			dst;
-
-		msgpack::unpack(componentPack[componentIndex].data() + componentPack[componentIndex].size() - 1, 1, NULL, &mempool, &deseriliazedIndex);
-		deseriliazedIndex.convert(&dst);
+		int8_t			dst = componentPack[componentIndex].at(componentPack[componentIndex].size() - 1);
 
 		if (_componentIdToReadFunction.find(dst) != _componentIdToReadFunction.end())
 		{
@@ -168,6 +164,8 @@ SceneParser::parseNode(std::vector<SerializedNode>			nodePack,
 				node->addComponent(newComponent);
 		}
 	}
+
+	std::cout << "Scene created" << std::endl;
 
 	return root;
 }

@@ -30,13 +30,14 @@ minko.plugin.oculus = {}
 -- #endif
 
 function minko.plugin.oculus:enable()
-	defines { "MINKO_PLUGIN_OCULUS" }
+	configuration { "windows or macosx" }
+		defines { "MINKO_PLUGIN_OCULUS" }
 
-	minko.plugin.links { "oculus" }
+		minko.plugin.links { "oculus" }
 
-	includedirs {
-		minko.sdk.path("plugins/oculus/include")
-	}
+		includedirs {
+			minko.sdk.path("plugins/oculus/include")
+		}
 
 	configuration { "win" }
 		links { "winmm", "setupapi" }
