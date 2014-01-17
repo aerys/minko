@@ -40,19 +40,30 @@ mat3 getWorldToTangentSpaceMatrix(vec3 worldNormal, vec3 worldTangent)
 	return transpose;
 }
 
+vec2 phong_blinnNewellSphericalProjection(vec3 xyz)
+{
+	float PI = 3.14159265358979323846264;
+
+	float u = (atan(xyz.x, xyz.z) + PI) / (2. * PI);
+	float v = (asin(xyz.y) + PI / 2.) / PI;
+
+	return vec2(u, v);
+}
+
 vec3 phong_cartesian3DToSpherical3D(vec3 xyz)
 {
-	return vec3(
-		sqrt(xyz.x * xyz.x + xyz.y * xyz.y + xyz.z * xyz.z),
-		atan(xyz.x, xyz.y),
-		acos(xyz.z)
-	);
+	float r 	= sqrt(xyz.x * xyz.x + xyz.y * xyz.y + xyz.z * xyz.z);
+	float phi 	= acos(xyz.y);
+	float theta = atan(xyz.z, xyz.x);
+
+	return vec3(r, theta, phi);
 }
+
 
 vec2 phong_spherical3DToCartesian2D(float theta, float phi)
 {
 	return vec2(
 		cos(theta) * cos(phi),
 		sin(theta) * cos(phi)
-	);
+	) * 0.5 + vec2(0.5, 0.5);
 }
