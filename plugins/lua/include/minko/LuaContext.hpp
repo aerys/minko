@@ -50,18 +50,6 @@ namespace minko
 		getSceneManager();
 
 		static
-		std::shared_ptr<input::Mouse>
-		getMouse();
-
-		static
-		std::shared_ptr<input::Keyboard>
-		getKeyboard();
-
-		static
-		std::shared_ptr<input::Joystick>
-		getJoystick(int id);
-
-		static
 		bool
 		getOption(const std::string& optionName);
 	};

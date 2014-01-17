@@ -38,8 +38,9 @@ namespace minko
 			bind(LuaGlue& state)
 			{
 				state.Class<std::vector<Node::Ptr>>("std__vector_scene__Node__Ptr_")
-					.method("get",		&LuaNode::getWrapper)
+					.method("at",		&LuaNode::atWrapper)
 					.property("size", 	&std::vector<Node::Ptr>::size);
+					//.index(&LuaNode::getWrapper);
 
 				state.Class<Node>("Node")
 		            .method("create",				static_cast<Node::Ptr (*)(void)>(&Node::create))
@@ -52,6 +53,7 @@ namespace minko
 		            .method("getBoundingBox",		&LuaNode::getBoundingBoxWrapper)
 		            .method("getTransform",			&LuaNode::getTransformWrapper)
 					.method("getPerspectiveCamera",	&LuaNode::getPerspectiveCameraWrapper)
+		            .property("children",			&Node::children)
 		            .property("data",				&Node::data)
 		            .property("root",				&Node::root)
 		            .property("name",				&Node::name, &Node::name);
@@ -59,7 +61,7 @@ namespace minko
 
 			static
 			Node::Ptr
-			getWrapper(std::vector<Node::Ptr>* v, uint index)
+			atWrapper(std::vector<Node::Ptr>* v, uint index)
 			{
 				return (*v)[index - 1];
 			}

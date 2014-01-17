@@ -30,11 +30,11 @@ function minko.plugin.fx:enable()
 		
 	configuration { "linux" }
 		prelinkcommands {
-			'cp -r ' .. minko.sdk.path('/plugins/fx/asset/effect') .. ' ${TARGETDIR} || ' .. minko.fail(),
+			'cp -r ' .. minko.sdk.path('/plugins/fx/asset/effect') .. ' ${TARGETDIR} || ' .. minko.action.fail(),
 		}
 	
 	configuration { "macosx or html5" }
 		prelinkcommands {
-			'cp -r ' .. minko.sdk.path('/plugins/fx/asset/effect') .. ' ${TARGETDIR} || ' .. minko.fail(),
+			'cp -r ' .. minko.sdk.path('/plugins/fx/asset/effect') .. ' ${TARGETDIR} || ' .. minko.action.fail(),
 		}	
 end

@@ -42,7 +42,7 @@ using namespace minko::component;
 using namespace minko::math;
 
 /*static*/ const float					OculusVRCamera::WORLD_UNIT	= 1.0f;
-/*static*/ const unsigned int			OculusVRCamera::TARGET_SIZE	= 2048;
+/*static*/ const unsigned int			OculusVRCamera::TARGET_SIZE	= 1024;
 
 OculusVRCamera::OculusVRCamera(float aspectRatio, float zNear, float zFar) :
 	_aspectRatio(aspectRatio),

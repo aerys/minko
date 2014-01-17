@@ -111,7 +111,7 @@ Canvas::initializeContext(const std::string& windowTitle, unsigned int width, un
 		SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 
 	SDL_WM_SetCaption(windowTitle.c_str(), NULL);
-	SDL_Surface* screen = SDL_SetVideoMode(width, height, 0, SDL_OPENGL);
+	SDL_Surface* _screen = SDL_SetVideoMode(width, height, 0, SDL_OPENGL);
 
 	_context = minko::render::WebGLContext::create();
 #endif // EMSCRIPTEN
@@ -283,7 +283,6 @@ Canvas::step()
 
 	while (SDL_PollEvent(&event))
 	{
-
 		switch (event.type)
 		{
 		case SDL_QUIT:
@@ -371,7 +370,18 @@ Canvas::step()
 				_joysticks[event.jhat.which], event.jhat.which, event.jhat.hat, event.jhat.value
 			);
 			break;
-			
+
+#ifdef EMSCRIPTEN
+		case SDL_VIDEORESIZE:
+			width(event.resize.w);
+			height(event.resize.h);
+
+			delete _screen;
+			_screen = SDL_SetVideoMode(width(), height(), 0, SDL_OPENGL | SDL_RESIZABLE);
+			_context->configureViewport(x(), y(), width(), height());
+			_resized->execute(shared_from_this(), width(), height());
+			break;
+#else
 		case SDL_WINDOWEVENT:
 			switch (event.window.event)
 			{
@@ -387,7 +397,7 @@ Canvas::step()
 			}
 
 			break;
-
+#endif // EMSCRIPTEN
 		default:
 			break;
 		}
@@ -451,7 +461,6 @@ Canvas::quit()
 {
 	_active = false;
 }
-
 
 Canvas::SDLKeyboard::SDLKeyboard()
 {
