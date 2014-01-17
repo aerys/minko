@@ -43,7 +43,7 @@ namespace minko
 			{
 				auto& assetLibrary = state.Class<file::AssetLibrary>("AssetLibrary")
 			        .method("queue",        static_cast<file::AssetLibrary::Ptr (file::AssetLibrary::*)(const std::string&)>(&file::AssetLibrary::queue))
-			        .method("load",         static_cast<file::AssetLibrary::Ptr (file::AssetLibrary::*)(void)>(&file::AssetLibrary::load))
+			        .method("load",         static_cast<file::AssetLibrary::Ptr (file::AssetLibrary::*)(bool)>(&file::AssetLibrary::load))
 			        .method("geometry",     static_cast<geometry::Geometry::Ptr (file::AssetLibrary::*)(const std::string&)>(&file::AssetLibrary::geometry))
 			        .method("effect",       static_cast<render::Effect::Ptr (file::AssetLibrary::*)(const std::string&)>(&file::AssetLibrary::effect))
 			        .method("texture",      static_cast<render::Texture::Ptr (file::AssetLibrary::*)(const std::string&)>(&file::AssetLibrary::texture))

@@ -31,7 +31,9 @@ namespace minko
 			public AbstractParser
 		{
 		public:
-			typedef std::shared_ptr<AbstractSerializerParser> Ptr;
+			typedef std::shared_ptr<AbstractSerializerParser>				Ptr;
+			typedef msgpack::type::tuple<unsigned char, short, std::string> SerializedAsset;
+			typedef std::shared_ptr<file::AssetLibrary>						AssetLibraryPtr;
 		
 		protected:
 			std::shared_ptr<Dependency>		_dependencies;
@@ -51,13 +53,14 @@ namespace minko
 				  const std::string&                resolvedFilename,
 				  std::shared_ptr<Options>          options,
 				  const std::vector<unsigned char>&	data,
-				  std::shared_ptr<AssetLibrary>		assetLibrary);
+				  AssetLibraryPtr					assetLibrary);
 
 		protected:
 			std::string
-			extractDependencies(std::shared_ptr<AssetLibrary>		assetLibrary,
+			extractDependencies(AssetLibraryPtr						assetLibrary,
 								const std::vector<unsigned char>&	data,
-								std::shared_ptr<Options>			options);
+								std::shared_ptr<Options>			options,
+								std::string							assetFilePath);
 
 			inline
 			void
@@ -70,9 +73,13 @@ namespace minko
 			AbstractSerializerParser();
 
 			void
-			deserializedAsset(msgpack::type::tuple<unsigned char, short, std::string>	asset,
-							  std::shared_ptr<AssetLibrary>								assetLibrary,
-							  std::shared_ptr<Options>									options);
+			deserializedAsset(SerializedAsset					asset,
+							  AssetLibraryPtr					assetLibrary,
+							  std::shared_ptr<Options>			options,
+							  std::string						assetFilePath);
+
+			std::string
+			extractFolderPath(const std::string& filepath);
 		};
 	}
 }

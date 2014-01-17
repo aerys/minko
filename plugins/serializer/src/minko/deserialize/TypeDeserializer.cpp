@@ -110,7 +110,7 @@ TypeDeserializer::deserializeMatrix4x4(std::tuple<uint, std::string> serializeMa
 	for (unsigned int i = 0; i < 16; ++i)
 	{
 		if (std::get<0>(serializeMatrix) & (1u << i))
-			read(stream, matrixValues[i]);
+			read<float>(stream, matrixValues[i]);
 			//matrixValues[i] = serializeMatrix.a1[serializedIndex++];
 	}
 
