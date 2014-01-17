@@ -46,14 +46,14 @@ namespace minko
 		            .method("setVector3",   static_cast<data::Provider::Ptr (material::Material::*)(const std::string&, math::Vector3::Ptr)>(&data::Provider::set<math::Vector3::Ptr>))
 		            .method("setVector4",   static_cast<data::Provider::Ptr (material::Material::*)(const std::string&, math::Vector4::Ptr)>(&data::Provider::set<math::Vector4::Ptr>))
 		            .method("setMatrix4x4", static_cast<data::Provider::Ptr (material::Material::*)(const std::string&, math::Matrix4x4::Ptr)>(&data::Provider::set<math::Matrix4x4::Ptr>))
-		            .method("getTexture",   static_cast<render::Texture::Ptr (material::Material::*)(const std::string&) const>(&material::Material::get<render::Texture::Ptr>))
-		            .method("getInt",       static_cast<int (material::Material::*)(const std::string&) const>(&data::Provider::get<int>))
-		            .method("getUint",      static_cast<unsigned int (material::Material::*)(const std::string&) const>(&data::Provider::get<unsigned int>))
-		            .method("getFloat",     static_cast<float (material::Material::*)(const std::string&) const>(&data::Provider::get<float>))
-		            .method("getVector2",   static_cast<math::Vector2::Ptr (material::Material::*)(const std::string&) const>(&data::Provider::get<math::Vector2::Ptr>))
-		            .method("getVector3",   static_cast<math::Vector3::Ptr (material::Material::*)(const std::string&) const>(&data::Provider::get<math::Vector3::Ptr>))
-		            .method("getVector4",   static_cast<math::Vector4::Ptr (material::Material::*)(const std::string&) const>(&data::Provider::get<math::Vector4::Ptr>))
-		            .method("getMatrix4x4", static_cast<math::Matrix4x4::Ptr (material::Material::*)(const std::string&) const>(&data::Provider::get<math::Matrix4x4::Ptr>));
+		            .method("getTexture",   static_cast<render::Texture::Ptr (material::Material::*)(const std::string&)>(&material::Material::get<render::Texture::Ptr>))
+		            .method("getInt",       static_cast<int (material::Material::*)(const std::string&)>(&data::Provider::get<int>))
+		            .method("getUint",      static_cast<unsigned int (material::Material::*)(const std::string&)>(&data::Provider::get<unsigned int>))
+		            .method("getFloat",     static_cast<float (material::Material::*)(const std::string&)>(&data::Provider::get<float>))
+		            .method("getVector2",   static_cast<math::Vector2::Ptr (material::Material::*)(const std::string&)>(&data::Provider::get<math::Vector2::Ptr>))
+		            .method("getVector3",   static_cast<math::Vector3::Ptr (material::Material::*)(const std::string&)>(&data::Provider::get<math::Vector3::Ptr>))
+		            .method("getVector4",   static_cast<math::Vector4::Ptr (material::Material::*)(const std::string&)>(&data::Provider::get<math::Vector4::Ptr>))
+		            .method("getMatrix4x4", static_cast<math::Matrix4x4::Ptr (material::Material::*)(const std::string&)>(&data::Provider::get<math::Matrix4x4::Ptr>));
 			}
 		};
 	}
