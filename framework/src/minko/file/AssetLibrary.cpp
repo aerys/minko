@@ -304,13 +304,14 @@ AssetLibrary::queue(const std::string&						filename,
 
 
 AssetLibrary::Ptr
-AssetLibrary::load()
+AssetLibrary::load(bool	executeCompleteSignal)
 {
 	std::list<std::string> queue(_filesQueue);
 
 	if (queue.empty())
 	{
-		_complete->execute(shared_from_this());
+		if (executeCompleteSignal)
+			_complete->execute(shared_from_this());
 	}
 	else
 	{
