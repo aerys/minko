@@ -3,7 +3,7 @@
 #ifdef PRECOMPUTED_AMBIENT
 	uniform vec3 sumAmbients;
 #endif // PRECOMPUTED_AMBIENT
-	
+
 #ifndef MINKO_NO_GLSL_STRUCT
 
 	#ifdef NUM_AMBIENT_LIGHTS
@@ -75,6 +75,7 @@ uniform vec3 cameraPosition;
 // env. mapping
 uniform sampler2D environmentMap;
 uniform float environmentAlpha;
+uniform float environmentType;
 
 varying vec3 vertexPosition;
 varying vec2 vertexUV;
@@ -310,17 +311,33 @@ void main(void)
 	#endif // defined NUM_DIRECTIONAL_LIGHTS || defined NUM_POINT_LIGHTS || defined NUM_SPOT_LIGHTS
 	
 	#ifdef ENVIRONMENT_MAP
-		vec3 ref			= reflect(eyeVector, vertexNormal);
-		vec3 refSpherical	= phong_cartesian3DToSpherical3D(ref);
-		vec4 env			= texture2D(environmentMap, phong_spherical3DToCartesian2D(ref.y, ref.z));
+		vec3 ref				= reflect(normalize(eyeVector), normalize(vertexNormal));
+		vec2 environmentMapUv	= vec2(0.0);
+
+		#ifdef ENVIRONMENT_TYPE
+			if (environmentType > 0.1)
+			{
+				vec3 refSpherical	= phong_cartesian3DToSpherical3D(ref);
+				environmentMapUv = phong_spherical3DToCartesian2D(refSpherical.y, refSpherical.z);
+			}
+			else
+				environmentMapUv = phong_blinnNewellSphericalProjection(ref);
+		#else
+			environmentMapUv = phong_blinnNewellSphericalProjection(ref);
+		#endif
+
+		vec4 env			= texture2D(environmentMap, environmentMapUv);
+
+		float reflectivity 	= 0.0;
 
 		#ifdef ENVIRONMENT_ALPHA
-			env *= environmentAlpha;
+			reflectivity = environmentAlpha;
 		#else
-			env *= specular.a;
+			reflectivity = specular.a;
 		#endif // ENVIRONMENT_ALPHA
 
-		diffuse = vec4(diffuse.rgb + env.rgb, diffuse.a);
+		diffuse.rgb = mix(diffuse.rgb, env.rgb, reflectivity);
+
 	#endif // defined ENVIRONMENT_MAP
 	
 	diffuse = vec4(diffuse.rgb * phong, diffuse.a);

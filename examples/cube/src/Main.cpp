@@ -46,9 +46,7 @@ int main(int argc, char** argv)
 
 	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
 	{
-		auto cubeMaterial = material::BasicMaterial::create()->diffuseMap(assets->texture(TEXTURE_FILENAME));
 		auto cubeGeometry = geometry::CubeGeometry::create(sceneManager->assets()->context());
-		auto cubeGeometry2 = geometry::CubeGeometry::create(sceneManager->assets()->context());
 
 		auto root = scene::Node::create("root")
 			->addComponent(sceneManager);
@@ -71,19 +69,6 @@ int main(int argc, char** argv)
 				assets->effect("effect/Basic.effect")
 			));
 		root->addChild(mesh);
-
-		try
-		{
-			std::string cubeGeometryName = assets->geometryName(cubeGeometry);
-			std::cout << "CubeGeometry found ! " << cubeGeometryName << std::endl;
-
-			std::string sphereGeometryName = assets->geometryName(cubeGeometry2);
-			std::cout << "SphereGeometry found ! " << sphereGeometryName << std::endl;
-		}
-		catch(...)
-		{
-			std::cout << "error" << std::endl;
-		}
 
 		auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
 		{

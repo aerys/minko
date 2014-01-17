@@ -6,15 +6,15 @@ if [[ -z "${EMSCRIPTEN_HOME}" ]]; then
 fi
 
 BIN="${EMSCRIPTEN_HOME}/emar"
-ARGS=""
+ARGS=()
 
-for arg in "$@"; do
-	if [ $arg == "-rcs" ]; then
-		ARGS="${ARGS} rk"
+for ARG in "$@"; do
+	if [[ "${ARG}" == "-rcs" ]]; then
+		ARGS+=("rk")
 	else
-		ARGS="${ARGS} $arg"
+		ARGS+=("${ARG}")
 	fi
 done
 
 test "$verbose" != 0 && echo "${BIN} ${ARGS}"
-${BIN} ${ARGS}
+python "${BIN}" "${ARGS[@]}"

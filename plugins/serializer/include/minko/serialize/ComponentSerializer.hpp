@@ -71,6 +71,11 @@ namespace minko
 			std::string
 			serializeRenderer(NodePtr		node, 
 							  DependencyPtr dependencies);
+
+			static
+			std::string
+			serializeBoundingBox(NodePtr 		node,
+								 DependencyPtr 	dependencies);
 		};
 	}
 }

@@ -26,10 +26,40 @@ function minko.plugin.leap:enable()
 	
 	includedirs { minko.sdk.path("plugins/leap/include") }
 	
-	configuration { "windows" }
-		links { "Leap", "Leapd" }
-		libdirs { minko.sdk.path("plugins/leap/lib/win/leap/lib") }
+	configuration { "windows32" }
+		links { "Leap" }
+		libdirs { minko.sdk.path("plugins/leap/lib/leap/windows32/lib") }
+
 		postbuildcommands {
-			minko.vs.getdllscopycommand(minko.sdk.path("plugins/leap/lib/win/leap/lib"))
+			minko.vs.getdllscopycommand(minko.sdk.path("plugins/leap/lib/leap/windows32/lib"))
 		}
+
+	configuration { "windows64" }
+		links { "Leap" }
+		libdirs { minko.sdk.path("plugins/leap/lib/leap/windows64/lib") }
+
+		postbuildcommands {
+			minko.vs.getdllscopycommand(minko.sdk.path("plugins/leap/lib/leap/windows64/lib"))
+		}
+
+	configuration { "linux32" }
+		links { "Leap" }
+		libdirs { minko.sdk.path("plugins/leap/lib/leap/linux32/lib") }
+
+		postbuildcommands {
+			'cp ' .. minko.sdk.path("plugins/leap/lib/leap/linux32/lib") .. '/*.so ${TARGETDIR}' 
+		}
+
+	configuration { "linux64" }
+		links { "Leap" }
+		libdirs { minko.sdk.path("plugins/leap/lib/leap/linux64/lib") }
+
+		postbuildcommands {
+			'cp ' .. minko.sdk.path("plugins/leap/lib/leap/linux64/lib") .. '/*.so ${TARGETDIR}' 
+		}
+
+	configuration { "macosx" }
+		-- FIXME
+
+	configuration {}
 end

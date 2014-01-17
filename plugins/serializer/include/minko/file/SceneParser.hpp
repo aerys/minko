@@ -35,6 +35,7 @@ namespace minko
 			public AbstractSerializerParser
 		{
 
+
 		//typedef
 		public:
 			typedef std::shared_ptr<SceneParser>																														Ptr;
@@ -42,7 +43,10 @@ namespace minko
 			typedef msgpack::type::tuple<std::string, uint, uint, std::vector<uint>>																					SerializedNode;
 			typedef std::shared_ptr<AssetLibrary>																														AssetLibraryPtr;
 
-		// methods
+		private:
+			static std::unordered_map<int8_t, ComponentReadFunction> _componentIdToReadFunction;
+		
+			// methods
 		public:
 			inline static
 			Ptr
