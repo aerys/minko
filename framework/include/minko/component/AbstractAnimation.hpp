@@ -65,6 +65,7 @@ namespace minko
 			bool	_isPlaying;
 			bool	_isLooping;
 			bool	_isReversed;
+			bool	_canUpdateOnce;
 
 			clock_t	_clockStart;
 
@@ -224,6 +225,17 @@ namespace minko
 		protected:
 			AbstractAnimation(bool isLooping);
 
+			inline
+			~AbstractAnimation()
+			{
+				_targetAddedSlot	= nullptr;
+				_targetRemovedSlot	= nullptr;
+				_addedSlot			= nullptr;
+				_removedSlot		= nullptr;
+				_frameBeginSlot		= nullptr;
+			}
+
+			virtual
 			void
 			initialize();
 
@@ -233,9 +245,11 @@ namespace minko
 			void
 			targetRemovedHandler(AbsCmpPtr cmp, NodePtr node);
 
+			virtual
             void
             addedHandler(NodePtr node, NodePtr target, NodePtr parent);
 
+			virtual
 			void
             removedHandler(NodePtr node, NodePtr target, NodePtr parent);
 
