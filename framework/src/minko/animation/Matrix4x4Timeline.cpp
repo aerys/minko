@@ -31,14 +31,10 @@ Matrix4x4Timeline::Matrix4x4Timeline(const std::string& propertyName,
 									 uint duration,
 									 const std::vector<uint>& timetable,
 									 const std::vector<Matrix4x4Ptr>& matrices,
-									 bool interpolate,
-									 bool interpolateScale,
-									 bool interpolateTranslation):
+									 bool interpolate):
 	AbstractTimeline(propertyName, duration),
 	_matrices(),
-	_interpolate(interpolate),
-	_interpolateScale(interpolateScale),
-	_interpolateTranslation(interpolateTranslation)
+	_interpolate(interpolate)
 {
 	initializeMatrixTimetable(timetable, matrices);
 }
@@ -92,7 +88,18 @@ Matrix4x4Timeline::update(uint time,
 
 	if (interpolate)
 	{
-		throw new std::logic_error("matrix decomposition and interpolation not implemented yet!");
+		assert(keyId + 1 < (int)_matrices.size());
+
+		const auto& current	= _matrices[keyId];
+		const auto& next	= _matrices[keyId + 1];
+
+		const float ratio	= current.first < next.first 
+			? (t - current.first) / (float)(next.first - current.first)
+			: 0.0f;
+
+		matrix
+			->copyFrom(current.second)
+			->interpolateTo(next.second, ratio);
 	}
 	else
 	{
