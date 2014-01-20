@@ -38,8 +38,6 @@ namespace minko
 		private:
 			MatrixTimetable	_matrices;
 			bool			_interpolate;
-			bool			_interpolateScale;
-			bool			_interpolateTranslation;
 
 		public:
 			inline static
@@ -48,9 +46,7 @@ namespace minko
 				   uint								duration,
 				   const std::vector<uint>&			timetable,
 				   const std::vector<Matrix4x4Ptr>&	matrices,
-				   bool								interpolate				= false,
-				   bool								interpolateScale		= false,
-				   bool								interpolateTranslation	= false)
+				   bool								interpolate				= false)
 			{
 				Ptr ptr	= std::shared_ptr<Matrix4x4Timeline>(
 					new Matrix4x4Timeline(
@@ -58,9 +54,7 @@ namespace minko
 						duration,
 						timetable, 
 						matrices, 
-						interpolate, 
-						interpolateScale, 
-						interpolateTranslation
+						interpolate
 					)
 				);
 
@@ -75,8 +69,6 @@ namespace minko
 							  uint,
 							  const std::vector<uint>&,
 							  const std::vector<Matrix4x4Ptr>&,
-							  bool,
-							  bool,
 							  bool);
 
 			void
