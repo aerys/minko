@@ -17,6 +17,8 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+#include <climits>
+
 #include "minko/component/AbstractAnimation.hpp"
 #include "minko/scene/Node.hpp"
 #include "minko/scene/NodeSet.hpp"
@@ -38,6 +40,7 @@ AbstractAnimation::AbstractAnimation(bool isLooping):
 	_isPlaying(false),
 	_isLooping(isLooping),
 	_isReversed(false),
+	_canUpdateOnce(false),
 	_clockStart(clock()),
 	_timeFunction(),
 	_labels(),
@@ -187,6 +190,7 @@ AbstractAnimation::stop()
 	}
 
 	_isPlaying			= false;
+	_canUpdateOnce		= true;
 	_previousGlobalTime = _timeFunction(_sceneManager ? _sceneManager->getTimer() : 0);
 
 	_stopped->execute(shared_from_this());
@@ -455,8 +459,10 @@ AbstractAnimation::frameBeginHandler(SceneManager::Ptr sceneManager)
 bool
 AbstractAnimation::update(uint rawGlobalTime)
 {
-	if (!_isPlaying)
+	if (!_isPlaying && !_canUpdateOnce)
 		return false;
+
+	_canUpdateOnce = false;
 
 	const uint	globalTime		= _timeFunction(rawGlobalTime);
 	const uint	globalDeltaTime	= globalTime - _previousGlobalTime;
