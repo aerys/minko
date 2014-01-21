@@ -4,6 +4,8 @@
 	precision mediump float;
 #endif
 
+#pragma include("Skinning.function.glsl")
+
 attribute vec3 position;
 attribute vec2 uv;
 attribute vec3 normal;
