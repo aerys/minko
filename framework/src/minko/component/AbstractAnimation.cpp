@@ -63,6 +63,7 @@ AbstractAnimation::AbstractAnimation(bool isLooping):
 	};
 }
 
+/*virtual*/
 void
 AbstractAnimation::initialize()
 {
@@ -110,6 +111,7 @@ AbstractAnimation::targetRemovedHandler(AbstractComponent::Ptr cmp,
 	_removedSlot = nullptr;
 }
 
+/*virtual*/
 void
 AbstractAnimation::addedHandler(Node::Ptr node, 
 								Node::Ptr target, 
@@ -118,6 +120,7 @@ AbstractAnimation::addedHandler(Node::Ptr node,
 	findSceneManager();
 }
 
+/*virtual*/
 void
 AbstractAnimation::removedHandler(Node::Ptr node, 
 								  Node::Ptr target, 
@@ -170,12 +173,10 @@ AbstractAnimation::setSceneManager(SceneManager::Ptr sceneManager)
 AbstractAnimation::Ptr
 AbstractAnimation::play()
 {
-	_isPlaying			= true;
 	_previousGlobalTime = _timeFunction(_sceneManager ? _sceneManager->getTimer() : 0);
-
-	checkLabelHit(_currentTime, _currentTime);
-
+	_isPlaying	 		= true;
 	_started->execute(shared_from_this());
+	checkLabelHit(_currentTime, _currentTime);
 
 	return shared_from_this();
 }
@@ -190,12 +191,17 @@ AbstractAnimation::stop()
 	}
 
 	_isPlaying			= false;
+	_stopped->execute(shared_from_this());
 	_canUpdateOnce		= true;
 	_previousGlobalTime = _timeFunction(_sceneManager ? _sceneManager->getTimer() : 0);
 
-	_stopped->execute(shared_from_this());
-
 	return shared_from_this();
+}
+
+AbstractAnimation::Ptr
+AbstractAnimation::seek(const std::string& labelName)
+{
+	return seek(labelTime(labelName));
 }
 
 AbstractAnimation::Ptr
@@ -220,7 +226,7 @@ AbstractAnimation::hasLabel(const std::string& name) const
 AbstractAnimation::Ptr
 AbstractAnimation::addLabel(const std::string& name, uint time)
 {
-	if (!hasLabel(name))
+	if (hasLabel(name))
 		throw new std::logic_error("A label called '" + name + "' already exists.");
 
 	_labelNameToIndex[name] = _labels.size();
@@ -280,17 +286,19 @@ AbstractAnimation::removeLabel(const std::string& name)
 }
 
 uint
-AbstractAnimation::getLabelTime(const std::string& name) const
+AbstractAnimation::labelTime(const std::string& name) const
 {
 	const auto foundLabelIt = _labelNameToIndex.find(name);
 	if (foundLabelIt == _labelNameToIndex.end())
 		throw new std::logic_error("No label called '" + name + "' currently exists.");
 
-	return _labels[foundLabelIt->second].time;
+	return labelTime(foundLabelIt->second);
 }
 
 AbstractAnimation::Ptr
-AbstractAnimation::setPlaybackWindow(uint beginTime, uint endTime)
+AbstractAnimation::setPlaybackWindow(uint beginTime, 
+									 uint endTime, 
+									 bool forceRestart)
 {
 	_loopMinTime = beginTime;
 	_loopMaxTime = endTime;
@@ -298,10 +306,10 @@ AbstractAnimation::setPlaybackWindow(uint beginTime, uint endTime)
 	if (_loopMinTime > _loopMaxTime)
 		std::swap(_loopMinTime, _loopMaxTime);
 
-	_loopTimeRange = _loopMaxTime - _loopMinTime;
+	_loopTimeRange = _loopMaxTime - _loopMinTime + 1;
 
-	if (!isInPlaybackWindow(_currentTime))
-		_currentTime = _loopMinTime;
+	if (!isInPlaybackWindow(_currentTime) || forceRestart)
+		_currentTime = loopStartTime();
 
 	updateNextLabelIds(_currentTime);
 
@@ -309,9 +317,22 @@ AbstractAnimation::setPlaybackWindow(uint beginTime, uint endTime)
 }
 
 AbstractAnimation::Ptr
+AbstractAnimation::setPlaybackWindow(const std::string& beginLabelName, 
+									 const std::string& endLabelName, 
+									 bool forceRestart)
+{
+	return setPlaybackWindow(
+		labelTime(beginLabelName), 
+		labelTime(endLabelName), 
+		forceRestart
+	);
+}
+
+
+AbstractAnimation::Ptr
 AbstractAnimation::resetPlaybackWindow()
 {
-	return setPlaybackWindow(_loopMinTime, _loopMaxTime);
+	return setPlaybackWindow(0, _maxTime);
 }
 
 void
@@ -339,7 +360,7 @@ AbstractAnimation::updateNextLabelIds(uint time)
 		if (!isInPlaybackWindow(labelTime))
 			continue;
 
-		if (!_isReversed && time < labelTime)
+		if (!_isReversed && time <= labelTime)
 		{
 			if (labelTime < nextLabelTime)
 			{
@@ -351,7 +372,7 @@ AbstractAnimation::updateNextLabelIds(uint time)
 			else if (labelTime == nextLabelTime)
 				_nextLabelIds.push_back(labelId);
 		}
-		else if (_isReversed && labelTime < time)
+		else if (_isReversed && labelTime <= time)
 		{
 			if (nextLabelTime < labelTime)
 			{
@@ -421,7 +442,7 @@ AbstractAnimation::checkLabelHit(uint previousTime, uint newTime)
 		}
 		else // previousTime < newTime
 		{
-			if (nextLabelTime < previousTime)
+			if (nextLabelTime < previousTime) 
 				trigger = true;
 			else if (newTime < nextLabelTime)
 				trigger = true;
@@ -456,6 +477,7 @@ AbstractAnimation::frameBeginHandler(SceneManager::Ptr sceneManager)
 	update(sceneManager->getTimer());
 }
 
+/*virtual*/
 bool
 AbstractAnimation::update(uint rawGlobalTime)
 {
@@ -471,7 +493,8 @@ AbstractAnimation::update(uint rawGlobalTime)
 		: - int(globalDeltaTime);
 
 	_previousTime		= _currentTime;
-	_currentTime		= getNewLoopTime(_currentTime, deltaTime);
+	if (_isPlaying)
+		_currentTime	= getNewLoopTime(_currentTime, deltaTime);
 	_previousGlobalTime	= globalTime;
 
 	const bool looped	= 
@@ -483,14 +506,24 @@ AbstractAnimation::update(uint rawGlobalTime)
 		if (_isLooping)
 			_looped->execute(shared_from_this());
 		else
+		{
+			_currentTime = loopEndTime();
 			stop();
+		}
 	}
 
-	return true;
+	update();
+
+	checkLabelHit(_previousTime, _currentTime);
+
+	return _isPlaying || _canUpdateOnce;
 }
 
 uint
 AbstractAnimation::getNewLoopTime(uint time, int deltaTime) const
 {
-	return _loopMinTime + (int(time) + deltaTime + int(_loopTimeRange)) % int(_loopTimeRange);
+	const int	relTime		= int(time - _loopMinTime) + deltaTime;
+	const uint	timeOffset	= uint((relTime + _loopTimeRange) % _loopTimeRange);
+
+	return _loopMinTime + timeOffset;
 }

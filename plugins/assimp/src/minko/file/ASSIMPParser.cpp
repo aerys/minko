@@ -630,10 +630,10 @@ ASSIMPParser::getSkinningFromAssimp(const aiScene* aiscene)
 		
 		if (skin)
 		{
-			auto	meshNode	= _aiMeshToNode.find(aimesh)->second;
+			auto		meshNode		= _aiMeshToNode.find(aimesh)->second;
+			const float	durationSeconds	= skin->numFrames() / (float)_options->skinningFramerate();
 
-			skin->duration(skin->numFrames() / (float)_options->skinningFramerate());
-
+			skin->duration((uint)floorf(1000.0f * durationSeconds));
 			meshNode->addComponent(Skinning::create(skin, _options->skinningMethod(), _assetLibrary->context()));
 		}
 	}
