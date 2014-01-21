@@ -1,8 +1,4 @@
-#ifdef GL_ES
-	precision mediump float;
-#endif
-
-#ifdef NUM_BONES
+#if defined(VERTEX_SHADER) && defined(NUM_BONES)
 
 	uniform 	mat4	boneMatrices[NUM_BONES];
 	attribute	vec4	boneIdsA;
@@ -27,4 +23,4 @@
 		return outputVec;
 	}
 
-#endif // NUM_BONES
+#endif // defined(VERTEX_SHADER) && defined(NUM_BONES)

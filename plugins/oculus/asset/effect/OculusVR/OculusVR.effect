@@ -29,12 +29,8 @@
 				"uScreenCenter"			: "oculusvr.leftScreenCenter",
 				"uScreenCorner"			: "oculusvr.leftScreenCorner"
 			},	
-			"vertexShader" : {
-				"includes" : [ "OculusVR.vertex.glsl" ]
-			},
-			"fragmentShader" : {
-				"includes" : [ "fxaa.function.glsl", "OculusVR.fragment.glsl" ]
-			}
+			"vertexShader" : "#pragma include('OculusVR.vertex.glsl')",
+			"fragmentShader" : "#pragma include('OculusVR.fragment.glsl')"
 		},
 		{
 			"name" : "oculus vr right",
@@ -45,12 +41,8 @@
 				"uScreenCenter"			: "oculusvr.rightScreenCenter",
 				"uScreenCorner"			: "oculusvr.rightScreenCorner"
 			},
-			"vertexShader" : {
-				"includes" : [ "OculusVR.vertex.glsl" ]
-			},
-			"fragmentShader" : {
-				"includes" : [ "fxaa.function.glsl", "OculusVR.fragment.glsl" ]
-			}
+			"vertexShader" : "#pragma include('OculusVR.vertex.glsl')",
+			"fragmentShader" : "#pragma include('OculusVR.fragment.glsl')"
 		}
 	]
 }

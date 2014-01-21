@@ -56,7 +56,7 @@ main(void)
 		// the split screens take the whole screen.
 		vec2 finalUV	= vec2(2.0, 1.0) * (uv - uScreenCorner);
 		
-		//gl_FragColor	= texture2D(uTex, finalUV);
-		gl_FragColor	= fxaa_texture2D(uTex, finalUV, uPixelOffset);
+		gl_FragColor	= texture2D(uTex, finalUV);
+		//gl_FragColor	= fxaa_texture2D(uTex, finalUV, uPixelOffset);
 	}
 }
