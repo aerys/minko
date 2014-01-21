@@ -57,7 +57,7 @@ int main(int argc, char** argv)
 	matrices[1] = Matrix4x4::create()->copyFrom(matrices[0])->appendRotationX(PI * 0.25f);
 	matrices[2] = Matrix4x4::create()->copyFrom(matrices[1])->appendRotationZ(PI * 0.25f);
 
-	auto timeline	= Matrix4x4Timeline::create("transform.matrix", 2500, timetable, matrices);
+	auto timeline	= Matrix4x4Timeline::create("transform.matrix", 2500, timetable, matrices, true);
 
 	std::vector<AbstractTimeline::Ptr> timelines(1, timeline);
 

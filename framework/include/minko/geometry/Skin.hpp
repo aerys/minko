@@ -41,7 +41,7 @@ namespace minko
 			const unsigned int				_numBones;
 			std::vector<BonePtr>			_bones;
 
-			float							_duration;				// in seconds
+			uint							_duration;				// in milliseconds
 			float							_timeFactor;
 			std::vector<std::vector<float>>	_boneMatricesPerFrame;
 
@@ -95,14 +95,17 @@ namespace minko
 			}
 
 			inline
-			float
+			uint
 			duration() const
 			{
 				return _duration;
 			}
 
-			unsigned int
-			getFrameId(float) const;
+			void
+			duration(uint); // duration must be in milliseconds
+
+			uint
+			getFrameId(uint) const;
 
 			void
 			duration(float);
