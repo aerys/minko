@@ -50,8 +50,8 @@ namespace minko
 		            .method("xAxis",    &Vector3::xAxis)
 		            .method("yAxis",    &Vector3::yAxis)
 		            .method("zAxis",    &Vector3::zAxis)
-		            .method("max",     	&Vector3::min)
-		            .method("min",     	&Vector3::max)
+		            .method("max",     	&Vector3::max)
+		            .method("min",     	&Vector3::min)
 		            .property("x",      static_cast<float (Vector3::*)(void)>(&Vector3::x), static_cast<void (Vector3::*)(float)>(&Vector3::x))
 		            .property("y",      static_cast<float (Vector3::*)(void)>(&Vector3::y), static_cast<void (Vector3::*)(float)>(&Vector3::y))
 		            .property("z",      static_cast<float (Vector3::*)(void)>(&Vector3::z), static_cast<void (Vector3::*)(float)>(&Vector3::z));
