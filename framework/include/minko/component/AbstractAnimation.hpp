@@ -98,6 +98,9 @@ namespace minko
 			Ptr
 			seek(uint time);
 
+			Ptr
+			seek(const std::string&);
+
 			inline
 			uint
 			currentTime() const
@@ -109,14 +112,14 @@ namespace minko
 			uint
 			loopStartTime() const
 			{
-				return _isReversed ? _loopMinTime : _loopMaxTime;
+				return !_isReversed ? _loopMinTime : _loopMaxTime;
 			}
 
 			inline
 			uint
 			loopEndTime() const
 			{
-				return _isReversed ? _loopMaxTime : _loopMinTime;
+				return !_isReversed ? _loopMaxTime : _loopMinTime;
 			}
 
 			bool
@@ -134,11 +137,11 @@ namespace minko
 			Ptr
 			removeLabel(const std::string& name);
 
-			uint
-			getLabelTime(const std::string& name) const;
+			Ptr
+			setPlaybackWindow(uint, uint, bool forceRestart = false);
 
 			Ptr
-			setPlaybackWindow(uint, uint);
+			setPlaybackWindow(const std::string&, const std::string&, bool forceRestart = false);
 
 			Ptr
 			resetPlaybackWindow();
@@ -148,6 +151,21 @@ namespace minko
 			{
 				return _labels.size();
 			}
+
+			const std::string&
+			labelName(uint labelId) const
+			{
+				return _labels[labelId].name;
+			}
+
+			uint
+			labelTime(uint labelId) const
+			{
+				return _labels[labelId].time;
+			}
+
+			uint
+			labelTime(const std::string& name) const;
 
 			inline
 			bool
@@ -225,6 +243,7 @@ namespace minko
 		protected:
 			AbstractAnimation(bool isLooping);
 
+			virtual
 			inline
 			~AbstractAnimation()
 			{
@@ -282,6 +301,10 @@ namespace minko
 			virtual 
 			bool
 			update(uint rawGlobalTime); // absolute, untransformed animation time (in milliseconds)
+
+			virtual
+			void
+			update() = 0;
 
 			uint
 			getTimerMilliseconds() const;

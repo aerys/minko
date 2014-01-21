@@ -47,14 +47,9 @@ Animation::initialize()
 		->play();
 }
 
-bool
-Animation::update(uint rawGlobalTime)
+void
+Animation::update()
 {
-	const bool updated = AbstractAnimation::update(rawGlobalTime);
-
-	if (!updated)
-		return false;
-
 	for (auto& target : targets())
 	{
 		auto container = target->data();
@@ -66,7 +61,4 @@ Animation::update(uint rawGlobalTime)
 			timeline->update(currentTime, target->data());
 		}
 	}
-
-	return true;
 }
-
