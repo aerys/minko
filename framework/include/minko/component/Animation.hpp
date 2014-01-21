@@ -70,8 +70,8 @@ namespace minko
 			void
 			initialize();
 
-			bool
-			update(uint rawGlobalTime);
+			void
+			update();
 		};
 	}
 }
