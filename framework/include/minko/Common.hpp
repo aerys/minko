@@ -27,6 +27,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include <functional>
 #include <iostream>
 #include <list>
+#include <forward_list>
 #include <map>
 #include <memory>
 #include <set>

@@ -1,6 +1,5 @@
-// directional light effect
 {
-	"name"		: "vertex normal",
+	"name"				: "vertex normal",
 	"attributeBindings"	: {
 		"position"				: "geometry.vertex.attribute.position",
 		"normal"				: "geometry.vertex.attribute.normal"
@@ -26,6 +25,7 @@
 
 			void main(void)
 			{
+				// fixme: add skinning
 				worldNormal = normalize(mat3(modelToWorldMatrix) * normal);
 
 				gl_Position =  worldToScreenMatrix * modelToWorldMatrix * vec4(position, 1.0);
