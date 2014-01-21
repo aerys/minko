@@ -1,9 +1,5 @@
 #ifdef FRAGMENT_SHADER
 
-#ifdef GL_ES
-	precision mediump float;
-#endif
-
 #ifndef MINKO_NO_GLSL_STRUCT
 
 	struct AmbientLight

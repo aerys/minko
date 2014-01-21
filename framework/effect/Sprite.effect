@@ -26,6 +26,7 @@
 		"blendMode"         : "additive",
 		"depthTest"         : [ false, "less_equal" ],
 		"triangleCulling"   : "none",
-		"includes" 			: [ "Sprite.vertex.glsl", "Sprite.fragment.glsl" ]
+		"vertexShader" 		: "#pragma include('Sprite.vertex.glsl')",
+		"fragmentShader" 	: "#pragma include('Sprite.fragment.glsl')"
 	}]
 }
