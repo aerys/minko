@@ -274,40 +274,52 @@ namespace minko
 			getProgramInfoLogs(const uint program);
 
 			void
-			setUniform(const uint& location, const int& value);
+			setUniform(uint location, int);
 
 			void
-			setUniform(const uint& location, const int& v1, const int& v2);
+			setUniform(uint location, int, int);
 
 			void
-			setUniform(const uint& location, const int& v1, const int& v2, const int& v3);
+			setUniform(uint location, int, int, int);
 
 			void
-			setUniform(const uint& location, const int& v1, const int& v2, const int& v3, const int& v4);
+			setUniform(uint location, int, int, int, int);
 
 			void
-			setUniform(const uint& location, const float& value);
+			setUniform(uint location, float);
 
 			void
-			setUniform(const uint& location, const float& v1, const float& v2);
+			setUniform(uint location, float, float);
 
 			void
-			setUniform(const uint& location, const float& v1, const float& v2, const float& v3);
+			setUniform(uint location, float, float, float);
 
 			void
-			setUniform(const uint& location, const float& v1, const float& v2, const float& v3, const float& v4);
+			setUniform(uint location, float, float, float, float);
 
 			void
-			setUniforms(uint location, uint size, const float* values);
+			setUniforms(uint location, uint size, const int*);
 
 			void
-			setUniforms2(uint location, uint size, const float* values);
+			setUniforms2(uint location, uint size, const int*);
 
 			void
-			setUniforms3(uint location, uint size, const float* values);
+			setUniforms3(uint location, uint size, const int*);
 
 			void
-			setUniforms4(uint location, uint size, const float* values);
+			setUniforms4(uint location, uint size, const int*);
+
+			void
+			setUniforms(uint location, uint size, const float*);
+
+			void
+			setUniforms2(uint location, uint size, const float*);
+
+			void
+			setUniforms3(uint location, uint size, const float*);
+
+			void
+			setUniforms4(uint location, uint size, const float*);
 
 			virtual
 			void
@@ -370,6 +382,10 @@ namespace minko
 								std::vector<std::string>&			names,
 								std::vector<ProgramInputs::Type>&	types,
 								std::vector<unsigned int>&			locations);
+
+			static
+			ProgramInputs::Type
+			convertInputType(unsigned int);
 
             static
             BlendFactorsMap
