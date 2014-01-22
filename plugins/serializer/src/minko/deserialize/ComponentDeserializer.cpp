@@ -38,7 +38,7 @@ using namespace minko;
 using namespace minko::deserialize;
 
 std::shared_ptr<component::AbstractComponent>
-ComponentDeserializer::deserializeTransform(std::string							serializedTransformData,
+ComponentDeserializer::deserializeTransform(std::string&						serializedTransformData,
 											std::shared_ptr<file::AssetLibrary>	assetLibrary,
 											std::shared_ptr<file::Dependency>	dependencies)
 {
@@ -55,7 +55,7 @@ ComponentDeserializer::deserializeTransform(std::string							serializedTransfor
 }
 
 std::shared_ptr<component::AbstractComponent>
-ComponentDeserializer::deserializeProjectionCamera(std::string							serializedCameraData,
+ComponentDeserializer::deserializeProjectionCamera(std::string&							serializedCameraData,
 												   std::shared_ptr<file::AssetLibrary>	assetLibrary,
 												   std::shared_ptr<file::Dependency>	dependencies)
 {
@@ -70,7 +70,7 @@ ComponentDeserializer::deserializeProjectionCamera(std::string							serializedC
 }
 
 std::shared_ptr<component::AbstractComponent>
-ComponentDeserializer::deserializeAmbientLight(std::string							serializedAmbientLight,
+ComponentDeserializer::deserializeAmbientLight(std::string&							serializedAmbientLight,
 											   std::shared_ptr<file::AssetLibrary>	assetLibrary,
 											   std::shared_ptr<file::Dependency>	dependencies)
 {
@@ -89,7 +89,7 @@ ComponentDeserializer::deserializeAmbientLight(std::string							serializedAmbie
 }
 
 std::shared_ptr<component::AbstractComponent>
-ComponentDeserializer::deserializeDirectionalLight(std::string							serializedDirectionalLight,
+ComponentDeserializer::deserializeDirectionalLight(std::string&							serializedDirectionalLight,
 												   std::shared_ptr<file::AssetLibrary>	assetLibrary,
 												   std::shared_ptr<file::Dependency>	dependencies)
 {
@@ -109,7 +109,7 @@ ComponentDeserializer::deserializeDirectionalLight(std::string							serializedD
 }
 
 std::shared_ptr<component::AbstractComponent>
-ComponentDeserializer::deserializePointLight(std::string							serializedPointLight,
+ComponentDeserializer::deserializePointLight(std::string&							serializedPointLight,
 											 std::shared_ptr<file::AssetLibrary>	assetLibrary,
 											 std::shared_ptr<file::Dependency>		dependencies)
 {
@@ -130,7 +130,7 @@ ComponentDeserializer::deserializePointLight(std::string							serializedPointLi
 }
 		
 std::shared_ptr<component::AbstractComponent>
-ComponentDeserializer::deserializeSpotLight(std::string							serializedSpotLight,
+ComponentDeserializer::deserializeSpotLight(std::string&						serializedSpotLight,
 										    std::shared_ptr<file::AssetLibrary>	assetLibrary,
 											std::shared_ptr<file::Dependency>	dependencies)
 {
@@ -153,7 +153,7 @@ ComponentDeserializer::deserializeSpotLight(std::string							serializedSpotLigh
 }
 
 std::shared_ptr<component::AbstractComponent>
-ComponentDeserializer::deserializeSurface(std::string							serializedSurface,
+ComponentDeserializer::deserializeSurface(std::string&							serializedSurface,
 										  std::shared_ptr<file::AssetLibrary>	assetLibrary,
 										  std::shared_ptr<file::Dependency>		dependencies)
 {
@@ -178,7 +178,7 @@ ComponentDeserializer::deserializeSurface(std::string							serializedSurface,
 }
 
 std::shared_ptr<component::AbstractComponent>
-ComponentDeserializer::deserializeRenderer(std::string							serializedRenderer,
+ComponentDeserializer::deserializeRenderer(std::string&							serializedRenderer,
 										   std::shared_ptr<file::AssetLibrary>	assetLibrary,
 										   std::shared_ptr<file::Dependency>	dependencies)
 {
