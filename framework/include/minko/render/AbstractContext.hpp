@@ -210,35 +210,35 @@ namespace minko
 
 			virtual
 			void
-			setUniform(const uint& location, const int& value) = 0;
+			setUniform(uint location, int value) = 0;
 
 			virtual
 			void
-			setUniform(const uint& location, const int& v1, const int& v2) = 0;
+			setUniform(uint location, int v1, int v2) = 0;
 
 			virtual
 			void
-			setUniform(const uint& location, const int& v1, const int& v2, const int& v3) = 0;
+			setUniform(uint location, int v1, int v2, int v3) = 0;
 
 			virtual
 			void
-			setUniform(const uint& location, const int& v1, const int& v2, const int& v3, const int& v4) = 0;
+			setUniform(uint location, int v1, int v2, int v3, int v4) = 0;
 
 			virtual
 			void
-			setUniform(const uint& location, const float& value) = 0;
+			setUniform(uint location, float value) = 0;
 
 			virtual
 			void
-			setUniform(const uint& location, const float& v1, const float& v2) = 0;
+			setUniform(uint location, float v1, float v2) = 0;
 
 			virtual
 			void
-			setUniform(const uint& location, const float& v1, const float& v2, const float& v3) = 0;
+			setUniform(uint location, float v1, float v2, float v3) = 0;
 
 			virtual
 			void
-			setUniform(const uint& location, const float& v1, const float& v2, const float& v3, const float& v4) = 0;
+			setUniform(uint location, float v1, float v2, float v3, float v4) = 0;
 
 			virtual
 			void
@@ -259,6 +259,22 @@ namespace minko
 			virtual
 			void
 			setUniforms4(uint location, uint size, const float* values) = 0;
+
+			virtual
+			void
+			setUniforms(uint location, uint size, const int* values) = 0;
+
+			virtual
+			void
+			setUniforms2(uint location, uint size, const int* values) = 0;
+
+			virtual
+			void
+			setUniforms3(uint location, uint size, const int* values) = 0;
+
+			virtual
+			void
+			setUniforms4(uint location, uint size, const int* values) = 0;
 
             virtual
             void
