@@ -579,7 +579,7 @@ OpenGLES2Context::uploadTextureData(const uint 	texture,
 									uint 		width,
 									uint 		height,
 									uint 		mipLevel,
-									void*				data)
+									void*		data)
 {
 	glBindTexture(GL_TEXTURE_2D, texture);
 	glTexImage2D(GL_TEXTURE_2D, mipLevel, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);

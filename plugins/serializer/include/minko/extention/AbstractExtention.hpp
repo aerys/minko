@@ -23,45 +23,31 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace serialize
+	namespace extention
 	{
-		enum ComponentId
+		class AbstractExtention
 		{
-			TRANSFORM			= 100,
-			PROJECTION_CAMERA	= 101,
-			AMBIENT_LIGHT		= 102,
-			DIRECTIONAL_LIGHT	= 103,
-			POINT_LIGHT			= 104,
-			SPOT_LIGHT			= 105,
-			SURFACE				= 106,
-			RENDERER			= 107,
-			BOUNDINGBOX			= 108
+		public:
+			typedef std::shared_ptr<AbstractExtention> Ptr;
+
+		public:
+			virtual
+			void
+			bind() = 0;
 		};
 
-		enum MinkoTypes
+		class SerializerExtention
 		{
-			MATRIX4X4		= 0,
-			VECTOR4			= 3,
-			VECTOR3			= 1,
-			VECTOR2			= 2,
-			INT				= 4,
-			TEXTURE			= 5,
-			FLOAT			= 6,
-			BOOL			= 7,
-			BLENDING		= 8,
-			TRIANGLECULLING = 9
-		};
+		public:
+			template <typename T>
+			typename std::enable_if<std::is_base_of<extention::AbstractExtention, T>::value, void>::type
+			static
+			activeExtention()
+			{
+				std::shared_ptr<T> extention = T::initialize();
 
-		enum AssetType
-		{
-			GEOMETRY_ASSET			= 0,
-			EMBED_GEOMETRY_ASSET	= 10,
-			MATERIAL_ASSET			= 1,
-			EMBED_MATERIAL_ASSET	= 11,
-			TEXTURE_ASSET			= 2,
-			EMBED_TEXUTRE_ASSET		= 12,
-			EFFECT_ASSET			= 3,
-			EMBED_EFFECT_ASSET		= 13
+				extention->bind();
+			}
 		};
 	}
 }

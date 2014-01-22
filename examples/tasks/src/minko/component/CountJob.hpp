@@ -17,40 +17,50 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "CountTask.hpp"
+#pragma once
 
-using namespace minko;
-using namespace minko::component;
+#include "minko/Common.hpp"
+#include "minko/Signal.hpp"
+#include "minko/component/JobManager.hpp"
 
-void
-CountTask::beforeFirstStep()
+namespace minko
 {
-	_i = 0;
-	std::cout << "Init count task" << std::endl;
-}
+	namespace component
+	{
+		class CountJob :
+			public JobManager::Job
+		{
+		public:
+			typedef std::shared_ptr<CountJob> Ptr;
 
-float
-CountTask::priority()
-{
-	return 1.f;
-}
+		private:
+			uint _i;
 
-void
-CountTask::step()
-{
-	std::cout << _i << std::endl;
-	_i++;
-}
+		public:
+			inline
+			static
+			Ptr
+			create()
+			{
+				Ptr Job(new CountJob());
 
-void
-CountTask::afterLastStep()
-{
-	std::cout << "Count task done" << std::endl;
-	std::cout << std::endl;
-}
+				return Job;
+			}
 
-bool
-CountTask::complete()
-{
-	return _i == 100;
+			void
+			step();
+
+			void
+			beforeFirstStep();
+
+			void
+			afterLastStep();
+
+			bool
+			complete();
+
+			float
+			priority();
+		};
+	}
 }
