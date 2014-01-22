@@ -43,7 +43,7 @@ solution "minko"
 	include 'plugins/lua'
 	include 'plugins/serializer'
 	include 'plugins/oculus'
-	include 'plugins/leap'
+	-- include 'plugins/leap'
 
 	-- examples
 	if not _OPTIONS['no-examples'] then
@@ -60,7 +60,7 @@ solution "minko"
 		include('examples/serializer')
 		include('examples/picking')
 		include('examples/visibility')
-		include('examples/leap-motion')
+		-- include('examples/leap-motion')
 	end
 
 	-- tests

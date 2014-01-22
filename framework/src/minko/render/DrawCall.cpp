@@ -309,21 +309,24 @@ DrawCall::bindUniform(const std::string&	inputName,
 			{
 				// This case corresponds to base types uniforms or individual members of an GLSL struct array.
 
-				if (type == ProgramInputs::Type::float1 
-					/*&& container->propertyHasType<float>(propertyName, true)*/)
-						_uniformFloat[location]		= container->get<float>(propertyName);
-				else if (type == ProgramInputs::Type::float2 
-					/*&& container->propertyHasType<Vector2::Ptr>(propertyName, true)*/)
-						_uniformFloat2[location]	= container->get<Vector2::Ptr>(propertyName);
-				else if (type == ProgramInputs::Type::float3
-					/*&& container->propertyHasType<Vector3::Ptr>(propertyName, true)*/)
-						_uniformFloat3[location]	= container->get<Vector3::Ptr>(propertyName);
-				else if (type == ProgramInputs::Type::float4
-					/*&& container->propertyHasType<Vector4::Ptr>(propertyName, true)*/)
-						_uniformFloat4[location]	= container->get<Vector4::Ptr>(propertyName);
-				else if (type == ProgramInputs::Type::float16 
-					/*&& container->propertyHasType<Matrix4x4::Ptr>(propertyName, true)*/)
-						_uniformFloat16[location]	= &(container->get<Matrix4x4::Ptr>(propertyName)->data()[0]);
+				if (type == ProgramInputs::Type::float1)
+					_uniformFloat[location]		= container->get<float>(propertyName);
+				else if (type == ProgramInputs::Type::float2)
+					_uniformFloat2[location]	= container->get<Vector2::Ptr>(propertyName);
+				else if (type == ProgramInputs::Type::float3)
+					_uniformFloat3[location]	= container->get<Vector3::Ptr>(propertyName);
+				else if (type == ProgramInputs::Type::float4)
+					_uniformFloat4[location]	= container->get<Vector4::Ptr>(propertyName);
+				else if (type == ProgramInputs::Type::float16)
+					_uniformFloat16[location]	= &(container->get<Matrix4x4::Ptr>(propertyName)->data()[0]);
+				else if (type == ProgramInputs::Type::int1)
+					_uniformInt[location]		= container->get<int>(propertyName);
+				else if (type == ProgramInputs::Type::int2)
+					_uniformInt2[location]		= container->get<Int2>(propertyName);
+				else if (type == ProgramInputs::Type::int3)
+					_uniformInt3[location]		= container->get<Int3>(propertyName); 
+				else if (type == ProgramInputs::Type::int4)
+					_uniformInt4[location]		= container->get<Int4>(propertyName);
 				else
 					throw std::logic_error("unsupported uniform type.");
 			}
@@ -359,12 +362,28 @@ DrawCall::bindUniformArray(const std::string&	propertyName,
 						   ProgramInputs::Type	type,
 						   int					location)
 {
-	if (!container || 
-		!container->hasProperty(propertyName) || 
-		!container->propertyHasType<UniformArrayPtr>(propertyName, true))
+	if (!container || !container->hasProperty(propertyName))
 		return;
 
-	const auto& uniformArray = container->get<UniformArrayPtr>(propertyName);
+	if (type == ProgramInputs::Type::int1 ||
+		type == ProgramInputs::Type::int2 ||
+		type == ProgramInputs::Type::int3 ||
+		type == ProgramInputs::Type::int4)
+		bindIntegerUniformArray(propertyName, container, type, location);
+	else
+		bindFloatUniformArray(propertyName, container, type, location);
+}
+
+void
+DrawCall::bindFloatUniformArray(const std::string&	propertyName,
+								Container::Ptr		container,
+								ProgramInputs::Type	type,
+								int					location)
+{
+	if (!container->propertyHasType<UniformArrayPtr<float>>(propertyName, true))
+		return;
+
+	const auto& uniformArray = container->get<UniformArrayPtr<float>>(propertyName);
 	if (uniformArray->first == 0 || uniformArray->second == nullptr)
 		return;
 
@@ -383,6 +402,32 @@ DrawCall::bindUniformArray(const std::string&	propertyName,
 }
 
 void
+DrawCall::bindIntegerUniformArray(const std::string&	propertyName,
+								  Container::Ptr		container,
+							 	  ProgramInputs::Type	type,
+								  int					location)
+{
+	if (!container->propertyHasType<UniformArrayPtr<int>>(propertyName, true))
+		return;
+
+	const auto& uniformArray = container->get<UniformArrayPtr<int>>(propertyName);
+	if (uniformArray->first == 0 || uniformArray->second == nullptr)
+		return;
+
+	if (type == ProgramInputs::Type::int1)
+		_uniformInts[location] = uniformArray;
+	else if (type == ProgramInputs::Type::int2)
+		_uniformInts2[location] = uniformArray;
+	else if (type == ProgramInputs::Type::int3)
+		_uniformInts3[location] = uniformArray;
+	else if (type == ProgramInputs::Type::int4)
+		_uniformInts4[location] = uniformArray;
+	else
+		throw std::logic_error("unsupported uniform type.");
+}
+
+
+void
 DrawCall::reset()
 {
 	_target = nullptr;
@@ -393,11 +438,21 @@ DrawCall::reset()
 	_uniformFloat4.clear();
 	_uniformFloat16.clear();
 
+	_uniformInt.clear();
+	_uniformInt2.clear();
+	_uniformInt3.clear();
+	_uniformInt4.clear();
+
 	_uniformFloats.clear();
 	_uniformFloats2.clear();
 	_uniformFloats3.clear();
 	_uniformFloats4.clear();
 	_uniformFloats16.clear();
+
+	_uniformInts.clear();
+	_uniformInts2.clear();
+	_uniformInts3.clear();
+	_uniformInts4.clear();
 
 	_textures			.clear();
 	_textureLocations	.clear();
@@ -505,6 +560,7 @@ DrawCall::render(const AbstractContext::Ptr& context, std::shared_ptr<render::Te
 
     context->setProgram(_program->id());
 
+	// float uniforms
     for (auto& uniformFloat : _uniformFloat)
         context->setUniform(uniformFloat.first, uniformFloat.second);
     for (auto& uniformFloat2 : _uniformFloat2)
@@ -528,6 +584,26 @@ DrawCall::render(const AbstractContext::Ptr& context, std::shared_ptr<render::Te
     for (auto& uniformFloat16 : _uniformFloat16)
         context->setUniform(uniformFloat16.first, 1, true, uniformFloat16.second);
 
+	// integer uniforms
+	for (auto& uniformInt : _uniformInt)
+		context->setUniform(uniformInt.first, uniformInt.second);
+	for (auto& uniformInt2 : _uniformInt2)
+	{
+		const auto& int2 = uniformInt2.second;
+		context->setUniform(uniformInt2.first, std::get<0>(int2), std::get<1>(int2));
+	}
+	for (auto& uniformInt3 : _uniformInt3)
+	{
+		const auto& int3 = uniformInt3.second;
+		context->setUniform(uniformInt3.first, std::get<0>(int3), std::get<1>(int3), std::get<2>(int3));
+	}
+	for (auto& uniformInt4 : _uniformInt4)
+	{
+		const auto& int4 = uniformInt4.second;
+		context->setUniform(uniformInt4.first, std::get<0>(int4), std::get<1>(int4), std::get<2>(int4), std::get<3>(int4));
+	}
+
+	// arrays of float uniforms
 	for (auto& uniformFloats : _uniformFloats)
 		context->setUniforms	(uniformFloats.first,	uniformFloats.second->first,			uniformFloats.second->second);
 	for (auto& uniformFloats2 : _uniformFloats2)
@@ -538,6 +614,16 @@ DrawCall::render(const AbstractContext::Ptr& context, std::shared_ptr<render::Te
 		context->setUniforms4	(uniformFloats4.first,	uniformFloats4.second->first,			uniformFloats4.second->second);
 	for (auto& uniformFloats16 : _uniformFloats16)
 		context->setUniform		(uniformFloats16.first,	uniformFloats16.second->first, true,	uniformFloats16.second->second);
+
+	// arrays of integer uniforms
+	for (auto& uniformInts: _uniformInts)
+		context->setUniforms	(uniformInts.first,		uniformInts.second->first,			uniformInts.second->second);
+	for (auto& uniformInts2 : _uniformInts2)
+		context->setUniforms2	(uniformInts2.first,	uniformInts2.second->first,			uniformInts2.second->second);
+	for (auto& uniformInts3 : _uniformInts3)
+		context->setUniforms3	(uniformInts3.first,	uniformInts3.second->first,			uniformInts3.second->second);
+	for (auto& uniformInts4 : _uniformInts4)
+		context->setUniforms4	(uniformInts4.first,	uniformInts4.second->first,			uniformInts4.second->second);
 
 	auto textureOffset = 0;
 	for (auto textureLocationAndPtr : _program->textures())
