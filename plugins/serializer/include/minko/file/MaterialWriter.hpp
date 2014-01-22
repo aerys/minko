@@ -67,7 +67,7 @@ namespace minko
 			template <typename T>
 			typename std::enable_if<std::is_base_of<TexturePtr, T>::value, bool>::type
 			serializeMaterialValue(material::Material::Ptr										material, 
-								   std::string													propertyName,
+								   std::string&													propertyName,
 								   file::AssetLibrary::Ptr										assets,
 								   std::vector<ComplexPropertyTuple>							*complexSerializedProperties,
 								   std::vector<BasicPropertyTuple>								*basicTypeSeriliazedProperties,
@@ -89,7 +89,7 @@ namespace minko
 			template <typename T>
 			typename std::enable_if<!std::is_arithmetic<T>::value && !std::is_base_of<std::shared_ptr<render::Texture>, T>::value, bool>::type
 			serializeMaterialValue(material::Material::Ptr																			material, 
-								   	std::string																				propertyName,
+								   	std::string&																				propertyName,
 								   	file::AssetLibrary::Ptr																	assets,
 									std::vector<ComplexPropertyTuple>							*complexSerializedProperties,
 									std::vector<BasicPropertyTuple>								*basicTypeSeriliazedProperties,
@@ -113,7 +113,7 @@ namespace minko
 			template <typename T>
 			typename std::enable_if<std::is_arithmetic<T>::value, bool>::type
 			serializeMaterialValue(material::Material::Ptr							material, 
-								   std::string										propertyName,
+								   std::string&										propertyName,
 								   file::AssetLibrary::Ptr							assets,
 								   std::vector<ComplexPropertyTuple>				*complexSerializedProperties,
 								   std::vector<BasicPropertyTuple>					*basicTypeSeriliazedProperties,

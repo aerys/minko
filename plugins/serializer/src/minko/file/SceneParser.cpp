@@ -122,8 +122,8 @@ SceneParser::parse(const std::string&					filename,
 }
 
 scene::Node::Ptr
-SceneParser::parseNode(std::vector<SerializedNode>			nodePack, 
-					   std::vector<std::string>				componentPack,
+SceneParser::parseNode(std::vector<SerializedNode>&			nodePack, 
+					   std::vector<std::string>&			componentPack,
 					   AssetLibraryPtr						assetLibrary)
 {
 	scene::Node::Ptr									root;
