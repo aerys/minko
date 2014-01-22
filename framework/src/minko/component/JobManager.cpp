@@ -17,7 +17,7 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "minko/component/TaskManager.hpp"
+#include "minko/component/JobManager.hpp"
 
 #include "minko/scene/Node.hpp"
 #include "minko/scene/NodeSet.hpp"
@@ -26,71 +26,71 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::component;
 
-TaskManager::Task::Task()
+JobManager::Job::Job()
 {
 	_running = false;
 }
 
-TaskManager::TaskManager(unsigned int loadingFramerate):
+JobManager::JobManager(unsigned int loadingFramerate):
 	_loadingFramerate(loadingFramerate)
 {
 	_frameTime = 1.f / loadingFramerate;
 }
 
-TaskManager::Ptr
-TaskManager::pushTask(Task::Ptr task)
+JobManager::Ptr
+JobManager::pushJob(Job::Ptr Job)
 {
-	float taskPriority	= task->priority();
+	float JobPriority	= Job->priority();
 	bool inserted		= false;
 	uint i				= 0;
 	
-	for (; i < _tasks.size() && inserted; ++i)
+	for (; i < _jobs.size() && inserted; ++i)
 	{
-		if (_tasks[i]->priority() > taskPriority)
+		if (_jobs[i]->priority() > JobPriority)
 			inserted = true;
 	}
 
-	_tasks.insert(_tasks.begin() + i, task);
+	_jobs.insert(_jobs.begin() + i, Job);
 
-	return std::dynamic_pointer_cast<TaskManager>(shared_from_this());
+	return std::dynamic_pointer_cast<JobManager>(shared_from_this());
 }
 
 void
-TaskManager::update(NodePtr target)
+JobManager::update(NodePtr target)
 {
 	_frameStartTime = std::clock();
 }
 
 void
-TaskManager::end(NodePtr target)
+JobManager::end(NodePtr target)
 {
-	if (_tasks.size() == 0)
+	if (_jobs.size() == 0)
 		return;
 
-	float consumeTime		= (float(std::clock() - _frameStartTime) / CLOCKS_PER_SEC);
-	Task::Ptr currentTask	= nullptr;
+	float consumeTime	= (float(std::clock() - _frameStartTime) / CLOCKS_PER_SEC);
+	Job::Ptr currentJob	= nullptr;
 
 	while (consumeTime < _frameTime)
 	{
-		if (currentTask == nullptr)
+		if (currentJob == nullptr)
 		{
-			currentTask = _tasks.back();
-			if (!currentTask->running())
+			currentJob = _jobs.back();
+			if (!currentJob->running())
 			{
-				currentTask->_taskManager = std::dynamic_pointer_cast<TaskManager>(shared_from_this());
-				currentTask->running(true);
-				currentTask->beforeFirstStep();
+				currentJob->_jobManager = std::dynamic_pointer_cast<JobManager>(shared_from_this());
+				currentJob->running(true);
+				currentJob->beforeFirstStep();
 			}
 		}
 
-		currentTask->step();
+		currentJob->step();
 
-		if (currentTask->complete())
+		if (currentJob->complete())
 		{
-			_tasks.pop_back();
-			currentTask->afterLastStep();
-			currentTask = nullptr;
-			if (_tasks.size() == 0)
+			_jobs.pop_back();
+			currentJob->afterLastStep();
+			currentJob = nullptr;
+			if (_jobs.size() == 0)
 				return;
 		}
 
