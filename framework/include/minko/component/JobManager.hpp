@@ -28,21 +28,21 @@ namespace minko
 {
 	namespace component
 	{
-		class TaskManager :
+		class JobManager :
 			public AbstractScript
 		{
 
 		public:
 			
-			class Task
+			class Job
 			{
 			public :
-				typedef std::shared_ptr<Task> Ptr;
+				typedef std::shared_ptr<Job> Ptr;
 
-				friend TaskManager;
+				friend JobManager;
 
 			protected :
-				std::shared_ptr<TaskManager>	_taskManager;
+				std::shared_ptr<JobManager>		_jobManager;
 				bool							_running;
 				
 			public:
@@ -82,17 +82,17 @@ namespace minko
 				}
 
 				inline
-				std::shared_ptr<TaskManager>
-				taskManager()
+				std::shared_ptr<JobManager>
+				jobManager()
 				{
-					return _taskManager;
+					return _jobManager;
 				}
 			protected :
-				Task();
+				Job();
 			};
 
 		public:
-			typedef std::shared_ptr<TaskManager>	Ptr;
+			typedef std::shared_ptr<JobManager>	Ptr;
 
 		private:
 			typedef std::shared_ptr<scene::Node> NodePtr;
@@ -100,7 +100,7 @@ namespace minko
 		private:
 			unsigned int			_loadingFramerate;
 			float					_frameTime;
-			std::vector<Task::Ptr>	_tasks;
+			std::vector<Job::Ptr>	_jobs;
 			clock_t					_frameStartTime;
 
 		public:
@@ -108,7 +108,7 @@ namespace minko
 			Ptr
 			create(unsigned int loadingFramerate)
 			{
-				Ptr taskManager(new TaskManager(loadingFramerate));
+				Ptr taskManager(new JobManager(loadingFramerate));
 
 				taskManager->initialize();
 
@@ -116,7 +116,7 @@ namespace minko
 			};
 
 			Ptr
-			pushTask(Task::Ptr task);
+			pushJob(Job::Ptr task);
 
 			void
 			update(NodePtr target);
@@ -125,7 +125,7 @@ namespace minko
 			end(NodePtr target);
 
 		private:
-			TaskManager(unsigned int loadingFramerate);
+			JobManager(unsigned int loadingFramerate);
 		};
 	}
 }

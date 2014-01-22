@@ -40,6 +40,8 @@ solution "minko"
 	include 'plugins/oculus'
 	include 'plugins/leap'
 
+	--include 'plugins/streaming'
+
 	-- examples
 	if not _OPTIONS['no-examples'] then
 		include('examples/assimp')
@@ -56,7 +58,7 @@ solution "minko"
 		include('examples/picking')
 		include('examples/visibility')
 		include('examples/leap-motion')
-		include('examples/tasks')
+		include('examples/jobs')
 	end
 
 	-- tests

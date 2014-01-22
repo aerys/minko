@@ -114,7 +114,7 @@ namespace minko
 			void
 			registerReference(uint referenceId, std::shared_ptr<scene::Node> subScene);
 
-			std::vector<msgpack::type::tuple<unsigned char, short, std::string>>
+			std::vector<msgpack::type::tuple<short, short, std::string>>
 			serialize(std::shared_ptr<file::AssetLibrary>	assetLibrary, 
 					  std::shared_ptr<file::Options>		options);
 
