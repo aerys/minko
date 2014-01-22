@@ -71,10 +71,10 @@ AbstractSerializerParser::parse(const std::string&					filename,
 }
 
 std::string
-AbstractSerializerParser::extractDependencies(AssetLibraryPtr				assetLibrary,
-									  const std::vector<unsigned char>&		data,
-									  std::shared_ptr<Options>				options,
-									  std::string							assetFilePath)
+AbstractSerializerParser::extractDependencies(AssetLibraryPtr						assetLibrary,
+											  const std::vector<unsigned char>&		data,
+											  std::shared_ptr<Options>				options,
+											  std::string&							assetFilePath)
 {
 	msgpack::object			msgpackObject;
 	msgpack::zone			mempool;
@@ -94,7 +94,7 @@ void
 AbstractSerializerParser::deserializedAsset(SerializedAsset				asset,
 											AssetLibraryPtr				assetLibrary,
 											std::shared_ptr<Options>	options,
-											std::string					assetFilePath)
+											std::string&				assetFilePath)
 {
 	std::vector<unsigned char>	data;
 	std::string					assetCompletePath	= assetFilePath + "/";
