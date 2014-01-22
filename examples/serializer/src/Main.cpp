@@ -33,7 +33,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/deserialize/TypeDeserializer.hpp"
 #include "minko/geometry/SphereGeometry.hpp"
 
-#if defined(STREAMING)
+#if defined(MINKO_PLUGIN_STREAMING)
 const std::string MODEL_FILENAME = "model/primitiveStreamed/NewScene.scene";
 #else
 const std::string MODEL_FILENAME = "model/primitives/primitives.scene";
@@ -67,7 +67,7 @@ int main(int argc, char** argv)
 	auto canvas			= Canvas::create("Minko Example - Serializer/Deserializer", 800, 600);
 	auto sceneManager	= SceneManager::create(canvas->context());
 
-#if defined(STREAMING)
+#if defined(MINKO_PLUGIN_STREAMING)
 	extention::SerializerExtention::activeExtention<extention::StreamingExtention>();
 #endif
 	// setup assets
