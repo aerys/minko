@@ -17,51 +17,40 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#pragma once
+#include "CountJob.hpp"
 
-#include "minko/Common.hpp"
+using namespace minko;
+using namespace minko::component;
 
-namespace minko
+void
+CountJob::beforeFirstStep()
 {
-	namespace serialize
-	{
-		enum ComponentId
-		{
-			TRANSFORM			= 100,
-			PROJECTION_CAMERA	= 101,
-			AMBIENT_LIGHT		= 102,
-			DIRECTIONAL_LIGHT	= 103,
-			POINT_LIGHT			= 104,
-			SPOT_LIGHT			= 105,
-			SURFACE				= 106,
-			RENDERER			= 107,
-			BOUNDINGBOX			= 108
-		};
+	_i = 0;
+	std::cout << "Init count Job" << std::endl;
+}
 
-		enum MinkoTypes
-		{
-			MATRIX4X4		= 0,
-			VECTOR4			= 3,
-			VECTOR3			= 1,
-			VECTOR2			= 2,
-			INT				= 4,
-			TEXTURE			= 5,
-			FLOAT			= 6,
-			BOOL			= 7,
-			BLENDING		= 8,
-			TRIANGLECULLING = 9
-		};
+float
+CountJob::priority()
+{
+	return 1.f;
+}
 
-		enum AssetType
-		{
-			GEOMETRY_ASSET			= 0,
-			EMBED_GEOMETRY_ASSET	= 10,
-			MATERIAL_ASSET			= 1,
-			EMBED_MATERIAL_ASSET	= 11,
-			TEXTURE_ASSET			= 2,
-			EMBED_TEXUTRE_ASSET		= 12,
-			EFFECT_ASSET			= 3,
-			EMBED_EFFECT_ASSET		= 13
-		};
-	}
+void
+CountJob::step()
+{
+	std::cout << _i << std::endl;
+	_i++;
+}
+
+void
+CountJob::afterLastStep()
+{
+	std::cout << "Count Job done" << std::endl;
+	std::cout << std::endl;
+}
+
+bool
+CountJob::complete()
+{
+	return _i == 100;
 }
