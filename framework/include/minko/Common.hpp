@@ -119,7 +119,7 @@ namespace minko
 		class PerspectiveCamera;
 		class FrustumCulling;
 		class Picking;
-		class TaskManager;
+		class JobManager;
 
         class LightManager;
         class AbstractLight;

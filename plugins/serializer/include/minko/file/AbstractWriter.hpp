@@ -70,11 +70,11 @@ namespace minko
 
 				if (file)
 				{
-					Dependency::Ptr															dependencies			= Dependency::create();
-					std::string																serializedData			= embed(assetLibrary, options, dependencies);
-					std::vector<msgpack::type::tuple<unsigned char, short, std::string>>	serializedDependencies	= dependencies->serialize(assetLibrary, options);
+					Dependency::Ptr													dependencies			= Dependency::create();
+					std::string														serializedData			= embed(assetLibrary, options, dependencies);
+					std::vector<msgpack::type::tuple<short, short, std::string>>	serializedDependencies	= dependencies->serialize(assetLibrary, options);
 
-					msgpack::type::tuple<std::vector<msgpack::type::tuple<unsigned char, short, std::string>>, std::string> res(serializedDependencies, serializedData);
+					msgpack::type::tuple<std::vector<msgpack::type::tuple<short, short, std::string>>, std::string> res(serializedDependencies, serializedData);
 
 					std::stringstream sbuf;
 					msgpack::pack(sbuf, res);

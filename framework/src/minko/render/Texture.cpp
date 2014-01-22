@@ -46,8 +46,23 @@ Texture::Texture(std::shared_ptr<render::AbstractContext>	context,
 }
 
 void
-Texture::data(unsigned char* data, DataFormat format)
+Texture::data(unsigned char*	data, 
+			  DataFormat		format,
+			  int				widthGPU,
+			  int				heightGPU)
 {
+	if (widthGPU != -1)
+	{
+		_width		= widthGPU;
+		_widthGPU	= widthGPU;
+	}
+
+	if (heightGPU != -1)
+	{
+		_height		= heightGPU;
+		_heightGPU	= heightGPU;
+	}
+
 	const auto size = _width * _height * sizeof(int);
 
 	std::vector<unsigned char> rgba(size, 0);
@@ -157,6 +172,14 @@ Texture::processData(std::vector<unsigned char>&	inData,
 #ifdef DEBUG_TEXTURE
 	assert(outData.size() == _widthGPU * _heightGPU * sizeof(int));
 #endif // DEBUG_TEXTURE
+}
+
+void
+Texture::uploadMipLevel(uint						miplevel,
+						std::vector<unsigned char>	data,
+						bool						optimizeForRenderToTexture)
+{
+	_context->uploadTextureData(_id, uint(pow(2, (log2(_widthGPU) - miplevel))), uint(pow(2, (log2(_heightGPU) - miplevel))), miplevel, &data[0]);
 }
 
 void
