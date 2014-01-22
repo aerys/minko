@@ -161,14 +161,14 @@ Dependency::getEffectReference(uint effectId)
 	return _effectReferences[effectId];
 }
 
-std::vector<msgpack::type::tuple<unsigned char, short, std::string>>
+std::vector<msgpack::type::tuple<short, short, std::string>>
 Dependency::serialize(std::shared_ptr<file::AssetLibrary>	assetLibrary, 
 					  std::shared_ptr<file::Options>		options)
 {
 	GeometryWriter::Ptr geometryWriter = GeometryWriter::create();
 	MaterialWriter::Ptr materialWriter = MaterialWriter::create();
 
-	std::vector<msgpack::type::tuple<unsigned char, short, std::string>> serializedAsset;
+	std::vector<msgpack::type::tuple<short, short, std::string>> serializedAsset;
 
 	auto itGeometry = _geometryDependencies.begin();
 	auto itMaterial = _materialDependencies.begin();
@@ -182,7 +182,7 @@ Dependency::serialize(std::shared_ptr<file::AssetLibrary>	assetLibrary,
 		geometryWriter->data(itGeometry->first);
 		geometryWriter->write(filename, assetLibrary, options);
 
-		msgpack::type::tuple<unsigned char, short, std::string> res(0, itGeometry->second, filename);
+		msgpack::type::tuple<short, short, std::string> res(0, itGeometry->second, filename);
 		serializedAsset.push_back(res);
 		itGeometry++;
 	}
@@ -194,7 +194,7 @@ Dependency::serialize(std::shared_ptr<file::AssetLibrary>	assetLibrary,
 		materialWriter->data(itMaterial->first);
 		materialWriter->write(filename, assetLibrary, options);
 
-		msgpack::type::tuple<unsigned char, short, std::string> res(1, itMaterial->second, filename);
+		msgpack::type::tuple<short, short, std::string> res(1, itMaterial->second, filename);
 		serializedAsset.push_back(res);
 		itMaterial++;
 	}
@@ -218,7 +218,7 @@ Dependency::serialize(std::shared_ptr<file::AssetLibrary>	assetLibrary,
 		source.close();
 		dst.close();
 
-		msgpack::type::tuple<unsigned char, short, std::string> res(2, itTexture->second, filenameOutput);
+		msgpack::type::tuple<short, short, std::string> res(2, itTexture->second, filenameOutput);
 		
 		serializedAsset.insert(serializedAsset.begin(), res);
 		itTexture++;
@@ -244,7 +244,7 @@ Dependency::serialize(std::shared_ptr<file::AssetLibrary>	assetLibrary,
 		source.close();
 		dst.close();
 
-		msgpack::type::tuple<unsigned char, short, std::string> res(3, itEffect->second, filenameOutput);
+		msgpack::type::tuple<short, short, std::string> res(3, itEffect->second, filenameOutput);
 		serializedAsset.insert(serializedAsset.begin(), res);
 		itEffect++;
 	}

@@ -68,7 +68,6 @@ namespace minko
 				  AssetLibraryPtr					assetLibrary);
 
 		private:
-
 			std::shared_ptr<scene::Node>
 			parseNode(std::vector<SerializedNode>	nodePack, 
 					  std::vector<std::string>		componentPack,

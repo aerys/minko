@@ -67,7 +67,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/SkinningMethod.hpp"
 #include "minko/component/FrustumCulling.hpp"
 #include "minko/component/Picking.hpp"
-#include "minko/component/TaskManager.hpp"
+#include "minko/component/JobManager.hpp"
 #include "minko/render/AbstractResource.hpp"
 #include "minko/render/Program.hpp"
 #include "minko/render/VertexBuffer.hpp"

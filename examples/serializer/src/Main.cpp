@@ -21,6 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/MinkoPNG.hpp"
 #include "minko/MinkoSDL.hpp"
 #include "minko/MinkoSerializer.hpp"
+#include "minko/MinkoStreaming.hpp"
 #include "minko/Any.hpp"
 #include "minko/math/Vector4.hpp"
 #include "minko/math/Vector3.hpp"
@@ -32,7 +33,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/deserialize/TypeDeserializer.hpp"
 #include "minko/geometry/SphereGeometry.hpp"
 
-const std::string MODEL_FILENAME = "model/test2/NewScene.scene";
+#if defined(STREAMING)
+const std::string MODEL_FILENAME = "model/primitiveStreamed/NewScene.scene";
+#else
+const std::string MODEL_FILENAME = "model/primitives/primitives.scene";
+#endif
 
 //#define SERIALIZE // comment to test deserialization
 
@@ -57,15 +62,14 @@ openSceneExample(std::shared_ptr<file::AssetLibrary>	assets,
 	root->addChild(assets->symbol(MODEL_FILENAME));
 }
 
-int loaded = 0;
-
 int main(int argc, char** argv)
 {
-	auto canvas = Canvas::create("Minko Example - Cube", 800, 600);
+	auto canvas			= Canvas::create("Minko Example - Serializer/Deserializer", 800, 600);
+	auto sceneManager	= SceneManager::create(canvas->context());
 
-	auto sceneManager = SceneManager::create(canvas->context());
-	
-
+#if defined(STREAMING)
+	extention::SerializerExtention::activeExtention<extention::StreamingExtention>();
+#endif
 	// setup assets
 	sceneManager->assets()->defaultOptions()->generateMipmaps(true);
 	sceneManager->assets()->material("defaultMaterial", material::BasicMaterial::create()->diffuseColor(0xFFFFFFFF));
@@ -151,7 +155,7 @@ int main(int argc, char** argv)
 		auto minPitch = 0.f + 1e-5;
 		float maxPitch = (float)PI - 1e-5;
 		auto lookAt = Vector3::create(0.f, 0.f, 0.f);
-		auto distance = 20.f;
+		auto distance = 10.f;
 
 		Signal<input::Mouse::Ptr, int, int>::Slot mouseMove;
 		auto cameraRotationXSpeed = 0.f;
