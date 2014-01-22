@@ -35,6 +35,9 @@ namespace minko
 		public:
 			typedef std::shared_ptr<AbstractWriter> Ptr;
 
+		private:
+			typedef std::vector<msgpack::type::tuple<short, short, std::string>> SerializedDependency;
+
 		protected :
 			std::shared_ptr<Signal<Ptr>>	_complete;
 			T								_data;
@@ -62,7 +65,7 @@ namespace minko
 			}
 
 			void
-			write(std::string					filename,
+			write(std::string&					filename,
 				  std::shared_ptr<AssetLibrary>	assetLibrary,
 				  std::shared_ptr<Options>		options)
 			{
@@ -70,11 +73,11 @@ namespace minko
 
 				if (file)
 				{
-					Dependency::Ptr													dependencies			= Dependency::create();
-					std::string														serializedData			= embed(assetLibrary, options, dependencies);
-					std::vector<msgpack::type::tuple<short, short, std::string>>	serializedDependencies	= dependencies->serialize(assetLibrary, options);
+					Dependency::Ptr			dependencies			= Dependency::create();
+					std::string				serializedData			= embed(assetLibrary, options, dependencies);
+					SerializedDependency	serializedDependencies	= dependencies->serialize(assetLibrary, options);
 
-					msgpack::type::tuple<std::vector<msgpack::type::tuple<short, short, std::string>>, std::string> res(serializedDependencies, serializedData);
+					msgpack::type::tuple<SerializedDependency, std::string> res(serializedDependencies, serializedData);
 
 					std::stringstream sbuf;
 					msgpack::pack(sbuf, res);
