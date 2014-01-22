@@ -74,7 +74,7 @@ namespace minko
 			extractDependencies(AssetLibraryPtr						assetLibrary,
 								const std::vector<unsigned char>&	data,
 								std::shared_ptr<Options>			options,
-								std::string							assetFilePath);
+								std::string&						assetFilePath);
 
 			inline
 			void
@@ -90,7 +90,7 @@ namespace minko
 			deserializedAsset(SerializedAsset					asset,
 							  AssetLibraryPtr					assetLibrary,
 							  std::shared_ptr<Options>			options,
-							  std::string						assetFilePath);
+							  std::string&						assetFilePath);
 
 			std::string
 			extractFolderPath(const std::string& filepath);
