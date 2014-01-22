@@ -27,10 +27,25 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/data/Provider.hpp"
 #include "minko/material/Material.hpp"
 #include "minko/file/AbstractParser.hpp"
+#include "minko/Types.hpp"
+#include "minko/render/Texture.hpp"
+
 
 using namespace minko;
 using namespace minko::file;
 
+std::unordered_map<uint, std::function<void(unsigned char, 
+											AbstractSerializerParser::AssetLibraryPtr, 
+											std::string&, 
+											std::shared_ptr<Dependency>, 
+											short,
+											std::list<std::shared_ptr<component::JobManager::Job>>&)>> AbstractSerializerParser::_assetTypeToFunction;
+
+void
+AbstractSerializerParser::registerAssetFunction(uint assetTypeId, AssetDeserializeFunction f)
+{
+	_assetTypeToFunction[assetTypeId] = f;
+}
 
 AbstractSerializerParser::Ptr
 AbstractSerializerParser::create()
@@ -69,8 +84,6 @@ AbstractSerializerParser::extractDependencies(AssetLibraryPtr				assetLibrary,
 	msgpack::unpack(str.data(), str.size(), NULL, &mempool, &msgpackObject);
 	msgpackObject.convert(&serilizedAssets);
 
-	// do stuff with assets
-
 	for (uint index = 0; index < serilizedAssets.a0.size(); ++index)
 		deserializedAsset(serilizedAssets.a0[index], assetLibrary, options, assetFilePath);
 
@@ -86,13 +99,20 @@ AbstractSerializerParser::deserializedAsset(SerializedAsset				asset,
 	std::vector<unsigned char>	data;
 	std::string					assetCompletePath	= assetFilePath + "/";
 	std::string					resolvedPath		= "";
+	unsigned char				metaByte			= (asset.a0 & 0xFF00) >> 8;
+
+	asset.a0 = asset.a0 & 0x00FF;
 
 	if (asset.a0 < 10) // external
 	{
 		assetCompletePath += asset.a2;
 		resolvedPath = asset.a2;
+		
 		auto							flags = std::ios::in | std::ios::ate | std::ios::binary;
 		std::fstream					file(assetCompletePath, flags);
+	
+		//std::cout << assetCompletePath << "  open ? " << file.is_open() << "  exist ?" << file.good() << std::endl;
+		
 		if (file.is_open())
 		{
 			unsigned int size = (unsigned int)file.tellg();
@@ -113,21 +133,23 @@ AbstractSerializerParser::deserializedAsset(SerializedAsset				asset,
 		std::copy(asset.a2.begin(), asset.a2.end(), back_inserter(data));
 	}
 
-	if (asset.a0 == 0 || asset.a0 == 10) // geometry
+	if (asset.a0 == serialize::AssetType::GEOMETRY_ASSET || asset.a0 == serialize::AssetType::EMBED_GEOMETRY_ASSET) // geometry
 	{
 		_geometryParser->dependecy(_dependencies);
 		_geometryParser->parse(assetCompletePath, resolvedPath, options, data, assetLibrary);
 		_dependencies->registerReference(asset.a1, assetLibrary->geometry(_geometryParser->_lastParsedAssetName));
+		_jobList.merge(_materialParser->_jobList);
 	}
-	else if (asset.a0 == 1 || asset.a0 == 11) // material
+	else if (asset.a0 == serialize::AssetType::MATERIAL_ASSET || asset.a0 == serialize::AssetType::EMBED_MATERIAL_ASSET) // material
 	{
 		_materialParser->dependecy(_dependencies);
 		_materialParser->parse(assetCompletePath, resolvedPath, options, data, assetLibrary);
 		_dependencies->registerReference(asset.a1, std::dynamic_pointer_cast<data::Provider>(assetLibrary->material(_materialParser->_lastParsedAssetName)));
+		_jobList.merge(_materialParser->_jobList);
 	}
-	else if (asset.a0 == 2 || asset.a0 == 12) // texture
+	else if (asset.a0 == serialize::AssetType::TEXTURE_ASSET || asset.a0 == serialize::AssetType::EMBED_TEXUTRE_ASSET) // texture
 	{
-		if (asset.a0 == 12)
+		if (asset.a0 == serialize::AssetType::EMBED_TEXUTRE_ASSET)
 		{
 			resolvedPath = std::to_string(asset.a1) + ".png";
 			assetCompletePath += resolvedPath;
@@ -136,15 +158,41 @@ AbstractSerializerParser::deserializedAsset(SerializedAsset				asset,
 		std::shared_ptr<file::AbstractParser> parser = assetLibrary->getParser("png");
 
 		parser->parse(assetCompletePath, resolvedPath, options, data, assetLibrary);
-
-		//assetLibrary->load(assetCompletePath, nullptr, nullptr, false);
 		_dependencies->registerReference(asset.a1, assetLibrary->texture(assetCompletePath));
 	}
-	else if (asset.a0 == 3) // effect
+	else if (asset.a0 == serialize::AssetType::EFFECT_ASSET) // effect
 	{
 		assetLibrary->load(assetCompletePath, nullptr, nullptr, false);
 		_dependencies->registerReference(asset.a1, assetLibrary->effect(assetCompletePath));
 	}
+	else
+	{
+		if (_assetTypeToFunction.find(asset.a0) != _assetTypeToFunction.end())
+			_assetTypeToFunction[asset.a0](metaByte, assetLibrary, assetCompletePath, _dependencies, asset.a1, _jobList);
+	}
+	/*else if (asset.a0 == serialize::AssetType::STREAMED_TEXTURE_ASSET) //streamed texture
+	{
+		if (assetLibrary->texture(assetCompletePath) != nullptr)
+			_dependencies->registerReference(asset.a1, assetLibrary->texture(assetCompletePath));
+		else
+		{
+			unsigned char widthId	= (metaByte & 0xF0) >> 4;
+			unsigned char heightId	= (metaByte & 0x0F);
+			auto texture			= render::Texture::create(assetLibrary->context(), uint(pow(2, widthId)), uint(pow(2, heightId)), true);
+
+			texture->upload();
+			assetLibrary->texture(assetCompletePath, texture);
+			_dependencies->registerReference(asset.a1, assetLibrary->texture(assetCompletePath));
+
+			_jobList.push_back(component::StreamTextureJob::create(assetCompletePath, texture, assetLibrary));
+		}
+	}
+	else if (asset.a0 == serialize::AssetType::STREAMED_GEOMETRY_ASSET) // streamed geometry
+	{
+		// dépendance d'une géomtry
+		// filename -> JobGeometryStream
+		// 
+	}*/
 }
 
 std::string

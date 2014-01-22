@@ -21,17 +21,17 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 #include "minko/Signal.hpp"
-#include "minko/component/TaskManager.hpp"
+#include "minko/component/JobManager.hpp"
 
 namespace minko
 {
 	namespace component
 	{
-		class CountTask :
-			public TaskManager::Task
+		class CountJob :
+			public JobManager::Job
 		{
 		public:
-			typedef std::shared_ptr<CountTask> Ptr;
+			typedef std::shared_ptr<CountJob> Ptr;
 
 		private:
 			uint _i;
@@ -42,9 +42,9 @@ namespace minko
 			Ptr
 			create()
 			{
-				Ptr task(new CountTask());
+				Ptr Job(new CountJob());
 
-				return task;
+				return Job;
 			}
 
 			void
