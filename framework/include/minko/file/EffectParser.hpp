@@ -43,6 +43,13 @@ namespace minko
 			typedef std::shared_ptr<EffectParser>	Ptr;
 
 		private:
+			enum class GLSLBlockType
+			{
+				TEXT,
+				FILE
+			};
+
+		private:
 			typedef std::shared_ptr<render::Texture>						TexturePtr;
 
 			union UniformNumericValue
@@ -72,6 +79,9 @@ namespace minko
 			typedef std::unordered_map<std::string, TexturePtr>				TexturePtrMap;
 			typedef std::pair<UniformType, UniformValue>					UniformTypeAndValue;
 			typedef std::unordered_map<std::string, UniformTypeAndValue>	UniformValues;
+			typedef std::pair<GLSLBlockType, std::string> 					GLSLBlock;
+			typedef std::forward_list<GLSLBlock> 							GLSLBlockList;
+			typedef std::shared_ptr<GLSLBlockList>							GLSLBlockListPtr;
 
 		private:
 			static std::unordered_map<std::string, unsigned int>				_blendFactorMap;
@@ -79,6 +89,7 @@ namespace minko
 			static std::unordered_map<std::string, render::StencilOperation>	_stencilOpMap;
 			static std::unordered_map<std::string, float>						_priorityMap;
 
+		private:
             std::string                                                 _filename;
 			std::string                                                 _resolvedFilename;
 			std::shared_ptr<file::Options>								_options;
@@ -94,12 +105,12 @@ namespace minko
 			data::MacroBindingMap                              			_defaultMacroBindings;
 			UniformValues												_defaultUniformValues;
 
+
+			std::shared_ptr<AssetLibrary>								_assetLibrary;
 			unsigned int												_numDependencies;
 			unsigned int												_numLoadedDependencies;
-			std::shared_ptr<AssetLibrary>								_assetLibrary;
-			std::vector<LoaderPtr>										_effectIncludes;
-			std::unordered_map<PassPtr, std::vector<LoaderPtr>> 		_passIncludes;
-			std::unordered_map<ShaderPtr, std::vector<LoaderPtr>> 		_shaderIncludes;
+
+			std::unordered_map<ShaderPtr, GLSLBlockListPtr>				_glslBlocks;
 
 			std::vector<PassPtr>										_globalPasses;
 			std::unordered_map<std::string, TexturePtr>					_globalTargets;
@@ -139,9 +150,6 @@ namespace minko
 				  const std::vector<unsigned char>&	data,
 				  std::shared_ptr<AssetLibrary>		assetLibrary);
 
-			void
-			finalize();
-
 		private:
 			EffectParser();
 
@@ -180,6 +188,21 @@ namespace minko
 						const std::string&				resolvedFilename,
 						std::shared_ptr<file::Options>  options,
 						render::Shader::Type 			type);
+
+			void
+			parseGLSL(std::string 						glsl,
+					  std::shared_ptr<file::Options>	options,
+					  GLSLBlockListPtr 					blocks,
+	 				  GLSLBlockList::iterator 			fileBlock);
+
+			void
+			loadGLSLDependencies(GLSLBlockListPtr				blocks,
+								 std::shared_ptr<file::Options> options);
+
+			void
+			glslIncludeCompleteHandler(LoaderPtr 				loader,
+									   GLSLBlockListPtr 		blocks,
+	 								   GLSLBlockList::iterator 	fileBlock);
 
 			void
 			parseBindingNameAndSource(const Json::Value& contextNode, std::string& name, data::BindingSource& source);
@@ -261,12 +284,6 @@ namespace minko
                         TexturePtrMap&								targets);
 
 			void
-			parseDependencies(const Json::Value& 				root,
-							  const std::string& 				filename,
-							  std::shared_ptr<file::Options> 	options,
-							  std::vector<LoaderPtr>& 			store);
-
-			void
 			parseTechniques(const Json::Value&							root,
 							const std::string&							filename,
 							std::shared_ptr<file::Options>				options,
@@ -307,6 +324,13 @@ namespace minko
 			static
 			float
 			priority(const std::string&);
+
+			std::string
+			concatenateGLSLBlocks(GLSLBlockListPtr blocks);
+
+			void
+			finalize();
+
 		};
 	}
 }
