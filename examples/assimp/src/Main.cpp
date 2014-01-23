@@ -27,10 +27,8 @@ using namespace minko::math;
 
 const uint			WINDOW_WIDTH	= 800;
 const uint			WINDOW_HEIGHT	= 600;
-const std::string	DEFAULT_EFFECT	= "effect/SkinnedBasic.effect";
-//const std::string	DEFAULT_EFFECT	= "effect/Basic.effect";
-//const std::string	DEFAULT_EFFECT	= "effect/Phong.effect";
-const std::string	MODEL_FILENAME	= "pirate.dae";
+const std::string	DEFAULT_EFFECT	= "effect/VertexNormal.effect";
+const std::string	MODEL_FILENAME	= "pirate.dae";	
 
 const std::string	LABEL_RUN_START		= "run_start";
 const std::string	LABEL_RUN_STOP		= "run_stop";
@@ -72,7 +70,7 @@ main(int argc, char** argv)
 {
 	auto canvas = Canvas::create("Minko Example - Assimp", WINDOW_WIDTH, WINDOW_HEIGHT);
 	auto sceneManager = SceneManager::create(canvas->context());
-	
+
 	// setup assets
 	sceneManager->assets()->defaultOptions()->generateMipmaps(true);
 	sceneManager->assets()

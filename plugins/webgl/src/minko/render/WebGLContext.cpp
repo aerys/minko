@@ -66,48 +66,8 @@ WebGLContext::fillUniformInputs(const unsigned int						program,
 
 	    name[nameLength] = 0;
 
-	    ProgramInputs::Type inputType = ProgramInputs::Type::unknown;
-
-	    switch (type)
-	    {
-	    	case GL_FLOAT:
-	    		inputType = ProgramInputs::Type::float1;
-	    		break;
-	    	case GL_INT:
-	    		inputType = ProgramInputs::Type::int1;
-	    		break;
-	    	case GL_FLOAT_VEC2:
-	    		inputType = ProgramInputs::Type::float2;
-	    		break;
-	    	case GL_INT_VEC2:
-	    		inputType = ProgramInputs::Type::int2;
-		    	break;
-	    	case GL_FLOAT_VEC3:
-	    		inputType = ProgramInputs::Type::float3;
-	    		break;
-	    	case GL_INT_VEC3:
-	    		inputType = ProgramInputs::Type::int3;
-	    		break;
-	    	case GL_FLOAT_VEC4:
-	    		inputType = ProgramInputs::Type::float4;
-	    		break;
-	    	case GL_INT_VEC4:
-	    		inputType = ProgramInputs::Type::int4;
-	    		break;
-	    	case GL_FLOAT_MAT3:
-	    		inputType = ProgramInputs::Type::float9;
-		    	break;
-	    	case GL_FLOAT_MAT4:
-	    		inputType = ProgramInputs::Type::float16;
-	    		break;
-			case GL_SAMPLER_2D:
-				inputType = ProgramInputs::Type::sampler2d;
-				break;
-			default:
-				throw std::logic_error("unsupported type");
-	    }
-
-	    int location = glGetUniformLocation(program, &name[0]);
+	    ProgramInputs::Type	inputType	= convertInputType(type);
+	    int					location	= glGetUniformLocation(program, &name[0]);
 
 	    if (location >= 0 && inputType != ProgramInputs::Type::unknown)
 	    {

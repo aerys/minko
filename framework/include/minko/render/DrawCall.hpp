@@ -43,6 +43,14 @@ namespace minko
             typedef std::shared_ptr<data::Container>				ContainerPtr;
 			typedef data::Container::PropertyChangedSignal::Slot	ContainerPropertyChangedSlot;
 
+			typedef std::tuple<int, int>			Int2;
+			typedef std::tuple<int, int, int>		Int3;
+			typedef std::tuple<int, int, int, int>	Int4;
+			
+			typedef unsigned char					Bool2;
+			typedef unsigned char					Bool3;
+			typedef unsigned char					Bool4;						
+
 		private:
 			static const unsigned int									MAX_NUM_TEXTURES;
 			static const unsigned int									MAX_NUM_VERTEXBUFFERS;
@@ -89,12 +97,19 @@ namespace minko
             std::unordered_map<uint, std::shared_ptr<math::Vector3>>    _uniformFloat3;
             std::unordered_map<uint, std::shared_ptr<math::Vector4>>    _uniformFloat4;
             std::unordered_map<uint, const float*>                      _uniformFloat16;
-
-			std::unordered_map<uint, data::UniformArrayPtr>				_uniformFloats;
-			std::unordered_map<uint, data::UniformArrayPtr>				_uniformFloats2;
-			std::unordered_map<uint, data::UniformArrayPtr>				_uniformFloats3;
-			std::unordered_map<uint, data::UniformArrayPtr>				_uniformFloats4;
-			std::unordered_map<uint, data::UniformArrayPtr>				_uniformFloats16;
+			std::unordered_map<uint, int>								_uniformInt;
+			std::unordered_map<uint, Int2>								_uniformInt2;
+			std::unordered_map<uint, Int3>								_uniformInt3;
+			std::unordered_map<uint, Int4>								_uniformInt4;
+			std::unordered_map<uint, data::UniformArrayPtr<float>>		_uniformFloats;
+			std::unordered_map<uint, data::UniformArrayPtr<float>>		_uniformFloats2;
+			std::unordered_map<uint, data::UniformArrayPtr<float>>		_uniformFloats3;
+			std::unordered_map<uint, data::UniformArrayPtr<float>>		_uniformFloats4;
+			std::unordered_map<uint, data::UniformArrayPtr<float>>		_uniformFloats16;
+			std::unordered_map<uint, data::UniformArrayPtr<int>>		_uniformInts;
+			std::unordered_map<uint, data::UniformArrayPtr<int>>		_uniformInts2;
+			std::unordered_map<uint, data::UniformArrayPtr<int>>		_uniformInts3;
+			std::unordered_map<uint, data::UniformArrayPtr<int>>		_uniformInts4;
 
 			std::unordered_map<std::string, std::list<Any>>				_referenceChangedSlots; // Any = ContainerPropertyChangedSlot
 
@@ -184,6 +199,12 @@ namespace minko
 
 			void
 			bindUniformArray(const std::string&	propertyName, ContainerPtr, ProgramInputs::Type, int location);
+
+			void
+			bindFloatUniformArray(const std::string& propertyName, ContainerPtr, ProgramInputs::Type, int location);
+
+			void
+			bindIntegerUniformArray(const std::string& propertyName, ContainerPtr, ProgramInputs::Type, int location);
 
 			void
 			watchUniformRefChange(ContainerPtr, const std::string& propertyName, ProgramInputs::Type, int location);
