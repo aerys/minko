@@ -49,7 +49,9 @@ ComponentDeserializer::deserializeTransform(std::string&						serializedTransfor
 	msgpack::unpack(serializedTransformData.data(), serializedTransformData.size() - 1, NULL, &mempool, &deserialized);
 	deserialized.convert(&dst);
 
-	Matrix4x4Ptr transformMatrix = Any::cast<Matrix4x4Ptr>(deserialize::TypeDeserializer::deserializeMatrix4x4(std::make_tuple(dst.a0, dst.a1)));
+	std::tuple<uint, std::string&> serializedMatrixTuple(dst.a0, dst.a1);
+
+	Matrix4x4Ptr transformMatrix = Any::cast<Matrix4x4Ptr>(deserialize::TypeDeserializer::deserializeMatrix4x4(serializedMatrixTuple));
 	
 	return component::Transform::create(transformMatrix);
 }
