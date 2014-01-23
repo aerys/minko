@@ -43,10 +43,10 @@ namespace minko
 			static const uint MAX_SIZE;
 
 		private:
-			const unsigned int			_width;		
-			const unsigned int			_height;	
-			const unsigned int			_widthGPU;	// always power of 2
-			const unsigned int			_heightGPU;	// always power of 2
+			unsigned int				_width;		
+			unsigned int				_height;	
+			unsigned int				_widthGPU;	// always power of 2
+			unsigned int				_heightGPU;	// always power of 2
             bool                        _mipMapping;
             bool                        _optimizeForRenderToTexture;
 			const bool					_resizeSmoothly;
@@ -94,7 +94,10 @@ namespace minko
             }
 
 			void
-			data(unsigned char* data, DataFormat format = DataFormat::RGBA);
+			data(unsigned char* data, 
+				 DataFormat		format		= DataFormat::RGBA, 
+				 int			widthGPU	= -1, 
+				 int			heightGPU	= -1);
 
 			inline
 			std::vector<unsigned char>&
@@ -108,6 +111,12 @@ namespace minko
 
 			void
 			upload();
+
+			void
+			uploadMipLevel(uint							miplevel,
+						   std::vector<unsigned char>	data,
+						   bool							optimizeForRenderToTexture);
+
 
 		private:
 			Texture(std::shared_ptr<render::AbstractContext>	context,

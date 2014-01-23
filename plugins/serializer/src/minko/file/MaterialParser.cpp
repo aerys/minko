@@ -40,7 +40,7 @@ using namespace minko::file;
 using namespace minko::deserialize;
 using namespace minko::serialize;
 
-std::map<uint, std::function<Any(std::tuple<uint, std::string>&)>> MaterialParser::_typeIdToReadFunction;
+std::map<uint, std::function<Any(std::tuple<uint, std::string&>&)>> MaterialParser::_typeIdToReadFunction;
 
 MaterialParser::MaterialParser()
 {
@@ -61,7 +61,8 @@ MaterialParser::parse(const std::string&				filename,
 {
 	msgpack::object		msgpackObject;
 	msgpack::zone		mempool;
-	std::string			str = extractDependencies(assetLibrary, data, options, extractFolderPath(filename));
+	std::string 		folderpath = extractFolderPath(filename);
+	std::string			str = extractDependencies(assetLibrary, data, options, folderpath);
 
 	msgpack::type::tuple<std::vector<ComplexProperty>, std::vector<BasicProperty>> serializedMaterial;
 	msgpack::unpack(str.data(), str.size(), NULL, &mempool, &msgpackObject);
@@ -88,34 +89,36 @@ MaterialParser::deserializeComplexProperty(MaterialPtr			material,
 {
 	uint type = serializedProperty.a1.a0 >> 24;
 
+	std::tuple<uint, std::string&> serializedPropertyTulpe(serializedProperty.a1.a0, serializedProperty.a1.a1);
+
 	if (type == VECTOR4)
 		material->set<Vector4Ptr>(
 			serializedProperty.a0, 
-			Any::cast<Vector4Ptr>(TypeDeserializer::deserializeVector4(std::make_tuple(serializedProperty.a1.a0, serializedProperty.a1.a1))));
+			Any::cast<Vector4Ptr>(TypeDeserializer::deserializeVector4(serializedPropertyTulpe)));
 	else if (type == MATRIX4X4)
 		material->set<Matrix4x4Ptr>(
 			serializedProperty.a0, 
-			Any::cast<Matrix4x4Ptr>(TypeDeserializer::deserializeMatrix4x4(std::make_tuple(serializedProperty.a1.a0, serializedProperty.a1.a1))));
+			Any::cast<Matrix4x4Ptr>(TypeDeserializer::deserializeMatrix4x4(serializedPropertyTulpe)));
 	else if (type == VECTOR2)
 		material->set<Vector2Ptr>(
 			serializedProperty.a0, 
-			Any::cast<Vector2Ptr>(TypeDeserializer::deserializeVector2(std::make_tuple(serializedProperty.a1.a0, serializedProperty.a1.a1))));
+			Any::cast<Vector2Ptr>(TypeDeserializer::deserializeVector2(serializedPropertyTulpe)));
 	else if (type == VECTOR3)
 		material->set<Vector3Ptr>(
 			serializedProperty.a0, 
-			Any::cast<Vector3Ptr>(TypeDeserializer::deserializeVector3(std::make_tuple(serializedProperty.a1.a0, serializedProperty.a1.a1))));
+			Any::cast<Vector3Ptr>(TypeDeserializer::deserializeVector3(serializedPropertyTulpe)));
 	else if (type == BLENDING)
 		material->set<render::Blending::Mode>(
 			serializedProperty.a0, 
-			Any::cast<render::Blending::Mode>(TypeDeserializer::deserializeBlending(std::make_tuple(serializedProperty.a1.a0, serializedProperty.a1.a1))));
+			Any::cast<render::Blending::Mode>(TypeDeserializer::deserializeBlending(serializedPropertyTulpe)));
 	else if (type == TRIANGLECULLING)
 		material->set<render::TriangleCulling>(
 			serializedProperty.a0, 
-			Any::cast<render::TriangleCulling>(TypeDeserializer::deserializeTriangleCulling(std::make_tuple(serializedProperty.a1.a0, serializedProperty.a1.a1))));
+			Any::cast<render::TriangleCulling>(TypeDeserializer::deserializeTriangleCulling(serializedPropertyTulpe)));
 	else if (type == TEXTURE)
 		material->set<TexturePtr>(
 			serializedProperty.a0,
-			_dependencies->getTextureReference(Any::cast<uint>(TypeDeserializer::deserializeTextureId(std::make_tuple(serializedProperty.a1.a0, serializedProperty.a1.a1)))));
+			_dependencies->getTextureReference(Any::cast<uint>(TypeDeserializer::deserializeTextureId(serializedPropertyTulpe))));
 }
 
 void
