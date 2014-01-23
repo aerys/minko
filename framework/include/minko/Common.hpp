@@ -30,6 +30,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include <forward_list>
 #include <map>
 #include <memory>
+#include <queue>
 #include <set>
 #include <sstream>
 #include <fstream>
@@ -119,6 +120,7 @@ namespace minko
 		class PerspectiveCamera;
 		class FrustumCulling;
 		class Picking;
+		class JobManager;
 
         class LightManager;
         class AbstractLight;

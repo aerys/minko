@@ -71,6 +71,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/Animation.hpp"
 #include "minko/animation/AbstractTimeline.hpp"
 #include "minko/animation/Matrix4x4Timeline.hpp"
+#include "minko/component/JobManager.hpp"
 #include "minko/render/AbstractResource.hpp"
 #include "minko/render/Program.hpp"
 #include "minko/render/VertexBuffer.hpp"
