@@ -17,7 +17,7 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "minko/component/FrustumCulling.hpp"
+#include "minko/component/Culling.hpp"
 #include "minko/scene/Node.hpp"
 #include "minko/data/Container.hpp"
 #include "minko/math/Frustum.hpp"
@@ -31,28 +31,28 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::component;
 
-FrustumCulling::FrustumCulling()
+Culling::Culling()
 {
 }
 
 void
-FrustumCulling::initialize()
+Culling::initialize()
 {
 	_targetAddedSlot = targetAdded()->connect(std::bind(
-        &FrustumCulling::targetAddedHandler, shared_from_this(), std::placeholders::_1, std::placeholders::_2
+        &Culling::targetAddedHandler, shared_from_this(), std::placeholders::_1, std::placeholders::_2
     ));
     _targetRemovedSlot = targetAdded()->connect(std::bind(
-        &FrustumCulling::targetAddedHandler, shared_from_this(), std::placeholders::_1, std::placeholders::_2
+        &Culling::targetAddedHandler, shared_from_this(), std::placeholders::_1, std::placeholders::_2
     ));
 }
 
 void
-FrustumCulling::targetAddedHandler(AbstractComponent::Ptr ctrl, NodePtr target)
+Culling::targetAddedHandler(AbstractComponent::Ptr ctrl, NodePtr target)
 {
-	if (target->components<FrustumCulling>().size() > 1)
-		throw std::logic_error("The same camera node cannot have more than one FrustumCulling.");
+	if (target->components<Culling>().size() > 1)
+		throw std::logic_error("The same camera node cannot have more than one Culling.");
 	if (target->components<component::PerspectiveCamera>().size() < 1)
-		throw std::logic_error("FrustumCulling must be added to a camera");
+		throw std::logic_error("Culling must be added to a camera");
 
 
 	// compute scene bounding box
@@ -64,7 +64,7 @@ FrustumCulling::targetAddedHandler(AbstractComponent::Ptr ctrl, NodePtr target)
 		targetAddedToScene(nullptr, target, nullptr);
 	else
 		_addedToSceneSlot = target->added()->connect(std::bind(
-		&FrustumCulling::targetAddedToScene,
+		&Culling::targetAddedToScene,
 		shared_from_this(),
 		std::placeholders::_1,
 		std::placeholders::_2,
@@ -72,35 +72,35 @@ FrustumCulling::targetAddedHandler(AbstractComponent::Ptr ctrl, NodePtr target)
 
 
 	_viewMatrixChangedSlot = target->data()->propertyValueChanged("camera.worldToScreenMatrix")->connect(std::bind(
-		&FrustumCulling::worldToScreenChanged,
+		&Culling::worldToScreenChanged,
 		shared_from_this(),
 		std::placeholders::_1,
 		std::placeholders::_2));
 }
 
 void
-FrustumCulling::targetRemovedHandler(AbstractComponent::Ptr ctrl, NodePtr target)
+Culling::targetRemovedHandler(AbstractComponent::Ptr ctrl, NodePtr target)
 {
 	_addedSlot			= nullptr;
 	_layoutChangedSlot	= nullptr;
 }
 
 void
-FrustumCulling::targetAddedToScene(NodePtr node, NodePtr target, NodePtr ancestor)
+Culling::targetAddedToScene(NodePtr node, NodePtr target, NodePtr ancestor)
 {
 	if (target->root()->hasComponent<SceneManager>())
 	{
 		_addedToSceneSlot = nullptr;
 
 		_layoutChangedSlot = target->root()->layoutsChanged()->connect(std::bind(
-			&FrustumCulling::layoutChanged,
+			&Culling::layoutChanged,
 			shared_from_this(),
 			std::placeholders::_1,
 			std::placeholders::_2
 		));
 
 		_addedSlot = target->root()->added()->connect(std::bind(
-			&FrustumCulling::addedHandler,
+			&Culling::addedHandler,
 			shared_from_this(),
 			std::placeholders::_1,
 			std::placeholders::_2,
@@ -110,7 +110,7 @@ FrustumCulling::targetAddedToScene(NodePtr node, NodePtr target, NodePtr ancesto
 }
 
 void
-FrustumCulling::addedHandler(NodePtr node, NodePtr target, NodePtr ancestor)
+Culling::addedHandler(NodePtr node, NodePtr target, NodePtr ancestor)
 {
 	scene::NodeSet::Ptr nodeSet = scene::NodeSet::create(target)->descendants(true)->where([](NodePtr descendant)
 	{
@@ -122,7 +122,7 @@ FrustumCulling::addedHandler(NodePtr node, NodePtr target, NodePtr ancestor)
 }
 
 void
-FrustumCulling::layoutChanged(NodePtr node, NodePtr target)
+Culling::layoutChanged(NodePtr node, NodePtr target)
 {
 	if (target->layouts() & (1u << 17))
 		_octTree->insert(target);
@@ -131,7 +131,7 @@ FrustumCulling::layoutChanged(NodePtr node, NodePtr target)
 }
 
 void
-FrustumCulling::worldToScreenChanged(std::shared_ptr<data::Container> data, const std::string& propertyName)
+Culling::worldToScreenChanged(std::shared_ptr<data::Container> data, const std::string& propertyName)
 {
 	//std::cout << "update octTree" << std::endl;
 	_frustum->updateFromMatrix(data->get<std::shared_ptr<math::Matrix4x4>>(propertyName));
