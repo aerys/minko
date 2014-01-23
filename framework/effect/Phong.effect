@@ -75,8 +75,7 @@
 	"techniques" : [
 		{
 			"name"				: "single-pass",
-			//"fallback" 			: "multi-pass",
-			"fallback" 			: "basic",
+			"fallback" 			: "multi-pass",
 			"blendMode"			: ["one", "zero"],
 			"depthTest"			: [true, "less_equal"],
 			"triangleCulling"	: "back",
@@ -97,14 +96,14 @@
 			},
 				
 			"passes"	: [{
-				"vertexShader" : { "includes" : [ "Skinning.function.glsl", "Phong.vertex.glsl" ] },
-				"fragmentShader" : { "includes" : [ "Phong.struct.glsl", "Phong.function.glsl", "Phong.fragment.glsl" ] }
+				"vertexShader" : "#pragma include('Phong.vertex.glsl')",
+				"fragmentShader" : "#pragma include('Phong.fragment.glsl')"
 			}]
 		},
+
 		{
 			"name"				: "single-pass-no-glsl-struct",
-			//"fallback" 			: "multi-pass",
-			"fallback" 			: "basic",
+			"fallback" 			: "multi-pass",
 			"blendMode"			: ["one", "zero"],
 			"depthTest"			: [true, "less_equal"],
 			"triangleCulling"	: "back",
@@ -127,22 +126,17 @@
 			},
 				
 			"passes"	: [{
-				"vertexShader" : { "includes" : [ "Skinning.function.glsl", "Phong.vertex.glsl" ] },
-				"fragmentShader" : { "includes" : [ "Phong.struct.glsl", "Phong.function.glsl", "Phong.fragment.glsl" ] }
+				"vertexShader" : "#pragma include('Phong.vertex.glsl')",
+				"fragmentShader" : "#pragma include('Phong.fragment.glsl')"
 			}]
 		},
+
 		{
+			// fixme: implement multi-pass phong lighting
 			"name" 		: "multi-pass",
-
 			"passes" 	: [{
-				"includes" : [ "Skinning.function.glsl", "Basic.vertex.glsl", "Basic.fragment.glsl" ]
-			}]
-		},
-		{
-			"name" 		: "basic",
-
-			"passes" 	: [{
-				"includes" : [ "Skinning.function.glsl", "Basic.vertex.glsl", "Basic.fragment.glsl" ]
+				"vertexShader" : "#pragma include('Basic.vertex.glsl')",
+			"fragmentShader" : "#pragma include('Basic.fragment.glsl')"
 			}]
 		}
 	]

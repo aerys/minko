@@ -1,10 +1,18 @@
 #ifdef FRAGMENT_SHADER
 
+#ifdef GL_ES
+	precision mediump float;
+#endif
+
+#pragma include("Phong.function.glsl")
+
 #ifdef PRECOMPUTED_AMBIENT
 	uniform vec3 sumAmbients;
 #endif // PRECOMPUTED_AMBIENT
 
 #ifndef MINKO_NO_GLSL_STRUCT
+
+	#pragma include("Phong.struct.glsl")
 
 	#ifdef NUM_AMBIENT_LIGHTS
 		uniform AmbientLight		ambientLights[NUM_AMBIENT_LIGHTS];
