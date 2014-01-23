@@ -50,27 +50,24 @@ using namespace minko::render;
 
 Skinning::Skinning(const Skin::Ptr		skin, 
 				   SkinningMethod		method,
-				   AbstractContext::Ptr	context):
-	AbstractComponent(),
+				   AbstractContext::Ptr	context,
+				   bool					isLooping):
+	AbstractAnimation(isLooping),
 	_skin(skin),
 	_context(context),
 	_method(method),
 	_boneVertexBuffer(nullptr),
 	_targetGeometry(),
-	_targetStartTime(),
 	_targetInputPositions(),
-	_targetInputNormals(),
-	_targetAddedSlot(nullptr),
-	_targetRemovedSlot(nullptr),
-	_addedSlot(nullptr),
-	_removedSlot(nullptr),
-	_frameBeginSlot(nullptr)
+	_targetInputNormals()
 {
 }
 
 void
 Skinning::initialize()
 {
+	AbstractAnimation::initialize();
+
 	if (_skin == nullptr)
 		throw std::invalid_argument("skin");
 
@@ -90,54 +87,19 @@ Skinning::initialize()
 		? nullptr 
 		: createVertexBufferForBones();
 
-	_targetAddedSlot = targetAdded()->connect(std::bind(
-		&Skinning::targetAddedHandler,
-		shared_from_this(),
-		std::placeholders::_1,
-		std::placeholders::_2
-	));
+	_maxTime = _skin->duration();
 
-	_targetRemovedSlot = targetRemoved()->connect(std::bind(
-		&Skinning::targetRemovedHandler,
-		shared_from_this(),
-		std::placeholders::_1,
-		std::placeholders::_2
-	));
-}
-
-void
-Skinning::targetAddedHandler(AbstractComponent::Ptr, Node::Ptr target)
-{
-	_addedSlot	= target->added()->connect(std::bind(
-		&Skinning::addedHandler,
-		shared_from_this(),
-		std::placeholders::_1,
-		std::placeholders::_2,
-		std::placeholders::_3
-	));
-
-	_removedSlot	= target->removed()->connect(std::bind(
-		&Skinning::removedHandler,
-		shared_from_this(),
-		std::placeholders::_1,
-		std::placeholders::_2,
-		std::placeholders::_3
-	));
-}
-
-void
-Skinning::targetRemovedHandler(AbstractComponent::Ptr, Node::Ptr)
-{
-	_addedSlot		= nullptr;
-	_removedSlot	= nullptr;
+	setPlaybackWindow(0, _maxTime)
+		->seek(0)
+		->play();
 }
 
 void
 Skinning::addedHandler(Node::Ptr node, Node::Ptr target, Node::Ptr parent)
 {
-	findSceneManager();
+	AbstractAnimation::addedHandler(node, target, parent);
 
-	if (_skin->duration() < 1e-6f)
+	if (_skin->duration() == 0)
 		return; // incorrect animation
 
 	if (node->hasComponent<Surface>())
@@ -148,8 +110,6 @@ Skinning::addedHandler(Node::Ptr node, Node::Ptr target, Node::Ptr parent)
 			&& geometry->vertexBuffer(ATTRNAME_POSITION)->numVertices() == _skin->numVertices())
 		{
 			_targetGeometry[node]			= geometry;
-			_targetStartTime[node]			= (clock_t)(clock() / (float)CLOCKS_PER_SEC);
-
 			_targetInputPositions[node]		= geometry->vertexBuffer(ATTRNAME_POSITION)->data();			
 
 			if (geometry->hasVertexAttribute(ATTRNAME_NORMAL)
@@ -169,9 +129,9 @@ Skinning::addedHandler(Node::Ptr node, Node::Ptr target, Node::Ptr parent)
 }
 
 void
-Skinning::removedHandler(Node::Ptr, Node::Ptr target, Node::Ptr)
+Skinning::removedHandler(Node::Ptr node, Node::Ptr target, Node::Ptr parent)
 {
-	findSceneManager();
+	AbstractAnimation::removedHandler(node, target, parent);
 
 	if (_targetGeometry.count(target) > 0)
 	{
@@ -186,53 +146,10 @@ Skinning::removedHandler(Node::Ptr, Node::Ptr target, Node::Ptr)
 
 		_targetGeometry.erase(target);
 	}
-	if (_targetStartTime.count(target) > 0)
-		_targetStartTime.erase(target);
 	if (_targetInputPositions.count(target) > 0)
 		_targetInputPositions.erase(target);
 	if (_targetInputNormals.count(target) > 0)
 		_targetInputNormals.erase(target);
-}
-
-void
-Skinning::findSceneManager()
-{
-	NodeSet::Ptr roots = NodeSet::create(targets())
-		->roots()
-		->where([](NodePtr node)
-		{
-			return node->hasComponent<SceneManager>();
-		});
-
-	if (roots->nodes().size() > 1)
-		throw std::logic_error("Renderer cannot be in two separate scenes.");
-	else if (roots->nodes().size() == 1)
-		setSceneManager(roots->nodes()[0]->component<SceneManager>());		
-	else
-		setSceneManager(nullptr);
-}
-
-void
-Skinning::setSceneManager(SceneManager::Ptr sceneManager)
-{
-	if (sceneManager)
-	{
-		_frameBeginSlot = sceneManager->frameBegin()->connect(std::bind(
-			&Skinning::frameBeginHandler, 
-			shared_from_this(), 
-			std::placeholders::_1
-		));
-	}
-	else if (_frameBeginSlot)
-	{
-		for (auto& target : targets())
-		{
-			//_started[target] = false;
-			//stop(target);
-		}
-
-		_frameBeginSlot = nullptr;
-	}
 }
 
 VertexBuffer::Ptr
@@ -281,22 +198,23 @@ Skinning::createVertexBufferForBones() const
 	return vertexBuffer;
 }
 
-
 void
-Skinning::frameBeginHandler(SceneManager::Ptr)
+Skinning::update()
 {
-	const float time = clock() / (float)CLOCKS_PER_SEC;
+	const uint frameId = _skin->getFrameId(_currentTime);
 
 	for (auto& target : targets())
-		updateFrame(target, _skin->getFrameId(time - _targetStartTime[target]));
+		updateFrame(frameId, target);
 }
 
 void
-Skinning::updateFrame(Node::Ptr		target, 
-					  unsigned int	frameId)
+Skinning::updateFrame(unsigned int	frameId,
+					  Node::Ptr		target)
 {
-	if (_targetGeometry.count(target) == 0 || frameId >= _skin->numFrames())
+	if (_targetGeometry.count(target) == 0)
 		return;
+
+	assert(frameId < _skin->numFrames());
 
 	auto&						geometry		= _targetGeometry[target];
 	const std::vector<float>&	boneMatrices	= _skin->matrices(frameId);

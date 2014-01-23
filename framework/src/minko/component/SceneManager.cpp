@@ -27,6 +27,7 @@ using namespace minko;
 using namespace minko::component;
 
 SceneManager::SceneManager(const std::shared_ptr<render::AbstractContext>& context) :
+	_clockStart(clock()),
     _frameId(0),
 	_assets(file::AssetLibrary::create(context)),
     _frameBegin(Signal<Ptr>::create()),
@@ -103,4 +104,10 @@ SceneManager::nextFrame(std::shared_ptr<render::Texture> renderTarget)
 	_renderEnd->execute(shared_from_this(), _frameId, renderTarget);
 
 	++_frameId;
+}
+
+uint
+SceneManager::getTimer() const
+{
+	return (uint)floorf(1e+3f * float(clock() - _clockStart) / float(CLOCKS_PER_SEC));
 }

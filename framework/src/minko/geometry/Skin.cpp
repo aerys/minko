@@ -31,7 +31,7 @@ using namespace minko::geometry;
 Skin::Skin(unsigned int numBones, unsigned int numFrames):
 	_bones(numBones, nullptr),
 	_numBones(numBones),
-	_duration(0.0f),
+	_duration(0),
 	_timeFactor(0.0f),
 	_boneMatricesPerFrame(numFrames, std::vector<float>(numBones << 4, 0.0f)),
 	_maxNumVertexBones(0),
@@ -47,22 +47,12 @@ Skin::clear()
 {
 	_bones.clear();
 	_boneMatricesPerFrame.clear();
-	_duration	= 0.0f;
-	_timeFactor	= 0.0f;
+	_duration = 0;
+	_timeFactor = 0.0f;
 	_maxNumVertexBones	= 0;
 	_numVertexBones.clear();
 	_vertexBones.clear();
 	_vertexBoneWeights.clear();
-}
-
-void
-Skin::duration(float value)
-{
-	if (value < 1e-6f)
-		throw std::invalid_argument("value");
-
-	_duration	= value;
-	_timeFactor	= numFrames() / _duration; 
 }
 
 void
@@ -147,15 +137,22 @@ Skin::lastVertexId() const
 	return lastId;
 }
 
-unsigned int
-Skin::getFrameId(float time) const
+void
+Skin::duration(uint value)
 {
-	if (_duration < 1e-6f)
-		return 0;
-	
-	const float	t = fmod(time, _duration);
-	
-	return (unsigned int)floorf(t * _timeFactor) % numFrames();
+	_duration = value;
+
+	_timeFactor = _duration > 0
+		? numFrames() / (float)_duration
+		: 0.0f;
+}
+
+uint
+Skin::getFrameId(uint time) const
+{
+	const int frameId	= (int)floorf(time * _timeFactor);
+
+	return (uint)std::min(frameId, (int)numFrames() - 1);
 }
 
 void
