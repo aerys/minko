@@ -12,7 +12,7 @@
 			"name" : "downsample and threshold",
 			"uniformBindings" : {
 				"uInputTex"		: "backbuffer",
-				"uScale"		: [ 100., 100., 100., 1. ],
+				"uScale"		: [ 100.0, 100.0, 100.0, 1.0 ],
 				"uBias"			: [ -0.99, -0.99, -0.99, 0.0 ]
 			},
 			"triangleCulling" : "none",
@@ -20,12 +20,8 @@
 			"samplerStates" : {
 				"uInputTex"	: { "textureFilter" : "linear" }
 			},
-			"vertexShader" : {
-				"includes"	: [ "PseudoLensFlare.vertex.glsl" ]
-			},
-			"fragmentShader" : {
-				"includes" : [ "Threshold.fragment.glsl" ]
-			}
+			"vertexShader" : { "includes"	: [ "PseudoLensFlare.vertex.glsl" ] },
+			"fragmentShader" : "#pragma include('Threshold.fragment.glsl')"
 		},
 		{
 			"name" : "lens features",
@@ -33,21 +29,17 @@
 				"uInputTex"			: "lensflare_downsample",
 				"uSamples"			: 8,
 				"uDispersal"		: 0.3,
-				"uTextureSize"		: [ 512., 512. ],
+				"uTextureSize"		: [ 512.0, 512.0 ],
 				"uHaloWidth"		: 0.5,
-				"uDistortion"		: 3.
+				"uDistortion"		: 3.0
 			},
 			"triangleCulling" : "none",
 			"target" : { "name" : "lensflare_features", "size" : 512 },
 			"samplerStates" : {
 				"uInputTex"	: { "textureFilter" : "linear" }
 			},
-			"vertexShader" : {
-				"includes"	: [ "PseudoLensFlare.vertex.glsl" ]
-			},
-			"fragmentShader" : {
-				"includes" : [ "LensFeatures.fragment.glsl" ]
-			}
+			"vertexShader" : { "includes"	: [ "PseudoLensFlare.vertex.glsl" ] },
+			"fragmentShader" : "#pragma include('LensFeatures.fragment.glsl')"
 		},
 		{
 			"name"	: "guassian blur horizontal",
@@ -63,12 +55,8 @@
 			"samplerStates" : {
 				"s_texture"	: { "textureFilter" : "linear" }
 			},
-			"vertexShader" : {
-				"includes" : [ "HGaussianBlur.vertex.glsl" ]
-			},
-			"fragmentShader" : {
-				"includes" : [ "GaussianBlur.fragment.glsl" ]
-			}
+			"vertexShader" : "#pragma include('HGaussianBlur.vertex.glsl')",
+			"fragmentShader" : "#pragma include('GaussianBlur.fragment.glsl')"
 		},
 		{
 			"name"	: "guassian blur vertical",
@@ -84,12 +72,8 @@
 			"samplerStates" : {
 				"s_texture"	: { "textureFilter" : "linear" }
 			},
-			"vertexShader" : {
-				"includes" : [ "VGaussianBlur.vertex.glsl" ]
-			},
-			"fragmentShader" : {
-				"includes" : [ "GaussianBlur.fragment.glsl" ]
-			}
+			"vertexShader" : "#pragma include('VGaussianBlur.vertex.glsl')",
+			"fragmentShader" : "#pragma include('GaussianBlur.fragment.glsl')"
 		},
 		{
 			"name" : "lens compositing",
@@ -106,9 +90,7 @@
 				"uDirt"			: { "textureFilter" : "linear" },
 				"uBurst"		: { "textureFilter" : "linear" }
 			},
-			"vertexShader" : {
-				"includes" : [ "PseudoLensFlare.vertex.glsl" ]
-			},
+			"vertexShader" : "#pragma include('PseudoLensFlare.vertex.glsl')",
 			"fragmentShader" : "
 				#ifdef GL_ES
 				precision mediump float;

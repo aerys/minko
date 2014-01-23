@@ -103,36 +103,36 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 			},
 			"target" : { "name" : "blur input 1", "width" : 256, "height" : 256 },
 			"samplerStates" : { "uInputTex"	: { "textureFilter" : "linear" } },
-			"vertexShader" : { "includes" : [ "AnamorphicLensFlare.vertex.glsl" ] },
-			"fragmentShader" : { "includes" : [ "Threshold.fragment.glsl" ] }
+			"vertexShader" : "#pragma include('AnamorphicLensFlare.vertex.glsl')",
+			"fragmentShader" : "#pragma include('Threshold.fragment.glsl')"
 		},
 		{
 			"name"	: "horizontal gaussian blur 1",
 			"uniformBindings" : { "s_texture" : "blur input 1" },
 			"target" : { "name" : "blur input 2", "width" : 256, "height" : 256 },			
-			"vertexShader" : { "includes" : [ "HGaussianBlur.vertex.glsl" ] },
-			"fragmentShader" : { "includes" : [ "GaussianBlur.fragment.glsl" ] }
+			"vertexShader" : "#pragma include('HGaussianBlur.vertex.glsl')",
+			"fragmentShader" : "#pragma include('GaussianBlur.fragment.glsl')"
 		},
 		{
 			"name"	: "vertical gaussian blur 1",
 			"uniformBindings" : { "s_texture" : "blur input 1" },
 			"target" : "blur input 2",			
-			"vertexShader" : { "includes" : [ "VGaussianBlur.vertex.glsl" ] },
-			"fragmentShader" : { "includes" : [ "GaussianBlur.fragment.glsl" ] }
+			"vertexShader" : "#pragma include('VGaussianBlur.vertex.glsl')",
+			"fragmentShader" : "#pragma include('GaussianBlur.fragment.glsl')"
 		},
 		{
 			"name"	: "horizontal gaussian blur 2",
 			"uniformBindings" : { "s_texture" : "blur input 2" },
 			"target" : "blur input 1",
-			"vertexShader" : { "includes" : [ "HGaussianBlur.vertex.glsl" ] },
-			"fragmentShader" : { "includes" : [ "GaussianBlur.fragment.glsl" ] }
+			"vertexShader" : "#pragma include('HGaussianBlur.vertex.glsl')",
+			"fragmentShader" : "#pragma include('GaussianBlur.fragment.glsl')"
 		},
 		{
 			"name"	: "vertical gaussian blur 2",
 			"uniformBindings" : { "s_texture" : "blur input 2" },
 			"target" : "blur input 1",
-			"vertexShader" : { "includes" : [ "VGaussianBlur.vertex.glsl" ] },
-			"fragmentShader" : { "includes" : [ "GaussianBlur.fragment.glsl" ] }
+			"vertexShader" : "#pragma include('VGaussianBlur.vertex.glsl')",
+			"fragmentShader" : "#pragma include('GaussianBlur.fragment.glsl')"
 		},
 		{
 			"name" : "compositing",
@@ -144,7 +144,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 				"uBackbuffer"	: { "textureFilter" : "linear" },
 				"uFlares"		: { "textureFilter" : "linear" }
 			},
-			"vertexShader" : { "includes" : [ "AnamorphicLensFlare.vertex.glsl" ] },
+			"vertexShader" : "#pragma include('AnamorphicLensFlare.vertex.glsl')",
 			"fragmentShader" : "
 				#ifdef GL_ES
 				precision mediump float;
