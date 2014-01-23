@@ -630,10 +630,10 @@ ASSIMPParser::getSkinningFromAssimp(const aiScene* aiscene)
 		
 		if (skin)
 		{
-			auto	meshNode	= _aiMeshToNode.find(aimesh)->second;
+			auto		meshNode		= _aiMeshToNode.find(aimesh)->second;
+			const float	durationSeconds	= skin->numFrames() / (float)_options->skinningFramerate();
 
-			skin->duration(skin->numFrames() / (float)_options->skinningFramerate());
-
+			skin->duration((uint)floorf(1000.0f * durationSeconds));
 			meshNode->addComponent(Skinning::create(skin, _options->skinningMethod(), _assetLibrary->context()));
 		}
 	}
@@ -756,7 +756,7 @@ ASSIMPParser::sampleAnimation(const aiAnimation* animation)
 	if (animation == nullptr || animation->mTicksPerSecond < 1e-6 || _options->skinningFramerate() == 0)
 		return;
 
-	unsigned int numFrames	= (unsigned int)floorf((float)_options->skinningFramerate() * animation->mDuration / animation->mTicksPerSecond);
+	unsigned int numFrames	= (unsigned int)floorf(float(_options->skinningFramerate() * animation->mDuration / animation->mTicksPerSecond));
 	numFrames				= numFrames < 2 ? 2 : numFrames;
 
 	const float			timeStep	= (float)animation->mDuration / (float)(numFrames - 1);

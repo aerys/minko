@@ -23,6 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "gtest/gtest.h"
 
+#include "minko/math/Vector3.hpp"
 #include "minko/math/Matrix4x4.hpp"
 
 namespace minko
@@ -37,7 +38,14 @@ namespace minko
 			float
 			random(float max = 1000.f)
 			{
-				return rand() / (float)RAND_MAX * 1000.f;
+				return max * rand() / (float)RAND_MAX;
+			}
+
+			static inline
+			std::shared_ptr<Vector3>
+			randomVector3(float max = 1000.f)
+			{
+				return Vector3::create(random(max), random(max), random(max));
 			}
 
 			static inline
@@ -54,14 +62,14 @@ namespace minko
 
 			static inline
 			bool
-			nearEqual(float x, float y, float epsilon = 1e-15)
+			nearEqual(float x, float y, float epsilon = 1e-6f)
 			{
-				return abs(x - y) < epsilon;
+				return fabsf(x - y) < epsilon;
 			}
 
 			static inline
 			bool
-			nearEqual(std::shared_ptr<Matrix4x4> m1, std::shared_ptr<Matrix4x4> m2, float epsilon = 1e-15)
+			nearEqual(std::shared_ptr<Matrix4x4> m1, std::shared_ptr<Matrix4x4> m2, float epsilon = 1e-6f)
 			{
 				for (auto i = 0; i < 16; ++i)
 					if (!nearEqual(m1->data()[i], m2->data()[i], epsilon))

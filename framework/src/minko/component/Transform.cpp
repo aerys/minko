@@ -56,6 +56,7 @@ Transform::initialize()
 		std::placeholders::_2
 	));
 
+	_data->set<Matrix4x4::Ptr>("matrix", _matrix);
 	_data->set<Matrix4x4::Ptr>("modelToWorldMatrix", _modelToWorld);
 	//_data->set("transform/worldToModelMatrix", _worldToModel);
 }
