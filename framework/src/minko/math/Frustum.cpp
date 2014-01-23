@@ -126,6 +126,12 @@ Frustum::testBoundingBox(math::Box::Ptr box)
 	return FrustumPosition::INSIDE;
 }
 
+bool
+Frustum::cast(std::shared_ptr<Ray> ray, float& distance)
+{
+	return false;
+}
+
 Frustum::Frustum()
 {
 	_planes[(int)PlanePosition::LEFT]	= Vector4::create();
