@@ -166,7 +166,7 @@ Container::removeProvider(std::shared_ptr<ArrayProvider> provider)
 }
 
 bool
-Container::hasProvider(std::shared_ptr<Provider> provider)
+Container::hasProvider(std::shared_ptr<Provider> provider) /*const*/
 {
 	return std::find(_providers.begin(), _providers.end(), provider) != _providers.end();
 }
@@ -230,7 +230,7 @@ Container::propertyReferenceChanged(const std::string& propertyName)
 }
 
 void
-Container::assertPropertyExists(const std::string& propertyName)
+Container::assertPropertyExists(const std::string& propertyName) const
 {
 	if (!hasProperty(propertyName))
 		throw std::invalid_argument(propertyName);	

@@ -93,76 +93,79 @@ Quaternion::invert()
 Quaternion::Ptr
 Quaternion::fromMatrix(Matrix4x4ConstPtr matrix)
 {
-	const float det3x3	= matrix->determinant3x3();
-	if (fabsf(fabsf(det3x3) - 1.0f) > 1e-3f)
+#ifdef DEBUG
+	if (fabsf(matrix->determinant3x3() - 1.0f) > 1e-3f)
+		std::cerr << "Warning: matrix that is to be converted to quaternion does not represent a proper rotation (det3x3 = " << matrix->determinant3x3() << ")." << std::endl;
+#endif // DEBUG
+
+	const auto& m	= matrix->data();
+
+	const float a1	= m[0];
+	const float a2	= m[1];
+	const float a3	= m[2];
+
+	const float b1	= m[4];
+	const float b2	= m[5];
+	const float b3	= m[6];
+
+	const float c1	= m[8];
+	const float c2	= m[9];
+	const float c3	= m[10];
+
+	float x = 0.0f;
+	float y = 0.0f;
+	float z = 0.0f;
+	float w = 1.0f;
+
+	const float t	= a1 + b2 + c3;
+	if (t > 0.0f)
 	{
-		std::stringstream stream;
-		stream << "Quaternion::fromMatrix:\tSpecified matrix does not represent a rotation matrix (3x3 determinant = " << det3x3 << ").";
-		throw std::invalid_argument(stream.str());
+		const float s = sqrtf(1.0f + t) * 2.0f;
+		x = (c2 - b3) / s;
+		y = (a3 - c1) / s;
+		z = (b1 - a2) / s;
+		w = 0.25f * s;
 	}
-		
-	const std::vector<float>& m(matrix->values());
-
-	// "From Quaternion to Matrix and Back" by JMP van Warenen
-	uint k0		= 2;
-	uint k1		= 3;
-	uint k2		= 0;
-	uint k3		= 1;
-	float s0	= -1.0f;
-	float s1	= -1.0f;
-	float s2	=  1.0f;
-
-	if (m[0] + m[5] + m[10] > 0.0f)
-	{ 
-		k0	= 3; 
-		k1	= 2; 
-		k2	= 1; 
-		k3	= 0; 
-		s0	= 1.0f; 
-		s1	= 1.0f; 
-		s2	= 1.0f; 
+	else if (a1 > b2 && a1 > c3 )  
+	{	 
+		const float s = sqrtf(1.0f + a1 - b2 - c3) * 2.0f;
+		x = 0.25f * s;
+		y = (b1 + a2) / s;
+		z = (a3 + c1) / s;
+		w = (c2 - b3) / s;
 	} 
-	else if (m[0] > m[5] && m[0] > m[10]) 
-	{ 
-		k0	= 0; 
-		k1	= 1; 
-		k2	= 2; 
-		k3	= 3; 
-		s0	=  1.0f; 
-		s1	= -1.0f; 
-		s2	= -1.0f; 
+	else if (b2 > c3) 
+	{  
+		const float s = sqrtf(1.0f + b2 - a1 - c3) * 2.0f;
+		x = (b1 + a2) / s;
+		y = 0.25f * s;
+		z = (c2 + b3) / s;
+		w = (a3 - c1) / s;
 	} 
-	else if (m[5] > m[10]) 
+	else 
 	{ 
-		k0	= 1; 
-		k1	= 0; 
-		k2	= 3; 
-		k3	= 2; 
-		s0	= -1.0f; 
-		s1	=  1.0f; 
-		s2	= -1.0f; 
+		const float s = sqrtf(1.0f + c3 - a1 - b2) * 2.0f;
+		x = (a3 + c1) / s;
+		y = (c2 + b3) / s;
+		z = 0.25f * s;
+		w = (b1 - a2) / s;
 	}
 
-	float t	= s0*m[0] + s1*m[5] + s2*m[10] + 1.0f;
-	if (fabsf(t) < 1e-6f)
-		throw std::invalid_argument("impossible to convert rotation matrix to quaternion");
+	_i = x;
+	_j = y;
+	_k = z;
+	_r = w;
 
-	float s	= 0.5f / sqrtf(t);
-
-	float quaternion[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
-	quaternion[k0]	= s * t;
-	quaternion[k1]	= s * (m[4] - s2*m[1]);
-	quaternion[k2]	= s * (m[2] - s1*m[8]);
-	quaternion[k3]	= s * (m[9] - s0*m[6]);
-
-	return setTo(quaternion[0], quaternion[1], quaternion[2], quaternion[3]);
+	return normalize();
 }
 
 Matrix4x4::Ptr
 Quaternion::toMatrix(Matrix4x4::Ptr output)const
 {
+#ifdef DEBUG
 	if (fabsf(length() - 1.0f) > 1e-3f)
-		throw std::logic_error("Quaternion must be normalized prior to its conversion to a rotation matrix.");
+		std::cerr << "Warning: quaternion not normalized prior conversion to rotation matrix." << std::endl;
+#endif // DEBUG
 
 	float qx	= _i;
 	float qy	= _j;
@@ -187,5 +190,56 @@ Quaternion::toMatrix(Matrix4x4::Ptr output)const
 		qxy2 + qzw2,		1.0f - qxx2 - qzz2,	qyz2 - qxw2,		0.0f,
 		qxz2 - qyw2,		qyz2 + qxw2,		1.0f - qxx2 - qyy2,	0.0f,
 		0.0f,				0.0f,				0.0f,				1.0f
-		);
+	);
+}
+
+Quaternion::Ptr
+Quaternion::slerp(Quaternion::Ptr target, float ratio)
+{
+	const float q1x = _i;
+	const float q1y = _j;
+	const float q1z = _k;
+	const float q1w = _r;
+
+	float q2x = target->_i;
+	float q2y = target->_j;
+	float q2z = target->_k;
+	float q2w = target->_r;
+		
+	float cosOmega = q1x * q2x + q1y * q2y + q1z * q2z + q1w * q2w;
+
+	// adjust signs (if necessary)
+	if (cosOmega < 0.0f)
+	{
+		cosOmega	= -cosOmega;
+		q2x			= -q2x;   
+		q2y			= -q2y;
+		q2z			= -q2z;
+		q2w			= -q2w;
+	} 
+
+	float weight1 = 0.0f;
+	float weight2 = 1.0f;
+
+	if ((1.0f - cosOmega) > 1e-4f)
+	{
+		// slerp
+		const float omega		= acosf(cosOmega);
+		const float sinOmega	= sinf(omega);
+
+		weight1  = sinf((1.0f - ratio) * omega)	/ sinOmega;
+		weight2  = sinf(ratio * omega)			/ sinOmega;
+	} else
+	{
+		// lerp for small angles
+		weight1 = 1.0f - ratio;
+		weight2 = ratio;
+	}
+
+	_i = weight1 * q1x + weight2 * q2x;
+	_j = weight1 * q1y + weight2 * q2y;
+	_k = weight1 * q1z + weight2 * q2z;
+	_r = weight1 * q1w + weight2 * q2w;
+	
+	return shared_from_this();
 }
