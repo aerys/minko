@@ -45,7 +45,7 @@ namespace minko
 			typedef std::shared_ptr<render::Texture>							TexturePtr;
 
 		private:
-			static std::map<uint, std::function<Any(std::tuple<uint, std::string>&)>> _typeIdToReadFunction;
+			static std::map<uint, std::function<Any(std::tuple<uint, std::string&>&)>> _typeIdToReadFunction;
 
 		public:
 			inline static
