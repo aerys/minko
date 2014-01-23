@@ -118,7 +118,7 @@ namespace minko
 		class Surface;
 		class Renderer;
 		class PerspectiveCamera;
-		class FrustumCulling;
+		class Culling;
 		class Picking;
 		class JobManager;
 
