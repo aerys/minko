@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
+#include "minko/math/AbstractShape.hpp"
 
 namespace minko
 {
@@ -68,7 +69,8 @@ namespace minko
 {
 	namespace math
 	{
-		class Frustum
+		class Frustum :
+			public AbstractShape
 		{
 
 		public:
@@ -94,6 +96,9 @@ namespace minko
 			{
 				return std::shared_ptr<Frustum>(new Frustum());
 			}
+
+			bool
+			cast(std::shared_ptr<Ray> ray, float& distance);
 
 			void
 			updateFromMatrix(std::shared_ptr<math::Matrix4x4> matrix);
