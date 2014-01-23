@@ -1,34 +1,56 @@
-// directional light effect
 {
-	"name"		: "vertex normal",
+	"name"				: "normal",
+
 	"attributeBindings"	: {
 		"position"				: "geometry.vertex.attribute.position",
-		"normal"				: "geometry.vertex.attribute.normal"
+		"normal"				: "geometry.vertex.attribute.normal",
+		"boneIdsA"				: "geometry.vertex.attribute.boneIdsA",
+		"boneIdsB"				: "geometry.vertex.attribute.boneIdsB",		
+		"boneWeightsA"			: "geometry.vertex.attribute.boneWeightsA",
+		"boneWeightsB"			: "geometry.vertex.attribute.boneWeightsB"
 	},
+
 	"uniformBindings"	: {
-		"modelToWorldMatrix"	: "transform.modelToWorldMatrix",
-		"worldToScreenMatrix"	: "camera.worldToScreenMatrix"
+        "modelToWorldMatrix"    : "transform.modelToWorldMatrix",
+        "worldToScreenMatrix"   : { "property" : "camera.worldToScreenMatrix", "source" : "renderer" },
+		"boneMatrices"			: { "property" : "geometry.boneMatrices",		"source" : "target" },
+		"numBones"				: { "property" : "geometry.numBones",			"source" : "target" }
 	},
 	
+	"macroBindings"	: {
+		"NUM_BONES"				: { "property" : "geometry.numBones",	"source" : "target" }
+	},
+
 	"priority"		: 0,
 	"blendMode"		: ["one", "zero"],
 	"depthTest"		: [true, "less"],
 	
 	"passes"	: [{
 		"vertexShader"	: "
+			uniform mat4 modelToWorldMatrix;
+			uniform mat4 worldToScreenMatrix;
+
 			attribute vec3 position;
 			attribute vec3 normal;
 
 			varying vec3 worldNormal;
 
-			uniform mat4 modelToWorldMatrix;
-			uniform mat4 worldToScreenMatrix;
+			#pragma include('Skinning.function.glsl')
 
 			void main(void)
 			{
-				worldNormal = normalize(mat3(modelToWorldMatrix) * normal);
+				vec4 pos    = vec4(position, 1.0);
+				vec4 n 		= vec4(normal, 0.0); 
 
-				gl_Position =  worldToScreenMatrix * modelToWorldMatrix * vec4(position, 1.0);
+				
+				#ifdef NUM_BONES
+					pos 	= skinning_moveVertex(pos);
+					n 		= skinning_moveVertex(n);
+				#endif // NUM_BONES
+				
+				worldNormal = normalize(mat3(modelToWorldMatrix) * n.xyz);
+
+				gl_Position =  worldToScreenMatrix * modelToWorldMatrix * pos;
 			}
 		",
 		"fragmentShader"	: "

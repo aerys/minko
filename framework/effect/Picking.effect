@@ -54,7 +54,8 @@
     
 	"techniques" : [{
 		"passes"    : [{
-			"includes" : [ "Skinning.function.glsl", "Picking.vertex.glsl", "Picking.fragment.glsl" ]
+            "vertexShader" : "#pragma include('Picking.vertex.glsl')",
+            "fragmentShader" : "#pragma include('Picking.fragment.glsl')"
 		}]
 	}]
 }
