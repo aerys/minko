@@ -39,8 +39,11 @@ solution "minko"
 	include 'plugins/serializer'
 	include 'plugins/oculus'
 	include 'plugins/leap'
-
-	--include 'plugins/streaming'
+	
+	-- private plugins
+	if os.isdir('plugins/streaming') then
+		include 'plugins/streaming'
+	end
 
 	-- examples
 	if not _OPTIONS['no-examples'] then
