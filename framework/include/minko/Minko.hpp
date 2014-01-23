@@ -65,7 +65,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/MousePicking.hpp"
 #include "minko/component/MouseManager.hpp"
 #include "minko/component/SkinningMethod.hpp"
-#include "minko/component/FrustumCulling.hpp"
+#include "minko/component/Culling.hpp"
 #include "minko/component/Picking.hpp"
 #include "minko/component/AbstractAnimation.hpp"
 #include "minko/component/Animation.hpp"
