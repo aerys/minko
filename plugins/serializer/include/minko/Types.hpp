@@ -51,5 +51,17 @@ namespace minko
 			BLENDING		= 8,
 			TRIANGLECULLING = 9
 		};
+
+		enum AssetType
+		{
+			GEOMETRY_ASSET			= 0,
+			EMBED_GEOMETRY_ASSET	= 10,
+			MATERIAL_ASSET			= 1,
+			EMBED_MATERIAL_ASSET	= 11,
+			TEXTURE_ASSET			= 2,
+			EMBED_TEXUTRE_ASSET		= 12,
+			EFFECT_ASSET			= 3,
+			EMBED_EFFECT_ASSET		= 13
+		};
 	}
 }

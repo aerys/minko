@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/SerializerCommon.hpp"
 #include "minko/file/AbstractParser.hpp"
 #include "msgpack.hpp"
+#include "minko/component/JobManager.hpp"
 
 namespace minko
 {
@@ -32,15 +33,24 @@ namespace minko
 		{
 		public:
 			typedef std::shared_ptr<AbstractSerializerParser>				Ptr;
-			typedef msgpack::type::tuple<unsigned char, short, std::string> SerializedAsset;
+			typedef msgpack::type::tuple<unsigned int, short, std::string>	SerializedAsset;
 			typedef std::shared_ptr<file::AssetLibrary>						AssetLibraryPtr;
 		
-		protected:
-			std::shared_ptr<Dependency>		_dependencies;
-			std::shared_ptr<GeometryParser> _geometryParser;
-			std::shared_ptr<MaterialParser> _materialParser;
+		private:
+			typedef std::shared_ptr<component::JobManager::Job>												JobPtr;
+			typedef std::shared_ptr<Dependency>																DependencyPtr;
+			typedef std::function<void(unsigned char, AssetLibraryPtr, std::string&, DependencyPtr, short, std::list<JobPtr>&)>	AssetDeserializeFunction;
 
-			std::string						_lastParsedAssetName;
+		protected:
+			DependencyPtr						_dependencies;
+			std::shared_ptr<GeometryParser>		_geometryParser;
+			std::shared_ptr<MaterialParser>		_materialParser;
+
+			std::string												_lastParsedAssetName;
+			std::list<std::shared_ptr<component::JobManager::Job>>	_jobList;
+
+		private:
+			static std::unordered_map<uint, AssetDeserializeFunction> _assetTypeToFunction;
 
 		public:
 			inline static
@@ -55,12 +65,16 @@ namespace minko
 				  const std::vector<unsigned char>&	data,
 				  AssetLibraryPtr					assetLibrary);
 
+			static
+			void
+			registerAssetFunction(uint assetTypeId, AssetDeserializeFunction f);
+
 		protected:
 			std::string
 			extractDependencies(AssetLibraryPtr						assetLibrary,
 								const std::vector<unsigned char>&	data,
 								std::shared_ptr<Options>			options,
-								std::string							assetFilePath);
+								std::string&						assetFilePath);
 
 			inline
 			void
@@ -76,7 +90,7 @@ namespace minko
 			deserializedAsset(SerializedAsset					asset,
 							  AssetLibraryPtr					assetLibrary,
 							  std::shared_ptr<Options>			options,
-							  std::string						assetFilePath);
+							  std::string&						assetFilePath);
 
 			std::string
 			extractFolderPath(const std::string& filepath);
