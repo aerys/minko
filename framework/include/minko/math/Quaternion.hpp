@@ -117,6 +117,9 @@ namespace minko
 			float 
 			length() const;
 
+			Ptr
+			slerp(Ptr target, float ratio);
+
 			std::string
 			toString()
 			{
