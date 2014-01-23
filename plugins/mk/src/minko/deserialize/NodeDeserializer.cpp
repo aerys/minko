@@ -217,7 +217,7 @@ NodeDeserializer::deserializeCamera(NodeInfo&		nodeInfo,
 
 	camera->addComponent(component::Transform::create());
 	camera->component<component::Transform>()->matrix()->copyFrom(transformMatrix);
-	camera->component<component::Transform>()->matrix()->prependRotationY(PI); // otherwise the camera points the other way
+	camera->component<component::Transform>()->matrix()->prependRotationY(float(PI)); // otherwise the camera points the other way
 
 	// extract camera information
 
