@@ -66,11 +66,22 @@ dofile(MINKO_HOME .. '/tools/all/lib/minko.plugin.lua')
 dofile(MINKO_HOME .. '/tools/all/lib/minko.vs.lua')
 dofile(MINKO_HOME .. '/tools/all/lib/minko.project.lua')
 
+-- options
 newoption {
-	trigger	= "no-stencil",
-	description = "Disable all stencil operations."
+	trigger	= 'no-stencil',
+	description = 'Disable stencil buffer support.'
 }
-
-if _OPTIONS["no-stencil"] then
-	defines { "MINKO_NO_STENCIL" }
+if _OPTIONS['no-stencil'] then
+	defines { 'MINKO_NO_STENCIL' }
+	print('Stencil buffer support is disabled (--no-stencil)')
 end
+
+newoption {
+	trigger	= 'no-glsl-struct',
+	description = 'Disable GLSL struct support.'
+}
+if _OPTIONS['no-glsl-struct'] then
+	defines { 'MINKO_NO_GLSL_STRUCT' }
+	print('GLSL structs support is disabled (--no-glsl-struct)')
+end
+

@@ -19,6 +19,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/file/EffectParser.hpp"
 
+#include <regex>
+
 #include "minko/data/Provider.hpp"
 #include "minko/render/Effect.hpp"
 #include "minko/render/Program.hpp"
@@ -159,12 +161,17 @@ EffectParser::parse(const std::string&				    filename,
 		throw std::invalid_argument("data");
     }
 
+    int pos	= resolvedFilename.find_last_of("/\\");
+
+	_options = file::Options::create(options);
+	if (pos > 0)
+		_options->includePaths().push_back(resolvedFilename.substr(0, pos));
+	
 	_filename = filename;
 	_resolvedFilename = resolvedFilename;
-	_options = options;
 	_assetLibrary = assetLibrary;
-	_effectName			= root.get("name", filename).asString();
-	_defaultTechnique	= root.get("defaultTechnique", "default").asString();
+	_effectName	= root.get("name", filename).asString();
+	_defaultTechnique = root.get("defaultTechnique", "default").asString();
 	
 	auto context = _assetLibrary->context();
 
@@ -199,9 +206,6 @@ EffectParser::parse(const std::string&				    filename,
 		_defaultStates,
 		_defaultUniformValues
 	);
-
-	// parse a global list of dependencies
-	parseDependencies(root, resolvedFilename, options, _effectIncludes);
 
 	// parse a global list of render targets
 	auto targetsValue = root.get("targets", 0);
@@ -305,10 +309,10 @@ EffectParser::parsePasses(const Json::Value&		root,
                 _globalPasses.begin(),
                 _globalPasses.end(),
                 [&](Pass::Ptr pass)
-            {
-                return pass->name() == name;
-            }
-            );
+	            {
+	                return pass->name() == name;
+	            }
+	        );
 
             if (passIt == _globalPasses.end())
                 throw std::logic_error("Pass '" + name + "' does not exist.");
@@ -316,11 +320,10 @@ EffectParser::parsePasses(const Json::Value&		root,
             auto pass = *passIt;
             auto passCopy = Pass::create(pass, true);
 
-            _passIncludes[passCopy] = _passIncludes[pass];
-            _shaderIncludes[passCopy->program()->vertexShader()] = _shaderIncludes[pass->program()->vertexShader()];
-            _shaderIncludes[passCopy->program()->fragmentShader()] = _shaderIncludes[pass->program()->fragmentShader()];
 			passCopy->states()->priority(defaultStates->priority() + priorityOffset);
-
+			_glslBlocks[passCopy->program()->vertexShader()] = _glslBlocks[pass->program()->vertexShader()];
+			_glslBlocks[passCopy->program()->fragmentShader()] = _glslBlocks[pass->program()->fragmentShader()];
+			
             // set uniform default values
             for (auto& nameAndValues : defaultUniformDefaultValues)
                 setUniformDefaultValueOnPass(
@@ -360,15 +363,21 @@ EffectParser::parsePasses(const Json::Value&		root,
             auto states = parseRenderStates(passValue, context, targets, defaultStates, priorityOffset);
 
             // program
-            auto vertexShaderValue = passValue.get("vertexShader", "");
+            auto vertexShaderValue = passValue.get("vertexShader", 0);
             auto vertexShader = parseShader(
                 vertexShaderValue, resolvedFilename, options, render::Shader::Type::VERTEX_SHADER
             );
 
-            auto fragmentShaderValue = passValue.get("fragmentShader", "");
+            if (!vertexShader)
+            	throw std::logic_error("Missing vertex shader for pass '" + name + "'");
+
+            auto fragmentShaderValue = passValue.get("fragmentShader", 0);
             auto fragmentShader = parseShader(
                 fragmentShaderValue, resolvedFilename, options, render::Shader::Type::FRAGMENT_SHADER
             );
+
+            if (!fragmentShader)
+            	throw std::logic_error("Missing fragment shader for pass '" + name + "'");
 
             auto pass = render::Pass::create(
                 name,
@@ -382,8 +391,6 @@ EffectParser::parsePasses(const Json::Value&		root,
             );
 
             passes.push_back(pass);
-
-            parseDependencies(passValue, resolvedFilename, options, _passIncludes[pass]);
         }
 	}
 }
@@ -425,21 +432,135 @@ EffectParser::setUniformDefaultValueOnPass(render::Pass::Ptr	pass,
 }
 
 render::Shader::Ptr
-EffectParser::parseShader(const Json::Value& 	shaderNode,
-						  const std::string&	resolvedFilename,
-						  file::Options::Ptr    options,
-						  render::Shader::Type 	type)
+EffectParser::parseShader(const Json::Value& 		shaderNode,
+						  const std::string&		resolvedFilename,
+						  file::Options::Ptr    	options,
+						  render::Shader::Type 		type)
 {
-	if (shaderNode.isObject())
+	std::string glsl;
+
+	if (shaderNode.isString())
+		glsl = shaderNode.asString();
+	else
+		return nullptr;
+
+	auto shader = Shader::create(options->context(), type, glsl);
+	auto blocks = std::shared_ptr<GLSLBlockList>(new GLSLBlockList());
+	
+	blocks->push_front(GLSLBlock(GLSLBlockType::TEXT, ""));
+	_glslBlocks[shader] = blocks;
+	parseGLSL(glsl, options, blocks, blocks->begin());
+
+	return shader;
+}
+
+void
+EffectParser::parseGLSL(std::string 			glsl,
+						file::Options::Ptr 		options,
+						GLSLBlockListPtr		blocks,
+						GLSLBlockList::iterator	insertIt)
+{
+	std::string line;
+	std::stringstream stream(glsl);
+	auto i = 0;
+	auto lastBlockEnd = 0;
+	auto numIncludes = 0;
+
+	while (std::getline(stream, line))
 	{
-		auto shader = Shader::create(options->context(), type, shaderNode.get("code", "").asString());
+		auto firstSharpPos = line.find_first_of('#');
+		if (firstSharpPos != std::string::npos && line.substr(firstSharpPos, 16) == "#pragma include("
+			&& (line[firstSharpPos + 16] == '"' || line[firstSharpPos + 16] == '\''))
+		{
+			auto filename = line.substr(firstSharpPos + 17, line.find_last_of(line[firstSharpPos + 16]) - 17 - firstSharpPos);
 
-		parseDependencies(shaderNode, resolvedFilename, options, _shaderIncludes[shader]);
+			if (lastBlockEnd != i)
+				insertIt = blocks->insert_after(insertIt, GLSLBlock(GLSLBlockType::TEXT, glsl.substr(lastBlockEnd, i - lastBlockEnd)));
+			insertIt = blocks->insert_after(insertIt, GLSLBlock(GLSLBlockType::FILE, filename));
 
-		return shader;
+			lastBlockEnd = i + line.size() + 1;
+
+			++numIncludes;
+		}
+		i += line.size() + 1;
 	}
-	else if (shaderNode.isString())
-		return Shader::create(options->context(), type, shaderNode.asString());
+	
+	if (i != lastBlockEnd)
+		insertIt = blocks->insert_after(insertIt, GLSLBlock(GLSLBlockType::TEXT, glsl.substr(lastBlockEnd)));
+
+	if (numIncludes)
+		loadGLSLDependencies(blocks, options);
+}
+
+void
+EffectParser::loadGLSLDependencies(GLSLBlockListPtr		blocks,
+								   file::Options::Ptr 	options)
+{
+	for (auto blockIt = blocks->begin(); blockIt != blocks->end(); blockIt++)
+	{
+		auto& block = *blockIt;
+
+		if (block.first == GLSLBlockType::FILE)
+		{
+			auto loader = options->loaderFunction()(block.second);
+
+			++_numDependencies;
+
+			_loaderCompleteSlots[loader] = loader->complete()->connect(std::bind(
+				&EffectParser::glslIncludeCompleteHandler,
+				std::static_pointer_cast<EffectParser>(shared_from_this()),
+				std::placeholders::_1,
+				blocks,
+				blockIt
+			));
+
+			_loaderErrorSlots[loader] = loader->error()->connect(std::bind(
+				&EffectParser::dependencyErrorHandler,
+				std::static_pointer_cast<EffectParser>(shared_from_this()),
+				std::placeholders::_1
+			));
+
+			loader->load(block.second, _options);
+		}
+	}
+}
+
+void
+EffectParser::glslIncludeCompleteHandler(LoaderPtr 					loader,
+										 GLSLBlockListPtr 			blocks,
+	 								     GLSLBlockList::iterator 	blockIt)
+{
+	auto& block = *blockIt;
+
+	block.first = GLSLBlockType::TEXT;
+#ifdef DEBUG
+	block.second = "//#pragma include(\"" + loader->resolvedFilename() + "\")\n";
+#else
+	block.second = "\n";
+#endif
+
+	++_numLoadedDependencies;
+
+	auto options = _options;
+	auto pos = loader->resolvedFilename().find_last_of('/');
+	if (pos != std::string::npos)
+	{
+		options = file::Options::create(options);
+		options->includePaths().push_back(loader->resolvedFilename().substr(0, pos));
+	}
+
+	parseGLSL(std::string((const char*)&loader->data()[0], loader->data().size()), options, blocks, blockIt);
+
+	if (_numDependencies == _numLoadedDependencies && _effect)
+		finalize();
+}
+
+void
+EffectParser::dependencyErrorHandler(std::shared_ptr<AbstractLoader> loader)
+{
+	std::cerr << "Unable to load dependency '" << loader->filename() << "', included paths are:" << std::endl;
+	for (auto& path : loader->options()->includePaths())
+		std::cerr << path << std::endl;
 
 	throw;
 }
@@ -814,18 +935,12 @@ EffectParser::loadTexture(const std::string&	textureFilename,
 	});
 
 	_loaderErrorSlots[loader] = loader->error()->connect(std::bind(
-		&EffectParser::textureErrorHandler,
+		&EffectParser::dependencyErrorHandler,
 		std::static_pointer_cast<EffectParser>(shared_from_this()),
 		std::placeholders::_1
 	));
 
 	loader->load(textureFilename, options);
-}
-
-void
-EffectParser::textureErrorHandler(file::AbstractLoader::Ptr loader)
-{
-	throw;
 }
 
 void
@@ -995,46 +1110,6 @@ EffectParser::parseTarget(const Json::Value&                contextNode,
 }
 
 void
-EffectParser::parseDependencies(const Json::Value& 		root,
-								const std::string& 		filename,
-								file::Options::Ptr 		options,
-								std::vector<LoaderPtr>& store)
-{
-	auto includes	= root.get("includes", 0);
-	int pos			= filename.find_last_of("/\\");
-
-	if (pos > 0)
-	{
-		options = file::Options::create(options);
-		options->includePaths().push_back(filename.substr(0, pos));
-	}
-
-	if (includes.isArray())
-	{
-		_numDependencies += includes.size();
-
-		for (auto include : includes)
-		{
-			auto loader = Loader::create();
-
-			_loaderCompleteSlots[loader] = loader->complete()->connect(std::bind(
-				&EffectParser::dependencyCompleteHandler,
-				std::static_pointer_cast<EffectParser>(shared_from_this()),
-				std::placeholders::_1
-			));
-			_loaderErrorSlots[loader] = loader->error()->connect(std::bind(
-				&EffectParser::dependencyErrorHandler,
-				std::static_pointer_cast<EffectParser>(shared_from_this()),
-				std::placeholders::_1
-			));
-
-			store.push_back(loader);
-			loader->load(include.asString(), options);
-		}
-	}
-}
-
-void
 EffectParser::parseTechniques(const Json::Value&				root,
 							  const std::string&				filename,
 							  std::shared_ptr<file::Options>	options,
@@ -1142,38 +1217,20 @@ EffectParser::parseConfiguration(const Json::Value&	root)
 	return r;
 }
 
-void
-EffectParser::dependencyCompleteHandler(std::shared_ptr<AbstractLoader> loader)
-{
-	++_numLoadedDependencies;
-
-	if (_numDependencies == _numLoadedDependencies && _effect)
-		finalize();
-}
-
-void
-EffectParser::dependencyErrorHandler(std::shared_ptr<AbstractLoader> loader)
-{
-	std::cerr << "Unable to load dependency '" << loader->filename() << "'" << std::endl;
-	throw;
-}
-
 std::string
-EffectParser::concatenateIncludes(std::vector<LoaderPtr>& store)
+EffectParser::concatenateGLSLBlocks(GLSLBlockListPtr blocks)
 {
-	std::string code = "";
+	std::string glsl = "";
 
-	for (auto loader : store)
-		code += std::string((char*)&loader->data()[0], loader->data().size()) + "\r\n";
+	for (auto& block : *blocks)
+		glsl += block.second;
 
-	return code;
+	return glsl;
 }
 
 void
 EffectParser::finalize()
 {
-	auto effectIncludes = concatenateIncludes(_effectIncludes);
-
 	for (auto& technique : _techniquePasses)
     {
     	auto techniqueName = technique.first;
@@ -1182,21 +1239,15 @@ EffectParser::finalize()
 		for (auto& pass : passes)
 		{
 			auto program = pass->program();
-			auto passIncludes = concatenateIncludes(_passIncludes[pass]);
 
 			program->vertexShader()->source(
 				"#define VERTEX_SHADER\r\n"
-				+ effectIncludes
-				+ passIncludes
-				+ concatenateIncludes(_shaderIncludes[program->vertexShader()])
-				+ program->vertexShader()->source()
+				+ concatenateGLSLBlocks(_glslBlocks[program->vertexShader()])
 			);
+
 			program->fragmentShader()->source(
 				"#define FRAGMENT_SHADER\r\n"
-				+ effectIncludes
-				+ passIncludes
-				+ concatenateIncludes(_shaderIncludes[program->fragmentShader()])
-				+ program->fragmentShader()->source()
+				+ concatenateGLSLBlocks(_glslBlocks[program->fragmentShader()])
 			);
 		}
 

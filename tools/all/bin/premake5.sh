@@ -6,9 +6,9 @@ OS_TYPE=`uname -s`
 
 case ${OS_TYPE} in
 	"Linux")
-		${BASEDIR}/../../lin/bin/${MACHINE_TYPE}/premake5 $@
+		${BASEDIR}/../../lin/bin/premake5.sh $@
 		;;
 	"Darwin")
-		${BASEDIR}/../../mac/bin/${MACHINE_TYPE}/premake5 $@
+		${BASEDIR}/../../mac/bin/premake5.sh $@
 		;;
 esac

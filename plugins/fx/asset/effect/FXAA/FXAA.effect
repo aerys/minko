@@ -38,8 +38,6 @@
 			}
 		",
 
-		"fragmentShader" : {
-			"includes" : [ "FXAA.fragment.glsl" ]
-		}
+		"fragmentShader" : "#pragma include('FXAA.fragment.glsl')"
 	}]
 }
