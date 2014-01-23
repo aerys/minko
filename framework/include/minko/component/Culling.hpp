@@ -27,12 +27,12 @@ namespace minko
 {
 	namespace component
 	{
-		class FrustumCulling :
+		class Culling :
 			public AbstractComponent,
-			public std::enable_shared_from_this<FrustumCulling>
+			public std::enable_shared_from_this<Culling>
 		{
 		public:
-			typedef std::shared_ptr<FrustumCulling> Ptr;
+			typedef std::shared_ptr<Culling> Ptr;
 
 		private:
 			typedef std::shared_ptr<scene::Node> NodePtr;
@@ -53,11 +53,11 @@ namespace minko
 			Ptr
 			create()
 			{
-				Ptr frustumCullingComponent = std::shared_ptr<FrustumCulling>(new FrustumCulling());
+				Ptr CullingComponent = std::shared_ptr<Culling>(new Culling());
 
-				frustumCullingComponent->initialize();
+				CullingComponent->initialize();
 
-				return frustumCullingComponent;
+				return CullingComponent;
 			}
 
 		private:
@@ -83,7 +83,7 @@ namespace minko
 			void
 			targetAddedToScene(NodePtr node, NodePtr target, NodePtr ancestor);
 
-			FrustumCulling();
+			Culling();
 		};
 	}
 }
