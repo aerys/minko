@@ -47,10 +47,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 # include <GL/glu.h>
 #endif
 
-#ifdef MINKO_GLSL_OPTIMIZER
-# include "glsl_optimizer.h"
-#endif
-
 using namespace minko;
 using namespace minko::render;
 
@@ -154,7 +150,9 @@ OpenGLES2Context::OpenGLES2Context() :
 #endif
 
 	glEnable(GL_DEPTH_TEST);
+#ifndef MINKO_NO_STENCIL
 	glEnable(GL_STENCIL_TEST);
+#endif
 	glEnable(GL_BLEND);
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
@@ -800,44 +798,14 @@ void
 OpenGLES2Context::setShaderSource(const uint shader,
 								  const std::string& source)
 {
-#ifdef MINKO_GLSL_OPTIMIZER
-	glslopt_ctx* glslOptimizer = glslopt_initialize(true);
+#ifdef GL_ES_VERSION_2_0
 	std::string src = "#version 100\n" + source;
-	const char* sourceString = src.c_str();
-
-	auto type = std::find(_vertexShaders.begin(), _vertexShaders.end(), shader) != _vertexShaders.end()
-		? kGlslOptShaderVertex
-		: kGlslOptShaderFragment;
-
-	auto optimizedShader = glslopt_optimize(glslOptimizer, type, sourceString, 0);
-	if (glslopt_get_status(optimizedShader))
-	{
-		auto optimizedSource = glslopt_get_output(optimizedShader);
-		glShaderSource(shader, 1, &optimizedSource, 0);
-	}
-	else
-	{
-		std::stringstream stream(source);
-		std::string line;
-
-		std::cerr << glslopt_get_log(optimizedShader) << std::endl;
-		for (auto i = 0; std::getline(stream, line); ++i)
-			std::cerr << i << "\t" << line << std::endl;
-
-		throw std::invalid_argument("source");
-	}
-	glslopt_shader_delete(optimizedShader);
-	glslopt_cleanup(glslOptimizer);
 #else
-# ifdef GL_ES_VERSION_2_0
-	std::string src = "#version 100\n" + source;
-# else
 	std::string src = "#version 120\n" + source;
-#endif
+#endif // GL_ES_VERSION_2_0
 	const char* sourceString = src.c_str();
 
 	glShaderSource(shader, 1, &sourceString, 0);
-#endif
 
 	checkForErrors();
 }
@@ -957,6 +925,49 @@ OpenGLES2Context::getProgramInputs(const uint program)
 	return ProgramInputs::create(shared_from_this(), program, names, types, locations);
 }
 
+/*static*/
+ProgramInputs::Type
+OpenGLES2Context::convertInputType(unsigned int type)
+{
+	switch (type)
+	{
+		case GL_FLOAT:
+			return ProgramInputs::Type::float1;
+		case GL_FLOAT_VEC2:
+			return ProgramInputs::Type::float2;
+		case GL_FLOAT_VEC3:
+			return ProgramInputs::Type::float3;
+		case GL_FLOAT_VEC4:
+			return ProgramInputs::Type::float4;
+		case GL_INT:
+			return ProgramInputs::Type::int1;
+		case GL_INT_VEC2:
+			return ProgramInputs::Type::int2;
+		case GL_INT_VEC3:
+			return ProgramInputs::Type::int3;
+		case GL_INT_VEC4:
+			return ProgramInputs::Type::int4;
+		case GL_BOOL:
+			return ProgramInputs::Type::bool1;
+		case GL_BOOL_VEC2:
+			return ProgramInputs::Type::bool2;
+		case GL_BOOL_VEC3:
+			return ProgramInputs::Type::bool3;
+		case GL_BOOL_VEC4:
+			return ProgramInputs::Type::bool4;
+		case GL_FLOAT_MAT3:
+			return ProgramInputs::Type::float9;
+		case GL_FLOAT_MAT4:
+			return ProgramInputs::Type::float16;
+		case GL_SAMPLER_2D:
+			return ProgramInputs::Type::sampler2d;
+		default:
+			throw std::logic_error("unsupported type");
+			return ProgramInputs::Type::unknown;
+	}
+}
+
+
 void
 OpenGLES2Context::fillUniformInputs(const uint					program,
 									std::vector<std::string>&			names,
@@ -981,48 +992,8 @@ OpenGLES2Context::fillUniformInputs(const uint					program,
 
 		name[nameLength] = 0;
 
-		ProgramInputs::Type inputType = ProgramInputs::Type::unknown;
-
-		switch (type)
-		{
-			case GL_FLOAT:
-				inputType = ProgramInputs::Type::float1;
-				break;
-			case GL_INT:
-				inputType = ProgramInputs::Type::int1;
-				break;
-			case GL_FLOAT_VEC2:
-				inputType = ProgramInputs::Type::float2;
-				break;
-			case GL_INT_VEC2:
-				inputType = ProgramInputs::Type::int2;
-				break;
-			case GL_FLOAT_VEC3:
-				inputType = ProgramInputs::Type::float3;
-				break;
-			case GL_INT_VEC3:
-				inputType = ProgramInputs::Type::int3;
-				break;
-			case GL_FLOAT_VEC4:
-				inputType = ProgramInputs::Type::float4;
-				break;
-			case GL_INT_VEC4:
-				inputType = ProgramInputs::Type::int4;
-				break;
-			case GL_FLOAT_MAT3:
-				inputType = ProgramInputs::Type::float9;
-				break;
-			case GL_FLOAT_MAT4:
-				inputType = ProgramInputs::Type::float16;
-				break;
-			case GL_SAMPLER_2D:
-				inputType = ProgramInputs::Type::sampler2d;
-				break;
-			default:
-				throw std::logic_error("unsupported type");
-		}
-
-		int location = glGetUniformLocation(program, &name[0]);
+		ProgramInputs::Type	inputType	= convertInputType(type);
+		int					location	= glGetUniformLocation(program, &name[0]);
 
 		if (location >= 0 && inputType != ProgramInputs::Type::unknown)
 		{
@@ -1119,56 +1090,56 @@ OpenGLES2Context::getProgramInfoLogs(const uint program)
 }
 
 void
-OpenGLES2Context::setUniform(const uint& location, const int& value)
+OpenGLES2Context::setUniform(uint location, int value)
 {
 	glUniform1i(location, value);
 	checkForErrors();
 }
 
 void
-OpenGLES2Context::setUniform(const uint& location, const int& v1, const int& v2)
+OpenGLES2Context::setUniform(uint location, int v1, int v2)
 {
 	glUniform2i(location, v1, v2);
 	checkForErrors();
 }
 
 void
-OpenGLES2Context::setUniform(const uint& location, const int& v1, const int& v2, const int& v3)
+OpenGLES2Context::setUniform(uint location, int v1, int v2, int v3)
 {
 	glUniform3i(location, v1, v2, v3);
 	checkForErrors();
 }
 
 void
-OpenGLES2Context::setUniform(const uint& location, const int& v1, const int& v2, const int& v3, const int& v4)
+OpenGLES2Context::setUniform(uint location, int v1, int v2, int v3, int v4)
 {
 	glUniform4i(location, v1, v2, v3, v4);
 	checkForErrors();
 }
 
 void
-OpenGLES2Context::setUniform(const uint& location, const float& value)
+OpenGLES2Context::setUniform(uint location, float value)
 {
 	glUniform1f(location, value);
 	checkForErrors();
 }
 
 void
-OpenGLES2Context::setUniform(const uint& location, const float& v1, const float& v2)
+OpenGLES2Context::setUniform(uint location, float v1, float v2)
 {
 	glUniform2f(location, v1, v2);
 	checkForErrors();
 }
 
 void
-OpenGLES2Context::setUniform(const uint& location, const float& v1, const float& v2, const float& v3)
+OpenGLES2Context::setUniform(uint location, float v1, float v2, float v3)
 {
 	glUniform3f(location, v1, v2, v3);
 	checkForErrors();
 }
 
 void
-OpenGLES2Context::setUniform(const uint& location, const float& v1, const float& v2, const float& v3, const float& v4)
+OpenGLES2Context::setUniform(uint location, float v1, float v2, float v3, float v4)
 {
 	glUniform4f(location, v1, v2, v3, v4);
 	checkForErrors();
@@ -1199,6 +1170,34 @@ void
 OpenGLES2Context::setUniforms4(uint location, uint size, const float* values)
 {
 	glUniform4fv(location, size, values);
+	checkForErrors();
+}
+
+void
+OpenGLES2Context::setUniforms(uint location, uint size, const int* values)
+{
+	glUniform1iv(location, size, values);
+	checkForErrors();
+}
+
+void
+OpenGLES2Context::setUniforms2(uint location, uint size, const int* values)
+{
+	glUniform2iv(location, size, values);
+	checkForErrors();
+}
+
+void
+OpenGLES2Context::setUniforms3(uint location, uint size, const int* values)
+{
+	glUniform3iv(location, size, values);
+	checkForErrors();
+}
+
+void
+OpenGLES2Context::setUniforms4(uint location, uint size, const int* values)
+{
+	glUniform4iv(location, size, values);
 	checkForErrors();
 }
 

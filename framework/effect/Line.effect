@@ -47,7 +47,8 @@
     
 	"techniques" : [{
 		"passes"    : [{
-			"includes" : [ "Line.vertex.glsl", "Line.fragment.glsl" ]
+			"vertexShader" : "#pragma include('Line.vertex.glsl')",
+			"fragmentShader" : "#pragma include('Line.fragment.glsl')"
 		}]
 	}]
 }
