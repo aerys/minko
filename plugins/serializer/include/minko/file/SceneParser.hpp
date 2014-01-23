@@ -39,7 +39,7 @@ namespace minko
 		//typedef
 		public:
 			typedef std::shared_ptr<SceneParser>																														Ptr;
-			typedef std::function<std::shared_ptr<component::AbstractComponent>(std::string, std::shared_ptr<file::AssetLibrary>, std::shared_ptr<file::Dependency>)>	ComponentReadFunction;
+			typedef std::function<std::shared_ptr<component::AbstractComponent>(std::string&, std::shared_ptr<file::AssetLibrary>, std::shared_ptr<file::Dependency>)>	ComponentReadFunction;
 			typedef msgpack::type::tuple<std::string, uint, uint, std::vector<uint>>																					SerializedNode;
 			typedef std::shared_ptr<AssetLibrary>																														AssetLibraryPtr;
 
@@ -68,10 +68,9 @@ namespace minko
 				  AssetLibraryPtr					assetLibrary);
 
 		private:
-
 			std::shared_ptr<scene::Node>
-			parseNode(std::vector<SerializedNode>	nodePack, 
-					  std::vector<std::string>		componentPack,
+			parseNode(std::vector<SerializedNode>&	nodePack, 
+					  std::vector<std::string>&		componentPack,
 					  AssetLibraryPtr				assetLibrary);
 
 			SceneParser();
