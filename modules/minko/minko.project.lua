@@ -29,7 +29,8 @@ minko.project.library = function(name)
 			includedirs { EMSCRIPTEN .. "/system/include" }
 		end
 		buildoptions {
-			"--closure 1"
+			"--closure 1",
+			"-Wno-warn-absolute-paths"
 		}
 		optimize "On"
 
@@ -119,7 +120,7 @@ minko.project.application = function(name)
 
 		postbuildcommands {
 			'cd ${TARGETDIR}'
-			.. ' && ' .. emcc .. ' ' .. name .. '.bc -o ' .. name .. '.html -O2 -s CLOSURE_ANNOTATIONS=1 -s DISABLE_EXCEPTION_CATCHING=0 -s TOTAL_MEMORY=268435456 --preload-file effect --preload-file texture --preload-file model --preload-file script --preload-file symbol'
+			.. ' && ' .. emcc .. ' ' .. name .. '.bc -o ' .. name .. '.html -O2 -s CLOSURE_ANNOTATIONS=1 -s DISABLE_EXCEPTION_CATCHING=0 -s TOTAL_MEMORY=268435456 --closure 1 --preload-file effect --preload-file texture --preload-file model --preload-file script --preload-file symbol'
 			.. ' || ' .. minko.action.fail()
 		}
 
@@ -128,7 +129,7 @@ minko.project.application = function(name)
 
 		postbuildcommands {
 			'cd ${TARGETDIR}'
-			.. ' && ' .. emcc .. ' ' .. name .. '.bc -o ' .. name .. '.html -O2 -s DISABLE_EXCEPTION_CATCHING=0 -s TOTAL_MEMORY=268435456 --closure 1 --preload-file effect --preload-file texture --preload-file model --preload-file script --preload-file symbol'
+			.. ' && ' .. emcc .. ' ' .. name .. '.bc -o ' .. name .. '.html -O2 -s DISABLE_EXCEPTION_CATCHING=0 -s TOTAL_MEMORY=268435456 --preload-file effect --preload-file texture --preload-file model --preload-file script --preload-file symbol'
 			.. ' || ' .. minko.action.fail()
 		}
 

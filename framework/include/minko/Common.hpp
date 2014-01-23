@@ -27,6 +27,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include <functional>
 #include <iostream>
 #include <list>
+#include <forward_list>
 #include <map>
 #include <memory>
 #include <set>
@@ -157,8 +158,11 @@ namespace minko
 		typedef std::pair<std::string, BindingSource>		Binding;
 		typedef std::unordered_map<std::string, Binding>	BindingMap;
 
-		typedef std::pair<uint, const float*>				UniformArray;
-		typedef std::shared_ptr<UniformArray>				UniformArrayPtr;
+		template<typename T>
+		using UniformArray = std::pair<uint, const T*>;
+
+		template<typename T>
+		using UniformArrayPtr = std::shared_ptr<UniformArray<T>>;
 
 		enum class MacroBindingDefaultValueSemantic
 		{
