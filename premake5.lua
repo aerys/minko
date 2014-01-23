@@ -39,6 +39,11 @@ solution "minko"
 	include 'plugins/serializer'
 	include 'plugins/oculus'
 	include 'plugins/leap'
+	
+	-- private plugins
+	if os.isdir('plugins/streaming') then
+		include 'plugins/streaming'
+	end
 
 	-- examples
 	if not _OPTIONS['no-examples'] then
@@ -56,6 +61,7 @@ solution "minko"
 		include('examples/picking')
 		include('examples/visibility')
 		include('examples/leap-motion')
+		include('examples/jobs')
 	end
 
 	-- tests

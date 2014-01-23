@@ -30,11 +30,19 @@ namespace minko
 		public AbstractSerializerParser
 	{
 	public:
-		typedef std::shared_ptr<GeometryParser> Ptr;
+		typedef std::shared_ptr<GeometryParser>				Ptr;
+		typedef std::shared_ptr<render::AbstractContext>	AbstractContextPtr;
+		typedef std::shared_ptr<render::IndexBuffer>		IndexBufferPtr;
+		typedef std::shared_ptr<render::VertexBuffer>		VertexBufferPtr;
 
 	private:
-		static std::function<std::shared_ptr<render::IndexBuffer>(std::string, std::shared_ptr<render::AbstractContext>)>		indexBufferParserFunction;
-		static std::function<std::shared_ptr<render::VertexBuffer>(std::string, std::shared_ptr<render::AbstractContext>)>	vertexBufferParserFunction;
+		typedef unsigned char																	uchar;
+		typedef msgpack::type::tuple<std::string, uchar, uchar>									SerializeAttribute;
+		typedef msgpack::type::tuple<uchar, std::string, std::string, std::vector<std::string>> SerializedGeometry;
+
+	private:
+		static std::function<IndexBufferPtr(std::string&, AbstractContextPtr)>	indexBufferParserFunction;
+		static std::function<VertexBufferPtr(std::string&, AbstractContextPtr)>	vertexBufferParserFunction;
 
 	public:
 		inline static
@@ -54,7 +62,7 @@ namespace minko
 		inline
 		static
 		void
-		registerIndexBufferParserFunction(std::function<std::shared_ptr<render::IndexBuffer>(std::string, std::shared_ptr<render::AbstractContext>)> f)
+		registerIndexBufferParserFunction(std::function<IndexBufferPtr(std::string&, AbstractContextPtr)> f)
 		{
 			indexBufferParserFunction = f;
 		}
@@ -62,7 +70,7 @@ namespace minko
 		inline
 		static
 		void
-		registerVertexBufferParserFunction(std::function<std::shared_ptr<render::VertexBuffer>(std::string, std::shared_ptr<render::AbstractContext>)> f)
+		registerVertexBufferParserFunction(std::function<VertexBufferPtr(std::string&, AbstractContextPtr)> f)
 		{
 			vertexBufferParserFunction = f;
 		}
@@ -80,16 +88,19 @@ namespace minko
 		initialize();
 
 		static
-		std::shared_ptr<render::VertexBuffer>
-		deserializeVertexBuffer(std::string serializedVertexBuffer, std::shared_ptr<render::AbstractContext> context);
+		VertexBufferPtr
+		deserializeVertexBuffer(std::string&		serializedVertexBuffer, 
+								AbstractContextPtr	context);
 
 		static
-		std::shared_ptr<render::IndexBuffer>
-		deserializeIndexBuffer(std::string serializedIndexBuffer, std::shared_ptr<render::AbstractContext> context);
+		IndexBufferPtr
+		deserializeIndexBuffer(std::string&			serializedIndexBuffer, 
+							   AbstractContextPtr	context);
 
 		static
-		std::shared_ptr<render::IndexBuffer>
-		deserializeIndexBufferChar(std::string serializedIndexBuffer, std::shared_ptr<render::AbstractContext> context);
+		IndexBufferPtr
+		deserializeIndexBufferChar(std::string&			serializedIndexBuffer, 
+								   AbstractContextPtr	context);
 
 	};
 	}

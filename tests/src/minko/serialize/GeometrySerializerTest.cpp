@@ -39,13 +39,15 @@ TEST_F(GeometrySerializerTest, CubeGeometrySerialization)
 	auto outputAssetLibrary = file::AssetLibrary::create(MinkoTests::context());
 	auto geometryParser		= file::GeometryParser::create();
 
+	std::string	filename = "asset.tmp";
+
 	assetLibrary->geometry("cube", cubeGeometry);
 	geometryWriter->data(cubeGeometry);
-	geometryWriter->write("asset.tmp", assetLibrary, file::Options::create(MinkoTests::context()));
+	geometryWriter->write(filename, assetLibrary, file::Options::create(MinkoTests::context()));
 
 	std::vector<unsigned char>  data;
 	auto						flags = std::ios::in | std::ios::ate | std::ios::binary;
-	std::fstream				file("asset.tmp", flags);
+	std::fstream				file(filename, flags);
 	unsigned int				size = (unsigned int)file.tellg();
 
 	data.resize(size);
@@ -53,7 +55,7 @@ TEST_F(GeometrySerializerTest, CubeGeometrySerialization)
 	file.read((char*)&data[0], size);
 	file.close();
 
-	geometryParser->parse("asset.tmp", "asset.tmp", file::Options::create(MinkoTests::context()), data, outputAssetLibrary);
+	geometryParser->parse(filename, filename, file::Options::create(MinkoTests::context()), data, outputAssetLibrary);
 
 	ASSERT_TRUE(outputAssetLibrary->geometry("cube") != nullptr);
 	ASSERT_TRUE(cubeGeometry->equals(outputAssetLibrary->geometry("cube")));
@@ -66,14 +68,15 @@ TEST_F(GeometrySerializerTest, SphereGeometrySerialization)
 	auto geometryWriter		= file::GeometryWriter::create();
 	auto outputAssetLibrary = file::AssetLibrary::create(MinkoTests::context());
 	auto geometryParser		= file::GeometryParser::create();
+	std::string	filename	= "asset.tmp";
 
 	assetLibrary->geometry("Sphere", sphereGeometry);
 	geometryWriter->data(sphereGeometry);
-	geometryWriter->write("asset.tmp", assetLibrary, file::Options::create(MinkoTests::context()));
+	geometryWriter->write(filename, assetLibrary, file::Options::create(MinkoTests::context()));
 
 	std::vector<unsigned char>  data;
 	auto						flags = std::ios::in | std::ios::ate | std::ios::binary;
-	std::fstream				file("asset.tmp", flags);
+	std::fstream				file(filename, flags);
 	unsigned int				size = (unsigned int)file.tellg();
 
 	data.resize(size);
@@ -81,7 +84,7 @@ TEST_F(GeometrySerializerTest, SphereGeometrySerialization)
 	file.read((char*)&data[0], size);
 	file.close();
 
-	geometryParser->parse("asset.tmp", "asset.tmp", file::Options::create(MinkoTests::context()), data, outputAssetLibrary);
+	geometryParser->parse(filename, filename, file::Options::create(MinkoTests::context()), data, outputAssetLibrary);
 
 	ASSERT_TRUE(outputAssetLibrary->geometry("Sphere") != nullptr);
 	ASSERT_TRUE(sphereGeometry->equals(outputAssetLibrary->geometry("Sphere")));

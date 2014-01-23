@@ -30,8 +30,8 @@ TEST_F(MathTypeSerializerTest, DefaultVector4)
 {
 	auto vec = Vector4::create();
 	std::tuple<uint, std::string> vecSerialized = TypeSerializer::serializeVector4(Any(vec));
-
-	Vector4::Ptr vecResult = Any::cast<Vector4::Ptr>(TypeDeserializer::deserializeVector4(vecSerialized));
+	std::tuple<uint, std::string&> vecSerialized2(std::get<0>(vecSerialized), std::get<1>(vecSerialized));
+	Vector4::Ptr vecResult = Any::cast<Vector4::Ptr>(TypeDeserializer::deserializeVector4(vecSerialized2));
 
 	ASSERT_TRUE(vec->equals(vecResult));
 }
@@ -44,8 +44,8 @@ TEST_F(MathTypeSerializerTest, RandomVector4)
 		MathTypeSerializerTest::random(), 
 		MathTypeSerializerTest::random());
 	std::tuple<uint, std::string> vecSerialized = TypeSerializer::serializeVector4(Any(vec));
-
-	Vector4::Ptr vecResult = Any::cast<Vector4::Ptr>(TypeDeserializer::deserializeVector4(vecSerialized));
+	std::tuple<uint, std::string&> vecSerialized2(std::get<0>(vecSerialized), std::get<1>(vecSerialized));
+	Vector4::Ptr vecResult = Any::cast<Vector4::Ptr>(TypeDeserializer::deserializeVector4(vecSerialized2));
 
 	ASSERT_TRUE(vec->equals(vecResult));
 }
@@ -54,8 +54,8 @@ TEST_F(MathTypeSerializerTest, DefaultVector3)
 {
 	auto vec = Vector3::create();
 	std::tuple<uint, std::string> vecSerialized = TypeSerializer::serializeVector3(Any(vec));
-
-	Vector3::Ptr vecResult = Any::cast<Vector3::Ptr>(TypeDeserializer::deserializeVector3(vecSerialized));
+	std::tuple<uint, std::string&> vecSerialized2(std::get<0>(vecSerialized), std::get<1>(vecSerialized));
+	Vector3::Ptr vecResult = Any::cast<Vector3::Ptr>(TypeDeserializer::deserializeVector3(vecSerialized2));
 
 	ASSERT_TRUE(vec->equals(vecResult));
 }
@@ -67,8 +67,9 @@ TEST_F(MathTypeSerializerTest, RandomVector3)
 		MathTypeSerializerTest::random(),
 		MathTypeSerializerTest::random());
 	std::tuple<uint, std::string> vecSerialized = TypeSerializer::serializeVector3(Any(vec));
+	std::tuple<uint, std::string&> vecSerialized2(std::get<0>(vecSerialized), std::get<1>(vecSerialized));
 
-	Vector3::Ptr vecResult = Any::cast<Vector3::Ptr>(TypeDeserializer::deserializeVector3(vecSerialized));
+	Vector3::Ptr vecResult = Any::cast<Vector3::Ptr>(TypeDeserializer::deserializeVector3(vecSerialized2));
 
 	ASSERT_TRUE(vec->equals(vecResult));
 }
@@ -77,8 +78,9 @@ TEST_F(MathTypeSerializerTest, DefaultVector2)
 {
 	auto vec = Vector2::create();
 	std::tuple<uint, std::string> vecSerialized = TypeSerializer::serializeVector2(Any(vec));
+	std::tuple<uint, std::string&> vecSerialized2(std::get<0>(vecSerialized), std::get<1>(vecSerialized));
 
-	Vector2::Ptr vecResult = Any::cast<Vector2::Ptr>(TypeDeserializer::deserializeVector2(vecSerialized));
+	Vector2::Ptr vecResult = Any::cast<Vector2::Ptr>(TypeDeserializer::deserializeVector2(vecSerialized2));
 
 	ASSERT_TRUE(vec->equals(vecResult));
 }
@@ -89,8 +91,9 @@ TEST_F(MathTypeSerializerTest, RandomVector2)
 		MathTypeSerializerTest::random(),
 		MathTypeSerializerTest::random());
 	std::tuple<uint, std::string> vecSerialized = TypeSerializer::serializeVector2(Any(vec));
+	std::tuple<uint, std::string&> vecSerialized2(std::get<0>(vecSerialized), std::get<1>(vecSerialized));
 
-	Vector2::Ptr vecResult = Any::cast<Vector2::Ptr>(TypeDeserializer::deserializeVector2(vecSerialized));
+	Vector2::Ptr vecResult = Any::cast<Vector2::Ptr>(TypeDeserializer::deserializeVector2(vecSerialized2));
 
 	ASSERT_TRUE(vec->equals(vecResult));
 }
@@ -99,8 +102,9 @@ TEST_F(MathTypeSerializerTest, DefaultMatrix4x4)
 {
 	auto matrix = Matrix4x4::create();
 	std::tuple<uint, std::string> matrixSerialized = TypeSerializer::serializeMatrix4x4(Any(matrix));
+	std::tuple<uint, std::string&> matrixSerialized2(std::get<0>(matrixSerialized), std::get<1>(matrixSerialized));
 
-	Matrix4x4::Ptr matrixResult = Any::cast<Matrix4x4::Ptr>(TypeDeserializer::deserializeMatrix4x4(matrixSerialized));
+	Matrix4x4::Ptr matrixResult = Any::cast<Matrix4x4::Ptr>(TypeDeserializer::deserializeMatrix4x4(matrixSerialized2));
 
 	ASSERT_TRUE(matrix->equals(matrixResult));
 }
@@ -114,8 +118,9 @@ TEST_F(MathTypeSerializerTest, RandomMatrix4x4)
 		MathTypeSerializerTest::random(), MathTypeSerializerTest::random(), MathTypeSerializerTest::random(), MathTypeSerializerTest::random(), 
 		MathTypeSerializerTest::random(), MathTypeSerializerTest::random(), MathTypeSerializerTest::random(), MathTypeSerializerTest::random());
 	std::tuple<uint, std::string> matrixSerialized = TypeSerializer::serializeMatrix4x4(Any(matrix));
+	std::tuple<uint, std::string&> matrixSerialized2(std::get<0>(matrixSerialized), std::get<1>(matrixSerialized));
 
-	Matrix4x4::Ptr matrixResult = Any::cast<Matrix4x4::Ptr>(TypeDeserializer::deserializeMatrix4x4(matrixSerialized));
+	Matrix4x4::Ptr matrixResult = Any::cast<Matrix4x4::Ptr>(TypeDeserializer::deserializeMatrix4x4(matrixSerialized2));
 
 	ASSERT_TRUE(matrix->equals(matrixResult));
 }
