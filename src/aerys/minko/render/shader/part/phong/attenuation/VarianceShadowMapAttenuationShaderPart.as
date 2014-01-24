@@ -35,7 +35,7 @@ package aerys.minko.render.shader.part.phong.attenuation
 											 lightBleedingCorrection	: Function,
 											 lightBleedingBias 			: SFloat) : SFloat
 		{
-			var p				: SFloat	= lessEqual(depth, moment1);
+			var p				: SFloat	= lessThan(depth, moment1);
 			var e_x2			: SFloat	= moment2;						// e(x^2)
 			var ex_2			: SFloat	= multiply(moment1, moment1);	// e(x)^2
 			var variance		: SFloat	= subtract(e_x2, ex_2);
@@ -110,9 +110,9 @@ package aerys.minko.render.shader.part.phong.attenuation
 				lightBleedingBias
 			);
 			
-			shadow = coloredShadow(lightId, shadow);
+		//	shadow = coloredShadow(lightId, shadow);
 						
-			var insideShadow 	: SFloat = and(and(lessEqual(uv.x, 1), greaterThan(uv.x, 0)), and(lessEqual(uv.y, 1), greaterThan(uv.y, 0)));
+			var insideShadow 	: SFloat = and(and(lessThan(uv.x, 1), greaterEqual(uv.x, 0)), and(lessThan(uv.y, 1), greaterEqual(uv.y, 0)));
 			var outsideShadow	: SFloat = subtract(1, insideShadow);
 			
 			return add(shadow.scaleBy(insideShadow), outsideShadow);
