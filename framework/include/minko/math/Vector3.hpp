@@ -206,6 +206,13 @@ namespace minko
 
 			inline
 			Ptr
+			add(float dx, float dy, float dz)
+			{
+				return setTo(_x + dx, _y + dy, _z + dz);
+			}
+
+			inline
+			Ptr
 			normalize()
 			{
 				float l = sqrtf(_x * _x + _y * _y + _z * _z);
