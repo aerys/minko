@@ -31,42 +31,43 @@ solution "minko"
 	-- plugins
 	include 'plugins/jpeg'
 	include 'plugins/png'
-	include 'plugins/mk'
-	include 'plugins/bullet'
-	include 'plugins/particles'
-	include 'plugins/webgl'
+	-- include 'plugins/mk'
+	-- include 'plugins/bullet'
+	-- include 'plugins/particles'
+	-- include 'plugins/webgl'
 	include 'plugins/sdl'
-	include 'plugins/angle'
-	include 'plugins/fx'
-	include 'plugins/assimp'
-	include 'plugins/offscreen'
-	include 'plugins/lua'
-	include 'plugins/serializer'
-	include 'plugins/oculus'
+	-- include 'plugins/angle'
+	-- include 'plugins/fx'
+	-- include 'plugins/assimp'
+	-- include 'plugins/offscreen'
+	-- include 'plugins/lua'
+	-- include 'plugins/serializer'
+	-- include 'plugins/oculus'
 	-- include 'plugins/leap'
 	
 	-- private plugins
-	if os.isdir('plugins/streaming') then
-		include 'plugins/streaming'
-	end
+	-- if os.isdir('plugins/streaming') then
+		-- include 'plugins/streaming'
+	-- end
 
 	-- examples
 	if not _OPTIONS['no-examples'] then
-		include('examples/assimp')
+		-- include('examples/assimp')
 		include('examples/cube')
+		include('examples/cube-texture')
 		include('examples/effect-config')
-		include('examples/light')
-		include('examples/raycasting')
-		include('examples/sponza')
-		include('examples/stencil')
-		include('examples/lua-scripts')
-		include('examples/line-geometry')
-		include('examples/frustum')
-		include('examples/serializer')
-		include('examples/picking')
-		include('examples/visibility')
+		-- include('examples/light')
+		-- include('examples/raycasting')
+		-- include('examples/sponza')
+		-- include('examples/stencil')
+		-- include('examples/lua-scripts')
+		-- include('examples/line-geometry')
+		-- include('examples/frustum')
+		-- include('examples/serializer')
+		-- include('examples/picking')
+		-- include('examples/visibility')
 		-- include('examples/leap-motion')
-		include('examples/jobs')
+		-- include('examples/jobs')
 
 	end
 

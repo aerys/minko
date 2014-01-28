@@ -39,6 +39,7 @@ namespace minko
 
 		private:
             typedef std::shared_ptr<AbstractContext>				AbsCtxPtr;
+			typedef std::shared_ptr<AbstractTexture>				AbsTexturePtr;
 			typedef std::shared_ptr<data::Provider>					ProviderPtr;
             typedef std::shared_ptr<data::Container>				ContainerPtr;
 			typedef data::Container::PropertyChangedSignal::Slot	ContainerPropertyChangedSlot;
@@ -76,9 +77,10 @@ namespace minko
             std::vector<WrapMode>                                       _textureWrapMode;
             std::vector<TextureFilter>                                  _textureFilters;
             std::vector<MipFilter>                                      _textureMipFilters;
+			std::vector<TextureType>									_textureTypes;
             uint                                                        _numIndices;
             uint                                                        _indexBuffer;
-            std::shared_ptr<render::Texture>                            _target;
+            AbsTexturePtr					                            _target;
             render::Blending::Mode                                      _blendMode;
 			bool														_colorMask;
             bool                                                        _depthMask;
@@ -134,7 +136,7 @@ namespace minko
 			}
 
             inline
-            std::shared_ptr<Texture>
+            AbsTexturePtr
             target() const
             {
                 return _target;
@@ -161,7 +163,7 @@ namespace minko
                       ContainerPtr              rootData);
 
 			void
-			render(const std::shared_ptr<AbstractContext>& context, std::shared_ptr<render::Texture> renderTarget);
+			render(const std::shared_ptr<AbstractContext>& context, AbsTexturePtr renderTarget);
 
 			void
 			initialize(ContainerPtr				                    data,
@@ -192,7 +194,7 @@ namespace minko
 			bindVertexAttribute(const std::string& propertyName, int location, uint& vertexBufferId);
 			
 			void
-			bindTextureSampler2D(const std::string& propertyName, int location, uint& textureId, const SamplerState&);
+			bindTextureSampler(const std::string& propertyName, int location, uint& textureId, const SamplerState&);
 
 			void
 			bindUniform(const std::string& propertyName, ProgramInputs::Type, int location);

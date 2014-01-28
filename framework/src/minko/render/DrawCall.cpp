@@ -30,6 +30,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/VertexBuffer.hpp"
 #include "minko/render/IndexBuffer.hpp"
 #include "minko/render/Texture.hpp"
+#include "minko/render/CubeTexture.hpp"
 #include "minko/render/Program.hpp"
 #include "minko/render/States.hpp"
 #include "minko/data/Container.hpp"
@@ -148,12 +149,13 @@ DrawCall::bindProgramInputs()
 			}
 	
 		case ProgramInputs::Type::sampler2d:
+		case ProgramInputs::Type::samplerCube:
 			{
 				auto& samplerState = _states->samplers().count(inputName)
 					? _states->samplers().at(inputName)
 					: _defaultSamplerState;
 
-				bindTextureSampler2D(inputName, location, textureId, samplerState);
+				bindTextureSampler(inputName, location, textureId, samplerState);
 				break;
 			}
 	
@@ -225,10 +227,10 @@ DrawCall::bindVertexAttribute(const std::string&	inputName,
 }
 
 void
-DrawCall::bindTextureSampler2D(const std::string&	inputName,
-							   int					location,
-							   uint&				textureId,
-   							   const SamplerState&	samplerState)
+DrawCall::bindTextureSampler(const std::string&		inputName,
+							 int					location,
+							 uint&					textureId,
+   							 const SamplerState&	samplerState)
 {
 #ifdef DEBUG
 	if (location < 0)
@@ -241,18 +243,18 @@ DrawCall::bindTextureSampler2D(const std::string&	inputName,
 	{
 		++textureId;
 
-		auto& propertyName = std::get<0>(_uniformBindings.at(inputName));
-		const auto& container = getDataContainer(std::get<1>(_uniformBindings.at(inputName)));
+		auto& propertyName		= std::get<0>(_uniformBindings.at(inputName));
+		const auto& container	= getDataContainer(std::get<1>(_uniformBindings.at(inputName)));
 
 		if (container && container->hasProperty(propertyName))
 		{
-			auto texture = container->get<Texture::Ptr>(propertyName)->id();
+			auto texture = container->get<AbstractTexture::Ptr>(propertyName);
 
-			_textures[textureId] = texture;
-			_textureLocations[textureId] = location;
-			_textureWrapMode[textureId] = std::get<0>(samplerState);
-			_textureFilters[textureId] = std::get<1>(samplerState);
-			_textureMipFilters[textureId] = std::get<2>(samplerState);
+			_textures[textureId]			= texture->id();
+			_textureLocations[textureId]	= location;
+			_textureWrapMode[textureId]		= std::get<0>(samplerState);
+			_textureFilters[textureId]		= std::get<1>(samplerState);
+			_textureMipFilters[textureId]	= std::get<2>(samplerState);
 		}
 
 		if (_referenceChangedSlots.count(propertyName) == 0)			
@@ -261,11 +263,11 @@ DrawCall::bindTextureSampler2D(const std::string&	inputName,
 			// See issue #1848 in Emscripten: https://github.com/kripken/emscripten/issues/1848
 			auto that = shared_from_this();
 			_referenceChangedSlots[propertyName].push_back(container->propertyReferenceChanged(propertyName)->connect([&, that](Container::Ptr, const std::string&) {
-				that->bindTextureSampler2D(inputName, location, textureId, samplerState);
+				that->bindTextureSampler(inputName, location, textureId, samplerState);
 			}));
 #else
 			_referenceChangedSlots[propertyName].push_back(container->propertyReferenceChanged(propertyName)->connect(std::bind(
-				&DrawCall::bindTextureSampler2D, shared_from_this(), inputName, location, textureId, samplerState
+				&DrawCall::bindTextureSampler, shared_from_this(), inputName, location, textureId, samplerState
 			)));
 #endif
 		}
@@ -533,7 +535,7 @@ DrawCall::bindStates()
 		_stateBindings, "scissorBox.height", _states->scissorBox().height
 	);
 
-	_target = getDataProperty<Texture::Ptr>(
+	_target = getDataProperty<AbstractTexture::Ptr>(
 		_stateBindings, "target", _states->target()
 	);
 	
@@ -542,7 +544,7 @@ DrawCall::bindStates()
 }
 
 void
-DrawCall::render(const AbstractContext::Ptr& context, std::shared_ptr<render::Texture> renderTarget)
+DrawCall::render(const AbstractContext::Ptr& context, AbstractTexture::Ptr renderTarget)
 {
 	if (!renderTarget)
 		renderTarget = _target;
@@ -627,16 +629,27 @@ DrawCall::render(const AbstractContext::Ptr& context, std::shared_ptr<render::Te
 
 	auto textureOffset = 0;
 	for (auto textureLocationAndPtr : _program->textures())
-		context->setTextureAt(textureOffset++, textureLocationAndPtr.second->id(), textureLocationAndPtr.first);
+		context->setTextureAt(
+			textureOffset++, 
+			textureLocationAndPtr.second->id(), 
+			textureLocationAndPtr.first
+		);
 
 	for (uint textureId = 0; textureId < _textures.size() - textureOffset; ++textureId)
     {
         auto texture = _textures[textureId];
 
-        context->setTextureAt(textureOffset + textureId, texture, _textureLocations[textureId]);
+        context->setTextureAt(
+			textureOffset + textureId, 
+			texture, 
+			_textureLocations[textureId]
+		);
         if (texture > 0)
             context->setSamplerStateAt(
-				textureOffset + textureId, _textureWrapMode[textureId], _textureFilters[textureId], _textureMipFilters[textureId]
+				textureOffset + textureId,
+				_textureWrapMode[textureId],
+				_textureFilters[textureId],
+				_textureMipFilters[textureId]
             );
     }
 

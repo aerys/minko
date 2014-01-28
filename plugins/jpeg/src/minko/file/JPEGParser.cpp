@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/Options.hpp"
 #include "minko/file/AssetLibrary.hpp"
 #include "minko/render/Texture.hpp"
+#include "minko/render/CubeTexture.hpp"
 
 #include "jpgd.h"
 
@@ -47,11 +48,32 @@ JPEGParser::parse(const std::string&				filename,
 		(const unsigned char*)&data[0], data.size(), &width, &height, &comps, 3
 	);
 
-	auto format = render::Texture::DataFormat::RGBA;
+	auto format = render::TextureFormat::RGBA;
 	if (comps == 3 || comps == 1)
-		format	= render::Texture::DataFormat::RGB;
+		format	= render::TextureFormat::RGB;
 
-	auto texture = render::Texture::create(options->context(), width, height, options->generateMipmaps(), false, options->resizeSmoothly(), filename);
+	render::AbstractTexture::Ptr texture = nullptr;
+
+	if (!options->isCubeTexture())
+		texture	= render::Texture::create(
+			options->context(), 
+			width, 
+			height, 
+			options->generateMipmaps(), 
+			false, 
+			options->resizeSmoothly(), 
+			filename
+		);
+	else
+		texture = render::CubeTexture::create(
+			options->context(), 
+			width, 
+			height, 
+			options->generateMipmaps(), 
+			false, 
+			options->resizeSmoothly(), 
+			filename
+		);
 
 	texture->data(bmpData, format);
 	texture->upload();
