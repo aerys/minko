@@ -40,10 +40,16 @@ solution "minko"
 	include 'plugins/oculus'
 	include 'plugins/leap'
 	
+	-- private plugins
+	-- if os.isdir('plugins/streaming') then
+		-- include 'plugins/streaming'
+	-- end
+
 	-- examples
 	if not _OPTIONS['no-examples'] then
 		include('examples/assimp')
 		include('examples/cube')
+		include('examples/cube-texture')
 		include('examples/effect-config')
 		include('examples/light')
 		include('examples/raycasting')

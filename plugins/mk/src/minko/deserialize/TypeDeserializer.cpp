@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/deserialize/NameConverter.hpp"
 #include "minko/math/Vector3.hpp"
 #include "minko/math/Vector4.hpp"
-#include "minko/render/Texture.hpp"
+#include "minko/render/AbstractTexture.hpp"
 #include "minko/render/Blending.hpp"
 
 using namespace minko;
@@ -54,31 +54,31 @@ TypeDeserializer::initIdToFunctionMap()
 }
 
 void
-TypeDeserializer::texture(std::map<int, render::Texture::Ptr>&	idToTexture,
-						  std::string&							propertyName,
-						  std::shared_ptr<data::Provider>		material,
-						  Qark::Map&							object,
-						  std::shared_ptr<NameConverter>		nameConverter)
+TypeDeserializer::texture(std::map<int, render::AbstractTexture::Ptr>&	idToTexture,
+						  std::string&									propertyName,
+						  std::shared_ptr<data::Provider>				material,
+						  Qark::Map&									object,
+						  std::shared_ptr<NameConverter>				nameConverter)
 {
 	material->set(nameConverter->convertString(propertyName), idToTexture[Any::cast<int>(object["id"])]);
 }
 
 void
-TypeDeserializer::boolean(std::map<int, render::Texture::Ptr>&	idToTexture,
-						  std::string&							propertyName,
-						  std::shared_ptr<data::Provider>		material,
-						  Qark::Map&							object,
-						  std::shared_ptr<NameConverter>		nameConverter)
+TypeDeserializer::boolean(std::map<int, render::AbstractTexture::Ptr>&	idToTexture,
+						  std::string&									propertyName,
+						  std::shared_ptr<data::Provider>				material,
+						  Qark::Map&									object,
+						  std::shared_ptr<NameConverter>				nameConverter)
 {
 	material->set(nameConverter->convertString(propertyName), Any::cast<bool>(object["value"]));
 }
 
 void
-TypeDeserializer::number(std::map<int, render::Texture::Ptr>&	idToTexture,
-						 std::string&							propertyName,
-						 std::shared_ptr<data::Provider>		material,
-						 Qark::Map&								object,
-						 std::shared_ptr<NameConverter>			nameConverter)
+TypeDeserializer::number(std::map<int, render::AbstractTexture::Ptr>&	idToTexture,
+						 std::string&									propertyName,
+						 std::shared_ptr<data::Provider>				material,
+						 Qark::Map&										object,
+						 std::shared_ptr<NameConverter>					nameConverter)
 {
 	if (propertyName == "diffuseColor" || propertyName == "specular")
 	{
@@ -121,11 +121,11 @@ TypeDeserializer::number(std::map<int, render::Texture::Ptr>&	idToTexture,
 
 // tmp, will be removed when all mk write vector4 as vector4b
 void
-TypeDeserializer::vector4(std::map<int, render::Texture::Ptr>&	idToTexture,
-						  std::string&							propertyName,
-						  std::shared_ptr<data::Provider>		material,
-						  Qark::Map&							object,
-						  std::shared_ptr<NameConverter>		nameConverter)
+TypeDeserializer::vector4(std::map<int, render::AbstractTexture::Ptr>&	idToTexture,
+						  std::string&									propertyName,
+						  std::shared_ptr<data::Provider>				material,
+						  Qark::Map&									object,
+						  std::shared_ptr<NameConverter>				nameConverter)
 {
 	std::vector<Any>&	vectorValues	= Any::cast<std::vector<Any>&>(object["value"]);
 	
@@ -162,11 +162,11 @@ TypeDeserializer::vector4(std::map<int, render::Texture::Ptr>&	idToTexture,
 }
 
 void
-TypeDeserializer::vector4b(std::map<int, std::shared_ptr<render::Texture>>&	idToTexture,
-						   std::string&										propertyName,
-						   std::shared_ptr<data::Provider>					material,
-						   Qark::Map&										object,
-						   std::shared_ptr<NameConverter>					nameConverter)
+TypeDeserializer::vector4b(std::map<int, std::shared_ptr<render::AbstractTexture>>&	idToTexture,
+						   std::string&												propertyName,
+						   std::shared_ptr<data::Provider>							material,
+						   Qark::Map&												object,
+						   std::shared_ptr<NameConverter>							nameConverter)
 {
 	Qark::ByteArray&		vectorData	= Any::cast<Qark::ByteArray&>(object["value"]);
 	std::vector<float>		datas(4, 0);
@@ -208,18 +208,18 @@ TypeDeserializer::matrix4x4(Any& matrixObject)
 }
 
 void
-TypeDeserializer::unsupport(std::map<int, std::shared_ptr<render::Texture>>&	idToTexture,
-							std::string&										propertyName,
-							std::shared_ptr<data::Provider>						material,
-							Qark::Map&											object,
-							std::shared_ptr<NameConverter>						nameConverter)
+TypeDeserializer::unsupport(std::map<int, std::shared_ptr<render::AbstractTexture>>&	idToTexture,
+							std::string&												propertyName,
+							std::shared_ptr<data::Provider>								material,
+							Qark::Map&													object,
+							std::shared_ptr<NameConverter>								nameConverter)
 {
 }
 
 data::Provider::Ptr
 TypeDeserializer::provider(data::Provider::Ptr					defaultValues,
 						   std::vector<Any>&					properties,
-						   std::map<int, render::Texture::Ptr>&	idToTexture,
+						   std::map<int, render::AbstractTexture::Ptr>&	idToTexture,
 						   NameConverter::Ptr					nameConverter)
 {
 	data::Provider::Ptr material = data::Provider::create(defaultValues);
