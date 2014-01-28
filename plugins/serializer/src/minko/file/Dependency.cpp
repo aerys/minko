@@ -72,13 +72,13 @@ Dependency::registerDependency(std::shared_ptr<data::Provider> material)
 }
 
 bool
-Dependency::hasDependency(std::shared_ptr<render::Texture> texture)
+Dependency::hasDependency(AbsTexturePtr texture)
 {
 	return _textureDependencies.find(texture) != _textureDependencies.end();
 }
 
 uint
-Dependency::registerDependency(std::shared_ptr<render::Texture> texture)
+Dependency::registerDependency(AbsTexturePtr texture)
 {
 	if (!hasDependency(texture))
 		_textureDependencies[texture] = _currentId++;
@@ -125,14 +125,14 @@ Dependency::registerReference(uint referenceId, std::shared_ptr<data::Provider> 
 	_materialReferences[referenceId] = material;
 }
 
-std::shared_ptr<render::Texture>
+Dependency::AbsTexturePtr
 Dependency::getTextureReference(uint textureId)
 {
 	return _textureReferences[textureId];
 }
 
 void
-Dependency::registerReference(uint referenceId, std::shared_ptr<render::Texture> texture)
+Dependency::registerReference(uint referenceId, AbsTexturePtr texture)
 {
 	_textureReferences[referenceId] = texture;
 }
