@@ -13,12 +13,17 @@ uniform mat4 modelToWorldMatrix;
 uniform mat4 worldToScreenMatrix;
 
 varying vec2 vertexUV;
+varying vec3 vertexUVW;
 
 void main(void)
 {
 	#ifdef DIFFUSE_MAP
 		vertexUV = uv;
 	#endif
+
+	#ifdef DIFFUSE_CUBEMAP
+		vertexUVW = position;
+	#endif 
 
 	vec4 pos = vec4(position, 1.0);
 
