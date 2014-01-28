@@ -32,7 +32,7 @@ namespace minko
 		// typedef
 		public :
 			typedef	std::function<void(
-				std::map<int, std::shared_ptr<render::Texture>>&, 
+				std::map<int, std::shared_ptr<render::AbstractTexture>>&, 
 				std::string&, 
 				std::shared_ptr<data::Provider>, 
 				Qark::Map&, 
@@ -52,57 +52,57 @@ namespace minko
 
 			static
 			std::shared_ptr<data::Provider>
-			provider(std::shared_ptr<data::Provider>					defaultValues,
-					 std::vector<Any>&									properties,
-					 std::map<int, std::shared_ptr<render::Texture>>&	idToTexture,
-					 std::shared_ptr<NameConverter>						nameConverter);
+			provider(std::shared_ptr<data::Provider>							defaultValues,
+					 std::vector<Any>&											properties,
+					 std::map<int, std::shared_ptr<render::AbstractTexture>>&	idToTexture,
+					 std::shared_ptr<NameConverter>								nameConverter);
 
 			static
 			void
-			texture(std::map<int, std::shared_ptr<render::Texture>>&	idToTexture,
-					std::string&										propertyName,
-					std::shared_ptr<data::Provider>						material,
-					Qark::Map&											object,
-					std::shared_ptr<NameConverter>						nameConverter);
+			texture(std::map<int, std::shared_ptr<render::AbstractTexture>>&	idToTexture,
+					std::string&												propertyName,
+					std::shared_ptr<data::Provider>								material,
+					Qark::Map&													object,
+					std::shared_ptr<NameConverter>								nameConverter);
 
 			static
 			void
-			boolean(std::map<int, std::shared_ptr<render::Texture>>&	idToTexture,
-				    std::string&										propertyName,
-				    std::shared_ptr<data::Provider>						material,
-				    Qark::Map&											object,
-				    std::shared_ptr<NameConverter>						nameConverter);
+			boolean(std::map<int, std::shared_ptr<render::AbstractTexture>>&	idToTexture,
+				    std::string&												propertyName,
+				    std::shared_ptr<data::Provider>								material,
+				    Qark::Map&													object,
+				    std::shared_ptr<NameConverter>								nameConverter);
 
 			static
 			void
-			number(std::map<int, std::shared_ptr<render::Texture>>&	idToTexture,
-				   std::string&										propertyName,
-				   std::shared_ptr<data::Provider>					material,
-				   Qark::Map&										object,
-				   std::shared_ptr<NameConverter>					nameConverter);
+			number(std::map<int, std::shared_ptr<render::AbstractTexture>>&	idToTexture,
+				   std::string&												propertyName,
+				   std::shared_ptr<data::Provider>							material,
+				   Qark::Map&												object,
+				   std::shared_ptr<NameConverter>							nameConverter);
 
 			static
 			void
-			vector4(std::map<int, std::shared_ptr<render::Texture>>&	idToTexture,
-				    std::string&										propertyName,
-				    std::shared_ptr<data::Provider>						material,
-				    Qark::Map&											object,
-				    std::shared_ptr<NameConverter>						nameConverter);
+			vector4(std::map<int, std::shared_ptr<render::AbstractTexture>>&	idToTexture,
+				    std::string&												propertyName,
+				    std::shared_ptr<data::Provider>								material,
+				    Qark::Map&													object,
+				    std::shared_ptr<NameConverter>								nameConverter);
 
 						static
 			void
-			vector4b(std::map<int, std::shared_ptr<render::Texture>>&	idToTexture,
-				     std::string&										propertyName,
-				     std::shared_ptr<data::Provider>					material,
-				     Qark::Map&											object,
-				     std::shared_ptr<NameConverter>						nameConverter);
+			vector4b(std::map<int, std::shared_ptr<render::AbstractTexture>>&	idToTexture,
+				     std::string&												propertyName,
+				     std::shared_ptr<data::Provider>							material,
+				     Qark::Map&													object,
+				     std::shared_ptr<NameConverter>								nameConverter);
 
 			void
-			unsupport(std::map<int, std::shared_ptr<render::Texture>>&	idToTexture,
-				      std::string&										propertyName,
-				      std::shared_ptr<data::Provider>					material,
-				      Qark::Map&										object,
-				      std::shared_ptr<NameConverter>					nameConverter);
+			unsupport(std::map<int, std::shared_ptr<render::AbstractTexture>>&	idToTexture,
+				      std::string&												propertyName,
+				      std::shared_ptr<data::Provider>							material,
+				      Qark::Map&												object,
+				      std::shared_ptr<NameConverter>							nameConverter);
 
 		private:
 			static
