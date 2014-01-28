@@ -352,8 +352,8 @@ ASSIMPParser::createMeshSurface(scene::Node::Ptr 	minkoNode,
 	{
 		if ((texFound = material->GetTexture(static_cast<aiTextureType>(typeAndString.first), 0, &path)) == AI_SUCCESS)
 		{
-			auto texturePath = std::string(path.data);
-			auto texture = _assetLibrary->texture(texturePath);
+			auto texturePath	= std::string(path.data);
+			auto texture		= _assetLibrary->texture(texturePath);
 
 			if (!texturePath.empty() && texture)
 				provider->set(typeAndString.second, texture);

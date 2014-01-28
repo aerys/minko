@@ -32,7 +32,7 @@
 			"name" : "windows",
 			"configuration" : [ "windows" ],
 			"uniformBindings" : {
-				"diffuseMap"	: { "property" : "material.diffuseMap", "default" : "windows.jpg" }
+				"diffuseMap"	: { "property" : "material.diffuseMap", "default" : "effect/windows.jpg" }
 			},
 			"passes" : [ "basic pass" ]
 		},
@@ -40,7 +40,7 @@
 			"name" : "macosx",
 			"configuration" : [ "macosx" ],
 			"uniformBindings" : {
-				"diffuseMap"	: { "property" : "material.diffuseMap", "default" : "macosx.jpg" }
+				"diffuseMap"	: { "property" : "material.diffuseMap", "default" : "effect/macosx.jpg" }
 			},
 			"passes" : [ "basic pass" ]
 		},
@@ -48,7 +48,7 @@
 			"name" : "linux",
 			"configuration" : [ "linux" ],
 			"uniformBindings" : {
-				"diffuseMap"	: { "property" : "material.diffuseMap", "default" : "linux.jpg" }
+				"diffuseMap"	: { "property" : "material.diffuseMap", "default" : "effect/linux.jpg" }
 			},
 			"passes" : [ "basic pass" ]
 		}

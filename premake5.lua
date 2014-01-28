@@ -62,6 +62,7 @@ solution "minko"
 		include('examples/visibility')
 		-- include('examples/leap-motion')
 		include('examples/jobs')
+		include('examples/sky-box')
 
 	end
 
