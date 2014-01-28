@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/deserialize/MkTypes.hpp"
 #include "minko/Qark.hpp"
 #include "minko/file/AbstractParser.hpp"
-#include "minko/render/Texture.hpp"
+#include "minko/render/AbstractTexture.hpp"
 #include "minko/deserialize/TypeDeserializer.hpp"
 #include "minko/file/Options.hpp"
 #include "minko/material/Material.hpp"

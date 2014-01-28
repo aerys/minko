@@ -34,8 +34,8 @@ namespace minko
 			typedef std::shared_ptr<AssetsDeserializer> Ptr;
 
 		private:
-			typedef std::map<int, std::shared_ptr<render::Texture>>		TextureMap;
-			typedef std::map<int, std::shared_ptr<data::Provider>>		MaterialMap;
+			typedef std::map<int, std::shared_ptr<render::AbstractTexture>>		TextureMap;
+			typedef std::map<int, std::shared_ptr<data::Provider>>				MaterialMap;
 
 		private:
 			TextureMap							_idToTexture;
@@ -60,7 +60,7 @@ namespace minko
 			}
 
 			inline
-			std::shared_ptr<render::Texture>
+			std::shared_ptr<render::AbstractTexture>
 			texture(int id)
 			{
 				return _idToTexture[id];
