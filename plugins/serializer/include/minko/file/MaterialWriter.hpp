@@ -40,7 +40,7 @@ namespace minko
 
 		public:
 			typedef std::shared_ptr<MaterialWriter>						Ptr;
-			typedef std::shared_ptr<render::Texture>					TexturePtr;
+			typedef std::shared_ptr<render::AbstractTexture>			TexturePtr;
 			typedef msgpack::type::tuple<uint, std::string>				TupleIntString;
 			typedef msgpack::type::tuple<std::string, TupleIntString>	ComplexPropertyTuple;
 			typedef msgpack::type::tuple<std::string, float>			BasicPropertyTuple;
@@ -87,13 +87,13 @@ namespace minko
 			}
 
 			template <typename T>
-			typename std::enable_if<!std::is_arithmetic<T>::value && !std::is_base_of<std::shared_ptr<render::Texture>, T>::value, bool>::type
-			serializeMaterialValue(material::Material::Ptr																			material, 
-								   	std::string&																				propertyName,
-								   	file::AssetLibrary::Ptr																	assets,
+			typename std::enable_if<!std::is_arithmetic<T>::value && !std::is_base_of<std::shared_ptr<render::AbstractTexture>, T>::value, bool>::type
+			serializeMaterialValue(material::Material::Ptr										material, 
+								   	std::string&												propertyName,
+								   	file::AssetLibrary::Ptr										assets,
 									std::vector<ComplexPropertyTuple>							*complexSerializedProperties,
 									std::vector<BasicPropertyTuple>								*basicTypeSeriliazedProperties,
-								   	Dependency::Ptr																			dependency)
+								   	Dependency::Ptr												dependency)
 			{
 				if (_typeToWriteFunction.find(&typeid(T)) != _typeToWriteFunction.end() &&
 					material->propertyHasType<T>(propertyName))

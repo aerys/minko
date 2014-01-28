@@ -483,11 +483,12 @@ OpenGLES2Context::deleteIndexBuffer(const uint indexBuffer)
 	checkForErrors();
 }
 
-const uint
-OpenGLES2Context::createTexture(uint 	width,
-								uint 	height,
-								bool			mipMapping,
-								bool            optimizeForRenderToTexture)
+uint
+OpenGLES2Context::createTexture(TextureType	type,
+								uint 		width,
+								uint 		height,
+								bool		mipMapping,
+								bool        optimizeForRenderToTexture)
 {
 	uint texture;
 
@@ -515,20 +516,26 @@ OpenGLES2Context::createTexture(uint 	width,
 	// texture Specifies the name of a texture.
 	//
 	// glBindTexture bind a named texture to a texturing target
-	glBindTexture(GL_TEXTURE_2D, texture);
+	const auto glTarget = type == TextureType::Texture2D 
+		? GL_TEXTURE_2D 
+		: GL_TEXTURE_CUBE_MAP;
+
+	glBindTexture(glTarget, texture);
 
 	// default sampler states
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(glTarget, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(glTarget, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(glTarget, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(glTarget, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
 	_textures.push_back(texture);
-	_textureSizes[texture] = std::make_pair(width, height);
-	_textureHasMipmaps[texture] = mipMapping;
-	_currentWrapMode[texture] = WrapMode::CLAMP;
-	_currentTextureFilter[texture] = TextureFilter::NEAREST;
-	_currentMipFilter[texture] = MipFilter::NONE;
+	_textureSizes[texture]			= std::make_pair(width, height);
+	_textureHasMipmaps[texture]		= mipMapping;
+	_textureTypes[texture]			= type;
+
+	_currentWrapMode[texture]		= WrapMode::CLAMP;
+	_currentTextureFilter[texture]	= TextureFilter::NEAREST;
+	_currentMipFilter[texture]		= MipFilter::NONE;
 
 	// http://www.opengl.org/sdk/docs/man/xhtml/glTexImage2D.xml
 	//
@@ -558,27 +565,63 @@ OpenGLES2Context::createTexture(uint 	width,
 			 size > 0;
 			 size = size >> 1, w = w >> 1, h = h >> 1)
 		{
-			glTexImage2D(GL_TEXTURE_2D, level++, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+			 if (type == TextureType::Texture2D)
+				glTexImage2D(GL_TEXTURE_2D, level, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+			else
+			{
+				glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, level, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+				glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, level, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+				glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, level, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+				glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, level, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+				glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, level, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+				glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, level, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+			}
+
+			++level;
 		}
 	}
 	else
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+	{
+		if (type == TextureType::Texture2D)
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+		else
+		{
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+		}
+	}
 
 	if (optimizeForRenderToTexture)
-		createRTTBuffers(texture, width, height);
+		createRTTBuffers(type, texture, width, height);
 
 	checkForErrors();
 
 	return texture;
 }
 
-void
-OpenGLES2Context::uploadTextureData(const uint 	texture,
-									uint 		width,
-									uint 		height,
-									uint 		mipLevel,
-									void*		data)
+TextureType
+OpenGLES2Context::getTextureType(uint textureId) const
 {
+	const auto foundTypeIt = _textureTypes.find(textureId);
+
+	assert(foundTypeIt != _textureTypes.end());
+
+	return foundTypeIt->second;
+}
+
+void
+OpenGLES2Context::uploadTexture2dData(uint 		texture,
+									  uint 		width,
+									  uint 		height,
+									  uint 		mipLevel,
+									  void*		data)
+{
+	assert(getTextureType(texture) == TextureType::Texture2D);
+
 	glBindTexture(GL_TEXTURE_2D, texture);
 	glTexImage2D(GL_TEXTURE_2D, mipLevel, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 
@@ -586,7 +629,50 @@ OpenGLES2Context::uploadTextureData(const uint 	texture,
 }
 
 void
-OpenGLES2Context::deleteTexture(const uint texture)
+OpenGLES2Context::uploadCubeTextureData(uint				texture,
+										CubeTexture::Face	face,
+										unsigned int 		width,
+										unsigned int 		height,
+										unsigned int 		mipLevel,
+										void*				data)
+{
+	assert(getTextureType(texture) == TextureType::CubeTexture);
+
+	glBindTexture(GL_TEXTURE_CUBE_MAP, texture);
+
+	GLenum cubeFace;
+	switch (face)
+	{
+	case minko::render::CubeTexture::Face::POSITIVE_X:
+		cubeFace = GL_TEXTURE_CUBE_MAP_POSITIVE_X;
+		break;
+	case minko::render::CubeTexture::Face::NEGATIVE_X:
+		cubeFace = GL_TEXTURE_CUBE_MAP_NEGATIVE_X;
+		break;
+	case minko::render::CubeTexture::Face::POSITIVE_Y:
+		cubeFace = GL_TEXTURE_CUBE_MAP_POSITIVE_Y;
+		break;
+	case minko::render::CubeTexture::Face::NEGATIVE_Y:
+		cubeFace = GL_TEXTURE_CUBE_MAP_NEGATIVE_Y;
+		break;
+	case minko::render::CubeTexture::Face::POSITIVE_Z:
+		cubeFace = GL_TEXTURE_CUBE_MAP_POSITIVE_Z;
+		break;
+	case minko::render::CubeTexture::Face::NEGATIVE_Z:
+		cubeFace = GL_TEXTURE_CUBE_MAP_NEGATIVE_Z;
+		break;
+	default:
+		throw;
+		break;
+	}
+
+	glTexImage2D(cubeFace, mipLevel, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+
+	checkForErrors();
+}
+
+void
+OpenGLES2Context::deleteTexture(uint texture)
 {
 	_textures.erase(std::find(_textures.begin(), _textures.end(), texture));
 
@@ -603,6 +689,8 @@ OpenGLES2Context::deleteTexture(const uint texture)
 
 	_textureSizes.erase(texture);
 	_textureHasMipmaps.erase(texture);
+	_textureTypes.erase(texture);
+
 	_currentWrapMode.erase(texture);
 	_currentTextureFilter.erase(texture);
 	_currentMipFilter.erase(texture);
@@ -611,18 +699,26 @@ OpenGLES2Context::deleteTexture(const uint texture)
 }
 
 void
-OpenGLES2Context::setTextureAt(const uint	position,
-							   const int	texture,
-							   const int	location)
+OpenGLES2Context::setTextureAt(uint	position,
+							   int	texture,
+							   int	location)
 {
-	auto textureIsValid = texture > 0;
+	const bool textureIsValid = texture > 0;
+
+	if (!textureIsValid)
+		return ;
+
+	const auto glTarget	= getTextureType(texture) == TextureType::Texture2D 
+		? GL_TEXTURE_2D 
+		: GL_TEXTURE_CUBE_MAP;
+
 
 	if (_currentTexture[position] != texture)
 	{
 		_currentTexture[position] = texture;
 
 		glActiveTexture(GL_TEXTURE0 + position);
-		glBindTexture(GL_TEXTURE_2D, texture);
+		glBindTexture(glTarget, texture);
 	}
 
 	if (textureIsValid && location >= 0)
@@ -632,13 +728,20 @@ OpenGLES2Context::setTextureAt(const uint	position,
 }
 
 void
-OpenGLES2Context::setSamplerStateAt(const uint position, WrapMode wrapping, TextureFilter filtering, MipFilter mipFiltering)
+OpenGLES2Context::setSamplerStateAt(uint			position, 
+									WrapMode		wrapping, 
+									TextureFilter	filtering, 
+									MipFilter		mipFiltering)
 {
-	auto texture    = _currentTexture[position];
-	auto active     = false;
+	const auto	texture		= _currentTexture[position];
+	const auto	glTarget	= getTextureType(texture) == TextureType::Texture2D 
+		? GL_TEXTURE_2D 
+		: GL_TEXTURE_CUBE_MAP; 
+
+	auto active	= false;
 
 	// disable mip mapping if mip maps are not available
-	if (!_textureHasMipmaps[_currentTexture[position]])
+	if (!_textureHasMipmaps[texture])
 		mipFiltering = MipFilter::NONE;
 
 	if (_currentWrapMode[texture] != wrapping)
@@ -651,12 +754,12 @@ OpenGLES2Context::setSamplerStateAt(const uint position, WrapMode wrapping, Text
 		switch (wrapping)
 		{
 		case WrapMode::CLAMP :
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+			glTexParameteri(glTarget, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+			glTexParameteri(glTarget, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 			break;
 		case WrapMode::REPEAT :
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+			glTexParameteri(glTarget, GL_TEXTURE_WRAP_S, GL_REPEAT);
+			glTexParameteri(glTarget, GL_TEXTURE_WRAP_T, GL_REPEAT);
 			break;
 		}
 	}
@@ -675,39 +778,41 @@ OpenGLES2Context::setSamplerStateAt(const uint position, WrapMode wrapping, Text
 			switch (mipFiltering)
 			{
 			case MipFilter::NONE :
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+				glTexParameteri(glTarget, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 				break;
 			case MipFilter::NEAREST :
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+				glTexParameteri(glTarget, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
 				break;
 			case MipFilter::LINEAR :
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR);
+				glTexParameteri(glTarget, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR);
 				break;
 			}
 
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+			glTexParameteri(glTarget, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 			break;
 		case TextureFilter::LINEAR :
 			switch (mipFiltering)
 			{
 			case MipFilter::NONE :
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+				glTexParameteri(glTarget, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 				break;
 			case MipFilter::NEAREST :
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+				glTexParameteri(glTarget, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
 				break;
 			case MipFilter::LINEAR :
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+				glTexParameteri(glTarget, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 				break;
 			}
 
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			glTexParameteri(glTarget, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 			break;
 		}
 	}
 
 	checkForErrors();
 }
+
+
 
 const uint
 OpenGLES2Context::createProgram()
@@ -961,6 +1066,8 @@ OpenGLES2Context::convertInputType(unsigned int type)
 			return ProgramInputs::Type::float16;
 		case GL_SAMPLER_2D:
 			return ProgramInputs::Type::sampler2d;
+		case GL_SAMPLER_CUBE:
+			return ProgramInputs::Type::samplerCube;
 		default:
 			throw std::logic_error("unsupported type");
 			return ProgramInputs::Type::unknown;
@@ -1459,7 +1566,10 @@ OpenGLES2Context::setRenderToTexture(uint texture, bool enableDepthAndStencil)
 }
 
 void
-OpenGLES2Context::createRTTBuffers(uint texture, uint width, uint height)
+OpenGLES2Context::createRTTBuffers(TextureType	type,
+								   uint			texture, 
+								   unsigned int	width, 
+								   unsigned int	height)
 {
 	uint frameBuffer = -1;
 
@@ -1468,7 +1578,18 @@ OpenGLES2Context::createRTTBuffers(uint texture, uint width, uint height)
 	// bind the framebuffer object
 	glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
 	// attach a texture to the FBO
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
+	if (type == TextureType::Texture2D)
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
+	else
+	{
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + 0, GL_TEXTURE_CUBE_MAP_POSITIVE_X, texture, 0);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + 1, GL_TEXTURE_CUBE_MAP_NEGATIVE_X, texture, 0);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + 2, GL_TEXTURE_CUBE_MAP_POSITIVE_Y, texture, 0);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + 3, GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, texture, 0);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + 4, GL_TEXTURE_CUBE_MAP_POSITIVE_Z, texture, 0);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + 5, GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, texture, 0);
+	}
+
 
 	uint renderBuffer = -1;
 

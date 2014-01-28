@@ -27,7 +27,8 @@ namespace minko
 {
 	namespace file
 	{
-		class Options
+		class Options: 
+			public std::enable_shared_from_this<Options>
 		{
 		private:
 			typedef std::shared_ptr<AbstractLoader>								AbsLoaderPtr;
@@ -54,6 +55,7 @@ namespace minko
 
             bool                                        _generateMipMaps;
 			bool										_resizeSmoothly;
+			bool										_isCubeTexture;
 			unsigned int								_skinningFramerate;
 			component::SkinningMethod					_skinningMethod;
             std::shared_ptr<render::Effect>             _effect;
@@ -79,24 +81,25 @@ namespace minko
 			{
 				auto opt = std::shared_ptr<Options>(new Options(options->_context));
 
-				opt->_includePaths = options->_includePaths;
-                opt->_generateMipMaps = options->_generateMipMaps;
-				opt->_resizeSmoothly = options->_resizeSmoothly;
-				opt->_skinningFramerate = options->_skinningFramerate;
-				opt->_skinningMethod = options->_skinningMethod;
-                opt->_effect = options->_effect;
-				opt->_materialFunction = options->_materialFunction;
-				opt->_geometryFunction = options->_geometryFunction;
-				opt->_loaderFunction = options->_loaderFunction;
-				opt->_uriFunction = options->_uriFunction;
-				opt->_nodeFunction = options->_nodeFunction;
+				opt->_includePaths		= options->_includePaths;
+                opt->_generateMipMaps	= options->_generateMipMaps;
+				opt->_resizeSmoothly	= options->_resizeSmoothly;
+				opt->_isCubeTexture		= options->_isCubeTexture;
+				opt->_skinningFramerate	= options->_skinningFramerate;
+				opt->_skinningMethod	= options->_skinningMethod;
+                opt->_effect			= options->_effect;
+				opt->_materialFunction	= options->_materialFunction;
+				opt->_geometryFunction	= options->_geometryFunction;
+				opt->_loaderFunction	= options->_loaderFunction;
+				opt->_uriFunction		= options->_uriFunction;
+				opt->_nodeFunction		= options->_nodeFunction;
 
 				return opt;
 			}
 
 			inline
 			std::shared_ptr<render::AbstractContext>
-			context()
+			context() const
 			{
 				return _context;
 			}
@@ -124,16 +127,18 @@ namespace minko
 
             inline
             bool
-            generateMipmaps()
+            generateMipmaps() const
             {
                 return _generateMipMaps;
             }
 
             inline
-            void
+            Ptr
             generateMipmaps(bool generateMipmaps)
             {
                 _generateMipMaps = generateMipmaps;
+
+				return shared_from_this();
             }
 
 			inline
@@ -144,10 +149,28 @@ namespace minko
 			}
 
 			inline
-			void
+			Ptr
 			resizeSmoothly(bool value)
 			{
 				_resizeSmoothly = value;
+
+				return shared_from_this();
+			}
+
+			inline
+			bool
+			isCubeTexture() const
+			{
+				return _isCubeTexture;
+			}
+
+			inline
+			Ptr
+			isCubeTexture(bool value)
+			{
+				_isCubeTexture = value;
+
+				return shared_from_this();
 			}
 
 			inline
@@ -158,10 +181,12 @@ namespace minko
 			}
 
 			inline
-			void
+			Ptr
 			skinningFramerate(unsigned int value)
 			{
 				_skinningFramerate = value;
+
+				return shared_from_this();
 			}
 
 			inline
@@ -172,10 +197,12 @@ namespace minko
 			}
 
 			inline
-			void
+			Ptr
 			skinningMethod(component::SkinningMethod value)
 			{
 				_skinningMethod	= value;
+
+				return shared_from_this();
 			}
 
             inline
@@ -186,10 +213,12 @@ namespace minko
             }
 
             inline
-            void
+            Ptr
             effect(std::shared_ptr<render::Effect> effect)
             {
                 _effect = effect;
+
+				return shared_from_this();
             }
 
 			inline
@@ -200,10 +229,12 @@ namespace minko
 			}
 
 			inline
-			void
+			Ptr
 			material(MaterialPtr material)
 			{
 				_material = material;
+
+				return shared_from_this();
 			}
 
 			inline
@@ -214,10 +245,12 @@ namespace minko
 			}
 
 			inline
-			void
+			Ptr
 			loaderFunction(const LoaderFunction& func)
 			{
 				_loaderFunction = func;
+
+				return shared_from_this();
 			}
 
 			inline
@@ -228,10 +261,12 @@ namespace minko
 			}
 
 			inline
-			void
+			Ptr
 			materialFunction(const MaterialFunction& func)
 			{
 				_materialFunction = func;
+
+				return shared_from_this();
 			}
 
 			inline
@@ -242,10 +277,12 @@ namespace minko
 			}
 
 			inline
-			void
+			Ptr
 			geometryFunction(const GeometryFunction& func)
 			{
 				_geometryFunction = func;
+
+				return shared_from_this();
 			}
 
 			inline
@@ -256,10 +293,12 @@ namespace minko
 			}
 
 			inline
-			void
+			Ptr
 			uriFunction(const UriFunction& func)
 			{
 				_uriFunction = func;
+
+				return shared_from_this();
 			}
 
 			inline
@@ -270,10 +309,12 @@ namespace minko
 			}
 
 			inline
-			void
+			Ptr
 			nodeFunction(const NodeFunction& func)
 			{
 				_nodeFunction = func;
+
+				return shared_from_this();
 			}
 
 			inline
@@ -284,10 +325,12 @@ namespace minko
 			}
 
 			inline
-			void
+			Ptr
 			effectFunction(const EffectFunction& func)
 			{
 				_effectFunction = func;
+
+				return shared_from_this();
 			}
 			
 		private:
