@@ -57,6 +57,7 @@ namespace minko
 
 			std::set<std::shared_ptr<Surface>>							_toCollect;
 			std::shared_ptr<render::Effect>								_effect;
+			float														_priority;
 
 			Signal<AbsCtrlPtr, NodePtr>::Slot							_targetAddedSlot;
 			Signal<AbsCtrlPtr, NodePtr>::Slot							_targetRemovedSlot;
@@ -86,9 +87,12 @@ namespace minko
 
 			inline static
 			Ptr
-			create(uint backgroundColor, std::shared_ptr<render::Texture> renderTarget = nullptr, std::shared_ptr<render::Effect> effect= nullptr)
+			create(uint									backgroundColor, 
+				   std::shared_ptr<render::Texture>		renderTarget	= nullptr, 
+				   std::shared_ptr<render::Effect>		effect			= nullptr,
+				   float								priority		= 0.f)
 			{
-				auto ctrl = std::shared_ptr<Renderer>(new Renderer(renderTarget, effect));
+				auto ctrl = std::shared_ptr<Renderer>(new Renderer(renderTarget, effect, priority));
 
 				ctrl->initialize();
 				ctrl->backgroundColor(backgroundColor);
@@ -168,7 +172,9 @@ namespace minko
 			}
 
 		private:
-			Renderer(std::shared_ptr<render::Texture> renderTarget = nullptr, std::shared_ptr<render::Effect> effect = nullptr);
+			Renderer(std::shared_ptr<render::Texture>	renderTarget	= nullptr, 
+					 std::shared_ptr<render::Effect>	effect			= nullptr,
+					 float								priority		= 0.f);
 
 			void
 			initialize();
