@@ -21,7 +21,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/MinkoPNG.hpp"
 #include "minko/MinkoSDL.hpp"
 #include "minko/MinkoSerializer.hpp"
-#include "minko/MinkoStreaming.hpp"
 #include "minko/Any.hpp"
 #include "minko/math/Vector4.hpp"
 #include "minko/math/Vector3.hpp"
