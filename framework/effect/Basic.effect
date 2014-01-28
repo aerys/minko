@@ -16,6 +16,7 @@
     "uniformBindings"   : {
         "diffuseColor"          : "material.diffuseColor",
         "diffuseMap"            : "material.diffuseMap",
+        "diffuseCubeMap"        : "material.diffuseCubeMap",
         "modelToWorldMatrix"    : "transform.modelToWorldMatrix",
         "worldToScreenMatrix"   : { "property" : "camera.worldToScreenMatrix", "source" : "renderer" },
 		"boneMatrices"			: { "property" : "geometry.boneMatrices",			"source" : "target" },
@@ -36,6 +37,7 @@
 
     "macroBindings" : {
         "DIFFUSE_MAP"           : "material.diffuseMap",
+        "DIFFUSE_CUBEMAP"       : "material.diffuseCubeMap",
         "MODEL_TO_WORLD"        : "transform.modelToWorldMatrix",
 		"HAS_NORMAL"			: "geometry.vertex.attribute.normal",
 		"NUM_BONES"				: { "property" : "geometry.numBones",	"source" : "target" }
