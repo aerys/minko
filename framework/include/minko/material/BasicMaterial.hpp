@@ -22,6 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Common.hpp"
 
 #include "minko/material/Material.hpp"
+#include "minko/render/TriangleCulling.hpp"
+#include "minko/render/Blending.hpp"
 
 namespace minko
 {
@@ -41,35 +43,17 @@ namespace minko
 				return std::shared_ptr<BasicMaterial>(new BasicMaterial());
 			}
 
-			inline
 			Ptr
-			diffuseColor(std::shared_ptr<math::Vector4> color)
-			{
-				set("diffuseColor", color);
+			diffuseColor(std::shared_ptr<math::Vector4>);
 
-				return std::dynamic_pointer_cast<BasicMaterial>(shared_from_this());
-			}
-
-			inline
 			Ptr
-			diffuseColor(const uint rgba)
-			{
-				return diffuseColor(math::Vector4::create(
-					((rgba >> 24) & 0xff) / 255.f,
-					((rgba >> 16) & 0xff) / 255.f,
-					((rgba >> 8) & 0xff) / 255.f,
-					(rgba & 0xff) / 255.f
-				));
-			}
+			diffuseColor(uint);
 
-			inline
 			Ptr
-			diffuseMap(std::shared_ptr<render::Texture> diffuseMap)
-			{
-				set("diffuseMap", diffuseMap);
+			diffuseMap(std::shared_ptr<render::AbstractTexture>);
 
-				return std::dynamic_pointer_cast<BasicMaterial>(shared_from_this());
-			}
+			Ptr
+			diffuseCubeMap(std::shared_ptr<render::AbstractTexture>);
 
 			inline
 			Ptr

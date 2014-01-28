@@ -23,7 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/render/AbstractResource.hpp"
 #include "minko/render/ProgramInputs.hpp"
-#include "minko/render/Texture.hpp"
+#include "minko/render/AbstractTexture.hpp"
 #include "minko/render/AbstractContext.hpp"
 #include "minko/render/Shader.hpp"
 
@@ -40,14 +40,14 @@ namespace minko
 		private:
 			typedef std::shared_ptr<render::AbstractContext>	AbstractContextPtr;
 			typedef std::shared_ptr<render::ProgramInputs>		ProgramInputsPtr;
-			typedef std::shared_ptr<Texture>					TexturePtr;
+			typedef std::shared_ptr<AbstractTexture>			AbstractTexturePtr;
 
 		private:
-			std::shared_ptr<Shader>				_vertexShader;
-			std::shared_ptr<Shader>				_fragmentShader;
-			ProgramInputsPtr					_inputs;
+			std::shared_ptr<Shader>						_vertexShader;
+			std::shared_ptr<Shader>						_fragmentShader;
+			ProgramInputsPtr							_inputs;
 
-			std::unordered_map<int, TexturePtr> _textures;
+			std::unordered_map<int, AbstractTexturePtr>	_textures;
 
 		public:
 			inline static
@@ -63,10 +63,10 @@ namespace minko
 			{
 				auto p = create(program->_context);
 
-				p->_vertexShader = deepCopy ? Shader::create(program->_vertexShader) : program->_vertexShader;
-				p->_fragmentShader = deepCopy ? Shader::create(program->_fragmentShader) : program->_fragmentShader;
-				p->_inputs = program->inputs();
-				p->_textures = program->_textures;
+				p->_vertexShader	= deepCopy ? Shader::create(program->_vertexShader) : program->_vertexShader;
+				p->_fragmentShader	= deepCopy ? Shader::create(program->_fragmentShader) : program->_fragmentShader;
+				p->_inputs			= program->inputs();
+				p->_textures		= program->_textures;
 
 				return p;
 			}
@@ -107,7 +107,7 @@ namespace minko
 			}
 
 			inline
-			const std::unordered_map<int, TexturePtr>
+			const std::unordered_map<int, AbstractTexturePtr>&
 			textures() const
 			{
 				return _textures;
@@ -134,7 +134,7 @@ namespace minko
 			}
 
 			void
-			setUniform(const std::string& name, std::shared_ptr<render::Texture> texture)
+			setUniform(const std::string& name, std::shared_ptr<render::AbstractTexture> texture)
 			{
 				if (!_inputs->hasName(name))
 					return;

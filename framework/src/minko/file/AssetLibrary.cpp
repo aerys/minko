@@ -26,6 +26,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/AbstractParser.hpp"
 #include "minko/file/EffectParser.hpp"
 #include "minko/render/Texture.hpp"
+#include "minko/render/CubeTexture.hpp"
 #include "minko/render/Effect.hpp"
 #include "minko/geometry/Geometry.hpp"
 
@@ -79,14 +80,18 @@ AssetLibrary::geometryName(GeometryPtr geometry)
 	throw new std::logic_error("AssetLibrary does not reference this geometry.");
 }
 
-render::Texture::Ptr
-AssetLibrary::texture(const std::string& name)
+render::AbstractTexture::Ptr
+AssetLibrary::texture(const std::string& name) const
 {
-	return _textures.count(name) ? _textures[name] : nullptr;
+	const auto foundTextureIt = _textures.find(name);
+
+	return foundTextureIt != _textures.end()
+		? foundTextureIt->second
+		: nullptr;
 }
 
 AssetLibrary::Ptr
-AssetLibrary::texture(const std::string& name, render::Texture::Ptr texture)
+AssetLibrary::texture(const std::string& name, render::AbstractTexture::Ptr texture)
 {
 	_textures[name] = texture;
 
@@ -94,9 +99,12 @@ AssetLibrary::texture(const std::string& name, render::Texture::Ptr texture)
 }
 
 const std::string&
-AssetLibrary::textureName(TexturePtr texture)
+AssetLibrary::textureName(render::AbstractTexture::Ptr texture)
 {
-	auto it = std::find_if(_textures.begin(), _textures.end(), [&](std::pair<std::string, TexturePtr> itr) -> bool
+	auto it = std::find_if(
+		_textures.begin(), 
+		_textures.end(), 
+		[&](std::pair<std::string, render::AbstractTexture::Ptr> itr) -> bool
 	{
 		return itr.second == texture;
 	});
