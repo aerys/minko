@@ -21,7 +21,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/MinkoPNG.hpp"
 #include "minko/MinkoSDL.hpp"
 #include "minko/MinkoSerializer.hpp"
-#include "minko/MinkoStreaming.hpp"
 #include "minko/Any.hpp"
 #include "minko/math/Vector4.hpp"
 #include "minko/math/Vector3.hpp"
@@ -33,11 +32,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/deserialize/TypeDeserializer.hpp"
 #include "minko/geometry/SphereGeometry.hpp"
 
-#if defined(MINKO_PLUGIN_STREAMING)
-std::string MODEL_FILENAME = "model/primitiveStreamed/NewScene.scene";
-#else
 std::string MODEL_FILENAME = "model/primitives/primitives.scene";
-#endif
 
 //#define SERIALIZE // comment to test deserialization
 
@@ -67,9 +62,6 @@ int main(int argc, char** argv)
 	auto canvas			= Canvas::create("Minko Example - Serializer/Deserializer", 800, 600);
 	auto sceneManager	= SceneManager::create(canvas->context());
 
-#if defined(MINKO_PLUGIN_STREAMING)
-	extention::SerializerExtention::activeExtention<extention::StreamingExtention>();
-#endif
 	// setup assets
 	sceneManager->assets()->defaultOptions()->generateMipmaps(true);
 	sceneManager->assets()->material("defaultMaterial", material::BasicMaterial::create()->diffuseColor(0xFFFFFFFF));
