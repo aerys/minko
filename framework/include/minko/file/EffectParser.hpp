@@ -50,18 +50,18 @@ namespace minko
 			};
 
 		private:
-			typedef std::shared_ptr<render::Texture>						TexturePtr;
+			typedef std::shared_ptr<render::AbstractTexture>	AbstractTexturePtr;
 
 			union UniformNumericValue
 			{
-				int intValue;
-				float floatValue;
+				int		intValue;
+				float	floatValue;
 			};
 			
 			struct UniformValue
 			{
-				std::vector<UniformNumericValue> numericValue;
-				TexturePtr textureValue;
+				std::vector<UniformNumericValue>	numericValue;
+				AbstractTexturePtr					textureValue;
 			};
 
 			enum class UniformType
@@ -76,7 +76,7 @@ namespace minko
 			typedef std::shared_ptr<render::Effect>							EffectPtr;
 			typedef std::shared_ptr<render::Pass>							PassPtr;
 			typedef std::shared_ptr<render::Shader>							ShaderPtr;
-			typedef std::unordered_map<std::string, TexturePtr>				TexturePtrMap;
+			typedef std::unordered_map<std::string, AbstractTexturePtr>		TexturePtrMap;
 			typedef std::pair<UniformType, UniformValue>					UniformTypeAndValue;
 			typedef std::unordered_map<std::string, UniformTypeAndValue>	UniformValues;
 			typedef std::pair<GLSLBlockType, std::string> 					GLSLBlock;
@@ -113,7 +113,7 @@ namespace minko
 			std::unordered_map<ShaderPtr, GLSLBlockListPtr>				_glslBlocks;
 
 			std::vector<PassPtr>										_globalPasses;
-			std::unordered_map<std::string, TexturePtr>					_globalTargets;
+			std::unordered_map<std::string, AbstractTexturePtr>					_globalTargets;
 			std::unordered_map<std::string, TexturePtrMap>				_techniqueTargets;
 			std::unordered_map<std::string, std::vector<PassPtr>>		_techniquePasses;
 			std::unordered_map<std::string, std::string>				_techniqueFallback;
@@ -278,7 +278,7 @@ namespace minko
 							 bool&					scissorTest,
 							 render::ScissorBox&	scissorBox) const;
 
-            std::shared_ptr<render::Texture>
+            AbstractTexturePtr
             parseTarget(const Json::Value&                          contextNode,
                         std::shared_ptr<render::AbstractContext>    context,
                         TexturePtrMap&								targets);

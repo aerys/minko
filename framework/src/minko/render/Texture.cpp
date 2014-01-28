@@ -24,41 +24,37 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::render;
 
-const uint Texture::MAX_SIZE = 2048;
-
-Texture::Texture(std::shared_ptr<render::AbstractContext>	context,
-	const unsigned int							width,
-	const unsigned int							height,
-	bool                                       mipMapping,
-	bool                                       optimizeForRenderToTexture,
-	bool										resizeSmoothly,
-	std::string								filename) :
-	AbstractResource(context),
-	_width(width),
-	_height(height),
-	_widthGPU(std::min(math::clp2(width), MAX_SIZE)),
-	_heightGPU(std::min(math::clp2(height), MAX_SIZE)),
-    _mipMapping(mipMapping),
-    _optimizeForRenderToTexture(optimizeForRenderToTexture),
-	_resizeSmoothly(resizeSmoothly),
-	_filename(filename)
+Texture::Texture(AbstractContext::Ptr	context,
+				 uint					width,
+				 uint					height,
+				 bool					mipMapping,
+				 bool					optimizeForRenderToTexture,
+				 bool					resizeSmoothly,
+				 const std::string&		filename) :
+	AbstractTexture(TextureType::Texture2D, context, width, height, mipMapping, optimizeForRenderToTexture, resizeSmoothly, filename),
+	_data()
 {
 }
 
 void
 Texture::data(unsigned char*	data, 
-			  DataFormat		format,
+			  TextureFormat		format,
 			  int				widthGPU,
 			  int				heightGPU)
 {
-	if (widthGPU != -1)
+	if (widthGPU >= 0)
 	{
+		if (widthGPU > (int)MAX_SIZE)
+			throw std::invalid_argument("widthGPU");
+
 		_width		= widthGPU;
 		_widthGPU	= widthGPU;
 	}
-
-	if (heightGPU != -1)
+	if (heightGPU >= 0)
 	{
+		if (heightGPU > (int)MAX_SIZE)
+			throw std::invalid_argument("heightGPU");
+
 		_height		= heightGPU;
 		_heightGPU	= heightGPU;
 	}
@@ -67,11 +63,11 @@ Texture::data(unsigned char*	data,
 
 	std::vector<unsigned char> rgba(size, 0);
 	
-	if (format == DataFormat::RGBA)
+	if (format == TextureFormat::RGBA)
 	{
 		std::memcpy(&rgba[0], data, size);
 	}
-	else if (format == DataFormat::RGB)
+	else if (format == TextureFormat::RGB)
 	{
 		for (unsigned int i = 0, j = 0; j < size; i += 3, j += 4)
 		{
@@ -82,118 +78,48 @@ Texture::data(unsigned char*	data,
 		}
 	}
 
-	processData(rgba, _data);
-}
-
-void
-Texture::processData(std::vector<unsigned char>&	inData, 
-					 std::vector<unsigned char>&	outData) const
-{
-#ifdef DEBUG_TEXTURE
-	assert(inData.size() == _width * _height * sizeof(int));
-#endif // DEBUG_TEXTURE
-
-	outData.clear();
-
-	if (inData.empty() || _widthGPU == 0 || _heightGPU == 0)
-		return;
-
-	if (_widthGPU == _width && _heightGPU == _height)
-	{
-		outData.swap(inData);
-		return;
-	}
-
-	const auto	size	= _widthGPU * _heightGPU * sizeof(int);
-	const float	xFactor = ((float)_width - 1.0f)/((float)_widthGPU - 1.0f); 
-	const float	yFactor = ((float)_height - 1.0f)/((float)_heightGPU - 1.0f);
-
-	outData.resize(size);
-
-	uint	idx	= 0;
-	float	y	= 0.0f;
-	for (uint q = 0; q < _heightGPU; ++q)
-	{
-		uint		j	= (uint) floorf(y);
-		const float dy	= y - (float)j;
-		if (j >= _height)
-			j = _height - 1;
-
-		float		x	= 0.0f;
-		for (uint p = 0; p < _widthGPU; ++p)
-		{
-			uint		i	= (uint)floorf(x);
-			if (i >= _width)
-				i = _width - 1;
-
-			const uint ijTL	= (i + _width * j) << 2;
-
-			if (_resizeSmoothly)
-			{
-				// bilinear interpolation
-
-				const float dx	= x - (float)i;
-				const float dxy = dx * dy;
-
-				const uint ijTR	= i < _width - 1						? ijTL + 4						: ijTL;
-				const uint ijBL = j < _height - 1						? ijTL + (_width << 2)			: ijTL;
-				const uint ijBR = (i < _width - 1) && (j < _height - 1)	? ijTL + ((_width + 1) << 2)	: ijTL;
-
-				const float	wTL	= 1.0f - dx - dy + dxy; 
-				const float wTR = dx - dxy;
-				const float wBL = dy - dxy;
-				const float wBR = dxy;
-			
-				for (uint k = 0; k < 4; ++k)
-				{
-					const float color = wTL * inData[ijTL + k] + 
-						wTR * inData[ijTR + k] + 
-						wBL * inData[ijBL + k] + 
-						wBR * inData[ijBR + k];
-	
-					outData[idx + k] = (unsigned char)floorf(color);
-				}
-			}
-			else
-			{
-				// nearest pixel color
-
-				for (uint k = 0; k < 4; ++k)
-					outData[idx + k] = inData[ijTL + k];
-			}
-
-			idx	+= 4;
-			x	+= xFactor;
-		}
-		y += yFactor;
-	}
-
-
-#ifdef DEBUG_TEXTURE
-	assert(outData.size() == _widthGPU * _heightGPU * sizeof(int));
-#endif // DEBUG_TEXTURE
-}
-
-void
-Texture::uploadMipLevel(uint						miplevel,
-						std::vector<unsigned char>	data,
-						bool						optimizeForRenderToTexture)
-{
-	_context->uploadTextureData(_id, uint(pow(2, (log2(_widthGPU) - miplevel))), uint(pow(2, (log2(_heightGPU) - miplevel))), miplevel, &data[0]);
+	assert(math::isp2(_widthGPU) && math::isp2(_heightGPU));
+	resizeData(_width, _height, rgba, _widthGPU, _heightGPU, _resizeSmoothly, _data);
 }
 
 void
 Texture::upload()
 {
     if (_id == -1)
-    	_id = _context->createTexture(_widthGPU, _heightGPU, _mipMapping, _optimizeForRenderToTexture);
+    	_id = _context->createTexture(
+			_type,
+			_widthGPU, 
+			_heightGPU, 
+			_mipMapping, 
+			_optimizeForRenderToTexture
+		);
 	
     if (!_data.empty())
     {
-        _context->uploadTextureData(_id, _widthGPU, _heightGPU, 0, &_data[0]);
+        _context->uploadTexture2dData(
+			_id, 
+			_widthGPU, 
+			_heightGPU, 
+			0, 
+			&_data.front()
+		);
+
         if (_mipMapping)
             _context->generateMipmaps(_id);
     }
+}
+
+void
+Texture::uploadMipLevel(uint			level,
+						unsigned char*	data)
+{
+	_context->uploadTexture2dData(
+		_id, 
+		getMipmapWidth(level),
+		getMipmapHeight(level),
+		level,
+		data
+	);		
 }
 
 void
@@ -204,4 +130,13 @@ Texture::dispose()
 	    _context->deleteTexture(_id);
 	    _id = -1;
     }
+
+	disposeData();
+}
+
+void
+Texture::disposeData()
+{
+	_data.clear();
+	_data.shrink_to_fit();
 }

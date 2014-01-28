@@ -88,7 +88,21 @@ namespace minko
 		class VertexFormat;
 		class VertexBuffer;
 		class IndexBuffer;
+
+		enum class TextureType
+		{
+			Texture2D	= 0,
+			CubeTexture	= 1
+		};
+
+		enum class TextureFormat
+		{
+			RGB,
+			RGBA
+		};
+		class AbstractTexture;
 		class Texture;
+		class CubeTexture;
 
 		struct ScissorBox
 		{
@@ -219,6 +233,25 @@ namespace minko
 		class Box;
 		class Frustum;
 		class OctTree;
+
+		inline
+		bool
+		isp2(unsigned int x)
+		{
+			return x == 0 || (x & (x-1)) == 0;
+		}
+
+		inline
+		uint
+		getp2(unsigned int x)
+		{
+			unsigned int tmp	= x;
+			unsigned int p		= 0;
+			while (tmp >>= 1)
+				++p;
+
+			return p;
+		}
 
 		inline
 		unsigned int

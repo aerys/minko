@@ -170,29 +170,6 @@ AbstractSerializerParser::deserializedAsset(SerializedAsset				asset,
 		if (_assetTypeToFunction.find(asset.a0) != _assetTypeToFunction.end())
 			_assetTypeToFunction[asset.a0](metaByte, assetLibrary, assetCompletePath, _dependencies, asset.a1, _jobList);
 	}
-	/*else if (asset.a0 == serialize::AssetType::STREAMED_TEXTURE_ASSET) //streamed texture
-	{
-		if (assetLibrary->texture(assetCompletePath) != nullptr)
-			_dependencies->registerReference(asset.a1, assetLibrary->texture(assetCompletePath));
-		else
-		{
-			unsigned char widthId	= (metaByte & 0xF0) >> 4;
-			unsigned char heightId	= (metaByte & 0x0F);
-			auto texture			= render::Texture::create(assetLibrary->context(), uint(pow(2, widthId)), uint(pow(2, heightId)), true);
-
-			texture->upload();
-			assetLibrary->texture(assetCompletePath, texture);
-			_dependencies->registerReference(asset.a1, assetLibrary->texture(assetCompletePath));
-
-			_jobList.push_back(component::StreamTextureJob::create(assetCompletePath, texture, assetLibrary));
-		}
-	}
-	else if (asset.a0 == serialize::AssetType::STREAMED_GEOMETRY_ASSET) // streamed geometry
-	{
-		// dépendance d'une géomtry
-		// filename -> JobGeometryStream
-		// 
-	}*/
 }
 
 std::string
