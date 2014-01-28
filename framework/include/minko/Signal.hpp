@@ -111,6 +111,20 @@ namespace minko
 			return _callbacks.size();
 		}
 
+		void
+		sortSignals()
+		{
+			std::sort(_callbacks.begin(), _callbacks.end(), [&](Callback callback1, Callback callback2) -> bool
+			{
+				return callback1.first > callback2.first;
+			});
+
+			std::sort(_slotIds.begin(), _slotIds.end(), [&](std::pair<float, unsigned int> slot1, std::pair<float, unsigned int> slot2) -> bool
+			{
+				return slot1.first > slot2.first;
+			});
+		}
+
 		Slot
 		connect(CallbackFunction callback, float priority = 0)
 		{
@@ -122,6 +136,7 @@ namespace minko
 			{
 				_callbacks.push_back(std::pair<float, CallbackFunction>(priority, callback));
 				_slotIds.push_back(std::pair<float, unsigned int>(priority, connection->_id));
+				sortSignals();
 			}
 
 			return connection;
@@ -139,6 +154,7 @@ namespace minko
 			{
 				_callbacks.push_back(callbackAndConnectionId.first);
 				_slotIds.push_back(std::pair<float, unsigned int>(callbackAndConnectionId.first.first, callbackAndConnectionId.second));
+				sortSignals();
 			}
 			
 			for (auto& callbackIt : _toRemove)
