@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -27,52 +27,53 @@ namespace minko
 {
 	namespace render
 	{
-		class Texture :
+		class CubeTexture:
 			public AbstractTexture
 		{
 		public:
-			typedef std::shared_ptr<Texture>			Ptr;
+			typedef std::shared_ptr<CubeTexture>		Ptr;
 
 		private:
 			typedef std::shared_ptr<AbstractContext>	AbstractContextPtr;
 
+		public:
+			enum class Face
+			{
+				POSITIVE_X = 0,
+				NEGATIVE_X = 1,
+				POSITIVE_Y = 2,
+				NEGATIVE_Y = 3,
+				POSITIVE_Z = 4,
+				NEGATIVE_Z = 5
+			};
+
 		private:
-			std::vector<unsigned char>	_data;
-		
+			std::vector<std::vector<unsigned char>>	_data; // pixel RGBA data indexed by face index
+			uint									_faceWidth;	// power of two
+			uint									_faceHeight; // power of two
+
 		public:
 			inline static
 			Ptr
 			create(AbstractContextPtr	context,
 				   unsigned int			width,
 				   unsigned int			height,
-                   bool					mipMapping                  = false,
-                   bool					optimizeForRenderToTexture  = false,
+                   bool                 mipMapping                  = false,
+				   bool					optimizeForRenderToTexture	= false,
 				   bool					resizeSmoothly				= true,
 				   const std::string&	filename					= "")
 			{
-				return std::shared_ptr<Texture>(
-					new Texture(
+				return std::shared_ptr<CubeTexture>(
+					new CubeTexture(
 						context, 
 						width, 
 						height, 
 						mipMapping, 
-						optimizeForRenderToTexture, 
+						optimizeForRenderToTexture,
 						resizeSmoothly, 
 						filename
 					)
 				);
-			}
-
-			std::vector<unsigned char>&
-			data()
-			{
-				return _data;
-			}
-
-			const std::vector<unsigned char>&
-			data() const
-			{
-				return _data;
 			}
 
 			void
@@ -82,31 +83,31 @@ namespace minko
 				 int			heightGPU	= -1);
 
 			void
+			upload();
+
+			//void
+			//uploadMipLevel(uint	level,
+			//			   unsigned char*);
+
+			void
 			dispose();
 
 			void
 			disposeData();
 
-			void
-			upload();
-
-			void
-			uploadMipLevel(uint				level,
-						   unsigned char*	data);
-
-			~Texture()
+			~CubeTexture()
 			{
 				dispose();
 			}
 
 		private:
-			Texture(AbstractContextPtr	context,
-					unsigned int		width,
-					unsigned int		height,
-                    bool				mipMapping,
-                    bool				optimizeForRenderToTexture,
-					bool				resizeSmoothly,
-				    const std::string&	filename);
+			CubeTexture(AbstractContextPtr	context,
+						unsigned int		width,
+						unsigned int		height,
+						bool                mipMapping,
+						bool				optimizeForRenderToTexture,
+						bool				resizeSmoothly,
+						const std::string&	filename);
 		};
 	}
 }

@@ -138,7 +138,7 @@ int main(int argc, char** argv)
 				}
 
 				auto r = rand() / (float)RAND_MAX;
-				auto theta = 2.0f * PI *  r;
+				auto theta = 2.0f * (float)PI *  r;
 				auto color = Color::hslaToRgba(r, 1.f, .5f);
 				auto pos = Vector3::create(
 					cosf(theta) * 5.f + rand() / ((float)RAND_MAX * 3.f),
