@@ -73,6 +73,10 @@ namespace minko
 				_id(-1)
 			{
 			}
+
+			~AbstractResource()
+			{
+			}
 		};
 	}
 }
