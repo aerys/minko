@@ -314,10 +314,10 @@ OculusVRCamera::setSceneManager(SceneManager::Ptr sceneManager)
 	const auto halfIPD					= 0.5f * hmdInfo.interpupillaryDistance * WORLD_UNIT;
 
 	// left eye
-	auto leftEye						= scene::Node::create("oculusvr.leftEye");
-	auto leftEyeTexture					= render::Texture::create(context, TARGET_SIZE, TARGET_SIZE, false, true);
-	auto leftRenderer					= Renderer::create();
-	auto leftPostProjection				= Matrix4x4::create()->appendTranslation(+ projectionCenterOffset, 0.0f, 0.0f);
+	render::AbstractTexture::Ptr	leftEyeTexture		= render::Texture::create(context, TARGET_SIZE, TARGET_SIZE, false, true);
+	auto							leftEye				= scene::Node::create("oculusvr.leftEye");
+	auto							leftRenderer		= Renderer::create();
+	auto							leftPostProjection	= Matrix4x4::create()->appendTranslation(+ projectionCenterOffset, 0.0f, 0.0f);
 
 	_leftCamera = PerspectiveCamera::create(screenAspectRatio, screenFOV, _zNear, _zFar, leftPostProjection);
 
@@ -330,10 +330,10 @@ OculusVRCamera::setSceneManager(SceneManager::Ptr sceneManager)
 	));
 
 	// right eye
-	auto rightEye						= scene::Node::create("oculusvr.rightEye");
-	auto rightEyeTexture				= render::Texture::create(context, TARGET_SIZE, TARGET_SIZE, false, true);
-	auto rightRenderer					= Renderer::create();
-	auto rightPostProjection			= Matrix4x4::create()->appendTranslation(- projectionCenterOffset, 0.0f, 0.0f);
+	render::AbstractTexture::Ptr	rightEyeTexture		= render::Texture::create(context, TARGET_SIZE, TARGET_SIZE, false, true);
+	auto							rightEye			= scene::Node::create("oculusvr.rightEye");
+	auto							rightRenderer		= Renderer::create();
+	auto							rightPostProjection	= Matrix4x4::create()->appendTranslation(- projectionCenterOffset, 0.0f, 0.0f);
 
 	_rightCamera = PerspectiveCamera::create(screenAspectRatio, screenFOV, _zNear, _zFar, rightPostProjection);
 
@@ -417,9 +417,9 @@ OculusVRCamera::setSceneManager(SceneManager::Ptr sceneManager)
 }
 
 void
-OculusVRCamera::renderEndHandler(std::shared_ptr<SceneManager>		sceneManager,
-								 uint								frameId,
-								 std::shared_ptr<render::Texture>	renderTarget)
+OculusVRCamera::renderEndHandler(std::shared_ptr<SceneManager>	sceneManager,
+								 uint							frameId,
+								 render::AbstractTexture::Ptr	renderTarget)
 {
 	_renderer->render(sceneManager->assets()->context());
 

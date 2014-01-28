@@ -48,6 +48,7 @@ namespace minko
 				float9,
 				float16,
 				sampler2d,
+				samplerCube,
 				attribute,
 				constant
 			};
@@ -106,6 +107,10 @@ namespace minko
 						return "float9";
 					case Type::float16:
 						return "float16";
+					case Type::sampler2d:
+						return "sampler2d";
+					case Type::samplerCube:
+						return "samplerCube";
 					default:
 						throw std::invalid_argument("type");
 				}

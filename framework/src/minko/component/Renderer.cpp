@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/DrawCall.hpp"
 #include "minko/render/Effect.hpp"
 #include "minko/render/Pass.hpp"
-#include "minko/render/Texture.hpp"
+#include "minko/render/AbstractTexture.hpp"
 #include "minko/render/AbstractContext.hpp"
 #include "minko/component/SceneManager.hpp"
 #include "minko/file/AssetLibrary.hpp"
@@ -38,8 +38,8 @@ using namespace minko::render;
 
 const unsigned int Renderer::NUM_FALLBACK_ATTEMPTS = 32;
 
-Renderer::Renderer(std::shared_ptr<render::Texture> renderTarget,
-				   std::shared_ptr<render::Effect>	effect) :
+Renderer::Renderer(AbstractTexture::Ptr	renderTarget,
+				   Effect::Ptr			effect) :
     _backgroundColor(0),
 	_renderingBegin(Signal<Ptr>::create()),
 	_renderingEnd(Signal<Ptr>::create()),
@@ -243,7 +243,8 @@ Renderer::removeSurface(Surface::Ptr surface)
 }
 
 void
-Renderer::render(std::shared_ptr<render::AbstractContext> context, std::shared_ptr<render::Texture> renderTarget)
+Renderer::render(render::AbstractContext::Ptr	context, 
+				 render::AbstractTexture::Ptr	renderTarget)
 {
 	_drawCalls = _drawCallPool->drawCalls();
 
@@ -312,9 +313,9 @@ Renderer::setSceneManager(std::shared_ptr<SceneManager> sceneManager)
 }
 
 void
-Renderer::sceneManagerRenderingBeginHandler(std::shared_ptr<SceneManager>		sceneManager,
-										    uint								frameId,
-										    std::shared_ptr<render::Texture>	renderTarget)
+Renderer::sceneManagerRenderingBeginHandler(std::shared_ptr<SceneManager>	sceneManager,
+										    uint							frameId,
+										    AbstractTexture::Ptr			renderTarget)
 {
 	render(sceneManager->assets()->context(), renderTarget);
 }

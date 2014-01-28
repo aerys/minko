@@ -25,7 +25,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/TriangleCulling.hpp"
 #include "minko/render/CompareMode.hpp"
 #include "minko/render/StencilOperation.hpp"
-#include "minko/render/Texture.hpp"
 
 namespace minko
 {
@@ -37,6 +36,7 @@ namespace minko
 		    typedef std::shared_ptr<States>                                 Ptr;
             typedef std::unordered_map<std::string, render::SamplerState>   SamplerStates;
 			typedef std::shared_ptr<math::Vector4>							Vector4Ptr;
+			typedef std::shared_ptr<render::AbstractTexture>				AbstractTexturePtr;
 
         private:
             float				        _priority;
@@ -55,7 +55,7 @@ namespace minko
 			bool						_scissorTest;
 			ScissorBox					_scissorBox;
             SamplerStates               _samplerStates;
-            std::shared_ptr<Texture>    _target;
+            AbstractTexturePtr		    _target;
 
 		public:
 		    inline static
@@ -76,7 +76,7 @@ namespace minko
 				   StencilOperation			stencilZPassOp				= StencilOperation::KEEP, 
 				   bool						scissorTest					= false,
 				   const ScissorBox&		scissorBox					= ScissorBox(),
-                   std::shared_ptr<Texture> target                      = nullptr)
+                   AbstractTexturePtr		target                      = nullptr)
 		    {
 			    return std::shared_ptr<States>(new States(
                     samplerStates,
@@ -253,7 +253,7 @@ namespace minko
             }
 
             inline
-            std::shared_ptr<Texture>
+            AbstractTexturePtr
             target() const
             {
                 return _target;
@@ -276,7 +276,7 @@ namespace minko
 				   StencilOperation			stencilZPassOp,
 				   bool						scissorTest,
 				   const ScissorBox&		scissorBox,
-                   std::shared_ptr<Texture> target) :
+                   AbstractTexturePtr		target) :
                 _samplerStates(samplerSates),
                 _priority(priority),
                 _blendingSourceFactor(blendingSourceFactor),
