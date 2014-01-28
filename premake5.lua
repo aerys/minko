@@ -41,7 +41,7 @@ solution "minko"
 	-- include 'plugins/assimp'
 	-- include 'plugins/offscreen'
 	-- include 'plugins/lua'
-	-- include 'plugins/serializer'
+	include 'plugins/serializer'
 	-- include 'plugins/oculus'
 	-- include 'plugins/leap'
 	
@@ -54,7 +54,7 @@ solution "minko"
 	if not _OPTIONS['no-examples'] then
 		-- include('examples/assimp')
 		include('examples/cube')
-		include('examples/cube-texture')
+		--include('examples/cube-texture')
 		include('examples/effect-config')
 		-- include('examples/light')
 		-- include('examples/raycasting')
@@ -63,7 +63,7 @@ solution "minko"
 		-- include('examples/lua-scripts')
 		-- include('examples/line-geometry')
 		-- include('examples/frustum')
-		-- include('examples/serializer')
+		include('examples/serializer')
 		-- include('examples/picking')
 		-- include('examples/visibility')
 		-- include('examples/leap-motion')

@@ -42,7 +42,7 @@ namespace minko
 			typedef std::shared_ptr<math::Vector3>								Vector3Ptr;
 			typedef std::shared_ptr<math::Vector2>								Vector2Ptr;
 			typedef std::shared_ptr<math::Matrix4x4>							Matrix4x4Ptr;
-			typedef std::shared_ptr<render::Texture>							TexturePtr;
+			typedef std::shared_ptr<render::AbstractTexture>					TexturePtr;
 
 		private:
 			static std::map<uint, std::function<Any(std::tuple<uint, std::string&>&)>> _typeIdToReadFunction;
