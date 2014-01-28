@@ -22,9 +22,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/Options.hpp"
 #include "minko/file/AssetLibrary.hpp"
 #include "minko/render/Texture.hpp"
+#include "minko/render/CubeTexture.hpp"
 
 #include "lodepng.h"
 
+using namespace minko;
 using namespace minko::file;
 
 void
@@ -40,7 +42,28 @@ PNGParser::parse(const std::string&                 filename,
 
 	lodepng::decode(out, width, height, &data[0], data.size());
 
-	auto texture = render::Texture::create(options->context(), width, height, options->generateMipmaps(), false, options->resizeSmoothly(), filename);
+	render::AbstractTexture::Ptr texture = nullptr;
+
+	if (!options->isCubeTexture())
+		texture	= render::Texture::create(
+			options->context(), 
+			width, 
+			height, 
+			options->generateMipmaps(), 
+			false, 
+			options->resizeSmoothly(), 
+			filename
+		);
+	else
+		texture = render::CubeTexture::create(
+			options->context(), 
+			width, 
+			height, 
+			options->generateMipmaps(), 
+			false, 
+			options->resizeSmoothly(), 
+			filename
+		);
 
 	texture->data(&out[0]);
 	texture->upload();

@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Common.hpp"
 
 #include "minko/render/Blending.hpp"
+#include "minko/render/CubeTexture.hpp"
 
 namespace minko
 {
@@ -130,36 +131,46 @@ namespace minko
 			deleteIndexBuffer(const uint indexBuffer) = 0;
 
 			virtual
-			const uint
-			createTexture(unsigned int  width,
+			uint
+			createTexture(TextureType	type,
+						  unsigned int  width,
 						  unsigned int  height,
 						  bool		    mipMapping,
                           bool          optimizeForRenderToTexture = false) = 0;
 
 			virtual
 			void
-			uploadTextureData(const uint texture,
-							  unsigned int 		 width,
-							  unsigned int 		 height,
-							  unsigned int 		 mipLevel,
-							  void*				 data) = 0;
+			uploadTexture2dData(uint			texture,
+							    unsigned int 	width,
+							    unsigned int 	height,
+							    unsigned int 	mipLevel,
+							    void*			data) = 0;
 
 			virtual
 			void
-			deleteTexture(const uint texture) = 0;
+			uploadCubeTextureData(uint				texture,
+								  CubeTexture::Face	face,
+								  unsigned int		width,
+							      unsigned int		height,
+							      unsigned int		mipLevel,
+							      void*				data) = 0;
 
 			virtual
 			void
-			setTextureAt(const uint	position,
-						 const int			texture		= 0,
-						 const int			location	= -1) = 0;
+			deleteTexture(uint	texture) = 0;
+
+			virtual
+			void
+			setTextureAt(uint	position,
+						 int	texture		= 0,
+						 int	location	= -1) = 0;
 
             virtual
             void
-            setSamplerStateAt(const uint    position,
-                              WrapMode              wrapping,
-                              TextureFilter         filtering,
-                              MipFilter             mipFiltering) = 0;
+            setSamplerStateAt(uint			position,
+                              WrapMode      wrapping,
+                              TextureFilter filtering,
+                              MipFilter     mipFiltering) = 0;
 
 			virtual
 			const uint

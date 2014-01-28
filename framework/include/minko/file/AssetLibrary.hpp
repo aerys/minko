@@ -39,7 +39,7 @@ namespace minko
 		private:
 			typedef std::shared_ptr<render::AbstractContext>	AbsContextPtr;
 			typedef std::shared_ptr<render::Effect>				EffectPtr;
-			typedef std::shared_ptr<render::Texture>			TexturePtr;
+			typedef std::shared_ptr<render::AbstractTexture>	AbsTexturePtr;
 			typedef std::shared_ptr<geometry::Geometry>			GeometryPtr;
 			typedef std::shared_ptr<file::AbstractParser>		AbsParserPtr;
 			typedef std::function<AbsParserPtr(void)>			Handler;
@@ -55,7 +55,7 @@ namespace minko
 			std::unordered_map<std::string, MaterialPtr>							_materials;
 			std::unordered_map<std::string, GeometryPtr>							_geometries;
 			std::unordered_map<std::string, EffectPtr>								_effects;
-			std::unordered_map<std::string, TexturePtr>								_textures;
+			std::unordered_map<std::string, AbsTexturePtr>							_textures;
 			std::unordered_map<std::string, NodePtr>								_symbols;
 			std::unordered_map<std::string, std::vector<unsigned char>>				_blobs;
             std::unordered_map<std::string, AbsScriptPtr>                           _scripts;
@@ -119,15 +119,15 @@ namespace minko
 
 			const std::string&
 			geometryName(GeometryPtr geometry);
-
-			TexturePtr
-			texture(const std::string& name);
-
+			
 			Ptr
-			texture(const std::string& name, TexturePtr texture);
+			texture(const std::string& name, AbsTexturePtr texture);
+
+			AbsTexturePtr
+			texture(const std::string& name) const;
 
 			const std::string&
-			textureName(TexturePtr texture);
+			textureName(AbsTexturePtr texture);
 
 			std::shared_ptr<material::Material>
 			material(const std::string& name);
@@ -198,6 +198,7 @@ namespace minko
 
 			Ptr
 			queue(const std::string& filename);
+
 			Ptr
 			queue(const std::string& filename, std::shared_ptr<file::Options> options);
 
