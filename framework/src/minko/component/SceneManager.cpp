@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/file/AssetLibrary.hpp"
 #include "minko/scene/Node.hpp"
-#include "minko/render/Texture.hpp"
+#include "minko/render/AbstractTexture.hpp"
 
 using namespace minko;
 using namespace minko::component;
@@ -34,8 +34,8 @@ SceneManager::SceneManager(const std::shared_ptr<render::AbstractContext>& conte
     _frameEnd(Signal<Ptr>::create()),
 	_cullBegin(Signal<Ptr>::create()),
 	_cullEnd(Signal<Ptr>::create()),
-	_renderBegin(Signal<Ptr, uint, TexturePtr>::create()),
-	_renderEnd(Signal<Ptr, uint, TexturePtr>::create())
+	_renderBegin(Signal<Ptr, uint, render::AbstractTexture::Ptr>::create()),
+	_renderEnd(Signal<Ptr, uint, render::AbstractTexture::Ptr>::create())
 {
 }
 
@@ -94,7 +94,7 @@ SceneManager::nextFrame()
 }
 
 void
-SceneManager::nextFrame(std::shared_ptr<render::Texture> renderTarget)
+SceneManager::nextFrame(render::AbstractTexture::Ptr renderTarget)
 {
 	_frameBegin->execute(shared_from_this());
 	_cullBegin->execute(shared_from_this());

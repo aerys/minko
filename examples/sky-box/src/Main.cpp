@@ -18,6 +18,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "minko/Minko.hpp"
+#include "minko/MinkoPNG.hpp"
 #include "minko/MinkoJPEG.hpp"
 #include "minko/MinkoSDL.hpp"
 
@@ -25,25 +26,37 @@ using namespace minko;
 using namespace minko::component;
 using namespace minko::math;
 
+const std::string TEXTURE_2D	= "texture/box.png";
+const std::string CUBE_TEXTURE	= "texture/cubemap_sea.jpeg";
+
 int main(int argc, char** argv)
 {
-	auto canvas = Canvas::create("Minko Example - Effect Config", 800, 600);
-	auto sceneManager = SceneManager::create(canvas->context());
+	auto canvas = Canvas::create("Minko Example - Sky Box", 800, 600);
 
+	auto sceneManager = SceneManager::create(canvas->context());
+	
 	// setup assets
+	sceneManager->assets()->defaultOptions()->resizeSmoothly(true);
 	sceneManager->assets()->defaultOptions()->generateMipmaps(true);
 	sceneManager->assets()
+		->registerParser<file::PNGParser>("png")
 		->registerParser<file::JPEGParser>("jpg")
-		->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()))
-		->queue("effect/windows.jpg")
-		->queue("effect/macosx.jpg")
-		->queue("effect/linux.jpg")
-		->queue("effect/PlatformTexture.effect");
+		->registerParser<file::JPEGParser>("jpeg")
+		->queue(TEXTURE_2D)
+		->queue(CUBE_TEXTURE, file::Options::create(canvas->context())->isCubeTexture(true))
+		->queue("effect/Basic.effect");
+
+	sceneManager->assets()->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()));
+	
 
 	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
 	{
+		auto cubeGeometry = geometry::CubeGeometry::create(sceneManager->assets()->context());
+
 		auto root = scene::Node::create("root")
 			->addComponent(sceneManager);
+
+		assets->geometry("cubeGeometry", cubeGeometry);
 
 		auto camera = scene::Node::create("camera")
 			->addComponent(Renderer::create(0x7f7f7fff))
@@ -52,24 +65,40 @@ int main(int argc, char** argv)
 			))
 			->addComponent(PerspectiveCamera::create(800.f / 600.f, (float)PI * 0.25f, .1f, 1000.f));
 		root->addChild(camera);
+		
+		auto sky = scene::Node::create("sky")
+			->addComponent(Transform::create(
+				Matrix4x4::create()->appendScale(100.0f, 100.0f, 100.0f)
+			))
+			->addComponent(Surface::create(
+				assets->geometry("cubeGeometry"),
+				material::BasicMaterial::create()
+					->diffuseCubeMap(assets->texture(CUBE_TEXTURE))
+					->triangleCulling(render::TriangleCulling::NONE),
+				assets->effect("effect/Basic.effect")
+			));
+		root->addChild(sky);
 
-		auto mesh = scene::Node::create("mesh")
+		auto box = scene::Node::create("box")
 			->addComponent(Transform::create())
 			->addComponent(Surface::create(
-				assets->geometry("cube"),
-				material::Material::create()->set("diffuseColor", Vector4::one),
-				assets->effect("effect/PlatformTexture.effect")
+				assets->geometry("cubeGeometry"),
+				material::BasicMaterial::create()
+					->diffuseMap(assets->texture(TEXTURE_2D)),
+				assets->effect("effect/Basic.effect")
 			));
-		root->addChild(mesh);
-
+		root->addChild(box);
+		
 		auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
 		{
-			root->children()[0]->component<PerspectiveCamera>()->aspectRatio((float)w / (float)h);
+			camera->component<PerspectiveCamera>()->aspectRatio((float)w / (float)h);
 		});
 
 		auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, uint deltaTime)
 		{
-			mesh->component<Transform>()->matrix()->appendRotationY(.01f);
+			sky->component<Transform>()->matrix()->appendRotationY(.001f);
+			box->component<Transform>()->matrix()->appendRotationY(-.01f);
+
 			sceneManager->nextFrame();
 		});
 
@@ -80,3 +109,5 @@ int main(int argc, char** argv)
 
 	return 0;
 }
+
+
