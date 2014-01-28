@@ -57,7 +57,7 @@ Picking::Picking(SceneManagerPtr	sceneManager,
 	_mouseOut(Signal<NodePtr>::create()),
 	_mouseOver(Signal<NodePtr>::create())
 {
-	_renderer	= Renderer::create(0xFFFF00FF, nullptr, sceneManager->assets()->effect("effect/Picking.effect"));
+	_renderer	= Renderer::create(0xFFFF00FF, nullptr, sceneManager->assets()->effect("effect/Picking.effect"), 1000.f);
 }
 
 void
