@@ -28,9 +28,10 @@ namespace minko
 		public std::enable_shared_from_this<Signal<A...>>
 	{
 	private:
-		typedef std::function<void(A...)>					Callback;
-		typedef typename std::list<Callback>::iterator		CallbackIterator;
-		typedef typename std::list<unsigned int>::iterator	SlotIterator;
+		typedef std::function<void(A...)>										CallbackFunction;
+		typedef std::pair<float, CallbackFunction>								Callback;
+		typedef typename std::vector<Callback>::iterator						CallbackIterator;
+		typedef typename std::vector<std::pair<float, unsigned int>>::iterator	SlotIterator;
 
 		template <typename... B>
 		class SignalSlot;
@@ -40,12 +41,12 @@ namespace minko
 		typedef std::shared_ptr<SignalSlot<A...>>		Slot;
 
 	private:
-		std::list<Callback>										_callbacks;
-		std::list<unsigned int>									_slotIds;
+		std::vector<Callback>									_callbacks;
+		std::vector<std::pair<float, unsigned int>>				_slotIds;
 		unsigned int 											_nextSlotId;
 
 		bool													_locked;
-		std::list<std::pair<Callback, uint>>					_toAdd;
+		std::vector<std::pair<Callback, uint>>					_toAdd;
 		std::list<std::pair<CallbackIterator, SlotIterator>>	_toRemove;
 
 	private:
@@ -63,7 +64,7 @@ namespace minko
 			auto callbackIt 	= _callbacks.begin();
 			auto i 				= 0;
 
-			while (*connectionIdIt != connectionId)
+			while ((*connectionIdIt).second != connectionId)
 			{
 				connectionIdIt++;
 				callbackIt++;
@@ -80,7 +81,7 @@ namespace minko
 			{
 				auto addIt = std::find_if(_toAdd.begin(), _toAdd.end(), [&](std::pair<Callback, unsigned int>& add)
 				{
-					return add.second == *connectionIdIt;
+					return add.second == (*connectionIdIt).second;
 				});
 
 				if (addIt != _toAdd.end())
@@ -111,16 +112,16 @@ namespace minko
 		}
 
 		Slot
-		connect(Callback callback)
+		connect(CallbackFunction callback, float priority = 0)
 		{
 			auto connection = SignalSlot<A...>::create(Signal<A...>::shared_from_this(), _nextSlotId++);
 			
 			if (_locked)
-				_toAdd.push_back(std::pair<Callback, unsigned int>(callback, connection->_id));
+				_toAdd.push_back(std::pair<Callback, unsigned int>(std::pair<float, CallbackFunction>(priority, callback), connection->_id));
 			else
 			{
-				_callbacks.push_back(callback);
-				_slotIds.push_back(connection->_id);
+				_callbacks.push_back(std::pair<float, CallbackFunction>(priority, callback));
+				_slotIds.push_back(std::pair<float, unsigned int>(priority, connection->_id));
 			}
 
 			return connection;
@@ -131,13 +132,13 @@ namespace minko
 		{
 			_locked = true;
 			for (auto& callback : _callbacks)
-				callback(arguments...);
+				std::get<1>(callback)(arguments...);
 			_locked = false;
 
 			for (auto& callbackAndConnectionId : _toAdd)
 			{
 				_callbacks.push_back(callbackAndConnectionId.first);
-				_slotIds.push_back(callbackAndConnectionId.second);
+				_slotIds.push_back(std::pair<float, unsigned int>(callbackAndConnectionId.first.first, callbackAndConnectionId.second));
 			}
 			
 			for (auto& callbackIt : _toRemove)
