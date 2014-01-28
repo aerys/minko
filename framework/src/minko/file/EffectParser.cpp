@@ -32,7 +32,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/TextureFilter.hpp"
 #include "minko/render/MipFilter.hpp"
 #include "minko/render/TriangleCulling.hpp"
+#include "minko/render/AbstractTexture.hpp"
 #include "minko/render/Texture.hpp"
+#include "minko/render/CubeTexture.hpp"
 #include "minko/render/Pass.hpp"
 #include "minko/file/Loader.hpp"
 #include "minko/file/Options.hpp"
@@ -246,7 +248,7 @@ EffectParser::parseRenderStates(const Json::Value&		root,
 	auto scissorTest		= defaultStates->scissorTest();
 	auto scissorBox			= defaultStates->scissorBox();
 
-	render::Texture::Ptr target = defaultStates->target();
+	AbstractTexture::Ptr target = defaultStates->target();
 	std::unordered_map<std::string, SamplerState> samplerStates = defaultStates->samplers();
 
 	const float priority = parsePriority(root, defaultStates->priority() + priorityOffset);
@@ -549,7 +551,7 @@ EffectParser::glslIncludeCompleteHandler(LoaderPtr 					loader,
 		options->includePaths().push_back(loader->resolvedFilename().substr(0, pos));
 	}
 
-	parseGLSL(std::string((const char*)&loader->data()[0], loader->data().size()), options, blocks, blockIt);
+	parseGLSL(std::string((const char*)&loader->data()[0], loader->data().size()), options, blocks,blockIt);
 
 	if (_numDependencies == _numLoadedDependencies && _effect)
 		finalize();
@@ -915,7 +917,7 @@ EffectParser::loadTexture(const std::string&	textureFilename,
 		auto extension = loader->resolvedFilename().substr(pos + 1);
 		auto parser = _assetLibrary->parser(extension);
 
-		auto completeSlote = parser->complete()->connect([&](file::AbstractParser::Ptr parser)
+		auto completeSlot = parser->complete()->connect([&](file::AbstractParser::Ptr parser)
 		{
 			uniformTypeAndValue.second.textureValue = _assetLibrary->texture(textureFilename);
 			uniformTypeAndValue.second.textureValue->upload();
@@ -1062,15 +1064,15 @@ EffectParser::parseStencilOperations(const Json::Value& contextNode,
 	}
 }
 
-std::shared_ptr<render::Texture>
+AbstractTexture::Ptr
 EffectParser::parseTarget(const Json::Value&                contextNode,
                           std::shared_ptr<AbstractContext>  context,
                           TexturePtrMap&                    targets)
 {
     auto targetValue = contextNode.get("target", 0);
 
-	std::shared_ptr<render::Texture> target;
-	std::string targetName;
+	AbstractTexture::Ptr	target	= nullptr;
+	std::string				targetName;
 
     if (targetValue.isObject())
     {
@@ -1091,7 +1093,15 @@ EffectParser::parseTarget(const Json::Value&                contextNode,
             height = targetValue.get("height", 0).asUInt();
         }
 
-        target = render::Texture::create(context, width, height, false, true);
+		const bool isCubeTexture = targetValue.get("isCube", 0).isBool()
+			? targetValue.get("isCube", 0).asBool()
+			: false;
+
+		if (!isCubeTexture)
+			target	= Texture::create(context, width, height, false, true);
+		else
+			target	= CubeTexture::create(context, width, height, false, true);
+
 		target->upload();
 
 		if (targetName.length())
