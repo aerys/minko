@@ -26,8 +26,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/data/Container.hpp"
 #include "minko/scene/Node.hpp"
 #include "minko/render/Blending.hpp"
+#include "minko/render/Priority.hpp"
 
 using namespace minko;
+using namespace minko::math;
 using namespace minko::render;
 
 const unsigned int DrawCallPool::NUM_FALLBACK_ATTEMPTS = 32;
@@ -37,11 +39,13 @@ DrawCallPool::DrawCallPool(RendererPtr renderer):
 {
 }
 
-std::list<std::shared_ptr<DrawCall>>
+const std::list<std::shared_ptr<DrawCall>>&
 DrawCallPool::drawCalls()
 {
 	unsigned int _numToCollect				= _toCollect.size();
 	unsigned int _numToRemove				= _toRemove.size();
+
+	_drawCalls.sort(&DrawCallPool::compareDrawCalls);
 
 	if (_numToCollect == 0 && _numToRemove == 0)
 		return _drawCalls;
@@ -58,8 +62,6 @@ DrawCallPool::drawCalls()
 		_drawCalls.insert(_drawCalls.end(), newDrawCalls.begin(), newDrawCalls.end());
 	}
 	
-	_drawCalls.sort(&DrawCallPool::compareDrawCalls);
-
 	_toRemove.resize(0);
 	_toCollect.erase(_toCollect.begin(), _toCollect.begin() + _numToCollect);
 
@@ -68,15 +70,34 @@ DrawCallPool::drawCalls()
 
 
 bool
-DrawCallPool::compareDrawCalls(DrawCallPtr& a, DrawCallPtr& b)
+DrawCallPool::compareDrawCalls(DrawCallPtr a, DrawCallPtr b)
 {
-	float aPriority = a->priority() - (a->blendMode() == render::Blending::Mode::ALPHA ? 0.5f : 0.f);
-	float bPriority = b->priority() - (b->blendMode() == render::Blending::Mode::ALPHA ? 0.5f : 0.f);
+	const float	aPriority			= a->priority();
+	const float	bPriority			= b->priority();
+	const bool	arePrioritiesEqual	= fabsf(aPriority - bPriority) < 1e-3f;
 
-	if (aPriority == bPriority)
+	if (!arePrioritiesEqual)
+		return aPriority > bPriority;
+
+	// aPriority == bPriority
+	const bool	areTransparent		= priority::LAST < aPriority && !( aPriority > priority::TRANSPARENT);
+
+	if (areTransparent)
+	{
+		static Vector3::Ptr aPosition = Vector3::create();
+		static Vector3::Ptr bPosition = Vector3::create();
+
+		a->getEyeSpacePosition(aPosition);
+		b->getEyeSpacePosition(bPosition);
+
+		// z-sort
+		return aPosition->z() > bPosition->z();
+	}
+	else
+	{
+		// ordered by target texture id, if any
 		return a->target() && (!b->target() || (a->target()->id() > b->target()->id()));
-
-	return aPriority > bPriority;
+	}
 }
 
 void
@@ -277,7 +298,6 @@ DrawCallPool::initializeDrawCall(std::shared_ptr<render::Pass>			pass,
 	}
 
 	drawcall->configure(program, targetData, rendererData, rootData);
-	drawcall->priority(priority);
 
 	return drawcall;
 }

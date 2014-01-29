@@ -36,6 +36,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/Texture.hpp"
 #include "minko/render/CubeTexture.hpp"
 #include "minko/render/Pass.hpp"
+#include "minko/render/Priority.hpp"
 #include "minko/file/Loader.hpp"
 #include "minko/file/Options.hpp"
 #include "minko/file/AssetLibrary.hpp"
@@ -119,11 +120,11 @@ EffectParser::initializePriorityMap()
 	std::unordered_map<std::string, float> m;
 
 	// The higher the priority, the earlier the drawcall is rendered.
-	m["first"]			= 4000.0f;
-	m["background"]		= 3000.0f;
-	m["opaque"]			= 2000.0f;
-	m["transparent"]	= 1000.0f;
-	m["last"]			=    0.0f;
+	m["first"]			= priority::FIRST;
+	m["background"]		= priority::BACKGROUND;
+	m["opaque"]			= priority::OPAQUE;
+	m["transparent"]	= priority::TRANSPARENT;
+	m["last"]			= priority::LAST;
 
 	return m;
 }

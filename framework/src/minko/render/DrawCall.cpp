@@ -45,6 +45,10 @@ SamplerState DrawCall::_defaultSamplerState = SamplerState(WrapMode::CLAMP, Text
 /*static*/ const unsigned int	DrawCall::MAX_NUM_TEXTURES		= 8;
 /*static*/ const unsigned int	DrawCall::MAX_NUM_VERTEXBUFFERS	= 8;
 
+static const std::string	PNAME_POSITIONS			= "geometry.vertex.attribute.position";
+static const std::string	PNAME_MODEL_TO_WORLD	= "transform.modelToWorldMatrix";
+static const std::string	PNAME_WORLD_TO_SCREEN	= "camera.worldToScreenMatrix";
+
 DrawCall::DrawCall(const data::BindingMap&	attributeBindings,
 				   const data::BindingMap&	uniformBindings,
 				   const data::BindingMap&	stateBindings,
@@ -65,7 +69,8 @@ DrawCall::DrawCall(const data::BindingMap&	attributeBindings,
     _vertexAttributeSizes(MAX_NUM_VERTEXBUFFERS, -1),
     _vertexAttributeOffsets(MAX_NUM_VERTEXBUFFERS, -1),
 	_target(nullptr),
-	_referenceChangedSlots()
+	_referenceChangedSlots(),
+	_position(nullptr)
 {
 }
 
@@ -199,6 +204,9 @@ DrawCall::bindVertexAttribute(const std::string&	inputName,
 			if (!vertexBuffer->hasAttribute(attributeName))
 				throw std::logic_error("missing required vertex attribute: " + attributeName);
 #endif
+
+			if (propertyName == PNAME_POSITIONS)
+				_position = nullptr; // invalidate precomputed local position
 
 			auto attribute = vertexBuffer->attribute(attributeName);
 
@@ -481,66 +489,31 @@ DrawCall::reset()
 	_vertexAttributeOffsets	.resize(MAX_NUM_VERTEXBUFFERS, -1);
 
 	_referenceChangedSlots.clear();
+	
+	_position = nullptr;
 }
 
 void
 DrawCall::bindStates()
 {
-	_blendMode = getDataProperty<Blending::Mode>(
-		_stateBindings, "blendMode", _states->blendingSourceFactor() | _states->blendingDestinationFactor()
-	);
-	_colorMask = getDataProperty<bool>(
-		_stateBindings, "colorMask", _states->colorMask()
-	);
-	_depthMask = getDataProperty<bool>(
-		_stateBindings, "depthMask", _states->depthMask()
-	);
-	_depthFunc = getDataProperty<CompareMode>(
-		_stateBindings, "depthFunc", _states->depthFunc()
-	);
-	_triangleCulling = getDataProperty<TriangleCulling>(
-		_stateBindings, "triangleCulling", _states->triangleCulling()
-	);
-	_stencilFunc = getDataProperty<CompareMode>(
-		_stateBindings, "stencilFunc", _states->stencilFunction()
-	);
-	_stencilRef = getDataProperty<int>(
-		_stateBindings, "stencilRef", _states->stencilReference()
-	);
-	_stencilMask = getDataProperty<uint>(
-		_stateBindings, "stencilMask", _states->stencilMask()
-	);
-	_stencilFailOp = getDataProperty<StencilOperation>(
-		_stateBindings, "stencilFailOp", _states->stencilFailOperation()
-	);
-	_stencilZFailOp = getDataProperty<StencilOperation>(
-		_stateBindings, "stencilZFailOp", _states->stencilDepthFailOperation()
-	);
-	_stencilZPassOp = getDataProperty<StencilOperation>(
-		_stateBindings, "stencilZPassOp", _states->stencilDepthPassOperation()
-	);
-	_scissorTest	= getDataProperty<bool>(
-		_stateBindings, "scissorTest", _states->scissorTest()
-	);
-	_scissorBox.x	= getDataProperty<int>(
-		_stateBindings, "scissorBox.x", _states->scissorBox().x
-	);
-	_scissorBox.y	= getDataProperty<int>(
-		_stateBindings, "scissorBox.y", _states->scissorBox().y
-	);
-	_scissorBox.width	= getDataProperty<int>(
-		_stateBindings, "scissorBox.width", _states->scissorBox().width
-	);
-	_scissorBox.height	= getDataProperty<int>(
-		_stateBindings, "scissorBox.height", _states->scissorBox().height
-	);
-
-	_target = getDataProperty<AbstractTexture::Ptr>(
-		_stateBindings, "target", _states->target()
-	);
-	
-    if (_target && !_target->isReady())
-        _target->upload();
+	bindState<Blending::Mode>("blendMode", _states->blendingSourceFactor() | _states->blendingDestinationFactor(), _blendMode);
+	bindState<bool>("colorMask", _states->colorMask(), _colorMask);
+	bindState<bool>("depthMask", _states->depthMask(), _depthMask);
+	bindState<CompareMode>("depthFunc", _states->depthFunc(), _depthFunc);
+	bindState<TriangleCulling>("triangleCulling", _states->triangleCulling(), _triangleCulling);
+	bindState<CompareMode>("stencilFunc", _states->stencilFunction(), _stencilFunc);
+	bindState<int>("stencilRef", _states->stencilReference(), _stencilRef);
+	bindState<uint>("stencilMask", _states->stencilMask(), _stencilMask);
+	bindState<StencilOperation>("stencilFailOp", _states->stencilFailOperation(), _stencilFailOp);
+	bindState<StencilOperation>("stencilZFailOp", _states->stencilDepthFailOperation(), _stencilZFailOp);
+	bindState<StencilOperation>("stencilZPassOp", _states->stencilDepthPassOperation(), _stencilZPassOp);
+	bindState<bool>("scissorTest", _states->scissorTest(), _scissorTest);
+	bindState<int>("scissorBox.x", _states->scissorBox().x, _scissorBox.x);
+	bindState<int>("scissorBox.y", _states->scissorBox().y, _scissorBox.y);
+	bindState<int>("scissorBox.width", _states->scissorBox().width, _scissorBox.width);
+	bindState<int>("scissorBox.height", _states->scissorBox().height, _scissorBox.height);
+	bindState<float>("priority", _states->priority(), _priority);
+	bindState<AbstractTexture::Ptr>("target", _states->target(), _target);
 }
 
 void
@@ -689,6 +662,40 @@ DrawCall::getDataContainer(const data::BindingSource& source) const
 		return _rootData;
 
 	return nullptr;
+}
+
+Vector3::Ptr
+DrawCall::getEyeSpacePosition(Vector3::Ptr output) 
+{
+	if (_position == nullptr)
+	{
+		// update local position with position vertex attribute from target's container
+		
+		if (_targetData &&
+			_targetData->hasProperty(PNAME_POSITIONS))
+			_position = _targetData->get<VertexBuffer::Ptr>(PNAME_POSITIONS)->getPositionCenter(_position);
+		else
+			_position = Vector3::create(0.0f, 0.0f, 0.0f);
+	}
+
+	if (output == nullptr)
+		output = Vector3::create(_position->x(), _position->y(), _position->z());
+	else
+		output->copyFrom(_position);
+	
+	static Matrix4x4::Ptr modelView = Matrix4x4::create();
+	
+	if (_targetData && 
+		_targetData->hasProperty(PNAME_MODEL_TO_WORLD))
+		modelView->copyFrom(_targetData->get<Matrix4x4::Ptr>(PNAME_MODEL_TO_WORLD));
+
+	if (_rendererData && 
+		_rendererData->hasProperty(PNAME_WORLD_TO_SCREEN))
+		modelView->append(_rendererData->get<Matrix4x4::Ptr>(PNAME_WORLD_TO_SCREEN));
+
+	output = modelView->transform(_position, output);
+
+	return output;
 }
 
 /*
