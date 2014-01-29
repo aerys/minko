@@ -82,7 +82,7 @@ DrawCallPool::compareDrawCalls(DrawCallPtr a, DrawCallPtr b)
 	// aPriority == bPriority
 	const bool	areTransparent		= priority::LAST < aPriority && !( aPriority > priority::TRANSPARENT);
 
-	if (areTransparent)
+	if (areTransparent && (a->zsorted() || b->zsorted()))
 	{
 		static Vector3::Ptr aPosition = Vector3::create();
 		static Vector3::Ptr bPosition = Vector3::create();
