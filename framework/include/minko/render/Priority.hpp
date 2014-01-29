@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -21,60 +21,19 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 
-#include "minko/material/Material.hpp"
-#include "minko/render/TriangleCulling.hpp"
-#include "minko/render/Blending.hpp"
-
 namespace minko
 {
-	namespace material
-	{
-		class BasicMaterial :
-			public Material
+    namespace render
+    {
+		namespace priority
 		{
-		public:
-			typedef std::shared_ptr<BasicMaterial>	Ptr;
+			// The higher the priority, the earlier the drawcall is rendered.
 
-		public:
-			inline static
-			Ptr
-			create()
-			{
-				return std::shared_ptr<BasicMaterial>(new BasicMaterial());
-			}
-
-			Ptr
-			diffuseColor(std::shared_ptr<math::Vector4>);
-
-			Ptr
-			diffuseColor(uint);
-
-			Ptr
-			diffuseMap(std::shared_ptr<render::AbstractTexture>);
-
-			Ptr
-			diffuseCubeMap(std::shared_ptr<render::AbstractTexture>);
-
-			Ptr
-			isTransparent(bool);
-
-			inline
-			Ptr
-			blendMode(render::Blending::Mode blendMode)
-			{
-				set("blendMode", blendMode);
-
-				return std::dynamic_pointer_cast<BasicMaterial>(shared_from_this());
-			}
-
-			inline
-			Ptr
-			triangleCulling(render::TriangleCulling culling)
-			{
-				set("triangleCulling", culling);
-
-				return std::dynamic_pointer_cast<BasicMaterial>(shared_from_this());
-			}
-		};
-	}
+			static const float FIRST		= 4000.0f;
+			static const float BACKGROUND	= 3000.0f;
+			static const float OPAQUE		= 2000.0f;
+			static const float TRANSPARENT	= 1000.0f;
+			static const float LAST			= 0.0f;
+		}
+    }
 }
