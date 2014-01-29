@@ -23,6 +23,14 @@
 		"numBones"				: { "property" : "geometry.numBones",				"source" : "target" }
     },
     
+    "macroBindings" : {
+        "DIFFUSE_MAP"           : "material.diffuseMap",
+        "DIFFUSE_CUBEMAP"       : "material.diffuseCubeMap",
+        "MODEL_TO_WORLD"        : "transform.modelToWorldMatrix",
+        "HAS_NORMAL"            : "geometry.vertex.attribute.normal",
+        "NUM_BONES"             : { "property" : "geometry.numBones",   "source" : "target" }
+    },
+
     "stateBindings" : {
         "blendMode"             : "material.blendMode",
         "colorMask"             : "material.colorMask",
@@ -39,24 +47,19 @@
         "scissorBox.y"          : { "property" : "scissorBox.y",        "source" : "renderer" },
         "scissorBox.width"      : { "property" : "scissorBox.width",    "source" : "renderer" },
         "scissorBox.height"     : { "property" : "scissorBox.height",   "source" : "renderer" },
-        "priority"              : "material.priority"
-    },
-
-    "macroBindings" : {
-        "DIFFUSE_MAP"           : "material.diffuseMap",
-        "DIFFUSE_CUBEMAP"       : "material.diffuseCubeMap",
-        "MODEL_TO_WORLD"        : "transform.modelToWorldMatrix",
-		"HAS_NORMAL"			: "geometry.vertex.attribute.normal",
-		"NUM_BONES"				: { "property" : "geometry.numBones",	"source" : "target" }
+        "priority"              : "material.priority",
+        "zsort"                 : "material.zsort"
     },
     
     "blendMode"         : ["one", "zero"],
+    "colorMask"         : true,
     "depthTest"         : [true, "less_equal"],
-	"colorMask"			: true,
-	"stencilTest"		: ["always", 0, 1, ["keep", "keep", "keep"]],
     "triangleCulling"   : "none",
+	"stencilTest"		: ["always", 0, 1, ["keep", "keep", "keep"]],
     "scissorTest"		: false,
 	"scissorBox"		: [0, 0, -1, -1],
+    "priority"          : "opaque",
+    "zsort"             : false,
 	
     "samplerStates" : {
         "diffuseMap"    : { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" }
