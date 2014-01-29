@@ -87,7 +87,7 @@ namespace minko
 
 			inline static
 			Ptr
-			create(Ptr pass, bool deepCopy = false)
+			create(Ptr pass, float, bool deepCopy = false)
 			{
 				auto p = create(
 					pass->_name,
