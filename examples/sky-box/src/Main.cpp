@@ -137,7 +137,7 @@ createTransparentObject(float scale, float rotationY, file::AssetLibrary::Ptr as
 			assets->geometry("cube"),
 			material::BasicMaterial::create()
 				->diffuseColor(Color::hslaToRgba(0.5f * rotationY / (float)PI, 1.0f, 0.5f, 0.5f))
-				->isTransparent(true)
+				->isTransparent(true, true)
 				->triangleCulling(render::TriangleCulling::BACK),
 			assets->effect("effect/Basic.effect")
 		));
