@@ -117,6 +117,8 @@ namespace minko
 
 			std::unordered_map<std::string, std::list<Any>>				_referenceChangedSlots; // Any = ContainerPropertyChangedSlot
 
+			std::shared_ptr<math::Vector3>								_position; // position in local space
+
 		public:
 			static inline
 			Ptr
@@ -128,13 +130,6 @@ namespace minko
 				return std::shared_ptr<DrawCall>(new DrawCall(
                     attributeBindings, uniformBindings, stateBindings, states
                 ));;
-			}
-
-			inline
-			Blending::Mode
-			blendMode() const
-			{
-				return _blendMode;
 			}
 
             inline
@@ -149,18 +144,7 @@ namespace minko
 			priority() const
 			{
 				return _priority;
-				//return getDataProperty();
-				//return _states->priority();
 			}
-
-			/*
-			inline
-			void
-			priority(float value)
-			{
-				_states->priority(value);
-			}
-			*/
 
             void
             configure(std::shared_ptr<Program>  program,
@@ -174,6 +158,9 @@ namespace minko
 			void
 			initialize(ContainerPtr				                    data,
 					   const std::map<std::string, std::string>&	inputNameToBindingName);
+
+			std::shared_ptr<math::Vector3>
+			getEyeSpacePosition(std::shared_ptr<math::Vector3> output = nullptr);
 
 		private:
 			DrawCall(const data::BindingMap&	attributeBindings,
@@ -277,6 +264,7 @@ namespace minko
 				// actually does nothing
 				return value;
 			}
+
 		};		
 	}
 }
