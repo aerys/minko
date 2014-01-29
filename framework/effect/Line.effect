@@ -20,14 +20,21 @@
     
     "stateBindings" : {
         "blendMode"             : "material.blendMode",
-		"colorMask"				: "material.colorMask",
-		"stencilFunc"			: "material.stencilFunc",
-		"stencilRef"			: "material.stencilRef",
-		"stencilMask"			: "material.stencilMask",
-		"stencilFailOp"			: "material.stencilFailOp",
-		"stencilZFailOp"		: "material.stencilZFailOp",
-		"stencilZPassOp"		: "material.stencilZPassOp",
-        "triangleCulling"       : "material.triangleCulling"
+        "colorMask"             : "material.colorMask",
+        "depthMask"             : "material.depthMask",
+        "depthFunc"             : "material.depthFunc",
+        "triangleCulling"       : "material.triangleCulling",
+        "stencilFunc"           : "material.stencilFunc",
+        "stencilRef"            : "material.stencilRef",
+        "stencilMask"           : "material.stencilMask",
+        "stencilFailOp"         : "material.stencilFailOp",
+        "stencilZFailOp"        : "material.stencilZFailOp",
+        "stencilZPassOp"        : "material.stencilZPassOp",
+        "scissorBox.x"          : { "property" : "scissorBox.x",        "source" : "renderer" },
+        "scissorBox.y"          : { "property" : "scissorBox.y",        "source" : "renderer" },
+        "scissorBox.width"      : { "property" : "scissorBox.width",    "source" : "renderer" },
+        "scissorBox.height"     : { "property" : "scissorBox.height",   "source" : "renderer" },
+        "priority"              : "material.priority"
     },
 
     "macroBindings" : {
