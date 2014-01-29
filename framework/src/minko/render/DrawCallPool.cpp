@@ -618,3 +618,8 @@ DrawCallPool::forgiveMacros(SurfacePtr											surface,
 			}
 		}
 }
+
+			void
+			DrawCallPool::zsortNeededHandler(Surface::Ptr surface, DrawCall::Ptr)
+			{
+			}

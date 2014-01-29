@@ -45,6 +45,9 @@ SamplerState DrawCall::_defaultSamplerState = SamplerState(WrapMode::CLAMP, Text
 /*static*/ const unsigned int	DrawCall::MAX_NUM_TEXTURES		= 8;
 /*static*/ const unsigned int	DrawCall::MAX_NUM_VERTEXBUFFERS	= 8;
 
+// names of the properties that may cause a z-sort change between drawcalls
+static const std::string	PNAME_PRIORITY			= "material.priority";
+static const std::string	PNAME_ZSORTED			= "material.zsorted";
 static const std::string	PNAME_POSITIONS			= "geometry.vertex.attribute.position";
 static const std::string	PNAME_MODEL_TO_WORLD	= "transform.modelToWorldMatrix";
 static const std::string	PNAME_WORLD_TO_SCREEN	= "camera.worldToScreenMatrix";
@@ -70,7 +73,8 @@ DrawCall::DrawCall(const data::BindingMap&	attributeBindings,
     _vertexAttributeOffsets(MAX_NUM_VERTEXBUFFERS, -1),
 	_target(nullptr),
 	_referenceChangedSlots(),
-	_position(nullptr)
+	_zsortRequestingSlots(),
+	_zsortUpdateNeeded(Signal<Ptr>::create())
 {
 }
 
@@ -204,9 +208,6 @@ DrawCall::bindVertexAttribute(const std::string&	inputName,
 			if (!vertexBuffer->hasAttribute(attributeName))
 				throw std::logic_error("missing required vertex attribute: " + attributeName);
 #endif
-
-			if (propertyName == PNAME_POSITIONS)
-				_position = nullptr; // invalidate precomputed local position
 
 			auto attribute = vertexBuffer->attribute(attributeName);
 
@@ -489,8 +490,7 @@ DrawCall::reset()
 	_vertexAttributeOffsets	.resize(MAX_NUM_VERTEXBUFFERS, -1);
 
 	_referenceChangedSlots.clear();
-	
-	_position = nullptr;
+	_zsortRequestingSlots.clear();
 }
 
 void
@@ -668,23 +668,12 @@ DrawCall::getDataContainer(const data::BindingSource& source) const
 Vector3::Ptr
 DrawCall::getEyeSpacePosition(Vector3::Ptr output) 
 {
-	if (_position == nullptr)
-	{
-		// update local position with position vertex attribute from target's container
-		
-		if (_targetData &&
-			_targetData->hasProperty(PNAME_POSITIONS))
-			_position = _targetData->get<VertexBuffer::Ptr>(PNAME_POSITIONS)->getPositionCenter(_position);
-		else
-			_position = Vector3::create(0.0f, 0.0f, 0.0f);
-	}
+	static auto localPos	= Vector3::create();
+	static auto modelView	= Matrix4x4::create();
 
-	if (output == nullptr)
-		output = Vector3::create(_position->x(), _position->y(), _position->z());
-	else
-		output->copyFrom(_position);
-	
-	static Matrix4x4::Ptr modelView = Matrix4x4::create();
+	localPos = _targetData && _targetData->hasProperty(PNAME_POSITIONS)
+		? _targetData->get<VertexBuffer::Ptr>(PNAME_POSITIONS)->centerPosition(localPos)
+		: localPos->setTo(0.0f, 0.0f, 0.0f);
 	
 	if (_targetData && 
 		_targetData->hasProperty(PNAME_MODEL_TO_WORLD))
@@ -694,16 +683,76 @@ DrawCall::getEyeSpacePosition(Vector3::Ptr output)
 		_rendererData->hasProperty(PNAME_WORLD_TO_SCREEN))
 		modelView->append(_rendererData->get<Matrix4x4::Ptr>(PNAME_WORLD_TO_SCREEN));
 
-	output = modelView->transform(_position, output);
+	output = modelView->transform(localPos, output);
 
 	return output;
 }
 
-/*
-bool
-DrawCall::dataHasProperty(const std::string& propertyName)
+void
+DrawCall::watchZSortingProperties()
 {
-    return _targetData->hasProperty(propertyName) || _rendererData->hasProperty(propertyName)
-		|| _rootData->hasProperty(propertyName);
+	_zsortRequestingSlots.clear();
+
+	if (_targetData)
+	{
+		_zsortRequestingSlots.push_back(
+			_targetData->propertyReferenceChanged(PNAME_ZSORTED)->connect(std::bind(
+				&DrawCall::zsortingPropertyChanged, 
+				shared_from_this()
+			))
+		);
+
+		_zsortRequestingSlots.push_back(
+			_targetData->propertyReferenceChanged(PNAME_PRIORITY)->connect(std::bind(
+				&DrawCall::zsortingPropertyChanged, 
+				shared_from_this()
+			))
+		);
+
+		_zsortRequestingSlots.push_back(
+			_targetData->propertyReferenceChanged(PNAME_POSITIONS)->connect(std::bind(
+				&DrawCall::zsortingPropertyChanged, 
+				shared_from_this()
+			))
+		);
+
+		_zsortRequestingSlots.push_back(
+			_targetData->propertyReferenceChanged(PNAME_MODEL_TO_WORLD)->connect(std::bind(
+				&DrawCall::zsortingPropertyChanged, 
+				shared_from_this()
+			))
+		);
+
+		if (_targetData->hasProperty(PNAME_MODEL_TO_WORLD))
+			_zsortRequestingSlots.push_back(
+				_targetData->get<Matrix4x4::Ptr>(PNAME_MODEL_TO_WORLD)->changed()->connect(std::bind(
+					&DrawCall::zsortingPropertyChanged, 
+					shared_from_this()
+				))
+			);
+	}
+
+	if (_rendererData)
+	{
+		_zsortRequestingSlots.push_back(
+			_rendererData->propertyReferenceChanged(PNAME_WORLD_TO_SCREEN)->connect(std::bind(
+				&DrawCall::zsortingPropertyChanged, 
+				shared_from_this()
+			))
+		);
+
+		if (_rendererData->hasProperty(PNAME_WORLD_TO_SCREEN))
+			_zsortRequestingSlots.push_back(
+				_rendererData->get<Matrix4x4::Ptr>(PNAME_WORLD_TO_SCREEN)->changed()->connect(std::bind(
+					&DrawCall::zsortingPropertyChanged, 
+					shared_from_this()
+				))
+			);
+	}
 }
-*/
+
+void
+DrawCall::zsortingPropertyChanged()
+{
+	_zsortUpdateNeeded->execute(shared_from_this());
+}

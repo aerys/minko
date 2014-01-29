@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
+#include "minko/Signal.hpp"
 
 #include "minko/Signal.hpp"
 #include "minko/render/Blending.hpp"
@@ -117,8 +118,8 @@ namespace minko
 			std::unordered_map<uint, data::UniformArrayPtr<int>>		_uniformInts4;
 
 			std::unordered_map<std::string, std::list<Any>>				_referenceChangedSlots; // Any = ContainerPropertyChangedSlot
-
-			std::shared_ptr<math::Vector3>								_position; // position in local space
+			std::list<Any>												_zsortRequestingSlots;
+			std::shared_ptr<Signal<Ptr>>								_zsortUpdateNeeded;
 
 		public:
 			static inline
@@ -152,6 +153,13 @@ namespace minko
 			zsorted() const
 			{
 				return _zsorted;
+			}
+
+			inline
+			std::shared_ptr<Signal<Ptr>>
+			zsortUpdateNeeded() const
+			{
+				return _zsortUpdateNeeded;
 			}
 
             void
@@ -273,6 +281,11 @@ namespace minko
 				return value;
 			}
 
+			void
+			watchZSortingProperties();
+
+			void
+			zsortingPropertyChanged();
 		};		
 	}
 }
