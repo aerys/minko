@@ -486,61 +486,24 @@ DrawCall::reset()
 void
 DrawCall::bindStates()
 {
-	_blendMode = getDataProperty<Blending::Mode>(
-		_stateBindings, "blendMode", _states->blendingSourceFactor() | _states->blendingDestinationFactor()
-	);
-	_colorMask = getDataProperty<bool>(
-		_stateBindings, "colorMask", _states->colorMask()
-	);
-	_depthMask = getDataProperty<bool>(
-		_stateBindings, "depthMask", _states->depthMask()
-	);
-	_depthFunc = getDataProperty<CompareMode>(
-		_stateBindings, "depthFunc", _states->depthFunc()
-	);
-	_triangleCulling = getDataProperty<TriangleCulling>(
-		_stateBindings, "triangleCulling", _states->triangleCulling()
-	);
-	_stencilFunc = getDataProperty<CompareMode>(
-		_stateBindings, "stencilFunc", _states->stencilFunction()
-	);
-	_stencilRef = getDataProperty<int>(
-		_stateBindings, "stencilRef", _states->stencilReference()
-	);
-	_stencilMask = getDataProperty<uint>(
-		_stateBindings, "stencilMask", _states->stencilMask()
-	);
-	_stencilFailOp = getDataProperty<StencilOperation>(
-		_stateBindings, "stencilFailOp", _states->stencilFailOperation()
-	);
-	_stencilZFailOp = getDataProperty<StencilOperation>(
-		_stateBindings, "stencilZFailOp", _states->stencilDepthFailOperation()
-	);
-	_stencilZPassOp = getDataProperty<StencilOperation>(
-		_stateBindings, "stencilZPassOp", _states->stencilDepthPassOperation()
-	);
-	_scissorTest	= getDataProperty<bool>(
-		_stateBindings, "scissorTest", _states->scissorTest()
-	);
-	_scissorBox.x	= getDataProperty<int>(
-		_stateBindings, "scissorBox.x", _states->scissorBox().x
-	);
-	_scissorBox.y	= getDataProperty<int>(
-		_stateBindings, "scissorBox.y", _states->scissorBox().y
-	);
-	_scissorBox.width	= getDataProperty<int>(
-		_stateBindings, "scissorBox.width", _states->scissorBox().width
-	);
-	_scissorBox.height	= getDataProperty<int>(
-		_stateBindings, "scissorBox.height", _states->scissorBox().height
-	);
-
-	_target = getDataProperty<AbstractTexture::Ptr>(
-		_stateBindings, "target", _states->target()
-	);
-	
-    if (_target && !_target->isReady())
-        _target->upload();
+	bindState<Blending::Mode>("blendMode", _states->blendingSourceFactor() | _states->blendingDestinationFactor(), _blendMode);
+	bindState<bool>("colorMask", _states->colorMask(), _colorMask);
+	bindState<bool>("depthMask", _states->depthMask(), _depthMask);
+	bindState<CompareMode>("depthFunc", _states->depthFunc(), _depthFunc);
+	bindState<TriangleCulling>("triangleCulling", _states->triangleCulling(), _triangleCulling);
+	bindState<CompareMode>("stencilFunc", _states->stencilFunction(), _stencilFunc);
+	bindState<int>("stencilRef", _states->stencilReference(), _stencilRef);
+	bindState<uint>("stencilMask", _states->stencilMask(), _stencilMask);
+	bindState<StencilOperation>("stencilFailOp", _states->stencilFailOperation(), _stencilFailOp);
+	bindState<StencilOperation>("stencilZFailOp", _states->stencilDepthFailOperation(), _stencilZFailOp);
+	bindState<StencilOperation>("stencilZPassOp", _states->stencilDepthPassOperation(), _stencilZPassOp);
+	bindState<bool>("scissorTest", _states->scissorTest(), _scissorTest);
+	bindState<int>("scissorBox.x", _states->scissorBox().x, _scissorBox.x);
+	bindState<int>("scissorBox.y", _states->scissorBox().y, _scissorBox.y);
+	bindState<int>("scissorBox.width", _states->scissorBox().width, _scissorBox.width);
+	bindState<int>("scissorBox.height", _states->scissorBox().height, _scissorBox.height);
+	bindState<float>("priority", _states->priority(), _priority);
+	bindState<AbstractTexture::Ptr>("target", _states->target(), _target);
 }
 
 void
