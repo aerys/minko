@@ -153,16 +153,19 @@ namespace minko
 			removeAttribute(const std::string& name);
 
 			bool
-			hasAttribute(const std::string& attributeName);
+			hasAttribute(const std::string& attributeName) const;
 
 			AttributePtr
-			attribute(const std::string& attributeName);
+			attribute(const std::string& attributeName) const;
 
 			bool
 			equals(std::shared_ptr<VertexBuffer> vertexBuffer)
 			{
 				return _data == vertexBuffer->_data;
 			}
+
+			std::shared_ptr<math::Vector3>
+			getPositionCenter(std::shared_ptr<math::Vector3> output = nullptr) const;
 
 		protected:
 			VertexBuffer(std::shared_ptr<render::AbstractContext> context);
