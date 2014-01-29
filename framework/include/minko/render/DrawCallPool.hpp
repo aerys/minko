@@ -97,12 +97,12 @@ namespace minko
 				return std::shared_ptr<DrawCallPool>(new DrawCallPool(renderer));
 			}
 
-			std::list<std::shared_ptr<DrawCall>>
+			const std::list<std::shared_ptr<DrawCall>>&
 			drawCalls();
 
 			static
 			bool
-			compareDrawCalls(DrawCallPtr& a, DrawCallPtr& b);
+			compareDrawCalls(DrawCallPtr, DrawCallPtr);
 
 			void
 			addSurface(SurfacePtr surface);
@@ -144,7 +144,7 @@ namespace minko
 			deleteDrawCalls(SurfacePtr surface);
 
 			void
-				cleanSurface(SurfacePtr surface);
+			cleanSurface(SurfacePtr surface);
 
 			void
 			macroChangedHandler(ContainerPtr		container, 
