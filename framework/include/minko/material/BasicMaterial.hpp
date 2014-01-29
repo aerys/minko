@@ -55,6 +55,9 @@ namespace minko
 			Ptr
 			diffuseCubeMap(std::shared_ptr<render::AbstractTexture>);
 
+			Ptr
+			isTransparent(bool);
+
 			inline
 			Ptr
 			blendMode(render::Blending::Mode blendMode)
