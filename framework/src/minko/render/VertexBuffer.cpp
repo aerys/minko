@@ -21,8 +21,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Signal.hpp"
 #include "minko/render/AbstractContext.hpp"
+#include "minko/math/Vector3.hpp"
 
 using namespace minko;
+using namespace minko::math;
 using namespace minko::render;
 
 VertexBuffer::VertexBuffer(std::shared_ptr<AbstractContext> context) :
@@ -110,7 +112,7 @@ VertexBuffer::addAttribute(const std::string& 	name,
 }
 
 bool
-VertexBuffer::hasAttribute(const std::string& attributeName)
+VertexBuffer::hasAttribute(const std::string& attributeName) const
 {
 	auto it = std::find_if(_attributes.begin(), _attributes.end(), [&](AttributePtr attr)
 	{
@@ -135,7 +137,7 @@ VertexBuffer::removeAttribute(const std::string& attributeName)
 }
 
 VertexBuffer::AttributePtr
-VertexBuffer::attribute(const std::string& attributeName)
+VertexBuffer::attribute(const std::string& attributeName) const
 {
 	for (auto& attr : _attributes)
 		if (std::get<0>(*attr) == attributeName)
@@ -151,4 +153,31 @@ VertexBuffer::vertexSize(unsigned int value)
 
 	_vertexSize = value;
 	_vertexSizeChanged->execute(shared_from_this(), offset);
+}
+
+Vector3::Ptr
+VertexBuffer::getPositionCenter(Vector3::Ptr output) const
+{
+
+	auto xyzAttr = attribute("position");
+
+	const unsigned int	size	= std::max(0, std::min(3, (int)std::get<1>(*xyzAttr)));
+	const unsigned int	offset	= std::get<2>(*xyzAttr);
+
+	float				acc[3]	= { 0.0f, 0.0f, 0.0f };
+	unsigned int		vidx	= offset;
+	while (vidx < _data.size())
+	{
+		for (unsigned int k = 0; k < size; ++k)
+			acc[k] += _data[vidx + k];
+
+		vidx += _vertexSize;
+	}
+
+	if (output == nullptr)
+		output = Vector3::create(acc[0], acc[1], acc[2]);
+	else
+		output->setTo(acc[0], acc[1], acc[2]);
+
+	return output;
 }
