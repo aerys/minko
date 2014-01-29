@@ -16,7 +16,11 @@
 		"boneMatrices"			: { "property" : "geometry.boneMatrices",		"source" : "target" },
 		"numBones"				: { "property" : "geometry.numBones",			"source" : "target" }
 	},
-	
+
+	"macroBindings"	: {
+		"NUM_BONES"				: { "property" : "geometry.numBones",	"source" : "target" }
+	},
+		
 	"stateBindings" : {
         "blendMode"             : "material.blendMode",
         "colorMask"             : "material.colorMask",
@@ -33,16 +37,19 @@
         "scissorBox.y"          : { "property" : "scissorBox.y",        "source" : "renderer" },
         "scissorBox.width"      : { "property" : "scissorBox.width",    "source" : "renderer" },
         "scissorBox.height"     : { "property" : "scissorBox.height",   "source" : "renderer" },
-        "priority"              : "material.priority"
+        "priority"              : "material.priority",
+        "zsort"					: "material.zsort"
     },
 
-	"macroBindings"	: {
-		"NUM_BONES"				: { "property" : "geometry.numBones",	"source" : "target" }
-	},
-
-	"priority"		: 0,
-	"blendMode"		: ["one", "zero"],
-	"depthTest"		: [true, "less"],
+    "blendMode"         : ["one", "zero"],
+    "colorMask"         : true,
+    "depthTest"         : [true, "less_equal"],
+    "triangleCulling"   : "none",
+	"stencilTest"		: ["always", 0, 1, ["keep", "keep", "keep"]],
+    "scissorTest"		: false,
+	"scissorBox"		: [0, 0, -1, -1],
+    "priority"          : "opaque",
+    "zsort"             : false,
 	
 	"passes"	: [{
 		"vertexShader"	: "
