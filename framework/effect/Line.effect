@@ -18,6 +18,13 @@
 		"viewport"				: { "property" : "canvas.viewport", "source" : "root" }
     },
     
+    "macroBindings" : {
+        "DIFFUSE_COLOR"         : "material.diffuseColor",
+        "LINE_THICKNESS"        : "material.lineThickness",
+        "MODEL_TO_WORLD"        : "transform.modelToWorldMatrix",
+        "VIEWPORT"              : { "property" : "canvas.viewport", "source" : "root" }
+    },
+
     "stateBindings" : {
         "blendMode"             : "material.blendMode",
         "colorMask"             : "material.colorMask",
@@ -34,23 +41,19 @@
         "scissorBox.y"          : { "property" : "scissorBox.y",        "source" : "renderer" },
         "scissorBox.width"      : { "property" : "scissorBox.width",    "source" : "renderer" },
         "scissorBox.height"     : { "property" : "scissorBox.height",   "source" : "renderer" },
-        "priority"              : "material.priority"
-    },
-
-    "macroBindings" : {
-        "DIFFUSE_COLOR"			: "material.diffuseColor",
-		"LINE_THICKNESS"		: "material.lineThickness",
-        "MODEL_TO_WORLD"        : "transform.modelToWorldMatrix",
-		"VIEWPORT"				: { "property" : "canvas.viewport", "source" : "root" }
+        "priority"              : "material.priority",
+        "zsort"                 : "material.zsort"
     },
     
     "blendMode"         : ["one", "zero"],
+    "colorMask"         : true,
     "depthTest"         : [true, "less_equal"],
-	"colorMask"			: true,
-	"stencilTest"		: ["always", 0, 1, ["keep", "keep", "keep"]],
     "triangleCulling"   : "none",
-	"scissorTest"		: false,
-	"scissorBox"		: [0, 0, -1, -1],
+    "stencilTest"       : ["always", 0, 1, ["keep", "keep", "keep"]],
+    "scissorTest"       : false,
+    "scissorBox"        : [0, 0, -1, -1],
+    "priority"          : "opaque",
+    "zsort"             : false,
     
 	"techniques" : [{
 		"passes"    : [{

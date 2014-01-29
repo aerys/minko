@@ -32,9 +32,20 @@
         "scissorBox.y"          : { "property" : "scissorBox.y",        "source" : "renderer" },
         "scissorBox.width"      : { "property" : "scissorBox.width",    "source" : "renderer" },
         "scissorBox.height"     : { "property" : "scissorBox.height",   "source" : "renderer" },
-        "priority"              : "material.priority"
+        "priority"              : "material.priority",
+        "zsort"					: "material.zsort"
     },
 
+    "blendMode"         : ["one", "zero"],
+    "colorMask"         : true,
+    "depthTest"         : [true, "less_equal"],
+    "triangleCulling"   : "none",
+	"stencilTest"		: ["always", 0, 1, ["keep", "keep", "keep"]],
+    "scissorTest"		: false,
+	"scissorBox"		: [0, 0, -1, -1],
+    "priority"          : "opaque",
+    "zsort"             : false,
+    
 	"macroBindings"	: {
 		"DIFFUSE_MAP"			: "material.diffuseMap",
 		"DIFFUSE_TINT"			: "material.diffuseTint"

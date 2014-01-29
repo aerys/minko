@@ -40,6 +40,7 @@ namespace minko
 
         private:
             float				        _priority;
+			bool						_zsorted;
 		    Blending::Source		    _blendingSourceFactor;
 		    Blending::Destination	    _blendingDestinationFactor;
 			bool						_colorMask;
@@ -61,7 +62,8 @@ namespace minko
 		    inline static
 		    Ptr
 		    create(const SamplerStates&     samplerStates,
-				   const float				priority					= 0.f,
+				   float					priority					= 0.f,
+				   bool						zsorted						= false,
 				   Blending::Source			blendingSourceFactor		= Blending::Source::ONE,
 				   Blending::Destination	blendingDestinationFactor	= Blending::Destination::ZERO,
 				   bool						colorMask					= true,
@@ -81,6 +83,7 @@ namespace minko
 			    return std::shared_ptr<States>(new States(
                     samplerStates,
                     priority,
+					zsorted,
                     blendingSourceFactor,
                     blendingDestinationFactor,
 					colorMask,
@@ -106,6 +109,7 @@ namespace minko
 		    	return std::shared_ptr<States>(new States(
                     states->_samplerStates,
                     states->_priority,
+					states->_zsorted,
                     states->_blendingSourceFactor,
                     states->_blendingDestinationFactor,
 					states->_colorMask,
@@ -146,6 +150,13 @@ namespace minko
             {
             	_priority = priority;
             }
+
+			inline
+			bool
+			zsorted() const
+			{
+				return _zsorted;
+			}
 
             inline
             Blending::Source
@@ -261,7 +272,8 @@ namespace minko
 
 	    private:
 		    States(const SamplerStates&     samplerSates,
-				   const float			    priority,
+				   float				    priority,
+				   bool						zsorted,
 				   Blending::Source		    blendingSourceFactor,
 				   Blending::Destination    blendingDestinationFactor,
 				   bool						colorMask,
@@ -279,6 +291,7 @@ namespace minko
                    AbstractTexturePtr		target) :
                 _samplerStates(samplerSates),
                 _priority(priority),
+				_zsorted(zsorted),
                 _blendingSourceFactor(blendingSourceFactor),
                 _blendingDestinationFactor(blendingDestinationFactor),
 				_colorMask(colorMask),
