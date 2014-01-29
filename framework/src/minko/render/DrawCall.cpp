@@ -45,6 +45,10 @@ SamplerState DrawCall::_defaultSamplerState = SamplerState(WrapMode::CLAMP, Text
 /*static*/ const unsigned int	DrawCall::MAX_NUM_TEXTURES		= 8;
 /*static*/ const unsigned int	DrawCall::MAX_NUM_VERTEXBUFFERS	= 8;
 
+static const std::string	PNAME_POSITIONS			= "geometry.vertex.attribute.position";
+static const std::string	PNAME_MODEL_TO_WORLD	= "transform.modelToWorldMatrix";
+static const std::string	PNAME_WORLD_TO_SCREEN	= "camera.worldToScreenMatrix";
+
 DrawCall::DrawCall(const data::BindingMap&	attributeBindings,
 				   const data::BindingMap&	uniformBindings,
 				   const data::BindingMap&	stateBindings,
@@ -65,7 +69,8 @@ DrawCall::DrawCall(const data::BindingMap&	attributeBindings,
     _vertexAttributeSizes(MAX_NUM_VERTEXBUFFERS, -1),
     _vertexAttributeOffsets(MAX_NUM_VERTEXBUFFERS, -1),
 	_target(nullptr),
-	_referenceChangedSlots()
+	_referenceChangedSlots(),
+	_position(nullptr)
 {
 }
 
@@ -199,6 +204,9 @@ DrawCall::bindVertexAttribute(const std::string&	inputName,
 			if (!vertexBuffer->hasAttribute(attributeName))
 				throw std::logic_error("missing required vertex attribute: " + attributeName);
 #endif
+
+			if (propertyName == PNAME_POSITIONS)
+				_position = nullptr; // invalidate precomputed local position
 
 			auto attribute = vertexBuffer->attribute(attributeName);
 
@@ -481,6 +489,8 @@ DrawCall::reset()
 	_vertexAttributeOffsets	.resize(MAX_NUM_VERTEXBUFFERS, -1);
 
 	_referenceChangedSlots.clear();
+	
+	_position = nullptr;
 }
 
 void
@@ -652,6 +662,40 @@ DrawCall::getDataContainer(const data::BindingSource& source) const
 		return _rootData;
 
 	return nullptr;
+}
+
+Vector3::Ptr
+DrawCall::getEyeSpacePosition(Vector3::Ptr output) 
+{
+	if (_position == nullptr)
+	{
+		// update local position with position vertex attribute from target's container
+		
+		if (_targetData &&
+			_targetData->hasProperty(PNAME_POSITIONS))
+			_position = _targetData->get<VertexBuffer::Ptr>(PNAME_POSITIONS)->getPositionCenter(_position);
+		else
+			_position = Vector3::create(0.0f, 0.0f, 0.0f);
+	}
+
+	if (output == nullptr)
+		output = Vector3::create(_position->x(), _position->y(), _position->z());
+	else
+		output->copyFrom(_position);
+	
+	static Matrix4x4::Ptr modelView = Matrix4x4::create();
+	
+	if (_targetData && 
+		_targetData->hasProperty(PNAME_MODEL_TO_WORLD))
+		modelView->copyFrom(_targetData->get<Matrix4x4::Ptr>(PNAME_MODEL_TO_WORLD));
+
+	if (_rendererData && 
+		_rendererData->hasProperty(PNAME_WORLD_TO_SCREEN))
+		modelView->append(_rendererData->get<Matrix4x4::Ptr>(PNAME_WORLD_TO_SCREEN));
+
+	output = modelView->transform(_position, output);
+
+	return output;
 }
 
 /*
