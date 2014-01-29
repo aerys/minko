@@ -242,6 +242,10 @@ namespace minko
 						   render::Blending::Destination&	dstFactor);
 
 			void
+			parseZSort(const Json::Value&	contextNode,
+					   bool& zsorted) const;
+
+			void
 			parseColorMask(const Json::Value&	contextNode,
 						   bool& colorMask) const;
 
