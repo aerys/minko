@@ -26,6 +26,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/data/Container.hpp"
 #include "minko/render/ProgramInputs.hpp"
 #include "minko/render/States.hpp"
+#include "minko/render/AbstractTexture.hpp"
 
 namespace minko
 {
@@ -94,6 +95,7 @@ namespace minko
 			render::StencilOperation									_stencilZPassOp;
 			bool														_scissorTest;
 			render::ScissorBox											_scissorBox;
+			float														_priority;
             std::unordered_map<uint, float>                             _uniformFloat;
             std::unordered_map<uint, std::shared_ptr<math::Vector2>>    _uniformFloat2;
             std::unordered_map<uint, std::shared_ptr<math::Vector3>>    _uniformFloat3;
@@ -115,6 +117,8 @@ namespace minko
 
 			std::unordered_map<std::string, std::list<Any>>				_referenceChangedSlots; // Any = ContainerPropertyChangedSlot
 
+			std::shared_ptr<math::Vector3>								_position; // position in local space
+
 		public:
 			static inline
 			Ptr
@@ -128,13 +132,6 @@ namespace minko
                 ));;
 			}
 
-			inline
-			Blending::Mode
-			blendMode() const
-			{
-				return _blendMode;
-			}
-
             inline
             AbsTexturePtr
             target() const
@@ -146,14 +143,7 @@ namespace minko
 			float
 			priority() const
 			{
-				return _states->priority();
-			}
-
-			inline
-			void
-			priority(float value)
-			{
-				_states->priority(value);
+				return _priority;
 			}
 
             void
@@ -168,6 +158,9 @@ namespace minko
 			void
 			initialize(ContainerPtr				                    data,
 					   const std::map<std::string, std::string>&	inputNameToBindingName);
+
+			std::shared_ptr<math::Vector3>
+			getEyeSpacePosition(std::shared_ptr<math::Vector3> output = nullptr);
 
 		private:
 			DrawCall(const data::BindingMap&	attributeBindings,
@@ -211,46 +204,67 @@ namespace minko
 			void
 			watchUniformRefChange(ContainerPtr, const std::string& propertyName, ProgramInputs::Type, int location);
 
-			template <typename T>
-            T
-            getDataProperty(const data::BindingMap&		bindings,
-							std::string					propertyName,
-							T							defaultValue)
-            {
-				if (bindings.count(propertyName))
-				{
-					auto &binding = bindings.at(propertyName);
-					const data::BindingSource&	source = std::get<1>(binding);
-
-					propertyName = std::get<0>(binding);
-
-					switch (source)
-					{
-					case data::BindingSource::TARGET:
-						if (_targetData->hasProperty(propertyName))
-							return _targetData->get<T>(propertyName);
-						break;
-					case data::BindingSource::RENDERER:
-						if (_rendererData->hasProperty(propertyName))
-							return _rendererData->get<T>(propertyName);
-						break;
-					case data::BindingSource::ROOT:
-						if (_rootData->hasProperty(propertyName))
-							return _rootData->get<T>(propertyName);
-						break;
-					}
-				}
-
-				return defaultValue;
-            }
-
 			ContainerPtr
 			getDataContainer(const data::BindingSource& source) const;
 
-			/*
-            bool
-            dataHasProperty(const std::string& propertyName);
-			*/
+			template <typename T>
+			void
+			bindState(const std::string& stateName, T defaultValue, T& stateValue)
+			{
+				data::Container::Ptr	container		= nullptr;
+				std::string				propertyName	= "";
+					
+				if (_stateBindings.count(stateName) > 0)
+				{
+					const auto&	binding	= _stateBindings.at(stateName);
+					
+					propertyName		= std::get<0>(binding);
+					container			= getDataContainer(std::get<1>(binding));
+				}
+
+				if (container)
+				{
+					stateValue = container->hasProperty(propertyName)
+						? container->get<T>(propertyName)
+						: defaultValue;
+				
+					if (_referenceChangedSlots.count(propertyName) == 0)
+					{
+						_referenceChangedSlots[propertyName].push_back(container->propertyReferenceChanged(propertyName)->connect(std::bind(
+							&DrawCall::bindState<T>,
+							shared_from_this(),
+							stateName, 
+							defaultValue, 
+							stateValue
+						)));
+					}
+				}
+				else
+					stateValue = defaultValue;
+
+				uploadIfTexture<T>(stateValue);
+			}
+
+			
+			template <typename T>
+			typename std::enable_if<std::is_convertible< T, std::shared_ptr<render::AbstractTexture> >::value, T>::type
+			uploadIfTexture(T value)
+			{
+				render::AbstractTexture::Ptr texture = value;
+
+				if (texture && !texture->isReady())
+					texture->upload();
+
+				return value;
+			}
+			template <typename T>
+			typename std::enable_if<!std::is_convertible< T, std::shared_ptr<render::AbstractTexture> >::value, T>::type
+			uploadIfTexture(T value)
+			{
+				// actually does nothing
+				return value;
+			}
+
 		};		
 	}
 }
