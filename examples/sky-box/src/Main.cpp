@@ -25,9 +25,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::component;
 using namespace minko::math;
+using namespace minko::scene;
 
-const std::string TEXTURE_2D	= "texture/box.png";
-const std::string CUBE_TEXTURE	= "texture/cubemap_sea.jpeg";
+const std::string	CUBE_TEXTURE	= "texture/cubemap_sea.jpeg";
+const unsigned int	NUM_OBJECTS		= 15;
+
+Node::Ptr
+createTransparentObject(float, float rotationY, file::AssetLibrary::Ptr);
 
 int main(int argc, char** argv)
 {
@@ -42,21 +46,18 @@ int main(int argc, char** argv)
 		->registerParser<file::PNGParser>("png")
 		->registerParser<file::JPEGParser>("jpg")
 		->registerParser<file::JPEGParser>("jpeg")
-		->queue(TEXTURE_2D)
 		->queue(CUBE_TEXTURE, file::Options::create(canvas->context())->isCubeTexture(true))
 		->queue("effect/Basic.effect");
 
-	sceneManager->assets()->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()));
+	sceneManager->assets()
+		->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()))
+		->geometry("sphere", geometry::SphereGeometry::create(sceneManager->assets()->context(), 16, 16));
 	
 
 	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
 	{
-		auto cubeGeometry = geometry::CubeGeometry::create(sceneManager->assets()->context());
-
 		auto root = scene::Node::create("root")
 			->addComponent(sceneManager);
-
-		assets->geometry("cubeGeometry", cubeGeometry);
 
 		auto camera = scene::Node::create("camera")
 			->addComponent(Renderer::create(0x7f7f7fff))
@@ -64,31 +65,36 @@ int main(int argc, char** argv)
 				Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 3.f))
 			))
 			->addComponent(PerspectiveCamera::create(800.f / 600.f, (float)PI * 0.25f, .1f, 1000.f));
-		root->addChild(camera);
 		
 		auto sky = scene::Node::create("sky")
 			->addComponent(Transform::create(
 				Matrix4x4::create()->appendScale(100.0f, 100.0f, 100.0f)
 			))
 			->addComponent(Surface::create(
-				assets->geometry("cubeGeometry"),
+				assets->geometry("cube"),
 				material::BasicMaterial::create()
 					->diffuseCubeMap(assets->texture(CUBE_TEXTURE))
-					->triangleCulling(render::TriangleCulling::NONE),
+					->triangleCulling(render::TriangleCulling::FRONT),
 				assets->effect("effect/Basic.effect")
 			));
-		root->addChild(sky);
-
-		auto box = scene::Node::create("box")
-			->addComponent(Transform::create())
-			->addComponent(Surface::create(
-				assets->geometry("cubeGeometry"),
-				material::BasicMaterial::create()
-					->diffuseMap(assets->texture(TEXTURE_2D)),
-				assets->effect("effect/Basic.effect")
-			));
-		root->addChild(box);
 		
+		auto objects = scene::Node::create("objects")
+			->addComponent(Transform::create(
+				Matrix4x4::create()->appendRotationX(0.2f)
+			));
+
+		assert(NUM_OBJECTS > 0);
+		const float scale = 1.25f * (float) PI / (float)NUM_OBJECTS;
+		const float	dAngle = 2.0f * (float) PI / (float)NUM_OBJECTS;
+
+		for (unsigned int objId = 0; objId < NUM_OBJECTS; ++objId)
+			objects->addChild(createTransparentObject(scale, objId * dAngle, assets));
+	
+		root
+			->addChild(camera)
+			->addChild(sky)
+			->addChild(objects);
+
 		auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
 		{
 			camera->component<PerspectiveCamera>()->aspectRatio((float)w / (float)h);
@@ -97,7 +103,7 @@ int main(int argc, char** argv)
 		auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, uint deltaTime)
 		{
 			sky->component<Transform>()->matrix()->appendRotationY(.001f);
-			box->component<Transform>()->matrix()->appendRotationY(-.01f);
+			objects->component<Transform>()->matrix()->prependRotationY(-.02f);
 
 			sceneManager->nextFrame();
 		});
@@ -110,4 +116,29 @@ int main(int argc, char** argv)
 	return 0;
 }
 
+Node::Ptr
+createTransparentObject(float scale, float rotationY, file::AssetLibrary::Ptr assets)
+{
+	assert(assets);
+	assert(NUM_OBJECTS > 0);
 
+	auto		randomAxis	= Vector3::create((float)rand(), (float)rand(), (float)rand())->normalize();
+	const float randomAng	= 2.0f * (float)PI * rand() / (float)RAND_MAX;
+
+	return scene::Node::create()
+		->addComponent(Transform::create(
+			Matrix4x4::create()
+				->appendRotation(randomAng, randomAxis)
+				->appendScale(scale)
+				->appendTranslation(1.0f)
+				->appendRotationY(rotationY)
+		))
+		->addComponent(Surface::create(
+			assets->geometry("cube"),
+			material::BasicMaterial::create()
+				->diffuseColor(Color::hslaToRgba(0.5f * rotationY / (float)PI, 1.0f, 0.5f, 0.5f))
+				->isTransparent(true)
+				->triangleCulling(render::TriangleCulling::BACK),
+			assets->effect("effect/Basic.effect")
+		));
+}
