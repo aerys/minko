@@ -32,15 +32,16 @@ namespace minko
 		{
 		public:
 			typedef std::shared_ptr<DrawCallPool>						Ptr;
+			typedef std::shared_ptr<DrawCall>							DrawCallPtr; 
 			typedef std::shared_ptr<component::Renderer>				RendererPtr;
 			typedef std::shared_ptr<component::Surface>					SurfacePtr;
-			typedef std::list<std::shared_ptr<DrawCall>>				DrawCallList;
-			typedef std::shared_ptr<DrawCall>							DrawCallPtr;
+			typedef std::list<DrawCallPtr>								DrawCallList;
 			typedef std::shared_ptr<data::Container>					ContainerPtr;
 
 			typedef Signal<ContainerPtr, const std::string&>			PropertyChangedSignal;
 			typedef Signal<SurfacePtr, const std::string&, bool>::Slot	TechniqueChangeSlot;
 			typedef Signal<SurfacePtr, bool>::Slot						VisibilityChangedSlot;
+			typedef Signal<DrawCall>::Slot								ZSortRequestedSlot;
 			typedef PropertyChangedSignal::Slot							PropertyChangedSlot;
 			typedef std::shared_ptr<render::Pass>						PassPtr;
 			
@@ -88,6 +89,9 @@ namespace minko
 			// draw call list for renderer
 			std::unordered_map<SurfacePtr, DrawCallList>															_surfaceToDrawCalls;
 			std::list<DrawCallPtr>																					_drawCalls;
+
+			// listeners for drawcalls' zsort update calls
+			std::unordered_map<SurfacePtr, std::list<ZSortRequestedSlot>>											_drawcallZSortUpdateSlots;
 
 		public:
 			inline static
@@ -172,6 +176,9 @@ namespace minko
 			void
 			incorrectMacroChangedHandler(SurfacePtr						surface,
 										 const data::ContainerProperty& macro);
+
+			void
+			zsortNeededHandler(SurfacePtr, DrawCallPtr);
 		};
 	}
 }
