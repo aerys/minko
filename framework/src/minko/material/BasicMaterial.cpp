@@ -21,6 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/math/Vector4.hpp"
 #include "minko/render/AbstractTexture.hpp"
+#include "minko/render/Priority.hpp"
 
 using namespace minko;
 using namespace minko::material;
@@ -64,6 +65,15 @@ BasicMaterial::diffuseCubeMap(std::shared_ptr<render::AbstractTexture> texture)
 	assert(texture->type() == TextureType::CubeTexture);
 
 	set("diffuseCubeMap", texture);
+
+	return std::dynamic_pointer_cast<BasicMaterial>(shared_from_this());
+}
+
+BasicMaterial::Ptr
+BasicMaterial::isTransparent(bool value)
+{
+	set("priority",		value ? priority::TRANSPARENT : priority::OPAQUE);
+	set("blendMode",	value ? Blending::Mode::ALPHA : Blending::Mode::DEFAULT);
 
 	return std::dynamic_pointer_cast<BasicMaterial>(shared_from_this());
 }
