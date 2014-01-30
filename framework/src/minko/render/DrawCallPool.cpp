@@ -31,46 +31,45 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::math;
 using namespace minko::render;
+using namespace minko::component;
+using namespace minko::data;
 
 const unsigned int DrawCallPool::NUM_FALLBACK_ATTEMPTS = 32;
 
-DrawCallPool::DrawCallPool(RendererPtr renderer):
+DrawCallPool::DrawCallPool(Renderer::Ptr renderer):
 	_renderer(renderer)
 {
 }
 
-const std::list<std::shared_ptr<DrawCall>>&
+const std::list<DrawCall::Ptr>&
 DrawCallPool::drawCalls()
 {
-	unsigned int _numToCollect				= _toCollect.size();
-	unsigned int _numToRemove				= _toRemove.size();
-
-
-	if (_numToCollect == 0 && _numToRemove == 0)
+	if (_toCollect.empty() && _toRemove.empty())
 		return _drawCalls;
-	
-	for (uint removedSurfaceIndex = 0; removedSurfaceIndex < _numToRemove; ++removedSurfaceIndex)
-	{
-		deleteDrawCalls(_toRemove[removedSurfaceIndex]);
-		cleanSurface(_toRemove[removedSurfaceIndex]);
-	}
 
-	for (uint surfaceIndex = 0; surfaceIndex < _numToCollect; ++surfaceIndex)
+	for (auto& surface : _toRemove)
 	{
-		auto& newDrawCalls = generateDrawCall(_toCollect[surfaceIndex], NUM_FALLBACK_ATTEMPTS);
+		deleteDrawCalls(surface);
+		cleanSurface(surface);		
+	}
+	_toRemove.clear();
+
+	for (auto& surface : _toCollect)
+	{
+		auto& newDrawCalls = generateDrawCall(surface, NUM_FALLBACK_ATTEMPTS);
 		_drawCalls.insert(_drawCalls.end(), newDrawCalls.begin(), newDrawCalls.end());
 	}
-	
+	_toCollect.clear();
+
 	_drawCalls.sort(&DrawCallPool::compareDrawCalls);
-	_toRemove.resize(0);
-	_toCollect.erase(_toCollect.begin(), _toCollect.begin() + _numToCollect);
 
 	return _drawCalls;
 }
 
 
 bool
-DrawCallPool::compareDrawCalls(DrawCallPtr a, DrawCallPtr b)
+DrawCallPool::compareDrawCalls(DrawCall::Ptr a, 
+							   DrawCall::Ptr b)
 {
 	const float	aPriority			= a->priority();
 	const float	bPriority			= b->priority();
@@ -101,7 +100,7 @@ DrawCallPool::compareDrawCalls(DrawCallPtr a, DrawCallPtr b)
 }
 
 void
-DrawCallPool::addSurface(SurfacePtr surface)
+DrawCallPool::addSurface(Surface::Ptr surface)
 {
 	_surfaceToTechniqueChangedSlot[surface] = surface->techniqueChanged()->connect(std::bind(
 		&DrawCallPool::techniqueChanged,
@@ -124,7 +123,9 @@ DrawCallPool::addSurface(SurfacePtr surface)
 		std::placeholders::_1,
 		std::placeholders::_2))));
 
-	Effect::Ptr effect = (_renderer->effect() ? _renderer->effect() : surface->effect());
+	Effect::Ptr effect = _renderer->effect() 
+		? _renderer->effect() 
+		: surface->effect();
 
 	for (auto& technique : effect->techniques())
 	{
@@ -139,13 +140,13 @@ DrawCallPool::addSurface(SurfacePtr surface)
 }
 
 void
-DrawCallPool::removeSurface(SurfacePtr surface)
+DrawCallPool::removeSurface(Surface::Ptr surface)
 {
 	_toRemove.push_back(surface);
 }
 
 void
-DrawCallPool::cleanSurface(SurfacePtr surface)
+DrawCallPool::cleanSurface(Surface::Ptr	surface)
 {
 	_surfaceToTechniqueChangedSlot.erase(surface);
 	_surfaceToDrawCalls[surface].clear();
@@ -155,7 +156,9 @@ DrawCallPool::cleanSurface(SurfacePtr surface)
 }
 
 void
-DrawCallPool::techniqueChanged(SurfacePtr surface, const std::string& technique, bool updateDrawCall)
+DrawCallPool::techniqueChanged(Surface::Ptr			surface, 
+							   const std::string&	technique, 
+							   bool					updateDrawCall)
 {
 	//_toRemove.push_back(surface);
 	deleteDrawCalls(surface);
@@ -164,7 +167,8 @@ DrawCallPool::techniqueChanged(SurfacePtr surface, const std::string& technique,
 }
 
 void
-DrawCallPool::visibilityChanged(SurfacePtr surface, bool value)
+DrawCallPool::visibilityChanged(Surface::Ptr	surface, 
+								bool			value)
 {
 	bool visible = surface->visible() && surface->computedVisibility();
 
@@ -182,7 +186,7 @@ DrawCallPool::visibilityChanged(SurfacePtr surface, bool value)
 }
 
 DrawCallPool::DrawCallList&
-DrawCallPool::generateDrawCall(SurfacePtr	surface,
+DrawCallPool::generateDrawCall(Surface::Ptr	surface,
 							   unsigned int	numAttempts)
 {
 	if (_surfaceToDrawCalls.find(surface) != _surfaceToDrawCalls.end())
@@ -234,10 +238,10 @@ DrawCallPool::generateDrawCall(SurfacePtr	surface,
 	return _surfaceToDrawCalls[surface];
 }
 
-std::shared_ptr<DrawCall>
-DrawCallPool::initializeDrawCall(std::shared_ptr<render::Pass>			pass, 
-									std::shared_ptr<component::Surface>	surface,
-									std::shared_ptr<DrawCall>			drawcall)
+DrawCall::Ptr
+DrawCallPool::initializeDrawCall(Pass::Ptr		pass, 
+								 Surface::Ptr	surface,
+								 DrawCall::Ptr	drawcall)
 {
 #ifdef DEBUG
 	if (pass == nullptr)
@@ -250,9 +254,9 @@ DrawCallPool::initializeDrawCall(std::shared_ptr<render::Pass>			pass,
 	const auto	targetData	= target->data();
 	const auto	rootData	= target->root()->data();
 
-	std::list<data::ContainerProperty>	booleanMacros;
-	std::list<data::ContainerProperty>	integerMacros;
-	std::list<data::ContainerProperty>	incorrectIntegerMacros;
+	std::list<ContainerProperty>	booleanMacros;
+	std::list<ContainerProperty>	integerMacros;
+	std::list<ContainerProperty>	incorrectIntegerMacros;
 
 	auto program = getWorkingProgram(
 		surface,
@@ -303,14 +307,14 @@ DrawCallPool::initializeDrawCall(std::shared_ptr<render::Pass>			pass,
 }
 
 std::shared_ptr<Program>
-DrawCallPool::getWorkingProgram(std::shared_ptr<component::Surface>	surface,
-								   std::shared_ptr<Pass>				pass,
-								   std::shared_ptr<data::Container>		targetData,
-								   std::shared_ptr<data::Container>		rendererData,
-								   std::shared_ptr<data::Container>		rootData,
-								   std::list<data::ContainerProperty>&	booleanMacros,
-								   std::list<data::ContainerProperty>&	integerMacros,
-								   std::list<data::ContainerProperty>&	incorrectIntegerMacros)
+DrawCallPool::getWorkingProgram(Surface::Ptr					surface,
+								Pass::Ptr						pass,
+								Container::Ptr					targetData,
+								Container::Ptr					rendererData,
+								Container::Ptr					rootData,
+								std::list<ContainerProperty>&	booleanMacros,
+								std::list<ContainerProperty>&	integerMacros,
+								std::list<ContainerProperty>&	incorrectIntegerMacros)
 {
 	Program::Ptr program = nullptr;
 
@@ -362,7 +366,7 @@ DrawCallPool::getWorkingProgram(std::shared_ptr<component::Surface>	surface,
 }
 
 void
-DrawCallPool::deleteDrawCalls(SurfacePtr surface)
+DrawCallPool::deleteDrawCalls(Surface::Ptr surface)
 {
 	auto& drawCalls = _surfaceToDrawCalls[surface];
 
@@ -400,24 +404,24 @@ DrawCallPool::deleteDrawCalls(SurfacePtr surface)
 }
 
 void
-DrawCallPool::macroChangedHandler(ContainerPtr		container, 
-									 const std::string& propertyName, 
-									 SurfacePtr			surface, 
-									 MacroChange		change)
+DrawCallPool::macroChangedHandler(Container::Ptr		container, 
+								  const std::string&	propertyName, 
+								  Surface::Ptr			surface, 
+								  MacroChange			change)
 {
-	const data::ContainerProperty	macro(propertyName, container);
-	Effect::Ptr						effect = (_renderer->effect() ? _renderer->effect() : surface->effect());
+	const ContainerProperty	macro(propertyName, container);
+	Effect::Ptr				effect = (_renderer->effect() ? _renderer->effect() : surface->effect());
 
 
 	if (change == MacroChange::REF_CHANGED && !_surfaceToDrawCalls[surface].empty())
 	{
-		const DrawCallList							drawCalls		= _macroNameToDrawCalls[surface][macro.name()];
-		std::unordered_set<data::Container::Ptr>	failedDrawcallRendererData;
+		const DrawCallList					drawCalls = _macroNameToDrawCalls[surface][macro.name()];
+		std::unordered_set<Container::Ptr>	failedDrawcallRendererData;
 
-		for (std::shared_ptr<DrawCall> drawCall : drawCalls)
+		for (auto& drawCall : drawCalls)
 		{
-			auto	rendererData	= _drawCallToRendererData[surface][drawCall];
-			auto	pass			= _drawCallToPass[surface][drawCall];
+			auto rendererData	= _drawCallToRendererData[surface][drawCall];
+			auto pass			= _drawCallToPass[surface][drawCall];
 	
 			if (!initializeDrawCall(pass, surface, drawCall))
 				failedDrawcallRendererData.insert(rendererData);
@@ -467,7 +471,7 @@ DrawCallPool::macroChangedHandler(ContainerPtr		container,
 
 
 void
-DrawCallPool::watchMacroAdditionOrDeletion(std::shared_ptr<component::Surface> surface)
+DrawCallPool::watchMacroAdditionOrDeletion(Surface::Ptr surface)
 {
 	_macroAddedOrRemovedSlots[surface].clear();
 
@@ -547,9 +551,9 @@ DrawCallPool::watchMacroAdditionOrDeletion(std::shared_ptr<component::Surface> s
 }
 
 void
-DrawCallPool::blameMacros(SurfacePtr									surface,
-							 const std::list<data::ContainerProperty>&	incorrectIntegerMacros,
-							 const TechniquePass&						pass)
+DrawCallPool::blameMacros(Surface::Ptr							surface,
+						  const std::list<ContainerProperty>&	incorrectIntegerMacros,
+						  const TechniquePass&					pass)
 {
 	for (auto& macro : incorrectIntegerMacros)
 	{
@@ -587,8 +591,8 @@ DrawCallPool::blameMacros(SurfacePtr									surface,
 }
 
 void
-DrawCallPool::incorrectMacroChangedHandler(SurfacePtr						surface,
-										   const data::ContainerProperty&	macro)
+DrawCallPool::incorrectMacroChangedHandler(Surface::Ptr				surface,
+										   const ContainerProperty&	macro)
 {
 	if (_incorrectMacroToPasses[surface].count(macro) > 0)
 	{
@@ -597,10 +601,10 @@ DrawCallPool::incorrectMacroChangedHandler(SurfacePtr						surface,
 }
 
 void
-DrawCallPool::forgiveMacros(SurfacePtr											surface,
-							   const std::list<data::ContainerProperty>&			booleanMacros,
-							   const std::list<data::ContainerProperty>&			integerMacros,
-							   const TechniquePass&									pass)
+DrawCallPool::forgiveMacros(Surface::Ptr						surface,
+							const std::list<ContainerProperty>&	booleanMacros,
+							const std::list<ContainerProperty>&	integerMacros,
+							const TechniquePass&				pass)
 {
 	for (auto& macro : integerMacros)
 		if (_incorrectMacroToPasses[surface].count(macro) > 0)
@@ -618,8 +622,3 @@ DrawCallPool::forgiveMacros(SurfacePtr											surface,
 			}
 		}
 }
-
-			void
-			DrawCallPool::zsortNeededHandler(Surface::Ptr surface, DrawCall::Ptr)
-			{
-			}
