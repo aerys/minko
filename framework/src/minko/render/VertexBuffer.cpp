@@ -27,6 +27,8 @@ using namespace minko;
 using namespace minko::math;
 using namespace minko::render;
 
+static const std::string ATTRNAME_POSITION = "position";
+
 VertexBuffer::VertexBuffer(std::shared_ptr<AbstractContext> context) :
 	AbstractResource(context),
 	std::enable_shared_from_this<VertexBuffer>(),
@@ -80,6 +82,8 @@ VertexBuffer::upload(uint offset, uint numVertices)
     	numVertices == 0 ? _data.size() : numVertices * _vertexSize,
     	&_data[0]
     );
+
+	updatePositionBounds();
 }
 
 void
@@ -109,6 +113,9 @@ VertexBuffer::addAttribute(const std::string& 	name,
 	);
 
 	vertexSize(_vertexSize + size);
+
+	if (name == ATTRNAME_POSITION)
+		invalidatePositionBounds();
 }
 
 bool
@@ -134,6 +141,9 @@ VertexBuffer::removeAttribute(const std::string& attributeName)
 		throw std::invalid_argument("attributeName = " + attributeName);
 
 	vertexSize(_vertexSize - std::get<1>(**it));
+
+	if (attributeName == ATTRNAME_POSITION)
+		invalidatePositionBounds();
 }
 
 VertexBuffer::AttributePtr
@@ -155,29 +165,80 @@ VertexBuffer::vertexSize(unsigned int value)
 	_vertexSizeChanged->execute(shared_from_this(), offset);
 }
 
+
 Vector3::Ptr
-VertexBuffer::getPositionCenter(Vector3::Ptr output) const
+VertexBuffer::minPosition(Vector3::Ptr output)
 {
+	if (_minPosition == nullptr)
+		updatePositionBounds();
 
-	auto xyzAttr = attribute("position");
+	if (output == nullptr)
+		output = Vector3::create();
 
+	return _minPosition
+		? output->copyFrom(_minPosition)
+		: output->setTo(0.0f, 0.0f, 0.0f);
+}
+
+Vector3::Ptr
+VertexBuffer::maxPosition(Vector3::Ptr output)
+{
+	if (_maxPosition == nullptr)
+		updatePositionBounds();
+
+	if (output == nullptr)
+		output = Vector3::create();
+
+	return _maxPosition
+		? output->copyFrom(_maxPosition)
+		: output->setTo(0.0f, 0.0f, 0.0f);
+}
+
+void
+VertexBuffer::invalidatePositionBounds()
+{
+	_minPosition = nullptr;
+	_maxPosition = nullptr;
+}
+
+void
+VertexBuffer::updatePositionBounds()
+{
+	invalidatePositionBounds();
+
+	if (!hasAttribute(ATTRNAME_POSITION) || numVertices() == 0)
+		return;
+
+	auto				xyzAttr = attribute(ATTRNAME_POSITION);
 	const unsigned int	size	= std::max(0, std::min(3, (int)std::get<1>(*xyzAttr)));
 	const unsigned int	offset	= std::get<2>(*xyzAttr);
 
-	float				acc[3]	= { 0.0f, 0.0f, 0.0f };
+	float minXYZ[3] = {FLT_MAX, FLT_MAX, FLT_MAX};
+	float maxXYZ[3] = {-FLT_MAX, -FLT_MAX, -FLT_MAX};
+
 	unsigned int		vidx	= offset;
 	while (vidx < _data.size())
 	{
 		for (unsigned int k = 0; k < size; ++k)
-			acc[k] += _data[vidx + k];
+		{
+			const float vk = _data[vidx + k];
+
+			minXYZ[k] = std::min(minXYZ[k], vk);
+			maxXYZ[k] = std::max(maxXYZ[k], vk);
+		}
 
 		vidx += _vertexSize;
 	}
 
-	if (output == nullptr)
-		output = Vector3::create(acc[0], acc[1], acc[2]);
-	else
-		output->setTo(acc[0], acc[1], acc[2]);
+	_minPosition = Vector3::create(minXYZ[0], minXYZ[1], minXYZ[2]);
+	_maxPosition = Vector3::create(maxXYZ[0], maxXYZ[1], maxXYZ[2]);
+}
 
-	return output;
+Vector3::Ptr
+VertexBuffer::centerPosition(Vector3::Ptr output)
+{
+	if (output == nullptr)
+		output = Vector3::create();
+	
+	return output->copyFrom(minPosition())->add(maxPosition())->scaleBy(0.5f);
 }
