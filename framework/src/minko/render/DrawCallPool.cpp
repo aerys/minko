@@ -26,7 +26,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/data/Container.hpp"
 #include "minko/scene/Node.hpp"
 #include "minko/render/Blending.hpp"
-#include "minko/render/Priority.hpp"
 
 using namespace minko;
 using namespace minko::math;
@@ -37,15 +36,17 @@ using namespace minko::data;
 const unsigned int DrawCallPool::NUM_FALLBACK_ATTEMPTS = 32;
 
 DrawCallPool::DrawCallPool(Renderer::Ptr renderer):
-	_renderer(renderer)
+	_renderer(renderer),
+	_mustZSort(true)
 {
 }
 
 const std::list<DrawCall::Ptr>&
 DrawCallPool::drawCalls()
 {
-	if (_toCollect.empty() && _toRemove.empty())
-		return _drawCalls;
+	const bool doZSort = _mustZSort || !_toCollect.empty();
+	//if (_toCollect.empty() && _toRemove.empty())
+		//return _drawCalls;
 
 	for (auto& surface : _toRemove)
 	{
@@ -61,7 +62,9 @@ DrawCallPool::drawCalls()
 	}
 	_toCollect.clear();
 
-	_drawCalls.sort(&DrawCallPool::compareDrawCalls);
+	if (doZSort)
+		_drawCalls.sort(&DrawCallPool::compareDrawCalls);
+	_mustZSort = false;
 
 	return _drawCalls;
 }
@@ -78,10 +81,7 @@ DrawCallPool::compareDrawCalls(DrawCall::Ptr a,
 	if (!arePrioritiesEqual)
 		return aPriority > bPriority;
 
-	// aPriority == bPriority
-	const bool	areTransparent		= priority::LAST < aPriority && !( aPriority > priority::TRANSPARENT);
-
-	if (areTransparent && (a->zsorted() || b->zsorted()))
+	if (a->zsorted() || b->zsorted())
 	{
 		static Vector3::Ptr aPosition = Vector3::create();
 		static Vector3::Ptr bPosition = Vector3::create();
@@ -89,7 +89,6 @@ DrawCallPool::compareDrawCalls(DrawCall::Ptr a,
 		a->getEyeSpacePosition(aPosition);
 		b->getEyeSpacePosition(bPosition);
 
-		// z-sort
 		return aPosition->z() > bPosition->z();
 	}
 	else
@@ -153,6 +152,7 @@ DrawCallPool::cleanSurface(Surface::Ptr	surface)
 	_macroAddedOrRemovedSlots[surface].clear();
 	_macroChangedSlots[surface].clear();
 	_numMacroListeners[surface].clear();
+	_drawcallToZSortNeededSlots.erase(surface);
 }
 
 void
@@ -202,7 +202,7 @@ DrawCallPool::generateDrawCall(Surface::Ptr	surface,
 		technique		= _renderer->effect()->techniques().begin()->first;
 	}
 
-	_surfaceToDrawCalls[surface] = std::list<DrawCall::Ptr>();
+	_surfaceToDrawCalls	[surface] = std::list<DrawCall::Ptr>();
 
 	for (const auto& pass : drawCallEffect->technique(technique))
 	{
@@ -211,6 +211,14 @@ DrawCallPool::generateDrawCall(Surface::Ptr	surface,
 		if (drawCall)
 		{
 			_surfaceToDrawCalls[surface].push_back(drawCall);
+
+			_drawcallToZSortNeededSlots[surface][drawCall] = drawCall->zsortNeeded()->connect(std::bind(	
+				&DrawCallPool::zsortNeededHandler,
+				shared_from_this(),
+				surface,
+				drawCall
+			));
+			
 			//_drawCallAdded->execute(shared_from_this(), surface, drawCall);
 		}
 		else
@@ -379,6 +387,7 @@ DrawCallPool::deleteDrawCalls(Surface::Ptr surface)
 
 		_drawCallToPass[surface].erase(drawCall);
 		_drawCallToRendererData[surface].erase(drawCall);
+		_drawcallToZSortNeededSlots[surface].erase(drawCall);
 
 		for (auto& drawcallsIt : _macroNameToDrawCalls[surface])
 		{
@@ -621,4 +630,11 @@ DrawCallPool::forgiveMacros(Surface::Ptr						surface,
 					_incorrectMacroChangedSlot[surface].erase(macro);
 			}
 		}
+}
+
+void
+DrawCallPool::zsortNeededHandler(Surface::Ptr	surface, 
+								 DrawCall::Ptr	drawcall)
+{
+	_mustZSort = true;
 }
