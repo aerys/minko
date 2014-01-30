@@ -211,13 +211,13 @@ OctTree::nodeModelToWorldChanged(data::Container::Ptr	data,
 }
 
 void
-OctTree::testFrustum(std::shared_ptr<math::Frustum>						frustum, 
+OctTree::testFrustum(std::shared_ptr<math::AbstractShape>				frustum, 
 					 std::function<void(std::shared_ptr<scene::Node>)>	insideFrustumCallback,
 					 std::function<void(std::shared_ptr<scene::Node>)>	outsideFustumCallback)
 {
-	FrustumPosition result					= frustum->testBoundingBox(_octantBox);
+	ShapePosition result					= frustum->testBoundingBox(_octantBox);
 	
-	if (result == FrustumPosition::AROUND || result == FrustumPosition::INSIDE)
+	if (result == ShapePosition::AROUND || result == ShapePosition::INSIDE)
 	{
 		if (_splitted)
 		{
