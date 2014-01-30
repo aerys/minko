@@ -33,8 +33,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/CubeTexture.hpp"
 #include "minko/render/Program.hpp"
 #include "minko/render/States.hpp"
+#include "minko/render/Priority.hpp"
 #include "minko/data/Container.hpp"
 #include "minko/math/Matrix4x4.hpp"
+
+#include "ZSortSignalManager.hpp"
 
 using namespace minko;
 using namespace minko::data;
@@ -44,10 +47,6 @@ using namespace minko::render;
 SamplerState DrawCall::_defaultSamplerState = SamplerState(WrapMode::CLAMP, TextureFilter::NEAREST, MipFilter::NONE);
 /*static*/ const unsigned int	DrawCall::MAX_NUM_TEXTURES		= 8;
 /*static*/ const unsigned int	DrawCall::MAX_NUM_VERTEXBUFFERS	= 8;
-
-static const std::string	PNAME_POSITIONS			= "geometry.vertex.attribute.position";
-static const std::string	PNAME_MODEL_TO_WORLD	= "transform.modelToWorldMatrix";
-static const std::string	PNAME_WORLD_TO_SCREEN	= "camera.worldToScreenMatrix";
 
 DrawCall::DrawCall(const data::BindingMap&	attributeBindings,
 				   const data::BindingMap&	uniformBindings,
@@ -70,8 +69,15 @@ DrawCall::DrawCall(const data::BindingMap&	attributeBindings,
     _vertexAttributeOffsets(MAX_NUM_VERTEXBUFFERS, -1),
 	_target(nullptr),
 	_referenceChangedSlots(),
-	_position(nullptr)
+	_zsortNeeded(Signal<Ptr>::create()),
+	_zsortSignalManager(nullptr)
 {
+}
+
+void
+DrawCall::initialize()
+{
+	_zsortSignalManager = ZSortSignalManager::create(shared_from_this());
 }
 
 void
@@ -96,6 +102,8 @@ DrawCall::bind(ContainerPtr data, ContainerPtr rendererData, ContainerPtr rootDa
 	bindIndexBuffer();
 	bindProgramInputs();
 	bindStates();
+
+	_zsortSignalManager->initialize(data, rendererData, rootData);
 }
 
 void
@@ -204,9 +212,6 @@ DrawCall::bindVertexAttribute(const std::string&	inputName,
 			if (!vertexBuffer->hasAttribute(attributeName))
 				throw std::logic_error("missing required vertex attribute: " + attributeName);
 #endif
-
-			if (propertyName == PNAME_POSITIONS)
-				_position = nullptr; // invalidate precomputed local position
 
 			auto attribute = vertexBuffer->attribute(attributeName);
 
@@ -489,8 +494,7 @@ DrawCall::reset()
 	_vertexAttributeOffsets	.resize(MAX_NUM_VERTEXBUFFERS, -1);
 
 	_referenceChangedSlots.clear();
-	
-	_position = nullptr;
+	_zsortSignalManager->clear();
 }
 
 void
@@ -668,23 +672,16 @@ DrawCall::getDataContainer(const data::BindingSource& source) const
 Vector3::Ptr
 DrawCall::getEyeSpacePosition(Vector3::Ptr output) 
 {
-	if (_position == nullptr)
-	{
-		// update local position with position vertex attribute from target's container
-		
-		if (_targetData &&
-			_targetData->hasProperty(PNAME_POSITIONS))
-			_position = _targetData->get<VertexBuffer::Ptr>(PNAME_POSITIONS)->getPositionCenter(_position);
-		else
-			_position = Vector3::create(0.0f, 0.0f, 0.0f);
-	}
+	static auto localPos	= Vector3::create();
+	static auto modelView	= Matrix4x4::create();
 
-	if (output == nullptr)
-		output = Vector3::create(_position->x(), _position->y(), _position->z());
-	else
-		output->copyFrom(_position);
-	
-	static Matrix4x4::Ptr modelView = Matrix4x4::create();
+	static const std::string PNAME_POSITIONS		= "geometry.vertex.attribute.position";
+	static const std::string PNAME_MODEL_TO_WORLD	= "transform.modelToWorldMatrix";
+	static const std::string PNAME_WORLD_TO_SCREEN	= "camera.worldToScreenMatrix";
+
+	localPos = _targetData && _targetData->hasProperty(PNAME_POSITIONS)
+		? _targetData->get<VertexBuffer::Ptr>(PNAME_POSITIONS)->centerPosition(localPos)
+		: localPos->setTo(0.0f, 0.0f, 0.0f);
 	
 	if (_targetData && 
 		_targetData->hasProperty(PNAME_MODEL_TO_WORLD))
@@ -694,16 +691,7 @@ DrawCall::getEyeSpacePosition(Vector3::Ptr output)
 		_rendererData->hasProperty(PNAME_WORLD_TO_SCREEN))
 		modelView->append(_rendererData->get<Matrix4x4::Ptr>(PNAME_WORLD_TO_SCREEN));
 
-	output = modelView->transform(_position, output);
+	output = modelView->transform(localPos, output);
 
 	return output;
 }
-
-/*
-bool
-DrawCall::dataHasProperty(const std::string& propertyName)
-{
-    return _targetData->hasProperty(propertyName) || _rendererData->hasProperty(propertyName)
-		|| _rootData->hasProperty(propertyName);
-}
-*/
