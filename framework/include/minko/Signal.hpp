@@ -30,8 +30,8 @@ namespace minko
 	private:
 		typedef std::function<void(A...)>										CallbackFunction;
 		typedef std::pair<float, CallbackFunction>								Callback;
-		typedef typename std::vector<Callback>::iterator						CallbackIterator;
-		typedef typename std::vector<std::pair<float, unsigned int>>::iterator	SlotIterator;
+		typedef typename std::list<Callback>::iterator							CallbackIterator;
+		typedef typename std::list<std::pair<float, unsigned int>>::iterator	SlotIterator;
 
 		template <typename... B>
 		class SignalSlot;
@@ -41,13 +41,14 @@ namespace minko
 		typedef std::shared_ptr<SignalSlot<A...>>		Slot;
 
 	private:
-		std::vector<Callback>									_callbacks;
-		std::vector<std::pair<float, unsigned int>>				_slotIds;
+		std::list<Callback>										_callbacks;
+		std::list<std::pair<float, unsigned int>>				_slotIds;
 		unsigned int 											_nextSlotId;
 
 		bool													_locked;
-		std::vector<std::pair<Callback, uint>>					_toAdd;
+		std::list<std::pair<Callback, uint>>					_toAdd;
 		std::list<std::pair<CallbackIterator, SlotIterator>>	_toRemove;
+		std::list<unsigned int>									_toRemoveSlotId;
 
 	private:
 		Signal() :
@@ -87,7 +88,10 @@ namespace minko
 				if (addIt != _toAdd.end())
 					_toAdd.erase(addIt);
 				else
+				{
 					_toRemove.push_back(std::pair<CallbackIterator, SlotIterator>(callbackIt, connectionIdIt));
+					_toRemoveSlotId.push_back(connectionIdIt->second);
+				}
 			}
 			else
 			{
@@ -114,12 +118,12 @@ namespace minko
 		void
 		sortSignals()
 		{
-			std::sort(_callbacks.begin(), _callbacks.end(), [&](Callback callback1, Callback callback2) -> bool
+			_callbacks.sort([&](Callback callback1, Callback callback2) -> bool
 			{
 				return callback1.first > callback2.first;
 			});
 
-			std::sort(_slotIds.begin(), _slotIds.end(), [&](std::pair<float, unsigned int> slot1, std::pair<float, unsigned int> slot2) -> bool
+			_slotIds.sort([&](std::pair<float, unsigned int> slot1, std::pair<float, unsigned int> slot2) -> bool
 			{
 				return slot1.first > slot2.first;
 			});
@@ -147,8 +151,14 @@ namespace minko
 		{
 			_locked = true;
 			for (auto& callback : _callbacks)
-				std::get<1>(callback)(arguments...);
+				callback.second(arguments...);
 			_locked = false;
+
+			for (auto& callbackIt : _toRemove)
+			{
+				_callbacks.erase(callbackIt.first);
+				_slotIds.erase(callbackIt.second);
+			}
 
 			for (auto& callbackAndConnectionId : _toAdd)
 			{
@@ -157,12 +167,6 @@ namespace minko
 				sortSignals();
 			}
 			
-			for (auto& callbackIt : _toRemove)
-			{
-				_callbacks.erase(callbackIt.first);
-				_slotIds.erase(callbackIt.second);
-			}
-
 			_toAdd.clear();
 			_toRemove.clear();
 		}
