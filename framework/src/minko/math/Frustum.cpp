@@ -39,7 +39,7 @@ Frustum::updateFromMatrix(std::shared_ptr<math::Matrix4x4> matrix)
 	_planes[(int)PlanePosition::NEAR]	->setTo(data[8], data[9], data[10], data[11])->normalize();
 }
 
-FrustumPosition
+ShapePosition
 Frustum::testBoundingBox(math::Box::Ptr box)
 {
 	int result = 0;
@@ -107,7 +107,7 @@ Frustum::testBoundingBox(math::Box::Ptr box)
 		(_blfResult[(int)PlanePosition::RIGHT]	&& _trbResult[(int)PlanePosition::LEFT]) ||
 		(_blfResult[(int)PlanePosition::TOP]	&& _trbResult[(int)PlanePosition::BOTTOM]) ||
 		(_blfResult[(int)PlanePosition::BOTTOM] && _trbResult[(int)PlanePosition::TOP]))
-		return FrustumPosition::AROUND;
+		return ShapePosition::AROUND;
 
 	for (uint planeId = 0; planeId < _planes.size(); ++planeId)
 	{
@@ -120,10 +120,10 @@ Frustum::testBoundingBox(math::Box::Ptr box)
 			_tlbResult[planeId] &&
 			_trbResult[planeId]
 			)
-			return static_cast<FrustumPosition>(planeId);
+			return static_cast<ShapePosition>(planeId);
 	}
 
-	return FrustumPosition::INSIDE;
+	return ShapePosition::INSIDE;
 }
 
 bool
