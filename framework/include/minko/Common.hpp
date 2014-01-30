@@ -42,6 +42,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include <cassert>
 #include <ctime>
 #include <type_traits>
+#include <cfloat>
 #include "minko/math/Convertible.hpp"
 
 #ifdef __ANDROID__
