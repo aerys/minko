@@ -45,7 +45,6 @@ DrawCallPool::drawCalls()
 	unsigned int _numToCollect				= _toCollect.size();
 	unsigned int _numToRemove				= _toRemove.size();
 
-	_drawCalls.sort(&DrawCallPool::compareDrawCalls);
 
 	if (_numToCollect == 0 && _numToRemove == 0)
 		return _drawCalls;
@@ -62,6 +61,7 @@ DrawCallPool::drawCalls()
 		_drawCalls.insert(_drawCalls.end(), newDrawCalls.begin(), newDrawCalls.end());
 	}
 	
+	_drawCalls.sort(&DrawCallPool::compareDrawCalls);
 	_toRemove.resize(0);
 	_toCollect.erase(_toCollect.begin(), _toCollect.begin() + _numToCollect);
 
