@@ -28,11 +28,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/ProgramInputs.hpp"
 #include "minko/render/States.hpp"
 #include "minko/render/AbstractTexture.hpp"
+#include "minko/render/Priority.hpp"
 
 namespace minko
 {
 	namespace render
 	{
+		class ZSortSignalManager;
+
 		class DrawCall :
             public std::enable_shared_from_this<DrawCall>
 		{
@@ -46,13 +49,9 @@ namespace minko
             typedef std::shared_ptr<data::Container>				ContainerPtr;
 			typedef data::Container::PropertyChangedSignal::Slot	ContainerPropertyChangedSlot;
 
-			typedef std::tuple<int, int>			Int2;
-			typedef std::tuple<int, int, int>		Int3;
-			typedef std::tuple<int, int, int, int>	Int4;
-			
-			typedef unsigned char					Bool2;
-			typedef unsigned char					Bool3;
-			typedef unsigned char					Bool4;						
+			typedef std::tuple<int, int>							Int2;
+			typedef std::tuple<int, int, int>						Int3;
+			typedef std::tuple<int, int, int, int>					Int4;					
 
 		private:
 			static const unsigned int									MAX_NUM_TEXTURES;
@@ -118,8 +117,9 @@ namespace minko
 			std::unordered_map<uint, data::UniformArrayPtr<int>>		_uniformInts4;
 
 			std::unordered_map<std::string, std::list<Any>>				_referenceChangedSlots; // Any = ContainerPropertyChangedSlot
-			std::list<Any>												_zsortRequestingSlots;
-			std::shared_ptr<Signal<Ptr>>								_zsortUpdateNeeded;
+
+			std::shared_ptr<Signal<Ptr>>								_zsortNeeded;
+			std::shared_ptr<ZSortSignalManager>							_zsortSignalManager;
 
 		public:
 			static inline
@@ -129,9 +129,16 @@ namespace minko
 				   const data::BindingMap&	stateBindings,
                    std::shared_ptr<States>  states)
 			{
-				return std::shared_ptr<DrawCall>(new DrawCall(
-                    attributeBindings, uniformBindings, stateBindings, states
-                ));;
+				Ptr ptr = std::shared_ptr<DrawCall>(new DrawCall(
+                    attributeBindings, 
+					uniformBindings, 
+					stateBindings, 
+					states
+                ));
+
+				ptr->initialize();
+
+				return ptr;
 			}
 
             inline
@@ -152,14 +159,14 @@ namespace minko
 			bool
 			zsorted() const
 			{
-				return _zsorted;
+				return _zsorted && priority::LAST < _priority && !( _priority > priority::TRANSPARENT);
 			}
-
+			
 			inline
 			std::shared_ptr<Signal<Ptr>>
-			zsortUpdateNeeded() const
+			zsortNeeded() const
 			{
-				return _zsortUpdateNeeded;
+				return _zsortNeeded;
 			}
 
             void
@@ -183,6 +190,9 @@ namespace minko
 				     const data::BindingMap&	uniformBindings,
 					 const data::BindingMap&	stateBindings,
                      std::shared_ptr<States>    states);
+
+			void
+			initialize();
 
 			void
 			reset();
@@ -280,12 +290,6 @@ namespace minko
 				// actually does nothing
 				return value;
 			}
-
-			void
-			watchZSortingProperties();
-
-			void
-			zsortingPropertyChanged();
 		};		
 	}
 }
