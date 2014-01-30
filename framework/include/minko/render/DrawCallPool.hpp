@@ -48,7 +48,7 @@ namespace minko
 			typedef std::pair<std::string, PassPtr>						TechniquePass;
 
 		private:
-			typedef Signal<Ptr, SurfacePtr, std::shared_ptr<render::DrawCall>>	DrawCallChangedSignal;
+			typedef Signal<Ptr, SurfacePtr, DrawCallPtr>				DrawCallChangedSignal;
 			
 			enum class MacroChange
 			{
@@ -90,9 +90,6 @@ namespace minko
 			std::unordered_map<SurfacePtr, DrawCallList>															_surfaceToDrawCalls;
 			std::list<DrawCallPtr>																					_drawCalls;
 
-			// listeners for drawcalls' zsort update calls
-			std::unordered_map<SurfacePtr, std::list<ZSortRequestedSlot>>											_drawcallZSortUpdateSlots;
-
 		public:
 			inline static
 			Ptr
@@ -109,10 +106,10 @@ namespace minko
 			compareDrawCalls(DrawCallPtr, DrawCallPtr);
 
 			void
-			addSurface(SurfacePtr surface);
+			addSurface(SurfacePtr);
 
 			void
-			removeSurface(SurfacePtr surface);
+			removeSurface(SurfacePtr);
 			
 		private:
 			
@@ -126,9 +123,9 @@ namespace minko
 
 			// generate draw call for one mesh
 			std::shared_ptr<DrawCall>
-			initializeDrawCall(std::shared_ptr<render::Pass>		pass, 
-							   std::shared_ptr<component::Surface>	surface,
-							   std::shared_ptr<DrawCall>			drawcall = nullptr);
+			initializeDrawCall(std::shared_ptr<render::Pass>	pass, 
+							   SurfacePtr						surface,
+							   std::shared_ptr<DrawCall>		drawcall = nullptr);
 
 			std::shared_ptr<Program>
 			getWorkingProgram(SurfacePtr							surface,
@@ -141,14 +138,13 @@ namespace minko
 						      std::list<data::ContainerProperty>&	incorrectIntegerMacros);
 						
 			DrawCallList&
-			generateDrawCall(SurfacePtr		surface,
-							 unsigned int	numAttempts); 
+			generateDrawCall(SurfacePtr, unsigned int numAttempts); 
 			
 			void
-			deleteDrawCalls(SurfacePtr surface);
+			deleteDrawCalls(SurfacePtr);
 
 			void
-			cleanSurface(SurfacePtr surface);
+			cleanSurface(SurfacePtr);
 
 			void
 			macroChangedHandler(ContainerPtr		container, 
@@ -158,7 +154,7 @@ namespace minko
 
 			
 			void
-			watchMacroAdditionOrDeletion(std::shared_ptr<component::Surface> surface);
+			watchMacroAdditionOrDeletion(SurfacePtr);
 			
 			void
 			blameMacros(SurfacePtr									surface,
@@ -171,14 +167,9 @@ namespace minko
 						  const std::list<data::ContainerProperty>&		integerMacros,
 						  const TechniquePass&							pass);
 						  
-
-
 			void
 			incorrectMacroChangedHandler(SurfacePtr						surface,
 										 const data::ContainerProperty& macro);
-
-			void
-			zsortNeededHandler(SurfacePtr, DrawCallPtr);
 		};
 	}
 }
