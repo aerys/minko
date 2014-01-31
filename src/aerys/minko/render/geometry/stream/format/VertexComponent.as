@@ -31,6 +31,7 @@ package aerys.minko.render.geometry.stream.format
 		private var _properties			: Vector.<String>;
 		private var _offsets			: Object;
 		private var _vertexComponentId	: String;	// used to avoid array comparison
+		private var _propertiesString	: String;   // Used to avoid creation of strings all the time in toString()
 
 		public function get numBytes() : uint
 		{
@@ -100,7 +101,10 @@ package aerys.minko.render.geometry.stream.format
 		
 		public function toString() : String
 		{
-			return _properties.join(', ');
+			if (!_propertiesString)
+				_propertiesString = _properties.join(', ');
+				
+			return _propertiesString;
 		}
 	}
 }
