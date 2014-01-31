@@ -37,7 +37,7 @@ insert.insert(premake.tools.clang, 'cxxflags.system', {
 	macosx = { "-MMD", "-MP", "-std=c++11", "-stdlib=libc++" }
 })
 
-insert.insert(premake.tools.clang, 'ldflags.system.macosx', {
+insert.insert(premake.tools.clang, 'ldflags.system', {
 	macosx = { "-stdlib=libc++" }
 })
 
@@ -49,6 +49,12 @@ configuration { "html5" }
 
 configuration { "android"}
 	system "android"
+
+configuration { "cc=gcc"}
+	toolset "gcc"
+
+configuration { "cc=clang"}
+	toolset "clang"
 
 configuration {}
 
