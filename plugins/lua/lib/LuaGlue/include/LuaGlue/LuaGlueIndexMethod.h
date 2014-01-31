@@ -1,4 +1,4 @@
-#ifndef LUAGLUE_INDED_METHOD_H_GUARD
+#ifndef LUAGLUE_INDEX_METHOD_H_GUARD
 #define LUAGLUE_INDEX_METHOD_H_GUARD
 
 #include <lua.hpp>
