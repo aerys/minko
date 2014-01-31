@@ -24,7 +24,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Signal.hpp"
 #include "minko/component/AbstractRootDataComponent.hpp"
 #include "minko/data/ArrayProvider.hpp"
-#include "minko/math/Vector3.hpp"
 
 namespace minko
 {
@@ -60,12 +59,14 @@ namespace minko
 				return _color;
 			}
 
-			inline
 			void
-			color(std::shared_ptr<math::Vector3> color)
-			{
-				_color->copyFrom(color);
-			}
+			color(std::shared_ptr<math::Vector3>);
+
+			void
+			color(std::shared_ptr<math::Vector4>);
+
+			void
+			color(uint color);
 
 		protected:
 			AbstractLight(const std::string& arrayName);

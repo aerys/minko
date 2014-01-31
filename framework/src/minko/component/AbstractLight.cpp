@@ -19,7 +19,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/component/AbstractLight.hpp"
 
+#include "minko/Color.hpp"
 #include "minko/scene/Node.hpp"
+#include "minko/math/Vector3.hpp"
+#include "minko/math/Vector4.hpp"
 
 using namespace minko;
 using namespace minko::component;
@@ -29,4 +32,22 @@ AbstractLight::AbstractLight(const std::string& arrayName) :
 	_color(math::Vector3::create(1.0f, 1.0f, 1.0f))
 {
 	data()->set("color", _color);
+}
+
+void
+AbstractLight::color(math::Vector3::Ptr color)
+{
+	_color->copyFrom(color);
+}
+
+void
+AbstractLight::color(math::Vector4::Ptr color)
+{
+	_color->setTo(color->x(), color->y(), color->z());
+}
+
+void
+AbstractLight::color(uint rgba)
+{
+	color(Color::uintToVec4(rgba));
 }
