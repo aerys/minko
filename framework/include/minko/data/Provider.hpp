@@ -129,21 +129,11 @@ namespace minko
 				const std::string&	formattedName	= skipPropertyNameFormatting ? propertyName : formatPropertyName(propertyName);
 				auto				foundIt			= values().find(formattedName);
 
-				return foundIt != values().end()
-					? std::dynamic_pointer_cast<typename T::element_type>(foundIt->second)
-					: nullptr;
-
-				// return std::dynamic_pointer_cast<typename T::element_type>(_values[formattedName]);
+				if (foundIt != values().end())
+					return std::dynamic_pointer_cast<typename T::element_type>(foundIt->second);
+				else
+					throw std::logic_error("Property '" + formattedName + "' could not be found in provider.");
 			}
-
-			/*
-			template <typename T>
-			typename std::enable_if<std::is_convertible<T, std::shared_ptr<Value>>::value, T>::type
-			get(const std::string& propertyName)
-			{
-				return get<T>(propertyName, false);
-			}
-			*/
 
 			template <typename T>
 			typename std::enable_if<!std::is_convertible<T, std::shared_ptr<Value>>::value, T>::type
@@ -152,11 +142,10 @@ namespace minko
 				const std::string&	formattedName	= skipPropertyNameFormatting ? propertyName : formatPropertyName(propertyName);
 				auto				foundIt			= values().find(formattedName);
 
-				return foundIt != values().end()
-					? std::dynamic_pointer_cast<ValueWrapper<T>>(foundIt->second)->value()
-					: T();
-
-				// return std::dynamic_pointer_cast<ValueWrapper<T>>(_values[formattedName])->value();
+				if (foundIt != values().end())
+					return std::dynamic_pointer_cast<ValueWrapper<T>>(foundIt->second)->value();
+				else
+					throw std::logic_error("Property '" + formattedName + "' could not be found in provider.");
 			}
 
 			template <typename T>
@@ -260,6 +249,11 @@ namespace minko
 				return ValueWrapper<T>::create(value);
 			}
 
+			class ValueWrapperBase
+			{
+				
+			};
+
 			template <typename P>
 			class ValueWrapper :
 				public Value,
@@ -267,6 +261,7 @@ namespace minko
 			{
 			public:
 				typedef std::shared_ptr<ValueWrapper> Ptr;
+				typedef P Type;
 
 			private:
 				P _value;
