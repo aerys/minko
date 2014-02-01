@@ -119,8 +119,6 @@ Container::addProvider(std::shared_ptr<ArrayProvider> provider)
 	addProvider(std::dynamic_pointer_cast<Provider>(provider));
 
 	_arrayLengths->set<int>(lengthPropertyName, ++length);
-	// must come last because will trigger a program signature update which must 
-
 }
 
 void
@@ -237,8 +235,8 @@ Container::assertPropertyExists(const std::string& propertyName) const
 }
 
 void
-Container::providerValueChangedHandler(Provider::Ptr			provider,
-									      const std::string& 	propertyName)
+Container::providerValueChangedHandler(Provider::Ptr		provider,
+									   const std::string& 	propertyName)
 {
 	if (_propValueChanged.count(propertyName) != 0)
 		propertyValueChanged(propertyName)->execute(shared_from_this(), propertyName);
@@ -255,7 +253,7 @@ Container::providerReferenceChangedHandler(Provider::Ptr		provider,
 void
 Container::providerPropertyAddedHandler(std::shared_ptr<Provider> 	provider,
 										const std::string& 			propertyName)
-{
+{	
 	if (_propertyNameToProvider.count(propertyName) != 0)
 		throw std::logic_error("duplicate property name: " + propertyName);
 	
