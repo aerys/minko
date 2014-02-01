@@ -181,41 +181,29 @@ namespace minko
 				return true;
 			}
 
-			/*
-			template <typename T>
-			typename std::enable_if<!std::is_convertible<T, std::shared_ptr<Value>>::value, bool>::type
-			propertyHasType(const std::string& propertyName, bool skypPropertyNameFormatting = false) const
-			{
-				const std::string&	formattedName	= skypPropertyNameFormatting ? propertyName : formatPropertyName(propertyName);
-				const auto			foundPropertyIt	= _values.find(formattedName);
-
-				return foundPropertyIt != _values.end() 
-					? std::dynamic_pointer_cast<ValueWrapper<T>>(foundPropertyIt->second) != nullptr
-					: false;
-			}
-			*/
-
 			template <typename T>
 			Ptr
 			set(const std::string& propertyName, T value, bool skipPropertyNameFormatting)
 			{
-				const auto	foundValueIt	= _values.find(propertyName);
-				const bool	isNewValue		= (foundValueIt == _values.end());
-				const bool	changed			= !isNewValue;// || !((*value) == (*foundValueIt->second));
+				auto		formattedName	= skipPropertyNameFormatting ? propertyName : formatPropertyName(propertyName);
+				
+				const auto	foundValueIt	= _values.find(formattedName);
+				const bool	isNewValue		= foundValueIt == _values.end();
+				//const bool	changed			= !isNewValue;// || !((*value) == (*foundValueIt->second));
 	
-				_values[propertyName] = value;
+				_values[formattedName] = value;
 		
 				if (isNewValue)
 				{
-					_names.push_back(propertyName);
+					_names.push_back(formattedName);
 
-					_propertyAdded->execute(shared_from_this(), propertyName);
+					_propertyAdded->execute(shared_from_this(), formattedName);
 				}
 
-				if (changed)
+				//if (changed)
 				{
-					_propReferenceChanged->execute(shared_from_this(), propertyName);
-					_propValueChanged->execute(shared_from_this(), propertyName);
+					_propReferenceChanged->execute(shared_from_this(), formattedName);
+					_propValueChanged->execute(shared_from_this(), formattedName);
 				}
 
 				return shared_from_this();
