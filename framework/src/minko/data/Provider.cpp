@@ -101,49 +101,6 @@ Provider::swap(const std::string& propertyName1, const std::string& propertyName
 	}
 }
 
-Provider::Ptr
-Provider::set(const std::string& propertyName, Value::Ptr value, bool skipPropertyNameFormatting)
-{
-	auto		formattedName	= skipPropertyNameFormatting ? propertyName : formatPropertyName(propertyName);
-		
-	const auto	foundValueIt	= _values.find(formattedName);
-	const bool	isNewValue		= (foundValueIt == _values.end());
-	//const bool	changed			= !isNewValue;// || !((*value) == (*foundValueIt->second));
-	
-	_values[formattedName] = value;
-		
-	if (isNewValue)
-	{
-#if defined(EMSCRIPTEN)
-		auto that = shared_from_this();
-		_valueChangedSlots[formattedName] = value->changed()->connect([&, that, formattedName, this](Value::Ptr)
-		{
-			_propValueChanged->execute(that, formattedName);
-		});
-#else
-		_valueChangedSlots[formattedName] = value->changed()->connect(std::bind(
-			&Signal<Provider::Ptr, const std::string&>::execute,
-			_propValueChanged,
-			shared_from_this(),
-			formattedName
-		));
-#endif
-
-		_names.push_back(formattedName);
-
-		_propertyAdded->execute(shared_from_this(), formattedName);
-	}
-
-	//if (changed)
-	{
-		_propReferenceChanged->execute(shared_from_this(), formattedName);
-		_propValueChanged->execute(shared_from_this(), formattedName);
-	}
-
-	return shared_from_this();				
-}
-
-
 bool 
 Provider::hasProperty(const std::string& name, bool skipPropertyNameFormatting) const
 {
