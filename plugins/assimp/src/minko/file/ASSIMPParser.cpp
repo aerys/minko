@@ -678,7 +678,10 @@ ASSIMPParser::getSkinningFromAssimp(const aiMesh* aimesh) const
 		//std::cout << "\ncollapsed trf bone '" << aimesh->mBones[boneId]->mName.C_Str() << "'" << std::endl;
 #endif // DEBUG_SKINNING
 
-		const auto bone				= getSkinningFromAssimp(aimesh->mBones[boneId]);
+		const auto bone = getSkinningFromAssimp(aimesh->mBones[boneId]);
+		if (!bone)
+			return nullptr;
+		
 		const auto boneNode			= bone->node();
 		const auto boneOffsetMatrix	= bone->offsetMatrix();
 
