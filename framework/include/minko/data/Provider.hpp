@@ -132,7 +132,7 @@ namespace minko
 				if (foundIt == values().end())
 					throw std::invalid_argument("propertyName");
 				
-				return Any::cast<T>(foundIt->second);
+				return Any::unsafe_cast<T>(foundIt->second);
 			}
 
 			template <typename T>
