@@ -42,6 +42,9 @@ AbstractDiscreteLight::targetAddedHandler(AbstractComponent::Ptr cmp, std::share
 		std::placeholders::_1,
 		std::placeholders::_2
 	));
+
+	if (target->data()->hasProperty("transform.modelToWorldMatrix"))
+		updateModelToWorldMatrix(target->data()->get<math::Matrix4x4::Ptr>("transform.modelToWorldMatrix"));
 }
 
 void
