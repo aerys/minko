@@ -41,7 +41,7 @@ function main:start(root)
 			:addComponent(Transform.create())
 			:addComponent(Surface.create(
 				CubeGeometry.create(assets.context),
-				Material.create():setTexture('diffuseMap', assets:texture2D('texture/box.png')),
+				Material.create():setTexture('diffuseMap', assets:texture('texture/box.png')),
 				assets:effect('effect/Phong.effect')
 			))
 		root:addChild(cube)
