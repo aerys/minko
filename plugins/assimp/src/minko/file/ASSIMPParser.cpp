@@ -135,7 +135,18 @@ ASSIMPParser::parse(const std::string&					filename,
 	const aiScene* scene = importer.ReadFileFromMemory(
 		&data[0],
 		data.size(),
-		aiProcessPreset_TargetRealtime_Fast,
+		aiProcessPreset_TargetRealtime_Fast
+		| aiProcess_JoinIdenticalVertices
+		| aiProcess_GenSmoothNormals
+		| aiProcess_SplitLargeMeshes
+		| aiProcess_LimitBoneWeights
+		| aiProcess_GenUVCoords
+		| aiProcess_OptimizeMeshes
+		| aiProcess_OptimizeGraph
+		| aiProcess_FlipUVs
+		| aiProcess_SortByPType
+		| aiProcess_Triangulate
+		| aiProcess_JoinIdenticalVertices,
 		resolvedFilename.c_str()
 	);
 	
