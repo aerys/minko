@@ -48,13 +48,11 @@ minko.project.application = function(name)
 	end
 
 	configuration { "windows32" }
-		libdirs { minko.sdk.path("/framework/lib/glew/lib/windows32") }
-
-	configuration { "windows64" }
-		libdirs { minko.sdk.path("/framework/lib/glew/lib/windows64") }
-
-	configuration { "windows32 or windows64" }
+		libdirs {
+			minko.sdk.path("/framework/lib/glew/lib/windows32")
+		}
 		links {
+			"minko-framework",
 			"OpenGL32",
 			"glew32"
 		}
@@ -63,12 +61,45 @@ minko.project.application = function(name)
 			minko.vs.getdllscopycommand(minko.sdk.path("/framework/lib/glew/lib"))
 		}
 
-	configuration { "windows32 or windows64", "release" }
-		postbuildcommands {
-			'xcopy /y /s asset\\* "$(TargetDir)"'
+	configuration { "windows32", "debug" }
+		libdirs {
+			minko.sdk.path("/framework/bin/windows32/debug")
 		}
-		
-	configuration { "linux" }
+
+	configuration { "windows32", "release" }
+		libdirs {
+			minko.sdk.path("/framework/bin/windows32/release")
+		}
+		postbuildcommands {
+			'xcopy /y /s asset\\* "$(TargetDir)"',
+		}
+
+	configuration { "windows64" }
+		libdirs { minko.sdk.path("/framework/lib/glew/lib/windows64") }
+		links {
+			"OpenGL32",
+			"glew32"
+		}
+		postbuildcommands {
+			'xcopy /y /i "' .. minko.sdk.path("/framework/effect") .. '" "$(TargetDir)\\effect"',
+			'xcopy /y /s asset\\* "$(TargetDir)"',
+			minko.vs.getdllscopycommand(minko.sdk.path("/framework/lib/glew/lib"))
+		}
+
+	configuration { "windows64", "debug" }
+		libdirs {
+			minko.sdk.path("/framework/bin/windows64/debug")
+		}
+
+	configuration { "windows64", "release" }
+		libdirs {
+			minko.sdk.path("/framework/bin/windows64/release")
+		}
+		postbuildcommands {
+			'xcopy /y /s asset\\* "$(TargetDir)"',
+		}
+
+	configuration { "linux64" }
 		linkoptions { "-Wl,--no-as-needed" }
 		links {
 			"GL",
@@ -78,12 +109,43 @@ minko.project.application = function(name)
 			'cp -r ' .. minko.sdk.path("/framework/effect") .. ' ${TARGETDIR} || :'
 		}
 
-	configuration { "linux", "release" }
+	configuration { "linux64", "debug" }
+		libdirs {
+			minko.sdk.path("/framework/bin/linux64/debug")
+		}
+
+	configuration { "linux64", "release" }
+		libdirs {
+			minko.sdk.path("/framework/bin/linux64/release")
+		}
 		postbuildcommands {
 			'cp -r asset/* ${TARGETDIR} || :'
 		}
 	
-	configuration { "macosx" }
+	configuration { "linux32" }
+		linkoptions { "-Wl,--no-as-needed" }
+		links {
+			"GL",
+			"m"
+		}
+		postbuildcommands {
+			'cp -r ' .. minko.sdk.path("/framework/effect") .. ' ${TARGETDIR} || :'
+		}
+
+	configuration { "linux32", "debug" }
+		libdirs {
+			minko.sdk.path("/framework/bin/linux32/debug")
+		}
+
+	configuration { "linux32", "release" }
+		libdirs {
+			minko.sdk.path("/framework/bin/linux32/release")
+		}
+		postbuildcommands {
+			'cp -r asset/* ${TARGETDIR} || :'
+		}
+	
+	configuration { "osx64" }
 		links {
 			"m",
 			"Cocoa.framework",
@@ -94,7 +156,15 @@ minko.project.application = function(name)
 			'cp -r ' .. minko.sdk.path('/framework/effect') .. ' ${TARGETDIR} || :'
 		}
 
-	configuration { "macosx", "release" }
+	configuration { "osx64", "debug" }
+		libdirs {
+			minko.sdk.path("/framework/bin/osx64/debug")
+		}
+
+	configuration { "osx64", "release" }
+		libdirs {
+			minko.sdk.path("/framework/bin/osx64/release")
+		}
 		postbuildcommands {
 			'cp -r asset/* ${TARGETDIR} || :'
 		}
