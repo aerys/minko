@@ -12,8 +12,6 @@ end
 
 package.path = MINKO_HOME .. "/modules/?/?.lua;".. package.path
 
-require 'color'
-
 print('Minko SDK home directory: ' .. MINKO_HOME)
 
 configurations {
@@ -33,6 +31,7 @@ platforms {
 }
 
 require 'minko'
+require 'color'
 require 'emscripten'
 require 'android'
 require 'vs2013ctp'
@@ -87,12 +86,3 @@ configuration {}
 
 -- distributable SDK
 MINKO_SDK_DIST = true
-
-newoption {
-	trigger	= "no-stencil",
-	description = "Disable all stencil operations."
-}
-
-if _OPTIONS["no-stencil"] then
-	defines { "MINKO_NO_STENCIL" }
-end
