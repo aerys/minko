@@ -26,7 +26,7 @@ namespace minko
 {
 	namespace file
 	{
-		class Loader :
+		class FileLoader :
 		    public AbstractLoader
 		{
 		public:
@@ -34,15 +34,15 @@ namespace minko
             Ptr
             create()
             {
-                return std::shared_ptr<Loader>(new Loader());
+				return std::shared_ptr<FileLoader>(new FileLoader());
             }
 
-			typedef std::shared_ptr<Loader>	Ptr;
+			typedef std::shared_ptr<FileLoader>	Ptr;
 			void
 			load(const std::string& filename, std::shared_ptr<Options> options);
 
 		protected:
-			Loader();
+			FileLoader();
 		};
 	}
 }
