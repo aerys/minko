@@ -1,5 +1,3 @@
-require 'color'
-
 newoption {
 	trigger	= 'no-examples',
 	description = 'Disable examples.'
