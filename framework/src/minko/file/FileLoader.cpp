@@ -17,7 +17,7 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "minko/file/Loader.hpp"
+#include "minko/file/FileLoader.hpp"
 
 #include "minko/file/Options.hpp"
 #include "minko/Signal.hpp"
@@ -27,12 +27,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::file;
 
-Loader::Loader()
+FileLoader::FileLoader()
 {
 }
 
 void
-Loader::load(const std::string& filename, std::shared_ptr<Options> options)
+FileLoader::load(const std::string& filename, std::shared_ptr<Options> options)
 {
 	auto flags = std::ios::in | std::ios::ate | std::ios::binary;
 

@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/Options.hpp"
 
 #include "minko/material/Material.hpp"
-#include "minko/file/Loader.hpp"
+#include "minko/file/FileLoader.hpp"
 
 using namespace minko;
 using namespace minko::file;
@@ -73,7 +73,7 @@ Options::Options(std::shared_ptr<render::AbstractContext> context) :
 
 	_loaderFunction = [](const std::string&) -> std::shared_ptr<AbstractLoader>
 	{
-		return Loader::create();
+		return FileLoader::create();
 	};
 
 	_uriFunction = [](const std::string& uri) -> const std::string
