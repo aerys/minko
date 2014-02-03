@@ -19,7 +19,7 @@ configurations {
 	"release"
 }
 
-platforms {
+minko.platform.platforms {
 	"linux32",
 	"linux64",
 	"windows32",
@@ -27,7 +27,7 @@ platforms {
 	"osx64",
 	"html5",
 	-- "ios",
-	-- "android"
+	-- "android",
 }
 
 require 'minko'
