@@ -14,6 +14,14 @@ package.path = MINKO_HOME .. "/modules/?/?.lua;".. package.path
 
 print('Minko SDK home directory: ' .. MINKO_HOME)
 
+require 'minko'
+require 'color'
+require 'emscripten'
+-- require 'android'
+require 'vs2013ctp'
+require 'gcc'
+require 'clang'
+
 configurations {
 	"debug",
 	"release"
@@ -29,33 +37,6 @@ minko.platform.platforms {
 	-- "ios",
 	-- "android",
 }
-
-require 'minko'
-require 'color'
-require 'emscripten'
--- require 'android'
-require 'vs2013ctp'
-
-local insert = require 'insert'
-
-insert.insert(premake.tools.gcc, 'cxxflags.system', {
-	linux = { "-MMD", "-MP", "-std=c++11" },
-	macosx = { "-MMD", "-MP", "-std=c++11" },
-	emscripten = { "-MMD", "-MP", "-std=c++11" }
-})
-
-insert.insert(premake.tools.gcc, 'tools.linux', {
-	ld = MINKO_HOME .. '/tools/lin/bin/g++-ld.sh',
-	cxx = MINKO_HOME .. '/tools/lin/bin/g++-ld.sh'
-})
-
-insert.insert(premake.tools.clang, 'cxxflags.system', {
-	macosx = { "-MMD", "-MP", "-std=c++11", "-stdlib=libc++" }
-})
-
-insert.insert(premake.tools.clang, 'ldflags.system', {
-	macosx = { "-stdlib=libc++" }
-})
 
 configuration { "windows32" }
 	system "windows"
