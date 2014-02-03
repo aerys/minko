@@ -32,6 +32,7 @@ platforms {
 	"android"
 }
 
+require 'minko'
 require 'emscripten'
 require 'android'
 require 'vs2013ctp'
@@ -84,19 +85,8 @@ configuration { "android"}
 
 configuration {}
 
--- print(table.inspect(premake.tools.clang))
-
 -- distributable SDK
 MINKO_SDK_DIST = true
-
--- import build system utilities
-dofile(MINKO_HOME .. '/tools/all/lib/minko.lua')
-dofile(MINKO_HOME .. '/tools/all/lib/minko.sdk.lua')
-dofile(MINKO_HOME .. '/tools/all/lib/minko.os.lua')
-dofile(MINKO_HOME .. '/tools/all/lib/minko.path.lua')
-dofile(MINKO_HOME .. '/tools/all/lib/minko.plugin.lua')
-dofile(MINKO_HOME .. '/tools/all/lib/minko.vs.lua')
-dofile(MINKO_HOME .. '/tools/all/lib/minko.project.lua')
 
 newoption {
 	trigger	= "no-stencil",
