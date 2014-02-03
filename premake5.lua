@@ -10,7 +10,7 @@ newoption {
 
 newoption {
 	trigger = 'dist-dir',
-	description = 'Output folder for the redistributable SDL built with the \'dist\' action.'
+	description = 'Output folder for the redistributable SDK built with the \'dist\' action.'
 }
 
 solution "minko"
