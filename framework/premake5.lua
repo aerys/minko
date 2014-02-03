@@ -48,8 +48,8 @@ project "minko-framework"
 
 	-- windows
 	configuration { "windows" }
-		includedirs { "../deps/win/include" }
-		libdirs { "../deps/win/lib" }
+		includedirs { "lib/glew/include" }
+		libdirs { "lib/glew/lib" }
 		
 	configuration { "vs*" }
 		defines { "NOMINMAX" }
