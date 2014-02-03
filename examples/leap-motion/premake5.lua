@@ -11,7 +11,6 @@ minko.project.application("minko-example-" .. PROJECT_NAME)
 	includedirs { "src" }
 
 	-- plugins
-	minko.plugin.enable("mk")
 	minko.plugin.enable("png")
 	minko.plugin.enable("jpeg")
 	minko.plugin.enable("sdl")
