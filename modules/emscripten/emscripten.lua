@@ -25,8 +25,8 @@ insert.insert(premake.tools.gcc, 'cppflags.system.emscripten', {
 	'-DEMSCRIPTEN'
 })
 
-if os.getenv('EMSCRIPTEN_HOME') then
-	EMSCRIPTEN_HOME = os.getenv('EMSCRIPTEN_HOME');
+if os.getenv('EMSCRIPTEN') then
+	EMSCRIPTEN = os.getenv('EMSCRIPTEN');
 else
-	print(color.fg.yellow .. 'You must define the environment variable EMSCRIPTEN_HOME to be able to target HTML5.' .. color.reset)
+	print(color.fg.yellow .. 'You must define the environment variable EMSCRIPTEN to be able to target HTML5.' .. color.reset)
 end
