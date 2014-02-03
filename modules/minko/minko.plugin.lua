@@ -1,10 +1,6 @@
 minko.plugin = {
 }
 
--- register plugin from its path (must be called from plugin.lua)
--- minko.plugin.register = function(name)
--- end
-
 minko.plugin.import = function(name)
 	if minko.plugin[name] and minko.plugin[name].import then
 		minko.plugin[name]:import()
