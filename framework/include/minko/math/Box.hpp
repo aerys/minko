@@ -117,6 +117,13 @@ namespace minko
 			std::array<std::shared_ptr<Vector3>, 8>
 			getVertices();
 
+			
+			ShapePosition
+			testBoundingBox(std::shared_ptr<math::Box> box);
+
+			void
+			updateFromMatrix(std::shared_ptr<math::Matrix4x4> matrix);
+
 		private:
 			Box();
 		};
