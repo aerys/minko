@@ -32,16 +32,16 @@ function minko.plugin.particles:enable()
 		
 	configuration { "linux" }
 		postbuildcommands {
-			'cp -r ' .. minko.sdk.path('/plugins/particles/asset/effect') .. ' ${TARGETDIR} || ' .. minko.fail(),
+			'cp -r ' .. minko.sdk.path('/plugins/particles/asset/effect') .. ' ${TARGETDIR} || ' .. minko.action.fail(),
 		}
 	
 	configuration { "macosx" }
 		postbuildcommands {
-			'cp -r ' .. minko.sdk.path('/plugins/particles/asset/effect') .. ' ${TARGETDIR} || ' .. minko.fail(),
+			'cp -r ' .. minko.sdk.path('/plugins/particles/asset/effect') .. ' ${TARGETDIR} || ' .. minko.action.fail(),
 		}	
 
 	configuration { "html5" }
 		prelinkcommands {
-			'cp -r ' .. minko.sdk.path('/plugins/particles/asset/effect') .. ' ${TARGETDIR} || ' .. minko.fail(),
+			'cp -r ' .. minko.sdk.path('/plugins/particles/asset/effect') .. ' ${TARGETDIR} || ' .. minko.action.fail(),
 		}	
 end
