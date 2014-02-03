@@ -46,8 +46,13 @@ minko.project.application = function(name)
 		links { "minko-framework" }
 	end
 
-	configuration { "windows" }
-		libdirs { minko.sdk.path("/framework/lib/glew/lib") }
+	configuration { "windows32" }
+		libdirs { minko.sdk.path("/framework/lib/glew/lib/windows32") }
+
+	configuration { "windows64" }
+		libdirs { minko.sdk.path("/framework/lib/glew/lib/windows64") }
+
+	configuration { "windows32 or windows64" }
 		links {
 			"OpenGL32",
 			"glew32"
@@ -56,7 +61,8 @@ minko.project.application = function(name)
 			'xcopy /y /i "' .. minko.sdk.path("/framework/effect") .. '" "$(TargetDir)\\effect"',
 			minko.vs.getdllscopycommand(minko.sdk.path("/framework/lib/glew/lib"))
 		}
-	configuration { "windows", "release" }
+
+	configuration { "windows32 or windows64", "release" }
 		postbuildcommands {
 			'xcopy /y /s asset\\* "$(TargetDir)"'
 		}

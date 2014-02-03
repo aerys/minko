@@ -47,9 +47,14 @@ project "minko-framework"
 		buildoptions { "-std=c++11" }
 
 	-- windows
-	configuration { "windows" }
+	configuration { "windows32 or windows64" }
 		includedirs { "lib/glew/include" }
-		libdirs { "lib/glew/lib" }
+		
+	configuration { "windows32" }
+		libdirs { "lib/glew/lib/windows32" }
+		
+	configuration { "windows64" }
+		libdirs { "lib/glew/lib/windows64" }
 		
 	configuration { "vs*" }
 		defines { "NOMINMAX" }
