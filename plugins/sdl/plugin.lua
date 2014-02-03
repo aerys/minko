@@ -20,10 +20,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 -- sdl plugin
 minko.plugin.sdl = {}
 
-function minko.plugin.sdl:import()
-
-end
-
 function minko.plugin.sdl:enable()
 	minko.plugin.links { "sdl" }
 	defines { "MINKO_PLUGIN_SDL" }
