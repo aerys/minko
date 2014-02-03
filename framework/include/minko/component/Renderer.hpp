@@ -90,8 +90,8 @@ namespace minko
 			inline static
 			Ptr
 			create(uint									backgroundColor, 
-				   std::shared_ptr<render::Texture>		renderTarget	= nullptr, 
-				   std::shared_ptr<render::Effect>		effect			= nullptr,
+				   AbsTexturePtr						renderTarget	= nullptr, 
+				   EffectPtr							effect			= nullptr,
 				   float								priority		= 0.f)
 			{
 				auto ctrl = std::shared_ptr<Renderer>(new Renderer(renderTarget, effect, priority));
@@ -174,8 +174,8 @@ namespace minko
 			}
 
 		private:
-			Renderer(std::shared_ptr<render::Texture>	renderTarget	= nullptr, 
-					 std::shared_ptr<render::Effect>	effect			= nullptr,
+			Renderer(AbsTexturePtr						renderTarget	= nullptr, 
+					 EffectPtr							effect			= nullptr,
 					 float								priority		= 0.f);
 
 			void
