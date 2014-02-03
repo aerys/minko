@@ -89,6 +89,8 @@ newaction {
 		minko.os.copyfiles('framework/bin', distDir .. '/framework/bin')
 		os.mkdir(distDir .. '/framework/include')
 		minko.os.copyfiles('framework/include', distDir .. '/framework/include')
+		os.mkdir(distDir .. '/framework/lib')
+		minko.os.copyfiles('framework/lib', distDir .. '/framework/lib')
 		os.mkdir(distDir .. '/framework/effect')
 		minko.os.copyfiles('framework/effect', distDir .. '/framework/effect')
 
@@ -107,10 +109,6 @@ newaction {
 		-- tools
 		os.mkdir(distDir .. '/tools/')
 		minko.os.copyfiles('tools', distDir .. '/tools')
-		
-		-- deps
-		os.mkdir(distDir .. '/deps')
-		minko.os.copyfiles('deps', distDir .. '/deps')
 		
 		-- plugins
 		local plugins = os.matchdirs('plugins/*')
