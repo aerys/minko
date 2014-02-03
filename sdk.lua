@@ -26,14 +26,14 @@ platforms {
 	"windows64",
 	"osx64",
 	"html5",
-	"ios",
-	"android"
+	-- "ios",
+	-- "android"
 }
 
 require 'minko'
 require 'color'
 require 'emscripten'
-require 'android'
+-- require 'android'
 require 'vs2013ctp'
 
 local insert = require 'insert'
@@ -79,8 +79,8 @@ configuration { "osx64" }
 configuration { "html5" }
 	system "emscripten"
 
-configuration { "android"}
-	system "android"
+-- configuration { "android"}
+-- 	system "android"
 
 configuration {}
 
