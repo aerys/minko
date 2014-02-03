@@ -15,7 +15,6 @@ minko.project.application("minko-example-" .. PROJECT_NAME)
 
 	includedirs { "src" }
 
-	minko.plugin.enable("webgl");
 	minko.plugin.enable("png");
 
 	-- linux
