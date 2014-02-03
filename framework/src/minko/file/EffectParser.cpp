@@ -37,7 +37,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/CubeTexture.hpp"
 #include "minko/render/Pass.hpp"
 #include "minko/render/Priority.hpp"
-#include "minko/file/Loader.hpp"
+#include "minko/file/FileLoader.hpp"
 #include "minko/file/Options.hpp"
 #include "minko/file/AssetLibrary.hpp"
 #include "json/json.h"
