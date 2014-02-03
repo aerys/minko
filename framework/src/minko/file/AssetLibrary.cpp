@@ -29,6 +29,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/CubeTexture.hpp"
 #include "minko/render/Effect.hpp"
 #include "minko/geometry/Geometry.hpp"
+#include <regex>
 
 using namespace minko;
 using namespace minko::render;
@@ -41,6 +42,7 @@ AssetLibrary::create(AbsContextPtr context)
 	auto al = std::shared_ptr<AssetLibrary>(new AssetLibrary(context));
 
 	al->registerParser<file::EffectParser>("effect");
+	al->registerProtocol<FileLoader>("file");
 
 	return al;
 }
@@ -306,6 +308,22 @@ AssetLibrary::queue(const std::string&						filename,
 
 	if (loader)
 		_filenameToLoader[filename] = loader;
+	else
+	{
+		std::smatch match;
+		std::regex e("^([a-zA-Z0-9]+):\/\/");
+
+		std::regex_search(filename, match, e);
+
+		if (match.length() > 1)
+		{
+			auto protocol = match[1];
+			loader = this->loader(protocol);
+
+			if (loader)
+				_filenameToLoader[filename] = loader;
+		}
+	}
 
 	return shared_from_this();
 }
@@ -414,8 +432,14 @@ AssetLibrary::parser(std::string extension)
 {
 	/*
 	if ()
-		throw std::invalid_argument("No parser found for extension '" + extension + "'");
+	throw std::invalid_argument("No parser found for extension '" + extension + "'");
 	*/
 
 	return _parsers.count(extension) == 0 ? nullptr : _parsers[extension]();
+}
+
+AssetLibrary::AbsLoaderPtr
+AssetLibrary::loader(std::string protocol)
+{
+	return _loaders.count(protocol) == 0 ? nullptr : _loaders[protocol]();
 }
