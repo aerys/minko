@@ -141,7 +141,12 @@ DrawCallPool::addSurface(Surface::Ptr surface)
 void
 DrawCallPool::removeSurface(Surface::Ptr surface)
 {
-	_toRemove.push_back(surface);
+	auto surfaceToCollectIt = std::find(_toCollect.begin(), _toCollect.end(), surface);
+
+	if (surfaceToCollectIt == _toCollect.end())
+		_toRemove.push_back(surface);
+	else
+		_toCollect.erase(surfaceToCollectIt);
 }
 
 void
