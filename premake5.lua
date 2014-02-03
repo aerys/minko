@@ -24,20 +24,20 @@ solution "minko"
 	include 'framework'
 	
 	-- plugins
-	include 'plugins/jpeg'
-	include 'plugins/png'
-	include 'plugins/bullet'
-	include 'plugins/particles'
-	include 'plugins/webgl'
-	include 'plugins/sdl'
-	include 'plugins/angle'
-	include 'plugins/fx'
-	include 'plugins/assimp'
-	include 'plugins/offscreen'
+	minko.plugin.include 'plugins/jpeg'
+	minko.plugin.include 'plugins/png'
+	minko.plugin.include 'plugins/bullet'
+	minko.plugin.include 'plugins/particles'
+	minko.plugin.include 'plugins/webgl'
+	minko.plugin.include 'plugins/sdl'
+	minko.plugin.include 'plugins/angle'
+	minko.plugin.include 'plugins/fx'
+	minko.plugin.include 'plugins/assimp'
+	minko.plugin.include 'plugins/offscreen'
 	-- include 'plugins/lua'
-	include 'plugins/serializer'
-	include 'plugins/oculus'
-	include 'plugins/leap'
+	minko.plugin.include 'plugins/serializer'
+	minko.plugin.include 'plugins/oculus'
+	minko.plugin.include 'plugins/leap'
 	
 	-- private plugins
 	-- if os.isdir('plugins/streaming') then
@@ -46,22 +46,21 @@ solution "minko"
 
 	-- examples
 	if not _OPTIONS['no-examples'] then
-		include('examples/assimp')
-		include('examples/cube')
-		include('examples/cube-texture')
-		include('examples/effect-config')
-		include('examples/light')
-		include('examples/raycasting')
-		include('examples/stencil')
-		-- include('examples/lua-scripts')
-		include('examples/line-geometry')
-		include('examples/frustum')
-		include('examples/serializer')
-		include('examples/picking')
-		include('examples/visibility')
-		include('examples/leap-motion')
-		include('examples/jobs')
-		include('examples/sky-box')
+		include 'examples/assimp'
+		include 'examples/cube'
+		include 'examples/effect-config'
+		include 'examples/light'
+		include 'examples/raycasting'
+		include 'examples/stencil'
+		-- include 'examples/lua-scripts'
+		include 'examples/line-geometry'
+		include 'examples/frustum'
+		include 'examples/serializer'
+		include 'examples/picking'
+		include 'examples/visibility'
+		include 'examples/leap-motion'
+		include 'examples/jobs'
+		include 'examples/sky-box'
 	end
 
 	-- tests
