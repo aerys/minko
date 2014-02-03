@@ -30,47 +30,38 @@ function minko.plugin.sdl:enable()
 
 	includedirs { minko.sdk.path("plugins/sdl/include") }
 
-	configuration { "windows", "x32" }
+	configuration { "windows32" }
 		links { "SDL2", "SDL2main" }
-		libdirs { minko.sdk.path("plugins/sdl/lib/sdl/windows32/lib") }
+		libdirs { minko.sdk.path("plugins/sdl/lib/sdl/lib/windows32") }
 		postbuildcommands {
-			minko.vs.getdllscopycommand(minko.sdk.path("plugins/sdl/lib/sdl/windows32/lib"))
+			minko.vs.getdllscopycommand(minko.sdk.path("plugins/sdl/lib/sdl/lib/windows32"))
 		}
 
-	configuration { "windows", "x64" }
+	configuration { "windows64" }
 		links { "SDL2", "SDL2main" }
-		libdirs { minko.sdk.path("plugins/sdl/lib/sdl/windows64/lib") }
+		libdirs { minko.sdk.path("plugins/sdl/lib/sdl/lib/windows64") }
 		postbuildcommands {
-			minko.vs.getdllscopycommand(minko.sdk.path("plugins/sdl/lib/sdl/windows64/lib"))
+			minko.vs.getdllscopycommand(minko.sdk.path("plugins/sdl/lib/sdl/lib/windows64"))
 		}
 		
-	configuration { "linux", "x32" }
+	configuration { "linux32" }
 		links { "SDL2", "SDL2main" }
-		libdirs { minko.sdk.path("plugins/sdl/lib/sdl/linux32/lib") }
 
-	configuration { "linux", "x64" }
+	configuration { "linux64" }
 		links { "SDL2", "SDL2main" }
-		libdirs { minko.sdk.path("plugins/sdl/lib/sdl/linux64/lib") }
 
 	configuration { "macosx" }
 		links { "SDL2.framework" }
-		libdirs { minko.sdk.path("plugins/sdl/lib/sdl/osx64/lib") }
-
-	configuration { "html5" }
-		defines { "HAVE_M_PI" }
-
-
 end
 
 function minko.plugin.sdl:dist(pluginDistDir)
 	print("plugin-dist " .. pluginDistDir)
 	
+	configuration { "windows32" }
+		os.mkdir(pluginDistDir .. "/lib/sdl/lib/windows32")
+		minko.os.copyfiles(minko.sdk.path("plugins/sdl/lib/sdl/lib/windows32"), pluginDistDir .. "/lib/sdl/lib/windows32")
 
-	configuration { "windows", "x32" }
-		os.mkdir(pluginDistDir .. "/lib/sdl/windows32/lib")
-		minko.os.copyfiles(minko.sdk.path("plugins/sdl/lib/sdl/windows32/lib"), pluginDistDir .. "/lib/sdl/windows32/lib")
-
-	configuration { "windows", "x64" }
+	configuration { "windows64" }
 		os.mkdir(pluginDistDir .. "/lib/sdl/windows64/lib")
-		minko.os.copyfiles(minko.sdk.path("plugins/sdl/lib/sdl/windows64/lib"), pluginDistDir .. "/lib/sdl/windows64/lib")
+		minko.os.copyfiles(minko.sdk.path("plugins/sdl/lib/sdl/lib/windows64"), pluginDistDir .. "/lib/sdl/lib/windows64")
 end
