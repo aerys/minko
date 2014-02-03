@@ -76,6 +76,7 @@ minko.project.application = function(name)
 		postbuildcommands {
 			'cp -r ' .. minko.sdk.path("/framework/effect") .. ' ${TARGETDIR} || :'
 		}
+
 	configuration { "linux", "release" }
 		postbuildcommands {
 			'cp -r asset/* ${TARGETDIR} || :'
@@ -91,6 +92,7 @@ minko.project.application = function(name)
 		postbuildcommands {
 			'cp -r ' .. minko.sdk.path('/framework/effect') .. ' ${TARGETDIR} || :'
 		}
+
 	configuration { "macosx", "release" }
 		postbuildcommands {
 			'cp -r asset/* ${TARGETDIR} || :'
@@ -105,11 +107,11 @@ minko.project.application = function(name)
 		}
 
 		postbuildcommands {
-			'cd ${TARGETDIR} && cp ' .. name .. ' ' .. name .. '.bc || ' .. minko.fail()	 
+			'cd ${TARGETDIR} && cp ' .. name .. ' ' .. name .. '.bc || ' .. minko.action.fail()	 
 			-- 'cd ${TARGETDIR}'
 			-- .. ' && ' .. emcc .. ' ' .. name .. '.bc -o ' .. name .. '.html -s DISABLE_EXCEPTION_CATCHING=0 -s CLOSURE_ANNOTATIONS=0 -s ASM_JS=0 -s TOTAL_MEMORY=268435456 -s ALLOW_MEMORY_GROWTH=1 --preload-file effect --preload-file texture  --compression ${EMSCRIPTEN}/third_party/lzma.js/lzma-native,${EMSCRIPTEN}/third_party/lzma.js/lzma-decoder.js,LZMA.decompress'
 			-- -- .. ' && ' .. emcc .. ' ' .. name .. '.bc -o ' .. name .. '.js -O2 -s CLOSURE_ANNOTATIONS=0 -s ASM_JS=0 -s TOTAL_MEMORY=268435456 -s ALLOW_MEMORY_GROWTH=1 --preload-file effect --preload-file texture'
-			-- .. ' || ' .. minko.fail()
+			-- .. ' || ' .. minko.action.fail()
 		}
 
 	configuration { "html5", "release" }
@@ -118,7 +120,7 @@ minko.project.application = function(name)
 		postbuildcommands {
 			'cd ${TARGETDIR}'
 			.. ' && ' .. emcc .. ' ' .. name .. '.bc -o ' .. name .. '.html -O2 -s CLOSURE_ANNOTATIONS=1 -s DISABLE_EXCEPTION_CATCHING=0 -s TOTAL_MEMORY=268435456 --preload-file effect --preload-file texture --preload-file model --preload-file script --preload-file symbol'
-			.. ' || ' .. minko.fail()
+			.. ' || ' .. minko.action.fail()
 		}
 
 	configuration { "html5", "debug" }
@@ -127,7 +129,7 @@ minko.project.application = function(name)
 		postbuildcommands {
 			'cd ${TARGETDIR}'
 			.. ' && ' .. emcc .. ' ' .. name .. '.bc -o ' .. name .. '.html -O2 -s DISABLE_EXCEPTION_CATCHING=0 -s TOTAL_MEMORY=268435456 --closure 1 --preload-file effect --preload-file texture --preload-file model --preload-file script --preload-file symbol'
-			.. ' || ' .. minko.fail()
+			.. ' || ' .. minko.action.fail()
 		}
 
 	configuration { }
