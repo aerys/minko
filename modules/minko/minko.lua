@@ -1,6 +1,7 @@
 minko = {}
 
 dofile('modules/minko/minko.sdk.lua')
+dofile('modules/minko/minko.platform.lua')
 dofile('modules/minko/minko.action.lua')
 dofile('modules/minko/minko.os.lua')
 dofile('modules/minko/minko.path.lua')
