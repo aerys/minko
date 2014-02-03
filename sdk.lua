@@ -2,22 +2,35 @@ if not MINKO_HOME then
 	if os.getenv('MINKO_HOME') then
 		MINKO_HOME = os.getenv('MINKO_HOME');
 	else
-		print(color.fg.red .. 'You must define the environment variable MINKO_HOME.' .. color.reset)
-		os.exit(1)
+		error('You must define the environment variable MINKO_HOME.')
 	end
 end
 
 if not os.isfile(MINKO_HOME .. '/sdk.lua') then
-	print(color.fg.red ..'MINKO_HOME does not point to a valid Minko SDK.' .. color.reset)
-	os.exit(1)
+	error('MINKO_HOME does not point to a valid Minko SDK.')
 end
-
-print('Minko SDK home directory: ' .. MINKO_HOME)
 
 package.path = MINKO_HOME .. "/modules/?/?.lua;".. package.path
 
-configurations { "debug", "release" }
-platforms { "linux32", "linux64", "windows32", "windows64", "osx64", "html5", "ios", "android" }
+require 'color'
+
+print('Minko SDK home directory: ' .. MINKO_HOME)
+
+configurations {
+	"debug",
+	"release"
+}
+
+platforms {
+	"linux32",
+	"linux64",
+	"windows32",
+	"windows64",
+	"osx64",
+	"html5",
+	"ios",
+	"android"
+}
 
 require 'emscripten'
 require 'android'
