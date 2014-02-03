@@ -26,7 +26,6 @@ solution "minko"
 	-- plugins
 	include 'plugins/jpeg'
 	include 'plugins/png'
-	include 'plugins/mk'
 	include 'plugins/bullet'
 	include 'plugins/particles'
 	include 'plugins/webgl'
@@ -53,7 +52,6 @@ solution "minko"
 		include('examples/effect-config')
 		include('examples/light')
 		include('examples/raycasting')
-		include('examples/sponza')
 		include('examples/stencil')
 		-- include('examples/lua-scripts')
 		include('examples/line-geometry')
