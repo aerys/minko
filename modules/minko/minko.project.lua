@@ -145,7 +145,7 @@ minko.project.solution = function(name)
 		"release"
 	}
 
-	platforms {
+	minko.platform.platforms {
 		"linux32",
 		"linux64",
 		"windows32",
@@ -153,7 +153,7 @@ minko.project.solution = function(name)
 		"osx64",
 		"html5",
 		-- "ios",
-		-- "android"
+		-- "android",
 	}
 
 	print(name)
