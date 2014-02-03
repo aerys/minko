@@ -24,7 +24,4 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		"include",
 		"lib/sdl/include"
 	}
-	
-	minko.plugin.import("angle")
-	minko.plugin.enable("webgl")
 
