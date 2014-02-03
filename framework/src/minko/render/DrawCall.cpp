@@ -243,7 +243,8 @@ void
 DrawCall::bindTextureSampler(const std::string&		inputName,
 							 int					location,
 							 uint&					textureId,
-   							 const SamplerState&	samplerState)
+   							 const SamplerState&	samplerState, 
+							 bool					incrementTextureId)
 {
 #ifdef DEBUG
 	if (location < 0)
@@ -254,7 +255,8 @@ DrawCall::bindTextureSampler(const std::string&		inputName,
 
 	if (_uniformBindings.count(inputName))
 	{
-		++textureId;
+		if (incrementTextureId)
+			++textureId;
 
 		auto& propertyName		= std::get<0>(_uniformBindings.at(inputName));
 		const auto& container	= getDataContainer(std::get<1>(_uniformBindings.at(inputName)));
@@ -276,11 +278,11 @@ DrawCall::bindTextureSampler(const std::string&		inputName,
 			// See issue #1848 in Emscripten: https://github.com/kripken/emscripten/issues/1848
 			auto that = shared_from_this();
 			_referenceChangedSlots[propertyName].push_back(container->propertyReferenceChanged(propertyName)->connect([&, that](Container::Ptr, const std::string&) {
-				that->bindTextureSampler(inputName, location, textureId, samplerState);
+				that->bindTextureSampler(inputName, location, textureId, samplerState, false);
 			}));
 #else
 			_referenceChangedSlots[propertyName].push_back(container->propertyReferenceChanged(propertyName)->connect(std::bind(
-				&DrawCall::bindTextureSampler, shared_from_this(), inputName, location, textureId, samplerState
+				&DrawCall::bindTextureSampler, shared_from_this(), inputName, location, textureId, samplerState, false
 			)));
 #endif
 		}
