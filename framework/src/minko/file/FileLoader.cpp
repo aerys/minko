@@ -23,6 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Signal.hpp"
 
 #include <fstream>
+#include <regex>
 
 using namespace minko;
 using namespace minko::file;
@@ -35,17 +36,21 @@ void
 FileLoader::load(const std::string& filename, std::shared_ptr<Options> options)
 {
 	auto flags = std::ios::in | std::ios::ate | std::ios::binary;
+	
+	std::regex e("^[a-zA-Z0-9]+:\/\/");
 
+	auto cleanFilename = std::regex_replace(filename, e, "");
+	
 	_filename = filename;
-    _resolvedFilename = options->uriFunction()(sanitizeFilename(filename));
+	_resolvedFilename = options->uriFunction()(sanitizeFilename(cleanFilename));
 	_options = options;
 	
-	std::fstream file(filename, flags);
+	std::fstream file(cleanFilename, flags);
 
 	if (!file.is_open())
 		for (auto path : _options->includePaths())
 		{
-			auto testFilename = options->uriFunction()(sanitizeFilename(path + '/' + filename));
+			auto testFilename = options->uriFunction()(sanitizeFilename(path + '/' + cleanFilename));
 
 			file.open(testFilename, flags);
 			if (file.is_open())
