@@ -1,6 +1,5 @@
 local insert = require 'insert'
 local inspect = require 'inspect'
-local color = require 'color'
 
 premake.extensions.android = {}
 
@@ -45,8 +44,7 @@ insert.insert(premake.tools.gcc, 'ldflags.system.android', {
 -- linkoptions { "-llog", "-lGLESv1_CM", "-lz", "-s", "-shared" }
 
 if not os.isfile(premake.tools.gcc.tools.android.cc) then
-	-- print(color.fg.red ..'Cannot find GCC for Android. Make sure arm-linux-androideabi-gcc is in your PATH.' .. color.reset)
-	-- os.exit(1)
+	-- error(color.fg.red ..'Cannot find GCC for Android. Make sure arm-linux-androideabi-gcc is in your PATH.' .. color.reset)
 end
 
 local this_dir = debug.getinfo(1, "S").source:match[[^@?(.*[\/])[^\/]-$]];
@@ -57,8 +55,6 @@ require 'jni_cpp'
 require 'jni_solution'
 require 'jni_makefile'
 
-if os.getenv('ANDROID_HOME') then
-	ANDROID_HOME = os.getenv('ANDROID_HOME');
-else
-	print(color.fg.yellow .. 'You must define the environment variable ANDROID_HOME to be able to target Android.' .. color.reset)
+if os.getenv('ANDROID') then
+	ANDROID = os.getenv('ANDROID');
 end

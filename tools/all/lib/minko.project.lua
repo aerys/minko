@@ -25,8 +25,8 @@ minko.project.library = function(name)
 	configuration { "linux" }
 		
 	configuration { "html5" }
-		if EMSCRIPTEN_HOME then
-			includedirs { EMSCRIPTEN_HOME .. "/system/include" }
+		if EMSCRIPTEN then
+			includedirs { EMSCRIPTEN .. "/system/include" }
 		end
 		buildoptions {
 			"--closure 1"
@@ -107,7 +107,7 @@ minko.project.application = function(name)
 		postbuildcommands {
 			'cd ${TARGETDIR} && cp ' .. name .. ' ' .. name .. '.bc || ' .. minko.fail()	 
 			-- 'cd ${TARGETDIR}'
-			-- .. ' && ' .. emcc .. ' ' .. name .. '.bc -o ' .. name .. '.html -s DISABLE_EXCEPTION_CATCHING=0 -s CLOSURE_ANNOTATIONS=0 -s ASM_JS=0 -s TOTAL_MEMORY=268435456 -s ALLOW_MEMORY_GROWTH=1 --preload-file effect --preload-file texture  --compression ${EMSCRIPTEN_HOME}/third_party/lzma.js/lzma-native,${EMSCRIPTEN_HOME}/third_party/lzma.js/lzma-decoder.js,LZMA.decompress'
+			-- .. ' && ' .. emcc .. ' ' .. name .. '.bc -o ' .. name .. '.html -s DISABLE_EXCEPTION_CATCHING=0 -s CLOSURE_ANNOTATIONS=0 -s ASM_JS=0 -s TOTAL_MEMORY=268435456 -s ALLOW_MEMORY_GROWTH=1 --preload-file effect --preload-file texture  --compression ${EMSCRIPTEN}/third_party/lzma.js/lzma-native,${EMSCRIPTEN}/third_party/lzma.js/lzma-decoder.js,LZMA.decompress'
 			-- -- .. ' && ' .. emcc .. ' ' .. name .. '.bc -o ' .. name .. '.js -O2 -s CLOSURE_ANNOTATIONS=0 -s ASM_JS=0 -s TOTAL_MEMORY=268435456 -s ALLOW_MEMORY_GROWTH=1 --preload-file effect --preload-file texture'
 			-- .. ' || ' .. minko.fail()
 		}
