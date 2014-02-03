@@ -136,8 +136,22 @@ end
 
 minko.project.solution = function(name)
 	solution(name)
-	configurations { "debug", "release" }
-	platforms { "linux32", "linux64", "windows32", "windows64", "osx64", "html5", "ios", "android" }
+
+	configurations {
+		"debug",
+		"release"
+	}
+
+	platforms {
+		"linux32",
+		"linux64",
+		"windows32",
+		"windows64",
+		"osx64",
+		"html5",
+		"ios",
+		"android"
+	}
 
 	print(name)
 
