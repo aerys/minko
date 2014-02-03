@@ -39,9 +39,9 @@ using namespace minko::render;
 const unsigned int Renderer::NUM_FALLBACK_ATTEMPTS = 32;
 
 
-Renderer::Renderer(std::shared_ptr<render::Texture> renderTarget,
-				   EffectPtr						effect,
-				   float							priority) :
+Renderer::Renderer(std::shared_ptr<render::AbstractTexture> renderTarget,
+				   EffectPtr								effect,
+				   float									priority) :
     _backgroundColor(0),
 	_renderingBegin(Signal<Ptr>::create()),
 	_renderingEnd(Signal<Ptr>::create()),
