@@ -31,7 +31,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::component;
 
-Culling::Culling()
+std::shared_ptr<math::OctTree>	Culling::_octTree;
+
+Culling::Culling(ShapePtr shape, std::string bindProperty):
+_frustum(shape),
+_bindProperty(bindProperty)
 {
 }
 
@@ -57,9 +61,9 @@ Culling::targetAddedHandler(AbstractComponent::Ptr ctrl, NodePtr target)
 
 	// compute scene bounding box
 
-	_octTree = math::OctTree::create(50, 7, math::Vector3::create(0, 0, 0));
-	_frustum = math::Frustum::create();
-
+	if (_octTree == nullptr)
+		_octTree = math::OctTree::create(50, 7, math::Vector3::create(0, 0, 0));
+	
 	if (target->root()->hasComponent<SceneManager>())
 		targetAddedToScene(nullptr, target, nullptr);
 	else
@@ -71,7 +75,7 @@ Culling::targetAddedHandler(AbstractComponent::Ptr ctrl, NodePtr target)
 		std::placeholders::_3));
 
 
-	_viewMatrixChangedSlot = target->data()->propertyValueChanged("camera.worldToScreenMatrix")->connect(std::bind(
+	_viewMatrixChangedSlot = target->data()->propertyValueChanged(_bindProperty)->connect(std::bind(
 		&Culling::worldToScreenChanged,
 		shared_from_this(),
 		std::placeholders::_1,
@@ -133,19 +137,16 @@ Culling::layoutChanged(NodePtr node, NodePtr target)
 void
 Culling::worldToScreenChanged(std::shared_ptr<data::Container> data, const std::string& propertyName)
 {
-	//std::cout << "update octTree" << std::endl;
 	_frustum->updateFromMatrix(data->get<std::shared_ptr<math::Matrix4x4>>(propertyName));
 	
 	_octTree->testFrustum(
 		_frustum, 
 		[](NodePtr node)
 		{
-			//std::cout << 1 << std::endl;
 			node->component<Surface>()->computedVisibility(true);
 		},
 		[](NodePtr node)
 		{
-			//std::cout << 0 << std::endl;
 			node->component<Surface>()->computedVisibility(false);
 		});
 }
