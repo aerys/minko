@@ -15,7 +15,7 @@ minko.project.library = function(name)
 		optimize "On"
 	
 	configuration { "windows" }
-		includedirs { minko.sdk.path("/deps/win/include") }
+		includedirs { minko.sdk.path("/framework/lib/glew/include") }
 
 	configuration { "vs*" }
 		defines { "NOMINMAX" }
@@ -47,14 +47,14 @@ minko.project.application = function(name)
 	end
 
 	configuration { "windows" }
-		libdirs { minko.sdk.path("/deps/win/lib") }
+		libdirs { minko.sdk.path("/framework/lib/glew/lib") }
 		links {
 			"OpenGL32",
 			"glew32"
 		}
 		postbuildcommands {
-			'xcopy /y /i "' .. minko.sdk.path('/framework/effect') .. '" "$(TargetDir)\\effect"',
-			minko.vs.getdllscopycommand(minko.sdk.path('/deps/win/lib'))
+			'xcopy /y /i "' .. minko.sdk.path("/framework/effect") .. '" "$(TargetDir)\\effect"',
+			minko.vs.getdllscopycommand(minko.sdk.path("/framework/lib/glew/lib"))
 		}
 	configuration { "windows", "release" }
 		postbuildcommands {
@@ -62,14 +62,13 @@ minko.project.application = function(name)
 		}
 		
 	configuration { "linux" }
-		libdirs { minko.sdk.path("/deps/lin/lib") }
 		linkoptions { "-Wl,--no-as-needed" }
 		links {
 			"GL",
 			"m"
 		}
 		postbuildcommands {
-			'cp -r ' .. minko.sdk.path('/framework/effect') .. ' ${TARGETDIR} || :'
+			'cp -r ' .. minko.sdk.path("/framework/effect") .. ' ${TARGETDIR} || :'
 		}
 	configuration { "linux", "release" }
 		postbuildcommands {
