@@ -1,10 +1,22 @@
 minko.plugin = {
-	_enabled = {}
+	_enabled = {},
+	_externalPlugins = {}
 }
+
+-- register external plugin
+minko.plugin.register = function(name)
+	print ("register " .. name)
+	minko.plugin._externalPlugins[name] = os.getcwd()
+end
 
 minko.plugin.import = function(name)
 	if not MINKO_SDK_DIST then
-		include(minko.sdk.path("/plugins/" .. name))
+
+		if os.isdir(minko.sdk.path("/plugins/" .. name)) then
+			include(minko.sdk.path("/plugins/" .. name))
+		else
+			include(minko.plugin._externalPlugins[name])
+		end
 	end
 
 	if minko.plugin[name] and minko.plugin[name].import then
@@ -24,8 +36,16 @@ minko.plugin.enable = function(name)
 	project(projectName)
 	configuration { unpack(terms) }
 
-	dofile(minko.sdk.path("/plugins/" .. name .."/plugin.lua"))
+	print ("Minko enable " .. name .. " "  .. os.getcwd())
 
+	if os.isdir(minko.sdk.path("/plugins/" .. name)) then
+		dofile(minko.sdk.path("/plugins/" .. name .."/plugin.lua"))
+	elseif minko.plugin._externalPlugins[name] ~= nil then
+		dofile(minko.plugin._externalPlugins[name] .. "/plugin.lua")
+	else
+		print(color.fg.red ..'Plugin ' .. name .. " not found." .. color.reset)
+		os.exit(1)
+	end
 	if minko.plugin[name] and minko.plugin[name].enable then
 		minko.plugin[name]:enable()
 	end
@@ -35,6 +55,21 @@ end
 
 minko.plugin.enabled = function(name)
 	return minko.plugin._enabled[name] or _OPTIONS["with-" .. name] ~= nil
+end
+
+minko.plugin.path = function(name)
+			
+	if minko.plugin._externalPlugins[name] ~= nil then
+		name = path.getabsolute(minko.plugin._externalPlugins[name])
+	else
+		name = path.getabsolute(MINKO_HOME .. "/plugins/" .. name)
+	end
+
+	if os.get() == "windows" then
+		name = path.translate(name, "\\")
+	end
+	
+	return name
 end
 
 minko.plugin.links = function(names)
