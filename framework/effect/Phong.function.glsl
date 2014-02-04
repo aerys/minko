@@ -19,11 +19,21 @@ float phong_specularReflection(vec3 normal, vec3 lightDirection, vec3 viewVector
 	}
 }
 
+vec3 phong_fresnel(vec3 specularColor, vec3 lightDirection, vec3 eyeVector)
+{
+	vec3	halfVector	= normalize(eyeVector + lightDirection);
+	float 	k			= 1.0 - max(0.0, dot(eyeVector, halfVector));
+	float 	kk			= k * k;
+	
+	// Schlick's approximation
+	return specularColor + (vec3(1.0) - specularColor) * kk * kk * k;
+}
+
+
 // compute the world space to tangent space matrix using the model's normal and tangent
 // @precondition worldNormal is expected to be normalized.
 
-
-mat3 getTangentToWorldSpaceMatrix(vec3 worldNormal, vec3 worldTangent)
+mat3 phong_getTangentToWorldSpaceMatrix(vec3 worldNormal, vec3 worldTangent)
 {
 	worldTangent = normalize(worldTangent);
 
@@ -34,9 +44,9 @@ mat3 getTangentToWorldSpaceMatrix(vec3 worldNormal, vec3 worldTangent)
 	);
 }
 
-mat3 getWorldToTangentSpaceMatrix(vec3 worldNormal, vec3 worldTangent)
+mat3 phong_getWorldToTangentSpaceMatrix(vec3 worldNormal, vec3 worldTangent)
 {
-	mat3 matrix = getTangentToWorldSpaceMatrix(worldNormal, worldTangent);
+	mat3 matrix = phong_getTangentToWorldSpaceMatrix(worldNormal, worldTangent);
 
 	mat3 transpose = mat3(
 		matrix[0][0], matrix[1][0], matrix[2][0],
