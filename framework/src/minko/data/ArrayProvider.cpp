@@ -18,13 +18,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "minko/data/ArrayProvider.hpp"
+#include "minko/Signal.hpp"
 
 using namespace minko;
 using namespace minko::data;
 
 ArrayProvider::ArrayProvider(const std::string& name, uint index) :
 	_name(name),
-	_index(index)
+	_index(index),
+	_indexChanged(IndexChangedSignal::create())
 {
 	if (_name.find(NO_STRUCT_SEP) != std::string::npos)
 		throw new std::invalid_argument("The name of a ArrayProvider cannot contain the following character sequence: " + NO_STRUCT_SEP);
@@ -45,6 +47,8 @@ ArrayProvider::index(unsigned int index)
 
 		swap(formattedPropertyName, newFormattedPropertyName, true);
 	}
+
+	_indexChanged->execute(std::dynamic_pointer_cast<ArrayProvider>(shared_from_this()), _index);
 }
 
 std::string
@@ -69,12 +73,12 @@ ArrayProvider::unformatPropertyName(const std::string& formattedPropertyName) co
 
 #ifndef MINKO_NO_GLSL_STRUCT
 
-	std::size_t pos = formattedPropertyName.find_last_of("].");
+	std::size_t pos = formattedPropertyName.rfind("].");
 
 	if (pos == std::string::npos)
 		return Provider::unformatPropertyName(formattedPropertyName);
 
-	return formattedPropertyName.substr(pos + 1);
+	return formattedPropertyName.substr(pos + 2);
 
 #else
 
