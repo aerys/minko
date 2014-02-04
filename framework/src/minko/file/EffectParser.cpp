@@ -43,6 +43,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "json/json.h"
 
 using namespace minko;
+using namespace minko::data;
 using namespace minko::file;
 using namespace minko::render;
 
@@ -293,10 +294,10 @@ EffectParser::parsePasses(const Json::Value&		root,
 						  AbstractContext::Ptr		context,
 						  std::vector<Pass::Ptr>&	passes,
 						  TexturePtrMap&			targets,
-						  data::BindingMap&			defaultAttributeBindings,
-						  data::BindingMap&			defaultUniformBindings,
-						  data::BindingMap&			defaultStateBindings,
-						  data::MacroBindingMap&	defaultMacroBindings,
+						  BindingMap&			defaultAttributeBindings,
+						  BindingMap&			defaultUniformBindings,
+						  BindingMap&			defaultStateBindings,
+						  MacroBindingMap&	defaultMacroBindings,
 						  render::States::Ptr		defaultStates,
 						  UniformValues&			defaultUniformDefaultValues)
 {
@@ -350,11 +351,11 @@ EffectParser::parsePasses(const Json::Value&		root,
 			auto	fallback	= passValue.get("fallback", std::string()).asString();
 
             // pass bindings
-            data::BindingMap		attributeBindings(defaultAttributeBindings);
-            data::BindingMap		uniformBindings(defaultUniformBindings);
-            data::BindingMap		stateBindings(defaultStateBindings);
-            data::MacroBindingMap	macroBindings(defaultMacroBindings);
-            UniformValues			uniformDefaultValues(defaultUniformDefaultValues);
+            BindingMap		attributeBindings(defaultAttributeBindings);
+            BindingMap		uniformBindings(defaultUniformBindings);
+            BindingMap		stateBindings(defaultStateBindings);
+            MacroBindingMap	macroBindings(defaultMacroBindings);
+            UniformValues	uniformDefaultValues(defaultUniformDefaultValues);
 
             parseBindings(
                 passValue,
@@ -704,9 +705,9 @@ EffectParser::parsePriority(const Json::Value& contextNode,
 }
 
 void
-EffectParser::parseBindingNameAndSource(const Json::Value& contextNode, std::string& propertyName, data::BindingSource& source)
+EffectParser::parseBindingNameAndSource(const Json::Value& contextNode, std::string& propertyName, BindingSource& source)
 {
-	source = data::BindingSource::TARGET;
+	source = BindingSource::TARGET;
 	if (contextNode.isString())
 		propertyName = contextNode.asString();
 	else if (contextNode.isObject())
@@ -722,21 +723,21 @@ EffectParser::parseBindingNameAndSource(const Json::Value& contextNode, std::str
 			auto sourceString = sourceValue.asString();
 
 			if (sourceString == "target")
-				source = data::BindingSource::TARGET;
+				source = BindingSource::TARGET;
 			else if (sourceString == "renderer")
-				source = data::BindingSource::RENDERER;
+				source = BindingSource::RENDERER;
 			else if (sourceString == "root")
-				source = data::BindingSource::ROOT;
+				source = BindingSource::ROOT;
 		}
 	}
 }
 
 void
 EffectParser::parseBindings(const Json::Value&		contextNode,
-						    data::BindingMap&		attributeBindings,
-						    data::BindingMap&		uniformBindings,
-						    data::BindingMap&		stateBindings,
-							data::MacroBindingMap&	macroBindings,
+						    BindingMap&		attributeBindings,
+						    BindingMap&		uniformBindings,
+						    BindingMap&		stateBindings,
+							MacroBindingMap&	macroBindings,
 							UniformValues&			uniformDefaultValues)
 {
 	auto attributeBindingsValue = contextNode.get("attributeBindings", 0);
@@ -763,7 +764,7 @@ EffectParser::parseBindings(const Json::Value&		contextNode,
 }
 
 void
-EffectParser::parseMacroBindings(const Json::Value&	contextNode, data::MacroBindingMap&	macroBindings)
+EffectParser::parseMacroBindings(const Json::Value&	contextNode, MacroBindingMap&	macroBindings)
 {
 	auto macroBindingsValue = contextNode.get("macroBindings", 0);
 
@@ -772,10 +773,14 @@ EffectParser::parseMacroBindings(const Json::Value&	contextNode, data::MacroBind
 		for (auto propertyName : macroBindingsValue.getMemberNames())
 		{
 			auto macroBindingValue = macroBindingsValue.get(propertyName, 0);
-			minko::data::MacroBindingDefault& bindingDefault = std::get<2>(macroBindings[propertyName]);
 
+			MacroBindingDefault&	bindingDefault	= std::get<2>(macroBindings[propertyName]);
+			auto&					min				= std::get<3>(macroBindings[propertyName]);
+			auto&					max				= std::get<4>(macroBindings[propertyName]);
 		
-			bindingDefault.semantic = data::MacroBindingDefaultValueSemantic::UNSET;
+			bindingDefault.semantic = MacroBindingDefaultValueSemantic::UNSET;
+			min						= -INT_MAX;
+			max						= INT_MAX;
 
 			parseBindingNameAndSource(
 				macroBindingValue,
@@ -785,39 +790,33 @@ EffectParser::parseMacroBindings(const Json::Value&	contextNode, data::MacroBind
 
 			if (macroBindingValue.isObject())
 			{
-				auto nameValue = macroBindingValue.get("property", 0);
-				auto minValue = macroBindingValue.get("min", -1);
-				auto maxValue = macroBindingValue.get("max", -1);
-				auto defaultValue = macroBindingValue.get("default", "");
+				auto nameValue		= macroBindingValue.get("property", 0);
+				auto minValue		= macroBindingValue.get("min", -INT_MAX);
+				auto maxValue		= macroBindingValue.get("max", INT_MAX);
+				auto defaultValue	= macroBindingValue.get("default", "");
 
 				if (defaultValue.isInt())
 				{
-					bindingDefault.semantic = data::MacroBindingDefaultValueSemantic::VALUE;
+					bindingDefault.semantic = MacroBindingDefaultValueSemantic::VALUE;
 					bindingDefault.value.value = defaultValue.asInt();
 				}
 				else if (defaultValue.isBool())
 				{
-					bindingDefault.semantic = data::MacroBindingDefaultValueSemantic::PROPERTY_EXISTS;
+					bindingDefault.semantic = MacroBindingDefaultValueSemantic::PROPERTY_EXISTS;
 					bindingDefault.value.propertyExists = defaultValue.asBool();
 				}
-
-				//if (!nameValue.isString() || !minValue.isInt() || !maxValue.isInt())
-				//	throw;
-
-				auto& min = std::get<3>(macroBindings[propertyName]);
-				auto& max = std::get<4>(macroBindings[propertyName]);
 
 				min = minValue.asInt();
 				max = maxValue.asInt();
 			}
 			else if (macroBindingValue.isInt())
 			{
-				bindingDefault.semantic = data::MacroBindingDefaultValueSemantic::VALUE;
+				bindingDefault.semantic = MacroBindingDefaultValueSemantic::VALUE;
 				bindingDefault.value.value = macroBindingValue.asInt();
 			}
 			else if (macroBindingValue.isBool())
 			{
-				bindingDefault.semantic = data::MacroBindingDefaultValueSemantic::PROPERTY_EXISTS;
+				bindingDefault.semantic = MacroBindingDefaultValueSemantic::PROPERTY_EXISTS;
 				bindingDefault.value.propertyExists = macroBindingValue.asBool();
 			}
 		}
@@ -826,7 +825,7 @@ EffectParser::parseMacroBindings(const Json::Value&	contextNode, data::MacroBind
 
 void
 EffectParser::parseUniformBindings(const Json::Value&	contextNode,
-								   data::BindingMap&	uniformBindings,
+								   BindingMap&	uniformBindings,
 								   UniformValues&		uniformDefaultValues)
 {
 	auto uniformBindingsValue = contextNode.get("uniformBindings", 0);
@@ -1158,10 +1157,10 @@ EffectParser::parseTechniques(const Json::Value&				root,
 				if (fallbackValue.isString() && fallbackValue.asString().length())
 					_techniqueFallback[techniqueName] = fallbackValue.asString();
 
-				data::BindingMap		attributeBindings(_defaultAttributeBindings);
-				data::BindingMap		uniformBindings(_defaultUniformBindings);
-				data::BindingMap		stateBindings(_defaultStateBindings);
-				data::MacroBindingMap	macroBindings(_defaultMacroBindings);
+				BindingMap		attributeBindings(_defaultAttributeBindings);
+				BindingMap		uniformBindings(_defaultUniformBindings);
+				BindingMap		stateBindings(_defaultStateBindings);
+				MacroBindingMap	macroBindings(_defaultMacroBindings);
 				UniformValues			uniformDefaultValues(_defaultUniformValues);
         
 				// bindings
