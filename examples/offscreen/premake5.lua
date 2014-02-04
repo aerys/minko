@@ -1,11 +1,13 @@
+if minko.platform.supports("linux") then
+
 PROJECT_NAME = path.getname(os.getcwd())
 
 minko.project.application("minko-example-" .. PROJECT_NAME)
 
 	removeplatforms { "android", "ios", "win", "osx", "html5" }
 
-	kind "ConsoleApp"
 	language "C++"
+	kind "ConsoleApp"
 
 	files {
 		"src/**.hpp",
@@ -20,3 +22,5 @@ minko.project.application("minko-example-" .. PROJECT_NAME)
 	-- linux
 	configuration { "linux" }
 		links { "OSMesa" }
+
+end

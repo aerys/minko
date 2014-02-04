@@ -1,3 +1,9 @@
+-- Note: Premake5 crashes if there is no valid platform for a project.
+-- Since this plugin is only supported on Linux, we must not define it
+-- if the host platform is not Linux.
+
+if minko.platform.supports("linux") then
+
 newoption {
 	trigger			= "with-offscreen",
 	description		= "Enable the Minko Offscreen plugin."
@@ -7,7 +13,7 @@ PROJECT_NAME = path.getname(os.getcwd())
 
 minko.project.library("minko-plugin-" .. PROJECT_NAME)
 
-	removeplatforms { "windows32", "windows64", "macosx64", "html5", "ios", "android" }
+	removeplatforms { "windows32" , "windows64", "macosx64", "html5", "ios", "android" }
 	
 	kind "StaticLib"
 	language "C++"
@@ -25,3 +31,5 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		"include",
 		"lib/osmesa/include"
 	}
+
+end
