@@ -55,6 +55,7 @@ solution "minko"
 		-- include 'examples/lua-scripts'
 		include 'examples/line-geometry'
 		include 'examples/frustum'
+		include 'examples/offscreen'
 		include 'examples/serializer'
 		include 'examples/picking'
 		include 'examples/visibility'
