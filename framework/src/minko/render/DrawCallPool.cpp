@@ -153,12 +153,10 @@ DrawCallPool::addSurface(Surface::Ptr surface)
 void
 DrawCallPool::dataProviderIndexChanged(std::shared_ptr<data::ArrayProvider> provider, uint index, SurfacePtr surface)
 {
-	std::cout << "indexChanged" << std::endl;
-
 	//if (std::find(_toCollect.begin(), _toCollect.end(), surface) == _toCollect.end())
 	//{
 	//	std::cout << "   update surface drawcalls" << std::endl;
-		deleteDrawCalls(surface);
+		//deleteDrawCalls(surface);
 		_toCollect.insert(surface);
 	//}
 }
@@ -166,7 +164,6 @@ DrawCallPool::dataProviderIndexChanged(std::shared_ptr<data::ArrayProvider> prov
 void
 DrawCallPool::removeSurface(Surface::Ptr surface)
 {
-	std::cout << "removeSurface" << std::endl;
 	auto surfaceToCollectIt = std::find(_toCollect.begin(), _toCollect.end(), surface);
 
 	if (surfaceToCollectIt == _toCollect.end())
