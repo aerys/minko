@@ -97,10 +97,10 @@ namespace minko
 			std::unordered_map<SurfacePtr, DrawCallToZSortSlotMap>						_drawcallToZSortNeededSlots;
 
 			// surface that will generate new draw call next frame
-			std::unordered_set<SurfacePtr>																			_toCollect;
-			std::unordered_set<SurfacePtr>																			_toRemove;
-			std::unordered_set<SurfacePtr>																			_invisibleSurfaces;
-			bool																									_mustZSort;
+			std::set<SurfacePtr>														_toCollect;
+			std::set<SurfacePtr>														_toRemove;
+			std::set<SurfacePtr>														_invisibleSurfaces;
+			bool																		_mustZSort;
 
 			// draw call list for renderer
 			std::unordered_map<SurfacePtr, DrawCallList>															_surfaceToDrawCalls;
