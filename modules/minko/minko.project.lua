@@ -71,6 +71,7 @@ minko.project.application = function(name)
 	configuration { "windows64" }
 		libdirs { minko.sdk.path("/framework/lib/glew/lib/windows64") }
 		links {
+			"minko-framework",
 			"OpenGL32",
 			"glew32"
 		}
@@ -96,6 +97,7 @@ minko.project.application = function(name)
 	configuration { "linux64" }
 		linkoptions { "-Wl,--no-as-needed" }
 		links {
+			"minko-framework",
 			"GL",
 			"m"
 		}
@@ -141,6 +143,7 @@ minko.project.application = function(name)
 	
 	configuration { "osx64" }
 		links {
+			"minko-framework",
 			"m",
 			"Cocoa.framework",
 			"OpenGL.framework",
@@ -166,6 +169,10 @@ minko.project.application = function(name)
 	configuration { "html5" }
 		minko.plugin.enable("webgl")
 
+		links {
+			"minko-framework",
+		}
+		
 		prelinkcommands {
 			'cp -r ' .. minko.sdk.path('/framework/effect') .. ' ${TARGETDIR} || :',
 			'cp -r asset/* ${TARGETDIR} || :'

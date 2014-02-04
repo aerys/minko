@@ -8,8 +8,8 @@ minko.plugin.import = function(name)
 end
 
 minko.plugin.include = function(path)
-	if not MINKO_SDK_DIST then
-		include(path)
+	if not os.isfile(path .. '/plugin.lua') then
+		error(color.fg.red .. 'No plugin found in path "' .. path .. '" (imported from "' .. project().name .. '").' .. color.reset)
 	end
 
 	dofile(path .. '/plugin.lua')
