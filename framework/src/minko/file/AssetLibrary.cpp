@@ -308,22 +308,28 @@ AssetLibrary::queue(const std::string&						filename,
 
 	if (loader)
 		_filenameToLoader[filename] = loader;
-	//else
-	//{
-	//	std::smatch match;
-	//	std::regex e("^([a-zA-Z0-9]+):\/\/");
+	else
+	{
+		std::string protocol = "";
 
-	//	std::regex_search(filename, match, e);
+		int i;
 
-	//	if (match.length() > 1)
-	//	{
-	//		auto protocol = match[1];
-	//		loader = this->loader(protocol);
+		for(i = 0; i < filename.length(); ++i)
+		{
+			if (i < filename.length() - 2 && filename.at(i) == ':' && filename.at(i + 1) == '/' && filename.at(i + 2) == '/')
+				break;
+			
+			protocol += filename.at(i);
+		}
 
-	//		if (loader)
-	//			_filenameToLoader[filename] = loader;
-	//	}
-	//}
+		if (i != filename.length())
+		{
+			loader = this->loader(protocol);
+
+			if (loader)
+				_filenameToLoader[filename] = loader;
+		}
+	}
 
 	return shared_from_this();
 }
