@@ -23,15 +23,16 @@
 		"normalMap"				: "material.normalMap",
 		"specularMap"			: "material.specularMap",
 		"specularColor"			: { "property" : "material.specularColor", "default" : [ 1.0, 1.0, 1.0, 1.0 ] },
-		"environmentMap"		: "material.environmentMap",
+		"environmentMap2d"		: "material.environmentMap2d",
+		"environmentMap2dType"	: "material.environmentMap2dType",
+		"environmentCubemap"	: "material.environmentCubemap",
 		"environmentAlpha"		: "material.environmentAlpha",
-		"environmentType"		: "material.environmentType",
 		"shininess"				: "material.shininess",
 		"modelToWorldMatrix"	: "transform.modelToWorldMatrix",
 		"worldToScreenMatrix"	: { "property" : "camera.worldToScreenMatrix", 		"source" : "renderer" },
 		"cameraPosition"		: { "property" : "camera.position", 				"source" : "renderer" },
-		"boneMatrices"			: { "property" : "geometry.boneMatrices",			"source" : "target" },
-		"numBones"				: { "property" : "geometry.numBones",				"source" : "target" }
+		"boneMatrices"			: "geometry.boneMatrices",
+		"numBones"				: "geometry.numBones"
 	},
 
 	"macroBindings"	: {
@@ -40,12 +41,13 @@
 		"SPECULAR_MAP"			: "material.specularMap",
 		"ALPHA_MAP"				: "material.alphaMap",
 		"ALPHA_THRESHOLD"		: "material.alphaThreshold",
-		"ENVIRONMENT_MAP"		: "material.environmentMap",
+		"ENVIRONMENT_MAP_2D"	: "material.environmentMap2d",
+		"ENVIRONMENT_CUBE_MAP"	: "material.environmentCubemap",
 		"ENVIRONMENT_ALPHA"		: "material.environmentAlpha",
-		"ENVIRONMENT_TYPE"		: "material.environmentType",
+		"ENVIRONMENT_TYPE_2D"	: "material.environmentMap2dType",
 		"SHININESS"				: "material.shininess",
 		"MODEL_TO_WORLD"		: "transform.modelToWorldMatrix",
-		"NUM_BONES"				: { "property" : "geometry.numBones",	"source" : "target" }
+		"NUM_BONES"				: "geometry.numBones"
 	},
 		
 	"stateBindings"	: {
