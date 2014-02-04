@@ -9,7 +9,7 @@ end
 
 minko.plugin.include = function(path)
 	if not os.isfile(path .. '/plugin.lua') then
-		error(color.fg.red .. 'No plugin found in path "' .. path .. '" (imported from "' .. project().name .. '").' .. color.reset)
+		error(color.fg.red .. 'No plugin found in path "' .. path .. '" (imported from "' .. (project() and project().name or 'framework') .. '").' .. color.reset)
 	end
 
 	dofile(path .. '/plugin.lua')
@@ -22,7 +22,7 @@ minko.plugin.enable = function(name)
 	configuration { unpack(terms) }
 
 	if not minko.plugin[name] then
-		error(color.fg.red .. 'Plugin "' .. name .. '" not found (enabled from "' .. project().name .. '").' .. color.reset)
+		error(color.fg.red .. 'Plugin "' .. name .. '" not found (enabled from "' .. (project() and project().name or 'framework') .. '").' .. color.reset)
 	end
 
 	if minko.plugin[name] and minko.plugin[name].enable then
