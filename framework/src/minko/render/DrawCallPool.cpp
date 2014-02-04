@@ -304,11 +304,7 @@ DrawCallPool::initializeDrawCall(Pass::Ptr		pass,
 	}
 
 	std::unordered_map<std::string, MacroBinding> macroBindings = pass->macroBindings(
-		std::bind(
-			&DrawCallPool::replaceVariable,
-			shared_from_this(),
-			std::placeholders::_1,
-			std::placeholders::_2),
+		_formatFunction,
 		drawCallVariables);
 
 	auto program = getWorkingProgram(
@@ -332,11 +328,7 @@ DrawCallPool::initializeDrawCall(Pass::Ptr		pass,
 			pass->uniformBindings(),
 			pass->stateBindings(),
 			pass->states(),
-			std::bind(
-				&DrawCallPool::replaceVariable,
-				shared_from_this(),
-				std::placeholders::_1,
-				std::placeholders::_2),
+			_formatFunction,
 			drawCallVariables
 		);
 
@@ -350,12 +342,7 @@ DrawCallPool::initializeDrawCall(Pass::Ptr		pass,
 			auto& techniqueName = technique.first;
 
 			for (auto& pass : technique.second)
-				for (auto& macroBinding : pass->macroBindings(std::bind(
-					&DrawCallPool::replaceVariable,
-						shared_from_this(),
-						std::placeholders::_1,
-						std::placeholders::_2),
-					drawCallVariables))
+				for (auto& macroBinding : pass->macroBindings(_formatFunction, drawCallVariables))
 				_techniqueToMacroNames[surface][techniqueName].insert(std::get<0>(macroBinding.second));
 		}
 

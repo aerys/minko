@@ -102,8 +102,9 @@ namespace minko
 			bool																		_mustZSort;
 
 			// draw call list for renderer
-			std::unordered_map<SurfacePtr, DrawCallList>															_surfaceToDrawCalls;
-			DrawCallList																							_drawCalls;
+			std::unordered_map<SurfacePtr, DrawCallList>												_surfaceToDrawCalls;
+			DrawCallList																				_drawCalls;
+			std::function <void(std::string&, std::unordered_map<std::string, std::string>&)>			_formatFunction;
 
 
 		public:
@@ -111,7 +112,15 @@ namespace minko
 			Ptr
 			create(RendererPtr renderer)
 			{
-				return std::shared_ptr<DrawCallPool>(new DrawCallPool(renderer));
+				Ptr drawCallPool(new DrawCallPool(renderer));
+
+				drawCallPool->_formatFunction = std::bind(
+					&DrawCallPool::replaceVariable,
+					drawCallPool,
+					std::placeholders::_1,
+					std::placeholders::_2);
+
+				return drawCallPool;
 			}
 
 			const std::list<std::shared_ptr<DrawCall>>&
