@@ -53,6 +53,10 @@ minko.plugin.links = function(names)
 	configuration { unpack(terms) }
 end
 
+minko.plugin.path = function(name)
+	return minko.plugin[name]._path
+end
+
 setmetatable(minko.plugin, {
 	__newindex = function(t, k, v)
 		assert(type(v) == "table", 'The correct syntax for initializing a plugin is: minko.plugin.name = {}')
