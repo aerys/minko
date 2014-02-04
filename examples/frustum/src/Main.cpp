@@ -58,7 +58,7 @@ int main(int argc, char** argv)
 	{
 		std::shared_ptr<material::BasicMaterial> material = material::BasicMaterial::create()->diffuseColor(0xFF00FFFF);
 
-		for (uint i = 0; i < 200; ++i)
+		for (uint i = 0; i < 25; ++i)
 		{
 			auto mesh = scene::Node::create("mesh")
 				->addComponent(Transform::create(math::Matrix4x4::create()
@@ -78,7 +78,7 @@ int main(int argc, char** argv)
 		camera = scene::Node::create("camera")
 			->addComponent(Renderer::create())
 			->addComponent(PerspectiveCamera::create((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT))
-			->addComponent(Culling::create())
+			->addComponent(Culling::create(math::Frustum::create(), "camera.worldToScreenMatrix"))
 			->addComponent(Transform::create(
 				Matrix4x4::create()->lookAt(
 					Vector3::create(0.f, 0.f), 
