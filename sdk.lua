@@ -77,8 +77,8 @@ MINKO_SDK_DIST = true
 -- make plugins visible from an external project
 local plugins = os.matchdirs(MINKO_HOME .. '/plugins/*')
 
-for i, basedir in ipairs(plugins) do
-	dofile(basedir .. '/plugin.lua')
+for _, plugin in ipairs(plugins) do
+	minko.plugin.include(plugin)
 end
 
 -- options
