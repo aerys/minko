@@ -124,7 +124,7 @@ namespace minko
 
 			template <typename T>
 		    T
-			get(const std::string& propertyName, bool skipPropertyNameFormatting)
+			get(const std::string& propertyName, bool skipPropertyNameFormatting) const
 			{
 				const std::string&	formattedName	= skipPropertyNameFormatting ? propertyName : formatPropertyName(propertyName);
 				auto				foundIt			= values().find(formattedName);
@@ -138,7 +138,7 @@ namespace minko
 			template <typename T>
 			inline
 			T
-			get(const std::string& propertyName)
+			get(const std::string& propertyName) const
 			{
 				return get<T>(propertyName, false);
 			}

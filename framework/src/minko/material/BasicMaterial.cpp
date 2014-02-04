@@ -19,6 +19,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/material/BasicMaterial.hpp"
 
+#include "minko/Color.hpp"
 #include "minko/math/Vector4.hpp"
 #include "minko/render/AbstractTexture.hpp"
 #include "minko/render/Priority.hpp"
@@ -40,13 +41,7 @@ BasicMaterial::diffuseColor(math::Vector4::Ptr color)
 BasicMaterial::Ptr
 BasicMaterial::diffuseColor(uint rgba)
 {
-	return diffuseColor(
-		math::Vector4::create(
-			((rgba >> 24) & 0xff) / 255.f,
-			((rgba >> 16) & 0xff) / 255.f,
-			((rgba >> 8) & 0xff) / 255.f,
-			(rgba & 0xff) / 255.f
-	));
+	return diffuseColor(Color::uintToVec4(rgba));
 }
 
 BasicMaterial::Ptr
