@@ -5,12 +5,12 @@
 	"priority"	: "opaque",
 	
     "attributeBindings" : {
-        "position"              : "geometry.vertex.attribute.position",
-        "uv"                    : "geometry.vertex.attribute.uv",
-		"boneIdsA"				: "geometry.vertex.attribute.boneIdsA",
-		"boneIdsB"				: "geometry.vertex.attribute.boneIdsB",		
-		"boneWeightsA"			: "geometry.vertex.attribute.boneWeightsA",
-		"boneWeightsB"			: "geometry.vertex.attribute.boneWeightsB"
+        "position"              : "geometry[${geometryId}].vertex.attribute.position",
+        "uv"                    : "geometry[${geometryId}].vertex.attribute.uv",
+		"boneIdsA"				: "geometry[${geometryId}].vertex.attribute.boneIdsA",
+		"boneIdsB"				: "geometry[${geometryId}].vertex.attribute.boneIdsB",		
+		"boneWeightsA"			: "geometry[${geometryId}].vertex.attribute.boneWeightsA",
+		"boneWeightsB"			: "geometry[${geometryId}].vertex.attribute.boneWeightsB"
     },
     
     "uniformBindings"   : {
@@ -20,34 +20,34 @@
         "worldToScreenMatrix"   : { "property" : "camera.worldToScreenMatrix",  "source" : "renderer" },
         "pickingProjection"     : { "property" : "picking.projection",          "source" : "renderer"},
         "cameraProjection"      : { "property" : "camera.projectionMatrix",     "source" : "renderer"},
-		"boneMatrices"			: { "property" : "geometry.boneMatrices",		"source" : "target" },
-		"numBones"				: { "property" : "geometry.numBones",			"source" : "target" }
+		"boneMatrices"			: { "property" : "geometry[${geometryId}].boneMatrices",		"source" : "target" },
+		"numBones"				: { "property" : "geometry[${geometryId}].numBones",			"source" : "target" }
     },
 
     "macroBindings" : {
         "MODEL_TO_WORLD"        : "transform.modelToWorldMatrix",
-        "HAS_NORMAL"            : "geometry.vertex.attribute.normal",
-        "NUM_BONES"             : { "property" : "geometry.numBones",   "source" : "target" }
+        "HAS_NORMAL"            : "geometry[${geometryId}].vertex.attribute.normal",
+        "NUM_BONES"             : "geometry[${geometryId}].numBones",
     },
         
     "stateBindings" : {
-        "blendMode"             : "material.blendMode",
-        "colorMask"             : "material.colorMask",
-        "depthMask"             : "material.depthMask",
-        "depthFunc"             : "material.depthFunc",
-        "triangleCulling"       : "material.triangleCulling",
-        "stencilFunc"           : "material.stencilFunc",
-        "stencilRef"            : "material.stencilRef",
-        "stencilMask"           : "material.stencilMask",
-        "stencilFailOp"         : "material.stencilFailOp",
-        "stencilZFailOp"        : "material.stencilZFailOp",
-        "stencilZPassOp"        : "material.stencilZPassOp",
+        "blendMode"             : "material[${materialId}].blendMode",
+        "colorMask"             : "material[${materialId}].colorMask",
+        "depthMask"             : "material[${materialId}].depthMask",
+        "depthFunc"             : "material[${materialId}].depthFunc",
+        "triangleCulling"       : "material[${materialId}].triangleCulling",
+        "stencilFunc"           : "material[${materialId}].stencilFunc",
+        "stencilRef"            : "material[${materialId}].stencilRef",
+        "stencilMask"           : "material[${materialId}].stencilMask",
+        "stencilFailOp"         : "material[${materialId}].stencilFailOp",
+        "stencilZFailOp"        : "material[${materialId}].stencilZFailOp",
+        "stencilZPassOp"        : "material[${materialId}].stencilZPassOp",
         "scissorBox.x"          : { "property" : "scissorBox.x",        "source" : "renderer" },
         "scissorBox.y"          : { "property" : "scissorBox.y",        "source" : "renderer" },
         "scissorBox.width"      : { "property" : "scissorBox.width",    "source" : "renderer" },
         "scissorBox.height"     : { "property" : "scissorBox.height",   "source" : "renderer" },
-        "priority"              : "material.priority",
-        "zsort"                 : "material.zsort"
+        "priority"              : "material[${materialId}].priority",
+        "zsort"                 : "material[${materialId}].zsort"
     },
     
     "blendMode"         : ["one", "zero"],
