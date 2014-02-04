@@ -83,14 +83,14 @@ namespace minko
 			removeProvider(std::shared_ptr<ArrayProvider> provider);
 
 			bool
-			hasProvider(std::shared_ptr<Provider> provider) /*const*/;
+			hasProvider(std::shared_ptr<Provider> provider) const;
 
 			bool
 			hasProperty(const std::string& propertyName) const;
 
 			template <typename T>
 			T
-			get(const std::string& propertyName) /*const*/
+			get(const std::string& propertyName) const
 			{
 				assertPropertyExists(propertyName);
 
