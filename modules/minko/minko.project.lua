@@ -52,7 +52,7 @@ minko.project.application = function(name)
 		}
 		postbuildcommands {
 			'xcopy /y /i "' .. minko.sdk.path("/framework/effect") .. '" "$(TargetDir)\\effect"',
-			minko.vs.getdllscopycommand(minko.sdk.path("/framework/lib/glew/lib"))
+			minko.vs.getdllscopycommand(minko.sdk.path("/framework/lib/glew/lib/windows32"))
 		}
 
 	configuration { "windows32", "debug" }
@@ -77,7 +77,7 @@ minko.project.application = function(name)
 		postbuildcommands {
 			'xcopy /y /i "' .. minko.sdk.path("/framework/effect") .. '" "$(TargetDir)\\effect"',
 			'xcopy /y /s asset\\* "$(TargetDir)"',
-			minko.vs.getdllscopycommand(minko.sdk.path("/framework/lib/glew/lib"))
+			minko.vs.getdllscopycommand(minko.sdk.path("/framework/lib/glew/lib/windows64"))
 		}
 
 	configuration { "windows64", "debug" }
