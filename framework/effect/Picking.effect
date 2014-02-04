@@ -1,4 +1,3 @@
-// basic effect
 {
     "name"  	: "picking",
     
@@ -20,14 +19,14 @@
         "worldToScreenMatrix"   : { "property" : "camera.worldToScreenMatrix",  "source" : "renderer" },
         "pickingProjection"     : { "property" : "picking.projection",          "source" : "renderer"},
         "cameraProjection"      : { "property" : "camera.projectionMatrix",     "source" : "renderer"},
-		"boneMatrices"			: { "property" : "geometry[${geometryId}].boneMatrices",		"source" : "target" },
-		"numBones"				: { "property" : "geometry[${geometryId}].numBones",			"source" : "target" }
+		"boneMatrices"			: "geometry[${geometryId}].boneMatrices",
+		"numBones"				: "geometry[${geometryId}].numBones"
     },
 
     "macroBindings" : {
         "MODEL_TO_WORLD"        : "transform.modelToWorldMatrix",
         "HAS_NORMAL"            : "geometry[${geometryId}].vertex.attribute.normal",
-        "NUM_BONES"             : "geometry[${geometryId}].numBones",
+        "NUM_BONES"             : "geometry[${geometryId}].numBones"
     },
         
     "stateBindings" : {

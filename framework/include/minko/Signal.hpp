@@ -49,12 +49,14 @@ namespace minko
 		std::list<std::pair<Callback, uint>>					_toAdd;
 		std::list<std::pair<CallbackIterator, SlotIterator>>	_toRemove;
 		std::list<unsigned int>									_toRemoveSlotId;
+		bool													_signalListDirty;
 
 	private:
 		Signal() :
 			std::enable_shared_from_this<Signal<A...>>(),
             _nextSlotId(0),
-			_locked(false)
+			_locked(false),
+			_signalListDirty(false)
 		{
 		}
 
@@ -118,12 +120,12 @@ namespace minko
 		void
 		sortSignals()
 		{
-			_callbacks.sort([&](Callback callback1, Callback callback2) -> bool
+			_callbacks.sort([&](const Callback& callback1, const Callback& callback2) -> bool
 			{
 				return callback1.first > callback2.first;
 			});
 
-			_slotIds.sort([&](std::pair<float, unsigned int> slot1, std::pair<float, unsigned int> slot2) -> bool
+			_slotIds.sort([&](const std::pair<float, unsigned int>& slot1, const std::pair<float, unsigned int>& slot2) -> bool
 			{
 				return slot1.first > slot2.first;
 			});
@@ -138,9 +140,17 @@ namespace minko
 				_toAdd.push_back(std::pair<Callback, unsigned int>(std::pair<float, CallbackFunction>(priority, callback), connection->_id));
 			else
 			{
+
 				_callbacks.push_back(std::pair<float, CallbackFunction>(priority, callback));
 				_slotIds.push_back(std::pair<float, unsigned int>(priority, connection->_id));
-				sortSignals();
+				
+				if (_callbacks.size() > 2)
+				{
+					auto prec = std::prev(_callbacks.end(), 2);
+
+					if (priority > prec->first)
+						sortSignals();
+				}
 			}
 
 			return connection;
@@ -149,6 +159,7 @@ namespace minko
 		void
 		execute(A... arguments)
 		{
+
 			_locked = true;
 			for (auto& callback : _callbacks)
 				callback.second(arguments...);
@@ -162,11 +173,25 @@ namespace minko
 
 			for (auto& callbackAndConnectionId : _toAdd)
 			{
+
 				_callbacks.push_back(callbackAndConnectionId.first);
 				_slotIds.push_back(std::pair<float, unsigned int>(callbackAndConnectionId.first.first, callbackAndConnectionId.second));
-				sortSignals();
+
+				if (_callbacks.size() > 2)
+				{
+					auto prec = std::prev(_callbacks.end(), 2);
+
+					if (callbackAndConnectionId.first.first > prec->first)
+						_signalListDirty = true;
+				}
 			}
 			
+			if (_signalListDirty)
+			{
+				_signalListDirty = false;
+				sortSignals();
+			}
+
 			_toAdd.clear();
 			_toRemove.clear();
 		}
