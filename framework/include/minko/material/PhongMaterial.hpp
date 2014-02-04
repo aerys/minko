@@ -76,6 +76,18 @@ namespace minko
 			shininess() const;
 
 			Ptr
+			normalMap(AbsTexturePtr);
+
+			TexturePtr
+			normalMap() const;
+
+			Ptr
+			specularMap(AbsTexturePtr);
+
+			TexturePtr
+			specularMap() const;
+
+			Ptr
 			environmentMap(AbsTexturePtr, render::EnvironmentMap2dType type = render::EnvironmentMap2dType::Unset);
 
 			CubeTexturePtr
