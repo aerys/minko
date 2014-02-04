@@ -23,15 +23,16 @@
 		"normalMap"				: "material[${materialId}].normalMap",
 		"specularMap"			: "material[${materialId}].specularMap",
 		"specularColor"			: { "property" : "material[${materialId}].specularColor", "default" : [ 1.0, 1.0, 1.0, 1.0 ] },
-		"environmentMap"		: "material[${materialId}].environmentMap",
+		"environmentMap2d"		: "material[${materialId}].environmentMap2d",
+		"environmentMap2dType"	: "material[${materialId}].environmentMap2dType",
+		"environmentCubemap"	: "material[${materialId}].environmentCubemap",
 		"environmentAlpha"		: "material[${materialId}].environmentAlpha",
-		"environmentType"		: "material[${materialId}].environmentType",
 		"shininess"				: "material[${materialId}].shininess",
 		"modelToWorldMatrix"	: "transform.modelToWorldMatrix",
-		"worldToScreenMatrix"	: { "property" : "camera.worldToScreenMatrix", 				"source" : "renderer" },
-		"cameraPosition"		: { "property" : "camera.position", 						"source" : "renderer" },
-		"boneMatrices"			: { "property" : "geometry[${geometryId}].boneMatrices",	"source" : "target" },
-		"numBones"				: { "property" : "geometry[${geometryId}].numBones",		"source" : "target" }
+		"worldToScreenMatrix"	: { "property" : "camera.worldToScreenMatrix", 		"source" : "renderer" },
+		"cameraPosition"		: { "property" : "camera.position", 				"source" : "renderer" },
+		"boneMatrices"			: "geometry[${geometryId}].boneMatrices",
+		"numBones"				: "geometry[${geometryId}].numBones"
 	},
 
 	"macroBindings"	: {
@@ -40,12 +41,13 @@
 		"SPECULAR_MAP"			: "material[${materialId}].specularMap",
 		"ALPHA_MAP"				: "material[${materialId}].alphaMap",
 		"ALPHA_THRESHOLD"		: "material[${materialId}].alphaThreshold",
-		"ENVIRONMENT_MAP"		: "material[${materialId}].environmentMap",
+		"ENVIRONMENT_MAP_2D"	: "material[${materialId}].environmentMap2d",
+		"ENVIRONMENT_CUBE_MAP"	: "material[${materialId}].environmentCubemap",
 		"ENVIRONMENT_ALPHA"		: "material[${materialId}].environmentAlpha",
-		"ENVIRONMENT_TYPE"		: "material[${materialId}].environmentType",
+		"ENVIRONMENT_TYPE_2D"	: "material[${materialId}].environmentMap2dType",
 		"SHININESS"				: "material[${materialId}].shininess",
 		"MODEL_TO_WORLD"		: "transform.modelToWorldMatrix",
-		"NUM_BONES"				: { "property" : "geometry[${geometryId}].numBones",	"source" : "target" }
+		"NUM_BONES"				: "geometry[${geometryId}].numBones"
 	},
 		
 	"stateBindings"	: {

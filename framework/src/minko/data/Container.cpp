@@ -181,7 +181,7 @@ Container::removeProvider(std::shared_ptr<ArrayProvider> provider)
 }
 
 bool
-Container::hasProvider(std::shared_ptr<Provider> provider) /*const*/
+Container::hasProvider(std::shared_ptr<Provider> provider) const
 {
 	return std::find(_providers.begin(), _providers.end(), provider) != _providers.end();
 }
