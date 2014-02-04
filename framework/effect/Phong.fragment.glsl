@@ -139,7 +139,7 @@ void main(void)
 	
 	#if defined NUM_DIRECTIONAL_LIGHTS || defined NUM_POINT_LIGHTS || defined NUM_SPOT_LIGHTS || defined ENVIRONMENT_MAP
 
-	vec3 eyeVector	= normalize(cameraPosition - vertexPosition);
+	vec3 eyeVector	= normalize(cameraPosition - vertexPosition); // in world-space
 
 	#endif // NUM_DIRECTIONAL_LIGHTS || NUM_POINT_LIGHTS || NUM_SPOT_LIGHTS || ENVIRONMENT_MAP
 
@@ -156,19 +156,15 @@ void main(void)
 		float	lightCosOuterAng		= 0.0;
 		float 	contribution			= 0.0;
 		
-		vec3 	normal					= normalize(vertexNormal);
-		vec3	phongEyeVector			= eyeVector;
+		vec3 	normalVector			= normalize(vertexNormal); // in world-space
 		
 		#ifdef NORMAL_MAP
 			// warning: the normal vector must be normalized at this point!
-			mat3 worldToTangentMatrix 	= getWorldToTangentSpaceMatrix(normal, vertexTangent);
+			mat3 tangentToWorldMatrix 	= getTangentToWorldSpaceMatrix(normalVector, vertexTangent);
 			
-			normal						= normalize(2.0*texture2D(normalMap, vertexUV).xyz - 1.0);
-			phongEyeVector				= worldToTangentMatrix * eyeVector;
+			normalVector				= tangentToWorldMatrix * normalize(2.0*texture2D(normalMap, vertexUV).xyz - 1.0); // bring normal from tangent-space normal to world-space
 		#endif // NORMAL_MAP
-		
-		// phongEyeVector	= normalize(phongEyeVector);
-		
+				
 		#ifdef NUM_DIRECTIONAL_LIGHTS
 		//---------------------------
 		for (int i = 0; i < NUM_DIRECTIONAL_LIGHTS; ++i)
@@ -187,17 +183,14 @@ void main(void)
 	
 		
 			lightDirection	= normalize(-lightDirection);
-			#ifdef NORMAL_MAP
-				lightDirection = worldToTangentMatrix * lightDirection;
-			#endif // NORMAL_MAP
 			
-			contribution = phong_diffuseReflection(normal, lightDirection) * lightDiffuseCoeff;
+			contribution = phong_diffuseReflection(normalVector, lightDirection) * lightDiffuseCoeff;
 
 			#ifdef SHININESS
 				contribution += phong_specularReflection(
-					normal,
+					normalVector,
 					lightDirection,
-					phongEyeVector,
+					eyeVector,
 					shininess
 				) * lightSpecularCoeff * specular.a;
 			#endif // SHININESS
@@ -227,17 +220,14 @@ void main(void)
 			lightDirection			= lightPosition - vertexPosition;
 			float distanceToLight 	= length(lightDirection);
 			lightDirection 			/= distanceToLight;
-			#ifdef NORMAL_MAP
-				lightDirection = worldToTangentMatrix * lightDirection;
-			#endif // NORMAL_MAP
 			
-			contribution	= phong_diffuseReflection(normal, lightDirection) * lightDiffuseCoeff;
+			contribution	= phong_diffuseReflection(normalVector, lightDirection) * lightDiffuseCoeff;
 
 			#ifdef SHININESS
 				contribution += phong_specularReflection(
-					normal,
+					normalVector,
 					lightDirection,
-					phongEyeVector,
+					eyeVector,
 					shininess
 				) * lightSpecularCoeff * specular.a;
 			#endif // SHININESS
@@ -284,19 +274,14 @@ void main(void)
 
 			if (lightCosOuterAng < cosSpot)
 			{
-				#ifdef NORMAL_MAP
-					lightDirection		= worldToTangentMatrix * lightDirection;
-					// lightSpotDirection	= worldToTangentMatrix * lightSpotDirection;
-				#endif // NORMAL_MAP
-			
-				contribution	= phong_diffuseReflection(normal, lightDirection)
+				contribution	= phong_diffuseReflection(normalVector, lightDirection)
 					* lightDiffuseCoeff;
 
 				#ifdef SHININESS
 					contribution += phong_specularReflection(
-						normal,
+						normalVector,
 						lightDirection,
-						phongEyeVector,
+						eyeVector,
 						shininess
 					) * lightSpecularCoeff * specular.a;
 				#endif // SHININESS
@@ -319,7 +304,7 @@ void main(void)
 
 	#if defined(ENVIRONMENT_MAP_2D) || defined(ENVIRONMENT_CUBE_MAP)
 
-		vec4	envmapColor		= envmap_sampleEnvironmentMap(eyeVector, normalize(vertexNormal));
+		vec4	envmapColor		= envmap_sampleEnvironmentMap(eyeVector, normalVector);
 		float	reflectivity	= specular.a;
 
 		#ifdef ENVIRONMENT_ALPHA

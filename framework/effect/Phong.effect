@@ -21,8 +21,8 @@
 		"alphaMap"				: "material.alphaMap",
 		"alphaThreshold"		: "material.alphaThreshold",
 		"normalMap"				: "material.normalMap",
-		"specularMap"			: "material.specularMap",
 		"specularColor"			: { "property" : "material.specularColor", "default" : [ 1.0, 1.0, 1.0, 1.0 ] },
+		"specularMap"			: "material.specularMap",
 		"environmentMap2d"		: "material.environmentMap2d",
 		"environmentMap2dType"	: "material.environmentMap2dType",
 		"environmentCubemap"	: "material.environmentCubemap",
@@ -71,9 +71,11 @@
 	},
 
 	"samplerStates" : {
-		"diffuseMap"	: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" },
-		"normalMap"		: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" },
-		"specularMap"	: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" }
+		"diffuseMap"			: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" },
+		"normalMap"				: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" },
+		"specularMap"			: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" },
+		"environmentMap2d"		: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" },
+		"environmentCubemap"	: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" }
 	},
 	
 	"blendMode"         : ["one", "zero"],
