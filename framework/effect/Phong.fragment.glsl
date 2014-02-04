@@ -164,7 +164,7 @@ void main(void)
 		
 		#ifdef NORMAL_MAP
 			// warning: the normal vector must be normalized at this point!
-			mat3 tangentToWorldMatrix 	= getTangentToWorldSpaceMatrix(normalVector, vertexTangent);
+			mat3 tangentToWorldMatrix 	= phong_getTangentToWorldSpaceMatrix(normalVector, vertexTangent);
 			
 			normalVector				= tangentToWorldMatrix * normalize(2.0*texture2D(normalMap, vertexUV).xyz - 1.0); // bring normal from tangent-space normal to world-space
 		#endif // NORMAL_MAP
@@ -192,7 +192,9 @@ void main(void)
 				* lightDiffuseCoeff;
 
 			#if defined(SHININESS)
-				specularAccum	+= phong_specularReflection(normalVector, lightDirection, eyeVector, shininess) 
+				specularAccum	+= 
+					phong_specularReflection(normalVector, lightDirection, eyeVector, shininess) 
+					* phong_fresnel(specularColor.rgb, lightDirection, eyeVector)
 					* lightColor
 					* lightSpecularCoeff;
 			#endif // SHININESS
@@ -230,7 +232,9 @@ void main(void)
 				* (lightDiffuseCoeff * attenuation);
 
 			#if defined(SHININESS)
-				specularAccum	+= phong_specularReflection(normalVector, lightDirection, eyeVector, shininess) 
+				specularAccum	+= 
+					phong_specularReflection(normalVector, lightDirection, eyeVector, shininess) 
+					* phong_fresnel(specularColor.rgb, lightDirection, eyeVector)
 					* lightColor
 					* (lightSpecularCoeff * attenuation);
 			#endif // SHININESS	
@@ -285,7 +289,9 @@ void main(void)
 					* (lightDiffuseCoeff * attenuation * cutoff);
 
 				#ifdef SHININESS
-					specularAccum	+= phong_specularReflection(normalVector, lightDirection, eyeVector, shininess) 
+					specularAccum	+= 
+						phong_specularReflection(normalVector, lightDirection, eyeVector, shininess) 
+						* phong_fresnel(specularColor.rgb, lightDirection, eyeVector)
 						* lightColor
 						* (lightSpecularCoeff * attenuation * cutoff);
 				#endif // SHININESS
@@ -314,10 +320,6 @@ void main(void)
 	// Final blend of ambient, diffuse, and specular parts
 	//----------------------------------------------------
 	diffuseAccum		*= diffuse.rgb;
-	
-	#if defined(SHININESS)
-		specularAccum	*= specular.rgb;
-	#endif
 	
 	vec3 phong		= ambientAccum + diffuseAccum + specularAccum;
 	gl_FragColor	= vec4(phong.rgb, diffuse.a);
