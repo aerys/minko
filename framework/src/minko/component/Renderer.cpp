@@ -151,7 +151,7 @@ Renderer::addedHandler(std::shared_ptr<Node> node,
 		std::placeholders::_1,
 		std::placeholders::_2,
 		std::placeholders::_3
-	));
+	), 10.f);
 
 	rootDescendantAddedHandler(nullptr, target->root(), nullptr);
 }
