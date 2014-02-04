@@ -32,8 +32,7 @@ namespace minko
 		{
 		public:
 			typedef std::shared_ptr<DrawCallPool>						Ptr;
-			typedef std::shared_ptr<DrawCall>							DrawCallPtr; 
-			typedef std::shared_ptr<component::Renderer>				RendererPtr;
+			typedef std::shared_ptr<DrawCall>							DrawCallPtr;
 			typedef std::shared_ptr<component::Surface>					SurfacePtr;
 			typedef std::list<DrawCallPtr>								DrawCallList;
 			typedef std::shared_ptr<data::Container>					ContainerPtr;
