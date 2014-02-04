@@ -69,14 +69,15 @@ int main(int argc, char** argv)
 			));
 		root->addChild(light);
 
-		auto resized = canvas->resized()->connect([&](Canvas::Ptr canvas, uint w, uint h)
+		auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
 		{
 			camera->component<PerspectiveCamera>()->aspectRatio((float)w / (float)h);
 		});
 
-		auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas)
+		auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, uint deltaTime)
 		{
-			mesh->component<Transform>()->transform()->appendRotationY(.01f);
+			mesh->component<Transform>()->matrix()->appendRotationY(.01f);
+
 			sceneManager->nextFrame();
 		});
 
