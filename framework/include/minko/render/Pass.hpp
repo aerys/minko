@@ -43,11 +43,13 @@ namespace minko
 			typedef std::shared_ptr<Pass> Ptr;
 
 		private:
- 			typedef std::shared_ptr<Program>							ProgramPtr;
-            typedef std::unordered_map<std::string, SamplerState>		SamplerStatesMap;
-			typedef std::shared_ptr<States>								StatesPtr;
-			typedef std::unordered_map<ProgramSignature, ProgramPtr>	SignatureProgramMap;
-			typedef std::list<std::function<void(ProgramPtr)>>			UniformFctList;
+ 			typedef std::shared_ptr<Program>								ProgramPtr;
+            typedef std::unordered_map<std::string, SamplerState>			SamplerStatesMap;
+			typedef std::shared_ptr<States>									StatesPtr;
+			typedef std::unordered_map<ProgramSignature, ProgramPtr>		SignatureProgramMap;
+			typedef std::list<std::function<void(ProgramPtr)>>				UniformFctList;
+			typedef std::unordered_map<std::string, data::MacroBinding>		MacroBindingsMap;
+
 
 		private:
 			const std::string		_name;
@@ -55,7 +57,7 @@ namespace minko
 			data::BindingMap		_attributeBindings;
 			data::BindingMap		_uniformBindings;
 			data::BindingMap		_stateBindings;
-			data::MacroBindingMap	_macroBindings;
+			data::MacroBindingMap	_macroBindingsTemplate;
             StatesPtr				_states;
 			std::string				_fallback;
 			SignatureProgramMap		_signatureToProgram;
@@ -95,7 +97,7 @@ namespace minko
 					pass->_attributeBindings,
 					pass->_uniformBindings,
 					pass->_stateBindings,
-					pass->_macroBindings,
+					pass->_macroBindingsTemplate,
 					deepCopy ? States::create(pass->_states) : pass->_states,
 					pass->_fallback
 				);
@@ -147,10 +149,14 @@ namespace minko
 
 			inline
 			const data::MacroBindingMap&
-			macroBindings() const
+			macroBindingsTemplate() const
 			{
-				return _macroBindings;
+				return _macroBindingsTemplate;
 			}
+
+			const data::MacroBindingMap
+			macroBindings(std::function<void(std::string&, std::unordered_map<std::string, std::string>&)> formatPropertyNameFunction,
+						  std::unordered_map<std::string, std::string>&									   variablesToValue);
 
 			inline
 			StatesPtr
@@ -167,7 +173,8 @@ namespace minko
 			}
 
 			std::shared_ptr<Program>
-			selectProgram(std::shared_ptr<data::Container> 		data,
+			selectProgram(const MacroBindingsMap&				macroBindings,	
+						  std::shared_ptr<data::Container> 		data,
 						  std::shared_ptr<data::Container> 		rendererData,
 						  std::shared_ptr<data::Container> 		rootData,
 						  std::list<data::ContainerProperty>&	booleanMacros,

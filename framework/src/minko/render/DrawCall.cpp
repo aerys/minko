@@ -109,7 +109,7 @@ DrawCall::bind(ContainerPtr data, ContainerPtr rendererData, ContainerPtr rootDa
 void
 DrawCall::bindIndexBuffer()
 {
-	static const std::string propertyName = "geometry.indices";
+	const std::string propertyName = "geometry[" + _variablesToValue["geometryId"] + "].indices";
 
 	_indexBuffer	= -1;
 	_numIndices		= 0;
@@ -198,7 +198,9 @@ DrawCall::bindVertexAttribute(const std::string&	inputName,
 	
 	if (_attributeBindings.count(inputName))
 	{
-		auto& propertyName = std::get<0>(_attributeBindings.at(inputName));
+		auto propertyName = std::get<0>(_attributeBindings.at(inputName));
+		_formatPropertyNameFct(propertyName, _variablesToValue);
+
 		const auto& container = getDataContainer(std::get<1>(_attributeBindings.at(inputName)));
 
 		++vertexBufferId;
@@ -258,7 +260,8 @@ DrawCall::bindTextureSampler(const std::string&		inputName,
 		if (incrementTextureId)
 			++textureId;
 
-		auto& propertyName		= std::get<0>(_uniformBindings.at(inputName));
+		auto propertyName = std::get<0>(_uniformBindings.at(inputName));
+		_formatPropertyNameFct(propertyName, _variablesToValue);
 		const auto& container	= getDataContainer(std::get<1>(_uniformBindings.at(inputName)));
 
 		if (container && container->hasProperty(propertyName))
@@ -313,9 +316,10 @@ DrawCall::bindUniform(const std::string&	inputName,
 	
 	if (_uniformBindings.count(bindingName))
 	{	
-		auto	propertyName	= std::get<0>(_uniformBindings.at(bindingName));
-		auto&	source			= std::get<1>(_uniformBindings.at(bindingName));
-		const auto&	container	= getDataContainer(source);
+		auto	propertyName = std::get<0>(_uniformBindings.at(bindingName));
+		_formatPropertyNameFct(propertyName, _variablesToValue);
+		auto&	source = std::get<1>(_uniformBindings.at(bindingName));
+		const auto&	container		= getDataContainer(source);
 
 		if (container)
 		{
@@ -350,7 +354,8 @@ DrawCall::bindUniform(const std::string&	inputName,
 			else if (isArray)
 			{
 				// This case corresponds to continuous base type arrays that are stored in data providers as std::vector<float>.
-				propertyName	= std::get<0>(_uniformBindings.at(bindingName));
+				propertyName = std::get<0>(_uniformBindings.at(bindingName));
+				_formatPropertyNameFct(propertyName, _variablesToValue);
 
 				bindUniformArray(propertyName, container, type, location);
 			}
