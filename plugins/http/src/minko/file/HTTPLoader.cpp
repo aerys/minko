@@ -130,8 +130,13 @@ HTTPLoader::load(const std::string& filename, std::shared_ptr<Options> options)
 		mem.size = 0; 
 
 		curl_easy_setopt(curl, CURLOPT_URL, _filename.c_str());
+
 		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, &curlWriteMemoryHandler);
 		curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&mem);
+
+		curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+		//curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+
 		curl_easy_setopt(curl, CURLOPT_USERAGENT, "libcurl-agent/1.0");
 		res = curl_easy_perform(curl);
 
