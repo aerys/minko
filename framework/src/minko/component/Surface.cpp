@@ -138,8 +138,18 @@ Surface::targetAddedHandler(AbstractComponent::Ptr	ctrl,
 		std::placeholders::_3
 	));
 
-	targetData->addProvider(std::dynamic_pointer_cast<data::ArrayProvider>(_material));
-	_materialId = std::dynamic_pointer_cast<data::ArrayProvider>(_material)->index();
+	auto arrayProviderMaterial = std::dynamic_pointer_cast<data::ArrayProvider>(_material);
+
+	if (arrayProviderMaterial)
+	{
+		targetData->addProvider(std::dynamic_pointer_cast<data::ArrayProvider>(_material));
+		_materialId = std::dynamic_pointer_cast<data::ArrayProvider>(_material)->index();
+	}
+	else
+	{
+		targetData->addProvider(_material);
+	}
+
 	targetData->addProvider(_geometry->data());
 	_geometryId = _geometry->data()->index();
 	targetData->addProvider(_effect->data());
