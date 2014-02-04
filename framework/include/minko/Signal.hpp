@@ -144,7 +144,7 @@ namespace minko
 				_callbacks.push_back(std::pair<float, CallbackFunction>(priority, callback));
 				_slotIds.push_back(std::pair<float, unsigned int>(priority, connection->_id));
 				
-				if (_callbacks.size() > 2)
+				if (_callbacks.size() >= 2)
 				{
 					auto prec = std::prev(_callbacks.end(), 2);
 
@@ -177,7 +177,7 @@ namespace minko
 				_callbacks.push_back(callbackAndConnectionId.first);
 				_slotIds.push_back(std::pair<float, unsigned int>(callbackAndConnectionId.first.first, callbackAndConnectionId.second));
 
-				if (_callbacks.size() > 2)
+				if (_callbacks.size() >= 2)
 				{
 					auto prec = std::prev(_callbacks.end(), 2);
 
