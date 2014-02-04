@@ -21,15 +21,22 @@ float phong_specularReflection(vec3 normal, vec3 lightDirection, vec3 viewVector
 
 // compute the world space to tangent space matrix using the model's normal and tangent
 // @precondition worldNormal is expected to be normalized.
-mat3 getWorldToTangentSpaceMatrix(vec3 worldNormal, vec3 worldTangent)
+
+
+mat3 getTangentToWorldSpaceMatrix(vec3 worldNormal, vec3 worldTangent)
 {
 	worldTangent = normalize(worldTangent);
 
-	mat3 matrix = mat3(
+	return mat3(
 		worldTangent,	
-		cross(worldNormal, worldTangent),	
+		cross(worldNormal, worldTangent),	// bi-tangent
 		worldNormal
 	);
+}
+
+mat3 getWorldToTangentSpaceMatrix(vec3 worldNormal, vec3 worldTangent)
+{
+	mat3 matrix = getTangentToWorldSpaceMatrix(worldNormal, worldTangent);
 
 	mat3 transpose = mat3(
 		matrix[0][0], matrix[1][0], matrix[2][0],
@@ -39,4 +46,3 @@ mat3 getWorldToTangentSpaceMatrix(vec3 worldNormal, vec3 worldTangent)
 
 	return transpose;
 }
-
