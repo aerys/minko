@@ -43,11 +43,12 @@ namespace minko
 			typedef std::shared_ptr<DrawCall>						Ptr;
 
 		private:
-            typedef std::shared_ptr<AbstractContext>				AbsCtxPtr;
-			typedef std::shared_ptr<AbstractTexture>				AbsTexturePtr;
-			typedef std::shared_ptr<data::Provider>					ProviderPtr;
-            typedef std::shared_ptr<data::Container>				ContainerPtr;
-			typedef data::Container::PropertyChangedSignal::Slot	ContainerPropertyChangedSlot;
+            typedef std::shared_ptr<AbstractContext>													AbsCtxPtr;
+			typedef std::shared_ptr<AbstractTexture>													AbsTexturePtr;
+			typedef std::shared_ptr<data::Provider>														ProviderPtr;
+            typedef std::shared_ptr<data::Container>													ContainerPtr;
+			typedef data::Container::PropertyChangedSignal::Slot										ContainerPropertyChangedSlot;
+			typedef std::function<void(std::string&, std::unordered_map<std::string, std::string>&)>	FormatFunction;
 
 			typedef std::tuple<int, int>							Int2;
 			typedef std::tuple<int, int, int>						Int3;
@@ -66,6 +67,7 @@ namespace minko
             const data::BindingMap&	                                    _attributeBindings;
 			const data::BindingMap&	                                    _uniformBindings;
 			const data::BindingMap&	                                    _stateBindings;
+			std::unordered_map<std::string, std::string>				_variablesToValue;
 
             std::shared_ptr<States>                                     _states;
             std::vector<int>                                            _vertexBuffers;
@@ -120,14 +122,17 @@ namespace minko
 
 			std::shared_ptr<Signal<Ptr>>								_zsortNeeded;
 			std::shared_ptr<ZSortSignalManager>							_zsortSignalManager;
+			FormatFunction												_formatPropertyNameFct;
 
 		public:
 			static inline
 			Ptr
-			create(const data::BindingMap&	attributeBindings,
-				   const data::BindingMap&	uniformBindings,
-				   const data::BindingMap&	stateBindings,
-                   std::shared_ptr<States>  states)
+			create(const data::BindingMap&						attributeBindings,
+				   const data::BindingMap&						uniformBindings,
+				   const data::BindingMap&						stateBindings,
+                   std::shared_ptr<States>						states,
+				   FormatFunction								formatPropertyNameFct,
+				   std::unordered_map<std::string, std::string> variablesToValue)
 			{
 				Ptr ptr = std::shared_ptr<DrawCall>(new DrawCall(
                     attributeBindings, 
@@ -136,9 +141,19 @@ namespace minko
 					states
                 ));
 
+				ptr->_formatPropertyNameFct = formatPropertyNameFct;
+				ptr->_variablesToValue = variablesToValue;
+
 				ptr->initialize();
 
 				return ptr;
+			}
+
+			inline
+			const std::unordered_map<std::string, std::string>&
+			variablesToValue()
+			{
+				return _variablesToValue;
 			}
 
             inline
