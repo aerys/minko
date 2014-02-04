@@ -43,6 +43,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include <ctime>
 #include <type_traits>
 #include <cfloat>
+#include <climits>
 #include "minko/math/Convertible.hpp"
 
 #ifdef __ANDROID__
@@ -94,6 +95,13 @@ namespace minko
 		{
 			Texture2D	= 0,
 			CubeTexture	= 1
+		};
+
+		enum class EnvironmentMap2dType
+		{
+			Unset		= -1,
+			Probe		= 0,
+			BlinnNewell	= 1
 		};
 
 		enum class TextureFormat
@@ -298,6 +306,7 @@ namespace minko
 	{
 		class Material;
 		class BasicMaterial;
+		class PhongMaterial;
 	}
 
 	namespace input
