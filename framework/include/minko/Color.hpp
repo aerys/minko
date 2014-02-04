@@ -28,6 +28,10 @@ namespace minko
 		std::shared_ptr<math::Vector4>
 		hslaToRgba(float h, float s, float l, float a = 1.f, std::shared_ptr<math::Vector4> out = nullptr);
 
+		static 
+		std::shared_ptr<math::Vector4>
+		uintToVec4(uint rgba, std::shared_ptr<math::Vector4> output = nullptr);
+
 	private:
 		static
 		float

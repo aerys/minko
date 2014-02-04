@@ -135,3 +135,40 @@ Box::merge(Ptr box1, Ptr box2, Ptr out)
 
 	return out;
 }
+
+ShapePosition
+Box::testBoundingBox(std::shared_ptr<math::Box> box)
+{
+	if (box->bottomLeft()->x() > this->topRight()->x())
+		return ShapePosition::LEFT;
+
+	if (box->topRight()->x() < this->bottomLeft()->x())
+		return ShapePosition::RIGHT;
+
+	if (box->bottomLeft()->y() > this->topRight()->y())
+		return ShapePosition::BOTTOM;
+
+	if (box->topRight()->y() < this->bottomLeft()->y())
+		return ShapePosition::TOP;
+
+	if (box->topRight()->z() < this->bottomLeft()->z())
+		return ShapePosition::FAR;
+
+	if (box->bottomLeft()->z() > this->topRight()->z())
+		return ShapePosition::NEAR;
+
+	if (this->bottomLeft()->x() > box->bottomLeft()->x() && 
+		this->bottomLeft()->y() > box->bottomLeft()->y() && 
+		this->bottomLeft()->z() > box->bottomLeft()->z() &&
+		this->topRight()->x() < box->topRight()->x() && 
+		this->topRight()->y() < box->topRight()->y() && 
+		this->topRight()->z() < box->topRight()->z())
+		return ShapePosition::INSIDE;
+
+	return ShapePosition::AROUND;
+}
+
+void
+Box::updateFromMatrix(std::shared_ptr<math::Matrix4x4> matrix)
+{
+}

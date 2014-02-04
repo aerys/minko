@@ -72,29 +72,32 @@ ProgramSignature::build(const MacroBindingMap&			macroBindings,
 
 			if (isMacroInteger || isDefaultMacroInteger)
 			{
-				const int value	= isMacroInteger 
+				const int	min		= std::get<3>(macroBinding.second);
+				const int	max		= std::get<4>(macroBinding.second);
+
+				int			value	= isMacroInteger 
 					? macro.container()->get<int>(macro.name())
 					: defaultMacro.value.value;
 
-				if (value > 0)
+				// for beta 1 : clamp integer macros instead for using fallback technique
+				value = std::max(min, std::min(max, value)); 
+
+				// update program signature
+				_values[macroId] = value; 
+
+				if (value < min || value > max)
 				{
-					_values[macroId]	= value; // update program signature
-
-					const int min	= std::get<3>(macroBinding.second);
-					const int max	= std::get<4>(macroBinding.second);
-
-					if ((min != -1 && value < min) || (max != -1 && value > max))
-					{
-						if (macroExists)
-							incorrectIntegerMacros.push_back(macro);
-					}
-					else
-					{
-						defines += "#define " + macroBinding.first + " " + std::to_string(value) + "\n";
-
-						if (macroExists)
-							integerMacros.push_back(macro);
-					}
+					if (macroExists)
+						incorrectIntegerMacros.push_back(macro);
+				
+					throw; // for beta 1, macros are clamped and cannot get out-of-bounds!
+				}
+				else
+				{
+					defines += "#define " + macroBinding.first + " " + std::to_string(value) + "\n";
+				
+					if (macroExists)
+						integerMacros.push_back(macro);
 				}
 			}
 			else if (macroExists || defaultMacroExists)

@@ -35,11 +35,12 @@ namespace minko
 			typedef std::shared_ptr<Culling> Ptr;
 
 		private:
-			typedef std::shared_ptr<scene::Node> NodePtr;
+			typedef std::shared_ptr<scene::Node>			NodePtr;
+			typedef std::shared_ptr<math::AbstractShape>	ShapePtr;
 
 		private:
-			std::shared_ptr<math::OctTree>		_octTree;
-			std::shared_ptr<math::Frustum>		_frustum;
+			static std::shared_ptr<math::OctTree>	_octTree;
+			std::shared_ptr<math::AbstractShape>	_frustum;
 
 			Signal<AbstractComponent::Ptr, NodePtr>::Slot						_targetAddedSlot;
             Signal<AbstractComponent::Ptr, NodePtr>::Slot						_targetRemovedSlot;
@@ -48,12 +49,14 @@ namespace minko
 			Signal<NodePtr, NodePtr>::Slot										_layoutChangedSlot;
 			Signal<std::shared_ptr<data::Container>, const std::string&>::Slot	_viewMatrixChangedSlot;
 
+			std::string		_bindProperty;
+
 		public:
 			inline static
 			Ptr
-			create()
+			create(ShapePtr shape, std::string bindPropertyName)
 			{
-				Ptr CullingComponent = std::shared_ptr<Culling>(new Culling());
+				Ptr CullingComponent = std::shared_ptr<Culling>(new Culling(shape, bindPropertyName));
 
 				CullingComponent->initialize();
 
@@ -83,7 +86,7 @@ namespace minko
 			void
 			targetAddedToScene(NodePtr node, NodePtr target, NodePtr ancestor);
 
-			Culling();
+			Culling(ShapePtr shape, std::string bindProperty);
 		};
 	}
 }

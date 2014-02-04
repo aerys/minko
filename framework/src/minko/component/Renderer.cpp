@@ -38,15 +38,18 @@ using namespace minko::render;
 
 const unsigned int Renderer::NUM_FALLBACK_ATTEMPTS = 32;
 
-Renderer::Renderer(AbstractTexture::Ptr	renderTarget,
-				   Effect::Ptr			effect) :
+
+Renderer::Renderer(std::shared_ptr<render::AbstractTexture> renderTarget,
+				   EffectPtr								effect,
+				   float									priority) :
     _backgroundColor(0),
 	_renderingBegin(Signal<Ptr>::create()),
 	_renderingEnd(Signal<Ptr>::create()),
 	_beforePresent(Signal<Ptr>::create()),
 	_surfaceDrawCalls(),
 	_surfaceTechniqueChangedSlot(),
-	_effect(effect)
+	_effect(effect),
+	_priority(priority)
 {
 	if (renderTarget)
 	{
@@ -302,7 +305,7 @@ Renderer::setSceneManager(std::shared_ptr<SceneManager> sceneManager)
 				std::placeholders::_1,
 				std::placeholders::_2,
 				std::placeholders::_3
-			));
+			), _priority);
 		}
 		else
 		{
