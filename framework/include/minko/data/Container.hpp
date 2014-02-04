@@ -42,6 +42,7 @@ namespace minko
 
 			std::list<ProviderPtr>											_providers;
 			std::unordered_map<std::string, ProviderPtr>					_propertyNameToProvider;
+			std::unordered_map<ProviderPtr, uint>							_providersToNumUse;
 
 			std::shared_ptr<Provider>										_arrayLengths;
 
