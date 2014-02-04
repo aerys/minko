@@ -74,6 +74,13 @@ configuration {}
 -- distributable SDK
 MINKO_SDK_DIST = true
 
+-- make plugins visible from an external project
+local plugins = os.matchdirs(MINKO_HOME .. 'plugins/*')
+
+for i, basedir in ipairs(plugins) do
+	dofile(basedir .. '/plugin.lua')
+end
+
 -- options
 newoption {
 	trigger	= 'no-stencil',

@@ -24,20 +24,20 @@ solution "minko"
 	include 'framework'
 	
 	-- plugins
-	minko.plugin.include 'plugins/jpeg'
-	minko.plugin.include 'plugins/png'
-	minko.plugin.include 'plugins/bullet'
-	minko.plugin.include 'plugins/particles'
-	minko.plugin.include 'plugins/webgl'
-	minko.plugin.include 'plugins/sdl'
-	minko.plugin.include 'plugins/angle'
-	minko.plugin.include 'plugins/fx'
-	minko.plugin.include 'plugins/assimp'
-	minko.plugin.include 'plugins/offscreen'
+	include 'plugins/jpeg'
+	include 'plugins/png'
+	include 'plugins/bullet'
+	include 'plugins/particles'
+	include 'plugins/webgl'
+	include 'plugins/sdl'
+	include 'plugins/angle'
+	include 'plugins/fx'
+	include 'plugins/assimp'
+	include 'plugins/offscreen'
 	-- include 'plugins/lua'
-	minko.plugin.include 'plugins/serializer'
-	minko.plugin.include 'plugins/oculus'
-	minko.plugin.include 'plugins/leap'
+	include 'plugins/serializer'
+	include 'plugins/oculus'
+	include 'plugins/leap'
 	
 	-- private plugins
 	-- if os.isdir('plugins/streaming') then

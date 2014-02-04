@@ -41,12 +41,6 @@ minko.project.application = function(name)
 
 	minko.project.library(name)
 
-	if MINKO_SDK_DIST then
-		minko.sdk.links("minko-framework", "framework")
-	else
-		links { "minko-framework" }
-	end
-
 	configuration { "windows32" }
 		libdirs {
 			minko.sdk.path("/framework/lib/glew/lib/windows32")
@@ -225,8 +219,6 @@ minko.project.solution = function(name)
 		-- "ios",
 		-- "android",
 	}
-
-	print(name)
 
 	if not MINKO_SDK_DIST then
 		include(minko.sdk.path("framework"))
