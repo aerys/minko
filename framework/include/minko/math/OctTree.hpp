@@ -86,7 +86,7 @@ namespace minko
 			testFrustum(std::shared_ptr<math::Frustum> frustum);
 
 			void
-			testFrustum(std::shared_ptr<math::Frustum>						frustum, 
+			testFrustum(std::shared_ptr<math::AbstractShape>				frustum, 
 						std::function<void(std::shared_ptr<scene::Node>)>	insideFrustumCallback,
 						std::function<void(std::shared_ptr<scene::Node>)>	outsideFustumCallback);
 

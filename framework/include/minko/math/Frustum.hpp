@@ -26,49 +26,6 @@ namespace minko
 {
 	namespace math
 	{
-		enum class FrustumPosition
-		{
-			OUTSIDE = -3,
-			AROUND	= -2,
-			INSIDE	= -1,
-			LEFT	= 0,
-			TOP		= 1,
-			RIGHT	= 2,
-			BOTTOM	= 3,
-			NEAR	= 4,
-			FAR		= 5
-		};
-
-		enum class PlanePosition
-		{
-			LEFT	= 0,
-			TOP		= 1,
-			RIGHT	= 2,
-			BOTTOM	= 3,
-			NEAR	= 4,
-			FAR		= 5
-		};
-	}
-}
-
-namespace std
-{
-	template<> 
-	struct hash<minko::math::FrustumPosition>
-	{
-	    inline
-	    size_t
-	    operator()(const minko::math::FrustumPosition& p) const
-	    {
-	        return static_cast<int>(p);
-	    }
-	};
-}
-
-namespace minko
-{
-	namespace math
-	{
 		class Frustum :
 			public AbstractShape
 		{
@@ -103,7 +60,7 @@ namespace minko
 			void
 			updateFromMatrix(std::shared_ptr<math::Matrix4x4> matrix);
 
-			FrustumPosition
+			ShapePosition
 			testBoundingBox(std::shared_ptr<math::Box> box);
 
 		private:
