@@ -37,10 +37,20 @@ FileLoader::load(const std::string& filename, std::shared_ptr<Options> options)
 {
 	auto flags = std::ios::in | std::ios::ate | std::ios::binary;
 	
-	std::regex e("^[a-zA-Z0-9]+:\/\/");
+	std::string cleanFilename = "";
 
-	auto cleanFilename = std::regex_replace(filename, e, "");
-	
+	for(int i = 0; i < filename.length(); ++i)
+	{
+		if (i < filename.length() - 2 && filename.at(i) == ':' && filename.at(i + 1) == '/' && filename.at(i + 2) == '/')
+		{
+			cleanFilename = "";
+			i += 2;
+			continue;
+		}
+		
+		cleanFilename += filename.at(i);
+	}
+
 	_filename = filename;
 	_resolvedFilename = options->uriFunction()(sanitizeFilename(cleanFilename));
 	_options = options;
