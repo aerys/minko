@@ -42,6 +42,7 @@ solution "minko"
 	include 'plugins/lua'
 	include 'plugins/serializer'
 	include 'plugins/oculus'
+	include 'plugins/http'
 	-- include 'plugins/leap'
 	
 	-- examples
