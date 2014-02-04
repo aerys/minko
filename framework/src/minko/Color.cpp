@@ -60,3 +60,19 @@ Color::hueToRgb(float p, float q, float t)
 
 	return p;
 }
+
+Vector4::Ptr
+Color::uintToVec4(uint rgba, Vector4::Ptr output)
+{
+	static const float div255 = 1.0f / 255.0f;
+
+	const float r = ((rgba >> 24) & 0xff) * div255;
+	const float g = ((rgba >> 16) & 0xff) * div255;
+	const float b = ((rgba >> 8)  & 0xff) * div255;
+	const float a = ( rgba        & 0xff) * div255;
+
+	if (output == nullptr)
+		output = Vector4::create();
+	
+	return output->setTo(r, g, b, a);
+}
