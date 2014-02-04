@@ -21,14 +21,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 
-#include "minko/data/StructureProvider.hpp"
+#include "minko/data/ArrayProvider.hpp"
 
 namespace minko
 {
 	namespace material
 	{
 		class Material :
-			public data::StructureProvider
+			public data::ArrayProvider
 		{
 		public:
 			typedef std::shared_ptr<Material> Ptr;
@@ -54,7 +54,7 @@ namespace minko
 
 		protected:
 			Material() :
-				data::StructureProvider("material")
+				data::ArrayProvider("material", 0)
 			{
 			}
 		};
