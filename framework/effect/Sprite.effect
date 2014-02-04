@@ -3,37 +3,37 @@
 	"name" : "sprite",
 	
 	"attributeBindings" : {
-		"aPosition"				: "geometry.vertex.attribute.position",
-		"aUV"					: "geometry.vertex.attribute.uv"
+		"aPosition"				: "geometry[${geometryId}].vertex.attribute.position",
+		"aUV"					: "geometry[${geometryId}].vertex.attribute.uv"
 	},
 	
 	"uniformBindings" : {
-		"uDiffuseColor"			: "material.diffuseColor",
-		"uDiffuseMap"			: "material.diffuseMap",
-		"uDiffuseTint"			: "material.diffuseTint",
+		"uDiffuseColor"			: "material[${materialId}].diffuseColor",
+		"uDiffuseMap"			: "material[${materialId}].diffuseMap",
+		"uDiffuseTint"			: "material[${materialId}].diffuseTint",
 		"uModelToWorldMatrix"	: "transform.modelToWorldMatrix",
 		"uViewMatrix"			: { "property" : "camera.viewMatrix", "source" : "renderer" },
 		"uProjectionMatrix"		: { "property" : "camera.projectionMatrix", "source" : "renderer" }
 	},
 	
 	"stateBindings" : {
-        "blendMode"             : "material.blendMode",
-        "colorMask"             : "material.colorMask",
-        "depthMask"             : "material.depthMask",
-        "depthFunc"             : "material.depthFunc",
-        "triangleCulling"       : "material.triangleCulling",
-        "stencilFunc"           : "material.stencilFunc",
-        "stencilRef"            : "material.stencilRef",
-        "stencilMask"           : "material.stencilMask",
-        "stencilFailOp"         : "material.stencilFailOp",
-        "stencilZFailOp"        : "material.stencilZFailOp",
-        "stencilZPassOp"        : "material.stencilZPassOp",
+        "blendMode"             : "material[${materialId}].blendMode",
+        "colorMask"             : "material[${materialId}].colorMask",
+        "depthMask"             : "material[${materialId}].depthMask",
+        "depthFunc"             : "material[${materialId}].depthFunc",
+        "triangleCulling"       : "material[${materialId}].triangleCulling",
+        "stencilFunc"           : "material[${materialId}].stencilFunc",
+        "stencilRef"            : "material[${materialId}].stencilRef",
+        "stencilMask"           : "material[${materialId}].stencilMask",
+        "stencilFailOp"         : "material[${materialId}].stencilFailOp",
+        "stencilZFailOp"        : "material[${materialId}].stencilZFailOp",
+        "stencilZPassOp"        : "material[${materialId}].stencilZPassOp",
         "scissorBox.x"          : { "property" : "scissorBox.x",        "source" : "renderer" },
         "scissorBox.y"          : { "property" : "scissorBox.y",        "source" : "renderer" },
         "scissorBox.width"      : { "property" : "scissorBox.width",    "source" : "renderer" },
         "scissorBox.height"     : { "property" : "scissorBox.height",   "source" : "renderer" },
-        "priority"              : "material.priority",
-        "zsort"					: "material.zsort"
+        "priority"              : "material[${materialId}].priority",
+        "zsort"					: "material[${materialId}].zsort"
     },
 
     "blendMode"         : ["one", "zero"],
@@ -47,8 +47,8 @@
     "zsort"             : false,
     
 	"macroBindings"	: {
-		"DIFFUSE_MAP"			: "material.diffuseMap",
-		"DIFFUSE_TINT"			: "material.diffuseTint"
+		"DIFFUSE_MAP"			: "material[${materialId}].diffuseMap",
+		"DIFFUSE_TINT"			: "material[${materialId}].diffuseTint"
 	},
 	
 	"passes" : [{
