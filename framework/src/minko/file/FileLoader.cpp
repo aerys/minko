@@ -39,7 +39,7 @@ FileLoader::load(const std::string& filename, std::shared_ptr<Options> options)
 	
 	std::string cleanFilename = "";
 
-	for(int i = 0; i < filename.length(); ++i)
+	for(uint i = 0; i < filename.length(); ++i)
 	{
 		if (i < filename.length() - 2 && filename.at(i) == ':' && filename.at(i + 1) == '/' && filename.at(i + 2) == '/')
 		{
