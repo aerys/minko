@@ -43,17 +43,17 @@ insert.insert(premake.tools.gcc, 'ldflags.system.android', {
 -- targetextension ".so"
 -- linkoptions { "-llog", "-lGLESv1_CM", "-lz", "-s", "-shared" }
 
-if not os.isfile(premake.tools.gcc.tools.android.cc) then
+-- if not os.isfile(premake.tools.gcc.tools.android.cc) then
 	-- error(color.fg.red ..'Cannot find GCC for Android. Make sure arm-linux-androideabi-gcc is in your PATH.' .. color.reset)
-end
+-- end
 
-local this_dir = debug.getinfo(1, "S").source:match[[^@?(.*[\/])[^\/]-$]];
-package.path = this_dir .. "actions/?.lua;".. package.path
+-- local this_dir = debug.getinfo(1, "S").source:match[[^@?(.*[\/])[^\/]-$]];
+-- package.path = this_dir .. "actions/?.lua;".. package.path
 
-require 'jni'
-require 'jni_cpp'
-require 'jni_solution'
-require 'jni_makefile'
+-- require 'jni'
+-- require 'jni_cpp'
+-- require 'jni_solution'
+-- require 'jni_makefile'
 
 if os.getenv('ANDROID') then
 	ANDROID = os.getenv('ANDROID');

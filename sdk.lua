@@ -17,7 +17,7 @@ print('Minko SDK home directory: ' .. MINKO_HOME)
 require 'minko'
 require 'color'
 require 'emscripten'
--- require 'android'
+require 'android'
 require 'vs2013ctp'
 require 'gcc'
 require 'clang'
@@ -34,8 +34,8 @@ minko.platform.platforms {
 	"windows64",
 	"osx64",
 	"html5",
-	-- "ios",
-	-- "android",
+	"ios",
+	"android",
 }
 
 configuration { "windows32" }
@@ -60,8 +60,8 @@ configuration { "osx64" }
 configuration { "html5" }
 	system "emscripten"
 
--- configuration { "android"}
--- 	system "android"
+configuration { "android"}
+	system "android"
 
 configuration { "cc=gcc"}
 	toolset "gcc"
