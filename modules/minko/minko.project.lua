@@ -216,8 +216,8 @@ minko.project.solution = function(name)
 		"windows64",
 		"osx64",
 		"html5",
-		-- "ios",
-		-- "android",
+		"ios",
+		"android",
 	}
 
 	if not MINKO_SDK_DIST then
