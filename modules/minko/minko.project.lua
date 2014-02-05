@@ -51,8 +51,8 @@ minko.project.application = function(name)
 			"glew32"
 		}
 		postbuildcommands {
-			'xcopy /y /i "' .. minko.sdk.path("/framework/effect") .. '" "$(TargetDir)\\effect"',
-			minko.vs.getdllscopycommand(minko.sdk.path("/framework/lib/glew/lib/windows32"))
+			minko.action.copy(minko.sdk.path("/framework/effect")),
+			minko.action.copy(minko.sdk.path("/framework/lib/glew/lib/windows32/*.dll")),
 		}
 
 	configuration { "windows32", "debug" }
@@ -65,7 +65,7 @@ minko.project.application = function(name)
 			minko.sdk.path("/framework/bin/windows32/release")
 		}
 		postbuildcommands {
-			'xcopy /y /s asset\\* "$(TargetDir)"',
+			minko.action.copy("asset"),
 		}
 
 	configuration { "windows64" }
@@ -76,9 +76,8 @@ minko.project.application = function(name)
 			"glew32"
 		}
 		postbuildcommands {
-			'xcopy /y /i "' .. minko.sdk.path("/framework/effect") .. '" "$(TargetDir)\\effect"',
-			'xcopy /y /s asset\\* "$(TargetDir)"',
-			minko.vs.getdllscopycommand(minko.sdk.path("/framework/lib/glew/lib/windows64"))
+			minko.action.copy(minko.sdk.path("/framework/effect")),
+			minko.action.copy(minko.sdk.path("/framework/lib/glew/lib/windows64/*.dll")),
 		}
 
 	configuration { "windows64", "debug" }
@@ -91,7 +90,7 @@ minko.project.application = function(name)
 			minko.sdk.path("/framework/bin/windows64/release")
 		}
 		postbuildcommands {
-			'xcopy /y /s asset\\* "$(TargetDir)"',
+			minko.action.copy("asset"),
 		}
 
 	configuration { "linux64" }
@@ -102,7 +101,7 @@ minko.project.application = function(name)
 			"m"
 		}
 		postbuildcommands {
-			'cp -r ' .. minko.sdk.path("/framework/effect") .. ' ${TARGETDIR} || :'
+			minko.action.copy(minko.sdk.path("/framework/effect")),
 		}
 
 	configuration { "linux64", "debug" }
@@ -115,7 +114,7 @@ minko.project.application = function(name)
 			minko.sdk.path("/framework/bin/linux64/release")
 		}
 		postbuildcommands {
-			'cp -r asset/* ${TARGETDIR} || :'
+			minko.action.copy("asset"),
 		}
 	
 	configuration { "linux32" }
@@ -125,7 +124,7 @@ minko.project.application = function(name)
 			"m"
 		}
 		postbuildcommands {
-			'cp -r ' .. minko.sdk.path("/framework/effect") .. ' ${TARGETDIR} || :'
+			minko.action.copy(minko.sdk.path("/framework/effect")),
 		}
 
 	configuration { "linux32", "debug" }
@@ -138,7 +137,7 @@ minko.project.application = function(name)
 			minko.sdk.path("/framework/bin/linux32/release")
 		}
 		postbuildcommands {
-			'cp -r asset/* ${TARGETDIR} || :'
+			minko.action.copy("asset"),
 		}
 	
 	configuration { "osx64" }
@@ -150,7 +149,7 @@ minko.project.application = function(name)
 			"IOKit.framework"
 		}
 		postbuildcommands {
-			'cp -r ' .. minko.sdk.path('/framework/effect') .. ' ${TARGETDIR} || :'
+			minko.action.copy(minko.sdk.path("/framework/effect")),
 		}
 
 	configuration { "osx64", "debug" }
@@ -163,7 +162,7 @@ minko.project.application = function(name)
 			minko.sdk.path("/framework/bin/osx64/release")
 		}
 		postbuildcommands {
-			'cp -r asset/* ${TARGETDIR} || :'
+			minko.action.copy("asset"),
 		}
 
 	configuration { "html5" }
@@ -174,8 +173,8 @@ minko.project.application = function(name)
 		}
 		
 		prelinkcommands {
-			'cp -r ' .. minko.sdk.path('/framework/effect') .. ' ${TARGETDIR} || :',
-			'cp -r asset/* ${TARGETDIR} || :'
+			minko.action.copy(minko.sdk.path("/framework/effect")),
+			minko.action.copy("asset"),
 		}
 
 		postbuildcommands {
