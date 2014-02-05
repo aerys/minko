@@ -46,7 +46,13 @@ Pass::Pass(const std::string&				name,
 	_macroBindingsTemplate(macroBindings),
     _states(states),
 	_fallback(fallback),
-	_signatureToProgram()
+	_signatureToProgram(),
+	_uniformFunctions(),
+	_attributeFunctions(),
+	_indexFunction(nullptr),
+	_undefinedMacros(),
+	_definedBoolMacros(),
+	_definedIntMacros()
 {
 }
 
@@ -73,6 +79,7 @@ Pass::selectProgram(const MacroBindingsMap&				macroBindings,
 		ProgramSignature	signature;
 
 		signature.build(
+			shared_from_this(),
 			macroBindings,
 			data, 
 			rendererData, 
@@ -178,4 +185,36 @@ Pass::macroBindings(FormatFunction									formatPropertyNameFunction,
 	}
 
 	return instancedMacroBindings;
+}
+
+void
+Pass::getExplicitDefinitions(std::unordered_map<std::string, data::MacroBindingDefault>& macroNameToValue) const
+{
+	macroNameToValue.clear();
+
+	for (auto& macroName : _definedBoolMacros)
+		if (!isExplicitlyUndefined(macroName))
+		{
+			data::MacroBindingDefault macroValue;
+
+			macroValue.semantic				= data::MacroBindingDefaultValueSemantic::PROPERTY_EXISTS;
+			macroValue.value.propertyExists = true;
+
+			macroNameToValue[macroName] = macroValue;
+		}
+
+	for (auto& macroNameAndValue : _definedIntMacros)
+	{
+		const auto& macroName	= macroNameAndValue.first;
+
+		if (!isExplicitlyUndefined(macroName))
+		{
+			data::MacroBindingDefault	macroValue;
+
+			macroValue.semantic		= data::MacroBindingDefaultValueSemantic::VALUE;
+			macroValue.value.value	= macroNameAndValue.second;
+
+			macroNameToValue[macroName] = macroValue; // integer definitions will overwrite boolean definitions
+		}
+	}
 }
