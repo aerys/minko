@@ -29,13 +29,13 @@ using namespace minko::render;
 using namespace minko::math;
 
 // names of the properties that may cause a z-sort change between drawcalls
-/*static*/ const std::unordered_set<std::string> ZSortSignalManager::TARGET_PNAMES = {
+/*static*/ const std::set<std::string> ZSortSignalManager::TARGET_RAW_PNAMES = {
 	"material[${materialId}].priority",
 	"material[${materialId}].zsorted",
 	"geometry[${geometryId}].vertex.attribute.position",
 	"transform.modelToWorldMatrix"
 };
-/*static*/ const std::unordered_set<std::string> ZSortSignalManager::RENDERER_PNAMES = {
+/*static*/ const std::set<std::string> ZSortSignalManager::RENDERER_RAW_PNAMES = {
 	"camera.worldToScreenMatrix"
 };
 
@@ -45,7 +45,9 @@ ZSortSignalManager::ZSortSignalManager(DrawCall::Ptr drawcall):
 	_targetPropAddedSlot(nullptr),
 	_targetPropRemovedSlot(nullptr),
 	_rendererPropAddedSlot(nullptr),
-	_rendererPropRemovedSlot(nullptr)
+	_rendererPropRemovedSlot(nullptr),
+	_target_pnames(),
+	_renderer_pnames()
 {
 	if (drawcall == nullptr)
 		throw new std::invalid_argument("drawcall");
@@ -59,12 +61,19 @@ ZSortSignalManager::initialize(Container::Ptr targetData,
 	assert(targetData);
 	assert(rendererData);
 
+	clear();
+
+	for (auto& pname : TARGET_RAW_PNAMES)
+		_target_pnames.insert(_drawcall->formatPropertyName(pname));
+	for (auto& pname : RENDERER_RAW_PNAMES)
+		_renderer_pnames.insert(_drawcall->formatPropertyName(pname));
+
 	_targetPropAddedSlot	= targetData->propertyAdded()->connect(std::bind(
 		&ZSortSignalManager::propertyAddedHandler,
 		shared_from_this(),
 		std::placeholders::_1,
 		std::placeholders::_2,
-		TARGET_PNAMES
+		_target_pnames
 	));
 
 	_rendererPropAddedSlot	= rendererData->propertyAdded()->connect(std::bind(
@@ -72,7 +81,7 @@ ZSortSignalManager::initialize(Container::Ptr targetData,
 		shared_from_this(),
 		std::placeholders::_1,
 		std::placeholders::_2,
-		RENDERER_PNAMES
+		_renderer_pnames
 	));
 
 	_targetPropRemovedSlot	= targetData->propertyRemoved()->connect(std::bind(
@@ -80,7 +89,7 @@ ZSortSignalManager::initialize(Container::Ptr targetData,
 		shared_from_this(),
 		std::placeholders::_1,
 		std::placeholders::_2,
-		TARGET_PNAMES
+		_target_pnames
 	));
 	
 	_rendererPropRemovedSlot	= rendererData->propertyRemoved()->connect(std::bind(
@@ -88,15 +97,15 @@ ZSortSignalManager::initialize(Container::Ptr targetData,
 		shared_from_this(),
 		std::placeholders::_1,
 		std::placeholders::_2,
-		RENDERER_PNAMES
+		_renderer_pnames
 	));
 
 	_propChangedSlots.clear();
 
-	for (auto& pname : TARGET_PNAMES)
-		propertyAddedHandler(targetData, pname, TARGET_PNAMES);
-	for (auto& pname : RENDERER_PNAMES)
-		propertyAddedHandler(rendererData, pname, RENDERER_PNAMES);
+	for (auto& pname : _target_pnames)
+		propertyAddedHandler(targetData, pname, _target_pnames);
+	for (auto& pname : _renderer_pnames)
+		propertyAddedHandler(rendererData, pname, _renderer_pnames);
 }
 
 void
@@ -108,12 +117,14 @@ ZSortSignalManager::clear()
 	_rendererPropRemovedSlot	= nullptr;
 	_propChangedSlots			.clear();
 	_matrixChangedSlots			.clear();
+	_target_pnames				.clear();
+	_renderer_pnames			.clear();
 }
 
 void
-ZSortSignalManager::propertyAddedHandler(Container::Ptr							container, 
-										 const std::string&						propertyName,
-										 const std::unordered_set<std::string>& possibleNames)
+ZSortSignalManager::propertyAddedHandler(Container::Ptr					container, 
+										 const std::string&				propertyName,
+										 const std::set<std::string>&	possibleNames)
 {
 	assert(container);
 
@@ -143,9 +154,9 @@ ZSortSignalManager::propertyAddedHandler(Container::Ptr							container,
 }
 
 void
-ZSortSignalManager::propertyRemovedHandler(Container::Ptr							container, 
-										   const std::string&						propertyName,
-										   const std::unordered_set<std::string>&	possibleNames)
+ZSortSignalManager::propertyRemovedHandler(Container::Ptr				container, 
+										   const std::string&			propertyName,
+										   const std::set<std::string>&	possibleNames)
 {
 	assert(container);
 
