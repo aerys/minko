@@ -43,6 +43,9 @@ namespace minko
 			typedef Signal<ValuePtr>::Slot							ValueChangedSlot;
 
 		private:
+			static const std::set<std::string>						TARGET_RAW_PNAMES;
+			static const std::set<std::string>						RENDERER_RAW_PNAMES;
+
 			const DrawCallPtr										_drawcall;
 
 			PropertyChangedSlot										_targetPropAddedSlot;
@@ -52,8 +55,8 @@ namespace minko
 			std::unordered_map<std::string, PropertyChangedSlot>	_propChangedSlots;
 			std::unordered_map<std::string, ValueChangedSlot>		_matrixChangedSlots;
 
-			static const std::unordered_set<std::string>			TARGET_PNAMES;
-			static const std::unordered_set<std::string>			RENDERER_PNAMES;
+			std::set<std::string>									_target_pnames;
+			std::set<std::string>									_renderer_pnames;
 
 		public:
 			inline static
@@ -73,10 +76,10 @@ namespace minko
 			ZSortSignalManager(DrawCallPtr drawcall);
 
 			void
-			propertyAddedHandler(ContainerPtr, const std::string&, const std::unordered_set<std::string>&);
+			propertyAddedHandler(ContainerPtr, const std::string&, const std::set<std::string>&);
 
 			void
-			propertyRemovedHandler(ContainerPtr, const std::string&, const std::unordered_set<std::string>&);
+			propertyRemovedHandler(ContainerPtr, const std::string&, const std::set<std::string>&);
 
 			void
 			requestZSort();
