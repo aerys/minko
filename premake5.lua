@@ -172,6 +172,6 @@ newaction {
 	trigger			= "clean",
 	description		= "Remove generated files.",
 	execute			= function()
-		os.execute(minko.sdk.path("tools/lin/scripts/clean.sh"))
+		minko.action.clean()
 	end
 }
