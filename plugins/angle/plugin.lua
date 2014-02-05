@@ -25,15 +25,16 @@ function minko.plugin.angle:enable()
 
 	assert(os.get() == 'windows', "The ANGLE plugin is compatible only with Windows.")
 
-	configuration { "windows" }
-		libdirs { minko.sdk.path("plugins/angle/lib/win/ANGLE/lib") }
+	configuration { "windows32 or windows64" }
 		defines { "MINKO_ANGLE" }
+
+		libdirs { minko.plugin.path("angle") .. "/lib/win/ANGLE/lib" }
 		links { "libGLESv2", "libEGL" }
-		includedirs { minko.sdk.path("plugins/angle/lib/win/ANGLE/include") }
+		includedirs { minko.plugin.path("angle") .. "/lib/win/ANGLE/include" }
 		
 		if kind ~= "StaticLib" and kind ~= "SharedLib" then
 			postbuildcommands {
-				minko.vs.getdllscopycommand(minko.sdk.path("plugins/angle/lib/win/ANGLE/lib"))
+				minko.action.copy(minko.plugin.path("angle") .. "/lib/win/ANGLE/lib/*.dll")
 			}
 		end
 end

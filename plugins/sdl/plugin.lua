@@ -21,23 +21,27 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 minko.plugin.sdl = {}
 
 function minko.plugin.sdl:enable()
-	minko.plugin.links { "sdl" }
 	defines { "MINKO_PLUGIN_SDL" }
 
-	includedirs { minko.sdk.path("plugins/sdl/include") }
+	minko.plugin.links { "sdl" }
+	
+	includedirs {
+		minko.plugin.path("sdl") .. "/include",
+		minko.plugin.path("sdl") .. "/lib/sdl/include",
+	}
 
 	configuration { "windows32" }
 		links { "SDL2", "SDL2main" }
-		libdirs { minko.sdk.path("plugins/sdl/lib/sdl/lib/windows32") }
+		libdirs { minko.plugin.path("sdl") .. "/lib/sdl/lib/windows32" }
 		postbuildcommands {
-			minko.vs.getdllscopycommand(minko.sdk.path("plugins/sdl/lib/sdl/lib/windows32"))
+			minko.action.copy(minko.plugin.path("sdl") .. "/lib/sdl/lib/windows32/*.dll")
 		}
 
 	configuration { "windows64" }
 		links { "SDL2", "SDL2main" }
-		libdirs { minko.sdk.path("plugins/sdl/lib/sdl/lib/windows64") }
+		libdirs { minko.plugin.path("sdl") .. "/lib/sdl/lib/windows64" }
 		postbuildcommands {
-			minko.vs.getdllscopycommand(minko.sdk.path("plugins/sdl/lib/sdl/lib/windows64"))
+			minko.action.copy(minko.plugin.path("sdl") .. "/lib/sdl/lib/windows64/*.dll")
 		}
 		
 	configuration { "linux32" }
@@ -51,13 +55,11 @@ function minko.plugin.sdl:enable()
 end
 
 function minko.plugin.sdl:dist(pluginDistDir)
-	print("plugin-dist " .. pluginDistDir)
-	
 	configuration { "windows32" }
 		os.mkdir(pluginDistDir .. "/lib/sdl/lib/windows32")
-		minko.os.copyfiles(minko.sdk.path("plugins/sdl/lib/sdl/lib/windows32"), pluginDistDir .. "/lib/sdl/lib/windows32")
+		minko.os.copyfiles(minko.plugin.path("sdl") .. "/lib/sdl/lib/windows32", pluginDistDir .. "/lib/sdl/lib/windows32")
 
 	configuration { "windows64" }
 		os.mkdir(pluginDistDir .. "/lib/sdl/windows64/lib")
-		minko.os.copyfiles(minko.sdk.path("plugins/sdl/lib/sdl/lib/windows64"), pluginDistDir .. "/lib/sdl/lib/windows64")
+		minko.os.copyfiles(minko.plugin.path("sdl") .. "/lib/sdl/lib/windows64", pluginDistDir .. "/lib/sdl/lib/windows64")
 end
