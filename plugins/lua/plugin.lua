@@ -21,42 +21,33 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 minko.plugin.lua = {}
 
 function minko.plugin.lua:enable()
-	minko.plugin.links { "lua" }
-	includedirs {
-		minko.sdk.path("plugins/lua/include"),
-		minko.sdk.path("plugins/lua/lib/lua/include"),
-		minko.sdk.path("plugins/lua/lib/LuaGlue/include"),
-	}
 	defines {
 		"MINKO_PLUGIN_LUA",
 		"LUA_USE_POSIX"
 	}
 
-	configuration { "windows" }
-		prelinkcommands {
-			'xcopy /y /i /s "' .. minko.sdk.path('/plugins/lua/asset/script/*') .. '" "$(TargetDir)\\script"',
-		}
-		
-	configuration { "linux" }
-		prelinkcommands {
-			'cp -r ' .. minko.sdk.path('/plugins/lua/asset/script') .. ' ${TARGETDIR} || :',
-		}
-	
-	configuration { "macosx or html5" }
-		prelinkcommands {
-			'cp -r ' .. minko.sdk.path('/plugins/lua/asset/script') .. ' ${TARGETDIR} || :',
-		}
+	minko.plugin.links { "lua" }
+
+	includedirs {
+		minko.plugin.path("lua") .. "/include",
+		minko.plugin.path("lua") .. "/lib/lua/include",
+		minko.plugin.path("lua") .. "/lib/LuaGlue/include",
+	}
+
+	postbuildcommands {
+		minko.action.copy(minko.plugin.path("lua") .. "/asset"),
+	}
 end
 
 function minko.plugin.lua:dist(pluginDistDir)
 	os.mkdir(pluginDistDir .. '/lib/lua/include')
 	minko.os.copyfiles(
-		minko.sdk.path('/plugins/lua/lib/lua/include'),
+		minko.plugin.path("lua") .. "/lib/lua/include",
 		pluginDistDir .. '/lib/lua/include'
 	)
 	os.mkdir(pluginDistDir .. '/lib/LuaGlue/include')
 	minko.os.copyfiles(
-		minko.sdk.path('/plugins/lua/lib/LuaGlue/include'),
+		minko.plugin.path("lua") .. "/lib/LuaGlue/include",
 		pluginDistDir .. '/lib/LuaGlue/include'
 	)
 end
