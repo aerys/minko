@@ -11,3 +11,7 @@ minko.action.copy = function(sourcePath)
 		return 'cp -R "' .. sourcePath .. '" ${TARGETDIR}'
 	end
 end
+
+minko.action.clean = function()
+	error("Not implemented yet")
+end
