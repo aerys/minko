@@ -638,19 +638,46 @@ DrawCall::render(const AbstractContext::Ptr& context, AbstractTexture::Ptr rende
             );
     }
 
-    for (uint vertexBufferId = 0; vertexBufferId < _vertexBuffers.size(); ++vertexBufferId)
-    {
-        auto vertexBuffer = _vertexBuffers[vertexBufferId];
+	if (_program->indexBuffer())
+	{
+		// use the vertex attributes manually assigned to the effect
+		for (auto vertexBufferLocationAndPtr : _program->vertexBuffers())
+		{
+			const int	location		= vertexBufferLocationAndPtr.first;
+			auto&		vertexBuffer	= vertexBufferLocationAndPtr.second;
+	
+			if (vertexBuffer->isReady())
+			{
+				assert(vertexBuffer->attributes().size() == 1);
+	
+				const auto& vertexAttribute = vertexBuffer->attributes().front();
 
-        if (vertexBuffer > 0)
-            context->setVertexBufferAt(
-                _vertexBufferLocations[vertexBufferId],
-                vertexBuffer,
-                _vertexAttributeSizes[vertexBufferId],
-                _vertexSizes[vertexBufferId],
-                _vertexAttributeOffsets[vertexBufferId]
-            );
-    }
+				context->setVertexBufferAt(
+					location,
+					vertexBuffer->id(),
+					std::get<1>(*vertexAttribute),
+					vertexBuffer->vertexSize(),
+					std::get<2>(*vertexAttribute)
+				);
+			}
+		}
+	}
+	else
+	{
+	    for (uint vertexBufferId = 0; vertexBufferId < _vertexBuffers.size(); ++vertexBufferId)
+	    {
+	        auto vertexBuffer = _vertexBuffers[vertexBufferId];
+	
+	        if (vertexBuffer > 0)
+	            context->setVertexBufferAt(
+	                _vertexBufferLocations[vertexBufferId],
+	                vertexBuffer,
+	                _vertexAttributeSizes[vertexBufferId],
+	                _vertexSizes[vertexBufferId],
+	                _vertexAttributeOffsets[vertexBufferId]
+	            );
+	    }
+	}
 
 	context->setColorMask(_colorMask);
 	context->setBlendMode(_blendMode);
@@ -659,7 +686,9 @@ DrawCall::render(const AbstractContext::Ptr& context, AbstractTexture::Ptr rende
 	context->setScissorTest(_scissorTest, _scissorBox);
     context->setTriangleCulling(_triangleCulling);
 
-	if (_indexBuffer != -1)
+	if (_program->indexBuffer() && _program->indexBuffer()->isReady())
+		context->drawTriangles(_program->indexBuffer()->id(), _program->indexBuffer()->data().size() / 3);
+	else if (_indexBuffer != -1)
 		context->drawTriangles(_indexBuffer, _numIndices / 3);
 }
 

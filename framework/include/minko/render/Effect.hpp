@@ -36,14 +36,20 @@ namespace minko
 
 		private:
 			typedef std::shared_ptr<Pass>										PassPtr;
+			typedef std::shared_ptr<VertexBuffer>								VertexBufferPtr;
+			typedef std::shared_ptr<std::function<void(PassPtr)>>				OnPassFunctionPtr;
+			typedef std::list<std::function<void(PassPtr)>>						OnPassFunctionList;	
 			typedef std::vector<PassPtr> 										Technique;
 			typedef Signal<Ptr, const std::string&, const std::string&>::Ptr	TechniqueChangedSignalPtr;
 
 		private:
 			std::unordered_map<std::string, Technique>		_techniques;
 			std::unordered_map<std::string, std::string>	_fallback;
-			std::list<std::function<void(PassPtr)>>			_uniformFunctions;
 			std::shared_ptr<data::Provider>					_data;
+
+			OnPassFunctionList								_uniformFunctions;
+			OnPassFunctionList								_attributeFunctions;
+			OnPassFunctionPtr								_indexFunction;
 
 		public:
 			inline static
@@ -120,13 +126,36 @@ namespace minko
 				});
 #else
 				_uniformFunctions.push_back(std::bind(
-					&Effect::setUniformOnPass<T...>, shared_from_this(), std::placeholders::_1, name, values...
+					&Effect::setUniformOnPass<T...>, std::placeholders::_1, name, values...
 				));
 #endif
-
-				for (auto technique : _techniques)
+				for (auto& technique : _techniques)
 					for (auto& pass : technique.second)
 						pass->setUniform(name, values...);
+			}
+
+			void
+			setIndexBuffer(const std::vector<unsigned short>& indices)
+			{
+				_indexFunction = std::make_shared<std::function<void(PassPtr)>>(std::bind(
+					&Effect::setIndexBufferOnPass, std::placeholders::_1, indices
+				));
+
+				for (auto& technique : _techniques)
+					for (auto& pass : technique.second)
+						pass->setIndexBuffer(indices);
+			}
+
+			void
+			setVertexAttribute(const std::string& name, unsigned int attributeSize, const std::vector<float>& data)
+			{
+				_attributeFunctions.push_back(std::bind(
+					&Effect::setVertexAttributeOnPass, std::placeholders::_1, name, attributeSize, data
+				));
+
+				for (auto& technique : _techniques)
+					for (auto& pass : technique.second)
+						pass->setVertexAttribute(name, attributeSize, data);
 			}
 
             void
@@ -142,10 +171,25 @@ namespace minko
 			Effect();
 
 			template <typename... T>
+			static 
 			void
 			setUniformOnPass(std::shared_ptr<Pass> pass, const std::string& name, const T&... values)
 			{
 				pass->setUniform(name, values...);
+			}
+
+			static 
+			void
+			setVertexAttributeOnPass(std::shared_ptr<Pass> pass, const std::string& name, unsigned int attributeSize, const std::vector<float>& data)
+			{
+				pass->setVertexAttribute(name, attributeSize, data);
+			}
+
+			static
+			void
+			setIndexBufferOnPass(std::shared_ptr<Pass> pass, const std::vector<unsigned short>& indices)
+			{
+				pass->setIndexBuffer(indices);
 			}
 		};		
 	}
