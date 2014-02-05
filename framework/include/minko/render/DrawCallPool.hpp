@@ -48,10 +48,11 @@ namespace minko
 			typedef std::shared_ptr<component::Surface>													SurfacePtr;
 			typedef std::shared_ptr<component::Renderer>												RendererPtr;
 			typedef std::shared_ptr<render::Pass>														PassPtr;
+			typedef std::unordered_map<std::string, std::string>										StringToStringMap;
 
 			typedef std::pair<std::string, PassPtr>														TechniquePass;
 			typedef std::list<DrawCallPtr>																DrawCallList;
-			typedef std::function <void(std::string&, std::unordered_map<std::string, std::string>&)>	FormatFunction;
+			typedef std::function <std::string(const std::string&, StringToStringMap&)>					FormatFunction;
 
 			typedef Signal<ContainerPtr, const std::string&>											PropertyChangedSignal;
 			typedef Signal<Ptr, SurfacePtr, DrawCallPtr>												DrawCallChangedSignal;
@@ -214,8 +215,9 @@ namespace minko
 			void
 			dataProviderIndexChanged(std::shared_ptr<data::ArrayProvider> provider, uint index, SurfacePtr surface);
 		
-			void
-			replaceVariable(std::string& propertyName, std::unordered_map<std::string, std::string>& variableToValue);
+			std::string
+			replaceVariable(const std::string&								rawPropertyName,
+							std::unordered_map<std::string, std::string>&	variableToValue);
 		};
 	}
 }
