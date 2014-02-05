@@ -152,3 +152,37 @@ PhongMaterial::reflectivity() const
 {
 	return get<float>("reflectivity");
 }
+
+PhongMaterial::Ptr
+PhongMaterial::normalMap(AbstractTexture::Ptr value)
+{
+	if (value->type() == TextureType::CubeTexture)
+		throw new std::logic_error("Only 2d normal maps are currently supported.");
+
+	set("normalMap", std::static_pointer_cast<AbstractTexture>(value));
+
+	return std::static_pointer_cast<PhongMaterial>(shared_from_this());
+}
+
+Texture::Ptr
+PhongMaterial::normalMap() const
+{
+	return std::dynamic_pointer_cast<Texture>(get<AbstractTexture::Ptr>("normalMap"));
+}
+
+PhongMaterial::Ptr
+PhongMaterial::specularMap(AbstractTexture::Ptr value)
+{
+	if (value->type() == TextureType::CubeTexture)
+		throw new std::logic_error("Only 2d specular maps are currently supported.");
+
+	set("specularMap", std::static_pointer_cast<AbstractTexture>(value));
+
+	return std::static_pointer_cast<PhongMaterial>(shared_from_this());
+}
+
+Texture::Ptr
+PhongMaterial::specularMap() const
+{
+	return std::dynamic_pointer_cast<Texture>(get<AbstractTexture::Ptr>("specularMap"));
+}
