@@ -55,19 +55,22 @@ namespace minko
 			typedef std::function<std::string(const std::string&, StringToStringMap&)>	FormatFunction;
 
 		private:
-			const std::string		_name;
-			ProgramPtr				_programTemplate;
-			data::BindingMap		_attributeBindings;
-			data::BindingMap		_uniformBindings;
-			data::BindingMap		_stateBindings;
-			data::MacroBindingMap	_macroBindingsTemplate;
-            StatesPtr				_states;
-			std::string				_fallback;
-			SignatureProgramMap		_signatureToProgram;
+			const std::string						_name;
+			ProgramPtr								_programTemplate;
+			data::BindingMap						_attributeBindings;
+			data::BindingMap						_uniformBindings;
+			data::BindingMap						_stateBindings;
+			data::MacroBindingMap					_macroBindingsTemplate;
+            StatesPtr								_states;
+			std::string								_fallback;
+			SignatureProgramMap						_signatureToProgram;
 
-			OnProgramFunctionList	_uniformFunctions;
-			OnProgramFunctionList	_attributeFunctions;
-			OnProgramFunctionPtr	_indexFunction;
+			OnProgramFunctionList					_uniformFunctions;
+			OnProgramFunctionList					_attributeFunctions;
+			OnProgramFunctionPtr					_indexFunction;
+			std::set<std::string>					_undefinedMacros;
+			std::set<std::string>					_definedBoolMacros;
+			std::unordered_map<std::string, int>	_definedIntMacros;
 
 		public:
 			inline static
@@ -210,6 +213,7 @@ namespace minko
 					signatureAndProgram.second->setUniform(name, values...);
 			}
 
+			inline
 			void
 			setVertexAttribute(const std::string& name, unsigned int attributeSize, const std::vector<float>& data)
 			{
@@ -223,6 +227,7 @@ namespace minko
 					signatureAndProgram.second->setVertexAttribute(name, attributeSize, data);
 			}
 
+			inline
 			void
 			setIndexBuffer(const std::vector<unsigned short>& indices)
 			{
@@ -234,6 +239,40 @@ namespace minko
 					_programTemplate->setIndexBuffer(indices);
 				for (auto signatureAndProgram : _signatureToProgram)
 					signatureAndProgram.second->setIndexBuffer(indices);
+			}
+
+			inline
+			void
+			define(const std::string& macroName)
+			{
+				if (!macroName.empty())
+					_definedBoolMacros.insert(macroName);
+			}
+
+			inline
+			void
+			define(const std::string& macroName, int macroValue)
+			{
+				if (!macroName.empty())
+					_definedIntMacros[macroName] = macroValue;
+			}
+
+			inline
+			void
+			undefine(const std::string& macroName)
+			{
+				if (!macroName.empty())
+					_undefinedMacros.insert(macroName);
+			}
+
+			void
+			getExplicitDefinitions(std::unordered_map<std::string, data::MacroBindingDefault>& macroNameToValue) const;
+
+			inline
+			bool
+			isExplicitlyUndefined(const std::string& macroName) const
+			{
+				return _undefinedMacros.find(macroName) != _undefinedMacros.end();
 			}
 
 		private:
