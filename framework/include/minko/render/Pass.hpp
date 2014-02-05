@@ -43,15 +43,16 @@ namespace minko
 			typedef std::shared_ptr<Pass> Ptr;
 
 		private:
- 			typedef std::shared_ptr<Program>								ProgramPtr;
-			typedef std::shared_ptr<VertexBuffer>							VertexBufferPtr;
-            typedef std::unordered_map<std::string, SamplerState>			SamplerStatesMap;
-			typedef std::shared_ptr<States>									StatesPtr;
-			typedef std::unordered_map<ProgramSignature, ProgramPtr>		SignatureProgramMap;
-			typedef std::shared_ptr<std::function<void(ProgramPtr)>>		OnProgramFunctionPtr;
-			typedef std::list<std::function<void(ProgramPtr)>>				OnProgramFunctionList;	
-			typedef std::unordered_map<std::string, data::MacroBinding>		MacroBindingsMap;
-
+ 			typedef std::shared_ptr<Program>											ProgramPtr;
+			typedef std::shared_ptr<VertexBuffer>										VertexBufferPtr;
+            typedef std::unordered_map<std::string, SamplerState>						SamplerStatesMap;
+			typedef std::shared_ptr<States>												StatesPtr;
+			typedef std::unordered_map<ProgramSignature, ProgramPtr>					SignatureProgramMap;
+			typedef std::shared_ptr<std::function<void(ProgramPtr)>>					OnProgramFunctionPtr;
+			typedef std::list<std::function<void(ProgramPtr)>>							OnProgramFunctionList;	
+			typedef std::unordered_map<std::string, data::MacroBinding>					MacroBindingsMap;
+			typedef std::unordered_map<std::string, std::string>						StringToStringMap;
+			typedef std::function<std::string(const std::string&, StringToStringMap&)>	FormatFunction;
 
 		private:
 			const std::string		_name;
@@ -169,8 +170,8 @@ namespace minko
 			}
 
 			const data::MacroBindingMap
-			macroBindings(std::function<void(std::string&, std::unordered_map<std::string, std::string>&)> formatPropertyNameFunction,
-						  std::unordered_map<std::string, std::string>&									   variablesToValue);
+			macroBindings(FormatFunction										formatPropertyNameFunction,
+						  std::unordered_map<std::string, std::string>&			variablesToValue);
 
 			inline
 			StatesPtr
