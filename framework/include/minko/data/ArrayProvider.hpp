@@ -34,9 +34,15 @@ namespace minko
 			typedef std::shared_ptr<ArrayProvider> Ptr;
 
 		private:
+			typedef std::shared_ptr<Provider>				ProviderPtr;
+			typedef Signal<Ptr, uint>						IndexChangedSignal;
+			typedef std::shared_ptr<IndexChangedSignal>		IndexChangedSignalPtr;
+
+		private:
 			std::string										_name;
 			unsigned int									_index;
 			std::unordered_map<std::string, std::string>	_propertyNameToArrayPropertyName;
+			IndexChangedSignalPtr							_indexChanged;
 
 		public:
 			inline static
@@ -44,6 +50,14 @@ namespace minko
 			create(const std::string& name, uint index = 0)
 			{
 				return std::shared_ptr<ArrayProvider>(new ArrayProvider(name, index));
+			}
+
+
+			inline
+			IndexChangedSignalPtr
+			indexChanged()
+			{
+				return _indexChanged;
 			}
 
 			inline
@@ -63,9 +77,10 @@ namespace minko
 			void
 			index(unsigned int index);
 
-		private:
+		protected:
 			ArrayProvider(const std::string& name, uint index);
-
+		
+		private:
 			std::string
 			formatPropertyName(const std::string&) const;
 

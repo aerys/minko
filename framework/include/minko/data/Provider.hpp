@@ -270,7 +270,6 @@ namespace minko
 			{
 				return propertyName;
 			}
-			
 		};
 	}
 }

@@ -26,6 +26,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/data/Container.hpp"
 #include "minko/scene/Node.hpp"
 #include "minko/render/Blending.hpp"
+#include "minko/geometry/Geometry.hpp"
+#include "minko/data/ArrayProvider.hpp"
 
 using namespace minko;
 using namespace minko::math;
@@ -34,6 +36,9 @@ using namespace minko::component;
 using namespace minko::data;
 
 const unsigned int DrawCallPool::NUM_FALLBACK_ATTEMPTS = 32;
+
+std::unordered_map<std::string, std::pair<std::string, int>> DrawCallPool::_variablePropertyNameToPosition;
+
 
 DrawCallPool::DrawCallPool(Renderer::Ptr renderer):
 	_renderer(renderer),
@@ -122,20 +127,38 @@ DrawCallPool::addSurface(Surface::Ptr surface)
 		std::placeholders::_1,
 		std::placeholders::_2))));
 
-	Effect::Ptr effect = _renderer->effect() 
-		? _renderer->effect() 
-		: surface->effect();
+	_surfaceToIndexChangedSlot.insert(std::pair<SurfacePtr, ArrayProviderIndexChangedSlot>(surface, surface->geometry()->data()->indexChanged()->connect(std::bind(
+		&DrawCallPool::dataProviderIndexChanged,
+		shared_from_this(),
+		std::placeholders::_1,
+		std::placeholders::_2,
+		surface
+		))));
 
-	for (auto& technique : effect->techniques())
-	{
-		auto& techniqueName = technique.first;
+	auto arrayProviderMaterial = std::dynamic_pointer_cast<data::ArrayProvider>(surface->material());
 
-		for (auto& pass : technique.second)
-			for (auto& macroBinding : pass->macroBindings())
-				_techniqueToMacroNames[surface][techniqueName].insert(std::get<0>(macroBinding.second));
-	}
+	if (arrayProviderMaterial)
+		_surfaceToIndexChangedSlot.insert(std::pair<SurfacePtr, ArrayProviderIndexChangedSlot>(surface, arrayProviderMaterial->indexChanged()->connect(std::bind(
+		&DrawCallPool::dataProviderIndexChanged,
+		shared_from_this(),
+		std::placeholders::_1,
+		std::placeholders::_2,
+		surface
+		))));
 
-	_toCollect.push_back(surface);
+	//if (std::find(_toCollect.begin(), _toCollect.end(), surface) == _toCollect.end())
+	_toCollect.insert(surface);
+}
+
+void
+DrawCallPool::dataProviderIndexChanged(std::shared_ptr<data::ArrayProvider> provider, uint index, SurfacePtr surface)
+{
+	//if (std::find(_toCollect.begin(), _toCollect.end(), surface) == _toCollect.end())
+	//{
+	//	std::cout << "   update surface drawcalls" << std::endl;
+		//deleteDrawCalls(surface);
+		_toCollect.insert(surface);
+	//}
 }
 
 void
@@ -144,7 +167,7 @@ DrawCallPool::removeSurface(Surface::Ptr surface)
 	auto surfaceToCollectIt = std::find(_toCollect.begin(), _toCollect.end(), surface);
 
 	if (surfaceToCollectIt == _toCollect.end())
-		_toRemove.push_back(surface);
+		_toRemove.insert(surface);
 	else
 		_toCollect.erase(surfaceToCollectIt);
 }
@@ -158,6 +181,7 @@ DrawCallPool::cleanSurface(Surface::Ptr	surface)
 	_macroChangedSlots[surface].clear();
 	_numMacroListeners[surface].clear();
 	_drawcallToZSortNeededSlots.erase(surface);
+	_surfaceToIndexChangedSlot.erase(surface);
 }
 
 void
@@ -165,10 +189,9 @@ DrawCallPool::techniqueChanged(Surface::Ptr			surface,
 							   const std::string&	technique, 
 							   bool					updateDrawCall)
 {
-	//_toRemove.push_back(surface);
 	deleteDrawCalls(surface);
-	if (updateDrawCall)
-		_toCollect.push_back(surface);
+	if (updateDrawCall && std::find(_toCollect.begin(), _toCollect.end(), surface) == _toCollect.end())
+		_toCollect.insert(surface);
 }
 
 void
@@ -179,12 +202,12 @@ DrawCallPool::visibilityChanged(Surface::Ptr	surface,
 
 	if (visible && _invisibleSurfaces.find(surface) != _invisibleSurfaces.end()) // visible and already wasn't visible before
 	{
-		_toCollect.push_back(surface);
+		_toCollect.insert(surface);
 		_invisibleSurfaces.erase(surface);
 	}
 	else if (!visible && _invisibleSurfaces.find(surface) == _invisibleSurfaces.end()) // not visible but was visible before
 	{
-		_toRemove.push_back(surface);
+		_toRemove.insert(surface);
 		_invisibleSurfaces.insert(surface);
 	}
 	
@@ -270,17 +293,30 @@ DrawCallPool::initializeDrawCall(Pass::Ptr		pass,
 	std::list<ContainerProperty>	booleanMacros;
 	std::list<ContainerProperty>	integerMacros;
 	std::list<ContainerProperty>	incorrectIntegerMacros;
+	std::unordered_map<std::string, std::string> drawCallVariables;
+
+	if (drawcall)
+		drawCallVariables = drawcall->variablesToValue();
+	else
+	{
+		drawCallVariables["geometryId"] = std::to_string(surface->_geometryId);
+		drawCallVariables["materialId"] = std::to_string(surface->_materialId);
+	}
+
+	std::unordered_map<std::string, MacroBinding> macroBindings = pass->macroBindings(
+		_formatFunction,
+		drawCallVariables);
 
 	auto program = getWorkingProgram(
 		surface,
-		pass, 
-		targetData, 
-		rendererData, 
-		rootData, 
-		booleanMacros, 
+		pass,
+		macroBindings,
+		targetData,
+		rendererData,
+		rootData,
+		booleanMacros,
 		integerMacros,
-		incorrectIntegerMacros
-	);
+		incorrectIntegerMacros);
 
 	if (!program)
 		return nullptr;
@@ -291,13 +327,26 @@ DrawCallPool::initializeDrawCall(Pass::Ptr		pass,
 			pass->attributeBindings(),
 			pass->uniformBindings(),
 			pass->stateBindings(),
-			pass->states()
+			pass->states(),
+			_formatFunction,
+			drawCallVariables
 		);
 
 		_drawCallToPass[surface][drawcall]			= pass;
 		_drawCallToRendererData[surface][drawcall]	= rendererData;
 
-		for (const auto& binding : pass->macroBindings())
+		Effect::Ptr effect = _renderer->effect() ? _renderer->effect() : surface->effect();
+
+		for (auto& technique : effect->techniques())
+		{
+			auto& techniqueName = technique.first;
+
+			for (auto& pass : technique.second)
+				for (auto& macroBinding : pass->macroBindings(_formatFunction, drawCallVariables))
+				_techniqueToMacroNames[surface][techniqueName].insert(std::get<0>(macroBinding.second));
+		}
+
+		for (const auto& binding : macroBindings)
 		{
 			data::ContainerProperty macro(binding.second, targetData, rendererData, rootData);
 
@@ -322,6 +371,7 @@ DrawCallPool::initializeDrawCall(Pass::Ptr		pass,
 std::shared_ptr<Program>
 DrawCallPool::getWorkingProgram(Surface::Ptr					surface,
 								Pass::Ptr						pass,
+								const MacroBindingsMap&			macroBindings,
 								Container::Ptr					targetData,
 								Container::Ptr					rendererData,
 								Container::Ptr					rootData,
@@ -334,6 +384,7 @@ DrawCallPool::getWorkingProgram(Surface::Ptr					surface,
 	do
 	{
 		program = pass->selectProgram(
+			macroBindings,
 			targetData, 
 			rendererData, 
 			rootData, 
@@ -426,7 +477,6 @@ DrawCallPool::macroChangedHandler(Container::Ptr		container,
 	const ContainerProperty	macro(propertyName, container);
 	Effect::Ptr				effect = (_renderer->effect() ? _renderer->effect() : surface->effect());
 
-
 	if (change == MacroChange::REF_CHANGED && !_surfaceToDrawCalls[surface].empty())
 	{
 		const DrawCallList					drawCalls = _macroNameToDrawCalls[surface][macro.name()];
@@ -443,11 +493,6 @@ DrawCallPool::macroChangedHandler(Container::Ptr		container,
 
 		if (!failedDrawcallRendererData.empty())
 		{
-			// at least, one pass failed for good. must fallback the whole technique.
-			//for (auto& rendererData : failedDrawcallRendererData)
-			//	if (_drawCallToRendererData[surface].count(rendererData) > 0)
-			//		deleteDrawCalls(surface);
-
 			if (effect->hasFallback(surface->technique()))
 				surface->setTechnique(effect->fallback(surface->technique()), true);
 		}
@@ -473,7 +518,8 @@ DrawCallPool::macroChangedHandler(Container::Ptr		container,
 		}
 		else if (change == MacroChange::REMOVED)
 		{
-			macroChangedHandler(macro.container(), macro.name(), surface, MacroChange::REF_CHANGED);
+			if (surface->numTargets() > 0)
+				macroChangedHandler(macro.container(), macro.name(), surface, MacroChange::REF_CHANGED);
 
 			_numMacroListeners[surface][macro] = numListeners - 1;
 
@@ -642,4 +688,42 @@ DrawCallPool::zsortNeededHandler(Surface::Ptr	surface,
 								 DrawCall::Ptr	drawcall)
 {
 	_mustZSort = true;
+}
+
+
+void
+DrawCallPool::replaceVariable(std::string& propertyName, std::unordered_map<std::string, std::string>& variableToValue)
+{
+	if (_variablePropertyNameToPosition.find(propertyName) != _variablePropertyNameToPosition.end())
+	{
+		auto variablePosition = _variablePropertyNameToPosition[propertyName];
+
+		if (variablePosition.second != -1)
+		{
+			auto key = "${" + variablePosition.first + "}";
+			propertyName.replace(variablePosition.second, key.size(), variableToValue[variablePosition.first]);
+		}
+	}
+	else
+	{
+		auto variableIt = variableToValue.begin();
+		bool changed = false;
+
+		while (variableIt != variableToValue.end())
+		{
+			auto key = "${" + variableIt->first + "}";
+			size_t position = propertyName.rfind(key);
+
+			if (position != std::string::npos)
+			{
+				propertyName.replace(position, key.size(), variableIt->second);
+				_variablePropertyNameToPosition[propertyName] = std::pair<std::string, int>(variableIt->first, position);
+				changed = true;
+			}
+			variableIt++;
+		}
+
+		if (!changed)
+			_variablePropertyNameToPosition[propertyName] = std::pair<std::string, int>("", -1);
+	}
 }
