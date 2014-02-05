@@ -26,7 +26,13 @@ using namespace minko;
 using namespace minko::render;
 
 Effect::Effect() :
-_data(data::Provider::create())
+_techniques(),
+_fallback(),
+_data(data::Provider::create()),
+_uniformFunctions(),
+_attributeFunctions(),
+_indexFunction(nullptr),
+_macroFunctions()
 {
 
 }
@@ -45,6 +51,8 @@ Effect::addTechnique(const std::string& name, Technique& passes)
 			func(pass);
 		if (_indexFunction)
 			_indexFunction->operator()(pass);
+		for (auto& func : _macroFunctions)
+			func(pass);
 	}
 	_techniques[name] = passes;
 }
