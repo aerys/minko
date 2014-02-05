@@ -47,7 +47,7 @@ MaterialWriter::embed(std::shared_ptr<AssetLibrary>		assetLibrary,
 
 	for (std::string structuredPropertyName : material->propertyNames())
 	{
-		std::string propertyName = (structuredPropertyName).substr(material->structureName().size() + 1);
+		std::string propertyName = (structuredPropertyName).substr(material->arrayName().size() + 1);
 
 		if (serializeMaterialValue<uint>(material, propertyName, assetLibrary, &serializedComplexProperties, &serializedBasicProperties, dependency))
 			continue;
