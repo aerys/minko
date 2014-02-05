@@ -367,7 +367,7 @@ DrawCallPool::initializeDrawCall(Pass::Ptr		pass,
 
 			for (auto& pass : technique.second)
 				for (auto& macroBinding : pass->macroBindings(_formatFunction, drawCallVariables))
-				_techniqueToMacroNames[surface][techniqueName].insert(std::get<0>(macroBinding.second));
+					_techniqueToMacroNames[surface][techniqueName].insert(std::get<0>(macroBinding.second));
 		}
 
 		for (const auto& binding : macroBindings)
@@ -716,7 +716,8 @@ DrawCallPool::zsortNeededHandler(Surface::Ptr	surface,
 
 
 void
-DrawCallPool::replaceVariable(std::string& propertyName, std::unordered_map<std::string, std::string>& variableToValue)
+DrawCallPool::replaceVariable(std::string&									propertyName, 
+							  std::unordered_map<std::string, std::string>&	variableToValue)
 {
 	if (_variablePropertyNameToPosition.find(propertyName) != _variablePropertyNameToPosition.end())
 	{
