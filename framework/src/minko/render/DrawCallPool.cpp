@@ -715,12 +715,15 @@ DrawCallPool::zsortNeededHandler(Surface::Ptr	surface,
 }
 
 
-void
-DrawCallPool::replaceVariable(std::string& propertyName, std::unordered_map<std::string, std::string>& variableToValue)
+std::string
+DrawCallPool::replaceVariable(const std::string&							rawPropertyName, 
+							  std::unordered_map<std::string, std::string>& variableToValue)
 {
-	if (_variablePropertyNameToPosition.find(propertyName) != _variablePropertyNameToPosition.end())
+	std::string propertyName = rawPropertyName;
+
+	if (_variablePropertyNameToPosition.find(rawPropertyName) != _variablePropertyNameToPosition.end())
 	{
-		auto variablePosition = _variablePropertyNameToPosition[propertyName];
+		auto variablePosition = _variablePropertyNameToPosition[rawPropertyName];
 
 		if (variablePosition.second != -1)
 		{
@@ -736,18 +739,20 @@ DrawCallPool::replaceVariable(std::string& propertyName, std::unordered_map<std:
 		while (variableIt != variableToValue.end())
 		{
 			auto key = "${" + variableIt->first + "}";
-			size_t position = propertyName.rfind(key);
+			size_t position = rawPropertyName.rfind(key);
 
 			if (position != std::string::npos)
 			{
 				propertyName.replace(position, key.size(), variableIt->second);
-				_variablePropertyNameToPosition[propertyName] = std::pair<std::string, int>(variableIt->first, position);
+				_variablePropertyNameToPosition[rawPropertyName] = std::pair<std::string, int>(variableIt->first, position);
 				changed = true;
 			}
 			variableIt++;
 		}
 
 		if (!changed)
-			_variablePropertyNameToPosition[propertyName] = std::pair<std::string, int>("", -1);
+			_variablePropertyNameToPosition[rawPropertyName] = std::pair<std::string, int>("", -1);
 	}
+
+	return propertyName;
 }
