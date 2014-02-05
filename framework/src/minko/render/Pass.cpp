@@ -142,6 +142,10 @@ Pass::finalizeProgram(Program::Ptr program)
 
 				for (auto& func : _uniformFunctions)
 					func(program);
+				for (auto& func : _attributeFunctions)
+					func(program);
+				if (_indexFunction)
+					_indexFunction->operator()(program);
 			}
 		}
 		catch (std::exception& e)
