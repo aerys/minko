@@ -32,20 +32,25 @@ minko.plugin.enable = function(name)
 	configuration { unpack(terms) }
 end
 
+-- "minko.plugin.links" is a clone of the default "links" premake function,
+-- except when used from an external project. In this case, the function
+-- selects the right "libdirs" based on the platform / configuration.
 minko.plugin.links = function(names)
 	local cfg = configuration().configset._current
 	local terms = cfg._criteria.terms
 
-	for _, name in ipairs(names) do
-		configuration { unpack(terms) }
+	for _, platform in ipairs(platforms()) do
+		for _, cfg in ipairs(configurations()) do
+			-- matching both the platform (windows32, osx64...) and the config (debug, release)
+			-- but also the current scope configuration if there is one defined!
+			configuration { platform, cfg, unpack(terms) }
 
-		local plugin = "minko-plugin-" .. name
+			for _, name in ipairs(names) do
+				links { "minko-plugin-" .. name }
 
-		if not MINKO_SDK_DIST then
-			links { plugin }
-		else
-			if minko.plugin[name] and minko.plugin[name].links then
-				minko.plugin[name]:links()
+				if MINKO_SDK_DIST then
+					libdirs { minko.plugin.path(name) .. "/bin/" .. platform .. "/" .. cfg }
+				end
 			end
 		end
 	end
