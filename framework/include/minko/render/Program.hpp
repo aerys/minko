@@ -23,7 +23,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/render/AbstractResource.hpp"
 #include "minko/render/ProgramInputs.hpp"
-#include "minko/render/AbstractTexture.hpp"
 #include "minko/render/AbstractContext.hpp"
 #include "minko/render/Shader.hpp"
 
@@ -35,19 +34,24 @@ namespace minko
 			public AbstractResource
 		{
 		public:
-			typedef std::shared_ptr<Program>	Ptr;
+			typedef std::shared_ptr<Program>					Ptr;
 
 		private:
+			typedef std::shared_ptr<render::VertexBuffer>		VertexBufferPtr;
+			typedef std::shared_ptr<render::IndexBuffer>		IndexBufferPtr;
+			typedef std::shared_ptr<render::AbstractTexture>	AbstractTexturePtr;
 			typedef std::shared_ptr<render::AbstractContext>	AbstractContextPtr;
 			typedef std::shared_ptr<render::ProgramInputs>		ProgramInputsPtr;
 			typedef std::shared_ptr<AbstractTexture>			AbstractTexturePtr;
 
 		private:
-			std::shared_ptr<Shader>						_vertexShader;
-			std::shared_ptr<Shader>						_fragmentShader;
-			ProgramInputsPtr							_inputs;
+			std::shared_ptr<Shader>								_vertexShader;
+			std::shared_ptr<Shader>								_fragmentShader;
+			ProgramInputsPtr									_inputs;
 
-			std::unordered_map<int, AbstractTexturePtr>	_textures;
+			std::unordered_map<int, AbstractTexturePtr>			_textures;
+			std::unordered_map<int, VertexBufferPtr>			_vertexBuffers;
+			IndexBufferPtr										_indexBuffer;
 
 		public:
 			inline static
@@ -67,6 +71,8 @@ namespace minko
 				p->_fragmentShader	= deepCopy ? Shader::create(program->_fragmentShader) : program->_fragmentShader;
 				p->_inputs			= program->inputs();
 				p->_textures		= program->_textures;
+				p->_vertexBuffers	= program->_vertexBuffers;
+				p->_indexBuffer		= program->_indexBuffer;
 
 				return p;
 			}
@@ -113,6 +119,20 @@ namespace minko
 				return _textures;
 			}
 
+			inline
+			const std::unordered_map<int, VertexBufferPtr>&
+			vertexBuffers() const
+			{
+				return _vertexBuffers;
+			}
+
+			inline
+			IndexBufferPtr
+			indexBuffer() const
+			{
+				return _indexBuffer;
+			}
+
 			void
 			upload();
 
@@ -134,13 +154,13 @@ namespace minko
 			}
 
 			void
-			setUniform(const std::string& name, std::shared_ptr<render::AbstractTexture> texture)
-			{
-				if (!_inputs->hasName(name))
-					return;
+			setUniform(const std::string&, AbstractTexturePtr);
 
-				_textures[_inputs->location(name)] = texture;
-			}
+			void
+			setVertexAttribute(const std::string& name, unsigned int attributeSize, const std::vector<float>& data);
+
+			void
+			setIndexBuffer(const std::vector<unsigned short>&);
 
 		private:
 			Program(AbstractContextPtr context);
