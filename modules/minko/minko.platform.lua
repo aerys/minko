@@ -10,7 +10,7 @@ end
 
 minko.platform.supports = function(target)
 	if target == "html5" then
-		if EMSCRIPTEN then
+		if EMSCRIPTEN and not string.startswith(_ACTION, "vs") then
 			return true
 		end
 	elseif target == "linux32" or target == "linux64" then
