@@ -35,7 +35,8 @@ using namespace minko::render;
 using namespace minko::component;
 using namespace minko::data;
 
-const unsigned int DrawCallPool::NUM_FALLBACK_ATTEMPTS = 32;
+/*static*/ const unsigned int								DrawCallPool::NUM_FALLBACK_ATTEMPTS		= 32;
+/*static*/ std::unordered_map<DrawCall::Ptr, Vector3::Ptr>	DrawCallPool::_cachedDrawcallPositions;
 
 std::unordered_map<std::string, std::pair<std::string, int>> DrawCallPool::_variablePropertyNameToPosition;
 
@@ -68,13 +69,16 @@ DrawCallPool::drawCalls()
 	_toCollect.clear();
 
 	if (doZSort)
+	{
+		_cachedDrawcallPositions.empty();
 		_drawCalls.sort(&DrawCallPool::compareDrawCalls);
+	}
 	_mustZSort = false;
 
 	return _drawCalls;
 }
 
-
+/*static*/
 bool
 DrawCallPool::compareDrawCalls(DrawCall::Ptr a, 
 							   DrawCall::Ptr b)
@@ -91,8 +95,8 @@ DrawCallPool::compareDrawCalls(DrawCall::Ptr a,
 		static Vector3::Ptr aPosition = Vector3::create();
 		static Vector3::Ptr bPosition = Vector3::create();
 
-		a->getEyeSpacePosition(aPosition);
-		b->getEyeSpacePosition(bPosition);
+		getDrawcallEyePosition(a, aPosition);
+		getDrawcallEyePosition(b, bPosition);
 
 		return aPosition->z() > bPosition->z();
 	}
@@ -101,6 +105,26 @@ DrawCallPool::compareDrawCalls(DrawCall::Ptr a,
 		// ordered by target texture id, if any
 		return a->target() && (!b->target() || (a->target()->id() > b->target()->id()));
 	}
+}
+
+/*static*/
+Vector3::Ptr
+DrawCallPool::getDrawcallEyePosition(DrawCall::Ptr drawcall, 
+									 Vector3::Ptr output)
+{
+	const auto foundPositionIt = _cachedDrawcallPositions.find(drawcall);
+
+	if (foundPositionIt != _cachedDrawcallPositions.end())
+	{
+		if (output == nullptr)
+			output = Vector3::create(foundPositionIt->second);
+		else
+			output->copyFrom(foundPositionIt->second);
+
+		return output;
+	}
+	else
+		return drawcall->getEyeSpacePosition(output);
 }
 
 void
