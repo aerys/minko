@@ -22,6 +22,6 @@ minko.plugin.bullet = {}
 
 function minko.plugin.bullet:enable()
 	minko.plugin.links { "bullet" }
-	includedirs { minko.sdk.path("plugins/bullet/include") }
+	includedirs { minko.plugin.path("bullet") .. "/include" }
 	defines { "MINKO_PLUGIN_BULLET" }
 end
