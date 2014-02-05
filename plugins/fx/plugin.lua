@@ -23,18 +23,7 @@ minko.plugin.fx = {}
 function minko.plugin.fx:enable()
 	defines { "MINKO_PLUGIN_FX" }
 	
-	configuration { "windows" }
-		prelinkcommands {
-			'xcopy /y /i /s "' .. minko.sdk.path('/plugins/fx/asset/effect/*') .. '" "$(TargetDir)\\effect"',
-		}
-		
-	configuration { "linux" }
-		prelinkcommands {
-			'cp -r ' .. minko.sdk.path('/plugins/fx/asset/effect') .. ' ${TARGETDIR} || ' .. minko.action.fail(),
-		}
-	
-	configuration { "macosx or html5" }
-		prelinkcommands {
-			'cp -r ' .. minko.sdk.path('/plugins/fx/asset/effect') .. ' ${TARGETDIR} || ' .. minko.action.fail(),
-		}	
+	prelinkcommands {
+		minko.action.copy(minko.plugin.path("fx") .. "/asset"),
+	}
 end
