@@ -59,7 +59,7 @@ solution "minko"
 		include 'examples/serializer'
 		include 'examples/picking'
 		include 'examples/visibility'
-		include 'examples/leap-motion'
+		-- include 'examples/leap-motion'
 		include 'examples/jobs'
 		include 'examples/sky-box'
 	end
@@ -172,6 +172,6 @@ newaction {
 	trigger			= "clean",
 	description		= "Remove generated files.",
 	execute			= function()
-		os.execute(minko.sdk.path("tools/all/bin/clean.sh"))
+		os.execute(minko.sdk.path("tools/lin/scripts/clean.sh"))
 	end
 }
