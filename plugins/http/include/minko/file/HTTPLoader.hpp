@@ -41,6 +41,10 @@ namespace minko
 			void
 			load(const std::string& filename, std::shared_ptr<Options> options);
 
+			static
+			std::list<std::shared_ptr<HTTPLoader>>
+			_runningLoaders;
+
 		protected:
 			HTTPLoader();
 
@@ -54,10 +58,6 @@ namespace minko
 			static size_t
 			curlWriteMemoryHandler(void*, size_t, size_t, void*);
 			#endif
-
-			static
-			std::list<std::shared_ptr<HTTPLoader>>
-			_runningLoaders;
 		};
 	}
 }
