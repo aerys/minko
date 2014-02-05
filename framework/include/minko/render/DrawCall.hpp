@@ -40,7 +40,7 @@ namespace minko
             public std::enable_shared_from_this<DrawCall>
 		{
 		public:
-			typedef std::shared_ptr<DrawCall>						Ptr;
+			typedef std::shared_ptr<DrawCall>	Ptr;
 
 		private:
             typedef std::shared_ptr<AbstractContext>													AbsCtxPtr;
@@ -147,6 +147,17 @@ namespace minko
 				ptr->initialize();
 
 				return ptr;
+			}
+
+			inline
+			std::string
+			formatPropertyName(const std::string& rawPropertyName)
+			{
+				std::string propertyName = rawPropertyName;
+
+				_formatPropertyNameFct(propertyName, _variablesToValue);
+
+				return propertyName;
 			}
 
 			inline
@@ -259,7 +270,7 @@ namespace minko
 				{
 					const auto&	binding	= _stateBindings.at(stateName);
 					
-					propertyName		= std::get<0>(binding);
+					propertyName		= formatPropertyName(std::get<0>(binding));
 					container			= getDataContainer(std::get<1>(binding));
 				}
 
