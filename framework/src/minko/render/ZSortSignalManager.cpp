@@ -30,9 +30,9 @@ using namespace minko::math;
 
 // names of the properties that may cause a z-sort change between drawcalls
 /*static*/ const std::unordered_set<std::string> ZSortSignalManager::TARGET_PNAMES = {
-	"material.priority",
-	"material.zsorted",
-	"geometry.vertex.attribute.position",
+	"material[${materialId}].priority",
+	"material[${materialId}].zsorted",
+	"geometry[${geometryId}].vertex.attribute.position",
 	"transform.modelToWorldMatrix"
 };
 /*static*/ const std::unordered_set<std::string> ZSortSignalManager::RENDERER_PNAMES = {
