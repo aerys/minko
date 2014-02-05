@@ -41,12 +41,14 @@ namespace minko
 			typedef Signal<Ptr, bool>								VisibilityChangedSignal;
 
 		private:
-			typedef std::shared_ptr<scene::Node>					NodePtr;
-			typedef std::shared_ptr<data::Container>				ContainerPtr;
-			typedef Signal<ContainerPtr, const std::string&>		PropertyChangedSignal;
-			typedef PropertyChangedSignal::Slot						PropertyChangedSlot;
-			typedef std::shared_ptr<render::Effect>					EffectPtr;
-			typedef const std::string&								StringRef;
+			typedef std::shared_ptr<data::ArrayProvider>					ArrayProviderPtr;
+			typedef std::shared_ptr<scene::Node>							NodePtr;
+			typedef std::shared_ptr<data::Container>						ContainerPtr;
+			typedef Signal<ContainerPtr, const std::string&>				PropertyChangedSignal;
+			typedef PropertyChangedSignal::Slot								PropertyChangedSlot;
+			typedef std::shared_ptr<render::Effect>							EffectPtr;
+			typedef const std::string&										StringRef;
+			typedef Signal<ArrayProviderPtr, uint>::Slot					ArrayProviderIndexChangedSlot;
 
 
 		private:
@@ -55,6 +57,10 @@ namespace minko
 			std::shared_ptr<render::Effect>											_effect;
 			
 			std::string 															_technique;
+			std::list<ArrayProviderIndexChangedSlot>								_dataProviderIndexChangedSlots;
+
+			int																		_geometryId;
+			int																		_materialId;
 			
 			TechniqueChangedSignal::Ptr												_techniqueChanged;
 
@@ -72,19 +78,19 @@ namespace minko
 		public:
 			static
 			Ptr
-			create(std::shared_ptr<geometry::Geometry> 	geometry,
-				   std::shared_ptr<data::Provider>		material,
-				   std::shared_ptr<render::Effect>		effect)
+			create(std::shared_ptr<geometry::Geometry> 		geometry,
+				   std::shared_ptr<data::Provider>			material,
+				   std::shared_ptr<render::Effect>			effect)
 			{
 				return create(geometry, material, effect, "default");
 			}
 
 			static
 			Ptr
-			create(std::shared_ptr<geometry::Geometry> 	geometry,
-				   std::shared_ptr<data::Provider>		material,
-				   std::shared_ptr<render::Effect>		effect,
-				   const std::string&					technique)
+			create(std::shared_ptr<geometry::Geometry> 		geometry,
+				   std::shared_ptr<data::Provider>			material,
+				   std::shared_ptr<render::Effect>			effect,
+				   const std::string&						technique)
 			{
 				Ptr surface(new Surface(geometry, material, effect, technique));
 
@@ -170,10 +176,10 @@ namespace minko
 			}
 
 		private:
-			Surface(std::shared_ptr<geometry::Geometry> geometry,
-					std::shared_ptr<data::Provider>		material,
-					std::shared_ptr<render::Effect>		effect,
-					const std::string&					technique);
+			Surface(std::shared_ptr<geometry::Geometry>		geometry,
+					std::shared_ptr<data::Provider>			material,
+					std::shared_ptr<render::Effect>			effect,
+					const std::string&						technique);
 
 			void
 			initialize();
@@ -189,6 +195,12 @@ namespace minko
 
 			void
 			setTechnique(const std::string&, bool updateDrawcalls = true);
+
+			void
+			geometryProviderIndexChanged(ArrayProviderPtr arrayProvider, uint index);
+
+			void
+			materialProviderIndexChanged(ArrayProviderPtr arrayProvider, uint index);
 		};
 	}
 }

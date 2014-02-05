@@ -312,7 +312,7 @@ AssetLibrary::queue(const std::string&						filename,
 	{
 		std::string protocol = "";
 
-		int i;
+		uint i;
 
 		for(i = 0; i < filename.length(); ++i)
 		{
