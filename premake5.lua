@@ -49,6 +49,7 @@ solution "minko"
 	if not _OPTIONS['no-examples'] then
 		include('examples/assimp')
 		include('examples/cube')
+		include('examples/http')
 		include('examples/effect-config')
 		include('examples/light')
 		include('examples/raycasting')
