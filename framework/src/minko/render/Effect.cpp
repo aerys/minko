@@ -38,9 +38,14 @@ Effect::addTechnique(const std::string& name, Technique& passes)
 		throw std::logic_error("A technique named '" + name + "' already exists.");
 
 	for (auto& pass : passes)
+	{
 		for (auto& func : _uniformFunctions)
 			func(pass);
-
+		for (auto& func : _attributeFunctions)
+			func(pass);
+		if (_indexFunction)
+			_indexFunction->operator()(pass);
+	}
 	_techniques[name] = passes;
 }
 
