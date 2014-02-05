@@ -154,11 +154,7 @@ namespace minko
 			std::string
 			formatPropertyName(const std::string& rawPropertyName)
 			{
-				std::string propertyName = rawPropertyName;
-
-				_formatPropertyNameFct(propertyName, _variablesToValue);
-
-				return propertyName;
+				return _formatPropertyNameFct(rawPropertyName, _variablesToValue);
 			}
 
 			inline
