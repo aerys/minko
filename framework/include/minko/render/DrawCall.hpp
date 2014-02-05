@@ -48,7 +48,8 @@ namespace minko
 			typedef std::shared_ptr<data::Provider>														ProviderPtr;
             typedef std::shared_ptr<data::Container>													ContainerPtr;
 			typedef data::Container::PropertyChangedSignal::Slot										ContainerPropertyChangedSlot;
-			typedef std::function<void(std::string&, std::unordered_map<std::string, std::string>&)>	FormatFunction;
+			typedef std::unordered_map<std::string, std::string>										StringToStringMap;
+			typedef std::function <std::string(const std::string&, StringToStringMap&)>					FormatFunction;
 
 			typedef std::tuple<int, int>							Int2;
 			typedef std::tuple<int, int, int>						Int3;
@@ -153,11 +154,7 @@ namespace minko
 			std::string
 			formatPropertyName(const std::string& rawPropertyName)
 			{
-				std::string propertyName = rawPropertyName;
-
-				_formatPropertyNameFct(propertyName, _variablesToValue);
-
-				return propertyName;
+				return _formatPropertyNameFct(rawPropertyName, _variablesToValue);
 			}
 
 			inline
