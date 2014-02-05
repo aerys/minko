@@ -31,12 +31,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::file;
 
-
-struct MemoryStruct {
-	char *memory;
-	size_t size;
-};
-
 std::list<std::shared_ptr<HTTPLoader>>
 HTTPLoader::_runningLoaders;
 
@@ -117,7 +111,6 @@ HTTPLoader::load(const std::string& filename, std::shared_ptr<Options> options)
 	std::cout << "HTTPLoader::load(): " << "call emscripten_async_wget_data" << std::endl;
 	emscripten_async_wget_data(_filename.c_str(), loader.get(), &completeHandler, &errorHandler);
 	#else
-
 	CURL *curl;
 	CURLcode res;
 
@@ -158,6 +151,12 @@ HTTPLoader::load(const std::string& filename, std::shared_ptr<Options> options)
 
 
 #ifndef EMSCRIPTEN
+
+struct MemoryStruct {
+	char *memory;
+	size_t size;
+};
+
 size_t
 HTTPLoader::curlWriteMemoryHandler(void* contents, size_t size, size_t nmemb, void* userp)
 {
