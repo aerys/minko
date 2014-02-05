@@ -42,7 +42,8 @@ namespace minko
 			}
 			
 			void
-			build(const data::MacroBindingMap&			macroBindings,
+			build(std::shared_ptr<render::Pass>			pass,
+				  const data::MacroBindingMap&			macroBindings,
 				  std::shared_ptr<data::Container>		data,
 				  std::shared_ptr<data::Container>		rendererData,
 				  std::shared_ptr<data::Container>		rootData,
