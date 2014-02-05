@@ -161,8 +161,8 @@ Pass::finalizeProgram(Program::Ptr program)
 }
 
 const data::MacroBindingMap
-Pass::macroBindings(std::function <void(std::string&, std::unordered_map<std::string, std::string>&)> formatPropertyNameFunction, 
-				    std::unordered_map<std::string, std::string>&								     variablesToValue)
+Pass::macroBindings(FormatFunction									formatPropertyNameFunction,
+				    std::unordered_map<std::string, std::string>&	variablesToValue)
 {
 	std::unordered_map<std::string, data::MacroBinding> instancedMacroBindings;
 
@@ -171,9 +171,7 @@ Pass::macroBindings(std::function <void(std::string&, std::unordered_map<std::st
 		std::string macroName = macro.first;
 		auto		binding = macro.second;
 
-		std::string propertyName = std::get<0>(binding);
-
-		formatPropertyNameFunction(propertyName, variablesToValue);
+		std::string propertyName = formatPropertyNameFunction(std::get<0>(binding), variablesToValue);
 
 		instancedMacroBindings[macroName] = binding;
 		std::get<0>(instancedMacroBindings[macroName]) = propertyName;
