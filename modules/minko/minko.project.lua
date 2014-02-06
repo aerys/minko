@@ -118,10 +118,11 @@ minko.project.application = function(name)
 		prelinkcommands {
 			minko.action.copy("asset"),
 		}
-	
+
 	configuration { "linux32" }
 		linkoptions { "-Wl,--no-as-needed" }
 		links {
+                        "minko-framework",
 			"GL",
 			"m"
 		}
