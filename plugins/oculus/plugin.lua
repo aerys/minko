@@ -40,7 +40,7 @@ function minko.plugin.oculus:enable()
 		minko.plugin.path("oculus") .. "/include"
 	}
 
-	postbuildcommands {
+	prelinkcommands {
 		minko.action.copy(minko.plugin.path("oculus") .. "/asset"),
 	}
 
