@@ -44,7 +44,7 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 			"/wd4503"
 		}
 
-	configuration { "linux or macosx" }
+	configuration { "linux32 or linux64 or osx64" }
 		buildoptions {
 			"-Wno-deprecated-declarations"
 		}
