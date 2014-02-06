@@ -1,2 +1,6 @@
+@echo off
 chdir ..
-call "%MINKO_HOME%"\tools\win\scripts\premake_vs2013
+
+"%MINKO_HOME%"\tools\win\bin\premake5.exe vs2013
+
+pause
