@@ -13,38 +13,6 @@
 #  define constexpr const
 # endif
 
-template <typename T>
-struct luaglue_remove_reference { typedef T type; };
-
-template <typename T>
-struct luaglue_remove_reference<T&> { typedef T type; };
-
-template <typename T>
-struct luaglue_remove_const { typedef T type; };
-
-template <typename T>
-struct luaglue_remove_const<const T> { typedef T type; };
-
-template <typename T>
-struct luaglue_remove_const_reference
-{
-	typedef typename luaglue_remove_const<typename luaglue_remove_reference<T>::type>::type type;
-};
-
-#else
-
-template <typename T>
-using luaglue_remove_reference = std::remove_reference<T>;
-
-template <typename T>
-using luaglue_remove_const = std::remove_const<T>;
-
-template <typename T>
-struct luaglue_remove_const_reference
-{
-	typedef typename std::remove_const<typename std::remove_reference<T>::type>::type type;
-};
-
 #endif /* _MSC_VER */
 
 #endif /* LUAGLUE_COMPAT_H_GUARD */

@@ -29,16 +29,31 @@ using namespace minko::render;
 using namespace minko::math;
 
 // names of the properties that may cause a z-sort change between drawcalls
-/*static*/ const std::set<std::string> ZSortSignalManager::TARGET_RAW_PNAMES = {
-	"material[${materialId}].priority",
-	"material[${materialId}].zsorted",
-	"geometry[${geometryId}].vertex.attribute.position",
-	"transform.modelToWorldMatrix"
-};
-/*static*/ const std::set<std::string> ZSortSignalManager::RENDERER_RAW_PNAMES = {
-	"camera.worldToScreenMatrix"
-};
+/*static*/ std::set<std::string> ZSortSignalManager::_targetRawPropNames;
+/*static*/ std::set<std::string> ZSortSignalManager::_rendererRawPropNames;
 
+/*static*/
+void
+ZSortSignalManager::initializeTargetRawPropertyNames()
+{
+	if (!_targetRawPropNames.empty())
+		return;
+
+	_targetRawPropNames.insert("material[${materialId}].priority");
+	_targetRawPropNames.insert("material[${materialId}].zsorted");
+	_targetRawPropNames.insert("geometry[${geometryId}].vertex.attribute.position");
+	_targetRawPropNames.insert("transform.modelToWorldMatrix");
+}
+
+/*static*/
+void
+ZSortSignalManager::initializeRendererRawPropertyNames()
+{
+	if (!_rendererRawPropNames.empty())
+		return;
+
+	_rendererRawPropNames.insert("camera.worldToScreenMatrix");
+}
 
 ZSortSignalManager::ZSortSignalManager(DrawCall::Ptr drawcall):
 	_drawcall(drawcall),
@@ -46,11 +61,14 @@ ZSortSignalManager::ZSortSignalManager(DrawCall::Ptr drawcall):
 	_targetPropRemovedSlot(nullptr),
 	_rendererPropAddedSlot(nullptr),
 	_rendererPropRemovedSlot(nullptr),
-	_target_pnames(),
-	_renderer_pnames()
+	_targetPropNames(),
+	_rendererPropNames()
 {
 	if (drawcall == nullptr)
 		throw new std::invalid_argument("drawcall");
+
+	initializeTargetRawPropertyNames();
+	initializeRendererRawPropertyNames();
 }
 
 void
@@ -63,17 +81,17 @@ ZSortSignalManager::initialize(Container::Ptr targetData,
 
 	clear();
 
-	for (auto& pname : TARGET_RAW_PNAMES)
-		_target_pnames.insert(_drawcall->formatPropertyName(pname));
-	for (auto& pname : RENDERER_RAW_PNAMES)
-		_renderer_pnames.insert(_drawcall->formatPropertyName(pname));
+	for (auto& pname : _targetRawPropNames)
+		_targetPropNames.insert(_drawcall->formatPropertyName(pname));
+	for (auto& pname : _rendererRawPropNames)
+		_rendererPropNames.insert(_drawcall->formatPropertyName(pname));
 
 	_targetPropAddedSlot	= targetData->propertyAdded()->connect(std::bind(
 		&ZSortSignalManager::propertyAddedHandler,
 		shared_from_this(),
 		std::placeholders::_1,
 		std::placeholders::_2,
-		_target_pnames
+		_targetPropNames
 	));
 
 	_rendererPropAddedSlot	= rendererData->propertyAdded()->connect(std::bind(
@@ -81,7 +99,7 @@ ZSortSignalManager::initialize(Container::Ptr targetData,
 		shared_from_this(),
 		std::placeholders::_1,
 		std::placeholders::_2,
-		_renderer_pnames
+		_rendererPropNames
 	));
 
 	_targetPropRemovedSlot	= targetData->propertyRemoved()->connect(std::bind(
@@ -89,7 +107,7 @@ ZSortSignalManager::initialize(Container::Ptr targetData,
 		shared_from_this(),
 		std::placeholders::_1,
 		std::placeholders::_2,
-		_target_pnames
+		_targetPropNames
 	));
 	
 	_rendererPropRemovedSlot	= rendererData->propertyRemoved()->connect(std::bind(
@@ -97,15 +115,15 @@ ZSortSignalManager::initialize(Container::Ptr targetData,
 		shared_from_this(),
 		std::placeholders::_1,
 		std::placeholders::_2,
-		_renderer_pnames
+		_rendererPropNames
 	));
 
 	_propChangedSlots.clear();
 
-	for (auto& pname : _target_pnames)
-		propertyAddedHandler(targetData, pname, _target_pnames);
-	for (auto& pname : _renderer_pnames)
-		propertyAddedHandler(rendererData, pname, _renderer_pnames);
+	for (auto& pname : _targetPropNames)
+		propertyAddedHandler(targetData, pname, _targetPropNames);
+	for (auto& pname : _rendererPropNames)
+		propertyAddedHandler(rendererData, pname, _rendererPropNames);
 }
 
 void
@@ -117,8 +135,8 @@ ZSortSignalManager::clear()
 	_rendererPropRemovedSlot	= nullptr;
 	_propChangedSlots			.clear();
 	_matrixChangedSlots			.clear();
-	_target_pnames				.clear();
-	_renderer_pnames			.clear();
+	_targetPropNames			.clear();
+	_rendererPropNames			.clear();
 }
 
 void
