@@ -17,7 +17,7 @@ minko.action.clean = function()
 		error("cannot clean from outside the Minko SDK")
 	end
 
-	os.execute("git clean -X -n")
+	os.execute("git clean -X -f")
 	
 	for _, pattern in ipairs { "framework", "plugins/*", "tests", "examples/*" } do
 		local dirs = os.matchdirs(pattern)
@@ -25,7 +25,7 @@ minko.action.clean = function()
 		for _, dir in ipairs(dirs) do
 			local cwd = os.getcwd()
 			os.chdir(dir)
-			os.execute("git clean -X -n")
+			os.execute("git clean -X -f")
 			os.chdir(cwd)
 		end
 	end
