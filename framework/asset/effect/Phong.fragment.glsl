@@ -92,8 +92,8 @@ varying vec3 		vertexTangent;
 
 void main(void)
 {
-	vec4 diffuse = diffuseColor;
-	vec4 specular = specularColor;
+	vec4 diffuse 	= diffuseColor;
+	vec4 specular 	= specularColor;
 
 	#ifdef DIFFUSE_MAP
 		diffuse = texture2D(diffuseMap, vertexUV);
@@ -108,7 +108,7 @@ void main(void)
 			discard;
 	#endif // ALPHA_THRESHOLD
 	
-	#if defined(SHININESS) || (defined(ENVIRONMENT_MAP) && !defined(ENVIRONMENT_ALPHA))
+	#if defined(SHININESS) || ( (defined(ENVIRONMENT_MAP_2D) || defined(ENVIRONMENT_CUBE_MAP)) && !defined(ENVIRONMENT_ALPHA) )
 		//vec4 specular = specularColor;
 
 		#ifdef SPECULAR_MAP
@@ -142,11 +142,11 @@ void main(void)
 	#endif // PRECOMPUTED_AMBIENT
 	
 
-	#if defined NUM_DIRECTIONAL_LIGHTS || defined NUM_POINT_LIGHTS || defined NUM_SPOT_LIGHTS || defined ENVIRONMENT_MAP
+	#if defined NUM_DIRECTIONAL_LIGHTS || defined NUM_POINT_LIGHTS || defined NUM_SPOT_LIGHTS || defined ENVIRONMENT_MAP_2D || defined ENVIRONMENT_CUBE_MAP
 
 	vec3 eyeVector	= normalize(cameraPosition - vertexPosition); // always in world-space
 
-	#endif // NUM_DIRECTIONAL_LIGHTS || NUM_POINT_LIGHTS || NUM_SPOT_LIGHTS || ENVIRONMENT_MAP
+	#endif // NUM_DIRECTIONAL_LIGHTS || NUM_POINT_LIGHTS || NUM_SPOT_LIGHTS || ENVIRONMENT_MAP_2D || ENVIRONMENT_CUBE_MAP
 
 	#if defined NUM_DIRECTIONAL_LIGHTS || defined NUM_POINT_LIGHTS || defined NUM_SPOT_LIGHTS
 		
@@ -320,18 +320,9 @@ void main(void)
 
 	// Final blend of ambient, diffuse, and specular parts
 	//----------------------------------------------------
-	diffuseAccum		*= diffuse.rgb;
-	
-	vec3 phong		= ambientAccum + diffuseAccum + specularAccum;
+	vec3 phong		= diffuse.rgb * (ambientAccum + diffuseAccum) + specularAccum;
+
 	gl_FragColor	= vec4(phong.rgb, diffuse.a);
-	return;
-
-
-
-
-	diffuse = vec4(diffuse.rgb * phong, diffuse.a);
-	
-	gl_FragColor = diffuse;
 }
 
 #endif // FRAGMENT_SHADER

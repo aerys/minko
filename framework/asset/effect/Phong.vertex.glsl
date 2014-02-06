@@ -35,7 +35,7 @@ void main(void)
 		worldPosition 	= modelToWorldMatrix * worldPosition;
 	#endif // MODEL_TO_WORLD
 	
-	#if defined NUM_DIRECTIONAL_LIGHTS || defined NUM_POINT_LIGHTS || defined NUM_SPOT_LIGHTS
+	#if defined NUM_DIRECTIONAL_LIGHTS || defined NUM_POINT_LIGHTS || defined NUM_SPOT_LIGHTS || defined ENVIRONMENT_MAP_2D || defined ENVIRONMENT_CUBE_MAP
 	
 		vertexPosition	= worldPosition.xyz;
 		
@@ -58,7 +58,7 @@ void main(void)
 			vertexTangent = normalize(vertexTangent);
 		#endif // NORMAL_MAP
 		
-	#endif // defined NUM_DIRECTIONAL_LIGHTS || defined NUM_POINT_LIGHTS || defined NUM_SPOT_LIGHTS
+	#endif // NUM_DIRECTIONAL_LIGHTS || NUM_POINT_LIGHTS || NUM_SPOT_LIGHTS || ENVIRONMENT_MAP_2D || ENVIRONMENT_CUBE_MAP
 
 	gl_Position =  worldToScreenMatrix * worldPosition;
 }
