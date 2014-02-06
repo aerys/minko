@@ -46,7 +46,7 @@ solution "minko"
 
 	-- examples
 	if not _OPTIONS['no-examples'] then
-		-- include 'examples/lua-scripts'
+		include 'examples/lua-scripts'
 		include 'examples/assimp'
 		include 'examples/cube'
 		include 'examples/effect-config'
