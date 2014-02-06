@@ -15,9 +15,9 @@ local fileconfig = premake.fileconfig
 local insert = require 'insert'
 
 insert.insert(premake.tools.gcc, 'tools.emscripten', {
-	cc = MINKO_HOME .. '/tools/lin/bin/emcc.sh',
-	cxx = MINKO_HOME .. '/tools/lin/bin/em++.sh',
-	ar = MINKO_HOME .. '/tools/lin/bin/emar.sh'
+	cc = MINKO_HOME .. '/tools/lin/scripts/emcc.sh',
+	cxx = MINKO_HOME .. '/tools/lin/scripts/em++.sh',
+	ar = MINKO_HOME .. '/tools/lin/scripts/emar.sh'
 })
 
 insert.insert(premake.tools.gcc, 'cppflags.system.emscripten', {
