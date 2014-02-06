@@ -45,23 +45,24 @@ int main(int argc, char** argv)
 
 	std::cout << "Press [SPACE]\tto change a cube visibility" << std::endl;
 
+
+	auto root = scene::Node::create("root")
+		->addComponent(sceneManager);
+
+	auto camera = scene::Node::create("camera")
+		->addComponent(Renderer::create(0x7f7f7fff))
+		->addComponent(Transform::create(
+			Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 17.f))
+		))
+		->addComponent(PerspectiveCamera::create(800.f / 600.f, (float)PI * 0.25f, .1f, 1000.f));
+	root->addChild(camera);
+
+	auto cubes = scene::Node::create("cubesContainer");
+
 	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
 	{
 		assets->material("boxMaterial", material::BasicMaterial::create()->diffuseMap(assets->texture(TEXTURE_FILENAME)));
 		assets->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()));
-
-		auto root = scene::Node::create("root")
-			->addComponent(sceneManager);
-
-		auto camera = scene::Node::create("camera")
-			->addComponent(Renderer::create(0x7f7f7fff))
-			->addComponent(Transform::create(
-				Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 17.f))
-			))
-			->addComponent(PerspectiveCamera::create(800.f / 600.f, (float)PI * 0.25f, .1f, 1000.f));
-		root->addChild(camera);
-
-		auto cubes = scene::Node::create("cubesContainer");
 
 		for (int j = 3; j >= -3; --j)
 		{
@@ -79,47 +80,47 @@ int main(int argc, char** argv)
 		}
 
 		root->addChild(cubes);
+	});
 
-		auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
+	auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
+	{
+		camera->component<PerspectiveCamera>()->aspectRatio((float)w / (float)h);
+	});
+
+	auto keyDown = canvas->keyboard()->keyDown()->connect([&](input::Keyboard::Ptr k)
+	{
+		if (k->keyDown(input::Keyboard::ScanCode::SPACE))
 		{
-			camera->component<PerspectiveCamera>()->aspectRatio((float)w / (float)h);
-		});
+			auto numChildren = cubes->children().size();
+			auto randomChild = cubes->children()[rand() % numChildren];
 
-		auto keyDown = canvas->keyboard()->keyDown()->connect([&](input::Keyboard::Ptr k)
+			randomChild->component<Surface>()->visible(!randomChild->component<Surface>()->visible());
+		}
+	});
+
+	int frameId = 0;
+	int cubeId = 0;
+
+	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, uint deltaTime)
+	{
+		frameId++;
+		sceneManager->nextFrame();
+
+		if (frameId % 10 == 0)
 		{
-			if (k->keyDown(input::Keyboard::ScanCode::SPACE))
-			{
-				auto numChildren = cubes->children().size();
-				auto randomChild = cubes->children()[rand() % numChildren];
+			cubeId++;
+			auto numChildren = cubes->children().size();
+			auto visibleChild = cubes->children()[(cubeId - 1) % numChildren];
+			auto invisibleChild = cubes->children()[cubeId % numChildren];
 
-				randomChild->component<Surface>()->visible(!randomChild->component<Surface>()->visible());
-			}
-		});
-
-		int frameId = 0;
-		int cubeId = 0;
-
-		auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, uint deltaTime)
-		{
-			frameId++;
-			sceneManager->nextFrame();
-
-			if (frameId % 10 == 0)
-			{
-				cubeId++;
-				auto numChildren = cubes->children().size();
-				auto visibleChild = cubes->children()[(cubeId - 1) % numChildren];
-				auto invisibleChild = cubes->children()[cubeId % numChildren];
-
-				visibleChild->component<Surface>()->visible(true);
-				invisibleChild->component<Surface>()->visible(false);
-			}
-		});
-
-		canvas->run();
+			visibleChild->component<Surface>()->visible(true);
+			invisibleChild->component<Surface>()->visible(false);
+		}
 	});
 
 	sceneManager->assets()->load();
+
+	canvas->run();
 
 	return 0;
 }
