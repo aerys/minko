@@ -15,7 +15,7 @@ newoption {
 
 solution "minko"
 	MINKO_HOME = path.getabsolute(os.getcwd())
-
+	
 	dofile('sdk.lua')
 
 	-- buildable SDK
@@ -96,8 +96,8 @@ newaction {
 		minko.os.copyfiles('framework/include', distDir .. '/framework/include')
 		os.mkdir(distDir .. '/framework/lib')
 		minko.os.copyfiles('framework/lib', distDir .. '/framework/lib')
-		os.mkdir(distDir .. '/framework/effect')
-		minko.os.copyfiles('framework/effect', distDir .. '/framework/effect')
+		os.mkdir(distDir .. '/framework/asset')
+		minko.os.copyfiles('framework/asset', distDir .. '/framework/asset')
 
 		-- skeleton
 		os.mkdir(distDir .. '/skeleton')
