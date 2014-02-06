@@ -51,11 +51,11 @@ int main(int argc, char** argv)
 		->geometry("sphere",				geometry::SphereGeometry::create(sceneManager->assets()->context()))
 		->geometry("plane",					geometry::QuadGeometry::create(sceneManager->assets()->context()));
 
+	auto root = scene::Node::create("root")
+		->addComponent(sceneManager);
+
 	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
 	{
-		auto root = scene::Node::create("root")
-			->addComponent(sceneManager);
-
 		auto cube = scene::Node::create("cubeNode")
 			->addComponent(Surface::create(
 				assets->geometry("cube"),
@@ -76,55 +76,56 @@ int main(int argc, char** argv)
 				assets->material("blueMaterial"),
 				assets->effect("effect/Basic.effect")))
 			->addComponent(Transform::create(Matrix4x4::create()->appendTranslation(Vector3::create(1.4f))));
-			
-		auto camera = scene::Node::create("camera")
-			->addComponent(Transform::create(
-				Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 4.f))
-			))
-			->addComponent(PerspectiveCamera::create(800.f / 600.f, (float)PI * 0.25f, .1f, 1000.f));
 
-		root->addChild(camera)
-			->addChild(cube)
+		root->addChild(cube)
 			->addChild(sphere)
 			->addChild(teapot);
+	});
 
-		camera->addComponent(Renderer::create(0x7f7f7fff));
-		root->addComponent(Picking::create(sceneManager, canvas, camera));
+		
+	auto camera = scene::Node::create("camera")
+		->addComponent(Transform::create(
+			Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 4.f))
+		))
+		->addComponent(PerspectiveCamera::create(800.f / 600.f, (float)PI * 0.25f, .1f, 1000.f));
 
-		auto pickingMouseClick = root->component<Picking>()->mouseClick()->connect([&](scene::Node::Ptr node)
-		{
-			std::cout << "Click : " << node->name() << std::endl;
-		});
+	root->addChild(camera);
+	camera->addComponent(Renderer::create(0x7f7f7fff));
+	root->addComponent(Picking::create(sceneManager, canvas, camera));
 
-		auto pickingMouseRightClick = root->component<Picking>()->mouseRightClick()->connect([&](scene::Node::Ptr node)
-		{
-			std::cout << "Right Click : " << node->name() << std::endl;
-		});
+	auto pickingMouseClick = root->component<Picking>()->mouseClick()->connect([&](scene::Node::Ptr node)
+	{
+		std::cout << "Click : " << node->name() << std::endl;
+	});
 
-		auto pickingMouseOver = root->component<Picking>()->mouseOver()->connect([&](scene::Node::Ptr node)
-		{
-			std::cout << "Over : " << node->name() << std::endl;
-		});
+	auto pickingMouseRightClick = root->component<Picking>()->mouseRightClick()->connect([&](scene::Node::Ptr node)
+	{
+		std::cout << "Right Click : " << node->name() << std::endl;
+	});
 
-		auto pickingMouseOut = root->component<Picking>()->mouseOut()->connect([&](scene::Node::Ptr node)
-		{
-			std::cout << "Out : " << node->name() << std::endl;
-		});
+	auto pickingMouseOver = root->component<Picking>()->mouseOver()->connect([&](scene::Node::Ptr node)
+	{
+		std::cout << "Over : " << node->name() << std::endl;
+	});
 
-		auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
-		{
-			camera->component<PerspectiveCamera>()->aspectRatio((float)w / (float)h);
-		});
+	auto pickingMouseOut = root->component<Picking>()->mouseOut()->connect([&](scene::Node::Ptr node)
+	{
+		std::cout << "Out : " << node->name() << std::endl;
+	});
 
-		auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, uint deltaTime)
-		{
-			sceneManager->nextFrame();
-		});
+	auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
+	{
+		camera->component<PerspectiveCamera>()->aspectRatio((float)w / (float)h);
+	});
 
-		canvas->run();
+	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, uint deltaTime)
+	{
+		sceneManager->nextFrame();
 	});
 
 	sceneManager->assets()->load();
+
+	canvas->run();
 
 	return 0;
 }

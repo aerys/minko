@@ -40,43 +40,44 @@ int main(int argc, char** argv)
 		->queue("effect/linux.jpg")
 		->queue("effect/PlatformTexture.effect");
 
+	auto root = scene::Node::create("root")
+		->addComponent(sceneManager);
+
+	auto camera = scene::Node::create("camera")
+		->addComponent(Renderer::create(0x7f7f7fff))
+		->addComponent(Transform::create(
+			Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 3.f))
+		))
+		->addComponent(PerspectiveCamera::create(800.f / 600.f, (float)PI * 0.25f, .1f, 1000.f));
+	root->addChild(camera);
+
+	auto mesh = scene::Node::create("mesh")
+		->addComponent(Transform::create());
+
 	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
 	{
-		auto root = scene::Node::create("root")
-			->addComponent(sceneManager);
-
-		auto camera = scene::Node::create("camera")
-			->addComponent(Renderer::create(0x7f7f7fff))
-			->addComponent(Transform::create(
-				Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 3.f))
-			))
-			->addComponent(PerspectiveCamera::create(800.f / 600.f, (float)PI * 0.25f, .1f, 1000.f));
-		root->addChild(camera);
-
-		auto mesh = scene::Node::create("mesh")
-			->addComponent(Transform::create())
-			->addComponent(Surface::create(
+		mesh->addComponent(Surface::create(
 				assets->geometry("cube"),
 				material::Material::create()->set("diffuseColor", Vector4::one),
 				assets->effect("effect/PlatformTexture.effect")
 			));
 		root->addChild(mesh);
+	});
+	
+	auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
+	{
+		root->children()[0]->component<PerspectiveCamera>()->aspectRatio((float)w / (float)h);
+	});
 
-		auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
-		{
-			root->children()[0]->component<PerspectiveCamera>()->aspectRatio((float)w / (float)h);
-		});
-
-		auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, uint deltaTime)
-		{
-			mesh->component<Transform>()->matrix()->appendRotationY(.01f);
-			sceneManager->nextFrame();
-		});
-
-		canvas->run();
+	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, uint deltaTime)
+	{
+		mesh->component<Transform>()->matrix()->appendRotationY(.01f);
+		sceneManager->nextFrame();
 	});
 
 	sceneManager->assets()->load();
+
+	canvas->run();
 
 	return 0;
 }

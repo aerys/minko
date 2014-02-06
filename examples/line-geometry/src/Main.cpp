@@ -52,48 +52,47 @@ int main(int argc, char** argv)
 	auto sceneManager = SceneManager::create(canvas->context());
 	sceneManager->assets()->queue("effect/Line.effect");
 
+	auto root = scene::Node::create("root")
+		->addComponent(sceneManager);
+
+	auto camera = scene::Node::create("camera")
+		->addComponent(Renderer::create(0x7f7f7fff))
+		->addComponent(Transform::create(
+			Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 3.f))
+		))
+		->addComponent(PerspectiveCamera::create(800.f / 600.f, (float)PI * 0.25f, .1f, 1000.f));
+	
+	root->addChild(camera);
+	root->data()->addProvider(canvas->data()); // FIXME
+
 	std::vector<Star> stars;
 	auto _ = sceneManager->assets()->complete()->connect([&](file::AssetLibrary::Ptr assets)
 	{
-		auto root = scene::Node::create("root")
-			->addComponent(sceneManager);
-
-		auto camera = scene::Node::create("camera")
-			->addComponent(Renderer::create(0x7f7f7fff))
-			->addComponent(Transform::create(
-				Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 3.f))
-			))
-			->addComponent(PerspectiveCamera::create(800.f / 600.f, (float)PI * 0.25f, .1f, 1000.f));
-
-		root->addChild(camera);
-
-		root->data()->addProvider(canvas->data()); // FIXME
-
 		addStar(root, assets, stars);
+	});
 
-		auto keyDown = canvas->keyboard()->keyDown()->connect([&](input::Keyboard::Ptr k)
-		{
-			if (k->keyIsDown(input::Keyboard::ScanCode::A))
-				addStar(root, assets, stars);
-		});
+	auto keyDown = canvas->keyboard()->keyDown()->connect([&](input::Keyboard::Ptr k)
+	{
+		if (k->keyIsDown(input::Keyboard::ScanCode::A))
+			addStar(root, sceneManager->assets(), stars);
+	});
 
-		auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
-		{
-			camera->component<PerspectiveCamera>()->aspectRatio((float)w / (float)h);
-		});
+	auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
+	{
+		camera->component<PerspectiveCamera>()->aspectRatio((float)w / (float)h);
+	});
 
-		auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, uint deltaTime)
-		{
-			for (auto& star : stars)
-				star.node->component<Transform>()->matrix()->appendRotationY(star.angRate);
+	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, uint deltaTime)
+	{
+		for (auto& star : stars)
+			star.node->component<Transform>()->matrix()->appendRotationY(star.angRate);
 
-			sceneManager->nextFrame();
-		});
-
-		canvas->run();
+		sceneManager->nextFrame();
 	});
 
 	sceneManager->assets()->load();
+
+	canvas->run();
 
 	return 0;
 }

@@ -111,21 +111,27 @@ main(int argc, char** argv)
 	unsigned int			numSmallStars	= 30;
 	std::vector<Node::Ptr>	smallStars;
 
+	auto root = Node::create("root")
+		->addComponent(sceneManager);
+
+	auto camera	= Node::create("camera")
+		->addComponent(Renderer::create(generateHexColor()))
+		->addComponent(PerspectiveCamera::create(800.0f / 600.0f, (float)PI * 0.25f, 0.1f, 1000.0f))
+		->addComponent(Transform::create());
+	camera->component<Transform>()->matrix()
+		->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 3.f));
+
+	auto bigStarNode = Node::create("bigStarNode")
+			->addComponent(Transform::create());
+
+	auto quadNode = Node::create("quadNode")
+			->addComponent(Transform::create());
+
+	root->addChild(camera);
+
 	auto _ = sceneManager->assets()->complete()->connect([&](file::AssetLibrary::Ptr assets)
 	{
-		auto root = Node::create("root")
-			->addComponent(sceneManager);
-
-		auto camera	= Node::create("camera")
-			->addComponent(Renderer::create(generateHexColor()))
-			->addComponent(PerspectiveCamera::create(800.0f / 600.0f, (float)PI * 0.25f, 0.1f, 1000.0f))
-			->addComponent(Transform::create());
-		camera->component<Transform>()->matrix()
-			->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 3.f));
-
-		auto bigStarNode = Node::create("bigStarNode");
 		bigStarNode
-			->addComponent(Transform::create())
 			->addComponent(Surface::create(
 				assets->geometry("bigStar"),
 				Material::create()
@@ -142,9 +148,7 @@ main(int argc, char** argv)
 			));
 		bigStarNode->component<Transform>()->matrix()->appendScale(2.5f, 2.5f, 2.5f);
 
-		auto quadNode = Node::create("quadNode");
 		quadNode
-			->addComponent(Transform::create())
 			->addComponent(Surface::create(
 				assets->geometry("quad"),
 				Material::create()
@@ -164,29 +168,28 @@ main(int argc, char** argv)
 
 		generateStars(numSmallStars, assets, smallStars);
 
-		root->addChild(camera);
-
 		// stencil writting pass
 		root->addChild(bigStarNode);
 		// stencil fetching pass
 		root->addChild(quadNode);
 		for (auto& star : smallStars)
 			root->addChild(star);
+	});
+
 		
-		auto _ = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, uint deltaTime)
-		{
-			bigStarNode->component<Transform>()->matrix()->appendRotationZ(.001f);
-			for (auto& star : smallStars)
-				star->component<Transform>()->matrix()
-				->prependRotationZ(-0.025f);
+	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, uint deltaTime)
+	{
+		bigStarNode->component<Transform>()->matrix()->appendRotationZ(.001f);
+		for (auto& star : smallStars)
+			star->component<Transform>()->matrix()
+			->prependRotationZ(-0.025f);
 
-			sceneManager->nextFrame();
-		});
-
-		canvas->run();
+		sceneManager->nextFrame();
 	});
 
 	sceneManager->assets()->load();
-
+	
+	canvas->run();
+	
 	return 0;
 }

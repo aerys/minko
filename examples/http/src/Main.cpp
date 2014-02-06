@@ -40,10 +40,18 @@ int main(int argc, char** argv)
 	
 	sceneManager->assets()->defaultOptions()->resizeSmoothly(true);
 	sceneManager->assets()->defaultOptions()->generateMipmaps(true);
+
+	#if defined(EMSCRIPTEN)
 	sceneManager->assets()
 		->registerParser<file::PNGParser>("png")
 		->queue(TEXTURE_FILENAME, nullptr, file::HTTPLoader::create())
 		->queue(BASIC_EFFECT_FILENAME, nullptr, file::HTTPLoader::create());
+	#else
+	sceneManager->assets()
+		->registerParser<file::PNGParser>("png")
+		->queue(TEXTURE_FILENAME)
+		->queue(BASIC_EFFECT_FILENAME);
+	#endif
 
 	sceneManager->assets()->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()));
 	
