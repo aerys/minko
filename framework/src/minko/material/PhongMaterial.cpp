@@ -67,6 +67,20 @@ PhongMaterial::diffuseColor(Vector4::Ptr out) const
 }
 
 PhongMaterial::Ptr
+PhongMaterial::diffuseMap(AbstractTexture::Ptr value)
+{
+	set("diffuseMap", std::static_pointer_cast<AbstractTexture>(value));
+
+	return std::static_pointer_cast<PhongMaterial>(shared_from_this());
+}
+
+Texture::Ptr
+PhongMaterial::diffuseMap() const
+{
+	return std::dynamic_pointer_cast<Texture>(get<AbstractTexture::Ptr>("diffuseMap"));
+}
+
+PhongMaterial::Ptr
 PhongMaterial::specularColor(Vector4::Ptr color)
 {
 	set("specularColor", color);

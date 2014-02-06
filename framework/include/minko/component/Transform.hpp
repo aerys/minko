@@ -197,7 +197,7 @@ namespace minko
 				bool											_invalidLists;
 
 				std::list<Any>									_targetSlots;
-				Signal<std::shared_ptr<SceneManager>>::Slot		_frameEndSlot;
+				Signal<std::shared_ptr<SceneManager>>::Slot		_frameBeginSlot;
 
 			private:
 				void
@@ -231,7 +231,7 @@ namespace minko
 				updateTransformPath(const std::vector<unsigned int>& path);
 
 				void
-				frameEndHandler(std::shared_ptr<SceneManager> sceneManager);
+				frameBeginHandler(std::shared_ptr<SceneManager> sceneManager);
 			};
 		};
 	}
