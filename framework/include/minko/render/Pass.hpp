@@ -60,7 +60,7 @@ namespace minko
 			data::BindingMap						_attributeBindings;
 			data::BindingMap						_uniformBindings;
 			data::BindingMap						_stateBindings;
-			data::MacroBindingMap					_macroBindingsTemplate;
+			data::MacroBindingMap					_macroBindings;
             StatesPtr								_states;
 			std::string								_fallback;
 			SignatureProgramMap						_signatureToProgram;
@@ -106,7 +106,7 @@ namespace minko
 					pass->_attributeBindings,
 					pass->_uniformBindings,
 					pass->_stateBindings,
-					pass->_macroBindingsTemplate,
+					pass->_macroBindings,
 					deepCopy ? States::create(pass->_states) : pass->_states,
 					pass->_fallback
 				);
@@ -167,14 +167,10 @@ namespace minko
 
 			inline
 			const data::MacroBindingMap&
-			macroBindingsTemplate() const
+			macroBindings() const
 			{
-				return _macroBindingsTemplate;
+				return _macroBindings;
 			}
-
-			const data::MacroBindingMap
-			macroBindings(FormatFunction										formatPropertyNameFunction,
-						  std::unordered_map<std::string, std::string>&			variablesToValue);
 
 			inline
 			StatesPtr
@@ -191,10 +187,10 @@ namespace minko
 			}
 
 			std::shared_ptr<Program>
-			selectProgram(const MacroBindingsMap&				macroBindings,	
-						  std::shared_ptr<data::Container> 		data,
-						  std::shared_ptr<data::Container> 		rendererData,
-						  std::shared_ptr<data::Container> 		rootData,
+			selectProgram(std::shared_ptr<render::DrawCall>		drawCall,
+						  std::shared_ptr<data::Container>		targetData,
+						  std::shared_ptr<data::Container>		rendererData,
+						  std::shared_ptr<data::Container>		rootData,
 						  std::list<data::ContainerProperty>&	booleanMacros,
 						  std::list<data::ContainerProperty>&	integerMacros,
 						  std::list<data::ContainerProperty>&	incorrectIntegerMacros);

@@ -62,6 +62,7 @@ solution "minko"
 		include 'examples/sky-box'
 		include 'examples/stencil'
 		include 'examples/visibility'
+		include 'examples/multi-surface'
 	end
 
 	-- tests

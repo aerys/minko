@@ -45,13 +45,16 @@ project "minko-framework"
 	-- windows
 	configuration { "windows32 or windows64" }
 		includedirs { "lib/glew/include" }
+		buildoptions {
+			"/wd4503"
+		}
 		
 	configuration { "windows32" }
 		libdirs { "lib/glew/lib/windows32" }
 		
 	configuration { "windows64" }
 		libdirs { "lib/glew/lib/windows64" }
-		
+
 	configuration { "vs*" }
 		defines { "NOMINMAX" }
 
