@@ -19,8 +19,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/file/EffectParser.hpp"
 
-#include <regex>
-
 #include "minko/data/Provider.hpp"
 #include "minko/render/Effect.hpp"
 #include "minko/render/Program.hpp"
@@ -32,14 +30,18 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/TextureFilter.hpp"
 #include "minko/render/MipFilter.hpp"
 #include "minko/render/TriangleCulling.hpp"
+#include "minko/render/AbstractTexture.hpp"
 #include "minko/render/Texture.hpp"
+#include "minko/render/CubeTexture.hpp"
 #include "minko/render/Pass.hpp"
-#include "minko/file/Loader.hpp"
+#include "minko/render/Priority.hpp"
+#include "minko/file/FileLoader.hpp"
 #include "minko/file/Options.hpp"
 #include "minko/file/AssetLibrary.hpp"
 #include "json/json.h"
 
 using namespace minko;
+using namespace minko::data;
 using namespace minko::file;
 using namespace minko::render;
 
@@ -117,11 +119,11 @@ EffectParser::initializePriorityMap()
 	std::unordered_map<std::string, float> m;
 
 	// The higher the priority, the earlier the drawcall is rendered.
-	m["first"]			= 4000.0f;
-	m["background"]		= 3000.0f;
-	m["opaque"]			= 2000.0f;
-	m["transparent"]	= 1000.0f;
-	m["last"]			=    0.0f;
+	m["first"]			= priority::FIRST;
+	m["background"]		= priority::BACKGROUND;
+	m["opaque"]			= priority::OPAQUE;
+	m["transparent"]	= priority::TRANSPARENT;
+	m["last"]			= priority::LAST;
 
 	return m;
 }
@@ -231,6 +233,7 @@ EffectParser::parseRenderStates(const Json::Value&		root,
 								render::States::Ptr		defaultStates,
 								float					priorityOffset)
 {
+	auto zsorted			= defaultStates->zsorted();
 	auto blendSrcFactor		= defaultStates->blendingSourceFactor();
 	auto blendDstFactor		= defaultStates->blendingDestinationFactor();
 	auto colorMask			= defaultStates->colorMask();
@@ -246,10 +249,11 @@ EffectParser::parseRenderStates(const Json::Value&		root,
 	auto scissorTest		= defaultStates->scissorTest();
 	auto scissorBox			= defaultStates->scissorBox();
 
-	render::Texture::Ptr target = defaultStates->target();
+	AbstractTexture::Ptr target = defaultStates->target();
 	std::unordered_map<std::string, SamplerState> samplerStates = defaultStates->samplers();
 
 	const float priority = parsePriority(root, defaultStates->priority() + priorityOffset);
+	parseZSort(root, zsorted);
 	parseBlendMode(root, blendSrcFactor, blendDstFactor);
 	parseColorMask(root, colorMask);
 	parseDepthTest(root, depthMask, depthFunc);
@@ -262,6 +266,7 @@ EffectParser::parseRenderStates(const Json::Value&		root,
 	return render::States::create(
 		samplerStates,
 		(float)priority,
+		zsorted,
 		blendSrcFactor,
 		blendDstFactor,
 		colorMask,
@@ -287,10 +292,10 @@ EffectParser::parsePasses(const Json::Value&		root,
 						  AbstractContext::Ptr		context,
 						  std::vector<Pass::Ptr>&	passes,
 						  TexturePtrMap&			targets,
-						  data::BindingMap&			defaultAttributeBindings,
-						  data::BindingMap&			defaultUniformBindings,
-						  data::BindingMap&			defaultStateBindings,
-						  data::MacroBindingMap&	defaultMacroBindings,
+						  BindingMap&			defaultAttributeBindings,
+						  BindingMap&			defaultUniformBindings,
+						  BindingMap&			defaultStateBindings,
+						  MacroBindingMap&	defaultMacroBindings,
 						  render::States::Ptr		defaultStates,
 						  UniformValues&			defaultUniformDefaultValues)
 {
@@ -344,11 +349,11 @@ EffectParser::parsePasses(const Json::Value&		root,
 			auto	fallback	= passValue.get("fallback", std::string()).asString();
 
             // pass bindings
-            data::BindingMap		attributeBindings(defaultAttributeBindings);
-            data::BindingMap		uniformBindings(defaultUniformBindings);
-            data::BindingMap		stateBindings(defaultStateBindings);
-            data::MacroBindingMap	macroBindings(defaultMacroBindings);
-            UniformValues			uniformDefaultValues(defaultUniformDefaultValues);
+            BindingMap		attributeBindings(defaultAttributeBindings);
+            BindingMap		uniformBindings(defaultUniformBindings);
+            BindingMap		stateBindings(defaultStateBindings);
+            MacroBindingMap	macroBindings(defaultMacroBindings);
+            UniformValues	uniformDefaultValues(defaultUniformDefaultValues);
 
             parseBindings(
                 passValue,
@@ -549,7 +554,7 @@ EffectParser::glslIncludeCompleteHandler(LoaderPtr 					loader,
 		options->includePaths().push_back(loader->resolvedFilename().substr(0, pos));
 	}
 
-	parseGLSL(std::string((const char*)&loader->data()[0], loader->data().size()), options, blocks, blockIt);
+	parseGLSL(std::string((const char*)&loader->data()[0], loader->data().size()), options, blocks,blockIt);
 
 	if (_numDependencies == _numLoadedDependencies && _effect)
 		finalize();
@@ -594,6 +599,16 @@ EffectParser::parseBlendMode(const Json::Value&				contextNode,
 			dstFactor = static_cast<render::Blending::Destination>(blendMode & 0xff00);
 		}
 	}
+}
+
+void
+EffectParser::parseZSort(const Json::Value&	contextNode,
+						 bool& zsorted) const
+{
+	auto zsortedValue	= contextNode.get("zsort", 0);
+
+	if (zsortedValue.isBool())
+		zsorted = zsortedValue.asBool();
 }
 
 void
@@ -688,9 +703,9 @@ EffectParser::parsePriority(const Json::Value& contextNode,
 }
 
 void
-EffectParser::parseBindingNameAndSource(const Json::Value& contextNode, std::string& propertyName, data::BindingSource& source)
+EffectParser::parseBindingNameAndSource(const Json::Value& contextNode, std::string& propertyName, BindingSource& source)
 {
-	source = data::BindingSource::TARGET;
+	source = BindingSource::TARGET;
 	if (contextNode.isString())
 		propertyName = contextNode.asString();
 	else if (contextNode.isObject())
@@ -706,21 +721,21 @@ EffectParser::parseBindingNameAndSource(const Json::Value& contextNode, std::str
 			auto sourceString = sourceValue.asString();
 
 			if (sourceString == "target")
-				source = data::BindingSource::TARGET;
+				source = BindingSource::TARGET;
 			else if (sourceString == "renderer")
-				source = data::BindingSource::RENDERER;
+				source = BindingSource::RENDERER;
 			else if (sourceString == "root")
-				source = data::BindingSource::ROOT;
+				source = BindingSource::ROOT;
 		}
 	}
 }
 
 void
 EffectParser::parseBindings(const Json::Value&		contextNode,
-						    data::BindingMap&		attributeBindings,
-						    data::BindingMap&		uniformBindings,
-						    data::BindingMap&		stateBindings,
-							data::MacroBindingMap&	macroBindings,
+						    BindingMap&		attributeBindings,
+						    BindingMap&		uniformBindings,
+						    BindingMap&		stateBindings,
+							MacroBindingMap&	macroBindings,
 							UniformValues&			uniformDefaultValues)
 {
 	auto attributeBindingsValue = contextNode.get("attributeBindings", 0);
@@ -747,7 +762,7 @@ EffectParser::parseBindings(const Json::Value&		contextNode,
 }
 
 void
-EffectParser::parseMacroBindings(const Json::Value&	contextNode, data::MacroBindingMap&	macroBindings)
+EffectParser::parseMacroBindings(const Json::Value&	contextNode, MacroBindingMap&	macroBindings)
 {
 	auto macroBindingsValue = contextNode.get("macroBindings", 0);
 
@@ -756,10 +771,14 @@ EffectParser::parseMacroBindings(const Json::Value&	contextNode, data::MacroBind
 		for (auto propertyName : macroBindingsValue.getMemberNames())
 		{
 			auto macroBindingValue = macroBindingsValue.get(propertyName, 0);
-			minko::data::MacroBindingDefault& bindingDefault = std::get<2>(macroBindings[propertyName]);
 
+			MacroBindingDefault&	bindingDefault	= std::get<2>(macroBindings[propertyName]);
+			auto&					min				= std::get<3>(macroBindings[propertyName]);
+			auto&					max				= std::get<4>(macroBindings[propertyName]);
 		
-			bindingDefault.semantic = data::MacroBindingDefaultValueSemantic::UNSET;
+			bindingDefault.semantic = MacroBindingDefaultValueSemantic::UNSET;
+			min						= -INT_MAX;
+			max						= INT_MAX;
 
 			parseBindingNameAndSource(
 				macroBindingValue,
@@ -769,39 +788,33 @@ EffectParser::parseMacroBindings(const Json::Value&	contextNode, data::MacroBind
 
 			if (macroBindingValue.isObject())
 			{
-				auto nameValue = macroBindingValue.get("property", 0);
-				auto minValue = macroBindingValue.get("min", -1);
-				auto maxValue = macroBindingValue.get("max", -1);
-				auto defaultValue = macroBindingValue.get("default", "");
+				auto nameValue		= macroBindingValue.get("property", 0);
+				auto minValue		= macroBindingValue.get("min", -INT_MAX);
+				auto maxValue		= macroBindingValue.get("max", INT_MAX);
+				auto defaultValue	= macroBindingValue.get("default", "");
 
 				if (defaultValue.isInt())
 				{
-					bindingDefault.semantic = data::MacroBindingDefaultValueSemantic::VALUE;
+					bindingDefault.semantic = MacroBindingDefaultValueSemantic::VALUE;
 					bindingDefault.value.value = defaultValue.asInt();
 				}
 				else if (defaultValue.isBool())
 				{
-					bindingDefault.semantic = data::MacroBindingDefaultValueSemantic::PROPERTY_EXISTS;
+					bindingDefault.semantic = MacroBindingDefaultValueSemantic::PROPERTY_EXISTS;
 					bindingDefault.value.propertyExists = defaultValue.asBool();
 				}
-
-				//if (!nameValue.isString() || !minValue.isInt() || !maxValue.isInt())
-				//	throw;
-
-				auto& min = std::get<3>(macroBindings[propertyName]);
-				auto& max = std::get<4>(macroBindings[propertyName]);
 
 				min = minValue.asInt();
 				max = maxValue.asInt();
 			}
 			else if (macroBindingValue.isInt())
 			{
-				bindingDefault.semantic = data::MacroBindingDefaultValueSemantic::VALUE;
+				bindingDefault.semantic = MacroBindingDefaultValueSemantic::VALUE;
 				bindingDefault.value.value = macroBindingValue.asInt();
 			}
 			else if (macroBindingValue.isBool())
 			{
-				bindingDefault.semantic = data::MacroBindingDefaultValueSemantic::PROPERTY_EXISTS;
+				bindingDefault.semantic = MacroBindingDefaultValueSemantic::PROPERTY_EXISTS;
 				bindingDefault.value.propertyExists = macroBindingValue.asBool();
 			}
 		}
@@ -810,7 +823,7 @@ EffectParser::parseMacroBindings(const Json::Value&	contextNode, data::MacroBind
 
 void
 EffectParser::parseUniformBindings(const Json::Value&	contextNode,
-								   data::BindingMap&	uniformBindings,
+								   BindingMap&	uniformBindings,
 								   UniformValues&		uniformDefaultValues)
 {
 	auto uniformBindingsValue = contextNode.get("uniformBindings", 0);
@@ -915,7 +928,7 @@ EffectParser::loadTexture(const std::string&	textureFilename,
 		auto extension = loader->resolvedFilename().substr(pos + 1);
 		auto parser = _assetLibrary->parser(extension);
 
-		auto completeSlote = parser->complete()->connect([&](file::AbstractParser::Ptr parser)
+		auto completeSlot = parser->complete()->connect([&](file::AbstractParser::Ptr parser)
 		{
 			uniformTypeAndValue.second.textureValue = _assetLibrary->texture(textureFilename);
 			uniformTypeAndValue.second.textureValue->upload();
@@ -1062,15 +1075,15 @@ EffectParser::parseStencilOperations(const Json::Value& contextNode,
 	}
 }
 
-std::shared_ptr<render::Texture>
+AbstractTexture::Ptr
 EffectParser::parseTarget(const Json::Value&                contextNode,
                           std::shared_ptr<AbstractContext>  context,
                           TexturePtrMap&                    targets)
 {
     auto targetValue = contextNode.get("target", 0);
 
-	std::shared_ptr<render::Texture> target;
-	std::string targetName;
+	AbstractTexture::Ptr	target	= nullptr;
+	std::string				targetName;
 
     if (targetValue.isObject())
     {
@@ -1091,7 +1104,15 @@ EffectParser::parseTarget(const Json::Value&                contextNode,
             height = targetValue.get("height", 0).asUInt();
         }
 
-        target = render::Texture::create(context, width, height, false, true);
+		const bool isCubeTexture = targetValue.get("isCube", 0).isBool()
+			? targetValue.get("isCube", 0).asBool()
+			: false;
+
+		if (!isCubeTexture)
+			target	= Texture::create(context, width, height, false, true);
+		else
+			target	= CubeTexture::create(context, width, height, false, true);
+
 		target->upload();
 
 		if (targetName.length())
@@ -1134,10 +1155,10 @@ EffectParser::parseTechniques(const Json::Value&				root,
 				if (fallbackValue.isString() && fallbackValue.asString().length())
 					_techniqueFallback[techniqueName] = fallbackValue.asString();
 
-				data::BindingMap		attributeBindings(_defaultAttributeBindings);
-				data::BindingMap		uniformBindings(_defaultUniformBindings);
-				data::BindingMap		stateBindings(_defaultStateBindings);
-				data::MacroBindingMap	macroBindings(_defaultMacroBindings);
+				BindingMap		attributeBindings(_defaultAttributeBindings);
+				BindingMap		uniformBindings(_defaultUniformBindings);
+				BindingMap		stateBindings(_defaultStateBindings);
+				MacroBindingMap	macroBindings(_defaultMacroBindings);
 				UniformValues			uniformDefaultValues(_defaultUniformValues);
         
 				// bindings

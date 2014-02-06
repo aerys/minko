@@ -37,49 +37,49 @@ namespace minko
 		public:
 			static
 			AbsComponentPtr
-			deserializeTransform(std::string		serializedTransformData,
+			deserializeTransform(std::string&		serializedTransformData,
 								 AssetLibraryPtr	assetLibrary,
 								 DependencyPtr		dependencies);
 
 			static
 			AbsComponentPtr
-			deserializeProjectionCamera(std::string		serializedCameraData,
+			deserializeProjectionCamera(std::string&	serializedCameraData,
 										AssetLibraryPtr	assetLibrary,
 										DependencyPtr	dependencies);
 
 			static
 			AbsComponentPtr
-			deserializeAmbientLight(std::string		serializedAmbientLight,
+			deserializeAmbientLight(std::string&	serializedAmbientLight,
 									AssetLibraryPtr	assetLibrary,
 									DependencyPtr	dependencies);
 
 			static
 			AbsComponentPtr
-			deserializeDirectionalLight(std::string		serializedDirectionalLight,
+			deserializeDirectionalLight(std::string&	serializedDirectionalLight,
 										AssetLibraryPtr	assetLibrary,
 										DependencyPtr	dependencies);
 
 			static
 			AbsComponentPtr
-			deserializePointLight(std::string		serializedPointLight,
+			deserializePointLight(std::string&		serializedPointLight,
 								  AssetLibraryPtr	assetLibrary,
 								  DependencyPtr		dependencies);
 		
 			static
 			AbsComponentPtr
-			deserializeSpotLight(std::string		serializedSpotLight,
+			deserializeSpotLight(std::string&		serializedSpotLight,
 								 AssetLibraryPtr	assetLibrary,
 								 DependencyPtr		dependencies);
 
 			static
 			AbsComponentPtr
-			deserializeSurface(std::string		serializedSurface,
+			deserializeSurface(std::string&		serializedSurface,
 							   AssetLibraryPtr	assetLibrary,
 							   DependencyPtr	dependencies);
 
 			static
 			AbsComponentPtr
-			deserializeRenderer(std::string		serializedRenderer,
+			deserializeRenderer(std::string&	serializedRenderer,
 							   AssetLibraryPtr	assetLibrary,
 							   DependencyPtr	dependencies);
 		};

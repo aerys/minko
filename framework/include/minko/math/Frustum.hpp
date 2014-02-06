@@ -20,45 +20,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
+#include "minko/math/AbstractShape.hpp"
 
 namespace minko
 {
 	namespace math
 	{
-		enum class FrustumPosition
-		{
-			OUTSIDE = -3,
-			AROUND	= -2,
-			INSIDE	= -1,
-			LEFT	= 0,
-			TOP		= 1,
-			RIGHT	= 2,
-			BOTTOM	= 3,
-			NEAR	= 4,
-			FAR		= 5
-		};
-	}
-}
-
-namespace std
-{
-	template<> 
-	struct hash<minko::math::FrustumPosition>
-	{
-	    inline
-	    size_t
-	    operator()(const minko::math::FrustumPosition& p) const
-	    {
-	        return static_cast<int>(p);
-	    }
-	};
-}
-
-namespace minko
-{
-	namespace math
-	{
-		class Frustum
+		class Frustum :
+			public AbstractShape
 		{
 
 		public:
@@ -85,10 +54,13 @@ namespace minko
 				return std::shared_ptr<Frustum>(new Frustum());
 			}
 
+			bool
+			cast(std::shared_ptr<Ray> ray, float& distance);
+
 			void
 			updateFromMatrix(std::shared_ptr<math::Matrix4x4> matrix);
 
-			FrustumPosition
+			ShapePosition
 			testBoundingBox(std::shared_ptr<math::Box> box);
 
 		private:

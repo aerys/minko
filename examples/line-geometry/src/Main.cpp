@@ -115,9 +115,9 @@ addStar(Node::Ptr root, file::AssetLibrary::Ptr assets, std::vector<Star>& stars
 	auto starNode = Node::create("star_" + std::to_string(stars.size()))
 		->addComponent(Surface::create(
 			createStarLineGeometry(numBranches, inRadius, outRadius, assets->context()),
-			Provider::create()
-				->set("material.diffuseColor",	Color::hslaToRgba(rand() / (float)RAND_MAX, 0.75f, 0.6f, 1.0f))
-				->set("material.lineThickness",	1.0f + 3.0f * (rand() / (float)RAND_MAX)),
+			ArrayProvider::create("material")
+				->set("diffuseColor",	Color::hslaToRgba(rand() / (float)RAND_MAX, 0.75f, 0.6f, 1.0f))
+				->set("lineThickness",	1.0f + 3.0f * (rand() / (float)RAND_MAX)),
 			assets->effect("line")
 		))
 		->addComponent(Transform::create(Matrix4x4::create()->appendRotationZ(2.0f * (float)PI * rand() / (float)RAND_MAX)));

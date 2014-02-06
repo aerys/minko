@@ -37,6 +37,10 @@ namespace minko
 				int2,
 				int3,
 				int4,
+				bool1,
+				bool2,
+				bool3,
+				bool4,
 				float1,
 				float2,
 				float3,
@@ -44,6 +48,7 @@ namespace minko
 				float9,
 				float16,
 				sampler2d,
+				samplerCube,
 				attribute,
 				constant
 			};
@@ -82,6 +87,14 @@ namespace minko
 						return "int3";
 					case Type::int4:
 						return "int4";
+					case Type::bool1:
+						return "bool1";
+					case Type::bool2:
+						return "bool2";
+					case Type::bool3:
+						return "bool3";
+					case Type::bool4:
+						return "bool4";
 					case Type::float1:
 						return "float1";
 					case Type::float2:
@@ -94,6 +107,10 @@ namespace minko
 						return "float9";
 					case Type::float16:
 						return "float16";
+					case Type::sampler2d:
+						return "sampler2d";
+					case Type::samplerCube:
+						return "samplerCube";
 					default:
 						throw std::invalid_argument("type");
 				}

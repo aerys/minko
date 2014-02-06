@@ -36,14 +36,21 @@ namespace minko
 
 		private:
 			typedef std::shared_ptr<Pass>										PassPtr;
+			typedef std::shared_ptr<VertexBuffer>								VertexBufferPtr;
+			typedef std::shared_ptr<std::function<void(PassPtr)>>				OnPassFunctionPtr;
+			typedef std::list<std::function<void(PassPtr)>>						OnPassFunctionList;	
 			typedef std::vector<PassPtr> 										Technique;
 			typedef Signal<Ptr, const std::string&, const std::string&>::Ptr	TechniqueChangedSignalPtr;
 
 		private:
 			std::unordered_map<std::string, Technique>		_techniques;
 			std::unordered_map<std::string, std::string>	_fallback;
-			std::list<std::function<void(PassPtr)>>			_uniformFunctions;
 			std::shared_ptr<data::Provider>					_data;
+
+			OnPassFunctionList								_uniformFunctions;
+			OnPassFunctionList								_attributeFunctions;
+			OnPassFunctionPtr								_indexFunction;
+			OnPassFunctionList								_macroFunctions;
 
 		public:
 			inline static
@@ -120,13 +127,77 @@ namespace minko
 				});
 #else
 				_uniformFunctions.push_back(std::bind(
-					&Effect::setUniformOnPass<T...>, shared_from_this(), std::placeholders::_1, name, values...
+					&Effect::setUniformOnPass<T...>, std::placeholders::_1, name, values...
 				));
 #endif
-
-				for (auto technique : _techniques)
+				for (auto& technique : _techniques)
 					for (auto& pass : technique.second)
 						pass->setUniform(name, values...);
+			}
+
+			inline
+			void
+			setIndexBuffer(const std::vector<unsigned short>& indices)
+			{
+				_indexFunction = std::make_shared<std::function<void(PassPtr)>>(std::bind(
+					&Effect::setIndexBufferOnPass, std::placeholders::_1, indices
+				));
+
+				for (auto& technique : _techniques)
+					for (auto& pass : technique.second)
+						pass->setIndexBuffer(indices);
+			}
+
+			inline
+			void
+			setVertexAttribute(const std::string& name, unsigned int attributeSize, const std::vector<float>& data)
+			{
+				_attributeFunctions.push_back(std::bind(
+					&Effect::setVertexAttributeOnPass, std::placeholders::_1, name, attributeSize, data
+				));
+
+				for (auto& technique : _techniques)
+					for (auto& pass : technique.second)
+						pass->setVertexAttribute(name, attributeSize, data);
+			}
+
+			inline
+			void
+			define(const std::string& macroName)
+			{
+				_macroFunctions.push_back(std::bind(
+					&Effect::defineBooleanMacroOnPass, std::placeholders::_1, macroName
+				));
+
+				for (auto& technique : _techniques)
+					for (auto& pass : technique.second)
+						pass->define(macroName);
+			}
+
+			inline
+			void
+			define(const std::string& macroName, int macroValue)
+			{
+				_macroFunctions.push_back(std::bind(
+					&Effect::defineIntegerMacroOnPass, std::placeholders::_1, macroName, macroValue
+				));
+
+				for (auto& technique : _techniques)
+					for (auto& pass : technique.second)
+						pass->define(macroName, macroValue);
+			}
+
+			inline
+			void
+			undefine(const std::string& macroName)
+			{
+				_macroFunctions.push_back(std::bind(
+					&Effect::undefineMacroOnPass, std::placeholders::_1, macroName
+				));
+
+				for (auto& technique : _techniques)
+					for (auto& pass : technique.second)
+						pass->undefine(macroName);
 			}
 
             void
@@ -142,10 +213,46 @@ namespace minko
 			Effect();
 
 			template <typename... T>
+			inline static 
 			void
 			setUniformOnPass(std::shared_ptr<Pass> pass, const std::string& name, const T&... values)
 			{
 				pass->setUniform(name, values...);
+			}
+
+			inline static 
+			void
+			setVertexAttributeOnPass(std::shared_ptr<Pass> pass, const std::string& name, unsigned int attributeSize, const std::vector<float>& data)
+			{
+				pass->setVertexAttribute(name, attributeSize, data);
+			}
+
+			inline static
+			void
+			setIndexBufferOnPass(std::shared_ptr<Pass> pass, const std::vector<unsigned short>& indices)
+			{
+				pass->setIndexBuffer(indices);
+			}
+
+			inline static
+			void 
+			defineBooleanMacroOnPass(std::shared_ptr<Pass> pass, const std::string& macroName)
+			{
+				pass->define(macroName);
+			}
+
+			inline static
+			void 
+			defineIntegerMacroOnPass(std::shared_ptr<Pass> pass, const std::string& macroName, int macroValue)
+			{
+				pass->define(macroName, macroValue);
+			}
+
+			inline static
+			void 
+			undefineMacroOnPass(std::shared_ptr<Pass> pass, const std::string& macroName)
+			{
+				pass->undefine(macroName);
 			}
 		};		
 	}

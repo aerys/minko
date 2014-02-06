@@ -39,10 +39,12 @@ namespace minko
 		private:
 			typedef std::shared_ptr<render::AbstractContext>	AbsContextPtr;
 			typedef std::shared_ptr<render::Effect>				EffectPtr;
-			typedef std::shared_ptr<render::Texture>			TexturePtr;
+			typedef std::shared_ptr<render::AbstractTexture>	AbsTexturePtr;
 			typedef std::shared_ptr<geometry::Geometry>			GeometryPtr;
 			typedef std::shared_ptr<file::AbstractParser>		AbsParserPtr;
-			typedef std::function<AbsParserPtr(void)>			Handler;
+			typedef std::shared_ptr<file::AbstractLoader>		AbsLoaderPtr;
+			typedef std::function<AbsParserPtr(void)>			ParserHandler;
+			typedef std::function<AbsLoaderPtr(void)>			LoaderHandler;
 			typedef std::shared_ptr<scene::Node>				NodePtr;
             typedef std::shared_ptr<component::AbstractScript>  AbsScriptPtr;
 			typedef std::shared_ptr<data::Provider>				MaterialPtr;
@@ -50,12 +52,13 @@ namespace minko
 		private:
 			AbsContextPtr															_context;
 			std::shared_ptr<file::Options>											_defaultOptions;
-			std::unordered_map<std::string, Handler>								_parsers;
+			std::unordered_map<std::string, ParserHandler>							_parsers;
+			std::unordered_map<std::string, LoaderHandler>							_loaders;
 
 			std::unordered_map<std::string, MaterialPtr>							_materials;
 			std::unordered_map<std::string, GeometryPtr>							_geometries;
 			std::unordered_map<std::string, EffectPtr>								_effects;
-			std::unordered_map<std::string, TexturePtr>								_textures;
+			std::unordered_map<std::string, AbsTexturePtr>							_textures;
 			std::unordered_map<std::string, NodePtr>								_symbols;
 			std::unordered_map<std::string, std::vector<unsigned char>>				_blobs;
             std::unordered_map<std::string, AbsScriptPtr>                           _scripts;
@@ -119,15 +122,15 @@ namespace minko
 
 			const std::string&
 			geometryName(GeometryPtr geometry);
-
-			TexturePtr
-			texture(const std::string& name);
-
+			
 			Ptr
-			texture(const std::string& name, TexturePtr texture);
+			texture(const std::string& name, AbsTexturePtr texture);
+
+			AbsTexturePtr
+			texture(const std::string& name) const;
 
 			const std::string&
-			textureName(TexturePtr texture);
+			textureName(AbsTexturePtr texture);
 
 			std::shared_ptr<material::Material>
 			material(const std::string& name);
@@ -196,8 +199,28 @@ namespace minko
 				return _parsers[extension]();
 			}
 
+			template <typename T>
+			typename std::enable_if<std::is_base_of<file::AbstractLoader, T>::value, Ptr>::type
+			registerProtocol(const std::string& protocol)
+			{
+				std::string prefix(protocol);
+
+				std::transform(prefix.begin(), prefix.end(), prefix.begin(), ::tolower);
+
+				_loaders[prefix] = T::create;
+
+				return shared_from_this();
+			}
+
+			file::AbstractLoader::Ptr
+			getLoader(const std::string& protocol)
+			{
+				return _loaders[protocol]();
+			}
+
 			Ptr
 			queue(const std::string& filename);
+
 			Ptr
 			queue(const std::string& filename, std::shared_ptr<file::Options> options);
 
@@ -231,6 +254,9 @@ namespace minko
 
 			AbsParserPtr
 			parser(std::string extension);
+
+			AbsLoaderPtr
+			loader(std::string protocol);
 
 		private:
 			AssetLibrary(AbsContextPtr context);

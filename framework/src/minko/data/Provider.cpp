@@ -85,7 +85,7 @@ Provider::swap(const std::string& propertyName1, const std::string& propertyName
 	{
 		const auto	value1	= _values[formattedPropertyName1];
 		const auto	value2	= _values[formattedPropertyName2];
-		const bool	changed = !( (*value1) == (*value2) );
+		const bool	changed = true;//!( (*value1) == (*value2) );
 
 		_values[formattedPropertyName1] = value2;
 		_values[formattedPropertyName2] = value1;
@@ -98,44 +98,6 @@ Provider::swap(const std::string& propertyName1, const std::string& propertyName
 			_propReferenceChanged->execute(shared_from_this(), formattedPropertyName1);
 			_propReferenceChanged->execute(shared_from_this(), formattedPropertyName2);
 		}
-	}
-}
-
-void
-Provider::registerProperty(const std::string&		propertyName, 
-						   std::shared_ptr<Value>	value)
-{
-	const auto	foundValueIt	= _values.find(propertyName);
-	const bool	isNewValue		= (foundValueIt == _values.end());
-	const bool	changed			= isNewValue || !((*value) == (*foundValueIt->second));
-	
-	_values[propertyName] = value;
-		
-	if (isNewValue)
-	{
-#if defined(EMSCRIPTEN)
-		auto that = shared_from_this();
-		_valueChangedSlots[propertyName] = value->changed()->connect([&, that, propertyName, this](Value::Ptr) {
-			_propValueChanged->execute(that, propertyName);
-		});
-#else
-		_valueChangedSlots[propertyName] = value->changed()->connect(std::bind(
-			&Signal<Provider::Ptr, const std::string&>::execute,
-			_propValueChanged,
-			shared_from_this(),
-			propertyName
-		));
-#endif
-
-		_names.push_back(propertyName);
-
-		_propertyAdded->execute(shared_from_this(), propertyName);
-	}
-
-	if (changed)
-	{
-		_propReferenceChanged->execute(shared_from_this(), propertyName);
-		_propValueChanged->execute(shared_from_this(), propertyName);
 	}
 }
 

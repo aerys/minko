@@ -30,15 +30,16 @@ namespace minko
 		{
 		public:
 			typedef std::shared_ptr<Dependency> Ptr;
+			typedef std::shared_ptr<render::AbstractTexture> AbsTexturePtr;
 
 		private:
-			std::unordered_map<std::shared_ptr<render::Texture>, uint>		_textureDependencies;
+			std::unordered_map<AbsTexturePtr, uint>							_textureDependencies;
 			std::unordered_map<std::shared_ptr<data::Provider>, uint>		_materialDependencies;
 			std::unordered_map<std::shared_ptr<scene::Node>, uint>			_subSceneDependencies;
 			std::unordered_map<std::shared_ptr<geometry::Geometry>, uint>	_geometryDependencies;
 			std::unordered_map<std::shared_ptr<render::Effect>, uint>		_effectDependencies;
 
-			std::unordered_map<uint, std::shared_ptr<render::Texture>>		_textureReferences;
+			std::unordered_map<uint, AbsTexturePtr>							_textureReferences;
 			std::unordered_map<uint, std::shared_ptr<data::Provider>>		_materialReferences;
 			std::unordered_map<uint, std::shared_ptr<scene::Node>>			_subSceneReferences;
 			std::unordered_map<uint, std::shared_ptr<geometry::Geometry>>	_geometryReferences;
@@ -67,10 +68,10 @@ namespace minko
 			registerDependency(std::shared_ptr<data::Provider> material);
 
 			bool
-			hasDependency(std::shared_ptr<render::Texture> texture);
+			hasDependency(AbsTexturePtr texture);
 
 			uint
-			registerDependency(std::shared_ptr<render::Texture> texture);
+			registerDependency(AbsTexturePtr texture);
 
 			bool
 			hasDependency(std::shared_ptr<scene::Node> subScene);
@@ -96,11 +97,11 @@ namespace minko
 			void
 			registerReference(uint referenceId, std::shared_ptr<data::Provider> material);
 
-			std::shared_ptr<render::Texture>
+			AbsTexturePtr
 			getTextureReference(uint textureId);
 
 			void
-			registerReference(uint referenceId, std::shared_ptr<render::Texture> texture);
+			registerReference(uint referenceId, AbsTexturePtr texture);
 
 			std::shared_ptr<scene::Node>
 			getSubsceneReference(uint subSceneId);
@@ -114,7 +115,7 @@ namespace minko
 			void
 			registerReference(uint referenceId, std::shared_ptr<scene::Node> subScene);
 
-			std::vector<msgpack::type::tuple<unsigned char, short, std::string>>
+			std::vector<msgpack::type::tuple<short, short, std::string>>
 			serialize(std::shared_ptr<file::AssetLibrary>	assetLibrary, 
 					  std::shared_ptr<file::Options>		options);
 

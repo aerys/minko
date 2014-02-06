@@ -47,7 +47,7 @@ MaterialWriter::embed(std::shared_ptr<AssetLibrary>		assetLibrary,
 
 	for (std::string structuredPropertyName : material->propertyNames())
 	{
-		std::string propertyName = (structuredPropertyName).substr(material->structureName().size() + 1);
+		std::string propertyName = (structuredPropertyName).substr(material->arrayName().size() + 1);
 
 		if (serializeMaterialValue<uint>(material, propertyName, assetLibrary, &serializedComplexProperties, &serializedBasicProperties, dependency))
 			continue;
@@ -77,7 +77,7 @@ MaterialWriter::embed(std::shared_ptr<AssetLibrary>		assetLibrary,
 			continue;
 		else if (serializeMaterialValue<std::shared_ptr<math::Matrix4x4>>(material, propertyName, assetLibrary, &serializedComplexProperties, &serializedBasicProperties, dependency))
 			continue;
-		else if (serializeMaterialValue<std::shared_ptr<render::Texture>>(material, propertyName, assetLibrary, &serializedComplexProperties, &serializedBasicProperties, dependency))
+		else if (serializeMaterialValue<TexturePtr>(material, propertyName, assetLibrary, &serializedComplexProperties, &serializedBasicProperties, dependency))
 			continue;
 		else
 			std::cerr << propertyName << " can't be serialized : missing technique" << std::endl << std::endl;
