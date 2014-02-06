@@ -179,6 +179,12 @@ bullet::Collider::initializeFromNode(Node::Ptr node)
 	
 	_targetTransform = node->component<Transform>();
 
+	// check that target's model-to-world matrix is good to begin with.
+	auto modelToWorld = _targetTransform->modelToWorldMatrix(true);
+	if (fabsf(modelToWorld->determinant()) < 1e-3f)
+		throw new std::logic_error("The node's model-to-world matrix cannot be inverted.");
+
+
 	auto nodeSet = NodeSet::create(node)
 		->ancestors(true)
 		->where([](Node::Ptr node)
