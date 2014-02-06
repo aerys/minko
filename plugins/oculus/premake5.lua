@@ -27,7 +27,7 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 	
 	excludes { "lib/LibOVR/Include/OVRVersion.h" }
 	
-	configuration { "windows" }
+	configuration { "windows32 or windows64" }
 		excludes {
 			"lib/LibOVR/Src/OVR_Linux_*",
 			"lib/LibOVR/Src/OVR_OSX_*",
@@ -35,7 +35,7 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		}
 		defines { "UNICODE", "_UNICODE" } -- should also undefine _MCBS
 		
-	configuration { "linux" }
+	configuration { "linux32 or linux64" }
 		includedirs {
 			"lib/lin/Xinerama/include",
 			"lib/lin/libudev/include"
@@ -46,7 +46,7 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 			"lib/LibOVR/Src/Kernel/OVR_ThreadsWinAPI.cpp"
 		}
 	
-	configuration { "macosx" }
+	configuration { "osx64" }
 		excludes {
 			"lib/LibOVR/Src/OVR_Win32_*",
 			"lib/LibOVR/Src/OVR_Linux_*",
