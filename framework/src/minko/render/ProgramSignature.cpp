@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/Pass.hpp"
 #include "minko/data/Container.hpp"
 #include "minko/data/ContainerProperty.hpp"
+#include "minko/render/DrawCall.hpp"
 
 using namespace minko;
 using namespace minko::render;
@@ -31,10 +32,10 @@ using namespace minko::data;
 
 void
 ProgramSignature::build(std::shared_ptr<render::Pass>	pass,
-					    const MacroBindingMap&			macroBindings,
-						data::Container::Ptr			targetData,
-						data::Container::Ptr			rendererData,
-						data::Container::Ptr			rootData,
+					    DrawCall::Ptr					drawCall,
+						Container::Ptr					targetData,
+						Container::Ptr					rendererData,
+						Container::Ptr					rootData,
 						std::string&					defines,
 						std::list<ContainerProperty>&	booleanMacros,
 						std::list<ContainerProperty>&	integerMacros,
@@ -56,10 +57,14 @@ ProgramSignature::build(std::shared_ptr<render::Pass>	pass,
 
 	unsigned int macroId = 0;
 
-	for (auto& macroBinding : macroBindings)
+	for (auto& macroBinding : pass->macroBindings())
     {
 		const auto&					macroName		= macroBinding.first;
-		const ContainerProperty		macro			(macroBinding.second, targetData, rendererData, rootData);
+		auto macroDefault = macroBinding.second;
+
+		std::get<0>(macroDefault) = drawCall->formatPropertyName(std::get<0>(macroDefault));
+
+		const ContainerProperty		macro(macroDefault, targetData, rendererData, rootData);
 
 		bool						macroExists;		
 		bool						isMacroInteger;
@@ -124,7 +129,7 @@ ProgramSignature::build(std::shared_ptr<render::Pass>	pass,
 				}
 				else
 				{
-					defines += "#define " + macroBinding.first + " " + std::to_string(value) + "\n";
+					defines += "#define " + macroName + " " + std::to_string(value) + "\n";
 				
 					if (macroExists)
 						integerMacros.push_back(macro);
@@ -132,7 +137,7 @@ ProgramSignature::build(std::shared_ptr<render::Pass>	pass,
 			}
 			else if (macroExists || defaultMacroExists)
 			{
-				defines += "#define " + macroBinding.first + "\n";
+				defines += "#define " + macroName + "\n";
 
 				if (macroExists)
 					booleanMacros.push_back(macro);

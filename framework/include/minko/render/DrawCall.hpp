@@ -151,6 +151,28 @@ namespace minko
 			}
 
 			inline
+			ContainerPtr
+			targetData() const
+			{
+				return _targetData;
+			}
+
+			inline
+			ContainerPtr
+			rendererData() const
+			{
+				return _rendererData;
+			}
+
+			inline
+			ContainerPtr
+			rootData() const
+			{
+				return _rootData;
+			}
+
+
+			inline
 			std::string
 			formatPropertyName(const std::string& rawPropertyName)
 			{
