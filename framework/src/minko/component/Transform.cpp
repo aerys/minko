@@ -159,8 +159,8 @@ Transform::RootTransform::targetAddedHandler(AbstractComponent::Ptr 	ctrl,
 	auto sceneManager = target->root()->component<SceneManager>();
 
 	if (sceneManager != nullptr)
-		_frameEndSlot = sceneManager->frameEnd()->connect(std::bind(
-			&Transform::RootTransform::frameEndHandler, shared_from_this(), std::placeholders::_1
+		_frameBeginSlot = sceneManager->frameBegin()->connect(std::bind(
+			&Transform::RootTransform::frameBeginHandler, shared_from_this(), std::placeholders::_1
 		));
 
 	addedHandler(nullptr, target, target->parent());
@@ -171,7 +171,7 @@ Transform::RootTransform::targetRemovedHandler(AbstractComponent::Ptr 	ctrl,
 											   scene::Node::Ptr			target)
 {
 	_targetSlots.clear();
-	_frameEndSlot = nullptr;
+	_frameBeginSlot = nullptr;
 }
 
 void
@@ -182,8 +182,8 @@ Transform::RootTransform::componentAddedHandler(scene::Node::Ptr		node,
 	auto sceneManager = std::dynamic_pointer_cast<SceneManager>(ctrl);
 
 	if (sceneManager != nullptr)
-		_frameEndSlot = sceneManager->frameEnd()->connect(std::bind(
-			&Transform::RootTransform::frameEndHandler, shared_from_this(), std::placeholders::_1
+		_frameBeginSlot = sceneManager->frameBegin()->connect(std::bind(
+			&Transform::RootTransform::frameBeginHandler, shared_from_this(), std::placeholders::_1
 		));
 	else if (std::dynamic_pointer_cast<Transform>(ctrl) != nullptr)
 		_invalidLists = true;
@@ -197,7 +197,7 @@ Transform::RootTransform::componentRemovedHandler(scene::Node::Ptr			node,
 	auto sceneManager = std::dynamic_pointer_cast<SceneManager>(ctrl);
 
 	if (sceneManager)
-		_frameEndSlot = nullptr;
+		_frameBeginSlot = nullptr;
 	else if (std::dynamic_pointer_cast<Transform>(ctrl) != nullptr)
 		_invalidLists = true;
 }
@@ -362,7 +362,7 @@ Transform::RootTransform::forceUpdate(scene::Node::Ptr node)
 }
 
 void
-Transform::RootTransform::frameEndHandler(std::shared_ptr<SceneManager> sceneManager)
+Transform::RootTransform::frameBeginHandler(std::shared_ptr<SceneManager> sceneManager)
 {
 	if (_invalidLists)
 		updateTransformsList();

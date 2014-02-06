@@ -33,22 +33,22 @@ function minko.plugin.sdl:enable()
 	configuration { "windows32" }
 		links { "SDL2", "SDL2main" }
 		libdirs { minko.plugin.path("sdl") .. "/lib/sdl/lib/windows32" }
-		postbuildcommands {
+		prelinkcommands {
 			minko.action.copy(minko.plugin.path("sdl") .. "/lib/sdl/lib/windows32/*.dll")
 		}
 
 	configuration { "windows64" }
 		links { "SDL2", "SDL2main" }
 		libdirs { minko.plugin.path("sdl") .. "/lib/sdl/lib/windows64" }
-		postbuildcommands {
+		prelinkcommands {
 			minko.action.copy(minko.plugin.path("sdl") .. "/lib/sdl/lib/windows64/*.dll")
 		}
 		
 	configuration { "linux32" }
-		links { "SDL2", "SDL2main" }
+		links { "SDL2" }
 
 	configuration { "linux64" }
-		links { "SDL2", "SDL2main" }
+		links { "SDL2" }
 
 	configuration { "osx64" }
 		links { "SDL2.framework" }
