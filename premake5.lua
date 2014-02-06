@@ -63,9 +63,10 @@ solution "minko"
 		include 'examples/stencil'
 		include 'examples/visibility'
 		include 'examples/multi-surface'
+		include 'examples/physics'
 	end
 
-	-- tests
+	tests
 	if not _OPTIONS['no-tests'] then
 		include 'tests'
 	end
