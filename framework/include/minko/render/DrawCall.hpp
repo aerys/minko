@@ -293,6 +293,7 @@ namespace minko
 					container			= getDataContainer(std::get<1>(binding));
 				}
 
+
 				if (container)
 				{
 					stateValue = container->hasProperty(propertyName)
@@ -301,6 +302,14 @@ namespace minko
 				
 					if (_referenceChangedSlots.count(propertyName) == 0)
 					{
+#if defined(EMSCRIPTEN)
+			// See issue #1848 in Emscripten: https://github.com/kripken/emscripten/issues/1848
+						auto that = shared_from_this();
+
+						_referenceChangedSlots[propertyName].push_back(container->propertyReferenceChanged(propertyName)->connect([&, that, defaultValue](data::Container::Ptr, const std::string&) {
+							that->bindState<T>(stateName, defaultValue, stateValue);
+						}));
+#else
 						_referenceChangedSlots[propertyName].push_back(container->propertyReferenceChanged(propertyName)->connect(std::bind(
 							&DrawCall::bindState<T>,
 							shared_from_this(),
@@ -308,6 +317,7 @@ namespace minko
 							defaultValue, 
 							stateValue
 						)));
+#endif
 					}
 				}
 				else
