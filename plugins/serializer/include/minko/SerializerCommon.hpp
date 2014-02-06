@@ -5,10 +5,10 @@
 
 namespace minko
 {
-	namespace extention
+	namespace extension
 	{
-		class SerializerExtention;
-		class AbstractExtention;
+		class SerializerExtension;
+		class AbstractExtension;
 	}
 
 	namespace data
