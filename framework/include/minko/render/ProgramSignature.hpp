@@ -43,8 +43,8 @@ namespace minko
 			
 			void
 			build(std::shared_ptr<render::Pass>			pass,
-				  const data::MacroBindingMap&			macroBindings,
-				  std::shared_ptr<data::Container>		data,
+				  std::shared_ptr<render::DrawCall>		drawCall,
+				  std::shared_ptr<data::Container>		targetData,
 				  std::shared_ptr<data::Container>		rendererData,
 				  std::shared_ptr<data::Container>		rootData,
 				  std::string&							defines,
