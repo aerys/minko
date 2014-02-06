@@ -86,17 +86,20 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		"AI_SLM_DEFAULT_MAX_TRIANGLES=21845"
 	}
 
-	configuration { "windows" }
+	configuration { "vs*" }
 		defines {
 			"_CRT_SECURE_NO_WARNINGS",
 			"_SCL_SECURE_NO_WARNINGS"
 		}
 
-	configuration { "macosx or html5" }
-		buildoptions { "-Wno-attributes" }
+	configuration { "osx64" }
+		buildoptions {
+			"-Wno-attributes"
+		}
 
 	configuration { "html5" }
 		buildoptions {
+			"-Wno-attributes",
 			"-Wimplicit-function-declaration",
 			"-Wparentheses-equality"
 		}
