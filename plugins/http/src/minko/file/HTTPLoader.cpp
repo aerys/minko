@@ -34,8 +34,48 @@ using namespace minko::file;
 std::list<std::shared_ptr<HTTPLoader>>
 HTTPLoader::_runningLoaders;
 
+uint
+HTTPLoader::_uid = 0;
+
 HTTPLoader::HTTPLoader()
 {
+}
+
+void
+HTTPLoader::wget2CompleteHandler(void* arg, const char* file)
+{
+	FILE* f = fopen(file,"rb");
+	if (f)
+	{
+		fseek (f, 0, SEEK_END); 
+    	int size=ftell (f);
+    	fseek (f, 0, SEEK_SET);  
+    		 
+		char* data = new char[size];
+		fread(data,size,1,f);
+		fclose(f);
+		completeHandler(arg, (void*)data, size);
+		delete data;
+	}
+}
+void
+HTTPLoader::progressHandler(void* arg, int progress)
+{
+	auto iterator = std::find_if(HTTPLoader::_runningLoaders.begin(),
+								 HTTPLoader::_runningLoaders.end(),
+								 [=](std::shared_ptr<HTTPLoader> loader) -> bool {
+		return loader.get() == arg;
+	});
+
+	if (iterator == HTTPLoader::_runningLoaders.end())
+	{
+		std::cerr << "HTTPLoader::progressHandler(): cannot find loader" << std::endl;
+		return;
+	}
+	std::cout << "HTTPLoader::progressHandler(): found loader " << format("%d", progress) << "%"  << std::endl;
+	std::shared_ptr<HTTPLoader> loader = *iterator;
+
+	loader->_progress->execute(loader, (float)progress / 100.0);
 }
 
 void
@@ -60,12 +100,19 @@ HTTPLoader::completeHandler(void* arg, void* data, int size)
 	std::cout << "HTTPLoader::completeHandler(): set data" << std::endl;
 	loader->_data.assign(static_cast<unsigned char*>(data), static_cast<unsigned char*>(data) + size);
 
+	loader->_progress->execute(loader, 1.0);
 	std::cout << "HTTPLoader::completeHandler(): call execute" << std::endl;
 	loader->_complete->execute(loader);
 
 	std::cout << "HTTPLoader::completeHandler(): remove loader" << std::endl;
 	// HTTPLoader::_runningLoaders.remove(loader);
 	std::cout << "HTTPLoader::completeHandler(): complete" << std::endl;
+}
+
+void
+HTTPLoader::wget2ErrorHandler(void* arg, int error)
+{
+	errorHandler(arg);
 }
 
 void
@@ -108,8 +155,16 @@ HTTPLoader::load(const std::string& filename, std::shared_ptr<Options> options)
 	_runningLoaders.push_back(std::static_pointer_cast<HTTPLoader>(loader));
 
 	#if defined(EMSCRIPTEN)
-	std::cout << "HTTPLoader::load(): " << "call emscripten_async_wget_data" << std::endl;
+
+	loader->progress()->execute(loader, 0.0);
+	
+	//std::string destFilename = format("prepare%d", _uid++);
+	//std::cout << "HTTPLoader::load(): " << "call emscripten_async_wget2 with filename " << destFilename << std::endl;
+	//emscripten_async_wget2(_filename.c_str(), destFilename.c_str(), "GET", "", loader.get(), &wget2CompleteHandler, &errorHandler, &progressHandler);
+
+	std::cout << "HTTPLoader::load(): " << "call emscripten_async_wget_data " << std::endl;
 	emscripten_async_wget_data(_filename.c_str(), loader.get(), &completeHandler, &errorHandler);
+
 	#else
 	CURL *curl;
 	CURLcode res;
@@ -135,7 +190,7 @@ HTTPLoader::load(const std::string& filename, std::shared_ptr<Options> options)
 
 		if (res != CURLE_OK)
 		{
-			errorHandler(loader.get());
+			errorHandler(loader.get(), 0);
 		}
 		else
 		{
