@@ -44,7 +44,7 @@ namespace minko
 		            //.method("hasProperty",  &Container::hasProperty)
 					.method("addProvider",				static_cast<void (Container::*)(Provider::Ptr)>(&Container::addProvider))
 					.method("removeProvider",			static_cast<void (Container::*)(Provider::Ptr)>(&Container::removeProvider))
-					.method("hasProvider",				static_cast<bool (Container::*)(Provider::Ptr)>(&Container::hasProvider))
+                    .method("hasProvider",              static_cast<bool (Container::*)(Provider::Ptr) const>(&Container::hasProvider))
 					.method("propertyValueChanged",		&Container::propertyValueChanged)
 					.method("propertyReferenceChanged",	&Container::propertyReferenceChanged)
 		            .method("getFloat",     			&Container::get<float>)
