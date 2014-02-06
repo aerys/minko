@@ -20,23 +20,8 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		"src/**.hpp"
 	}
 
-	includedirs { "include" }
-	
-	minko.plugin.import("angle")
-	minko.plugin.enable("webgl")
+	includedirs {
+		"include",
+		"lib/sdl/include"
+	}
 
-	-- linux
-	configuration { "linux" }
-		includedirs { "lib/SDL2/include" }
-
-	-- windows
-	configuration { "win" }
-		includedirs { "lib/SDL2/include" }
-		
-	-- macos
-	configuration { "osx" }
-		includedirs { "lib/SDL2/include" }
-
-	-- emscripten
-	configuration { "html5" }
-		includedirs { "lib/emscripten/SDL/include" }
