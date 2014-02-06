@@ -33,7 +33,7 @@ function minko.plugin.angle:enable()
 		includedirs { minko.plugin.path("angle") .. "/lib/win/ANGLE/include" }
 		
 		if kind ~= "StaticLib" and kind ~= "SharedLib" then
-			postbuildcommands {
+			prelinkcommands {
 				minko.action.copy(minko.plugin.path("angle") .. "/lib/win/ANGLE/lib/*.dll")
 			}
 		end

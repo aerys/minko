@@ -29,7 +29,7 @@ function minko.plugin.particles:enable()
 		minko.plugin.path("particles") .. "/include"
 	}
 	
-	postbuildcommands {
+	prelinkcommands {
 		minko.action.copy(minko.plugin.path("particles") .. "/asset"),
 	}
 end
