@@ -14,25 +14,22 @@ minko.project.library = function(name)
 		defines { "NDEBUG" }
 		optimize "On"
 	
-	configuration { "windows" }
+	configuration { "windows32 or windows64" }
 		includedirs { minko.sdk.path("/framework/lib/glew/include") }
 
 	configuration { "vs*" }
-		defines { "NOMINMAX" }
-		
-	configuration { "macosx" }
-	
-	configuration { "linux" }
+		defines {
+			"NOMINMAX",				-- do not define min/max as macro in windows.h
+			"_VARIADIC_MAX=10"		-- fix for faux variadic templates limited to 5 arguments by default
+		}
+		buildoptions {
+			"/wd4503"				-- remove warnings about too long type names
+		}
 		
 	configuration { "html5" }
 		if EMSCRIPTEN then
 			includedirs { EMSCRIPTEN .. "/system/include" }
 		end
-		buildoptions {
-			"--closure 1",
-			"-Wno-warn-absolute-paths"
-		}
-		optimize "On"
 
 	configuration { }
 end
@@ -50,8 +47,8 @@ minko.project.application = function(name)
 			"OpenGL32",
 			"glew32"
 		}
-		postbuildcommands {
-			minko.action.copy(minko.sdk.path("/framework/effect")),
+		prelinkcommands {
+			minko.action.copy(minko.sdk.path("/framework/asset")),
 			minko.action.copy(minko.sdk.path("/framework/lib/glew/lib/windows32/*.dll")),
 		}
 
@@ -64,7 +61,7 @@ minko.project.application = function(name)
 		libdirs {
 			minko.sdk.path("/framework/bin/windows32/release")
 		}
-		postbuildcommands {
+		prelinkcommands {
 			minko.action.copy("asset"),
 		}
 
@@ -75,8 +72,8 @@ minko.project.application = function(name)
 			"OpenGL32",
 			"glew32"
 		}
-		postbuildcommands {
-			minko.action.copy(minko.sdk.path("/framework/effect")),
+		prelinkcommands {
+			minko.action.copy(minko.sdk.path("/framework/asset")),
 			minko.action.copy(minko.sdk.path("/framework/lib/glew/lib/windows64/*.dll")),
 		}
 
@@ -89,7 +86,7 @@ minko.project.application = function(name)
 		libdirs {
 			minko.sdk.path("/framework/bin/windows64/release")
 		}
-		postbuildcommands {
+		prelinkcommands {
 			minko.action.copy("asset"),
 		}
 
@@ -100,8 +97,8 @@ minko.project.application = function(name)
 			"GL",
 			"m"
 		}
-		postbuildcommands {
-			minko.action.copy(minko.sdk.path("/framework/effect")),
+		prelinkcommands {
+			minko.action.copy(minko.sdk.path("/framework/asset")),
 		}
 
 	configuration { "linux64", "debug" }
@@ -113,7 +110,7 @@ minko.project.application = function(name)
 		libdirs {
 			minko.sdk.path("/framework/bin/linux64/release")
 		}
-		postbuildcommands {
+		prelinkcommands {
 			minko.action.copy("asset"),
 		}
 	
@@ -123,8 +120,8 @@ minko.project.application = function(name)
 			"GL",
 			"m"
 		}
-		postbuildcommands {
-			minko.action.copy(minko.sdk.path("/framework/effect")),
+		prelinkcommands {
+			minko.action.copy(minko.sdk.path("/framework/asset")),
 		}
 
 	configuration { "linux32", "debug" }
@@ -136,7 +133,7 @@ minko.project.application = function(name)
 		libdirs {
 			minko.sdk.path("/framework/bin/linux32/release")
 		}
-		postbuildcommands {
+		prelinkcommands {
 			minko.action.copy("asset"),
 		}
 	
@@ -148,8 +145,8 @@ minko.project.application = function(name)
 			"OpenGL.framework",
 			"IOKit.framework"
 		}
-		postbuildcommands {
-			minko.action.copy(minko.sdk.path("/framework/effect")),
+		prelinkcommands {
+			minko.action.copy(minko.sdk.path("/framework/asset")),
 		}
 
 	configuration { "osx64", "debug" }
@@ -161,7 +158,7 @@ minko.project.application = function(name)
 		libdirs {
 			minko.sdk.path("/framework/bin/osx64/release")
 		}
-		postbuildcommands {
+		prelinkcommands {
 			minko.action.copy("asset"),
 		}
 
@@ -171,18 +168,12 @@ minko.project.application = function(name)
 		links {
 			"minko-framework",
 		}
+
+		targetsuffix "bc"
 		
 		prelinkcommands {
-			minko.action.copy(minko.sdk.path("/framework/effect")),
+			minko.action.copy(minko.sdk.path("/framework/asset")),
 			minko.action.copy("asset"),
-		}
-
-		postbuildcommands {
-			'cd ${TARGETDIR} && cp ' .. name .. ' ' .. name .. '.bc || ' .. minko.action.fail()	 
-			-- 'cd ${TARGETDIR}'
-			-- .. ' && ' .. emcc .. ' ' .. name .. '.bc -o ' .. name .. '.html -s DISABLE_EXCEPTION_CATCHING=0 -s CLOSURE_ANNOTATIONS=0 -s ASM_JS=0 -s TOTAL_MEMORY=268435456 -s ALLOW_MEMORY_GROWTH=1 --preload-file effect --preload-file texture  --compression ${EMSCRIPTEN}/third_party/lzma.js/lzma-native,${EMSCRIPTEN}/third_party/lzma.js/lzma-decoder.js,LZMA.decompress'
-			-- -- .. ' && ' .. emcc .. ' ' .. name .. '.bc -o ' .. name .. '.js -O2 -s CLOSURE_ANNOTATIONS=0 -s ASM_JS=0 -s TOTAL_MEMORY=268435456 -s ALLOW_MEMORY_GROWTH=1 --preload-file effect --preload-file texture'
-			-- .. ' || ' .. minko.action.fail()
 		}
 
 	configuration { "html5", "release" }
@@ -190,16 +181,20 @@ minko.project.application = function(name)
 
 		postbuildcommands {
 			'cd ${TARGETDIR}'
-			.. ' && ' .. emcc .. ' ' .. name .. '.bc -o ' .. name .. '.html -O2 -s CLOSURE_ANNOTATIONS=1 -s DISABLE_EXCEPTION_CATCHING=0 -s TOTAL_MEMORY=268435456 --closure 1 --preload-file effect --preload-file texture --preload-file model --preload-file script --preload-file symbol'
+			.. ' && ' .. emcc .. ' ${TARGETNAME} -o ' .. name .. '.html -O2 --closure 1 -s CLOSURE_ANNOTATIONS=1 -s DISABLE_EXCEPTION_CATCHING=0 -s TOTAL_MEMORY=268435456 --preload-file asset'
 			.. ' || ' .. minko.action.fail()
 		}
 
 	configuration { "html5", "debug" }
 		local emcc = premake.tools.gcc.tools.emscripten.cc
 
+		buildoptions {
+			"-g4"
+		}
+
 		postbuildcommands {
 			'cd ${TARGETDIR}'
-			.. ' && ' .. emcc .. ' ' .. name .. '.bc -o ' .. name .. '.html -O2 -s DISABLE_EXCEPTION_CATCHING=0 -s TOTAL_MEMORY=268435456 --preload-file effect --preload-file texture --preload-file model --preload-file script --preload-file symbol'
+			.. ' && ' .. emcc .. ' ${TARGETNAME} -o ' .. name .. '.html -O2 --js-opts 0 -g4 -s ASM_JS=0 -s DISABLE_EXCEPTION_CATCHING=0 -s TOTAL_MEMORY=268435456 --preload-file asset'
 			.. ' || ' .. minko.action.fail()
 		}
 

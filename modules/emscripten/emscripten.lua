@@ -21,7 +21,8 @@ insert.insert(premake.tools.gcc, 'tools.emscripten', {
 })
 
 insert.insert(premake.tools.gcc, 'cppflags.system.emscripten', {
-	'-DEMSCRIPTEN'
+	"-DEMSCRIPTEN",
+	"-Wno-warn-absolute-paths"
 })
 
 if os.getenv('EMSCRIPTEN') then
