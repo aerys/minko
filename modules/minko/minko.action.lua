@@ -13,20 +13,20 @@ minko.action.copy = function(sourcePath)
 end
 
 minko.action.clean = function()
-	-- if not os.isfile("sdk.lua") then
-	-- 	error("cannot clean from outside the Minko SDK")
-	-- end
+	if not os.isfile("sdk.lua") then
+		error("cannot clean from outside the Minko SDK")
+	end
 
-	-- for _, dir1 in ipairs { "framework", "plugins", "tests", "examples" } do
-	-- 	for _, dir2 in ipairs { "bin", "obj" } do
-	-- 		local dirs = os.matchdirs(dir1 .. "/**/" .. dir2)
-	-- 		for _, dir in ipairs(dirs) do
-	-- 			os.rmdir(dir)
-	-- 		end
-	-- 	end
-	-- end
+	os.execute("git clean -X -n")
+	
+	for _, pattern in ipairs { "framework", "plugins/*", "tests", "examples/*" } do
+		local dirs = os.matchdirs(pattern)
 
-	-- os.rmdir("doc")
-
-	os.execute("git clean -X -f")
+		for _, dir in ipairs(dirs) do
+			local cwd = os.getcwd()
+			os.chdir(dir)
+			os.execute("git clean -X -n")
+			os.chdir(cwd)
+		end
+	end
 end
