@@ -31,6 +31,11 @@ minko.project.library = function(name)
 			includedirs { EMSCRIPTEN .. "/system/include" }
 		end
 
+	configuration { "html5", "debug" }
+		buildoptions {
+			"-g4"
+		}
+
 	configuration { }
 end
 
@@ -49,7 +54,7 @@ minko.project.application = function(name)
 		}
 		prelinkcommands {
 			minko.action.copy(minko.sdk.path("/framework/asset")),
-			minko.action.copy(minko.sdk.path("/framework/lib/glew/lib/windows32/*.dll")),
+			minko.action.copy(minko.sdk.path("/framework/lib/glew/lib/windows32/*.dll"))
 		}
 
 	configuration { "windows32", "debug" }
@@ -62,7 +67,7 @@ minko.project.application = function(name)
 			minko.sdk.path("/framework/bin/windows32/release")
 		}
 		prelinkcommands {
-			minko.action.copy("asset"),
+			minko.action.copy("asset")
 		}
 
 	configuration { "windows64" }
@@ -74,7 +79,7 @@ minko.project.application = function(name)
 		}
 		prelinkcommands {
 			minko.action.copy(minko.sdk.path("/framework/asset")),
-			minko.action.copy(minko.sdk.path("/framework/lib/glew/lib/windows64/*.dll")),
+			minko.action.copy(minko.sdk.path("/framework/lib/glew/lib/windows64/*.dll"))
 		}
 
 	configuration { "windows64", "debug" }
@@ -169,7 +174,7 @@ minko.project.application = function(name)
 			"minko-framework",
 		}
 
-		targetsuffix "bc"
+		targetsuffix ".bc"
 		
 		prelinkcommands {
 			minko.action.copy(minko.sdk.path("/framework/asset")),
@@ -180,22 +185,18 @@ minko.project.application = function(name)
 		local emcc = premake.tools.gcc.tools.emscripten.cc
 
 		postbuildcommands {
-			'cd ${TARGETDIR}'
-			.. ' && ' .. emcc .. ' ${TARGETNAME} -o ' .. name .. '.html -O2 --closure 1 -s CLOSURE_ANNOTATIONS=1 -s DISABLE_EXCEPTION_CATCHING=0 -s TOTAL_MEMORY=268435456 --preload-file asset'
-			.. ' || ' .. minko.action.fail()
+			emcc .. ' ${TARGET} -o ${TARGETDIR}/' .. name .. '.html -O2 --closure 1 -s CLOSURE_ANNOTATIONS=1 -s DISABLE_EXCEPTION_CATCHING=0 -s TOTAL_MEMORY=268435456 --preload-file asset || ' .. minko.action.fail()
 		}
 
 	configuration { "html5", "debug" }
 		local emcc = premake.tools.gcc.tools.emscripten.cc
 
 		buildoptions {
-			"-g4"
+			"-g4" -- allow source maps in final .js
 		}
 
 		postbuildcommands {
-			'cd ${TARGETDIR}'
-			.. ' && ' .. emcc .. ' ${TARGETNAME} -o ' .. name .. '.html -O2 --js-opts 0 -g4 -s ASM_JS=0 -s DISABLE_EXCEPTION_CATCHING=0 -s TOTAL_MEMORY=268435456 --preload-file asset'
-			.. ' || ' .. minko.action.fail()
+			emcc .. ' ${TARGET} -o ${TARGETDIR}/' .. name .. '.html -O2 --js-opts 0 -g4 -s ASM_JS=0 -s DISABLE_EXCEPTION_CATCHING=0 -s TOTAL_MEMORY=268435456 --preload-file asset || ' .. minko.action.fail()
 		}
 
 	configuration { }

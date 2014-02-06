@@ -1,14 +1,22 @@
 minko.action = {}
 
 minko.action.fail = function()
-	return 'source ' .. minko.sdk.path('/tools/lin/bin/fail.sh') .. ' ${TARGET}'
+	if os.is('windows') then
+		return 'call "' .. path.translate(minko.sdk.path('/tools/win/scripts/fail.bat')) .. '" "$(Target)"'
+	elseif os.is('macosx') then
+		return 'source ' .. minko.sdk.path('/tools/mac/scripts/fail.sh') .. ' ${TARGET}'		
+	else
+		return 'source ' .. minko.sdk.path('/tools/lin/scripts/fail.sh') .. ' ${TARGET}'
+	end
 end
 
 minko.action.copy = function(sourcePath)
 	if os.is('windows') then
-		return 'xcopy /y /i /e "' .. path.translate(sourcePath) .. '" "$(TargetDir)"'
+		sourcePath = path.translate(sourcePath)
+		return 'xcopy /y /i /e "' .. sourcePath .. '" "$(TargetDir)"'
+		-- return 'if exist ' .. sourcePath .. ' xcopy /y /i /e "' .. sourcePath .. '" "$(TargetDir)"'
 	else
-		return 'cp -R "' .. sourcePath .. '" ${TARGETDIR}'
+		return 'test -e "' .. sourcePath .. '" && cp -R "' .. sourcePath .. '" "${TARGETDIR}" || :'
 	end
 end
 
@@ -17,7 +25,9 @@ minko.action.clean = function()
 		error("cannot clean from outside the Minko SDK")
 	end
 
-	os.execute("git clean -X -f")
+	local cmd = "git clean -X -f"
+
+	os.execute(cmd)
 	
 	for _, pattern in ipairs { "framework", "plugins/*", "tests", "examples/*" } do
 		local dirs = os.matchdirs(pattern)
@@ -25,7 +35,7 @@ minko.action.clean = function()
 		for _, dir in ipairs(dirs) do
 			local cwd = os.getcwd()
 			os.chdir(dir)
-			os.execute("git clean -X -f")
+			os.execute(cmd)
 			os.chdir(cwd)
 		end
 	end
