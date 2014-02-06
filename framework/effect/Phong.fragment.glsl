@@ -93,7 +93,8 @@ varying vec3 		vertexTangent;
 void main(void)
 {
 	vec4 diffuse = diffuseColor;
-	
+	vec4 specular = specularColor;
+
 	#ifdef DIFFUSE_MAP
 		diffuse = texture2D(diffuseMap, vertexUV);
 	#endif // DIFFUSE_MAP
@@ -108,7 +109,7 @@ void main(void)
 	#endif // ALPHA_THRESHOLD
 	
 	#if defined(SHININESS) || (defined(ENVIRONMENT_MAP) && !defined(ENVIRONMENT_ALPHA))
-		vec4 specular = specularColor;
+		//vec4 specular = specularColor;
 
 		#ifdef SPECULAR_MAP
 			specular = texture2D(specularMap, vertexUV);
@@ -194,7 +195,7 @@ void main(void)
 			#if defined(SHININESS)
 				specularAccum	+= 
 					phong_specularReflection(normalVector, lightDirection, eyeVector, shininess) 
-					* phong_fresnel(specularColor.rgb, lightDirection, eyeVector)
+					* phong_fresnel(specular.rgb, lightDirection, eyeVector)
 					* lightColor
 					* lightSpecularCoeff;
 			#endif // SHININESS
@@ -234,7 +235,7 @@ void main(void)
 			#if defined(SHININESS)
 				specularAccum	+= 
 					phong_specularReflection(normalVector, lightDirection, eyeVector, shininess) 
-					* phong_fresnel(specularColor.rgb, lightDirection, eyeVector)
+					* phong_fresnel(specular.rgb, lightDirection, eyeVector)
 					* lightColor
 					* (lightSpecularCoeff * attenuation);
 			#endif // SHININESS	
@@ -291,7 +292,7 @@ void main(void)
 				#ifdef SHININESS
 					specularAccum	+= 
 						phong_specularReflection(normalVector, lightDirection, eyeVector, shininess) 
-						* phong_fresnel(specularColor.rgb, lightDirection, eyeVector)
+						* phong_fresnel(specular.rgb, lightDirection, eyeVector)
 						* lightColor
 						* (lightSpecularCoeff * attenuation * cutoff);
 				#endif // SHININESS
