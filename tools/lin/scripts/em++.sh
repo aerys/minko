@@ -1,11 +1,11 @@
 #!/bin/bash
 
-if [[ -z "${EMSCRIPTEN_HOME}" ]]; then
-	echo "EMSCRIPTEN_HOME is not defined" > /dev/stderr
+if [[ -z "${EMSCRIPTEN}" ]]; then
+	echo "EMSCRIPTEN is not defined" > /dev/stderr
 	exit 1
 fi
 
-BIN="${EMSCRIPTEN_HOME}/em++"
+BIN="${EMSCRIPTEN}/em++"
 
 declare -a ARGS
 declare -a STATIC_LIBS
