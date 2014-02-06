@@ -328,26 +328,6 @@ class LuaGlueClass : public LuaGlueClassBase
 		}
 
 		template<typename _Ret, typename... _Args>
-		LuaGlueClass<_Class> &method(const std::string &name, _Ret (*fn)(_Class*, _Args...))
-		{
-			//printf("decorator method(%s)\n", name.c_str());
-			auto impl = new LuaGlueStaticMethod<_Ret, _Class, _Class*, _Args...>(this, name, std::forward<decltype(fn)>(fn));
-			methods.addSymbol(name.c_str(), impl);
-			
-			return *this;
-		}
-
-		template<typename _Ret, typename... _Args>
-		LuaGlueClass<_Class> &method(const std::string &name, _Ret (*fn)(std::shared_ptr<_Class>, _Args...))
-		{
-			//printf("decorator method(%s)\n", name.c_str());
-			auto impl = new LuaGlueStaticMethod<_Ret, _Class, std::shared_ptr<_Class>, _Args...>(this, name, std::forward<decltype(fn)>(fn));
-			methods.addSymbol(name.c_str(), impl);
-			
-			return *this;
-		}
-
-		template<typename _Ret, typename... _Args>
 		LuaGlueClass<_Class> &method(const std::string &name, _Ret (*fn)(_Args...))
 		{
 			//printf("method(%s)\n", name.c_str());
@@ -356,6 +336,26 @@ class LuaGlueClass : public LuaGlueClassBase
 			
 			return *this;
 		}
+
+        template<typename _Ret, typename... _Args>
+        LuaGlueClass<_Class> &methodWrapper(const std::string &name, _Ret(*fn)(_Class*, _Args...))
+        {
+            //printf("decorator method(%s)\n", name.c_str());
+            auto impl = new LuaGlueStaticMethod<_Ret, _Class, _Class*, _Args...>(this, name, std::forward<decltype(fn)>(fn));
+            methods.addSymbol(name.c_str(), impl);
+
+            return *this;
+        }
+
+        template<typename _Ret, typename... _Args>
+        LuaGlueClass<_Class> &methodWrapper(const std::string &name, _Ret(*fn)(std::shared_ptr<_Class>, _Args...))
+        {
+            //printf("decorator method(%s)\n", name.c_str());
+            auto impl = new LuaGlueStaticMethod<_Ret, _Class, std::shared_ptr<_Class>, _Args...>(this, name, std::forward<decltype(fn)>(fn));
+            methods.addSymbol(name.c_str(), impl);
+
+            return *this;
+        }
 		
 		bool hasMethod(const std::string& methodName)
 		{

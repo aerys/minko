@@ -40,14 +40,14 @@ namespace minko
 			bind(LuaGlue& state)
 			{
 				state.Class<Transform>("Transform")
-					.method("create",				static_cast<Transform::Ptr(*)(void)>(&Transform::create))
-					.method("createFromMatrix",		static_cast<Transform::Ptr(*)(math::Matrix4x4::Ptr)>(&Transform::create))
-					.method("modelToWorld",			&LuaTransform::worldToModelWrapper)
-					.method("deltaModelToWorld",	&LuaTransform::deltaModelToWorldWrapper)
-					.method("worldToModel",			&LuaTransform::worldToModelWrapper)
-					.method("delta>orldToModel",	&LuaTransform::deltaWorldToModelWrapper)
-					.property("matrix", 			&Transform::matrix)
-					.property("modelToWorldMatrix",	static_cast<math::Matrix4x4::Ptr (Transform::*)()>(&Transform::modelToWorldMatrix));
+					.method("create",				    static_cast<Transform::Ptr(*)(void)>(&Transform::create))
+					.method("createFromMatrix",		    static_cast<Transform::Ptr(*)(math::Matrix4x4::Ptr)>(&Transform::create))
+					.methodWrapper("modelToWorld",		&LuaTransform::worldToModelWrapper)
+                    .methodWrapper("deltaModelToWorld", &LuaTransform::deltaModelToWorldWrapper)
+                    .methodWrapper("worldToModel",      &LuaTransform::worldToModelWrapper)
+                    .methodWrapper("delta>orldToModel", &LuaTransform::deltaWorldToModelWrapper)
+					.property("matrix", 			    &Transform::matrix)
+					.property("modelToWorldMatrix",	    static_cast<math::Matrix4x4::Ptr (Transform::*)()>(&Transform::modelToWorldMatrix));
 			}
 
 		private:
