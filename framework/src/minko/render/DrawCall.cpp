@@ -114,6 +114,7 @@ DrawCall::bindIndexBuffer()
 	_indexBuffer	= -1;
 	_numIndices		= 0;
 
+
 	// Note: index buffer can only be held by the target node's data container!
 	if (_targetData->hasProperty(propertyName))
 	{
@@ -222,12 +223,13 @@ DrawCall::bindVertexAttribute(const std::string&	inputName,
 			_vertexAttributeOffsets[vertexBufferId] = std::get<2>(*attribute);
 		}
 
+
 		if (_referenceChangedSlots.count(propertyName) == 0)
 		{
 #if defined(EMSCRIPTEN)
 			// See issue #1848 in Emscripten: https://github.com/kripken/emscripten/issues/1848
 			auto that = shared_from_this();
-			_referenceChangedSlots[propertyName].push_back(container->propertyReferenceChanged(propertyName)->connect([&, that](Container::Ptr, const std::string&) {
+			_referenceChangedSlots[propertyName].push_back(container->propertyReferenceChanged(propertyName)->connect([&, that](data::Container::Ptr, const std::string&) {
 				that->bindVertexAttribute(inputName, location, vertexBufferId);
 			}));
 #else
