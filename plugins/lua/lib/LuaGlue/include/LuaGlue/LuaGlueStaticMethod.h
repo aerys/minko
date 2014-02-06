@@ -16,8 +16,7 @@ class LuaGlueClass;
 template<typename _Ret, typename _Class, typename... _Args>
 class LuaGlueStaticMethod : public LuaGlueMethodBase
 {
-	private:
-		typedef std::tuple<typename luaglue_remove_const_reference<_Args>::type...> ArgsTuple;
+	typedef std::tuple<typename std::remove_const<typename std::remove_reference<_Args>::type>::type...> ArgsTuple;
 
 	public:
 		typedef _Class ClassType;
@@ -66,7 +65,7 @@ template<typename _Class, typename... _Args>
 class LuaGlueStaticMethod<void, _Class, _Args...> : public LuaGlueMethodBase
 {
 	private:
-		typedef std::tuple<typename luaglue_remove_const_reference<_Args>::type...> ArgsTuple;
+		typedef std::tuple<typename std::remove_const<typename std::remove_reference<_Args>::type>::type...> ArgsTuple;
 
 	public:
 		typedef _Class ClassType;
