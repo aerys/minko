@@ -36,13 +36,15 @@ namespace minko
 		private:
 			typedef std::shared_ptr<scene::Node>						NodePtr;
 			typedef std::shared_ptr<AbstractComponent>					AbsCtrlPtr;
+			typedef std::shared_ptr<render::AbstractContext>			AbsContext;
 			typedef std::shared_ptr<Surface>							SurfacePtr;
 			typedef std::shared_ptr<render::DrawCall>					DrawCallPtr;
 			typedef std::list<DrawCallPtr>								DrawCallList;
 			typedef std::shared_ptr<SceneManager>						SceneManagerPtr;
-			typedef std::shared_ptr<render::Texture>					TexturePtr;
+			typedef std::shared_ptr<render::AbstractTexture>			AbsTexturePtr;
+			typedef std::shared_ptr<render::Effect>						EffectPtr;
+			typedef std::shared_ptr<render::DrawCallPool>				DrawCallFactoryPtr;
 			typedef Signal<SurfacePtr, const std::string&, bool>::Slot	SurfaceTechniqueChangedSlot;
-			typedef std::shared_ptr<render::DrawCallPool>			DrawCallFactoryPtr;
 
 		private:
 			DrawCallList												_drawCalls;
@@ -53,10 +55,12 @@ namespace minko
 			Signal<Ptr>::Ptr											_renderingBegin;
 			Signal<Ptr>::Ptr											_renderingEnd;
 			Signal<Ptr>::Ptr											_beforePresent;
-			std::shared_ptr<render::Texture>							_renderTarget;
+			AbsTexturePtr												_renderTarget;
 
 			std::set<std::shared_ptr<Surface>>							_toCollect;
-			std::shared_ptr<render::Effect>								_effect;
+			EffectPtr													_effect;
+			float														_priority;
+
 
 			Signal<AbsCtrlPtr, NodePtr>::Slot							_targetAddedSlot;
 			Signal<AbsCtrlPtr, NodePtr>::Slot							_targetRemovedSlot;
@@ -66,7 +70,7 @@ namespace minko
 			Signal<NodePtr, NodePtr, NodePtr>::Slot						_rootDescendantRemovedSlot;
 			Signal<NodePtr, NodePtr, AbsCtrlPtr>::Slot					_componentAddedSlot;
 			Signal<NodePtr, NodePtr, AbsCtrlPtr>::Slot					_componentRemovedSlot;
-			Signal<SceneManagerPtr, uint, TexturePtr>::Slot				_renderingBeginSlot;
+			Signal<SceneManagerPtr, uint, AbsTexturePtr>::Slot			_renderingBeginSlot;
 			std::unordered_map<SurfacePtr, SurfaceTechniqueChangedSlot>	_surfaceTechniqueChangedSlot;
 
 			DrawCallFactoryPtr											_drawCallPool;
@@ -86,9 +90,13 @@ namespace minko
 
 			inline static
 			Ptr
-			create(uint backgroundColor, std::shared_ptr<render::Texture> renderTarget = nullptr, std::shared_ptr<render::Effect> effect= nullptr)
+
+			create(uint					backgroundColor, 
+				   AbsTexturePtr		renderTarget = nullptr,
+				   EffectPtr			effect			= nullptr,
+				   float				priority		= 0.f)
 			{
-				auto ctrl = std::shared_ptr<Renderer>(new Renderer(renderTarget, effect));
+				auto ctrl = std::shared_ptr<Renderer>(new Renderer(renderTarget, effect, priority));
 
 				ctrl->initialize();
 				ctrl->backgroundColor(backgroundColor);
@@ -101,7 +109,7 @@ namespace minko
 			}
 
 			inline
-			std::shared_ptr<render::Effect>
+			EffectPtr
 			effect()
 			{
 				return _effect;
@@ -129,7 +137,7 @@ namespace minko
 			}
 
 			inline
-			std::shared_ptr<render::Texture>
+			AbsTexturePtr
 			target()
 			{
 				return _renderTarget;
@@ -137,14 +145,14 @@ namespace minko
 
 			inline
 			void
-			target(std::shared_ptr<render::Texture> target)
+			target(AbsTexturePtr target)
 			{
 				_renderTarget = target;
 			}
 
 			void
 			render(std::shared_ptr<render::AbstractContext> context,
-				   std::shared_ptr<render::Texture> 		renderTarget = nullptr);
+				   AbsTexturePtr 		renderTarget = nullptr);
 
 			inline
 			Signal<Ptr>::Ptr
@@ -168,7 +176,9 @@ namespace minko
 			}
 
 		private:
-			Renderer(std::shared_ptr<render::Texture> renderTarget = nullptr, std::shared_ptr<render::Effect> effect = nullptr);
+			Renderer(AbsTexturePtr		renderTarget = nullptr,
+					 EffectPtr			effect			= nullptr,
+					 float				priority		= 0.f);
 
 			void
 			initialize();
@@ -210,9 +220,9 @@ namespace minko
 			materialChanged(SurfacePtr ctrl);
 
 			void
-			sceneManagerRenderingBeginHandler(std::shared_ptr<SceneManager>		sceneManager,
-											  uint								frameId,
-											  std::shared_ptr<render::Texture>	renderTarget);
+			sceneManagerRenderingBeginHandler(std::shared_ptr<SceneManager>	sceneManager,
+											  uint							frameId,
+											  AbsTexturePtr					renderTarget);
 
 			void
 			findSceneManager();

@@ -1,0 +1,159 @@
+// phong effect
+{
+	"name"	: "phong",
+	
+	"priority"	: "opaque",
+	
+	"attributeBindings"	: {
+		"position"				: "geometry[${geometryId}].vertex.attribute.position",
+		"uv"					: "geometry[${geometryId}].vertex.attribute.uv",
+		"normal"				: "geometry[${geometryId}].vertex.attribute.normal",
+		"tangent"				: "geometry[${geometryId}].vertex.attribute.tangent",
+		"boneIdsA"				: "geometry[${geometryId}].vertex.attribute.boneIdsA",
+		"boneIdsB"				: "geometry[${geometryId}].vertex.attribute.boneIdsB",		
+		"boneWeightsA"			: "geometry[${geometryId}].vertex.attribute.boneWeightsA",
+		"boneWeightsB"			: "geometry[${geometryId}].vertex.attribute.boneWeightsB"
+	},
+	
+	"uniformBindings"	: {
+		"diffuseColor"			: "material[${materialId}].diffuseColor",
+		"diffuseMap"			: "material[${materialId}].diffuseMap",
+		"alphaMap"				: "material[${materialId}].alphaMap",
+		"alphaThreshold"		: "material[${materialId}].alphaThreshold",
+		"normalMap"				: "material[${materialId}].normalMap",
+		"specularMap"			: "material[${materialId}].specularMap",
+		"specularColor"			: { "property" : "material[${materialId}].specularColor", "default" : [ 1.0, 1.0, 1.0, 1.0 ] },
+		"environmentMap2d"		: "material[${materialId}].environmentMap2d",
+		"environmentMap2dType"	: "material[${materialId}].environmentMap2dType",
+		"environmentCubemap"	: "material[${materialId}].environmentCubemap",
+		"environmentAlpha"		: "material[${materialId}].environmentAlpha",
+		"shininess"				: "material[${materialId}].shininess",
+		"modelToWorldMatrix"	: "transform.modelToWorldMatrix",
+		"worldToScreenMatrix"	: { "property" : "camera.worldToScreenMatrix", 		"source" : "renderer" },
+		"cameraPosition"		: { "property" : "camera.position", 				"source" : "renderer" },
+		"boneMatrices"			: "geometry[${geometryId}].boneMatrices",
+		"numBones"				: "geometry[${geometryId}].numBones"
+	},
+
+	"macroBindings"	: {
+		"DIFFUSE_MAP"			: "material[${materialId}].diffuseMap",
+		"NORMAL_MAP"			: "material[${materialId}].normalMap",
+		"SPECULAR_MAP"			: "material[${materialId}].specularMap",
+		"ALPHA_MAP"				: "material[${materialId}].alphaMap",
+		"ALPHA_THRESHOLD"		: "material[${materialId}].alphaThreshold",
+		"ENVIRONMENT_MAP_2D"	: "material[${materialId}].environmentMap2d",
+		"ENVIRONMENT_CUBE_MAP"	: "material[${materialId}].environmentCubemap",
+		"ENVIRONMENT_ALPHA"		: "material[${materialId}].environmentAlpha",
+		"ENVIRONMENT_TYPE_2D"	: "material[${materialId}].environmentMap2dType",
+		"SHININESS"				: "material[${materialId}].shininess",
+		"MODEL_TO_WORLD"		: "transform.modelToWorldMatrix",
+		"NUM_BONES"				: "geometry[${geometryId}].numBones"
+	},
+		
+	"stateBindings"	: {
+        "blendMode"             : "material[${materialId}].blendMode",
+        "colorMask"             : "material[${materialId}].colorMask",
+        "depthMask"             : "material[${materialId}].depthMask",
+        "depthFunc"             : "material[${materialId}].depthFunc",
+        "triangleCulling"       : "material[${materialId}].triangleCulling",
+        "stencilFunc"           : "material[${materialId}].stencilFunc",
+        "stencilRef"            : "material[${materialId}].stencilRef",
+        "stencilMask"           : "material[${materialId}].stencilMask",
+        "stencilFailOp"         : "material[${materialId}].stencilFailOp",
+        "stencilZFailOp"        : "material[${materialId}].stencilZFailOp",
+        "stencilZPassOp"        : "material[${materialId}].stencilZPassOp",
+        "scissorBox.x"          : { "property" : "scissorBox.x",        "source" : "renderer" },
+        "scissorBox.y"          : { "property" : "scissorBox.y",        "source" : "renderer" },
+        "scissorBox.width"      : { "property" : "scissorBox.width",    "source" : "renderer" },
+        "scissorBox.height"     : { "property" : "scissorBox.height",   "source" : "renderer" },
+        "priority"              : "material[${materialId}].priority",
+        "zsort"					: "material[${materialId}].zsort"
+	},
+
+	"samplerStates" : {
+		"diffuseMap"	: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" },
+		"normalMap"		: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" },
+		"specularMap"	: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" }
+	},
+	
+	"blendMode"         : ["one", "zero"],
+    "colorMask"         : true,
+    "depthTest"         : [true, "less_equal"],
+    "triangleCulling"   : "none",
+	"stencilTest"		: ["always", 0, 1, ["keep", "keep", "keep"]],
+    "scissorTest"		: false,
+	"scissorBox"		: [0, 0, -1, -1],
+    "priority"          : "opaque",
+    "zsort"             : false,
+
+	"defaultTechnique" : "single-pass",
+	
+	"techniques" : [
+		{
+			"name"				: "single-pass",
+			"fallback" 			: "multi-pass",
+			"blendMode"			: ["one", "zero"],
+			"depthTest"			: [true, "less_equal"],
+			"triangleCulling"	: "back",
+			
+			"uniformBindings" : {
+				"ambientLights"				: { "property" : "ambientLights", "source" : "root" },
+				"directionalLights"			: { "property" : "directionalLights", "source" : "root" },
+				"spotLights"				: { "property" : "spotLights", "source" : "root" },
+				"pointLights"				: { "property" : "pointLights", "source" : "root" }
+			},
+			
+			"macroBindings" : {
+				"NUM_AMBIENT_LIGHTS"		: { "property" : "ambientLights.length", "source" : "root" },
+				"PRECOMPUTED_AMBIENT"		: { "property" : "sumAmbients", "source" : "root" },
+				"NUM_DIRECTIONAL_LIGHTS"	: { "property" : "directionalLights.length", "source" : "root", "max" : 8 },
+				"NUM_POINT_LIGHTS"			: { "property" : "pointLights.length", "source" : "root", "max" : 8 },
+				"NUM_SPOT_LIGHTS"			: { "property" : "spotLights.length", "source" : "root", "max" : 8 }
+			},
+				
+			"passes"	: [{
+				"vertexShader" : "#pragma include('Phong.vertex.glsl')",
+				"fragmentShader" : "#pragma include('Phong.fragment.glsl')"
+			}]
+		},
+
+		{
+			"name"				: "single-pass-no-glsl-struct",
+			"fallback" 			: "multi-pass",
+			"blendMode"			: ["one", "zero"],
+			"depthTest"			: [true, "less_equal"],
+			"triangleCulling"	: "back",
+			
+			"configuration"		: [ "no-glsl-struct" ],
+			
+			"uniformBindings" : {
+				"ambientLights"				: { "property" : "ambientLights", "source" : "root" },
+				"directionalLights"			: { "property" : "directionalLights", "source" : "root" },
+				"spotLights"				: { "property" : "spotLights", "source" : "root" },
+				"pointLights"				: { "property" : "pointLights", "source" : "root" }
+			},
+			
+			"macroBindings" : {
+				"NUM_AMBIENT_LIGHTS"		: { "property" : "ambientLights.length", "source" : "root" },
+				"PRECOMPUTED_AMBIENT"		: { "property" : "sumAmbients", "source" : "root" },
+				"NUM_DIRECTIONAL_LIGHTS"	: { "property" : "directionalLights.length", "source" : "root", "max" : 8 },
+				"NUM_POINT_LIGHTS"			: { "property" : "pointLights.length", "source" : "root", "max" : 8 },
+				"NUM_SPOT_LIGHTS"			: { "property" : "spotLights.length", "source" : "root", "max" : 8 }
+			},
+				
+			"passes"	: [{
+				"vertexShader" : "#pragma include('Phong.vertex.glsl')",
+				"fragmentShader" : "#pragma include('Phong.fragment.glsl')"
+			}]
+		},
+
+		{
+			// fixme: implement multi-pass phong lighting
+			"name" 		: "multi-pass",
+			"passes" 	: [{
+				"vertexShader" : "#pragma include('Basic.vertex.glsl')",
+			"fragmentShader" : "#pragma include('Basic.fragment.glsl')"
+			}]
+		}
+	]
+}

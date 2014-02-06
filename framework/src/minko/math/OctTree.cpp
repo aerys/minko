@@ -36,9 +36,9 @@ using namespace minko;
 using namespace minko::math;
 
 OctTree::OctTree(float							worldSize,
-			 	   uint								maxDepth,
-				   std::shared_ptr<math::Vector3>	center,
-				   uint								depth)
+			 	 uint							maxDepth,
+				 std::shared_ptr<math::Vector3>	center,
+				 uint							depth)
 {
 	_worldSize  = worldSize;
 	_depth		= depth;
@@ -54,8 +54,8 @@ OctTree::OctTree(float							worldSize,
 }
 
 std::shared_ptr<scene::Node>
-OctTree::generateVisual(std::shared_ptr<file::AssetLibrary>	assetLibrary,
-						 std::shared_ptr<scene::Node>			rootNode)
+OctTree::generateVisual(std::shared_ptr<file::AssetLibrary>		assetLibrary,
+						std::shared_ptr<scene::Node>			rootNode)
 {
 	if (!rootNode)
 		rootNode = scene::Node::create();
@@ -196,7 +196,7 @@ OctTree::nodeChangedOctant(std::shared_ptr<scene::Node> node)
 
 void
 OctTree::nodeModelToWorldChanged(data::Container::Ptr	data,
-								  const std::string&	propertyName)
+								 const std::string&		propertyName)
 {
 	/*auto node		= _matrixToNode[data->get<std::shared_ptr<math::Matrix4x4>>(propertyName)];
 	auto octant		= _nodeToOctant[node];
@@ -211,13 +211,13 @@ OctTree::nodeModelToWorldChanged(data::Container::Ptr	data,
 }
 
 void
-OctTree::testFrustum(std::shared_ptr<math::Frustum>						frustum, 
+OctTree::testFrustum(std::shared_ptr<math::AbstractShape>				frustum, 
 					 std::function<void(std::shared_ptr<scene::Node>)>	insideFrustumCallback,
 					 std::function<void(std::shared_ptr<scene::Node>)>	outsideFustumCallback)
 {
-	FrustumPosition result					= frustum->testBoundingBox(_octantBox);
+	ShapePosition result					= frustum->testBoundingBox(_octantBox);
 	
-	if (result == FrustumPosition::AROUND || result == FrustumPosition::INSIDE)
+	if (result == ShapePosition::AROUND || result == ShapePosition::INSIDE)
 	{
 		if (_splitted)
 		{

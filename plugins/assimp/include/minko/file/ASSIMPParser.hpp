@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 #include "minko/file/AbstractParser.hpp"
-#include "minko/file/Loader.hpp"
+#include "minko/file/FileLoader.hpp"
 #include "minko/component/Skinning.hpp"
 
 struct	aiMesh;

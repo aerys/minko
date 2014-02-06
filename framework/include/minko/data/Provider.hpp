@@ -42,7 +42,7 @@ namespace minko
 
 		private:
 			std::vector<std::string>								_names;
-			std::unordered_map<std::string, std::shared_ptr<Value>>	_values;
+			std::unordered_map<std::string, Any>					_values;
 			std::unordered_map<std::string, ChangedSignalSlot>		_valueChangedSlots;
 			std::unordered_map<std::string, ChangedSignalSlot>		_referenceChangedSlots;
 
@@ -71,7 +71,7 @@ namespace minko
 
 			inline
 			const std::vector<std::string>&
-			propertyNames()
+			propertyNames() const
 			{
 				return _names;
 			}
@@ -81,7 +81,7 @@ namespace minko
 			hasProperty(const std::string&, bool skipPropertyNameFormatting = false) const;
 
 			inline
-			const std::unordered_map<std::string, std::shared_ptr<Value>>&
+			const std::unordered_map<std::string, Any>&
 			values() const
 			{
 				return _values;
@@ -89,112 +89,151 @@ namespace minko
 
 			inline
 			const std::string&
-			propertyName(const unsigned int propertyIndex)
+			propertyName(const unsigned int propertyIndex) const
 			{
 				return _names[propertyIndex];
 			}
 
 			inline
 			std::shared_ptr<Signal<Ptr, const std::string&>>
-			propertyValueChanged()
+			propertyValueChanged() const
 			{
 				return _propValueChanged;
 			}
 
 			inline
 			std::shared_ptr<Signal<Ptr, const std::string&>>
-			propertyReferenceChanged()
+			propertyReferenceChanged() const
 			{
 				return _propReferenceChanged;
 			}
 
 			inline
 			std::shared_ptr<Signal<Ptr, const std::string&>>
-			propertyAdded()
+			propertyAdded() const
 			{
 				return _propertyAdded;
 			}
 
 			inline
 			std::shared_ptr<Signal<Ptr, const std::string&>>
-			propertyRemoved()
+			propertyRemoved() const
 			{
 				return _propertyRemoved;
 			}
 
 			template <typename T>
-			typename std::enable_if<std::is_convertible<T, std::shared_ptr<Value>>::value, T>::type
-			get(const std::string& propertyName, bool skipPropertyNameFormatting)
+		    T
+			get(const std::string& propertyName, bool skipPropertyNameFormatting) const
 			{
 				const std::string&	formattedName	= skipPropertyNameFormatting ? propertyName : formatPropertyName(propertyName);
 				auto				foundIt			= values().find(formattedName);
 
-				return foundIt != values().end()
-					? std::dynamic_pointer_cast<typename T::element_type>(foundIt->second)
-					: nullptr;
-
-				// return std::dynamic_pointer_cast<typename T::element_type>(_values[formattedName]);
-			}
-
-			/*
-			template <typename T>
-			typename std::enable_if<std::is_convertible<T, std::shared_ptr<Value>>::value, T>::type
-			get(const std::string& propertyName)
-			{
-				return get<T>(propertyName, false);
-			}
-			*/
-
-			template <typename T>
-			typename std::enable_if<!std::is_convertible<T, std::shared_ptr<Value>>::value, T>::type
-			get(const std::string& propertyName, bool skipPropertyNameFormatting)
-			{
-				const std::string&	formattedName	= skipPropertyNameFormatting ? propertyName : formatPropertyName(propertyName);
-				auto				foundIt			= values().find(formattedName);
-
-				return foundIt != values().end()
-					? std::dynamic_pointer_cast<ValueWrapper<T>>(foundIt->second)->value()
-					: T();
-
-				// return std::dynamic_pointer_cast<ValueWrapper<T>>(_values[formattedName])->value();
+				if (foundIt == values().end())
+					throw std::invalid_argument("propertyName");
+				
+				return Any::unsafe_cast<T>(foundIt->second);
 			}
 
 			template <typename T>
 			inline
 			T
-			get(const std::string& propertyName)
+			get(const std::string& propertyName) const
 			{
 				return get<T>(propertyName, false);
 			}
 
 			template <typename T>
-			typename std::enable_if<std::is_convertible<T, std::shared_ptr<Value>>::value, bool>::type
-			propertyHasType(const std::string& propertyName, bool skipPropertyNameFormatting = false)
+			bool
+			propertyHasType(const std::string& propertyName, bool skipPropertyNameFormatting = false) const
 			{
-				const std::string& formattedName = skipPropertyNameFormatting ? propertyName : formatPropertyName(propertyName);
+				const std::string&	formattedName	= skipPropertyNameFormatting ? propertyName : formatPropertyName(propertyName);
+				const auto			foundIt			= _values.find(formattedName);
 
-				return std::dynamic_pointer_cast<typename T::element_type>(_values[formattedName]) != nullptr;
+				if (foundIt == _values.end())
+					throw std::invalid_argument("propertyName");
+
+				try
+				{
+					Any::cast<T>(foundIt->second);
+				}
+				catch (...)
+				{
+					return false;
+				}
+				
+				return true;
 			}
 
 			template <typename T>
-			typename std::enable_if<!std::is_convertible<T, std::shared_ptr<Value>>::value, bool>::type
-			propertyHasType(const std::string& propertyName, bool skypPropertyNameFormatting = false)
-			{
-				const std::string& formattedName = skypPropertyNameFormatting ? propertyName : formatPropertyName(propertyName);
-
-				return std::dynamic_pointer_cast<ValueWrapper<T>>(_values[formattedName]) != nullptr;
-			}
-
-			template <typename T>
-			Ptr
+			typename std::enable_if<!std::is_convertible<T, Value::Ptr>::value, Provider::Ptr>::type
 			set(const std::string& propertyName, T value, bool skipPropertyNameFormatting)
 			{
-				registerProperty(
-					skipPropertyNameFormatting ? propertyName : formatPropertyName(propertyName),
-					wrapProperty<T>(value)
-				);
+				auto		formattedName	= skipPropertyNameFormatting ? propertyName : formatPropertyName(propertyName);
+				
+				const auto	foundValueIt	= _values.find(formattedName);
+				const bool	isNewValue		= foundValueIt == _values.end();
+				//const bool	changed			= !isNewValue;// || !((*value) == (*foundValueIt->second));
+	
+				_values[formattedName] = value;
+		
+				if (isNewValue)
+				{
+					_names.push_back(formattedName);
+
+					_propertyAdded->execute(shared_from_this(), formattedName);
+				}
+
+				//if (changed)
+				{
+					_propReferenceChanged->execute(shared_from_this(), formattedName);
+					_propValueChanged->execute(shared_from_this(), formattedName);
+				}
 
 				return shared_from_this();
+			}
+
+			template <typename T>
+			typename std::enable_if<std::is_convertible<T, Value::Ptr>::value, Provider::Ptr>::type
+			set(const std::string& propertyName, T value, bool skipPropertyNameFormatting)
+			{
+				auto		formattedName	= skipPropertyNameFormatting ? propertyName : formatPropertyName(propertyName);
+				
+				const auto	foundValueIt	= _values.find(formattedName);
+				const bool	isNewValue		= (foundValueIt == _values.end());
+				//const bool	changed			= !isNewValue;// || !((*value) == (*foundValueIt->second));
+	
+				_values[formattedName] = value;
+				
+				if (isNewValue)
+				{
+#if defined(EMSCRIPTEN)
+					auto that = shared_from_this();
+					_valueChangedSlots[formattedName] = value->changed()->connect([&, that, formattedName, this](Value::Ptr)
+					{
+						_propValueChanged->execute(that, formattedName);
+					});
+#else
+					_valueChangedSlots[formattedName] = value->changed()->connect(std::bind(
+					     &Signal<Provider::Ptr, const std::string&>::execute,
+						 _propValueChanged,
+						 shared_from_this(),
+						 formattedName
+					));
+#endif
+					
+					_names.push_back(formattedName);
+					
+					_propertyAdded->execute(shared_from_this(), formattedName);
+				}
+
+				//if (changed)
+				{
+					_propReferenceChanged->execute(shared_from_this(), formattedName);
+					_propValueChanged->execute(shared_from_this(), formattedName);
+				}
+				
+				return shared_from_this();				
 			}
 
 			template <typename T>
@@ -202,7 +241,7 @@ namespace minko
 			Ptr
 			set(const std::string& propertyName, T value)
 			{
-				return set<T>(propertyName, value, false);
+				return set(propertyName, value, false);
 			}
 
 			virtual
@@ -219,10 +258,6 @@ namespace minko
 			Provider();
 
 			virtual
-			void
-			registerProperty(const std::string& propertyName, std::shared_ptr<Value> value);
-
-			virtual
 			std::string
 			formatPropertyName(const std::string& propertyName) const
 			{
@@ -235,65 +270,6 @@ namespace minko
 			{
 				return propertyName;
 			}
-
-		private:
-
-			template <typename T>
-			inline
-			std::shared_ptr<Value>
-			wrapProperty(typename std::enable_if<std::is_convertible<T, std::shared_ptr<Value>>::value, std::shared_ptr<Value>>::type	value)
-			{
-				return value;
-			}
-
-			template <typename T>
-			inline
-			std::shared_ptr<Value>
-			wrapProperty(typename std::enable_if<!std::is_convertible<T, std::shared_ptr<Value>>::value, T>::type	value)
-			{
-				return ValueWrapper<T>::create(value);
-			}
-
-			template <typename P>
-			class ValueWrapper :
-				public Value,
-				public std::enable_shared_from_this<Value>
-			{
-			public:
-				typedef std::shared_ptr<ValueWrapper> Ptr;
-
-			private:
-				P _value;
-
-			public:
-				inline static
-				Ptr
-				create(P value)
-				{
-					return std::shared_ptr<ValueWrapper>(new ValueWrapper(value));
-				}
-
-				inline
-				P
-				value() const
-				{
-					return _value;
-				}
-
-				bool
-				operator==(const Value& value) const
-				{
-					const ValueWrapper<P>* x = dynamic_cast<const ValueWrapper<P>*>(&value);
-
-					return x ? _value == x->value() : false;
-				}
-
-			private:
-				ValueWrapper(P value) :
-					_value(value)
-				{
-				}
-			};
 		};
 	}
 }

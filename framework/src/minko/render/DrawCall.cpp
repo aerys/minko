@@ -30,10 +30,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/VertexBuffer.hpp"
 #include "minko/render/IndexBuffer.hpp"
 #include "minko/render/Texture.hpp"
+#include "minko/render/CubeTexture.hpp"
 #include "minko/render/Program.hpp"
 #include "minko/render/States.hpp"
+#include "minko/render/Priority.hpp"
 #include "minko/data/Container.hpp"
 #include "minko/math/Matrix4x4.hpp"
+
+#include "ZSortSignalManager.hpp"
 
 using namespace minko;
 using namespace minko::data;
@@ -64,8 +68,16 @@ DrawCall::DrawCall(const data::BindingMap&	attributeBindings,
     _vertexAttributeSizes(MAX_NUM_VERTEXBUFFERS, -1),
     _vertexAttributeOffsets(MAX_NUM_VERTEXBUFFERS, -1),
 	_target(nullptr),
-	_referenceChangedSlots()
+	_referenceChangedSlots(),
+	_zsortNeeded(Signal<Ptr>::create()),
+	_zsortSignalManager(nullptr)
 {
+}
+
+void
+DrawCall::initialize()
+{
+	_zsortSignalManager = ZSortSignalManager::create(shared_from_this());
 }
 
 void
@@ -90,12 +102,14 @@ DrawCall::bind(ContainerPtr data, ContainerPtr rendererData, ContainerPtr rootDa
 	bindIndexBuffer();
 	bindProgramInputs();
 	bindStates();
+
+	_zsortSignalManager->initialize(data, rendererData, rootData);
 }
 
 void
 DrawCall::bindIndexBuffer()
 {
-	static const std::string propertyName = "geometry.indices";
+	const std::string propertyName = "geometry[" + _variablesToValue["geometryId"] + "].indices";
 
 	_indexBuffer	= -1;
 	_numIndices		= 0;
@@ -148,12 +162,13 @@ DrawCall::bindProgramInputs()
 			}
 	
 		case ProgramInputs::Type::sampler2d:
+		case ProgramInputs::Type::samplerCube:
 			{
 				auto& samplerState = _states->samplers().count(inputName)
 					? _states->samplers().at(inputName)
 					: _defaultSamplerState;
 
-				bindTextureSampler2D(inputName, location, textureId, samplerState);
+				bindTextureSampler(inputName, location, textureId, samplerState);
 				break;
 			}
 	
@@ -183,8 +198,8 @@ DrawCall::bindVertexAttribute(const std::string&	inputName,
 	
 	if (_attributeBindings.count(inputName))
 	{
-		auto& propertyName = std::get<0>(_attributeBindings.at(inputName));
-		const auto& container = getDataContainer(std::get<1>(_attributeBindings.at(inputName)));
+		auto propertyName		= formatPropertyName(std::get<0>(_attributeBindings.at(inputName)));
+		const auto& container	= getDataContainer(std::get<1>(_attributeBindings.at(inputName)));
 
 		++vertexBufferId;
 
@@ -225,10 +240,11 @@ DrawCall::bindVertexAttribute(const std::string&	inputName,
 }
 
 void
-DrawCall::bindTextureSampler2D(const std::string&	inputName,
-							   int					location,
-							   uint&				textureId,
-   							   const SamplerState&	samplerState)
+DrawCall::bindTextureSampler(const std::string&		inputName,
+							 int					location,
+							 uint&					textureId,
+   							 const SamplerState&	samplerState, 
+							 bool					incrementTextureId)
 {
 #ifdef DEBUG
 	if (location < 0)
@@ -239,20 +255,21 @@ DrawCall::bindTextureSampler2D(const std::string&	inputName,
 
 	if (_uniformBindings.count(inputName))
 	{
-		++textureId;
+		if (incrementTextureId)
+			++textureId;
 
-		auto& propertyName = std::get<0>(_uniformBindings.at(inputName));
-		const auto& container = getDataContainer(std::get<1>(_uniformBindings.at(inputName)));
+		auto propertyName		= formatPropertyName(std::get<0>(_uniformBindings.at(inputName)));
+		const auto& container	= getDataContainer(std::get<1>(_uniformBindings.at(inputName)));
 
 		if (container && container->hasProperty(propertyName))
 		{
-			auto texture = container->get<Texture::Ptr>(propertyName)->id();
+			auto texture = container->get<AbstractTexture::Ptr>(propertyName);
 
-			_textures[textureId] = texture;
-			_textureLocations[textureId] = location;
-			_textureWrapMode[textureId] = std::get<0>(samplerState);
-			_textureFilters[textureId] = std::get<1>(samplerState);
-			_textureMipFilters[textureId] = std::get<2>(samplerState);
+			_textures[textureId]			= texture->id();
+			_textureLocations[textureId]	= location;
+			_textureWrapMode[textureId]		= std::get<0>(samplerState);
+			_textureFilters[textureId]		= std::get<1>(samplerState);
+			_textureMipFilters[textureId]	= std::get<2>(samplerState);
 		}
 
 		if (_referenceChangedSlots.count(propertyName) == 0)			
@@ -261,11 +278,11 @@ DrawCall::bindTextureSampler2D(const std::string&	inputName,
 			// See issue #1848 in Emscripten: https://github.com/kripken/emscripten/issues/1848
 			auto that = shared_from_this();
 			_referenceChangedSlots[propertyName].push_back(container->propertyReferenceChanged(propertyName)->connect([&, that](Container::Ptr, const std::string&) {
-				that->bindTextureSampler2D(inputName, location, textureId, samplerState);
+				that->bindTextureSampler(inputName, location, textureId, samplerState, false);
 			}));
 #else
 			_referenceChangedSlots[propertyName].push_back(container->propertyReferenceChanged(propertyName)->connect(std::bind(
-				&DrawCall::bindTextureSampler2D, shared_from_this(), inputName, location, textureId, samplerState
+				&DrawCall::bindTextureSampler, shared_from_this(), inputName, location, textureId, samplerState, false
 			)));
 #endif
 		}
@@ -296,9 +313,9 @@ DrawCall::bindUniform(const std::string&	inputName,
 	
 	if (_uniformBindings.count(bindingName))
 	{	
-		auto	propertyName	= std::get<0>(_uniformBindings.at(bindingName));
-		auto&	source			= std::get<1>(_uniformBindings.at(bindingName));
-		const auto&	container	= getDataContainer(source);
+		std::string	propertyName	= formatPropertyName(std::get<0>(_uniformBindings.at(bindingName)));
+		auto&		source			= std::get<1>(_uniformBindings.at(bindingName));
+		const auto&	container		= getDataContainer(source);
 
 		if (container)
 		{
@@ -309,29 +326,32 @@ DrawCall::bindUniform(const std::string&	inputName,
 			{
 				// This case corresponds to base types uniforms or individual members of an GLSL struct array.
 
-				if (type == ProgramInputs::Type::float1 
-					/*&& container->propertyHasType<float>(propertyName, true)*/)
-						_uniformFloat[location]		= container->get<float>(propertyName);
-				else if (type == ProgramInputs::Type::float2 
-					/*&& container->propertyHasType<Vector2::Ptr>(propertyName, true)*/)
-						_uniformFloat2[location]	= container->get<Vector2::Ptr>(propertyName);
-				else if (type == ProgramInputs::Type::float3
-					/*&& container->propertyHasType<Vector3::Ptr>(propertyName, true)*/)
-						_uniformFloat3[location]	= container->get<Vector3::Ptr>(propertyName);
-				else if (type == ProgramInputs::Type::float4
-					/*&& container->propertyHasType<Vector4::Ptr>(propertyName, true)*/)
-						_uniformFloat4[location]	= container->get<Vector4::Ptr>(propertyName);
-				else if (type == ProgramInputs::Type::float16 
-					/*&& container->propertyHasType<Matrix4x4::Ptr>(propertyName, true)*/)
-						_uniformFloat16[location]	= &(container->get<Matrix4x4::Ptr>(propertyName)->data()[0]);
+				if (type == ProgramInputs::Type::float1)
+					_uniformFloat[location]		= container->get<float>(propertyName);
+				else if (type == ProgramInputs::Type::float2)
+					_uniformFloat2[location]	= container->get<Vector2::Ptr>(propertyName);
+				else if (type == ProgramInputs::Type::float3)
+					_uniformFloat3[location]	= container->get<Vector3::Ptr>(propertyName);
+				else if (type == ProgramInputs::Type::float4)
+					_uniformFloat4[location]	= container->get<Vector4::Ptr>(propertyName);
+				else if (type == ProgramInputs::Type::float16)
+					_uniformFloat16[location]	= &(container->get<Matrix4x4::Ptr>(propertyName)->data()[0]);
+				else if (type == ProgramInputs::Type::int1)
+					_uniformInt[location]		= container->get<int>(propertyName);
+				else if (type == ProgramInputs::Type::int2)
+					_uniformInt2[location]		= container->get<Int2>(propertyName);
+				else if (type == ProgramInputs::Type::int3)
+					_uniformInt3[location]		= container->get<Int3>(propertyName); 
+				else if (type == ProgramInputs::Type::int4)
+					_uniformInt4[location]		= container->get<Int4>(propertyName);
 				else
 					throw std::logic_error("unsupported uniform type.");
 			}
 			else if (isArray)
 			{
 				// This case corresponds to continuous base type arrays that are stored in data providers as std::vector<float>.
-				propertyName	= std::get<0>(_uniformBindings.at(bindingName));
-
+				propertyName = formatPropertyName(std::get<0>(_uniformBindings.at(bindingName)));
+				
 				bindUniformArray(propertyName, container, type, location);
 			}
 		}
@@ -359,12 +379,28 @@ DrawCall::bindUniformArray(const std::string&	propertyName,
 						   ProgramInputs::Type	type,
 						   int					location)
 {
-	if (!container || 
-		!container->hasProperty(propertyName) || 
-		!container->propertyHasType<UniformArrayPtr>(propertyName, true))
+	if (!container || !container->hasProperty(propertyName))
 		return;
 
-	const auto& uniformArray = container->get<UniformArrayPtr>(propertyName);
+	if (type == ProgramInputs::Type::int1 ||
+		type == ProgramInputs::Type::int2 ||
+		type == ProgramInputs::Type::int3 ||
+		type == ProgramInputs::Type::int4)
+		bindIntegerUniformArray(propertyName, container, type, location);
+	else
+		bindFloatUniformArray(propertyName, container, type, location);
+}
+
+void
+DrawCall::bindFloatUniformArray(const std::string&	propertyName,
+								Container::Ptr		container,
+								ProgramInputs::Type	type,
+								int					location)
+{
+	if (!container->propertyHasType<UniformArrayPtr<float>>(propertyName, true))
+		return;
+
+	const auto& uniformArray = container->get<UniformArrayPtr<float>>(propertyName);
 	if (uniformArray->first == 0 || uniformArray->second == nullptr)
 		return;
 
@@ -383,6 +419,32 @@ DrawCall::bindUniformArray(const std::string&	propertyName,
 }
 
 void
+DrawCall::bindIntegerUniformArray(const std::string&	propertyName,
+								  Container::Ptr		container,
+							 	  ProgramInputs::Type	type,
+								  int					location)
+{
+	if (!container->propertyHasType<UniformArrayPtr<int>>(propertyName, true))
+		return;
+
+	const auto& uniformArray = container->get<UniformArrayPtr<int>>(propertyName);
+	if (uniformArray->first == 0 || uniformArray->second == nullptr)
+		return;
+
+	if (type == ProgramInputs::Type::int1)
+		_uniformInts[location] = uniformArray;
+	else if (type == ProgramInputs::Type::int2)
+		_uniformInts2[location] = uniformArray;
+	else if (type == ProgramInputs::Type::int3)
+		_uniformInts3[location] = uniformArray;
+	else if (type == ProgramInputs::Type::int4)
+		_uniformInts4[location] = uniformArray;
+	else
+		throw std::logic_error("unsupported uniform type.");
+}
+
+
+void
 DrawCall::reset()
 {
 	_target = nullptr;
@@ -393,11 +455,21 @@ DrawCall::reset()
 	_uniformFloat4.clear();
 	_uniformFloat16.clear();
 
+	_uniformInt.clear();
+	_uniformInt2.clear();
+	_uniformInt3.clear();
+	_uniformInt4.clear();
+
 	_uniformFloats.clear();
 	_uniformFloats2.clear();
 	_uniformFloats3.clear();
 	_uniformFloats4.clear();
 	_uniformFloats16.clear();
+
+	_uniformInts.clear();
+	_uniformInts2.clear();
+	_uniformInts3.clear();
+	_uniformInts4.clear();
 
 	_textures			.clear();
 	_textureLocations	.clear();
@@ -424,70 +496,35 @@ DrawCall::reset()
 	_vertexAttributeOffsets	.resize(MAX_NUM_VERTEXBUFFERS, -1);
 
 	_referenceChangedSlots.clear();
+	_zsortSignalManager->clear();
 }
 
 void
 DrawCall::bindStates()
 {
-	_blendMode = getDataProperty<Blending::Mode>(
-		_stateBindings, "blendMode", _states->blendingSourceFactor() | _states->blendingDestinationFactor()
-	);
-	_colorMask = getDataProperty<bool>(
-		_stateBindings, "colorMask", _states->colorMask()
-	);
-	_depthMask = getDataProperty<bool>(
-		_stateBindings, "depthMask", _states->depthMask()
-	);
-	_depthFunc = getDataProperty<CompareMode>(
-		_stateBindings, "depthFunc", _states->depthFunc()
-	);
-	_triangleCulling = getDataProperty<TriangleCulling>(
-		_stateBindings, "triangleCulling", _states->triangleCulling()
-	);
-	_stencilFunc = getDataProperty<CompareMode>(
-		_stateBindings, "stencilFunc", _states->stencilFunction()
-	);
-	_stencilRef = getDataProperty<int>(
-		_stateBindings, "stencilRef", _states->stencilReference()
-	);
-	_stencilMask = getDataProperty<uint>(
-		_stateBindings, "stencilMask", _states->stencilMask()
-	);
-	_stencilFailOp = getDataProperty<StencilOperation>(
-		_stateBindings, "stencilFailOp", _states->stencilFailOperation()
-	);
-	_stencilZFailOp = getDataProperty<StencilOperation>(
-		_stateBindings, "stencilZFailOp", _states->stencilDepthFailOperation()
-	);
-	_stencilZPassOp = getDataProperty<StencilOperation>(
-		_stateBindings, "stencilZPassOp", _states->stencilDepthPassOperation()
-	);
-	_scissorTest	= getDataProperty<bool>(
-		_stateBindings, "scissorTest", _states->scissorTest()
-	);
-	_scissorBox.x	= getDataProperty<int>(
-		_stateBindings, "scissorBox.x", _states->scissorBox().x
-	);
-	_scissorBox.y	= getDataProperty<int>(
-		_stateBindings, "scissorBox.y", _states->scissorBox().y
-	);
-	_scissorBox.width	= getDataProperty<int>(
-		_stateBindings, "scissorBox.width", _states->scissorBox().width
-	);
-	_scissorBox.height	= getDataProperty<int>(
-		_stateBindings, "scissorBox.height", _states->scissorBox().height
-	);
-
-	_target = getDataProperty<Texture::Ptr>(
-		_stateBindings, "target", _states->target()
-	);
-	
-    if (_target && !_target->isReady())
-        _target->upload();
+	bindState<Blending::Mode>("blendMode", _states->blendingSourceFactor() | _states->blendingDestinationFactor(), _blendMode);
+	bindState<bool>("colorMask", _states->colorMask(), _colorMask);
+	bindState<bool>("depthMask", _states->depthMask(), _depthMask);
+	bindState<CompareMode>("depthFunc", _states->depthFunc(), _depthFunc);
+	bindState<TriangleCulling>("triangleCulling", _states->triangleCulling(), _triangleCulling);
+	bindState<CompareMode>("stencilFunc", _states->stencilFunction(), _stencilFunc);
+	bindState<int>("stencilRef", _states->stencilReference(), _stencilRef);
+	bindState<uint>("stencilMask", _states->stencilMask(), _stencilMask);
+	bindState<StencilOperation>("stencilFailOp", _states->stencilFailOperation(), _stencilFailOp);
+	bindState<StencilOperation>("stencilZFailOp", _states->stencilDepthFailOperation(), _stencilZFailOp);
+	bindState<StencilOperation>("stencilZPassOp", _states->stencilDepthPassOperation(), _stencilZPassOp);
+	bindState<bool>("scissorTest", _states->scissorTest(), _scissorTest);
+	bindState<int>("scissorBox.x", _states->scissorBox().x, _scissorBox.x);
+	bindState<int>("scissorBox.y", _states->scissorBox().y, _scissorBox.y);
+	bindState<int>("scissorBox.width", _states->scissorBox().width, _scissorBox.width);
+	bindState<int>("scissorBox.height", _states->scissorBox().height, _scissorBox.height);
+	bindState<float>("priority", _states->priority(), _priority);
+	bindState<bool>("zsort", _states->zsorted(), _zsorted);
+	bindState<AbstractTexture::Ptr>("target", _states->target(), _target);
 }
 
 void
-DrawCall::render(const AbstractContext::Ptr& context, std::shared_ptr<render::Texture> renderTarget)
+DrawCall::render(const AbstractContext::Ptr& context, AbstractTexture::Ptr renderTarget)
 {
 	if (!renderTarget)
 		renderTarget = _target;
@@ -505,6 +542,7 @@ DrawCall::render(const AbstractContext::Ptr& context, std::shared_ptr<render::Te
 
     context->setProgram(_program->id());
 
+	// float uniforms
     for (auto& uniformFloat : _uniformFloat)
         context->setUniform(uniformFloat.first, uniformFloat.second);
     for (auto& uniformFloat2 : _uniformFloat2)
@@ -528,6 +566,26 @@ DrawCall::render(const AbstractContext::Ptr& context, std::shared_ptr<render::Te
     for (auto& uniformFloat16 : _uniformFloat16)
         context->setUniform(uniformFloat16.first, 1, true, uniformFloat16.second);
 
+	// integer uniforms
+	for (auto& uniformInt : _uniformInt)
+		context->setUniform(uniformInt.first, uniformInt.second);
+	for (auto& uniformInt2 : _uniformInt2)
+	{
+		const auto& int2 = uniformInt2.second;
+		context->setUniform(uniformInt2.first, std::get<0>(int2), std::get<1>(int2));
+	}
+	for (auto& uniformInt3 : _uniformInt3)
+	{
+		const auto& int3 = uniformInt3.second;
+		context->setUniform(uniformInt3.first, std::get<0>(int3), std::get<1>(int3), std::get<2>(int3));
+	}
+	for (auto& uniformInt4 : _uniformInt4)
+	{
+		const auto& int4 = uniformInt4.second;
+		context->setUniform(uniformInt4.first, std::get<0>(int4), std::get<1>(int4), std::get<2>(int4), std::get<3>(int4));
+	}
+
+	// arrays of float uniforms
 	for (auto& uniformFloats : _uniformFloats)
 		context->setUniforms	(uniformFloats.first,	uniformFloats.second->first,			uniformFloats.second->second);
 	for (auto& uniformFloats2 : _uniformFloats2)
@@ -539,34 +597,82 @@ DrawCall::render(const AbstractContext::Ptr& context, std::shared_ptr<render::Te
 	for (auto& uniformFloats16 : _uniformFloats16)
 		context->setUniform		(uniformFloats16.first,	uniformFloats16.second->first, true,	uniformFloats16.second->second);
 
+	// arrays of integer uniforms
+	for (auto& uniformInts: _uniformInts)
+		context->setUniforms	(uniformInts.first,		uniformInts.second->first,			uniformInts.second->second);
+	for (auto& uniformInts2 : _uniformInts2)
+		context->setUniforms2	(uniformInts2.first,	uniformInts2.second->first,			uniformInts2.second->second);
+	for (auto& uniformInts3 : _uniformInts3)
+		context->setUniforms3	(uniformInts3.first,	uniformInts3.second->first,			uniformInts3.second->second);
+	for (auto& uniformInts4 : _uniformInts4)
+		context->setUniforms4	(uniformInts4.first,	uniformInts4.second->first,			uniformInts4.second->second);
+
 	auto textureOffset = 0;
 	for (auto textureLocationAndPtr : _program->textures())
-		context->setTextureAt(textureOffset++, textureLocationAndPtr.second->id(), textureLocationAndPtr.first);
+		context->setTextureAt(
+			textureOffset++, 
+			textureLocationAndPtr.second->id(), 
+			textureLocationAndPtr.first
+		);
 
 	for (uint textureId = 0; textureId < _textures.size() - textureOffset; ++textureId)
     {
         auto texture = _textures[textureId];
 
-        context->setTextureAt(textureOffset + textureId, texture, _textureLocations[textureId]);
+        context->setTextureAt(
+			textureOffset + textureId, 
+			texture, 
+			_textureLocations[textureId]
+		);
         if (texture > 0)
             context->setSamplerStateAt(
-				textureOffset + textureId, _textureWrapMode[textureId], _textureFilters[textureId], _textureMipFilters[textureId]
+				textureOffset + textureId,
+				_textureWrapMode[textureId],
+				_textureFilters[textureId],
+				_textureMipFilters[textureId]
             );
     }
 
-    for (uint vertexBufferId = 0; vertexBufferId < _vertexBuffers.size(); ++vertexBufferId)
-    {
-        auto vertexBuffer = _vertexBuffers[vertexBufferId];
+	if (_program->indexBuffer())
+	{
+		// use the vertex attributes manually assigned to the effect
+		for (auto vertexBufferLocationAndPtr : _program->vertexBuffers())
+		{
+			const int	location		= vertexBufferLocationAndPtr.first;
+			auto&		vertexBuffer	= vertexBufferLocationAndPtr.second;
+	
+			if (vertexBuffer->isReady())
+			{
+				assert(vertexBuffer->attributes().size() == 1);
+	
+				const auto& vertexAttribute = vertexBuffer->attributes().front();
 
-        if (vertexBuffer > 0)
-            context->setVertexBufferAt(
-                _vertexBufferLocations[vertexBufferId],
-                vertexBuffer,
-                _vertexAttributeSizes[vertexBufferId],
-                _vertexSizes[vertexBufferId],
-                _vertexAttributeOffsets[vertexBufferId]
-            );
-    }
+				context->setVertexBufferAt(
+					location,
+					vertexBuffer->id(),
+					std::get<1>(*vertexAttribute),
+					vertexBuffer->vertexSize(),
+					std::get<2>(*vertexAttribute)
+				);
+			}
+		}
+	}
+	else
+	{
+	    for (uint vertexBufferId = 0; vertexBufferId < _vertexBuffers.size(); ++vertexBufferId)
+	    {
+	        auto vertexBuffer = _vertexBuffers[vertexBufferId];
+	
+	        if (vertexBuffer > 0)
+	            context->setVertexBufferAt(
+	                _vertexBufferLocations[vertexBufferId],
+	                vertexBuffer,
+	                _vertexAttributeSizes[vertexBufferId],
+	                _vertexSizes[vertexBufferId],
+	                _vertexAttributeOffsets[vertexBufferId]
+	            );
+	    }
+	}
 
 	context->setColorMask(_colorMask);
 	context->setBlendMode(_blendMode);
@@ -575,7 +681,9 @@ DrawCall::render(const AbstractContext::Ptr& context, std::shared_ptr<render::Te
 	context->setScissorTest(_scissorTest, _scissorBox);
     context->setTriangleCulling(_triangleCulling);
 
-	if (_indexBuffer != -1)
+	if (_program->indexBuffer() && _program->indexBuffer()->isReady())
+		context->drawTriangles(_program->indexBuffer()->id(), _program->indexBuffer()->data().size() / 3);
+	else if (_indexBuffer != -1)
 		context->drawTriangles(_indexBuffer, _numIndices / 3);
 }
 
@@ -592,11 +700,29 @@ DrawCall::getDataContainer(const data::BindingSource& source) const
 	return nullptr;
 }
 
-/*
-bool
-DrawCall::dataHasProperty(const std::string& propertyName)
+Vector3::Ptr
+DrawCall::getEyeSpacePosition(Vector3::Ptr output) 
 {
-    return _targetData->hasProperty(propertyName) || _rendererData->hasProperty(propertyName)
-		|| _rootData->hasProperty(propertyName);
+	static auto localPos	= Vector3::create();
+	static auto modelView	= Matrix4x4::create();
+
+	static const std::string PNAME_POSITIONS		= "geometry.vertex.attribute.position";
+	static const std::string PNAME_MODEL_TO_WORLD	= "transform.modelToWorldMatrix";
+	static const std::string PNAME_WORLD_TO_SCREEN	= "camera.worldToScreenMatrix";
+
+	localPos = _targetData && _targetData->hasProperty(PNAME_POSITIONS)
+		? _targetData->get<VertexBuffer::Ptr>(PNAME_POSITIONS)->centerPosition(localPos)
+		: localPos->setTo(0.0f, 0.0f, 0.0f);
+	
+	if (_targetData && 
+		_targetData->hasProperty(PNAME_MODEL_TO_WORLD))
+		modelView->copyFrom(_targetData->get<Matrix4x4::Ptr>(PNAME_MODEL_TO_WORLD));
+
+	if (_rendererData && 
+		_rendererData->hasProperty(PNAME_WORLD_TO_SCREEN))
+		modelView->append(_rendererData->get<Matrix4x4::Ptr>(PNAME_WORLD_TO_SCREEN));
+
+	output = modelView->transform(localPos, output);
+
+	return output;
 }
-*/
