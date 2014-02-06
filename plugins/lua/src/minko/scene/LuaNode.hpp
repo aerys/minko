@@ -43,20 +43,20 @@ namespace minko
 					//.index(&LuaNode::getWrapper);
 
 				state.Class<Node>("Node")
-		            .method("create",				static_cast<Node::Ptr (*)(void)>(&Node::create))
-		            .method("addChild",				&Node::addChild)
-		            .method("removeChild",			&Node::removeChild)
-		            .method("contains",				&Node::contains)
-		            .method("addComponent",			&Node::addComponent)
-		            .method("removeComponent",		&Node::removeComponent)
-		            .method("getChildren",			&LuaNode::childrenWrapper)
-		            .method("getBoundingBox",		&LuaNode::getBoundingBoxWrapper)
-		            .method("getTransform",			&LuaNode::getTransformWrapper)
-					.method("getPerspectiveCamera",	&LuaNode::getPerspectiveCameraWrapper)
-		            .property("children",			&Node::children)
-		            .property("data",				&Node::data)
-		            .property("root",				&Node::root)
-		            .property("name",				&Node::name, &Node::name);
+		            .method("create",				        static_cast<Node::Ptr (*)(void)>(&Node::create))
+		            .method("addChild",				        &Node::addChild)
+		            .method("removeChild",			        &Node::removeChild)
+		            .method("contains",				        &Node::contains)
+		            .method("addComponent",			        &Node::addComponent)
+		            .method("removeComponent",		        &Node::removeComponent)
+                    .methodWrapper("getChildren",           &LuaNode::childrenWrapper)
+                    .methodWrapper("getBoundingBox",        &LuaNode::getBoundingBoxWrapper)
+                    .methodWrapper("getTransform",          &LuaNode::getTransformWrapper)
+                    .methodWrapper("getPerspectiveCamera",  &LuaNode::getPerspectiveCameraWrapper)
+		            .property("children",			        &Node::children)
+		            .property("data",				        &Node::data)
+		            .property("root",				        &Node::root)
+		            .property("name",				        &Node::name, &Node::name);
 			}
 
 			static

@@ -24,7 +24,7 @@ solution "minko"
 	include 'framework'
 	
 	-- plugins
-	-- include 'plugins/lua'
+	include 'plugins/lua'
 	include 'plugins/angle'
 	include 'plugins/assimp'
 	include 'plugins/bullet'
