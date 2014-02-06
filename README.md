@@ -11,35 +11,32 @@ It provides a powerful editor on top of a robust, extensible and fully documente
 
 Get started
 ===========
-### OS X / Linux 
+### OS X
 * Make sure you have a recent compiler (tested with GCC 4.8 and Clang 3.3)
 * Open a command prompt
-* `cd <minko-cpp>`
-* `premake4 gmake` or `premake4 --platform=clang gmake`
-* `make config=release`
-* `cd examples && bin/release/minko-example`
+* `cd <minko>`
+* `tools/mac/bin/premake5.sh gmake` (`--cc=gcc` or `--cc=clang`)
+* `make config=release config=osx64_release`
+* `cd examples/cube && bin/osx64/release/minko-example-cube`
+
+### Linux
+* Make sure you have a recent compiler (tested with GCC 4.8 and Clang 3.3)
+* Open a command prompt (or start [Vagrant](http://www.vagrantup.com/))
+* `cd <minko>`
+* `tools/lin/bin/premake5.sh gmake` (`--cc=gcc` or `--cc=clang`)
+* `make config=release config=linux64_release`
+* `cd examples/cube && bin/linux64/release/minko-example-cube`
 
 ### Windows
 * Open a command prompt
-* `cd <minko-cpp>`
-* `premake4 vs2012`
+* `cd <minko>`
+* `tools\win\scripts\premake5 vs2013ctp`
 * `start minko.sln`
 
 Or from the explorer:
 
-* Run `tools\win\scripts\premake_vs2010.bat`
+* Run `tools\win\scripts\premake_vs2013ctp.bat`
 * Open `minko.sln`
-
-
-### Linux (under Vagrant)
-* **You need an internet connection**
-* Install [Vagrant](http://www.vagrantup.com/)
-* Open a command prompt
-* `cd <minko-cpp>`
-* `vagrant up`
-* `vagrant ssh`
-* `tools/lin/bin/premake4 gmake`
-* `make verbose=1 config=release`
 
 
 Contents
@@ -59,9 +56,9 @@ Tools
 
 Set of scripts to ease the deployment of the Minko SDK without using the command line.
 
-`premake_vs2010.bat` - Windows batch script to create a VS2010 solution and perform other necessary operations such as copying required DLL into the output folders
+`premake_vs2013ctp.bat` - Windows batch script to create a VS2010 solution and perform other necessary operations such as copying required DLL into the output folders
 
-`premake_clean.bat` - Windows batch script to properly clean a VS2010 solution created by premake_vs2010.bat
+`premake_clean.bat` - Windows batch script to properly clean a VS2010 solution
 
 Templates
 ---------
@@ -71,7 +68,7 @@ or applications.
 
 * `vs` - Visual Studio templates; can be installed by:
 	* running the `tools/premake_templates.bat` script
-	* or executing `premake4 installTemplates` command line
+	* or executing `premake5 installTemplates` command line
 	* or by manually copying each template directory into your VS templates directory (default is `$user\Documents\Visual Studio 2012\Templates\ItemTemplates\Projet Visual C++`)
 
 Plugins

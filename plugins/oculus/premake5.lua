@@ -6,7 +6,7 @@ newoption {
 PROJECT_NAME = path.getname(os.getcwd())
 
 minko.project.library("minko-plugin-" .. PROJECT_NAME)
-	removeplatforms { "linux", "html5", "ios", "android" }
+	removeplatforms { "html5", "ios", "android" }
 
 	kind "StaticLib"
 	language "C++"
@@ -27,7 +27,7 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 	
 	excludes { "lib/LibOVR/Include/OVRVersion.h" }
 	
-	configuration { "win" }
+	configuration { "windows" }
 		excludes {
 			"lib/LibOVR/Src/OVR_Linux_*",
 			"lib/LibOVR/Src/OVR_OSX_*",
@@ -36,13 +36,17 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		defines { "UNICODE", "_UNICODE" } -- should also undefine _MCBS
 		
 	configuration { "linux" }
+		includedirs {
+			"lib/lin/Xinerama/include",
+			"lib/lin/libudev/include"
+		}
 		excludes {
 			"lib/LibOVR/Src/OVR_Win32_*",
 			"lib/LibOVR/Src/OVR_OSX_*",
 			"lib/LibOVR/Src/Kernel/OVR_ThreadsWinAPI.cpp"
 		}
 	
-	configuration { "osx" }
+	configuration { "macosx" }
 		excludes {
 			"lib/LibOVR/Src/OVR_Win32_*",
 			"lib/LibOVR/Src/OVR_Linux_*",
