@@ -90,7 +90,7 @@ namespace minko
 
 			template <typename T>
 			T
-			get(const std::string& propertyName) /*const*/
+			get(const std::string& propertyName) const
 			{
 				assertPropertyExists(propertyName);
 
