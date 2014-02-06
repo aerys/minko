@@ -37,14 +37,14 @@ namespace minko
 			bind(LuaGlue& state)
 			{
 			    state.Class<scene::NodeSet>("NodeSet")
-			        .method("create", 		static_cast<scene::NodeSet::Ptr (*)(std::shared_ptr<scene::Node>)>(&scene::NodeSet::create))
-			        .method("descendants",	&LuaNodeSet::descendantsWrapper)
-			        .method("ancestors",	&LuaNodeSet::ancestorsWrapper)
-			        .method("children",		&LuaNodeSet::childrenWrapper)
-			        .method("roots",		&LuaNodeSet::rootsWrapper)
-			        .method("where",		&LuaNodeSet::whereWrapper)
-			        .method("get",			&LuaNodeSet::getWrapper)
-			        .method("size",			&LuaNodeSet::sizeWrapper);
+			        .method("create", 		        static_cast<scene::NodeSet::Ptr (*)(std::shared_ptr<scene::Node>)>(&scene::NodeSet::create))
+                    .methodWrapper("descendants",   &LuaNodeSet::descendantsWrapper)
+                    .methodWrapper("ancestors",     &LuaNodeSet::ancestorsWrapper)
+                    .methodWrapper("children",      &LuaNodeSet::childrenWrapper)
+                    .methodWrapper("roots",         &LuaNodeSet::rootsWrapper)
+                    .methodWrapper("where",         &LuaNodeSet::whereWrapper)
+                    .methodWrapper("get",           &LuaNodeSet::getWrapper)
+                    .methodWrapper("size",          &LuaNodeSet::sizeWrapper);
 			}
 
 			static
