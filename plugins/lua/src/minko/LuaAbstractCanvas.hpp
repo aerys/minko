@@ -36,11 +36,11 @@ namespace minko
 		bind(LuaGlue& state)
 		{
 			auto& abstractCanvas = state.Class<AbstractCanvas>("AbstractCanvas")
-				.property("width",		&AbstractCanvas::width)
-				.property("height",		&AbstractCanvas::height)
-				.property("mouse", 		&AbstractCanvas::mouse)
-				.property("keyboard",	&AbstractCanvas::keyboard)
-				.method("joystick",		&LuaAbstractCanvas::joystickWrapper);
+				.property("width",		    &AbstractCanvas::width)
+				.property("height",		    &AbstractCanvas::height)
+				.property("mouse", 		    &AbstractCanvas::mouse)
+				.property("keyboard",	    &AbstractCanvas::keyboard)
+                .methodWrapper("joystick",  &LuaAbstractCanvas::joystickWrapper);
 		    MINKO_LUAGLUE_BIND_SIGNAL(state, AbstractCanvas::Ptr);
 		    MINKO_LUAGLUE_BIND_SIGNAL(state, AbstractCanvas::Ptr, uint, uint);
 		    abstractCanvas.property("resized", &AbstractCanvas::resized);

@@ -34,7 +34,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
         state.Class<Signal<__VA_ARGS__>::Slot::element_type>("SignalSlot" + argsStr) \
             .method("disconnect", &Signal<__VA_ARGS__>::Slot::element_type::disconnect); \
         state.Class<Signal<__VA_ARGS__>>("Signal" + argsStr) \
-            .method("connect", &LuaWrapper::wrapSignalConnect<__VA_ARGS__>); \
+            .methodWrapper("connect", &LuaWrapper::wrapSignalConnect<__VA_ARGS__>); \
     }
 
 namespace minko

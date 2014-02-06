@@ -57,6 +57,12 @@ namespace minko
 			Ptr
 			diffuseColor(uint);
 
+			Ptr
+			diffuseMap(AbsTexturePtr);
+
+			TexturePtr
+			diffuseMap() const;
+
 			Vector4Ptr
 			diffuseColor(Vector4Ptr out = nullptr) const;
 
