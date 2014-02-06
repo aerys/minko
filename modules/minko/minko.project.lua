@@ -18,7 +18,13 @@ minko.project.library = function(name)
 		includedirs { minko.sdk.path("/framework/lib/glew/include") }
 
 	configuration { "vs*" }
-		defines { "NOMINMAX" }
+		defines {
+			"NOMINMAX",				-- do not define min/max as macro in windows.h
+			"_VARIADIC_MAX=10"		-- fix for faux variadic templates limited to 5 arguments by default
+		}
+		buildoptions {
+			"/wd4503"				-- remove warnings about too long type names
+		}
 		
 	configuration { "html5" }
 		if EMSCRIPTEN then
@@ -41,8 +47,8 @@ minko.project.application = function(name)
 			"OpenGL32",
 			"glew32"
 		}
-		postbuildcommands {
-			minko.action.copy(minko.sdk.path("/framework/effect")),
+		prelinkcommands {
+			minko.action.copy(minko.sdk.path("/framework/asset")),
 			minko.action.copy(minko.sdk.path("/framework/lib/glew/lib/windows32/*.dll")),
 		}
 
@@ -55,7 +61,7 @@ minko.project.application = function(name)
 		libdirs {
 			minko.sdk.path("/framework/bin/windows32/release")
 		}
-		postbuildcommands {
+		prelinkcommands {
 			minko.action.copy("asset"),
 		}
 
@@ -66,8 +72,8 @@ minko.project.application = function(name)
 			"OpenGL32",
 			"glew32"
 		}
-		postbuildcommands {
-			minko.action.copy(minko.sdk.path("/framework/effect")),
+		prelinkcommands {
+			minko.action.copy(minko.sdk.path("/framework/asset")),
 			minko.action.copy(minko.sdk.path("/framework/lib/glew/lib/windows64/*.dll")),
 		}
 
@@ -80,7 +86,7 @@ minko.project.application = function(name)
 		libdirs {
 			minko.sdk.path("/framework/bin/windows64/release")
 		}
-		postbuildcommands {
+		prelinkcommands {
 			minko.action.copy("asset"),
 		}
 
@@ -91,8 +97,8 @@ minko.project.application = function(name)
 			"GL",
 			"m"
 		}
-		postbuildcommands {
-			minko.action.copy(minko.sdk.path("/framework/effect")),
+		prelinkcommands {
+			minko.action.copy(minko.sdk.path("/framework/asset")),
 		}
 
 	configuration { "linux64", "debug" }
@@ -104,7 +110,7 @@ minko.project.application = function(name)
 		libdirs {
 			minko.sdk.path("/framework/bin/linux64/release")
 		}
-		postbuildcommands {
+		prelinkcommands {
 			minko.action.copy("asset"),
 		}
 	
@@ -114,8 +120,8 @@ minko.project.application = function(name)
 			"GL",
 			"m"
 		}
-		postbuildcommands {
-			minko.action.copy(minko.sdk.path("/framework/effect")),
+		prelinkcommands {
+			minko.action.copy(minko.sdk.path("/framework/asset")),
 		}
 
 	configuration { "linux32", "debug" }
@@ -127,7 +133,7 @@ minko.project.application = function(name)
 		libdirs {
 			minko.sdk.path("/framework/bin/linux32/release")
 		}
-		postbuildcommands {
+		prelinkcommands {
 			minko.action.copy("asset"),
 		}
 	
@@ -139,8 +145,8 @@ minko.project.application = function(name)
 			"OpenGL.framework",
 			"IOKit.framework"
 		}
-		postbuildcommands {
-			minko.action.copy(minko.sdk.path("/framework/effect")),
+		prelinkcommands {
+			minko.action.copy(minko.sdk.path("/framework/asset")),
 		}
 
 	configuration { "osx64", "debug" }
@@ -152,7 +158,7 @@ minko.project.application = function(name)
 		libdirs {
 			minko.sdk.path("/framework/bin/osx64/release")
 		}
-		postbuildcommands {
+		prelinkcommands {
 			minko.action.copy("asset"),
 		}
 
@@ -166,7 +172,7 @@ minko.project.application = function(name)
 		targetsuffix "bc"
 		
 		prelinkcommands {
-			minko.action.copy(minko.sdk.path("/framework/effect")),
+			minko.action.copy(minko.sdk.path("/framework/asset")),
 			minko.action.copy("asset"),
 		}
 
