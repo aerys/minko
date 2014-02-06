@@ -108,7 +108,7 @@ void main(void)
 			discard;
 	#endif // ALPHA_THRESHOLD
 	
-	#if defined(SHININESS) || (defined(ENVIRONMENT_MAP) && !defined(ENVIRONMENT_ALPHA))
+	#if defined(SHININESS) || ( (defined(ENVIRONMENT_MAP_2D) || defined(ENVIRONMENT_CUBE_MAP)) && !defined(ENVIRONMENT_ALPHA) )
 		//vec4 specular = specularColor;
 
 		#ifdef SPECULAR_MAP
