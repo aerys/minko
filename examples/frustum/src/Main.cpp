@@ -20,7 +20,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Minko.hpp"
 #include "minko/MinkoPNG.hpp"
 #include "minko/MinkoSDL.hpp"
-#include "minko/math/OctTree.hpp"
 
 using namespace minko;
 using namespace minko::component;
@@ -59,7 +58,7 @@ int main(int argc, char** argv)
 	{
 		std::shared_ptr<material::BasicMaterial> material = material::BasicMaterial::create()->diffuseColor(0xFF00FFFF);
 
-		for (uint i = 0; i < 200; ++i)
+		for (uint i = 0; i < 25; ++i)
 		{
 			auto mesh = scene::Node::create("mesh")
 				->addComponent(Transform::create(math::Matrix4x4::create()
@@ -79,9 +78,11 @@ int main(int argc, char** argv)
 		camera = scene::Node::create("camera")
 			->addComponent(Renderer::create())
 			->addComponent(PerspectiveCamera::create((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT))
-			->addComponent(FrustumCulling::create())
+			->addComponent(Culling::create(math::Frustum::create(), "camera.worldToScreenMatrix"))
 			->addComponent(Transform::create(
-				Matrix4x4::create()->lookAt(Vector3::create(0.f, 0.f), Vector3::create(rand() % 200 - 100.f, rand() % 200 - 100.f, rand() % 200 - 100.f))
+				Matrix4x4::create()->lookAt(
+					Vector3::create(0.f, 0.f), 
+					Vector3::create(rand() % 200 - 100.f, rand() % 200 - 100.f, rand() % 200 - 100.f))
 			));
 
 		root->addChild(camera);

@@ -32,7 +32,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/deserialize/TypeDeserializer.hpp"
 #include "minko/geometry/SphereGeometry.hpp"
 
-const std::string MODEL_FILENAME = "model/test2/NewScene.scene";
+std::string MODEL_FILENAME = "model/primitives/primitives.scene";
 
 //#define SERIALIZE // comment to test deserialization
 
@@ -57,14 +57,10 @@ openSceneExample(std::shared_ptr<file::AssetLibrary>	assets,
 	root->addChild(assets->symbol(MODEL_FILENAME));
 }
 
-int loaded = 0;
-
 int main(int argc, char** argv)
 {
-	auto canvas = Canvas::create("Minko Example - Cube", 800, 600);
-
-	auto sceneManager = SceneManager::create(canvas->context());
-	
+	auto canvas			= Canvas::create("Minko Example - Serializer/Deserializer", 800, 600);
+	auto sceneManager	= SceneManager::create(canvas->context());
 
 	// setup assets
 	sceneManager->assets()->defaultOptions()->generateMipmaps(true);
@@ -148,10 +144,10 @@ int main(int argc, char** argv)
 		auto yaw = 0.f;
 		auto pitch = (float)PI * .5f;
 		auto roll = 0.f;
-		auto minPitch = 0.f + 1e-5;
-		float maxPitch = (float)PI - 1e-5;
+		float minPitch = 0.f + float(1e-5);
+		float maxPitch = (float)PI - float(1e-5);
 		auto lookAt = Vector3::create(0.f, 0.f, 0.f);
-		auto distance = 20.f;
+		auto distance = 10.f;
 
 		Signal<input::Mouse::Ptr, int, int>::Slot mouseMove;
 		auto cameraRotationXSpeed = 0.f;

@@ -20,33 +20,46 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 -- sdl plugin
 minko.plugin.sdl = {}
 
-function minko.plugin.sdl:import()
-
-end
-
 function minko.plugin.sdl:enable()
-	minko.plugin.links { "sdl" }
 	defines { "MINKO_PLUGIN_SDL" }
-	includedirs { minko.sdk.path("plugins/sdl/include") }
 
-	configuration { "win" }
+	minko.plugin.links { "sdl" }
+	
+	includedirs {
+		minko.plugin.path("sdl") .. "/include",
+		minko.plugin.path("sdl") .. "/lib/sdl/include",
+	}
+
+	configuration { "windows32" }
 		links { "SDL2", "SDL2main" }
-		libdirs { minko.sdk.path("plugins/sdl/lib/win/SDL/lib") }
+		libdirs { minko.plugin.path("sdl") .. "/lib/sdl/lib/windows32" }
 		postbuildcommands {
-			minko.vs.getdllscopycommand(minko.sdk.path("plugins/sdl/lib/win/SDL/lib"))
+			minko.action.copy(minko.plugin.path("sdl") .. "/lib/sdl/lib/windows32/*.dll")
+		}
+
+	configuration { "windows64" }
+		links { "SDL2", "SDL2main" }
+		libdirs { minko.plugin.path("sdl") .. "/lib/sdl/lib/windows64" }
+		postbuildcommands {
+			minko.action.copy(minko.plugin.path("sdl") .. "/lib/sdl/lib/windows64/*.dll")
 		}
 		
-	configuration { "linux" }
-		links { "SDL2" }
+	configuration { "linux32" }
+		links { "SDL2", "SDL2main" }
 
-	configuration { "osx" }
+	configuration { "linux64" }
+		links { "SDL2", "SDL2main" }
+
+	configuration { "macosx" }
 		links { "SDL2.framework" }
-
-	configuration { "html5" }
-		defines { "HAVE_M_PI" }
 end
 
 function minko.plugin.sdl:dist(pluginDistDir)
-	os.mkdir(pluginDistDir .. "/lib/win/SDL/lib")
-	minko.os.copyfiles(minko.sdk.path("plugins/sdl/lib/win/SDL/lib"), pluginDistDir .. "/lib/win/SDL/lib")
+	configuration { "windows32" }
+		os.mkdir(pluginDistDir .. "/lib/sdl/lib/windows32")
+		minko.os.copyfiles(minko.plugin.path("sdl") .. "/lib/sdl/lib/windows32", pluginDistDir .. "/lib/sdl/lib/windows32")
+
+	configuration { "windows64" }
+		os.mkdir(pluginDistDir .. "/lib/sdl/windows64/lib")
+		minko.os.copyfiles(minko.plugin.path("sdl") .. "/lib/sdl/lib/windows64", pluginDistDir .. "/lib/sdl/lib/windows64")
 end

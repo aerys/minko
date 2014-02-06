@@ -19,8 +19,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/render/ProgramSignature.hpp"
 
+#include "minko/render/Pass.hpp"
 #include "minko/data/Container.hpp"
 #include "minko/data/ContainerProperty.hpp"
+#include "minko/render/DrawCall.hpp"
 
 using namespace minko;
 using namespace minko::render;
@@ -29,10 +31,11 @@ using namespace minko::data;
 /*static*/ const uint ProgramSignature::MAX_NUM_BINDINGS = 32;
 
 void
-ProgramSignature::build(const MacroBindingMap&			macroBindings,
-						data::Container::Ptr			targetData,
-						data::Container::Ptr			rendererData,
-						data::Container::Ptr			rootData,
+ProgramSignature::build(std::shared_ptr<render::Pass>	pass,
+					    DrawCall::Ptr					drawCall,
+						Container::Ptr					targetData,
+						Container::Ptr					rendererData,
+						Container::Ptr					rootData,
 						std::string&					defines,
 						std::list<ContainerProperty>&	booleanMacros,
 						std::list<ContainerProperty>&	integerMacros,
@@ -48,21 +51,53 @@ ProgramSignature::build(const MacroBindingMap&			macroBindings,
 	integerMacros.clear();
 	incorrectIntegerMacros.clear();
 
+	std::unordered_map<std::string, data::MacroBindingDefault> explicitDefinitions;
+	
+	pass->getExplicitDefinitions(explicitDefinitions);
+
 	unsigned int macroId = 0;
 
-	for (auto& macroBinding : macroBindings)
+	for (auto& macroBinding : pass->macroBindings())
     {
-		ContainerProperty	macro					(macroBinding.second, targetData, rendererData, rootData);
-		const bool			macroExists				= (macro.container() != nullptr); 
-		const bool			isMacroInteger			= macroExists && macro.container()->propertyHasType<int>(macro.name());
+		const auto&					macroName		= macroBinding.first;
+		auto macroDefault = macroBinding.second;
 
-		const auto&			defaultMacro			= std::get<2>(macroBinding.second);
-		const auto			defaultMacroExists		= defaultMacro.semantic == data::MacroBindingDefaultValueSemantic::PROPERTY_EXISTS;
-		const bool			isDefaultMacroInteger	= defaultMacro.semantic == data::MacroBindingDefaultValueSemantic::VALUE;
-		const bool			canUseDefaultMacro		= defaultMacroExists || isDefaultMacroInteger;
+		std::get<0>(macroDefault) = drawCall->formatPropertyName(std::get<0>(macroDefault));
+
+		const ContainerProperty		macro(macroDefault, targetData, rendererData, rootData);
+
+		bool						macroExists;		
+		bool						isMacroInteger;
+		data::MacroBindingDefault	defaultMacro;
+
+		const auto					foundExplicitDefIt	= explicitDefinitions.find(macroName);
+		if (foundExplicitDefIt == explicitDefinitions.end())
+		{
+			// no explicit definition
+			macroExists		= (macro.container() != nullptr); 
+			isMacroInteger	= macroExists && macro.container()->propertyHasType<int>(macro.name(), true);
+			defaultMacro	= std::get<2>(macroBinding.second);
+		}
+		else
+		{
+			// explicit definition by the pass
+			macroExists		= true;
+			defaultMacro	= foundExplicitDefIt->second;
+			isMacroInteger	= (defaultMacro.semantic == data::MacroBindingDefaultValueSemantic::VALUE);
+
+			explicitDefinitions.erase(macroName); 
+		}
+
+		const auto	defaultMacroExists		= defaultMacro.semantic == data::MacroBindingDefaultValueSemantic::PROPERTY_EXISTS;
+		const bool	isDefaultMacroInteger	= defaultMacro.semantic == data::MacroBindingDefaultValueSemantic::VALUE;
+		const bool	canUseDefaultMacro		= defaultMacroExists || isDefaultMacroInteger;
+
 
 		if (macroExists || canUseDefaultMacro)
 		{
+			if (pass->isExplicitlyUndefined(macroName))
+				continue;
+
 			// WARNING: we do not support more than 32 macro bindings
 			if (macroId == MAX_NUM_BINDINGS)
 				throw;
@@ -72,39 +107,62 @@ ProgramSignature::build(const MacroBindingMap&			macroBindings,
 
 			if (isMacroInteger || isDefaultMacroInteger)
 			{
-				const int value	= isMacroInteger 
+				const int	min		= std::get<3>(macroBinding.second);
+				const int	max		= std::get<4>(macroBinding.second);
+
+				int			value	= isMacroInteger 
 					? macro.container()->get<int>(macro.name())
 					: defaultMacro.value.value;
 
-				if (value > 0)
+				// for beta 1 : clamp integer macros instead for using fallback technique
+				value = std::max(min, std::min(max, value)); 
+
+				// update program signature
+				_values[macroId] = value; 
+
+				if (value < min || value > max)
 				{
-					_values[macroId]	= value; // update program signature
-
-					const int min	= std::get<3>(macroBinding.second);
-					const int max	= std::get<4>(macroBinding.second);
-
-					if ((min != -1 && value < min) || (max != -1 && value > max))
-					{
-						if (macroExists)
-							incorrectIntegerMacros.push_back(macro);
-					}
-					else
-					{
-						defines += "#define " + macroBinding.first + " " + std::to_string(value) + "\n";
-
-						if (macroExists)
-							integerMacros.push_back(macro);
-					}
+					if (macroExists)
+						incorrectIntegerMacros.push_back(macro);
+				
+						throw; // for beta 1, macros are clamped and cannot get out-of-bounds!
+				}
+				else
+				{
+					defines += "#define " + macroName + " " + std::to_string(value) + "\n";
+				
+					if (macroExists)
+						integerMacros.push_back(macro);
 				}
 			}
 			else if (macroExists || defaultMacroExists)
 			{
-				defines += "#define " + macroBinding.first + "\n";
+				defines += "#define " + macroName + "\n";
 
 				if (macroExists)
 					booleanMacros.push_back(macro);
 			}
 		}
+		++macroId;
+	}
+
+	// treat remaining unprocessed explicit macro definitions
+	for (auto& macroNameAndDefault : explicitDefinitions)
+	{
+		// WARNING: we do not support more than 32 macro bindings
+		if (macroId == MAX_NUM_BINDINGS)
+			throw;
+
+		_mask |= 1 << macroId; // update program signature
+
+		const auto& macroName		= macroNameAndDefault.first;
+		const auto& macroDefault	= macroNameAndDefault.second;
+
+		if (macroDefault.semantic == data::MacroBindingDefaultValueSemantic::VALUE)
+			defines += "#define " + macroName + " " + std::to_string(macroDefault.value.value) + "\n";
+		else
+			defines += "#define " + macroName + "\n";
+
 		++macroId;
 	}
 }

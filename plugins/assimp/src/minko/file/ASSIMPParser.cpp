@@ -135,7 +135,18 @@ ASSIMPParser::parse(const std::string&					filename,
 	const aiScene* scene = importer.ReadFileFromMemory(
 		&data[0],
 		data.size(),
-		aiProcessPreset_TargetRealtime_Fast,
+		aiProcessPreset_TargetRealtime_Fast
+		| aiProcess_JoinIdenticalVertices
+		| aiProcess_GenSmoothNormals
+		| aiProcess_SplitLargeMeshes
+		| aiProcess_LimitBoneWeights
+		| aiProcess_GenUVCoords
+		| aiProcess_OptimizeMeshes
+		| aiProcess_OptimizeGraph
+		| aiProcess_FlipUVs
+		| aiProcess_SortByPType
+		| aiProcess_Triangulate
+		| aiProcess_JoinIdenticalVertices,
 		resolvedFilename.c_str()
 	);
 	
@@ -352,8 +363,8 @@ ASSIMPParser::createMeshSurface(scene::Node::Ptr 	minkoNode,
 	{
 		if ((texFound = material->GetTexture(static_cast<aiTextureType>(typeAndString.first), 0, &path)) == AI_SUCCESS)
 		{
-			auto texturePath = std::string(path.data);
-			auto texture = _assetLibrary->texture(texturePath);
+			auto texturePath	= std::string(path.data);
+			auto texture		= _assetLibrary->texture(texturePath);
 
 			if (!texturePath.empty() && texture)
 				provider->set(typeAndString.second, texture);
@@ -630,10 +641,10 @@ ASSIMPParser::getSkinningFromAssimp(const aiScene* aiscene)
 		
 		if (skin)
 		{
-			auto	meshNode	= _aiMeshToNode.find(aimesh)->second;
+			auto		meshNode		= _aiMeshToNode.find(aimesh)->second;
+			const float	durationSeconds	= skin->numFrames() / (float)_options->skinningFramerate();
 
-			skin->duration(skin->numFrames() / (float)_options->skinningFramerate());
-
+			skin->duration((uint)floorf(1000.0f * durationSeconds));
 			meshNode->addComponent(Skinning::create(skin, _options->skinningMethod(), _assetLibrary->context()));
 		}
 	}
@@ -667,7 +678,10 @@ ASSIMPParser::getSkinningFromAssimp(const aiMesh* aimesh) const
 		//std::cout << "\ncollapsed trf bone '" << aimesh->mBones[boneId]->mName.C_Str() << "'" << std::endl;
 #endif // DEBUG_SKINNING
 
-		const auto bone				= getSkinningFromAssimp(aimesh->mBones[boneId]);
+		const auto bone = getSkinningFromAssimp(aimesh->mBones[boneId]);
+		if (!bone)
+			return nullptr;
+		
 		const auto boneNode			= bone->node();
 		const auto boneOffsetMatrix	= bone->offsetMatrix();
 
@@ -756,7 +770,7 @@ ASSIMPParser::sampleAnimation(const aiAnimation* animation)
 	if (animation == nullptr || animation->mTicksPerSecond < 1e-6 || _options->skinningFramerate() == 0)
 		return;
 
-	unsigned int numFrames	= (unsigned int)floorf((float)_options->skinningFramerate() * animation->mDuration / animation->mTicksPerSecond);
+	unsigned int numFrames	= (unsigned int)floorf(float(_options->skinningFramerate() * animation->mDuration / animation->mTicksPerSecond));
 	numFrames				= numFrames < 2 ? 2 : numFrames;
 
 	const float			timeStep	= (float)animation->mDuration / (float)(numFrames - 1);

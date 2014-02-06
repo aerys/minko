@@ -1,0 +1,64 @@
+// line effect
+{
+    "name"  	: "line",
+    
+	"priority"	: "opaque",
+	
+    "attributeBindings" : {
+        "startPosition"			: "geometry[${geometryId}].vertex.attribute.startPosition",
+		"stopPosition"			: "geometry[${geometryId}].vertex.attribute.stopPosition",
+		"weights"				: "geometry[${geometryId}].vertex.attribute.weights"
+    },
+    
+    "uniformBindings"   : {
+        "diffuseColor"          : "material[${materialId}].diffuseColor",
+		"lineThickness"			: "material[${materialId}].lineThickness",
+		"modelToWorldMatrix"    : "transform.modelToWorldMatrix",
+		"worldToScreenMatrix"   : { "property" : "camera.worldToScreenMatrix", "source" : "renderer" },
+		"viewport"				: { "property" : "canvas.viewport", "source" : "root" }
+    },
+    
+    "macroBindings" : {
+        "DIFFUSE_COLOR"         : "material[${materialId}].diffuseColor",
+        "LINE_THICKNESS"        : "material[${materialId}].lineThickness",
+        "MODEL_TO_WORLD"        : "transform.modelToWorldMatrix",
+        "VIEWPORT"              : { "property" : "canvas.viewport", "source" : "root" }
+    },
+
+    "stateBindings" : {
+        "blendMode"             : "material[${materialId}].blendMode",
+        "colorMask"             : "material[${materialId}].colorMask",
+        "depthMask"             : "material[${materialId}].depthMask",
+        "depthFunc"             : "material[${materialId}].depthFunc",
+        "triangleCulling"       : "material[${materialId}].triangleCulling",
+        "stencilFunc"           : "material[${materialId}].stencilFunc",
+        "stencilRef"            : "material[${materialId}].stencilRef",
+        "stencilMask"           : "material[${materialId}].stencilMask",
+        "stencilFailOp"         : "material[${materialId}].stencilFailOp",
+        "stencilZFailOp"        : "material[${materialId}].stencilZFailOp",
+        "stencilZPassOp"        : "material[${materialId}].stencilZPassOp",
+        "scissorBox.x"          : { "property" : "scissorBox.x",        "source" : "renderer" },
+        "scissorBox.y"          : { "property" : "scissorBox.y",        "source" : "renderer" },
+        "scissorBox.width"      : { "property" : "scissorBox.width",    "source" : "renderer" },
+        "scissorBox.height"     : { "property" : "scissorBox.height",   "source" : "renderer" },
+        "priority"              : "material[${materialId}].priority",
+        "zsort"                 : "material[${materialId}].zsort"
+    },
+    
+    "blendMode"         : ["one", "zero"],
+    "colorMask"         : true,
+    "depthTest"         : [true, "less_equal"],
+    "triangleCulling"   : "none",
+    "stencilTest"       : ["always", 0, 1, ["keep", "keep", "keep"]],
+    "scissorTest"       : false,
+    "scissorBox"        : [0, 0, -1, -1],
+    "priority"          : "opaque",
+    "zsort"             : false,
+    
+	"techniques" : [{
+		"passes"    : [{
+			"vertexShader" : "#pragma include('Line.vertex.glsl')",
+			"fragmentShader" : "#pragma include('Line.fragment.glsl')"
+		}]
+	}]
+}

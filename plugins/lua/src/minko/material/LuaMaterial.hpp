@@ -22,6 +22,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Common.hpp"
 
 #include "minko/material/Material.hpp"
+#include "minko/math/Vector2.hpp"
+#include "minko/math/Vector3.hpp"
+#include "minko/math/Vector4.hpp"
+#include "minko/math/Matrix4x4.hpp"
+#include "minko/render/Texture.hpp"
 
 #include "minko/LuaWrapper.hpp"
 

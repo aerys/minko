@@ -113,11 +113,25 @@ namespace minko
         &static_cast<Any::Holder<ValueType> *>(operand->_content)->_held : 0;
     }
 
+	template <typename ValueType>
+    static ValueType*
+    unsafe_cast(Any* operand)
+    {
+      return operand ? &static_cast<Any::Holder<ValueType> *>(operand->_content)->_held : 0;
+    }
+
     template <typename ValueType>
     static inline const ValueType*
     cast(const Any* operand)
     {
       return Any::cast<ValueType>(const_cast<Any*>(operand));
+    }
+
+	template <typename ValueType>
+    static inline const ValueType*
+    unsafe_cast(const Any* operand)
+    {
+      return Any::unsafe_cast<ValueType>(const_cast<Any*>(operand));
     }
 
     template <typename ValueType>
@@ -134,6 +148,20 @@ namespace minko
       return *result;
     }
 
+	template <typename ValueType>
+    static ValueType
+    unsafe_cast(Any& operand)
+    {
+      typedef typename RemoveReference<ValueType>::Type NonRef;
+
+      NonRef* result = unsafe_cast<NonRef>(&operand);
+
+      if (!result)
+          throw std::bad_cast();
+
+      return *result;
+    }
+
     template <typename ValueType>
     static inline ValueType
     cast(const Any& operand)
@@ -141,6 +169,15 @@ namespace minko
       typedef typename RemoveReference<ValueType>::Type NonRef;
 
       return cast<const NonRef&>(const_cast<Any&>(operand));
+    }
+
+	template <typename ValueType>
+    static inline ValueType
+    unsafe_cast(const Any& operand)
+    {
+      typedef typename RemoveReference<ValueType>::Type NonRef;
+
+      return unsafe_cast<const NonRef&>(const_cast<Any&>(operand));
     }
 
     class Placeholder

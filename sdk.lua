@@ -2,46 +2,59 @@ if not MINKO_HOME then
 	if os.getenv('MINKO_HOME') then
 		MINKO_HOME = os.getenv('MINKO_HOME');
 	else
-		print(color.fg.red .. 'You must define the environment variable MINKO_HOME.' .. color.reset)
-		os.exit(1)
+		error('You must define the environment variable MINKO_HOME.')
 	end
 end
 
 if not os.isfile(MINKO_HOME .. '/sdk.lua') then
-	print(color.fg.red ..'MINKO_HOME does not point to a valid Minko SDK.' .. color.reset)
-	os.exit(1)
+	error('MINKO_HOME does not point to a valid Minko SDK.')
 end
-
-print('Minko SDK home directory: ' .. MINKO_HOME)
 
 package.path = MINKO_HOME .. "/modules/?/?.lua;".. package.path
 
+print('Minko SDK home directory: ' .. MINKO_HOME)
+
+require 'minko'
+require 'color'
 require 'emscripten'
 require 'android'
 require 'vs2013ctp'
+require 'gcc'
+require 'clang'
 
-local insert = require 'insert'
+configurations {
+	"debug",
+	"release"
+}
 
-insert.insert(premake.tools.gcc, 'cxxflags.system', {
-	linux = { "-MMD", "-MP", "-std=c++11" },
-	macosx = { "-MMD", "-MP", "-std=c++11" },
-	emscripten = { "-MMD", "-MP", "-std=c++11" }
-})
+minko.platform.platforms {
+	"linux32",
+	"linux64",
+	"windows32",
+	"windows64",
+	"osx64",
+	"html5",
+	"ios",
+	"android",
+}
 
-insert.insert(premake.tools.gcc, 'tools.linux', {
-	ld = MINKO_HOME .. '/tools/lin/bin/g++-ld.sh',
-	cxx = MINKO_HOME .. '/tools/lin/bin/g++-ld.sh'
-})
+configuration { "windows32" }
+	system "windows"
+	architecture "x32"
 
-insert.insert(premake.tools.clang, 'cxxflags.system', {
-	macosx = { "-MMD", "-MP", "-std=c++11", "-stdlib=libc++" }
-})
+configuration { "windows64" }
+	system "windows"
+	architecture "x64"
 
-insert.insert(premake.tools.clang, 'ldflags.system.macosx', {
-	macosx = { "-stdlib=libc++" }
-})
+configuration { "linux32" }
+	system "linux"
+	architecture "x32"
 
-configuration { "osx" }
+configuration { "linux64" }
+	system "linux"
+	architecture "x64"
+
+configuration { "osx64" }
 	system "macosx"
 
 configuration { "html5" }
@@ -50,21 +63,28 @@ configuration { "html5" }
 configuration { "android"}
 	system "android"
 
+configuration { "cc=gcc"}
+	toolset "gcc"
+
+configuration { "cc=clang"}
+	toolset "clang"
+
 configuration {}
 
--- print(table.inspect(premake.tools.clang))
+configuration { "cc=clang"}
+	toolset "clang"
+
+configuration {}
 
 -- distributable SDK
 MINKO_SDK_DIST = true
 
--- import build system utilities
-dofile(MINKO_HOME .. '/tools/all/lib/minko.lua')
-dofile(MINKO_HOME .. '/tools/all/lib/minko.sdk.lua')
-dofile(MINKO_HOME .. '/tools/all/lib/minko.os.lua')
-dofile(MINKO_HOME .. '/tools/all/lib/minko.path.lua')
-dofile(MINKO_HOME .. '/tools/all/lib/minko.plugin.lua')
-dofile(MINKO_HOME .. '/tools/all/lib/minko.vs.lua')
-dofile(MINKO_HOME .. '/tools/all/lib/minko.project.lua')
+-- make plugins visible from an external project
+local plugins = os.matchdirs(MINKO_HOME .. '/plugins/*')
+
+for _, plugin in ipairs(plugins) do
+	minko.plugin.include(plugin)
+end
 
 -- options
 newoption {
