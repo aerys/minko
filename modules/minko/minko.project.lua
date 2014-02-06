@@ -174,7 +174,7 @@ minko.project.application = function(name)
 			"minko-framework",
 		}
 
-		targetsuffix "bc"
+		targetsuffix ".bc"
 		
 		prelinkcommands {
 			minko.action.copy(minko.sdk.path("/framework/asset")),
@@ -186,7 +186,7 @@ minko.project.application = function(name)
 
 		postbuildcommands {
 			'cd ${TARGETDIR}'
-			.. ' && ' .. emcc .. ' ${TARGETNAME} -o ' .. name .. '.html -O2 --closure 1 -s CLOSURE_ANNOTATIONS=1 -s DISABLE_EXCEPTION_CATCHING=0 -s TOTAL_MEMORY=268435456 --preload-file asset'
+			.. ' && ' .. emcc .. ' ' .. name .. '.bc -o ' .. name .. '.html -O2 --closure 1 -s CLOSURE_ANNOTATIONS=1 -s DISABLE_EXCEPTION_CATCHING=0 -s TOTAL_MEMORY=268435456 --preload-file asset'
 			.. ' || ' .. minko.action.fail()
 		}
 
@@ -194,12 +194,12 @@ minko.project.application = function(name)
 		local emcc = premake.tools.gcc.tools.emscripten.cc
 
 		buildoptions {
-			"-g4"
+			"-g4" -- allow source maps in final .js
 		}
 
 		postbuildcommands {
 			'cd ${TARGETDIR}'
-			.. ' && ' .. emcc .. ' ${TARGETNAME} -o ' .. name .. '.html -O2 --js-opts 0 -g4 -s ASM_JS=0 -s DISABLE_EXCEPTION_CATCHING=0 -s TOTAL_MEMORY=268435456 --preload-file asset'
+			.. ' && ' .. emcc .. ' ' .. name .. '.bc -o ' .. name .. '.html -O2 --js-opts 0 -g4 -s ASM_JS=0 -s DISABLE_EXCEPTION_CATCHING=0 -s TOTAL_MEMORY=268435456 --preload-file asset'
 			.. ' || ' .. minko.action.fail()
 		}
 
