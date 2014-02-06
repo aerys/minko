@@ -31,14 +31,14 @@ const std::string	TEXTURE_FILENAME	= "texture/box.png";
 const float			GROUND_WIDTH		= 5.0f;
 const float			GROUND_HEIGHT		= 0.25f;
 const float			GROUND_DEPTH		= 5.0f;
-const float			GROUND_THICK		= 0.1f;
+const float			GROUND_THICK		= 0.05f;
 
 const float			MIN_MASS			= 1.0f;
 const float			MAX_MASS			= 5.0f;
 const float			MIN_SCALE			= 0.2f;
 const float			MAX_SCALE			= 1.0f;
-
-const float			START_ALTITUDE		= 5.0f;
+const auto			MIN_DROP_POS		= Vector3::create(-GROUND_WIDTH * 0.5f + 0.5f, 5.0f, -GROUND_DEPTH * 0.5f + 0.5f);
+const auto			MAX_DROP_POS		= Vector3::create( GROUND_WIDTH * 0.5f - 0.5f, 5.0f,  GROUND_DEPTH * 0.5f - 0.5f);
 
 const unsigned int	MAX_NUM_OBJECTS		= 32;
 
@@ -47,7 +47,7 @@ createPhysicsObject(unsigned int id, file::AssetLibrary::Ptr, bool isCube);
 
 int main(int argc, char** argv)
 {
-	auto canvas = Canvas::create("Minko Example - Cube", 800, 600);
+	auto canvas = Canvas::create("Minko Example - Physics", 800, 600);
 
 	auto sceneManager	= SceneManager::create(canvas->context());
 
@@ -62,6 +62,8 @@ int main(int argc, char** argv)
 		->geometry("sphere",	geometry::SphereGeometry::create(sceneManager->assets()->context(), 16, 16))
 		->geometry("cube",		geometry::CubeGeometry::create(sceneManager->assets()->context()));
 	
+	std::cout << "[space]\tdrop an object onto the scene (up to " << MAX_NUM_OBJECTS << ")" << std::endl;
+
 	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
 	{
 		auto root = scene::Node::create("root")
@@ -71,7 +73,7 @@ int main(int argc, char** argv)
 		auto camera = scene::Node::create("camera")
 			->addComponent(Renderer::create(0x7f7f7fff))
 			->addComponent(Transform::create(
-				Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(3.0f, 1.0, 8.0f))
+				Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(5.0f, 1.5f, 5.0f))
 			))
 			->addComponent(PerspectiveCamera::create(800.f / 600.f, (float)PI * 0.25f, .1f, 1000.f));
 		
@@ -88,20 +90,29 @@ int main(int argc, char** argv)
 				material::BasicMaterial::create()->diffuseMap(assets->texture(TEXTURE_FILENAME)),
 				assets->effect("effect/Basic.effect")
 			))
-			->addComponent(bullet::Collider::create(bullet::ColliderData::create(0.0f, bullet::BoxShape::create(GROUND_WIDTH * 0.5f, GROUND_THICK * 0.5f, GROUND_DEPTH * 0.5f))));
+			->addComponent(bullet::Collider::create(
+					bullet::ColliderData::create(
+						0.0f, // static object (no mass)
+						bullet::BoxShape::create(GROUND_WIDTH * 0.5f, GROUND_THICK * 0.5f, GROUND_DEPTH * 0.5f)
+					)
+			));
 
 		auto groundNodeB = scene::Node::create("groundNodeB")
 			->addComponent(Transform::create(
 				Matrix4x4::create()
 					->appendScale(GROUND_THICK, GROUND_HEIGHT, GROUND_DEPTH)
-					->appendTranslation(0.5f * GROUND_WIDTH, 0.5f * (GROUND_HEIGHT - GROUND_THICK), 0.0f)
+					->appendTranslation(0.5f * (GROUND_WIDTH + GROUND_THICK), 0.5f * (GROUND_HEIGHT - GROUND_THICK), 0.0f)
 			))
 			->addComponent(Surface::create(
 				assets->geometry("cube"),
-				material::BasicMaterial::create()->diffuseMap(assets->texture(TEXTURE_FILENAME)),
+				material::BasicMaterial::create()->diffuseColor(0x241f1cff),
 				assets->effect("effect/Basic.effect")
 			))
-			->addComponent(bullet::Collider::create(bullet::ColliderData::create(0.0f, bullet::BoxShape::create(GROUND_THICK * 0.5f, GROUND_HEIGHT * 0.5f, GROUND_DEPTH * 0.5f))));
+			->addComponent(bullet::Collider::create(
+				bullet::ColliderData::create(
+					0.0f, // static object (no mass)
+					bullet::BoxShape::create(GROUND_THICK * 0.5f, GROUND_HEIGHT * 0.5f, GROUND_DEPTH * 0.5f))
+			));
 
 		root->addChild(camera);
 
@@ -111,18 +122,21 @@ int main(int argc, char** argv)
 
 		root->addChild(groundNode);
 
-		unsigned int numObjects = 0;
+		unsigned int		numObjects	= 0;
+		scene::Node::Ptr	newObject	= nullptr;
+
 		auto keyDown = canvas->keyboard()->keyDown()->connect([&](input::Keyboard::Ptr k)
 		{
-			if (k->keyIsDown(input::Keyboard::ScanCode::SPACE) && numObjects < MAX_NUM_OBJECTS)
+			if (k->keyIsDown(input::Keyboard::ScanCode::SPACE))
 			{
-				root->addChild(createPhysicsObject(0, assets, true));
-				
-				//root->addChild(createPhysicsObject(numObjects, assets, rand() / (float)RAND_MAX > 0.5f));
-				++numObjects;
+				if (numObjects < MAX_NUM_OBJECTS)
+				{
+					if (newObject == nullptr)
+						newObject = createPhysicsObject(numObjects, assets, rand() / (float)RAND_MAX > 0.5f);
+				}
+				else
+					std::cout << "You threw away all your possible objects. Try again!" << std::endl;
 			}
-			else
-				std::cout << "You threw away all your possible objects. Try again!" << std::endl;
 		});
 
 		auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
@@ -132,6 +146,16 @@ int main(int argc, char** argv)
 
 		auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, uint deltaTime)
 		{
+			if (newObject)
+			{
+				newObject->component<Transform>()->modelToWorldMatrix(true); // FIXME: artificially force matrix update 
+
+				root->addChild(newObject);
+				++numObjects;
+
+				newObject = nullptr;
+			}
+
 			sceneManager->nextFrame();
 		});
 
@@ -149,8 +173,13 @@ createPhysicsObject(unsigned int id, file::AssetLibrary::Ptr assets, bool isCube
 {
 	const float mass		= MIN_MASS  + (rand() / (float)RAND_MAX) * (MAX_MASS - MIN_MASS);
 	const float size		= MIN_SCALE + (rand() / (float)RAND_MAX) * (MAX_SCALE - MIN_SCALE);
+
+	const float startX		= MIN_DROP_POS->x() + (rand() / (float)RAND_MAX) * (MAX_DROP_POS->x() - MIN_DROP_POS->x());
+	const float startY		= MIN_DROP_POS->y() + (rand() / (float)RAND_MAX) * (MAX_DROP_POS->y() - MIN_DROP_POS->y());
+	const float startZ		= MIN_DROP_POS->z() + (rand() / (float)RAND_MAX) * (MAX_DROP_POS->z() - MIN_DROP_POS->z());
+
 	const float halfSize	= 0.5f * size;
-	auto		color		= Color::hslaToRgba(rand() / (float)RAND_MAX, 1.0f, 0.8f, 0.5f);
+	auto		color		= Color::hslaToRgba((id % 10) * 0.1f, 1.0f, 0.6f, 1.0f);
 
 	bullet::Collider::Ptr collider = nullptr;
 
@@ -176,13 +205,13 @@ createPhysicsObject(unsigned int id, file::AssetLibrary::Ptr assets, bool isCube
 		->addComponent(Transform::create(
 			Matrix4x4::create()
 				->appendScale(size)
-				->appendTranslation(0.0f, START_ALTITUDE, 0.0f)
+				->appendTranslation(startX, startY, startZ)
 		))
 		->addComponent(Surface::create(
 			assets->geometry(isCube ? "cube" : "sphere"),
 			material::BasicMaterial::create()
 				->diffuseColor(color)
-				->isTransparent(true, true)
+				//->isTransparent(true, true)
 				->triangleCulling(render::TriangleCulling::BACK),
 			assets->effect("basic")
 		))
