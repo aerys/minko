@@ -100,10 +100,10 @@ namespace minko
 			environmentMap2dType() const;
 
 			Ptr
-			reflectivity(float);
+			environmentAlpha(float);
 
 			float
-			reflectivity() const;
+			environmentAlpha() const;
 
 		private:
 			PhongMaterial();
