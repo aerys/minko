@@ -30,6 +30,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include <forward_list>
 #include <map>
 #include <memory>
+#include <queue>
 #include <set>
 #include <sstream>
 #include <fstream>
@@ -41,6 +42,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include <cassert>
 #include <ctime>
 #include <type_traits>
+#include <cfloat>
+#include <climits>
 #include "minko/math/Convertible.hpp"
 
 #ifdef __ANDROID__
@@ -87,7 +90,28 @@ namespace minko
 		class VertexFormat;
 		class VertexBuffer;
 		class IndexBuffer;
+
+		enum class TextureType
+		{
+			Texture2D	= 0,
+			CubeTexture	= 1
+		};
+
+		enum class EnvironmentMap2dType
+		{
+			Unset		= -1,
+			Probe		= 0,
+			BlinnNewell	= 1
+		};
+
+		enum class TextureFormat
+		{
+			RGB,
+			RGBA
+		};
+		class AbstractTexture;
 		class Texture;
+		class CubeTexture;
 
 		struct ScissorBox
 		{
@@ -117,8 +141,9 @@ namespace minko
 		class Surface;
 		class Renderer;
 		class PerspectiveCamera;
-		class FrustumCulling;
+		class Culling;
 		class Picking;
+		class JobManager;
 
         class LightManager;
         class AbstractLight;
@@ -134,6 +159,9 @@ namespace minko
 		class MouseManager;
         class AbstractScript;
 		enum class SkinningMethod;
+
+		class AbstractAnimation;
+		class Animation;
 	}
 
 	namespace data
@@ -155,8 +183,11 @@ namespace minko
 		typedef std::pair<std::string, BindingSource>		Binding;
 		typedef std::unordered_map<std::string, Binding>	BindingMap;
 
-		typedef std::pair<uint, const float*>				UniformArray;
-		typedef std::shared_ptr<UniformArray>				UniformArrayPtr;
+		template<typename T>
+		using UniformArray = std::pair<uint, const T*>;
+
+		template<typename T>
+		using UniformArrayPtr = std::shared_ptr<UniformArray<T>>;
 
 		enum class MacroBindingDefaultValueSemantic
 		{
@@ -193,6 +224,12 @@ namespace minko
 		class TeapotGeometry;
 	}
 
+	namespace animation
+	{
+		class AbstractTimeline;
+		class Matrix4x4Timeline;
+	}
+
 	namespace math
 	{
 		class Vector2;
@@ -205,6 +242,25 @@ namespace minko
 		class Box;
 		class Frustum;
 		class OctTree;
+
+		inline
+		bool
+		isp2(unsigned int x)
+		{
+			return x == 0 || (x & (x-1)) == 0;
+		}
+
+		inline
+		uint
+		getp2(unsigned int x)
+		{
+			unsigned int tmp	= x;
+			unsigned int p		= 0;
+			while (tmp >>= 1)
+				++p;
+
+			return p;
+		}
 
 		inline
 		unsigned int
@@ -250,6 +306,7 @@ namespace minko
 	{
 		class Material;
 		class BasicMaterial;
+		class PhongMaterial;
 	}
 
 	namespace input

@@ -5,6 +5,12 @@
 
 namespace minko
 {
+	namespace extension
+	{
+		class SerializerExtension;
+		class AbstractExtension;
+	}
+
 	namespace data
 	{
 		class HalfEdge;

@@ -26,6 +26,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/Pass.hpp"
 #include "minko/render/Program.hpp"
 #include "minko/data/Container.hpp"
+#include "minko/data/ArrayProvider.hpp"
 
 using namespace minko;
 using namespace minko::data;
@@ -33,10 +34,10 @@ using namespace minko::component;
 using namespace minko::geometry;
 using namespace minko::render;
 
-Surface::Surface(Geometry::Ptr 			geometry,
-				 data::Provider::Ptr 	material,
-				 Effect::Ptr			effect,
-				 const std::string&		technique) :
+Surface::Surface(Geometry::Ptr 				geometry,
+				 data::Provider::Ptr 		material,
+				 Effect::Ptr				effect,
+				 const std::string&			technique) :
 	AbstractComponent(),
 	_geometry(geometry),
 	_material(material),
@@ -44,7 +45,9 @@ Surface::Surface(Geometry::Ptr 			geometry,
 	_technique(technique),
 	_techniqueChanged(TechniqueChangedSignal::create()),
 	_visibilityChanged(VisibilityChangedSignal::create()),
-	_computedVisibilityChanged(VisibilityChangedSignal::create())
+	_computedVisibilityChanged(VisibilityChangedSignal::create()),
+	_geometryId(-1),
+	_materialId(-1)
 {
 }
 
@@ -64,6 +67,23 @@ Surface::initialize()
 		std::placeholders::_1,
 		std::placeholders::_2
 	));
+
+	_dataProviderIndexChangedSlots.push_back(_geometry->data()->indexChanged()->connect(std::bind(
+		&Surface::geometryProviderIndexChanged,
+		shared_from_this(),
+		std::placeholders::_1,
+		std::placeholders::_2
+		), 10.f));
+
+	auto arrayProviderMaterial = std::dynamic_pointer_cast<ArrayProvider>(_material);
+
+	if (arrayProviderMaterial)
+	_dataProviderIndexChangedSlots.push_back(arrayProviderMaterial->indexChanged()->connect(std::bind(
+		&Surface::materialProviderIndexChanged,
+		shared_from_this(),
+		std::placeholders::_1,
+		std::placeholders::_2
+		), 10.f));
 
 	if (_effect->techniques().count(_technique) == 0)
 		throw std::logic_error("The technique '" + _technique + "' does not exist.");
@@ -98,8 +118,6 @@ Surface::geometry(std::shared_ptr<geometry::Geometry> newGeometry)
 
 		target->data()->removeProvider(_geometry->data());
 		target->data()->addProvider(newGeometry->data());
-
-		//createDrawCalls();
 	}
 
 	_geometry = newGeometry;
@@ -120,8 +138,20 @@ Surface::targetAddedHandler(AbstractComponent::Ptr	ctrl,
 		std::placeholders::_3
 	));
 
-	targetData->addProvider(_material);
+	auto arrayProviderMaterial = std::dynamic_pointer_cast<data::ArrayProvider>(_material);
+
+	if (arrayProviderMaterial)
+	{
+		targetData->addProvider(std::dynamic_pointer_cast<data::ArrayProvider>(_material));
+		_materialId = std::dynamic_pointer_cast<data::ArrayProvider>(_material)->index();
+	}
+	else
+	{
+		targetData->addProvider(_material);
+	}
+
 	targetData->addProvider(_geometry->data());
+	_geometryId = _geometry->data()->index();
 	targetData->addProvider(_effect->data());
 }
 
@@ -140,7 +170,10 @@ Surface::targetRemovedHandler(AbstractComponent::Ptr	ctrl,
 	
 	data->removeProvider(_material);
 	data->removeProvider(_geometry->data());
-	data->removeProvider(_geometry->data());
+	data->removeProvider(_effect->data());
+
+	_materialId = -1;
+	_geometryId = -1;
 }
 
 void
@@ -160,4 +193,16 @@ Surface::setTechnique(const std::string&	technique,
 		throw std::logic_error("The technique '" + _technique + "' does not exist.");
 
 	_techniqueChanged->execute(shared_from_this(), _technique, updateDrawcalls);
+}
+
+void
+Surface::geometryProviderIndexChanged(ArrayProviderPtr arrayProvider, uint index)
+{
+	_geometryId = index;
+}
+
+void
+Surface::materialProviderIndexChanged(ArrayProviderPtr arrayProvider, uint index)
+{
+	_materialId = index;
 }

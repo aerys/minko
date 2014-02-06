@@ -21,12 +21,17 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/render/AbstractContext.hpp"
 #include "minko/render/Shader.hpp"
+#include "minko/render/VertexBuffer.hpp"
+#include "minko/render/AbstractTexture.hpp"
+#include "minko/render/IndexBuffer.hpp"
+
 
 using namespace minko;
 using namespace minko::render;
 
 Program::Program(Program::AbstractContextPtr context) :
-	AbstractResource(context)
+	AbstractResource(context),
+	_indexBuffer(nullptr)
 {
 }
 
@@ -49,4 +54,38 @@ Program::dispose()
 
 	_vertexShader = nullptr;
 	_fragmentShader = nullptr;
+}
+
+void
+Program::setUniform(const std::string& name, std::shared_ptr<render::AbstractTexture> texture)
+{
+	if (!_inputs->hasName(name))
+		return;
+
+	_textures[_inputs->location(name)] = texture;
+}
+
+void
+Program::setVertexAttribute(const std::string& name, unsigned int attributeSize, const std::vector<float>& data)
+{
+	if (!_inputs->hasName(name))
+		return;
+	
+	auto vertexBuffer = VertexBuffer::create(_context, data);
+	vertexBuffer->addAttribute(name, attributeSize, 0);
+
+	_vertexBuffers[_inputs->location(name)] = vertexBuffer;
+}
+
+void
+Program::setIndexBuffer(const std::vector<unsigned short>& indices)
+{
+	if (indices.empty())
+	{
+		_indexBuffer = nullptr;
+
+		return;
+	}
+
+	_indexBuffer = IndexBuffer::create(_context, indices);
 }

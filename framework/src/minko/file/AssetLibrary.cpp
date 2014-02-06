@@ -26,8 +26,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/AbstractParser.hpp"
 #include "minko/file/EffectParser.hpp"
 #include "minko/render/Texture.hpp"
+#include "minko/render/CubeTexture.hpp"
 #include "minko/render/Effect.hpp"
 #include "minko/geometry/Geometry.hpp"
+#include <regex>
 
 using namespace minko;
 using namespace minko::render;
@@ -40,6 +42,7 @@ AssetLibrary::create(AbsContextPtr context)
 	auto al = std::shared_ptr<AssetLibrary>(new AssetLibrary(context));
 
 	al->registerParser<file::EffectParser>("effect");
+	al->registerProtocol<FileLoader>("file");
 
 	return al;
 }
@@ -79,14 +82,18 @@ AssetLibrary::geometryName(GeometryPtr geometry)
 	throw new std::logic_error("AssetLibrary does not reference this geometry.");
 }
 
-render::Texture::Ptr
-AssetLibrary::texture(const std::string& name)
+render::AbstractTexture::Ptr
+AssetLibrary::texture(const std::string& name) const
 {
-	return _textures.count(name) ? _textures[name] : nullptr;
+	const auto foundTextureIt = _textures.find(name);
+
+	return foundTextureIt != _textures.end()
+		? foundTextureIt->second
+		: nullptr;
 }
 
 AssetLibrary::Ptr
-AssetLibrary::texture(const std::string& name, render::Texture::Ptr texture)
+AssetLibrary::texture(const std::string& name, render::AbstractTexture::Ptr texture)
 {
 	_textures[name] = texture;
 
@@ -94,9 +101,12 @@ AssetLibrary::texture(const std::string& name, render::Texture::Ptr texture)
 }
 
 const std::string&
-AssetLibrary::textureName(TexturePtr texture)
+AssetLibrary::textureName(render::AbstractTexture::Ptr texture)
 {
-	auto it = std::find_if(_textures.begin(), _textures.end(), [&](std::pair<std::string, TexturePtr> itr) -> bool
+	auto it = std::find_if(
+		_textures.begin(), 
+		_textures.end(), 
+		[&](std::pair<std::string, render::AbstractTexture::Ptr> itr) -> bool
 	{
 		return itr.second == texture;
 	});
@@ -298,6 +308,28 @@ AssetLibrary::queue(const std::string&						filename,
 
 	if (loader)
 		_filenameToLoader[filename] = loader;
+	else
+	{
+		std::string protocol = "";
+
+		uint i;
+
+		for(i = 0; i < filename.length(); ++i)
+		{
+			if (i < filename.length() - 2 && filename.at(i) == ':' && filename.at(i + 1) == '/' && filename.at(i + 2) == '/')
+				break;
+			
+			protocol += filename.at(i);
+		}
+
+		if (i != filename.length())
+		{
+			loader = this->loader(protocol);
+
+			if (loader)
+				_filenameToLoader[filename] = loader;
+		}
+	}
 
 	return shared_from_this();
 }
@@ -406,8 +438,14 @@ AssetLibrary::parser(std::string extension)
 {
 	/*
 	if ()
-		throw std::invalid_argument("No parser found for extension '" + extension + "'");
+	throw std::invalid_argument("No parser found for extension '" + extension + "'");
 	*/
 
 	return _parsers.count(extension) == 0 ? nullptr : _parsers[extension]();
+}
+
+AssetLibrary::AbsLoaderPtr
+AssetLibrary::loader(std::string protocol)
+{
+	return _loaders.count(protocol) == 0 ? nullptr : _loaders[protocol]();
 }

@@ -50,9 +50,10 @@ namespace minko
 
 			bool									_errorsEnabled;
 
-			std::list<unsigned int>	                _textures;
+			std::list<uint>							_textures;
             std::unordered_map<uint, TextureSize>	_textureSizes;
             std::unordered_map<uint, bool>          _textureHasMipmaps;
+			std::unordered_map<uint, TextureType>   _textureTypes;
 
             std::string                             _driverInfo;
 
@@ -203,32 +204,41 @@ namespace minko
 			void
 			deleteIndexBuffer(const uint indexBuffer);
 
-			const uint
-			createTexture(unsigned int  width,
+			uint
+			createTexture(TextureType	type,
+						  unsigned int  width,
 						  unsigned int  height,
 						  bool		    mipMapping,
                           bool          optimizeForRenderToTexture = false);
 
 			void
-			uploadTextureData(const uint texture,
-							  unsigned int 		 width,
-							  unsigned int 		 height,
-							  unsigned int 		 mipLevel,
-							  void*				 data);
+			uploadTexture2dData(uint			texture,
+							    unsigned int 	width,
+							    unsigned int 	height,
+							    unsigned int 	mipLevel,
+							    void*			data);
 
 			void
-			deleteTexture(const uint texture);
+			uploadCubeTextureData(uint				texture,
+								  CubeTexture::Face face,
+							      unsigned int 		width,
+							      unsigned int 		height,
+							      unsigned int 		mipLevel,
+							      void*				data);
 
 			void
-			setTextureAt(const uint	position,
-						 const int			texture		= 0,
-						 const int			location	= -1);
+			deleteTexture(uint texture);
+
+			void
+			setTextureAt(uint			position,
+						 int			texture		= 0,
+						 int			location	= -1);
 
             void
-            setSamplerStateAt(const uint    position,
-                              WrapMode              wrapping,
-                              TextureFilter         filtering,
-                              MipFilter             mipFiltering);
+            setSamplerStateAt(uint				position,
+                              WrapMode          wrapping,
+                              TextureFilter     filtering,
+                              MipFilter         mipFiltering);
 
 			const uint
 			createProgram();
@@ -274,40 +284,52 @@ namespace minko
 			getProgramInfoLogs(const uint program);
 
 			void
-			setUniform(const uint& location, const int& value);
+			setUniform(uint location, int);
 
 			void
-			setUniform(const uint& location, const int& v1, const int& v2);
+			setUniform(uint location, int, int);
 
 			void
-			setUniform(const uint& location, const int& v1, const int& v2, const int& v3);
+			setUniform(uint location, int, int, int);
 
 			void
-			setUniform(const uint& location, const int& v1, const int& v2, const int& v3, const int& v4);
+			setUniform(uint location, int, int, int, int);
 
 			void
-			setUniform(const uint& location, const float& value);
+			setUniform(uint location, float);
 
 			void
-			setUniform(const uint& location, const float& v1, const float& v2);
+			setUniform(uint location, float, float);
 
 			void
-			setUniform(const uint& location, const float& v1, const float& v2, const float& v3);
+			setUniform(uint location, float, float, float);
 
 			void
-			setUniform(const uint& location, const float& v1, const float& v2, const float& v3, const float& v4);
+			setUniform(uint location, float, float, float, float);
 
 			void
-			setUniforms(uint location, uint size, const float* values);
+			setUniforms(uint location, uint size, const int*);
 
 			void
-			setUniforms2(uint location, uint size, const float* values);
+			setUniforms2(uint location, uint size, const int*);
 
 			void
-			setUniforms3(uint location, uint size, const float* values);
+			setUniforms3(uint location, uint size, const int*);
 
 			void
-			setUniforms4(uint location, uint size, const float* values);
+			setUniforms4(uint location, uint size, const int*);
+
+			void
+			setUniforms(uint location, uint size, const float*);
+
+			void
+			setUniforms2(uint location, uint size, const float*);
+
+			void
+			setUniforms3(uint location, uint size, const float*);
+
+			void
+			setUniforms4(uint location, uint size, const float*);
 
 			virtual
 			void
@@ -371,6 +393,10 @@ namespace minko
 								std::vector<ProgramInputs::Type>&	types,
 								std::vector<unsigned int>&			locations);
 
+			static
+			ProgramInputs::Type
+			convertInputType(unsigned int);
+
             static
             BlendFactorsMap
             initializeBlendFactorsMap();
@@ -384,7 +410,10 @@ namespace minko
 			initializeStencilOperationsMap();
 
             void
-            createRTTBuffers(unsigned int texture, unsigned int width, unsigned int height);
+            createRTTBuffers(TextureType	type,
+							 uint			texture, 
+							 unsigned int	width, 
+							 unsigned int height);
 
 			void
 			getShaderSource(unsigned int shader, std::string&);
@@ -407,6 +436,9 @@ namespace minko
 
             unsigned int
             getError();
+
+			TextureType
+			getTextureType(uint textureId) const;
 		};
 	}
 }
