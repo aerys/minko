@@ -15,6 +15,7 @@ $deps = [
     "libxrandr-dev",
     "libxxf86vm-dev",
     "libxi-dev",
+    "libudev-dev",
     "xvfb",
     "apache2",
     "php5",
