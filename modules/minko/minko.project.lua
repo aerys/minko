@@ -14,25 +14,16 @@ minko.project.library = function(name)
 		defines { "NDEBUG" }
 		optimize "On"
 	
-	configuration { "windows" }
+	configuration { "windows32 or windows64" }
 		includedirs { minko.sdk.path("/framework/lib/glew/include") }
 
 	configuration { "vs*" }
 		defines { "NOMINMAX" }
 		
-	configuration { "macosx" }
-	
-	configuration { "linux" }
-		
 	configuration { "html5" }
 		if EMSCRIPTEN then
 			includedirs { EMSCRIPTEN .. "/system/include" }
 		end
-		buildoptions {
-			"--closure 1",
-			"-Wno-warn-absolute-paths"
-		}
-		optimize "On"
 
 	configuration { }
 end
@@ -171,18 +162,12 @@ minko.project.application = function(name)
 		links {
 			"minko-framework",
 		}
+
+		targetsuffix "bc"
 		
 		prelinkcommands {
 			minko.action.copy(minko.sdk.path("/framework/effect")),
 			minko.action.copy("asset"),
-		}
-
-		postbuildcommands {
-			'cd ${TARGETDIR} && cp ' .. name .. ' ' .. name .. '.bc || ' .. minko.action.fail()	 
-			-- 'cd ${TARGETDIR}'
-			-- .. ' && ' .. emcc .. ' ' .. name .. '.bc -o ' .. name .. '.html -s DISABLE_EXCEPTION_CATCHING=0 -s CLOSURE_ANNOTATIONS=0 -s ASM_JS=0 -s TOTAL_MEMORY=268435456 -s ALLOW_MEMORY_GROWTH=1 --preload-file effect --preload-file texture  --compression ${EMSCRIPTEN}/third_party/lzma.js/lzma-native,${EMSCRIPTEN}/third_party/lzma.js/lzma-decoder.js,LZMA.decompress'
-			-- -- .. ' && ' .. emcc .. ' ' .. name .. '.bc -o ' .. name .. '.js -O2 -s CLOSURE_ANNOTATIONS=0 -s ASM_JS=0 -s TOTAL_MEMORY=268435456 -s ALLOW_MEMORY_GROWTH=1 --preload-file effect --preload-file texture'
-			-- .. ' || ' .. minko.action.fail()
 		}
 
 	configuration { "html5", "release" }
@@ -190,16 +175,20 @@ minko.project.application = function(name)
 
 		postbuildcommands {
 			'cd ${TARGETDIR}'
-			.. ' && ' .. emcc .. ' ' .. name .. '.bc -o ' .. name .. '.html -O2 -s CLOSURE_ANNOTATIONS=1 -s DISABLE_EXCEPTION_CATCHING=0 -s TOTAL_MEMORY=268435456 --closure 1 --preload-file effect --preload-file texture --preload-file model --preload-file script --preload-file symbol'
+			.. ' && ' .. emcc .. ' ${TARGETNAME} -o ' .. name .. '.html -O2 --closure 1 -s CLOSURE_ANNOTATIONS=1 -s DISABLE_EXCEPTION_CATCHING=0 -s TOTAL_MEMORY=268435456 --preload-file asset'
 			.. ' || ' .. minko.action.fail()
 		}
 
 	configuration { "html5", "debug" }
 		local emcc = premake.tools.gcc.tools.emscripten.cc
 
+		buildoptions {
+			"-g4"
+		}
+
 		postbuildcommands {
 			'cd ${TARGETDIR}'
-			.. ' && ' .. emcc .. ' ' .. name .. '.bc -o ' .. name .. '.html -O2 -s DISABLE_EXCEPTION_CATCHING=0 -s TOTAL_MEMORY=268435456 --preload-file effect --preload-file texture --preload-file model --preload-file script --preload-file symbol'
+			.. ' && ' .. emcc .. ' ${TARGETNAME} -o ' .. name .. '.html -O2 --js-opts 0 -g4 -s ASM_JS=0 -s DISABLE_EXCEPTION_CATCHING=0 -s TOTAL_MEMORY=268435456 --preload-file asset'
 			.. ' || ' .. minko.action.fail()
 		}
 
