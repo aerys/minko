@@ -76,7 +76,7 @@ FileLoader::load(const std::string& filename, std::shared_ptr<Options> options)
 
 		// FIXME: use fixed size buffers and call _progress accordingly
 
-		_progress->execute(shared_from_this());
+		_progress->execute(shared_from_this(), 0.0);
 
 		_data.resize(size);
 
@@ -84,7 +84,7 @@ FileLoader::load(const std::string& filename, std::shared_ptr<Options> options)
 		file.read((char*)&_data[0], size);
 		file.close();
 
-		_progress->execute(shared_from_this());
+		_progress->execute(shared_from_this(), 1.0);
 	
 		_complete->execute(shared_from_this());
 	}
