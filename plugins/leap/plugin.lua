@@ -24,12 +24,47 @@ function minko.plugin.leap:enable()
 	minko.plugin.links { "leap" }
 	defines { "MINKO_PLUGIN_LEAP" }
 	
-	includedirs { minko.sdk.path("plugins/leap/include") }
+	includedirs { minko.plugin.path("leap") .. "/include" }
 	
-	configuration { "windows" }
-		links { "Leap", "Leapd" }
-		libdirs { minko.sdk.path("plugins/leap/lib/win/leap/lib") }
+	configuration { "windows32" }
+		links { "Leap" }
+		libdirs { minko.plugin.path("leap") .. "/lib/windows32" }
+
 		postbuildcommands {
-			minko.vs.getdllscopycommand(minko.sdk.path("plugins/leap/lib/win/leap/lib"))
+			minko.action.copy(minko.plugin.path("leap") .. "/lib/windows32/*.dll")
 		}
+
+	configuration { "windows64" }
+		links { "Leap" }
+		libdirs { minko.plugin.path("leap") .. "/lib/windows64" }
+
+		postbuildcommands {
+			minko.action.copy(minko.plugin.path("leap") .. "/lib/windows64/*.dll")
+		}
+
+	configuration { "linux32" }
+		links { "Leap" }
+		libdirs { minko.plugin.path("leap") .. "/lib/linux32" }
+
+		postbuildcommands {
+			minko.action.copy(minko.plugin.path("leap") .. "/lib/linux32/*.so")
+		}
+
+	configuration { "linux64" }
+		links { "Leap" }
+		libdirs { minko.plugin.path("leap") .. "/lib/linux64" }
+
+		postbuildcommands {
+			minko.action.copy(minko.plugin.path("leap") .. "/lib/linux64/*.so")
+		}
+
+	configuration { "osx64" }
+		links { "Leap" }
+		libdirs { minko.plugin.path("leap") .. "/lib/osx64" }
+
+		postbuildcommands {
+			minko.action.copy(minko.plugin.path("leap") .. "/lib/osx64/*.dylib")
+		}
+
+	configuration {}
 end
