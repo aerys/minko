@@ -15,7 +15,7 @@ newoption {
 
 solution "minko"
 	MINKO_HOME = path.getabsolute(os.getcwd())
-
+	
 	dofile('sdk.lua')
 
 	-- buildable SDK
@@ -24,7 +24,7 @@ solution "minko"
 	include 'framework'
 	
 	-- plugins
-	-- include 'plugins/lua'
+	include 'plugins/lua'
 	include 'plugins/angle'
 	include 'plugins/assimp'
 	include 'plugins/bullet'
@@ -46,7 +46,7 @@ solution "minko"
 
 	-- examples
 	if not _OPTIONS['no-examples'] then
-		-- include 'examples/lua-scripts'
+		include 'examples/lua-scripts'
 		include 'examples/assimp'
 		include 'examples/cube'
 		include 'examples/effect-config'
@@ -96,8 +96,8 @@ newaction {
 		minko.os.copyfiles('framework/include', distDir .. '/framework/include')
 		os.mkdir(distDir .. '/framework/lib')
 		minko.os.copyfiles('framework/lib', distDir .. '/framework/lib')
-		os.mkdir(distDir .. '/framework/effect')
-		minko.os.copyfiles('framework/effect', distDir .. '/framework/effect')
+		os.mkdir(distDir .. '/framework/asset')
+		minko.os.copyfiles('framework/asset', distDir .. '/framework/asset')
 
 		-- skeleton
 		os.mkdir(distDir .. '/skeleton')
