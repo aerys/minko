@@ -14,11 +14,8 @@ project "msgpack-c"
 	configuration { "debug"}
 		defines { "_DEBUG" }
 
-	-- linux
-	configuration { "linux" }
-
 	-- windows
-	configuration { "windows", "x32" }
+	configuration { "windows32 or windows64" }
 		defines {
 			"_LIB",
 			"_CRT_SECURE_NO_WARNINGS",
@@ -37,10 +34,7 @@ project "msgpack-c"
 		-- c99 fix for windows only
 		includedirs { "include/c99" }
 
-	-- macos
-	configuration { "macosx" }
-
 	-- emscripten
-	configuration { "emscripten" }
+	configuration { "html5" }
 		flags { "Optimize" }
 
