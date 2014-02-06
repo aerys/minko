@@ -21,27 +21,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 minko.plugin.particles = {}
 
 function minko.plugin.particles:enable()
-	minko.plugin.links { "particles" }
-	includedirs { minko.sdk.path("plugins/particles/include") }
 	defines { "MINKO_PLUGIN_PARTICES" }
-	
-	configuration { "win" }
-		postbuildcommands {
-			'xcopy /y /i "' .. minko.sdk.path('/plugins/particles/asset/effect') .. '" "$(TargetDir)\\effect"',
-		}
-		
-	configuration { "linux" }
-		postbuildcommands {
-			'cp -r ' .. minko.sdk.path('/plugins/particles/asset/effect') .. ' ${TARGETDIR} || ' .. minko.fail(),
-		}
-	
-	configuration { "osx" }
-		postbuildcommands {
-			'cp -r ' .. minko.sdk.path('/plugins/particles/asset/effect') .. ' ${TARGETDIR} || ' .. minko.fail(),
-		}	
 
-	configuration { "html5" }
-		prelinkcommands {
-			'cp -r ' .. minko.sdk.path('/plugins/particles/asset/effect') .. ' ${TARGETDIR} || ' .. minko.fail(),
-		}	
+	minko.plugin.links { "particles" }
+
+	includedirs {
+		minko.plugin.path("particles") .. "/include"
+	}
+	
+	postbuildcommands {
+		minko.action.copy(minko.plugin.path("particles") .. "/asset"),
+	}
 end
