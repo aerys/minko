@@ -52,7 +52,19 @@ namespace minko
 			completeHandler(void*, void*, int);
 
 			static void
+			wget2CompleteHandler(void*, const char*);
+
+			static void
 			errorHandler(void*);
+
+			static void
+			wget2ErrorHandler(void*, int);
+
+			static void
+			progressHandler(void*, int);
+
+			static uint
+			_uid;
 
 			#ifndef EMSCRIPTEN
 			static size_t
@@ -60,4 +72,23 @@ namespace minko
 			#endif
 		};
 	}
+}
+
+inline std::string format(const char* fmt, ...)
+{
+    int size = 512;
+    char* buffer = 0;
+    buffer = new char[size];
+    va_list vl;
+    va_start(vl,fmt);
+    int nsize = vsnprintf(buffer,size,fmt,vl);
+    if(size<=nsize){//fail delete buffer and try again
+        delete buffer; buffer = 0;
+        buffer = new char[nsize+1];//+1 for /0
+        nsize = vsnprintf(buffer,size,fmt,vl);
+    }
+    std::string ret(buffer);
+    va_end(vl);
+    delete buffer;
+    return ret;
 }
