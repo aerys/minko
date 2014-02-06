@@ -84,10 +84,10 @@ void
 SceneManager::nextFrame()
 {
     _frameBegin->execute(shared_from_this());
-	_cullBegin->execute(shared_from_this());
-	_cullEnd->execute(shared_from_this());
-	_renderBegin->execute(shared_from_this(), _frameId, nullptr);
-	_renderEnd->execute(shared_from_this(), _frameId, nullptr);
+    _cullBegin->execute(shared_from_this());
+    _cullEnd->execute(shared_from_this());
+    _renderBegin->execute(shared_from_this(), _frameId, nullptr);
+    _renderEnd->execute(shared_from_this(), _frameId, nullptr);
     _frameEnd->execute(shared_from_this());
 
 	++_frameId;
