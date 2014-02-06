@@ -15,18 +15,24 @@ minko.plugin.include = function(path)
 	dofile(path .. '/plugin.lua')
 end
 
-minko.plugin.enable = function(name)
+minko.plugin.enable = function(names)
 	local cfg = configuration().configset._current
 	local terms = cfg._criteria.terms
 
-	configuration { unpack(terms) }
-
-	if not minko.plugin[name] then
-		error(color.fg.red .. 'Plugin "' .. name .. '" not found (enabled from "' .. (project() and project().name or 'framework') .. '").' .. color.reset)
+	if type(names) == "string" then
+		names = { names }
 	end
 
-	if minko.plugin[name] and minko.plugin[name].enable then
-		minko.plugin[name]:enable()
+	for _, name in ipairs(names) do
+		configuration { unpack(terms) }
+
+		if not minko.plugin[name] then
+			error(color.fg.red .. 'Plugin "' .. name .. '" not found (enabled from "' .. (project() and project().name or 'framework') .. '").' .. color.reset)
+		end
+
+		if minko.plugin[name] and minko.plugin[name].enable then
+			minko.plugin[name]:enable()
+		end
 	end
 
 	configuration { unpack(terms) }
