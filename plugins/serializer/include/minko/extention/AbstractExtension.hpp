@@ -25,10 +25,10 @@ namespace minko
 {
 	namespace extention
 	{
-		class AbstractExtention
+		class AbstractExtension
 		{
 		public:
-			typedef std::shared_ptr<AbstractExtention> Ptr;
+			typedef std::shared_ptr<AbstractExtension> Ptr;
 
 		public:
 			virtual
@@ -36,17 +36,17 @@ namespace minko
 			bind() = 0;
 		};
 
-		class SerializerExtention
+		class SerializerExtension
 		{
 		public:
 			template <typename T>
-			typename std::enable_if<std::is_base_of<extention::AbstractExtention, T>::value, void>::type
+			typename std::enable_if<std::is_base_of<extension::AbstractExtension, T>::value, void>::type
 			static
-			activeExtention()
+			activeExtension()
 			{
-				std::shared_ptr<T> extention = T::initialize();
+				std::shared_ptr<T> extension = T::initialize();
 
-				extention->bind();
+				extension->bind();
 			}
 		};
 	}
