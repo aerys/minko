@@ -31,6 +31,11 @@ minko.project.library = function(name)
 			includedirs { EMSCRIPTEN .. "/system/include" }
 		end
 
+	configuration { "html5", "debug" }
+		buildoptions {
+			"-g4"
+		}
+
 	configuration { }
 end
 

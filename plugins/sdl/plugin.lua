@@ -50,7 +50,7 @@ function minko.plugin.sdl:enable()
 	configuration { "linux64" }
 		links { "SDL2", "SDL2main" }
 
-	configuration { "macosx" }
+	configuration { "osx64" }
 		links { "SDL2.framework" }
 end
 
