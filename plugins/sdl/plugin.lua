@@ -60,6 +60,6 @@ function minko.plugin.sdl:dist(pluginDistDir)
 		minko.os.copyfiles(minko.plugin.path("sdl") .. "/lib/sdl/lib/windows32", pluginDistDir .. "/lib/sdl/lib/windows32")
 
 	configuration { "windows64" }
-		os.mkdir(pluginDistDir .. "/lib/sdl/windows64/lib")
+		os.mkdir(pluginDistDir .. "/lib/sdl/lib/windows64/lib")
 		minko.os.copyfiles(minko.plugin.path("sdl") .. "/lib/sdl/lib/windows64", pluginDistDir .. "/lib/sdl/lib/windows64")
 end

@@ -133,15 +133,12 @@ newaction {
 			os.mkdir(dir)
 			os.copyfile(basedir .. '/plugin.lua', dir .. '/plugin.lua')
 
-			dofile(dir .. '/plugin.lua')
 			if minko.plugin[pluginName] and minko.plugin[pluginName].dist then
 				minko.plugin[pluginName]:dist(dir)
 			end
 
-			if solution()['projects']['minko-plugin-' .. pluginName] then
-				-- bin
-				assert(os.isdir(basedir .. '/bin'), 'missing bin folder')
-
+			-- bin
+			if os.isdir(basedir .. '/bin') then
 				os.mkdir(binDir)
 				minko.os.copyfiles(basedir .. '/bin', binDir)
 			end
