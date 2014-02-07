@@ -59,7 +59,7 @@ int main(int argc, char** argv)
 			->addComponent(Transform::create())
 			->addComponent(Surface::create(
 				assets->geometry("cube"),
-				material::Material::create()->set("diffuseColor", Vector4::one),
+				material::Material::create()->set("diffuseColor", Vector4::one()),
 				assets->effect("effect/PlatformTexture.effect")
 			));
 		root->addChild(mesh);
