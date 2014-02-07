@@ -40,3 +40,11 @@ minko.action.clean = function()
 		end
 	end
 end
+
+minko.action.zip = function(directory, archive)
+	if os.is('windows') then
+		os.execute('7za a "' .. archive .. '" "' .. path.translate(directory) .. '"')
+	else
+		os.execute('zip -r "' .. archive .. '" "' .. directory .. '"')
+	end
+end

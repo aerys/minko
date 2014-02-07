@@ -156,6 +156,8 @@ newaction {
 				minko.os.copyfiles(basedir .. '/asset', dir .. '/asset')
 			end
 		end
+
+		minko.action.zip(distDir, distDir .. '.zip')
 	end
 }
 
