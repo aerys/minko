@@ -64,6 +64,7 @@ solution "minko"
 		include 'examples/visibility'
 		include 'examples/multi-surface'
 		include 'examples/physics'
+		include 'examples/oculus'
 	end
 
 	if not _OPTIONS['no-tests'] then
