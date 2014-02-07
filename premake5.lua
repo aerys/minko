@@ -66,7 +66,6 @@ solution "minko"
 		include 'examples/physics'
 	end
 
-	tests
 	if not _OPTIONS['no-tests'] then
 		include 'tests'
 	end
