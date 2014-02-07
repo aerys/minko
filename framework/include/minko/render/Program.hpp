@@ -126,6 +126,13 @@ namespace minko
 			}
 
 			inline
+			bool
+			hasVertexBufferLocation(uint vertexLocation) const
+			{
+				return _vertexBuffers.find(vertexLocation) != _vertexBuffers.end();
+			}
+
+			inline
 			IndexBufferPtr
 			indexBuffer() const
 			{
