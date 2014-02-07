@@ -17,60 +17,51 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#pragma once
+#include "minko/async/Worker.hpp"
 
-#include "minko/Common.hpp"
-
-#include "minko/Signal.hpp"
+using namespace minko;
+using namespace minko::async;
+using namespace minko::file;
 
 namespace minko
 {
-	class AbstractCanvas
+	namespace async
 	{
-	public:
-		typedef std::shared_ptr<AbstractCanvas>	Ptr;
+		class HTTPWorker : public Worker
+		{
+		public:
+			static
+			Ptr
+			create()
+			{
+				return std::shared_ptr<HTTPWorker>(new HTTPWorker());
+			}
 
-	private:
+			void
+			run(); // Must be defined in .cpp with the MINKO_WORKER macro.
 
-	public:
-		virtual
-		uint
-		x() = 0;
+			MessagePtr
+			output()
+			{
+				return _output;
+			}
 
-		virtual
-		uint
-		y() = 0;
+		private:
+			HTTPWorker() :
+				Worker("http")
+			{
+			}
 
-		virtual
-		uint
-		width() = 0;
+			static
+			size_t
+			curlWriteHandler(void* data, size_t size, size_t chunks, void* arg);
 
-		virtual
-		uint
-		height() = 0;
+			static
+			int
+			curlProgressHandler(void* arg, double total, double current, double, double);
 
-		virtual
-		std::shared_ptr<input::Mouse>
-		mouse() = 0;
-
-        virtual
-        std::shared_ptr<input::Keyboard>
-        keyboard() = 0;
-
-		virtual
-		std::shared_ptr<input::Joystick>
-		joystick(uint id) = 0;
-
-		virtual
-		uint
-		numJoysticks() = 0;
-
-        virtual
-		Signal<Ptr, uint, uint>::Ptr
-		resized() = 0;
-
-		virtual
-		std::shared_ptr<async::Worker>
-		worker(const std::string& name) = 0;
-	};
+		private:
+			MessagePtr _output;
+		};		
+	}
 }
