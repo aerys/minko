@@ -135,6 +135,7 @@ namespace minko
 						pass->setUniform(name, values...);
 			}
 
+		private:
 			inline
 			void
 			setIndexBuffer(const std::vector<unsigned short>& indices)
@@ -148,6 +149,7 @@ namespace minko
 						pass->setIndexBuffer(indices);
 			}
 
+		public:
 			inline
 			void
 			setVertexAttribute(const std::string& name, unsigned int attributeSize, const std::vector<float>& data)
