@@ -39,8 +39,8 @@ using namespace minko::geometry;
 using namespace minko::render;
 
 /*static*/ const unsigned int	Skinning::MAX_NUM_BONES_PER_VERTEX	= 8;
-/*static*/ const std::string	Skinning::PNAME_NUM_BONES			= "geometry.numBones";
-/*static*/ const std::string	Skinning::PNAME_BONE_MATRICES		= "geometry.boneMatrices";
+/*static*/ const std::string	Skinning::PNAME_NUM_BONES			= "numBones";
+/*static*/ const std::string	Skinning::PNAME_BONE_MATRICES		= "boneMatrices";
 /*static*/ const std::string	Skinning::ATTRNAME_POSITION			= "position";
 /*static*/ const std::string	Skinning::ATTRNAME_NORMAL			= "normal";
 /*static*/ const std::string	Skinning::ATTRNAME_BONE_IDS_A		= "boneIdsA";
