@@ -21,10 +21,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 	"name" 		: "anamorphic lens flare",
 	
 	"attributeBindings" : {
-		"aPosition"		: "geometry.vertex.attribute.position",
-		"aUv"			: "geometry.vertex.attribute.uv",
-		"a_position"	: "geometry.vertex.attribute.position",
-		"a_texCoord"	: "geometry.vertex.attribute.uv"
+		"aPosition"		: "geometry[${geometryId}].vertex.attribute.position",
+		"aUv"			: "geometry[${geometryId}].vertex.attribute.uv",
+		"a_position"	: "geometry[${geometryId}].vertex.attribute.position",
+		"a_texCoord"	: "geometry[${geometryId}].vertex.attribute.uv"
 
 	},
 
