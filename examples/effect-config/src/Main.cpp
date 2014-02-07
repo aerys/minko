@@ -26,9 +26,6 @@ using namespace minko::component;
 using namespace minko::math;
 using namespace minko::render;
 
-Effect::Ptr
-initializeEffect(file::AssetLibrary::Ptr assets);
-
 int main(int argc, char** argv)
 {
 	auto canvas = Canvas::create("Minko Example - Effect Config", 800, 600);
@@ -61,9 +58,9 @@ int main(int argc, char** argv)
 		auto mesh = scene::Node::create("mesh")
 			->addComponent(Transform::create())
 			->addComponent(Surface::create(
-				assets->geometry("sphere"),
+				assets->geometry("cube"),
 				material::Material::create()->set("diffuseColor", Vector4::one),
-				initializeEffect(assets)
+				assets->effect("effect/PlatformTexture.effect")
 			));
 		root->addChild(mesh);
 
@@ -84,115 +81,4 @@ int main(int argc, char** argv)
 	sceneManager->assets()->load();
 
 	return 0;
-}
-
-
-Effect::Ptr
-initializeEffect(file::AssetLibrary::Ptr assets)
-{
-	Effect::Ptr effect = assets->effect("effect/PlatformTexture.effect");
-
-	const std::vector<float> xyz = {
-		0.5, 0.5, -0.5, 
-		-0.5, 0.5, 0.5,     
-		0.5, 0.5, 0.5,      
-		0.5, 0.5, -0.5,     
-		-0.5, 0.5, -0.5,    
-		-0.5, 0.5, 0.5,     
-		// bottom
-		-0.5, -0.5, 0.5,    
-		0.5, -0.5, -0.5,	
-		0.5, -0.5, 0.5,     
-		-0.5, -0.5, -0.5,   
-		0.5, -0.5, -0.5,	
-		-0.5, -0.5, 0.5,    
-		// front
-		0.5, -0.5, -0.5,    
-		-0.5, 0.5, -0.5,	
-		0.5, 0.5, -0.5,     
-		-0.5, 0.5, -0.5,	
-		0.5, -0.5, -0.5,	
-		-0.5, -0.5, -0.5,   
-		// back
-		-0.5, 0.5, 0.5,     
-		-0.5, -0.5, 0.5,    
-		0.5, 0.5, 0.5,      
-		-0.5, -0.5, 0.5,    
-		0.5, -0.5, 0.5,     
-		0.5, 0.5, 0.5,      
-		// left
-		-0.5, -0.5, 0.5,    
-		-0.5, 0.5, -0.5,	
-		-0.5, -0.5, -0.5,   
-		-0.5, 0.5, -0.5,	
-		-0.5, -0.5, 0.5,    
-		-0.5, 0.5, 0.5,     
-		// right
-		0.5, -0.5, -0.5,	
-		0.5, 0.5, -0.5,     
-		0.5, 0.5, 0.5,      
-		0.5, 0.5, 0.5,	    
-		0.5, -0.5, 0.5,     
-		0.5, -0.5, -0.5,    
-	};
-
-	const std::vector<float> uv = {
-		// top
-		1.f, 0.f,
-		0.f, 1.f,
-		1.f, 1.f,
-		1.f, 0.f,
-		0.f, 0.f,
-		0.f, 1.f,
-		// bottom
-		0.f, 0.f,
-		1., 1.,
-		1.f, 0.,
-		0.f, 1.f,
-		1.f, 1.f,
-		0.f, 0.f,
-		// front
-		0.f, 1.f,
-		1.f, 0.f,
-		0.f, 0.f,
-		1.f, 0.f,
-		0.f, 1.f,
-		1.f, 1.f,
-		// back
-		0.f, 0.f,
-		0.f, 1.f,
-		1.f, 0.f,
-		0.f, 1.f,
-		1.f, 1.f,
-		1.f, 0.f,
-		// left
-		1.f, 1.f,
-		0.f, 0.f,
-		0.f, 1.f,
-		0.f, 0.f,
-		1.f, 1.f,
-		1.f, 0.f,
-		// right
-		1.f, 1.f,
-		1.f, 0.f,
-		0.f, 0.f,
-		0.f, 0.f,
-		0.f, 1.f,
-		1.f, 1.f
-	};
-
-	const std::vector<unsigned short> indices = {
-		0, 1, 2, 3, 4, 5,
-		6, 7, 8, 9, 10, 11,
-		12, 13, 14, 15, 16, 17,
-		18, 19, 20, 21, 22, 23,
-		24, 25, 26, 27, 28, 29,
-		30, 31, 32, 33, 34, 35
-	};
-
-	effect->setIndexBuffer(indices);
-	effect->setVertexAttribute("position", 3, xyz);
-	effect->setVertexAttribute("uv", 2, uv);
-
-	return effect;
 }
