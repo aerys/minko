@@ -137,16 +137,15 @@ ASSIMPParser::parse(const std::string&					filename,
 		data.size(),
 		aiProcessPreset_TargetRealtime_Fast
 		| aiProcess_JoinIdenticalVertices
-		| aiProcess_GenSmoothNormals
+		//| aiProcess_GenSmoothNormals // assertion is raised by assimp
 		| aiProcess_SplitLargeMeshes
 		| aiProcess_LimitBoneWeights
 		| aiProcess_GenUVCoords
 		| aiProcess_OptimizeMeshes
-		| aiProcess_OptimizeGraph
+		//| aiProcess_OptimizeGraph // makes the mesh simply vanish
 		| aiProcess_FlipUVs
 		| aiProcess_SortByPType
-		| aiProcess_Triangulate
-		| aiProcess_JoinIdenticalVertices,
+		| aiProcess_Triangulate,
 		resolvedFilename.c_str()
 	);
 	
