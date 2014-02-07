@@ -13,20 +13,18 @@ local config = premake.config
 local fileconfig = premake.fileconfig
 
 local insert = require 'insert'
-local color = require 'color'
 
 insert.insert(premake.tools.gcc, 'tools.emscripten', {
-	cc = MINKO_HOME .. '/tools/lin/bin/emcc.sh',
-	cxx = MINKO_HOME .. '/tools/lin/bin/em++.sh',
-	ar = MINKO_HOME .. '/tools/lin/bin/emar.sh'
+	cc = MINKO_HOME .. '/tools/lin/scripts/emcc.sh',
+	cxx = MINKO_HOME .. '/tools/lin/scripts/em++.sh',
+	ar = MINKO_HOME .. '/tools/lin/scripts/emar.sh'
 })
 
 insert.insert(premake.tools.gcc, 'cppflags.system.emscripten', {
-	'-DEMSCRIPTEN'
+	"-DEMSCRIPTEN",
+	"-Wno-warn-absolute-paths"
 })
 
-if os.getenv('EMSCRIPTEN_HOME') then
-	EMSCRIPTEN_HOME = os.getenv('EMSCRIPTEN_HOME');
-else
-	print(color.fg.yellow .. 'You must define the environment variable EMSCRIPTEN_HOME to be able to target HTML5.' .. color.reset)
+if os.getenv('EMSCRIPTEN') then
+	EMSCRIPTEN = os.getenv('EMSCRIPTEN');
 end

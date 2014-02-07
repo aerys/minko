@@ -1,5 +1,3 @@
-require 'color'
-
 newoption {
 	trigger	= 'no-examples',
 	description = 'Disable examples.'
@@ -12,15 +10,12 @@ newoption {
 
 newoption {
 	trigger = 'dist-dir',
-	description = 'Output folder for the redistributable SDL built with the \'dist\' action.'
+	description = 'Output folder for the redistributable SDK built with the \'dist\' action.'
 }
 
 solution "minko"
-	configurations { "debug", "release" }
-	platforms { "linux", "win", "osx", "html5", "ios", "android" }
-
 	MINKO_HOME = path.getabsolute(os.getcwd())
-
+	
 	dofile('sdk.lua')
 
 	-- buildable SDK
@@ -29,42 +24,49 @@ solution "minko"
 	include 'framework'
 	
 	-- plugins
-	include 'plugins/jpeg'
-	include 'plugins/png'
-	include 'plugins/bullet'
-	include 'plugins/particles'
-	include 'plugins/webgl'
-	include 'plugins/sdl'
-	include 'plugins/angle'
-	include 'plugins/fx'
-	include 'plugins/assimp'
-	include 'plugins/offscreen'
 	include 'plugins/lua'
-	include 'plugins/serializer'
+	include 'plugins/angle'
+	include 'plugins/assimp'
+	include 'plugins/bullet'
+	include 'plugins/fx'
+	include 'plugins/jpeg'
+	include 'plugins/leap'
 	include 'plugins/oculus'
-	-- include 'plugins/leap'
+	include 'plugins/offscreen'
+	include 'plugins/particles'
+	include 'plugins/png'
+	include 'plugins/sdl'
+	include 'plugins/serializer'
+	include 'plugins/webgl'
 	
+	-- private plugins
+	-- if os.isdir('plugins/streaming') then
+		-- include 'plugins/streaming'
+	-- end
+
 	-- examples
 	if not _OPTIONS['no-examples'] then
-		include('examples/assimp')
-		include('examples/cube')
-		include('examples/effect-config')
-		include('examples/light')
-		include('examples/raycasting')
-		include('examples/stencil')
-		include('examples/lua-scripts')
-		include('examples/line-geometry')
-		include('examples/frustum')
-		include('examples/serializer')
-		include('examples/picking')
-		include('examples/visibility')
-		-- include('examples/leap-motion')
-		include('examples/jobs')
-		include('examples/sky-box')
-
+		include 'examples/lua-scripts'
+		include 'examples/assimp'
+		include 'examples/cube'
+		include 'examples/effect-config'
+		include 'examples/frustum'
+		include 'examples/jobs'
+		include 'examples/leap-motion'
+		include 'examples/light'
+		include 'examples/line-geometry'
+		include 'examples/offscreen'
+		include 'examples/picking'
+		include 'examples/raycasting'
+		include 'examples/serializer'
+		include 'examples/sky-box'
+		include 'examples/stencil'
+		include 'examples/visibility'
+		include 'examples/multi-surface'
+		include 'examples/physics'
 	end
 
-	-- tests
+	tests
 	if not _OPTIONS['no-tests'] then
 		include 'tests'
 	end
@@ -93,8 +95,10 @@ newaction {
 		minko.os.copyfiles('framework/bin', distDir .. '/framework/bin')
 		os.mkdir(distDir .. '/framework/include')
 		minko.os.copyfiles('framework/include', distDir .. '/framework/include')
-		os.mkdir(distDir .. '/framework/effect')
-		minko.os.copyfiles('framework/effect', distDir .. '/framework/effect')
+		os.mkdir(distDir .. '/framework/lib')
+		minko.os.copyfiles('framework/lib', distDir .. '/framework/lib')
+		os.mkdir(distDir .. '/framework/asset')
+		minko.os.copyfiles('framework/asset', distDir .. '/framework/asset')
 
 		-- skeleton
 		os.mkdir(distDir .. '/skeleton')
@@ -104,17 +108,13 @@ newaction {
 		os.mkdir(distDir .. '/modules')
 		minko.os.copyfiles('modules', distDir .. '/modules')
 		
-		-- docs
-		os.mkdir(distDir .. '/doc')
-		minko.os.copyfiles('doc/html', distDir .. '/doc')
+		-- -- docs
+		-- os.mkdir(distDir .. '/doc')
+		-- minko.os.copyfiles('doc/html', distDir .. '/doc')
 		
 		-- tools
 		os.mkdir(distDir .. '/tools/')
 		minko.os.copyfiles('tools', distDir .. '/tools')
-		
-		-- deps
-		os.mkdir(distDir .. '/deps')
-		minko.os.copyfiles('deps', distDir .. '/deps')
 		
 		-- plugins
 		local plugins = os.matchdirs('plugins/*')
@@ -174,6 +174,6 @@ newaction {
 	trigger			= "clean",
 	description		= "Remove generated files.",
 	execute			= function()
-		os.execute(minko.sdk.path("tools/all/bin/clean.sh"))
+		minko.action.clean()
 	end
 }

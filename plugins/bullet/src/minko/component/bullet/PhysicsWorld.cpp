@@ -41,14 +41,13 @@ Matrix4x4::Ptr	bullet::PhysicsWorld::_TMP_MATRIX	= Matrix4x4::create();
 /*static*/
 btTransform		bullet::PhysicsWorld::_TMP_BTTRANSFORM;
 
-bullet::PhysicsWorld::PhysicsWorld(Renderer::Ptr renderer):
+bullet::PhysicsWorld::PhysicsWorld():
 	AbstractComponent(),
 	_uidAllocator(LinearIdAllocator::create(_MAX_BODIES)),
 	_colliderMap(),
 	_colliderReverseMap(),
 	_uidToCollider(),
 	_collisions(),
-	_renderer(renderer),
 	_bulletBroadphase(nullptr),
 	_bulletCollisionConfiguration(nullptr),
 	_bulletConstraintSolver(nullptr),

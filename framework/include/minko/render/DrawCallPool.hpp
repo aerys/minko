@@ -23,16 +23,35 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Signal.hpp"
 #include "minko/data/ContainerProperty.hpp"
 
+namespace std
+{
+	template<>
+	struct hash< std::pair< std::shared_ptr<minko::component::Surface>, std::shared_ptr<minko::scene::Node> > >
+	{
+		inline
+		size_t
+		operator()(const std::pair< std::shared_ptr<minko::component::Surface>, std::shared_ptr<minko::scene::Node> >& x) const
+		{
+			size_t seed = std::hash<long>()(long(x.first.get()));
+
+			hash_combine(seed, std::hash<long>()(long(x.second.get())));
+
+			return seed;
+		}
+	};
+}
+
 namespace minko
 {
 	namespace render
 	{
+
 		class DrawCallPool :
 			public std::enable_shared_from_this<DrawCallPool>
 		{
 		public:
 			typedef std::shared_ptr<DrawCallPool>														Ptr;
-
+			
 		private:
 			enum class MacroChange
 			{
@@ -48,9 +67,11 @@ namespace minko
 			typedef std::shared_ptr<component::Surface>													SurfacePtr;
 			typedef std::shared_ptr<component::Renderer>												RendererPtr;
 			typedef std::shared_ptr<render::Pass>														PassPtr;
+			typedef std::shared_ptr<scene::Node>														NodePtr;
 			typedef std::unordered_map<std::string, std::string>										StringToStringMap;
 
-			typedef std::pair<std::string, PassPtr>														TechniquePass;
+			typedef std::pair<std::string, PassPtr>														TechniqueNameAndPass;
+			typedef std::pair<SurfacePtr, NodePtr>														SurfaceAndTarget;
 			typedef std::list<DrawCallPtr>																DrawCallList;
 			typedef std::function <std::string(const std::string&, StringToStringMap&)>					FormatFunction;
 
@@ -66,7 +87,7 @@ namespace minko
 			typedef std::unordered_map<DrawCallPtr, PassPtr>											DrawCallToPassMap;
 			typedef std::unordered_map<data::ContainerProperty, PropertyChangedSlot>					ContainerPropertyToChangedSlotMap;
 			typedef std::unordered_map<data::ContainerProperty, uint>									ContainerPropertyToNumListenersMap;
-			typedef std::unordered_map<data::ContainerProperty, std::list<TechniquePass>>				ContainerPropertyToPassesMap;
+			typedef std::unordered_map<data::ContainerProperty, std::list<TechniqueNameAndPass>>		ContainerPropertyToPassesMap;
 			typedef std::unordered_map<DrawCallPtr, ContainerPtr>										DrawCallToContainerMap;
 			typedef std::unordered_map<std::string, DrawCallList>										MacroNameToDrawCallListMap;
 			typedef std::unordered_map<std::string, std::unordered_set<std::string>>					TechniqueToMacroSetMap;
@@ -79,6 +100,8 @@ namespace minko
 			static std::unordered_map<DrawCallPtr, Vector3Ptr>					_cachedDrawcallPositions; // in eye space
 
 			RendererPtr															_renderer;
+
+			// std::unordered_map<SurfaceAndTarget, uint> _test;
 
 			std::unordered_map<SurfacePtr, TechniqueChangeSlot>					_surfaceToTechniqueChangedSlot;
 			std::unordered_multimap<SurfacePtr, VisibilityChangedSlot>			_surfaceToVisibilityChangedSlot;
@@ -123,7 +146,7 @@ namespace minko
 				Ptr drawCallPool(new DrawCallPool(renderer));
 
 				drawCallPool->_formatFunction = std::bind(
-					&DrawCallPool::replaceVariable,
+					&DrawCallPool::formatPropertyName,
 					drawCallPool,
 					std::placeholders::_1,
 					std::placeholders::_2);
@@ -158,11 +181,11 @@ namespace minko
 
 			std::shared_ptr<Program>
 			getWorkingProgram(SurfacePtr							surface,
-							  std::shared_ptr<Pass>					pass,
-							  const MacroBindingsMap&				macroBindings,
-						      std::shared_ptr<data::Container>		targetData,
-						      std::shared_ptr<data::Container>		rendererData,
-						      std::shared_ptr<data::Container>		rootData,
+							  PassPtr								pass,
+							  DrawCallPtr							drawCall,
+							  ContainerPtr							targetData,
+							  ContainerPtr							rendererData,
+							  ContainerPtr							rootData,
 						      std::list<data::ContainerProperty>&	booleanMacros,
 						      std::list<data::ContainerProperty>&	integerMacros,
 						      std::list<data::ContainerProperty>&	incorrectIntegerMacros);
@@ -189,13 +212,13 @@ namespace minko
 			void
 			blameMacros(SurfacePtr									surface,
 						const std::list<data::ContainerProperty>&	incorrectIntegerMacros,
-						const TechniquePass&						pass);
+						const TechniqueNameAndPass&						pass);
 			
 			void
 			forgiveMacros(SurfacePtr									surface,
 						  const std::list<data::ContainerProperty>&		booleanMacros,
 						  const std::list<data::ContainerProperty>&		integerMacros,
-						  const TechniquePass&							pass);
+						  const TechniqueNameAndPass&							pass);
 						  
 			void
 			incorrectMacroChangedHandler(SurfacePtr						surface,
@@ -216,8 +239,13 @@ namespace minko
 			dataProviderIndexChanged(std::shared_ptr<data::ArrayProvider> provider, uint index, SurfacePtr surface);
 		
 			std::string
-			replaceVariable(const std::string&								rawPropertyName,
-							std::unordered_map<std::string, std::string>&	variableToValue);
+			formatPropertyName(const std::string&								rawPropertyName,
+							   std::unordered_map<std::string, std::string>&	variablesToValue);
+
+			const data::MacroBindingMap
+			getDrawCallmacroBindings(DrawCallPtr drawcall);
+
 		};
 	}
 }
+
