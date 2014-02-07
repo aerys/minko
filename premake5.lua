@@ -52,7 +52,7 @@ solution "minko"
 		include 'examples/effect-config'
 		include 'examples/frustum'
 		include 'examples/jobs'
-		include 'examples/leap-motion'
+		-- include 'examples/leap-motion'
 		include 'examples/light'
 		include 'examples/line-geometry'
 		include 'examples/offscreen'
