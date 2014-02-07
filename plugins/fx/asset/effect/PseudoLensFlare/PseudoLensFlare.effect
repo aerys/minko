@@ -3,8 +3,8 @@
 	"name" 		: "pseudo lens flare",
 	
 	"attributeBindings" : {
-		"aPosition"		: "geometry.vertex.attribute.position",
-		"aUv"			: "geometry.vertex.attribute.uv"
+		"aPosition"		: "geometry[${geometryId}].vertex.attribute.position",
+		"aUv"			: "geometry[${geometryId}].vertex.attribute.uv"
 	},
 	
 	"passes"	: [
@@ -47,8 +47,8 @@
 				"s_texture" 	: "lensflare_features"
 			},
 			"attributeBindings" : {
-				"a_position"	: "geometry.vertex.attribute.position",
-				"a_texCoord"	: "geometry.vertex.attribute.uv"
+				"a_position"	: "geometry[${geometryId}].vertex.attribute.position",
+				"a_texCoord"	: "geometry[${geometryId}].vertex.attribute.uv"
 			},
 			"triangleCulling" : "none",
 			"target" : { "name" : "lensflare_blur_h", "size" : 512 },
@@ -64,8 +64,8 @@
 				"s_texture" 	: "lensflare_blur_h"
 			},
 			"attributeBindings" : {
-				"a_position"	: "geometry.vertex.attribute.position",
-				"a_texCoord"	: "geometry.vertex.attribute.uv"
+				"a_position"	: "geometry[${geometryId}].vertex.attribute.position",
+				"a_texCoord"	: "geometry[${geometryId}].vertex.attribute.uv"
 			},
 			"triangleCulling" : "none",
 			"target" : { "name" : "lensflare_blur", "size" : 512 },
