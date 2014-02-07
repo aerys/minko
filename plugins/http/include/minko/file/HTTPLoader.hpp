@@ -28,26 +28,24 @@ namespace minko
 	namespace file
 	{
 		class HTTPLoader :
-		    public AbstractLoader
+			public AbstractLoader
 		{
 		public:
-		    inline static
-            Ptr
-            create()
-            {
-                return std::shared_ptr<HTTPLoader>(new HTTPLoader());
-            }
-
 			typedef std::shared_ptr<HTTPLoader>	Ptr;
+
+		public:
+			inline static
+			Ptr
+			create(std::shared_ptr<AbstractCanvas> canvas)
+			{
+				return std::shared_ptr<HTTPLoader>(new HTTPLoader(canvas));
+			}
+
 			void
 			load(const std::string& filename, std::shared_ptr<Options> options);
 
-			static
-			std::list<std::shared_ptr<HTTPLoader>>
-			_runningLoaders;
-
 		protected:
-			HTTPLoader();
+			HTTPLoader(std::shared_ptr<AbstractCanvas> canvas);
 
 			static void
 			completeHandler(void*, void*, int);
@@ -64,33 +62,43 @@ namespace minko
 			static void
 			progressHandler(void*, int);
 
+		protected:
+			static
+			std::list<std::shared_ptr<HTTPLoader>>
+			_runningLoaders;
+
 			static uint
 			_uid;
 
-			#ifndef EMSCRIPTEN
+#if !defined(EMSCRIPTEN)
 			static size_t
 			curlWriteMemoryHandler(void*, size_t, size_t, void*);
-			#endif
+#endif
+
+		private:
+			std::shared_ptr<AbstractCanvas> _canvas;
 		};
 	}
 }
 
-
-inline std::string format(const char* fmt, ...)
+namespace
 {
-    int size = 512;
-    char* buffer = 0;
-    buffer = new char[size];
-    va_list vl;
-    va_start(vl,fmt);
-    int nsize = vsnprintf(buffer,size,fmt,vl);
-    if(size<=nsize){//fail delete buffer and try again
-        delete buffer; buffer = 0;
-        buffer = new char[nsize+1];//+1 for /0
-        nsize = vsnprintf(buffer,size,fmt,vl);
-    }
-    std::string ret(buffer);
-    va_end(vl);
-    delete buffer;
-    return ret;
+	inline std::string format(const char* fmt, ...)
+	{
+		int size = 512;
+		char* buffer = 0;
+		buffer = new char[size];
+		va_list vl;
+		va_start(vl,fmt);
+		int nsize = vsnprintf(buffer,size,fmt,vl);
+		if(size<=nsize){//fail delete buffer and try again
+			delete buffer; buffer = 0;
+			buffer = new char[nsize+1];//+1 for /0
+			nsize = vsnprintf(buffer,size,fmt,vl);
+		}
+		std::string ret(buffer);
+		va_end(vl);
+		delete buffer;
+		return ret;
+	}	
 }
