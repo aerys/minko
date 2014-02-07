@@ -158,9 +158,13 @@ OpenGLES2Context::OpenGLES2Context() :
 	glCullFace(GL_BACK);
 	glFrontFace(GL_CCW);
 
-	_driverInfo = std::string(reinterpret_cast<const char*>(glGetString(GL_VENDOR)))
-		+ " " + std::string(reinterpret_cast<const char*>(glGetString(GL_RENDERER)))
-		+ " " + std::string(reinterpret_cast<const char*>(glGetString(GL_VERSION)));
+	const char* glVendor = reinterpret_cast<const char*>(glGetString(GL_VENDOR));
+	const char* glRenderer = reinterpret_cast<const char*>(glGetString(GL_RENDERER));
+	const char* glVersion = reinterpret_cast<const char*>(glGetString(GL_VERSION));
+
+	_driverInfo = std::string(glVendor ? glVendor : "(unknown vendor)")
+		+ " " + std::string(glRenderer ? glRenderer : "(unknown renderer)")
+		+ " " + std::string(glVersion ? glVersion : "(unknown version)");
 
 	// init. viewport x, y, width and height
 	std::vector<int> viewportSettings(4);
