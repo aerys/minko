@@ -98,7 +98,9 @@ Canvas::initializeContext(const std::string& windowTitle, unsigned int width, un
 	if (!(_angleContext = initContext(_window, width, height)))
 		throw std::runtime_error("Could not create eglContext");
 # else
-	SDL_GLContext glcontext = SDL_GL_CreateContext(_window);
+	SDL_GLContext glContext = SDL_GL_CreateContext(_window);
+	if (!glContext)
+		throw std::runtime_error("Could not create a window context from SDL");
 # endif // MINKO_ANGLE
 
 	_context = minko::render::OpenGLES2Context::create();
