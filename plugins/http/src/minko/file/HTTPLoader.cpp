@@ -190,7 +190,7 @@ HTTPLoader::load(const std::string& filename, std::shared_ptr<Options> options)
 
 		if (res != CURLE_OK)
 		{
-			errorHandler(loader.get(), 0);
+			errorHandler(loader.get());
 		}
 		else
 		{
