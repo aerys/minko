@@ -33,7 +33,7 @@
         "scissorBox.width"      : { "property" : "scissorBox.width",    "source" : "renderer" },
         "scissorBox.height"     : { "property" : "scissorBox.height",   "source" : "renderer" },
         "priority"              : "material[${materialId}].priority",
-        "zsort"					: "material[${materialId}].zsort"
+        "zSort"					: "material[${materialId}].zSort"
     },
 
     "blendMode"         : ["one", "zero"],
@@ -44,7 +44,7 @@
     "scissorTest"		: false,
 	"scissorBox"		: [0, 0, -1, -1],
     "priority"          : "opaque",
-    "zsort"             : false,
+    "zSort"             : false,
     
 	"macroBindings"	: {
 		"DIFFUSE_MAP"			: "material[${materialId}].diffuseMap",

@@ -1,8 +1,8 @@
 {
 	"name" : "fxaa",
 	"attributeBindings" : {
-		"position"	: "geometry.vertex.attribute.position",
-		"uv"		: "geometry.vertex.attribute.uv"
+		"position"	: "geometry[${geometryId}].vertex.attribute.position",
+		"uv"		: "geometry[${geometryId}].vertex.attribute.uv"
 	},
 
 	"uniformBindings" : {

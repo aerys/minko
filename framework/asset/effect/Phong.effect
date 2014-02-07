@@ -67,7 +67,7 @@
         "scissorBox.width"      : { "property" : "scissorBox.width",    "source" : "renderer" },
         "scissorBox.height"     : { "property" : "scissorBox.height",   "source" : "renderer" },
         "priority"              : "material[${materialId}].priority",
-        "zsort"					: "material[${materialId}].zsort"
+        "zSort"					: "material[${materialId}].zSort"
 	},
 
 	"samplerStates" : {
@@ -84,7 +84,7 @@
     "scissorTest"		: false,
 	"scissorBox"		: [0, 0, -1, -1],
     "priority"          : "opaque",
-    "zsort"             : false,
+    "zSort"             : false,
 
 	"defaultTechnique" : "single-pass",
 	
