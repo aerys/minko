@@ -43,7 +43,7 @@ Pass::Pass(const std::string&				name,
 	_attributeBindings(attributeBindings),
 	_uniformBindings(uniformBindings),
 	_stateBindings(stateBindings),
-	_macroBindingsTemplate(macroBindings),
+	_macroBindings(macroBindings),
     _states(states),
 	_fallback(fallback),
 	_signatureToProgram(),
@@ -57,8 +57,8 @@ Pass::Pass(const std::string&				name,
 }
 
 std::shared_ptr<Program>
-Pass::selectProgram(const MacroBindingsMap&				macroBindings,
-					std::shared_ptr<data::Container>	data,
+Pass::selectProgram(DrawCall::Ptr						drawCall,
+					std::shared_ptr<data::Container>	targetData,
 					std::shared_ptr<data::Container>	rendererData,
 					std::shared_ptr<data::Container>	rootData,
 					std::list<data::ContainerProperty>&	booleanMacros,
@@ -71,7 +71,7 @@ Pass::selectProgram(const MacroBindingsMap&				macroBindings,
 
 	Program::Ptr program;
 
-	if (macroBindings.size() == 0)
+	if (_macroBindings.size() == 0)
 		program = _programTemplate;
 	else
 	{
@@ -80,10 +80,10 @@ Pass::selectProgram(const MacroBindingsMap&				macroBindings,
 
 		signature.build(
 			shared_from_this(),
-			macroBindings,
-			data, 
-			rendererData, 
-			rootData, 
+			drawCall,
+			targetData,
+			rendererData,
+			rootData,
 			defines, 
 			booleanMacros,
 			integerMacros,
@@ -165,26 +165,6 @@ Pass::finalizeProgram(Program::Ptr program)
 	}
 
 	return program;
-}
-
-const data::MacroBindingMap
-Pass::macroBindings(FormatFunction									formatPropertyNameFunction,
-				    std::unordered_map<std::string, std::string>&	variablesToValue)
-{
-	std::unordered_map<std::string, data::MacroBinding> instancedMacroBindings;
-
-	for (auto& macro : _macroBindingsTemplate)
-	{
-		std::string macroName = macro.first;
-		auto		binding = macro.second;
-
-		std::string propertyName = formatPropertyNameFunction(std::get<0>(binding), variablesToValue);
-
-		instancedMacroBindings[macroName] = binding;
-		std::get<0>(instancedMacroBindings[macroName]) = propertyName;
-	}
-
-	return instancedMacroBindings;
 }
 
 void

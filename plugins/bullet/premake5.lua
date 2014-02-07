@@ -46,20 +46,26 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 	}
 
 	-- linux
-	configuration { "linux" }
-		buildoptions { "-Wno-narrowing -Wno-int-to-pointer-cast" }
+	configuration { "linux32 or linux64" }
+		buildoptions {
+			"-Wno-narrowing -Wno-int-to-pointer-cast"
+		}
 
 	-- windows
-	configuration { "win" }
+	configuration { "vs*" }
 		defines {
 			"_CRT_SECURE_NO_WARNINGS",
 			"_CRT_SECURE_NO_DEPRECATE"
 		}
 
 	-- macosx
-	configuration { "osx" }
-		buildoptions { "-Wno-narrowing -Wno-int-to-pointer-cast" }
+	configuration { "osx64" }
+		buildoptions {
+			"-Wno-narrowing -Wno-int-to-pointer-cast"
+		}
 
 	-- emscripten
 	configuration { "html5" }
-		buildoptions { "-Wno-narrowing -Wno-int-to-pointer-cast" }
+		buildoptions {
+			"-Wno-narrowing -Wno-int-to-pointer-cast"
+		}

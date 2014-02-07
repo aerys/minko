@@ -1,1 +1,0 @@
-../../lin/bin/emar.sh

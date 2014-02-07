@@ -250,7 +250,7 @@ Renderer::render(render::AbstractContext::Ptr	context,
 				 render::AbstractTexture::Ptr	renderTarget)
 {
 	_drawCalls = _drawCallPool->drawCalls();
-
+	
 	_renderingBegin->execute(shared_from_this());
 
 	if (!renderTarget)
