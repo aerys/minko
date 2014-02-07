@@ -405,6 +405,9 @@ Canvas::step()
 		}
 	}
 
+	for (auto worker : _workers)
+		worker.second->update();
+
 	auto time = std::clock();
 	auto frameTime = (1000.f * (time - stepStartTime) / CLOCKS_PER_SEC);
 
@@ -481,3 +484,34 @@ Canvas::SDLKeyboard::getScanCodeFromKeyCode(input::Keyboard::KeyCode keyCode)
 	return static_cast<input::Keyboard::ScanCode>(SDL_GetScancodeFromKey(static_cast<int>(keyCode)));
 }
 
+Canvas::WorkerPtr
+Canvas::worker(const std::string& name)
+{
+    return _workers.count(name) ? _workers[name] : nullptr;
+}
+
+Canvas::Ptr
+Canvas::worker(const std::string& name, WorkerPtr worker)
+{
+    _workers[name] = worker;
+
+	worker->complete()->connect([&, name](async::Worker::MessagePtr) {
+		_workers.erase(name);
+	});
+	
+    return shared_from_this();
+}
+
+const std::string&
+Canvas::workerName(WorkerPtr worker)
+{
+	auto it = std::find_if(_workers.begin(), _workers.end(), [&](std::pair<std::string, WorkerPtr> itr) -> bool
+	{
+		return itr.second == worker;
+	});
+
+	if (it != _workers.end())
+		return it->first;
+
+	throw new std::logic_error("Canvas does not reference this worker.");
+}

@@ -1,4 +1,4 @@
-/*
+--[[
 Copyright (c) 2013 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
@@ -15,62 +15,15 @@ BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR P
 NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
 DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-*/
+]]--
 
-#pragma once
+-- http worker
+minko.worker.http = {}
 
-#include "minko/Common.hpp"
+function minko.worker.http:enable()
+	minko.worker.links { "http" }
+	includedirs { minko.worker.path("http") .. "/include" }
+	defines { "MINKO_WORKER_HTTP" }
 
-#include "minko/Signal.hpp"
-
-namespace minko
-{
-	class AbstractCanvas
-	{
-	public:
-		typedef std::shared_ptr<AbstractCanvas>	Ptr;
-
-	private:
-
-	public:
-		virtual
-		uint
-		x() = 0;
-
-		virtual
-		uint
-		y() = 0;
-
-		virtual
-		uint
-		width() = 0;
-
-		virtual
-		uint
-		height() = 0;
-
-		virtual
-		std::shared_ptr<input::Mouse>
-		mouse() = 0;
-
-        virtual
-        std::shared_ptr<input::Keyboard>
-        keyboard() = 0;
-
-		virtual
-		std::shared_ptr<input::Joystick>
-		joystick(uint id) = 0;
-
-		virtual
-		uint
-		numJoysticks() = 0;
-
-        virtual
-		Signal<Ptr, uint, uint>::Ptr
-		resized() = 0;
-
-		virtual
-		std::shared_ptr<async::Worker>
-		worker(const std::string& name) = 0;
-	};
-}
+	minko.plugin.enable("http")
+end

@@ -66,8 +66,12 @@ solution "minko"
 		include 'examples/multi-surface'
 		include 'examples/physics'
 		include 'examples/oculus'
+		include 'examples/http'
 	end
 
+	include 'workers/http'
+
+	-- tests
 	if not _OPTIONS['no-tests'] then
 		include 'tests'
 	end

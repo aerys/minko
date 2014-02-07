@@ -25,12 +25,14 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 	}
 	
 	-- linux
-	configuration { "linux" }
+	configuration { "linux32 or linux64" }
+		links { "curl"}
 
 	-- windows
-	configuration { "win" }
+	configuration { "windows32 or windows 64" }
 		includedirs { "lib/libcurl/include" }
 		
 	-- macos
-	configuration { "osx" }
+	configuration { "osx64" }
 		includedirs { "lib/libcurl/include" }
+		links { "curl"}
