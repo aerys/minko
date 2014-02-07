@@ -605,7 +605,7 @@ void
 EffectParser::parseZSort(const Json::Value&	contextNode,
 						 bool& zsorted) const
 {
-	auto zsortedValue	= contextNode.get("zsort", 0);
+	auto zsortedValue	= contextNode.get("zSort", 0);
 
 	if (zsortedValue.isBool())
 		zsorted = zsortedValue.asBool();
