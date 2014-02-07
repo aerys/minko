@@ -71,12 +71,12 @@ namespace minko
 			std::unordered_map<std::string, std::string>				_variablesToValue;
 
             std::shared_ptr<States>                                     _states;
-            std::vector<int>                                            _vertexBuffers;
+            std::vector<int>                                            _vertexBufferIds;
             std::vector<int>                                            _vertexBufferLocations;
             std::vector<int>                                            _vertexSizes;
             std::vector<int>                                            _vertexAttributeSizes;
             std::vector<int>                                            _vertexAttributeOffsets;
-            std::vector<int>                                            _textures;
+            std::vector<int>                                            _textureIds;
             std::vector<int>                                            _textureLocations;
             std::vector<WrapMode>                                       _textureWrapMode;
             std::vector<TextureFilter>                                  _textureFilters;
@@ -255,10 +255,10 @@ namespace minko
 			bindStates();
 			
 			void
-			bindVertexAttribute(const std::string& propertyName, int location, uint& vertexBufferId);
+			bindVertexAttribute(const std::string& propertyName, int location, uint& vertexBufferIndex);
 			
 			void
-			bindTextureSampler(const std::string& propertyName, int location, uint& textureId, const SamplerState&, bool = true);
+			bindTextureSampler(const std::string& propertyName, int location, uint& textureIndex, const SamplerState&, bool = true);
 
 			void
 			bindUniform(const std::string& propertyName, ProgramInputs::Type, int location);

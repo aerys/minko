@@ -57,12 +57,12 @@ DrawCall::DrawCall(const data::BindingMap&	attributeBindings,
 	_uniformBindings(uniformBindings),
 	_stateBindings(stateBindings),
     _states(states),
-    _textures(MAX_NUM_TEXTURES, 0),
+    _textureIds(MAX_NUM_TEXTURES, 0),
     _textureLocations(MAX_NUM_TEXTURES, -1),
     _textureWrapMode(MAX_NUM_TEXTURES, WrapMode::CLAMP),
     _textureFilters(MAX_NUM_TEXTURES, TextureFilter::NEAREST),
     _textureMipFilters(MAX_NUM_TEXTURES, MipFilter::NONE),
-    _vertexBuffers(MAX_NUM_VERTEXBUFFERS, 0),
+    _vertexBufferIds(MAX_NUM_VERTEXBUFFERS, 0),
     _vertexBufferLocations(MAX_NUM_VERTEXBUFFERS, -1),
     _vertexSizes(MAX_NUM_VERTEXBUFFERS, -1),
     _vertexAttributeSizes(MAX_NUM_VERTEXBUFFERS, -1),
@@ -145,8 +145,8 @@ DrawCall::bindProgramInputs()
 	unsigned int					numTextures			= 0;
     unsigned int					numVertexBuffers	= 0;
 	
-	unsigned int					vertexBufferId		= 0;
-	unsigned int					textureId			= 0;
+	unsigned int					vertexBufferIndex	= 0;
+	unsigned int					textureIndex		= 0;
 	
 	for (unsigned int inputId = 0; inputId < inputNames.size(); ++inputId)
 	{
@@ -158,7 +158,7 @@ DrawCall::bindProgramInputs()
 		{
 		case ProgramInputs::Type::attribute:
 			{
-				bindVertexAttribute(inputName, location, vertexBufferId);
+				bindVertexAttribute(inputName, location, vertexBufferIndex);
 				break;
 			}
 	
@@ -169,7 +169,7 @@ DrawCall::bindProgramInputs()
 					? _states->samplers().at(inputName)
 					: _defaultSamplerState;
 
-				bindTextureSampler(inputName, location, textureId, samplerState);
+				bindTextureSampler(inputName, location, textureIndex, samplerState);
 				break;
 			}
 	
@@ -188,13 +188,13 @@ DrawCall::bindProgramInputs()
 void
 DrawCall::bindVertexAttribute(const std::string&	inputName,
 							  int					location,
-							  uint&					vertexBufferId)
+							  uint&					vertexBufferIndex)
 {
 #ifdef DEBUG
 	if (location < 0)
 		throw std::invalid_argument("location");
-	if (vertexBufferId >= MAX_NUM_VERTEXBUFFERS)
-		throw std::invalid_argument("vertexBufferId");
+	if (vertexBufferIndex >= MAX_NUM_VERTEXBUFFERS)
+		throw std::invalid_argument("vertexBufferIndex");
 #endif // DEBUG
 	
 	if (_attributeBindings.count(inputName))
@@ -202,7 +202,7 @@ DrawCall::bindVertexAttribute(const std::string&	inputName,
 		auto propertyName		= formatPropertyName(std::get<0>(_attributeBindings.at(inputName)));
 		const auto& container	= getDataContainer(std::get<1>(_attributeBindings.at(inputName)));
 
-		++vertexBufferId;
+		++vertexBufferIndex;
 
 		if (container && container->hasProperty(propertyName))
 		{
@@ -216,11 +216,11 @@ DrawCall::bindVertexAttribute(const std::string&	inputName,
 
 			auto attribute = vertexBuffer->attribute(attributeName);
 
-			_vertexBuffers[vertexBufferId] = vertexBuffer->id();
-			_vertexBufferLocations[vertexBufferId] = location;
-			_vertexAttributeSizes[vertexBufferId] = std::get<1>(*attribute);
-			_vertexSizes[vertexBufferId] = vertexBuffer->vertexSize();
-			_vertexAttributeOffsets[vertexBufferId] = std::get<2>(*attribute);
+			_vertexBufferIds		[vertexBufferIndex]	= vertexBuffer->id();
+			_vertexBufferLocations	[vertexBufferIndex]	= location;
+			_vertexAttributeSizes	[vertexBufferIndex]	= std::get<1>(*attribute);
+			_vertexSizes			[vertexBufferIndex]	= vertexBuffer->vertexSize();
+			_vertexAttributeOffsets	[vertexBufferIndex]	= std::get<2>(*attribute);
 		}
 
 
@@ -230,11 +230,11 @@ DrawCall::bindVertexAttribute(const std::string&	inputName,
 			// See issue #1848 in Emscripten: https://github.com/kripken/emscripten/issues/1848
 			auto that = shared_from_this();
 			_referenceChangedSlots[propertyName].push_back(container->propertyReferenceChanged(propertyName)->connect([&, that](data::Container::Ptr, const std::string&) {
-				that->bindVertexAttribute(inputName, location, vertexBufferId);
+				that->bindVertexAttribute(inputName, location, vertexBufferIndex);
 			}));
 #else
 			_referenceChangedSlots[propertyName].push_back(container->propertyReferenceChanged(propertyName)->connect(std::bind(
-				&DrawCall::bindVertexAttribute, shared_from_this(), inputName, location, vertexBufferId
+				&DrawCall::bindVertexAttribute, shared_from_this(), inputName, location, vertexBufferIndex
 			)));
 #endif
 		}
@@ -244,21 +244,21 @@ DrawCall::bindVertexAttribute(const std::string&	inputName,
 void
 DrawCall::bindTextureSampler(const std::string&		inputName,
 							 int					location,
-							 uint&					textureId,
+							 uint&					textureIndex,
    							 const SamplerState&	samplerState, 
-							 bool					incrementTextureId)
+							 bool					incrementTextureIndex)
 {
 #ifdef DEBUG
 	if (location < 0)
 		throw std::invalid_argument("location");
-	if (textureId >= MAX_NUM_TEXTURES)
-		throw std::invalid_argument("textureId");
+	if (textureIndex >= MAX_NUM_TEXTURES)
+		throw std::invalid_argument("textureIndex");
 #endif // DEBUG
 
 	if (_uniformBindings.count(inputName))
 	{
-		if (incrementTextureId)
-			++textureId;
+		if (incrementTextureIndex)
+			++textureIndex;
 
 		auto propertyName		= formatPropertyName(std::get<0>(_uniformBindings.at(inputName)));
 		const auto& container	= getDataContainer(std::get<1>(_uniformBindings.at(inputName)));
@@ -267,11 +267,11 @@ DrawCall::bindTextureSampler(const std::string&		inputName,
 		{
 			auto texture = container->get<AbstractTexture::Ptr>(propertyName);
 
-			_textures[textureId]			= texture->id();
-			_textureLocations[textureId]	= location;
-			_textureWrapMode[textureId]		= std::get<0>(samplerState);
-			_textureFilters[textureId]		= std::get<1>(samplerState);
-			_textureMipFilters[textureId]	= std::get<2>(samplerState);
+			_textureIds			[textureIndex] = texture->id();
+			_textureLocations	[textureIndex] = location;
+			_textureWrapMode	[textureIndex] = std::get<0>(samplerState);
+			_textureFilters		[textureIndex] = std::get<1>(samplerState);
+			_textureMipFilters	[textureIndex] = std::get<2>(samplerState);
 		}
 
 		if (_referenceChangedSlots.count(propertyName) == 0)			
@@ -280,11 +280,11 @@ DrawCall::bindTextureSampler(const std::string&		inputName,
 			// See issue #1848 in Emscripten: https://github.com/kripken/emscripten/issues/1848
 			auto that = shared_from_this();
 			_referenceChangedSlots[propertyName].push_back(container->propertyReferenceChanged(propertyName)->connect([&, that](Container::Ptr, const std::string&) {
-				that->bindTextureSampler(inputName, location, textureId, samplerState, false);
+				that->bindTextureSampler(inputName, location, textureIndex, samplerState, false);
 			}));
 #else
 			_referenceChangedSlots[propertyName].push_back(container->propertyReferenceChanged(propertyName)->connect(std::bind(
-				&DrawCall::bindTextureSampler, shared_from_this(), inputName, location, textureId, samplerState, false
+				&DrawCall::bindTextureSampler, shared_from_this(), inputName, location, textureIndex, samplerState, false
 			)));
 #endif
 		}
@@ -473,25 +473,25 @@ DrawCall::reset()
 	_uniformInts3.clear();
 	_uniformInts4.clear();
 
-	_textures			.clear();
+	_textureIds			.clear();
 	_textureLocations	.clear();
 	_textureWrapMode	.clear();
 	_textureFilters		.clear();
 	_textureMipFilters	.clear();
 
-	_textures			.resize(MAX_NUM_TEXTURES, 0);
+	_textureIds			.resize(MAX_NUM_TEXTURES, 0);
 	_textureLocations	.resize(MAX_NUM_TEXTURES, -1);
 	_textureWrapMode	.resize(MAX_NUM_TEXTURES, WrapMode::CLAMP);
 	_textureFilters		.resize(MAX_NUM_TEXTURES, TextureFilter::NEAREST);
 	_textureMipFilters	.resize(MAX_NUM_TEXTURES, MipFilter::NONE);
 
-	_vertexBuffers			.clear();
+	_vertexBufferIds			.clear();
 	_vertexBufferLocations	.clear();
 	_vertexSizes			.clear();
 	_vertexAttributeSizes	.clear();
 	_vertexAttributeOffsets	.clear();
 
-	_vertexBuffers			.resize(MAX_NUM_VERTEXBUFFERS, 0);
+	_vertexBufferIds			.resize(MAX_NUM_VERTEXBUFFERS, 0);
 	_vertexBufferLocations	.resize(MAX_NUM_VERTEXBUFFERS, -1);
 	_vertexSizes			.resize(MAX_NUM_VERTEXBUFFERS, -1);
 	_vertexAttributeSizes	.resize(MAX_NUM_VERTEXBUFFERS, -1);
@@ -617,65 +617,61 @@ DrawCall::render(const AbstractContext::Ptr& context, AbstractTexture::Ptr rende
 			textureLocationAndPtr.first
 		);
 
-	for (uint textureId = 0; textureId < _textures.size() - textureOffset; ++textureId)
+	for (uint i = 0; i < _textureIds.size() - textureOffset; ++i)
     {
-        auto texture = _textures[textureId];
+        auto textureId = _textureIds[i];
 
         context->setTextureAt(
-			textureOffset + textureId, 
-			texture, 
-			_textureLocations[textureId]
+			textureOffset + i, 
+			textureId, 
+			_textureLocations[i]
 		);
-        if (texture > 0)
+        if (textureId > 0)
             context->setSamplerStateAt(
-				textureOffset + textureId,
-				_textureWrapMode[textureId],
-				_textureFilters[textureId],
-				_textureMipFilters[textureId]
+				textureOffset + i,
+				_textureWrapMode[i],
+				_textureFilters[i],
+				_textureMipFilters[i]
             );
     }
 
-	if (_program->indexBuffer())
+	// first, hand over to the context bound vertex attributes
+	for (uint i = 0; i < _vertexBufferIds.size(); ++i)
 	{
-		// use the vertex attributes manually assigned to the effect
-		for (auto vertexBufferLocationAndPtr : _program->vertexBuffers())
+		auto vertexBufferId = _vertexBufferIds[i];
+	
+		if (vertexBufferId > 0 && 
+			!_program->hasVertexBufferLocation(_vertexBufferLocations[i]))
+			context->setVertexBufferAt(
+			     _vertexBufferLocations[i],
+			     vertexBufferId,
+			     _vertexAttributeSizes[i],
+			     _vertexSizes[i],
+			     _vertexAttributeOffsets[i]
+			);
+	}
+	// second, hand over explicitly user defined vertex attributes (possible replacement of )
+	for (auto vertexBufferLocationAndPtr : _program->vertexBuffers())
+	{
+		const int	location		= vertexBufferLocationAndPtr.first;
+		auto&		vertexBuffer	= vertexBufferLocationAndPtr.second;
+	
+		if (vertexBuffer->isReady())
 		{
-			const int	location		= vertexBufferLocationAndPtr.first;
-			auto&		vertexBuffer	= vertexBufferLocationAndPtr.second;
+			assert(vertexBuffer->attributes().size() == 1);
 	
-			if (vertexBuffer->isReady())
-			{
-				assert(vertexBuffer->attributes().size() == 1);
+			const auto& vertexAttribute = vertexBuffer->attributes().front();
 	
-				const auto& vertexAttribute = vertexBuffer->attributes().front();
-
-				context->setVertexBufferAt(
-					location,
-					vertexBuffer->id(),
-					std::get<1>(*vertexAttribute),
-					vertexBuffer->vertexSize(),
-					std::get<2>(*vertexAttribute)
-				);
-			}
+			context->setVertexBufferAt(
+				location,
+				vertexBuffer->id(),
+				std::get<1>(*vertexAttribute),
+				vertexBuffer->vertexSize(),
+				std::get<2>(*vertexAttribute)
+			);
 		}
 	}
-	else
-	{
-	    for (uint vertexBufferId = 0; vertexBufferId < _vertexBuffers.size(); ++vertexBufferId)
-	    {
-	        auto vertexBuffer = _vertexBuffers[vertexBufferId];
 	
-	        if (vertexBuffer > 0)
-	            context->setVertexBufferAt(
-	                _vertexBufferLocations[vertexBufferId],
-	                vertexBuffer,
-	                _vertexAttributeSizes[vertexBufferId],
-	                _vertexSizes[vertexBufferId],
-	                _vertexAttributeOffsets[vertexBufferId]
-	            );
-	    }
-	}
-
 	context->setColorMask(_colorMask);
 	context->setBlendMode(_blendMode);
 	context->setDepthTest(_depthMask, _depthFunc);
