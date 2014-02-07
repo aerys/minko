@@ -41,7 +41,7 @@ PhongMaterial::initialize()
 	diffuseColor(0xffffffff);
 	specularColor(0xffffffff);
 	shininess(8.0f);
-	reflectivity(1.0f);
+	environmentAlpha(1.0f);
 
 	set("environmentMap2dType", int(EnvironmentMap2dType::Unset));
 }
@@ -64,6 +64,20 @@ Vector4::Ptr
 PhongMaterial::diffuseColor(Vector4::Ptr out) const
 {
 	return get<Vector4::Ptr>("diffuseColor");
+}
+
+PhongMaterial::Ptr
+PhongMaterial::diffuseMap(AbstractTexture::Ptr value)
+{
+	set("diffuseMap", std::static_pointer_cast<AbstractTexture>(value));
+
+	return std::static_pointer_cast<PhongMaterial>(shared_from_this());
+}
+
+Texture::Ptr
+PhongMaterial::diffuseMap() const
+{
+	return std::dynamic_pointer_cast<Texture>(get<AbstractTexture::Ptr>("diffuseMap"));
 }
 
 PhongMaterial::Ptr
@@ -140,17 +154,17 @@ PhongMaterial::environmentMap2dType() const
 }
 
 PhongMaterial::Ptr
-PhongMaterial::reflectivity(float value)
+PhongMaterial::environmentAlpha(float value)
 {
-	set("reflectivity", value);
+	set("environmentAlpha", value);
 
 	return std::static_pointer_cast<PhongMaterial>(shared_from_this());
 }
 
 float
-PhongMaterial::reflectivity() const
+PhongMaterial::environmentAlpha() const
 {
-	return get<float>("reflectivity");
+	return get<float>("environmentAlpha");
 }
 
 PhongMaterial::Ptr

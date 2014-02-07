@@ -313,7 +313,9 @@ DrawCallPool::initializeDrawCall(Pass::Ptr		pass,
 	const auto	target		= surface->targets()[0];
 	const auto	targetData	= target->data();
 	const auto	rootData	= target->root()->data();
+	bool		firstInit	= false;
 
+	Effect::Ptr						effect = _renderer->effect() ? _renderer->effect() : surface->effect();
 	std::list<ContainerProperty>	booleanMacros;
 	std::list<ContainerProperty>	integerMacros;
 	std::list<ContainerProperty>	incorrectIntegerMacros;
@@ -326,24 +328,6 @@ DrawCallPool::initializeDrawCall(Pass::Ptr		pass,
 		drawCallVariables["geometryId"] = std::to_string(surface->_geometryId);
 		drawCallVariables["materialId"] = std::to_string(surface->_materialId);
 	}
-
-	std::unordered_map<std::string, MacroBinding> macroBindings = pass->macroBindings(
-		_formatFunction,
-		drawCallVariables);
-
-	auto program = getWorkingProgram(
-		surface,
-		pass,
-		macroBindings,
-		targetData,
-		rendererData,
-		rootData,
-		booleanMacros,
-		integerMacros,
-		incorrectIntegerMacros);
-
-	if (!program)
-		return nullptr;
 	
 	if (drawcall == nullptr)
 	{
@@ -356,23 +340,48 @@ DrawCallPool::initializeDrawCall(Pass::Ptr		pass,
 			drawCallVariables
 		);
 
+		firstInit = true;
+	}
+
+	auto program = getWorkingProgram(
+		surface,
+		pass,
+		drawcall,
+		targetData,
+		rendererData,
+		rootData,
+		booleanMacros,
+		integerMacros,
+		incorrectIntegerMacros);
+
+	if (!program)
+		return nullptr;
+	
+	if (firstInit)
+	{
+
 		_drawCallToPass[surface][drawcall]			= pass;
 		_drawCallToRendererData[surface][drawcall]	= rendererData;
-
-		Effect::Ptr effect = _renderer->effect() ? _renderer->effect() : surface->effect();
 
 		for (auto& technique : effect->techniques())
 		{
 			auto& techniqueName = technique.first;
 
 			for (auto& pass : technique.second)
-				for (auto& macroBinding : pass->macroBindings(_formatFunction, drawCallVariables))
-				_techniqueToMacroNames[surface][techniqueName].insert(std::get<0>(macroBinding.second));
+				for (auto& macroBinding : pass->macroBindings())
+				{
+					auto propertyName = drawcall->formatPropertyName(std::get<0>(macroBinding.second));
+					_techniqueToMacroNames[surface][techniqueName].insert(propertyName);
+				}
 		}
 
-		for (const auto& binding : macroBindings)
+		for (const auto& binding : pass->macroBindings())
 		{
-			data::ContainerProperty macro(binding.second, targetData, rendererData, rootData);
+			auto bindingDefault = binding.second;
+
+			std::get<0>(bindingDefault) = drawcall->formatPropertyName(std::get<0>(bindingDefault));
+
+			data::ContainerProperty macro(bindingDefault, targetData, rendererData, rootData);
 
 			_macroNameToDrawCalls[surface][macro.name()].push_back(drawcall);
 
@@ -395,10 +404,10 @@ DrawCallPool::initializeDrawCall(Pass::Ptr		pass,
 std::shared_ptr<Program>
 DrawCallPool::getWorkingProgram(Surface::Ptr					surface,
 								Pass::Ptr						pass,
-								const MacroBindingsMap&			macroBindings,
-								Container::Ptr					targetData,
-								Container::Ptr					rendererData,
-								Container::Ptr					rootData,
+								DrawCall::Ptr					drawCall,
+								ContainerPtr					targetData,
+								ContainerPtr					rendererData,
+								ContainerPtr					rootData,
 								std::list<ContainerProperty>&	booleanMacros,
 								std::list<ContainerProperty>&	integerMacros,
 								std::list<ContainerProperty>&	incorrectIntegerMacros)
@@ -408,10 +417,10 @@ DrawCallPool::getWorkingProgram(Surface::Ptr					surface,
 	do
 	{
 		program = pass->selectProgram(
-			macroBindings,
-			targetData, 
-			rendererData, 
-			rootData, 
+			drawCall, 
+			targetData,
+			rendererData,
+			rootData,
 			booleanMacros, 
 			integerMacros, 
 			incorrectIntegerMacros
@@ -421,8 +430,8 @@ DrawCallPool::getWorkingProgram(Surface::Ptr					surface,
 	assert(incorrectIntegerMacros.empty() != (program==nullptr));
 #endif // DEBUG_FALLBACK
 
-		forgiveMacros	(surface, booleanMacros, integerMacros,	TechniquePass(surface->technique(), pass));
-		blameMacros		(surface, incorrectIntegerMacros,		TechniquePass(surface->technique(), pass));
+		forgiveMacros	(surface, booleanMacros, integerMacros,	TechniqueNameAndPass(surface->technique(), pass));
+		blameMacros		(surface, incorrectIntegerMacros,		TechniqueNameAndPass(surface->technique(), pass));
 
 		break;
 
@@ -637,7 +646,7 @@ DrawCallPool::watchMacroAdditionOrDeletion(Surface::Ptr surface)
 void
 DrawCallPool::blameMacros(Surface::Ptr							surface,
 						  const std::list<ContainerProperty>&	incorrectIntegerMacros,
-						  const TechniquePass&					pass)
+						  const TechniqueNameAndPass&					pass)
 {
 	for (auto& macro : incorrectIntegerMacros)
 	{
@@ -688,7 +697,7 @@ void
 DrawCallPool::forgiveMacros(Surface::Ptr						surface,
 							const std::list<ContainerProperty>&	booleanMacros,
 							const std::list<ContainerProperty>&	integerMacros,
-							const TechniquePass&				pass)
+							const TechniqueNameAndPass&				pass)
 {
 	for (auto& macro : integerMacros)
 		if (_incorrectMacroToPasses[surface].count(macro) > 0)
@@ -716,8 +725,8 @@ DrawCallPool::zsortNeededHandler(Surface::Ptr	surface,
 
 
 std::string
-DrawCallPool::replaceVariable(const std::string&							rawPropertyName, 
-							  std::unordered_map<std::string, std::string>& variableToValue)
+DrawCallPool::formatPropertyName(const std::string&							rawPropertyName, 
+							     std::unordered_map<std::string, std::string>& variableToValue)
 {
 	std::string propertyName = rawPropertyName;
 

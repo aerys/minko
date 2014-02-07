@@ -85,7 +85,6 @@ namespace minko
 				ColliderReverseMap								_colliderReverseMap;
 				std::map<uint, ColliderDataPtr>					_uidToCollider;
 				CollisionSet									_collisions;
-				RendererPtr										_renderer;
 
 				btBroadphasePtr									_bulletBroadphase;
 				btCollisionConfigurationPtr						_bulletCollisionConfiguration;
@@ -109,13 +108,13 @@ namespace minko
 			public:
 				static
 				Ptr
-				create(RendererPtr renderer)
+				create()
 				{
-					Ptr physicsWorld(new PhysicsWorld(renderer));
+					Ptr ptr(new PhysicsWorld());
 
-					physicsWorld->initialize();
+					ptr->initialize();
 
-					return physicsWorld;
+					return ptr;
 				}
 
 				~PhysicsWorld()
@@ -153,7 +152,7 @@ namespace minko
 				print(std::ostream&, Matrix4x4Ptr);
 
 			private:
-				PhysicsWorld(RendererPtr renderer);
+				PhysicsWorld();
 
 				void 
 				initialize();
