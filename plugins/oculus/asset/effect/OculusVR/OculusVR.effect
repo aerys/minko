@@ -3,8 +3,8 @@
 	"name" : "oculusvr",
 	
 	"attributeBindings" : {
-		"aPosition"		: "geometry.vertex.attribute.position",
-		"aUv"			: "geometry.vertex.attribute.uv"
+		"aPosition"		: "geometry[${geometryId}].vertex.attribute.position",
+		"aUv"			: "geometry[${geometryId}].vertex.attribute.uv"
 	},
 	
 	"triangleCulling" : "none",
