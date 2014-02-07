@@ -56,7 +56,7 @@ namespace minko
 			diffuseCubeMap(std::shared_ptr<render::AbstractTexture>);
 
 			Ptr
-			isTransparent(bool, bool zsort = false);
+			isTransparent(bool, bool zSort = false);
 
 			inline
 			Ptr
