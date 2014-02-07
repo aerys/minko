@@ -65,11 +65,11 @@ BasicMaterial::diffuseCubeMap(std::shared_ptr<render::AbstractTexture> texture)
 }
 
 BasicMaterial::Ptr
-BasicMaterial::isTransparent(bool value, bool zsort)
+BasicMaterial::isTransparent(bool value, bool zSort)
 {
 	set("priority",		value ? priority::TRANSPARENT : priority::OPAQUE);
 	set("blendMode",	value ? Blending::Mode::ALPHA : Blending::Mode::DEFAULT);
-	set("zsort",		zsort);
+	set("zSort",		zSort);
 
 	return std::dynamic_pointer_cast<BasicMaterial>(shared_from_this());
 }
