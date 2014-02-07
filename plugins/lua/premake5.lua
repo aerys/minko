@@ -26,12 +26,14 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 	configuration { "html5" }
 		defines { "LUA_USE_POSIX" }
 
-	configuration { "linux" }
+	configuration { "linux32 or linux64" }
 		defines { "LUA_USE_POSIX" }
 
-	configuration { "win" }
+	configuration { "windows32 or windows64" }
 		defines { "LUA_USE_WIN" }
+
+	configuration { "vs*" }
 		defines { "_CRT_SECURE_NO_WARNINGS" }
 
-	configuration { "osx" }
+	configuration { "osx64" }
 		defines { "LUA_USE_MACOSX" }

@@ -29,29 +29,24 @@ minko.plugin.oculus = {}
 -- #pragma options align=reset
 -- #endif
 
+-- Note for linux compilation:
+-- The 'libudev' and 'libxinerama' libraries must be prealably installed.
+
 function minko.plugin.oculus:enable()
-	configuration { "windows or macosx" }
-		defines { "MINKO_PLUGIN_OCULUS" }
+	defines { "MINKO_PLUGIN_OCULUS" }
+	minko.plugin.links { "oculus" }
 
-		minko.plugin.links { "oculus" }
+	includedirs {
+		minko.plugin.path("oculus") .. "/include"
+	}
 
-		includedirs {
-			minko.sdk.path("plugins/oculus/include")
-		}
+	prelinkcommands {
+		minko.action.copy(minko.plugin.path("oculus") .. "/asset"),
+	}
 
-	configuration { "win" }
+	configuration { "windows32 or windows64" }
 		links { "winmm", "setupapi" }
 
-		postbuildcommands {
-			'xcopy /y /i /s "' .. minko.sdk.path('/plugins/oculus/asset/effect/*') .. '" "$(TargetDir)\\effect"',
-		}
-
-	configuration { "osx" }
-		includedirs { 
-			minko.sdk.path("plugins/oculus/include")
-		}
-
-		postbuildcommands {
-			'cp -r ' .. minko.sdk.path('/plugins/oculus/asset/effect') .. ' ${TARGETDIR}',
-		}
+	configuration { "linux32 or linux64" }
+		links { "udev", "Xinerama", "X11" }
 end

@@ -8,11 +8,19 @@ PROJECT_NAME = path.getname(os.getcwd())
 minko.project.library("minko-plugin-" .. PROJECT_NAME)
 	kind "StaticLib"
 	language "C++"
-	files { "src/**.hpp", "src/**.h", "src/**.cpp", "src/**.c", "include/**.hpp" }
-	includedirs { "include", "src" }
+	
+	files {
+		"src/**.hpp",
+		"src/**.h",
+		"src/**.cpp",
+		"src/**.c",
+		"include/**.hpp"
+	}
 
-	removeplatforms { "linux", "html5", "ios", "android" }
+	includedirs {
+		"include",
+		"src",
+		"lib/leap/include"
+	}
 
-	-- windows
-	configuration { "windows" }
-		includedirs { "lib/include" }
+	removeplatforms { "html5", "ios", "android" }

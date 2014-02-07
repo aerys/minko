@@ -37,27 +37,39 @@ Options::Options(std::shared_ptr<render::AbstractContext> context) :
 	_skinningMethod(component::SkinningMethod::HARDWARE),
 	_material(material::Material::create())
 {
-#ifdef DEBUG
+#if defined(DEBUG)
 	includePaths().push_back("../../../asset");
 	includePaths().push_back("asset");
-# if defined(_WIN32) || defined(_WIN64)
-	includePaths().push_back("bin/windows/debug");
+# if defined(_WIN32)
+	includePaths().push_back("bin/windows32/debug/asset");
+# elif defined(_WIN64)
+	includePaths().push_back("bin/windows64/debug/asset");
 # elif defined(TARGET_OS_MAC)
-	includePaths().push_back("bin/macosx/debug");
+	includePaths().push_back("bin/osx64/debug/asset");
 # elif defined(EMSCRIPTEN)
-	includePaths().push_back("bin/html5/debug");
+	includePaths().push_back("bin/html5/debug/asset");
 # elif defined(LINUX) || defined(__unix__)
-	includePaths().push_back("bin/linux/debug");
+#  if defined(__x86_64__)
+	includePaths().push_back("bin/linux64/debug/asset");
+#  else
+	includePaths().push_back("bin/linux32/debug/asset");
+#  endif
 # endif
-#else
-# if defined(_WIN32) || defined(_WIN64)
-	includePaths().push_back("bin/windows/release");
+#else // release
+# if defined(_WIN32)
+	includePaths().push_back("bin/windows32/release/asset");
+# elif defined(_WIN64)
+	includePaths().push_back("bin/windows64/release/asset");
 # elif defined(TARGET_OS_MAC)
-	includePaths().push_back("bin/macosx/release");
+	includePaths().push_back("bin/osx64/release/asset");
 # elif defined(EMSCRIPTEN)
-	includePaths().push_back("bin/html5/release");
+	includePaths().push_back("bin/html5/release/asset");
 # elif defined(LINUX) || defined(__unix__)
-	includePaths().push_back("bin/linux/release");
+#  if defined(__x86_64__)
+	includePaths().push_back("bin/linux64/release/asset");
+#  else
+	includePaths().push_back("bin/linux32/release/asset");
+#  endif 
 # endif
 #endif
 
