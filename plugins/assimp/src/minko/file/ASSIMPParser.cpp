@@ -136,9 +136,10 @@ ASSIMPParser::parse(const std::string&					filename,
 	const aiScene* scene = importer.ReadFileFromMemory(
 		&data[0],
 		data.size(),
-		aiProcessPreset_TargetRealtime_Fast
-		| aiProcess_JoinIdenticalVertices
+        aiProcess_JoinIdenticalVertices
 		//| aiProcess_GenSmoothNormals // assertion is raised by assimp
+		aiProcess_JoinIdenticalVertices
+		| aiProcess_GenSmoothNormals
 		| aiProcess_SplitLargeMeshes
 		| aiProcess_LimitBoneWeights
 		| aiProcess_GenUVCoords
@@ -151,9 +152,7 @@ ASSIMPParser::parse(const std::string&					filename,
 	);
 	
     if (!scene)
-    {
-		throw std::runtime_error(importer.GetErrorString());
-    }
+		throw ParserError(importer.GetErrorString());
     
     parseDependencies(resolvedFilename, scene);
 
