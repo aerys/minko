@@ -1,9 +1,7 @@
 // basic effect
 {
     "name"  	: "basic",
-    
-	"priority"	: "opaque",
-	
+    	
     "attributeBindings" : {
         "position"              : "geometry[${geometryId}].position",
         "uv"                    : "geometry[${geometryId}].uv",
@@ -51,24 +49,50 @@
         "zSort"                 : "material[${materialId}].zSort"
     },
     
-    "blendMode"         : ["one", "zero"],
     "colorMask"         : true,
     "depthTest"         : [true, "less_equal"],
-    "triangleCulling"   : "none",
+    "triangleCulling"   : "back",
 	"stencilTest"		: ["always", 0, 1, ["keep", "keep", "keep"]],
     "scissorTest"		: false,
 	"scissorBox"		: [0, 0, -1, -1],
-    "priority"          : "opaque",
-    "zSort"             : false,
 	
     "samplerStates" : {
         "diffuseMap"    : { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" }
     },
     
-	"techniques" : [{
-		"passes"    : [{
-			"vertexShader" : "#pragma include('Basic.vertex.glsl')",
+    "defaultTechnique"  : "opaque",
+
+	"techniques" : [
+    {
+        "name"      : "opaque",
+
+
+        "blendMode" : ["one", "zero"],
+        "priority"  : "opaque",
+        "zSort"     : "false",
+
+		"passes"    : [
+        {
+			"vertexShader"   : "#pragma include('Basic.vertex.glsl')",
 			"fragmentShader" : "#pragma include('Basic.fragment.glsl')"
-		}]
-	}]
+		}
+        ]
+	},
+
+    {
+        "name"      : "transparent",
+
+
+        "blendMode" : "alpha",
+        "priority"  : "transparent",
+        "zSort"     : "true",
+
+        "passes"    : [
+        {
+            "vertexShader"      : "#pragma include('Basic.vertex.glsl')",
+            "fragmentShader"    : "#pragma include('Basic.fragment.glsl')"
+        }
+        ] 
+    }
+    ]
 }
