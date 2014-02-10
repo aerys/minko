@@ -25,9 +25,14 @@ using namespace minko;
 using namespace minko::component;
 using namespace minko::math;
 
+Signal<scene::Node::Ptr>::Slot pickingMouseClick;
+Signal<scene::Node::Ptr>::Slot pickingMouseRightClick;
+Signal<scene::Node::Ptr>::Slot pickingMouseOver;
+Signal<scene::Node::Ptr>::Slot pickingMouseOut;
+
 int main(int argc, char** argv)
 {
-	auto canvas = Canvas::create("Minko Example - Cube", 800, 600);
+	auto canvas = Canvas::create("Minko Example - Picking", 800, 600);
 
 	auto sceneManager = SceneManager::create(canvas->context());
 	
@@ -53,7 +58,15 @@ int main(int argc, char** argv)
 
 	auto root = scene::Node::create("root")
 		->addComponent(sceneManager);
+	
+	auto camera = scene::Node::create("camera")
+		->addComponent(Transform::create(
+		Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 4.f))
+		))
+		->addComponent(PerspectiveCamera::create(800.f / 600.f, (float)PI * 0.25f, .1f, 1000.f));
 
+	root->addChild(camera);
+	
 	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
 	{
 		auto cube = scene::Node::create("cubeNode")
@@ -80,38 +93,30 @@ int main(int argc, char** argv)
 		root->addChild(cube)
 			->addChild(sphere)
 			->addChild(teapot);
+
+		root->addComponent(Picking::create(sceneManager, canvas, camera));
+
+		pickingMouseClick = root->component<Picking>()->mouseClick()->connect([&](scene::Node::Ptr node)
+		{
+			std::cout << "Click : " << node->name() << std::endl;
+		});
+
+		pickingMouseRightClick = root->component<Picking>()->mouseRightClick()->connect([&](scene::Node::Ptr node)
+		{
+			std::cout << "Right Click : " << node->name() << std::endl;
+		});
+
+		pickingMouseOver = root->component<Picking>()->mouseOver()->connect([&](scene::Node::Ptr node)
+		{
+			std::cout << "Over : " << node->name() << std::endl;
+		});
+
+		pickingMouseOut = root->component<Picking>()->mouseOut()->connect([&](scene::Node::Ptr node)
+		{
+			std::cout << "Out : " << node->name() << std::endl;
+		});
 	});
-
-		
-	auto camera = scene::Node::create("camera")
-		->addComponent(Transform::create(
-			Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 4.f))
-		))
-		->addComponent(PerspectiveCamera::create(800.f / 600.f, (float)PI * 0.25f, .1f, 1000.f));
-
-	root->addChild(camera);
 	camera->addComponent(Renderer::create(0x7f7f7fff));
-	root->addComponent(Picking::create(sceneManager, canvas, camera));
-
-	auto pickingMouseClick = root->component<Picking>()->mouseClick()->connect([&](scene::Node::Ptr node)
-	{
-		std::cout << "Click : " << node->name() << std::endl;
-	});
-
-	auto pickingMouseRightClick = root->component<Picking>()->mouseRightClick()->connect([&](scene::Node::Ptr node)
-	{
-		std::cout << "Right Click : " << node->name() << std::endl;
-	});
-
-	auto pickingMouseOver = root->component<Picking>()->mouseOver()->connect([&](scene::Node::Ptr node)
-	{
-		std::cout << "Over : " << node->name() << std::endl;
-	});
-
-	auto pickingMouseOut = root->component<Picking>()->mouseOut()->connect([&](scene::Node::Ptr node)
-	{
-		std::cout << "Out : " << node->name() << std::endl;
-	});
 
 	auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
 	{
