@@ -38,8 +38,8 @@ namespace minko
 			bind(LuaGlue& state)
 			{
 				state.Class<std::vector<Node::Ptr>>("std__vector_scene__Node__Ptr_")
-					.method("at",		&LuaNode::atWrapper)
-					.property("size", 	&std::vector<Node::Ptr>::size);
+					.methodWrapper("at",	&LuaNode::atWrapper)
+					.property("size", 	    &std::vector<Node::Ptr>::size);
 					//.index(&LuaNode::getWrapper);
 
 				state.Class<Node>("Node")
