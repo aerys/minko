@@ -34,7 +34,8 @@ using namespace minko::component;
 using namespace minko::geometry;
 using namespace minko::render;
 
-Surface::Surface(Geometry::Ptr 				geometry,
+Surface::Surface(std::string				name,
+				 Geometry::Ptr 				geometry,
 				 data::Provider::Ptr 		material,
 				 Effect::Ptr				effect,
 				 const std::string&			technique) :
@@ -47,7 +48,8 @@ Surface::Surface(Geometry::Ptr 				geometry,
 	_visibilityChanged(VisibilityChangedSignal::create()),
 	_computedVisibilityChanged(VisibilityChangedSignal::create()),
 	_geometryId(-1),
-	_materialId(-1)
+	_materialId(-1),
+	_name(name)
 {
 }
 
