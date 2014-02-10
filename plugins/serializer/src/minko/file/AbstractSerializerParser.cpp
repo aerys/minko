@@ -96,6 +96,7 @@ AbstractSerializerParser::deserializedAsset(SerializedAsset				asset,
 											std::shared_ptr<Options>	options,
 											std::string&				assetFilePath)
 {
+
 	std::vector<unsigned char>	data;
 	std::string					assetCompletePath	= assetFilePath + "/";
 	std::string					resolvedPath		= "";
@@ -107,7 +108,7 @@ AbstractSerializerParser::deserializedAsset(SerializedAsset				asset,
 	{
 		assetCompletePath += asset.a2;
 		resolvedPath = asset.a2;
-		
+
 		auto							flags = std::ios::in | std::ios::ate | std::ios::binary;
 		std::fstream					file(assetCompletePath, flags);
 	
@@ -136,14 +137,14 @@ AbstractSerializerParser::deserializedAsset(SerializedAsset				asset,
 	if (asset.a0 == serialize::AssetType::GEOMETRY_ASSET || asset.a0 == serialize::AssetType::EMBED_GEOMETRY_ASSET) // geometry
 	{
 		_geometryParser->dependecy(_dependencies);
-		_geometryParser->parse(assetCompletePath, resolvedPath, options, data, assetLibrary);
+		_geometryParser->parse(resolvedPath, assetCompletePath, options, data, assetLibrary);
 		_dependencies->registerReference(asset.a1, assetLibrary->geometry(_geometryParser->_lastParsedAssetName));
 		_jobList.merge(_materialParser->_jobList);
 	}
 	else if (asset.a0 == serialize::AssetType::MATERIAL_ASSET || asset.a0 == serialize::AssetType::EMBED_MATERIAL_ASSET) // material
 	{
 		_materialParser->dependecy(_dependencies);
-		_materialParser->parse(assetCompletePath, resolvedPath, options, data, assetLibrary);
+		_materialParser->parse(resolvedPath, assetCompletePath, options, data, assetLibrary);
 		_dependencies->registerReference(asset.a1, std::dynamic_pointer_cast<data::Provider>(assetLibrary->material(_materialParser->_lastParsedAssetName)));
 		_jobList.merge(_materialParser->_jobList);
 	}
@@ -157,8 +158,8 @@ AbstractSerializerParser::deserializedAsset(SerializedAsset				asset,
 
 		std::shared_ptr<file::AbstractParser> parser = assetLibrary->getParser("png");
 
-		parser->parse(assetCompletePath, resolvedPath, options, data, assetLibrary);
-		_dependencies->registerReference(asset.a1, assetLibrary->texture(assetCompletePath));
+		parser->parse(resolvedPath, assetCompletePath, options, data, assetLibrary);
+		_dependencies->registerReference(asset.a1, assetLibrary->texture(resolvedPath));
 	}
 	else if (asset.a0 == serialize::AssetType::EFFECT_ASSET) // effect
 	{
