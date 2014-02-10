@@ -71,7 +71,8 @@ namespace minko
 			std::shared_ptr<scene::Node>
 			parseNode(std::vector<SerializedNode>&	nodePack, 
 					  std::vector<std::string>&		componentPack,
-					  AssetLibraryPtr				assetLibrary);
+					  AssetLibraryPtr				assetLibrary,
+					  std::shared_ptr<Options>		options);
 
 			SceneParser();
 		};
