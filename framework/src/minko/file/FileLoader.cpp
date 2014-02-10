@@ -39,9 +39,9 @@ FileLoader::load(const std::string& filename, std::shared_ptr<Options> options)
 	
 	std::string cleanFilename = "";
 
-	for(int i = 0; i < (int)filename.length(); ++i)
+	for(uint i = 0; i < filename.length(); ++i)
 	{
-		if (i < int(filename.length()) - 2 && filename.at(i) == ':' && filename.at(i + 1) == '/' && filename.at(i + 2) == '/')
+		if (i < filename.length() - 2 && filename.at(i) == ':' && filename.at(i + 1) == '/' && filename.at(i + 2) == '/')
 		{
 			cleanFilename = "";
 			i += 2;
@@ -76,7 +76,7 @@ FileLoader::load(const std::string& filename, std::shared_ptr<Options> options)
 
 		// FIXME: use fixed size buffers and call _progress accordingly
 
-		_progress->execute(shared_from_this());
+		_progress->execute(shared_from_this(), 0.0);
 
 		_data.resize(size);
 
@@ -84,7 +84,7 @@ FileLoader::load(const std::string& filename, std::shared_ptr<Options> options)
 		file.read((char*)&_data[0], size);
 		file.close();
 
-		_progress->execute(shared_from_this());
+		_progress->execute(shared_from_this(), 1.0);
 	
 		_complete->execute(shared_from_this());
 	}

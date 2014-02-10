@@ -22,8 +22,10 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 
 	includedirs {
 		"include",
-		"lib/sdl/include"
 	}
+	
+	configuration { "not html5" }
+		includedirs { "lib/sdl/include" }
 
 	configuration { "html5" }
 		minko.plugin.enable { "webgl" }
