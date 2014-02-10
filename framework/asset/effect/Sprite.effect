@@ -3,8 +3,8 @@
 	"name" : "sprite",
 	
 	"attributeBindings" : {
-		"aPosition"				: "geometry[${geometryId}].vertex.attribute.position",
-		"aUV"					: "geometry[${geometryId}].vertex.attribute.uv"
+		"aPosition"				: "geometry[${geometryId}].position",
+		"aUV"					: "geometry[${geometryId}].uv"
 	},
 	
 	"uniformBindings" : {

@@ -5,9 +5,9 @@
 	"priority"	: "opaque",
 	
     "attributeBindings" : {
-        "startPosition"			: "geometry[${geometryId}].vertex.attribute.startPosition",
-		"stopPosition"			: "geometry[${geometryId}].vertex.attribute.stopPosition",
-		"weights"				: "geometry[${geometryId}].vertex.attribute.weights"
+        "startPosition"			: "geometry[${geometryId}].startPosition",
+		"stopPosition"			: "geometry[${geometryId}].stopPosition",
+		"weights"				: "geometry[${geometryId}].weights"
     },
     
     "uniformBindings"   : {

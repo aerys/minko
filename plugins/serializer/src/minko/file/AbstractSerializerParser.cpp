@@ -104,16 +104,14 @@ AbstractSerializerParser::deserializedAsset(SerializedAsset				asset,
 
 	asset.a0 = asset.a0 & 0x00FF;
 
+	assetCompletePath += asset.a2;
+	resolvedPath = asset.a2;
+
 	if (asset.a0 < 10) // external
 	{
-		assetCompletePath += asset.a2;
-		resolvedPath = asset.a2;
-
 		auto							flags = std::ios::in | std::ios::ate | std::ios::binary;
 		std::fstream					file(assetCompletePath, flags);
 	
-		//std::cout << assetCompletePath << "  open ? " << file.is_open() << "  exist ?" << file.good() << std::endl;
-		
 		if (file.is_open())
 		{
 			unsigned int size = (unsigned int)file.tellg();
@@ -130,9 +128,7 @@ AbstractSerializerParser::deserializedAsset(SerializedAsset				asset,
 			throw std::invalid_argument("file already open");
 	}
 	else
-	{
 		std::copy(asset.a2.begin(), asset.a2.end(), back_inserter(data));
-	}
 
 	if (asset.a0 == serialize::AssetType::GEOMETRY_ASSET || asset.a0 == serialize::AssetType::EMBED_GEOMETRY_ASSET) // geometry
 	{

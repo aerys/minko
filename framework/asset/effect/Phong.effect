@@ -5,14 +5,14 @@
 	"priority"	: "opaque",
 	
 	"attributeBindings"	: {
-		"position"				: "geometry[${geometryId}].vertex.attribute.position",
-		"uv"					: "geometry[${geometryId}].vertex.attribute.uv",
-		"normal"				: "geometry[${geometryId}].vertex.attribute.normal",
-		"tangent"				: "geometry[${geometryId}].vertex.attribute.tangent",
-		"boneIdsA"				: "geometry[${geometryId}].vertex.attribute.boneIdsA",
-		"boneIdsB"				: "geometry[${geometryId}].vertex.attribute.boneIdsB",		
-		"boneWeightsA"			: "geometry[${geometryId}].vertex.attribute.boneWeightsA",
-		"boneWeightsB"			: "geometry[${geometryId}].vertex.attribute.boneWeightsB"
+		"position"				: "geometry[${geometryId}].position",
+		"uv"					: "geometry[${geometryId}].uv",
+		"normal"				: "geometry[${geometryId}].normal",
+		"tangent"				: "geometry[${geometryId}].tangent",
+		"boneIdsA"				: "geometry[${geometryId}].boneIdsA",
+		"boneIdsB"				: "geometry[${geometryId}].boneIdsB",		
+		"boneWeightsA"			: "geometry[${geometryId}].boneWeightsA",
+		"boneWeightsB"			: "geometry[${geometryId}].boneWeightsB"
 	},
 	
 	"uniformBindings"	: {

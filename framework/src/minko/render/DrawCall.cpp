@@ -704,12 +704,14 @@ DrawCall::getEyeSpacePosition(Vector3::Ptr output)
 	static auto localPos	= Vector3::create();
 	static auto modelView	= Matrix4x4::create();
 
-	static const std::string PNAME_POSITIONS		= "geometry.vertex.attribute.position";
+	static const std::string PNAME_POSITIONS		= "geometry[${geometryId}].position";
 	static const std::string PNAME_MODEL_TO_WORLD	= "transform.modelToWorldMatrix";
 	static const std::string PNAME_WORLD_TO_SCREEN	= "camera.worldToScreenMatrix";
 
-	localPos = _targetData && _targetData->hasProperty(PNAME_POSITIONS)
-		? _targetData->get<VertexBuffer::Ptr>(PNAME_POSITIONS)->centerPosition(localPos)
+	auto pnamePosition = formatPropertyName(PNAME_POSITIONS);
+
+	localPos = _targetData && _targetData->hasProperty(pnamePosition)
+		? _targetData->get<VertexBuffer::Ptr>(pnamePosition)->centerPosition(localPos)
 		: localPos->setTo(0.0f, 0.0f, 0.0f);
 	
 	if (_targetData && 
