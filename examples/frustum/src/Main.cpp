@@ -54,6 +54,32 @@ int main(int argc, char** argv)
 		->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()))
 		->queue("effect/Basic.effect");
 
+
+	// camera init
+	camera = scene::Node::create("camera")
+		->addComponent(Renderer::create())
+		->addComponent(PerspectiveCamera::create((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT))
+		->addComponent(Culling::create(math::Frustum::create(), "camera.worldToScreenMatrix"))
+		->addComponent(Transform::create(
+			Matrix4x4::create()->lookAt(
+				Vector3::create(0.f, 0.f), 
+				Vector3::create(rand() % 200 - 100.f, rand() % 200 - 100.f, rand() % 200 - 100.f))
+		));
+
+	root->addChild(camera);
+		
+	auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, unsigned int width, unsigned int height)
+	{
+		camera->component<PerspectiveCamera>()->aspectRatio((float)width / (float)height);
+	});
+
+	auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr canvas, uint time, uint deltaTime)
+	{
+		camera->component<Transform>()->matrix()->lock()->appendRotationY(0.02f)->appendRotationZ(-0.014f)->unlock();
+		sceneManager->nextFrame();
+		std::cout << "Num drawCalls : " << camera->component<Renderer>()->numDrawCalls() << std::endl;
+	});
+	
 	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
 	{
 		std::shared_ptr<material::BasicMaterial> material = material::BasicMaterial::create()->diffuseColor(0xFF00FFFF);
@@ -73,37 +99,12 @@ int main(int argc, char** argv)
 
 			cubeGroup->addChild(mesh);
 		}
-
-		// camera init
-		camera = scene::Node::create("camera")
-			->addComponent(Renderer::create())
-			->addComponent(PerspectiveCamera::create((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT))
-			->addComponent(Culling::create(math::Frustum::create(), "camera.worldToScreenMatrix"))
-			->addComponent(Transform::create(
-				Matrix4x4::create()->lookAt(
-					Vector3::create(0.f, 0.f), 
-					Vector3::create(rand() % 200 - 100.f, rand() % 200 - 100.f, rand() % 200 - 100.f))
-			));
-
-		root->addChild(camera);
 		root->addChild(cubeGroup);
-		
-		auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, unsigned int width, unsigned int height)
-		{
-			camera->component<PerspectiveCamera>()->aspectRatio((float)width / (float)height);
-		});
-
-		auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr canvas, uint time, uint deltaTime)
-		{
-			camera->component<Transform>()->matrix()->lock()->appendRotationY(0.02f)->appendRotationZ(-0.014f)->unlock();
-			sceneManager->nextFrame();
-			std::cout << "Num drawCalls : " << camera->component<Renderer>()->numDrawCalls() << std::endl;
-		});
-		
-		canvas->run();
 	});
 
 	sceneManager->assets()->load();
+		
+	canvas->run();
 
 	exit(EXIT_SUCCESS);
 }

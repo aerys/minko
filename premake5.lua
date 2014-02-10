@@ -38,6 +38,7 @@ solution "minko"
 	include 'plugins/sdl'
 	include 'plugins/serializer'
 	include 'plugins/webgl'
+	include 'plugins/http'
 	
 	-- private plugins
 	-- if os.isdir('plugins/streaming') then

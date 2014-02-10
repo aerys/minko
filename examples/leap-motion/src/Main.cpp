@@ -325,8 +325,6 @@ int main(int argc, char** argv)
 		root->addChild(cameraNode);
 		root->addChild(mkNode);
 
-
-
         // post-processing
 		/*
 		auto ppRenderer	= Renderer::create();
@@ -344,17 +342,17 @@ int main(int argc, char** argv)
 			));
 		*/
 
-		auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, uint deltaTime)
-		{
-			sceneManager->nextFrame();
-		});
+	});
 
-		canvas->run();
+	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, uint deltaTime)
+	{
+		sceneManager->nextFrame();
 	});
     
 	controller->start();
 	sceneManager->assets()->load();
 
+	canvas->run();
 	return 0;
 }
 

@@ -53,34 +53,34 @@ int main(int argc, char** argv)
 		->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()))
 		->geometry("sphere", geometry::SphereGeometry::create(sceneManager->assets()->context(), 16, 16));
 	
+	auto root = scene::Node::create("root")
+		->addComponent(sceneManager);
+
+	auto camera = scene::Node::create("camera")
+		->addComponent(Renderer::create(0x7f7f7fff))
+		->addComponent(Transform::create(
+			Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 3.f))
+		))
+		->addComponent(PerspectiveCamera::create(800.f / 600.f, (float)PI * 0.25f, .1f, 1000.f));
+	
+	auto sky = scene::Node::create("sky")
+		->addComponent(Transform::create(
+			Matrix4x4::create()->appendScale(100.0f, 100.0f, 100.0f)
+		));
+
+	auto objects = scene::Node::create("objects")
+		->addComponent(Transform::create(
+			Matrix4x4::create()->appendRotationX(0.2f)
+		));
 
 	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
 	{
-		auto root = scene::Node::create("root")
-			->addComponent(sceneManager);
-
-		auto camera = scene::Node::create("camera")
-			->addComponent(Renderer::create(0x7f7f7fff))
-			->addComponent(Transform::create(
-				Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 3.f))
-			))
-			->addComponent(PerspectiveCamera::create(800.f / 600.f, (float)PI * 0.25f, .1f, 1000.f));
-		
-		auto sky = scene::Node::create("sky")
-			->addComponent(Transform::create(
-				Matrix4x4::create()->appendScale(100.0f, 100.0f, 100.0f)
-			))
-			->addComponent(Surface::create(
+		sky->addComponent(Surface::create(
 				assets->geometry("cube"),
 				material::BasicMaterial::create()
 					->diffuseCubeMap(assets->texture(CUBE_TEXTURE))
 					->triangleCulling(render::TriangleCulling::FRONT),
 				assets->effect("effect/Basic.effect")
-			));
-		
-		auto objects = scene::Node::create("objects")
-			->addComponent(Transform::create(
-				Matrix4x4::create()->appendRotationX(0.2f)
 			));
 
 		assert(NUM_OBJECTS > 0);
@@ -94,24 +94,24 @@ int main(int argc, char** argv)
 			->addChild(camera)
 			->addChild(sky)
 			->addChild(objects);
+	});
 
-		auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
-		{
-			camera->component<PerspectiveCamera>()->aspectRatio((float)w / (float)h);
-		});
+	auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
+	{
+		camera->component<PerspectiveCamera>()->aspectRatio((float)w / (float)h);
+	});
 
-		auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, uint deltaTime)
-		{
-			sky->component<Transform>()->matrix()->appendRotationY(.001f);
-			objects->component<Transform>()->matrix()->prependRotationY(-.02f);
+	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, uint deltaTime)
+	{
+		sky->component<Transform>()->matrix()->appendRotationY(.001f);
+		objects->component<Transform>()->matrix()->prependRotationY(-.02f);
 
-			sceneManager->nextFrame();
-		});
-
-		canvas->run();
+		sceneManager->nextFrame();
 	});
 
 	sceneManager->assets()->load();
+
+	canvas->run();
 
 	return 0;
 }
