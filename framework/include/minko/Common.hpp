@@ -300,6 +300,13 @@ namespace minko
 		class AbstractParser;
 		class EffectParser;
         class AssetLibrary;
+
+        class ParserError : public std::runtime_error
+        {
+        public:
+            ParserError(std::string message) : std::runtime_error(message)
+            {}
+        };
 	}
 
 	namespace material
