@@ -41,7 +41,7 @@ ZSortSignalManager::initializeTargetRawPropertyNames()
 
 	_targetRawPropNames.insert("material[${materialId}].priority");
 	_targetRawPropNames.insert("material[${materialId}].zsorted");
-	_targetRawPropNames.insert("geometry[${geometryId}].vertex.attribute.position");
+	_targetRawPropNames.insert("geometry[${geometryId}].position");
 	_targetRawPropNames.insert("transform.modelToWorldMatrix");
 }
 
