@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include <stack>
 #include "minko/component/Transform.hpp"
 #include "minko/component/JobManager.hpp"
+#include "minko/file/Options.hpp"
 
 using namespace minko;
 using namespace minko::file;
@@ -103,14 +104,14 @@ SceneParser::parse(const std::string&					filename,
 {
 	msgpack::object		deserialized;
 	msgpack::zone		mempool;
-	std::string 		folderPath = extractFolderPath(filename);
+	std::string 		folderPath = extractFolderPath(resolvedFilename);
 	std::string			str = extractDependencies(assetLibrary, data, options, folderPath);
 
 	msgpack::unpack(str.data(), str.size(), NULL, &mempool, &deserialized);
 	msgpack::type::tuple<std::vector<std::string>, std::vector<SerializedNode>> dst;
 	deserialized.convert(&dst);
 
-	assetLibrary->symbol(filename, parseNode(dst.a1, dst.a0, assetLibrary));
+	assetLibrary->symbol(filename, parseNode(dst.a1, dst.a0, assetLibrary, options));
 
 	auto jobManager = component::JobManager::create(30);
 
@@ -125,7 +126,8 @@ SceneParser::parse(const std::string&					filename,
 scene::Node::Ptr
 SceneParser::parseNode(std::vector<SerializedNode>&			nodePack, 
 					   std::vector<std::string>&			componentPack,
-					   AssetLibraryPtr						assetLibrary)
+					   AssetLibraryPtr						assetLibrary,
+					   Options::Ptr							options)
 {
 	scene::Node::Ptr									root;
 	std::queue<std::tuple<scene::Node::Ptr, uint>>		nodeStack;
@@ -141,6 +143,8 @@ SceneParser::parseNode(std::vector<SerializedNode>&			nodePack,
 		newNode->layouts(layouts);
 		newNode->name(nodePack[i].a0);
 		
+		newNode = options->nodeFunction()(newNode);
+
 		for (uint componentId : componentsId)
 			componentIdToNodes[componentId].push_back(newNode);
 

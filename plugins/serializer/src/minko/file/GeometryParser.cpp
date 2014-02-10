@@ -91,7 +91,7 @@ GeometryParser::parse(const std::string&				filename,
 {
 	msgpack::object			msgpackObject;
 	msgpack::zone			mempool;
-	std::string				folderPathName = extractFolderPath(filename);
+	std::string				folderPathName = extractFolderPath(resolvedFilename);
 	std::string				str		= extractDependencies(assetLibrary, data, options, folderPathName);
 	geometry::Geometry::Ptr geom	= geometry::Geometry::create();
 	SerializedGeometry		serializedGeometry;
@@ -106,6 +106,8 @@ GeometryParser::parse(const std::string&				filename,
 	for (std::string serializedVertexBuffer : serializedGeometry.a3)
 		geom->addVertexBuffer(vertexBufferParserFunction(serializedVertexBuffer, options->context()));
 		
+	geom = options->geometryFunction()(serializedGeometry.a1, geom);
+
 	assetLibrary->geometry(serializedGeometry.a1, geom);
 	_lastParsedAssetName = serializedGeometry.a1;
 }
