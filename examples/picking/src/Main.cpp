@@ -69,13 +69,14 @@ int main(int argc, char** argv)
 				assets->material("greenMaterial"),
 				assets->effect("effect/Basic.effect")))
 			->addComponent(Transform::create());
-		
+
 		auto teapot = scene::Node::create("planeNode")
 			->addComponent(Surface::create(
 				assets->geometry("plane"),
 				assets->material("blueMaterial"),
 				assets->effect("effect/Basic.effect")))
 			->addComponent(Transform::create(Matrix4x4::create()->appendTranslation(Vector3::create(1.4f))));
+		
 			
 		auto camera = scene::Node::create("camera")
 			->addComponent(Transform::create(
@@ -84,12 +85,13 @@ int main(int argc, char** argv)
 			->addComponent(PerspectiveCamera::create(800.f / 600.f, (float)PI * 0.25f, .1f, 1000.f));
 
 		root->addChild(camera)
-			->addChild(cube)
-			->addChild(sphere)
-			->addChild(teapot);
+			->addChild(sphere);
 
 		camera->addComponent(Renderer::create(0x7f7f7fff));
 		root->addComponent(Picking::create(sceneManager, canvas, camera));
+
+		root->addChild(teapot)
+			->addChild(cube);
 
 		auto pickingMouseClick = root->component<Picking>()->mouseClick()->connect([&](scene::Node::Ptr node)
 		{
