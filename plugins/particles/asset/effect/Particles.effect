@@ -3,14 +3,14 @@
 	"name"	: "particles",
 	
 	"attributeBindings"	: {
-		"offset"				: "geometry.vertex.attribute.offset",
-		"position"				: "geometry.vertex.attribute.position",
-		"size"					: "geometry.vertex.attribute.size",
-		"color"					: "geometry.vertex.attribute.color",
-		"time"					: "geometry.vertex.attribute.time",
-		"oldPosition"			: "geometry.vertex.attribute.oldPosition",
-		"rotation"				: "geometry.vertex.attribute.rotation",
-		"spriteIndex"			: "geometry.vertex.attribute.spriteIndex"
+		"offset"				: "geometry[${geometryId}].offset",
+		"position"				: "geometry[${geometryId}].position",
+		"size"					: "geometry[${geometryId}].size",
+		"color"					: "geometry[${geometryId}].color",
+		"time"					: "geometry[${geometryId}].time",
+		"oldPosition"			: "geometry[${geometryId}].oldPosition",
+		"rotation"				: "geometry[${geometryId}].rotation",
+		"spriteIndex"			: "geometry[${geometryId}].spriteIndex"
 	},
 	
 	"uniformBindings"	: {
