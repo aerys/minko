@@ -26,7 +26,7 @@ namespace minko
             std::string                                     _resolvedFilename;
 
             Signal<Ptr>::Ptr                                _complete;
-            Signal<Ptr>::Ptr                                _progress;
+            Signal<Ptr, float>::Ptr                                _progress;
             Signal<Ptr>::Ptr                                _error;
             Signal<Ptr, AbsParserPtr, AssetLibraryPtr>::Ptr _parserComplete;
 
@@ -76,7 +76,7 @@ namespace minko
             }
 
             inline
-            std::shared_ptr<Signal<Ptr>>
+            std::shared_ptr<Signal<Ptr, float>>
             progress()
             {
                 return _progress;
@@ -95,7 +95,7 @@ namespace minko
         protected:
             AbstractLoader():
                 _complete(Signal<Ptr>::create()),
-                _progress(Signal<Ptr>::create()),
+                _progress(Signal<Ptr, float>::create()),
                 _error(Signal<Ptr>::create()),
                 _parserComplete(Signal<Ptr, AbsParserPtr, AssetLibraryPtr>::create())
             {

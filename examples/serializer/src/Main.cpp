@@ -80,19 +80,26 @@ int main(int argc, char** argv)
 		->queue(MODEL_FILENAME);
 #endif
 
+	auto root = scene::Node::create("root")
+		->addComponent(sceneManager);
+
+	auto camera = scene::Node::create("camera")
+		->addComponent(Renderer::create(0x7f7f7fff))
+		->addComponent(Transform::create(
+		Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 20.f))
+		))
+		->addComponent(PerspectiveCamera::create(800.f / 600.f, (float)PI * 0.25f, .1f, 1000.f));
+	root->addChild(camera);
+
+	auto mesh = scene::Node::create("mesh")
+		->addComponent(Transform::create());
+	auto mesh2 = scene::Node::create("mesh2")
+		->addComponent(Transform::create());
+	auto mesh3 = scene::Node::create("mesh3")
+		->addComponent(Transform::create());
 
 	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
 	{
-		auto root = scene::Node::create("root")
-			->addComponent(sceneManager);
-
-		auto camera = scene::Node::create("camera")
-			->addComponent(Renderer::create(0x7f7f7fff))
-			->addComponent(Transform::create(
-			Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 20.f))
-			))
-			->addComponent(PerspectiveCamera::create(800.f / 600.f, (float)PI * 0.25f, .1f, 1000.f));
-		root->addChild(camera);
 #ifdef SERIALIZE
 		auto cubeMaterial = material::BasicMaterial::create()
 			->diffuseMap(assets->texture("texture/box.png"))
@@ -109,25 +116,18 @@ int main(int argc, char** argv)
 		assets->material("boxMaterial", cubeMaterial);
 		assets->material("sphereMaterial", sphereMaterial);
 		
-		auto mesh = scene::Node::create("mesh")
-			->addComponent(Transform::create())
-			->addComponent(Surface::create(
+		mesh->addComponent(Surface::create(
 				assets->geometry("sphere"),
 				assets->material("sphereMaterial"),
 				assets->effect("effect/Basic.effect")
 			));
 
-		auto mesh2 = scene::Node::create("mesh2")
-			->addComponent(Transform::create())
-			->addComponent(Surface::create(
+		mesh2->addComponent(Surface::create(
 				assets->geometry("cube"),
 				assets->material("boxMaterial"),
 				assets->effect("effect/Basic.effect")
 			));
-
-		auto mesh3 = scene::Node::create("mesh3")
-			->addComponent(Transform::create())	
-			->addComponent(Surface::create(
+		mesh3->addComponent(Surface::create(
 				assets->geometry("cube"),
 				assets->material("boxMaterial"),
 				assets->effect("effect/Basic.effect")
@@ -141,72 +141,73 @@ int main(int argc, char** argv)
 		mesh3->component<Transform>()->matrix()->appendTranslation(0, -1, 0);
 #endif
 
-		auto yaw = 0.f;
-		auto pitch = (float)PI * .5f;
-		auto roll = 0.f;
-		float minPitch = 0.f + float(1e-5);
-		float maxPitch = (float)PI - float(1e-5);
-		auto lookAt = Vector3::create(0.f, 0.f, 0.f);
-		auto distance = 10.f;
-
-		Signal<input::Mouse::Ptr, int, int>::Slot mouseMove;
-		auto cameraRotationXSpeed = 0.f;
-		auto cameraRotationYSpeed = 0.f;
-
-		// handle mouse signals
-		auto mouseWheel = canvas->mouse()->wheel()->connect([&](input::Mouse::Ptr m, int h, int v)
-		{
-			distance += (float)v / 5.f;
-		});
-
-		mouseMove = canvas->mouse()->move()->connect([&](input::Mouse::Ptr m, int dx, int dy)
-		{
-			if (m->leftButtonIsDown())
-			{
-				cameraRotationYSpeed = (float)dx * .01f;
-				cameraRotationXSpeed = (float)dy * -.01f;
-			}
-		});
-
-		auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
-		{
-			root->children()[0]->component<PerspectiveCamera>()->aspectRatio((float)w / (float)h);
-		});
-
 #ifdef SERIALIZE
 		serializeSceneExample(assets, root, sceneManager->assets()->context());
 #else
 		openSceneExample(assets, root);
 #endif
-		auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr canvas, uint time, uint deltaTime)
-		{
-
-			yaw += cameraRotationYSpeed;
-			cameraRotationYSpeed *= 0.9f;
-
-			pitch += cameraRotationXSpeed;
-			cameraRotationXSpeed *= 0.9f;
-			if (pitch > maxPitch)
-				pitch = maxPitch;
-			else if (pitch < minPitch)
-				pitch = minPitch;
-
-			camera->component<Transform>()->matrix()->lookAt(
-				lookAt,
-				Vector3::create(
-				lookAt->x() + distance * cosf(yaw) * sinf(pitch),
-				lookAt->y() + distance * cosf(pitch),
-				lookAt->z() + distance * sinf(yaw) * sinf(pitch)
-				)
-			);
-
-			sceneManager->nextFrame();
-		});
-
-		canvas->run();
 	});
+
+	auto yaw = 0.f;
+	auto pitch = (float)PI * .5f;
+	auto roll = 0.f;
+	float minPitch = 0.f + float(1e-5);
+	float maxPitch = (float)PI - float(1e-5);
+	auto lookAt = Vector3::create(0.f, 0.f, 0.f);
+	auto distance = 10.f;
+
+	Signal<input::Mouse::Ptr, int, int>::Slot mouseMove;
+	auto cameraRotationXSpeed = 0.f;
+	auto cameraRotationYSpeed = 0.f;
+
+	// handle mouse signals
+	auto mouseWheel = canvas->mouse()->wheel()->connect([&](input::Mouse::Ptr m, int h, int v)
+	{
+		distance += (float)v / 5.f;
+	});
+
+	mouseMove = canvas->mouse()->move()->connect([&](input::Mouse::Ptr m, int dx, int dy)
+	{
+		if (m->leftButtonIsDown())
+		{
+			cameraRotationYSpeed = (float)dx * .01f;
+			cameraRotationXSpeed = (float)dy * -.01f;
+		}
+	});
+
+	auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
+	{
+		root->children()[0]->component<PerspectiveCamera>()->aspectRatio((float)w / (float)h);
+	});
+
 	
+	auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr canvas, uint time, uint deltaTime)
+	{
+		yaw += cameraRotationYSpeed;
+		cameraRotationYSpeed *= 0.9f;
+
+		pitch += cameraRotationXSpeed;
+		cameraRotationXSpeed *= 0.9f;
+		if (pitch > maxPitch)
+			pitch = maxPitch;
+		else if (pitch < minPitch)
+			pitch = minPitch;
+
+		camera->component<Transform>()->matrix()->lookAt(
+			lookAt,
+			Vector3::create(
+			lookAt->x() + distance * cosf(yaw) * sinf(pitch),
+			lookAt->y() + distance * cosf(pitch),
+			lookAt->z() + distance * sinf(yaw) * sinf(pitch)
+			)
+		);
+
+		sceneManager->nextFrame();
+	});
+
 	sceneManager->assets()->load();
+
+	canvas->run();
 
 	return 0;
 }
