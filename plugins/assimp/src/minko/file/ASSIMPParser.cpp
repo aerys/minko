@@ -42,6 +42,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/geometry/Bone.hpp"
 #include "minko/material/Material.hpp"
 #include "minko/file/AssetLibrary.hpp"
+#include "minko/render/Effect.hpp"
 
 using namespace minko;
 using namespace minko::component;
@@ -201,24 +202,27 @@ ASSIMPParser::createSceneTree(scene::Node::Ptr 				minkoNode,
         minkoNode->addChild(_options->nodeFunction()(child));
     }
     
+	auto minkoMesh = scene::Node::create();
+	minkoMesh->addComponent(Transform::create());
+
     for (uint j = 0; j < ainode->mNumMeshes; j++)
     {
         aiMesh* mesh = scene->mMeshes[ainode->mMeshes[j]];
 		assert(mesh);
 
-		auto minkoMesh = scene::Node::create(mesh->mName.C_Str());
+	//	auto minkoMesh = scene::Node::create(mesh->mName.C_Str());
 
 		_aiMeshToNode[mesh] = minkoMesh;
 
-		minkoMesh->addComponent(Transform::create());
+	//	minkoMesh->addComponent(Transform::create());
 		createMeshSurface(minkoMesh, scene, mesh);
 
-		minkoNode->addChild(_options->nodeFunction()(minkoMesh));
 
 #ifdef DEBUG_SKINNING
 		std::cout << "meshmap\t<- '" << minkoMesh->name() << "'" << std::endl;
 #endif // DEBUG_SKINNING
     }
+	minkoNode->addChild(_options->nodeFunction()(minkoMesh));
 }
 
 Geometry::Ptr
@@ -370,7 +374,8 @@ ASSIMPParser::createMeshSurface(scene::Node::Ptr 	minkoNode,
 		}
 	}
 
-    minkoNode->addComponent(Surface::create(geom, provider, _options->effect()));
+	std::string surfaceName(mesh->mName.C_Str());
+	minkoNode->addComponent(Surface::create(surfaceName, geom, provider, _options->effect(), "default"));
 }
 
 void
