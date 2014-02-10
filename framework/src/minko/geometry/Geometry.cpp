@@ -48,7 +48,7 @@ Geometry::addVertexBuffer(render::VertexBuffer::Ptr vertexBuffer)
 	const unsigned bufNumVertices	= vertexBuffer->numVertices();
 
 	for (auto attribute : vertexBuffer->attributes())
-		_data->set("vertex.attribute." + std::get<0>(*attribute), vertexBuffer);
+		_data->set(std::get<0>(*attribute), vertexBuffer);
 	_vertexSize	+= bufVertexSize;
 	_data->set("vertex.size", _vertexSize);
 
@@ -74,7 +74,7 @@ Geometry::removeVertexBuffer(std::list<render::VertexBuffer::Ptr>::iterator vert
 	vertexBuffer->dispose();
 
 	for (auto attribute : vertexBuffer->attributes())
-		_data->unset("vertex.attribute." + std::get<0>(*attribute));
+		_data->unset(std::get<0>(*attribute));
 
 	_vertexSize	-= vertexBuffer->vertexSize();
 	_data->set("vertex.size", _vertexSize);
@@ -119,10 +119,10 @@ Geometry::computeNormals()
 	if (numVertices == 0)
 		return shared_from_this();
 
-	if (_data->hasProperty("vertex.attribute.normal"))
+	if (_data->hasProperty("normal"))
 		throw std::logic_error("The geometry already stores precomputed normals.");
 		
-	if (!_data->hasProperty("vertex.attribute.position"))
+	if (!_data->hasProperty("position"))
 		throw std::logic_error("Computation of normals requires positions.");
 
 	const std::vector<unsigned short>& indices	= this->indices()->data();
@@ -131,7 +131,7 @@ Geometry::computeNormals()
 	unsigned short vertexIds[3] = { 0, 0, 0 };
 	std::vector<Vector3::Ptr> xyz(3);
 
-	VertexBuffer::Ptr xyzBuffer			= _data->get<VertexBuffer::Ptr>("vertex.attribute.position");
+	VertexBuffer::Ptr xyzBuffer			= _data->get<VertexBuffer::Ptr>("position");
 	const unsigned int xyzSize			= xyzBuffer->vertexSize();
 	const unsigned int xyzOffset		= std::get<2>(*xyzBuffer->attribute("position"));
 	const std::vector<float>& xyzData	= xyzBuffer->data();
@@ -189,8 +189,8 @@ Geometry::computeTangentSpace(bool doNormals)
 	if (numVertices == 0)
 		return shared_from_this();
 
-	if (!_data->hasProperty("vertex.attribute.position") 
-		|| !_data->hasProperty("vertex.attribute.uv"))
+	if (!_data->hasProperty("position") 
+		|| !_data->hasProperty("uv"))
 		throw std::logic_error("Computation of tangent space requires positions and uv.");
 
 	if (doNormals)
@@ -203,12 +203,12 @@ Geometry::computeTangentSpace(bool doNormals)
 	std::vector<Vector3::Ptr> xyz(3);
 	std::vector<Vector2::Ptr> uv(3);
 
-	VertexBuffer::Ptr xyzBuffer			= _data->get<VertexBuffer::Ptr>("vertex.attribute.position");
+	VertexBuffer::Ptr xyzBuffer			= _data->get<VertexBuffer::Ptr>("position");
 	const unsigned int xyzSize			= xyzBuffer->vertexSize();
 	const unsigned int xyzOffset		= std::get<2>(*xyzBuffer->attribute("position"));
 	const std::vector<float>& xyzData	= xyzBuffer->data();
 
-	VertexBuffer::Ptr uvBuffer			= _data->get<VertexBuffer::Ptr>("vertex.attribute.uv");
+	VertexBuffer::Ptr uvBuffer			= _data->get<VertexBuffer::Ptr>("uv");
 	const unsigned int uvSize			= uvBuffer->vertexSize();
 	const unsigned int uvOffset			= std::get<2>(*uvBuffer->attribute("uv"));
 	const std::vector<float>& uvData	= uvBuffer->data();

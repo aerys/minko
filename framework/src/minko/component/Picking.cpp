@@ -152,31 +152,39 @@ Picking::targetRemovedHandler(AbsCtrlPtr ctrl, NodePtr target)
 void
 Picking::addedHandler(NodePtr node, NodePtr target, NodePtr parent)
 {
-	_renderingBeginSlot = _renderer->renderingBegin()->connect(std::bind(
-		&Picking::renderingBegin,
-		shared_from_this(),
-		std::placeholders::_1));
+	if (node == target)
+	{
+		_renderingBeginSlot = _renderer->renderingBegin()->connect(std::bind(
+			&Picking::renderingBegin,
+			shared_from_this(),
+			std::placeholders::_1));
 
-	_renderingEndSlot = _renderer->beforePresent()->connect(std::bind(
-		&Picking::renderingEnd,
-		shared_from_this(),
-		std::placeholders::_1));
+		_renderingEndSlot = _renderer->beforePresent()->connect(std::bind(
+			&Picking::renderingEnd,
+			shared_from_this(),
+			std::placeholders::_1));
 	
-	_componentAddedSlot = target->root()->componentAdded()->connect(std::bind(
-		&Picking::componentAddedHandler,
-		shared_from_this(),
-		std::placeholders::_1,
-		std::placeholders::_2,
-		std::placeholders::_3
-	));
+		_componentAddedSlot = target->root()->componentAdded()->connect(std::bind(
+			&Picking::componentAddedHandler,
+			shared_from_this(),
+			std::placeholders::_1,
+			std::placeholders::_2,
+			std::placeholders::_3
+		));
 
-	_componentRemovedSlot = target->root()->componentRemoved()->connect(std::bind(
-		&Picking::componentRemovedHandler,
-		shared_from_this(),
-		std::placeholders::_1,
-		std::placeholders::_2,
-		std::placeholders::_3
-	));
+		_componentRemovedSlot = target->root()->componentRemoved()->connect(std::bind(
+			&Picking::componentRemovedHandler,
+			shared_from_this(),
+			std::placeholders::_1,
+			std::placeholders::_2,
+			std::placeholders::_3
+		));
+	}
+	else
+	{
+		for (auto surface : target->components<Surface>())
+			addSurface(surface);
+	}
 
 }
 

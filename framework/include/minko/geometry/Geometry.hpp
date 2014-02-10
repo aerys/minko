@@ -101,7 +101,7 @@ namespace minko
 			bool
 			hasVertexAttribute(const std::string& vertexAttributeName) const
 			{
-				return _data->hasProperty("vertex.attribute." + vertexAttributeName);
+				return _data->hasProperty(vertexAttributeName);
 			}
 
 			inline
