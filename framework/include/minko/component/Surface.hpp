@@ -52,6 +52,8 @@ namespace minko
 
 
 		private:
+			std::string																_name;
+
 			std::shared_ptr<geometry::Geometry>										_geometry;
 			std::shared_ptr<data::Provider>											_material;
 			std::shared_ptr<render::Effect>											_effect;
@@ -82,17 +84,18 @@ namespace minko
 				   std::shared_ptr<data::Provider>			material,
 				   std::shared_ptr<render::Effect>			effect)
 			{
-				return create(geometry, material, effect, "default");
+				return create("", geometry, material, effect, "default");
 			}
 
 			static
 			Ptr
-			create(std::shared_ptr<geometry::Geometry> 		geometry,
+			create(std::string							    name,
+				   std::shared_ptr<geometry::Geometry> 		geometry,
 				   std::shared_ptr<data::Provider>			material,
 				   std::shared_ptr<render::Effect>			effect,
 				   const std::string&						technique)
 			{
-				Ptr surface(new Surface(geometry, material, effect, technique));
+				Ptr surface(new Surface(name, geometry, material, effect, technique));
 
 				surface->initialize();
 
@@ -138,6 +141,20 @@ namespace minko
 			}
 
 			inline
+			const std::string&
+			name()
+			{
+				return _name;
+			}
+
+			inline
+			void
+			name(std::string value)
+			{
+				_name = value;
+			}
+
+			inline
 			std::shared_ptr<geometry::Geometry>
 			geometry()
 			{
@@ -176,7 +193,8 @@ namespace minko
 			}
 
 		private:
-			Surface(std::shared_ptr<geometry::Geometry>		geometry,
+			Surface(std::string								name,
+					std::shared_ptr<geometry::Geometry>		geometry,
 					std::shared_ptr<data::Provider>			material,
 					std::shared_ptr<render::Effect>			effect,
 					const std::string&						technique);
