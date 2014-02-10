@@ -5,12 +5,12 @@
 	"priority"	: "opaque",
 	
     "attributeBindings" : {
-        "position"              : "geometry[${geometryId}].vertex.attribute.position",
-        "uv"                    : "geometry[${geometryId}].vertex.attribute.uv",
-		"boneIdsA"				: "geometry[${geometryId}].vertex.attribute.boneIdsA",
-		"boneIdsB"				: "geometry[${geometryId}].vertex.attribute.boneIdsB",		
-		"boneWeightsA"			: "geometry[${geometryId}].vertex.attribute.boneWeightsA",
-		"boneWeightsB"			: "geometry[${geometryId}].vertex.attribute.boneWeightsB"
+        "position"              : "geometry[${geometryId}].position",
+        "uv"                    : "geometry[${geometryId}].uv",
+		"boneIdsA"				: "geometry[${geometryId}].boneIdsA",
+		"boneIdsB"				: "geometry[${geometryId}].boneIdsB",		
+		"boneWeightsA"			: "geometry[${geometryId}].boneWeightsA",
+		"boneWeightsB"			: "geometry[${geometryId}].boneWeightsB"
     },
     
     "uniformBindings"   : {
@@ -27,7 +27,7 @@
         "DIFFUSE_MAP"           : "material[${materialId}].diffuseMap",
         "DIFFUSE_CUBEMAP"       : "material[${materialId}].diffuseCubeMap",
         "MODEL_TO_WORLD"        : "transform.modelToWorldMatrix",
-        "HAS_NORMAL"            : "geometry[${geometryId}].vertex.attribute.normal",
+        "HAS_NORMAL"            : "geometry[${geometryId}].normal",
         "NUM_BONES"             : { "property" : "geometry[${geometryId}].numBones",   "source" : "target" }
     },
 
