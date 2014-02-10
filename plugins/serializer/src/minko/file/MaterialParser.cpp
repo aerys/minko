@@ -34,6 +34,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/Blending.hpp"
 #include "minko/render/TriangleCulling.hpp"
 #include "minko/file/Dependency.hpp"
+#include "minko/file/Options.hpp"
+#include "minko/render/Priority.hpp"
 
 using namespace minko;
 using namespace minko::file;
@@ -55,13 +57,13 @@ MaterialParser::MaterialParser()
 void
 MaterialParser::parse(const std::string&				filename,
 					  const std::string&                resolvedFilename,
-					  OptionsPtr						options,
+					  Options::Ptr						options,
 					  const std::vector<unsigned char>&	data,
 					  AssetLibraryPtr					assetLibrary)
 {
 	msgpack::object		msgpackObject;
 	msgpack::zone		mempool;
-	std::string 		folderpath = extractFolderPath(filename);
+	std::string 		folderpath = extractFolderPath(resolvedFilename);
 	std::string			str = extractDependencies(assetLibrary, data, options, folderpath);
 
 	msgpack::type::tuple<std::vector<ComplexProperty>, std::vector<BasicProperty>> serializedMaterial;
@@ -79,8 +81,10 @@ MaterialParser::parse(const std::string&				filename,
 	for (auto serializedBasicProperty : basicProperties)
 		deserializeBasicProperty(material, serializedBasicProperty);
 
-	assetLibrary->material(resolvedFilename, material);
-	_lastParsedAssetName = resolvedFilename;
+	material = options->materialFunction()(material->arrayName(), material);
+
+	assetLibrary->material(filename, material);
+	_lastParsedAssetName = filename;
 }
 
 void
@@ -108,9 +112,16 @@ MaterialParser::deserializeComplexProperty(MaterialPtr			material,
 			serializedProperty.a0, 
 			Any::cast<Vector3Ptr>(TypeDeserializer::deserializeVector3(serializedPropertyTulpe)));
 	else if (type == BLENDING)
+	{
 		material->set<render::Blending::Mode>(
 			serializedProperty.a0, 
 			Any::cast<render::Blending::Mode>(TypeDeserializer::deserializeBlending(serializedPropertyTulpe)));
+		
+		if (material->get<render::Blending::Mode>("blendMode") != render::Blending::Mode::DEFAULT)
+
+		material->set("priority", render::priority::TRANSPARENT);
+		material->set("zSort", true);
+	}
 	else if (type == TRIANGLECULLING)
 		material->set<render::TriangleCulling>(
 			serializedProperty.a0, 

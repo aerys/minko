@@ -171,6 +171,7 @@ ComponentDeserializer::deserializeSurface(std::string&							serializedSurface,
 	render::Effect::Ptr			effect = dependencies->getEffectReference(dst.a2);
 
 	std::shared_ptr<component::Surface>	surface = component::Surface::create(
+		"",
 		geometry,
 		(material != nullptr ? material : assetLibrary->material("defaultMaterial")),
 		(effect != nullptr ? effect : assetLibrary->effect("effect/Phong.effect")),
