@@ -71,7 +71,7 @@ OctTree::generateVisual(std::shared_ptr<file::AssetLibrary>		assetLibrary,
 						geometry::CubeGeometry::create(assetLibrary->context()),
 						material::BasicMaterial::create()
 							->diffuseColor(0x00FF0030)
-							->blendMode(render::Blending::Mode::ALPHA)
+							->blendingMode(render::Blending::Mode::ALPHA)
 							->triangleCulling(render::TriangleCulling::NONE),
 						assetLibrary->effect("effect/Basic.effect")
 					));
