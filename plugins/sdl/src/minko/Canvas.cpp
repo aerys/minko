@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/input/Keyboard.hpp"
 #include "minko/data/Provider.hpp"
 #include "minko/math/Vector4.hpp"
+#include "minko/async/Worker.hpp"
 
 #if defined(EMSCRIPTEN)
 # include "minko/MinkoWebGL.hpp"
@@ -39,6 +40,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 using namespace minko;
 using namespace minko::math;
+using namespace minko::async;
 
 Canvas::Canvas(const std::string& name, const uint width, const uint height, bool useStencil) :
 	_name(name),
@@ -405,8 +407,8 @@ Canvas::step()
 		}
 	}
 
-	for (auto worker : _workers)
-		worker.second->update();
+	for (auto worker : _activeWorkers)
+		worker->update();
 
 	auto time = std::clock();
 	auto frameTime = (1000.f * (time - stepStartTime) / CLOCKS_PER_SEC);
@@ -485,33 +487,18 @@ Canvas::SDLKeyboard::getScanCodeFromKeyCode(input::Keyboard::KeyCode keyCode)
 }
 
 Canvas::WorkerPtr
-Canvas::worker(const std::string& name)
+Canvas::getWorker(const std::string& name)
 {
-    return _workers.count(name) ? _workers[name] : nullptr;
-}
+	if (!_workers.count(name))
+		return nullptr;
 
-Canvas::Ptr
-Canvas::worker(const std::string& name, WorkerPtr worker)
-{
-    _workers[name] = worker;
+	auto worker = _workers[name]();
 
-	worker->complete()->connect([&, name](async::Worker::MessagePtr) {
-		_workers.erase(name);
-	});
-	
-    return shared_from_this();
-}
+	_activeWorkers.push_back(worker);
 
-const std::string&
-Canvas::workerName(WorkerPtr worker)
-{
-	auto it = std::find_if(_workers.begin(), _workers.end(), [&](std::pair<std::string, WorkerPtr> itr) -> bool
-	{
-		return itr.second == worker;
+	worker->complete()->connect([worker, this](Worker::MessagePtr) {
+		_activeWorkers.erase(std::remove(_activeWorkers.begin(), _activeWorkers.end(), worker), _activeWorkers.end());
 	});
 
-	if (it != _workers.end())
-		return it->first;
-
-	throw new std::logic_error("Canvas does not reference this worker.");
+	return worker;
 }

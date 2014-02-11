@@ -28,14 +28,24 @@ using namespace minko::file;
 MINKO_WORKER("http", minko::async::HTTPWorker, {
 	std::cout << "HTTPWorker::run(): enter" << std::endl;
 
-	std::string filename(input->begin(), input->end());
+	// Simulate long execution worker.
+	std::chrono::milliseconds dura(2000);
+	std::this_thread::sleep_for(dura);
 
-	_output = std::make_shared<std::vector<char>>();
+	std::string filename(input()->begin(), input()->end());
+
+	output(std::make_shared<std::vector<char>>());
+
+	std::cout << "HTTPWorker::run(): before curl init" << std::endl;
 
 	CURL* curl = curl_easy_init();
 
+	std::cout << "HTTPWorker::run(): after curl init" << std::endl;
+
 	if (!curl)
 		throw std::runtime_error("cURL not enabled");
+
+	std::cout << "HTTPWorker::run(): after curl init success" << std::endl;
 
 	curl_easy_setopt(curl, CURLOPT_URL, filename.c_str());
 
@@ -50,10 +60,15 @@ MINKO_WORKER("http", minko::async::HTTPWorker, {
 
 	curl_easy_setopt(curl, CURLOPT_USERAGENT, "libcurl-agent/1.0");
 
+	std::cout << "HTTPWorker::run(): before curl perform" << std::endl;
+
 	CURLcode res = curl_easy_perform(curl);
+
+	std::cout << "HTTPWorker::run(): after curl perform" << std::endl;
 
 	if (res != CURLE_OK)
 	{
+		std::cout << "HTTPWorker::run(): curl error" << std::endl;
 		// FIXME: Deal with errors.
 		// errorHandler(loader.get());
 	}
@@ -61,8 +76,6 @@ MINKO_WORKER("http", minko::async::HTTPWorker, {
 	curl_easy_cleanup(curl);
 
 	std::cout << "HTTPWorker::run(): exit" << std::endl;
-
-	return _output;
 });
 
 namespace minko
@@ -76,15 +89,15 @@ namespace minko
 
 			size *= chunks;
 
-			std::vector<char>& output = *worker->output();
+			Worker::MessagePtr output = worker->output();
 
-			size_t position = output.size();
+			size_t position = output->size();
 
 			// Resizing to the new size.
-			output.resize(position + size);
+			output->resize(position + size);
 
 			// Adding the chunk to the end of the vector.
-			std::copy(output.begin() + position, output.end(), output.begin() + position);
+			std::copy(output->begin() + position, output->end(), output->begin() + position);
 
 			return size;
 		}

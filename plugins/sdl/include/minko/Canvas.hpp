@@ -187,7 +187,8 @@ namespace minko
 		std::shared_ptr<SDLMouse>						_mouse;
 		std::vector<std::shared_ptr<SDLJoystick>>		_joysticks;
 		std::shared_ptr<SDLKeyboard>    				_keyboard;
-		std::unordered_map<std::string, WorkerPtr>		_workers;
+
+		std::list<std::shared_ptr<async::Worker>>		_activeWorkers;
 
 	public:
 		static inline
@@ -305,13 +306,7 @@ namespace minko
 		}
 
 		WorkerPtr
-		worker(const std::string& name);
-
-		Canvas::Ptr
-		worker(const std::string& name, WorkerPtr worker);
-
-		const std::string&
-		workerName(WorkerPtr worker);
+		getWorker(const std::string& name);
 
 		void
 		run();
