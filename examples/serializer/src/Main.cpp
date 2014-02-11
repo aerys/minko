@@ -32,7 +32,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/deserialize/TypeDeserializer.hpp"
 #include "minko/geometry/SphereGeometry.hpp"
 
-std::string MODEL_FILENAME = "model/engine/NewScene.scene";
+std::string MODEL_FILENAME = "model/primitives/primitives.scene";
 
 //#define SERIALIZE // comment to test deserialization
 
