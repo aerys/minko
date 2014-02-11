@@ -25,7 +25,7 @@ function minko.worker.http:enable()
 	includedirs { minko.worker.path("http") .. "/include" }
 	defines { "MINKO_WORKER_HTTP" }
 
-	minko.plugin.enable("http")
+	-- minko.plugin.enable("http")
 
 	defines { "CURL_STATICLIB" }
 
