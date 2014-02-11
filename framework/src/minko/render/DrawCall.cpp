@@ -521,7 +521,7 @@ DrawCall::bindStates()
 	bindState<int>("scissorBox.width", _states->scissorBox().width, _scissorBox.width);
 	bindState<int>("scissorBox.height", _states->scissorBox().height, _scissorBox.height);
 	bindState<float>("priority", _states->priority(), _priority);
-	bindState<bool>("zSort", _states->zsorted(), _zsorted);
+	bindState<bool>("zSort", _states->zSorted(), _zsorted);
 	bindState<AbstractTexture::Ptr>("target", _states->target(), _target);
 }
 
