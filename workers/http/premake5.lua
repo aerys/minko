@@ -8,5 +8,22 @@ minko.project.worker("minko-worker-" .. PROJECT_NAME)
 	}
 
 	includedirs {
-		"include"
+		"include",
+		"lib/curl/include"
 	}
+
+	defines { "CURL_STATICLIB" }
+
+	minko.plugin.enable("http")
+
+	-- linux
+	configuration { "linux32 or linux64" }
+		links { "curl"}
+
+	-- windows
+	configuration { "windows32 or windows 64" }
+		links { "libcurl" }
+		
+	-- macos
+	configuration { "osx64" }
+		links { "curl"}
