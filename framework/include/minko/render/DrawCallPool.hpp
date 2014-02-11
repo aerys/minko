@@ -79,7 +79,7 @@ namespace minko
 			typedef Signal<Ptr, SurfacePtr, DrawCallPtr>												DrawCallChangedSignal;
 
 			typedef Signal<SurfacePtr, const std::string&, bool>::Slot									TechniqueChangeSlot;
-			typedef Signal<SurfacePtr, bool>::Slot														VisibilityChangedSlot;
+			typedef Signal<SurfacePtr, RendererPtr, bool>::Slot											VisibilityChangedSlot;
 			typedef Signal<DrawCallPtr>::Slot															ZSortNeededSlot;
 			typedef Signal<std::shared_ptr<data::ArrayProvider>, uint>::Slot							ArrayProviderIndexChangedSlot;
 			typedef PropertyChangedSignal::Slot															PropertyChangedSlot;
@@ -171,7 +171,7 @@ namespace minko
 			techniqueChanged(SurfacePtr surface, const std::string& technique, bool updateDrawCall);
 
 			void
-			visibilityChanged(SurfacePtr surface, bool visibility);
+			visibilityChanged(SurfacePtr surface, RendererPtr renderer, bool visibility);
 
 			// generate draw call for one mesh
 			std::shared_ptr<DrawCall>
