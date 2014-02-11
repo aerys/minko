@@ -1,9 +1,7 @@
 // phong effect
 {
 	"name"	: "phong",
-	
-	"priority"	: "opaque",
-	
+		
 	"attributeBindings"	: {
 		"position"				: "geometry[${geometryId}].position",
 		"uv"					: "geometry[${geometryId}].uv",
@@ -32,7 +30,11 @@
 		"worldToScreenMatrix"	: { "property" : "camera.worldToScreenMatrix", 		"source" : "renderer" },
 		"cameraPosition"		: { "property" : "camera.position", 				"source" : "renderer" },
 		"boneMatrices"			: "geometry[${geometryId}].boneMatrices",
-		"numBones"				: "geometry[${geometryId}].numBones"
+		"numBones"				: "geometry[${geometryId}].numBones",
+		"ambientLights"			: { "property" : "ambientLights",					"source" : "root" },
+		"directionalLights"		: { "property" : "directionalLights",				"source" : "root" },
+		"spotLights"			: { "property" : "spotLights",						"source" : "root" },
+		"pointLights"			: { "property" : "pointLights",						"source" : "root" }
 	},
 
 	"macroBindings"	: {
@@ -47,7 +49,9 @@
 		"ENVIRONMENT_TYPE_2D"	: "material[${materialId}].environmentMap2dType",
 		"SHININESS"				: "material[${materialId}].shininess",
 		"MODEL_TO_WORLD"		: "transform.modelToWorldMatrix",
-		"NUM_BONES"				: "geometry[${geometryId}].numBones"
+		"NUM_BONES"				: "geometry[${geometryId}].numBones",
+		"NUM_AMBIENT_LIGHTS"	: { "property" : "ambientLights.length",		"source" : "root" },
+		"PRECOMPUTED_AMBIENT"	: { "property" : "sumAmbients",					"source" : "root" }
 	},
 		
 	"stateBindings"	: {
@@ -76,83 +80,134 @@
 		"specularMap"	: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" }
 	},
 	
-	"blendMode"         : ["one", "zero"],
     "colorMask"         : true,
     "depthTest"         : [true, "less_equal"],
-    "triangleCulling"   : "none",
+    "triangleCulling"   : "back",
 	"stencilTest"		: ["always", 0, 1, ["keep", "keep", "keep"]],
     "scissorTest"		: false,
 	"scissorBox"		: [0, 0, -1, -1],
-    "priority"          : "opaque",
-    "zSort"             : false,
 
-	"defaultTechnique" : "single-pass",
+
+	"defaultTechnique"	: "opaque",
 	
 	"techniques" : [
+		// SINGLE PASS TECHNIQUES
+		//-----------------------
 		{
-			"name"				: "single-pass",
-			"fallback" 			: "multi-pass",
+			"name"				: "opaque",
+			"fallback" 			: "opaque-multipass",
+
 			"blendMode"			: ["one", "zero"],
-			"depthTest"			: [true, "less_equal"],
-			"triangleCulling"	: "back",
-			
-			"uniformBindings" : {
-				"ambientLights"				: { "property" : "ambientLights", "source" : "root" },
-				"directionalLights"			: { "property" : "directionalLights", "source" : "root" },
-				"spotLights"				: { "property" : "spotLights", "source" : "root" },
-				"pointLights"				: { "property" : "pointLights", "source" : "root" }
-			},
+   			"priority"          : "opaque",
+    		"zSort"             : false,
 			
 			"macroBindings" : {
-				"NUM_AMBIENT_LIGHTS"		: { "property" : "ambientLights.length", "source" : "root" },
-				"PRECOMPUTED_AMBIENT"		: { "property" : "sumAmbients", "source" : "root" },
-				"NUM_DIRECTIONAL_LIGHTS"	: { "property" : "directionalLights.length", "source" : "root", "max" : 8 },
-				"NUM_POINT_LIGHTS"			: { "property" : "pointLights.length", "source" : "root", "max" : 8 },
-				"NUM_SPOT_LIGHTS"			: { "property" : "spotLights.length", "source" : "root", "max" : 8 }
+				"NUM_DIRECTIONAL_LIGHTS"	: { "property" : "directionalLights.length",	"source" : "root",	"max" : 8 },
+				"NUM_POINT_LIGHTS"			: { "property" : "pointLights.length", 			"source" : "root",	"max" : 8 },
+				"NUM_SPOT_LIGHTS"			: { "property" : "spotLights.length", 			"source" : "root",	"max" : 8 }
 			},
 				
-			"passes"	: [{
-				"vertexShader" : "#pragma include('Phong.vertex.glsl')",
-				"fragmentShader" : "#pragma include('Phong.fragment.glsl')"
+			"passes"	: [
+			{
+				"vertexShader" 		: "#pragma include('Phong.vertex.glsl')",
+				"fragmentShader" 	: "#pragma include('Phong.fragment.glsl')"
 			}]
 		},
 
 		{
-			"name"				: "single-pass-no-glsl-struct",
-			"fallback" 			: "multi-pass",
+			"name"				: "opaque-no-struct",
+			"fallback" 			: "opaque-multipass",
+
 			"blendMode"			: ["one", "zero"],
-			"depthTest"			: [true, "less_equal"],
-			"triangleCulling"	: "back",
+   			"priority"          : "opaque",
+    		"zSort"             : false,
 			
 			"configuration"		: [ "no-glsl-struct" ],
 			
-			"uniformBindings" : {
-				"ambientLights"				: { "property" : "ambientLights", "source" : "root" },
-				"directionalLights"			: { "property" : "directionalLights", "source" : "root" },
-				"spotLights"				: { "property" : "spotLights", "source" : "root" },
-				"pointLights"				: { "property" : "pointLights", "source" : "root" }
-			},
-			
 			"macroBindings" : {
-				"NUM_AMBIENT_LIGHTS"		: { "property" : "ambientLights.length", "source" : "root" },
-				"PRECOMPUTED_AMBIENT"		: { "property" : "sumAmbients", "source" : "root" },
-				"NUM_DIRECTIONAL_LIGHTS"	: { "property" : "directionalLights.length", "source" : "root", "max" : 8 },
-				"NUM_POINT_LIGHTS"			: { "property" : "pointLights.length", "source" : "root", "max" : 8 },
-				"NUM_SPOT_LIGHTS"			: { "property" : "spotLights.length", "source" : "root", "max" : 8 }
+				"NUM_DIRECTIONAL_LIGHTS"	: { "property" : "directionalLights.length",	"source" : "root",	"max" : 8 },
+				"NUM_POINT_LIGHTS"			: { "property" : "pointLights.length", 			"source" : "root",	"max" : 8 },
+				"NUM_SPOT_LIGHTS"			: { "property" : "spotLights.length", 			"source" : "root",	"max" : 8 }
 			},
 				
-			"passes"	: [{
-				"vertexShader" : "#pragma include('Phong.vertex.glsl')",
-				"fragmentShader" : "#pragma include('Phong.fragment.glsl')"
+			"passes"	: [
+			{
+				"vertexShader" 		: "#pragma include('Phong.vertex.glsl')",
+				"fragmentShader" 	: "#pragma include('Phong.fragment.glsl')"
 			}]
 		},
 
 		{
-			// fixme: implement multi-pass phong lighting
-			"name" 		: "multi-pass",
-			"passes" 	: [{
-				"vertexShader" : "#pragma include('Basic.vertex.glsl')",
-			"fragmentShader" : "#pragma include('Basic.fragment.glsl')"
+			"name"				: "transparent",
+			"fallback"			: "transparent-multipass",
+
+			"blendMode"			: "alpha",
+   			"priority"          : "transparent",
+    		"zSort"             : true,
+			
+			"macroBindings" : {
+				"NUM_DIRECTIONAL_LIGHTS"	: { "property" : "directionalLights.length",	"source" : "root",	"max" : 8 },
+				"NUM_POINT_LIGHTS"			: { "property" : "pointLights.length", 			"source" : "root",	"max" : 8 },
+				"NUM_SPOT_LIGHTS"			: { "property" : "spotLights.length", 			"source" : "root",	"max" : 8 }
+			},
+				
+			"passes"	: [
+			{
+				"vertexShader"		: "#pragma include('Phong.vertex.glsl')",
+				"fragmentShader"	: "#pragma include('Phong.fragment.glsl')"
+			}]
+		},
+
+		{
+			"name"				: "transparent-no-struct",
+			"fallback"			: "transparent-multipass",
+
+			"blendMode"			: "alpha",
+   			"priority"          : "transparent",
+    		"zSort"             : true,
+			
+			"configuration"		: [ "no-glsl-struct" ],
+
+			"macroBindings" : {
+				"NUM_DIRECTIONAL_LIGHTS"	: { "property" : "directionalLights.length",	"source" : "root",	"max" : 8 },
+				"NUM_POINT_LIGHTS"			: { "property" : "pointLights.length", 			"source" : "root",	"max" : 8 },
+				"NUM_SPOT_LIGHTS"			: { "property" : "spotLights.length", 			"source" : "root",	"max" : 8 }
+			},
+				
+			"passes"	: [
+			{
+				"vertexShader"		: "#pragma include('Phong.vertex.glsl')",
+				"fragmentShader"	: "#pragma include('Phong.fragment.glsl')"
+			}]
+		},
+
+		// MULTI-PASS TECHNIQUES (coming soon)
+		//----------------------
+		{
+			"name" 					: "opaque-multipass",
+
+			"blendMode"				: ["one", "zero"],
+   			"priority"          	: "opaque",
+    		"zSort"             	: false,
+
+			"passes" 	: [
+			{
+				"vertexShader" 		: "#pragma include('Basic.vertex.glsl')",
+				"fragmentShader" 	: "#pragma include('Basic.fragment.glsl')"
+			}]
+		},
+
+		{
+			"name" 					: "transparent-multipass",
+
+			"blendMode"				: "alpha",
+   			"priority"         		: "transparent",
+    		"zSort"             	: true,
+
+			"passes" 	: [
+			{
+				"vertexShader" 		: "#pragma include('Basic.vertex.glsl')",
+				"fragmentShader" 	: "#pragma include('Basic.fragment.glsl')"
 			}]
 		}
 	]

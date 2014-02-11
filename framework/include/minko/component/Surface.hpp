@@ -89,7 +89,7 @@ namespace minko
 
 			static
 			Ptr
-			create(std::string							    name,
+			create(const std::string&					    name,
 				   std::shared_ptr<geometry::Geometry> 		geometry,
 				   std::shared_ptr<data::Provider>			material,
 				   std::shared_ptr<render::Effect>			effect,
@@ -149,7 +149,7 @@ namespace minko
 
 			inline
 			void
-			name(std::string value)
+			name(const std::string& value)
 			{
 				_name = value;
 			}

@@ -29,7 +29,11 @@ using namespace minko::material;
 using namespace minko::render;
 using namespace minko::math;
 
-			
+BasicMaterial::BasicMaterial():
+	Material()
+{
+}
+	
 BasicMaterial::Ptr
 BasicMaterial::diffuseColor(math::Vector4::Ptr color)
 {
@@ -60,16 +64,6 @@ BasicMaterial::diffuseCubeMap(std::shared_ptr<render::AbstractTexture> texture)
 	assert(texture->type() == TextureType::CubeTexture);
 
 	set("diffuseCubeMap", texture);
-
-	return std::dynamic_pointer_cast<BasicMaterial>(shared_from_this());
-}
-
-BasicMaterial::Ptr
-BasicMaterial::isTransparent(bool value, bool zSort)
-{
-	set("priority",		value ? priority::TRANSPARENT : priority::OPAQUE);
-	set("blendMode",	value ? Blending::Mode::ALPHA : Blending::Mode::DEFAULT);
-	set("zSort",		zSort);
 
 	return std::dynamic_pointer_cast<BasicMaterial>(shared_from_this());
 }

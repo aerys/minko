@@ -233,7 +233,7 @@ EffectParser::parseRenderStates(const Json::Value&		root,
 								render::States::Ptr		defaultStates,
 								float					priorityOffset)
 {
-	auto zsorted			= defaultStates->zsorted();
+	auto zSorted			= defaultStates->zSorted();
 	auto blendSrcFactor		= defaultStates->blendingSourceFactor();
 	auto blendDstFactor		= defaultStates->blendingDestinationFactor();
 	auto colorMask			= defaultStates->colorMask();
@@ -253,7 +253,7 @@ EffectParser::parseRenderStates(const Json::Value&		root,
 	std::unordered_map<std::string, SamplerState> samplerStates = defaultStates->samplers();
 
 	const float priority = parsePriority(root, defaultStates->priority() + priorityOffset);
-	parseZSort(root, zsorted);
+	parseZSort(root, zSorted);
 	parseBlendMode(root, blendSrcFactor, blendDstFactor);
 	parseColorMask(root, colorMask);
 	parseDepthTest(root, depthMask, depthFunc);
@@ -266,7 +266,7 @@ EffectParser::parseRenderStates(const Json::Value&		root,
 	return render::States::create(
 		samplerStates,
 		(float)priority,
-		zsorted,
+		zSorted,
 		blendSrcFactor,
 		blendDstFactor,
 		colorMask,
@@ -603,12 +603,12 @@ EffectParser::parseBlendMode(const Json::Value&				contextNode,
 
 void
 EffectParser::parseZSort(const Json::Value&	contextNode,
-						 bool& zsorted) const
+						 bool& zSorted) const
 {
 	auto zsortedValue	= contextNode.get("zSort", 0);
 
 	if (zsortedValue.isBool())
-		zsorted = zsortedValue.asBool();
+		zSorted = zsortedValue.asBool();
 }
 
 void
