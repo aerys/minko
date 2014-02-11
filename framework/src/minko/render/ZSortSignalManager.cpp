@@ -40,7 +40,7 @@ ZSortSignalManager::initializeTargetRawPropertyNames()
 		return;
 
 	_targetRawPropNames.insert("material[${materialId}].priority");
-	_targetRawPropNames.insert("material[${materialId}].zsorted");
+	_targetRawPropNames.insert("material[${materialId}].zSort");
 	_targetRawPropNames.insert("geometry[${geometryId}].position");
 	_targetRawPropNames.insert("transform.modelToWorldMatrix");
 }
@@ -195,6 +195,6 @@ ZSortSignalManager::propertyRemovedHandler(Container::Ptr				container,
 void
 ZSortSignalManager::requestZSort()
 {
-	if (_drawcall && _drawcall->zsorted())
+	if (_drawcall && _drawcall->zSorted())
 		_drawcall->zsortNeeded()->execute(_drawcall); // temporary ugly solution
 }
