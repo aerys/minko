@@ -143,13 +143,15 @@ DrawCallPool::addSurface(Surface::Ptr surface)
 		&DrawCallPool::visibilityChanged,
 		shared_from_this(),
 		std::placeholders::_1,
-		std::placeholders::_2))));
+		std::placeholders::_2,
+		std::placeholders::_3))));
 
 	_surfaceToVisibilityChangedSlot.insert(std::pair<SurfacePtr, VisibilityChangedSlot>(surface, surface->computedVisibilityChanged()->connect(std::bind(
 		&DrawCallPool::visibilityChanged,
 		shared_from_this(),
 		std::placeholders::_1,
-		std::placeholders::_2))));
+		std::placeholders::_2,
+		std::placeholders::_3))));
 
 	_surfaceToIndexChangedSlot.insert(std::pair<SurfacePtr, ArrayProviderIndexChangedSlot>(surface, surface->geometry()->data()->indexChanged()->connect(std::bind(
 		&DrawCallPool::dataProviderIndexChanged,
@@ -219,10 +221,14 @@ DrawCallPool::techniqueChanged(Surface::Ptr			surface,
 }
 
 void
-DrawCallPool::visibilityChanged(Surface::Ptr	surface, 
+DrawCallPool::visibilityChanged(Surface::Ptr	surface,
+							    Renderer::Ptr	renderer,
 								bool			value)
 {
-	bool visible = surface->visible() && surface->computedVisibility();
+	if (renderer != _renderer && renderer != nullptr)
+		return;
+
+	bool visible = surface->visible(_renderer) && surface->computedVisibility(_renderer);
 
 	if (visible && _invisibleSurfaces.find(surface) != _invisibleSurfaces.end()) // visible and already wasn't visible before
 	{

@@ -36,9 +36,9 @@ namespace minko
 			friend render::DrawCallPool;
 
 		public:
-			typedef std::shared_ptr<Surface>						Ptr;
-			typedef Signal<Ptr, const std::string&, bool>			TechniqueChangedSignal;	
-			typedef Signal<Ptr, bool>								VisibilityChangedSignal;
+			typedef std::shared_ptr<Surface>									Ptr;
+			typedef Signal<Ptr, const std::string&, bool>						TechniqueChangedSignal;	
+			typedef Signal<Ptr, std::shared_ptr<component::Renderer>, bool>		VisibilityChangedSignal;
 
 		private:
 			typedef std::shared_ptr<data::ArrayProvider>					ArrayProviderPtr;
@@ -72,7 +72,9 @@ namespace minko
 			Signal<EffectPtr, StringRef, StringRef>::Slot							_techniqueChangedSlot;
 
 			bool																	_visible;
-			bool																	_computedVisibility;
+
+			std::unordered_map<std::shared_ptr<component::Renderer>, bool>			_rendererToVisibility;
+			std::unordered_map<std::shared_ptr<component::Renderer>, bool>			_rendererToComputedVisibility;
 
 			VisibilityChangedSignal::Ptr											_visibilityChanged;
 			VisibilityChangedSignal::Ptr											_computedVisibilityChanged;
@@ -114,24 +116,49 @@ namespace minko
 			}
 
 			inline
+			bool
+			visible(std::shared_ptr<component::Renderer> renderer)
+			{
+				if (_rendererToVisibility.find(renderer) == _rendererToVisibility.end())
+					_rendererToVisibility[renderer] = _visible;
+				return _rendererToVisibility[renderer];
+			}
+
+			inline
 			VisibilityChangedSignal::Ptr
 			visibilityChanged()
 			{
 				return _visibilityChanged;
 			}
 
+			inline
 			void
-			visible(bool value);
+			visible(bool value)
+			{
+				for (auto& visibility : _rendererToVisibility)
+					visible(visibility.first, value);
 
+				if (_visible != value)
+				{
+					_visible = value;
+					_visibilityChanged->execute(shared_from_this(), nullptr, _visible);
+				}
+			}
+
+			void
+			visible(std::shared_ptr<component::Renderer>, bool value);
+			
 			inline
 			bool
-			computedVisibility()
+			computedVisibility(std::shared_ptr<component::Renderer> renderer)
 			{
-				return _computedVisibility;
+				if (_rendererToComputedVisibility.find(renderer) == _rendererToComputedVisibility.end())
+					_rendererToComputedVisibility[renderer] = true;
+				return _rendererToComputedVisibility[renderer];
 			}
-			
+
 			void
-			computedVisibility(bool value);
+			computedVisibility(std::shared_ptr<component::Renderer>, bool value);
 
 			inline
 			VisibilityChangedSignal::Ptr

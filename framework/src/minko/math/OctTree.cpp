@@ -83,8 +83,6 @@ OctTree::generateVisual(std::shared_ptr<file::AssetLibrary>		assetLibrary,
 		for (auto octant : _children)
 			octant->generateVisual(assetLibrary, rootNode);
 
-	
-
 	return rootNode;
 }
 
