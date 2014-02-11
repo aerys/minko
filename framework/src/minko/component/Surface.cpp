@@ -49,7 +49,8 @@ Surface::Surface(std::string				name,
 	_computedVisibilityChanged(VisibilityChangedSignal::create()),
 	_geometryId(-1),
 	_materialId(-1),
-	_name(name)
+	_name(name),
+	_visible(true)
 {
 }
 
@@ -92,22 +93,22 @@ Surface::initialize()
 }
 
 void
-Surface::visible(bool value)
+Surface::visible(std::shared_ptr<component::Renderer> renderer, bool value)
 {
-	if (_visible != value)
+	if (visible(renderer) != value)
 	{
-		_visible = value;
-		_visibilityChanged->execute(shared_from_this(), value);
+		_rendererToVisibility[renderer] = value;
+		_visibilityChanged->execute(shared_from_this(), renderer, value);
 	}
 }
 
 void
-Surface::computedVisibility(bool value)
+Surface::computedVisibility(std::shared_ptr<component::Renderer> renderer, bool value)
 {
-	if (_computedVisibility != value)
+	if (computedVisibility(renderer) != value)
 	{
-		_computedVisibility = value;
-		_computedVisibilityChanged->execute(shared_from_this(), value);
+		_rendererToComputedVisibility[renderer] = value;
+		_computedVisibilityChanged->execute(shared_from_this(), renderer, value);
 	}
 }
 
