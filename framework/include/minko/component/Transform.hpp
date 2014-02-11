@@ -132,7 +132,7 @@ namespace minko
 					auto node		= targets()[0];
 					auto rootCtrl	= node->root()->component<RootTransform>();
 
-					rootCtrl->forceUpdate(node);
+					rootCtrl->forceUpdate(node, true);
 				}
 
 				return _modelToWorld;
@@ -182,7 +182,7 @@ namespace minko
 				}
 
 				void
-				forceUpdate(NodePtr node);
+				forceUpdate(NodePtr node, bool updateTransformLists = false);
 
 			private:
 				std::vector<std::shared_ptr<math::Matrix4x4>>	_transforms;
