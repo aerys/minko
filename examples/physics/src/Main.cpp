@@ -147,6 +147,8 @@ int main(int argc, char** argv)
 				{
 					root->addChild(createPhysicsObject(numObjects, assets, rand() / (float)RAND_MAX > 0.5f));
 					++numObjects;
+
+					std::cout << "object #" << numObjects << " dropped" << std::endl;
 				}
 				else
 					std::cout << "You threw away all your possible objects. Try again!" << std::endl;
