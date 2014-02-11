@@ -181,27 +181,35 @@ bullet::PhysicsWorld::addChild(ColliderData::Ptr data)
 void
 bullet::PhysicsWorld::removeChild(ColliderData::Ptr data)
 {
-	ColliderMap::const_iterator	it	= _colliderMap.find(data);
-	if (it == _colliderMap.end())
-		throw std::invalid_argument("data");
+	auto bulletColliderIt = _colliderMap.find(data);
 
-	btCollisionObject*	bulletObject = it->second->rigidBody().get();
+	if (bulletColliderIt != _colliderMap.end())
+	{
+		btCollisionObject*	bulletObject = bulletColliderIt->second->rigidBody().get();
 
-	ColliderReverseMap::const_iterator invIt = _colliderReverseMap.find(bulletObject);
-	if (invIt == _colliderReverseMap.end())
-		throw std::invalid_argument("data");
+		auto dataIt = _colliderReverseMap.find(bulletObject);
 
-	_bulletDynamicsWorld->removeCollisionObject(bulletObject);
+		if (dataIt != _colliderReverseMap.end())
+			_colliderReverseMap.erase(dataIt);
+			
+		_bulletDynamicsWorld->removeCollisionObject(bulletObject);
+		_colliderMap.erase(bulletColliderIt);
+	}
 
-	std::map<unsigned int, ColliderData::Ptr>::const_iterator uidIt = _uidToCollider.find(data->uid());
-	if (uidIt == _uidToCollider.end())
-		throw std::invalid_argument("data");
+	auto uidIt = _uidToCollider.find(data->uid());
+	if (uidIt != _uidToCollider.end())
+	{
+		_uidAllocator->free(data->uid());
+		_uidToCollider.erase(uidIt);
+	}
 
-	_uidAllocator->free(data->uid());
-
-	_colliderMap.erase(it);
-	_colliderReverseMap.erase(invIt);
-	_uidToCollider.erase(uidIt);
+	// remove all current collision pairs the collider appears in (warning: it is an ordered set, remove_if won't work).
+	for (auto collisionIt = _collisions.begin(); collisionIt != _collisions.end(); )
+		if (collisionIt->first == data->uid() ||
+			collisionIt->second == data->uid())
+			collisionIt = _collisions.erase(collisionIt);
+		else
+			++collisionIt;
 }
 
 bool
@@ -259,66 +267,70 @@ bullet::PhysicsWorld::updateColliders()
 void
 bullet::PhysicsWorld::notifyCollisions()
 {
-	CollisionSet currentCollisions;
+	CollisionSet		currentCollisions;
+	ColliderData::Ptr	colliderData[2]	= { nullptr, nullptr };
+	const int			numManifolds	= _bulletDynamicsWorld->getDispatcher()->getNumManifolds();
 
-	ColliderData::Ptr colliderData[2]	= { nullptr, nullptr };
-	const int numManifolds				= _bulletDynamicsWorld->getDispatcher()->getNumManifolds();
 	for (int i = 0; i < numManifolds; ++i)
 	{
 		btPersistentManifold* manifold	= _bulletDynamicsWorld->getDispatcher()->getManifoldByIndexInternal(i);
 
-		ColliderReverseMap::const_iterator	it = _colliderReverseMap.find(manifold->getBody0());
-		if (it == _colliderReverseMap.end())
-			throw std::logic_error("collision started between untracked colliders.");
-		colliderData[0]	= it->second;
+		auto colliderDataIt = _colliderReverseMap.find(manifold->getBody0());
+		colliderData[0]		= colliderDataIt != _colliderReverseMap.end()
+			? colliderDataIt->second
+			: nullptr;
 
-		it = _colliderReverseMap.find(manifold->getBody1());
-		if (it == _colliderReverseMap.end())
-			throw std::logic_error("collision started between untracked colliders.");
-		colliderData[1]	= it->second;
+		colliderDataIt		= _colliderReverseMap.find(manifold->getBody1());
+		colliderData[1]		= colliderDataIt != _colliderReverseMap.end()
+			? colliderDataIt->second
+			: nullptr;
 
-		if (!colliderData[0]->triggerCollisions() 
-			&& !colliderData[1]->triggerCollisions())
+		if (colliderData[0] == nullptr || colliderData[1] == nullptr)
+			continue;
+		if (!colliderData[0]->triggerCollisions() && !colliderData[1]->triggerCollisions())
 			continue;
 		
-		const uint				uid0	= colliderData[0]->uid();
-		const uint				uid1	= colliderData[1]->uid();
-		std::pair<uint, uint>	collision(uid0, uid1);
-		if (uid0 > uid1)
-		{
-			collision.first		= uid1;
-			collision.second	= uid0;
-		}
+		// a collision exists between to valid colliders
+		auto collision = std::make_pair(colliderData[0]->uid(),  colliderData[1]->uid());
+
+		if (collision.first > collision.second)
+			std::swap(collision.first, collision.second);
 
 		if (_collisions.find(collision) == _collisions.end())
 		{
 			colliderData[0]->collisionStarted()->execute(colliderData[0], colliderData[1]);
 			colliderData[1]->collisionStarted()->execute(colliderData[1], colliderData[0]);
 		}
+
 		currentCollisions.insert(collision);
 	}
 
 	// find and notify collisions that are not present anymore as the difference with the intersection
-	// between the previous collision set and the current one
+	// between the previous collision set and the current one.
+
 	CollisionSet lostCollisions;
 	std::set_difference(
 		_collisions.begin(), _collisions.end(), 
 		currentCollisions.begin(), currentCollisions.end(), 
 		std::inserter(lostCollisions, lostCollisions.end())
-		);
+	);
 
-	for (CollisionSet::const_iterator it = lostCollisions.begin(); it != lostCollisions.end(); ++it)
+	for (auto& collision : lostCollisions)
 	{
-		std::map<uint, ColliderData::Ptr>::const_iterator uidIt = _uidToCollider.find(it->first);
-		if (uidIt == _uidToCollider.end())
-			throw std::logic_error("collision ended between untracked colliders.");
-		colliderData[0] = uidIt->second;
+		auto colliderDataIt = _uidToCollider.find(collision.first);
+		colliderData[0]		= colliderDataIt != _uidToCollider.end()
+			? colliderDataIt->second
+			: nullptr;
 
-		uidIt = _uidToCollider.find(it->second);
-		if (uidIt == _uidToCollider.end())
-			throw std::logic_error("collision ended between untracked colliders.");
-		colliderData[1] = uidIt->second;
+		colliderDataIt		= _uidToCollider.find(collision.second);
+		colliderData[1]		= colliderDataIt != _uidToCollider.end()
+			? colliderDataIt->second
+			: nullptr;
 
+		if (colliderData[0] == nullptr || colliderData[1] == nullptr)
+			continue;
+
+		// colliders assured to trigger collisions at this point.
 		colliderData[0]->collisionEnded()->execute(colliderData[0], colliderData[1]);
 		colliderData[1]->collisionEnded()->execute(colliderData[1], colliderData[0]);
 	}
