@@ -23,6 +23,8 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		"include",
 		"lib/libcurl/include"
 	}
+
+	minko.worker.enable("http")
 	
 	-- linux
 	configuration { "linux32 or linux64" }

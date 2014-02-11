@@ -18,6 +18,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "minko/async/Worker.hpp"
+#include "minko/AbstractCanvas.hpp"
 
 #if defined(EMSCRIPTEN)
 # include "emscripten/emscripten.h"
@@ -40,10 +41,11 @@ Worker::Worker(const std::string& name) :
 }
 
 void
-Worker::start(const std::vector<char>& input)
+Worker::start()
 {
+	std::cout << "Worker::start()" << std::endl;;
+
 	_busy = true;
-	_input = std::make_shared<std::vector<char>>(input);
 
 #if defined(EMSCRIPTEN)
 	emscripten_call_worker(_handle, "minkoWorkerEntryPoint", input->begin(), input->size(), &messageHandler, this);
@@ -70,8 +72,10 @@ Worker::progress(float value)
 void
 Worker::update()
 {
+	std::cout << "Worker::update()" << std::endl;;
+
 	if (!_busy)
-		return;
+		start();
 
 #if !defined(EMSCRIPTEN)
 	{

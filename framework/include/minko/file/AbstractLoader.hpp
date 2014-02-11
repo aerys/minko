@@ -26,7 +26,7 @@ namespace minko
             std::string                                     _resolvedFilename;
 
             Signal<Ptr>::Ptr                                _complete;
-            Signal<Ptr, float>::Ptr                                _progress;
+            Signal<Ptr, float>::Ptr                         _progress;
             Signal<Ptr>::Ptr                                _error;
             Signal<Ptr, AbsParserPtr, AssetLibraryPtr>::Ptr _parserComplete;
 
