@@ -36,16 +36,16 @@ namespace minko
 		public:
 			inline static
 			Ptr
-			create(std::shared_ptr<AbstractCanvas> canvas)
+			create()
 			{
-				return std::shared_ptr<HTTPLoader>(new HTTPLoader(canvas));
+				return std::shared_ptr<HTTPLoader>(new HTTPLoader());
 			}
 
 			void
 			load(const std::string& filename, std::shared_ptr<Options> options);
 
 		protected:
-			HTTPLoader(std::shared_ptr<AbstractCanvas> canvas);
+			HTTPLoader();
 
 			static void
 			completeHandler(void*, void*, int);
@@ -74,9 +74,6 @@ namespace minko
 			static size_t
 			curlWriteMemoryHandler(void*, size_t, size_t, void*);
 #endif
-
-		private:
-			std::shared_ptr<AbstractCanvas> _canvas;
 		};
 	}
 }
