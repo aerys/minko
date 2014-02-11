@@ -21,23 +21,17 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 
-#include "minko/material/Material.hpp"
+#include "minko/material/BasicMaterial.hpp"
 
 namespace minko
 {
 	namespace material
 	{
 		class PhongMaterial:
-			public Material
+			public BasicMaterial
 		{
 		public:
-			typedef std::shared_ptr<PhongMaterial>				Ptr;
-
-		private:
-			typedef std::shared_ptr<math::Vector4>				Vector4Ptr;
-			typedef std::shared_ptr<render::AbstractTexture>	AbsTexturePtr;
-			typedef std::shared_ptr<render::Texture>			TexturePtr;
-			typedef std::shared_ptr<render::CubeTexture>		CubeTexturePtr;
+			typedef std::shared_ptr<PhongMaterial>	Ptr;
 
 		public:
 			inline static
@@ -52,28 +46,13 @@ namespace minko
 			}
 
 			Ptr
-			diffuseColor(Vector4Ptr);
-
-			Ptr
-			diffuseColor(uint);
-
-			Ptr
-			diffuseMap(AbsTexturePtr);
-
-			TexturePtr
-			diffuseMap() const;
-
-			Vector4Ptr
-			diffuseColor(Vector4Ptr out = nullptr) const;
-
-			Ptr
 			specularColor(Vector4Ptr);
 
 			Ptr
 			specularColor(uint);
 
 			Vector4Ptr
-			specularColor(Vector4Ptr out = nullptr) const;
+			specularColor() const;
 
 			Ptr
 			shininess(float);
@@ -110,6 +89,18 @@ namespace minko
 
 			float
 			environmentAlpha() const;
+
+			Ptr
+			alphaMap(AbsTexturePtr);
+
+			TexturePtr
+			alphaMap() const;
+
+			Ptr
+			alphaThreshold(float);
+
+			float
+			alphaThreshold() const;
 
 		private:
 			PhongMaterial();
