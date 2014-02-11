@@ -145,13 +145,13 @@ HTTPLoader::load(const std::string& filename, std::shared_ptr<Options> options)
 #else
 	auto worker = AbstractCanvas::defaultCanvas()->getWorker("http");
 
-	worker->complete()->connect([=](Worker::MessagePtr data) {
+	_workerSlots.push_back(worker->complete()->connect([=](Worker::MessagePtr data) {
 		completeHandler(loader.get(), &*data->begin(), data->size());
-	});
+	}));
 
-	worker->progress()->connect([=](float ratio) {
+	_workerSlots.push_back(worker->progress()->connect([=](float ratio) {
 		progressHandler(loader.get(), ratio * 100);
-	});
+	}));
 
 	worker->input(std::make_shared<std::vector<char>>(_resolvedFilename.begin(), _resolvedFilename.end()));
 #endif
