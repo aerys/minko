@@ -27,6 +27,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/PerspectiveCamera.hpp"
 #include "minko/component/SceneManager.hpp"
 #include "minko/component/Surface.hpp"
+#include "minko/component/Renderer.hpp"
 
 using namespace minko;
 using namespace minko::component;
@@ -139,14 +140,16 @@ Culling::worldToScreenChanged(std::shared_ptr<data::Container> data, const std::
 {
 	_frustum->updateFromMatrix(data->get<std::shared_ptr<math::Matrix4x4>>(propertyName));
 	
+	auto renderer = targets()[0]->component<Renderer>();
+
 	_octTree->testFrustum(
 		_frustum, 
-		[](NodePtr node)
+		[&](NodePtr node)
 		{
-			node->component<Surface>()->computedVisibility(true);
+			node->component<Surface>()->computedVisibility(renderer, true);
 		},
-		[](NodePtr node)
+		[&](NodePtr node)
 		{
-			node->component<Surface>()->computedVisibility(false);
+			node->component<Surface>()->computedVisibility(renderer, false);
 		});
 }
