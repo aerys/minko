@@ -30,7 +30,7 @@ using namespace minko::render;
 using namespace minko::math;
 
 PhongMaterial::PhongMaterial():
-	Material()
+	BasicMaterial()
 {
 
 }
@@ -38,46 +38,14 @@ PhongMaterial::PhongMaterial():
 void
 PhongMaterial::initialize()
 {
-	diffuseColor(0xffffffff);
+	BasicMaterial::initialize();
+
 	specularColor(0xffffffff);
 	shininess(8.0f);
 	environmentAlpha(1.0f);
+	alphaThreshold(1.0f);
 
 	set("environmentMap2dType", int(EnvironmentMap2dType::Unset));
-}
-
-PhongMaterial::Ptr
-PhongMaterial::diffuseColor(Vector4::Ptr color)
-{
-	set("diffuseColor", color);
-
-	return std::static_pointer_cast<PhongMaterial>(shared_from_this());
-}
-
-PhongMaterial::Ptr
-PhongMaterial::diffuseColor(uint color)
-{
-	return diffuseColor(Color::uintToVec4(color));
-}
-
-Vector4::Ptr
-PhongMaterial::diffuseColor(Vector4::Ptr out) const
-{
-	return get<Vector4::Ptr>("diffuseColor");
-}
-
-PhongMaterial::Ptr
-PhongMaterial::diffuseMap(AbstractTexture::Ptr value)
-{
-	set("diffuseMap", std::static_pointer_cast<AbstractTexture>(value));
-
-	return std::static_pointer_cast<PhongMaterial>(shared_from_this());
-}
-
-Texture::Ptr
-PhongMaterial::diffuseMap() const
-{
-	return std::dynamic_pointer_cast<Texture>(get<AbstractTexture::Ptr>("diffuseMap"));
 }
 
 PhongMaterial::Ptr
@@ -95,7 +63,7 @@ PhongMaterial::specularColor(uint color)
 }
 
 Vector4::Ptr
-PhongMaterial::specularColor(Vector4::Ptr out) const
+PhongMaterial::specularColor() const
 {
 	return get<Vector4::Ptr>("specularColor");
 }
@@ -138,13 +106,17 @@ PhongMaterial::environmentMap(AbstractTexture::Ptr value,
 CubeTexture::Ptr
 PhongMaterial::environmentCubemap() const
 {
-	return std::dynamic_pointer_cast<CubeTexture>(get<AbstractTexture::Ptr>("environmentCubemap"));
+	return hasProperty("environmentCubemap") 
+		? std::dynamic_pointer_cast<CubeTexture>(get<AbstractTexture::Ptr>("environmentCubemap"))
+		: nullptr;
 }
 
 Texture::Ptr
 PhongMaterial::environmentMap2d() const
 {
-	return std::dynamic_pointer_cast<Texture>(get<AbstractTexture::Ptr>("environmentMap2d"));
+	return hasProperty("environmentMap2d") 
+		? std::dynamic_pointer_cast<Texture>(get<AbstractTexture::Ptr>("environmentMap2d"))
+		: nullptr;
 }
 
 EnvironmentMap2dType
@@ -181,7 +153,9 @@ PhongMaterial::normalMap(AbstractTexture::Ptr value)
 Texture::Ptr
 PhongMaterial::normalMap() const
 {
-	return std::dynamic_pointer_cast<Texture>(get<AbstractTexture::Ptr>("normalMap"));
+	return hasProperty("normalMap") 
+		? std::dynamic_pointer_cast<Texture>(get<AbstractTexture::Ptr>("normalMap"))
+		: nullptr;
 }
 
 PhongMaterial::Ptr
@@ -198,5 +172,40 @@ PhongMaterial::specularMap(AbstractTexture::Ptr value)
 Texture::Ptr
 PhongMaterial::specularMap() const
 {
-	return std::dynamic_pointer_cast<Texture>(get<AbstractTexture::Ptr>("specularMap"));
+	return hasProperty("specularMap") 
+		? std::dynamic_pointer_cast<Texture>(get<AbstractTexture::Ptr>("specularMap"))
+		: nullptr;
+}
+
+PhongMaterial::Ptr
+PhongMaterial::alphaMap(AbstractTexture::Ptr value)
+{
+	if (value->type() == TextureType::CubeTexture)
+		throw new std::logic_error("Only 2d transparency maps are currently supported.");
+
+	set("alphaMap", std::static_pointer_cast<AbstractTexture>(value));
+
+	return std::static_pointer_cast<PhongMaterial>(shared_from_this());
+}
+
+Texture::Ptr
+PhongMaterial::alphaMap() const
+{
+	return hasProperty("alphaMap") 
+		? std::dynamic_pointer_cast<Texture>(get<AbstractTexture::Ptr>("alphaMap"))
+		: nullptr;
+}
+
+PhongMaterial::Ptr
+PhongMaterial::alphaThreshold(float value)
+{
+	set("alphaThreshold", value);
+
+	return std::static_pointer_cast<PhongMaterial>(shared_from_this());
+}
+
+float
+PhongMaterial::alphaThreshold() const
+{
+	return get<float>("alphaThreshold");
 }

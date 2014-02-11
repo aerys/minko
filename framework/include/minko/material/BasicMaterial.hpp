@@ -22,8 +22,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Common.hpp"
 
 #include "minko/material/Material.hpp"
-#include "minko/render/TriangleCulling.hpp"
 #include "minko/render/Blending.hpp"
+#include "minko/render/CompareMode.hpp"
+#include "minko/render/StencilOperation.hpp"
+#include "minko/render/TriangleCulling.hpp"
 
 namespace minko
 {
@@ -33,30 +35,150 @@ namespace minko
 			public Material
 		{
 		public:
-			typedef std::shared_ptr<BasicMaterial>	Ptr;
+			typedef std::shared_ptr<BasicMaterial>				Ptr;
+
+		protected:
+			typedef std::shared_ptr<render::AbstractTexture>	AbsTexturePtr;
+			typedef std::shared_ptr<render::Texture>			TexturePtr;
+			typedef std::shared_ptr<render::CubeTexture>		CubeTexturePtr;
+			typedef std::shared_ptr<render::States>				RenderStatesPtr;
+			typedef std::shared_ptr<math::Vector4>				Vector4Ptr;
+
+		protected:
+			static const RenderStatesPtr						_defaultStates;
 
 		public:
 			inline static
 			Ptr
 			create()
 			{
-				return std::shared_ptr<BasicMaterial>(new BasicMaterial());
+				Ptr ptr = std::shared_ptr<BasicMaterial>(new BasicMaterial());
+
+				ptr->initialize();
+
+				return ptr;
 			}
 
 			Ptr
-			diffuseColor(std::shared_ptr<math::Vector4>);
+			diffuseColor(Vector4Ptr);
 
 			Ptr
 			diffuseColor(uint);
 
-			Ptr
-			diffuseMap(std::shared_ptr<render::AbstractTexture>);
+			Vector4Ptr
+			diffuseColor() const;
 
 			Ptr
-			diffuseCubeMap(std::shared_ptr<render::AbstractTexture>);
+			diffuseMap(AbsTexturePtr);
 
-		private:
+			TexturePtr
+			diffuseMap() const;
+
+			Ptr
+			diffuseCubeMap(AbsTexturePtr);
+
+			CubeTexturePtr
+			diffuseCubeMap() const;
+
+			Ptr
+			blendingMode(render::Blending::Source, render::Blending::Destination);
+
+			Ptr
+			blendingMode(render::Blending::Mode);
+
+			render::Blending::Source
+			blendingSourceFactor() const;
+
+			render::Blending::Destination
+			blendingDestinationFactor() const;
+
+			Ptr
+			colorMask(bool);
+
+			bool
+			colorMask() const;
+
+			Ptr
+			depthMask(bool);
+
+			bool
+			depthMask() const;
+
+			Ptr
+			depthFunction(render::CompareMode);
+
+			render::CompareMode
+			depthFunction() const;
+
+			Ptr
+			triangleCulling(render::TriangleCulling);
+
+			render::TriangleCulling
+			triangleCulling() const;
+
+			Ptr
+			stencilFunction(render::CompareMode);
+
+			render::CompareMode
+			stencilFunction() const;
+
+			Ptr
+			stencilReference(int);
+
+			int
+			stencilReference() const;
+
+			Ptr
+			stencilMask(uint);
+
+			uint
+			stencilMask() const;
+
+			Ptr
+			stencilFailOperation(render::StencilOperation);
+
+			render::StencilOperation
+			stencilFailOperation() const;
+
+			Ptr
+			stencilDepthFailOperation(render::StencilOperation);
+
+			render::StencilOperation
+			stencilDepthFailOperation() const;
+
+			Ptr
+			stencilDepthPassOperation(render::StencilOperation);
+
+			render::StencilOperation
+			stencilDepthPassOperation() const;
+
+			Ptr
+			priority(float);
+
+			float 
+			priority() const;
+
+			Ptr
+			zSorted(bool);
+
+			bool
+			zSorted() const;
+
+			Ptr
+			isTransparent(bool transparent, bool zSort = false);
+
+			Ptr
+			target(AbsTexturePtr);
+
+			AbsTexturePtr
+			target() const;
+
+		protected:
 			BasicMaterial();
+
+			virtual
+			void
+			initialize();
 		};
 	}
 }
