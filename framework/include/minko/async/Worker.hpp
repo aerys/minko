@@ -44,7 +44,6 @@ namespace minko
 		protected:
 			std::shared_ptr<Signal<float>>				_progress;
 			std::shared_ptr<Signal<MessagePtr>>			_complete;
-			MessagePtr									_input;
 			bool										_busy;
 
 			std::shared_future<MessagePtr>				_future;
@@ -60,7 +59,7 @@ namespace minko
 
 		public:
 			void
-			start(const std::vector<char>& input);
+			start();
 
 			void
 			update();
@@ -95,8 +94,36 @@ namespace minko
 			virtual
 			~Worker();
 
+			MessagePtr
+			input()
+			{
+				return _input;
+			}
+
+			void
+			input(MessagePtr value)
+			{
+				_input = value;
+			}
+
+			MessagePtr
+			output()
+			{
+				return _output;
+			}
+
 		protected:
 			Worker(const std::string& name);
+
+			void
+			output(MessagePtr value)
+			{
+				_output = value;
+			}
+
+		private:
+			MessagePtr _input;
+			MessagePtr _output;
 
 #if defined(EMSCRIPTEN)
 			static
@@ -118,9 +145,9 @@ void minkoWorkerEntryPoint(char* data, int size)								\
 }																				\
 void Class ::run()																\
 {																				\
-	auto code = [this](Worker::MessagePtr input) Code;							\
-	auto output = code(_input);													\
-	emscripten_worker_respond(output.begin(), output.size());					\
+	auto code = [this]() Code;													\
+	code();																		\
+	emscripten_worker_respond(output()->begin(), output()->size());				\
 }
 
 #else
@@ -128,9 +155,9 @@ void Class ::run()																\
 # define MINKO_WORKER(Name, Class, Code)										\
 void Class ::run()																\
 {																				\
-	auto code = [this](Worker::MessagePtr input) Code;							\
-	auto output = code(_input);													\
-	_promise.set_value(output);													\
+	auto code = [this]() Code;													\
+	code();																		\
+	_promise.set_value(output());												\
 }
 
 #endif

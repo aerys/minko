@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/Options.hpp"
 #include "minko/Signal.hpp"
 #include "minko/AbstractCanvas.hpp"
-#include "minko/async/Worker.hpp"
+#include "minko/async/HTTPWorker.hpp"
 
 #if defined(EMSCRIPTEN)
 # include "emscripten/emscripten.h"
@@ -38,14 +38,14 @@ HTTPLoader::_runningLoaders;
 uint
 HTTPLoader::_uid = 0;
 
-HTTPLoader::HTTPLoader(std::shared_ptr<AbstractCanvas> canvas) :
-	_canvas(canvas)
+HTTPLoader::HTTPLoader()
 {
 }
 
 void
 HTTPLoader::progressHandler(void* arg, int progress)
 {
+	std::cout << "HTTPLoader::progressHandler(): " << progress << std::endl;
 	auto iterator = std::find_if(HTTPLoader::_runningLoaders.begin(),
 								 HTTPLoader::_runningLoaders.end(),
 								 [=](std::shared_ptr<HTTPLoader> loader) -> bool {
@@ -60,7 +60,7 @@ HTTPLoader::progressHandler(void* arg, int progress)
 	std::cout << "HTTPLoader::progressHandler(): found loader " << format("%d", progress) << "%"  << std::endl;
 	std::shared_ptr<HTTPLoader> loader = *iterator;
 
-	loader->_progress->execute(loader, (float)progress / 100.0f);
+	loader->_progress->execute(loader, float(progress) / 100.0f);
 }
 
 void
@@ -143,7 +143,7 @@ HTTPLoader::load(const std::string& filename, std::shared_ptr<Options> options)
 	std::cout << "HTTPLoader::load(): " << "call emscripten_async_wget_data " << std::endl;
 	emscripten_async_wget_data(_filename.c_str(), loader.get(), &completeHandler, &errorHandler);
 #else
-	auto worker = _canvas->worker("http");
+	auto worker = AbstractCanvas::defaultCanvas()->getWorker("http");
 
 	worker->complete()->connect([=](Worker::MessagePtr data) {
 		completeHandler(loader.get(), &*data->begin(), data->size());
@@ -153,9 +153,7 @@ HTTPLoader::load(const std::string& filename, std::shared_ptr<Options> options)
 		progressHandler(loader.get(), ratio * 100);
 	});
 
-	std::vector<char> name(_resolvedFilename.begin(), _resolvedFilename.end());
-
-	worker->start(name);
+	worker->input(std::make_shared<std::vector<char>>(_resolvedFilename.begin(), _resolvedFilename.end()));
 #endif
 }
 
