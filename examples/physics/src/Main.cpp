@@ -219,9 +219,9 @@ createPhysicsObject(unsigned int id, file::AssetLibrary::Ptr assets, bool isCube
 		->addComponent(Surface::create(
 			assets->geometry(isCube ? "cube" : "sphere"),
 			material::PhongMaterial::create()
-				->diffuseColor(diffColor)
 				->specularColor(specColor)
-				->shininess(shininess),
+				->shininess(shininess)
+				->diffuseColor(diffColor),
 			assets->effect("phong")
 		))
 		->addComponent(collider);

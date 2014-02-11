@@ -62,9 +62,9 @@ int main(int argc, char** argv)
 	auto root				= scene::Node::create("root")->addComponent(sceneManager);
 	auto sphereGeometry		= geometry::SphereGeometry::create(sceneManager->assets()->context(), 32, 32, true);
 	auto sphereMaterial		= material::PhongMaterial::create()
-		->diffuseColor(Vector4::create(1.f, 1.f, 1.f, 1.f))
+		->shininess(16.f)
 		->specularColor(Vector4::create(1.0f, 1.0f, 1.0f, 1.0f))
-		->shininess(16.f);
+		->diffuseColor(Vector4::create(1.f, 1.f, 1.f, 1.f));
 	auto lights				= scene::Node::create("lights");
 
 	std::cout << "Press [SPACE]\tto toogle normal mapping\nPress [A]\tto add random light\nPress [R]\tto remove random light" << std::endl;
