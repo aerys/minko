@@ -21,6 +21,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 #include "minko/file/AbstractLoader.hpp"
+#include "minko/Any.hpp"
+
 #include <stdarg.h>  
 
 namespace minko
@@ -63,6 +65,9 @@ namespace minko
 			progressHandler(void*, int);
 
 		protected:
+			std::list<Any>
+			_workerSlots;
+
 			static
 			std::list<std::shared_ptr<HTTPLoader>>
 			_runningLoaders;
