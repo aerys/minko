@@ -22,3 +22,6 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 	includedirs {
 		"include"
 	}
+
+	minko.worker.enable("http")
+	

@@ -32,6 +32,7 @@ Worker::Worker(const std::string& name) :
 	_progress(Signal<float>::create()),
 	_complete(Signal<MessagePtr>::create()),
 	_busy(false),
+	_finished(false),
 	_ratio(0),
 	_oldRatio(0)
 {
@@ -74,6 +75,9 @@ Worker::progress(float value)
 void
 Worker::update()
 {
+	if (_finished)
+		return;
+
 	std::cout << "Worker::update()" << std::endl;;
 
 	if (!_busy)
@@ -94,8 +98,9 @@ Worker::update()
 	if (_future.valid() && _future.wait_for(std::chrono::milliseconds(0)) == std::future_status::ready)
 	{
 		std::cout << "Worker::update(): complete execute" << std::endl;
-		_complete->execute(_future.get());
 		_busy = false;
+		_finished = true;
+		_complete->execute(_future.get());
 	}
 }
 
