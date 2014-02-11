@@ -510,7 +510,7 @@ ASSIMPParser::loadTexture(const std::string&	textureFilename,
 	{
 		auto pos = loader->resolvedFilename().find_last_of('.');
 		auto extension = loader->resolvedFilename().substr(pos + 1);
-		auto parser = _assetLibrary->parser(extension);
+		auto parser = _assetLibrary->getParser(extension);
 
 		if (!parser)
 		{
