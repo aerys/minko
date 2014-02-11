@@ -40,11 +40,6 @@ solution "minko"
 	include 'plugins/webgl'
 	include 'plugins/http'
 	
-	-- private plugins
-	-- if os.isdir('plugins/streaming') then
-		-- include 'plugins/streaming'
-	-- end
-
 	-- examples
 	if not _OPTIONS['no-examples'] then
 		include 'examples/lua-scripts'
@@ -63,7 +58,7 @@ solution "minko"
 		include 'examples/sky-box'
 		include 'examples/stencil'
 		include 'examples/visibility'
-		include 'examples/multi-surface'
+		include 'examples/multi-surfaces'
 		include 'examples/physics'
 		include 'examples/oculus'
 	end
