@@ -27,7 +27,7 @@ using namespace minko;
 using namespace minko::component;
 using namespace minko::math;
 
-const std::string TEXTURE_FILENAME = "https://dl.dropboxusercontent.com/s/68w979idplf8j21/256.png";
+const std::string TEXTURE_FILENAME = "http://benjisbrk.com/public/box.png";
 
 int main(int argc, char** argv)
 {
@@ -86,7 +86,7 @@ int main(int argc, char** argv)
 
 		mesh->addComponent(Surface::create(
 				assets->geometry("cube"),
-				material::BasicMaterial::create()->diffuseColor(0xff0000ff), // diffuseMap(assets->texture(TEXTURE_FILENAME)),
+				material::BasicMaterial::create()->diffuseMap(assets->texture(TEXTURE_FILENAME)),
 				assets->effect("effect/Basic.effect")
 			));
 	});

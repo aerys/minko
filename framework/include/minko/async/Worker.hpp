@@ -45,6 +45,7 @@ namespace minko
 			std::shared_ptr<Signal<float>>				_progress;
 			std::shared_ptr<Signal<MessagePtr>>			_complete;
 			bool										_busy;
+			bool										_finished;
 
 			std::shared_future<MessagePtr>				_future;
 			std::promise<MessagePtr>					_promise;

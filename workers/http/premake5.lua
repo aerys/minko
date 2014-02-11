@@ -14,8 +14,6 @@ minko.project.worker("minko-worker-" .. PROJECT_NAME)
 
 	defines { "CURL_STATICLIB" }
 
-	minko.plugin.enable("http")
-
 	-- linux
 	configuration { "linux32 or linux64" }
 		links { "curl"}
