@@ -28,10 +28,6 @@ using namespace minko::file;
 MINKO_WORKER("http", minko::async::HTTPWorker, {
 	std::cout << "HTTPWorker::run(): enter" << std::endl;
 
-	// Simulate long execution worker.
-	std::chrono::milliseconds dura(2000);
-	std::this_thread::sleep_for(dura);
-
 	std::string filename(input()->begin(), input()->end());
 
 	output(std::make_shared<std::vector<char>>());
@@ -96,8 +92,10 @@ namespace minko
 			// Resizing to the new size.
 			output->resize(position + size);
 
+			char* source = reinterpret_cast<char*>(data);
+
 			// Adding the chunk to the end of the vector.
-			std::copy(output->begin() + position, output->end(), output->begin() + position);
+			std::copy(source, source + size, output->begin() + position);
 
 			return size;
 		}
