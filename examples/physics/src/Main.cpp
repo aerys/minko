@@ -58,7 +58,7 @@ int main(int argc, char** argv)
 	sceneManager->assets()
 		->registerParser<file::PNGParser>("png")
 		->queue(TEXTURE_FILENAME)
-		->queue("effect/Basic.effect")
+		->queue("effect/Phong.effect")
 		->geometry("sphere",	geometry::SphereGeometry::create(sceneManager->assets()->context(), 16, 16))
 		->geometry("cube",		geometry::CubeGeometry::create(sceneManager->assets()->context()));
 	
@@ -88,7 +88,7 @@ int main(int argc, char** argv)
 			->addComponent(Surface::create(
 				assets->geometry("cube"),
 				material::BasicMaterial::create()->diffuseMap(assets->texture(TEXTURE_FILENAME)),
-				assets->effect("effect/Basic.effect")
+				assets->effect("phong")
 			))
 			->addComponent(bullet::Collider::create(
 					bullet::ColliderData::create(
@@ -106,7 +106,7 @@ int main(int argc, char** argv)
 			->addComponent(Surface::create(
 				assets->geometry("cube"),
 				material::BasicMaterial::create()->diffuseColor(0x241f1cff),
-				assets->effect("effect/Basic.effect")
+				assets->effect("phong")
 			))
 			->addComponent(bullet::Collider::create(
 				bullet::ColliderData::create(
@@ -122,17 +122,31 @@ int main(int argc, char** argv)
 
 		root->addChild(groundNode);
 
-		unsigned int		numObjects	= 0;
-		scene::Node::Ptr	newObject	= nullptr;
+		// set-up lighting environment
+		auto ambientLightNode = scene::Node::create("ambientLight")
+			->addComponent(AmbientLight::create());
 
+		auto dirLightNode = scene::Node::create("dirLight")
+			->addComponent(DirectionalLight::create())
+			->addComponent(Transform::create(
+				Matrix4x4::create()->lookAt(Vector4::zero(), Vector4::create(0.5f, 5.0f, 3.0f))
+			));
+
+		dirLightNode->component<DirectionalLight>()->specular(0.5f);
+
+		root
+			->addChild(ambientLightNode)
+			->addChild(dirLightNode);
+
+		uint numObjects	= 0;
 		auto keyDown = canvas->keyboard()->keyDown()->connect([&](input::Keyboard::Ptr k)
 		{
 			if (k->keyIsDown(input::Keyboard::ScanCode::SPACE))
 			{
 				if (numObjects < MAX_NUM_OBJECTS)
 				{
-					if (newObject == nullptr)
-						newObject = createPhysicsObject(numObjects, assets, rand() / (float)RAND_MAX > 0.5f);
+					root->addChild(createPhysicsObject(numObjects, assets, rand() / (float)RAND_MAX > 0.5f));
+					++numObjects;
 				}
 				else
 					std::cout << "You threw away all your possible objects. Try again!" << std::endl;
@@ -146,16 +160,6 @@ int main(int argc, char** argv)
 
 		auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, uint deltaTime)
 		{
-			if (newObject)
-			{
-				newObject->component<Transform>()->modelToWorldMatrix(true); // FIXME: artificially force matrix update 
-
-				root->addChild(newObject);
-				++numObjects;
-
-				newObject = nullptr;
-			}
-
 			sceneManager->nextFrame();
 		});
 
@@ -179,7 +183,10 @@ createPhysicsObject(unsigned int id, file::AssetLibrary::Ptr assets, bool isCube
 	const float startZ		= MIN_DROP_POS->z() + (rand() / (float)RAND_MAX) * (MAX_DROP_POS->z() - MIN_DROP_POS->z());
 
 	const float halfSize	= 0.5f * size;
-	auto		color		= Color::hslaToRgba((id % 10) * 0.1f, 1.0f, 0.6f, 1.0f);
+	const float hue			= (id % 10) * 0.1f;
+	auto		diffColor	= Color::hslaToRgba(hue, 1.0f, 0.5f, 1.0f);
+	auto		specColor	= Color::hslaToRgba(hue, 1.0f, 0.8f, 1.0f);
+	const float shininess	= 2.0f * (rand() / (float)RAND_MAX) * 6.0f;
 
 	bullet::Collider::Ptr collider = nullptr;
 
@@ -209,11 +216,11 @@ createPhysicsObject(unsigned int id, file::AssetLibrary::Ptr assets, bool isCube
 		))
 		->addComponent(Surface::create(
 			assets->geometry(isCube ? "cube" : "sphere"),
-			material::BasicMaterial::create()
-				->diffuseColor(color)
-				//->isTransparent(true, true)
-				->triangleCulling(render::TriangleCulling::BACK),
-			assets->effect("basic")
+			material::PhongMaterial::create()
+				->diffuseColor(diffColor)
+				->specularColor(specColor)
+				->shininess(shininess),
+			assets->effect("phong")
 		))
 		->addComponent(collider);
 }

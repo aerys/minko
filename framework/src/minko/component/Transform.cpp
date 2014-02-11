@@ -325,9 +325,9 @@ Transform::RootTransform::updateTransforms()
 }
 
 void
-Transform::RootTransform::forceUpdate(scene::Node::Ptr node)
+Transform::RootTransform::forceUpdate(scene::Node::Ptr node, bool updateTransformLists)
 {
-	if (_invalidLists)
+	if (_invalidLists || updateTransformLists)
 		updateTransformsList();
 
 	auto				targetNodeId	= _nodeToId[node];
