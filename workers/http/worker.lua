@@ -26,4 +26,44 @@ function minko.worker.http:enable()
 	defines { "MINKO_WORKER_HTTP" }
 
 	minko.plugin.enable("http")
+
+	defines { "CURL_STATICLIB" }
+
+	configuration { "windows32 or windows64" }
+		links { "libcurl" }
+		
+	configuration { "windows32", "debug" }
+		libdirs { minko.worker.path("http") .. "/lib/curl/lib/windows32/debug" }
+		postbuildcommands {
+			minko.action.copy(minko.worker.path("http") .. "/lib/curl/lib/windows32/debug/*.dll")
+		}
+		
+	configuration { "windows32", "release" }
+		libdirs { minko.worker.path("http") .. "/lib/curl/lib/windows32/release" }
+		postbuildcommands {
+			minko.action.copy(minko.worker.path("http") .. "/lib/curl/lib/windows32/release/*.dll")
+		}
+		
+	configuration { "windows64", "debug" }
+		libdirs { minko.worker.path("http") .. "/lib/curl/lib/windows64/debug" }
+		postbuildcommands {
+			minko.action.copy(minko.worker.path("http") .. "/lib/curl/lib/windows64/debug/*.dll")
+		}
+		
+	configuration { "windows64", "release" }
+		libdirs { minko.worker.path("http") .. "/lib/curl/lib/windows64/release" }
+		postbuildcommands {
+			minko.action.copy(minko.worker.path("http") .. "/lib/curl/lib/windows64/release/*.dll")
+		}
+		
+	configuration { "linux32 or linux64" }
+		links { "curl" }
+
+	configuration { "osx64" }
+		links { "curl" }
+end
+
+function minko.plugin.http:dist(pluginDistDir)
+	os.mkdir(pluginDistDir .. "/lib/curl/lib/win")
+	minko.os.copyfiles(minko.worker.path("/lib/curl/lib/win"), pluginDistDir .. "/lib/curl/lib/win")
 end
