@@ -83,7 +83,7 @@ namespace minko
 				LinearIdAllocatorPtr							_uidAllocator;
 				ColliderMap										_colliderMap;
 				ColliderReverseMap								_colliderReverseMap;
-				std::map<uint, ColliderDataPtr>					_uidToCollider;
+				std::unordered_map<uint, ColliderDataPtr>		_uidToCollider;
 				CollisionSet									_collisions;
 
 				btBroadphasePtr									_bulletBroadphase;
