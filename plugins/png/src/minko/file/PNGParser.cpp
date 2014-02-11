@@ -40,7 +40,10 @@ PNGParser::parse(const std::string&                 filename,
 	unsigned int width;
 	unsigned int height;
 
-	lodepng::decode(out, width, height, &data[0], data.size());
+	unsigned error = lodepng::decode(out, width, height, &data[0], data.size());
+
+	if (error)
+		throw std::invalid_argument("file " + filename + " is not a valid PNG file");
 
 	render::AbstractTexture::Ptr texture = nullptr;
 
