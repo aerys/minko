@@ -496,9 +496,10 @@ Canvas::getWorker(const std::string& name)
 
 	_activeWorkers.push_back(worker);
 
-	worker->complete()->connect([worker, this](Worker::MessagePtr) {
-		_activeWorkers.erase(std::remove(_activeWorkers.begin(), _activeWorkers.end(), worker), _activeWorkers.end());
-	});
+	_workerCompleteSlots.push_back(worker->complete()->connect([worker, this](Worker::MessagePtr) {
+		std::cout << "Canvas::getWorker(): " << "remove worker" << std::endl;
+		_activeWorkers.remove(worker);
+	}));
 
 	return worker;
 }
