@@ -243,7 +243,7 @@ namespace minko
 
 			void
 			parseZSort(const Json::Value&	contextNode,
-					   bool& zsorted) const;
+					   bool& zSorted) const;
 
 			void
 			parseColorMask(const Json::Value&	contextNode,

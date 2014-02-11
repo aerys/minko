@@ -55,26 +55,8 @@ namespace minko
 			Ptr
 			diffuseCubeMap(std::shared_ptr<render::AbstractTexture>);
 
-			Ptr
-			isTransparent(bool, bool zSort = false);
-
-			inline
-			Ptr
-			blendMode(render::Blending::Mode blendMode)
-			{
-				set("blendMode", blendMode);
-
-				return std::dynamic_pointer_cast<BasicMaterial>(shared_from_this());
-			}
-
-			inline
-			Ptr
-			triangleCulling(render::TriangleCulling culling)
-			{
-				set("triangleCulling", culling);
-
-				return std::dynamic_pointer_cast<BasicMaterial>(shared_from_this());
-			}
+		private:
+			BasicMaterial();
 		};
 	}
 }
