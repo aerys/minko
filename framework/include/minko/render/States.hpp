@@ -63,7 +63,7 @@ namespace minko
 		    Ptr
 		    create(const SamplerStates&     samplerStates,
 				   float					priority					= 0.f,
-				   bool						zsorted						= false,
+				   bool						zSorted						= false,
 				   Blending::Source			blendingSourceFactor		= Blending::Source::ONE,
 				   Blending::Destination	blendingDestinationFactor	= Blending::Destination::ZERO,
 				   bool						colorMask					= true,
@@ -83,7 +83,7 @@ namespace minko
 			    return std::shared_ptr<States>(new States(
                     samplerStates,
                     priority,
-					zsorted,
+					zSorted,
                     blendingSourceFactor,
                     blendingDestinationFactor,
 					colorMask,
@@ -153,7 +153,7 @@ namespace minko
 
 			inline
 			bool
-			zsorted() const
+			zSorted() const
 			{
 				return _zsorted;
 			}
@@ -273,7 +273,7 @@ namespace minko
 	    private:
 		    States(const SamplerStates&     samplerSates,
 				   float				    priority,
-				   bool						zsorted,
+				   bool						zSorted,
 				   Blending::Source		    blendingSourceFactor,
 				   Blending::Destination    blendingDestinationFactor,
 				   bool						colorMask,
@@ -291,7 +291,7 @@ namespace minko
                    AbstractTexturePtr		target) :
                 _samplerStates(samplerSates),
                 _priority(priority),
-				_zsorted(zsorted),
+				_zsorted(zSorted),
                 _blendingSourceFactor(blendingSourceFactor),
                 _blendingDestinationFactor(blendingDestinationFactor),
 				_colorMask(colorMask),

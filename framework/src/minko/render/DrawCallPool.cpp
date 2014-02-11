@@ -90,7 +90,7 @@ DrawCallPool::compareDrawCalls(DrawCall::Ptr a,
 	if (!arePrioritiesEqual)
 		return aPriority > bPriority;
 
-	if (a->zsorted() || b->zsorted())
+	if (a->zSorted() || b->zSorted())
 	{
 		static Vector3::Ptr aPosition = Vector3::create();
 		static Vector3::Ptr bPosition = Vector3::create();
