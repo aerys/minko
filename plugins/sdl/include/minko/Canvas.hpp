@@ -189,6 +189,7 @@ namespace minko
 		std::shared_ptr<SDLKeyboard>    				_keyboard;
 
 		std::list<std::shared_ptr<async::Worker>>		_activeWorkers;
+		std::list<Any>									_workerCompleteSlots;
 
 	public:
 		static inline
