@@ -165,6 +165,7 @@ namespace minko
 		uint											_height;
 		std::shared_ptr<data::Provider>					_data;
 		bool											_useStencil;
+		bool											_chromeless;
 
 		bool											_active;
 		render::AbstractContext::Ptr					_context;
@@ -188,9 +189,13 @@ namespace minko
 	public:
 		static inline
 		Ptr
-		create(const std::string& name, const uint width, const uint height, bool useStencil = false)
+		create(const std::string&	name, 
+			   const uint			width, 
+			   const uint			height, 
+			   bool					useStencil = false,
+			   bool					chromeless = false)
 		{
-			auto canvas = std::shared_ptr<Canvas>(new Canvas(name, width, height, useStencil));
+			auto canvas = std::shared_ptr<Canvas>(new Canvas(name, width, height, useStencil, chromeless));
 
 			canvas->initialize();
 
@@ -307,7 +312,11 @@ namespace minko
 		quit();
 
 	private:
-		Canvas(const std::string& name, const uint width, const uint height, bool useStencil = false);
+		Canvas(const std::string&	name, 
+			   const uint			width, 
+			   const uint			height, 
+			   bool					useStencil = false,
+			   bool					chromeless = false);
 
 		void
 		x(uint);
