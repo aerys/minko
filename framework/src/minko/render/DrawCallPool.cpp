@@ -173,7 +173,10 @@ DrawCallPool::addSurface(Surface::Ptr surface)
 		))));
 
 	//if (std::find(_toCollect.begin(), _toCollect.end(), surface) == _toCollect.end())
-	_toCollect.insert(surface);
+	if (surface->visible(_renderer))
+		_toCollect.insert(surface);
+	else
+		_invisibleSurfaces.insert(surface);
 }
 
 void
