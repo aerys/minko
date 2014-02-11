@@ -33,6 +33,7 @@ int main(int argc, char** argv)
 {
 	auto canvas = Canvas::create("Minko Example - HTTP", 800, 600);
 
+	canvas->registerWorker<async::HTTPWorker>("http");
 	AbstractCanvas::defaultCanvas(canvas);
 
 	auto sceneManager = SceneManager::create(canvas->context());
