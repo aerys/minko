@@ -136,7 +136,6 @@ ASSIMPParser::parse(const std::string&					filename,
 	const aiScene* scene = importer.ReadFileFromMemory(
 		&data[0],
 		data.size(),
-        aiProcess_JoinIdenticalVertices
 		//| aiProcess_GenSmoothNormals // assertion is raised by assimp
 		aiProcess_JoinIdenticalVertices
 		| aiProcess_GenSmoothNormals

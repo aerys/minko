@@ -926,7 +926,7 @@ EffectParser::loadTexture(const std::string&	textureFilename,
 	{
 		auto pos = loader->resolvedFilename().find_last_of('.');
 		auto extension = loader->resolvedFilename().substr(pos + 1);
-		auto parser = _assetLibrary->parser(extension);
+		auto parser = _assetLibrary->getParser(extension);
 
 		auto completeSlot = parser->complete()->connect([&](file::AbstractParser::Ptr parser)
 		{
