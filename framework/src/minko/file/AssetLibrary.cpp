@@ -324,7 +324,7 @@ AssetLibrary::queue(const std::string&						filename,
 
 		if (i != filename.length())
 		{
-			loader = this->loader(protocol);
+			loader = this->getLoader(protocol);
 
 			if (loader)
 				_filenameToLoader[filename] = loader;
