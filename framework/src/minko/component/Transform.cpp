@@ -159,9 +159,9 @@ Transform::RootTransform::targetAddedHandler(AbstractComponent::Ptr 	ctrl,
 	auto sceneManager = target->root()->component<SceneManager>();
 
 	if (sceneManager != nullptr)
-		_frameBeginSlot = sceneManager->frameBegin()->connect(std::bind(
-			&Transform::RootTransform::frameBeginHandler, shared_from_this(), std::placeholders::_1
-		));
+		_renderingBeginSlot = sceneManager->renderingBegin()->connect(std::bind(
+			&Transform::RootTransform::renderingBeginHandler, shared_from_this(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
+		), 1000.f);
 
 	addedHandler(nullptr, target, target->parent());
 }
@@ -171,7 +171,7 @@ Transform::RootTransform::targetRemovedHandler(AbstractComponent::Ptr 	ctrl,
 											   scene::Node::Ptr			target)
 {
 	_targetSlots.clear();
-	_frameBeginSlot = nullptr;
+	_renderingBeginSlot = nullptr;
 }
 
 void
@@ -182,9 +182,9 @@ Transform::RootTransform::componentAddedHandler(scene::Node::Ptr		node,
 	auto sceneManager = std::dynamic_pointer_cast<SceneManager>(ctrl);
 
 	if (sceneManager != nullptr)
-		_frameBeginSlot = sceneManager->frameBegin()->connect(std::bind(
-			&Transform::RootTransform::frameBeginHandler, shared_from_this(), std::placeholders::_1
-		));
+		_renderingBeginSlot = sceneManager->renderingBegin()->connect(std::bind(
+			&Transform::RootTransform::renderingBeginHandler, shared_from_this(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
+		), 1000.f);
 	else if (std::dynamic_pointer_cast<Transform>(ctrl) != nullptr)
 		_invalidLists = true;
 }
@@ -197,7 +197,7 @@ Transform::RootTransform::componentRemovedHandler(scene::Node::Ptr			node,
 	auto sceneManager = std::dynamic_pointer_cast<SceneManager>(ctrl);
 
 	if (sceneManager)
-		_frameBeginSlot = nullptr;
+		_renderingBeginSlot = nullptr;
 	else if (std::dynamic_pointer_cast<Transform>(ctrl) != nullptr)
 		_invalidLists = true;
 }
@@ -362,7 +362,9 @@ Transform::RootTransform::forceUpdate(scene::Node::Ptr node)
 }
 
 void
-Transform::RootTransform::frameBeginHandler(std::shared_ptr<SceneManager> sceneManager)
+Transform::RootTransform::renderingBeginHandler(std::shared_ptr<SceneManager>				sceneManager, 
+											    uint										frameId, 
+												std::shared_ptr<render::AbstractTexture>	abstractTexture)
 {
 	if (_invalidLists)
 		updateTransformsList();

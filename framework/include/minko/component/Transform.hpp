@@ -197,7 +197,7 @@ namespace minko
 				bool											_invalidLists;
 
 				std::list<Any>									_targetSlots;
-				Signal<std::shared_ptr<SceneManager>>::Slot		_frameBeginSlot;
+				Signal<std::shared_ptr<SceneManager>, uint, std::shared_ptr<render::AbstractTexture>>::Slot		_renderingBeginSlot;
 
 			private:
 				void
@@ -231,7 +231,9 @@ namespace minko
 				updateTransformPath(const std::vector<unsigned int>& path);
 
 				void
-				frameBeginHandler(std::shared_ptr<SceneManager> sceneManager);
+				renderingBeginHandler(std::shared_ptr<SceneManager> sceneManager, 
+									  uint							frameId, 
+									  std::shared_ptr<render::AbstractTexture>);
 			};
 		};
 	}
