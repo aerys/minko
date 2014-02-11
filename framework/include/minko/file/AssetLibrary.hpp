@@ -72,7 +72,8 @@ namespace minko
 
 			std::vector<Signal<std::shared_ptr<file::AbstractLoader>>::Slot>		_loaderSlots;
 
-			std::shared_ptr<Signal<Ptr>>											_complete;
+            Signal<Ptr>::Ptr											            _complete;
+            Signal<Ptr, std::shared_ptr<AbstractParser>>::Ptr                       _parserError;
 
 		public:
 			static
@@ -94,11 +95,18 @@ namespace minko
 			}
 
 			inline
-			std::shared_ptr<Signal<Ptr>>
+			Signal<Ptr>::Ptr
 			complete()
 			{
 				return _complete;
 			}
+
+            inline
+            Signal<Ptr, std::shared_ptr<AbstractParser>>::Ptr
+            parserError()
+            {
+                return _parserError;
+            }
 
 			inline
 			const std::list<std::string>&
@@ -196,7 +204,7 @@ namespace minko
 			file::AbstractParser::Ptr
 			getParser(const std::string& extension)
 			{
-				return _parsers[extension]();
+                return _parsers.count(extension) == 0 ? nullptr : _parsers[extension]();
 			}
 
 			template <typename T>
@@ -215,7 +223,7 @@ namespace minko
 			file::AbstractLoader::Ptr
 			getLoader(const std::string& protocol)
 			{
-				return _loaders[protocol]();
+                return _loaders.count(protocol) == 0 ? nullptr : _loaders[protocol](); 
 			}
 
 			Ptr
@@ -251,12 +259,6 @@ namespace minko
 
 			Ptr
 			load(bool executeCompleteSignal = true);
-
-			AbsParserPtr
-			parser(std::string extension);
-
-			AbsLoaderPtr
-			loader(std::string protocol);
 
 		private:
 			AssetLibrary(AbsContextPtr context);

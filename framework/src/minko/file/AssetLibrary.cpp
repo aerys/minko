@@ -400,17 +400,29 @@ AssetLibrary::loaderCompleteHandler(std::shared_ptr<file::AbstractLoader> loader
 			finalize(filename);
 		});
 
-		parser->parse(
-            loader->filename(),
-            loader->resolvedFilename(),
-            _filenameToOptions[filename],
-            loader->data(),
-            shared_from_this()
-        );
+        try
+        {
+            parser->parse(
+                loader->filename(),
+                loader->resolvedFilename(),
+                _filenameToOptions[filename],
+                loader->data(),
+                shared_from_this()
+            );
+        }
+        catch (ParserError parserError)
+        {
+            if (_parserError->numCallbacks() != 0)
+                _parserError->execute(shared_from_this(), parser);
+#ifdef DEBUG
+            else
+                std::cerr << parserError.what() << std::endl;
+#endif
+        }
 	}
 	else
 	{
-		std::cerr << "warning: no parser found for file extesntion '" << extension << "'" << std::endl;
+		std::cerr << "warning: no parser found for file extension '" << extension << "'" << std::endl;
 		blob(filename, loader->data());
 		finalize(filename);
 	}
@@ -431,21 +443,4 @@ AssetLibrary::finalize(const std::string& filename)
 
 		_complete->execute(shared_from_this());
 	}
-}
-
-AssetLibrary::AbsParserPtr
-AssetLibrary::parser(std::string extension)
-{
-	/*
-	if ()
-	throw std::invalid_argument("No parser found for extension '" + extension + "'");
-	*/
-
-	return _parsers.count(extension) == 0 ? nullptr : _parsers[extension]();
-}
-
-AssetLibrary::AbsLoaderPtr
-AssetLibrary::loader(std::string protocol)
-{
-	return _loaders.count(protocol) == 0 ? nullptr : _loaders[protocol]();
 }
