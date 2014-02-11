@@ -31,7 +31,9 @@ using namespace minko::async;
 Worker::Worker(const std::string& name) :
 	_progress(Signal<float>::create()),
 	_complete(Signal<MessagePtr>::create()),
-	_busy(false)
+	_busy(false),
+	_ratio(0),
+	_oldRatio(0)
 {
 #if defined(EMSCRIPTEN)
 	_handle = emscripten_create_worker("minko-worker-" + name + ".js");
@@ -91,6 +93,7 @@ Worker::update()
 
 	if (_future.valid() && _future.wait_for(std::chrono::milliseconds(0)) == std::future_status::ready)
 	{
+		std::cout << "Worker::update(): complete execute" << std::endl;
 		_complete->execute(_future.get());
 		_busy = false;
 	}

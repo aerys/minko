@@ -72,7 +72,7 @@ namespace minko
 		std::shared_ptr<async::Worker>
 		getWorker(const std::string& name) = 0;
 
-		template <typename T, typename std::enable_if<std::is_base_of<async::Worker, T>::value, Ptr>::type = 0>
+		template <typename T>
 		void
 		registerWorker(const std::string& type)
 		{
