@@ -40,9 +40,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::math;
 
-Canvas::Canvas(const std::string& name, const uint width, const uint height, bool useStencil) :
+Canvas::Canvas(const std::string& name, const uint width, const uint height, bool useStencil, bool chromeless) :
 	_name(name),
 	_useStencil(useStencil),
+	_chromeless(chromeless),
 	_data(data::Provider::create()),
 	_active(false),
 	_framerate(0.f),
@@ -86,12 +87,17 @@ Canvas::initializeContext(const std::string& windowTitle, unsigned int width, un
 	if (useStencil)
 		SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 
+	auto sdlFlags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE;
+
+	if (_chromeless)
+		sdlFlags |= SDL_WINDOW_BORDERLESS;
+
 	_window = SDL_CreateWindow(
 		windowTitle.c_str(),
 		SDL_WINDOWPOS_UNDEFINED,
 		SDL_WINDOWPOS_UNDEFINED,
 		width, height,
-		SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE
+		sdlFlags
 	);
 
 # ifdef MINKO_ANGLE
