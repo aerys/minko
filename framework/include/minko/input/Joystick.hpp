@@ -40,7 +40,16 @@ namespace minko
 			Signal<Ptr, int, int>::Ptr			_joystickButtonDown;
 			Signal<Ptr, int, int>::Ptr			_joystickButtonUp;
 
+			int									_joystickId;
+
 		public:
+			inline
+			int
+			joystickId()
+			{
+				return _joystickId;
+			}
+
 			inline
 			Signal<Ptr, int, int, int>::Ptr
 			joystickAxisMotion() const
@@ -71,7 +80,7 @@ namespace minko
 			}
 
 		protected:
-			Joystick(std::shared_ptr<AbstractCanvas> canvas);
+			Joystick(std::shared_ptr<AbstractCanvas> canvas, int joystickId);
 		};
 	}
 }
