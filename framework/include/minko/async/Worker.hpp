@@ -47,12 +47,11 @@ namespace minko
 			bool										_busy;
 			bool										_finished;
 
+#if defined(EMSCRIPTEN)
+			int											_handle;
+#else
 			std::shared_future<MessagePtr>				_future;
 			std::promise<MessagePtr>					_promise;
-
-#if defined(EMSCRIPTEN)
-			worker_handle								_handle;
-#else
 			float										_ratio;
 			float										_oldRatio;
 			std::mutex									_ratioMutex;
