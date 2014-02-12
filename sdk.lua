@@ -71,7 +71,6 @@ configuration { "cc=clang"}
 
 configuration {}
 
-
 -- distributable SDK
 MINKO_SDK_DIST = true
 
