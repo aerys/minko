@@ -2,6 +2,8 @@ PROJECT_NAME = path.getname(os.getcwd())
 
 minko.project.worker("minko-worker-" .. PROJECT_NAME)
 
+	removeplatforms { "html5" }
+
 	files {
 		"include/**.hpp",
 		"src/**.cpp"

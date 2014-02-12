@@ -32,13 +32,14 @@ Worker::Worker(const std::string& name) :
 	_progress(Signal<float>::create()),
 	_complete(Signal<MessagePtr>::create()),
 	_busy(false),
-	_finished(false),
-	_ratio(0),
-	_oldRatio(0)
+	_finished(false)
 {
 #if defined(EMSCRIPTEN)
-	_handle = emscripten_create_worker("minko-worker-" + name + ".js");
+	std::string path = "minko-worker-" + name + ".js";
+	_handle = emscripten_create_worker(path.c_str());
 #else
+	_ratio = 0;
+	_oldRatio = 0;
 	_future = _promise.get_future();
 #endif
 }
@@ -51,7 +52,7 @@ Worker::start()
 	_busy = true;
 
 #if defined(EMSCRIPTEN)
-	emscripten_call_worker(_handle, "minkoWorkerEntryPoint", input->begin(), input->size(), &messageHandler, this);
+	emscripten_call_worker(_handle, "minkoWorkerEntryPoint", &*_input->begin(), _input->size(), &messageHandler, this);
 #else
 	std::thread(&Worker::run, shared_from_this()).detach();
 #endif
@@ -61,7 +62,8 @@ void
 Worker::progress(float value)
 {
 #if defined(EMSCRIPTEN)
-	emscripten_run_script("postMessage(" + std::to_string(value) + ")")
+	std::string script = "postMessage(" + std::to_string(value) + ")";
+	emscripten_run_script(script.c_str());
 	// EM_ASM(
 	// 	postMessage(0.5);
 	// );
@@ -84,16 +86,14 @@ Worker::update()
 		start();
 
 #if !defined(EMSCRIPTEN)
+	std::lock_guard<std::mutex> lock(_ratioMutex);
+	
+	if (_ratio != _oldRatio)
 	{
-		std::lock_guard<std::mutex> lock(_ratioMutex);
-		
-		if (_ratio != _oldRatio)
-		{
-			_progress->execute(_ratio);
-			_oldRatio = _ratio;
-		}
+		std::cout << "Worker::update(): progress execute" << std::endl;
+		_progress->execute(_ratio);
+		_oldRatio = _ratio;
 	}
-#endif
 
 	if (_future.valid() && _future.wait_for(std::chrono::milliseconds(0)) == std::future_status::ready)
 	{
@@ -102,6 +102,7 @@ Worker::update()
 		_finished = true;
 		_complete->execute(_future.get());
 	}
+#endif
 }
 
 #if defined(EMSCRIPTEN)
@@ -114,13 +115,16 @@ Worker::messageHandler(char* data, int size, void* arg)
 
 	if (size == sizeof(float))
 	{
-		_ratio = reinterpret_cast<float>(data);
+		std::cout << "Worker::messageHandler(): progress execute" << std::endl;
+		float ratio = reinterpret_cast<float*>(data)[0];
+		worker->progress()->execute(ratio);
+
 	}
 	else
 	{
+		std::cout << "Worker::messageHandler(): complete execute" << std::endl;
 		auto output = std::make_shared<std::vector<char>>(data, data + size);
-
-		worker->_promise.set_value(output);		
+		worker->complete()->execute(output);
 	}
 }
 #endif

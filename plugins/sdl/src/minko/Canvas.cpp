@@ -407,8 +407,10 @@ Canvas::step()
 		}
 	}
 
+#if !defined(EMSCRIPTEN)
 	for (auto worker : _activeWorkers)
 		worker->update();
+#endif
 
 	auto time = std::clock();
 	auto frameTime = (1000.f * (time - stepStartTime) / CLOCKS_PER_SEC);
