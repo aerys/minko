@@ -20,17 +20,8 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 	}
 
 	includedirs {
-		"include",
-		"lib/libcurl/include"
+		"include"
 	}
-	
-	-- linux
-	configuration { "linux" }
 
-	-- windows
-	configuration { "win" }
-		includedirs { "lib/libcurl/include" }
-		
-	-- macos
-	configuration { "osx" }
-		includedirs { "lib/libcurl/include" }
+	minko.worker.enable("http")
+	
