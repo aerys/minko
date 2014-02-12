@@ -23,6 +23,10 @@ using namespace minko;
 using namespace minko::async;
 using namespace minko::file;
 
+#if defined(EMSCRIPTEN)
+# error "HTTPWorker should not be used in HTML5"
+#endif
+
 #include "curl/curl.h"
 
 MINKO_WORKER("http", minko::async::HTTPWorker, {
