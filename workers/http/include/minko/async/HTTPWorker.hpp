@@ -17,77 +17,42 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#pragma once
+#include "minko/async/Worker.hpp"
 
-#include "minko/Common.hpp"
-
-#ifdef FAR // The macro is defined by guiddef.h
-# undef FAR
-#endif
+using namespace minko;
+using namespace minko::async;
+using namespace minko::file;
 
 namespace minko
 {
-	namespace math
+	namespace async
 	{
-		enum class ShapePosition
-		{
-			AROUND	= -2,
-			INSIDE	= -1,
-			LEFT	= 0,
-			TOP		= 1,
-			RIGHT	= 2,
-			BOTTOM	= 3,
-			NEAR	= 4,
-			FAR		= 5
-		};
-
-		enum class PlanePosition
-		{
-			LEFT	= 0,
-			TOP		= 1,
-			RIGHT	= 2,
-			BOTTOM	= 3,
-			NEAR	= 4,
-			FAR		= 5
-		};
-	}
-}
-
-namespace std
-{
-	template<>
-	struct hash<minko::math::ShapePosition>
-	{
-		inline
-		size_t
-		operator()(const minko::math::ShapePosition& p) const
-		{
-			return static_cast<int>(p);
-		}
-	};
-}
-
-namespace minko
-{
-	namespace math
-	{
-		class AbstractShape
+		class HTTPWorker : public Worker
 		{
 		public:
-			typedef std::shared_ptr<AbstractShape>	Ptr;
+			static
+			Ptr
+			create()
+			{
+				return std::shared_ptr<HTTPWorker>(new HTTPWorker());
+			}
 
-		public:
-			virtual
-			bool
-			cast(std::shared_ptr<Ray> ray, float& distance) = 0;
-	
-			virtual
-			ShapePosition
-			testBoundingBox(std::shared_ptr<math::Box> box) = 0;
-
-			virtual
 			void
-			updateFromMatrix(std::shared_ptr<math::Matrix4x4> matrix) = 0;
-		};
+			run(); // Must be defined in .cpp with the MINKO_WORKER macro.
+
+		private:
+			HTTPWorker() :
+				Worker("http")
+			{
+			}
+
+			static
+			size_t
+			curlWriteHandler(void* data, size_t size, size_t chunks, void* arg);
+
+			static
+			int
+			curlProgressHandler(void* arg, double total, double current, double, double);
+		};		
 	}
 }
