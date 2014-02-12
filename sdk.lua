@@ -71,10 +71,6 @@ configuration { "cc=clang"}
 
 configuration {}
 
-configuration { "cc=clang"}
-	toolset "clang"
-
-configuration {}
 
 -- distributable SDK
 MINKO_SDK_DIST = true
