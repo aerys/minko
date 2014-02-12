@@ -24,8 +24,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Signal.hpp"
 
 // Possible implementations:
-// - Web Worker-based (web)
-// - Callback-based (web)
+// - Web Worker-based (web, sync)
+// - Callback-based (web, async eg. xhr)
 // - Thread-based (native)
 // - Fork-based (native)
 
