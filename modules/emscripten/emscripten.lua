@@ -18,8 +18,6 @@ else
 	print(color.fg.yellow .. 'You must define the environment variable EMSCRIPTEN to be able to target HTML5.' .. color.reset)
 end
 
-print(color.fg.yellow .. 'Foo bar.' .. color.reset)
-
 local insert = require 'insert'
 
 if os.is('linux') then
@@ -46,12 +44,3 @@ insert.insert(premake.tools.gcc, 'cppflags.system.emscripten', {
 	"-DEMSCRIPTEN",
 	"-Wno-warn-absolute-paths"
 })
-<<<<<<< HEAD
-
-if os.getenv('EMSCRIPTEN') then
-	EMSCRIPTEN = os.getenv('EMSCRIPTEN');
-else
-	print(color.fg.yellow .. 'You must define the environment variable EMSCRIPTEN to be able to target HTML5.' .. color.reset)
-end
-=======
->>>>>>> refs/heads/feature/worker
