@@ -143,7 +143,7 @@ namespace minko
 			createLights(NodePtr minkoRoot, const aiScene* scene);
 
             NodePtr
-            findNode(std::string name, NodePtr root);
+            findNode(const std::string&, NodePtr root);
             
             void
 			parseDependencies(const std::string& filename, const aiScene* scene);
