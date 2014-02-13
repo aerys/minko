@@ -71,11 +71,6 @@ configuration { "cc=clang"}
 
 configuration {}
 
-configuration { "cc=clang"}
-	toolset "clang"
-
-configuration {}
-
 -- distributable SDK
 MINKO_SDK_DIST = true
 
@@ -84,6 +79,13 @@ local plugins = os.matchdirs(MINKO_HOME .. '/plugins/*')
 
 for _, plugin in ipairs(plugins) do
 	minko.plugin.include(plugin)
+end
+
+-- make workers visible from an external project
+local workers = os.matchdirs(MINKO_HOME .. '/workers/*')
+
+for _, worker in ipairs(workers) do
+	minko.worker.include(worker)
 end
 
 -- options

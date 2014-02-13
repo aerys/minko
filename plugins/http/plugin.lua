@@ -22,32 +22,6 @@ minko.plugin.http = {}
 
 function minko.plugin.http:enable()
 	minko.plugin.links { "http" }
-	includedirs { minko.sdk.path("plugins/http/include") }
+	includedirs { minko.plugin.path("http") .. "/include" }
 	defines { "MINKO_PLUGIN_HTTP" }
-	
-	configuration { "windows32 or windows64" }
-		links { "libcurl"}
-		
-	configuration { "windows32 or windows64", "debug" }
-		libdirs { minko.sdk.path("plugins/http/lib/win/libcurl/lib/Debug") }
-		postbuildcommands {
-			minko.action.copy(minko.plugin.path("http") .. "/lib/win/libcurl/lib/Debug/*.dll")
-		}
-		
-	configuration { "windows32 or windows64", "release" }
-		libdirs { minko.sdk.path("plugins/http/lib/win/libcurl/lib/Release") }
-		postbuildcommands {
-			minko.action.copy(minko.plugin.path("http") .. "/lib/win/libcurl/lib/Release/*.dll")
-		}
-		
-	configuration { "linux32 or linux64" }
-		links { "curl" }
-
-	configuration { "osx64" }
-		links { "curl" }
-end
-
-function minko.plugin.http:dist(pluginDistDir)
-	os.mkdir(pluginDistDir .. "/lib/win/libcurl/lib")
-	minko.os.copyfiles(minko.sdk.path("plugins/http/lib/win/libcurl/lib"), pluginDistDir .. "/lib/win/libcurl/lib")
 end

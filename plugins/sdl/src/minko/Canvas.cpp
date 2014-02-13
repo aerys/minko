@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/input/Keyboard.hpp"
 #include "minko/data/Provider.hpp"
 #include "minko/math/Vector4.hpp"
+#include "minko/async/Worker.hpp"
 
 #if defined(EMSCRIPTEN)
 # include "minko/MinkoWebGL.hpp"
@@ -39,6 +40,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 using namespace minko;
 using namespace minko::math;
+using namespace minko::async;
 
 Canvas::Canvas(const std::string& name, const uint width, const uint height, bool useStencil, bool chromeless) :
 	_name(name),
@@ -411,6 +413,11 @@ Canvas::step()
 		}
 	}
 
+#if !defined(EMSCRIPTEN)
+	for (auto worker : _activeWorkers)
+		worker->update();
+#endif
+
 	auto time = std::clock();
 	auto frameTime = (1000.f * (time - stepStartTime) / CLOCKS_PER_SEC);
 
@@ -487,3 +494,20 @@ Canvas::SDLKeyboard::getScanCodeFromKeyCode(input::Keyboard::KeyCode keyCode)
 	return static_cast<input::Keyboard::ScanCode>(SDL_GetScancodeFromKey(static_cast<int>(keyCode)));
 }
 
+Canvas::WorkerPtr
+Canvas::getWorker(const std::string& name)
+{
+	if (!_workers.count(name))
+		return nullptr;
+
+	auto worker = _workers[name]();
+
+	_activeWorkers.push_back(worker);
+
+	_workerCompleteSlots.push_back(worker->complete()->connect([worker, this](Worker::MessagePtr) {
+		std::cout << "Canvas::getWorker(): " << "remove worker" << std::endl;
+		//_activeWorkers.remove(worker);
+	}));
+
+	return worker;
+}
