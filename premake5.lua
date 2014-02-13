@@ -62,6 +62,7 @@ solution "minko"
 		include 'examples/physics'
 		include 'examples/oculus'
 		include 'examples/http'
+		include 'examples/joystick'
 	end
 
 	include 'workers/http'
