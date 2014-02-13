@@ -43,6 +43,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/material/Material.hpp"
 #include "minko/file/AssetLibrary.hpp"
 #include "minko/render/Effect.hpp"
+#include "minko/material/Material.hpp"
+#include "minko/material/BasicMaterial.hpp"
+#include "minko/material/PhongMaterial.hpp"
+#include "minko/render/Effect.hpp"
 
 using namespace minko;
 using namespace minko::component;
@@ -57,14 +61,19 @@ using namespace minko::geometry;
 /*static*/	Vector3::Ptr		ASSIMPParser::_TMP_SCALING			= Vector3::create();
 /*static*/	Matrix4x4::Ptr		ASSIMPParser::_TMP_MATRIX			= Matrix4x4::create();
 
-const ASSIMPParser::TextureTypeToName ASSIMPParser::_textureTypeToName = ASSIMPParser::initializeTextureTypeToName();
+/*static*/ const ASSIMPParser::TextureTypeToName	ASSIMPParser::_textureTypeToName	= ASSIMPParser::initializeTextureTypeToName();
+
+/*static*/
 ASSIMPParser::TextureTypeToName
 ASSIMPParser::initializeTextureTypeToName()
 {
 	TextureTypeToName typeToString;
 
-	typeToString[aiTextureType_DIFFUSE] = "diffuseMap";
-	typeToString[aiTextureType_NORMALS] = "normalMap";
+	typeToString[aiTextureType_DIFFUSE]		= "diffuseMap";
+	typeToString[aiTextureType_SPECULAR]	= "specularMap";
+	typeToString[aiTextureType_OPACITY]		= "alphaMap";
+	typeToString[aiTextureType_NORMALS]		= "normalMap";
+	typeToString[aiTextureType_REFLECTION]	= "environmentMap2d"; // not sure about this one
 
 	return typeToString;
 }
@@ -124,9 +133,9 @@ ASSIMPParser::parse(const std::string&					filename,
 		options->includePaths().push_back(resolvedFilename.substr(0, pos));
 	}
 
-    _filename = filename;
-	_assetLibrary = assetLibrary;
-	_options = options;
+    _filename		= filename;
+	_assetLibrary	= assetLibrary;
+	_options		= options;
     
     //Init the assimp scene
     Assimp::Importer importer;
@@ -317,63 +326,29 @@ ASSIMPParser::createMeshSurface(scene::Node::Ptr 	minkoNode,
 								const aiScene* 		scene,
 								aiMesh* 			mesh)
 {
-	auto geom = createMeshGeometry(minkoNode, mesh);
-    auto provider = material::Material::create(_options->material());
-	aiString materialName;
-    aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
+	if (mesh == nullptr)
+		return;
 
-	material->Get(AI_MATKEY_NAME, materialName);
-    
-    //Diffuse color
-    aiColor4D diffuse;
-	if (AI_SUCCESS == material->Get(AI_MATKEY_COLOR_DIFFUSE, diffuse))
-		provider->set("diffuseColor", Vector4::create(diffuse.r, diffuse.g, diffuse.b, diffuse.a));
+	const auto	meshName	= std::string(mesh->mName.data);
+	const auto	aiMat		= scene->mMaterials[mesh->mMaterialIndex];
+	auto		geometry	= createMeshGeometry(minkoNode, mesh);
+	auto		material	= createMaterial(aiMat);
+	auto		effect		= chooseEffectByShadingMode(aiMat);
+
+	if (effect)
+		minkoNode->addComponent(
+			Surface::create(
+				meshName, 
+				geometry, 
+				material, 
+				effect, 
+				"default"
+			)
+		);
+#ifdef DEBUG
 	else
-		provider->set("diffuseColor", Vector4::create(0.f, 0.f, 0.f, 1.f));
-    
-    //Specular color
-    aiColor4D specular;
-    if (AI_SUCCESS == material->Get(AI_MATKEY_COLOR_SPECULAR, specular))
-        provider->set("specularColor", Vector4::create(specular.r, specular.g, specular.b, specular.a));
-    
-    //Emissive color
-	/*
-    aiColor4D emissive;
-    if (AI_SUCCESS == material->Get(AI_MATKEY_COLOR_EMISSIVE, emissive))
-        provider->set("emissiveColor", Vector4::create(emissive.r, emissive.g, emissive.b, emissive.a));
-	//Ambient color
-	aiColor4D ambient;
-	if (AI_SUCCESS == material->Get(AI_MATKEY_COLOR_AMBIENT, ambient))
-		provider->set("ambientColor", Vector4::create(ambient.r, ambient.g, ambient.b, ambient.a));
-	*/
-
-	/*
-    //Shininess
-	float shininess;
-    if (AI_SUCCESS == material->Get(AI_MATKEY_COLOR_EMISSIVE, shininess))
-        provider->set("shininess", shininess);
-    */
-
-	provider = _options->materialFunction()(materialName.C_Str(), provider);
-
-    int texIndex = 0;
-    aiString path;
-    aiReturn texFound = AI_SUCCESS;
-
-	for (auto& typeAndString : _textureTypeToName)
-	{
-		if ((texFound = material->GetTexture(static_cast<aiTextureType>(typeAndString.first), 0, &path)) == AI_SUCCESS)
-		{
-			auto texturePath	= std::string(path.data);
-			auto texture		= _assetLibrary->texture(texturePath);
-
-			if (!texturePath.empty() && texture)
-				provider->set(typeAndString.second, texture);
-		}
-	}
-
-	std::string surfaceName(mesh->mName.C_Str());
-	minkoNode->addComponent(Surface::create(surfaceName, geom, provider, _options->effect(), "default"));
+		std::cerr << "Failed to find suitable effect for mesh '" << meshName << "' and no default effect provided." << std::endl;
+#endif // DEBUG
 }
 
 void
@@ -459,28 +434,37 @@ void
 ASSIMPParser::parseDependencies(const std::string& 	filename,
 								const aiScene*		scene)
 {
-	std::list<std::string> loading;
-	aiString path;
+	std::set<std::string>	loadedFilenames;
+	aiString				path;
 
-	for (unsigned int m = 0; m < scene->mNumMaterials; m++)
+	for (unsigned int materialId = 0; materialId < scene->mNumMaterials; materialId++)
 	{
+		const aiMaterial* aiMat = scene->mMaterials[materialId];
+
 		for (auto& textureTypeAndName : _textureTypeToName)
 		{
-			aiReturn texFound = scene->mMaterials[m]->GetTexture(static_cast<aiTextureType>(textureTypeAndName.first), 0, &path);
+			const auto			textureType = static_cast<aiTextureType>(textureTypeAndName.first);
+			const unsigned int	numTextures = aiMat->GetTextureCount(textureType);
 
-			if (texFound == AI_SUCCESS)
+			for (unsigned int textureId = 0; textureId < numTextures; ++textureId)
 			{
-				std::string filename(path.data);
+				aiReturn texFound = aiMat->GetTexture(textureType, textureId, &path);
 
-				if (!filename.empty() && std::find(loading.begin(), loading.end(), filename) == loading.end())
+				if (texFound == AI_SUCCESS)
 				{
-#ifdef DEBUG
-					std::cout << "ASSIMParser: loading texture '" << filename << "'..." << std::endl;
-#endif
+					std::string filename(path.data);
 
-					loading.push_back(filename);
-					_numDependencies++;
-					loadTexture(filename, filename, _options);
+					if (!filename.empty() && 
+						loadedFilenames.find(filename) == loadedFilenames.end())
+					{
+#ifdef DEBUG
+						std::cout << "ASSIMParser: loading texture '" << filename << "'..." << std::endl;
+#endif
+						loadedFilenames.insert(filename);
+						_numDependencies++;
+
+						loadTexture(filename, filename, _options);
+					}
 				}
 			}
 		}
@@ -494,7 +478,7 @@ ASSIMPParser::finalize()
 	_loaderCompleteSlots.clear();
 
 	_assetLibrary->symbol(_filename, _symbol);
-	
+
 	complete()->execute(shared_from_this());
 }
 
@@ -507,13 +491,18 @@ ASSIMPParser::loadTexture(const std::string&	textureFilename,
 
 	_loaderCompleteSlots[loader] = loader->complete()->connect([&](file::AbstractLoader::Ptr loader)
 	{
-		auto pos = loader->resolvedFilename().find_last_of('.');
-		auto extension = loader->resolvedFilename().substr(pos + 1);
-		auto parser = _assetLibrary->getParser(extension);
+		auto pos		= loader->resolvedFilename().find_last_of('.');
+		auto extension	= loader->resolvedFilename().substr(pos + 1);
+		auto parser		= _assetLibrary->getParser(extension);
+
+#ifdef DEBUG
+		if (parser == nullptr)
+			std::cerr << "No parser for extension '" << extension << "' found in asset library" << std::endl;
+#endif // DEBUG
 
 		if (!parser)
 		{
-			_numLoadedDependencies++;
+			++_numLoadedDependencies;
 			if (_numDependencies == _numLoadedDependencies && _symbol)
 				finalize();
 
@@ -550,7 +539,7 @@ ASSIMPParser::loadTexture(const std::string&	textureFilename,
 		}
 		else
 		{
-			_numLoadedDependencies++;
+			++_numLoadedDependencies;
 			std::cerr << "unable to find texture with filename '" << loader->filename() << "'" << std::endl;
 		}
 	});
@@ -992,4 +981,219 @@ ASSIMPParser::convert(const aiMatrix4x4& matrix, Matrix4x4::Ptr output)
 	);
     
 	return output;
+}
+
+material::Material::Ptr
+ASSIMPParser::createMaterial(const aiMaterial* aiMat)
+{
+	auto material	= chooseMaterialByShadingMode(aiMat);
+	
+	if (aiMat == nullptr)
+		return material;
+
+	material->set("blendMode",			getBlendingMode(aiMat));
+	material->set("triangleCulling",	getTriangleCulling(aiMat));
+	material->set("wireframe",			getWireframe(aiMat)); // bool
+
+	setColorProperty(material, "ambientColor",			aiMat, AI_MATKEY_COLOR_AMBIENT);
+	setColorProperty(material, "diffuseColor",			aiMat, AI_MATKEY_COLOR_DIFFUSE);
+	setColorProperty(material, "emissiveColor",			aiMat, AI_MATKEY_COLOR_EMISSIVE);
+	setColorProperty(material, "reflectiveColor",		aiMat, AI_MATKEY_COLOR_REFLECTIVE);
+	setColorProperty(material, "specularColor",			aiMat, AI_MATKEY_COLOR_SPECULAR);
+	setColorProperty(material, "transparentColor",		aiMat, AI_MATKEY_COLOR_TRANSPARENT);
+
+	setScalarProperty(material, "opacity",				aiMat, AI_MATKEY_OPACITY);
+	setScalarProperty(material, "reflectivity",			aiMat, AI_MATKEY_REFLECTIVITY);
+	setScalarProperty(material, "shininess",			aiMat, AI_MATKEY_SHININESS);
+	setScalarProperty(material, "shininessStrength",	aiMat, AI_MATKEY_SHININESS_STRENGTH);
+	setScalarProperty(material, "refractivity",			aiMat, AI_MATKEY_REFRACTI);
+	setScalarProperty(material, "bumpScaling",			aiMat, AI_MATKEY_BUMPSCALING);
+
+	for (auto& textureTypeAndName : _textureTypeToName)
+	{
+		const auto			textureType	= static_cast<aiTextureType>(textureTypeAndName.first);
+		const std::string&	textureName	= textureTypeAndName.second;
+
+		const unsigned int	numTextures	= aiMat->GetTextureCount(textureType);
+		if (numTextures == 0)
+			continue;
+
+		aiString path;
+		if (aiMat->GetTexture(textureType, 0, &path) == AI_SUCCESS)
+		{
+			render::AbstractTexture::Ptr texture = _assetLibrary->texture(std::string(path.data));
+
+			if (texture)
+				material->set<render::AbstractTexture::Ptr>(textureName, texture);
+		}
+	}
+
+	// apply material function
+	aiString materialName;
+	return aiMat->Get(AI_MATKEY_NAME, materialName) == AI_SUCCESS
+		? _options->materialFunction()(materialName.C_Str(), material)
+		: material;
+}
+
+material::Material::Ptr
+ASSIMPParser::chooseMaterialByShadingMode(const aiMaterial* aiMat) const
+{
+	if (aiMat == nullptr || _options->material())
+		return material::Material::create(_options->material());
+
+	int shadingMode;
+	unsigned int max;
+	if (aiMat->Get(AI_MATKEY_SHADING_MODEL, &shadingMode, &max) == AI_SUCCESS)
+	{
+		switch(static_cast<aiShadingMode>(shadingMode))
+		{
+			case aiShadingMode_Flat:
+			case aiShadingMode_Gouraud:
+			case aiShadingMode_Toon:
+			case aiShadingMode_OrenNayar:
+			case aiShadingMode_Minnaert:
+				return std::static_pointer_cast<material::Material>(material::BasicMaterial::create());
+	
+			case aiShadingMode_Phong:
+			case aiShadingMode_Blinn:
+			case aiShadingMode_CookTorrance:
+			case aiShadingMode_Fresnel:
+				return std::static_pointer_cast<material::Material>(material::PhongMaterial::create());
+			
+			case aiShadingMode_NoShading:
+			default:
+				return material::Material::create(_options->material());
+		}
+	}
+	else
+		return material::Material::create(_options->material());
+}
+
+render::Effect::Ptr
+ASSIMPParser::chooseEffectByShadingMode(const aiMaterial* aiMat) const
+{
+	render::Effect::Ptr effect = _options->effect();
+
+	if (aiMat)
+	{
+		int shadingMode;
+		unsigned int max;
+		if (aiMat->Get(AI_MATKEY_SHADING_MODEL, &shadingMode, &max) == AI_SUCCESS)
+		{
+			switch(static_cast<aiShadingMode>(shadingMode))
+			{
+				case aiShadingMode_Flat:
+				case aiShadingMode_Gouraud:
+				case aiShadingMode_Toon:
+				case aiShadingMode_OrenNayar:
+				case aiShadingMode_Minnaert:
+					if (_assetLibrary->effect("basic"))
+						effect = _assetLibrary->effect("basic");
+#ifdef DEBUG
+					else
+						std::cerr << "Basic effect not available in the asset library." << std::endl;
+#endif // DEBUG
+					break;
+		
+				case aiShadingMode_Phong:
+				case aiShadingMode_Blinn:
+				case aiShadingMode_CookTorrance:
+				case aiShadingMode_Fresnel:
+					if (_assetLibrary->effect("phong"))
+						effect = _assetLibrary->effect("phong");
+#ifdef DEBUG
+					else
+						std::cerr << "Phong effect not available in the asset library." << std::endl;
+#endif // DEBUG
+					break;
+				
+				case aiShadingMode_NoShading:
+				default:
+					break;
+			}
+		}
+	}
+
+	// apply effect function
+	return _options->effectFunction()(effect);
+}
+
+
+render::Blending::Mode
+ASSIMPParser::getBlendingMode(const aiMaterial* aiMat) const
+{
+	int blendMode;
+	unsigned int max;
+	if (aiMat && aiMat->Get(AI_MATKEY_BLEND_FUNC, &blendMode, &max) == AI_SUCCESS)
+	{
+		switch (static_cast<aiBlendMode>(blendMode))
+		{
+			case aiBlendMode_Default: // src * alpha - dst * (1 - alpha)
+				return render::Blending::Mode::ALPHA; 
+			case aiBlendMode_Additive:
+				return render::Blending::Mode::ADDITIVE;
+			default:
+				return render::Blending::Mode::DEFAULT;
+		}
+	}
+	else
+		return render::Blending::Mode::DEFAULT;
+}
+
+render::TriangleCulling
+ASSIMPParser::getTriangleCulling(const aiMaterial* aiMat) const
+{
+	int twoSided;
+	unsigned int max;
+	if (aiMat && aiMat->Get(AI_MATKEY_TWOSIDED, &twoSided, &max) == AI_SUCCESS)
+	{
+		return twoSided == 0 
+			? render::TriangleCulling::NONE
+			: render::TriangleCulling::BACK;
+	}
+	else
+		return render::TriangleCulling::BACK;
+}
+
+bool 
+ASSIMPParser::getWireframe(const aiMaterial* aiMat) const
+{
+	int wireframe;
+	unsigned int max;
+
+	return (aiMat && aiMat->Get(AI_MATKEY_TWOSIDED, &wireframe, &max) == AI_SUCCESS)
+		? wireframe != 0
+		: false;
+}
+
+void
+ASSIMPParser::setColorProperty(material::Material::Ptr	material, 
+							   const std::string&		propertyName, 
+							   const aiMaterial*		aiMat, 
+							   const char*				aiMatKeyName,
+							   unsigned int				aiType,
+							   unsigned int				aiIndex)
+{
+	if (material == nullptr || aiMat == nullptr)
+		return;
+
+	aiColor4D color;
+	if (aiMat->Get(aiMatKeyName, aiType, aiIndex, color) == AI_SUCCESS)
+		material->set(propertyName, math::Vector4::create(color.r, color.g, color.b, color.a));
+}
+
+void
+ASSIMPParser::setScalarProperty(material::Material::Ptr	material, 
+							    const std::string&		propertyName, 
+							    const aiMaterial*		aiMat, 
+							    const char*				aiMatKeyName,
+							    unsigned int			aiType,
+							    unsigned int			aiIndex)
+{
+	if (material == nullptr || aiMat == nullptr)
+		return;
+
+	float scalar;
+	if (aiMat->Get(aiMatKeyName, aiType, aiIndex, scalar) == AI_SUCCESS)
+		material->set(propertyName, scalar);
 }
