@@ -34,20 +34,24 @@ AbstractLight::AbstractLight(const std::string& arrayName) :
 	data()->set("color", _color);
 }
 
-void
+AbstractLight::Ptr
 AbstractLight::color(math::Vector3::Ptr color)
 {
 	_color->copyFrom(color);
+
+	return std::static_pointer_cast<AbstractLight>(shared_from_this());
 }
 
-void
+AbstractLight::Ptr
 AbstractLight::color(math::Vector4::Ptr color)
 {
 	_color->setTo(color->x(), color->y(), color->z());
+
+	return std::static_pointer_cast<AbstractLight>(shared_from_this());
 }
 
-void
+AbstractLight::Ptr
 AbstractLight::color(uint rgba)
 {
-	color(Color::uintToVec4(rgba));
+	return color(Color::uintToVec4(rgba));
 }

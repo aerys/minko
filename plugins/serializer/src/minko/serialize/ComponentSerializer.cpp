@@ -130,7 +130,7 @@ ComponentSerializer::serializePointLight(NodePtr		node,
 	msgpack::type::tuple<float, float, float, float, float, float>	src(
 		point->diffuse(),
 		point->specular(),
-		point->attenuationDistance(),
+		point->attenuationCoefficients()->x(),
 		point->color()->x(),
 		point->color()->y(),
 		point->color()->z());
@@ -151,7 +151,7 @@ ComponentSerializer::serializeSpotLight(NodePtr			node,
 	msgpack::type::tuple<float, float, float, float, float, float, float, float> src(
 		spot->diffuse(),
 		spot->specular(),
-		spot->attenuationDistance(),
+		spot->attenuationCoefficients()->x(),
 		spot->cosInnerConeAngle(),
 		spot->cosOuterConeAngle(),
 		spot->color()->x(),

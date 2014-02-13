@@ -26,22 +26,30 @@ using namespace minko;
 using namespace minko::math;
 using namespace minko::component;
 
-SpotLight::SpotLight(float innerAngleRadians,
-					 float outerAngleRadians,
-					 float attenuationDist) :
-	AbstractDiscreteLight("spotLights"),
+SpotLight::SpotLight(float diffuse,
+					 float specular,
+					 float attenuationConstant,
+					 float attenuationLinear,
+					 float attenuationQuadratic) :
+	AbstractDiscreteLight("spotLights", diffuse, specular),
+	_attenuationCoeffs(Vector3::create(attenuationConstant, attenuationLinear, attenuationQuadratic)),
 	_worldPosition(Vector3::create(0.0f, 0.0f, 0.0f)),
 	_worldDirection(Vector3::create(0.0f, 0.0f, 1.0f))
 {
-	diffuse(1.f);
-	specular(1.f);
-	attenuationDistance(attenuationDist);
+
+	data()->set("attenuationCoeffs",	_attenuationCoeffs);
+	data()->set("position",				_worldPosition);
+	data()->set("direction",			_worldDirection);
+}
+
+void 
+SpotLight::initialize(float innerAngleRadians,
+					  float outerAngleRadians)
+{
+	AbstractDiscreteLight::initialize();
 
 	innerConeAngle(innerAngleRadians);
 	outerConeAngle(std::max(outerAngleRadians, innerAngleRadians));
-
-	data()->set("position", _worldPosition);
-	data()->set("direction", _worldDirection);
 }
 
 void
@@ -51,29 +59,47 @@ SpotLight::updateModelToWorldMatrix(std::shared_ptr<math::Matrix4x4> modelToWorl
 	modelToWorld->deltaTransform(Vector3::zAxis(), _worldDirection);
 }
 
-void
+SpotLight::Ptr
 SpotLight::innerConeAngle(float radians)
 {
-	if (radians < 0.0f || radians > 0.5f * (float)PI)
-		throw std::invalid_argument("radians");
-
-	_cosInnerConeAngle = cosf(radians);
+	_cosInnerConeAngle = cosf(std::max(0.0f, std::min(0.5f * (float)PI, radians)));
 	data()->set<float>("cosInnerConeAngle", _cosInnerConeAngle);
+
+	return std::static_pointer_cast<SpotLight>(shared_from_this());
 }
 
-void
+SpotLight::Ptr
 SpotLight::outerConeAngle(float radians)
 {
-	if (radians < 0.0f || radians > 0.5f * (float)PI)
-		throw std::invalid_argument("radians");
-
-	_cosOuterConeAngle = cosf(radians);
+	_cosOuterConeAngle = cosf(std::max(0.0f, std::min(0.5f * (float)PI, radians)));
 	data()->set<float>("cosOuterConeAngle", _cosOuterConeAngle);
+
+	return std::static_pointer_cast<SpotLight>(shared_from_this());
 }
 
-void
-SpotLight::attenuationDistance(float value)
+Vector3::Ptr
+SpotLight::attenuationCoefficients() const
 {
-	_attenuationDistance = value > 1e-6f ? value : -1.0f;
-	data()->set<float>("attenuationDistance", _attenuationDistance);
+	return data()->get<math::Vector3::Ptr>("attenuationCoeffs");
+}
+
+SpotLight::Ptr
+SpotLight::attenuationCoefficients(float constant, float linear, float quadratic) 
+{
+	return attenuationCoefficients(Vector3::create(constant, linear, quadratic));
+}
+
+SpotLight::Ptr
+SpotLight::attenuationCoefficients(Vector3::Ptr value)
+{
+	_attenuationCoeffs->copyFrom(value);
+	data()->set<Vector3::Ptr>("attenuationCoeffs", _attenuationCoeffs);
+
+	return std::static_pointer_cast<SpotLight>(shared_from_this());
+}
+
+bool
+SpotLight::attenuationEnabled() const
+{
+	return !( _attenuationCoeffs->x() < 0.0f || _attenuationCoeffs->y() < 0.0f || _attenuationCoeffs->z() < 0.0f);
 }
