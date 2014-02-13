@@ -257,6 +257,16 @@ namespace minko
 				return shared_from_this();
 			};
 
+			inline
+			Ptr
+			load(const char*						filename,
+				 std::shared_ptr<file::Options>		options = nullptr,
+				 std::shared_ptr<AbstractLoader>	loader	= nullptr,
+				 bool								executeCompleteSignal = true)
+			{
+				return load(std::string(filename), options, loader, executeCompleteSignal);
+			};
+
 			Ptr
 			load(bool executeCompleteSignal = true);
 

@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/AbstractParser.hpp"
 #include "minko/file/FileLoader.hpp"
 #include "minko/component/Skinning.hpp"
+#include "minko/render/Blending.hpp"
 
 struct	aiMesh;
 struct	aiNode;
@@ -33,6 +34,8 @@ struct	aiVectorKey;
 struct	aiQuatKey;
 template<typename>
 class aiMatrix4x4t;
+struct	aiMaterial;
+
 
 namespace minko
 {
@@ -60,12 +63,15 @@ namespace minko
 			typedef std::shared_ptr<math::Vector3>								Vector3Ptr;
 			typedef std::shared_ptr<math::Quaternion>							QuaternionPtr;
 			typedef std::shared_ptr<math::Matrix4x4>							Matrix4x4Ptr;
+			typedef std::shared_ptr<material::Material>							MaterialPtr;
+			typedef std::shared_ptr<render::Effect>								EffectPtr;
+			
 			typedef std::vector<Matrix4x4Ptr>									Matrices4x4;
 
 			typedef Signal<LoaderPtr>::Slot										LoaderSignalSlot;
 
 			typedef std::unordered_map<LoaderPtr, LoaderSignalSlot>				LoaderToSlotMap;
-			typedef std::unordered_map<unsigned int, std::string>				TextureTypeToName;
+			typedef std::unordered_map<uint, std::string>						TextureTypeToName;
 
         private:
 			static const TextureTypeToName					_textureTypeToName;
@@ -135,7 +141,7 @@ namespace minko
 
             void
 			createLights(NodePtr minkoRoot, const aiScene* scene);
-            
+
             NodePtr
             findNode(std::string name, NodePtr root);
             
@@ -193,6 +199,30 @@ namespace minko
 			static
 			Matrix4x4Ptr
 			convert(const aiMatrix4x4t<float>&, Matrix4x4Ptr output = nullptr);
+
+			MaterialPtr
+			createMaterial(const aiMaterial*);
+
+			MaterialPtr
+			chooseMaterialByShadingMode(const aiMaterial*) const;
+
+			EffectPtr
+			chooseEffectByShadingMode(const aiMaterial*) const;
+
+			render::Blending::Mode
+			getBlendingMode(const aiMaterial*) const;
+
+			render::TriangleCulling
+			getTriangleCulling(const aiMaterial*) const;
+
+			bool 
+			getWireframe(const aiMaterial*) const;
+
+			void
+			setColorProperty(MaterialPtr, const std::string& propertyName, const aiMaterial*, const char*, unsigned int, unsigned int);
+
+			void
+			setScalarProperty(MaterialPtr, const std::string& propertyName, const aiMaterial*, const char*, unsigned int, unsigned int);
 
 			void
 			disposeNodeMaps();
