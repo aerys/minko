@@ -47,7 +47,8 @@ namespace minko
 			{
 				auto mat = create();
 
-				mat->copyFrom(source);
+				if (source)
+					mat->copyFrom(source);
 
 				return mat;
 			}

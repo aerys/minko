@@ -35,7 +35,8 @@ Options::Options(std::shared_ptr<render::AbstractContext> context) :
 	_isCubeTexture(false),
 	_skinningFramerate(30),
 	_skinningMethod(component::SkinningMethod::HARDWARE),
-	_material(material::Material::create())
+	_material(nullptr),
+	_effect(nullptr)
 {
 #if defined(DEBUG)
 	includePaths().push_back("../../../asset");
