@@ -40,9 +40,10 @@ namespace minko
 	    public:
 		    inline static
 		    Ptr
-		    create()
+		    create(float diffuse	= 1.0f,
+				   float specular	= 1.0f)
 		    {
-                auto light = std::shared_ptr<DirectionalLight>(new DirectionalLight());
+                auto light = std::shared_ptr<DirectionalLight>(new DirectionalLight(diffuse, specular));
 
                 light->initialize();
 
@@ -58,7 +59,8 @@ namespace minko
             updateModelToWorldMatrix(std::shared_ptr<math::Matrix4x4> modelToWorld);
 
 	    private:
-		    DirectionalLight();
+		    DirectionalLight(float diffuse,
+							 float specular);
 	    };
     }
 }

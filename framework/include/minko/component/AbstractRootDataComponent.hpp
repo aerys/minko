@@ -52,7 +52,7 @@ namespace minko
 	    protected:
             inline
             std::shared_ptr<ProviderClass>
-            data()
+            data() const
             {
                 return _data;
             }
