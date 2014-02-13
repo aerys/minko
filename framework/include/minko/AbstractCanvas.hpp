@@ -28,9 +28,8 @@ namespace minko
 	class AbstractCanvas
 	{
 	public:
-		typedef std::shared_ptr<AbstractCanvas>	Ptr;
-
-	private:
+		typedef std::shared_ptr<AbstractCanvas>							Ptr;
+		typedef std::function<std::shared_ptr<async::Worker> ()>		WorkerHandler;
 
 	public:
 		virtual
@@ -68,5 +67,40 @@ namespace minko
         virtual
 		Signal<Ptr, uint, uint>::Ptr
 		resized() = 0;
+
+		virtual
+		std::shared_ptr<async::Worker>
+		getWorker(const std::string& name) = 0;
+
+		template <typename T>
+		void
+		registerWorker(const std::string& type)
+		{
+			std::string key(type);
+
+			std::transform(key.begin(), key.end(), key.begin(), ::tolower);
+
+			_workers[key] = T::create;
+		}
+
+		static
+		std::shared_ptr<AbstractCanvas>
+		defaultCanvas()
+		{
+			return _defaultCanvas;
+		}
+
+		static
+		void
+		defaultCanvas(std::shared_ptr<AbstractCanvas> value)
+		{
+			_defaultCanvas = value;
+		}
+
+	protected:
+		std::unordered_map<std::string, WorkerHandler>		_workers;
+		
+		static
+		std::shared_ptr<AbstractCanvas>						_defaultCanvas;
 	};
 }

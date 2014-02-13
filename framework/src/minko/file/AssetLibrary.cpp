@@ -328,6 +328,8 @@ AssetLibrary::queue(const std::string&						filename,
 
 			if (loader)
 				_filenameToLoader[filename] = loader;
+			else
+				throw std::runtime_error("unsupported protocol: " + protocol);
 		}
 	}
 
@@ -365,7 +367,9 @@ AssetLibrary::load(bool	executeCompleteSignal)
 			_loaderSlots.push_back(loader->complete()->connect(std::bind(
 				&AssetLibrary::loaderCompleteHandler, shared_from_this(), std::placeholders::_1
 			)));
+			std::cout << "AssetLibrary::load(): before " << filename << std::endl;
 			loader->load(filename, options);
+			std::cout << "AssetLibrary::load(): after " << filename << std::endl;
 		}
 	}
 
@@ -385,6 +389,8 @@ AssetLibrary::loaderErrorHandler(std::shared_ptr<file::AbstractLoader> loader)
 void
 AssetLibrary::loaderCompleteHandler(std::shared_ptr<file::AbstractLoader> loader)
 {
+	std::cerr << "AssetLibrary::loaderCompleteHandler(): " << std::endl;
+
 	auto filename = loader->filename();
 	auto extension = filename.substr(filename.find_last_of('.') + 1);
 
