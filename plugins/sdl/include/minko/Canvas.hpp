@@ -34,6 +34,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 struct SDL_Window;
 struct SDL_Surface;
+struct _SDL_Joystick;
+typedef struct _SDL_Joystick SDL_Joystick;
 typedef unsigned char Uint8;
 
 namespace minko
@@ -144,16 +146,28 @@ namespace minko
 		{
 			friend class Canvas;
 
+		private:
+			SDL_Joystick*	_joystick;
+
 		public :
 			static inline
 			std::shared_ptr<SDLJoystick>
-			create(Canvas::Ptr canvas)
+			create(Canvas::Ptr canvas, int joystickId, SDL_Joystick* joystick)
 			{
-				return std::shared_ptr<SDLJoystick>(new SDLJoystick(canvas));
+				return std::shared_ptr<SDLJoystick>(new SDLJoystick(canvas, joystickId, joystick));
 			}
+
+			inline
+			SDL_Joystick* const
+			joystick()
+			{
+				return _joystick;
+			}
+
 		private:
-			SDLJoystick(Canvas::Ptr canvas) :
-				input::Joystick(canvas)
+			SDLJoystick(Canvas::Ptr canvas, int joystickId, SDL_Joystick* joystick) :
+				input::Joystick(canvas, joystickId),
+				_joystick(joystick)
 			{
 			}
 		};
@@ -173,24 +187,24 @@ namespace minko
 		bool											_active;
 		render::AbstractContext::Ptr					_context;
 #ifdef EMSCRIPTEN
-		SDL_Surface*									_screen;
+		SDL_Surface*											_screen;
 #else
-		SDL_Window*										_window;
+		SDL_Window*												_window;
 #endif
-		float											_framerate;
-		float											_desiredFramerate;
+		float													_framerate;
+		float													_desiredFramerate;
 
-		Signal<Ptr, uint, uint>::Ptr					_enterFrame;
-		Signal<Ptr, int, int, int>::Ptr					_joystickMotion;
-		Signal<Ptr, int>::Ptr							_joystickButtonDown;
-		Signal<Ptr, int>::Ptr							_joystickButtonUp;
-		Signal<AbstractCanvas::Ptr, uint, uint>::Ptr	_resized;
-		std::shared_ptr<SDLMouse>						_mouse;
-		std::vector<std::shared_ptr<SDLJoystick>>		_joysticks;
-		std::shared_ptr<SDLKeyboard>    				_keyboard;
+		std::shared_ptr<SDLMouse>								_mouse;
+		std::unordered_map<int, std::shared_ptr<SDLJoystick>>	_joysticks;
+        std::shared_ptr<SDLKeyboard>    						_keyboard;
 
+		Signal<Ptr, uint, uint>::Ptr											_enterFrame;
+		Signal<AbstractCanvas::Ptr, uint, uint>::Ptr							_resized;
+		Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::Ptr		_joystickAdded;
+		Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::Ptr		_joystickRemoved;
 		std::list<std::shared_ptr<async::Worker>>		_activeWorkers;
 		std::list<Any>									_workerCompleteSlots;
+
 
 	public:
 		static inline
@@ -274,6 +288,20 @@ namespace minko
 		numJoysticks()
 		{
 			return _joysticks.size();
+		}
+
+		inline
+		Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::Ptr
+		joystickAdded()
+		{
+			return _joystickAdded;
+		}
+
+		inline
+		Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::Ptr
+		joystickRemoved()
+		{
+				return _joystickRemoved;
 		}
 
 		inline
