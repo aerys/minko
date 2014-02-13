@@ -207,7 +207,7 @@ namespace minko
 
             inline
             std::shared_ptr<render::Effect>
-            effect()
+            effect() const
             {
                 return _effect;
             }
@@ -223,7 +223,7 @@ namespace minko
 
 			inline
 			MaterialPtr
-			material()
+			material() const
 			{
 				return _material;
 			}
@@ -271,7 +271,7 @@ namespace minko
 
 			inline
 			const GeometryFunction&
-			geometryFunction()
+			geometryFunction() const
 			{
 				return _geometryFunction;
 			}
@@ -287,7 +287,7 @@ namespace minko
 
 			inline
 			const UriFunction&
-			uriFunction()
+			uriFunction() const
 			{
 				return _uriFunction;
 			}
@@ -303,7 +303,7 @@ namespace minko
 
 			inline
 			const NodeFunction&
-			nodeFunction()
+			nodeFunction() const
 			{
 				return _nodeFunction;
 			}
@@ -319,7 +319,7 @@ namespace minko
 
 			inline
 			const EffectFunction&
-			effectFunction()
+			effectFunction() const
 			{
 				return _effectFunction;
 			}
