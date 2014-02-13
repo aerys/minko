@@ -25,14 +25,12 @@ using namespace minko;
 using namespace minko::component;
 using namespace minko::math;
 
-DirectionalLight::DirectionalLight() :
-	AbstractDiscreteLight("directionalLights"),
+DirectionalLight::DirectionalLight(float diffuse,
+								   float specular) :
+	AbstractDiscreteLight("directionalLights", diffuse, specular),
 	_worldDirection(Vector3::create(0.f, 0.f, -1.f))
 {
-	diffuse(1.f);
-	specular(1.f);
-
-    data()->set("direction", _worldDirection);
+	data()->set("direction", _worldDirection);
 }
 
 void
