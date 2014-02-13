@@ -204,6 +204,24 @@ minko.project.application = function(name)
 	
 end
 
+minko.project.worker = function(name)
+	minko.project.library(name)
+
+	kind "StaticLib"
+	language "C++"
+
+	removelinks { "minko-framework" }
+
+	configuration { "html5" }
+		local emcc = premake.tools.gcc.tools.emscripten.cc
+
+		postbuildcommands {
+			emcc .. ' ${TARGET} -o ${TARGETDIR}/' .. name .. '.js -O2 --closure 1 -s DISABLE_EXCEPTION_CATCHING=0 -s TOTAL_MEMORY=268435456 -s EXPORTED_FUNCTIONS="[\'minkoWorkerEntryPoint\']" || ' .. minko.action.fail()
+		}
+
+	configuration { }
+end
+
 minko.project.solution = function(name)
 	solution(name)
 

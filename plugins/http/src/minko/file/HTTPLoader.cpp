@@ -21,20 +21,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/file/Options.hpp"
 #include "minko/Signal.hpp"
+#include "minko/AbstractCanvas.hpp"
+#include "minko/async/HTTPWorker.hpp"
 
 #if defined(EMSCRIPTEN)
 # include "emscripten/emscripten.h"
-#else
-#include "curl/curl.h"
-
-struct MemoryStruct {
-	char *memory;
-	size_t size;
-};
 #endif
 
 using namespace minko;
 using namespace minko::file;
+using namespace minko::async;
 
 std::list<std::shared_ptr<HTTPLoader>>
 HTTPLoader::_runningLoaders;
@@ -46,30 +42,10 @@ HTTPLoader::HTTPLoader()
 {
 }
 
-#if defined(EMSCRIPTEN)
-void
-HTTPLoader::wget2CompleteHandler(void* arg, const char* file)
-{
-	FILE* f = fopen(file,"rb");
-	if (f)
-	{
-		fseek (f, 0, SEEK_END); 
-    	int size=ftell (f);
-    	fseek (f, 0, SEEK_SET);  
-    		 
-		char* data = new char[size];
-		fread(data,size,1,f);
-		fclose(f);
-		completeHandler(arg, (void*)data, size);
-		delete data;
-	}
-}
-
-#endif
-
 void
 HTTPLoader::progressHandler(void* arg, int progress)
 {
+	std::cout << "HTTPLoader::progressHandler(): " << progress << std::endl;
 	auto iterator = std::find_if(HTTPLoader::_runningLoaders.begin(),
 								 HTTPLoader::_runningLoaders.end(),
 								 [=](std::shared_ptr<HTTPLoader> loader) -> bool {
@@ -84,7 +60,7 @@ HTTPLoader::progressHandler(void* arg, int progress)
 	std::cout << "HTTPLoader::progressHandler(): found loader " << format("%d", progress) << "%"  << std::endl;
 	std::shared_ptr<HTTPLoader> loader = *iterator;
 
-	loader->_progress->execute(loader, (float)progress / 100.0f);
+	loader->_progress->execute(loader, float(progress) / 100.0f);
 }
 
 void
@@ -150,80 +126,55 @@ HTTPLoader::load(const std::string& filename, std::shared_ptr<Options> options)
 {
 	std::cout << "HTTPLoader::load(): " << filename << std::endl;
 	_filename = filename;
-    _resolvedFilename = options->uriFunction()(sanitizeFilename(filename));
+	_resolvedFilename = options->uriFunction()(sanitizeFilename(filename));
 	_options = options;
 	
 	auto loader = shared_from_this();
 
 	_runningLoaders.push_back(std::static_pointer_cast<HTTPLoader>(loader));
 
-	#if defined(EMSCRIPTEN)
-
 	loader->progress()->execute(loader, 0.0);
-	
+
+#if defined(EMSCRIPTEN)
 	//std::string destFilename = format("prepare%d", _uid++);
 	//std::cout << "HTTPLoader::load(): " << "call emscripten_async_wget2 with filename " << destFilename << std::endl;
 	//emscripten_async_wget2(_filename.c_str(), destFilename.c_str(), "GET", "", loader.get(), &wget2CompleteHandler, &errorHandler, &progressHandler);
 
 	std::cout << "HTTPLoader::load(): " << "call emscripten_async_wget_data " << std::endl;
 	emscripten_async_wget_data(_filename.c_str(), loader.get(), &completeHandler, &errorHandler);
+#else
+	auto worker = AbstractCanvas::defaultCanvas()->getWorker("http");
 
-	#else
-	CURL *curl;
-	CURLcode res;
+	_workerSlots.push_back(worker->complete()->connect([=](Worker::MessagePtr data) {
+		completeHandler(loader.get(), &*data->begin(), data->size());
+	}));
 
-	curl = curl_easy_init();
+	_workerSlots.push_back(worker->progress()->connect([=](float ratio) {
+		progressHandler(loader.get(), ratio * 100);
+	}));
 
-	if (curl)
-	{
-		struct MemoryStruct mem;
-		mem.memory = (char *)malloc(1);
-		mem.size = 0; 
-
-		curl_easy_setopt(curl, CURLOPT_URL, _filename.c_str());
-
-		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, &curlWriteMemoryHandler);
-		curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&mem);
-
-		curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
-		//curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
-
-		curl_easy_setopt(curl, CURLOPT_USERAGENT, "libcurl-agent/1.0");
-		res = curl_easy_perform(curl);
-
-		if (res != CURLE_OK)
-		{
-			errorHandler(loader.get());
-		}
-		else
-		{
-			curl_easy_cleanup(curl);
-			completeHandler(loader.get(), mem.memory, mem.size);
-
-			if (mem.memory)
-				free(mem.memory);
-		}
-	}
-	#endif
+	worker->input(std::make_shared<std::vector<char>>(_resolvedFilename.begin(), _resolvedFilename.end()));
+#endif
 }
 
-
-#ifndef EMSCRIPTEN
-
-size_t
-HTTPLoader::curlWriteMemoryHandler(void* contents, size_t size, size_t nmemb, void* userp)
+#if defined(EMSCRIPTEN)
+void
+HTTPLoader::wget2CompleteHandler(void* arg, const char* file)
 {
-	size_t realsize = size * nmemb;
-	struct MemoryStruct *mem = (struct MemoryStruct *)userp;
+	FILE* f = fopen(file, "rb");
 
-	mem->memory = (char *)realloc(mem->memory, mem->size + realsize + 1);
-	if (mem->memory == NULL)
-		return 0;
+	if (f)
+	{
+		fseek(f, 0, SEEK_END);
+		int size = ftell(f);
 
-	memcpy(&(mem->memory[mem->size]), contents, realsize);
-	mem->size += realsize;
-	mem->memory[mem->size] = 0;
+		fseek (f, 0, SEEK_SET);
+		char* data = new char[size];
+		fread(data, size, 1, f);
+		fclose(f);
 
-	return realsize;
+		completeHandler(arg, (void*)data, size);
+		delete data;
+	}
 }
 #endif

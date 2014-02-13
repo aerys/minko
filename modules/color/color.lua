@@ -50,6 +50,7 @@
 
 module(..., package.seeall)
 
+local ansi = not os.is("windows") or os.getenv('CMDER_ROOT') -- go, go, Cmder!
 local esc = string.char(27, 91)
 
 local names = {'black', 'red', 'green', 'yellow', 'blue', 'pink', 'cyan', 'white'}
@@ -57,7 +58,7 @@ local hi_names = {'BLACK', 'RED', 'GREEN', 'YELLOW', 'BLUE', 'PINK', 'CYAN', 'WH
 
 fg, bg = {}, {}
 
-if os.is("windows") then
+if ansi then
     for i, name in ipairs(names) do
         fg[name] = ''
         _M[name] = ''
@@ -83,7 +84,7 @@ else
     end
 end
 
-if os.is("windows") then
+if ansi then
     reset = ''
     clear = ''
 
@@ -110,7 +111,7 @@ else
 end
 
 local function fg256(_,n)
-    if os.is("windows") then
+    if ansi then
         return ''
     else
         return esc .. "38;5;" .. n .. 'm'
@@ -118,7 +119,7 @@ local function fg256(_,n)
 end
 
 local function bg256(_,n)
-    if os.is("windows") then
+    if ansi then
         return ''
     else
         return esc .. "48;5;" .. n .. 'm'   

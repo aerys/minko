@@ -21,6 +21,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 
+#ifdef FAR // The macro is defined by guiddef.h
+# undef FAR
+#endif
+
 namespace minko
 {
 	namespace math

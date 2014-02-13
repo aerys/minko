@@ -29,6 +29,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/input/Mouse.hpp"
 #include "minko/input/Keyboard.hpp"
 #include "minko/input/Joystick.hpp"
+#include "minko/async/Worker.hpp"
 
 
 struct SDL_Window;
@@ -158,6 +159,8 @@ namespace minko
 		};
 
 	private:
+		typedef std::shared_ptr<async::Worker>			WorkerPtr;
+
 		std::string										_name;
 		uint											_x;
 		uint											_y;
@@ -184,7 +187,10 @@ namespace minko
 		Signal<AbstractCanvas::Ptr, uint, uint>::Ptr	_resized;
 		std::shared_ptr<SDLMouse>						_mouse;
 		std::vector<std::shared_ptr<SDLJoystick>>		_joysticks;
-        std::shared_ptr<SDLKeyboard>    				_keyboard;
+		std::shared_ptr<SDLKeyboard>    				_keyboard;
+
+		std::list<std::shared_ptr<async::Worker>>		_activeWorkers;
+		std::list<Any>									_workerCompleteSlots;
 
 	public:
 		static inline
@@ -249,19 +255,19 @@ namespace minko
 			return _mouse;
 		}
 
-        inline
-        std::shared_ptr<input::Keyboard>
-        keyboard()
-        {
-            return _keyboard;
-        }
+		inline
+		std::shared_ptr<input::Keyboard>
+		keyboard()
+		{
+			return _keyboard;
+		}
 		
 		inline
 		std::shared_ptr<input::Joystick>
-        joystick(uint id)
-        {
+		joystick(uint id)
+		{
 			return id < numJoysticks() ? _joysticks[id] : nullptr;
-        }
+		}
 
 		inline
 		uint
@@ -304,6 +310,9 @@ namespace minko
 		{
 			_desiredFramerate = desiredFramerate;
 		}
+
+		WorkerPtr
+		getWorker(const std::string& name);
 
 		void
 		run();

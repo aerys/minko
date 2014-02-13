@@ -44,6 +44,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include <type_traits>
 #include <cfloat>
 #include <climits>
+#include <future>
+#include <thread>
+#include <chrono>
+
 #include "minko/math/Convertible.hpp"
 
 #ifdef __ANDROID__
@@ -321,6 +325,11 @@ namespace minko
 		class Mouse;
         class Keyboard;
 		class Joystick;
+	}
+
+	namespace async
+	{
+		class Worker;
 	}
 }
 

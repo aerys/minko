@@ -2,7 +2,11 @@ minko.action = {}
 
 minko.action.fail = function()
 	if os.is('windows') then
-		return 'call "' .. path.translate(minko.sdk.path('/tools/win/scripts/fail.bat')) .. '" "$(Target)"'
+		if string.startswith(_ACTION, "gmake") then
+			return 'call "' .. path.translate(minko.sdk.path('/tools/win/scripts/fail.bat')) .. '" "${TARGET}"'
+		else
+			return 'call "' .. path.translate(minko.sdk.path('/tools/win/scripts/fail.bat')) .. '" "$(Target)"'
+		end
 	elseif os.is('macosx') then
 		return 'source ' .. minko.sdk.path('/tools/mac/scripts/fail.sh') .. ' ${TARGET}'		
 	else
@@ -13,7 +17,12 @@ end
 minko.action.copy = function(sourcePath)
 	if os.is('windows') then
 		sourcePath = path.translate(sourcePath)
-		return 'xcopy /y /i /e "' .. sourcePath .. '" "$(TargetDir)"'
+
+		if string.startswith(_ACTION, "gmake") then
+			return 'xcopy /y /i /e "' .. sourcePath .. '" "${TARGETDIR}"'
+		else
+			return 'xcopy /y /i /e "' .. sourcePath .. '" "$(TargetDir)"'
+		end
 		-- return 'if exist ' .. sourcePath .. ' xcopy /y /i /e "' .. sourcePath .. '" "$(TargetDir)"'
 	else
 		return 'test -e "' .. sourcePath .. '" && cp -R "' .. sourcePath .. '" "${TARGETDIR}" || :'
