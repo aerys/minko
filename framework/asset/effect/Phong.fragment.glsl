@@ -49,7 +49,7 @@
 		uniform vec3	pointLights_color[NUM_POINT_LIGHTS];
 		uniform float	pointLights_diffuse[NUM_POINT_LIGHTS];
 		uniform float	pointLights_specular[NUM_POINT_LIGHTS];
-		uniform float	pointLights_attenuationDistance[NUM_POINT_LIGHTS];
+		uniform vec3	pointLights_attenuationCoeffs[NUM_POINT_LIGHTS];
 		uniform vec3	pointLights_position[NUM_POINT_LIGHTS];
 	#endif // NUM_POINT_LIGHTS
 
@@ -57,7 +57,7 @@
 		uniform vec3	spotLights_color[NUM_SPOT_LIGHTS];
 		uniform float	spotLights_diffuse[NUM_SPOT_LIGHTS];
 		uniform float	spotLights_specular[NUM_SPOT_LIGHTS];
-		uniform float	spotLights_attenuationDistance[NUM_SPOT_LIGHTS];
+		uniform vec3	spotLights_attenuationCoeffs[NUM_SPOT_LIGHTS];
 		uniform vec3	spotLights_position[NUM_SPOT_LIGHTS];
 		uniform vec3	spotLights_direction[NUM_SPOT_LIGHTS];
 		uniform float	spotLights_cosInnerConeAngle[NUM_SPOT_LIGHTS];
@@ -156,7 +156,7 @@ void main(void)
 		vec3 	lightPosition			= vec3(0.0);
 		float	lightDiffuseCoeff		= 1.0;
 		float	lightSpecularCoeff		= 1.0;
-		float	lightAttenuationDist	= -1.0;
+		vec3	lightAttenuationCoeffs	= vec3(1.0, 0.0, 0.0);
 		float	lightCosInnerAng		= 0.0;
 		float	lightCosOuterAng		= 0.0;
 		float 	contribution			= 0.0;
@@ -210,13 +210,13 @@ void main(void)
 				lightColor				= pointLights[i].color;
 				lightDiffuseCoeff		= pointLights[i].diffuse;
 				lightSpecularCoeff		= pointLights[i].specular;
-				lightAttenuationDist	= pointLights[i].attenuationDistance;
+				lightAttenuationCoeffs	= pointLights[i].attenuationCoeffs;
 				lightPosition			= pointLights[i].position;
 			#else
 				lightColor				= pointLights_color[i];
 				lightDiffuseCoeff		= pointLights_diffuse[i];
 				lightSpecularCoeff		= pointLights_specular[i];
-				lightAttenuationDist	= pointLights_attenuationDistance[i];
+				lightAttenuationCoeffs	= pointLights_attenuationCoeffs[i];
 				lightPosition			= pointLights_position[i];
 			#endif // MINKO_NO_GLSL_STRUCT
 		
@@ -224,9 +224,10 @@ void main(void)
 			float distanceToLight 	= length(lightDirection);
 			lightDirection 			/= distanceToLight;
 			
-			float attenuation = lightAttenuationDist > 0.0
-				? max(0.0, 1.0 - distanceToLight / lightAttenuationDist) 
-				: 1.0;
+			vec3	distVec 	= vec3(1.0, distanceToLight, distanceToLight * distanceToLight);
+			float 	attenuation = any(lessThan(lightAttenuationCoeffs, vec3(0.0)))
+				? 1.0
+				: max(0.0, 1.0 - distanceToLight / dot(lightAttenuationCoeffs, distVec)); 
 
 			diffuseAccum		+= phong_diffuseReflection(normalVector, lightDirection)
 				* lightColor
@@ -250,7 +251,7 @@ void main(void)
 				lightColor				= spotLights[i].color;
 				lightDiffuseCoeff		= spotLights[i].diffuse;
 				lightSpecularCoeff		= spotLights[i].specular;
-				lightAttenuationDist	= spotLights[i].attenuationDistance;
+				lightAttenuationCoeffs	= spotLights[i].attenuationCoeffs;
 				lightPosition			= spotLights[i].position;
 				lightSpotDirection		= spotLights[i].direction;
 				lightCosInnerAng		= spotLights[i].cosInnerConeAngle;
@@ -259,7 +260,7 @@ void main(void)
 				lightColor				= spotLights_color[i];
 				lightDiffuseCoeff		= spotLights_diffuse[i];
 				lightSpecularCoeff		= spotLights_specular[i];
-				lightAttenuationDist	= spotLights_attenuationDistance[i];
+				lightAttenuationCoeffs	= spotLights_attenuationCoeffs[i];
 				lightPosition			= spotLights_position[i];
 				lightSpotDirection		= spotLights_direction[i];
 				lightCosInnerAng		= spotLights_cosInnerConeAngle[i];
@@ -276,9 +277,10 @@ void main(void)
 
 			if (lightCosOuterAng < cosSpot)
 			{
-				float attenuation = lightAttenuationDist > 0.0
-					? max(0.0, 1.0 - distanceToLight / lightAttenuationDist)
-					: 1.0;
+				vec3	distVec 	= vec3(1.0, distanceToLight, distanceToLight * distanceToLight);
+				float 	attenuation = any(lessThan(lightAttenuationCoeffs, vec3(0.0)))
+					? 1.0
+					: max(0.0, 1.0 - distanceToLight / dot(lightAttenuationCoeffs, distVec)); 
 					
 				float cutoff	= cosSpot < lightCosInnerAng && lightCosOuterAng < lightCosInnerAng 
 					? (cosSpot - lightCosOuterAng) / (lightCosInnerAng - lightCosOuterAng) 
