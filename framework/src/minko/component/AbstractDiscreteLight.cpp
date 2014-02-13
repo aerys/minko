@@ -26,9 +26,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::component;
 
-AbstractDiscreteLight::AbstractDiscreteLight(const std::string& arrayName) :
+AbstractDiscreteLight::AbstractDiscreteLight(const std::string& arrayName,
+											 float				diffuse,
+											 float				specular) :
 	AbstractLight(arrayName)
 {
+	data()
+		->set("diffuse", diffuse)
+		->set("specular", specular);
 }
 
 void
