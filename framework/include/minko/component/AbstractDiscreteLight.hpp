@@ -43,10 +43,12 @@ namespace minko
 		    }
 
 		    inline
-		    void
+		    Ptr
 		    diffuse(float diffuse)
 		    {
 		    	data()->set<float>("diffuse", diffuse);
+
+				return std::static_pointer_cast<AbstractDiscreteLight>(shared_from_this());
 		    }
 
 			inline
@@ -57,14 +59,18 @@ namespace minko
 			}
 
 			inline
-			void
+			Ptr
 			specular(float specular)
 			{
 				data()->set<float>("specular", specular);
+
+				return std::static_pointer_cast<AbstractDiscreteLight>(shared_from_this());
 			}
 
 		protected:
-			AbstractDiscreteLight(const std::string& arrayName);
+			AbstractDiscreteLight(const std::string&	arrayName, 
+								  float					diffuse		= 1.0f, 
+								  float					specular	= 1.0f);
 
 			virtual
             void

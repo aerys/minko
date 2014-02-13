@@ -60,7 +60,7 @@ end
 function main:initializeLights(root)
 	local lights = Node.create()
 		:addComponent(AmbientLight.create(.2))
-		:addComponent(DirectionalLight.create(.4))
+		:addComponent(DirectionalLight.create(.4, 1.0))
 	root:addChild(lights)
 
 	return lights

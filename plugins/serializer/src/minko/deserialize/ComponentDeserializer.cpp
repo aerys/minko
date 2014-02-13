@@ -125,7 +125,7 @@ ComponentDeserializer::deserializePointLight(std::string&							serializedPointL
 
 	pointLight->diffuse(dst.a0);
 	pointLight->specular(dst.a1);
-	pointLight->attenuationDistance(dst.a2);
+	pointLight->attenuationCoefficients(dst.a2, 0.0f, 0.0f);
 	pointLight->color()->setTo(dst.a3, dst.a4, dst.a5);
 
 	return pointLight;
@@ -146,7 +146,7 @@ ComponentDeserializer::deserializeSpotLight(std::string&						serializedSpotLigh
 
 	spotLight->diffuse(dst.a0);
 	spotLight->specular(dst.a1);
-	spotLight->attenuationDistance(dst.a2);
+	spotLight->attenuationCoefficients(dst.a2, 0.0f, 0.0f);
 	spotLight->innerConeAngle(dst.a3);
 	spotLight->outerConeAngle(dst.a4);
 	spotLight->color()->setTo(dst.a5, dst.a6, dst.a7);
