@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Minko.hpp"
 #include "minko/MinkoASSIMP.hpp"
 #include "minko/MinkoSDL.hpp"
+#include "minko/MinkoJPEG.hpp"
 
 using namespace minko;
 using namespace minko::component;
@@ -27,7 +28,7 @@ using namespace minko::math;
 
 const uint			WINDOW_WIDTH	= 800;
 const uint			WINDOW_HEIGHT	= 600;
-const std::string	DEFAULT_EFFECT	= "effect/VertexNormal.effect";
+const std::string	DEFAULT_EFFECT	= "effect/Basic.effect";
 const std::string	MODEL_FILENAME	= "pirate.dae";	
 
 const std::string	LABEL_RUN_START		= "run_start";
@@ -76,12 +77,14 @@ main(int argc, char** argv)
 	sceneManager->assets()
 		->registerParser<file::ASSIMPParser>("obj")
 		->registerParser<file::ASSIMPParser>("dae")
-		->load(DEFAULT_EFFECT);
+		->registerParser<file::JPEGParser>("jpg")
+		->load("effect/Basic.effect")
+		->load("effect/Phong.effect");
 
 	sceneManager->assets()->defaultOptions()->skinningFramerate(60);
 	sceneManager->assets()->defaultOptions()->skinningMethod(SkinningMethod::HARDWARE);
-	sceneManager->assets()->defaultOptions()->effect(sceneManager->assets()->effect(DEFAULT_EFFECT));
-	sceneManager->assets()->defaultOptions()->material()->set("diffuseColor", Vector4::create(0.8f, 0.1f, 0.1f, 1.0f));
+	//sceneManager->assets()->defaultOptions()->effect(sceneManager->assets()->effect(DEFAULT_EFFECT));
+	//sceneManager->assets()->defaultOptions()->material()->set("diffuseColor", Vector4::create(0.8f, 0.1f, 0.1f, 1.0f));
 	sceneManager->assets()
 		->queue(MODEL_FILENAME);
 
@@ -136,6 +139,21 @@ main(int argc, char** argv)
 			->addLabel(LABEL_KICK_STOP,		3600)
 			->addLabel(LABEL_STUN_START,	3633)
 			->addLabel(LABEL_STUN_STOP,		5033);
+
+		auto ambientLightNode	= scene::Node::create("ambientLightNode")
+			->addComponent(AmbientLight::create(0.1f));
+
+		auto spotLightNode		= scene::Node::create("spotLightNode")
+			->addComponent(Transform::create(
+				Matrix4x4::create(camera->component<Transform>()->matrix())
+			))
+			->addComponent(SpotLight::create());
+		spotLightNode->component<SpotLight>()
+			->specular(0.5f);
+
+		root
+			->addChild(ambientLightNode)
+			->addChild(spotLightNode);
 
 		auto started	= anim->started()->connect([](AbstractAnimation::Ptr){ std::cout << "\nanimation started" << std::endl; });
 		auto stopped	= anim->stopped()->connect([](AbstractAnimation::Ptr){ std::cout << "animation stopped" << std::endl; });
