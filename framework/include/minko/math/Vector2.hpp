@@ -142,7 +142,7 @@ namespace minko
 
 			inline
 			float
-			dot(Ptr value)
+			dot(Ptr value) const
 			{
 				return _x * value->_x + _y * value->_y;
 			}
