@@ -135,11 +135,9 @@ newaction {
 			os.mkdir(dir)
 			os.copyfile(basedir .. '/plugin.lua', dir .. '/plugin.lua')
 
-			print("before")
 			if minko.plugin[pluginName] and minko.plugin[pluginName].dist then
 				minko.plugin[pluginName]:dist(dir)
 			end
-			print("after")
 
 			-- bin
 			if os.isdir(basedir .. '/bin') then
