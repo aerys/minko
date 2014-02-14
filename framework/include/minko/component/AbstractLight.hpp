@@ -59,13 +59,13 @@ namespace minko
 				return _color;
 			}
 
-			void
+			Ptr
 			color(std::shared_ptr<math::Vector3>);
 
-			void
+			Ptr
 			color(std::shared_ptr<math::Vector4>);
 
-			void
+			Ptr
 			color(uint color);
 
 		protected:
