@@ -397,7 +397,7 @@ Matrix4x4::prependScale(float x, float y, float z)
 }
 
 Matrix4x4::Ptr
-Matrix4x4::perspective(float fov,
+Matrix4x4::perspective(float fov, // vertical FOV
                        float ratio,
                        float zNear,
                        float zFar)

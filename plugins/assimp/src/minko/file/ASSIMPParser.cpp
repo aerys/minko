@@ -35,6 +35,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/SceneManager.hpp"
 #include "minko/component/Surface.hpp"
 #include "minko/component/Skinning.hpp"
+#include "minko/component/PerspectiveCamera.hpp"
 #include "minko/render/VertexBuffer.hpp"
 #include "minko/render/IndexBuffer.hpp"
 #include "minko/geometry/Geometry.hpp"
@@ -169,6 +170,7 @@ ASSIMPParser::parse(const std::string&					filename,
 	_symbol = _options->nodeFunction()(_symbol);
 
 	createLights(_symbol, scene);
+	createCameras(_symbol, scene);
 	getSkinningFromAssimp(scene);
 
 	if (_numDependencies == _numLoadedDependencies)
@@ -353,6 +355,43 @@ ASSIMPParser::createMeshSurface(scene::Node::Ptr 	minkoNode,
 }
 
 void
+ASSIMPParser::createCameras(scene::Node::Ptr minkoRoot, const aiScene* scene)
+{
+	for (uint i = 0; i < scene->mNumCameras; ++i)
+	{
+		const auto	aiCamera	= scene->mCameras[i];
+		const auto	aiPosition	= aiCamera->mPosition;
+		const auto	aiLookAt	= aiCamera->mLookAt;
+		const auto	aiUp		= aiCamera->mUp;
+		auto		position	= Vector3::create(aiPosition.x, aiPosition.y, aiPosition.z)->normalize();
+		auto		target		= Vector3::create(aiPosition.x + aiLookAt.x, aiPosition.y + aiLookAt.y, aiPosition.z + aiLookAt.z)->normalize();
+		auto		up			= Vector3::create(aiUp.x, aiUp.y, aiUp.z)->normalize();
+
+		const auto	cameraName	= std::string(aiCamera->mName.data);
+		auto		cameraNode = scene::Node::create(cameraName + "_camera_" + std::to_string(i))
+
+			->addComponent(PerspectiveCamera::create(
+				aiCamera->mAspect,
+				aiCamera->mHorizontalFOV * aiCamera->mAspect, // need the vertical FOV
+				aiCamera->mClipPlaneNear,
+				aiCamera->mClipPlaneFar
+			))
+			->addComponent(Transform::create(
+				Matrix4x4::create()->lookAt(target, position, up)
+			));
+
+		scene::Node::Ptr parentNode = !cameraName.empty()
+			? findNode(cameraName, minkoRoot)
+			: nullptr;
+
+		if (parentNode)
+			parentNode->addChild(cameraNode);
+		else
+			minkoRoot->addChild(cameraNode);
+	}
+}
+
+void
 ASSIMPParser::createLights(scene::Node::Ptr minkoRoot, const aiScene* scene)
 {
     for (uint i = 0; i < scene->mNumLights; i++)
@@ -368,7 +407,7 @@ ASSIMPParser::createLights(scene::Node::Ptr minkoRoot, const aiScene* scene)
 			continue;
 		}
 
-		auto		lightNode	= findNode(lightName, minkoRoot);
+		auto lightNode	= findNode(lightName, minkoRoot);
         
 		if (lightNode == nullptr)
 			continue;
@@ -1129,7 +1168,7 @@ ASSIMPParser::chooseEffectByShadingMode(const aiMaterial* aiMat) const
 {
 	render::Effect::Ptr effect = _options->effect();
 
-	if (aiMat)
+	if (effect == nullptr && aiMat)
 	{
 		int shadingMode;
 		unsigned int max;
