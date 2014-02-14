@@ -39,7 +39,10 @@ solution "minko"
 	include 'plugins/serializer'
 	include 'plugins/webgl'
 	include 'plugins/http'
-	
+
+	-- workers	
+	include 'workers/http'
+
 	-- examples
 	if not _OPTIONS['no-examples'] then
 		include 'examples/lua-scripts'
@@ -63,8 +66,6 @@ solution "minko"
 		include 'examples/oculus'
 		include 'examples/http'
 	end
-
-	include 'workers/http'
 
 	-- tests
 	if not _OPTIONS['no-tests'] then
@@ -134,8 +135,51 @@ newaction {
 			os.mkdir(dir)
 			os.copyfile(basedir .. '/plugin.lua', dir .. '/plugin.lua')
 
+			print("before")
 			if minko.plugin[pluginName] and minko.plugin[pluginName].dist then
 				minko.plugin[pluginName]:dist(dir)
+			end
+			print("after")
+
+			-- bin
+			if os.isdir(basedir .. '/bin') then
+				os.mkdir(binDir)
+				minko.os.copyfiles(basedir .. '/bin', binDir)
+			end
+
+			-- includes
+			if os.isdir(basedir .. '/include') then
+				os.mkdir(dir .. '/include')
+				minko.os.copyfiles(basedir .. '/include', dir .. '/include')
+			end
+			
+			-- assets
+			if os.isdir(basedir .. '/asset') then
+				os.mkdir(dir .. '/asset')
+				minko.os.copyfiles(basedir .. '/asset', dir .. '/asset')
+			end
+		end
+
+		-- workers
+		local workers = os.matchdirs('workers/*')
+
+		os.mkdir(distDir .. '/workers')
+		for i, basedir in ipairs(workers) do
+			local workerName = path.getbasename(basedir)
+
+			print('Packaging worker "' .. workerName .. '"...')
+
+			-- workers
+			local dir = distDir .. '/workers/' .. path.getbasename(basedir)
+			local binDir = dir .. '/bin'
+
+			-- worker.lua
+			assert(os.isfile(basedir .. '/worker.lua'), 'missing worker.lua')			
+			os.mkdir(dir)
+			os.copyfile(basedir .. '/worker.lua', dir .. '/worker.lua')
+
+			if minko.worker[workerName] and minko.worker[workerName].dist then
+				minko.worker[workerName]:dist(dir)
 			end
 
 			-- bin
