@@ -142,6 +142,9 @@ namespace minko
             void
 			createLights(NodePtr minkoRoot, const aiScene* scene);
 
+			void
+			createCameras(NodePtr minkoRoot, const aiScene* scene);
+
             NodePtr
             findNode(const std::string&, NodePtr root);
             
