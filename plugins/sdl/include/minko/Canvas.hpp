@@ -202,8 +202,8 @@ namespace minko
 		Signal<AbstractCanvas::Ptr, uint, uint>::Ptr							_resized;
 		Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::Ptr		_joystickAdded;
 		Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::Ptr		_joystickRemoved;
-		std::list<std::shared_ptr<async::Worker>>		_activeWorkers;
-		std::list<Any>									_workerCompleteSlots;
+		std::list<std::shared_ptr<async::Worker>>								_activeWorkers;
+		std::list<Any>															_workerCompleteSlots;
 
 
 	public:
