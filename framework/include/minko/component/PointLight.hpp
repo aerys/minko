@@ -34,15 +34,25 @@ namespace minko
 			typedef std::shared_ptr<PointLight> Ptr;
 	
 		private:
-			float							_attenuationDistance;
+			std::shared_ptr<math::Vector3>	_attenuationCoeffs;
 			std::shared_ptr<math::Vector3>	_worldPosition;
 
 		public:
 			inline static
 			Ptr
-			create(float attenuationDistance = -1.0f)
+			create(float diffuse				= 1.0f,
+				   float specular				= 1.0f,
+				   float attenuationConstant	= -1.0f,
+				   float attenuationLinear		= -1.0f,
+				   float attenuationQuadratic	= -1.0f)
 			{
-				auto light = std::shared_ptr<PointLight>(new PointLight(attenuationDistance));
+				auto light = std::shared_ptr<PointLight>(new PointLight(
+					diffuse,
+					specular,
+					attenuationConstant,
+					attenuationLinear,
+					attenuationQuadratic
+				));
 
 				light->initialize();
 
@@ -53,29 +63,28 @@ namespace minko
 		    {
 		    }
 
-			inline
 			bool
-			attenuationEnabled() const
-			{
-				return !(attenuationDistance() < 0.0f);
-			}
+			attenuationEnabled() const;
 
-			inline
-			float 
-			attenuationDistance() const
-			{
-				return _attenuationDistance;
-			}
+			std::shared_ptr<math::Vector3>
+			attenuationCoefficients() const;
 
-			void
-			attenuationDistance(float);
+			Ptr
+			attenuationCoefficients(float constant, float linear, float quadratic);
+
+			Ptr
+			attenuationCoefficients(std::shared_ptr<math::Vector3>);
 
 		protected:
 			void
             updateModelToWorldMatrix(std::shared_ptr<math::Matrix4x4> modelToWorld);
 
 		private:
-			PointLight(float attenuationDistance);
+			PointLight(float diffuse,
+					   float specular,
+					   float attenuationConstant,
+					   float attenuationLinear,
+					   float attenuationQuadratic);
 		};
 	}
 }

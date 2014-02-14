@@ -29,6 +29,8 @@ solution "minko"
 	include 'plugins/assimp'
 	include 'plugins/bullet'
 	include 'plugins/fx'
+	include 'plugins/http-loader'
+	include 'plugins/http-worker'
 	include 'plugins/jpeg'
 	include 'plugins/leap'
 	include 'plugins/oculus'
@@ -38,8 +40,7 @@ solution "minko"
 	include 'plugins/sdl'
 	include 'plugins/serializer'
 	include 'plugins/webgl'
-	include 'plugins/http'
-	
+
 	-- examples
 	if not _OPTIONS['no-examples'] then
 		include 'examples/lua-scripts'
@@ -48,7 +49,7 @@ solution "minko"
 		include 'examples/effect-config'
 		include 'examples/frustum'
 		include 'examples/jobs'
-		-- include 'examples/leap-motion'
+		include 'examples/leap-motion'
 		include 'examples/light'
 		include 'examples/line-geometry'
 		include 'examples/offscreen'
@@ -64,8 +65,6 @@ solution "minko"
 		include 'examples/http'
 		include 'examples/joystick'
 	end
-
-	include 'workers/http'
 
 	-- tests
 	if not _OPTIONS['no-tests'] then
