@@ -27,7 +27,7 @@ using namespace minko;
 using namespace minko::component;
 using namespace minko::math;
 
-const std::string TEXTURE_FILENAME = "http://static.aerys.in:8000/minko3/http/minko.png";
+const std::string TEXTURE_FILENAME = "http://static.aerys.in:8080/minko3/http/box.png";
 
 int main(int argc, char** argv)
 {

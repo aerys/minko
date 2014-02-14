@@ -17,13 +17,14 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ]]--
 
--- http worker
-minko.worker.http = {}
+-- http worker plugin
+minko.plugin["http-worker"] = {}
 
-function minko.worker.http:enable()
-	minko.worker.links { "http" }
-	includedirs { minko.worker.path("http") .. "/include" }
-	defines { "MINKO_WORKER_HTTP" }
+minko.plugin["http-worker"].enable = function (self)
+--function minko.plugin.["http-worker"]:enable()
+	minko.plugin.links { "http-worker" }
+	includedirs { minko.plugin.path("http-worker") .. "/include" }
+	defines { "MINKO_PLUGIN_HTTP_WORKER" }
 
 	defines { "CURL_STATICLIB" }
 
@@ -31,27 +32,27 @@ function minko.worker.http:enable()
 		links { "libcurl" }
 		
 	configuration { "windows32", "debug" }
-		libdirs { minko.worker.path("http") .. "/lib/curl/lib/windows32/debug" }
+		libdirs { minko.plugin.path("http-worker") .. "/lib/curl/lib/windows32/debug" }
 		postbuildcommands {
-			minko.action.copy(minko.worker.path("http") .. "/lib/curl/lib/windows32/debug/*.dll")
+			minko.action.copy(minko.plugin.path("http-worker") .. "/lib/curl/lib/windows32/debug/*.dll")
 		}
 		
 	configuration { "windows32", "release" }
-		libdirs { minko.worker.path("http") .. "/lib/curl/lib/windows32/release" }
+		libdirs { minko.plugin.path("http-worker") .. "/lib/curl/lib/windows32/release" }
 		postbuildcommands {
-			minko.action.copy(minko.worker.path("http") .. "/lib/curl/lib/windows32/release/*.dll")
+			minko.action.copy(minko.plugin.path("http-worker") .. "/lib/curl/lib/windows32/release/*.dll")
 		}
 		
 	configuration { "windows64", "debug" }
-		libdirs { minko.worker.path("http") .. "/lib/curl/lib/windows64/debug" }
+		libdirs { minko.plugin.path("http-worker") .. "/lib/curl/lib/windows64/debug" }
 		postbuildcommands {
-			minko.action.copy(minko.worker.path("http") .. "/lib/curl/lib/windows64/debug/*.dll")
+			minko.action.copy(minko.plugin.path("http-worker") .. "/lib/curl/lib/windows64/debug/*.dll")
 		}
 		
 	configuration { "windows64", "release" }
-		libdirs { minko.worker.path("http") .. "/lib/curl/lib/windows64/release" }
+		libdirs { minko.plugin.path("http-worker") .. "/lib/curl/lib/windows64/release" }
 		postbuildcommands {
-			minko.action.copy(minko.worker.path("http") .. "/lib/curl/lib/windows64/release/*.dll")
+			minko.action.copy(minko.plugin.path("http-worker") .. "/lib/curl/lib/windows64/release/*.dll")
 		}
 		
 	configuration { "linux32 or linux64" }
@@ -61,7 +62,7 @@ function minko.worker.http:enable()
 		links { "curl" }
 end
 
-function minko.worker.http:dist(workerDistDir)
-	os.mkdir(workerDistDir .. "/lib/curl/lib")
-	minko.os.copyfiles(minko.worker.path("http") .. "/lib/curl/lib", workerDistDir .. "/lib/curl/lib")
-end
+--function minko.worker.http:dist(workerDistDir)
+--	os.mkdir(workerDistDir .. "/lib/curl/lib")
+--	minko.os.copyfiles(minko.worker.path("http") .. "/lib/curl/lib", workerDistDir .. "/lib/curl/lib")
+--end
