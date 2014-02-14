@@ -507,7 +507,7 @@ EffectParser::loadGLSLDependencies(GLSLBlockListPtr		blocks,
 
 		if (block.first == GLSLBlockType::FILE)
 		{
-			auto loader = options->loaderFunction()(block.second);
+			auto loader = options->loaderFunction()(block.second, _assetLibrary);
 
 			++_numDependencies;
 
@@ -918,7 +918,7 @@ EffectParser::loadTexture(const std::string&	textureFilename,
 						  UniformTypeAndValue&	uniformTypeAndValue,
 						  Options::Ptr			options)
 {
-	auto loader = _options->loaderFunction()(textureFilename);
+	auto loader = _options->loaderFunction()(textureFilename, _assetLibrary);
 
 	_numDependencies++;
 
