@@ -5,8 +5,8 @@
 #include "minko/Minko.hpp"
 #include "minko/MinkoPNG.hpp"
 #include "minko/MinkoSDL.hpp"
-#include "minko/MinkoMk.hpp"
 #include "minko/MinkoLeap.hpp"
+#include "minko/MinkoSerializer.hpp"
 
 using namespace minko;
 using namespace minko::math;
@@ -14,8 +14,9 @@ using namespace minko::scene;
 using namespace minko::material;
 using namespace minko::component;
 
-static const std::string	MK_NAME			= "model/airplane_engine_n.mk";
+static const std::string	SCENE_NAME		= "model/airplane_engine_n.scene";
 static const std::string	DEFAULT_EFFECT	= "effect/Basic.effect";
+static const std::string	HANGAR_TEXTURE	= "texture/hangar.png";
 
 void 
 explodeModel(float magnitude, float previousMagnitude, Node::Ptr);
@@ -37,7 +38,7 @@ int main(int argc, char** argv)
 	// scene set-up
 	auto sceneManager = SceneManager::create(render::OpenGLES2Context::create());
 
-	auto mkNode		= Node::create("mkNode")
+	auto sceneNode	= Node::create("engine")
 		->addComponent(Transform::create());
 	auto cameraNode	= Node::create("cameraNode")
 		->addComponent(Transform::create());
@@ -209,7 +210,7 @@ int main(int argc, char** argv)
 		explodeModel(
 			explosionValue,
 			previousExplosionValue,
-			mkNode
+			sceneNode
 		);
 
 		previousExplosionValue	= explosionValue;
@@ -245,7 +246,7 @@ int main(int argc, char** argv)
 
 	sceneManager->assets()->context()->errorsEnabled(true);
 
-	sceneManager->assets()->defaultOptions()->generateMipmaps(true);
+	sceneManager->assets()->defaultOptions()->generateMipmaps(false);
 	sceneManager->assets()->defaultOptions()->material(std::static_pointer_cast<Material>(
 			Material::create()->set("triangleCulling", render::TriangleCulling::NONE)
 	));
@@ -256,74 +257,74 @@ int main(int argc, char** argv)
 
 	sceneManager->assets()
 		->registerParser<file::PNGParser>("png")
-		->registerParser<file::MkParser>("mk")
+		->registerParser<file::SceneParser>("scene")
 		->geometry("cube",		geometry::CubeGeometry::create(sceneManager->assets()->context()))
 		->geometry("sphere",	geometry::SphereGeometry::create(sceneManager->assets()->context()))
 		->geometry("skybox",	geometry::SphereGeometry::create(sceneManager->assets()->context(), 80, 80, true))
-        ->queue("texture/hangar.png");   
-    
-    sceneManager->assets()
-		->load("effect/Phong.effect")
-		->load("effect/Basic.effect")
-		->load("effect/fxaa.effect");
+		->queue(HANGAR_TEXTURE);
 
+	sceneManager->assets()
+		->load("effect/Phong.effect", nullptr, nullptr, false);
+	sceneManager->assets()
+		->load("effect/Basic.effect", nullptr, nullptr, false);
+    
 	sceneManager->assets()->defaultOptions()->effect(sceneManager->assets()->effect("effect/Phong.effect"));
     
-	sceneManager->assets()->queue(MK_NAME);
+	sceneManager->assets()->queue(SCENE_NAME);
+
+	auto renderer = Renderer::create();
+	renderer->backgroundColor(0x7F7F7FFF);
+
+	cameraNode
+		->addComponent(PerspectiveCamera::create(windowWidth / (float)windowHeight))
+		->addComponent(renderer);
+
+	placeCamera(
+		cameraDistance,
+		atan2f(sinRotation, cosRotation),
+		cameraNode->component<Transform>()->matrix()
+		);
+
+
+	auto dirLight = Node::create("dirLight")
+		->addComponent(component::DirectionalLight::create())
+		->addComponent(component::Transform::create(
+		Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(-1.0f, -1.0f, -1.0f))
+		));
+
+	auto pointLight = Node::create("pointLight")
+		->addComponent(component::PointLight::create())
+		->addComponent(component::Transform::create(
+		Matrix4x4::create()->appendTranslation(0.0f, 10.0f, 0.0f)
+		));
+
+	pointLight->component<PointLight>()->color()->setTo(1.0f, 1.0f, 1.0f);
+	root->addChild(cameraNode);
+	root->addChild(dirLight);
+	root->addChild(pointLight);
+
+	auto skybox = Node::create("skybox")
+		->addComponent(Transform::create(
+		Matrix4x4::create()->appendScale(60.0f, 60.0f, 60.0f)
+		));
+
+	root->addComponent(sceneManager);
 
 	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
 	{
-		root->addComponent(sceneManager);
-
-		mkNode->addChild(assets->symbol(MK_NAME));
-
-
-		auto dirLight	= Node::create("dirLight")
-			->addComponent(component::DirectionalLight::create())
-			->addComponent(component::Transform::create(
-				Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(-1.0f, -1.0f, -1.0f))
-			));
-
-	    auto pointLight	= Node::create("pointLight")
-			->addComponent(component::PointLight::create())
-			->addComponent(component::Transform::create(
-				Matrix4x4::create()->appendTranslation(0.0f, 10.0f, 0.0f)
-			));
-
-        pointLight->component<PointLight>()->color()->setTo(1.0f, 1.0f, 1.0f);
+		sceneNode->addChild(assets->symbol(SCENE_NAME));
 		
-		auto skybox	= Node::create("skybox")
-			->addComponent(Transform::create(
-				Matrix4x4::create()->appendScale(60.0f, 60.0f, 60.0f)
-			))
-			->addComponent(Surface::create(
+		skybox->addComponent(Surface::create(
 				 assets->geometry("skybox"),
-				data::Provider::create()
-				   ->set("material.diffuseColor",		Vector4::create(1.0f, 1.0f, 1.0f, 1.0f))
-					->set("material.diffuseMap",		assets->texture("texture/hangar.png"))
-					->set("material.triangleCulling",	render::TriangleCulling::FRONT),
+				 BasicMaterial::create()
+					 ->diffuseColor(Vector4::create(1.0f, 0.0f, 0.0f, 1.0f))
+					 ->diffuseMap(assets->texture(HANGAR_TEXTURE))
+					 ->triangleCulling(render::TriangleCulling::FRONT),
 				assets->effect("effect/Basic.effect")
 			));
 
-
-		auto renderer = Renderer::create();
-		renderer->backgroundColor(0x7F7F7FFF);
-
-		cameraNode
-			->addComponent(PerspectiveCamera::create(windowWidth / (float)windowHeight))
-			->addComponent(renderer);
-
-		placeCamera(
-			cameraDistance, 
-			atan2f(sinRotation, cosRotation), 
-			cameraNode->component<Transform>()->matrix()
-		);
-
-		root->addChild(dirLight);
-		root->addChild(pointLight);
-        root->addChild(skybox);
-		root->addChild(cameraNode);
-		root->addChild(mkNode);
+		root->addChild(sceneNode);
+		root->addChild(skybox);
 
         // post-processing
 		/*
@@ -342,6 +343,11 @@ int main(int argc, char** argv)
 			));
 		*/
 
+	});
+
+	auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
+	{
+		cameraNode->component<PerspectiveCamera>()->aspectRatio((float)w / (float)h);
 	});
 
 	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, uint deltaTime)
