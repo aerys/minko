@@ -206,7 +206,7 @@ Matrix4x4::transpose()
 }
 
 std::shared_ptr<Vector3>
-Matrix4x4::transform(std::shared_ptr<Vector3> v, std::shared_ptr<Vector3> output)
+Matrix4x4::transform(std::shared_ptr<Vector3> v, std::shared_ptr<Vector3> output) const
 {
     if (!output)
         output = Vector3::create();
@@ -221,7 +221,7 @@ Matrix4x4::transform(std::shared_ptr<Vector3> v, std::shared_ptr<Vector3> output
 }
 
 std::shared_ptr<Vector3>
-Matrix4x4::deltaTransform(std::shared_ptr<Vector3> v, std::shared_ptr<Vector3> output)
+Matrix4x4::deltaTransform(std::shared_ptr<Vector3> v, std::shared_ptr<Vector3> output) const
 {
     if (!output)
         output = Vector3::create();

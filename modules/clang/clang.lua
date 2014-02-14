@@ -7,3 +7,7 @@ insert.insert(premake.tools.clang, 'cxxflags.system', {
 insert.insert(premake.tools.clang, 'ldflags.system', {
 	macosx = { "-stdlib=libc++" }
 })
+
+insert.insert(premake.tools.clang, 'tools.macosx', {
+	ld = 'clang++',
+})

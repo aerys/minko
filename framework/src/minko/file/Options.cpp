@@ -21,6 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/material/Material.hpp"
 #include "minko/file/FileLoader.hpp"
+#include "minko/file/AssetLibrary.hpp"
 
 using namespace minko;
 using namespace minko::file;
@@ -84,8 +85,28 @@ Options::Options(std::shared_ptr<render::AbstractContext> context) :
 		return geom;
 	};
 
-	_loaderFunction = [](const std::string&) -> std::shared_ptr<AbstractLoader>
+	_loaderFunction = [](const std::string& filename, std::shared_ptr<AssetLibrary> assets) -> std::shared_ptr<AbstractLoader>
 	{
+		std::string protocol = "";
+
+		uint i;
+
+		for (i = 0; i < filename.length(); ++i)
+		{
+			if (i < filename.length() - 2 && filename.at(i) == ':' && filename.at(i + 1) == '/' && filename.at(i + 2) == '/')
+				break;
+
+			protocol += filename.at(i);
+		}
+
+		if (i != filename.length())
+		{
+			std::shared_ptr<AbstractLoader> loader = assets->getLoader(protocol);
+
+			if (loader)
+				return loader;
+		}
+
 		return FileLoader::create();
 	};
 

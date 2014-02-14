@@ -60,11 +60,13 @@ namespace minko
 			}
 
 			inline
-			void
+			Ptr
 			ambient(float ambient)
 			{
 				_ambient = ambient;
 				data()->set("ambient", ambient);
+
+				return std::static_pointer_cast<AmbientLight>(shared_from_this());
 			}
 
 		protected:

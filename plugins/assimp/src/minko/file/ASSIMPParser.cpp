@@ -168,6 +168,7 @@ ASSIMPParser::parse(const std::string&					filename,
 	createSceneTree(_symbol, scene, scene->mRootNode, assetLibrary);
 	_symbol = _options->nodeFunction()(_symbol);
 
+	createLights(_symbol, scene);
 	getSkinningFromAssimp(scene);
 
 	if (_numDependencies == _numLoadedDependencies)
@@ -356,57 +357,111 @@ ASSIMPParser::createLights(scene::Node::Ptr minkoRoot, const aiScene* scene)
 {
     for (uint i = 0; i < scene->mNumLights; i++)
     {
-        auto ailight = scene->mLights[i];
-        auto light = findNode(std::string(ailight->mName.data), minkoRoot);
+        const auto	aiLight		= scene->mLights[i];
+		const auto	lightName	= std::string(aiLight->mName.data);
+
+		if (aiLight->mType == aiLightSource_UNDEFINED)
+		{
+#ifdef DEBUG
+			std::cerr << "The type of the '" << lightName << "' has not been properly recognized." << std::endl;
+#endif // DEBUG
+			continue;
+		}
+
+		auto		lightNode	= findNode(lightName, minkoRoot);
         
-        switch (ailight->mType)
+		if (lightNode == nullptr)
+			continue;
+
+		//// specular colors are ignored (diffuse colors are sent to discrete lights, ambient colors create ambient lights)
+		//const aiColor3D& aiAmbientColor = aiLight->mColorAmbient;
+		//if (!aiAmbientColor.IsBlack())
+		//{
+		//	auto ambientLight = AmbientLight::create()
+		//		->ambient(1.0f)
+		//		->color(Vector3::create(aiAmbientColor.r, aiAmbientColor.g, aiAmbientColor.b));
+
+		//	lightNode->addComponent(ambientLight);
+		//}
+
+		const aiColor3D&	aiDiffuseColor	= aiLight->mColorDiffuse;
+		const aiVector3D&	aiDirection		= aiLight->mDirection;
+		const aiVector3D&	aiPosition		= aiLight->mPosition;
+
+		if (aiDirection.Length() > 0.0f)
+		{
+			auto	direction	= Vector3::create(aiDirection.x, aiDirection.y, aiDirection.z);
+			auto	position	= Vector3::create(aiPosition.x, aiPosition.y, aiPosition.z);
+			
+			auto	transform	= lightNode->component<Transform>();
+			if (transform)
+			{
+				direction	= transform->matrix()->deltaTransform(direction);
+				position	= transform->matrix()->transform(position);
+			}
+			else
+				lightNode->addComponent(Transform::create());
+			
+			auto	lookAt		= Vector3::create(position)->add(direction)->normalize();
+			auto	matrix		= lightNode->component<Transform>()->matrix();
+			try
+			{
+				matrix->lookAt(lookAt, position, Vector3::yAxis());
+			}
+			catch(std::exception e)
+			{
+				matrix->lookAt(lookAt, position, Vector3::xAxis());
+			}
+		}
+			
+		const float			diffuse			= 1.0f;
+		const float			specular		= 1.0f;
+        switch (aiLight->mType)
         {
             case aiLightSource_DIRECTIONAL:
-            {
-                light->addComponent(DirectionalLight::create());
-                light->component<DirectionalLight>()->color()->setTo(
-					ailight->mColorDiffuse.r,
-                    ailight->mColorDiffuse.g,
-                    ailight->mColorDiffuse.b
+				lightNode->addComponent(
+					DirectionalLight::create(
+						diffuse, 
+						specular
+					)->color(Vector3::create(aiDiffuseColor.r, aiDiffuseColor.g, aiDiffuseColor.b))
 				);
                 break;
-            }
+
             case aiLightSource_POINT:
-            {
-                light->addComponent(PointLight::create());
-                light->component<PointLight>()->color()->setTo(
-					ailight->mColorDiffuse.r,
-                    ailight->mColorDiffuse.g,
-                    ailight->mColorDiffuse.b
+				lightNode->addComponent(
+					PointLight::create(
+						diffuse, 
+						specular, 
+						aiLight->mAttenuationConstant, 
+						aiLight->mAttenuationLinear, 
+						aiLight->mAttenuationQuadratic
+					)->color(Vector3::create(aiDiffuseColor.r, aiDiffuseColor.g, aiDiffuseColor.b))
 				);
                 break;
-            }
+
             case aiLightSource_SPOT:
-            {
-                light->addComponent(SpotLight::create());
-                light->component<PointLight>()->color()->setTo(
-					ailight->mColorDiffuse.r,
-                    ailight->mColorDiffuse.g,
-                    ailight->mColorDiffuse.b
+				lightNode->addComponent(
+					SpotLight::create(
+						aiLight->mAngleInnerCone,
+						aiLight->mAngleOuterCone,
+						diffuse, 
+						specular,
+						aiLight->mAttenuationConstant, 
+						aiLight->mAttenuationLinear, 
+						aiLight->mAttenuationQuadratic
+					)->color(Vector3::create(aiDiffuseColor.r, aiDiffuseColor.g, aiDiffuseColor.b))
 				);
                 break;
-            }
+
             default:
-                light->addComponent(AmbientLight::create());
-                light->component<AmbientLight>()->ambient(1.0f);
-                light->component<PointLight>()->color()->setTo(
-					ailight->mColorAmbient.r,
-                    ailight->mColorAmbient.g,
-                    ailight->mColorAmbient.b
-				);
                 break;
         }
-        //minkoRoot->addChild(light);
     }
 }
 
 scene::Node::Ptr
-ASSIMPParser::findNode(std::string name, scene::Node::Ptr root)
+ASSIMPParser::findNode(const std::string& name, 
+					   scene::Node::Ptr root)
 {
     scene::Node::Ptr result = nullptr;
     

@@ -36,26 +36,32 @@ namespace minko
 		private:
 			float							_cosInnerConeAngle;
 			float							_cosOuterConeAngle;
-			float							_attenuationDistance;
+			std::shared_ptr<math::Vector3>	_attenuationCoeffs;
 			std::shared_ptr<math::Vector3>	_worldPosition;
 			std::shared_ptr<math::Vector3>	_worldDirection;
 
 		public:
 			inline static
 			Ptr
-			create(float innerAngleRadians		= PI * 0.25f,
+			create(float innerAngleRadians		= (float)PI * 0.25f,
 				   float outerAngleRadians		= -1.0f,
-				   float attenuationDistance	= -1.0f)
+				   float diffuse				= 1.0f,
+				   float specular				= 1.0f,
+				   float attenuationConstant	= -1.0f,
+				   float attenuationLinear		= -1.0f,
+				   float attenuationQuadratic	= -1.0f)
 			{
 				auto light = std::shared_ptr<SpotLight>(
 					new SpotLight(
-						innerAngleRadians, 
-						outerAngleRadians,
-						attenuationDistance
+						diffuse,
+						specular,
+						attenuationConstant,
+						attenuationLinear,
+						attenuationQuadratic
 					)
 				);
 
-                light->initialize();
+                light->initialize(innerAngleRadians, outerAngleRadians);
 
 			    return light;
 			}
@@ -67,7 +73,7 @@ namespace minko
 				return _cosInnerConeAngle;
 			}
 
-			void
+			Ptr
 			innerConeAngle(float radians);
 
 			inline
@@ -77,34 +83,35 @@ namespace minko
 				return _cosOuterConeAngle;
 			}
 
-			void
+			Ptr
 			outerConeAngle(float radians);
 
-			inline
 			bool
-			attenuationEnabled() const
-			{
-				return !(attenuationDistance() < 0.0f);
-			}
+			attenuationEnabled() const;
 
-			inline
-			float
-			attenuationDistance() const
-			{
-				return _attenuationDistance;
-			}
+			std::shared_ptr<math::Vector3>
+			attenuationCoefficients() const;
 
-			void
-			attenuationDistance(float);
+			Ptr
+			attenuationCoefficients(float constant, float linear, float quadratic);
+
+			Ptr
+			attenuationCoefficients(std::shared_ptr<math::Vector3>);
 
 		protected:
 			void
             updateModelToWorldMatrix(std::shared_ptr<math::Matrix4x4> modelToWorld);
 
 		private:
-			SpotLight(float innerAngleRadians,
-					  float outerAngleRadians,
-					  float attenuationDistance);
+			SpotLight(float diffuse,
+					  float specular,
+					  float attenuationConstant,
+					  float attenuationLinear,
+					  float attenuationQuadratic);
+
+			void 
+			initialize(float innerAngleRadians,
+					   float outerAngleRadians);
 		};
 	}
 }
