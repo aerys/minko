@@ -547,6 +547,14 @@ DrawCallPool::macroChangedHandler(Container::Ptr		container,
 		if (change == MacroChange::ADDED)
 		{
 			if (numListeners == 0)
+			{
+#if defined(EMSCRIPTEN)
+				// See issue #1848 in Emscripten: https://github.com/kripken/emscripten/issues/1848
+				auto that = shared_from_this();
+				_macroChangedSlots[surface][macro] = macro.container()->propertyReferenceChanged(macro.name())->connect([&, that, surface, macro](data::Container::Ptr container, const std::string& propertyName) {
+					that->macroChangedHandler(macro.container(), macro.name(), surface, MacroChange::REF_CHANGED);
+				});
+#else
 				_macroChangedSlots[surface][macro] = macro.container()->propertyReferenceChanged(macro.name())->connect(std::bind(
 					&DrawCallPool::macroChangedHandler,
 					shared_from_this(),
@@ -555,6 +563,8 @@ DrawCallPool::macroChangedHandler(Container::Ptr		container,
 					surface,
 					MacroChange::REF_CHANGED
 				));
+#endif
+			}
 
 			_numMacroListeners[surface][macro] = numListeners + 1;
 		}
