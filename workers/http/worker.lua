@@ -25,8 +25,6 @@ function minko.worker.http:enable()
 	includedirs { minko.worker.path("http") .. "/include" }
 	defines { "MINKO_WORKER_HTTP" }
 
-	-- minko.plugin.enable("http")
-
 	defines { "CURL_STATICLIB" }
 
 	configuration { "windows32 or windows64" }
@@ -63,7 +61,7 @@ function minko.worker.http:enable()
 		links { "curl" }
 end
 
-function minko.plugin.http:dist(pluginDistDir)
-	os.mkdir(pluginDistDir .. "/lib/curl/lib/win")
-	minko.os.copyfiles(minko.worker.path("/lib/curl/lib/win"), pluginDistDir .. "/lib/curl/lib/win")
+function minko.worker.http:dist(workerDistDir)
+	os.mkdir(workerDistDir .. "/lib/curl/lib")
+	minko.os.copyfiles(minko.worker.path("http") .. "/lib/curl/lib", workerDistDir .. "/lib/curl/lib")
 end
