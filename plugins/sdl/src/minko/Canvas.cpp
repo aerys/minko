@@ -71,6 +71,7 @@ Canvas::initializeInputs()
 	_mouse = Canvas::SDLMouse::create(shared_from_this());
 	_keyboard = Canvas::SDLKeyboard::create();
 
+#ifndef EMSCRIPTEN
 	for (int i = 0; i < SDL_NumJoysticks(); ++i)
 	{
 		SDL_Joystick* joystick = SDL_JoystickOpen(i);
@@ -80,6 +81,7 @@ Canvas::initializeInputs()
 		else
 			_joysticks[i] = Canvas::SDLJoystick::create(shared_from_this(), SDL_JoystickInstanceID(joystick), joystick);
 	}
+#endif
 }
 
 void
@@ -353,6 +355,7 @@ Canvas::step()
 			//_mouseWheel->execute(shared_from_this(), event.wheel.x, event.wheel.y);
 			break;
 
+#ifndef EMSCRIPTEN			
 		case SDL_JOYDEVICEADDED:
 		{
 			int				device		= event.cdevice.which;
@@ -367,7 +370,7 @@ Canvas::step()
 
 			_joystickAdded->execute(shared_from_this(), _joysticks[instance_id]);
 
-#if defined(DEBUG)
+# if defined(DEBUG)
 			std::cout << "Is Gamecontroller : " << SDL_IsGameController(device) << std::endl;
 			std::cout << "Num joystick : " << SDL_NumJoysticks() << std::endl;
 			std::cout << "Name : " << SDL_JoystickName(joystick) << std::endl;
@@ -376,7 +379,7 @@ Canvas::step()
 			std::cout << "Num balls : " << SDL_JoystickNumBalls(joystick) << std::endl;
 			std::cout << "Num hat : " << SDL_JoystickNumHats(joystick) << std::endl;
 			std::cout << "instance_id : " << instance_id << std::endl;
-#endif
+# endif // DEBUG
 			break;
 		}
 		case SDL_JOYDEVICEREMOVED:
@@ -391,27 +394,21 @@ Canvas::step()
 			break;
 		}
 		case SDL_JOYAXISMOTION:
-#if !defined(EMSCRIPTEN)
 			_joysticks[event.jaxis.which]->joystickAxisMotion()->execute(
 				_joysticks[event.jaxis.which], event.jaxis.which, event.jaxis.axis, event.jaxis.value
 			);
-#endif
 			break;
 
 		case SDL_JOYBUTTONDOWN:
-#if !defined(EMSCRIPTEN)
 			_joysticks[event.jbutton.which]->joystickButtonDown()->execute(
 				_joysticks[event.jbutton.which], event.jbutton.which, event.jbutton.button
 			);
-#endif
 			break;
 
 		case SDL_JOYBUTTONUP:
-#if !defined(EMSCRIPTEN)
 			_joysticks[event.jbutton.which]->joystickButtonUp()->execute(
 				_joysticks[event.jbutton.which], event.jbutton.which, event.jbutton.button
 			);
-#endif
 			break;
 
 		case SDL_JOYHATMOTION:
@@ -419,6 +416,7 @@ Canvas::step()
 				_joysticks[event.jhat.which], event.jhat.which, event.jhat.hat, event.jhat.value
 			);
 			break;
+#endif // EMSCRIPTEN
 
 #ifdef EMSCRIPTEN
 		case SDL_VIDEORESIZE:
