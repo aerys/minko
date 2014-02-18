@@ -1,4 +1,4 @@
-dofile(os.getenv("MINKO_HOME") .. "/sdk.lua")
+include "script"
 
 PROJECT_NAME = path.getname(os.getcwd())
 
