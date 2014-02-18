@@ -49,6 +49,7 @@ solution "minko"
 	-- examples
 	if not _OPTIONS['no-examples'] then
 		include 'examples/lua-scripts'
+		include 'examples/animation'
 		include 'examples/assimp'
 		include 'examples/cube'
 		include 'examples/effect-config'
@@ -74,6 +75,12 @@ solution "minko"
 	-- tutorials
 	if not _OPTIONS['no-tutorials'] then
 		include 'tutorials/cube'
+		include 'tutorials/load-scene-file'
+		include 'tutorials/load-scenes'
+		include 'tutorials/mouse-camera-rotating'
+		include 'tutorials/moving-objects'
+		include 'tutorials/moving-objects-keyboard'
+		include 'tutorials/resizing'
 	end
 	
 	-- tests
