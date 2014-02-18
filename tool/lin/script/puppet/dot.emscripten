@@ -1,0 +1,8 @@
+EMSCRIPTEN_ROOT = '/opt/emscripten'
+LLVM_ADD_VERSION = '3.2'
+LLVM_ROOT = '/usr/bin/'
+NODE_JS = 'nodejs'
+JS_ENGINE = NODE_JS
+PYTHON = 'python'
+TEMP_DIR = '/tmp'
+COMPILER_ENGINE = 'nodejs'
