@@ -55,7 +55,7 @@ main(int argc, char** argv)
       ->addComponent(Transform::create(Matrix4x4::create()->translation(-2.f, 0.f, -5.f)))
 	  ->addComponent(Surface::create(
         geometry::CubeGeometry::create(assets->context()),
-        material::Material::create()->set("diffuseColor", Vector4::create(0.f, 0.f, 1.f, 1.f)),
+		material::Material::create()->set("diffuseMap", assets->texture("texture/box.png")),
         assets->effect("effect/Basic.effect")
       ));
     root->addChild(texturedCube);
