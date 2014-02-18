@@ -32,8 +32,9 @@ struct	aiAnimation;
 struct	aiNodeAnim;
 struct	aiVectorKey;
 struct	aiQuatKey;
-template<typename>
-class aiMatrix4x4t;
+template <typename> class aiVector3t;
+template <typename> class aiQuaterniont;
+template <typename> class aiMatrix4x4t;
 struct	aiMaterial;
 
 
@@ -51,52 +52,48 @@ namespace minko
 			public AbstractParser
 		{
 		public:
-			typedef std::shared_ptr<ASSIMPParser>								Ptr;
+			typedef std::shared_ptr<ASSIMPParser>					Ptr;
 
         private:
-            typedef std::shared_ptr<AbstractLoader>								LoaderPtr;
-			typedef std::shared_ptr<scene::Node>								NodePtr;
-			typedef std::shared_ptr<component::SceneManager>					SceneManagerPtr;
-			typedef std::shared_ptr<geometry::Geometry>							GeometryPtr;
-			typedef std::shared_ptr<geometry::Bone>								BonePtr;
-			typedef std::shared_ptr<geometry::Skin>								SkinPtr;
-			typedef std::shared_ptr<math::Vector3>								Vector3Ptr;
-			typedef std::shared_ptr<math::Quaternion>							QuaternionPtr;
-			typedef std::shared_ptr<math::Matrix4x4>							Matrix4x4Ptr;
-			typedef std::shared_ptr<material::Material>							MaterialPtr;
-			typedef std::shared_ptr<render::Effect>								EffectPtr;
+            typedef std::shared_ptr<AbstractLoader>					LoaderPtr;
+			typedef std::shared_ptr<scene::Node>					NodePtr;
+			typedef std::shared_ptr<component::SceneManager>		SceneManagerPtr;
+			typedef std::shared_ptr<geometry::Geometry>				GeometryPtr;
+			typedef std::shared_ptr<geometry::Bone>					BonePtr;
+			typedef std::shared_ptr<geometry::Skin>					SkinPtr;
+			typedef std::shared_ptr<math::Vector3>					Vector3Ptr;
+			typedef std::shared_ptr<math::Quaternion>				QuaternionPtr;
+			typedef std::shared_ptr<math::Matrix4x4>				Matrix4x4Ptr;
+			typedef std::shared_ptr<material::Material>				MaterialPtr;
+			typedef std::shared_ptr<render::Effect>					EffectPtr;
 			
-			typedef std::vector<Matrix4x4Ptr>									Matrices4x4;
+			typedef std::vector<Matrix4x4Ptr>						Matrices4x4;
 
-			typedef Signal<LoaderPtr>::Slot										LoaderSignalSlot;
+			typedef Signal<LoaderPtr>::Slot							LoaderSignalSlot;
 
-			typedef std::unordered_map<LoaderPtr, LoaderSignalSlot>				LoaderToSlotMap;
-			typedef std::unordered_map<uint, std::string>						TextureTypeToName;
+			typedef std::unordered_map<LoaderPtr, LoaderSignalSlot>	LoaderToSlotMap;
+			typedef std::unordered_map<uint, std::string>			TextureTypeToName;
 
         private:
-			static const TextureTypeToName					_textureTypeToName;
+			static const TextureTypeToName							_textureTypeToName;
+			static const std::string								PNAME_TRANSFORM;
 
-            unsigned int									_numDependencies;
-			unsigned int									_numLoadedDependencies;
-            std::string										_filename;
-            std::shared_ptr<AssetLibrary>					_assetLibrary;
-			std::shared_ptr<file::Options>					_options;
+            unsigned int											_numDependencies;
+			unsigned int											_numLoadedDependencies;
+            std::string												_filename;
+            std::shared_ptr<AssetLibrary>							_assetLibrary;
+			std::shared_ptr<file::Options>							_options;
 			
-			NodePtr											_symbol;
+			NodePtr													_symbol;
 
-			std::unordered_map<const aiNode*, NodePtr>		_aiNodeToNode;
-			std::unordered_map<const aiMesh*, NodePtr>		_aiMeshToNode;
-			std::unordered_map<std::string, NodePtr>		_nameToNode;
-			std::unordered_map<std::string, Matrices4x4>	_nameToAnimMatrices;
+			std::unordered_map<const aiNode*, NodePtr>				_aiNodeToNode;
+			std::unordered_map<const aiMesh*, NodePtr>				_aiMeshToNode;
+			std::unordered_map<std::string, NodePtr>				_nameToNode;
+			std::unordered_map<std::string, Matrices4x4>			_nameToAnimMatrices;
+			std::set<NodePtr>										_alreadyAnimatedNodes;
 
-			LoaderToSlotMap									_loaderCompleteSlots;
-			LoaderToSlotMap									_loaderErrorSlots;
-            
-			static	Vector3Ptr								_TMP_POSITION;
-			static	QuaternionPtr							_TMP_ROTATION;
-			static	Matrix4x4Ptr							_TMP_ROTATION_MATRIX;
-			static	Vector3Ptr								_TMP_SCALING;
-			static	Matrix4x4Ptr							_TMP_MATRIX;
+			LoaderToSlotMap											_loaderCompleteSlots;
+			LoaderToSlotMap											_loaderErrorSlots;
 
 		public:
 			inline static
@@ -137,16 +134,19 @@ namespace minko
             getTransformFromAssimp(aiNode* ainode);
 
             void
-            createMeshSurface(NodePtr minkoNode, const aiScene* scene, aiMesh* mesh);
+            createMeshSurface(NodePtr, const aiScene*, aiMesh*);
 
             void
-			createLights(NodePtr minkoRoot, const aiScene* scene);
+			createLights(const aiScene*);
 
 			void
-			createCameras(NodePtr minkoRoot, const aiScene* scene);
+			createCameras(const aiScene*);
+
+			void
+			createAnimations(const aiScene*, bool interpolate = false);
 
             NodePtr
-            findNode(const std::string&, NodePtr root);
+            findNode(const std::string&) const;
             
             void
 			parseDependencies(const std::string& filename, const aiScene* scene);
@@ -160,16 +160,19 @@ namespace minko
 						std::shared_ptr<file::Options>	options);
 
 			void
-			getSkinningFromAssimp(const aiScene*);
+			createSkins(const aiScene*);
 
-			SkinPtr
-			getSkinningFromAssimp(const aiMesh*) const;
+			void
+			createSkin(const aiMesh*);
 
 			BonePtr 
-			getSkinningFromAssimp(const aiBone*) const;
+			createBone(const aiBone*) const;
 
 			unsigned int
-			getNumFrames(const aiMesh*) const;
+			getSkinNumFrames(const aiMesh*) const;
+
+			void
+			precomputeModelToRootMatrices(NodePtr node, NodePtr root, std::vector<Matrix4x4Ptr>&) const;
 
 			void
 			sampleAnimations(const aiScene*);
@@ -188,6 +191,14 @@ namespace minko
 			static
 			void
 			sample(const aiNodeAnim*, const std::vector<float>&, std::vector<Matrix4x4Ptr>&);
+			
+			static
+			Matrix4x4Ptr
+			convert(const aiVector3t<float>&, const aiQuaterniont<float>&, const aiVector3t<float>&, Matrix4x4Ptr output = nullptr);
+			
+			static
+			QuaternionPtr
+			convert(const aiQuaterniont<float>&, QuaternionPtr output = nullptr);
 
 			template<class AiKey>
 			static
