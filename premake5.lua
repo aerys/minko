@@ -4,6 +4,11 @@ newoption {
 }
 
 newoption {
+	trigger	= 'no-tutorials',
+	description = 'Disable tutorials.'
+}
+
+newoption {
 	trigger	= 'no-tests',
 	description = 'Disable tests.'
 }
@@ -66,6 +71,11 @@ solution "minko"
 		include 'examples/joystick'
 	end
 
+	-- tutorials
+	if not _OPTIONS['no-tutorials'] then
+		include 'tutorials/cube'
+	end
+	
 	-- tests
 	if not _OPTIONS['no-tests'] then
 		include 'tests'
