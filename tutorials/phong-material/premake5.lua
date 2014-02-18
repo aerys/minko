@@ -7,7 +7,8 @@ minko.project.application("minko-tutorial-" .. PROJECT_NAME)
 
 	files {
 		"src/**.cpp",
-		"src/**.hpp"
+		"src/**.hpp",
+		"asset/**"
 	}
 	
 	includedirs { "src" }
