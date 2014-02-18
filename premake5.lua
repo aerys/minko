@@ -74,6 +74,8 @@ solution "minko"
 
 	-- tutorials
 	if not _OPTIONS['no-tutorials'] then
+		include 'tutorials/basic-material'
+		include 'tutorials/camera'
 		include 'tutorials/cube'
 		include 'tutorials/load-scene-file'
 		include 'tutorials/load-scenes'
@@ -81,6 +83,19 @@ solution "minko"
 		include 'tutorials/moving-objects'
 		include 'tutorials/moving-objects-keyboard'
 		include 'tutorials/resizing'
+		include 'tutorials/custom-effect'
+		include 'tutorials/custom-materials'
+		include 'tutorials/custom-vertex-attributes'
+		include 'tutorials/environment-maps'
+		include 'tutorials/external-glsl-code'
+		include 'tutorials/loading-effects'
+		include 'tutorials/model-world-transform'
+		include 'tutorials/normal-maps'
+		include 'tutorials/phong-material'
+		include 'tutorials/post-processing-effect'
+		include 'tutorials/specular-maps'
+		include 'tutorials/textures'
+		include 'tutorials/uber-shaders'
 	end
 	
 	-- tests
