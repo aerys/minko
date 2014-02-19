@@ -4,8 +4,8 @@ newoption {
 }
 
 newoption {
-	trigger	= 'no-tutorials',
-	description = 'Disable tutorials.'
+	trigger	= 'no-tutorial',
+	description = 'Disable tutorial.'
 }
 
 newoption {
@@ -72,30 +72,20 @@ solution "minko"
 		include 'examples/joystick'
 	end
 
-	-- tutorials
-	if not _OPTIONS['no-tutorials'] then
-		include 'tutorials/basic-material'
-		include 'tutorials/camera'
-		include 'tutorials/cube'
-		include 'tutorials/load-scene-file'
-		include 'tutorials/load-scenes'
-		include 'tutorials/mouse-camera-rotating'
-		include 'tutorials/moving-objects'
-		include 'tutorials/moving-objects-keyboard'
-		include 'tutorials/resizing'
-		include 'tutorials/custom-effect'
-		include 'tutorials/custom-materials'
-		include 'tutorials/custom-vertex-attributes'
-		include 'tutorials/environment-maps'
-		include 'tutorials/external-glsl-code'
-		include 'tutorials/loading-effects'
-		include 'tutorials/model-world-transform'
-		include 'tutorials/normal-maps'
-		include 'tutorials/phong-material'
-		include 'tutorials/post-processing-effect'
-		include 'tutorials/specular-maps'
-		include 'tutorials/textures'
-		include 'tutorials/uber-shaders'
+	-- tutorial
+	if not _OPTIONS['no-tutorial'] then
+		include 'tutorial/cube'
+		include 'tutorial/load-scene-file'
+		include 'tutorial/load-scenes'
+		include 'tutorial/mouse-camera-rotating'
+		include 'tutorial/moving-objects'
+		include 'tutorial/moving-objects-keyboard'
+		include 'tutorial/resizing'
+		
+		include 'tutorial/phong-material'
+		include 'tutorial/basic-material'
+		include 'tutorial/textures'
+		include 'tutorial/loading-effects'
 	end
 	
 	-- tests
