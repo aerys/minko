@@ -81,11 +81,23 @@ solution "minko"
 		include 'tutorial/moving-objects-with-the-keyboard'
 		include 'tutorial/load-scenes'
 		include 'tutorial/loading-scene-files'
-		
-		include 'tutorial/phong-material'
-		include 'tutorial/basic-material'
-		include 'tutorial/textures'
+		include 'tutorial/resizing'
+
+		include 'tutorial/authoring-uber-shaders'
+		include 'tutorial/binding-the-camera'
+		include 'tutorial/binding-the-model-to-world-transform'
+		include 'tutorial/create-your-first-custom-effect'
+		include 'tutorial/creating-a-simple-post-processing-effect'
+		include 'tutorial/creating-custom-materials'
+		include 'tutorial/loading-and-using-textures'
 		include 'tutorial/loading-effects'
+		include 'tutorial/using-external-glsl-code-in-effect-files'
+		include 'tutorial/working-with-custom-vertex-attributes'
+		include 'tutorial/working-with-environment-maps'
+		include 'tutorial/working-with-normal-maps'
+		include 'tutorial/working-with-specular-maps'
+		include 'tutorial/working-with-the-basic-material'
+		include 'tutorial/working-with-the-phong-material'
 	end
 	
 	-- tests
