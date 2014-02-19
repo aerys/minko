@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 
-#include <minko/component/AbstractAnimation.hpp>
+#include <minko/component/MasterAnimation.hpp>
 #include <minko/render/VertexBuffer.hpp>
 #include <minko/component/SkinningMethod.hpp>
 
@@ -35,7 +35,7 @@ namespace minko
 	namespace component
 	{
 		class Skinning:
-			public AbstractAnimation
+			public MasterAnimation
 			/*,
 			public std::enable_shared_from_this<Skinning>*/
 		{
@@ -49,6 +49,7 @@ namespace minko
 			typedef std::shared_ptr<render::VertexBuffer>			VertexBufferPtr;
 			typedef std::shared_ptr<component::AbstractComponent>	AbsCmpPtr;
 			typedef std::shared_ptr<component::SceneManager>		SceneManagerPtr;
+			typedef std::shared_ptr<component::Animation>			AnimationPtr;
 			typedef std::shared_ptr<geometry::Geometry>				GeometryPtr;
 			typedef std::shared_ptr<geometry::Skin>					SkinPtr;
 			typedef std::shared_ptr<data::Provider>					ProviderPtr;
@@ -85,9 +86,13 @@ namespace minko
 		public:
 			inline static
 			Ptr
-			create(const SkinPtr skin, SkinningMethod method, AbstractContextPtr context, bool isLooping = true)
+			create(const SkinPtr						skin, 
+				   SkinningMethod						method, 
+				   AbstractContextPtr					context, 
+				   const std::vector<AnimationPtr>&		animations,
+				   bool									isLooping = true)
 			{
-				Ptr ptr(new Skinning(skin, method, context, isLooping));
+				Ptr ptr(new Skinning(skin, method, context, animations, isLooping));
 
 				ptr->initialize();
 
@@ -95,7 +100,11 @@ namespace minko
 			}
 
 		private:
-			Skinning(const SkinPtr, SkinningMethod, AbstractContextPtr, bool);
+			Skinning(const SkinPtr, 
+					 SkinningMethod, 
+					 AbstractContextPtr, 
+					 const std::vector<AnimationPtr>&,
+					 bool);
 
 			void
 			initialize();

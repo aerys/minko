@@ -77,6 +77,16 @@ ASSIMPParser::initializeTextureTypeToName()
 	return typeToString;
 }
 
+inline
+static
+std::ostream&
+printScene(std::ostream& out, Node::Ptr scene, const aiScene* aiscene);
+
+inline
+static
+std::ostream&
+printNode(std::ostream& out, Node::Ptr node, uint depth);
+
 ASSIMPParser::ASSIMPParser() :
 	_numDependencies(0),
 	_numLoadedDependencies(0),
@@ -178,10 +188,14 @@ ASSIMPParser::parse(const std::string&					filename,
 	createSceneTree(_symbol, scene, scene->mRootNode, assetLibrary);
 	_symbol = _options->nodeFunction()(_symbol);
 
+	printNode(std::cout, _symbol, 0) << std::endl;
+
 	createLights(scene);
 	createCameras(scene);
 	createSkins(scene); // must come before createAnimations
-	createAnimations(scene);
+	//createAnimations(scene);
+
+	printNode(std::cout << "\n", _symbol, 0) << std::endl;
 
 	if (_numDependencies == _numLoadedDependencies)
 		finalize();
@@ -195,54 +209,44 @@ ASSIMPParser::createSceneTree(scene::Node::Ptr 				minkoNode,
 							  aiNode* 						ainode,
 							  std::shared_ptr<AssetLibrary> assets)
 {
+	// create surfaces for each node mesh
+	for (uint j = 0; j < ainode->mNumMeshes; j++)
+	{
+	    aiMesh* aimesh = scene->mMeshes[ainode->mMeshes[j]];
+		if (aimesh == nullptr)
+			continue;
+	
+		_aiMeshToNode[aimesh] = minkoNode;
+		createMeshSurface(minkoNode, scene, aimesh);
+	}
+
+	// traverse the node's children
 	for (uint i = 0; i < ainode->mNumChildren; i++)
     {
-		assert(ainode->mChildren[i]);
+		aiNode* aichild = ainode->mChildren[i];
+		if (aichild == nullptr)
+			continue;
 
-        auto childName	= std::string(ainode->mChildren[i]->mName.data);
-        auto child		= scene::Node::create(childName);
+        auto childName	= std::string(aichild->mName.data);
+        auto childNode	= scene::Node::create(childName);
         
-		_aiNodeToNode[ainode->mChildren[i]] = child;
-		if (!child->name().empty())
-			_nameToNode[child->name()] = child;
+		_aiNodeToNode[aichild] = childNode;
+		if (!childName.empty())
+			_nameToNode[childName] = childNode;
 
-        child->addComponent(getTransformFromAssimp(ainode->mChildren[i]));
-        
-		//if (!child->name().empty())
-		//	_nameToNode[child->name()] = child;
-
-
-#ifdef DEBUG_SKINNING
-		std::cout << "nodemap\t<- '" << child->name() << "'" << std::endl;
-#endif // DEBUG_SKINNING
+        childNode->addComponent(getTransformFromAssimp(aichild));
 
         //Recursive call
-		createSceneTree(child, scene, ainode->mChildren[i], assets);
+		createSceneTree(childNode, scene, aichild, assets);
 
-        minkoNode->addChild(_options->nodeFunction()(child));
+        minkoNode->addChild(_options->nodeFunction()(childNode));
     }
-    
-	auto minkoMesh = scene::Node::create();
-	minkoMesh->addComponent(Transform::create());
+}
 
-    for (uint j = 0; j < ainode->mNumMeshes; j++)
-    {
-        aiMesh* mesh = scene->mMeshes[ainode->mMeshes[j]];
-		assert(mesh);
-
-	//	auto minkoMesh = scene::Node::create(mesh->mName.C_Str());
-
-		_aiMeshToNode[mesh] = minkoMesh;
-
-	//	minkoMesh->addComponent(Transform::create());
-		createMeshSurface(minkoMesh, scene, mesh);
-
-
-#ifdef DEBUG_SKINNING
-		std::cout << "meshmap\t<- '" << minkoMesh->name() << "'" << std::endl;
-#endif // DEBUG_SKINNING
-    }
-	minkoNode->addChild(_options->nodeFunction()(minkoMesh));
+Transform::Ptr
+ASSIMPParser::getTransformFromAssimp(aiNode* ainode)
+{
+	return Transform::create(convert(ainode->mTransformation));
 }
 
 Geometry::Ptr
@@ -350,6 +354,7 @@ ASSIMPParser::createMeshSurface(scene::Node::Ptr 	minkoNode,
 
 	if (effect)
 	{
+		std::cout << "surface added to node [" << minkoNode.get() << "]" << std::endl;
 		minkoNode->addComponent(
 			Surface::create(
 				meshName, 
@@ -516,12 +521,6 @@ ASSIMPParser::findNode(const std::string& name) const
 	return foundNodeIt != _nameToNode.end()
 		? foundNodeIt->second
 		: nullptr;
-}
-
-Transform::Ptr
-ASSIMPParser::getTransformFromAssimp(aiNode* ainode)
-{
-	return Transform::create(convert(ainode->mTransformation));
 }
 
 void
@@ -720,22 +719,23 @@ ASSIMPParser::createSkins(const aiScene* aiscene)
 void
 ASSIMPParser::createSkin(const aiMesh* aimesh)
 {
-	std::cout << "mesh '" << aimesh->mName.data << "' has " << aimesh->mNumBones << std::endl;
-
 	if (aimesh == nullptr || aimesh->mNumBones == 0)
 		return;
 
+#ifdef DEBUG
+	for (uint i = 0; i < aimesh->mNumBones; ++i)
+		std::cout << "mesh(" << aimesh->mName.data << ").bone is " << aimesh->mBones[i]->mName.data << std::endl;
+	std::cout << std::endl;
+#endif // DEBUG
 
 	const auto	meshName	= std::string(aimesh->mName.data);
 	if (_aiMeshToNode.count(aimesh) == 0)
 		return;
 
+
+	auto supposedSkeletonRoot = getSkeletonRoot(aimesh);
+
 	auto		meshNode	= _aiMeshToNode.find(aimesh)->second;
-
-	auto allchildren = NodeSet::create(meshNode->parent())->descendants(true);
-	for (auto& child : allchildren->nodes())
-		std::cout << "'" << meshNode->parent()->name() << "'\t<- " << child->name() << std::endl;
-
 	const uint	numBones	= aimesh->mNumBones;
 	const uint	numFrames	= getSkinNumFrames(aimesh);
 	if (numFrames == 0)
@@ -743,19 +743,14 @@ ASSIMPParser::createSkin(const aiMesh* aimesh)
 		std::cerr << "Failed to flatten skinning information. Most likely involved nodes do not share a common animation." << std::endl;
 		return;
 	}
-	const uint duration		= uint(floorf(1e+3f * numFrames / (float)_options->skinningFramerate())); // in milliseconds
+	const uint	duration		= uint(floorf(1e+3f * numFrames / (float)_options->skinningFramerate())); // in milliseconds
+	auto	skin				= Skin::create(numBones, duration, numFrames);
+	auto	skeletonRoot		= getSkeletonRoot(aimesh); //findNode("ALL");
+	auto	boneTransforms		= std::vector<std::vector<float>>(numBones, std::vector<float>(numFrames * 16, 0.0f));
+	auto	modelToRootMatrices	= std::vector<Matrix4x4::Ptr>(numFrames);
 
-	auto		skin		= Skin::create(numBones, duration, numFrames);
-	//skin->duration(duration); // in milliseconds
-
-	auto		boneTransforms	= std::vector<std::vector<float>>(numBones, std::vector<float>(numFrames * 16, 0.0f));
-
-
-	auto modelToRootMatrices = std::vector<Matrix4x4::Ptr>(numFrames);
 	for (auto& m : modelToRootMatrices)
 		m = Matrix4x4::create();
-
-	std::set<Node::Ptr> childrenWithSurface;
 
 	for (uint boneId = 0; boneId < numBones; ++boneId)
 	{
@@ -766,7 +761,7 @@ ASSIMPParser::createSkin(const aiMesh* aimesh)
 		const auto boneNode			= bone->node();
 		const auto boneOffsetMatrix	= bone->offsetMatrix();
 
-		precomputeModelToRootMatrices(bone->node(), _symbol, modelToRootMatrices);
+		precomputeModelToRootMatrices(bone->node(), skeletonRoot, modelToRootMatrices);
 		skin->bone(boneId, bone);
 
 		for (uint frameId = 0; frameId < numFrames; ++frameId)
@@ -774,95 +769,210 @@ ASSIMPParser::createSkin(const aiMesh* aimesh)
 			modelToRootMatrices[frameId]->prepend(boneOffsetMatrix);  // from bind space to root space
 			skin->matrix(frameId, boneId, modelToRootMatrices[frameId]);
 		}
-
-		//childrenWithSurface.insert(boneNode);
-		//auto children = NodeSet::create(boneNode)
-		//	->descendants(false)
-		//	->where([](Node::Ptr n){ return n->hasComponent<Surface>(); });
-		//childrenWithSurface.insert(children->nodes().begin(), children->nodes().end());
-
-		_alreadyAnimatedNodes.insert(boneNode);
 	}
 
 	// also find all bone children that must also be animated and synchronized with the 
 	// skinning component.
+	std::set<Node::Ptr>			slaves;
+	std::vector<Animation::Ptr>	slaveAnimations;
 
-	std::vector<Animation::Ptr> slaveAnimations;
-	slaveAnimations.reserve(childrenWithSurface.size());
+	for (uint boneId = 0; boneId < numBones; ++boneId)
+	{
+		auto childrenWithSurface = NodeSet::create(skin->bone(boneId)->node())
+		->descendants(true)
+		->where([](Node::Ptr n)
+		{ 
+			return n->hasComponent<Surface>(); 
+		});
 
-	auto	timetable = std::vector<uint>(numFrames, 0);
+		slaves.insert(childrenWithSurface->nodes().begin(), childrenWithSurface->nodes().end());
+	}
+
+	auto timetable = std::vector<uint>(numFrames, 0);
 	for (uint i = 0; i < numFrames; ++i)
 		timetable[i] = uint(floorf(i * duration / float(numFrames - 1)));
 
-	for (auto& n : childrenWithSurface)
-		//if (_alreadyAnimatedNodes.find(n) == _alreadyAnimatedNodes.end())
-		{
-			std::cout << "should process " << n->name() << std::endl;
+	slaveAnimations.reserve(slaves.size());
+	for (auto& n : slaves)
+	{
+		auto matrices = std::vector<Matrix4x4::Ptr>(numFrames);
+		for (auto& m : matrices)
+			m = Matrix4x4::create();
 
-			precomputeModelToRootMatrices(n, n, modelToRootMatrices);
+		precomputeModelToRootMatrices(n, skeletonRoot, matrices);
 
-			auto timeline = animation::Matrix4x4Timeline::create(
-				PNAME_TRANSFORM, 
-				duration, 
-				timetable, 
-				modelToRootMatrices
-			);
+		auto timeline	= animation::Matrix4x4Timeline::create(PNAME_TRANSFORM, duration, timetable, matrices);
+		auto animation	= Animation::create(std::vector<animation::AbstractTimeline::Ptr>(1, timeline));
 
-			auto animation	= Animation::create(std::vector<animation::AbstractTimeline::Ptr>(1, timeline));
+		n->addComponent(animation);
+		slaveAnimations.push_back(animation);
+		_alreadyAnimatedNodes.insert(n);
+	}
 
-			slaveAnimations.push_back(animation);
-			n->addComponent(animation);
-			_alreadyAnimatedNodes.insert(n);
-		}
+	for (auto& n : slaves) // FIXME
+	{
+		if (n->parent())
+			n->parent()->removeChild(n);
+		skeletonRoot->addChild(n);
+	}
 
 	// add skinning component to mesh
 	meshNode->addComponent(Skinning::create(
 		skin->reorganizeByVertices()->disposeBones(), 
 		_options->skinningMethod(), 
-		_assetLibrary->context()
+		_assetLibrary->context(),
+		slaveAnimations
 	));
+
+	auto irrelevantTransforms = NodeSet::create(skeletonRoot)
+		->descendants(false)
+		->where([](Node::Ptr n){
+			return n->hasComponent<Transform>() && !n->hasComponent<Animation>() && !n->hasComponent<Surface>();
+		});
+
+	for (auto& n : irrelevantTransforms->nodes())
+		n->removeComponent(n->component<Transform>());
+}
+
+Node::Ptr
+ASSIMPParser::getSkeletonRoot(const aiMesh* aimesh) const
+{
+	Node::Ptr	skeletonRoot	= nullptr;
+	auto		boneAncestor	= getBoneCommonAncestor(aimesh);
+	auto		currentNode		= boneAncestor;
+
+	while (true)
+	{
+		if (currentNode == nullptr)
+			break;
+
+		if (_nameToAnimMatrices.count(currentNode->name()) > 0)
+			skeletonRoot = currentNode;
+
+		currentNode = currentNode->parent();
+	}
+
+	return skeletonRoot 
+		? (skeletonRoot->parent() ? skeletonRoot->parent() : _symbol)
+		: boneAncestor;
+}
+
+Node::Ptr
+ASSIMPParser::getBoneCommonAncestor(const aiMesh* aimesh) const
+{
+	if (aimesh && aimesh->mNumBones > 0)
+	{
+		std::vector< std::vector<Node::Ptr> > bonePath;
+		bonePath.reserve(aimesh->mNumBones);
+
+		// compute the common ancestor of all bones influencing the specified mesh
+		uint minDepth = UINT_MAX;
+		for (uint boneId = 0; boneId < aimesh->mNumBones; ++boneId)
+		{
+			auto boneNode = findNode(aimesh->mBones[boneId]->mName.data);
+			if (boneNode == nullptr)
+				continue;
+
+			bonePath.push_back(std::vector<Node::Ptr>());
+
+			auto currentNode = boneNode;
+			do
+			{
+				if (currentNode == nullptr)
+					break;
+
+				bonePath.back().push_back(currentNode);
+				currentNode = currentNode->parent();
+			}
+			while(true);
+
+			std::reverse(bonePath.back().begin(), bonePath.back().end());
+
+			if (bonePath.back().size() < minDepth)
+				minDepth = bonePath.back().size();
+		}
+
+		if (bonePath.empty())
+			return _symbol;
+
+		for (uint d = 0; d < minDepth; ++d)
+		{
+			auto node		= bonePath.front()[d];
+			bool isCommon	= true;
+			for (uint boneId = 1; boneId < aimesh->mNumBones && isCommon; ++boneId)
+				if (bonePath[boneId][d] != node)
+				{
+					isCommon = false;
+					break;
+				}
+
+			if (!isCommon)
+			{
+				if (d > 0)
+					return bonePath.front()[d-1];
+				else
+					return _symbol;
+			}
+		}
+	}
+	return _symbol;
 }
 
 void
 ASSIMPParser::precomputeModelToRootMatrices(Node::Ptr						node, 
 											Node::Ptr						root, 
-											std::vector<Matrix4x4::Ptr>&	matrices) const
+											std::vector<Matrix4x4::Ptr>&	modelToRootMatrices) const
 {
-	assert(node && root && !matrices.empty());
+	assert(node && !modelToRootMatrices.empty());
 
-	for (uint frameId = 0; frameId < matrices.size(); ++frameId)
+	typedef std::tuple<Node::Ptr, const std::vector<Matrix4x4::Ptr>*, Matrix4x4::Ptr> NodeTransformInfo;
+
+	// precompute the sequence of local-to-parent transformations from node to root
+	std::list<NodeTransformInfo> transformsUpToRoot;
+	auto currentNode = node;
+	do
 	{
-		auto currentNode	= node;
+		if (currentNode == nullptr)
+			break;
+		
+		const std::string& currentName = currentNode->name();
 
-		assert(matrices[frameId]);
-		matrices[frameId]->identity();
-		do
+		transformsUpToRoot.push_back(NodeTransformInfo());
+
+		std::get<0>(transformsUpToRoot.back()) = currentNode;
+		std::get<1>(transformsUpToRoot.back()) = nullptr;
+		std::get<2>(transformsUpToRoot.back()) = nullptr;
+
+		const auto foundAnimMatricesIt = _nameToAnimMatrices.find(currentName);
+		if (foundAnimMatricesIt != _nameToAnimMatrices.end())
+			std::get<1>(transformsUpToRoot.back()) = &(foundAnimMatricesIt->second);
+		else if (currentNode->hasComponent<Transform>())
+			std::get<2>(transformsUpToRoot.back()) = currentNode->component<Transform>()->matrix();
+		
+		currentNode = currentNode->parent();
+	} 
+	while(currentNode != root); // the transform of the root is not accounted for!
+
+	// collapse transform from node to root for each frame of the animation
+	const uint numFrames = modelToRootMatrices.size();
+
+	for (uint frameId = 0; frameId < numFrames; ++frameId)
+	{
+		auto modelToRoot = modelToRootMatrices[frameId]; // warning: not a copy
+		assert(modelToRoot);
+
+		modelToRoot->identity();
+		for (auto& trfInfo : transformsUpToRoot)
 		{
-			if (currentNode == nullptr)
-				break;
+			const auto animMatrices	= std::get<1>(trfInfo);
+			const auto matrix		= std::get<2>(trfInfo);
 
-			//std::cout << "curr = " << currentNode->name() << std::endl;
-			Matrix4x4::Ptr currentTransform = nullptr;
-
-			if (_nameToAnimMatrices.count(currentNode->name()) > 0)
-			{
-				// get the animated node's resampled transform matrix
-				const std::vector<Matrix4x4::Ptr>& matrices = _nameToAnimMatrices.find(currentNode->name())->second;
-				currentTransform = matrices[std::min(frameId, matrices.size()-1)];
-			}
-			else if (currentNode->hasComponent<Transform>())
-			{
-				// get the constant node's transform
-				currentTransform = currentNode->component<Transform>()->matrix();
-			}
-
-			if (currentTransform)
-				matrices[frameId]->append(currentTransform);
-
-			currentNode = currentNode->parent();
-		} 
-		while(currentNode != root);
- 	}
+			if (animMatrices)
+				modelToRoot->append((*animMatrices)[std::min (frameId, animMatrices->size() - 1)]);
+			else if (matrix)
+				modelToRoot->append(matrix);
+		}
+	}
 }
 
 Bone::Ptr 
@@ -925,8 +1035,11 @@ ASSIMPParser::sampleAnimation(const aiAnimation* animation)
 		{
 			_nameToAnimMatrices[nodeName] = std::vector<Matrix4x4::Ptr>();
 			sample(nodeAnimation, sampleTimes, _nameToAnimMatrices[nodeName]);
+
+			std::cout << "node '" << nodeName << "' is animated" << std::endl;
 		}
 	}
+	std::cout << std::endl;
 }
 
 /*static*/
@@ -1424,4 +1537,41 @@ ASSIMPParser::createAnimations(const aiScene* scene, bool interpolate)
 		for (auto& nodeAndTimelines : nodeToTimelines)
 			nodeAndTimelines.first->addComponent(Animation::create(nodeAndTimelines.second));
 	}
+}
+
+static
+std::ostream&
+printNode(std::ostream& out, Node::Ptr node, uint depth)
+{
+	bool hasSurface		= node->hasComponent<Surface>();
+	bool hasTransform	= node->hasComponent<Transform>();
+	bool hasAnimation	= node->hasComponent<Animation>();
+	bool hasIdentity	= false;
+	if (hasTransform)
+	{
+		const std::vector<float>& data = node->component<Transform>()->matrix()->data();
+		
+		hasIdentity = true;
+		for (unsigned int i = 0; i < 16; ++i)
+			hasIdentity = hasIdentity && fabsf(data[i] - (i % 5 == 0 ? 1.0f : 0.0f)) < 1e-4f;
+	}
+
+	for (uint d = 0; d < depth; ++d)
+		out << "  ";
+
+	out << "(" << depth << ") " << node->name() << "\t";
+	if (hasSurface)
+		out << "[Surf] ";
+	if (hasIdentity)
+		out << "[Id] ";
+	else if (hasTransform)
+		out << "[Trf] ";
+	if (hasAnimation)
+		out << "[Anim] ";
+	out << "\n";
+
+	for (auto& n : node->children())
+		printNode(out, n, depth + 1);
+
+	return out;
 }

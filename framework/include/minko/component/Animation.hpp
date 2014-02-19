@@ -28,14 +28,18 @@ namespace minko
 	{
 		class Animation: public AbstractAnimation
 		{
+			friend class MasterAnimation;
+
 		public:
-			typedef std::shared_ptr<Animation>	Ptr;
+			typedef std::shared_ptr<Animation>						Ptr;
 
 		private:
 			typedef std::shared_ptr<animation::AbstractTimeline>	AbsTimelinePtr;
+			typedef std::shared_ptr<MasterAnimation>				MasterAnimationPtr;
 
 		private:
-			const std::vector<AbsTimelinePtr>	_timelines;
+			const std::vector<AbsTimelinePtr>						_timelines;
+			MasterAnimationPtr										_master;
 
 		public:
 			inline static
@@ -67,11 +71,37 @@ namespace minko
 		private:
 			Animation(const std::vector<AbsTimelinePtr>&, bool isLooping);
 
+			/*virtual*/
 			void
 			initialize();
 
+			/*virtual*/
 			void
 			update();
+
+			inline /*virtual*/
+			void
+			frameBeginHandler(std::shared_ptr<SceneManager> manager)
+			{
+				if (_master == nullptr)
+					AbstractAnimation::frameBeginHandler(manager);
+			}
+
+			inline /*virtual*/
+			void
+			updateNextLabelIds(uint time)
+			{
+				if (_master == nullptr)
+					AbstractAnimation::updateNextLabelIds(time);
+			}
+
+			inline /*virtual*/
+			void 
+			checkLabelHit(uint previousTime, uint newTime)
+			{
+				if (_master == nullptr)
+					AbstractAnimation::checkLabelHit(previousTime, newTime);
+			}
 		};
 	}
 }

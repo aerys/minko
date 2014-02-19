@@ -168,6 +168,12 @@ namespace minko
 			BonePtr 
 			createBone(const aiBone*) const;
 
+			NodePtr
+			getSkeletonRoot(const aiMesh*) const;
+
+			NodePtr
+			getBoneCommonAncestor(const aiMesh*) const;
+
 			unsigned int
 			getSkinNumFrames(const aiMesh*) const;
 
