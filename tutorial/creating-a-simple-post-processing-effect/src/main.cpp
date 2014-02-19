@@ -21,64 +21,78 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/MinkoSDL.hpp"
 
 using namespace minko;
-using namespace minko::component;
 using namespace minko::math;
+using namespace minko::component;
 
-const uint WINDOW_WIDTH		= 800;
-const uint WINDOW_HEIGHT	= 600;
+const uint WINDOW_WIDTH = 800;
+const uint WINDOW_HEIGHT = 600;
 
-int main(int argc, char** argv)
+int
+main(int argc, char** argv)
 {
-	auto canvas = Canvas::create("Minko Application", WINDOW_WIDTH, WINDOW_HEIGHT);
-	auto sceneManager = SceneManager::create(canvas->context());
-	
-	sceneManager->assets()
-		->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()))
-		->queue("effect/Phong.effect");
+	auto canvas = Canvas::create("Hello cube!", WINDOW_WIDTH, WINDOW_HEIGHT);
+	auto sceneManager = component::SceneManager::create(canvas->context());
 
-	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
+	sceneManager->assets()
+		->queue("effect/Basic.effect")
+		->queue("effect/Desaturate.effect");
+
+	auto complete = sceneManager->assets()->complete()->connect([&](file::AssetLibrary::Ptr assets)
 	{
 		auto root = scene::Node::create("root")
 			->addComponent(sceneManager);
 
 		auto camera = scene::Node::create("camera")
 			->addComponent(Renderer::create(0x7f7f7fff))
-			->addComponent(Transform::create(
-				Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 3.f))
-			))
 			->addComponent(PerspectiveCamera::create(
-				(float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, (float)PI * 0.25f, .1f, 1000.f)
+			(float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, (float)PI * 0.25f, .1f, 1000.f)
 			);
 		root->addChild(camera);
-		
-		auto mesh = scene::Node::create("mesh")
-			->addComponent(Transform::create())
+
+		auto cube = scene::Node::create("cube")
+		->addComponent(Transform::create(Matrix4x4::create()->translation(0.f, 0.f, -5.f)))
 			->addComponent(Surface::create(
-				assets->geometry("cube"),
-				material::Material::create()
-					->set("diffuseColor",	Vector4::create(1.f, 1.f, 1.f, 1.f)),
-				assets->effect("effect/Phong.effect")
+			geometry::CubeGeometry::create(assets->context()),
+			material::BasicMaterial::create()->diffuseColor(Vector4::create(0.f, 0.f, 1.f, 1.f)),
+			assets->effect("effect/Basic.effect")
 			));
-		root->addChild(mesh);
+		root->addChild(cube);
 
-		auto light = scene::Node::create("light")
-			->addComponent(AmbientLight::create())
-			->addComponent(DirectionalLight::create())
-			->addComponent(Transform::create(
-				Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(-2.f, -1.f, -1.f))
+		auto ppTarget = render::Texture::create(assets->context(), 1024, 1024, false, true);
+
+		ppTarget->upload();
+
+		auto ppFx = sceneManager->assets()->effect("effect/Desaturate.effect");
+
+		if (!ppFx)
+			throw std::logic_error("The post-processing effect has not been loaded.");
+
+		ppFx->setUniform("uBackbuffer", ppTarget);
+
+		auto ppRenderer = Renderer::create();
+		auto ppScene = scene::Node::create()
+			->addComponent(ppRenderer)
+			->addComponent(Surface::create(
+			geometry::QuadGeometry::create(sceneManager->assets()->context()),
+			material::Material::create(),
+			ppFx
 			));
-		root->addChild(light);
 
-		auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
+		auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint width, uint height)
 		{
-			camera->component<PerspectiveCamera>()->aspectRatio((float)w / (float)h);
+			camera->component<PerspectiveCamera>()->aspectRatio((float)width / (float)height);
+
+			ppTarget = render::Texture::create(assets->context(), clp2(width), clp2(height), false, true);
+			ppTarget->upload();
+			ppFx->setUniform("uBackbuffer", ppTarget);
 		});
 
 		auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, uint deltaTime)
 		{
-			mesh->component<Transform>()->matrix()->appendRotationY(.01f);
+			cube->component<Transform>()->matrix()->prependRotationY(.01f);
 
-			sceneManager->nextFrame();
+			sceneManager->nextFrame(ppTarget);
+			ppRenderer->render(assets->context());
 		});
 
 		canvas->run();
