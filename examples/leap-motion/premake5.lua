@@ -15,5 +15,6 @@ minko.project.application("minko-example-" .. PROJECT_NAME)
 	minko.plugin.enable("jpeg")
 	minko.plugin.enable("sdl")
 	minko.plugin.enable("leap")
+	minko.plugin.enable("serializer")
 	
 	minko.plugin.import("angle")
