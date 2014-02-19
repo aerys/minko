@@ -165,7 +165,9 @@ namespace minko
 		enum class SkinningMethod;
 
 		class AbstractAnimation;
+		class MasterAnimation;
 		class Animation;
+		class Skinning;
 	}
 
 	namespace data
