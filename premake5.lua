@@ -74,13 +74,13 @@ solution "minko"
 
 	-- tutorial
 	if not _OPTIONS['no-tutorial'] then
-		include 'tutorial/cube'
-		include 'tutorial/load-scene-file'
-		include 'tutorial/load-scenes'
-		include 'tutorial/mouse-camera-rotating'
+		include 'tutorial/hello-cube'
+		include 'tutorial/handle-canvas-resizing'
+		include 'tutorial/rotating-the-camera-with-the-mouse'
 		include 'tutorial/moving-objects'
-		include 'tutorial/moving-objects-keyboard'
-		include 'tutorial/resizing'
+		include 'tutorial/moving-objects-with-the-keyboard'
+		include 'tutorial/load-scenes'
+		include 'tutorial/loading-scene-files'
 		
 		include 'tutorial/phong-material'
 		include 'tutorial/basic-material'
