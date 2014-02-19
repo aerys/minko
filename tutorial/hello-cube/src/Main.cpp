@@ -30,41 +30,42 @@ const uint WINDOW_HEIGHT = 600;
 int
 main(int argc, char** argv)
 {
-	auto canvas = Canvas::create("Tutorial - Hello cube!", WINDOW_WIDTH, WINDOW_HEIGHT);
-	auto sceneManager = component::SceneManager::create(canvas->context());
+    auto canvas = Canvas::create("Hello cube!", WINDOW_WIDTH, WINDOW_HEIGHT);
+    auto sceneManager = component::SceneManager::create(canvas->context());
 
-	sceneManager->assets()->queue("effect/Basic.effect");
-	auto complete = sceneManager->assets()->complete()->connect([&](file::AssetLibrary::Ptr assets)
-	{
-		auto root = scene::Node::create("root")
-			->addComponent(sceneManager);
+    sceneManager->assets()->queue("effect/Basic.effect");
+    auto complete = sceneManager->assets()->complete()->connect([&](file::AssetLibrary::Ptr assets)
+    {
+        auto root = scene::Node::create("root")
+            ->addComponent(sceneManager);
 
-		auto camera = scene::Node::create("camera")
-			->addComponent(Renderer::create(0x7f7f7fff))
-			->addComponent(PerspectiveCamera::create(
-			(float) WINDOW_WIDTH / (float) WINDOW_HEIGHT, (float) PI * 0.25f, .1f, 1000.f)
-			);
-		root->addChild(camera);
+        auto camera = scene::Node::create("camera")
+            ->addComponent(Renderer::create(0x7f7f7fff))
+            ->addComponent(PerspectiveCamera::create(
+            (float) WINDOW_WIDTH / (float) WINDOW_HEIGHT, (float) PI * 0.25f, .1f, 1000.f)
+            );
+        root->addChild(camera);
 
-		auto cube = scene::Node::create("cube")
-			->addComponent(Transform::create(Matrix4x4::create()->translation(0.f, 0.f, -5.f)))
-			->addComponent(Surface::create(
-			geometry::CubeGeometry::create(assets->context()),
-			material::BasicMaterial::create()->diffuseColor(Vector4::create(0.f, 0.f, 1.f, 1.f)),
-			assets->effect("effect/Basic.effect")
-			));
-		root->addChild(cube);
+        auto cube = scene::Node::create("cube")
+            ->addComponent(Transform::create(Matrix4x4::create()->translation(0.f, 0.f, -5.f)))
+            ->addComponent(Surface::create(
+            geometry::CubeGeometry::create(assets->context()),
+            material::BasicMaterial::create()->diffuseColor(Vector4::create(0.f, 0.f, 1.f, 1.f)),
+            assets->effect("effect/Basic.effect")
+            ));
+        root->addChild(cube);
 
-		auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint t, uint dt)
-		{
-			cube->component<Transform>()->matrix()->prependRotationY(.01f);
-			sceneManager->nextFrame();
-		});
+        auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint t, uint dt)
+        {
+            cube->component<Transform>()->matrix()->prependRotationY(.01f);
+            sceneManager->nextFrame();
+        });
 
-		canvas->run();
-	});
+        canvas->run();
+    });
 
-	sceneManager->assets()->load();
+    sceneManager->assets()->load();
 
-	return 0;
+    return 0;
 }
+

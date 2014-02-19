@@ -42,10 +42,10 @@ main(int argc, char** argv)
         auto camera = scene::Node::create("camera")
             ->addComponent(Renderer::create(0x7f7f7fff))
             ->addComponent(Transform::create(
-                Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0., 0., -5.f))
+            Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0., 0., -5.f))
             ))
             ->addComponent(PerspectiveCamera::create(
-                (float) WINDOW_WIDTH / (float) WINDOW_HEIGHT, (float) PI * 0.25f, .1f, 1000.f)
+            (float) WINDOW_WIDTH / (float) WINDOW_HEIGHT, (float) PI * 0.25f, .1f, 1000.f)
             );
         root->addChild(camera);
 
