@@ -18,22 +18,25 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "minko/Minko.hpp"
+#include "minko/MinkoPNG.hpp"
 #include "minko/MinkoSDL.hpp"
 
 using namespace minko;
 using namespace minko::component;
 using namespace minko::math;
 
-const uint WINDOW_WIDTH		= 800;
-const uint WINDOW_HEIGHT	= 600;
-
 int main(int argc, char** argv)
 {
-	auto canvas = Canvas::create("Minko Application", WINDOW_WIDTH, WINDOW_HEIGHT);
+	auto canvas = Canvas::create("", 800, 600);
+
 	auto sceneManager = SceneManager::create(canvas->context());
-	
+
+	// add the png parser to load textures
+	// add the Phong effect
 	sceneManager->assets()
-		->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()))
+		->registerParser<file::PNGParser>("png")
+		->queue("texture/diffuseMap.png")
+		->queue("texture/envmap.png")
 		->queue("effect/Phong.effect");
 
 	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
@@ -41,50 +44,43 @@ int main(int argc, char** argv)
 		auto root = scene::Node::create("root")
 			->addComponent(sceneManager);
 
-		auto camera = scene::Node::create("camera")
-			->addComponent(Renderer::create(0x7f7f7fff))
-			->addComponent(Transform::create(
-				Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 3.f))
-			))
-			->addComponent(PerspectiveCamera::create(
-				(float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, (float)PI * 0.25f, .1f, 1000.f)
-			);
-		root->addChild(camera);
-		
+		auto phongMaterial = material::PhongMaterial::create();
+
+		phongMaterial->diffuseColor(0xFFFFFFFF);
+		phongMaterial->diffuseMap(assets->texture("texture/diffuseMap.png"));
+		phongMaterial->environmentMap(assets->texture("texture/envmap.png"), render::EnvironmentMap2dType::BlinnNewell);
+		phongMaterial->environmentAlpha(0.2f);
+
 		auto mesh = scene::Node::create("mesh")
-			->addComponent(Transform::create())
+			->addComponent(Transform::create(Matrix4x4::create()->prependScale(1.1)))
 			->addComponent(Surface::create(
-				assets->geometry("cube"),
-				material::Material::create()
-					->set("diffuseColor",	Vector4::create(1.f, 1.f, 1.f, 1.f)),
-				assets->effect("effect/Phong.effect")
+			geometry::SphereGeometry::create(sceneManager->assets()->context()),
+			phongMaterial,
+			assets->effect("effect/Phong.effect")
 			));
+
+		auto camera = scene::Node::create("camera")
+			->addComponent(Renderer::create(0x00000000))
+			->addComponent(Transform::create(Matrix4x4::create()->lookAt(Vector3::create(), Vector3::create(0.0f, 1.f, 1.3f))
+			))
+			->addComponent(PerspectiveCamera::create(800.f / 600.f, (float)PI * 0.25f, .1f, 1000.f));
+
+
+		auto spotLight = scene::Node::create("SpotLight")
+			->addComponent(SpotLight::create(0.6f, 0.78f, 20.f))
+			->addComponent(Transform::create(Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(3.f, 5.f, 1.5f))));
+
+		root->addChild(camera);
 		root->addChild(mesh);
-
-		auto light = scene::Node::create("light")
-			->addComponent(AmbientLight::create())
-			->addComponent(DirectionalLight::create())
-			->addComponent(Transform::create(
-				Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(-2.f, -1.f, -1.f))
-			));
-		root->addChild(light);
-
-		auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
-		{
-			camera->component<PerspectiveCamera>()->aspectRatio((float)w / (float)h);
-		});
+		root->addChild(spotLight);
 
 		auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, uint deltaTime)
 		{
-			mesh->component<Transform>()->matrix()->appendRotationY(.01f);
-
 			sceneManager->nextFrame();
 		});
 
 		canvas->run();
 	});
-
 	sceneManager->assets()->load();
-
 	return 0;
 }
