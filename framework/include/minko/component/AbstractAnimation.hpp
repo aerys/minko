@@ -33,11 +33,11 @@ namespace minko
 			public std::enable_shared_from_this<AbstractAnimation>
 		{
 		public:
-			typedef std::shared_ptr<AbstractAnimation>	Ptr;
+			typedef std::shared_ptr<AbstractAnimation>		Ptr;
 
 		private:
-			typedef std::shared_ptr<scene::Node>		NodePtr;
-			typedef std::shared_ptr<AbstractComponent>	AbsCmpPtr;
+			typedef std::shared_ptr<scene::Node>			NodePtr;
+			typedef std::shared_ptr<AbstractComponent>		AbsCmpPtr;
 			
 			struct Label
 			{
@@ -52,22 +52,23 @@ namespace minko
 			};
 
 		protected:
-			uint	_maxTime;
-			uint	_currentTime;	// relative to animation 
+			uint		_maxTime;
+			uint		_currentTime;	// relative to animation 
 
 		private:
-			uint	_loopMinTime;
-			uint	_loopMaxTime;
-			uint	_loopTimeRange;
-			uint	_previousTime;	// relative to animation
-			uint	_previousGlobalTime;
+			uint		_loopMinTime;
+			uint		_loopMaxTime;
+			uint		_loopTimeRange;
+			uint		_previousTime;	// relative to animation
+			uint		_previousGlobalTime;
 
-			bool	_isPlaying;
-			bool	_isLooping;
-			bool	_isReversed;
-			bool	_canUpdateOnce;
+			bool		_isPlaying;
+			bool		_isLooping;
+			bool		_isReversed;
+			bool		_canUpdateOnce;
 
-			clock_t	_clockStart;
+
+			clock_t		_clockStart;
 
 			std::function<uint(uint)>						_timeFunction;
 
@@ -89,9 +90,11 @@ namespace minko
 			Signal<std::shared_ptr<SceneManager>>::Slot		_frameBeginSlot;
 
 		public:
+			virtual
 			Ptr
 			play();
 
+			virtual
 			Ptr
 			stop();
 
@@ -125,24 +128,31 @@ namespace minko
 			bool
 			hasLabel(const std::string& name) const;
 
+			virtual
 			Ptr
 			addLabel(const std::string& name, uint time);
 
+			virtual
 			Ptr
 			changeLabel(const std::string& name, const std::string& newName);
 
+			virtual
 			Ptr
 			setTimeForLabel(const std::string& name, uint newTime);
 
+			virtual
 			Ptr
 			removeLabel(const std::string& name);
 
+			virtual
 			Ptr
 			setPlaybackWindow(uint, uint, bool forceRestart = false);
 
+			virtual
 			Ptr
 			setPlaybackWindow(const std::string&, const std::string&, bool forceRestart = false);
 
+			virtual
 			Ptr
 			resetPlaybackWindow();
 
@@ -284,14 +294,17 @@ namespace minko
 			void
 			setSceneManager(std::shared_ptr<SceneManager>);
 
+			virtual
 			void
 			frameBeginHandler(std::shared_ptr<SceneManager>);
 
 			// record the indices of the labels that lie directly after the specified time value
 			// in the animation.
+			virtual
 			void
 			updateNextLabelIds(uint time);
 
+			virtual
 			void 
 			checkLabelHit(uint previousTime, uint newTime);
 
