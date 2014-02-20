@@ -1,7 +1,7 @@
 {
   "name" : "MyCustomEffect",
   "attributeBindings" : {
-    "aPosition" : "geometry.vertex.attribute.position"
+    "aPosition" : "geometry[${geometryId}].position"
   },
   "passes" : [{
     "vertexShader" : "
