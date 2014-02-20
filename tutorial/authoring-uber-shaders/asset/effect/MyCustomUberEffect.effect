@@ -1,7 +1,7 @@
 {
   "name" : "MyCustomUberEffect",
   "attributeBindings" : {
-    "aPosition" : "geometry[${geometryId}].position"
+    "aPosition" : "geometry[${geometryId}].position",
     "aUv" : "geometry[${geometryId}].uv"
   },
   "uniformBindings" : {
@@ -9,6 +9,9 @@
     "uDiffuseMap" : "material[${materialId}].diffuseMap",
     "uModelToWorldMatrix" : "transform.modelToWorldMatrix",
     "uWorldToScreenMatrix" : { "property" : "camera.worldToScreenMatrix", "source" : "renderer" }
+  },
+  "macroBindings" : {
+	"diffuseMap" : "material[${materialId}].diffuseMap"
   },
   "passes" : [{
     "vertexShader" : "
@@ -54,3 +57,4 @@
     "
   }]
 }
+
