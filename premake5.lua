@@ -90,7 +90,6 @@ solution "minko"
 		include 'tutorial/creating-custom-materials'
 		include 'tutorial/loading-and-using-textures'
 		include 'tutorial/loading-effects'
-		include 'tutorial/using-external-glsl-code-in-effect-files'
 		include 'tutorial/working-with-custom-vertex-attributes'
 		include 'tutorial/working-with-environment-maps'
 		include 'tutorial/working-with-normal-maps'
