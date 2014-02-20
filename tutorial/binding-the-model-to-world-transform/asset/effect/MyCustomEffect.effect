@@ -1,0 +1,40 @@
+{
+  "name" : "MyCustomEffect",
+  "attributeBindings" : {
+    "aPosition" : "geometry.vertex.attribute.position"
+  },
+  "uniformBindings" : {
+    "uColor" : "material.color",
+    "uModelToWorldMatrix" : "transform.modelToWorldMatrix"
+  },
+  "passes" : [{
+    "vertexShader" : "
+      #ifdef GL_ES
+      precision mediump float;
+      #endif
+ 
+      attribute vec3 aPosition;
+ 
+      uniform mat4 uModelToWorldMatrix;
+      uniform mat4 uViewMatrix;
+      uniform mat4 uProjectionMatrix;
+ 
+      void main(void)
+      {
+        gl_Position = uProjectionMatrix * uViewMatrix * uModelToWorldMatrix * vec4(aPosition, 1.0);
+      }
+    ",
+    "fragmentShader" : "
+      #ifdef GL_ES
+      precision mediump float;
+      #endif
+ 
+      uniform vec4 uColor;
+ 
+      void main(void)
+      {
+        gl_FragColor = uColor;
+      }
+    "
+  }]
+}
