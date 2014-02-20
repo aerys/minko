@@ -1,7 +1,7 @@
 {
   "name" : "MyCustomEffect",
   "attributeBindings" : {
-    "aPosition" : "geometry[${geometryId}].vertex.attribute.position"
+    "aPosition" : "geometry[${geometryId}].position"
   },
   "uniformBindings" : {
     "uColor" : "material[${materialId}].color",
