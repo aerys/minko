@@ -62,6 +62,7 @@ namespace minko
 			typedef std::shared_ptr<geometry::Bone>					BonePtr;
 			typedef std::shared_ptr<geometry::Skin>					SkinPtr;
 			typedef std::shared_ptr<math::Vector3>					Vector3Ptr;
+			typedef std::shared_ptr<math::Vector4>					Vector4Ptr;
 			typedef std::shared_ptr<math::Quaternion>				QuaternionPtr;
 			typedef std::shared_ptr<math::Matrix4x4>				Matrix4x4Ptr;
 			typedef std::shared_ptr<material::Material>				MaterialPtr;
@@ -238,11 +239,11 @@ namespace minko
 			bool 
 			getWireframe(const aiMaterial*) const;
 
-			void
-			setColorProperty(MaterialPtr, const std::string& propertyName, const aiMaterial*, const char*, unsigned int, unsigned int);
+			float
+			setScalarProperty(MaterialPtr, const std::string& propertyName, const aiMaterial*, const char*, unsigned int, unsigned int, float);
 
-			void
-			setScalarProperty(MaterialPtr, const std::string& propertyName, const aiMaterial*, const char*, unsigned int, unsigned int);
+			Vector4Ptr
+			setColorProperty(MaterialPtr, const std::string& propertyName, const aiMaterial*, const char*, unsigned int, unsigned int, Vector4Ptr);
 
 			void
 			disposeNodeMaps();

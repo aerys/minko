@@ -51,6 +51,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/material/BasicMaterial.hpp"
 #include "minko/material/PhongMaterial.hpp"
 #include "minko/render/Effect.hpp"
+#include "minko/render/priority.hpp"
 
 using namespace minko;
 using namespace minko::component;
@@ -80,12 +81,22 @@ ASSIMPParser::initializeTextureTypeToName()
 inline
 static
 std::ostream&
-printScene(std::ostream& out, Node::Ptr scene, const aiScene* aiscene);
+printScene(std::ostream&, Node::Ptr scene, const aiScene* aiscene);
 
 inline
 static
 std::ostream&
-printNode(std::ostream& out, Node::Ptr node, uint depth);
+printNode(std::ostream&, Node::Ptr node, uint depth);
+
+inline
+static
+std::ostream&
+dotPrint(std::ostream&, const aiScene*, const aiNode*, const std::string&);
+
+inline
+static
+void
+dotPrint(const std::string&, const aiScene*);
 
 ASSIMPParser::ASSIMPParser() :
 	_numDependencies(0),
@@ -124,16 +135,6 @@ ASSIMPParser::getSupportedFileExensions()
 		result.insert(list.substr(2));
 
 	return result;
-}
-
-void
-printMe(Node::Ptr node)
-{
-	for (auto& child : node->children())
-	{
-		std::cout << node->name() << "\t<- " << child->name() << std::endl;
-		printMe(child);
-	}
 }
 
 void
@@ -187,6 +188,8 @@ ASSIMPParser::parse(const std::string&					filename,
 	_symbol = scene::Node::create(_filename);
 	createSceneTree(_symbol, scene, scene->mRootNode, assetLibrary);
 	_symbol = _options->nodeFunction()(_symbol);
+
+	dotPrint("aiscene.dot", scene);
 
 	printNode(std::cout, _symbol, 0) << std::endl;
 
@@ -354,7 +357,6 @@ ASSIMPParser::createMeshSurface(scene::Node::Ptr 	minkoNode,
 
 	if (effect)
 	{
-		std::cout << "surface added to node [" << minkoNode.get() << "]" << std::endl;
 		minkoNode->addComponent(
 			Surface::create(
 				meshName, 
@@ -1272,19 +1274,41 @@ ASSIMPParser::createMaterial(const aiMaterial* aiMat)
 	material->set("triangleCulling",	getTriangleCulling(aiMat));
 	material->set("wireframe",			getWireframe(aiMat)); // bool
 
-	setColorProperty(material, "ambientColor",			aiMat, AI_MATKEY_COLOR_AMBIENT);
-	setColorProperty(material, "diffuseColor",			aiMat, AI_MATKEY_COLOR_DIFFUSE);
-	setColorProperty(material, "emissiveColor",			aiMat, AI_MATKEY_COLOR_EMISSIVE);
-	setColorProperty(material, "reflectiveColor",		aiMat, AI_MATKEY_COLOR_REFLECTIVE);
-	setColorProperty(material, "specularColor",			aiMat, AI_MATKEY_COLOR_SPECULAR);
-	setColorProperty(material, "transparentColor",		aiMat, AI_MATKEY_COLOR_TRANSPARENT);
+	float opacity		= setScalarProperty(material, "opacity",			aiMat, AI_MATKEY_OPACITY,				1.0f);
+	float shininess		= setScalarProperty(material, "shininess",			aiMat, AI_MATKEY_SHININESS,				0.0f);
+	float reflectivity	= setScalarProperty(material, "reflectivity",		aiMat, AI_MATKEY_REFLECTIVITY,			1.0f);
+	float shininessStr	= setScalarProperty(material, "shininessStrength",	aiMat, AI_MATKEY_SHININESS_STRENGTH,	1.0f);
+	float refractiveIdx	= setScalarProperty(material, "refractiveIndex",	aiMat, AI_MATKEY_REFRACTI,				1.0f);
+	float bumpScaling	= setScalarProperty(material, "bumpScaling",		aiMat, AI_MATKEY_BUMPSCALING,			1.0f);
 
-	setScalarProperty(material, "opacity",				aiMat, AI_MATKEY_OPACITY);
-	setScalarProperty(material, "reflectivity",			aiMat, AI_MATKEY_REFLECTIVITY);
-	setScalarProperty(material, "shininess",			aiMat, AI_MATKEY_SHININESS);
-	setScalarProperty(material, "shininessStrength",	aiMat, AI_MATKEY_SHININESS_STRENGTH);
-	setScalarProperty(material, "refractivity",			aiMat, AI_MATKEY_REFRACTI);
-	setScalarProperty(material, "bumpScaling",			aiMat, AI_MATKEY_BUMPSCALING);
+	auto diffuseColor		= setColorProperty(material, "diffuseColor",		aiMat, AI_MATKEY_COLOR_DIFFUSE,		Vector4::create(0.0f, 0.0f, 0.0f, 1.0f));
+	auto specularColor		= setColorProperty(material, "specularColor",		aiMat, AI_MATKEY_COLOR_SPECULAR,	Vector4::create(0.0f, 0.0f, 0.0f, 1.0f));
+	auto ambientColor		= setColorProperty(material, "ambientColor",		aiMat, AI_MATKEY_COLOR_AMBIENT,		Vector4::create(0.0f, 0.0f, 0.0f, 1.0f));
+	auto emissiveColor		= setColorProperty(material, "emissiveColor",		aiMat, AI_MATKEY_COLOR_EMISSIVE,	Vector4::create(0.0f, 0.0f, 0.0f, 1.0f));
+	auto reflectiveColor	= setColorProperty(material, "reflectiveColor",		aiMat, AI_MATKEY_COLOR_REFLECTIVE,	Vector4::create(0.0f, 0.0f, 0.0f, 1.0f));
+	auto transparentColor	= setColorProperty(material, "transparentColor",	aiMat, AI_MATKEY_COLOR_TRANSPARENT,	Vector4::create(0.0f, 0.0f, 0.0f, 1.0f));
+
+	if (shininess < 1.0f)
+		// Gouraud-like shading (-> no specular)
+		specularColor->w(0.0f);
+
+	if (opacity < 1.0f)
+	{
+		diffuseColor->w(opacity);
+		specularColor->w(opacity);
+		ambientColor->w(opacity);
+		emissiveColor->w(opacity);
+		reflectiveColor->w(opacity);
+		transparentColor->w(opacity);
+
+		material->set("priority",	render::priority::TRANSPARENT);
+		material->set("zSort",		true);
+	}
+	else
+	{
+		material->set("priority",	render::priority::OPAQUE);
+		material->set("zSort",		false);
+	}
 
 	for (auto& textureTypeAndName : _textureTypeToName)
 	{
@@ -1325,16 +1349,16 @@ ASSIMPParser::chooseMaterialByShadingMode(const aiMaterial* aiMat) const
 		switch(static_cast<aiShadingMode>(shadingMode))
 		{
 			case aiShadingMode_Flat:
-			case aiShadingMode_Gouraud:
-			case aiShadingMode_Toon:
-			case aiShadingMode_OrenNayar:
-			case aiShadingMode_Minnaert:
 				return std::static_pointer_cast<material::Material>(material::BasicMaterial::create());
 	
 			case aiShadingMode_Phong:
 			case aiShadingMode_Blinn:
 			case aiShadingMode_CookTorrance:
 			case aiShadingMode_Fresnel:
+			case aiShadingMode_Toon:
+			case aiShadingMode_Gouraud:
+			case aiShadingMode_OrenNayar:
+			case aiShadingMode_Minnaert:
 				return std::static_pointer_cast<material::Material>(material::PhongMaterial::create());
 			
 			case aiShadingMode_NoShading:
@@ -1405,7 +1429,7 @@ ASSIMPParser::getBlendingMode(const aiMaterial* aiMat) const
 	{
 		switch (static_cast<aiBlendMode>(blendMode))
 		{
-			case aiBlendMode_Default: // src * alpha - dst * (1 - alpha)
+			case aiBlendMode_Default: // src * alpha + dst * (1 - alpha)
 				return render::Blending::Mode::ALPHA; 
 			case aiBlendMode_Additive:
 				return render::Blending::Mode::ADDITIVE;
@@ -1414,7 +1438,7 @@ ASSIMPParser::getBlendingMode(const aiMaterial* aiMat) const
 		}
 	}
 	else
-		return render::Blending::Mode::DEFAULT;
+		return render::Blending::Mode::ALPHA;
 }
 
 render::TriangleCulling
@@ -1443,36 +1467,48 @@ ASSIMPParser::getWireframe(const aiMaterial* aiMat) const
 		: false;
 }
 
-void
+Vector4::Ptr
 ASSIMPParser::setColorProperty(material::Material::Ptr	material, 
 							   const std::string&		propertyName, 
 							   const aiMaterial*		aiMat, 
 							   const char*				aiMatKeyName,
 							   unsigned int				aiType,
-							   unsigned int				aiIndex)
+							   unsigned int				aiIndex,
+							   Vector4::Ptr				defaultValue)
 {
-	if (material == nullptr || aiMat == nullptr)
-		return;
+	assert(material && aiMat && defaultValue);
 
 	aiColor4D color;
-	if (aiMat->Get(aiMatKeyName, aiType, aiIndex, color) == AI_SUCCESS)
-		material->set(propertyName, math::Vector4::create(color.r, color.g, color.b, color.a));
+	color.r = defaultValue->x();
+	color.g = defaultValue->y();
+	color.b = defaultValue->z();
+	color.a = defaultValue->w();
+
+	auto ret = aiMat->Get(aiMatKeyName, aiType, aiIndex, color);
+	material->set(propertyName, Vector4::create(color.r, color.g, color.b, color.a));
+
+	return material->get<Vector4::Ptr>(propertyName);
 }
 
-void
+float
 ASSIMPParser::setScalarProperty(material::Material::Ptr	material, 
 							    const std::string&		propertyName, 
 							    const aiMaterial*		aiMat, 
 							    const char*				aiMatKeyName,
 							    unsigned int			aiType,
-							    unsigned int			aiIndex)
+							    unsigned int			aiIndex,
+								float					defaultValue)
 {
-	if (material == nullptr || aiMat == nullptr)
-		return;
+	assert(material && aiMat);
 
-	float scalar;
-	if (aiMat->Get(aiMatKeyName, aiType, aiIndex, scalar) == AI_SUCCESS)
-		material->set(propertyName, scalar);
+	float scalar = defaultValue;
+
+	auto ret = aiMat->Get(aiMatKeyName, aiType, aiIndex, scalar);
+	material->set(propertyName, scalar);
+
+	return material->get<float>(propertyName);
+	//if (aiMat->Get(aiMatKeyName, aiType, aiIndex, scalar) == AI_SUCCESS)
+	//	material->set(propertyName, scalar);
 }
 
 void
@@ -1487,7 +1523,6 @@ ASSIMPParser::createAnimations(const aiScene* scene, bool interpolate)
 			continue;
 
 		const uint duration = (uint)floor(1e+3 * animation->mDuration / animation->mTicksPerSecond); // in milliseconds
-		std::cout << "duration = " << duration << std::endl;
 
 		for (uint j = 0; j < animation->mNumChannels; ++j)
 		{
@@ -1544,6 +1579,7 @@ std::ostream&
 printNode(std::ostream& out, Node::Ptr node, uint depth)
 {
 	bool hasSurface		= node->hasComponent<Surface>();
+	bool hasSkinning	= node->hasComponent<Skinning>();
 	bool hasTransform	= node->hasComponent<Transform>();
 	bool hasAnimation	= node->hasComponent<Animation>();
 	bool hasIdentity	= false;
@@ -1568,10 +1604,122 @@ printNode(std::ostream& out, Node::Ptr node, uint depth)
 		out << "[Trf] ";
 	if (hasAnimation)
 		out << "[Anim] ";
+	if (hasSkinning)
+		out << "[Skin] ";
 	out << "\n";
 
 	for (auto& n : node->children())
 		printNode(out, n, depth + 1);
 
+	return out;
+}
+
+static
+void
+dotPrint(const std::string& filename, 
+		const aiScene* aiscene)
+{
+	std::set<std::string>	boneNames;
+	std::set<std::string>	animatedNames;
+
+	std::ofstream file (filename);
+	if (file.is_open())
+	{
+		file << "digraph aiscene {\n";
+		file << "node [style=filled];\n";
+		dotPrint(file, aiscene, aiscene->mRootNode, "root");
+		file << "}\n";
+		file.close();
+	}
+}
+
+inline
+static
+std::string
+getDotLabel(const aiNode* ainode)
+{
+	if (ainode)
+	{
+		const std::string nodeName(ainode->mName.data);
+
+		return nodeName == "unnamed" || nodeName.find("AutoName$") != std::string::npos
+			? "\"\"" 
+			: "\"" + nodeName + "\"";
+	}
+	else
+		return "\"\"";
+}
+
+inline
+static 
+std::string
+getDotStyle(const aiScene* aiscene, const aiNode* ainode)
+{
+	static const std::string whiteColor = "\"white\"";
+	static const std::string blackColor = "\"black\"";
+	static const std::string meshColor = "\"#ffe680\"";
+	static const std::string skinColor = "\"#5fd35f\"";
+	static const std::string animColor = "\"#ff2a2a\"";
+
+	static std::set<std::string>* boneNames = nullptr;
+	if (boneNames == nullptr)
+	{
+		boneNames = new std::set<std::string>();
+		for (unsigned int m = 0; m < aiscene->mNumMeshes; ++m)
+			for (unsigned int b = 0; b < aiscene->mMeshes[m]->mNumBones; ++b)
+			{
+				boneNames->insert(std::string(aiscene->mMeshes[m]->mBones[b]->mName.data));
+				std::cout << aiscene->mMeshes[m]->mBones[b]->mName.data << " is a bone" << std::endl;
+			}
+	}
+
+	static std::set<std::string>* animatedNames = nullptr;
+	if (animatedNames == nullptr)
+	{
+		animatedNames = new std::set<std::string>();
+		for (unsigned int a = 0; a < aiscene->mNumAnimations; ++a)
+			for (unsigned int n = 0; n < aiscene->mAnimations[a]->mNumChannels; ++n)
+				animatedNames->insert(std::string(aiscene->mAnimations[a]->mChannels[n]->mNodeName.data));
+	}
+
+	const bool	isAnimated	= animatedNames->count(std::string(ainode->mName.data)) > 0;
+	const bool	isBone		= boneNames->count(std::string(ainode->mName.data)) > 0;
+	const bool	hasMesh		= ainode->mNumMeshes > 0;
+	bool		isSkinned	= false;
+	for (unsigned int m = 0; m < ainode->mNumMeshes; ++m)
+		isSkinned = isSkinned || aiscene->mMeshes[ainode->mMeshes[m]]->mNumBones > 0;
+
+	const std::string& fillColor	= hasMesh ? meshColor : (isBone ? skinColor : whiteColor);
+	const std::string& color		= isAnimated ? animColor : (isSkinned ? skinColor : blackColor);
+	const std::string& fontColor	= isAnimated ? animColor : blackColor;
+
+	return "style=filled, fillcolor=" + fillColor + ", color=" + color + ", fontcolor=" + fontColor;
+}
+
+static
+std::ostream&
+dotPrint(std::ostream&		out, 
+		 const aiScene*		aiscene, 
+		 const aiNode*		ainode,
+		 const std::string&	nodeName)
+{
+
+	if (aiscene == nullptr || ainode == nullptr)
+		return out;
+	for (uint i = 0; i < ainode->mNumChildren; ++i)
+	{
+		const std::string& childName = nodeName + "_" + std::to_string(i);
+
+		out << "{" 
+			<< nodeName 
+			<< " [label=" << getDotLabel(ainode)
+			<< ", " << getDotStyle(aiscene, ainode) << "]} -> {" 
+			<< childName 
+			<< " [label=" << getDotLabel(ainode->mChildren[i])
+			<< ", " << getDotStyle(aiscene, ainode->mChildren[i]) << "]}" 
+			<< std::endl;
+
+		dotPrint(out, aiscene, ainode->mChildren[i], childName);
+	}
 	return out;
 }
