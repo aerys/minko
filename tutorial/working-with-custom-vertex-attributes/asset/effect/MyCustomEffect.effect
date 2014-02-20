@@ -1,8 +1,8 @@
 {
   "name" : "MyCustomEffect",
   "attributeBindings" : {
-    "aPosition" : "geometry[${geometryId}].vertex.attribute.position",
-    "aPositionOffset" : "geometry[${geometryId}].vertex.attribute.positionOffset"
+    "aPosition" : "geometry[${geometryId}].position",
+    "aPositionOffset" : "geometry[${geometryId}].positionOffset"
   },
   "uniformBindings" : {
     "uModelToWorldMatrix" : "transform.modelToWorldMatrix",
