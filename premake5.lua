@@ -81,6 +81,7 @@ solution "minko"
 		include 'tutorial/moving-objects-with-the-keyboard'
 		include 'tutorial/load-scenes'
 		include 'tutorial/loading-scene-files'
+		include 'tutorial/my-first-script'
 
 		include 'tutorial/authoring-uber-shaders'
 		include 'tutorial/binding-the-camera'

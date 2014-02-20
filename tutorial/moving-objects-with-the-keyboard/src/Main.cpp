@@ -30,7 +30,7 @@ const uint WINDOW_HEIGHT = 600;
 int
 main(int argc, char** argv)
 {
-    auto canvas = Canvas::create("Tutorial - Moving objects with the keyboard", WINDOW_WIDTH, WINDOW_HEIGHT);
+    auto canvas = Canvas::create("Minko Tutorial - Moving objects with the keyboard", WINDOW_WIDTH, WINDOW_HEIGHT);
     auto sceneManager = component::SceneManager::create(canvas->context());
 
     sceneManager->assets()->queue("effect/Basic.effect");

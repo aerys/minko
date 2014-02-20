@@ -19,6 +19,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Minko.hpp"
 #include "minko/MinkoSDL.hpp"
+#include "minko/MinkoLua.hpp"
 
 using namespace minko;
 using namespace minko::math;
@@ -30,42 +31,38 @@ const uint WINDOW_HEIGHT = 600;
 int
 main(int argc, char** argv)
 {
-    auto canvas = Canvas::create("Tutorial - Hello cube!", WINDOW_WIDTH, WINDOW_HEIGHT);
+    auto canvas = Canvas::create("Minko Tutorial - My first script", WINDOW_WIDTH, WINDOW_HEIGHT);
     auto sceneManager = component::SceneManager::create(canvas->context());
+    auto root = scene::Node::create("root")->addComponent(sceneManager);
 
-    sceneManager->assets()->queue("effect/Basic.effect");
+    // initialization of Lua context
+    LuaContext::initialize(argc, argv, root, canvas);
+
+    // add a LuaScriptManager to the root node
+    root->addComponent(LuaScriptManager::create());
+
+    sceneManager->assets()->registerParser<file::LuaScriptParser>("lua");
+    sceneManager->assets()->queue("script/my_script.lua");
+
     auto complete = sceneManager->assets()->complete()->connect([&](file::AssetLibrary::Ptr assets)
     {
-        auto root = scene::Node::create("root")
-            ->addComponent(sceneManager);
+        root->addComponent(assets->script("script/my_script.lua"));
 
-        auto camera = scene::Node::create("camera")
-            ->addComponent(Renderer::create(0x7f7f7fff))
-            ->addComponent(PerspectiveCamera::create(
-            (float) WINDOW_WIDTH / (float) WINDOW_HEIGHT, (float) PI * 0.25f, .1f, 1000.f)
-            );
-        root->addChild(camera);
-
-        auto cube = scene::Node::create("cube")
-            ->addComponent(Transform::create(Matrix4x4::create()->translation(0.f, 0.f, -5.f)))
-            ->addComponent(Surface::create(
-            geometry::CubeGeometry::create(assets->context()),
-            material::BasicMaterial::create()->diffuseColor(Vector4::create(0.f, 0.f, 1.f, 1.f)),
-            assets->effect("effect/Basic.effect")
-            ));
-        root->addChild(cube);
-
-        auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint t, uint dt)
+        auto numFrames = 0;
+        auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr c, uint t, uint dt)
         {
-            cube->component<Transform>()->matrix()->prependRotationY(.01f);
+            ++numFrames;
+            if (numFrames == 5)
+                root->removeComponent(sceneManager->assets()->script("script/my_script.lua"));
+
             sceneManager->nextFrame();
         });
 
         canvas->run();
     });
 
+    // actually begin loading operations
     sceneManager->assets()->load();
 
     return 0;
 }
-
