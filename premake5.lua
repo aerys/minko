@@ -82,6 +82,7 @@ solution "minko"
 		include 'tutorial/load-scenes'
 		include 'tutorial/loading-scene-files'
 		include 'tutorial/my-first-script'
+		include 'tutorial/scripting-mouse-inputs'
 
 		include 'tutorial/authoring-uber-shaders'
 		include 'tutorial/binding-the-camera'
