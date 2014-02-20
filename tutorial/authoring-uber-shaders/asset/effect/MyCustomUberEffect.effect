@@ -1,12 +1,12 @@
 {
   "name" : "MyCustomUberEffect",
   "attributeBindings" : {
-    "aPosition" : "geometry.vertex.attribute.position",
-    "aUv" : "geometry.vertex.attribute.uv"
+    "aPosition" : "geometry[${geometryId}].position"
+    "aUv" : "geometry[${geometryId}].uv"
   },
   "uniformBindings" : {
-    "uDiffuseColor" : "material.diffuseColor",
-    "uDiffuseMap" : "material.diffuseMap",
+    "uDiffuseColor" : "material[${materialId}].diffuseColor",
+    "uDiffuseMap" : "material[${materialId}].diffuseMap",
     "uModelToWorldMatrix" : "transform.modelToWorldMatrix",
     "uWorldToScreenMatrix" : { "property" : "camera.worldToScreenMatrix", "source" : "renderer" }
   },
