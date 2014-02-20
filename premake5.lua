@@ -83,7 +83,8 @@ solution "minko"
 		include 'tutorial/loading-scene-files'
 		include 'tutorial/my-first-script'
 		include 'tutorial/scripting-mouse-inputs'
-
+		include 'tutorial/hello-falling-cube'
+		
 		include 'tutorial/authoring-uber-shaders'
 		include 'tutorial/binding-the-camera'
 		include 'tutorial/binding-the-model-to-world-transform'
