@@ -76,7 +76,7 @@ solution "minko"
 	if not _OPTIONS['no-tutorial'] then
 		include 'tutorial/hello-cube'
 		include 'tutorial/handle-canvas-resizing'
-		include 'tutorial/camera-rotating-around-an-object-with-the-mouse'
+		include 'tutorial/rotating-the-camera-around-an-object-with-the-mouse'
 		include 'tutorial/moving-objects'
 		include 'tutorial/moving-objects-with-the-keyboard'
 		include 'tutorial/load-scenes'
