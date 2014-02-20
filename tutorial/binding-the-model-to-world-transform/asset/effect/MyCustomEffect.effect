@@ -1,10 +1,10 @@
 {
   "name" : "MyCustomEffect",
   "attributeBindings" : {
-    "aPosition" : "geometry.vertex.attribute.position"
+    "aPosition" : "geometry[${geometryId}].position"
   },
   "uniformBindings" : {
-    "uColor" : "material.color",
+    "uColor" : "material[${materialId}].color",
     "uModelToWorldMatrix" : "transform.modelToWorldMatrix"
   },
   "passes" : [{
