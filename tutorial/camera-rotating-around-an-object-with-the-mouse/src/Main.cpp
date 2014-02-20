@@ -30,10 +30,11 @@ const uint WINDOW_HEIGHT = 600;
 int
 main(int argc, char** argv)
 {
-    auto canvas = Canvas::create("Tutorial - Hello cube!", WINDOW_WIDTH, WINDOW_HEIGHT);
+    auto canvas = Canvas::create("Tutorial - Camera rotating around an object with the mouse", WINDOW_WIDTH, WINDOW_HEIGHT);
     auto sceneManager = component::SceneManager::create(canvas->context());
 
-    sceneManager->assets()->queue("effect/Basic.effect");
+    // We replace the basic effect by the Phong effect to have light effects
+    sceneManager->assets()->queue("effect/Phong.effect");
     auto complete = sceneManager->assets()->complete()->connect([&](file::AssetLibrary::Ptr assets)
     {
         auto root = scene::Node::create("root")
@@ -41,23 +42,51 @@ main(int argc, char** argv)
 
         auto camera = scene::Node::create("camera")
             ->addComponent(Renderer::create(0x7f7f7fff))
+            ->addComponent(Transform::create(
+            Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0., 0., -5.f))
+            ))
             ->addComponent(PerspectiveCamera::create(
             (float) WINDOW_WIDTH / (float) WINDOW_HEIGHT, (float) PI * 0.25f, .1f, 1000.f)
             );
         root->addChild(camera);
 
-        auto cube = scene::Node::create("cube")
-            ->addComponent(Transform::create(Matrix4x4::create()->translation(0.f, 0.f, -5.f)))
+        // Add a simple directional light to really see the camera rotation
+        auto directionalLight = scene::Node::create("directionalLight")
+            ->addComponent(DirectionalLight::create())
+            ->addComponent(Transform::create(Matrix4x4::create()->lookAt(
+                Vector3::create(-0.33f, -0.33f, 0.33f), Vector3::create())));
+        root->addChild(directionalLight);
+
+        // Replace the cube by a sphere to inscrease light visibility
+        auto sphere = scene::Node::create("sphere")
             ->addComponent(Surface::create(
-            geometry::CubeGeometry::create(assets->context()),
+            geometry::SphereGeometry::create(assets->context()),
             material::BasicMaterial::create()->diffuseColor(Vector4::create(0.f, 0.f, 1.f, 1.f)),
-            assets->effect("effect/Basic.effect")
+            assets->effect("effect/Phong.effect")
             ));
-        root->addChild(cube);
+        root->addChild(sphere);
+
+        Signal<input::Mouse::Ptr, int, int>::Slot mouseMove;
+        float cameraRotationSpeed = 0.f;
+
+        auto mouseDown = canvas->mouse()->leftButtonDown()->connect([&](input::Mouse::Ptr mouse)
+        {
+            mouseMove = canvas->mouse()->move()->connect([&](input::Mouse::Ptr mouse, int dx, int dy)
+            {
+                cameraRotationSpeed = (float) -dx * .01f;
+            });
+        });
+
+        auto mouseUp = canvas->mouse()->leftButtonUp()->connect([&](input::Mouse::Ptr mouse)
+        {
+            mouseMove = nullptr;
+        });
 
         auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint t, uint dt)
         {
-            cube->component<Transform>()->matrix()->prependRotationY(.01f);
+            camera->component<Transform>()->matrix()->appendRotationY(cameraRotationSpeed);
+            cameraRotationSpeed *= .99f;
+
             sceneManager->nextFrame();
         });
 
@@ -68,4 +97,3 @@ main(int argc, char** argv)
 
     return 0;
 }
-

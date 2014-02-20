@@ -58,8 +58,8 @@ main(int argc, char** argv)
         // If the cube already has a transform component
         if (cube->hasComponent<Transform>())
         {
-            // We translate the cube to the right
-            cube->component<Transform>()->matrix()->appendTranslation(1.f, 0.f, 0.f);
+            // We translate the cube to the left
+            cube->component<Transform>()->matrix()->appendTranslation(-1.f, 0.f, 0.f);
         }
         else
         {
