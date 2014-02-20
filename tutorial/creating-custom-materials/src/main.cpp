@@ -34,7 +34,7 @@ main(int argc, char** argv)
 	auto canvas = Canvas::create("Hello cube!", WINDOW_WIDTH, WINDOW_HEIGHT);
 	auto sceneManager = component::SceneManager::create(canvas->context());
 
-	sceneManager->assets()->queue("effect/Basic.effect");
+	sceneManager->assets()->queue("effect/MyCustomEffect.effect");
 	auto complete = sceneManager->assets()->complete()->connect([&](file::AssetLibrary::Ptr assets)
 	{
 		auto root = scene::Node::create("root")
@@ -56,7 +56,7 @@ main(int argc, char** argv)
 
 		myCustomEffect->setUniform("uModelToWorldMatrix", modelToWorldMatrix);
 		myCustomEffect->setUniform("uViewMatrix", Matrix4x4::create());
-		myCustomEffect->setUniform("uProjectionMatrix", Matrix4x4::create()->perspective((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, (float)PI * 0.25f, .1f, 1000.f));
+		myCustomEffect->setUniform("uProjectionMatrix", Matrix4x4::create()->perspective((float)PI * 0.25f, (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, .1f, 1000.f));
 
 		auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, uint deltaTime)
 		{
