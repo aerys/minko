@@ -20,6 +20,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Minko.hpp"
 #include "minko/MinkoSDL.hpp"
 
+#include "MyCustomMaterial.hpp"
+
 using namespace minko;
 using namespace minko::math;
 using namespace minko::component;
