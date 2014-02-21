@@ -18,7 +18,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "minko/Minko.hpp"
-#include "minko/MinkoPNG.hpp"
+#include "minko/MinkoJPEG.hpp"
 #include "minko/MinkoSDL.hpp"
 
 using namespace minko;
@@ -31,11 +31,11 @@ int main(int argc, char** argv)
 
 	auto sceneManager = SceneManager::create(canvas->context());
 
-	// add the png parser to load textures
+	// add the jpeg parser to load textures
 	// add the Phong effect
 	sceneManager->assets()
-		->registerParser<file::PNGParser>("png")
-		->queue("texture/diffuseMap.png")
+		->registerParser<file::JPEGParser>("jpg")
+		->queue("texture/diffuseMap.jpg")
 		->queue("effect/Phong.effect");
 
 	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
@@ -45,8 +45,7 @@ int main(int argc, char** argv)
 
 		auto phongMaterial = material::PhongMaterial::create();
 
-		phongMaterial->diffuseColor(0xFFFFFFFF);
-		//phongMaterial->diffuseMap(assets->texture("texture/diffuseMap.png"));
+		phongMaterial->diffuseMap(assets->texture("texture/diffuseMap.jpg"));
 		phongMaterial->shininess(2.f);
 		phongMaterial->specularColor(math::Vector4::create(0.4f, 0.8f, 1.f, 1.f));
 
@@ -62,24 +61,13 @@ int main(int argc, char** argv)
 			->addComponent(Renderer::create())
 			->addComponent(PerspectiveCamera::create((float)800 / (float)600))
 			->addComponent(Transform::create(
-			Matrix4x4::create()->lookAt(Vector3::create(0.f, 2.f), Vector3::create(10.f, 10.f, 10.f))
+			Matrix4x4::create()->lookAt(Vector3::create(0.f, 0.f, 0.f), Vector3::create(3.f, 3.f, 3.f))
 			));
 
-		//auto camera = scene::Node::create("camera")
-		//	->addComponent(Renderer::create(0x00000000))
-		//	->addComponent(Transform::create(Matrix4x4::create()->lookAt(Vector3::create(), Vector3::create(0.0f, 1.f, 1.3f))
-		//	))
-		//	->addComponent(PerspectiveCamera::create(800.f / 600.f, (float)PI * 0.25f, .1f, 1000.f));
-
-		auto pointLight = scene::Node::create("pointLight")
-			->addComponent(PointLight::create(10.0f));
-		pointLight->component<PointLight>()->color(0xFFFFFFFF);
-		pointLight->component<PointLight>()->diffuse(0.1f);
-		root->addChild(pointLight);
-
 		auto spotLight = scene::Node::create("SpotLight")
-			->addComponent(SpotLight::create(0.6f, 0.78f, 20.f)->color(0xFFFFFFFF))
+			->addComponent(SpotLight::create(0.6f, 0.78f, 20.f))
 			->addComponent(Transform::create(Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(3.f, 5.f, 1.5f))));
+		spotLight->component<SpotLight>()->diffuse(0.5f);
 
 		root->addChild(camera);
 		root->addChild(mesh);
