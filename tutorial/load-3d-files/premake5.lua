@@ -17,4 +17,3 @@ minko.project.application("minko-tutorial-" .. PROJECT_NAME)
 	minko.plugin.enable("sdl")
 	minko.plugin.enable("assimp")
 	minko.plugin.enable("jpeg")
-	
