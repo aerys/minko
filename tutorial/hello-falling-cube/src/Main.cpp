@@ -18,46 +18,63 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "minko/Minko.hpp"
+#include "minko/MinkoPNG.hpp"
 #include "minko/MinkoSDL.hpp"
+// STEP 0
+#include "minko/MinkoBullet.hpp"
 
 using namespace minko;
-using namespace minko::math;
+using namespace minko::scene;
 using namespace minko::component;
+using namespace minko::math;
 
 const uint WINDOW_WIDTH = 800;
 const uint WINDOW_HEIGHT = 600;
+const std::string TEXTURE_FILENAME = "texture/box.png";
 
-int
-main(int argc, char** argv)
+int main(int argc, char** argv)
 {
-    auto canvas = Canvas::create("Minko Tutorial - Hello cube!", WINDOW_WIDTH, WINDOW_HEIGHT);
-    auto sceneManager = component::SceneManager::create(canvas->context());
+    auto canvas = Canvas::create("Minko Tutorial - Hello falling cube!", WINDOW_WIDTH, WINDOW_HEIGHT);
+    auto sceneManager = SceneManager::create(canvas->context());
 
-    sceneManager->assets()->queue("effect/Basic.effect");
+    sceneManager->assets()
+        ->registerParser<file::PNGParser>("png")
+        ->queue(TEXTURE_FILENAME)
+        ->queue("effect/Basic.effect");
+
     auto complete = sceneManager->assets()->complete()->connect([&](file::AssetLibrary::Ptr assets)
     {
-        auto root = scene::Node::create("root")
-            ->addComponent(sceneManager);
-
         auto camera = scene::Node::create("camera")
             ->addComponent(Renderer::create(0x7f7f7fff))
-            ->addComponent(PerspectiveCamera::create(
-            (float) WINDOW_WIDTH / (float) WINDOW_HEIGHT, (float) PI * 0.25f, .1f, 1000.f)
-            );
-        root->addChild(camera);
+            ->addComponent(Transform::create(
+            Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.5f, 2.0f, 2.0f))
+            ))
+            ->addComponent(PerspectiveCamera::create(WINDOW_WIDTH / WINDOW_HEIGHT, (float) PI * 0.25f, .1f, 1000.f));
 
-        auto cube = scene::Node::create("cube")
-            ->addComponent(Transform::create(Matrix4x4::create()->translation(0.f, 0.f, -5.f)))
+        // STEP 1: create and add your physics world to the scene
+        auto root = scene::Node::create("root")
+            ->addComponent(sceneManager)
+            ->addComponent(bullet::PhysicsWorld::create());
+
+        // STEP 2: create a box-shaped rigid body
+        auto boxColliderData = bullet::ColliderData::create(
+            5.0f, // strictly positive mass
+            bullet::BoxShape::create(0.5f, 0.5f, 0.5f) // shape strictly matches the CubeGeometry
+            );
+        auto boxNode = scene::Node::create("boxNode")
+            ->addComponent(bullet::Collider::create(boxColliderData))
             ->addComponent(Surface::create(
             geometry::CubeGeometry::create(assets->context()),
-            material::BasicMaterial::create()->diffuseColor(Vector4::create(0.f, 0.f, 1.f, 1.f)),
+            material::BasicMaterial::create()->diffuseMap(assets->texture(TEXTURE_FILENAME)),
             assets->effect("effect/Basic.effect")
             ));
-        root->addChild(cube);
 
-        auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint t, uint dt)
+        root->addChild(camera);
+        // STEP 3: trigger the simulation by adding the physics object to the scene
+        root->addChild(boxNode);
+
+        auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, uint deltaTime)
         {
-            cube->component<Transform>()->matrix()->prependRotationY(.01f);
             sceneManager->nextFrame();
         });
 

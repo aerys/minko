@@ -60,7 +60,7 @@ main(int argc, char** argv)
         auto camera = scene::Node::create("camera")
             ->addComponent(Renderer::create(0x7f7f7fff))
             ->addComponent(Transform::create(
-            Matrix4x4::create()->lookAt(Vector3::create(0.f, 0.f, 0.f), Vector3::create(0.f, 0.f, -5.f))
+            Matrix4x4::create()->lookAt(Vector3::create(0.f, 0.f, 0.f), Vector3::create(0.f, 0.f, 5.f))
             ))
             ->addComponent(PerspectiveCamera::create(
             (float) WINDOW_WIDTH / (float) WINDOW_HEIGHT, (float) PI * 0.25f, .1f, 1000.f)
@@ -79,8 +79,27 @@ main(int argc, char** argv)
         root->addChild(objModel);
         root->addChild(daeModel);
 
-        auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, uint deltaTime)
+        Signal<input::Mouse::Ptr, int, int>::Slot mouseMove;
+        float cameraRotationSpeed = 0.f;
+
+        auto mouseDown = canvas->mouse()->leftButtonDown()->connect([&](input::Mouse::Ptr mouse)
         {
+            mouseMove = canvas->mouse()->move()->connect([&](input::Mouse::Ptr mouse, int dx, int dy)
+            {
+                cameraRotationSpeed = (float) -dx * .01f;
+            });
+        });
+
+        auto mouseUp = canvas->mouse()->leftButtonUp()->connect([&](input::Mouse::Ptr mouse)
+        {
+            mouseMove = nullptr;
+        });
+
+        auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint t, uint dt)
+        {
+            camera->component<Transform>()->matrix()->appendRotationY(cameraRotationSpeed);
+            cameraRotationSpeed *= .99f;
+
             sceneManager->nextFrame();
         });
 
