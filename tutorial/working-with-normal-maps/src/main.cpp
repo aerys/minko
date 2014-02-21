@@ -35,8 +35,8 @@ int main(int argc, char** argv)
 	// add the Phong effect
 	sceneManager->assets()
 		->registerParser<file::JPEGParser>("jpg")
-		->queue("texture/stone_diffuse.jpg")
-		->queue("texture/stone_normal.jpg")
+		->queue("texture/diffuseMap.jpg")
+		->queue("texture/normalMap.jpg")
 		->queue("effect/Phong.effect");
 
 	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
@@ -46,8 +46,8 @@ int main(int argc, char** argv)
 
 		auto phongMaterial = material::PhongMaterial::create();
 
-		phongMaterial->diffuseMap(assets->texture("texture/stone_diffuse.jpg"));
-		phongMaterial->normalMap(assets->texture("texture/stone_normal.jpg"));
+		phongMaterial->diffuseMap(assets->texture("texture/diffuseMap.jpg"));
+		phongMaterial->normalMap(assets->texture("texture/normalMap.jpg"));
 
 		auto mesh = scene::Node::create("mesh")
 			->addComponent(Transform::create(Matrix4x4::create()->prependScale(1.1)))
