@@ -31,21 +31,22 @@ namespace minko
 			public std::enable_shared_from_this<Options>
 		{
 		private:
-			typedef std::shared_ptr<AbstractLoader>								AbsLoaderPtr;
-			typedef std::shared_ptr<data::Provider>								ProviderPtr;
-			typedef std::shared_ptr<material::Material>							MaterialPtr;
-			typedef std::shared_ptr<geometry::Geometry>							GeomPtr;
-			typedef std::shared_ptr<scene::Node>								NodePtr;
-			typedef std::shared_ptr<render::Effect>								EffectPtr;
+			typedef std::shared_ptr<AbstractLoader>										AbsLoaderPtr;
+			typedef std::shared_ptr<data::Provider>										ProviderPtr;
+			typedef std::shared_ptr<material::Material>									MaterialPtr;
+			typedef std::shared_ptr<geometry::Geometry>									GeomPtr;
+			typedef std::shared_ptr<scene::Node>										NodePtr;
+			typedef std::shared_ptr<render::Effect>										EffectPtr;
+			typedef std::shared_ptr<AssetLibrary>										AssetLibraryPtr;
 
 		public:
-			typedef std::shared_ptr<Options>									Ptr;
-			typedef std::function<MaterialPtr(const std::string&, MaterialPtr)> MaterialFunction;
-			typedef std::function<GeomPtr(const std::string&, GeomPtr)> 		GeometryFunction;
-			typedef std::function<AbsLoaderPtr(const std::string&)>				LoaderFunction;
-			typedef std::function<const std::string(const std::string&)>		UriFunction;
-			typedef std::function<NodePtr(NodePtr)>								NodeFunction;
-			typedef std::function<EffectPtr(EffectPtr)>							EffectFunction;
+			typedef std::shared_ptr<Options>											Ptr;
+			typedef std::function<MaterialPtr(const std::string&, MaterialPtr)>			MaterialFunction;
+			typedef std::function<GeomPtr(const std::string&, GeomPtr)> 				GeometryFunction;
+			typedef std::function<AbsLoaderPtr(const std::string&, AssetLibraryPtr)>	LoaderFunction;
+			typedef std::function<const std::string(const std::string&)>				UriFunction;
+			typedef std::function<NodePtr(NodePtr)>										NodeFunction;
+			typedef std::function<EffectPtr(EffectPtr)>									EffectFunction;
 
 		private:
 			std::shared_ptr<render::AbstractContext>	_context;

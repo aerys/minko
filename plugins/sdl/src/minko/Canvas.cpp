@@ -51,7 +51,9 @@ Canvas::Canvas(const std::string& name, const uint width, const uint height, boo
 	_framerate(0.f),
 	_desiredFramerate(60.f),
 	_enterFrame(Signal<Canvas::Ptr, uint, uint>::create()),
-	_resized(Signal<AbstractCanvas::Ptr, uint, uint>::create())
+	_resized(Signal<AbstractCanvas::Ptr, uint, uint>::create()),
+	_joystickAdded(Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::create()),
+	_joystickRemoved(Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::create())
 {
 	_data->set<math::Vector4::Ptr>("canvas.viewport", Vector4::create(0.0f, 0.0f, (float)width, (float)height));
 }
@@ -69,6 +71,7 @@ Canvas::initializeInputs()
 	_mouse = Canvas::SDLMouse::create(shared_from_this());
 	_keyboard = Canvas::SDLKeyboard::create();
 
+#ifndef EMSCRIPTEN
 	for (int i = 0; i < SDL_NumJoysticks(); ++i)
 	{
 		SDL_Joystick* joystick = SDL_JoystickOpen(i);
@@ -76,8 +79,9 @@ Canvas::initializeInputs()
 		if (!joystick)
 			continue;
 		else
-			_joysticks.push_back(Canvas::SDLJoystick::create(shared_from_this()));
+			_joysticks[i] = Canvas::SDLJoystick::create(shared_from_this(), SDL_JoystickInstanceID(joystick), joystick);
 	}
+#endif
 }
 
 void
@@ -351,28 +355,60 @@ Canvas::step()
 			//_mouseWheel->execute(shared_from_this(), event.wheel.x, event.wheel.y);
 			break;
 
+#ifndef EMSCRIPTEN			
+		case SDL_JOYDEVICEADDED:
+		{
+			int				device		= event.cdevice.which;
+			auto			joystick	= SDL_JoystickOpen(device);
+			SDL_JoystickID  instance_id = SDL_JoystickInstanceID(joystick);
+
+			if (_joysticks.find(instance_id) == _joysticks.end())
+			{
+				auto sdlJoystick = Canvas::SDLJoystick::create(shared_from_this(), instance_id, joystick);
+				_joysticks[instance_id] = sdlJoystick;
+			}
+
+			_joystickAdded->execute(shared_from_this(), _joysticks[instance_id]);
+
+# if defined(DEBUG)
+			std::cout << "Is Gamecontroller : " << SDL_IsGameController(device) << std::endl;
+			std::cout << "Num joystick : " << SDL_NumJoysticks() << std::endl;
+			std::cout << "Name : " << SDL_JoystickName(joystick) << std::endl;
+			std::cout << "Num axes : " << SDL_JoystickNumAxes(joystick) << std::endl;
+			std::cout << "Num buttons : " << SDL_JoystickNumButtons(joystick) << std::endl;
+			std::cout << "Num balls : " << SDL_JoystickNumBalls(joystick) << std::endl;
+			std::cout << "Num hat : " << SDL_JoystickNumHats(joystick) << std::endl;
+			std::cout << "instance_id : " << instance_id << std::endl;
+# endif // DEBUG
+			break;
+		}
+		case SDL_JOYDEVICEREMOVED:
+		{
+			auto joystick = _joysticks[event.cdevice.which]->_joystick;
+
+			_joystickRemoved->execute(shared_from_this(), _joysticks[event.cdevice.which]);
+
+			SDL_JoystickClose(joystick);
+			_joysticks.erase(event.cdevice.which);
+
+			break;
+		}
 		case SDL_JOYAXISMOTION:
-#if !defined(EMSCRIPTEN)
 			_joysticks[event.jaxis.which]->joystickAxisMotion()->execute(
 				_joysticks[event.jaxis.which], event.jaxis.which, event.jaxis.axis, event.jaxis.value
 			);
-#endif
 			break;
 
 		case SDL_JOYBUTTONDOWN:
-#if !defined(EMSCRIPTEN)
 			_joysticks[event.jbutton.which]->joystickButtonDown()->execute(
 				_joysticks[event.jbutton.which], event.jbutton.which, event.jbutton.button
 			);
-#endif
 			break;
 
 		case SDL_JOYBUTTONUP:
-#if !defined(EMSCRIPTEN)
 			_joysticks[event.jbutton.which]->joystickButtonUp()->execute(
 				_joysticks[event.jbutton.which], event.jbutton.which, event.jbutton.button
 			);
-#endif
 			break;
 
 		case SDL_JOYHATMOTION:
@@ -380,6 +416,7 @@ Canvas::step()
 				_joysticks[event.jhat.which], event.jhat.which, event.jhat.hat, event.jhat.value
 			);
 			break;
+#endif // EMSCRIPTEN
 
 #ifdef EMSCRIPTEN
 		case SDL_VIDEORESIZE:

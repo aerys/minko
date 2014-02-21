@@ -161,7 +161,7 @@ ASSIMPParser::parse(const std::string&					filename,
     //Init the assimp scene
     Assimp::Importer importer;
 
-	importer.SetIOHandler(new IOHandler(options));
+	importer.SetIOHandler(new IOHandler(options, _assetLibrary));
 
 	const aiScene* scene = importer.ReadFileFromMemory(
 		&data[0],
@@ -582,7 +582,7 @@ ASSIMPParser::loadTexture(const std::string&	textureFilename,
 						  const std::string&	assetName,
 						  Options::Ptr			options)
 {
-	auto loader = _options->loaderFunction()(textureFilename);
+	auto loader = _options->loaderFunction()(textureFilename, _assetLibrary);
 
 	_loaderCompleteSlots[loader] = loader->complete()->connect([&](file::AbstractLoader::Ptr loader)
 	{

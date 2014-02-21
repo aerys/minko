@@ -1,8 +1,10 @@
-set target = %1
-set error = %errorlevel%
+@echo on
 
-echo "Post-build command failed for project %target%"
+set target=%1
+set error=%errorlevel%
 
-del %target%
+echo Post-build command failed for project "%target%"
+
+del %target:/=\%
 
 if %error% neq 0 exit /b %error%

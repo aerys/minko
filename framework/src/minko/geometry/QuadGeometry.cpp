@@ -25,18 +25,51 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::geometry;
 
+QuadGeometry::QuadGeometry(uint		numColumns,
+						   uint		numRows,
+						   float	width,
+						   float	height):
+	geometry::Geometry(),
+	_numColumns(numColumns),
+	_numRows(numRows),
+	_width(width * 2),
+	_height(height * 2)
+{
+}
+
 void
 QuadGeometry::initialize(std::shared_ptr<render::AbstractContext> context)
 {
-    float xyzData[]         = {
-    	-.5f, .5f, 0.f,		0.f, 0.f,	0.f, 0.f, 1.f,
-    	-.5f, -.5f, 0.f,	0.f, 1.f,	0.f, 0.f, 1.f,
-    	.5f, .5f, 0.f,		1.f, 0.f,	0.f, 0.f, 1.f,
-    	.5f, -.5f, 0.f,		1.f, 1.f,	0.f, 0.f, 1.f
-    };
-    unsigned short ind[]    = { 0, 1, 2, 2, 1, 3 };
-    auto vertexBuffer       = render::VertexBuffer::create(context, std::begin(xyzData), std::end(xyzData));
-    auto indexBuffer        = render::IndexBuffer::create(context, std::begin(ind), std::end(ind));
+	std::vector<float> vertexData;
+	std::vector<unsigned short> indicesData;
+
+	for (uint y = 0; y <= _numRows; ++y)
+	{
+		for (uint x = 0; x <= _numColumns; ++x)
+		{
+			vertexData.push_back((float(x) / float(_numColumns) - 0.5f) * _width);
+			vertexData.push_back((float(y) / float(_numRows) - 0.5f) * _height);
+			vertexData.push_back(0.f);
+			vertexData.push_back(float(x) / float(_numColumns));
+			vertexData.push_back(1.f - float(y) / float(_numRows));
+			vertexData.push_back(0.f);
+			vertexData.push_back(0.f);
+			vertexData.push_back(1.f);
+
+			if (y < _numRows && x < _numColumns)
+			{
+				indicesData.push_back(x + (_numColumns + 1) * y);
+				indicesData.push_back(x + 1 + y * (_numColumns + 1));
+				indicesData.push_back((y + 1) * (_numColumns + 1) + x);
+				indicesData.push_back(x + 1 + y * (_numColumns + 1));
+				indicesData.push_back((y + 1) * (_numColumns + 1) + x + 1);
+				indicesData.push_back((y + 1) * (_numColumns + 1) + x);
+			}
+		}
+	}
+
+	auto vertexBuffer	= render::VertexBuffer::create(context, vertexData);
+	auto indexBuffer	= render::IndexBuffer::create(context, indicesData);
 
     vertexBuffer->addAttribute("position", 3);
     vertexBuffer->addAttribute("uv", 2);

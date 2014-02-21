@@ -157,11 +157,7 @@ EffectParser::parse(const std::string&				    filename,
 	Json::Reader reader;
 
 	if (!reader.parse((const char*)&data[0], (const char*)&data[data.size() - 1], root, false))
-    {
-        std::cerr << resolvedFilename << ":" << reader.getFormattedErrorMessages() << std::endl;
-
-		throw std::invalid_argument("data");
-    }
+		throw file::ParserError(resolvedFilename + ": " +reader.getFormattedErrorMessages());
 
     int pos	= resolvedFilename.find_last_of("/\\");
 
@@ -320,7 +316,7 @@ EffectParser::parsePasses(const Json::Value&		root,
 	        );
 
             if (passIt == _globalPasses.end())
-                throw std::logic_error("Pass '" + name + "' does not exist.");
+                throw file::ParserError("Pass '" + name + "' does not exist.");
 
             auto pass = *passIt;
             auto passCopy = Pass::create(pass, true);
@@ -374,7 +370,7 @@ EffectParser::parsePasses(const Json::Value&		root,
             );
 
             if (!vertexShader)
-            	throw std::logic_error("Missing vertex shader for pass '" + name + "'");
+            	throw file::ParserError("Missing vertex shader for pass '" + name + "'");
 
             auto fragmentShaderValue = passValue.get("fragmentShader", 0);
             auto fragmentShader = parseShader(
@@ -382,7 +378,7 @@ EffectParser::parsePasses(const Json::Value&		root,
             );
 
             if (!fragmentShader)
-            	throw std::logic_error("Missing fragment shader for pass '" + name + "'");
+				throw file::ParserError("Missing fragment shader for pass '" + name + "'");
 
             auto pass = render::Pass::create(
                 name,
@@ -507,7 +503,7 @@ EffectParser::loadGLSLDependencies(GLSLBlockListPtr		blocks,
 
 		if (block.first == GLSLBlockType::FILE)
 		{
-			auto loader = options->loaderFunction()(block.second);
+			auto loader = options->loaderFunction()(block.second, _assetLibrary);
 
 			++_numDependencies;
 
@@ -567,7 +563,7 @@ EffectParser::dependencyErrorHandler(std::shared_ptr<AbstractLoader> loader)
 	for (auto& path : loader->options()->includePaths())
 		std::cerr << path << std::endl;
 
-	throw;
+	throw file::ParserError("Unable to load dependencies.");
 }
 
 void
@@ -918,7 +914,7 @@ EffectParser::loadTexture(const std::string&	textureFilename,
 						  UniformTypeAndValue&	uniformTypeAndValue,
 						  Options::Ptr			options)
 {
-	auto loader = _options->loaderFunction()(textureFilename);
+	auto loader = _options->loaderFunction()(textureFilename, _assetLibrary);
 
 	_numDependencies++;
 
