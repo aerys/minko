@@ -17,11 +17,13 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ]]--
 
--- http plugin
-minko.plugin.http = {}
+-- http loader plugin
+minko.plugin["http-loader"] = {}
 
-function minko.plugin.http:enable()
-	minko.plugin.links { "http" }
-	includedirs { minko.plugin.path("http") .. "/include" }
-	defines { "MINKO_PLUGIN_HTTP" }
+minko.plugin["http-loader"].enable = function (self)
+	minko.plugin.links { "http-loader" }
+	includedirs { minko.plugin.path("http-loader") .. "/include" }
+	defines { "MINKO_PLUGIN_HTTP_LOADER" }
+
+	minko.plugin.enable("http-worker")
 end

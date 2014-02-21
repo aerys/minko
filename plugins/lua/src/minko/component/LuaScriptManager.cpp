@@ -95,7 +95,7 @@ LuaScriptManager::loadStandardLibrary()
 
     for (auto& filename : filesToLoad)
     {
-        auto loader = createLoader(filename);
+		auto loader = createLoader(filename, assets);
 
         _dependencySlots.push_back(loader->complete()->connect(std::bind(
             &LuaScriptManager::dependencyLoadedHandler,

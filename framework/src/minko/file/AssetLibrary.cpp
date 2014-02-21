@@ -308,30 +308,6 @@ AssetLibrary::queue(const std::string&						filename,
 
 	if (loader)
 		_filenameToLoader[filename] = loader;
-	else
-	{
-		std::string protocol = "";
-
-		uint i;
-
-		for(i = 0; i < filename.length(); ++i)
-		{
-			if (i < filename.length() - 2 && filename.at(i) == ':' && filename.at(i + 1) == '/' && filename.at(i + 2) == '/')
-				break;
-			
-			protocol += filename.at(i);
-		}
-
-		if (i != filename.length())
-		{
-			loader = this->getLoader(protocol);
-
-			if (loader)
-				_filenameToLoader[filename] = loader;
-			else
-				throw std::runtime_error("unsupported protocol: " + protocol);
-		}
-	}
 
 	return shared_from_this();
 }
@@ -356,7 +332,7 @@ AssetLibrary::load(bool	executeCompleteSignal)
 				: _filenameToOptions[filename] = _defaultOptions;
 			auto loader = _filenameToLoader.count(filename)
 				? _filenameToLoader[filename]
-				: _filenameToLoader[filename] = options->loaderFunction()(filename);
+				: _filenameToLoader[filename] = options->loaderFunction()(filename, shared_from_this());
 
 			_filesQueue.erase(std::find(_filesQueue.begin(), _filesQueue.end(), filename));
 			_loading.push_back(filename);

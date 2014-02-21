@@ -69,6 +69,14 @@ namespace minko
 		resized() = 0;
 
 		virtual
+		Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::Ptr
+		joystickAdded() = 0;
+
+		virtual
+		Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::Ptr
+		joystickRemoved() = 0;
+
+		virtual
 		std::shared_ptr<async::Worker>
 		getWorker(const std::string& name) = 0;
 

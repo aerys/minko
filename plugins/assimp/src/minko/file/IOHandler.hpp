@@ -35,11 +35,13 @@ namespace minko
 			public Assimp::IOSystem
 		{
 		private:
-			std::shared_ptr<file::Options>	_options;
+			std::shared_ptr<file::Options>		_options;
+			std::shared_ptr<file::AssetLibrary>	_assets;
 
 		public:
-			IOHandler(std::shared_ptr<file::Options> options) :
-				_options(options)
+			IOHandler(std::shared_ptr<file::Options> options, std::shared_ptr<file::AssetLibrary> assets) :
+				_options(options),
+				_assets(assets)
 			{
 
 			}
@@ -72,7 +74,7 @@ namespace minko
 			Open(const char* pFile, const char* pMode = "rb")
 			{
 				auto filename = std::string(pFile);
-				auto loader = _options->loaderFunction()(filename);
+				auto loader = _options->loaderFunction()(filename, _assets);
 				
 				Assimp::IOStream* stream = 0;
 
