@@ -60,6 +60,16 @@ using namespace minko::file;
 using namespace minko::scene;
 using namespace minko::geometry;
 
+#ifdef DEBUG_ASSIMP_DOT
+static
+void
+dotPrint(const std::string&, const aiScene*);
+
+static
+void
+dotPrint(const std::string&, Node::Ptr);
+#endif // DEBUG_ASSIMP_DOT
+
 /*static*/ const ASSIMPParser::TextureTypeToName	ASSIMPParser::_textureTypeToName	= ASSIMPParser::initializeTextureTypeToName();
 /*static*/ const std::string						ASSIMPParser::PNAME_TRANSFORM		= "transform.matrix";
 
@@ -77,26 +87,6 @@ ASSIMPParser::initializeTextureTypeToName()
 
 	return typeToString;
 }
-
-inline
-static
-std::ostream&
-printScene(std::ostream&, Node::Ptr scene, const aiScene* aiscene);
-
-inline
-static
-std::ostream&
-printNode(std::ostream&, Node::Ptr node, uint depth);
-
-inline
-static
-std::ostream&
-dotPrint(std::ostream&, const aiScene*, const aiNode*, const std::string&);
-
-inline
-static
-void
-dotPrint(const std::string&, const aiScene*);
 
 ASSIMPParser::ASSIMPParser() :
 	_numDependencies(0),
@@ -189,21 +179,29 @@ ASSIMPParser::parse(const std::string&					filename,
 	createSceneTree(_symbol, scene, scene->mRootNode, assetLibrary);
 	_symbol = _options->nodeFunction()(_symbol);
 
-	dotPrint("aiscene.dot", scene);
-
-	printNode(std::cout, _symbol, 0) << std::endl;
+#ifdef DEBUG_ASSIMP
+	printNode(std::cout << "\n", _symbol, 0) << std::endl;
+#endif // DEBUG_ASSIMP
 
 	createLights(scene);
 	createCameras(scene);
 	createSkins(scene); // must come before createAnimations
 	//createAnimations(scene);
 
+#ifdef DEBUG_ASSIMP
 	printNode(std::cout << "\n", _symbol, 0) << std::endl;
+#endif // DEBUG_ASSIMP
+
+#ifdef DEBUG_ASSIMP_DOT
+	dotPrint("aiscene.dot", scene);
+	dotPrint("minkoscene.dot", _symbol);
+#endif // DEBUG_ASSIMP_DOT
 
 	if (_numDependencies == _numLoadedDependencies)
 		finalize();
 
 	disposeNodeMaps();
+
 }
 
 void
@@ -212,6 +210,8 @@ ASSIMPParser::createSceneTree(scene::Node::Ptr 				minkoNode,
 							  aiNode* 						ainode,
 							  std::shared_ptr<AssetLibrary> assets)
 {
+	minkoNode->addComponent(getTransformFromAssimp(ainode));
+
 	// create surfaces for each node mesh
 	for (uint j = 0; j < ainode->mNumMeshes; j++)
 	{
@@ -237,7 +237,7 @@ ASSIMPParser::createSceneTree(scene::Node::Ptr 				minkoNode,
 		if (!childName.empty())
 			_nameToNode[childName] = childNode;
 
-        childNode->addComponent(getTransformFromAssimp(aichild));
+        //childNode->addComponent(getTransformFromAssimp(aichild));
 
         //Recursive call
 		createSceneTree(childNode, scene, aichild, assets);
@@ -366,7 +366,6 @@ ASSIMPParser::createMeshSurface(scene::Node::Ptr 	minkoNode,
 				"default"
 			)
 		);
-		std::cout << "surface created for " << minkoNode->name() << std::endl;
 	}
 #ifdef DEBUG
 	else
@@ -635,7 +634,9 @@ ASSIMPParser::loadTexture(const std::string&	textureFilename,
 		else
 		{
 			++_numLoadedDependencies;
+#ifdef DEBUG
 			std::cerr << "unable to find texture with filename '" << loader->filename() << "'" << std::endl;
+#endif // DEBUG
 		}
 	});
 
@@ -724,12 +725,6 @@ ASSIMPParser::createSkin(const aiMesh* aimesh)
 	if (aimesh == nullptr || aimesh->mNumBones == 0)
 		return;
 
-#ifdef DEBUG
-	for (uint i = 0; i < aimesh->mNumBones; ++i)
-		std::cout << "mesh(" << aimesh->mName.data << ").bone is " << aimesh->mBones[i]->mName.data << std::endl;
-	std::cout << std::endl;
-#endif // DEBUG
-
 	const auto	meshName	= std::string(aimesh->mName.data);
 	if (_aiMeshToNode.count(aimesh) == 0)
 		return;
@@ -742,7 +737,10 @@ ASSIMPParser::createSkin(const aiMesh* aimesh)
 	const uint	numFrames	= getSkinNumFrames(aimesh);
 	if (numFrames == 0)
 	{
+#ifdef DEBUG
 		std::cerr << "Failed to flatten skinning information. Most likely involved nodes do not share a common animation." << std::endl;
+#endif // DEBUG
+
 		return;
 	}
 	const uint	duration		= uint(floorf(1e+3f * numFrames / (float)_options->skinningFramerate())); // in milliseconds
@@ -1037,11 +1035,8 @@ ASSIMPParser::sampleAnimation(const aiAnimation* animation)
 		{
 			_nameToAnimMatrices[nodeName] = std::vector<Matrix4x4::Ptr>();
 			sample(nodeAnimation, sampleTimes, _nameToAnimMatrices[nodeName]);
-
-			std::cout << "node '" << nodeName << "' is animated" << std::endl;
 		}
 	}
-	std::cout << std::endl;
 }
 
 /*static*/
@@ -1531,8 +1526,6 @@ ASSIMPParser::createAnimations(const aiScene* scene, bool interpolate)
 			if (node == nullptr || _alreadyAnimatedNodes.count(node) > 0)
 				continue;
 
-			std::cout << "\tnode name = " << node->name() << std::endl;
-
 			const uint	numKeys	= channel->mNumPositionKeys;
 			// currently assume all keys are synchronized
 			assert(channel->mNumRotationKeys == numKeys && 
@@ -1614,112 +1607,4 @@ printNode(std::ostream& out, Node::Ptr node, uint depth)
 	return out;
 }
 
-static
-void
-dotPrint(const std::string& filename, 
-		const aiScene* aiscene)
-{
-	std::set<std::string>	boneNames;
-	std::set<std::string>	animatedNames;
-
-	std::ofstream file (filename);
-	if (file.is_open())
-	{
-		file << "digraph aiscene {\n";
-		file << "node [style=filled];\n";
-		dotPrint(file, aiscene, aiscene->mRootNode, "root");
-		file << "}\n";
-		file.close();
-	}
-}
-
-inline
-static
-std::string
-getDotLabel(const aiNode* ainode)
-{
-	if (ainode)
-	{
-		const std::string nodeName(ainode->mName.data);
-
-		return nodeName == "unnamed" || nodeName.find("AutoName$") != std::string::npos
-			? "\"\"" 
-			: "\"" + nodeName + "\"";
-	}
-	else
-		return "\"\"";
-}
-
-inline
-static 
-std::string
-getDotStyle(const aiScene* aiscene, const aiNode* ainode)
-{
-	static const std::string whiteColor = "\"white\"";
-	static const std::string blackColor = "\"black\"";
-	static const std::string meshColor = "\"#ffe680\"";
-	static const std::string skinColor = "\"#5fd35f\"";
-	static const std::string animColor = "\"#ff2a2a\"";
-
-	static std::set<std::string>* boneNames = nullptr;
-	if (boneNames == nullptr)
-	{
-		boneNames = new std::set<std::string>();
-		for (unsigned int m = 0; m < aiscene->mNumMeshes; ++m)
-			for (unsigned int b = 0; b < aiscene->mMeshes[m]->mNumBones; ++b)
-			{
-				boneNames->insert(std::string(aiscene->mMeshes[m]->mBones[b]->mName.data));
-				std::cout << aiscene->mMeshes[m]->mBones[b]->mName.data << " is a bone" << std::endl;
-			}
-	}
-
-	static std::set<std::string>* animatedNames = nullptr;
-	if (animatedNames == nullptr)
-	{
-		animatedNames = new std::set<std::string>();
-		for (unsigned int a = 0; a < aiscene->mNumAnimations; ++a)
-			for (unsigned int n = 0; n < aiscene->mAnimations[a]->mNumChannels; ++n)
-				animatedNames->insert(std::string(aiscene->mAnimations[a]->mChannels[n]->mNodeName.data));
-	}
-
-	const bool	isAnimated	= animatedNames->count(std::string(ainode->mName.data)) > 0;
-	const bool	isBone		= boneNames->count(std::string(ainode->mName.data)) > 0;
-	const bool	hasMesh		= ainode->mNumMeshes > 0;
-	bool		isSkinned	= false;
-	for (unsigned int m = 0; m < ainode->mNumMeshes; ++m)
-		isSkinned = isSkinned || aiscene->mMeshes[ainode->mMeshes[m]]->mNumBones > 0;
-
-	const std::string& fillColor	= hasMesh ? meshColor : (isBone ? skinColor : whiteColor);
-	const std::string& color		= isAnimated ? animColor : (isSkinned ? skinColor : blackColor);
-	const std::string& fontColor	= isAnimated ? animColor : blackColor;
-
-	return "style=filled, fillcolor=" + fillColor + ", color=" + color + ", fontcolor=" + fontColor;
-}
-
-static
-std::ostream&
-dotPrint(std::ostream&		out, 
-		 const aiScene*		aiscene, 
-		 const aiNode*		ainode,
-		 const std::string&	nodeName)
-{
-
-	if (aiscene == nullptr || ainode == nullptr)
-		return out;
-	for (uint i = 0; i < ainode->mNumChildren; ++i)
-	{
-		const std::string& childName = nodeName + "_" + std::to_string(i);
-
-		out << "{" 
-			<< nodeName 
-			<< " [label=" << getDotLabel(ainode)
-			<< ", " << getDotStyle(aiscene, ainode) << "]} -> {" 
-			<< childName 
-			<< " [label=" << getDotLabel(ainode->mChildren[i])
-			<< ", " << getDotStyle(aiscene, ainode->mChildren[i]) << "]}" 
-			<< std::endl;
-
-		dotPrint(out, aiscene, ainode->mChildren[i], childName);
-	}
-	return out;
-}
+#include "ASSIMPParserDebug.cpp"
