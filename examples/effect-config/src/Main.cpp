@@ -30,9 +30,12 @@ int main(int argc, char** argv)
 {
 	auto canvas = Canvas::create("Minko Example - Effect Config", 800, 600);
 	auto sceneManager = SceneManager::create(canvas->context());
-
+	
 	// setup assets
-	sceneManager->assets()->defaultOptions()->generateMipmaps(true);
+	sceneManager->assets()->defaultOptions()
+		->generateMipmaps(true)
+		->includePaths().push_back("effect");
+
 	sceneManager->assets()
 		->registerParser<file::JPEGParser>("jpg")
 		->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()))
