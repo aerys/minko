@@ -47,17 +47,16 @@ main(int argc, char** argv)
 		auto camera = scene::Node::create("camera")
 			->addComponent(Renderer::create(0x7f7f7fff))
 			->addComponent(PerspectiveCamera::create(
-			(float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, (float)PI * 0.25f, .1f, 1000.f)
-			);
+			(float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, (float)PI * 0.25f, .1f, 1000.f))
+			->addComponent(Transform::create(Matrix4x4::create()->lookAt(Vector3::create(), Vector3::create(0.0f, 0.0f, 3.0f))));
 		root->addChild(camera);
 
 		auto texturedCube = scene::Node::create("texturedCube")
-		->addComponent(Transform::create(Matrix4x4::create()->translation(-2.f, 0.f, -5.f)))
+			->addComponent(Transform::create(Matrix4x4::create()->translation(-2.f, 0.f, -5.f)))
 			->addComponent(Surface::create(
 			geometry::CubeGeometry::create(assets->context()),
 			material::Material::create()->set("diffuseMap", sceneManager->assets()->texture("texture/box.png")),
-			assets->effect("effect/MyCustomUberEffect.effect")
-			));
+			assets->effect("effect/MyCustomUberEffect.effect")));
 		root->addChild(texturedCube);
 
 		auto coloredCube = scene::Node::create("coloredCube")
