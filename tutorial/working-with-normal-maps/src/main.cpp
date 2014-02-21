@@ -63,10 +63,10 @@ int main(int argc, char** argv)
 			))
 			->addComponent(PerspectiveCamera::create(800.f / 600.f, (float)PI * 0.25f, .1f, 1000.f));
 
-		auto ambienLight = scene::Node::create("ambientLight")
+		auto ambientLight = scene::Node::create("ambientLight")
 			->addComponent(AmbientLight::create(0.25f));
-		ambienLight->component<AmbientLight>()->color(Vector4::create(1.0f, 1.0f, 1.0f, 1.0f));
-		root->addChild(ambienLight);
+		ambientLight->component<AmbientLight>()->color(Vector4::create(1.0f, 1.0f, 1.0f, 1.0f));
+		root->addChild(ambientLight);
 
 		auto spotLight = scene::Node::create("SpotLight")
 			->addComponent(SpotLight::create(0.6f, 0.78f, 20.f))
