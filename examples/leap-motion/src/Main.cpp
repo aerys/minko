@@ -264,8 +264,7 @@ int main(int argc, char** argv)
 		->queue(HANGAR_TEXTURE);
 
 	sceneManager->assets()
-		->load("effect/Phong.effect", nullptr, nullptr, false);
-	sceneManager->assets()
+		->load("effect/Phong.effect", nullptr, nullptr, false)
 		->load("effect/Basic.effect", nullptr, nullptr, false);
     
 	sceneManager->assets()->defaultOptions()->effect(sceneManager->assets()->effect("effect/Phong.effect"));
@@ -284,7 +283,6 @@ int main(int argc, char** argv)
 		atan2f(sinRotation, cosRotation),
 		cameraNode->component<Transform>()->matrix()
 		);
-
 
 	auto dirLight = Node::create("dirLight")
 		->addComponent(component::DirectionalLight::create())
@@ -323,8 +321,11 @@ int main(int argc, char** argv)
 				assets->effect("effect/Basic.effect")
 			));
 
+		root->addChild(dirLight);
+		root->addChild(pointLight);
+        root->addChild(skybox);
+		root->addChild(cameraNode);
 		root->addChild(sceneNode);
-		root->addChild(skybox);
 
         // post-processing
 		/*
