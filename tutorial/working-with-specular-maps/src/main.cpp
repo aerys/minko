@@ -69,10 +69,10 @@ int main(int argc, char** argv)
 			->addComponent(Transform::create(Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(3.f, 5.f, 1.5f))));
 		spotLight->component<SpotLight>()->diffuse(0.5f);
 
-		auto ambienLight = scene::Node::create("ambientLight")
+		auto ambientLight = scene::Node::create("ambientLight")
 			->addComponent(AmbientLight::create(0.2f));
-		ambienLight->component<AmbientLight>()->color(Vector4::create(1.0f, 1.0f, 1.0f, 1.0f));
-		root->addChild(ambienLight);
+		ambientLight->component<AmbientLight>()->color(Vector4::create(1.0f, 1.0f, 1.0f, 1.0f));
+		root->addChild(ambientLight);
 
 		root->addChild(camera);
 		root->addChild(mesh);

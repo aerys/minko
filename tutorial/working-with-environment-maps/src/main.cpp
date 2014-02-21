@@ -18,7 +18,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "minko/Minko.hpp"
-#include "minko/MinkoPNG.hpp"
+#include "minko/MinkoJPEG.hpp"
 #include "minko/MinkoSDL.hpp"
 
 using namespace minko;
@@ -34,9 +34,9 @@ int main(int argc, char** argv)
 	// add the png parser to load textures
 	// add the Phong effect
 	sceneManager->assets()
-		->registerParser<file::PNGParser>("png")
-		->queue("texture/diffuseMap.png")
-		->queue("texture/envmap.png")
+		->registerParser<file::JPEGParser>("jpg")
+		->queue("texture/diffuseMap.jpg")
+		->queue("texture/envmap.jpg")
 		->queue("effect/Phong.effect");
 
 	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
@@ -47,8 +47,8 @@ int main(int argc, char** argv)
 		auto phongMaterial = material::PhongMaterial::create();
 
 		phongMaterial->diffuseColor(0xFFFFFFFF);
-		phongMaterial->diffuseMap(assets->texture("texture/diffuseMap.png"));
-		phongMaterial->environmentMap(assets->texture("texture/envmap.png"), render::EnvironmentMap2dType::BlinnNewell);
+		phongMaterial->diffuseMap(assets->texture("texture/diffuseMap.jpg"));
+		phongMaterial->environmentMap(assets->texture("texture/envmap.jpg"), render::EnvironmentMap2dType::BlinnNewell);
 		phongMaterial->environmentAlpha(0.2f);
 
 		auto mesh = scene::Node::create("mesh")
@@ -61,14 +61,20 @@ int main(int argc, char** argv)
 
 		auto camera = scene::Node::create("camera")
 			->addComponent(Renderer::create(0x00000000))
-			->addComponent(Transform::create(Matrix4x4::create()->lookAt(Vector3::create(), Vector3::create(0.0f, 1.f, 1.3f))
+			->addComponent(Transform::create(Matrix4x4::create()->lookAt(Vector3::create(), Vector3::create(0.0f, 2.f, 2.6f))
 			))
 			->addComponent(PerspectiveCamera::create(800.f / 600.f, (float)PI * 0.25f, .1f, 1000.f));
 
 
+		auto ambienLight = scene::Node::create("ambientLight")
+			->addComponent(AmbientLight::create(0.25f));
+		ambienLight->component<AmbientLight>()->color(Vector4::create(1.0f, 1.0f, 1.0f, 1.0f));
+		root->addChild(ambienLight);
+
 		auto spotLight = scene::Node::create("SpotLight")
 			->addComponent(SpotLight::create(0.6f, 0.78f, 20.f))
-			->addComponent(Transform::create(Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(3.f, 5.f, 1.5f))));
+			->addComponent(Transform::create(Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(4.f, 6.f, 2.5f))));
+		spotLight->component<SpotLight>()->diffuse(0.4f);
 
 		root->addChild(camera);
 		root->addChild(mesh);
