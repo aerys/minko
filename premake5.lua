@@ -79,7 +79,7 @@ solution "minko"
 		include 'tutorial/rotating-the-camera-around-an-object-with-the-mouse'
 		include 'tutorial/moving-objects'
 		include 'tutorial/moving-objects-with-the-keyboard'
-		include 'tutorial/load-scenes'
+		include 'tutorial/load-3d-files'
 		include 'tutorial/loading-scene-files'
 		include 'tutorial/my-first-script'
 		include 'tutorial/scripting-mouse-inputs'

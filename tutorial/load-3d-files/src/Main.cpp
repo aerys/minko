@@ -26,14 +26,16 @@ using namespace minko;
 using namespace minko::component;
 using namespace minko::math;
 
-const uint		    WINDOW_WIDTH = 800;
-const uint		    WINDOW_HEIGHT = 600;
-const std::string	MODEL_FILENAME = "model/mymodel.dae";
+const uint WINDOW_WIDTH = 800;
+const uint WINDOW_HEIGHT = 600;
+
+const std::string OBJ_MODEL_FILENAME = "model/pirate.obj";
+const std::string DAE_MODEL_FILENAME = "model/pirate.dae";
 
 int
 main(int argc, char** argv)
 {
-    auto canvas = Canvas::create("Minko Tutorial - Load scenes", WINDOW_WIDTH, WINDOW_HEIGHT);
+    auto canvas = Canvas::create("Minko Tutorial - Load 3D files", WINDOW_WIDTH, WINDOW_HEIGHT);
     auto sceneManager = SceneManager::create(canvas->context());
 
     // setup assets
@@ -42,11 +44,11 @@ main(int argc, char** argv)
         ->registerParser<file::ASSIMPParser>("dae")
         ->registerParser<file::JPEGParser>("jpg");
 
-
     sceneManager->assets()->load("effect/Basic.effect");
     
-    // add mymodel to the asset list
-    sceneManager->assets()->queue(MODEL_FILENAME);
+    // add the model to the asset list
+    sceneManager->assets()->queue(OBJ_MODEL_FILENAME);
+    sceneManager->assets()->queue(DAE_MODEL_FILENAME);
 
     sceneManager->assets()->defaultOptions()->generateMipmaps(true);
     sceneManager->assets()->defaultOptions()->effect(sceneManager->assets()->effect("effect/Basic.effect"));
@@ -58,17 +60,24 @@ main(int argc, char** argv)
         auto camera = scene::Node::create("camera")
             ->addComponent(Renderer::create(0x7f7f7fff))
             ->addComponent(Transform::create(
-            Matrix4x4::create()->lookAt(Vector3::create(0.f, 0.f, 0.f), Vector3::create(0.f, -3, 3.f))
+            Matrix4x4::create()->lookAt(Vector3::create(0.f, 0.f, 0.f), Vector3::create(0.f, 0.f, -5.f))
             ))
             ->addComponent(PerspectiveCamera::create(
             (float) WINDOW_WIDTH / (float) WINDOW_HEIGHT, (float) PI * 0.25f, .1f, 1000.f)
             );
         root->addChild(camera);
 
-        auto model = assets->symbol(MODEL_FILENAME);
-        model->addComponent(Transform::create(Matrix4x4::create()->appendScale(.01f)));
+        auto objModel = assets->symbol(OBJ_MODEL_FILENAME);
+        auto daeModel = assets->symbol(DAE_MODEL_FILENAME);
 
-        root->addChild(model);
+        objModel->addComponent(Transform::create(Matrix4x4::create()->appendScale(.01f)));
+        daeModel->addComponent(Transform::create(Matrix4x4::create()->appendScale(.01f)));
+
+        objModel->component<Transform>()->matrix()->translation(-1.f, 0.f, 0.f);
+        daeModel->component<Transform>()->matrix()->translation(1.f, 0.f, 0.f);
+
+        root->addChild(objModel);
+        root->addChild(daeModel);
 
         auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, uint deltaTime)
         {
