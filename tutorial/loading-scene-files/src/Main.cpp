@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -19,72 +19,50 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Minko.hpp"
 #include "minko/MinkoSDL.hpp"
+#include "minko/MinkoSerializer.hpp"
 
 using namespace minko;
 using namespace minko::component;
 using namespace minko::math;
 
-const uint WINDOW_WIDTH		= 800;
-const uint WINDOW_HEIGHT	= 600;
+const uint WINDOW_WIDTH = 800;
+const uint WINDOW_HEIGHT = 600;
+std::string SCENE_FILENAME = "model/myScene/myScene.scene";
 
 int main(int argc, char** argv)
 {
-	auto canvas = Canvas::create("Minko Application", WINDOW_WIDTH, WINDOW_HEIGHT);
-	auto sceneManager = SceneManager::create(canvas->context());
-	
-	sceneManager->assets()
-		->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()))
-		->queue("effect/Phong.effect");
+    auto canvas = Canvas::create("Minko Tutorial - Loading .scene files", WINDOW_WIDTH, WINDOW_HEIGHT);
+    auto sceneManager = SceneManager::create(canvas->context());
 
-	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
-	{
-		auto root = scene::Node::create("root")
-			->addComponent(sceneManager);
+    sceneManager->assets()->registerParser<minko::file::SceneParser>("scene");
+    sceneManager->assets()->queue("effect/Phong.effect");
+    sceneManager->assets()->queue(SCENE_FILENAME);
 
-		auto camera = scene::Node::create("camera")
-			->addComponent(Renderer::create(0x7f7f7fff))
-			->addComponent(Transform::create(
-				Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 3.f))
-			))
-			->addComponent(PerspectiveCamera::create(
-				(float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, (float)PI * 0.25f, .1f, 1000.f)
-			);
-		root->addChild(camera);
-		
-		auto mesh = scene::Node::create("mesh")
-			->addComponent(Transform::create())
-			->addComponent(Surface::create(
-				assets->geometry("cube"),
-				material::Material::create()
-					->set("diffuseColor",	Vector4::create(1.f, 1.f, 1.f, 1.f)),
-				assets->effect("effect/Phong.effect")
-			));
-		root->addChild(mesh);
+    auto root = scene::Node::create("root")->addComponent(sceneManager);
 
-		auto light = scene::Node::create("light")
-			->addComponent(AmbientLight::create())
-			->addComponent(DirectionalLight::create())
-			->addComponent(Transform::create(
-				Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(-2.f, -1.f, -1.f))
-			));
-		root->addChild(light);
+    auto camera = scene::Node::create("camera")
+        ->addComponent(Renderer::create(0x7f7f7fff))
+        ->addComponent(Transform::create(
+        Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0., 3., -5.f))
+        ))
+        ->addComponent(PerspectiveCamera::create(
+        (float) WINDOW_WIDTH / (float) WINDOW_HEIGHT, (float) PI * 0.25f, .1f, 1000.f)
+        );
+    root->addChild(camera);
 
-		auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
-		{
-			camera->component<PerspectiveCamera>()->aspectRatio((float)w / (float)h);
-		});
+    auto complete = sceneManager->assets()->complete()->connect([&](file::AssetLibrary::Ptr assets)
+    {
+        root->addChild(assets->symbol(SCENE_FILENAME));
 
-		auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, uint deltaTime)
-		{
-			mesh->component<Transform>()->matrix()->appendRotationY(.01f);
+        auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, uint deltaTime)
+        {
+            sceneManager->nextFrame();
+        });
 
-			sceneManager->nextFrame();
-		});
+        canvas->run();
+    });
 
-		canvas->run();
-	});
+    sceneManager->assets()->load();
 
-	sceneManager->assets()->load();
-
-	return 0;
+    return 0;
 }

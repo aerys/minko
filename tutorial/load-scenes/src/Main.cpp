@@ -18,8 +18,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "minko/Minko.hpp"
-#include "minko/MinkoASSIMP.hpp"
 #include "minko/MinkoSDL.hpp"
+#include "minko/MinkoASSIMP.hpp"
 #include "minko/MinkoJPEG.hpp"
 
 using namespace minko;
@@ -40,8 +40,10 @@ main(int argc, char** argv)
     sceneManager->assets()
         ->registerParser<file::ASSIMPParser>("obj")
         ->registerParser<file::ASSIMPParser>("dae")
-        ->registerParser<file::JPEGParser>("jpg")
-        ->load("effect/Basic.effect");
+        ->registerParser<file::JPEGParser>("jpg");
+
+
+    sceneManager->assets()->load("effect/Basic.effect");
     
     // add mymodel to the asset list
     sceneManager->assets()->queue(MODEL_FILENAME);
@@ -49,7 +51,7 @@ main(int argc, char** argv)
     sceneManager->assets()->defaultOptions()->generateMipmaps(true);
     sceneManager->assets()->defaultOptions()->effect(sceneManager->assets()->effect("effect/Basic.effect"));
 
-    auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
+    auto complete = sceneManager->assets()->complete()->connect([&](file::AssetLibrary::Ptr assets)
     {
         auto root = scene::Node::create("root")->addComponent(sceneManager);
 
