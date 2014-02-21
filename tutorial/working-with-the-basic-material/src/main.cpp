@@ -31,7 +31,7 @@ const uint WINDOW_HEIGHT = 600;
 int
 main(int argc, char** argv)
 {
-  auto canvas = Canvas::create("Hello cube!", WINDOW_WIDTH, WINDOW_HEIGHT);
+  auto canvas = Canvas::create("Minko Tutorial - Working with the BasicMaterial", WINDOW_WIDTH, WINDOW_HEIGHT);
   auto sceneManager = component::SceneManager::create(canvas->context());
  
   sceneManager->assets()

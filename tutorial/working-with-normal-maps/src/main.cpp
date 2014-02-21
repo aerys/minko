@@ -27,7 +27,7 @@ using namespace minko::math;
 
 int main(int argc, char** argv)
 {
-	auto canvas = Canvas::create("Working with normal maps", 800, 600);
+	auto canvas = Canvas::create("Minko Tutorial - Working with normal maps", 800, 600);
 
 	auto sceneManager = SceneManager::create(canvas->context());
 
