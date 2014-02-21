@@ -41,10 +41,10 @@ main(int argc, char** argv)
     auto root = scene::Node::create("root")
       ->addComponent(sceneManager);
  
-	auto camera = scene::Node::create("camera")
-		->addComponent(Renderer::create(0x7f7f7fff))
-		->addComponent(PerspectiveCamera::create(
-			(float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, (float)PI * 0.25f, .1f, 1000.f));
+    auto camera = scene::Node::create("camera")
+      ->addComponent(Renderer::create(0x7f7f7fff))
+      ->addComponent(PerspectiveCamera::create(
+		(float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, (float)PI * 0.25f, .1f, 1000.f));
     root->addChild(camera);
  
 	auto phongMaterial = material::PhongMaterial::create();
@@ -70,7 +70,7 @@ main(int argc, char** argv)
 
 	auto directionalLight = scene::Node::create("directionalLight")
 		->addComponent(DirectionalLight::create()->diffuse(0.8f)->color(0xFFFFFFFF))
-		->addComponent(Transform::create(Matrix4x4::create()->lookAt(Vector3::create(), Vector3::create(5.0f, 0.0f, 0.0f))));
+		->addComponent(Transform::create(Matrix4x4::create()->lookAt(Vector3::create(), Vector3::create(3.0f, 2.0f, 3.0f))));
 	root->addChild(directionalLight);
 
 	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, uint deltaTime)
