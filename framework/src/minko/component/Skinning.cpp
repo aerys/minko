@@ -29,6 +29,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include <minko/math/Matrix4x4.hpp>
 #include <minko/component/Surface.hpp>
 #include <minko/component/SceneManager.hpp>
+#include <minko/component/Animation.hpp>
 
 using namespace minko;
 using namespace minko::data;
@@ -48,11 +49,12 @@ using namespace minko::render;
 /*static*/ const std::string	Skinning::ATTRNAME_BONE_WEIGHTS_A	= "boneWeightsA";
 /*static*/ const std::string	Skinning::ATTRNAME_BONE_WEIGHTS_B	= "boneWeightsB";
 
-Skinning::Skinning(const Skin::Ptr		skin, 
-				   SkinningMethod		method,
-				   AbstractContext::Ptr	context,
-				   bool					isLooping):
-	AbstractAnimation(isLooping),
+Skinning::Skinning(const Skin::Ptr						skin, 
+				   SkinningMethod						method,
+				   AbstractContext::Ptr					context,
+				   const std::vector<Animation::Ptr>&	animations,
+				   bool									isLooping):
+	MasterAnimation(animations, isLooping),
 	_skin(skin),
 	_context(context),
 	_method(method),
@@ -66,7 +68,7 @@ Skinning::Skinning(const Skin::Ptr		skin,
 void
 Skinning::initialize()
 {
-	AbstractAnimation::initialize();
+	MasterAnimation::initialize();
 
 	if (_skin == nullptr)
 		throw std::invalid_argument("skin");
@@ -201,6 +203,8 @@ Skinning::createVertexBufferForBones() const
 void
 Skinning::update()
 {
+	MasterAnimation::update();
+
 	const uint frameId = _skin->getFrameId(_currentTime);
 
 	for (auto& target : targets())

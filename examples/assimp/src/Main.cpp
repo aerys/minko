@@ -28,7 +28,6 @@ using namespace minko::math;
 
 const uint			WINDOW_WIDTH	= 800;
 const uint			WINDOW_HEIGHT	= 600;
-const std::string	DEFAULT_EFFECT	= "effect/Basic.effect";
 const std::string	MODEL_FILENAME	= "pirate.dae";	
 
 const std::string	LABEL_RUN_START		= "run_start";
@@ -89,10 +88,11 @@ main(int argc, char** argv)
 		->load("effect/Basic.effect")
 		->load("effect/Phong.effect");
 
-	sceneManager->assets()->defaultOptions()->skinningFramerate(60);
-	sceneManager->assets()->defaultOptions()->skinningMethod(SkinningMethod::HARDWARE);
-	//sceneManager->assets()->defaultOptions()->effect(sceneManager->assets()->effect(DEFAULT_EFFECT));
-	//sceneManager->assets()->defaultOptions()->material()->set("diffuseColor", Vector4::create(0.8f, 0.1f, 0.1f, 1.0f));
+	sceneManager->assets()->defaultOptions()
+		->skinningFramerate(60)
+		->skinningMethod(SkinningMethod::HARDWARE)
+		->effect(sceneManager->assets()->effect("basic"));
+
 	sceneManager->assets()
 		->queue(MODEL_FILENAME);
 
@@ -113,18 +113,17 @@ main(int argc, char** argv)
 	auto camera = scene::Node::create("camera")
 		->addComponent(Renderer::create(0x7f7f7fff))
 		->addComponent(Transform::create(
-		Matrix4x4::create()->lookAt(Vector3::create(0.f, 0.f, 0.f), Vector3::create(0.f, -3.0f, 3.f))
+			Matrix4x4::create()->lookAt(Vector3::create(0.f, 0.75f, 0.f), Vector3::create(0.25f, 0.75f, 2.5f))
 		))
 		->addComponent(PerspectiveCamera::create(
-		(float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, (float)PI * 0.25f, .1f, 1000.f)
+			(float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, (float)PI * 0.25f, .1f, 1000.f)
 		);
 	root->addChild(camera);
 
 	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
 	{
 
-		auto model = assets->symbol(MODEL_FILENAME)
-			->addComponent(Transform::create(Matrix4x4::create()->appendScale(.01f)));
+		auto model = assets->symbol(MODEL_FILENAME);
 
 		auto surfaceNodeSet = scene::NodeSet::create(model)
 			->descendants(true)
