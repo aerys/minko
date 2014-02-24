@@ -50,7 +50,7 @@ Canvas::Canvas(const std::string& name, const uint width, const uint height, boo
 	_active(false),
 	_framerate(0.f),
 	_desiredFramerate(60.f),
-	_enterFrame(Signal<Canvas::Ptr, uint, uint>::create()),
+	_enterFrame(Signal<Canvas::Ptr, uint, float>::create()),
 	_resized(Signal<AbstractCanvas::Ptr, uint, uint>::create()),
 	_joystickAdded(Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::create()),
 	_joystickRemoved(Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::create())
@@ -291,7 +291,6 @@ Canvas::height(uint value)
 void
 Canvas::step()
 {
-	auto stepStartTime = std::clock();
 
 	SDL_Event event;
 
@@ -454,11 +453,15 @@ Canvas::step()
 	for (auto worker : _activeWorkers)
 		worker->update();
 #endif
+    auto time = std::chrono::high_resolution_clock::now();
+    auto frameDuration = std::chrono::duration_cast<std::chrono::nanoseconds>(time - _previousTime).count();
 
-	auto time = std::clock();
-	auto frameTime = (1000.f * (time - stepStartTime) / CLOCKS_PER_SEC);
+    // we convert frameTime from nanoseconds to milliseconds
+    float frameTime = frameDuration / 1000000.f;
 
-	_enterFrame->execute(shared_from_this(), (uint)time, (uint)frameTime);
+    _enterFrame->execute(shared_from_this(), (uint)time.time_since_epoch().count(), frameTime);
+
+    _previousTime = time;
 
 	// swap buffers
 #if defined(MINKO_ANGLE)
@@ -469,7 +472,8 @@ Canvas::step()
 	SDL_GL_SwapWindow(_window);
 #endif
 
-	_framerate = 1000.f / frameTime;
+    // framerate in seconds
+    _framerate = 1000.f / frameTime;
 
 #if !defined(EMSCRIPTEN)
     if (_framerate > _desiredFramerate)

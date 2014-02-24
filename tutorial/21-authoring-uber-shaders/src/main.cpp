@@ -31,52 +31,52 @@ const uint WINDOW_HEIGHT = 600;
 int
 main(int argc, char** argv)
 {
-	auto canvas = Canvas::create("Minko Tutorial - Authoring uber-shaders", WINDOW_WIDTH, WINDOW_HEIGHT);
-	auto sceneManager = component::SceneManager::create(canvas->context());
+    auto canvas = Canvas::create("Minko Tutorial - Authoring uber-shaders", WINDOW_WIDTH, WINDOW_HEIGHT);
+    auto sceneManager = component::SceneManager::create(canvas->context());
 
-	sceneManager->assets()
-		->registerParser<file::PNGParser>("png")
-		->queue("effect/MyCustomUberEffect.effect")
-		->queue("texture/box.png");
+    sceneManager->assets()
+        ->registerParser<file::PNGParser>("png")
+        ->queue("effect/MyCustomUberEffect.effect")
+        ->queue("texture/box.png");
 
-	auto complete = sceneManager->assets()->complete()->connect([&](file::AssetLibrary::Ptr assets)
-	{
-		auto root = scene::Node::create("root")
-			->addComponent(sceneManager);
+    auto complete = sceneManager->assets()->complete()->connect([&](file::AssetLibrary::Ptr assets)
+    {
+        auto root = scene::Node::create("root")
+            ->addComponent(sceneManager);
 
-		auto camera = scene::Node::create("camera")
-			->addComponent(Renderer::create(0x7f7f7fff))
-			->addComponent(PerspectiveCamera::create(
-			(float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, (float)PI * 0.25f, .1f, 1000.f))
-			->addComponent(Transform::create(Matrix4x4::create()->lookAt(Vector3::create(), Vector3::create(0.0f, 0.0f, 3.0f))));
-		root->addChild(camera);
+        auto camera = scene::Node::create("camera")
+            ->addComponent(Renderer::create(0x7f7f7fff))
+            ->addComponent(PerspectiveCamera::create(
+            (float) WINDOW_WIDTH / (float) WINDOW_HEIGHT, (float) PI * 0.25f, .1f, 1000.f))
+            ->addComponent(Transform::create(Matrix4x4::create()->lookAt(Vector3::create(), Vector3::create(0.0f, 0.0f, 3.0f))));
+        root->addChild(camera);
 
-		auto texturedCube = scene::Node::create("texturedCube")
-			->addComponent(Transform::create(Matrix4x4::create()->translation(-2.f, 0.f, -5.f)))
-			->addComponent(Surface::create(
-			geometry::CubeGeometry::create(assets->context()),
-			material::Material::create()->set("diffuseMap", sceneManager->assets()->texture("texture/box.png")),
-			assets->effect("effect/MyCustomUberEffect.effect")));
-		root->addChild(texturedCube);
+        auto texturedCube = scene::Node::create("texturedCube")
+            ->addComponent(Transform::create(Matrix4x4::create()->translation(-2.f, 0.f, -5.f)))
+            ->addComponent(Surface::create(
+            geometry::CubeGeometry::create(assets->context()),
+            material::Material::create()->set("diffuseMap", sceneManager->assets()->texture("texture/box.png")),
+            assets->effect("effect/MyCustomUberEffect.effect")));
+        root->addChild(texturedCube);
 
-		auto coloredCube = scene::Node::create("coloredCube")
-		->addComponent(Transform::create(Matrix4x4::create()->translation(2.f, 0.f, -5.f)))
-			->addComponent(Surface::create(
-			geometry::CubeGeometry::create(assets->context()),
-			material::Material::create()->set("diffuseColor", Vector4::create(0.f, 0.f, 1.f, 1.f)),
-			assets->effect("effect/MyCustomUberEffect.effect")
-			));
-		root->addChild(coloredCube);
+        auto coloredCube = scene::Node::create("coloredCube")
+            ->addComponent(Transform::create(Matrix4x4::create()->translation(2.f, 0.f, -5.f)))
+            ->addComponent(Surface::create(
+            geometry::CubeGeometry::create(assets->context()),
+            material::Material::create()->set("diffuseColor", Vector4::create(0.f, 0.f, 1.f, 1.f)),
+            assets->effect("effect/MyCustomUberEffect.effect")
+            ));
+        root->addChild(coloredCube);
 
-		auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, uint deltaTime)
-		{
-			sceneManager->nextFrame();
-		});
+        auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint t, float dt)
+        {
+            sceneManager->nextFrame();
+        });
 
-		canvas->run();
-	});
+        canvas->run();
+    });
 
-	sceneManager->assets()->load();
+    sceneManager->assets()->load();
 
-	return 0;
+    return 0;
 }

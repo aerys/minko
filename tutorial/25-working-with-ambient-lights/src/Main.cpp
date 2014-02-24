@@ -67,7 +67,7 @@ main(int argc, char** argv)
 	ambientLightNode->component<AmbientLight>()->color()->setTo(1.0f, 1.0f, 1.0f);
 	root->addChild(ambientLightNode);
  
-	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, uint deltaTime)
+	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint t, float dt)
 	{
 		sceneManager->nextFrame();
 	});

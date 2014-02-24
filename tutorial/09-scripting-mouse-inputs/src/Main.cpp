@@ -48,7 +48,7 @@ main(int argc, char** argv)
     {
         root->addComponent(assets->script("script/my_mouse_script.lua"));
 
-        auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr c, uint t, uint dt)
+        auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint t, float dt)
         {
             sceneManager->nextFrame();
         });

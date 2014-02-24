@@ -55,7 +55,7 @@ main(int argc, char** argv)
             ));
         root->addChild(cube);
 
-        auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint t, uint dt)
+        auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint t, float dt)
         {
             cube->component<Transform>()->matrix()->prependRotationY(.01f);
             sceneManager->nextFrame();

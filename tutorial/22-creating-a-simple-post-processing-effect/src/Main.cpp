@@ -87,7 +87,7 @@ main(int argc, char** argv)
 			ppFx->setUniform("uBackbuffer", ppTarget);
 		});
 
-		auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, uint deltaTime)
+		auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint t, float dt)
 		{
 			cube->component<Transform>()->matrix()->prependRotationY(.01f);
 

@@ -248,7 +248,7 @@ int main(int argc, char** argv)
 			mouseMove = nullptr;
 		});
 
-		auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, uint deltaTime)
+		auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint t, float dt)
 		{
 			yaw += cameraRotationYSpeed;
 			cameraRotationYSpeed *= 0.9f;
