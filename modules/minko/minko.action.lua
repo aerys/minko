@@ -8,9 +8,9 @@ minko.action.fail = function()
 			return 'call "' .. path.translate(minko.sdk.path('/tools/win/scripts/fail.bat')) .. '" "$(Target)"'
 		end
 	elseif os.is('macosx') then
-		return 'source ' .. minko.sdk.path('/tools/mac/scripts/fail.sh') .. ' ${TARGET}'		
+		return 'bash ' .. minko.sdk.path('/tools/mac/scripts/fail.sh') .. ' ${TARGET}'		
 	else
-		return 'source ' .. minko.sdk.path('/tools/lin/scripts/fail.sh') .. ' ${TARGET}'
+		return 'bash ' .. minko.sdk.path('/tools/lin/scripts/fail.sh') .. ' ${TARGET}'
 	end
 end
 
