@@ -472,8 +472,12 @@ Canvas::step()
 	_framerate = 1000.f / frameTime;
 
 #if !defined(EMSCRIPTEN)
-	if (_framerate > _desiredFramerate)
-		SDL_Delay((uint)((1000.f / _desiredFramerate) - frameTime));
+    if (_framerate > _desiredFramerate)
+    {
+        SDL_Delay((uint) ((1000.f / _desiredFramerate) - frameTime));
+
+        _framerate = _desiredFramerate;
+    }
 #endif
 }
 
