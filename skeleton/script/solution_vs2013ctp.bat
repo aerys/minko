@@ -1,2 +1,4 @@
+@echo off
 chdir ..
-call "%MINKO_HOME%"\tools\win\scripts\premake_vs2013ctp
+"%MINKO_HOME%"\tools\win\bin\premake5.exe --no-tests vs2013ctp
+pause
