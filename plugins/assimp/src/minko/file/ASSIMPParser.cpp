@@ -37,6 +37,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/Surface.hpp"
 #include "minko/component/Skinning.hpp"
 #include "minko/component/PerspectiveCamera.hpp"
+#include "minko/component/AbstractAnimation.hpp"
 #include "minko/component/Animation.hpp"
 #include "minko/animation/Matrix4x4Timeline.hpp"
 #include "minko/render/VertexBuffer.hpp"
@@ -196,6 +197,19 @@ ASSIMPParser::parse(const std::string&					filename,
 	dotPrint("aiscene.dot", scene);
 	dotPrint("minkoscene.dot", _symbol);
 #endif // DEBUG_ASSIMP_DOT
+
+	auto animations = NodeSet::create(_symbol)
+		->descendants(true)
+		->where([](Node::Ptr n)
+		{
+			return n->hasComponent<component::AbstractAnimation>();
+		});
+
+	for (auto& n : animations->nodes())
+		if (_options->startAnimation())
+			n->component<component::AbstractAnimation>()->play();
+		else
+			n->component<component::AbstractAnimation>()->stop();
 
 	if (_numDependencies == _numLoadedDependencies)
 		finalize();

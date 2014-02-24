@@ -43,9 +43,7 @@ Animation::initialize()
 	for (auto& timeline : _timelines)
 		_maxTime = std::max(_maxTime, timeline->duration());
 
-	setPlaybackWindow(0, _maxTime)
-		->seek(0)
-		->play();
+	setPlaybackWindow(0, _maxTime)->seek(0)->play();
 }
 
 void

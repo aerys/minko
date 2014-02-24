@@ -57,6 +57,7 @@ namespace minko
             bool                                        _generateMipMaps;
 			bool										_resizeSmoothly;
 			bool										_isCubeTexture;
+			bool										_startAnimation;
 			unsigned int								_skinningFramerate;
 			component::SkinningMethod					_skinningMethod;
             std::shared_ptr<render::Effect>             _effect;
@@ -86,6 +87,7 @@ namespace minko
                 opt->_generateMipMaps	= options->_generateMipMaps;
 				opt->_resizeSmoothly	= options->_resizeSmoothly;
 				opt->_isCubeTexture		= options->_isCubeTexture;
+				opt->_startAnimation	= options->_startAnimation;
 				opt->_skinningFramerate	= options->_skinningFramerate;
 				opt->_skinningMethod	= options->_skinningMethod;
                 opt->_effect			= options->_effect;
@@ -141,6 +143,22 @@ namespace minko
 
 				return shared_from_this();
             }
+
+			inline
+			bool
+			startAnimation() const
+			{
+				return _startAnimation;
+			}
+
+			inline
+			Ptr
+			startAnimation(bool value)
+			{
+				_startAnimation = value;
+
+				return shared_from_this();
+			}
 
 			inline
 			bool
