@@ -100,7 +100,7 @@ solution "minko"
 		include 'tutorial/working-with-normal-maps'
 		include 'tutorial/working-with-point-lights'
 		include 'tutorial/working-with-specular-maps'
-		--include 'tutorial/working-with-spot-lights'
+		include 'tutorial/working-with-spot-lights'
 		include 'tutorial/working-with-the-basic-material'
 		include 'tutorial/working-with-the-phong-material'
 	end
