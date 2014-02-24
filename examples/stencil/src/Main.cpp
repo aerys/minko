@@ -177,7 +177,7 @@ main(int argc, char** argv)
 	});
 
 		
-	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, uint deltaTime)
+	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint t, float dt)
 	{
 		bigStarNode->component<Transform>()->matrix()->appendRotationZ(.001f);
 		for (auto& star : smallStars)

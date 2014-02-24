@@ -63,7 +63,7 @@ main(int argc, char** argv)
                 cube->component<Transform>()->matrix()->appendTranslation(0.1f);
         });
 
-        auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint t, uint dt)
+        auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint t, float dt)
         {
             sceneManager->nextFrame();
         });

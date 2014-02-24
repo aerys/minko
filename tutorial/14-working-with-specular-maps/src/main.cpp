@@ -78,7 +78,7 @@ int main(int argc, char** argv)
 		root->addChild(mesh);
 		root->addChild(spotLight);
 
-		auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, uint deltaTime)
+		auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint t, float dt)
 		{
 			sceneManager->nextFrame();
 		});

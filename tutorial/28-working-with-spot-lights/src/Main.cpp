@@ -79,9 +79,11 @@ main(int argc, char** argv)
         // add the node to the root of the scene graph
         root->addChild(spotLightNode);
 
-        auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint t, uint dt)
+        auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint t, float dt)
         {
-            spotLightNode->component<Transform>()->matrix()->appendRotationX(0.005f);
+            spotLightNode->component<Transform>()->matrix()->appendRotationX(0.002f * dt);
+
+            std::cout << "Delta time: " << dt << " [" << canvas->framerate() << "]" << std::endl;
 
             sceneManager->nextFrame();
         });

@@ -73,7 +73,7 @@ int main(int argc, char** argv)
         // STEP 3: trigger the simulation by adding the physics object to the scene
         root->addChild(boxNode);
 
-        auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, uint deltaTime)
+        auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint t, float dt)
         {
             sceneManager->nextFrame();
         });

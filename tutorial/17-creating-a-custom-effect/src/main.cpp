@@ -59,7 +59,7 @@ main(int argc, char** argv)
 
 		myCustomEffect->setUniform("uColor", Vector4::create(0.f, 0.f, 1.f, 1.f));
 
-		auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint t, uint dt)
+		auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint t, float dt)
 		{
 			modelToWorldMatrix->prependRotationY(0.01f);
 			myCustomEffect->setUniform("uModelToWorldMatrix", modelToWorldMatrix);

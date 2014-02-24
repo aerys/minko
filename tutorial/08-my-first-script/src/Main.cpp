@@ -49,7 +49,7 @@ main(int argc, char** argv)
         root->addComponent(assets->script("script/my_script.lua"));
 
         auto numFrames = 0;
-        auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr c, uint t, uint dt)
+        auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint t, float dt)
         {
             ++numFrames;
             if (numFrames == 5)

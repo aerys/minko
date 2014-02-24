@@ -19,7 +19,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #pragma once
 
-#include <ctime>
+#include <chrono>
 
 #include "minko/Common.hpp"
 #include "minko/Signal.hpp"
@@ -173,7 +173,8 @@ namespace minko
 		};
 
 	private:
-		typedef std::shared_ptr<async::Worker>			WorkerPtr;
+        typedef std::chrono::high_resolution_clock::time_point	time_point;
+		typedef std::shared_ptr<async::Worker>			        WorkerPtr;
 
 		std::string										_name;
 		uint											_x;
@@ -191,6 +192,7 @@ namespace minko
 #else
 		SDL_Window*												_window;
 #endif
+        time_point                                              _previousTime;
 		float													_framerate;
 		float													_desiredFramerate;
 
@@ -198,7 +200,7 @@ namespace minko
 		std::unordered_map<int, std::shared_ptr<SDLJoystick>>	_joysticks;
         std::shared_ptr<SDLKeyboard>    						_keyboard;
 
-		Signal<Ptr, uint, uint>::Ptr											_enterFrame;
+		Signal<Ptr, uint, float>::Ptr											_enterFrame;
 		Signal<AbstractCanvas::Ptr, uint, uint>::Ptr							_resized;
 		Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::Ptr		_joystickAdded;
 		Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::Ptr		_joystickRemoved;
@@ -256,7 +258,7 @@ namespace minko
 		}
 
 		inline
-		Signal<Ptr, uint, uint>::Ptr
+		Signal<Ptr, uint, float>::Ptr
 		enterFrame() const
 		{
 			return _enterFrame;
