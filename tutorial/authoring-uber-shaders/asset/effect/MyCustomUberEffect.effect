@@ -11,7 +11,7 @@
     "uWorldToScreenMatrix" : { "property" : "camera.worldToScreenMatrix", "source" : "renderer" }
   },
   "macroBindings" : {
-	"diffuseMap" : "material[${materialId}].diffuseMap"
+	"DIFFUSE_MAP" : "material[${materialId}].diffuseMap"
   },
   "passes" : [{
     "vertexShader" : "
@@ -20,7 +20,7 @@
       #endif
  
       attribute vec3 aPosition;
-      attribute vec3 aUv;
+      attribute vec2 aUv;
  
       uniform mat4 uModelToWorldMatrix;
       uniform mat4 uWorldToScreenMatrix;
