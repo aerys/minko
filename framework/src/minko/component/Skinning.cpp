@@ -91,9 +91,7 @@ Skinning::initialize()
 
 	_maxTime = _skin->duration();
 
-	setPlaybackWindow(0, _maxTime)
-		->seek(0)
-		->play();
+	setPlaybackWindow(0, _maxTime)->seek(0)->play();
 }
 
 void

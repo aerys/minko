@@ -44,9 +44,7 @@ MasterAnimation::initialize()
 		_maxTime = std::max(_maxTime, animation->_maxTime);
 	}
 
-	setPlaybackWindow(0, _maxTime)
-		->seek(0)
-		->play();
+	setPlaybackWindow(0, _maxTime)->seek(0)->play();
 }
 
 /*virtual*/

@@ -91,6 +91,7 @@ main(int argc, char** argv)
 	sceneManager->assets()->defaultOptions()
 		->skinningFramerate(60)
 		->skinningMethod(SkinningMethod::HARDWARE)
+		->startAnimation(true)
 		->effect(sceneManager->assets()->effect("basic"));
 
 	sceneManager->assets()
@@ -172,7 +173,7 @@ main(int argc, char** argv)
 	});
 
 	// currently, keyUp events seem not to be fired at the individual key level
-	auto keyDowm = canvas->keyboard()->keyDown()->connect([&](input::Keyboard::Ptr k)
+	auto keyDown = canvas->keyboard()->keyDown()->connect([&](input::Keyboard::Ptr k)
 	{
 		if (!anim)
 			return;
