@@ -52,7 +52,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/material/BasicMaterial.hpp"
 #include "minko/material/PhongMaterial.hpp"
 #include "minko/render/Effect.hpp"
-#include "minko/render/priority.hpp"
+#include "minko/render/Priority.hpp"
 
 using namespace minko;
 using namespace minko::component;
@@ -62,14 +62,20 @@ using namespace minko::scene;
 using namespace minko::geometry;
 
 #ifdef DEBUG_ASSIMP_DOT
-static
-void
-dotPrint(const std::string&, const aiScene*);
-
-static
-void
-dotPrint(const std::string&, Node::Ptr);
+	static
+	void
+	dotPrint(const std::string&, const aiScene*);
+	
+	static
+	void
+	dotPrint(const std::string&, Node::Ptr);
 #endif // DEBUG_ASSIMP_DOT
+
+#ifdef DEBUG_ASSIMP
+	static
+	std::ostream&
+	printNode(std::ostream& out, Node::Ptr node, uint depth)
+#endif // DEBUG_ASSIMP
 
 /*static*/ const ASSIMPParser::TextureTypeToName	ASSIMPParser::_textureTypeToName	= ASSIMPParser::initializeTextureTypeToName();
 /*static*/ const std::string						ASSIMPParser::PNAME_TRANSFORM		= "transform.matrix";
@@ -1581,44 +1587,4 @@ ASSIMPParser::createAnimations(const aiScene* scene, bool interpolate)
 	}
 }
 
-static
-std::ostream&
-printNode(std::ostream& out, Node::Ptr node, uint depth)
-{
-	bool hasSurface		= node->hasComponent<Surface>();
-	bool hasSkinning	= node->hasComponent<Skinning>();
-	bool hasTransform	= node->hasComponent<Transform>();
-	bool hasAnimation	= node->hasComponent<Animation>();
-	bool hasIdentity	= false;
-	if (hasTransform)
-	{
-		const std::vector<float>& data = node->component<Transform>()->matrix()->data();
-		
-		hasIdentity = true;
-		for (unsigned int i = 0; i < 16; ++i)
-			hasIdentity = hasIdentity && fabsf(data[i] - (i % 5 == 0 ? 1.0f : 0.0f)) < 1e-4f;
-	}
-
-	for (uint d = 0; d < depth; ++d)
-		out << "  ";
-
-	out << "(" << depth << ") " << node->name() << "\t";
-	if (hasSurface)
-		out << "[Surf] ";
-	if (hasIdentity)
-		out << "[Id] ";
-	else if (hasTransform)
-		out << "[Trf] ";
-	if (hasAnimation)
-		out << "[Anim] ";
-	if (hasSkinning)
-		out << "[Skin] ";
-	out << "\n";
-
-	for (auto& n : node->children())
-		printNode(out, n, depth + 1);
-
-	return out;
-}
-
-#include "ASSIMPParserDebug.cpp"
+#include "ASSIMPParserDebug.hpp"
