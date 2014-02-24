@@ -14,7 +14,46 @@ using namespace minko;
 using namespace minko::component;
 using namespace minko::scene;
 
-inline
+static
+std::ostream&
+printNode(std::ostream& out, Node::Ptr node, uint depth)
+{
+	bool hasSurface		= node->hasComponent<Surface>();
+	bool hasSkinning	= node->hasComponent<Skinning>();
+	bool hasTransform	= node->hasComponent<Transform>();
+	bool hasAnimation	= node->hasComponent<Animation>();
+	bool hasIdentity	= false;
+	if (hasTransform)
+	{
+		const std::vector<float>& data = node->component<Transform>()->matrix()->data();
+		
+		hasIdentity = true;
+		for (unsigned int i = 0; i < 16; ++i)
+			hasIdentity = hasIdentity && fabsf(data[i] - (i % 5 == 0 ? 1.0f : 0.0f)) < 1e-4f;
+	}
+
+	for (uint d = 0; d < depth; ++d)
+		out << "  ";
+
+	out << "(" << depth << ") " << node->name() << "\t";
+	if (hasSurface)
+		out << "[Surf] ";
+	if (hasIdentity)
+		out << "[Id] ";
+	else if (hasTransform)
+		out << "[Trf] ";
+	if (hasAnimation)
+		out << "[Anim] ";
+	if (hasSkinning)
+		out << "[Skin] ";
+	out << "\n";
+
+	for (auto& n : node->children())
+		printNode(out, n, depth + 1);
+
+	return out;
+}
+
 static
 std::string
 getDotLabel(const aiNode* ainode)
@@ -31,7 +70,6 @@ getDotLabel(const aiNode* ainode)
 		return "\"\"";
 }
 
-inline
 static
 std::string
 getDotLabel(Node::Ptr node)
@@ -46,7 +84,6 @@ getDotLabel(Node::Ptr node)
 		return "\"\"";
 }
 
-inline
 static
 std::string
 getDotStyle(Node::Ptr node)
@@ -80,7 +117,6 @@ getDotStyle(Node::Ptr node)
 	return ret;
 }
 
-inline
 static 
 std::string
 getDotStyle(const aiScene* aiscene, const aiNode* ainode)
