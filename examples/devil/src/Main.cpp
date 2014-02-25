@@ -25,6 +25,14 @@ using namespace minko;
 using namespace minko::component;
 using namespace minko::math;
 
+const std::string TEXTURE_JPG = "texture/bricks.jpg";
+const std::string TEXTURE_PNG = "texture/bricks.png";
+const std::string TEXTURE_TGA = "texture/bricks.tga";
+const std::string TEXTURE_TIF = "texture/bricks.tif";
+const std::string TEXTURE_BMP = "texture/bricks.bmp";
+const std::string TEXTURE_PSD = "texture/bricks.psd";
+const std::string TEXTURE_DDS = "texture/bricks.dds";
+
 int main(int argc, char** argv)
 {
 	auto canvas = Canvas::create("Minko Example - DevIL", 800, 600);
@@ -34,18 +42,18 @@ int main(int argc, char** argv)
 	// setup assets
 	sceneManager->assets()->defaultOptions()->generateMipmaps(true);
 	sceneManager->assets()
-		->queue("texture/bricks.jpg")
-		->queue("texture/bricks.png")
-		->queue("texture/bricks.tga")
-		->queue("texture/bricks.tif")
-		->queue("texture/bricks.bmp")
-		->queue("texture/bricks.psd")
-		->queue("texture/bricks.dds")
+		->queue(TEXTURE_JPG)
+		->queue(TEXTURE_PNG)
+		->queue(TEXTURE_TGA)
+		->queue(TEXTURE_TIF)
+		->queue(TEXTURE_BMP)
+		->queue(TEXTURE_PSD)
+		->queue(TEXTURE_DDS)
 		->queue("effect/Basic.effect");
 
 	std::vector<std::string> extensions = file::DevILParser::getSupportedFileExensions();
 
-	for (int i = 0; i < extensions.size(); i++)
+	for (uint i = 0; i < extensions.size(); i++)
 	{
 		std::string extension = extensions[i];
 		sceneManager->assets()->registerParser<file::DevILParser>(extension);
@@ -58,13 +66,13 @@ int main(int argc, char** argv)
 	{
 		std::vector<minko::render::AbstractTexture::Ptr> textures;
 
-		textures.push_back(assets->texture("texture/bricks.jpg"));
-		textures.push_back(assets->texture("texture/bricks.png"));
-		textures.push_back(assets->texture("texture/bricks.tga"));
-		textures.push_back(assets->texture("texture/bricks.tif"));
-		textures.push_back(assets->texture("texture/bricks.bmp"));
-		textures.push_back(assets->texture("texture/bricks.psd"));
-		textures.push_back(assets->texture("texture/bricks.dds"));
+		textures.push_back(assets->texture(TEXTURE_JPG));
+		textures.push_back(assets->texture(TEXTURE_PNG));
+		textures.push_back(assets->texture(TEXTURE_TGA));
+		textures.push_back(assets->texture(TEXTURE_TIF));
+		textures.push_back(assets->texture(TEXTURE_BMP));
+		textures.push_back(assets->texture(TEXTURE_PSD));
+		textures.push_back(assets->texture(TEXTURE_DDS));
 		
 		auto root = scene::Node::create("root")
 			->addComponent(sceneManager);

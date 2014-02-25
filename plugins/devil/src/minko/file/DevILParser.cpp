@@ -140,7 +140,6 @@ DevILParser::getSupportedFileExensions()
 	result.push_back("dicom");
 	result.push_back("dcm");
 	result.push_back("dds");
-	//result.push_back("exr");
 	result.push_back("fits");
 	result.push_back("fit");
 	result.push_back("ftx");
@@ -184,7 +183,6 @@ DevILParser::getSupportedFileExensions()
 	result.push_back("utx");
 	result.push_back("wal");
 	result.push_back("vtf");
-	//result.push_back("wdp");
 	result.push_back("hdp");
 	result.push_back("xpm");
 
