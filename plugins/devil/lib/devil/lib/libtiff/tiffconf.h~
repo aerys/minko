@@ -1,0 +1,5 @@
+#if defined(__WIN32__) || defined(_WIN32) || defined(WIN32)
+	#include <tiffconf_win.h>
+#else
+	#include <tiffconf_lin.h>
+#endif
