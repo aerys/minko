@@ -391,6 +391,15 @@ EffectParser::parsePasses(const Json::Value&		root,
 				fallback
             );
 
+			// set uniform default values
+            for (auto& nameAndValues : uniformDefaultValues)
+                setUniformDefaultValueOnPass(
+                    pass,
+                    nameAndValues.first,
+                    nameAndValues.second.first,
+                    nameAndValues.second.second
+                );
+
             passes.push_back(pass);
         }
 	}
@@ -429,7 +438,9 @@ EffectParser::setUniformDefaultValueOnPass(render::Pass::Ptr	pass,
 			pass->setUniform(name, nv[0].floatValue, nv[1].floatValue, nv[2].floatValue, nv[3].floatValue);
 	}
 	else if (type == UniformType::TEXTURE)
+	{
 		pass->setUniform(name, value.textureValue);
+	}
 }
 
 render::Shader::Ptr
