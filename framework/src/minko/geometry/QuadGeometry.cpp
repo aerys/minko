@@ -32,8 +32,8 @@ QuadGeometry::QuadGeometry(uint		numColumns,
 	geometry::Geometry(),
 	_numColumns(numColumns),
 	_numRows(numRows),
-	_width(width * 2),
-	_height(height * 2)
+	_width(width),
+	_height(height)
 {
 }
 
