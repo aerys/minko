@@ -141,7 +141,7 @@ int main(int argc, char** argv)
 		uint numObjects	= 0;
 		auto keyDown = canvas->keyboard()->keyDown()->connect([&](input::Keyboard::Ptr k)
 		{
-			if (k->keyIsDown(input::Keyboard::ScanCode::SPACE))
+			if (k->keyIsDown(input::Keyboard::KeyCode::SPACE))
 			{
 				if (numObjects < MAX_NUM_OBJECTS)
 				{
