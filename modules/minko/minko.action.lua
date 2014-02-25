@@ -19,7 +19,7 @@ minko.action.copy = function(sourcePath)
 		sourcePath = path.translate(sourcePath)
 
 		if string.startswith(_ACTION, "gmake") then
-			return 'xcopy /y /i /e "' .. sourcePath .. '" ${TARGETDIR}'
+			return 'xcopy /y /i /e "' .. sourcePath .. '" $(subst /,\\,$(TARGETDIR))'
 		else
 			return 'xcopy /y /i /e "' .. sourcePath .. '" "$(TargetDir)"'
 		end
