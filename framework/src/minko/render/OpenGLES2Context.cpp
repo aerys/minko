@@ -128,6 +128,7 @@ OpenGLES2Context::OpenGLES2Context() :
 	_currentVertexSize(8, -1),
 	_currentVertexStride(8, -1),
 	_currentVertexOffset(8, -1),
+	_currentBoundTexture(0),
 	_currentTexture(8, 0),
 	_currentProgram(0),
 	_currentTriangleCulling(TriangleCulling::BACK),
@@ -526,6 +527,8 @@ OpenGLES2Context::createTexture(TextureType	type,
 
 	glBindTexture(glTarget, texture);
 
+	_currentBoundTexture = texture;
+
 	// default sampler states
 	glTexParameteri(glTarget, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(glTarget, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -628,6 +631,8 @@ OpenGLES2Context::uploadTexture2dData(uint 		texture,
 
 	glBindTexture(GL_TEXTURE_2D, texture);
 	glTexImage2D(GL_TEXTURE_2D, mipLevel, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+	
+	_currentBoundTexture = texture;
 
 	checkForErrors();
 }
@@ -672,6 +677,8 @@ OpenGLES2Context::uploadCubeTextureData(uint				texture,
 
 	glTexImage2D(cubeFace, mipLevel, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 
+	_currentBoundTexture = texture;
+
 	checkForErrors();
 }
 
@@ -699,6 +706,10 @@ OpenGLES2Context::deleteTexture(uint texture)
 	_currentTextureFilter.erase(texture);
 	_currentMipFilter.erase(texture);
 
+	for (unsigned int pos = 0; pos < _currentTexture.size(); ++pos)
+		_currentTexture[pos] = (_currentTexture[pos] == texture ? 0 : _currentTexture[pos]);
+	_currentBoundTexture = (_currentBoundTexture == texture ? 0 : _currentBoundTexture);
+
 	checkForErrors();
 }
 
@@ -710,19 +721,23 @@ OpenGLES2Context::setTextureAt(uint	position,
 	const bool textureIsValid = texture > 0;
 
 	if (!textureIsValid)
-		return ;
+		return;
+
+	if (position >= _currentTexture.size())
+		return;
 
 	const auto glTarget	= getTextureType(texture) == TextureType::Texture2D 
 		? GL_TEXTURE_2D 
 		: GL_TEXTURE_CUBE_MAP;
 
-
-	if (_currentTexture[position] != texture)
+	if (_currentTexture[position] != texture || 
+		_currentBoundTexture != texture)
 	{
-		_currentTexture[position] = texture;
-
 		glActiveTexture(GL_TEXTURE0 + position);
 		glBindTexture(glTarget, texture);
+
+		_currentTexture[position]	= texture;
+		_currentBoundTexture		= texture;
 	}
 
 	if (textureIsValid && location >= 0)
@@ -1660,6 +1675,8 @@ OpenGLES2Context::generateMipmaps(uint texture)
 {
 	glBindTexture(GL_TEXTURE_2D, texture);
 	glGenerateMipmap(GL_TEXTURE_2D);
+
+	_currentBoundTexture = texture;
 
 	checkForErrors();
 }
