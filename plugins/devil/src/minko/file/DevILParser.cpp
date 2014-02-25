@@ -84,14 +84,14 @@ DevILParser::parse(const std::string&                 filename,
 void
 DevILParser::computeDimensions()
 {
-	int width = ilGetInteger(IL_IMAGE_WIDTH);
-	int height = ilGetInteger(IL_IMAGE_HEIGHT);
+	uint width = (uint)ilGetInteger(IL_IMAGE_WIDTH);
+	uint height = (uint)ilGetInteger(IL_IMAGE_HEIGHT);
 
-	int wPow = std::ceil(std::log(double(width)) / std::log(double(2u)));
-	int hPow = std::ceil(std::log(double(height)) / std::log(double(2u)));
+	uint wPow = (uint)std::ceil(std::log(double(width)) / std::log(double(2u)));
+	uint hPow = (uint)std::ceil(std::log(double(height)) / std::log(double(2u)));
 
-	int w = std::pow(2.f, wPow);
-	int h = std::pow(2.f, hPow);
+	uint w = (uint)std::pow(2.f, wPow);
+	uint h = (uint)std::pow(2.f, hPow);
 
 	if (w > width)
 		wPow--;
@@ -104,7 +104,7 @@ DevILParser::computeDimensions()
 	if (maxPow < 1)
 		maxPow = 1;
 
-	w = std::pow(2.f, maxPow);
+	w = (uint)std::pow(2.f, maxPow);
 
 	if (w > render::AbstractTexture::MAX_SIZE)
 		w = render::AbstractTexture::MAX_SIZE;
