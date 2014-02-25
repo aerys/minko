@@ -77,6 +77,7 @@ namespace minko
 			std::vector<int>		                _currentVertexSize;
 			std::vector<int>		                _currentVertexStride;
 			std::vector<int>		                _currentVertexOffset;
+			uint									_currentBoundTexture;
 			std::vector<int>		                _currentTexture;
             std::unordered_map<uint, WrapMode>      _currentWrapMode;
             std::unordered_map<uint, TextureFilter> _currentTextureFilter;
