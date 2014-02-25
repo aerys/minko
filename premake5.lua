@@ -103,6 +103,7 @@ solution "minko"
 		include 'tutorial/27-working-with-point-lights'
 		include 'tutorial/28-working-with-spot-lights'
 		include 'tutorial/29-hello-falling-cube'
+		include 'tutorial/30-applying-antialiasing-effect'
 	end
 	
 	-- tests
