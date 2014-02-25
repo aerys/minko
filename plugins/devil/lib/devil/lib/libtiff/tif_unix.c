@@ -29,6 +29,8 @@
  * Windows Common RunTime Library.
  */
 
+#if !defined(__WIN32__) && !defined(_WIN32) && !defined(WIN32)
+
 #include "tif_config.h"
 
 #ifdef HAVE_SYS_TYPES_H
@@ -320,3 +322,4 @@ TIFFErrorHandler _TIFFerrorHandler = unixErrorHandler;
  * fill-column: 78
  * End:
  */
+#endif

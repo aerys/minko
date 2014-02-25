@@ -90,8 +90,8 @@ DevILParser::computeDimensions()
 	int wPow = std::ceil(std::log(double(width)) / std::log(double(2u)));
 	int hPow = std::ceil(std::log(double(height)) / std::log(double(2u)));
 
-	int w = std::pow(2.f, w);
-	int h = std::pow(2.f, h);
+	int w = std::pow(2.f, wPow);
+	int h = std::pow(2.f, hPow);
 
 	if (w > width)
 		wPow--;
