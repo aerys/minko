@@ -41,8 +41,8 @@ namespace minko
 			const unsigned int				_numBones;
 			std::vector<BonePtr>			_bones;
 
-			const uint							_duration;				// in milliseconds
-			const float							_timeFactor;
+			const uint						_duration;				// in milliseconds
+			const float						_timeFactor;
 			std::vector<std::vector<float>>	_boneMatricesPerFrame;
 
 			unsigned int					_maxNumVertexBones;
@@ -154,6 +154,9 @@ namespace minko
 			Ptr
 			disposeBones();
 
+			Ptr
+			transposeMatrices();
+
 		private:
 			Skin(unsigned int numBones, unsigned int duration, unsigned int numFrames);
 
@@ -170,6 +173,7 @@ namespace minko
 
 				return j + _numBones * vertexId;
 			}
+
 		};
 	}
 }
