@@ -42,50 +42,50 @@ int main(int argc, char** argv)
 		->queue("effect/Basic.effect");
 
 	sceneManager->assets()->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()));
-	
+
+	auto root = scene::Node::create("root")
+		->addComponent(sceneManager);
+
+	auto mesh = scene::Node::create("mesh")
+		->addComponent(Transform::create());
+
+	auto camera = scene::Node::create("camera")
+		->addComponent(Renderer::create(0x7f7f7fff))
+		->addComponent(Transform::create(
+		Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 3.f))
+		))
+		->addComponent(PerspectiveCamera::create(800.f / 600.f, (float)PI * 0.25f, .1f, 1000.f));
+	root->addChild(camera);
 
 	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
 	{
 		auto cubeGeometry = geometry::CubeGeometry::create(sceneManager->assets()->context());
 
-		auto root = scene::Node::create("root")
-			->addComponent(sceneManager);
-
 		assets->geometry("cubeGeometry", cubeGeometry);
-
-		auto camera = scene::Node::create("camera")
-			->addComponent(Renderer::create(0x7f7f7fff))
-			->addComponent(Transform::create(
-				Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 3.f))
-			))
-			->addComponent(PerspectiveCamera::create(800.f / 600.f, (float)PI * 0.25f, .1f, 1000.f));
-		root->addChild(camera);
 		
-		auto mesh = scene::Node::create("mesh")
-			->addComponent(Transform::create())
-			->addComponent(Surface::create(
-				assets->geometry("cubeGeometry"),
-				material::BasicMaterial::create()->diffuseMap(assets->texture(TEXTURE_FILENAME)),
-				assets->effect("effect/Basic.effect")
+		mesh->addComponent(Surface::create(
+			assets->geometry("cubeGeometry"),
+			material::BasicMaterial::create()->diffuseMap(assets->texture(TEXTURE_FILENAME)),
+			assets->effect("effect/Basic.effect")
 			));
+
 		root->addChild(mesh);
+	});
 
-		auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
-		{
-			camera->component<PerspectiveCamera>()->aspectRatio((float)w / (float)h);
-		});
+	auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
+	{
+		camera->component<PerspectiveCamera>()->aspectRatio((float)w / (float)h);
+	});
 
-		auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, uint deltaTime)
-		{
-			mesh->component<Transform>()->matrix()->appendRotationY(.01f);
+	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, uint deltaTime)
+	{
+		mesh->component<Transform>()->matrix()->appendRotationY(.01f);
 
-			sceneManager->nextFrame();
-		});
-
-		canvas->run();
+		sceneManager->nextFrame();
 	});
 
 	sceneManager->assets()->load();
+	canvas->run();
 
 	return 0;
 }
