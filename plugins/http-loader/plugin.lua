@@ -25,5 +25,6 @@ minko.plugin["http-loader"].enable = function (self)
 	includedirs { minko.plugin.path("http-loader") .. "/include" }
 	defines { "MINKO_PLUGIN_HTTP_LOADER" }
 
-	minko.plugin.enable("http-worker")
+	configuration { "not html5" }
+		minko.plugin.enable("http-worker")
 end
