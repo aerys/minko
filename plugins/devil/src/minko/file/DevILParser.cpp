@@ -105,6 +105,10 @@ DevILParser::computeDimensions()
 		maxPow = 1;
 
 	w = std::pow(2.f, maxPow);
+
+	if (w > render::AbstractTexture::MAX_SIZE)
+		w = render::AbstractTexture::MAX_SIZE;
+
 	h = w;
 
 	if (w != width || h != height)
