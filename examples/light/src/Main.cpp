@@ -31,6 +31,8 @@ using namespace minko::math;
 
 scene::Node::Ptr camera = nullptr;
 
+Signal<input::Keyboard::Ptr>::Slot keyDown;
+
 scene::Node::Ptr
 createPointLight(Vector3::Ptr color, Vector3::Ptr position, file::AssetLibrary::Ptr assets)
 {
@@ -119,7 +121,7 @@ int main(int argc, char** argv)
 		root->addChild(lights);
 
 		// handle keyboard signals
-		auto keyDown = canvas->keyboard()->keyDown()->connect([&](input::Keyboard::Ptr k)
+		keyDown = canvas->keyboard()->keyDown()->connect([&](input::Keyboard::Ptr k)
 		{
 			if (k->keyIsDown(input::Keyboard::KeyCode::a))
 			{
@@ -171,118 +173,118 @@ int main(int argc, char** argv)
 			if (k->keyIsDown(input::Keyboard::ScanCode::DOWN))
 				camera->component<Transform>()->matrix()->prependTranslation(0.f, 0.f, 1.f);
 		});
+	});
 
-		// camera init
-		camera = scene::Node::create("camera")
-			->addComponent(Renderer::create())
-			->addComponent(PerspectiveCamera::create((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT))
-			->addComponent(Transform::create(
-				Matrix4x4::create()->lookAt(Vector3::create(0.f, 2.f), Vector3::create(10.f, 10.f, 10.f))
-			));
-		root->addChild(camera);
+	// camera init
+	camera = scene::Node::create("camera")
+		->addComponent(Renderer::create())
+		->addComponent(PerspectiveCamera::create((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT))
+		->addComponent(Transform::create(
+		Matrix4x4::create()->lookAt(Vector3::create(0.f, 2.f), Vector3::create(10.f, 10.f, 10.f))
+		));
+	root->addChild(camera);
 
-		// initialize post processing
+	// initialize post processing
 #if POST_PROCESSING
-		auto ppFx = sceneManager->assets()->effect("effect/AnamorphicLensFlare/AnamorphicLensFlare.effect");
+	auto ppFx = sceneManager->assets()->effect("effect/AnamorphicLensFlare/AnamorphicLensFlare.effect");
 
-		if (!ppFx)
-			throw std::logic_error("AnamorphicLensFlare.effect has not been loaded.");
+	if (!ppFx)
+		throw std::logic_error("AnamorphicLensFlare.effect has not been loaded.");
 
-		auto ppTarget = render::Texture::create(assets->context(), 1024, 1024, false, true);
+	auto ppTarget = render::Texture::create(assets->context(), 1024, 1024, false, true);
 
-		ppTarget->upload();
+	ppTarget->upload();
 
-		auto ppRenderer = Renderer::create();
-		auto ppData = data::Provider::create()->set("backbuffer", ppTarget);
-		auto ppScene = scene::Node::create()
-			->addComponent(ppRenderer)
-			->addComponent(Surface::create(
-				geometry::QuadGeometry::create(sceneManager->assets()->context()),
-				ppData,
-				ppFx
-			));
+	auto ppRenderer = Renderer::create();
+	auto ppData = data::Provider::create()->set("backbuffer", ppTarget);
+	auto ppScene = scene::Node::create()
+		->addComponent(ppRenderer)
+		->addComponent(Surface::create(
+		geometry::QuadGeometry::create(sceneManager->assets()->context()),
+		ppData,
+		ppFx
+		));
 #endif
-		
-		auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, unsigned int width, unsigned int height)
-		{
-			camera->component<PerspectiveCamera>()->aspectRatio((float)width / (float)height);
+
+	auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, unsigned int width, unsigned int height)
+	{
+		camera->component<PerspectiveCamera>()->aspectRatio((float)width / (float)height);
 
 #if POST_PROCESSING
-			auto oldTarget = ppTarget;
+		auto oldTarget = ppTarget;
 
-			ppTarget = render::Texture::create(assets->context(), clp2(width), clp2(height), false, true);
-			ppTarget->upload();
-			ppData->set("backbuffer", ppTarget);
+		ppTarget = render::Texture::create(assets->context(), clp2(width), clp2(height), false, true);
+		ppTarget->upload();
+		ppData->set("backbuffer", ppTarget);
 #endif //POST_PROCESSING
-		});
+	});
 
-		auto yaw = 0.f;
-		auto pitch = (float)PI * .5f;
-		auto roll = 0.f;
-		auto minPitch = 0.f + 1e-5;
-		auto maxPitch = (float)PI - 1e-5;
-		auto lookAt = Vector3::create(0.f, 2.f, 0.f);
-		auto distance = 20.f;
+	auto yaw = 0.f;
+	auto pitch = (float)PI * .5f;
+	auto roll = 0.f;
+	auto minPitch = 0.f + 1e-5;
+	auto maxPitch = (float)PI - 1e-5;
+	auto lookAt = Vector3::create(0.f, 2.f, 0.f);
+	auto distance = 20.f;
 
-		// handle mouse signals
-		auto mouseWheel = canvas->mouse()->wheel()->connect([&](input::Mouse::Ptr m, int h, int v)
+	// handle mouse signals
+	auto mouseWheel = canvas->mouse()->wheel()->connect([&](input::Mouse::Ptr m, int h, int v)
+	{
+		distance += (float)v / 10.f;
+	});
+
+	Signal<input::Mouse::Ptr, int, int>::Slot mouseMove;
+	auto cameraRotationXSpeed = 0.f;
+	auto cameraRotationYSpeed = 0.f;
+
+	auto mouseDown = canvas->mouse()->leftButtonDown()->connect([&](input::Mouse::Ptr m)
+	{
+		mouseMove = canvas->mouse()->move()->connect([&](input::Mouse::Ptr, int dx, int dy)
 		{
-			distance += (float)v / 10.f;
+			cameraRotationYSpeed = (float)dx * .01f;
+			cameraRotationXSpeed = (float)dy * -.01f;
 		});
+	});
 
-		Signal<input::Mouse::Ptr, int, int>::Slot mouseMove;
-		auto cameraRotationXSpeed = 0.f;
-		auto cameraRotationYSpeed = 0.f;
+	auto mouseUp = canvas->mouse()->leftButtonUp()->connect([&](input::Mouse::Ptr m)
+	{
+		mouseMove = nullptr;
+	});
 
-		auto mouseDown = canvas->mouse()->leftButtonDown()->connect([&](input::Mouse::Ptr m)
-		{
-			mouseMove = canvas->mouse()->move()->connect([&](input::Mouse::Ptr, int dx, int dy)
-			{
-				cameraRotationYSpeed = (float)dx * .01f;
-				cameraRotationXSpeed = (float)dy * -.01f;
-			});
-		});
+	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, uint deltaTime)
+	{
+		yaw += cameraRotationYSpeed;
+		cameraRotationYSpeed *= 0.9f;
 
-		auto mouseUp = canvas->mouse()->leftButtonUp()->connect([&](input::Mouse::Ptr m)
-		{
-			mouseMove = nullptr;
-		});
+		pitch += cameraRotationXSpeed;
+		cameraRotationXSpeed *= 0.9f;
+		if (pitch > maxPitch)
+			pitch = maxPitch;
+		else if (pitch < minPitch)
+			pitch = minPitch;
 
-		auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, uint deltaTime)
-		{
-			yaw += cameraRotationYSpeed;
-			cameraRotationYSpeed *= 0.9f;
-
-			pitch += cameraRotationXSpeed;
-			cameraRotationXSpeed *= 0.9f;
-			if (pitch > maxPitch)
-				pitch = maxPitch;
-			else if (pitch < minPitch)
-				pitch = minPitch;
-
-			camera->component<Transform>()->matrix()->lookAt(
-				lookAt,
-				Vector3::create(
-					lookAt->x() + distance * cosf(yaw) * sinf(pitch),
-					lookAt->y() + distance * cosf(pitch),
-					lookAt->z() + distance * sinf(yaw) * sinf(pitch)
-				)
+		camera->component<Transform>()->matrix()->lookAt(
+			lookAt,
+			Vector3::create(
+			lookAt->x() + distance * cosf(yaw) * sinf(pitch),
+			lookAt->y() + distance * cosf(pitch),
+			lookAt->z() + distance * sinf(yaw) * sinf(pitch)
+			)
 			);
 
-			lights->component<Transform>()->matrix()->appendRotationY(.005f);
+		lights->component<Transform>()->matrix()->appendRotationY(.005f);
 
 #if POST_PROCESSING
-			sceneManager->nextFrame(ppTarget);
-			ppRenderer->render(assets->context());
+		sceneManager->nextFrame(ppTarget);
+		ppRenderer->render(assets->context());
 #else
-			sceneManager->nextFrame();
+		sceneManager->nextFrame();
 #endif
-		});
-
-		canvas->run();
 	});
 
 	sceneManager->assets()->load();
+
+	canvas->run();
 
 	exit(EXIT_SUCCESS);
 }
