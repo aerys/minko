@@ -1,4 +1,4 @@
-@echo on
+@echo off
 
 set target=%1
 set error=%errorlevel%
