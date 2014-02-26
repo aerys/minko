@@ -184,7 +184,6 @@ ASSIMPParser::parse(const std::string&					filename,
 
 	_symbol = scene::Node::create(_filename);
 	createSceneTree(_symbol, scene, scene->mRootNode, assetLibrary);
-	_symbol = _options->nodeFunction()(_symbol);
 
 #ifdef DEBUG_ASSIMP
 	printNode(std::cout << "\n", _symbol, 0) << std::endl;
@@ -204,13 +203,16 @@ ASSIMPParser::parse(const std::string&					filename,
 	dotPrint("minkoscene.dot", _symbol);
 #endif // DEBUG_ASSIMP_DOT
 
+	// file::Options::nodeFunction
+	apply(_symbol, _options->nodeFunction());
+
+	// file::Options::startAnimation
 	auto animations = NodeSet::create(_symbol)
 		->descendants(true)
 		->where([](Node::Ptr n)
 		{
 			return n->hasComponent<component::AbstractAnimation>();
 		});
-
 	for (auto& n : animations->nodes())
 		if (_options->startAnimation())
 			n->component<component::AbstractAnimation>()->play();
@@ -221,7 +223,6 @@ ASSIMPParser::parse(const std::string&					filename,
 		finalize();
 
 	disposeNodeMaps();
-
 }
 
 void
@@ -257,13 +258,21 @@ ASSIMPParser::createSceneTree(scene::Node::Ptr 				minkoNode,
 		if (!childName.empty())
 			_nameToNode[childName] = childNode;
 
-        //childNode->addComponent(getTransformFromAssimp(aichild));
-
         //Recursive call
 		createSceneTree(childNode, scene, aichild, assets);
 
-        minkoNode->addChild(_options->nodeFunction()(childNode));
+        minkoNode->addChild(childNode);
     }
+}
+
+void
+ASSIMPParser::apply(Node::Ptr node, const std::function<Node::Ptr(Node::Ptr)>& func)
+{
+	func(node);
+
+	if (node)
+		for (auto& n : node->children())
+			apply(n, func);
 }
 
 Transform::Ptr
