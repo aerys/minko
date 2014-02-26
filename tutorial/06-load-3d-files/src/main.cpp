@@ -70,36 +70,19 @@ main(int argc, char** argv)
         auto objModel = assets->symbol(OBJ_MODEL_FILENAME);
         auto daeModel = assets->symbol(DAE_MODEL_FILENAME);
 
-        objModel->addComponent(Transform::create(Matrix4x4::create()->appendScale(.01f)));
-        daeModel->addComponent(Transform::create(Matrix4x4::create()->appendScale(.01f)));
+        // change scale for the obj file
+        objModel->component<Transform>()->matrix()->appendScale(0.01f);
 
-        objModel->component<Transform>()->matrix()->translation(-1.f, 0.f, 0.f);
-        daeModel->component<Transform>()->matrix()->translation(1.f, 0.f, 0.f);
+        // change position
+        objModel->component<Transform>()->matrix()->translation(-1.f, -1.f, 0.f);
+        daeModel->component<Transform>()->matrix()->translation(1.f, -1.f, 0.f);
 
+        // add to the scene
         root->addChild(objModel);
         root->addChild(daeModel);
 
-        Signal<input::Mouse::Ptr, int, int>::Slot mouseMove;
-        float cameraRotationSpeed = 0.f;
-
-        auto mouseDown = canvas->mouse()->leftButtonDown()->connect([&](input::Mouse::Ptr mouse)
-        {
-            mouseMove = canvas->mouse()->move()->connect([&](input::Mouse::Ptr mouse, int dx, int dy)
-            {
-                cameraRotationSpeed = (float) -dx * .01f;
-            });
-        });
-
-        auto mouseUp = canvas->mouse()->leftButtonUp()->connect([&](input::Mouse::Ptr mouse)
-        {
-            mouseMove = nullptr;
-        });
-
         auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint t, float dt)
         {
-            camera->component<Transform>()->matrix()->appendRotationY(cameraRotationSpeed);
-            cameraRotationSpeed *= .99f;
-
             sceneManager->nextFrame();
         });
 
