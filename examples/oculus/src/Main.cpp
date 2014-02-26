@@ -18,7 +18,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "minko/Minko.hpp"
-#include "minko/MinkoPNG.hpp"
+#include "minko/MinkoJPEG.hpp"
 #include "minko/MinkoSDL.hpp"
 #include "minko/MinkoOculus.hpp"
 
@@ -27,7 +27,7 @@ using namespace minko::scene;
 using namespace minko::component;
 using namespace minko::math;
 
-const std::string	CUBE_TEXTURE		= "texture/entrance_hall_hor.png";
+const std::string	CUBE_TEXTURE		= "texture/entrance_hall_hor.jpg";
 
 const uint			WINDOW_WIDTH		= 800;
 const uint			WINDOW_HEIGHT		= 600;
@@ -75,7 +75,7 @@ int main(int argc, char** argv)
 		->generateMipmaps(true);
 
 	sceneManager->assets()
-		->registerParser<file::PNGParser>("png")
+		->registerParser<file::JPEGParser>("jpg")
 		->queue(CUBE_TEXTURE, file::Options::create(sceneManager->assets()->context())->isCubeTexture(true))
 		->geometry("cube",		geometry::CubeGeometry::create(sceneManager->assets()->context()))
 		->geometry("quad",		geometry::QuadGeometry::create(sceneManager->assets()->context()))
@@ -83,26 +83,29 @@ int main(int argc, char** argv)
 		->queue("effect/Basic.effect")
 		->queue("effect/OculusVR/OculusVR.effect");
 
-	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
+	auto prevTime = getTime();
+
+	std::vector<AnimData> spheresAnimData;
+	std::vector<AnimData> quadsAnimData;
+
+	Node::Ptr spheres	= nullptr;
+	Node::Ptr quads		= nullptr;
+
+	auto _ = sceneManager->assets()->complete()->connect([&](file::AssetLibrary::Ptr assets)
 	{
-		auto prevTime = getTime();
 
 		auto root = scene::Node::create("root")
 			->addComponent(sceneManager);
 
 		auto camera = scene::Node::create("camera")
 			->addComponent(Renderer::create(0x7f7f7fff))
-			->addComponent(Transform::create(
-				Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.0f, 3.0f))
-			))
+			->addComponent(Transform::create())
 			->addComponent(OculusVRCamera::create(WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f));
 		
-		std::vector<AnimData> spheresAnimData;
-		std::vector<AnimData> quadsAnimData;
-		auto spheres	= createObjectGroup(NUM_SPHERES, false, SPHERES_DIST, SPHERES_PRIORITY, assets, spheresAnimData);
-		auto quads		= createObjectGroup(NUM_QUADS, true, QUADS_DIST, QUADS_PRIORITY, assets, quadsAnimData);
+		spheres	= createObjectGroup(NUM_SPHERES, false, SPHERES_DIST, SPHERES_PRIORITY, assets, spheresAnimData);
+		quads	= createObjectGroup(NUM_QUADS, true, QUADS_DIST, QUADS_PRIORITY, assets, quadsAnimData);
 
-		auto cube		= scene::Node::create("cube")
+		auto cube	= scene::Node::create("cube")
 			->addComponent(Transform::create(
 				Matrix4x4::create()->appendScale(50.0f)
 			))
@@ -116,22 +119,21 @@ int main(int argc, char** argv)
 		root->addChild(spheres);
 		root->addChild(quads);
 		root->addChild(cube);
-
-		auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, uint deltaTime)
-		{
-			animateObjects(SPHERES_MOVE_AMPL, SPHERES_MOVE_SPEED, prevTime, spheresAnimData);
-			spheres->component<Transform>()->matrix()->appendRotationY(.001f);
-
-			animateObjects(QUADS_MOVE_AMPL, QUADS_MOVE_SPEED, prevTime, quadsAnimData);
-			quads->component<Transform>()->matrix()->appendRotationY(-.0005f);
-
-			sceneManager->nextFrame();
-		});
-
-		canvas->run();
 	});
+
+	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, uint deltaTime)
+	{
+		animateObjects(SPHERES_MOVE_AMPL, SPHERES_MOVE_SPEED, prevTime, spheresAnimData);
+		spheres->component<Transform>()->matrix()->appendRotationY(.001f);
 	
+		animateObjects(QUADS_MOVE_AMPL, QUADS_MOVE_SPEED, prevTime, quadsAnimData);
+		quads->component<Transform>()->matrix()->appendRotationY(-.0005f);
+	
+		sceneManager->nextFrame();
+	});
+			
 	sceneManager->assets()->load();
+	canvas->run();
 
 	return 0;
 }
@@ -174,7 +176,7 @@ createObjectGroup(unsigned int				numObjects,
 		auto matrix		 = Matrix4x4::create();
 		if (doQuads)
 			matrix
-				->appendScale(2.0* size, 3.0 * size, 1.0f)
+				->appendScale(2.0f * size, 3.0f * size, 1.0f)
 				->append(Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(toEyeVector)->scaleBy(distanceToEye)));
 		else
 			matrix

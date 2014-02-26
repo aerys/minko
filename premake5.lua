@@ -164,10 +164,10 @@ newaction {
 }
 
 newaction {
-	trigger			= "doxygen",
+	trigger			= "doc",
 	description		= "Create developer reference.",
 	execute			= function()
-		os.execute("doxygen")
+		os.execute("doxygen doc/Doxyfile")
 	end
 }
 
