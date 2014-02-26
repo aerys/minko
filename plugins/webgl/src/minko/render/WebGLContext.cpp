@@ -119,26 +119,34 @@ WebGLContext::setUniform(const unsigned int& location, const unsigned int& size,
 {
 	if (transpose)
 	{
-		static float	transposedValues[16];
+		float* transposed = new float[size << 4];
 
-		transposedValues[0] = values[0];
-		transposedValues[1] = values[4];
-		transposedValues[2] = values[8];
-		transposedValues[3] = values[12];
-		transposedValues[4] = values[1];
-		transposedValues[5] = values[5];
-		transposedValues[6] = values[9];
-		transposedValues[7] = values[13];
-		transposedValues[8] = values[2];
-		transposedValues[9] = values[6];
-		transposedValues[10] = values[10];
-		transposedValues[11] = values[14];
-		transposedValues[12] = values[3];
-		transposedValues[13] = values[7];
-		transposedValues[14] = values[11];
-		transposedValues[15] = values[15];
+		for (uint i = 0; i < size; ++i)
+		{
+			const float*	matrix	= values		+ (i << 4);
+			float*			tmatrix	= transposed	+ (i << 4);
 
-		glUniformMatrix4fv(location, size, false, transposedValues);
+			tmatrix[0]	= matrix[0];
+			tmatrix[1]	= matrix[4];
+			tmatrix[2]	= matrix[8];
+			tmatrix[3]	= matrix[12];
+			tmatrix[4]	= matrix[1];
+			tmatrix[5]	= matrix[5];
+			tmatrix[6]	= matrix[9];
+			tmatrix[7]	= matrix[13];
+			tmatrix[8]	= matrix[2];
+			tmatrix[9]	= matrix[6];
+			tmatrix[10] = matrix[10];
+			tmatrix[11] = matrix[14];
+			tmatrix[12] = matrix[3];
+			tmatrix[13] = matrix[7];
+			tmatrix[14] = matrix[11];
+			tmatrix[15] = matrix[15];
+		}
+
+		glUniformMatrix4fv(location, size, false, transposed);
+
+		delete[] transposed;
 	}
 	else
 		glUniformMatrix4fv(location, size, false, values);
