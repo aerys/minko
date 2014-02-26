@@ -7,7 +7,9 @@
 uniform vec4        diffuseColor;
 uniform sampler2D   diffuseMap;
 uniform samplerCube	diffuseCubeMap;
-uniform vec4		fogColor;
+#if defined(FOG_COLOR)
+	uniform vec4		fogColor;
+#endif
 
 varying vec2 vertexUV;
 varying vec3 vertexUVW;
@@ -23,7 +25,8 @@ void main(void)
 	#endif
 
 	#if defined(FOG_COLOR)
-		gl_FragColor *= 0.0f;
+		float factor = 0.5f;
+		gl_FragColor *= factor;
 	#endif
 }
 

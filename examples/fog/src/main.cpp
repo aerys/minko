@@ -26,7 +26,7 @@ using namespace minko::component;
 using namespace minko::math;
 
 static const std::string TEXTURE_FILENAME = "texture/box.png";
-static const std::string EFFECT_FILENAME = "effect/Basic.effect";
+static const std::string EFFECT_FILENAME = "effect/Basic-fog.effect";
 
 static const int WINDOW_WIDTH = 800;
 static const int WINDOW_HEIGHT = 600;
