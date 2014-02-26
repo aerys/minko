@@ -83,7 +83,6 @@ main(int argc, char** argv)
             ppFx
             ));
 
-        /*
         auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint width, uint height)
         {
             camera->component<PerspectiveCamera>()->aspectRatio((float) width / (float) height);
@@ -92,15 +91,36 @@ main(int argc, char** argv)
             ppTarget->upload();
             ppFx->setUniform("uBackbuffer", ppTarget);
         });
-        */
+
+        auto enableFXAA = true;
+
+        auto keyDown = canvas->keyboard()->keyDown()->connect([&](input::Keyboard::Ptr k)
+        {
+            if (k->keyIsDown(input::Keyboard::ScanCode::SPACE))
+            {
+                enableFXAA = !enableFXAA;
+
+                if (enableFXAA)
+                    std::cout << "Enable FXAA" << std::endl;
+                else
+                    std::cout << "Disable FXAA" << std::endl;
+            }
+            
+        });
 
         auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint t, float dt)
         {
             cube->component<Transform>()->matrix()->prependRotationY(.01f);
 
-            //sceneManager->nextFrame();
-            sceneManager->nextFrame(ppTarget);
-            ppRenderer->render(assets->context());
+            if (enableFXAA)
+            {
+                sceneManager->nextFrame(ppTarget);
+                ppRenderer->render(assets->context());
+            }
+            else
+            {
+                sceneManager->nextFrame();
+            }
         });
 
         canvas->run();
