@@ -34,6 +34,7 @@ Options::Options(std::shared_ptr<render::AbstractContext> context) :
     _generateMipMaps(false),
 	_resizeSmoothly(false),
 	_isCubeTexture(false),
+	_startAnimation(true),
 	_skinningFramerate(30),
 	_skinningMethod(component::SkinningMethod::HARDWARE),
 	_material(nullptr),
