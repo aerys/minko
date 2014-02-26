@@ -988,7 +988,7 @@ ASSIMPParser::precomputeModelToRootMatrices(Node::Ptr						node,
 			const auto matrix		= std::get<2>(trfInfo);
 
 			if (animMatrices)
-				modelToRoot->append((*animMatrices)[std::min (frameId, animMatrices->size() - 1)]);
+				modelToRoot->append((*animMatrices)[std::min (int(frameId), int(animMatrices->size() - 1))]);
 			else if (matrix)
 				modelToRoot->append(matrix);
 		}
