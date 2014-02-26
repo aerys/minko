@@ -37,7 +37,7 @@ FileLoader::FileLoader()
 void
 FileLoader::load(const std::string& filename, std::shared_ptr<Options> options)
 {
-	bool async = false;
+	bool async = true;
 
 	auto flags = std::ios::in | std::ios::ate | std::ios::binary;
 	

@@ -59,7 +59,7 @@ MINKO_WORKER("file-loader", FileLoaderWorker,
 			if (nextOffset > size)
 				readSize = size % chunkSize;
 
-			outputData->resize(nextOffset);
+			outputData->resize(offset + readSize);
 
 			file.read((char*)&(outputData->begin())[offset], readSize);
 
