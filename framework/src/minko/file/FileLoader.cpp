@@ -37,8 +37,6 @@ FileLoader::FileLoader()
 void
 FileLoader::load(const std::string& filename, std::shared_ptr<Options> options)
 {
-	bool async = true;
-
 	auto flags = std::ios::in | std::ios::ate | std::ios::binary;
 	
 	std::string cleanFilename = "";
@@ -76,7 +74,7 @@ FileLoader::load(const std::string& filename, std::shared_ptr<Options> options)
 
 	if (file.is_open())
 	{
-		if (async)
+		if (_options->loadAsynchronously() && AbstractCanvas::defaultCanvas() != nullptr && AbstractCanvas::defaultCanvas()->isWorkerRegistered("file-loader"))
 		{
 			file.close();
 			auto worker = AbstractCanvas::defaultCanvas()->getWorker("file-loader");

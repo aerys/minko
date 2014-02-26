@@ -80,6 +80,10 @@ namespace minko
 		std::shared_ptr<async::Worker>
 		getWorker(const std::string& name) = 0;
 
+		virtual
+		bool
+		isWorkerRegistered(const std::string& name) = 0;
+
 		template <typename T>
 		void
 		registerWorker(const std::string& type)
