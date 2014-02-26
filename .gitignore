@@ -20,7 +20,7 @@ Makefile
 *.lastbuildstate
 *.vsglog
 *.cache
-doc
+doc/html
 remove.me
 dist
 packages
