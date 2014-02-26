@@ -838,7 +838,7 @@ ASSIMPParser::createSkin(const aiMesh* aimesh)
 
 	// add skinning component to mesh
 	meshNode->addComponent(Skinning::create(
-		skin->reorganizeByVertices()->disposeBones(), 
+		skin->reorganizeByVertices()->transposeMatrices()->disposeBones(), 
 		_options->skinningMethod(), 
 		_assetLibrary->context(),
 		slaveAnimations

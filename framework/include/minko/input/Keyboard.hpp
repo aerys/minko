@@ -38,13 +38,6 @@ namespace minko
             {
                 UNKNOWN = 0,
 
-                /**
-                *  \name Usage page 0x07
-                *
-                *  These values are from usage page 0x07 (USB keyboard page).
-                */
-                /*@{*/
-
                 A = 4,
                 B = 5,
                 C = 6,
@@ -93,53 +86,10 @@ namespace minko
                 EQUALS = 46,
                 LEFTBRACKET = 47,
                 RIGHTBRACKET = 48,
-                /**< Located at the lower left of the return
-                *   key on ISO keyboards and at the right end
-                *   of the QWERTY row on ANSI keyboards.
-                *   Produces REVERSE SOLIDUS (backslash) and
-                *   VERTICAL LINE in a US layout, REVERSE
-                *   SOLIDUS and VERTICAL LINE in a UK Mac
-                *   layout, NUMBER SIGN and TILDE in a UK
-                *   Windows layout, DOLLAR SIGN and POUND SIGN
-                *   in a Swiss German layout, NUMBER SIGN and
-                *   APOSTROPHE in a German layout, GRAVE
-                *   ACCENT and POUND SIGN in a French Mac
-                *   layout, and ASTERISK and MICRO SIGN in a
-                *   French Windows layout.
-                */
                 BACKSLASH = 49, 
-                /**< ISO USB keyboards actually use this code
-                *   instead of 49 for the same key, but all
-                *   OSes I've seen treat the two codes
-                *   identically. So, as an implementor, unless
-                *   your keyboard generates both of those
-                *   codes and your OS treats them differently,
-                *   you should generate BACKSLASH
-                *   instead of this code. As a user, you
-                *   should not rely on this code because SDL
-                *   will never generate it with most (all?)
-                *   keyboards.
-                */
                 NONUSHASH = 50, 
                 SEMICOLON = 51,
                 APOSTROPHE = 52,
-                /**< Located in the top left corner (on both ANSI
-                *   and ISO keyboards). Produces GRAVE ACCENT and
-                *   TILDE in a US Windows layout and in US and UK
-                *   Mac layouts on ANSI keyboards, GRAVE ACCENT
-                *   and NOT SIGN in a UK Windows layout, SECTION
-                *   SIGN and PLUS-MINUS SIGN in US and UK Mac
-                *   layouts on ISO keyboards, SECTION SIGN and
-                *   DEGREE SIGN in a Swiss German layout (Mac:
-                *   only on ISO keyboards), CIRCUMFLEX ACCENT and
-                *   DEGREE SIGN in a German layout (Mac: only on
-                *   ISO keyboards), SUPERSCRIPT TWO and TILDE in a
-                *   French Windows layout, COMMERCIAL AT and
-                *   NUMBER SIGN in a French Mac layout on ISO
-                *   keyboards, and LESS-THAN SIGN and GREATER-THAN
-                *   SIGN in a Swiss German, German, or French Mac
-                *   layout on ANSI keyboards.
-                */
                 GRAVE = 53, 
                 COMMA = 54,
                 PERIOD = 55,
@@ -163,8 +113,6 @@ namespace minko
                 PRINTSCREEN = 70,
                 SCROLLLOCK = 71,
                 PAUSE = 72,
-                /**< insert on PC, help on some Mac keyboards (but
-                does send code 73, not 117) */
                 INSERT = 73, 
                 HOME = 74,
                 PAGEUP = 75,
@@ -175,8 +123,6 @@ namespace minko
                 LEFT = 80,
                 DOWN = 81,
                 UP = 82,
-                /**< num lock on PC, clear on Mac keyboards
-                */
                 NUMLOCKCLEAR = 83, 
                 KP_DIVIDE = 84,
                 KP_MULTIPLY = 85,
@@ -194,23 +140,8 @@ namespace minko
                 KP_9 = 97,
                 KP_0 = 98,
                 KP_PERIOD = 99,
-
-                /**< This is the additional key that ISO
-                *   keyboards have over ANSI ones,
-                *   located between left shift and Y.
-                *   Produces GRAVE ACCENT and TILDE in a
-                *   US or UK Mac layout, REVERSE SOLIDUS
-                *   (backslash) and VERTICAL LINE in a
-                *   US or UK Windows layout, and
-                *   LESS-THAN SIGN and GREATER-THAN SIGN
-                *   in a Swiss German, German, or French
-                *   layout. */
                 NONUSBACKSLASH = 100, 
-                /**< windows contextual menu, compose */
                 APPLICATION = 101, 
-                /**< The USB document says this is a status flag,
-                *   not a physical key - but some Mac keyboards
-                *   do have a power key. */
                 POWER = 102, 
                 KP_EQUALS = 103,
                 F13 = 104,
@@ -230,7 +161,7 @@ namespace minko
                 MENU = 118,
                 SELECT = 119,
                 STOP = 120,
-                AGAIN = 121,   /**< redo */
+                AGAIN = 121,
                 UNDO = 122,
                 CUT = 123,
                 COPY = 124,
@@ -239,34 +170,27 @@ namespace minko
                 MUTE = 127,
                 VOLUMEUP = 128,
                 VOLUMEDOWN = 129,
-                /* not sure whether there's a reason to enable these */
-                /*     LOCKINGCAPSLOCK = 130,  */
-                /*     LOCKINGNUMLOCK = 131, */
-                /*     LOCKINGSCROLLLOCK = 132, */
                 KP_COMMA = 133,
                 KP_EQUALSAS400 = 134,
-                /**< used on Asian keyboards, see
-                footnotes in USB doc */
                 INTERNATIONAL1 = 135, 
                 INTERNATIONAL2 = 136,
-                INTERNATIONAL3 = 137, /**< Yen */
+                INTERNATIONAL3 = 137,
                 INTERNATIONAL4 = 138,
                 INTERNATIONAL5 = 139,
                 INTERNATIONAL6 = 140,
                 INTERNATIONAL7 = 141,
                 INTERNATIONAL8 = 142,
                 INTERNATIONAL9 = 143,
-                LANG1 = 144, /**< Hangul/English toggle */
-                LANG2 = 145, /**< Hanja conversion */
-                LANG3 = 146, /**< Katakana */
-                LANG4 = 147, /**< Hiragana */
-                LANG5 = 148, /**< Zenkaku/Hankaku */
-                LANG6 = 149, /**< reserved */
-                LANG7 = 150, /**< reserved */
-                LANG8 = 151, /**< reserved */
-                LANG9 = 152, /**< reserved */
-
-                ALTERASE = 153, /**< Erase-Eaze */
+                LANG1 = 144,
+                LANG2 = 145,
+                LANG3 = 146,
+                LANG4 = 147,
+                LANG5 = 148,
+                LANG6 = 149,
+                LANG7 = 150,
+                LANG8 = 151,
+                LANG9 = 152,
+                ALTERASE = 153,
                 SYSREQ = 154,
                 CANCEL = 155,
                 CLEAR = 156,
@@ -278,7 +202,6 @@ namespace minko
                 CLEARAGAIN = 162,
                 CRSEL = 163,
                 EXSEL = 164,
-
                 KP_00 = 176,
                 KP_000 = 177,
                 THOUSANDSSEPARATOR = 178,
@@ -328,25 +251,12 @@ namespace minko
 
                 LCTRL = 224,
                 LSHIFT = 225,
-                LALT = 226, /**< alt, option */
-                LGUI = 227, /**< windows, command (apple), meta */
+                LALT = 226,
+                LGUI = 227,
                 RCTRL = 228,
                 RSHIFT = 229,
-                RALT = 230, /**< alt gr, option */
-                RGUI = 231, /**< windows, command (apple), meta */
-                /**< I'm not sure if this is really not covered
-                *   by any of the above, but since there's a
-                *   special KMOD_MODE for it I'm adding it here
-                */
-
-                /*@}*//*Usage page 0x07*/
-
-                /**
-                *  \name Usage page 0x0C
-                *
-                *  These values are mapped from usage page 0x0C (USB consumer page).
-                */
-                /*@{*/
+                RALT = 230,
+                RGUI = 231,
                 MODE = 257,    
 
                 AUDIONEXT = 258,
@@ -367,19 +277,8 @@ namespace minko
                 AC_REFRESH = 273,
                 AC_BOOKMARKS = 274,
 
-                /*@}*//*Usage page 0x0C*/
-
-                /**
-                *  \name Walther keys
-                *
-                *  These are values that Christian Walther added (for mac keyboard?).
-                */
-                /*@{*/
-
                 BRIGHTNESSDOWN = 275,
                 BRIGHTNESSUP = 276,
-                /**< display mirroring/dual display
-                switch, video mode switch */
                 DISPLAYSWITCH = 277, 
                 KBDILLUMTOGGLE = 278,
                 KBDILLUMDOWN = 279,

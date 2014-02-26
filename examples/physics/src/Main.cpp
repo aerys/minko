@@ -42,6 +42,9 @@ const auto			MAX_DROP_POS		= Vector3::create( GROUND_WIDTH * 0.5f - 0.5f, 5.0f, 
 
 const unsigned int	MAX_NUM_OBJECTS		= 32;
 
+Signal<input::Keyboard::Ptr>::Slot keyDown;
+uint numObjects = 0;
+
 Node::Ptr
 createPhysicsObject(unsigned int id, file::AssetLibrary::Ptr, bool isCube);
 
@@ -64,23 +67,42 @@ int main(int argc, char** argv)
 	
 	std::cout << "[space]\tdrop an object onto the scene (up to " << MAX_NUM_OBJECTS << ")" << std::endl;
 
+
+	auto root = scene::Node::create("root")
+		->addComponent(sceneManager)
+		->addComponent(bullet::PhysicsWorld::create());
+
+	auto camera = scene::Node::create("camera")
+		->addComponent(Renderer::create(0x7f7f7fff))
+		->addComponent(Transform::create(
+		Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(5.0f, 1.5f, 5.0f))
+		))
+		->addComponent(PerspectiveCamera::create(800.f / 600.f, (float)PI * 0.25f, .1f, 1000.f));
+
+	root->addChild(camera);
+
+	auto groundNode = scene::Node::create("groundNode")->addComponent(Transform::create(
+		Matrix4x4::create()->appendRotationZ(-(float)PI * 0.1f)
+		));
+
+	// set-up lighting environment
+	auto ambientLightNode = scene::Node::create("ambientLight")
+		->addComponent(AmbientLight::create());
+
+	auto dirLightNode = scene::Node::create("dirLight")
+		->addComponent(DirectionalLight::create())
+		->addComponent(Transform::create(
+		Matrix4x4::create()->lookAt(Vector4::zero(), Vector4::create(0.5f, 5.0f, 3.0f))
+		));
+
+	dirLightNode->component<DirectionalLight>()->specular(0.5f);
+
+	root
+		->addChild(ambientLightNode)
+		->addChild(dirLightNode);
+
 	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
 	{
-		auto root = scene::Node::create("root")
-			->addComponent(sceneManager)
-			->addComponent(bullet::PhysicsWorld::create());
-
-		auto camera = scene::Node::create("camera")
-			->addComponent(Renderer::create(0x7f7f7fff))
-			->addComponent(Transform::create(
-				Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(5.0f, 1.5f, 5.0f))
-			))
-			->addComponent(PerspectiveCamera::create(800.f / 600.f, (float)PI * 0.25f, .1f, 1000.f));
-		
-		auto groundNode = scene::Node::create("groundNode")->addComponent(Transform::create(
-				Matrix4x4::create()->appendRotationZ(-(float)PI * 0.1f)
-			));
-
 		auto groundNodeA = scene::Node::create("groundNodeA")
 			->addComponent(Transform::create(
 				Matrix4x4::create()->appendScale(GROUND_WIDTH, GROUND_THICK, GROUND_DEPTH)
@@ -114,38 +136,19 @@ int main(int argc, char** argv)
 					bullet::BoxShape::create(GROUND_THICK * 0.5f, GROUND_HEIGHT * 0.5f, GROUND_DEPTH * 0.5f))
 			));
 
-		root->addChild(camera);
-
 		groundNode
 			->addChild(groundNodeA)
 			->addChild(groundNodeB);
 
 		root->addChild(groundNode);
 
-		// set-up lighting environment
-		auto ambientLightNode = scene::Node::create("ambientLight")
-			->addComponent(AmbientLight::create());
-
-		auto dirLightNode = scene::Node::create("dirLight")
-			->addComponent(DirectionalLight::create())
-			->addComponent(Transform::create(
-				Matrix4x4::create()->lookAt(Vector4::zero(), Vector4::create(0.5f, 5.0f, 3.0f))
-			));
-
-		dirLightNode->component<DirectionalLight>()->specular(0.5f);
-
-		root
-			->addChild(ambientLightNode)
-			->addChild(dirLightNode);
-
-		uint numObjects	= 0;
-		auto keyDown = canvas->keyboard()->keyDown()->connect([&](input::Keyboard::Ptr k)
+		keyDown = canvas->keyboard()->keyDown()->connect([&](input::Keyboard::Ptr k)
 		{
 			if (k->keyIsDown(input::Keyboard::KeyCode::SPACE))
 			{
 				if (numObjects < MAX_NUM_OBJECTS)
 				{
-					root->addChild(createPhysicsObject(numObjects, assets, rand() / (float)RAND_MAX > 0.5f));
+					root->addChild(createPhysicsObject(numObjects, sceneManager->assets(), rand() / (float)RAND_MAX > 0.5f));
 					++numObjects;
 
 					std::cout << "object #" << numObjects << " dropped" << std::endl;
@@ -154,21 +157,21 @@ int main(int argc, char** argv)
 					std::cout << "You threw away all your possible objects. Try again!" << std::endl;
 			}
 		});
+	});
 
-		auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
-		{
-			camera->component<PerspectiveCamera>()->aspectRatio((float)w / (float)h);
-		});
+	auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
+	{
+		camera->component<PerspectiveCamera>()->aspectRatio((float)w / (float)h);
+	});
 
-		auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, uint deltaTime)
-		{
-			sceneManager->nextFrame();
-		});
-
-		canvas->run();
+	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, uint deltaTime)
+	{
+		sceneManager->nextFrame();
 	});
 
 	sceneManager->assets()->load();
+
+	canvas->run();
 
 	return 0;
 }
