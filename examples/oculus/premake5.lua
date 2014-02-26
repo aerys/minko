@@ -15,7 +15,7 @@ minko.project.application("minko-example-" .. PROJECT_NAME)
 
 	-- plugins
 	minko.plugin.enable("oculus")
-	minko.plugin.enable("png")
+	minko.plugin.enable("jpeg")
 	minko.plugin.enable("sdl")
 	
 	minko.plugin.import("angle")
