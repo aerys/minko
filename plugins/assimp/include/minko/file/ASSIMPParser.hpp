@@ -247,6 +247,9 @@ namespace minko
 
 			void
 			disposeNodeMaps();
+
+			void
+			apply(NodePtr, const std::function<NodePtr(NodePtr)>&);
 		};
 	}
 }
