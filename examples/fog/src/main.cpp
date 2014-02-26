@@ -45,13 +45,11 @@ int main(int argc, char** argv)
 		->queue(TEXTURE_FILENAME)
 		->queue("effect/Basic-fog.effect");
 
-	sceneManager->assets()->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()));
-
 	auto root = scene::Node::create("root")
 		->addComponent(sceneManager);
 
 	auto mesh = scene::Node::create("mesh")
-		->addComponent(Transform::create(Matrix4x4::create()->translation()));
+		->addComponent(Transform::create(Matrix4x4::create()->appendTranslation(Vector3::create(0.0f, 0.0f, -3.0f))));
 
 	auto camera = scene::Node::create("camera")
 		->addComponent(Renderer::create(0x7f7f7fff))
