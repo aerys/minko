@@ -187,3 +187,26 @@ Skin::disposeBones()
 
 	return shared_from_this();
 }
+
+Skin::Ptr
+Skin::transposeMatrices()
+{	
+	for (auto& frameMatrices : _boneMatricesPerFrame)
+	{
+		assert(frameMatrices.size() % 16 == 0);
+		const unsigned int	numBones	= frameMatrices.size() >> 4;
+		float*				matrices	= &(frameMatrices[0]);
+
+		for (unsigned int boneId = 0; boneId < numBones; ++boneId)
+		{
+			float* matrix = matrices + (boneId << 4);
+			std::swap(matrix[1],	matrix[4]);
+			std::swap(matrix[2],	matrix[8]);
+			std::swap(matrix[3],	matrix[12]);
+			std::swap(matrix[6],	matrix[9]);
+			std::swap(matrix[7],	matrix[13]);
+			std::swap(matrix[11],	matrix[14]);
+		}
+	}
+	return shared_from_this();
+}
