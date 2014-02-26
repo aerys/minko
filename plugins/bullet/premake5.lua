@@ -10,6 +10,8 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 	kind "StaticLib"
 	language "C++"
 
+	minko.plugin.enable("serializer")
+
 	files {
 		"lib/**.hpp",
 		"lib/**.h",

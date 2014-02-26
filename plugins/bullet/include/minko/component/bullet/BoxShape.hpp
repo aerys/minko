@@ -21,6 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 #include <minko/component/bullet/AbstractPhysicsShape.hpp>
+#include "minko/math/Vector3.hpp"
 
 namespace minko
 {
