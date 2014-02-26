@@ -597,7 +597,7 @@ DrawCall::render(const AbstractContext::Ptr& context, AbstractTexture::Ptr rende
 	for (auto& uniformFloats4 : _uniformFloats4)
 		context->setUniforms4	(uniformFloats4.first,	uniformFloats4.second->first,			uniformFloats4.second->second);
 	for (auto& uniformFloats16 : _uniformFloats16)
-		context->setUniform		(uniformFloats16.first,	uniformFloats16.second->first, true,	uniformFloats16.second->second);
+		context->setUniform		(uniformFloats16.first,	uniformFloats16.second->first, false,	uniformFloats16.second->second);
 
 	// arrays of integer uniforms
 	for (auto& uniformInts: _uniformInts)
