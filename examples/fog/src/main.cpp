@@ -66,13 +66,30 @@ int main(int argc, char** argv)
 
 		assets->geometry("cubeGeometry", cubeGeometry);
 		
+		auto cubeMaterial = material::BasicMaterial::create()
+			->diffuseMap(assets->texture(TEXTURE_FILENAME))
+			->fogColor(Vector4::create(1.0f, 1.0f, 1.0f, 1.0f));
+
 		mesh->addComponent(Surface::create(
 			assets->geometry("cubeGeometry"),
-			material::BasicMaterial::create()
-				->diffuseMap(assets->texture(TEXTURE_FILENAME))
-				->fogColor(Vector4::create(1.0f, 1.0f, 1.0f, 1.0f)),
+			cubeMaterial,
 			assets->effect(EFFECT_FILENAME)
 			));
+
+		std::vector<Matrix4x4::Ptr> keyTransforms;
+
+		keyTransforms.push_back(Matrix4x4::create()->appendTranslation(Vector3::create(0.0f, 0.0f, 0.0f)));
+		keyTransforms.push_back(Matrix4x4::create()->copyFrom(keyTransforms[0])->appendTranslation(Vector3::create(0.0f, 0.0f, -15.0f)));
+		keyTransforms.push_back(Matrix4x4::create()->copyFrom(keyTransforms[1])->appendTranslation(Vector3::create(0.0f, 0.0f, 15.0f)));
+
+		auto segmentDuration = 1000U;
+
+		auto cubeAnimation = Animation::create(
+		{ minko::animation::Matrix4x4Timeline::create("transform.matrix", segmentDuration * 3,
+		{ segmentDuration * 1, segmentDuration * 2, segmentDuration * 3 },
+		keyTransforms, true) }, true);
+
+		mesh->addComponent(cubeAnimation);
 
 		root->addChild(mesh);
 
