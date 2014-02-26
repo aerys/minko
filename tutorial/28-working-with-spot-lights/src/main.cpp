@@ -55,7 +55,7 @@ main(int argc, char** argv)
         auto ground = scene::Node::create("sphere")
             ->addComponent(Surface::create(
             geometry::QuadGeometry::create(assets->context()),
-            material::BasicMaterial::create()->diffuseColor(Vector4::create(0.f, 0.f, 1.f, 1.f)),
+            material::BasicMaterial::create()->diffuseColor(Vector4::create(0.f, 0.f, 0.f, 1.f)),
             assets->effect("effect/Phong.effect")
             ))
             ->addComponent(Transform::create(Matrix4x4::create()->appendScale(3.f)->appendRotationX(-1.57f)));
@@ -83,7 +83,6 @@ main(int argc, char** argv)
         {
             spotLightNode->component<Transform>()->matrix()->appendRotationX(0.002f * dt);
 
-            std::cout << "Delta time: " << dt << " [" << canvas->framerate() << "]" << std::endl;
 
             sceneManager->nextFrame();
         });

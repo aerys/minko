@@ -49,7 +49,7 @@ main(int argc, char** argv)
         auto camera = scene::Node::create("camera")
             ->addComponent(Renderer::create(0x7f7f7fff))
             ->addComponent(Transform::create(
-            Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 3.f, -5.f))
+            Matrix4x4::create()->lookAt(Vector3::create(0.f, 1.f, 0.f), Vector3::create(0.f, 1.f, -3.f))
             ))
             ->addComponent(PerspectiveCamera::create(
             (float) WINDOW_WIDTH / (float) WINDOW_HEIGHT, (float) PI * 0.25f, .1f, 1000.f)
@@ -57,14 +57,53 @@ main(int argc, char** argv)
         root->addChild(camera);
 
         // create a ground
-        auto ground = scene::Node::create("sphere")
+        auto ground = scene::Node::create("ground")
             ->addComponent(Surface::create(
             geometry::QuadGeometry::create(assets->context()),
-            material::BasicMaterial::create()->diffuseColor(Vector4::create(0.f, 0.f, 1.f, 1.f)),
+            material::BasicMaterial::create()->diffuseColor(Vector4::create(0.5f, 0.5f, 0.5f, 1.f)),
             assets->effect("effect/Phong.effect")
             ))
-            ->addComponent(Transform::create(Matrix4x4::create()->appendScale(3.f)->appendRotationX(-1.57f)));
+            ->addComponent(Transform::create(Matrix4x4::create()->appendScale(4.f)->appendRotationX(-(PI /2))));
         root->addChild(ground);
+
+        // create a left wall
+        auto leftWall = scene::Node::create("leftWall")
+            ->addComponent(Surface::create(
+            geometry::QuadGeometry::create(assets->context()),
+            material::BasicMaterial::create()->diffuseColor(Vector4::create(0.5f, 0.5f, 0.5f, 1.f)),
+            assets->effect("effect/Phong.effect")
+            ))
+            ->addComponent(Transform::create(Matrix4x4::create()
+            ->appendScale(4.f)
+            ->appendRotationY(-(PI / 2))
+            ->appendTranslation(1.f, 1.f, 0.f)));
+        root->addChild(leftWall);
+
+        // create a right wall
+        auto rightWall = scene::Node::create("rightWall")
+            ->addComponent(Surface::create(
+            geometry::QuadGeometry::create(assets->context()),
+            material::BasicMaterial::create()->diffuseColor(Vector4::create(0.5f, 0.5f, 0.5f, 1.f)),
+            assets->effect("effect/Phong.effect")
+            ))
+            ->addComponent(Transform::create(Matrix4x4::create()
+            ->appendScale(4.f)
+            ->appendRotationY((PI / 2))
+            ->appendTranslation(-1.f, 1.f, 0.f)));
+        root->addChild(rightWall);
+
+        // create a back wall
+        auto backWall = scene::Node::create("backWall")
+            ->addComponent(Surface::create(
+            geometry::QuadGeometry::create(assets->context()),
+            material::BasicMaterial::create()->diffuseColor(Vector4::create(0.5f, 0.5f, 0.5f, 1.f)),
+            assets->effect("effect/Phong.effect")
+            ))
+            ->addComponent(Transform::create(Matrix4x4::create()
+            ->appendScale(4.f)
+            ->appendRotationX(PI)
+            ->appendTranslation(0.f, 1.f, 1.f)));
+        root->addChild(backWall);
 
         // create the point light node
         auto pointLightNode = scene::Node::create("pointLight")
@@ -75,7 +114,7 @@ main(int argc, char** argv)
             geometry::QuadGeometry::create(assets->context()),
             material::Material::create()
             ->set("diffuseMap", assets->texture("texture/sprite-pointlight.png"))
-            ->set("diffuseTint", Vector4::create(0.f, 0.f, 1.f, 1.f)),
+            ->set("diffuseTint", Vector4::create(1.f, 1.f, 1.f, 1.f)),
             assets->effect("effect/Sprite.effect")
             ));
 
