@@ -37,7 +37,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/data/Container.hpp"
 #include "minko/math/Matrix4x4.hpp"
 
-#include "ZSortSignalManager.hpp"
+#include "DrawCallTransparencyHelper.hpp"
 
 using namespace minko;
 using namespace minko::data;
@@ -70,14 +70,14 @@ DrawCall::DrawCall(const data::BindingMap&	attributeBindings,
 	_target(nullptr),
 	_referenceChangedSlots(),
 	_zsortNeeded(Signal<Ptr>::create()),
-	_zsortSignalManager(nullptr)
+	_transparencyHelper(nullptr)
 {
 }
 
 void
 DrawCall::initialize()
 {
-	_zsortSignalManager = ZSortSignalManager::create(shared_from_this());
+	_transparencyHelper = DrawCallTransparencyHelper::create(shared_from_this());
 }
 
 void
@@ -103,7 +103,7 @@ DrawCall::bind(ContainerPtr data, ContainerPtr rendererData, ContainerPtr rootDa
 	bindProgramInputs();
 	bindStates();
 
-	_zsortSignalManager->initialize(data, rendererData, rootData);
+	_transparencyHelper->initialize(data, rendererData, rootData);
 }
 
 void
@@ -498,7 +498,7 @@ DrawCall::reset()
 	_vertexAttributeOffsets	.resize(MAX_NUM_VERTEXBUFFERS, -1);
 
 	_referenceChangedSlots.clear();
-	_zsortSignalManager->clear();
+	_transparencyHelper->clear();
 }
 
 void
@@ -701,5 +701,5 @@ DrawCall::getDataContainer(const data::BindingSource& source) const
 Vector3::Ptr
 DrawCall::getEyeSpacePosition(Vector3::Ptr output) 
 {
-	return _zsortSignalManager->getEyeSpacePosition(output);
+	return _transparencyHelper->getEyeSpacePosition(output);
 }
