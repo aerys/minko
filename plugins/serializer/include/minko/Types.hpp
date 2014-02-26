@@ -35,7 +35,9 @@ namespace minko
 			SPOT_LIGHT			= 105,
 			SURFACE				= 106,
 			RENDERER			= 107,
-			BOUNDINGBOX			= 108
+			BOUNDINGBOX			= 108,
+			ANIMATION			= 109,
+			SKINNING			= 110
 		};
 
 		enum MinkoTypes
