@@ -1,4 +1,4 @@
-/*
+	/*
 Copyright (c) 2013 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
@@ -38,25 +38,43 @@ namespace minko
 			typedef std::shared_ptr<data::Value>					ValuePtr;
 
 		private:
+			struct PropertyInfo
+			{
+				data::BindingSource source;
+				bool				isMatrix;
+
+				inline
+				PropertyInfo(): source(data::BindingSource::TARGET), isMatrix(false) { }
+
+				inline
+				PropertyInfo(data::BindingSource src, bool isMat): source(src), isMatrix(isMat)	{ }
+			};
+
 			typedef std::shared_ptr<Signal<DrawCallPtr>>			ZSortNeedSignalPtr;
+			typedef std::shared_ptr<render::VertexBuffer>			VertexBufferPtr;
+			typedef std::shared_ptr<math::Matrix4x4>				Matrix4x4Ptr;	
 			typedef Signal<ContainerPtr, const std::string&>::Slot	PropertyChangedSlot;
 			typedef Signal<ValuePtr>::Slot							ValueChangedSlot;
+			typedef std::unordered_map<std::string, PropertyInfo>	PropertyInfos;								
 
-		private:
-			static std::set<std::string>							_targetRawPropNames;
-			static std::set<std::string>							_rendererRawPropNames;
+		private:	
+			static const PropertyInfos								_rawProperties;
 
 			const DrawCallPtr										_drawcall;
 
+			PropertyInfos											_properties;
 			PropertyChangedSlot										_targetPropAddedSlot;
 			PropertyChangedSlot										_targetPropRemovedSlot;
 			PropertyChangedSlot										_rendererPropAddedSlot;
 			PropertyChangedSlot										_rendererPropRemovedSlot;
+
 			std::unordered_map<std::string, PropertyChangedSlot>	_propChangedSlots;
 			std::unordered_map<std::string, ValueChangedSlot>		_matrixChangedSlots;
 
-			std::set<std::string>									_targetPropNames;
-			std::set<std::string>									_rendererPropNames;
+			// positional members
+			std::pair<std::string, VertexBufferPtr>					_vertexPositions;
+			std::pair<std::string, Matrix4x4Ptr>					_modelToWorldMatrix;
+			std::pair<std::string, Matrix4x4Ptr>					_worldToScreenMatrix;
 
 		public:
 			inline static
@@ -72,25 +90,27 @@ namespace minko
 			void
 			clear();
 
+			std::shared_ptr<math::Vector3>
+			getEyeSpacePosition(std::shared_ptr<math::Vector3> output = nullptr) const;
+
 		private:
 			ZSortSignalManager(DrawCallPtr drawcall);
 
 			static
-			void
-			initializeTargetRawPropertyNames();
-
-			static
-			void
-			initializeRendererRawPropertyNames();
+			PropertyInfos
+			initializeRawProperties();
 
 			void
-			propertyAddedHandler(ContainerPtr, const std::string&, const std::set<std::string>&);
+			propertyAddedHandler(ContainerPtr, const std::string&);
 
 			void
-			propertyRemovedHandler(ContainerPtr, const std::string&, const std::set<std::string>&);
+			propertyRemovedHandler(ContainerPtr, const std::string&);
 
 			void
 			requestZSort();
+
+			void
+			recordIfPositionalMembers(ContainerPtr, const std::string&, bool, bool);
 		};
 	}
 }

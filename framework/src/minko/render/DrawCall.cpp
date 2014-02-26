@@ -701,28 +701,5 @@ DrawCall::getDataContainer(const data::BindingSource& source) const
 Vector3::Ptr
 DrawCall::getEyeSpacePosition(Vector3::Ptr output) 
 {
-	static auto localPos	= Vector3::create();
-	static auto modelView	= Matrix4x4::create();
-
-	static const std::string PNAME_POSITIONS		= "geometry[${geometryId}].position";
-	static const std::string PNAME_MODEL_TO_WORLD	= "transform.modelToWorldMatrix";
-	static const std::string PNAME_WORLD_TO_SCREEN	= "camera.worldToScreenMatrix";
-
-	auto pnamePosition = formatPropertyName(PNAME_POSITIONS);
-
-	localPos = _targetData && _targetData->hasProperty(pnamePosition)
-		? _targetData->get<VertexBuffer::Ptr>(pnamePosition)->centerPosition(localPos)
-		: localPos->setTo(0.0f, 0.0f, 0.0f);
-	
-	if (_targetData && 
-		_targetData->hasProperty(PNAME_MODEL_TO_WORLD))
-		modelView->copyFrom(_targetData->get<Matrix4x4::Ptr>(PNAME_MODEL_TO_WORLD));
-
-	if (_rendererData && 
-		_rendererData->hasProperty(PNAME_WORLD_TO_SCREEN))
-		modelView->append(_rendererData->get<Matrix4x4::Ptr>(PNAME_WORLD_TO_SCREEN));
-
-	output = modelView->transform(localPos, output);
-
-	return output;
+	return _zsortSignalManager->getEyeSpacePosition(output);
 }
