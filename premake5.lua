@@ -66,6 +66,7 @@ solution "minko"
 		include 'examples/oculus'
 		include 'examples/http'
 		include 'examples/joystick'
+		include 'examples/fog'
 	end
 
 	-- tests
