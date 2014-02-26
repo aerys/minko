@@ -103,6 +103,26 @@ BasicMaterial::diffuseCubeMap() const
 }
 
 BasicMaterial::Ptr
+BasicMaterial::fogColor(Vector4::Ptr value)
+{
+	set("fogColor", value);
+
+	return std::dynamic_pointer_cast<BasicMaterial>(shared_from_this());
+}
+
+BasicMaterial::Ptr
+BasicMaterial::fogColor(uint rgba)
+{
+	return fogColor(Color::uintToVec4(rgba));
+}
+
+Vector4::Ptr
+BasicMaterial::fogColor() const
+{
+	return get<Vector4::Ptr>("fogColor");
+}
+
+BasicMaterial::Ptr
 BasicMaterial::blendingMode(Blending::Source src, Blending::Destination dst)
 {
 	set<Blending::Mode>("blendMode", src | dst);

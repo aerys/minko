@@ -7,6 +7,7 @@
 uniform vec4        diffuseColor;
 uniform sampler2D   diffuseMap;
 uniform samplerCube	diffuseCubeMap;
+uniform vec4		fogColor;
 
 varying vec2 vertexUV;
 varying vec3 vertexUVW;
@@ -19,6 +20,10 @@ void main(void)
 		gl_FragColor 	= texture2D(diffuseMap, vertexUV);
 	#else
 		gl_FragColor 	= diffuseColor;
+	#endif
+
+	#if defined(FOG_COLOR)
+		gl_FragColor *= 0.2f;
 	#endif
 }
 

@@ -26,7 +26,7 @@ using namespace minko::component;
 using namespace minko::math;
 
 static const std::string TEXTURE_FILENAME = "texture/box.png";
-static const std::string EFFECT_FILENAME = "effect/Basic-fog.effect";
+static const std::string EFFECT_FILENAME = "effect/Basic.effect";
 
 static const int WINDOW_WIDTH = 800;
 static const int WINDOW_HEIGHT = 600;
@@ -43,51 +43,55 @@ int main(int argc, char** argv)
 	sceneManager->assets()
 		->registerParser<file::PNGParser>("png")
 		->queue(TEXTURE_FILENAME)
-		->queue("effect/Basic-fog.effect");
+		->queue(EFFECT_FILENAME);
 
-	auto root = scene::Node::create("root")
-		->addComponent(sceneManager);
-
-	auto mesh = scene::Node::create("mesh")
-		->addComponent(Transform::create(Matrix4x4::create()->appendTranslation(Vector3::create(0.0f, 0.0f, -3.0f))));
-
-	auto camera = scene::Node::create("camera")
-		->addComponent(Renderer::create(0x7f7f7fff))
-		->addComponent(Transform::create(
-		Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 3.f))
-		))
-		->addComponent(PerspectiveCamera::create(WINDOW_WIDTH / (float) WINDOW_HEIGHT, (float)PI * 0.25f, .1f, 1000.f));
-	root->addChild(camera);
 
 	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
 	{
+		auto root = scene::Node::create("root")
+			->addComponent(sceneManager);
+
+		auto mesh = scene::Node::create("mesh")
+			->addComponent(Transform::create(Matrix4x4::create()->appendTranslation(Vector3::create(0.0f, 0.0f, -3.0f))));
+
+		auto camera = scene::Node::create("camera")
+			->addComponent(Renderer::create(0x7f7f7fff))
+			->addComponent(Transform::create(
+			Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 3.f))
+			))
+			->addComponent(PerspectiveCamera::create(WINDOW_WIDTH / (float)WINDOW_HEIGHT, (float)PI * 0.25f, .1f, 1000.f));
+		root->addChild(camera);
+
 		auto cubeGeometry = geometry::CubeGeometry::create(sceneManager->assets()->context());
 
 		assets->geometry("cubeGeometry", cubeGeometry);
 		
 		mesh->addComponent(Surface::create(
 			assets->geometry("cubeGeometry"),
-			material::BasicMaterial::create()->diffuseMap(assets->texture(TEXTURE_FILENAME)),
-			assets->effect("effect/Basic-fog.effect")
+			material::BasicMaterial::create()
+				->diffuseMap(assets->texture(TEXTURE_FILENAME))
+				->fogColor(Vector4::create(1.0f, 1.0f, 1.0f, 1.0f)),
+			assets->effect(EFFECT_FILENAME)
 			));
 
 		root->addChild(mesh);
-	});
 
-	auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
-	{
-		camera->component<PerspectiveCamera>()->aspectRatio((float)w / (float)h);
-	});
+		auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
+		{
+			camera->component<PerspectiveCamera>()->aspectRatio((float)w / (float)h);
+		});
 
-	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, uint deltaTime)
-	{
-		mesh->component<Transform>()->matrix()->appendRotationY(.01f);
+		auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, uint deltaTime)
+		{
+			mesh->component<Transform>()->matrix()->prependRotationY(.01f);
 
-		sceneManager->nextFrame();
+			sceneManager->nextFrame();
+		});
+
+		canvas->run();
 	});
 
 	sceneManager->assets()->load();
-	canvas->run();
 
 	return 0;
 }
