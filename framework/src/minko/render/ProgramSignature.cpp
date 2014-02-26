@@ -131,7 +131,7 @@ ProgramSignature::build(std::shared_ptr<render::Pass>	pass,
 				{
 					defines += "#define " + macroName + " " + std::to_string(value) + "\n";
 				
-					if (macroExists)
+					if (macroExists && value > 0) // FIXME
 						integerMacros.push_back(macro);
 				}
 			}
