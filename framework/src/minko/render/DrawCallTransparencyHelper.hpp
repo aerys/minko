@@ -26,11 +26,11 @@ namespace minko
 {
 	namespace render
 	{
-		class ZSortSignalManager: 
-			public std::enable_shared_from_this<ZSortSignalManager>
+		class DrawCallTransparencyHelper: 
+			public std::enable_shared_from_this<DrawCallTransparencyHelper>
 		{
 		public:
-			typedef std::shared_ptr<ZSortSignalManager>				Ptr;
+			typedef std::shared_ptr<DrawCallTransparencyHelper>		Ptr;
 
 		private:
 			typedef std::shared_ptr<DrawCall>						DrawCallPtr;
@@ -81,7 +81,7 @@ namespace minko
 			Ptr
 			create(DrawCallPtr drawCall)
 			{
-				return std::shared_ptr<ZSortSignalManager>(new ZSortSignalManager(drawCall));
+				return std::shared_ptr<DrawCallTransparencyHelper>(new DrawCallTransparencyHelper(drawCall));
 			}
 
 			void
@@ -94,7 +94,7 @@ namespace minko
 			getEyeSpacePosition(std::shared_ptr<math::Vector3> output = nullptr) const;
 
 		private:
-			ZSortSignalManager(DrawCallPtr drawcall);
+			DrawCallTransparencyHelper(DrawCallPtr drawcall);
 
 			static
 			PropertyInfos

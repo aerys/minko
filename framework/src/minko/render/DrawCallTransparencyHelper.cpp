@@ -17,7 +17,7 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "ZSortSignalManager.hpp"
+#include "DrawCallTransparencyHelper.hpp"
 
 #include "minko/render/DrawCall.hpp"
 #include "minko/data/Container.hpp"
@@ -31,11 +31,11 @@ using namespace minko::render;
 using namespace minko::math;
 
 // names of the properties that may cause a z-sort change between drawcalls
-/*static*/ const ZSortSignalManager::PropertyInfos	ZSortSignalManager::_rawProperties = initializeRawProperties();
+/*static*/ const DrawCallTransparencyHelper::PropertyInfos	DrawCallTransparencyHelper::_rawProperties = initializeRawProperties();
 
 /*static*/
-ZSortSignalManager::PropertyInfos
-ZSortSignalManager::initializeRawProperties()
+DrawCallTransparencyHelper::PropertyInfos
+DrawCallTransparencyHelper::initializeRawProperties()
 {
 	PropertyInfos props;
 
@@ -48,7 +48,7 @@ ZSortSignalManager::initializeRawProperties()
 	return props;
 }
 
-ZSortSignalManager::ZSortSignalManager(DrawCall::Ptr drawcall):
+DrawCallTransparencyHelper::DrawCallTransparencyHelper(DrawCall::Ptr drawcall):
 	_drawcall(drawcall),
 	_properties(),
 	_targetPropAddedSlot(nullptr),
@@ -64,7 +64,7 @@ ZSortSignalManager::ZSortSignalManager(DrawCall::Ptr drawcall):
 }
 
 void
-ZSortSignalManager::initialize(Container::Ptr targetData, 
+DrawCallTransparencyHelper::initialize(Container::Ptr targetData, 
 							   Container::Ptr rendererData, 
 							   Container::Ptr /*rootData*/)
 {
@@ -83,28 +83,28 @@ ZSortSignalManager::initialize(Container::Ptr targetData,
 
 
 	_targetPropAddedSlot	= targetData->propertyAdded()->connect(std::bind(
-		&ZSortSignalManager::propertyAddedHandler,
+		&DrawCallTransparencyHelper::propertyAddedHandler,
 		shared_from_this(),
 		std::placeholders::_1,
 		std::placeholders::_2
 	));
 
 	_rendererPropAddedSlot	= rendererData->propertyAdded()->connect(std::bind(
-		&ZSortSignalManager::propertyAddedHandler,
+		&DrawCallTransparencyHelper::propertyAddedHandler,
 		shared_from_this(),
 		std::placeholders::_1,
 		std::placeholders::_2
 	));
 
 	_targetPropRemovedSlot	= targetData->propertyRemoved()->connect(std::bind(
-		&ZSortSignalManager::propertyRemovedHandler,
+		&DrawCallTransparencyHelper::propertyRemovedHandler,
 		shared_from_this(),
 		std::placeholders::_1,
 		std::placeholders::_2
 	));
 	
 	_rendererPropRemovedSlot	= rendererData->propertyRemoved()->connect(std::bind(
-		&ZSortSignalManager::propertyRemovedHandler,
+		&DrawCallTransparencyHelper::propertyRemovedHandler,
 		shared_from_this(),
 		std::placeholders::_1,
 		std::placeholders::_2
@@ -121,7 +121,7 @@ ZSortSignalManager::initialize(Container::Ptr targetData,
 }
 
 void
-ZSortSignalManager::clear()
+DrawCallTransparencyHelper::clear()
 {
 	_targetPropAddedSlot		= nullptr;
 	_targetPropRemovedSlot		= nullptr;
@@ -133,7 +133,7 @@ ZSortSignalManager::clear()
 }
 
 void
-ZSortSignalManager::propertyAddedHandler(Container::Ptr		container, 
+DrawCallTransparencyHelper::propertyAddedHandler(Container::Ptr		container, 
 										 const std::string&	propertyName)
 {
 	assert(container);
@@ -147,7 +147,7 @@ ZSortSignalManager::propertyAddedHandler(Container::Ptr		container,
 	if (_propChangedSlots.find(propertyName) == _propChangedSlots.end())
 	{
 		_propChangedSlots[propertyName] = container->propertyReferenceChanged(propertyName)->connect(std::bind(
-			&ZSortSignalManager::requestZSort,
+			&DrawCallTransparencyHelper::requestZSort,
 			shared_from_this()
 		));
 
@@ -157,7 +157,7 @@ ZSortSignalManager::propertyAddedHandler(Container::Ptr		container,
 
 			if (matrix)
 				_matrixChangedSlots[propertyName] = matrix->changed()->connect(std::bind(
-					&ZSortSignalManager::requestZSort,
+					&DrawCallTransparencyHelper::requestZSort,
 					shared_from_this()
 				));
 		}
@@ -167,7 +167,7 @@ ZSortSignalManager::propertyAddedHandler(Container::Ptr		container,
 }
 
 void
-ZSortSignalManager::propertyRemovedHandler(Container::Ptr		container, 
+DrawCallTransparencyHelper::propertyRemovedHandler(Container::Ptr		container, 
 										   const std::string&	propertyName)
 {
 	assert(container);
@@ -189,14 +189,14 @@ ZSortSignalManager::propertyRemovedHandler(Container::Ptr		container,
 }
 
 void
-ZSortSignalManager::requestZSort()
+DrawCallTransparencyHelper::requestZSort()
 {
 	if (_drawcall->zSorted())
 		_drawcall->zsortNeeded()->execute(_drawcall); // temporary ugly solution
 }
 
 void
-ZSortSignalManager::recordIfPositionalMembers(Container::Ptr container,
+DrawCallTransparencyHelper::recordIfPositionalMembers(Container::Ptr container,
 										  const std::string& propertyName,
 										  bool isPropertyAdded,
 										  bool isPropertyRemoved)
@@ -222,7 +222,7 @@ ZSortSignalManager::recordIfPositionalMembers(Container::Ptr container,
 }
 
 Vector3::Ptr
-ZSortSignalManager::getEyeSpacePosition(Vector3::Ptr output)  const
+DrawCallTransparencyHelper::getEyeSpacePosition(Vector3::Ptr output)  const
 {
 	static auto localPos	= Vector3::create();
 	static auto modelView	= Matrix4x4::create();

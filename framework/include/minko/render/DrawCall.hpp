@@ -34,7 +34,7 @@ namespace minko
 {
 	namespace render
 	{
-		class ZSortSignalManager;
+		class DrawCallTransparencyHelper;
 
 		class DrawCall :
             public std::enable_shared_from_this<DrawCall>
@@ -43,17 +43,17 @@ namespace minko
 			typedef std::shared_ptr<DrawCall>	Ptr;
 
 		private:
-            typedef std::shared_ptr<AbstractContext>													AbsCtxPtr;
-			typedef std::shared_ptr<AbstractTexture>													AbsTexturePtr;
-			typedef std::shared_ptr<data::Provider>														ProviderPtr;
-            typedef std::shared_ptr<data::Container>													ContainerPtr;
-			typedef data::Container::PropertyChangedSignal::Slot										ContainerPropertyChangedSlot;
-			typedef std::unordered_map<std::string, std::string>										StringToStringMap;
-			typedef std::function <std::string(const std::string&, StringToStringMap&)>					FormatFunction;
+            typedef std::shared_ptr<AbstractContext>									AbsCtxPtr;
+			typedef std::shared_ptr<AbstractTexture>									AbsTexturePtr;
+			typedef std::shared_ptr<data::Provider>										ProviderPtr;
+            typedef std::shared_ptr<data::Container>									ContainerPtr;
+			typedef data::Container::PropertyChangedSignal::Slot						ContainerPropertyChangedSlot;
+			typedef std::unordered_map<std::string, std::string>						StringToStringMap;
+			typedef std::function <std::string(const std::string&, StringToStringMap&)>	FormatFunction;
 
-			typedef std::tuple<int, int>							Int2;
-			typedef std::tuple<int, int, int>						Int3;
-			typedef std::tuple<int, int, int, int>					Int4;					
+			typedef std::tuple<int, int>								Int2;
+			typedef std::tuple<int, int, int>							Int3;
+			typedef std::tuple<int, int, int, int>						Int4;					
 
 		private:
 			static const unsigned int									MAX_NUM_TEXTURES;
@@ -122,7 +122,7 @@ namespace minko
 			std::unordered_map<std::string, std::list<Any>>				_referenceChangedSlots; // Any = ContainerPropertyChangedSlot
 
 			std::shared_ptr<Signal<Ptr>>								_zsortNeeded;
-			std::shared_ptr<ZSortSignalManager>							_zsortSignalManager;
+			std::shared_ptr<DrawCallTransparencyHelper>					_transparencyHelper;
 			FormatFunction												_formatPropertyNameFct;
 
 		public:
