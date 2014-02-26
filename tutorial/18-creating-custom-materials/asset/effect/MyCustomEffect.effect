@@ -4,7 +4,7 @@
     "aPosition" : "geometry[${geometryId}].position"
   },
   "uniformBindings" : {
-    "uColor" : "material.color"
+    "uColor" : "material[${materialId}].color"
   },
   "passes" : [{
     "vertexShader" : "

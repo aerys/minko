@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -33,7 +33,7 @@ main(int argc, char** argv)
 	auto canvas = Canvas::create("Minko Tutorial - Loading effects", WINDOW_WIDTH, WINDOW_HEIGHT);
 	auto sceneManager = component::SceneManager::create(canvas->context());
 
-	sceneManager->assets()->queue("effect/Basic.effect");
+	sceneManager->assets()->queue("effect/VertexNormal.effect");
 	auto complete = sceneManager->assets()->complete()->connect([&](file::AssetLibrary::Ptr assets)
 	{
 		std::cout << "all assets have been loaded!" << std::endl;
@@ -53,7 +53,7 @@ main(int argc, char** argv)
 			->addComponent(Surface::create(
 			geometry::CubeGeometry::create(assets->context()),
 			material::BasicMaterial::create()->diffuseColor(Vector4::create(0.f, 0.f, 1.f, 1.f)),
-			assets->effect("effect/Basic.effect")
+			assets->effect("effect/VertexNormal.effect")
 			));
 		root->addChild(cube);
 
