@@ -223,7 +223,9 @@ Skinning::updateFrame(unsigned int	frameId,
 
 	if (_method == SkinningMethod::HARDWARE)
 	{
-		geometry->data()->set<int>(PNAME_NUM_BONES,	_skin->numBones());
+		if (!geometry->data()->hasProperty(PNAME_NUM_BONES) ||
+			geometry->data()->get<int>(PNAME_NUM_BONES) != _skin->numBones())
+			geometry->data()->set<int>(PNAME_NUM_BONES,	_skin->numBones());
 	
 		const auto& uniformArray	= geometry->data()->get<UniformArrayPtr<float>>	(PNAME_BONE_MATRICES);
 		uniformArray->first			= _skin->numBones();
