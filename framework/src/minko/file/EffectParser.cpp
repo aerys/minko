@@ -563,7 +563,7 @@ EffectParser::glslIncludeCompleteHandler(LoaderPtr 					loader,
 		options->includePaths().push_back(loader->resolvedFilename().substr(0, pos));
 	}
 
-	parseGLSL(std::string((const char*)&loader->data()[0], loader->data().size()), options, blocks,blockIt);
+	parseGLSL(std::string((const char*)&loader->data()[0], loader->data().size()), options, blocks, blockIt);
 
 	if (_numDependencies == _numLoadedDependencies && _effect)
 		finalize();
