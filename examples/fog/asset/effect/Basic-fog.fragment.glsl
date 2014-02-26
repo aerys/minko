@@ -23,7 +23,7 @@ void main(void)
 	#endif
 
 	#if defined(FOG_COLOR)
-		gl_FragColor *= 0.2f;
+		gl_FragColor *= 0.0f;
 	#endif
 }
 
