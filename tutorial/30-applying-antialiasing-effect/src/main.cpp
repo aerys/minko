@@ -35,7 +35,8 @@ main(int argc, char** argv)
 
     sceneManager->assets()
         ->queue("effect/Basic.effect")
-        ->queue("effect/FXAA.effect");
+        ->queue("effect/FXAA/FXAA.effect")
+        ;
 
     auto complete = sceneManager->assets()->complete()->connect([&](file::AssetLibrary::Ptr assets)
     {
@@ -46,11 +47,14 @@ main(int argc, char** argv)
             ->addComponent(Renderer::create(0x7f7f7fff))
             ->addComponent(PerspectiveCamera::create(
             (float) WINDOW_WIDTH / (float) WINDOW_HEIGHT, (float) PI * 0.25f, .1f, 1000.f)
-            );
+            )
+            ->addComponent(Transform::create(Matrix4x4::create()
+            ->lookAt(Vector3::create(), Vector3::create(0.f, 0.f, -5.f))))
+            ;
         root->addChild(camera);
 
         auto cube = scene::Node::create("cube")
-            ->addComponent(Transform::create(Matrix4x4::create()->translation(0.f, 0.f, -5.f)))
+            ->addComponent(Transform::create())
             ->addComponent(Surface::create(
             geometry::CubeGeometry::create(assets->context()),
             material::BasicMaterial::create()->diffuseColor(Vector4::create(0.f, 0.f, 1.f, 1.f)),
@@ -58,16 +62,17 @@ main(int argc, char** argv)
             ));
         root->addChild(cube);
 
+        
         auto ppTarget = render::Texture::create(assets->context(), 1024, 1024, false, true);
 
         ppTarget->upload();
 
-        auto ppFx = sceneManager->assets()->effect("effect/FXAA.effect");
+        auto ppFx = sceneManager->assets()->effect("effect/FXAA/FXAA.effect");
 
         if (!ppFx)
             throw std::logic_error("The post-processing effect has not been loaded.");
 
-        ppFx->setUniform("uBackbuffer", ppTarget);
+        ppFx->setUniform("backbuffer", ppTarget);
 
         auto ppRenderer = Renderer::create();
         auto ppScene = scene::Node::create()
@@ -78,6 +83,7 @@ main(int argc, char** argv)
             ppFx
             ));
 
+        /*
         auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint width, uint height)
         {
             camera->component<PerspectiveCamera>()->aspectRatio((float) width / (float) height);
@@ -86,11 +92,13 @@ main(int argc, char** argv)
             ppTarget->upload();
             ppFx->setUniform("uBackbuffer", ppTarget);
         });
+        */
 
         auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint t, float dt)
         {
             cube->component<Transform>()->matrix()->prependRotationY(.01f);
 
+            //sceneManager->nextFrame();
             sceneManager->nextFrame(ppTarget);
             ppRenderer->render(assets->context());
         });
