@@ -322,7 +322,7 @@ bool
 BasicMaterial::zSorted() const
 {
 	return hasProperty("zSort")
-		? get<float>("zSort")
+		? get<bool>("zSort")
 		: _defaultStates->zSorted();
 }
 

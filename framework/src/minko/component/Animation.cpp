@@ -29,7 +29,8 @@ using namespace minko::animation;
 Animation::Animation(const std::vector<AbstractTimeline::Ptr>& timelines, 
 					 bool isLooping):
 	AbstractAnimation(isLooping),
-	_timelines(timelines)
+	_timelines(timelines),
+	_master(nullptr)
 {
 }
 

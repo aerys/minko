@@ -28,11 +28,11 @@ using namespace minko::scene;
 using namespace minko::math;
 using namespace minko::geometry;
 
-Skin::Skin(unsigned int numBones, unsigned int numFrames):
+Skin::Skin(unsigned int numBones, unsigned int duration, unsigned int numFrames):
 	_bones(numBones, nullptr),
 	_numBones(numBones),
-	_duration(0),
-	_timeFactor(0.0f),
+	_duration(duration),
+	_timeFactor(duration > 0 ? numFrames / float(duration) : 0.0f),
 	_boneMatricesPerFrame(numFrames, std::vector<float>(numBones << 4, 0.0f)),
 	_maxNumVertexBones(0),
 	_numVertexBones(),
@@ -40,19 +40,6 @@ Skin::Skin(unsigned int numBones, unsigned int numFrames):
 	_vertexBoneWeights()
 {
 
-}
-
-void
-Skin::clear()
-{
-	_bones.clear();
-	_boneMatricesPerFrame.clear();
-	_duration = 0;
-	_timeFactor = 0.0f;
-	_maxNumVertexBones	= 0;
-	_numVertexBones.clear();
-	_vertexBones.clear();
-	_vertexBoneWeights.clear();
 }
 
 void
@@ -135,16 +122,6 @@ Skin::lastVertexId() const
 	}
 
 	return lastId;
-}
-
-void
-Skin::duration(uint value)
-{
-	_duration = value;
-
-	_timeFactor = _duration > 0
-		? numFrames() / (float)_duration
-		: 0.0f;
 }
 
 uint
