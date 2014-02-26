@@ -1,6 +1,8 @@
 #include <string.h>
 #include <stdio.h>
+#if !defined(__APPLE__)
 #include <malloc.h>
+#endif
 
 #include <IL/il.h>
 #include <IL/ilu.h>
