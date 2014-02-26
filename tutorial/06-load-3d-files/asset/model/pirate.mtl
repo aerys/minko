@@ -46,5 +46,5 @@ newmtl 04___Default
 	Kd 0.5882 0.5882 0.5882
 	Ks 0.0000 0.0000 0.0000
 	Ke 0.0000 0.0000 0.0000
-	map_Ka pirate_baked.jpg
-	map_Kd pirate_baked.jpg
+	map_Ka pirate.jpg
+	map_Kd pirate.jpg
