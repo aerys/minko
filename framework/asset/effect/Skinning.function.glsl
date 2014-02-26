@@ -8,19 +8,16 @@
 
 	vec4 skinning_moveVertex(vec4 inputVec)
 	{
-		vec4 outputVec = vec4(0.0);
-	
-		outputVec += boneWeightsA.x * boneMatrices[int(boneIdsA.x)] * inputVec;
-		outputVec += boneWeightsA.y * boneMatrices[int(boneIdsA.y)] * inputVec;
-		outputVec += boneWeightsA.z * boneMatrices[int(boneIdsA.z)] * inputVec;
-		outputVec += boneWeightsA.w * boneMatrices[int(boneIdsA.w)] * inputVec;
-	
-		outputVec += boneWeightsB.x * boneMatrices[int(boneIdsB.x)] * inputVec;
-		outputVec += boneWeightsB.y * boneMatrices[int(boneIdsB.y)] * inputVec;
-		outputVec += boneWeightsB.z * boneMatrices[int(boneIdsB.z)] * inputVec;
-		outputVec += boneWeightsB.w * boneMatrices[int(boneIdsB.w)] * inputVec;
-	
-		return outputVec;
+		return ( 
+			boneWeightsA.x * boneMatrices[int(boneIdsA.x)] + 
+			boneWeightsA.y * boneMatrices[int(boneIdsA.y)] + 
+			boneWeightsA.z * boneMatrices[int(boneIdsA.z)] + 
+			boneWeightsA.w * boneMatrices[int(boneIdsA.w)] + 
+			boneWeightsB.x * boneMatrices[int(boneIdsB.x)] + 
+			boneWeightsB.y * boneMatrices[int(boneIdsB.y)] + 
+			boneWeightsB.z * boneMatrices[int(boneIdsB.z)] + 
+			boneWeightsB.w * boneMatrices[int(boneIdsB.w)] 
+			) * inputVec;	
 	}
 
 #endif // defined(VERTEX_SHADER) && defined(NUM_BONES)
