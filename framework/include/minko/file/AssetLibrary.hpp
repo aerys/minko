@@ -71,6 +71,7 @@ namespace minko
 			std::unordered_map<std::string, std::shared_ptr<file::AbstractLoader>>	_filenameToLoader;
 
 			std::vector<Signal<std::shared_ptr<file::AbstractLoader>>::Slot>		_loaderSlots;
+			std::vector<Signal<std::shared_ptr<file::AbstractParser>>::Slot>	_parserSlots;
 
             Signal<Ptr>::Ptr											            _complete;
             Signal<Ptr, std::shared_ptr<AbstractParser>>::Ptr                       _parserError;

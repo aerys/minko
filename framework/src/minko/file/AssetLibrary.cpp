@@ -375,12 +375,12 @@ AssetLibrary::loaderCompleteHandler(std::shared_ptr<file::AbstractLoader> loader
 	if (_parsers.count(extension))
 	{
 		auto parser = _parsers[extension]();
-		auto completeSlot = parser->complete()->connect([=](AbstractParser::Ptr)
+		_parserSlots.push_back(parser->complete()->connect([=](AbstractParser::Ptr)
 		{
 			loader->parserComplete()->execute(loader, parser, shared_from_this());
 
 			finalize(filename);
-		});
+		}));
 
         try
         {
@@ -420,6 +420,7 @@ AssetLibrary::finalize(const std::string& filename)
 	if (_loading.size() == 0 && _filesQueue.size() == 0)
 	{
 		_loaderSlots.clear();
+		_parserSlots.clear();
 		_filenameToLoader.clear();
 		_filenameToOptions.clear();
 

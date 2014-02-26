@@ -17,37 +17,34 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#pragma once
+#include "minko/async/Worker.hpp"
 
-#include "minko/Common.hpp"
-#include "minko/file/AbstractLoader.hpp"
-#include "minko/Any.hpp"
+using namespace minko;
+using namespace minko::async;
+using namespace minko::file;
 
 namespace minko
 {
-	namespace file
+	namespace async
 	{
-		class FileLoader :
-		    public AbstractLoader
+		class FileLoaderWorker : public Worker
 		{
 		public:
-		    inline static
-            Ptr
-            create()
-            {
-				return std::shared_ptr<FileLoader>(new FileLoader());
-            }
+			static
+				Ptr
+				create()
+				{
+					return std::shared_ptr<FileLoaderWorker>(new FileLoaderWorker());
+				}
 
-			typedef std::shared_ptr<FileLoader>	Ptr;
 			void
-			load(const std::string& filename, std::shared_ptr<Options> options);
-
-		protected:
-			FileLoader();
+				run(); // Must be defined in .cpp with the MINKO_WORKER macro.
 
 		private:
-			std::list<Any>
-			_workerSlots;
+			FileLoaderWorker() :
+				Worker("file-loader")
+			{
+			}
 		};
 	}
 }
