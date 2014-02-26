@@ -21,6 +21,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/file/Options.hpp"
 #include "minko/Signal.hpp"
+#include "minko/AbstractCanvas.hpp"
+#include "minko/async/Worker.hpp"
 
 #include <fstream>
 #include <regex>
@@ -35,6 +37,8 @@ FileLoader::FileLoader()
 void
 FileLoader::load(const std::string& filename, std::shared_ptr<Options> options)
 {
+	bool async = false;
+
 	auto flags = std::ios::in | std::ios::ate | std::ios::binary;
 	
 	std::string cleanFilename = "";
@@ -72,21 +76,41 @@ FileLoader::load(const std::string& filename, std::shared_ptr<Options> options)
 
 	if (file.is_open())
 	{
-		unsigned int size = (unsigned int)file.tellg();
+		if (async)
+		{
+			file.close();
+			auto worker = AbstractCanvas::defaultCanvas()->getWorker("file-loader");
 
-		// FIXME: use fixed size buffers and call _progress accordingly
+			_workerSlots.push_back(worker->complete()->connect([=](async::Worker::MessagePtr data) {
+				void* charData = &*data->begin();
+				_data.assign(static_cast<unsigned char*>(charData), static_cast<unsigned char*>(charData) + data->size());
+				_complete->execute(shared_from_this());
+			}));
 
-		_progress->execute(shared_from_this(), 0.0);
+			_workerSlots.push_back(worker->progress()->connect([=](float ratio) {
+				_progress->execute(shared_from_this(), ratio);
+			}));
 
-		_data.resize(size);
+			worker->input(std::make_shared<std::vector<char>>(_resolvedFilename.begin(), _resolvedFilename.end()));
+		}
+		else
+		{
+			unsigned int size = (unsigned int)file.tellg();
 
-		file.seekg(0, std::ios::beg);
-		file.read((char*)&_data[0], size);
-		file.close();
+			// FIXME: use fixed size buffers and call _progress accordingly
 
-		_progress->execute(shared_from_this(), 1.0);
-	
-		_complete->execute(shared_from_this());
+			_progress->execute(shared_from_this(), 0.0);
+
+			_data.resize(size);
+
+			file.seekg(0, std::ios::beg);
+			file.read((char*)&_data[0], size);
+			file.close();
+
+			_progress->execute(shared_from_this(), 1.0);
+
+			_complete->execute(shared_from_this());
+		}
 	}
 	else
 		_error->execute(shared_from_this());

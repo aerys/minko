@@ -18,6 +18,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "minko/Minko.hpp"
+#include "minko/async/FileLoaderWorker.hpp"
 #include "minko/MinkoPNG.hpp"
 #include "minko/MinkoSDL.hpp"
 
@@ -31,7 +32,9 @@ int main(int argc, char** argv)
 {
 	auto canvas = Canvas::create("Minko Example - Cube", 800, 600);
 
+	canvas->registerWorker<async::FileLoaderWorker>("file-loader");
 	auto sceneManager = SceneManager::create(canvas->context());
+	AbstractCanvas::defaultCanvas(canvas);
 	
 	// setup assets
 	sceneManager->assets()->defaultOptions()->resizeSmoothly(true);
