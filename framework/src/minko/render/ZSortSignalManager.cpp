@@ -22,6 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/DrawCall.hpp"
 #include "minko/data/Container.hpp"
 #include "minko/math/Matrix4x4.hpp"
+#include "minko/math/Vector3.hpp"
+#include "minko/render/VertexBuffer.hpp"
 
 using namespace minko;
 using namespace minko::data;
@@ -29,46 +31,36 @@ using namespace minko::render;
 using namespace minko::math;
 
 // names of the properties that may cause a z-sort change between drawcalls
-/*static*/ std::set<std::string> ZSortSignalManager::_targetRawPropNames;
-/*static*/ std::set<std::string> ZSortSignalManager::_rendererRawPropNames;
+/*static*/ const ZSortSignalManager::PropertyInfos	ZSortSignalManager::_rawProperties = initializeRawProperties();
 
 /*static*/
-void
-ZSortSignalManager::initializeTargetRawPropertyNames()
+ZSortSignalManager::PropertyInfos
+ZSortSignalManager::initializeRawProperties()
 {
-	if (!_targetRawPropNames.empty())
-		return;
+	PropertyInfos props;
 
-	_targetRawPropNames.insert("material[${materialId}].priority");
-	_targetRawPropNames.insert("material[${materialId}].zSort");
-	_targetRawPropNames.insert("geometry[${geometryId}].position");
-	_targetRawPropNames.insert("transform.modelToWorldMatrix");
-}
+	props["material[${materialId}].priority"]	= PropertyInfo(data::BindingSource::TARGET,		false);
+	props["material[${materialId}].zSort"]		= PropertyInfo(data::BindingSource::TARGET,		false);
+	props["geometry[${geometryId}].position"]	= PropertyInfo(data::BindingSource::TARGET,		false);
+	props["transform.modelToWorldMatrix"]		= PropertyInfo(data::BindingSource::TARGET,		true);
+	props["camera.worldToScreenMatrix"]			= PropertyInfo(data::BindingSource::RENDERER,	true);
 
-/*static*/
-void
-ZSortSignalManager::initializeRendererRawPropertyNames()
-{
-	if (!_rendererRawPropNames.empty())
-		return;
-
-	_rendererRawPropNames.insert("camera.worldToScreenMatrix");
+	return props;
 }
 
 ZSortSignalManager::ZSortSignalManager(DrawCall::Ptr drawcall):
 	_drawcall(drawcall),
+	_properties(),
 	_targetPropAddedSlot(nullptr),
 	_targetPropRemovedSlot(nullptr),
 	_rendererPropAddedSlot(nullptr),
 	_rendererPropRemovedSlot(nullptr),
-	_targetPropNames(),
-	_rendererPropNames()
+	_vertexPositions(),
+	_modelToWorldMatrix(),
+	_worldToScreenMatrix()
 {
-	if (drawcall == nullptr)
+	if (_drawcall == nullptr)
 		throw new std::invalid_argument("drawcall");
-
-	initializeTargetRawPropertyNames();
-	initializeRendererRawPropertyNames();
 }
 
 void
@@ -81,49 +73,51 @@ ZSortSignalManager::initialize(Container::Ptr targetData,
 
 	clear();
 
-	for (auto& pname : _targetRawPropNames)
-		_targetPropNames.insert(_drawcall->formatPropertyName(pname));
-	for (auto& pname : _rendererRawPropNames)
-		_rendererPropNames.insert(_drawcall->formatPropertyName(pname));
+	// format raw property name to fit with the current
+	for (auto& prop : _rawProperties)
+		_properties[_drawcall->formatPropertyName(prop.first)] = prop.second;
+
+	_vertexPositions.first		= _drawcall->formatPropertyName("geometry[${geometryId}].position");
+	_modelToWorldMatrix.first	= _drawcall->formatPropertyName("transform.modelToWorldMatrix");
+	_worldToScreenMatrix.first	= _drawcall->formatPropertyName("camera.worldToScreenMatrix");
+
 
 	_targetPropAddedSlot	= targetData->propertyAdded()->connect(std::bind(
 		&ZSortSignalManager::propertyAddedHandler,
 		shared_from_this(),
 		std::placeholders::_1,
-		std::placeholders::_2,
-		_targetPropNames
+		std::placeholders::_2
 	));
 
 	_rendererPropAddedSlot	= rendererData->propertyAdded()->connect(std::bind(
 		&ZSortSignalManager::propertyAddedHandler,
 		shared_from_this(),
 		std::placeholders::_1,
-		std::placeholders::_2,
-		_rendererPropNames
+		std::placeholders::_2
 	));
 
 	_targetPropRemovedSlot	= targetData->propertyRemoved()->connect(std::bind(
 		&ZSortSignalManager::propertyRemovedHandler,
 		shared_from_this(),
 		std::placeholders::_1,
-		std::placeholders::_2,
-		_targetPropNames
+		std::placeholders::_2
 	));
 	
 	_rendererPropRemovedSlot	= rendererData->propertyRemoved()->connect(std::bind(
 		&ZSortSignalManager::propertyRemovedHandler,
 		shared_from_this(),
 		std::placeholders::_1,
-		std::placeholders::_2,
-		_rendererPropNames
+		std::placeholders::_2
 	));
 
 	_propChangedSlots.clear();
 
-	for (auto& pname : _targetPropNames)
-		propertyAddedHandler(targetData, pname, _targetPropNames);
-	for (auto& pname : _rendererPropNames)
-		propertyAddedHandler(rendererData, pname, _rendererPropNames);
+	for (auto& prop : _properties)
+	{
+		auto source		= prop.second.source;
+		auto container	= source == data::BindingSource::RENDERER ? rendererData : targetData;
+		propertyAddedHandler(container, prop.first); 
+	}		
 }
 
 void
@@ -135,20 +129,21 @@ ZSortSignalManager::clear()
 	_rendererPropRemovedSlot	= nullptr;
 	_propChangedSlots			.clear();
 	_matrixChangedSlots			.clear();
-	_targetPropNames			.clear();
-	_rendererPropNames			.clear();
+	_properties					.clear();
 }
 
 void
-ZSortSignalManager::propertyAddedHandler(Container::Ptr					container, 
-										 const std::string&				propertyName,
-										 const std::set<std::string>&	possibleNames)
+ZSortSignalManager::propertyAddedHandler(Container::Ptr		container, 
+										 const std::string&	propertyName)
 {
 	assert(container);
 
-	if (possibleNames.find(propertyName) == possibleNames.end())
+	const auto foundPropIt	= _properties.find(propertyName);
+	if (foundPropIt == _properties.end())
 		return;
 	
+	recordIfPositionalMembers(container, propertyName, true, false);
+
 	if (_propChangedSlots.find(propertyName) == _propChangedSlots.end())
 	{
 		_propChangedSlots[propertyName] = container->propertyReferenceChanged(propertyName)->connect(std::bind(
@@ -156,15 +151,15 @@ ZSortSignalManager::propertyAddedHandler(Container::Ptr					container,
 			shared_from_this()
 		));
 
-		if (container->hasProperty(propertyName) && 
-			container->propertyHasType<Matrix4x4::Ptr>(propertyName, true))
+		if (container->hasProperty(propertyName) && foundPropIt->second.isMatrix)
 		{
 			auto matrix = container->get<Matrix4x4::Ptr>(propertyName);
 
-			_matrixChangedSlots[propertyName] = matrix->changed()->connect(std::bind(
-				&ZSortSignalManager::requestZSort,
-				shared_from_this()
-			));
+			if (matrix)
+				_matrixChangedSlots[propertyName] = matrix->changed()->connect(std::bind(
+					&ZSortSignalManager::requestZSort,
+					shared_from_this()
+				));
 		}
 	}
 
@@ -172,14 +167,15 @@ ZSortSignalManager::propertyAddedHandler(Container::Ptr					container,
 }
 
 void
-ZSortSignalManager::propertyRemovedHandler(Container::Ptr				container, 
-										   const std::string&			propertyName,
-										   const std::set<std::string>&	possibleNames)
+ZSortSignalManager::propertyRemovedHandler(Container::Ptr		container, 
+										   const std::string&	propertyName)
 {
 	assert(container);
 
-	if (possibleNames.find(propertyName) == possibleNames.end())
+	if (_properties.find(propertyName) == _properties.end())
 		return;
+
+	recordIfPositionalMembers(container, propertyName, false, true);
 
 	if (_propChangedSlots.find(propertyName) != _propChangedSlots.end())
 	{
@@ -195,6 +191,56 @@ ZSortSignalManager::propertyRemovedHandler(Container::Ptr				container,
 void
 ZSortSignalManager::requestZSort()
 {
-	if (_drawcall && _drawcall->zSorted())
+	if (_drawcall->zSorted())
 		_drawcall->zsortNeeded()->execute(_drawcall); // temporary ugly solution
+}
+
+void
+ZSortSignalManager::recordIfPositionalMembers(Container::Ptr container,
+										  const std::string& propertyName,
+										  bool isPropertyAdded,
+										  bool isPropertyRemoved)
+{
+	if (isPropertyAdded)
+	{
+		if (propertyName == _vertexPositions.first)
+			_vertexPositions.second		= container->get<VertexBuffer::Ptr>(propertyName);
+		else if (propertyName == _modelToWorldMatrix.first)
+			_modelToWorldMatrix.second	= container->get<Matrix4x4::Ptr>(propertyName);
+		else if (propertyName == _worldToScreenMatrix.first)
+			_worldToScreenMatrix.second	= container->get<Matrix4x4::Ptr>(propertyName);
+	}
+	else if (isPropertyRemoved)
+	{
+		if (propertyName == _vertexPositions.first)
+			_vertexPositions.second		= nullptr;
+		else if (propertyName == _modelToWorldMatrix.first)
+			_modelToWorldMatrix.second	= nullptr;
+		else if (propertyName == _worldToScreenMatrix.first)
+			_worldToScreenMatrix.second	= nullptr;
+	}
+}
+
+Vector3::Ptr
+ZSortSignalManager::getEyeSpacePosition(Vector3::Ptr output)  const
+{
+	static auto localPos	= Vector3::create();
+	static auto modelView	= Matrix4x4::create();
+
+	if (_vertexPositions.second)
+		localPos = _vertexPositions.second->centerPosition(localPos);
+	else
+		localPos->setTo(0.0f, 0.0f, 0.0f);
+
+	if (_modelToWorldMatrix.second)
+		modelView->copyFrom(_modelToWorldMatrix.second);
+	else
+		modelView->identity();
+
+	if (_worldToScreenMatrix.second)
+		modelView->append(_worldToScreenMatrix.second);
+
+	output = modelView->transform(localPos, output);
+	
+	return output;
 }
