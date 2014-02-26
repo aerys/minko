@@ -19,12 +19,35 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #pragma once
 
-#include "minko/component/bullet/PhysicsWorld.hpp"
-#include "minko/component/bullet/Collider.hpp"
-#include "minko/component/bullet/ColliderData.hpp"
-#include "minko/component/bullet/AbstractPhysicsShape.hpp"
-#include "minko/component/bullet/SphereShape.hpp"
-#include "minko/component/bullet/BoxShape.hpp"
-#include "minko/component/bullet/ConeShape.hpp"
-#include "minko/component/bullet/CylinderShape.hpp"
-#include "minko/extension/PhysicsExtension.hpp"
+#include "minko/Common.hpp"
+
+namespace minko
+{
+	namespace extension
+	{
+		class AbstractExtension
+		{
+		public:
+			typedef std::shared_ptr<AbstractExtension> Ptr;
+
+		public:
+			virtual
+			void
+			bind() = 0;
+		};
+
+		class SerializerExtension
+		{
+		public:
+			template <typename T>
+			typename std::enable_if<std::is_base_of<extension::AbstractExtension, T>::value, void>::type
+			static
+			activeExtension()
+			{
+				std::shared_ptr<T> extension = T::initialize();
+
+				extension->bind();
+			}
+		};
+	}
+}

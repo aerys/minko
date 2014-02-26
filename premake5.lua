@@ -27,6 +27,7 @@ solution "minko"
 	include 'plugins/lua'
 	include 'plugins/angle'
 	include 'plugins/assimp'
+	include 'plugins/serializer'
 	include 'plugins/devil'
 	include 'plugins/bullet'
 	include 'plugins/fx'
@@ -39,7 +40,6 @@ solution "minko"
 	include 'plugins/particles'
 	include 'plugins/png'
 	include 'plugins/sdl'
-	include 'plugins/serializer'
 	include 'plugins/webgl'
 
 	-- examples
