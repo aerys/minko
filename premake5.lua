@@ -1,10 +1,10 @@
 newoption {
-	trigger	= 'no-examples',
+	trigger	= 'no-example',
 	description = 'Disable examples.'
 }
 
 newoption {
-	trigger	= 'no-tests',
+	trigger	= 'no-test',
 	description = 'Disable tests.'
 }
 
@@ -23,54 +23,54 @@ solution "minko"
 	
 	include 'framework'
 	
-	-- plugins
-	include 'plugins/lua'
-	include 'plugins/angle'
-	include 'plugins/assimp'
-	include 'plugins/devil'
-	include 'plugins/bullet'
-	include 'plugins/fx'
-	include 'plugins/http-loader'
-	include 'plugins/http-worker'
-	include 'plugins/jpeg'
-	include 'plugins/leap'
-	include 'plugins/oculus'
-	include 'plugins/offscreen'
-	include 'plugins/particles'
-	include 'plugins/png'
-	include 'plugins/sdl'
-	include 'plugins/serializer'
-	include 'plugins/webgl'
+	-- plugin
+	include 'plugin/lua'
+	include 'plugin/angle'
+	include 'plugin/assimp'
+	include 'plugin/devil'
+	include 'plugin/bullet'
+	include 'plugin/fx'
+	include 'plugin/http-loader'
+	include 'plugin/http-worker'
+	include 'plugin/jpeg'
+	include 'plugin/leap'
+	include 'plugin/oculus'
+	include 'plugin/offscreen'
+	include 'plugin/particles'
+	include 'plugin/png'
+	include 'plugin/sdl'
+	include 'plugin/serializer'
+	include 'plugin/webgl'
 
-	-- examples
-	if not _OPTIONS['no-examples'] then
-		include 'examples/lua-scripts'
-		include 'examples/assimp'
-		include 'examples/cube'
-		include 'examples/devil'
-		include 'examples/effect-config'
-		include 'examples/frustum'
-		include 'examples/jobs'
-		include 'examples/leap-motion'
-		include 'examples/light'
-		include 'examples/line-geometry'
-		include 'examples/offscreen'
-		include 'examples/picking'
-		include 'examples/raycasting'
-		include 'examples/serializer'
-		include 'examples/sky-box'
-		include 'examples/stencil'
-		include 'examples/visibility'
-		include 'examples/multi-surfaces'
-		include 'examples/physics'
-		include 'examples/oculus'
-		include 'examples/http'
-		include 'examples/joystick'
+	-- example
+	if not _OPTIONS['no-example'] then
+		include 'example/lua-scripts'
+		include 'example/assimp'
+		include 'example/cube'
+		include 'example/devil'
+		include 'example/effect-config'
+		include 'example/frustum'
+		include 'example/jobs'
+		include 'example/leap-motion'
+		include 'example/light'
+		include 'example/line-geometry'
+		include 'example/offscreen'
+		include 'example/picking'
+		include 'example/raycasting'
+		include 'example/serializer'
+		include 'example/sky-box'
+		include 'example/stencil'
+		include 'example/visibility'
+		include 'example/multi-surfaces'
+		include 'example/physics'
+		include 'example/oculus'
+		include 'example/http'
+		include 'example/joystick'
 	end
 
-	-- tests
-	if not _OPTIONS['no-tests'] then
-		include 'tests'
+	-- test
+	if not _OPTIONS['no-test'] then
+		include 'test'
 	end
 
 newaction {
@@ -78,6 +78,9 @@ newaction {
 	description	= 'Generate the distributable version of the Minko SDK.',
 	execute		= function()
 	
+		print("Building documentation...")
+		os.execute("doxygen doc/Doxyfile")
+
 		local distDir = 'dist'
 		
 		if _OPTIONS['dist-dir'] then
@@ -106,29 +109,29 @@ newaction {
 		os.mkdir(distDir .. '/skeleton')
 		minko.os.copyfiles('skeleton', distDir .. '/skeleton')
 		
-		-- modules
-		os.mkdir(distDir .. '/modules')
-		minko.os.copyfiles('modules', distDir .. '/modules')
+		-- module
+		os.mkdir(distDir .. '/module')
+		minko.os.copyfiles('module', distDir .. '/module')
 		
-		-- -- docs
+		-- -- doc
 		-- os.mkdir(distDir .. '/doc')
 		-- minko.os.copyfiles('doc/html', distDir .. '/doc')
 		
-		-- tools
-		os.mkdir(distDir .. '/tools/')
-		minko.os.copyfiles('tools', distDir .. '/tools')
+		-- tool
+		os.mkdir(distDir .. '/tool/')
+		minko.os.copyfiles('tool', distDir .. '/tool')
 		
-		-- plugins
-		local plugins = os.matchdirs('plugins/*')
+		-- plugin
+		local plugins = os.matchdirs('plugin/*')
 
-		os.mkdir(distDir .. '/plugins')
+		os.mkdir(distDir .. '/plugin')
 		for i, basedir in ipairs(plugins) do
 			local pluginName = path.getbasename(basedir)
 
 			print('Packaging plugin "' .. pluginName .. '"...')
 
 			-- plugins
-			local dir = distDir .. '/plugins/' .. path.getbasename(basedir)
+			local dir = distDir .. '/plugin/' .. path.getbasename(basedir)
 			local binDir = dir .. '/bin'
 
 			-- plugin.lua
