@@ -162,8 +162,11 @@ EffectParser::parse(const std::string&				    filename,
     int pos	= resolvedFilename.find_last_of("/\\");
 
 	_options = file::Options::create(options);
+	_options->includePaths().clear();
 	if (pos > 0)
+	{
 		_options->includePaths().push_back(resolvedFilename.substr(0, pos));
+	}
 	
 	_filename = filename;
 	_resolvedFilename = resolvedFilename;
@@ -516,7 +519,7 @@ EffectParser::loadGLSLDependencies(GLSLBlockListPtr		blocks,
 
 		if (block.first == GLSLBlockType::FILE)
 		{
-			auto loader = options->loaderFunction()(block.second, _assetLibrary);
+			auto loader = _options->loaderFunction()(block.second, _assetLibrary);
 
 			++_numDependencies;
 

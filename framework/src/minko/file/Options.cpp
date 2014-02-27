@@ -42,7 +42,9 @@ Options::Options(std::shared_ptr<render::AbstractContext> context) :
 	_effect(nullptr)
 {
 #if defined(DEBUG)
+#if !defined(EMSCRIPTEN)
 	includePaths().push_back("../../../asset");
+#endif
 	includePaths().push_back("asset");
 # if defined(_WIN32)
 	includePaths().push_back("bin/windows32/debug/asset");
@@ -111,7 +113,7 @@ Options::Options(std::shared_ptr<render::AbstractContext> context) :
 
 		return FileLoader::create();
 	};
-
+	
 	_uriFunction = [](const std::string& uri) -> const std::string
 	{
 		return uri;

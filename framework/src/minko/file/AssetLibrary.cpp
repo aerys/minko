@@ -304,7 +304,7 @@ AssetLibrary::queue(const std::string&						filename,
 	_filesQueue.push_back(filename);
 
 	if (options)
-		_filenameToOptions[filename] = options;
+		_filenameToOptions[filename] = Options::create(options);
 
 	if (loader)
 		_filenameToLoader[filename] = loader;
@@ -329,7 +329,7 @@ AssetLibrary::load(bool	executeCompleteSignal)
 		{
 			auto options = _filenameToOptions.count(filename)
 				? _filenameToOptions[filename]
-				: _filenameToOptions[filename] = _defaultOptions;
+				: _filenameToOptions[filename] = Options::create(_defaultOptions);
 			auto loader = _filenameToLoader.count(filename)
 				? _filenameToLoader[filename]
 				: _filenameToLoader[filename] = options->loaderFunction()(filename, shared_from_this());
