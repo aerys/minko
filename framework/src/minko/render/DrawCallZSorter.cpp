@@ -17,7 +17,7 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "DrawCallTransparencyHelper.hpp"
+#include "DrawCallZSorter.hpp"
 
 #include "minko/render/DrawCall.hpp"
 #include "minko/data/Container.hpp"
@@ -31,11 +31,11 @@ using namespace minko::render;
 using namespace minko::math;
 
 // names of the properties that may cause a z-sort change between drawcalls
-/*static*/ const DrawCallTransparencyHelper::PropertyInfos	DrawCallTransparencyHelper::_rawProperties = initializeRawProperties();
+/*static*/ const DrawCallZSorter::PropertyInfos	DrawCallZSorter::_rawProperties = initializeRawProperties();
 
 /*static*/
-DrawCallTransparencyHelper::PropertyInfos
-DrawCallTransparencyHelper::initializeRawProperties()
+DrawCallZSorter::PropertyInfos
+DrawCallZSorter::initializeRawProperties()
 {
 	PropertyInfos props;
 
@@ -48,7 +48,7 @@ DrawCallTransparencyHelper::initializeRawProperties()
 	return props;
 }
 
-DrawCallTransparencyHelper::DrawCallTransparencyHelper(DrawCall::Ptr drawcall):
+DrawCallZSorter::DrawCallZSorter(DrawCall::Ptr drawcall):
 	_drawcall(drawcall),
 	_properties(),
 	_targetPropAddedSlot(nullptr),
@@ -64,9 +64,9 @@ DrawCallTransparencyHelper::DrawCallTransparencyHelper(DrawCall::Ptr drawcall):
 }
 
 void
-DrawCallTransparencyHelper::initialize(Container::Ptr targetData, 
-							   Container::Ptr rendererData, 
-							   Container::Ptr /*rootData*/)
+DrawCallZSorter::initialize(Container::Ptr targetData, 
+							Container::Ptr rendererData, 
+							Container::Ptr /*rootData*/)
 {
 	assert(targetData);
 	assert(rendererData);
@@ -83,28 +83,28 @@ DrawCallTransparencyHelper::initialize(Container::Ptr targetData,
 
 
 	_targetPropAddedSlot	= targetData->propertyAdded()->connect(std::bind(
-		&DrawCallTransparencyHelper::propertyAddedHandler,
+		&DrawCallZSorter::propertyAddedHandler,
 		shared_from_this(),
 		std::placeholders::_1,
 		std::placeholders::_2
 	));
 
 	_rendererPropAddedSlot	= rendererData->propertyAdded()->connect(std::bind(
-		&DrawCallTransparencyHelper::propertyAddedHandler,
+		&DrawCallZSorter::propertyAddedHandler,
 		shared_from_this(),
 		std::placeholders::_1,
 		std::placeholders::_2
 	));
 
 	_targetPropRemovedSlot	= targetData->propertyRemoved()->connect(std::bind(
-		&DrawCallTransparencyHelper::propertyRemovedHandler,
+		&DrawCallZSorter::propertyRemovedHandler,
 		shared_from_this(),
 		std::placeholders::_1,
 		std::placeholders::_2
 	));
 	
 	_rendererPropRemovedSlot	= rendererData->propertyRemoved()->connect(std::bind(
-		&DrawCallTransparencyHelper::propertyRemovedHandler,
+		&DrawCallZSorter::propertyRemovedHandler,
 		shared_from_this(),
 		std::placeholders::_1,
 		std::placeholders::_2
@@ -122,7 +122,7 @@ DrawCallTransparencyHelper::initialize(Container::Ptr targetData,
 }
 
 void
-DrawCallTransparencyHelper::clear()
+DrawCallZSorter::clear()
 {
 	_targetPropAddedSlot		= nullptr;
 	_targetPropRemovedSlot		= nullptr;
@@ -134,8 +134,8 @@ DrawCallTransparencyHelper::clear()
 }
 
 void
-DrawCallTransparencyHelper::propertyAddedHandler(Container::Ptr		container, 
-										 const std::string&	propertyName)
+DrawCallZSorter::propertyAddedHandler(Container::Ptr		container, 
+									  const std::string&	propertyName)
 {
 	assert(container);
 
@@ -148,7 +148,7 @@ DrawCallTransparencyHelper::propertyAddedHandler(Container::Ptr		container,
 	if (_propChangedSlots.find(propertyName) == _propChangedSlots.end())
 	{
 		_propChangedSlots[propertyName] = container->propertyReferenceChanged(propertyName)->connect(std::bind(
-			&DrawCallTransparencyHelper::requestZSort,
+			&DrawCallZSorter::requestZSort,
 			shared_from_this()
 		));
 
@@ -158,7 +158,7 @@ DrawCallTransparencyHelper::propertyAddedHandler(Container::Ptr		container,
 
 			if (matrix)
 				_matrixChangedSlots[propertyName] = matrix->changed()->connect(std::bind(
-					&DrawCallTransparencyHelper::requestZSort,
+					&DrawCallZSorter::requestZSort,
 					shared_from_this()
 				));
 		}
@@ -168,8 +168,8 @@ DrawCallTransparencyHelper::propertyAddedHandler(Container::Ptr		container,
 }
 
 void
-DrawCallTransparencyHelper::propertyRemovedHandler(Container::Ptr		container, 
-										   const std::string&	propertyName)
+DrawCallZSorter::propertyRemovedHandler(Container::Ptr		container, 
+										const std::string&	propertyName)
 {
 	assert(container);
 
@@ -190,17 +190,17 @@ DrawCallTransparencyHelper::propertyRemovedHandler(Container::Ptr		container,
 }
 
 void
-DrawCallTransparencyHelper::requestZSort()
+DrawCallZSorter::requestZSort()
 {
 	if (_drawcall->zSorted())
 		_drawcall->zsortNeeded()->execute(_drawcall); // temporary ugly solution
 }
 
 void
-DrawCallTransparencyHelper::recordIfPositionalMembers(Container::Ptr container,
-										  const std::string& propertyName,
-										  bool isPropertyAdded,
-										  bool isPropertyRemoved)
+DrawCallZSorter::recordIfPositionalMembers(Container::Ptr		container,
+										   const std::string&	propertyName,
+										   bool					isPropertyAdded,
+										   bool					isPropertyRemoved)
 {
 	if (isPropertyAdded)
 	{
@@ -223,7 +223,7 @@ DrawCallTransparencyHelper::recordIfPositionalMembers(Container::Ptr container,
 }
 
 Vector3::Ptr
-DrawCallTransparencyHelper::getEyeSpacePosition(Vector3::Ptr output)  const
+DrawCallZSorter::getEyeSpacePosition(Vector3::Ptr output)  const
 {
 	static auto localPos	= Vector3::create();
 	static auto modelView	= Matrix4x4::create();

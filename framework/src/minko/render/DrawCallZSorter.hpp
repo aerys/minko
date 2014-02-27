@@ -26,16 +26,16 @@ namespace minko
 {
 	namespace render
 	{
-		class DrawCallTransparencyHelper: 
-			public std::enable_shared_from_this<DrawCallTransparencyHelper>
+		class DrawCallZSorter: 
+			public std::enable_shared_from_this<DrawCallZSorter>
 		{
 		public:
-			typedef std::shared_ptr<DrawCallTransparencyHelper>		Ptr;
+			typedef std::shared_ptr<DrawCallZSorter>	Ptr;
 
 		private:
-			typedef std::shared_ptr<DrawCall>						DrawCallPtr;
-			typedef std::shared_ptr<data::Container>				ContainerPtr;
-			typedef std::shared_ptr<data::Value>					ValuePtr;
+			typedef std::shared_ptr<DrawCall>			DrawCallPtr;
+			typedef std::shared_ptr<data::Container>	ContainerPtr;
+			typedef std::shared_ptr<data::Value>		ValuePtr;
 
 		private:
 			struct PropertyInfo
@@ -81,7 +81,7 @@ namespace minko
 			Ptr
 			create(DrawCallPtr drawCall)
 			{
-				return std::shared_ptr<DrawCallTransparencyHelper>(new DrawCallTransparencyHelper(drawCall));
+				return std::shared_ptr<DrawCallZSorter>(new DrawCallZSorter(drawCall));
 			}
 
 			void
@@ -94,7 +94,7 @@ namespace minko
 			getEyeSpacePosition(std::shared_ptr<math::Vector3> output = nullptr) const;
 
 		private:
-			DrawCallTransparencyHelper(DrawCallPtr drawcall);
+			DrawCallZSorter(DrawCallPtr drawcall);
 
 			static
 			PropertyInfos
