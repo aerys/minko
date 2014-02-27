@@ -14,6 +14,7 @@ uniform mat4 worldToScreenMatrix;
 uniform mat4 viewMatrix;
 #if defined(FOG_COLOR)
 	uniform vec4 fogColor;
+	uniform float fogDensity;
 #endif
 
 
