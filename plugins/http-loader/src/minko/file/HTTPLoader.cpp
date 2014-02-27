@@ -124,10 +124,28 @@ HTTPLoader::errorHandler(void* arg)
 void
 HTTPLoader::load(const std::string& filename, std::shared_ptr<Options> options)
 {
+	_options = options;
+
 	std::cout << "HTTPLoader::load(): " << filename << std::endl;
 	_filename = filename;
-	_resolvedFilename = options->uriFunction()(sanitizeFilename(filename));
-	_options = options;
+	_resolvedFilename = _options->uriFunction()(sanitizeFilename(filename));
+
+	if (_options->includePaths().size() != 0)
+	{
+		if (_resolvedFilename.find_first_of("http://") != 0 && _resolvedFilename.find_first_of("https://") != 0)
+		{
+			for (auto path : _options->includePaths())
+			{
+				_resolvedFilename = path + '/' + _resolvedFilename;
+				break;
+			}
+		}
+	}
+
+	_options->loaderFunction([](const std::string& filename, std::shared_ptr<AssetLibrary> assets) -> std::shared_ptr<AbstractLoader>
+	{
+		return HTTPLoader::create();
+	});
 	
 	auto loader = shared_from_this();
 
@@ -143,17 +161,24 @@ HTTPLoader::load(const std::string& filename, std::shared_ptr<Options> options)
 	std::cout << "HTTPLoader::load(): " << "call emscripten_async_wget_data " << std::endl;
 	emscripten_async_wget_data(_filename.c_str(), loader.get(), &completeHandler, &errorHandler);
 #else
-	auto worker = AbstractCanvas::defaultCanvas()->getWorker("http");
+	/*if (options->loadAsynchronously())
+	{*/
+		auto worker = AbstractCanvas::defaultCanvas()->getWorker("http");
 
-	_workerSlots.push_back(worker->complete()->connect([=](Worker::MessagePtr data) {
-		completeHandler(loader.get(), &*data->begin(), data->size());
-	}));
+		_workerSlots.push_back(worker->complete()->connect([=](Worker::MessagePtr data) {
+			completeHandler(loader.get(), &*data->begin(), data->size());
+		}));
 
-	_workerSlots.push_back(worker->progress()->connect([=](float ratio) {
-		progressHandler(loader.get(), ratio * 100);
-	}));
+		_workerSlots.push_back(worker->progress()->connect([=](float ratio) {
+			progressHandler(loader.get(), ratio * 100);
+		}));
 
-	worker->input(std::make_shared<std::vector<char>>(_resolvedFilename.begin(), _resolvedFilename.end()));
+		worker->input(std::make_shared<std::vector<char>>(_resolvedFilename.begin(), _resolvedFilename.end()));
+	/*}
+	else
+	{
+		//fixme: handle synchronous HTTP loading
+	}*/
 #endif
 }
 

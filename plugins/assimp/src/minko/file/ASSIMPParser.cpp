@@ -145,9 +145,11 @@ ASSIMPParser::parse(const std::string&					filename,
 
 	int pos = resolvedFilename.find_last_of("\\/");
 
+	options = file::Options::create(options);
+		
 	if (pos > 0)
 	{
-		options = file::Options::create(options);
+		options->includePaths().clear();
 		options->includePaths().push_back(resolvedFilename.substr(0, pos));
 	}
 
@@ -158,6 +160,8 @@ ASSIMPParser::parse(const std::string&					filename,
     //Init the assimp scene
     Assimp::Importer importer;
 
+	//fixme : find a way to handle loading dependencies asynchronously
+	options->loadAsynchronously(false);
 	importer.SetIOHandler(new IOHandler(options, _assetLibrary));
 
 	const aiScene* scene = importer.ReadFileFromMemory(

@@ -83,20 +83,21 @@ namespace minko
 			create(Ptr options)
 			{
 				auto opt = std::shared_ptr<Options>(new Options(options->_context));
-
-				opt->_includePaths		= options->_includePaths;
-                opt->_generateMipMaps	= options->_generateMipMaps;
-				opt->_resizeSmoothly	= options->_resizeSmoothly;
-				opt->_isCubeTexture		= options->_isCubeTexture;
-				opt->_startAnimation	= options->_startAnimation;
-				opt->_skinningFramerate	= options->_skinningFramerate;
-				opt->_skinningMethod	= options->_skinningMethod;
-                opt->_effect			= options->_effect;
-				opt->_materialFunction	= options->_materialFunction;
-				opt->_geometryFunction	= options->_geometryFunction;
-				opt->_loaderFunction	= options->_loaderFunction;
-				opt->_uriFunction		= options->_uriFunction;
-				opt->_nodeFunction		= options->_nodeFunction;
+				
+				opt->_includePaths				= options->_includePaths;
+                opt->_generateMipMaps			= options->_generateMipMaps;
+				opt->_resizeSmoothly			= options->_resizeSmoothly;
+				opt->_isCubeTexture				= options->_isCubeTexture;
+				opt->_startAnimation			= options->_startAnimation;
+				opt->_skinningFramerate			= options->_skinningFramerate;
+				opt->_skinningMethod			= options->_skinningMethod;
+                opt->_effect					= options->_effect;
+				opt->_materialFunction			= options->_materialFunction;
+				opt->_geometryFunction			= options->_geometryFunction;
+				opt->_loaderFunction			= options->_loaderFunction;
+				opt->_uriFunction				= options->_uriFunction;
+				opt->_nodeFunction				= options->_nodeFunction;
+				opt->_loadAsynchronously		= options->_loadAsynchronously;
 
 				return opt;
 			}

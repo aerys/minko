@@ -110,6 +110,7 @@ namespace minko
 		}
 
 	protected:
+		static
 		std::unordered_map<std::string, WorkerHandler>		_workers;
 		
 		static

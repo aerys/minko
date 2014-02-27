@@ -219,6 +219,9 @@ namespace minko
 
 			canvas->initialize();
 
+			if (_defaultCanvas == nullptr)
+				_defaultCanvas = canvas;
+
 			return canvas;
 		}
 
