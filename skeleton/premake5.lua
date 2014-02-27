@@ -12,10 +12,10 @@ minko.project.solution(PROJECT_NAME)
 		files { "src/**.cpp", "src/**.hpp" }
 		includedirs { "src" }
 
-		-- plugins
+		-- plugin
 		minko.plugin.enable("sdl")
 		--minko.plugin.enable("bullet")
 		--minko.plugin.enable("jpeg")
-		--minko.plugin.enable("mk")
+		--minko.plugin.enable("serializer")
 		--minko.plugin.enable("particles")
 		--minko.plugin.enable("png")
