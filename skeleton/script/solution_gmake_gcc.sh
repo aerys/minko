@@ -6,10 +6,10 @@ OS_TYPE=`uname -s`
 pushd ${DIR}/..
 case ${OS_TYPE} in
 	"Linux")
-		${MINKO_HOME}/tools/lin/scripts/premake5.sh --cc=gcc gmake
+		${MINKO_HOME}/tool/lin/script/premake5.sh --cc=gcc gmake
 		;;
 	"Darwin")
-		${MINKO_HOME}/tools/mac/scripts/premake5.sh --cc=gcc gmake
+		${MINKO_HOME}/tool/mac/script/premake5.sh --cc=gcc gmake
 		;;
 esac
 popd

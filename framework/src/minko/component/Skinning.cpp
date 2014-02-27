@@ -223,7 +223,9 @@ Skinning::updateFrame(unsigned int	frameId,
 
 	if (_method == SkinningMethod::HARDWARE)
 	{
-		geometry->data()->set<int>(PNAME_NUM_BONES,	_skin->numBones());
+		if (!geometry->data()->hasProperty(PNAME_NUM_BONES) ||
+			geometry->data()->get<int>(PNAME_NUM_BONES) != _skin->numBones())
+			geometry->data()->set<int>(PNAME_NUM_BONES, _skin->numBones());
 	
 		const auto& uniformArray	= geometry->data()->get<UniformArrayPtr<float>>	(PNAME_BONE_MATRICES);
 		uniformArray->first			= _skin->numBones();
@@ -320,20 +322,6 @@ Skinning::performSoftwareSkinning(VertexBuffer::AttributePtr		attr,
 				y2 += boneWeight * (boneMatrix[1] * x1 + boneMatrix[5] * y1 + boneMatrix[9]  * z1);
 				z2 += boneWeight * (boneMatrix[2] * x1 + boneMatrix[6] * y1 + boneMatrix[10] * z1);
 			}
-			/*
-			if (!doDeltaTransform)
-			{
-				x2 += boneWeight * (boneMatrix[0] * x1 + boneMatrix[1] * y1 + boneMatrix[2]  * z1 + boneMatrix[3]);
-				y2 += boneWeight * (boneMatrix[4] * x1 + boneMatrix[5] * y1 + boneMatrix[6]  * z1 + boneMatrix[7]);
-				z2 += boneWeight * (boneMatrix[8] * x1 + boneMatrix[9] * y1 + boneMatrix[10] * z1 + boneMatrix[11]);
-			}
-			else
-			{
-				x2 += boneWeight * (boneMatrix[0] * x1 + boneMatrix[1] * y1 + boneMatrix[2]  * z1);
-				y2 += boneWeight * (boneMatrix[4] * x1 + boneMatrix[5] * y1 + boneMatrix[6]  * z1);
-				z2 += boneWeight * (boneMatrix[8] * x1 + boneMatrix[9] * y1 + boneMatrix[10] * z1);
-			}
-			*/
 		}
 
 		outputData[index]	= x2;
