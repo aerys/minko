@@ -66,3 +66,8 @@ end
 --	os.mkdir(workerDistDir .. "/lib/curl/lib")
 --	minko.os.copyfiles(minko.worker.path("http") .. "/lib/curl/lib", workerDistDir .. "/lib/curl/lib")
 --end
+
+newoption {
+	trigger		= "with-http-worker",
+	description	= "Enable the Minko HTTP Worker plugin."
+}

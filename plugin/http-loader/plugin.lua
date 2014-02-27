@@ -27,3 +27,8 @@ minko.plugin["http-loader"].enable = function (self)
 
 	minko.plugin.enable("http-worker")
 end
+
+newoption {
+	trigger		= "with-http-loader",
+	description	= "Enable the Minko HTTP Loader plugin."
+}

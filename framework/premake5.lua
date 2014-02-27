@@ -28,9 +28,6 @@ minko.project.library "minko-framework"
 		"JSON_IS_AMALGAMATION"
 	}
 	
-	-- plugins
-	minko.plugin.import("angle")
-
 	-- windows
 	configuration { "windows32" }
 		libdirs { "lib/glew/lib/windows32" }

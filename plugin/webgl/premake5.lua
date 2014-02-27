@@ -4,11 +4,6 @@
 
 if minko.platform.supports("html5") then
 
-newoption {
-	trigger			= "with-webgl",
-	description		= "Enable the Minko WebGL plugin."
-}
-
 PROJECT_NAME = path.getname(os.getcwd())
 
 minko.project.library("minko-plugin-" .. PROJECT_NAME)
@@ -28,7 +23,5 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 	}
 
 	includedirs { "include" }
-
-	minko.plugin.import("sdl")
 
 end
