@@ -82,11 +82,11 @@ int main(int argc, char** argv)
 		keyTransforms.push_back(Matrix4x4::create()->copyFrom(keyTransforms[0])->appendTranslation(Vector3::create(0.0f, 0.0f, -15.0f)));
 		keyTransforms.push_back(Matrix4x4::create()->copyFrom(keyTransforms[1])->appendTranslation(Vector3::create(0.0f, 0.0f, 15.0f)));
 
-		auto segmentDuration = 1000U;
+		auto segmentDuration = 1500U;
 
 		auto cubeAnimation = Animation::create(
-		{ minko::animation::Matrix4x4Timeline::create("transform.matrix", segmentDuration * 3,
-		{ segmentDuration * 1, segmentDuration * 2, segmentDuration * 3 },
+		{ minko::animation::Matrix4x4Timeline::create("transform.matrix", segmentDuration * 2,
+		{ segmentDuration * 0, segmentDuration * 1, segmentDuration * 2 },
 		keyTransforms, true) }, true);
 
 		mesh->addComponent(cubeAnimation);
