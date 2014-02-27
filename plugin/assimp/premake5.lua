@@ -1,8 +1,3 @@
-newoption {
-	trigger = "with-assimp",
-	description = "Enable the Minko ASSIMP plugin."
-}
-
 PROJECT_NAME = path.getname(os.getcwd())
 
 minko.project.library("minko-plugin-" .. PROJECT_NAME)

@@ -1,8 +1,3 @@
-newoption {
-	trigger			= "with-devil",
-	description		= "Enable the Minko DevIL plugin."
-}
-
 PROJECT_NAME = path.getname(os.getcwd())
 
 minko.project.library("minko-plugin-" .. PROJECT_NAME)

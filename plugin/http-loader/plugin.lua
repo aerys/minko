@@ -28,3 +28,8 @@ minko.plugin["http-loader"].enable = function (self)
 	configuration { "not html5" }
 		minko.plugin.enable("http-worker")
 end
+
+newoption {
+	trigger		= "with-http-loader",
+	description	= "Enable the Minko HTTP Loader plugin."
+}
