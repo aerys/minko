@@ -16,8 +16,15 @@ for ARG in "$@"; do
 	fi
 done
 
+if [[ `uname -s` != "Darwin" ]]; then # Option not supported on OS X (because this is the default behavior)
+	START_GROUP="-Wl,--start-group"
+	END_GROUP="-Wl,--end-group"
+fi
+
 if [[ -z "${STATIC_LIBS}" && -z "${SHARED_LIBS}" ]]; then
+	test "$verbose" != 0 && echo "${BIN} ${ARGS}"
 	${BIN} ${ARGS}
 else
-	${BIN} ${ARGS} "-Wl,--start-group" ${STATIC_LIBS} ${SHARED_LIBS} "-Wl,--end-group"
+	test "$verbose" != 0 && echo "${BIN} ${ARGS} -Wl,--start-group ${STATIC_LIBS} ${SHARED_LIBS} -Wl,--end-group"
+	${BIN} ${ARGS} ${START_GROUP} ${STATIC_LIBS} ${SHARED_LIBS} ${END_GROUP}
 fi
