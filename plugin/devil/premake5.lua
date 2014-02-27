@@ -26,6 +26,11 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		"lib/devil/lib/lcms/include"
 	}
 
+	configuration { "osx64" }
+		buildoptions {
+			"-std=gnu89"
+		}
+
 	configuration { "debug"}
 		defines { "DEBUG" }
 		flags { "Symbols" }
