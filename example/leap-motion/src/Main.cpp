@@ -351,7 +351,7 @@ int main(int argc, char** argv)
 		cameraNode->component<PerspectiveCamera>()->aspectRatio((float)w / (float)h);
 	});
 
-	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, uint deltaTime)
+	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, float deltaTime)
 	{
 		sceneManager->nextFrame();
 	});

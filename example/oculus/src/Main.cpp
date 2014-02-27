@@ -121,7 +121,7 @@ int main(int argc, char** argv)
 		root->addChild(cube);
 	});
 
-	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, uint deltaTime)
+	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, float deltaTime)
 	{
 		animateObjects(SPHERES_MOVE_AMPL, SPHERES_MOVE_SPEED, prevTime, spheresAnimData);
 		spheres->component<Transform>()->matrix()->appendRotationY(.001f);

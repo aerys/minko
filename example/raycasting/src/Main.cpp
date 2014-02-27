@@ -97,7 +97,7 @@ int main(int argc, char** argv)
 	});
 
 
-	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, uint deltaTime)
+	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, float deltaTime)
 	{
 		auto distance = 0.f;
 		auto ray = camera->component<PerspectiveCamera>()->unproject(
