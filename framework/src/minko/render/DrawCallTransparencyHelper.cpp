@@ -116,7 +116,8 @@ DrawCallTransparencyHelper::initialize(Container::Ptr targetData,
 	{
 		auto source		= prop.second.source;
 		auto container	= source == data::BindingSource::RENDERER ? rendererData : targetData;
-		propertyAddedHandler(container, prop.first); 
+		if (container->hasProperty(prop.first))
+			propertyAddedHandler(container, prop.first); 
 	}		
 }
 
