@@ -68,7 +68,7 @@ int main(int argc, char** argv)
 		
 		auto cubeMaterial = material::BasicMaterial::create()
 			->diffuseMap(assets->texture(TEXTURE_FILENAME))
-			->fogColor(Vector4::create(1.0f, 1.0f, 1.0f, 1.0f));
+			->fogColor(Vector4::create(0.6f, 0.6f, 0.6f, 0.6f));
 
 		mesh->addComponent(Surface::create(
 			assets->geometry("cubeGeometry"),

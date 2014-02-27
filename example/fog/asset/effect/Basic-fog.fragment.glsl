@@ -8,11 +8,15 @@ uniform vec4        diffuseColor;
 uniform sampler2D   diffuseMap;
 uniform samplerCube	diffuseCubeMap;
 #if defined(FOG_COLOR)
-	uniform vec4		fogColor;
+	uniform vec4 fogColor;
 #endif
+
 
 varying vec2 vertexUV;
 varying vec3 vertexUVW;
+#ifdef FOG_COLOR
+	varying float fogFactor;
+#endif
 
 void main(void)
 {
@@ -25,8 +29,7 @@ void main(void)
 	#endif
 
 	#if defined(FOG_COLOR)
-		float factor = 0.5f;
-		gl_FragColor *= factor;
+		gl_FragColor = mix(fogColor, gl_FragColor, fogFactor);
 	#endif
 }
 
