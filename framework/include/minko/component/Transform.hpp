@@ -153,11 +153,11 @@ namespace minko
 			void
 			addedOrRemovedHandler(NodePtr node, NodePtr target, NodePtr ancestor);
 
-#ifdef MINKO_TESTS
+#ifdef MINKO_TEST
 		public:
 #else
 		private:
-#endif // MINKO_TESTS
+#endif // MINKO_TEST
 			class RootTransform :
 				public std::enable_shared_from_this<RootTransform>,
 				public AbstractComponent

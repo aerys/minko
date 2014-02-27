@@ -15,27 +15,27 @@ Get started
 * Make sure you have a recent compiler (tested with GCC 4.8 and Clang 3.3)
 * Open a command prompt
 * `cd <minko>`
-* `tools/mac/bin/premake5.sh gmake` (`--cc=gcc` or `--cc=clang`)
+* `tool/mac/bin/premake5.sh gmake` (`--cc=gcc` or `--cc=clang`)
 * `make config=release config=osx64_release`
-* `cd examples/cube && bin/osx64/release/minko-example-cube`
+* `cd example/cube/bin/osx64/release && ./minko-example-cube`
 
 ### Linux
 * Make sure you have a recent compiler (tested with GCC 4.8 and Clang 3.3)
 * Open a command prompt (or start [Vagrant](http://www.vagrantup.com/))
 * `cd <minko>`
-* `tools/lin/bin/premake5.sh gmake` (`--cc=gcc` or `--cc=clang`)
+* `tool/lin/bin/premake5.sh gmake` (`--cc=gcc` or `--cc=clang`)
 * `make config=release config=linux64_release`
-* `cd examples/cube && bin/linux64/release/minko-example-cube`
+* `cd example/cube/bin/linux64/release && ./minko-example-cube`
 
 ### Windows
 * Open a command prompt
 * `cd <minko>`
-* `tools\win\scripts\premake5 vs2013ctp`
+* `tool\win\bin\premake5.exe --no-test vs2013`
 * `start minko.sln`
 
 Or from the explorer:
 
-* Run `tools\win\scripts\premake_vs2013ctp.bat`
+* Run `tool\win\script\premake_vs2013.bat`
 * Open `minko.sln`
 
 
@@ -46,44 +46,58 @@ Framework
 
 Sources for the Minko framework.
 
-Examples
---------
+Example
+-------
 
 Example applications created with the Minko framework and its plugins.
 
-Tools
------
+Tool
+----
 
 Set of scripts to ease the deployment of the Minko SDK without using the command line.
 
-`premake_vs2013ctp.bat` - Windows batch script to create a VS2010 solution and perform other necessary operations such as copying required DLL into the output folders
+`premake_vs2013.bat` - Windows batch script to create a VS2013 solution and perform other necessary operations such as copying required DLL into the output folders
 
-`premake_clean.bat` - Windows batch script to properly clean a VS2010 solution
+`premake_vs2013ctp.bat` - Windows batch script to create a VS2013 solution (with the Nov. 2013 CTP compiler) and perform other necessary operations such as copying required DLL into the output folders
 
-Templates
----------
+`premake_gmake.bat` - Windows batch script to create a GNU Make solution (supporting HTML5 compilation)
+
+`premake_clean.bat` - Windows batch script to properly clean the generated solutions and builds
+
+Template
+--------
 
 This folder contains templates you can use to ease the development of the Minko framework, plugins
 or applications.
 
-* `vs` - Visual Studio templates; can be installed by:
-	* running the `tools/premake_templates.bat` script
-	* or executing `premake5 installTemplates` command line
-	* or by manually copying each template directory into your VS templates directory (default is `$user\Documents\Visual Studio 2012\Templates\ItemTemplates\Projet Visual C++`)
-
-Plugins
--------
+Plugin
+------
 
 Sources for Minko's plugins.
 
 Available plugins are:
+* angle
+* assimp
+* bullet
+* devil
+* fx
+* http-loader
+* http-worker
 * jpeg
+* leap
+* lua
+* oculus
+* offscreen
+* particles
 * png
+* sdl
+* serializer
 * webgl: please follow `webgl/README.md` to learn how to deploy
 
 Resources
 ---------
 * [minko.io](http://minko.io/ "Website")
+* [doc.minko.io](http://doc.minko.io/ "Documentation")
 
 Contribute
 ----------
