@@ -23,3 +23,4 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/LuaScriptManager.hpp"
 #include "minko/component/LuaScript.hpp"
 #include "minko/file/LuaScriptParser.hpp"
+#include "minko/LuaWrapper.hpp"

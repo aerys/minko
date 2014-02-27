@@ -70,6 +70,17 @@ LuaScriptManager::initialize()
 }
 
 void
+LuaScriptManager::initialize(std::vector<std::function<void(LuaGlue&)>> bindingsFunctions)
+{
+	AbstractScript::initialize();
+
+	for (auto f : bindingsFunctions)
+		f(_state);
+
+	initializeBindings();
+}
+
+void
 LuaScriptManager::targetAddedHandler(AbstractComponent::Ptr cmp, scene::Node::Ptr target)
 {
     AbstractScript::targetAddedHandler(cmp, target);
