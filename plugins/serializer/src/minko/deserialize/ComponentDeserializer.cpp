@@ -26,6 +26,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/SpotLight.hpp"
 #include "minko/component/Surface.hpp"
 #include "minko/component/Animation.hpp"
+#include "minko/component/Skinning.hpp"
 #include "minko/file/AssetLibrary.hpp"
 #include "minko/component/Renderer.hpp"
 #include "msgpack.hpp"
@@ -39,6 +40,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/geometry/Bone.hpp"
 #include "minko/scene/NodeSet.hpp"
 #include "minko/scene/Node.hpp"
+
+#include "SkinningComponentDeserializer.hpp"
 
 using namespace minko;
 using namespace minko::deserialize;
@@ -285,7 +288,10 @@ ComponentDeserializer::deserializeSkinning(std::string&		serializedAnimation,
 
 	}
 
-	// @fixme Pierre
-
-	return component::AmbientLight::create();
+	return SkinningComponentDeserializer::computeSkinning(
+        assetLibrary->defaultOptions(), 
+        assetLibrary->context(), 
+        bones, 
+        root
+   );
 }
