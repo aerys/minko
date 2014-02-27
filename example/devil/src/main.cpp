@@ -18,36 +18,59 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "minko/Minko.hpp"
-#include "minko/MinkoPNG.hpp"
+#include "minko/MinkoDevIL.hpp"
 #include "minko/MinkoSDL.hpp"
 
 using namespace minko;
 using namespace minko::component;
 using namespace minko::math;
 
-const std::string TEXTURE_FILENAME = "texture/box.png";
+const std::string TEXTURE_JPG = "texture/bricks.jpg";
+const std::string TEXTURE_PNG = "texture/bricks.png";
+const std::string TEXTURE_TGA = "texture/bricks.tga";
+const std::string TEXTURE_TIF = "texture/bricks.tif";
+const std::string TEXTURE_BMP = "texture/bricks.bmp";
+const std::string TEXTURE_PSD = "texture/bricks.psd";
+const std::string TEXTURE_DDS = "texture/bricks.dds";
+
+std::vector<minko::render::AbstractTexture::Ptr> textures;
 
 int main(int argc, char** argv)
 {
-	auto canvas = Canvas::create("Minko Example - Cube", 800, 600);
+	auto canvas = Canvas::create("Minko Example - DevIL", 800, 600);
 
 	auto sceneManager = SceneManager::create(canvas->context());
 	
 	// setup assets
-	sceneManager->assets()->defaultOptions()->resizeSmoothly(true);
 	sceneManager->assets()->defaultOptions()->generateMipmaps(true);
 	sceneManager->assets()
-		->registerParser<file::PNGParser>("png")
-		->queue(TEXTURE_FILENAME)
+		->queue(TEXTURE_JPG)
+		->queue(TEXTURE_PNG)
+		->queue(TEXTURE_TGA)
+		->queue(TEXTURE_TIF)
+		->queue(TEXTURE_BMP)
+		->queue(TEXTURE_PSD)
+		->queue(TEXTURE_DDS)
 		->queue("effect/Basic.effect");
 
+	std::vector<std::string> extensions = file::DevILParser::getSupportedFileExensions();
+
+	for (uint i = 0; i < extensions.size(); i++)
+	{
+		std::string extension = extensions[i];
+		sceneManager->assets()->registerParser<file::DevILParser>(extension);
+	}
+
 	sceneManager->assets()->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()));
+	
+
 
 	auto root = scene::Node::create("root")
 		->addComponent(sceneManager);
 
 	auto mesh = scene::Node::create("mesh")
 		->addComponent(Transform::create());
+	root->addChild(mesh);
 
 	auto camera = scene::Node::create("camera")
 		->addComponent(Renderer::create(0x7f7f7fff))
@@ -57,19 +80,23 @@ int main(int argc, char** argv)
 		->addComponent(PerspectiveCamera::create(800.f / 600.f, (float)PI * 0.25f, .1f, 1000.f));
 	root->addChild(camera);
 
+	int frames = 0;
+
 	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
 	{
-		auto cubeGeometry = geometry::CubeGeometry::create(sceneManager->assets()->context());
-
-		assets->geometry("cubeGeometry", cubeGeometry);
+		textures.push_back(assets->texture(TEXTURE_JPG));
+		textures.push_back(assets->texture(TEXTURE_PNG));
+		textures.push_back(assets->texture(TEXTURE_TGA));
+		textures.push_back(assets->texture(TEXTURE_TIF));
+		textures.push_back(assets->texture(TEXTURE_BMP));
+		textures.push_back(assets->texture(TEXTURE_PSD));
+		textures.push_back(assets->texture(TEXTURE_DDS));
 		
 		mesh->addComponent(Surface::create(
-			assets->geometry("cubeGeometry"),
-			material::BasicMaterial::create()->diffuseMap(assets->texture(TEXTURE_FILENAME)),
-			assets->effect("effect/Basic.effect")
+				geometry::CubeGeometry::create(sceneManager->assets()->context()),
+				material::BasicMaterial::create()->diffuseMap(textures[0]),
+				assets->effect("effect/Basic.effect")
 			));
-
-		root->addChild(mesh);
 	});
 
 	auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
@@ -79,9 +106,21 @@ int main(int argc, char** argv)
 
 	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, float deltaTime)
 	{
-        mesh->component<Transform>()->matrix()->appendRotationY(0.001f * deltaTime);
+		mesh->component<Transform>()->matrix()->appendRotationY(.01f);
 
 		sceneManager->nextFrame();
+
+		if (textures.size() > 0)
+		{
+			frames++;
+
+			if ((frames % 100) == 0)
+			{
+				int i = (frames / 100) % textures.size();
+
+				mesh->component<Surface>()->material()->set("diffuseMap", textures[i]);
+			}
+		}
 	});
 
 	sceneManager->assets()->load();
