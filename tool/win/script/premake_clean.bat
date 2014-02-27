@@ -6,5 +6,5 @@ set exdir=%~dp0
 cd /%exdir:~0,1% %exdir%
 
 chdir ..\..\..
-tools\win\bin\premake5.exe clean
-cd tools\win\scripts
+tool\win\bin\premake5.exe clean
+pause
