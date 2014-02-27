@@ -18,8 +18,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 ]]--
 
 -- offscreen plugin
-if minko.platform.supports("linux") then
-
 minko.plugin.offscreen = {}
 
 function minko.plugin.offscreen:enable()
@@ -38,5 +36,3 @@ newoption {
 	trigger			= "with-offscreen",
 	description		= "Enable the Minko Offscreen plugin."
 }
-
-end
