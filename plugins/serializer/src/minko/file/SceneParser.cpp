@@ -185,17 +185,32 @@ SceneParser::parseNode(std::vector<SerializedNode>&			nodePack,
 
 	_dependencies->loadedRoot(root);
 
+	std::set<uint> markedComponent;
+
 	for (uint componentIndex = 0; componentIndex < componentPack.size(); ++componentIndex)
 	{
 		int8_t			dst = componentPack[componentIndex].at(componentPack[componentIndex].size() - 1);
 
-		if (_componentIdToReadFunction.find(dst) != _componentIdToReadFunction.end())
+		if (dst == serialize::SKINNING)
+			markedComponent.insert(componentIndex);
+		else
 		{
-			std::shared_ptr<component::AbstractComponent> newComponent = _componentIdToReadFunction[dst](componentPack[componentIndex], assetLibrary, _dependencies);
+			if (_componentIdToReadFunction.find(dst) != _componentIdToReadFunction.end())
+			{
+				std::shared_ptr<component::AbstractComponent> newComponent = _componentIdToReadFunction[dst](componentPack[componentIndex], assetLibrary, _dependencies);
 
-			for (scene::Node::Ptr node : componentIdToNodes[componentIndex])
-				node->addComponent(newComponent);
+				for (scene::Node::Ptr node : componentIdToNodes[componentIndex])
+					node->addComponent(newComponent);
+			}
 		}
+	}
+
+	for (auto componentIndex2 : markedComponent)
+	{
+		std::shared_ptr<component::AbstractComponent> newComponent = _componentIdToReadFunction[serialize::SKINNING](componentPack[componentIndex2], assetLibrary, _dependencies);
+
+		for (scene::Node::Ptr node : componentIdToNodes[componentIndex2])
+			node->addComponent(newComponent);
 	}
 
 	return root;

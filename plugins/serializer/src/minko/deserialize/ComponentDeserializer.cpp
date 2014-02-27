@@ -287,5 +287,5 @@ ComponentDeserializer::deserializeSkinning(std::string&		serializedAnimation,
 
 	// @fixme Pierre
 
-	return component::Transform::create();
+	return component::AmbientLight::create();
 }
