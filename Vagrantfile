@@ -18,7 +18,7 @@ Vagrant.configure("2") do |config|
   # end
 
   config.vm.provision :puppet do |puppet|
-    puppet.manifests_path = "tools/lin/share"
+    puppet.manifests_path = "tool/lin/share"
     puppet.manifest_file = "minko.pp"
   end
 end
