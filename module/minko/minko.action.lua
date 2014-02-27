@@ -25,7 +25,15 @@ minko.action.copy = function(sourcePath)
 		end
 		-- return 'if exist ' .. sourcePath .. ' xcopy /y /i /e "' .. sourcePath .. '" "$(TargetDir)"'
 	else
-		return 'test -e "' .. sourcePath .. '" && cp -R "' .. sourcePath .. '" "${TARGETDIR}" || :'
+		return 'test -e ' .. sourcePath .. ' && cp -R ' .. sourcePath .. ' "${TARGETDIR}" || :'
+	end
+end
+
+minko.action.link = function(sourcePath)
+	if os.is('windows') then
+		-- fixme: not needed yet
+	else
+		return 'ln -s -f ' .. sourcePath .. ' "${TARGETDIR}" || :'
 	end
 end
 
