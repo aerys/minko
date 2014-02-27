@@ -18,6 +18,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 ]]--
 
 -- offscreen plugin
+if minko.platform.supports("linux") then
+
 minko.plugin.offscreen = {}
 
 function minko.plugin.offscreen:enable()
@@ -30,4 +32,11 @@ function minko.plugin.offscreen:enable()
 		minko.plugin.path("offscreen") .. "/lib/osmesa/include",
 		minko.plugin.path("offscreen") .. "/include"
 	}
+end
+
+newoption {
+	trigger			= "with-offscreen",
+	description		= "Enable the Minko Offscreen plugin."
+}
+
 end

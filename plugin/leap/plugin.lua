@@ -68,3 +68,8 @@ function minko.plugin.leap:enable()
 
 	configuration {}
 end
+
+newoption {
+	trigger			= "with-leap",
+	description		= "Enable the Minko Leap plugin."
+}

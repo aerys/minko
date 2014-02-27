@@ -25,3 +25,8 @@ function minko.plugin.jpeg:enable()
 	includedirs { minko.plugin.path("jpeg") .. "/include" }
 	defines { "MINKO_PLUGIN_JPEG" }
 end
+
+newoption {
+	trigger		= "with-jpeg",
+	description	= "Enable the Minko JPEG plugin."
+}

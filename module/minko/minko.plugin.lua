@@ -1,11 +1,4 @@
-minko.plugin = {
-}
-
-minko.plugin.import = function(name)
-	if minko.plugin[name] and minko.plugin[name].import then
-		minko.plugin[name]:import()
-	end
-end
+minko.plugin = {}
 
 minko.plugin.include = function(path)
 	if not os.isfile(path .. '/plugin.lua') then

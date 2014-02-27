@@ -1,8 +1,3 @@
-newoption {
-	trigger		= "with-http-loader",
-	description	= "Enable the Minko HTTP Loader plugin."
-}
-
 PROJECT_NAME = path.getname(os.getcwd())
 
 minko.project.library("minko-plugin-" .. PROJECT_NAME)
