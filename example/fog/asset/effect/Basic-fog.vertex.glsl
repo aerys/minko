@@ -11,9 +11,18 @@ attribute vec2 uv;
 
 uniform mat4 modelToWorldMatrix;
 uniform mat4 worldToScreenMatrix;
+uniform mat4 viewMatrix;
+#if defined(FOG_COLOR)
+	uniform vec4 fogColor;
+#endif
+
 
 varying vec2 vertexUV;
 varying vec3 vertexUVW;
+
+#ifdef FOG_COLOR
+	varying float fogFactor;
+#endif
 
 void main(void)
 {
@@ -33,6 +42,16 @@ void main(void)
 	
 	#ifdef MODEL_TO_WORLD
 		pos = modelToWorldMatrix * pos;
+	#endif
+
+	#ifdef FOG_COLOR
+		vec4 eyeSpacePosition = viewMatrix * pos;
+
+		float fragDist = length(eyeSpacePosition);
+
+		const float LOG2 = 1.442695;
+
+		fogFactor = clamp(exp2(-fogColor.r * fogColor.r * fragDist * fragDist * LOG2), 0.0f, 1.0f);
 	#endif
 	
 	gl_Position =  worldToScreenMatrix * pos;

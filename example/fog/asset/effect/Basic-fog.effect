@@ -17,6 +17,7 @@
         "diffuseCubeMap"        : "material[${materialId}].diffuseCubeMap",
         "modelToWorldMatrix"    : "transform.modelToWorldMatrix",
         "worldToScreenMatrix"   : { "property" : "camera.worldToScreenMatrix", "source" : "renderer" },
+		"viewMatrix"			: { "property" : "camera.viewMatrix", "source" : "renderer" },
 		"boneMatrices"			: { "property" : "geometry[${geometryId}].boneMatrices",			"source" : "target" },
 		"numBones"				: { "property" : "geometry[${geometryId}].numBones",				"source" : "target" },
 		"fogColor"				: "material[${materialId}].fogColor"
