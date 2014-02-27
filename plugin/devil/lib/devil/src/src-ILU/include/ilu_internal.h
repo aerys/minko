@@ -53,7 +53,7 @@
 	#include <windows.h>
 	#define IL_TEXT(s) TEXT(s)
 #else
-	#define IL_TEXT(s) s
+	#define IL_TEXT(s) L ## s
 	#define TEXT(s) s
 #endif
 
