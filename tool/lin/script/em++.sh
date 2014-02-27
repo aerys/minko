@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [[ -z "${EMSCRIPTEN}" ]]; then
-	echo "EMSCRIPTEN is not defined" > /dev/stderr
+	echo "EMSCRIPTEN is not defined" 1>&2
 	exit 1
 fi
 
