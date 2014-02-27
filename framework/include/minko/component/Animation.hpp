@@ -67,7 +67,13 @@ namespace minko
 				return _timelines[timelineId];
 			}
 
-
+            inline
+            const std::vector<AbsTimelinePtr>&
+            timelines() const
+            {
+                return _timelines;
+            }
+             
 		private:
 			Animation(const std::vector<AbsTimelinePtr>&, bool isLooping);
 
