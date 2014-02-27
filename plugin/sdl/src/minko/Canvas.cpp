@@ -23,6 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/data/Provider.hpp"
 #include "minko/math/Vector4.hpp"
 #include "minko/async/Worker.hpp"
+#include "minko/async/FileLoaderWorker.hpp"
 
 #if defined(EMSCRIPTEN)
 # include "minko/MinkoWebGL.hpp"
@@ -63,6 +64,8 @@ Canvas::initialize()
 {
 	initializeContext(_name, width(), height(), _useStencil);
 	initializeInputs();
+
+	registerWorker<async::FileLoaderWorker>("file-loader");
 }
 
 void

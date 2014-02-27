@@ -162,8 +162,11 @@ EffectParser::parse(const std::string&				    filename,
     int pos	= resolvedFilename.find_last_of("/\\");
 
 	_options = file::Options::create(options);
+	_options->includePaths().clear();
 	if (pos > 0)
+	{
 		_options->includePaths().push_back(resolvedFilename.substr(0, pos));
+	}
 	
 	_filename = filename;
 	_resolvedFilename = resolvedFilename;
@@ -215,6 +218,8 @@ EffectParser::parse(const std::string&				    filename,
 	// parse the list of techniques, if no "techniques" directive is found then
 	// the global list of passes becomes the "default" techinque
 	parseTechniques(root, resolvedFilename, options, context);
+
+
 
 	_effect = render::Effect::create();
 
@@ -514,7 +519,7 @@ EffectParser::loadGLSLDependencies(GLSLBlockListPtr		blocks,
 
 		if (block.first == GLSLBlockType::FILE)
 		{
-			auto loader = options->loaderFunction()(block.second, _assetLibrary);
+			auto loader = _options->loaderFunction()(block.second, _assetLibrary);
 
 			++_numDependencies;
 
@@ -561,7 +566,7 @@ EffectParser::glslIncludeCompleteHandler(LoaderPtr 					loader,
 		options->includePaths().push_back(loader->resolvedFilename().substr(0, pos));
 	}
 
-	parseGLSL(std::string((const char*)&loader->data()[0], loader->data().size()), options, blocks,blockIt);
+	parseGLSL(std::string((const char*)&loader->data()[0], loader->data().size()), options, blocks, blockIt);
 
 	if (_numDependencies == _numLoadedDependencies && _effect)
 		finalize();

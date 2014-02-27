@@ -221,6 +221,9 @@ namespace minko
 
 			canvas->initialize();
 
+			if (_defaultCanvas == nullptr)
+				_defaultCanvas = canvas;
+
 			return canvas;
 		}
 
@@ -343,6 +346,15 @@ namespace minko
 
 		WorkerPtr
 		getWorker(const std::string& name);
+
+		bool
+		isWorkerRegistered(const std::string& name)
+		{
+			if (_workers.count(name))
+				return true;
+			else
+				return false;
+		};
 
 		void
 		run();

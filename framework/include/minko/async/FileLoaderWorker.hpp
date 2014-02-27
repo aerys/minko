@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014 Aerys
+Copyright (c) 2013 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -17,14 +17,34 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "minko/Common.hpp"
-
-#include "minko/AbstractCanvas.hpp"
+#include "minko/async/Worker.hpp"
 
 using namespace minko;
+using namespace minko::async;
+using namespace minko::file;
 
-std::shared_ptr<AbstractCanvas>
-AbstractCanvas::_defaultCanvas;
+namespace minko
+{
+	namespace async
+	{
+		class FileLoaderWorker : public Worker
+		{
+		public:
+			static
+				Ptr
+				create()
+				{
+					return std::shared_ptr<FileLoaderWorker>(new FileLoaderWorker());
+				}
 
-std::unordered_map<std::string, std::function<std::shared_ptr<async::Worker>()>>
-AbstractCanvas::_workers;
+			void
+				run(); // Must be defined in .cpp with the MINKO_WORKER macro.
+
+		private:
+			FileLoaderWorker() :
+				Worker("file-loader")
+			{
+			}
+		};
+	}
+}
