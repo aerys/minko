@@ -46,7 +46,7 @@ main(int argc, char** argv)
 		auto myCustomMaterial = material::MyCustomMaterial::create();
 		auto cube = scene::Node::create("cube")
 		->addComponent(Transform::create(
-			Matrix4x4::create()->translation(0.f, 0.f, -10.f)
+			Matrix4x4::create()->translation(0.f, 0.f, -5.f)
 			))
 			->addComponent(Surface::create(
 			geometry::CubeGeometry::create(assets->context()),
