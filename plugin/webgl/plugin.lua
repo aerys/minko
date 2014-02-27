@@ -17,8 +17,6 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ]]--
 
-if minko.platform.supports("html5") then
-
 -- webgl plugin
 minko.plugin.webgl = {}
 
@@ -33,5 +31,3 @@ newoption {
 	trigger			= "with-webgl",
 	description		= "Enable the Minko WebGL plugin."
 }
-
-end
