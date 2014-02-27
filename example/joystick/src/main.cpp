@@ -27,9 +27,28 @@ using namespace minko::math;
 
 const std::string TEXTURE_FILENAME = "texture/box.png";
 
+std::unordered_map<input::Joystick::Ptr, scene::Node::Ptr> joystickToCube;
+std::unordered_map<input::Joystick::Ptr, Signal<input::Joystick::Ptr, int, int>::Slot> joystickToButtonDownSlot;
+
+Signal<AbstractCanvas::Ptr, input::Joystick::Ptr>::Slot joystickAdded;
+Signal<AbstractCanvas::Ptr, input::Joystick::Ptr>::Slot joystickRemoved;
+
+void
+joystickButtonDownHandler(input::Joystick::Ptr joystick, int which, int buttonId)
+{
+	if (buttonId == 0)
+		joystickToCube[joystick]->component<Transform>()->matrix()->appendTranslation(0.f, 0.f, -0.1f);
+	if (buttonId == 1)
+		joystickToCube[joystick]->component<Transform>()->matrix()->appendTranslation(0.f, 0.f, 0.1f);
+	if (buttonId == 2)
+		joystickToCube[joystick]->component<Transform>()->matrix()->appendTranslation(-.1f);
+	if (buttonId == 3)
+		joystickToCube[joystick]->component<Transform>()->matrix()->appendTranslation(.1f);
+}
+
 int main(int argc, char** argv)
 {
-	auto canvas = Canvas::create("Minko Example - Cube", 800, 600);
+	auto canvas = Canvas::create("Minko Example - Joystick", 800, 600);
 
 	auto sceneManager = SceneManager::create(canvas->context());
 	
@@ -38,38 +57,51 @@ int main(int argc, char** argv)
 	sceneManager->assets()->defaultOptions()->generateMipmaps(true);
 	sceneManager->assets()
 		->registerParser<file::PNGParser>("png")
-		->queue(TEXTURE_FILENAME)
 		->queue("effect/Basic.effect");
 
 	sceneManager->assets()->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()));
+	
+	std::cout << "Plug a joystick and move the cube." << std::endl;
 
 	auto root = scene::Node::create("root")
 		->addComponent(sceneManager);
 
-	auto mesh = scene::Node::create("mesh")
-		->addComponent(Transform::create());
-
 	auto camera = scene::Node::create("camera")
 		->addComponent(Renderer::create(0x7f7f7fff))
 		->addComponent(Transform::create(
-		Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 3.f))
+		Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 5.f, 1.f))
 		))
 		->addComponent(PerspectiveCamera::create(800.f / 600.f, (float)PI * 0.25f, .1f, 1000.f));
 	root->addChild(camera);
 
+	auto cubeGeometry = geometry::CubeGeometry::create(sceneManager->assets()->context());
+	sceneManager->assets()->geometry("cubeGeometry", cubeGeometry);
+
 	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
 	{
-		auto cubeGeometry = geometry::CubeGeometry::create(sceneManager->assets()->context());
+		joystickAdded = canvas->joystickAdded()->connect([&](AbstractCanvas::Ptr canvas, input::Joystick::Ptr joystick)
+		{
+			auto mesh = scene::Node::create("mesh")
+				->addComponent(Transform::create());
 
-		assets->geometry("cubeGeometry", cubeGeometry);
-		
-		mesh->addComponent(Surface::create(
-			assets->geometry("cubeGeometry"),
-			material::BasicMaterial::create()->diffuseMap(assets->texture(TEXTURE_FILENAME)),
-			assets->effect("effect/Basic.effect")
+			mesh->addComponent(Surface::create(
+				geometry::CubeGeometry::create(sceneManager->assets()->context()),
+				material::BasicMaterial::create()->diffuseColor(math::Vector4::create(float(rand()) / float(RAND_MAX), float(rand()) / float(RAND_MAX), float(rand()) / float(RAND_MAX))),
+				sceneManager->assets()->effect("effect/Basic.effect")
 			));
+				
+			joystickToCube[joystick] = mesh;
+			joystickToButtonDownSlot[joystick] = joystick->joystickButtonDown()->connect(std::bind(&joystickButtonDownHandler, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+		
+			root->addChild(mesh);
+		});
 
-		root->addChild(mesh);
+		joystickRemoved = canvas->joystickRemoved()->connect([&](AbstractCanvas::Ptr canvas, input::Joystick::Ptr joystick)
+		{
+			root->removeChild(joystickToCube[joystick]);
+			joystickToButtonDownSlot.erase(joystick);
+			joystickToCube.erase(joystick);
+		});
 	});
 
 	auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
@@ -79,8 +111,6 @@ int main(int argc, char** argv)
 
 	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, float deltaTime)
 	{
-        mesh->component<Transform>()->matrix()->appendRotationY(0.001f * deltaTime);
-
 		sceneManager->nextFrame();
 	});
 

@@ -34,6 +34,7 @@ int main(int argc, char** argv)
 	auto canvas = Canvas::create("Minko Example - HTTP", 800, 600);
 
 	canvas->registerWorker<async::HTTPWorker>("http");
+	AbstractCanvas::defaultCanvas(canvas);
 
 	auto sceneManager = SceneManager::create(canvas->context());
 	
@@ -72,7 +73,7 @@ int main(int argc, char** argv)
 		camera->component<PerspectiveCamera>()->aspectRatio((float)w / (float)h);
 	});
 
-	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, uint deltaTime)
+	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, float deltaTime)
 	{
 		mesh->component<Transform>()->matrix()->appendRotationY(.01f);
 
