@@ -29,6 +29,4 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 
 	includedirs { "include" }
 
-	minko.plugin.import("sdl")
-
 end
