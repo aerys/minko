@@ -1,8 +1,3 @@
-newoption {
-	trigger		= "with-serializer",
-	description	= "Enable the Minko SERIALIZER plugin."
-}
-
 PROJECT_NAME = path.getname(os.getcwd())
 
 minko.project.library("minko-plugin-" .. PROJECT_NAME)

@@ -33,3 +33,8 @@ function minko.plugin.particles:enable()
 		minko.action.copy(minko.plugin.path("particles") .. "/asset"),
 	}
 end
+
+newoption {
+	trigger		= "with-particles",
+	description	= "Enable the Minko particles plugin."
+}

@@ -1,8 +1,3 @@
-newoption {
-	trigger			= "with-sdl",
-	description		= "Enable the Minko SDL plugin."
-}
-
 PROJECT_NAME = path.getname(os.getcwd())
 
 minko.project.library("minko-plugin-" .. PROJECT_NAME)

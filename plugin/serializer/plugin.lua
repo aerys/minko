@@ -20,3 +20,8 @@ function minko.plugin.serializer:dist(pluginDistDir)
 	os.mkdir(pluginDistDir .. "/lib/msgpack-c/include")
 	minko.os.copyfiles(minko.plugin.path("serializer") .. "/lib/msgpack-c/include", pluginDistDir .. "/lib/msgpack-c/include")
 end
+
+newoption {
+	trigger		= "with-serializer",
+	description	= "Enable the Minko SERIALIZER plugin."
+}

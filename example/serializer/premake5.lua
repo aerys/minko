@@ -23,5 +23,3 @@ minko.project.application("minko-example-" .. PROJECT_NAME)
 	minko.plugin.enable("png")
 	minko.plugin.enable("fx")
 	-- minko.plugin.enable("oculus")
-	
-	minko.plugin.import("angle")
