@@ -7,6 +7,5 @@ minko.project.application("minko-example-" .. PROJECT_NAME)
 	includedirs { "src"	}
 	
 	minko.plugin.enable("sdl")
-
 	minko.plugin.import("angle")
 	

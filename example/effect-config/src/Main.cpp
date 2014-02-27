@@ -32,7 +32,10 @@ int main(int argc, char** argv)
 	auto sceneManager = SceneManager::create(canvas->context());
 
 	// setup assets
-	sceneManager->assets()->defaultOptions()->generateMipmaps(true);
+	sceneManager->assets()->defaultOptions()
+        ->generateMipmaps(true)
+        ->includePaths().push_back("effect");
+
 	sceneManager->assets()
 		->registerParser<file::JPEGParser>("jpg")
 		->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()))
@@ -71,7 +74,7 @@ int main(int argc, char** argv)
 		root->children()[0]->component<PerspectiveCamera>()->aspectRatio((float)w / (float)h);
 	});
 
-	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, uint deltaTime)
+	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, float deltaTime)
 	{
 		mesh->component<Transform>()->matrix()->appendRotationY(.01f);
 		sceneManager->nextFrame();

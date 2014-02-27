@@ -11,6 +11,7 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 	files { "**.hpp", "**.h", "**.cpp", "**.c" }
 	includedirs {
 		"src",
+		"include/minko/file",
 		"lib/devil/src/include",
 		"lib/devil/src/src-IL/include",
 		"lib/devil/src/src-ILU/include",
