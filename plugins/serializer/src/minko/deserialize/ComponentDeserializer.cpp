@@ -67,14 +67,14 @@ ComponentDeserializer::deserializeProjectionCamera(std::string&							serialized
 												   std::shared_ptr<file::AssetLibrary>	assetLibrary,
 												   std::shared_ptr<file::Dependency>	dependencies)
 {
-	msgpack::zone								mempool;
-	msgpack::object								deserialized;
-	msgpack::type::tuple<std::vector<float>>	dst;
+	msgpack::zone										mempool;
+	msgpack::object										deserialized;
+	msgpack::type::tuple<float, float, float, float>	dst;
 
 	msgpack::unpack(serializedCameraData.data(), serializedCameraData.size() - 1, NULL, &mempool, &deserialized);
 	deserialized.convert(&dst);
 
-	return component::PerspectiveCamera::create(dst.a0[0], dst.a0[1], dst.a0[2], dst.a0[3]);
+	return component::PerspectiveCamera::create(dst.a0, dst.a1, dst.a2, dst.a3);
 }
 
 std::shared_ptr<component::AbstractComponent>
