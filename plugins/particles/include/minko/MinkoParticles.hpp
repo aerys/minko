@@ -19,7 +19,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #pragma once
 
-#include "minko/controller/ParticleSystem.hpp"
+#include "minko/component/ParticleSystem.hpp"
 
 #include "minko/particle/StartDirection.hpp"
 
