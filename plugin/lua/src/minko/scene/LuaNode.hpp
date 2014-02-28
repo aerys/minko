@@ -56,6 +56,7 @@ namespace minko
 		            .property("children",					&Node::children)
 		            .property("data",				        &Node::data)
 		            .property("root",				        &Node::root)
+					.property("parent", 					&Node::parent)
 		            .property("name",				        &Node::name, &Node::name);
 			}
 
