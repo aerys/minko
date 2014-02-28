@@ -334,7 +334,7 @@ void main(void)
 
 	gl_FragColor	= vec4(phong.rgb, diffuse.a);
 
-	#if defined(FOG_COLOR)
+	#if defined(FOG)
 		float fragDist = gl_FragCoord.z / gl_FragCoord.w;
 
 		const float LOG2 = 1.442695;

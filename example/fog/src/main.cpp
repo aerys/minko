@@ -26,7 +26,7 @@ using namespace minko::component;
 using namespace minko::math;
 
 static const std::string TEXTURE_FILENAME = "texture/box.png";
-static const std::string EFFECT_FILENAME = "effect/Basic.effect";
+static const std::string EFFECT_FILENAME = "effect/Phong.effect";
 
 static const int WINDOW_WIDTH = 800;
 static const int WINDOW_HEIGHT = 600;
@@ -42,6 +42,8 @@ int main(int argc, char** argv)
 	sceneManager->assets()->defaultOptions()->generateMipmaps(true);
 	sceneManager->assets()
 		->registerParser<file::PNGParser>("png")
+        ->queue("effect/Sprite.effect")
+        ->queue("texture/sprite-pointlight.png")
 		->queue(TEXTURE_FILENAME)
 		->queue(EFFECT_FILENAME);
 
@@ -52,30 +54,57 @@ int main(int argc, char** argv)
 			->addComponent(sceneManager);
 
 		auto mesh = scene::Node::create("mesh")
-			->addComponent(Transform::create(Matrix4x4::create()->appendTranslation(Vector3::create(0.0f, 0.0f, -3.0f))));
+			->addComponent(Transform::create(Matrix4x4::create()->appendTranslation(Vector3::create(0.0f, 1.0f, 0.0f))));
 
 		auto camera = scene::Node::create("camera")
 			->addComponent(Renderer::create(0x7f7f7fff))
 			->addComponent(Transform::create(
-			Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 3.f))
+			Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 1.5f, 6.f))
 			))
 			->addComponent(PerspectiveCamera::create(WINDOW_WIDTH / (float)WINDOW_HEIGHT, (float)PI * 0.25f, .1f, 1000.f));
 		root->addChild(camera);
-
-		auto cubeGeometry = geometry::CubeGeometry::create(sceneManager->assets()->context());
-
-		assets->geometry("cubeGeometry", cubeGeometry);
 		
-        auto cubeMaterial = material::BasicMaterial::create()
+        auto material = material::PhongMaterial::create()
             ->diffuseMap(assets->texture(TEXTURE_FILENAME))
             ->fogColor(Vector4::create(1.0f, 1.0f, 1.0f, 1.0f))
             ->fogDensity(0.05f);
 
-		mesh->addComponent(Surface::create(
-			assets->geometry("cubeGeometry"),
-			cubeMaterial,
-			assets->effect(EFFECT_FILENAME)
-			));
+        mesh->addComponent(Surface::create(
+            geometry::CubeGeometry::create(sceneManager->assets()->context()),
+            material,
+            assets->effect(EFFECT_FILENAME)));
+
+        auto groundNode = scene::Node::create("ground")
+            ->addComponent(Transform::create(Matrix4x4::create()->appendScale(8.0f)->appendRotationX((float) -PI / 2.0f)))
+            ->addComponent(Surface::create(
+            geometry::QuadGeometry::create(sceneManager->assets()->context()),
+            material::PhongMaterial::create()->diffuseColor(0xAA0000FF)->fogColor(Vector4::create(1.0f, 1.0f, 1.0f, 1.0f))
+            ->fogDensity(0.05f)
+        ,
+            assets->effect(EFFECT_FILENAME)));
+        root->addChild(groundNode);
+
+        auto ambientLight = scene::Node::create("ambientLight")
+            ->addComponent(AmbientLight::create(0.25f));
+        ambientLight->component<AmbientLight>()->color(Vector4::create(1.0f, 1.0f, 1.0f, 1.0f));
+        root->addChild(ambientLight);
+
+        auto directionalLight = scene::Node::create("directionalLight")
+            ->addComponent(DirectionalLight::create()->diffuse(0.8f)->color(0xFFFFFFFF))
+            ->addComponent(Transform::create(Matrix4x4::create()->lookAt(Vector3::create(), Vector3::create(3.0f, 2.0f, 3.0f))));
+        root->addChild(directionalLight);
+
+        auto pointLightNode = scene::Node::create("pointLight")
+            ->addComponent(Transform::create(Matrix4x4::create()->translation(-2.0f, 1.0f, 0.0f)))
+            ->addComponent(Surface::create(
+            geometry::QuadGeometry::create(assets->context()),
+            material::Material::create()
+            ->set("diffuseMap", assets->texture("texture/sprite-pointlight.png"))
+            ->set("diffuseTint", Vector4::create(1.f, 1.f, 1.f, 1.f)),
+            assets->effect("effect/Sprite.effect")
+            ))
+            ->addComponent(PointLight::create()->diffuse(0.5f));
+        root->addChild(pointLightNode);
 
 		std::vector<Matrix4x4::Ptr> keyTransforms;
 
@@ -86,7 +115,7 @@ int main(int argc, char** argv)
 		auto segmentDuration = 1500U;
 
 		auto cubeAnimation = Animation::create(
-		{ minko::animation::Matrix4x4Timeline::create("transform.matrix", segmentDuration * 2,
+		{ minko::animation::Matrix4x4Timeline::create("transform.matrix", segmentDuration * 3,
 		{ segmentDuration * 0, segmentDuration * 1, segmentDuration * 2 },
 		keyTransforms, true) }, true);
 
