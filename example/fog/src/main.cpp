@@ -42,8 +42,6 @@ int main(int argc, char** argv)
 	sceneManager->assets()->defaultOptions()->generateMipmaps(true);
 	sceneManager->assets()
 		->registerParser<file::PNGParser>("png")
-        ->queue("effect/Sprite.effect")
-        ->queue("texture/sprite-pointlight.png")
 		->queue(TEXTURE_FILENAME)
 		->queue(EFFECT_FILENAME);
 
@@ -54,7 +52,7 @@ int main(int argc, char** argv)
 			->addComponent(sceneManager);
 
 		auto mesh = scene::Node::create("mesh")
-			->addComponent(Transform::create(Matrix4x4::create()->appendTranslation(Vector3::create(0.0f, 1.0f, 0.0f))));
+			->addComponent(Transform::create(Matrix4x4::create()->appendTranslation(Vector3::create(0.0f, 0.5f, 0.0f))));
 
 		auto camera = scene::Node::create("camera")
 			->addComponent(Renderer::create(0x7f7f7fff))
@@ -67,7 +65,7 @@ int main(int argc, char** argv)
         auto material = material::PhongMaterial::create()
             ->diffuseMap(assets->texture(TEXTURE_FILENAME))
             ->fogColor(Vector4::create(1.0f, 1.0f, 1.0f, 1.0f))
-            ->fogDensity(0.05f);
+            ->fogDensity(0.15f);
 
         mesh->addComponent(Surface::create(
             geometry::CubeGeometry::create(sceneManager->assets()->context()),
@@ -75,11 +73,11 @@ int main(int argc, char** argv)
             assets->effect(EFFECT_FILENAME)));
 
         auto groundNode = scene::Node::create("ground")
-            ->addComponent(Transform::create(Matrix4x4::create()->appendScale(8.0f)->appendRotationX((float) -PI / 2.0f)))
+            ->addComponent(Transform::create(Matrix4x4::create()->appendScale(16.0f)->appendRotationX((float) -PI / 2.0f)))
             ->addComponent(Surface::create(
             geometry::QuadGeometry::create(sceneManager->assets()->context()),
             material::PhongMaterial::create()->diffuseColor(0xAA0000FF)->fogColor(Vector4::create(1.0f, 1.0f, 1.0f, 1.0f))
-            ->fogDensity(0.05f)
+            ->fogDensity(0.15f)
         ,
             assets->effect(EFFECT_FILENAME)));
         root->addChild(groundNode);
@@ -94,21 +92,9 @@ int main(int argc, char** argv)
             ->addComponent(Transform::create(Matrix4x4::create()->lookAt(Vector3::create(), Vector3::create(3.0f, 2.0f, 3.0f))));
         root->addChild(directionalLight);
 
-        auto pointLightNode = scene::Node::create("pointLight")
-            ->addComponent(Transform::create(Matrix4x4::create()->translation(-2.0f, 1.0f, 0.0f)))
-            ->addComponent(Surface::create(
-            geometry::QuadGeometry::create(assets->context()),
-            material::Material::create()
-            ->set("diffuseMap", assets->texture("texture/sprite-pointlight.png"))
-            ->set("diffuseTint", Vector4::create(1.f, 1.f, 1.f, 1.f)),
-            assets->effect("effect/Sprite.effect")
-            ))
-            ->addComponent(PointLight::create()->diffuse(0.5f));
-        root->addChild(pointLightNode);
-
 		std::vector<Matrix4x4::Ptr> keyTransforms;
 
-		keyTransforms.push_back(Matrix4x4::create()->appendTranslation(Vector3::create(0.0f, 0.0f, 0.0f)));
+		keyTransforms.push_back(Matrix4x4::create()->appendTranslation(Vector3::create(0.0f, 0.5f, 0.0f)));
 		keyTransforms.push_back(Matrix4x4::create()->copyFrom(keyTransforms[0])->appendTranslation(Vector3::create(0.0f, 0.0f, -15.0f)));
 		keyTransforms.push_back(Matrix4x4::create()->copyFrom(keyTransforms[1])->appendTranslation(Vector3::create(0.0f, 0.0f, 15.0f)));
 
