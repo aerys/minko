@@ -17,8 +17,8 @@
 		"diffuseColor"			: "material[${materialId}].diffuseColor",
 		"diffuseMap"			: "material[${materialId}].diffuseMap",
 		"modelToWorldMatrix"	: "transform.modelToWorldMatrix",
-		"viewMatrix"			: "camera.viewMatrix",
-		"projectionMatrix"		: "camera.projectionMatrix",
+		"viewMatrix"			: { "property": "camera.viewMatrix",		"source": "renderer" },
+		"projectionMatrix"		: { "property": "camera.projectionMatrix",	"source": "renderer" },
 		"spriteSheetRows"		: "particles.spriteSheetRows",
 		"spriteSheetColumns"	: "particles.spriteSheetColumns"
 	},
@@ -37,7 +37,7 @@
 	"triangleCulling"	: "none",
 	
 	"passes"	: [{	
-		"vertexShader"		: "#pragma include('Particles.vertex.glsl')",
-		"fragmentShader"	: "#pragma include('Particles.fragment.glsl')"
+		"vertexShader"		: "#pragma include('effect/Particles.vertex.glsl')",
+		"fragmentShader"	: "#pragma include('effect/Particles.fragment.glsl')"
 	}]
 }
