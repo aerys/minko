@@ -21,6 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 #include "minko/file/AbstractLoader.hpp"
+#include "minko/Any.hpp"
 
 namespace minko
 {
@@ -43,6 +44,10 @@ namespace minko
 
 		protected:
 			FileLoader();
+
+		private:
+			std::list<Any>
+			_workerSlots;
 		};
 	}
 }
