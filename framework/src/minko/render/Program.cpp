@@ -23,6 +23,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/Shader.hpp"
 #include "minko/render/VertexBuffer.hpp"
 #include "minko/render/AbstractTexture.hpp"
+#include "minko/render/Texture.hpp"
+#include "minko/render/CubeTexture.hpp"
 #include "minko/render/IndexBuffer.hpp"
 
 
@@ -57,12 +59,24 @@ Program::dispose()
 }
 
 void
-Program::setUniform(const std::string& name, std::shared_ptr<render::AbstractTexture> texture)
+Program::setUniform(const std::string& name, AbstractTexture::Ptr texture)
 {
 	if (!_inputs->hasName(name))
 		return;
 
 	_textures[_inputs->location(name)] = texture;
+}
+
+void
+Program::setUniform(const std::string& name, Texture::Ptr texture)
+{
+	setUniform(name, std::static_pointer_cast<AbstractTexture>(texture));
+}
+
+void
+Program::setUniform(const std::string& name, CubeTexture::Ptr texture)
+{
+	setUniform(name, std::static_pointer_cast<AbstractTexture>(texture));
 }
 
 void

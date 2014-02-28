@@ -27,3 +27,8 @@ function minko.plugin.fx:enable()
 		minko.action.copy(minko.plugin.path("fx") .. "/asset"),
 	}
 end
+
+newoption {
+	trigger		= "with-fx",
+	description	= "Enable the Minko FX plugin."
+}

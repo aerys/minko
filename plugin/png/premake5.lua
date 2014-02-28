@@ -1,8 +1,3 @@
-newoption {
-	trigger			= "with-png",
-	description		= "Enable the Minko PNG plugin."
-}
-
 PROJECT_NAME = path.getname(os.getcwd())
 
 minko.project.library("minko-plugin-" .. PROJECT_NAME)

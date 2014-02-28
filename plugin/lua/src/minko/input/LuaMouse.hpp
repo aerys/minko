@@ -48,6 +48,7 @@ namespace minko
 
 			    input_mouse
 			        .property("leftButtonDown",     &input::Mouse::leftButtonDown)
+                    .property("leftButtonUp",       &input::Mouse::leftButtonUp)
 			        .property("rightButtonDown",    &input::Mouse::rightButtonDown)
 			        .property("move",               &input::Mouse::move)
 			        .property("wheel",				&input::Mouse::wheel);

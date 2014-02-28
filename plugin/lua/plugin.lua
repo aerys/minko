@@ -51,3 +51,8 @@ function minko.plugin.lua:dist(pluginDistDir)
 		pluginDistDir .. '/lib/LuaGlue/include'
 	)
 end
+
+newoption {
+	trigger		= "with-lua",
+	description	= "Enable the Minko Lua plugin."
+}

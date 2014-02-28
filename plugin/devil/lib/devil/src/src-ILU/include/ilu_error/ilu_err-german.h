@@ -6,7 +6,7 @@
 //
 // Filename: src-ILU/include/ilu_error/ilu_err_German.h
 //
-// Description: Error functions in German, translated by Andreas Stöckel.
+// Description: Error functions in German, translated by Andreas StÃ¶ckel.
 //
 //-----------------------------------------------------------------------------
 
@@ -17,23 +17,23 @@
 #include "ilu_internal.h"
 
 ILconst_string iluErrorStringsGerman[IL_FILE_READ_ERROR - IL_INVALID_ENUM + 1] = {
-	IL_TEXT("Ungültiger Enumerator"),
-    IL_TEXT("Kein Speicher verfügbar"),
-	IL_TEXT("Das Format wird noch nicht unterstützt"),
+	IL_TEXT("UngÃ¼ltiger Enumerator"),
+    IL_TEXT("Kein Speicher verfÃ¼gbar"),
+	IL_TEXT("Das Format wird noch nicht unterstÃ¼tzt"),
 	IL_TEXT("Interner Fehler"),
-	IL_TEXT("Ungültiger Wert"),
-    IL_TEXT("Unzulässige Operation"),
-	IL_TEXT("Unzulässiger Datei-Wert"),
-	IL_TEXT("Unzulässiger Datei-Header"),
-	IL_TEXT("Unzulässiger Parameter"),
-	IL_TEXT("Datei konnte nicht geöffnet werden"),
-	IL_TEXT("Ungültiger Erweiterung"),
+	IL_TEXT("UngÃ¼ltiger Wert"),
+    IL_TEXT("UnzulÃ¤ssige Operation"),
+	IL_TEXT("UnzulÃ¤ssiger Datei-Wert"),
+	IL_TEXT("UnzulÃ¤ssiger Datei-Header"),
+	IL_TEXT("UnzulÃ¤ssiger Parameter"),
+	IL_TEXT("Datei konnte nicht geÃ¶ffnet werden"),
+	IL_TEXT("UngÃ¼ltiger Erweiterung"),
 	IL_TEXT("Die Datei existiert bereits"),
 	IL_TEXT("out format equivalent"),
-	IL_TEXT("Stack Überlauf"),
+	IL_TEXT("Stack Ãœberlauf"),
     IL_TEXT("Stack Unterlauf"),
-	IL_TEXT("Ungültige Konvertierung"),
-	IL_TEXT("Unzulässige Abmessungen"),
+	IL_TEXT("UngÃ¼ltige Konvertierung"),
+	IL_TEXT("UnzulÃ¤ssige Abmessungen"),
 	IL_TEXT("Fehler beim Lesen der Datei")
 };
 

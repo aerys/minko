@@ -1,8 +1,3 @@
-newoption {
-	trigger		= "with-lua",
-	description	= "Enable the Minko Lua plugin."
-}
-
 PROJECT_NAME = path.getname(os.getcwd())
 
 minko.project.library("minko-plugin-" .. PROJECT_NAME)

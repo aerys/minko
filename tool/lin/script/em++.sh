@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [[ -z "${EMSCRIPTEN}" ]]; then
-	echo "EMSCRIPTEN is not defined" > /dev/stderr
+	echo "EMSCRIPTEN is not defined" 1>&2
 	exit 1
 fi
 
@@ -44,30 +44,10 @@ for LIB in "${EXPECTED_ORDER[@]}"; do
 	done
 done
 
-declare -a NEW_SHARED_LIBS
-
-for ARG in "${SHARED_LIBS[@]}"; do
-	for LIB in "${EXPECTED_ORDER[@]}"; do
-		if [[ ${ARG} = -l*${LIB} ]]; then
-			continue 2
-		fi
-	done
-	NEW_SHARED_LIBS+=("${ARG}")
-done
-
-for LIB in "${EXPECTED_ORDER[@]}"; do
-	for ARG in "${SHARED_LIBS[@]}"; do
-		if [[ ${ARG} = -l*${LIB} ]]; then
-			NEW_SHARED_LIBS+=("${ARG}")
-			continue 2
-		fi
-	done
-done
-
 if [[ ${#NEW_STATIC_LIBS[0]} -eq 0 && ${#SHARED_LIBS[@]} -eq 0 ]]; then
 	test "$verbose" != 0 && echo "${BIN} ${ARGS[@]}"
-	python "${BIN}" "${ARGS[@]}" 2>&1 >/dev/null
+	python "${BIN}" "${ARGS[@]}"
 else
-	test "$verbose" != 0 && echo "${BIN} ${ARGS[@]} ${NEW_STATIC_LIBS[@]} ${NEW_SHARED_LIBS[@]}"
-	python "${BIN}" "${ARGS[@]}" "${NEW_STATIC_LIBS[@]}" "${NEW_SHARED_LIBS[@]}"
+	test "$verbose" != 0 && echo "${BIN} ${ARGS[@]} ${NEW_STATIC_LIBS[@]} ${SHARED_LIBS[@]}"
+	python "${BIN}" "${ARGS[@]}" "${NEW_STATIC_LIBS[@]}" "${SHARED_LIBS[@]}"
 fi

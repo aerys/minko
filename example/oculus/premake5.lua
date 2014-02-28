@@ -2,8 +2,6 @@ PROJECT_NAME = path.getname(os.getcwd())
 
 minko.project.application("minko-example-" .. PROJECT_NAME)
 
-	removeplatforms { "html5" }
-
 	language "c++"
 	kind "ConsoleApp"
 
@@ -19,5 +17,3 @@ minko.project.application("minko-example-" .. PROJECT_NAME)
 	minko.plugin.enable("oculus")
 	minko.plugin.enable("jpeg")
 	minko.plugin.enable("sdl")
-	
-	minko.plugin.import("angle")
