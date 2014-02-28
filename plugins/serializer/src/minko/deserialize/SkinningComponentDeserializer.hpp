@@ -66,6 +66,10 @@ namespace minko
             precomputeModelToRootMatrices(BonePtr, NodePtr, const NodeMatrices&, Matrices4x4Ptr&);
 
             static
+            void
+            cleanNode(NodePtr, bool);
+
+            static
             bool
             haveBonesCommonRoot(const std::vector<BonePtr>&, NodePtr);
         };

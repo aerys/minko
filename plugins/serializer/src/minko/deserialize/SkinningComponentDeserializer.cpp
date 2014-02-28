@@ -98,8 +98,12 @@ SkinningComponentDeserializer::computeSkinning(file::Options::Ptr						options,
         );
 
         for (unsigned int frameId = 0; frameId < numFrames; ++frameId)
-            skin->matrix(frameId, boneId, matrices[boneId]);
+            skin->matrix(frameId, boneId, matrices[frameId]);
     }
+
+    // strip the scene nodes below the skeleton off their obsolete
+    // Transform and Animation components.
+    cleanNode(skeletonRoot, false);
 
 	return Skinning::create(
         skin->reorganizeByVertices()->transposeMatrices()->disposeBones(),
@@ -107,6 +111,21 @@ SkinningComponentDeserializer::computeSkinning(file::Options::Ptr						options,
         context,
         std::vector<Animation::Ptr>()
     );
+}
+
+/*static*/
+void
+SkinningComponentDeserializer::cleanNode(Node::Ptr node, bool self)
+{
+    if (self)
+    {
+        if (node->hasComponent<Transform>())
+            node->removeComponent(node->component<Transform>());
+        if (node->hasComponent<Animation>())
+            node->removeComponent(node->component<Animation>());
+    }
+    for (auto& n : node->children())
+        cleanNode(n, true);
 }
 
 /*static*/
