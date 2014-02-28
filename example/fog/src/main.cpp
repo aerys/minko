@@ -31,6 +31,8 @@ static const std::string EFFECT_FILENAME = "effect/Phong.effect";
 static const int WINDOW_WIDTH = 800;
 static const int WINDOW_HEIGHT = 600;
 
+static const float CAMERA_SPEED = 20.0f;
+
 int main(int argc, char** argv)
 {
 	auto canvas = Canvas::create("Minko Example - Fog", WINDOW_WIDTH, WINDOW_HEIGHT);
@@ -44,7 +46,6 @@ int main(int argc, char** argv)
 		->registerParser<file::PNGParser>("png")
 		->queue(TEXTURE_FILENAME)
 		->queue(EFFECT_FILENAME);
-
 
 	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
 	{
@@ -64,7 +65,7 @@ int main(int argc, char** argv)
 		
         auto material = material::PhongMaterial::create()
             ->diffuseMap(assets->texture(TEXTURE_FILENAME))
-            ->fogColor(Vector4::create(1.0f, 1.0f, 1.0f, 1.0f))
+            ->fogColor(Vector4::create(0.6f, 0.6f, 0.6f, 1.0f))
             ->fogDensity(0.15f);
 
         mesh->addComponent(Surface::create(
@@ -76,7 +77,8 @@ int main(int argc, char** argv)
             ->addComponent(Transform::create(Matrix4x4::create()->appendScale(16.0f)->appendRotationX((float) -PI / 2.0f)))
             ->addComponent(Surface::create(
             geometry::QuadGeometry::create(sceneManager->assets()->context()),
-            material::PhongMaterial::create()->diffuseColor(0xAA0000FF)->fogColor(Vector4::create(1.0f, 1.0f, 1.0f, 1.0f))
+            material::PhongMaterial::create()->diffuseColor(0xAA0000FF)
+            ->fogColor(Vector4::create(0.6f, 0.6f, 0.6f, 1.0f))
             ->fogDensity(0.15f)
         ,
             assets->effect(EFFECT_FILENAME)));
@@ -109,13 +111,31 @@ int main(int argc, char** argv)
 
 		root->addChild(mesh);
 
+        auto cameraMove = Vector3::create();
+
+        auto keyDown = canvas->keyboard()->keyDown()->connect([&](input::Keyboard::Ptr k)
+        {
+            if (k->keyIsDown(input::Keyboard::ScanCode::LEFT))
+                cameraMove = Vector3::create(-1.0f, 0.0f, 0.0f);
+            if (k->keyIsDown(input::Keyboard::ScanCode::UP))
+                cameraMove = Vector3::create(0.0f, 0.0f, -1.0f);
+            if (k->keyIsDown(input::Keyboard::ScanCode::RIGHT))
+                cameraMove = Vector3::create(1.0f, 0.0f, 0.0f);
+            if (k->keyIsDown(input::Keyboard::ScanCode::DOWN))
+                cameraMove = Vector3::create(0.0f, 0.0f, 1.0f);
+        });
+
 		auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
 		{
 			camera->component<PerspectiveCamera>()->aspectRatio((float)w / (float)h);
 		});
 
-		auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, uint deltaTime)
+		auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, float dt)
 		{
+            cameraMove = cameraMove->normalize() * CAMERA_SPEED * (dt / 1000.0f);
+            camera->component<Transform>()->matrix()->appendTranslation(cameraMove);
+            cameraMove = Vector3::create()->zero();
+
 			mesh->component<Transform>()->matrix()->prependRotationY(.01f);
 
 			sceneManager->nextFrame();
