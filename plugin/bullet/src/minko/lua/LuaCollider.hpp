@@ -19,13 +19,48 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #pragma once
 
-#include "minko/component/bullet/PhysicsWorld.hpp"
+#include "minko/BulletCommon.hpp"
+
+#include "minko/MinkoLua.hpp"
 #include "minko/component/bullet/Collider.hpp"
-#include "minko/component/bullet/ColliderData.hpp"
-#include "minko/component/bullet/AbstractPhysicsShape.hpp"
-#include "minko/component/bullet/SphereShape.hpp"
-#include "minko/component/bullet/BoxShape.hpp"
-#include "minko/component/bullet/ConeShape.hpp"
-#include "minko/component/bullet/CylinderShape.hpp"
-#include "minko/extension/PhysicsExtension.hpp"
-#include "minko/lua/BulletLuaBindingsCollection.hpp"
+#include "minko/scene/Node.hpp"
+
+namespace minko
+{
+	class LuaWrapper;
+
+	namespace component
+	{
+		namespace bullet
+		{
+			class LuaCollider :
+				public LuaWrapper
+			{
+		
+				private:
+					typedef std::shared_ptr<ColliderData> ColliderDataPtr;
+
+				public:
+
+					static
+					std::shared_ptr<Collider>
+					extractColliderFromNode(std::shared_ptr<scene::Node> node)
+					{
+						return node->component<Collider>(0);
+					}
+
+					static
+					void
+					bind(LuaGlue& state)
+					{
+						state.Class<Collider>("Collider");
+							//.property("colliderData",					&Collider::colliderData)
+							//.method("create", static_cast<Collider::Ptr(*)(ColliderDataPtr)>(&Collider::create))
+							//.method("synchronizePhysicsWithGraphics", &Collider::synchronizePhysicsWithGraphics);
+							//.method("extractCollider",					&LuaCollider::extractColliderFromNode);
+					}
+
+			};
+		}
+	}
+}

@@ -19,13 +19,35 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #pragma once
 
+#include "minko/BulletCommon.hpp"
+
+#include "minko/MinkoLua.hpp"
 #include "minko/component/bullet/PhysicsWorld.hpp"
-#include "minko/component/bullet/Collider.hpp"
-#include "minko/component/bullet/ColliderData.hpp"
-#include "minko/component/bullet/AbstractPhysicsShape.hpp"
-#include "minko/component/bullet/SphereShape.hpp"
-#include "minko/component/bullet/BoxShape.hpp"
-#include "minko/component/bullet/ConeShape.hpp"
-#include "minko/component/bullet/CylinderShape.hpp"
-#include "minko/extension/PhysicsExtension.hpp"
-#include "minko/lua/BulletLuaBindingsCollection.hpp"
+
+namespace minko
+{
+	class LuaWrapper;
+
+	namespace component
+	{
+		namespace bullet
+		{
+			class LuaPhysicsWorld :
+				public LuaWrapper
+			{
+
+			public:
+
+				static
+				void
+				bind(LuaGlue& state)
+				{
+					state.Class<PhysicsWorld>("PhysicsWorld")
+						.method("create", &PhysicsWorld::create);
+						//.method("setGravity", &PhysicsWorld::setGravity)
+						//.method("synchronizePhysicsWithGraphics", &PhysicsWorld::synchronizePhysicsWithGraphics);
+				}
+			};
+		}
+	}
+}
