@@ -17,8 +17,12 @@ Vagrant.configure("2") do |config|
   #   v.gui = true
   # end
 
+  config.vm.provider "virtualbox" do |v|
+    v.memory = 2048
+  end
+
   config.vm.provision :puppet do |puppet|
-    puppet.manifests_path = "tools/lin/share"
-    puppet.manifest_file = "minko.pp"
+    puppet.manifests_path = "tools/lin/scripts/puppet/manifests"
+    puppet.module_path = "tools/lin/scripts/puppet/modules" 
   end
 end
