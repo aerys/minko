@@ -59,7 +59,8 @@ namespace minko
 		            .method("prependRotationZ",     &Matrix4x4::prependRotationZ)
 		            .method("prependRotation",      &Matrix4x4::prependRotation)
 		            .method("prependTranslation",   static_cast<Matrix4x4::Ptr(Matrix4x4::*)(float, float, float)>(&Matrix4x4::prependTranslation))
-		            .method("prependTranslation",   static_cast<Matrix4x4::Ptr(Matrix4x4::*)(Vector3::Ptr)>(&Matrix4x4::prependTranslation));
+		            .method("prependTranslation",   static_cast<Matrix4x4::Ptr(Matrix4x4::*)(Vector3::Ptr)>(&Matrix4x4::prependTranslation))
+					.method("getTranslation",		static_cast<Vector3::Ptr(Matrix4x4::*)(void) const>(&Matrix4x4::translation));
 			}
 		};
 	}
