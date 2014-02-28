@@ -34,7 +34,7 @@ namespace minko
 {
 	namespace render
 	{
-		class DrawCallTransparencyHelper;
+		class DrawCallZSorter;
 
 		class DrawCall :
             public std::enable_shared_from_this<DrawCall>
@@ -122,7 +122,7 @@ namespace minko
 			std::unordered_map<std::string, std::list<Any>>				_referenceChangedSlots; // Any = ContainerPropertyChangedSlot
 
 			std::shared_ptr<Signal<Ptr>>								_zsortNeeded;
-			std::shared_ptr<DrawCallTransparencyHelper>					_transparencyHelper;
+			std::shared_ptr<DrawCallZSorter>					        _zSorter;
 			FormatFunction												_formatPropertyNameFct;
 
 		public:

@@ -1,0 +1,62 @@
+// platform texture effect
+// this effect will render using a texture according to the target platform thanks to the
+// "configuration" directive to filter what techniques will actually be available at runtime
+{
+    "name"  : "platform texture",
+    
+    "attributeBindings" : {
+        "position"              : "geometry[${geometryId}].position",
+        "uv"                    : "geometry[${geometryId}].uv"
+    },
+    
+    "uniformBindings"   : {
+        "modelToWorldMatrix"    : "transform.modelToWorldMatrix",
+        "worldToScreenMatrix"   : { "property" : "camera.worldToScreenMatrix", "source" : "renderer" }
+    },
+	
+	"macroBindings" : {
+        "DIFFUSE_MAP"           : true,
+        "MODEL_TO_WORLD"        : "transform.modelToWorldMatrix"
+    },
+
+    "blendMode"         : ["one", "zero"],
+    "depthTest"         : [true, "less_equal"],
+    "triangleCulling"   : "none",
+    
+    "samplerStates" : {
+        "diffuseMap"    : { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" }
+    },
+    
+	"techniques" : [
+		{
+			"name" : "windows",
+			"configuration" : [ "windows" ],
+			"uniformBindings" : {
+				"diffuseMap"	: { "property" : "material[${materialId}].diffuseMap", "default" : "windows.jpg" }
+			},
+			"passes" : [ "basic pass" ]
+		},
+		{
+			"name" : "macosx",
+			"configuration" : [ "macosx" ],
+			"uniformBindings" : {
+				"diffuseMap"	: { "property" : "material[${materialId}].diffuseMap", "default" : "macosx.jpg" }
+			},
+			"passes" : [ "basic pass" ]
+		},
+		{
+			"name" : "linux",
+			"configuration" : [ "linux" ],
+			"uniformBindings" : {
+				"diffuseMap"	: { "property" : "material[${materialId}].diffuseMap", "default" : "linux.jpg" }
+			},
+			"passes" : [ "basic pass" ]
+		}
+	],
+	
+	"passes"    : [{
+		"name" : "basic pass",
+		"vertexShader" : "#pragma include('Basic.vertex.glsl')",
+		"fragmentShader" : "#pragma include('Basic.fragment.glsl')"
+	}]
+}
