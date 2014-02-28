@@ -123,6 +123,20 @@ BasicMaterial::fogColor() const
 }
 
 BasicMaterial::Ptr
+BasicMaterial::fogDensity(float value)
+{
+    set("fogDensity", value);
+
+    return std::dynamic_pointer_cast<BasicMaterial>(shared_from_this());
+}
+
+float
+BasicMaterial::fogDensity() const
+{
+    return get<float>("fogDensity");
+}
+
+BasicMaterial::Ptr
 BasicMaterial::blendingMode(Blending::Source src, Blending::Destination dst)
 {
 	set<Blending::Mode>("blendMode", src | dst);

@@ -26,7 +26,7 @@ using namespace minko::component;
 using namespace minko::math;
 
 static const std::string TEXTURE_FILENAME = "texture/box.png";
-static const std::string EFFECT_FILENAME = "effect/Basic-fog.effect";
+static const std::string EFFECT_FILENAME = "effect/Basic.effect";
 
 static const int WINDOW_WIDTH = 800;
 static const int WINDOW_HEIGHT = 600;
@@ -66,9 +66,10 @@ int main(int argc, char** argv)
 
 		assets->geometry("cubeGeometry", cubeGeometry);
 		
-		auto cubeMaterial = material::BasicMaterial::create()
-			->diffuseMap(assets->texture(TEXTURE_FILENAME))
-			->fogColor(Vector4::create(0.6f, 0.6f, 0.6f, 0.6f));
+        auto cubeMaterial = material::BasicMaterial::create()
+            ->diffuseMap(assets->texture(TEXTURE_FILENAME))
+            ->fogColor(Vector4::create(1.0f, 1.0f, 1.0f, 1.0f))
+            ->fogDensity(0.05f);
 
 		mesh->addComponent(Surface::create(
 			assets->geometry("cubeGeometry"),
