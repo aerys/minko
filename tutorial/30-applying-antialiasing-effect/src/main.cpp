@@ -72,7 +72,8 @@ main(int argc, char** argv)
         if (!ppFx)
             throw std::logic_error("The post-processing effect has not been loaded.");
 
-        ppFx->setUniform("backbuffer", ppTarget);
+        ppFx->setUniform("textureSampler", ppTarget);
+        ppFx->setUniform("texcoordOffset", Vector2::create(1.0f / 1024.0f, 1.0f / 1024.0f));
 
         auto ppRenderer = Renderer::create();
         auto ppScene = scene::Node::create()
@@ -89,7 +90,7 @@ main(int argc, char** argv)
 
             ppTarget = render::Texture::create(assets->context(), clp2(width), clp2(height), false, true);
             ppTarget->upload();
-            ppFx->setUniform("uBackbuffer", ppTarget);
+            ppFx->setUniform("textureSampler", ppTarget);
         });
 
         auto enableFXAA = true;
