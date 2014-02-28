@@ -35,7 +35,7 @@ static const float CAMERA_SPEED = 20.0f;
 
 int main(int argc, char** argv)
 {
-	auto canvas = Canvas::create("Minko Example - Fog", WINDOW_WIDTH, WINDOW_HEIGHT);
+    auto canvas = Canvas::create("Minko Example - Fog", WINDOW_WIDTH, WINDOW_HEIGHT);
 
 	auto sceneManager = SceneManager::create(canvas->context());
 	
@@ -49,6 +49,8 @@ int main(int argc, char** argv)
 
 	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
 	{
+        std::cout << "Press [L]\tto activate linear fog\nPress [E]\tto activate exponential fog\nPress [F]\tto activate square exponential fog\nPress [N]\tto deactivate fog\nPress [P]\tto to increase fog density\nPress [M]\tto to decrease fog density" << std::endl;
+
 		auto root = scene::Node::create("root")
 			->addComponent(sceneManager);
 
@@ -62,11 +64,18 @@ int main(int argc, char** argv)
 			))
 			->addComponent(PerspectiveCamera::create(WINDOW_WIDTH / (float)WINDOW_HEIGHT, (float)PI * 0.25f, .1f, 1000.f));
 		root->addChild(camera);
-		
+
         auto material = material::PhongMaterial::create()
             ->diffuseMap(assets->texture(TEXTURE_FILENAME))
+            ->fogType(render::FogType::None)
             ->fogColor(Vector4::create(0.6f, 0.6f, 0.6f, 1.0f))
+            ->fogStart(0.5f) // only for linear
+            ->fogEnd(2.0f)   // only for linear
             ->fogDensity(0.15f);
+
+        auto groundMaterial = std::static_pointer_cast<material::PhongMaterial>(material::PhongMaterial::create()->copyFrom(material));
+        groundMaterial->unset("diffuseMap");
+        groundMaterial->diffuseColor(0xAA0000FF);
 
         mesh->addComponent(Surface::create(
             geometry::CubeGeometry::create(sceneManager->assets()->context()),
@@ -77,10 +86,7 @@ int main(int argc, char** argv)
             ->addComponent(Transform::create(Matrix4x4::create()->appendScale(16.0f)->appendRotationX((float) -PI / 2.0f)))
             ->addComponent(Surface::create(
             geometry::QuadGeometry::create(sceneManager->assets()->context()),
-            material::PhongMaterial::create()->diffuseColor(0xAA0000FF)
-            ->fogColor(Vector4::create(0.6f, 0.6f, 0.6f, 1.0f))
-            ->fogDensity(0.15f)
-        ,
+            groundMaterial,
             assets->effect(EFFECT_FILENAME)));
         root->addChild(groundNode);
 
@@ -117,12 +123,56 @@ int main(int argc, char** argv)
         {
             if (k->keyIsDown(input::Keyboard::ScanCode::LEFT))
                 cameraMove = Vector3::create(-1.0f, 0.0f, 0.0f);
-            if (k->keyIsDown(input::Keyboard::ScanCode::UP))
+            else if (k->keyIsDown(input::Keyboard::ScanCode::UP))
                 cameraMove = Vector3::create(0.0f, 0.0f, -1.0f);
-            if (k->keyIsDown(input::Keyboard::ScanCode::RIGHT))
+            else if (k->keyIsDown(input::Keyboard::ScanCode::RIGHT))
                 cameraMove = Vector3::create(1.0f, 0.0f, 0.0f);
-            if (k->keyIsDown(input::Keyboard::ScanCode::DOWN))
+            else if (k->keyIsDown(input::Keyboard::ScanCode::DOWN))
                 cameraMove = Vector3::create(0.0f, 0.0f, 1.0f);
+
+            else if (k->keyIsDown(input::Keyboard::ScanCode::P))
+            {
+                material->fogDensity(material->fogDensity() * 2.0f);
+                groundMaterial->fogDensity(material->fogDensity() * 2.0f);
+
+                std::cout << "fog density: " << material->fogDensity() << std::endl;
+            }
+            else if (k->keyIsDown(input::Keyboard::ScanCode::M))
+            {
+                material->fogDensity(material->fogDensity() / 2.0f);
+                groundMaterial->fogDensity(material->fogDensity() / 2.0f);
+
+                std::cout << "fog density: " << material->fogDensity() << std::endl;
+            }
+
+            else if (k->keyIsDown(input::Keyboard::ScanCode::N))
+            {
+                material->fogType(render::FogType::None);
+                groundMaterial->fogType(render::FogType::None);
+
+                std::cout << "fog is inactive" << std::endl;
+            }
+            else if (k->keyIsDown(input::Keyboard::ScanCode::L))
+            {
+                material->fogType(render::FogType::Linear);
+                groundMaterial->fogType(render::FogType::Linear);
+
+                std::cout << "fog type is linear" << std::endl;
+            }
+            else if (k->keyIsDown(input::Keyboard::ScanCode::E))
+            {
+                material->fogType(render::FogType::Exponential);
+                groundMaterial->fogType(render::FogType::Exponential);
+
+                std::cout << "fog type is exponential" << std::endl;
+            }
+            else if (k->keyIsDown(input::Keyboard::ScanCode::F))
+            {
+                material->fogType(render::FogType::Exponential2);
+                groundMaterial->fogType(render::FogType::Exponential2);
+
+                std::cout << "fog type is exponential2" << std::endl;
+            }
         });
 
 		auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)

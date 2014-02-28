@@ -36,7 +36,9 @@
 		"spotLights"			: { "property" : "spotLights",						"source" : "root" },
 		"pointLights"			: { "property" : "pointLights",						"source" : "root" },
 		"fogColor"				: "material[${materialId}].fogColor",
-		"fogDensity"			: "material[${materialId}].fogDensity"
+		"fogDensity"			: "material[${materialId}].fogDensity",
+		"fogStart"				: "material[${materialId}].fogStart",
+		"fogEnd"				: "material[${materialId}].fogEnd"
 	},
 
 	"macroBindings"	: {
@@ -54,7 +56,9 @@
 		"NUM_BONES"				: "geometry[${geometryId}].numBones",
 		"NUM_AMBIENT_LIGHTS"	: { "property" : "ambientLights.length",		"source" : "root" },
 		"PRECOMPUTED_AMBIENT"	: { "property" : "sumAmbients",					"source" : "root" },
-		"FOG"					: "material[${materialId}].fogColor"
+		"FOG_LIN"				: "material[${materialId}].fogLinear",
+		"FOG_EXP"				: "material[${materialId}].fogExponential",
+		"FOG_EXP2"				: "material[${materialId}].fogExponential2"
 	},
 		
 	"stateBindings"	: {

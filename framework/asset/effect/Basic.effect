@@ -20,7 +20,9 @@
 		"boneMatrices"			: { "property" : "geometry[${geometryId}].boneMatrices",			"source" : "target" },
 		"numBones"				: { "property" : "geometry[${geometryId}].numBones",				"source" : "target" },
 		"fogColor"				: "material[${materialId}].fogColor",
-		"fogDensity"			: "material[${materialId}].fogDensity"
+		"fogDensity"			: "material[${materialId}].fogDensity",
+		"fogStart"				: "material[${materialId}].fogStart",
+		"fogEnd"				: "material[${materialId}].fogEnd"
     },
     
     "macroBindings" : {
@@ -29,7 +31,9 @@
         "MODEL_TO_WORLD"        : "transform.modelToWorldMatrix",
         "HAS_NORMAL"            : "geometry[${geometryId}].normal",
         "NUM_BONES"             : { "property" : "geometry[${geometryId}].numBones",   "source" : "target" },
-		"FOG"					: "material[${materialId}].fogColor"
+		"FOG_LIN"				: "material[${materialId}].fogLinear",
+		"FOG_EXP"				: "material[${materialId}].fogExponential",
+		"FOG_EXP2"				: "material[${materialId}].fogExponential2"
     },
 
     "stateBindings" : {
