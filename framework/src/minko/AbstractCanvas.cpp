@@ -25,3 +25,6 @@ using namespace minko;
 
 std::shared_ptr<AbstractCanvas>
 AbstractCanvas::_defaultCanvas;
+
+std::unordered_map<std::string, std::function<std::shared_ptr<async::Worker>()>>
+AbstractCanvas::_workers;

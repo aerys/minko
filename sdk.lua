@@ -10,7 +10,7 @@ if not os.isfile(MINKO_HOME .. '/sdk.lua') then
 	error('MINKO_HOME does not point to a valid Minko SDK.')
 end
 
-package.path = MINKO_HOME .. "/modules/?/?.lua;".. package.path
+package.path = MINKO_HOME .. "/module/?/?.lua;".. package.path
 
 print('Minko SDK home directory: ' .. MINKO_HOME)
 
@@ -75,7 +75,7 @@ configuration {}
 MINKO_SDK_DIST = true
 
 -- make plugins visible from an external project
-local plugins = os.matchdirs(MINKO_HOME .. '/plugins/*')
+local plugins = os.matchdirs(MINKO_HOME .. '/plugin/*')
 
 for _, plugin in ipairs(plugins) do
 	minko.plugin.include(plugin)
