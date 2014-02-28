@@ -94,6 +94,7 @@ solution "minko"
 		include 'example/light'
 		include 'example/line-geometry'
 		include 'example/offscreen'
+		include 'example/particles'
 		include 'example/picking'
 		include 'example/raycasting'
 		include 'example/serializer'
