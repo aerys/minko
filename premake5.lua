@@ -4,6 +4,11 @@ newoption {
 }
 
 newoption {
+	trigger	= 'no-tutorial',
+	description = 'Disable tutorial.'
+}
+
+newoption {
 	trigger	= 'no-test',
 	description = 'Disable tests.'
 }
@@ -22,7 +27,41 @@ solution "minko"
 	MINKO_SDK_DIST = false
 	
 	include 'framework'
-	
+
+	-- tutorial
+	if not _OPTIONS['no-tutorial'] then
+		include 'tutorial/01-hello-cube'
+		include 'tutorial/02-handle-canvas-resizing'
+		include 'tutorial/03-rotating-the-camera-around-an-object-with-the-mouse'
+		include 'tutorial/04-moving-objects'
+		include 'tutorial/05-moving-objects-with-the-keyboard'
+		include 'tutorial/06-load-3d-files'
+		include 'tutorial/07-loading-scene-files'
+		include 'tutorial/08-my-first-script'
+		include 'tutorial/09-scripting-mouse-inputs'
+		include 'tutorial/10-working-with-the-basic-material'
+		include 'tutorial/11-working-with-the-phong-material'
+		include 'tutorial/12-working-with-normal-maps'
+		include 'tutorial/13-working-with-environment-maps'
+		include 'tutorial/14-working-with-specular-maps'
+		include 'tutorial/15-loading-and-using-textures'
+		include 'tutorial/16-loading-effects'
+		include 'tutorial/17-creating-a-custom-effect'
+		include 'tutorial/18-creating-custom-materials'
+		include 'tutorial/19-binding-the-model-to-world-transform'
+		include 'tutorial/20-binding-the-camera'
+		include 'tutorial/21-authoring-uber-shaders'
+		include 'tutorial/22-creating-a-simple-post-processing-effect'
+		-- include 'tutorial/23-using-external-glsl-code-in-effect-files'
+		include 'tutorial/24-working-with-custom-vertex-attributes'
+		include 'tutorial/25-working-with-ambient-lights'
+		include 'tutorial/26-working-with-directional-lights'
+		include 'tutorial/27-working-with-point-lights'
+		include 'tutorial/28-working-with-spot-lights'
+		include 'tutorial/29-hello-falling-cube'
+		include 'tutorial/30-applying-antialiasing-effect'
+	end
+
 	-- plugin
 	include 'plugin/lua'
 	include 'plugin/angle'

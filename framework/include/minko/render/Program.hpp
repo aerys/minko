@@ -40,6 +40,8 @@ namespace minko
 			typedef std::shared_ptr<render::VertexBuffer>		VertexBufferPtr;
 			typedef std::shared_ptr<render::IndexBuffer>		IndexBufferPtr;
 			typedef std::shared_ptr<render::AbstractTexture>	AbstractTexturePtr;
+			typedef std::shared_ptr<render::Texture>			TexturePtr;
+			typedef std::shared_ptr<render::CubeTexture>		CubeTexturePtr;
 			typedef std::shared_ptr<render::AbstractContext>	AbstractContextPtr;
 			typedef std::shared_ptr<render::ProgramInputs>		ProgramInputsPtr;
 
@@ -159,8 +161,15 @@ namespace minko
 				_context->setProgram(oldProgram);
 			}
 
+
 			void
 			setUniform(const std::string&, AbstractTexturePtr);
+
+			void
+			setUniform(const std::string&, TexturePtr);
+			
+			void
+			setUniform(const std::string&, CubeTexturePtr);
 
 			void
 			setVertexAttribute(const std::string& name, unsigned int attributeSize, const std::vector<float>& data);

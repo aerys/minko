@@ -26,3 +26,8 @@ function minko.plugin.webgl:enable()
 		minko.plugin.links { "webgl" }
 		includedirs { minko.plugin.path("webgl") .. "/include" }
 end
+
+newoption {
+	trigger			= "with-webgl",
+	description		= "Enable the Minko WebGL plugin."
+}

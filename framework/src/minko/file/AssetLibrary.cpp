@@ -304,7 +304,7 @@ AssetLibrary::queue(const std::string&						filename,
 	_filesQueue.push_back(filename);
 
 	if (options)
-		_filenameToOptions[filename] = options;
+		_filenameToOptions[filename] = Options::create(options);
 
 	if (loader)
 		_filenameToLoader[filename] = loader;
@@ -329,7 +329,7 @@ AssetLibrary::load(bool	executeCompleteSignal)
 		{
 			auto options = _filenameToOptions.count(filename)
 				? _filenameToOptions[filename]
-				: _filenameToOptions[filename] = _defaultOptions;
+				: _filenameToOptions[filename] = Options::create(_defaultOptions);
 			auto loader = _filenameToLoader.count(filename)
 				? _filenameToLoader[filename]
 				: _filenameToLoader[filename] = options->loaderFunction()(filename, shared_from_this());
@@ -375,12 +375,12 @@ AssetLibrary::loaderCompleteHandler(std::shared_ptr<file::AbstractLoader> loader
 	if (_parsers.count(extension))
 	{
 		auto parser = _parsers[extension]();
-		auto completeSlot = parser->complete()->connect([=](AbstractParser::Ptr)
+		_parserSlots.push_back(parser->complete()->connect([=](AbstractParser::Ptr)
 		{
 			loader->parserComplete()->execute(loader, parser, shared_from_this());
 
 			finalize(filename);
-		});
+		}));
 
         try
         {
@@ -420,6 +420,7 @@ AssetLibrary::finalize(const std::string& filename)
 	if (_loading.size() == 0 && _filesQueue.size() == 0)
 	{
 		_loaderSlots.clear();
+		_parserSlots.clear();
 		_filenameToLoader.clear();
 		_filenameToOptions.clear();
 

@@ -7,3 +7,8 @@ function minko.plugin.devil:enable()
 	includedirs { minko.plugin.path("devil") .. "/include" }
 	defines { "MINKO_PLUGIN_DEVIL" }
 end
+
+newoption {
+	trigger			= "with-devil",
+	description		= "Enable the Minko DevIL plugin."
+}

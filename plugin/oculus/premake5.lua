@@ -1,8 +1,3 @@
-newoption {
-	trigger		= "with-oculus",
-	description	= "Enable the Minko OCULUS plugin."
-}
-
 PROJECT_NAME = path.getname(os.getcwd())
 
 minko.project.library("minko-plugin-" .. PROJECT_NAME)

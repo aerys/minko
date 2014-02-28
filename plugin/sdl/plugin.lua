@@ -53,6 +53,9 @@ function minko.plugin.sdl:enable()
 	configuration { "osx64" }
 		linkoptions { "-F", minko.plugin.path("sdl") .. "/lib/sdl/lib/osx64" }
 		links { "SDL2.framework" }
+		prelinkcommands {
+			minko.action.link(minko.plugin.path("sdl") .. "/lib/sdl/lib/osx64/*.framework")
+		}
 end
 
 function minko.plugin.sdl:dist(pluginDistDir)
@@ -64,3 +67,8 @@ function minko.plugin.sdl:dist(pluginDistDir)
 		os.mkdir(pluginDistDir .. "/lib/sdl/lib/windows64/lib")
 		minko.os.copyfiles(minko.plugin.path("sdl") .. "/lib/sdl/lib/windows64", pluginDistDir .. "/lib/sdl/lib/windows64")
 end
+
+newoption {
+	trigger			= "with-sdl",
+	description		= "Enable the Minko SDL plugin."
+}

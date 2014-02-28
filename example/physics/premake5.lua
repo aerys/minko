@@ -17,5 +17,3 @@ minko.project.application("minko-example-" .. PROJECT_NAME)
 	minko.plugin.enable("sdl")
 	minko.plugin.enable("bullet")
 	minko.plugin.enable("png")
-	
-	minko.plugin.import("angle")

@@ -1,8 +1,3 @@
-newoption {
-	trigger			= "with-leap",
-	description		= "Enable the Minko Leap plugin."
-}
-
 PROJECT_NAME = path.getname(os.getcwd())
 
 minko.project.library("minko-plugin-" .. PROJECT_NAME)

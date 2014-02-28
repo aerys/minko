@@ -16,5 +16,3 @@ minko.project.application("minko-example-" .. PROJECT_NAME)
 	minko.plugin.enable("sdl")
 	minko.plugin.enable("jpeg")
 	minko.plugin.enable("assimp")
-	
-	minko.plugin.import("angle")

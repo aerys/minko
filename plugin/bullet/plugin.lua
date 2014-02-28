@@ -25,3 +25,8 @@ function minko.plugin.bullet:enable()
 	includedirs { minko.plugin.path("bullet") .. "/include" }
 	defines { "MINKO_PLUGIN_BULLET" }
 end
+
+newoption {
+	trigger		= "with-bullet",
+	description	= "Enable the Minko Bullet plugin."
+}

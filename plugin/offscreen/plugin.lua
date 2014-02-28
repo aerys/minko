@@ -31,3 +31,8 @@ function minko.plugin.offscreen:enable()
 		minko.plugin.path("offscreen") .. "/include"
 	}
 end
+
+newoption {
+	trigger			= "with-offscreen",
+	description		= "Enable the Minko Offscreen plugin."
+}

@@ -20,5 +20,3 @@ minko.project.application("minko-example-" .. PROJECT_NAME)
 	--minko.plugin.enable("mk")
 	--minko.plugin.enable("particles")
 	--minko.plugin.enable("png")
-	
-	minko.plugin.import("angle")
