@@ -68,9 +68,9 @@ int main(int argc, char** argv)
 
 
 	// setup assets
-	sceneManager->assets()->load("effect/Phong.effect");
+	sceneManager->assets()->load("effect/Basic.effect")->load("effect/Phong.effect");
 	sceneManager->assets()->defaultOptions()->generateMipmaps(true);
-	sceneManager->assets()->defaultOptions()->effect(sceneManager->assets()->effect("effect/Phong.effect"));
+	sceneManager->assets()->defaultOptions()->effect(sceneManager->assets()->effect("basic"));
 	sceneManager->assets()->material("defaultMaterial", material::BasicMaterial::create()->diffuseColor(0xFFFFFFFF));
 	sceneManager->assets()->geometry("defaultGeometry", geometry::CubeGeometry::create(sceneManager->assets()->context())),
 	sceneManager->assets()
