@@ -17,7 +17,7 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "minko/controller/ParticleSystem.hpp"
+#include "minko/component/ParticleSystem.hpp"
 
 #include "minko/file/AssetLibrary.hpp"
 
@@ -60,37 +60,38 @@ ParticleSystem::ParticleSystem(AbstractContextPtr	context,
 							   FloatSamplerPtr		lifetime,
 							   ShapePtr				shape,
 							   StartDirection		startDirection,
-							   FloatSamplerPtr		startVelocity)
-	: _countLimit			(16384),
-	  _maxCount				(0),
-	  _liveCount			(0),
-	  _previousLiveCount	(0),
-	  _particles			(),
-	  _isInWorldSpace		(false),
-	  _isZSorted			(false),
-	  _useOldPosition		(false),
-	  _rate					(1 / rate),
-	  _lifetime				(lifetime),
-	  _shape				(shape),
-	  _startDirection		(startDirection),
-	  _startVelocity		(startVelocity),
-	  _createTimer			(0),
-	  _format				(VertexComponentFlags::DEFAULT),
-	  _updateStep			(0),
-	  _playing				(false),
-	  _emitting				(true),
-	  _time					(0)
+							   FloatSamplerPtr		startVelocity): 
+	_countLimit			(16384),
+	_maxCount			(0),
+	_liveCount			(0),
+	_previousLiveCount	(0),
+	_particles			(),
+	_isInWorldSpace		(false),
+	_isZSorted			(false),
+	_useOldPosition		(false),
+	_rate				(1 / rate),
+	_lifetime			(lifetime),
+	_shape				(shape),
+	_startDirection		(startDirection),
+	_startVelocity		(startVelocity),
+	_createTimer		(0),
+	_format				(VertexComponentFlags::DEFAULT),
+	_updateStep			(0),
+	_playing			(false),
+	_emitting			(true),
+	_time				(0)
 {
-	_geometry = geometry::ParticlesGeometry::create(context);
-	_material = data::Provider::create();
-	
-	_effect = assets->effect("particles");
-	_surface = Surface::create(_geometry,
-							   _material,
-							   _effect);
+	_geometry	= geometry::ParticlesGeometry::create(context);
+	_material	= data::Provider::create();
+	_effect		= assets->effect("particles");
 
-	if (_shape == 0)
-		_shape = shape::Sphere::create(10);
+	if (_effect == nullptr)
+		throw new std::logic_error("Effect 'particles' is not available in the asset library.");
+
+	_surface	= Surface::create(_geometry, _material, _effect);
+
+	if (_shape == nullptr)
+		_shape	= shape::Sphere::create(10);
 
 	_comparisonObject.system = (this);
 
