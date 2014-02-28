@@ -84,6 +84,10 @@ uniform vec3 		cameraPosition;
 // env. mapping
 uniform float 		environmentAlpha;
 
+// fog
+uniform vec4		fogColor;
+uniform float		fogDensity;
+
 
 varying vec3 		vertexPosition;
 varying vec2 		vertexUV;
@@ -329,6 +333,16 @@ void main(void)
 	vec3 phong		= diffuse.rgb * (ambientAccum + diffuseAccum) + specular.a * specularAccum;
 
 	gl_FragColor	= vec4(phong.rgb, diffuse.a);
+
+	#if defined(FOG_COLOR)
+		float fragDist = gl_FragCoord.z / gl_FragCoord.w;
+
+		const float LOG2 = 1.442695;
+
+		float fogFactor = clamp(exp2(-fogDensity * fogDensity * fragDist * fragDist * LOG2), 0.0f, 1.0f);
+
+		gl_FragColor = mix(fogColor, gl_FragColor, fogFactor);
+	#endif
 }
 
 #endif // FRAGMENT_SHADER

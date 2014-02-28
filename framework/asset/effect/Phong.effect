@@ -34,7 +34,9 @@
 		"ambientLights"			: { "property" : "ambientLights",					"source" : "root" },
 		"directionalLights"		: { "property" : "directionalLights",				"source" : "root" },
 		"spotLights"			: { "property" : "spotLights",						"source" : "root" },
-		"pointLights"			: { "property" : "pointLights",						"source" : "root" }
+		"pointLights"			: { "property" : "pointLights",						"source" : "root" },
+		"fogColor"				: "material[${materialId}].fogColor",
+		"fogDensity"			: "material[${materialId}].fogDensity"
 	},
 
 	"macroBindings"	: {
@@ -51,7 +53,8 @@
 		"MODEL_TO_WORLD"		: "transform.modelToWorldMatrix",
 		"NUM_BONES"				: "geometry[${geometryId}].numBones",
 		"NUM_AMBIENT_LIGHTS"	: { "property" : "ambientLights.length",		"source" : "root" },
-		"PRECOMPUTED_AMBIENT"	: { "property" : "sumAmbients",					"source" : "root" }
+		"PRECOMPUTED_AMBIENT"	: { "property" : "sumAmbients",					"source" : "root" },
+		"FOG"					: "material[${materialId}].fogColor"
 	},
 		
 	"stateBindings"	: {

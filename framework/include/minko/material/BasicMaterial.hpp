@@ -89,6 +89,12 @@ namespace minko
 			Vector4Ptr
 			fogColor() const;
 
+            Ptr
+            fogDensity(float);
+
+            float
+            fogDensity() const;
+
 			Ptr
 			blendingMode(render::Blending::Source, render::Blending::Destination);
 
