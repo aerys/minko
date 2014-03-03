@@ -42,7 +42,7 @@
 	"triangleCulling"	: "none",
 	
 	"passes"	: [{	
-		"vertexShader"		: "#pragma include('effect/Particles.vertex.glsl')",
-		"fragmentShader"	: "#pragma include('effect/Particles.fragment.glsl')"
+		"vertexShader"		: "#pragma include('Particles.vertex.glsl')",
+		"fragmentShader"	: "#pragma include('Particles.fragment.glsl')"
 	}]
 }
