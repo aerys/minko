@@ -27,9 +27,9 @@
 ---
 ---
 
-	dofile("xcode_common.lua")
-	dofile("xcode4_workspace.lua")
-	dofile("xcode_project.lua")
+	dofile("module/xcode/xcode_common.lua")
+	dofile("module/xcode/xcode4_workspace.lua")
+	dofile("module/xcode/xcode_project.lua")
 	
 
 	newaction 
