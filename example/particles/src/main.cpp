@@ -36,6 +36,8 @@ int main(int argc, char** argv)
 	sceneManager->assets()->defaultOptions()->generateMipmaps(true);
 	sceneManager->assets()
 		->registerParser<file::PNGParser>("png")
+        ->queue("texture/heal.png")
+        ->queue("texture/fire_spritesheet.png")
         ->queue("effect/Basic.effect")
 		->queue("effect/Particles.effect");
 
@@ -67,12 +69,18 @@ int main(int argc, char** argv)
         
         auto color = Vector3::create(1.0f, 0.0f, 0.0f);
 
+        particles->material()->diffuseMap(assets->texture("texture/heal.png"))->diffuseColor(0x00ff00ff);
         particles
         ->add(particle::modifier::StartSize::create(particle::sampler::Constant<float>::create(0.1f)))
         ->add(particle::modifier::StartRotation::create(particle::sampler::Constant<float>::create(PI * 0.25f)))
         ->add(particle::modifier::StartColor::create(
             particle::sampler::Constant<math::Vector3>::create(*color)
         ))
+        ->add(particle::modifier::StartSprite::create(
+            particle::sampler::RandomValue<float>::create(0.0f, 4.0f), 
+            2, 
+            2, 
+            assets->texture("texture/fire_spritesheet.png")))
         ->play();
         
         particlesNode->addComponent(particles);

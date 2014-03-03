@@ -14,18 +14,16 @@
 	},
 	
 	"uniformBindings"	: {
-		"diffuseColor"			: "material[${materialId}].diffuseColor",
-		"diffuseMap"			: "material[${materialId}].diffuseMap",
 		"modelToWorldMatrix"	: "transform.modelToWorldMatrix",
 		"viewMatrix"			: { "property": "camera.viewMatrix",		"source": "renderer" },
 		"projectionMatrix"		: { "property": "camera.projectionMatrix",	"source": "renderer" },
-		"spriteSheetRows"		: "particles.spriteSheetRows",
-		"spriteSheetColumns"	: "particles.spriteSheetColumns"
+		"diffuseColor"			: "particles.diffuseColor",
+		"spritesheet"			: "particles.spritesheet",
+		"spritesheetSize"		: "particles.spritesheetSize"
 	},
 
 	"macroBindings"	: {
 		"MODEL_TO_WORLD"			: "transform.modelToWorldMatrix",
-		"DIFFUSE_MAP"				: "material[${materialId}].diffuseMap",
 		"WORLDSPACE_PARTICLES"		: "particles.worldspace",
 		"SPRITE_SHEET"				: "particles.spritesheet",
 		"PARTICLE_SIZE"				: "geometry[${geometryId}].size",

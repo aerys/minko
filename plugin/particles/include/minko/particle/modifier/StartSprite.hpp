@@ -29,28 +29,38 @@ namespace minko
 	{
 		namespace modifier
 		{
-			class StartSprite : public IParticleInitializer, public Modifier1<float>
+			class StartSprite : 
+                public IParticleInitializer, 
+                public Modifier1<float>
 			{
 			public:
-				typedef std::shared_ptr<StartSprite>    Ptr;
+				typedef std::shared_ptr<StartSprite>                Ptr;
 
             private:
-                typedef std::shared_ptr<data::Provider> ProviderPtr;
+                typedef std::shared_ptr<data::ParticlesProvider>    ParticlesProviderPtr;
+                typedef std::shared_ptr<render::AbstractTexture>    AbsTexturePtr;
+
+            private:
+                unsigned int    _numCols;
+                unsigned int    _numRows;
+                AbsTexturePtr   _spritesheet;
 
 			public:
 				static
 				Ptr
-				create(SamplerPtr x)
+				create(SamplerPtr       spriteIndex,
+                       unsigned int     numCols,
+                       unsigned int     numRows,
+                       AbsTexturePtr    spritesheet)
 				{
-					Ptr modifier = std::shared_ptr<StartSprite>(new StartSprite(x));
+					Ptr ptr = std::shared_ptr<StartSprite>(new StartSprite(spriteIndex, numCols, numRows, spritesheet));
 
-					return modifier;
+					return ptr;
 				};
 
 				virtual
 				void
-				initialize(ParticleData& 	particle,
-						   float			time) const;
+				initialize(ParticleData&, float time) const;
 
 				virtual
 				unsigned int
@@ -58,14 +68,17 @@ namespace minko
 
 				virtual
 				void
-				setProperties(ProviderPtr);
+				setProperties(ParticlesProviderPtr);
 				
 				virtual
 				void
-				unsetProperties(ProviderPtr);
+				unsetProperties(ParticlesProviderPtr);
 			
 			protected:
-				StartSprite(SamplerPtr spriteIndex);
+				StartSprite(SamplerPtr      spriteIndex,
+                            unsigned int    numCols,
+                            unsigned int    numRows,
+                            AbsTexturePtr   spritesheet);
 			};
 		}
 	}

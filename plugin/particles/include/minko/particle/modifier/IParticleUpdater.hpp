@@ -36,8 +36,7 @@ namespace minko
 			public:
 				virtual
 				void
-				update(std::vector<ParticleData>& 	particles,
-					  float							timeStep) const = 0;
+				update(std::vector<ParticleData>&, float timeStep) const = 0;
 			};
 		}
 	}

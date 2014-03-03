@@ -20,33 +20,26 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/ParticleSystem.hpp"
 
 #include "minko/file/AssetLibrary.hpp"
-
 #include "minko/component/SceneManager.hpp"
 #include "minko/component/Surface.hpp"
 #include "minko/component/Transform.hpp"
-
+#include "minko/data/ParticlesProvider.hpp"
 #include "minko/scene/Node.hpp"
 #include "minko/scene/NodeSet.hpp"
-
 #include "minko/render/Blending.hpp"
 #include "minko/render/CompareMode.hpp"
 #include "minko/render/ParticleVertexBuffer.hpp"
 #include "minko/render/ParticleIndexBuffer.hpp"
-
+#include "minko/math/Matrix4x4.hpp"
 #include "minko/particle/ParticleData.hpp"
 #include "minko/particle/StartDirection.hpp"
-
 #include "minko/particle/modifier/IParticleModifier.hpp"
 #include "minko/particle/modifier/IParticleInitializer.hpp"
 #include "minko/particle/modifier/IParticleUpdater.hpp"
-
 #include "minko/particle/shape/Sphere.hpp"
-
 #include "minko/particle/sampler/Sampler.hpp"
-
 #include "minko/particle/tools/VertexComponentFlags.hpp"
 
-#include "minko/math/Matrix4x4.hpp"
 
 using namespace minko;
 using namespace minko::component;
@@ -82,7 +75,7 @@ ParticleSystem::ParticleSystem(AbstractContextPtr	context,
 	_time				(0)
 {
 	_geometry	= geometry::ParticlesGeometry::create(context);
-	_material	= data::Provider::create();
+	_material	= data::ParticlesProvider::create();
 	_effect		= assets->effect("particles");
 
 	if (_effect == nullptr)
@@ -740,3 +733,35 @@ ParticleSystem::updateVertexBuffer()
 		_previousLiveCount      = _liveCount;
 	}
 }
+
+ParticleSystem::Ptr
+ParticleSystem::isInWorldSpace(bool value)
+{
+    _isInWorldSpace = value;
+
+    _material->isInWorldSpace(value);
+
+    return std::static_pointer_cast<ParticleSystem>(shared_from_this());
+}
+
+ParticleSystem::Ptr
+ParticleSystem::isZSorted(bool value)
+{
+	_isZSorted = value;
+
+	resizeParticlesVector();
+
+    return std::static_pointer_cast<ParticleSystem>(shared_from_this());
+};
+
+ParticleSystem::Ptr
+ParticleSystem::useOldPosition(bool value)
+{
+	if (value != _useOldPosition)
+    {
+	    _useOldPosition = value;
+	    updateVertexFormat();
+    }
+
+    return std::static_pointer_cast<ParticleSystem>(shared_from_this());
+};
