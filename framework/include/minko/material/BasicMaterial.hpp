@@ -81,6 +81,39 @@ namespace minko
 			diffuseCubeMap() const;
 
 			Ptr
+			fogColor(Vector4Ptr);
+
+			Ptr
+			fogColor(uint);
+
+			Vector4Ptr
+			fogColor() const;
+
+            Ptr
+            fogDensity(float);
+
+            float
+            fogDensity() const;
+
+            Ptr
+            fogStart(float);
+
+            float
+            fogStart() const;
+
+            Ptr
+            fogEnd(float);
+
+            float
+            fogEnd() const;
+
+            Ptr
+            fogType(render::FogType);
+
+            render::FogType
+            fogType() const;
+
+			Ptr
 			blendingMode(render::Blending::Source, render::Blending::Destination);
 
 			Ptr

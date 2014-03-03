@@ -127,6 +127,14 @@ namespace minko
 			{
 			}
 		};
+
+        enum class FogType
+        {
+            None,
+            Linear,
+            Exponential,
+            Exponential2,
+        };
 	}
 
 	namespace scene

@@ -18,7 +18,11 @@
         "modelToWorldMatrix"    : "transform.modelToWorldMatrix",
         "worldToScreenMatrix"   : { "property" : "camera.worldToScreenMatrix", "source" : "renderer" },
 		"boneMatrices"			: { "property" : "geometry[${geometryId}].boneMatrices",			"source" : "target" },
-		"numBones"				: { "property" : "geometry[${geometryId}].numBones",				"source" : "target" }
+		"numBones"				: { "property" : "geometry[${geometryId}].numBones",				"source" : "target" },
+		"fogColor"				: "material[${materialId}].fogColor",
+		"fogDensity"			: "material[${materialId}].fogDensity",
+		"fogStart"				: "material[${materialId}].fogStart",
+		"fogEnd"				: "material[${materialId}].fogEnd"
     },
     
     "macroBindings" : {
@@ -26,7 +30,10 @@
         "DIFFUSE_CUBEMAP"       : "material[${materialId}].diffuseCubeMap",
         "MODEL_TO_WORLD"        : "transform.modelToWorldMatrix",
         "HAS_NORMAL"            : "geometry[${geometryId}].normal",
-        "NUM_BONES"             : { "property" : "geometry[${geometryId}].numBones",   "source" : "target" }
+        "NUM_BONES"             : { "property" : "geometry[${geometryId}].numBones",   "source" : "target" },
+		"FOG_LIN"				: "material[${materialId}].fogLinear",
+		"FOG_EXP"				: "material[${materialId}].fogExponential",
+		"FOG_EXP2"				: "material[${materialId}].fogExponential2"
     },
 
     "stateBindings" : {

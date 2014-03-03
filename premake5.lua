@@ -88,6 +88,7 @@ solution "minko"
 		include 'example/cube'
 		include 'example/devil'
 		include 'example/effect-config'
+		include 'example/fog'
 		include 'example/frustum'
 		include 'example/jobs'
 		include 'example/leap-motion'
