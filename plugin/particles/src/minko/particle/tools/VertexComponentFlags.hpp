@@ -32,7 +32,7 @@ namespace minko
 			OLD_POSITION	= (0x1 << 3),
 			ROTATION		= (0x1 << 4),
 			ANG_VELOCITY	= (0x1 << 5),
-			SPRITEINDEX		= (0x1 << 6)
+			SPRITE_INDEX	= (0x1 << 6)
 		};
 	}
 }

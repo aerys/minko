@@ -46,8 +46,7 @@ namespace minko
 
 				virtual
 				void
-				update(std::vector<ParticleData>& 	particles,
-					   float						timeStep) const;
+				update(std::vector<ParticleData>&, float) const;
 
 				virtual
 				unsigned int

@@ -29,7 +29,9 @@ namespace minko
 	{
 		namespace modifier
 		{
-			class StartForce: public IParticleInitializer, public Modifier3<float>
+			class StartForce: 
+                public IParticleInitializer, 
+                public Modifier3<float>
 			{
 			public:
 				typedef std::shared_ptr<StartForce>	Ptr;
@@ -48,17 +50,16 @@ namespace minko
 
 				virtual
 				void
-				initialize(ParticleData& 	particle,
-						   float			time) const;
+				initialize(ParticleData&, float) const;
 
 				virtual
 				unsigned int
 				getNeededComponents() const;
 			
 			protected:
-				StartForce(SamplerPtr fx,
-						   SamplerPtr fy,
-						   SamplerPtr fz);
+				StartForce(SamplerPtr,
+						   SamplerPtr,
+						   SamplerPtr);
 			};
 		}
 	}

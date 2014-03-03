@@ -26,8 +26,8 @@ using namespace minko;
 using namespace minko::particle;
 using namespace minko::particle::modifier;
 
-StartAngularVelocity::StartAngularVelocity(SamplerPtr w)
-	: Modifier1<float> (w)
+StartAngularVelocity::StartAngularVelocity(SamplerPtr w): 
+    Modifier1<float> (w)
 {
 }
 

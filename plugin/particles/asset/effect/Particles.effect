@@ -24,11 +24,16 @@
 	},
 
 	"macroBindings"	: {
+		"MODEL_TO_WORLD"			: "transform.modelToWorldMatrix",
+		"DIFFUSE_MAP"				: "material[${materialId}].diffuseMap",
 		"WORLDSPACE_PARTICLES"		: "particles.worldspace",
 		"SPRITE_SHEET"				: "particles.spritesheet",
-		"TECHNIQUE_DIFFUSE_MAP"		: "material[${materialId}].diffuseMap",
-		"TECHNIQUE_DIFFUSE_COLOR"	: "material[${materialId}].diffuseColor",
-		"HAS_MODEL_TO_WORLD"		: "transform.modelToWorldMatrix"
+		"PARTICLE_SIZE"				: "geometry[${geometryId}].size",
+		"PARTICLE_COLOR"			: "geometry[${geometryId}].color",
+		"PARTICLE_TIME"				: "geometry[${geometryId}].time",
+		"PARTICLE_OLD_POSITION"		: "geometry[${geometryId}].oldPosition",
+		"PARTICLE_ROTATION"			: "geometry[${geometryId}].rotation",
+		"PARTICLE_SPRITE_INDEX"		: "geometry[${geometryId}].spriteIndex"
 	},
 	
 	"priority"			: 0,

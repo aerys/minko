@@ -24,26 +24,29 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 using namespace minko;
 using namespace minko::particle;
+using namespace minko::particle::sampler;
 using namespace minko::particle::modifier;
 
-StartForce::StartForce(SamplerPtr fx,
-					   SamplerPtr fy,
-					   SamplerPtr fz)
+StartForce::StartForce(Sampler<float>::Ptr fx,
+					   Sampler<float>::Ptr fy,
+					   Sampler<float>::Ptr fz)
 	: Modifier3<float> (fx, fy, fz)
 {
 }
 
 void
-StartForce::initialize(ParticleData& 	particle,
-	    			   float				time) const
+StartForce::initialize(ParticleData&    particle,
+	    			   float            time) const
 {
-	particle.startfx = _x->value();
-	particle.startfy = _y->value();
-	particle.startfz = _z->value();
+	particle.startfx    = _x->value();
+	particle.startfy    = _y->value();
+	particle.startfz    = _z->value();
 
-	particle.x += particle.startfx * time * time;
-	particle.y += particle.startfy * time * time;
-	particle.z += particle.startfz * time * time;
+    const float tt      = time * time;
+
+	particle.x          += particle.startfx * tt;
+	particle.y          += particle.startfy * tt;
+	particle.z          += particle.startfz * tt;
 }
 
 unsigned int

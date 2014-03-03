@@ -32,7 +32,10 @@ namespace minko
 			class StartSprite : public IParticleInitializer, public Modifier1<float>
 			{
 			public:
-				typedef std::shared_ptr<StartSprite>	Ptr;
+				typedef std::shared_ptr<StartSprite>    Ptr;
+
+            private:
+                typedef std::shared_ptr<data::Provider> ProviderPtr;
 
 			public:
 				static
@@ -55,11 +58,11 @@ namespace minko
 
 				virtual
 				void
-				setProperties(ProviderPtr provider);
+				setProperties(ProviderPtr);
 				
 				virtual
 				void
-				unsetProperties(ProviderPtr provider);
+				unsetProperties(ProviderPtr);
 			
 			protected:
 				StartSprite(SamplerPtr spriteIndex);

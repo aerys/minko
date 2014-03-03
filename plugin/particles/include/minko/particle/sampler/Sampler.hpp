@@ -40,7 +40,7 @@ namespace minko
 				
 				virtual
 				void
-				set(T& target, float time = 0) const	= 0;
+				set(T& target, float time = 0) const = 0;
 
 				virtual
 				T

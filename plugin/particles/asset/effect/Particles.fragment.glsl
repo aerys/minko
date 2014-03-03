@@ -2,28 +2,29 @@
 	precision mediump float;
 #endif
 
-uniform vec4 diffuseColor;
-uniform sampler2D diffuseMap;
+uniform vec4		diffuseColor;
+uniform sampler2D	diffuseMap;
 	
-varying vec2 vertexUV;
-varying float particleTime;
+varying vec2	vUV;
+varying vec3	vColor;
+varying float	vTime;
 
 void main(void)
 {			
-	vec4 c;
+	vec4 color = vec4(vColor, 1.0);
+	gl_FragColor = color;
+	return;
 
-	c = vec4(1., 1., 1., 1.);
-
-	#ifdef TECHNIQUE_DIFFUSE_MAP
-		c *= texture2D(diffuseMap, vertexUV);
+	#ifdef DIFFUSE_MAP
+		color *= texture2D(diffuseMap, vertexUV);
 	#endif
 	
 	#ifdef TECHNIQUE_DIFFUSE_COLOR
-		c *= vec4(diffuseColor);
+		color *= vec4(diffuseColor);
 	#endif
 	
 	// fake ColorOverTime
-	c *= 1.0 - pow(particleTime, 4.);
+	color *= 1.0 - pow(vTime, 4.);
 	
-	gl_FragColor = c;
+	gl_FragColor = color;
 }

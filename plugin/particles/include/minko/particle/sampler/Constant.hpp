@@ -84,9 +84,10 @@ namespace minko
 				};
 
 			protected:
-				Constant(T value)
-					: _value (value)
-				{};
+				Constant(T value): 
+                    _value (value)
+				{
+                };
 			};
 		}
 	}

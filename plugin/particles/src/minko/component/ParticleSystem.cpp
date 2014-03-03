@@ -163,7 +163,9 @@ ParticleSystem::findSceneManager()
 		throw std::logic_error("ParticleSystem cannot be in two separate scenes.");
 	else if (roots->nodes().size() == 1)
 		_frameEndSlot = roots->nodes()[0]->component<SceneManager>()->frameEnd()->connect(std::bind(
-			&ParticleSystem::frameEndHandler, shared_from_this(), std::placeholders::_1
+			&ParticleSystem::frameEndHandler, 
+            shared_from_this(), 
+            std::placeholders::_1
 		));
 	else
 		_frameEndSlot = nullptr;
@@ -172,7 +174,7 @@ ParticleSystem::findSceneManager()
 void
 ParticleSystem::frameEndHandler(SceneManager::Ptr sceneManager)
 {	
-	if(!_playing)
+	if (!_playing)
 		return;
 
 	if (_isInWorldSpace)
@@ -204,7 +206,7 @@ ParticleSystem::frameEndHandler(SceneManager::Ptr sceneManager)
 	}
 }
 
-void
+ParticleSystem::Ptr
 ParticleSystem::add(ModifierPtr	modifier)
 {
 	addComponents(modifier->getNeededComponents());
@@ -216,16 +218,19 @@ ParticleSystem::add(ModifierPtr	modifier)
 	if (i != 0)
 	{
 		_initializers.push_back(i);
-		return;	
+
+		return shared_from_this();	
 	}
 
 	IUpdaterPtr u = std::dynamic_pointer_cast<modifier::IParticleUpdater> (modifier);
 
 	if (u != 0)
 		_updaters.push_back(u);
+
+    return shared_from_this();	
 }
 
-void
+ParticleSystem::Ptr
 ParticleSystem::remove(ModifierPtr	modifier)
 {
 	IInitializerPtr i = std::dynamic_pointer_cast<modifier::IParticleInitializer> (modifier);
@@ -240,11 +245,11 @@ ParticleSystem::remove(ModifierPtr	modifier)
 				modifier->unsetProperties(_material);
 				updateVertexFormat();
 
-				return;
+				return shared_from_this();
 			}
 		}
 
-		return;
+		return shared_from_this();
 	}
 	
 	IUpdaterPtr u = std::dynamic_pointer_cast<modifier::IParticleUpdater> (modifier);
@@ -259,14 +264,16 @@ ParticleSystem::remove(ModifierPtr	modifier)
 				modifier->unsetProperties(_material);
 				updateVertexFormat();
 
-				return;
+				return shared_from_this();
 			}
 		}
 	}
+
+    return shared_from_this();
 }
 
 bool
-ParticleSystem::has(ModifierPtr 	modifier)
+ParticleSystem::has(ModifierPtr modifier) const
 {
 	IInitializerPtr i = std::dynamic_pointer_cast<modifier::IParticleInitializer> (modifier);
 
@@ -576,51 +583,52 @@ ParticleSystem::reset()
 void
 ParticleSystem::addComponents(unsigned int components, bool blockVSInit)
 {
-	if (_format & components)
+    typedef std::tuple<std::string, VertexComponentFlags, unsigned int> ComponentInfo;
+    static const std::array<ComponentInfo, 6> OPTIONAL_COMPONENTS = 
+    {
+        std::make_tuple("size",          VertexComponentFlags::SIZE,            1),
+        std::make_tuple("color",         VertexComponentFlags::COLOR,           3),
+        std::make_tuple("time",          VertexComponentFlags::TIME,            1),
+        std::make_tuple("oldPosition",   VertexComponentFlags::OLD_POSITION,    3),
+        std::make_tuple("rotation",      VertexComponentFlags::ROTATION,        1),
+        std::make_tuple("spriteIndex",   VertexComponentFlags::SPRITE_INDEX,    1)
+    };
+    
+	if (_format == components)
 		return;
 
 	_format |= components;
 
-	render::ParticleVertexBuffer::Ptr vs = _geometry->vertices();
-	unsigned int vertexSize = 5;
+    // FIXME: should be made fully dynamic
+	auto vertexBuffer = _geometry->particleVertices();
 
-	vs->resetAttributes();
+    _geometry->removeVertexBuffer(vertexBuffer);
+    for (auto& component : OPTIONAL_COMPONENTS)
+    {
+        const auto& attrName = std::get<0>(component);
 
-	if (_format & VertexComponentFlags::SIZE && !vs->hasAttribute("size"))
-	{
-		vs->addAttribute ("size", 1, vertexSize);
-		vertexSize += 1;
-	}
+        if (vertexBuffer->hasAttribute(attrName))
+            vertexBuffer->removeAttribute(attrName); // attribute offset must be updated
+    }
 
-	if (_format & VertexComponentFlags::COLOR && !vs->hasAttribute("size"))
-	{
-		vs->addAttribute ("color", 3, vertexSize);
-		vertexSize += 3;
-	}
+    // mandatory vertex attributes: offset and position
+    assert(vertexBuffer->hasAttribute("offset") && vertexBuffer->hasAttribute("position"));
+    unsigned int attrOffset = 5;
 
-	if (_format & VertexComponentFlags::TIME && !vs->hasAttribute("size"))
-	{
-		vs->addAttribute ("time", 1, vertexSize);
-		vertexSize += 1;
-	}
+    for (auto& component : OPTIONAL_COMPONENTS)
+    {
+        const auto& attrName    = std::get<0>(component);
+        const auto  attrFlag    = std::get<1>(component);
+        const auto  attrSize    = std::get<2>(component);
 
-	if (_format & VertexComponentFlags::OLD_POSITION && !vs->hasAttribute("size"))
-	{
-		vs->addAttribute ("old_Position", 3, vertexSize);
-		vertexSize += 3;
-	}
+        if ((_format & attrFlag))
+        {
+            vertexBuffer->addAttribute(attrName, attrSize, attrOffset);
+            attrOffset += attrSize;
+        }
+    }
 
-	if (_format & VertexComponentFlags::ROTATION && !vs->hasAttribute("size"))
-	{
-		vs->addAttribute ("rotation", 1, vertexSize);
-		vertexSize += 1;
-	}
-
-	if (_format & VertexComponentFlags::SPRITEINDEX && !vs->hasAttribute("size"))
-	{
-		vs->addAttribute ("spriteIndex", 1, vertexSize);
-		vertexSize += 1;
-	}
+    _geometry->addVertexBuffer(vertexBuffer);
 
 	if (!blockVSInit)
 		_geometry->initStreams(_maxCount);
@@ -635,7 +643,7 @@ ParticleSystem::updateVertexFormat()
 	auto vb = _geometry->vertices();
 	if (!vb->hasAttribute("offset"))
 		vb->addAttribute("offset", 2, 0);
-	if (!vb->hasAttribute("position@"))
+	if (!vb->hasAttribute("position"))
 		vb->addAttribute("position", 3, 2);
 	*/
 
@@ -657,6 +665,7 @@ ParticleSystem::updateVertexFormat()
 		addComponents(VertexComponentFlags::OLD_POSITION, true);
 	
 	_geometry->initStreams(_maxCount);
+
 	return _format;
 }
 
@@ -672,7 +681,7 @@ ParticleSystem::updateVertexBuffer()
 		std::sort(_particleOrder.begin(), _particleOrder.end(), _comparisonObject);
 	}
 	
-	std::vector<float>& vsData = _geometry->vertices()->data();
+	std::vector<float>& vsData = _geometry->particleVertices()->data();
 	float* vertexIterator	= &(*vsData.begin());
 
 	for (unsigned int particleIndex = 0; particleIndex < _maxCount; ++particleIndex)
@@ -715,19 +724,19 @@ ParticleSystem::updateVertexBuffer()
 			if (_format & VertexComponentFlags::ROTATION)
 				setInVertexBuffer(vertexIterator, i++, particle->rotation);
 
-			if (_format & VertexComponentFlags::SPRITEINDEX)
+			if (_format & VertexComponentFlags::SPRITE_INDEX)
 				setInVertexBuffer(vertexIterator, i++, particle->spriteIndex);
 
 			vertexIterator += 4 * _geometry->vertexSize();
 		}
 	}
-	std::static_pointer_cast<render::ParticleVertexBuffer>(_geometry->vertices())->upload(
-		0, _liveCount * 4
-	);
+
+    _geometry->particleVertices()->upload(0, _liveCount << 2);
 
 	if (_liveCount != _previousLiveCount)
 	{
-		std::static_pointer_cast<render::ParticleIndexBuffer>(_geometry->indices())->upload(0, _liveCount * 4);
-		_previousLiveCount = _liveCount;
+        auto particleIndices    = std::static_pointer_cast<render::ParticleIndexBuffer>(_geometry->indices());
+        particleIndices->upload(0, _liveCount << 2);
+		_previousLiveCount      = _liveCount;
 	}
 }

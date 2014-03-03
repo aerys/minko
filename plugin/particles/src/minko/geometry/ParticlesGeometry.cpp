@@ -17,8 +17,9 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "ParticlesGeometry.hpp"
+#include "minko/geometry/ParticlesGeometry.hpp"
 
+#include "minko/render/AbstractContext.hpp"
 #include "minko/render/ParticleVertexBuffer.hpp"
 #include "minko/render/ParticleIndexBuffer.hpp"
 
@@ -26,13 +27,13 @@ using namespace minko;
 using namespace minko::geometry;
 
 void
-ParticlesGeometry::initialize(std::shared_ptr<render::AbstractContext> context)
+ParticlesGeometry::initialize(render::AbstractContext::Ptr context)
 {
-	_vertices = render::ParticleVertexBuffer::create(context);
-	_indices = render::ParticleIndexBuffer::create(context);	
+	_particleVertices   = render::ParticleVertexBuffer::create(context);
+	_particleIndices    = render::ParticleIndexBuffer::create(context);	
 	
-	addVertexBuffer(_vertices);
-	indices(_indices);
+	addVertexBuffer(_particleVertices);
+	indices(_particleIndices);
 }
 
 void
@@ -41,6 +42,6 @@ ParticlesGeometry::initStreams(unsigned int maxParticles)
 	if (maxParticles == 0)
 		return;
 	
-	_vertices->resize(maxParticles, vertexSize());
-	_indices->resize(maxParticles);
+	_particleVertices->resize(maxParticles, vertexSize());
+	_particleIndices->resize(maxParticles);
 }

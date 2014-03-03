@@ -29,7 +29,9 @@ namespace minko
 	{
 		namespace modifier
 		{
-			class StartColor : public IParticleInitializer, public Modifier1<minko::math::Vector3>
+			class StartColor: 
+                public IParticleInitializer, 
+                public Modifier1<minko::math::Vector3>
 			{
 			public:
 				typedef std::shared_ptr<StartColor>	Ptr;
@@ -46,15 +48,14 @@ namespace minko
 
 				virtual
 				void
-				initialize(ParticleData& 	particle,
-						  float				time) const;
+				initialize(ParticleData&, float) const;
 
 				virtual
 				unsigned int
 				getNeededComponents() const;
 
 			protected:
-				StartColor(SamplerPtr color);
+				StartColor(SamplerPtr);
 			};
 		}
 	}

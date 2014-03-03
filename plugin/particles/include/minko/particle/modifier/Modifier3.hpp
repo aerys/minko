@@ -31,13 +31,13 @@ namespace minko
 			class Modifier3
 			{
 			public:
-				typedef std::shared_ptr<Modifier3>	 Ptr;
-				typedef std::shared_ptr<sampler::Sampler<T> > SamplerPtr;
+				typedef std::shared_ptr<Modifier3>              Ptr;
+				typedef std::shared_ptr<sampler::Sampler<T> >   SamplerPtr;
 
 			protected:
-				SamplerPtr _x;
-				SamplerPtr _y;
-				SamplerPtr _z;
+				SamplerPtr  _x;
+				SamplerPtr  _y;
+				SamplerPtr  _z;
 
 			public:
 				inline
@@ -85,11 +85,13 @@ namespace minko
 			protected:
 				Modifier3(SamplerPtr x,
 						  SamplerPtr y,
-						  SamplerPtr z)
-					: _x (x),
+						  SamplerPtr z): 
+                    _x (x),
 					_y (y),
 					_z (z)
-				{};
+				{
+
+                };
 			};
 		}
 	}

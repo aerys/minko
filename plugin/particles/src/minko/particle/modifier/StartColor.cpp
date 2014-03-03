@@ -17,6 +17,7 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+#include "minko/math/Vector3.hpp"
 #include "minko/particle/modifier/StartColor.hpp"
 #include "minko/particle/ParticleData.hpp"
 #include "minko/particle/tools/VertexComponentFlags.hpp"
@@ -35,12 +36,12 @@ void
 StartColor::initialize(ParticleData& 	particle,
 	    			   float			time) const
 {
-	/*static math::Vector3 c;
-	_x->set(&c);
+	static auto c = math::Vector3::create();
+	_x->set(*c);
 
-	particle.r = c.x();
-	particle.g = c.y();
-	particle.b = c.z();*/
+	particle.r = c->x();
+	particle.g = c->y();
+	particle.b = c->z();
 }
 
 unsigned int
