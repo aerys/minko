@@ -29,7 +29,9 @@ namespace minko
 	{
 		namespace modifier
 		{
-			class VelocityOverTime : public IParticleUpdater, public Modifier3<float>
+			class VelocityOverTime : 
+                public IParticleUpdater, 
+                public Modifier3<float>
 			{
 			public:
 				typedef std::shared_ptr<VelocityOverTime>	Ptr;

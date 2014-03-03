@@ -18,7 +18,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "minko/particle/modifier/StartSprite.hpp"
-#include "minko/data/Provider.hpp"
+#include "minko/data/ParticlesProvider.hpp"
+#include "minko/render/Texture.hpp"
 #include "minko/particle/ParticleData.hpp"
 #include "minko/particle/sampler/Sampler.hpp"
 #include "minko/particle/tools/VertexComponentFlags.hpp"
@@ -28,9 +29,17 @@ using namespace minko::particle;
 using namespace minko::particle::modifier;
 
 
-StartSprite::StartSprite(SamplerPtr spriteIndex)
-	: Modifier1<float> (spriteIndex)
+StartSprite::StartSprite(SamplerPtr                     spriteIndex,
+                         unsigned int                   numCols,
+                         unsigned int                   numRows,
+                         render::AbstractTexture::Ptr   spritesheet): 
+    Modifier1<float> (spriteIndex),
+    _numCols(numCols),
+    _numRows(numRows),
+    _spritesheet(spritesheet)
 {
+    if (_spritesheet->type() == render::TextureType::CubeTexture)
+        throw new std::invalid_argument("spritesheet");
 }
 
 void
@@ -48,17 +57,21 @@ StartSprite::getNeededComponents() const
 
 
 void
-StartSprite::setProperties(ProviderPtr provider)
+StartSprite::setProperties(data::ParticlesProvider::Ptr provider)
 {
-	provider->set("particles.spritesheet", true);
-	provider->set("particles.spriteSheetRows", 2.f);
-	provider->set("particles.spriteSheetColumns", 2.f);
+    if (_numCols > 0 && _numRows > 0 && _spritesheet)
+        provider->diffuseSpritesheet(_numRows, _numCols, _spritesheet);
+
+	//provider->set("particles.spritesheet", true);
+	//provider->set("particles.spriteSheetRows", 2.f);
+	//provider->set("particles.spriteSheetColumns", 2.f);
 }
 				
 void
-StartSprite::unsetProperties(ProviderPtr provider)
+StartSprite::unsetProperties(data::ParticlesProvider::Ptr provider)
 {
-	provider->unset("particles.spritesheet");
-	provider->unset("particles.spriteSheetRows");
-	provider->unset("particles.spriteSheetColumns");
+    provider->unsetDiffuseSpritesheet();
+	//provider->unset("particles.spritesheet");
+	//provider->unset("particles.spriteSheetRows");
+	//provider->unset("particles.spriteSheetColumns");
 }

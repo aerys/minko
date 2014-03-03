@@ -52,7 +52,7 @@ namespace minko
 
 			typedef std::shared_ptr<Surface>									SurfacePtr;
 			typedef std::shared_ptr<geometry::ParticlesGeometry>				GeometryPtr;
-			typedef std::shared_ptr<data::Provider>								ProviderPtr;
+			typedef std::shared_ptr<data::ParticlesProvider>					ParticlesProviderPtr;
 			typedef std::shared_ptr<render::Effect>								EffectPtr;
 
 			typedef std::shared_ptr<particle::shape::EmitterShape>				ShapePtr;
@@ -79,7 +79,7 @@ namespace minko
 		private:
 			SurfacePtr									_surface;
 			GeometryPtr									_geometry;
-			ProviderPtr									_material;
+			ParticlesProviderPtr						_material;
 			EffectPtr									_effect;
 
 			TransformPtr								_toWorld;
@@ -154,8 +154,8 @@ namespace minko
 			};
 
 			inline
-			ProviderPtr
-			material()
+			ParticlesProviderPtr
+			material() const
 			{
 				return _material;
 			}
@@ -164,7 +164,7 @@ namespace minko
 			void
 			rate(float value)
 			{
-				_rate =  1 / value;
+				_rate =  1.0f / value;
 
 				updateMaxParticlesCount();
 			}
@@ -203,7 +203,7 @@ namespace minko
 			void
 			updateRate(unsigned int updatesPerSecond)
 			{
-				_updateStep = 1.f / (float)updatesPerSecond;
+				_updateStep = 1.0f / (float)updatesPerSecond;
 			}
 
 			inline
@@ -222,7 +222,7 @@ namespace minko
 			void
 			emitting(bool value)
 			{
-					_emitting = value;
+				_emitting = value;
 			}
 
 			inline
@@ -258,12 +258,12 @@ namespace minko
 
 		public:
 			void
-			updateSystem(float		timeStep,
-					     bool		emit);
+			updateSystem(float	timeStep,
+					     bool	emit);
 
 			void
-			fastForward(float time,
-						unsigned int updatesPerSecond = 0);
+			fastForward(float           time,
+						unsigned int    updatesPerSecond = 0);
 
 			void
 			reset();
@@ -279,6 +279,16 @@ namespace minko
 			has(ModifierPtr) const;
 
 		public:
+            Ptr
+            isInWorldSpace(bool);
+
+			Ptr
+			isZSorted(bool);
+
+			Ptr
+			useOldPosition(bool);
+
+        /**
 			inline
 			void
 			isInWorldSpace(bool value)
@@ -293,21 +303,15 @@ namespace minko
 				else
 					_material->unset("particles.worldspace");
 			};
+            **/
 
 			inline
 			float*
-			localToWorld()
+			localToWorld() 
 			{
 				return _localToWorld;
 			}
 
-			inline
-			void
-			iIsZSorted(bool value)
-			{
-				_isZSorted = value;
-				resizeParticlesVector();
-			};
 
 			inline
 			float*
@@ -316,16 +320,7 @@ namespace minko
 				return _cameraCoords;
 			};
 
-			inline
-			void
-			useOldPosition(bool value)
-			{
-				if (value == _useOldPosition)
-					return;
 
-				_useOldPosition = value;
-				updateVertexFormat();
-			};
 
 			inline
 			float

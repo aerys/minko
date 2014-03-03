@@ -29,7 +29,9 @@ namespace minko
 	{
 		namespace modifier
 		{
-			class StartVelocity: public IParticleInitializer, public Modifier3<float>
+			class StartVelocity: 
+                public IParticleInitializer, 
+                public Modifier3<float>
 			{
 			public:
 				typedef std::shared_ptr<StartVelocity>	Ptr;

@@ -36,8 +36,7 @@ namespace minko
 			public:	
 				virtual
 				void
-				initialize(ParticleData& 	particle,
-						   float			time) const = 0;
+				initialize(ParticleData&, float time) const = 0;
 			};
 		}
 	}
