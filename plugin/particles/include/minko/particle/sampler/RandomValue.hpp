@@ -67,14 +67,14 @@ namespace minko
 				virtual
 				T value(float time) const
 				{
-					return _min + _delta * rand01();
+					return _min + _delta * tools::rand01();
 				};
 
 				virtual
 				void
 				set(T& value, float time) const
 				{
-					value = _min + _delta * rand01();
+					value = _min + _delta * tools::rand01();
 				};
 
 				virtual
