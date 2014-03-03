@@ -19,6 +19,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/async/FileLoaderWorker.hpp"
 
+
+#if !defined(EMSCRIPTEN)
 using namespace minko;
 using namespace minko::async;
 using namespace minko::file;
@@ -71,3 +73,4 @@ MINKO_WORKER("file-loader", FileLoaderWorker,
 		std::cout << "FileLoaderWorker::run(): exit" << std::endl;
 	}
 });
+#endif
