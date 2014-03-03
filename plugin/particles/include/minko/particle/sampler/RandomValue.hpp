@@ -92,11 +92,11 @@ namespace minko
 				};
 
 			protected:
-				RandomValue(T min, T max)
-					: _min (min),
+				RandomValue(T min, T max): 
+                    _min(min),
 					_delta(max - min)
-				{}
-;
+				{
+                }
 			};
 		}
 	}

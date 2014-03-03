@@ -33,8 +33,8 @@ ParticleVertexBuffer::ParticleVertexBuffer(std::shared_ptr<AbstractContext> cont
 void
 ParticleVertexBuffer::initialize()
 {
-	addAttribute("offset", 2, 0);
-	addAttribute("position", 3, 2);
+	addAttribute("offset",      2, 0);
+	addAttribute("position",    3, 2);
 }
 
 // void 
@@ -48,41 +48,34 @@ ParticleVertexBuffer::initialize()
 void 
 ParticleVertexBuffer::resize(unsigned int nParticles, unsigned int vertexSize)
 {	
-	std::vector<float>& vsData = data();
-	unsigned int oldSize = vsData.size();
-	unsigned int size = nParticles * vertexSize * 4;
+	std::vector<float>& vertexData  = data();
+	unsigned int        oldSize     = vertexData.size();
+	unsigned int        size        = (nParticles * vertexSize) << 2;
 
 	if (oldSize != size)
-	{
-		auto attrs = attributes();
-		
-		dispose();
-		/*
-		for (auto& attr : attrs)
-		{
-			const std::string&	attrName	= std::get<0>(*attr);
-			unsigned int		attrSize	= std::get<1>(*attr);
-			unsigned int		attrOffset	= std::get<2>(*attr);
+        dispose();
 
-			addAttribute(attrName, attrSize, attrOffset);
-		}
-		*/
-	}
+	vertexData.resize(size);
 
-	vsData.resize(size);
+    float*          ptr = &vertexData[0];
+    unsigned int    idx = 0;
 	for (unsigned int i = 0; i < nParticles; ++i)
 	{
-		vsData[i * vertexSize * 4] = -0.5;
-		vsData[i * vertexSize * 4 + 1] = -0.5;
+        ptr[idx]       = -0.5f;
+        ptr[idx + 1]   = -0.5f;
+        idx += vertexSize;
 
-		vsData[vertexSize + i * vertexSize * 4] = 0.5;
-		vsData[vertexSize + i * vertexSize * 4 + 1] = -0.5;
+        ptr[idx]       =  0.5f;
+        ptr[idx + 1]   = -0.5f;
+        idx += vertexSize;
 
-		vsData[2 * vertexSize + i * vertexSize * 4] = -0.5;
-		vsData[2 * vertexSize + i * vertexSize * 4 + 1] = 0.5;
+        ptr[idx]       = -0.5f;
+        ptr[idx + 1]   =  0.5f;
+        idx += vertexSize;
 
-		vsData[3 * vertexSize + i * vertexSize * 4] = 0.5;
-		vsData[3 * vertexSize + i * vertexSize * 4 + 1] = 0.5;
+        ptr[idx]       =  0.5f;
+        ptr[idx + 1]   =  0.5f;
+        idx += vertexSize;
 	}
 
 	upload();

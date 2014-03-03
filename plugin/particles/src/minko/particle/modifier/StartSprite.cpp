@@ -43,7 +43,7 @@ StartSprite::initialize(ParticleData& 	particle,
 unsigned int
 StartSprite::getNeededComponents() const
 {
-	return VertexComponentFlags::SPRITEINDEX;
+	return VertexComponentFlags::SPRITE_INDEX;
 }
 
 

@@ -36,8 +36,8 @@ namespace minko
 			typedef std::shared_ptr<render::ParticleIndexBuffer>	IndexBufferPtr;
 		
 		private:
-			VertexBufferPtr						_vertices;
-			IndexBufferPtr						_indices;
+			VertexBufferPtr	_particleVertices;
+			IndexBufferPtr	_particleIndices;
 
 		public:
 			inline static
@@ -56,9 +56,9 @@ namespace minko
 
 			inline
 			VertexBufferPtr
-			vertices()
+			particleVertices() const
 			{
-				return _vertices;
+				return _particleVertices;
 			}
 
 		protected:

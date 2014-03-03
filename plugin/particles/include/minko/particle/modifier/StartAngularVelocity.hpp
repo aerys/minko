@@ -29,32 +29,36 @@ namespace minko
 	{
 		namespace modifier
 		{
-			class StartAngularVelocity : public IParticleInitializer, public Modifier1<float>
+			class StartAngularVelocity: 
+                public IParticleInitializer, 
+                public Modifier1<float>
 			{
 			public:
-				typedef std::shared_ptr<StartAngularVelocity>	Ptr;
+				typedef std::shared_ptr<StartAngularVelocity>	    Ptr;
+
+            private:
+                typedef std::shared_ptr<sampler::Sampler<float>>   SamplerPtr; 
 
 			public:
 				static
 				Ptr
 				create(SamplerPtr w)
 				{
-					Ptr modifier = std::shared_ptr<StartAngularVelocity>(new StartAngularVelocity(w));
+					Ptr ptr = std::shared_ptr<StartAngularVelocity>(new StartAngularVelocity(w));
 
-					return modifier;
+					return ptr;
 				};
 
 				virtual
 				void
-				initialize(ParticleData& 	particle,
-						   float			time) const;
+				initialize(ParticleData&, float time) const;
 
 				virtual
 				unsigned int
 				getNeededComponents() const;
 			
 			protected:
-				StartAngularVelocity(SamplerPtr w);
+				StartAngularVelocity(SamplerPtr);
 			};
 		}
 	}

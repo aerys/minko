@@ -29,7 +29,6 @@ using namespace minko::math;
 int main(int argc, char** argv)
 {
 	auto canvas = Canvas::create("Minko Example - Particles", 800, 600);
-
 	auto sceneManager = SceneManager::create(canvas->context());
 	
 	// setup assets
@@ -37,25 +36,26 @@ int main(int argc, char** argv)
 	sceneManager->assets()->defaultOptions()->generateMipmaps(true);
 	sceneManager->assets()
 		->registerParser<file::PNGParser>("png")
+        ->queue("effect/Basic.effect")
 		->queue("effect/Particles.effect");
 
 	auto root = scene::Node::create("root")
 		->addComponent(sceneManager);
 
-	auto particles = scene::Node::create("particles")
+	auto particlesNode = scene::Node::create("particlesNode")
 		->addComponent(Transform::create());
 
 	auto camera = scene::Node::create("camera")
 		->addComponent(Renderer::create(0x7f7f7fff))
 		->addComponent(Transform::create(
-		Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 3.f))
+		    Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 3.f))
 		))
 		->addComponent(PerspectiveCamera::create(800.f / 600.f, (float)PI * 0.25f, .1f, 1000.f));
 	root->addChild(camera);
-
+    
 	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
 	{
-        particles->addComponent(component::ParticleSystem::create(
+        auto particles = ParticleSystem::create(
             assets->context(),
             assets,
             100.0f,
@@ -63,11 +63,23 @@ int main(int argc, char** argv)
             particle::shape::Sphere::create(0.5f),
             particle::StartDirection::UP,
             particle::sampler::Constant<float>::create(2.0f)
-        ));
+        );  
+        
+        auto color = Vector3::create(1.0f, 0.0f, 0.0f);
 
-		root->addChild(particles);
+        particles
+        ->add(particle::modifier::StartSize::create(particle::sampler::Constant<float>::create(0.1f)))
+        ->add(particle::modifier::StartRotation::create(particle::sampler::Constant<float>::create(PI * 0.25f)))
+        ->add(particle::modifier::StartColor::create(
+            particle::sampler::Constant<math::Vector3>::create(*color)
+        ))
+        ->play();
+        
+        particlesNode->addComponent(particles);
+
+		root->addChild(particlesNode);
 	});
-
+    
 	auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
 	{
 		camera->component<PerspectiveCamera>()->aspectRatio((float)w / (float)h);

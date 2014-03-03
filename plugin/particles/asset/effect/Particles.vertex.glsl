@@ -2,31 +2,45 @@
 	precision mediump float;
 #endif
 
-attribute vec2 offset;
-attribute vec3 position;
-attribute float size;
-attribute vec3 color;
-attribute float time;
-attribute vec3 oldPosition;
-attribute float rotation;
-attribute float spriteIndex;
+attribute vec2	offset;
+attribute vec3	position;
+attribute float	size;
+attribute vec3	color;
+attribute float	time;
+attribute vec3	oldPosition;
+attribute float	rotation;
+attribute float	spriteIndex;
 
-uniform mat4 modelToWorldMatrix;
-uniform mat4 viewMatrix;
-uniform mat4 projectionMatrix;
+uniform mat4	modelToWorldMatrix;
+uniform mat4	viewMatrix;
+uniform mat4	projectionMatrix;
 
-uniform float spriteSheetRows;
-uniform float spriteSheetColumns;
+uniform float	spriteSheetRows;
+uniform float	spriteSheetColumns;
 
-varying vec2 vertexUV;
-varying float particleTime;
+varying vec2	vUV;
+varying vec3	vColor;
+varying float	vTime;
 
 void main(void)
 {
-	particleTime = time;
+	float	particleTime 	= 0.0;
+	vec3	particleColor	= vec3(1.0);
 
-	vec4 pos;
-	
+	#ifdef PARTICLE_TIME
+
+		particleTime = time;
+
+	#endif // PARTICLE_TIME
+
+	#ifdef PARTICLE_COLOR
+
+		particleColor = color;
+
+	#endif // PARTICLE_COLOR
+
+
+	/*****
 	#ifdef TECHNIQUE_DIFFUSE_MAP
 		vertexUV = vec2(offset.x, -offset.y) + 0.5;
 	
@@ -49,19 +63,42 @@ void main(void)
 			vertexUV += vec2(r, c);
 		#endif
 	#endif
-	
-	#ifdef WORLDSPACE_PARTICLES	
-		pos = viewMatrix * vec4(position, 1.0);
-	#else
-		pos = vec4(position, 1.0);
-		
-		#ifdef HAS_MODEL_TO_WORLD
-			pos =  modelToWorldMatrix * pos;
-		#endif
-		
-		pos = viewMatrix * pos;
+	****/
+
+
+	vec4 pos = vec4(position, 1.0);
+
+	#if !defined(WORLDSPACE_PARTICLES) && defined(MODEL_TO_WORLD)
+
+		pos =  modelToWorldMatrix * pos;
+
 	#endif
 	
+	pos = viewMatrix * pos; // pos is in eye space -> offset positions
+
+
+	vec2 particleOffset = offset;
+
+#if defined(PARTICLE_ROTATION)
+
+	vec4 offXY_cos_sin = vec4(particleOffset.x, particleOffset.y, cos(rotation), sin(rotation)); // less temp registers !
+
+	particleOffset.xy = vec2(
+		offXY_cos_sin.z * offXY_cos_sin.x - offXY_cos_sin.w * offXY_cos_sin.y, // cos * x - sin * y
+		offXY_cos_sin.w * offXY_cos_sin.x + offXY_cos_sin.z * offXY_cos_sin.y  // sin * x + cos * y 
+	);
+
+#endif // defined(PARTICLE_ROTATION)
+
+
+#if defined(PARTICLE_SIZE)
+
+	particleOffset *= vec2(size);
+
+#endif // defined(PARTICLE_SIZE)
+
+
+	/****
 	float cosine = cos(rotation);
 	float sine = sin(rotation);
 	
@@ -75,6 +112,9 @@ void main(void)
 	//size *= 0.05;
 
 	pos += vec4(sinOffset, 0, 0) * sizeOverTimer;
+	****/
 
-	gl_Position = projectionMatrix * pos;
+	vTime 		= particleTime;
+	vColor 		= particleColor;
+	gl_Position	= projectionMatrix * (pos + vec4(particleOffset, 0.0, 0.0));
 }

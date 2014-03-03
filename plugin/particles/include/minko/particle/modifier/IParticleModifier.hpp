@@ -30,9 +30,10 @@ namespace minko
 			class IParticleModifier
 			{
 			public:
-				typedef std::shared_ptr<IParticleModifier> Ptr;
+				typedef std::shared_ptr<IParticleModifier>  Ptr;
 
-				typedef std::shared_ptr<data::Provider> ProviderPtr;
+            private:
+				typedef std::shared_ptr<data::Provider>     ProviderPtr;
 
 			public:
 				virtual
@@ -41,12 +42,12 @@ namespace minko
 
 				virtual
 				void
-				setProperties(ProviderPtr provider)
+				setProperties(ProviderPtr)
 				{};
 				
 				virtual
 				void
-				unsetProperties(ProviderPtr provider)
+				unsetProperties(ProviderPtr)
 				{};
 			};
 		}
