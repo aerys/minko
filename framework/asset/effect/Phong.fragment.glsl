@@ -6,6 +6,7 @@
 
 #pragma include("Phong.function.glsl")
 #pragma include("Envmap.function.glsl")
+#pragma include("Fog.function.glsl")
 
 #ifdef PRECOMPUTED_AMBIENT
 	uniform vec3 sumAmbients;
@@ -83,7 +84,6 @@ uniform vec3 		cameraPosition;
 
 // env. mapping
 uniform float 		environmentAlpha;
-
 
 varying vec3 		vertexPosition;
 varying vec2 		vertexUV;
@@ -329,6 +329,10 @@ void main(void)
 	vec3 phong		= diffuse.rgb * (ambientAccum + diffuseAccum) + specular.a * specularAccum;
 
 	gl_FragColor	= vec4(phong.rgb, diffuse.a);
+
+	// Applying fog if necessary
+	//----------------------------------------------------
+	gl_FragColor 	= fog_sampleFog(gl_FragColor, gl_FragCoord);
 }
 
 #endif // FRAGMENT_SHADER

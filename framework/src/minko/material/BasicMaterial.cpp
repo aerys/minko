@@ -103,6 +103,108 @@ BasicMaterial::diffuseCubeMap() const
 }
 
 BasicMaterial::Ptr
+BasicMaterial::fogColor(Vector4::Ptr value)
+{
+	set("fogColor", value);
+
+	return std::dynamic_pointer_cast<BasicMaterial>(shared_from_this());
+}
+
+BasicMaterial::Ptr
+BasicMaterial::fogColor(uint rgba)
+{
+	return fogColor(Color::uintToVec4(rgba));
+}
+
+Vector4::Ptr
+BasicMaterial::fogColor() const
+{
+	return get<Vector4::Ptr>("fogColor");
+}
+
+BasicMaterial::Ptr
+BasicMaterial::fogDensity(float value)
+{
+    set("fogDensity", value);
+
+    return std::dynamic_pointer_cast<BasicMaterial>(shared_from_this());
+}
+
+float
+BasicMaterial::fogDensity() const
+{
+    return get<float>("fogDensity");
+}
+
+BasicMaterial::Ptr
+BasicMaterial::fogStart(float value)
+{
+    set("fogStart", value);
+
+    return std::dynamic_pointer_cast<BasicMaterial>(shared_from_this());
+}
+
+float
+BasicMaterial::fogStart() const
+{
+    return get<float>("fogStart");
+}
+
+BasicMaterial::Ptr
+BasicMaterial::fogEnd(float value)
+{
+    set("fogEnd", value);
+
+    return std::dynamic_pointer_cast<BasicMaterial>(shared_from_this());
+}
+
+float
+BasicMaterial::fogEnd() const
+{
+    return get<float>("fogEnd");
+}
+
+BasicMaterial::Ptr
+BasicMaterial::fogType(render::FogType value)
+{
+    unset("fogLinear");
+    unset("fogExponential");
+    unset("fogExponential2");
+
+    switch (value)
+    {
+    case render::FogType::Linear:
+        set("fogLinear", true);
+        break;
+    case render::FogType::Exponential:
+        set("fogExponential", true);
+        break;
+    case render::FogType::Exponential2:
+        set("fogExponential2", true);
+        break;
+    default:
+        break;
+    }
+
+    return std::dynamic_pointer_cast<BasicMaterial>(shared_from_this());
+}
+
+render::FogType
+BasicMaterial::fogType() const
+{
+    if (hasProperty("fogLinear"))
+        return render::FogType::Linear;
+
+    if (hasProperty("fogExponential"))
+        return render::FogType::Exponential;
+
+    if (hasProperty("fogExponential2"))
+        return render::FogType::Exponential2;
+
+    return render::FogType::None;
+}
+
+BasicMaterial::Ptr
 BasicMaterial::blendingMode(Blending::Source src, Blending::Destination dst)
 {
 	set<Blending::Mode>("blendMode", src | dst);
