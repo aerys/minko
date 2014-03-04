@@ -7,11 +7,9 @@ insert.insert(premake.tools.gcc, 'cxxflags.system', {
 })
 
 insert.insert(premake.tools.gcc, 'tools.linux', {
-	ld = MINKO_HOME .. '/tool/lin/script/g++-ld.sh',
-	cxx = MINKO_HOME .. '/tool/lin/script/g++-ld.sh',
+	cxx = MINKO_HOME .. '/tool/lin/script/g++.sh',
 })
 
 insert.insert(premake.tools.gcc, 'tools.macosx', {
-	ld = MINKO_HOME .. '/tool/mac/script/g++-ld.sh',
-	cxx = MINKO_HOME .. '/tool/mac/script/g++-ld.sh',
+	cxx = MINKO_HOME .. '/tool/mac/script/g++.sh',
 })
