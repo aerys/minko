@@ -30,9 +30,9 @@ using namespace minko::particle::modifier;
 
 
 StartSprite::StartSprite(SamplerPtr                     spriteIndex,
+                         render::AbstractTexture::Ptr   spritesheet,
                          unsigned int                   numCols,
-                         unsigned int                   numRows,
-                         render::AbstractTexture::Ptr   spritesheet): 
+                         unsigned int                   numRows): 
     Modifier1<float> (spriteIndex),
     _numCols(numCols),
     _numRows(numRows),
@@ -57,21 +57,14 @@ StartSprite::getNeededComponents() const
 
 
 void
-StartSprite::setProperties(data::ParticlesProvider::Ptr provider)
+StartSprite::setProperties(data::ParticlesProvider::Ptr provider) const
 {
     if (_numCols > 0 && _numRows > 0 && _spritesheet)
-        provider->diffuseSpritesheet(_numRows, _numCols, _spritesheet);
-
-	//provider->set("particles.spritesheet", true);
-	//provider->set("particles.spriteSheetRows", 2.f);
-	//provider->set("particles.spriteSheetColumns", 2.f);
+        provider->diffuseSpritesheet(_spritesheet, _numRows, _numCols);
 }
 				
 void
-StartSprite::unsetProperties(data::ParticlesProvider::Ptr provider)
+StartSprite::unsetProperties(data::ParticlesProvider::Ptr provider) const
 {
     provider->unsetDiffuseSpritesheet();
-	//provider->unset("particles.spritesheet");
-	//provider->unset("particles.spriteSheetRows");
-	//provider->unset("particles.spriteSheetColumns");
 }

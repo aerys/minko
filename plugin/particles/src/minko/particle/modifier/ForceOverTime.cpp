@@ -28,9 +28,10 @@ using namespace minko::particle::modifier;
 
 ForceOverTime::ForceOverTime(SamplerPtr fx,
 			     			 SamplerPtr fy,
-			     			 SamplerPtr fz)
-	: Modifier3<float> (fx, fy, fz)
-{}
+			     			 SamplerPtr fz): Modifier3<float> (fx, fy, fz)
+{
+
+}
 
 void
 ForceOverTime::update(std::vector<ParticleData>& 	particles,

@@ -37,7 +37,7 @@ namespace minko
 				typedef std::shared_ptr<VelocityOverTime>	Ptr;
 
 			public:
-				static
+				inline static
 				Ptr
 				create(SamplerPtr vx,
 					   SamplerPtr vy,
@@ -48,12 +48,9 @@ namespace minko
 					return modifier;
 				};
 
-				virtual
 				void
-				update(std::vector<ParticleData>& 	particles,
-					   float						timeStep) const;
+				update(std::vector<ParticleData>&, float timeStep) const;
 
-				virtual
 				unsigned int
 				getNeededComponents() const;
 

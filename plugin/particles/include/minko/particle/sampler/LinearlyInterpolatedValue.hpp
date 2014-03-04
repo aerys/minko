@@ -35,65 +35,113 @@ namespace minko
 				typedef std::shared_ptr<LinearlyInterpolatedValue<T> > Ptr;
 
 			private:
-				T _start;
-				T _delta;
-
+				T       _startValue;
+				T       _deltaValue;
+                float   _startTime;
+                float   _endTime;
+                float   _invDeltaTime;
+                    
 			public:
-				static
+				static inline
 				Ptr
-				create(T start, T end)
+				create(T        startValue, 
+                       T        endValue, 
+                       float    startTime = 0.0f, 
+                       float    endTime = 1.0f)
 				{
-					Ptr sampler = std::shared_ptr<LinearlyInterpolatedValue>(new LinearlyInterpolatedValue(start, end));
+					Ptr ptr = std::shared_ptr<LinearlyInterpolatedValue>(new LinearlyInterpolatedValue(startValue, endValue, startTime, endTime));
 
-					return sampler;
+					return ptr;
 				};
 
-				void
-				start(T value)
+    //            inline
+				//void
+				//start(T value)
+				//{
+				//	_startValue = value;
+				//};
+
+    //            inline
+				//void
+				//end(T value)
+				//{
+				//	_delta = value - _startValue;
+				//};
+
+                inline
+                T
+                min() const
+                {
+                    return startValue();
+                };
+
+                inline
+                T
+                max() const
+                {
+                    return startValue();
+                };
+
+                inline
+				T
+				startValue() const
 				{
-					_start = value;
+					return _startValue;
 				};
 
-				void
-				end(T value)
+                inline
+				T
+				endValue() const
 				{
-					_delta = value - _start;
+					return _startValue + _deltaValue;
 				};
 
-			public:
-				virtual
+                inline
+                float
+                startTime() const
+                {
+                    return _startTime;
+                }
+
+                inline
+                float
+                endTime() const
+                {
+                    return _endTime;
+                }
+
+                inline
 				T
 				value(float time) const
 				{
-					return _start + _delta * time;
+                    const float t = std::max(0.0f, std::min(1.0f, (time - _startTime) * _invDeltaTime));
+
+					return _startValue + _deltaValue * t;
 				};
 
-				virtual
+                inline
 				void
 				set(T& target, float time) const
 				{
-					target = _start + _delta * time;
-				};
-
-				virtual
-				T
-				max() const
-				{
-					return _start + _delta;
-				};
-
-				virtual
-				T
-				min() const
-				{
-					return _start;
+					target = value(time);
 				};
 
 			protected:
-				LinearlyInterpolatedValue(T start, T end)
-					: _start (start),
-					 _delta(end - start)
-				{};
+                inline
+				LinearlyInterpolatedValue(T     startValue, 
+                                          T     endValue, 
+                                          float startTime, 
+                                          float endTime): 
+                    _startValue(startValue),
+                    _deltaValue(endValue - startValue),
+                    _startTime(std::min(startTime, endTime)),
+                    _endTime(std::max(startTime, endTime)),
+                    _invDeltaTime(0.0f)
+				{
+                    _startTime      = std::max(0.0f, std::min(1.0f, _startTime));
+                    _endTime        = std::max(0.0f, std::min(1.0f, _endTime));
+                    _invDeltaTime   = fabsf(_endTime - _startTime) < 1e-3f ? 0.0f : 1.0f / (_endTime - _startTime);
+                };
 			};
 		}
 	}

@@ -20,6 +20,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/ParticlesCommon.hpp"
+#include "minko/math/Vector3.hpp"
+#include "minko/particle/modifier/Modifier1.hpp"
 #include "minko/particle/modifier/IParticleUpdater.hpp"
 
 namespace minko
@@ -28,32 +30,44 @@ namespace minko
 	{
 		namespace modifier
 		{
-			class ColorOverTime : public IParticleUpdater
+			class ColorOverTime : 
+                public IParticleUpdater,
+                public Modifier1<math::Vector3>
 			{
 			public:
-				typedef std::shared_ptr<ColorOverTime>	Ptr;
+				typedef std::shared_ptr<ColorOverTime>	                                    Ptr;
+
+            private:
+                typedef std::shared_ptr<sampler::LinearlyInterpolatedValue<math::Vector3>>  LinearSamplerPtr;
+                typedef std::shared_ptr<data::ParticlesProvider>                            ParticlesProviderPtr;
+
+            private:
+                static const std::string PROPERTY_NAMES[2];
 
 			public:
 				static
 				Ptr
-				create()
+				create(LinearSamplerPtr sampler)
 				{
-					Ptr modifier = std::shared_ptr<ColorOverTime>(new ColorOverTime());
+					Ptr ptr = std::shared_ptr<ColorOverTime>(new ColorOverTime(sampler));
 
-					return modifier;
+					return ptr;
 				};
 
-				virtual
 				void
-				update(std::vector<ParticleData>& 	particles,
-					   float						timeStep) const;
+				update(std::vector<ParticleData>&, float timeStep) const;
 
-				virtual
 				unsigned int
 				getNeededComponents() const;
 
+                void
+                setProperties(ParticlesProviderPtr) const;
+
+                void
+                unsetProperties(ParticlesProviderPtr) const;
+
 			protected:
-				ColorOverTime();
+				ColorOverTime(LinearSamplerPtr);
 			};
 		}
 	}

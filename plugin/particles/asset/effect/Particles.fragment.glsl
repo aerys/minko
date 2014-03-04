@@ -4,10 +4,18 @@
 
 uniform vec4		diffuseColor;
 uniform sampler2D	spritesheet;
-	
+
+uniform vec4		colorOverTimeStart;
+uniform vec4 		colorOverTimeEnd;
+uniform vec4		colorBySpeedStart;
+uniform vec4 		colorBySpeedEnd;
+
 varying vec2		vUV;
 varying vec3		vColor;
 varying float		vTime;
+varying float		vVelocity;
+
+#pragma include('Particles.function.glsl')
 
 void main(void)
 {			
@@ -25,20 +33,30 @@ void main(void)
 
 	#endif // defined(SPRITE_SHEET)
 
-	//vec4 color = vec4(vColor, 1.0);
+	#if defined(COLOR_OVER_TIME)
+
+		color.rgb *= particles_linearlyInterpolateFloat3(
+			vTime,
+			colorOverTimeStart.w,
+			colorOverTimeStart.xyz,
+			colorOverTimeEnd.w,
+			colorOverTimeEnd.xyz
+		);
+
+	#endif // defined(COLOR_OVER_TIME)
+
+	#if defined(COLOR_BY_SPEED)
+
+		color.rgb *= particles_linearlyInterpolateFloat3(
+			vVelocity,
+			colorBySpeedStart.w,
+			colorBySpeedStart.xyz,
+			colorBySpeedEnd.w,
+			colorBySpeedEnd.xyz
+		);
+
+	#endif // defined(COLOR_BY_SPEED)
+
 	gl_FragColor = color;
 	return;
-
-	// #ifdef DIFFUSE_MAP
-	// 	color *= texture2D(spritesheet, vertexUV);
-	// #endif
-	
-	// #ifdef TECHNIQUE_DIFFUSE_COLOR
-	// 	color *= vec4(diffuseColor);
-	// #endif
-	
-	// // fake ColorOverTime
-	// color *= 1.0 - pow(vTime, 4.);
-	
-	// gl_FragColor = color;
 }

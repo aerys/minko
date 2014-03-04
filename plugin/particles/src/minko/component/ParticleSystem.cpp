@@ -321,6 +321,8 @@ ParticleSystem::fastForward(float time, unsigned int updatesPerSecond)
 void
 ParticleSystem::updateSystem(float	timeStep, bool emit)
 {
+    _material->set<float>("particles.timeStep", timeStep);
+
 	if (emit && _createTimer < _rate)
 		_createTimer += timeStep;
 
@@ -330,11 +332,11 @@ ParticleSystem::updateSystem(float	timeStep, bool emit)
 
 		if (particle.alive)
 		{
-			particle.timeLived += timeStep;
+			particle.timeLived  += timeStep;
 
-			particle.oldx = particle.x;
-			particle.oldy = particle.y;
-			particle.oldz = particle.z;
+			particle.oldx       = particle.x;
+			particle.oldy       = particle.y;
+			particle.oldz       = particle.z;
 
 			if (particle.timeLived >= particle.lifetime)
 				killParticle(particleIndex);
@@ -343,18 +345,16 @@ ParticleSystem::updateSystem(float	timeStep, bool emit)
 
 	if (_format & VertexComponentFlags::OLD_POSITION)
 	{
-		for (unsigned particleIndex = 0; particleIndex < _particles.size(); ++particleIndex)
+		for (auto& particle : _particles)
 		{
-			ParticleData& particle = _particles[particleIndex];
-
 			particle.oldx = particle.x;
 			particle.oldy = particle.y;
 			particle.oldz = particle.z;
 		}
 	}
 	
-	for (unsigned int i = 0; i < _updaters.size(); ++i)
-		_updaters[i]->update(_particles, timeStep);
+	for (auto& updater : _updaters)
+		updater->update(_particles, timeStep);
 
 	for (unsigned particleIndex = 0; particleIndex < _particles.size(); ++particleIndex)
 	{
@@ -364,18 +364,19 @@ ParticleSystem::updateSystem(float	timeStep, bool emit)
 		{
 			_createTimer -= _rate;
 			createParticle(particleIndex, *_shape, _createTimer);
+
 			particle.lifetime = _lifetime->value();
 		}
 		
-		particle.rotation += particle.startAngularVelocity * timeStep;
+		particle.rotation   += particle.startAngularVelocity * timeStep;
 
-		particle.startvx += particle.startfx * timeStep;
-		particle.startvy += particle.startfy * timeStep;
-		particle.startvz += particle.startfz * timeStep;
+		particle.startvx    += particle.startfx * timeStep;
+		particle.startvy    += particle.startfy * timeStep;
+		particle.startvz    += particle.startfz * timeStep;
 
-		particle.x += particle.startvx * timeStep;
-		particle.y += particle.startvy * timeStep;
-		particle.z += particle.startvz * timeStep;
+		particle.x          += particle.startvx * timeStep;
+		particle.y          += particle.startvy * timeStep;
+		particle.z          += particle.startvz * timeStep;
 	}
 }
 
@@ -390,9 +391,9 @@ ParticleSystem::createParticle(unsigned int 				particleIndex,
 	{
 		shape.initPosition(particle);
 
-		particle.startvx 	= 0;
-		particle.startvy 	= 0;
-		particle.startvz 	= 0;
+		particle.startvx 	= 0.0f;
+		particle.startvy 	= 0.0f;
+		particle.startvz 	= 0.0f;
 	}
 	else if (_startDirection == StartDirection::SHAPE)
 	{
@@ -406,15 +407,13 @@ ParticleSystem::createParticle(unsigned int 				particleIndex,
 	{
 		shape.initPosition(particle);
 
-
-		particle.startvx 	= 0;
-		particle.startvy 	= 1;
-		particle.startvz 	= 0;
+		particle.startvx 	= 0.f;
+		particle.startvy 	= 1.0f;
+		particle.startvz 	= 0.0f;
 	}
 	else if (_startDirection == StartDirection::OUTWARD)
 	{
 		shape.initPosition(particle);
-
 
 		particle.startvx 	= particle.x;
 		particle.startvy 	= particle.y;
@@ -429,9 +428,9 @@ ParticleSystem::createParticle(unsigned int 				particleIndex,
 	{
 		const std::vector<float>& transform = _toWorld->matrix()->data();
 
-		float x = particle.x;
-		float y = particle.y;
-		float z = particle.z;
+		const float x = particle.x;
+		const float y = particle.y;
+		const float z = particle.z;
 
 		particle.x = transform[0] * x + transform[1] * y + transform[2] * z + transform[3];
 		particle.y = transform[4] * x + transform[5] * y + transform[6] * z + transform[7];
@@ -439,9 +438,9 @@ ParticleSystem::createParticle(unsigned int 				particleIndex,
 
 		if (_startDirection != StartDirection::NONE)
 		{
-			float vx = particle.startvx;
-			float vy = particle.startvy;
-			float vz = particle.startvz;
+			const float vx = particle.startvx;
+			const float vy = particle.startvy;
+			const float vz = particle.startvz;
 
 			particle.startvx = transform[0] * vx + transform[1] * vy + transform[2] * vz;
 			particle.startvy = transform[4] * vx + transform[5] * vy + transform[6] * vz;
@@ -451,28 +450,31 @@ ParticleSystem::createParticle(unsigned int 				particleIndex,
 
 	if (_startDirection != StartDirection::NONE)
 	{
-		float norm = sqrt(particle.startvx * particle.startvx + 
-						  particle.startvy * particle.startvy + 
-						  particle.startvz * particle.startvz);
+		const float norm = std::max(1e-4f, 
+                                    sqrtf(particle.startvx * particle.startvx + 
+						                  particle.startvy * particle.startvy + 
+						                  particle.startvz * particle.startvz));
 
-		float v = _startVelocity ? _startVelocity->value() : 1;
+		const float k = _startVelocity 
+            ? _startVelocity->value()   / norm 
+            : 1.0f                      / norm;
 
-		particle.startvx 	= particle.startvx / norm * v;
-		particle.startvy 	= particle.startvy / norm * v;
-		particle.startvz 	= particle.startvz / norm * v;
+		particle.startvx 	= particle.startvx * k;
+		particle.startvy 	= particle.startvy * k;
+		particle.startvz 	= particle.startvz * k;
 	}
 
-	particle.rotation 				= 0;
-	particle.startAngularVelocity 	= 0;
+	particle.rotation 				= 0.0f;
+	particle.startAngularVelocity 	= 0.0f;
 
-	particle.timeLived	= timeLived;
+	particle.timeLived	            = timeLived;
 			
-	particle.alive 		= true;
+	particle.alive 		            = true;
 	
 	++_liveCount;
 
-	for (unsigned int i = 0; i < _initializers.size(); ++i)
-		_initializers[i]->initialize(particle, timeLived);
+	for (auto& initializer : _initializers)
+		initializer->initialize(particle, timeLived);
 }
 
 void

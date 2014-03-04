@@ -17,15 +17,26 @@
 		"modelToWorldMatrix"	: "transform.modelToWorldMatrix",
 		"viewMatrix"			: { "property": "camera.viewMatrix",		"source": "renderer" },
 		"projectionMatrix"		: { "property": "camera.projectionMatrix",	"source": "renderer" },
+		"timeStep"				: "particles.timeStep",
 		"diffuseColor"			: "particles.diffuseColor",
 		"spritesheet"			: "particles.spritesheet",
-		"spritesheetSize"		: "particles.spritesheetSize"
+		"spritesheetSize"		: "particles.spritesheetSize",
+		"sizeOverTime"			: "particles.sizeOverTime",
+		"sizeBySpeed"			: "particles.sizeBySpeed",
+		"colorOverTimeStart" 	: "particles.colorOverTimeStart",
+		"colorOverTimeEnd" 		: "particles.colorOverTimeEnd",
+		"colorBySpeedStart" 	: "particles.colorBySpeedStart",
+		"colorBySpeedEnd" 		: "particles.colorBySpeedEnd"
 	},
 
 	"macroBindings"	: {
 		"MODEL_TO_WORLD"			: "transform.modelToWorldMatrix",
 		"WORLDSPACE_PARTICLES"		: "particles.worldspace",
 		"SPRITE_SHEET"				: "particles.spritesheet",
+		"SIZE_OVER_TIME"			: "particles.sizeOverTime",
+		"SIZE_BY_SPEED"				: "particles.sizeBySpeed",
+		"COLOR_OVER_TIME"			: "particles.colorOverTimeStart",
+		"COLOR_BY_SPEED"			: "particles.colorBySpeedStart",
 		"PARTICLE_SIZE"				: "geometry[${geometryId}].size",
 		"PARTICLE_COLOR"			: "geometry[${geometryId}].color",
 		"PARTICLE_TIME"				: "geometry[${geometryId}].time",

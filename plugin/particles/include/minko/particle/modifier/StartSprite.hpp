@@ -49,11 +49,11 @@ namespace minko
 				static
 				Ptr
 				create(SamplerPtr       spriteIndex,
+                       AbsTexturePtr    spritesheet,
                        unsigned int     numCols,
-                       unsigned int     numRows,
-                       AbsTexturePtr    spritesheet)
+                       unsigned int     numRows)
 				{
-					Ptr ptr = std::shared_ptr<StartSprite>(new StartSprite(spriteIndex, numCols, numRows, spritesheet));
+					Ptr ptr = std::shared_ptr<StartSprite>(new StartSprite(spriteIndex, spritesheet, numCols, numRows));
 
 					return ptr;
 				};
@@ -68,17 +68,17 @@ namespace minko
 
 				virtual
 				void
-				setProperties(ParticlesProviderPtr);
+				setProperties(ParticlesProviderPtr) const;
 				
 				virtual
 				void
-				unsetProperties(ParticlesProviderPtr);
+				unsetProperties(ParticlesProviderPtr) const;
 			
 			protected:
 				StartSprite(SamplerPtr      spriteIndex,
+                            AbsTexturePtr   spritesheet,
                             unsigned int    numCols,
-                            unsigned int    numRows,
-                            AbsTexturePtr   spritesheet);
+                            unsigned int    numRows);
 			};
 		}
 	}

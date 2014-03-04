@@ -42,13 +42,13 @@ namespace minko
 
 				virtual
 				void
-				setProperties(ParticlesProviderPtr)
+				setProperties(ParticlesProviderPtr) const
 				{
                 };
 				
 				virtual
 				void
-				unsetProperties(ParticlesProviderPtr)
+				unsetProperties(ParticlesProviderPtr) const
 				{
                 };
 			};
