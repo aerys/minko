@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 
-#include "minko/component/Transform.hpp"
+#include "minko/component/Animation.hpp"
 #include "minko/math/Matrix4x4.hpp"
 #include "minko/math/Vector3.hpp"
 
@@ -31,7 +31,7 @@ namespace minko
 {
 	namespace component
 	{
-		class LuaTransform :
+		class LuaAnimation :
 			public LuaWrapper
 		{
 		public:
@@ -39,44 +39,31 @@ namespace minko
 			void
 			bind(LuaGlue& state)
 			{
-				state.Class<Transform>("Transform")
-					.method("create",				    static_cast<Transform::Ptr(*)(void)>(&Transform::create))
-					.method("createFromMatrix",		    static_cast<Transform::Ptr(*)(math::Matrix4x4::Ptr)>(&Transform::create))
-					.methodWrapper("modelToWorld",		&LuaTransform::worldToModelWrapper)
-                    .methodWrapper("deltaModelToWorld", &LuaTransform::deltaModelToWorldWrapper)
-                    .methodWrapper("worldToModel",      &LuaTransform::worldToModelWrapper)
-                    .methodWrapper("deltaWorldToModel", &LuaTransform::deltaWorldToModelWrapper)
-					.property("matrix", 			    &Transform::matrix)
-					.property("modelToWorldMatrix",	    static_cast<math::Matrix4x4::Ptr (Transform::*)()>(&Transform::modelToWorldMatrix));
-			}
-
-		private:
-			static
-			math::Vector3::Ptr
-			modelToWorldWrapper(Transform::Ptr t, math::Vector3::Ptr v)
-			{
-				return t->modelToWorld(v);
+				state.Class<Animation>("Animation")
+					.property("loopStartTime",	&Animation::loopStartTime)
+					.property("loopEndTime",	&Animation::loopEndTime)
+					.property("isPlaying",		static_cast<bool(Animation::*)() const>(&Animation::isPlaying))
+					.property("isLooping",		static_cast<bool(Animation::*)() const>(&Animation::isLooping))
+					.method("hasLabel",			&Animation::hasLabel)
+					.method("play",				&Animation::play)
+					.method("stop",				&Animation::stop)
+					.method("currentTime",		&Animation::currentTime)
+					.methodWrapper("seekTime",	&LuaAnimation::seekTimeWrapper)
+					.methodWrapper("seekLabel",	&LuaAnimation::seekLabelWrapper);
 			}
 
 			static
-			math::Vector3::Ptr
-			deltaModelToWorldWrapper(Transform::Ptr t, math::Vector3::Ptr v)
+			void
+			seekTimeWrapper(Animation::Ptr animation, uint time)
 			{
-				return t->deltaModelToWorld(v);
+				animation->seek(time);
 			}
 
 			static
-			math::Vector3::Ptr
-			worldToModelWrapper(Transform::Ptr t, math::Vector3::Ptr v)
+			void
+			seekLabelWrapper(Animation::Ptr animation, std::string label)
 			{
-				return t->worldToModel(v);
-			}
-
-			static
-			math::Vector3::Ptr
-			deltaWorldToModelWrapper(Transform::Ptr t, math::Vector3::Ptr v)
-			{
-				return t->deltaWorldToModel(v);
+				animation->seek(label);
 			}
 		};
 	}

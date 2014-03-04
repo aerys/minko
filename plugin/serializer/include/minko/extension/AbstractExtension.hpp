@@ -19,8 +19,35 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #pragma once
 
-#include "minko/LuaContext.hpp"
-#include "minko/component/LuaScriptManager.hpp"
-#include "minko/component/LuaScript.hpp"
-#include "minko/file/LuaScriptParser.hpp"
-#include "minko/LuaWrapper.hpp"
+#include "minko/Common.hpp"
+
+namespace minko
+{
+	namespace extension
+	{
+		class AbstractExtension
+		{
+		public:
+			typedef std::shared_ptr<AbstractExtension> Ptr;
+
+		public:
+			virtual
+			void
+			bind() = 0;
+		};
+
+		class SerializerExtension
+		{
+		public:
+			template <typename T>
+			typename std::enable_if<std::is_base_of<extension::AbstractExtension, T>::value, void>::type
+			static
+			activeExtension()
+			{
+				std::shared_ptr<T> extension = T::initialize();
+
+				extension->bind();
+			}
+		};
+	}
+}

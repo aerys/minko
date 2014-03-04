@@ -19,8 +19,35 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #pragma once
 
-#include "minko/LuaContext.hpp"
-#include "minko/component/LuaScriptManager.hpp"
-#include "minko/component/LuaScript.hpp"
-#include "minko/file/LuaScriptParser.hpp"
-#include "minko/LuaWrapper.hpp"
+#include "minko/BulletCommon.hpp"
+
+#include "minko/MinkoLua.hpp"
+#include "minko/component/bullet/PhysicsWorld.hpp"
+
+namespace minko
+{
+	class LuaWrapper;
+
+	namespace component
+	{
+		namespace bullet
+		{
+			class LuaPhysicsWorld :
+				public LuaWrapper
+			{
+
+			public:
+
+				static
+				void
+				bind(LuaGlue& state)
+				{
+					state.Class<PhysicsWorld>("PhysicsWorld")
+						.method("create", &PhysicsWorld::create);
+						//.method("setGravity", &PhysicsWorld::setGravity)
+						//.method("synchronizePhysicsWithGraphics", &PhysicsWorld::synchronizePhysicsWithGraphics);
+				}
+			};
+		}
+	}
+}
