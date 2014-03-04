@@ -23,6 +23,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Signal.hpp"
 
+#if EMSCRIPTEN
+#include "emscripten/emscripten.h"
+#endif
+
 // Possible implementations:
 // - Web Worker-based (web, sync)
 // - Callback-based (web, async eg. xhr)
@@ -139,15 +143,15 @@ namespace minko
 # define MINKO_WORKER(Name, Class, Code)										\
 void minkoWorkerEntryPoint(char* data, int size)								\
 {																				\
-	auto worker = Class ## ::create(#Name);										\
-	worker->_input = std::make_shared<std::vector<char>>(data, data + size);	\
+	auto worker = Class ::create();												\
+	worker->input(std::make_shared<std::vector<char>>(data, data + size));		\
 	worker->run();																\
 }																				\
 void Class ::run()																\
 {																				\
 	auto code = [this]() Code;													\
 	code();																		\
-	emscripten_worker_respond(output()->begin(), output()->size());				\
+	emscripten_worker_respond(&*output()->begin(), output()->size());			\
 }
 
 #else
