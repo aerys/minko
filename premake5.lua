@@ -118,8 +118,8 @@ newaction {
 	description	= 'Generate the distributable version of the Minko SDK.',
 	execute		= function()
 	
-		print("Building documentation...")
-		os.execute("doxygen doc/Doxyfile")
+		-- print("Building documentation...")
+		-- os.execute("doxygen doc/Doxyfile")
 
 		local distDir = 'dist'
 		
