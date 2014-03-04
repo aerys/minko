@@ -1061,8 +1061,11 @@
 		end
 		
 		-- printSetting(bs, 4, "GCC_C_LANGUAGE_STANDARD" , "gnu99")
-		xcode.PrintBuildSetting(4, 'GCC_C_LANGUAGE_STANDARD = gnu99;', cfg)
-		
+		xcode.PrintBuildSetting(4, 'GCC_C_LANGUAGE_STANDARD = "gnu99";', cfg)
+
+		xcode.PrintBuildSetting(4, 'CLANG_CXX_LANGUAGE_STANDARD = "c++0x";', cfg)
+		xcode.PrintBuildSetting(4, 'CLANG_CXX_LIBRARY = "libc++";', cfg)
+
 		if cfg.flags.NoExceptions then
 			-- printSetting(bs, 4, "GCC_ENABLE_CPP_EXCEPTIONS", "NO")
 			xcode.PrintBuildSetting(4, 'GCC_ENABLE_CPP_EXCEPTIONS = NO;', cfg)
