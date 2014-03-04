@@ -63,23 +63,25 @@ solution "minko"
 	end
 
 	-- plugin
-	include 'plugin/lua'
-	include 'plugin/angle'
-	include 'plugin/assimp'
-	include 'plugin/devil'
-	include 'plugin/bullet'
-	include 'plugin/fx'
-	include 'plugin/http-loader'
-	include 'plugin/http-worker'
-	include 'plugin/jpeg'
-	include 'plugin/leap'
-	include 'plugin/oculus'
-	include 'plugin/offscreen'
-	include 'plugin/particles'
-	include 'plugin/png'
-	include 'plugin/sdl'
-	include 'plugin/serializer'
-	include 'plugin/webgl'
+	if not _OPTIONS['no-plugin'] then
+		include 'plugin/lua'
+		include 'plugin/angle'
+		include 'plugin/assimp'
+		include 'plugin/devil'
+		include 'plugin/bullet'
+		include 'plugin/fx'
+		include 'plugin/http-loader'
+		include 'plugin/http-worker'
+		include 'plugin/jpeg'
+		include 'plugin/leap'
+		include 'plugin/oculus'
+		include 'plugin/offscreen'
+		include 'plugin/particles'
+		include 'plugin/png'
+		include 'plugin/sdl'
+		include 'plugin/serializer'
+		include 'plugin/webgl'
+	end
 
 	-- example
 	if not _OPTIONS['no-example'] then
