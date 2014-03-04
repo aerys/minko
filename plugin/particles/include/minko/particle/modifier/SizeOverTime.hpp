@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/ParticlesCommon.hpp"
-#include "minko/particle/modifier/Modifier3.hpp"
+#include "minko/particle/modifier/Modifier1.hpp"
 #include "minko/particle/modifier/IParticleUpdater.hpp"
 
 namespace minko
@@ -29,31 +29,44 @@ namespace minko
 	{
 		namespace modifier
 		{
-			class SizeOverTime : public IParticleUpdater
+			class SizeOverTime: 
+                public IParticleUpdater,
+                public Modifier1<float>
 			{
 			public:
-				typedef std::shared_ptr<SizeOverTime>	Ptr;
+				typedef std::shared_ptr<SizeOverTime>	                            Ptr;
+
+            private:
+                typedef std::shared_ptr<sampler::LinearlyInterpolatedValue<float>>  LinearSamplerPtr;
+                typedef std::shared_ptr<data::ParticlesProvider>                    ParticlesProviderPtr;
+
+            private:
+                static const std::string    PROPERTY_NAME;
 
 			public:
 				static
 				Ptr
-				create()
+				create(LinearSamplerPtr sampler)
 				{
-					Ptr modifier = std::shared_ptr<SizeOverTime>(new SizeOverTime());
+					Ptr ptr = std::shared_ptr<SizeOverTime>(new SizeOverTime(sampler));
 
-					return modifier;
+					return ptr;
 				};
 
-				virtual
 				void
 				update(std::vector<ParticleData>&, float) const;
 
-				virtual
 				unsigned int
 				getNeededComponents() const;
 
+                void
+                setProperties(ParticlesProviderPtr) const;
+
+                void
+                unsetProperties(ParticlesProviderPtr) const;
+
 			protected:
-				SizeOverTime();
+				SizeOverTime(LinearSamplerPtr);
 			};
 		}
 	}

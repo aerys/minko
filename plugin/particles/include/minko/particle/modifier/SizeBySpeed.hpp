@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/ParticlesCommon.hpp"
+#include "minko/particle/modifier/Modifier1.hpp"
 #include "minko/particle/modifier/IParticleUpdater.hpp"
 
 namespace minko
@@ -28,16 +29,44 @@ namespace minko
 	{
 		namespace modifier
 		{
-			class SizeBySpeed : public IParticleUpdater
+			class SizeBySpeed : 
+                public IParticleUpdater,
+                public Modifier1<float>
 			{
+            public:
+                typedef std::shared_ptr<SizeBySpeed>                                Ptr;
+
+            private:
+                typedef std::shared_ptr<sampler::LinearlyInterpolatedValue<float>>  LinearSamplerPtr;
+                typedef std::shared_ptr<data::ParticlesProvider>                    ParticlesProviderPtr;
+
+            private:
+                static const std::string    PROPERTY_NAME;
+
 			public:
-				virtual
+                inline static
+                Ptr
+                create(LinearSamplerPtr sampler)
+                {
+                    Ptr ptr = std::shared_ptr<SizeBySpeed>(new SizeBySpeed(sampler));
+
+                    return ptr;
+                }
+
 				void
 				update(std::vector<ParticleData>&, float) const;
 
-				virtual
 				unsigned int
 				getNeededComponents() const;
+
+                void
+                setProperties(ParticlesProviderPtr) const;
+
+                void
+                unsetProperties(ParticlesProviderPtr) const;
+
+            private:
+                SizeBySpeed(LinearSamplerPtr);
 			};
 		}
 	}
