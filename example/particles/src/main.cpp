@@ -61,28 +61,42 @@ int main(int argc, char** argv)
             assets->context(),
             assets,
             100.0f,
-            particle::sampler::Constant<float>::create(200.0f),
+            particle::sampler::Constant<float>::create(2.0f),
             particle::shape::Sphere::create(0.5f),
             particle::StartDirection::UP,
-            particle::sampler::Constant<float>::create(2.0f)
+            particle::sampler::Constant<float>::create(0.0f)
         );  
         
         auto color = Vector3::create(1.0f, 0.0f, 0.0f);
 
-        particles->material()->diffuseMap(assets->texture("texture/heal.png"))->diffuseColor(0x00ff00ff);
+        auto startcolor1    = Vector3::create(1.0f, 0.0f, 0.0f);
+        auto endcolor1      = Vector3::create(0.0f, 1.0f, 0.0f);
+
+        std::cout << "particles play ... " << std::endl;
+
+        particles->material()->diffuseMap(assets->texture("texture/heal.png"))->diffuseColor(0xffffffff);
         particles
         ->add(particle::modifier::StartSize::create(particle::sampler::Constant<float>::create(0.1f)))
-        ->add(particle::modifier::StartRotation::create(particle::sampler::Constant<float>::create(PI * 0.25f)))
+        ->add(particle::modifier::SizeOverTime::create(particle::sampler::LinearlyInterpolatedValue<float>::create(1.0, 5.0f, 0.0f, 1.0f)))
+        ->add(particle::modifier::VelocityOverTime::create(
+            particle::sampler::Constant<float>::create(0.0f),
+            particle::sampler::LinearlyInterpolatedValue<float>::create(1.0, 0.0f, 0.0f, 1.0f),
+            particle::sampler::Constant<float>::create(0.0f)
+        ))
+        //->add(particle::modifier::ColorOverTime::create(particle::sampler::LinearlyInterpolatedValue<math::Vector3>::create(*startcolor1, *endcolor1)))
+        ->add(particle::modifier::ColorBySpeed::create(particle::sampler::LinearlyInterpolatedValue<math::Vector3>::create(*startcolor1, *endcolor1, 0.0f, 1.0f)))
+        ->add(particle::modifier::SizeBySpeed::create(particle::sampler::LinearlyInterpolatedValue<float>::create(3.0f, 1.0f, 0.0f, 1.0f)))
+        /*->add(particle::modifier::StartRotation::create(particle::sampler::Constant<float>::create(PI * 0.25f)))
         ->add(particle::modifier::StartColor::create(
             particle::sampler::Constant<math::Vector3>::create(*color)
         ))
         ->add(particle::modifier::StartSprite::create(
             particle::sampler::RandomValue<float>::create(0.0f, 4.0f), 
-            2, 
-            2, 
-            assets->texture("texture/fire_spritesheet.png")))
+            assets->texture("texture/fire_spritesheet.png"), 2, 2))*/
         ->play();
         
+        std::cout << "particles play done" << std::endl;
+
         particlesNode->addComponent(particles);
 
 		root->addChild(particlesNode);
@@ -92,7 +106,7 @@ int main(int argc, char** argv)
 	{
 		camera->component<PerspectiveCamera>()->aspectRatio((float)w / (float)h);
 	});
-
+    
 	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, float deltaTime)
 	{
 		sceneManager->nextFrame();
@@ -100,7 +114,7 @@ int main(int argc, char** argv)
 
 	sceneManager->assets()->load();
 	canvas->run();
-
+    
 	return 0;
 }
 
