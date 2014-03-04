@@ -18,12 +18,15 @@ minko.action.copy = function(sourcePath)
 	if os.is('windows') then
 		sourcePath = path.translate(sourcePath)
 
-		if string.startswith(_ACTION, "gmake") then
-			return 'xcopy /y /i /e "' .. sourcePath .. '" $(subst /,\\,$(TARGETDIR))'
-		else
-			return 'xcopy /y /i /e "' .. sourcePath .. '" "$(TargetDir)"'
+		local targetDir = string.startswith(_ACTION, "gmake") and '$(subst /,\\,$(TARGETDIR))' or '$(TargetDir)'
+
+		if os.isdir(sourcePath) then
+			targetDir = targetDir .. '\\' .. path.getbasename(sourcePath)
 		end
-		-- return 'if exist ' .. sourcePath .. ' xcopy /y /i /e "' .. sourcePath .. '" "$(TargetDir)"'
+
+		local existenceTest = string.find(sourcePath, '*') and '' or ('if exist ' .. sourcePath .. ' ')
+
+		return existenceTest .. 'xcopy /y /i /e "' .. sourcePath .. '" ' .. targetDir
 	else
 		return 'test -e ' .. sourcePath .. ' && cp -R ' .. sourcePath .. ' "${TARGETDIR}" || :'
 	end
