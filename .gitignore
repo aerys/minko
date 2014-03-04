@@ -1,6 +1,7 @@
 .vagrant
 Makefile
 *.xcodeproj
+*.xcworkspace
 *.opensdf
 *.sdf
 *.sln
