@@ -343,15 +343,15 @@ ParticleSystem::updateSystem(float	timeStep, bool emit)
 		}
 	}
 
-	if (_format & VertexComponentFlags::OLD_POSITION)
-	{
-		for (auto& particle : _particles)
-		{
-			particle.oldx = particle.x;
-			particle.oldy = particle.y;
-			particle.oldz = particle.z;
-		}
-	}
+	//if (_format & VertexComponentFlags::OLD_POSITION)
+	//{
+	//	for (auto& particle : _particles)
+	//	{
+	//		particle.oldx = particle.x;
+	//		particle.oldy = particle.y;
+	//		particle.oldz = particle.z;
+	//	}
+	//}
 	
 	for (auto& updater : _updaters)
 		updater->update(_particles, timeStep);
