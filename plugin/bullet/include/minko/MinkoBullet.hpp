@@ -27,3 +27,5 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/bullet/BoxShape.hpp"
 #include "minko/component/bullet/ConeShape.hpp"
 #include "minko/component/bullet/CylinderShape.hpp"
+#include "minko/extension/PhysicsExtension.hpp"
+#include "minko/lua/BulletLuaBindingsCollection.hpp"

@@ -21,7 +21,7 @@ minko.action.copy = function(sourcePath)
 		local targetDir = string.startswith(_ACTION, "gmake") and '$(subst /,\\,$(TARGETDIR))' or '$(TargetDir)'
 
 		if os.isdir(sourcePath) then
-			targetDir = targetDir .. path.getbasename(sourcePath)
+			targetDir = targetDir .. '\\' .. path.getbasename(sourcePath)
 		end
 
 		local existenceTest = string.find(sourcePath, '*') and '' or ('if exist ' .. sourcePath .. ' ')

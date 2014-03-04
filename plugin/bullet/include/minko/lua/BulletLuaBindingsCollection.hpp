@@ -19,8 +19,26 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #pragma once
 
-#include "minko/LuaContext.hpp"
-#include "minko/component/LuaScriptManager.hpp"
-#include "minko/component/LuaScript.hpp"
-#include "minko/file/LuaScriptParser.hpp"
-#include "minko/LuaWrapper.hpp"
+#include "minko/Common.hpp"
+#include "minko/BulletCommon.hpp"
+
+class LuaGlue;
+struct lua_State;
+
+namespace minko
+{
+	namespace lua
+	{
+		class BulletLuaBindingsCollection
+		{
+		public:
+			static
+				std::vector<std::function<void(LuaGlue&)>>
+				getBulletBindings();
+
+			static
+				std::vector<std::function<void(LuaGlue&)>>
+				getBulletBindings(std::vector<std::function<void(LuaGlue&)>> bindings);
+		};
+	}
+}

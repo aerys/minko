@@ -42,6 +42,7 @@ namespace minko
 		            .method("toString", &Vector4::toString)
 		            .method("setTo",	&Vector4::setTo)
 		            .method("scaleBy",	&Vector4::scaleBy)
+					.method("length",	&Vector4::length)
 		            .method("copyFrom",	static_cast<Vector4::Ptr (Vector4::*)(Vector4::Ptr)>(&Vector4::copyFrom))
 		            .property("x",      static_cast<float (Vector4::*)(void)>(&Vector4::x), static_cast<void (Vector4::*)(float)>(&Vector4::x))
 		            .property("y",      static_cast<float (Vector4::*)(void)>(&Vector4::y), static_cast<void (Vector4::*)(float)>(&Vector4::y))

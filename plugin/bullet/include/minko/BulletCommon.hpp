@@ -19,8 +19,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #pragma once
 
-#include "minko/LuaContext.hpp"
-#include "minko/component/LuaScriptManager.hpp"
-#include "minko/component/LuaScript.hpp"
-#include "minko/file/LuaScriptParser.hpp"
-#include "minko/LuaWrapper.hpp"
+#include "minko/Common.hpp"
+
+namespace minko
+{
+	namespace lua
+	{
+		class BulletLuaBindingsCollection;
+	}
+}

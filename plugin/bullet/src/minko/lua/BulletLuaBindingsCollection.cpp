@@ -17,10 +17,28 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#pragma once
+#include "minko/lua/BulletLuaBindingsCollection.hpp"
+#include "LuaCollider.hpp"
+#include "LuaColliderData.hpp"
+#include "LuaPhysicsWorld.hpp"
 
-#include "minko/LuaContext.hpp"
-#include "minko/component/LuaScriptManager.hpp"
-#include "minko/component/LuaScript.hpp"
-#include "minko/file/LuaScriptParser.hpp"
-#include "minko/LuaWrapper.hpp"
+using namespace minko;
+using namespace minko::lua;
+using namespace minko::component;
+
+std::vector<std::function<void(LuaGlue&)>>
+BulletLuaBindingsCollection::getBulletBindings()
+{
+	std::vector<std::function<void(LuaGlue&)>> bindings;
+
+	return BulletLuaBindingsCollection::getBulletBindings(bindings);
+}
+
+std::vector<std::function<void(LuaGlue&)>>
+BulletLuaBindingsCollection::getBulletBindings(std::vector<std::function<void(LuaGlue&)>> bindings)
+{
+	bindings.push_back(&bullet::LuaColliderData::bind);
+	bindings.push_back(&bullet::LuaCollider::bind);
+	bindings.push_back(&bullet::LuaPhysicsWorld::bind);
+	return bindings;
+}
