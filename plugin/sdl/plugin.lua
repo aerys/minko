@@ -58,7 +58,8 @@ function minko.plugin.sdl:enable()
 		}
 
 	configuration { "ios" }
-		links { "SDL2" }
+		links { "SDL2-Simulator" }
+		libdirs { minko.plugin.path("sdl") .. "/lib/sdl/lib/ios" }
 end
 
 function minko.plugin.sdl:dist(pluginDistDir)
