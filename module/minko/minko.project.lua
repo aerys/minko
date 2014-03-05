@@ -214,6 +214,17 @@ minko.project.application = function(name)
 			emcc .. ' ${TARGET} -o ${TARGETDIR}/' .. name .. '.html -O2 --js-opts 0 -g4 -s ASM_JS=0 -s DISABLE_EXCEPTION_CATCHING=0 -s ERROR_ON_UNDEFINED_SYMBOLS=1 -s TOTAL_MEMORY=268435456 --preload-file ${TARGETDIR}/asset || ' .. minko.action.fail()
 		}
 
+	configuration { "ios" }
+		links {
+			"minko-framework",
+			"m",
+			"OpenGLES.framework",
+			"Foundation.framework",
+			"UIKit.framework",
+			"QuartzCore.framework",
+			"CoreGraphics.framework"
+		}
+
 	configuration { }
 	
 end
