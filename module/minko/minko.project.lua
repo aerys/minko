@@ -36,6 +36,17 @@ minko.project.library = function(name)
 			"-g4"
 		}
 
+        configuration { "ios" }
+                links {
+                        "m",
+                        "SDL2.framework",
+                        "OpenGLES.framework",
+                        "Foundation.framework",
+                        "UIKit.framework",
+                        "QuartzCore.framework",
+                        "CoreGraphics.framework"
+                }
+
 	configuration { }
 end
 
