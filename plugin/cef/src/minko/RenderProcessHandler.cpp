@@ -21,6 +21,53 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/CefPimpl.hpp"
 #include "include/cef_render_process_handler.h"
 
+class V8Handler : public CefV8Handler
+{
+public:
+	V8Handler() {}
+
+	virtual bool Execute(const CefString& name,
+		CefRefPtr<CefV8Value> object,
+		const CefV8ValueList& arguments,
+		CefRefPtr<CefV8Value>& retval,
+		CefString& exception) OVERRIDE
+	{
+		if (name == "sendMessage")
+		{
+			CefRefPtr<CefV8Value> message = arguments[0];
+
+			std::string value = message->GetStringValue();
+
+			//_messageReceived->execute(value);
+
+			std::cout << value << "\n";
+		}
+		else if (name == "onLoadCallback")
+		{
+
+		}
+		else if (name == "sendEventCallback")
+		{
+			CefRefPtr<CefV8Value> callbackId = arguments[0];
+			CefRefPtr<CefV8Value> elementId = arguments[1];
+			CefRefPtr<CefV8Value> eventType = arguments[2];
+
+			std::string callbackIdValue = callbackId->GetStringValue();
+			std::string elementIdValue = elementId->GetStringValue();
+			std::string eventTypeValue = eventType->GetStringValue();
+
+		}
+
+		// Function does not exist.
+		return false;
+	}
+
+private:
+
+	IMPLEMENT_REFCOUNTING(V8Handler);
+};
+
+
 using namespace minko;
 
 RenderProcessHandler::RenderProcessHandler(CefPimpl* impl) :
@@ -34,6 +81,7 @@ RenderProcessHandler::OnContextCreated(CefRefPtr<CefBrowser> browser, CefRefPtr<
 {
 	context->Enter();
 	CefRefPtr<CefV8Value> object = context->GetGlobal();
+		
 	CefRefPtr<CefV8Value> minkoObject = CefV8Value::CreateObject(nullptr);
 
 	CefRefPtr<CefV8Handler> handler = new V8Handler();
@@ -45,8 +93,37 @@ RenderProcessHandler::OnContextCreated(CefRefPtr<CefBrowser> browser, CefRefPtr<
 	minkoObject->SetValue("foo", CefV8Value::CreateString("bar"), V8_PROPERTY_ATTRIBUTE_NONE);
 
 	object->SetValue("Minko", minkoObject, V8_PROPERTY_ATTRIBUTE_NONE);
+
+	CefRefPtr<CefV8Value> retValue = ExecuteFunction("tototiti");
+	if (retValue->IsInt())
+	{
+		int tititoto = retValue->GetIntValue();
+		tititoto++;
+	}
 	context->Exit();
 }
+
+CefRefPtr<CefV8Value>
+RenderProcessHandler::ExecuteFunction(std::string functionName, CefRefPtr<CefV8Value> object)
+{
+	CefRefPtr<CefV8Context> context = CefV8Context::GetCurrentContext();
+
+	if (context != nullptr)
+	{
+		if (object == nullptr)
+			object = context->GetGlobal();
+
+		CefV8ValueList args;
+
+		CefRefPtr<CefV8Value> function = object->GetValue(functionName);
+
+		if (function->IsFunction())
+			return function->ExecuteFunctionWithContext(context, object, args);
+	}
+	return CefV8Value::CreateUndefined();
+}
+
+
 
 CefRefPtr<CefLoadHandler>
 RenderProcessHandler::GetLoadHandler()

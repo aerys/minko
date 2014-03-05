@@ -94,10 +94,10 @@ int main(int argc, char** argv)
 		));
 	});
 
-	cef->messageReceived()->connect([=](std::string message)
+	/*cef->messageReceived()->connect([=](std::string message)
 	{
 		std::cout << message << std::endl;
-	});
+	});*/
 
 	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, uint deltaTime)
 	{

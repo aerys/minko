@@ -67,8 +67,6 @@ namespace minko
 
 		int cefProcessResult;
 
-		Signal<std::string>::Ptr messageReceived();
-
 	private:
 
 		void

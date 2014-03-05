@@ -27,59 +27,6 @@ namespace minko
 {
 	class CefPimpl;
 
-	class V8Handler : public CefV8Handler
-	{
-	public:
-		V8Handler() {}
-
-		static
-			Signal<std::string>::Ptr
-			messageReceived()
-		{
-				return _messageReceived;
-			}
-
-		virtual bool Execute(const CefString& name,
-			CefRefPtr<CefV8Value> object,
-			const CefV8ValueList& arguments,
-			CefRefPtr<CefV8Value>& retval,
-			CefString& exception) OVERRIDE
-		{
-			if (name == "sendMessage")
-			{
-				CefRefPtr<CefV8Value> message = arguments[0];
-
-				std::string value = message->GetStringValue();
-
-				_messageReceived->execute(value);
-
-				std::cout << value << "\n";
-			}
-			else if (name == "sendEventCallback")
-			{
-				CefRefPtr<CefV8Value> callbackId = arguments[0];
-				CefRefPtr<CefV8Value> elementId = arguments[1];
-				CefRefPtr<CefV8Value> eventType = arguments[2];
-
-				std::string callbackIdValue = callbackId->GetStringValue();
-				std::string elementIdValue = elementId->GetStringValue();
-				std::string eventTypeValue = eventType->GetStringValue();
-
-
-			}
-
-			// Function does not exist.
-			return false;
-		}
-
-	private:
-
-		static
-			Signal<std::string>::Ptr _messageReceived;
-
-		IMPLEMENT_REFCOUNTING(V8Handler);
-	};
-
 	class DOMListener : public CefDOMEventListener
 	{
 	public:
@@ -199,6 +146,9 @@ namespace minko
 		virtual
 		void
 		OnContextCreated(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame, CefRefPtr<CefV8Context> context) OVERRIDE;
+
+		CefRefPtr<CefV8Value>
+		ExecuteFunction(std::string, CefRefPtr<CefV8Value> = nullptr);
 
 		virtual
 		CefRefPtr<CefLoadHandler>

@@ -80,6 +80,7 @@ solution "minko"
 	include 'plugin/sdl'
 	include 'plugin/serializer'
 	include 'plugin/webgl'
+	include 'plugin/cef'
 
 	-- example
 	if not _OPTIONS['no-example'] then
@@ -106,6 +107,7 @@ solution "minko"
 		include 'example/oculus'
 		include 'example/http'
 		include 'example/joystick'
+		include 'example/cef'
 	end
 
 	-- test

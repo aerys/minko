@@ -174,9 +174,3 @@ Cef::enterFrame()
 	CefDoMessageLoopWork();
 	_impl->cefRenderHandler->uploadTexture();
 }
-
-Signal<std::string>::Ptr
-Cef::messageReceived()
-{
-	return _impl->cefMessageReceived();
-}

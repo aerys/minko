@@ -38,11 +38,5 @@ namespace minko
 		CefRefPtr<App> cefApp;
 		CefRefPtr<CefV8Context> cefV8Context;
 		CefRefPtr<RenderProcessHandler> cefRenderProcessHandler;
-
-		Signal<std::string>::Ptr
-		cefMessageReceived()
-		{
-			return V8Handler::messageReceived();
-		}
 	};
 }
