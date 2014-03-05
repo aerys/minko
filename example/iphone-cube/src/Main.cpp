@@ -1,80 +1,93 @@
-#include <time.h>
+/*
+ Copyright (c) 2013 Aerys
+ 
+ Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
+ associated documentation files (the "Software"), to deal in the Software without restriction,
+ including without limitation the rights to use, copy, modify, merge, publish, distribute,
+ sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
+ furnished to do so, subject to the following conditions:
+ 
+ The above copyright notice and this permission notice shall be included in all copies or
+ substantial portions of the Software.
+ 
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+ BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
 
 #include "minko/Minko.hpp"
 #include "minko/MinkoPNG.hpp"
-
-//#include "GLFW/glfw3.h"
+#include "minko/MinkoSDL.hpp"
 
 using namespace minko;
 using namespace minko::component;
 using namespace minko::math;
 
-int main2(int argc, char** argv)
-{/*
-	glfwInit();
-	auto window = glfwCreateWindow(800, 600, "Minko - Cube Example", NULL, NULL);
-	glfwMakeContextCurrent(window);*/
+const std::string TEXTURE_FILENAME = "texture/box.png";
 
-	auto sceneManager = SceneManager::create(render::OpenGLES2Context::create());
-    auto mesh = scene::Node::create("mesh");
-
+int main(int argc, char** argv)
+{
+	auto canvas = Canvas::create("Minko Example - Cube", 800, 600);
+    
+	auto sceneManager = SceneManager::create(canvas->context());
+	
 	// setup assets
+	sceneManager->assets()->defaultOptions()->resizeSmoothly(true);
 	sceneManager->assets()->defaultOptions()->generateMipmaps(true);
 	sceneManager->assets()
-		->registerParser<file::PNGParser>("png")
-		->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()))
-		->queue("texture/box.png")
-		->queue("effect/Basic.effect");
-
-#ifdef DEBUG
-    sceneManager->assets()->defaultOptions()->includePaths().insert("bin/debug");
-#else 
-	sceneManager->assets()->defaultOptions()->includePaths().insert("bin/release");
-#endif
-
-    auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
-	{
-		auto root   = scene::Node::create("root");
-        auto camera	= scene::Node::create("camera");
-		
-		root->addComponent(sceneManager);
-
-		// setup camera
-        auto renderer = Renderer::create();
-		renderer->backgroundColor(0x7F7F7FFF);
-        camera->addComponent(renderer);
-		camera->addComponent(Transform::create());
-		camera->component<Transform>()->transform()
-			->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 3.f));
-		camera->addComponent(PerspectiveCamera::create(.785f, 800.f / 600.f, .1f, 1000.f));
-        root->addChild(camera);
-
-		// setup mesh
-		mesh->addComponent(Transform::create());
-		mesh->addComponent(Surface::create(
-			assets->geometry("cube"),
-			data::Provider::create()
-				->set("material.diffuseColor",	Vector4::create(0.f, 0.f, 1.f, 1.f))
-				->set("material.diffuseMap",	assets->texture("texture/box.png")),
-			assets->effect("effect/Basic.effect")
-		));
-		root->addChild(mesh);
-	});
-
+    ->registerParser<file::PNGParser>("png")
+    ->queue(TEXTURE_FILENAME)
+    ->queue("effect/Basic.effect");
+    
+	sceneManager->assets()->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()));
+    
+	auto root = scene::Node::create("root")
+    ->addComponent(sceneManager);
+    
+	auto mesh = scene::Node::create("mesh")
+    ->addComponent(Transform::create());
+    
+	auto camera = scene::Node::create("camera")
+    ->addComponent(Renderer::create(0x7f7f7fff))
+    ->addComponent(Transform::create(
+                                     Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 3.f))
+                                     ))
+    ->addComponent(PerspectiveCamera::create(800.f / 600.f, (float)PI * 0.25f, .1f, 1000.f));
+	root->addChild(camera);
+    
+	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
+                                                         {
+                                                             auto cubeGeometry = geometry::CubeGeometry::create(sceneManager->assets()->context());
+                                                             
+                                                             assets->geometry("cubeGeometry", cubeGeometry);
+                                                             
+                                                             mesh->addComponent(Surface::create(
+                                                                                                assets->geometry("cubeGeometry"),
+                                                                                                material::BasicMaterial::create()->diffuseMap(assets->texture(TEXTURE_FILENAME)),
+                                                                                                assets->effect("effect/Basic.effect")
+                                                                                                ));
+                                                             
+                                                             root->addChild(mesh);
+                                                         });
+    
+	auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
+                                              {
+                                                  camera->component<PerspectiveCamera>()->aspectRatio((float)w / (float)h);
+                                              });
+    
+	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, float deltaTime)
+                                                    {
+                                                        mesh->component<Transform>()->matrix()->appendRotationY(0.001f * deltaTime);
+                                                        
+                                                        sceneManager->nextFrame();
+                                                    });
+    
 	sceneManager->assets()->load();
-/*
-	while (!glfwWindowShouldClose(window))
-	{
-		mesh->component<Transform>()->transform()->prependRotationY(.01f);
-
-		sceneManager->nextFrame();
-
-		glfwSwapBuffers(window);
-		glfwPollEvents();
-	}
-
-	glfwDestroyWindow(window);
-	glfwTerminate();*/
-
-	exit(EXIT_SUCCESS);
+	canvas->run();
+    
+	return 0;
 }
+
+
