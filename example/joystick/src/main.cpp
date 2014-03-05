@@ -85,13 +85,25 @@ int main(int argc, char** argv)
 				->addComponent(Transform::create());
 
 			mesh->addComponent(Surface::create(
-				geometry::CubeGeometry::create(sceneManager->assets()->context()),
-				material::BasicMaterial::create()->diffuseColor(math::Vector4::create(float(rand()) / float(RAND_MAX), float(rand()) / float(RAND_MAX), float(rand()) / float(RAND_MAX))),
-				sceneManager->assets()->effect("effect/Basic.effect")
-			));
+				geometry::CubeGeometry::create(
+                    sceneManager->assets()->context()),
+				    material::BasicMaterial::create()->diffuseColor(math::Vector4::create(
+                        float(rand()) / float(RAND_MAX), 
+                        float(rand()) / float(RAND_MAX), 
+                        float(rand()) / float(RAND_MAX))),
+				    sceneManager->assets()->effect("effect/Basic.effect")
+                )
+            );
 				
 			joystickToCube[joystick] = mesh;
-			joystickToButtonDownSlot[joystick] = joystick->joystickButtonDown()->connect(std::bind(&joystickButtonDownHandler, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+			joystickToButtonDownSlot[joystick] = joystick->joystickButtonDown()->connect(
+                std::bind(
+                    &joystickButtonDownHandler, 
+                    std::placeholders::_1, 
+                    std::placeholders::_2, 
+                    std::placeholders::_3
+                )
+            );
 		
 			root->addChild(mesh);
 		});
