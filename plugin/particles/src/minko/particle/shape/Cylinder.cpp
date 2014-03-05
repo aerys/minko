@@ -26,11 +26,13 @@ using namespace minko::particle::shape;
 
 Cylinder::Cylinder(float	height,
 				   float	radius,
-		   		   float 	innerRadius)
-	: _height (height),
+		   		   float 	innerRadius): 
+      EmitterShape(),
+      _height (height),
 	  _radius (radius),
 	  _innerRadius (innerRadius)
-{}
+{
+}
 
 void
 Cylinder::initPosition(ParticleData& particle) const

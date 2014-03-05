@@ -34,23 +34,24 @@ namespace minko
                 public Modifier1<float>
 			{
 			public:
-				typedef std::shared_ptr<StartRotation>	Ptr;
+				typedef std::shared_ptr<StartRotation>	            Ptr;
+
+            private:
+                typedef std::shared_ptr<sampler::Sampler<float>>    SamplerPtr;
 
 			public:
 				static
 				Ptr
 				create(SamplerPtr x)
 				{
-					Ptr modifier = std::shared_ptr<StartRotation>(new StartRotation(x));
+					Ptr ptr = std::shared_ptr<StartRotation>(new StartRotation(x));
 
-					return modifier;
+					return ptr;
 				};
 
-				virtual
 				void
 				initialize(ParticleData&, float) const;
 
-				virtual
 				unsigned int
 				getNeededComponents() const;
 

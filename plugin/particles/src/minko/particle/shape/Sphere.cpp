@@ -25,10 +25,12 @@ using namespace minko::particle;
 using namespace minko::particle::shape;
 
 Sphere::Sphere(float	radius,
-		   	   float 	innerRadius)
-	: _radius (radius),
-	  _innerRadius (innerRadius)
-{}
+		   	   float 	innerRadius): 
+    EmitterShape(),
+    _radius (radius),
+    _innerRadius (innerRadius)
+{
+}
 	
 void
 Sphere::initPosition(ParticleData& particle) const
@@ -43,7 +45,7 @@ Sphere::initPosition(ParticleData& particle) const
 	
 	float r			= _innerRadius + sqrt(tools::rand01()) * (_radius - _innerRadius);
 	
-	r = tools::rand01() > .5f ? r : -r;
+	r = tools::rand01() > 0.5f ? r : -r;
 
 	particle.x = r * sqrt1mu2 * cosTheta;
 	particle.y = r * sqrt1mu2 * sinTheta;

@@ -34,23 +34,24 @@ namespace minko
                 public Modifier1<minko::math::Vector3>
 			{
 			public:
-				typedef std::shared_ptr<StartColor>	Ptr;
+				typedef std::shared_ptr<StartColor>	                        Ptr;
+
+            private:
+                typedef std::shared_ptr<sampler::Sampler<math::Vector3>>    SamplerPtr;
 
 			public:
 				static
 				Ptr
 				create(SamplerPtr x)
 				{
-					Ptr modifier = std::shared_ptr<StartColor>(new StartColor(x));
+					Ptr ptr = std::shared_ptr<StartColor>(new StartColor(x));
 
-					return modifier;
+					return ptr;
 				};
 
-				virtual
 				void
 				initialize(ParticleData&, float) const;
 
-				virtual
 				unsigned int
 				getNeededComponents() const;
 

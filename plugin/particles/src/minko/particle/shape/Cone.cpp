@@ -27,8 +27,9 @@ using namespace minko::particle::shape;
 Cone::Cone(float	angle,
 		   float 	baseRadius,
 		   float	length, 
-		   float 	innerRadius)
-	: _angle (angle),
+		   float 	innerRadius): 
+      EmitterShape(),
+      _angle (angle),
 	  _baseRadius (baseRadius),
 	  _length (length),
 	  _innerRadius (innerRadius)

@@ -37,6 +37,7 @@ namespace minko
 				typedef std::shared_ptr<StartSprite>                Ptr;
 
             private:
+                typedef std::shared_ptr<sampler::Sampler<float>>    SamplerPtr;
                 typedef std::shared_ptr<data::ParticlesProvider>    ParticlesProviderPtr;
                 typedef std::shared_ptr<render::AbstractTexture>    AbsTexturePtr;
 
@@ -58,19 +59,15 @@ namespace minko
 					return ptr;
 				};
 
-				virtual
 				void
 				initialize(ParticleData&, float time) const;
 
-				virtual
 				unsigned int
 				getNeededComponents() const;
 
-				virtual
 				void
 				setProperties(ParticlesProviderPtr) const;
 				
-				virtual
 				void
 				unsetProperties(ParticlesProviderPtr) const;
 			

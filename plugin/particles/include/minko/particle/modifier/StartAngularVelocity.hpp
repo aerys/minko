@@ -49,11 +49,9 @@ namespace minko
 					return ptr;
 				};
 
-				virtual
 				void
 				initialize(ParticleData&, float time) const;
 
-				virtual
 				unsigned int
 				getNeededComponents() const;
 			

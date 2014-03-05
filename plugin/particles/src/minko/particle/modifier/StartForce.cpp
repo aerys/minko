@@ -29,8 +29,9 @@ using namespace minko::particle::modifier;
 
 StartForce::StartForce(Sampler<float>::Ptr fx,
 					   Sampler<float>::Ptr fy,
-					   Sampler<float>::Ptr fz)
-	: Modifier3<float> (fx, fy, fz)
+					   Sampler<float>::Ptr fz): 
+    IParticleInitializer(),
+    Modifier3<float> (fx, fy, fz)
 {
 }
 

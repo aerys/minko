@@ -24,8 +24,11 @@ using namespace minko;
 using namespace minko::particle;
 using namespace minko::particle::shape;
 
-Point::Point()
-{}
+Point::Point():
+      EmitterShape()
+{
+
+}
 	
 void
 Point::initPosition(ParticleData& particle) const

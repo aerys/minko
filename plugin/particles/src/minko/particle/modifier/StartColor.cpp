@@ -27,8 +27,9 @@ using namespace minko;
 using namespace minko::particle;
 using namespace minko::particle::modifier;
 
-StartColor::StartColor(SamplerPtr color)
-	: Modifier1<math::Vector3> (color)
+StartColor::StartColor(SamplerPtr color): 
+    IParticleInitializer(),
+    Modifier1<math::Vector3> (color)
 {
 }
 

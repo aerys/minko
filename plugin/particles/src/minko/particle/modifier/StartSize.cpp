@@ -26,8 +26,9 @@ using namespace minko;
 using namespace minko::particle;
 using namespace minko::particle::modifier;
 
-StartSize::StartSize(SamplerPtr size)
-	: Modifier1<float> (size)
+StartSize::StartSize(SamplerPtr size): 
+    IParticleInitializer(),
+    Modifier1<float> (size)
 {
 }
 
