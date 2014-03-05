@@ -75,61 +75,59 @@ namespace minko
 			};
 
 		private:
-			SurfacePtr									_surface;
-			GeometryPtr									_geometry;
-			ParticlesProviderPtr						_material;
-			EffectPtr									_effect;
+			SurfacePtr									                _surface;
+			GeometryPtr									                _geometry;
+			ParticlesProviderPtr						                _material;
+			EffectPtr									                _effect;
 
-			TransformPtr								_toWorld;
+			TransformPtr								                _toWorld;
 
-			unsigned int 								_countLimit;
-			unsigned int								_maxCount;
-			unsigned int								_liveCount;
-			unsigned int								_previousLiveCount;
-			std::vector<IInitializerPtr> 				_initializers;
-			std::vector<IUpdaterPtr> 					_updaters;
-			std::vector<particle::ParticleData>			_particles;
-			std::vector<unsigned int>					_particleOrder;
-			std::vector<float>							_particleDistanceToCamera;
+			unsigned int 								                _countLimit;
+			unsigned int								                _maxCount;
+			unsigned int								                _liveCount;
+			unsigned int								                _previousLiveCount;
+			std::vector<IInitializerPtr> 				                _initializers;
+			std::vector<IUpdaterPtr> 					                _updaters;
+			std::vector<particle::ParticleData>			                _particles;
+			std::vector<unsigned int>					                _particleOrder;
+			std::vector<float>							                _particleDistanceToCamera;
 
-			bool										_isInWorldSpace;
-			float 										_localToWorld[16];
-			bool										_isZSorted;
-			float 										_cameraCoords[3];
-			ParticleDistanceToCameraComparison			_comparisonObject;
-			bool										_useOldPosition;
+			bool										                _isInWorldSpace;
+			float 										                _localToWorld[16];
+			bool										                _isZSorted;
+			float 										                _cameraCoords[3];
+			ParticleDistanceToCameraComparison			                _comparisonObject;
+			bool										                _useOldPosition;
 
-			float										_rate;
-			FloatSamplerPtr								_lifetime;
-			ShapePtr									_shape;
-			particle::StartDirection					_startDirection;
-			FloatSamplerPtr 							_startVelocity;
+			float										                _rate;
+			FloatSamplerPtr								                _lifetime;
+			ShapePtr									                _shape;
+			particle::StartDirection					                _startDirection;
+			FloatSamplerPtr 							                _startVelocity;
 
-			float										_createTimer;
+			float										                _createTimer;
 
-			int											_format;
+			int											                _format;
 
-			float										_updateStep;
-			bool										_playing;
-			bool										_emitting;
-			clock_t										_previousClock;
-			float										_time;
+			float										                _updateStep;
+			bool										                _playing;
+			bool										                _emitting;
+			float										                _time;
 
-			Signal<std::shared_ptr<SceneManager>>::Slot	_frameEndSlot;
-			Signal<AbsCompPtr, NodePtr>::Slot			_targetAddedSlot;
-			Signal<AbsCompPtr, NodePtr>::Slot			_targetRemovedSlot;
-			Signal<NodePtr, NodePtr, NodePtr>::Slot		_addedSlot;
-			Signal<NodePtr, NodePtr, NodePtr>::Slot		_removedSlot;
-			Signal<NodePtr, NodePtr, NodePtr>::Slot		_rootDescendantAddedSlot;
-			Signal<NodePtr, NodePtr, NodePtr>::Slot		_rootDescendantRemovedSlot;
-			Signal<NodePtr, NodePtr, AbsCompPtr>::Slot	_componentAddedSlot;
-			Signal<NodePtr, NodePtr, AbsCompPtr>::Slot	_componentRemovedSlot;
+			Signal<std::shared_ptr<SceneManager>, float, float>::Slot	_frameBeginSlot;
+			Signal<AbsCompPtr, NodePtr>::Slot			                _targetAddedSlot;
+			Signal<AbsCompPtr, NodePtr>::Slot			                _targetRemovedSlot;
+			Signal<NodePtr, NodePtr, NodePtr>::Slot		                _addedSlot;
+			Signal<NodePtr, NodePtr, NodePtr>::Slot		                _removedSlot;
+			Signal<NodePtr, NodePtr, NodePtr>::Slot		                _rootDescendantAddedSlot;
+			Signal<NodePtr, NodePtr, NodePtr>::Slot		                _rootDescendantRemovedSlot;
+			Signal<NodePtr, NodePtr, AbsCompPtr>::Slot	                _componentAddedSlot;
+			Signal<NodePtr, NodePtr, AbsCompPtr>::Slot	                _componentRemovedSlot;
 
 		public:
 			static
 			Ptr
-			create(AbstractContextPtr		context,
-				   AssetLibraryPtr			assets,
+			create(AssetLibraryPtr			assets,
 				   float					rate,
 				   FloatSamplerPtr			lifetime,
 				   ShapePtr					shape,
@@ -137,7 +135,6 @@ namespace minko
 				   FloatSamplerPtr 			startVelocity)
 			{
 				Ptr ptr = std::shared_ptr<ParticleSystem> (new ParticleSystem(
-					context,
 					assets,
 					rate,
 					lifetime,
@@ -208,12 +205,13 @@ namespace minko
 			void
 			playing(bool value)
 			{
-				if (value != _playing)
-				{
-					_playing = value;
-					if (_playing)
-						_previousClock = clock();
-				}
+                _playing = true;
+				//if (value != _playing)
+				//{
+				//	_playing = value;
+				//	if (_playing)
+				//		_previousClock = clock();
+				//}
 			}
 
 			inline
@@ -409,8 +407,7 @@ namespace minko
 			updateVertexBuffer();
 
 		protected:
-			ParticleSystem(AbstractContextPtr		context,
-						   AssetLibraryPtr			assets,
+			ParticleSystem(AssetLibraryPtr			assets,
 						   float					rate,
 						   FloatSamplerPtr			lifetime,
 						   ShapePtr					shape,
@@ -430,7 +427,7 @@ namespace minko
 			findSceneManager();
 
 			void
-			frameEndHandler(std::shared_ptr<SceneManager> sceneManager);
+			frameBeginHandler(std::shared_ptr<SceneManager>, float, float);
 		};
 	}
 }

@@ -52,9 +52,11 @@ Canvas::Canvas(const std::string& name, const uint width, const uint height, boo
 	_chromeless(chromeless),
 	_data(data::Provider::create()),
 	_active(false),
+    _previousTime(std::chrono::high_resolution_clock::now()),
+    _startTime(std::chrono::high_resolution_clock::now()),
 	_framerate(0.f),
 	_desiredFramerate(60.f),
-	_enterFrame(Signal<Canvas::Ptr, uint, float>::create()),
+	_enterFrame(Signal<Canvas::Ptr, float, float>::create()),
 	_resized(Signal<AbstractCanvas::Ptr, uint, uint>::create()),
 	_joystickAdded(Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::create()),
 	_joystickRemoved(Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::create())
@@ -461,13 +463,11 @@ Canvas::step()
 	for (auto worker : _activeWorkers)
 		worker->update();
 #endif
-    auto time = std::chrono::high_resolution_clock::now();
-    auto frameDuration = std::chrono::duration_cast<std::chrono::nanoseconds>(time - _previousTime).count();
+    auto time           = std::chrono::high_resolution_clock::now();
+    auto relativeTime   = 1e-6f * std::chrono::duration_cast<std::chrono::nanoseconds>(time - _startTime).count(); // in milliseconds
+    auto frameDuration  = 1e-6f * std::chrono::duration_cast<std::chrono::nanoseconds>(time - _previousTime).count(); // in milliseconds
 
-    // we convert frameTime from nanoseconds to milliseconds
-    float frameTime = frameDuration / 1000000.f;
-
-    _enterFrame->execute(shared_from_this(), (uint)time.time_since_epoch().count(), frameTime);
+    _enterFrame->execute(shared_from_this(), relativeTime, frameDuration);
 
     _previousTime = time;
 
@@ -481,12 +481,12 @@ Canvas::step()
 #endif
 
     // framerate in seconds
-    _framerate = 1000.f / frameTime;
+    _framerate = 1000.f / frameDuration;
 
 #if !defined(EMSCRIPTEN)
     if (_framerate > _desiredFramerate)
     {
-        SDL_Delay((uint) ((1000.f / _desiredFramerate) - frameTime));
+        SDL_Delay((uint) ((1000.f / _desiredFramerate) - frameDuration));
 
         _framerate = _desiredFramerate;
     }

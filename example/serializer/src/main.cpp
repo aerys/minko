@@ -34,7 +34,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/deserialize/TypeDeserializer.hpp"
 #include "minko/geometry/SphereGeometry.hpp"
 
-std::string MODEL_FILENAME = "model/primitives/primitives.scene";
+//std::string MODEL_FILENAME = "model/primitives/primitives.scene";
+std::string MODEL_FILENAME = "model/dummy/NewScene.scene";
 
 //#define SERIALIZE // comment to test deserialization
 
@@ -194,7 +195,7 @@ int main(int argc, char** argv)
 	});
 
 	
-	auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr canvas, uint time, uint deltaTime)
+	auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr canvas, float time, float deltaTime)
 	{
 		yaw += cameraRotationYSpeed;
 		cameraRotationYSpeed *= 0.9f;
@@ -215,7 +216,7 @@ int main(int argc, char** argv)
 			)
 		);
 
-		sceneManager->nextFrame();
+		sceneManager->nextFrame(time, deltaTime);
 	});
 
 	sceneManager->assets()->load();

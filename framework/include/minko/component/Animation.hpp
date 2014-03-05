@@ -87,10 +87,10 @@ namespace minko
 
 			inline /*virtual*/
 			void
-			frameBeginHandler(std::shared_ptr<SceneManager> manager)
+			frameBeginHandler(std::shared_ptr<SceneManager> manager, float time, float deltaTime)
 			{
 				if (_master == nullptr)
-					AbstractAnimation::frameBeginHandler(manager);
+					AbstractAnimation::frameBeginHandler(manager, time, deltaTime);
 			}
 
 			inline /*virtual*/
