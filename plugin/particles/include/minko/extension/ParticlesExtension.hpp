@@ -19,11 +19,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #pragma once
 
+#include "msgpack.hpp"
+
 #include "minko/Common.hpp"
 #include "minko/SerializerCommon.hpp"
 #include "minko/ParticlesCommon.hpp"
 #include "minko/extension/AbstractExtension.hpp"
-#include "msgpack.hpp"
+#include "minko/serialize/ParticlesTypes.hpp"
 
 namespace minko
 {
@@ -38,15 +40,15 @@ namespace minko
             typedef std::shared_ptr<component::AbstractComponent>                                   AbsComponentPtr;
             typedef std::shared_ptr<file::AssetLibrary>                                             AssetLibraryPtr;
             typedef std::shared_ptr<file::Dependency>                                               DependencyPtr;
-
-            typedef msgpack::type::tuple<uint, std::vector<float>, std::vector<uint>>               SerializedSampler;
-            typedef msgpack::type::tuple<uint, std::vector<float>>                                  SerializedShape;
-            typedef msgpack::type::tuple<uint, std::vector<uint>, std::vector<SerializedSampler>>   SerializedModifier;
+            typedef std::shared_ptr<render::AbstractTexture>                                        AbsTexturePtr;
 
             typedef std::shared_ptr<particle::modifier::IParticleModifier>                          ParticleModifierPtr;
             typedef std::shared_ptr<particle::shape::EmitterShape>                                  EmitterShapePtr;
+            typedef std::shared_ptr<particle::sampler::Sampler<float>>                              FloatSamplerPtr;
+            typedef std::shared_ptr<particle::sampler::Sampler<math::Vector3>>                      ColorSamplerPtr;
 
-        public:
+            typedef msgpack::type::tuple<uint, std::string>                                         IdAndString;
+       public:
             inline static
             Ptr
             initialize()
@@ -69,11 +71,115 @@ namespace minko
 
             static
             EmitterShapePtr
-            deserializeEmitterShape(const SerializedShape&);
+            deserializeEmitterShape(serialize::EmitterShapeId, const std::string&);
+
+            static 
+            EmitterShapePtr
+            deserializeConeShape(const std::string&);
+
+            static 
+            EmitterShapePtr
+            deserializeCylinderShape(const std::string&);
+
+            static 
+            EmitterShapePtr
+            deserializePointShape(const std::string&);
+
+            static 
+            EmitterShapePtr
+            deserializeSphereShape(const std::string&);
+
+            static 
+            EmitterShapePtr
+            deserializeBoxShape(const std::string&);
+
+            static
+            FloatSamplerPtr
+            deserializeFloatSampler(serialize::SamplerId, const std::string&);
+
+            static
+            ColorSamplerPtr
+            deserializeColorSampler(serialize::SamplerId, const std::string&);
+
+            static
+            FloatSamplerPtr
+            deserializeConstantNumberSampler(const std::string&);
+
+            static
+            FloatSamplerPtr
+            deserializeLinearNumberSampler(const std::string&);
+
+            static
+            FloatSamplerPtr
+            deserializeRandomNumberSampler(const std::string&);
+
+            static
+            ColorSamplerPtr
+            deserializeConstantColorSampler(const std::string&);
+
+            static
+            ColorSamplerPtr
+            deserializeLinearColorSampler(const std::string&);
+
+            static
+            ColorSamplerPtr
+            deserializeRandomColorSampler(const std::string&);
 
             static
             ParticleModifierPtr
-            deserializeParticleModifier(const SerializedModifier&);
+            deserializeParticleModifier(serialize::ModifierId, const std::string&, AbsTexturePtr);
+
+            static
+            ParticleModifierPtr
+            deserializeStartColorInitializer(const std::string&);
+
+            static
+            ParticleModifierPtr
+            deserializeStartForceInitializer(const std::string&);
+
+            static
+            ParticleModifierPtr
+            deserializeStartRotationInitializer(const std::string&);
+
+            static
+            ParticleModifierPtr
+            deserializeStartSizeInitializer(const std::string&);
+
+            static
+            ParticleModifierPtr
+            deserializeStartSpriteInitializer(const std::string&, AbsTexturePtr);
+
+            static
+            ParticleModifierPtr
+            deserializeStartVelocityInitializer(const std::string&);
+
+            static
+            ParticleModifierPtr
+            deserializeStartAngularVelocityInitializer(const std::string&);
+
+            static
+            ParticleModifierPtr
+            deserializeColorBySpeedUpdater(const std::string&);
+
+            static
+            ParticleModifierPtr
+            deserializeColorOverTimeUpdater(const std::string&);
+
+            static
+            ParticleModifierPtr
+            deserializeForceOverTimeUpdater(const std::string&);
+
+            static
+            ParticleModifierPtr
+            deserializeSizeBySpeedUpdater(const std::string&);
+
+            static
+            ParticleModifierPtr
+            deserializeSizeOverTimeUpdater(const std::string&);
+
+            static
+            ParticleModifierPtr
+            deserializeVelocityOverTimeUpdater(const std::string&);
         };
     }
 }
