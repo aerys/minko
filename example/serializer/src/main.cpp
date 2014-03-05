@@ -21,6 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/MinkoPNG.hpp"
 #include "minko/MinkoSDL.hpp"
 #include "minko/MinkoBullet.hpp"
+#include "minko/MinkoParticles.hpp"
 #include "minko/MinkoSerializer.hpp"
 #include "minko/Any.hpp"
 #include "minko/math/Vector4.hpp"
@@ -65,7 +66,7 @@ int main(int argc, char** argv)
 	auto sceneManager	= SceneManager::create(canvas->context());
 
 	extension::SerializerExtension::activeExtension<extension::PhysicsExtension>();
-
+    extension::SerializerExtension::activeExtension<extension::ParticlesExtension>();
 
 	// setup assets
 	sceneManager->assets()->load("effect/Basic.effect")->load("effect/Phong.effect");
