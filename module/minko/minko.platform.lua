@@ -22,7 +22,7 @@ minko.platform.supports = function(target)
 			return true
 		end
 	elseif target == "osx64" then
-		if os.is("macosx") then
+		if os.is("macosx") and string.startswith(_ACTION, "gmake") then
 			return true
 		end
 	elseif target == "ios" then
