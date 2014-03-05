@@ -32,14 +32,5 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 			"-std=gnu89"
 		}
 
-	configuration { "debug"}
-		defines { "DEBUG" }
-		flags { "Symbols" }
-		targetdir "bin/debug"
-
-	configuration { "release" }
-		defines { "NDEBUG" }
-		targetdir "bin/release"
-
 	configuration { "linux" }
 		defines {}
