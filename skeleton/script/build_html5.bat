@@ -1,7 +1,7 @@
 @echo off
 @setlocal enabledelayedexpansion
 
-chdir ..\..\..
+chdir ..
 
 if not defined EMSCRIPTEN (
 	echo Environment variable EMSCRIPTEN is not defined.
@@ -16,6 +16,6 @@ if not defined MINKO_HOME (
 )
 
 call "%EMSCRIPTEN%\..\..\emsdk_add_path.bat"
-tool\win\bin\premake5.exe --no-test gmake
+"%MINKO_HOME%\tool\win\bin\premake5.exe" gmake
 mingw32-make SHELL=cmd.exe config=html5_release verbose=1
 pause
