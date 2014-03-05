@@ -1035,15 +1035,15 @@
 
 		-- printSetting(bs, 4,"ARCHS", archs[cfg.platform or "Native"], true)
 
-		if cfg.platform:lower() == "ios" then
+		--if cfg.platform:lower() == "ios" then
 			xcode.PrintBuildSetting(4, 'SDKROOT = iphoneos;', cfg)
 			xcode.PrintBuildSetting(4, 'ARCHS = "(armv6, armv7)";', cfg)						
-		elseif cfg.platform:lower() == "osx64" then
-			xcode.PrintBuildSetting(4, 'SDKROOT = macosx;', cfg)
-			xcode.PrintBuildSetting(4, 'ARCHS = "$(NATIVE_ARCH_ACTUAL)";', cfg)						
-		else
-			error("Platform '" .. cfg.platform .. "' is not supported with Xcode solutions")
-		end
+		--elseif cfg.platform:lower() == "osx64" then
+			--xcode.PrintBuildSetting(4, 'SDKROOT = macosx;', cfg)
+			--xcode.PrintBuildSetting(4, 'ARCHS = "$(NATIVE_ARCH_ACTUAL)";', cfg)						
+		--else
+			--error("Platform '" .. cfg.platform .. "' is not supported with Xcode solutions")
+		--end
 		
 		local targetdir = path.getdirectory(cfg.buildtarget.relpath)
 

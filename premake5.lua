@@ -108,6 +108,8 @@ solution "minko"
 		include 'example/oculus'
 		include 'example/http'
 		include 'example/joystick'
+		include 'example/iphone-cube'
+		-- include 'example-template-ios'
 	end
 
 	-- test
