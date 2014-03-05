@@ -58,7 +58,6 @@ int main(int argc, char** argv)
 	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
 	{
         auto particles = ParticleSystem::create(
-            assets->context(),
             assets,
             100.0f,
             particle::sampler::Constant<float>::create(2.0f),
@@ -107,9 +106,9 @@ int main(int argc, char** argv)
 		camera->component<PerspectiveCamera>()->aspectRatio((float)w / (float)h);
 	});
     
-	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, float deltaTime)
+	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float deltaTime)
 	{
-		sceneManager->nextFrame();
+		sceneManager->nextFrame(time, deltaTime);
 	});
 
 	sceneManager->assets()->load();

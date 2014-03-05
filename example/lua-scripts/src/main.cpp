@@ -61,9 +61,9 @@ int main(int argc, char** argv)
 
 	sceneManager->assets()->load();
 
-	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, float deltaTime)
+	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float deltaTime)
 	{
-		sceneManager->nextFrame();
+		sceneManager->nextFrame(time, deltaTime);
 	});
 
 	canvas->run();

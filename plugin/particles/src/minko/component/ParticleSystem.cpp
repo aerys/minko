@@ -47,8 +47,7 @@ using namespace minko::particle;
 
 #define EPSILON 0.001
 
-ParticleSystem::ParticleSystem(AbstractContextPtr	context,
-							   AssetLibraryPtr		assets,
+ParticleSystem::ParticleSystem(AssetLibraryPtr		assets,
 							   float				rate,
 							   FloatSamplerPtr		lifetime,
 							   ShapePtr				shape,
@@ -72,9 +71,13 @@ ParticleSystem::ParticleSystem(AbstractContextPtr	context,
 	_updateStep			(0),
 	_playing			(false),
 	_emitting			(true),
-	_time				(0)
+	_time				(0.0f),
+    _frameBeginSlot     (nullptr)
 {
-	_geometry	= geometry::ParticlesGeometry::create(context);
+    if (assets == nullptr)
+        throw new std::invalid_argument("assets");
+
+	_geometry	= geometry::ParticlesGeometry::create(assets->context());
 	_material	= data::ParticlesProvider::create();
 	_effect		= assets->effect("particles");
 
@@ -117,15 +120,15 @@ ParticleSystem::targetAddedHandler(AbsCompPtr	ctrl,
 
 	target->addComponent(_surface);
 
-	auto nodeCallback = [&](NodePtr, NodePtr, NodePtr) { findSceneManager(); };
+	auto nodeCallback       = [&](NodePtr, NodePtr, NodePtr) { findSceneManager(); };
 
-	_addedSlot = target->added()->connect(nodeCallback);
-	_removedSlot = target->removed()->connect(nodeCallback);
+	_addedSlot              = target->added()->connect(nodeCallback);
+	_removedSlot            = target->removed()->connect(nodeCallback);
 
-	auto componentCallback = [&](NodePtr, NodePtr, AbsCompPtr) { findSceneManager(); };
+	auto componentCallback  = [&](NodePtr, NodePtr, AbsCompPtr) { findSceneManager(); };
 
-	_componentAddedSlot = target->root()->componentAdded()->connect(componentCallback);
-	_componentRemovedSlot = target->root()->componentRemoved()->connect(componentCallback);
+	_componentAddedSlot     = target->root()->componentAdded()->connect(componentCallback);
+	_componentRemovedSlot   = target->root()->componentRemoved()->connect(componentCallback);
 }
 
 void
@@ -155,17 +158,19 @@ ParticleSystem::findSceneManager()
 	if (roots->nodes().size() > 1)
 		throw std::logic_error("ParticleSystem cannot be in two separate scenes.");
 	else if (roots->nodes().size() == 1)
-		_frameEndSlot = roots->nodes()[0]->component<SceneManager>()->frameEnd()->connect(std::bind(
-			&ParticleSystem::frameEndHandler, 
+		_frameBeginSlot = roots->nodes()[0]->component<SceneManager>()->frameBegin()->connect(std::bind(
+			&ParticleSystem::frameBeginHandler, 
             shared_from_this(), 
-            std::placeholders::_1
+            std::placeholders::_1,
+            std::placeholders::_2,
+            std::placeholders::_3
 		));
 	else
-		_frameEndSlot = nullptr;
+		_frameBeginSlot = nullptr;
 }
 
 void
-ParticleSystem::frameEndHandler(SceneManager::Ptr sceneManager)
+ParticleSystem::frameBeginHandler(SceneManager::Ptr sceneManager, float time, float deltaTime)
 {	
 	if (!_playing)
 		return;
@@ -173,9 +178,7 @@ ParticleSystem::frameEndHandler(SceneManager::Ptr sceneManager)
 	if (_isInWorldSpace)
 		_toWorld = targets()[0]->components<Transform>()[0];
 
-	clock_t now	= clock();
-	float deltaT = (float)(now - _previousClock) / CLOCKS_PER_SEC;
-	_previousClock = now;
+	const float deltaT = 1e-3f * deltaTime; // expects seconds
 
 	if (_updateStep == 0)
 	{
@@ -319,7 +322,7 @@ ParticleSystem::fastForward(float time, unsigned int updatesPerSecond)
 }
 
 void
-ParticleSystem::updateSystem(float	timeStep, bool emit)
+ParticleSystem::updateSystem(float timeStep, bool emit)
 {
     _material->set<float>("particles.timeStep", timeStep);
 
