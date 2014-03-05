@@ -321,9 +321,7 @@ ParticleSystem::fastForward(float time, unsigned int updatesPerSecond)
 void
 ParticleSystem::updateSystem(float	timeStep, bool emit)
 {
-    std::cout << "ParticleSystem::updateSystem -> abt to write timestep" << std::endl;
     _material->set<float>("particles.timeStep", timeStep);
-    std::cout << "ParticleSystem::updateSystem -> done writing timestep" << std::endl;
 
 	if (emit && _createTimer < _rate)
 		_createTimer += timeStep;

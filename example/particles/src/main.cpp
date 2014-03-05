@@ -64,7 +64,7 @@ int main(int argc, char** argv)
             particle::sampler::Constant<float>::create(2.0f),
             particle::shape::Sphere::create(0.5f),
             particle::StartDirection::UP,
-            particle::sampler::Constant<float>::create(0.0f)
+            particle::sampler::Constant<float>::create(0.00f)
         );  
         
         auto color = Vector3::create(1.0f, 0.0f, 0.0f);
@@ -85,7 +85,7 @@ int main(int argc, char** argv)
         ))
         //->add(particle::modifier::ColorOverTime::create(particle::sampler::LinearlyInterpolatedValue<math::Vector3>::create(*startcolor1, *endcolor1)))
         ->add(particle::modifier::ColorBySpeed::create(particle::sampler::LinearlyInterpolatedValue<math::Vector3>::create(*startcolor1, *endcolor1, 0.0f, 1.0f)))
-        ->add(particle::modifier::SizeBySpeed::create(particle::sampler::LinearlyInterpolatedValue<float>::create(3.0f, 1.0f, 0.0f, 1.0f)))
+        ->add(particle::modifier::SizeBySpeed::create(particle::sampler::LinearlyInterpolatedValue<float>::create(0.05f, 2.0f)))
         /*->add(particle::modifier::StartRotation::create(particle::sampler::Constant<float>::create(PI * 0.25f)))
         ->add(particle::modifier::StartColor::create(
             particle::sampler::Constant<math::Vector3>::create(*color)
