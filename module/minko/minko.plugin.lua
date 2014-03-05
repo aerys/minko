@@ -48,8 +48,6 @@ minko.plugin.links = function(names)
 				links { "minko-plugin-" .. name }
 
 				if MINKO_SDK_DIST then
-				  print(minko.plugin.path(name))
-				  print(platform)
 					libdirs { minko.plugin.path(name) .. "/bin/" .. platform .. "/" .. cfg }
 				end
 			end
