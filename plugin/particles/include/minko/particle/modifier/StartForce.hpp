@@ -34,7 +34,10 @@ namespace minko
                 public Modifier3<float>
 			{
 			public:
-				typedef std::shared_ptr<StartForce>	Ptr;
+				typedef std::shared_ptr<StartForce>	                Ptr;
+
+            private:
+                typedef std::shared_ptr<sampler::Sampler<float>>    SamplerPtr;
 
 			public:
 				static
@@ -48,11 +51,9 @@ namespace minko
 					return modifier;
 				};
 
-				virtual
 				void
 				initialize(ParticleData&, float) const;
 
-				virtual
 				unsigned int
 				getNeededComponents() const;
 			

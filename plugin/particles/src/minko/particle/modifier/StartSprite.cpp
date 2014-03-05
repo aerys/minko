@@ -32,7 +32,8 @@ using namespace minko::particle::modifier;
 StartSprite::StartSprite(SamplerPtr                     spriteIndex,
                          render::AbstractTexture::Ptr   spritesheet,
                          unsigned int                   numCols,
-                         unsigned int                   numRows): 
+                         unsigned int                   numRows):
+    IParticleInitializer(), 
     Modifier1<float> (spriteIndex),
     _numCols(numCols),
     _numRows(numRows),

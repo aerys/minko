@@ -29,10 +29,15 @@ namespace minko
 	{
 		namespace modifier
 		{
-			class ForceOverTime : public IParticleUpdater, public Modifier3<float>
+			class ForceOverTime : 
+                public IParticleUpdater, 
+                public Modifier3<float>
 			{
 			public:
-				typedef std::shared_ptr<ForceOverTime>	Ptr;
+				typedef std::shared_ptr<ForceOverTime>	            Ptr;
+
+            private:
+                typedef std::shared_ptr<sampler::Sampler<float>>    SamplerPtr;
 
 			public:
 				static
@@ -41,17 +46,14 @@ namespace minko
 					   SamplerPtr fy,
 					   SamplerPtr fz)
 				{
-					Ptr modifier = std::shared_ptr<ForceOverTime>(new ForceOverTime(fx, fy, fz));
+					Ptr ptr = std::shared_ptr<ForceOverTime>(new ForceOverTime(fx, fy, fz));
 
-					return modifier;
+					return ptr;
 				};
 
-				virtual
 				void
-				update(std::vector<ParticleData>& 	particles,
-					   float						timeStep) const;
+				update(std::vector<ParticleData>&, float) const;
 
-				virtual
 				unsigned int
 				getNeededComponents() const;
 

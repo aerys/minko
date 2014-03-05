@@ -29,27 +29,29 @@ namespace minko
 	{
 		namespace modifier
 		{
-			class StartSize : public IParticleInitializer, public Modifier1<float>
+			class StartSize : 
+                public IParticleInitializer, 
+                public Modifier1<float>
 			{
 			public:
-				typedef std::shared_ptr<StartSize>	Ptr;
+				typedef std::shared_ptr<StartSize>	                Ptr;
+
+            private:
+                typedef std::shared_ptr<sampler::Sampler<float>>    SamplerPtr;
 
 			public:
 				static
 				Ptr
 				create(SamplerPtr x)
 				{
-					Ptr modifier = std::shared_ptr<StartSize>(new StartSize(x));
+					Ptr ptr = std::shared_ptr<StartSize>(new StartSize(x));
 
-					return modifier;
+					return ptr;
 				};
 
-				virtual
 				void
-				initialize(ParticleData& 	particle,
-						   float			time) const;
+				initialize(ParticleData&, float) const;
 
-				virtual
 				unsigned int
 				getNeededComponents() const;
 			

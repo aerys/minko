@@ -34,7 +34,10 @@ namespace minko
                 public Modifier3<float>
 			{
 			public:
-				typedef std::shared_ptr<VelocityOverTime>	Ptr;
+				typedef std::shared_ptr<VelocityOverTime>	        Ptr;
+
+            private:
+                typedef std::shared_ptr<sampler::Sampler<float>>    SamplerPtr;
 
 			public:
 				inline static

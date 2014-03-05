@@ -27,6 +27,7 @@ using namespace minko::particle;
 using namespace minko::particle::modifier;
 
 StartAngularVelocity::StartAngularVelocity(SamplerPtr w): 
+    IParticleInitializer(),
     Modifier1<float> (w)
 {
 }
@@ -35,9 +36,8 @@ void
 StartAngularVelocity::initialize(ParticleData& 	particle,
 	    			  	 		 float			time) const 
 {
-	particle.startAngularVelocity = _x->value();
-
-	particle.rotation += particle.startAngularVelocity * time;
+	particle.startAngularVelocity   = _x->value();
+	particle.rotation               += particle.startAngularVelocity * time;
 }
 
 unsigned int

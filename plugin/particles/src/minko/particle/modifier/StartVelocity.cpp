@@ -28,22 +28,23 @@ using namespace minko::particle::modifier;
 
 StartVelocity::StartVelocity(SamplerPtr vx,
 						     SamplerPtr vy,
-						     SamplerPtr vz)
-	: Modifier3<float> (vx, vy, vz)
-	{
-	}
+						     SamplerPtr vz): 
+    IParticleInitializer(),
+    Modifier3<float> (vx, vy, vz)
+{
+}
 
 void
 StartVelocity::initialize(ParticleData& 	particle,
 	    			  	  float				time) const 
 {
-	particle.startvx += _x->value();
-	particle.startvy += _y->value();
-	particle.startvz += _z->value();
+	particle.startvx    += _x->value();
+	particle.startvy    += _y->value();
+	particle.startvz    += _z->value();
 
-	particle.x += particle.startvx * time;
-	particle.y += particle.startvy * time;
-	particle.z += particle.startvz * time;
+	particle.x          += particle.startvx * time;
+	particle.y          += particle.startvy * time;
+	particle.z          += particle.startvz * time;
 }
 
 unsigned int

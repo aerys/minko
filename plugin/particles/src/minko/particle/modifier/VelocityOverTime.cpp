@@ -29,6 +29,7 @@ using namespace minko::particle::modifier;
 VelocityOverTime::VelocityOverTime(SamplerPtr vx,
 			     				   SamplerPtr vy,
 			     				   SamplerPtr vz): 
+    IParticleUpdater(),
     Modifier3<float> (vx, vy, vz)
 {
 

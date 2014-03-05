@@ -26,8 +26,9 @@ using namespace minko;
 using namespace minko::particle;
 using namespace minko::particle::modifier;
 
-StartRotation::StartRotation(SamplerPtr angle)
-	: Modifier1<float> (angle)
+StartRotation::StartRotation(SamplerPtr angle): 
+    IParticleInitializer(),
+    Modifier1<float> (angle)
 {
 }
 

@@ -32,6 +32,8 @@ namespace minko
 			{
 			public:
 				typedef std::shared_ptr<Modifier1>              Ptr;
+
+            private:
 				typedef std::shared_ptr<sampler::Sampler<T>>    SamplerPtr;
 				
 			protected:

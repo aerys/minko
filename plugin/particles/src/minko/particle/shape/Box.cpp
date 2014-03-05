@@ -27,8 +27,9 @@ using namespace minko::particle::shape;
 Box::Box(float	width,
 		 float 	height,
 		 float	length, 
-		 bool 	limitToSides)
-	: _width (width),
+		 bool 	limitToSides): 
+      EmitterShape(),
+      _width (width),
 	  _height (height),
 	  _length (length),
 	  _limitToSides (limitToSides)
