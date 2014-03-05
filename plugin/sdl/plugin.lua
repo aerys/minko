@@ -57,25 +57,8 @@ function minko.plugin.sdl:enable()
 			minko.action.link(minko.plugin.path("sdl") .. "/lib/sdl/lib/osx64/*.framework")
 		}
 
-        configuration { "ios" }
-		files {
-		  "SDL2/**.cpp"
-		}
-		includedirs {
-		  "SDL2/**.hpp"
- 		}
-                links {
-                        "m",
-                        "SDL2.framework",
-                        "OpenGLES.framework",
-                        "Foundation.framework",
-                        "UIKit.framework",
-                        "QuartzCore.framework",
-                        "CoreGraphics.framework"
-                }
-                includedirs {
-                        "../../deps/mac/include"
-                }
+	configuration { "ios" }
+		links { "SDL2" }
 end
 
 function minko.plugin.sdl:dist(pluginDistDir)
