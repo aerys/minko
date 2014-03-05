@@ -2,6 +2,7 @@
 /obj
 .vagrant
 Makefile
+*.make
 *.xcodeproj
 *.opensdf
 *.sdf
