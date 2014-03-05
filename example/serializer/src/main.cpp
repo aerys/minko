@@ -35,7 +35,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/geometry/SphereGeometry.hpp"
 
 //std::string MODEL_FILENAME = "model/primitives/primitives.scene";
-std::string MODEL_FILENAME = "model/dummy/NewScene.scene";
+std::string MODEL_FILENAME = "model/particles-final/NewScene.scene";
 
 //#define SERIALIZE // comment to test deserialization
 
@@ -70,7 +70,10 @@ int main(int argc, char** argv)
     extension::SerializerExtension::activeExtension<extension::ParticlesExtension>();
 
 	// setup assets
-	sceneManager->assets()->load("effect/Basic.effect")->load("effect/Phong.effect");
+	sceneManager->assets()
+        ->load("effect/Basic.effect")
+        ->load("effect/Phong.effect")
+        ->load("effect/Particles.effect");
 	sceneManager->assets()->defaultOptions()->generateMipmaps(true);
 	sceneManager->assets()->defaultOptions()->effect(sceneManager->assets()->effect("basic"));
 	sceneManager->assets()->material("defaultMaterial", material::BasicMaterial::create()->diffuseColor(0xFFFFFFFF));
