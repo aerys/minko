@@ -58,7 +58,11 @@ function minko.plugin.sdl:enable()
 		}
 
 	configuration { "ios" }
-		links { "SDL2-Simulator" }
+		links {
+			"SDL2-Simulator",
+			"CoreAudio.framework",
+			"AudioToolbox.framework"
+		}
 		libdirs { minko.plugin.path("sdl") .. "/lib/sdl/lib/ios" }
 end
 
