@@ -224,9 +224,7 @@ minko.project.application = function(name)
 
 		prelinkcommands {
 			minko.action.copy(minko.sdk.path("/framework/asset")),
-			minko.action.copy("asset"),
-			minko.action.copy(minko.sdk.path("/skeleton/Default-568h@2x.png")),
-			minko.action.copy(minko.sdk.path("/skeleton/Info.plist"))
+			minko.action.copy("asset")
 		}
 
 	configuration { }
