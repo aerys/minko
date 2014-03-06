@@ -3,8 +3,6 @@ include "lib/googletest"
 minko.project.application "minko-tests"
 	removeplatforms { "html5" }
 
-	kind "ConsoleApp"
-	language "C++"
 	files {
 		"src/**.hpp",
 		"src/**.cpp"

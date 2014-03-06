@@ -6,10 +6,7 @@ minko.project.solution(PROJECT_NAME)
 
 	minko.project.application(PROJECT_NAME)
 
-		language "c++"
-		kind "ConsoleApp"
-
-		files { "src/**.cpp", "src/**.hpp" }
+		files { "src/**.cpp", "src/**.hpp", "asset/**" }
 		includedirs { "src" }
 
 		-- plugin
