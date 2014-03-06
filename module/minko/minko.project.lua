@@ -3,6 +3,8 @@ minko.project = {}
 minko.project.library = function(name)
 	project(name)
 
+	language "C++"
+
 	location "."
 	includedirs { minko.sdk.path("/framework/include") }
 	
@@ -42,6 +44,8 @@ end
 minko.project.application = function(name)
 
 	minko.project.library(name)
+
+	kind "WindowedApp"
 
 	configuration { "windows32" }
 		libdirs {
