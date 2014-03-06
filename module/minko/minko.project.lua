@@ -122,7 +122,7 @@ minko.project.application = function(name)
 	configuration { "linux32" }
 		linkoptions { "-Wl,--no-as-needed" }
 		links {
-                        "minko-framework",
+			"minko-framework",
 			"GL",
 			"m"
 		}
@@ -212,6 +212,15 @@ minko.project.application = function(name)
 			"UIKit.framework",
 			"QuartzCore.framework",
 			"CoreGraphics.framework"
+		}
+
+		prelinkcommands {
+			minko.action.copy(minko.sdk.path("/framework/asset")),
+			minko.action.copy("asset"),
+		}
+
+		files {
+			"**.plist"
 		}
 
 	configuration { }

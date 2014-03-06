@@ -15,5 +15,3 @@ minko.project.application("minko-example-" .. PROJECT_NAME)
 	--minko.plugin.enable("serializer")
 	--minko.plugin.enable("particles")
 	minko.plugin.enable("png")
-
-	files { "minko-example-iphone-cube-Info.plist" }
