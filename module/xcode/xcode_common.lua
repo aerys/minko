@@ -918,7 +918,7 @@
 		-- printSetting(bs, 4,"GCC_DYNAMIC_NO_PIC", "NO")
 		-- printSetting(bs, 4,"GCC_MODEL_TUNING", "G5")
 		xcode.PrintBuildSetting(4, 'GCC_DYNAMIC_NO_PIC = NO;', cfg)
-		xcode.PrintBuildSetting(4, 'GCC_MODEL_TUNING = G5;', cfg)		
+		-- xcode.PrintBuildSetting(4, 'GCC_MODEL_TUNING = G5;', cfg)		
 
 		if tr.infoplist then
 			local fcfg = config.findfile(cfg, path.getextension(tr.infoplist.name))
@@ -1064,7 +1064,7 @@
 		end
 		
 		-- printSetting(bs, 4, "GCC_C_LANGUAGE_STANDARD" , "gnu99")
-		xcode.PrintBuildSetting(4, 'GCC_C_LANGUAGE_STANDARD = "gnu99";', cfg)
+		-- xcode.PrintBuildSetting(4, 'GCC_C_LANGUAGE_STANDARD = "gnu99";', cfg)
 
 		xcode.PrintBuildSetting(4, 'CLANG_CXX_LANGUAGE_STANDARD = "c++0x";', cfg)
 		xcode.PrintBuildSetting(4, 'CLANG_CXX_LIBRARY = "libc++";', cfg)
