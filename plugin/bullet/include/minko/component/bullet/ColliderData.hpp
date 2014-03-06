@@ -42,14 +42,23 @@ namespace minko
 				typedef std::shared_ptr<math::Quaternion>		QuaternionPtr;
 				typedef std::shared_ptr<math::Vector3>			Vector3Ptr;
 
+            private:
+                static const short  DEFAULT_DYNAMIC_FILTER;
+                static const short  DEFAULT_STATIC_FILTER;
+                static const short  DEFAULT_DYNAMIC_MASK;
+                static const short  DEFAULT_STATIC_MASK;
+
 			private:
-				uint			_uid;
+				uint  	        _uid;
 
 				std::string		_name;
-				float			_mass;
+				const float     _mass;
+                const short     _filterGroup;
+                const short     _filterMask;
 				Matrix4x4Ptr	_correctionMatrix;
 				AbsShapePtr		_shape;
 				Vector3Ptr		_inertia;
+
 
 				Vector3Ptr		_linearVelocity;
 				Vector3Ptr		_linearFactor;
@@ -59,8 +68,8 @@ namespace minko
 				Vector3Ptr		_angularFactor;
 				float			_angularDamping;
 				float			_angularSleepingThreshold;
-				float			_restitution; // from bullet: best simulation results using zero restitution. 
-				float			_friction; // from bullet: best simulation results when friction is non-zero 
+				float			_restitution;       // from bullet: best simulation results using zero restitution. 
+				float			_friction;          // from bullet: best simulation results when friction is non-zero 
 				float			_rollingFriction;
 
 				bool			_deactivationDisabled;
@@ -93,17 +102,31 @@ namespace minko
 				}
 
 				inline
-				Vector3Ptr
-				inertia() const
-				{
-					return _inertia;
-				}
-
-				inline
 				bool
 				isStatic() const
 				{
 					return _mass < 1e-6f;
+				}
+
+                inline
+                short
+                filterGroup() const
+                {
+                    return _filterGroup;
+                }
+
+                inline
+                short
+                filterMask() const
+                {
+                    return _filterMask;
+                }
+
+				inline
+				Vector3Ptr
+				inertia() const
+				{
+					return _inertia;
 				}
 
 				inline
@@ -330,7 +353,8 @@ namespace minko
 				}
 
 			private:
-				ColliderData(float, AbsShapePtr, Vector3Ptr inertia	= nullptr);
+				ColliderData(float, AbsShapePtr, Vector3Ptr = nullptr);
+                ColliderData(float, short, short, AbsShapePtr, Vector3Ptr = nullptr);
 			};
 		}
 	}

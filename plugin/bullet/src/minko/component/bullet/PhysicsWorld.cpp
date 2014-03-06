@@ -169,7 +169,11 @@ bullet::PhysicsWorld::addChild(ColliderData::Ptr data)
 	_colliderReverseMap.insert(std::pair<btCollisionObject*, ColliderData::Ptr>(bulletCollider->rigidBody().get(), data));
 
 	std::dynamic_pointer_cast<btDiscreteDynamicsWorld>(_bulletDynamicsWorld)
-		->addRigidBody(bulletCollider->rigidBody().get());
+		->addRigidBody(
+            bulletCollider->rigidBody().get(),
+            data->filterGroup(),
+            data->filterMask()
+        );
 
 #ifdef DEBUG_PHYSICS
 	std::cout << "[" << data->name() << "]\tadd physics body" << std::endl;
