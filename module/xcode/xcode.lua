@@ -57,7 +57,7 @@
 		default_platform = "Universal",
 		
 		onsolution = function(sln)
-			premake.generate(sln, ".xcworkspace/contents.xcworkspacedata", premake.xcode4.workspace_generate)
+			premake.generate(sln, ".xcworkspace/contents.xcworkspacedata", premake.xcode.workspace_generate)
 		end,
 		
 		onproject = function(prj)
@@ -95,4 +95,4 @@
 		trigger     = "modules",
 		value       = "path",
 		description = "Search for additional scripts on the given path"
-	} 
+	}

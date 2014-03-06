@@ -1,22 +1,20 @@
-premake.xcode4 = {}
-
-local xcode4 = premake.xcode4
+local xcode = premake.xcode
 local solution = premake.solution
 local project = premake.project
 local tree  = premake.tree
    
-function xcode4.workspace_head()
+function xcode.workspace_head()
 	_p('<?xml version="1.0" encoding="UTF-8"?>')
 	_p('<Workspace')
 		_p(1,'version = "1.0">')
 
 end
 
-function xcode4.workspace_tail()
+function xcode.workspace_tail()
 	_p('</Workspace>')
 end
 
-function xcode4.workspace_file_ref(prj)
+function xcode.workspace_file_ref(prj)
 
 		local projpath = path.getrelative(prj.solution.location, prj.location)
 		if projpath == '.' then projpath = '' 
@@ -27,15 +25,15 @@ function xcode4.workspace_file_ref(prj)
 		_p(1,'</FileRef>')
 end
 
-function xcode4.workspace_generate(sln)
+function xcode.workspace_generate(sln)
 	premake.xcode.preparesolution(sln)
-	xcode4.workspace_head()
+	xcode.workspace_head()
    
 	for prj in premake.solution.eachproject(sln) do
-		xcode4.workspace_file_ref(prj)
+		xcode.workspace_file_ref(prj)
 	end
 	
-    xcode4.workspace_tail()
+    xcode.workspace_tail()
 end
 
 
