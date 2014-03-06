@@ -86,7 +86,6 @@ MouseManager::pick(std::shared_ptr<math::Ray> ray)
 
 	for (auto& descendant : descendants->nodes())
 	{
-		auto bboxHit = false;
 		auto distance = 0.f;
 
 		if (descendant->component<BoundingBox>()->box()->cast(ray, distance))
