@@ -324,20 +324,21 @@ Canvas::step()
             auto joystick = SDL_JoystickOpen(i);
             if (joystick) 
             {
+                if (_joysticks.find(i) == _joysticks.end())
+                {
+                    auto sdlJoystick = Canvas::SDLJoystick::create(shared_from_this(), i, joystick);
+                    _joysticks[i] = sdlJoystick;
+                }
+                _joystickAdded->execute(shared_from_this(), _joysticks[i]);
+
+# if defined(DEBUG)
                 printf("New joystick found!\n");
                 printf("Joystick %i\n", i);
                 printf("Name: %s\n", SDL_JoystickName(i));
                 printf("Number of Axes: %d\n", SDL_JoystickNumAxes(joystick));
                 printf("Number of Buttons: %d\n", SDL_JoystickNumButtons(joystick));
                 printf("Number of Balls: %d\n", SDL_JoystickNumBalls(joystick));
-
-                if (_joysticks.find(i) == _joysticks.end())
-                {
-                    auto sdlJoystick = Canvas::SDLJoystick::create(shared_from_this(), i, joystick);
-                    _joysticks[i] = sdlJoystick;
-                }
-
-                _joystickAdded->execute(shared_from_this(), _joysticks[i]);
+#endif // DEBUG
             }
         }
     }
@@ -428,38 +429,66 @@ Canvas::step()
             break;
 
         case SDL_JOYAXISMOTION:
-            printf("Joystick %d axis %d value %d\n", event.jaxis.which, event.jaxis.axis, event.jaxis.value);
+# if defined(DEBUG)
+            printf("Joystick %d axis %d value: %d\n",
+                event.jaxis.which,
+                event.jaxis.axis,
+                event.jaxis.value);
+#endif // DEBUG
             _joysticks[event.jaxis.which]->joystickAxisMotion()->execute(
                 _joysticks[event.jaxis.which], event.jaxis.which, event.jaxis.axis, event.jaxis.value
                 );
             break;
 
+        case SDL_JOYHATMOTION:
+# if defined(DEBUG)
+            printf("Joystick %d hat %d value:",
+                event.jhat.which,
+                event.jhat.hat);
+            if (event.jhat.value == SDL_HAT_CENTERED)
+                printf(" centered");
+            if (event.jhat.value & SDL_HAT_UP)
+                printf(" up");
+            if (event.jhat.value & SDL_HAT_RIGHT)
+                printf(" right");
+            if (event.jhat.value & SDL_HAT_DOWN)
+                printf(" down");
+            if (event.jhat.value & SDL_HAT_LEFT)
+                printf(" left");
+            printf("\n");
+#endif // DEBUG
+            _joysticks[event.jhat.which]->joystickHatMotion()->execute(
+                _joysticks[event.jhat.which], event.jhat.which, event.jhat.hat, event.jhat.value
+                );
+            break;
+
         case SDL_JOYBUTTONDOWN:
-            printf("Joystick %d button down %d value %d\n", event.jbutton.which, event.jbutton.which, event.jbutton.button);
+# if defined(DEBUG)
+            printf("Joystick %d button %d down\n",
+                event.jbutton.which,
+                event.jbutton.button);
+#endif
             _joysticks[event.jbutton.which]->joystickButtonDown()->execute(
                 _joysticks[event.jbutton.which], event.jbutton.which, event.jbutton.button
                 );
             break;
 
         case SDL_JOYBUTTONUP:
-            printf("Joystick %d button up %d value %d\n", event.jbutton.which, event.jbutton.which, event.jbutton.button);
+# if defined(DEBUG)
+            printf("Joystick %d button %d up\n",
+                event.jbutton.which,
+                event.jbutton.button);
+#endif
             _joysticks[event.jbutton.which]->joystickButtonUp()->execute(
                 _joysticks[event.jbutton.which], event.jbutton.which, event.jbutton.button
-                );
-            break;
-
-        case SDL_JOYHATMOTION:
-            printf("Joystick hat motion");
-            _joysticks[event.jhat.which]->joystickHatMotion()->execute(
-                _joysticks[event.jhat.which], event.jhat.which, event.jhat.hat, event.jhat.value
                 );
             break;
 
 #ifndef EMSCRIPTEN
         case SDL_JOYDEVICEADDED:
         {
-            int             device = event.cdevice.which;
-            auto            joystick = SDL_JoystickOpen(device);
+            int				device = event.cdevice.which;
+            auto			joystick = SDL_JoystickOpen(device);
             SDL_JoystickID  instance_id = SDL_JoystickInstanceID(joystick);
 
             if (_joysticks.find(instance_id) == _joysticks.end())
