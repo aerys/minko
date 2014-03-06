@@ -493,7 +493,7 @@ const aiScene* Importer::ReadFileFromMemory( const void* pBuffer,
 	IOSystem* io = pimpl->mIOHandler;
 	pimpl->mIOHandler = NULL;
 
-	SetIOHandler(new MemoryIOSystem((const uint8_t*)pBuffer,pLength,io));
+	SetIOHandler(new MemoryIOSystem((const uint8_t*)pBuffer,pLength));
 
 	// read the file and recover the previous IOSystem
 	char fbuff[128];

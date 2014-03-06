@@ -7,8 +7,7 @@ minko.project.application("minko-example-" .. PROJECT_NAME)
 
 	files {
 		"src/**.cpp",
-		"src/**.hpp",
-		"asset/**"
+		"src/**.hpp"
 	}
 	
 	includedirs { "src" }
@@ -19,4 +18,4 @@ minko.project.application("minko-example-" .. PROJECT_NAME)
 	--minko.plugin.enable("jpeg")
 	--minko.plugin.enable("mk")
 	--minko.plugin.enable("particles")
-	minko.plugin.enable("png")
+	--minko.plugin.enable("png")
