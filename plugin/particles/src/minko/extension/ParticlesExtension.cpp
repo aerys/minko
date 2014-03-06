@@ -47,7 +47,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/particle/modifier/SizeOverTime.hpp"
 #include "minko/particle/modifier/SizeBySpeed.hpp"
 #include "minko/particle/modifier/VelocityOverTime.hpp"
+#include "minko/data/ParticlesProvider.hpp"
 #include "minko/math/Vector3.hpp"
+#include "minko/math/Vector4.hpp"
 
 using namespace minko;
 using namespace minko::extension;
@@ -80,7 +82,7 @@ ParticlesExtension::deserializeParticles(std::string&       serialized,
                                          AssetLibrary::Ptr  assets, 
                                          Dependency::Ptr    dependencies)
 {
-    typedef msgpack::type::tuple<float, uint, bool, bool, bool, uint, IdAndString, IdAndString, IdAndString, std::vector<IdAndString>>  SerializedParticles;
+    typedef msgpack::type::tuple<unsigned short, float, uint, bool, bool, bool, uint, IdAndString, IdAndString, IdAndString, std::vector<IdAndString>>  SerializedParticles;
 
     msgpack::zone   mempool;
     msgpack::object deserialized;
@@ -89,15 +91,16 @@ ParticlesExtension::deserializeParticles(std::string&       serialized,
     SerializedParticles dst;
     deserialized.convert(&dst);
 
-    const float rate            = dst.a0;
-    const auto  startDirection  = particle::StartDirection(dst.a1);
-    const bool  emit            = dst.a2;
-    const bool  inWorldSpace    = dst.a3;
-    const bool  zSorted         = dst.a4;
-    const uint  countLimit      = dst.a5;
-    auto        lifetime        = deserializeFloatSampler(serialize::SamplerId(dst.a6.a0), dst.a6.a1);
-    auto        shape           = deserializeEmitterShape(serialize::EmitterShapeId(dst.a7.a0), dst.a7.a1);
-    auto        startVelocity   = deserializeFloatSampler(serialize::SamplerId(dst.a8.a0), dst.a8.a1);
+    const unsigned short    matId           = dst.a0;
+    const float             rate            = dst.a1;
+    const auto              startDirection  = particle::StartDirection(dst.a2);
+    const bool              emit            = dst.a3;
+    const bool              inWorldSpace    = dst.a4;
+    const bool              zSorted         = dst.a5;
+    const uint              countLimit      = dst.a6;
+    auto                    lifetime        = deserializeFloatSampler(serialize::SamplerId(dst.a7.a0), dst.a7.a1);
+    auto                    shape           = deserializeEmitterShape(serialize::EmitterShapeId(dst.a8.a0), dst.a8.a1);
+    auto                    startVelocity   = deserializeFloatSampler(serialize::SamplerId(dst.a9.a0), dst.a9.a1);
 
     auto particles = component::ParticleSystem::create(
         assets,
@@ -108,28 +111,53 @@ ParticlesExtension::deserializeParticles(std::string&       serialized,
         startVelocity
     );
 
-    render::AbstractTexture::Ptr    spritesheet = nullptr; // FIXME
-
-    for (auto& modifier : dst.a9)
+    for (auto& modifier : dst.a10)
     {
-        auto deserializedModifier = deserializeParticleModifier(
+        auto mod = deserializeParticleModifier(
             serialize::ModifierId(modifier.a0), 
-            modifier.a1, 
-            spritesheet
+            modifier.a1
         );
         
-        if (deserializedModifier)
-             particles->add(deserializedModifier);   
+        if (mod)
+             particles->add(mod);   
     }
 
+    // retrieve the diffuse color and diffuse texture from associated material if any
+    math::Vector4::Ptr              particleColor   = nullptr;
+    render::AbstractTexture::Ptr    particleMap     = nullptr; // FIXME
+
+    auto material = dependencies->getMaterialReference(matId);
+    if (material)
+    {
+        // FIXME !!
+        static const std::string PNAME_COLOR        = "diffuseColor";
+        static const std::string PNAME_SPRITESHEET  = "diffuseMap";
+
+        for (auto& pname : material->propertyNames())
+        {
+            auto pos            = pname.find_last_of('.');
+            std::string suffix  = pos != std::string::npos ? pname.substr(pos + 1) : pname;
+
+            if (suffix == PNAME_COLOR)
+                particleColor = material->get<math::Vector4::Ptr>(pname, true);
+            else if (suffix == PNAME_SPRITESHEET)
+                particleMap = material->get<render::AbstractTexture::Ptr>(pname, true);
+        }
+    }
+
+    if (particleColor)
+        particles->material()->diffuseColor(particleColor);
+    if (particleMap)
+        particles->material()->diffuseMap(particleMap);
+
+    particles->play();
     return particles;
 }
 
 /*static*/
 modifier::IParticleModifier::Ptr
 ParticlesExtension::deserializeParticleModifier(serialize::ModifierId           id, 
-                                                const std::string&              serialized,
-                                                render::AbstractTexture::Ptr    spritesheet)
+                                                const std::string&              serialized)
 {
     std::cout << "modifier = " << int(id) << std::endl;
 
@@ -144,7 +172,7 @@ ParticlesExtension::deserializeParticleModifier(serialize::ModifierId           
     case minko::serialize::ModifierId::START_SIZE:
         return deserializeStartSizeInitializer(serialized);
     case minko::serialize::ModifierId::START_SPRITE:
-        return deserializeStartSpriteInitializer(serialized, spritesheet);
+        return deserializeStartSpriteInitializer(serialized);
     case minko::serialize::ModifierId::START_VELOCITY:
         return deserializeStartVelocityInitializer(serialized);
     case minko::serialize::ModifierId::START_ANGULAR_VELOCITY:
@@ -232,12 +260,8 @@ ParticlesExtension::deserializeStartSizeInitializer(const std::string& serialize
 
 /*static*/
 modifier::IParticleModifier::Ptr
-ParticlesExtension::deserializeStartSpriteInitializer(const std::string&            serialized,
-                                                      render::AbstractTexture::Ptr  spritesheet)
+ParticlesExtension::deserializeStartSpriteInitializer(const std::string&            serialized)
 {
-    if (spritesheet == nullptr)
-        return nullptr;
-
     msgpack::zone   mempool;
     msgpack::object deserialized;
     msgpack::unpack(serialized.data(), serialized.size(), NULL, &mempool, &deserialized);
@@ -246,7 +270,7 @@ ParticlesExtension::deserializeStartSpriteInitializer(const std::string&        
     deserialized.convert(&dst);
 
     auto sprite = deserializeFloatSampler(serialize::SamplerId(dst.a2.a0), dst.a2.a1);
-    return modifier::StartSprite::create(sprite, spritesheet, dst.a0, dst.a1);
+    return modifier::StartSprite::create(sprite, dst.a0, dst.a1);
 }
 
 /*static*/
@@ -274,10 +298,10 @@ ParticlesExtension::deserializeStartAngularVelocityInitializer(const std::string
     msgpack::object deserialized;
     msgpack::unpack(serialized.data(), serialized.size(), NULL, &mempool, &deserialized);
 
-    msgpack::type::tuple<uint, std::string> dst;
+    msgpack::type::tuple<IdAndString> dst;
     deserialized.convert(&dst);
 
-    auto angVelocity = deserializeFloatSampler(serialize::SamplerId(dst.a0), dst.a1);
+    auto angVelocity = deserializeFloatSampler(serialize::SamplerId(dst.a0.a0), dst.a0.a1);
     return modifier::StartAngularVelocity::create(angVelocity);
 }
 
@@ -502,6 +526,8 @@ ParticlesExtension::deserializeFloatSampler(serialize::SamplerId   id,
         return deserializeLinearNumberSampler(serialized);
     case minko::serialize::SamplerId::RANDOM_NUMBER:
         return deserializeRandomNumberSampler(serialized);
+    case minko::serialize::SamplerId::UNKNOWN:
+        return nullptr;
     default:
         throw new std::logic_error("Failed to deserialized float sampler.");
     }
@@ -522,6 +548,8 @@ ParticlesExtension::deserializeColorSampler(serialize::SamplerId   id,
         return deserializeLinearColorSampler(serialized);
     case minko::serialize::SamplerId::RANDOM_COLOR:
         return deserializeRandomColorSampler(serialized);
+    case minko::serialize::SamplerId::UNKNOWN:
+        return nullptr;
     default:
         throw new std::logic_error("Failed to deserialized color sampler.");
     }

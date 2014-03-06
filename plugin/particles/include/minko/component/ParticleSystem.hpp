@@ -102,8 +102,8 @@ namespace minko
 			float										                _rate;
 			FloatSamplerPtr								                _lifetime;
 			ShapePtr									                _shape;
-			particle::StartDirection					                _startDirection;
-			FloatSamplerPtr 							                _startVelocity;
+			particle::StartDirection					                _emissionDirection;
+			FloatSamplerPtr 							                _emissionVelocity;
 
 			float										                _createTimer;
 
@@ -131,16 +131,16 @@ namespace minko
 				   float					rate,
 				   FloatSamplerPtr			lifetime,
 				   ShapePtr					shape,
-				   particle::StartDirection	startDirection,
-				   FloatSamplerPtr 			startVelocity)
+				   particle::StartDirection	emissionDirection,
+				   FloatSamplerPtr 			emissionVelocity   = nullptr)
 			{
 				Ptr ptr = std::shared_ptr<ParticleSystem> (new ParticleSystem(
 					assets,
 					rate,
 					lifetime,
 					shape,
-					startDirection,
-					startVelocity
+					emissionDirection,
+					emissionVelocity
 				));
 
 				ptr->initialize();
@@ -182,16 +182,16 @@ namespace minko
 
 			inline
 			void
-			startDirection(particle::StartDirection value)
+			emissionDirection(particle::StartDirection value)
 			{
-				_startDirection = value;
+				_emissionDirection = value;
 			}
 
 			inline
 			void
-			startVelocity(FloatSamplerPtr value)
+			emissionVelocity(FloatSamplerPtr value)
 			{
-				_startVelocity = value;
+				_emissionVelocity = value;
 			}
 
 			inline
@@ -407,12 +407,12 @@ namespace minko
 			updateVertexBuffer();
 
 		protected:
-			ParticleSystem(AssetLibraryPtr			assets,
+			ParticleSystem(AssetLibraryPtr,
 						   float					rate,
 						   FloatSamplerPtr			lifetime,
-						   ShapePtr					shape,
-						   particle::StartDirection	startDirection,
-						   FloatSamplerPtr 			startVelocity);
+						   ShapePtr,
+						   particle::StartDirection	emissionDirection,
+						   FloatSamplerPtr 			emissionVelocity);
 
 			void
 			initialize();
