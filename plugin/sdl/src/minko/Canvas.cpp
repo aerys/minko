@@ -42,6 +42,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 # include "SDL2/SDL.h"
 #endif
 
+#if defined(__APPLE__)
+# include <TargetConditionals.h>
+#endif
+
 using namespace minko;
 using namespace minko::math;
 using namespace minko::async;
@@ -114,9 +118,12 @@ Canvas::initializeContext(const std::string& windowTitle, unsigned int width, un
 		sdlFlags
 	);
 
-# ifdef MINKO_ANGLE
+# if MINKO_ANGLE
 	if (!(_angleContext = initContext(_window, width, height)))
-		throw std::runtime_error("Could not create eglContext");
+		throw std::runtime_error("Could not create Angle context");
+# elif TARGET_IPHONE_SIMULATOR
+    /*if (!(_iOSRenderer = SDL_CreateRenderer(_window, -1, 0)))
+		throw std::runtime_error("Could not create iOS context");*/
 # else
 	SDL_GLContext glContext = SDL_GL_CreateContext(_window);
 	if (!glContext)
