@@ -5,7 +5,7 @@ minko.project.application("minko-example-" .. PROJECT_NAME)
 	language "c++"
 	kind "WindowedApp"
 
-	files { "src/**.cpp", "src/**.hpp" }
+	files { "src/Main.cpp" }
 	includedirs { "src" }
 
 	-- plugin
@@ -15,3 +15,5 @@ minko.project.application("minko-example-" .. PROJECT_NAME)
 	--minko.plugin.enable("serializer")
 	--minko.plugin.enable("particles")
 	minko.plugin.enable("png")
+
+	files { "minko-example-iphone-cube-Info.plist" }
