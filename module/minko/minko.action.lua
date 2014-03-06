@@ -38,7 +38,9 @@ minko.action.link = function(sourcePath)
 	if os.is('windows') then
 		-- fixme: not needed yet
 	else
-		return 'ln -s -f ' .. sourcePath .. ' "${TARGETDIR}" || :'
+		local targetDir = string.startswith(_ACTION, "xcode") and '${TARGET_BUILD_DIR}/${TARGET_NAME}.app' or '${TARGETDIR}'
+
+		return 'test -e ' .. sourcePath .. ' && ln -s -f ' .. sourcePath .. ' "' .. targetDir .. '" || :'
 	end
 end
 
