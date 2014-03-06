@@ -1,7 +1,8 @@
 PROJECT_NAME = path.getname(os.getcwd())
 
 minko.project.application("minko-example-" .. PROJECT_NAME)
-	kind "ConsoleApp"
+
+	kind "WindowedApp"
 	language "C++"
 	files { "src/**.hpp", "src/**.cpp", "asset/**" }
 	includedirs { "src"	}
