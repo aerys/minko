@@ -30,9 +30,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include <iomanip>
 
 #define GL_GLEXT_PROTOTYPES
-#ifdef __APPLE__
+#if __APPLE__
 # include "TargetConditionals.h"
-# if TARGET_IPHONE_SIMLUATOR
+# if TARGET_IPHONE_SIMULATOR
 #  include <OpenGLES/ES2/gl.h>
 # elif TARGET_OS_IPHONE
 #  include <OpenGLES/ES2/gl.h>
