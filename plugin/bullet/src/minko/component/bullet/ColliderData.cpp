@@ -23,9 +23,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include <minko/component/bullet/AbstractPhysicsShape.hpp>
 #include <minko/component/bullet/PhysicsWorld.hpp>
 
+#include <btBulletDynamicsCommon.h>
+
 using namespace minko;
 using namespace minko::math;
 using namespace minko::component;
+
+/*static*/ const short  bullet::ColliderData::DEFAULT_DYNAMIC_FILTER    = btBroadphaseProxy::DefaultFilter;
+/*static*/ const short  bullet::ColliderData::DEFAULT_STATIC_FILTER     = btBroadphaseProxy::StaticFilter;
+/*static*/ const short  bullet::ColliderData::DEFAULT_DYNAMIC_MASK      = btBroadphaseProxy::AllFilter;
+/*static*/ const short  bullet::ColliderData::DEFAULT_STATIC_MASK       = btBroadphaseProxy::AllFilter ^ btBroadphaseProxy::StaticFilter;
 
 bullet::ColliderData::ColliderData(float						mass,
 								   AbstractPhysicsShape::Ptr	shape,
@@ -33,6 +40,40 @@ bullet::ColliderData::ColliderData(float						mass,
 	_uid(0),
 	_name(""),
 	_mass(mass),
+    _filterGroup(_mass < 1e-6f ? DEFAULT_STATIC_FILTER : DEFAULT_DYNAMIC_FILTER),
+    _filterMask(_mass < 1e-6f ? DEFAULT_STATIC_MASK : DEFAULT_DYNAMIC_MASK),
+	_correctionMatrix(Matrix4x4::create()->identity()),
+	_shape(shape),
+	_inertia(inertia),
+	_linearVelocity(Vector3::create(0.0f, 0.0f, 0.0f)),
+	_linearFactor(Vector3::create(1.0f, 1.0f, 1.0f)),
+	_linearDamping(0.0f),
+	_linearSleepingThreshold(0.8f),
+	_angularVelocity(Vector3::create(0.0f, 0.0f, 0.0f)),
+	_angularFactor(Vector3::create(1.0f, 1.0f, 1.0f)),
+	_angularDamping(0.0f),
+	_angularSleepingThreshold(1.0f),
+	_restitution(0.0f),
+	_friction(0.5f),
+	_rollingFriction(0.0f),
+	_deactivationDisabled(false),
+	_graphicsWorldTransformChanged(Signal<Ptr, Matrix4x4Ptr>::create()),
+	_collisionStarted(Signal<Ptr, Ptr>::create()),
+	_collisionEnded(Signal<Ptr, Ptr>::create())
+{
+
+}
+
+bullet::ColliderData::ColliderData(float						mass,
+                                   short                        filterGroup,
+                                   short                        filterMask,
+								   AbstractPhysicsShape::Ptr	shape,
+								   Vector3::Ptr					inertia):
+	_uid(0),
+	_name(""),
+	_mass(mass),
+    _filterGroup(filterGroup),
+    _filterMask(filterMask),
 	_correctionMatrix(Matrix4x4::create()->identity()),
 	_shape(shape),
 	_inertia(inertia),
