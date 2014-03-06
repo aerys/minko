@@ -1,7 +1,7 @@
 PROJECT_NAME = path.getname(os.getcwd())
 
 minko.project.library("minko-plugin-" .. PROJECT_NAME)
-	--removeplatforms { "html5", "ios", "android" }
+	removeplatforms { "html5", "ios", "android" }
 	kind "StaticLib"
 	language "C++"
 	
@@ -38,8 +38,4 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 	configuration { "html5" }
 		buildoptions {
 			"-std=gnu89"
-<<<<<<< Updated upstream
 		}
-=======
-		}
->>>>>>> Stashed changes
