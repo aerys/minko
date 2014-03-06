@@ -54,8 +54,8 @@ PhysicsExtension::deserializePhysics(std::string&							serializedAnimation,
 	component::bullet::AbstractPhysicsShape::Ptr	deserializedShape;
 	msgpack::zone									mempool;
 	msgpack::object									deserialized;
-	// shape type, shape data, delta transform, density, friction, restit, dynamic, trigger
-	msgpack::type::tuple<int, std::string, msgpack::type::tuple<uint, std::string>, float, float, float, bool, bool> dst;
+	// shape type, shape data, delta transform, density, friction, restit, dynamic, trigger, filterGroup, filterMask
+	msgpack::type::tuple<int, std::string, msgpack::type::tuple<uint, std::string>, float, float, float, bool, bool, uint, uint> dst;
 
 	msgpack::unpack(serializedAnimation.data(), serializedAnimation.size() - 1, NULL, &mempool, &deserialized);
 	deserialized.convert(&dst);
@@ -91,6 +91,12 @@ PhysicsExtension::deserializePhysics(std::string&							serializedAnimation,
 	data->restitution(dst.a5);
 	data->triggerCollisions(dst.a7);
 	data->disableDeactivation(true);
+
+    const short filterGroup = short(dst.a8 & ((1<<16) - 1)); // overriden by node's layouts
+    const short filterMask  = short(dst.a9 & ((1<<16) - 1)); 
+
+    data->collisionGroup(filterGroup);
+    data->collisionMask(filterMask);
 
 	return component::bullet::Collider::create(data);
 }

@@ -184,7 +184,6 @@ bullet::Collider::initializeFromNode(Node::Ptr node)
 	if (fabsf(modelToWorld->determinant()) < 1e-3f)
 		throw new std::logic_error("The node's model-to-world matrix cannot be inverted.");
 
-
 	auto nodeSet = NodeSet::create(node)
 		->ancestors(true)
 		->where([](Node::Ptr node)
@@ -201,9 +200,8 @@ bullet::Collider::initializeFromNode(Node::Ptr node)
 		return;
 	}
 
-	_colliderData->name(node->name());
-
-	_physicsWorld	= nodeSet->nodes().front()->component<bullet::PhysicsWorld>();
+    _colliderData->_node    = node; 
+	_physicsWorld           = nodeSet->nodes().front()->component<bullet::PhysicsWorld>();
 	_physicsWorld->addChild(_colliderData);
 
 	synchronizePhysicsWithGraphics();
