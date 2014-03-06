@@ -6,9 +6,6 @@ minko.project.application("minko-example-" .. PROJECT_NAME)
 
 	removeplatforms { "android", "ios", "win", "osx", "html5" }
 
-	language "C++"
-	kind "ConsoleApp"
-
 	files {
 		"src/**.hpp",
 		"src/**.cpp",

@@ -34,3 +34,8 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 
 	configuration { "linux" }
 		defines {}
+
+	configuration { "html5" }
+		buildoptions {
+			"-std=gnu89"
+		}

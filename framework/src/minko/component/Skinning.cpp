@@ -280,7 +280,6 @@ Skinning::performSoftwareSkinning(VertexBuffer::AttributePtr		attr,
 	assert(boneMatrices.size() == (_skin->numBones() << 4));
 #endif // DEBUG_SKINNING
 
-	const unsigned int	numBones		= _skin->numBones();
 	const unsigned int	vertexSize		= vertexBuffer->vertexSize();
 	std::vector<float>&	outputData		= vertexBuffer->data();
 	const unsigned int	numVertices		= outputData.size() / vertexSize;

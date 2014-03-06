@@ -65,7 +65,6 @@ namespace minko
 		{
 			auto connectionIdIt = _slotIds.begin();
 			auto callbackIt 	= _callbacks.begin();
-			auto i 				= 0;
 
 			while ((*connectionIdIt).second != connectionId)
 			{
