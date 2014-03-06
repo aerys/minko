@@ -17,6 +17,21 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#pragma once
+#include "chromium/ChromiumRenderProcessHandler.hpp"
+#include "chromium/ChromiumPimpl.hpp"
+#include "include/cef_render_process_handler.h"
 
-#include "chromium/Chromium.hpp"
+using namespace minko;
+using namespace chromium;
+
+ChromiumRenderProcessHandler::ChromiumRenderProcessHandler(ChromiumPimpl* impl) :
+	_impl(impl)
+{
+	_impl->v8Engine = new ChromiumV8Engine();
+}
+
+void
+ChromiumRenderProcessHandler::OnContextCreated(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame, CefRefPtr<CefV8Context> context)
+{
+	_impl->v8Engine->initNewPage(context);
+}

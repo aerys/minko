@@ -19,53 +19,32 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #pragma once
 
-#include "minko/Common.hpp"
-#include "minko/Signal.hpp"
-#include "minko/render/AbstractContext.hpp"
-#include "minko/AbstractCanvas.hpp"
+#include "include/cef_client.h"
 #include "include/cef_render_handler.h"
+#include "include/cef_task.h"
 
-namespace minko
+namespace chromium
 {
-	class RenderHandler : public CefRenderHandler
+	class ChromiumPimpl;
+
+	class ChromiumClient : public CefClient
 	{
 	public:
-		RenderHandler(std::shared_ptr<AbstractCanvas> canvas, std::shared_ptr<render::AbstractContext> context);
+		ChromiumClient(CefRefPtr<CefRenderHandler> renderHandler, ChromiumPimpl* impl);
 
-		bool
-		GetViewRect(CefRefPtr<CefBrowser> browser, CefRect &rect);
+		virtual
+		CefRefPtr<CefRenderHandler>
+		GetRenderHandler();
 
+		virtual
 		void
-		OnPaint(CefRefPtr<CefBrowser> browser, PaintElementType type, const RectList &dirtyRects, const void *buffer, int width, int height);
-
-		void
-		SetResized(int width, int height);
-
-		bool
-		generateTexture();
-
-		void
-		uploadTexture();
-	
-	private: 
-
-		void
-		canvasResized(std::shared_ptr<AbstractCanvas> canvas, uint w, uint h);
-
-	private:
-		uint _lastW;
-		uint _lastH;
-		uint _texW;
-		uint _texH;
-		std::shared_ptr<AbstractCanvas> _canvas;
-		std::shared_ptr<render::AbstractContext> _context;
-		Signal<std::shared_ptr<AbstractCanvas>, uint, uint>::Slot _canvasResizedSlot;
-
+		OnBeforeClose(CefRefPtr<CefBrowser> browser);
+				
 	public:
-		std::vector<unsigned char>* _textureBuffer;
-		std::shared_ptr<render::Texture> renderTexture;
-		bool textureChanged;
+		CefRefPtr<CefRenderHandler> renderHandler;
+	private:
+		ChromiumPimpl* _impl;
 
-		IMPLEMENT_REFCOUNTING(RenderHandler);
+		IMPLEMENT_REFCOUNTING(ChromiumClient);
 	};
 }

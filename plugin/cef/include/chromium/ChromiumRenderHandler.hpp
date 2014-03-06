@@ -16,59 +16,58 @@ NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FO
 DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
+
 #pragma once
 
 #include "minko/Common.hpp"
-#include "include/cef_app.h"
 #include "minko/Signal.hpp"
 #include "minko/render/AbstractContext.hpp"
 #include "minko/AbstractCanvas.hpp"
+#include "include/cef_render_handler.h"
 
+using namespace minko;
 
-namespace minko
+namespace chromium
 {
-	class CefPimpl;
-
-	class App : public CefApp,
-				public CefBrowserProcessHandler
+	class ChromiumRenderHandler : public CefRenderHandler
 	{
 	public:
-		App();
+		ChromiumRenderHandler(std::shared_ptr<AbstractCanvas> canvas, std::shared_ptr<render::AbstractContext> context);
 
-		std::shared_ptr<render::Texture>
-		initialize(std::shared_ptr<AbstractCanvas> canvas, std::shared_ptr<render::AbstractContext> context, CefPimpl* impl);
+		bool
+		GetViewRect(CefRefPtr<CefBrowser> browser, CefRect &rect);
 
-		virtual
-		CefRefPtr<CefBrowserProcessHandler> 
-		GetBrowserProcessHandler() OVERRIDE
-		{ 
-			return this; 
-		}
-
-		virtual
 		void
-		OnContextInitialized() OVERRIDE;
+		OnPaint(CefRefPtr<CefBrowser> browser, PaintElementType type, const RectList &dirtyRects, const void *buffer, int width, int height);
 
-		CefRefPtr<CefRenderProcessHandler>
-		GetRenderProcessHandler();
+		void
+		SetResized(int width, int height);
+
+		bool
+		generateTexture();
+
+		void
+		uploadTexture();
+	
+	private: 
+
+		void
+		canvasResized(std::shared_ptr<AbstractCanvas> canvas, uint w, uint h);
 
 	private:
-		void
-		bindControls();
-
-		Signal<std::shared_ptr<input::Mouse>, int, int>::Slot _mouseMoveSlot;
-		Signal<std::shared_ptr<input::Mouse>>::Slot _leftDownSlot;
-		Signal<std::shared_ptr<input::Mouse>>::Slot _leftUpSlot;
-		Signal<std::shared_ptr<input::Mouse>>::Slot _rightDownSlot;
-		Signal<std::shared_ptr<input::Mouse>>::Slot _rightUpSlot;
-		Signal<std::shared_ptr<input::Mouse>>::Slot _middleDownSlot;
-		Signal<std::shared_ptr<input::Mouse>>::Slot _middleUpSlot;
-
+		uint _lastW;
+		uint _lastH;
+		uint _texW;
+		uint _texH;
 		std::shared_ptr<AbstractCanvas> _canvas;
 		std::shared_ptr<render::AbstractContext> _context;
-		CefPimpl* _impl;
 		Signal<std::shared_ptr<AbstractCanvas>, uint, uint>::Slot _canvasResizedSlot;
 
-		IMPLEMENT_REFCOUNTING(App);
+	public:
+		std::vector<unsigned char>* _textureBuffer;
+		std::shared_ptr<render::Texture> renderTexture;
+		bool textureChanged;
+
+		IMPLEMENT_REFCOUNTING(ChromiumRenderHandler);
 	};
 }

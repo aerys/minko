@@ -19,24 +19,40 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #pragma once
 
-#include "include/cef_client.h"
-#include "include/cef_render_handler.h"
-#include "include/cef_task.h"
+#include "chromium/ChromiumV8Handler.hpp"
+#include "include/cef_render_process_handler.h"
 
-
-namespace minko
+namespace chromium
 {
-	class BrowserClient : public CefClient
+	class ChromiumV8Engine
 	{
 	public:
-		BrowserClient(CefRefPtr<CefRenderHandler> renderHandler);
+		ChromiumV8Engine();
 
-		virtual
-		CefRefPtr<CefRenderHandler> GetRenderHandler();
-				
-	public:
-		CefRefPtr<CefRenderHandler> renderHandler;
+		void
+		initNewPage(CefRefPtr<CefV8Context>);
 
-		IMPLEMENT_REFCOUNTING(BrowserClient);
+	private:
+		void
+		addLoadEventListener();
+
+		void
+		addSendMessageFunction();
+
+		CefRefPtr<CefV8Value>
+		window();
+
+		CefRefPtr<CefV8Value>
+		document();
+
+		std::shared_ptr<minko::Signal<std::string>> _onLoad;
+		std::shared_ptr<minko::Signal<std::string>> _onMessage;
+
+		minko::Signal<std::string, CefV8ValueList>::Slot _onLoadSlot;
+		minko::Signal<std::string, CefV8ValueList>::Slot _onMessageSlot;
+
+		CefRefPtr<CefV8Value> _minkoObject;
+		CefRefPtr<ChromiumV8Handler> _v8Handler;
+		CefRefPtr<CefV8Context> _currentV8Context;
 	};
 }

@@ -25,18 +25,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::component;
 using namespace minko::math;
+using namespace chromium;
 
 const std::string TEXTURE_FILENAME = "texture/box.png";
 
 int main(int argc, char** argv)
 {
-	Cef* cef = new Cef();
-
-	if (!cef->load(argc, argv))
-	{
-		return cef->cefProcessResult;
-	}
-
 	auto canvas = Canvas::create("Minko Example - Cube", 800, 600);
 
 	auto sceneManager = SceneManager::create(canvas->context());
@@ -75,20 +69,18 @@ int main(int argc, char** argv)
 		camera->component<PerspectiveCamera>()->aspectRatio((float)w / (float)h);
 	});
 
+	Chromium* cef = new Chromium();
 	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
 	{
-		cef->initialize(canvas, sceneManager);
-		//cef->setURL("http://static3.wikia.nocookie.net/__cb20071019155932/uncyclopedia/images/7/7b/Dancing_banana.gif");
+		//cef->initialize(canvas, sceneManager);
+		//cef->load("http://static3.wikia.nocookie.net/__cb20071019155932/uncyclopedia/images/7/7b/Dancing_banana.gif");
 		//cef->setHTML("<html><body color='blue'>Hello World</body></html>");
 		//cef->setURL("http://www.benjisbrk.com/public/mousetest");
 
-		cef->loadLocal("html/menu.html");
-
-		cef->executeJavascript("Minko.sendMessage('tatatatata');");
-
+		cef->load("html/menu.html");
+		
 		mesh->addComponent(Surface::create(
 			assets->geometry("cubeGeometry"),
-			//material::BasicMaterial::create()->diffuseMap(texture),
 			material::BasicMaterial::create()->diffuseColor(0xFF0000FF),
 			assets->effect("effect/Basic.effect")
 		));
@@ -110,7 +102,7 @@ int main(int argc, char** argv)
 	sceneManager->assets()->load();
 	canvas->run();
 
-	cef->unload();
+	cef->beforeAppCloses();
 	return 0;
 }
 

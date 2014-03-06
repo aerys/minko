@@ -17,17 +17,34 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "minko/BrowserClient.hpp"
+#pragma once
 
-using namespace minko;
+#include "minko/Signal.hpp"
+#include "include/cef_render_process_handler.h"
 
-BrowserClient::BrowserClient(CefRefPtr<CefRenderHandler> renderHandler)
-	: renderHandler(renderHandler)
+class ChromiumV8Handler : public CefV8Handler
 {
-}
+public:
 
-CefRefPtr<CefRenderHandler>
-BrowserClient::GetRenderHandler()
-{
-	return renderHandler;
-}
+	ChromiumV8Handler() :
+		_received(minko::Signal<std::string, CefV8ValueList>::create())
+	{
+	}
+	
+	virtual bool Execute(const CefString& name, CefRefPtr<CefV8Value> object, const CefV8ValueList& arguments, CefRefPtr<CefV8Value>& retval, CefString& exception) OVERRIDE
+	{
+		_received->execute(name, arguments);
+		return true;
+	}
+
+	std::shared_ptr<minko::Signal<std::string, CefV8ValueList>>
+	received()
+	{
+		return _received;
+	}
+
+private:
+	std::shared_ptr<minko::Signal<std::string, CefV8ValueList>>	_received;
+
+	IMPLEMENT_REFCOUNTING(ChromiumV8Handler);
+};

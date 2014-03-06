@@ -17,7 +17,7 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "minko/RenderHandler.hpp"
+#include "chromium/ChromiumRenderHandler.hpp"
 #include "minko/render/Texture.hpp"
 #include "minko/AbstractCanvas.hpp"
 #include "minko/render/AbstractContext.hpp"
@@ -26,8 +26,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "include/cef_render_handler.h"
 
 using namespace minko;
+using namespace chromium;
 
-RenderHandler::RenderHandler(std::shared_ptr<AbstractCanvas> canvas, std::shared_ptr<render::AbstractContext> context) :
+ChromiumRenderHandler::ChromiumRenderHandler(std::shared_ptr<AbstractCanvas> canvas, std::shared_ptr<render::AbstractContext> context) :
 	_canvas(canvas), 
 	_context(context),
 	_textureBuffer(nullptr),
@@ -38,7 +39,7 @@ RenderHandler::RenderHandler(std::shared_ptr<AbstractCanvas> canvas, std::shared
 }
 
 bool
-RenderHandler::generateTexture()
+ChromiumRenderHandler::generateTexture()
 {
 	uint w = math::clp2(_canvas->width());
 	uint h = math::clp2(_canvas->height());
@@ -76,7 +77,7 @@ RenderHandler::generateTexture()
 }
 
 bool
-RenderHandler::GetViewRect(CefRefPtr<CefBrowser> browser, CefRect &rect)
+ChromiumRenderHandler::GetViewRect(CefRefPtr<CefBrowser> browser, CefRect &rect)
 {
 	uint w = _canvas->width();
 	if (w > 2048)
@@ -100,7 +101,7 @@ RenderHandler::GetViewRect(CefRefPtr<CefBrowser> browser, CefRect &rect)
 }
 
 void
-RenderHandler::OnPaint(CefRefPtr<CefBrowser> browser, PaintElementType type, const RectList &dirtyRects, const void *buffer, int width, int height)
+ChromiumRenderHandler::OnPaint(CefRefPtr<CefBrowser> browser, PaintElementType type, const RectList &dirtyRects, const void *buffer, int width, int height)
 {
 	if (width != _lastW || height != _lastH)
 		return;
@@ -122,7 +123,7 @@ RenderHandler::OnPaint(CefRefPtr<CefBrowser> browser, PaintElementType type, con
 }
 
 void
-RenderHandler::uploadTexture()
+ChromiumRenderHandler::uploadTexture()
 {
 	if (textureChanged)
 	{
@@ -133,7 +134,7 @@ RenderHandler::uploadTexture()
 }
 
 void
-RenderHandler::canvasResized(AbstractCanvas::Ptr canvas, uint w, uint h)
+ChromiumRenderHandler::canvasResized(AbstractCanvas::Ptr canvas, uint w, uint h)
 {
 	generateTexture();
 }

@@ -17,34 +17,31 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "minko/App.hpp"
+#include "chromium/ChromiumApp.hpp"
 #include "minko/input/Mouse.hpp"
-#include "minko/CefPimpl.hpp"
-#include "minko/RenderProcessHandler.hpp"
-#include "minko/RenderHandler.hpp"
-#include "minko/BrowserClient.hpp"
+#include "chromium/ChromiumPimpl.hpp"
+#include "chromium/ChromiumRenderProcessHandler.hpp"
+#include "chromium/ChromiumRenderHandler.hpp"
+#include "chromium/ChromiumClient.hpp"
 #include "include/cef_command_line.h"
 
 using namespace minko;
-
-App::App()
-{
-}
+using namespace chromium;
 
 std::shared_ptr<render::Texture>
-App::initialize(std::shared_ptr<AbstractCanvas> canvas, std::shared_ptr<render::AbstractContext> context, CefPimpl* impl)
+ChromiumApp::initialize(std::shared_ptr<AbstractCanvas> canvas, std::shared_ptr<render::AbstractContext> context, ChromiumPimpl* impl)
 {
 	_canvas = canvas;
 	_context = context;
 	_impl = impl;
-	_impl->cefRenderHandler = new RenderHandler(_canvas, _context);
-	_impl->cefRenderProcessHandler = new RenderProcessHandler(_impl);
+	_impl->renderHandler = new ChromiumRenderHandler(_canvas, _context);
+	_impl->renderProcessHandler = new ChromiumRenderProcessHandler(_impl);
 
-	return _impl->cefRenderHandler->renderTexture;
+	return _impl->renderHandler->renderTexture;
 }
 
 void
-App::OnContextInitialized()
+ChromiumApp::OnContextInitialized()
 {
 	CefWindowInfo window_info;
 	CefBrowserSettings browserSettings;
@@ -52,22 +49,22 @@ App::OnContextInitialized()
 	browserSettings.web_security = STATE_DISABLED;
 	browserSettings.file_access_from_file_urls = STATE_ENABLED;
 
-	CefRefPtr<BrowserClient> browserClient = new BrowserClient(_impl->cefRenderHandler);
+	CefRefPtr<ChromiumClient> browserClient = new ChromiumClient(_impl->renderHandler, _impl);
 
 	// in linux set a gtk widget, in windows a hwnd. If not available set nullptr - may cause some render errors, in context-menu and plugins.
 	window_info.SetAsOffScreen(nullptr);
 	window_info.SetTransparentPainting(true);
 
-	_impl->cefBrowser = CefBrowserHost::CreateBrowserSync(window_info, browserClient.get(), "", browserSettings, nullptr);
+	_impl->browser = CefBrowserHost::CreateBrowserSync(window_info, browserClient.get(), "", browserSettings, nullptr);
 
-	_impl->cefBrowser->GetHost()->SetMouseCursorChangeDisabled(false);
+	_impl->browser->GetHost()->SetMouseCursorChangeDisabled(false);
 
 	bindControls();
 }
 
 
 void
-App::bindControls()
+ChromiumApp::bindControls()
 {
 	_mouseMoveSlot = _canvas->mouse()->move()->connect([&](input::Mouse::Ptr m, int dx, int dy)
 	{
@@ -83,7 +80,7 @@ App::bindControls()
 			mouseEvent.y = m->y();
 		}
 
-		_impl->cefBrowser->GetHost()->SendMouseMoveEvent(mouseEvent, false);
+		_impl->browser->GetHost()->SendMouseMoveEvent(mouseEvent, false);
 	});
 
 	_leftDownSlot = _canvas->mouse()->leftButtonDown()->connect([&](input::Mouse::Ptr m)
@@ -94,7 +91,7 @@ App::bindControls()
 			mouseEvent.y = m->y();
 		}
 
-		_impl->cefBrowser->GetHost()->SendMouseClickEvent(mouseEvent, CefBrowserHost::MouseButtonType::MBT_LEFT, false, 1);
+		_impl->browser->GetHost()->SendMouseClickEvent(mouseEvent, CefBrowserHost::MouseButtonType::MBT_LEFT, false, 1);
 	});
 
 	_leftUpSlot = _canvas->mouse()->leftButtonUp()->connect([&](input::Mouse::Ptr m)
@@ -105,7 +102,7 @@ App::bindControls()
 			mouseEvent.y = m->y();
 		}
 
-		_impl->cefBrowser->GetHost()->SendMouseClickEvent(mouseEvent, CefBrowserHost::MouseButtonType::MBT_LEFT, true, 1);
+		_impl->browser->GetHost()->SendMouseClickEvent(mouseEvent, CefBrowserHost::MouseButtonType::MBT_LEFT, true, 1);
 	});
 
 	_rightDownSlot = _canvas->mouse()->rightButtonDown()->connect([&](input::Mouse::Ptr m)
@@ -116,7 +113,7 @@ App::bindControls()
 			mouseEvent.y = m->y();
 		}
 
-		_impl->cefBrowser->GetHost()->SendMouseClickEvent(mouseEvent, CefBrowserHost::MouseButtonType::MBT_RIGHT, false, 1);
+		_impl->browser->GetHost()->SendMouseClickEvent(mouseEvent, CefBrowserHost::MouseButtonType::MBT_RIGHT, false, 1);
 	});
 
 	_rightUpSlot = _canvas->mouse()->rightButtonUp()->connect([&](input::Mouse::Ptr m)
@@ -127,7 +124,7 @@ App::bindControls()
 			mouseEvent.y = m->y();
 		}
 
-		_impl->cefBrowser->GetHost()->SendMouseClickEvent(mouseEvent, CefBrowserHost::MouseButtonType::MBT_RIGHT, true, 1);
+		_impl->browser->GetHost()->SendMouseClickEvent(mouseEvent, CefBrowserHost::MouseButtonType::MBT_RIGHT, true, 1);
 	});
 
 	_middleDownSlot = _canvas->mouse()->middleButtonDown()->connect([&](input::Mouse::Ptr m)
@@ -138,7 +135,7 @@ App::bindControls()
 			mouseEvent.y = m->y();
 		}
 
-		_impl->cefBrowser->GetHost()->SendMouseClickEvent(mouseEvent, CefBrowserHost::MouseButtonType::MBT_MIDDLE, false, 1);
+		_impl->browser->GetHost()->SendMouseClickEvent(mouseEvent, CefBrowserHost::MouseButtonType::MBT_MIDDLE, false, 1);
 	});
 
 	_middleUpSlot = _canvas->mouse()->middleButtonUp()->connect([&](input::Mouse::Ptr m)
@@ -149,12 +146,12 @@ App::bindControls()
 			mouseEvent.y = m->y();
 		}
 
-		_impl->cefBrowser->GetHost()->SendMouseClickEvent(mouseEvent, CefBrowserHost::MouseButtonType::MBT_MIDDLE, true, 1);
+		_impl->browser->GetHost()->SendMouseClickEvent(mouseEvent, CefBrowserHost::MouseButtonType::MBT_MIDDLE, true, 1);
 	});
 }
 
 CefRefPtr<CefRenderProcessHandler>
-App::GetRenderProcessHandler()
+ChromiumApp::GetRenderProcessHandler()
 {
-	return _impl->cefRenderProcessHandler;
+	return _impl->renderProcessHandler;
 }

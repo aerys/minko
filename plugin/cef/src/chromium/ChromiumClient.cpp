@@ -17,6 +17,30 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#pragma once
+#include "chromium/ChromiumClient.hpp"
+#include "chromium/ChromiumPimpl.hpp"
 
-#include "chromium/Chromium.hpp"
+using namespace minko;
+using namespace chromium;
+
+ChromiumClient::ChromiumClient(CefRefPtr<CefRenderHandler> renderHandler, ChromiumPimpl* impl) :
+	renderHandler(renderHandler),
+	_impl(impl)
+{
+}
+
+void
+ChromiumClient::OnBeforeClose(CefRefPtr<CefBrowser> browser)
+{
+	_impl->mainArgs = nullptr;
+	_impl->browser = nullptr;
+	_impl->app = nullptr;
+	_impl->renderHandler = nullptr;
+	_impl->renderProcessHandler = nullptr;
+}
+
+CefRefPtr<CefRenderHandler>
+ChromiumClient::GetRenderHandler()
+{
+	return renderHandler;
+}

@@ -20,23 +20,29 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
-#include "minko/App.hpp"
-#include "minko/RenderHandler.hpp"
-#include "minko/RenderProcessHandler.hpp"
-#include "include/cef_app.h"
-#include "include/cef_render_handler.h"
-#include "include/cef_client.h"
+#include "include/cef_render_process_handler.h"
+#include "minko/Signal.hpp"
 
-namespace minko
-{	
-	class CefPimpl
+namespace chromium
+{
+	class ChromiumPimpl;
+
+	class ChromiumRenderProcessHandler : public CefRenderProcessHandler
 	{
 	public:
-		CefMainArgs* cefMainArgs;
-		CefRefPtr<CefBrowser> cefBrowser;
-		RenderHandler* cefRenderHandler;
-		CefRefPtr<App> cefApp;
-		CefRefPtr<CefV8Context> cefV8Context;
-		CefRefPtr<RenderProcessHandler> cefRenderProcessHandler;
+		ChromiumRenderProcessHandler(ChromiumPimpl* impl);
+	public:
+		virtual
+		void
+		OnContextCreated(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame, CefRefPtr<CefV8Context> context) OVERRIDE;
+
+		static
+		CefRefPtr<CefV8Value>
+		ExecuteFunction(std::string, CefRefPtr<CefV8Value> = nullptr);
+
+	private:
+		ChromiumPimpl*  _impl;
+
+		IMPLEMENT_REFCOUNTING(ChromiumRenderProcessHandler);
 	};
 }

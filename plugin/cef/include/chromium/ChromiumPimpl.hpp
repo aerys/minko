@@ -19,4 +19,25 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #pragma once
 
-#include "chromium/Chromium.hpp"
+#include "chromium/ChromiumApp.hpp"
+#include "chromium/ChromiumRenderHandler.hpp"
+#include "chromium/ChromiumRenderProcessHandler.hpp"
+#include "chromium/ChromiumV8Engine.hpp"
+#include "include/cef_app.h"
+#include "include/cef_render_handler.h"
+#include "include/cef_client.h"
+
+namespace chromium
+{	
+	class ChromiumPimpl
+	{
+	public:
+		CefMainArgs* mainArgs;
+		CefRefPtr<CefBrowser> browser;
+		ChromiumRenderHandler* renderHandler;
+		CefRefPtr<ChromiumApp> app;
+		CefRefPtr<ChromiumRenderProcessHandler> renderProcessHandler;
+		ChromiumV8Engine* v8Engine;
+		CefRefPtr<CefV8Context> v8Context;
+	};
+}

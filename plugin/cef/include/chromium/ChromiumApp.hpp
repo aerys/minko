@@ -16,85 +16,59 @@ NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FO
 DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
-
 #pragma once
 
 #include "minko/Common.hpp"
+#include "include/cef_app.h"
 #include "minko/Signal.hpp"
 #include "minko/render/AbstractContext.hpp"
-#include "minko/component/SceneManager.hpp"
 #include "minko/AbstractCanvas.hpp"
 
-#include <stdio.h>  /* defines FILENAME_MAX */
-#ifdef _WIN32
-#include <direct.h>
-#define GetCurrentDir _getcwd
-#else
-#include <unistd.h>
-#define GetCurrentDir getcwd
-#endif
+using namespace minko;
 
-namespace minko
+namespace chromium
 {
-	class CefPimpl;
+	class ChromiumPimpl;
 
-	class Cef
+	class ChromiumApp : public CefApp,
+				public CefBrowserProcessHandler
 	{
 	public:
-		Cef();
-		
-		bool
-		load(int argc, char** argv);
 
-		void
-		unload();
-		
-		void
-		initialize(std::shared_ptr<AbstractCanvas>, std::shared_ptr<component::SceneManager>);
+		std::shared_ptr<render::Texture>
+		initialize(std::shared_ptr<AbstractCanvas> canvas, std::shared_ptr<render::AbstractContext> context, ChromiumPimpl* impl);
 
-		void
-		setURL(std::string);
-
-		void
-		loadLocal(std::string);
-
-		void
-		executeJavascript(std::string);
-		
-		void
-		setHTML(std::string);
-
-
-		int cefProcessResult;
-
-	private:
-
-		void
-		enterFrame();
-
-		std::string
-		getWorkingDirectory()
-		{
-			if (!GetCurrentDir(_currentPath, sizeof(_currentPath)))
-			{
-				return "";
-			}
-			_currentPath[sizeof(_currentPath)-1] = '\0'; /* not really required */
-
-			return std::string(_currentPath);
+		virtual
+		CefRefPtr<CefBrowserProcessHandler> 
+		GetBrowserProcessHandler() OVERRIDE
+		{ 
+			return this; 
 		}
 
+		virtual
+		void
+		OnContextInitialized() OVERRIDE;
+
+		CefRefPtr<CefRenderProcessHandler>
+		GetRenderProcessHandler();
+
+	private:
+		void
+		bindControls();
+
+		Signal<std::shared_ptr<input::Mouse>, int, int>::Slot _mouseMoveSlot;
+		Signal<std::shared_ptr<input::Mouse>>::Slot _leftDownSlot;
+		Signal<std::shared_ptr<input::Mouse>>::Slot _leftUpSlot;
+		Signal<std::shared_ptr<input::Mouse>>::Slot _rightDownSlot;
+		Signal<std::shared_ptr<input::Mouse>>::Slot _rightUpSlot;
+		Signal<std::shared_ptr<input::Mouse>>::Slot _middleDownSlot;
+		Signal<std::shared_ptr<input::Mouse>>::Slot _middleUpSlot;
 
 		std::shared_ptr<AbstractCanvas> _canvas;
 		std::shared_ptr<render::AbstractContext> _context;
-		std::shared_ptr<component::SceneManager> _sceneManager;
-
+		ChromiumPimpl* _impl;
 		Signal<std::shared_ptr<AbstractCanvas>, uint, uint>::Slot _canvasResizedSlot;
-		Signal<std::shared_ptr<component::SceneManager>>::Slot _enterFrameSlot;
 
-		CefPimpl* _impl;
-		std::shared_ptr<material::BasicMaterial> _overlayMaterial;
-
-		char _currentPath[FILENAME_MAX];
+		IMPLEMENT_REFCOUNTING(ChromiumApp);
 	};
 }

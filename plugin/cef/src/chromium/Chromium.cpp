@@ -20,68 +20,73 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include <signal.h>
 
 #include "minko/Minko.hpp"
-#include "minko/Cef.hpp"
+#include "chromium/Chromium.hpp"
 
-#include "minko/App.hpp"
-#include "minko/RenderHandler.hpp"
-#include "minko/BrowserClient.hpp"
+#include "chromium/ChromiumApp.hpp"
+#include "chromium/ChromiumRenderHandler.hpp"
+#include "chromium/ChromiumClient.hpp"
 
-#include "minko/CefPimpl.hpp"
+#include "chromium/ChromiumPimpl.hpp"
 
 #include "include/cef_app.h"
 #include "include/cef_client.h"
 #include "include/cef_render_handler.h"
 
 using namespace minko;
+using namespace chromium;
 
-Cef::Cef()
+Chromium::Chromium()
 {
-	_impl = new CefPimpl();
+	_impl = new ChromiumPimpl();
+	start(0, 0);
 }
 
-bool
-Cef::load(int argc, char** argv)
+Chromium::Chromium(int argc, char** argv)
+{
+	_impl = new ChromiumPimpl();
+	start(argc, argv);
+}
+
+void
+Chromium::start(int argc, char** argv)
 {
 #ifdef _WIN32
-	_impl->cefMainArgs = new CefMainArgs(GetModuleHandle(NULL));
+	_impl->mainArgs = new CefMainArgs(GetModuleHandle(NULL));
 #else
-	_impl->cefMainArgs = new CefMainArgs(argc, argv);
+	_impl->mainArgs = new CefMainArgs(argc, argv);
 #endif
-	_impl->cefApp = new App();
+	_impl->app = new ChromiumApp();
 
-	cefProcessResult = CefExecuteProcess(*_impl->cefMainArgs, _impl->cefApp.get(), nullptr);
-
-	if (cefProcessResult >= 0)
-	{
-		return false;
-	}
-	return true;
+	CefExecuteProcess(*_impl->mainArgs, _impl->app.get(), nullptr);
 }
 
 void
-Cef::unload()
+Chromium::beforeAppCloses()
 {
-	_impl->cefMainArgs = nullptr;
-	_impl->cefBrowser = nullptr;
-	_impl->cefApp = nullptr;
-	_impl->cefRenderHandler = nullptr;
+	_impl->mainArgs = nullptr;
+	_impl->browser = nullptr;
+	_impl->app = nullptr;
+	_impl->renderHandler = nullptr;
+	_impl->renderProcessHandler = nullptr;
+	_impl->v8Engine = nullptr;
+	_impl->v8Context = nullptr;
+
 	CefShutdown();
-	//delete _impl->cefRenderHandler;
 }
 
 void
-Cef::initialize(std::shared_ptr<AbstractCanvas> canvas, std::shared_ptr<component::SceneManager> sceneManager)
+Chromium::initialize(std::shared_ptr<AbstractCanvas> canvas, std::shared_ptr<component::SceneManager> sceneManager)
 {
 	_canvas = canvas;
 	_sceneManager = sceneManager;
 	_context = _sceneManager->assets()->context();
-	std::shared_ptr<render::Texture> texture = _impl->cefApp->initialize(canvas, _context, _impl);
+	std::shared_ptr<render::Texture> texture = _impl->app->initialize(canvas, _context, _impl);
 
 	CefSettings settings;
 
 	settings.single_process = 1;
 
-	cefProcessResult = CefInitialize(*_impl->cefMainArgs, settings, _impl->cefApp.get(), nullptr);
+	int result = CefInitialize(*_impl->mainArgs, settings, _impl->app.get(), nullptr);
 	
 	auto overlayEffect = sceneManager->assets()->effect("effect/Overlay.effect");
 
@@ -106,12 +111,12 @@ Cef::initialize(std::shared_ptr<AbstractCanvas> canvas, std::shared_ptr<componen
 	_canvasResizedSlot = _canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
 	{
 		_overlayMaterial->unset("diffuseMap");
-		_impl->cefBrowser->GetHost()->WasResized();
+		_impl->browser->GetHost()->WasResized();
 
 		float wRatio = (float)canvas->width() / (float)math::clp2(canvas->width());
 		float hRatio = (float)canvas->height() / (float)math::clp2(canvas->height());
 		_overlayMaterial->set("overlayRatio", math::Vector2::create(wRatio, hRatio));
-		_overlayMaterial->diffuseMap(_impl->cefRenderHandler->renderTexture);
+		_overlayMaterial->diffuseMap(_impl->renderHandler->renderTexture);
 		enterFrame();
 	});
 
@@ -122,13 +127,26 @@ Cef::initialize(std::shared_ptr<AbstractCanvas> canvas, std::shared_ptr<componen
 }
 
 void
-Cef::setURL(std::string url)
+Chromium::load(std::string uri)
 {
-	_impl->cefBrowser.get()->GetMainFrame()->LoadURL(url);
+	int httpIndex = uri.find_first_of("http://");
+	int httpsIndex = uri.find_first_of("https://");
+	int fileIndex = uri.find_first_of("file://");
+
+	if (fileIndex == 0)
+		loadHttp(uri);
+	else
+		loadLocal(uri);
 }
 
 void
-Cef::loadLocal(std::string filename)
+Chromium::loadHttp(std::string url)
+{
+	_impl->browser.get()->GetMainFrame()->LoadURL(url);
+}
+
+void
+Chromium::loadLocal(std::string filename)
 {
 	std::string path = getWorkingDirectory() + "/";
 
@@ -139,38 +157,18 @@ Cef::loadLocal(std::string filename)
 
 	std::string url = "file://" + path + "/" + filename;
 
-	setURL(url);
+	loadHttp(url);
 }
 
 void
-Cef::setHTML(std::string html)
+Chromium::executeJavascript(std::string code)
 {
-	executeJavascript("var doc = document.open('text/html', 'replace'); doc.write(\"" + html + "\");doc.close();");
-}
-
-/*void
-Cef::addEventListener(std::string type, std::string id)
-{
-	std::string code = "";
-
-	code += "var element = document.getElementById('" + id + "');\n";
-	code += "element.addEventListener('" + type + "', function(event)\n";
-	code += "{\n";
-	code += "	Minko.sendCallback";
-	code += "	";
-	code += "	";
-	code += "});\n";
-}*/
-
-void
-Cef::executeJavascript(std::string code)
-{
-	_impl->cefBrowser.get()->GetMainFrame()->ExecuteJavaScript(code, "", 0);
+	_impl->browser.get()->GetMainFrame()->ExecuteJavaScript(code, "", 0);
 }
 
 void
-Cef::enterFrame()
+Chromium::enterFrame()
 {
 	CefDoMessageLoopWork();
-	_impl->cefRenderHandler->uploadTexture();
+	_impl->renderHandler->uploadTexture();
 }
