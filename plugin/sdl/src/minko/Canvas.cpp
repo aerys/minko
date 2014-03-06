@@ -42,6 +42,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 # include "SDL2/SDL.h"
 #endif
 
+#if defined(__APPLE__)
+# include <TargetConditionals.h>
+# if TARGET_OS_IPHONE
+#  include "SDL2/SDL_opengles.h"
+# endif
+#endif
+
 using namespace minko;
 using namespace minko::math;
 using namespace minko::async;
@@ -96,15 +103,19 @@ void
 Canvas::initializeContext(const std::string& windowTitle, unsigned int width, unsigned int height, bool useStencil)
 {
 #ifndef EMSCRIPTEN
-    SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK);
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK) < 0)
+        throw std::runtime_error(SDL_GetError());
 
     if (useStencil)
         SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 
-    auto sdlFlags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE;
+    auto sdlFlags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_SHOWN;
 
     if (_chromeless)
         sdlFlags |= SDL_WINDOW_BORDERLESS;
+    
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
+    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
     _window = SDL_CreateWindow(
         windowTitle.c_str(),
@@ -112,11 +123,19 @@ Canvas::initializeContext(const std::string& windowTitle, unsigned int width, un
         SDL_WINDOWPOS_UNDEFINED,
         width, height,
         sdlFlags
-        );
+    );
+    
+    if (!_window)
+        throw;
 
-# ifdef MINKO_ANGLE
+# if MINKO_ANGLE
     if (!(_angleContext = initContext(_window, width, height)))
-        throw std::runtime_error("Could not create eglContext");
+        throw std::runtime_error("Could not create Angle context");
+# elif TARGET_IPHONE_SIMULATOR
+//    SDL_CreateRenderer(_window, -1, 0);
+    SDL_GLContext glContext = SDL_GL_CreateContext(_window);
+    if (!glContext)
+        throw std::runtime_error("Could not create iOS context");
 # else
     SDL_GLContext glContext = SDL_GL_CreateContext(_window);
     if (!glContext)
@@ -125,15 +144,12 @@ Canvas::initializeContext(const std::string& windowTitle, unsigned int width, un
 
     _context = minko::render::OpenGLES2Context::create();
 #else
-    //SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-
-    SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK);
-
     if (useStencil)
         SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 
     SDL_WM_SetCaption(windowTitle.c_str(), NULL);
-    SDL_Surface* _screen = SDL_SetVideoMode(width, height, 0, SDL_OPENGL);
+
+    SDL_SetVideoMode(width, height, 0, SDL_OPENGL);
 
     _context = minko::render::WebGLContext::create();
 #endif // EMSCRIPTEN
@@ -300,42 +316,54 @@ void
 Canvas::step()
 {
 #if defined(EMSCRIPTEN)
-    //std::cout << "SDL_NumJoysticks: [" << SDL_NumJoysticks() << "]" << std::endl;
-    for (int i = 0; i < SDL_NumJoysticks(); i++) {
-        if (!SDL_JoystickOpened(i)) {
+    // Detect new joystick
+    for (int i = 0; i < SDL_NumJoysticks(); i++) 
+    {
+        if (!SDL_JoystickOpened(i)) 
+        {
             auto joystick = SDL_JoystickOpen(i);
-            if (joystick) {
+            if (joystick) 
+            {
+                if (_joysticks.find(i) == _joysticks.end())
+                {
+                    auto sdlJoystick = Canvas::SDLJoystick::create(shared_from_this(), i, joystick);
+                    _joysticks[i] = sdlJoystick;
+                }
+                _joystickAdded->execute(shared_from_this(), _joysticks[i]);
+
+# if defined(DEBUG)
                 printf("New joystick found!\n");
                 printf("Joystick %i\n", i);
                 printf("Name: %s\n", SDL_JoystickName(i));
                 printf("Number of Axes: %d\n", SDL_JoystickNumAxes(joystick));
                 printf("Number of Buttons: %d\n", SDL_JoystickNumButtons(joystick));
                 printf("Number of Balls: %d\n", SDL_JoystickNumBalls(joystick));
-
-                if (_joysticks.find(i) == _joysticks.end())
-                {
-                    auto sdlJoystick = Canvas::SDLJoystick::create(shared_from_this(), i, joystick);
-                    _joysticks[i] = sdlJoystick;
-                }
-
-                _joystickAdded->execute(shared_from_this(), _joysticks[i]);
+#endif // DEBUG
             }
         }
     }
 
-    /*
-    int				device = event.cdevice.which;
-    auto			joystick = SDL_JoystickOpen(device);
-    SDL_JoystickID  instance_id = SDL_JoystickInstanceID(joystick);
-
-    if (_joysticks.find(instance_id) == _joysticks.end())
+    // A gamepad has been removed ?
+    if (_joysticks.size() != SDL_NumJoysticks())
     {
-    auto sdlJoystick = Canvas::SDLJoystick::create(shared_from_this(), instance_id, joystick);
-    _joysticks[instance_id] = sdlJoystick;
-    }
+        // We looking for the missing gamepad
+        int joystickId = 0;
+        for (int i = 0; i < _joysticks.size(); i++) 
+        {
+            if (!SDL_JoystickOpen(i)) 
+            {
+                joystickId = i;
+                break;
+            }
+        }
 
-    _joystickAdded->execute(shared_from_this(), _joysticks[instance_id]);
-    */
+        auto joystick = _joysticks[joystickId]->_joystick;
+
+        _joystickRemoved->execute(shared_from_this(), _joysticks[joystickId]);
+
+        SDL_JoystickClose(joystick);
+        _joysticks.erase(joystickId);
+    }
 #endif
 
     SDL_Event event;
@@ -400,6 +428,62 @@ Canvas::step()
             //_mouseWheel->execute(shared_from_this(), event.wheel.x, event.wheel.y);
             break;
 
+        case SDL_JOYAXISMOTION:
+# if defined(DEBUG)
+            printf("Joystick %d axis %d value: %d\n",
+                event.jaxis.which,
+                event.jaxis.axis,
+                event.jaxis.value);
+#endif // DEBUG
+            _joysticks[event.jaxis.which]->joystickAxisMotion()->execute(
+                _joysticks[event.jaxis.which], event.jaxis.which, event.jaxis.axis, event.jaxis.value
+                );
+            break;
+
+        case SDL_JOYHATMOTION:
+# if defined(DEBUG)
+            printf("Joystick %d hat %d value:",
+                event.jhat.which,
+                event.jhat.hat);
+            if (event.jhat.value == SDL_HAT_CENTERED)
+                printf(" centered");
+            if (event.jhat.value & SDL_HAT_UP)
+                printf(" up");
+            if (event.jhat.value & SDL_HAT_RIGHT)
+                printf(" right");
+            if (event.jhat.value & SDL_HAT_DOWN)
+                printf(" down");
+            if (event.jhat.value & SDL_HAT_LEFT)
+                printf(" left");
+            printf("\n");
+#endif // DEBUG
+            _joysticks[event.jhat.which]->joystickHatMotion()->execute(
+                _joysticks[event.jhat.which], event.jhat.which, event.jhat.hat, event.jhat.value
+                );
+            break;
+
+        case SDL_JOYBUTTONDOWN:
+# if defined(DEBUG)
+            printf("Joystick %d button %d down\n",
+                event.jbutton.which,
+                event.jbutton.button);
+#endif
+            _joysticks[event.jbutton.which]->joystickButtonDown()->execute(
+                _joysticks[event.jbutton.which], event.jbutton.which, event.jbutton.button
+                );
+            break;
+
+        case SDL_JOYBUTTONUP:
+# if defined(DEBUG)
+            printf("Joystick %d button %d up\n",
+                event.jbutton.which,
+                event.jbutton.button);
+#endif
+            _joysticks[event.jbutton.which]->joystickButtonUp()->execute(
+                _joysticks[event.jbutton.which], event.jbutton.which, event.jbutton.button
+                );
+            break;
+
 #ifndef EMSCRIPTEN
         case SDL_JOYDEVICEADDED:
         {
@@ -438,60 +522,9 @@ Canvas::step()
 
             break;
         }
-        case SDL_JOYAXISMOTION:
-            _joysticks[event.jaxis.which]->joystickAxisMotion()->execute(
-                _joysticks[event.jaxis.which], event.jaxis.which, event.jaxis.axis, event.jaxis.value
-                );
-            break;
-
-        case SDL_JOYBUTTONDOWN:
-            _joysticks[event.jbutton.which]->joystickButtonDown()->execute(
-                _joysticks[event.jbutton.which], event.jbutton.which, event.jbutton.button
-                );
-            break;
-
-        case SDL_JOYBUTTONUP:
-            _joysticks[event.jbutton.which]->joystickButtonUp()->execute(
-                _joysticks[event.jbutton.which], event.jbutton.which, event.jbutton.button
-                );
-            break;
-
-        case SDL_JOYHATMOTION:
-            _joysticks[event.jhat.which]->joystickHatMotion()->execute(
-                _joysticks[event.jhat.which], event.jhat.which, event.jhat.hat, event.jhat.value
-                );
-            break;
 #endif // EMSCRIPTEN
 
 #ifdef EMSCRIPTEN
-
-        case SDL_JOYAXISMOTION:
-            printf("Joystick %d axis %d value %d\n", event.jaxis.which, event.jaxis.axis, event.jaxis.value);
-            _joysticks[event.jaxis.which]->joystickAxisMotion()->execute(
-                _joysticks[event.jaxis.which], event.jaxis.which, event.jaxis.axis, event.jaxis.value
-                );
-            break;
-
-        case SDL_JOYBUTTONDOWN:
-            printf("Joystick %d button %d value %d\n", event.jbutton.which, event.jbutton.which, event.jbutton.button);
-            _joysticks[event.jbutton.which]->joystickButtonDown()->execute(
-                _joysticks[event.jbutton.which], event.jbutton.which, event.jbutton.button
-                );
-            break;
-
-        case SDL_JOYBUTTONUP:
-            printf("Joystick %d button %d value %d\n", event.jbutton.which, event.jbutton.which, event.jbutton.button);
-            _joysticks[event.jbutton.which]->joystickButtonUp()->execute(
-                _joysticks[event.jbutton.which], event.jbutton.which, event.jbutton.button
-                );
-            break;
-
-        case SDL_JOYHATMOTION:
-            _joysticks[event.jhat.which]->joystickHatMotion()->execute(
-                _joysticks[event.jhat.which], event.jhat.which, event.jhat.hat, event.jhat.value
-                );
-            break;
-
         case SDL_VIDEORESIZE:
             width(event.resize.w);
             height(event.resize.h);
@@ -565,9 +598,9 @@ namespace
     Canvas::Ptr currentCanvas;
 
     void
-        emscriptenMainLoop()
+    emscriptenMainLoop()
     {
-            currentCanvas->step();
+        currentCanvas->step();
     }
 }
 #endif
