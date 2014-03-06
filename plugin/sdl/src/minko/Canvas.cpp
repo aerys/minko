@@ -44,6 +44,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #if defined(__APPLE__)
 # include <TargetConditionals.h>
+# if TARGET_OS_IPHONE
+#  include "SDL2/SDL_opengles.h"
+# endif
 #endif
 
 using namespace minko;
@@ -100,15 +103,19 @@ void
 Canvas::initializeContext(const std::string& windowTitle, unsigned int width, unsigned int height, bool useStencil)
 {
 #ifndef EMSCRIPTEN
-	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK);
+	if (SDL_Init(SDL_INIT_VIDEO) < 0)
+        throw std::runtime_error(SDL_GetError());
 
 	if (useStencil)
 		SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 
-	auto sdlFlags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE;
+	auto sdlFlags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_SHOWN;
 
 	if (_chromeless)
 		sdlFlags |= SDL_WINDOW_BORDERLESS;
+    
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
+    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
 	_window = SDL_CreateWindow(
 		windowTitle.c_str(),
@@ -117,13 +124,18 @@ Canvas::initializeContext(const std::string& windowTitle, unsigned int width, un
 		width, height,
 		sdlFlags
 	);
+    
+    if (!_window)
+        throw;
 
 # if MINKO_ANGLE
 	if (!(_angleContext = initContext(_window, width, height)))
 		throw std::runtime_error("Could not create Angle context");
 # elif TARGET_IPHONE_SIMULATOR
-    /*if (!(_iOSRenderer = SDL_CreateRenderer(_window, -1, 0)))
-		throw std::runtime_error("Could not create iOS context");*/
+//    SDL_CreateRenderer(_window, -1, 0);
+	SDL_GLContext glContext = SDL_GL_CreateContext(_window);
+	if (!glContext)
+		throw std::runtime_error("Could not create iOS context");
 # else
 	SDL_GLContext glContext = SDL_GL_CreateContext(_window);
 	if (!glContext)
@@ -132,7 +144,6 @@ Canvas::initializeContext(const std::string& windowTitle, unsigned int width, un
 
 	_context = minko::render::OpenGLES2Context::create();
 #else
-	//SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
 	SDL_Init(SDL_INIT_VIDEO);
 
