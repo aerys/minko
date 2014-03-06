@@ -65,18 +65,13 @@
 		end,
 		
 		oncleanproject = function(prj)
-			--premake.clean.directory(prj, "%.xcodeproj")
-			--premake.clean.directory(prj, "%.xcworkspace")
 		end,
 
 		oncleansolution = function(sln)
-
 		end,
 		
 		oncleantarget   = function()
-		
-		end,
- 
+		end, 
 		
 		oncheckproject = function(prj)
 			-- Xcode can't mix target kinds within a project

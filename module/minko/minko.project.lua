@@ -214,14 +214,15 @@ minko.project.application = function(name)
 			"CoreGraphics.framework"
 		}
 
+		files {
+			"**.plist"
+		}
+
 		prelinkcommands {
 			minko.action.copy(minko.sdk.path("/framework/asset")),
 			minko.action.copy("asset"),
-			minko.action.link("asset/Default-568h@2x.png")
-		}
-
-		files {
-			"**.plist"
+			minko.action.copy(minko.sdk.path("/skeleton/Default-568h@2x.png")),
+			minko.action.copy(minko.sdk.path("/skeleton/Info.plist"))
 		}
 
 	configuration { }
