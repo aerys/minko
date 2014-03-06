@@ -49,9 +49,11 @@ minko.action.clean = function()
 		error("cannot clean from outside the Minko SDK")
 	end
 
-	local cmd = "git clean -X -f"
+	-- fixme: could detect Git location (http://stackoverflow.com/questions/8507368/finding-the-path-where-git-is-installed-on-a-windows-system)
+	local bin = os.is('windows') and '"C:\\Program Files (x86)\\Git\\bin\\git.exe"' or 'git'
+	local cmd = 'clean -X -d -f'
 
-	os.execute(cmd)
+	os.execute(bin .. " " .. cmd)
 	
 	for _, pattern in ipairs { "framework", "plugin/*", "test", "example/*" } do
 		local dirs = os.matchdirs(pattern)
@@ -59,7 +61,7 @@ minko.action.clean = function()
 		for _, dir in ipairs(dirs) do
 			local cwd = os.getcwd()
 			os.chdir(dir)
-			os.execute(cmd)
+			os.execute(bin .. ' ' .. cmd)
 			os.chdir(cwd)
 		end
 	end
