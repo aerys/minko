@@ -51,8 +51,8 @@ ParticleSystem::ParticleSystem(AssetLibraryPtr		assets,
 							   float				rate,
 							   FloatSamplerPtr		lifetime,
 							   ShapePtr				shape,
-							   StartDirection		startDirection,
-							   FloatSamplerPtr		startVelocity): 
+							   StartDirection		emissionDirection,
+							   FloatSamplerPtr		emissionVelocity): 
 	_countLimit			(16384),
 	_maxCount			(0),
 	_liveCount			(0),
@@ -64,8 +64,8 @@ ParticleSystem::ParticleSystem(AssetLibraryPtr		assets,
 	_rate				(1 / rate),
 	_lifetime			(lifetime),
 	_shape				(shape),
-	_startDirection		(startDirection),
-	_startVelocity		(startVelocity),
+	_emissionDirection	(emissionDirection),
+	_emissionVelocity	(emissionVelocity),
 	_createTimer		(0),
 	_format				(VertexComponentFlags::DEFAULT),
 	_updateStep			(0),
@@ -341,20 +341,10 @@ ParticleSystem::updateSystem(float timeStep, bool emit)
 			particle.oldy       = particle.y;
 			particle.oldz       = particle.z;
 
-			if (particle.timeLived >= particle.lifetime)
+			if (!(particle.timeLived < particle.lifetime))
 				killParticle(particleIndex);
 		}
 	}
-
-	//if (_format & VertexComponentFlags::OLD_POSITION)
-	//{
-	//	for (auto& particle : _particles)
-	//	{
-	//		particle.oldx = particle.x;
-	//		particle.oldy = particle.y;
-	//		particle.oldz = particle.z;
-	//	}
-	//}
 	
 	for (auto& updater : _updaters)
 		updater->update(_particles, timeStep);
@@ -363,7 +353,7 @@ ParticleSystem::updateSystem(float timeStep, bool emit)
 	{
 		ParticleData& particle = _particles[particleIndex];
 		
-		if (!particle.alive && emit && _createTimer >= _rate)
+		if (!particle.alive && emit && !(_createTimer < _rate))
 		{
 			_createTimer -= _rate;
 			createParticle(particleIndex, *_shape, _createTimer);
@@ -390,7 +380,7 @@ ParticleSystem::createParticle(unsigned int 				particleIndex,
 {
 	ParticleData& particle = _particles[particleIndex];
 
-	if (_startDirection == StartDirection::NONE)
+	if (_emissionDirection == StartDirection::NONE)
 	{
 		shape.initPosition(particle);
 
@@ -398,15 +388,15 @@ ParticleSystem::createParticle(unsigned int 				particleIndex,
 		particle.startvy 	= 0.0f;
 		particle.startvz 	= 0.0f;
 	}
-	else if (_startDirection == StartDirection::SHAPE)
+	else if (_emissionDirection == StartDirection::SHAPE)
 	{
 		shape.initPositionAndDirection(particle);
 	}
-	else if (_startDirection == StartDirection::RANDOM)
+	else if (_emissionDirection == StartDirection::RANDOM)
 	{
 		shape.initPosition(particle);
 	}
-	else if (_startDirection == StartDirection::UP)
+	else if (_emissionDirection == StartDirection::UP)
 	{
 		shape.initPosition(particle);
 
@@ -414,7 +404,7 @@ ParticleSystem::createParticle(unsigned int 				particleIndex,
 		particle.startvy 	= 1.0f;
 		particle.startvz 	= 0.0f;
 	}
-	else if (_startDirection == StartDirection::OUTWARD)
+	else if (_emissionDirection == StartDirection::OUTWARD)
 	{
 		shape.initPosition(particle);
 
@@ -439,7 +429,7 @@ ParticleSystem::createParticle(unsigned int 				particleIndex,
 		particle.y = transform[4] * x + transform[5] * y + transform[6] * z + transform[7];
 		particle.z = transform[8] * x + transform[9] * y + transform[10] * z + transform[11];
 
-		if (_startDirection != StartDirection::NONE)
+		if (_emissionDirection != StartDirection::NONE)
 		{
 			const float vx = particle.startvx;
 			const float vy = particle.startvy;
@@ -451,16 +441,16 @@ ParticleSystem::createParticle(unsigned int 				particleIndex,
 		}
 	}
 
-	if (_startDirection != StartDirection::NONE)
+	if (_emissionDirection != StartDirection::NONE)
 	{
 		const float norm = std::max(1e-4f, 
                                     sqrtf(particle.startvx * particle.startvx + 
 						                  particle.startvy * particle.startvy + 
 						                  particle.startvz * particle.startvz));
 
-		const float k = _startVelocity 
-            ? _startVelocity->value()   / norm 
-            : 1.0f                      / norm;
+		const float k = _emissionVelocity 
+            ? _emissionVelocity->value() / norm 
+            : 1.0f                       / norm;
 
 		particle.startvx 	= particle.startvx * k;
 		particle.startvy 	= particle.startvy * k;
@@ -500,12 +490,13 @@ ParticleSystem::updateMaxParticlesCount()
 	_maxCount = value;
 
 	_liveCount = 0;
+
 	for (unsigned int i = 0; i < _particles.size(); ++i)
 	{
 		if (_particles[i].alive)
 		{
-			if (_liveCount == _maxCount
-				|| _particles[i].timeLived >= _lifetime->max())
+			if (_liveCount == _maxCount	|| 
+                !(_particles[i].timeLived < _lifetime->max()))
 				_particles[i].alive = false;
 			else
 			{

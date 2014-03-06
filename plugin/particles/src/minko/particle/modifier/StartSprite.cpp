@@ -29,18 +29,15 @@ using namespace minko::particle;
 using namespace minko::particle::modifier;
 
 
-StartSprite::StartSprite(SamplerPtr                     spriteIndex,
-                         render::AbstractTexture::Ptr   spritesheet,
-                         unsigned int                   numCols,
-                         unsigned int                   numRows):
+StartSprite::StartSprite(SamplerPtr     spriteIndex,
+                         unsigned int   numCols,
+                         unsigned int   numRows):
     IParticleInitializer(), 
     Modifier1<float> (spriteIndex),
     _numCols(numCols),
-    _numRows(numRows),
-    _spritesheet(spritesheet)
+    _numRows(numRows)
 {
-    if (_spritesheet->type() == render::TextureType::CubeTexture)
-        throw new std::invalid_argument("spritesheet");
+
 }
 
 void
@@ -60,12 +57,11 @@ StartSprite::getNeededComponents() const
 void
 StartSprite::setProperties(data::ParticlesProvider::Ptr provider) const
 {
-    if (_numCols > 0 && _numRows > 0 && _spritesheet)
-        provider->diffuseSpritesheet(_spritesheet, _numRows, _numCols);
+    provider->spritesheetSize(_numRows, _numCols);
 }
 				
 void
 StartSprite::unsetProperties(data::ParticlesProvider::Ptr provider) const
 {
-    provider->unsetDiffuseSpritesheet();
+    provider->unsetSpritesheetSize();
 }

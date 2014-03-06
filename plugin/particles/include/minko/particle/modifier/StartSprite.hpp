@@ -50,11 +50,10 @@ namespace minko
 				static
 				Ptr
 				create(SamplerPtr       spriteIndex,
-                       AbsTexturePtr    spritesheet,
                        unsigned int     numCols,
                        unsigned int     numRows)
 				{
-					Ptr ptr = std::shared_ptr<StartSprite>(new StartSprite(spriteIndex, spritesheet, numCols, numRows));
+					Ptr ptr = std::shared_ptr<StartSprite>(new StartSprite(spriteIndex, numCols, numRows));
 
 					return ptr;
 				};
@@ -73,7 +72,6 @@ namespace minko
 			
 			protected:
 				StartSprite(SamplerPtr      spriteIndex,
-                            AbsTexturePtr   spritesheet,
                             unsigned int    numCols,
                             unsigned int    numRows);
 			};

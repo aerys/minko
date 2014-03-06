@@ -27,6 +27,7 @@ namespace minko
 	{
 		enum class SamplerId
 		{
+            UNKNOWN         = 0,
 			CONSTANT_COLOR  = 2,
 			CONSTANT_NUMBER = 1,
 			LINEAR_COLOR	= 3,

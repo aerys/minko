@@ -56,12 +56,15 @@ namespace minko
 
             Ptr
             diffuseMap(AbsTexturePtr);
+            
+            Ptr
+            unsetDiffuseMap();
 
             Ptr
-            diffuseSpritesheet(AbsTexturePtr, unsigned int numCols = 1, unsigned int numRows = 1);
+            spritesheetSize(unsigned int numCols, unsigned int numRows);
 
             Ptr
-            unsetDiffuseSpritesheet();
+            unsetSpritesheetSize();
 
             Ptr
             isInWorldSpace(bool);

@@ -127,7 +127,7 @@ namespace minko
 
             static
             ParticleModifierPtr
-            deserializeParticleModifier(serialize::ModifierId, const std::string&, AbsTexturePtr);
+            deserializeParticleModifier(serialize::ModifierId, const std::string&);
 
             static
             ParticleModifierPtr
@@ -147,7 +147,7 @@ namespace minko
 
             static
             ParticleModifierPtr
-            deserializeStartSpriteInitializer(const std::string&, AbsTexturePtr);
+            deserializeStartSpriteInitializer(const std::string&);
 
             static
             ParticleModifierPtr

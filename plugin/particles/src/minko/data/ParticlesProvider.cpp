@@ -57,29 +57,35 @@ ParticlesProvider::diffuseColor(Vector4::Ptr color)
 ParticlesProvider::Ptr
 ParticlesProvider::diffuseMap(AbstractTexture::Ptr  texture)
 {
-    return diffuseSpritesheet(texture, 1, 1);
+    if (texture)
+        set<AbstractTexture::Ptr>("particles.spritesheet", texture);
+
+    return std::static_pointer_cast<ParticlesProvider>(shared_from_this()); 
 }
 
 ParticlesProvider::Ptr
-ParticlesProvider::diffuseSpritesheet(AbstractTexture::Ptr  spritesheet,
-                                      unsigned int          numCols, 
-                                      unsigned int          numRows)
+ParticlesProvider::unsetDiffuseMap()
 {
-    if (numRows > 0 && numCols > 0 && spritesheet && spritesheet->type() == TextureType::Texture2D)
-    {
-        set<Vector2::Ptr>("particles.spritesheetSize",      Vector2::create(float(numCols), float(numRows)));
-        set<AbstractTexture::Ptr>("particles.spritesheet",  spritesheet);
-    }
-    else
-        unsetDiffuseSpritesheet();
+    if (hasProperty("particles.spritesheet"))
+        unset("particles.spritesheet");
+
+    return std::static_pointer_cast<ParticlesProvider>(shared_from_this()); 
+}
+
+
+ParticlesProvider::Ptr
+ParticlesProvider::spritesheetSize(unsigned int numCols, 
+                                   unsigned int numRows)
+{
+    set<Vector2::Ptr>("particles.spritesheetSize", Vector2::create(float(numCols), float(numRows)));
 
     return std::static_pointer_cast<ParticlesProvider>(shared_from_this());
 }
 
 ParticlesProvider::Ptr
-ParticlesProvider::unsetDiffuseSpritesheet()
+ParticlesProvider::unsetSpritesheetSize()
 {
-    if (hasProperty("particles.spritesheet"))
+    if (hasProperty("particles.spritesheetSize"))
     {
         unset("particles.spritesheetSize");
         unset("particles.spritesheet");
