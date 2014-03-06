@@ -38,13 +38,12 @@ bullet::ColliderData::ColliderData(float						mass,
 								   AbstractPhysicsShape::Ptr	shape,
 								   Vector3::Ptr					inertia):
 	_uid(0),
-	_name(""),
 	_mass(mass),
-    _filterGroup(_mass < 1e-6f ? DEFAULT_STATIC_FILTER : DEFAULT_DYNAMIC_FILTER),
-    _filterMask(_mass < 1e-6f ? DEFAULT_STATIC_MASK : DEFAULT_DYNAMIC_MASK),
 	_correctionMatrix(Matrix4x4::create()->identity()),
 	_shape(shape),
 	_inertia(inertia),
+    _collisionGroup(1),
+    _collisionMask((1<<16) - 1),
 	_linearVelocity(Vector3::create(0.0f, 0.0f, 0.0f)),
 	_linearFactor(Vector3::create(1.0f, 1.0f, 1.0f)),
 	_linearDamping(0.0f),
@@ -59,42 +58,12 @@ bullet::ColliderData::ColliderData(float						mass,
 	_deactivationDisabled(false),
 	_graphicsWorldTransformChanged(Signal<Ptr, Matrix4x4Ptr>::create()),
 	_collisionStarted(Signal<Ptr, Ptr>::create()),
-	_collisionEnded(Signal<Ptr, Ptr>::create())
+	_collisionEnded(Signal<Ptr, Ptr>::create()),
+    _collisionFilterChanged(Signal<Ptr>::create())
 {
 
 }
 
-bullet::ColliderData::ColliderData(float						mass,
-                                   short                        filterGroup,
-                                   short                        filterMask,
-								   AbstractPhysicsShape::Ptr	shape,
-								   Vector3::Ptr					inertia):
-	_uid(0),
-	_name(""),
-	_mass(mass),
-    _filterGroup(filterGroup),
-    _filterMask(filterMask),
-	_correctionMatrix(Matrix4x4::create()->identity()),
-	_shape(shape),
-	_inertia(inertia),
-	_linearVelocity(Vector3::create(0.0f, 0.0f, 0.0f)),
-	_linearFactor(Vector3::create(1.0f, 1.0f, 1.0f)),
-	_linearDamping(0.0f),
-	_linearSleepingThreshold(0.8f),
-	_angularVelocity(Vector3::create(0.0f, 0.0f, 0.0f)),
-	_angularFactor(Vector3::create(1.0f, 1.0f, 1.0f)),
-	_angularDamping(0.0f),
-	_angularSleepingThreshold(1.0f),
-	_restitution(0.0f),
-	_friction(0.5f),
-	_rollingFriction(0.0f),
-	_deactivationDisabled(false),
-	_graphicsWorldTransformChanged(Signal<Ptr, Matrix4x4Ptr>::create()),
-	_collisionStarted(Signal<Ptr, Ptr>::create()),
-	_collisionEnded(Signal<Ptr, Ptr>::create())
-{
-
-}
 
 void
 bullet::ColliderData::correction(Matrix4x4::Ptr value)
@@ -124,4 +93,20 @@ void
 bullet::ColliderData::angularFactor(float x, float y, float z)
 {
 	_angularFactor->setTo(x, y, z);
+}
+
+void
+bullet::ColliderData::collisionGroup(short value)
+{
+    _collisionGroup = value;
+
+    _collisionFilterChanged->execute(shared_from_this());
+}
+
+void
+bullet::ColliderData::collisionMask(short value)
+{
+    _collisionMask = value;
+
+    _collisionFilterChanged->execute(shared_from_this());
 }

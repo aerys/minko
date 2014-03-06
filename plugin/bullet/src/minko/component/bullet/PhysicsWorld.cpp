@@ -57,7 +57,9 @@ bullet::PhysicsWorld::PhysicsWorld():
 	_targetRemovedSlot(nullptr),
 	_frameEndSlot(nullptr),
 	_componentAddedOrRemovedSlot(nullptr),
-	_addedOrRemovedSlot(nullptr)
+	_addedOrRemovedSlot(nullptr),
+    _colliderGroupChangedSlot(),
+    _colliderMaskChangedSlot()
 {
 }
 
@@ -157,8 +159,11 @@ bullet::PhysicsWorld::setSceneManager(std::shared_ptr<SceneManager> sceneManager
 void
 bullet::PhysicsWorld::addChild(ColliderData::Ptr data)
 {
+    if (data == nullptr || data->node() == nullptr)
+        throw new std::invalid_argument("data");
+
 	if (hasCollider(data))
-		throw std::logic_error("The same data cannot be added twice.");
+		throw new std::logic_error("The same data cannot be added twice.");
 
 	data->uid(_uidAllocator->allocate());
 
@@ -168,12 +173,24 @@ bullet::PhysicsWorld::addChild(ColliderData::Ptr data)
 	_colliderMap.insert(std::pair<ColliderData::Ptr, BulletCollider::Ptr>(data, bulletCollider));
 	_colliderReverseMap.insert(std::pair<btCollisionObject*, ColliderData::Ptr>(bulletCollider->rigidBody().get(), data));
 
+    _colliderGroupChangedSlot[data] = data->node()->layoutsChanged()->connect(std::bind(
+        &bullet::PhysicsWorld::updateCollisionFilter,
+        shared_from_this(),
+        data
+    ));
+    _colliderMaskChangedSlot[data] = data->collisionFilterChanged()->connect(std::bind(
+        &bullet::PhysicsWorld::updateCollisionFilter,
+        shared_from_this(),
+        data
+    ));
+
 	std::dynamic_pointer_cast<btDiscreteDynamicsWorld>(_bulletDynamicsWorld)
 		->addRigidBody(
             bulletCollider->rigidBody().get(),
-            data->filterGroup(),
-            data->filterMask()
-        );
+            //short(data->node()->layouts() & ((1<<16) - 1)), // FIXME
+            data->collisionGroup(),
+            data->collisionMask()
+         );
 
 #ifdef DEBUG_PHYSICS
 	std::cout << "[" << data->name() << "]\tadd physics body" << std::endl;
@@ -183,10 +200,29 @@ bullet::PhysicsWorld::addChild(ColliderData::Ptr data)
 }
 
 void
+bullet::PhysicsWorld::updateCollisionFilter(ColliderData::Ptr data)
+{
+    auto foundColliderIt = _colliderMap.find(data);
+    if (foundColliderIt != _colliderMap.end())
+    {
+        auto proxy = foundColliderIt->second->rigidBody()->getBroadphaseProxy();
+        
+        //proxy->m_collisionFilterGroup   = short(data->node()->layouts() & ((1<<16) - 1)); // FIXME
+        proxy->m_collisionFilterGroup   = data->collisionGroup();
+        proxy->m_collisionFilterMask    = data->collisionMask();
+    }
+}
+
+void
 bullet::PhysicsWorld::removeChild(ColliderData::Ptr data)
 {
-	auto bulletColliderIt = _colliderMap.find(data);
+    if (_colliderGroupChangedSlot.count(data))
+        _colliderGroupChangedSlot.erase(data);
 
+    if (_colliderMaskChangedSlot.count(data))
+        _colliderMaskChangedSlot.erase(data);
+
+	auto bulletColliderIt = _colliderMap.find(data);
 	if (bulletColliderIt != _colliderMap.end())
 	{
 		btCollisionObject*	bulletObject = bulletColliderIt->second->rigidBody().get();
@@ -390,6 +426,14 @@ bullet::PhysicsWorld::synchronizePhysicsWithGraphics(ColliderDataPtr collider,
 	print(std::cout << "- rigidbody.worldtransform = \n", it->second->rigidBody()->getWorldTransform()) << std::endl;
 #endif // DEBUG_PHYSICS
 }
+
+//void
+//bullet::PhysicsWorld::collisionMaskChangedHandler(ColliderData::Ptr colliderData, short mask)
+//{
+//    auto foundBulletColliderIt = _colliderMap.find(colliderData);
+//    if (foundBulletColliderIt != _colliderMap.end())
+//        foundBulletColliderIt->second->rigidBody()->getBroadphaseProxy()->m_collisionFilterGroup = mask;
+//}
 
 /*static*/
 Matrix4x4::Ptr
