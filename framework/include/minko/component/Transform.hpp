@@ -138,6 +138,27 @@ namespace minko
 				return _modelToWorld;
 			}
 
+            inline
+            float
+            x()
+            {
+                return this->modelToWorld(minko::math::Vector3::create())->x();
+            }
+
+            inline
+            float
+            y()
+            {
+                return this->modelToWorld(minko::math::Vector3::create())->y();
+            }
+
+            inline
+            float
+            z()
+            {
+                return this->modelToWorld(minko::math::Vector3::create())->z();
+            }
+
 		private:
 			Transform();
 
