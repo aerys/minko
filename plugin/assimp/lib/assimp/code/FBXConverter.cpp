@@ -62,7 +62,6 @@ namespace FBX {
 
 
 #define MAGIC_NODE_TAG "_$AssimpFbx$"
-#define MAGIC_NULL_TAG "_$AssimpFbxNull$"
 
 #define CONVERT_FBX_TIME(time) static_cast<double>(time) / 46186158000L
 
@@ -95,7 +94,13 @@ public:
 		TransformationComp_MAXIMUM
 	};
 
+	enum MetadataKeys
+	{
+		MetadataKeys_UserProperties = 0,
+		MetadataKeys_IsNull,
 
+		MetadataKeys_MAXIMUM
+	};
 
 public:
 
@@ -223,6 +228,9 @@ private:
 						name_carrier = nodes_chain.back();
 					}
 
+					//setup metadata on newest node
+					SetupNodeMetadata(*model, *nodes_chain.back());
+
 					// link all nodes in a row
 					aiNode* last_parent = &parent;
 					BOOST_FOREACH(aiNode* prenode, nodes_chain) {
@@ -252,14 +260,6 @@ private:
 
 					if(doc.Settings().readCameras) {
 						ConvertCameras(*model);
-					}
-
-					// preserve the info that a node was marked as Null node
-					// in the original file.
-					if(model->IsNull()) {
-						const std::string& new_name = original_name + MAGIC_NULL_TAG;
-						RenameNode(original_name, new_name);
-						name_carrier->mName.Set( new_name.c_str() );
 					}
 
 					nodes.push_back(nodes_chain.front());	
@@ -754,7 +754,28 @@ private:
 			nd->mTransformation = nd->mTransformation * chain[i];
 		}
 	}
+	
+	// ------------------------------------------------------------------------------------------------
 
+	void SetupNodeMetadata(const Model& model, aiNode& nd)
+	{
+		const PropertyTable& props = model.Props();
+
+		//create metadata on node
+		aiMetadata* data = new aiMetadata();
+		data->mNumProperties = MetadataKeys_MAXIMUM;
+		data->mKeys = new aiString[data->mNumProperties]();
+		data->mValues = new aiString[data->mNumProperties]();
+		nd.mMetaData = data;
+
+		// find user defined properties
+		data->mKeys[MetadataKeys_UserProperties].Set("UserProperties");
+		data->mValues[MetadataKeys_UserProperties].Set(PropertyGet<std::string>(props, "UDP3DSMAX", ""));
+
+		// preserve the info that a node was marked as Null node in the original file.
+		data->mKeys[MetadataKeys_IsNull].Set("IsNull");
+		data->mValues[MetadataKeys_IsNull].Set(model.IsNull() ? "true" : "false");
+	}
 
 	// ------------------------------------------------------------------------------------------------
 	void ConvertModel(const Model& model, aiNode& nd, const aiMatrix4x4& node_global_transform)
@@ -1517,6 +1538,7 @@ private:
 		TrySetTextureProperties(out_mat, textures, "DisplacementColor", aiTextureType_DISPLACEMENT);
 		TrySetTextureProperties(out_mat, textures, "NormalMap", aiTextureType_NORMALS);
 		TrySetTextureProperties(out_mat, textures, "Bump", aiTextureType_HEIGHT);
+		TrySetTextureProperties(out_mat, textures, "ShininessExponent", aiTextureType_SHININESS);
 	}
 
 
