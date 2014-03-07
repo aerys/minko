@@ -27,7 +27,7 @@ namespace minko
 	{
 		struct ParticleData
 		{
-			bool	alive;
+			//bool	alive;
 
 			float	x;
 			float	y;
@@ -59,7 +59,18 @@ namespace minko
 
 			float	spriteIndex;
 
-			ParticleData() : alive (false),
+			inline bool alive() const
+			{
+				return timeLived < lifetime;
+			}
+
+			inline void kill()
+			{
+				timeLived = lifetime;
+			}
+
+			ParticleData() : 
+				//alive (false),
 				x (0),
 				y (0),
 				z (0),
@@ -76,7 +87,10 @@ namespace minko
 				rotation (0),
 				lifetime (0),
 				timeLived (0),
-				spriteIndex (0) {};
+				spriteIndex (0) 
+			{
+
+			};
 		};
 	}
 }

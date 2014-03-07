@@ -75,16 +75,18 @@ namespace minko
 			};
 
 		private:
-			SurfacePtr									                _surface;
+			static const unsigned int 								    COUNT_LIMIT;
+
 			GeometryPtr									                _geometry;
 			ParticlesProviderPtr						                _material;
 			EffectPtr									                _effect;
+			SurfacePtr									                _surface;
 
 			TransformPtr								                _toWorld;
 
-			unsigned int 								                _countLimit;
+			unsigned int												_countLimit;
 			unsigned int								                _maxCount;
-			unsigned int								                _liveCount;
+			//unsigned int								                _liveCount;
 			unsigned int								                _previousLiveCount;
 			std::vector<IInitializerPtr> 				                _initializers;
 			std::vector<IUpdaterPtr> 					                _updaters;
@@ -132,7 +134,7 @@ namespace minko
 				   FloatSamplerPtr			lifetime,
 				   ShapePtr					shape,
 				   particle::StartDirection	emissionDirection,
-				   FloatSamplerPtr 			emissionVelocity   = nullptr)
+				   FloatSamplerPtr 			emissionVelocity)
 			{
 				Ptr ptr = std::shared_ptr<ParticleSystem> (new ParticleSystem(
 					assets,
@@ -156,42 +158,52 @@ namespace minko
 			}
 
 			inline
-			void
+			Ptr
 			rate(float value)
 			{
 				_rate =  1.0f / value;
 
 				updateMaxParticlesCount();
+
+                return shared_from_this();
 			}
 
 			inline
-			void
+			Ptr
 			lifetime(FloatSamplerPtr value)
 			{
 				_lifetime = value;
 
 				updateMaxParticlesCount();
+
+                return shared_from_this();
 			}
 
 			inline
-			void
-				shape(ShapePtr value)
+			Ptr
+			shape(ShapePtr value)
 			{
 				_shape = value;
+
+                return shared_from_this();
 			}
 
 			inline
-			void
+			Ptr
 			emissionDirection(particle::StartDirection value)
 			{
 				_emissionDirection = value;
+
+                return shared_from_this();
 			}
 
 			inline
-			void
+			Ptr
 			emissionVelocity(FloatSamplerPtr value)
 			{
 				_emissionVelocity = value;
+
+                return shared_from_this();
 			}
 
 			inline
@@ -202,7 +214,7 @@ namespace minko
 			}
 
 			inline
-			void
+			Ptr
 			playing(bool value)
 			{
                 _playing = true;
@@ -212,44 +224,51 @@ namespace minko
 				//	if (_playing)
 				//		_previousClock = clock();
 				//}
+
+                return shared_from_this();
 			}
 
 			inline
-			void
+			Ptr
 			emitting(bool value)
 			{
 				_emitting = value;
+
+                return shared_from_this();
 			}
 
 			inline
-			void
+			Ptr
 			play()
 			{
 				reset();
-				playing(true);
+
+				return playing(true);
 			}
 
 			inline
-			void
+			Ptr
 			stop()
 			{
 				reset();
 				playing(false);
 				updateVertexBuffer();
+
+                return shared_from_this();
 			}
 
 			inline
-			void
+			Ptr
 			pause()
 			{
-				playing(false);
+				return playing(false);
 			}
 
 			inline
-			void
+			Ptr
 			resume()
 			{
-				playing(true);
+				return playing(true);
 			}
 
 		public:
@@ -340,18 +359,11 @@ namespace minko
 			updateMaxParticlesCount();
 
 			inline
-			unsigned int
-			liveParticlesCount() const
-			{
-				return _liveCount;
-			};
-
-			inline
 			void
 			countLimit(unsigned int value)
 			{
-				if (value > 16384)
-					throw std::length_error("A particle system can have a maximum of 16384 particles.");
+				if (value > COUNT_LIMIT)
+					throw std::length_error("A particle system can have a maximum of " + std::to_string(COUNT_LIMIT) + " particles.");
 
 				_countLimit = value;
 
@@ -370,8 +382,8 @@ namespace minko
 						   const particle::shape::EmitterShape&	emitter,
 						   float								timeLived);
 
-			void
-			killParticle(unsigned int							particleIndex);
+			//void
+			//killParticle(unsigned int							particleIndex);
 
 		public:
 			inline

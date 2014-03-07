@@ -110,7 +110,8 @@ ParticlesExtension::deserializeParticles(std::string&       serialized,
         startDirection,
         startVelocity
     );
-
+    particles->emitting(emit);
+	
     for (auto& modifier : dst.a10)
     {
         auto mod = deserializeParticleModifier(
@@ -150,8 +151,7 @@ ParticlesExtension::deserializeParticles(std::string&       serialized,
     if (particleMap)
         particles->material()->diffuseMap(particleMap);
 
-    particles->play();
-    return particles;
+    return particles->play();
 }
 
 /*static*/
@@ -159,8 +159,6 @@ modifier::IParticleModifier::Ptr
 ParticlesExtension::deserializeParticleModifier(serialize::ModifierId           id, 
                                                 const std::string&              serialized)
 {
-    std::cout << "modifier = " << int(id) << std::endl;
-
     switch (id)
     {
     case minko::serialize::ModifierId::START_COLOR:
@@ -423,7 +421,6 @@ shape::EmitterShape::Ptr
 ParticlesExtension::deserializeEmitterShape(serialize::EmitterShapeId   id, 
                                             const std::string&          serialized)
 {
-    std::cout << "shape = " << int(id) << std::endl;
     switch (id)
     {
     case minko::serialize::EmitterShapeId::CYLINDER:
@@ -516,8 +513,6 @@ sampler::Sampler<float>::Ptr
 ParticlesExtension::deserializeFloatSampler(serialize::SamplerId   id, 
                                             const std::string&     serialized)
 {
-    std::cout << "sampler 1d(" << int(id) << ")" << std::endl;
-
     switch (id)
     {
     case minko::serialize::SamplerId::CONSTANT_NUMBER:
@@ -538,8 +533,6 @@ sampler::Sampler<math::Vector3>::Ptr
 ParticlesExtension::deserializeColorSampler(serialize::SamplerId   id, 
                                              const std::string&     serialized)
 {
-    std::cout << "sampler 3d(" << int(id) << ")" << std::endl;
-
     switch (id)
     {
     case minko::serialize::SamplerId::CONSTANT_COLOR:
