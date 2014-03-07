@@ -1,7 +1,7 @@
 include "lib/googletest"
 
 minko.project.application "minko-tests"
-	-- removeplatforms { "html5" } @fixme broken for Windows
+	removeplatforms { "html5" }
 
 	files {
 		"src/**.hpp",
