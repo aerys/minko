@@ -145,7 +145,10 @@ Canvas::initializeContext(const std::string& windowTitle, unsigned int width, un
 # endif // MINKO_ANGLE
 
     _context = minko::render::OpenGLES2Context::create();
-#else
+#else // if defined(EMSCRIPTEN)
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK) < 0)
+        throw std::runtime_error(SDL_GetError());
+	
     if (useStencil)
         SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 
