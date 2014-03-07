@@ -32,6 +32,9 @@ namespace minko
         const unsigned char* _keyboardState;
 
     public:
+        static const std::array<int, 256> SCAN_CODE_SDL_MAP;
+        static const std::array<int, 256> KEY_CODE_SDL_MAP;
+
         static inline
         std::shared_ptr<SDLKeyboard>
         create()
@@ -41,26 +44,10 @@ namespace minko
 
     public:
         bool
-            keyIsDown(input::Keyboard::ScanCode scanCode)
-        {
-#if defined(EMSCRIPTEN)
-            return _keyboardState[static_cast<int>(getKeyCodeFromScanCode(scanCode))] != 0;
-#else
-            return _keyboardState[static_cast<int>(scanCode)] != 0;
-#endif
-        }
+            keyIsDown(input::Keyboard::ScanCode scanCode);
 
         bool
-            keyIsDown(input::Keyboard::KeyCode keyCode)
-        {
-#if defined(EMSCRIPTEN)
-            // Note: bug in emscripten, GetKeyStates is indexed by key codes.
-            auto scanCode = keyCode;
-            return _keyboardState[static_cast<int>(scanCode)] != 0;
-#else
-            return _keyboardState[static_cast<int>(getScanCodeFromKeyCode(keyCode))] != 0;
-#endif
-        }
+            keyIsDown(input::Keyboard::KeyCode keyCode);
 
     private:
         bool

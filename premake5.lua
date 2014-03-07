@@ -70,8 +70,8 @@ solution "minko"
 		include 'plugin/devil'
 		include 'plugin/bullet'
 		include 'plugin/fx'
-		include 'plugin/http-loader'
-		include 'plugin/http-worker'
+		--include 'plugin/http-loader'
+		--include 'plugin/http-worker'
 		include 'plugin/jpeg'
 		include 'plugin/leap'
 		include 'plugin/oculus'
@@ -85,7 +85,7 @@ solution "minko"
 
 	-- example
 	if not _OPTIONS['no-example'] then
-		include 'example/lua-scripts'
+		--include 'example/lua-scripts'
 		include 'example/assimp'
 		include 'example/cube'
 		include 'example/devil'
@@ -106,7 +106,7 @@ solution "minko"
 		include 'example/multi-surfaces'
 		include 'example/physics'
 		include 'example/oculus'
-		include 'example/http'
+		--include 'example/http'
 		include 'example/joystick'
 	end
 

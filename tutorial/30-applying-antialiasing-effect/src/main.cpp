@@ -118,7 +118,7 @@ main(int argc, char** argv)
 
             if (enableFXAA)
             {
-                sceneManager->nextFrame(ppTarget);
+                sceneManager->nextFrame(renderTarget);
                 ppRenderer->render(assets->context());
             }
             else
