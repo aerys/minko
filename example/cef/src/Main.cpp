@@ -21,13 +21,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/MinkoPNG.hpp"
 #include "minko/MinkoSDL.hpp"
 #include "minko/MinkoCEF.hpp"
+#include "minko/dom/AbstractDOMElement.hpp"
 
 using namespace minko;
 using namespace minko::component;
 using namespace minko::math;
-using namespace chromium;
 
 const std::string TEXTURE_FILENAME = "texture/box.png";
+
+Signal<std::string>::Slot onloadSlot;
 
 int main(int argc, char** argv)
 {
@@ -69,15 +71,27 @@ int main(int argc, char** argv)
 		camera->component<PerspectiveCamera>()->aspectRatio((float)w / (float)h);
 	});
 
-	Chromium* cef = new Chromium();
+	auto overlay = Overlay::create(canvas);
+
 	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
 	{
+		root->addComponent(overlay);
 		//cef->initialize(canvas, sceneManager);
 		//cef->load("http://static3.wikia.nocookie.net/__cb20071019155932/uncyclopedia/images/7/7b/Dancing_banana.gif");
 		//cef->setHTML("<html><body color='blue'>Hello World</body></html>");
 		//cef->setURL("http://www.benjisbrk.com/public/mousetest");
 
-		cef->load("html/menu.html");
+		onloadSlot = overlay->onload()->connect([=](std::string page)
+		{
+			std::cout << "onload: " << page << std::endl;
+
+			if (overlay->domEngine()->getElementById("toto") == overlay->domEngine()->getElementById("toto"))
+			{
+				std::cout << "oh yeah !" << std::endl;
+			}
+		});
+
+		overlay->load("html/menu.html");
 		
 		mesh->addComponent(Surface::create(
 			assets->geometry("cubeGeometry"),
@@ -102,7 +116,7 @@ int main(int argc, char** argv)
 	sceneManager->assets()->load();
 	canvas->run();
 
-	cef->beforeAppCloses();
+	overlay->unload();
 	return 0;
 }
 

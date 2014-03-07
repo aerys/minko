@@ -22,13 +22,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "chromium/ChromiumApp.hpp"
 #include "chromium/ChromiumRenderHandler.hpp"
 #include "chromium/ChromiumRenderProcessHandler.hpp"
-#include "chromium/ChromiumV8Engine.hpp"
+#include "chromium/dom/ChromiumDOMEngine.hpp"
 #include "include/cef_app.h"
 #include "include/cef_render_handler.h"
 #include "include/cef_client.h"
 
 namespace chromium
-{	
+{
 	class ChromiumPimpl
 	{
 	public:
@@ -37,7 +37,7 @@ namespace chromium
 		ChromiumRenderHandler* renderHandler;
 		CefRefPtr<ChromiumApp> app;
 		CefRefPtr<ChromiumRenderProcessHandler> renderProcessHandler;
-		ChromiumV8Engine* v8Engine;
+		dom::ChromiumDOMEngine* domEngine;
 		CefRefPtr<CefV8Context> v8Context;
 	};
 }

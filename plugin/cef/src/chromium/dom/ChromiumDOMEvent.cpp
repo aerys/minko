@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "chromium/dom/ChromiumDOMEvent.hpp"
+#include "minko/dom/AbstractDOMEvent.hpp"
 #include "chromium/dom/ChromiumDOMElement.hpp"
 
 using namespace chromium;

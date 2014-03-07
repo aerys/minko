@@ -27,11 +27,10 @@ using namespace chromium;
 ChromiumRenderProcessHandler::ChromiumRenderProcessHandler(ChromiumPimpl* impl) :
 	_impl(impl)
 {
-	_impl->v8Engine = new ChromiumV8Engine();
 }
 
 void
 ChromiumRenderProcessHandler::OnContextCreated(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame, CefRefPtr<CefV8Context> context)
 {
-	_impl->v8Engine->initNewPage(context);
+	_impl->domEngine->initNewPage(context);
 }

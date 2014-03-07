@@ -20,7 +20,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
-#include "include/cef_render_process_handler.h"
+#include "minko/component/SceneManager.hpp"
+#include "minko/AbstractCanvas.hpp"
+#include "AbstractDOMElement.hpp"
 
 namespace minko
 {
@@ -29,6 +31,8 @@ namespace minko
 		class AbstractDOMEngine
 		{
 		public:
+			typedef std::shared_ptr<AbstractDOMEngine> Ptr;
+			
 			virtual
 			void
 			load(std::string uri) = 0;
@@ -64,6 +68,10 @@ namespace minko
 			virtual
 			Signal<std::string>::Ptr
 			onload() = 0;
+
+			virtual
+			Signal<std::string>::Ptr
+			onmessage() = 0;
 		};
 	}
 }

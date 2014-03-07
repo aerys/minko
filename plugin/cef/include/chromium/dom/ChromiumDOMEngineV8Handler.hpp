@@ -19,40 +19,39 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #pragma once
 
-#include "chromium/ChromiumV8Handler.hpp"
+#include "minko/Signal.hpp"
 #include "include/cef_render_process_handler.h"
 
 namespace chromium
 {
-	class ChromiumV8Engine
+	namespace dom
 	{
-	public:
-		ChromiumV8Engine();
+		class ChromiumDOMEngineV8Handler : public CefV8Handler
+		{
+		public:
 
-		void
-		initNewPage(CefRefPtr<CefV8Context>);
+			ChromiumDOMEngineV8Handler() :
+				_received(minko::Signal<std::string, CefV8ValueList>::create())
+			{
+			}
 
-	private:
-		void
-		addLoadEventListener();
+			virtual bool Execute(const CefString& name, CefRefPtr<CefV8Value> object, const CefV8ValueList& arguments, CefRefPtr<CefV8Value>& retval, CefString& exception) OVERRIDE
+			{
+				_received->execute(name, arguments);
+				return true;
+			}
 
-		void
-		addSendMessageFunction();
+			std::shared_ptr<minko::Signal<std::string, CefV8ValueList>>
+			received()
+			{
+				return _received;
+			}
 
-		CefRefPtr<CefV8Value>
-		window();
+		private:
+			std::shared_ptr<minko::Signal<std::string, CefV8ValueList>>	_received;
 
-		CefRefPtr<CefV8Value>
-		document();
+			IMPLEMENT_REFCOUNTING(ChromiumDOMEngineV8Handler);
+		};
 
-		std::shared_ptr<minko::Signal<std::string>> _onLoad;
-		std::shared_ptr<minko::Signal<std::string>> _onMessage;
-
-		minko::Signal<std::string, CefV8ValueList>::Slot _onLoadSlot;
-		minko::Signal<std::string, CefV8ValueList>::Slot _onMessageSlot;
-
-		CefRefPtr<CefV8Value> _minkoObject;
-		CefRefPtr<ChromiumV8Handler> _v8Handler;
-		CefRefPtr<CefV8Context> _currentV8Context;
-	};
+	}
 }

@@ -28,7 +28,7 @@ namespace chromium
 {
 	namespace dom
 	{
-		class ChromiumDOMEvent : minko::dom::AbstractDOMEvent,
+		class ChromiumDOMEvent : public minko::dom::AbstractDOMEvent,
 			public std::enable_shared_from_this<ChromiumDOMEvent>
 		{
 		public:

@@ -19,4 +19,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #pragma once
 
-#include "chromium/Chromium.hpp"
+#include "component/Overlay.hpp"
+#include "dom/AbstractDOMElement.hpp"
+#include "dom/AbstractDOMEvent.hpp"
+#include "dom/AbstractDOMEngine.hpp"

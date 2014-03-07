@@ -21,12 +21,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 #include "minko/Signal.hpp"
-#include "AbstractDOMEvent.hpp"
 
 namespace minko
 {
 	namespace dom
 	{
+		class AbstractDOMEvent;
+
 		class AbstractDOMElement
 		{
 		public:
@@ -90,31 +91,31 @@ namespace minko
 			style(std::string name) = 0;
 
 			virtual
-			std::string
+			void
 			style(std::string name, std::string value) = 0;
 
 			virtual
-			Signal<AbstractDOMEvent::Ptr>::Ptr
+			Signal<std::shared_ptr<AbstractDOMEvent>>::Ptr
 			onclick() = 0;
 
 			virtual
-			Signal<AbstractDOMEvent::Ptr>::Ptr
+			Signal<std::shared_ptr<AbstractDOMEvent>>::Ptr
 			onmousedown() = 0;
 
 			virtual
-			Signal<AbstractDOMEvent::Ptr>::Ptr
+			Signal<std::shared_ptr<AbstractDOMEvent>>::Ptr
 			onmousemove() = 0;
 
 			virtual
-			Signal<AbstractDOMEvent::Ptr>::Ptr
+			Signal<std::shared_ptr<AbstractDOMEvent>>::Ptr
 			onmouseup() = 0;
 
 			virtual
-			Signal<AbstractDOMEvent::Ptr>::Ptr
+			Signal<std::shared_ptr<AbstractDOMEvent>>::Ptr
 			onmouseout() = 0;
 
 			virtual
-			Signal<AbstractDOMEvent::Ptr>::Ptr
+			Signal<std::shared_ptr<AbstractDOMEvent>>::Ptr
 			onmouseover() = 0;
 
 		private:

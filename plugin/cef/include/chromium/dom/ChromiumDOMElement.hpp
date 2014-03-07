@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
+#include "minko/Signal.hpp"
 #include "minko/dom/AbstractDOMEvent.hpp"
 #include "minko/dom/AbstractDOMElement.hpp"
 #include "chromium/dom/ChromiumDOMElementV8Handler.hpp"
@@ -29,7 +30,7 @@ namespace chromium
 {
 	namespace dom
 	{
-		class ChromiumDOMElement : minko::dom::AbstractDOMElement,
+		class ChromiumDOMElement : public minko::dom::AbstractDOMElement,
 			public std::enable_shared_from_this<ChromiumDOMElement>
 		{
 		public:
@@ -37,10 +38,7 @@ namespace chromium
 
 		private:
 			ChromiumDOMElement(CefRefPtr<CefV8Value>);
-
-			Ptr
-			initialize();
-
+			
 		public:
 
 			static
@@ -50,6 +48,10 @@ namespace chromium
 			static
 			Ptr
 			getDOMElementFromV8Object(CefRefPtr<CefV8Value>);
+
+			static
+			std::list<AbstractDOMElement::Ptr>
+			v8ElementArrayToList(CefRefPtr<CefV8Value>);
 
 
 			std::string
@@ -94,25 +96,25 @@ namespace chromium
 			std::string
 			style(std::string name);
 
-			std::string
+			void
 			style(std::string name, std::string value);
 
-			Signal<AbstractDOMEvent::Ptr>::Ptr
+			minko::Signal<minko::dom::AbstractDOMEvent::Ptr>::Ptr
 			onclick();
 
-			Signal<AbstractDOMEvent::Ptr>::Ptr
+			minko::Signal<minko::dom::AbstractDOMEvent::Ptr>::Ptr
 			onmousedown();
 
-			Signal<AbstractDOMEvent::Ptr>::Ptr
+			minko::Signal<minko::dom::AbstractDOMEvent::Ptr>::Ptr
 			onmousemove();
 
-			Signal<AbstractDOMEvent::Ptr>::Ptr
+			minko::Signal<minko::dom::AbstractDOMEvent::Ptr>::Ptr
 			onmouseup();
 
-			Signal<AbstractDOMEvent::Ptr>::Ptr
+			minko::Signal<minko::dom::AbstractDOMEvent::Ptr>::Ptr
 			onmouseout();
 
-			Signal<AbstractDOMEvent::Ptr>::Ptr
+			minko::Signal<minko::dom::AbstractDOMEvent::Ptr>::Ptr
 			onmouseover();
 
 		private:
@@ -122,9 +124,6 @@ namespace chromium
 
 			CefRefPtr<CefV8Value>
 			getProperty(std::string name);
-
-			std::list<AbstractDOMElement::Ptr>
-			v8ElementArrayToList(CefRefPtr<CefV8Value>);
 
 			void
 			addEventListener(std::string type);

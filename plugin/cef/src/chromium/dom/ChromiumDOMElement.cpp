@@ -26,6 +26,12 @@ using namespace chromium::dom;
 using namespace minko;
 using namespace minko::dom;
 
+std::map<CefRefPtr<CefV8Value>, std::shared_ptr<ChromiumDOMElement>>
+ChromiumDOMElement::_v8NodeToElement;
+
+std::map<AbstractDOMElement::Ptr, CefRefPtr<CefV8Value>>
+ChromiumDOMElement::_elementToV8Object;
+
 ChromiumDOMElement::ChromiumDOMElement(CefRefPtr<CefV8Value> v8NodeObject) :
 	_v8Handler(new ChromiumDOMElementV8Handler())
 {
@@ -36,24 +42,19 @@ ChromiumDOMElement::ChromiumDOMElement(CefRefPtr<CefV8Value> v8NodeObject) :
 }
 
 ChromiumDOMElement::Ptr
-ChromiumDOMElement::initialize()
-{
-	_v8NodeToElement[_v8NodeObject] = shared_from_this();
-	return _v8NodeToElement[_v8NodeObject];
-}
-
-ChromiumDOMElement::Ptr
 ChromiumDOMElement::create(CefRefPtr<CefV8Value> v8NodeObject)
 {
-	ChromiumDOMElement* element = new ChromiumDOMElement(v8NodeObject);
-	return element->initialize();
+	ChromiumDOMElement::Ptr element(new ChromiumDOMElement(v8NodeObject));
+
+	_v8NodeToElement[v8NodeObject] = element;
+	return element;
 }
 
 ChromiumDOMElement::Ptr
 ChromiumDOMElement::getDOMElementFromV8Object(CefRefPtr<CefV8Value> v8Object)
 {
 	std::map<CefRefPtr<CefV8Value>, ChromiumDOMElement::Ptr>::iterator it = _v8NodeToElement.find(v8Object);
-
+	
 	if (it != _v8NodeToElement.end())
 		return it->second;
 	else
@@ -226,9 +227,11 @@ ChromiumDOMElement::style(std::string name)
 
 	if (styleProperty->IsString())
 		return styleProperty->GetStringValue();
+	else
+		return "";
 }
 
-std::string
+void
 ChromiumDOMElement::style(std::string name, std::string value)
 {
 	getProperty("style")->SetValue(name, CefV8Value::CreateString(value), V8_PROPERTY_ATTRIBUTE_NONE);

@@ -21,9 +21,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 #include "minko/Signal.hpp"
+#include "minko/AbstractCanvas.hpp"
 #include "minko/component/AbstractComponent.hpp"
-#include "minko/dom/AbstractDOMElement.hpp";
-#include "minko/dom/AbstractDOMEngine.hpp";
+#include "minko/dom/AbstractDOMElement.hpp"
+#include "minko/dom/AbstractDOMEngine.hpp"
 
 namespace minko
 {
@@ -31,14 +32,37 @@ namespace minko
 	{
 
 		class Overlay :
-			AbstractComponent
+			public AbstractComponent,
+			public std::enable_shared_from_this<Overlay>
 		{
 		public:
+			typedef std::shared_ptr<Overlay> Ptr;
+
+		private:
+			typedef std::shared_ptr<scene::Node>							NodePtr;
+
+
+			Overlay();
+
+			void
+			initialize(AbstractCanvas::Ptr);
+
+		public:
+
+			static
+			Ptr
+			create(AbstractCanvas::Ptr canvas)
+			{
+				Ptr overlay(new Overlay());
+				overlay->initialize(canvas);
+
+				return overlay;
+			}
 			
 			void
 			load(std::string uri)
 			{
-				return _domEngine->load(uri);
+				_domEngine->load(uri);
 			}
 
 			void
@@ -47,22 +71,43 @@ namespace minko
 				_domEngine->unload();
 			}
 
-			std::shared_ptr<dom::AbstractDOMElement>
-			document()
+			std::shared_ptr<Signal<std::string>>
+			onload()
 			{
-				return _document;
+				return _domEngine->onload();
 			}
 
 			std::shared_ptr<Signal<std::string>>
-			onLoad()
+			onmessage()
 			{
-				return _onLoad;
+				return _domEngine->onmessage();
 			}
+
+			minko::dom::AbstractDOMEngine::Ptr
+			domEngine()
+			{
+				return _domEngine;
+			}
+
+		private:
+
+			void
+			targetAddedHandler(AbstractComponent::Ptr ctrl, NodePtr target);
+
+			void
+			targetRemovedHandler(AbstractComponent::Ptr ctrl, NodePtr target);
+
+			void
+			removedHandler(NodePtr node, NodePtr target, NodePtr ancestor);
 			
 		private:
-			std::shared_ptr<dom::AbstractDOMEngine> _domEngine;
-			std::shared_ptr<dom::AbstractDOMElement> _document;
-			std::shared_ptr<Signal<std::string>> _onLoad;
+			AbstractCanvas::Ptr														_canvas;
+
+			Signal<AbstractComponent::Ptr, NodePtr>::Slot							_targetAddedSlot;
+			Signal<AbstractComponent::Ptr, NodePtr>::Slot							_targetRemovedSlot;
+			Signal<NodePtr, NodePtr, NodePtr>::Slot									_removedSlot;
+
+			dom::AbstractDOMEngine::Ptr												_domEngine;
 		};
 	}
 }

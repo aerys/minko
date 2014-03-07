@@ -31,90 +31,30 @@ namespace chromium
 		class ChromiumDOMElementV8Handler : public CefV8Handler
 		{
 		public:
-			ChromiumDOMElementV8Handler() :
-				_onclick(minko::Signal<minko::dom::AbstractDOMEvent::Ptr>::create()),
-				_onmousedown(minko::Signal<minko::dom::AbstractDOMEvent::Ptr>::create()),
-				_onmousemove(minko::Signal<minko::dom::AbstractDOMEvent::Ptr>::create()),
-				_onmouseup(minko::Signal<minko::dom::AbstractDOMEvent::Ptr>::create()),
-				_onmouseover(minko::Signal<minko::dom::AbstractDOMEvent::Ptr>::create()),
-				_onmouseout(minko::Signal<minko::dom::AbstractDOMEvent::Ptr>::create())
-			{
-			}
+			ChromiumDOMElementV8Handler();
 
-			virtual bool Execute(const CefString& name, CefRefPtr<CefV8Value> object, const CefV8ValueList& arguments, CefRefPtr<CefV8Value>& retval, CefString& exception) OVERRIDE
-			{
-				if (arguments.size() > 0)
-				{
-					CefRefPtr<CefV8Value> event = arguments[0];
-
-					if (event->IsObject())
-					{
-						std::string type = event->GetValue("type")->GetStringValue();
-
-						if (type == "click" && _onclick->numCallbacks() > 0)
-						{
-							_onclick->execute(ChromiumDOMEvent::create(event));
-						}
-						else if (type == "mousedown" && _onmousedown->numCallbacks() > 0)
-						{
-							_onmousedown->execute(ChromiumDOMEvent::create(event));
-						}
-						else if (type == "mousemove" && _onmousemove->numCallbacks() > 0)
-						{
-							_onmousemove->execute(ChromiumDOMEvent::create(event));
-						}
-						else if (type == "mouseup" && _onmouseup->numCallbacks() > 0)
-						{
-							_onmouseup->execute(ChromiumDOMEvent::create(event));
-						}
-						else if (type == "mouseover" && _onmouseover->numCallbacks() > 0)
-						{
-							_onmouseover->execute(ChromiumDOMEvent::create(event));
-						}
-						else if (type == "mouseout" && _onmouseout->numCallbacks() > 0)
-						{
-							_onmouseout->execute(ChromiumDOMEvent::create(event));
-						}
-					}
-				}
-				return true;
-			}
+			virtual
+			bool
+			Execute(const CefString& name, CefRefPtr<CefV8Value> object, const CefV8ValueList& arguments, CefRefPtr<CefV8Value>& retval, CefString& exception);
+			
 
 			std::shared_ptr<minko::Signal<minko::dom::AbstractDOMEvent::Ptr>>
-				onclick()
-			{
-					return _onclick;
-				}
+			onclick();
 
 			std::shared_ptr<minko::Signal<minko::dom::AbstractDOMEvent::Ptr>>
-				onmousedown()
-			{
-					return _onmousedown;
-				}
+			onmousedown();
 
 			std::shared_ptr<minko::Signal<minko::dom::AbstractDOMEvent::Ptr>>
-				onmousemove()
-			{
-					return _onmousemove;
-				}
+			onmousemove();
 
 			std::shared_ptr<minko::Signal<minko::dom::AbstractDOMEvent::Ptr>>
-				onmouseup()
-			{
-					return _onmouseup;
-				}
+			onmouseup();
 
 			std::shared_ptr<minko::Signal<minko::dom::AbstractDOMEvent::Ptr>>
-				onmouseover()
-			{
-					return _onmouseover;
-				}
+			onmouseover();
 
 			std::shared_ptr<minko::Signal<minko::dom::AbstractDOMEvent::Ptr>>
-				onmouseout()
-			{
-					return _onmouseout;
-				}
+			onmouseout();
 
 		private:
 			std::shared_ptr<minko::Signal<minko::dom::AbstractDOMEvent::Ptr>> _onclick;
