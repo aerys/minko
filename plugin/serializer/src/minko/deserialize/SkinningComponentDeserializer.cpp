@@ -26,6 +26,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/Skinning.hpp"
 #include "minko/component/Transform.hpp"
 #include "minko/component/Animation.hpp"
+#include "minko/component/Surface.hpp"
 #include "minko/animation/Matrix4x4Timeline.hpp"
 #include "minko/math/Vector3.hpp"
 #include "minko/math/Quaternion.hpp"
@@ -120,7 +121,12 @@ SkinningComponentDeserializer::cleanNode(Node::Ptr node, bool self)
     if (self)
     {
         if (node->hasComponent<Transform>())
-            node->removeComponent(node->component<Transform>());
+		{
+			if (node->hasComponent<Surface>())
+				node->component<Transform>()->matrix()->identity();
+			else
+	            node->removeComponent(node->component<Transform>());
+		}
         if (node->hasComponent<Animation>())
             node->removeComponent(node->component<Animation>());
     }
