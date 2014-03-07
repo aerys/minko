@@ -88,7 +88,7 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 			"_SCL_SECURE_NO_WARNINGS"
 		}
 
-	configuration { "cc=clang or html5" }
+	configuration { "cc=clang" }
 		buildoptions {
 			"-Wno-deprecated-register"
 		}
