@@ -301,6 +301,13 @@ namespace minko
                 return Vector3(_x * k, _y * k, _z * k);
             }
 
+            inline
+            bool
+            operator<(const Vector3& v) const
+            {
+                return std::make_tuple(_x, _y, _z) < std::make_tuple(v._x, v._y, v._z);
+            }
+
 			inline
 			Ptr
 			operator+=(Ptr value)
