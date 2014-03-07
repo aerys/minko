@@ -62,35 +62,38 @@ main(int argc, char** argv)
         ));
         root->addChild(cube);
 
-        
+        // Replace 1024 by clp2(width), clp2(height)
         auto renderTarget = render::Texture::create(assets->context(), 1024, 1024, false, true);
         renderTarget->upload();
 
-        auto ppFx = sceneManager->assets()->effect("effect/FXAA/FXAA.effect");
+        auto effect = sceneManager->assets()->effect("effect/FXAA/FXAA.effect");
 
-        if (!ppFx)
+        if (!effect)
             throw std::logic_error("The post-processing effect has not been loaded.");
 
-        ppFx->setUniform("textureSampler", renderTarget);
-        ppFx->setUniform("texcoordOffset", Vector2::create(1.0f / 1024.0f, 1.0f / 1024.0f));
+        effect->setUniform("textureSampler", renderTarget);
+        effect->setUniform("texcoordOffset", Vector2::create(1.0f / 1024.0f, 1.0f / 1024.0f));
 
         auto ppRenderer = Renderer::create();
         auto ppScene = scene::Node::create()
             ->addComponent(ppRenderer)
-            ->addComponent(Surface::create(
-            geometry::QuadGeometry::create(sceneManager->assets()->context()),
-            material::Material::create(),
-            ppFx
-            ));
+            ->addComponent(
+                Surface::create(
+                    geometry::QuadGeometry::create(sceneManager->assets()->context()),
+                    material::Material::create(),
+                    effect
+                )
+            );
 
         auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint width, uint height)
         {
             camera->component<PerspectiveCamera>()->aspectRatio((float) width / (float) height);
 
-            ppTarget = render::Texture::create(assets->context(), clp2(width), clp2(height), false, true);
-            ppTarget->upload();
-            ppFx->setUniform("textureSampler", ppTarget);
-            ppFx->setUniform("texcoordOffset", Vector2::create(1.0f / 1024.0f, 1.0f / 1024.0f));
+            renderTarget = render::Texture::create(assets->context(), clp2(width), clp2(height), false, true);
+            renderTarget->upload();
+
+            effect->setUniform("textureSampler", renderTarget);
+            effect->setUniform("texcoordOffset", Vector2::create(1.0f / 1024.0f, 1.0f / 1024.0f));
         });
 
         auto enableFXAA = true;
