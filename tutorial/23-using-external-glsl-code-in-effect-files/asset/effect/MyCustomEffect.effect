@@ -1,0 +1,10 @@
+{
+  "name" : "MyCustomEffect",
+  "attributeBindings" : {
+    "aPosition" : "geometry[${geometryId}].position"
+  },
+  "passes" : [{
+    "vertexShader" : "#pragma include('Basic.vertex.glsl')",
+    "fragmentShader" : "#pragma include('Basic.fragment.glsl')"
+  }]
+}
