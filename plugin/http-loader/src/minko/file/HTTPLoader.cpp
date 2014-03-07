@@ -22,10 +22,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/Options.hpp"
 #include "minko/Signal.hpp"
 #include "minko/AbstractCanvas.hpp"
-#include "minko/async/HTTPWorker.hpp"
 
 #if defined(EMSCRIPTEN)
 # include "emscripten/emscripten.h"
+#else
+# include "minko/async/HTTPWorker.hpp"
 #endif
 
 using namespace minko;
