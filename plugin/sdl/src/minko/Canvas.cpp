@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -18,8 +18,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "minko/Canvas.hpp"
-#include "minko/input/Mouse.hpp"
-#include "minko/input/Keyboard.hpp"
 #include "minko/data/Provider.hpp"
 #include "minko/math/Vector4.hpp"
 #include "minko/async/Worker.hpp"
@@ -83,8 +81,8 @@ Canvas::initialize()
 void
 Canvas::initializeInputs()
 {
-    _mouse = Canvas::SDLMouse::create(shared_from_this());
-    _keyboard = Canvas::SDLKeyboard::create();
+    _mouse = SDLMouse::create(shared_from_this());
+    _keyboard = SDLKeyboard::create();
 
 #ifndef EMSCRIPTEN
     for (int i = 0; i < SDL_NumJoysticks(); ++i)
@@ -630,23 +628,6 @@ void
 Canvas::quit()
 {
     _active = false;
-}
-
-Canvas::SDLKeyboard::SDLKeyboard()
-{
-    _keyboardState = SDL_GetKeyboardState(NULL);
-}
-
-input::Keyboard::KeyCode
-Canvas::SDLKeyboard::getKeyCodeFromScanCode(input::Keyboard::ScanCode scanCode)
-{
-    return static_cast<input::Keyboard::KeyCode>(SDL_SCANCODE_TO_KEYCODE(static_cast<int>(scanCode)));
-}
-
-input::Keyboard::ScanCode
-Canvas::SDLKeyboard::getScanCodeFromKeyCode(input::Keyboard::KeyCode keyCode)
-{
-    return static_cast<input::Keyboard::ScanCode>(SDL_GetScancodeFromKey(static_cast<int>(keyCode)));
 }
 
 Canvas::WorkerPtr
