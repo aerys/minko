@@ -232,7 +232,6 @@ namespace minko
 			components()
 			{
 				std::vector<std::shared_ptr<T>> result;
-				unsigned int counter = 0;
 
 				for (auto component : _components)
 				{

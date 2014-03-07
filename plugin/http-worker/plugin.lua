@@ -22,7 +22,9 @@ minko.plugin["http-worker"] = {}
 
 minko.plugin["http-worker"].enable = function (self)
 --function minko.plugin.["http-worker"]:enable()
-	minko.plugin.links { "http-worker" }
+    configuration { "not html5" }
+	    minko.plugin.links { "http-worker" }
+	
 	includedirs { minko.plugin.path("http-worker") .. "/include" }
 	defines { "MINKO_PLUGIN_HTTP_WORKER" }
 
