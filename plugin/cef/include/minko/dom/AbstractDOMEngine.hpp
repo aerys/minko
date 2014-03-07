@@ -34,6 +34,11 @@ namespace minko
 			typedef std::shared_ptr<AbstractDOMEngine> Ptr;
 			
 			virtual
+			~AbstractDOMEngine()
+			{
+			};
+
+			virtual
 			void
 			load(std::string uri) = 0;
 			

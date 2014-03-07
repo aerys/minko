@@ -49,7 +49,7 @@ ChromiumApp::OnContextInitialized()
 	browserSettings.web_security = STATE_DISABLED;
 	browserSettings.file_access_from_file_urls = STATE_ENABLED;
 
-	CefRefPtr<ChromiumClient> browserClient = new ChromiumClient(_impl->renderHandler, _impl);
+	CefRefPtr<ChromiumClient> browserClient = new ChromiumClient(_impl->renderHandler.get(), _impl);
 
 	// in linux set a gtk widget, in windows a hwnd. If not available set nullptr - may cause some render errors, in context-menu and plugins.
 	window_info.SetAsOffScreen(nullptr);
@@ -153,5 +153,5 @@ ChromiumApp::bindControls()
 CefRefPtr<CefRenderProcessHandler>
 ChromiumApp::GetRenderProcessHandler()
 {
-	return _impl->renderProcessHandler;
+	return _impl->renderProcessHandler.get();
 }

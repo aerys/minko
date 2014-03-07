@@ -41,9 +41,21 @@ ChromiumDOMEngine::ChromiumDOMEngine() :
 	_onmessage(minko::Signal<std::string>::create())
 {
 	_impl = new ChromiumPimpl();
-	_impl->domEngine = this;
+}
 
-	start();
+ChromiumDOMEngine::~ChromiumDOMEngine()
+{
+	std::cout << "toto" << std::endl;
+}
+
+ChromiumDOMEngine::Ptr
+ChromiumDOMEngine::create()
+{
+	Ptr engine(new ChromiumDOMEngine());
+	engine->_impl->domEngine = engine;
+	engine->start();
+
+	return engine;
 }
 
 void
@@ -129,7 +141,7 @@ ChromiumDOMEngine::start()
 #ifdef _WIN32
 	_impl->mainArgs = new CefMainArgs(GetModuleHandle(NULL));
 #else
-	_impl->mainArgs = new CefMainArgs(0,0);
+	_impl->mainArgs = new CefMainArgs(0, 0);
 #endif
 	_impl->app = new ChromiumApp();
 

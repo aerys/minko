@@ -31,6 +31,10 @@ const std::string TEXTURE_FILENAME = "texture/box.png";
 
 Signal<std::string>::Slot onloadSlot;
 
+Signal<dom::AbstractDOMEvent::Ptr>::Slot onredclickSlot;
+Signal<dom::AbstractDOMEvent::Ptr>::Slot onyellowclickSlot;
+Signal<dom::AbstractDOMEvent::Ptr>::Slot onblueclickSlot;
+
 int main(int argc, char** argv)
 {
 	auto canvas = Canvas::create("Minko Example - Cube", 800, 600);
@@ -73,37 +77,40 @@ int main(int argc, char** argv)
 
 	auto overlay = Overlay::create(canvas);
 
+	auto material = material::BasicMaterial::create()->diffuseColor(0xCCCCCCFF);
+
 	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
 	{
 		root->addComponent(overlay);
-		//cef->initialize(canvas, sceneManager);
-		//cef->load("http://static3.wikia.nocookie.net/__cb20071019155932/uncyclopedia/images/7/7b/Dancing_banana.gif");
-		//cef->setHTML("<html><body color='blue'>Hello World</body></html>");
-		//cef->setURL("http://www.benjisbrk.com/public/mousetest");
 
-		onloadSlot = overlay->onload()->connect([=](std::string page)
-		{
-			std::cout << "onload: " << page << std::endl;
-
-			if (overlay->domEngine()->getElementById("toto") == overlay->domEngine()->getElementById("toto"))
-			{
-				std::cout << "oh yeah !" << std::endl;
-			}
-		});
-
-		overlay->load("html/menu.html");
-		
 		mesh->addComponent(Surface::create(
 			assets->geometry("cubeGeometry"),
-			material::BasicMaterial::create()->diffuseColor(0xFF0000FF),
+			material,
 			assets->effect("effect/Basic.effect")
-		));
+			));
+
+		overlay->load("html/menu.html");
 	});
 
-	/*cef->messageReceived()->connect([=](std::string message)
+	onloadSlot = overlay->onload()->connect([=](std::string page)
 	{
-		std::cout << message << std::endl;
-	});*/
+		std::cout << "onload: " << page << std::endl;
+
+		onredclickSlot = overlay->domEngine()->getElementById("redButton")->onclick()->connect([=](dom::AbstractDOMEvent::Ptr event)
+		{
+			material->diffuseColor(0xFF0000FF);
+		});
+
+		onblueclickSlot = overlay->domEngine()->getElementById("blueButton")->onclick()->connect([=](dom::AbstractDOMEvent::Ptr event)
+		{
+			material->diffuseColor(0x0000FFFF);
+		});
+
+		onyellowclickSlot = overlay->domEngine()->getElementById("yellowButton")->onclick()->connect([=](dom::AbstractDOMEvent::Ptr event)
+		{
+			material->diffuseColor(0xFFFF00FF);
+		});
+	});
 
 	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, uint deltaTime)
 	{

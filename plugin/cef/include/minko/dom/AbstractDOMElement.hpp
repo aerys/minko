@@ -34,12 +34,25 @@ namespace minko
 			typedef std::shared_ptr<AbstractDOMElement> Ptr;
 
 			virtual
+			~AbstractDOMElement()
+			{
+			};
+
+			virtual
 			std::string
 			id() = 0;
 
 			virtual
+			void
+			id(std::string) = 0;
+
+			virtual
 			std::string
 			className() = 0;
+
+			virtual
+			void
+			className(std::string) = 0;
 
 			virtual
 			std::string
@@ -54,6 +67,21 @@ namespace minko
 			std::list<Ptr>
 			childNodes() = 0;
 
+			virtual
+			std::string
+			textContent() = 0;
+
+			virtual
+			void
+			textContent(std::string) = 0;
+
+			virtual
+			std::string
+			innerHTML() = 0;
+
+			virtual
+			void
+			innerHTML(std::string) = 0;
 
 			virtual
 			Ptr
@@ -66,11 +94,11 @@ namespace minko
 
 			virtual
 			Ptr
-			insertBefore(Ptr) = 0;
+			insertBefore(Ptr, Ptr) = 0;
 
 			virtual
 			Ptr
-			cloneNode(bool deep) = 0;
+			cloneNode(bool deep = true) = 0;
 
 
 			virtual

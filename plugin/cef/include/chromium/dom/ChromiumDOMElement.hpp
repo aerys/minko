@@ -35,6 +35,7 @@ namespace chromium
 		{
 		public:
 			typedef std::shared_ptr<ChromiumDOMElement> Ptr;
+			~ChromiumDOMElement();
 
 		private:
 			ChromiumDOMElement(CefRefPtr<CefV8Value>);
@@ -57,8 +58,14 @@ namespace chromium
 			std::string
 			id();
 
+			void
+			id(std::string);
+
 			std::string
 			className();
+
+			void
+			className(std::string);
 
 			std::string
 			tagName();
@@ -70,6 +77,19 @@ namespace chromium
 			std::list<AbstractDOMElement::Ptr>
 			childNodes();
 
+			
+			std::string
+			textContent();
+
+			void
+			textContent(std::string content);
+
+			std::string
+			innerHTML();
+
+			void
+			innerHTML(std::string html);
+
 			AbstractDOMElement::Ptr
 			appendChild(AbstractDOMElement::Ptr);
 
@@ -78,7 +98,7 @@ namespace chromium
 
 
 			AbstractDOMElement::Ptr
-			insertBefore(AbstractDOMElement::Ptr);
+			insertBefore(AbstractDOMElement::Ptr, AbstractDOMElement::Ptr);
 
 			AbstractDOMElement::Ptr
 			cloneNode(bool deep);
@@ -124,6 +144,9 @@ namespace chromium
 
 			CefRefPtr<CefV8Value>
 			getProperty(std::string name);
+
+			void
+			setProperty(std::string name, CefRefPtr<CefV8Value>);
 
 			void
 			addEventListener(std::string type);

@@ -37,16 +37,10 @@ ChromiumDOMEvent::ChromiumDOMEvent(CefRefPtr<CefV8Value> v8NodeObject)
 }
 
 ChromiumDOMEvent::Ptr
-ChromiumDOMEvent::initialize()
-{
-	return shared_from_this();
-}
-
-ChromiumDOMEvent::Ptr
 ChromiumDOMEvent::create(CefRefPtr<CefV8Value> v8NodeObject)
 {
-	ChromiumDOMEvent* event = new ChromiumDOMEvent(v8NodeObject);
-	return event->initialize();
+	ChromiumDOMEvent::Ptr event(new ChromiumDOMEvent(v8NodeObject));
+	return event;
 }
 
 

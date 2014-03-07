@@ -37,8 +37,9 @@ Overlay::initialize(AbstractCanvas::Ptr canvas)
 
 
 #if defined(CHROMIUM)
-	//ChromiumDOMEngine* engine = new ChromiumDOMEngine();
-	//_domEngine = engine->shared_from_this();
+
+	ChromiumDOMEngine::Ptr engine = ChromiumDOMEngine::create();
+	_domEngine = engine;
 #endif
 }
 
@@ -49,9 +50,8 @@ Overlay::targetAddedHandler(AbstractComponent::Ptr	ctrl, scene::Node::Ptr		targe
 	if (target->hasComponent<SceneManager>())
 	{
 		SceneManager::Ptr sceneManager = target->component<SceneManager>();
-
-		ChromiumDOMEngine::Ptr engine(new ChromiumDOMEngine());
-		_domEngine = engine;
+		
+		ChromiumDOMEngine::Ptr engine = std::dynamic_pointer_cast<ChromiumDOMEngine>(_domEngine);
 		engine->initialize(_canvas, sceneManager);
 	}
 #endif

@@ -32,12 +32,16 @@ namespace chromium
 	class ChromiumPimpl
 	{
 	public:
+		dom::ChromiumDOMEngine::Ptr domEngine;
+
 		CefMainArgs* mainArgs;
+
 		CefRefPtr<CefBrowser> browser;
-		ChromiumRenderHandler* renderHandler;
 		CefRefPtr<ChromiumApp> app;
+
+		CefRefPtr<ChromiumRenderHandler> renderHandler;
 		CefRefPtr<ChromiumRenderProcessHandler> renderProcessHandler;
-		dom::ChromiumDOMEngine* domEngine;
+
 		CefRefPtr<CefV8Context> v8Context;
 	};
 }

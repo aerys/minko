@@ -49,11 +49,19 @@ namespace chromium
 		public:
 			typedef std::shared_ptr<ChromiumDOMEngine> Ptr;
 
+		private:
 			ChromiumDOMEngine();
+
+		public:
+			~ChromiumDOMEngine();
 			
+			static
+			Ptr
+			create();
+
 			void
 			initNewPage(CefRefPtr<CefV8Context>);
-
+			
 			void
 			initialize(std::shared_ptr<minko::AbstractCanvas>, std::shared_ptr<minko::component::SceneManager>);
 			

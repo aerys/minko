@@ -33,20 +33,40 @@ std::map<AbstractDOMElement::Ptr, CefRefPtr<CefV8Value>>
 ChromiumDOMElement::_elementToV8Object;
 
 ChromiumDOMElement::ChromiumDOMElement(CefRefPtr<CefV8Value> v8NodeObject) :
-	_v8Handler(new ChromiumDOMElementV8Handler())
+	_v8Handler(new ChromiumDOMElementV8Handler()),
+	_onclickCallbackSet(false),
+	_onmousedownCallbackSet(false),
+	_onmousemoveCallbackSet(false),
+	_onmouseupCallbackSet(false),
+	_onmouseoverCallbackSet(false),
+	_onmouseoutCallbackSet(false)
 {
-	if (!v8NodeObject->IsObject())
-		throw;
+	/*if (!v8NodeObject->IsObject())
+		throw;*/
 
 	_v8NodeObject = v8NodeObject;
+}
+
+
+ChromiumDOMElement::~ChromiumDOMElement()
+{
+	_v8NodeToElement.erase(_v8NodeObject);
+	_elementToV8Object.erase(shared_from_this());
+
+	_v8NodeObject = nullptr;
+	_v8Handler = nullptr;
 }
 
 ChromiumDOMElement::Ptr
 ChromiumDOMElement::create(CefRefPtr<CefV8Value> v8NodeObject)
 {
+	if (v8NodeObject->IsUndefined() || v8NodeObject->IsNull())
+		return nullptr;
+
 	ChromiumDOMElement::Ptr element(new ChromiumDOMElement(v8NodeObject));
 
 	_v8NodeToElement[v8NodeObject] = element;
+	_elementToV8Object[element] = v8NodeObject;
 	return element;
 }
 
@@ -68,7 +88,7 @@ ChromiumDOMElement::getFunction(std::string name)
 	CefRefPtr<CefV8Value> func = _v8NodeObject->GetValue(name);
 
 	if (!func->IsFunction())
-		func = nullptr;
+		throw;
 
 	return func;
 }
@@ -76,12 +96,13 @@ ChromiumDOMElement::getFunction(std::string name)
 CefRefPtr<CefV8Value>
 ChromiumDOMElement::getProperty(std::string name)
 {
-	CefRefPtr<CefV8Value> prop = _v8NodeObject->GetValue(name);
+	return _v8NodeObject->GetValue(name);
+}
 
-	if (prop->IsFunction())
-		prop = nullptr;
-
-	return prop;
+void
+ChromiumDOMElement::setProperty(std::string name, CefRefPtr<CefV8Value> value)
+{
+	_v8NodeObject->SetValue(name, value, V8_PROPERTY_ATTRIBUTE_NONE);
 }
 
 std::list<AbstractDOMElement::Ptr>
@@ -110,10 +131,22 @@ ChromiumDOMElement::id()
 	return getProperty("id")->GetStringValue();
 }
 
+void
+ChromiumDOMElement::id(std::string newId)
+{
+	return setProperty("id", CefV8Value::CreateString(newId));
+}
+
 std::string
 ChromiumDOMElement::className()
 {
 	return getProperty("className")->GetStringValue();
+}
+
+void
+ChromiumDOMElement::className(std::string newClass)
+{
+	return setProperty("id", CefV8Value::CreateString(newClass));
 }
 
 std::string
@@ -136,10 +169,37 @@ ChromiumDOMElement::childNodes()
 	return v8ElementArrayToList(getProperty("childNodes"));
 }
 
+std::string
+ChromiumDOMElement::textContent()
+{
+	return getProperty("textContent")->GetStringValue();
+}
+
+void
+ChromiumDOMElement::textContent(std::string content)
+{
+	setProperty("innerHTML", CefV8Value::CreateString(content));
+}
+
+std::string
+ChromiumDOMElement::innerHTML()
+{
+	return getProperty("innerHTML")->GetStringValue();
+}
+
+void
+ChromiumDOMElement::innerHTML(std::string html)
+{
+	setProperty("innerHTML", CefV8Value::CreateString(html));
+}
+
 AbstractDOMElement::Ptr
 ChromiumDOMElement::appendChild(AbstractDOMElement::Ptr child)
 {
 	CefRefPtr<CefV8Value> func = getFunction("appendChild");
+
+	if (func == nullptr)
+		return nullptr;
 	
 	CefV8ValueList args;
 	args.push_back(_elementToV8Object[child]);
@@ -153,6 +213,9 @@ ChromiumDOMElement::removeChild(AbstractDOMElement::Ptr child)
 {
 	CefRefPtr<CefV8Value> func = getFunction("removeChild");
 
+	if (func == nullptr)
+		return nullptr;
+
 	CefV8ValueList args;
 	args.push_back(_elementToV8Object[child]);
 
@@ -162,12 +225,16 @@ ChromiumDOMElement::removeChild(AbstractDOMElement::Ptr child)
 
 
 AbstractDOMElement::Ptr
-ChromiumDOMElement::insertBefore(AbstractDOMElement::Ptr child)
+ChromiumDOMElement::insertBefore(AbstractDOMElement::Ptr newNode, AbstractDOMElement::Ptr refNode)
 {
 	CefRefPtr<CefV8Value> func = getFunction("insertBefore");
 
+	if (func == nullptr)
+		return nullptr;
+
 	CefV8ValueList args;
-	args.push_back(_elementToV8Object[child]);
+	args.push_back(_elementToV8Object[newNode]);
+	args.push_back(_elementToV8Object[refNode]);
 
 	CefRefPtr<CefV8Value> v8Result = func->ExecuteFunction(_v8NodeObject, args);
 	return getDOMElementFromV8Object(v8Result);
@@ -177,6 +244,9 @@ AbstractDOMElement::Ptr
 ChromiumDOMElement::cloneNode(bool deep)
 {
 	CefRefPtr<CefV8Value> func = getFunction("cloneNode");
+
+	if (func == nullptr)
+		return nullptr;
 
 	CefV8ValueList args;
 	args.push_back(CefV8Value::CreateBool(deep));
@@ -190,6 +260,9 @@ ChromiumDOMElement::getAttribute(std::string name)
 {
 	CefRefPtr<CefV8Value> func = getFunction("getAttribute");
 
+	if (func == nullptr)
+		return nullptr;
+
 	CefV8ValueList args;
 	args.push_back(CefV8Value::CreateString(name));
 
@@ -200,6 +273,9 @@ void
 ChromiumDOMElement::setAttribute(std::string name, std::string value)
 {
 	CefRefPtr<CefV8Value> func = getFunction("setAttribute");
+
+	if (func == nullptr)
+		return;
 
 	CefV8ValueList args;
 	args.push_back(CefV8Value::CreateString(name));
@@ -213,17 +289,25 @@ ChromiumDOMElement::getElementsByTagName(std::string tagName)
 {
 	CefRefPtr<CefV8Value> func = getFunction("setAttribute");
 
-	CefV8ValueList args;
-	args.push_back(CefV8Value::CreateString(tagName));
+	std::list<AbstractDOMElement::Ptr> result;
 
-	CefRefPtr<CefV8Value> v8Result = func->ExecuteFunction(_v8NodeObject, args);
-	return v8ElementArrayToList(v8Result);
+	if (func != nullptr)
+	{
+		CefV8ValueList args;
+		args.push_back(CefV8Value::CreateString(tagName));
+
+		CefRefPtr<CefV8Value> v8Result = func->ExecuteFunction(_v8NodeObject, args);
+		result = v8ElementArrayToList(v8Result);
+	}
+
+	return result;
 }
 
 std::string
 ChromiumDOMElement::style(std::string name)
 {
-	CefRefPtr<CefV8Value> styleProperty = getProperty("style")->GetValue("name");
+	CefRefPtr<CefV8Value> styleObject = getProperty("style");
+	CefRefPtr<CefV8Value> styleProperty = styleObject->GetValue(name);
 
 	if (styleProperty->IsString())
 		return styleProperty->GetStringValue();
@@ -240,7 +324,9 @@ ChromiumDOMElement::style(std::string name, std::string value)
 void
 ChromiumDOMElement::addEventListener(std::string type)
 {
-	std::string onClickFunctionName = "on" + type + "Handler";
+	static int i = 0;
+
+	std::string onClickFunctionName = "on" + type + "Handler" + std::to_string(i++);
 
 	CefRefPtr<CefV8Value> onClickFunction = CefV8Value::CreateFunction(onClickFunctionName, _v8Handler.get());
 
@@ -248,7 +334,7 @@ ChromiumDOMElement::addEventListener(std::string type)
 	args.push_back(CefV8Value::CreateString(type));
 	args.push_back(onClickFunction);
 
-	getFunction("addEventListener")->ExecuteFunction(nullptr, args);
+	getFunction("addEventListener")->ExecuteFunction(_v8NodeObject, args);
 }
 
 Signal<AbstractDOMEvent::Ptr>::Ptr

@@ -36,10 +36,7 @@ namespace chromium
 
 		private:
 			ChromiumDOMEvent(CefRefPtr<CefV8Value>);
-
-			Ptr
-			initialize();
-
+			
 		public:
 			static
 			Ptr

@@ -69,6 +69,7 @@ namespace minko
 			unload()
 			{
 				_domEngine->unload();
+				_domEngine = nullptr;
 			}
 
 			std::shared_ptr<Signal<std::string>>
