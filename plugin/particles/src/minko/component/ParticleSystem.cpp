@@ -38,14 +38,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/particle/modifier/IParticleUpdater.hpp"
 #include "minko/particle/shape/Sphere.hpp"
 #include "minko/particle/sampler/Sampler.hpp"
+#include "minko/particle/sampler/Constant.hpp"
 #include "minko/particle/tools/VertexComponentFlags.hpp"
-
 
 using namespace minko;
 using namespace minko::component;
 using namespace minko::particle;
 
-#define EPSILON 0.001
+/*static*/ const unsigned int ParticleSystem::COUNT_LIMIT = 16384;
 
 ParticleSystem::ParticleSystem(AssetLibraryPtr		assets,
 							   float				rate,
@@ -53,20 +53,24 @@ ParticleSystem::ParticleSystem(AssetLibraryPtr		assets,
 							   ShapePtr				shape,
 							   StartDirection		emissionDirection,
 							   FloatSamplerPtr		emissionVelocity): 
-	_countLimit			(16384),
+	_geometry			(geometry::ParticlesGeometry::create(assets->context())),
+	_material			(data::ParticlesProvider::create()),
+	_effect				(assets->effect("particles")),
+	_surface			(nullptr),
+	_toWorld			(nullptr),
+	_countLimit			(COUNT_LIMIT),
 	_maxCount			(0),
-	_liveCount			(0),
 	_previousLiveCount	(0),
 	_particles			(),
 	_isInWorldSpace		(false),
 	_isZSorted			(false),
 	_useOldPosition		(false),
-	_rate				(1 / rate),
-	_lifetime			(lifetime),
-	_shape				(shape),
+	_rate				(1.0f / rate),
+	_lifetime			(lifetime			? lifetime			: sampler::Constant<float>::create(1.0f)),
+	_shape				(shape				? shape				: shape::Sphere::create(10)),
 	_emissionDirection	(emissionDirection),
-	_emissionVelocity	(emissionVelocity),
-	_createTimer		(0),
+	_emissionVelocity	(emissionVelocity	? emissionVelocity	: sampler::Constant<float>::create(1.0f)),
+	_createTimer		(0.0f),
 	_format				(VertexComponentFlags::DEFAULT),
 	_updateStep			(0),
 	_playing			(false),
@@ -74,20 +78,14 @@ ParticleSystem::ParticleSystem(AssetLibraryPtr		assets,
 	_time				(0.0f),
     _frameBeginSlot     (nullptr)
 {
-    if (assets == nullptr)
-        throw new std::invalid_argument("assets");
-
-	_geometry	= geometry::ParticlesGeometry::create(assets->context());
-	_material	= data::ParticlesProvider::create();
-	_effect		= assets->effect("particles");
-
 	if (_effect == nullptr)
 		throw new std::logic_error("Effect 'particles' is not available in the asset library.");
 
-	_surface	= Surface::create(_geometry, _material, _effect);
-
-	if (_shape == nullptr)
-		_shape	= shape::Sphere::create(10);
+	_surface = Surface::create(
+		_geometry, 
+		_material, 
+		_effect
+	);
 
 	_comparisonObject.system = (this);
 
@@ -139,10 +137,10 @@ ParticleSystem::targetRemovedHandler(AbsCompPtr ctrl,
 
 	target->removeComponent(_surface);
 	
-	_addedSlot = nullptr;
-	_removedSlot = nullptr;
-	_componentAddedSlot = nullptr;
-	_componentRemovedSlot = nullptr;
+	_addedSlot				= nullptr;
+	_removedSlot			= nullptr;
+	_componentAddedSlot		= nullptr;
+	_componentRemovedSlot	= nullptr;
 }
 
 void
@@ -158,7 +156,7 @@ ParticleSystem::findSceneManager()
 	if (roots->nodes().size() > 1)
 		throw std::logic_error("ParticleSystem cannot be in two separate scenes.");
 	else if (roots->nodes().size() == 1)
-		_frameBeginSlot = roots->nodes()[0]->component<SceneManager>()->frameBegin()->connect(std::bind(
+		_frameBeginSlot = roots->nodes()[0]->component<SceneManager>()->frameEnd()->connect(std::bind(
 			&ParticleSystem::frameBeginHandler, 
             shared_from_this(), 
             std::placeholders::_1,
@@ -182,8 +180,8 @@ ParticleSystem::frameBeginHandler(SceneManager::Ptr sceneManager, float time, fl
 
 	if (_updateStep == 0)
 	{
-			updateSystem(deltaT, _emitting);
-			updateVertexBuffer();
+        updateSystem(deltaT, _emitting);
+        updateVertexBuffer();
 	}
 	else
 	{
@@ -333,7 +331,7 @@ ParticleSystem::updateSystem(float timeStep, bool emit)
 	{
 		ParticleData& particle = _particles[particleIndex];
 
-		if (particle.alive)
+		if (particle.alive())
 		{
 			particle.timeLived  += timeStep;
 
@@ -341,11 +339,12 @@ ParticleSystem::updateSystem(float timeStep, bool emit)
 			particle.oldy       = particle.y;
 			particle.oldz       = particle.z;
 
-			if (!(particle.timeLived < particle.lifetime))
-				killParticle(particleIndex);
+			//if (part)
+			//if (!(particle.timeLived < particle.lifetime))
+			//	killParticle(particleIndex);
 		}
 	}
-	
+
 	for (auto& updater : _updaters)
 		updater->update(_particles, timeStep);
 
@@ -353,9 +352,10 @@ ParticleSystem::updateSystem(float timeStep, bool emit)
 	{
 		ParticleData& particle = _particles[particleIndex];
 		
-		if (!particle.alive && emit && !(_createTimer < _rate))
+		if (!particle.alive() && emit && !(_createTimer < _rate))
 		{
 			_createTimer -= _rate;
+
 			createParticle(particleIndex, *_shape, _createTimer);
 
 			particle.lifetime = _lifetime->value();
@@ -448,9 +448,7 @@ ParticleSystem::createParticle(unsigned int 				particleIndex,
 						                  particle.startvy * particle.startvy + 
 						                  particle.startvz * particle.startvz));
 
-		const float k = _emissionVelocity 
-            ? _emissionVelocity->value() / norm 
-            : 1.0f                       / norm;
+		const float k = _emissionVelocity->value() / norm;
 
 		particle.startvx 	= particle.startvx * k;
 		particle.startvy 	= particle.startvy * k;
@@ -462,50 +460,74 @@ ParticleSystem::createParticle(unsigned int 				particleIndex,
 
 	particle.timeLived	            = timeLived;
 			
-	particle.alive 		            = true;
+//	particle.alive 		            = true;
 	
-	++_liveCount;
+//	++_liveCount;
 
 	for (auto& initializer : _initializers)
 		initializer->initialize(particle, timeLived);
 }
 
-void
-ParticleSystem::killParticle(unsigned int	particleIndex)
-{
-	_particles[particleIndex].alive = false;
+//void
+//ParticleSystem::killParticle(unsigned int particleIndex)
+//{
+//	_particles[particleIndex].alive = false;
 	
-	--_liveCount;
-}
+	//--_liveCount;
+//}
 
 void
 ParticleSystem::updateMaxParticlesCount()
 {
-	auto value = (unsigned int)(ceilf(_lifetime->max() / _rate - (float)EPSILON));
-	value = value > _countLimit ? _countLimit : value;
+	auto value = std::min(_countLimit, (unsigned int)(ceilf(_lifetime->max()/_rate - 1e-3f)));
 	
 	if (_maxCount == value)
 		return;
 
 	_maxCount = value;
 
-	_liveCount = 0;
-
-	for (unsigned int i = 0; i < _particles.size(); ++i)
-	{
-		if (_particles[i].alive)
+	uint liveCount = 0;
+	for (auto& particle : _particles)
+		if (particle.alive())
 		{
-			if (_liveCount == _maxCount	|| 
-                !(_particles[i].timeLived < _lifetime->max()))
-				_particles[i].alive = false;
+			if (liveCount == _maxCount || !( particle.timeLived < _lifetime->max()) )
+				particle.kill();
 			else
 			{
-				++_liveCount;
-				if (_particles[i].lifetime > _lifetime->max() || _particles[i].lifetime < _lifetime->min())
-					_particles[i].lifetime = _lifetime->value();
+				if (particle.lifetime < _lifetime->min() || particle.lifetime > _lifetime->max())
+					particle.lifetime = _lifetime->value();
+
+				if (particle.alive())
+					++liveCount;
 			}
 		}
-	}
+
+
+ //   //std::cout << "lifetime in [" << _lifetime->min() << " " << _lifetime->max() << "]" << std::endl;
+
+	//for (unsigned int i = 0; i < _particles.size(); ++i)
+	//{
+	//	if (_particles[i].alive())
+	//	{
+	//		if (liveCount == _maxCount ||
+	//			!(_particles[i].timeLived < _lifetime->max()))
+	//			_particles[i].kill();
+	//			//!(_particles[i].timeLived < _lifetime->max()))
+	//			//;//				_particles[i].alive = false;
+	//		else
+	//		{
+	//			//++_liveCount;
+	//			if (_particles[i].lifetime > _lifetime->max() || _particles[i].lifetime < _lifetime->min())
+	//				_particles[i].lifetime = _lifetime->value();
+
+	//			liveCount += _particles[i].alive() ? 1 : 0;
+	//			//if (!(_particles[i].timeLived < _particles[i].lifetime))
+	//				//;// _particles[i].alive = false;
+ //               //else
+ //                   //++_liveCount;
+	//		}
+	//	}
+	//}
 	resizeParticlesVector();
 	_geometry->initStreams(_maxCount);
 }
@@ -557,15 +579,16 @@ ParticleSystem::updateParticleDistancesToCamera()
 void
 ParticleSystem::reset()
 {
-	if(_liveCount == 0)
-		return;
+	for (auto& particle : _particles)
+		particle.kill();
 
-	_liveCount = 0;
+	//if (_liveCount == 0)
+	//	return;
 
-	for (unsigned particleIndex = 0; particleIndex < _particles.size(); ++particleIndex)
-	{
-		_particles[particleIndex].alive = false;
-	}
+	//_liveCount = 0;
+
+//	for (auto& particle : _particles)
+//        particle.alive = false;
 }
 
 
@@ -661,8 +684,8 @@ ParticleSystem::updateVertexFormat()
 void
 ParticleSystem::updateVertexBuffer()
 {
-	if (_liveCount == 0)
-		return;
+	//if (_liveCount == 0)
+	//	return;
 
 	if (_isZSorted)
 	{
@@ -670,8 +693,10 @@ ParticleSystem::updateVertexBuffer()
 		std::sort(_particleOrder.begin(), _particleOrder.end(), _comparisonObject);
 	}
 	
-	std::vector<float>& vsData = _geometry->particleVertices()->data();
-	float* vertexIterator	= &(*vsData.begin());
+	std::vector<float>&	vsData			= _geometry->particleVertices()->data();
+	float*				vertexIterator	= &(*vsData.begin());
+
+    unsigned int liveCount = 0;
 
 	for (unsigned int particleIndex = 0; particleIndex < _maxCount; ++particleIndex)
 	{
@@ -684,7 +709,7 @@ ParticleSystem::updateVertexBuffer()
 
 		unsigned int i = 5;
 
-		if (particle->alive)
+		if (particle->alive())
 		{
 			setInVertexBuffer(vertexIterator, 2, particle->x);
 			setInVertexBuffer(vertexIterator, 3, particle->y);
@@ -717,16 +742,18 @@ ParticleSystem::updateVertexBuffer()
 				setInVertexBuffer(vertexIterator, i++, particle->spriteIndex);
 
 			vertexIterator += 4 * _geometry->vertexSize();
+            ++liveCount;
 		}
 	}
 
-    _geometry->particleVertices()->upload(0, _liveCount << 2);
+//    std::cout << "liveCount = " << _liveCount << " " << liveCount << std::endl;
+	_geometry->particleVertices()->upload(0, liveCount << 2);
 
-	if (_liveCount != _previousLiveCount)
+	if (liveCount != _previousLiveCount)
 	{
         auto particleIndices    = std::static_pointer_cast<render::ParticleIndexBuffer>(_geometry->indices());
-        particleIndices->upload(0, _liveCount << 2);
-		_previousLiveCount      = _liveCount;
+		particleIndices->upload(0, liveCount << 2);
+		_previousLiveCount = liveCount;
 	}
 }
 

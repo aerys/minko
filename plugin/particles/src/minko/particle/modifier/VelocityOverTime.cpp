@@ -40,7 +40,7 @@ VelocityOverTime::update(std::vector<ParticleData>& particles,
 		 		   		 float                      timeStep) const
 {
 	for (auto& particle : particles)
-    	if (particle.alive)
+    	if (particle.alive())
 	    	{
                 const float t = particle.lifetime > 0.0f
                     ? particle.timeLived / particle.lifetime

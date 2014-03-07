@@ -42,7 +42,7 @@ ForceOverTime::update(std::vector<ParticleData>& 	particles,
 	float sqTime = timeStep * timeStep;
 
 	for (auto& particle : particles)
-        if (particle.alive)
+        if (particle.alive())
 		    {
                 const float t = particle.lifetime > 0.0f 
                     ? particle.timeLived / particle.lifetime

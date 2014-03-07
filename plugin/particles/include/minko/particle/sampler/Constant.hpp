@@ -69,13 +69,6 @@ namespace minko
 					value = _value;
 				};
 
-				virtual 
-				T
-				max() const
-				{
-					return _value;
-				};
-				
 				virtual
 				T
 				min() const
@@ -83,6 +76,13 @@ namespace minko
 					return _value;
 				};
 
+				virtual 
+				T
+				max() const
+				{
+					return _value;
+				};
+				
 			protected:
 				Constant(T value): 
                     _value (value)

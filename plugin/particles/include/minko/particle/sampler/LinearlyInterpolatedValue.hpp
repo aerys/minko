@@ -72,14 +72,18 @@ namespace minko
                 T
                 min() const
                 {
-                    return startValue();
+                    return startValue() < endValue() 
+                        ? startValue() 
+                        : endValue();
                 };
 
                 inline
                 T
                 max() const
                 {
-                    return startValue();
+                    return startValue() < endValue() 
+                        ? endValue() 
+                        : startValue();
                 };
 
                 inline
