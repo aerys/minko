@@ -74,11 +74,11 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		"ASSIMP_BUILD_NO_IFC_IMPORTER",
 		"ASSIMP_BUILD_NO_XGL_IMPORTER",
 		--"ASSIMP_BUILD_NO_FBX_IMPORTER",
-		"AI_LMW_MAX_WEIGHTS=4",
+		'"AI_LMW_MAX_WEIGHTS=4"',
 		-- OpenGL ES 2 max vertex count
-		"AI_SLM_DEFAULT_MAX_VERTICES=128000",
+		'"AI_SLM_DEFAULT_MAX_VERTICES=128000"',
 		-- OpenGL ES 2 max indices/triangles count
-		"AI_SLM_DEFAULT_MAX_TRIANGLES=21845"
+		'"AI_SLM_DEFAULT_MAX_TRIANGLES=21845"'
 	}
 
 	configuration { "vs*" }
