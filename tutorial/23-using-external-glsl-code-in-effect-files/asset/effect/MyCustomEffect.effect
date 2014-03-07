@@ -4,7 +4,7 @@
     "aPosition" : "geometry[${geometryId}].position"
   },
   "passes" : [{
-    "vertexShader" : "#pragma include('Basic.vertex.glsl')",
-    "fragmentShader" : "#pragma include('Basic.fragment.glsl')"
+    "vertexShader" : "#pragma include('MyCustomEffect.vertex.glsl')",
+    "fragmentShader" : "#pragma include('MyCustomEffect.fragment.glsl')"
   }]
 }
