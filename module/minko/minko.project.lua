@@ -227,6 +227,9 @@ minko.project.application = function(name)
 			minko.action.copy("asset")
 		}
 
+	configuration { "vs*" }
+		kind "ConsoleApp"
+		
 	configuration { }
 	
 end
