@@ -196,6 +196,10 @@ minko.project.application = function(name)
 			emcc .. ' ${TARGET} -o ${TARGETDIR}/' .. name .. '.html -O2 --closure 1 -s CLOSURE_ANNOTATIONS=1 -s ERROR_ON_UNDEFINED_SYMBOLS=1 -s DISABLE_EXCEPTION_CATCHING=0 -s TOTAL_MEMORY=268435456 --preload-file ${TARGETDIR}/asset || ' .. minko.action.fail()
 		}
 
+		libdirs {
+			minko.sdk.path("/framework/bin/html5/release")
+		}
+
 	configuration { "html5", "debug" }
 		local emcc = premake.tools.gcc.tools.emscripten.cc
 
@@ -205,6 +209,10 @@ minko.project.application = function(name)
 
 		postbuildcommands {
 			emcc .. ' ${TARGET} -o ${TARGETDIR}/' .. name .. '.html -O2 --js-opts 0 -g4 -s ASM_JS=0 -s DISABLE_EXCEPTION_CATCHING=0 -s ERROR_ON_UNDEFINED_SYMBOLS=1 -s TOTAL_MEMORY=268435456 --preload-file ${TARGETDIR}/asset || ' .. minko.action.fail()
+		}
+
+		libdirs {
+			minko.sdk.path("/framework/bin/html5/debug")
 		}
 
 	configuration { "ios" }
