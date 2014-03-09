@@ -18,7 +18,7 @@ minko.action.copy = function(sourcePath)
 	if os.is('windows') then
 		sourcePath = path.translate(sourcePath)
 
-		local targetDir = string.startswith(_ACTION, "gmake") and '$(subst /,\\,$(TARGETDIR))' or '$(TargetDir)'
+		local targetDir = string.startswith(_ACTION, "gmake") and '$(subst /,\\,$(TARGETDIR))' or '"$(TargetDir)"'
 
 		if os.isdir(sourcePath) then
 			targetDir = targetDir .. '\\' .. path.getbasename(sourcePath)
