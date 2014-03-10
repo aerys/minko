@@ -102,6 +102,10 @@ Skinning::addedHandler(Node::Ptr node, Node::Ptr target, Node::Ptr parent)
 	if (_skin->duration() == 0)
 		return; // incorrect animation
 
+	// FIXME
+	if (node->components<Surface>().size() > 1)
+		std::cerr << "Warning: The skinning component is not intended to work on node with several surfaces. Attempts to apply skinning to first surface." << std::endl;
+
 	if (node->hasComponent<Surface>())
 	{
 		auto geometry = node->component<Surface>()->geometry();
