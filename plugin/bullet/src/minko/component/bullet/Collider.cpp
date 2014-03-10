@@ -174,24 +174,12 @@ bullet::Collider::initializeFromNode(Node::Ptr node)
 	if (_targetTransform != nullptr && _physicsWorld != nullptr)
 		return;
 
-	if (!node->hasComponent<Transform>())
-		node->addComponent(Transform::create());
-	
-	_targetTransform = node->component<Transform>();
-
-	// check that target's model-to-world matrix is good to begin with.
-	auto modelToWorld = _targetTransform->modelToWorldMatrix(true);
-	if (fabsf(modelToWorld->determinant()) < 1e-3f)
-		throw new std::logic_error("The node's model-to-world matrix cannot be inverted.");
-
-	auto nodeSet = NodeSet::create(node)
+	// identify physics world
+	auto withPhysicsWorld = NodeSet::create(node)
 		->ancestors(true)
-		->where([](Node::Ptr node)
-		{
-			return node->hasComponent<bullet::PhysicsWorld>();
-		});
+		->where([](Node::Ptr n){ return n->hasComponent<bullet::PhysicsWorld>(); });
 
-	if (nodeSet->nodes().size() != 1)
+	if (withPhysicsWorld->nodes().size() != 1)
 	{
 #ifdef DEBUG_PHYSICS
 		std::cout << "[" << node->name() << "]\tcollider CANNOT be added (# PhysicsWorld = " << nodeSet->nodes().size() << ")." << std::endl;
@@ -200,8 +188,21 @@ bullet::Collider::initializeFromNode(Node::Ptr node)
 		return;
 	}
 
-    _colliderData->_node    = node; 
-	_physicsWorld           = nodeSet->nodes().front()->component<bullet::PhysicsWorld>();
+	_physicsWorld = withPhysicsWorld->nodes().front()->component<bullet::PhysicsWorld>();
+	assert(_physicsWorld);
+
+	if (!node->hasComponent<Transform>())
+		node->addComponent(Transform::create());
+	
+	_targetTransform = node->component<Transform>();
+	assert(_targetTransform);
+
+	// check that target's model-to-world matrix is good to begin with.
+	auto modelToWorld = _targetTransform->modelToWorldMatrix(true);
+	if (fabsf(modelToWorld->determinant()) < 1e-3f)
+		throw new std::logic_error("The node's model-to-world matrix cannot be inverted.");
+
+    _colliderData->_node = node; 
 	_physicsWorld->addChild(_colliderData);
 
 	synchronizePhysicsWithGraphics();
