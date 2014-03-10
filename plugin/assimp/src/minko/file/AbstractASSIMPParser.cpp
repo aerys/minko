@@ -17,7 +17,7 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "minko/file/ASSIMPParser.hpp"
+#include "minko/file/AbstractASSIMPParser.hpp"
 
 #include "IOHandler.hpp"
 
@@ -77,12 +77,12 @@ using namespace minko::geometry;
 	printNode(std::ostream& out, Node::Ptr node, uint depth)
 #endif // DEBUG_ASSIMP
 
-/*static*/ const ASSIMPParser::TextureTypeToName	ASSIMPParser::_textureTypeToName	= ASSIMPParser::initializeTextureTypeToName();
-/*static*/ const std::string						ASSIMPParser::PNAME_TRANSFORM		= "transform.matrix";
+/*static*/ const AbstractASSIMPParser::TextureTypeToName	AbstractASSIMPParser::_textureTypeToName	= AbstractASSIMPParser::initializeTextureTypeToName();
+/*static*/ const std::string						AbstractASSIMPParser::PNAME_TRANSFORM		= "transform.matrix";
 
 /*static*/
-ASSIMPParser::TextureTypeToName
-ASSIMPParser::initializeTextureTypeToName()
+AbstractASSIMPParser::TextureTypeToName
+AbstractASSIMPParser::initializeTextureTypeToName()
 {
 	TextureTypeToName typeToString;
 
@@ -95,7 +95,7 @@ ASSIMPParser::initializeTextureTypeToName()
 	return typeToString;
 }
 
-ASSIMPParser::ASSIMPParser() :
+AbstractASSIMPParser::AbstractASSIMPParser() :
 	_numDependencies(0),
 	_numLoadedDependencies(0),
 	_filename(),
@@ -112,8 +112,12 @@ ASSIMPParser::ASSIMPParser() :
 {
 }
 
+AbstractASSIMPParser::~AbstractASSIMPParser()
+{
+}
+
 std::set<std::string>
-ASSIMPParser::getSupportedFileExensions()
+AbstractASSIMPParser::getSupportedFileExensions()
 {
 	Assimp::Importer importer;
 	std::string list;
@@ -135,7 +139,7 @@ ASSIMPParser::getSupportedFileExensions()
 }
 
 void
-ASSIMPParser::parse(const std::string&					filename,
+AbstractASSIMPParser::parse(const std::string&					filename,
 					const std::string&					resolvedFilename,
 					std::shared_ptr<Options>			options,
 					const std::vector<unsigned char>&	data,
@@ -159,6 +163,8 @@ ASSIMPParser::parse(const std::string&					filename,
     
     //Init the assimp scene
     Assimp::Importer importer;
+
+    provideImporter(importer);
 
 	//fixme : find a way to handle loading dependencies asynchronously
 	options->loadAsynchronously(false);
@@ -230,7 +236,7 @@ ASSIMPParser::parse(const std::string&					filename,
 }
 
 void
-ASSIMPParser::createSceneTree(scene::Node::Ptr 				minkoNode,
+AbstractASSIMPParser::createSceneTree(scene::Node::Ptr 				minkoNode,
 							  const aiScene* 				scene,
 							  aiNode* 						ainode,
 							  std::shared_ptr<AssetLibrary> assets)
@@ -270,7 +276,7 @@ ASSIMPParser::createSceneTree(scene::Node::Ptr 				minkoNode,
 }
 
 void
-ASSIMPParser::apply(Node::Ptr node, const std::function<Node::Ptr(Node::Ptr)>& func)
+AbstractASSIMPParser::apply(Node::Ptr node, const std::function<Node::Ptr(Node::Ptr)>& func)
 {
 	func(node);
 
@@ -280,13 +286,13 @@ ASSIMPParser::apply(Node::Ptr node, const std::function<Node::Ptr(Node::Ptr)>& f
 }
 
 Transform::Ptr
-ASSIMPParser::getTransformFromAssimp(aiNode* ainode)
+AbstractASSIMPParser::getTransformFromAssimp(aiNode* ainode)
 {
 	return Transform::create(convert(ainode->mTransformation));
 }
 
 Geometry::Ptr
-ASSIMPParser::createMeshGeometry(scene::Node::Ptr minkoNode, aiMesh* mesh)
+AbstractASSIMPParser::createMeshGeometry(scene::Node::Ptr minkoNode, aiMesh* mesh)
 {
 	unsigned int vertexSize = 0; 
 
@@ -375,7 +381,7 @@ ASSIMPParser::createMeshGeometry(scene::Node::Ptr minkoNode, aiMesh* mesh)
 }
 
 void
-ASSIMPParser::createMeshSurface(scene::Node::Ptr 	minkoNode,
+AbstractASSIMPParser::createMeshSurface(scene::Node::Ptr 	minkoNode,
 								const aiScene* 		scene,
 								aiMesh* 			mesh)
 {
@@ -407,7 +413,7 @@ ASSIMPParser::createMeshSurface(scene::Node::Ptr 	minkoNode,
 }
 
 void
-ASSIMPParser::createCameras(const aiScene* scene)
+AbstractASSIMPParser::createCameras(const aiScene* scene)
 {
 	for (uint i = 0; i < scene->mNumCameras; ++i)
 	{
@@ -442,7 +448,7 @@ ASSIMPParser::createCameras(const aiScene* scene)
 }
 
 void
-ASSIMPParser::createLights(const aiScene* scene)
+AbstractASSIMPParser::createLights(const aiScene* scene)
 {
     for (uint i = 0; i < scene->mNumLights; i++)
     {
@@ -549,7 +555,7 @@ ASSIMPParser::createLights(const aiScene* scene)
 }
 
 scene::Node::Ptr
-ASSIMPParser::findNode(const std::string& name) const
+AbstractASSIMPParser::findNode(const std::string& name) const
 {
 	const auto foundNodeIt = _nameToNode.find(name);
 	return foundNodeIt != _nameToNode.end()
@@ -558,7 +564,7 @@ ASSIMPParser::findNode(const std::string& name) const
 }
 
 void
-ASSIMPParser::parseDependencies(const std::string& 	filename,
+AbstractASSIMPParser::parseDependencies(const std::string& 	filename,
 								const aiScene*		scene)
 {
 	std::set<std::string>	loadedFilenames;
@@ -599,7 +605,7 @@ ASSIMPParser::parseDependencies(const std::string& 	filename,
 }
 
 void
-ASSIMPParser::finalize()
+AbstractASSIMPParser::finalize()
 {
 	_loaderErrorSlots.clear();
 	_loaderCompleteSlots.clear();
@@ -610,7 +616,7 @@ ASSIMPParser::finalize()
 }
 
 void
-ASSIMPParser::loadTexture(const std::string&	textureFilename,
+AbstractASSIMPParser::loadTexture(const std::string&	textureFilename,
 						  const std::string&	assetName,
 						  Options::Ptr			options)
 {
@@ -677,7 +683,7 @@ ASSIMPParser::loadTexture(const std::string&	textureFilename,
 }
 
 void
-ASSIMPParser::resetParser()
+AbstractASSIMPParser::resetParser()
 {
 	_numDependencies		= 0;
 	_numLoadedDependencies	= 0;
@@ -687,7 +693,7 @@ ASSIMPParser::resetParser()
 	disposeNodeMaps();
 }
 void
-ASSIMPParser::disposeNodeMaps()
+AbstractASSIMPParser::disposeNodeMaps()
 {
 	_aiNodeToNode.clear();
 	_aiMeshToNode.clear();
@@ -697,7 +703,7 @@ ASSIMPParser::disposeNodeMaps()
 }
 
 unsigned int
-ASSIMPParser::getSkinNumFrames(const aiMesh* aimesh) const
+AbstractASSIMPParser::getSkinNumFrames(const aiMesh* aimesh) const
 {
 	assert(aimesh && _aiMeshToNode.count(aimesh) > 0);
 	const auto	minkoMesh	= _aiMeshToNode.find(aimesh)->second;
@@ -738,7 +744,7 @@ ASSIMPParser::getSkinNumFrames(const aiMesh* aimesh) const
 }
 
 void
-ASSIMPParser::createSkins(const aiScene* aiscene)
+AbstractASSIMPParser::createSkins(const aiScene* aiscene)
 {
 	if (_options->skinningFramerate() == 0)
 		return;
@@ -753,7 +759,7 @@ ASSIMPParser::createSkins(const aiScene* aiscene)
 }
 
 void
-ASSIMPParser::createSkin(const aiMesh* aimesh)
+AbstractASSIMPParser::createSkin(const aiMesh* aimesh)
 {
 	if (aimesh == nullptr || aimesh->mNumBones == 0)
 		return;
@@ -868,7 +874,7 @@ ASSIMPParser::createSkin(const aiMesh* aimesh)
 }
 
 Node::Ptr
-ASSIMPParser::getSkeletonRoot(const aiMesh* aimesh) const
+AbstractASSIMPParser::getSkeletonRoot(const aiMesh* aimesh) const
 {
 	Node::Ptr	skeletonRoot	= nullptr;
 	auto		boneAncestor	= getBoneCommonAncestor(aimesh);
@@ -891,7 +897,7 @@ ASSIMPParser::getSkeletonRoot(const aiMesh* aimesh) const
 }
 
 Node::Ptr
-ASSIMPParser::getBoneCommonAncestor(const aiMesh* aimesh) const
+AbstractASSIMPParser::getBoneCommonAncestor(const aiMesh* aimesh) const
 {
 	if (aimesh && aimesh->mNumBones > 0)
 	{
@@ -952,7 +958,7 @@ ASSIMPParser::getBoneCommonAncestor(const aiMesh* aimesh) const
 }
 
 void
-ASSIMPParser::precomputeModelToRootMatrices(Node::Ptr						node, 
+AbstractASSIMPParser::precomputeModelToRootMatrices(Node::Ptr						node, 
 											Node::Ptr						root, 
 											std::vector<Matrix4x4::Ptr>&	modelToRootMatrices) const
 {
@@ -1009,7 +1015,7 @@ ASSIMPParser::precomputeModelToRootMatrices(Node::Ptr						node,
 }
 
 Bone::Ptr 
-ASSIMPParser::createBone(const aiBone* aibone) const
+AbstractASSIMPParser::createBone(const aiBone* aibone) const
 {
 	const auto boneName = std::string(aibone->mName.data);
 	if (aibone == nullptr || _nameToNode.count(boneName) == 0)
@@ -1031,7 +1037,7 @@ ASSIMPParser::createBone(const aiBone* aibone) const
 }
 
 void
-ASSIMPParser::sampleAnimations(const aiScene* scene)
+AbstractASSIMPParser::sampleAnimations(const aiScene* scene)
 {
 	_nameToAnimMatrices.clear();
 
@@ -1043,7 +1049,7 @@ ASSIMPParser::sampleAnimations(const aiScene* scene)
 }
 
 void
-ASSIMPParser::sampleAnimation(const aiAnimation* animation)
+AbstractASSIMPParser::sampleAnimation(const aiAnimation* animation)
 {
 	if (animation == nullptr || animation->mTicksPerSecond < 1e-6 || _options->skinningFramerate() == 0)
 		return;
@@ -1074,7 +1080,7 @@ ASSIMPParser::sampleAnimation(const aiAnimation* animation)
 
 /*static*/
 void
-ASSIMPParser::sample(const aiNodeAnim*				nodeAnimation, 
+AbstractASSIMPParser::sample(const aiNodeAnim*				nodeAnimation, 
 					 const std::vector<float>&		times, 
 					 std::vector<Matrix4x4::Ptr>&	matrices)
 {
@@ -1138,7 +1144,7 @@ ASSIMPParser::sample(const aiNodeAnim*				nodeAnimation,
 
 /*static*/
 Vector3::Ptr
-ASSIMPParser::sample(const aiVectorKey*			keys,
+AbstractASSIMPParser::sample(const aiVectorKey*			keys,
 					 const std::vector<float>&	keyTimeFactors,
 					 float						time,
 					 Vector3::Ptr				output)
@@ -1170,7 +1176,7 @@ ASSIMPParser::sample(const aiVectorKey*			keys,
 
 /*static*/
 Quaternion::Ptr
-ASSIMPParser::sample(const aiQuatKey*			keys, 
+AbstractASSIMPParser::sample(const aiQuatKey*			keys, 
 					 const std::vector<float>&	keyTimeFactors,
 					 float						time, 
 					 Quaternion::Ptr			output)
@@ -1202,7 +1208,7 @@ ASSIMPParser::sample(const aiQuatKey*			keys,
 template<class AiKey>
 /*static*/
 void
-ASSIMPParser::computeTimeFactors(unsigned int			numKeys,
+AbstractASSIMPParser::computeTimeFactors(unsigned int			numKeys,
 								 const AiKey*			keys,
 								 std::vector<float>&	keyTimeFactors)
 {
@@ -1219,7 +1225,7 @@ ASSIMPParser::computeTimeFactors(unsigned int			numKeys,
 template<class AiKey>
 /*static*/
 unsigned int
-ASSIMPParser::getIndexForTime(unsigned int	numKeys,
+AbstractASSIMPParser::getIndexForTime(unsigned int	numKeys,
 							  const AiKey*	keys,
 							  double		time)
 {
@@ -1243,7 +1249,7 @@ ASSIMPParser::getIndexForTime(unsigned int	numKeys,
 
 /*static*/
 Quaternion::Ptr
-ASSIMPParser::convert(const aiQuaternion& quaternion, Quaternion::Ptr output)
+AbstractASSIMPParser::convert(const aiQuaternion& quaternion, Quaternion::Ptr output)
 {
 	if (output == nullptr)
 		output = Quaternion::create();
@@ -1253,7 +1259,7 @@ ASSIMPParser::convert(const aiQuaternion& quaternion, Quaternion::Ptr output)
 
 /*static*/
 Matrix4x4::Ptr
-ASSIMPParser::convert(const aiMatrix4x4& matrix, Matrix4x4::Ptr output)
+AbstractASSIMPParser::convert(const aiMatrix4x4& matrix, Matrix4x4::Ptr output)
 {
 	if (output == nullptr)
 		output = Matrix4x4::create();
@@ -1268,7 +1274,7 @@ ASSIMPParser::convert(const aiMatrix4x4& matrix, Matrix4x4::Ptr output)
 
 /*static*/
 Matrix4x4::Ptr
-ASSIMPParser::convert(const aiVector3D&		scaling, 
+AbstractASSIMPParser::convert(const aiVector3D&		scaling, 
 					  const aiQuaternion&	quaternion, 
 					  const aiVector3D&		translation, 
 					  Matrix4x4Ptr			output)
@@ -1291,7 +1297,7 @@ ASSIMPParser::convert(const aiVector3D&		scaling,
 }
 
 material::Material::Ptr
-ASSIMPParser::createMaterial(const aiMaterial* aiMat)
+AbstractASSIMPParser::createMaterial(const aiMaterial* aiMat)
 {
 	auto material	= chooseMaterialByShadingMode(aiMat);
 	
@@ -1365,7 +1371,7 @@ ASSIMPParser::createMaterial(const aiMaterial* aiMat)
 }
 
 material::Material::Ptr
-ASSIMPParser::chooseMaterialByShadingMode(const aiMaterial* aiMat) const
+AbstractASSIMPParser::chooseMaterialByShadingMode(const aiMaterial* aiMat) const
 {
 	if (aiMat == nullptr || _options->material())
 		return material::Material::create(_options->material());
@@ -1399,7 +1405,7 @@ ASSIMPParser::chooseMaterialByShadingMode(const aiMaterial* aiMat) const
 }
 
 render::Effect::Ptr
-ASSIMPParser::chooseEffectByShadingMode(const aiMaterial* aiMat) const
+AbstractASSIMPParser::chooseEffectByShadingMode(const aiMaterial* aiMat) const
 {
 	render::Effect::Ptr effect = _options->effect();
 
@@ -1449,7 +1455,7 @@ ASSIMPParser::chooseEffectByShadingMode(const aiMaterial* aiMat) const
 
 
 render::Blending::Mode
-ASSIMPParser::getBlendingMode(const aiMaterial* aiMat) const
+AbstractASSIMPParser::getBlendingMode(const aiMaterial* aiMat) const
 {
 	int blendMode;
 	unsigned int max;
@@ -1470,7 +1476,7 @@ ASSIMPParser::getBlendingMode(const aiMaterial* aiMat) const
 }
 
 render::TriangleCulling
-ASSIMPParser::getTriangleCulling(const aiMaterial* aiMat) const
+AbstractASSIMPParser::getTriangleCulling(const aiMaterial* aiMat) const
 {
 	int twoSided;
 	unsigned int max;
@@ -1485,7 +1491,7 @@ ASSIMPParser::getTriangleCulling(const aiMaterial* aiMat) const
 }
 
 bool 
-ASSIMPParser::getWireframe(const aiMaterial* aiMat) const
+AbstractASSIMPParser::getWireframe(const aiMaterial* aiMat) const
 {
 	int wireframe;
 	unsigned int max;
@@ -1496,7 +1502,7 @@ ASSIMPParser::getWireframe(const aiMaterial* aiMat) const
 }
 
 Vector4::Ptr
-ASSIMPParser::setColorProperty(material::Material::Ptr	material, 
+AbstractASSIMPParser::setColorProperty(material::Material::Ptr	material, 
 							   const std::string&		propertyName, 
 							   const aiMaterial*		aiMat, 
 							   const char*				aiMatKeyName,
@@ -1519,7 +1525,7 @@ ASSIMPParser::setColorProperty(material::Material::Ptr	material,
 }
 
 float
-ASSIMPParser::setScalarProperty(material::Material::Ptr	material, 
+AbstractASSIMPParser::setScalarProperty(material::Material::Ptr	material, 
 							    const std::string&		propertyName, 
 							    const aiMaterial*		aiMat, 
 							    const char*				aiMatKeyName,
@@ -1540,7 +1546,7 @@ ASSIMPParser::setScalarProperty(material::Material::Ptr	material,
 }
 
 void
-ASSIMPParser::createAnimations(const aiScene* scene, bool interpolate)
+AbstractASSIMPParser::createAnimations(const aiScene* scene, bool interpolate)
 {
 	std::unordered_map<Node::Ptr, std::vector<animation::AbstractTimeline::Ptr>> nodeToTimelines;
 
