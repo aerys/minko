@@ -41,6 +41,25 @@ using namespace minko::math;
 using namespace minko::animation;
 using namespace minko::deserialize;
 
+inline static
+std::ostream&
+printMatrix(std::ostream& out, Node::Ptr node)
+{
+	if (node && node->hasComponent<Transform>())
+	{
+		const auto& matrix = node->component<Transform>()->matrix()->data();
+
+		out 
+			<< "'" << node->name() << "'\t<- '" << (node->parent() ? node->parent()->name() : "") << "'\t("
+			<< matrix[0] << ", " << matrix[5] << ", " << matrix[10] << ")" 
+			<< std::endl;
+
+		for (auto& n : node->children())
+			printMatrix(out, n);
+	}
+	return out;
+}
+
 /*static*/
 Skinning::Ptr
 SkinningComponentDeserializer::computeSkinning(file::Options::Ptr						options,
