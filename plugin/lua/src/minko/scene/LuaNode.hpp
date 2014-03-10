@@ -54,6 +54,7 @@ namespace minko
                     .methodWrapper("getTransform",          &LuaNode::getTransformWrapper)
 					.methodWrapper("getAnimation",			&LuaNode::getAnimationWrapper)
                     .methodWrapper("getPerspectiveCamera",  &LuaNode::getPerspectiveCameraWrapper)
+					.methodWrapper("getSurface",			&LuaNode::getSurfaceWrapper)
 		            .property("children",					&Node::children)
 		            .property("data",				        &Node::data)
 		            .property("root",				        &Node::root)
@@ -101,6 +102,13 @@ namespace minko
 			getPerspectiveCameraWrapper(Node::Ptr node)
 			{
 				return node->component<component::PerspectiveCamera>();
+			}
+
+			static
+			std::shared_ptr<component::Surface>
+			getSurfaceWrapper(Node::Ptr node)
+			{
+				return node->component<component::Surface>();
 			}
 		};
 	}
