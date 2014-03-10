@@ -79,13 +79,13 @@ FileLoader::load(const std::string& filename, std::shared_ptr<Options> options)
 			file.close();
 			auto worker = AbstractCanvas::defaultCanvas()->getWorker("file-loader");
 
-			_workerSlots.push_back(worker->complete()->connect([=](async::Worker::MessagePtr data) {
+			_workerSlots.push_back(worker->complete()->connect([=](async::Worker::Ptr, async::Worker::MessagePtr data) {
 				void* charData = &*data->begin();
 				_data.assign(static_cast<unsigned char*>(charData), static_cast<unsigned char*>(charData) + data->size());
 				_complete->execute(shared_from_this());
 			}));
 
-			_workerSlots.push_back(worker->progress()->connect([=](float ratio) {
+			_workerSlots.push_back(worker->progress()->connect([=](async::Worker::Ptr, float ratio) {
 				_progress->execute(shared_from_this(), ratio);
 			}));
 

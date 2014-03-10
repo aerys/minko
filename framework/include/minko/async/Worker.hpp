@@ -46,8 +46,8 @@ namespace minko
 			typedef float								Progress;
 
 		protected:
-			std::shared_ptr<Signal<float>>				_progress;
-			std::shared_ptr<Signal<MessagePtr>>			_complete;
+			std::shared_ptr<Signal<Ptr, float>>			_progress;
+			std::shared_ptr<Signal<Ptr, MessagePtr>>	_complete;
 			bool										_busy;
 			bool										_finished;
 
@@ -82,14 +82,14 @@ namespace minko
 			progress(float value);
 
 			inline
-			Signal<float>::Ptr
+			Signal<Ptr, float>::Ptr
 			progress()
 			{
 				return _progress;
 			}
 
 			inline
-			Signal<MessagePtr>::Ptr
+			Signal<Ptr, MessagePtr>::Ptr
 			complete()
 			{
 				return _complete;

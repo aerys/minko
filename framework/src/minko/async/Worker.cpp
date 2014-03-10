@@ -29,8 +29,8 @@ using namespace minko;
 using namespace minko::async;
 
 Worker::Worker(const std::string& name) :
-	_progress(Signal<float>::create()),
-	_complete(Signal<MessagePtr>::create()),
+	_progress(Signal<Ptr, float>::create()),
+	_complete(Signal<Ptr, MessagePtr>::create()),
 	_busy(false),
 	_finished(false)
 {
@@ -87,11 +87,13 @@ Worker::update()
 
 #if !defined(EMSCRIPTEN)
 	std::lock_guard<std::mutex> lock(_ratioMutex);
+
+	Ptr worker = shared_from_this();
 	
 	if (_ratio != _oldRatio)
 	{
 		std::cout << "Worker::update(): progress execute" << std::endl;
-		_progress->execute(_ratio);
+		_progress->execute(worker, _ratio);
 		_oldRatio = _ratio;
 	}
 
@@ -100,7 +102,7 @@ Worker::update()
 		std::cout << "Worker::update(): complete execute" << std::endl;
 		_busy = false;
 		_finished = true;
-		_complete->execute(_future.get());
+		_complete->execute(worker, _future.get());
 	}
 #endif
 }
@@ -109,7 +111,7 @@ Worker::update()
 void
 Worker::messageHandler(char* data, int size, void* arg)
 {
-	Worker* worker = static_cast<Worker*>(arg);
+	Worker::Ptr worker = static_cast<Worker*>(arg)->shared_from_this();
 
 	std::cout << "Worker::messageHandler(): " << size << std::endl;;
 
@@ -117,14 +119,14 @@ Worker::messageHandler(char* data, int size, void* arg)
 	{
 		std::cout << "Worker::messageHandler(): progress execute" << std::endl;
 		float ratio = reinterpret_cast<float*>(data)[0];
-		worker->progress()->execute(ratio);
+		worker->progress()->execute(worker, ratio);
 
 	}
 	else
 	{
 		std::cout << "Worker::messageHandler(): complete execute" << std::endl;
 		auto output = std::make_shared<std::vector<char>>(data, data + size);
-		worker->complete()->execute(output);
+		worker->complete()->execute(worker, output);
 	}
 }
 #endif
