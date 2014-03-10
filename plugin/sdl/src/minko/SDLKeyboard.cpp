@@ -535,12 +535,23 @@ SDLKeyboard::SDLKeyboard()
 
 bool SDLKeyboard::keyIsDown(input::Keyboard::ScanCode scanCode)
 {
+#if defined(EMSCRIPTEN)
+    if (scanCode == ScanCode::LEFT)
+        std::cout << "Emscripten [SPACE]: " << static_cast<int>(getKeyCodeFromScanCode(scanCode)) << std::endl;
+    return _keyboardState[static_cast<int>(getKeyCodeFromScanCode(scanCode))] != 0;
+#else
     return _keyboardState[static_cast<int>(scanCode)] != 0;
+#endif
 }
 
 bool SDLKeyboard::keyIsDown(input::Keyboard::KeyCode keyCode)
 {
+#if defined(EMSCRIPTEN)
+    // Note: bug in emscripten, GetKeyStates is indexed by key codes.
     return _keyboardState[static_cast<int>(keyCode)] != 0;
+#else
+    return _keyboardState[static_cast<int>(getScanCodeFromKeyCode(keyCode))] != 0;
+#endif
 }
 
 input::Keyboard::KeyCode
