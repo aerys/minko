@@ -52,7 +52,7 @@ namespace minko
 			    input_keyboard
 			        .methodWrapper("keyDown",   &LuaKeyboard::keyboardKeyDownWrapper)
                     .methodWrapper("keyUp",     &LuaKeyboard::keyboardKeyUpWrapper)
-			        .method("keyIsDown",        static_cast<bool (Keyboard::*)(Keyboard::ScanCode)>(&Keyboard::keyIsDown))
+			        .methodWrapper("keyIsDown", &LuaKeyboard::keyboardKeyIsDownWrapper)
 			        .property("anyKeyDown",	    &Keyboard::keyDown)
 			        .property("anyKeyUp",       &Keyboard::keyUp);
 			}
@@ -69,6 +69,13 @@ namespace minko
 			keyboardKeyUpWrapper(Keyboard::Ptr k, uint s)
 			{
 				return k->keyUp(static_cast<Keyboard::ScanCode>(s));
+			}
+
+			static
+			bool
+			keyboardKeyIsDownWrapper(Keyboard::Ptr k, uint s)
+			{
+				return k->keyIsDown(static_cast<Keyboard::ScanCode>(s));
 			}
 		};
 	}
