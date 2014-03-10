@@ -34,7 +34,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/deserialize/TypeDeserializer.hpp"
 #include "minko/geometry/SphereGeometry.hpp"
 
-std::string MODEL_FILENAME = "model/primitives/primitives.scene";
+//std::string MODEL_FILENAME = "model/skinning/NewScene.scene";
+std::string MODEL_FILENAME = "model/nurse-soccerpunch/nurse.scene";
 
 //#define SERIALIZE // comment to test deserialization
 
@@ -93,10 +94,11 @@ int main(int argc, char** argv)
 	auto root = scene::Node::create("root")
 		->addComponent(sceneManager);
 
-	auto physicWorld = bullet::PhysicsWorld::create();
 
+	auto physicWorld = bullet::PhysicsWorld::create();
 	physicWorld->setGravity(math::Vector3::create(0.f, -9.8f, 0.f));
 	root->addComponent(physicWorld);
+	
 
 	auto camera = scene::Node::create("camera")
 		->addComponent(Renderer::create(0x7f7f7fff))
@@ -196,7 +198,30 @@ int main(int argc, char** argv)
 		root->children()[0]->component<PerspectiveCamera>()->aspectRatio((float)w / (float)h);
 	});
 
-	
+	auto keyDown = canvas->keyboard()->keyDown()->connect([&](input::Keyboard::Ptr k)
+	{
+		float tx = 0.0f;
+		float tz = 0.0f;
+		if (k->keyIsDown(input::Keyboard::ScanCode::LEFT))
+			tx -= 0.1f;
+		else if (k->keyIsDown(input::Keyboard::ScanCode::RIGHT))
+			tx += 0.1f;
+		else if (k->keyIsDown(input::Keyboard::ScanCode::UP))
+			tz += 0.1f;
+		else if (k->keyIsDown(input::Keyboard::ScanCode::DOWN))
+			tz -= 0.1f;
+		
+		auto model = sceneManager->assets()->symbol(MODEL_FILENAME);
+		if (model && model->hasComponent<Transform>())
+		{
+			model->component<Transform>()->matrix()->appendTranslation(tx, 0.0f, tz);
+
+			auto withCollider = scene::NodeSet::create(model)->descendants(true)->where([](scene::Node::Ptr n){ return n->hasComponent<bullet::Collider>(); });
+			for (auto& n : withCollider->nodes())
+				n->component<bullet::Collider>()->synchronizePhysicsWithGraphics();
+		}
+	});
+
 	auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr canvas, float time, float deltaTime)
 	{
 		yaw += cameraRotationYSpeed;
