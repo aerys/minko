@@ -26,7 +26,7 @@ minko.action.copy = function(sourcePath)
 
 		local existenceTest = string.find(sourcePath, '*') and '' or ('if exist ' .. sourcePath .. ' ')
 
-		return existenceTest .. 'xcopy /y /i /e "' .. sourcePath .. '" ' .. targetDir
+		return existenceTest .. 'xcopy /y /i /e "' .. sourcePath .. '" "' .. targetDir .. '"'
 	else
 		local targetDir = string.startswith(_ACTION, "xcode") and '${TARGET_BUILD_DIR}/${TARGET_NAME}.app' or '${TARGETDIR}'
 
@@ -49,11 +49,9 @@ minko.action.clean = function()
 		error("cannot clean from outside the Minko SDK")
 	end
 
-	-- fixme: could detect Git location (http://stackoverflow.com/questions/8507368/finding-the-path-where-git-is-installed-on-a-windows-system)
-	local bin = os.is('windows') and '"C:\\Program Files (x86)\\Git\\bin\\git.exe"' or 'git'
-	local cmd = 'clean -X -d -f'
+	local cmd = 'git clean -X -d -f'
 
-	os.execute(bin .. " " .. cmd)
+	os.execute(cmd)
 	
 	for _, pattern in ipairs { "framework", "plugin/*", "test", "example/*" } do
 		local dirs = os.matchdirs(pattern)
@@ -61,7 +59,7 @@ minko.action.clean = function()
 		for _, dir in ipairs(dirs) do
 			local cwd = os.getcwd()
 			os.chdir(dir)
-			os.execute(bin .. ' ' .. cmd)
+			os.execute(cmd)
 			os.chdir(cwd)
 		end
 	end

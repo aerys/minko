@@ -110,8 +110,6 @@ solution "minko"
 		include 'example/joystick'
 	end
 
-	include 'example/iphone-cube'
-
 	-- test
 	if not _OPTIONS['no-test'] then
 		include 'test'
