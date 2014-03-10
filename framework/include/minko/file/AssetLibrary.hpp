@@ -21,6 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 
+#include "minko/file/BatchLoader.hpp"
 #include "minko/Signal.hpp"
 #include "minko/file/AbstractParser.hpp"
 #include "minko/file/EffectParser.hpp"
@@ -43,38 +44,25 @@ namespace minko
 			typedef std::shared_ptr<geometry::Geometry>			GeometryPtr;
 			typedef std::shared_ptr<file::AbstractParser>		AbsParserPtr;
 			typedef std::shared_ptr<file::AbstractLoader>		AbsLoaderPtr;
-			typedef std::function<AbsParserPtr(void)>			ParserHandler;
-			typedef std::function<AbsLoaderPtr(void)>			LoaderHandler;
 			typedef std::shared_ptr<scene::Node>				NodePtr;
             typedef std::shared_ptr<component::AbstractScript>  AbsScriptPtr;
 			typedef std::shared_ptr<data::Provider>				MaterialPtr;
 
 		private:
-			AbsContextPtr															_context;
-			std::shared_ptr<file::Options>											_defaultOptions;
-			std::unordered_map<std::string, ParserHandler>							_parsers;
-			std::unordered_map<std::string, LoaderHandler>							_loaders;
+			AbsContextPtr												        _context;
+            std::shared_ptr<BatchLoader>                                        _loader;
 
-			std::unordered_map<std::string, MaterialPtr>							_materials;
-			std::unordered_map<std::string, GeometryPtr>							_geometries;
-			std::unordered_map<std::string, EffectPtr>								_effects;
-			std::unordered_map<std::string, AbsTexturePtr>							_textures;
-			std::unordered_map<std::string, NodePtr>								_symbols;
-			std::unordered_map<std::string, std::vector<unsigned char>>				_blobs;
-            std::unordered_map<std::string, AbsScriptPtr>                           _scripts;
+			std::unordered_map<std::string, MaterialPtr>				        _materials;
+			std::unordered_map<std::string, GeometryPtr>				        _geometries;
+			std::unordered_map<std::string, EffectPtr>					        _effects;
+			std::unordered_map<std::string, AbsTexturePtr>				        _textures;
+			std::unordered_map<std::string, NodePtr>					        _symbols;
+			std::unordered_map<std::string, std::vector<unsigned char>>	        _blobs;
+            std::unordered_map<std::string, AbsScriptPtr>                       _scripts;
+            std::unordered_map<std::string, uint>						        _layouts;
 
-            std::unordered_map<std::string, uint>									_layouts;
-
-			std::list<std::string>													_filesQueue;
-			std::list<std::string>													_loading;
-			std::unordered_map<std::string, std::shared_ptr<file::Options>>			_filenameToOptions;
-			std::unordered_map<std::string, std::shared_ptr<file::AbstractLoader>>	_filenameToLoader;
-
-			std::vector<Signal<std::shared_ptr<file::AbstractLoader>>::Slot>		_loaderSlots;
-			std::vector<Signal<std::shared_ptr<file::AbstractParser>>::Slot>	_parserSlots;
-
-            Signal<Ptr>::Ptr											            _complete;
-            Signal<Ptr, std::shared_ptr<AbstractParser>>::Ptr                       _parserError;
+            Signal<Ptr, std::shared_ptr<AbstractParser>>::Ptr                   _parserError;
+            Signal<Ptr>::Ptr                                                    _ready;
 
 		public:
 			static
@@ -88,40 +76,12 @@ namespace minko
 				return _context;
 			}
 
-			inline
-			std::shared_ptr<file::Options>
-			defaultOptions()
-			{
-				return _defaultOptions;
-			}
-
-			inline
-			Signal<Ptr>::Ptr
-			complete()
-			{
-				return _complete;
-			}
-
             inline
-            Signal<Ptr, std::shared_ptr<AbstractParser>>::Ptr
-            parserError()
+            std::shared_ptr<BatchLoader>
+            loader()
             {
-                return _parserError;
+                return _loader;
             }
-
-			inline
-			const std::list<std::string>&
-			filesQueue()
-			{
-				return _filesQueue;
-			}
-
-			inline
-			bool
-			loading() const
-			{
-				return _filesQueue.size() > 0 || _loading.size() > 0;
-			}
 
 			GeometryPtr
 			geometry(const std::string& name);
@@ -189,99 +149,14 @@ namespace minko
 			Ptr
 			layout(const std::string& name, const unsigned int mask);
 
-			template <typename T>
-			typename std::enable_if<std::is_base_of<file::AbstractParser, T>::value, Ptr>::type
-			registerParser(const std::string& extension)
-			{
-				std::string ext(extension);
-
-				std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
-
-				_parsers[ext] = T::create;
-
-				return shared_from_this();
-			}
-
-			file::AbstractParser::Ptr
-			getParser(const std::string& extension)
-			{
-                return _parsers.count(extension) == 0 ? nullptr : _parsers[extension]();
-			}
-
-			template <typename T>
-			typename std::enable_if<std::is_base_of<file::AbstractLoader, T>::value, Ptr>::type
-			registerProtocol(const std::string& protocol)
-			{
-				std::string prefix(protocol);
-
-				std::transform(prefix.begin(), prefix.end(), prefix.begin(), ::tolower);
-
-				_loaders[prefix] = T::create;
-
-				return shared_from_this();
-			}
-
-			file::AbstractLoader::Ptr
-			getLoader(const std::string& protocol)
-			{
-                return _loaders.count(protocol) == 0 ? nullptr : _loaders[protocol](); 
-			}
-
-			Ptr
-			queue(const std::string& filename);
-
-			Ptr
-			queue(const std::string& filename, std::shared_ptr<file::Options> options);
-
-			Ptr
-			queue(const std::string&				filename,
-				  std::shared_ptr<Options>			options,
-				  std::shared_ptr<AbstractLoader>	loader);
-
-			/*
-			Ptr
-			queue(const std::string&				filename,
-				  std::shared_ptr<Options>			options = nullptr,
-				  std::shared_ptr<AbstractLoader>	loader 	= nullptr);
-			*/
-
-			inline
-			Ptr
-			load(const std::string&					filename,
-				 std::shared_ptr<file::Options>		options = nullptr,
-				 std::shared_ptr<AbstractLoader>	loader	= nullptr,
-				 bool								executeCompleteSignal = true)
-			{
-				queue(filename, options, loader);
-				load(executeCompleteSignal);
-
-				return shared_from_this();
-			};
-
-			inline
-			Ptr
-			load(const char*						filename,
-				 std::shared_ptr<file::Options>		options = nullptr,
-				 std::shared_ptr<AbstractLoader>	loader	= nullptr,
-				 bool								executeCompleteSignal = true)
-			{
-				return load(std::string(filename), options, loader, executeCompleteSignal);
-			};
-
-			Ptr
-			load(bool executeCompleteSignal = true);
-
 		private:
 			AssetLibrary(AbsContextPtr context);
 
-			void
-			loaderErrorHandler(std::shared_ptr<file::AbstractLoader> loader);
+            void
+            loaderCompleteHandler(std::shared_ptr<AbstractSingleLoader> loader);
 
-			void
-			loaderCompleteHandler(std::shared_ptr<file::AbstractLoader> loader);
-
-			void
-			finalize(const std::string& filename);
+            void
+            parserCompleteHandler(AbsParserPtr parser);
 		};
 	}
 }

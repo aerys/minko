@@ -123,13 +123,10 @@ HTTPLoader::errorHandler(void* arg)
 }
 
 void
-HTTPLoader::load(const std::string& filename, std::shared_ptr<Options> options)
+HTTPLoader::load()
 {
-	_options = options;
-
-	std::cout << "HTTPLoader::load(): " << filename << std::endl;
-	_filename = filename;
-	_resolvedFilename = _options->uriFunction()(sanitizeFilename(filename));
+	std::cout << "HTTPLoader::load(): " << _filename << std::endl;
+	_resolvedFilename = _options->uriFunction()(sanitizeFilename(_filename));
 
 	if (_options->includePaths().size() != 0)
 	{
@@ -143,12 +140,12 @@ HTTPLoader::load(const std::string& filename, std::shared_ptr<Options> options)
 		}
 	}
 
-	_options->loaderFunction([](const std::string& filename, std::shared_ptr<AssetLibrary> assets) -> std::shared_ptr<AbstractLoader>
+	_options->loaderFunction([](const std::string& filename) -> std::shared_ptr<AbstractSingleLoader>
 	{
 		return HTTPLoader::create();
 	});
 	
-	auto loader = shared_from_this();
+	auto loader = AbstractLoader::shared_from_this();
 
 	_runningLoaders.push_back(std::static_pointer_cast<HTTPLoader>(loader));
 

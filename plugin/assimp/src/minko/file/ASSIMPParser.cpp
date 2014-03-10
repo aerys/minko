@@ -26,6 +26,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "assimp/postprocess.h"     // Post processing flags
 #include "assimp/material.h"
 
+#include "minko/file/AbstractSingleLoader.hpp"
 #include "minko/scene/Node.hpp"
 #include "minko/scene/NodeSet.hpp"
 #include "minko/component/Transform.hpp"
@@ -614,13 +615,14 @@ ASSIMPParser::loadTexture(const std::string&	textureFilename,
 						  const std::string&	assetName,
 						  Options::Ptr			options)
 {
-	auto loader = _options->loaderFunction()(textureFilename, _assetLibrary);
+	auto loader = _options->loaderFunction()(textureFilename);
 
 	_loaderCompleteSlots[loader] = loader->complete()->connect([&](file::AbstractLoader::Ptr loader)
 	{
-		auto pos		= loader->resolvedFilename().find_last_of('.');
-		auto extension	= loader->resolvedFilename().substr(pos + 1);
-		auto parser		= _assetLibrary->getParser(extension);
+        auto sgLoader   = std::dynamic_pointer_cast<file::AbstractSingleLoader>(loader);
+        auto pos        = sgLoader->resolvedFilename().find_last_of('.');
+        auto extension  = sgLoader->resolvedFilename().substr(pos + 1);
+		auto parser		= options->getParser(extension);
 
 #ifdef DEBUG
 		if (parser == nullptr)
@@ -649,7 +651,7 @@ ASSIMPParser::loadTexture(const std::string&	textureFilename,
 
 		parser->parse(
 			assetName,
-			loader->resolvedFilename(),
+            sgLoader->resolvedFilename(),
 			loader->options(),
 			loader->data(),
 			_assetLibrary
@@ -658,17 +660,18 @@ ASSIMPParser::loadTexture(const std::string&	textureFilename,
 
 	_loaderErrorSlots[loader] = loader->error()->connect([&](file::AbstractLoader::Ptr loader)
 	{
-		auto pos = loader->filename().find_last_of("\\/");
+        auto sgLoader = std::dynamic_pointer_cast<file::AbstractSingleLoader>(loader);
+        auto pos = sgLoader->filename().find_last_of("\\/");
 
 		if (pos != std::string::npos)
 		{
-			loadTexture(loader->filename().substr(pos + 1), assetName, options);
+            loadTexture(sgLoader->filename().substr(pos + 1), assetName, options);
 		}
 		else
 		{
 			++_numLoadedDependencies;
 #ifdef DEBUG
-			std::cerr << "unable to find texture with filename '" << loader->filename() << "'" << std::endl;
+            std::cerr << "unable to find texture with filename '" << sgLoader->filename() << "'" << std::endl;
 #endif // DEBUG
 		}
 	});

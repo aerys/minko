@@ -19,6 +19,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/file/EffectParser.hpp"
 
+#include "minko/file/AbstractSingleLoader.hpp"
 #include "minko/data/Provider.hpp"
 #include "minko/render/Effect.hpp"
 #include "minko/render/Program.hpp"
@@ -519,7 +520,7 @@ EffectParser::loadGLSLDependencies(GLSLBlockListPtr		blocks,
 
 		if (block.first == GLSLBlockType::FILE)
 		{
-			auto loader = _options->loaderFunction()(block.second, _assetLibrary);
+			auto loader = _options->loaderFunction()(block.second);
 
 			++_numDependencies;
 
@@ -543,10 +544,11 @@ EffectParser::loadGLSLDependencies(GLSLBlockListPtr		blocks,
 }
 
 void
-EffectParser::glslIncludeCompleteHandler(LoaderPtr 					loader,
+EffectParser::glslIncludeCompleteHandler(LoaderPtr 			        l,
 										 GLSLBlockListPtr 			blocks,
 	 								     GLSLBlockList::iterator 	blockIt)
 {
+    auto loader = std::dynamic_pointer_cast<AbstractSingleLoader>(l);
 	auto& block = *blockIt;
 
 	block.first = GLSLBlockType::TEXT;
@@ -575,7 +577,9 @@ EffectParser::glslIncludeCompleteHandler(LoaderPtr 					loader,
 void
 EffectParser::dependencyErrorHandler(std::shared_ptr<AbstractLoader> loader)
 {
-	std::cerr << "Unable to load dependency '" << loader->filename() << "', included paths are:" << std::endl;
+    auto sgLoader = std::dynamic_pointer_cast<AbstractSingleLoader>(loader);
+
+	std::cerr << "Unable to load dependency '" << sgLoader->filename() << "', included paths are:" << std::endl;
 	for (auto& path : loader->options()->includePaths())
 		std::cerr << path << std::endl;
 
@@ -930,15 +934,16 @@ EffectParser::loadTexture(const std::string&	textureFilename,
 						  UniformTypeAndValue&	uniformTypeAndValue,
 						  Options::Ptr			options)
 {
-	auto loader = _options->loaderFunction()(textureFilename, _assetLibrary);
+	auto loader = _options->loaderFunction()(textureFilename);
 
 	_numDependencies++;
 
-	_loaderCompleteSlots[loader] = loader->complete()->connect([&](file::AbstractLoader::Ptr loader)
+	_loaderCompleteSlots[loader] = loader->complete()->connect([&](file::AbstractLoader::Ptr l)
 	{
+        auto loader = std::dynamic_pointer_cast<AbstractSingleLoader>(l);
 		auto pos = loader->resolvedFilename().find_last_of('.');
 		auto extension = loader->resolvedFilename().substr(pos + 1);
-		auto parser = _assetLibrary->getParser(extension);
+		auto parser = options->getParser(extension);
 
 		auto completeSlot = parser->complete()->connect([&](file::AbstractParser::Ptr parser)
 		{

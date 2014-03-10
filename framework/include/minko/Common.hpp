@@ -311,6 +311,8 @@ namespace minko
 		class APKLoader;
 		class Loader;
 		class AbstractLoader;
+        class AbstractSingleLoader;
+        class BatchLoader;
 		class AbstractParser;
 		class EffectParser;
         class AssetLibrary;

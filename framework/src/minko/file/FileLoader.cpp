@@ -35,8 +35,10 @@ FileLoader::FileLoader()
 }
 
 void
-FileLoader::load(const std::string& filename, std::shared_ptr<Options> options)
+FileLoader::load()
 {
+    auto filename = _filename;
+    auto options = _options;
 	auto flags = std::ios::in | std::ios::ate | std::ios::binary;
 	
 	std::string cleanFilename = "";
@@ -72,21 +74,28 @@ FileLoader::load(const std::string& filename, std::shared_ptr<Options> options)
             }
 		}
 
+    auto loader = std::enable_shared_from_this<AbstractLoader>::shared_from_this();
+
 	if (file.is_open())
 	{
-		if (_options->loadAsynchronously() && AbstractCanvas::defaultCanvas() != nullptr && AbstractCanvas::defaultCanvas()->isWorkerRegistered("file-loader"))
+        selectParser();
+
+		if (_options->loadAsynchronously() && AbstractCanvas::defaultCanvas() != nullptr
+            && AbstractCanvas::defaultCanvas()->isWorkerRegistered("file-loader"))
 		{
 			file.close();
 			auto worker = AbstractCanvas::defaultCanvas()->getWorker("file-loader");
 
-			_workerSlots.push_back(worker->complete()->connect([=](async::Worker::MessagePtr data) {
+			_workerSlots.push_back(worker->complete()->connect([=](async::Worker::MessagePtr data)
+            {
 				void* charData = &*data->begin();
 				_data.assign(static_cast<unsigned char*>(charData), static_cast<unsigned char*>(charData) + data->size());
-				_complete->execute(shared_from_this());
+                processData();
 			}));
 
-			_workerSlots.push_back(worker->progress()->connect([=](float ratio) {
-				_progress->execute(shared_from_this(), ratio);
+			_workerSlots.push_back(worker->progress()->connect([=](float ratio)
+            {
+                _progress->execute(loader, ratio);
 			}));
 
 			worker->input(std::make_shared<std::vector<char>>(_resolvedFilename.begin(), _resolvedFilename.end()));
@@ -97,7 +106,7 @@ FileLoader::load(const std::string& filename, std::shared_ptr<Options> options)
 
 			// FIXME: use fixed size buffers and call _progress accordingly
 
-			_progress->execute(shared_from_this(), 0.0);
+            _progress->execute(AbstractLoader::shared_from_this(), 0.0);
 
 			_data.resize(size);
 
@@ -105,11 +114,11 @@ FileLoader::load(const std::string& filename, std::shared_ptr<Options> options)
 			file.read((char*)&_data[0], size);
 			file.close();
 
-			_progress->execute(shared_from_this(), 1.0);
+            _progress->execute(loader, 1.0);
 
-			_complete->execute(shared_from_this());
+            processData();
 		}
 	}
 	else
-		_error->execute(shared_from_this());
+        _error->execute(std::enable_shared_from_this<AbstractLoader>::shared_from_this());
 }

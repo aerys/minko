@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
-#include "minko/file/AbstractLoader.hpp"
+#include "minko/file/AbstractSingleLoader.hpp"
 #include "minko/Any.hpp"
 
 #include <stdarg.h>  
@@ -30,7 +30,7 @@ namespace minko
 	namespace file
 	{
 		class HTTPLoader :
-			public AbstractLoader
+			public AbstractSingleLoader
 		{
 		public:
 			typedef std::shared_ptr<HTTPLoader>	Ptr;
@@ -44,7 +44,7 @@ namespace minko
 			}
 
 			void
-			load(const std::string& filename, std::shared_ptr<Options> options);
+			load();
 
 		protected:
 			HTTPLoader();

@@ -21,15 +21,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/material/Material.hpp"
 #include "minko/scene/Node.hpp"
-#include "minko/file/AbstractLoader.hpp"
+#include "minko/file/BatchLoader.hpp"
 #include "minko/file/Options.hpp"
-#include "minko/file/AbstractParser.hpp"
-#include "minko/file/EffectParser.hpp"
 #include "minko/render/Texture.hpp"
 #include "minko/render/CubeTexture.hpp"
 #include "minko/render/Effect.hpp"
 #include "minko/geometry/Geometry.hpp"
-#include <regex>
 
 using namespace minko;
 using namespace minko::render;
@@ -39,18 +36,16 @@ using namespace minko::file;
 AssetLibrary::Ptr
 AssetLibrary::create(AbsContextPtr context)
 {
-	auto al = std::shared_ptr<AssetLibrary>(new AssetLibrary(context));
+    auto al = std::shared_ptr<AssetLibrary>(new AssetLibrary(context));
 
-	al->registerParser<file::EffectParser>("effect");
-	al->registerProtocol<FileLoader>("file");
+    al->_loader->options()->assetLibrary(al);
 
-	return al;
+    return al;
 }
 
 AssetLibrary::AssetLibrary(std::shared_ptr<AbstractContext> context) :
 	_context(context),
-	_defaultOptions(file::Options::create(context)),
-	_complete(Signal<Ptr>::create())
+    _loader(BatchLoader::create())
 {
 }
 
@@ -65,7 +60,7 @@ AssetLibrary::geometry(const std::string& name, std::shared_ptr<Geometry> geomet
 {
 	_geometries[name] = geometry;
 
-	return shared_from_this();
+	return std::enable_shared_from_this<AssetLibrary>::shared_from_this();
 }
 
 const std::string&
@@ -97,7 +92,7 @@ AssetLibrary::texture(const std::string& name, render::AbstractTexture::Ptr text
 {
 	_textures[name] = texture;
 
-	return shared_from_this();
+	return std::enable_shared_from_this<AssetLibrary>::shared_from_this();
 }
 
 const std::string&
@@ -128,7 +123,7 @@ AssetLibrary::symbol(const std::string& name, scene::Node::Ptr node)
 {
 	_symbols[name] = node;
 
-	return shared_from_this();
+	return std::enable_shared_from_this<AssetLibrary>::shared_from_this();
 }
 
 const std::string&
@@ -163,7 +158,7 @@ AssetLibrary::material(const std::string& name, MaterialPtr material)
 
 	_materials[name] = material;
 
-	return shared_from_this();
+	return std::enable_shared_from_this<AssetLibrary>::shared_from_this();
 }
 
 const std::string&
@@ -191,7 +186,7 @@ AssetLibrary::effect(const std::string& name, std::shared_ptr<Effect> effect)
 {
 	_effects[name] = effect;
 
-	return shared_from_this();
+	return std::enable_shared_from_this<AssetLibrary>::shared_from_this();
 }
 
 const std::string&
@@ -222,7 +217,7 @@ AssetLibrary::blob(const std::string& name, const std::vector<unsigned char>& bl
 {
 	_blobs[name] = blob;
 
-	return shared_from_this();
+	return std::enable_shared_from_this<AssetLibrary>::shared_from_this();
 }
 
 AssetLibrary::AbsScriptPtr
@@ -236,7 +231,7 @@ AssetLibrary::script(const std::string& name, AbsScriptPtr script)
 {
     _scripts[name] = script;
 
-    return shared_from_this();
+    return std::enable_shared_from_this<AssetLibrary>::shared_from_this();
 }
 
 const std::string&
@@ -281,149 +276,5 @@ AssetLibrary::layout(const std::string& name, const unsigned int mask)
 {
 	_layouts[name] = mask;
 
-	return shared_from_this();
-}
-
-AssetLibrary::Ptr
-AssetLibrary::queue(const std::string& filename)
-{
-	return queue(filename, nullptr, nullptr);
-}
-
-AssetLibrary::Ptr
-AssetLibrary::queue(const std::string& filename, std::shared_ptr<file::Options> options)
-{
-	return queue(filename, options, nullptr);
-}
-
-AssetLibrary::Ptr
-AssetLibrary::queue(const std::string&						filename,
-				    std::shared_ptr<file::Options>			options,
-					std::shared_ptr<file::AbstractLoader>	loader)
-{
-	_filesQueue.push_back(filename);
-
-	if (options)
-		_filenameToOptions[filename] = Options::create(options);
-
-	if (loader)
-		_filenameToLoader[filename] = loader;
-
-	return shared_from_this();
-}
-
-
-AssetLibrary::Ptr
-AssetLibrary::load(bool	executeCompleteSignal)
-{
-	std::list<std::string> queue(_filesQueue);
-
-	if (queue.empty())
-	{
-		if (executeCompleteSignal)
-			_complete->execute(shared_from_this());
-	}
-	else
-	{
-		for (auto& filename : queue)
-		{
-			auto options = _filenameToOptions.count(filename)
-				? _filenameToOptions[filename]
-				: _filenameToOptions[filename] = Options::create(_defaultOptions);
-			auto loader = _filenameToLoader.count(filename)
-				? _filenameToLoader[filename]
-				: _filenameToLoader[filename] = options->loaderFunction()(filename, shared_from_this());
-
-			_filesQueue.erase(std::find(_filesQueue.begin(), _filesQueue.end(), filename));
-			_loading.push_back(filename);
-
-			_loaderSlots.push_back(loader->error()->connect(std::bind(
-				&AssetLibrary::loaderErrorHandler, shared_from_this(), std::placeholders::_1
-			)));
-			_loaderSlots.push_back(loader->complete()->connect(std::bind(
-				&AssetLibrary::loaderCompleteHandler, shared_from_this(), std::placeholders::_1
-			)));
-			std::cout << "AssetLibrary::load(): before " << filename << std::endl;
-			loader->load(filename, options);
-			std::cout << "AssetLibrary::load(): after " << filename << std::endl;
-		}
-	}
-
-	return shared_from_this();
-}
-
-void
-AssetLibrary::loaderErrorHandler(std::shared_ptr<file::AbstractLoader> loader)
-{
-	auto filename = loader->filename();
-
-	std::cerr << "error: AssetLibrary::loaderErrorHandler(): " << filename << std::endl;
-
-	throw std::invalid_argument(filename);
-}
-
-void
-AssetLibrary::loaderCompleteHandler(std::shared_ptr<file::AbstractLoader> loader)
-{
-	std::cerr << "AssetLibrary::loaderCompleteHandler(): " << std::endl;
-
-	auto filename = loader->filename();
-	auto extension = filename.substr(filename.find_last_of('.') + 1);
-
-	std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
-
-	if (_parsers.count(extension))
-	{
-		auto parser = _parsers[extension]();
-		_parserSlots.push_back(parser->complete()->connect([=](AbstractParser::Ptr)
-		{
-			loader->parserComplete()->execute(loader, parser, shared_from_this());
-
-			finalize(filename);
-		}));
-
-        try
-        {
-            parser->parse(
-                loader->filename(),
-                loader->resolvedFilename(),
-                _filenameToOptions[filename],
-                loader->data(),
-                shared_from_this()
-            );
-        }
-        catch (ParserError parserError)
-        {
-            if (_parserError->numCallbacks() != 0)
-                _parserError->execute(shared_from_this(), parser);
-#ifdef DEBUG
-            else
-                std::cerr << parserError.what() << std::endl;
-#endif
-        }
-	}
-	else
-	{
-		std::cerr << "warning: no parser found for file extension '" << extension << "'" << std::endl;
-		blob(filename, loader->data());
-		finalize(filename);
-	}
-}
-
-void
-AssetLibrary::finalize(const std::string& filename)
-{
-	_loading.erase(std::find(_loading.begin(), _loading.end(), filename));
-	_filenameToLoader.erase(filename);
-	_filenameToOptions.erase(filename);
-
-	if (_loading.size() == 0 && _filesQueue.size() == 0)
-	{
-		_loaderSlots.clear();
-		_parserSlots.clear();
-		_filenameToLoader.clear();
-		_filenameToOptions.clear();
-
-		_complete->execute(shared_from_this());
-	}
+	return std::enable_shared_from_this<AssetLibrary>::shared_from_this();
 }

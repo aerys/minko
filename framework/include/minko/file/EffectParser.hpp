@@ -73,6 +73,7 @@ namespace minko
 			};
 
 			typedef std::shared_ptr<AbstractLoader>							LoaderPtr;
+            typedef std::shared_ptr<AbstractSingleLoader>					SingleLoaderPtr;
 			typedef std::shared_ptr<render::Effect>							EffectPtr;
 			typedef std::shared_ptr<render::Pass>							PassPtr;
 			typedef std::shared_ptr<render::Shader>							ShaderPtr;
@@ -200,7 +201,7 @@ namespace minko
 								 std::shared_ptr<file::Options> options);
 
 			void
-			glslIncludeCompleteHandler(LoaderPtr 				loader,
+			glslIncludeCompleteHandler(LoaderPtr 			    loader,
 									   GLSLBlockListPtr 		blocks,
 	 								   GLSLBlockList::iterator 	fileBlock);
 

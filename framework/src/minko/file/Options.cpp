@@ -30,8 +30,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::file;
 
-Options::Options(std::shared_ptr<render::AbstractContext> context) :
-	_context(context),
+Options::Options() :
+    _context(nullptr),
 	_includePaths(),
 	_platforms(),
 	_userFlags(),
@@ -115,7 +115,7 @@ Options::Options(std::shared_ptr<render::AbstractContext> context) :
 		return geom;
 	};
 
-	_loaderFunction = [](const std::string& filename, std::shared_ptr<AssetLibrary> assets) -> std::shared_ptr<AbstractLoader>
+	_loaderFunction = [&](const std::string& filename) -> std::shared_ptr<AbstractSingleLoader>
 	{
 		std::string protocol = "";
 
@@ -131,7 +131,7 @@ Options::Options(std::shared_ptr<render::AbstractContext> context) :
 
 		if (i != filename.length())
 		{
-			std::shared_ptr<AbstractLoader> loader = assets->getLoader(protocol);
+			auto loader = this->getLoader(protocol);
 
 			if (loader)
 				return loader;
@@ -193,4 +193,16 @@ Options::initializeUserFlags()
 #ifdef MINKO_NO_GLSL_STRUCT
 	_userFlags.push_back("no-glsl-struct");
 #endif // MINKO_NO_GLSL_STRUCT
+}
+
+AbstractParser::Ptr
+Options::getParser(const std::string& extension)
+{
+    return _parsers.count(extension) == 0 ? nullptr : _parsers[extension]();
+}
+
+Options::AbsLoaderPtr
+Options::getLoader(const std::string& protocol)
+{
+    return _loaders.count(protocol) == 0 ? nullptr : _loaders[protocol]();
 }

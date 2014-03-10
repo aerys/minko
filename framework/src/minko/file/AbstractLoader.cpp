@@ -17,38 +17,22 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#pragma once
+#include "minko/file/AbstractLoader.hpp"
 
-#include "minko/Common.hpp"
-#include "minko/file/AbstractSingleLoader.hpp"
-#include "minko/Any.hpp"
+using namespace minko::file;
 
-namespace minko
+std::string
+AbstractLoader::sanitizeFilename(const std::string& filename)
 {
-	namespace file
-	{
-		class FileLoader :
-		    public AbstractSingleLoader
-		{
-        public:
-            typedef std::shared_ptr<FileLoader>	Ptr;
+    auto f = filename;
+    auto a = '\\';
 
-		public:
-		    inline static
-            Ptr
-            create()
-            {
-				return std::shared_ptr<FileLoader>(new FileLoader());
-            }
+    for (auto pos = f.find_first_of(a);
+         pos != std::string::npos;
+         pos = f.find_first_of(a))
+    {
+        f = f.replace(pos, 1, 1, '/');
+    }
 
-            void
-            load();
-
-		protected:
-			FileLoader();
-
-		private:
-			std::list<Any> _workerSlots;
-		};
-	}
+    return f;
 }

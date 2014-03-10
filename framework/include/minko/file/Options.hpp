@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Common.hpp"
 
 #include "minko/component/SkinningMethod.hpp"
+#include "minko/file/EffectParser.hpp"
 
 namespace minko
 {
@@ -31,73 +32,99 @@ namespace minko
 			public std::enable_shared_from_this<Options>
 		{
 		private:
-			typedef std::shared_ptr<AbstractLoader>										AbsLoaderPtr;
+			typedef std::shared_ptr<AbstractSingleLoader>						        AbsLoaderPtr;
 			typedef std::shared_ptr<data::Provider>										ProviderPtr;
 			typedef std::shared_ptr<material::Material>									MaterialPtr;
 			typedef std::shared_ptr<geometry::Geometry>									GeomPtr;
 			typedef std::shared_ptr<scene::Node>										NodePtr;
 			typedef std::shared_ptr<render::Effect>										EffectPtr;
-			typedef std::shared_ptr<AssetLibrary>										AssetLibraryPtr;
+            typedef std::shared_ptr<BatchLoader>                                        BatchLoaderPtr;
+            typedef std::shared_ptr<AbstractParser>                                     AbsParserPtr;
+            typedef std::function<AbsParserPtr(void)>                                   ParserHandler;
+            typedef std::function<AbsLoaderPtr(void)>		                            LoaderHandler;
 
 		public:
 			typedef std::shared_ptr<Options>											Ptr;
 			typedef std::function<MaterialPtr(const std::string&, MaterialPtr)>			MaterialFunction;
 			typedef std::function<GeomPtr(const std::string&, GeomPtr)> 				GeometryFunction;
-			typedef std::function<AbsLoaderPtr(const std::string&, AssetLibraryPtr)>	LoaderFunction;
+			typedef std::function<AbsLoaderPtr(const std::string&)>	                    LoaderFunction;
 			typedef std::function<const std::string(const std::string&)>				UriFunction;
 			typedef std::function<NodePtr(NodePtr)>										NodeFunction;
 			typedef std::function<EffectPtr(EffectPtr)>									EffectFunction;
 
 		private:
-			std::shared_ptr<render::AbstractContext>	_context;
-			std::list<std::string>						_includePaths;
-			std::list<std::string>						_platforms;
-			std::list<std::string>						_userFlags;
+			std::shared_ptr<render::AbstractContext>	    _context;
+            std::shared_ptr<AssetLibrary>                   _assets;
+			std::list<std::string>						    _includePaths;
+			std::list<std::string>						    _platforms;
+			std::list<std::string>						    _userFlags;
 
-            bool                                        _generateMipMaps;
-			bool										_resizeSmoothly;
-			bool										_isCubeTexture;
-			bool										_startAnimation;
-			bool										_loadAsynchronously;
-			unsigned int								_skinningFramerate;
-			component::SkinningMethod					_skinningMethod;
-            std::shared_ptr<render::Effect>             _effect;
-			MaterialPtr									_material;
-			MaterialFunction							_materialFunction;
-			GeometryFunction							_geometryFunction;
-			LoaderFunction								_loaderFunction;
-			UriFunction									_uriFunction;
-			NodeFunction								_nodeFunction;
-			EffectFunction								_effectFunction;
+            std::unordered_map<std::string, ParserHandler>	_parsers;
+            std::unordered_map<std::string, LoaderHandler>	_loaders;
+
+            bool                                            _generateMipMaps;
+			bool										    _resizeSmoothly;
+			bool										    _isCubeTexture;
+			bool										    _startAnimation;
+			bool										    _loadAsynchronously;
+			unsigned int								    _skinningFramerate;
+			component::SkinningMethod					    _skinningMethod;
+            std::shared_ptr<render::Effect>                 _effect;
+			MaterialPtr									    _material;
+			MaterialFunction							    _materialFunction;
+			GeometryFunction							    _geometryFunction;
+			LoaderFunction								    _loaderFunction;
+			UriFunction									    _uriFunction;
+			NodeFunction								    _nodeFunction;
+			EffectFunction								    _effectFunction;
 
 		public:
-			inline static
+            inline static
 			Ptr
+			create()
+			{
+                auto opt = std::shared_ptr<Options>(new Options());
+
+                opt->registerParser<file::EffectParser>("effect");
+                opt->registerProtocol<FileLoader>("file");
+
+				return opt;
+			}
+
+            inline static
+            Ptr
 			create(std::shared_ptr<render::AbstractContext> context)
 			{
-				return std::shared_ptr<Options>(new Options(context));
-			}
+				auto opt = std::shared_ptr<Options>(new Options());
+
+                opt->_context = context;
+
+                return opt;
+            }
 
 			inline static
 			Ptr
 			create(Ptr options)
 			{
-				auto opt = std::shared_ptr<Options>(new Options(options->_context));
+				auto opt = std::shared_ptr<Options>(new Options());
 				
-				opt->_includePaths				= options->_includePaths;
-                opt->_generateMipMaps			= options->_generateMipMaps;
-				opt->_resizeSmoothly			= options->_resizeSmoothly;
-				opt->_isCubeTexture				= options->_isCubeTexture;
-				opt->_startAnimation			= options->_startAnimation;
-				opt->_skinningFramerate			= options->_skinningFramerate;
-				opt->_skinningMethod			= options->_skinningMethod;
-                opt->_effect					= options->_effect;
-				opt->_materialFunction			= options->_materialFunction;
-				opt->_geometryFunction			= options->_geometryFunction;
-				opt->_loaderFunction			= options->_loaderFunction;
-				opt->_uriFunction				= options->_uriFunction;
-				opt->_nodeFunction				= options->_nodeFunction;
-				opt->_loadAsynchronously		= options->_loadAsynchronously;
+                opt->_context = options->_context;
+                opt->_parsers = options->_parsers;
+                opt->_loaders = options->_loaders;
+                opt->_includePaths = options->_includePaths;
+                opt->_generateMipMaps = options->_generateMipMaps;
+                opt->_resizeSmoothly = options->_resizeSmoothly;
+                opt->_isCubeTexture = options->_isCubeTexture;
+                opt->_startAnimation = options->_startAnimation;
+                opt->_skinningFramerate = options->_skinningFramerate;
+                opt->_skinningMethod = options->_skinningMethod;
+                opt->_effect = options->_effect;
+                opt->_materialFunction = options->_materialFunction;
+                opt->_geometryFunction = options->_geometryFunction;
+                opt->_loaderFunction = options->_loaderFunction;
+                opt->_uriFunction = options->_uriFunction;
+                opt->_nodeFunction = options->_nodeFunction;
+                opt->_loadAsynchronously = options->_loadAsynchronously;
 
 				return opt;
 			}
@@ -108,7 +135,28 @@ namespace minko
 			{
 				return _context;
 			}
-			
+
+            inline
+            void
+            context(std::shared_ptr<render::AbstractContext> context)
+            {
+                _context = context;
+            }
+
+            inline
+            std::shared_ptr<AssetLibrary>
+            assetLibrary()
+            {
+                return _assets;
+            }
+
+            inline
+            void
+            assetLibrary(std::shared_ptr<AssetLibrary> assetLibrary)
+            {
+                _assets = assetLibrary;
+            }
+
 			inline
 			std::list<std::string>&
 			includePaths()
@@ -369,9 +417,41 @@ namespace minko
 
 				return shared_from_this();
 			}
+
+            template <typename T>
+			typename std::enable_if<std::is_base_of<file::AbstractParser, T>::value, Ptr>::type
+			registerParser(const std::string& extension)
+			{
+				std::string ext(extension);
+
+				std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
+
+				_parsers[ext] = T::create;
+
+				return shared_from_this();
+			}
+
+			std::shared_ptr<AbstractParser>
+			getParser(const std::string& extension);
+
+			template <typename T>
+			typename std::enable_if<std::is_base_of<file::AbstractLoader, T>::value, Ptr>::type
+			registerProtocol(const std::string& protocol)
+			{
+				std::string prefix(protocol);
+
+				std::transform(prefix.begin(), prefix.end(), prefix.begin(), ::tolower);
+
+				_loaders[prefix] = T::create;
+
+				return shared_from_this();
+			}
+
+            AbsLoaderPtr
+			getLoader(const std::string& protocol);
 			
 		private:
-			Options(std::shared_ptr<render::AbstractContext> context);
+			Options();
 
 			void
 			initializePlatforms();

@@ -21,6 +21,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 
+#include "minko/file/AbstractSingleLoader.hpp"
+
 #include "minko/file/Options.hpp"
 #include "minko/file/IOStream.hpp"
 
@@ -82,7 +84,7 @@ namespace minko
 			Open(const char* pFile, const char* pMode = "rb")
 			{
 				auto filename = std::string(pFile);
-				auto loader = _options->loaderFunction()(filename, _assets);
+				auto loader = _options->loaderFunction()(filename);
 				
 				Assimp::IOStream* stream = 0;
 
@@ -95,7 +97,7 @@ namespace minko
 				{
 					std::cerr << "error: could not load file '" << filename << "'" << std::endl;
 				});
-#endif
+#endif // defined(DEBUG)
 
 				loader->load(filename, _options);
 				

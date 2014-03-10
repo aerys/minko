@@ -1,6 +1,23 @@
+/*
+Copyright (c) 2013 Aerys
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
+associated documentation files (the "Software"), to deal in the Software without restriction,
+including without limitation the rights to use, copy, modify, merge, publish, distribute,
+sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or
+substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
 
 #pragma once
-
 
 #include "minko/Common.hpp"
 #include "minko/Signal.hpp"
@@ -10,28 +27,22 @@ namespace minko
     namespace file
     {
         class AbstractLoader :
-                public std::enable_shared_from_this<AbstractLoader>
+            public std::enable_shared_from_this<AbstractLoader>
         {
         public:
             typedef std::shared_ptr<AbstractLoader> Ptr;
 
-        private:
-            typedef std::shared_ptr<AbstractParser> AbsParserPtr;
-            typedef std::shared_ptr<AssetLibrary>   AssetLibraryPtr;
-
         protected:
-            std::vector<unsigned char>                      _data;
-            std::shared_ptr<Options>                        _options;
-            std::string                                     _filename;
-            std::string                                     _resolvedFilename;
+            std::vector<unsigned char>                  _data;
+            std::shared_ptr<Options>                    _options;
 
-            Signal<Ptr>::Ptr                                _complete;
-            Signal<Ptr, float>::Ptr                         _progress;
-            Signal<Ptr>::Ptr                                _error;
-            Signal<Ptr, AbsParserPtr, AssetLibraryPtr>::Ptr _parserComplete;
+            std::shared_ptr<Signal<Ptr, float>>         _progress;
+            std::shared_ptr<Signal<Ptr>>                _complete;
+            std::shared_ptr<Signal<Ptr>>                _error;
 
         public:
-            static Ptr create();
+            static Ptr
+            create();
 
             inline
             const std::vector<unsigned char>&
@@ -48,17 +59,10 @@ namespace minko
             }
 
             inline
-            const std::string&
-            filename()
+            void
+            options(std::shared_ptr<Options> options)
             {
-                return _filename;
-            }
-
-            inline
-            const std::string&
-            resolvedFilename()
-            {
-                return _resolvedFilename;
+                _options = options;
             }
 
             inline
@@ -66,13 +70,6 @@ namespace minko
             complete()
             {
                 return _complete;
-            }
-
-            inline
-            Signal<Ptr, AbsParserPtr, AssetLibraryPtr>::Ptr
-            parserComplete()
-            {
-                return _parserComplete;
             }
 
             inline
@@ -88,34 +85,21 @@ namespace minko
             {
                 return _error;
             }
-			
-            virtual void
-            load(const std::string& filename, std::shared_ptr<Options> options) = 0;
+
+            virtual
+            void
+            load() = 0;
 
         protected:
-            AbstractLoader():
+            AbstractLoader() :
                 _complete(Signal<Ptr>::create()),
                 _progress(Signal<Ptr, float>::create()),
-                _error(Signal<Ptr>::create()),
-                _parserComplete(Signal<Ptr, AbsParserPtr, AssetLibraryPtr>::create())
+                _error(Signal<Ptr>::create())
             {
             }
 
             std::string
-            sanitizeFilename(const std::string& filename)
-            {
-                auto f = filename;
-                auto a = '\\';
-
-                for (auto pos = f.find_first_of(a);
-                     pos != std::string::npos;
-                     pos = f.find_first_of(a))
-                {
-                    f = f.replace(pos, 1, 1, '/');
-                }
-
-                return f;
-            }
+            sanitizeFilename(const std::string& filename);
         };
 
     }

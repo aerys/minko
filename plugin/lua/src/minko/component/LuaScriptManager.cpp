@@ -84,8 +84,8 @@ void
 LuaScriptManager::loadStandardLibrary()
 {
     auto assets = targets()[0]->root()->component<SceneManager>()->assets();
-    auto options = assets->defaultOptions();
-    auto createLoader = assets->defaultOptions()->loaderFunction();
+    auto options = assets->loader()->options();
+    auto createLoader = options->loaderFunction();
     auto filesToLoad = {
         "script/minko.coroutine.lua",
         "script/minko.time.lua"
@@ -95,7 +95,7 @@ LuaScriptManager::loadStandardLibrary()
 
     for (auto& filename : filesToLoad)
     {
-		auto loader = createLoader(filename, assets);
+		auto loader = createLoader(filename);
 
         _dependencySlots.push_back(loader->complete()->connect(std::bind(
             &LuaScriptManager::dependencyLoadedHandler,
