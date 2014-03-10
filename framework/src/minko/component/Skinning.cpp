@@ -111,7 +111,8 @@ Skinning::addedHandler(Node::Ptr node, Node::Ptr target, Node::Ptr parent)
 		auto geometry = node->component<Surface>()->geometry();
 
 		if (geometry->hasVertexAttribute(ATTRNAME_POSITION) 
-			&& geometry->vertexBuffer(ATTRNAME_POSITION)->numVertices() == _skin->numVertices())
+			&& geometry->vertexBuffer(ATTRNAME_POSITION)->numVertices() == _skin->numVertices()
+			&& !geometry->hasVertexBuffer(_boneVertexBuffer))
 		{
 			_targetGeometry[node]			= geometry;
 			_targetInputPositions[node]		= geometry->vertexBuffer(ATTRNAME_POSITION)->data();			
