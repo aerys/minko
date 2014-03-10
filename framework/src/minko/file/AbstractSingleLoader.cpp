@@ -33,11 +33,6 @@ AbstractSingleLoader::selectParser()
     std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
 
     _parser = _options->getParser(extension);
-
-#ifdef DEBUG
-    if (!_parser)
-        std::cerr << "warning: no parser found for file extension '" << extension << "'" << std::endl;
-#endif // defined(DEBUG)
 }
 
 void
@@ -47,7 +42,7 @@ AbstractSingleLoader::processData()
     {
         _parserCompleteSlot = _parser->complete()->connect(std::bind(
             &AbstractSingleLoader::parserCompleteHandler,
-            std::enable_shared_from_this<AbstractSingleLoader>::shared_from_this(),
+            std::dynamic_pointer_cast<AbstractSingleLoader>(shared_from_this()),
             std::placeholders::_1
         ));
 
@@ -76,6 +71,7 @@ AbstractSingleLoader::processData()
     else
     {
         _options->assetLibrary()->blob(_filename, _data);
+        _complete->execute(std::enable_shared_from_this<AbstractLoader>::shared_from_this());
     }
 }
 

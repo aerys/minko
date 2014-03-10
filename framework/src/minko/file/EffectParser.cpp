@@ -944,6 +944,8 @@ EffectParser::loadTexture(const std::string&	textureFilename,
 
 		uniformTypeAndValue.second.textureValue = _assetLibrary->texture(textureFilename);
 		uniformTypeAndValue.second.textureValue->upload();
+
+        ++_numLoadedDependencies;
 	});
 
 	_loaderErrorSlots[loader] = loader->error()->connect(std::bind(

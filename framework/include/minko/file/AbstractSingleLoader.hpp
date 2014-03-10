@@ -29,8 +29,7 @@ namespace minko
     namespace file
     {
         class AbstractSingleLoader :
-            public AbstractLoader,
-            public std::enable_shared_from_this<AbstractSingleLoader>
+            public AbstractLoader
         {
         public:
             typedef std::shared_ptr<AbstractSingleLoader> Ptr;
@@ -44,7 +43,6 @@ namespace minko
             std::string                     _resolvedFilename;
 
             AbsParserPtr                    _parser;
-            //Signal<Ptr, AbsParserPtr>::Ptr  _parseError;
 
             AbsParserPtrSlot	            _parserCompleteSlot;
 
@@ -62,15 +60,6 @@ namespace minko
             {
                 return _resolvedFilename;
             }
-
-            /*
-            inline
-            Signal<Ptr, AbsParserPtr>::Ptr
-            parseError()
-            {
-                return _parseError;
-            }
-            */
 
             void
             load(const std::string& filename, std::shared_ptr<Options> options = nullptr)

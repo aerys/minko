@@ -89,6 +89,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/geometry/LineGeometry.hpp"
 #include "minko/file/Options.hpp"
 #include "minko/file/AbstractLoader.hpp"
+#include "minko/file/AbstractSingleLoader.hpp"
+#include "minko/file/BatchLoader.hpp"
 #include "minko/file/FileLoader.hpp"
 #include "minko/file/AbstractParser.hpp"
 #include "minko/file/EffectParser.hpp"

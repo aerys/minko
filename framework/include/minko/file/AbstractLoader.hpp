@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
+
 #include "minko/Signal.hpp"
 
 namespace minko
@@ -91,12 +92,7 @@ namespace minko
             load() = 0;
 
         protected:
-            AbstractLoader() :
-                _complete(Signal<Ptr>::create()),
-                _progress(Signal<Ptr, float>::create()),
-                _error(Signal<Ptr>::create())
-            {
-            }
+            AbstractLoader();
 
             std::string
             sanitizeFilename(const std::string& filename);

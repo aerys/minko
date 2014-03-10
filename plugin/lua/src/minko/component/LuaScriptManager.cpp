@@ -50,6 +50,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/geometry/LuaGeometry.hpp"
 #include "minko/material/LuaMaterial.hpp"
 #include "minko/render/LuaEffect.hpp"
+#include "minko/file/LuaBatchLoader.hpp"
 #include "minko/file/LuaAssetLibrary.hpp"
 #include "minko/input/LuaKeyboard.hpp"
 #include "minko/input/LuaMouse.hpp"
@@ -161,6 +162,7 @@ LuaScriptManager::initializeBindings()
     geometry::LuaGeometry::bind(_state);
     material::LuaMaterial::bind(_state);
     render::LuaEffect::bind(_state);
+    file::LuaBatchLoader::bind(_state);
     file::LuaAssetLibrary::bind(_state);
     input::LuaMouse::bind(_state);
     input::LuaKeyboard::bind(_state);

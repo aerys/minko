@@ -17,32 +17,25 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "minko/file/AbstractLoader.hpp"
+#include "minko/file/LuaBatchLoader.hpp"
 
-#include "minko/file/Options.hpp"
-
+using namespace minko;
 using namespace minko::file;
 
-AbstractLoader::AbstractLoader() :
-    _options(Options::create()),
-    _complete(Signal<Ptr>::create()),
-    _progress(Signal<Ptr, float>::create()),
-    _error(Signal<Ptr>::create())
+void
+LuaBatchLoader::bind(LuaGlue& state)
 {
-}
+    auto& batchLoader = state.Class<BatchLoader>("BatchLoader");
 
-std::string
-AbstractLoader::sanitizeFilename(const std::string& filename)
-{
-    auto f = filename;
-    auto a = '\\';
+    MINKO_LUAGLUE_BIND_SIGNAL(state, AbstractLoader::Ptr);
+    MINKO_LUAGLUE_BIND_SIGNAL(state, AbstractLoader::Ptr, float);
 
-    for (auto pos = f.find_first_of(a);
-         pos != std::string::npos;
-         pos = f.find_first_of(a))
-    {
-        f = f.replace(pos, 1, 1, '/');
-    }
-
-    return f;
+    batchLoader
+        .method("create",       static_cast<BatchLoader::Ptr(*)(void)>(&BatchLoader::create))
+        .method("createCopy",   static_cast<BatchLoader::Ptr(*)(BatchLoader::Ptr)>(&BatchLoader::create))
+        .method("queue",        static_cast<BatchLoader::Ptr (BatchLoader::*)(const std::string&)>(&BatchLoader::queue))
+        .method("load",         &BatchLoader::load)
+        .property("complete",   &BatchLoader::complete)
+        .property("progress",   &BatchLoader::progress)
+        .property("error",      &BatchLoader::error);
 }

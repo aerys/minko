@@ -38,6 +38,7 @@ AssetLibrary::create(AbsContextPtr context)
 {
     auto al = std::shared_ptr<AssetLibrary>(new AssetLibrary(context));
 
+    al->_loader->options()->context(context);
     al->_loader->options()->assetLibrary(al);
 
     return al;

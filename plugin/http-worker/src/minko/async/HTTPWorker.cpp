@@ -111,7 +111,7 @@ namespace minko
 
 			double ratio = current / total;
 
-			worker->progress(ratio);
+			worker->progress((float)ratio);
 
 			return 0;
 		}

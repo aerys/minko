@@ -74,7 +74,7 @@ FileLoader::load()
             }
 		}
 
-    auto loader = std::enable_shared_from_this<AbstractLoader>::shared_from_this();
+    auto loader = shared_from_this();
 
 	if (file.is_open())
 	{

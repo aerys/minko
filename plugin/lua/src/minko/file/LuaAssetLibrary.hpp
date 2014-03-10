@@ -36,7 +36,7 @@ namespace minko
 {
 	namespace file
 	{
-		class LuaAssetLibrary
+		class LuaAssetLibrary : public LuaWrapper
 		{
 		public:
 			static
@@ -49,7 +49,8 @@ namespace minko
 			        .method("texture",		static_cast<render::AbstractTexture::Ptr (AssetLibrary::*)(const std::string&) const>(&AssetLibrary::texture))
 			        .method("script",       static_cast<component::AbstractScript::Ptr (AssetLibrary::*)(const std::string&)>(&AssetLibrary::script))
 					.method("symbol",		static_cast<scene::Node::Ptr (AssetLibrary::*)(const std::string&)>(&AssetLibrary::symbol))
-					.property("context",    &AssetLibrary::context);
+					.property("context",    &AssetLibrary::context)
+                    .property("loader",     &AssetLibrary::loader);
 
 			    //MINKO_LUAGLUE_BIND_SIGNAL(state, AssetLibrary::Ptr);
 

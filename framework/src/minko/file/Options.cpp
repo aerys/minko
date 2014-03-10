@@ -137,7 +137,11 @@ Options::Options() :
 				return loader;
 		}
 
-		return FileLoader::create();
+        auto defaultLoader = FileLoader::create();
+
+        defaultLoader->options(Options::create(shared_from_this()));
+
+		return defaultLoader;
 	};
 	
 	_uriFunction = [](const std::string& uri) -> const std::string
@@ -204,5 +208,10 @@ Options::getParser(const std::string& extension)
 Options::AbsLoaderPtr
 Options::getLoader(const std::string& protocol)
 {
-    return _loaders.count(protocol) == 0 ? nullptr : _loaders[protocol]();
+    auto loader = _loaders.count(protocol) == 0 ? nullptr : _loaders[protocol]();
+
+    if (loader)
+        loader->options(Options::create(loader->options()));
+
+    return loader;
 }

@@ -57,14 +57,14 @@ BatchLoader::queue(const std::string&				        filename,
 void
 BatchLoader::load()
 {
-    std::list<std::string> queue(_filesQueue);
-
-    if (queue.empty())
+    if (_filesQueue.empty())
     {
         _complete->execute(std::dynamic_pointer_cast<BatchLoader>(shared_from_this()));
     }
     else
     {
+        auto queue = _filesQueue;
+
         for (auto& filename : queue)
         {
             auto options = _filenameToOptions.count(filename)
@@ -135,6 +135,11 @@ BatchLoader::finalize(const std::string& filename)
     _loading.erase(std::find(_loading.begin(), _loading.end(), filename));
     _filenameToLoader.erase(filename);
     _filenameToOptions.erase(filename);
+    
+#ifdef DEBUG
+    std::cerr << "BatchLoader::finalize(): " << _loading.size() << " file(s) still loading, "
+        << _filesQueue.size() << " file(s) in the queue" << std::endl;
+#endif // defined(DEBUG)
 
     if (_loading.size() == 0 && _filesQueue.size() == 0)
     {

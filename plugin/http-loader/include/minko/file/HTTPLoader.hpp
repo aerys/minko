@@ -83,6 +83,9 @@ namespace minko
 	}
 }
 
+#pragma warning(push)
+#pragma warning(disable:4996)
+
 namespace
 {
 	inline std::string format(const char* fmt, ...)
@@ -104,3 +107,5 @@ namespace
 		return ret;
 	}	
 }
+
+#pragma warning(pop)

@@ -61,6 +61,17 @@ namespace minko
                 return std::shared_ptr<BatchLoader>(new BatchLoader());
             }
             
+            inline static
+            Ptr
+            create(Ptr loader)
+            {
+                auto copy = BatchLoader::create();
+
+                copy->_options = loader->_options;
+
+                return copy;
+            }
+
             inline
 			const std::list<std::string>&
 			filesQueue()

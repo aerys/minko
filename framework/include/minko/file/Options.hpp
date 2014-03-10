@@ -95,7 +95,7 @@ namespace minko
             Ptr
 			create(std::shared_ptr<render::AbstractContext> context)
 			{
-				auto opt = std::shared_ptr<Options>(new Options());
+				auto opt = create();
 
                 opt->_context = context;
 
@@ -106,9 +106,10 @@ namespace minko
 			Ptr
 			create(Ptr options)
 			{
-				auto opt = std::shared_ptr<Options>(new Options());
+				auto opt = create();
 				
                 opt->_context = options->_context;
+                opt->_assets = options->_assets;
                 opt->_parsers = options->_parsers;
                 opt->_loaders = options->_loaders;
                 opt->_includePaths = options->_includePaths;

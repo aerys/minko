@@ -17,32 +17,25 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "minko/file/AbstractLoader.hpp"
+#pragma once
 
-#include "minko/file/Options.hpp"
+#include "minko/Common.hpp"
 
-using namespace minko::file;
+#include "minko/LuaWrapper.hpp"
+#include "minko/file/BatchLoader.hpp"
 
-AbstractLoader::AbstractLoader() :
-    _options(Options::create()),
-    _complete(Signal<Ptr>::create()),
-    _progress(Signal<Ptr, float>::create()),
-    _error(Signal<Ptr>::create())
+#include "LuaGlue/LuaGlue.h"
+
+namespace minko
 {
-}
-
-std::string
-AbstractLoader::sanitizeFilename(const std::string& filename)
-{
-    auto f = filename;
-    auto a = '\\';
-
-    for (auto pos = f.find_first_of(a);
-         pos != std::string::npos;
-         pos = f.find_first_of(a))
+    namespace file
     {
-        f = f.replace(pos, 1, 1, '/');
+        class LuaBatchLoader : public LuaWrapper
+        {
+        public:
+            static
+            void
+            bind(LuaGlue& state);
+        };
     }
-
-    return f;
 }
