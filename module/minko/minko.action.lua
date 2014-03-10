@@ -18,7 +18,7 @@ minko.action.copy = function(sourcePath)
 	if os.is('windows') then
 		sourcePath = path.translate(sourcePath)
 
-		local targetDir = string.startswith(_ACTION, "gmake") and '$(subst /,\\,$(TARGETDIR))' or '"$(TargetDir)"'
+		local targetDir = string.startswith(_ACTION, "gmake") and '$(subst /,\\,$(TARGETDIR))' or '$(TargetDir)'
 
 		if os.isdir(sourcePath) then
 			targetDir = targetDir .. '\\' .. path.getbasename(sourcePath)
@@ -26,7 +26,7 @@ minko.action.copy = function(sourcePath)
 
 		local existenceTest = string.find(sourcePath, '*') and '' or ('if exist ' .. sourcePath .. ' ')
 
-		return existenceTest .. 'xcopy /y /i /e "' .. sourcePath .. '" ' .. targetDir
+		return existenceTest .. 'xcopy /y /i /e "' .. sourcePath .. '" "' .. targetDir .. '"'
 	else
 		local targetDir = string.startswith(_ACTION, "xcode") and '${TARGET_BUILD_DIR}/${TARGET_NAME}.app' or '${TARGETDIR}'
 
