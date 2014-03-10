@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/AbstractComponent.hpp"
 #include "minko/dom/AbstractDOMElement.hpp"
 #include "minko/dom/AbstractDOMEngine.hpp"
+#include "minko/dom/AbstractDOM.hpp"
 
 namespace minko
 {
@@ -59,38 +60,38 @@ namespace minko
 				return overlay;
 			}
 			
-			void
+			minko::dom::AbstractDOM::Ptr
 			load(std::string uri)
 			{
-				_domEngine->load(uri);
+				return _domEngine->load(uri);
 			}
 
 			void
-			unload()
+			clear()
 			{
-				_domEngine->unload();
+				_domEngine->clear();
 				_domEngine = nullptr;
 			}
 
-			std::shared_ptr<Signal<std::string>>
+			std::shared_ptr<Signal<minko::dom::AbstractDOM::Ptr, std::string>>
 			onload()
 			{
 				return _domEngine->onload();
 			}
 
-			std::shared_ptr<Signal<std::string>>
+			std::shared_ptr<Signal<minko::dom::AbstractDOM::Ptr, std::string>>
 			onmessage()
 			{
 				return _domEngine->onmessage();
 			}
+
+		private:
 
 			minko::dom::AbstractDOMEngine::Ptr
 			domEngine()
 			{
 				return _domEngine;
 			}
-
-		private:
 
 			void
 			targetAddedHandler(AbstractComponent::Ptr ctrl, NodePtr target);

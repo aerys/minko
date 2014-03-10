@@ -29,7 +29,7 @@ using namespace minko::math;
 
 const std::string TEXTURE_FILENAME = "texture/box.png";
 
-Signal<std::string>::Slot onloadSlot;
+Signal<minko::dom::AbstractDOM::Ptr, std::string>::Slot onloadSlot;
 
 Signal<dom::AbstractDOMEvent::Ptr>::Slot onredclickSlot;
 Signal<dom::AbstractDOMEvent::Ptr>::Slot onyellowclickSlot;
@@ -92,21 +92,24 @@ int main(int argc, char** argv)
 		overlay->load("html/menu.html");
 	});
 
-	onloadSlot = overlay->onload()->connect([=](std::string page)
+	onloadSlot = overlay->onload()->connect([=](minko::dom::AbstractDOM::Ptr dom, std::string page)
 	{
 		std::cout << "onload: " << page << std::endl;
 
-		onredclickSlot = overlay->domEngine()->getElementById("redButton")->onclick()->connect([=](dom::AbstractDOMEvent::Ptr event)
+		if (!dom->isMain())
+			return;
+
+		onredclickSlot = dom->getElementById("redButton")->onclick()->connect([=](dom::AbstractDOMEvent::Ptr event)
 		{
 			material->diffuseColor(0xFF0000FF);
 		});
 
-		onblueclickSlot = overlay->domEngine()->getElementById("blueButton")->onclick()->connect([=](dom::AbstractDOMEvent::Ptr event)
+		onblueclickSlot = dom->getElementById("blueButton")->onclick()->connect([=](dom::AbstractDOMEvent::Ptr event)
 		{
 			material->diffuseColor(0x0000FFFF);
 		});
 
-		onyellowclickSlot = overlay->domEngine()->getElementById("yellowButton")->onclick()->connect([=](dom::AbstractDOMEvent::Ptr event)
+		onyellowclickSlot = dom->getElementById("yellowButton")->onclick()->connect([=](dom::AbstractDOMEvent::Ptr event)
 		{
 			material->diffuseColor(0xFFFF00FF);
 		});
@@ -123,7 +126,7 @@ int main(int argc, char** argv)
 	sceneManager->assets()->load();
 	canvas->run();
 
-	overlay->unload();
+	overlay->clear();
 	return 0;
 }
 

@@ -20,9 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
-#include "minko/component/SceneManager.hpp"
-#include "minko/AbstractCanvas.hpp"
-#include "AbstractDOMElement.hpp"
+#include "AbstractDOM.hpp"
 
 namespace minko
 {
@@ -36,46 +34,22 @@ namespace minko
 			virtual
 			~AbstractDOMEngine()
 			{
-			};
+			}
 
 			virtual
-			void
+			AbstractDOM::Ptr
 			load(std::string uri) = 0;
-			
+
 			virtual
 			void
-			unload() = 0;
+			clear() = 0;
 
 			virtual
-			AbstractDOMElement::Ptr
-			createElement(std::string) = 0;
-
-			virtual
-			AbstractDOMElement::Ptr
-			getElementById(std::string) = 0;
-
-			virtual
-			std::list<AbstractDOMElement::Ptr>
-			getElementsByClassName(std::string) = 0;
-
-			virtual
-			std::list<AbstractDOMElement::Ptr>
-			getElementsByTagName(std::string) = 0;
-
-			virtual
-			AbstractDOMElement::Ptr
-			document() = 0;
-
-			virtual
-			AbstractDOMElement::Ptr
-			body() = 0;
-
-			virtual
-			Signal<std::string>::Ptr
+			Signal<AbstractDOM::Ptr, std::string>::Ptr
 			onload() = 0;
 
 			virtual
-			Signal<std::string>::Ptr
+			Signal<AbstractDOM::Ptr, std::string>::Ptr
 			onmessage() = 0;
 		};
 	}

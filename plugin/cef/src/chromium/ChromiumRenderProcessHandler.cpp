@@ -19,10 +19,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "chromium/ChromiumRenderProcessHandler.hpp"
 #include "chromium/ChromiumPimpl.hpp"
+#include "chromium/dom/ChromiumDOM.hpp"
 #include "include/cef_render_process_handler.h"
 
 using namespace minko;
 using namespace chromium;
+using namespace chromium::dom;
 
 ChromiumRenderProcessHandler::ChromiumRenderProcessHandler(ChromiumPimpl* impl) :
 	_impl(impl)
@@ -36,5 +38,16 @@ ChromiumRenderProcessHandler::~ChromiumRenderProcessHandler()
 void
 ChromiumRenderProcessHandler::OnContextCreated(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame, CefRefPtr<CefV8Context> context)
 {
-	_impl->domEngine->initNewPage(context);
+	if (frame->IsMain())
+	{
+		if (_impl->mainDOM != nullptr && _impl->mainDOM->initialized())
+			_impl->mainDOM = ChromiumDOM::create(_impl->domEngine);
+
+		_impl->mainDOM->init(context, frame);
+	}
+	else
+	{
+		ChromiumDOM::Ptr newDom = ChromiumDOM::create(_impl->domEngine);
+		newDom->init(context, frame);
+	}
 }

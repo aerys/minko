@@ -19,31 +19,51 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #pragma once
 
-#include "chromium/ChromiumApp.hpp"
-#include "chromium/ChromiumRenderHandler.hpp"
-#include "chromium/ChromiumRenderProcessHandler.hpp"
-#include "chromium/dom/ChromiumDOMEngine.hpp"
-#include "chromium/dom/ChromiumDOM.hpp"
-#include "include/cef_app.h"
-#include "include/cef_render_handler.h"
-#include "include/cef_client.h"
+#include "minko/Common.hpp"
+#include "minko/component/SceneManager.hpp"
+#include "minko/AbstractCanvas.hpp"
+#include "AbstractDOMElement.hpp"
 
-namespace chromium
+namespace minko
 {
-	class ChromiumPimpl
+	namespace dom
 	{
-	public:
-		dom::ChromiumDOMEngine::Ptr domEngine;
-		dom::ChromiumDOM::Ptr mainDOM;
+		class AbstractDOM
+		{
+		public:
+			typedef std::shared_ptr<AbstractDOM> Ptr;
 
-		CefMainArgs* mainArgs;
+			virtual
+			AbstractDOMElement::Ptr
+			createElement(std::string) = 0;
 
-		CefRefPtr<CefBrowser> browser;
-		CefRefPtr<ChromiumApp> app;
+			virtual
+			AbstractDOMElement::Ptr
+			getElementById(std::string) = 0;
 
-		CefRefPtr<ChromiumRenderHandler> renderHandler;
-		CefRefPtr<ChromiumRenderProcessHandler> renderProcessHandler;
+			virtual
+			std::list<AbstractDOMElement::Ptr>
+			getElementsByClassName(std::string) = 0;
 
-		CefRefPtr<CefV8Context> v8Context;
-	};
+			virtual
+			std::list<AbstractDOMElement::Ptr>
+			getElementsByTagName(std::string) = 0;
+
+			virtual
+			AbstractDOMElement::Ptr
+			document() = 0;
+
+			virtual
+			AbstractDOMElement::Ptr
+			body() = 0;
+
+			virtual
+			Signal<Ptr, std::string>::Ptr
+			onload() = 0;
+
+			virtual
+			bool
+			isMain() = 0;
+		};
+	}
 }

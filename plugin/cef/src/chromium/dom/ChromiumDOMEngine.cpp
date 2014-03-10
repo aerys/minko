@@ -23,7 +23,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "chromium/ChromiumPimpl.hpp"
 #include "chromium/dom/ChromiumDOMEngine.hpp"
 #include "chromium/dom/ChromiumDOMElement.hpp"
-#include "chromium/dom/ChromiumDOMEngineV8Handler.hpp"
 #include "minko/dom/AbstractDOMElement.hpp"
 
 #include "include/cef_app.h"
@@ -36,16 +35,16 @@ using namespace minko;
 using namespace minko::dom;
 
 ChromiumDOMEngine::ChromiumDOMEngine() :
-	_v8Handler(new ChromiumDOMEngineV8Handler()),
-	_onload(minko::Signal<std::string>::create()),
-	_onmessage(minko::Signal<std::string>::create())
+	_onload(minko::Signal<AbstractDOM::Ptr, std::string>::create()),
+	_onmessage(minko::Signal<AbstractDOM::Ptr, std::string>::create()),
+	_cleared(false)
 {
 	_impl = new ChromiumPimpl();
 }
 
 ChromiumDOMEngine::~ChromiumDOMEngine()
 {
-	std::cout << "toto" << std::endl;
+	clear();
 }
 
 ChromiumDOMEngine::Ptr
@@ -56,83 +55,6 @@ ChromiumDOMEngine::create()
 	engine->start();
 
 	return engine;
-}
-
-void
-ChromiumDOMEngine::initNewPage(CefRefPtr<CefV8Context> context)
-{
-	_currentV8Context = context;
-
-	_currentV8Context->Enter();
-
-	_minkoObject = CefV8Value::CreateObject(nullptr);
-	window()->SetValue("Minko", _minkoObject, V8_PROPERTY_ATTRIBUTE_NONE);
-
-	addLoadEventListener();
-	addSendMessageFunction();
-
-	_currentV8Context->Exit();
-}
-
-
-CefRefPtr<CefV8Value>
-ChromiumDOMEngine::window()
-{
-	return _currentV8Context->GetGlobal();
-}
-
-
-AbstractDOMElement::Ptr
-ChromiumDOMEngine::document()
-{
-	return ChromiumDOMElement::getDOMElementFromV8Object(_currentV8Context->GetGlobal()->GetValue("document"));
-}
-
-AbstractDOMElement::Ptr
-ChromiumDOMEngine::body()
-{
-	return ChromiumDOMElement::getDOMElementFromV8Object(_currentV8Context->GetGlobal()->GetValue("document")->GetValue("body"));
-}
-
-void
-ChromiumDOMEngine::addSendMessageFunction()
-{
-	std::string sendMessageFunctionName = "sendMessage";
-
-	// [javascript] Minko.sendMessage('message');
-	CefRefPtr<CefV8Value> sendMessageFunction = CefV8Value::CreateFunction(sendMessageFunctionName, _v8Handler.get());
-	_minkoObject->SetValue(sendMessageFunctionName, sendMessageFunction, V8_PROPERTY_ATTRIBUTE_NONE);
-
-	_onmessageSlot = _v8Handler->received()->connect([=](std::string functionName, CefV8ValueList arguments)
-	{
-		if (functionName == sendMessageFunctionName)
-		{
-			CefRefPtr<CefV8Value> messageV8Value = arguments[0];
-			std::string message = messageV8Value->GetStringValue();
-
-			_onmessage->execute(message);
-		}
-	});
-}
-
-void
-ChromiumDOMEngine::addLoadEventListener()
-{
-	std::string loadFunctionName = "onLoadHandler";
-	CefRefPtr<CefV8Value> onloadFunction = CefV8Value::CreateFunction(loadFunctionName, _v8Handler.get());
-
-	CefV8ValueList args;
-	args.push_back(CefV8Value::CreateString("load"));
-	args.push_back(onloadFunction);
-
-	window()->GetValue("addEventListener")->ExecuteFunction(nullptr, args);
-
-	_onloadSlot = _v8Handler->received()->connect([=](std::string functionName, CefV8ValueList)
-	{
-		//fixme: pass page name, relative to working directory
-		if (functionName == loadFunctionName)
-			_onload->execute("");
-	});
 }
 
 void
@@ -159,6 +81,7 @@ ChromiumDOMEngine::initialize(AbstractCanvas::Ptr canvas, std::shared_ptr<compon
 	CefSettings settings;
 
 	settings.single_process = 1;
+	settings.no_sandbox = 1;
 
 	int result = CefInitialize(*_impl->mainArgs, settings, _impl->app.get(), nullptr);
 	
@@ -207,7 +130,7 @@ ChromiumDOMEngine::enterFrame()
 	_impl->renderHandler->uploadTexture();
 }
 
-void
+AbstractDOM::Ptr
 ChromiumDOMEngine::load(std::string uri)
 {
 	bool isHttp		= uri.substr(0, 7) == "http://";
@@ -218,6 +141,16 @@ ChromiumDOMEngine::load(std::string uri)
 		loadHttp(uri);
 	else
 		loadLocal(uri);
+
+	_impl->mainDOM = ChromiumDOM::create(shared_from_this());
+
+	return _impl->mainDOM;
+}
+
+void
+ChromiumDOMEngine::registerDom(ChromiumDOM::Ptr dom)
+{
+	_doms.push_back(dom);
 }
 
 void
@@ -242,15 +175,20 @@ ChromiumDOMEngine::loadLocal(std::string filename)
 }
 
 void
-ChromiumDOMEngine::unload()
+ChromiumDOMEngine::clear()
 {
-	_currentV8Context = nullptr;
-	_v8Handler = nullptr;
-	_minkoObject = nullptr;
+	if (_cleared)
+		return;
+
+	_impl->mainDOM = nullptr;
+
+	for (ChromiumDOM::Ptr dom : _doms)
+		dom->clear();
+
+	_doms.clear();
 
 	ChromiumDOMElement::clearAll();
 	ChromiumDOMEvent::clearAll();
-
 	_impl->mainArgs = nullptr;
 	_impl->browser = nullptr;
 	_impl->app = nullptr;
@@ -259,62 +197,8 @@ ChromiumDOMEngine::unload()
 	_impl->domEngine = nullptr;
 	_impl->v8Context = nullptr;
 
+	_cleared = true;
+
 	CefShutdown();
-}
-
-AbstractDOMElement::Ptr
-ChromiumDOMEngine::createElement(std::string element)
-{
-	CefRefPtr<CefV8Value> document = window()->GetValue("document");
-	CefRefPtr<CefV8Value> func = document->GetValue("createElement");
-
-	CefV8ValueList args;
-	args.push_back(CefV8Value::CreateString(element));
-
-	CefRefPtr<CefV8Value> result = func->ExecuteFunction(document, args);
-
-	return ChromiumDOMElement::create(result);
-}
-
-AbstractDOMElement::Ptr
-ChromiumDOMEngine::getElementById(std::string id)
-{
-	CefRefPtr<CefV8Value> document = window()->GetValue("document");
-	CefRefPtr<CefV8Value> func = document->GetValue("getElementById");
-
-	CefV8ValueList args;
-	args.push_back(CefV8Value::CreateString(id));
-
-	CefRefPtr<CefV8Value> result = func->ExecuteFunction(document, args);
-
-	return ChromiumDOMElement::getDOMElementFromV8Object(result);
-}
-
-std::list<AbstractDOMElement::Ptr>
-ChromiumDOMEngine::getElementsByClassName(std::string className)
-{
-	CefRefPtr<CefV8Value> document = window()->GetValue("document");
-	CefRefPtr<CefV8Value> func = document->GetValue("getElementsByClassName");
-
-	CefV8ValueList args;
-	args.push_back(CefV8Value::CreateString(className));
-
-	CefRefPtr<CefV8Value> result = func->ExecuteFunction(document, args);
-
-	return ChromiumDOMElement::v8ElementArrayToList(result);
-}
-
-std::list<AbstractDOMElement::Ptr>
-ChromiumDOMEngine::getElementsByTagName(std::string tagName)
-{
-	CefRefPtr<CefV8Value> document = window()->GetValue("document");
-	CefRefPtr<CefV8Value> func = document->GetValue("getElementsByTagName");
-
-	CefV8ValueList args;
-	args.push_back(CefV8Value::CreateString(tagName));
-
-	CefRefPtr<CefV8Value> result = func->ExecuteFunction(document, args);
-
-	return ChromiumDOMElement::v8ElementArrayToList(result);
 }
 

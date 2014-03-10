@@ -21,10 +21,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 #include "minko/Signal.hpp"
-#include "minko/component/SceneManager.hpp"
-#include "minko/AbstractCanvas.hpp"
-#include "minko/dom/AbstractDOMEngine.hpp"
-#include "ChromiumDOM.hpp"
+#include "minko/dom/AbstractDOM.hpp"
+#include "minko/dom/AbstractDOMElement.hpp"
+#include "ChromiumDOMV8Handler.hpp"
 #include "include/cef_render_process_handler.h"
 
 #include <stdio.h>  /* defines FILENAME_MAX */
@@ -41,31 +40,58 @@ namespace chromium
 	class ChromiumPimpl;
 	namespace dom
 	{
-		class ChromiumDOMEngine : public minko::dom::AbstractDOMEngine,
-			public std::enable_shared_from_this<ChromiumDOMEngine>
+		class ChromiumDOMEngine;
+
+		class ChromiumDOM : public minko::dom::AbstractDOM,
+			public std::enable_shared_from_this<ChromiumDOM>
 		{
 		public:
-			typedef std::shared_ptr<ChromiumDOMEngine> Ptr;
+			typedef std::shared_ptr<ChromiumDOM> Ptr;
+
 
 		private:
-			ChromiumDOMEngine();
+			ChromiumDOM();
 
 		public:
-			~ChromiumDOMEngine();
-			
+			~ChromiumDOM();
+
 			static
 			Ptr
-			create();
+			create(std::shared_ptr<ChromiumDOMEngine>);
 
 			void
 			clear();
-			
-			void
-			initialize(std::shared_ptr<minko::AbstractCanvas>, std::shared_ptr<minko::component::SceneManager>);
-			
-			minko::dom::AbstractDOM::Ptr
-			load(std::string uri);
 
+			void
+			init(CefRefPtr<CefV8Context>, CefRefPtr<CefFrame>);
+
+			minko::dom::AbstractDOMElement::Ptr
+			createElement(std::string);
+
+			minko::dom::AbstractDOMElement::Ptr
+			getElementById(std::string);
+
+			std::list<minko::dom::AbstractDOMElement::Ptr>
+			getElementsByClassName(std::string);
+
+			std::list<minko::dom::AbstractDOMElement::Ptr>
+			getElementsByTagName(std::string);
+
+			minko::dom::AbstractDOMElement::Ptr
+			document();
+
+			minko::dom::AbstractDOMElement::Ptr
+			body();
+			
+			CefRefPtr<CefV8Value>
+			window();
+
+			void
+			addLoadEventListener();
+
+			void
+			addSendMessageFunction();
+			
 			minko::Signal<minko::dom::AbstractDOM::Ptr, std::string>::Ptr
 			onload()
 			{
@@ -78,56 +104,35 @@ namespace chromium
 				return _onmessage;
 			}
 
-			void
-			registerDom(ChromiumDOM::Ptr);
-
-		private:			
-			void
-			start(int argc, char** argv);
-
-			void
-			start();
-
-			void
-			enterFrame();
-
-			void
-			loadHttp(std::string);
-
-			void
-			loadLocal(std::string);
-
-			std::string
-			getWorkingDirectory()
+			bool
+			initialized()
 			{
-				if (!GetCurrentDir(_currentPath, sizeof(_currentPath)))
-				{
-					return "";
-				}
-				_currentPath[sizeof(_currentPath)-1] = '\0'; /* not really required */
+				return _init;
+			}
 
-				return std::string(_currentPath);
+			bool
+			isMain()
+			{
+				return _frame->IsMain();
 			}
 
 		private:
 
-			std::list<chromium::dom::ChromiumDOM::Ptr> _doms;
+			CefRefPtr<CefV8Context> _v8Context;
+			CefRefPtr<CefFrame> _frame;
+			CefRefPtr<CefV8Value> _minkoObject;
+			CefRefPtr<ChromiumDOMV8Handler> _v8Handler;
 
-			minko::Signal<minko::dom::AbstractDOM::Ptr, std::string>::Ptr _onload;
-			minko::Signal<minko::dom::AbstractDOM::Ptr, std::string>::Ptr _onmessage;
+			std::shared_ptr<ChromiumDOMEngine> _engine;
 
-			minko::AbstractCanvas::Ptr _canvas;
-			minko::component::SceneManager::Ptr _sceneManager;
+			std::shared_ptr<minko::Signal<minko::dom::AbstractDOM::Ptr, std::string>> _onload;
+			std::shared_ptr<minko::Signal<minko::dom::AbstractDOM::Ptr, std::string>> _onmessage;
 
-			minko::Signal<minko::AbstractCanvas::Ptr, minko::uint, minko::uint>::Slot _canvasResizedSlot;
-			minko::Signal<minko::component::SceneManager::Ptr>::Slot _enterFrameSlot;
-
-			ChromiumPimpl* _impl;
-			std::shared_ptr<minko::material::BasicMaterial> _overlayMaterial;
+			minko::Signal<std::string, CefV8ValueList>::Slot _onloadSlot;
+			minko::Signal<std::string, CefV8ValueList>::Slot _onmessageSlot;
 
 			bool _cleared;
-
-			char _currentPath[FILENAME_MAX];
+			bool _init;
 		};
 	}
 }

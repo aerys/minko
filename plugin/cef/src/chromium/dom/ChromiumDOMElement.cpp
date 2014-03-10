@@ -60,16 +60,19 @@ ChromiumDOMElement::clear()
 	if (_v8NodeToElement.find(_v8NodeObject) != _v8NodeToElement.end())
 		_v8NodeToElement.erase(_v8NodeObject);
 
-	std::map<ChromiumDOMElement::Ptr, CefRefPtr<CefV8Value>>::iterator i = _elementToV8Object.begin();
-
-	while (i != _elementToV8Object.end())
+	if (_elementToV8Object.size() != 0)
 	{
-		if (i->second == _v8NodeObject)
+		std::map<ChromiumDOMElement::Ptr, CefRefPtr<CefV8Value>>::iterator i = _elementToV8Object.begin();
+
+		while (i != _elementToV8Object.end())
 		{
-			_elementToV8Object.erase(i->first);
-			break;
+			if (i->second == _v8NodeObject)
+			{
+				_elementToV8Object.erase(i->first);
+				break;
+			}
+			i++;
 		}
-		i++;
 	}
 
 	_v8Handler = nullptr;
@@ -109,12 +112,15 @@ ChromiumDOMElement::clearAll()
 	//Destructors will be called at the end of clearAll
 	std::list<Ptr> l;
 
-	std::map<Ptr, CefRefPtr<CefV8Value>>::iterator i = _elementToV8Object.begin();
-
-	while (i != _elementToV8Object.end())
+	if (_elementToV8Object.size() != 0)
 	{
-		l.push_back(i->first);
-		i++;
+		std::map<Ptr, CefRefPtr<CefV8Value>>::iterator i = _elementToV8Object.begin();
+
+		while (i != _elementToV8Object.end())
+		{
+			l.push_back(i->first);
+			i++;
+		}
 	}
 
 	for (Ptr element : l)

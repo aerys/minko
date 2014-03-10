@@ -60,6 +60,6 @@ Overlay::targetAddedHandler(AbstractComponent::Ptr	ctrl, scene::Node::Ptr		targe
 void
 Overlay::targetRemovedHandler(AbstractComponent::Ptr	ctrl, scene::Node::Ptr		target)
 {
-	unload();
+	clear();
 }
 

@@ -26,11 +26,11 @@ namespace chromium
 {
 	namespace dom
 	{
-		class ChromiumDOMEngineV8Handler : public CefV8Handler
+		class ChromiumDOMV8Handler : public CefV8Handler
 		{
 		public:
 
-			ChromiumDOMEngineV8Handler() :
+			ChromiumDOMV8Handler() :
 				_received(minko::Signal<std::string, CefV8ValueList>::create())
 			{
 			}
@@ -50,7 +50,7 @@ namespace chromium
 		private:
 			std::shared_ptr<minko::Signal<std::string, CefV8ValueList>>	_received;
 
-			IMPLEMENT_REFCOUNTING(ChromiumDOMEngineV8Handler);
+			IMPLEMENT_REFCOUNTING(ChromiumDOMV8Handler);
 		};
 
 	}

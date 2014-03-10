@@ -52,6 +52,8 @@ ChromiumApp::OnContextInitialized()
 
 	browserSettings.web_security = STATE_DISABLED;
 	browserSettings.file_access_from_file_urls = STATE_ENABLED;
+	browserSettings.universal_access_from_file_urls = STATE_ENABLED;
+	browserSettings.webgl = STATE_DISABLED;
 
 	CefRefPtr<ChromiumClient> browserClient = new ChromiumClient(_impl);
 
