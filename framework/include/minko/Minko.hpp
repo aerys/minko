@@ -88,10 +88,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/geometry/TeapotGeometry.hpp"
 #include "minko/geometry/LineGeometry.hpp"
 #include "minko/file/Options.hpp"
-#include "minko/file/AbstractLoader.hpp"
-#include "minko/file/AbstractSingleLoader.hpp"
-#include "minko/file/BatchLoader.hpp"
-#include "minko/file/FileLoader.hpp"
+#include "minko/file/Loader.hpp"
+#include "minko/file/AbstractProtocol.hpp"
+#include "minko/file/FileProtocol.hpp"
 #include "minko/file/AbstractParser.hpp"
 #include "minko/file/EffectParser.hpp"
 #include "minko/file/AssetLibrary.hpp"
@@ -100,4 +99,3 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/material/PhongMaterial.hpp"
 #include "minko/input/Mouse.hpp"
 #include "minko/input/Keyboard.hpp"
-

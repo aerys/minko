@@ -307,12 +307,9 @@ namespace minko
 	namespace file
 	{
 		class Options;
-		class AbstractLoader;
-		class APKLoader;
 		class Loader;
-		class AbstractLoader;
-        class AbstractSingleLoader;
-        class BatchLoader;
+        class AbstractProtocol;
+        class Loader;
 		class AbstractParser;
 		class EffectParser;
         class AssetLibrary;

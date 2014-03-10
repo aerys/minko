@@ -17,25 +17,36 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "minko/file/LuaBatchLoader.hpp"
+#if !defined(EMSCRIPTEN)
+#include "minko/async/Worker.hpp"
 
 using namespace minko;
+using namespace minko::async;
 using namespace minko::file;
 
-void
-LuaBatchLoader::bind(LuaGlue& state)
+namespace minko
 {
-    auto& batchLoader = state.Class<BatchLoader>("BatchLoader");
+	namespace async
+	{
+		class FileProtocolWorker : public Worker
+		{
+		public:
+			static
+				Ptr
+				create()
+				{
+					return std::shared_ptr<FileProtocolWorker>(new FileProtocolWorker());
+				}
 
-    MINKO_LUAGLUE_BIND_SIGNAL(state, AbstractLoader::Ptr);
-    MINKO_LUAGLUE_BIND_SIGNAL(state, AbstractLoader::Ptr, float);
+			void
+				run(); // Must be defined in .cpp with the MINKO_WORKER macro.
 
-    batchLoader
-        .method("create",       static_cast<BatchLoader::Ptr(*)(void)>(&BatchLoader::create))
-        .method("createCopy",   static_cast<BatchLoader::Ptr(*)(BatchLoader::Ptr)>(&BatchLoader::create))
-        .method("queue",        static_cast<BatchLoader::Ptr (BatchLoader::*)(const std::string&)>(&BatchLoader::queue))
-        .method("load",         &BatchLoader::load)
-        .property("complete",   &BatchLoader::complete)
-        .property("progress",   &BatchLoader::progress)
-        .property("error",      &BatchLoader::error);
+		private:
+			FileProtocolWorker() :
+				Worker("file-loader")
+			{
+			}
+		};
+	}
 }
+#endif

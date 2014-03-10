@@ -218,7 +218,7 @@ private:
 	void BuildGraph(aiNode* nd, 
 		LWS::NodeDesc& src, 
 		std::vector<AttachmentInfo>& attach,
-		BatchLoader& batch,
+		Loader& batch,
 		aiCamera**& camOut,
 		aiLight**& lightOut, 
 		std::vector<aiNodeAnim*>& animOut);

@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/Options.hpp"
 
 #include "minko/material/Material.hpp"
-#include "minko/file/FileLoader.hpp"
+#include "minko/file/AbstractProtocol.hpp"
 #include "minko/file/AssetLibrary.hpp"
 
 #ifdef __APPLE__
@@ -115,7 +115,7 @@ Options::Options() :
 		return geom;
 	};
 
-	_loaderFunction = [&](const std::string& filename) -> std::shared_ptr<AbstractSingleLoader>
+	_protocolFunction = [&](const std::string& filename) -> std::shared_ptr<AbstractProtocol>
 	{
 		std::string protocol = "";
 
@@ -131,17 +131,17 @@ Options::Options() :
 
 		if (i != filename.length())
 		{
-			auto loader = this->getLoader(protocol);
+			auto loader = this->getProtocol(protocol);
 
 			if (loader)
 				return loader;
 		}
 
-        auto defaultLoader = FileLoader::create();
+        auto defaultProtocol = FileProtocol::create();
 
-        defaultLoader->options(Options::create(shared_from_this()));
+        defaultProtocol->options(Options::create(shared_from_this()));
 
-		return defaultLoader;
+        return defaultProtocol;
 	};
 	
 	_uriFunction = [](const std::string& uri) -> const std::string
@@ -205,13 +205,13 @@ Options::getParser(const std::string& extension)
     return _parsers.count(extension) == 0 ? nullptr : _parsers[extension]();
 }
 
-Options::AbsLoaderPtr
-Options::getLoader(const std::string& protocol)
+Options::AbsProtocolPtr
+Options::getProtocol(const std::string& protocol)
 {
-    auto loader = _loaders.count(protocol) == 0 ? nullptr : _loaders[protocol]();
+    auto p = _protocols.count(protocol) == 0 ? nullptr : _protocols[protocol]();
 
-    if (loader)
-        loader->options(Options::create(loader->options()));
+    if (p)
+        p->options(Options::create(p->options()));
 
-    return loader;
+    return p;
 }

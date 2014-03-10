@@ -26,7 +26,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "assimp/postprocess.h"     // Post processing flags
 #include "assimp/material.h"
 
-#include "minko/file/AbstractSingleLoader.hpp"
 #include "minko/scene/Node.hpp"
 #include "minko/scene/NodeSet.hpp"
 #include "minko/component/Transform.hpp"
@@ -615,68 +614,26 @@ ASSIMPParser::loadTexture(const std::string&	textureFilename,
 						  const std::string&	assetName,
 						  Options::Ptr			options)
 {
-	auto loader = _options->loaderFunction()(textureFilename);
+	auto loader = Loader::create();
 
-	_loaderCompleteSlots[loader] = loader->complete()->connect([&](file::AbstractLoader::Ptr loader)
+    loader->options(options);
+
+    _loaderCompleteSlots[loader] = loader->complete()->connect([&](file::Loader::Ptr loader)
 	{
-        auto sgLoader   = std::dynamic_pointer_cast<file::AbstractSingleLoader>(loader);
-        auto pos        = sgLoader->resolvedFilename().find_last_of('.');
-        auto extension  = sgLoader->resolvedFilename().substr(pos + 1);
-		auto parser		= options->getParser(extension);
-
-#ifdef DEBUG
-		if (parser == nullptr)
-			std::cerr << "No parser for extension '" << extension << "' found in asset library" << std::endl;
-#endif // DEBUG
-
-		if (!parser)
-		{
-			++_numLoadedDependencies;
-			if (_numDependencies == _numLoadedDependencies && _symbol)
-				finalize();
-
-			return;
-		}
-
-		auto complete = parser->complete()->connect([&](file::AbstractParser::Ptr parser)
-		{
-#ifdef DEBUG
-			std::cout << "ASSIMParser: texture '" << textureFilename << "' loaded" << std::endl;
-#endif
-
-			_numLoadedDependencies++;
-			if (_numDependencies == _numLoadedDependencies && _symbol)
-				finalize();
-		});
-
-		parser->parse(
-			assetName,
-            sgLoader->resolvedFilename(),
-			loader->options(),
-			loader->data(),
-			_assetLibrary
-		);
+		++_numLoadedDependencies;
+		if (_numDependencies == _numLoadedDependencies && _symbol)
+			finalize();
 	});
 
-	_loaderErrorSlots[loader] = loader->error()->connect([&](file::AbstractLoader::Ptr loader)
+    _loaderErrorSlots[loader] = loader->error()->connect([=](file::Loader::Ptr loader)
 	{
-        auto sgLoader = std::dynamic_pointer_cast<file::AbstractSingleLoader>(loader);
-        auto pos = sgLoader->filename().find_last_of("\\/");
-
-		if (pos != std::string::npos)
-		{
-            loadTexture(sgLoader->filename().substr(pos + 1), assetName, options);
-		}
-		else
-		{
-			++_numLoadedDependencies;
+		++_numLoadedDependencies;
 #ifdef DEBUG
-            std::cerr << "unable to find texture with filename '" << sgLoader->filename() << "'" << std::endl;
+        std::cerr << "unable to find texture with filename '" << textureFilename << "'" << std::endl;
 #endif // DEBUG
-		}
 	});
 
-	loader->load(textureFilename, options);
+	loader->queue(textureFilename, options)->load();
 }
 
 void

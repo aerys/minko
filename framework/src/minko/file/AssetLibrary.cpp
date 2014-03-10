@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/material/Material.hpp"
 #include "minko/scene/Node.hpp"
-#include "minko/file/BatchLoader.hpp"
+#include "minko/file/Loader.hpp"
 #include "minko/file/Options.hpp"
 #include "minko/render/Texture.hpp"
 #include "minko/render/CubeTexture.hpp"
@@ -46,7 +46,7 @@ AssetLibrary::create(AbsContextPtr context)
 
 AssetLibrary::AssetLibrary(std::shared_ptr<AbstractContext> context) :
 	_context(context),
-    _loader(BatchLoader::create())
+    _loader(Loader::create())
 {
 }
 

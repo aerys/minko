@@ -17,7 +17,7 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "minko/file/FileLoader.hpp"
+#include "minko/file/FileProtocol.hpp"
 
 #include "minko/file/Options.hpp"
 #include "minko/Signal.hpp"
@@ -30,12 +30,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::file;
 
-FileLoader::FileLoader()
+FileProtocol::FileProtocol()
 {
 }
 
 void
-FileLoader::load()
+FileProtocol::load()
 {
     auto filename = _filename;
     auto options = _options;
@@ -78,8 +78,6 @@ FileLoader::load()
 
 	if (file.is_open())
 	{
-        selectParser();
-
 		if (_options->loadAsynchronously() && AbstractCanvas::defaultCanvas() != nullptr
             && AbstractCanvas::defaultCanvas()->isWorkerRegistered("file-loader"))
 		{
@@ -89,8 +87,9 @@ FileLoader::load()
 			_workerSlots.push_back(worker->complete()->connect([=](async::Worker::MessagePtr data)
             {
 				void* charData = &*data->begin();
+
 				_data.assign(static_cast<unsigned char*>(charData), static_cast<unsigned char*>(charData) + data->size());
-                processData();
+                _complete->execute(shared_from_this());
 			}));
 
 			_workerSlots.push_back(worker->progress()->connect([=](float ratio)
@@ -106,7 +105,7 @@ FileLoader::load()
 
 			// FIXME: use fixed size buffers and call _progress accordingly
 
-            _progress->execute(AbstractLoader::shared_from_this(), 0.0);
+            _progress->execute(shared_from_this(), 0.0);
 
 			_data.resize(size);
 
@@ -116,9 +115,9 @@ FileLoader::load()
 
             _progress->execute(loader, 1.0);
 
-            processData();
+            _complete->execute(shared_from_this());
 		}
 	}
 	else
-        _error->execute(std::enable_shared_from_this<AbstractLoader>::shared_from_this());
+        _error->execute(shared_from_this());
 }

@@ -32,51 +32,51 @@ namespace minko
 			public std::enable_shared_from_this<Options>
 		{
 		private:
-			typedef std::shared_ptr<AbstractSingleLoader>						        AbsLoaderPtr;
+			typedef std::shared_ptr<AbstractProtocol>						            AbsProtocolPtr;
 			typedef std::shared_ptr<data::Provider>										ProviderPtr;
 			typedef std::shared_ptr<material::Material>									MaterialPtr;
 			typedef std::shared_ptr<geometry::Geometry>									GeomPtr;
 			typedef std::shared_ptr<scene::Node>										NodePtr;
 			typedef std::shared_ptr<render::Effect>										EffectPtr;
-            typedef std::shared_ptr<BatchLoader>                                        BatchLoaderPtr;
+            typedef std::shared_ptr<Loader>                                        LoaderPtr;
             typedef std::shared_ptr<AbstractParser>                                     AbsParserPtr;
             typedef std::function<AbsParserPtr(void)>                                   ParserHandler;
-            typedef std::function<AbsLoaderPtr(void)>		                            LoaderHandler;
+            typedef std::function<AbsProtocolPtr(void)>		                            ProtocolHandler;
 
 		public:
 			typedef std::shared_ptr<Options>											Ptr;
 			typedef std::function<MaterialPtr(const std::string&, MaterialPtr)>			MaterialFunction;
 			typedef std::function<GeomPtr(const std::string&, GeomPtr)> 				GeometryFunction;
-			typedef std::function<AbsLoaderPtr(const std::string&)>	                    LoaderFunction;
+			typedef std::function<AbsProtocolPtr(const std::string&)>	                ProtocolFunction;
 			typedef std::function<const std::string(const std::string&)>				UriFunction;
 			typedef std::function<NodePtr(NodePtr)>										NodeFunction;
 			typedef std::function<EffectPtr(EffectPtr)>									EffectFunction;
 
 		private:
-			std::shared_ptr<render::AbstractContext>	    _context;
-            std::shared_ptr<AssetLibrary>                   _assets;
-			std::list<std::string>						    _includePaths;
-			std::list<std::string>						    _platforms;
-			std::list<std::string>						    _userFlags;
+			std::shared_ptr<render::AbstractContext>	        _context;
+            std::shared_ptr<AssetLibrary>                       _assets;
+			std::list<std::string>						        _includePaths;
+			std::list<std::string>						        _platforms;
+			std::list<std::string>						        _userFlags;
 
-            std::unordered_map<std::string, ParserHandler>	_parsers;
-            std::unordered_map<std::string, LoaderHandler>	_loaders;
+            std::unordered_map<std::string, ParserHandler>	    _parsers;
+            std::unordered_map<std::string, ProtocolHandler>    _protocols;
 
-            bool                                            _generateMipMaps;
-			bool										    _resizeSmoothly;
-			bool										    _isCubeTexture;
-			bool										    _startAnimation;
-			bool										    _loadAsynchronously;
-			unsigned int								    _skinningFramerate;
-			component::SkinningMethod					    _skinningMethod;
-            std::shared_ptr<render::Effect>                 _effect;
-			MaterialPtr									    _material;
-			MaterialFunction							    _materialFunction;
-			GeometryFunction							    _geometryFunction;
-			LoaderFunction								    _loaderFunction;
-			UriFunction									    _uriFunction;
-			NodeFunction								    _nodeFunction;
-			EffectFunction								    _effectFunction;
+            bool                                                _generateMipMaps;
+			bool										        _resizeSmoothly;
+			bool										        _isCubeTexture;
+			bool										        _startAnimation;
+			bool										        _loadAsynchronously;
+			unsigned int								        _skinningFramerate;
+			component::SkinningMethod					        _skinningMethod;
+            std::shared_ptr<render::Effect>                     _effect;
+			MaterialPtr									        _material;
+			MaterialFunction							        _materialFunction;
+			GeometryFunction							        _geometryFunction;
+			ProtocolFunction								    _protocolFunction;
+			UriFunction									        _uriFunction;
+			NodeFunction								        _nodeFunction;
+			EffectFunction								        _effectFunction;
 
 		public:
             inline static
@@ -86,7 +86,7 @@ namespace minko
                 auto opt = std::shared_ptr<Options>(new Options());
 
                 opt->registerParser<file::EffectParser>("effect");
-                opt->registerProtocol<FileLoader>("file");
+                opt->registerProtocol<FileProtocol>("file");
 
 				return opt;
 			}
@@ -111,7 +111,7 @@ namespace minko
                 opt->_context = options->_context;
                 opt->_assets = options->_assets;
                 opt->_parsers = options->_parsers;
-                opt->_loaders = options->_loaders;
+                opt->_protocols = options->_protocols;
                 opt->_includePaths = options->_includePaths;
                 opt->_generateMipMaps = options->_generateMipMaps;
                 opt->_resizeSmoothly = options->_resizeSmoothly;
@@ -122,7 +122,7 @@ namespace minko
                 opt->_effect = options->_effect;
                 opt->_materialFunction = options->_materialFunction;
                 opt->_geometryFunction = options->_geometryFunction;
-                opt->_loaderFunction = options->_loaderFunction;
+                opt->_protocolFunction = options->_protocolFunction;
                 opt->_uriFunction = options->_uriFunction;
                 opt->_nodeFunction = options->_nodeFunction;
                 opt->_loadAsynchronously = options->_loadAsynchronously;
@@ -324,17 +324,17 @@ namespace minko
 			}
 
 			inline
-			const LoaderFunction&
-			loaderFunction() const
+			const ProtocolFunction&
+			protocolFunction() const
 			{
-				return _loaderFunction;
+				return _protocolFunction;
 			}
 
 			inline
 			Ptr
-			loaderFunction(const LoaderFunction& func)
+			protocolFunction(const ProtocolFunction& func)
 			{
-				_loaderFunction = func;
+				_protocolFunction = func;
 
 				return shared_from_this();
 			}
@@ -436,20 +436,20 @@ namespace minko
 			getParser(const std::string& extension);
 
 			template <typename T>
-			typename std::enable_if<std::is_base_of<file::AbstractLoader, T>::value, Ptr>::type
+			typename std::enable_if<std::is_base_of<file::AbstractProtocol, T>::value, Ptr>::type
 			registerProtocol(const std::string& protocol)
 			{
 				std::string prefix(protocol);
 
 				std::transform(prefix.begin(), prefix.end(), prefix.begin(), ::tolower);
 
-				_loaders[prefix] = T::create;
+				_protocols[prefix] = T::create;
 
 				return shared_from_this();
 			}
 
-            AbsLoaderPtr
-			getLoader(const std::string& protocol);
+            AbsProtocolPtr
+			getProtocol(const std::string& protocol);
 			
 		private:
 			Options();

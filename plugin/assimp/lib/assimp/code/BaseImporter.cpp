@@ -408,7 +408,7 @@ namespace Assimp
 	// Represents an import request
 	struct LoadRequest
 	{
-		LoadRequest(const std::string& _file, unsigned int _flags,const BatchLoader::PropertyMap* _map, unsigned int _id)
+		LoadRequest(const std::string& _file, unsigned int _flags,const Loader::PropertyMap* _map, unsigned int _id)
 			: file(_file), flags(_flags), refCnt(1),scene(NULL), loaded(false), id(_id)
 		{
 			if (_map)
@@ -420,7 +420,7 @@ namespace Assimp
 		unsigned int refCnt;
 		aiScene* scene;
 		bool loaded;
-		BatchLoader::PropertyMap map;
+		Loader::PropertyMap map;
 		unsigned int id;
 
 		bool operator== (const std::string& f) {
@@ -430,7 +430,7 @@ namespace Assimp
 }
 
 // ------------------------------------------------------------------------------------------------
-// BatchLoader::pimpl data structure
+// Loader::pimpl data structure
 struct Assimp::BatchData
 {
 	BatchData()
@@ -454,7 +454,7 @@ struct Assimp::BatchData
 };
 
 // ------------------------------------------------------------------------------------------------
-BatchLoader::BatchLoader(IOSystem* pIO)
+Loader::Loader(IOSystem* pIO)
 {
 	ai_assert(NULL != pIO);
 
@@ -466,7 +466,7 @@ BatchLoader::BatchLoader(IOSystem* pIO)
 }
 
 // ------------------------------------------------------------------------------------------------
-BatchLoader::~BatchLoader()
+Loader::~Loader()
 {
 	// delete all scenes wthat have not been polled by the user
 	for (std::list<LoadRequest>::iterator it = data->requests.begin();it != data->requests.end(); ++it)	{
@@ -480,7 +480,7 @@ BatchLoader::~BatchLoader()
 
 
 // ------------------------------------------------------------------------------------------------
-unsigned int BatchLoader::AddLoadRequest	(const std::string& file,
+unsigned int Loader::AddLoadRequest	(const std::string& file,
 	unsigned int steps /*= 0*/, const PropertyMap* map /*= NULL*/)
 {
 	ai_assert(!file.empty());
@@ -510,7 +510,7 @@ unsigned int BatchLoader::AddLoadRequest	(const std::string& file,
 }
 
 // ------------------------------------------------------------------------------------------------
-aiScene* BatchLoader::GetImport		(unsigned int which)
+aiScene* Loader::GetImport		(unsigned int which)
 {
 	for (std::list<LoadRequest>::iterator it = data->requests.begin();it != data->requests.end(); ++it)	{
 
@@ -527,7 +527,7 @@ aiScene* BatchLoader::GetImport		(unsigned int which)
 }
 
 // ------------------------------------------------------------------------------------------------
-void BatchLoader::LoadAll()
+void Loader::LoadAll()
 {
 	// no threaded implementation for the moment
 	for (std::list<LoadRequest>::iterator it = data->requests.begin();it != data->requests.end(); ++it)	{

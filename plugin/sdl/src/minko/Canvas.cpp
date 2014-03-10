@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/async/Worker.hpp"
 
 #if !defined(EMSCRIPTEN)
-#include "minko/async/FileLoaderWorker.hpp"
+#include "minko/async/FileProtocolWorker.hpp"
 #endif
 
 #if defined(EMSCRIPTEN)
@@ -76,7 +76,7 @@ Canvas::initialize()
     initializeInputs();
 
 #if !defined(EMSCRIPTEN)
-    registerWorker<async::FileLoaderWorker>("file-loader");
+    registerWorker<async::FileProtocolWorker>("file-loader");
 #endif
 }
 

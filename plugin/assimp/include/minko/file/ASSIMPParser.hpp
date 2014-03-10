@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 #include "minko/file/AbstractParser.hpp"
-#include "minko/file/FileLoader.hpp"
+#include "minko/file/FileProtocol.hpp"
 #include "minko/component/Skinning.hpp"
 #include "minko/render/Blending.hpp"
 
@@ -55,7 +55,7 @@ namespace minko
 			typedef std::shared_ptr<ASSIMPParser>					Ptr;
 
         private:
-            typedef std::shared_ptr<AbstractLoader>					LoaderPtr;
+            typedef std::shared_ptr<Loader>					LoaderPtr;
 			typedef std::shared_ptr<scene::Node>					NodePtr;
 			typedef std::shared_ptr<component::SceneManager>		SceneManagerPtr;
 			typedef std::shared_ptr<geometry::Geometry>				GeometryPtr;

@@ -27,23 +27,40 @@ namespace minko
 {
     namespace file
     {
-        class AbstractLoader :
-            public std::enable_shared_from_this<AbstractLoader>
+        class AbstractProtocol :
+            public std::enable_shared_from_this<AbstractProtocol>
         {
         public:
-            typedef std::shared_ptr<AbstractLoader> Ptr;
+            typedef std::shared_ptr<AbstractProtocol> Ptr;
 
         protected:
-            std::vector<unsigned char>                  _data;
-            std::shared_ptr<Options>                    _options;
+            std::string                         _filename;
+            std::shared_ptr<Options>            _options;
 
-            std::shared_ptr<Signal<Ptr, float>>         _progress;
-            std::shared_ptr<Signal<Ptr>>                _complete;
-            std::shared_ptr<Signal<Ptr>>                _error;
+            std::vector<unsigned char>          _data;
+            std::string                         _resolvedFilename;
+
+            std::shared_ptr<Signal<Ptr, float>> _progress;
+            std::shared_ptr<Signal<Ptr>>        _complete;
+            std::shared_ptr<Signal<Ptr>>        _error;
 
         public:
             static Ptr
             create();
+
+            inline
+            const std::string&
+            filename()
+            {
+                return _filename;
+            }
+
+            inline
+            const std::string&
+            resolvedFilename()
+            {
+                return _resolvedFilename;
+            }
 
             inline
             const std::vector<unsigned char>&
@@ -87,12 +104,22 @@ namespace minko
                 return _error;
             }
 
+            inline
+            void
+            load(const std::string& filename, std::shared_ptr<Options> options)
+            {
+                _filename = filename;
+                _options = options;
+
+                load();
+            }
+
             virtual
             void
             load() = 0;
 
         protected:
-            AbstractLoader();
+            AbstractProtocol();
 
             std::string
             sanitizeFilename(const std::string& filename);

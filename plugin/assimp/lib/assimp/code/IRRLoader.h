@@ -242,7 +242,7 @@ private:
 	/** Fill the scenegraph recursively
 	 */
 	void GenerateGraph(Node* root,aiNode* rootOut ,aiScene* scene,
-		BatchLoader& batch,
+		Loader& batch,
 		std::vector<aiMesh*>& meshes,
 		std::vector<aiNodeAnim*>& anims,
 		std::vector<AttachmentInfo>& attach,

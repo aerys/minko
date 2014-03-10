@@ -17,32 +17,38 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "minko/file/AbstractLoader.hpp"
+#pragma once
 
-#include "minko/file/Options.hpp"
+#include "minko/Common.hpp"
+#include "minko/file/AbstractProtocol.hpp"
+#include "minko/Any.hpp"
 
-using namespace minko::file;
-
-AbstractLoader::AbstractLoader() :
-    _options(Options::create()),
-    _complete(Signal<Ptr>::create()),
-    _progress(Signal<Ptr, float>::create()),
-    _error(Signal<Ptr>::create())
+namespace minko
 {
-}
+	namespace file
+	{
+		class FileProtocol :
+		    public AbstractProtocol
+		{
+        public:
+            typedef std::shared_ptr<FileProtocol>	Ptr;
 
-std::string
-AbstractLoader::sanitizeFilename(const std::string& filename)
-{
-    auto f = filename;
-    auto a = '\\';
+		public:
+		    inline static
+            Ptr
+            create()
+            {
+				return std::shared_ptr<FileProtocol>(new FileProtocol());
+            }
 
-    for (auto pos = f.find_first_of(a);
-         pos != std::string::npos;
-         pos = f.find_first_of(a))
-    {
-        f = f.replace(pos, 1, 1, '/');
-    }
+            void
+            load();
 
-    return f;
+		protected:
+			FileProtocol();
+
+		private:
+			std::list<Any> _workerSlots;
+		};
+	}
 }

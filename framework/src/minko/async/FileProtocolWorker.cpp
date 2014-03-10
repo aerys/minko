@@ -17,7 +17,7 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "minko/async/FileLoaderWorker.hpp"
+#include "minko/async/FileProtocolWorker.hpp"
 
 
 #if !defined(EMSCRIPTEN)
@@ -25,11 +25,11 @@ using namespace minko;
 using namespace minko::async;
 using namespace minko::file;
 
-MINKO_WORKER("file-loader", FileLoaderWorker,
+MINKO_WORKER("file-loader", FileProtocolWorker,
 {
 	uint chunkSize = 8 * 1024;
 
-	std::cout << "FileLoaderWorker::run(): enter" << std::endl;
+	std::cout << "FileProtocolWorker::run(): enter" << std::endl;
 
 	std::string filename(input()->begin(), input()->end());
 
@@ -47,7 +47,7 @@ MINKO_WORKER("file-loader", FileLoaderWorker,
 	{
 		unsigned int size = (unsigned int)file.tellg();
 
-		std::cout << "FileLoaderWorker::run(): file is open" << std::endl;
+		std::cout << "FileProtocolWorker::run(): file is open" << std::endl;
 
 		file.seekg(0, std::ios::beg);
 		
@@ -70,7 +70,7 @@ MINKO_WORKER("file-loader", FileLoaderWorker,
 		}
 		file.close();
 
-		std::cout << "FileLoaderWorker::run(): exit" << std::endl;
+		std::cout << "FileProtocolWorker::run(): exit" << std::endl;
 	}
 });
 #endif

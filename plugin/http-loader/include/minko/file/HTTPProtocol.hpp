@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
-#include "minko/file/AbstractSingleLoader.hpp"
+#include "minko/file/AbstractProtocol.hpp"
 #include "minko/Any.hpp"
 
 #include <stdarg.h>  
@@ -29,25 +29,25 @@ namespace minko
 {
 	namespace file
 	{
-		class HTTPLoader :
-			public AbstractSingleLoader
+		class HTTPProtocol :
+			public AbstractProtocol
 		{
 		public:
-			typedef std::shared_ptr<HTTPLoader>	Ptr;
+			typedef std::shared_ptr<HTTPProtocol>	Ptr;
 
 		public:
 			inline static
 			Ptr
 			create()
 			{
-				return std::shared_ptr<HTTPLoader>(new HTTPLoader());
+				return std::shared_ptr<HTTPProtocol>(new HTTPProtocol());
 			}
 
 			void
 			load();
 
 		protected:
-			HTTPLoader();
+			HTTPProtocol();
 
 			static void
 			completeHandler(void*, void*, int);
@@ -69,7 +69,7 @@ namespace minko
 			_workerSlots;
 
 			static
-			std::list<std::shared_ptr<HTTPLoader>>
+			std::list<std::shared_ptr<HTTPProtocol>>
 			_runningLoaders;
 
 			static uint

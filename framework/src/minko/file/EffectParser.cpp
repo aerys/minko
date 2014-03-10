@@ -19,7 +19,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/file/EffectParser.hpp"
 
-#include "minko/file/AbstractSingleLoader.hpp"
+#include "minko/file/Loader.hpp"
 #include "minko/data/Provider.hpp"
 #include "minko/render/Effect.hpp"
 #include "minko/render/Program.hpp"
@@ -36,7 +36,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/CubeTexture.hpp"
 #include "minko/render/Pass.hpp"
 #include "minko/render/Priority.hpp"
-#include "minko/file/FileLoader.hpp"
+#include "minko/file/FileProtocol.hpp"
 #include "minko/file/Options.hpp"
 #include "minko/file/AssetLibrary.hpp"
 #include "json/json.h"
@@ -164,10 +164,8 @@ EffectParser::parse(const std::string&				    filename,
 
 	_options = file::Options::create(options);
 	_options->includePaths().clear();
-	if (pos > 0)
-	{
+	if (pos != std::string::npos)
 		_options->includePaths().push_back(resolvedFilename.substr(0, pos));
-	}
 	
 	_filename = filename;
 	_resolvedFilename = resolvedFilename;
@@ -197,7 +195,7 @@ EffectParser::parse(const std::string&				    filename,
 	parsePasses(
 		root,
 		resolvedFilename,
-		options,
+		_options,
 		context,
 		_globalPasses,
 		_globalTargets,
@@ -218,11 +216,9 @@ EffectParser::parse(const std::string&				    filename,
 
 	// parse the list of techniques, if no "techniques" directive is found then
 	// the global list of passes becomes the "default" techinque
-	parseTechniques(root, resolvedFilename, options, context);
+	parseTechniques(root, resolvedFilename, _options, context);
 
-
-
-	_effect = render::Effect::create();
+    _effect = render::Effect::create();
 
 	if (_numDependencies == _numLoadedDependencies)
 		finalize();
@@ -294,10 +290,10 @@ EffectParser::parsePasses(const Json::Value&		root,
 						  AbstractContext::Ptr		context,
 						  std::vector<Pass::Ptr>&	passes,
 						  TexturePtrMap&			targets,
-						  BindingMap&			defaultAttributeBindings,
-						  BindingMap&			defaultUniformBindings,
-						  BindingMap&			defaultStateBindings,
-						  MacroBindingMap&	defaultMacroBindings,
+						  BindingMap&			    defaultAttributeBindings,
+						  BindingMap&			    defaultUniformBindings,
+						  BindingMap&			    defaultStateBindings,
+						  MacroBindingMap&	        defaultMacroBindings,
 						  render::States::Ptr		defaultStates,
 						  UniformValues&			defaultUniformDefaultValues)
 {
@@ -520,7 +516,7 @@ EffectParser::loadGLSLDependencies(GLSLBlockListPtr		blocks,
 
 		if (block.first == GLSLBlockType::FILE)
 		{
-			auto loader = _options->loaderFunction()(block.second);
+			auto loader = Loader::create(options);
 
 			++_numDependencies;
 
@@ -529,59 +525,65 @@ EffectParser::loadGLSLDependencies(GLSLBlockListPtr		blocks,
 				std::static_pointer_cast<EffectParser>(shared_from_this()),
 				std::placeholders::_1,
 				blocks,
-				blockIt
+				blockIt,
+                block.second
 			));
 
 			_loaderErrorSlots[loader] = loader->error()->connect(std::bind(
 				&EffectParser::dependencyErrorHandler,
 				std::static_pointer_cast<EffectParser>(shared_from_this()),
-				std::placeholders::_1
+				std::placeholders::_1,
+                block.second
 			));
 
-			loader->load(block.second, _options);
+			loader->queue(block.second)->load();
 		}
 	}
 }
 
 void
-EffectParser::glslIncludeCompleteHandler(LoaderPtr 			        l,
+EffectParser::glslIncludeCompleteHandler(LoaderPtr 			        loader,
 										 GLSLBlockListPtr 			blocks,
-	 								     GLSLBlockList::iterator 	blockIt)
+	 								     GLSLBlockList::iterator 	blockIt,
+                                         const std::string&         filename)
 {
-    auto loader = std::dynamic_pointer_cast<AbstractSingleLoader>(l);
 	auto& block = *blockIt;
 
 	block.first = GLSLBlockType::TEXT;
 #ifdef DEBUG
-	block.second = "//#pragma include(\"" + loader->resolvedFilename() + "\")\n";
+	block.second = "//#pragma include(\"" + filename + "\")\n";
 #else
 	block.second = "\n";
 #endif
 
 	++_numLoadedDependencies;
 
-	auto options = _options;
-	auto pos = loader->resolvedFilename().find_last_of('/');
+    auto file = loader->files().at(filename);
+    auto resolvedFilename = file->resolvedFilename();
+	auto options = Options::create(_options);
+	auto pos = resolvedFilename.find_last_of("/\\");
+
+    //options->includePaths().clear();
 	if (pos != std::string::npos)
 	{
 		options = file::Options::create(options);
-		options->includePaths().push_back(loader->resolvedFilename().substr(0, pos));
+        options->includePaths().push_back(resolvedFilename.substr(0, pos));
 	}
 
-	parseGLSL(std::string((const char*)&loader->data()[0], loader->data().size()), options, blocks, blockIt);
+    parseGLSL(std::string((const char*)&file->data()[0], file->data().size()), options, blocks, blockIt);
 
 	if (_numDependencies == _numLoadedDependencies && _effect)
 		finalize();
 }
 
 void
-EffectParser::dependencyErrorHandler(std::shared_ptr<AbstractLoader> loader)
+EffectParser::dependencyErrorHandler(std::shared_ptr<Loader> loader, const std::string& filename)
 {
-    auto sgLoader = std::dynamic_pointer_cast<AbstractSingleLoader>(loader);
-
-	std::cerr << "Unable to load dependency '" << sgLoader->filename() << "', included paths are:" << std::endl;
+#ifdef DEBUG
+	std::cerr << "Unable to load dependency '" << filename << "', included paths are:" << std::endl;
 	for (auto& path : loader->options()->includePaths())
 		std::cerr << path << std::endl;
+#endif // defined(DEBUG)
 
 	throw file::ParserError("Unable to load dependencies.");
 }
@@ -934,14 +936,12 @@ EffectParser::loadTexture(const std::string&	textureFilename,
 						  UniformTypeAndValue&	uniformTypeAndValue,
 						  Options::Ptr			options)
 {
-	auto loader = _options->loaderFunction()(textureFilename);
+    auto loader = Loader::create(options);
 
 	_numDependencies++;
 
-	_loaderCompleteSlots[loader] = loader->complete()->connect([&](file::AbstractLoader::Ptr l)
+	_loaderCompleteSlots[loader] = loader->complete()->connect([&](file::Loader::Ptr loader)
 	{
-        auto loader = std::dynamic_pointer_cast<AbstractSingleLoader>(l);
-
 		uniformTypeAndValue.second.textureValue = _assetLibrary->texture(textureFilename);
 		uniformTypeAndValue.second.textureValue->upload();
 
@@ -951,10 +951,11 @@ EffectParser::loadTexture(const std::string&	textureFilename,
 	_loaderErrorSlots[loader] = loader->error()->connect(std::bind(
 		&EffectParser::dependencyErrorHandler,
 		std::static_pointer_cast<EffectParser>(shared_from_this()),
-		std::placeholders::_1
+		std::placeholders::_1,
+        textureFilename
 	));
 
-	loader->load(textureFilename, options);
+	loader->queue(textureFilename)->load();
 }
 
 void

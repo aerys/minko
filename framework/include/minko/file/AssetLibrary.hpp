@@ -21,11 +21,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 
-#include "minko/file/BatchLoader.hpp"
+#include "minko/file/Loader.hpp"
 #include "minko/Signal.hpp"
 #include "minko/file/AbstractParser.hpp"
 #include "minko/file/EffectParser.hpp"
-#include "minko/file/AbstractLoader.hpp"
 
 namespace minko
 {
@@ -43,14 +42,14 @@ namespace minko
 			typedef std::shared_ptr<render::AbstractTexture>	AbsTexturePtr;
 			typedef std::shared_ptr<geometry::Geometry>			GeometryPtr;
 			typedef std::shared_ptr<file::AbstractParser>		AbsParserPtr;
-			typedef std::shared_ptr<file::AbstractLoader>		AbsLoaderPtr;
+			typedef std::shared_ptr<file::Loader>		    LoaderPtr;
 			typedef std::shared_ptr<scene::Node>				NodePtr;
             typedef std::shared_ptr<component::AbstractScript>  AbsScriptPtr;
 			typedef std::shared_ptr<data::Provider>				MaterialPtr;
 
 		private:
 			AbsContextPtr												        _context;
-            std::shared_ptr<BatchLoader>                                        _loader;
+            std::shared_ptr<Loader>                                        _loader;
 
 			std::unordered_map<std::string, MaterialPtr>				        _materials;
 			std::unordered_map<std::string, GeometryPtr>				        _geometries;
@@ -77,7 +76,7 @@ namespace minko
 			}
 
             inline
-            std::shared_ptr<BatchLoader>
+            std::shared_ptr<Loader>
             loader()
             {
                 return _loader;
@@ -151,12 +150,6 @@ namespace minko
 
 		private:
 			AssetLibrary(AbsContextPtr context);
-
-            void
-            loaderCompleteHandler(std::shared_ptr<AbstractSingleLoader> loader);
-
-            void
-            parserCompleteHandler(AbsParserPtr parser);
 		};
 	}
 }

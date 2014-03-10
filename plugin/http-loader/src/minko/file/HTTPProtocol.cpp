@@ -17,7 +17,7 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "minko/file/HTTPLoader.hpp"
+#include "minko/file/HTTPProtocol.hpp"
 
 #include "minko/file/Options.hpp"
 #include "minko/Signal.hpp"
@@ -33,99 +33,99 @@ using namespace minko;
 using namespace minko::file;
 using namespace minko::async;
 
-std::list<std::shared_ptr<HTTPLoader>>
-HTTPLoader::_runningLoaders;
+std::list<std::shared_ptr<HTTPProtocol>>
+HTTPProtocol::_runningLoaders;
 
 uint
-HTTPLoader::_uid = 0;
+HTTPProtocol::_uid = 0;
 
-HTTPLoader::HTTPLoader()
+HTTPProtocol::HTTPProtocol()
 {
 }
 
 void
-HTTPLoader::progressHandler(void* arg, int progress)
+HTTPProtocol::progressHandler(void* arg, int progress)
 {
-	std::cout << "HTTPLoader::progressHandler(): " << progress << std::endl;
-	auto iterator = std::find_if(HTTPLoader::_runningLoaders.begin(),
-								 HTTPLoader::_runningLoaders.end(),
-								 [=](std::shared_ptr<HTTPLoader> loader) -> bool {
+	std::cout << "HTTPProtocol::progressHandler(): " << progress << std::endl;
+	auto iterator = std::find_if(HTTPProtocol::_runningLoaders.begin(),
+								 HTTPProtocol::_runningLoaders.end(),
+								 [=](std::shared_ptr<HTTPProtocol> loader) -> bool {
 		return loader.get() == arg;
 	});
 
-	if (iterator == HTTPLoader::_runningLoaders.end())
+	if (iterator == HTTPProtocol::_runningLoaders.end())
 	{
-		std::cerr << "HTTPLoader::progressHandler(): cannot find loader" << std::endl;
+		std::cerr << "HTTPProtocol::progressHandler(): cannot find loader" << std::endl;
 		return;
 	}
-	std::cout << "HTTPLoader::progressHandler(): found loader " << format("%d", progress) << "%"  << std::endl;
-	std::shared_ptr<HTTPLoader> loader = *iterator;
+	std::cout << "HTTPProtocol::progressHandler(): found loader " << format("%d", progress) << "%"  << std::endl;
+	std::shared_ptr<HTTPProtocol> loader = *iterator;
 
 	loader->_progress->execute(loader, float(progress) / 100.0f);
 }
 
 void
-HTTPLoader::completeHandler(void* arg, void* data, int size)
+HTTPProtocol::completeHandler(void* arg, void* data, int size)
 {
-	std::cout << "HTTPLoader::completeHandler(): size: " << size << std::endl;
-	auto iterator = std::find_if(HTTPLoader::_runningLoaders.begin(),
-								 HTTPLoader::_runningLoaders.end(),
-								 [=](std::shared_ptr<HTTPLoader> loader) -> bool {
+	std::cout << "HTTPProtocol::completeHandler(): size: " << size << std::endl;
+	auto iterator = std::find_if(HTTPProtocol::_runningLoaders.begin(),
+								 HTTPProtocol::_runningLoaders.end(),
+								 [=](std::shared_ptr<HTTPProtocol> loader) -> bool {
 		return loader.get() == arg;
 	});
 
-	if (iterator == HTTPLoader::_runningLoaders.end())
+	if (iterator == HTTPProtocol::_runningLoaders.end())
 	{
-		std::cerr << "HTTPLoader::completeHandler(): cannot find loader" << std::endl;
+		std::cerr << "HTTPProtocol::completeHandler(): cannot find loader" << std::endl;
 		return;
 	}
 
-	std::cout << "HTTPLoader::completeHandler(): found loader" << std::endl;
-	std::shared_ptr<HTTPLoader> loader = *iterator;
+	std::cout << "HTTPProtocol::completeHandler(): found loader" << std::endl;
+	std::shared_ptr<HTTPProtocol> loader = *iterator;
 
-	std::cout << "HTTPLoader::completeHandler(): set data" << std::endl;
+	std::cout << "HTTPProtocol::completeHandler(): set data" << std::endl;
 	loader->_data.assign(static_cast<unsigned char*>(data), static_cast<unsigned char*>(data) + size);
 
 	loader->_progress->execute(loader, 1.0);
-	std::cout << "HTTPLoader::completeHandler(): call execute" << std::endl;
+	std::cout << "HTTPProtocol::completeHandler(): call execute" << std::endl;
 	loader->_complete->execute(loader);
 
-	std::cout << "HTTPLoader::completeHandler(): remove loader" << std::endl;
-	// HTTPLoader::_runningLoaders.remove(loader);
-	std::cout << "HTTPLoader::completeHandler(): complete" << std::endl;
+	std::cout << "HTTPProtocol::completeHandler(): remove loader" << std::endl;
+	// HTTPProtocol::_runningLoaders.remove(loader);
+	std::cout << "HTTPProtocol::completeHandler(): complete" << std::endl;
 }
 
 void
-HTTPLoader::errorHandler(void* arg)
+HTTPProtocol::errorHandler(void* arg)
 {
-	std::cout << "HTTPLoader::errorHandler(): " << std::endl;
-	auto iterator = std::find_if(HTTPLoader::_runningLoaders.begin(),
-								 HTTPLoader::_runningLoaders.end(),
-								 [=](std::shared_ptr<HTTPLoader> loader) -> bool {
+	std::cout << "HTTPProtocol::errorHandler(): " << std::endl;
+	auto iterator = std::find_if(HTTPProtocol::_runningLoaders.begin(),
+								 HTTPProtocol::_runningLoaders.end(),
+								 [=](std::shared_ptr<HTTPProtocol> loader) -> bool {
 		return loader.get() == arg;
 	});
 
-	if (iterator == HTTPLoader::_runningLoaders.end())
+	if (iterator == HTTPProtocol::_runningLoaders.end())
 	{
-		std::cerr << "HTTPLoader::errorHandler(): cannot find loader" << std::endl;
+		std::cerr << "HTTPProtocol::errorHandler(): cannot find loader" << std::endl;
 		return;
 	}
 
-	std::cout << "HTTPLoader::errorHandler(): found loader" << std::endl;
-	std::shared_ptr<HTTPLoader> loader = *iterator;
+	std::cout << "HTTPProtocol::errorHandler(): found loader" << std::endl;
+	std::shared_ptr<HTTPProtocol> loader = *iterator;
 
-	std::cout << "HTTPLoader::errorHandler(): call execute" << std::endl;
+	std::cout << "HTTPProtocol::errorHandler(): call execute" << std::endl;
 	loader->_error->execute(loader);
 
-	std::cout << "HTTPLoader::completeHandler(): remove loader" << std::endl;
-	// HTTPLoader::_runningLoaders.remove(loader);
-	std::cout << "HTTPLoader::errorHandler(): complete" << std::endl;
+	std::cout << "HTTPProtocol::completeHandler(): remove loader" << std::endl;
+	// HTTPProtocol::_runningLoaders.remove(loader);
+	std::cout << "HTTPProtocol::errorHandler(): complete" << std::endl;
 }
 
 void
-HTTPLoader::load()
+HTTPProtocol::load()
 {
-	std::cout << "HTTPLoader::load(): " << _filename << std::endl;
+	std::cout << "HTTPProtocol::load(): " << _filename << std::endl;
 	_resolvedFilename = _options->uriFunction()(sanitizeFilename(_filename));
 
 	if (_options->includePaths().size() != 0)
@@ -140,23 +140,23 @@ HTTPLoader::load()
 		}
 	}
 
-	_options->loaderFunction([](const std::string& filename) -> std::shared_ptr<AbstractSingleLoader>
+	_options->protocolFunction([](const std::string& filename) -> std::shared_ptr<AbstractProtocol>
 	{
-		return HTTPLoader::create();
+		return HTTPProtocol::create();
 	});
 	
-	auto loader = AbstractLoader::shared_from_this();
+	auto loader = shared_from_this();
 
-	_runningLoaders.push_back(std::static_pointer_cast<HTTPLoader>(loader));
+	_runningLoaders.push_back(std::static_pointer_cast<HTTPProtocol>(loader));
 
 	loader->progress()->execute(loader, 0.0);
 
 #if defined(EMSCRIPTEN)
 	//std::string destFilename = format("prepare%d", _uid++);
-	//std::cout << "HTTPLoader::load(): " << "call emscripten_async_wget2 with filename " << destFilename << std::endl;
+	//std::cout << "HTTPProtocol::load(): " << "call emscripten_async_wget2 with filename " << destFilename << std::endl;
 	//emscripten_async_wget2(_filename.c_str(), destFilename.c_str(), "GET", "", loader.get(), &wget2CompleteHandler, &errorHandler, &progressHandler);
 
-	std::cout << "HTTPLoader::load(): " << "call emscripten_async_wget_data " << std::endl;
+	std::cout << "HTTPProtocol::load(): " << "call emscripten_async_wget_data " << std::endl;
 	emscripten_async_wget_data(_filename.c_str(), loader.get(), &completeHandler, &errorHandler);
 #else
 	/*if (options->loadAsynchronously())
@@ -168,7 +168,7 @@ HTTPLoader::load()
 		}));
 
 		_workerSlots.push_back(worker->progress()->connect([=](float ratio) {
-			progressHandler(loader.get(), ratio * 100);
+			progressHandler(loader.get(), (int)ratio * 100);
 		}));
 
 		worker->input(std::make_shared<std::vector<char>>(_resolvedFilename.begin(), _resolvedFilename.end()));
@@ -182,7 +182,7 @@ HTTPLoader::load()
 
 #if defined(EMSCRIPTEN)
 void
-HTTPLoader::wget2CompleteHandler(void* arg, const char* file)
+HTTPProtocol::wget2CompleteHandler(void* arg, const char* file)
 {
 	FILE* f = fopen(file, "rb");
 
