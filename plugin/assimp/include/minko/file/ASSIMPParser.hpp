@@ -50,7 +50,7 @@ namespace minko
 
         private:
 
-            virtual void provideImporter(Assimp::Importer& importer)
+            virtual void provideLoaders(Assimp::Importer& importer)
             {
             }
         };

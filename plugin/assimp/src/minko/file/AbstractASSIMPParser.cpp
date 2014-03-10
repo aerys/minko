@@ -164,7 +164,7 @@ AbstractASSIMPParser::parse(const std::string&					filename,
     //Init the assimp scene
     Assimp::Importer importer;
 
-    provideImporter(importer);
+    provideLoaders(importer);
 
 	//fixme : find a way to handle loading dependencies asynchronously
 	options->loadAsynchronously(false);

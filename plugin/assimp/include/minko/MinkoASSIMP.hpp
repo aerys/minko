@@ -21,3 +21,4 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/file/ASSIMPParser.hpp"
 #include "minko/file/AnyASSIMPParser.hpp"
+#include "minko/file/ColladaASSIMPParser.hpp"

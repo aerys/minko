@@ -121,7 +121,7 @@ namespace minko
 
 		private:
 
-            virtual void provideImporter(Assimp::Importer& importer) = 0;
+            virtual void provideLoaders(Assimp::Importer& importer) = 0;
 
 			static
 			TextureTypeToName

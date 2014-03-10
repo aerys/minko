@@ -16,33 +16,42 @@ NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FO
 DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
+
 #pragma once
 
-#include "minko/file/AbstractASSIMPParser.hpp"
+#include "minko/file/AnyAssimpParser.hpp"
+
+namespace Assimp
+{
+    class ColladaLoader;
+}
 
 namespace minko
 {
     namespace file
     {
-        template <typename T>
-        class AnyASSIMPParser : public AbstractASSIMPParser
+        template <>
+        class AnyASSIMPParser<Assimp::ColladaLoader> : public AbstractASSIMPParser
         {
         public:
 
-            virtual ~AnyASSIMPParser()
-            {
-            }
+            typedef std::shared_ptr<AnyASSIMPParser<Assimp::ColladaLoader>> Ptr;
 
-            virtual void provideLoaders(Assimp::Importer& importer)
-            {
-                importer.RegisterLoader(new T());
-            }
+        public:
 
-        protected:
+            virtual ~AnyASSIMPParser() { }
 
-            AnyASSIMPParser()
-            {
-            }
+            static
+            Ptr
+            create();
+
+            virtual void provideLoaders(Assimp::Importer& importer);
+
+        private:
+
+            AnyASSIMPParser() { }
         };
+
+        using ColladaASSIMPParser = AnyASSIMPParser<Assimp::ColladaLoader>;
     }
 }

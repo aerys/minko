@@ -177,6 +177,11 @@ void GetImporterInstanceList(std::vector< BaseImporter* >& out)
 	// (register_new_importers_here)
 	// ----------------------------------------------------------------------------
 	out.reserve(64);
+
+    // Importers are not part of a monolithic structure.
+    // Instead, refer to AnyASSIMPParser<T> hierarchy.
+
+    /*
 #if (!defined ASSIMP_BUILD_NO_X_IMPORTER)
 	out.push_back( new XFileImporter());
 #endif
@@ -291,6 +296,7 @@ void GetImporterInstanceList(std::vector< BaseImporter* >& out)
 #if ( !defined ASSIMP_BUILD_NO_FBX_IMPORTER )
 	out.push_back( new FBXImporter() );
 #endif
+    */
 }
 
 }
