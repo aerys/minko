@@ -535,12 +535,12 @@ SDLKeyboard::SDLKeyboard()
 
 bool SDLKeyboard::keyIsDown(input::Keyboard::ScanCode scanCode)
 {
-    return _keyboardState[SCAN_CODE_SDL_MAP[static_cast<int>(scanCode)]] != 0;
+    return _keyboardState[static_cast<int>(scanCode)] != 0;
 }
 
 bool SDLKeyboard::keyIsDown(input::Keyboard::KeyCode keyCode)
 {
-    return _keyboardState[/*KEY_CODE_SDL_MAP[*/static_cast<int>(getScanCodeFromKeyCode(keyCode))]/*]*/ != 0;
+    return _keyboardState[static_cast<int>(keyCode)] != 0;
 }
 
 input::Keyboard::KeyCode

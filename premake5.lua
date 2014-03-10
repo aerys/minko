@@ -86,6 +86,7 @@ solution "minko"
 	-- example
 	if not _OPTIONS['no-example'] then
 		--include 'example/lua-scripts'
+		include 'example/sdl-binding'
 		include 'example/assimp'
 		include 'example/cube'
 		include 'example/devil'
