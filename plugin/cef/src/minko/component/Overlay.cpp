@@ -1,6 +1,13 @@
+#ifndef EMSCRIPTEN
 #define CHROMIUM 1
+#endif
+
+
 #if defined(CHROMIUM)
 #include "chromium/dom/ChromiumDOMEngine.hpp"
+#endif
+#if defined(EMSCRIPTEN)
+#include "emscripten/dom/EmscriptenDOMEngine.hpp"
 #endif
 #include "minko/component/Overlay.hpp"
 #include "minko/scene/Node.hpp"
@@ -12,8 +19,14 @@ using namespace chromium;
 using namespace chromium::dom;
 
 Overlay::Overlay() :
-	AbstractComponent()
+	AbstractComponent(),
+	_cleared(false)
 {
+}
+
+Overlay::~Overlay()
+{
+	clear();
 }
 
 void
@@ -40,6 +53,11 @@ Overlay::initialize(AbstractCanvas::Ptr canvas)
 
 	ChromiumDOMEngine::Ptr engine = ChromiumDOMEngine::create();
 	_domEngine = engine;
+#endif
+
+#if defined(EMSCRIPTEN)
+	EmscriptenDOMEngine::Ptr engine = EmscriptenDOMEngine::create();
+	_domEnfine = engine;
 #endif
 }
 

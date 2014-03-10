@@ -38,6 +38,7 @@ namespace minko
 		{
 		public:
 			typedef std::shared_ptr<Overlay> Ptr;
+			~Overlay();
 
 		private:
 			typedef std::shared_ptr<scene::Node>							NodePtr;
@@ -69,8 +70,12 @@ namespace minko
 			void
 			clear()
 			{
+				if (_cleared)
+					return;
+
 				_domEngine->clear();
 				_domEngine = nullptr;
+				_cleared = true;
 			}
 
 			std::shared_ptr<Signal<minko::dom::AbstractDOM::Ptr, std::string>>
@@ -110,6 +115,8 @@ namespace minko
 			Signal<NodePtr, NodePtr, NodePtr>::Slot									_removedSlot;
 
 			dom::AbstractDOMEngine::Ptr												_domEngine;
+
+			bool																	_cleared;
 		};
 	}
 }
