@@ -18,7 +18,7 @@ minko.action.copy = function(sourcePath)
 	if os.is('windows') then
 		sourcePath = path.translate(sourcePath)
 
-		local targetDir = string.startswith(_ACTION, "gmake") and '$(subst /,\\,$(TARGETDIR))' or '$(TargetDir)'
+		local targetDir = string.startswith(_ACTION, "gmake") and '$(subst /,\\,$(TARGETDIR))' or '"$(TargetDir)"'
 
 		if os.isdir(sourcePath) then
 			targetDir = targetDir .. '\\' .. path.getbasename(sourcePath)
@@ -49,11 +49,9 @@ minko.action.clean = function()
 		error("cannot clean from outside the Minko SDK")
 	end
 
-	-- fixme: could detect Git location (http://stackoverflow.com/questions/8507368/finding-the-path-where-git-is-installed-on-a-windows-system)
-	local bin = os.is('windows') and '"C:\\Program Files (x86)\\Git\\bin\\git.exe"' or 'git'
-	local cmd = 'clean -X -d -f'
+	local cmd = 'git clean -X -d -f'
 
-	os.execute(bin .. " " .. cmd)
+	os.execute(cmd)
 	
 	for _, pattern in ipairs { "framework", "plugin/*", "test", "example/*" } do
 		local dirs = os.matchdirs(pattern)
@@ -61,7 +59,7 @@ minko.action.clean = function()
 		for _, dir in ipairs(dirs) do
 			local cwd = os.getcwd()
 			os.chdir(dir)
-			os.execute(bin .. ' ' .. cmd)
+			os.execute(cmd)
 			os.chdir(cwd)
 		end
 	end
