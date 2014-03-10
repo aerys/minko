@@ -94,7 +94,7 @@ int main(int argc, char** argv)
 
 	onloadSlot = overlay->onload()->connect([=](minko::dom::AbstractDOM::Ptr dom, std::string page)
 	{
-		std::cout << "onload: " << page << std::endl;
+		std::cout << "onload: " << dom->fileName() << std::endl;
 
 		if (!dom->isMain())
 			return;

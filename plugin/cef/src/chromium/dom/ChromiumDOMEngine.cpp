@@ -169,7 +169,7 @@ ChromiumDOMEngine::loadLocal(std::string filename)
 	path += "../../../asset/";
 #endif
 
-	std::string url = "file://" + path + "/" + filename;
+	std::string url = path + "/" + filename;
 
 	loadHttp(url);
 }

@@ -106,7 +106,7 @@ namespace chromium
 				}
 				_currentPath[sizeof(_currentPath)-1] = '\0'; /* not really required */
 
-				return std::string(_currentPath);
+				return "file://" + std::string(_currentPath);
 			}
 
 		private:

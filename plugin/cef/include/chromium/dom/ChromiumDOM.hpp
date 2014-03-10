@@ -116,6 +116,22 @@ namespace chromium
 				return _frame->IsMain();
 			}
 
+			std::string
+			fileName()
+			{
+				std::string fullUrl = _frame->GetURL();
+				int i = fullUrl.find_last_of('/');
+
+				std::string fileName = fullUrl.substr(i + 1);
+				return fileName;
+			}
+
+			std::string
+			fullUrl()
+			{
+				return _frame->GetURL();
+			}
+
 		private:
 
 			CefRefPtr<CefV8Context> _v8Context;

@@ -62,6 +62,14 @@ namespace minko
 			onload() = 0;
 
 			virtual
+			std::string
+			fileName() = 0;
+
+			virtual
+			std::string
+			fullUrl() = 0;
+
+			virtual
 			bool
 			isMain() = 0;
 		};
