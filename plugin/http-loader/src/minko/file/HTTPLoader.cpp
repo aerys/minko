@@ -209,11 +209,11 @@ HTTPLoader::load(const std::string& filename, std::shared_ptr<Options> options)
 	{
 		auto worker = AbstractCanvas::defaultCanvas()->getWorker("http");
 
-		_workerSlots.push_back(worker->complete()->connect([=](Worker::MessagePtr data) {
+		_workerSlots.push_back(worker->complete()->connect([=](Worker::Ptr, Worker::MessagePtr data) {
 			completeHandler(loader.get(), &*data->begin(), data->size());
 		}));
 
-		_workerSlots.push_back(worker->progress()->connect([=](float ratio) {
+		_workerSlots.push_back(worker->progress()->connect([=](Worker::Ptr, float ratio) {
 			progressHandler(loader.get(), ratio * 100);
 		}));
 
