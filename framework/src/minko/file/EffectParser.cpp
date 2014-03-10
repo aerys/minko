@@ -941,27 +941,9 @@ EffectParser::loadTexture(const std::string&	textureFilename,
 	_loaderCompleteSlots[loader] = loader->complete()->connect([&](file::AbstractLoader::Ptr l)
 	{
         auto loader = std::dynamic_pointer_cast<AbstractSingleLoader>(l);
-		auto pos = loader->resolvedFilename().find_last_of('.');
-		auto extension = loader->resolvedFilename().substr(pos + 1);
-		auto parser = options->getParser(extension);
 
-		auto completeSlot = parser->complete()->connect([&](file::AbstractParser::Ptr parser)
-		{
-			uniformTypeAndValue.second.textureValue = _assetLibrary->texture(textureFilename);
-			uniformTypeAndValue.second.textureValue->upload();
-
-			_numLoadedDependencies++;
-
-			if (_numDependencies == _numLoadedDependencies && _effect)
-				finalize();
-		});
-
-		parser->parse(
-			loader->filename(),
-			loader->resolvedFilename(),
-			loader->options(), loader->data(),
-			_assetLibrary
-		);
+		uniformTypeAndValue.second.textureValue = _assetLibrary->texture(textureFilename);
+		uniformTypeAndValue.second.textureValue->upload();
 	});
 
 	_loaderErrorSlots[loader] = loader->error()->connect(std::bind(
