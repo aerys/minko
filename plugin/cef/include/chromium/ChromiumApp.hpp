@@ -34,6 +34,7 @@ namespace chromium
 				public CefBrowserProcessHandler
 	{
 	public:
+		~ChromiumApp();
 
 		std::shared_ptr<render::Texture>
 		initialize(std::shared_ptr<AbstractCanvas> canvas, std::shared_ptr<render::AbstractContext> context, ChromiumPimpl* impl);

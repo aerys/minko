@@ -28,6 +28,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace chromium;
 
+ChromiumApp::~ChromiumApp()
+{
+}
+
 std::shared_ptr<render::Texture>
 ChromiumApp::initialize(std::shared_ptr<AbstractCanvas> canvas, std::shared_ptr<render::AbstractContext> context, ChromiumPimpl* impl)
 {
@@ -49,7 +53,7 @@ ChromiumApp::OnContextInitialized()
 	browserSettings.web_security = STATE_DISABLED;
 	browserSettings.file_access_from_file_urls = STATE_ENABLED;
 
-	CefRefPtr<ChromiumClient> browserClient = new ChromiumClient(_impl->renderHandler.get(), _impl);
+	CefRefPtr<ChromiumClient> browserClient = new ChromiumClient(_impl);
 
 	// in linux set a gtk widget, in windows a hwnd. If not available set nullptr - may cause some render errors, in context-menu and plugins.
 	window_info.SetAsOffScreen(nullptr);

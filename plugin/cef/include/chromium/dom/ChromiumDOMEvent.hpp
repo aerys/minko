@@ -33,6 +33,7 @@ namespace chromium
 		{
 		public:
 			typedef std::shared_ptr<ChromiumDOMEvent> Ptr;
+			~ChromiumDOMEvent();
 
 		private:
 			ChromiumDOMEvent(CefRefPtr<CefV8Value>);
@@ -41,6 +42,13 @@ namespace chromium
 			static
 			Ptr
 			create(CefRefPtr<CefV8Value>);
+
+			static
+			void
+			clearAll();
+
+			void
+			clear();
 
 			void
 			preventDefault();
@@ -92,6 +100,11 @@ namespace chromium
 			getProperty(std::string name);
 
 		private:
+			static
+			std::list<Ptr> _events;
+
+			bool _cleared;
+
 			CefRefPtr<CefV8Value> _v8NodeObject;
 		};
 	}

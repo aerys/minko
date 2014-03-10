@@ -161,7 +161,7 @@ ChromiumDOMEngine::initialize(AbstractCanvas::Ptr canvas, std::shared_ptr<compon
 	settings.single_process = 1;
 
 	int result = CefInitialize(*_impl->mainArgs, settings, _impl->app.get(), nullptr);
-
+	
 	auto overlayEffect = _sceneManager->assets()->effect("effect/Overlay.effect");
 
 	if (!overlayEffect)
@@ -244,6 +244,13 @@ ChromiumDOMEngine::loadLocal(std::string filename)
 void
 ChromiumDOMEngine::unload()
 {
+	_currentV8Context = nullptr;
+	_v8Handler = nullptr;
+	_minkoObject = nullptr;
+
+	ChromiumDOMElement::clearAll();
+	ChromiumDOMEvent::clearAll();
+
 	_impl->mainArgs = nullptr;
 	_impl->browser = nullptr;
 	_impl->app = nullptr;

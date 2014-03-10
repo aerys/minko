@@ -30,7 +30,8 @@ namespace chromium
 	class ChromiumClient : public CefClient
 	{
 	public:
-		ChromiumClient(CefRefPtr<CefRenderHandler> renderHandler, ChromiumPimpl* impl);
+		ChromiumClient(ChromiumPimpl* impl);
+		~ChromiumClient();
 
 		virtual
 		CefRefPtr<CefRenderHandler>
@@ -39,9 +40,6 @@ namespace chromium
 		virtual
 		void
 		OnBeforeClose(CefRefPtr<CefBrowser> browser);
-				
-	public:
-		CefRefPtr<CefRenderHandler> renderHandler;
 	private:
 		ChromiumPimpl* _impl;
 

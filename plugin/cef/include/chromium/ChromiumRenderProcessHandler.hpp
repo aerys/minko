@@ -31,6 +31,7 @@ namespace chromium
 	{
 	public:
 		ChromiumRenderProcessHandler(ChromiumPimpl* impl);
+		~ChromiumRenderProcessHandler();
 	public:
 		virtual
 		void

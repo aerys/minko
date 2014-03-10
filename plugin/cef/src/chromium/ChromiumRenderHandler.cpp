@@ -38,6 +38,10 @@ ChromiumRenderHandler::ChromiumRenderHandler(std::shared_ptr<AbstractCanvas> can
 	generateTexture();
 }
 
+ChromiumRenderHandler::~ChromiumRenderHandler()
+{
+}
+
 bool
 ChromiumRenderHandler::generateTexture()
 {

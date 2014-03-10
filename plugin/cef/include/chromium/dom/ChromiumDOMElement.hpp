@@ -51,9 +51,15 @@ namespace chromium
 			getDOMElementFromV8Object(CefRefPtr<CefV8Value>);
 
 			static
+			void
+			clearAll();
+
+			static
 			std::list<AbstractDOMElement::Ptr>
 			v8ElementArrayToList(CefRefPtr<CefV8Value>);
 
+			void
+			clear();
 
 			std::string
 			id();
@@ -157,7 +163,7 @@ namespace chromium
 			std::map<CefRefPtr<CefV8Value>, Ptr> _v8NodeToElement;
 
 			static
-			std::map<AbstractDOMElement::Ptr, CefRefPtr<CefV8Value>> _elementToV8Object;
+			std::map<Ptr, CefRefPtr<CefV8Value>> _elementToV8Object;
 
 			bool _onclickCallbackSet;
 			bool _onmousedownCallbackSet;
@@ -168,6 +174,8 @@ namespace chromium
 
 			CefRefPtr<ChromiumDOMElementV8Handler> _v8Handler;
 			CefRefPtr<CefV8Value> _v8NodeObject;
+
+			bool _cleared;
 		};
 	}
 }

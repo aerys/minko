@@ -29,6 +29,10 @@ ChromiumRenderProcessHandler::ChromiumRenderProcessHandler(ChromiumPimpl* impl) 
 {
 }
 
+ChromiumRenderProcessHandler::~ChromiumRenderProcessHandler()
+{
+}
+
 void
 ChromiumRenderProcessHandler::OnContextCreated(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame, CefRefPtr<CefV8Context> context)
 {

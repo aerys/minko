@@ -26,10 +26,10 @@ using namespace chromium::dom;
 using namespace minko;
 using namespace minko::dom;
 
-std::map<CefRefPtr<CefV8Value>, std::shared_ptr<ChromiumDOMElement>>
+std::map<CefRefPtr<CefV8Value>, ChromiumDOMElement::Ptr>
 ChromiumDOMElement::_v8NodeToElement;
 
-std::map<AbstractDOMElement::Ptr, CefRefPtr<CefV8Value>>
+std::map<ChromiumDOMElement::Ptr, CefRefPtr<CefV8Value>>
 ChromiumDOMElement::_elementToV8Object;
 
 ChromiumDOMElement::ChromiumDOMElement(CefRefPtr<CefV8Value> v8NodeObject) :
@@ -39,22 +39,43 @@ ChromiumDOMElement::ChromiumDOMElement(CefRefPtr<CefV8Value> v8NodeObject) :
 	_onmousemoveCallbackSet(false),
 	_onmouseupCallbackSet(false),
 	_onmouseoverCallbackSet(false),
-	_onmouseoutCallbackSet(false)
+	_onmouseoutCallbackSet(false),
+	_cleared(false)
 {
-	/*if (!v8NodeObject->IsObject())
-		throw;*/
-
 	_v8NodeObject = v8NodeObject;
 }
 
 
 ChromiumDOMElement::~ChromiumDOMElement()
 {
-	_v8NodeToElement.erase(_v8NodeObject);
-	_elementToV8Object.erase(shared_from_this());
+	clear();
+}
 
-	_v8NodeObject = nullptr;
+void
+ChromiumDOMElement::clear()
+{
+	if (_cleared)
+		return;
+
+	if (_v8NodeToElement.find(_v8NodeObject) != _v8NodeToElement.end())
+		_v8NodeToElement.erase(_v8NodeObject);
+
+	std::map<ChromiumDOMElement::Ptr, CefRefPtr<CefV8Value>>::iterator i = _elementToV8Object.begin();
+
+	while (i != _elementToV8Object.end())
+	{
+		if (i->second == _v8NodeObject)
+		{
+			_elementToV8Object.erase(i->first);
+			break;
+		}
+		i++;
+	}
+
 	_v8Handler = nullptr;
+	_v8NodeObject = nullptr;
+
+	_cleared = true;
 }
 
 ChromiumDOMElement::Ptr
@@ -81,6 +102,29 @@ ChromiumDOMElement::getDOMElementFromV8Object(CefRefPtr<CefV8Value> v8Object)
 		return create(v8Object);
 }
 
+void
+ChromiumDOMElement::clearAll()
+{
+	//Keeping a reference to avoid destructors being called when clearing maps
+	//Destructors will be called at the end of clearAll
+	std::list<Ptr> l;
+
+	std::map<Ptr, CefRefPtr<CefV8Value>>::iterator i = _elementToV8Object.begin();
+
+	while (i != _elementToV8Object.end())
+	{
+		l.push_back(i->first);
+		i++;
+	}
+
+	for (Ptr element : l)
+	{
+		element->clear();
+	}
+
+	_v8NodeToElement.clear();
+	_elementToV8Object.clear();
+}
 
 CefRefPtr<CefV8Value>
 ChromiumDOMElement::getFunction(std::string name)
@@ -202,7 +246,7 @@ ChromiumDOMElement::appendChild(AbstractDOMElement::Ptr child)
 		return nullptr;
 	
 	CefV8ValueList args;
-	args.push_back(_elementToV8Object[child]);
+	args.push_back(_elementToV8Object[std::dynamic_pointer_cast<ChromiumDOMElement>(child)]);
 
 	CefRefPtr<CefV8Value> v8Result = func->ExecuteFunction(_v8NodeObject, args);
 	return getDOMElementFromV8Object(v8Result);
@@ -217,7 +261,7 @@ ChromiumDOMElement::removeChild(AbstractDOMElement::Ptr child)
 		return nullptr;
 
 	CefV8ValueList args;
-	args.push_back(_elementToV8Object[child]);
+	args.push_back(_elementToV8Object[std::dynamic_pointer_cast<ChromiumDOMElement>(child)]);
 
 	CefRefPtr<CefV8Value> v8Result = func->ExecuteFunction(_v8NodeObject, args);
 	return getDOMElementFromV8Object(v8Result);
@@ -233,8 +277,8 @@ ChromiumDOMElement::insertBefore(AbstractDOMElement::Ptr newNode, AbstractDOMEle
 		return nullptr;
 
 	CefV8ValueList args;
-	args.push_back(_elementToV8Object[newNode]);
-	args.push_back(_elementToV8Object[refNode]);
+	args.push_back(_elementToV8Object[std::dynamic_pointer_cast<ChromiumDOMElement>(newNode)]);
+	args.push_back(_elementToV8Object[std::dynamic_pointer_cast<ChromiumDOMElement>(refNode)]);
 
 	CefRefPtr<CefV8Value> v8Result = func->ExecuteFunction(_v8NodeObject, args);
 	return getDOMElementFromV8Object(v8Result);

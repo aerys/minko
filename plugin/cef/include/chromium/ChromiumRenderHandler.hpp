@@ -33,6 +33,7 @@ namespace chromium
 	{
 	public:
 		ChromiumRenderHandler(std::shared_ptr<AbstractCanvas> canvas, std::shared_ptr<render::AbstractContext> context);
+		~ChromiumRenderHandler();
 
 		bool
 		GetViewRect(CefRefPtr<CefBrowser> browser, CefRect &rect);

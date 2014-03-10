@@ -28,7 +28,11 @@ using namespace chromium::dom;
 using namespace minko;
 using namespace minko::dom;
 
-ChromiumDOMEvent::ChromiumDOMEvent(CefRefPtr<CefV8Value> v8NodeObject)
+std::list<ChromiumDOMEvent::Ptr>
+ChromiumDOMEvent::_events;
+
+ChromiumDOMEvent::ChromiumDOMEvent(CefRefPtr<CefV8Value> v8NodeObject) :
+	_cleared(false)
 {
 	if (!v8NodeObject->IsObject())
 		throw;
@@ -36,10 +40,38 @@ ChromiumDOMEvent::ChromiumDOMEvent(CefRefPtr<CefV8Value> v8NodeObject)
 	_v8NodeObject = v8NodeObject;
 }
 
+ChromiumDOMEvent::~ChromiumDOMEvent()
+{
+	clear();
+}
+
+void
+ChromiumDOMEvent::clear()
+{
+	if (_cleared)
+		return;
+
+	_v8NodeObject = nullptr;
+	_cleared = true;
+}
+
+
+void
+ChromiumDOMEvent::clearAll()
+{
+	for (Ptr event : _events)
+	{
+		event->clear();
+	}
+
+	_events.clear();
+}
+
 ChromiumDOMEvent::Ptr
 ChromiumDOMEvent::create(CefRefPtr<CefV8Value> v8NodeObject)
 {
 	ChromiumDOMEvent::Ptr event(new ChromiumDOMEvent(v8NodeObject));
+	_events.push_back(event);
 	return event;
 }
 

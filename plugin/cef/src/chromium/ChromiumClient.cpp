@@ -23,24 +23,22 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace chromium;
 
-ChromiumClient::ChromiumClient(CefRefPtr<CefRenderHandler> renderHandler, ChromiumPimpl* impl) :
-	renderHandler(renderHandler),
+ChromiumClient::ChromiumClient(ChromiumPimpl* impl) :
 	_impl(impl)
+{
+}
+
+ChromiumClient::~ChromiumClient()
 {
 }
 
 void
 ChromiumClient::OnBeforeClose(CefRefPtr<CefBrowser> browser)
 {
-	_impl->mainArgs = nullptr;
-	_impl->browser = nullptr;
-	_impl->app = nullptr;
-	_impl->renderHandler = nullptr;
-	_impl->renderProcessHandler = nullptr;
 }
 
 CefRefPtr<CefRenderHandler>
 ChromiumClient::GetRenderHandler()
 {
-	return renderHandler;
+	return _impl->renderHandler.get();
 }
