@@ -235,6 +235,9 @@ minko.project.application = function(name)
 			minko.action.copy("asset")
 		}
 
+	configuration { "vs*" }
+		kind "ConsoleApp" -- make the console visible in VS 2013
+
 	configuration { }
 	
 end
