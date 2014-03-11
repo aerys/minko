@@ -236,8 +236,8 @@ minko.project.application = function(name)
 		}
 
 	configuration { "vs*" }
-		kind "ConsoleApp"
-		
+		kind "ConsoleApp" -- make the console visible in VS 2013
+
 	configuration { }
 	
 end
