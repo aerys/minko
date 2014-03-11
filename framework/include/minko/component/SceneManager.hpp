@@ -40,12 +40,12 @@ namespace minko
 			typedef std::shared_ptr<render::AbstractTexture>	AbsTexturePtr;
 
         private:
-			clock_t											_clockStart;
             uint                                            _frameId;
+            float                                           _time;
             std::shared_ptr<file::AssetLibrary>             _assets;
 
-            Signal<Ptr>::Ptr                                _frameBegin;
-            Signal<Ptr>::Ptr                                _frameEnd;
+            Signal<Ptr, float, float>::Ptr                  _frameBegin;
+            Signal<Ptr, float, float>::Ptr                  _frameEnd;
 			Signal<Ptr>::Ptr                                _cullBegin;
 			Signal<Ptr>::Ptr                                _cullEnd;
 			Signal<Ptr, uint, AbsTexturePtr>::Ptr           _renderBegin;
@@ -78,9 +78,6 @@ namespace minko
                 return _frameId;
             }
 
-			uint
-			getTimer() const; // in milliseconds
-
             inline
             std::shared_ptr<file::AssetLibrary>
             assets()
@@ -89,15 +86,15 @@ namespace minko
             }
 
             inline
-            Signal<Ptr>::Ptr
-            frameBegin()
+            Signal<Ptr, float, float>::Ptr
+            frameBegin() const
             {
                 return _frameBegin;
             }
 
             inline
-            Signal<Ptr>::Ptr
-            frameEnd()
+            Signal<Ptr, float, float>::Ptr
+            frameEnd() const
             {
                 return _frameEnd;
             }
@@ -130,14 +127,18 @@ namespace minko
 				return _renderEnd;
 			}
 
+            inline
+            float
+            time() const
+            {
+                return _time; // in milliseconds
+            }
+
             void
             initialize();
 
             void
-            nextFrame();
-
-			void
-			nextFrame(AbsTexturePtr renderTarget);
+            nextFrame(float time, float deltaTime, AbsTexturePtr target = nullptr);
 
 	    private:
 		    SceneManager(const std::shared_ptr<render::AbstractContext>& context);

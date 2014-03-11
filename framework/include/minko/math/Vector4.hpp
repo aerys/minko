@@ -204,6 +204,20 @@ namespace minko
 				);
 			}
 
+			inline
+			float
+			lengthSquared() const
+			{
+				return _x * _x + _y * _y + _z * _z + _w * _w;
+			}
+
+			inline
+			float
+			length() const
+			{
+				return sqrtf(lengthSquared());
+			}
+
 			bool
 			equals(std::shared_ptr<Vector4> vect4)
 			{

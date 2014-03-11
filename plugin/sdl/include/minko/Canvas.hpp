@@ -199,6 +199,7 @@ namespace minko
 		SDL_Window*												_window;
 #endif
         time_point                                              _previousTime;
+        time_point                                              _startTime;
 		float													_framerate;
 		float													_desiredFramerate;
 
@@ -206,7 +207,7 @@ namespace minko
 		std::unordered_map<int, std::shared_ptr<SDLJoystick>>	_joysticks;
         std::shared_ptr<SDLKeyboard>    						_keyboard;
 
-		Signal<Ptr, uint, float>::Ptr											_enterFrame;
+		Signal<Ptr, float, float>::Ptr											_enterFrame;
 		Signal<AbstractCanvas::Ptr, uint, uint>::Ptr							_resized;
 		Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::Ptr		_joystickAdded;
 		Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::Ptr		_joystickRemoved;
@@ -267,7 +268,7 @@ namespace minko
 		}
 
 		inline
-		Signal<Ptr, uint, float>::Ptr
+		Signal<Ptr, float, float>::Ptr
 		enterFrame() const
 		{
 			return _enterFrame;

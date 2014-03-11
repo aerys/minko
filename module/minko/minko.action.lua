@@ -26,7 +26,7 @@ minko.action.copy = function(sourcePath)
 
 		local existenceTest = string.find(sourcePath, '*') and '' or ('if exist ' .. sourcePath .. ' ')
 
-		return existenceTest .. 'xcopy /y /i /e "' .. sourcePath .. '" ' .. targetDir
+		return existenceTest .. 'xcopy /y /i /e "' .. sourcePath .. '" "' .. targetDir .. '"'
 	else
 		local targetDir = string.startswith(_ACTION, "xcode") and '${TARGET_BUILD_DIR}/${TARGET_NAME}.app' or '${TARGETDIR}'
 
