@@ -108,34 +108,13 @@ AbstractASSIMPParser::AbstractASSIMPParser() :
 	_nameToAnimMatrices(),
 	_alreadyAnimatedNodes(),
 	_loaderCompleteSlots(),
-	_loaderErrorSlots()
+	_loaderErrorSlots(),
+    _importer()
 {
 }
 
 AbstractASSIMPParser::~AbstractASSIMPParser()
 {
-}
-
-std::set<std::string>
-AbstractASSIMPParser::getSupportedFileExensions()
-{
-	Assimp::Importer importer;
-	std::string list;
-	std::set<std::string> result;
-
-	importer.GetExtensionList(list);
-
-	auto pos = list.find_first_of(";");
-	while (pos != std::string::npos)
-	{
-		result.insert(list.substr(2, pos - 2));
-		list = list.substr(pos + 1);
-		pos = list.find_first_of(";");
-	}
-	if (!list.empty())
-		result.insert(list.substr(2));
-
-	return result;
 }
 
 void
@@ -147,7 +126,9 @@ AbstractASSIMPParser::parse(const std::string&					filename,
 {
 	resetParser();
 
-	int pos = resolvedFilename.find_last_of("\\/");
+    initImporter();
+
+    int pos = resolvedFilename.find_last_of("\\/");
 
 	options = file::Options::create(options);
 		
@@ -162,9 +143,7 @@ AbstractASSIMPParser::parse(const std::string&					filename,
 	_options		= options;
     
     //Init the assimp scene
-    Assimp::Importer importer;
-
-    provideLoaders(importer);
+    Assimp::Importer& importer = *_importer;
 
 	//fixme : find a way to handle loading dependencies asynchronously
 	options->loadAsynchronously(false);
@@ -233,6 +212,19 @@ AbstractASSIMPParser::parse(const std::string&					filename,
 		finalize();
 
 	disposeNodeMaps();
+}
+
+void
+AbstractASSIMPParser::initImporter()
+{
+    if (_importer != nullptr)
+    {
+        return;
+    }
+
+    _importer = std::make_shared<Assimp::Importer>();
+
+    provideLoaders(*_importer);
 }
 
 void

@@ -71,6 +71,7 @@ namespace minko
 			typedef std::shared_ptr<math::Matrix4x4>				Matrix4x4Ptr;
 			typedef std::shared_ptr<material::Material>				MaterialPtr;
 			typedef std::shared_ptr<render::Effect>					EffectPtr;
+            typedef std::shared_ptr<Assimp::Importer>               ImporterPtr;
 			
 			typedef std::vector<Matrix4x4Ptr>						Matrices4x4;
 
@@ -100,15 +101,11 @@ namespace minko
 			LoaderToSlotMap											_loaderCompleteSlots;
 			LoaderToSlotMap											_loaderErrorSlots;
 
-            std::shared_ptr<Assimp::Importer> _importer;
+            ImporterPtr                                             _importer;
 
 		public:
 
             virtual ~AbstractASSIMPParser();
-
-			static
-			std::set<std::string>
-			getSupportedFileExensions();
 
 			void
 			parse(const std::string&				filename,
@@ -128,6 +125,9 @@ namespace minko
 			static
 			TextureTypeToName
 			initializeTextureTypeToName();
+
+            void
+            initImporter();
 
 			void
 			resetParser();
