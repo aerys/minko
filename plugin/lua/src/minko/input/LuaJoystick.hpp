@@ -43,6 +43,7 @@ namespace minko
 				MINKO_LUAGLUE_BIND_SIGNAL(state, Joystick::Ptr, int, int);
 
 				inputJoystick
+					.property("joystickId", 		&Joystick::joystickId)
 					.property("joystickAxisMotion", &Joystick::joystickAxisMotion)
 					.property("joystickHatMotion",	&Joystick::joystickHatMotion)
 					.property("joystickButtonDown", &Joystick::joystickButtonDown)

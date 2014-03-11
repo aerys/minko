@@ -94,10 +94,7 @@ VertexBuffer::dispose()
 	    _context->deleteVertexBuffer(_id);
 	    _id = -1;
     }
-
 	_data.clear();
-	// _attributes.clear();
-	// _vertexSize	= 0;
 }
 
 void
@@ -141,6 +138,7 @@ VertexBuffer::removeAttribute(const std::string& attributeName)
 		throw std::invalid_argument("attributeName = " + attributeName);
 
 	vertexSize(_vertexSize - std::get<1>(**it));
+    _attributes.erase(it);
 
 	if (attributeName == ATTRNAME_POSITION)
 		invalidatePositionBounds();

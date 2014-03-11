@@ -122,11 +122,11 @@ main(int argc, char** argv)
             camera->component<PerspectiveCamera>()->aspectRatio((float) w / (float) h);
         });
 
-        auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint t, float dt)
+        auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float t, float dt)
         {
             cube->component<Transform>()->matrix()->prependRotationY(.01f);
 
-            sceneManager->nextFrame();
+            sceneManager->nextFrame(t, dt);
         });
 
         canvas->run();

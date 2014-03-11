@@ -19,35 +19,39 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #pragma once
 
+#include "minko/extension/AbstractExtension.hpp"
 #include "minko/Common.hpp"
+#include "minko/SerializerCommon.hpp"
 
 namespace minko
 {
-	namespace extention
+	namespace extension
 	{
-		class AbstractExtension
+		class PhysicsExtension :
+			public AbstractExtension
 		{
 		public:
-			typedef std::shared_ptr<AbstractExtension> Ptr;
+			typedef std::shared_ptr<PhysicsExtension> Ptr;
 
 		public:
-			virtual
 			void
-			bind() = 0;
-		};
+			bind();
 
-		class SerializerExtension
-		{
-		public:
-			template <typename T>
-			typename std::enable_if<std::is_base_of<extension::AbstractExtension, T>::value, void>::type
 			static
-			activeExtension()
+			inline
+			Ptr
+			initialize()
 			{
-				std::shared_ptr<T> extension = T::initialize();
+				Ptr extention(new PhysicsExtension());
 
-				extension->bind();
+				return extention;
 			}
+
+			static
+			std::shared_ptr<component::AbstractComponent>
+			deserializePhysics(std::string&								serializedAnimation,
+							   std::shared_ptr<file::AssetLibrary>		assetLibrary,
+							   std::shared_ptr<file::Dependency>		dependencies);
 		};
 	}
 }

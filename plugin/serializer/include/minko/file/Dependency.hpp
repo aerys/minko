@@ -46,6 +46,8 @@ namespace minko
 			std::unordered_map<uint, std::shared_ptr<render::Effect>>		_effectReferences;
 
 			uint															_currentId;
+			std::shared_ptr<Options>										_options;
+			std::shared_ptr<scene::Node>									_loadedRoot;
 
 		public:
 			inline static
@@ -53,6 +55,34 @@ namespace minko
 			create()
 			{
 				return std::shared_ptr<Dependency>(new Dependency());
+			}
+
+			inline
+			std::shared_ptr<scene::Node>
+			loadedRoot()
+			{
+				return _loadedRoot;
+			}
+
+			inline
+			void
+			loadedRoot(std::shared_ptr<scene::Node> value)
+			{
+				_loadedRoot = value;
+			}
+
+			inline
+			std::shared_ptr<Options>
+			options()
+			{
+				return _options;
+			}
+
+			inline
+			void
+			options(std::shared_ptr<Options> value)
+			{
+				_options = value;
 			}
 
 			bool

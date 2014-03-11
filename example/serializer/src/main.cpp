@@ -20,6 +20,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Minko.hpp"
 #include "minko/MinkoPNG.hpp"
 #include "minko/MinkoSDL.hpp"
+#include "minko/MinkoBullet.hpp"
+#include "minko/MinkoParticles.hpp"
 #include "minko/MinkoSerializer.hpp"
 #include "minko/Any.hpp"
 #include "minko/math/Vector4.hpp"
@@ -32,13 +34,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/deserialize/TypeDeserializer.hpp"
 #include "minko/geometry/SphereGeometry.hpp"
 
-std::string MODEL_FILENAME = "model/engineEmbed/engine.scene";
+std::string MODEL_FILENAME = "model/primitives/primitives.scene";
 
 //#define SERIALIZE // comment to test deserialization
 
 using namespace minko;
 using namespace minko::component;
 using namespace minko::math;
+
 
 void
 serializeSceneExample(std::shared_ptr<file::AssetLibrary>		assets,
@@ -62,8 +65,16 @@ int main(int argc, char** argv)
 	auto canvas			= Canvas::create("Minko Example - Serializer/Deserializer", 800, 600);
 	auto sceneManager	= SceneManager::create(canvas->context());
 
+	extension::SerializerExtension::activeExtension<extension::PhysicsExtension>();
+    extension::SerializerExtension::activeExtension<extension::ParticlesExtension>();
+
 	// setup assets
+	sceneManager->assets()
+        ->load("effect/Basic.effect")
+        ->load("effect/Phong.effect")
+        ->load("effect/Particles.effect");
 	sceneManager->assets()->defaultOptions()->generateMipmaps(true);
+	sceneManager->assets()->defaultOptions()->effect(sceneManager->assets()->effect("basic"));
 	sceneManager->assets()->material("defaultMaterial", material::BasicMaterial::create()->diffuseColor(0xFFFFFFFF));
 	sceneManager->assets()->geometry("defaultGeometry", geometry::CubeGeometry::create(sceneManager->assets()->context())),
 	sceneManager->assets()
@@ -76,12 +87,17 @@ int main(int argc, char** argv)
 		sceneManager->assets()->geometry("sphere", geometry::SphereGeometry::create(sceneManager->assets()->context(), 20, 20));
 #else
 		->registerParser<file::SceneParser>("scene")
-		->queue("effect/Phong.effect")
 		->queue(MODEL_FILENAME);
 #endif
 
 	auto root = scene::Node::create("root")
 		->addComponent(sceneManager);
+
+
+	auto physicWorld = bullet::PhysicsWorld::create();
+	physicWorld->setGravity(math::Vector3::create(0.f, -9.8f, 0.f));
+	root->addComponent(physicWorld);
+	
 
 	auto camera = scene::Node::create("camera")
 		->addComponent(Renderer::create(0x7f7f7fff))
@@ -148,13 +164,14 @@ int main(int argc, char** argv)
 #endif
 	});
 
-	auto yaw = 0.f;
+	auto yaw = (float)PI * 0.5f;
 	auto pitch = (float)PI * .5f;
 	auto roll = 0.f;
 	float minPitch = 0.f + float(1e-5);
 	float maxPitch = (float)PI - float(1e-5);
 	auto lookAt = Vector3::create(0.f, 0.f, 0.f);
-	auto distance = 10.f;
+	auto distance = 50.f;
+
 
 	Signal<input::Mouse::Ptr, int, int>::Slot mouseMove;
 	auto cameraRotationXSpeed = 0.f;
@@ -180,8 +197,31 @@ int main(int argc, char** argv)
 		root->children()[0]->component<PerspectiveCamera>()->aspectRatio((float)w / (float)h);
 	});
 
-	
-	auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr canvas, uint time, uint deltaTime)
+	auto keyDown = canvas->keyboard()->keyDown()->connect([&](input::Keyboard::Ptr k)
+	{
+		float tx = 0.0f;
+		float tz = 0.0f;
+		if (k->keyIsDown(input::Keyboard::ScanCode::LEFT))
+			tx -= 0.1f;
+		else if (k->keyIsDown(input::Keyboard::ScanCode::RIGHT))
+			tx += 0.1f;
+		else if (k->keyIsDown(input::Keyboard::ScanCode::UP))
+			tz += 0.1f;
+		else if (k->keyIsDown(input::Keyboard::ScanCode::DOWN))
+			tz -= 0.1f;
+		
+		auto model = sceneManager->assets()->symbol(MODEL_FILENAME);
+		if (model && model->hasComponent<Transform>())
+		{
+			model->component<Transform>()->matrix()->appendTranslation(tx, 0.0f, tz);
+
+			auto withCollider = scene::NodeSet::create(model)->descendants(true)->where([](scene::Node::Ptr n){ return n->hasComponent<bullet::Collider>(); });
+			for (auto& n : withCollider->nodes())
+				n->component<bullet::Collider>()->synchronizePhysicsWithGraphics();
+		}
+	});
+
+	auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr canvas, float time, float deltaTime)
 	{
 		yaw += cameraRotationYSpeed;
 		cameraRotationYSpeed *= 0.9f;
@@ -202,7 +242,7 @@ int main(int argc, char** argv)
 			)
 		);
 
-		sceneManager->nextFrame();
+		sceneManager->nextFrame(time, deltaTime);
 	});
 
 	sceneManager->assets()->load();

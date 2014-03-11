@@ -62,11 +62,11 @@ main(int argc, char** argv)
 
 		myCustomMaterial->color(Vector4::create(1.f, 0.f, 0.f, 1.f));
 
-		auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint t, float dt)
+		auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float t, float dt)
 		{
 			cube->component<Transform>()->matrix()->prependRotationY(0.01f);
 
-			sceneManager->nextFrame();
+			sceneManager->nextFrame(t, dt);
 		});
 
 		canvas->run();
