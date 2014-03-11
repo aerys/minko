@@ -33,23 +33,23 @@ namespace minko
 			public std::enable_shared_from_this<AbstractScript>
 		{
 		public:
-			typedef std::shared_ptr<AbstractScript> Ptr;
+			typedef std::shared_ptr<AbstractScript>                         Ptr;
 
 		private:
-			typedef std::shared_ptr<scene::Node>		NodePtr;
-			typedef std::shared_ptr<AbstractComponent>	AbsCmpPtr;
+			typedef std::shared_ptr<scene::Node>		                    NodePtr;
+			typedef std::shared_ptr<AbstractComponent>	                    AbsCmpPtr;
 
 		private:
-			std::unordered_map<NodePtr, bool>				_started;
+			std::unordered_map<NodePtr, bool>				                _started;
 
-			Signal<AbsCmpPtr, NodePtr>::Slot				_targetAddedSlot;
-			Signal<AbsCmpPtr, NodePtr>::Slot				_targetRemovedSlot;
-            Signal<NodePtr, NodePtr, NodePtr>::Slot         _addedSlot;
-            Signal<NodePtr, NodePtr, NodePtr>::Slot         _removedSlot;
-			Signal<NodePtr, NodePtr, AbsCmpPtr>::Slot		_componentAddedSlot;
-			Signal<NodePtr, NodePtr, AbsCmpPtr>::Slot		_componentRemovedSlot;
-			Signal<std::shared_ptr<SceneManager>>::Slot		_frameBeginSlot;
-			Signal<std::shared_ptr<SceneManager>>::Slot		_frameEndSlot;
+			Signal<AbsCmpPtr, NodePtr>::Slot				                _targetAddedSlot;
+			Signal<AbsCmpPtr, NodePtr>::Slot				                _targetRemovedSlot;
+            Signal<NodePtr, NodePtr, NodePtr>::Slot                         _addedSlot;
+            Signal<NodePtr, NodePtr, NodePtr>::Slot                         _removedSlot;
+			Signal<NodePtr, NodePtr, AbsCmpPtr>::Slot		                _componentAddedSlot;
+			Signal<NodePtr, NodePtr, AbsCmpPtr>::Slot		                _componentRemovedSlot;
+			Signal<std::shared_ptr<SceneManager>, float, float>::Slot		_frameBeginSlot;
+			Signal<std::shared_ptr<SceneManager>, float, float>::Slot		_frameEndSlot;
 
 		protected:
 			virtual
@@ -117,10 +117,10 @@ namespace minko
 			componentRemovedHandler(NodePtr	node, NodePtr target, AbsCmpPtr	component);
 
 			void
-			frameBeginHandler(std::shared_ptr<SceneManager> sceneManager);
+			frameBeginHandler(std::shared_ptr<SceneManager> sceneManager, float, float);
 
 			void
-			frameEndHandler(std::shared_ptr<SceneManager> sceneManager);
+			frameEndHandler(std::shared_ptr<SceneManager> sceneManager, float, float);
 
 			void
 			findSceneManager();

@@ -97,7 +97,7 @@ int main(int argc, char** argv)
 	});
 
 
-	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, float deltaTime)
+	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float deltaTime)
 	{
 		auto distance = 0.f;
 		auto ray = camera->component<PerspectiveCamera>()->unproject(
@@ -128,7 +128,7 @@ int main(int argc, char** argv)
 			root->removeChild(hit);
 		*/
 		//camera->component<Transform>()->matrix()->appendRotationY(.01f);
-		sceneManager->nextFrame();
+		sceneManager->nextFrame(time, deltaTime);
 	});
 
 	sceneManager->assets()->load();

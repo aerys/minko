@@ -16,54 +16,5 @@ NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FO
 DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
-
 #pragma once
 
-#include "minko/ParticlesCommon.hpp"
-#include "minko/geometry/Geometry.hpp"
-
-namespace minko
-{
-	namespace geometry
-	{
-		class ParticlesGeometry :
-			public Geometry
-		{
-		public:
-			typedef std::shared_ptr<ParticlesGeometry>				Ptr;
-
-			typedef std::shared_ptr<render::ParticleVertexBuffer>	VertexBufferPtr;
-			typedef std::shared_ptr<render::ParticleIndexBuffer>	IndexBufferPtr;
-		
-		private:
-			VertexBufferPtr						_vertices;
-			IndexBufferPtr						_indices;
-
-		public:
-			inline static
-			Ptr
-			create(std::shared_ptr<render::AbstractContext> context)
-			{
-				auto geom = std::shared_ptr<ParticlesGeometry>(new ParticlesGeometry());
-
-				geom->initialize(context);
-
-				return geom;
-			};
-
-			void
-			initStreams(unsigned int maxParticles);
-
-			inline
-			VertexBufferPtr
-			vertices()
-			{
-				return _vertices;
-			}
-
-		protected:
-			void
-			initialize(std::shared_ptr<render::AbstractContext> context);
-		};
-	}
-}

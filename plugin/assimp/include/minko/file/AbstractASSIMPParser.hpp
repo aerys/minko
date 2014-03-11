@@ -100,6 +100,8 @@ namespace minko
 			LoaderToSlotMap											_loaderCompleteSlots;
 			LoaderToSlotMap											_loaderErrorSlots;
 
+            std::shared_ptr<Assimp::Importer> _importer;
+
 		public:
 
             virtual ~AbstractASSIMPParser();

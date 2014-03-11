@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -23,31 +23,44 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace extention
+	namespace serialize
 	{
-		class AbstractExtension
+		enum class SamplerId
 		{
-		public:
-			typedef std::shared_ptr<AbstractExtension> Ptr;
-
-		public:
-			virtual
-			void
-			bind() = 0;
+            UNKNOWN         = 0,
+			CONSTANT_COLOR  = 2,
+			CONSTANT_NUMBER = 1,
+			LINEAR_COLOR	= 3,
+			LINEAR_NUMBER   = 4,
+			RANDOM_COLOR	= 6,
+			RANDOM_NUMBER	= 7
 		};
 
-		class SerializerExtension
+		enum class EmitterShapeId
 		{
-		public:
-			template <typename T>
-			typename std::enable_if<std::is_base_of<extension::AbstractExtension, T>::value, void>::type
-			static
-			activeExtension()
-			{
-				std::shared_ptr<T> extension = T::initialize();
+            UNKNOWN     = 0,
+            CYLINDER    = 1,
+            CONE        = 2,
+            SPHERE      = 3,
+            POINT       = 4,
+            BOX         = 5
+		};
 
-				extension->bind();
-			}
+		enum class ModifierId
+		{
+            START_COLOR	            = 0,
+			START_FORCE			    = 1,
+			START_ROTATION	        = 2,
+			START_SIZE			    = 3,
+			START_SPRITE		    = 4,
+			START_VELOCITY			= 5,
+			START_ANGULAR_VELOCITY	= 12,
+			COLOR_BY_SPEED		    = 6,
+            COLOR_OVER_TIME         = 7,
+            FORCE_OVER_TIME         = 8,    
+            SIZE_BY_SPEED           = 9,
+            SIZE_OVER_TIME          = 10,
+            VELOCITY_OVER_TIME      = 11
 		};
 	}
 }
