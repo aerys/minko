@@ -93,8 +93,6 @@ namespace minko
             load(const std::string& filename, std::shared_ptr<Options> options)
             {
                 _options = options;
-                _file = File::create();
-
                 _file->_filename = filename;
 
                 load();
