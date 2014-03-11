@@ -45,9 +45,7 @@ minko.project.application = function(name)
 
 	minko.project.library(name)
 
-	kind "ConsoleApp"
-	configuration { "release or ios" }
-		kind "WindowedApp"
+	kind "WindowedApp"
 
 	configuration { "windows32" }
 		libdirs {
@@ -237,8 +235,8 @@ minko.project.application = function(name)
 			minko.action.copy("asset")
 		}
 
-	configuration { "vs*" }
-		kind "ConsoleApp" -- make the console visible in VS 2013
+	configuration { "vs*", "debug" }
+		kind "ConsoleApp" -- make the console visible in VS 2013 in debug mode
 
 	configuration { }
 	
