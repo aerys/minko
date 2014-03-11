@@ -27,22 +27,13 @@ namespace minko
         template <typename T>
         class AnyASSIMPParser : public AbstractASSIMPParser
         {
-        public:
+            // not meant to be directly used
+            // specialization only class
 
-            virtual ~AnyASSIMPParser()
-            {
-            }
+        private:
 
-            virtual void provideLoaders(Assimp::Importer& importer)
-            {
-                importer.RegisterLoader(new T());
-            }
-
-        protected:
-
-            AnyASSIMPParser()
-            {
-            }
+            AnyASSIMPParser();
+            virtual ~AnyASSIMPParser();
         };
     }
 }

@@ -83,7 +83,6 @@ main(int argc, char** argv)
 	sceneManager->assets()->defaultOptions()->generateMipmaps(true);
 	sceneManager->assets()
         ->registerParser<file::ColladaASSIMPParser>("dae")
-//		->registerParser<file::ASSIMPParser>("obj")
 		->registerParser<file::JPEGParser>("jpg")
 		->load("effect/Basic.effect")
 		->load("effect/Phong.effect");
