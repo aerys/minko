@@ -64,14 +64,11 @@ ComponentSerializer::serializePerspectiveCamera(NodePtr			node,
 	int8_t											type = serialize::PROJECTION_CAMERA;
 	std::shared_ptr<component::PerspectiveCamera>	perspectiveCamera = node->component<component::PerspectiveCamera>();
 	std::stringstream								buffer;
-	std::vector<float>								cameraDatas(4, 0);
-
-	cameraDatas[0] = perspectiveCamera->aspectRatio();
-	cameraDatas[1] = perspectiveCamera->fieldOfView();
-	cameraDatas[2] = perspectiveCamera->zNear();
-	cameraDatas[3] = perspectiveCamera->zFar();
-
-	msgpack::type::tuple<std::vector<float>>	src(cameraDatas);
+	
+	msgpack::type::tuple<float, float, float, float>	src(perspectiveCamera->aspectRatio(),
+		perspectiveCamera->fieldOfView(),
+		perspectiveCamera->zNear(),
+		perspectiveCamera->zFar());
 
 	msgpack::pack(buffer, src);
 	msgpack::pack(buffer, type);
