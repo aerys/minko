@@ -45,11 +45,12 @@ Options::Options() :
 	_material(nullptr),
 	_effect(nullptr)
 {
+    includePaths().push_back("asset");
+
 #if defined(DEBUG)
 # if !defined(EMSCRIPTEN)
 	includePaths().push_back("../../../asset");
 # endif
-	includePaths().push_back("asset");
 # if defined(_WIN32)
 	includePaths().push_back("bin/windows32/debug/asset");
 # elif defined(_WIN64)
