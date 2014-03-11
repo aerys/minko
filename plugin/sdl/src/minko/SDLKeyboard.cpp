@@ -528,16 +528,38 @@ const std::array<int, 256> KEY_CODE_SDL_MAP
     }
 };
 
+
+const std::map<input::Keyboard::ScanCode, input::Keyboard::KeyCode> ScanCodeKeyCodeMap =
+{
+    //{ input::Keyboard::ScanCode::A, input::Keyboard::KeyCode::a },
+    //{ input::Keyboard::ScanCode::E, input::Keyboard::KeyCode::e }
+};
+
+const std::map<input::Keyboard::KeyCode, input::Keyboard::ScanCode> KeyCodeScanCodeMap =
+{
+    //{ input::Keyboard::KeyCode::a, input::Keyboard::ScanCode::A },
+    //{ input::Keyboard::KeyCode::e, input::Keyboard::ScanCode::E }
+};
+
 SDLKeyboard::SDLKeyboard()
 {
     _keyboardState = SDL_GetKeyboardState(NULL);
+
+    /*
+    int keyCode1 = static_cast<int>(SDL_GetScancodeFromKey(static_cast<int>(input::Keyboard::KeyCode::a)));
+    int keyCode2 = static_cast<int>(KeyCodeScanCodeMap.find(input::Keyboard::KeyCode::a)->second);
+
+    std::cout << "A: \n" << "Key code: " << keyCode1
+        << "\nKey code: " << keyCode2
+        << std::endl;
+    */
+
+    std::cout << static_cast<int>(SDL_SCANCODE_TO_KEYCODE(static_cast<int>(input::Keyboard::ScanCode::B))) << std::endl;
 }
 
 bool SDLKeyboard::keyIsDown(input::Keyboard::ScanCode scanCode)
 {
 #if defined(EMSCRIPTEN)
-    if (scanCode == ScanCode::LEFT)
-        std::cout << "Emscripten [SPACE]: " << static_cast<int>(getKeyCodeFromScanCode(scanCode)) << std::endl;
     return _keyboardState[static_cast<int>(getKeyCodeFromScanCode(scanCode))] != 0;
 #else
     return _keyboardState[static_cast<int>(scanCode)] != 0;
@@ -554,14 +576,23 @@ bool SDLKeyboard::keyIsDown(input::Keyboard::KeyCode keyCode)
 #endif
 }
 
-input::Keyboard::KeyCode
-SDLKeyboard::getKeyCodeFromScanCode(input::Keyboard::ScanCode scanCode)
+input::Keyboard::KeyCode SDLKeyboard::getKeyCodeFromScanCode(input::Keyboard::ScanCode scanCode)
 {
-    return static_cast<input::Keyboard::KeyCode>(SDL_SCANCODE_TO_KEYCODE(static_cast<int>(scanCode)));
+    auto iterator = ScanCodeKeyCodeMap.find(scanCode);
+
+    if (iterator != ScanCodeKeyCodeMap.end())
+        return iterator->second;
+    else
+        return static_cast<input::Keyboard::KeyCode>(SDL_SCANCODE_TO_KEYCODE(static_cast<int>(scanCode)));
+
 }
 
-input::Keyboard::ScanCode
-SDLKeyboard::getScanCodeFromKeyCode(input::Keyboard::KeyCode keyCode)
+input::Keyboard::ScanCode SDLKeyboard::getScanCodeFromKeyCode(input::Keyboard::KeyCode keyCode)
 {
-    return static_cast<input::Keyboard::ScanCode>(SDL_GetScancodeFromKey(static_cast<int>(keyCode)));
+    auto iterator = KeyCodeScanCodeMap.find(keyCode);
+
+    if (iterator != KeyCodeScanCodeMap.end())
+        return iterator->second;
+    else
+        return static_cast<input::Keyboard::ScanCode>(SDL_GetScancodeFromKey(static_cast<int>(keyCode)));
 }

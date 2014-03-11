@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -31,42 +31,8 @@ int
 main(int argc, char** argv)
 {
 	auto canvas = Canvas::create("Minko Example - SDL binding", WINDOW_WIDTH, WINDOW_HEIGHT);
-	auto sceneManager = SceneManager::create(canvas->context());
 
-	// setup assets
-	sceneManager->assets()->defaultOptions()->generateMipmaps(true);
-    sceneManager->assets()->load("effect/Basic.effect");
-
-	sceneManager->assets()->defaultOptions()
-		->skinningFramerate(60)
-		->skinningMethod(SkinningMethod::HARDWARE)
-		->startAnimation(true)
-		->effect(sceneManager->assets()->effect("basic"));
-
-	auto root = scene::Node::create("root")
-		->addComponent(sceneManager);
-
-	auto camera = scene::Node::create("camera")
-		->addComponent(Renderer::create(0x7f7f7fff))
-		->addComponent(Transform::create(
-			Matrix4x4::create()->lookAt(Vector3::create(0.f, 0.75f, 0.f), Vector3::create(0.25f, 0.75f, 2.5f))
-		))
-		->addComponent(PerspectiveCamera::create(
-			(float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, (float)PI * 0.25f, .1f, 1000.f)
-		);
-	root->addChild(camera);
-
-	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
-	{
-
-	});
-
-	auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
-	{
-		camera->component<PerspectiveCamera>()->aspectRatio((float)w / (float)h);
-	});
-
-	// currently, keyUp events seem not to be fired at the individual key level
+    // currently, keyUp events seem not to be fired at the individual key level
 	auto keyDown = canvas->keyboard()->keyDown()->connect([&](input::Keyboard::Ptr k)
     {
         // Scan code
@@ -1033,12 +999,6 @@ main(int argc, char** argv)
             std::cout << "[KeyCode]Key UNDO down !" << std::endl;
 	});
 
-	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, float deltaTime)
-	{
-		sceneManager->nextFrame();
-	});
-
-	sceneManager->assets()->load();
 	canvas->run();
 
 	return 0;

@@ -48,7 +48,6 @@ namespace minko
 
         bool
             keyIsDown(input::Keyboard::KeyCode keyCode);
-
     private:
         bool
         hasKeyDownSignal(input::Keyboard::ScanCode scanCode)
