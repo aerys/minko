@@ -45,7 +45,9 @@ minko.project.application = function(name)
 
 	minko.project.library(name)
 
-	kind "WindowedApp"
+	kind "ConsoleApp"
+	configuration { "release or ios" }
+		kind "WindowedApp"
 
 	configuration { "windows32" }
 		libdirs {
