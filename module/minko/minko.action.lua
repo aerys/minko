@@ -24,7 +24,7 @@ minko.action.copy = function(sourcePath)
 			targetDir = targetDir .. '\\' .. path.getbasename(sourcePath)
 		end
 
-		local existenceTest = string.find(sourcePath, '*') and '' or ('if exist ' .. sourcePath .. ' ')
+		local existenceTest = string.find(sourcePath, '*') and '' or ('if exist "' .. sourcePath .. '" ')
 
 		return existenceTest .. 'xcopy /y /i /e "' .. sourcePath .. '" ' .. targetDir
 	else
