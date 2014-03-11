@@ -1,27 +1,36 @@
 #! /bin/bash
 
+function args_error
+{
+	exit 1
+}
+
 if [ ! -z $1 ]; then
 	parser_name=$1
 else
 	parser_name="ParserNamePlaceHolder"
+	args_error
 fi
 
 if [ ! -z $2 ]; then
 	assimp_file_name=$2
 else
 	assimp_file_name="AssimpClassPlaceHolder"
+	args_error
 fi
 
 if [ ! -z $3 ]; then
 	include_path=$3
 else
 	include_path="."
+	args_error
 fi
 
 if [ ! -z $4 ]; then
 	src_path=$4
 else
 	src_path="."
+	args_error
 fi
 
 
