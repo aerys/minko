@@ -108,9 +108,9 @@ LuaScriptManager::loadStandardLibrary()
 void
 LuaScriptManager::dependencyLoadedHandler(file::Loader::Ptr loader)
 {
-    for (auto& file : loader->files())
+    for (auto& filenameAndFile : loader->files())
     {
-        auto& data = file.second->data();
+        auto& data = filenameAndFile.second->data();
 
         _state.doString(std::string((char*)&data[0], data.size()));
     }

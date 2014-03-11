@@ -306,6 +306,7 @@ namespace minko
 
 	namespace file
 	{
+        class File;
 		class Options;
 		class Loader;
         class AbstractProtocol;

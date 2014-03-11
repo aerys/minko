@@ -68,7 +68,9 @@ Loader::load()
             auto options = _filenameToOptions.count(filename)
                 ? _filenameToOptions[filename]
                 : _filenameToOptions[filename] = Options::create(_options);
-            auto protocol = _filenameToProtocol[filename] = options->protocolFunction()(filename);
+            auto protocol =  options->protocolFunction()(filename);
+
+            _files[filename] = protocol->file();
 
             _filesQueue.erase(std::find(_filesQueue.begin(), _filesQueue.end(), filename));
             _loading.push_back(filename);
@@ -100,10 +102,10 @@ void
 Loader::protocolErrorHandler(std::shared_ptr<AbstractProtocol> protocol)
 {
 #ifdef DEBUG
-    std::cerr << "error: Loader::protocolErrorHandler(): " << protocol->filename() << std::endl;
+    std::cerr << "error: Loader::protocolErrorHandler(): " << protocol->file()->filename() << std::endl;
 #endif // defined(DEBUG)
 
-    throw std::invalid_argument(protocol->filename());
+    throw std::invalid_argument(protocol->file()->filename());
 }
 
 void
@@ -118,16 +120,23 @@ Loader::protocolCompleteHandler(std::shared_ptr<AbstractProtocol> protocol)
         (float)_loading.size() / (float)_protocolSlots.size()
     );
 
-    _loading.erase(std::find(_loading.begin(), _loading.end(), protocol->filename()));
+    auto filename = protocol->file()->filename();
+
+    _loading.erase(std::find(_loading.begin(), _loading.end(), filename));
     //_filenameToProtocol.erase(protocol->filename());
-    _filenameToOptions.erase(protocol->filename());
+    _filenameToOptions.erase(filename);
     
 #ifdef DEBUG
     std::cerr << "Loader::finalize(): " << _loading.size() << " file(s) still loading, "
         << _filesQueue.size() << " file(s) in the queue" << std::endl;
 #endif // defined(DEBUG)
 
-    auto parsed = processData(protocol->filename(), protocol->resolvedFilename(), protocol->options(), protocol->data());
+    auto parsed = processData(
+        filename,
+        protocol->file()->resolvedFilename(),
+        protocol->options(),
+        protocol->file()->data()
+    );
 
     if (!parsed)
         finalize();

@@ -34,19 +34,19 @@ namespace minko
             typedef std::shared_ptr<Loader>        Ptr;
 
         private:
-            typedef std::shared_ptr<AbstractParser>                                         AbsParserPtr;
-            typedef std::unordered_map<std::string, std::shared_ptr<Options>>               FilenameToOptionsMap;
-            typedef std::unordered_map<std::string, std::shared_ptr<AbstractProtocol>>      FilenameToProtocolMap;
-            typedef std::vector<Signal<std::shared_ptr<AbstractProtocol>>::Slot>            ProtocolSlots;
-            typedef std::unordered_map<AbsParserPtr, Signal<AbsParserPtr>::Slot>            ParserSlots;
+            typedef std::shared_ptr<AbstractParser>                                 AbsParserPtr;
+            typedef std::unordered_map<std::string, std::shared_ptr<Options>>       FilenameToOptions;
+            typedef std::unordered_map<std::string, std::shared_ptr<File>>          FilenameToFile;
+            typedef std::vector<Signal<std::shared_ptr<AbstractProtocol>>::Slot>    ProtocolSlots;
+            typedef std::unordered_map<AbsParserPtr, Signal<AbsParserPtr>::Slot>    ParserSlots;
 
         protected:
             std::shared_ptr<Options>            _options;
 
             std::list<std::string>	            _filesQueue;
             std::list<std::string>	            _loading;
-            FilenameToOptionsMap	            _filenameToOptions;
-            FilenameToProtocolMap               _filenameToProtocol;
+            FilenameToOptions	                _filenameToOptions;
+            FilenameToFile                      _files;
 
             std::shared_ptr<Signal<Ptr, float>> _progress;
             std::shared_ptr<Signal<Ptr>>        _complete;
@@ -144,10 +144,10 @@ namespace minko
 			load();
 
             inline
-            const FilenameToProtocolMap& 
+            const FilenameToFile& 
             files()
             {
-                return _filenameToProtocol;
+                return _files;
             }
 
         protected:

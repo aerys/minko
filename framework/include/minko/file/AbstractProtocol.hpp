@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Common.hpp"
 
 #include "minko/Signal.hpp"
+#include "minko/file/File.hpp"
 
 namespace minko
 {
@@ -34,11 +35,8 @@ namespace minko
             typedef std::shared_ptr<AbstractProtocol> Ptr;
 
         protected:
-            std::string                         _filename;
+            std::shared_ptr<File>               _file;
             std::shared_ptr<Options>            _options;
-
-            std::vector<unsigned char>          _data;
-            std::string                         _resolvedFilename;
 
             std::shared_ptr<Signal<Ptr, float>> _progress;
             std::shared_ptr<Signal<Ptr>>        _complete;
@@ -49,24 +47,10 @@ namespace minko
             create();
 
             inline
-            const std::string&
-            filename()
+            std::shared_ptr<File>
+            file()
             {
-                return _filename;
-            }
-
-            inline
-            const std::string&
-            resolvedFilename()
-            {
-                return _resolvedFilename;
-            }
-
-            inline
-            const std::vector<unsigned char>&
-            data()
-            {
-                return _data;
+                return _file;
             }
 
             inline
@@ -108,8 +92,10 @@ namespace minko
             void
             load(const std::string& filename, std::shared_ptr<Options> options)
             {
-                _filename = filename;
                 _options = options;
+                _file = File::create();
+
+                _file->_filename = filename;
 
                 load();
             }
@@ -120,6 +106,27 @@ namespace minko
 
         protected:
             AbstractProtocol();
+
+            inline
+            const std::string&
+            resolvedFilename()
+            {
+                return _file->_resolvedFilename;
+            }
+
+            inline
+            void
+            resolvedFilename(const std::string& resolvedFilename)
+            {
+                _file->_resolvedFilename = resolvedFilename;
+            }
+
+            inline
+            std::vector<unsigned char>&
+            data()
+            {
+                return _file->_data;
+            }
 
             std::string
             sanitizeFilename(const std::string& filename);

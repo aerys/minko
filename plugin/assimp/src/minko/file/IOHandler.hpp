@@ -90,7 +90,7 @@ namespace minko
 
                 _protocolCompleteSlots[protocol] = protocol->complete()->connect([&](file::AbstractProtocol::Ptr protocol)
 				{
-                    stream = new minko::file::IOStream(protocol->data());
+                    stream = new minko::file::IOStream(protocol->file()->data());
 				});
 #ifdef DEBUG
                 _protocolErrorSlots[protocol] = protocol->error()->connect([&](file::AbstractProtocol::Ptr protocol)

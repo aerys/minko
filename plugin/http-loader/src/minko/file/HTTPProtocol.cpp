@@ -84,7 +84,7 @@ HTTPProtocol::completeHandler(void* arg, void* data, int size)
 	std::shared_ptr<HTTPProtocol> loader = *iterator;
 
 	std::cout << "HTTPProtocol::completeHandler(): set data" << std::endl;
-	loader->_data.assign(static_cast<unsigned char*>(data), static_cast<unsigned char*>(data) + size);
+	loader->data().assign(static_cast<unsigned char*>(data), static_cast<unsigned char*>(data) + size);
 
 	loader->_progress->execute(loader, 1.0);
 	std::cout << "HTTPProtocol::completeHandler(): call execute" << std::endl;
@@ -125,20 +125,23 @@ HTTPProtocol::errorHandler(void* arg)
 void
 HTTPProtocol::load()
 {
-	std::cout << "HTTPProtocol::load(): " << _filename << std::endl;
-	_resolvedFilename = _options->uriFunction()(sanitizeFilename(_filename));
+	std::cout << "HTTPProtocol::load(): " << _file->filename() << std::endl;
+
+    auto realFilename = _options->uriFunction()(sanitizeFilename(_file->filename()));
 
 	if (_options->includePaths().size() != 0)
 	{
-		if (_resolvedFilename.find_first_of("http://") != 0 && _resolvedFilename.find_first_of("https://") != 0)
+        if (realFilename.find_first_of("http://") != 0 && realFilename.find_first_of("https://") != 0)
 		{
 			for (auto path : _options->includePaths())
 			{
-				_resolvedFilename = path + '/' + _resolvedFilename;
+                realFilename = path + '/' + realFilename;
 				break;
 			}
 		}
 	}
+
+    resolvedFilename(realFilename);
 
 	_options->protocolFunction([](const std::string& filename) -> std::shared_ptr<AbstractProtocol>
 	{
@@ -171,7 +174,7 @@ HTTPProtocol::load()
 			progressHandler(loader.get(), (int)ratio * 100);
 		}));
 
-		worker->input(std::make_shared<std::vector<char>>(_resolvedFilename.begin(), _resolvedFilename.end()));
+        worker->input(std::make_shared<std::vector<char>>(realFilename.begin(), realFilename.end()));
 	/*}
 	else
 	{

@@ -37,7 +37,7 @@ FileProtocol::FileProtocol()
 void
 FileProtocol::load()
 {
-    auto filename = _filename;
+    auto filename = _file->filename();
     auto options = _options;
 	auto flags = std::ios::in | std::ios::ate | std::ios::binary;
 	
@@ -55,9 +55,9 @@ FileProtocol::load()
 		cleanFilename += filename.at(i);
 	}
 
-	_filename = filename;
-	_resolvedFilename = options->uriFunction()(sanitizeFilename(cleanFilename));
 	_options = options;
+
+    auto realFilename = options->uriFunction()(sanitizeFilename(cleanFilename));
 	
 	std::fstream file(cleanFilename, flags);
 
@@ -69,7 +69,7 @@ FileProtocol::load()
 			file.open(testFilename, flags);
 			if (file.is_open())
             {
-				_resolvedFilename = testFilename;
+                realFilename = testFilename;
 				break;
             }
 		}
@@ -78,17 +78,19 @@ FileProtocol::load()
 
 	if (file.is_open())
 	{
+        resolvedFilename(realFilename);
+
 		if (_options->loadAsynchronously() && AbstractCanvas::defaultCanvas() != nullptr
             && AbstractCanvas::defaultCanvas()->isWorkerRegistered("file-loader"))
 		{
 			file.close();
 			auto worker = AbstractCanvas::defaultCanvas()->getWorker("file-loader");
 
-			_workerSlots.push_back(worker->complete()->connect([=](async::Worker::MessagePtr data)
+			_workerSlots.push_back(worker->complete()->connect([=](async::Worker::MessagePtr workerData)
             {
-				void* charData = &*data->begin();
+                void* charData = &*workerData->begin();
 
-				_data.assign(static_cast<unsigned char*>(charData), static_cast<unsigned char*>(charData) + data->size());
+                data().assign(static_cast<unsigned char*>(charData), static_cast<unsigned char*>(charData) + workerData->size());
                 _complete->execute(shared_from_this());
 			}));
 
@@ -97,7 +99,7 @@ FileProtocol::load()
                 _progress->execute(loader, ratio);
 			}));
 
-			worker->input(std::make_shared<std::vector<char>>(_resolvedFilename.begin(), _resolvedFilename.end()));
+            worker->input(std::make_shared<std::vector<char>>(realFilename.begin(), realFilename.end()));
 		}
 		else
 		{
@@ -107,10 +109,10 @@ FileProtocol::load()
 
             _progress->execute(shared_from_this(), 0.0);
 
-			_data.resize(size);
+			data().resize(size);
 
 			file.seekg(0, std::ios::beg);
-			file.read((char*)&_data[0], size);
+			file.read((char*)&data()[0], size);
 			file.close();
 
             _progress->execute(loader, 1.0);
