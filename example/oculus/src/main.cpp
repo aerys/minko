@@ -121,7 +121,7 @@ int main(int argc, char** argv)
 		root->addChild(cube);
 	});
 
-	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, float deltaTime)
+	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float deltaTime)
 	{
 		animateObjects(SPHERES_MOVE_AMPL, SPHERES_MOVE_SPEED, prevTime, spheresAnimData);
 		spheres->component<Transform>()->matrix()->appendRotationY(.001f);
@@ -129,7 +129,7 @@ int main(int argc, char** argv)
 		animateObjects(QUADS_MOVE_AMPL, QUADS_MOVE_SPEED, prevTime, quadsAnimData);
 		quads->component<Transform>()->matrix()->appendRotationY(-.0005f);
 	
-		sceneManager->nextFrame();
+		sceneManager->nextFrame(time, deltaTime);
 	});
 			
 	sceneManager->assets()->load();

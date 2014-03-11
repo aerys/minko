@@ -31,7 +31,7 @@ int
 main(int argc, char** argv)
 {
     auto canvas = Canvas::create("Minko Tutorial - Applying antialiasing effect", WINDOW_WIDTH, WINDOW_HEIGHT);
-    auto sceneManager = component::SceneManager::create(canvas->context());
+    auto sceneManager = SceneManager::create(canvas->context());
 
     sceneManager->assets()
         ->queue("effect/Basic.effect")
@@ -44,7 +44,7 @@ main(int argc, char** argv)
             ->addComponent(sceneManager);
 
         auto camera = scene::Node::create("camera")
-            ->addComponent(Renderer::create(0x7f7f7fff))
+            ->addComponent(Renderer::create(0x00000000))
             ->addComponent(PerspectiveCamera::create(
             (float) WINDOW_WIDTH / (float) WINDOW_HEIGHT, (float) PI * 0.25f, .1f, 1000.f)
             )
@@ -59,20 +59,19 @@ main(int argc, char** argv)
             geometry::CubeGeometry::create(assets->context()),
             material::BasicMaterial::create()->diffuseColor(Vector4::create(0.f, 0.f, 1.f, 1.f)),
             assets->effect("effect/Basic.effect")
-            ));
+        ));
         root->addChild(cube);
 
         
-        auto ppTarget = render::Texture::create(assets->context(), 1024, 1024, false, true);
-
-        ppTarget->upload();
+        auto renderTarget = render::Texture::create(assets->context(), 1024, 1024, false, true);
+        renderTarget->upload();
 
         auto ppFx = sceneManager->assets()->effect("effect/FXAA/FXAA.effect");
 
         if (!ppFx)
             throw std::logic_error("The post-processing effect has not been loaded.");
 
-        ppFx->setUniform("textureSampler", ppTarget);
+        ppFx->setUniform("textureSampler", renderTarget);
         ppFx->setUniform("texcoordOffset", Vector2::create(1.0f / 1024.0f, 1.0f / 1024.0f));
 
         auto ppRenderer = Renderer::create();
@@ -88,9 +87,10 @@ main(int argc, char** argv)
         {
             camera->component<PerspectiveCamera>()->aspectRatio((float) width / (float) height);
 
-            ppTarget = render::Texture::create(assets->context(), clp2(width), clp2(height), false, true);
-            ppTarget->upload();
-            ppFx->setUniform("textureSampler", ppTarget);
+            renderTarget = render::Texture::create(assets->context(), clp2(width), clp2(height), false, true);
+            renderTarget->upload();
+            ppFx->setUniform("textureSampler", renderTarget);
+            ppFx->setUniform("texcoordOffset", Vector2::create(1.0f / 1024.0f, 1.0f / 1024.0f));
         });
 
         auto enableFXAA = true;
@@ -109,18 +109,18 @@ main(int argc, char** argv)
             
         });
 
-        auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint t, float dt)
+        auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float t, float dt)
         {
             cube->component<Transform>()->matrix()->prependRotationY(.01f);
 
             if (enableFXAA)
             {
-                sceneManager->nextFrame(ppTarget);
+                sceneManager->nextFrame(t, dt, renderTarget);
                 ppRenderer->render(assets->context());
             }
             else
             {
-                sceneManager->nextFrame();
+                sceneManager->nextFrame(t, dt);
             }
         });
 
