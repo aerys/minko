@@ -39,6 +39,12 @@ header_file_name="${file_name_prefix}.hpp"
 source_file_name="${file_name_prefix}.cpp"
 
 assimp_class_name="${parser_name}Importer"
+
+# Ugly exception...
+if [ ${parser_name} == "Collada" ]; then
+	assimp_class_name="${parser_name}Loader"
+fi
+
 parser_type_name="${file_name_prefix}"
 
 echo "/*

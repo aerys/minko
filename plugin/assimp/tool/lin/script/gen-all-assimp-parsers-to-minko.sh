@@ -9,5 +9,5 @@ src_path=${MINKO_HOME}/plugin/assimp/src/minko/file
 echo "include path: ${include_path}"
 echo "src path: ${src_path}"
 
-./gen-all-assimp-parsers ${include_path} ${src_path}
+./gen-all-assimp-parsers.sh ${include_path} ${src_path}
 
