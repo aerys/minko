@@ -21,6 +21,7 @@ require 'android'
 require 'vs2013ctp'
 require 'gcc'
 require 'clang'
+require 'xcode'
 
 configurations {
 	"debug",

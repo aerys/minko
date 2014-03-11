@@ -106,7 +106,7 @@
 		 end
 		
         -- Final setup
-		 tree.traverse(tr, {
+		tree.traverse(tr, {
 		 	onnode = function(node)
 		 		-- assign IDs to every node in the tree
 		 		node.id = xcode.newid(node)
@@ -123,7 +123,7 @@
 		 			tr.infoplist = node		 			
 		 		end						
 		 	end
-		 }, true)
+		}, true)
 		
         -- Plug in the product node into the Products folder in the tree. The node
 		-- was built in xcode.preparesolution() in xcode_common.lua; it contains IDs

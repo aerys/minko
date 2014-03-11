@@ -24,6 +24,9 @@ function minko.plugin.bullet:enable()
 	minko.plugin.links { "bullet" }
 	includedirs { minko.plugin.path("bullet") .. "/include" }
 	defines { "MINKO_PLUGIN_BULLET" }
+
+	minko.plugin.enable("serializer")
+	minko.plugin.enable("lua")
 end
 
 newoption {

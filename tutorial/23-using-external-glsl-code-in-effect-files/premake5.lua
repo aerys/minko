@@ -2,9 +2,6 @@ PROJECT_NAME = path.getname(os.getcwd())
 
 minko.project.application("minko-tutorial-" .. PROJECT_NAME)
 
-	language "c++"
-	kind "ConsoleApp"
-
 	files {
 		"src/**.cpp",
 		"src/**.hpp",
@@ -19,4 +16,4 @@ minko.project.application("minko-tutorial-" .. PROJECT_NAME)
 	--minko.plugin.enable("jpeg")
 	--minko.plugin.enable("mk")
 	--minko.plugin.enable("particles")
-	--minko.plugin.enable("png")
+	minko.plugin.enable("png")

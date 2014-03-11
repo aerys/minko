@@ -102,12 +102,17 @@ Skinning::addedHandler(Node::Ptr node, Node::Ptr target, Node::Ptr parent)
 	if (_skin->duration() == 0)
 		return; // incorrect animation
 
+	// FIXME
+	if (node->components<Surface>().size() > 1)
+		std::cerr << "Warning: The skinning component is not intended to work on node with several surfaces. Attempts to apply skinning to first surface." << std::endl;
+
 	if (node->hasComponent<Surface>())
 	{
 		auto geometry = node->component<Surface>()->geometry();
 
 		if (geometry->hasVertexAttribute(ATTRNAME_POSITION) 
-			&& geometry->vertexBuffer(ATTRNAME_POSITION)->numVertices() == _skin->numVertices())
+			&& geometry->vertexBuffer(ATTRNAME_POSITION)->numVertices() == _skin->numVertices()
+			&& !geometry->hasVertexBuffer(_boneVertexBuffer))
 		{
 			_targetGeometry[node]			= geometry;
 			_targetInputPositions[node]		= geometry->vertexBuffer(ATTRNAME_POSITION)->data();			
@@ -280,7 +285,6 @@ Skinning::performSoftwareSkinning(VertexBuffer::AttributePtr		attr,
 	assert(boneMatrices.size() == (_skin->numBones() << 4));
 #endif // DEBUG_SKINNING
 
-	const unsigned int	numBones		= _skin->numBones();
 	const unsigned int	vertexSize		= vertexBuffer->vertexSize();
 	std::vector<float>&	outputData		= vertexBuffer->data();
 	const unsigned int	numVertices		= outputData.size() / vertexSize;

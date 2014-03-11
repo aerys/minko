@@ -52,7 +52,7 @@ solution "minko"
 		include 'tutorial/20-binding-the-camera'
 		include 'tutorial/21-authoring-uber-shaders'
 		include 'tutorial/22-creating-a-simple-post-processing-effect'
-		-- include 'tutorial/23-using-external-glsl-code-in-effect-files'
+		include 'tutorial/23-using-external-glsl-code-in-effect-files'
 		include 'tutorial/24-working-with-custom-vertex-attributes'
 		include 'tutorial/25-working-with-ambient-lights'
 		include 'tutorial/26-working-with-directional-lights'
@@ -63,24 +63,25 @@ solution "minko"
 	end
 
 	-- plugin
-	include 'plugin/lua'
-	include 'plugin/angle'
-	include 'plugin/assimp'
-	include 'plugin/devil'
-	include 'plugin/bullet'
-	include 'plugin/fx'
-	include 'plugin/http-loader'
-	include 'plugin/http-worker'
-	include 'plugin/jpeg'
-	include 'plugin/leap'
-	include 'plugin/oculus'
-	include 'plugin/offscreen'
-	include 'plugin/particles'
-	include 'plugin/png'
-	include 'plugin/sdl'
-	include 'plugin/serializer'
-	include 'plugin/webgl'
-	include 'plugin/cef'
+	if not _OPTIONS['no-plugin'] then
+		include 'plugin/lua'
+		include 'plugin/angle'
+		include 'plugin/assimp'
+		include 'plugin/devil'
+		include 'plugin/bullet'
+		include 'plugin/fx'
+		include 'plugin/http-loader'
+		include 'plugin/http-worker'
+		include 'plugin/jpeg'
+		include 'plugin/leap'
+		include 'plugin/oculus'
+		include 'plugin/offscreen'
+		include 'plugin/particles'
+		include 'plugin/png'
+		include 'plugin/sdl'
+		include 'plugin/serializer'
+		include 'plugin/webgl'
+	end
 
 	-- example
 	if not _OPTIONS['no-example'] then
@@ -96,6 +97,7 @@ solution "minko"
 		include 'example/light'
 		include 'example/line-geometry'
 		include 'example/offscreen'
+		include 'example/particles'
 		include 'example/picking'
 		include 'example/raycasting'
 		include 'example/serializer'
@@ -107,7 +109,6 @@ solution "minko"
 		include 'example/oculus'
 		include 'example/http'
 		include 'example/joystick'
-		include 'example/cef'
 	end
 
 	-- test
@@ -120,8 +121,8 @@ newaction {
 	description	= 'Generate the distributable version of the Minko SDK.',
 	execute		= function()
 	
-		print("Building documentation...")
-		os.execute("doxygen doc/Doxyfile")
+		-- print("Building documentation...")
+		-- os.execute("doxygen doc/Doxyfile")
 
 		local distDir = 'dist'
 		

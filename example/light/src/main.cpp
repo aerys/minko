@@ -251,7 +251,7 @@ int main(int argc, char** argv)
 		mouseMove = nullptr;
 	});
 
-	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, float deltaTime)
+	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float deltaTime)
 	{
 		yaw += cameraRotationYSpeed;
 		cameraRotationYSpeed *= 0.9f;
@@ -275,10 +275,10 @@ int main(int argc, char** argv)
 		lights->component<Transform>()->matrix()->appendRotationY(.005f);
 
 #if POST_PROCESSING
-		sceneManager->nextFrame(ppTarget);
+		sceneManager->nextFrame(time, deltaTime, ppTarget);
 		ppRenderer->render(assets->context());
 #else
-		sceneManager->nextFrame();
+		sceneManager->nextFrame(time, deltaTime);
 #endif
 	});
 

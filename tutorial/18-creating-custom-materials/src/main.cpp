@@ -58,12 +58,12 @@ main(int argc, char** argv)
 		myCustomEffect->setUniform("uViewMatrix", Matrix4x4::create());
 		myCustomEffect->setUniform("uProjectionMatrix", Matrix4x4::create()->perspective((float)PI * 0.25f, (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, .1f, 1000.f));
 
-		auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint t, float dt)
+		auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float t, float dt)
 		{
 			modelToWorldMatrix->prependRotationY(0.01f);
 			myCustomEffect->setUniform("uModelToWorldMatrix", modelToWorldMatrix);
 
-			sceneManager->nextFrame();
+			sceneManager->nextFrame(t, dt);
 		});
 
 		canvas->run();

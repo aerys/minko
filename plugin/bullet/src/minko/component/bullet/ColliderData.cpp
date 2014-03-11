@@ -23,19 +23,27 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include <minko/component/bullet/AbstractPhysicsShape.hpp>
 #include <minko/component/bullet/PhysicsWorld.hpp>
 
+#include <btBulletDynamicsCommon.h>
+
 using namespace minko;
 using namespace minko::math;
 using namespace minko::component;
+
+/*static*/ const short  bullet::ColliderData::DEFAULT_DYNAMIC_FILTER    = btBroadphaseProxy::DefaultFilter;
+/*static*/ const short  bullet::ColliderData::DEFAULT_STATIC_FILTER     = btBroadphaseProxy::StaticFilter;
+/*static*/ const short  bullet::ColliderData::DEFAULT_DYNAMIC_MASK      = btBroadphaseProxy::AllFilter;
+/*static*/ const short  bullet::ColliderData::DEFAULT_STATIC_MASK       = btBroadphaseProxy::AllFilter ^ btBroadphaseProxy::StaticFilter;
 
 bullet::ColliderData::ColliderData(float						mass,
 								   AbstractPhysicsShape::Ptr	shape,
 								   Vector3::Ptr					inertia):
 	_uid(0),
-	_name(""),
 	_mass(mass),
 	_correctionMatrix(Matrix4x4::create()->identity()),
 	_shape(shape),
 	_inertia(inertia),
+    _collisionGroup(1),
+    _collisionMask(short((1<<16) - 1)),
 	_linearVelocity(Vector3::create(0.0f, 0.0f, 0.0f)),
 	_linearFactor(Vector3::create(1.0f, 1.0f, 1.0f)),
 	_linearDamping(0.0f),
@@ -50,10 +58,12 @@ bullet::ColliderData::ColliderData(float						mass,
 	_deactivationDisabled(false),
 	_graphicsWorldTransformChanged(Signal<Ptr, Matrix4x4Ptr>::create()),
 	_collisionStarted(Signal<Ptr, Ptr>::create()),
-	_collisionEnded(Signal<Ptr, Ptr>::create())
+	_collisionEnded(Signal<Ptr, Ptr>::create()),
+    _collisionFilterChanged(Signal<Ptr>::create())
 {
 
 }
+
 
 void
 bullet::ColliderData::correction(Matrix4x4::Ptr value)
@@ -83,4 +93,20 @@ void
 bullet::ColliderData::angularFactor(float x, float y, float z)
 {
 	_angularFactor->setTo(x, y, z);
+}
+
+void
+bullet::ColliderData::collisionGroup(short value)
+{
+    _collisionGroup = value;
+
+    _collisionFilterChanged->execute(shared_from_this());
+}
+
+void
+bullet::ColliderData::collisionMask(short value)
+{
+    _collisionMask = value;
+
+    _collisionFilterChanged->execute(shared_from_this());
 }

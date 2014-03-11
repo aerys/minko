@@ -560,7 +560,7 @@ namespace minko
 
             virtual
             Signal<Ptr>::Ptr
-            keyDown()
+            keyDown() const
             {
                 return _down;
             }
@@ -579,7 +579,7 @@ namespace minko
 
             virtual
             Signal<Ptr>::Ptr
-            keyUp()
+            keyUp() const
             {
                 return _up;
             }
