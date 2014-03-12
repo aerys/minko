@@ -36,11 +36,14 @@ namespace minko
 		private:
 			typedef std::shared_ptr<scene::Node>						NodePtr;
 			typedef std::shared_ptr<AbstractComponent>					AbsCtrlPtr;
+			typedef std::shared_ptr<render::AbstractContext>			AbsContext;
 			typedef std::shared_ptr<Surface>							SurfacePtr;
 			typedef std::shared_ptr<render::DrawCall>					DrawCallPtr;
 			typedef std::list<DrawCallPtr>								DrawCallList;
 			typedef std::shared_ptr<SceneManager>						SceneManagerPtr;
-			typedef std::shared_ptr<render::Texture>					TexturePtr;
+			typedef std::shared_ptr<render::AbstractTexture>			AbsTexturePtr;
+			typedef std::shared_ptr<render::Effect>						EffectPtr;
+			typedef std::shared_ptr<render::DrawCallPool>				DrawCallFactoryPtr;
 			typedef Signal<SurfacePtr, const std::string&, bool>::Slot	SurfaceTechniqueChangedSlot;
 
 		private:
@@ -51,9 +54,13 @@ namespace minko
 			std::shared_ptr<SceneManager>								_sceneManager;
 			Signal<Ptr>::Ptr											_renderingBegin;
 			Signal<Ptr>::Ptr											_renderingEnd;
-			std::shared_ptr<render::Texture>							_renderTarget;
+			Signal<Ptr>::Ptr											_beforePresent;
+			AbsTexturePtr												_renderTarget;
 
 			std::set<std::shared_ptr<Surface>>							_toCollect;
+			EffectPtr													_effect;
+			float														_priority;
+
 
 			Signal<AbsCtrlPtr, NodePtr>::Slot							_targetAddedSlot;
 			Signal<AbsCtrlPtr, NodePtr>::Slot							_targetRemovedSlot;
@@ -63,8 +70,10 @@ namespace minko
 			Signal<NodePtr, NodePtr, NodePtr>::Slot						_rootDescendantRemovedSlot;
 			Signal<NodePtr, NodePtr, AbsCtrlPtr>::Slot					_componentAddedSlot;
 			Signal<NodePtr, NodePtr, AbsCtrlPtr>::Slot					_componentRemovedSlot;
-			Signal<SceneManagerPtr, uint, TexturePtr>::Slot				_renderingBeginSlot;
+			Signal<SceneManagerPtr, uint, AbsTexturePtr>::Slot			_renderingBeginSlot;
 			std::unordered_map<SurfacePtr, SurfaceTechniqueChangedSlot>	_surfaceTechniqueChangedSlot;
+
+			DrawCallFactoryPtr											_drawCallPool;
 
 			static const unsigned int									NUM_FALLBACK_ATTEMPTS;
 
@@ -76,15 +85,18 @@ namespace minko
 				auto ctrl = std::shared_ptr<Renderer>(new Renderer());
 
 				ctrl->initialize();
-
 				return ctrl;
 			}
 
 			inline static
 			Ptr
-			create(uint backgroundColor)
+
+			create(uint					backgroundColor, 
+				   AbsTexturePtr		renderTarget = nullptr,
+				   EffectPtr			effect			= nullptr,
+				   float				priority		= 0.f)
 			{
-				auto ctrl = std::shared_ptr<Renderer>(new Renderer());
+				auto ctrl = std::shared_ptr<Renderer>(new Renderer(renderTarget, effect, priority));
 
 				ctrl->initialize();
 				ctrl->backgroundColor(backgroundColor);
@@ -94,6 +106,20 @@ namespace minko
 
 			~Renderer()
 			{
+			}
+
+			inline
+			EffectPtr
+			effect()
+			{
+				return _effect;
+			}
+
+			inline
+			unsigned int
+			numDrawCalls()
+			{
+				return _drawCalls.size();
 			}
 
 			inline
@@ -111,7 +137,7 @@ namespace minko
 			}
 
 			inline
-			std::shared_ptr<render::Texture>
+			AbsTexturePtr
 			target()
 			{
 				return _renderTarget;
@@ -119,14 +145,14 @@ namespace minko
 
 			inline
 			void
-			target(std::shared_ptr<render::Texture> target)
+			target(AbsTexturePtr target)
 			{
 				_renderTarget = target;
 			}
 
 			void
 			render(std::shared_ptr<render::AbstractContext> context,
-				   std::shared_ptr<render::Texture> 		renderTarget = nullptr);
+				   AbsTexturePtr 		renderTarget = nullptr);
 
 			inline
 			Signal<Ptr>::Ptr
@@ -137,13 +163,22 @@ namespace minko
 
 			inline
 			Signal<Ptr>::Ptr
+			beforePresent()
+			{
+				return _beforePresent;
+			}
+
+			inline
+			Signal<Ptr>::Ptr
 			renderingEnd()
 			{
 				return _renderingEnd;
 			}
 
 		private:
-			Renderer();
+			Renderer(AbsTexturePtr		renderTarget = nullptr,
+					 EffectPtr			effect			= nullptr,
+					 float				priority		= 0.f);
 
 			void
 			initialize();
@@ -176,31 +211,18 @@ namespace minko
 			addSurface(SurfacePtr);
 
 			void
-			addSurfaceDrawcalls(SurfacePtr);
-
-			void
 			removeSurface(SurfacePtr);
-
-			void
-			removeSurfaceDrawcalls(SurfacePtr);
 
 			void
 			geometryChanged(SurfacePtr ctrl);
 
 			void
-			surfaceTechniqueChanged(SurfacePtr, const std::string& technique, bool updateSurfaceDrawcalls);
-
-			void
 			materialChanged(SurfacePtr ctrl);
 
-            static
-            bool
-            compareDrawCalls(DrawCallPtr& a, DrawCallPtr& b);
-
 			void
-			sceneManagerRenderingBeginHandler(std::shared_ptr<SceneManager>		sceneManager,
-											  uint								frameId,
-											  std::shared_ptr<render::Texture>	renderTarget);
+			sceneManagerRenderingBeginHandler(std::shared_ptr<SceneManager>	sceneManager,
+											  uint							frameId,
+											  AbsTexturePtr					renderTarget);
 
 			void
 			findSceneManager();

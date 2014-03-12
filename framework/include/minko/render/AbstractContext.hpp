@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Common.hpp"
 
 #include "minko/render/Blending.hpp"
+#include "minko/render/CubeTexture.hpp"
 
 namespace minko
 {
@@ -130,36 +131,46 @@ namespace minko
 			deleteIndexBuffer(const uint indexBuffer) = 0;
 
 			virtual
-			const uint
-			createTexture(unsigned int  width,
+			uint
+			createTexture(TextureType	type,
+						  unsigned int  width,
 						  unsigned int  height,
 						  bool		    mipMapping,
                           bool          optimizeForRenderToTexture = false) = 0;
 
 			virtual
 			void
-			uploadTextureData(const uint texture,
-							  unsigned int 		 width,
-							  unsigned int 		 height,
-							  unsigned int 		 mipLevel,
-							  void*				 data) = 0;
+			uploadTexture2dData(uint			texture,
+							    unsigned int 	width,
+							    unsigned int 	height,
+							    unsigned int 	mipLevel,
+							    void*			data) = 0;
 
 			virtual
 			void
-			deleteTexture(const uint texture) = 0;
+			uploadCubeTextureData(uint				texture,
+								  CubeTexture::Face	face,
+								  unsigned int		width,
+							      unsigned int		height,
+							      unsigned int		mipLevel,
+							      void*				data) = 0;
 
 			virtual
 			void
-			setTextureAt(const uint	position,
-						 const int			texture		= 0,
-						 const int			location	= -1) = 0;
+			deleteTexture(uint	texture) = 0;
+
+			virtual
+			void
+			setTextureAt(uint	position,
+						 int	texture		= 0,
+						 int	location	= -1) = 0;
 
             virtual
             void
-            setSamplerStateAt(const uint    position,
-                              WrapMode              wrapping,
-                              TextureFilter         filtering,
-                              MipFilter             mipFiltering) = 0;
+            setSamplerStateAt(uint			position,
+                              WrapMode      wrapping,
+                              TextureFilter filtering,
+                              MipFilter     mipFiltering) = 0;
 
 			virtual
 			const uint
@@ -210,35 +221,35 @@ namespace minko
 
 			virtual
 			void
-			setUniform(const uint& location, const int& value) = 0;
+			setUniform(uint location, int value) = 0;
 
 			virtual
 			void
-			setUniform(const uint& location, const int& v1, const int& v2) = 0;
+			setUniform(uint location, int v1, int v2) = 0;
 
 			virtual
 			void
-			setUniform(const uint& location, const int& v1, const int& v2, const int& v3) = 0;
+			setUniform(uint location, int v1, int v2, int v3) = 0;
 
 			virtual
 			void
-			setUniform(const uint& location, const int& v1, const int& v2, const int& v3, const int& v4) = 0;
+			setUniform(uint location, int v1, int v2, int v3, int v4) = 0;
 
 			virtual
 			void
-			setUniform(const uint& location, const float& value) = 0;
+			setUniform(uint location, float value) = 0;
 
 			virtual
 			void
-			setUniform(const uint& location, const float& v1, const float& v2) = 0;
+			setUniform(uint location, float v1, float v2) = 0;
 
 			virtual
 			void
-			setUniform(const uint& location, const float& v1, const float& v2, const float& v3) = 0;
+			setUniform(uint location, float v1, float v2, float v3) = 0;
 
 			virtual
 			void
-			setUniform(const uint& location, const float& v1, const float& v2, const float& v3, const float& v4) = 0;
+			setUniform(uint location, float v1, float v2, float v3, float v4) = 0;
 
 			virtual
 			void
@@ -259,6 +270,22 @@ namespace minko
 			virtual
 			void
 			setUniforms4(uint location, uint size, const float* values) = 0;
+
+			virtual
+			void
+			setUniforms(uint location, uint size, const int* values) = 0;
+
+			virtual
+			void
+			setUniforms2(uint location, uint size, const int* values) = 0;
+
+			virtual
+			void
+			setUniforms3(uint location, uint size, const int* values) = 0;
+
+			virtual
+			void
+			setUniforms4(uint location, uint size, const int* values) = 0;
 
             virtual
             void
@@ -292,6 +319,10 @@ namespace minko
 			virtual
 			void
 			readPixels(unsigned char* pixels) = 0;
+
+			virtual
+			void
+			readPixels(unsigned int x, unsigned int y, unsigned int width, unsigned int height, unsigned char* pixels) = 0;
 
             virtual
             void

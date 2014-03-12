@@ -25,10 +25,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/DrawCall.hpp"
 #include "minko/render/Effect.hpp"
 #include "minko/render/Pass.hpp"
-#include "minko/render/Texture.hpp"
+#include "minko/render/AbstractTexture.hpp"
 #include "minko/render/AbstractContext.hpp"
 #include "minko/component/SceneManager.hpp"
 #include "minko/file/AssetLibrary.hpp"
+#include "minko/render/DrawCallPool.hpp"
 
 using namespace minko;
 using namespace minko::component;
@@ -37,18 +38,31 @@ using namespace minko::render;
 
 const unsigned int Renderer::NUM_FALLBACK_ATTEMPTS = 32;
 
-Renderer::Renderer() :
+
+Renderer::Renderer(std::shared_ptr<render::AbstractTexture> renderTarget,
+				   EffectPtr								effect,
+				   float									priority) :
     _backgroundColor(0),
 	_renderingBegin(Signal<Ptr>::create()),
 	_renderingEnd(Signal<Ptr>::create()),
+	_beforePresent(Signal<Ptr>::create()),
 	_surfaceDrawCalls(),
-	_surfaceTechniqueChangedSlot()
+	_surfaceTechniqueChangedSlot(),
+	_effect(effect),
+	_priority(priority)
 {
+	if (renderTarget)
+	{
+		renderTarget->upload();
+		_renderTarget = renderTarget;
+	}
 }
 
 void
 Renderer::initialize()
 {
+	_drawCallPool = DrawCallPool::create(shared_from_this());
+
 	_targetAddedSlot = targetAdded()->connect(std::bind(
 		&Renderer::targetAddedHandler,
 		shared_from_this(),
@@ -137,7 +151,7 @@ Renderer::addedHandler(std::shared_ptr<Node> node,
 		std::placeholders::_1,
 		std::placeholders::_2,
 		std::placeholders::_3
-	));
+	), 10.f);
 
 	rootDescendantAddedHandler(nullptr, target->root(), nullptr);
 }
@@ -222,79 +236,21 @@ Renderer::componentRemovedHandler(std::shared_ptr<Node>					node,
 void
 Renderer::addSurface(Surface::Ptr surface)
 {
-	_surfaceTechniqueChangedSlot[surface]	= surface->techniqueChanged()->connect(std::bind(
-		&Renderer::surfaceTechniqueChanged,
-		shared_from_this(),
-		surface,
-		std::placeholders::_2,
-		std::placeholders::_3
-	));
-
-	_toCollect.insert(surface);
-}
-
-void
-Renderer::addSurfaceDrawcalls(Surface::Ptr surface)
-{
-	removeSurfaceDrawcalls(surface);
-
-	auto& drawcalls = surface->createDrawCalls(targets()[0]->data(), NUM_FALLBACK_ATTEMPTS);
-
-	_surfaceDrawCalls[surface]	= drawcalls;
-
-	if (!drawcalls.empty())
-		_drawCalls.insert(
-			_drawCalls.end(), 
-			_surfaceDrawCalls[surface].begin(), 
-			_surfaceDrawCalls[surface].end()
-		);
+	_drawCallPool->addSurface(surface);
 }
 
 void
 Renderer::removeSurface(Surface::Ptr surface)
 {
-	removeSurfaceDrawcalls(surface);
-
-	_surfaceTechniqueChangedSlot.erase(surface);
-
-	if (_surfaceDrawCalls.count(surface) > 0)
-		_surfaceDrawCalls.erase(surface);
+	_drawCallPool->removeSurface(surface);
 }
 
 void
-Renderer::removeSurfaceDrawcalls(Surface::Ptr surface)
+Renderer::render(render::AbstractContext::Ptr	context, 
+				 render::AbstractTexture::Ptr	renderTarget)
 {
-	auto foundDrawcallsIt	= _surfaceDrawCalls.find(surface);
-
-	if (foundDrawcallsIt == _surfaceDrawCalls.end())
-		return;
-
-	const DrawCallList& surfaceDrawcalls = foundDrawcallsIt->second;
-	if (surfaceDrawcalls.empty())
-		return;
-
-	for (DrawCallList::iterator it = _drawCalls.begin(); it != _drawCalls.end(); )
-	{
-		auto foundSurfaceDrawcallIt = std::find(surfaceDrawcalls.begin(), surfaceDrawcalls.end(), *it);
-
-		if (foundSurfaceDrawcallIt != surfaceDrawcalls.end())
-			it = _drawCalls.erase(it);
-		else
-			++it;
-	}
-
-	_surfaceDrawCalls.erase(surface);
-}
-
-void
-Renderer::render(std::shared_ptr<render::AbstractContext> context, std::shared_ptr<render::Texture> renderTarget)
-{
-	std::set<Surface::Ptr> toCollect;
-	_toCollect.swap(toCollect); // _toCollect now empty
-
-	for (auto surface : toCollect)
-		addSurfaceDrawcalls(surface); // warning: may add drawcalls in the _toCollect structure, hence the separate toCollect.
-
+	_drawCalls = _drawCallPool->drawCalls();
+	
 	_renderingBegin->execute(shared_from_this());
 
 	if (!renderTarget)
@@ -307,22 +263,14 @@ Renderer::render(std::shared_ptr<render::AbstractContext> context, std::shared_p
 		(_backgroundColor & 0xff) / 255.f
 	);
 
-    _drawCalls.sort(&Renderer::compareDrawCalls);
 	for (auto& drawCall : _drawCalls)
 		drawCall->render(context, renderTarget);
+
+	_beforePresent->execute(shared_from_this());
 
 	context->present();
 
 	_renderingEnd->execute(shared_from_this());
-}
-
-bool
-Renderer::compareDrawCalls(DrawCallPtr& a, DrawCallPtr& b)
-{
-	if (a->priority() == b->priority())
-		return a->target() && (!b->target() || (a->target()->id() > b->target()->id()));
-
-    return a->priority() > b->priority();
 }
 
 void
@@ -357,7 +305,7 @@ Renderer::setSceneManager(std::shared_ptr<SceneManager> sceneManager)
 				std::placeholders::_1,
 				std::placeholders::_2,
 				std::placeholders::_3
-			));
+			), _priority);
 		}
 		else
 		{
@@ -368,21 +316,9 @@ Renderer::setSceneManager(std::shared_ptr<SceneManager> sceneManager)
 }
 
 void
-Renderer::sceneManagerRenderingBeginHandler(std::shared_ptr<SceneManager>		sceneManager,
-										    uint								frameId,
-										    std::shared_ptr<render::Texture>	renderTarget)
+Renderer::sceneManagerRenderingBeginHandler(std::shared_ptr<SceneManager>	sceneManager,
+										    uint							frameId,
+										    AbstractTexture::Ptr			renderTarget)
 {
 	render(sceneManager->assets()->context(), renderTarget);
-}
-
-void
-Renderer::surfaceTechniqueChanged(Surface::Ptr			surface, 
-								  const std::string&	technique,
-								  bool					updateSurfaceDrawcalls)
-{
-	if (updateSurfaceDrawcalls)
-	{
-		removeSurfaceDrawcalls(surface);
-		_toCollect.insert(surface);
-	}
 }

@@ -31,7 +31,7 @@ using namespace minko::geometry;
 using namespace minko::render;
 
 Geometry::Geometry() :
-	_data(data::Provider::create()),
+	_data(data::ArrayProvider::create("geometry")),
 	_vertexSize(0),
 	_numVertices(0),
 	_indexBuffer(nullptr)
@@ -48,9 +48,9 @@ Geometry::addVertexBuffer(render::VertexBuffer::Ptr vertexBuffer)
 	const unsigned bufNumVertices	= vertexBuffer->numVertices();
 
 	for (auto attribute : vertexBuffer->attributes())
-		_data->set("geometry.vertex.attribute." + std::get<0>(*attribute), vertexBuffer);
+		_data->set(std::get<0>(*attribute), vertexBuffer);
 	_vertexSize	+= bufVertexSize;
-	_data->set("geometry.vertex.size", _vertexSize);
+	_data->set("vertex.size", _vertexSize);
 
 	if (_vertexBuffers.size() > 0 && _numVertices != bufNumVertices)
 		throw std::logic_error("inconsistent number of vertices between the geometry's vertex streams.");
@@ -74,10 +74,10 @@ Geometry::removeVertexBuffer(std::list<render::VertexBuffer::Ptr>::iterator vert
 	vertexBuffer->dispose();
 
 	for (auto attribute : vertexBuffer->attributes())
-		_data->unset("geometry.vertex.attribute." + std::get<0>(*attribute));
+		_data->unset(std::get<0>(*attribute));
 
 	_vertexSize	-= vertexBuffer->vertexSize();
-	_data->set("geometry.vertex.size", _vertexSize);
+	_data->set("vertex.size", _vertexSize);
 
 	_vertexBuffers.erase(vertexBufferIt);
 
@@ -119,10 +119,10 @@ Geometry::computeNormals()
 	if (numVertices == 0)
 		return shared_from_this();
 
-	if (_data->hasProperty("geometry.vertex.attribute.normal"))
+	if (_data->hasProperty("normal"))
 		throw std::logic_error("The geometry already stores precomputed normals.");
 		
-	if (!_data->hasProperty("geometry.vertex.attribute.position"))
+	if (!_data->hasProperty("position"))
 		throw std::logic_error("Computation of normals requires positions.");
 
 	const std::vector<unsigned short>& indices	= this->indices()->data();
@@ -131,7 +131,7 @@ Geometry::computeNormals()
 	unsigned short vertexIds[3] = { 0, 0, 0 };
 	std::vector<Vector3::Ptr> xyz(3);
 
-	VertexBuffer::Ptr xyzBuffer			= _data->get<VertexBuffer::Ptr>("geometry.vertex.attribute.position");
+	VertexBuffer::Ptr xyzBuffer			= _data->get<VertexBuffer::Ptr>("position");
 	const unsigned int xyzSize			= xyzBuffer->vertexSize();
 	const unsigned int xyzOffset		= std::get<2>(*xyzBuffer->attribute("position"));
 	const std::vector<float>& xyzData	= xyzBuffer->data();
@@ -148,8 +148,8 @@ Geometry::computeNormals()
 		}
 
 		Vector3::Ptr faceNormal = Vector3::create()
-			->copyFrom(xyz[0] - xyz[2])
-			->cross(xyz[0] - xyz[1]);
+			->copyFrom(xyz[0] - xyz[1])
+			->cross(xyz[0] - xyz[2]);
 
  		for (unsigned int k = 0; k < 3; ++k)
 		{
@@ -189,8 +189,8 @@ Geometry::computeTangentSpace(bool doNormals)
 	if (numVertices == 0)
 		return shared_from_this();
 
-	if (!_data->hasProperty("geometry.vertex.attribute.position") 
-		|| !_data->hasProperty("geometry.vertex.attribute.uv"))
+	if (!_data->hasProperty("position") 
+		|| !_data->hasProperty("uv"))
 		throw std::logic_error("Computation of tangent space requires positions and uv.");
 
 	if (doNormals)
@@ -203,12 +203,12 @@ Geometry::computeTangentSpace(bool doNormals)
 	std::vector<Vector3::Ptr> xyz(3);
 	std::vector<Vector2::Ptr> uv(3);
 
-	VertexBuffer::Ptr xyzBuffer			= _data->get<VertexBuffer::Ptr>("geometry.vertex.attribute.position");
+	VertexBuffer::Ptr xyzBuffer			= _data->get<VertexBuffer::Ptr>("position");
 	const unsigned int xyzSize			= xyzBuffer->vertexSize();
 	const unsigned int xyzOffset		= std::get<2>(*xyzBuffer->attribute("position"));
 	const std::vector<float>& xyzData	= xyzBuffer->data();
 
-	VertexBuffer::Ptr uvBuffer			= _data->get<VertexBuffer::Ptr>("geometry.vertex.attribute.uv");
+	VertexBuffer::Ptr uvBuffer			= _data->get<VertexBuffer::Ptr>("uv");
 	const unsigned int uvSize			= uvBuffer->vertexSize();
 	const unsigned int uvOffset			= std::get<2>(*uvBuffer->attribute("uv"));
 	const std::vector<float>& uvData	= uvBuffer->data();
@@ -285,7 +285,6 @@ Geometry::removeDuplicatedVertices(std::vector<unsigned short>&		indices,
 								   std::vector<std::vector<float>>&	vertices,
 								   uint								numVertices)
 {
-	auto numIndices = indices.size();
 	auto newVertexCount = 0;
 	auto newLimit = 0;
 
@@ -483,4 +482,13 @@ Geometry::getHitNormal(uint triangle, Vector3::Ptr hitNormal)
 	auto edge2 = Vector3::create(v2)->subtract(v0)->normalize();
 
 	hitNormal->copyFrom(edge2)->cross(edge1);
+}
+
+void
+Geometry::upload()
+{
+	for (const auto& vb : _vertexBuffers)
+		vb->upload();
+
+	_indexBuffer->upload();
 }

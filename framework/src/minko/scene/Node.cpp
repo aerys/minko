@@ -112,6 +112,17 @@ Node::removeChild(Node::Ptr child)
 	return shared_from_this();
 }
 
+Node::Ptr
+Node::removeChildren()
+{
+	int numChildren = _children.size();
+
+	for (int i = numChildren - 1; i >= 0; --i)
+		removeChild(_children[i]);
+
+	return shared_from_this();
+}
+
 bool
 Node::contains(Node::Ptr node)
 {

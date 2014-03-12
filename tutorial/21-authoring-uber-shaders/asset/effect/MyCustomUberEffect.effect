@@ -1,0 +1,60 @@
+{
+  "name" : "MyCustomUberEffect",
+  "attributeBindings" : {
+    "aPosition" : "geometry[${geometryId}].position",
+    "aUv" : "geometry[${geometryId}].uv"
+  },
+  "uniformBindings" : {
+    "uDiffuseColor" : "material[${materialId}].diffuseColor",
+    "uDiffuseMap" : "material[${materialId}].diffuseMap",
+    "uModelToWorldMatrix" : "transform.modelToWorldMatrix",
+    "uWorldToScreenMatrix" : { "property" : "camera.worldToScreenMatrix", "source" : "renderer" }
+  },
+  "macroBindings" : {
+	"DIFFUSE_MAP" : "material[${materialId}].diffuseMap"
+  },
+  "passes" : [{
+    "vertexShader" : "
+      #ifdef GL_ES
+      precision mediump float;
+      #endif
+ 
+      attribute vec3 aPosition;
+      attribute vec2 aUv;
+ 
+      uniform mat4 uModelToWorldMatrix;
+      uniform mat4 uWorldToScreenMatrix;
+ 
+      varying vec2 vVertexUv;
+ 
+      void main(void)
+      {
+        #ifdef DIFFUSE_MAP
+          vVertexUv = aUv;
+        #endif
+ 
+        gl_Position = uWorldToScreenMatrix * uModelToWorldMatrix * vec4(aPosition, 1.0);
+      }
+    ",
+    "fragmentShader" : "
+      #ifdef GL_ES
+      precision mediump float;
+      #endif
+ 
+      uniform vec4 uDiffuseColor;
+      uniform sampler2D uDiffuseMap;
+ 
+      varying vec2 vVertexUv;
+ 
+      void main(void)
+      {
+        #ifdef DIFFUSE_MAP
+          gl_FragColor = texture2D(uDiffuseMap, vVertexUv);
+        #else
+          gl_FragColor = uDiffuseColor;
+        #endif
+      }
+    "
+  }]
+}
+

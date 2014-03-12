@@ -1,0 +1,57 @@
+// particles effect
+{
+	"name"	: "particles",
+	
+	"attributeBindings"	: {
+		"offset"				: "geometry[${geometryId}].offset",
+		"position"				: "geometry[${geometryId}].position",
+		"size"					: "geometry[${geometryId}].size",
+		"color"					: "geometry[${geometryId}].color",
+		"time"					: "geometry[${geometryId}].time",
+		"oldPosition"			: "geometry[${geometryId}].oldPosition",
+		"rotation"				: "geometry[${geometryId}].rotation",
+		"spriteIndex"			: "geometry[${geometryId}].spriteIndex"
+	},
+	
+	"uniformBindings"	: {
+		"modelToWorldMatrix"	: "transform.modelToWorldMatrix",
+		"viewMatrix"			: { "property": "camera.viewMatrix",		"source": "renderer" },
+		"projectionMatrix"		: { "property": "camera.projectionMatrix",	"source": "renderer" },
+		"timeStep"				: "particles.timeStep",
+		"diffuseColor"			: "particles.diffuseColor",
+		"spritesheet"			: "particles.spritesheet",
+		"spritesheetSize"		: "particles.spritesheetSize",
+		"sizeOverTime"			: "particles.sizeOverTime",
+		"sizeBySpeed"			: "particles.sizeBySpeed",
+		"colorOverTimeStart" 	: "particles.colorOverTimeStart",
+		"colorOverTimeEnd" 		: "particles.colorOverTimeEnd",
+		"colorBySpeedStart" 	: "particles.colorBySpeedStart",
+		"colorBySpeedEnd" 		: "particles.colorBySpeedEnd"
+	},
+
+	"macroBindings"	: {
+		"MODEL_TO_WORLD"			: "transform.modelToWorldMatrix",
+		"WORLDSPACE_PARTICLES"		: "particles.worldspace",
+		"SPRITE_SHEET"				: "particles.spritesheet",
+		"SIZE_OVER_TIME"			: "particles.sizeOverTime",
+		"SIZE_BY_SPEED"				: "particles.sizeBySpeed",
+		"COLOR_OVER_TIME"			: "particles.colorOverTimeStart",
+		"COLOR_BY_SPEED"			: "particles.colorBySpeedStart",
+		"PARTICLE_SIZE"				: "geometry[${geometryId}].size",
+		"PARTICLE_COLOR"			: "geometry[${geometryId}].color",
+		"PARTICLE_TIME"				: "geometry[${geometryId}].time",
+		"PARTICLE_OLD_POSITION"		: "geometry[${geometryId}].oldPosition",
+		"PARTICLE_ROTATION"			: "geometry[${geometryId}].rotation",
+		"PARTICLE_SPRITE_INDEX"		: "geometry[${geometryId}].spriteIndex"
+	},
+	
+	"priority"			: 0,
+	"blendMode"			: "additive",
+	"depthTest"			: [false, "less"],
+	"triangleCulling"	: "none",
+	
+	"passes"	: [{	
+		"vertexShader"		: "#pragma include('Particles.vertex.glsl')",
+		"fragmentShader"	: "#pragma include('Particles.fragment.glsl')"
+	}]
+}

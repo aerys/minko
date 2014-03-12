@@ -1,0 +1,48 @@
+// oculus vr post-processing effect
+{
+	"name" : "oculusvr",
+	
+	"attributeBindings" : {
+		"aPosition"		: "geometry[${geometryId}].position",
+		"aUv"			: "geometry[${geometryId}].uv"
+	},
+	
+	"triangleCulling" : "none",
+	"depthTest" : [ false, "less_equal" ],
+	"samplerStates" : {
+		"uTex"	: { "textureFilter" : "linear" }
+	},
+	
+	"uniformBindings" : {
+		"uDistortionK"			: "oculusvr.distortionK",
+		"uScalePriorDistortion"	: "oculusvr.scalePriorDistortion",
+		"uScaleAfterDistortion"	: "oculusvr.scaleAfterDistortion",
+		"uPixelOffset"			: "oculusvr.pixelOffset"
+	},
+	
+	"passes" : [
+		{
+			"name" : "oculus vr left",
+			"uniformBindings" : {
+				"uTex"					: "oculusvr.leftEyeTexture",
+				"uLensCenter"			: "oculusvr.leftLensCenter",
+				"uScreenCenter"			: "oculusvr.leftScreenCenter",
+				"uScreenCorner"			: "oculusvr.leftScreenCorner"
+			},	
+			"vertexShader" : "#pragma include('OculusVR.vertex.glsl')",
+			"fragmentShader" : "#pragma include('OculusVR.fragment.glsl')"
+		},
+		{
+			"name" : "oculus vr right",
+			"blendMode" : "additive",
+			"uniformBindings" : {
+				"uTex"					: "oculusvr.rightEyeTexture",
+				"uLensCenter"			: "oculusvr.rightLensCenter",
+				"uScreenCenter"			: "oculusvr.rightScreenCenter",
+				"uScreenCorner"			: "oculusvr.rightScreenCorner"
+			},
+			"vertexShader" : "#pragma include('OculusVR.vertex.glsl')",
+			"fragmentShader" : "#pragma include('OculusVR.fragment.glsl')"
+		}
+	]
+}

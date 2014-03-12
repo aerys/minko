@@ -31,19 +31,22 @@ namespace minko
 	{
 		class Matrix4x4 :
 			public std::enable_shared_from_this<Matrix4x4>,
-			public data::Value
+			public data::Value,
+			public Convertible<Matrix4x4>
 		{
 			friend component::Transform;
-
-		private:
-			std::vector<float>	_m;
-			bool				_hasChanged;
 
 		public:
 			typedef std::shared_ptr<Matrix4x4>	Ptr;
 
 		private:
 			typedef std::shared_ptr<Vector3>	Vector3Ptr;
+			typedef std::shared_ptr<Quaternion>	QuaternionPtr;
+
+		private:
+			std::vector<float>	_m;
+			bool				_lock;
+			bool				_hasChanged;
 
 		public:
 			inline static
@@ -62,6 +65,13 @@ namespace minko
 			create(Ptr value)
 			{
 				return std::shared_ptr<Matrix4x4>(new Matrix4x4(value));
+			}
+
+			inline
+			std::vector<float>&
+			data()
+			{
+				return _m;
 			}
 
 			inline
@@ -183,7 +193,7 @@ namespace minko
 			}
 
 			float
-			determinant();
+			determinant() const;
 
 			float
 			determinant3x3() const;
@@ -191,17 +201,54 @@ namespace minko
 			std::pair<Ptr, Ptr>
 			decomposeQR(Ptr matrixQ = nullptr, Ptr matrixR = nullptr) const;
 
+			std::pair<QuaternionPtr, Ptr>
+			decomposeQR(QuaternionPtr quaternion = nullptr, Ptr matrixR = nullptr) const;
+
+			void
+			decompose(Vector3Ptr	translation,
+					  QuaternionPtr	rotation,
+					  Vector3Ptr	scaling) const;
+
+			Ptr
+			recompose(Vector3Ptr	translation,
+					  QuaternionPtr	rotation,
+					  Vector3Ptr	scaling);
+
+			Ptr
+			interpolateTo(Ptr	target, 
+						  float	ratio);
+
 			Ptr
 			invert();
 
 			Ptr
 			transpose();
 
+			inline
+			std::shared_ptr<Vector3>
+			transform(std::shared_ptr<Vector3> v) const
+			{
+				return transform(v, nullptr);
+			}
+
             std::shared_ptr<Vector3>
-            transform(std::shared_ptr<Vector3> v, std::shared_ptr<Vector3> output = nullptr);
+            transform(std::shared_ptr<Vector3> v, std::shared_ptr<Vector3> output) const;
+
+			inline
+			std::shared_ptr<Vector3>
+			deltaTransform(std::shared_ptr<Vector3> v) const
+			{
+				return deltaTransform(v, nullptr);
+			}
 
 			std::shared_ptr<Vector3>
-            deltaTransform(std::shared_ptr<Vector3> v, std::shared_ptr<Vector3> output = nullptr);            
+            deltaTransform(std::shared_ptr<Vector3> v, std::shared_ptr<Vector3> output) const;
+
+			Ptr
+			lock();
+
+			Ptr
+			unlock();
 
 			inline
 			Ptr
@@ -258,6 +305,9 @@ namespace minko
 
 			Ptr
 			lerp(Matrix4x4::Ptr target, float ratio);
+
+			Ptr
+			fromQuaternion(Quaternion::Ptr quaternion);
 
 			Quaternion::Ptr
 			rotationQuaternion(Quaternion::Ptr output = nullptr) const;

@@ -26,9 +26,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::component;
 
-AbstractDiscreteLight::AbstractDiscreteLight(const std::string& arrayName) :
+AbstractDiscreteLight::AbstractDiscreteLight(const std::string& arrayName,
+											 float				diffuse,
+											 float				specular) :
 	AbstractLight(arrayName)
 {
+	data()
+		->set("diffuse", diffuse)
+		->set("specular", specular);
 }
 
 void
@@ -42,6 +47,9 @@ AbstractDiscreteLight::targetAddedHandler(AbstractComponent::Ptr cmp, std::share
 		std::placeholders::_1,
 		std::placeholders::_2
 	));
+
+	if (target->data()->hasProperty("transform.modelToWorldMatrix"))
+		updateModelToWorldMatrix(target->data()->get<math::Matrix4x4::Ptr>("transform.modelToWorldMatrix"));
 }
 
 void

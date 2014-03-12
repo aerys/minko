@@ -78,6 +78,13 @@ namespace minko
 				return mm;
 			}
 
+			inline
+			MousePtr
+			mouse()
+			{
+				return _mouse;
+			}
+
 			void
 			pick(std::shared_ptr<math::Ray> ray);
 

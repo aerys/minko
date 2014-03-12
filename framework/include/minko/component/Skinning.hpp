@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 
-#include <minko/component/AbstractComponent.hpp>
+#include <minko/component/MasterAnimation.hpp>
 #include <minko/render/VertexBuffer.hpp>
 #include <minko/component/SkinningMethod.hpp>
 
@@ -35,8 +35,9 @@ namespace minko
 	namespace component
 	{
 		class Skinning:
-			public AbstractComponent,
-			public std::enable_shared_from_this<Skinning>
+			public MasterAnimation
+			/*,
+			public std::enable_shared_from_this<Skinning>*/
 		{
 		public:	
 			typedef std::shared_ptr<Skinning>						Ptr;
@@ -48,6 +49,7 @@ namespace minko
 			typedef std::shared_ptr<render::VertexBuffer>			VertexBufferPtr;
 			typedef std::shared_ptr<component::AbstractComponent>	AbsCmpPtr;
 			typedef std::shared_ptr<component::SceneManager>		SceneManagerPtr;
+			typedef std::shared_ptr<component::Animation>			AnimationPtr;
 			typedef std::shared_ptr<geometry::Geometry>				GeometryPtr;
 			typedef std::shared_ptr<geometry::Skin>					SkinPtr;
 			typedef std::shared_ptr<data::Provider>					ProviderPtr;
@@ -78,50 +80,34 @@ namespace minko
 			render::VertexBuffer::Ptr								_boneVertexBuffer; // vertex buffer storing vertex attributes
 
 			std::unordered_map<NodePtr, GeometryPtr>				_targetGeometry;
-			std::unordered_map<NodePtr, clock_t>					_targetStartTime;
-
 			std::unordered_map<NodePtr,	std::vector<float>>			_targetInputPositions;	// only for software skinning
 			std::unordered_map<NodePtr,	std::vector<float>>			_targetInputNormals;	// only for software skinning
-
-			TargetAddedOrRemovedSignal::Slot						_targetAddedSlot;
-			TargetAddedOrRemovedSignal::Slot						_targetRemovedSlot;
-			AddedOrRemovedSignal::Slot								_addedSlot;
-			AddedOrRemovedSignal::Slot								_removedSlot;
-			SceneManagerSignal::Slot								_frameBeginSlot;
 
 		public:
 			inline static
 			Ptr
-			create(const SkinPtr skin, SkinningMethod method, AbstractContextPtr context)
+			create(const SkinPtr						skin, 
+				   SkinningMethod						method, 
+				   AbstractContextPtr					context, 
+				   const std::vector<AnimationPtr>&		animations,
+				   bool									isLooping = true)
 			{
-				Ptr ptr(new Skinning(skin, method, context));
+				Ptr ptr(new Skinning(skin, method, context, animations, isLooping));
 
 				ptr->initialize();
 
 				return ptr;
 			}
 
-			inline
-			~Skinning()
-			{
-				_targetAddedSlot	= nullptr;
-				_targetRemovedSlot	= nullptr;
-				_addedSlot			= nullptr;
-				_removedSlot		= nullptr;
-				_frameBeginSlot		= nullptr;
-			}
-
 		private:
-			Skinning(const SkinPtr, SkinningMethod, AbstractContextPtr);
+			Skinning(const SkinPtr, 
+					 SkinningMethod, 
+					 AbstractContextPtr, 
+					 const std::vector<AnimationPtr>&,
+					 bool);
 
 			void
 			initialize();
-
-			void
-			targetAddedHandler(AbsCmpPtr, NodePtr);
-
-			void
-			targetRemovedHandler(AbsCmpPtr, NodePtr);
 
 			void
 			addedHandler(NodePtr, NodePtr, NodePtr);
@@ -130,16 +116,10 @@ namespace minko
 			removedHandler(NodePtr, NodePtr, NodePtr);
 
 			void
-			findSceneManager();
+			update();
 
 			void
-			setSceneManager(SceneManagerPtr);
-
-			void
-			frameBeginHandler(SceneManagerPtr);
-
-			void
-			updateFrame(NodePtr, unsigned int frameId);
+			updateFrame(uint frameId, NodePtr);
 
 			void
 			performSoftwareSkinning(NodePtr, const std::vector<float>&);

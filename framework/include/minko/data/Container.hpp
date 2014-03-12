@@ -42,6 +42,7 @@ namespace minko
 
 			std::list<ProviderPtr>											_providers;
 			std::unordered_map<std::string, ProviderPtr>					_propertyNameToProvider;
+			std::unordered_map<ProviderPtr, uint>							_providersToNumUse;
 
 			std::shared_ptr<Provider>										_arrayLengths;
 
@@ -82,18 +83,20 @@ namespace minko
 			removeProvider(std::shared_ptr<ArrayProvider> provider);
 
 			bool
-			hasProvider(std::shared_ptr<Provider> provider);
+			hasProvider(std::shared_ptr<Provider> provider) const;
 
 			bool
 			hasProperty(const std::string& propertyName) const;
 
 			template <typename T>
 			T
-			get(const std::string& propertyName)
+			get(const std::string& propertyName) const
 			{
 				assertPropertyExists(propertyName);
 
-				return _propertyNameToProvider[propertyName]->get<T>(propertyName, true);
+				const auto& provider = _propertyNameToProvider.find(propertyName)->second;
+
+				return provider->get<T>(propertyName, true);
 			}
 
 			template <typename T>
@@ -107,11 +110,13 @@ namespace minko
 
 			template <typename T>
 			bool
-			propertyHasType(const std::string& propertyName, bool skipPropertyNameFormatting = false)
+			propertyHasType(const std::string& propertyName, bool skipPropertyNameFormatting = false) const
 			{
 				assertPropertyExists(propertyName);
 
-				return _propertyNameToProvider[propertyName]->propertyHasType<T>(propertyName, skipPropertyNameFormatting);
+				const auto& provider = _propertyNameToProvider.find(propertyName)->second;
+
+				return provider->propertyHasType<T>(propertyName, skipPropertyNameFormatting);
 			}
 
 			inline
@@ -145,7 +150,7 @@ namespace minko
 			Container();
 
 			void
-			assertPropertyExists(const std::string& propertyName);
+			assertPropertyExists(const std::string& propertyName) const;
 
 			void
 			providerPropertyAddedHandler(ProviderPtr, const std::string& propertyName);
@@ -161,20 +166,20 @@ namespace minko
 
 			inline
 			void
-			assertProviderDoesNotExist(std::shared_ptr<Provider> provider)
+			assertProviderDoesNotExist(std::shared_ptr<Provider> provider) const
 			{
 #ifdef DEBUG
-				if (hasProvider(provider))
+				if (std::find(_providers.begin(), _providers.end(), provider) != _providers.end())
 					throw std::invalid_argument("provider");
 #endif // DEBUG
 			}
 
 			inline
 			void
-			assertProviderExists(std::shared_ptr<Provider> provider)
+			assertProviderExists(std::shared_ptr<Provider> provider) const
 			{
 #ifdef DEBUG
-				if (!hasProvider(provider))
+				if (std::find(_providers.begin(), _providers.end(), provider) == _providers.end())
 					throw std::invalid_argument("provider");
 #endif // DEBUG
 			}

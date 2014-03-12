@@ -118,18 +118,46 @@ namespace minko
 
 			inline
 			std::shared_ptr<math::Matrix4x4>
-			modelToWorldMatrix(bool forceUpdate = false)
+			modelToWorldMatrix()
+			{
+				return modelToWorldMatrix(false);
+			}
+
+			inline
+			std::shared_ptr<math::Matrix4x4>
+			modelToWorldMatrix(bool forceUpdate)
 			{
 				if (forceUpdate)
 				{
 					auto node		= targets()[0];
 					auto rootCtrl	= node->root()->component<RootTransform>();
 
-					rootCtrl->forceUpdate(node);
+					rootCtrl->forceUpdate(node, true);
 				}
 
 				return _modelToWorld;
 			}
+
+            inline
+            float
+            x()
+            {
+                return this->modelToWorld(minko::math::Vector3::create())->x();
+            }
+
+            inline
+            float
+            y()
+            {
+                return this->modelToWorld(minko::math::Vector3::create())->y();
+            }
+
+            inline
+            float
+            z()
+            {
+                return this->modelToWorld(minko::math::Vector3::create())->z();
+            }
 
 		private:
 			Transform();
@@ -146,7 +174,11 @@ namespace minko
 			void
 			addedOrRemovedHandler(NodePtr node, NodePtr target, NodePtr ancestor);
 
+#ifdef MINKO_TEST
+		public:
+#else
 		private:
+#endif // MINKO_TEST
 			class RootTransform :
 				public std::enable_shared_from_this<RootTransform>,
 				public AbstractComponent
@@ -155,8 +187,8 @@ namespace minko
 				typedef std::shared_ptr<RootTransform> Ptr;
 
 			private:
-				typedef std::shared_ptr<Renderer>	RendererCtrlPtr;
-				typedef Signal<RendererCtrlPtr>::Slot 			EnterFrameCallback;
+				typedef std::shared_ptr<Renderer>		RendererCtrlPtr;
+				typedef Signal<RendererCtrlPtr>::Slot 	EnterFrameCallback;
 
 			public:
 				inline static
@@ -171,7 +203,7 @@ namespace minko
 				}
 
 				void
-				forceUpdate(NodePtr node);
+				forceUpdate(NodePtr node, bool updateTransformLists = false);
 
 			private:
 				std::vector<std::shared_ptr<math::Matrix4x4>>	_transforms;
@@ -186,7 +218,7 @@ namespace minko
 				bool											_invalidLists;
 
 				std::list<Any>									_targetSlots;
-				Signal<std::shared_ptr<SceneManager>>::Slot		_frameEndSlot;
+				Signal<std::shared_ptr<SceneManager>, uint, std::shared_ptr<render::AbstractTexture>>::Slot		_renderingBeginSlot;
 
 			private:
 				void
@@ -220,7 +252,9 @@ namespace minko
 				updateTransformPath(const std::vector<unsigned int>& path);
 
 				void
-				frameEndHandler(std::shared_ptr<SceneManager> sceneManager);
+				renderingBeginHandler(std::shared_ptr<SceneManager> sceneManager, 
+									  uint							frameId, 
+									  std::shared_ptr<render::AbstractTexture>);
 			};
 		};
 	}

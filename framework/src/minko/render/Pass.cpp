@@ -46,12 +46,19 @@ Pass::Pass(const std::string&				name,
 	_macroBindings(macroBindings),
     _states(states),
 	_fallback(fallback),
-	_signatureToProgram()
+	_signatureToProgram(),
+	_uniformFunctions(),
+	_attributeFunctions(),
+	_indexFunction(nullptr),
+	_undefinedMacros(),
+	_definedBoolMacros(),
+	_definedIntMacros()
 {
 }
 
 std::shared_ptr<Program>
-Pass::selectProgram(std::shared_ptr<data::Container>	data,
+Pass::selectProgram(DrawCall::Ptr						drawCall,
+					std::shared_ptr<data::Container>	targetData,
 					std::shared_ptr<data::Container>	rendererData,
 					std::shared_ptr<data::Container>	rootData,
 					std::list<data::ContainerProperty>&	booleanMacros,
@@ -72,10 +79,11 @@ Pass::selectProgram(std::shared_ptr<data::Container>	data,
 		ProgramSignature	signature;
 
 		signature.build(
-			_macroBindings, 
-			data, 
-			rendererData, 
-			rootData, 
+			shared_from_this(),
+			drawCall,
+			targetData,
+			rendererData,
+			rootData,
 			defines, 
 			booleanMacros,
 			integerMacros,
@@ -141,6 +149,10 @@ Pass::finalizeProgram(Program::Ptr program)
 
 				for (auto& func : _uniformFunctions)
 					func(program);
+				for (auto& func : _attributeFunctions)
+					func(program);
+				if (_indexFunction)
+					_indexFunction->operator()(program);
 			}
 		}
 		catch (std::exception& e)
@@ -153,4 +165,36 @@ Pass::finalizeProgram(Program::Ptr program)
 	}
 
 	return program;
+}
+
+void
+Pass::getExplicitDefinitions(std::unordered_map<std::string, data::MacroBindingDefault>& macroNameToValue) const
+{
+	macroNameToValue.clear();
+
+	for (auto& macroName : _definedBoolMacros)
+		if (!isExplicitlyUndefined(macroName))
+		{
+			data::MacroBindingDefault macroValue;
+
+			macroValue.semantic				= data::MacroBindingDefaultValueSemantic::PROPERTY_EXISTS;
+			macroValue.value.propertyExists = true;
+
+			macroNameToValue[macroName] = macroValue;
+		}
+
+	for (auto& macroNameAndValue : _definedIntMacros)
+	{
+		const auto& macroName	= macroNameAndValue.first;
+
+		if (!isExplicitlyUndefined(macroName))
+		{
+			data::MacroBindingDefault	macroValue;
+
+			macroValue.semantic		= data::MacroBindingDefaultValueSemantic::VALUE;
+			macroValue.value.value	= macroNameAndValue.second;
+
+			macroNameToValue[macroName] = macroValue; // integer definitions will overwrite boolean definitions
+		}
+	}
 }

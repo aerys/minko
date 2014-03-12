@@ -22,7 +22,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::input;
 
-Joystick::Joystick(std::shared_ptr<AbstractCanvas> canvas) :
-	_canvas(canvas)
+Joystick::Joystick(std::shared_ptr<AbstractCanvas> canvas, int joystickId) :
+	_canvas(canvas),
+	_joystickAxisMotion(Signal<Ptr, int, int, int>::create()),
+	_joystickHatMotion(Signal<Ptr, int, int, int>::create()),
+	_joystickButtonUp(Signal<Ptr, int, int>::create()),
+	_joystickButtonDown(Signal<Ptr, int, int>::create()),
+	_joystickId(joystickId)
 {
 }

@@ -27,7 +27,8 @@ namespace minko
 	namespace math
 	{
 		class Vector4 :
-			public Vector3
+			public Vector3,
+			public Convertible<Vector4>
 		{
 		public:
 			typedef std::shared_ptr<Vector4>	Ptr;
@@ -201,6 +202,29 @@ namespace minko
 					_z + (target->_z - _z) * ratio,
 					_w + (target->_w - _w) * ratio
 				);
+			}
+
+			inline
+			float
+			lengthSquared() const
+			{
+				return _x * _x + _y * _y + _z * _z + _w * _w;
+			}
+
+			inline
+			float
+			length() const
+			{
+				return sqrtf(lengthSquared());
+			}
+
+			bool
+			equals(std::shared_ptr<Vector4> vect4)
+			{
+				return vect4->x() == _x && 
+					   vect4->y() == _y && 
+					   vect4->z() == _z &&
+					   vect4->w() == _w;
 			}
 
 		protected:

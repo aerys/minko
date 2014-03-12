@@ -25,7 +25,8 @@ using namespace minko;
 using namespace minko::math;
 
 Matrix4x4::Matrix4x4() :
-	_m(16)
+	_m(16),
+	_lock(false)
 {
 }
 
@@ -97,7 +98,8 @@ Matrix4x4::initialize(float m00, float m01, float m02, float m03,
 	_m[8] = m20;	_m[9] = m21; 	_m[10] = m22; 	_m[11] = m23;
 	_m[12] = m30; 	_m[13] = m31; 	_m[14] = m32; 	_m[15] = m33;
 
-	changed()->execute(shared_from_this());
+	if (!_lock)
+		changed()->execute(shared_from_this());
 	_hasChanged = true;
 
 	return shared_from_this();
@@ -130,7 +132,7 @@ Matrix4x4::identity()
 }
 
 float
-Matrix4x4::determinant()
+Matrix4x4::determinant() const
 {
     return _m[0] * _m[5] - _m[4] * _m[1] * _m[10] * _m[15] - _m[14] * _m[11]
     	- _m[0] * _m[6] - _m[4] * _m[2] * _m[9] * _m[15] - _m[13] * _m[11]
@@ -204,7 +206,7 @@ Matrix4x4::transpose()
 }
 
 std::shared_ptr<Vector3>
-Matrix4x4::transform(std::shared_ptr<Vector3> v, std::shared_ptr<Vector3> output)
+Matrix4x4::transform(std::shared_ptr<Vector3> v, std::shared_ptr<Vector3> output) const
 {
     if (!output)
         output = Vector3::create();
@@ -219,7 +221,7 @@ Matrix4x4::transform(std::shared_ptr<Vector3> v, std::shared_ptr<Vector3> output
 }
 
 std::shared_ptr<Vector3>
-Matrix4x4::deltaTransform(std::shared_ptr<Vector3> v, std::shared_ptr<Vector3> output)
+Matrix4x4::deltaTransform(std::shared_ptr<Vector3> v, std::shared_ptr<Vector3> output) const
 {
     if (!output)
         output = Vector3::create();
@@ -351,50 +353,12 @@ Matrix4x4::Ptr
 Matrix4x4::appendRotation(float radians, Vector3::Ptr axis)
 {
 	return append(Quaternion::create()->initialize(radians, axis));
-
-	// this piece of code is buggy -> does not always return a 3x3 rotation matrix (|det| != 1)
-	//float xy2 	= 2.f * axis->x() * axis->y();
-	//float xz2 	= 2.f * axis->x() * axis->z();
-	//float xw2 	= 2.f * axis->x() * radians;
-	//float yz2 	= 2.f * axis->y() * axis->z();
-	//float yw2 	= 2.f * axis->y() * radians;
-	//float zw2 	= 2.f * axis->z() * radians;
-	//float xx 	= axis->x() * axis->x();
-	//float yy 	= axis->y() * axis->y();
-	//float zz 	= axis->z() * axis->z();
-	//float ww 	= radians * radians;
-
-	//return append(
-	//	xx - yy - zz + ww, 	xy2 + zw2, 			xz2 - yw2, 			0.,
-	//	xy2 - zw2,			-xx + yy - zz + ww,	yz2 + xw2,			0.,
-	//	xz2 + yw2,			yz2 - xw2,			-xx - yy + zz + ww, 0.,
-	//	0.,					0.,					0.,					1.
-	//	);
 }
 
 Matrix4x4::Ptr
 Matrix4x4::prependRotation(float radians, Vector3::Ptr axis)
 {
 	return prepend(Quaternion::create()->initialize(radians, axis));
-	
-	// this piece of code is buggy -> does not always return a 3x3 rotation matrix (|det| != 1)
-	//float xy2 	= 2.f * axis->x() * axis->y();
-	//float xz2 	= 2.f * axis->x() * axis->z();
-	//float xw2 	= 2.f * axis->x() * radians;
-	//float yz2 	= 2.f * axis->y() * axis->z();
-	//float yw2 	= 2.f * axis->y() * radians;
-	//float zw2 	= 2.f * axis->z() * radians;
-	//float xx 	= axis->x() * axis->x();
-	//float yy 	= axis->y() * axis->y();
-	//float zz 	= axis->z() * axis->z();
-	//float ww 	= radians * radians;
-
-	//return prepend(
-	//	xx - yy - zz + ww, 	xy2 + zw2, 			xz2 - yw2, 			0.,
-	//	xy2 - zw2,			-xx + yy - zz + ww,	yz2 + xw2,			0.,
-	//	xz2 + yw2,			yz2 - xw2,			-xx - yy + zz + ww, 0.,
-	//	0.,					0.,					0.,					1.
-	//	);
 }
 
 Matrix4x4::Ptr
@@ -433,19 +397,31 @@ Matrix4x4::prependScale(float x, float y, float z)
 }
 
 Matrix4x4::Ptr
-Matrix4x4::perspective(float fov,
+Matrix4x4::perspective(float fov, // vertical FOV
                        float ratio,
                        float zNear,
                        float zFar)
 {
-	float fd = 1.f / tanf(fov * .5f);
+	const float invHalfFOV	= 1.0f / tanf(fov * .5f);
+	const float	invZRange	= 1.0f / (zNear - zFar);
 
+	/*
+	// oculus rift's expected perspective transform
 	return initialize(
-		fd / ratio,	0.f,	0.f,								0.f,
-		0.f,		fd,		0.f,								0.f,
-		0.f,		0.f,	(zFar + zNear) / (zNear - zFar),	2.f * zNear * zFar / (zNear- zFar),
-		0.f,		0.f,	-1.f,								0.f
+		invHalfFOV / ratio,	0.f,		0.f,				0.f,
+		0.f,				invHalfFOV,	0.f,				0.f,
+		0.f,				0.f,		zFar * invZRange,	zNear * zFar * invZRange,
+		0.f,				0.f,		-1.f,				0.f	
 	);
+	*/
+	
+	return initialize(
+		invHalfFOV / ratio,	0.f,		0.f,						0.f,
+		0.f,				invHalfFOV,	0.f,						0.f,
+		0.f,				0.f,		(zFar + zNear) * invZRange,	2.f * zNear * zFar * invZRange,
+		0.f,				0.f,		-1.f,						0.f
+	);
+	
 }
 
 Matrix4x4::Ptr
@@ -503,11 +479,18 @@ Matrix4x4::lerp(Matrix4x4::Ptr target, float ratio)
 {
 	for (auto i = 0; i < 16; ++i)
 		_m[i] = _m[i] + (target->_m[i] - _m[i]) * ratio;
-
-	changed()->execute(shared_from_this());
+	
+	if (!_lock)
+		changed()->execute(shared_from_this());
 	_hasChanged = true;
 
 	return shared_from_this();
+}
+
+Matrix4x4::Ptr
+Matrix4x4::fromQuaternion(Quaternion::Ptr quaternion)
+{
+	return quaternion->toMatrix(shared_from_this());
 }
 
 Quaternion::Ptr
@@ -525,7 +508,8 @@ Matrix4x4::copyFrom(Matrix4x4::Ptr source)
 {
 	std::copy(source->_m.begin(), source->_m.end(), _m.begin());
 
-	changed()->execute(shared_from_this());
+	if (!_lock)
+		changed()->execute(shared_from_this());
 	_hasChanged = true;
 
 	return shared_from_this();
@@ -533,52 +517,196 @@ Matrix4x4::copyFrom(Matrix4x4::Ptr source)
 
 std::pair<Matrix4x4::Ptr, Matrix4x4::Ptr>
 Matrix4x4::decomposeQR(Matrix4x4::Ptr matQ, Matrix4x4::Ptr matR) const
-{
-	Vector4::Ptr				vj		= Vector4::create();
-	Vector4::Ptr				proj	= Vector4::create();
-	Vector4::Ptr				accProj	= Vector4::create();
-	std::vector<Vector4::Ptr>	projVec(4);
+{	
+	double vj[4]		= { 0.0, 0.0, 0.0, 0.0 };
+	double accproj[4]	= { 0.0, 0.0, 0.0, 0.0 };
+	
+	auto projvec		= std::vector<double>(16, 0.0);
+	auto valuesR		= std::vector<double>(16, 0.0);
 
-	std::vector<float> valuesR(16, 0.0f);
 	for (unsigned int j = 0; j < 4; ++j)
 	{
-		vj->setTo(_m[j], _m[j+4], _m[j+8], _m[j+12]); // jth column
+		// m's jth column -> vj
+		vj[0] = _m[j];
+		vj[1] = _m[j + 4];
+		vj[2] = _m[j + 8];
+		vj[3] = _m[j + 12];
 
-		accProj->setTo(0.0f, 0.0f, 0.0f, 0.0f);
+		accproj[0] = 0.0;
+		accproj[1] = 0.0;
+		accproj[2] = 0.0;
+		accproj[3] = 0.0;
+
 		for (unsigned int i = 0; i < j; ++i)
 		{
-			proj->copyFrom(projVec[i]);
-			accProj = accProj + proj * (projVec[i]->dot(vj));
+			const double dot = 
+				projvec[4*i]		* vj[0] + 
+				projvec[4*i + 1]	* vj[1] + 
+				projvec[4*i + 2]	* vj[2] + 
+				projvec[4*i + 3]	* vj[3];
+
+			for (unsigned int k = 0; k < 4; ++k)
+				accproj[k] += dot * projvec[4*i + k];
 		}
 
-		projVec[j] = Vector4::create()
-			->copyFrom(vj - accProj)
-			->normalize();
+		double squaredLength = 0.0;
+		for (unsigned int k = 0; k < 4; ++k)
+		{
+			const double diff	= vj[k] - accproj[k];
+
+			projvec[4*j + k]	= diff;
+			squaredLength		+= diff * diff;
+		}
+
+		const double invLength	= squaredLength > 1e-6 ? 1.0 / sqrt(squaredLength) : 0.0;
+		for (unsigned int k = 0; k < 4; ++k)
+			projvec[4*j + k] *= invLength;
 
 		for (unsigned int i = 0; i <= j; ++i)
-			valuesR[j + (i<<2)] = projVec[i]->dot(vj);
+		{
+			const double dot = 
+				projvec[4*i]		* vj[0] + 
+				projvec[4*i + 1]	* vj[1] + 
+				projvec[4*i + 2]	* vj[2] + 
+				projvec[4*i + 3]	* vj[3];
+
+			valuesR[j + 4*i] = dot;
+		}
 	}
 
-	Matrix4x4::Ptr matrixQ = matQ == nullptr
-		? Matrix4x4::create()
-		: matQ;
-	Matrix4x4::Ptr matrixR = matR == nullptr
-		? Matrix4x4::create()
-		: matR;
+	if (matQ == nullptr)
+		matQ = Matrix4x4::create();
+	if (matR == nullptr)
+		matR = Matrix4x4::create();
 
-	matrixQ->initialize(
-		projVec[0]->x(), projVec[1]->x(), projVec[2]->x(), projVec[3]->x(),
-		projVec[0]->y(), projVec[1]->y(), projVec[2]->y(), projVec[3]->y(),
-		projVec[0]->z(), projVec[1]->z(), projVec[2]->z(), projVec[3]->z(),
-		projVec[0]->w(), projVec[1]->w(), projVec[2]->w(), projVec[3]->w()
+	matQ->initialize(
+		(float)projvec[0],	(float)projvec[4],	(float)projvec[8],	(float)projvec[12],
+		(float)projvec[1],	(float)projvec[5],	(float)projvec[9],	(float)projvec[13],
+		(float)projvec[2],	(float)projvec[6],	(float)projvec[10], (float)projvec[14],
+		(float)projvec[3],	(float)projvec[7],	(float)projvec[11], (float)projvec[15]
+	);
+	matR->initialize(
+		(float)valuesR[0],	(float)valuesR[1],	(float)valuesR[2],	(float)valuesR[3],
+		(float)valuesR[4],	(float)valuesR[5],	(float)valuesR[6],	(float)valuesR[7],
+		(float)valuesR[8],	(float)valuesR[9],	(float)valuesR[10], (float)valuesR[11],
+		(float)valuesR[12],	(float)valuesR[13],	(float)valuesR[14], (float)valuesR[15]
 	);
 
-	matrixR->initialize(
-		valuesR[0], valuesR[1], valuesR[2], valuesR[3],
-		valuesR[4], valuesR[5], valuesR[6], valuesR[7],
-		valuesR[8], valuesR[9], valuesR[10], valuesR[11],
-		valuesR[12], valuesR[13], valuesR[14], valuesR[15]
-	);
+	if (matQ->determinant3x3() < 0.0f)
+	{
+		// important: account for possible reflection in the Q orthogonal matrix
+		matQ->data()[0]		*= -1.0f;
+		matQ->data()[4]		*= -1.0f;
+		matQ->data()[8]		*= -1.0f;
+		matQ->data()[12]	*= -1.0f;
 
-	return std::pair<Matrix4x4::Ptr, Matrix4x4::Ptr>(matrixQ, matrixR);
+		matR->data()[0]		*= -1.0f;
+		matR->data()[1]		*= -1.0f;
+		matR->data()[2]		*= -1.0f;
+		matR->data()[3]		*= -1.0f;
+	}
+
+	return std::make_pair(matQ, matR);
+}
+
+std::pair<Quaternion::Ptr, Matrix4x4::Ptr>
+Matrix4x4::decomposeQR(Quaternion::Ptr quaternion, Matrix4x4::Ptr matR) const
+{
+	if (quaternion == nullptr)
+		quaternion = Quaternion::create();
+	if (matR == nullptr)
+		matR = Matrix4x4::create();
+
+	static auto matQ = Matrix4x4::create();
+
+	decomposeQR(matQ, matR);
+	quaternion->fromMatrix(matQ);
+
+	return std::make_pair(quaternion, matR);
+}
+
+Matrix4x4::Ptr
+Matrix4x4::lock()
+{
+	_lock = true;
+	return shared_from_this();
+}
+
+Matrix4x4::Ptr
+Matrix4x4::unlock()
+{
+	if (_hasChanged)
+		changed()->execute(shared_from_this());
+	_lock = false;
+
+	return shared_from_this();
+}
+
+void
+Matrix4x4::decompose(Vector3::Ptr		translation,
+					 Quaternion::Ptr	rotation,
+					 Vector3::Ptr		scaling) const
+{
+	static auto matrixR = Matrix4x4::create();
+
+	decomposeQR(rotation, matrixR);
+	
+	const std::vector<float>& matR = matrixR->_m;
+	scaling->setTo(matR[0], matR[5], matR[10]);
+
+#ifdef DEBUG
+	if (fabsf(matR[1]) > 1e-3f || fabsf(matR[2]) > 1e-3f || fabsf(matR[6]) > 1e-3f)
+		std::cout << "Warning: Matrix decomposition assumes the following composition order : scaling, rotation, and translation." << std::endl;
+#endif // DEBUG
+
+	translation->setTo(_m[3], _m[7], _m[11]);
+}
+
+Matrix4x4::Ptr
+Matrix4x4::recompose(Vector3Ptr		translation,
+					 QuaternionPtr	rotation,
+					 Vector3Ptr		scaling)
+{
+	static auto matrixRotation = Matrix4x4::create();
+
+	matrixRotation->fromQuaternion(rotation);
+
+	const std::vector<float>& matRot	= matrixRotation->_m;
+
+	const float sx	= scaling->x();
+	const float sy	= scaling->y();
+	const float sz	= scaling->z();
+
+	return initialize(
+		sx * matRot[0],	sy * matRot[1],	sz * matRot[2],		translation->x(),
+		sx * matRot[4],	sy * matRot[5],	sz * matRot[6],		translation->y(),
+		sx * matRot[8],	sy * matRot[9],	sz * matRot[10],	translation->z(),
+		0.0f,			0.0f,			0.0f,				1.0f
+	);
+}
+
+Matrix4x4::Ptr
+Matrix4x4::interpolateTo(Matrix4x4::Ptr	target, 
+						 float			ratio)
+{
+	static auto quaternion1 = Quaternion::create();
+	static auto quaternion2 = Quaternion::create();
+	static auto matrixR1	= Matrix4x4::create();
+	static auto matrixR2	= Matrix4x4::create();
+
+	decomposeQR(quaternion1, matrixR1);
+	target->decomposeQR(quaternion2, matrixR2);
+	
+	// handle the special case of rotation interpolation with quaternions
+	quaternion1 = quaternion1->slerp(quaternion2, ratio);
+
+	const float weight1 = 1.0f - ratio;
+	const float weight2 = ratio;
+
+	const auto&	mat1	= matrixR1->_m;
+	const auto&	mat2	= matrixR2->_m;
+	for (uint i = 0; i < 16; ++i)
+		_m[i] = weight1 * mat1[i] + weight2 * mat2[i];
+
+	return append(quaternion1); // interpQ * interpR
 }

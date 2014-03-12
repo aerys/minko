@@ -40,12 +40,14 @@ namespace minko
 			Signal<Ptr, int, int>::Ptr			_joystickButtonDown;
 			Signal<Ptr, int, int>::Ptr			_joystickButtonUp;
 
+			int									_joystickId;
+
 		public:
-			inline static
-			Ptr
-			create(std::shared_ptr<AbstractCanvas> canvas)
+			inline
+			int
+			joystickId()
 			{
-				return std::shared_ptr<Joystick>(new Joystick(canvas));
+				return _joystickId;
 			}
 
 			inline
@@ -78,7 +80,7 @@ namespace minko
 			}
 
 		protected:
-			Joystick(std::shared_ptr<AbstractCanvas> canvas);
+			Joystick(std::shared_ptr<AbstractCanvas> canvas, int joystickId);
 		};
 	}
 }
