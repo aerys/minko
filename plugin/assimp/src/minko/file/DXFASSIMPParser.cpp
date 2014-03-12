@@ -17,21 +17,21 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "minko/file/3DSASSIMPParser.hpp"
+#include "minko/file/DXFASSIMPParser.hpp"
 
 #include "../code/AssimpPCH.h"
 #include "assimp/Importer.hpp"
-#include "../code/3DSLoader.h"
+#include "../code/DXFLoader.h"
 
 using namespace minko;
 using namespace file;
 
-3DSASSIMPParser::Ptr 3DSASSIMPParser::create()
+DXFASSIMPParser::Ptr DXFASSIMPParser::create()
 {
-    return ColladaASSIMPParser::Ptr(new ColladaASSIMPParser());
+    return DXFASSIMPParser::Ptr(new DXFASSIMPParser());
 }
 
-void 3DSASSIMPParser::provideLoaders(Assimp::Importer& importer)
+void DXFASSIMPParser::provideLoaders(Assimp::Importer& importer)
 {
-    importer.RegisterLoader(new Assimp::3DSImporter());
+    importer.RegisterLoader(new Assimp::DXFImporter());
 }

@@ -28,7 +28,7 @@ using namespace file;
 
 OFFASSIMPParser::Ptr OFFASSIMPParser::create()
 {
-    return ColladaASSIMPParser::Ptr(new ColladaASSIMPParser());
+    return OFFASSIMPParser::Ptr(new OFFASSIMPParser());
 }
 
 void OFFASSIMPParser::provideLoaders(Assimp::Importer& importer)

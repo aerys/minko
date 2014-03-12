@@ -28,7 +28,7 @@ using namespace file;
 
 DFXASSIMPParser::Ptr DFXASSIMPParser::create()
 {
-    return ColladaASSIMPParser::Ptr(new ColladaASSIMPParser());
+    return DFXASSIMPParser::Ptr(new DFXASSIMPParser());
 }
 
 void DFXASSIMPParser::provideLoaders(Assimp::Importer& importer)

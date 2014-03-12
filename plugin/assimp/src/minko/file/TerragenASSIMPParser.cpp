@@ -28,7 +28,7 @@ using namespace file;
 
 TerragenASSIMPParser::Ptr TerragenASSIMPParser::create()
 {
-    return ColladaASSIMPParser::Ptr(new ColladaASSIMPParser());
+    return TerragenASSIMPParser::Ptr(new TerragenASSIMPParser());
 }
 
 void TerragenASSIMPParser::provideLoaders(Assimp::Importer& importer)

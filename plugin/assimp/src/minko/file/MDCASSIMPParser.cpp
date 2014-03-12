@@ -28,7 +28,7 @@ using namespace file;
 
 MDCASSIMPParser::Ptr MDCASSIMPParser::create()
 {
-    return ColladaASSIMPParser::Ptr(new ColladaASSIMPParser());
+    return MDCASSIMPParser::Ptr(new MDCASSIMPParser());
 }
 
 void MDCASSIMPParser::provideLoaders(Assimp::Importer& importer)

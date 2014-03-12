@@ -19,7 +19,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #pragma once
 
-#include "minko/file/AnyAssimpParser.hpp"
+#include "minko/file/AnyASSIMPParser.hpp"
 
 namespace Assimp
 {
@@ -31,7 +31,7 @@ namespace minko
     namespace file
     {
         template <>
-		class AnyASSIMPParser<Assimp::ColladaLoader> : public AbstractASSIMPParser
+	class AnyASSIMPParser<Assimp::ColladaLoader> : public AbstractASSIMPParser
         {
         public:
 

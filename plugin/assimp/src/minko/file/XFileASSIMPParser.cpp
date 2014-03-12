@@ -28,7 +28,7 @@ using namespace file;
 
 XFileASSIMPParser::Ptr XFileASSIMPParser::create()
 {
-    return ColladaASSIMPParser::Ptr(new ColladaASSIMPParser());
+    return XFileASSIMPParser::Ptr(new XFileASSIMPParser());
 }
 
 void XFileASSIMPParser::provideLoaders(Assimp::Importer& importer)

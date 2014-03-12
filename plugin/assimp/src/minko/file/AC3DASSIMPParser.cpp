@@ -17,7 +17,7 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "minko/file/ACASSIMPParser.hpp"
+#include "minko/file/AC3DASSIMPParser.hpp"
 
 #include "../code/AssimpPCH.h"
 #include "assimp/Importer.hpp"
@@ -26,12 +26,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace file;
 
-ACASSIMPParser::Ptr ACASSIMPParser::create()
+AC3DASSIMPParser::Ptr AC3DASSIMPParser::create()
 {
-    return ColladaASSIMPParser::Ptr(new ColladaASSIMPParser());
+    return AC3DASSIMPParser::Ptr(new AC3DASSIMPParser());
 }
 
-void ACASSIMPParser::provideLoaders(Assimp::Importer& importer)
+void AC3DASSIMPParser::provideLoaders(Assimp::Importer& importer)
 {
-    importer.RegisterLoader(new Assimp::ACImporter());
+    importer.RegisterLoader(new Assimp::AC3DImporter());
 }

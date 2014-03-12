@@ -28,7 +28,7 @@ using namespace file;
 
 NDOASSIMPParser::Ptr NDOASSIMPParser::create()
 {
-    return ColladaASSIMPParser::Ptr(new ColladaASSIMPParser());
+    return NDOASSIMPParser::Ptr(new NDOASSIMPParser());
 }
 
 void NDOASSIMPParser::provideLoaders(Assimp::Importer& importer)

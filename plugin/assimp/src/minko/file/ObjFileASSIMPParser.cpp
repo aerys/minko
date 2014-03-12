@@ -28,7 +28,7 @@ using namespace file;
 
 ObjFileASSIMPParser::Ptr ObjFileASSIMPParser::create()
 {
-    return ColladaASSIMPParser::Ptr(new ColladaASSIMPParser());
+    return ObjFileASSIMPParser::Ptr(new ObjFileASSIMPParser());
 }
 
 void ObjFileASSIMPParser::provideLoaders(Assimp::Importer& importer)

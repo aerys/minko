@@ -40,9 +40,19 @@ source_file_name="${file_name_prefix}.cpp"
 
 assimp_class_name="${parser_name}Importer"
 
-# Ugly exception...
-if [ ${parser_name} == "Collada" ]; then
-	assimp_class_name="${parser_name}Loader"
+# Ugly exceptions...
+# assimp class names do not respect consistent convention
+# remapping parser name to specific assimp class name
+if [[ ${parser_name} == "Collada" ]]; then
+ 	assimp_class_name="ColladaLoader"
+fi
+
+if [[ ${parser_name} == "Discreet3DS" ]]; then
+    assimp_class_name="Discreet3DSImporter"
+fi
+
+if [[ ${parser_name} == "BVH" ]]; then
+ 	assimp_class_name="BVHLoader"
 fi
 
 parser_type_name="${file_name_prefix}"
@@ -68,7 +78,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #pragma once
 
-#include \"minko/file/AnyAssimpParser.hpp\"
+#include \"minko/file/AnyASSIMPParser.hpp\"
 
 namespace Assimp
 {
@@ -80,7 +90,7 @@ namespace minko
     namespace file
     {
         template <>
-		class AnyASSIMPParser<Assimp::"${assimp_class_name}"> : public AbstractASSIMPParser
+	class AnyASSIMPParser<Assimp::"${assimp_class_name}"> : public AbstractASSIMPParser
         {
         public:
 
@@ -135,7 +145,7 @@ using namespace file;
 
 "${parser_type_name}"::Ptr "${parser_type_name}"::create()
 {
-    return ColladaASSIMPParser::Ptr(new ColladaASSIMPParser());
+    return "${parser_type_name}"::Ptr(new "${parser_type_name}"());
 }
 
 void "${parser_type_name}"::provideLoaders(Assimp::Importer& importer)

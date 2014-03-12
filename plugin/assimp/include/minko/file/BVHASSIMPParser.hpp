@@ -19,11 +19,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #pragma once
 
-#include "minko/file/AnyAssimpParser.hpp"
+#include "minko/file/AnyASSIMPParser.hpp"
 
 namespace Assimp
 {
-    class BVHImporter;
+    class BVHLoader;
 }
 
 namespace minko
@@ -31,11 +31,11 @@ namespace minko
     namespace file
     {
         template <>
-		class AnyASSIMPParser<Assimp::BVHImporter> : public AbstractASSIMPParser
+	class AnyASSIMPParser<Assimp::BVHLoader> : public AbstractASSIMPParser
         {
         public:
 
-            typedef std::shared_ptr<AnyASSIMPParser<Assimp::BVHImporter>> Ptr;
+            typedef std::shared_ptr<AnyASSIMPParser<Assimp::BVHLoader>> Ptr;
 
         public:
 
@@ -52,6 +52,6 @@ namespace minko
             AnyASSIMPParser() { }
         };
 
-        using BVHASSIMPParser = AnyASSIMPParser<Assimp::BVHImporter>;
+        using BVHASSIMPParser = AnyASSIMPParser<Assimp::BVHLoader>;
     }
 }

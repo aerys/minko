@@ -28,7 +28,7 @@ using namespace file;
 
 XGLASSIMPParser::Ptr XGLASSIMPParser::create()
 {
-    return ColladaASSIMPParser::Ptr(new ColladaASSIMPParser());
+    return XGLASSIMPParser::Ptr(new XGLASSIMPParser());
 }
 
 void XGLASSIMPParser::provideLoaders(Assimp::Importer& importer)

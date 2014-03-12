@@ -28,7 +28,7 @@ using namespace file;
 
 BlenderASSIMPParser::Ptr BlenderASSIMPParser::create()
 {
-    return ColladaASSIMPParser::Ptr(new ColladaASSIMPParser());
+    return BlenderASSIMPParser::Ptr(new BlenderASSIMPParser());
 }
 
 void BlenderASSIMPParser::provideLoaders(Assimp::Importer& importer)

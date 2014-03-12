@@ -28,7 +28,7 @@ using namespace file;
 
 NFFASSIMPParser::Ptr NFFASSIMPParser::create()
 {
-    return ColladaASSIMPParser::Ptr(new ColladaASSIMPParser());
+    return NFFASSIMPParser::Ptr(new NFFASSIMPParser());
 }
 
 void NFFASSIMPParser::provideLoaders(Assimp::Importer& importer)

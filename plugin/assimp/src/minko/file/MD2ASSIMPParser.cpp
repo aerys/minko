@@ -28,7 +28,7 @@ using namespace file;
 
 MD2ASSIMPParser::Ptr MD2ASSIMPParser::create()
 {
-    return ColladaASSIMPParser::Ptr(new ColladaASSIMPParser());
+    return MD2ASSIMPParser::Ptr(new MD2ASSIMPParser());
 }
 
 void MD2ASSIMPParser::provideLoaders(Assimp::Importer& importer)

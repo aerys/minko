@@ -28,7 +28,7 @@ using namespace file;
 
 PlyASSIMPParser::Ptr PlyASSIMPParser::create()
 {
-    return ColladaASSIMPParser::Ptr(new ColladaASSIMPParser());
+    return PlyASSIMPParser::Ptr(new PlyASSIMPParser());
 }
 
 void PlyASSIMPParser::provideLoaders(Assimp::Importer& importer)

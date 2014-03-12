@@ -28,7 +28,7 @@ using namespace file;
 
 UnrealASSIMPParser::Ptr UnrealASSIMPParser::create()
 {
-    return ColladaASSIMPParser::Ptr(new ColladaASSIMPParser());
+    return UnrealASSIMPParser::Ptr(new UnrealASSIMPParser());
 }
 
 void UnrealASSIMPParser::provideLoaders(Assimp::Importer& importer)

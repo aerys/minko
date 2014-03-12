@@ -28,7 +28,7 @@ using namespace file;
 
 FBXASSIMPParser::Ptr FBXASSIMPParser::create()
 {
-    return ColladaASSIMPParser::Ptr(new ColladaASSIMPParser());
+    return FBXASSIMPParser::Ptr(new FBXASSIMPParser());
 }
 
 void FBXASSIMPParser::provideLoaders(Assimp::Importer& importer)

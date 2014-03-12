@@ -28,7 +28,7 @@ using namespace file;
 
 RawASSIMPParser::Ptr RawASSIMPParser::create()
 {
-    return ColladaASSIMPParser::Ptr(new ColladaASSIMPParser());
+    return RawASSIMPParser::Ptr(new RawASSIMPParser());
 }
 
 void RawASSIMPParser::provideLoaders(Assimp::Importer& importer)

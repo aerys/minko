@@ -28,7 +28,7 @@ using namespace file;
 
 IFCASSIMPParser::Ptr IFCASSIMPParser::create()
 {
-    return ColladaASSIMPParser::Ptr(new ColladaASSIMPParser());
+    return IFCASSIMPParser::Ptr(new IFCASSIMPParser());
 }
 
 void IFCASSIMPParser::provideLoaders(Assimp::Importer& importer)

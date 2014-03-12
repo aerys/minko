@@ -28,7 +28,7 @@ using namespace file;
 
 B3DASSIMPParser::Ptr B3DASSIMPParser::create()
 {
-    return ColladaASSIMPParser::Ptr(new ColladaASSIMPParser());
+    return B3DASSIMPParser::Ptr(new B3DASSIMPParser());
 }
 
 void B3DASSIMPParser::provideLoaders(Assimp::Importer& importer)

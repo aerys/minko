@@ -28,7 +28,7 @@ using namespace file;
 
 MD5ASSIMPParser::Ptr MD5ASSIMPParser::create()
 {
-    return ColladaASSIMPParser::Ptr(new ColladaASSIMPParser());
+    return MD5ASSIMPParser::Ptr(new MD5ASSIMPParser());
 }
 
 void MD5ASSIMPParser::provideLoaders(Assimp::Importer& importer)

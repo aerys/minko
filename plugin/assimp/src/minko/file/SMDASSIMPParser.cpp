@@ -28,7 +28,7 @@ using namespace file;
 
 SMDASSIMPParser::Ptr SMDASSIMPParser::create()
 {
-    return ColladaASSIMPParser::Ptr(new ColladaASSIMPParser());
+    return SMDASSIMPParser::Ptr(new SMDASSIMPParser());
 }
 
 void SMDASSIMPParser::provideLoaders(Assimp::Importer& importer)

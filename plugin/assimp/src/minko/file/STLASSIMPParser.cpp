@@ -28,7 +28,7 @@ using namespace file;
 
 STLASSIMPParser::Ptr STLASSIMPParser::create()
 {
-    return ColladaASSIMPParser::Ptr(new ColladaASSIMPParser());
+    return STLASSIMPParser::Ptr(new STLASSIMPParser());
 }
 
 void STLASSIMPParser::provideLoaders(Assimp::Importer& importer)

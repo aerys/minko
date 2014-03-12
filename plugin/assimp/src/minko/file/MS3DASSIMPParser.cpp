@@ -28,7 +28,7 @@ using namespace file;
 
 MS3DASSIMPParser::Ptr MS3DASSIMPParser::create()
 {
-    return ColladaASSIMPParser::Ptr(new ColladaASSIMPParser());
+    return MS3DASSIMPParser::Ptr(new MS3DASSIMPParser());
 }
 
 void MS3DASSIMPParser::provideLoaders(Assimp::Importer& importer)

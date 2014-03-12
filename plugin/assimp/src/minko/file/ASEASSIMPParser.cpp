@@ -28,7 +28,7 @@ using namespace file;
 
 ASEASSIMPParser::Ptr ASEASSIMPParser::create()
 {
-    return ColladaASSIMPParser::Ptr(new ColladaASSIMPParser());
+    return ASEASSIMPParser::Ptr(new ASEASSIMPParser());
 }
 
 void ASEASSIMPParser::provideLoaders(Assimp::Importer& importer)

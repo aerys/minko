@@ -28,7 +28,7 @@ using namespace file;
 
 IRRASSIMPParser::Ptr IRRASSIMPParser::create()
 {
-    return ColladaASSIMPParser::Ptr(new ColladaASSIMPParser());
+    return IRRASSIMPParser::Ptr(new IRRASSIMPParser());
 }
 
 void IRRASSIMPParser::provideLoaders(Assimp::Importer& importer)

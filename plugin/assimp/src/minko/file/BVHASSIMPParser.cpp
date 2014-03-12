@@ -28,10 +28,10 @@ using namespace file;
 
 BVHASSIMPParser::Ptr BVHASSIMPParser::create()
 {
-    return ColladaASSIMPParser::Ptr(new ColladaASSIMPParser());
+    return BVHASSIMPParser::Ptr(new BVHASSIMPParser());
 }
 
 void BVHASSIMPParser::provideLoaders(Assimp::Importer& importer)
 {
-    importer.RegisterLoader(new Assimp::BVHImporter());
+    importer.RegisterLoader(new Assimp::BVHLoader());
 }

@@ -28,7 +28,7 @@ using namespace file;
 
 Q3DASSIMPParser::Ptr Q3DASSIMPParser::create()
 {
-    return ColladaASSIMPParser::Ptr(new ColladaASSIMPParser());
+    return Q3DASSIMPParser::Ptr(new Q3DASSIMPParser());
 }
 
 void Q3DASSIMPParser::provideLoaders(Assimp::Importer& importer)

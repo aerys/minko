@@ -28,7 +28,7 @@ using namespace file;
 
 COBASSIMPParser::Ptr COBASSIMPParser::create()
 {
-    return ColladaASSIMPParser::Ptr(new ColladaASSIMPParser());
+    return COBASSIMPParser::Ptr(new COBASSIMPParser());
 }
 
 void COBASSIMPParser::provideLoaders(Assimp::Importer& importer)

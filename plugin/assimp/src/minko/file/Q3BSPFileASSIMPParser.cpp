@@ -28,7 +28,7 @@ using namespace file;
 
 Q3BSPFileASSIMPParser::Ptr Q3BSPFileASSIMPParser::create()
 {
-    return ColladaASSIMPParser::Ptr(new ColladaASSIMPParser());
+    return Q3BSPFileASSIMPParser::Ptr(new Q3BSPFileASSIMPParser());
 }
 
 void Q3BSPFileASSIMPParser::provideLoaders(Assimp::Importer& importer)

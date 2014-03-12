@@ -28,7 +28,7 @@ using namespace file;
 
 HMPASSIMPParser::Ptr HMPASSIMPParser::create()
 {
-    return ColladaASSIMPParser::Ptr(new ColladaASSIMPParser());
+    return HMPASSIMPParser::Ptr(new HMPASSIMPParser());
 }
 
 void HMPASSIMPParser::provideLoaders(Assimp::Importer& importer)

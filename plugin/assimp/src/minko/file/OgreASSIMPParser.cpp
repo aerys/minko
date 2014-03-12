@@ -28,7 +28,7 @@ using namespace file;
 
 OgreASSIMPParser::Ptr OgreASSIMPParser::create()
 {
-    return ColladaASSIMPParser::Ptr(new ColladaASSIMPParser());
+    return OgreASSIMPParser::Ptr(new OgreASSIMPParser());
 }
 
 void OgreASSIMPParser::provideLoaders(Assimp::Importer& importer)

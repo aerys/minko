@@ -28,7 +28,7 @@ using namespace file;
 
 MD3ASSIMPParser::Ptr MD3ASSIMPParser::create()
 {
-    return ColladaASSIMPParser::Ptr(new ColladaASSIMPParser());
+    return MD3ASSIMPParser::Ptr(new MD3ASSIMPParser());
 }
 
 void MD3ASSIMPParser::provideLoaders(Assimp::Importer& importer)

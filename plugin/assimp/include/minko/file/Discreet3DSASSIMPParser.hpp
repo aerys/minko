@@ -23,7 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace Assimp
 {
-    class XFileImporter;
+    class Discreet3DSImporter;
 }
 
 namespace minko
@@ -31,11 +31,11 @@ namespace minko
     namespace file
     {
         template <>
-	class AnyASSIMPParser<Assimp::XFileImporter> : public AbstractASSIMPParser
+	class AnyASSIMPParser<Assimp::Discreet3DSImporter> : public AbstractASSIMPParser
         {
         public:
 
-            typedef std::shared_ptr<AnyASSIMPParser<Assimp::XFileImporter>> Ptr;
+            typedef std::shared_ptr<AnyASSIMPParser<Assimp::Discreet3DSImporter>> Ptr;
 
         public:
 
@@ -52,6 +52,6 @@ namespace minko
             AnyASSIMPParser() { }
         };
 
-        using XFileASSIMPParser = AnyASSIMPParser<Assimp::XFileImporter>;
+        using Discreet3DSASSIMPParser = AnyASSIMPParser<Assimp::Discreet3DSImporter>;
     }
 }

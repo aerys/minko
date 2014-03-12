@@ -28,7 +28,7 @@ using namespace file;
 
 LWOASSIMPParser::Ptr LWOASSIMPParser::create()
 {
-    return ColladaASSIMPParser::Ptr(new ColladaASSIMPParser());
+    return LWOASSIMPParser::Ptr(new LWOASSIMPParser());
 }
 
 void LWOASSIMPParser::provideLoaders(Assimp::Importer& importer)

@@ -28,7 +28,7 @@ using namespace file;
 
 CSMASSIMPParser::Ptr CSMASSIMPParser::create()
 {
-    return ColladaASSIMPParser::Ptr(new ColladaASSIMPParser());
+    return CSMASSIMPParser::Ptr(new CSMASSIMPParser());
 }
 
 void CSMASSIMPParser::provideLoaders(Assimp::Importer& importer)
