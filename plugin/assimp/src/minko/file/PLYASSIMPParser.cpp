@@ -17,7 +17,7 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "minko/file/PlyASSIMPParser.hpp"
+#include "minko/file/PLYASSIMPParser.hpp"
 
 #include "../code/AssimpPCH.h"
 #include "assimp/Importer.hpp"
@@ -26,12 +26,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace file;
 
-PlyASSIMPParser::Ptr PlyASSIMPParser::create()
+PLYASSIMPParser::Ptr PLYASSIMPParser::create()
 {
-    return PlyASSIMPParser::Ptr(new PlyASSIMPParser());
+    return PLYASSIMPParser::Ptr(new PLYASSIMPParser());
 }
 
-void PlyASSIMPParser::provideLoaders(Assimp::Importer& importer)
+void PLYASSIMPParser::provideLoaders(Assimp::Importer& importer)
 {
-    importer.RegisterLoader(new Assimp::PlyImporter());
+    importer.RegisterLoader(new Assimp::PLYImporter());
 }

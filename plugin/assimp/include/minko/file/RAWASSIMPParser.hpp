@@ -23,7 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace Assimp
 {
-    class RawImporter;
+    class RAWImporter;
 }
 
 namespace minko
@@ -31,11 +31,11 @@ namespace minko
     namespace file
     {
         template <>
-	class AnyASSIMPParser<Assimp::RawImporter> : public AbstractASSIMPParser
+	class AnyASSIMPParser<Assimp::RAWImporter> : public AbstractASSIMPParser
         {
         public:
 
-            typedef std::shared_ptr<AnyASSIMPParser<Assimp::RawImporter>> Ptr;
+            typedef std::shared_ptr<AnyASSIMPParser<Assimp::RAWImporter>> Ptr;
 
         public:
 
@@ -52,6 +52,6 @@ namespace minko
             AnyASSIMPParser() { }
         };
 
-        using RawASSIMPParser = AnyASSIMPParser<Assimp::RawImporter>;
+        using RAWASSIMPParser = AnyASSIMPParser<Assimp::RAWImporter>;
     }
 }

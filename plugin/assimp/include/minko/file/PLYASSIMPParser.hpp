@@ -17,21 +17,41 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "minko/file/RawASSIMPParser.hpp"
+#pragma once
 
-#include "../code/AssimpPCH.h"
-#include "assimp/Importer.hpp"
-#include "../code/RawLoader.h"
+#include "minko/file/AnyASSIMPParser.hpp"
 
-using namespace minko;
-using namespace file;
-
-RawASSIMPParser::Ptr RawASSIMPParser::create()
+namespace Assimp
 {
-    return RawASSIMPParser::Ptr(new RawASSIMPParser());
+    class PLYImporter;
 }
 
-void RawASSIMPParser::provideLoaders(Assimp::Importer& importer)
+namespace minko
 {
-    importer.RegisterLoader(new Assimp::RawImporter());
+    namespace file
+    {
+        template <>
+	class AnyASSIMPParser<Assimp::PLYImporter> : public AbstractASSIMPParser
+        {
+        public:
+
+            typedef std::shared_ptr<AnyASSIMPParser<Assimp::PLYImporter>> Ptr;
+
+        public:
+
+            virtual ~AnyASSIMPParser() { }
+
+            static
+            Ptr
+            create();
+
+            virtual void provideLoaders(Assimp::Importer& importer);
+
+        private:
+
+            AnyASSIMPParser() { }
+        };
+
+        using PLYASSIMPParser = AnyASSIMPParser<Assimp::PLYImporter>;
+    }
 }
