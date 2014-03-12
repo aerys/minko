@@ -18,181 +18,239 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #if defined(EMSCRIPTEN)
-#pragma once
 
 #include "minko/Common.hpp"
 #include "emscripten/dom/EmscriptenDOMElement.hpp"
+#include "emscripten/dom/EmscriptenDOM.hpp"
 #include "minko/dom/AbstractDOMEvent.hpp"
+#include "emscripten/emscripten.h"
 
 using namespace minko;
 using namespace minko::dom;
 using namespace emscripten;
 using namespace emscripten::dom;
 
-EmscriptenDOMElement::EmscriptenDOMElement()
+EmscriptenDOMElement::EmscriptenDOMElement(std::string jsAccessor) :
+	_jsAccessor(jsAccessor),
+	_onclick(Signal<AbstractDOMEvent::Ptr>::create()),
+	_onmousedown(Signal<AbstractDOMEvent::Ptr>::create()),
+	_onmousemove(Signal<AbstractDOMEvent::Ptr>::create()),
+	_onmouseup(Signal<AbstractDOMEvent::Ptr>::create()),
+	_onmouseover(Signal<AbstractDOMEvent::Ptr>::create()),
+	_onmouseout(Signal<AbstractDOMEvent::Ptr>::create())
 {
 }
 
 EmscriptenDOMElement::Ptr
-create(std::string accessor, std::string varName)
+EmscriptenDOMElement::create(std::string jsAccessor)
 {
-	return nullptr;
+	EmscriptenDOMElement::Ptr element(new EmscriptenDOMElement(jsAccessor));
+	return element;
+}
+
+std::string
+EmscriptenDOMElement::getJavascriptAccessor()
+{
+	return _jsAccessor;
 }
 
 std::string
 EmscriptenDOMElement::id()
 {
-	return "";
+	std::string eval = "(" + _jsAccessor + ".id)";
+	char* result = emscripten_run_script_string(eval.c_str());
+	return std::string(result);
 }
 
 void
-EmscriptenDOMElement::id(std::string)
+EmscriptenDOMElement::id(std::string newId)
 {
+	std::string eval = _jsAccessor + ".id = '" + newId + "';";
+	emscripten_run_script(eval.c_str());
 }
 
 std::string
 EmscriptenDOMElement::className()
 {
-	return "";
+	std::string eval = "(" + _jsAccessor + ".className)";
+	char* result = emscripten_run_script_string(eval.c_str());
+	return std::string(result);
 }
 
 void
-EmscriptenDOMElement::className(std::string)
+EmscriptenDOMElement::className(std::string newClassName)
 {
+	std::string eval = _jsAccessor + ".className = '" + newClassName + "';";
+	emscripten_run_script(eval.c_str());
 }
 
 std::string
 EmscriptenDOMElement::tagName()
 {
-	return "";
+	std::string eval = "(" + _jsAccessor + ".tagName)";
+	char* result = emscripten_run_script_string(eval.c_str());
+	return std::string(result);
 }
 
-minko::dom::AbstractDOMElement::Ptr
+AbstractDOMElement::Ptr
 EmscriptenDOMElement::parentNode()
 {
-	return nullptr;
+	std::string newElement = EmscriptenDOM::getNewElementName();
+	std::string eval = newElement + " = " + _jsAccessor + ".parentNode;";
+
+	emscripten_run_script(eval.c_str());
+
+	return EmscriptenDOMElement::create(newElement);
 }
 
 std::list<minko::dom::AbstractDOMElement::Ptr>
 EmscriptenDOMElement::childNodes()
 {
-	std::list<minko::dom::AbstractDOMElement::Ptr> l;
-	return l;
+	return (EmscriptenDOM::getElementList(_jsAccessor + ".childNodes"));
 }
 
 std::string
 EmscriptenDOMElement::textContent()
 {
-	return "";
+	std::string eval = "(" + _jsAccessor + ".textContent)";
+	char* result = emscripten_run_script_string(eval.c_str());
+	return std::string(result);
 }
 
 void
-EmscriptenDOMElement::textContent(std::string)
+EmscriptenDOMElement::textContent(std::string newTextContent)
 {
-	return;
+	std::string eval = _jsAccessor + ".textContent = '" + newTextContent + "';";
+	emscripten_run_script(eval.c_str());
 }
 
 std::string
 EmscriptenDOMElement::innerHTML()
 {
-	return "";
+	std::string eval = "(" + _jsAccessor + ".innerHTML)";
+	char* result = emscripten_run_script_string(eval.c_str());
+	return std::string(result);
 }
 
 void
-EmscriptenDOMElement::innerHTML(std::string)
+EmscriptenDOMElement::innerHTML(std::string newInnerHTML)
 {
-	return;
+	std::string eval = _jsAccessor + ".innerHTML = '" + newInnerHTML + "';";
+	emscripten_run_script(eval.c_str());
 }
 
-minko::dom::AbstractDOMElement::Ptr
-EmscriptenDOMElement::appendChild(minko::dom::AbstractDOMElement::Ptr)
+AbstractDOMElement::Ptr
+EmscriptenDOMElement::appendChild(minko::dom::AbstractDOMElement::Ptr newChild)
 {
-	return nullptr;
+	EmscriptenDOMElement::Ptr child = std::dynamic_pointer_cast<EmscriptenDOMElement>(newChild);
+	std::string eval = _jsAccessor + ".appendChild(" + child->getJavascriptAccessor() + ");";
+	emscripten_run_script(eval.c_str());
+
+	return shared_from_this();
 }
 
-minko::dom::AbstractDOMElement::Ptr
-EmscriptenDOMElement::removeChild(minko::dom::AbstractDOMElement::Ptr)
+AbstractDOMElement::Ptr
+EmscriptenDOMElement::removeChild(minko::dom::AbstractDOMElement::Ptr childToRemove)
 {
-	return nullptr;
+	EmscriptenDOMElement::Ptr child = std::dynamic_pointer_cast<EmscriptenDOMElement>(childToRemove);
+	std::string eval = _jsAccessor + ".removeChild(" + child->getJavascriptAccessor() + ");";
+	emscripten_run_script(eval.c_str());
+
+	return shared_from_this();
 }
 
-minko::dom::AbstractDOMElement::Ptr
-EmscriptenDOMElement::insertBefore(minko::dom::AbstractDOMElement::Ptr, minko::dom::AbstractDOMElement::Ptr)
+AbstractDOMElement::Ptr
+EmscriptenDOMElement::insertBefore(minko::dom::AbstractDOMElement::Ptr newChild, minko::dom::AbstractDOMElement::Ptr adjacentNode)
 {
-	return nullptr;
+	EmscriptenDOMElement::Ptr child = std::dynamic_pointer_cast<EmscriptenDOMElement>(newChild);
+	EmscriptenDOMElement::Ptr adjNode = std::dynamic_pointer_cast<EmscriptenDOMElement>(adjacentNode);
+	std::string eval = _jsAccessor + ".removeChild(" + child->getJavascriptAccessor() + ", " + adjNode->getJavascriptAccessor() + ");";
+	emscripten_run_script(eval.c_str());
+
+	return shared_from_this();
 }
 
-minko::dom::AbstractDOMElement::Ptr
+AbstractDOMElement::Ptr
 EmscriptenDOMElement::cloneNode(bool deep)
 {
-	return nullptr;
+	std::string newElement = EmscriptenDOM::getNewElementName();
+	std::string eval = newElement + " = " + _jsAccessor + ".cloneNode(" + (deep ? "true" : "false") + ");";
+
+	emscripten_run_script(eval.c_str());
+
+	return EmscriptenDOMElement::create(newElement);
 }
 
 std::string
 EmscriptenDOMElement::getAttribute(std::string name)
 {
-	return "";
+	std::string eval = "(" + _jsAccessor + ".getAttribute('" + name + "'))";
+	char* result = emscripten_run_script_string(eval.c_str());
+	return std::string(result);
 }
 
 void
 EmscriptenDOMElement::setAttribute(std::string name, std::string value)
 {
-	return;
+	std::string eval = _jsAccessor + ".setAttribute('" + name + "', '" + value + "');";
+	emscripten_run_script(eval.c_str());
 }
 
 std::list<minko::dom::AbstractDOMElement::Ptr>
 EmscriptenDOMElement::getElementsByTagName(std::string tagName)
 {
-	std::list<minko::dom::AbstractDOMElement::Ptr> l;
-	return l;
+	return (EmscriptenDOM::getElementList(_jsAccessor + ".getElementsByTagName('" + tagName + "')"));
 }
 
 
 std::string
 EmscriptenDOMElement::style(std::string name)
 {
-	return "";
+	std::string eval = "(" + _jsAccessor + ".style." + name + ")";
+	char* result = emscripten_run_script_string(eval.c_str());
+	return std::string(result);
 }
 
 void
 EmscriptenDOMElement::style(std::string name, std::string value)
 {
-	return;
+	std::string eval = _jsAccessor + ".style." + name + " = '" + value + "';";
+	emscripten_run_script(eval.c_str());
 }
 
 Signal<std::shared_ptr<AbstractDOMEvent>>::Ptr
 EmscriptenDOMElement::onclick()
 {
-	return nullptr;
+	return _onclick;
 }
 
 Signal<std::shared_ptr<AbstractDOMEvent>>::Ptr
 EmscriptenDOMElement::onmousedown()
 {
-	return nullptr;
+	return _onmousedown;
 }
 
 Signal<std::shared_ptr<AbstractDOMEvent>>::Ptr
 EmscriptenDOMElement::onmousemove()
 {
-	return nullptr;
+	return _onmousemove;
 }
 
 Signal<std::shared_ptr<AbstractDOMEvent>>::Ptr
 EmscriptenDOMElement::onmouseup()
 {
-	return nullptr;
+	return _onmouseup;
 }
 
 Signal<std::shared_ptr<AbstractDOMEvent>>::Ptr
 EmscriptenDOMElement::onmouseout()
 {
-	return nullptr;
+	return _onmouseout;
 }
 
 Signal<std::shared_ptr<AbstractDOMEvent>>::Ptr
 EmscriptenDOMElement::onmouseover()
 {
-	return nullptr;
+	return _onmouseover;
 }
 #endif

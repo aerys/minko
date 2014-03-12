@@ -24,6 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/SceneManager.hpp"
 #include "minko/AbstractCanvas.hpp"
 #include "minko/dom/AbstractDOMElement.hpp"
+#include "EmscriptenDOMElement.hpp"
 #include "minko/dom/AbstractDOM.hpp"
 
 namespace emscripten
@@ -34,6 +35,14 @@ namespace emscripten
 		{
 		public:
 			typedef std::shared_ptr<EmscriptenDOM> Ptr;
+
+		private:
+			EmscriptenDOM();
+
+		public:
+			static
+			Ptr
+			create();
 
 			minko::dom::AbstractDOMElement::Ptr
 			createElement(std::string);
@@ -64,6 +73,32 @@ namespace emscripten
 
 			bool
 			isMain();
+
+			bool
+			initialized();
+
+			void
+			initialized(bool);
+
+			static
+			int
+			elementUid;
+
+			static
+			std::string
+			getNewElementName();
+
+			static
+			std::list<minko::dom::AbstractDOMElement::Ptr>
+			getElementList(std::string);
+
+		private:
+			bool _initialized;
+			EmscriptenDOMElement::Ptr _document;
+			EmscriptenDOMElement::Ptr _body;
+
+			minko::Signal<minko::dom::AbstractDOM::Ptr, std::string>::Ptr _onload;
+			minko::Signal<minko::dom::AbstractDOM::Ptr, std::string>::Ptr _onmessage;
 		};
 	}
 }

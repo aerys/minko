@@ -23,6 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Common.hpp"
 #include "minko/dom/AbstractDOM.hpp"
 #include "minko/dom/AbstractDOMEngine.hpp"
+#include "EmscriptenDOM.hpp"
 
 namespace emscripten
 {
@@ -42,6 +43,15 @@ namespace emscripten
 			{
 			}
 
+			void
+			initialize(minko::AbstractCanvas::Ptr, minko::component::SceneManager::Ptr);
+			
+			void
+			initJavascript();
+
+			void
+			enterFrame();
+
 			minko::dom::AbstractDOM::Ptr
 			load(std::string uri);
 
@@ -57,6 +67,19 @@ namespace emscripten
 
 			minko::Signal<minko::dom::AbstractDOM::Ptr, std::string>::Ptr
 			onmessage();
+
+		private:
+			EmscriptenDOM::Ptr _currentDOM;
+
+			minko::AbstractCanvas::Ptr _canvas;
+			minko::component::SceneManager::Ptr _sceneManager;
+
+			minko::Signal<minko::AbstractCanvas::Ptr, minko::uint, minko::uint>::Slot _canvasResizedSlot;
+			minko::Signal<minko::component::SceneManager::Ptr, float, float>::Slot _enterFrameSlot;
+
+			int _loadedPreviousFrameState;
+			minko::Signal<minko::dom::AbstractDOM::Ptr, std::string>::Ptr _onload;
+			minko::Signal<minko::dom::AbstractDOM::Ptr, std::string>::Ptr _onmessage;
 		};
 	}
 }

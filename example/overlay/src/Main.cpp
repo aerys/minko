@@ -81,7 +81,7 @@ int main(int argc, char** argv)
 
 	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
 	{
-		//root->addComponent(overlay);
+		root->addComponent(overlay);
 
 		mesh->addComponent(Surface::create(
 			assets->geometry("cubeGeometry"),
@@ -89,23 +89,33 @@ int main(int argc, char** argv)
 			assets->effect("effect/Basic.effect")
 			));
 
-		//overlay->load("html/menu.html");
+		overlay->load("html/menu.html");
 	});
 
-
-	auto mouseMove = canvas->mouse()->move()->connect([&](input::Mouse::Ptr m, int dx, int dy)
+	onloadSlot = overlay->onload()->connect([=](minko::dom::AbstractDOM::Ptr dom, std::string page)
 	{
-		std::cout << "move " + std::to_string(m->x()) + "," + std::to_string(m->y()) << std::endl;
-	});
-
-	/*onloadSlot = overlay->onload()->connect([=](minko::dom::AbstractDOM::Ptr dom, std::string page)
-	{
-		std::cout << "onload: " << dom->fileName() << std::endl;
+		std::cout << "OnLoad: " << dom->fileName() << std::endl;
 
 		if (!dom->isMain())
 			return;
 
-		onredclickSlot = dom->getElementById("redButton")->onclick()->connect([=](dom::AbstractDOMEvent::Ptr event)
+		if (dom->fileName() == "menu.html")
+		{
+			
+		}
+
+		/*auto redButton = dom->getElementById("redButton");
+		auto blueButton = dom->getElementById("blueButton");
+
+		auto buttonParent = redButton->parentNode();
+
+		buttonParent->removeChild(redButton);
+
+		blueButton->appendChild(redButton);
+
+		buttonParent->innerHTML("<div>Hello World</div>");*/
+
+		/*onredclickSlot = dom->getElementById("redButton")->onclick()->connect([=](dom::AbstractDOMEvent::Ptr event)
 		{
 			material->diffuseColor(0xFF0000FF);
 		});
@@ -118,8 +128,8 @@ int main(int argc, char** argv)
 		onyellowclickSlot = dom->getElementById("yellowButton")->onclick()->connect([=](dom::AbstractDOMEvent::Ptr event)
 		{
 			material->diffuseColor(0xFFFF00FF);
-		});
-	});*/
+		});*/
+	});
 
 	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, uint deltaTime)
 	{

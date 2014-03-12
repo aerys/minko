@@ -80,6 +80,16 @@ Overlay::targetAddedHandler(AbstractComponent::Ptr	ctrl, scene::Node::Ptr		targe
 		engine->initialize(_canvas, sceneManager);
 	}
 #endif
+	
+#if defined(EMSCRIPTEN)
+	if (target->hasComponent<SceneManager>())
+	{
+		SceneManager::Ptr sceneManager = target->component<SceneManager>();
+		
+		EmscriptenDOMEngine::Ptr engine = std::dynamic_pointer_cast<EmscriptenDOMEngine>(_domEngine);
+		engine->initialize(_canvas, sceneManager);
+	}
+#endif
 }
 
 void

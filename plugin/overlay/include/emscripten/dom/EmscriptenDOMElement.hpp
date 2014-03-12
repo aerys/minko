@@ -23,28 +23,33 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Common.hpp"
 #include "minko/Signal.hpp"
 #include "minko/dom/AbstractDOMElement.hpp"
+#include "minko/dom/AbstractDOMEvent.hpp"
 
 namespace emscripten
 {
 	namespace dom
 	{
 
-		class EmscriptenDOMElement : public minko::dom::AbstractDOMElement
+		class EmscriptenDOMElement : public minko::dom::AbstractDOMElement,
+			public std::enable_shared_from_this<EmscriptenDOMElement>
 		{
 		public:
 			typedef std::shared_ptr<EmscriptenDOMElement> Ptr;
 
 		private:
-			EmscriptenDOMElement();
+			EmscriptenDOMElement(std::string jsAccessor);
 
 		public:
 			~EmscriptenDOMElement()
 			{
 			};
 
+			std::string
+			getJavascriptAccessor();
+
 			static
 			Ptr
-			create(std::string accessor, std::string varName);
+			create(std::string javascriptAccessor);
 
 			std::string
 			id();
@@ -124,6 +129,16 @@ namespace emscripten
 
 			minko::Signal<std::shared_ptr<minko::dom::AbstractDOMEvent>>::Ptr
 			onmouseover();
+
+		private:
+			std::string _jsAccessor;
+
+			minko::Signal<minko::dom::AbstractDOMEvent::Ptr>::Ptr _onclick;
+			minko::Signal<minko::dom::AbstractDOMEvent::Ptr>::Ptr _onmousedown;
+			minko::Signal<minko::dom::AbstractDOMEvent::Ptr>::Ptr _onmousemove;
+			minko::Signal<minko::dom::AbstractDOMEvent::Ptr>::Ptr _onmouseup;
+			minko::Signal<minko::dom::AbstractDOMEvent::Ptr>::Ptr _onmouseover;
+			minko::Signal<minko::dom::AbstractDOMEvent::Ptr>::Ptr _onmouseout;
 		};
 	}
 }
