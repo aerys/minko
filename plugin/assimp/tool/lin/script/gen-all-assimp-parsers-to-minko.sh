@@ -15,3 +15,4 @@ cd ${MINKO_HOME}/plugin/assimp/tool/lin/script
 
 ./gen-all-assimp-parsers.sh ${include_path} ${src_path}
 
+./gen-assimp-plugin-main-header.sh

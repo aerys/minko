@@ -3,6 +3,7 @@
 declare -A loaders
 
 # (parser name <-> assimp file name) mapping
+
 loaders["Discreet3DS"]="3DSLoader.h"
 loaders["AC3D"]="ACLoader.h"
 loaders["ASE"]="ASELoader.h"
