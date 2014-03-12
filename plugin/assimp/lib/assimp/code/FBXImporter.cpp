@@ -105,8 +105,8 @@ bool FBXImporter::CanRead( const std::string& pFile, IOSystem* pIOHandler, bool 
 
 	else if ((!extension.length() || checkSig) && pIOHandler)	{
 		// at least ascii FBX files usually have a 'FBX' somewhere in their head
-		const char* tokens[] = {"FBX", "fbx"};
-		return SearchFileHeaderForToken(pIOHandler,pFile,tokens,2);
+		const char* tokens[] = {"FBX"};
+		return SearchFileHeaderForToken(pIOHandler,pFile,tokens,1);
 	}
 	return false;
 }

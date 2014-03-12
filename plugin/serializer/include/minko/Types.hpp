@@ -37,7 +37,8 @@ namespace minko
 			RENDERER			= 107,
 			BOUNDINGBOX			= 108,
 			ANIMATION			= 109,
-			SKINNING			= 110
+			SKINNING			= 110,
+            PARTICLES           = 60
 		};
 
 		enum MinkoTypes

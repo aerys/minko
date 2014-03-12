@@ -70,24 +70,24 @@ namespace minko
 
 			clock_t		_clockStart;
 
-			std::function<uint(uint)>						_timeFunction;
+			std::function<uint(uint)>						            _timeFunction;
 
-			std::vector<Label>								_labels;
-			std::unordered_map<std::string, uint>			_labelNameToIndex;
-			std::vector<uint>								_nextLabelIds;
+			std::vector<Label>								            _labels;
+			std::unordered_map<std::string, uint>			            _labelNameToIndex;
+			std::vector<uint>								            _nextLabelIds;
 
-			std::shared_ptr<SceneManager>					_sceneManager;
+			std::shared_ptr<SceneManager>					            _sceneManager;
 
-			std::shared_ptr<Signal<Ptr>>					_started;
-			std::shared_ptr<Signal<Ptr>>					_looped;
-			std::shared_ptr<Signal<Ptr>>					_stopped;
-			std::shared_ptr<Signal<Ptr, std::string, uint>>	_labelHit;
+			std::shared_ptr<Signal<Ptr>>					            _started;
+			std::shared_ptr<Signal<Ptr>>					            _looped;
+			std::shared_ptr<Signal<Ptr>>					            _stopped;
+			std::shared_ptr<Signal<Ptr, std::string, uint>>	            _labelHit;
 
-			Signal<AbsCmpPtr, NodePtr>::Slot				_targetAddedSlot;
-			Signal<AbsCmpPtr, NodePtr>::Slot				_targetRemovedSlot;
-			Signal<NodePtr, NodePtr, NodePtr>::Slot			_addedSlot;
-			Signal<NodePtr, NodePtr, NodePtr>::Slot			_removedSlot;
-			Signal<std::shared_ptr<SceneManager>>::Slot		_frameBeginSlot;
+			Signal<AbsCmpPtr, NodePtr>::Slot				            _targetAddedSlot;
+			Signal<AbsCmpPtr, NodePtr>::Slot				            _targetRemovedSlot;
+			Signal<NodePtr, NodePtr, NodePtr>::Slot			            _addedSlot;
+			Signal<NodePtr, NodePtr, NodePtr>::Slot			            _removedSlot;
+			Signal<std::shared_ptr<SceneManager>, float, float>::Slot	_frameBeginSlot;
 
 		public:
 			virtual
@@ -296,7 +296,7 @@ namespace minko
 
 			virtual
 			void
-			frameBeginHandler(std::shared_ptr<SceneManager>);
+			frameBeginHandler(std::shared_ptr<SceneManager>, float, float);
 
 			// record the indices of the labels that lie directly after the specified time value
 			// in the animation.

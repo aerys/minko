@@ -3,6 +3,8 @@ minko.project = {}
 minko.project.library = function(name)
 	project(name)
 
+	language "C++"
+
 	location "."
 	includedirs { minko.sdk.path("/framework/include") }
 	
@@ -42,6 +44,8 @@ end
 minko.project.application = function(name)
 
 	minko.project.library(name)
+
+	kind "WindowedApp"
 
 	configuration { "windows32" }
 		libdirs {
@@ -122,7 +126,7 @@ minko.project.application = function(name)
 	configuration { "linux32" }
 		linkoptions { "-Wl,--no-as-needed" }
 		links {
-                        "minko-framework",
+			"minko-framework",
 			"GL",
 			"m"
 		}
@@ -192,6 +196,10 @@ minko.project.application = function(name)
 			emcc .. ' ${TARGET} -o ${TARGETDIR}/' .. name .. '.html -O2 --closure 1 -s CLOSURE_ANNOTATIONS=1 -s ERROR_ON_UNDEFINED_SYMBOLS=1 -s DISABLE_EXCEPTION_CATCHING=0 -s TOTAL_MEMORY=268435456 --preload-file ${TARGETDIR}/asset || ' .. minko.action.fail()
 		}
 
+		libdirs {
+			minko.sdk.path("/framework/bin/html5/release")
+		}
+
 	configuration { "html5", "debug" }
 		local emcc = premake.tools.gcc.tools.emscripten.cc
 
@@ -202,6 +210,33 @@ minko.project.application = function(name)
 		postbuildcommands {
 			emcc .. ' ${TARGET} -o ${TARGETDIR}/' .. name .. '.html -O2 --js-opts 0 -g4 -s ASM_JS=0 -s DISABLE_EXCEPTION_CATCHING=0 -s ERROR_ON_UNDEFINED_SYMBOLS=1 -s TOTAL_MEMORY=268435456 --preload-file ${TARGETDIR}/asset || ' .. minko.action.fail()
 		}
+
+		libdirs {
+			minko.sdk.path("/framework/bin/html5/debug")
+		}
+
+	configuration { "ios" }
+		links {
+			"minko-framework",
+			"m",
+			"OpenGLES.framework",
+			"Foundation.framework",
+			"UIKit.framework",
+			"QuartzCore.framework",
+			"CoreGraphics.framework"
+		}
+
+		files {
+			"**.plist"
+		}
+
+		prelinkcommands {
+			minko.action.copy(minko.sdk.path("/framework/asset")),
+			minko.action.copy("asset")
+		}
+
+	configuration { "vs*" }
+		kind "ConsoleApp" -- make the console visible in VS 2013
 
 	configuration { }
 	

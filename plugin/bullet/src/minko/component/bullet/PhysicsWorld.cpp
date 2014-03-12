@@ -173,16 +173,10 @@ bullet::PhysicsWorld::addChild(ColliderData::Ptr data)
 	_colliderMap.insert(std::pair<ColliderData::Ptr, BulletCollider::Ptr>(data, bulletCollider));
 	_colliderReverseMap.insert(std::pair<btCollisionObject*, ColliderData::Ptr>(bulletCollider->rigidBody().get(), data));
 
-    _colliderGroupChangedSlot[data] = data->node()->layoutsChanged()->connect(std::bind(
-        &bullet::PhysicsWorld::updateCollisionFilter,
-        shared_from_this(),
-        data
-    ));
-    _colliderMaskChangedSlot[data] = data->collisionFilterChanged()->connect(std::bind(
-        &bullet::PhysicsWorld::updateCollisionFilter,
-        shared_from_this(),
-        data
-    ));
+
+	_colliderGroupChangedSlot[data]	= data->node()->layoutsChanged()->connect([&](Node::Ptr, Node::Ptr){ updateCollisionFilter(data); });
+    _colliderMaskChangedSlot[data]	= data->collisionFilterChanged()->connect([&](ColliderData::Ptr){ updateCollisionFilter(data); });
+
 
 	std::dynamic_pointer_cast<btDiscreteDynamicsWorld>(_bulletDynamicsWorld)
 		->addRigidBody(

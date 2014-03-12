@@ -285,7 +285,6 @@ Geometry::removeDuplicatedVertices(std::vector<unsigned short>&		indices,
 								   std::vector<std::vector<float>>&	vertices,
 								   uint								numVertices)
 {
-	auto numIndices = indices.size();
 	auto newVertexCount = 0;
 	auto newLimit = 0;
 

@@ -1,9 +1,7 @@
 PROJECT_NAME = path.getname(os.getcwd())
 
 minko.project.application("minko-example-" .. PROJECT_NAME)
-
-	language "c++"
-	kind "ConsoleApp"
+	removeplatforms { "html5", "ios", "android" }
 
 	files {
 		"src/**.cpp",

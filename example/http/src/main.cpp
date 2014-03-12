@@ -21,7 +21,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/MinkoPNG.hpp"
 #include "minko/MinkoSDL.hpp"
 #include "minko/file/HTTPLoader.hpp"
-#include "minko/async/HTTPWorker.hpp"
+
+#if !defined(EMSCRIPTEN) // FIXME: Automate this in the HTTPLoader
+# include "minko/async/HTTPWorker.hpp"
+#endif
 
 using namespace minko;
 using namespace minko::component;
@@ -33,7 +36,9 @@ int main(int argc, char** argv)
 {
 	auto canvas = Canvas::create("Minko Example - HTTP", 800, 600);
 
+#if !defined(EMSCRIPTEN) // FIXME: Automate this in the HTTPLoader
 	canvas->registerWorker<async::HTTPWorker>("http");
+#endif
 
 	auto sceneManager = SceneManager::create(canvas->context());
 	
@@ -72,11 +77,11 @@ int main(int argc, char** argv)
 		camera->component<PerspectiveCamera>()->aspectRatio((float)w / (float)h);
 	});
 
-	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, float deltaTime)
+	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float deltaTime)
 	{
 		mesh->component<Transform>()->matrix()->appendRotationY(.01f);
 
-		sceneManager->nextFrame();
+		sceneManager->nextFrame(time, deltaTime);
 	});
 
 	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)

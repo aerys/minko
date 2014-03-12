@@ -30,9 +30,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include <iomanip>
 
 #define GL_GLEXT_PROTOTYPES
-#ifdef __APPLE__
-# include <OpenGL/gl.h>
-# include <GLUT/glut.h>
+#if __APPLE__
+# include "TargetConditionals.h"
+# if TARGET_IPHONE_SIMULATOR
+#  include <OpenGLES/ES2/gl.h>
+# elif TARGET_OS_IPHONE
+#  include <OpenGLES/ES2/gl.h>
+# elif TARGET_OS_MAC
+#  include <OpenGL/gl.h>
+#  include <GLUT/glut.h>
+# endif
 #elif MINKO_ANGLE
 # include "GLES2/gl2.h"
 #elif _WIN32

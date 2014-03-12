@@ -28,6 +28,11 @@ namespace minko
 		class ParticleSystem;
 	}
 
+    namespace data
+    {
+        class ParticlesProvider;
+    }
+
 	namespace geometry
 	{
 		class ParticlesGeometry;

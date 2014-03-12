@@ -26,9 +26,11 @@ minko.action.copy = function(sourcePath)
 
 		local existenceTest = string.find(sourcePath, '*') and '' or ('if exist ' .. sourcePath .. ' ')
 
-		return existenceTest .. 'xcopy /y /i /e "' .. sourcePath .. '" ' .. targetDir
+		return existenceTest .. 'xcopy /y /i /e "' .. sourcePath .. '" "' .. targetDir .. '"'
 	else
-		return 'test -e ' .. sourcePath .. ' && cp -R ' .. sourcePath .. ' "${TARGETDIR}" || :'
+		local targetDir = string.startswith(_ACTION, "xcode") and '${TARGET_BUILD_DIR}/${TARGET_NAME}.app' or '${TARGETDIR}'
+
+		return 'test -e ' .. sourcePath .. ' && cp -R ' .. sourcePath .. ' "' .. targetDir .. '" || :'
 	end
 end
 
@@ -36,7 +38,9 @@ minko.action.link = function(sourcePath)
 	if os.is('windows') then
 		-- fixme: not needed yet
 	else
-		return 'ln -s -f ' .. sourcePath .. ' "${TARGETDIR}" || :'
+		local targetDir = string.startswith(_ACTION, "xcode") and '${TARGET_BUILD_DIR}/${TARGET_NAME}.app' or '${TARGETDIR}'
+
+		return 'test -e ' .. sourcePath .. ' && ln -s -f ' .. sourcePath .. ' "' .. targetDir .. '" || :'
 	end
 end
 
@@ -45,7 +49,7 @@ minko.action.clean = function()
 		error("cannot clean from outside the Minko SDK")
 	end
 
-	local cmd = "git clean -X -f"
+	local cmd = 'git clean -X -d -f'
 
 	os.execute(cmd)
 	

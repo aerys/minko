@@ -73,7 +73,7 @@ namespace minko
             {
                 return _timelines;
             }
-             
+
 		private:
 			Animation(const std::vector<AbsTimelinePtr>&, bool isLooping);
 
@@ -85,12 +85,12 @@ namespace minko
 			void
 			update();
 
-			inline /*virtual*/
+			/*virtual*/
 			void
-			frameBeginHandler(std::shared_ptr<SceneManager> manager)
+			frameBeginHandler(std::shared_ptr<SceneManager> manager, float time, float deltaTime)
 			{
 				if (_master == nullptr)
-					AbstractAnimation::frameBeginHandler(manager);
+					AbstractAnimation::frameBeginHandler(manager, time, deltaTime);
 			}
 
 			inline /*virtual*/
