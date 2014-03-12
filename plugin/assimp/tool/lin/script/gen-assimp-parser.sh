@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/bin/bash
 
 function args_error
 {
@@ -138,7 +138,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include \"../code/AssimpPCH.h\"
 #include \"assimp/Importer.hpp\"
-#include \"../code/"${assimp_file_name}".h\"
+#include \"../code/"${assimp_file_name}"\"
 
 using namespace minko;
 using namespace file;

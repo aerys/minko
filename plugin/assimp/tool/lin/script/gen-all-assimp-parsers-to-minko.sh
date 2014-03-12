@@ -1,3 +1,5 @@
+#!/bin/bash
+
 if [ -z ${MINKO_HOME} ]; then
 	echo "MINKO_HOME variable is empty"
 	exit 1
