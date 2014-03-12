@@ -29,7 +29,6 @@ loaders["MS3D"]="MS3DLoader.h"
 loaders["NDO"]="NDOLoader.h"
 loaders["NFF"]="NFFLoader.h"
 loaders["ObjFile"]="ObjFileImporter.h"
-# loaders["ObjFileMtl"]="ObjFileMtlImporter.h"
 loaders["OFF"]="OFFLoader.h"
 # note: OgreImporter is nested in Assimp::Ogre namespace; TODO handle special case
 # loaders["Ogre"]="OgreImporter.hpp"
