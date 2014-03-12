@@ -99,7 +99,8 @@ namespace minko
 				Signal<AbsCtrlPtr, NodePtr>::Slot				                        _targetAddedSlot;
 				Signal<AbsCtrlPtr, NodePtr>::Slot				                        _targetRemovedSlot;
 				Signal<AbsCtrlPtr, NodePtr>::Slot				                        _exitFrameSlot;
-				Signal<std::shared_ptr<SceneManager>>::Slot		                        _frameEndSlot;
+				Signal<std::shared_ptr<SceneManager>, float, float>::Slot               _frameBeginSlot;
+				Signal<std::shared_ptr<SceneManager>, float, float>::Slot               _frameEndSlot;
 				Signal<NodePtr, NodePtr, NodePtr>::Slot			                        _addedOrRemovedSlot;
 				Signal<NodePtr, NodePtr, AbsCtrlPtr>::Slot		                        _componentAddedOrRemovedSlot;
                 std::unordered_map<ColliderDataPtr, NodeLayoutsChanged::Slot>           _colliderGroupChangedSlot;
@@ -137,9 +138,6 @@ namespace minko
 				void
 				setGravity(Vector3Ptr);
 
-				void 
-				update(float timeStep = 1.0f/60.0f);
-
 				void
 				synchronizePhysicsWithGraphics(ColliderDataPtr, Matrix4x4Ptr);
 
@@ -171,7 +169,10 @@ namespace minko
 				addedHandler(NodePtr node, NodePtr target, NodePtr ancestor);
 
 				void
-				frameEndHandler(std::shared_ptr<SceneManager> sceneManager);
+				frameBeginHandler(std::shared_ptr<SceneManager> sceneManager, float time, float deltaTime);
+
+				void
+				frameEndHandler(std::shared_ptr<SceneManager> sceneManager, float time, float deltaTime);
 
 				void
 				updateColliders();

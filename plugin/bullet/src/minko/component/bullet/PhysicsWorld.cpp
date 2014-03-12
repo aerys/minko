@@ -17,6 +17,7 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+#include <bitset>
 #include "minko/component/bullet/PhysicsWorld.hpp"
 
 #include <btBulletDynamicsCommon.h>
@@ -55,6 +56,7 @@ bullet::PhysicsWorld::PhysicsWorld():
 	_bulletDynamicsWorld(nullptr),
 	_targetAddedSlot(nullptr),
 	_targetRemovedSlot(nullptr),
+	_frameBeginSlot(nullptr),
 	_frameEndSlot(nullptr),
 	_componentAddedOrRemovedSlot(nullptr),
 	_addedOrRemovedSlot(nullptr),
@@ -109,11 +111,12 @@ void
 bullet::PhysicsWorld::targetRemovedHandler(AbstractComponent::Ptr	controller, 
 										   Node::Ptr				target)
 {
-	_sceneManager = nullptr;
-	_frameEndSlot = nullptr;
-	_addedOrRemovedSlot = nullptr;
-	_componentAddedOrRemovedSlot = nullptr;
-	_exitFrameSlot = nullptr;
+	_sceneManager					= nullptr;
+	_frameBeginSlot					= nullptr;
+	_frameEndSlot					= nullptr;
+	_addedOrRemovedSlot				= nullptr;
+	_componentAddedOrRemovedSlot	= nullptr;
+	_exitFrameSlot					= nullptr;
 
 	_colliderMap.clear();
 	_colliderReverseMap.clear();
@@ -138,8 +141,11 @@ bullet::PhysicsWorld::setSceneManager(std::shared_ptr<SceneManager> sceneManager
 		if (sceneManager)
 		{
 			_sceneManager = sceneManager;
-			_frameEndSlot = sceneManager->cullingBegin()->connect(std::bind(
-				&PhysicsWorld::frameEndHandler, shared_from_this(), std::placeholders::_1
+			_frameBeginSlot = sceneManager->frameBegin()->connect(std::bind(
+				&PhysicsWorld::frameBeginHandler, shared_from_this(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
+			));
+			_frameEndSlot = sceneManager->frameEnd()->connect(std::bind(
+				&PhysicsWorld::frameEndHandler, shared_from_this(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
 			));
 
 			_componentAddedOrRemovedSlot = target->componentRemoved()->connect(componentCallback);
@@ -147,8 +153,9 @@ bullet::PhysicsWorld::setSceneManager(std::shared_ptr<SceneManager> sceneManager
 		}
 		else
 		{
-			_sceneManager = nullptr;
-			_frameEndSlot = nullptr;
+			_sceneManager	= nullptr;
+			_frameBeginSlot	= nullptr;
+			_frameEndSlot	= nullptr;
 
 			_componentAddedOrRemovedSlot = target->componentAdded()->connect(componentCallback);
 			_addedOrRemovedSlot = target->added()->connect(nodeCallback);
@@ -164,6 +171,11 @@ bullet::PhysicsWorld::addChild(ColliderData::Ptr data)
 
 	if (hasCollider(data))
 		throw new std::logic_error("The same data cannot be added twice.");
+
+	//std::cout << "PhysicsWorld::addChild\tnode '" << data->node()->name() 
+	//	<< "'\tgroup = " << std::bitset<16>(data->collisionGroup()) 
+	//	<< "\tmask = " << std::bitset<16>(data->collisionMask()) 
+	//	<< std::endl;
 
 	data->uid(_uidAllocator->allocate());
 
@@ -260,16 +272,15 @@ bullet::PhysicsWorld::setGravity(Vector3::Ptr gravity)
 }
 
 void
-bullet::PhysicsWorld::frameEndHandler(std::shared_ptr<SceneManager> sceneManager)
+bullet::PhysicsWorld::frameBeginHandler(std::shared_ptr<SceneManager> sceneManager, float time, float deltaTime)
 {
-	update();
+	_bulletDynamicsWorld->stepSimulation(deltaTime);
+	updateColliders();
 }
 
 void
-bullet::PhysicsWorld::update(float timeStep)
+bullet::PhysicsWorld::frameEndHandler(std::shared_ptr<SceneManager> sceneManager, float time, float deltaTime)
 {
-	_bulletDynamicsWorld->stepSimulation(timeStep);
-	updateColliders();
 	notifyCollisions();
 }
 
@@ -321,8 +332,8 @@ bullet::PhysicsWorld::notifyCollisions()
 
 		if (colliderData[0] == nullptr || colliderData[1] == nullptr)
 			continue;
-		if (!colliderData[0]->triggerCollisions() && !colliderData[1]->triggerCollisions())
-			continue;
+		//if (!colliderData[0]->triggerCollisions() && !colliderData[1]->triggerCollisions())
+		//	continue;
 		
 		// a collision exists between to valid colliders
 		auto collision = std::make_pair(colliderData[0]->uid(),  colliderData[1]->uid());
@@ -330,15 +341,18 @@ bullet::PhysicsWorld::notifyCollisions()
 		if (collision.first > collision.second)
 			std::swap(collision.first, collision.second);
 
-		if (_collisions.find(collision) == _collisions.end())
+		if (_collisions.find(collision) == _collisions.end()) // inserted only once
 		{
-			colliderData[0]->collisionStarted()->execute(colliderData[0], colliderData[1]);
-			colliderData[1]->collisionStarted()->execute(colliderData[1], colliderData[0]);
+			if (colliderData[0]->triggerCollisions())
+				colliderData[0]->collisionStarted()->execute(colliderData[0], colliderData[1]);
+			if (colliderData[1]->triggerCollisions())
+				colliderData[1]->collisionStarted()->execute(colliderData[1], colliderData[0]);
 		}
 
 		currentCollisions.insert(collision);
 	}
 
+	// FIXME: not optimal at all.
 	// find and notify collisions that are not present anymore as the difference with the intersection
 	// between the previous collision set and the current one.
 

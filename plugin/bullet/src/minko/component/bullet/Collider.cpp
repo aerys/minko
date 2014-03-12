@@ -203,8 +203,8 @@ bullet::Collider::initializeFromNode(Node::Ptr node)
 		throw new std::logic_error("The node's model-to-world matrix cannot be inverted.");
 
     _colliderData->_node = node; 
-	_physicsWorld->addChild(_colliderData);
 
+	_physicsWorld->addChild(_colliderData);
 	synchronizePhysicsWithGraphics();
 }
 
