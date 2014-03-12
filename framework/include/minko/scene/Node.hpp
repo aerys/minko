@@ -106,7 +106,7 @@ namespace minko
 
 			inline
 			const std::string&
-			name()
+			name() const
 			{
 				return _name;
 			}
@@ -119,39 +119,39 @@ namespace minko
 			}
 
 			inline
-			unsigned int
-			layouts()
+			uint
+			layouts() const
 			{
 				return _layouts;
 			}
 			
 			void
-			layouts(unsigned int layouts);
+			layouts(uint);
 
 			inline
 			Ptr
-			parent()
+			parent() const
 			{
 				return _parent;
 			}
 
 			inline
 			Ptr
-			root()
+			root() const
 			{
 				return _root;
 			}
 
 			inline
 			const std::vector<Ptr>&
-			children()
+			children() const
 			{
 				return _children;
 			}
 
 			inline
 			std::shared_ptr<data::Container>
-			data()
+			data() const
 			{
 				return _container;
 			}
@@ -165,35 +165,35 @@ namespace minko
 
 			inline
 			Signal<Ptr, Ptr, Ptr>::Ptr
-			added()
+			added() const
 			{
 				return _added;
 			}
 
 			inline
 			Signal<Ptr, Ptr, Ptr>::Ptr
-			removed()
+			removed() const
 			{
 				return _removed;
 			}
 
 			inline
 			Signal<Ptr, Ptr>::Ptr
-			layoutsChanged()
+			layoutsChanged() const
 			{
 				return _layoutsChanged;
 			}
 
 			inline
 			std::shared_ptr<Signal<Ptr, Ptr, AbsCtrlPtr>>
-			componentAdded()
+			componentAdded() const
 			{
 				return _componentAdded;
 			}
 
 			inline
 			std::shared_ptr<Signal<Ptr, Ptr, AbsCtrlPtr>>
-			componentRemoved()
+			componentRemoved() const
 			{
 				return _componentRemoved;
 			}

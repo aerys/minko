@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/SerializerCommon.hpp"
+#include "msgpack.hpp"
 
 namespace minko
 {
@@ -33,6 +34,8 @@ namespace minko
 			typedef std::shared_ptr<file::Dependency>				DependencyPtr;
 			typedef std::shared_ptr<file::AssetLibrary>				AssetLibraryPtr;
 			typedef std::shared_ptr<component::AbstractComponent>	AbsComponentPtr;
+			typedef msgpack::type::tuple<uint, std::string>			SerializedMatrix;
+			typedef std::vector<SerializedMatrix>					VectorOfSerializedMatrix;
 
 		public:
 			static
@@ -82,6 +85,18 @@ namespace minko
 			deserializeRenderer(std::string&	serializedRenderer,
 							   AssetLibraryPtr	assetLibrary,
 							   DependencyPtr	dependencies);
+
+			static
+			AbsComponentPtr
+			deserializeAnimation(std::string&		serializedAnimation,
+								 AssetLibraryPtr	assetLibrary,
+								 DependencyPtr		dependencies);
+
+			static
+			AbsComponentPtr
+			deserializeSkinning(std::string&		serializedAnimation,
+								AssetLibraryPtr		assetLibrary,
+								DependencyPtr		dependencies);
 		};
 	}
 }

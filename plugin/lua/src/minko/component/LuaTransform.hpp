@@ -45,7 +45,7 @@ namespace minko
 					.methodWrapper("modelToWorld",		&LuaTransform::worldToModelWrapper)
                     .methodWrapper("deltaModelToWorld", &LuaTransform::deltaModelToWorldWrapper)
                     .methodWrapper("worldToModel",      &LuaTransform::worldToModelWrapper)
-                    .methodWrapper("delta>orldToModel", &LuaTransform::deltaWorldToModelWrapper)
+                    .methodWrapper("deltaWorldToModel", &LuaTransform::deltaWorldToModelWrapper)
 					.property("matrix", 			    &Transform::matrix)
 					.property("modelToWorldMatrix",	    static_cast<math::Matrix4x4::Ptr (Transform::*)()>(&Transform::modelToWorldMatrix));
 			}

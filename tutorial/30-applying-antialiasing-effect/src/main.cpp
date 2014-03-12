@@ -112,18 +112,18 @@ main(int argc, char** argv)
             
         });
 
-        auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint t, float dt)
+        auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float t, float dt)
         {
             cube->component<Transform>()->matrix()->prependRotationY(.01f);
 
             if (enableFXAA)
             {
-                sceneManager->nextFrame(ppTarget);
+                sceneManager->nextFrame(t, dt, renderTarget);
                 ppRenderer->render(assets->context());
             }
             else
             {
-                sceneManager->nextFrame();
+                sceneManager->nextFrame(t, dt);
             }
         });
 

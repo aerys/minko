@@ -25,6 +25,8 @@ function minko.plugin.particles:enable()
 
 	minko.plugin.links { "particles" }
 
+	minko.plugin.enable("serializer")
+	
 	includedirs {
 		minko.plugin.path("particles") .. "/include"
 	}

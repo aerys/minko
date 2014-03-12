@@ -55,7 +55,7 @@ main(int argc, char** argv)
         auto ground = scene::Node::create("sphere")
             ->addComponent(Surface::create(
             geometry::QuadGeometry::create(assets->context()),
-            material::BasicMaterial::create()->diffuseColor(Vector4::create(0.f, 0.f, 0.f, 1.f)),
+            material::BasicMaterial::create(),
             assets->effect("effect/Phong.effect")
             ))
             ->addComponent(Transform::create(Matrix4x4::create()->appendScale(3.f)->appendRotationX(-1.57f)));
@@ -76,15 +76,18 @@ main(int argc, char** argv)
         // add the component to the spot light node
         spotLightNode->addComponent(spotLight);
 
+		//sets a red color to our spot light
+		spotLightNode->component<SpotLight>()->color()->setTo(2.0f, 1.0f, 1.0f);
+
         // add the node to the root of the scene graph
         root->addChild(spotLightNode);
 
-        auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint t, float dt)
+        auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float t, float dt)
         {
             spotLightNode->component<Transform>()->matrix()->appendRotationX(0.002f * dt);
 
 
-            sceneManager->nextFrame();
+            sceneManager->nextFrame(t, dt);
         });
 
         canvas->run();
