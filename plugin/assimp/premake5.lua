@@ -8,7 +8,7 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		"include",
 		"src"
 	}
-	
+
 	--defines { "DEBUG_SKINNING" }
 
 	-- assimp lib
@@ -23,6 +23,10 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		"lib/assimp/contrib/**.cpp",
 		"lib/assimp/contrib/**.hpp",
 	}
+        excludes {
+                 "lib/assimp/code/Assimp.cpp"
+        }
+
 	includedirs {
 		"lib/assimp/code",
 		"lib/assimp/code/BoostWorkaround",
