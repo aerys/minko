@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/MinkoSDL.hpp"
 #include "minko/MinkoCEF.hpp"
 #include "minko/dom/AbstractDOMElement.hpp"
+#include "minko/dom/AbstractDOM.hpp"
 
 using namespace minko;
 using namespace minko::component;
@@ -31,12 +32,22 @@ const std::string TEXTURE_FILENAME = "texture/box.png";
 
 Signal<minko::dom::AbstractDOM::Ptr, std::string>::Slot onloadSlot;
 
-Signal<dom::AbstractDOMEvent::Ptr>::Slot onredclickSlot;
-Signal<dom::AbstractDOMEvent::Ptr>::Slot onyellowclickSlot;
-Signal<dom::AbstractDOMEvent::Ptr>::Slot onblueclickSlot;
+dom::AbstractDOM::Ptr gameInterfaceDom;
+
+int redScore;
+int blueScore;
+
+void
+updateRedScore();
+
+void
+updateBlueScore();
 
 int main(int argc, char** argv)
 {
+	redScore = 0;
+	blueScore = 0;
+
 	auto canvas = Canvas::create("Minko Example - Cube", 800, 600);
 
 	auto sceneManager = SceneManager::create(canvas->context());
@@ -89,7 +100,7 @@ int main(int argc, char** argv)
 			assets->effect("effect/Basic.effect")
 			));
 
-		overlay->load("html/menu.html");
+		overlay->load("html/gameInterface.html");
 	});
 
 	onloadSlot = overlay->onload()->connect([=](minko::dom::AbstractDOM::Ptr dom, std::string page)
@@ -99,36 +110,21 @@ int main(int argc, char** argv)
 		if (!dom->isMain())
 			return;
 
-		if (dom->fileName() == "menu.html")
+		if (dom->fileName() == "gameInterface.html")
 		{
-			
+			gameInterfaceDom = dom;
 		}
+	});
 
-		/*auto redButton = dom->getElementById("redButton");
-		auto blueButton = dom->getElementById("blueButton");
+	auto rightButtonDown = canvas->mouse()->rightButtonDown()->connect([&](input::Mouse::Ptr m)
+	{
+		updateRedScore();
+	});
 
-		auto buttonParent = redButton->parentNode();
 
-		buttonParent->removeChild(redButton);
-
-		blueButton->appendChild(redButton);
-
-		buttonParent->innerHTML("<div>Hello World</div>");*/
-
-		/*onredclickSlot = dom->getElementById("redButton")->onclick()->connect([=](dom::AbstractDOMEvent::Ptr event)
-		{
-			material->diffuseColor(0xFF0000FF);
-		});
-
-		onblueclickSlot = dom->getElementById("blueButton")->onclick()->connect([=](dom::AbstractDOMEvent::Ptr event)
-		{
-			material->diffuseColor(0x0000FFFF);
-		});
-
-		onyellowclickSlot = dom->getElementById("yellowButton")->onclick()->connect([=](dom::AbstractDOMEvent::Ptr event)
-		{
-			material->diffuseColor(0xFFFF00FF);
-		});*/
+	auto leftButtonDown = canvas->mouse()->leftButtonDown()->connect([&](input::Mouse::Ptr m)
+	{
+		updateBlueScore();
 	});
 
 	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, uint deltaTime)
@@ -146,4 +142,16 @@ int main(int argc, char** argv)
 	return 0;
 }
 
+void
+updateRedScore()
+{
+	if (gameInterfaceDom != nullptr)
+		gameInterfaceDom->getElementById("teamScoreRed")->textContent(std::to_string(redScore++));
+}
 
+void
+updateBlueScore()
+{
+	if (gameInterfaceDom != nullptr)
+		gameInterfaceDom->getElementById("teamScoreBlue")->textContent(std::to_string(blueScore++));
+}
