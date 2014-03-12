@@ -29,7 +29,8 @@ namespace minko
 	namespace math
 	{
 		class Box :
-			public AbstractShape
+			public AbstractShape,
+			public std::enable_shared_from_this<Box>
 		{
 		public:
 			typedef std::shared_ptr<Box>	Ptr;
@@ -61,6 +62,9 @@ namespace minko
 			static
 			Ptr
 			merge(Ptr box1, Ptr box2, Ptr out = nullptr);
+
+			Ptr
+			merge(Ptr box2);
 			
 			inline
 			std::shared_ptr<Vector3>
@@ -97,11 +101,28 @@ namespace minko
 				return _topRight->z() - _bottomLeft->z();
 			}
 
+			inline
+			Ptr
+			copyFrom(Ptr box)
+			{
+				_topRight->copyFrom(box->_topRight);
+				_bottomLeft->copyFrom(box->_bottomLeft);
+
+				return shared_from_this();
+			}
+
 			bool
 			cast(std::shared_ptr<Ray> ray, float& distance);
 
 			std::array<std::shared_ptr<Vector3>, 8>
 			getVertices();
+
+			
+			ShapePosition
+			testBoundingBox(std::shared_ptr<math::Box> box);
+
+			void
+			updateFromMatrix(std::shared_ptr<math::Matrix4x4> matrix);
 
 		private:
 			Box();

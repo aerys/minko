@@ -21,99 +21,92 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 
-#include "minko/render/AbstractResource.hpp"
+#include "minko/render/AbstractTexture.hpp"
 
 namespace minko
 {
 	namespace render
 	{
 		class Texture :
-			public AbstractResource
+			public AbstractTexture
 		{
 		public:
-			typedef std::shared_ptr<Texture> Ptr;
-
-			enum DataFormat
-			{
-				RGB,
-				RGBA
-			};
+			typedef std::shared_ptr<Texture>			Ptr;
 
 		private:
-			const unsigned int			_width;		
-			const unsigned int			_height;	
-			const unsigned int			_widthGPU;	// always power of 2
-			const unsigned int			_heightGPU;	// always power of 2
-            bool                        _mipMapping;
-            bool                        _optimizeForRenderToTexture;
-			const bool					_resizeSmoothly;
+			typedef std::shared_ptr<AbstractContext>	AbstractContextPtr;
+
+		private:
 			std::vector<unsigned char>	_data;
-
+		
 		public:
-			~Texture()
-			{
-				dispose();
-			}
-
 			inline static
 			Ptr
-			create(std::shared_ptr<render::AbstractContext> context,
-				   const unsigned int						width,
-				   const unsigned int						height,
-                   bool                                     mipMapping                  = false,
-                   bool                                     optimizeForRenderToTexture  = false,
-				   bool										resizeSmoothly				= true)
+			create(AbstractContextPtr	context,
+				   unsigned int			width,
+				   unsigned int			height,
+                   bool					mipMapping                  = false,
+                   bool					optimizeForRenderToTexture  = false,
+				   bool					resizeSmoothly				= true,
+				   const std::string&	filename					= "")
 			{
-				return std::shared_ptr<Texture>(new Texture(context, width, height, mipMapping, optimizeForRenderToTexture, resizeSmoothly));
+				return std::shared_ptr<Texture>(
+					new Texture(
+						context, 
+						width, 
+						height, 
+						mipMapping, 
+						optimizeForRenderToTexture, 
+						resizeSmoothly, 
+						filename
+					)
+				);
 			}
 
-			inline
-			const unsigned int
-			width()
-			{
-				return _width;
-			}
-
-			inline
-			const unsigned int
-			height()
-			{
-				return _height;
-			}
-
-            inline
-            const bool
-            mipMapping()
-            {
-                return _mipMapping;
-            }
-
-			void
-			data(unsigned char* data, DataFormat format = DataFormat::RGBA);
-
-			inline
 			std::vector<unsigned char>&
 			data()
 			{
 				return _data;
 			}
 
+			const std::vector<unsigned char>&
+			data() const
+			{
+				return _data;
+			}
+
+			void
+			data(unsigned char*, 
+				 TextureFormat	format		= TextureFormat::RGBA,
+				 int			widthGPU	= -1,
+				 int			heightGPU	= -1);
+
 			void
 			dispose();
 
 			void
-			upload();
-
-		private:
-			Texture(std::shared_ptr<render::AbstractContext>	context,
-					const unsigned int							width,
-					const unsigned int							height,
-                    bool                                        mipMapping,
-                    bool                                        optimizeForRenderToTexture,
-					bool										resizeSmoothly);
+			disposeData();
 
 			void
-			processData(std::vector<unsigned char>& inData, std::vector<unsigned char>& outData) const;
+			upload();
+
+			void
+			uploadMipLevel(uint				level,
+						   unsigned char*	data);
+
+			~Texture()
+			{
+				dispose();
+			}
+
+		private:
+			Texture(AbstractContextPtr	context,
+					unsigned int		width,
+					unsigned int		height,
+                    bool				mipMapping,
+                    bool				optimizeForRenderToTexture,
+					bool				resizeSmoothly,
+				    const std::string&	filename);
 		};
 	}
 }

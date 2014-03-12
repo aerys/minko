@@ -20,7 +20,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/Options.hpp"
 
 #include "minko/material/Material.hpp"
-#include "minko/file/Loader.hpp"
+#include "minko/file/FileLoader.hpp"
+#include "minko/file/AssetLibrary.hpp"
+
+#ifdef __APPLE__
+# include "CoreFoundation/CoreFoundation.h"
+#endif
 
 using namespace minko;
 using namespace minko::file;
@@ -30,15 +35,74 @@ Options::Options(std::shared_ptr<render::AbstractContext> context) :
 	_includePaths(),
 	_platforms(),
 	_userFlags(),
-    _generateMipMaps(false),
-	_skinningNumFPS(30),
+	_generateMipMaps(false),
+	_resizeSmoothly(false),
+	_isCubeTexture(false),
+	_startAnimation(true),
+	_loadAsynchronously(false),
+	_skinningFramerate(30),
 	_skinningMethod(component::SkinningMethod::HARDWARE),
-	_material(material::Material::create())
+	_material(nullptr),
+	_effect(nullptr)
 {
-#ifdef DEBUG
-	includePaths().insert("bin/debug");
-#else
-	includePaths().insert("bin/release");
+#if defined(DEBUG)
+# if !defined(EMSCRIPTEN)
+	includePaths().push_back("../../../asset");
+# endif
+	includePaths().push_back("asset");
+# if defined(_WIN32)
+	includePaths().push_back("bin/windows32/debug/asset");
+# elif defined(_WIN64)
+	includePaths().push_back("bin/windows64/debug/asset");
+# elif defined(EMSCRIPTEN)
+	includePaths().push_back("bin/html5/debug/asset");
+# elif defined(LINUX) || defined(__unix__)
+#  if defined(__x86_64__)
+	includePaths().push_back("bin/linux64/debug/asset");
+#  else
+	includePaths().push_back("bin/linux32/debug/asset");
+#  endif
+# elif defined(__APPLE__)
+#  include <TargetConditionals.h>
+#  if defined(TARGET_IPHONE_SIMULATOR) or defined(TARGET_OS_IPHONE)
+	CFURLRef resourcesURL = CFBundleCopyResourcesDirectoryURL(CFBundleGetMainBundle());
+	char path[PATH_MAX];
+	if (!CFURLGetFileSystemRepresentation(resourcesURL, true, (UInt8*) path, PATH_MAX))
+		throw std::runtime_error("cannot find .app path");
+	CFRelease(resourcesURL);
+	includePaths().push_back(std::string(path) + "/asset");
+#  elif defined(TARGET_OS_MAC)
+	includePaths().push_back("bin/osx64/debug/asset");
+#  endif
+# endif
+#else // release
+# if defined(_WIN32)
+	includePaths().push_back("bin/windows32/release/asset");
+# elif defined(_WIN64)
+	includePaths().push_back("bin/windows64/release/asset");
+# elif defined(TARGET_OS_MAC)
+	includePaths().push_back("bin/osx64/release/asset");
+# elif defined(EMSCRIPTEN)
+	includePaths().push_back("bin/html5/release/asset");
+# elif defined(LINUX) || defined(__unix__)
+#  if defined(__x86_64__)
+	includePaths().push_back("bin/linux64/release/asset");
+#  else
+	includePaths().push_back("bin/linux32/release/asset");
+#  endif 
+# elif defined(__APPLE__)
+#  include <TargetConditionals.h>
+#  if defined(TARGET_IPHONE_SIMULATOR) or defined(TARGET_OS_IPHONE)
+	CFURLRef resourcesURL = CFBundleCopyResourcesDirectoryURL(CFBundleGetMainBundle());
+	char path[PATH_MAX];
+	if (!CFURLGetFileSystemRepresentation(resourcesURL, true, (UInt8*) path, PATH_MAX))
+		throw std::runtime_error("cannot find .app path");
+	CFRelease(resourcesURL);
+	includePaths().push_back(std::string(path) + "/asset");
+#  elif defined(TARGET_OS_MAC)
+	includePaths().push_back("bin/osx64/debug/asset");
+#  endif
+# endif
 #endif
 
 	_materialFunction = [](const std::string&, material::Material::Ptr material) -> material::Material::Ptr
@@ -46,11 +110,36 @@ Options::Options(std::shared_ptr<render::AbstractContext> context) :
 		return material;
 	};
 
-	_loaderFunction = [](const std::string&) -> std::shared_ptr<AbstractLoader>
+	_geometryFunction = [](const std::string&, GeomPtr geom) -> GeomPtr
 	{
-		return Loader::create();
+		return geom;
 	};
 
+	_loaderFunction = [](const std::string& filename, std::shared_ptr<AssetLibrary> assets) -> std::shared_ptr<AbstractLoader>
+	{
+		std::string protocol = "";
+
+		uint i;
+
+		for (i = 0; i < filename.length(); ++i)
+		{
+			if (i < filename.length() - 2 && filename.at(i) == ':' && filename.at(i + 1) == '/' && filename.at(i + 2) == '/')
+				break;
+
+			protocol += filename.at(i);
+		}
+
+		if (i != filename.length())
+		{
+			std::shared_ptr<AbstractLoader> loader = assets->getLoader(protocol);
+
+			if (loader)
+				return loader;
+		}
+
+		return FileLoader::create();
+	};
+	
 	_uriFunction = [](const std::string& uri) -> const std::string
 	{
 		return uri;

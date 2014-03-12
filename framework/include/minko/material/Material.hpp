@@ -21,17 +21,17 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 
-#include "minko/data/StructureProvider.hpp"
+#include "minko/data/ArrayProvider.hpp"
 
 namespace minko
 {
 	namespace material
 	{
 		class Material :
-			public data::StructureProvider
+			public data::ArrayProvider
 		{
 		public:
-			typedef std::shared_ptr<Material> Ptr;
+			typedef std::shared_ptr<Material>	Ptr;
 
 		public:
 			inline static
@@ -47,16 +47,14 @@ namespace minko
 			{
 				auto mat = create();
 
-				mat->copyFrom(source);
+				if (source)
+					mat->copyFrom(source);
 
 				return mat;
 			}
 
 		protected:
-			Material() :
-				data::StructureProvider("material")
-			{
-			}
+			Material();
 		};
 	}
 }

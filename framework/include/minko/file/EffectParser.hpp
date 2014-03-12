@@ -23,7 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Signal.hpp"
 #include "minko/file/AbstractParser.hpp"
-#include "minko/file/Loader.hpp"
+#include "minko/file/FileLoader.hpp"
 #include "minko/render/Blending.hpp"
 #include "minko/render/Shader.hpp"
 
@@ -43,18 +43,25 @@ namespace minko
 			typedef std::shared_ptr<EffectParser>	Ptr;
 
 		private:
-			typedef std::shared_ptr<render::Texture>						TexturePtr;
+			enum class GLSLBlockType
+			{
+				TEXT,
+				FILE
+			};
+
+		private:
+			typedef std::shared_ptr<render::AbstractTexture>	AbstractTexturePtr;
 
 			union UniformNumericValue
 			{
-				int intValue;
-				float floatValue;
+				int		intValue;
+				float	floatValue;
 			};
 			
 			struct UniformValue
 			{
-				std::vector<UniformNumericValue> numericValue;
-				TexturePtr textureValue;
+				std::vector<UniformNumericValue>	numericValue;
+				AbstractTexturePtr					textureValue;
 			};
 
 			enum class UniformType
@@ -69,9 +76,12 @@ namespace minko
 			typedef std::shared_ptr<render::Effect>							EffectPtr;
 			typedef std::shared_ptr<render::Pass>							PassPtr;
 			typedef std::shared_ptr<render::Shader>							ShaderPtr;
-			typedef std::unordered_map<std::string, TexturePtr>				TexturePtrMap;
+			typedef std::unordered_map<std::string, AbstractTexturePtr>		TexturePtrMap;
 			typedef std::pair<UniformType, UniformValue>					UniformTypeAndValue;
 			typedef std::unordered_map<std::string, UniformTypeAndValue>	UniformValues;
+			typedef std::pair<GLSLBlockType, std::string> 					GLSLBlock;
+			typedef std::forward_list<GLSLBlock> 							GLSLBlockList;
+			typedef std::shared_ptr<GLSLBlockList>							GLSLBlockListPtr;
 
 		private:
 			static std::unordered_map<std::string, unsigned int>				_blendFactorMap;
@@ -79,6 +89,7 @@ namespace minko
 			static std::unordered_map<std::string, render::StencilOperation>	_stencilOpMap;
 			static std::unordered_map<std::string, float>						_priorityMap;
 
+		private:
             std::string                                                 _filename;
 			std::string                                                 _resolvedFilename;
 			std::shared_ptr<file::Options>								_options;
@@ -94,15 +105,15 @@ namespace minko
 			data::MacroBindingMap                              			_defaultMacroBindings;
 			UniformValues												_defaultUniformValues;
 
+
+			std::shared_ptr<AssetLibrary>								_assetLibrary;
 			unsigned int												_numDependencies;
 			unsigned int												_numLoadedDependencies;
-			std::shared_ptr<AssetLibrary>								_assetLibrary;
-			std::vector<LoaderPtr>										_effectIncludes;
-			std::unordered_map<PassPtr, std::vector<LoaderPtr>> 		_passIncludes;
-			std::unordered_map<ShaderPtr, std::vector<LoaderPtr>> 		_shaderIncludes;
+
+			std::unordered_map<ShaderPtr, GLSLBlockListPtr>				_glslBlocks;
 
 			std::vector<PassPtr>										_globalPasses;
-			std::unordered_map<std::string, TexturePtr>					_globalTargets;
+			std::unordered_map<std::string, AbstractTexturePtr>					_globalTargets;
 			std::unordered_map<std::string, TexturePtrMap>				_techniqueTargets;
 			std::unordered_map<std::string, std::vector<PassPtr>>		_techniquePasses;
 			std::unordered_map<std::string, std::string>				_techniqueFallback;
@@ -138,9 +149,6 @@ namespace minko
                   std::shared_ptr<Options>          options,
 				  const std::vector<unsigned char>&	data,
 				  std::shared_ptr<AssetLibrary>		assetLibrary);
-
-			void
-			finalize();
 
 		private:
 			EffectParser();
@@ -182,6 +190,21 @@ namespace minko
 						render::Shader::Type 			type);
 
 			void
+			parseGLSL(std::string 						glsl,
+					  std::shared_ptr<file::Options>	options,
+					  GLSLBlockListPtr 					blocks,
+	 				  GLSLBlockList::iterator 			fileBlock);
+
+			void
+			loadGLSLDependencies(GLSLBlockListPtr				blocks,
+								 std::shared_ptr<file::Options> options);
+
+			void
+			glslIncludeCompleteHandler(LoaderPtr 				loader,
+									   GLSLBlockListPtr 		blocks,
+	 								   GLSLBlockList::iterator 	fileBlock);
+
+			void
 			parseBindingNameAndSource(const Json::Value& contextNode, std::string& name, data::BindingSource& source);
 
 			void
@@ -217,6 +240,10 @@ namespace minko
 			parseBlendMode(const Json::Value&				contextNode,
 						   render::Blending::Source&		srcFactor,
 						   render::Blending::Destination&	dstFactor);
+
+			void
+			parseZSort(const Json::Value&	contextNode,
+					   bool& zSorted) const;
 
 			void
 			parseColorMask(const Json::Value&	contextNode,
@@ -255,16 +282,10 @@ namespace minko
 							 bool&					scissorTest,
 							 render::ScissorBox&	scissorBox) const;
 
-            std::shared_ptr<render::Texture>
+            AbstractTexturePtr
             parseTarget(const Json::Value&                          contextNode,
                         std::shared_ptr<render::AbstractContext>    context,
                         TexturePtrMap&								targets);
-
-			void
-			parseDependencies(const Json::Value& 				root,
-							  const std::string& 				filename,
-							  std::shared_ptr<file::Options> 	options,
-							  std::vector<LoaderPtr>& 			store);
 
 			void
 			parseTechniques(const Json::Value&							root,
@@ -307,6 +328,13 @@ namespace minko
 			static
 			float
 			priority(const std::string&);
+
+			std::string
+			concatenateGLSLBlocks(GLSLBlockListPtr blocks);
+
+			void
+			finalize();
+
 		};
 	}
 }

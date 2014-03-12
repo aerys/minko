@@ -25,7 +25,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/TriangleCulling.hpp"
 #include "minko/render/CompareMode.hpp"
 #include "minko/render/StencilOperation.hpp"
-#include "minko/render/Texture.hpp"
 
 namespace minko
 {
@@ -37,9 +36,11 @@ namespace minko
 		    typedef std::shared_ptr<States>                                 Ptr;
             typedef std::unordered_map<std::string, render::SamplerState>   SamplerStates;
 			typedef std::shared_ptr<math::Vector4>							Vector4Ptr;
+			typedef std::shared_ptr<render::AbstractTexture>				AbstractTexturePtr;
 
         private:
             float				        _priority;
+			bool						_zsorted;
 		    Blending::Source		    _blendingSourceFactor;
 		    Blending::Destination	    _blendingDestinationFactor;
 			bool						_colorMask;
@@ -55,13 +56,14 @@ namespace minko
 			bool						_scissorTest;
 			ScissorBox					_scissorBox;
             SamplerStates               _samplerStates;
-            std::shared_ptr<Texture>    _target;
+            AbstractTexturePtr		    _target;
 
 		public:
 		    inline static
 		    Ptr
 		    create(const SamplerStates&     samplerStates,
-				   const float				priority					= 0.f,
+				   float					priority					= 0.f,
+				   bool						zSorted						= false,
 				   Blending::Source			blendingSourceFactor		= Blending::Source::ONE,
 				   Blending::Destination	blendingDestinationFactor	= Blending::Destination::ZERO,
 				   bool						colorMask					= true,
@@ -76,11 +78,12 @@ namespace minko
 				   StencilOperation			stencilZPassOp				= StencilOperation::KEEP, 
 				   bool						scissorTest					= false,
 				   const ScissorBox&		scissorBox					= ScissorBox(),
-                   std::shared_ptr<Texture> target                      = nullptr)
+                   AbstractTexturePtr		target                      = nullptr)
 		    {
 			    return std::shared_ptr<States>(new States(
                     samplerStates,
                     priority,
+					zSorted,
                     blendingSourceFactor,
                     blendingDestinationFactor,
 					colorMask,
@@ -106,6 +109,7 @@ namespace minko
 		    	return std::shared_ptr<States>(new States(
                     states->_samplerStates,
                     states->_priority,
+					states->_zsorted,
                     states->_blendingSourceFactor,
                     states->_blendingDestinationFactor,
 					states->_colorMask,
@@ -146,6 +150,13 @@ namespace minko
             {
             	_priority = priority;
             }
+
+			inline
+			bool
+			zSorted() const
+			{
+				return _zsorted;
+			}
 
             inline
             Blending::Source
@@ -253,7 +264,7 @@ namespace minko
             }
 
             inline
-            std::shared_ptr<Texture>
+            AbstractTexturePtr
             target() const
             {
                 return _target;
@@ -261,7 +272,8 @@ namespace minko
 
 	    private:
 		    States(const SamplerStates&     samplerSates,
-				   const float			    priority,
+				   float				    priority,
+				   bool						zSorted,
 				   Blending::Source		    blendingSourceFactor,
 				   Blending::Destination    blendingDestinationFactor,
 				   bool						colorMask,
@@ -276,9 +288,10 @@ namespace minko
 				   StencilOperation			stencilZPassOp,
 				   bool						scissorTest,
 				   const ScissorBox&		scissorBox,
-                   std::shared_ptr<Texture> target) :
+                   AbstractTexturePtr		target) :
                 _samplerStates(samplerSates),
                 _priority(priority),
+				_zsorted(zSorted),
                 _blendingSourceFactor(blendingSourceFactor),
                 _blendingDestinationFactor(blendingDestinationFactor),
 				_colorMask(colorMask),

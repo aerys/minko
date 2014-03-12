@@ -28,11 +28,11 @@ using namespace minko::scene;
 using namespace minko::math;
 using namespace minko::geometry;
 
-Skin::Skin(unsigned int numBones, unsigned int numFrames):
+Skin::Skin(unsigned int numBones, unsigned int duration, unsigned int numFrames):
 	_bones(numBones, nullptr),
 	_numBones(numBones),
-	_duration(0.0f),
-	_timeFactor(0.0f),
+	_duration(duration),
+	_timeFactor(duration > 0 ? numFrames / float(duration) : 0.0f),
 	_boneMatricesPerFrame(numFrames, std::vector<float>(numBones << 4, 0.0f)),
 	_maxNumVertexBones(0),
 	_numVertexBones(),
@@ -40,29 +40,6 @@ Skin::Skin(unsigned int numBones, unsigned int numFrames):
 	_vertexBoneWeights()
 {
 
-}
-
-void
-Skin::clear()
-{
-	_bones.clear();
-	_boneMatricesPerFrame.clear();
-	_duration	= 0.0f;
-	_timeFactor	= 0.0f;
-	_maxNumVertexBones	= 0;
-	_numVertexBones.clear();
-	_vertexBones.clear();
-	_vertexBoneWeights.clear();
-}
-
-void
-Skin::duration(float value)
-{
-	if (value < 1e-6f)
-		throw std::invalid_argument("value");
-
-	_duration	= value;
-	_timeFactor	= numFrames() / _duration; 
 }
 
 void
@@ -147,15 +124,12 @@ Skin::lastVertexId() const
 	return lastId;
 }
 
-unsigned int
-Skin::getFrameId(float time) const
+uint
+Skin::getFrameId(uint time) const
 {
-	if (_duration < 1e-6f)
-		return 0;
-	
-	const float	t = fmod(time, _duration);
-	
-	return (unsigned int)floorf(t * _timeFactor) % numFrames();
+	const int frameId	= (int)floorf(time * _timeFactor);
+
+	return (uint)std::min(frameId, (int)numFrames() - 1);
 }
 
 void
@@ -188,5 +162,28 @@ Skin::disposeBones()
 	_bones.clear();
 	_bones.shrink_to_fit();
 
+	return shared_from_this();
+}
+
+Skin::Ptr
+Skin::transposeMatrices()
+{	
+	for (auto& frameMatrices : _boneMatricesPerFrame)
+	{
+		assert(frameMatrices.size() % 16 == 0);
+		const unsigned int	numBones	= frameMatrices.size() >> 4;
+		float*				matrices	= &(frameMatrices[0]);
+
+		for (unsigned int boneId = 0; boneId < numBones; ++boneId)
+		{
+			float* matrix = matrices + (boneId << 4);
+			std::swap(matrix[1],	matrix[4]);
+			std::swap(matrix[2],	matrix[8]);
+			std::swap(matrix[3],	matrix[12]);
+			std::swap(matrix[6],	matrix[9]);
+			std::swap(matrix[7],	matrix[13]);
+			std::swap(matrix[11],	matrix[14]);
+		}
+	}
 	return shared_from_this();
 }

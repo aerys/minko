@@ -1,6 +1,7 @@
 .vagrant
 Makefile
 *.xcodeproj
+*.xcworkspace
 *.opensdf
 *.sdf
 *.sln
@@ -20,6 +21,7 @@ Makefile
 *.lastbuildstate
 *.vsglog
 *.cache
-doc
+doc/html
 remove.me
 dist
+packages

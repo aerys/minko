@@ -11,35 +11,30 @@ It provides a powerful editor on top of a robust, extensible and fully documente
 
 Get started
 ===========
-### OS X / Linux 
-* Make sure you have a recent compiler (tested with GCC 4.8 and Clang 3.3)
-* Open a command prompt
-* `cd <minko-cpp>`
-* `premake4 gmake` or `premake4 --platform=clang gmake`
-* `make config=release`
-* `cd examples && bin/release/minko-example`
 
 ### Windows
+* Set the `MINKO_HOME` environment variable to the root of the SDK.
+* Open the explorer in `tool\win\script`
+* Run `solution_vs2013.bat`
+* Open `minko.sln` at the root of the SDK
+
+### OS X
+* Make sure you have a recent compiler (tested with GCC 4.8 and Clang 3.3)
+* Set the `MINKO_HOME` environment variable to the root of the SDK
 * Open a command prompt
-* `cd <minko-cpp>`
-* `premake4 vs2012`
-* `start minko.sln`
+* `cd <minko>`
+* `tool/mac/script/solution_gmake_gcc.sh` (or `solution_gmake_clang.sh`)
+* `make config=release config=osx64_release`
+* `cd example/cube/bin/osx64/release && ./minko-example-cube`
 
-Or from the explorer:
-
-* Run `tools\win\scripts\premake_vs2010.bat`
-* Open `minko.sln`
-
-
-### Linux (under Vagrant)
-* **You need an internet connection**
-* Install [Vagrant](http://www.vagrantup.com/)
-* Open a command prompt
-* `cd <minko-cpp>`
-* `vagrant up`
-* `vagrant ssh`
-* `tools/lin/bin/premake4 gmake`
-* `make verbose=1 config=release`
+### Linux
+* Make sure you have a recent compiler (tested with GCC 4.8 and Clang 3.3)
+* Set the `MINKO_HOME` environment variable to the root of the SDK
+* Open a command prompt (or start [Vagrant](http://www.vagrantup.com/))
+* `cd <minko>`
+* `tool/lin/script/solution_gmake_gcc.sh` (or `solution_gmake_clang.sh`)
+* `make config=release config=linux64_release`
+* `cd example/cube/bin/linux64/release && ./minko-example-cube`
 
 
 Contents
@@ -49,44 +44,66 @@ Framework
 
 Sources for the Minko framework.
 
-Examples
---------
+Example
+-------
 
 Example applications created with the Minko framework and its plugins.
 
-Tools
------
+Tool
+----
 
 Set of scripts to ease the deployment of the Minko SDK without using the command line.
 
-`premake_vs2010.bat` - Windows batch script to create a VS2010 solution and perform other necessary operations such as copying required DLL into the output folders
+`solution_vs2013.bat` - Windows batch script to create a VS2013 solution and perform other necessary operations such as copying required DLL into the output folders
 
-`premake_clean.bat` - Windows batch script to properly clean a VS2010 solution created by premake_vs2010.bat
+`solution_vs2013ctp.bat` - Windows batch script to create a VS2013 solution (with the Nov. 2013 CTP compiler) and perform other necessary operations such as copying required DLL into the output folders
 
-Templates
----------
+`solution_gmake.bat` - Windows batch script to create a GNU Make solution (supporting HTML5 compilation)
+
+`clean.bat` - Windows batch script to properly clean the generated solutions and builds
+
+`doc.bat` - Windows batch script to generate the developer reference
+
+`dist.bat` - Windows batch script to make a redistributable Minko SDK
+
+`install_emscripten.bat` - Windows batch script to install Emscripten (needed by the HTML5 target)
+
+You will find similar tools for Linux and OS X.
+
+Template
+--------
 
 This folder contains templates you can use to ease the development of the Minko framework, plugins
 or applications.
 
-* `vs` - Visual Studio templates; can be installed by:
-	* running the `tools/premake_templates.bat` script
-	* or executing `premake4 installTemplates` command line
-	* or by manually copying each template directory into your VS templates directory (default is `$user\Documents\Visual Studio 2012\Templates\ItemTemplates\Projet Visual C++`)
-
-Plugins
--------
+Plugin
+------
 
 Sources for Minko's plugins.
 
 Available plugins are:
+* angle
+* assimp
+* bullet
+* devil
+* fx
+* http-loader
+* http-worker
 * jpeg
+* leap
+* lua
+* oculus
+* offscreen
+* particles
 * png
+* sdl
+* serializer
 * webgl: please follow `webgl/README.md` to learn how to deploy
 
 Resources
 ---------
 * [minko.io](http://minko.io/ "Website")
+* [doc.minko.io](http://doc.minko.io/ "Documentation")
 
 Contribute
 ----------

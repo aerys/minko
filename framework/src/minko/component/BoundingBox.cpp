@@ -106,9 +106,9 @@ BoundingBox::update()
 				std::numeric_limits<float>::max()
 			);
 			auto max = Vector3::create(
-				std::numeric_limits<float>::lowest(),
-				std::numeric_limits<float>::lowest(),
-				std::numeric_limits<float>::lowest()
+				-std::numeric_limits<float>::max(),
+				-std::numeric_limits<float>::max(),
+				-std::numeric_limits<float>::max()
 			);
 
 			for (auto& surface : surfaces)
@@ -126,17 +126,17 @@ BoundingBox::update()
 
 					if (x < min->x())
 						min->x(x);
-					else if (x > max->x())
+					if (x > max->x())
 						max->x(x);
 
 					if (y < min->y())
 						min->y(y);
-					else if (y > max->y())
+					if (y > max->y())
 						max->y(y);
 
 					if (z < min->z())
 						min->z(z);
-					else if (z > max->z())
+					if (z > max->z())
 						max->z(z);
 				}
 			}
@@ -175,32 +175,32 @@ BoundingBox::updateWorldSpaceBox()
 		for (auto& vertex : vertices)
 			t->transform(vertex, vertex);
 
+		auto max = _worldSpaceBox->topRight()->setTo(
+			-std::numeric_limits<float>::max(),
+			-std::numeric_limits<float>::max(),
+			-std::numeric_limits<float>::max()
+		);
 		auto min = _worldSpaceBox->bottomLeft()->setTo(
 			std::numeric_limits<float>::max(),
 			std::numeric_limits<float>::max(),
 			std::numeric_limits<float>::max()
-		);
-		auto max = _worldSpaceBox->topRight()->setTo(
-			std::numeric_limits<float>::lowest(),
-			std::numeric_limits<float>::lowest(),
-			std::numeric_limits<float>::lowest()
 		);
 
 		for (auto& vertex : vertices)
 		{
 			if (vertex->x() > max->x())
 				max->x(vertex->x());
-			else if (vertex->x() < min->x())
+			if (vertex->x() < min->x())
 				min->x(vertex->x());
 
 			if (vertex->y() > max->y())
 				max->y(vertex->y());
-			else if (vertex->y() < min->y())
+			if (vertex->y() < min->y())
 				min->y(vertex->y());
 
 			if (vertex->z() > max->z())
 				max->z(vertex->z());
-			else if (vertex->z() < min->z())
+			if (vertex->z() < min->z())
 				min->z(vertex->z());
 		}
 	}

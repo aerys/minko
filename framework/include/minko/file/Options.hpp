@@ -27,36 +27,44 @@ namespace minko
 {
 	namespace file
 	{
-		class Options
+		class Options: 
+			public std::enable_shared_from_this<Options>
 		{
 		private:
-			typedef std::shared_ptr<AbstractLoader>								AbsLoaderPtr;
-			typedef std::shared_ptr<data::Provider>								ProviderPtr;
-			typedef std::shared_ptr<material::Material>							MaterialPtr;
-			typedef std::shared_ptr<scene::Node>								NodePtr;
-			typedef std::shared_ptr<render::Effect>								EffectPtr;
+			typedef std::shared_ptr<AbstractLoader>										AbsLoaderPtr;
+			typedef std::shared_ptr<data::Provider>										ProviderPtr;
+			typedef std::shared_ptr<material::Material>									MaterialPtr;
+			typedef std::shared_ptr<geometry::Geometry>									GeomPtr;
+			typedef std::shared_ptr<scene::Node>										NodePtr;
+			typedef std::shared_ptr<render::Effect>										EffectPtr;
+			typedef std::shared_ptr<AssetLibrary>										AssetLibraryPtr;
 
 		public:
-			typedef std::shared_ptr<Options>									Ptr;
-			typedef std::function<MaterialPtr(const std::string&, MaterialPtr)> MaterialFunction;
-			typedef std::function<AbsLoaderPtr(const std::string&)>				LoaderFunction;
-			typedef std::function<const std::string(const std::string&)>		UriFunction;
-			typedef std::function<NodePtr(NodePtr)>								NodeFunction;
-			typedef std::function<EffectPtr(EffectPtr)>							EffectFunction;
+			typedef std::shared_ptr<Options>											Ptr;
+			typedef std::function<MaterialPtr(const std::string&, MaterialPtr)>			MaterialFunction;
+			typedef std::function<GeomPtr(const std::string&, GeomPtr)> 				GeometryFunction;
+			typedef std::function<AbsLoaderPtr(const std::string&, AssetLibraryPtr)>	LoaderFunction;
+			typedef std::function<const std::string(const std::string&)>				UriFunction;
+			typedef std::function<NodePtr(NodePtr)>										NodeFunction;
+			typedef std::function<EffectPtr(EffectPtr)>									EffectFunction;
 
 		private:
 			std::shared_ptr<render::AbstractContext>	_context;
-			std::set<std::string>						_includePaths;
+			std::list<std::string>						_includePaths;
 			std::list<std::string>						_platforms;
 			std::list<std::string>						_userFlags;
 
             bool                                        _generateMipMaps;
 			bool										_resizeSmoothly;
-			unsigned int								_skinningNumFPS;
+			bool										_isCubeTexture;
+			bool										_startAnimation;
+			bool										_loadAsynchronously;
+			unsigned int								_skinningFramerate;
 			component::SkinningMethod					_skinningMethod;
             std::shared_ptr<render::Effect>             _effect;
 			MaterialPtr									_material;
 			MaterialFunction							_materialFunction;
+			GeometryFunction							_geometryFunction;
 			LoaderFunction								_loaderFunction;
 			UriFunction									_uriFunction;
 			NodeFunction								_nodeFunction;
@@ -75,27 +83,34 @@ namespace minko
 			create(Ptr options)
 			{
 				auto opt = std::shared_ptr<Options>(new Options(options->_context));
-
-				opt->_includePaths.insert(options->_includePaths.begin(), options->_includePaths.end());
-                opt->_generateMipMaps = options->_generateMipMaps;
-                opt->_effect = options->_effect;
-				opt->_materialFunction = options->_materialFunction;
-				opt->_loaderFunction = options->_loaderFunction;
-				opt->_uriFunction = options->_uriFunction;
-				opt->_nodeFunction = options->_nodeFunction;
+				
+				opt->_includePaths				= options->_includePaths;
+                opt->_generateMipMaps			= options->_generateMipMaps;
+				opt->_resizeSmoothly			= options->_resizeSmoothly;
+				opt->_isCubeTexture				= options->_isCubeTexture;
+				opt->_startAnimation			= options->_startAnimation;
+				opt->_skinningFramerate			= options->_skinningFramerate;
+				opt->_skinningMethod			= options->_skinningMethod;
+                opt->_effect					= options->_effect;
+				opt->_materialFunction			= options->_materialFunction;
+				opt->_geometryFunction			= options->_geometryFunction;
+				opt->_loaderFunction			= options->_loaderFunction;
+				opt->_uriFunction				= options->_uriFunction;
+				opt->_nodeFunction				= options->_nodeFunction;
+				opt->_loadAsynchronously		= options->_loadAsynchronously;
 
 				return opt;
 			}
 
 			inline
 			std::shared_ptr<render::AbstractContext>
-			context()
+			context() const
 			{
 				return _context;
 			}
 			
 			inline
-			std::set<std::string>&
+			std::list<std::string>&
 			includePaths()
 			{
 				return _includePaths;
@@ -117,17 +132,51 @@ namespace minko
 
             inline
             bool
-            generateMipmaps()
+            generateMipmaps() const
             {
                 return _generateMipMaps;
             }
 
             inline
-            void
+            Ptr
             generateMipmaps(bool generateMipmaps)
             {
                 _generateMipMaps = generateMipmaps;
-            }
+
+				return shared_from_this();
+			}
+
+			inline
+			bool
+			startAnimation() const
+			{
+				return _startAnimation;
+			}
+
+			inline
+			Ptr
+			startAnimation(bool value)
+			{
+				_startAnimation = value;
+
+				return shared_from_this();
+			}
+
+			inline
+			bool
+			loadAsynchronously() const
+			{
+				return _loadAsynchronously;
+			}
+
+			inline
+			Ptr
+			loadAsynchronously(bool value)
+			{
+				_loadAsynchronously = value;
+
+				return shared_from_this();
+			}
 
 			inline
 			bool
@@ -137,24 +186,44 @@ namespace minko
 			}
 
 			inline
-			void
+			Ptr
 			resizeSmoothly(bool value)
 			{
 				_resizeSmoothly = value;
+
+				return shared_from_this();
+			}
+
+			inline
+			bool
+			isCubeTexture() const
+			{
+				return _isCubeTexture;
+			}
+
+			inline
+			Ptr
+			isCubeTexture(bool value)
+			{
+				_isCubeTexture = value;
+
+				return shared_from_this();
 			}
 
 			inline
 			unsigned int
-			skinningNumFPS() const
+			skinningFramerate() const
 			{
-				return _skinningNumFPS;
+				return _skinningFramerate;
 			}
 
 			inline
-			void
-			skinningNumFPS(unsigned int value)
+			Ptr
+			skinningFramerate(unsigned int value)
 			{
-				_skinningNumFPS = value;
+				_skinningFramerate = value;
+
+				return shared_from_this();
 			}
 
 			inline
@@ -165,45 +234,44 @@ namespace minko
 			}
 
 			inline
-			void
+			Ptr
 			skinningMethod(component::SkinningMethod value)
 			{
 				_skinningMethod	= value;
+
+				return shared_from_this();
 			}
 
             inline
             std::shared_ptr<render::Effect>
-            effect()
+            effect() const
             {
                 return _effect;
             }
 
             inline
-            void
+            Ptr
             effect(std::shared_ptr<render::Effect> effect)
             {
                 _effect = effect;
+
+				return shared_from_this();
             }
 
 			inline
 			MaterialPtr
-			material()
+			material() const
 			{
 				return _material;
 			}
 
 			inline
-			void
+			Ptr
 			material(MaterialPtr material)
 			{
 				_material = material;
-			}
 
-			inline
-			const MaterialFunction&
-			materialFunction() const
-			{
-				return _materialFunction;
+				return shared_from_this();
 			}
 
 			inline
@@ -214,52 +282,92 @@ namespace minko
 			}
 
 			inline
-			void
+			Ptr
+			loaderFunction(const LoaderFunction& func)
+			{
+				_loaderFunction = func;
+
+				return shared_from_this();
+			}
+
+			inline
+			const MaterialFunction&
+			materialFunction() const
+			{
+				return _materialFunction;
+			}
+
+			inline
+			Ptr
 			materialFunction(const MaterialFunction& func)
 			{
 				_materialFunction = func;
+
+				return shared_from_this();
+			}
+
+			inline
+			const GeometryFunction&
+			geometryFunction() const
+			{
+				return _geometryFunction;
+			}
+
+			inline
+			Ptr
+			geometryFunction(const GeometryFunction& func)
+			{
+				_geometryFunction = func;
+
+				return shared_from_this();
 			}
 
 			inline
 			const UriFunction&
-			uriFunction()
+			uriFunction() const
 			{
 				return _uriFunction;
 			}
 
 			inline
-			void
+			Ptr
 			uriFunction(const UriFunction& func)
 			{
 				_uriFunction = func;
+
+				return shared_from_this();
 			}
 
 			inline
 			const NodeFunction&
-			nodeFunction()
+			nodeFunction() const
 			{
 				return _nodeFunction;
 			}
 
 			inline
-			void
+			Ptr
 			nodeFunction(const NodeFunction& func)
 			{
 				_nodeFunction = func;
+
+				return shared_from_this();
 			}
 
 			inline
 			const EffectFunction&
-			effectFunction()
+			effectFunction() const
 			{
 				return _effectFunction;
 			}
 
 			inline
-			void
+			Ptr
 			effectFunction(const EffectFunction& func)
 			{
 				_effectFunction = func;
+
+				return shared_from_this();
 			}
 			
 		private:

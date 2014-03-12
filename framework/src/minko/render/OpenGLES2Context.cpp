@@ -19,33 +19,39 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/render/OpenGLES2Context.hpp"
 
-#include <iomanip>
 #include "minko/render/CompareMode.hpp"
 #include "minko/render/WrapMode.hpp"
 #include "minko/render/TextureFilter.hpp"
 #include "minko/render/MipFilter.hpp"
 #include "minko/render/TriangleCulling.hpp"
 #include "minko/render/StencilOperation.hpp"
+#include "minko/math/Matrix4x4.hpp"
+
+#include <iomanip>
 
 #define GL_GLEXT_PROTOTYPES
-#ifdef __APPLE__
-# include <OpenGL/gl.h>
-# include <GLUT/glut.h>
+#if __APPLE__
+# include "TargetConditionals.h"
+# if TARGET_IPHONE_SIMULATOR
+#  include <OpenGLES/ES2/gl.h>
+# elif TARGET_OS_IPHONE
+#  include <OpenGLES/ES2/gl.h>
+# elif TARGET_OS_MAC
+#  include <OpenGL/gl.h>
+#  include <GLUT/glut.h>
+# endif
 #elif MINKO_ANGLE
 # include "GLES2/gl2.h"
-# include "minko/math/Matrix4x4.hpp"
 #elif _WIN32
 # include "GL/glew.h"
 #elif EMSCRIPTEN
 # include <GLES2/gl2.h>
 # include <EGL/egl.h>
+#elif __ANDROID__
+# include <GLES2/gl2.h>
 #else
 # include <GL/gl.h>
 # include <GL/glu.h>
-#endif
-
-#ifdef MINKO_GLSL_OPTIMIZER
-# include "glsl_optimizer.h"
 #endif
 
 using namespace minko;
@@ -55,27 +61,27 @@ OpenGLES2Context::BlendFactorsMap OpenGLES2Context::_blendingFactors = OpenGLES2
 OpenGLES2Context::BlendFactorsMap
 OpenGLES2Context::initializeBlendFactorsMap()
 {
-    BlendFactorsMap m;
+	BlendFactorsMap m;
 
-    m[static_cast<uint>(Blending::Source::ZERO)]                       = GL_ZERO;
-    m[static_cast<uint>(Blending::Source::ONE)]                        = GL_ONE;
-    m[static_cast<uint>(Blending::Source::SRC_COLOR)]                  = GL_SRC_COLOR;
-    m[static_cast<uint>(Blending::Source::ONE_MINUS_SRC_COLOR)]        = GL_ONE_MINUS_SRC_COLOR;
-    m[static_cast<uint>(Blending::Source::SRC_ALPHA)]                  = GL_SRC_ALPHA;
-    m[static_cast<uint>(Blending::Source::ONE_MINUS_SRC_ALPHA)]        = GL_ONE_MINUS_SRC_ALPHA;
-    m[static_cast<uint>(Blending::Source::DST_ALPHA)]                  = GL_DST_ALPHA;
-    m[static_cast<uint>(Blending::Source::ONE_MINUS_DST_ALPHA)]        = GL_ONE_MINUS_DST_ALPHA;
+	m[static_cast<uint>(Blending::Source::ZERO)]                       = GL_ZERO;
+	m[static_cast<uint>(Blending::Source::ONE)]                        = GL_ONE;
+	m[static_cast<uint>(Blending::Source::SRC_COLOR)]                  = GL_SRC_COLOR;
+	m[static_cast<uint>(Blending::Source::ONE_MINUS_SRC_COLOR)]        = GL_ONE_MINUS_SRC_COLOR;
+	m[static_cast<uint>(Blending::Source::SRC_ALPHA)]                  = GL_SRC_ALPHA;
+	m[static_cast<uint>(Blending::Source::ONE_MINUS_SRC_ALPHA)]        = GL_ONE_MINUS_SRC_ALPHA;
+	m[static_cast<uint>(Blending::Source::DST_ALPHA)]                  = GL_DST_ALPHA;
+	m[static_cast<uint>(Blending::Source::ONE_MINUS_DST_ALPHA)]        = GL_ONE_MINUS_DST_ALPHA;
 
-    m[static_cast<uint>(Blending::Destination::ZERO)]                  = GL_ZERO;
-    m[static_cast<uint>(Blending::Destination::ONE)]                   = GL_ONE;
-    m[static_cast<uint>(Blending::Destination::DST_COLOR)]             = GL_DST_COLOR;
-    m[static_cast<uint>(Blending::Destination::ONE_MINUS_DST_COLOR)]   = GL_ONE_MINUS_DST_COLOR;
-    m[static_cast<uint>(Blending::Destination::ONE_MINUS_DST_ALPHA)]   = GL_ONE_MINUS_DST_ALPHA;
-    m[static_cast<uint>(Blending::Destination::ONE_MINUS_SRC_ALPHA)]   = GL_ONE_MINUS_SRC_ALPHA;
-    m[static_cast<uint>(Blending::Destination::DST_ALPHA)]             = GL_DST_ALPHA;
-    m[static_cast<uint>(Blending::Destination::ONE_MINUS_DST_ALPHA)]   = GL_ONE_MINUS_DST_ALPHA;
+	m[static_cast<uint>(Blending::Destination::ZERO)]                  = GL_ZERO;
+	m[static_cast<uint>(Blending::Destination::ONE)]                   = GL_ONE;
+	m[static_cast<uint>(Blending::Destination::DST_COLOR)]             = GL_DST_COLOR;
+	m[static_cast<uint>(Blending::Destination::ONE_MINUS_DST_COLOR)]   = GL_ONE_MINUS_DST_COLOR;
+	m[static_cast<uint>(Blending::Destination::ONE_MINUS_DST_ALPHA)]   = GL_ONE_MINUS_DST_ALPHA;
+	m[static_cast<uint>(Blending::Destination::ONE_MINUS_SRC_ALPHA)]   = GL_ONE_MINUS_SRC_ALPHA;
+	m[static_cast<uint>(Blending::Destination::DST_ALPHA)]             = GL_DST_ALPHA;
+	m[static_cast<uint>(Blending::Destination::ONE_MINUS_DST_ALPHA)]   = GL_ONE_MINUS_DST_ALPHA;
 
-    return m;
+	return m;
 }
 
 OpenGLES2Context::CompareFuncsMap OpenGLES2Context::_compareFuncs = OpenGLES2Context::initializeDepthFuncsMap();
@@ -117,8 +123,8 @@ OpenGLES2Context::initializeStencilOperationsMap()
 OpenGLES2Context::OpenGLES2Context() :
 	_errorsEnabled(false),
 	_textures(),
-    _textureSizes(),
-    _textureHasMipmaps(),
+	_textureSizes(),
+	_textureHasMipmaps(),
 	_viewportX(0),
 	_viewportY(0),
 	_viewportWidth(0),
@@ -129,16 +135,17 @@ OpenGLES2Context::OpenGLES2Context() :
 	_currentVertexSize(8, -1),
 	_currentVertexStride(8, -1),
 	_currentVertexOffset(8, -1),
+	_currentBoundTexture(0),
 	_currentTexture(8, 0),
 	_currentProgram(0),
-    _currentTriangleCulling(TriangleCulling::BACK),
-    _currentWrapMode(),
-    _currentTextureFilter(),
-    _currentMipFilter(),
-    _currentBlendMode(Blending::Mode::DEFAULT),
+	_currentTriangleCulling(TriangleCulling::BACK),
+	_currentWrapMode(),
+	_currentTextureFilter(),
+	_currentMipFilter(),
+	_currentBlendMode(Blending::Mode::DEFAULT),
 	_currentColorMask(true),
-    _currentDepthMask(true),
-    _currentDepthFunc(CompareMode::UNSET),
+	_currentDepthMask(true),
+	_currentDepthFunc(CompareMode::UNSET),
 	_currentStencilFunc(CompareMode::UNSET),
 	_currentStencilRef(0),
 	_currentStencilMask(0x1),
@@ -147,19 +154,25 @@ OpenGLES2Context::OpenGLES2Context() :
 	_currentStencilZPassOp(StencilOperation::UNSET)
 {
 #if defined _WIN32 && !defined MINKO_ANGLE
-    glewInit();
+	glewInit();
 #endif
 
 	glEnable(GL_DEPTH_TEST);
+#ifndef MINKO_NO_STENCIL
 	glEnable(GL_STENCIL_TEST);
-    glEnable(GL_BLEND);
-    glEnable(GL_CULL_FACE);
-    glCullFace(GL_BACK);
-    glFrontFace(GL_CCW);
+#endif
+	glEnable(GL_BLEND);
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
+	glFrontFace(GL_CCW);
 
-    _driverInfo = std::string(reinterpret_cast<const char*>(glGetString(GL_VENDOR)))
-        + " " + std::string(reinterpret_cast<const char*>(glGetString(GL_RENDERER)))
-        + " " + std::string(reinterpret_cast<const char*>(glGetString(GL_VERSION)));
+	const char* glVendor = reinterpret_cast<const char*>(glGetString(GL_VENDOR));
+	const char* glRenderer = reinterpret_cast<const char*>(glGetString(GL_RENDERER));
+	const char* glVersion = reinterpret_cast<const char*>(glGetString(GL_VERSION));
+
+	_driverInfo = std::string(glVendor ? glVendor : "(unknown vendor)")
+		+ " " + std::string(glRenderer ? glRenderer : "(unknown renderer)")
+		+ " " + std::string(glVersion ? glVersion : "(unknown version)");
 
 	// init. viewport x, y, width and height
 	std::vector<int> viewportSettings(4);
@@ -197,9 +210,9 @@ OpenGLES2Context::~OpenGLES2Context()
 
 void
 OpenGLES2Context::configureViewport(const uint x,
-				  				    const uint y,
-				  				    const uint width,
-				  				    const uint height)
+									const uint y,
+									const uint width,
+									const uint height)
 {
 	if (x != _viewportX || y != _viewportY || width != _viewportWidth || height != _viewportHeight)
 	{
@@ -214,12 +227,12 @@ OpenGLES2Context::configureViewport(const uint x,
 
 void
 OpenGLES2Context::clear(float 	red,
-					    float 	green,
-					    float 	blue,
-					    float 	alpha,
-					    float 	depth,
-					    uint 	stencil,
-					    uint 	mask)
+						float 	green,
+						float 	blue,
+						float 	alpha,
+						float 	depth,
+						uint 	stencil,
+						uint 	mask)
 {
 	// http://www.opengl.org/sdk/docs/man/xhtml/glClearColor.xml
 	//
@@ -275,7 +288,7 @@ OpenGLES2Context::present()
 	// force execution of GL commands in finite time
 	//glFlush();
 	
-    setRenderToBackBuffer();
+	setRenderToBackBuffer();
 }
 
 void
@@ -299,7 +312,7 @@ OpenGLES2Context::drawTriangles(const uint indexBuffer, const int numTriangles)
 	// glDrawElements render primitives from array data
 	glDrawElements(GL_TRIANGLES, numTriangles * 3, GL_UNSIGNED_SHORT, (void*)0);
 
-    checkForErrors();
+	checkForErrors();
 }
 
 const uint
@@ -341,16 +354,16 @@ OpenGLES2Context::createVertexBuffer(const uint size)
 
 	_vertexBuffers.push_back(vertexBuffer);
 
-    checkForErrors();
+	checkForErrors();
 
 	return vertexBuffer;
 }
 
 void
 OpenGLES2Context::uploadVertexBufferData(const uint vertexBuffer,
-									     const uint offset,
-									     const uint size,
-									     void* 				data)
+										 const uint offset,
+										 const uint size,
+										 void* 				data)
 {
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
 
@@ -365,7 +378,7 @@ OpenGLES2Context::uploadVertexBufferData(const uint vertexBuffer,
 	// glBufferSubData updates a subset of a buffer object's data store
 	glBufferSubData(GL_ARRAY_BUFFER, offset * sizeof(GLfloat), size * sizeof(GLfloat), data);
 
-    checkForErrors();
+	checkForErrors();
 }
 
 void
@@ -388,15 +401,15 @@ OpenGLES2Context::deleteVertexBuffer(const uint vertexBuffer)
 	// that is currently bound is deleted, the binding reverts to 0 (the absence of any buffer object).
 	glDeleteBuffers(1, &vertexBuffer);
 
-    checkForErrors();
+	checkForErrors();
 }
 
 void
 OpenGLES2Context::setVertexBufferAt(const uint	position,
-								    const uint	vertexBuffer,
-								    const uint	size,
-								    const uint	stride,
-								    const uint	offset)
+									const uint	vertexBuffer,
+									const uint	size,
+									const uint	stride,
+									const uint	offset)
 {
 	auto currentVertexBuffer = _currentVertexBuffer[position];
 
@@ -432,7 +445,7 @@ OpenGLES2Context::setVertexBufferAt(const uint	position,
 		(void*)(sizeof(GLfloat) * offset)
 	);
 
-    checkForErrors();
+	checkForErrors();
 }
 
 const uint
@@ -449,7 +462,7 @@ OpenGLES2Context::createIndexBuffer(const uint size)
 
 	_indexBuffers.push_back(indexBuffer);
 
-    checkForErrors();
+	checkForErrors();
 
 	return indexBuffer;
 }
@@ -466,7 +479,7 @@ OpenGLES2Context::uploaderIndexBufferData(const uint 	indexBuffer,
 	
 	glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, offset * sizeof(GLushort), size * sizeof(GLushort), data);
 
-    checkForErrors();
+	checkForErrors();
 }
 
 void
@@ -479,14 +492,15 @@ OpenGLES2Context::deleteIndexBuffer(const uint indexBuffer)
 
 	glDeleteBuffers(1, &indexBuffer);
 
-    checkForErrors();
+	checkForErrors();
 }
 
-const uint
-OpenGLES2Context::createTexture(uint 	width,
-							    uint 	height,
-							    bool			mipMapping,
-                                bool            optimizeForRenderToTexture)
+uint
+OpenGLES2Context::createTexture(TextureType	type,
+								uint 		width,
+								uint 		height,
+								bool		mipMapping,
+								bool        optimizeForRenderToTexture)
 {
 	uint texture;
 
@@ -514,20 +528,28 @@ OpenGLES2Context::createTexture(uint 	width,
 	// texture Specifies the name of a texture.
 	//
 	// glBindTexture bind a named texture to a texturing target
-	glBindTexture(GL_TEXTURE_2D, texture);
+	const auto glTarget = type == TextureType::Texture2D 
+		? GL_TEXTURE_2D 
+		: GL_TEXTURE_CUBE_MAP;
 
-    // default sampler states
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glBindTexture(glTarget, texture);
 
-  	_textures.push_back(texture);
-    _textureSizes[texture] = std::make_pair(width, height);
-    _textureHasMipmaps[texture] = mipMapping;
-    _currentWrapMode[texture] = WrapMode::CLAMP;
-    _currentTextureFilter[texture] = TextureFilter::NEAREST;
-    _currentMipFilter[texture] = MipFilter::NONE;
+	_currentBoundTexture = texture;
+
+	// default sampler states
+	glTexParameteri(glTarget, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(glTarget, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(glTarget, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(glTarget, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+	_textures.push_back(texture);
+	_textureSizes[texture]			= std::make_pair(width, height);
+	_textureHasMipmaps[texture]		= mipMapping;
+	_textureTypes[texture]			= type;
+
+	_currentWrapMode[texture]		= WrapMode::CLAMP;
+	_currentTextureFilter[texture]	= TextureFilter::NEAREST;
+	_currentMipFilter[texture]		= MipFilter::NONE;
 
 	// http://www.opengl.org/sdk/docs/man/xhtml/glTexImage2D.xml
 	//
@@ -548,165 +570,275 @@ OpenGLES2Context::createTexture(uint 	width,
 	//
 	// glTexImage2D specify a two-dimensional texture image
 	if (mipMapping)
-    {
-        uint level = 0;
-        uint h = height;
-        uint w = width;
+	{
+		uint level = 0;
+		uint h = height;
+		uint w = width;
 		
 		for (uint size = width > height ? width : height;
 			 size > 0;
 			 size = size >> 1, w = w >> 1, h = h >> 1)
 		{
-			glTexImage2D(GL_TEXTURE_2D, level++, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+			 if (type == TextureType::Texture2D)
+				glTexImage2D(GL_TEXTURE_2D, level, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+			else
+			{
+				glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, level, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+				glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, level, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+				glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, level, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+				glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, level, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+				glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, level, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+				glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, level, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+			}
+
+			++level;
 		}
-    }
+	}
 	else
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+	{
+		if (type == TextureType::Texture2D)
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+		else
+		{
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+		}
+	}
 
-    if (optimizeForRenderToTexture)
-        createRTTBuffers(texture, width, height);
+	if (optimizeForRenderToTexture)
+		createRTTBuffers(type, texture, width, height);
 
-    checkForErrors();
+	checkForErrors();
 
 	return texture;
 }
 
-void
-OpenGLES2Context::uploadTextureData(const uint 	texture,
-								    uint 		width,
-								    uint 		height,
-								    uint 		mipLevel,
-								    void*				data)
+TextureType
+OpenGLES2Context::getTextureType(uint textureId) const
 {
-	glBindTexture(GL_TEXTURE_2D, texture);
-	glTexImage2D(GL_TEXTURE_2D, mipLevel, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+	const auto foundTypeIt = _textureTypes.find(textureId);
 
-    checkForErrors();
+	assert(foundTypeIt != _textureTypes.end());
+
+	return foundTypeIt->second;
 }
 
 void
-OpenGLES2Context::deleteTexture(const uint texture)
+OpenGLES2Context::uploadTexture2dData(uint 		texture,
+									  uint 		width,
+									  uint 		height,
+									  uint 		mipLevel,
+									  void*		data)
+{
+	assert(getTextureType(texture) == TextureType::Texture2D);
+
+	glBindTexture(GL_TEXTURE_2D, texture);
+	glTexImage2D(GL_TEXTURE_2D, mipLevel, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+	
+	_currentBoundTexture = texture;
+
+	checkForErrors();
+}
+
+void
+OpenGLES2Context::uploadCubeTextureData(uint				texture,
+										CubeTexture::Face	face,
+										unsigned int 		width,
+										unsigned int 		height,
+										unsigned int 		mipLevel,
+										void*				data)
+{
+	assert(getTextureType(texture) == TextureType::CubeTexture);
+
+	glBindTexture(GL_TEXTURE_CUBE_MAP, texture);
+
+	GLenum cubeFace;
+	switch (face)
+	{
+	case minko::render::CubeTexture::Face::POSITIVE_X:
+		cubeFace = GL_TEXTURE_CUBE_MAP_POSITIVE_X;
+		break;
+	case minko::render::CubeTexture::Face::NEGATIVE_X:
+		cubeFace = GL_TEXTURE_CUBE_MAP_NEGATIVE_X;
+		break;
+	case minko::render::CubeTexture::Face::POSITIVE_Y:
+		cubeFace = GL_TEXTURE_CUBE_MAP_POSITIVE_Y;
+		break;
+	case minko::render::CubeTexture::Face::NEGATIVE_Y:
+		cubeFace = GL_TEXTURE_CUBE_MAP_NEGATIVE_Y;
+		break;
+	case minko::render::CubeTexture::Face::POSITIVE_Z:
+		cubeFace = GL_TEXTURE_CUBE_MAP_POSITIVE_Z;
+		break;
+	case minko::render::CubeTexture::Face::NEGATIVE_Z:
+		cubeFace = GL_TEXTURE_CUBE_MAP_NEGATIVE_Z;
+		break;
+	default:
+		throw;
+		break;
+	}
+
+	glTexImage2D(cubeFace, mipLevel, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+
+	_currentBoundTexture = texture;
+
+	checkForErrors();
+}
+
+void
+OpenGLES2Context::deleteTexture(uint texture)
 {
 	_textures.erase(std::find(_textures.begin(), _textures.end(), texture));
 
 	glDeleteTextures(1, &texture);
 
-    if (_frameBuffers.count(texture))
-    {
-        glDeleteFramebuffers(1, &_frameBuffers[texture]);
-        _frameBuffers.erase(texture);
+	if (_frameBuffers.count(texture))
+	{
+		glDeleteFramebuffers(1, &_frameBuffers[texture]);
+		_frameBuffers.erase(texture);
 
-        glDeleteRenderbuffers(1, &_renderBuffers[texture]);
-        _renderBuffers.erase(texture);
-    }
+		glDeleteRenderbuffers(1, &_renderBuffers[texture]);
+		_renderBuffers.erase(texture);
+	}
 
-    _textureSizes.erase(texture);
-    _textureHasMipmaps.erase(texture);
-    _currentWrapMode.erase(texture);
-    _currentTextureFilter.erase(texture);
-    _currentMipFilter.erase(texture);
+	_textureSizes.erase(texture);
+	_textureHasMipmaps.erase(texture);
+	_textureTypes.erase(texture);
 
-    checkForErrors();
+	_currentWrapMode.erase(texture);
+	_currentTextureFilter.erase(texture);
+	_currentMipFilter.erase(texture);
+
+	for (unsigned int pos = 0; pos < _currentTexture.size(); ++pos)
+		_currentTexture[pos] = (_currentTexture[pos] == texture ? 0 : _currentTexture[pos]);
+	_currentBoundTexture = (_currentBoundTexture == texture ? 0 : _currentBoundTexture);
+
+	checkForErrors();
 }
 
 void
-OpenGLES2Context::setTextureAt(const uint	position,
-							   const int	texture,
-							   const int	location)
+OpenGLES2Context::setTextureAt(uint	position,
+							   int	texture,
+							   int	location)
 {
-	auto textureIsValid = texture > 0;
+	const bool textureIsValid = texture > 0;
 
-    if (_currentTexture[position] != texture)
+	if (!textureIsValid)
+		return;
+
+	if (position >= _currentTexture.size())
+		return;
+
+	const auto glTarget	= getTextureType(texture) == TextureType::Texture2D 
+		? GL_TEXTURE_2D 
+		: GL_TEXTURE_CUBE_MAP;
+
+	if (_currentTexture[position] != texture || 
+		_currentBoundTexture != texture)
 	{
-		_currentTexture[position] = texture;
-
 		glActiveTexture(GL_TEXTURE0 + position);
-		glBindTexture(GL_TEXTURE_2D, texture);
+		glBindTexture(glTarget, texture);
+
+		_currentTexture[position]	= texture;
+		_currentBoundTexture		= texture;
 	}
 
 	if (textureIsValid && location >= 0)
 		glUniform1i(location, position);
 
-    checkForErrors();
+	checkForErrors();
 }
 
 void
-OpenGLES2Context::setSamplerStateAt(const uint position, WrapMode wrapping, TextureFilter filtering, MipFilter mipFiltering)
+OpenGLES2Context::setSamplerStateAt(uint			position, 
+									WrapMode		wrapping, 
+									TextureFilter	filtering, 
+									MipFilter		mipFiltering)
 {
-    auto texture    = _currentTexture[position];
-    auto active     = false;
+	const auto	texture		= _currentTexture[position];
+	const auto	glTarget	= getTextureType(texture) == TextureType::Texture2D 
+		? GL_TEXTURE_2D 
+		: GL_TEXTURE_CUBE_MAP; 
 
-    // disable mip mapping if mip maps are not available
-    if (!_textureHasMipmaps[_currentTexture[position]])
-        mipFiltering = MipFilter::NONE;
+	auto active	= false;
 
-    if (_currentWrapMode[texture] != wrapping)
-    {
-        _currentWrapMode[texture] = wrapping;
+	// disable mip mapping if mip maps are not available
+	if (!_textureHasMipmaps[texture])
+		mipFiltering = MipFilter::NONE;
 
-        glActiveTexture(GL_TEXTURE0 + position);
-        active = true;
+	if (_currentWrapMode[texture] != wrapping)
+	{
+		_currentWrapMode[texture] = wrapping;
 
-        switch (wrapping)
-        {
-        case WrapMode::CLAMP :
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-            break;
-        case WrapMode::REPEAT :
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-            break;
-        }
-    }
-    
-    if (_currentTextureFilter[texture] != filtering || _currentMipFilter[texture] != mipFiltering)
-    {
-        _currentTextureFilter[texture] = filtering;
-        _currentMipFilter[texture] = mipFiltering;
+		glActiveTexture(GL_TEXTURE0 + position);
+		active = true;
 
-        if (!active)
-            glActiveTexture(GL_TEXTURE0 + position);
+		switch (wrapping)
+		{
+		case WrapMode::CLAMP :
+			glTexParameteri(glTarget, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+			glTexParameteri(glTarget, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+			break;
+		case WrapMode::REPEAT :
+			glTexParameteri(glTarget, GL_TEXTURE_WRAP_S, GL_REPEAT);
+			glTexParameteri(glTarget, GL_TEXTURE_WRAP_T, GL_REPEAT);
+			break;
+		}
+	}
+	
+	if (_currentTextureFilter[texture] != filtering || _currentMipFilter[texture] != mipFiltering)
+	{
+		_currentTextureFilter[texture] = filtering;
+		_currentMipFilter[texture] = mipFiltering;
 
-        switch (filtering)
-        {
-        case TextureFilter::NEAREST :
-            switch (mipFiltering)
-            {
-            case MipFilter::NONE :
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-                break;
-            case MipFilter::NEAREST :
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
-                break;
-            case MipFilter::LINEAR :
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR);
-                break;
-            }
+		if (!active)
+			glActiveTexture(GL_TEXTURE0 + position);
 
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-            break;
-        case TextureFilter::LINEAR :
-            switch (mipFiltering)
-            {
-            case MipFilter::NONE :
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-                break;
-            case MipFilter::NEAREST :
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
-                break;
-            case MipFilter::LINEAR :
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-                break;
-            }
+		switch (filtering)
+		{
+		case TextureFilter::NEAREST :
+			switch (mipFiltering)
+			{
+			case MipFilter::NONE :
+				glTexParameteri(glTarget, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+				break;
+			case MipFilter::NEAREST :
+				glTexParameteri(glTarget, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+				break;
+			case MipFilter::LINEAR :
+				glTexParameteri(glTarget, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR);
+				break;
+			}
 
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-            break;
-        }
-    }
+			glTexParameteri(glTarget, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+			break;
+		case TextureFilter::LINEAR :
+			switch (mipFiltering)
+			{
+			case MipFilter::NONE :
+				glTexParameteri(glTarget, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+				break;
+			case MipFilter::NEAREST :
+				glTexParameteri(glTarget, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+				break;
+			case MipFilter::LINEAR :
+				glTexParameteri(glTarget, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+				break;
+			}
 
-    checkForErrors();
+			glTexParameteri(glTarget, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			break;
+		}
+	}
+
+	checkForErrors();
 }
+
+
 
 const uint
 OpenGLES2Context::createProgram()
@@ -724,7 +856,7 @@ OpenGLES2Context::attachShader(const uint program, const uint shader)
 {
 	glAttachShader(program, shader);
 
-    checkForErrors();
+	checkForErrors();
 }
 
 void
@@ -733,15 +865,15 @@ OpenGLES2Context::linkProgram(const uint program)
 	glLinkProgram(program);
 
 #ifdef DEBUG
-    auto errors = getProgramInfoLogs(program);
+	auto errors = getProgramInfoLogs(program);
 
-    if (!errors.empty())
+	if (!errors.empty())
 	{
-    	std::cout << errors << std::endl;
+		std::cout << errors << std::endl;
 	}
 #endif
 
-    checkForErrors();
+	checkForErrors();
 }
 
 void
@@ -751,7 +883,7 @@ OpenGLES2Context::deleteProgram(const uint program)
 
 	glDeleteProgram(program);
 
-    checkForErrors();
+	checkForErrors();
 }
 
 void
@@ -760,10 +892,10 @@ OpenGLES2Context::compileShader(const uint shader)
 	glCompileShader(shader);
 
 #ifdef DEBUG
-    auto errors = getShaderCompilationLogs(shader);
+	auto errors = getShaderCompilationLogs(shader);
 
-    if (!errors.empty())
-    {
+	if (!errors.empty())
+	{
 		std::stringstream	stream;
 		stream << "glShaderSource_" << shader << ".txt";
 
@@ -777,7 +909,7 @@ OpenGLES2Context::compileShader(const uint shader)
 	}
 #endif
 
-    checkForErrors();
+	checkForErrors();
 }
 
 void
@@ -790,53 +922,23 @@ OpenGLES2Context::setProgram(const uint program)
 
 	glUseProgram(program);
 
-    checkForErrors();
+	checkForErrors();
 }
 
 void
 OpenGLES2Context::setShaderSource(const uint shader,
-							      const std::string& source)
+								  const std::string& source)
 {
-#ifdef MINKO_GLSL_OPTIMIZER
-	glslopt_ctx* glslOptimizer = glslopt_initialize(true);
-    std::string src = "#version 100\n" + source;
-	const char* sourceString = src.c_str();
-
-    auto type = std::find(_vertexShaders.begin(), _vertexShaders.end(), shader) != _vertexShaders.end()
-        ? kGlslOptShaderVertex
-        : kGlslOptShaderFragment;
-
-    auto optimizedShader = glslopt_optimize(glslOptimizer, type, sourceString, 0);
-    if (glslopt_get_status(optimizedShader))
-    {
-        auto optimizedSource = glslopt_get_output(optimizedShader);
-        glShaderSource(shader, 1, &optimizedSource, 0);
-    }
-    else
-    {
-		std::stringstream stream(source);
-		std::string line;
-
-        std::cerr << glslopt_get_log(optimizedShader) << std::endl;
-		for (auto i = 0; std::getline(stream, line); ++i)
-			std::cerr << i << "\t" << line << std::endl;
-
-        throw std::invalid_argument("source");
-    }
-    glslopt_shader_delete(optimizedShader);
-    glslopt_cleanup(glslOptimizer);
-#else
-# ifdef GL_ES_VERSION_2_0
+#ifdef GL_ES_VERSION_2_0
 	std::string src = "#version 100\n" + source;
-# else
-    std::string src = "#version 120\n" + source;
-#endif
+#else
+	std::string src = "#version 120\n" + source;
+#endif // GL_ES_VERSION_2_0
 	const char* sourceString = src.c_str();
 
-    glShaderSource(shader, 1, &sourceString, 0);
-#endif
+	glShaderSource(shader, 1, &sourceString, 0);
 
-    checkForErrors();
+	checkForErrors();
 }
 
 void
@@ -915,7 +1017,7 @@ OpenGLES2Context::deleteVertexShader(const uint vertexShader)
 
 	glDeleteShader(vertexShader);
 
-    checkForErrors();
+	checkForErrors();
 }
 
 const uint
@@ -937,7 +1039,7 @@ OpenGLES2Context::deleteFragmentShader(const uint fragmentShader)
 
 	glDeleteShader(fragmentShader);
 
-    checkForErrors();
+	checkForErrors();
 }
 
 std::shared_ptr<ProgramInputs>
@@ -954,11 +1056,56 @@ OpenGLES2Context::getProgramInputs(const uint program)
 	return ProgramInputs::create(shared_from_this(), program, names, types, locations);
 }
 
+/*static*/
+ProgramInputs::Type
+OpenGLES2Context::convertInputType(unsigned int type)
+{
+	switch (type)
+	{
+		case GL_FLOAT:
+			return ProgramInputs::Type::float1;
+		case GL_FLOAT_VEC2:
+			return ProgramInputs::Type::float2;
+		case GL_FLOAT_VEC3:
+			return ProgramInputs::Type::float3;
+		case GL_FLOAT_VEC4:
+			return ProgramInputs::Type::float4;
+		case GL_INT:
+			return ProgramInputs::Type::int1;
+		case GL_INT_VEC2:
+			return ProgramInputs::Type::int2;
+		case GL_INT_VEC3:
+			return ProgramInputs::Type::int3;
+		case GL_INT_VEC4:
+			return ProgramInputs::Type::int4;
+		case GL_BOOL:
+			return ProgramInputs::Type::bool1;
+		case GL_BOOL_VEC2:
+			return ProgramInputs::Type::bool2;
+		case GL_BOOL_VEC3:
+			return ProgramInputs::Type::bool3;
+		case GL_BOOL_VEC4:
+			return ProgramInputs::Type::bool4;
+		case GL_FLOAT_MAT3:
+			return ProgramInputs::Type::float9;
+		case GL_FLOAT_MAT4:
+			return ProgramInputs::Type::float16;
+		case GL_SAMPLER_2D:
+			return ProgramInputs::Type::sampler2d;
+		case GL_SAMPLER_CUBE:
+			return ProgramInputs::Type::samplerCube;
+		default:
+			throw std::logic_error("unsupported type");
+			return ProgramInputs::Type::unknown;
+	}
+}
+
+
 void
 OpenGLES2Context::fillUniformInputs(const uint					program,
-								    std::vector<std::string>&			names,
-								    std::vector<ProgramInputs::Type>&	types,
-								    std::vector<uint>&			locations)
+									std::vector<std::string>&			names,
+									std::vector<ProgramInputs::Type>&	types,
+									std::vector<uint>&			locations)
 {
 	int total = -1;
 	int maxUniformNameLength = -1;
@@ -968,64 +1115,24 @@ OpenGLES2Context::fillUniformInputs(const uint					program,
 
 	for (int i = 0; i < total; ++i)
 	{
-    	int nameLength = -1;
-    	int size = -1;
-    	GLenum type = GL_ZERO;
-    	std::vector<char> name(maxUniformNameLength);
+		int nameLength = -1;
+		int size = -1;
+		GLenum type = GL_ZERO;
+		std::vector<char> name(maxUniformNameLength);
 
-    	glGetActiveUniform(program, i, maxUniformNameLength, &nameLength, &size, &type, &name[0]);
-    	checkForErrors();
+		glGetActiveUniform(program, i, maxUniformNameLength, &nameLength, &size, &type, &name[0]);
+		checkForErrors();
 
-	    name[nameLength] = 0;
+		name[nameLength] = 0;
 
-	    ProgramInputs::Type inputType = ProgramInputs::Type::unknown;
+		ProgramInputs::Type	inputType	= convertInputType(type);
+		int					location	= glGetUniformLocation(program, &name[0]);
 
-	    switch (type)
-	    {
-	    	case GL_FLOAT:
-	    		inputType = ProgramInputs::Type::float1;
-	    		break;
-	    	case GL_INT:
-	    		inputType = ProgramInputs::Type::int1;
-	    		break;
-	    	case GL_FLOAT_VEC2:
-	    		inputType = ProgramInputs::Type::float2;
-	    		break;
-	    	case GL_INT_VEC2:
-	    		inputType = ProgramInputs::Type::int2;
-		    	break;
-	    	case GL_FLOAT_VEC3:
-	    		inputType = ProgramInputs::Type::float3;
-	    		break;
-	    	case GL_INT_VEC3:
-	    		inputType = ProgramInputs::Type::int3;
-	    		break;
-	    	case GL_FLOAT_VEC4:
-	    		inputType = ProgramInputs::Type::float4;
-	    		break;
-	    	case GL_INT_VEC4:
-	    		inputType = ProgramInputs::Type::int4;
-	    		break;
-	    	case GL_FLOAT_MAT3:
-	    		inputType = ProgramInputs::Type::float9;
-		    	break;
-	    	case GL_FLOAT_MAT4:
-	    		inputType = ProgramInputs::Type::float16;
-	    		break;
-			case GL_SAMPLER_2D:
-				inputType = ProgramInputs::Type::sampler2d;
-				break;
-			default:
-				throw std::logic_error("unsupported type");
-	    }
-
-	    int location = glGetUniformLocation(program, &name[0]);
-
-	    if (location >= 0 && inputType != ProgramInputs::Type::unknown)
-	    {
-		    names.push_back(std::string(&name[0], nameLength));
-		    types.push_back(inputType);
-		    locations.push_back(location);
+		if (location >= 0 && inputType != ProgramInputs::Type::unknown)
+		{
+			names.push_back(std::string(&name[0], nameLength));
+			types.push_back(inputType);
+			locations.push_back(location);
 		}
 	}
 }
@@ -1033,8 +1140,8 @@ OpenGLES2Context::fillUniformInputs(const uint					program,
 void
 OpenGLES2Context::fillAttributeInputs(const uint				program,
 									 std::vector<std::string>&			names,
-								     std::vector<ProgramInputs::Type>&	types,
-								     std::vector<uint>&			locations)
+									 std::vector<ProgramInputs::Type>&	types,
+									 std::vector<uint>&			locations)
 {
 	int total = -1;
 	int maxAttributeNameLength = -1;
@@ -1044,25 +1151,25 @@ OpenGLES2Context::fillAttributeInputs(const uint				program,
 
 	for (int i = 0; i < total; ++i)
 	{
-    	int nameLength = -1;
-    	int size = -1;
-    	GLenum type = GL_ZERO;
-    	std::vector<char> name(maxAttributeNameLength);
+		int nameLength = -1;
+		int size = -1;
+		GLenum type = GL_ZERO;
+		std::vector<char> name(maxAttributeNameLength);
 
 		glGetActiveAttrib(program, i, maxAttributeNameLength, &nameLength, &size, &type, &name[0]);
-	    checkForErrors();
+		checkForErrors();
 
-	    name[nameLength] = 0;
+		name[nameLength] = 0;
 
-	    ProgramInputs::Type inputType = ProgramInputs::Type::attribute;
+		ProgramInputs::Type inputType = ProgramInputs::Type::attribute;
 
 		int location = glGetAttribLocation(program, &name[0]);
 
-	    if (location >= 0)
-	    {
-		    names.push_back(std::string(&name[0], nameLength));
-		    types.push_back(inputType);
-		    locations.push_back(location);
+		if (location >= 0)
+		{
+			names.push_back(std::string(&name[0], nameLength));
+			types.push_back(inputType);
+			locations.push_back(location);
 		}
 	}
 }
@@ -1116,56 +1223,56 @@ OpenGLES2Context::getProgramInfoLogs(const uint program)
 }
 
 void
-OpenGLES2Context::setUniform(const uint& location, const int& value)
+OpenGLES2Context::setUniform(uint location, int value)
 {
 	glUniform1i(location, value);
 	checkForErrors();
 }
 
 void
-OpenGLES2Context::setUniform(const uint& location, const int& v1, const int& v2)
+OpenGLES2Context::setUniform(uint location, int v1, int v2)
 {
 	glUniform2i(location, v1, v2);
 	checkForErrors();
 }
 
 void
-OpenGLES2Context::setUniform(const uint& location, const int& v1, const int& v2, const int& v3)
+OpenGLES2Context::setUniform(uint location, int v1, int v2, int v3)
 {
 	glUniform3i(location, v1, v2, v3);
 	checkForErrors();
 }
 
 void
-OpenGLES2Context::setUniform(const uint& location, const int& v1, const int& v2, const int& v3, const int& v4)
+OpenGLES2Context::setUniform(uint location, int v1, int v2, int v3, int v4)
 {
 	glUniform4i(location, v1, v2, v3, v4);
 	checkForErrors();
 }
 
 void
-OpenGLES2Context::setUniform(const uint& location, const float& value)
+OpenGLES2Context::setUniform(uint location, float value)
 {
 	glUniform1f(location, value);
 	checkForErrors();
 }
 
 void
-OpenGLES2Context::setUniform(const uint& location, const float& v1, const float& v2)
+OpenGLES2Context::setUniform(uint location, float v1, float v2)
 {
 	glUniform2f(location, v1, v2);
 	checkForErrors();
 }
 
 void
-OpenGLES2Context::setUniform(const uint& location, const float& v1, const float& v2, const float& v3)
+OpenGLES2Context::setUniform(uint location, float v1, float v2, float v3)
 {
 	glUniform3f(location, v1, v2, v3);
 	checkForErrors();
 }
 
 void
-OpenGLES2Context::setUniform(const uint& location, const float& v1, const float& v2, const float& v3, const float& v4)
+OpenGLES2Context::setUniform(uint location, float v1, float v2, float v3, float v4)
 {
 	glUniform4f(location, v1, v2, v3, v4);
 	checkForErrors();
@@ -1200,26 +1307,78 @@ OpenGLES2Context::setUniforms4(uint location, uint size, const float* values)
 }
 
 void
+OpenGLES2Context::setUniforms(uint location, uint size, const int* values)
+{
+	glUniform1iv(location, size, values);
+	checkForErrors();
+}
+
+void
+OpenGLES2Context::setUniforms2(uint location, uint size, const int* values)
+{
+	glUniform2iv(location, size, values);
+	checkForErrors();
+}
+
+void
+OpenGLES2Context::setUniforms3(uint location, uint size, const int* values)
+{
+	glUniform3iv(location, size, values);
+	checkForErrors();
+}
+
+void
+OpenGLES2Context::setUniforms4(uint location, uint size, const int* values)
+{
+	glUniform4iv(location, size, values);
+	checkForErrors();
+}
+
+void
 OpenGLES2Context::setUniform(const uint& location, const uint& size, bool transpose, const float* values)
 {
 #ifdef GL_ES_VERSION_2_0
-    if (transpose)
-    {
-		float tmp[16];
-		for (int i = 0; i < 4; i++)
-			for (int j = 0; j < 4; j++)
-				tmp[i * 4 + j] = values[j * 4 + i];
 
-        glUniformMatrix4fv(location, size, false, tmp);
-    }
-    else
-    {
-        glUniformMatrix4fv(location, size, transpose, values);
-    }
+	if (transpose)
+	{
+		float* transposed = new float[size << 4];
+
+		for (uint i = 0; i < size; ++i)
+		{
+			const float*	matrix	= values		+ (i << 4);
+			float*			tmatrix	= transposed	+ (i << 4);
+
+			tmatrix[0]	= matrix[0];
+			tmatrix[1]	= matrix[4];
+			tmatrix[2]	= matrix[8];
+			tmatrix[3]	= matrix[12];
+			tmatrix[4]	= matrix[1];
+			tmatrix[5]	= matrix[5];
+			tmatrix[6]	= matrix[9];
+			tmatrix[7]	= matrix[13];
+			tmatrix[8]	= matrix[2];
+			tmatrix[9]	= matrix[6];
+			tmatrix[10] = matrix[10];
+			tmatrix[11] = matrix[14];
+			tmatrix[12] = matrix[3];
+			tmatrix[13] = matrix[7];
+			tmatrix[14] = matrix[11];
+			tmatrix[15] = matrix[15];
+		}
+
+		glUniformMatrix4fv(location, size, false, transposed);
+
+		delete[] transposed;
+	}
+	else
+		glUniformMatrix4fv(location, size, false, values);
+
 #else
 
 	glUniformMatrix4fv(location, size, transpose, values);
+
 #endif
+
 	checkForErrors();
 }
 
@@ -1236,7 +1395,7 @@ OpenGLES2Context::setBlendMode(Blending::Source source, Blending::Destination de
 		);
 	}
 
-    checkForErrors();
+	checkForErrors();
 }
 
 void
@@ -1252,7 +1411,7 @@ OpenGLES2Context::setBlendMode(Blending::Mode blendMode)
 		);
 	}
 
-    checkForErrors();
+	checkForErrors();
 }
 
 void
@@ -1267,7 +1426,7 @@ OpenGLES2Context::setDepthTest(bool depthMask, CompareMode depthFunc)
 		glDepthFunc(_compareFuncs[depthFunc]);
 	}
 
-    checkForErrors();
+	checkForErrors();
 }
 
 void
@@ -1320,6 +1479,15 @@ OpenGLES2Context::setStencilTest(CompareMode stencilFunc,
 #endif
 }
 
+
+void
+OpenGLES2Context::readPixels(unsigned int x, unsigned int y, unsigned int width, unsigned int height, unsigned char* pixels)
+{
+	glReadPixels(x, y, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+
+	checkForErrors();
+}
+
 void
 OpenGLES2Context::setScissorTest(bool						scissorTest, 
 								 const render::ScissorBox&	scissorBox)
@@ -1361,119 +1529,133 @@ OpenGLES2Context::readPixels(unsigned char* pixels)
 {
 	glReadPixels(_viewportX, _viewportY, _viewportWidth, _viewportHeight, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
-    checkForErrors();
+	checkForErrors();
 }
 
 void
 OpenGLES2Context::setTriangleCulling(TriangleCulling triangleCulling)
 {
-    if (triangleCulling == _currentTriangleCulling)
-        return;
+	if (triangleCulling == _currentTriangleCulling)
+		return;
 
-    if (_currentTriangleCulling == TriangleCulling::NONE)
-        glEnable(GL_CULL_FACE);
-    _currentTriangleCulling = triangleCulling;
+	if (_currentTriangleCulling == TriangleCulling::NONE)
+		glEnable(GL_CULL_FACE);
+	_currentTriangleCulling = triangleCulling;
 
-    switch (triangleCulling)
-    {
-    case TriangleCulling::NONE:
-        glDisable(GL_CULL_FACE);
-        break;
-    case TriangleCulling::BACK :
-        glCullFace(GL_BACK);
-        break;
-    case TriangleCulling::FRONT :
-        glCullFace(GL_FRONT);
-        break;
-    case TriangleCulling::BOTH :
-        glCullFace(GL_FRONT_AND_BACK);
-        break;
-    }
+	switch (triangleCulling)
+	{
+	case TriangleCulling::NONE:
+		glDisable(GL_CULL_FACE);
+		break;
+	case TriangleCulling::BACK :
+		glCullFace(GL_BACK);
+		break;
+	case TriangleCulling::FRONT :
+		glCullFace(GL_FRONT);
+		break;
+	case TriangleCulling::BOTH :
+		glCullFace(GL_FRONT_AND_BACK);
+		break;
+	}
 
-    checkForErrors();
+	checkForErrors();
 }
 
 void
 OpenGLES2Context::setRenderToBackBuffer()
 {
-    if (_currentTarget == 0)
-        return;
+	if (_currentTarget == 0)
+		return;
 
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glBindRenderbuffer(GL_RENDERBUFFER, 0);
-    glViewport(_viewportX, _viewportY, _viewportWidth, _viewportHeight);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glBindRenderbuffer(GL_RENDERBUFFER, 0);
+	glViewport(_viewportX, _viewportY, _viewportWidth, _viewportHeight);
 
-    _currentTarget = 0;
+	_currentTarget = 0;
 
-    checkForErrors();
+	checkForErrors();
 }
 
 void
 OpenGLES2Context::setRenderToTexture(uint texture, bool enableDepthAndStencil)
 {
-    if (texture == _currentTarget)
-        return;
+	if (texture == _currentTarget)
+		return;
 
-    if (_frameBuffers.count(texture) == 0)
-        throw std::logic_error("this texture cannot be used for RTT");
+	if (_frameBuffers.count(texture) == 0)
+		throw std::logic_error("this texture cannot be used for RTT");
 
-    _currentTarget = texture;
+	_currentTarget = texture;
 
 	glBindFramebuffer(GL_FRAMEBUFFER, _frameBuffers[texture]);
 	checkForErrors();
 
-    if (enableDepthAndStencil)
+	if (enableDepthAndStencil)
 		glBindRenderbuffer(GL_RENDERBUFFER, _renderBuffers[texture]);
 	checkForErrors();
 
-    auto textureSize = _textureSizes[texture];
+	auto textureSize = _textureSizes[texture];
 
-    glViewport(0, 0, textureSize.first, textureSize.second);
+	glViewport(0, 0, textureSize.first, textureSize.second);
 
-    checkForErrors();
+	checkForErrors();
 }
 
 void
-OpenGLES2Context::createRTTBuffers(uint texture, uint width, uint height)
+OpenGLES2Context::createRTTBuffers(TextureType	type,
+								   uint			texture, 
+								   unsigned int	width, 
+								   unsigned int	height)
 {
-    uint frameBuffer = -1;
+	uint frameBuffer = -1;
 
-    // create a framebuffer object
-    glGenFramebuffers(1, &frameBuffer);
-    // bind the framebuffer object
-    glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
-    // attach a texture to the FBO
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
+	// create a framebuffer object
+	glGenFramebuffers(1, &frameBuffer);
+	// bind the framebuffer object
+	glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
+	// attach a texture to the FBO
+	if (type == TextureType::Texture2D)
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
+	else
+	{
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + 0, GL_TEXTURE_CUBE_MAP_POSITIVE_X, texture, 0);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + 1, GL_TEXTURE_CUBE_MAP_NEGATIVE_X, texture, 0);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + 2, GL_TEXTURE_CUBE_MAP_POSITIVE_Y, texture, 0);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + 3, GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, texture, 0);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + 4, GL_TEXTURE_CUBE_MAP_POSITIVE_Z, texture, 0);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + 5, GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, texture, 0);
+	}
 
-    uint renderBuffer = -1;
 
-    // gen renderbuffer
-    glGenRenderbuffers(1, &renderBuffer);
-    // bind renderbuffer
-    glBindRenderbuffer(GL_RENDERBUFFER, renderBuffer);
-    // init as a depth buffer
+	uint renderBuffer = -1;
+
+	// gen renderbuffer
+	glGenRenderbuffers(1, &renderBuffer);
+	// bind renderbuffer
+	glBindRenderbuffer(GL_RENDERBUFFER, renderBuffer);
+	// init as a depth buffer
 #ifdef GL_ES_VERSION_2_0
 	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, width, height);
 #else
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, width, height);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, width, height);
 #endif
 	// FIXME: create & attach stencil buffer
 
-    // attach to the FBO for depth
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, renderBuffer);
+	// attach to the FBO for depth
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, renderBuffer);
 
-    auto status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-    if (status != GL_FRAMEBUFFER_COMPLETE)
-        throw;
+	auto status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+	if (status != GL_FRAMEBUFFER_COMPLETE)
+		throw;
 
-    _frameBuffers[texture] = frameBuffer;
-    _renderBuffers[texture] = renderBuffer;
+	_frameBuffers[texture] = frameBuffer;
+	_renderBuffers[texture] = renderBuffer;
 
-    // unbind
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glBindRenderbuffer(GL_RENDERBUFFER, 0);
+	// unbind
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glBindRenderbuffer(GL_RENDERBUFFER, 0);
 
-    checkForErrors();
+	checkForErrors();
 }
 
 uint
@@ -1481,7 +1663,7 @@ OpenGLES2Context::getError()
 {
 	auto error = glGetError();
 
-	switch(error)
+	switch (error)
 	{
 	default:
 		break;
@@ -1502,14 +1684,16 @@ OpenGLES2Context::getError()
 		break;
 	}
 
-    return error;
+	return error;
 }
 
 void
 OpenGLES2Context::generateMipmaps(uint texture)
 {
-    glBindTexture(GL_TEXTURE_2D, texture);
-    glGenerateMipmap(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, texture);
+	glGenerateMipmap(GL_TEXTURE_2D);
 
-    checkForErrors();
+	_currentBoundTexture = texture;
+
+	checkForErrors();
 }

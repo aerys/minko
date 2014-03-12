@@ -22,6 +22,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Common.hpp"
 
 #include "minko/material/Material.hpp"
+#include "minko/render/Blending.hpp"
+#include "minko/render/CompareMode.hpp"
+#include "minko/render/StencilOperation.hpp"
+#include "minko/render/TriangleCulling.hpp"
 
 namespace minko
 {
@@ -31,63 +35,183 @@ namespace minko
 			public Material
 		{
 		public:
-			typedef std::shared_ptr<BasicMaterial>	Ptr;
+			typedef std::shared_ptr<BasicMaterial>				Ptr;
+
+		protected:
+			typedef std::shared_ptr<render::AbstractTexture>	AbsTexturePtr;
+			typedef std::shared_ptr<render::Texture>			TexturePtr;
+			typedef std::shared_ptr<render::CubeTexture>		CubeTexturePtr;
+			typedef std::shared_ptr<render::States>				RenderStatesPtr;
+			typedef std::shared_ptr<math::Vector4>				Vector4Ptr;
+
+		protected:
+			static const RenderStatesPtr						_defaultStates;
 
 		public:
 			inline static
 			Ptr
 			create()
 			{
-				return std::shared_ptr<BasicMaterial>(new BasicMaterial());
+				Ptr ptr = std::shared_ptr<BasicMaterial>(new BasicMaterial());
+
+				ptr->initialize();
+
+				return ptr;
 			}
 
-			inline
 			Ptr
-			diffuseColor(std::shared_ptr<math::Vector4> color)
-			{
-				set("diffuseColor", color);
+			diffuseColor(Vector4Ptr);
 
-				return std::dynamic_pointer_cast<BasicMaterial>(shared_from_this());
-			}
-
-			inline
 			Ptr
-			diffuseColor(const uint rgba)
-			{
-				return diffuseColor(math::Vector4::create(
-					((rgba >> 24) & 0xff) / 255.f,
-					((rgba >> 16) & 0xff) / 255.f,
-					((rgba >> 8) & 0xff) / 255.f,
-					(rgba & 0xff) / 255.f
-				));
-			}
+			diffuseColor(uint);
 
-			inline
+			Vector4Ptr
+			diffuseColor() const;
+
 			Ptr
-			diffuseMap(std::shared_ptr<render::Texture> diffuseMap)
-			{
-				set("diffuseMap", diffuseMap);
+			diffuseMap(AbsTexturePtr);
 
-				return std::dynamic_pointer_cast<BasicMaterial>(shared_from_this());
-			}
+			TexturePtr
+			diffuseMap() const;
 
-			inline
 			Ptr
-			blendMode(render::Blending::Mode blendMode)
-			{
-				set("blendMode", blendMode);
+			diffuseCubeMap(AbsTexturePtr);
 
-				return std::dynamic_pointer_cast<BasicMaterial>(shared_from_this());
-			}
+			CubeTexturePtr
+			diffuseCubeMap() const;
 
-			inline
 			Ptr
-			triangleCulling(render::TriangleCulling culling)
-			{
-				set("triangleCulling", culling);
+			fogColor(Vector4Ptr);
 
-				return std::dynamic_pointer_cast<BasicMaterial>(shared_from_this());
-			}
+			Ptr
+			fogColor(uint);
+
+			Vector4Ptr
+			fogColor() const;
+
+            Ptr
+            fogDensity(float);
+
+            float
+            fogDensity() const;
+
+            Ptr
+            fogStart(float);
+
+            float
+            fogStart() const;
+
+            Ptr
+            fogEnd(float);
+
+            float
+            fogEnd() const;
+
+            Ptr
+            fogType(render::FogType);
+
+            render::FogType
+            fogType() const;
+
+			Ptr
+			blendingMode(render::Blending::Source, render::Blending::Destination);
+
+			Ptr
+			blendingMode(render::Blending::Mode);
+
+			render::Blending::Source
+			blendingSourceFactor() const;
+
+			render::Blending::Destination
+			blendingDestinationFactor() const;
+
+			Ptr
+			colorMask(bool);
+
+			bool
+			colorMask() const;
+
+			Ptr
+			depthMask(bool);
+
+			bool
+			depthMask() const;
+
+			Ptr
+			depthFunction(render::CompareMode);
+
+			render::CompareMode
+			depthFunction() const;
+
+			Ptr
+			triangleCulling(render::TriangleCulling);
+
+			render::TriangleCulling
+			triangleCulling() const;
+
+			Ptr
+			stencilFunction(render::CompareMode);
+
+			render::CompareMode
+			stencilFunction() const;
+
+			Ptr
+			stencilReference(int);
+
+			int
+			stencilReference() const;
+
+			Ptr
+			stencilMask(uint);
+
+			uint
+			stencilMask() const;
+
+			Ptr
+			stencilFailOperation(render::StencilOperation);
+
+			render::StencilOperation
+			stencilFailOperation() const;
+
+			Ptr
+			stencilDepthFailOperation(render::StencilOperation);
+
+			render::StencilOperation
+			stencilDepthFailOperation() const;
+
+			Ptr
+			stencilDepthPassOperation(render::StencilOperation);
+
+			render::StencilOperation
+			stencilDepthPassOperation() const;
+
+			Ptr
+			priority(float);
+
+			float 
+			priority() const;
+
+			Ptr
+			zSorted(bool);
+
+			bool
+			zSorted() const;
+
+			Ptr
+			isTransparent(bool transparent, bool zSort = false);
+
+			Ptr
+			target(AbsTexturePtr);
+
+			AbsTexturePtr
+			target() const;
+
+		protected:
+			BasicMaterial();
+
+			virtual
+			void
+			initialize();
 		};
 	}
 }

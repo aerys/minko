@@ -36,19 +36,20 @@ namespace minko
 		    typedef std::shared_ptr<SceneManager> Ptr;
 
         private:
-            typedef std::shared_ptr<scene::Node>		NodePtr;
-			typedef std::shared_ptr<render::Texture>	TexturePtr;
+            typedef std::shared_ptr<scene::Node>				NodePtr;
+			typedef std::shared_ptr<render::AbstractTexture>	AbsTexturePtr;
 
         private:
             uint                                            _frameId;
+            float                                           _time;
             std::shared_ptr<file::AssetLibrary>             _assets;
 
-            Signal<Ptr>::Ptr                                _frameBegin;
-            Signal<Ptr>::Ptr                                _frameEnd;
+            Signal<Ptr, float, float>::Ptr                  _frameBegin;
+            Signal<Ptr, float, float>::Ptr                  _frameEnd;
 			Signal<Ptr>::Ptr                                _cullBegin;
 			Signal<Ptr>::Ptr                                _cullEnd;
-			Signal<Ptr, uint, TexturePtr>::Ptr              _renderBegin;
-			Signal<Ptr, uint, TexturePtr>::Ptr              _renderEnd;
+			Signal<Ptr, uint, AbsTexturePtr>::Ptr           _renderBegin;
+			Signal<Ptr, uint, AbsTexturePtr>::Ptr           _renderEnd;
 
             Signal<AbstractComponent::Ptr, NodePtr>::Slot   _targetAddedSlot;
             Signal<AbstractComponent::Ptr, NodePtr>::Slot   _targetRemovedSlot;
@@ -85,15 +86,15 @@ namespace minko
             }
 
             inline
-            Signal<Ptr>::Ptr
-            frameBegin()
+            Signal<Ptr, float, float>::Ptr
+            frameBegin() const
             {
                 return _frameBegin;
             }
 
             inline
-            Signal<Ptr>::Ptr
-            frameEnd()
+            Signal<Ptr, float, float>::Ptr
+            frameEnd() const
             {
                 return _frameEnd;
             }
@@ -113,27 +114,31 @@ namespace minko
 			}
 
 			inline
-			Signal<Ptr, uint, TexturePtr>::Ptr
+			Signal<Ptr, uint, AbsTexturePtr>::Ptr
 			renderingBegin()
 			{
 				return _renderBegin;
 			}
 
 			inline
-			Signal<Ptr, uint, TexturePtr>::Ptr
+			Signal<Ptr, uint, AbsTexturePtr>::Ptr
 			renderingEnd()
 			{
 				return _renderEnd;
 			}
 
+            inline
+            float
+            time() const
+            {
+                return _time; // in milliseconds
+            }
+
             void
             initialize();
 
             void
-            nextFrame();
-
-			void
-			nextFrame(std::shared_ptr<render::Texture> renderTarget);
+            nextFrame(float time, float deltaTime, AbsTexturePtr target = nullptr);
 
 	    private:
 		    SceneManager(const std::shared_ptr<render::AbstractContext>& context);

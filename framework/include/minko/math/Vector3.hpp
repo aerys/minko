@@ -27,7 +27,8 @@ namespace minko
 	namespace math
 	{
 		class Vector3 :
-			public Vector2
+			public Vector2,
+			public Convertible<Vector3>
 		{
 		public:
 			typedef std::shared_ptr<Vector3>	Ptr;
@@ -66,8 +67,30 @@ namespace minko
 			}
 
 			inline static
+			Ptr
+			min()
+			{
+				return create(
+					-std::numeric_limits<float>::max(),
+					-std::numeric_limits<float>::max(),
+					-std::numeric_limits<float>::max()
+				);
+			}
+
+			inline static
+			Ptr
+			max()
+			{
+				return create(
+					std::numeric_limits<float>::max(),
+					std::numeric_limits<float>::max(),
+					std::numeric_limits<float>::max()
+				);
+			}
+
+			inline static
 			ConstPtr
-			upAxis()
+			up()
 			{
 				static ConstPtr upAxis = createConst(0.f, 1.f, 0.f);
 
@@ -183,6 +206,13 @@ namespace minko
 
 			inline
 			Ptr
+			add(float dx, float dy, float dz)
+			{
+				return setTo(_x + dx, _y + dy, _z + dz);
+			}
+
+			inline
+			Ptr
 			normalize()
 			{
 				float l = sqrtf(_x * _x + _y * _y + _z * _z);
@@ -214,7 +244,7 @@ namespace minko
 
 			inline
 			float
-			dot(Ptr value)
+			dot(Ptr value) const
 			{
 				return _x * value->_x + _y * value->_y + _z * value->_z;
 			}
@@ -249,6 +279,34 @@ namespace minko
 			{
 				return create(_x + value->_x, _y + value->_y, _z + value->_z);
 			}
+
+            inline
+            Vector3
+            operator+(const Vector3& v) const
+            {
+                return Vector3(_x + v._x, _y + v._y, _z + v._z);
+            }
+
+            inline
+            Vector3
+            operator-(const Vector3& v) const
+            {
+                return Vector3(_x - v._x, _y - v._y, _z - v._z);
+            }
+
+            inline
+            Vector3
+            operator*(float k) const
+            {
+                return Vector3(_x * k, _y * k, _z * k);
+            }
+
+            inline
+            bool
+            operator<(const Vector3& v) const
+            {
+                return std::make_tuple(_x, _y, _z) < std::make_tuple(v._x, v._y, v._z);
+            }
 
 			inline
 			Ptr
@@ -327,7 +385,7 @@ namespace minko
 			}
 
 		protected:
-			Vector3(float x, float y, float z) :
+			Vector3(float x = 0.0f, float y = 0.0f, float z = 0.0f) :
 				Vector2(x, y),
 				_z(z)
 			{

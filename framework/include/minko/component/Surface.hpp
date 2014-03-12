@@ -33,52 +33,37 @@ namespace minko
 			public AbstractComponent,
 			public std::enable_shared_from_this<Surface>
 		{
+			friend render::DrawCallPool;
+
 		public:
-			typedef std::shared_ptr<Surface>						Ptr;
-			typedef Signal<Ptr, std::shared_ptr<render::DrawCall>>	DrawCallChangedSignal;
-			typedef Signal<Ptr, const std::string&, bool>			TechniqueChangedSignal;			
+			typedef std::shared_ptr<Surface>									Ptr;
+			typedef Signal<Ptr, const std::string&, bool>						TechniqueChangedSignal;	
+			typedef Signal<Ptr, std::shared_ptr<component::Renderer>, bool>		VisibilityChangedSignal;
 
 		private:
-			typedef std::shared_ptr<scene::Node>					NodePtr;
-			typedef std::shared_ptr<data::Container>				ContainerPtr;
-			typedef std::shared_ptr<render::Pass>					PassPtr;
-			typedef std::shared_ptr<render::DrawCall>				DrawCallPtr;
-			typedef std::list<DrawCallPtr>							DrawCallList;
-			typedef Signal<ContainerPtr, const std::string&>		PropertyChangedSignal;
-			typedef PropertyChangedSignal::Slot						PropertyChangedSlot;
-			typedef std::shared_ptr<render::Effect>					EffectPtr;
-			typedef const std::string&								StringRef;
-			typedef std::pair<std::string, PassPtr>					TechniquePass;
-			enum class MacroChange
-			{
-				REF_CHANGED	= 0,
-				ADDED		= 1,
-				REMOVED		= 2
-			};
+			typedef std::shared_ptr<data::ArrayProvider>					ArrayProviderPtr;
+			typedef std::shared_ptr<scene::Node>							NodePtr;
+			typedef std::shared_ptr<data::Container>						ContainerPtr;
+			typedef Signal<ContainerPtr, const std::string&>				PropertyChangedSignal;
+			typedef PropertyChangedSignal::Slot								PropertyChangedSlot;
+			typedef std::shared_ptr<render::Effect>							EffectPtr;
+			typedef const std::string&										StringRef;
+			typedef Signal<ArrayProviderPtr, uint>::Slot					ArrayProviderIndexChangedSlot;
+
 
 		private:
+			std::string																_name;
+
 			std::shared_ptr<geometry::Geometry>										_geometry;
 			std::shared_ptr<data::Provider>											_material;
 			std::shared_ptr<render::Effect>											_effect;
-			std::unordered_map<std::string, std::unordered_set<std::string>>		_techniqueToMacroNames;
-
-			std::string 															_technique;
-			std::unordered_map<ContainerPtr, DrawCallList>							_drawCalls;
-			std::unordered_map<DrawCallPtr, PassPtr>								_drawCallToPass;
-			std::unordered_map<DrawCallPtr, ContainerPtr>							_drawCallToRendererData;
-			std::unordered_map<std::string, DrawCallList>							_macroNameToDrawCalls;
-
-			// current technique-related members
-			std::list<Any>															_macroAddedOrRemovedSlots;
-			std::unordered_map<data::ContainerProperty, PropertyChangedSlot>		_macroChangedSlots;
-			std::unordered_map<data::ContainerProperty, uint>						_numMacroListeners;
 			
-			// cross-technique members
-			std::unordered_map<data::ContainerProperty, std::list<TechniquePass>>	_incorrectMacroToPasses;
-			std::unordered_map<data::ContainerProperty, PropertyChangedSlot>		_incorrectMacroChangedSlot;
+			std::string 															_technique;
+			std::list<ArrayProviderIndexChangedSlot>								_dataProviderIndexChangedSlots;
 
-			DrawCallChangedSignal::Ptr												_drawCallAdded;
-			DrawCallChangedSignal::Ptr												_drawCallRemoved;
+			int																		_geometryId;
+			int																		_materialId;
+			
 			TechniqueChangedSignal::Ptr												_techniqueChanged;
 
 			Signal<AbstractComponent::Ptr, NodePtr>::Slot							_targetAddedSlot;
@@ -86,15 +71,33 @@ namespace minko
 			Signal<NodePtr, NodePtr, NodePtr>::Slot									_removedSlot;
 			Signal<EffectPtr, StringRef, StringRef>::Slot							_techniqueChangedSlot;
 
+			bool																	_visible;
+
+			std::unordered_map<std::shared_ptr<component::Renderer>, bool>			_rendererToVisibility;
+			std::unordered_map<std::shared_ptr<component::Renderer>, bool>			_rendererToComputedVisibility;
+
+			VisibilityChangedSignal::Ptr											_visibilityChanged;
+			VisibilityChangedSignal::Ptr											_computedVisibilityChanged;
+
 		public:
 			static
 			Ptr
-			create(std::shared_ptr<geometry::Geometry> 	geometry,
-				   std::shared_ptr<data::Provider>		material,
-				   std::shared_ptr<render::Effect>		effect,
-				   const std::string&					technique = "default")
+			create(std::shared_ptr<geometry::Geometry> 		geometry,
+				   std::shared_ptr<data::Provider>			material,
+				   std::shared_ptr<render::Effect>			effect)
 			{
-				Ptr surface(new Surface(geometry, material, effect, technique));
+				return create("", geometry, material, effect, "default");
+			}
+
+			static
+			Ptr
+			create(const std::string&					    name,
+				   std::shared_ptr<geometry::Geometry> 		geometry,
+				   std::shared_ptr<data::Provider>			material,
+				   std::shared_ptr<render::Effect>			effect,
+				   const std::string&						technique)
+			{
+				Ptr surface(new Surface(name, geometry, material, effect, technique));
 
 				surface->initialize();
 
@@ -103,6 +106,79 @@ namespace minko
 
 			~Surface()
 			{
+			}
+
+			inline
+			bool
+			visible()
+			{
+				return _visible;
+			}
+
+			inline
+			bool
+			visible(std::shared_ptr<component::Renderer> renderer)
+			{
+				if (_rendererToVisibility.find(renderer) == _rendererToVisibility.end())
+					_rendererToVisibility[renderer] = _visible;
+				return _rendererToVisibility[renderer];
+			}
+
+			inline
+			VisibilityChangedSignal::Ptr
+			visibilityChanged()
+			{
+				return _visibilityChanged;
+			}
+
+			inline
+			void
+			visible(bool value)
+			{
+				for (auto& visibility : _rendererToVisibility)
+					visible(visibility.first, value);
+
+				if (_visible != value)
+				{
+					_visible = value;
+					_visibilityChanged->execute(shared_from_this(), nullptr, _visible);
+				}
+			}
+
+			void
+			visible(std::shared_ptr<component::Renderer>, bool value);
+			
+			inline
+			bool
+			computedVisibility(std::shared_ptr<component::Renderer> renderer)
+			{
+				if (_rendererToComputedVisibility.find(renderer) == _rendererToComputedVisibility.end())
+					_rendererToComputedVisibility[renderer] = true;
+				return _rendererToComputedVisibility[renderer];
+			}
+
+			void
+			computedVisibility(std::shared_ptr<component::Renderer>, bool value);
+
+			inline
+			VisibilityChangedSignal::Ptr
+			computedVisibilityChanged()
+			{
+				return _computedVisibilityChanged;
+			}
+
+			inline
+			const std::string&
+			name()
+			{
+				return _name;
+			}
+
+			inline
+			void
+			name(const std::string& value)
+			{
+				_name = value;
 			}
 
 			inline
@@ -137,26 +213,6 @@ namespace minko
 			}
 
 			inline
-			DrawCallChangedSignal::Ptr
-			drawCallAdded() const
-			{
-				return _drawCallAdded;
-			}
-
-			inline
-			DrawCallChangedSignal::Ptr
-			drawCallRemoved() const
-			{
-				return _drawCallRemoved;
-			}
-
-			const DrawCallList&
-			createDrawCalls(std::shared_ptr<data::Container>	rendererData, unsigned int numAttempts);
-
-			void
-			deleteDrawCalls(std::shared_ptr<data::Container>	rendererData);
-
-			inline
 			TechniqueChangedSignal::Ptr	
 			techniqueChanged() const
 			{
@@ -164,21 +220,14 @@ namespace minko
 			}
 
 		private:
-			Surface(std::shared_ptr<geometry::Geometry> geometry,
-					std::shared_ptr<data::Provider>		material,
-					std::shared_ptr<render::Effect>		effect,
-					const std::string&					technique);
+			Surface(std::string								name,
+					std::shared_ptr<geometry::Geometry>		geometry,
+					std::shared_ptr<data::Provider>			material,
+					std::shared_ptr<render::Effect>			effect,
+					const std::string&						technique);
 
 			void
 			initialize();
-
-			void
-			initializeTechniqueMacroNames();
-
-			std::shared_ptr<render::DrawCall>
-			initializeDrawCall(std::shared_ptr<render::Pass>		pass,
-							   std::shared_ptr<data::Container>		rendererData,
-							   std::shared_ptr<render::DrawCall>	drawcall = nullptr);
 
 			void
 			targetAddedHandler(AbstractComponent::Ptr ctrl, NodePtr target);
@@ -190,37 +239,13 @@ namespace minko
 			removedHandler(NodePtr node, NodePtr target, NodePtr ancestor);
 
 			void
-			watchMacroAdditionOrDeletion(ContainerPtr rendererData);
-
-			void
-			macroChangedHandler(ContainerPtr, const std::string& propertyName, MacroChange);
-
-			std::shared_ptr<render::Program>
-			getWorkingProgram(std::shared_ptr<render::Pass>			pass,
-							  ContainerPtr							targetData,
-							  ContainerPtr							rendererData,
-							  ContainerPtr							rootData,
-							  std::list<data::ContainerProperty>&	booleanMacros,
-							  std::list<data::ContainerProperty>&	integerMacros,
-							  std::list<data::ContainerProperty>&	incorrectIntegerMacros);
-
-			void
 			setTechnique(const std::string&, bool updateDrawcalls = true);
 
 			void
-			forgiveMacros(const std::list<data::ContainerProperty>& booleanMacros,
-						  const std::list<data::ContainerProperty>& integerMacros,
-						  const TechniquePass&);
+			geometryProviderIndexChanged(ArrayProviderPtr arrayProvider, uint index);
 
 			void
-			blameMacros(const std::list<data::ContainerProperty>& incorrectIntegerMacros,
-						const TechniquePass&);
-
-			void
-			incorrectMacroChangedHandler(const data::ContainerProperty&);
-
-			void
-			deleteAllDrawCalls();
+			materialProviderIndexChanged(ArrayProviderPtr arrayProvider, uint index);
 		};
 	}
 }

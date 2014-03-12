@@ -28,26 +28,25 @@ namespace minko
 	class AbstractCanvas
 	{
 	public:
-		typedef std::shared_ptr<AbstractCanvas>	Ptr;
-
-	private:
+		typedef std::shared_ptr<AbstractCanvas>							Ptr;
+		typedef std::function<std::shared_ptr<async::Worker> ()>		WorkerHandler;
 
 	public:
 		virtual
 		uint
-		x() const = 0;
+		x() = 0;
 
 		virtual
 		uint
-		y() const = 0;
+		y() = 0;
 
 		virtual
 		uint
-		width() const = 0;
+		width() = 0;
 
 		virtual
 		uint
-		height() const = 0;
+		height() = 0;
 
 		virtual
 		std::shared_ptr<input::Mouse>
@@ -59,10 +58,62 @@ namespace minko
 
 		virtual
 		std::shared_ptr<input::Joystick>
-		joystick(int id) = 0;
+		joystick(uint id) = 0;
 
 		virtual
 		uint
 		numJoysticks() = 0;
+
+        virtual
+		Signal<Ptr, uint, uint>::Ptr
+		resized() = 0;
+
+		virtual
+		Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::Ptr
+		joystickAdded() = 0;
+
+		virtual
+		Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::Ptr
+		joystickRemoved() = 0;
+
+		virtual
+		std::shared_ptr<async::Worker>
+		getWorker(const std::string& name) = 0;
+
+		virtual
+		bool
+		isWorkerRegistered(const std::string& name) = 0;
+
+		template <typename T>
+		void
+		registerWorker(const std::string& type)
+		{
+			std::string key(type);
+
+			std::transform(key.begin(), key.end(), key.begin(), ::tolower);
+
+			_workers[key] = T::create;
+		}
+
+		static
+		std::shared_ptr<AbstractCanvas>
+		defaultCanvas()
+		{
+			return _defaultCanvas;
+		}
+
+		static
+		void
+		defaultCanvas(std::shared_ptr<AbstractCanvas> value)
+		{
+			_defaultCanvas = value;
+		}
+
+	protected:
+		static
+		std::unordered_map<std::string, WorkerHandler>		_workers;
+		
+		static
+		std::shared_ptr<AbstractCanvas>						_defaultCanvas;
 	};
 }

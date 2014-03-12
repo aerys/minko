@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
-#include "minko/data/Provider.hpp"
+#include "minko/data/ArrayProvider.hpp"
 #include "minko/render/VertexBuffer.hpp"
 
 namespace minko
@@ -35,13 +35,14 @@ namespace minko
 
 		private:
 			typedef std::shared_ptr<render::VertexBuffer> VBPtr;
+			typedef std::shared_ptr<data::ArrayProvider>  ProviderPtr;
 
 		private:
-			std::shared_ptr<data::Provider>						_data;
-			unsigned int										_vertexSize;
-			unsigned int										_numVertices;
-			std::list<VBPtr>									_vertexBuffers;
-			std::shared_ptr<render::IndexBuffer>				_indexBuffer;
+			ProviderPtr								_data;
+			unsigned int							_vertexSize;
+			unsigned int							_numVertices;
+			std::list<VBPtr>						_vertexBuffers;
+			std::shared_ptr<render::IndexBuffer>	_indexBuffer;
 
 			std::unordered_map<VBPtr, Signal<VBPtr, int>::Slot>	_vbToVertexSizeChangedSlot;
 
@@ -60,7 +61,7 @@ namespace minko
 			}
 
 			inline
-			std::shared_ptr<data::Provider>
+			ProviderPtr
 			data() const
 			{
 				return _data;
@@ -100,7 +101,7 @@ namespace minko
 			bool
 			hasVertexAttribute(const std::string& vertexAttributeName) const
 			{
-				return _data->hasProperty("geometry.vertex.attribute." + vertexAttributeName);
+				return _data->hasProperty(vertexAttributeName);
 			}
 
 			inline
@@ -108,7 +109,7 @@ namespace minko
 			indices(std::shared_ptr<render::IndexBuffer> indices)
 			{
 				_indexBuffer = indices;
-				_data->set("geometry.indices", indices);
+				_data->set("indices", indices);
 			}
 
 			inline
@@ -166,6 +167,28 @@ namespace minko
 
 			void
 			upload();
+
+			inline
+			bool
+			equals(Ptr geom)
+			{
+				bool vertexEquality		= _vertexBuffers.size() == geom->_vertexBuffers.size();
+				bool indexEquality		= _indexBuffer == geom->_indexBuffer;
+				auto vertexBuffer1Start = _vertexBuffers.begin();
+				auto vertexBuffer2Start = geom->_vertexBuffers.begin();
+
+				if (vertexEquality)
+				{
+					for (uint i = 0; i < _vertexBuffers.size() && vertexEquality; ++i)
+					{
+						vertexEquality = vertexEquality && (*vertexBuffer1Start == *vertexBuffer2Start);
+						std::next(vertexBuffer1Start);
+						std::next(vertexBuffer2Start);
+					}
+				}
+
+				return vertexEquality && indexEquality;
+			}
 
 		protected:
 			Geometry();

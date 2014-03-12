@@ -54,6 +54,8 @@ namespace minko
 			std::shared_ptr<math::Matrix4x4>				_projection;
 			std::shared_ptr<math::Matrix4x4>				_viewProjection;
             std::shared_ptr<math::Vector3>                  _position;
+			
+			std::shared_ptr<math::Matrix4x4>				_postProjection;
 
 			Signal<AbsCtrlPtr, NodePtr>::Slot				_targetAddedSlot;
 			Signal<AbsCtrlPtr, NodePtr>::Slot				_targetRemovedSlot;
@@ -62,7 +64,10 @@ namespace minko
 		public:
 			inline static
 			Ptr
-			create(float aspectRatio, float fov = .785f, float zNear = 0.1f, float zFar = 1000.f)
+			create(float aspectRatio, 
+				   float fov	= .785f, 
+				   float zNear	= 0.1f, 
+				   float zFar	= 1000.f)
 			{
 				auto ctrl  = std::shared_ptr<PerspectiveCamera>(new PerspectiveCamera(fov, aspectRatio, zNear, zFar));
 
@@ -71,9 +76,24 @@ namespace minko
 				return ctrl;
 			}
 
+			inline static
+			Ptr
+			create(float aspectRatio, 
+				   float fov, 
+				   float zNear, 
+				   float zFar, 
+				   std::shared_ptr<math::Matrix4x4> postProjection)
+			{
+				auto ctrl  = std::shared_ptr<PerspectiveCamera>(new PerspectiveCamera(fov, aspectRatio, zNear, zFar, postProjection));
+
+				ctrl->initialize();
+
+				return ctrl;
+			}
+
 			inline
 			float
-			fieldOfView() const
+			fieldOfView()
 			{
 				return _fov;
 			}
@@ -91,7 +111,7 @@ namespace minko
 
 			inline
 			float
-			aspectRatio() const
+			aspectRatio()
 			{
 				return _aspectRatio;
 			}
@@ -109,7 +129,7 @@ namespace minko
 
 			inline
 			float
-			zNear() const
+			zNear()
 			{
 				return _zNear;
 			}
@@ -127,7 +147,7 @@ namespace minko
 
 			inline
 			float
-			zFar() const
+			zFar()
 			{
 				return _zFar;
 			}
@@ -143,12 +163,19 @@ namespace minko
 				}
 			}
 
+			inline
+			std::shared_ptr<data::StructureProvider>
+			data()
+			{
+				return _data;
+			}
+
 			~PerspectiveCamera()
 			{
 			}
 
 			void
-			updateProjection(float fieldOfView, float aspectRatio, float zNear, float zFar);
+			updateProjection(float aspectRatio, float fieldOfView, float zNear, float zFar);
 
 			std::shared_ptr<math::Ray>
 			unproject(float x, float y, std::shared_ptr<math::Ray> out = nullptr);
@@ -161,7 +188,11 @@ namespace minko
 			targetRemovedHandler(AbstractComponent::Ptr ctrl, NodePtr target);
 
 		private:
-			PerspectiveCamera(float fov, float aspectRatio, float zNear, float zFar);
+			PerspectiveCamera(float								fov,
+							  float								aspectRatio,
+							  float								zNear,
+							  float								zFar,
+							  std::shared_ptr<math::Matrix4x4>	postPerspective = nullptr);
 
 			void
 			initialize();
