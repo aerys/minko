@@ -246,7 +246,34 @@ Transform::RootTransform::updateTransformsList()
 			return node->hasComponent<Transform>();
 		});
 
-	for (auto node : descendants->nodes())
+	// reorder the descendants so that nodes with common ancestor (with Transform component)
+	// end up at contiguous positions in the descendant list
+	const auto&									nodes = descendants->nodes();
+	std::vector<scene::Node::Ptr>				reorderedDescendents;
+	std::unordered_map<scene::Node::Ptr, uint>	firstChild;
+
+	reorderedDescendents.reserve(descendants->nodes().size());
+
+	for (auto& node : descendants->nodes())
+	{
+		auto ancestor = node->parent();
+		while (ancestor != nullptr && std::find(nodes.begin(), nodes.end(), ancestor) == nodes.end())
+			ancestor = ancestor->parent();
+
+		if (firstChild.count(ancestor) == 0)
+		{
+			firstChild[ancestor] = nodeId;
+			reorderedDescendents.push_back(node);
+		}
+		else
+		{
+			reorderedDescendents.insert(reorderedDescendents.begin() + firstChild[ancestor], node);		
+		}
+		++nodeId;
+	}
+
+	nodeId = 0;
+	for (auto node : reorderedDescendents)
 	{
 		auto transformCtrl  = node->component<Transform>();
 
@@ -301,10 +328,12 @@ Transform::RootTransform::updateTransforms()
 		{
             auto parentTransform = _transforms[nodeId];
 	        
-            if (parentTransformChanged)
+            if (_transforms[nodeId]->_hasChanged)
             {
 			    parentModelToWorldMatrix->copyFrom(parentTransform);
+				parentModelToWorldMatrix->_hasChanged = false;
                 parentTransform->_hasChanged = false;
+				parentTransformChanged = true;
             }
 		}
 
@@ -315,7 +344,7 @@ Transform::RootTransform::updateTransforms()
 
             if (transform->_hasChanged || parentTransformChanged)
             {
-			    modelToWorld->copyFrom(transform)->append(parentModelToWorldMatrix);
+			    modelToWorld->lock()->copyFrom(transform)->append(parentModelToWorldMatrix)->unlock();
 			    transform->_hasChanged = false;
             }
 		}
