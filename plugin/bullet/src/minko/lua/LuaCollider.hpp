@@ -53,11 +53,15 @@ namespace minko
 					void
 					bind(LuaGlue& state)
 					{
-						state.Class<Collider>("Collider");
-							//.property("colliderData",					&Collider::colliderData)
-							//.method("create", static_cast<Collider::Ptr(*)(ColliderDataPtr)>(&Collider::create))
-							//.method("synchronizePhysicsWithGraphics", &Collider::synchronizePhysicsWithGraphics);
-							//.method("extractCollider",					&LuaCollider::extractColliderFromNode);
+						auto scene_node = (LuaGlueClass<scene::Node>*)state.lookupClass("Node");
+
+						scene_node->methodWrapper("getCollider", &LuaCollider::extractColliderFromNode);
+
+						state.Class<Collider>("Collider")
+							.property("colliderData",					&Collider::colliderData)
+							.method("create", static_cast<Collider::Ptr(*)(ColliderDataPtr)>(&Collider::create))
+							.method("synchronizePhysicsWithGraphics", &Collider::synchronizePhysicsWithGraphics)
+							.method("extractCollider",					&LuaCollider::extractColliderFromNode);
 					}
 
 			};
