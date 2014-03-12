@@ -95,9 +95,6 @@ PhysicsExtension::deserializePhysics(std::string&							serializedAnimation,
     const short filterGroup = short(dst.a8 & ((1<<16) - 1)); // overriden by node's layouts
     const short filterMask  = short(dst.a9 & ((1<<16) - 1)); 
 
-    const short filterGroup = short(dst.a8 & ((1<<16) - 1)); // overriden by node's layouts
-    const short filterMask  = short(dst.a9 & ((1<<16) - 1)); 
-
     data->collisionGroup(filterGroup);
     data->collisionMask(filterMask);
 
