@@ -26,6 +26,8 @@ function minko.plugin.overlay:enable()
 	includedirs {
 		minko.plugin.path("overlay") .. "/include"
 	}
+	
+	minko.plugin.enable("lua")
 
 	configuration { "windows32 or windows64", "debug" }
 		links { "libcef_dll_wrapper", "libcef" }
@@ -40,13 +42,10 @@ function minko.plugin.overlay:enable()
 		links { "libcef_dll_wrapper", "libcef" }
 		libdirs { minko.plugin.path("overlay") .. "/lib/win/cef3/lib/release" }
 		prelinkcommands {
-			minko.action.copy(minko.plugin.path("overlay") .. "/lib/win/cef3/resource:*"),
+			minko.action.copy(minko.plugin.path("overlay") .. "/lib/win/cef3/resource/*"),
 			minko.action.copy(minko.plugin.path("overlay") .. "/asset"),
 			minko.action.copy(minko.plugin.path("overlay") .. "/lib/win/cef3/lib/release/*.dll")
 		}
-		
-	prelinkcommands {
-	}
 end
 
 function minko.plugin.overlay:dist(pluginDistDir)

@@ -5,6 +5,8 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 	kind "StaticLib"
 	language "C++"
 
+	minko.plugin.enable("lua")
+	
 	files {
 		"lib/**.hpp",
 		"lib/**.h",

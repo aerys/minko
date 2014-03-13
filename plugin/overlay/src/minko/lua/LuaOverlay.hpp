@@ -19,7 +19,54 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #pragma once
 
-#include "component/Overlay.hpp"
-#include "dom/AbstractDOMElement.hpp"
-#include "dom/AbstractDOMEvent.hpp"
-#include "dom/AbstractDOMEngine.hpp"
+#include "minko/component/Overlay.hpp"
+#include "minko/MinkoLua.hpp"
+
+#include "minko/scene/Node.hpp"
+
+namespace minko
+{
+	class LuaWrapper;
+
+	namespace component
+	{
+		namespace overlay
+		{
+			class LuaOverlay :
+				public LuaWrapper
+			{
+
+			private:
+
+			public:
+
+				static
+				std::shared_ptr<Overlay>
+				extractOverlayFromNode(std::shared_ptr<scene::Node> node)
+				{
+					return node->component<Overlay>(0);
+				}
+
+				static
+				void
+				bind(LuaGlue& state)
+				{
+					auto scene_node = (LuaGlueClass<scene::Node>*)state.lookupClass("Node");
+
+					scene_node->methodWrapper("getOverlay", &LuaOverlay::extractOverlayFromNode);
+
+					auto& overlay = state.Class<Overlay>("Overlay")
+						.method("create", &Overlay::create)
+						.method("load", &Overlay::load)
+						.method("clear", &Overlay::clear);
+
+					MINKO_LUAGLUE_BIND_SIGNAL(state, minko::dom::AbstractDOM::Ptr, std::string);
+
+					overlay.property("onload", &Overlay::onload);
+					overlay.property("onmessage", &Overlay::onmessage);
+				}
+
+			};
+		}
+	}
+}

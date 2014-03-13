@@ -20,9 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Minko.hpp"
 #include "minko/MinkoPNG.hpp"
 #include "minko/MinkoSDL.hpp"
-#include "minko/MinkoCEF.hpp"
-#include "minko/dom/AbstractDOMElement.hpp"
-#include "minko/dom/AbstractDOM.hpp"
+#include "minko/MinkoOverlay.hpp"
 
 using namespace minko;
 using namespace minko::component;
