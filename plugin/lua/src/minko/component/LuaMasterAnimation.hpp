@@ -45,9 +45,11 @@ namespace minko
 					.property("isPlaying",		static_cast<bool (MasterAnimation::*)() const>(&MasterAnimation::isPlaying))
 					.property("isLooping",		static_cast<bool (MasterAnimation::*)() const>(&MasterAnimation::isLooping))
 					.method("hasLabel",			static_cast<bool (MasterAnimation::*)(const std::string&) const>(&MasterAnimation::hasLabel))
+					.method("addLabel",			static_cast<AbstractAnimation::Ptr (MasterAnimation::*)(const std::string&, uint)>(&MasterAnimation::addLabel))
 					.method("play",				static_cast<AbstractAnimation::Ptr (MasterAnimation::*)()>(&MasterAnimation::play))
 					.method("stop",				static_cast<AbstractAnimation::Ptr (MasterAnimation::*)()>(&MasterAnimation::stop))
 					.method("currentTime",		static_cast<uint (MasterAnimation::*)() const>(&MasterAnimation::currentTime))
+					.method("resetPlaybackWindow",		static_cast<AbstractAnimation::Ptr (MasterAnimation::*)()>(&MasterAnimation::resetPlaybackWindow))
 					.methodWrapper("seekTime",	&LuaMasterAnimation::seekTimeWrapper)
 					.methodWrapper("seekLabel",	&LuaMasterAnimation::seekLabelWrapper)
 					.methodWrapper("setPlaybackWindowLabel",	&LuaMasterAnimation::setPlaybackWindowLabelWrapper);
