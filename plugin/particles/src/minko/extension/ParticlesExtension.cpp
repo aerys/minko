@@ -188,7 +188,7 @@ ParticlesExtension::deserializeParticleModifier(serialize::ModifierId           
     case minko::serialize::ModifierId::VELOCITY_OVER_TIME:
         return deserializeVelocityOverTimeUpdater(serialized);
     default:
-        throw new std::logic_error("Failed to deserialized particle modifier.");
+        throw std::logic_error("Failed to deserialized particle modifier.");
     }
     return nullptr;
 }
@@ -317,7 +317,7 @@ ParticlesExtension::deserializeColorBySpeedUpdater(const std::string& serialized
     auto color          = deserializeColorSampler(serialize::SamplerId(dst.a0.a0), dst.a0.a1);
     auto linearColor    = std::dynamic_pointer_cast<sampler::LinearlyInterpolatedValue<math::Vector3>>(color);
     if (linearColor == nullptr)
-        throw new std::logic_error("Failed to initialize color-by-speed modifier.");
+        throw std::logic_error("Failed to initialize color-by-speed modifier.");
 
     return modifier::ColorBySpeed::create(linearColor);
 }
@@ -336,7 +336,7 @@ ParticlesExtension::deserializeColorOverTimeUpdater(const std::string& serialize
     auto color          = deserializeColorSampler(serialize::SamplerId(dst.a0.a0), dst.a0.a1);
     auto linearColor    = std::dynamic_pointer_cast<sampler::LinearlyInterpolatedValue<math::Vector3>>(color);
     if (linearColor == nullptr)
-        throw new std::logic_error("Failed to initialize color-over-time modifier.");
+        throw std::logic_error("Failed to initialize color-over-time modifier.");
 
     return modifier::ColorOverTime::create(linearColor);
 }
@@ -372,7 +372,7 @@ ParticlesExtension::deserializeSizeBySpeedUpdater(const std::string& serialized)
     auto size           = deserializeFloatSampler(serialize::SamplerId(dst.a0.a0), dst.a0.a1);
     auto linearSize     = std::dynamic_pointer_cast<sampler::LinearlyInterpolatedValue<float>>(size);
     if (linearSize == nullptr)
-        throw new std::logic_error("Failed to initialize size-by-speed modifier.");
+        throw std::logic_error("Failed to initialize size-by-speed modifier.");
 
     return modifier::SizeBySpeed::create(linearSize);
 }
@@ -391,7 +391,7 @@ ParticlesExtension::deserializeSizeOverTimeUpdater(const std::string& serialized
     auto size           = deserializeFloatSampler(serialize::SamplerId(dst.a0.a0), dst.a0.a1);
     auto linearSize     = std::dynamic_pointer_cast<sampler::LinearlyInterpolatedValue<float>>(size);
     if (linearSize == nullptr)
-        throw new std::logic_error("Failed to initialize size-over-time modifier.");
+        throw std::logic_error("Failed to initialize size-over-time modifier.");
 
     return modifier::SizeOverTime::create(linearSize);
 }
@@ -435,7 +435,7 @@ ParticlesExtension::deserializeEmitterShape(serialize::EmitterShapeId   id,
         return deserializeBoxShape(serialized);
     case minko::serialize::EmitterShapeId::UNKNOWN:
     default:
-        throw new std::logic_error("Failed to deserialized emitter shape.");
+        throw std::logic_error("Failed to deserialized emitter shape.");
     }
     return nullptr;
 }
@@ -524,7 +524,7 @@ ParticlesExtension::deserializeFloatSampler(serialize::SamplerId   id,
     case minko::serialize::SamplerId::UNKNOWN:
         return nullptr;
     default:
-        throw new std::logic_error("Failed to deserialized float sampler.");
+        throw std::logic_error("Failed to deserialized float sampler.");
     }
 }
 
@@ -544,7 +544,7 @@ ParticlesExtension::deserializeColorSampler(serialize::SamplerId   id,
     case minko::serialize::SamplerId::UNKNOWN:
         return nullptr;
     default:
-        throw new std::logic_error("Failed to deserialized color sampler.");
+        throw std::logic_error("Failed to deserialized color sampler.");
     }
 }
 
