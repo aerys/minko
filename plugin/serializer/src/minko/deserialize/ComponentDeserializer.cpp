@@ -292,6 +292,6 @@ ComponentDeserializer::deserializeSkinning(std::string&		serializedAnimation,
         assetLibrary->defaultOptions(), 
         assetLibrary->context(), 
         bones, 
-        root
+        root->children().size() == 1 ? root->children().front() : root  // FIXME (for soccerpunch) there is one extra level wrt minko studio ! ->issues w/ precomputation and collider
    );
 }
