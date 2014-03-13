@@ -199,6 +199,7 @@ ChromiumDOM::getElementById(std::string id)
 	ChromiumDOMElement::Ptr element;
 	if (CefCurrentlyOn(TID_RENDERER))
 	{
+		std::cout << "getElementByID 1" << std::endl;
 		CefRefPtr<CefV8Value> func = _document->GetValue("getElementById");
 
 		CefV8ValueList args;
@@ -210,6 +211,7 @@ ChromiumDOM::getElementById(std::string id)
 	}
 	else
 	{
+		std::cout << "getElementByID 2" << std::endl;
 		CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
 		bool blocker = true;
 		
@@ -221,6 +223,7 @@ ChromiumDOM::getElementById(std::string id)
 
 		while (blocker);
 	}
+	std::cout << "getElementByID 3" << std::endl;
 	return element;
 }
 
