@@ -77,11 +77,16 @@ namespace minko
 			AbstractContextPtr										_context;
 			SkinningMethod											_method;
 
+			NodePtr													_skeletonRoot;
+			bool													_moveTargetBelowRoot;
+
 			render::VertexBuffer::Ptr								_boneVertexBuffer; // vertex buffer storing vertex attributes
 
 			std::unordered_map<NodePtr, GeometryPtr>				_targetGeometry;
 			std::unordered_map<NodePtr,	std::vector<float>>			_targetInputPositions;	// only for software skinning
 			std::unordered_map<NodePtr,	std::vector<float>>			_targetInputNormals;	// only for software skinning
+
+			TargetAddedOrRemovedSignal::Slot						_targetAddedSlot;
 
 		public:
 			inline static
@@ -90,9 +95,11 @@ namespace minko
 				   SkinningMethod						method, 
 				   AbstractContextPtr					context, 
 				   const std::vector<AnimationPtr>&		animations,
+				   NodePtr								skeletonRoot,
+				   bool									moveTargetBelowRoot = false,
 				   bool									isLooping = true)
 			{
-				Ptr ptr(new Skinning(skin, method, context, animations, isLooping));
+				Ptr ptr(new Skinning(skin, method, context, animations, skeletonRoot, moveTargetBelowRoot, isLooping));
 
 				ptr->initialize();
 
@@ -104,6 +111,8 @@ namespace minko
 					 SkinningMethod, 
 					 AbstractContextPtr, 
 					 const std::vector<AnimationPtr>&,
+					 NodePtr,
+					 bool,
 					 bool);
 
 			void
@@ -120,6 +129,9 @@ namespace minko
 
 			void
 			updateFrame(uint frameId, NodePtr);
+
+			void
+			targetAddedHandler(AbsCmpPtr, NodePtr);
 
 			void
 			performSoftwareSkinning(NodePtr, const std::vector<float>&);

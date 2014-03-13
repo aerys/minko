@@ -65,9 +65,9 @@ namespace minko
             void
             precomputeModelToRootMatrices(BonePtr, NodePtr, const NodeMatrices&, Matrices4x4Ptr&);
 
-            static
-            void
-            cleanNode(NodePtr, bool);
+			static
+			void
+			clean(NodePtr);
 
             static
             bool

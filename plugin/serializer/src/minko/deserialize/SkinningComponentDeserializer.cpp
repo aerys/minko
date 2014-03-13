@@ -123,34 +123,49 @@ SkinningComponentDeserializer::computeSkinning(file::Options::Ptr						options,
 
     // strip the scene nodes below the skeleton off their obsolete
     // Transform and Animation components.
-    cleanNode(skeletonRoot, false);
+	//cleanNode(skeletonRoot, skeletonRoot, false);
+	clean(skeletonRoot);
 
 	return Skinning::create(
         skin->reorganizeByVertices()->transposeMatrices()->disposeBones(),
         options->skinningMethod(),
         context,
-        std::vector<Animation::Ptr>()
+        std::vector<Animation::Ptr>(),
+		skeletonRoot,
+		true
     );
 }
 
 /*static*/
 void
-SkinningComponentDeserializer::cleanNode(Node::Ptr node, bool self)
+SkinningComponentDeserializer::clean(Node::Ptr skeletonRoot)
 {
-    if (self)
-    {
-        if (node->hasComponent<Transform>())
-		{
-			if (node->hasComponent<Surface>())
-				node->component<Transform>()->matrix()->identity();
-			else
-	            node->removeComponent(node->component<Transform>());
-		}
-        if (node->hasComponent<Animation>())
-            node->removeComponent(node->component<Animation>());
-    }
-    for (auto& n : node->children())
-        cleanNode(n, true);
+	assert(skeletonRoot && skeletonRoot->hasComponent<Transform>());
+
+	auto worldToSkeletonMatrix = math::Matrix4x4::create()
+		->copyFrom(skeletonRoot->component<Transform>()->modelToWorldMatrix(true))
+		->invert();
+	auto modelToWorldMatrix = math::Matrix4x4::create();
+
+	auto withTransforms = scene::NodeSet::create(skeletonRoot)
+		->descendants(true, false)
+		->where([](Node::Ptr n){ return n->hasComponent<Transform>(); });
+
+	std::unordered_map<Node::Ptr, Matrix4x4::Ptr> nodeToModelToWorld;
+
+	// precompute node-to-modelToWorld association
+	for (auto& n : withTransforms->nodes())
+		nodeToModelToWorld[n] = math::Matrix4x4::create()->copyFrom(
+			n->component<Transform>()->modelToWorldMatrix(true)
+		);
+
+	for (auto& n : withTransforms->nodes())
+		if (!n->hasComponent<Surface>())
+			n->removeComponent(n->component<Transform>());
+		else
+			n->component<Transform>()->matrix()
+				->copyFrom(nodeToModelToWorld[n])
+				->append(worldToSkeletonMatrix);
 }
 
 /*static*/
