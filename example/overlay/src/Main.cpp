@@ -33,6 +33,8 @@ const std::string TEXTURE_FILENAME = "texture/box.png";
 Signal<minko::dom::AbstractDOM::Ptr, std::string>::Slot onloadSlot;
 
 dom::AbstractDOM::Ptr gameInterfaceDom;
+dom::AbstractDOMElement::Ptr redScoreElement;
+dom::AbstractDOMElement::Ptr blueScoreElement;
 
 int redScore;
 int blueScore;
@@ -113,7 +115,8 @@ int main(int argc, char** argv)
 		if (dom->fileName() == "gameInterface.html")
 		{
 			gameInterfaceDom = dom;
-			gameInterfaceDom->getElementById("teamScoreRed")->textContent(std::to_string(redScore++));
+			redScoreElement = gameInterfaceDom->getElementById("teamScoreRed");
+			blueScoreElement = gameInterfaceDom->getElementById("teamScoreBlue");
 		}
 	});
 
@@ -147,12 +150,12 @@ void
 updateRedScore()
 {
 	if (gameInterfaceDom != nullptr)
-		gameInterfaceDom->getElementById("teamScoreRed")->textContent(std::to_string(redScore++));
+		redScoreElement->textContent(std::to_string(redScore++));
 }
 
 void
 updateBlueScore()
 {
 	if (gameInterfaceDom != nullptr)
-		gameInterfaceDom->getElementById("teamScoreBlue")->textContent(std::to_string(blueScore++));
+		blueScoreElement->textContent(std::to_string(blueScore++));
 }
