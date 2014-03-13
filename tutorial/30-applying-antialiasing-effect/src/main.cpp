@@ -40,6 +40,11 @@ main(int argc, char** argv)
 
     auto complete = sceneManager->assets()->complete()->connect([&](file::AssetLibrary::Ptr assets)
     {
+        auto effect = sceneManager->assets()->effect("effect/FXAA/FXAA.effect");
+
+        if (!effect)
+            throw std::logic_error("The FXAA effect has not been loaded.");
+
         auto root = scene::Node::create("root")
             ->addComponent(sceneManager);
 
@@ -59,29 +64,26 @@ main(int argc, char** argv)
             geometry::CubeGeometry::create(assets->context()),
             material::BasicMaterial::create()->diffuseColor(Vector4::create(0.f, 0.f, 1.f, 1.f)),
             assets->effect("effect/Basic.effect")
-        ));
+            ));
         root->addChild(cube);
 
-        
-        auto renderTarget = render::Texture::create(assets->context(), 1024, 1024, false, true);
+        auto renderTarget = render::Texture::create(assets->context(), clp2(WINDOW_WIDTH), clp2(WINDOW_HEIGHT), false, true);
         renderTarget->upload();
 
-        auto ppFx = sceneManager->assets()->effect("effect/FXAA/FXAA.effect");
+        effect->setUniform("textureSampler", renderTarget);
+        effect->setUniform("texcoordOffset",
+            Vector2::create(1.0f / renderTarget->width(), 1.0f / renderTarget->height()));
 
-        if (!ppFx)
-            throw std::logic_error("The post-processing effect has not been loaded.");
-
-        ppFx->setUniform("textureSampler", renderTarget);
-        ppFx->setUniform("texcoordOffset", Vector2::create(1.0f / 1024.0f, 1.0f / 1024.0f));
-
-        auto ppRenderer = Renderer::create();
-        auto ppScene = scene::Node::create()
-            ->addComponent(ppRenderer)
-            ->addComponent(Surface::create(
-            geometry::QuadGeometry::create(sceneManager->assets()->context()),
-            material::Material::create(),
-            ppFx
-            ));
+        auto renderer = Renderer::create();
+        auto postProcessingScene = scene::Node::create()
+        ->addComponent(renderer)
+        ->addComponent(
+            Surface::create(
+                geometry::QuadGeometry::create(sceneManager->assets()->context()),
+                material::Material::create(),
+                effect
+            )
+        );
 
         auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint width, uint height)
         {
@@ -89,8 +91,10 @@ main(int argc, char** argv)
 
             renderTarget = render::Texture::create(assets->context(), clp2(width), clp2(height), false, true);
             renderTarget->upload();
-            ppFx->setUniform("textureSampler", renderTarget);
-            ppFx->setUniform("texcoordOffset", Vector2::create(1.0f / 1024.0f, 1.0f / 1024.0f));
+
+            effect->setUniform("textureSampler", renderTarget);
+            effect->setUniform("texcoordOffset",
+                Vector2::create(1.0f / renderTarget->width(), 1.0f / renderTarget->height()));
         });
 
         auto enableFXAA = true;
@@ -106,7 +110,7 @@ main(int argc, char** argv)
                 else
                     std::cout << "Disable FXAA" << std::endl;
             }
-            
+
         });
 
         auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float t, float dt)
@@ -116,7 +120,7 @@ main(int argc, char** argv)
             if (enableFXAA)
             {
                 sceneManager->nextFrame(t, dt, renderTarget);
-                ppRenderer->render(assets->context());
+                renderer->render(assets->context());
             }
             else
             {
