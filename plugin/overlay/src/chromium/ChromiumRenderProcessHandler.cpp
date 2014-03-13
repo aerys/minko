@@ -52,4 +52,10 @@ ChromiumRenderProcessHandler::OnContextCreated(CefRefPtr<CefBrowser> browser, Ce
 		newDom->init(context, frame);
 	}
 }
+
+void
+ChromiumRenderProcessHandler::OnContextReleased(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame, CefRefPtr<CefV8Context> context)
+{
+	std::cout << "context released" << std::endl;
+}
 #endif

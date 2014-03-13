@@ -138,6 +138,8 @@ namespace chromium
 			CefRefPtr<CefV8Context> _v8Context;
 			CefRefPtr<CefFrame> _frame;
 			CefRefPtr<CefV8Value> _minkoObject;
+			CefRefPtr<CefV8Value> _global;
+			CefRefPtr<CefV8Value> _document;
 			CefRefPtr<ChromiumDOMV8Handler> _v8Handler;
 
 			std::shared_ptr<ChromiumDOMEngine> _engine;

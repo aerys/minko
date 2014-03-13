@@ -37,6 +37,10 @@ namespace chromium
 		virtual
 		void
 		OnContextCreated(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame, CefRefPtr<CefV8Context> context) OVERRIDE;
+		
+		virtual
+		void
+		OnContextReleased(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame, CefRefPtr<CefV8Context> context) OVERRIDE;
 
 		static
 		CefRefPtr<CefV8Value>

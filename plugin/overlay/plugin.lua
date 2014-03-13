@@ -31,7 +31,7 @@ function minko.plugin.overlay:enable()
 		links { "libcef_dll_wrapper", "libcef" }
 		libdirs { minko.plugin.path("overlay") .. "/lib/win/cef3/lib/debug" }
 		prelinkcommands {
-			minko.action.copy(minko.plugin.path("overlay") .. "/lib/win/cef3/resource"),
+			minko.action.copy(minko.plugin.path("overlay") .. "/lib/win/cef3/resource/*"),
 			minko.action.copy(minko.plugin.path("overlay") .. "/asset"),
 			minko.action.copy(minko.plugin.path("overlay") .. "/lib/win/cef3/lib/debug/*.dll")
 		}
@@ -40,7 +40,7 @@ function minko.plugin.overlay:enable()
 		links { "libcef_dll_wrapper", "libcef" }
 		libdirs { minko.plugin.path("overlay") .. "/lib/win/cef3/lib/release" }
 		prelinkcommands {
-			minko.action.copy(minko.plugin.path("overlay") .. "/lib/win/cef3/resource"),
+			minko.action.copy(minko.plugin.path("overlay") .. "/lib/win/cef3/resource:*"),
 			minko.action.copy(minko.plugin.path("overlay") .. "/asset"),
 			minko.action.copy(minko.plugin.path("overlay") .. "/lib/win/cef3/lib/release/*.dll")
 		}

@@ -86,6 +86,9 @@ ChromiumDOMEngine::initialize(AbstractCanvas::Ptr canvas, std::shared_ptr<compon
 
 	int result = CefInitialize(*_impl->mainArgs, settings, _impl->app.get(), nullptr);
 	
+	auto options = minko::file::Options::create(_sceneManager->assets()->defaultOptions());
+	options->loadAsynchronously(false);
+	
 	auto overlayEffect = _sceneManager->assets()->effect("effect/Overlay.effect");
 
 	if (!overlayEffect)

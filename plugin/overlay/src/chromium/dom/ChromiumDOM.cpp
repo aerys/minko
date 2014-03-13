@@ -24,11 +24,17 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "chromium/dom/ChromiumDOMEngine.hpp"
 #include "chromium/dom/ChromiumDOMElement.hpp"
 #include "chromium/dom/ChromiumDOMV8Handler.hpp"
+#include "include/cef_runnable.h"
+#include "include/cef_task.h"
 
 using namespace chromium;
 using namespace chromium::dom;
 using namespace minko;
 using namespace minko::dom;
+
+
+void
+getElementByIdHelper(bool* blocker, ChromiumDOM::Ptr dom, ChromiumDOMElement::Ptr* element, std::string id);
 
 ChromiumDOM::ChromiumDOM() :
 	_v8Handler(new ChromiumDOMV8Handler()),
@@ -51,10 +57,12 @@ ChromiumDOM::clear()
 		return;
 
 	_engine = nullptr;
+	_global = nullptr;
 	_v8Handler = nullptr;
 	_v8Context = nullptr;
 	_frame = nullptr;
 	_minkoObject = nullptr;
+	_document = nullptr;
 
 	_cleared = true;
 }
@@ -77,7 +85,9 @@ ChromiumDOM::init(CefRefPtr<CefV8Context> context, CefRefPtr<CefFrame> frame)
 
 	_v8Context->Enter();
 
+	_global = _v8Context->GetGlobal();
 	_minkoObject = CefV8Value::CreateObject(nullptr);
+	_document = _global->GetValue("document");
 	window()->SetValue("Minko", _minkoObject, V8_PROPERTY_ATTRIBUTE_NONE);
 
 	addLoadEventListener();
@@ -91,20 +101,20 @@ ChromiumDOM::init(CefRefPtr<CefV8Context> context, CefRefPtr<CefFrame> frame)
 CefRefPtr<CefV8Value>
 ChromiumDOM::window()
 {
-	return _v8Context->GetGlobal();
+	return _global;
 }
 
 
 AbstractDOMElement::Ptr
 ChromiumDOM::document()
 {
-	return ChromiumDOMElement::getDOMElementFromV8Object(_v8Context->GetGlobal()->GetValue("document"));
+	return ChromiumDOMElement::getDOMElementFromV8Object(_document);
 }
 
 AbstractDOMElement::Ptr
 ChromiumDOM::body()
 {
-	return ChromiumDOMElement::getDOMElementFromV8Object(_v8Context->GetGlobal()->GetValue("document")->GetValue("body"));
+	return ChromiumDOMElement::getDOMElementFromV8Object(_document->GetValue("body"));
 }
 
 void
@@ -143,7 +153,6 @@ ChromiumDOM::addLoadEventListener()
 
 	_onloadSlot = _v8Handler->received()->connect([=](std::string functionName, CefV8ValueList)
 	{
-		//fixme: pass page name, relative to working directory
 		if (functionName == loadFunctionName)
 		{
 			std::string url = _frame->GetURL();
@@ -154,58 +163,127 @@ ChromiumDOM::addLoadEventListener()
 }
 
 AbstractDOMElement::Ptr
-ChromiumDOM::createElement(std::string element)
+ChromiumDOM::createElement(std::string tag)
 {
-	CefRefPtr<CefV8Value> document = window()->GetValue("document");
-	CefRefPtr<CefV8Value> func = document->GetValue("createElement");
+	ChromiumDOMElement::Ptr element;
+	if (CefCurrentlyOn(TID_RENDERER))
+	{
+		CefRefPtr<CefV8Value> func = _document->GetValue("createElement");
 
-	CefV8ValueList args;
-	args.push_back(CefV8Value::CreateString(element));
+		CefV8ValueList args;
+		args.push_back(CefV8Value::CreateString(tag));
 
-	CefRefPtr<CefV8Value> result = func->ExecuteFunctionWithContext(_v8Context, document, args);
+		CefRefPtr<CefV8Value> result = func->ExecuteFunctionWithContext(_v8Context, _document, args);
 
-	return ChromiumDOMElement::create(result);
+		element = ChromiumDOMElement::create(result);
+	}
+	else
+	{
+		CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
+		bool blocker = true;
+
+		runner->PostTask(NewCefRunnableFunction(&[&]()
+		{
+			element = std::dynamic_pointer_cast<ChromiumDOMElement>(createElement(tag));
+			blocker = false;
+		}));
+
+		while (blocker);
+	}
+	return element;
 }
 
 AbstractDOMElement::Ptr
 ChromiumDOM::getElementById(std::string id)
 {
-	CefRefPtr<CefV8Value> document = window()->GetValue("document");
-	CefRefPtr<CefV8Value> func = document->GetValue("getElementById");
+	ChromiumDOMElement::Ptr element;
+	if (CefCurrentlyOn(TID_RENDERER))
+	{
+		CefRefPtr<CefV8Value> func = _document->GetValue("getElementById");
 
-	CefV8ValueList args;
-	args.push_back(CefV8Value::CreateString(id));
+		CefV8ValueList args;
+		args.push_back(CefV8Value::CreateString(id));
 
-	CefRefPtr<CefV8Value> result = func->ExecuteFunctionWithContext(_v8Context, document, args);
+		CefRefPtr<CefV8Value> result = func->ExecuteFunctionWithContext(_v8Context, _document, args);
 
-	return ChromiumDOMElement::getDOMElementFromV8Object(result);
+		element = ChromiumDOMElement::getDOMElementFromV8Object(result);
+	}
+	else
+	{
+		CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
+		bool blocker = true;
+		
+		runner->PostTask(NewCefRunnableFunction(&[&]()
+		{
+			element = std::dynamic_pointer_cast<ChromiumDOMElement>(getElementById(id));
+			blocker = false;
+		}));
+
+		while (blocker);
+	}
+	return element;
 }
 
 std::list<AbstractDOMElement::Ptr>
 ChromiumDOM::getElementsByClassName(std::string className)
 {
-	CefRefPtr<CefV8Value> document = window()->GetValue("document");
-	CefRefPtr<CefV8Value> func = document->GetValue("getElementsByClassName");
+	std::list<AbstractDOMElement::Ptr> list;
 
-	CefV8ValueList args;
-	args.push_back(CefV8Value::CreateString(className));
+	if (CefCurrentlyOn(TID_RENDERER))
+	{
+		CefRefPtr<CefV8Value> func = _document->GetValue("getElementsByClassName");
 
-	CefRefPtr<CefV8Value> result = func->ExecuteFunctionWithContext(_v8Context, document, args);
+		CefV8ValueList args;
+		args.push_back(CefV8Value::CreateString(className));
 
-	return ChromiumDOMElement::v8ElementArrayToList(result);
+		CefRefPtr<CefV8Value> result = func->ExecuteFunctionWithContext(_v8Context, _document, args);
+		list = ChromiumDOMElement::v8ElementArrayToList(result);
+	}
+	else
+	{
+		CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
+		bool blocker = true;
+
+		runner->PostTask(NewCefRunnableFunction(&[&]()
+		{
+			list = getElementsByClassName(className);
+			blocker = false;
+		}));
+
+		while (blocker);
+	}
+	return list;
 }
 
 std::list<AbstractDOMElement::Ptr>
 ChromiumDOM::getElementsByTagName(std::string tagName)
 {
-	CefRefPtr<CefV8Value> document = window()->GetValue("document");
-	CefRefPtr<CefV8Value> func = document->GetValue("getElementsByTagName");
+	std::list<AbstractDOMElement::Ptr> list;
 
-	CefV8ValueList args;
-	args.push_back(CefV8Value::CreateString(tagName));
+	if (CefCurrentlyOn(TID_RENDERER))
+	{
+		CefRefPtr<CefV8Value> func = _document->GetValue("getElementsByTagName");
 
-	CefRefPtr<CefV8Value> result = func->ExecuteFunctionWithContext(_v8Context, document, args);
+		CefV8ValueList args;
+		args.push_back(CefV8Value::CreateString(tagName));
 
-	return ChromiumDOMElement::v8ElementArrayToList(result);
+		CefRefPtr<CefV8Value> result = func->ExecuteFunctionWithContext(_v8Context, _document, args);
+
+		list = ChromiumDOMElement::v8ElementArrayToList(result);
+	}
+	else
+	{
+		CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
+		bool blocker = true;
+
+		runner->PostTask(NewCefRunnableFunction(&[&]()
+		{
+			list = getElementsByTagName(tagName);
+			blocker = false;
+		}));
+
+		while (blocker);
+	}
+	return list;
 }
 #endif

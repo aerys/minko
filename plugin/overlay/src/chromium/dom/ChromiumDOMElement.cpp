@@ -21,6 +21,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "chromium/dom/ChromiumDOMElement.hpp"
+#include "include/cef_runnable.h"
+#include "include/cef_task.h"
 
 using namespace chromium;
 using namespace chromium::dom;
@@ -179,213 +181,573 @@ ChromiumDOMElement::v8ElementArrayToList(CefRefPtr<CefV8Value> v8Nodes)
 std::string
 ChromiumDOMElement::id()
 {
-	return getProperty("id")->GetStringValue();
+	std::string result;
+
+	if (CefCurrentlyOn(TID_RENDERER))
+	{
+		result = getProperty("id")->GetStringValue();
+	}
+	else
+	{
+		CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
+		bool blocker = true;
+
+		runner->PostTask(NewCefRunnableFunction(&[&]()
+		{
+			result = id();
+			blocker = false;
+		}));
+
+		while (blocker);
+	}
+	return result;
 }
 
 void
 ChromiumDOMElement::id(std::string newId)
 {
-	return setProperty("id", CefV8Value::CreateString(newId));
+	if (CefCurrentlyOn(TID_RENDERER))
+	{
+		setProperty("id", CefV8Value::CreateString(newId));
+	}
+	else
+	{
+		CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
+		bool blocker = true;
+
+		runner->PostTask(NewCefRunnableFunction(&[&]()
+		{
+			id(newId);
+			blocker = false;
+		}));
+		while (blocker);
+	}
 }
 
 std::string
 ChromiumDOMElement::className()
 {
-	return getProperty("className")->GetStringValue();
+	std::string result;
+
+	if (CefCurrentlyOn(TID_RENDERER))
+	{
+		result = getProperty("className")->GetStringValue();
+	}
+	else
+	{
+		CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
+		bool blocker = true;
+
+		runner->PostTask(NewCefRunnableFunction(&[&]()
+		{
+			result = className();
+			blocker = false;
+		}));
+
+		while (blocker);
+	}
+	return result;
 }
 
 void
 ChromiumDOMElement::className(std::string newClass)
 {
-	return setProperty("id", CefV8Value::CreateString(newClass));
+	if (CefCurrentlyOn(TID_RENDERER))
+	{
+		setProperty("className", CefV8Value::CreateString(newClass));
+	}
+	else
+	{
+		CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
+		bool blocker = true;
+
+		runner->PostTask(NewCefRunnableFunction(&[&]()
+		{
+			className(newClass);
+			blocker = false;
+		}));
+		while (blocker);
+	}
 }
 
 std::string
 ChromiumDOMElement::tagName()
 {
-	return getProperty("tagName")->GetStringValue();
+	std::string result;
+
+	if (CefCurrentlyOn(TID_RENDERER))
+	{
+		result = getProperty("tagName")->GetStringValue();
+	}
+	else
+	{
+		CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
+		bool blocker = true;
+
+		runner->PostTask(NewCefRunnableFunction(&[&]()
+		{
+			result = tagName();
+			blocker = false;
+		}));
+
+		while (blocker);
+	}
+	return result;
 }
 
 AbstractDOMElement::Ptr
 ChromiumDOMElement::parentNode()
 {
-	CefRefPtr<CefV8Value> parentNodeV8 = getProperty("parentNode");
+	AbstractDOMElement::Ptr result;
 
-	return getDOMElementFromV8Object(parentNodeV8);
+	if (CefCurrentlyOn(TID_RENDERER))
+	{
+		CefRefPtr<CefV8Value> parentNodeV8 = getProperty("parentNode");
+
+		result = getDOMElementFromV8Object(parentNodeV8);
+	}
+	else
+	{
+		CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
+		bool blocker = true;
+
+		runner->PostTask(NewCefRunnableFunction(&[&]()
+		{
+			result = parentNode();
+			blocker = false;
+		}));
+
+		while (blocker);
+	}
+	return result;
 }
 
 std::list<AbstractDOMElement::Ptr>
 ChromiumDOMElement::childNodes()
 {
-	return v8ElementArrayToList(getProperty("childNodes"));
+	std::list<AbstractDOMElement::Ptr> result;
+
+	if (CefCurrentlyOn(TID_RENDERER))
+	{
+		result = v8ElementArrayToList(getProperty("childNodes"));
+	}
+	else
+	{
+		CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
+		bool blocker = true;
+
+		runner->PostTask(NewCefRunnableFunction(&[&]()
+		{
+			result = childNodes();
+			blocker = false;
+		}));
+
+		while (blocker);
+	}
+	return result;
 }
 
 std::string
 ChromiumDOMElement::textContent()
 {
-	return getProperty("textContent")->GetStringValue();
+	std::string result;
+
+	if (CefCurrentlyOn(TID_RENDERER))
+	{
+		result = getProperty("textContent")->GetStringValue();
+	}
+	else
+	{
+		CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
+		bool blocker = true;
+
+		runner->PostTask(NewCefRunnableFunction(&[&]()
+		{
+			result = textContent();
+			blocker = false;
+		}));
+
+		while (blocker);
+	}
+	return result;
 }
 
 void
 ChromiumDOMElement::textContent(std::string content)
 {
-	setProperty("innerHTML", CefV8Value::CreateString(content));
+	if (CefCurrentlyOn(TID_RENDERER))
+	{
+		setProperty("textContent", CefV8Value::CreateString(content));
+	}
+	else
+	{
+		CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
+		bool blocker = true;
+
+		runner->PostTask(NewCefRunnableFunction(&[&]()
+		{
+			textContent(content);
+			blocker = false;
+		}));
+
+		while (blocker);
+	}
 }
 
 std::string
 ChromiumDOMElement::innerHTML()
 {
-	return getProperty("innerHTML")->GetStringValue();
+	std::string result;
+
+	if (CefCurrentlyOn(TID_RENDERER))
+	{
+		result = getProperty("innerHTML")->GetStringValue();
+	}
+	else
+	{
+		CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
+		bool blocker = true;
+
+		runner->PostTask(NewCefRunnableFunction(&[&]()
+		{
+			result = innerHTML();
+			blocker = false;
+		}));
+
+		while (blocker);
+	}
+	return result;
 }
 
 void
 ChromiumDOMElement::innerHTML(std::string html)
 {
-	setProperty("innerHTML", CefV8Value::CreateString(html));
+	if (CefCurrentlyOn(TID_RENDERER))
+	{
+		setProperty("innerHTML", CefV8Value::CreateString(html));
+	}
+	else
+	{
+		CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
+		bool blocker = true;
+
+		runner->PostTask(NewCefRunnableFunction(&[&]()
+		{
+			innerHTML(html);
+			blocker = false;
+		}));
+
+		while (blocker);
+	}
 }
 
 AbstractDOMElement::Ptr
 ChromiumDOMElement::appendChild(AbstractDOMElement::Ptr child)
 {
-	CefRefPtr<CefV8Value> func = getFunction("appendChild");
+	if (CefCurrentlyOn(TID_RENDERER))
+	{
+		CefRefPtr<CefV8Value> func = getFunction("appendChild");
 
-	if (func == nullptr)
-		return nullptr;
-	
-	CefV8ValueList args;
-	args.push_back(_elementToV8Object[std::dynamic_pointer_cast<ChromiumDOMElement>(child)]);
+		if (func == nullptr)
+			return nullptr;
 
-	CefRefPtr<CefV8Value> v8Result = func->ExecuteFunction(_v8NodeObject, args);
-	return getDOMElementFromV8Object(v8Result);
+		CefV8ValueList args;
+		args.push_back(_elementToV8Object[std::dynamic_pointer_cast<ChromiumDOMElement>(child)]);
+
+		func->ExecuteFunction(_v8NodeObject, args);
+	}
+	else
+	{
+		CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
+		bool blocker = true;
+
+		runner->PostTask(NewCefRunnableFunction(&[&]()
+		{
+			appendChild(child);
+			blocker = false;
+		}));
+
+		while (blocker);
+	}
+
+	return shared_from_this();
 }
 
 AbstractDOMElement::Ptr
 ChromiumDOMElement::removeChild(AbstractDOMElement::Ptr child)
 {
-	CefRefPtr<CefV8Value> func = getFunction("removeChild");
+	if (CefCurrentlyOn(TID_RENDERER))
+	{
+		CefRefPtr<CefV8Value> func = getFunction("removeChild");
 
-	if (func == nullptr)
-		return nullptr;
+		if (func == nullptr)
+			return nullptr;
 
-	CefV8ValueList args;
-	args.push_back(_elementToV8Object[std::dynamic_pointer_cast<ChromiumDOMElement>(child)]);
+		CefV8ValueList args;
+		args.push_back(_elementToV8Object[std::dynamic_pointer_cast<ChromiumDOMElement>(child)]);
 
-	CefRefPtr<CefV8Value> v8Result = func->ExecuteFunction(_v8NodeObject, args);
-	return getDOMElementFromV8Object(v8Result);
+		func->ExecuteFunction(_v8NodeObject, args);
+	}
+	else
+	{
+		CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
+		bool blocker = true;
+
+		runner->PostTask(NewCefRunnableFunction(&[&]()
+		{
+			removeChild(child);
+			blocker = false;
+		}));
+
+		while (blocker);
+	}
+	return shared_from_this();
 }
 
 
 AbstractDOMElement::Ptr
 ChromiumDOMElement::insertBefore(AbstractDOMElement::Ptr newNode, AbstractDOMElement::Ptr refNode)
 {
-	CefRefPtr<CefV8Value> func = getFunction("insertBefore");
+	if (CefCurrentlyOn(TID_RENDERER))
+	{
+		CefRefPtr<CefV8Value> func = getFunction("insertBefore");
 
-	if (func == nullptr)
-		return nullptr;
+		if (func == nullptr)
+			return nullptr;
 
-	CefV8ValueList args;
-	args.push_back(_elementToV8Object[std::dynamic_pointer_cast<ChromiumDOMElement>(newNode)]);
-	args.push_back(_elementToV8Object[std::dynamic_pointer_cast<ChromiumDOMElement>(refNode)]);
+		CefV8ValueList args;
+		args.push_back(_elementToV8Object[std::dynamic_pointer_cast<ChromiumDOMElement>(newNode)]);
+		args.push_back(_elementToV8Object[std::dynamic_pointer_cast<ChromiumDOMElement>(refNode)]);
 
-	CefRefPtr<CefV8Value> v8Result = func->ExecuteFunction(_v8NodeObject, args);
-	return getDOMElementFromV8Object(v8Result);
+		func->ExecuteFunction(_v8NodeObject, args);
+	}
+	else
+	{
+		CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
+		bool blocker = true;
+
+		runner->PostTask(NewCefRunnableFunction(&[&]()
+		{
+			insertBefore(newNode, refNode);
+			blocker = false;
+		}));
+
+		while (blocker);
+	}
+
+	return shared_from_this();
 }
 
 AbstractDOMElement::Ptr
 ChromiumDOMElement::cloneNode(bool deep)
 {
-	CefRefPtr<CefV8Value> func = getFunction("cloneNode");
+	AbstractDOMElement::Ptr element;
 
-	if (func == nullptr)
-		return nullptr;
+	if (CefCurrentlyOn(TID_RENDERER))
+	{
+		CefRefPtr<CefV8Value> func = getFunction("cloneNode");
 
-	CefV8ValueList args;
-	args.push_back(CefV8Value::CreateBool(deep));
+		if (func == nullptr)
+			return nullptr;
 
-	CefRefPtr<CefV8Value> v8Result = func->ExecuteFunction(_v8NodeObject, args);
-	return getDOMElementFromV8Object(v8Result);
+		CefV8ValueList args;
+		args.push_back(CefV8Value::CreateBool(deep));
+
+		CefRefPtr<CefV8Value> v8Result = func->ExecuteFunction(_v8NodeObject, args);
+		element = getDOMElementFromV8Object(v8Result);
+	}
+	else
+	{
+		CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
+		bool blocker = true;
+
+		runner->PostTask(NewCefRunnableFunction(&[&]()
+		{
+			element = cloneNode(deep);
+			blocker = false;
+		}));
+
+		while (blocker);
+	}
+	return element;
 }
 
 std::string
 ChromiumDOMElement::getAttribute(std::string name)
 {
-	CefRefPtr<CefV8Value> func = getFunction("getAttribute");
+	std::string result;
 
-	if (func == nullptr)
-		return nullptr;
+	if (CefCurrentlyOn(TID_RENDERER))
+	{
+		CefRefPtr<CefV8Value> func = getFunction("getAttribute");
 
-	CefV8ValueList args;
-	args.push_back(CefV8Value::CreateString(name));
+		if (func == nullptr)
+			return nullptr;
 
-	return func->ExecuteFunction(_v8NodeObject, args)->GetStringValue();
+		CefV8ValueList args;
+		args.push_back(CefV8Value::CreateString(name));
+
+		result = func->ExecuteFunction(_v8NodeObject, args)->GetStringValue();
+	}
+	else
+	{
+		CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
+		bool blocker = true;
+
+		runner->PostTask(NewCefRunnableFunction(&[&]()
+		{
+			result = getAttribute(name);
+			blocker = false;
+		}));
+
+		while (blocker);
+	}
+	return result;
 }
 
 void
 ChromiumDOMElement::setAttribute(std::string name, std::string value)
 {
-	CefRefPtr<CefV8Value> func = getFunction("setAttribute");
+	if (CefCurrentlyOn(TID_RENDERER))
+	{
+		CefRefPtr<CefV8Value> func = getFunction("setAttribute");
 
-	if (func == nullptr)
-		return;
+		if (func == nullptr)
+			return;
 
-	CefV8ValueList args;
-	args.push_back(CefV8Value::CreateString(name));
-	args.push_back(CefV8Value::CreateString(value));
+		CefV8ValueList args;
+		args.push_back(CefV8Value::CreateString(name));
+		args.push_back(CefV8Value::CreateString(value));
 
-	func->ExecuteFunction(_v8NodeObject, args);
+		func->ExecuteFunction(_v8NodeObject, args);
+	}
+	else
+	{
+		CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
+		bool blocker = true;
+
+		runner->PostTask(NewCefRunnableFunction(&[&]()
+		{
+			setAttribute(name, value);
+			blocker = false;
+		}));
+		while (blocker);
+	}
 }
 
 std::list<AbstractDOMElement::Ptr>
 ChromiumDOMElement::getElementsByTagName(std::string tagName)
 {
-	CefRefPtr<CefV8Value> func = getFunction("setAttribute");
+	std::list<AbstractDOMElement::Ptr> list;
 
-	std::list<AbstractDOMElement::Ptr> result;
-
-	if (func != nullptr)
+	if (CefCurrentlyOn(TID_RENDERER))
 	{
-		CefV8ValueList args;
-		args.push_back(CefV8Value::CreateString(tagName));
+		CefRefPtr<CefV8Value> func = getFunction("setAttribute");
 
-		CefRefPtr<CefV8Value> v8Result = func->ExecuteFunction(_v8NodeObject, args);
-		result = v8ElementArrayToList(v8Result);
+		if (func != nullptr)
+		{
+			CefV8ValueList args;
+			args.push_back(CefV8Value::CreateString(tagName));
+
+			CefRefPtr<CefV8Value> v8Result = func->ExecuteFunction(_v8NodeObject, args);
+			list = v8ElementArrayToList(v8Result);
+		}
 	}
+	else
+	{
+		CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
+		bool blocker = true;
 
-	return result;
+		runner->PostTask(NewCefRunnableFunction(&[&]()
+		{
+			list = getElementsByTagName(tagName);
+			blocker = false;
+		}));
+		while (blocker);
+	}
+	return list;
 }
 
 std::string
 ChromiumDOMElement::style(std::string name)
 {
-	CefRefPtr<CefV8Value> styleObject = getProperty("style");
-	CefRefPtr<CefV8Value> styleProperty = styleObject->GetValue(name);
+	std::string result;
 
-	if (styleProperty->IsString())
-		return styleProperty->GetStringValue();
+	if (CefCurrentlyOn(TID_RENDERER))
+	{
+		CefRefPtr<CefV8Value> styleObject = getProperty("style");
+		CefRefPtr<CefV8Value> styleProperty = styleObject->GetValue(name);
+
+		if (styleProperty->IsString())
+			result = styleProperty->GetStringValue();
+		else
+			result = "";
+	}
 	else
-		return "";
+	{
+		CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
+		bool blocker = true;
+
+		runner->PostTask(NewCefRunnableFunction(&[&]()
+		{
+			result = style(name);
+			blocker = false;
+		}));
+		while (blocker);
+	}
+	return result;
 }
 
 void
 ChromiumDOMElement::style(std::string name, std::string value)
 {
-	getProperty("style")->SetValue(name, CefV8Value::CreateString(value), V8_PROPERTY_ATTRIBUTE_NONE);
+	if (CefCurrentlyOn(TID_RENDERER))
+	{
+		getProperty("style")->SetValue(name, CefV8Value::CreateString(value), V8_PROPERTY_ATTRIBUTE_NONE);
+	}
+	else
+	{
+		CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
+		bool blocker = true;
+
+		runner->PostTask(NewCefRunnableFunction(&[&]()
+		{
+			style(name, value);
+			blocker = false;
+		}));
+		while (blocker);
+	}
 }
 
 void
 ChromiumDOMElement::addEventListener(std::string type)
 {
-	static int i = 0;
+	if (CefCurrentlyOn(TID_RENDERER))
+	{
+		static int i = 0;
 
-	std::string onClickFunctionName = "on" + type + "Handler" + std::to_string(i++);
+		std::string onClickFunctionName = "on" + type + "Handler" + std::to_string(i++);
 
-	CefRefPtr<CefV8Value> onClickFunction = CefV8Value::CreateFunction(onClickFunctionName, _v8Handler.get());
+		CefRefPtr<CefV8Value> onClickFunction = CefV8Value::CreateFunction(onClickFunctionName, _v8Handler.get());
 
-	CefV8ValueList args;
-	args.push_back(CefV8Value::CreateString(type));
-	args.push_back(onClickFunction);
+		CefV8ValueList args;
+		args.push_back(CefV8Value::CreateString(type));
+		args.push_back(onClickFunction);
 
-	getFunction("addEventListener")->ExecuteFunction(_v8NodeObject, args);
+		getFunction("addEventListener")->ExecuteFunction(_v8NodeObject, args);
+	}
+	else
+	{
+		CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
+		bool blocker = true;
+
+		runner->PostTask(NewCefRunnableFunction(&[&]()
+		{
+			addEventListener(type);
+			blocker = false;
+		}));
+		while (blocker);
+	}
 }
 
 Signal<AbstractDOMEvent::Ptr>::Ptr

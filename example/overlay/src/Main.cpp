@@ -58,8 +58,8 @@ int main(int argc, char** argv)
 	sceneManager->assets()
 		->registerParser<file::PNGParser>("png")
 		->queue(TEXTURE_FILENAME)
-		->queue("effect/Basic.effect");
-		//->queue("effect/Overlay.effect");
+		->queue("effect/Basic.effect")
+		->queue("effect/Overlay.effect");
 
 	sceneManager->assets()->context()->errorsEnabled(true);
 
@@ -113,6 +113,7 @@ int main(int argc, char** argv)
 		if (dom->fileName() == "gameInterface.html")
 		{
 			gameInterfaceDom = dom;
+			gameInterfaceDom->getElementById("teamScoreRed")->textContent(std::to_string(redScore++));
 		}
 	});
 
