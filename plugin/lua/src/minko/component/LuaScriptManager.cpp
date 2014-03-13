@@ -58,6 +58,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/LuaPerspectiveCamera.hpp"
 #include "minko/component/LuaTransform.hpp"
 #include "minko/component/LuaAnimation.hpp"
+#include "minko/component/LuaMasterAnimation.hpp"
 
 using namespace minko;
 using namespace minko::component;
@@ -190,7 +191,8 @@ LuaScriptManager::initializeBindings()
     component::LuaTransform::bind(_state);
     scene::LuaNode::bind(_state);
     scene::LuaNodeSet::bind(_state);
-	component::LuaAnimation::bind(_state);
+    component::LuaAnimation::bind(_state);
+    component::LuaMasterAnimation::bind(_state);
 
     auto& sceneManager = _state.Class<SceneManager>("SceneManager")
         .property("assets",     &SceneManager::assets);

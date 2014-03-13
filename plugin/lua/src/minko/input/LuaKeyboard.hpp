@@ -37,24 +37,23 @@ namespace minko
 			void
 			bind(LuaGlue& state)
 			{
-				auto& input_scancode = state.Class<Keyboard::ScanCode>("ScanCode");
-			    for (int key = 0; key < (int) Keyboard::NUM_SCANCODES; ++key)
-			    {
-			        auto& keyName = Keyboard::getKeyName(static_cast<Keyboard::ScanCode>(key));
-
-			        if (keyName.size())
-						input_scancode.constant(keyName, key);
-			    }
-
 				auto& input_keyboard = state.Class<Keyboard>("Keyboard");
-			    MINKO_LUAGLUE_BIND_SIGNAL(state, Keyboard::Ptr, uint);
-			    MINKO_LUAGLUE_BIND_SIGNAL(state, Keyboard::Ptr);
-			    input_keyboard
-			        .methodWrapper("keyDown",   &LuaKeyboard::keyboardKeyDownWrapper)
-                    .methodWrapper("keyUp",     &LuaKeyboard::keyboardKeyUpWrapper)
-			        .methodWrapper("keyIsDown", &LuaKeyboard::keyboardKeyIsDownWrapper)
-			        .property("anyKeyDown",	    &Keyboard::keyDown)
-			        .property("anyKeyUp",       &Keyboard::keyUp);
+				MINKO_LUAGLUE_BIND_SIGNAL(state, Keyboard::Ptr, uint);
+				MINKO_LUAGLUE_BIND_SIGNAL(state, Keyboard::Ptr);
+				input_keyboard
+					.methodWrapper("keyDown",   &LuaKeyboard::keyboardKeyDownWrapper)
+					.methodWrapper("keyUp",     &LuaKeyboard::keyboardKeyUpWrapper)
+					.methodWrapper("keyIsDown", &LuaKeyboard::keyboardKeyIsDownWrapper)
+					.property("anyKeyDown",	    &Keyboard::keyDown)
+					.property("anyKeyUp",       &Keyboard::keyUp);
+
+				for (int key = 0; key < (int) Keyboard::NUM_SCANCODES; ++key)
+				{
+					auto& keyName = Keyboard::getKeyName(static_cast<Keyboard::ScanCode>(key));
+
+					if (keyName.size())
+						input_keyboard.constant(keyName, key);
+				}
 			}
 
 			static

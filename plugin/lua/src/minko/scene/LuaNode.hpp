@@ -23,6 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/scene/Node.hpp"
 #include "minko/component/BoundingBox.hpp"
+#include "minko/component/MasterAnimation.hpp"
 
 #include "minko/LuaWrapper.hpp"
 
@@ -53,6 +54,7 @@ namespace minko
                     .methodWrapper("getBoundingBox",        &LuaNode::getBoundingBoxWrapper)
                     .methodWrapper("getTransform",          &LuaNode::getTransformWrapper)
 					.methodWrapper("getAnimation",			&LuaNode::getAnimationWrapper)
+					.methodWrapper("getMasterAnimation",	&LuaNode::getMasterAnimationWrapper)
                     .methodWrapper("getPerspectiveCamera",  &LuaNode::getPerspectiveCameraWrapper)
 					.methodWrapper("getSurface",			&LuaNode::getSurfaceWrapper)
 		            .property("children",					&Node::children)
@@ -95,6 +97,13 @@ namespace minko
 			getAnimationWrapper(Node::Ptr node)
 			{
 				return node->component<component::Animation>();
+			}
+
+			static
+			std::shared_ptr<component::MasterAnimation>
+			getMasterAnimationWrapper(Node::Ptr node)
+			{
+				return node->component<component::MasterAnimation>();
 			}
 
 			static
