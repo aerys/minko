@@ -167,10 +167,10 @@ void
 bullet::PhysicsWorld::addChild(ColliderData::Ptr data)
 {
     if (data == nullptr || data->node() == nullptr)
-        throw new std::invalid_argument("data");
+        throw std::invalid_argument("data");
 
 	if (hasCollider(data))
-		throw new std::logic_error("The same data cannot be added twice.");
+		throw std::logic_error("The same data cannot be added twice.");
 
 	//std::cout << "PhysicsWorld::addChild\tnode '" << data->node()->name() 
 	//	<< "'\tgroup = " << std::bitset<16>(data->collisionGroup()) 

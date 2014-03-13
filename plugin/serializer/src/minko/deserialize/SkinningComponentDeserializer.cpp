@@ -71,7 +71,7 @@ SkinningComponentDeserializer::computeSkinning(file::Options::Ptr						options,
 	SkinningMethod	method		= options->skinningMethod();
 
 	if (!haveBonesCommonRoot(bones, skeletonRoot))
-		throw new std::logic_error("Sone bones are not connected to the specified skeleton root.");
+		throw std::logic_error("Sone bones are not connected to the specified skeleton root.");
 
     std::cout 
         << "# abstract animations under skeleton root = " 
