@@ -50,11 +50,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/math/Convertible.hpp"
 
-#ifdef __ANDROID__
-# include "minko/to_string.hpp"
-#endif
-
 #define PI 3.1415926535897932384626433832795
+
+#define MINKO_VERSION "3.0"
 
 namespace minko
 {
