@@ -23,6 +23,6 @@ if [[ ${#STATIC_LIBS[0]} -eq 0 && ${#SHARED_LIBS[@]} -eq 0 ]]; then
 	test "$verbose" != 0 && echo "${BIN} ${ARGS[@]}"
 	python "${BIN}" "${ARGS[@]}"
 else
-	test "$verbose" != 0 && echo "${BIN} ${ARGS[@]} ${STATIC_LIBS[@]} ${STATIC_LIBS[@]} ${SHARED_LIBS[@]}"
-	python "${BIN}" "${ARGS[@]}" "${STATIC_LIBS[@]}" "${STATIC_LIBS[@]}" "${SHARED_LIBS[@]}"
+	test "$verbose" != 0 && echo "${BIN} ${ARGS[@]} ${STATIC_LIBS[@]} ${STATIC_LIBS[@]} ${SHARED_LIBS[@]} ${SHARED_LIBS[@]}"
+	python "${BIN}" "${ARGS[@]}" "${STATIC_LIBS[@]}" "${STATIC_LIBS[@]}" "${SHARED_LIBS[@]}" "${SHARED_LIBS[@]}"
 fi
