@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Minko.hpp"
 #include "minko/MinkoPNG.hpp"
 #include "minko/MinkoSDL.hpp"
-#include "minko/file/HTTPLoader.hpp"
+#include "minko/MinkoHTTP.hpp"
 
 #if !defined(EMSCRIPTEN) // FIXME: Automate this in the HTTPLoader
 # include "minko/async/HTTPWorker.hpp"
@@ -41,16 +41,17 @@ int main(int argc, char** argv)
 #endif
 
 	auto sceneManager = SceneManager::create(canvas->context());
-	
-	sceneManager->assets()->registerProtocol<file::HTTPLoader>("http");
-	sceneManager->assets()->registerProtocol<file::HTTPLoader>("https");
+
+	sceneManager->assets()->loader()->options()->registerProtocol<file::HTTPProtocol>("http");
+	sceneManager->assets()->loader()->options()->registerProtocol<file::HTTPProtocol>("https");
 
 	// setup assets
-	sceneManager->assets()->defaultOptions()->resizeSmoothly(true);
-	sceneManager->assets()->defaultOptions()->generateMipmaps(true);
-	sceneManager->assets()
-		->registerParser<file::PNGParser>("png")
-		->queue(TEXTURE_FILENAME)
+	sceneManager->assets()->loader()->options()->resizeSmoothly(true);
+	sceneManager->assets()->loader()->options()->generateMipmaps(true);
+	sceneManager->assets()->loader()->options()
+                ->registerParser<file::PNGParser>("png");
+        sceneManager->assets()->loader()
+                ->queue(TEXTURE_FILENAME)
 		->queue("effect/Basic.effect");
 
 	sceneManager->assets()->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()));
@@ -66,7 +67,7 @@ int main(int argc, char** argv)
 		->addComponent(PerspectiveCamera::create(800.f / 600.f, (float)PI * 0.25f, .1f, 1000.f));
 
 	root->addChild(camera);
-	
+
 	auto mesh = scene::Node::create("mesh")
 		->addComponent(Transform::create());
 
@@ -84,18 +85,18 @@ int main(int argc, char** argv)
 		sceneManager->nextFrame(time, deltaTime);
 	});
 
-	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
+	auto _ = sceneManager->assets()->loader()->complete()->connect([=](file::Loader::Ptr loader)
 	{
 		std::cout << "main(): asset complete" << std::endl;
 
 		mesh->addComponent(Surface::create(
-				assets->geometry("cube"),
-				material::BasicMaterial::create()->diffuseMap(assets->texture(TEXTURE_FILENAME)),
-				assets->effect("effect/Basic.effect")
+				sceneManager->assets()->geometry("cube"),
+				material::BasicMaterial::create()->diffuseMap(sceneManager->assets()->texture(TEXTURE_FILENAME)),
+				sceneManager->assets()->effect("effect/Basic.effect")
 			));
 	});
 
-	sceneManager->assets()->load();
+	sceneManager->assets()->loader()->load();
 	std::cout << "main(): after load" << std::endl;
 
 	canvas->run();

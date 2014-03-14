@@ -53,13 +53,13 @@ main(int argc, char** argv)
     auto sceneManager = SceneManager::create(canvas->context());
 
     // setup assets
-    sceneManager->assets()->defaultOptions()->resizeSmoothly(true);
-    sceneManager->assets()->defaultOptions()->generateMipmaps(true);
-    sceneManager->assets()->queue("effect/Basic.effect");
+    sceneManager->assets()->loader()->options()->resizeSmoothly(true);
+    sceneManager->assets()->loader()->options()->generateMipmaps(true);
+    sceneManager->assets()->loader()->queue("effect/Basic.effect");
 
     std::cout << "Plug a joystick and move the cube." << std::endl;
 
-    auto complete = sceneManager->assets()->complete()->connect([&](file::AssetLibrary::Ptr assets)
+    auto complete = sceneManager->assets()->loader()->complete()->connect([=](file::Loader::Ptr loader)
     {
         auto root = scene::Node::create("root")
             ->addComponent(sceneManager);
@@ -111,9 +111,9 @@ main(int argc, char** argv)
         auto cube = scene::Node::create("cube")
             ->addComponent(Transform::create(Matrix4x4::create()))
             ->addComponent(Surface::create(
-            geometry::CubeGeometry::create(assets->context()),
+            geometry::CubeGeometry::create(sceneManager->assets()->context()),
             material::BasicMaterial::create()->diffuseColor(Vector4::create(1.f, 0.f, 1.f, 1.f)),
-            assets->effect("effect/Basic.effect")
+            sceneManager->assets()->effect("effect/Basic.effect")
             ));
         root->addChild(cube);
 
@@ -132,7 +132,7 @@ main(int argc, char** argv)
         canvas->run();
     });
 
-    sceneManager->assets()->load();
+    sceneManager->assets()->loader()->load();
 
     return 0;
 }

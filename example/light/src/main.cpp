@@ -74,28 +74,31 @@ int main(int argc, char** argv)
 	sphereGeometry->computeTangentSpace(false);
 
 	// setup assets
-	sceneManager->assets()->defaultOptions()->generateMipmaps(true);
-	sceneManager->assets()
-		->registerParser<file::PNGParser>("png")
-		->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()))
+	sceneManager->assets()->loader()->options()->generateMipmaps(true);
+	sceneManager->assets()->loader()->options()
+                ->registerParser<file::PNGParser>("png");
+
+        sceneManager->assets()
+                ->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()))
 		->geometry("quad", geometry::QuadGeometry::create(sceneManager->assets()->context()))
-		->geometry("sphere", sphereGeometry)
-		->queue("texture/normalmap-cells.png")
+                ->geometry("sphere", sphereGeometry);
+        sceneManager->assets()->loader()
+                ->queue("texture/normalmap-cells.png")
 		->queue("texture/sprite-pointlight.png")
 		->queue("effect/Basic.effect")
 		->queue("effect/Sprite.effect")
 		->queue("effect/Phong.effect")
 		->queue("effect/AnamorphicLensFlare/AnamorphicLensFlare.effect");
 
-	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
+	auto _ = sceneManager->assets()->loader()->complete()->connect([=](file::Loader::Ptr loader)
 	{
 		// ground
 		auto ground = scene::Node::create("ground")
 			->addComponent(Surface::create(
-				assets->geometry("quad"),
+				sceneManager->assets()->geometry("quad"),
 				material::Material::create()
 					->set("diffuseColor",	Vector4::create(1.f, 1.f, 1.f, 1.f)),
-				assets->effect("phong")
+				sceneManager->assets()->effect("phong")
 			))
 			->addComponent(Transform::create(Matrix4x4::create()->appendScale(50.f)->appendRotationX(-1.57f)));
 		root->addChild(ground);
@@ -103,9 +106,9 @@ int main(int argc, char** argv)
 		// sphere
 		auto sphere = scene::Node::create("sphere")
 			->addComponent(Surface::create(
-				assets->geometry("sphere"),
+				sceneManager->assets()->geometry("sphere"),
 				sphereMaterial,
-				assets->effect("phong")
+				sceneManager->assets()->effect("phong")
 			))
 			->addComponent(Transform::create(Matrix4x4::create()->appendTranslation(0.f, 2.f, 0.f)->prependScale(3.f)));
 		root->addChild(sphere);
@@ -150,7 +153,7 @@ int main(int argc, char** argv)
 			{
 				if (lights->children().size() == 0)
 					return;
-				
+
 				lights->removeChild(lights->children().back());
 				std::cout << lights->children().size() << " lights" << std::endl;
 			}
@@ -166,7 +169,7 @@ int main(int argc, char** argv)
 				if (hasNormalMap)
 					data->unset("normalMap");
 				else
-					data->set("normalMap", assets->texture("texture/normalmap-cells.png"));
+					data->set("normalMap", sceneManager->assets()->texture("texture/normalmap-cells.png"));
 			}
 			if (k->keyIsDown(input::Keyboard::ScanCode::UP))
 				camera->component<Transform>()->matrix()->prependTranslation(0.f, 0.f, -1.f);
@@ -191,7 +194,7 @@ int main(int argc, char** argv)
 	if (!ppFx)
 		throw std::logic_error("AnamorphicLensFlare.effect has not been loaded.");
 
-	auto ppTarget = render::Texture::create(assets->context(), 1024, 1024, false, true);
+	auto ppTarget = render::Texture::create(sceneManager->assets()->context(), 1024, 1024, false, true);
 
 	ppTarget->upload();
 
@@ -213,7 +216,7 @@ int main(int argc, char** argv)
 #if POST_PROCESSING
 		auto oldTarget = ppTarget;
 
-		ppTarget = render::Texture::create(assets->context(), clp2(width), clp2(height), false, true);
+		ppTarget = render::Texture::create(sceneManager->assets()->context(), clp2(width), clp2(height), false, true);
 		ppTarget->upload();
 		ppData->set("backbuffer", ppTarget);
 #endif //POST_PROCESSING
@@ -276,13 +279,13 @@ int main(int argc, char** argv)
 
 #if POST_PROCESSING
 		sceneManager->nextFrame(time, deltaTime, ppTarget);
-		ppRenderer->render(assets->context());
+		ppRenderer->render(sceneManager->assets()->context());
 #else
 		sceneManager->nextFrame(time, deltaTime);
 #endif
 	});
 
-	sceneManager->assets()->load();
+	sceneManager->assets()->loader()->load();
 
 	canvas->run();
 

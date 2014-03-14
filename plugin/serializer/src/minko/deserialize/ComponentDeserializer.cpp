@@ -61,7 +61,7 @@ ComponentDeserializer::deserializeTransform(std::string&						serializedTransfor
 	std::tuple<uint, std::string&> serializedMatrixTuple(dst.a0, dst.a1);
 
 	Matrix4x4Ptr transformMatrix = Any::cast<Matrix4x4Ptr>(deserialize::TypeDeserializer::deserializeMatrix4x4(serializedMatrixTuple));
-	
+
 	return component::Transform::create(transformMatrix);
 }
 
@@ -89,7 +89,7 @@ ComponentDeserializer::deserializeAmbientLight(std::string&							serializedAmbi
 	msgpack::object										deserialized;
 	msgpack::type::tuple<float, float, float, float>	dst;
 	std::shared_ptr<component::AmbientLight>			ambientLight = component::AmbientLight::create();
-	
+
 	msgpack::unpack(serializedAmbientLight.data(), serializedAmbientLight.size() - 1, NULL, &mempool, &deserialized);
 	deserialized.convert(&dst);
 
@@ -108,10 +108,10 @@ ComponentDeserializer::deserializeDirectionalLight(std::string&							serialized
 	msgpack::object											deserialized;
 	msgpack::type::tuple<float, float, float, float, float>	dst;
 	std::shared_ptr<component::DirectionalLight>			directionalLight = component::DirectionalLight::create();
-	
+
 	msgpack::unpack(serializedDirectionalLight.data(), serializedDirectionalLight.size() - 1, NULL, &mempool, &deserialized);
 	deserialized.convert(&dst);
-	
+
 	directionalLight->diffuse(dst.a0);
 	directionalLight->specular(dst.a1);
 	directionalLight->color()->setTo(dst.a2, dst.a3, dst.a4);
@@ -128,7 +128,7 @@ ComponentDeserializer::deserializePointLight(std::string&							serializedPointL
 	msgpack::object													deserialized;
 	msgpack::type::tuple<float, float, float, float, float, float>	dst;
 	std::shared_ptr<component::PointLight>							pointLight = component::PointLight::create();
-	
+
 	msgpack::unpack(serializedPointLight.data(), serializedPointLight.size() - 1, NULL, &mempool, &deserialized);
 	deserialized.convert(&dst);
 
@@ -139,7 +139,7 @@ ComponentDeserializer::deserializePointLight(std::string&							serializedPointL
 
 	return pointLight;
 }
-		
+
 std::shared_ptr<component::AbstractComponent>
 ComponentDeserializer::deserializeSpotLight(std::string&						serializedSpotLight,
 										    std::shared_ptr<file::AssetLibrary>	assetLibrary,
@@ -149,7 +149,7 @@ ComponentDeserializer::deserializeSpotLight(std::string&						serializedSpotLigh
 	msgpack::object																	deserialized;
 	msgpack::type::tuple<float, float, float, float, float, float, float, float>	dst;
 	std::shared_ptr<component::SpotLight>											spotLight = component::SpotLight::create();
-	
+
 	msgpack::unpack(serializedSpotLight.data(), serializedSpotLight.size() - 1, NULL, &mempool, &deserialized);
 	deserialized.convert(&dst);
 
@@ -171,7 +171,7 @@ ComponentDeserializer::deserializeSurface(std::string&							serializedSurface,
 	msgpack::zone																		mempool;
 	msgpack::object																		deserialized;
 	msgpack::type::tuple<unsigned short, unsigned short, unsigned short, std::string>	dst;
-	
+
 	msgpack::unpack(serializedSurface.data(), serializedSurface.size() - 1, NULL, &mempool, &deserialized);
 	deserialized.convert(&dst);
 
@@ -204,7 +204,7 @@ ComponentDeserializer::deserializeRenderer(std::string&							serializedRenderer
 	msgpack::object							deserialized;
 	msgpack::type::tuple<unsigned int>		dst;
 	std::shared_ptr<component::Renderer>	renderer = component::Renderer::create();
-	
+
 	msgpack::unpack(serializedRenderer.data(), serializedRenderer.size() - 1, NULL, &mempool, &deserialized);
 	deserialized.convert(&dst);
 
@@ -235,7 +235,7 @@ ComponentDeserializer::deserializeAnimation(std::string&		serializedAnimation,
 	for (size_t i = 0; i < dst.a1.size(); ++i)
 	{
 		std::tuple<uint, std::string&> serializedMatrixTuple(dst.a2[i].a0, dst.a2[i].a1);
-		
+
 		timetable.push_back(dst.a1[i]);
 		matrices.push_back(Any::cast<Matrix4x4Ptr>(deserialize::TypeDeserializer::deserializeMatrix4x4(serializedMatrixTuple)));
 	}
@@ -289,9 +289,9 @@ ComponentDeserializer::deserializeSkinning(std::string&		serializedAnimation,
 	}
 
 	return SkinningComponentDeserializer::computeSkinning(
-        assetLibrary->defaultOptions(), 
-        assetLibrary->context(), 
-        bones, 
-        root
+          assetLibrary->loader()->options(),
+          assetLibrary->context(),
+          bones,
+          root
    );
 }
