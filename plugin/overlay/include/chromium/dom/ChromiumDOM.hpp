@@ -128,10 +128,10 @@ namespace chromium
 			}
 
 			std::string
-			fullUrl()
-			{
-				return _frame->GetURL();
-			}
+			fullUrl();
+
+			bool
+			update();
 
 		private:
 
@@ -152,6 +152,7 @@ namespace chromium
 
 			bool _cleared;
 			bool _init;
+			bool _executeOnLoad;
 		};
 	}
 }

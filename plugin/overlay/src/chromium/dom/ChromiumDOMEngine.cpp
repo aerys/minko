@@ -131,6 +131,8 @@ void
 ChromiumDOMEngine::enterFrame()
 {
 	CefDoMessageLoopWork();
+	for (auto dom : _doms)
+		dom->update();
 	_impl->renderHandler->uploadTexture();
 }
 

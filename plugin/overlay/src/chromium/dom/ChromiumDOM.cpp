@@ -41,7 +41,8 @@ ChromiumDOM::ChromiumDOM() :
 	_onload(minko::Signal<AbstractDOM::Ptr, std::string>::create()),
 	_onmessage(minko::Signal<AbstractDOM::Ptr, std::string>::create()),
 	_cleared(false),
-	_init(false)
+	_init(false),
+	_executeOnLoad(false)
 {
 }
 
@@ -156,10 +157,23 @@ ChromiumDOM::addLoadEventListener()
 		if (functionName == loadFunctionName)
 		{
 			std::string url = _frame->GetURL();
-			_onload->execute(shared_from_this(), url);
-			_engine->onload()->execute(shared_from_this(), url);
+
+			_executeOnLoad = true;
 		}
 	});
+}
+
+bool
+ChromiumDOM::update()
+{
+	if (_executeOnLoad)
+	{
+		_onload->execute(shared_from_this(), fullUrl());
+		_engine->onload()->execute(shared_from_this(), fullUrl());
+		_executeOnLoad = false;
+		return true;
+	}
+	return false;
 }
 
 AbstractDOMElement::Ptr
@@ -288,5 +302,30 @@ ChromiumDOM::getElementsByTagName(std::string tagName)
 		while (blocker);
 	}
 	return list;
+}
+
+std::string
+ChromiumDOM::fullUrl()
+{
+	std::string result;
+
+	if (CefCurrentlyOn(TID_RENDERER))
+	{
+		result = _frame->GetURL();
+	}
+	else
+	{
+		CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
+		bool blocker = true;
+
+		runner->PostTask(NewCefRunnableFunction(&[&]()
+		{
+			result = fullUrl();
+			blocker = false;
+		}));
+
+		while (blocker);
+	}
+	return result;
 }
 #endif
