@@ -59,8 +59,8 @@ namespace minko
 
 						state.Class<Collider>("Collider")
 							.property("colliderData",					&Collider::colliderData)
-							.method("create", static_cast<Collider::Ptr(*)(ColliderDataPtr)>(&Collider::create))
-							.method("synchronizePhysicsWithGraphics", &Collider::synchronizePhysicsWithGraphics)
+							.method("create",							static_cast<Collider::Ptr (*)(ColliderDataPtr, bool)>(&Collider::create))
+							.method("synchronizePhysicsWithGraphics",	&Collider::synchronizePhysicsWithGraphics)
 							.method("extractCollider",					&LuaCollider::extractColliderFromNode);
 					}
 

@@ -44,39 +44,42 @@ namespace minko
 				public std::enable_shared_from_this<Collider>
 			{
 			public:
-				typedef std::shared_ptr<Collider> Ptr;
+				typedef std::shared_ptr<Collider>					Ptr;
 
 			private:
-				typedef std::shared_ptr<AbstractComponent>		AbsCtrlPtr;
-				typedef std::shared_ptr<scene::Node>			NodePtr;
-				typedef std::shared_ptr<scene::NodeSet>			NodeSetPtr;
-				typedef std::shared_ptr<math::Vector3>			Vector3Ptr;
-				typedef std::shared_ptr<math::Matrix4x4>		Matrix4x4Ptr;
-				typedef std::shared_ptr<ColliderData>			ColliderDataPtr;
-				typedef std::shared_ptr<Transform>				TransformPtr;
-				typedef std::shared_ptr<PhysicsWorld>			PhysicsWorldPtr;
-
-			private:
-				ColliderDataPtr									_colliderData;
-				PhysicsWorldPtr									_physicsWorld;
-				TransformPtr									_targetTransform;
-
-				Signal<AbsCtrlPtr, NodePtr>::Slot				_targetAddedSlot;
-				Signal<AbsCtrlPtr, NodePtr>::Slot				_targetRemovedSlot;
-				Signal<NodePtr, NodePtr, NodePtr>::Slot			_addedSlot;
-				Signal<NodePtr, NodePtr, NodePtr>::Slot			_removedSlot;
-				Signal<ColliderDataPtr, Matrix4x4Ptr>::Slot		_graphicsTransformChangedSlot;
-				Signal<ColliderDataPtr, ColliderDataPtr>::Slot	_collisionStartedHandlerSlot;
-				Signal<ColliderDataPtr, ColliderDataPtr>::Slot	_collisionEndedHandlerSlot;
-
-				static Matrix4x4Ptr								_TMP_MATRIX;
-
+				typedef std::shared_ptr<file::AssetLibrary>			AssetLibraryPtr;
+				typedef std::shared_ptr<AbstractComponent>			AbsCtrlPtr;
+				typedef std::shared_ptr<scene::Node>				NodePtr;
+				typedef std::shared_ptr<scene::NodeSet>				NodeSetPtr;
+				typedef std::shared_ptr<math::Vector3>				Vector3Ptr;
+				typedef std::shared_ptr<math::Matrix4x4>			Matrix4x4Ptr;
+				typedef std::shared_ptr<ColliderData>				ColliderDataPtr;
+				typedef std::shared_ptr<Transform>					TransformPtr;
+				typedef std::shared_ptr<PhysicsWorld>				PhysicsWorldPtr;
+				typedef std::shared_ptr<Surface>					SurfacePtr;
+																	
+			private:												
+				ColliderDataPtr										_colliderData;
+				PhysicsWorldPtr										_physicsWorld;
+				TransformPtr										_targetTransform;
+																	
+				NodePtr												_debugNode;
+																	
+				Signal<AbsCtrlPtr, NodePtr>::Slot					_targetAddedSlot;
+				Signal<AbsCtrlPtr, NodePtr>::Slot					_targetRemovedSlot;
+				Signal<NodePtr, NodePtr, NodePtr>::Slot				_addedSlot;
+				Signal<NodePtr, NodePtr, NodePtr>::Slot				_removedSlot;
+				Signal<ColliderDataPtr, Matrix4x4Ptr>::Slot			_physicsTransformChangedSlot;
+				Signal<ColliderDataPtr, Matrix4x4Ptr>::Slot			_graphicsTransformChangedSlot;
+				Signal<ColliderDataPtr, ColliderDataPtr>::Slot		_collisionStartedHandlerSlot;
+				Signal<ColliderDataPtr, ColliderDataPtr>::Slot		_collisionEndedHandlerSlot;
+																	
 			public:
 				inline static
 				Ptr
-				create(ColliderDataPtr data)
+				create(ColliderDataPtr data, bool debug = false)
 				{
-					Ptr collider(new Collider(data));
+					Ptr collider(new Collider(data, debug));
 
 					collider->initialize();
 
@@ -97,8 +100,14 @@ namespace minko
 				void
 				synchronizePhysicsWithGraphics();
 
+				Ptr
+				displayCollider(AssetLibraryPtr);
+
+				Ptr
+				hideCollider();
+
 			private:
-				Collider(ColliderDataPtr);
+				Collider(ColliderDataPtr, bool);
 
 				void
 				initialize();
@@ -117,6 +126,9 @@ namespace minko
 
 				void
 				removedHandler(NodePtr, NodePtr, NodePtr);
+
+				void
+				physicsWorldTransformChangedHandler(ColliderDataPtr, Matrix4x4Ptr);
 
 				void
 				graphicsWorldTransformChangedHandler(ColliderDataPtr, Matrix4x4Ptr);

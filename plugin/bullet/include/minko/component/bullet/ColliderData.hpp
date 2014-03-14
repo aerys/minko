@@ -79,6 +79,7 @@ namespace minko
 				bool			                            _deactivationDisabled;
 				bool			                            _triggerCollisions;
 
+				std::shared_ptr<Signal<Ptr, Matrix4x4Ptr>>	_physicsWorldTransformChanged;
 				std::shared_ptr<Signal<Ptr, Matrix4x4Ptr>>	_graphicsWorldTransformChanged;
 				std::shared_ptr<Signal<Ptr, Ptr>>			_collisionStarted;
 				std::shared_ptr<Signal<Ptr, Ptr>>			_collisionEnded;
@@ -335,6 +336,13 @@ namespace minko
 				rollingFriction(float value)
 				{
 					_rollingFriction = value;
+				}
+
+				inline
+				Signal<Ptr, Matrix4x4Ptr>::Ptr
+				physicsWorldTransformChanged() const
+				{
+					return _physicsWorldTransformChanged;
 				}
 
 				inline

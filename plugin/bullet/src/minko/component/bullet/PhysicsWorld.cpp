@@ -35,12 +35,8 @@ using namespace minko::math;
 using namespace minko::scene;
 using namespace minko::component;
 
-/*static*/
-const uint		bullet::PhysicsWorld::_MAX_BODIES	= 2048;
-/*static*/
-Matrix4x4::Ptr	bullet::PhysicsWorld::_TMP_MATRIX	= Matrix4x4::create();
-/*static*/
-btTransform		bullet::PhysicsWorld::_TMP_BTTRANSFORM;
+/*static*/ const uint bullet::PhysicsWorld::_MAX_BODIES = 2048;
+
 
 bullet::PhysicsWorld::PhysicsWorld():
 	AbstractComponent(),
@@ -293,19 +289,21 @@ bullet::PhysicsWorld::updateColliders()
 		if (collider->isStatic())
 			continue;
 
+		static auto physicsModelToWorld		= Matrix4x4::create();
+		static auto graphicsModelToWorld	= Matrix4x4::create();
+
 		fromBulletTransform(
 			it->second->rigidBody()->getWorldTransform(),
-			_TMP_MATRIX
+			physicsModelToWorld
 		);
-		// _TMP_MATRIX = physicsTransform
 
-		_TMP_MATRIX
+		graphicsModelToWorld
+			->copyFrom(physicsModelToWorld)
 			->prepend(collider->shape()->deltaTransformInverse())
 			->prepend(collider->correction());
-		// _TMP_MATRIX = graphicsTransform = physicsTransform * deltaInverse * correction
 
-		collider->graphicsWorldTransformChanged()
-			->execute(collider, _TMP_MATRIX);
+		collider->physicsWorldTransformChanged()->execute(collider, physicsModelToWorld);
+		collider->graphicsWorldTransformChanged()->execute(collider, graphicsModelToWorld);
 	}
 }
 
@@ -387,9 +385,12 @@ bullet::PhysicsWorld::notifyCollisions()
 }
 
 void
-bullet::PhysicsWorld::synchronizePhysicsWithGraphics(ColliderDataPtr collider, 
-													 Matrix4x4::Ptr graphicsNoScaleTransform)
+bullet::PhysicsWorld::synchronizePhysicsWithGraphics(ColliderDataPtr	collider, 
+													 Matrix4x4::Ptr		graphicsNoScaleTransform)
 {
+	static auto			matrix = Matrix4x4::create();
+	static btTransform	bulletTransform;
+
 	auto it	= _colliderMap.find(collider);
 	if (it == _colliderMap.end())
 		return;
@@ -405,14 +406,14 @@ bullet::PhysicsWorld::synchronizePhysicsWithGraphics(ColliderDataPtr collider,
 	if (bulletMotionState == nullptr)
 		return;
 
-	_TMP_MATRIX
+	matrix
 		->copyFrom(graphicsNoScaleTransform)->invert()
 		->append(collider->shape()->deltaTransform())
 		->append(graphicsNoScaleTransform)
 		->invert();
 
 	toBulletTransform(
-		_TMP_MATRIX, 
+		matrix, 
 		bulletMotionState->m_centerOfMassOffset
 	);
 
@@ -423,8 +424,8 @@ bullet::PhysicsWorld::synchronizePhysicsWithGraphics(ColliderDataPtr collider,
 	);
 
 	// synchronize bullet
-	bulletMotionState->getWorldTransform(_TMP_BTTRANSFORM);
-	it->second->rigidBody()->setWorldTransform(_TMP_BTTRANSFORM);
+	bulletMotionState->getWorldTransform(bulletTransform);
+	it->second->rigidBody()->setWorldTransform(bulletTransform);
 
 #ifdef DEBUG_PHYSICS
 	std::cout << "[" << it->first->name() << "] synchro graphics -> physics" << std::endl;
@@ -449,10 +450,12 @@ bullet::PhysicsWorld::removeScalingShear(Matrix4x4::Ptr input,
 										 Matrix4x4::Ptr output, 
 										 Matrix4x4::Ptr correction)
 {
-	auto translation	= input->translation();
+	static auto	matrix		= Matrix4x4::create();
+
+	auto		translation	= input->translation();
 
 	// remove translational component, then perform QR decomposition
-	_TMP_MATRIX
+	matrix
 		->copyFrom(input)
 		->appendTranslation(-(*translation));
 
@@ -461,7 +464,7 @@ bullet::PhysicsWorld::removeScalingShear(Matrix4x4::Ptr input,
 	if (correction == nullptr)
 		correction = Matrix4x4::create();
 
-	_TMP_MATRIX->decomposeQR(output, correction);
+	matrix->decomposeQR(output, correction);
 
 	return output->appendTranslation(translation);
 }

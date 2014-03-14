@@ -234,6 +234,7 @@ namespace minko
 		class SphereGeometry;
         class QuadGeometry;
 		class TeapotGeometry;
+		class LineGeometry;
 	}
 
 	namespace animation

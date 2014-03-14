@@ -23,23 +23,28 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include <minko/scene/Node.hpp>
 #include <minko/scene/NodeSet.hpp>
 #include <minko/component/Transform.hpp>
+#include <minko/component/Surface.hpp>
 #include <minko/component/bullet/AbstractPhysicsShape.hpp>
 #include <minko/component/bullet/ColliderData.hpp>
 #include <minko/component/bullet/PhysicsWorld.hpp>
+#include <minko/component/bullet/PhysicsWorld.hpp>
+#include <minko/geometry/LineGeometry.hpp>
+#include <minko/file/AssetLibrary.hpp>
+#include <minko/data/ArrayProvider.hpp>
+#include <minko/render/CompareMode.hpp>
+#include <minko/render/Priority.hpp>
 
 using namespace minko;
 using namespace minko::math;
 using namespace minko::scene;
 using namespace minko::component;
 
-/*static*/
-Matrix4x4::Ptr bullet::Collider::_TMP_MATRIX = Matrix4x4::create();
-
-bullet::Collider::Collider(ColliderData::Ptr data):
+bullet::Collider::Collider(ColliderData::Ptr data, bool debug):
 	AbstractComponent(),
 	_colliderData(data),
 	_physicsWorld(nullptr),
 	_targetTransform(nullptr),
+	_debugNode(debug ? Node::create() : nullptr),
 	_targetAddedSlot(nullptr),
 	_targetRemovedSlot(nullptr),
 	_addedSlot(nullptr),
@@ -60,27 +65,33 @@ bullet::Collider::initialize()
 		shared_from_this(),
 		std::placeholders::_1,
 		std::placeholders::_2
-		));
+	));
 
 	_targetRemovedSlot	= targetRemoved()->connect(std::bind(
 		&bullet::Collider::targetRemovedHandler,
 		shared_from_this(),
 		std::placeholders::_1,
 		std::placeholders::_2
-		));
+	));
+
+	_physicsTransformChangedSlot	= _colliderData->physicsWorldTransformChanged()->connect(std::bind(
+		&bullet::Collider::physicsWorldTransformChangedHandler,
+		shared_from_this(),
+		std::placeholders::_1,
+		std::placeholders::_2
+	));
 
 	_graphicsTransformChangedSlot	= _colliderData->graphicsWorldTransformChanged()->connect(std::bind(
 		&bullet::Collider::graphicsWorldTransformChangedHandler,
 		shared_from_this(),
 		std::placeholders::_1,
 		std::placeholders::_2
-		));
+	));
 }
 
 void
-bullet::Collider::targetAddedHandler(
-	AbstractComponent::Ptr controller, 
-	Node::Ptr target)
+bullet::Collider::targetAddedHandler(AbstractComponent::Ptr, 
+									 Node::Ptr target)
 {
 	if (targets().size() > 1)
 		throw std::logic_error("Collider cannot have more than one target.");
@@ -101,24 +112,22 @@ bullet::Collider::targetAddedHandler(
 		std::placeholders::_3
 		));
 
-	// initialize from node if possible (mostly for adding a controller to the camera)
-	//initializeFromNode(target);
+	if (_debugNode)
+		_debugNode->name("collider_debug_" + target->name());
 }
 
 void
-bullet::Collider::targetRemovedHandler(
-	AbstractComponent::Ptr controller, 
-	Node::Ptr target)
+bullet::Collider::targetRemovedHandler(AbstractComponent::Ptr, 
+									   Node::Ptr target)
 {
 	_addedSlot		= nullptr;
 	_removedSlot	= nullptr;
 }
 
 void 
-bullet::Collider::addedHandler(
-	Node::Ptr node, 
-	Node::Ptr target, 
-	Node::Ptr parent)
+bullet::Collider::addedHandler(Node::Ptr node, 
+							   Node::Ptr, 
+							   Node::Ptr)
 {
 	initializeFromNode(node);
 
@@ -138,10 +147,7 @@ bullet::Collider::addedHandler(
 }
 
 void
-bullet::Collider::removedHandler(
-	Node::Ptr node, 
-	Node::Ptr target, 
-	Node::Ptr parent)
+bullet::Collider::removedHandler(Node::Ptr, Node::Ptr, Node::Ptr)
 {
 	if (_physicsWorld != nullptr)
 		_physicsWorld->removeChild(_colliderData);
@@ -150,6 +156,59 @@ bullet::Collider::removedHandler(
 	_targetTransform				= nullptr;
 	_collisionStartedHandlerSlot	= nullptr;
 	_collisionEndedHandlerSlot		= nullptr;
+}
+
+bullet::Collider::Ptr
+bullet::Collider::displayCollider(file::AssetLibrary::Ptr assets)
+{
+	if (assets == nullptr || assets->context() == nullptr || assets->effect("line") == nullptr)
+	{
+		std::cerr << "Warning: Incomplete assets for ensuring collider display (context, line effect needed)." << std::endl;
+		return shared_from_this();
+	}
+
+	if (_debugNode == nullptr)
+	{
+		if (targets().size() != 1)
+			std::cerr << "warning (temp): the collider does not have a target yet (for debug display)." << std::endl;
+
+		auto target = targets().front();
+
+		_debugNode = Node::create("collider_debug_" + target->name())
+			->addComponent(Transform::create())
+			->addComponent(Surface::create(
+				_colliderData->shape()->getGeometry(assets->context()),
+				data::ArrayProvider::create("material")
+					->set("diffuseColor",	math::Vector4::create(0.0f, 1.0f, 1.0f, 1.0f))
+					->set("lineThickness",	1.0f)
+					->set("depthFunc", render::CompareMode::ALWAYS)
+					->set("priority", render::priority::LAST),
+				assets->effect("line")
+				));
+
+		auto roots = NodeSet::create(target)->roots()->nodes();
+		assert(!roots.empty());
+
+		roots.front()->addChild(_debugNode);
+
+
+	}
+
+	return shared_from_this();
+}
+
+bullet::Collider::Ptr
+bullet::Collider::hideCollider()
+{
+	if (_debugNode)
+	{
+		if (_debugNode->parent())
+			_debugNode->parent()->removeChild(_debugNode->parent());
+	
+		_debugNode = nullptr;
+	}
+
+	return shared_from_this();
 }
 
 void
@@ -211,6 +270,8 @@ bullet::Collider::initializeFromNode(Node::Ptr node)
 void
 bullet::Collider::synchronizePhysicsWithGraphics()
 {
+	static auto matrix = Matrix4x4::create();
+
 	if (_physicsWorld == nullptr || _targetTransform == nullptr)
 		return;
 
@@ -219,35 +280,47 @@ bullet::Collider::synchronizePhysicsWithGraphics()
 	// remove the scaling/shear from the graphics transform, but record it to restitute it during rendering
 	PhysicsWorld::removeScalingShear(
 		graphicsTransform, 
-		_TMP_MATRIX, 
+		matrix, 
 		_colliderData->correction()
 	);
-	// _TMP_MATRIX = graphicsNoScaleTransform
+	// matrix = graphicsNoScaleTransform
 
 #ifdef DEBUG_PHYSICS
 	std::cout << "[" << _colliderData->name() << "]\tsynchro graphics->physics" << std::endl;
 	PhysicsWorld::print(std::cout << "- correction =\n", _colliderData->correction()) << std::endl;
-	PhysicsWorld::print(std::cout << "- scalefree(graphics) =\n", _TMP_MATRIX) << std::endl;
+	PhysicsWorld::print(std::cout << "- scalefree(graphics) =\n", matrix) << std::endl;
 #endif // DEBUG_PHYSICS
 
-	_physicsWorld->synchronizePhysicsWithGraphics(_colliderData, _TMP_MATRIX);
+	_physicsWorld->synchronizePhysicsWithGraphics(_colliderData, matrix);
 }
 
 void
-bullet::Collider::graphicsWorldTransformChangedHandler(ColliderData::Ptr collider, 
+bullet::Collider::graphicsWorldTransformChangedHandler(ColliderData::Ptr, 
 													   Matrix4x4::Ptr graphicsTransform)
 {
 	if (_targetTransform == nullptr)
 		return;
 
+	static auto matrix = Matrix4x4::create();
+
 	// get the world-to-parent matrix in order to update the target's Transform
-	_TMP_MATRIX
+	matrix
 		->copyFrom(_targetTransform->modelToWorldMatrix(true))
 		->invert()
 		->append(_targetTransform->matrix());
-	// _TMP_MATRIX = worldToParent
 
 	_targetTransform->matrix()
 		->copyFrom(graphicsTransform)
-		->append(_TMP_MATRIX);
+		->append(matrix);
+}
+
+void
+bullet::Collider::physicsWorldTransformChangedHandler(ColliderData::Ptr, 
+													  Matrix4x4::Ptr physicsTransform)
+{
+	if (_debugNode == nullptr)
+		return;
+
+	_debugNode->component<Transform>()->matrix()
+		->copyFrom(physicsTransform);
 }

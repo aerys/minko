@@ -82,6 +82,8 @@ namespace minko
                 typedef Signal<ColliderDataPtr>                                         ColliderChanged;
 
 			private:
+				static const uint								                        _MAX_BODIES;
+
 				LinearIdAllocatorPtr							                        _uidAllocator;
 				ColliderMap										                        _colliderMap;
 				ColliderReverseMap								                        _colliderReverseMap;
@@ -105,10 +107,6 @@ namespace minko
 				Signal<NodePtr, NodePtr, AbsCtrlPtr>::Slot		                        _componentAddedOrRemovedSlot;
                 std::unordered_map<ColliderDataPtr, NodeLayoutsChanged::Slot>           _colliderGroupChangedSlot;
                 std::unordered_map<ColliderDataPtr, ColliderChanged::Slot>              _colliderMaskChangedSlot;
-
-				static const uint								                        _MAX_BODIES;
-				static Matrix4x4Ptr								                        _TMP_MATRIX;
-				static btTransform								                        _TMP_BTTRANSFORM;
 
 			public:
 				static
@@ -166,13 +164,13 @@ namespace minko
 				targetRemovedHandler(AbsCtrlPtr, NodePtr);
 
 				void
-				addedHandler(NodePtr node, NodePtr target, NodePtr ancestor);
+				addedHandler(NodePtr, NodePtr, NodePtr);
 
 				void
-				frameBeginHandler(std::shared_ptr<SceneManager> sceneManager, float time, float deltaTime);
+				frameBeginHandler(std::shared_ptr<SceneManager>, float time, float deltaTime);
 
 				void
-				frameEndHandler(std::shared_ptr<SceneManager> sceneManager, float time, float deltaTime);
+				frameEndHandler(std::shared_ptr<SceneManager>, float time, float deltaTime);
 
 				void
 				updateColliders();
@@ -193,10 +191,10 @@ namespace minko
 				toBulletTransform(QuaternionPtr, Vector3Ptr, btTransform&);
 
 				void
-				componentAddedHandler(NodePtr node, NodePtr target, AbsCtrlPtr component);
+				componentAddedHandler(NodePtr, NodePtr, AbsCtrlPtr);
 
 				void
-				setSceneManager(std::shared_ptr<SceneManager> sceneManager);
+				setSceneManager(std::shared_ptr<SceneManager>);
 
                 void
                 updateCollisionFilter(ColliderDataPtr);
