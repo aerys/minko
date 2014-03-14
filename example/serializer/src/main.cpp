@@ -34,14 +34,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/deserialize/TypeDeserializer.hpp"
 #include "minko/geometry/SphereGeometry.hpp"
 
-//std::string MODEL_FILENAME = "model/primitives/primitives.scene";
-//std::string MODEL_FILENAME = "model/particles-mini/NewScene.scene";
-//std::string MODEL_FILENAME = "model/physics/NewScene.scene";
-
-//std::string MODEL_FILENAME = "deserialization/stadium-benji/stadium.scene";
-//std::string MODEL_FILENAME = "deserialization/mini-particles/NewScene.scene";
-std::string MODEL_FILENAME = "D:\\Landes\\soccerpunch\\game\\asset\\model\\player\\nurse-final\\nurse.scene";
-//std::string MODEL_FILENAME = "nurse-withoutcube/nurse.scene";
+std::string MODEL_FILENAME = "model/primitives/primitives.scene";
 
 //#define SERIALIZE // comment to test deserialization
 
@@ -64,52 +57,7 @@ void
 openSceneExample(std::shared_ptr<file::AssetLibrary>	assets, 
 				 std::shared_ptr<scene::Node>			root)
 {
-	std::cout << "openSceneExample" << std::endl;
 	root->addChild(assets->symbol(MODEL_FILENAME));
-
-	auto withSurface = scene::NodeSet::create(root)
-		->descendants(true)
-		->where([](scene::Node::Ptr n){ return n->hasComponent<Surface>(); });
-
-	for (auto& n : withSurface->nodes())
-		std::cout << "'" << n->name() << "' has a surface" << std::endl;
-
-	auto withTransform = scene::NodeSet::create(root)
-		->descendants(true, false)
-		->where([](scene::Node::Ptr n){ return n->hasComponent<Transform>(); });
-
-	for (auto& n : withTransform->nodes())
-		std::cout << "'" << n->name() << "' with scale = " 
-		<< n->component<Transform>()->matrix()->data()[0] << " " 
-		<< n->component<Transform>()->matrix()->data()[5] << " " 
-		<< n->component<Transform>()->matrix()->data()[10] << " "  << std::endl;
-
-	auto myNurse = scene::NodeSet::create(root)
-		->descendants(true)
-		->where([](scene::Node::Ptr n){ return n->hasComponent<Transform>() && n->name()=="nurse" && n->children().size() > 1; });
-
-	auto withSkinning = scene::NodeSet::create(root)
-		->descendants(true, false)
-		->where([](scene::Node::Ptr n){ return n->hasComponent<Skinning>(); });
-
-	if (!myNurse->nodes().empty())
-	{
-		auto bitchyNurse = myNurse->nodes()[0];
-		std::cout << "'bitchy nurse' = " << bitchyNurse->component<Transform>()->matrix()->toString() << std::endl;
-
-		auto& m = bitchyNurse->component<Transform>()->matrix()->data();
-
-		//std::swap(m[6], m[5]);
-		//std::swap(m[9], m[10]);
-
-		std::cout << "'nice nurse' = " << bitchyNurse->component<Transform>()->matrix()->toString() << std::endl;
-	}
-
-	if (!assets->symbol(MODEL_FILENAME)->hasComponent<Transform>())
-		assets->symbol(MODEL_FILENAME)->addComponent(Transform::create());
-
-//	assets->symbol(MODEL_FILENAME)->component<Transform>()->matrix()->prependScale(100.0f);
-	std::cout << "/openSceneExample" << std::endl;
 }
 
 int main(int argc, char** argv)
@@ -119,11 +67,6 @@ int main(int argc, char** argv)
 
 	extension::SerializerExtension::activeExtension<extension::PhysicsExtension>();
     extension::SerializerExtension::activeExtension<extension::ParticlesExtension>();
-
-	math::Matrix4x4::Ptr Msc = math::Matrix4x4::create()->appendScale(1.0, 2.0, 3.0);
-	std::cout << "Msc = " << Msc->toString() << std::endl;
-	std::cout << "Msc' = " << Msc->appendRotationX(-PI)->toString() << std::endl;
-
 
 	// setup assets
 	sceneManager->assets()
@@ -151,9 +94,9 @@ int main(int argc, char** argv)
 		->addComponent(sceneManager);
 
 
-	//auto physicWorld = bullet::PhysicsWorld::create();
-	//physicWorld->setGravity(math::Vector3::create(0.f, -9.8f, 0.f));
-	//root->addComponent(physicWorld);
+	auto physicWorld = bullet::PhysicsWorld::create();
+	physicWorld->setGravity(math::Vector3::create(0.f, -9.8f, 0.f));
+	root->addComponent(physicWorld);
 	
 
 	auto camera = scene::Node::create("camera")
@@ -280,7 +223,6 @@ int main(int argc, char** argv)
 
 	auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr canvas, float time, float deltaTime)
 	{
-		std::cout << "enter frame" << std::endl;
 		yaw += cameraRotationYSpeed;
 		cameraRotationYSpeed *= 0.9f;
 
@@ -299,9 +241,8 @@ int main(int argc, char** argv)
 			lookAt->z() + distance * sinf(yaw) * sinf(pitch)
 			)
 		);
-		std::cout << "enter frame\tabt to next frame" << std::endl;
+
 		sceneManager->nextFrame(time, deltaTime);
-		std::cout << "/enter frame" << std::endl;
 	});
 
 	sceneManager->assets()->load();
