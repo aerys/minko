@@ -11,6 +11,12 @@ It provides a powerful editor on top of a robust, extensible and fully documente
 
 The repository hosts the source code of ***Minko 3***. Looking for Minko 2? We've moved the [repository](http://github.com/aerys/minko-as3).
 
+
+Resources
+---------
+* [Official website](http://minko.io/ "Website")
+* [Documentation](http://doc.v3.minko.io/ "Documentation")
+
 Get started
 ===========
 
@@ -103,11 +109,6 @@ Available plugins are:
 * sdl
 * serializer
 * webgl: please follow `webgl/README.md` to learn how to deploy
-
-Resources
----------
-* [minko.io](http://minko.io/ "Website")
-* [doc.v3.minko.io](http://doc.v3.minko.io/ "Documentation")
 
 Contribute
 ----------
