@@ -34,6 +34,10 @@ namespace minko
 			typedef std::shared_ptr<AbstractDOM> Ptr;
 
 			virtual
+			void
+			sendMessage(std::string) = 0;
+
+			virtual
 			AbstractDOMElement::Ptr
 			createElement(std::string) = 0;
 

@@ -53,6 +53,13 @@ EmscriptenDOM::getNewElementName()
 	return name;
 }
 
+void
+EmscriptenDOM::sendMessage(std::string message)
+{
+	std::string eval = "if (Minko.onmessage) Minko.onmessage('" + message + "');";
+	emscripten_run_script(eval.c_str());
+}
+
 std::list<AbstractDOMElement::Ptr>
 EmscriptenDOM::getElementList(std::string expression)
 {

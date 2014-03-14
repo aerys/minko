@@ -42,7 +42,8 @@ ChromiumDOM::ChromiumDOM() :
 	_onmessage(minko::Signal<AbstractDOM::Ptr, std::string>::create()),
 	_cleared(false),
 	_init(false),
-	_executeOnLoad(false)
+	_executeOnLoad(false),
+	_receivedMessages()
 {
 }
 
@@ -119,6 +120,36 @@ ChromiumDOM::body()
 }
 
 void
+ChromiumDOM::sendMessage(std::string message)
+{
+	ChromiumDOMElement::Ptr element;
+	if (CefCurrentlyOn(TID_RENDERER))
+	{
+		CefRefPtr<CefV8Value> func = _minkoObject->GetValue("onmessage");
+
+		if (func->IsFunction())
+		{
+			CefV8ValueList args;
+			args.push_back(CefV8Value::CreateString(message));
+
+			CefRefPtr<CefV8Value> result = func->ExecuteFunctionWithContext(_v8Context, _minkoObject, args);
+		}
+	}
+	else
+	{
+		CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
+		bool blocker = true;
+
+		runner->PostTask(NewCefRunnableFunction(&[&]()
+		{
+			sendMessage(message);
+			blocker = false;
+		}));
+
+		while (blocker);
+	}
+}
+void
 ChromiumDOM::addSendMessageFunction()
 {
 	std::string sendMessageFunctionName = "sendMessage";
@@ -126,7 +157,7 @@ ChromiumDOM::addSendMessageFunction()
 	// [javascript] Minko.sendMessage('message');
 	CefRefPtr<CefV8Value> sendMessageFunction = CefV8Value::CreateFunction(sendMessageFunctionName, _v8Handler.get());
 	_minkoObject->SetValue(sendMessageFunctionName, sendMessageFunction, V8_PROPERTY_ATTRIBUTE_NONE);
-
+	
 	_onmessageSlot = _v8Handler->received()->connect([=](std::string functionName, CefV8ValueList arguments)
 	{
 		if (functionName == sendMessageFunctionName)
@@ -134,8 +165,7 @@ ChromiumDOM::addSendMessageFunction()
 			CefRefPtr<CefV8Value> messageV8Value = arguments[0];
 			std::string message = messageV8Value->GetStringValue();
 
-			_onmessage->execute(shared_from_this(), message);
-			_engine->onmessage()->execute(shared_from_this(), message);
+			_receivedMessages.push_back(message);
 		}
 	});
 }
@@ -166,6 +196,11 @@ ChromiumDOM::addLoadEventListener()
 bool
 ChromiumDOM::update()
 {
+	for (std::string message : _receivedMessages)
+	{
+		_onload->execute(shared_from_this(), message);
+		_engine->onmessage->execute(shared_from_this(), message);
+	}
 	if (_executeOnLoad)
 	{
 		_onload->execute(shared_from_this(), fullUrl());
@@ -213,7 +248,6 @@ ChromiumDOM::getElementById(std::string id)
 	ChromiumDOMElement::Ptr element;
 	if (CefCurrentlyOn(TID_RENDERER))
 	{
-		std::cout << "getElementByID 1" << std::endl;
 		CefRefPtr<CefV8Value> func = _document->GetValue("getElementById");
 
 		CefV8ValueList args;
@@ -225,7 +259,6 @@ ChromiumDOM::getElementById(std::string id)
 	}
 	else
 	{
-		std::cout << "getElementByID 2" << std::endl;
 		CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
 		bool blocker = true;
 		
@@ -237,7 +270,6 @@ ChromiumDOM::getElementById(std::string id)
 
 		while (blocker);
 	}
-	std::cout << "getElementByID 3" << std::endl;
 	return element;
 }
 

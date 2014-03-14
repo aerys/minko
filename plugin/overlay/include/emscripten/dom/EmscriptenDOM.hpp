@@ -44,6 +44,9 @@ namespace emscripten
 			Ptr
 			create();
 
+			void
+			sendMessage(std::string);
+
 			minko::dom::AbstractDOMElement::Ptr
 			createElement(std::string);
 

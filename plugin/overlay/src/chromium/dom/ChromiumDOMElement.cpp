@@ -375,14 +375,12 @@ ChromiumDOMElement::textContent()
 void
 ChromiumDOMElement::textContent(std::string content)
 {
-	std::cout << "textContent 1" << std::endl;
 	if (CefCurrentlyOn(TID_RENDERER))
 	{
 		setProperty("textContent", CefV8Value::CreateString(content));
 	}
 	else
 	{
-		std::cout << "textContent 2" << std::endl;
 		CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
 		bool blocker = true;
 
@@ -394,7 +392,6 @@ ChromiumDOMElement::textContent(std::string content)
 
 		while (blocker);
 	}
-	std::cout << "textContent 3" << std::endl;
 }
 
 std::string
