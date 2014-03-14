@@ -175,6 +175,7 @@ void GetImporterInstanceList(std::vector< BaseImporter* >& out)
 	// ----------------------------------------------------------------------------
 	// Add an instance of each worker class here
 	// (register_new_importers_here)
+    // Fix: effective unless ASSIMP_BUILD_NO_IMPORTER_INSTANCIATION flag is set
 	// ----------------------------------------------------------------------------
 	out.reserve(64);
 
@@ -295,7 +296,7 @@ void GetImporterInstanceList(std::vector< BaseImporter* >& out)
 	out.push_back( new FBXImporter() );
 #endif
 
-#endif
+#endif // ! ASSIMP_BUILD_NO_IMPORTER_INSTANCIATION
 }
 
 }
