@@ -106,60 +106,6 @@ Options::Options() :
 # endif
 #endif
 
-	_materialFunction = [](const std::string&, material::Material::Ptr material) -> material::Material::Ptr
-	{ 
-		return material;
-	};
-
-	_geometryFunction = [](const std::string&, GeomPtr geom) -> GeomPtr
-	{
-		return geom;
-	};
-
-	_protocolFunction = [&](const std::string& filename) -> std::shared_ptr<AbstractProtocol>
-	{
-		std::string protocol = "";
-
-		uint i;
-
-		for (i = 0; i < filename.length(); ++i)
-		{
-			if (i < filename.length() - 2 && filename.at(i) == ':' && filename.at(i + 1) == '/' && filename.at(i + 2) == '/')
-				break;
-
-			protocol += filename.at(i);
-		}
-
-		if (i != filename.length())
-		{
-			auto loader = this->getProtocol(protocol);
-
-			if (loader)
-				return loader;
-		}
-
-        auto defaultProtocol = FileProtocol::create();
-
-        defaultProtocol->options(Options::create(shared_from_this()));
-
-        return defaultProtocol;
-	};
-	
-	_uriFunction = [](const std::string& uri) -> const std::string
-	{
-		return uri;
-	};
-
-	_nodeFunction = [](NodePtr node) -> NodePtr
-	{
-		return node;
-	};
-
-	_effectFunction = [](EffectPtr effect) -> EffectPtr
-	{
-		return effect;
-	};
-
 	initializePlatforms();
 	initializeUserFlags();
 }
@@ -215,4 +161,65 @@ Options::getProtocol(const std::string& protocol)
         p->options(Options::create(p->options()));
 
     return p;
+}
+
+std::shared_ptr<AbstractProtocol>
+Options::defaultProtocolFunction(const std::string& filename)
+{
+    std::string protocol = "";
+
+    uint i;
+
+    for (i = 0; i < filename.length(); ++i)
+    {
+        if (i < filename.length() - 2 && filename.at(i) == ':' && filename.at(i + 1) == '/' && filename.at(i + 2) == '/')
+            break;
+
+        protocol += filename.at(i);
+    }
+
+    if (i != filename.length())
+    {
+        auto loader = this->getProtocol(protocol);
+
+        if (loader)
+            return loader;
+    }
+
+    auto defaultProtocol = FileProtocol::create();
+
+    defaultProtocol->options(Options::create(this->shared_from_this()));
+
+    return defaultProtocol;
+}
+
+void
+Options::initializeDefaultFunctions()
+{
+    _protocolFunction = std::bind(&Options::defaultProtocolFunction, shared_from_this(), std::placeholders::_1);
+
+    _materialFunction = [](const std::string&, material::Material::Ptr material) -> material::Material::Ptr
+    {
+        return material;
+    };
+
+    _geometryFunction = [](const std::string&, GeomPtr geom) -> GeomPtr
+    {
+        return geom;
+    };
+
+    _uriFunction = [](const std::string& uri) -> const std::string
+    {
+        return uri;
+    };
+
+    _nodeFunction = [](NodePtr node) -> NodePtr
+    {
+        return node;
+    };
+
+    _effectFunction = [](EffectPtr effect) -> EffectPtr
+    {
+        return effect;
+    };
 }

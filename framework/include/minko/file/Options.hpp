@@ -85,6 +85,7 @@ namespace minko
 			{
                 auto opt = std::shared_ptr<Options>(new Options());
 
+                opt->initializeDefaultFunctions();
                 opt->registerParser<file::EffectParser>("effect");
                 opt->registerProtocol<FileProtocol>("file");
 
@@ -459,6 +460,12 @@ namespace minko
 
 			void
 			initializeUserFlags();
+
+            std::shared_ptr<AbstractProtocol>
+            defaultProtocolFunction(const std::string& filename);
+
+            void
+            initializeDefaultFunctions();
 		};
 	}
 }
