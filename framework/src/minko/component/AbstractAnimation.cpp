@@ -155,11 +155,13 @@ AbstractAnimation::setSceneManager(SceneManager::Ptr sceneManager)
 		_frameBeginSlot = sceneManager->frameBegin()->connect(std::bind(
 			&AbstractAnimation::frameBeginHandler, 
 			shared_from_this(), 
-			std::placeholders::_1
+			std::placeholders::_1,
+            std::placeholders::_2,
+            std::placeholders::_3
 		));
 
 		if (_sceneManager == nullptr)
-			_previousGlobalTime = _timeFunction(sceneManager->getTimer());
+			_previousGlobalTime = _timeFunction(uint(sceneManager->time()));
 	}
 	else if (_frameBeginSlot)
 	{
@@ -173,7 +175,7 @@ AbstractAnimation::setSceneManager(SceneManager::Ptr sceneManager)
 AbstractAnimation::Ptr
 AbstractAnimation::play()
 {
-	_previousGlobalTime = _timeFunction(_sceneManager ? _sceneManager->getTimer() : 0);
+	_previousGlobalTime = _timeFunction(_sceneManager ? uint(_sceneManager->time()) : 0);
 	_isPlaying	 		= true;
 	_started->execute(shared_from_this());
 	checkLabelHit(_currentTime, _currentTime);
@@ -193,7 +195,7 @@ AbstractAnimation::stop()
 	_isPlaying			= false;
 	_stopped->execute(shared_from_this());
 	_canUpdateOnce		= true;
-	_previousGlobalTime = _timeFunction(_sceneManager ? _sceneManager->getTimer() : 0);
+	_previousGlobalTime = _timeFunction(_sceneManager ? uint(_sceneManager->time()) : 0);
 
 	return shared_from_this();
 }
@@ -472,9 +474,9 @@ AbstractAnimation::isInPlaybackWindow(uint time) const
 
 
 void
-AbstractAnimation::frameBeginHandler(SceneManager::Ptr sceneManager)
+AbstractAnimation::frameBeginHandler(SceneManager::Ptr sceneManager, float time, float)
 {
-	update(sceneManager->getTimer());
+	update(uint(time));
 }
 
 /*virtual*/

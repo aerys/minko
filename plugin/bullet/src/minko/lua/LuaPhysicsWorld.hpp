@@ -19,35 +19,35 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #pragma once
 
-#include "minko/Common.hpp"
+#include "minko/BulletCommon.hpp"
+
+#include "minko/MinkoLua.hpp"
+#include "minko/component/bullet/PhysicsWorld.hpp"
 
 namespace minko
 {
-	namespace extention
+	class LuaWrapper;
+
+	namespace component
 	{
-		class AbstractExtension
+		namespace bullet
 		{
-		public:
-			typedef std::shared_ptr<AbstractExtension> Ptr;
-
-		public:
-			virtual
-			void
-			bind() = 0;
-		};
-
-		class SerializerExtension
-		{
-		public:
-			template <typename T>
-			typename std::enable_if<std::is_base_of<extension::AbstractExtension, T>::value, void>::type
-			static
-			activeExtension()
+			class LuaPhysicsWorld :
+				public LuaWrapper
 			{
-				std::shared_ptr<T> extension = T::initialize();
 
-				extension->bind();
-			}
-		};
+			public:
+
+				static
+				void
+				bind(LuaGlue& state)
+				{
+					state.Class<PhysicsWorld>("PhysicsWorld")
+						.method("create", &PhysicsWorld::create);
+						//.method("setGravity", &PhysicsWorld::setGravity)
+						//.method("synchronizePhysicsWithGraphics", &PhysicsWorld::synchronizePhysicsWithGraphics);
+				}
+			};
+		}
 	}
 }

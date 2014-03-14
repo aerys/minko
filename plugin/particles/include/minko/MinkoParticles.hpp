@@ -19,10 +19,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #pragma once
 
-#include "minko/controller/ParticleSystem.hpp"
-
+#include "minko/component/ParticleSystem.hpp"
+#include "minko/data/ParticlesProvider.hpp"
 #include "minko/particle/StartDirection.hpp"
-
 #include "minko/particle/modifier/IParticleModifier.hpp"
 #include "minko/particle/modifier/Modifier1.hpp"
 #include "minko/particle/modifier/Modifier3.hpp"
@@ -40,15 +39,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/particle/modifier/ColorOverTime.hpp"
 #include "minko/particle/modifier/SizeBySpeed.hpp"
 #include "minko/particle/modifier/ColorBySpeed.hpp"
-
 #include "minko/particle/sampler/Sampler.hpp"
 #include "minko/particle/sampler/Constant.hpp"
 #include "minko/particle/sampler/RandomValue.hpp"
 #include "minko/particle/sampler/LinearlyInterpolatedValue.hpp"
-
 #include "minko/particle/shape/EmitterShape.hpp"
 #include "minko/particle/shape/Box.hpp"
 #include "minko/particle/shape/Sphere.hpp"
 #include "minko/particle/shape/Cone.hpp"
 #include "minko/particle/shape/Cylinder.hpp"
 #include "minko/particle/shape/Point.hpp"
+#include "minko/extension/ParticlesExtension.hpp"

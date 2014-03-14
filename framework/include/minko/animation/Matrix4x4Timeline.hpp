@@ -64,6 +64,9 @@ namespace minko
 			void
 			update(uint time, UpdateTargetPtr, bool skipPropertyNameFormatting = true);
 
+            Matrix4x4Ptr
+            interpolate(uint time, Matrix4x4Ptr output = nullptr) const;
+
 		private:
 			Matrix4x4Timeline(const std::string&,
 							  uint,

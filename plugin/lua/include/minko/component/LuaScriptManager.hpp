@@ -68,6 +68,17 @@ namespace minko
 				return sm;
 			}
 
+			inline static
+			Ptr
+			create(std::vector<std::function<void(LuaGlue&)>> bindingsFunctions)
+			{
+				auto sm = std::shared_ptr<LuaScriptManager>(new LuaScriptManager());
+
+				sm->initialize(bindingsFunctions);
+				
+				return sm;
+			}
+
 			inline
 			bool
 			ready(std::shared_ptr<scene::Node> node)
@@ -77,6 +88,13 @@ namespace minko
 
 			void
 			update(std::shared_ptr<scene::Node> target);
+
+			inline
+			LuaGlue*
+			state()
+			{
+				return &_state;
+			}
 
 		private:
 			LuaScriptManager() :
@@ -90,6 +108,9 @@ namespace minko
 
 			void
 			initialize();
+
+			void
+			initialize(std::vector<std::function<void(LuaGlue&)>> bindingsFunctions);
 
 			void
 			initializeBindings();

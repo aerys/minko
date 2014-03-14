@@ -79,17 +79,34 @@ Matrix4x4Timeline::update(uint time,
 	if (matrix == nullptr)
 		return;
 
-	const uint	t		= getTimeInRange(time, _duration + 1);
+    if (_interpolate)
+        matrix = interpolate(time, matrix);
+    else
+    {
+        const uint	t		= getTimeInRange(time, _duration + 1);
+	    const uint	keyId	= getIndexForTime(t, _matrices);
+
+   		matrix->copyFrom(_matrices[keyId].second);
+    }
+}
+
+Matrix4x4::Ptr
+Matrix4x4Timeline::interpolate(uint             time, 
+                               Matrix4x4::Ptr   output) const
+{
+    const uint	t		= getTimeInRange(time, _duration + 1);
 	const uint	keyId	= getIndexForTime(t, _matrices);
 
-	const bool interpolate = _interpolate 
-		&& (t >= _matrices.front().first) 
-		&& (t < _matrices.back().first);
+    if (output == nullptr)
+        output = Matrix4x4::create();
 
-	if (interpolate)
-	{
+    // all matrices are sorted in order of increasing time
+    if (t < _matrices.front().first || t >= _matrices.back().first)
+        output->copyFrom(_matrices[keyId].second);
+    else
+    {
 		assert(keyId + 1 < (int)_matrices.size());
-
+        
 		const auto& current	= _matrices[keyId];
 		const auto& next	= _matrices[keyId + 1];
 
@@ -97,12 +114,10 @@ Matrix4x4Timeline::update(uint time,
 			? (t - current.first) / (float)(next.first - current.first)
 			: 0.0f;
 
-		matrix
+		output
 			->copyFrom(current.second)
 			->interpolateTo(next.second, ratio);
-	}
-	else
-	{
-		matrix->copyFrom(_matrices[keyId].second);
-	}
+    }
+
+    return output;
 }

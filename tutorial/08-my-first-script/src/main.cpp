@@ -49,13 +49,13 @@ main(int argc, char** argv)
         root->addComponent(assets->script("script/my_script.lua"));
 
         auto numFrames = 0;
-        auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint t, float dt)
+        auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float t, float dt)
         {
             ++numFrames;
             if (numFrames == 5)
                 root->removeComponent(sceneManager->assets()->script("script/my_script.lua"));
 
-            sceneManager->nextFrame();
+            sceneManager->nextFrame(t, dt);
         });
 
         canvas->run();

@@ -31,7 +31,7 @@ int
 main(int argc, char** argv)
 {
     auto canvas = Canvas::create("Minko Tutorial - Applying antialiasing effect", WINDOW_WIDTH, WINDOW_HEIGHT);
-    auto sceneManager = component::SceneManager::create(canvas->context());
+    auto sceneManager = SceneManager::create(canvas->context());
 
     sceneManager->assets()
         ->queue("effect/Basic.effect")
@@ -40,11 +40,16 @@ main(int argc, char** argv)
 
     auto complete = sceneManager->assets()->complete()->connect([&](file::AssetLibrary::Ptr assets)
     {
+        auto effect = sceneManager->assets()->effect("effect/FXAA/FXAA.effect");
+
+        if (!effect)
+            throw std::logic_error("The FXAA effect has not been loaded.");
+
         auto root = scene::Node::create("root")
             ->addComponent(sceneManager);
 
         auto camera = scene::Node::create("camera")
-            ->addComponent(Renderer::create(0x7f7f7fff))
+            ->addComponent(Renderer::create(0x00000000))
             ->addComponent(PerspectiveCamera::create(
             (float) WINDOW_WIDTH / (float) WINDOW_HEIGHT, (float) PI * 0.25f, .1f, 1000.f)
             )
@@ -62,35 +67,34 @@ main(int argc, char** argv)
             ));
         root->addChild(cube);
 
-        
-        auto ppTarget = render::Texture::create(assets->context(), 1024, 1024, false, true);
+        auto renderTarget = render::Texture::create(assets->context(), clp2(WINDOW_WIDTH), clp2(WINDOW_HEIGHT), false, true);
+        renderTarget->upload();
 
-        ppTarget->upload();
+        effect->setUniform("textureSampler", renderTarget);
+        effect->setUniform("texcoordOffset",
+            Vector2::create(1.0f / renderTarget->width(), 1.0f / renderTarget->height()));
 
-        auto ppFx = sceneManager->assets()->effect("effect/FXAA/FXAA.effect");
-
-        if (!ppFx)
-            throw std::logic_error("The post-processing effect has not been loaded.");
-
-        ppFx->setUniform("textureSampler", ppTarget);
-        ppFx->setUniform("texcoordOffset", Vector2::create(1.0f / 1024.0f, 1.0f / 1024.0f));
-
-        auto ppRenderer = Renderer::create();
-        auto ppScene = scene::Node::create()
-            ->addComponent(ppRenderer)
-            ->addComponent(Surface::create(
-            geometry::QuadGeometry::create(sceneManager->assets()->context()),
-            material::Material::create(),
-            ppFx
-            ));
+        auto renderer = Renderer::create();
+        auto postProcessingScene = scene::Node::create()
+        ->addComponent(renderer)
+        ->addComponent(
+            Surface::create(
+                geometry::QuadGeometry::create(sceneManager->assets()->context()),
+                material::Material::create(),
+                effect
+            )
+        );
 
         auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint width, uint height)
         {
             camera->component<PerspectiveCamera>()->aspectRatio((float) width / (float) height);
 
-            ppTarget = render::Texture::create(assets->context(), clp2(width), clp2(height), false, true);
-            ppTarget->upload();
-            ppFx->setUniform("textureSampler", ppTarget);
+            renderTarget = render::Texture::create(assets->context(), clp2(width), clp2(height), false, true);
+            renderTarget->upload();
+
+            effect->setUniform("textureSampler", renderTarget);
+            effect->setUniform("texcoordOffset",
+                Vector2::create(1.0f / renderTarget->width(), 1.0f / renderTarget->height()));
         });
 
         auto enableFXAA = true;
@@ -106,21 +110,21 @@ main(int argc, char** argv)
                 else
                     std::cout << "Disable FXAA" << std::endl;
             }
-            
+
         });
 
-        auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint t, float dt)
+        auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float t, float dt)
         {
             cube->component<Transform>()->matrix()->prependRotationY(.01f);
 
             if (enableFXAA)
             {
-                sceneManager->nextFrame(ppTarget);
-                ppRenderer->render(assets->context());
+                sceneManager->nextFrame(t, dt, renderTarget);
+                renderer->render(assets->context());
             }
             else
             {
-                sceneManager->nextFrame();
+                sceneManager->nextFrame(t, dt);
             }
         });
 

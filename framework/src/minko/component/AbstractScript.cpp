@@ -86,10 +86,10 @@ AbstractScript::addedOrRemovedHandler(scene::Node::Ptr node, scene::Node::Ptr ta
 void
 AbstractScript::targetRemovedHandler(AbstractComponent::Ptr cmp, scene::Node::Ptr target)
 {
-	_componentAddedSlot = nullptr;
-	_componentRemovedSlot = nullptr;
-    _frameBeginSlot = nullptr;
-	_frameEndSlot = nullptr;
+	_componentAddedSlot     = nullptr;
+	_componentRemovedSlot   = nullptr;
+    _frameBeginSlot         = nullptr;
+	_frameEndSlot           = nullptr;
 }
 
 void
@@ -119,7 +119,7 @@ AbstractScript::componentRemovedHandler(scene::Node::Ptr		node,
 }
 
 void
-AbstractScript::frameBeginHandler(SceneManager::Ptr sceneManager)
+AbstractScript::frameBeginHandler(SceneManager::Ptr sceneManager, float time, float deltaTime)
 {
 	for (auto& target : targets())
 	{
@@ -138,7 +138,7 @@ AbstractScript::frameBeginHandler(SceneManager::Ptr sceneManager)
 }
 
 void
-AbstractScript::frameEndHandler(std::shared_ptr<SceneManager> sceneManager)
+AbstractScript::frameEndHandler(std::shared_ptr<SceneManager> sceneManager, float time, float deltaTime)
 {
 	for (auto& target : targets())
 	{
@@ -172,11 +172,12 @@ AbstractScript::setSceneManager(SceneManager::Ptr sceneManager)
 	{
 		if (!_frameBeginSlot)
 			_frameBeginSlot = sceneManager->frameBegin()->connect(std::bind(
-				&AbstractScript::frameBeginHandler, shared_from_this(), std::placeholders::_1
+				&AbstractScript::frameBeginHandler, shared_from_this(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
 			));
 		if (!_frameEndSlot)
 			_frameEndSlot = sceneManager->frameEnd()->connect(std::bind(
-				&AbstractScript::frameEndHandler, shared_from_this(), std::placeholders::_1));
+				&AbstractScript::frameEndHandler, shared_from_this(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
+            ));
 	}
 	else if (_frameBeginSlot)
 	{
@@ -187,6 +188,6 @@ AbstractScript::setSceneManager(SceneManager::Ptr sceneManager)
 		}
 
 		_frameBeginSlot = nullptr;
-		_frameEndSlot = nullptr;
+		_frameEndSlot   = nullptr;
 	}
 }

@@ -45,13 +45,13 @@ int main(int argc, char** argv)
         ->registerParser<file::LuaScriptParser>("lua")
         ->queue("script/main.lua");
 
-	Signal<Canvas::Ptr, uint, float>::Slot nextFrame;
+	Signal<Canvas::Ptr, float, float>::Slot nextFrame;
 	Signal<file::AssetLibrary::Ptr>::Slot loaded = sceneManager->assets()->complete()->connect(
 		[&](file::AssetLibrary::Ptr assets)
 		{
 			loaded = nullptr;
 
-			nextFrame = canvas->enterFrame()->connect([&](Canvas::Ptr, uint, float)
+			nextFrame = canvas->enterFrame()->connect([&](Canvas::Ptr, float, float)
 			{
 				nextFrame = nullptr;
 				root->addComponent(sceneManager->assets()->script("script/main.lua"));
@@ -61,9 +61,9 @@ int main(int argc, char** argv)
 
 	sceneManager->assets()->load();
 
-	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, float deltaTime)
+	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float deltaTime)
 	{
-		sceneManager->nextFrame();
+		sceneManager->nextFrame(time, deltaTime);
 	});
 
 	canvas->run();

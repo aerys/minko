@@ -74,10 +74,10 @@ int main(int argc, char** argv)
 		camera->component<PerspectiveCamera>()->aspectRatio((float)width / (float)height);
 	});
 
-	auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr canvas, uint time, uint deltaTime)
+	auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr canvas, float time, float deltaTime)
 	{
 		camera->component<Transform>()->matrix()->lock()->appendRotationY(0.02f)->appendRotationZ(-0.014f)->unlock();
-		sceneManager->nextFrame();
+		sceneManager->nextFrame(time, deltaTime);
 		std::cout << "Num drawCalls : " << camera->component<Renderer>()->numDrawCalls() << std::endl;
 	});
 

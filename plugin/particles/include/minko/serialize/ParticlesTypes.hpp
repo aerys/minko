@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -19,51 +19,48 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #pragma once
 
-#include "minko/ParticlesCommon.hpp"
-#include "minko/geometry/Geometry.hpp"
+#include "minko/Common.hpp"
 
 namespace minko
 {
-	namespace geometry
+	namespace serialize
 	{
-		class ParticlesGeometry :
-			public Geometry
+		enum class SamplerId
 		{
-		public:
-			typedef std::shared_ptr<ParticlesGeometry>				Ptr;
+            UNKNOWN         = 0,
+			CONSTANT_COLOR  = 2,
+			CONSTANT_NUMBER = 1,
+			LINEAR_COLOR	= 3,
+			LINEAR_NUMBER   = 4,
+			RANDOM_COLOR	= 6,
+			RANDOM_NUMBER	= 7
+		};
 
-			typedef std::shared_ptr<render::ParticleVertexBuffer>	VertexBufferPtr;
-			typedef std::shared_ptr<render::ParticleIndexBuffer>	IndexBufferPtr;
-		
-		private:
-			VertexBufferPtr						_vertices;
-			IndexBufferPtr						_indices;
+		enum class EmitterShapeId
+		{
+            UNKNOWN     = 0,
+            CYLINDER    = 1,
+            CONE        = 2,
+            SPHERE      = 3,
+            POINT       = 4,
+            BOX         = 5
+		};
 
-		public:
-			inline static
-			Ptr
-			create(std::shared_ptr<render::AbstractContext> context)
-			{
-				auto geom = std::shared_ptr<ParticlesGeometry>(new ParticlesGeometry());
-
-				geom->initialize(context);
-
-				return geom;
-			};
-
-			void
-			initStreams(unsigned int maxParticles);
-
-			inline
-			VertexBufferPtr
-			vertices()
-			{
-				return _vertices;
-			}
-
-		protected:
-			void
-			initialize(std::shared_ptr<render::AbstractContext> context);
+		enum class ModifierId
+		{
+            START_COLOR	            = 0,
+			START_FORCE			    = 1,
+			START_ROTATION	        = 2,
+			START_SIZE			    = 3,
+			START_SPRITE		    = 4,
+			START_VELOCITY			= 5,
+			START_ANGULAR_VELOCITY	= 12,
+			COLOR_BY_SPEED		    = 6,
+            COLOR_OVER_TIME         = 7,
+            FORCE_OVER_TIME         = 8,    
+            SIZE_BY_SPEED           = 9,
+            SIZE_OVER_TIME          = 10,
+            VELOCITY_OVER_TIME      = 11
 		};
 	}
 }

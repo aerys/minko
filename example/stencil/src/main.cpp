@@ -177,14 +177,14 @@ main(int argc, char** argv)
 	});
 
 		
-	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, float deltaTime)
+	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float deltaTime)
 	{
 		bigStarNode->component<Transform>()->matrix()->appendRotationZ(.001f);
 		for (auto& star : smallStars)
 			star->component<Transform>()->matrix()
 			->prependRotationZ(-0.025f);
 
-		sceneManager->nextFrame();
+		sceneManager->nextFrame(time, deltaTime);
 	});
 
 	sceneManager->assets()->load();

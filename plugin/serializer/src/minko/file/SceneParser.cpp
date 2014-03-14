@@ -26,6 +26,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/Transform.hpp"
 #include "minko/component/JobManager.hpp"
 #include "minko/file/Options.hpp"
+#include "minko/file/Dependency.hpp"
 
 using namespace minko;
 using namespace minko::file;
@@ -86,6 +87,18 @@ SceneParser::SceneParser()
 		std::placeholders::_1,
 		std::placeholders::_2,
 		std::placeholders::_3));
+
+	registerComponent(serialize::ANIMATION,
+		std::bind(&deserialize::ComponentDeserializer::deserializeAnimation,
+		std::placeholders::_1,
+		std::placeholders::_2,
+		std::placeholders::_3));
+
+	registerComponent(serialize::SKINNING,
+		std::bind(&deserialize::ComponentDeserializer::deserializeSkinning,
+		std::placeholders::_1,
+		std::placeholders::_2,
+		std::placeholders::_3));
 }
 
 void
@@ -102,6 +115,8 @@ SceneParser::parse(const std::string&					filename,
 				   const std::vector<unsigned char>&	data,
 				   AssetLibraryPtr					    assetLibrary)
 {
+	_dependencies->options(options);
+
 	msgpack::object		deserialized;
 	msgpack::zone		mempool;
 	std::string 		folderPath = extractFolderPath(resolvedFilename);
@@ -113,12 +128,15 @@ SceneParser::parse(const std::string&					filename,
 
 	assetLibrary->symbol(filename, parseNode(dst.a1, dst.a0, assetLibrary, options));
 
-	auto jobManager = component::JobManager::create(30);
+	if (_jobList.size() > 0)
+	{
+		auto jobManager = component::JobManager::create(30);
+		
+		for (auto it = _jobList.begin(); it != _jobList.end(); ++it)
+			jobManager->pushJob(*it);
 
-	for (auto it = _jobList.begin(); it != _jobList.end(); ++it)
-		jobManager->pushJob(*it);
-
-	assetLibrary->symbol(filename)->addComponent(jobManager);
+		assetLibrary->symbol(filename)->addComponent(jobManager);
+	}
 
 	complete()->execute(shared_from_this());
 }
@@ -165,17 +183,34 @@ SceneParser::parseNode(std::vector<SerializedNode>&			nodePack,
 			nodeStack.push(std::make_tuple(newNode, numChildren));
 	}
 
+	_dependencies->loadedRoot(root);
+
+	std::set<uint> markedComponent;
+
 	for (uint componentIndex = 0; componentIndex < componentPack.size(); ++componentIndex)
 	{
 		int8_t			dst = componentPack[componentIndex].at(componentPack[componentIndex].size() - 1);
 
-		if (_componentIdToReadFunction.find(dst) != _componentIdToReadFunction.end())
+		if (dst == serialize::SKINNING)
+			markedComponent.insert(componentIndex);
+		else
 		{
-			std::shared_ptr<component::AbstractComponent> newComponent = _componentIdToReadFunction[dst](componentPack[componentIndex], assetLibrary, _dependencies);
+			if (_componentIdToReadFunction.find(dst) != _componentIdToReadFunction.end())
+			{
+				std::shared_ptr<component::AbstractComponent> newComponent = _componentIdToReadFunction[dst](componentPack[componentIndex], assetLibrary, _dependencies);
 
-			for (scene::Node::Ptr node : componentIdToNodes[componentIndex])
-				node->addComponent(newComponent);
+				for (scene::Node::Ptr node : componentIdToNodes[componentIndex])
+					node->addComponent(newComponent);
+			}
 		}
+	}
+
+	for (auto componentIndex2 : markedComponent)
+	{
+		std::shared_ptr<component::AbstractComponent> newComponent = _componentIdToReadFunction[serialize::SKINNING](componentPack[componentIndex2], assetLibrary, _dependencies);
+
+		for (scene::Node::Ptr node : componentIdToNodes[componentIndex2])
+			node->addComponent(newComponent);
 	}
 
 	return root;
