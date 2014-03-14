@@ -162,6 +162,7 @@ ChromiumDOMEngine::registerDom(ChromiumDOM::Ptr dom)
 void
 ChromiumDOMEngine::loadHttp(std::string url)
 {
+	std::cout << url << std::endl;
 	_impl->browser.get()->GetMainFrame()->LoadURL(url);
 }
 
@@ -173,9 +174,11 @@ ChromiumDOMEngine::loadLocal(std::string filename)
 	//Fixme : find a more elegant way ?
 #if DEBUG
 	path += "../../../asset/";
+#else
+	path += "asset/";
 #endif
 
-	std::string url = path + "/" + filename;
+	std::string url = path + filename;
 
 	loadHttp(url);
 }

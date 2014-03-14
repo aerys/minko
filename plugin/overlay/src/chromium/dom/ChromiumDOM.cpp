@@ -138,7 +138,7 @@ ChromiumDOM::sendMessage(std::string message)
 	else
 	{
 		CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
-		bool blocker = true;
+		std::atomic<bool> blocker = true;
 
 		runner->PostTask(NewCefRunnableFunction(&[&]()
 		{
@@ -232,7 +232,7 @@ ChromiumDOM::createElement(std::string tag)
 	else
 	{
 		CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
-		bool blocker = true;
+		std::atomic<bool> blocker = true;
 
 		runner->PostTask(NewCefRunnableFunction(&[&]()
 		{
@@ -263,7 +263,7 @@ ChromiumDOM::getElementById(std::string id)
 	else
 	{
 		CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
-		bool blocker = true;
+		std::atomic<bool> blocker = true;
 		
 		runner->PostTask(NewCefRunnableFunction(&[&]()
 		{
@@ -294,7 +294,7 @@ ChromiumDOM::getElementsByClassName(std::string className)
 	else
 	{
 		CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
-		bool blocker = true;
+		std::atomic<bool> blocker = true;
 
 		runner->PostTask(NewCefRunnableFunction(&[&]()
 		{
@@ -326,7 +326,7 @@ ChromiumDOM::getElementsByTagName(std::string tagName)
 	else
 	{
 		CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
-		bool blocker = true;
+		std::atomic<bool> blocker = true;
 
 		runner->PostTask(NewCefRunnableFunction(&[&]()
 		{
@@ -351,7 +351,7 @@ ChromiumDOM::fullUrl()
 	else
 	{
 		CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
-		bool blocker = true;
+		std::atomic<bool> blocker = true;
 
 		runner->PostTask(NewCefRunnableFunction(&[&]()
 		{

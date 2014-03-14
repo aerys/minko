@@ -377,8 +377,11 @@ Canvas::step()
     {
         switch (event.type)
         {
-        case SDL_QUIT:
-            _active = false;
+		case SDL_QUIT:
+			quit();
+			break;
+		case SDL_APP_TERMINATING:
+			quit();
             break;
 
         case SDL_KEYDOWN:
