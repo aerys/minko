@@ -41,12 +41,12 @@ main(int argc, char** argv)
     // add a LuaScriptManager to the root node
     root->addComponent(LuaScriptManager::create());
 
-    sceneManager->assets()->registerParser<file::LuaScriptParser>("lua");
-    sceneManager->assets()->queue("script/my_script.lua");
+    sceneManager->assets()->loader()->options()->registerParser<file::LuaScriptParser>("lua");
+    sceneManager->assets()->loader()->queue("script/my_script.lua");
 
-    auto complete = sceneManager->assets()->complete()->connect([&](file::AssetLibrary::Ptr assets)
+    auto complete = sceneManager->assets()->loader()->complete()->connect([&](file::Loader::Ptr loader)
     {
-        root->addComponent(assets->script("script/my_script.lua"));
+		root->addComponent(sceneManager->assets()->script("script/my_script.lua"));
 
         auto numFrames = 0;
         auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float t, float dt)
@@ -62,7 +62,7 @@ main(int argc, char** argv)
     });
 
     // actually begin loading operations
-    sceneManager->assets()->load();
+    sceneManager->assets()->loader()->load();
 
     return 0;
 }

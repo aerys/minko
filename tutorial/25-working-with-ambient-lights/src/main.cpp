@@ -34,12 +34,12 @@ main(int argc, char** argv)
   auto canvas = Canvas::create("Minko Tutorial - Working with ambient lights", WINDOW_WIDTH, WINDOW_HEIGHT);
   auto sceneManager = component::SceneManager::create(canvas->context());
  
-  sceneManager->assets()
-	->registerParser<file::PNGParser>("png")
+  sceneManager->assets()->loader()
     ->queue("effect/Phong.effect")
-    ->queue("texture/box.png");
+	->queue("texture/box.png")
+	->options()->registerParser<file::PNGParser>("png");
   
-  auto complete = sceneManager->assets()->complete()->connect([&](file::AssetLibrary::Ptr assets)
+  auto complete = sceneManager->assets()->loader()->complete()->connect([&](file::Loader::Ptr loader)
   {
     auto root = scene::Node::create("root")
       ->addComponent(sceneManager);
@@ -54,9 +54,9 @@ main(int argc, char** argv)
     auto texturedCube = scene::Node::create("texturedCube")
       ->addComponent(Transform::create(Matrix4x4::create()->translation(0.f, 0.f, -5.f)))
 	  ->addComponent(Surface::create(
-        geometry::CubeGeometry::create(assets->context()),
-		material::Material::create()->set("diffuseMap", assets->texture("texture/box.png")),
-        assets->effect("effect/Phong.effect")
+        geometry::CubeGeometry::create(canvas->context()),
+		material::Material::create()->set("diffuseMap", sceneManager->assets()->texture("texture/box.png")),
+		sceneManager->assets()->effect("effect/Phong.effect")
       ));
 	texturedCube->component<Transform>()->matrix()->prependRotationY(PI * 0.25f);
     root->addChild(texturedCube);
@@ -75,7 +75,7 @@ main(int argc, char** argv)
     canvas->run();
   });
  
-  sceneManager->assets()->load();
+  sceneManager->assets()->loader()->load();
  
   return 0;
 }
