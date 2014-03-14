@@ -36,18 +36,18 @@ createTransparentObject(float, float rotationY, file::AssetLibrary::Ptr);
 int main(int argc, char** argv)
 {
 	auto canvas = Canvas::create("Minko Example - Sky Box", 800, 600);
-
 	auto sceneManager = SceneManager::create(canvas->context());
 
 	// setup assets
-	sceneManager->assets()->loader()->options()->resizeSmoothly(true);
-	sceneManager->assets()->loader()->options()->generateMipmaps(true);
-	sceneManager->assets()->loader()->options()
+    auto loader = sceneManager->assets()->loader();
+	loader->options()->resizeSmoothly(true);
+	loader->options()->generateMipmaps(true);
+	loader->options()
 		->registerParser<file::PNGParser>("png")
 		->registerParser<file::JPEGParser>("jpg")
                 ->registerParser<file::JPEGParser>("jpeg");
         sceneManager->assets()->loader()
-                ->queue(CUBE_TEXTURE, file::Options::create(canvas->context())->isCubeTexture(true))
+                ->queue(CUBE_TEXTURE, file::Options::create(loader->options())->isCubeTexture(true))
 		->queue("effect/Basic.effect");
 
 	sceneManager->assets()
