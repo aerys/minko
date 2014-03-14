@@ -38,16 +38,18 @@ int main(int argc, char** argv)
     auto canvas = Canvas::create("Minko Example - Fog", WINDOW_WIDTH, WINDOW_HEIGHT);
 
 	auto sceneManager = SceneManager::create(canvas->context());
-	
+
 	// setup assets
-	sceneManager->assets()->defaultOptions()->resizeSmoothly(true);
-	sceneManager->assets()->defaultOptions()->generateMipmaps(true);
-	sceneManager->assets()
-		->registerParser<file::PNGParser>("png")
-		->queue(TEXTURE_FILENAME)
+	sceneManager->assets()->loader()->options()->resizeSmoothly(true);
+	sceneManager->assets()->loader()->options()->generateMipmaps(true);
+	sceneManager->assets()->loader()->options()
+                ->registerParser<file::PNGParser>("png");
+
+        sceneManager->assets()->loader()
+                ->queue(TEXTURE_FILENAME)
 		->queue(EFFECT_FILENAME);
 
-	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
+	auto _ = sceneManager->assets()->loader()->complete()->connect([=](file::Loader::Ptr loader)
 	{
         std::cout << "Press [L]\tto activate linear fog\nPress [E]\tto activate exponential fog\nPress [F]\tto activate square exponential fog\nPress [N]\tto deactivate fog\nPress [P]\tto to increase fog density\nPress [M]\tto to decrease fog density" << std::endl;
 
@@ -66,7 +68,7 @@ int main(int argc, char** argv)
 		root->addChild(camera);
 
         auto material = material::PhongMaterial::create()
-            ->diffuseMap(assets->texture(TEXTURE_FILENAME))
+            ->diffuseMap(sceneManager->assets()->texture(TEXTURE_FILENAME))
             ->fogType(render::FogType::None)
             ->fogColor(Vector4::create(0.6f, 0.6f, 0.6f, 1.0f))
             ->fogStart(0.5f) // only for linear
@@ -80,14 +82,14 @@ int main(int argc, char** argv)
         mesh->addComponent(Surface::create(
             geometry::CubeGeometry::create(sceneManager->assets()->context()),
             material,
-            assets->effect(EFFECT_FILENAME)));
+            sceneManager->assets()->effect(EFFECT_FILENAME)));
 
         auto groundNode = scene::Node::create("ground")
             ->addComponent(Transform::create(Matrix4x4::create()->appendScale(16.0f)->appendRotationX((float) -PI / 2.0f)))
             ->addComponent(Surface::create(
             geometry::QuadGeometry::create(sceneManager->assets()->context()),
             groundMaterial,
-            assets->effect(EFFECT_FILENAME)));
+            sceneManager->assets()->effect(EFFECT_FILENAME)));
         root->addChild(groundNode);
 
         auto ambientLight = scene::Node::create("ambientLight")
@@ -194,7 +196,7 @@ int main(int argc, char** argv)
 		canvas->run();
 	});
 
-	sceneManager->assets()->load();
+	sceneManager->assets()->loader()->load();
 
 	return 0;
 }

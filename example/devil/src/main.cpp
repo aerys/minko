@@ -40,10 +40,10 @@ int main(int argc, char** argv)
 	auto canvas = Canvas::create("Minko Example - DevIL", 800, 600);
 
 	auto sceneManager = SceneManager::create(canvas->context());
-	
+
 	// setup assets
-	sceneManager->assets()->defaultOptions()->generateMipmaps(true);
-	sceneManager->assets()
+	sceneManager->assets()->loader()->options()->generateMipmaps(true);
+	sceneManager->assets()->loader()
 		->queue(TEXTURE_JPG)
 		->queue(TEXTURE_PNG)
 		->queue(TEXTURE_TGA)
@@ -58,11 +58,11 @@ int main(int argc, char** argv)
 	for (uint i = 0; i < extensions.size(); i++)
 	{
 		std::string extension = extensions[i];
-		sceneManager->assets()->registerParser<file::DevILParser>(extension);
+		sceneManager->assets()->loader()->options()->registerParser<file::DevILParser>(extension);
 	}
 
 	sceneManager->assets()->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()));
-	
+
 
 
 	auto root = scene::Node::create("root")
@@ -82,20 +82,20 @@ int main(int argc, char** argv)
 
 	int frames = 0;
 
-	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
+	auto _ = sceneManager->assets()->loader()->complete()->connect([=](file::Loader::Ptr loader)
 	{
-		textures.push_back(assets->texture(TEXTURE_JPG));
-		textures.push_back(assets->texture(TEXTURE_PNG));
-		textures.push_back(assets->texture(TEXTURE_TGA));
-		textures.push_back(assets->texture(TEXTURE_TIF));
-		textures.push_back(assets->texture(TEXTURE_BMP));
-		textures.push_back(assets->texture(TEXTURE_PSD));
-		textures.push_back(assets->texture(TEXTURE_DDS));
-		
+		textures.push_back(sceneManager->assets()->texture(TEXTURE_JPG));
+		textures.push_back(sceneManager->assets()->texture(TEXTURE_PNG));
+		textures.push_back(sceneManager->assets()->texture(TEXTURE_TGA));
+		textures.push_back(sceneManager->assets()->texture(TEXTURE_TIF));
+		textures.push_back(sceneManager->assets()->texture(TEXTURE_BMP));
+		textures.push_back(sceneManager->assets()->texture(TEXTURE_PSD));
+		textures.push_back(sceneManager->assets()->texture(TEXTURE_DDS));
+
 		mesh->addComponent(Surface::create(
 				geometry::CubeGeometry::create(sceneManager->assets()->context()),
 				material::BasicMaterial::create()->diffuseMap(textures[0]),
-				assets->effect("effect/Basic.effect")
+				sceneManager->assets()->effect("effect/Basic.effect")
 			));
 	});
 
@@ -123,7 +123,7 @@ int main(int argc, char** argv)
 		}
 	});
 
-	sceneManager->assets()->load();
+	sceneManager->assets()->loader()->load();
 	canvas->run();
 
 	return 0;

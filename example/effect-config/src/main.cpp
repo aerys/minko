@@ -32,15 +32,19 @@ int main(int argc, char** argv)
 	auto sceneManager = SceneManager::create(canvas->context());
 
 	// setup assets
-	sceneManager->assets()->defaultOptions()
+	sceneManager->assets()->loader()->options()
         ->generateMipmaps(true)
         ->includePaths().push_back("effect");
 
-	sceneManager->assets()
-		->registerParser<file::JPEGParser>("jpg")
+	sceneManager->assets()->loader()->options()
+                ->registerParser<file::JPEGParser>("jpg");
+
+        sceneManager->assets()
 		->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()))
-		->geometry("sphere", geometry::SphereGeometry::create(sceneManager->assets()->context()))
-		->queue("effect/windows.jpg")
+                ->geometry("sphere", geometry::SphereGeometry::create(sceneManager->assets()->context()));
+
+        sceneManager->assets()->loader()
+                ->queue("effect/windows.jpg")
 		->queue("effect/macosx.jpg")
 		->queue("effect/linux.jpg")
 		->queue("effect/PlatformTexture.effect");
@@ -59,16 +63,16 @@ int main(int argc, char** argv)
 	auto mesh = scene::Node::create("mesh")
 		->addComponent(Transform::create());
 
-	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
+	auto _ = sceneManager->assets()->loader()->complete()->connect([=](file::Loader::Ptr loader)
 	{
 		mesh->addComponent(Surface::create(
-				assets->geometry("cube"),
+				sceneManager->assets()->geometry("cube"),
 				material::Material::create()->set("diffuseColor", Vector4::one()),
-				assets->effect("effect/PlatformTexture.effect")
+				sceneManager->assets()->effect("effect/PlatformTexture.effect")
 			));
 		root->addChild(mesh);
 	});
-	
+
 	auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
 	{
 		root->children()[0]->component<PerspectiveCamera>()->aspectRatio((float)w / (float)h);
@@ -80,7 +84,7 @@ int main(int argc, char** argv)
 		sceneManager->nextFrame();
 	});
 
-	sceneManager->assets()->load();
+	sceneManager->assets()->loader()->load();
 
 	canvas->run();
 

@@ -34,25 +34,26 @@ scene::Node::Ptr camera = nullptr;
 int main(int argc, char** argv)
 {
 	auto canvas		= Canvas::create("Minko Example - Frustum", WINDOW_WIDTH, WINDOW_HEIGHT);
-	
+
 	canvas->context()->errorsEnabled(true);
 
 	const clock_t startTime	= clock();
 
 	auto sceneManager		= SceneManager::create(canvas->context());
 	auto root				= scene::Node::create("root")->addComponent(sceneManager);
-	
+
 	auto quadTreeRoot		= scene::Node::create("quadTreeRoot");
 	auto cubeGroup			= scene::Node::create("cubeGroup");
 
 	cubeGroup->addComponent(component::Transform::create());
 
 	// setup assets
-	sceneManager->assets()->defaultOptions()->generateMipmaps(true);
-	sceneManager->assets()
-		->registerParser<file::PNGParser>("png")
-		->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()))
-		->queue("effect/Basic.effect");
+	sceneManager->assets()->loader()->options()->generateMipmaps(true);
+	sceneManager->assets()->loader()->options()
+                ->registerParser<file::PNGParser>("png");
+
+        sceneManager->assets()->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()));
+        sceneManager->assets()->loader()->queue("effect/Basic.effect");
 
 
 	// camera init
@@ -62,12 +63,12 @@ int main(int argc, char** argv)
 		->addComponent(Culling::create(math::Frustum::create(), "camera.worldToScreenMatrix"))
 		->addComponent(Transform::create(
 			Matrix4x4::create()->lookAt(
-				Vector3::create(0.f, 0.f), 
+				Vector3::create(0.f, 0.f),
 				Vector3::create(rand() % 200 - 100.f, rand() % 200 - 100.f, rand() % 200 - 100.f))
 		));
 
 	root->addChild(camera);
-		
+
 	auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, unsigned int width, unsigned int height)
 	{
 		camera->component<PerspectiveCamera>()->aspectRatio((float)width / (float)height);
@@ -79,8 +80,8 @@ int main(int argc, char** argv)
 		sceneManager->nextFrame();
 		std::cout << "Num drawCalls : " << camera->component<Renderer>()->numDrawCalls() << std::endl;
 	});
-	
-	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
+
+	auto _ = sceneManager->assets()->loader()->complete()->connect([=](file::Loader::Ptr loader)
 	{
 		std::shared_ptr<material::BasicMaterial> material = material::BasicMaterial::create()->diffuseColor(0xFF00FFFF);
 
@@ -91,9 +92,9 @@ int main(int argc, char** argv)
 					->appendTranslation(rand() % 200 - 100.f, rand() % 200 - 100.f, rand() % 200 - 100.f)
 					))
 				->addComponent(Surface::create(
-					assets->geometry("cube"),
+					sceneManager->assets()->geometry("cube"),
 					material,
-					assets->effect("effect/Basic.effect")
+					sceneManager->assets()->effect("effect/Basic.effect")
 				));
 			mesh->layouts(mesh->layouts() | (1u << 17)); // static layout
 
@@ -102,8 +103,8 @@ int main(int argc, char** argv)
 		root->addChild(cubeGroup);
 	});
 
-	sceneManager->assets()->load();
-		
+	sceneManager->assets()->loader()->load();
+
 	canvas->run();
 
 	exit(EXIT_SUCCESS);
