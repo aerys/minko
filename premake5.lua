@@ -5,7 +5,12 @@ newoption {
 
 newoption {
 	trigger	= 'no-tutorial',
-	description = 'Disable tutorial.'
+	description = 'Disable tutorials.'
+}
+
+newoption {
+	trigger	= 'no-plugin',
+	description = 'Disable plugins.'
 }
 
 newoption {
