@@ -17,7 +17,7 @@ varying vec3 vertexUVW;
 
 void main(void)
 {
-	#ifdef DIFFUSE_MAP
+	#if defined(DIFFUSE_MAP) || defined(ALPHA_MAP)
 		vertexUV = uv;
 	#endif
 

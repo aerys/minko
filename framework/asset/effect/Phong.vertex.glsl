@@ -21,9 +21,9 @@ varying vec3 vertexTangent;
 
 void main(void)
 {
-	#if defined DIFFUSE_MAP || defined NORMAL_MAP || defined SPECULAR_MAP
+	#if defined DIFFUSE_MAP || defined NORMAL_MAP || defined SPECULAR_MAP || defined ALPHA_MAP
 		vertexUV = uv;
-	#endif // defined DIFFUSE_MAP || defined NORMAL_MAP || defined SPECULAR_MAP
+	#endif // defined DIFFUSE_MAP || defined NORMAL_MAP || defined SPECULAR_MAP || defined ALPHA_MAP
 
 	vec4 worldPosition 	= vec4(position, 1.0);
 	

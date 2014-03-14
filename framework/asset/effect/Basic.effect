@@ -14,6 +14,8 @@
     "uniformBindings"   : {
         "diffuseColor"          : "material[${materialId}].diffuseColor",
         "diffuseMap"            : "material[${materialId}].diffuseMap",
+		"alphaMap"				: "material[${materialId}].alphaMap",
+		"alphaThreshold"		: "material[${materialId}].alphaThreshold",
         "diffuseCubeMap"        : "material[${materialId}].diffuseCubeMap",
         "modelToWorldMatrix"    : "transform.modelToWorldMatrix",
         "worldToScreenMatrix"   : { "property" : "camera.worldToScreenMatrix", "source" : "renderer" },
@@ -28,6 +30,8 @@
     "macroBindings" : {
         "DIFFUSE_MAP"           : "material[${materialId}].diffuseMap",
         "DIFFUSE_CUBEMAP"       : "material[${materialId}].diffuseCubeMap",
+		"ALPHA_MAP"				: "material[${materialId}].alphaMap",
+		"ALPHA_THRESHOLD"		: "material[${materialId}].alphaThreshold",
         "MODEL_TO_WORLD"        : "transform.modelToWorldMatrix",
         "HAS_NORMAL"            : "geometry[${geometryId}].normal",
         "NUM_BONES"             : { "property" : "geometry[${geometryId}].numBones",   "source" : "target" },
