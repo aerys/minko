@@ -55,16 +55,18 @@ int main(int argc, char** argv)
 	auto sceneManager	= SceneManager::create(canvas->context());
 
 	// setup assets
-	sceneManager->assets()->defaultOptions()
+	sceneManager->assets()->loader()->options()
 		->resizeSmoothly(true)
 		->generateMipmaps(true);
-	sceneManager->assets()
-		->registerParser<file::PNGParser>("png")
-		->queue(TEXTURE_FILENAME)
-		->queue("effect/Phong.effect")
-		->geometry("sphere",	geometry::SphereGeometry::create(sceneManager->assets()->context(), 16, 16))
+	sceneManager->assets()->loader()->options()
+                ->registerParser<file::PNGParser>("png");
+        sceneManager->assets()->loader()
+                ->queue(TEXTURE_FILENAME)
+                ->queue("effect/Phong.effect");
+        sceneManager->assets()
+                ->geometry("sphere",	geometry::SphereGeometry::create(sceneManager->assets()->context(), 16, 16))
 		->geometry("cube",		geometry::CubeGeometry::create(sceneManager->assets()->context()));
-	
+
 	std::cout << "[space]\tdrop an object onto the scene (up to " << MAX_NUM_OBJECTS << ")" << std::endl;
 
 
@@ -101,16 +103,16 @@ int main(int argc, char** argv)
 		->addChild(ambientLightNode)
 		->addChild(dirLightNode);
 
-	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
+	auto _ = sceneManager->assets()->loader()->complete()->connect([=](file::Loader::Ptr loader)
 	{
 		auto groundNodeA = scene::Node::create("groundNodeA")
 			->addComponent(Transform::create(
 				Matrix4x4::create()->appendScale(GROUND_WIDTH, GROUND_THICK, GROUND_DEPTH)
 			))
 			->addComponent(Surface::create(
-				assets->geometry("cube"),
-				material::BasicMaterial::create()->diffuseMap(assets->texture(TEXTURE_FILENAME)),
-				assets->effect("phong")
+				sceneManager->assets()->geometry("cube"),
+				material::BasicMaterial::create()->diffuseMap(sceneManager->assets()->texture(TEXTURE_FILENAME)),
+				sceneManager->assets()->effect("phong")
 			))
 			->addComponent(bullet::Collider::create(
 					bullet::ColliderData::create(
@@ -126,9 +128,9 @@ int main(int argc, char** argv)
 					->appendTranslation(0.5f * (GROUND_WIDTH + GROUND_THICK), 0.5f * (GROUND_HEIGHT - GROUND_THICK), 0.0f)
 			))
 			->addComponent(Surface::create(
-				assets->geometry("cube"),
+				sceneManager->assets()->geometry("cube"),
 				material::BasicMaterial::create()->diffuseColor(0x241f1cff),
-				assets->effect("phong")
+				sceneManager->assets()->effect("phong")
 			))
 			->addComponent(bullet::Collider::create(
 				bullet::ColliderData::create(
@@ -169,7 +171,7 @@ int main(int argc, char** argv)
 		sceneManager->nextFrame(time, deltaTime);
 	});
 
-	sceneManager->assets()->load();
+	sceneManager->assets()->loader()->load();
 
 	canvas->run();
 
@@ -208,7 +210,7 @@ createPhysicsObject(unsigned int id, file::AssetLibrary::Ptr assets, bool isCube
 	{
 		auto sphColliderData = bullet::ColliderData::create(
 			mass,
-			bullet::SphereShape::create(halfSize) 
+			bullet::SphereShape::create(halfSize)
 		);
 		collider = bullet::Collider::create(sphColliderData);
 	}

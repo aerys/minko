@@ -30,12 +30,13 @@ int main(int argc, char** argv)
 	auto canvas = Canvas::create("Minko Example - Ray Casting", 800, 600);
 
 	auto sceneManager = SceneManager::create(canvas->context());
-	
+
 	// setup assets
-	sceneManager->assets()->defaultOptions()->generateMipmaps(true);
-	sceneManager->assets()
-		->registerParser<file::PNGParser>("png")
-		->queue("texture/box.png")
+	sceneManager->assets()->loader()->options()->generateMipmaps(true);
+	sceneManager->assets()->loader()->options()
+                ->registerParser<file::PNGParser>("png");
+        sceneManager->assets()->loader()
+                ->queue("texture/box.png")
 		->queue("effect/Basic.effect");
 
 	auto root = scene::Node::create("root")
@@ -58,20 +59,20 @@ int main(int argc, char** argv)
 
 	root->addComponent(MousePicking::create());
 
-	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
+	auto _ = sceneManager->assets()->loader()->complete()->connect([=](file::Loader::Ptr loader)
 	{
 		mesh->addComponent(BoundingBox::create())
 			->addComponent(Surface::create(
 				geometry::CubeGeometry::create(sceneManager->assets()->context()),
-				material::BasicMaterial::create()->diffuseMap(assets->texture("texture/box.png")),
-				assets->effect("effect/Basic.effect")
+				material::BasicMaterial::create()->diffuseMap(sceneManager->assets()->texture("texture/box.png")),
+				sceneManager->assets()->effect("effect/Basic.effect")
 			));
 		root->addChild(mesh);
 
 		hit->addComponent(Surface::create(
 				geometry::CubeGeometry::create(sceneManager->assets()->context()),
 				material::BasicMaterial::create()->diffuseColor(0x00ff00ff),
-				assets->effect("effect/Basic.effect")
+				sceneManager->assets()->effect("effect/Basic.effect")
 			));
 	});
 
@@ -131,10 +132,10 @@ int main(int argc, char** argv)
 		sceneManager->nextFrame(time, deltaTime);
 	});
 
-	sceneManager->assets()->load();
+	sceneManager->assets()->loader()->load();
 
 	canvas->run();
-	
+
 	return 0;
 }
 

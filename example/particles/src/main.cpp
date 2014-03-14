@@ -30,15 +30,16 @@ int main(int argc, char** argv)
 {
 	auto canvas = Canvas::create("Minko Example - Particles", 800, 600);
 	auto sceneManager = SceneManager::create(canvas->context());
-	
+
 	// setup assets
-	sceneManager->assets()->defaultOptions()->resizeSmoothly(true);
-	sceneManager->assets()->defaultOptions()->generateMipmaps(true);
-	sceneManager->assets()
-		->registerParser<file::PNGParser>("png")
-        ->queue("texture/heal.png")
-        ->queue("texture/fire_spritesheet.png")
-        ->queue("effect/Basic.effect")
+	sceneManager->assets()->loader()->options()->resizeSmoothly(true);
+	sceneManager->assets()->loader()->options()->generateMipmaps(true);
+	sceneManager->assets()->loader()->options()
+                ->registerParser<file::PNGParser>("png");
+        sceneManager->assets()->loader()
+                ->queue("texture/heal.png")
+                ->queue("texture/fire_spritesheet.png")
+                ->queue("effect/Basic.effect")
 		->queue("effect/Particles.effect");
 
 	auto root = scene::Node::create("root")
@@ -54,18 +55,18 @@ int main(int argc, char** argv)
 		))
 		->addComponent(PerspectiveCamera::create(800.f / 600.f, (float)PI * 0.25f, .1f, 1000.f));
 	root->addChild(camera);
-    
-	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
+
+	auto _ = sceneManager->assets()->loader()->complete()->connect([=](file::Loader::Ptr loader)
 	{
         auto particles = ParticleSystem::create(
-            assets,
+            sceneManager->assets(),
             100.0f,
             particle::sampler::Constant<float>::create(2.0f),
             particle::shape::Sphere::create(0.5f),
             particle::StartDirection::UP,
             particle::sampler::Constant<float>::create(0.00f)
-        );  
-        
+        );
+
         auto color = Vector3::create(1.0f, 0.0f, 0.0f);
 
         auto startcolor1    = Vector3::create(1.0f, 0.0f, 0.0f);
@@ -73,7 +74,7 @@ int main(int argc, char** argv)
 
         std::cout << "particles play ... " << std::endl;
 
-        particles->material()->diffuseMap(assets->texture("texture/heal.png"))->diffuseColor(0xffffffff);
+        particles->material()->diffuseMap(sceneManager->assets()->texture("texture/heal.png"))->diffuseColor(0xffffffff);
         particles
         ->add(particle::modifier::StartSize::create(particle::sampler::Constant<float>::create(0.1f)))
         ->add(particle::modifier::SizeOverTime::create(particle::sampler::LinearlyInterpolatedValue<float>::create(1.0, 5.0f, 0.0f, 1.0f)))
@@ -90,30 +91,30 @@ int main(int argc, char** argv)
             particle::sampler::Constant<math::Vector3>::create(*color)
         ))
         ->add(particle::modifier::StartSprite::create(
-            particle::sampler::RandomValue<float>::create(0.0f, 4.0f), 
-            assets->texture("texture/fire_spritesheet.png"), 2, 2))*/
+            particle::sampler::RandomValue<float>::create(0.0f, 4.0f),
+            sceneManager->assets()->texture("texture/fire_spritesheet.png"), 2, 2))*/
         ->play();
-        
+
         std::cout << "particles play done" << std::endl;
 
         particlesNode->addComponent(particles);
 
 		root->addChild(particlesNode);
 	});
-    
+
 	auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
 	{
 		camera->component<PerspectiveCamera>()->aspectRatio((float)w / (float)h);
 	});
-    
+
 	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float deltaTime)
 	{
 		sceneManager->nextFrame(time, deltaTime);
 	});
 
-	sceneManager->assets()->load();
+	sceneManager->assets()->loader()->load();
 	canvas->run();
-    
+
 	return 0;
 }
 

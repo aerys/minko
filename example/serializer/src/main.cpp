@@ -54,7 +54,7 @@ serializeSceneExample(std::shared_ptr<file::AssetLibrary>		assets,
 }
 
 void
-openSceneExample(std::shared_ptr<file::AssetLibrary>	assets, 
+openSceneExample(std::shared_ptr<file::AssetLibrary>	assets,
 				 std::shared_ptr<scene::Node>			root)
 {
 	root->addChild(assets->symbol(MODEL_FILENAME));
@@ -69,25 +69,26 @@ int main(int argc, char** argv)
     extension::SerializerExtension::activeExtension<extension::ParticlesExtension>();
 
 	// setup assets
-	sceneManager->assets()
-        ->load("effect/Basic.effect")
-        ->load("effect/Phong.effect")
-        ->load("effect/Particles.effect");
-	sceneManager->assets()->defaultOptions()->generateMipmaps(true);
-	sceneManager->assets()->defaultOptions()->effect(sceneManager->assets()->effect("basic"));
+    sceneManager->assets()->loader()
+        ->queue("effect/Basic.effect")
+        ->queue("effect/Phong.effect")
+        ->queue("effect/Particles.effect");
+    sceneManager->assets()->loader()->options()->generateMipmaps(true);
+    sceneManager->assets()->loader()->options()->effect(sceneManager->assets()->effect("basic"));
 	sceneManager->assets()->material("defaultMaterial", material::BasicMaterial::create()->diffuseColor(0xFFFFFFFF));
 	sceneManager->assets()->geometry("defaultGeometry", geometry::CubeGeometry::create(sceneManager->assets()->context())),
-	sceneManager->assets()
-		->registerParser<file::PNGParser>("png")
+          sceneManager->assets()->loader()->options()
+          ->registerParser<file::PNGParser>("png");
 #ifdef SERIALIZE
-		->queue("effect/Basic.effect");
-		->queue("texture/box.png")
-		
+        sceneManager->assets()->loader()
+                ->queue("effect/Basic.effect")
+                ->queue("texture/box.png");
+
 		sceneManager->assets()->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()));
 		sceneManager->assets()->geometry("sphere", geometry::SphereGeometry::create(sceneManager->assets()->context(), 20, 20));
 #else
-		->registerParser<file::SceneParser>("scene")
-		->queue(MODEL_FILENAME);
+		sceneManager->assets()->loader()->options()->registerParser<file::SceneParser>("scene");
+		sceneManager->assets()->loader()->queue(MODEL_FILENAME);
 #endif
 
 	auto root = scene::Node::create("root")
@@ -97,7 +98,7 @@ int main(int argc, char** argv)
 	auto physicWorld = bullet::PhysicsWorld::create();
 	physicWorld->setGravity(math::Vector3::create(0.f, -9.8f, 0.f));
 	root->addComponent(physicWorld);
-	
+
 
 	auto camera = scene::Node::create("camera")
 		->addComponent(Renderer::create(0x7f7f7fff))
@@ -114,45 +115,45 @@ int main(int argc, char** argv)
 	auto mesh3 = scene::Node::create("mesh3")
 		->addComponent(Transform::create());
 
-	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
+	auto _ = sceneManager->assets()->loader()->complete()->connect([=](file::Loader::Ptr loader)
 	{
 #ifdef SERIALIZE
 		auto cubeMaterial = material::BasicMaterial::create()
-			->diffuseMap(assets->texture("texture/box.png"))
+			->diffuseMap(sceneManager->assets()->texture("texture/box.png"))
 			->diffuseColor(math::Vector4::create(1.f, 0.f, 0.f, 1.f))
 			->blendMode(render::Blending::Mode::DEFAULT)
 			->set<render::TriangleCulling>("triangleCulling", render::TriangleCulling::BACK);
 
 		auto sphereMaterial = material::BasicMaterial::create()
-			->diffuseMap(assets->texture("texture/box.png"))
+			->diffuseMap(sceneManager->assets()->texture("texture/box.png"))
 			->diffuseColor(math::Vector4::create(0.f, 1.f, 0.f, 0.2f))
 			->blendMode(render::Blending::Mode::ALPHA)
 			->set<render::TriangleCulling>("triangleCulling", render::TriangleCulling::FRONT);
 
-		assets->material("boxMaterial", cubeMaterial);
-		assets->material("sphereMaterial", sphereMaterial);
-		
+		sceneManager->assets()->material("boxMaterial", cubeMaterial);
+		sceneManager->assets()->material("sphereMaterial", sphereMaterial);
+
 		mesh->addComponent(Surface::create(
-				assets->geometry("sphere"),
-				assets->material("sphereMaterial"),
-				assets->effect("effect/Basic.effect")
+				sceneManager->assets()->geometry("sphere"),
+				sceneManager->assets()->material("sphereMaterial"),
+				sceneManager->assets()->effect("effect/Basic.effect")
 			));
 
 		mesh2->addComponent(Surface::create(
-				assets->geometry("cube"),
-				assets->material("boxMaterial"),
-				assets->effect("effect/Basic.effect")
+				sceneManager->assets()->geometry("cube"),
+				sceneManager->assets()->material("boxMaterial"),
+				sceneManager->assets()->effect("effect/Basic.effect")
 			));
 		mesh3->addComponent(Surface::create(
-				assets->geometry("cube"),
-				assets->material("boxMaterial"),
-				assets->effect("effect/Basic.effect")
+				sceneManager->assets()->geometry("cube"),
+				sceneManager->assets()->material("boxMaterial"),
+				sceneManager->assets()->effect("effect/Basic.effect")
 			));
 
 		root->addChild(mesh);
 		root->addChild(mesh2);
 		root->addChild(mesh3);
-		
+
 		mesh2->component<Transform>()->matrix()->appendTranslation(0, 1, 0);
 		mesh3->component<Transform>()->matrix()->appendTranslation(0, -1, 0);
 #endif
@@ -160,7 +161,7 @@ int main(int argc, char** argv)
 #ifdef SERIALIZE
 		serializeSceneExample(assets, root, sceneManager->assets()->context());
 #else
-		openSceneExample(assets, root);
+		openSceneExample(sceneManager->assets(), root);
 #endif
 	});
 
@@ -209,7 +210,7 @@ int main(int argc, char** argv)
 			tz += 0.1f;
 		else if (k->keyIsDown(input::Keyboard::ScanCode::DOWN))
 			tz -= 0.1f;
-		
+
 		auto model = sceneManager->assets()->symbol(MODEL_FILENAME);
 		if (model && model->hasComponent<Transform>())
 		{
@@ -245,7 +246,7 @@ int main(int argc, char** argv)
 		sceneManager->nextFrame(time, deltaTime);
 	});
 
-	sceneManager->assets()->load();
+	sceneManager->assets()->loader()->load();
 
 	canvas->run();
 
