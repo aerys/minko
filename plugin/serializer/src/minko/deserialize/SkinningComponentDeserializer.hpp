@@ -69,6 +69,10 @@ namespace minko
 			void
 			clean(NodePtr);
 
+			static
+			void
+			removeAnimations(NodePtr);
+
             static
             bool
             haveBonesCommonRoot(const std::vector<BonePtr>&, NodePtr);
