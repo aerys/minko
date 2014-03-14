@@ -14,6 +14,8 @@ The repository hosts the source code of ***Minko 3***. Looking for Minko 2? We'v
 Get started
 ===========
 
+For more detailed instructions, please follow our [Getting started with Minko 3 beta 1](http://doc.v3.minko.io/wiki/Getting_started_with_Minko_3_beta_1) tutorial.
+
 ### Windows
 * Set the `MINKO_HOME` environment variable to the root of the SDK.
 * Open the explorer in `tool\win\script`
@@ -105,7 +107,7 @@ Available plugins are:
 Resources
 ---------
 * [minko.io](http://minko.io/ "Website")
-* [doc.minko.io](http://doc.minko.io/ "Documentation")
+* [doc.v3.minko.io](http://doc.v3.minko.io/ "Documentation")
 
 Contribute
 ----------
