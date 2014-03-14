@@ -82,8 +82,8 @@ main(int argc, char** argv)
 	// setup assets
 	sceneManager->assets()->loader()->options()->generateMipmaps(true);
 	sceneManager->assets()->loader()->options()
-		->registerParser<file::ASSIMPParser>("obj")
-		->registerParser<file::ASSIMPParser>("dae")
+		->registerParser<file::ObjFileASSIMPParser>("obj")
+		->registerParser<file::ColladaASSIMPParser>("dae")
                 ->registerParser<file::JPEGParser>("jpg");
         sceneManager->assets()->loader()
                 ->queue("effect/Basic.effect")

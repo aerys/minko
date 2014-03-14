@@ -40,12 +40,12 @@ main(int argc, char** argv)
 
     // setup assets
     sceneManager->assets()
-        ->registerParser<file::ASSIMPParser>("obj")
-        ->registerParser<file::ASSIMPParser>("dae")
+        ->registerParser<file::ObjFileASSIMPParser>("obj")
+        ->registerParser<file::ColladaASSIMPParser>("dae")
         ->registerParser<file::JPEGParser>("jpg");
 
     sceneManager->assets()->load("effect/Basic.effect");
-    
+
     // add the model to the asset list
     sceneManager->assets()->queue(OBJ_MODEL_FILENAME);
     sceneManager->assets()->queue(DAE_MODEL_FILENAME);
