@@ -194,6 +194,6 @@ LuaScriptManager::initializeBindings()
 
     auto& sceneManager = _state.Class<SceneManager>("SceneManager")
         .property("assets",     &SceneManager::assets);
-    MINKO_LUAGLUE_BIND_SIGNAL(_state, SceneManager::Ptr);
+    MINKO_LUAGLUE_BIND_SIGNAL(_state, SceneManager::Ptr, float, float);
     sceneManager.property("nextFrame",  &SceneManager::frameBegin);
 }
