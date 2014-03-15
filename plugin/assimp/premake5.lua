@@ -23,9 +23,14 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		"lib/assimp/contrib/**.cpp",
 		"lib/assimp/contrib/**.hpp",
 	}
-        excludes {
-                 "lib/assimp/code/Assimp.cpp"
-        }
+	excludes {
+			 "lib/assimp/code/Assimp.cpp",
+			 "lib/assimp/code/STLExporter.cpp",
+			 "lib/assimp/code/PlyExporter.cpp",
+			 "lib/assimp/code/ColladaExporter.cpp",
+			 "lib/assimp/code/Exporter.cpp",
+			 "lib/assimp/code/AssimpCExporter.cpp"
+	}
 
 	includedirs {
 		"lib/assimp/code",
@@ -39,9 +44,9 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		"lib/assimp/contrib/zlib"
 	}
 	defines {
-                "ASSIMP_BUILD_NO_EXPORT",
+		"ASSIMP_BUILD_NO_EXPORT",
 		"ASSIMP_BUILD_BOOST_WORKAROUND",
-                "ASSIMP_BUILD_NO_IMPORTER_INSTANCIATION",
+		"ASSIMP_BUILD_NO_IMPORTER_INSTANCIATION",
 		'"AI_LMW_MAX_WEIGHTS=4"',
 		-- OpenGL ES 2 max vertex count
 		'"AI_SLM_DEFAULT_MAX_VERTICES=128000"',
