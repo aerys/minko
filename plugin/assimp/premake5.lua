@@ -28,8 +28,9 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 			 "lib/assimp/code/STLExporter.cpp",
 			 "lib/assimp/code/PlyExporter.cpp",
 			 "lib/assimp/code/ColladaExporter.cpp",
+			 "lib/assimp/code/ObjExporter.cpp",
 			 "lib/assimp/code/Exporter.cpp",
-			 "lib/assimp/code/AssimpCExporter.cpp"
+			 "lib/assimp/code/AssimpCExport.cpp"
 	}
 
 	includedirs {
