@@ -308,7 +308,6 @@ namespace minko
 		class Options;
 		class Loader;
         class AbstractProtocol;
-        class Loader;
 		class AbstractParser;
 		class EffectParser;
         class AssetLibrary;
