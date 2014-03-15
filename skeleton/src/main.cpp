@@ -78,7 +78,7 @@ int main(int argc, char** argv)
 		{
 			mesh->component<Transform>()->matrix()->appendRotationY(.01f);
 
-			sceneManager->nextFrame();
+			sceneManager->nextFrame(time, deltaTime);
 		});
 
 		canvas->run();
