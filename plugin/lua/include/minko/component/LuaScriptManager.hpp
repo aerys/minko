@@ -45,7 +45,7 @@ namespace minko
 			typedef std::shared_ptr<LuaScriptManager> 				Ptr;
 
 		private:
-			typedef std::shared_ptr<file::Loader>			    LoaderPtr;
+			typedef std::shared_ptr<file::Loader>					LoaderPtr;
 			typedef std::chrono::high_resolution_clock::time_point	time_point;
 
 		private:
