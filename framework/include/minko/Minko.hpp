@@ -100,3 +100,5 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/material/PhongMaterial.hpp"
 #include "minko/input/Mouse.hpp"
 #include "minko/input/Keyboard.hpp"
+#include "minko/async/FileProtocolWorker.hpp"
+#include "minko/async/Worker.hpp"
