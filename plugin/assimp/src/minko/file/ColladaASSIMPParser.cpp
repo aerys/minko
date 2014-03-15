@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "../code/ColladaLoader.h"
 
 using namespace minko;
-using namespace file;
+using namespace minko::file;
 
 ColladaASSIMPParser::Ptr ColladaASSIMPParser::create()
 {

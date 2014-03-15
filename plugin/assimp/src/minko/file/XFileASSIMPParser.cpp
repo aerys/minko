@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "../code/XFileImporter.h"
 
 using namespace minko;
-using namespace file;
+using namespace minko::file;
 
 XFileASSIMPParser::Ptr XFileASSIMPParser::create()
 {
