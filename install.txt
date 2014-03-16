@@ -1,0 +1,24 @@
+// update macports
+
+sudo port selfupdate
+
+// update gcc to 4.8
+
+sudo port install gcc48
+
+// pick up your compiler
+
+sudo port select --set gcc mp-gcc48
+
+// didn't work for g++, so remove the usr/bin
+// this way it will use the macport one in /opt/usr/bin ..
+sudo mv /usr/bin/g++ /usr/bin+_g++
+
+// generate osx makefile
+tool/lin/script/solution_gmake_gcc.sh
+
+// compile it
+make config=osx64_release
+
+// remove the two oculus project from the main makefile
+
