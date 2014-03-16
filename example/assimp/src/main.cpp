@@ -84,10 +84,10 @@ main(int argc, char** argv)
 	sceneManager->assets()->loader()->options()
 		->registerParser<file::ObjFileASSIMPParser>("obj")
 		->registerParser<file::ColladaASSIMPParser>("dae")
-                ->registerParser<file::JPEGParser>("jpg");
-        sceneManager->assets()->loader()
-                ->queue("effect/Basic.effect")
-		->queue("effect/Phong.effect");
+        ->registerParser<file::JPEGParser>("jpg");
+    sceneManager->assets()->loader()
+        ->queue("effect/Basic.effect")
+	    ->queue("effect/Phong.effect");
 
 	sceneManager->assets()->loader()->options()
 		->skinningFramerate(60)
@@ -97,8 +97,6 @@ main(int argc, char** argv)
 
 	sceneManager->assets()->loader()
 		->queue(MODEL_FILENAME);
-
-	sceneManager->assets()->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()));
 
 	bool beIdle = true;
 	bool doPunch = false;
@@ -124,8 +122,7 @@ main(int argc, char** argv)
 
 	auto _ = sceneManager->assets()->loader()->complete()->connect([=](file::Loader::Ptr loader)
 	{
-
-                auto model = sceneManager->assets()->symbol(MODEL_FILENAME);
+        auto model = sceneManager->assets()->symbol(MODEL_FILENAME);
 
 		auto surfaceNodeSet = scene::NodeSet::create(model)
 			->descendants(true)
@@ -134,7 +131,10 @@ main(int argc, char** argv)
 			return n->hasComponent<Surface>();
 		});
 
-		root->addChild(model);
+        root
+            ->addComponent(AmbientLight::create())
+            ->addComponent(DirectionalLight::create())
+            ->addChild(model);
 
 		auto skinnedNodes = scene::NodeSet::create(model)
 			->descendants(true)
