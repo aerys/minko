@@ -25,3 +25,5 @@ doc/html
 remove.me
 dist
 packages
+a.out
+*~
