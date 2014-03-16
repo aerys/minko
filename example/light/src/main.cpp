@@ -25,7 +25,6 @@ using namespace minko;
 using namespace minko::component;
 using namespace minko::math;
 
-#define POST_PROCESSING 0
 #define WINDOW_WIDTH  	800
 #define WINDOW_HEIGHT 	600
 
@@ -58,8 +57,6 @@ int main(int argc, char** argv)
 
 	canvas->context()->errorsEnabled(true);
 
-	const clock_t startTime	= clock();
-
 	auto sceneManager		= SceneManager::create(canvas->context());
 	auto root				= scene::Node::create("root")->addComponent(sceneManager);
 	auto sphereGeometry		= geometry::SphereGeometry::create(sceneManager->assets()->context(), 32, 32, true);
@@ -74,31 +71,27 @@ int main(int argc, char** argv)
 	sphereGeometry->computeTangentSpace(false);
 
 	// setup assets
-	sceneManager->assets()->loader()->options()->generateMipmaps(true);
-	sceneManager->assets()->loader()->options()
-                ->registerParser<file::PNGParser>("png");
-
-        sceneManager->assets()
-                ->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()))
+	sceneManager->assets()->defaultOptions()->generateMipmaps(true);
+	sceneManager->assets()
+		->registerParser<file::PNGParser>("png")
+		->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()))
 		->geometry("quad", geometry::QuadGeometry::create(sceneManager->assets()->context()))
-                ->geometry("sphere", sphereGeometry);
-        sceneManager->assets()->loader()
-                ->queue("texture/normalmap-cells.png")
+		->geometry("sphere", sphereGeometry)
+		->queue("texture/normalmap-cells.png")
 		->queue("texture/sprite-pointlight.png")
 		->queue("effect/Basic.effect")
 		->queue("effect/Sprite.effect")
-		->queue("effect/Phong.effect")
-		->queue("effect/AnamorphicLensFlare/AnamorphicLensFlare.effect");
+		->queue("effect/Phong.effect");
 
-	auto _ = sceneManager->assets()->loader()->complete()->connect([=](file::Loader::Ptr loader)
+	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
 	{
 		// ground
 		auto ground = scene::Node::create("ground")
 			->addComponent(Surface::create(
-				sceneManager->assets()->geometry("quad"),
+				assets->geometry("quad"),
 				material::Material::create()
 					->set("diffuseColor",	Vector4::create(1.f, 1.f, 1.f, 1.f)),
-				sceneManager->assets()->effect("phong")
+				assets->effect("phong")
 			))
 			->addComponent(Transform::create(Matrix4x4::create()->appendScale(50.f)->appendRotationX(-1.57f)));
 		root->addChild(ground);
@@ -106,9 +99,9 @@ int main(int argc, char** argv)
 		// sphere
 		auto sphere = scene::Node::create("sphere")
 			->addComponent(Surface::create(
-				sceneManager->assets()->geometry("sphere"),
+				assets->geometry("sphere"),
 				sphereMaterial,
-				sceneManager->assets()->effect("phong")
+				assets->effect("phong")
 			))
 			->addComponent(Transform::create(Matrix4x4::create()->appendTranslation(0.f, 2.f, 0.f)->prependScale(3.f)));
 		root->addChild(sphere);
@@ -153,7 +146,7 @@ int main(int argc, char** argv)
 			{
 				if (lights->children().size() == 0)
 					return;
-
+				
 				lights->removeChild(lights->children().back());
 				std::cout << lights->children().size() << " lights" << std::endl;
 			}
@@ -169,7 +162,7 @@ int main(int argc, char** argv)
 				if (hasNormalMap)
 					data->unset("normalMap");
 				else
-					data->set("normalMap", sceneManager->assets()->texture("texture/normalmap-cells.png"));
+					data->set("normalMap", assets->texture("texture/normalmap-cells.png"));
 			}
 			if (k->keyIsDown(input::Keyboard::ScanCode::UP))
 				camera->component<Transform>()->matrix()->prependTranslation(0.f, 0.f, -1.f);
@@ -187,44 +180,13 @@ int main(int argc, char** argv)
 		));
 	root->addChild(camera);
 
-	// initialize post processing
-#if POST_PROCESSING
-	auto ppFx = sceneManager->assets()->effect("effect/AnamorphicLensFlare/AnamorphicLensFlare.effect");
-
-	if (!ppFx)
-		throw std::logic_error("AnamorphicLensFlare.effect has not been loaded.");
-
-	auto ppTarget = render::Texture::create(sceneManager->assets()->context(), 1024, 1024, false, true);
-
-	ppTarget->upload();
-
-	auto ppRenderer = Renderer::create();
-	auto ppData = data::Provider::create()->set("backbuffer", ppTarget);
-	auto ppScene = scene::Node::create()
-		->addComponent(ppRenderer)
-		->addComponent(Surface::create(
-		geometry::QuadGeometry::create(sceneManager->assets()->context()),
-		ppData,
-		ppFx
-		));
-#endif
-
 	auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, unsigned int width, unsigned int height)
 	{
 		camera->component<PerspectiveCamera>()->aspectRatio((float)width / (float)height);
-
-#if POST_PROCESSING
-		auto oldTarget = ppTarget;
-
-		ppTarget = render::Texture::create(sceneManager->assets()->context(), clp2(width), clp2(height), false, true);
-		ppTarget->upload();
-		ppData->set("backbuffer", ppTarget);
-#endif //POST_PROCESSING
 	});
 
 	auto yaw = 0.f;
 	auto pitch = (float)PI * .5f;
-	auto roll = 0.f;
 	auto minPitch = 0.f + 1e-5;
 	auto maxPitch = (float)PI - 1e-5;
 	auto lookAt = Vector3::create(0.f, 2.f, 0.f);
@@ -269,23 +231,18 @@ int main(int argc, char** argv)
 		camera->component<Transform>()->matrix()->lookAt(
 			lookAt,
 			Vector3::create(
-			lookAt->x() + distance * cosf(yaw) * sinf(pitch),
-			lookAt->y() + distance * cosf(pitch),
-			lookAt->z() + distance * sinf(yaw) * sinf(pitch)
+				lookAt->x() + distance * cosf(yaw) * sinf(pitch),
+				lookAt->y() + distance * cosf(pitch),
+				lookAt->z() + distance * sinf(yaw) * sinf(pitch)
 			)
-			);
+		);
 
 		lights->component<Transform>()->matrix()->appendRotationY(.005f);
 
-#if POST_PROCESSING
-		sceneManager->nextFrame(time, deltaTime, ppTarget);
-		ppRenderer->render(sceneManager->assets()->context());
-#else
 		sceneManager->nextFrame(time, deltaTime);
-#endif
 	});
 
-	sceneManager->assets()->loader()->load();
+	sceneManager->assets()->load();
 
 	canvas->run();
 
