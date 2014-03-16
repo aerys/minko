@@ -12,6 +12,7 @@
 #include "LuaGlue/LuaGlueFunction.h"
 #include "LuaGlue/LuaGlueFunctionRef.h"
 #include "LuaGlue/LuaGlueSymTab.h"
+#include "LuaGlue/LuaGlueEnum.h"
 
 template<typename _Class>
 class LuaGlueClass;
@@ -36,6 +37,15 @@ class LuaGlue : public LuaGlueBase
 		{
 			//printf("glue.Class(\"%s\")\n", name.c_str());
 			auto new_class = new LuaGlueClass<_Class>(this, name);
+			classes.addSymbol(name.c_str(), new_class);
+			return *new_class;
+		}
+
+		template<typename _Class>
+		LuaGlueEnum<_Class> &Enum(const std::string &name)
+		{
+			//printf("glue.Class(\"%s\")\n", name.c_str());
+			auto new_class = new LuaGlueEnum<_Class>(this, name);
 			classes.addSymbol(name.c_str(), new_class);
 			return *new_class;
 		}
