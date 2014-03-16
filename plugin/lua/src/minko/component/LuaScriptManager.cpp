@@ -68,18 +68,6 @@ LuaScriptManager::initialize()
     AbstractScript::initialize();
 
 	initializeBindings();
-}
-
-void
-LuaScriptManager::initialize(std::vector<std::function<void(LuaGlue&)>> bindingsFunctions)
-{
-	AbstractScript::initialize();
-
-	initializeBindings();
-
-	for (auto f : bindingsFunctions)
-		f(_state);
-
 
 	_state
 		.func("getCanvas", &LuaContext::getCanvas)
@@ -87,6 +75,15 @@ LuaScriptManager::initialize(std::vector<std::function<void(LuaGlue&)>> bindings
 		.func("getOption", &LuaContext::getOption);
 
 	_state.open().glue();
+}
+
+void
+LuaScriptManager::initialize(std::vector<std::function<void(LuaGlue&)>> bindingsFunctions)
+{
+	for (auto f : bindingsFunctions)
+		f(_state);
+
+	initialize();
 }
 
 void
@@ -194,8 +191,6 @@ LuaScriptManager::initializeBindings()
 
     auto& sceneManager = _state.Class<SceneManager>("SceneManager")
         .property("assets",     &SceneManager::assets);
-    MINKO_LUAGLUE_BIND_SIGNAL(_state, SceneManager::Ptr);
+    MINKO_LUAGLUE_BIND_SIGNAL(_state, SceneManager::Ptr, float, float);
     sceneManager.property("nextFrame",  &SceneManager::frameBegin);
-
-
 }
