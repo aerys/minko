@@ -9,8 +9,19 @@ Minko is a technology to develop and design rich, interactive and universal 3D a
 
 It provides a powerful editor on top of a robust, extensible and fully documented open source core framework, and is created and maintained by [Aerys](http://aerys.in/).
 
+The repository hosts the source code of ***Minko 3***. Looking for Minko 2? We've moved the [repository](http://github.com/aerys/minko-as3).
+
+
+Resources
+---------
+* [Official website](http://minko.io/ "Website")
+* [Documentation](http://doc.v3.minko.io/ "Documentation")
+* [Forums](http://minko.io/forums "Forums")
+
 Get started
 ===========
+
+For more detailed instructions, please follow our [Getting started with Minko 3 beta 1](http://doc.v3.minko.io/wiki/Getting_started_with_Minko_3_beta_1) tutorial.
 
 ### Windows
 * Set the `MINKO_HOME` environment variable to the root of the SDK.
@@ -99,11 +110,6 @@ Available plugins are:
 * sdl
 * serializer
 * webgl: please follow `webgl/README.md` to learn how to deploy
-
-Resources
----------
-* [minko.io](http://minko.io/ "Website")
-* [doc.minko.io](http://doc.minko.io/ "Documentation")
 
 Contribute
 ----------
