@@ -37,7 +37,7 @@ namespace minko
 			void
 			bind(LuaGlue& state)
 			{
-				auto& input_scancode = state.Class<Keyboard::ScanCode>("ScanCode");
+				auto& input_scancode = state.Enum<Keyboard::ScanCode>("ScanCode");
 			    for (int key = 0; key < (int) Keyboard::NUM_SCANCODES; ++key)
 			    {
 			        auto& keyName = Keyboard::getKeyName(static_cast<Keyboard::ScanCode>(key));
