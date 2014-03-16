@@ -334,9 +334,10 @@ Canvas::step()
                     auto sdlJoystick = Canvas::SDLJoystick::create(shared_from_this(), i, joystick);
                     _joysticks[i] = sdlJoystick;
                 }
+
                 _joystickAdded->execute(shared_from_this(), _joysticks[i]);
 
-# if defined(DEBUG)
+#if defined(DEBUG)
                 printf("New joystick found!\n");
                 printf("Joystick %i\n", i);
                 printf("Name: %s\n", SDL_JoystickName(i));
@@ -353,11 +354,11 @@ Canvas::step()
     {
         // We looking for the missing gamepad
         int joystickId = 0;
-        for (int i = 0; i < _joysticks.size(); i++) 
+        for (auto it = _joysticks.begin(); it != _joysticks.end(); ++it)
         {
-            if (!SDL_JoystickOpen(i)) 
+            if (!SDL_JoystickOpen(it->first))
             {
-                joystickId = i;
+                joystickId = it->first;
                 break;
             }
         }
@@ -370,7 +371,6 @@ Canvas::step()
         _joysticks.erase(joystickId);
     }
 #endif
-
     SDL_Event event;
 
     while (SDL_PollEvent(&event))
