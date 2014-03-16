@@ -16,6 +16,7 @@ Resources
 ---------
 * [Official website](http://minko.io/ "Website")
 * [Documentation](http://doc.v3.minko.io/ "Documentation")
+* [Forums](http://minko.io/forums "Forums")
 
 Get started
 ===========
