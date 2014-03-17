@@ -65,14 +65,9 @@ using namespace minko::component;
 void
 LuaScriptManager::initialize()
 {
-    AbstractScript::initialize();
-
+	AbstractScript::initialize();
+	_state.open();
 	initializeBindings();
-
-	_state
-		.func("getCanvas", &LuaContext::getCanvas)
-		.func("getSceneManager", &LuaContext::getSceneManager)
-		.func("getOption", &LuaContext::getOption);
 
 	_state.open().glue();
 }
@@ -80,10 +75,14 @@ LuaScriptManager::initialize()
 void
 LuaScriptManager::initialize(std::vector<std::function<void(LuaGlue&)>> bindingsFunctions)
 {
+	AbstractScript::initialize();
+	_state.open();
+	initializeBindings();
+
 	for (auto f : bindingsFunctions)
 		f(_state);
 
-	initialize();
+	_state.glue();
 }
 
 void
@@ -193,4 +192,9 @@ LuaScriptManager::initializeBindings()
         .property("assets",     &SceneManager::assets);
     MINKO_LUAGLUE_BIND_SIGNAL(_state, SceneManager::Ptr, float, float);
     sceneManager.property("nextFrame",  &SceneManager::frameBegin);
+
+	_state
+		.func("getCanvas", &LuaContext::getCanvas)
+		.func("getSceneManager", &LuaContext::getSceneManager)
+		.func("getOption", &LuaContext::getOption);
 }
