@@ -119,16 +119,16 @@ AbstractASSIMPParser::~AbstractASSIMPParser()
 
 void
 AbstractASSIMPParser::parse(const std::string&					filename,
-					const std::string&					resolvedFilename,
-					std::shared_ptr<Options>			options,
-					const std::vector<unsigned char>&	data,
-					std::shared_ptr<AssetLibrary>	    assetLibrary)
+							const std::string&					resolvedFilename,
+							std::shared_ptr<Options>			options,
+							const std::vector<unsigned char>&	data,
+							std::shared_ptr<AssetLibrary>	    assetLibrary)
 {
 	resetParser();
 
-    initImporter();
+	initImporter();
 
-    int pos = resolvedFilename.find_last_of("\\/");
+	int pos = resolvedFilename.find_last_of("\\/");
 
 	options = file::Options::create(options);
 
@@ -166,13 +166,25 @@ AbstractASSIMPParser::parse(const std::string&					filename,
 		resolvedFilename.c_str()
 	);
 
-    if (!scene)
+	if (!scene)
 		throw ParserError(importer.GetErrorString());
 
-    parseDependencies(resolvedFilename, scene);
+	parseDependencies(resolvedFilename, scene);
+
+	if (_numDependencies == 0)
+		allDependenciesLoaded(scene);
+}
+
+void
+AbstractASSIMPParser::allDependenciesLoaded(const aiScene* scene)
+{
+#ifdef DEBUG
+	if (_numDependencies != _numLoadedDependencies)
+		throw std::logic_error("_numDependencies != _numLoadedDependencies");
+#endif // DEBUG
 
 	_symbol = scene::Node::create(_filename);
-	createSceneTree(_symbol, scene, scene->mRootNode, assetLibrary);
+	createSceneTree(_symbol, scene, scene->mRootNode, _options->assetLibrary());
 
 #ifdef DEBUG_ASSIMP
 	printNode(std::cout << "\n", _symbol, 0) << std::endl;
@@ -231,9 +243,9 @@ AbstractASSIMPParser::initImporter()
 
 void
 AbstractASSIMPParser::createSceneTree(scene::Node::Ptr 				minkoNode,
-							  const aiScene* 				scene,
-							  aiNode* 						ainode,
-							  std::shared_ptr<AssetLibrary> assets)
+									  const aiScene* 				scene,
+									  aiNode* 						ainode,
+									  std::shared_ptr<AssetLibrary> assets)
 {
 	minkoNode->addComponent(getTransformFromAssimp(ainode));
 
@@ -376,8 +388,8 @@ AbstractASSIMPParser::createMeshGeometry(scene::Node::Ptr minkoNode, aiMesh* mes
 
 void
 AbstractASSIMPParser::createMeshSurface(scene::Node::Ptr 	minkoNode,
-								const aiScene* 		scene,
-								aiMesh* 			mesh)
+										const aiScene* 		scene,
+										aiMesh* 			mesh)
 {
 	if (mesh == nullptr)
 		return;
@@ -421,7 +433,6 @@ AbstractASSIMPParser::createCameras(const aiScene* scene)
 
 		const auto	cameraName	= std::string(aiCamera->mName.data);
 		auto		cameraNode = scene::Node::create(cameraName + "_camera_" + std::to_string(i))
-
 			->addComponent(PerspectiveCamera::create(
 				aiCamera->mAspect,
 				aiCamera->mHorizontalFOV * aiCamera->mAspect, // need the vertical FOV
@@ -559,7 +570,7 @@ AbstractASSIMPParser::findNode(const std::string& name) const
 
 void
 AbstractASSIMPParser::parseDependencies(const std::string& 	filename,
-								const aiScene*		scene)
+										const aiScene*		scene)
 {
 	std::set<std::string>	loadedFilenames;
 	aiString				path;
@@ -590,7 +601,7 @@ AbstractASSIMPParser::parseDependencies(const std::string& 	filename,
 						loadedFilenames.insert(filename);
 						_numDependencies++;
 
-						loadTexture(filename, filename, _options);
+						loadTexture(filename, filename, _options, scene);
 					}
 				}
 			}
@@ -611,19 +622,20 @@ AbstractASSIMPParser::finalize()
 
 void
 AbstractASSIMPParser::loadTexture(const std::string&	textureFilename,
-						  const std::string&	assetName,
-						  Options::Ptr			options)
+								  const std::string&	assetName,
+								  Options::Ptr			options,
+								  const aiScene*		scene)
 {
 	auto loader = Loader::create();
 
     loader->options(options);
 
-    _loaderCompleteSlots[loader] = loader->complete()->connect([&](file::Loader::Ptr loader)
-	{
-		++_numLoadedDependencies;
-		if (_numDependencies == _numLoadedDependencies && _symbol)
-			finalize();
-	});
+	_loaderCompleteSlots[loader] = loader->complete()->connect(std::bind(
+		&AbstractASSIMPParser::textureCompleteHandler,
+		std::dynamic_pointer_cast<AbstractASSIMPParser>(shared_from_this()),
+		std::placeholders::_1,
+        scene
+	));
 
     _loaderErrorSlots[loader] = loader->error()->connect([=](file::Loader::Ptr loader)
 	{
@@ -634,6 +646,14 @@ AbstractASSIMPParser::loadTexture(const std::string&	textureFilename,
 	});
 
 	loader->queue(textureFilename, options)->load();
+}
+
+void
+AbstractASSIMPParser::textureCompleteHandler(file::Loader::Ptr loader, const aiScene* scene)
+{
+	++_numLoadedDependencies;
+	if (_numDependencies == _numLoadedDependencies)// && _symbol)
+		allDependenciesLoaded(scene);
 }
 
 void

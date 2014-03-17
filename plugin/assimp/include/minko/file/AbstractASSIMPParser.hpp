@@ -165,7 +165,8 @@ namespace minko
 			void
 			loadTexture(const std::string&				textureFilename,
 						const std::string&				assetName,
-						std::shared_ptr<file::Options>	options);
+						std::shared_ptr<file::Options>	options,
+						const aiScene*					scene);
 
 			void
 			createSkins(const aiScene*);
@@ -257,6 +258,12 @@ namespace minko
 
 			void
 			apply(NodePtr, const std::function<NodePtr(NodePtr)>&);
+
+			void
+			allDependenciesLoaded(const aiScene* scene);
+
+            void
+            textureCompleteHandler(std::shared_ptr<file::Loader> loader, const aiScene* scene);
 		};
 	}
 }
