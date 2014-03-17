@@ -62,9 +62,7 @@ int main(int argc, char** argv)
 	}
 
 	sceneManager->assets()->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()));
-
-
-
+    
 	auto root = scene::Node::create("root")
 		->addComponent(sceneManager);
 
