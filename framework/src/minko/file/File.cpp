@@ -23,8 +23,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 # include <windows.h>
 #elif defined(__APPLE__)
 # include "CoreFoundation/CoreFoundation.h"
-#else
+#elif defined(LINUX) || defined(__unix__) // Linux
 # include <unistd.h>
+# include <linux/limits.h>
 #endif
 
 using namespace minko::file;
@@ -43,7 +44,7 @@ File::getCurrentWorkingDirectory()
 #elif defined(EMSCRIPTEN) // HTML5
 	return getBinaryDirectory();
 #elif defined(LINUX) || defined(__unix__) // Linux
-	char temp[MAXPATHLEN];
+    char temp[PATH_MAX];
 
 	return sanitizeFilename((getcwd(temp, MAXPATHLEN) ? std::string(temp) : std::string("")));
 #else
@@ -79,9 +80,9 @@ File::getBinaryDirectory()
 
 	return path.substr(0, pos);
 #elif defined(LINUX) || defined(__unix__) // Linux
-	char buffer[1024];
+    char buffer[PATH_MAX];
 
-	readlink("/proc/self/exe", buffer, 1024);
+    readlink("/proc/self/exe", buffer, PATH_MAX);
 
 	return sanitizeFilename(std::string((char*)buffer));
 #else
