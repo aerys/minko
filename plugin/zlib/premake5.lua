@@ -12,3 +12,7 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 	includedirs {
 		"lib/zlib"
 	}
+
+	configuration { "vs*" }
+		defines { "_CRT_SECURE_NO_WARNINGS" }
+	
