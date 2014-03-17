@@ -15,7 +15,14 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 	}
 	
 	excludes {
-		"lib/devil/src/src-ILU/ilur/ilur.c"
+		"lib/devil/src/src-ILU/ilur/ilur.c",
+		"lib/devil/src/src-IL/src/il_main.c",
+		--"lib/devil/src/src-ILU/src/ilu_main.c",
+		"lib/devil/lib/libjpeg/wrjpgcom.c",
+		"lib/devil/lib/libjpeg/jpegtran.c",
+		"lib/devil/lib/libjpeg/djpeg.c",
+		"lib/devil/lib/libjpeg/cjpeg.c",
+		"lib/devil/lib/libjpeg/ckconfig.c"
 	}
 	
 	includedirs {
@@ -30,6 +37,11 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		"lib/devil/lib/libpng",
 		"lib/devil/lib/libjasper/include",
 		"lib/devil/lib/lcms/include"
+	}
+	
+	defines {
+		"_CRT_SECURE_NO_WARNINGS",
+		"IL_STATIC_LIB"
 	}
 
 	configuration { "osx64" }
