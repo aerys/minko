@@ -32,9 +32,6 @@ namespace minko
         const unsigned char* _keyboardState;
 
     public:
-        static const std::array<int, 256> SCAN_CODE_SDL_MAP;
-        static const std::array<int, 256> KEY_CODE_SDL_MAP;
-
         static inline
         std::shared_ptr<SDLKeyboard>
         create()

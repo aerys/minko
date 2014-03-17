@@ -32,6 +32,8 @@ main(int argc, char** argv)
 {
 	auto canvas = Canvas::create("Minko Example - SDL binding", WINDOW_WIDTH, WINDOW_HEIGHT);
 
+    std::cout << "Please press a key." << std::endl;
+
     // currently, keyUp events seem not to be fired at the individual key level
 	auto keyDown = canvas->keyboard()->keyDown()->connect([&](input::Keyboard::Ptr k)
     {
