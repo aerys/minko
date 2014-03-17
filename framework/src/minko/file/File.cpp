@@ -81,10 +81,11 @@ File::getBinaryDirectory()
 	return path.substr(0, pos);
 #elif defined(LINUX) || defined(__unix__) // Linux
     char buffer[PATH_MAX];
+    size_t l = readlink("/proc/self/exe", buffer, PATH_MAX);
+	auto path = sanitizeFilename(std::string((char*)buffer, l));
+	auto pos = path.find_last_of("/");
 
-    readlink("/proc/self/exe", buffer, PATH_MAX);
-
-	return sanitizeFilename(std::string((char*)buffer));
+	return path.substr(0, pos);
 #else
 	return ".";
 #endif
