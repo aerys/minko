@@ -11,7 +11,7 @@ src_path=${MINKO_HOME}/plugin/assimp/src/minko/file
 echo "include path: ${include_path}"
 echo "src path: ${src_path}"
 
-cd ${MINKO_HOME}/plugin/assimp/tool/lin/script
+cd ${MINKO_HOME}/plugin/assimp/tool/lin/script/assimp-parser-generator
 
 source assimp-parser-decl.sh
 

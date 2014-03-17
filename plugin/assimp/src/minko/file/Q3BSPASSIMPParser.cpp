@@ -17,41 +17,21 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#pragma once
+#include "minko/file/Q3BSPASSIMPParser.hpp"
 
-#include "minko/file/AnyASSIMPParser.hpp"
+#include "../code/AssimpPCH.h"
+#include "assimp/Importer.hpp"
+#include "../code/Q3BSPFileImporter.h"
 
-namespace Assimp
+using namespace minko;
+using namespace file;
+
+Q3BSPASSIMPParser::Ptr Q3BSPASSIMPParser::create()
 {
-    class Discreet3DSImporter;
+    return Q3BSPASSIMPParser::Ptr(new Q3BSPASSIMPParser());
 }
 
-namespace minko
+void Q3BSPASSIMPParser::provideLoaders(Assimp::Importer& importer)
 {
-    namespace file
-    {
-        template <>
-	class AnyASSIMPParser<Assimp::Discreet3DSImporter> : public AbstractASSIMPParser
-        {
-        public:
-
-            typedef std::shared_ptr<AnyASSIMPParser<Assimp::Discreet3DSImporter>> Ptr;
-
-        public:
-
-            virtual ~AnyASSIMPParser() { }
-
-            static
-            Ptr
-            create();
-
-            virtual void provideLoaders(Assimp::Importer& importer);
-
-        private:
-
-            AnyASSIMPParser() { }
-        };
-
-        using Discreet3DSASSIMPParser = AnyASSIMPParser<Assimp::Discreet3DSImporter>;
-    }
+    importer.RegisterLoader(new Assimp::Q3BSPFileImporter());
 }

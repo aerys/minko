@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "../code/COBLoader.h"
 
 using namespace minko;
-using namespace minko::file;
+using namespace file;
 
 COBASSIMPParser::Ptr COBASSIMPParser::create()
 {

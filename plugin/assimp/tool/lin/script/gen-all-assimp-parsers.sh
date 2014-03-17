@@ -1,38 +1,18 @@
-function print_usage
-{
-	echo -e "usage:\ngen-all-assimp-parsers.sh include_path src_path"
-}
+#!/bin/bash
 
-function print_args_error
-{
-	echo "missing args: 2 needed"
-}
-
-if [ ! -z $1 ]; then
-	include_path=$1
-else
-	print_args_error
-	print_usage
+if [ -z ${MINKO_HOME} ]; then
+	echo "MINKO_HOME variable is empty"
 	exit 1
 fi
 
-if [ ! -z $2 ]; then
-	src_path=$2
-else
-	print_args_error
-	print_usage
-	exit 1
-fi
+include_path=${MINKO_HOME}/plugin/assimp/include/minko/file
+src_path=${MINKO_HOME}/plugin/assimp/src/minko/file
 
-mkdir -p ${include_path} ${src_path}
+echo "include path: ${include_path}"
+echo "src path: ${src_path}"
 
-source assimp-parser-decl.sh
+cd ${MINKO_HOME}/plugin/assimp/tool/lin/script/assimp-parser-generator
 
-for loader in ${!loaders[@]}; do
-	parser_name=${loader}
-	assimp_file_name=${loaders[${loader}]}
+./gen-all-assimp-parsers.sh ${include_path} ${src_path}
 
-	./gen-assimp-parser.sh ${parser_name} ${assimp_file_name} ${include_path} ${src_path}
-done
-
-echo "all files successfully generated"
+./gen-assimp-plugin-main-header.sh

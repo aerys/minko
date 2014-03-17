@@ -17,21 +17,43 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "minko/file/Q3BSPFileASSIMPParser.hpp"
+#pragma once
 
-#include "../code/AssimpPCH.h"
-#include "assimp/Importer.hpp"
-#include "../code/Q3BSPFileImporter.h"
+#include "minko/file/AnyASSIMPParser.hpp"
 
-using namespace minko;
-using namespace minko::file;
-
-Q3BSPFileASSIMPParser::Ptr Q3BSPFileASSIMPParser::create()
+namespace Assimp
 {
-    return Q3BSPFileASSIMPParser::Ptr(new Q3BSPFileASSIMPParser());
+    class Q3BSPFileImporter;
 }
 
-void Q3BSPFileASSIMPParser::provideLoaders(Assimp::Importer& importer)
+namespace minko
 {
-    importer.RegisterLoader(new Assimp::Q3BSPFileImporter());
+    namespace file
+    {
+        template <>
+	class AnyASSIMPParser<Assimp::Q3BSPFileImporter> : public AbstractASSIMPParser
+        {
+        public:
+
+            typedef std::shared_ptr<AnyASSIMPParser<Assimp::Q3BSPFileImporter>> Ptr;
+
+        public:
+
+            virtual ~AnyASSIMPParser() { }
+
+            static
+            Ptr
+            create();
+
+            virtual
+            void
+            provideLoaders(Assimp::Importer& importer);
+
+        private:
+
+            AnyASSIMPParser() { }
+        };
+
+        using Q3BSPASSIMPParser = AnyASSIMPParser<Assimp::Q3BSPFileImporter>;
+    }
 }

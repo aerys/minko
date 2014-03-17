@@ -17,41 +17,21 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#pragma once
+#include "minko/file/3DSASSIMPParser.hpp"
 
-#include "minko/file/AnyASSIMPParser.hpp"
+#include "../code/AssimpPCH.h"
+#include "assimp/Importer.hpp"
+#include "../code/3DSLoader.h"
 
-namespace Assimp
+using namespace minko;
+using namespace file;
+
+ThreeDSASSIMPParser::Ptr ThreeDSASSIMPParser::create()
 {
-    class XFileImporter;
+    return ThreeDSASSIMPParser::Ptr(new ThreeDSASSIMPParser());
 }
 
-namespace minko
+void ThreeDSASSIMPParser::provideLoaders(Assimp::Importer& importer)
 {
-    namespace file
-    {
-        template <>
-	class AnyASSIMPParser<Assimp::XFileImporter> : public AbstractASSIMPParser
-        {
-        public:
-
-            typedef std::shared_ptr<AnyASSIMPParser<Assimp::XFileImporter>> Ptr;
-
-        public:
-
-            virtual ~AnyASSIMPParser() { }
-
-            static
-            Ptr
-            create();
-
-            virtual void provideLoaders(Assimp::Importer& importer);
-
-        private:
-
-            AnyASSIMPParser() { }
-        };
-
-        using XFileASSIMPParser = AnyASSIMPParser<Assimp::XFileImporter>;
-    }
+    importer.RegisterLoader(new Assimp::Discreet3DSImporter());
 }

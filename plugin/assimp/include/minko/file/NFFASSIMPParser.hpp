@@ -45,7 +45,9 @@ namespace minko
             Ptr
             create();
 
-            virtual void provideLoaders(Assimp::Importer& importer);
+            virtual
+            void
+            provideLoaders(Assimp::Importer& importer);
 
         private:
 

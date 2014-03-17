@@ -2,60 +2,49 @@
 
 function args_error
 {
-	exit 1
+    exit 1
 }
 
 if [ ! -z $1 ]; then
-	parser_name=$1
+    parser_name=$1
 else
-	parser_name="ParserNamePlaceHolder"
-	args_error
+    args_error
 fi
 
 if [ ! -z $2 ]; then
-	assimp_file_name=$2
+    class_prefix=$2
 else
-	assimp_file_name="AssimpClassPlaceHolder"
-	args_error
+    args_error
 fi
 
 if [ ! -z $3 ]; then
-	include_path=$3
+    assimp_header_file=$3
 else
-	include_path="."
-	args_error
+    args_error
 fi
 
 if [ ! -z $4 ]; then
-	src_path=$4
+    assimp_class=$4
 else
-	src_path="."
-	args_error
+    args_error
 fi
 
-
-file_name_prefix="${parser_name}ASSIMPParser"
-header_file_name="${file_name_prefix}.hpp"
-source_file_name="${file_name_prefix}.cpp"
-
-assimp_class_name="${parser_name}Importer"
-
-# Ugly exceptions...
-# assimp class names do not respect consistent convention
-# remapping parser name to specific assimp class name
-if [[ ${parser_name} == "Collada" ]]; then
- 	assimp_class_name="ColladaLoader"
+if [ ! -z $5 ]; then
+    include_path=$5
+else
+    args_error
 fi
 
-if [[ ${parser_name} == "Discreet3DS" ]]; then
-    assimp_class_name="Discreet3DSImporter"
+if [ ! -z $6 ]; then
+    src_path=$6
+else
+    args_error
 fi
 
-if [[ ${parser_name} == "BVH" ]]; then
- 	assimp_class_name="BVHLoader"
-fi
+header_file_name=${parser_name}ASSIMPParser.hpp
+source_file_name=${parser_name}ASSIMPParser.cpp
 
-parser_type_name="${file_name_prefix}"
+parser_class_name="${class_prefix}ASSIMPParser"
 
 echo "/*
 Copyright (c) 2014 Aerys
@@ -82,7 +71,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace Assimp
 {
-    class "${assimp_class_name}";
+    class "${assimp_class}";
 }
 
 namespace minko
@@ -90,11 +79,11 @@ namespace minko
     namespace file
     {
         template <>
-	class AnyASSIMPParser<Assimp::"${assimp_class_name}"> : public AbstractASSIMPParser
+	class AnyASSIMPParser<Assimp::"${assimp_class}"> : public AbstractASSIMPParser
         {
         public:
 
-            typedef std::shared_ptr<AnyASSIMPParser<Assimp::"${assimp_class_name}">> Ptr;
+            typedef std::shared_ptr<AnyASSIMPParser<Assimp::"${assimp_class}">> Ptr;
 
         public:
 
@@ -104,14 +93,16 @@ namespace minko
             Ptr
             create();
 
-            virtual void provideLoaders(Assimp::Importer& importer);
+            virtual
+            void
+            provideLoaders(Assimp::Importer& importer);
 
         private:
 
             AnyASSIMPParser() { }
         };
 
-        using "${parser_type_name}" = AnyASSIMPParser<Assimp::"${assimp_class_name}">;
+        using "${parser_class_name}" = AnyASSIMPParser<Assimp::"${assimp_class}">;
     }
 }" > ${include_path}/${header_file_name}
 
@@ -138,17 +129,17 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include \"../code/AssimpPCH.h\"
 #include \"assimp/Importer.hpp\"
-#include \"../code/"${assimp_file_name}"\"
+#include \"../code/"${assimp_header_file}"\"
 
 using namespace minko;
 using namespace file;
 
-"${parser_type_name}"::Ptr "${parser_type_name}"::create()
+"${parser_class_name}"::Ptr "${parser_class_name}"::create()
 {
-    return "${parser_type_name}"::Ptr(new "${parser_type_name}"());
+    return "${parser_class_name}"::Ptr(new "${parser_class_name}"());
 }
 
-void "${parser_type_name}"::provideLoaders(Assimp::Importer& importer)
+void "${parser_class_name}"::provideLoaders(Assimp::Importer& importer)
 {
-    importer.RegisterLoader(new Assimp::"${assimp_class_name}"());
+    importer.RegisterLoader(new Assimp::"${assimp_class}"());
 }" > ${src_path}/${source_file_name}

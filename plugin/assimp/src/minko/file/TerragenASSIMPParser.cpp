@@ -24,14 +24,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "../code/TerragenLoader.h"
 
 using namespace minko;
-using namespace minko::file;
+using namespace file;
 
-TerragenASSIMPParser::Ptr TerragenASSIMPParser::create()
+TerrangenASSIMPParser::Ptr TerrangenASSIMPParser::create()
 {
-    return TerragenASSIMPParser::Ptr(new TerragenASSIMPParser());
+    return TerrangenASSIMPParser::Ptr(new TerrangenASSIMPParser());
 }
 
-void TerragenASSIMPParser::provideLoaders(Assimp::Importer& importer)
+void TerrangenASSIMPParser::provideLoaders(Assimp::Importer& importer)
 {
     importer.RegisterLoader(new Assimp::TerragenImporter());
 }

@@ -45,13 +45,15 @@ namespace minko
             Ptr
             create();
 
-            virtual void provideLoaders(Assimp::Importer& importer);
+            virtual
+            void
+            provideLoaders(Assimp::Importer& importer);
 
         private:
 
             AnyASSIMPParser() { }
         };
 
-        using TerragenASSIMPParser = AnyASSIMPParser<Assimp::TerragenImporter>;
+        using TerrangenASSIMPParser = AnyASSIMPParser<Assimp::TerragenImporter>;
     }
 }

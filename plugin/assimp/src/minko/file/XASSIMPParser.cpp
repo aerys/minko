@@ -17,21 +17,21 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "minko/file/ObjFileASSIMPParser.hpp"
+#include "minko/file/XASSIMPParser.hpp"
 
 #include "../code/AssimpPCH.h"
 #include "assimp/Importer.hpp"
-#include "../code/ObjFileImporter.h"
+#include "../code/XFileImporter.h"
 
 using namespace minko;
-using namespace minko::file;
+using namespace file;
 
-ObjFileASSIMPParser::Ptr ObjFileASSIMPParser::create()
+XASSIMPParser::Ptr XASSIMPParser::create()
 {
-    return ObjFileASSIMPParser::Ptr(new ObjFileASSIMPParser());
+    return XASSIMPParser::Ptr(new XASSIMPParser());
 }
 
-void ObjFileASSIMPParser::provideLoaders(Assimp::Importer& importer)
+void XASSIMPParser::provideLoaders(Assimp::Importer& importer)
 {
-    importer.RegisterLoader(new Assimp::ObjFileImporter());
+    importer.RegisterLoader(new Assimp::XFileImporter());
 }

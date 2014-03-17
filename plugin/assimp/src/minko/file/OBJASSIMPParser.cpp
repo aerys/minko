@@ -17,41 +17,21 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#pragma once
+#include "minko/file/OBJASSIMPParser.hpp"
 
-#include "minko/file/AnyASSIMPParser.hpp"
+#include "../code/AssimpPCH.h"
+#include "assimp/Importer.hpp"
+#include "../code/ObjFileImporter.h"
 
-namespace Assimp
+using namespace minko;
+using namespace file;
+
+OBJASSIMPParser::Ptr OBJASSIMPParser::create()
 {
-    class ObjFileImporter;
+    return OBJASSIMPParser::Ptr(new OBJASSIMPParser());
 }
 
-namespace minko
+void OBJASSIMPParser::provideLoaders(Assimp::Importer& importer)
 {
-    namespace file
-    {
-        template <>
-	class AnyASSIMPParser<Assimp::ObjFileImporter> : public AbstractASSIMPParser
-        {
-        public:
-
-            typedef std::shared_ptr<AnyASSIMPParser<Assimp::ObjFileImporter>> Ptr;
-
-        public:
-
-            virtual ~AnyASSIMPParser() { }
-
-            static
-            Ptr
-            create();
-
-            virtual void provideLoaders(Assimp::Importer& importer);
-
-        private:
-
-            AnyASSIMPParser() { }
-        };
-
-        using ObjFileASSIMPParser = AnyASSIMPParser<Assimp::ObjFileImporter>;
-    }
+    importer.RegisterLoader(new Assimp::ObjFileImporter());
 }

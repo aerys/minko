@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "../code/MD5Loader.h"
 
 using namespace minko;
-using namespace minko::file;
+using namespace file;
 
 MD5ASSIMPParser::Ptr MD5ASSIMPParser::create()
 {

@@ -82,7 +82,7 @@ main(int argc, char** argv)
 	// setup assets
 	sceneManager->assets()->loader()->options()->generateMipmaps(true);
 	sceneManager->assets()->loader()->options()
-		->registerParser<file::ObjFileASSIMPParser>("obj")
+		->registerParser<file::OBJASSIMPParser>("obj")
 		->registerParser<file::ColladaASSIMPParser>("dae")
         ->registerParser<file::JPEGParser>("jpg");
     sceneManager->assets()->loader()

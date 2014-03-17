@@ -19,12 +19,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/file/LWSASSIMPParser.hpp"
 
-#include "AssimpPCH.h"
+#include "../code/AssimpPCH.h"
 #include "assimp/Importer.hpp"
-#include "LWSLoader.h"
+#include "../code/LWSLoader.h"
 
 using namespace minko;
-using namespace minko::file;
+using namespace file;
 
 LWSASSIMPParser::Ptr LWSASSIMPParser::create()
 {
