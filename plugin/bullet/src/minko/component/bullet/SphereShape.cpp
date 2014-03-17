@@ -29,7 +29,7 @@ using namespace minko::geometry;
 LineGeometry::Ptr
 bullet::SphereShape::getGeometry(render::AbstractContext::Ptr context) const
 {
-	static const unsigned int	numSteps	= 18;
+	static const unsigned int	numSteps	= 36;
 	static const float			angStep		= 2.0f * float(PI) / float(numSteps); 
 	static const float			cAngStep	= cosf(angStep);
 	static const float			sAngStep	= sinf(angStep);
