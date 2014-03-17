@@ -37,11 +37,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 std::string MODEL_FILENAME = "model/primitives/primitives.scene";
 
 //#define SERIALIZE // comment to test deserialization
+#define DEACTIVATE_PHYSICS
 
 using namespace minko;
+using namespace minko::scene;
 using namespace minko::component;
 using namespace minko::math;
 
+static
+std::ostream&
+printNodeInfo(std::ostream&, Node::Ptr);
 
 void
 serializeSceneExample(std::shared_ptr<file::AssetLibrary>		assets,
@@ -53,11 +58,24 @@ serializeSceneExample(std::shared_ptr<file::AssetLibrary>		assets,
 	sceneWriter->write(MODEL_FILENAME, assets, file::Options::create(context));
 }
 
+
 void
 openSceneExample(std::shared_ptr<file::AssetLibrary>	assets, 
 				 std::shared_ptr<scene::Node>			root)
 {
-	root->addChild(assets->symbol(MODEL_FILENAME));
+	auto sceneNode = assets->symbol(MODEL_FILENAME);
+
+	if (!sceneNode->hasComponent<Transform>())
+		sceneNode->addComponent(Transform::create());
+
+	root->addChild(sceneNode);
+
+	auto withColliders = NodeSet::create(sceneNode)
+		->descendants(true)
+		->where([](Node::Ptr n){ return n->hasComponent<component::bullet::Collider>(); });
+
+	for (auto& n : withColliders->nodes())
+		n->component<component::bullet::Collider>()->displayCollider(assets);
 }
 
 int main(int argc, char** argv)
@@ -72,7 +90,9 @@ int main(int argc, char** argv)
 	sceneManager->assets()
         ->load("effect/Basic.effect")
         ->load("effect/Phong.effect")
+		->load("effect/Line.effect")
         ->load("effect/Particles.effect");
+
 	sceneManager->assets()->defaultOptions()->generateMipmaps(true);
 	sceneManager->assets()->defaultOptions()->effect(sceneManager->assets()->effect("basic"));
 	sceneManager->assets()->material("defaultMaterial", material::BasicMaterial::create()->diffuseColor(0xFFFFFFFF));
@@ -80,7 +100,6 @@ int main(int argc, char** argv)
 	sceneManager->assets()
 		->registerParser<file::PNGParser>("png")
 #ifdef SERIALIZE
-		->queue("effect/Basic.effect");
 		->queue("texture/box.png")
 		
 		sceneManager->assets()->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()));
@@ -93,18 +112,23 @@ int main(int argc, char** argv)
 	auto root = scene::Node::create("root")
 		->addComponent(sceneManager);
 
-
+#ifndef DEACTIVATE_PHYSICS
 	auto physicWorld = bullet::PhysicsWorld::create();
+
 	physicWorld->setGravity(math::Vector3::create(0.f, -9.8f, 0.f));
+
 	root->addComponent(physicWorld);
-	
+#endif // DEACTIVATE_PHYSICS
+
+	root->data()->addProvider(canvas->data()); // FIXME
 
 	auto camera = scene::Node::create("camera")
 		->addComponent(Renderer::create(0x7f7f7fff))
 		->addComponent(Transform::create(
-		Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 20.f))
+			Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 5.f))
 		))
 		->addComponent(PerspectiveCamera::create(800.f / 600.f, (float)PI * 0.25f, .1f, 1000.f));
+
 	root->addChild(camera);
 
 	auto mesh = scene::Node::create("mesh")
@@ -170,7 +194,7 @@ int main(int argc, char** argv)
 	float minPitch = 0.f + float(1e-5);
 	float maxPitch = (float)PI - float(1e-5);
 	auto lookAt = Vector3::create(0.f, 0.f, 0.f);
-	auto distance = 50.f;
+	auto distance = 5.f;
 
 
 	Signal<input::Mouse::Ptr, int, int>::Slot mouseMove;
@@ -252,3 +276,29 @@ int main(int argc, char** argv)
 	return 0;
 }
 
+static
+std::ostream&
+printNodeInfo(std::ostream&	out, 
+			  Node::Ptr		node)
+{
+	if (node == nullptr)
+		return out;
+
+	out << "\n'" << node->name() << "'" << (node->parent() ? "\t<- '" + node->parent()->name() + "'" : "" ) << std::endl;
+
+	if (node->hasComponent<Transform>())
+	{
+		const auto& m = node->component<Transform>()->matrix()->data();
+
+		out << "\t[" << m[0] << " " << m[1] << " " << m[2] << ";\n\t" 
+			<< m[4] << " " << m[5] << " " << m[6] << ";\n\t" 
+			<< m[8] << " " << m[9] << " " << m[10] << "]\n\t"
+			<< "t = (" << m[3] << ", " << m[7] << ", " << m[11] << ")" 
+			<< std::endl; 
+	}
+
+	for (auto& n : node->children())
+		printNodeInfo(out, n);
+
+	return out;
+}
