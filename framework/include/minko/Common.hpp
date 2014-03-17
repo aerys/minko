@@ -155,7 +155,6 @@ namespace minko
 		class Picking;
 		class JobManager;
 
-        class LightManager;
         class AbstractLight;
         class AmbientLight;
         class AbstractDiscreteLight;
