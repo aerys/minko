@@ -63,6 +63,7 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 
 	configuration { "cc=clang" }
 		buildoptions {
+			"-Wno-unknown-warning-option",
 			"-Wno-deprecated-register"
 		}
 

@@ -131,11 +131,10 @@ main(int argc, char** argv)
 			return n->hasComponent<Surface>();
 		});
 
-        root
-            ->addComponent(AmbientLight::create())
+        root->addComponent(AmbientLight::create())
             ->addComponent(DirectionalLight::create())
             ->addChild(model);
-
+		
 		auto skinnedNodes = scene::NodeSet::create(model)
 			->descendants(true)
 			->where([](scene::Node::Ptr n){ return n->hasComponent<Skinning>(); });
