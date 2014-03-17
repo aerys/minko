@@ -72,7 +72,7 @@ namespace minko
 			typedef std::shared_ptr<material::Material>				MaterialPtr;
 			typedef std::shared_ptr<render::Effect>					EffectPtr;
             typedef std::shared_ptr<Assimp::Importer>               ImporterPtr;
-			
+
 			typedef std::vector<Matrix4x4Ptr>						Matrices4x4;
 
 			typedef Signal<LoaderPtr>::Slot							LoaderSignalSlot;
@@ -89,7 +89,7 @@ namespace minko
             std::string												_filename;
             std::shared_ptr<AssetLibrary>							_assetLibrary;
 			std::shared_ptr<file::Options>							_options;
-			
+
 			NodePtr													_symbol;
 
 			std::unordered_map<const aiNode*, NodePtr>				_aiNodeToNode;
@@ -114,6 +114,10 @@ namespace minko
 				  const std::vector<unsigned char>&	data,
 				  std::shared_ptr<AssetLibrary>		assetLibrary);
 
+            static
+            std::set<std::string>
+            getSupportedFileExtensions();
+
         protected:
 
             AbstractASSIMPParser();
@@ -137,7 +141,7 @@ namespace minko
 
             GeometryPtr
             createMeshGeometry(NodePtr, aiMesh*);
-            
+
             std::shared_ptr<component::Transform>
             getTransformFromAssimp(aiNode* ainode);
 
@@ -155,10 +159,10 @@ namespace minko
 
             NodePtr
             findNode(const std::string&) const;
-            
+
             void
 			parseDependencies(const std::string& filename, const aiScene* scene);
-            
+
             void
 			finalize();
 
@@ -173,7 +177,7 @@ namespace minko
 			void
 			createSkin(const aiMesh*);
 
-			BonePtr 
+			BonePtr
 			createBone(const aiBone*) const;
 
 			NodePtr
@@ -205,11 +209,11 @@ namespace minko
 			static
 			void
 			sample(const aiNodeAnim*, const std::vector<float>&, std::vector<Matrix4x4Ptr>&);
-			
+
 			static
 			Matrix4x4Ptr
 			convert(const aiVector3t<float>&, const aiQuaterniont<float>&, const aiVector3t<float>&, Matrix4x4Ptr output = nullptr);
-			
+
 			static
 			QuaternionPtr
 			convert(const aiQuaterniont<float>&, QuaternionPtr output = nullptr);
@@ -243,7 +247,7 @@ namespace minko
 			render::TriangleCulling
 			getTriangleCulling(const aiMaterial*) const;
 
-			bool 
+			bool
 			getWireframe(const aiMaterial*) const;
 
 			float
