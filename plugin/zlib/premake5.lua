@@ -14,5 +14,6 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 	}
 
 	configuration { "vs*" }
+		buildoptions { "/wd4996" }
 		defines { "_CRT_SECURE_NO_WARNINGS" }
 	
