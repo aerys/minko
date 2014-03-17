@@ -380,9 +380,6 @@ Canvas::step()
 		case SDL_QUIT:
 			quit();
 			break;
-		case SDL_APP_TERMINATING:
-			quit();
-            break;
 
         case SDL_KEYDOWN:
         {
