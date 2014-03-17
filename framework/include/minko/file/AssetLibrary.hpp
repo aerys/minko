@@ -133,6 +133,13 @@ namespace minko
 			Ptr
 			blob(const std::string& name, const std::vector<unsigned char>& blob);
 
+			inline
+			bool
+			hasBlob(const std::string& name)
+			{
+				return _blobs.count(name) != 0;
+			}
+
             AbsScriptPtr
             script(const std::string& name);
 
