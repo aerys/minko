@@ -8,6 +8,8 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		"include",
 		"src"
 	}
+	
+	minko.plugin.enable("zlib")
 
 	--defines { "DEBUG_SKINNING" }
 
@@ -41,10 +43,11 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		"lib/assimp/contrib/ConvertUTF",
 		"lib/assimp/contrib/irrXML",
 		"lib/assimp/contrib/poly2tri",
-		"lib/assimp/contrib/unzip",
-		"lib/assimp/contrib/zlib"
+		"lib/assimp/contrib/unzip"
+		--"lib/assimp/contrib/zlib"
 	}
 	defines {
+		"ASSIMP_BUILD_NO_OWN_ZLIB",
 		"ASSIMP_BUILD_NO_EXPORT",
 		"ASSIMP_BUILD_BOOST_WORKAROUND",
 		-- "ASSIMP_BUILD_NO_IMPORTER_INSTANCIATION",

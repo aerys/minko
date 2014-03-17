@@ -37,7 +37,7 @@
 #undef HAVE_LIBM
 
 /* Define to 1 if you have the `z' library (-lz). */
-#undef HAVE_LIBZ
+#define HAVE_LIBZ
 
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H

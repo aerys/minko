@@ -5,13 +5,19 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 	kind "StaticLib"
 	language "C++"
 	
+	minko.plugin.enable("zlib")
+	
 	files {
 		"**.hpp",
 		"**.h",
 		"**.cpp",
 		"**.c"
 	}
-
+	
+	excludes {
+		"lib/devil/src/src-ILU/ilur/ilur.c"
+	}
+	
 	includedirs {
 		"include",
 		"lib/devil/src/include",
@@ -22,7 +28,6 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		"lib/devil/lib/libjpeg",
 		"lib/devil/lib/libtiff",
 		"lib/devil/lib/libpng",
-		"lib/devil/lib/zlib",
 		"lib/devil/lib/libjasper/include",
 		"lib/devil/lib/lcms/include"
 	}

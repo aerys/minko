@@ -17,18 +17,16 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ]]--
 
--- assimp plugin
-minko.plugin.assimp = {}
+-- angle plugin
+minko.plugin.zlib = {}
 
-function minko.plugin.assimp:enable()
-	minko.plugin.enable("zlib")
-
-	minko.plugin.links { "assimp" }
-	includedirs { minko.plugin.path("assimp") .. "/include" }
-	defines { "MINKO_PLUGIN_ASSIMP" }
+function minko.plugin.zlib:enable()
+	minko.plugin.links { "zlib" }
+	includedirs { minko.plugin.path("zlib") .. "/lib/zlib" }
+	defines { "MINKO_PLUGIN_ZLIB" }
 end
 
 newoption {
-	trigger = "with-assimp",
-	description = "Enable the Minko ASSIMP plugin."
+	trigger			= "with-zlib",
+	description	= "Enable the zlib plugin to use the DirectX backend provided by the Google ANGLE project."
 }
