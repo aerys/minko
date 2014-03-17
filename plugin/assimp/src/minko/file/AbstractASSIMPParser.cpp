@@ -77,8 +77,8 @@ using namespace minko::geometry;
 	printNode(std::ostream& out, Node::Ptr node, uint depth)
 #endif // DEBUG_ASSIMP
 
-/*static*/ const AbstractASSIMPParser::TextureTypeToName	AbstractASSIMPParser::_textureTypeToName	= AbstractASSIMPParser::initializeTextureTypeToName();
-/*static*/ const std::string						AbstractASSIMPParser::PNAME_TRANSFORM		= "transform.matrix";
+/*static*/ const AbstractASSIMPParser::TextureTypeToName AbstractASSIMPParser::_textureTypeToName = AbstractASSIMPParser::initializeTextureTypeToName();
+/*static*/ const std::string AbstractASSIMPParser::PNAME_TRANSFORM = "transform.matrix";
 
 /*static*/
 AbstractASSIMPParser::TextureTypeToName
@@ -124,8 +124,11 @@ AbstractASSIMPParser::parse(const std::string&					filename,
 							const std::vector<unsigned char>&	data,
 							std::shared_ptr<AssetLibrary>	    assetLibrary)
 {
+#ifdef DEBUG
+	std::cout << "AbstractASSIMPParser::parse()" << std::endl;
+#endif // DEBUG
+	
 	resetParser();
-
 	initImporter();
 
 	int pos = resolvedFilename.find_last_of("\\/");
@@ -149,6 +152,10 @@ AbstractASSIMPParser::parse(const std::string&					filename,
 	options->loadAsynchronously(false);
 	importer.SetIOHandler(new IOHandler(options, _assetLibrary));
 
+#ifdef DEBUG
+	std::cout << "AbstractASSIMPParser: preparing to parse" << std::endl;
+#endif // DEBUG
+	
 	const aiScene* scene = importer.ReadFileFromMemory(
 		&data[0],
 		data.size(),
@@ -167,9 +174,17 @@ AbstractASSIMPParser::parse(const std::string&					filename,
 	);
 
 	if (!scene)
-		throw ParserError(importer.GetErrorString());
+		throw ParserError(importer.GetErrorString());	
 
+#ifdef DEBUG
+	std::cout << "AbstractASSIMPParser: scene parsed" << std::endl;
+#endif // DEBUG
+	
 	parseDependencies(resolvedFilename, scene);
+
+#ifdef DEBUG
+	std::cout << "AbstractASSIMPParser: " << _numDependencies << " dependencies to load..." << std::endl;
+#endif // DEBUG
 
 	if (_numDependencies == 0)
 		allDependenciesLoaded(scene);
@@ -179,6 +194,7 @@ void
 AbstractASSIMPParser::allDependenciesLoaded(const aiScene* scene)
 {
 #ifdef DEBUG
+	std::cout << "AbstractASSIMPParser: " << _numDependencies << " dependencies loaded!" << std::endl;
 	if (_numDependencies != _numLoadedDependencies)
 		throw std::logic_error("_numDependencies != _numLoadedDependencies");
 #endif // DEBUG
@@ -641,7 +657,7 @@ AbstractASSIMPParser::loadTexture(const std::string&	textureFilename,
 	{
 		++_numLoadedDependencies;
 #ifdef DEBUG
-        std::cerr << "unable to find texture with filename '" << textureFilename << "'" << std::endl;
+        std::cerr << "AbstractASSIMPParser: unable to find texture with filename '" << textureFilename << "'" << std::endl;
 #endif // DEBUG
 	});
 
@@ -651,6 +667,10 @@ AbstractASSIMPParser::loadTexture(const std::string&	textureFilename,
 void
 AbstractASSIMPParser::textureCompleteHandler(file::Loader::Ptr loader, const aiScene* scene)
 {
+#ifdef DEBUG
+	std::cerr << "AbstractASSIMPParser: " << _numLoadedDependencies << "/" << _numDependencies << "texture loaded" << std::endl;
+#endif // DEBUG
+	
 	++_numLoadedDependencies;
 	if (_numDependencies == _numLoadedDependencies)// && _symbol)
 		allDependenciesLoaded(scene);
