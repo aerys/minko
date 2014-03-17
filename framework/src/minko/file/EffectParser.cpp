@@ -516,29 +516,47 @@ EffectParser::loadGLSLDependencies(GLSLBlockListPtr		blocks,
 
 		if (block.first == GLSLBlockType::FILE)
 		{
-			auto loader = Loader::create(options);
+			if (options->assetLibrary()->hasBlob(block.second))
+			{
+				auto& data = options->assetLibrary()->blob(block.second);
 
-			++_numDependencies;
+				block.first = GLSLBlockType::TEXT;
+#ifdef DEBUG
+				block.second = "//#pragma include(\"" + block.second + "\")\n";
+#else
+				block.second = "\n";
+#endif
+				parseGLSL(std::string((const char*)&data[0], data.size()), options, blocks, blockIt);
+			}
+			else
+			{
+				auto loader = Loader::create(options);
+				
+				++_numDependencies;
+				
+				_loaderCompleteSlots[loader] = loader->complete()->connect(std::bind(
+				    &EffectParser::glslIncludeCompleteHandler,
+				    std::static_pointer_cast<EffectParser>(shared_from_this()),
+					std::placeholders::_1,
+					blocks,
+					blockIt,
+					block.second
+				));
 
-			_loaderCompleteSlots[loader] = loader->complete()->connect(std::bind(
-				&EffectParser::glslIncludeCompleteHandler,
-				std::static_pointer_cast<EffectParser>(shared_from_this()),
-				std::placeholders::_1,
-				blocks,
-				blockIt,
-                block.second
-			));
+				_loaderErrorSlots[loader] = loader->error()->connect(std::bind(
+				    &EffectParser::dependencyErrorHandler,
+					std::static_pointer_cast<EffectParser>(shared_from_this()),
+					std::placeholders::_1,
+					block.second
+			    ));
 
-			_loaderErrorSlots[loader] = loader->error()->connect(std::bind(
-				&EffectParser::dependencyErrorHandler,
-				std::static_pointer_cast<EffectParser>(shared_from_this()),
-				std::placeholders::_1,
-                block.second
-			));
-
-			loader->queue(block.second)->load();
+				loader->queue(block.second)->load();
+			}
 		}
 	}
+
+	if (_numDependencies == _numLoadedDependencies && _effect)
+		finalize();
 }
 
 void
