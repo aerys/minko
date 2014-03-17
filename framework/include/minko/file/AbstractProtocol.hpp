@@ -125,9 +125,6 @@ namespace minko
             {
                 return _file->_data;
             }
-
-            std::string
-            sanitizeFilename(const std::string& filename);
         };
 
     }

@@ -57,14 +57,14 @@ FileProtocol::load()
 
 	_options = options;
 
-    auto realFilename = options->uriFunction()(sanitizeFilename(cleanFilename));
+    auto realFilename = options->uriFunction()(File::sanitizeFilename(cleanFilename));
 	
 	std::fstream file(cleanFilename, flags);
 
 	if (!file.is_open())
 		for (auto path : _options->includePaths())
 		{
-			auto testFilename = options->uriFunction()(sanitizeFilename(path + '/' + cleanFilename));
+			auto testFilename = options->uriFunction()(File::sanitizeFilename(path + '/' + cleanFilename));
 
 			file.open(testFilename, flags);
 			if (file.is_open())

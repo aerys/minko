@@ -67,6 +67,18 @@ namespace minko
                 return _data;
             }
 
+			static
+			std::string
+			getCurrentWorkingDirectory();
+
+			static
+			std::string
+			getBinaryDirectory();
+
+			static
+			std::string
+			sanitizeFilename(const std::string& filename);
+
         private:
             File()
             {

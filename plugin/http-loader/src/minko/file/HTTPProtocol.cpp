@@ -127,7 +127,7 @@ HTTPProtocol::load()
 {
 	std::cout << "HTTPProtocol::load(): " << _file->filename() << std::endl;
 
-    auto realFilename = _options->uriFunction()(sanitizeFilename(_file->filename()));
+    auto realFilename = _options->uriFunction()(File::sanitizeFilename(_file->filename()));
 
 	if (_options->includePaths().size() != 0)
 	{

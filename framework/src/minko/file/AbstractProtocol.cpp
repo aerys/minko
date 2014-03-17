@@ -32,19 +32,3 @@ AbstractProtocol::AbstractProtocol() :
     _error(Signal<Ptr>::create())
 {
 }
-
-std::string
-AbstractProtocol::sanitizeFilename(const std::string& filename)
-{
-    auto f = filename;
-    auto a = '\\';
-
-    for (auto pos = f.find_first_of(a);
-         pos != std::string::npos;
-         pos = f.find_first_of(a))
-    {
-        f = f.replace(pos, 1, 1, '/');
-    }
-
-    return f;
-}

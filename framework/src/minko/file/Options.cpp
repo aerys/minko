@@ -45,65 +45,12 @@ Options::Options() :
 	_material(nullptr),
 	_effect(nullptr)
 {
-    includePaths().push_back("asset");
+	auto binaryDir = File::getBinaryDirectory();
 
-#if defined(DEBUG)
-# if !defined(EMSCRIPTEN)
-	includePaths().push_back("../../../asset");
-# endif
-# if defined(_WIN32)
-	includePaths().push_back("bin/windows32/debug/asset");
-# elif defined(_WIN64)
-	includePaths().push_back("bin/windows64/debug/asset");
-# elif defined(EMSCRIPTEN)
-	includePaths().push_back("bin/html5/debug/asset");
-# elif defined(LINUX) || defined(__unix__)
-#  if defined(__x86_64__)
-	includePaths().push_back("bin/linux64/debug/asset");
-#  else
-	includePaths().push_back("bin/linux32/debug/asset");
-#  endif
-# elif defined(__APPLE__)
-#  include <TargetConditionals.h>
-#  if defined(TARGET_IPHONE_SIMULATOR) or defined(TARGET_OS_IPHONE)
-	CFURLRef resourcesURL = CFBundleCopyResourcesDirectoryURL(CFBundleGetMainBundle());
-	char path[PATH_MAX];
-	if (!CFURLGetFileSystemRepresentation(resourcesURL, true, (UInt8*) path, PATH_MAX))
-		throw std::runtime_error("cannot find .app path");
-	CFRelease(resourcesURL);
-	includePaths().push_back(std::string(path) + "/asset");
-#  elif defined(TARGET_OS_MAC)
-	includePaths().push_back("bin/osx64/debug/asset");
-#  endif
-# endif
-#else // release
-# if defined(_WIN32)
-	includePaths().push_back("bin/windows32/release/asset");
-# elif defined(_WIN64)
-	includePaths().push_back("bin/windows64/release/asset");
-# elif defined(TARGET_OS_MAC)
-	includePaths().push_back("bin/osx64/release/asset");
-# elif defined(EMSCRIPTEN)
-	includePaths().push_back("bin/html5/release/asset");
-# elif defined(LINUX) || defined(__unix__)
-#  if defined(__x86_64__)
-	includePaths().push_back("bin/linux64/release/asset");
-#  else
-	includePaths().push_back("bin/linux32/release/asset");
-#  endif 
-# elif defined(__APPLE__)
-#  include <TargetConditionals.h>
-#  if defined(TARGET_IPHONE_SIMULATOR) or defined(TARGET_OS_IPHONE)
-	CFURLRef resourcesURL = CFBundleCopyResourcesDirectoryURL(CFBundleGetMainBundle());
-	char path[PATH_MAX];
-	if (!CFURLGetFileSystemRepresentation(resourcesURL, true, (UInt8*) path, PATH_MAX))
-		throw std::runtime_error("cannot find .app path");
-	CFRelease(resourcesURL);
-	includePaths().push_back(std::string(path) + "/asset");
-#  elif defined(TARGET_OS_MAC)
-	includePaths().push_back("bin/osx64/debug/asset");
-#  endif
-# endif
+    includePaths().push_back(binaryDir + "/asset");
+
+#if defined(DEBUG) && !defined(EMSCRIPTEN)
+	includePaths().push_back(binaryDir + "/../../../asset");
 #endif
 
 	initializePlatforms();
