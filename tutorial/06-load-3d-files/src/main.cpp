@@ -44,7 +44,9 @@ main(int argc, char** argv)
         ->registerParser<file::ColladaASSIMPParser>("dae")
         ->registerParser<file::JPEGParser>("jpg");
 
-    sceneManager->assets()->loader()->queue("effect/Basic.effect");
+	sceneManager->assets()->loader()
+		->queue("effect/Basic.effect")
+		->queue("effect/Phong.effect");
 
     // add the model to the asset list
 	sceneManager->assets()->loader()->queue(OBJ_MODEL_FILENAME);
