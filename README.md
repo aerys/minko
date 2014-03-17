@@ -1,4 +1,4 @@
-![logo](https://dl.dropbox.com/s/68w979idplf8j21/256.png)
+![logo](http://minko.io/wp-content/uploads/2014/03/minko_by_aerys_noir_gris.png)
 
 Minko
 =====
@@ -11,8 +11,17 @@ It provides a powerful editor on top of a robust, extensible and fully documente
 
 The repository hosts the source code of ***Minko 3***. Looking for Minko 2? We've moved the [repository](http://github.com/aerys/minko-as3).
 
+
+Resources
+---------
+* [Official website](http://minko.io/ "Website")
+* [Documentation](http://doc.v3.minko.io/ "Documentation")
+* [Forums](http://minko.io/forums "Forums")
+
 Get started
 ===========
+
+For more detailed instructions, please follow our [Getting started with Minko 3 beta 1](http://doc.v3.minko.io/wiki/Getting_started_with_Minko_3_beta_1) tutorial.
 
 ### Windows
 * Set the `MINKO_HOME` environment variable to the root of the SDK.
@@ -101,11 +110,6 @@ Available plugins are:
 * sdl
 * serializer
 * webgl: please follow `webgl/README.md` to learn how to deploy
-
-Resources
----------
-* [minko.io](http://minko.io/ "Website")
-* [doc.minko.io](http://doc.minko.io/ "Documentation")
 
 Contribute
 ----------

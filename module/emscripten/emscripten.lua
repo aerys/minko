@@ -35,7 +35,7 @@ elseif os.is('macosx') then
 elseif os.is('windows') then
 	insert.insert(premake.tools.gcc, 'tools.emscripten', {
 		cc = '"' .. EMSCRIPTEN .. '\\emcc.bat"',
-		cxx = 'call %MINKO_HOME%\\tool\\win\\script\\em++.bat',
+		cxx = 'call "%MINKO_HOME%\\tool\\win\\script\\em++.bat"',
 		ar = '"' .. EMSCRIPTEN .. '\\emar.bat"'
 	})
 end
