@@ -110,13 +110,13 @@ ChromiumDOM::window()
 AbstractDOMElement::Ptr
 ChromiumDOM::document()
 {
-	return ChromiumDOMElement::getDOMElementFromV8Object(_document);
+	return ChromiumDOMElement::getDOMElementFromV8Object(_document, _v8Context);
 }
 
 AbstractDOMElement::Ptr
 ChromiumDOM::body()
 {
-	return ChromiumDOMElement::getDOMElementFromV8Object(_document->GetValue("body"));
+	return ChromiumDOMElement::getDOMElementFromV8Object(_document->GetValue("body"), _v8Context);
 }
 
 void
@@ -196,6 +196,8 @@ ChromiumDOM::addLoadEventListener()
 bool
 ChromiumDOM::update()
 {
+	ChromiumDOMElement::update();
+
 	for (std::string message : _receivedMessages)
 	{
 		_onload->execute(shared_from_this(), message);
@@ -220,6 +222,7 @@ ChromiumDOM::createElement(std::string tag)
 	ChromiumDOMElement::Ptr element;
 	if (CefCurrentlyOn(TID_RENDERER))
 	{
+		_v8Context->Enter();
 		CefRefPtr<CefV8Value> func = _document->GetValue("createElement");
 
 		CefV8ValueList args;
@@ -227,7 +230,8 @@ ChromiumDOM::createElement(std::string tag)
 
 		CefRefPtr<CefV8Value> result = func->ExecuteFunctionWithContext(_v8Context, _document, args);
 
-		element = ChromiumDOMElement::create(result);
+		element = ChromiumDOMElement::create(result, _v8Context);
+		_v8Context->Exit();
 	}
 	else
 	{
@@ -251,6 +255,7 @@ ChromiumDOM::getElementById(std::string id)
 	ChromiumDOMElement::Ptr element;
 	if (CefCurrentlyOn(TID_RENDERER))
 	{
+		_v8Context->Enter();
 		CefRefPtr<CefV8Value> func = _document->GetValue("getElementById");
 
 		CefV8ValueList args;
@@ -258,7 +263,8 @@ ChromiumDOM::getElementById(std::string id)
 
 		CefRefPtr<CefV8Value> result = func->ExecuteFunctionWithContext(_v8Context, _document, args);
 
-		element = ChromiumDOMElement::getDOMElementFromV8Object(result);
+		element = ChromiumDOMElement::getDOMElementFromV8Object(result, _v8Context);
+		_v8Context->Exit();
 	}
 	else
 	{
@@ -283,13 +289,15 @@ ChromiumDOM::getElementsByClassName(std::string className)
 
 	if (CefCurrentlyOn(TID_RENDERER))
 	{
+		_v8Context->Enter();
 		CefRefPtr<CefV8Value> func = _document->GetValue("getElementsByClassName");
 
 		CefV8ValueList args;
 		args.push_back(CefV8Value::CreateString(className));
 
 		CefRefPtr<CefV8Value> result = func->ExecuteFunctionWithContext(_v8Context, _document, args);
-		list = ChromiumDOMElement::v8ElementArrayToList(result);
+		list = ChromiumDOMElement::v8ElementArrayToList(result, _v8Context);
+		_v8Context->Exit();
 	}
 	else
 	{
@@ -314,6 +322,7 @@ ChromiumDOM::getElementsByTagName(std::string tagName)
 
 	if (CefCurrentlyOn(TID_RENDERER))
 	{
+		_v8Context->Enter();
 		CefRefPtr<CefV8Value> func = _document->GetValue("getElementsByTagName");
 
 		CefV8ValueList args;
@@ -321,7 +330,8 @@ ChromiumDOM::getElementsByTagName(std::string tagName)
 
 		CefRefPtr<CefV8Value> result = func->ExecuteFunctionWithContext(_v8Context, _document, args);
 
-		list = ChromiumDOMElement::v8ElementArrayToList(result);
+		list = ChromiumDOMElement::v8ElementArrayToList(result, _v8Context);
+		_v8Context->Exit();
 	}
 	else
 	{
@@ -356,6 +366,32 @@ ChromiumDOM::fullUrl()
 		runner->PostTask(NewCefRunnableFunction(&[&]()
 		{
 			result = fullUrl();
+			blocker = false;
+		}));
+
+		while (blocker);
+	}
+	return result;
+}
+
+
+bool
+ChromiumDOM::isMain()
+{
+	bool result;
+
+	if (CefCurrentlyOn(TID_RENDERER))
+	{
+		result = _frame->IsMain();
+	}
+	else
+	{
+		CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
+		std::atomic<bool> blocker = true;
+
+		runner->PostTask(NewCefRunnableFunction(&[&]()
+		{
+			result = isMain();
 			blocker = false;
 		}));
 

@@ -29,42 +29,20 @@ namespace chromium
 {
 	namespace dom
 	{
+		class ChromiumDOMElement;
+
 		class ChromiumDOMElementV8Handler : public CefV8Handler
 		{
 		public:
-			ChromiumDOMElementV8Handler();
+			ChromiumDOMElementV8Handler(std::shared_ptr<ChromiumDOMElement>);
 
 			virtual
 			bool
 			Execute(const CefString& name, CefRefPtr<CefV8Value> object, const CefV8ValueList& arguments, CefRefPtr<CefV8Value>& retval, CefString& exception);
-			
-
-			std::shared_ptr<minko::Signal<minko::dom::AbstractDOMEvent::Ptr>>
-			onclick();
-
-			std::shared_ptr<minko::Signal<minko::dom::AbstractDOMEvent::Ptr>>
-			onmousedown();
-
-			std::shared_ptr<minko::Signal<minko::dom::AbstractDOMEvent::Ptr>>
-			onmousemove();
-
-			std::shared_ptr<minko::Signal<minko::dom::AbstractDOMEvent::Ptr>>
-			onmouseup();
-
-			std::shared_ptr<minko::Signal<minko::dom::AbstractDOMEvent::Ptr>>
-			onmouseover();
-
-			std::shared_ptr<minko::Signal<minko::dom::AbstractDOMEvent::Ptr>>
-			onmouseout();
 
 		private:
-			std::shared_ptr<minko::Signal<minko::dom::AbstractDOMEvent::Ptr>> _onclick;
-			std::shared_ptr<minko::Signal<minko::dom::AbstractDOMEvent::Ptr>> _onmousedown;
-			std::shared_ptr<minko::Signal<minko::dom::AbstractDOMEvent::Ptr>> _onmousemove;
-			std::shared_ptr<minko::Signal<minko::dom::AbstractDOMEvent::Ptr>> _onmouseup;
-			std::shared_ptr<minko::Signal<minko::dom::AbstractDOMEvent::Ptr>> _onmouseover;
-			std::shared_ptr<minko::Signal<minko::dom::AbstractDOMEvent::Ptr>> _onmouseout;
-
+			std::shared_ptr<ChromiumDOMElement> _element;
+			
 			IMPLEMENT_REFCOUNTING(ChromiumDOMElementV8Handler);
 		};
 	}

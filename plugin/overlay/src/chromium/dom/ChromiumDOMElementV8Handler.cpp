@@ -19,17 +19,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #if defined(CHROMIUM)
 #include "chromium/dom/ChromiumDOMElementV8Handler.hpp"
+#include "chromium/dom/ChromiumDOMElement.hpp"
 
 using namespace chromium::dom;
 using namespace minko::dom;
+using namespace minko;
 
-ChromiumDOMElementV8Handler::ChromiumDOMElementV8Handler() :
-_onclick(minko::Signal<minko::dom::AbstractDOMEvent::Ptr>::create()),
-_onmousedown(minko::Signal<minko::dom::AbstractDOMEvent::Ptr>::create()),
-_onmousemove(minko::Signal<minko::dom::AbstractDOMEvent::Ptr>::create()),
-_onmouseup(minko::Signal<minko::dom::AbstractDOMEvent::Ptr>::create()),
-_onmouseover(minko::Signal<minko::dom::AbstractDOMEvent::Ptr>::create()),
-_onmouseout(minko::Signal<minko::dom::AbstractDOMEvent::Ptr>::create())
+ChromiumDOMElementV8Handler::ChromiumDOMElementV8Handler(ChromiumDOMElement::Ptr element) :
+	_element(element)
 {
 }
 
@@ -44,68 +41,31 @@ ChromiumDOMElementV8Handler::Execute(const CefString& name, CefRefPtr<CefV8Value
 		{
 			std::string type = event->GetValue("type")->GetStringValue();
 
-			if (type == "click" && _onclick->numCallbacks() > 0)
+			minko::Signal<minko::dom::AbstractDOMEvent::Ptr>::Ptr signal;
+
+			if (type == "click" && _element->onclick()->numCallbacks() > 0)
+				signal = _element->onclick();
+			else if (type == "mousedown" && _element->onmousedown()->numCallbacks() > 0)
+				signal = _element->onmousedown();
+			else if (type == "mousemove" && _element->onmousemove()->numCallbacks() > 0)
+				signal = _element->onmousemove();
+			else if (type == "mouseup" && _element->onmouseup()->numCallbacks() > 0)
+				signal = _element->onmouseup();
+			else if (type == "mouseover" && _element->onmouseover()->numCallbacks() > 0)
+				signal = _element->onmouseover();
+			else if (type == "mouseout" && _element->onmouseout()->numCallbacks() > 0)
+				signal = _element->onmouseout();
+
+			if (signal != nullptr)
 			{
-				_onclick->execute(ChromiumDOMEvent::create(event));
-			}
-			else if (type == "mousedown" && _onmousedown->numCallbacks() > 0)
-			{
-				_onmousedown->execute(ChromiumDOMEvent::create(event));
-			}
-			else if (type == "mousemove" && _onmousemove->numCallbacks() > 0)
-			{
-				_onmousemove->execute(ChromiumDOMEvent::create(event));
-			}
-			else if (type == "mouseup" && _onmouseup->numCallbacks() > 0)
-			{
-				_onmouseup->execute(ChromiumDOMEvent::create(event));
-			}
-			else if (type == "mouseover" && _onmouseover->numCallbacks() > 0)
-			{
-				_onmouseover->execute(ChromiumDOMEvent::create(event));
-			}
-			else if (type == "mouseout" && _onmouseout->numCallbacks() > 0)
-			{
-				_onmouseout->execute(ChromiumDOMEvent::create(event));
+				ChromiumDOMEvent::Ptr domEvent = ChromiumDOMEvent::create(event, CefV8Context::GetCurrentContext());
+				_element->addFunction([=]()
+				{
+					signal->execute(domEvent);
+				});
 			}
 		}
 	}
 	return true;
-}
-
-std::shared_ptr<minko::Signal<minko::dom::AbstractDOMEvent::Ptr>>
-ChromiumDOMElementV8Handler::onclick()
-{
-	return _onclick;
-}
-
-std::shared_ptr<minko::Signal<minko::dom::AbstractDOMEvent::Ptr>>
-ChromiumDOMElementV8Handler::onmousedown()
-{
-	return _onmousedown;
-}
-
-std::shared_ptr<minko::Signal<minko::dom::AbstractDOMEvent::Ptr>>
-ChromiumDOMElementV8Handler::onmousemove()
-{
-	return _onmousemove;
-}
-
-std::shared_ptr<minko::Signal<minko::dom::AbstractDOMEvent::Ptr>>
-ChromiumDOMElementV8Handler::onmouseup()
-{
-	return _onmouseup;
-}
-
-std::shared_ptr<minko::Signal<minko::dom::AbstractDOMEvent::Ptr>>
-ChromiumDOMElementV8Handler::onmouseover()
-{
-	return _onmouseover;
-}
-
-std::shared_ptr<minko::Signal<minko::dom::AbstractDOMEvent::Ptr>>
-ChromiumDOMElementV8Handler::onmouseout()
-{
-	return _onmouseout;
 }
 #endif

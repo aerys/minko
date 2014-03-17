@@ -30,6 +30,8 @@ const std::string TEXTURE_FILENAME = "texture/box.png";
 
 Signal<minko::dom::AbstractDOM::Ptr, std::string>::Slot onloadSlot;
 
+Signal<minko::dom::AbstractDOMEvent::Ptr>::Slot onclickSlot;
+
 dom::AbstractDOM::Ptr gameInterfaceDom;
 dom::AbstractDOMElement::Ptr redScoreElement;
 dom::AbstractDOMElement::Ptr blueScoreElement;
@@ -112,6 +114,10 @@ int main(int argc, char** argv)
 
 		if (dom->fileName() == "gameInterface.html")
 		{
+			onclickSlot = dom->document()->onclick()->connect([](dom::AbstractDOMEvent::Ptr event)
+			{
+				std::cout << "click" << std::endl;
+			});
 			gameInterfaceDom = dom;
 			redScoreElement = gameInterfaceDom->getElementById("teamScoreRed");
 			blueScoreElement = gameInterfaceDom->getElementById("teamScoreBlue");

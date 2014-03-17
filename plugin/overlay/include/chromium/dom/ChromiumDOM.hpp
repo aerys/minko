@@ -115,18 +115,15 @@ namespace chromium
 			}
 
 			bool
-			isMain()
-			{
-				return _frame->IsMain();
-			}
+				isMain();
 
 			std::string
 			fileName()
 			{
-				std::string fullUrl = _frame->GetURL();
-				int i = fullUrl.find_last_of('/');
+				std::string url = fullUrl();
+				int i = url.find_last_of('/');
 
-				std::string fileName = fullUrl.substr(i + 1);
+				std::string fileName = url.substr(i + 1);
 				return fileName;
 			}
 

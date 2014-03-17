@@ -39,17 +39,17 @@ namespace chromium
 			~ChromiumDOMElement();
 
 		private:
-			ChromiumDOMElement(CefRefPtr<CefV8Value>);
+			ChromiumDOMElement(CefRefPtr<CefV8Value>, CefRefPtr<CefV8Context>);
 			
 		public:
 
 			static
 			Ptr
-			create(CefRefPtr<CefV8Value>);
+			create(CefRefPtr<CefV8Value>, CefRefPtr<CefV8Context>);
 
 			static
 			Ptr
-			getDOMElementFromV8Object(CefRefPtr<CefV8Value>);
+			getDOMElementFromV8Object(CefRefPtr<CefV8Value>, CefRefPtr<CefV8Context>);
 
 			static
 			void
@@ -57,7 +57,7 @@ namespace chromium
 
 			static
 			std::list<AbstractDOMElement::Ptr>
-			v8ElementArrayToList(CefRefPtr<CefV8Value>);
+			v8ElementArrayToList(CefRefPtr<CefV8Value>, CefRefPtr<CefV8Context>);
 
 			void
 			clear();
@@ -144,6 +144,14 @@ namespace chromium
 			minko::Signal<minko::dom::AbstractDOMEvent::Ptr>::Ptr
 			onmouseover();
 
+			static
+			void
+			addFunction(std::function<void()>);
+
+			static
+			void
+			update();
+
 		private:
 
 			CefRefPtr<CefV8Value>
@@ -173,8 +181,18 @@ namespace chromium
 			bool _onmouseoverCallbackSet;
 			bool _onmouseoutCallbackSet;
 
+			std::shared_ptr<minko::Signal<minko::dom::AbstractDOMEvent::Ptr>> _onclick;
+			std::shared_ptr<minko::Signal<minko::dom::AbstractDOMEvent::Ptr>> _onmousedown;
+			std::shared_ptr<minko::Signal<minko::dom::AbstractDOMEvent::Ptr>> _onmousemove;
+			std::shared_ptr<minko::Signal<minko::dom::AbstractDOMEvent::Ptr>> _onmouseup;
+			std::shared_ptr<minko::Signal<minko::dom::AbstractDOMEvent::Ptr>> _onmouseover;
+			std::shared_ptr<minko::Signal<minko::dom::AbstractDOMEvent::Ptr>> _onmouseout;
+
 			CefRefPtr<ChromiumDOMElementV8Handler> _v8Handler;
 			CefRefPtr<CefV8Value> _v8NodeObject;
+			CefRefPtr<CefV8Context> _v8Context;
+
+			static std::list<std::function<void()>>	_functionList;
 
 			bool _cleared;
 		};

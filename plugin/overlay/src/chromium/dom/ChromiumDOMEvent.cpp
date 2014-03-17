@@ -34,8 +34,9 @@ using namespace minko::dom;
 std::list<ChromiumDOMEvent::Ptr>
 ChromiumDOMEvent::_events;
 
-ChromiumDOMEvent::ChromiumDOMEvent(CefRefPtr<CefV8Value> v8NodeObject) :
-	_cleared(false)
+ChromiumDOMEvent::ChromiumDOMEvent(CefRefPtr<CefV8Value> v8NodeObject, CefRefPtr<CefV8Context> v8Context):
+	_cleared(false),
+	_v8Context(v8Context)
 {
 	if (!v8NodeObject->IsObject())
 		throw;
@@ -71,9 +72,9 @@ ChromiumDOMEvent::clearAll()
 }
 
 ChromiumDOMEvent::Ptr
-ChromiumDOMEvent::create(CefRefPtr<CefV8Value> v8NodeObject)
+ChromiumDOMEvent::create(CefRefPtr<CefV8Value> v8NodeObject, CefRefPtr<CefV8Context> v8Context)
 {
-	ChromiumDOMEvent::Ptr event(new ChromiumDOMEvent(v8NodeObject));
+	ChromiumDOMEvent::Ptr event(new ChromiumDOMEvent(v8NodeObject, v8Context));
 	_events.push_back(event);
 	return event;
 }
@@ -107,8 +108,10 @@ ChromiumDOMEvent::preventDefault()
 {
 	if (CefCurrentlyOn(TID_RENDERER))
 	{
+		_v8Context->Enter();
 		CefV8ValueList args;
 		getFunction("preventDefault")->ExecuteFunction(_v8NodeObject, args);
+		_v8Context->Exit();
 	}
 	else
 	{
@@ -130,8 +133,10 @@ ChromiumDOMEvent::stopPropagation()
 {
 	if (CefCurrentlyOn(TID_RENDERER))
 	{
+		_v8Context->Enter();
 		CefV8ValueList args;
 		getFunction("stopPropagation")->ExecuteFunction(_v8NodeObject, args);
+		_v8Context->Exit();
 	}
 	else
 	{
@@ -156,7 +161,9 @@ ChromiumDOMEvent::type()
 
 	if (CefCurrentlyOn(TID_RENDERER))
 	{
+		_v8Context->Enter();
 		result = getProperty("type")->GetStringValue();
+		_v8Context->Exit();
 	}
 	else
 	{
@@ -182,7 +189,9 @@ ChromiumDOMEvent::target()
 
 	if (CefCurrentlyOn(TID_RENDERER))
 	{
-		result = ChromiumDOMElement::getDOMElementFromV8Object(getProperty("target"));
+		_v8Context->Enter();
+		result = ChromiumDOMElement::getDOMElementFromV8Object(getProperty("target"), _v8Context);
+		_v8Context->Exit();
 	}
 	else
 	{
@@ -209,7 +218,9 @@ ChromiumDOMEvent::clientX()
 
 	if (CefCurrentlyOn(TID_RENDERER))
 	{
+		_v8Context->Enter();
 		result = getProperty("clientX")->GetIntValue();
+		_v8Context->Exit();
 	}
 	else
 	{
@@ -235,7 +246,9 @@ ChromiumDOMEvent::clientY()
 
 	if (CefCurrentlyOn(TID_RENDERER))
 	{
+		_v8Context->Enter();
 		result = getProperty("clientY")->GetIntValue();
+		_v8Context->Exit();
 	}
 	else
 	{
@@ -262,7 +275,9 @@ ChromiumDOMEvent::pageX()
 
 	if (CefCurrentlyOn(TID_RENDERER))
 	{
+		_v8Context->Enter();
 		result = getProperty("pageX")->GetIntValue();
+		_v8Context->Exit();
 	}
 	else
 	{
@@ -288,7 +303,9 @@ ChromiumDOMEvent::pageY()
 
 	if (CefCurrentlyOn(TID_RENDERER))
 	{
+		_v8Context->Enter();
 		result = getProperty("pageY")->GetIntValue();
+		_v8Context->Exit();
 	}
 	else
 	{
@@ -315,7 +332,9 @@ ChromiumDOMEvent::layerX()
 
 	if (CefCurrentlyOn(TID_RENDERER))
 	{
+		_v8Context->Enter();
 		result = getProperty("layerX")->GetIntValue();
+		_v8Context->Exit();
 	}
 	else
 	{
@@ -341,7 +360,9 @@ ChromiumDOMEvent::layerY()
 
 	if (CefCurrentlyOn(TID_RENDERER))
 	{
+		_v8Context->Enter();
 		result = getProperty("layerY")->GetIntValue();
+		_v8Context->Exit();
 	}
 	else
 	{
@@ -368,7 +389,9 @@ ChromiumDOMEvent::screenX()
 
 	if (CefCurrentlyOn(TID_RENDERER))
 	{
+		_v8Context->Enter();
 		result = getProperty("screenX")->GetIntValue();
+		_v8Context->Exit();
 	}
 	else
 	{
@@ -394,7 +417,9 @@ ChromiumDOMEvent::screenY()
 
 	if (CefCurrentlyOn(TID_RENDERER))
 	{
+		_v8Context->Enter();
 		result = getProperty("screenY")->GetIntValue();
+		_v8Context->Exit();
 	}
 	else
 	{

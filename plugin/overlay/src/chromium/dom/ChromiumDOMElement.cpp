@@ -32,20 +32,24 @@ using namespace minko::dom;
 std::map<CefRefPtr<CefV8Value>, ChromiumDOMElement::Ptr>
 ChromiumDOMElement::_v8NodeToElement;
 
+std::list<std::function<void()>>
+ChromiumDOMElement::_functionList;
+
 std::map<ChromiumDOMElement::Ptr, CefRefPtr<CefV8Value>>
 ChromiumDOMElement::_elementToV8Object;
 
-ChromiumDOMElement::ChromiumDOMElement(CefRefPtr<CefV8Value> v8NodeObject) :
-	_v8Handler(new ChromiumDOMElementV8Handler()),
+ChromiumDOMElement::ChromiumDOMElement(CefRefPtr<CefV8Value> v8NodeObject, CefRefPtr<CefV8Context> v8Context) :
 	_onclickCallbackSet(false),
 	_onmousedownCallbackSet(false),
 	_onmousemoveCallbackSet(false),
 	_onmouseupCallbackSet(false),
 	_onmouseoverCallbackSet(false),
 	_onmouseoutCallbackSet(false),
-	_cleared(false)
+	_cleared(false),
+	_v8Handler(),
+	_v8NodeObject(v8NodeObject),
+	_v8Context(v8Context)
 {
-	_v8NodeObject = v8NodeObject;
 }
 
 
@@ -80,32 +84,53 @@ ChromiumDOMElement::clear()
 
 	_v8Handler = nullptr;
 	_v8NodeObject = nullptr;
+	_v8Context = nullptr;
 
 	_cleared = true;
 }
 
 ChromiumDOMElement::Ptr
-ChromiumDOMElement::create(CefRefPtr<CefV8Value> v8NodeObject)
+ChromiumDOMElement::create(CefRefPtr<CefV8Value> v8NodeObject, CefRefPtr<CefV8Context> v8Context)
 {
-	if (v8NodeObject->IsUndefined() || v8NodeObject->IsNull())
-		return nullptr;
+	ChromiumDOMElement::Ptr result;
+	if (CefCurrentlyOn(TID_RENDERER))
+	{
+		v8Context->Enter();
+		if (v8NodeObject->IsUndefined() || v8NodeObject->IsNull())
+			return nullptr;
 
-	ChromiumDOMElement::Ptr element(new ChromiumDOMElement(v8NodeObject));
+		ChromiumDOMElement::Ptr element(new ChromiumDOMElement(v8NodeObject, v8Context));
+		element->_v8Handler = new ChromiumDOMElementV8Handler(element);
+		_v8NodeToElement[v8NodeObject] = element;
+		_elementToV8Object[element] = v8NodeObject;
+		result = element;
+		v8Context->Exit();
+	}
+	else
+	{
+		CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
+		std::atomic<bool> blocker = true;
 
-	_v8NodeToElement[v8NodeObject] = element;
-	_elementToV8Object[element] = v8NodeObject;
-	return element;
+		runner->PostTask(NewCefRunnableFunction(&[&]()
+		{
+			result = ChromiumDOMElement::create(v8NodeObject, v8Context);
+			blocker = false;
+		}));
+		while (blocker);
+	}
+
+	return result;
 }
 
 ChromiumDOMElement::Ptr
-ChromiumDOMElement::getDOMElementFromV8Object(CefRefPtr<CefV8Value> v8Object)
+ChromiumDOMElement::getDOMElementFromV8Object(CefRefPtr<CefV8Value> v8Object, CefRefPtr<CefV8Context> v8Context)
 {
 	std::map<CefRefPtr<CefV8Value>, ChromiumDOMElement::Ptr>::iterator it = _v8NodeToElement.find(v8Object);
-	
+
 	if (it != _v8NodeToElement.end())
 		return it->second;
 	else
-		return create(v8Object);
+		return create(v8Object, v8Context);
 }
 
 void
@@ -159,7 +184,7 @@ ChromiumDOMElement::setProperty(std::string name, CefRefPtr<CefV8Value> value)
 }
 
 std::list<AbstractDOMElement::Ptr>
-ChromiumDOMElement::v8ElementArrayToList(CefRefPtr<CefV8Value> v8Nodes)
+ChromiumDOMElement::v8ElementArrayToList(CefRefPtr<CefV8Value> v8Nodes, CefRefPtr<CefV8Context> v8Context)
 {
 	std::list<minko::dom::AbstractDOMElement::Ptr> result;
 
@@ -170,7 +195,7 @@ ChromiumDOMElement::v8ElementArrayToList(CefRefPtr<CefV8Value> v8Nodes)
 		for (int i = 0; i < l; ++i)
 		{
 			CefRefPtr<CefV8Value> childNodeV8 = v8Nodes->GetValue(i);
-			result.push_back(getDOMElementFromV8Object(childNodeV8));
+			result.push_back(getDOMElementFromV8Object(childNodeV8, v8Context));
 		}
 	}
 
@@ -185,7 +210,9 @@ ChromiumDOMElement::id()
 
 	if (CefCurrentlyOn(TID_RENDERER))
 	{
+		_v8Context->Enter();
 		result = getProperty("id")->GetStringValue();
+		_v8Context->Exit();
 	}
 	else
 	{
@@ -208,7 +235,9 @@ ChromiumDOMElement::id(std::string newId)
 {
 	if (CefCurrentlyOn(TID_RENDERER))
 	{
+		_v8Context->Enter();
 		setProperty("id", CefV8Value::CreateString(newId));
+		_v8Context->Exit();
 	}
 	else
 	{
@@ -231,7 +260,9 @@ ChromiumDOMElement::className()
 
 	if (CefCurrentlyOn(TID_RENDERER))
 	{
+		_v8Context->Enter();
 		result = getProperty("className")->GetStringValue();
+		_v8Context->Exit();
 	}
 	else
 	{
@@ -254,7 +285,9 @@ ChromiumDOMElement::className(std::string newClass)
 {
 	if (CefCurrentlyOn(TID_RENDERER))
 	{
+		_v8Context->Enter();
 		setProperty("className", CefV8Value::CreateString(newClass));
+		_v8Context->Exit();
 	}
 	else
 	{
@@ -277,7 +310,9 @@ ChromiumDOMElement::tagName()
 
 	if (CefCurrentlyOn(TID_RENDERER))
 	{
+		_v8Context->Enter();
 		result = getProperty("tagName")->GetStringValue();
+		_v8Context->Exit();
 	}
 	else
 	{
@@ -302,9 +337,11 @@ ChromiumDOMElement::parentNode()
 
 	if (CefCurrentlyOn(TID_RENDERER))
 	{
+		_v8Context->Enter();
 		CefRefPtr<CefV8Value> parentNodeV8 = getProperty("parentNode");
 
-		result = getDOMElementFromV8Object(parentNodeV8);
+		result = getDOMElementFromV8Object(parentNodeV8, _v8Context);
+		_v8Context->Exit();
 	}
 	else
 	{
@@ -329,7 +366,9 @@ ChromiumDOMElement::childNodes()
 
 	if (CefCurrentlyOn(TID_RENDERER))
 	{
-		result = v8ElementArrayToList(getProperty("childNodes"));
+		_v8Context->Enter();
+		result = v8ElementArrayToList(getProperty("childNodes"), _v8Context);
+		_v8Context->Exit();
 	}
 	else
 	{
@@ -354,7 +393,9 @@ ChromiumDOMElement::textContent()
 
 	if (CefCurrentlyOn(TID_RENDERER))
 	{
+		_v8Context->Enter();
 		result = getProperty("textContent")->GetStringValue();
+		_v8Context->Exit();
 	}
 	else
 	{
@@ -377,7 +418,9 @@ ChromiumDOMElement::textContent(std::string content)
 {
 	if (CefCurrentlyOn(TID_RENDERER))
 	{
+		_v8Context->Enter();
 		setProperty("textContent", CefV8Value::CreateString(content));
+		_v8Context->Exit();
 	}
 	else
 	{
@@ -401,7 +444,9 @@ ChromiumDOMElement::innerHTML()
 
 	if (CefCurrentlyOn(TID_RENDERER))
 	{
+		_v8Context->Enter();
 		result = getProperty("innerHTML")->GetStringValue();
+		_v8Context->Exit();
 	}
 	else
 	{
@@ -424,7 +469,9 @@ ChromiumDOMElement::innerHTML(std::string html)
 {
 	if (CefCurrentlyOn(TID_RENDERER))
 	{
+		_v8Context->Enter();
 		setProperty("innerHTML", CefV8Value::CreateString(html));
+		_v8Context->Exit();
 	}
 	else
 	{
@@ -446,6 +493,7 @@ ChromiumDOMElement::appendChild(AbstractDOMElement::Ptr child)
 {
 	if (CefCurrentlyOn(TID_RENDERER))
 	{
+		_v8Context->Enter();
 		CefRefPtr<CefV8Value> func = getFunction("appendChild");
 
 		if (func == nullptr)
@@ -455,6 +503,7 @@ ChromiumDOMElement::appendChild(AbstractDOMElement::Ptr child)
 		args.push_back(_elementToV8Object[std::dynamic_pointer_cast<ChromiumDOMElement>(child)]);
 
 		func->ExecuteFunction(_v8NodeObject, args);
+		_v8Context->Exit();
 	}
 	else
 	{
@@ -478,6 +527,7 @@ ChromiumDOMElement::removeChild(AbstractDOMElement::Ptr child)
 {
 	if (CefCurrentlyOn(TID_RENDERER))
 	{
+		_v8Context->Enter();
 		CefRefPtr<CefV8Value> func = getFunction("removeChild");
 
 		if (func == nullptr)
@@ -487,6 +537,7 @@ ChromiumDOMElement::removeChild(AbstractDOMElement::Ptr child)
 		args.push_back(_elementToV8Object[std::dynamic_pointer_cast<ChromiumDOMElement>(child)]);
 
 		func->ExecuteFunction(_v8NodeObject, args);
+		_v8Context->Exit();
 	}
 	else
 	{
@@ -510,6 +561,7 @@ ChromiumDOMElement::insertBefore(AbstractDOMElement::Ptr newNode, AbstractDOMEle
 {
 	if (CefCurrentlyOn(TID_RENDERER))
 	{
+		_v8Context->Enter();
 		CefRefPtr<CefV8Value> func = getFunction("insertBefore");
 
 		if (func == nullptr)
@@ -520,6 +572,7 @@ ChromiumDOMElement::insertBefore(AbstractDOMElement::Ptr newNode, AbstractDOMEle
 		args.push_back(_elementToV8Object[std::dynamic_pointer_cast<ChromiumDOMElement>(refNode)]);
 
 		func->ExecuteFunction(_v8NodeObject, args);
+		_v8Context->Exit();
 	}
 	else
 	{
@@ -545,6 +598,7 @@ ChromiumDOMElement::cloneNode(bool deep)
 
 	if (CefCurrentlyOn(TID_RENDERER))
 	{
+		_v8Context->Enter();
 		CefRefPtr<CefV8Value> func = getFunction("cloneNode");
 
 		if (func == nullptr)
@@ -554,7 +608,8 @@ ChromiumDOMElement::cloneNode(bool deep)
 		args.push_back(CefV8Value::CreateBool(deep));
 
 		CefRefPtr<CefV8Value> v8Result = func->ExecuteFunction(_v8NodeObject, args);
-		element = getDOMElementFromV8Object(v8Result);
+		element = getDOMElementFromV8Object(v8Result, _v8Context);
+		_v8Context->Exit();
 	}
 	else
 	{
@@ -579,6 +634,7 @@ ChromiumDOMElement::getAttribute(std::string name)
 
 	if (CefCurrentlyOn(TID_RENDERER))
 	{
+		_v8Context->Enter();
 		CefRefPtr<CefV8Value> func = getFunction("getAttribute");
 
 		if (func == nullptr)
@@ -588,6 +644,7 @@ ChromiumDOMElement::getAttribute(std::string name)
 		args.push_back(CefV8Value::CreateString(name));
 
 		result = func->ExecuteFunction(_v8NodeObject, args)->GetStringValue();
+		_v8Context->Exit();
 	}
 	else
 	{
@@ -610,6 +667,7 @@ ChromiumDOMElement::setAttribute(std::string name, std::string value)
 {
 	if (CefCurrentlyOn(TID_RENDERER))
 	{
+		_v8Context->Enter();
 		CefRefPtr<CefV8Value> func = getFunction("setAttribute");
 
 		if (func == nullptr)
@@ -620,6 +678,7 @@ ChromiumDOMElement::setAttribute(std::string name, std::string value)
 		args.push_back(CefV8Value::CreateString(value));
 
 		func->ExecuteFunction(_v8NodeObject, args);
+		_v8Context->Exit();
 	}
 	else
 	{
@@ -642,6 +701,7 @@ ChromiumDOMElement::getElementsByTagName(std::string tagName)
 
 	if (CefCurrentlyOn(TID_RENDERER))
 	{
+		_v8Context->Enter();
 		CefRefPtr<CefV8Value> func = getFunction("setAttribute");
 
 		if (func != nullptr)
@@ -650,8 +710,9 @@ ChromiumDOMElement::getElementsByTagName(std::string tagName)
 			args.push_back(CefV8Value::CreateString(tagName));
 
 			CefRefPtr<CefV8Value> v8Result = func->ExecuteFunction(_v8NodeObject, args);
-			list = v8ElementArrayToList(v8Result);
+			list = v8ElementArrayToList(v8Result, _v8Context);
 		}
+		_v8Context->Exit();
 	}
 	else
 	{
@@ -675,6 +736,7 @@ ChromiumDOMElement::style(std::string name)
 
 	if (CefCurrentlyOn(TID_RENDERER))
 	{
+		_v8Context->Enter();
 		CefRefPtr<CefV8Value> styleObject = getProperty("style");
 		CefRefPtr<CefV8Value> styleProperty = styleObject->GetValue(name);
 
@@ -682,6 +744,7 @@ ChromiumDOMElement::style(std::string name)
 			result = styleProperty->GetStringValue();
 		else
 			result = "";
+		_v8Context->Exit();
 	}
 	else
 	{
@@ -703,7 +766,9 @@ ChromiumDOMElement::style(std::string name, std::string value)
 {
 	if (CefCurrentlyOn(TID_RENDERER))
 	{
+		_v8Context->Enter();
 		getProperty("style")->SetValue(name, CefV8Value::CreateString(value), V8_PROPERTY_ATTRIBUTE_NONE);
+		_v8Context->Exit();
 	}
 	else
 	{
@@ -724,6 +789,7 @@ ChromiumDOMElement::addEventListener(std::string type)
 {
 	if (CefCurrentlyOn(TID_RENDERER))
 	{
+		_v8Context->Enter();
 		static int i = 0;
 
 		std::string onClickFunctionName = "on" + type + "Handler" + std::to_string(i++);
@@ -735,6 +801,7 @@ ChromiumDOMElement::addEventListener(std::string type)
 		args.push_back(onClickFunction);
 
 		getFunction("addEventListener")->ExecuteFunction(_v8NodeObject, args);
+		_v8Context->Exit();
 	}
 	else
 	{
@@ -754,53 +821,96 @@ Signal<AbstractDOMEvent::Ptr>::Ptr
 ChromiumDOMElement::onclick()
 {
 	if (!_onclickCallbackSet)
+	{
+		_onclick = Signal<minko::dom::AbstractDOMEvent::Ptr>::create();
 		addEventListener("click");
+		_onclickCallbackSet = true;
+	}
 
-	return _v8Handler->onclick();
+	return _onclick;
 }
 
 Signal<AbstractDOMEvent::Ptr>::Ptr
 ChromiumDOMElement::onmousedown()
 {
 	if (!_onmousedownCallbackSet)
+	{
+		_onmousedown = Signal<minko::dom::AbstractDOMEvent::Ptr>::create();
 		addEventListener("mousedown");
+		_onmousedownCallbackSet = true;
+	}
 
-	return _v8Handler->onmousedown();
+	return _onmousedown;
 }
 
 Signal<AbstractDOMEvent::Ptr>::Ptr
 ChromiumDOMElement::onmousemove()
 {
 	if (!_onmousemoveCallbackSet)
+	{
+		_onmousemove = Signal<minko::dom::AbstractDOMEvent::Ptr>::create();
 		addEventListener("mousemove");
+		_onmousemoveCallbackSet = true;
+	}
 
-	return _v8Handler->onmousemove();
+	return _onmousemove;
 }
 
 Signal<AbstractDOMEvent::Ptr>::Ptr
 ChromiumDOMElement::onmouseup()
 {
 	if (!_onmouseupCallbackSet)
+	{
+		_onmouseup = Signal<minko::dom::AbstractDOMEvent::Ptr>::create();
 		addEventListener("mouseup");
+		_onmouseupCallbackSet = true;
+	}
 
-	return _v8Handler->onmouseup();
+	return _onmouseup;
 }
 
 Signal<AbstractDOMEvent::Ptr>::Ptr
 ChromiumDOMElement::onmouseout()
 {
 	if (!_onmouseoutCallbackSet)
+	{
+		_onmouseout = Signal<minko::dom::AbstractDOMEvent::Ptr>::create();
 		addEventListener("mouseout");
+		_onmouseoutCallbackSet = true;
+	}
 
-	return _v8Handler->onmouseout();
+	return _onmouseout;
 }
 
 Signal<AbstractDOMEvent::Ptr>::Ptr
 ChromiumDOMElement::onmouseover()
 {
 	if (!_onmouseoverCallbackSet)
+	{
+		_onmouseover = Signal<minko::dom::AbstractDOMEvent::Ptr>::create();
 		addEventListener("mouseover");
+		_onmouseoverCallbackSet = true;
+	}
 
-	return _v8Handler->onmouseover();
+	return _onmouseover;
 }
+
+void
+ChromiumDOMElement::update()
+{
+	for (auto func : _functionList)
+	{
+		func();
+	}
+
+	_functionList.clear();
+}
+
+
+void
+ChromiumDOMElement::addFunction(std::function<void()> func)
+{
+	_functionList.push_back(func);
+}
+
 #endif

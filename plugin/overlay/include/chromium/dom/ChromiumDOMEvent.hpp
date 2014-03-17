@@ -37,12 +37,12 @@ namespace chromium
 			~ChromiumDOMEvent();
 
 		private:
-			ChromiumDOMEvent(CefRefPtr<CefV8Value>);
+			ChromiumDOMEvent(CefRefPtr<CefV8Value>, CefRefPtr<CefV8Context>);
 			
 		public:
 			static
 			Ptr
-			create(CefRefPtr<CefV8Value>);
+			create(CefRefPtr<CefV8Value>, CefRefPtr<CefV8Context>);
 
 			static
 			void
@@ -103,6 +103,8 @@ namespace chromium
 		private:
 			static
 			std::list<Ptr> _events;
+
+			CefRefPtr<CefV8Context> _v8Context;
 
 			bool _cleared;
 
