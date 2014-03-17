@@ -67,15 +67,6 @@ ParticlesExtension::bind()
     ));
 }
 
-inline
-void
-peepingTom(const std::string& serialized)
-{
-    msgpack::unpacked msg;
-    msgpack::unpack(&msg, serialized.data(), serialized.size());
-    std::cout << msg.get() << std::endl;
-}
-
 /*static*/
 component::AbstractComponent::Ptr
 ParticlesExtension::deserializeParticles(std::string&       serialized, 
