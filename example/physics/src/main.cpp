@@ -22,6 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/MinkoSDL.hpp"
 #include "minko/MinkoBullet.hpp"
 
+#define DISPLAY_COLLIDERS
+
 using namespace minko;
 using namespace minko::scene;
 using namespace minko::component;
@@ -51,7 +53,7 @@ createPhysicsObject(unsigned int id, file::AssetLibrary::Ptr, bool isCube);
 int main(int argc, char** argv)
 {
 	auto canvas = Canvas::create("Minko Example - Physics", 800, 600);
-
+	
 	auto sceneManager	= SceneManager::create(canvas->context());
 
 	// setup assets
@@ -62,11 +64,13 @@ int main(int argc, char** argv)
 		->registerParser<file::PNGParser>("png")
 		->queue(TEXTURE_FILENAME)
 		->queue("effect/Phong.effect")
+#ifdef DISPLAY_COLLIDERS
+		->queue("effect/Line.effect")
+#endif // DISPLAY_COLLIDERS
 		->geometry("sphere",	geometry::SphereGeometry::create(sceneManager->assets()->context(), 16, 16))
 		->geometry("cube",		geometry::CubeGeometry::create(sceneManager->assets()->context()));
 	
 	std::cout << "[space]\tdrop an object onto the scene (up to " << MAX_NUM_OBJECTS << ")" << std::endl;
-
 
 	auto root = scene::Node::create("root")
 		->addComponent(sceneManager)
@@ -100,6 +104,10 @@ int main(int argc, char** argv)
 	root
 		->addChild(ambientLightNode)
 		->addChild(dirLightNode);
+	
+#ifdef DISPLAY_COLLIDERS
+	root->data()->addProvider(canvas->data());
+#endif // DISPLAY_COLLIDERS
 
 	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
 	{
@@ -135,7 +143,7 @@ int main(int argc, char** argv)
 					0.0f, // static object (no mass)
 					bullet::BoxShape::create(GROUND_THICK * 0.5f, GROUND_HEIGHT * 0.5f, GROUND_DEPTH * 0.5f))
 			));
-
+		
 		groundNode
 			->addChild(groundNodeA)
 			->addChild(groundNodeB);
@@ -148,7 +156,12 @@ int main(int argc, char** argv)
 			{
 				if (numObjects < MAX_NUM_OBJECTS)
 				{
-					root->addChild(createPhysicsObject(numObjects, sceneManager->assets(), rand() / (float)RAND_MAX > 0.5f));
+					auto physicsObj = createPhysicsObject(numObjects, sceneManager->assets(), rand() / (float)RAND_MAX > 0.5f);
+					root->addChild(physicsObj);
+#ifdef DISPLAY_COLLIDERS
+					physicsObj->component<bullet::Collider>()->displayCollider(sceneManager->assets());
+#endif // DISPLAY_COLLIDERS
+
 					++numObjects;
 
 					std::cout << "object #" << numObjects << " dropped" << std::endl;
