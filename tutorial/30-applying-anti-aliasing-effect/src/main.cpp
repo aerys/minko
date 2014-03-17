@@ -33,12 +33,11 @@ main(int argc, char** argv)
     auto canvas = Canvas::create("Minko Tutorial - Applying anti-aliasing effect", WINDOW_WIDTH, WINDOW_HEIGHT);
     auto sceneManager = SceneManager::create(canvas->context());
 
-    sceneManager->assets()
+    sceneManager->assets()->loader()
         ->queue("effect/Basic.effect")
-        ->queue("effect/FXAA/FXAA.effect")
-        ;
+        ->queue("effect/FXAA/FXAA.effect");
 
-    auto complete = sceneManager->assets()->complete()->connect([&](file::AssetLibrary::Ptr assets)
+    auto complete = sceneManager->assets()->loader()->complete()->connect([=](file::Loader::Ptr loader)
     {
         auto root = scene::Node::create("root")
             ->addComponent(sceneManager);
@@ -55,9 +54,9 @@ main(int argc, char** argv)
         auto cube = scene::Node::create("cube")
             ->addComponent(Transform::create())
             ->addComponent(Surface::create(
-            geometry::CubeGeometry::create(assets->context()),
+            geometry::CubeGeometry::create(sceneManager->assets()->context()),
             material::BasicMaterial::create()->diffuseColor(Vector4::create(0.f, 0.f, 1.f, 1.f)),
-            assets->effect("effect/Basic.effect")
+            sceneManager->assets()->effect("effect/Basic.effect")
             ));
         root->addChild(cube);
 
@@ -68,7 +67,7 @@ main(int argc, char** argv)
             throw std::logic_error("The FXAA effect has not been loaded.");
 
         auto renderTarget = render::Texture::create(
-            assets->context(), clp2(WINDOW_WIDTH), clp2(WINDOW_HEIGHT), false, true);
+            sceneManager->assets()->context(), clp2(WINDOW_WIDTH), clp2(WINDOW_HEIGHT), false, true);
         renderTarget->upload();
 
         effect->setUniform("textureSampler", renderTarget);
@@ -91,7 +90,7 @@ main(int argc, char** argv)
         {
             camera->component<PerspectiveCamera>()->aspectRatio((float) width / (float) height);
 
-            renderTarget = render::Texture::create(assets->context(), clp2(width), clp2(height), false, true);
+            renderTarget = render::Texture::create(sceneManager->assets()->context(), clp2(width), clp2(height), false, true);
             renderTarget->upload();
 
             effect->setUniform("textureSampler", renderTarget);
@@ -122,7 +121,7 @@ main(int argc, char** argv)
             if (enableFXAA)
             {
                 sceneManager->nextFrame(t, dt, renderTarget);
-                renderer->render(assets->context());
+                renderer->render(sceneManager->assets()->context());
             }
             else
             {
@@ -133,7 +132,7 @@ main(int argc, char** argv)
         canvas->run();
     });
 
-    sceneManager->assets()->load();
+    sceneManager->assets()->loader()->load();
 
     return 0;
 }
