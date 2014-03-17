@@ -19,10 +19,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/file/File.hpp"
 
-#if defined(_MSC_VER)
+#if defined(_MSC_VER) // Windows
 # include <windows.h>
-#elif defined(__APPLE__)
+#elif defined(__APPLE__) // iOS
 # include "CoreFoundation/CoreFoundation.h"
+#elif defined(EMSCRIPTEN) // HTML5
+# include "emscripten.h"
 #elif defined(LINUX) || defined(__unix__) // Linux
 # include <unistd.h>
 # include <linux/limits.h>
