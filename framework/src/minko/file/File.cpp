@@ -46,7 +46,7 @@ File::getCurrentWorkingDirectory()
 #elif defined(LINUX) || defined(__unix__) // Linux
     char temp[PATH_MAX];
 
-	return sanitizeFilename((getcwd(temp, MAXPATHLEN) ? std::string(temp) : std::string("")));
+    return sanitizeFilename((getcwd(temp, PATH_MAX) ? std::string(temp) : std::string("")));
 #else
 	return ".";
 #endif
