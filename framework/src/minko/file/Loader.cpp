@@ -174,14 +174,9 @@ Loader::processData(const std::string&                      filename,
         }
         catch (ParserError parserError)
         {
-            /*
-            if (_parseError->numCallbacks() != 0)
-            _parseError->execute(std::enable_shared_from_this<AbstractSingleLoader>::shared_from_this(), _parser);
-            #ifdef DEBUG
-            else
-            std::cerr << parserError.what() << std::endl;
-            #endif // defined(DEBUG)
-            */
+#ifdef DEBUG
+			std::cerr << parserError.what() << std::endl;
+#endif // defined(DEBUG)
         }
     }
     else
