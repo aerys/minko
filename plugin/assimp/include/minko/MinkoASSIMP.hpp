@@ -19,6 +19,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #pragma once
 
+#if (!defined ASSIMP_BUILD_NO_IMPORTER_INSTANCIATION)
+# include "minko/file/ASSIMPParser.hpp"
+#endif
+
 #include "minko/file/COBASSIMPParser.hpp"
 #include "minko/file/NDOASSIMPParser.hpp"
 #include "minko/file/MDLASSIMPParser.hpp"

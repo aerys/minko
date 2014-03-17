@@ -114,12 +114,6 @@ namespace minko
 				  const std::vector<unsigned char>&	data,
 				  std::shared_ptr<AssetLibrary>		assetLibrary);
 
-#if (!defined ASSIMP_BUILD_NO_IMPORTER_INSTANCIATION)
-            static
-            std::set<std::string>
-            getSupportedFileExtensions();
-#endif // ! ASSIMP_BUILD_NO_IMPORTER_INSTANCIATION
-
         protected:
 
             AbstractASSIMPParser();

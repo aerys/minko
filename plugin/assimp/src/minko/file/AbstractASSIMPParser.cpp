@@ -229,31 +229,6 @@ AbstractASSIMPParser::initImporter()
 #endif // ! ASSIMP_BUILD_NO_IMPORTER_INSTANCIATION
 }
 
-#if (!defined ASSIMP_BUILD_NO_IMPORTER_INSTANCIATION)
-std::set<std::string>
-AbstractASSIMPParser::getSupportedFileExtensions()
-{
-  Assimp::Importer importer;
-
-  std::string list;
-  std::set<std::string> result;
-
-  importer.GetExtensionList(list);
-
-  auto pos = list.find_first_of(";");
-  while (pos != std::string::npos)
-  {
-    result.insert(list.substr(2, pos - 2));
-    list = list.substr(pos + 1);
-    pos = list.find_first_of(";");
-  }
-  if (!list.empty())
-    result.insert(list.substr(2));
-
-  return result;
-}
-#endif // ! ASSIMP_BUILD_NO_IMPORTER_INSTANCIATION
-
 void
 AbstractASSIMPParser::createSceneTree(scene::Node::Ptr 				minkoNode,
 							  const aiScene* 				scene,
