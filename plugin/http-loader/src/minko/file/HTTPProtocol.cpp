@@ -160,7 +160,7 @@ HTTPProtocol::load()
 	//emscripten_async_wget2(_filename.c_str(), destFilename.c_str(), "GET", "", loader.get(), &wget2CompleteHandler, &errorHandler, &progressHandler);
 
 	std::cout << "HTTPProtocol::load(): " << "call emscripten_async_wget_data " << std::endl;
-	emscripten_async_wget_data(_filename.c_str(), loader.get(), &completeHandler, &errorHandler);
+    emscripten_async_wget_data(realFilename.c_str(), loader.get(), &completeHandler, &errorHandler);
 #else
 	/*if (options->loadAsynchronously())
 	{*/
