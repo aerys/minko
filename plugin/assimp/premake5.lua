@@ -8,7 +8,7 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		"include",
 		"src"
 	}
-	
+
 	minko.plugin.enable("zlib")
 
 	--defines { "DEBUG_SKINNING" }
@@ -50,7 +50,7 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		"ASSIMP_BUILD_NO_OWN_ZLIB",
 		"ASSIMP_BUILD_NO_EXPORT",
 		"ASSIMP_BUILD_BOOST_WORKAROUND",
-		"ASSIMP_BUILD_NO_IMPORTER_INSTANCIATION",
+		-- "ASSIMP_BUILD_NO_IMPORTER_INSTANCIATION",
 	}
 
 	configuration { "vs*" }
@@ -63,7 +63,7 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 			-- OpenGL ES 2 max indices/triangles count
 			"AI_SLM_DEFAULT_MAX_TRIANGLES=21845"
 		}
-		
+
 	configuration { "not vs*" }
 		defines {
 			'"AI_LMW_MAX_WEIGHTS=4"',

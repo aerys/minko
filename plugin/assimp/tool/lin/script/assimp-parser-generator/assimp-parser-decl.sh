@@ -2,6 +2,8 @@
 
 declare -A loaders
 
+minko_class_suffix="Parser"
+
 # parser_name <->		minko_class_prefix 	assimp_header_file 	assimp_class
 loaders["3DS"]="		ThreeDS 		3DSLoader.h 		Discreet3DSImporter"
 loaders["AC3D"]="		AC3D 			ACLoader.h		AC3DImporter"
@@ -37,7 +39,7 @@ loaders["Q3D"]="		Q3D			Q3DLoader.h		Q3DImporter"
 loaders["RAW"]="		RAW			RawLoader.h		RAWImporter"
 loaders["SMD"]="		SMD			SMDLoader.h		SMDImporter"
 loaders["STL"]="		STL			STLLoader.h		STLImporter"
-loaders["Terragen"]="           Terrangen		TerragenLoader.h	TerragenImporter"
+loaders["Terragen"]="           Terragen		TerragenLoader.h	TerragenImporter"
 loaders["Unreal"]="		Unreal			UnrealLoader.h		UnrealImporter"
 loaders["X"]="			X			XFileImporter.h		XFileImporter"
 loaders["XGL"]="		XGL			XGLLoader.h		XGLImporter"

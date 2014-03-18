@@ -12,7 +12,7 @@ else
 fi
 
 if [ ! -z $2 ]; then
-    class_prefix=$2
+    minko_class=$2
 else
     args_error
 fi
@@ -41,10 +41,8 @@ else
     args_error
 fi
 
-header_file_name=${parser_name}ASSIMPParser.hpp
-source_file_name=${parser_name}ASSIMPParser.cpp
-
-parser_class_name="${class_prefix}ASSIMPParser"
+header_file_name=${minko_class}.hpp
+source_file_name=${minko_class}.cpp
 
 echo "/*
 Copyright (c) 2014 Aerys
@@ -102,7 +100,7 @@ namespace minko
             AnyASSIMPParser() { }
         };
 
-        using "${parser_class_name}" = AnyASSIMPParser<Assimp::"${assimp_class}">;
+        using "${minko_class}" = AnyASSIMPParser<Assimp::"${assimp_class}">;
     }
 }" > ${include_path}/${header_file_name}
 
@@ -134,12 +132,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace file;
 
-"${parser_class_name}"::Ptr "${parser_class_name}"::create()
+"${minko_class}"::Ptr "${minko_class}"::create()
 {
-    return "${parser_class_name}"::Ptr(new "${parser_class_name}"());
+    return "${minko_class}"::Ptr(new "${minko_class}"());
 }
 
-void "${parser_class_name}"::provideLoaders(Assimp::Importer& importer)
+void "${minko_class}"::provideLoaders(Assimp::Importer& importer)
 {
     importer.RegisterLoader(new Assimp::"${assimp_class}"());
 }" > ${src_path}/${source_file_name}

@@ -82,8 +82,8 @@ main(int argc, char** argv)
 	// setup assets
 	sceneManager->assets()->loader()->options()->generateMipmaps(true);
 	sceneManager->assets()->loader()->options()
-		->registerParser<file::OBJASSIMPParser>("obj")
-		->registerParser<file::ColladaASSIMPParser>("dae")
+		->registerParser<file::OBJParser>("obj")
+		->registerParser<file::ColladaParser>("dae")
         ->registerParser<file::JPEGParser>("jpg");
     sceneManager->assets()->loader()
         ->queue("effect/Basic.effect")
@@ -134,7 +134,7 @@ main(int argc, char** argv)
         root->addComponent(AmbientLight::create())
             ->addComponent(DirectionalLight::create())
             ->addChild(model);
-		
+
 		auto skinnedNodes = scene::NodeSet::create(model)
 			->descendants(true)
 			->where([](scene::Node::Ptr n){ return n->hasComponent<Skinning>(); });

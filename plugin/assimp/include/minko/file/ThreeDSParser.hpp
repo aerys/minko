@@ -19,25 +19,27 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #pragma once
 
-#include "minko/file/AbstractASSIMPParser.hpp"
+#include "minko/file/AnyASSIMPParser.hpp"
+
+namespace Assimp
+{
+    class Discreet3DSImporter;
+}
 
 namespace minko
 {
     namespace file
     {
-        /**
-         * Used when all parsers are needed.
-         * ASSIMP_BUILD_NO_IMPORTER_INSTANCIATION flag must not be set.
-         */
-	class ASSIMPParser : public AbstractASSIMPParser
+        template <>
+	class AnyASSIMPParser<Assimp::Discreet3DSImporter> : public AbstractASSIMPParser
         {
         public:
 
-            typedef std::shared_ptr<ASSIMPParser> Ptr;
+            typedef std::shared_ptr<AnyASSIMPParser<Assimp::Discreet3DSImporter>> Ptr;
 
         public:
 
-            virtual ~ASSIMPParser() { }
+            virtual ~AnyASSIMPParser() { }
 
             static
             Ptr
@@ -47,15 +49,11 @@ namespace minko
             void
             provideLoaders(Assimp::Importer& importer);
 
-#if (defined ASSIMP_BUILD_NO_IMPORTER_INSTANCIATION)
-            static
-            std::set<std::string>
-            getSupportedFileExtensions();
-#endif // ! ASSIMP_BUILD_NO_IMPORTER_INSTANCIATION
-
         private:
 
-            ASSIMPParser() { }
+            AnyASSIMPParser() { }
         };
+
+        using ThreeDSParser = AnyASSIMPParser<Assimp::Discreet3DSImporter>;
     }
 }

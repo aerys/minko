@@ -18,8 +18,8 @@ source assimp-parser-decl.sh
 for loader in ${!loaders[@]}; do
     parser_name=${loader}
 
-    header_file=${include_path}/${parser_name}ASSIMPParser.hpp
-    src_file=${src_path}/${parser_name}ASSIMPParser.cpp
+    header_file=${include_path}/${parser_name}${minko_class_suffix}.hpp
+    src_file=${src_path}/${parser_name}${minko_class_suffix}.cpp
 
     rm -fv ${header_file} ${src_file}
 done

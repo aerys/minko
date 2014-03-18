@@ -40,8 +40,8 @@ main(int argc, char** argv)
 
     // setup assets
 	sceneManager->assets()->loader()->options()
-        ->registerParser<file::OBJASSIMPParser>("obj")
-        ->registerParser<file::ColladaASSIMPParser>("dae")
+        ->registerParser<file::OBJParser>("obj")
+        ->registerParser<file::ColladaParser>("dae")
         ->registerParser<file::JPEGParser>("jpg");
 
 	sceneManager->assets()->loader()

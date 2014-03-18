@@ -42,7 +42,7 @@ for loader in ${!loaders[@]}; do
 
     ./gen-assimp-parser.sh \
         ${parser_name} \
-        ${class_prefix} \
+        ${class_prefix}${minko_class_suffix} \
         ${assimp_header_file} \
         ${assimp_class} \
         ${include_path} \
