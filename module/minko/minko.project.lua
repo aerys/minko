@@ -45,7 +45,7 @@ minko.project.application = function(name)
 
 	minko.project.library(name)
 
-	kind "WindowedApp"
+	kind "ConsoleApp"
 
 	configuration { "windows32" }
 		libdirs {
@@ -216,6 +216,9 @@ minko.project.application = function(name)
 		}
 
 	configuration { "ios" }
+	
+		kind "WindowedApp"
+	
 		links {
 			"minko-framework",
 			"m",
@@ -234,9 +237,6 @@ minko.project.application = function(name)
 			minko.action.copy(minko.sdk.path("/framework/asset")),
 			minko.action.copy("asset")
 		}
-
-	configuration { "vs*", "debug" }
-		kind "ConsoleApp" -- make the console visible in VS 2013 in debug mode
 
 	configuration { }
 	
