@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #if defined(EMSCRIPTEN)
 #include "minko/Common.hpp"
 #include "emscripten/dom/EmscriptenDOMEvent.hpp"
+#include "emscripten/dom/EmscriptenDOMElement.hpp"
 #include "emscripten/emscripten.h"
 
 using namespace minko;
@@ -32,7 +33,7 @@ EmscriptenDOMEvent::preventDefault()
 {
 	std::cerr << "Warning : AbstractDOMEvent::preventDefault will have no effect" << std::endl;
 	std::string eval = _jsAccessor + ".preventDefault()";
-	result = emscripten_run_script(eval.c_str());
+	emscripten_run_script(eval.c_str());
 }
 
 void
@@ -40,7 +41,7 @@ EmscriptenDOMEvent::stopPropagation()
 {
 	std::cerr << "Warning : AbstractDOMEvent::stopPropagation will have no effect" << std::endl;
 	std::string eval = _jsAccessor + ".stopPropagation()";
-	result = emscripten_run_script(eval.c_str());
+	emscripten_run_script(eval.c_str());
 }
 
 std::string

@@ -117,7 +117,7 @@ int main(int argc, char** argv)
 			std::cout << "before on click" << std::endl;
 			onclickSlot = dom->document()->onclick()->connect([=](dom::AbstractDOMEvent::Ptr event)
 			{
-				std::cout << "click" << std::endl;
+				dom->sendMessage("trololo");
 			});
 			std::cout << "after on click" << std::endl;
 			gameInterfaceDom = dom;

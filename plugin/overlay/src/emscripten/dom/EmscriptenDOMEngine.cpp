@@ -181,8 +181,15 @@ EmscriptenDOMEngine::initJavascript()
 	eval += "		return;\n\n";
 
 	eval += "	Minko.loaded = 1;\n";
-
-	eval += "	Minko.iframeElement.contentWindow.Minko = {};\n";
+	eval +=	"	if (!Minko.iframeElement.contentWindow.Minko)\n";
+	eval += "		Minko.iframeElement.contentWindow.Minko = {};\n";
+	eval += "	if (!Minko.iframeElement.contentWindow.Minko.onmessage)\n";
+	eval +=	"	{\n";
+	eval +=	"		Minko.iframeElement.contentWindow.Minko.onmessage = function(message)\n";
+	eval +=	"		{\n";
+	eval +=	"			console.log('MINKO: ' + message);\n";
+	eval +=	"		}\n";
+	eval +=	"	}\n";
 
 	eval += "	Minko.iframeElement.contentWindow.addEventListener('mousemove',		Minko.redispatchMouseEvent);\n";
 	eval += "	Minko.iframeElement.contentWindow.addEventListener('mouseup',		Minko.redispatchMouseEvent);\n";
