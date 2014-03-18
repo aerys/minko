@@ -69,6 +69,7 @@ DrawCall::DrawCall(const data::BindingMap&	attributeBindings,
     _vertexAttributeOffsets(MAX_NUM_VERTEXBUFFERS, -1),
 	_target(nullptr),
 	_referenceChangedSlots(),
+	_indicesChanged(nullptr),
 	_zsortNeeded(Signal<Ptr>::create()),
 	_zSorter(nullptr)
 {
@@ -113,14 +114,19 @@ DrawCall::bindIndexBuffer()
 
 	_indexBuffer	= -1;
 	_numIndices		= 0;
-
+	_indicesChanged	= nullptr;
 
 	// Note: index buffer can only be held by the target node's data container!
 	if (_targetData->hasProperty(propertyName))
 	{
 		auto indexBuffer	= _targetData->get<IndexBuffer::Ptr>(propertyName);
 		_indexBuffer		= indexBuffer->id();
-		_numIndices			= indexBuffer->data().size();
+		_numIndices			= indexBuffer->numIndices();
+
+		_indicesChanged		= indexBuffer->changed()->connect([&](IndexBuffer::Ptr indices){
+			_indexBuffer	= indices->id();
+			_numIndices		= indices->numIndices();
+		});
 	}
 
 	if (_referenceChangedSlots.count(propertyName) == 0)
