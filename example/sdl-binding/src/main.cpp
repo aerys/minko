@@ -41,116 +41,6 @@ main(int argc, char** argv)
         if (k->keyIsDown(input::Keyboard::ScanCode::UNKNOWN))
             std::cout << "[ScanCode]Key UNKNOWN down !" << std::endl;
 
-        if (k->keyIsDown(input::Keyboard::ScanCode::A))
-            std::cout << "[ScanCode]Key A down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::ScanCode::B))
-            std::cout << "[ScanCode]Key B down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::ScanCode::C))
-            std::cout << "[ScanCode]Key C down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::ScanCode::D))
-            std::cout << "[ScanCode]Key D down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::ScanCode::E))
-            std::cout << "[ScanCode]Key E down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::ScanCode::F))
-            std::cout << "[ScanCode]Key F down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::ScanCode::G))
-            std::cout << "[ScanCode]Key G down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::ScanCode::H))
-            std::cout << "[ScanCode]Key H down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::ScanCode::I))
-            std::cout << "[ScanCode]Key I down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::ScanCode::J))
-            std::cout << "[ScanCode]Key J down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::ScanCode::K))
-            std::cout << "[ScanCode]Key K down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::ScanCode::L))
-            std::cout << "[ScanCode]Key L down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::ScanCode::M))
-            std::cout << "[ScanCode]Key M down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::ScanCode::N))
-            std::cout << "[ScanCode]Key N down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::ScanCode::O))
-            std::cout << "[ScanCode]Key O down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::ScanCode::P))
-            std::cout << "[ScanCode]Key P down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::ScanCode::Q))
-            std::cout << "[ScanCode]Key Q down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::ScanCode::R))
-            std::cout << "[ScanCode]Key R down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::ScanCode::S))
-            std::cout << "[ScanCode]Key S down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::ScanCode::T))
-            std::cout << "[ScanCode]Key T down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::ScanCode::U))
-            std::cout << "[ScanCode]Key U down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::ScanCode::V))
-            std::cout << "[ScanCode]Key V down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::ScanCode::W))
-            std::cout << "[ScanCode]Key W down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::ScanCode::X))
-            std::cout << "[ScanCode]Key X down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::ScanCode::Y))
-            std::cout << "[ScanCode]Key Y down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::ScanCode::Z))
-            std::cout << "[ScanCode]Key Z down !" << std::endl;
-
-        if (k->keyIsDown(input::Keyboard::ScanCode::_1))
-            std::cout << "[ScanCode]Key _1 down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::ScanCode::_2))
-            std::cout << "[ScanCode]Key _2 down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::ScanCode::_3))
-            std::cout << "[ScanCode]Key _3 down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::ScanCode::_4))
-            std::cout << "[ScanCode]Key _4 down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::ScanCode::_5))
-            std::cout << "[ScanCode]Key _5 down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::ScanCode::_6))
-            std::cout << "[ScanCode]Key _6 down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::ScanCode::_7))
-            std::cout << "[ScanCode]Key _7 down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::ScanCode::_8))
-            std::cout << "[ScanCode]Key _8 down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::ScanCode::_9))
-            std::cout << "[ScanCode]Key _9 down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::ScanCode::_0))
-            std::cout << "[ScanCode]Key _0 down !" << std::endl;
-
-        if (k->keyIsDown(input::Keyboard::ScanCode::RETURN))
-            std::cout << "[ScanCode]Key RETURN down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::ScanCode::ESCAPE))
-            std::cout << "[ScanCode]Key ESCAPE down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::ScanCode::BACKSPACE))
-            std::cout << "[ScanCode]Key BACKSPACE down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::ScanCode::TAB))
-            std::cout << "[ScanCode]Key TAB down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::ScanCode::SPACE))
-            std::cout << "[ScanCode]Key SPACE down !" << std::endl;
-
-        if (k->keyIsDown(input::Keyboard::ScanCode::MINUS))
-            std::cout << "[ScanCode]Key MINUS down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::ScanCode::EQUALS))
-            std::cout << "[ScanCode]Key EQUALS down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::ScanCode::LEFTBRACKET))
-            std::cout << "[ScanCode]Key LEFTBRACKET down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::ScanCode::RIGHTBRACKET))
-            std::cout << "[ScanCode]Key RIGHTBRACKET down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::ScanCode::BACKSLASH))
-            std::cout << "[ScanCode]Key BACKSLASH down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::ScanCode::NONUSHASH))
-            std::cout << "[ScanCode]Key NONUSHASH down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::ScanCode::SEMICOLON))
-            std::cout << "[ScanCode]Key SEMICOLON down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::ScanCode::APOSTROPHE))
-            std::cout << "[ScanCode]Key APOSTROPHE down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::ScanCode::GRAVE))
-            std::cout << "[ScanCode]Key GRAVE down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::ScanCode::COMMA))
-            std::cout << "[ScanCode]Key COMMA down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::ScanCode::PERIOD))
-            std::cout << "[ScanCode]Key PERIOD down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::ScanCode::SLASH))
-            std::cout << "[ScanCode]Key SLASH down !" << std::endl;
-
         if (k->keyIsDown(input::Keyboard::ScanCode::CAPSLOCK))
             std::cout << "[ScanCode]Key CAPSLOCK down !" << std::endl;
 
@@ -179,8 +69,6 @@ main(int argc, char** argv)
         if (k->keyIsDown(input::Keyboard::ScanCode::F12))
             std::cout << "[ScanCode]Key F12 down !" << std::endl;
 
-        if (k->keyIsDown(input::Keyboard::ScanCode::PRINTSCREEN))
-            std::cout << "[ScanCode]Key PRINTSCREEN down !" << std::endl;
         if (k->keyIsDown(input::Keyboard::ScanCode::SCROLLLOCK))
             std::cout << "[ScanCode]Key SCROLLLOCK down !" << std::endl;
         if (k->keyIsDown(input::Keyboard::ScanCode::PAUSE))
@@ -191,8 +79,6 @@ main(int argc, char** argv)
             std::cout << "[ScanCode]Key HOME down !" << std::endl;
         if (k->keyIsDown(input::Keyboard::ScanCode::PAGEUP))
             std::cout << "[ScanCode]Key PAGEUP down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::ScanCode::DELETE))
-            std::cout << "[ScanCode]Key DELETE down !" << std::endl;
         if (k->keyIsDown(input::Keyboard::ScanCode::END))
             std::cout << "[ScanCode]Key END down !" << std::endl;
         if (k->keyIsDown(input::Keyboard::ScanCode::PAGEDOWN))
@@ -239,8 +125,6 @@ main(int argc, char** argv)
             std::cout << "[ScanCode]Key KP_0 down !" << std::endl;
         if (k->keyIsDown(input::Keyboard::ScanCode::KP_PERIOD))
             std::cout << "[ScanCode]Key KP_PERIOD down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::ScanCode::NONUSBACKSLASH))
-            std::cout << "[ScanCode]Key NONUSBACKSLASH down !" << std::endl;
         if (k->keyIsDown(input::Keyboard::ScanCode::APPLICATION))
             std::cout << "[ScanCode]Key APPLICATION down !" << std::endl;
         if (k->keyIsDown(input::Keyboard::ScanCode::POWER))
@@ -871,114 +755,6 @@ main(int argc, char** argv)
             std::cout << "[KeyCode]Key WORLD_94 down !" << std::endl;
         if (k->keyIsDown(input::Keyboard::KeyCode::WORLD_95))
             std::cout << "[KeyCode]Key WORLD_95 down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::KeyCode::KP0))
-            std::cout << "[KeyCode]Key KP0 down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::KeyCode::KP1))
-            std::cout << "[KeyCode]Key KP1 down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::KeyCode::KP2))
-            std::cout << "[KeyCode]Key KP2 down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::KeyCode::KP3))
-            std::cout << "[KeyCode]Key KP3 down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::KeyCode::KP4))
-            std::cout << "[KeyCode]Key KP4 down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::KeyCode::KP5))
-            std::cout << "[KeyCode]Key KP5 down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::KeyCode::KP6))
-            std::cout << "[KeyCode]Key KP6 down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::KeyCode::KP7))
-            std::cout << "[KeyCode]Key KP7 down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::KeyCode::KP8))
-            std::cout << "[KeyCode]Key KP8 down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::KeyCode::KP9))
-            std::cout << "[KeyCode]Key KP9 down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::KeyCode::KP_PERIOD))
-            std::cout << "[KeyCode]Key KP_PERIOD down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::KeyCode::KP_DIVIDE))
-            std::cout << "[KeyCode]Key KP_DIVIDE down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::KeyCode::KP_MULTIPLY))
-            std::cout << "[KeyCode]Key KP_MULTIPLY down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::KeyCode::KP_MINUS))
-            std::cout << "[KeyCode]Key KP_MINUS down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::KeyCode::KP_PLUS))
-            std::cout << "[KeyCode]Key KP_PLUS down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::KeyCode::KP_ENTER))
-            std::cout << "[KeyCode]Key KP_ENTER down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::KeyCode::KP_EQUALS))
-            std::cout << "[KeyCode]Key KP_EQUALS down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::KeyCode::UP))
-            std::cout << "[KeyCode]Key UP down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::KeyCode::DOWN))
-            std::cout << "[KeyCode]Key DOWN down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::KeyCode::RIGHT))
-            std::cout << "[KeyCode]Key RIGHT down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::KeyCode::LEFT))
-            std::cout << "[KeyCode]Key LEFT down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::KeyCode::INSERT))
-            std::cout << "[KeyCode]Key INSERT down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::KeyCode::HOME))
-            std::cout << "[KeyCode]Key HOME down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::KeyCode::END))
-            std::cout << "[KeyCode]Key END down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::KeyCode::PAGEUP))
-            std::cout << "[KeyCode]Key PAGEUP down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::KeyCode::PAGEDOWN))
-            std::cout << "[KeyCode]Key PAGEDOWN down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::KeyCode::F1))
-            std::cout << "[KeyCode]Key F1 down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::KeyCode::F2))
-            std::cout << "[KeyCode]Key F2 down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::KeyCode::F3))
-            std::cout << "[KeyCode]Key F3 down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::KeyCode::F4))
-            std::cout << "[KeyCode]Key F4 down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::KeyCode::F5))
-            std::cout << "[KeyCode]Key F5 down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::KeyCode::F6))
-            std::cout << "[KeyCode]Key F6 down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::KeyCode::F7))
-            std::cout << "[KeyCode]Key F7 down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::KeyCode::F8))
-            std::cout << "[KeyCode]Key F8 down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::KeyCode::F9))
-            std::cout << "[KeyCode]Key F9 down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::KeyCode::F10))
-            std::cout << "[KeyCode]Key F10 down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::KeyCode::F11))
-            std::cout << "[KeyCode]Key F11 down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::KeyCode::F12))
-            std::cout << "[KeyCode]Key F12 down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::KeyCode::F13))
-            std::cout << "[KeyCode]Key F13 down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::KeyCode::F14))
-            std::cout << "[KeyCode]Key F14 down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::KeyCode::F15))
-            std::cout << "[KeyCode]Key F15 down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::KeyCode::NUMLOCK))
-            std::cout << "[KeyCode]Key NUMLOCK down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::KeyCode::CAPSLOCK))
-            std::cout << "[KeyCode]Key CAPSLOCK down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::KeyCode::SCROLLOCK))
-            std::cout << "[KeyCode]Key SCROLLOCK down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::KeyCode::RSHIFT))
-            std::cout << "[KeyCode]Key RSHIFT down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::KeyCode::LSHIFT))
-            std::cout << "[KeyCode]Key LSHIFT down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::KeyCode::RCTRL))
-            std::cout << "[KeyCode]Key RCTRL down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::KeyCode::LCTRL))
-            std::cout << "[KeyCode]Key LCTRL down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::KeyCode::RALT))
-            std::cout << "[KeyCode]Key RALT down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::KeyCode::LALT))
-            std::cout << "[KeyCode]Key LALT down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::KeyCode::RMETA))
-            std::cout << "[KeyCode]Key RMETA down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::KeyCode::LMETA))
-            std::cout << "[KeyCode]Key LMETA down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::KeyCode::LSUPER))
-            std::cout << "[KeyCode]Key LSUPER down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::KeyCode::RSUPER))
-            std::cout << "[KeyCode]Key RSUPER down !" << std::endl;
         if (k->keyIsDown(input::Keyboard::KeyCode::MODE))
             std::cout << "[KeyCode]Key MODE down !" << std::endl;
         if (k->keyIsDown(input::Keyboard::KeyCode::COMPOSE))
@@ -999,6 +775,18 @@ main(int argc, char** argv)
             std::cout << "[KeyCode]Key EURO down !" << std::endl;
         if (k->keyIsDown(input::Keyboard::KeyCode::UNDO))
             std::cout << "[KeyCode]Key UNDO down !" << std::endl;
+
+
+        if (k->keyIsDown(input::Keyboard::KeyCode::PERCENT))
+            std::cout << "[KeyCode]Key PERCENT down !" << std::endl;
+        if (k->keyIsDown(input::Keyboard::KeyCode::LEFTCURLYBRACKET))
+            std::cout << "[KeyCode]Key LEFTCURLYBRACKET down !" << std::endl;
+        if (k->keyIsDown(input::Keyboard::KeyCode::PIPE))
+            std::cout << "[KeyCode]Key PIPE down !" << std::endl;
+        if (k->keyIsDown(input::Keyboard::KeyCode::RIGHTCURLYBRACKET))
+            std::cout << "[KeyCode]Key RIGHTCURLYBRACKET down !" << std::endl;
+        if (k->keyIsDown(input::Keyboard::KeyCode::TILDE))
+            std::cout << "[KeyCode]Key TILDE down !" << std::endl;
 	});
 
 	canvas->run();
