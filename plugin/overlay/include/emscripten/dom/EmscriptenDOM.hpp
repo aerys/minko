@@ -37,12 +37,12 @@ namespace emscripten
 			typedef std::shared_ptr<EmscriptenDOM> Ptr;
 
 		private:
-			EmscriptenDOM();
+			EmscriptenDOM(std::string);
 
 		public:
 			static
 			Ptr
-			create();
+			create(std::string);
 
 			void
 			sendMessage(std::string);
@@ -84,19 +84,14 @@ namespace emscripten
 			initialized(bool);
 
 			static
-			int
-			elementUid;
-
-			static
-			std::string
-			getNewElementName();
-
-			static
 			std::list<minko::dom::AbstractDOMElement::Ptr>
 			getElementList(std::string);
 
 		private:
 			bool _initialized;
+
+			std::string _jsAccessor;
+
 			EmscriptenDOMElement::Ptr _document;
 			EmscriptenDOMElement::Ptr _body;
 

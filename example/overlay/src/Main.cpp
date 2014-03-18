@@ -60,8 +60,8 @@ int main(int argc, char** argv)
 	sceneManager->assets()
 		->registerParser<file::PNGParser>("png")
 		->queue(TEXTURE_FILENAME)
-		->queue("effect/Basic.effect")
-		->queue("effect/Overlay.effect");
+		->queue("effect/Basic.effect");
+		//->queue("effect/Overlay.effect");
 
 	sceneManager->assets()->context()->errorsEnabled(true);
 
@@ -114,10 +114,12 @@ int main(int argc, char** argv)
 
 		if (dom->fileName() == "gameInterface.html")
 		{
-			onclickSlot = dom->document()->onclick()->connect([](dom::AbstractDOMEvent::Ptr event)
+			std::cout << "before on click" << std::endl;
+			onclickSlot = dom->document()->onclick()->connect([=](dom::AbstractDOMEvent::Ptr event)
 			{
 				std::cout << "click" << std::endl;
 			});
+			std::cout << "after on click" << std::endl;
 			gameInterfaceDom = dom;
 			redScoreElement = gameInterfaceDom->getElementById("teamScoreRed");
 			blueScoreElement = gameInterfaceDom->getElementById("teamScoreBlue");

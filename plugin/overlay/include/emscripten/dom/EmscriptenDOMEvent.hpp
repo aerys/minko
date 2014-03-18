@@ -33,6 +33,22 @@ namespace emscripten
 		public:
 			typedef std::shared_ptr<EmscriptenDOMEvent> Ptr;
 
+		private:
+			EmscriptenDOMEvent(std::string jsAccessor):
+				_jsAccessor(jsAccessor)
+			{
+			}
+
+		public:
+
+			static
+			Ptr
+			create(std::string jsAccessor)
+			{
+				Ptr event(new EmscriptenDOMEvent(jsAccessor));
+				return event;
+			}
+
 			void
 			preventDefault();
 
@@ -70,6 +86,9 @@ namespace emscripten
 
 			int
 			screenY();
+
+		private:
+			std::string _jsAccessor;
 		};
 	}
 }

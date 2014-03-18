@@ -69,6 +69,15 @@ namespace emscripten
 			onmessage();
 
 		private:
+
+			void
+			createNewDom();
+
+		private:
+
+			static
+			int _domUid;
+
 			EmscriptenDOM::Ptr _currentDOM;
 
 			minko::AbstractCanvas::Ptr _canvas;

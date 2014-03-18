@@ -44,6 +44,10 @@ namespace emscripten
 			{
 			};
 
+			static
+			Ptr
+			getDOMElement(std::string jsElement);
+
 			std::string
 			getJavascriptAccessor();
 
@@ -130,7 +134,25 @@ namespace emscripten
 			minko::Signal<std::shared_ptr<minko::dom::AbstractDOMEvent>>::Ptr
 			onmouseover();
 
+			void
+			update();
+
 		private:
+			void
+			addEventListener(std::string);
+
+		public:
+			static
+			std::list<EmscriptenDOMElement::Ptr> domElements;
+
+		private:
+			static
+			int
+			_elementUid;
+			
+			static
+			std::map<std::string,Ptr> _accessorToElement;
+
 			std::string _jsAccessor;
 
 			minko::Signal<minko::dom::AbstractDOMEvent::Ptr>::Ptr _onclick;
@@ -139,6 +161,13 @@ namespace emscripten
 			minko::Signal<minko::dom::AbstractDOMEvent::Ptr>::Ptr _onmouseup;
 			minko::Signal<minko::dom::AbstractDOMEvent::Ptr>::Ptr _onmouseover;
 			minko::Signal<minko::dom::AbstractDOMEvent::Ptr>::Ptr _onmouseout;
+
+			bool _onclickSet;
+			bool _onmousedownSet;
+			bool _onmousemoveSet;
+			bool _onmouseupSet;
+			bool _onmouseoverSet;
+			bool _onmouseoutSet;
 		};
 	}
 }

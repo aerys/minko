@@ -37,6 +37,9 @@ using namespace emscripten::dom;
 // JS : Minko.DOMEngineHelper = new Module.DOMEngineHelper(this.engineId);
 // JS : iFrame.onload = {Minko.DOMEngineHelper.onload()}
 
+int
+EmscriptenDOMEngine::_domUid = 0;
+
 EmscriptenDOMEngine::EmscriptenDOMEngine() :
 	_loadedPreviousFrameState(0),
 	_onload(Signal<AbstractDOM::Ptr, std::string>::create()),
@@ -68,6 +71,17 @@ EmscriptenDOMEngine::initialize(AbstractCanvas::Ptr canvas, SceneManager::Ptr sc
 }
 
 void
+EmscriptenDOMEngine::createNewDom()
+{
+	std::string domName = "Minko.dom" + std::to_string(_domUid++);
+
+	std::string eval = domName + " = {};";
+	emscripten_run_script(eval.c_str());
+	
+	_currentDOM = EmscriptenDOM::create(domName);
+}
+
+void
 EmscriptenDOMEngine::enterFrame()
 {
 	std::string eval = "(Minko.loaded)";
@@ -76,16 +90,21 @@ EmscriptenDOMEngine::enterFrame()
 	if (loadedState == 1)
 	{
 		if (_currentDOM->initialized())
-			_currentDOM = EmscriptenDOM::create();
+			createNewDom();
 
 		_currentDOM->initialized(true);
 
 		_currentDOM->onload()->execute(_currentDOM, _currentDOM->fullUrl());
 		_onload->execute(_currentDOM, _currentDOM->fullUrl());
+
+		eval = "Minko.loaded = 0";
+		emscripten_run_script(eval.c_str());
 	}
 
-	eval = "Minko.loaded = 0";
-	emscripten_run_script(eval.c_str());
+	for(auto element : EmscriptenDOMElement::domElements)
+	{
+		element->update();
+	}
 }
 
 void
@@ -162,18 +181,16 @@ EmscriptenDOMEngine::initJavascript()
 	eval += "		return;\n\n";
 
 	eval += "	Minko.loaded = 1;\n";
-	eval += "	console.log('onload');\n";
 
-	eval += "	Minko.document = iframeElement.contentDocument;\n";
-	eval += "	Minko.window = iframeElement.contentWindow;\n";
+	eval += "	Minko.iframeElement.contentWindow.Minko = {};\n";
 
-	eval += "	Minko.window.addEventListener('mousemove',	Minko.redispatchMouseEvent);\n";
-	eval += "	Minko.window.addEventListener('mouseup',	Minko.redispatchMouseEvent);\n";
-	eval += "	Minko.window.addEventListener('mousedown',	Minko.redispatchMouseEvent);\n";
-	eval += "	Minko.window.addEventListener('click',		Minko.redispatchMouseEvent);\n";
-	eval += "	Minko.window.addEventListener('mouseover',	Minko.redispatchMouseEvent);\n";
-	eval += "	Minko.window.addEventListener('mouseout',	Minko.redispatchMouseEvent);\n";
-	eval += "	Minko.window.addEventListener('mousewheel',	Minko.redispatchMouseEvent);\n";
+	eval += "	Minko.iframeElement.contentWindow.addEventListener('mousemove',		Minko.redispatchMouseEvent);\n";
+	eval += "	Minko.iframeElement.contentWindow.addEventListener('mouseup',		Minko.redispatchMouseEvent);\n";
+	eval += "	Minko.iframeElement.contentWindow.addEventListener('mousedown',		Minko.redispatchMouseEvent);\n";
+	eval += "	Minko.iframeElement.contentWindow.addEventListener('click',			Minko.redispatchMouseEvent);\n";
+	eval += "	Minko.iframeElement.contentWindow.addEventListener('mouseover',		Minko.redispatchMouseEvent);\n";
+	eval += "	Minko.iframeElement.contentWindow.addEventListener('mouseout',		Minko.redispatchMouseEvent);\n";
+	eval += "	Minko.iframeElement.contentWindow.addEventListener('mousewheel',	Minko.redispatchMouseEvent);\n";
 	eval += "}\n\n";
 
 	eval += "iframeElement.onload = Minko.iframeLoadHandler;\n";
@@ -204,7 +221,7 @@ EmscriptenDOMEngine::load(std::string uri)
 
 	emscripten_run_script(eval.c_str());
 
-	_currentDOM = EmscriptenDOM::create();
+	createNewDom();
 
 	return _currentDOM;
 }

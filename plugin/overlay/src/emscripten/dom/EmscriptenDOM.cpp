@@ -28,35 +28,24 @@ using namespace minko::dom;
 using namespace emscripten;
 using namespace emscripten::dom;
 
-int
-EmscriptenDOM::elementUid = 0;
-
-EmscriptenDOM::EmscriptenDOM() :
-	_document(EmscriptenDOMElement::create("Minko.document")),
-	_body(EmscriptenDOMElement::create("Minko.document.body")),
+EmscriptenDOM::EmscriptenDOM(std::string jsAccessor) :
 	_initialized(false),
-	_onload(Signal<AbstractDOM::Ptr, std::string>::create())
+	_onload(Signal<AbstractDOM::Ptr, std::string>::create()),
+	_jsAccessor(jsAccessor)
 {
 }
 
 EmscriptenDOM::Ptr
-EmscriptenDOM::create()
+EmscriptenDOM::create(std::string jsAccessor)
 {
-	EmscriptenDOM::Ptr dom(new EmscriptenDOM());
+	EmscriptenDOM::Ptr dom(new EmscriptenDOM(jsAccessor));
 	return dom;
-}
-
-std::string
-EmscriptenDOM::getNewElementName()
-{
-	std::string name = "Minko.element" + std::to_string(elementUid++);
-	return name;
 }
 
 void
 EmscriptenDOM::sendMessage(std::string message)
 {
-	std::string eval = "if (Minko.onmessage) Minko.onmessage('" + message + "');";
+	std::string eval = "if (" + _jsAccessor + ".window.Minko.onmessage) " + _jsAccessor + ".window.Minko.onmessage('" + message + "');";
 	emscripten_run_script(eval.c_str());
 }
 
@@ -65,16 +54,15 @@ EmscriptenDOM::getElementList(std::string expression)
 {
 	std::list<minko::dom::AbstractDOMElement::Ptr> l;
 
-	std::string jsElements = EmscriptenDOM::getNewElementName();
-	expression = jsElements + " = " + expression;
+	expression = "Minko.tmpElements = " + expression;
 
 	emscripten_run_script(expression.c_str());
 
-	expression = "(" + jsElements + ".length)";
+	expression = "(Minko.tmpElements.length)";
 	int numElements = emscripten_run_script_int(expression.c_str());
 
 	for(int i = 0; i < numElements; ++i)
-		l.push_back(EmscriptenDOMElement::create(jsElements + "[" + std::to_string(i) + "]"));
+		l.push_back(EmscriptenDOMElement::getDOMElement("Minko.tmpElements[" + std::to_string(i) + "]"));
 
 	return l;
 }
@@ -82,35 +70,33 @@ EmscriptenDOM::getElementList(std::string expression)
 AbstractDOMElement::Ptr
 EmscriptenDOM::createElement(std::string element)
 {
-	std::string newElement = getNewElementName();
-	std::string eval = newElement + " = Minko.document.createElement('" + element + "');";
+	std::string eval = "Minko.tmpElement = " + _jsAccessor + ".document.createElement('" + element + "');";
 
 	emscripten_run_script(eval.c_str());
 
-	return EmscriptenDOMElement::create(newElement);
+	return EmscriptenDOMElement::getDOMElement("Minko.tmpElement");
 }
 
 AbstractDOMElement::Ptr
 EmscriptenDOM::getElementById(std::string id)
 {
-	std::string newElement = getNewElementName();
-	std::string eval = newElement + " = Minko.document.getElementById('" + id + "');";
+	std::string eval = "Minko.tmpElement = " + _jsAccessor + ".document.getElementById('" + id + "');";
 
 	emscripten_run_script(eval.c_str());
 
-	return EmscriptenDOMElement::create(newElement);
+	return EmscriptenDOMElement::getDOMElement("Minko.tmpElement");
 }
 
 std::list<AbstractDOMElement::Ptr>
 EmscriptenDOM::getElementsByClassName(std::string className)
 {
-	return getElementList("Minko.document.getElementsByClassName('" + className + "')");
+	return getElementList(_jsAccessor + ".document.getElementsByClassName('" + className + "')");
 }
 
 std::list<AbstractDOMElement::Ptr>
 EmscriptenDOM::getElementsByTagName(std::string tagName)
 {
-	return getElementList("Minko.document.getElementsByTagName('" + tagName + "')");
+	return getElementList(_jsAccessor + ".document.getElementsByTagName('" + tagName + "')");
 }
 
 AbstractDOMElement::Ptr
@@ -143,7 +129,7 @@ EmscriptenDOM::fileName()
 std::string
 EmscriptenDOM::fullUrl()
 {
-	std::string eval = "(Minko.document.location)";
+	std::string eval = "(" + _jsAccessor + ".document.location)";
 
 	char* result = emscripten_run_script_string(eval.c_str());
 
@@ -159,6 +145,18 @@ EmscriptenDOM::isMain()
 void
 EmscriptenDOM::initialized(bool v)
 {
+	if (!_initialized && v)
+	{
+		std::string eval = "";
+		eval += _jsAccessor + ".window		= Minko.iframeElement.contentWindow;\n";
+		eval += _jsAccessor + ".document	= Minko.iframeElement.contentDocument;\n";
+		eval += _jsAccessor + ".body		= Minko.iframeElement.contentDocument.body;\n";
+		emscripten_run_script(eval.c_str());
+
+		_document	= EmscriptenDOMElement::create(_jsAccessor + ".document");
+		_body		= EmscriptenDOMElement::create(_jsAccessor + ".body");
+	}
+
 	_initialized = v;
 }
 
