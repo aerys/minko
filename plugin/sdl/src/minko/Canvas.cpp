@@ -419,15 +419,31 @@ Canvas::step()
             break;
         }
         case SDL_MOUSEBUTTONDOWN:
-            _mouse->leftButtonDown()->execute(_mouse);
-            //_mouseLeftButtonDown->execute(shared_from_this(), event.motion.x, event.motion.y);
+        {
+            switch( event.button.button ) 
+            {
+            case SDL_BUTTON_LEFT:
+                _mouse->leftButtonDown()->execute(_mouse);
+                break;
+            case SDL_BUTTON_RIGHT:
+                _mouse->rightButtonDown()->execute(_mouse);
+                break;
+	    }
             break;
-
+        }
         case SDL_MOUSEBUTTONUP:
-            _mouse->leftButtonUp()->execute(_mouse);
-            //_mouseLeftButtonUp->execute(shared_from_this(), event.motion.x, event.motion.y);
+        {
+            switch( event.button.button ) 
+	    {
+	    case SDL_BUTTON_LEFT:
+                _mouse->leftButtonUp()->execute(_mouse);
+                break;
+	    case SDL_BUTTON_RIGHT:
+                _mouse->rightButtonUp()->execute(_mouse);
+                break;
+            }
             break;
-
+        }
         case SDL_MOUSEWHEEL:
             _mouse->wheel()->execute(_mouse, event.wheel.x, event.wheel.y);
             //_mouseWheel->execute(shared_from_this(), event.wheel.x, event.wheel.y);
