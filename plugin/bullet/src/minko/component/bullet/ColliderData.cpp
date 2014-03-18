@@ -19,9 +19,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/component/bullet/ColliderData.hpp"
 
-#include <minko/math/Matrix4x4.hpp>
 #include <minko/component/bullet/AbstractPhysicsShape.hpp>
 #include <minko/component/bullet/PhysicsWorld.hpp>
+#include "minko/math/tools.hpp"
 
 #include <btBulletDynamicsCommon.h>
 
@@ -66,49 +66,104 @@ bullet::ColliderData::ColliderData(float						mass,
 
 }
 
+void
+bullet::ColliderData::synchronizePhysicsWithGraphics(Matrix4x4::Ptr graphicsTransform,
+													 Matrix4x4::Ptr graphicsNoScaleTransform,
+													 Matrix4x4::Ptr	centerOfMassOffset)
+{
+	if (graphicsNoScaleTransform == nullptr)
+		graphicsNoScaleTransform = Matrix4x4::create();
+	if (centerOfMassOffset == nullptr)
+		centerOfMassOffset = Matrix4x4::create();
+
+	// remove the scaling/shear from the graphics transform, but record it to restitute it during rendering
+	removeScalingShear(
+		graphicsTransform, 
+		graphicsNoScaleTransform,
+		_correctionMatrix
+	);
+
+	centerOfMassOffset
+		->copyFrom(graphicsNoScaleTransform)->invert()
+		->append(_shape->deltaTransform())
+		->append(graphicsNoScaleTransform)
+		->invert();
+
+	static auto physicsModelToWorld = Matrix4x4::create();
+
+	physicsModelToWorld
+		->copyFrom(centerOfMassOffset)->invert()
+		->prepend(graphicsNoScaleTransform);
+
+	updatePhysicsTransform(physicsModelToWorld);
+}
 
 void
+bullet::ColliderData::updatePhysicsTransform(Matrix4x4::Ptr physicsModelToWorld) // triggers transform updating signals
+{
+	auto graphicsModelToWorld = math::Matrix4x4::create()
+		->copyFrom(physicsModelToWorld)
+		->prepend(_shape->deltaTransformInverse())
+		->prepend(_correctionMatrix);
+
+	_physicsWorldTransformChanged->execute(shared_from_this(), physicsModelToWorld);
+	_graphicsWorldTransformChanged->execute(shared_from_this(), graphicsModelToWorld);
+}
+
+bullet::ColliderData::Ptr
 bullet::ColliderData::correction(Matrix4x4::Ptr value)
 {
 	_correctionMatrix->copyFrom(value);
+
+	return shared_from_this();
 }
 
-void
+bullet::ColliderData::Ptr
 bullet::ColliderData::linearVelocity(float x, float y, float z)
 {
 	_linearVelocity->setTo(x, y, z);
+
+	return shared_from_this();
 }
 
-void
+bullet::ColliderData::Ptr
 bullet::ColliderData::angularVelocity(float x, float y, float z)
 {
 	_angularVelocity->setTo(x, y, z);
+
+	return shared_from_this();
 }
 
-void
+bullet::ColliderData::Ptr
 bullet::ColliderData::linearFactor(float x, float y, float z)
 {
 	_linearFactor->setTo(x, y, z);
+
+	return shared_from_this();
 }
 
-void
+bullet::ColliderData::Ptr
 bullet::ColliderData::angularFactor(float x, float y, float z)
 {
 	_angularFactor->setTo(x, y, z);
+
+	return shared_from_this();
 }
 
-void
+bullet::ColliderData::Ptr
 bullet::ColliderData::collisionGroup(short value)
 {
     _collisionGroup = value;
-
     _collisionFilterChanged->execute(shared_from_this());
+
+	return shared_from_this();
 }
 
-void
+bullet::ColliderData::Ptr
 bullet::ColliderData::collisionMask(short value)
 {
     _collisionMask = value;
-
     _collisionFilterChanged->execute(shared_from_this());
+
+	return shared_from_this();
 }

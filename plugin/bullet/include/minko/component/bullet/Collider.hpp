@@ -61,9 +61,10 @@ namespace minko
 			private:												
 				ColliderDataPtr										_colliderData;
 				PhysicsWorldPtr										_physicsWorld;
-				TransformPtr										_targetTransform;
-																	
-				NodePtr												_debugNode;
+				Matrix4x4Ptr										_physicsTransform;
+				TransformPtr										_graphicsTransform;
+
+				NodePtr												_colliderDisplayNode;
 																	
 				Signal<AbsCtrlPtr, NodePtr>::Slot					_targetAddedSlot;
 				Signal<AbsCtrlPtr, NodePtr>::Slot					_targetRemovedSlot;
@@ -77,9 +78,9 @@ namespace minko
 			public:
 				inline static
 				Ptr
-				create(ColliderDataPtr data, bool debug = false)
+				create(ColliderDataPtr data)
 				{
-					Ptr collider(new Collider(data, debug));
+					Ptr collider(new Collider(data));
 
 					collider->initialize();
 
@@ -101,13 +102,13 @@ namespace minko
 				synchronizePhysicsWithGraphics();
 
 				Ptr
-				displayCollider(AssetLibraryPtr);
+				show(AssetLibraryPtr);
 
 				Ptr
-				hideCollider();
+				hide();
 
 			private:
-				Collider(ColliderDataPtr, bool);
+				Collider(ColliderDataPtr);
 
 				void
 				initialize();

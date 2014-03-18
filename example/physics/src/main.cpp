@@ -156,12 +156,7 @@ int main(int argc, char** argv)
 			{
 				if (numObjects < MAX_NUM_OBJECTS)
 				{
-					auto physicsObj = createPhysicsObject(numObjects, sceneManager->assets(), rand() / (float)RAND_MAX > 0.5f);
-					root->addChild(physicsObj);
-#ifdef DISPLAY_COLLIDERS
-					physicsObj->component<bullet::Collider>()->displayCollider(sceneManager->assets());
-#endif // DISPLAY_COLLIDERS
-
+					root->addChild(createPhysicsObject(numObjects, sceneManager->assets(), rand() / (float)RAND_MAX > 0.5f));
 					++numObjects;
 
 					std::cout << "object #" << numObjects << " dropped" << std::endl;
@@ -225,6 +220,10 @@ createPhysicsObject(unsigned int id, file::AssetLibrary::Ptr assets, bool isCube
 		);
 		collider = bullet::Collider::create(sphColliderData);
 	}
+
+#ifdef DISPLAY_COLLIDERS
+	collider->show(assets);
+#endif // DISPLAY_COLLIDERS
 
 	return scene::Node::create("node_" + std::to_string(id))
 		->addComponent(Transform::create(

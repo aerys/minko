@@ -30,6 +30,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include <minko/component/bullet/ColliderData.hpp>
 #include <minko/component/bullet/AbstractPhysicsShape.hpp>
 
+#include "minko/math/tools.hpp"
+
 using namespace minko;
 using namespace minko::math;
 using namespace minko::scene;
@@ -283,28 +285,57 @@ bullet::PhysicsWorld::frameEndHandler(std::shared_ptr<SceneManager> sceneManager
 void
 bullet::PhysicsWorld::updateColliders()
 {
-	for (ColliderMap::iterator it = _colliderMap.begin(); it != _colliderMap.end(); ++it)
+	static auto physicsModelToWorld = Matrix4x4::create();
+
+	for (auto& dataAndBulletCollider : _colliderMap)
 	{
-		ColliderData::Ptr	collider(it->first);
-		if (collider->isStatic())
+		auto data				= dataAndBulletCollider.first;
+		auto bulletCollider		= dataAndBulletCollider.second;
+
+		if (data->isStatic())
 			continue;
 
-		static auto physicsModelToWorld		= Matrix4x4::create();
-		static auto graphicsModelToWorld	= Matrix4x4::create();
-
 		fromBulletTransform(
-			it->second->rigidBody()->getWorldTransform(),
+			bulletCollider->rigidBody()->getWorldTransform(),
 			physicsModelToWorld
 		);
 
-		graphicsModelToWorld
-			->copyFrom(physicsModelToWorld)
-			->prepend(collider->shape()->deltaTransformInverse())
-			->prepend(collider->correction());
-
-		collider->physicsWorldTransformChanged()->execute(collider, physicsModelToWorld);
-		collider->graphicsWorldTransformChanged()->execute(collider, graphicsModelToWorld);
+		data->updatePhysicsTransform(physicsModelToWorld); // triggers updating signals
 	}
+}
+
+void
+bullet::PhysicsWorld::updateRigidBodyState(ColliderData::Ptr	data, 
+										   Matrix4x4::Ptr		graphicsNoScaleTransform, 
+										   Matrix4x4::Ptr		centerOfMassOffset)
+{
+#ifdef DEBUG
+	const float det3x3 = fabsf(graphicsNoScaleTransform->determinant3x3());
+	if (fabsf(det3x3 - 1.0f) > 1e-3f)
+		throw std::logic_error("Graphics world matrices used for updating rigid bodies' must be pure rotation + translation matrices.");
+#endif // DEBUG
+
+	auto foundDataIt = _colliderMap.find(data);
+	if (foundDataIt == _colliderMap.end())
+		return;
+
+	auto					bulletCollider		= foundDataIt->second;
+	btDefaultMotionState*	bulletMotionState	= dynamic_cast<btDefaultMotionState*>(bulletCollider->rigidBody()->getMotionState());
+
+	if (bulletMotionState == nullptr)
+		return;
+
+	// update the motion state's center of mass offset transform
+	toBulletTransform(centerOfMassOffset,		bulletMotionState->m_centerOfMassOffset);
+
+	// update the motion state's world transform
+	toBulletTransform(graphicsNoScaleTransform,	bulletMotionState->m_graphicsWorldTrans);
+
+	// synchronize bullet
+	static btTransform bulletTransform;
+
+	bulletMotionState->getWorldTransform(bulletTransform);
+	bulletCollider->rigidBody()->setWorldTransform(bulletTransform);
 }
 
 void
@@ -384,160 +415,4 @@ bullet::PhysicsWorld::notifyCollisions()
 	_collisions.swap(currentCollisions);
 }
 
-void
-bullet::PhysicsWorld::synchronizePhysicsWithGraphics(ColliderDataPtr	collider, 
-													 Matrix4x4::Ptr		graphicsNoScaleTransform)
-{
-	static auto			matrix = Matrix4x4::create();
-	static btTransform	bulletTransform;
 
-	auto it	= _colliderMap.find(collider);
-	if (it == _colliderMap.end())
-		return;
-
-#ifdef DEBUG_PHYSICS
-	const float det3x3 = fabsf(graphicsNoScaleTransform->determinant3x3());
-	if (fabsf(det3x3 - 1.0f) > 1e-3f)
-		throw std::logic_error("Graphics world matrices used for physics synchronization must be pure rotation + translation matrices.");
-#endif // DEBUG_PHYSICS
-
-	// update the motion state's center of mass offset transform
-	btDefaultMotionState* bulletMotionState = dynamic_cast<btDefaultMotionState*>(it->second->rigidBody()->getMotionState());
-	if (bulletMotionState == nullptr)
-		return;
-
-	matrix
-		->copyFrom(graphicsNoScaleTransform)->invert()
-		->append(collider->shape()->deltaTransform())
-		->append(graphicsNoScaleTransform)
-		->invert();
-
-	toBulletTransform(
-		matrix, 
-		bulletMotionState->m_centerOfMassOffset
-	);
-
-	// update the motion state's world transform
-	toBulletTransform(
-		graphicsNoScaleTransform,
-		bulletMotionState->m_graphicsWorldTrans
-	);
-
-	// synchronize bullet
-	bulletMotionState->getWorldTransform(bulletTransform);
-	it->second->rigidBody()->setWorldTransform(bulletTransform);
-
-#ifdef DEBUG_PHYSICS
-	std::cout << "[" << it->first->name() << "] synchro graphics -> physics" << std::endl;
-
-	print(std::cout << "- scalefree(graphics) = \n", graphicsNoScaleTransform) << std::endl;
-	print(std::cout << "- motionstate.offset = \n", bulletMotionState->m_centerOfMassOffset) << std::endl;
-	print(std::cout << "- rigidbody.worldtransform = \n", it->second->rigidBody()->getWorldTransform()) << std::endl;
-#endif // DEBUG_PHYSICS
-}
-
-//void
-//bullet::PhysicsWorld::collisionMaskChangedHandler(ColliderData::Ptr colliderData, short mask)
-//{
-//    auto foundBulletColliderIt = _colliderMap.find(colliderData);
-//    if (foundBulletColliderIt != _colliderMap.end())
-//        foundBulletColliderIt->second->rigidBody()->getBroadphaseProxy()->m_collisionFilterGroup = mask;
-//}
-
-/*static*/
-Matrix4x4::Ptr
-bullet::PhysicsWorld::removeScalingShear(Matrix4x4::Ptr input, 
-										 Matrix4x4::Ptr output, 
-										 Matrix4x4::Ptr correction)
-{
-	static auto	matrix		= Matrix4x4::create();
-
-	auto		translation	= input->translation();
-
-	// remove translational component, then perform QR decomposition
-	matrix
-		->copyFrom(input)
-		->appendTranslation(-(*translation));
-
-	if (output == nullptr)
-		output = Matrix4x4::create();
-	if (correction == nullptr)
-		correction = Matrix4x4::create();
-
-	matrix->decomposeQR(output, correction);
-
-	return output->appendTranslation(translation);
-}
-
-/*static*/
-Matrix4x4::Ptr
-bullet::PhysicsWorld::fromBulletTransform(const btTransform& transform,
-										  Matrix4x4::Ptr output)
-{
-	auto basis			= transform.getBasis();
-	auto translation	= transform.getOrigin();
-
-	if (output == nullptr)
-		output = Matrix4x4::create();
-
-	return output->initialize(
-		basis[0][0], basis[0][1], basis[0][2], translation[0],
-		basis[1][0], basis[1][1], basis[1][2], translation[1],
-		basis[2][0], basis[2][1], basis[2][2], translation[2],
-		0.0f, 0.0f, 0.0f, 1.0f
-		);
-}
-
-/*static*/
-void
-bullet::PhysicsWorld::toBulletTransform(Matrix4x4::Ptr transform,
-										btTransform& output)
-{
-	toBulletTransform(
-		transform->rotationQuaternion(), 
-		transform->translation(), 
-		output
-	);
-}
-
-/*static*/
-void
-bullet::PhysicsWorld::toBulletTransform(Quaternion::Ptr rotation, 
-										Vector3::Ptr translation, 
-										btTransform& output)
-{
-	btQuaternion	btRotation(rotation->i(), rotation->j(), rotation->k(), rotation->r());
-	btVector3		btOrigin(translation->x(), translation->y(), translation->z());
-
-	output.setOrigin(btOrigin);
-	output.setRotation(btRotation);
-}
-
-/*static*/
-std::ostream&
-bullet::PhysicsWorld::print(std::ostream& out, const btTransform& bulletTransform)
-{
-	const btVector3& origin(bulletTransform.getOrigin());
-	const btMatrix3x3& basis(bulletTransform.getBasis());
-
-	out << "\t- origin\t= [" << origin[0] << "\t" << origin[1] << "\t" << origin[2] << "]\n\t- basis \t=\n" 
-		<< "\t[" << basis[0][0] << "\t" << basis[0][1] << "\t" << basis[0][2] 
-		<< "\n\t " << basis[1][0] << "\t" << basis[1][1] << "\t" << basis[1][2] 
-		<< "\n\t " << basis[2][0] << "\t" << basis[2][1] << "\t" << basis[2][2] << "]";
-
-	return out;
-}
-
-/*static*/
-std::ostream&
-bullet::PhysicsWorld::print(std::ostream& out, Matrix4x4Ptr matrix)
-{
-	const std::vector<float>& m(matrix->values());
-
-	out << "\t- origin\t= [" << m[3] << "\t" << m[7] << "\t" << m[11] << "]\n\t- basis \t=\n" 
-		<< "\t[" << m[0] << "\t" << m[1] << "\t" << m[2] 
-		<< "\n\t " << m[4] << "\t" << m[5] << "\t" << m[6] 
-		<< "\n\t " << m[8] << "\t" << m[9] << "\t" << m[10] << "]";
-
-	return out;
-}

@@ -32,8 +32,7 @@ namespace minko
 			class DynamicsProperties;
             class Collider;
 
-			class ColliderData:
-				public std::enable_shared_from_this<ColliderData>
+			class ColliderData: public std::enable_shared_from_this<ColliderData>
 			{
                 friend class component::bullet::Collider;
 
@@ -93,6 +92,14 @@ namespace minko
 					return std::shared_ptr<ColliderData>(new ColliderData(mass, shape, inertia));
 				}
 
+				void
+				synchronizePhysicsWithGraphics(Matrix4x4Ptr	graphicsModelToWorld,
+											   Matrix4x4Ptr	graphicsNoScaleTransform	= nullptr,
+											   Matrix4x4Ptr	centerOfMassOffset			= nullptr); // updates internal scale correction matrix
+
+				void
+				updatePhysicsTransform(Matrix4x4Ptr); // triggers transform updating signals
+
 				inline
 				AbsShapePtr
 				shape() const
@@ -121,7 +128,7 @@ namespace minko
                     return _collisionGroup;
                 }
 
-                void
+                Ptr
                 collisionGroup(short);
 
                 inline
@@ -131,7 +138,7 @@ namespace minko
                     return _collisionMask;
                 }
 
-                void
+                Ptr
                 collisionMask(short);
 
 				inline
@@ -149,10 +156,12 @@ namespace minko
 				}
 
 				inline
-				void 
+				Ptr 
                 uid(uint value)
 				{
 					_uid = value;
+
+					return shared_from_this();
 				}
 
                 inline
@@ -169,7 +178,7 @@ namespace minko
 					return _linearVelocity;
 				}
 
-				void
+				Ptr
 				linearVelocity(float, float, float);
 
 				inline
@@ -179,7 +188,7 @@ namespace minko
 					return _linearFactor;
 				}
 
-				void
+				Ptr
 				linearFactor(float, float, float);
 
 				inline
@@ -190,10 +199,12 @@ namespace minko
 				}
 
 				inline
-				void 
+				Ptr 
 				linearDamping(float value)
 				{
-					_linearDamping	= value;
+					_linearDamping = value;
+
+					return shared_from_this();
 				}
 
 				inline
@@ -203,7 +214,7 @@ namespace minko
 					return _angularVelocity;
 				}
 
-				void
+				Ptr
 				angularVelocity(float, float, float);
 
 				inline
@@ -213,7 +224,7 @@ namespace minko
 					return _angularFactor;
 				}
 
-				void
+				Ptr
 				angularFactor(float, float, float);
 
 				inline
@@ -224,10 +235,12 @@ namespace minko
 				}
 
 				inline
-				void 
+				Ptr 
 				angularDamping(float value)
 				{
 					_angularDamping	= value;
+
+					return shared_from_this();
 				}
 
 				inline
@@ -238,10 +251,12 @@ namespace minko
 				}
 
 				inline
-				void
+				Ptr
 				restitution(float value)
 				{
 					_restitution = value;
+
+					return shared_from_this();
 				}
 
 				inline 
@@ -252,10 +267,12 @@ namespace minko
 				}
 
 				inline
-				void
+				Ptr
 				disableDeactivation(bool value)
 				{
 					_deactivationDisabled = value;
+
+					return shared_from_this();
 				}
 
 				inline
@@ -266,13 +283,15 @@ namespace minko
 				}
 
 				inline
-				void
+				Ptr
 				triggerCollisions(bool value)
 				{
 					_triggerCollisions = value;
+
+					return shared_from_this();
 				}
 
-				void
+				Ptr
 				correction(Matrix4x4Ptr);
 
 				inline
@@ -290,10 +309,12 @@ namespace minko
 				}
 
 				inline
-				void
+				Ptr
 				linearSleepingThreshold(float value)
 				{
 					_linearSleepingThreshold = value;
+
+					return shared_from_this();
 				}
 
 				inline
@@ -304,10 +325,12 @@ namespace minko
 				}
 
 				inline
-				void
+				Ptr
 				angularSleepingThreshold(float value)
 				{
 					_angularSleepingThreshold = value;
+
+					return shared_from_this();
 				}
 
 				inline
@@ -318,10 +341,12 @@ namespace minko
 				}
 
 				inline
-				void
+				Ptr
 				friction(float value)
 				{
 					_friction = value;
+
+					return shared_from_this();
 				}
 
 				inline
@@ -332,10 +357,12 @@ namespace minko
 				}
 
 				inline
-				void
+				Ptr
 				rollingFriction(float value)
 				{
 					_rollingFriction = value;
+
+					return shared_from_this();
 				}
 
 				inline

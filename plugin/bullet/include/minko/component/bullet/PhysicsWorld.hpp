@@ -139,17 +139,8 @@ namespace minko
 				void
 				synchronizePhysicsWithGraphics(ColliderDataPtr, Matrix4x4Ptr);
 
-				static
-				Matrix4x4Ptr
-				removeScalingShear(Matrix4x4Ptr, Matrix4x4Ptr output = nullptr, Matrix4x4Ptr correction = nullptr);
-
-				static
-				std::ostream&
-				print(std::ostream&, const btTransform&);
-
-				static
-				std::ostream&
-				print(std::ostream&, Matrix4x4Ptr);
+				void
+				updateRigidBodyState(ColliderDataPtr, Matrix4x4Ptr, Matrix4x4Ptr);
 
 			private:
 				PhysicsWorld();
@@ -177,18 +168,6 @@ namespace minko
 
 				void
 				notifyCollisions();
-
-				static
-				Matrix4x4Ptr
-				fromBulletTransform(const btTransform&, Matrix4x4Ptr output = nullptr);
-
-				static
-				void
-				toBulletTransform(Matrix4x4Ptr, btTransform&);
-
-				static
-				void
-				toBulletTransform(QuaternionPtr, Vector3Ptr, btTransform&);
 
 				void
 				componentAddedHandler(NodePtr, NodePtr, AbsCtrlPtr);

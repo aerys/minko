@@ -34,17 +34,20 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include <minko/render/CompareMode.hpp>
 #include <minko/render/Priority.hpp>
 
+#include "minko/math/tools.hpp"
+
 using namespace minko;
 using namespace minko::math;
 using namespace minko::scene;
 using namespace minko::component;
 
-bullet::Collider::Collider(ColliderData::Ptr data, bool debug):
+bullet::Collider::Collider(ColliderData::Ptr data):
 	AbstractComponent(),
 	_colliderData(data),
 	_physicsWorld(nullptr),
-	_targetTransform(nullptr),
-	_debugNode(debug ? Node::create() : nullptr),
+	_physicsTransform(Matrix4x4::create()),
+	_graphicsTransform(nullptr),
+	_colliderDisplayNode(nullptr),
 	_targetAddedSlot(nullptr),
 	_targetRemovedSlot(nullptr),
 	_addedSlot(nullptr),
@@ -111,9 +114,6 @@ bullet::Collider::targetAddedHandler(AbstractComponent::Ptr,
 		std::placeholders::_2,
 		std::placeholders::_3
 		));
-
-	if (_debugNode)
-		_debugNode->name("collider_debug_" + target->name());
 }
 
 void
@@ -152,60 +152,61 @@ bullet::Collider::removedHandler(Node::Ptr, Node::Ptr, Node::Ptr)
 	if (_physicsWorld != nullptr)
 		_physicsWorld->removeChild(_colliderData);
 
+	hide();
+
 	_physicsWorld					= nullptr;
-	_targetTransform				= nullptr;
+	_graphicsTransform				= nullptr;
 	_collisionStartedHandlerSlot	= nullptr;
 	_collisionEndedHandlerSlot		= nullptr;
 }
 
 bullet::Collider::Ptr
-bullet::Collider::displayCollider(file::AssetLibrary::Ptr assets)
+bullet::Collider::show(file::AssetLibrary::Ptr assets)
 {
-	if (assets == nullptr || assets->context() == nullptr || assets->effect("line") == nullptr)
+	if (assets == nullptr || 
+		assets->context() == nullptr || 
+		assets->effect("line") == nullptr)
 	{
 		std::cerr << "Warning: Incomplete assets for ensuring collider display (context, line effect needed)." << std::endl;
 		return shared_from_this();
 	}
 
-	if (_debugNode == nullptr)
+	hide();
+
+	Node::Ptr target = targets().empty() ? nullptr : targets().front();
+
+	_colliderDisplayNode = Node::create("collider_debug" + (target ? "_" + target->name() : ""))
+		->addComponent(Surface::create(
+			_colliderData->shape()->getGeometry(assets->context()),
+			data::ArrayProvider::create("material")
+				->set("diffuseColor",	math::Vector4::create(0.0f, 1.0f, 1.0f, 1.0f))
+				->set("lineThickness",	1.0f)
+				->set("depthFunc",		render::CompareMode::ALWAYS)
+				->set("priority",		render::priority::LAST),
+			assets->effect("line")
+		))
+		->addComponent(Transform::create(_physicsTransform));
+
+	if (target)
 	{
-		if (targets().size() != 1)
-			std::cerr << "warning (temp): the collider does not have a target yet (for debug display)." << std::endl;
-
-		auto target = targets().front();
-
-		_debugNode = Node::create("collider_debug_" + target->name())
-			->addComponent(Transform::create())
-			->addComponent(Surface::create(
-				_colliderData->shape()->getGeometry(assets->context()),
-				data::ArrayProvider::create("material")
-					->set("diffuseColor",	math::Vector4::create(0.0f, 1.0f, 1.0f, 1.0f))
-					->set("lineThickness",	1.0f)
-					->set("depthFunc", render::CompareMode::ALWAYS)
-					->set("priority", render::priority::LAST),
-				assets->effect("line")
-				));
-
 		auto roots = NodeSet::create(target)->roots()->nodes();
-		assert(!roots.empty());
 
-		roots.front()->addChild(_debugNode);
-
-
+		if (!roots.empty())
+			roots.front()->addChild(_colliderDisplayNode);
 	}
 
 	return shared_from_this();
 }
 
 bullet::Collider::Ptr
-bullet::Collider::hideCollider()
+bullet::Collider::hide()
 {
-	if (_debugNode)
+	if (_colliderDisplayNode)
 	{
-		if (_debugNode->parent())
-			_debugNode->parent()->removeChild(_debugNode->parent());
+		if (_colliderDisplayNode->parent())
+			_colliderDisplayNode->parent()->removeChild(_colliderDisplayNode);
 	
-		_debugNode = nullptr;
+		_colliderDisplayNode = nullptr;
 	}
 
 	return shared_from_this();
@@ -230,97 +231,105 @@ bullet::Collider::collisionEndedHandler(ColliderData::Ptr obj0, ColliderData::Pt
 void
 bullet::Collider::initializeFromNode(Node::Ptr node)
 {
-	if (_targetTransform != nullptr && _physicsWorld != nullptr)
+	if (_graphicsTransform != nullptr && 
+		_physicsWorld != nullptr)
 		return;
+
+    _colliderData->_node = node; 
+	_physicsTransform->identity(); // matrix automatically updated by physicsWorldTransformChangedHandler 
+
+	// get existing transform component or create one if necessary
+	if (!node->hasComponent<Transform>())
+		node->addComponent(Transform::create());
+
+	_graphicsTransform = node->component<Transform>();
+
+	if (fabsf(_graphicsTransform->modelToWorldMatrix(true)->determinant()) < 1e-3f)
+		throw std::logic_error("The node's model-to-world matrix cannot be inverted.");
 
 	// identify physics world
 	auto withPhysicsWorld = NodeSet::create(node)
 		->ancestors(true)
 		->where([](Node::Ptr n){ return n->hasComponent<bullet::PhysicsWorld>(); });
 
-	if (withPhysicsWorld->nodes().size() != 1)
-	{
-#ifdef DEBUG_PHYSICS
-		std::cout << "[" << node->name() << "]\tcollider CANNOT be added (# PhysicsWorld = " << nodeSet->nodes().size() << ")." << std::endl;
-#endif // DEBUG_PHYSICS
+	if (withPhysicsWorld->nodes().size() > 1)
+		throw std::logic_error("Scene cannot contain more than one PhysicsWorld component.");
 
-		return;
-	}
+	_physicsWorld = withPhysicsWorld->nodes().empty() 
+		? nullptr
+		: withPhysicsWorld->nodes().front()->component<bullet::PhysicsWorld>();
 
-	_physicsWorld = withPhysicsWorld->nodes().front()->component<bullet::PhysicsWorld>();
-	assert(_physicsWorld);
+	if (_physicsWorld)
+		_physicsWorld->addChild(_colliderData);
 
-	if (!node->hasComponent<Transform>())
-		node->addComponent(Transform::create());
-	
-	_targetTransform = node->component<Transform>();
-	assert(_targetTransform);
-
-	// check that target's model-to-world matrix is good to begin with.
-	auto modelToWorld = _targetTransform->modelToWorldMatrix(true);
-	if (fabsf(modelToWorld->determinant()) < 1e-3f)
-		throw std::logic_error("The node's model-to-world matrix cannot be inverted.");
-
-    _colliderData->_node = node; 
-
-	_physicsWorld->addChild(_colliderData);
 	synchronizePhysicsWithGraphics();
+
+	// update debugging display if any
+	if (_colliderDisplayNode)
+	{
+		if (_colliderDisplayNode->parent())
+			_colliderDisplayNode->parent()->removeChild(_colliderDisplayNode);
+
+		auto roots = NodeSet::create(node)->roots()->nodes();
+
+		if (!roots.empty())
+			roots.front()->addChild(_colliderDisplayNode);
+
+		_colliderDisplayNode->component<Transform>()->matrix()->copyFrom(_physicsTransform);
+	}
 }
 
 void
 bullet::Collider::synchronizePhysicsWithGraphics()
 {
-	static auto matrix = Matrix4x4::create();
-
-	if (_physicsWorld == nullptr || _targetTransform == nullptr)
+	if (_graphicsTransform == nullptr)
 		return;
 
-	auto graphicsTransform = _targetTransform->modelToWorldMatrix(true);
+	auto		graphicsTransform			= _graphicsTransform->modelToWorldMatrix(true);
+	static auto graphicsNoScaleTransform	= Matrix4x4::create();
+	static auto centerOfMassOffset			= Matrix4x4::create();
 
-	// remove the scaling/shear from the graphics transform, but record it to restitute it during rendering
-	PhysicsWorld::removeScalingShear(
-		graphicsTransform, 
-		matrix, 
-		_colliderData->correction()
+	_colliderData->synchronizePhysicsWithGraphics(
+		graphicsTransform,
+		graphicsNoScaleTransform,
+		centerOfMassOffset
 	);
-	// matrix = graphicsNoScaleTransform
 
-#ifdef DEBUG_PHYSICS
-	std::cout << "[" << _colliderData->name() << "]\tsynchro graphics->physics" << std::endl;
-	PhysicsWorld::print(std::cout << "- correction =\n", _colliderData->correction()) << std::endl;
-	PhysicsWorld::print(std::cout << "- scalefree(graphics) =\n", matrix) << std::endl;
-#endif // DEBUG_PHYSICS
-
-	_physicsWorld->synchronizePhysicsWithGraphics(_colliderData, matrix);
-}
-
-void
-bullet::Collider::graphicsWorldTransformChangedHandler(ColliderData::Ptr, 
-													   Matrix4x4::Ptr graphicsTransform)
-{
-	if (_targetTransform == nullptr)
-		return;
-
-	static auto matrix = Matrix4x4::create();
-
-	// get the world-to-parent matrix in order to update the target's Transform
-	matrix
-		->copyFrom(_targetTransform->modelToWorldMatrix(true))
-		->invert()
-		->append(_targetTransform->matrix());
-
-	_targetTransform->matrix()
-		->copyFrom(graphicsTransform)
-		->append(matrix);
+	if (_physicsWorld)
+		_physicsWorld->updateRigidBodyState(
+			_colliderData, 
+			graphicsNoScaleTransform, 
+			centerOfMassOffset
+		);
 }
 
 void
 bullet::Collider::physicsWorldTransformChangedHandler(ColliderData::Ptr, 
 													  Matrix4x4::Ptr physicsTransform)
 {
-	if (_debugNode == nullptr)
+	_physicsTransform->copyFrom(physicsTransform);
+
+	if (_colliderDisplayNode)
+		_colliderDisplayNode->component<Transform>()->matrix()
+			->copyFrom(_physicsTransform);
+}
+
+void
+bullet::Collider::graphicsWorldTransformChangedHandler(ColliderData::Ptr, 
+													   Matrix4x4::Ptr graphicsTransform)
+{
+	if (_graphicsTransform == nullptr)
 		return;
 
-	_debugNode->component<Transform>()->matrix()
-		->copyFrom(physicsTransform);
+	static auto matrix = Matrix4x4::create();
+
+	// get the world-to-parent matrix in order to update the target's Transform
+	matrix
+		->copyFrom(_graphicsTransform->modelToWorldMatrix(true))
+		->invert()
+		->append(_graphicsTransform->matrix());
+
+	_graphicsTransform->matrix()
+		->copyFrom(graphicsTransform)
+		->append(matrix);
 }

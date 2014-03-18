@@ -20,9 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/bullet/PhysicsWorld.hpp"
 
 #include <btBulletDynamicsCommon.h>
-#include <minko/math/Vector3.hpp>
-#include <minko/math/Quaternion.hpp>
-#include <minko/math/Matrix4x4.hpp>
+#include "minko/math/tools.hpp"
 #include <minko/component/bullet/ColliderData.hpp>
 #include <minko/component/bullet/AbstractPhysicsShape.hpp>
 #include <minko/component/bullet/SphereShape.hpp>
