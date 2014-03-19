@@ -304,6 +304,13 @@ namespace minko
             Ptr
             isInWorldSpace(bool);
 
+			inline
+			bool
+			isInWorldSpace() const
+			{
+				return _isInWorldSpace;
+			}
+
 			Ptr
 			isZSorted(bool);
 
