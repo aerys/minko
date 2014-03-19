@@ -238,6 +238,13 @@ namespace minko
 			}
 
 			inline
+			bool
+			emitting() const
+			{
+				return _emitting;
+			}
+
+			inline
 			Ptr
 			play()
 			{

@@ -752,7 +752,7 @@ ParticleSystem::updateVertexBuffer()
 	if (liveCount != _previousLiveCount)
 	{
         auto particleIndices    = std::static_pointer_cast<render::ParticleIndexBuffer>(_geometry->indices());
-		particleIndices->upload(0, liveCount << 2);
+		particleIndices->upload(0, liveCount * 6);
 		_previousLiveCount = liveCount;
 	}
 }
