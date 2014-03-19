@@ -45,6 +45,23 @@ namespace minko
 
         bool
             keyIsDown(input::Keyboard::KeyCode keyCode);
+
+        bool
+            keyIsDown(input::Keyboard::Key key);
+
+        enum class KeyType
+        {
+            KeyCode,
+            ScanCode,
+            Both
+        };
+
+        // TODO: change map to unordered_map (doesn't compile with Emscripten 1.13 with unordered_map)
+        static const std::map<Key, KeyType> keyTypeMap;
+
+        static const std::map<Key, KeyCode> keyToKeyCodeMap;
+        static const std::map<Key, ScanCode> keyToScanCodeMap;
+
     private:
         bool
         hasKeyDownSignal(input::Keyboard::ScanCode scanCode)
