@@ -23,16 +23,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/MinkoBullet.hpp"
 #include "minko/MinkoParticles.hpp"
 #include "minko/MinkoSerializer.hpp"
-#include "minko/Any.hpp"
-#include "minko/math/Vector4.hpp"
-#include "minko/math/Vector3.hpp"
-#include "minko/math/Vector2.hpp"
-#include "minko/math/Matrix4x4.hpp"
-#include "minko/MkStats.hpp"
-
-#include "minko/serialize/TypeSerializer.hpp"
-#include "minko/deserialize/TypeDeserializer.hpp"
-#include "minko/geometry/SphereGeometry.hpp"
 
 std::string MODEL_FILENAME = "model/primitives/primitives.scene";
 
