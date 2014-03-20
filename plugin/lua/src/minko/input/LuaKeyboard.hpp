@@ -75,7 +75,7 @@ namespace minko
 			bool
 			keyboardKeyIsDownWrapper(Keyboard::Ptr k, uint s)
 			{
-				return k->keyIsDown(static_cast<Keyboard::ScanCode>(s));
+				return k->keyIsDown(static_cast<Keyboard::Key>(s));
 			}
 		};
 	}

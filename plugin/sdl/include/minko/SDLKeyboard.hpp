@@ -50,14 +50,12 @@ namespace minko
             ScanCode
         };
 
-    public:
         // TODO: change map to unordered_map (doesn't compile with Emscripten 1.13 with unordered_map)
         static const std::map<Key, KeyType> keyTypeMap;
 
         static const std::map<Key, KeyCode> keyToKeyCodeMap;
         static const std::map<Key, ScanCode> keyToScanCodeMap;
 
-    private:
         bool
         hasKeyDownSignal(input::Keyboard::ScanCode scanCode)
         {

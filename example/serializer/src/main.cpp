@@ -201,13 +201,13 @@ int main(int argc, char** argv)
 	{
 		float tx = 0.0f;
 		float tz = 0.0f;
-		if (k->keyIsDown(input::Keyboard::ScanCode::LEFT))
+		if (k->keyIsDown(input::Keyboard::LEFT))
 			tx -= 0.1f;
-		else if (k->keyIsDown(input::Keyboard::ScanCode::RIGHT))
+		else if (k->keyIsDown(input::Keyboard::RIGHT))
 			tx += 0.1f;
-		else if (k->keyIsDown(input::Keyboard::ScanCode::UP))
+		else if (k->keyIsDown(input::Keyboard::UP))
 			tz += 0.1f;
-		else if (k->keyIsDown(input::Keyboard::ScanCode::DOWN))
+		else if (k->keyIsDown(input::Keyboard::DOWN))
 			tz -= 0.1f;
 		
 		auto model = sceneManager->assets()->symbol(MODEL_FILENAME);
