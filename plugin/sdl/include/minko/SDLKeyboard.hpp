@@ -52,8 +52,7 @@ namespace minko
         enum class KeyType
         {
             KeyCode,
-            ScanCode,
-            Both
+            ScanCode
         };
 
         // TODO: change map to unordered_map (doesn't compile with Emscripten 1.13 with unordered_map)
