@@ -1398,6 +1398,10 @@ AbstractASSIMPParser::chooseMaterialByShadingMode(const aiMaterial* aiMat) const
 		return material::Material::create(_options->material());
 }
 
+#ifdef NDEBUG
+# pragma optimize("", off)
+#endif // NDEBUG
+
 render::Effect::Ptr
 AbstractASSIMPParser::chooseEffectByShadingMode(const aiMaterial* aiMat) const
 {
@@ -1447,6 +1451,9 @@ AbstractASSIMPParser::chooseEffectByShadingMode(const aiMaterial* aiMat) const
 	return _options->effectFunction()(effect);
 }
 
+#ifdef NDEBUG
+# pragma optimize("", on)
+#endif // NDEBUG
 
 render::Blending::Mode
 AbstractASSIMPParser::getBlendingMode(const aiMaterial* aiMat) const
