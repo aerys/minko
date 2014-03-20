@@ -100,7 +100,7 @@ main(int argc, char** argv)
 
         auto keyDown = canvas->keyboard()->keyDown()->connect([&](input::Keyboard::Ptr k)
         {
-            if (k->keyIsDown(input::Keyboard::ScanCode::SPACE))
+            if (k->keyIsDown(input::Keyboard::SPACE))
             {
                 enableFXAA = !enableFXAA;
 

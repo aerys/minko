@@ -123,7 +123,7 @@ int main(int argc, char** argv)
 		// handle keyboard signals
 		keyDown = canvas->keyboard()->keyDown()->connect([&](input::Keyboard::Ptr k)
 		{
-			if (k->keyIsDown(input::Keyboard::KeyCode::a))
+			if (k->keyIsDown(input::Keyboard::A))
 			{
 				const auto MAX_NUM_LIGHTS = 40;
 
@@ -146,7 +146,7 @@ int main(int argc, char** argv)
 
 				std::cout << lights->children().size() << " lights" << std::endl;
 			}
-			if (k->keyIsDown(input::Keyboard::KeyCode::r))
+			if (k->keyIsDown(input::Keyboard::R))
 			{
 				if (lights->children().size() == 0)
 					return;
@@ -154,7 +154,7 @@ int main(int argc, char** argv)
 				lights->removeChild(lights->children().back());
 				std::cout << lights->children().size() << " lights" << std::endl;
 			}
-			if (k->keyIsDown(input::Keyboard::KeyCode::SPACE))
+			if (k->keyIsDown(input::Keyboard::SPACE))
 			{
 				auto data = sphere->component<Surface>()->material();
 				bool hasNormalMap = data->hasProperty("normalMap");
@@ -168,9 +168,9 @@ int main(int argc, char** argv)
 				else
 					data->set("normalMap", assets->texture("texture/normalmap-cells.png"));
 			}
-			if (k->keyIsDown(input::Keyboard::ScanCode::UP))
+			if (k->keyIsDown(input::Keyboard::UP))
 				camera->component<Transform>()->matrix()->prependTranslation(0.f, 0.f, -1.f);
-			if (k->keyIsDown(input::Keyboard::ScanCode::DOWN))
+			if (k->keyIsDown(input::Keyboard::DOWN))
 				camera->component<Transform>()->matrix()->prependTranslation(0.f, 0.f, 1.f);
 		});
 	});

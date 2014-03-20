@@ -669,70 +669,6 @@ namespace minko
                 WORLD_93 = 253,
                 WORLD_94 = 254,
                 WORLD_95 = 255,
-                //KP0 = 256,
-                //KP1 = 257,
-                //KP2 = 258,
-                //KP3 = 259,
-                //KP4 = 260,
-                //KP5 = 261,
-                //KP6 = 262,
-                //KP7 = 263,
-                //KP8 = 264,
-                //KP9 = 265,
-                //KP_PERIOD = 266,
-                //KP_DIVIDE = 267,
-                //KP_MULTIPLY = 268,
-                //KP_MINUS = 269,
-                //KP_PLUS = 270,
-                //KP_ENTER = 271,
-                //KP_EQUALS = 272,
-                //UP = 273,
-                //DOWN = 274,
-                //RIGHT = 275,
-                //LEFT = 276,
-                //INSERT = 277,
-                //HOME = 278,
-                //END = 279,
-                //PAGEUP = 280,
-                //PAGEDOWN = 281,
-                //F1 = 282,
-                //F2 = 283,
-                //F3 = 284,
-                //F4 = 285,
-                //F5 = 286,
-                //F6 = 287,
-                //F7 = 288,
-                //F8 = 289,
-                //F9 = 290,
-                //F10 = 291,
-                //F11 = 292,
-                //F12 = 293,
-                //F13 = 294,
-                //F14 = 295,
-                //F15 = 296,
-                //NUMLOCK = 300,
-                //CAPSLOCK = 301,
-                //SCROLLOCK = 302,
-                //RSHIFT = 303,
-                //LSHIFT = 304,
-                //RCTRL = 305,
-                //LCTRL = 306,
-                //RALT = 307,
-                //LALT = 308,
-                //RMETA = 309,
-                //LMETA = 310,
-                //LSUPER = 311,
-                //RSUPER = 312,
-                //MODE = 313,
-                //COMPOSE = 314,
-                //HELP = 315,
-                //PRINT = 316,
-                //SYSREQ = 317,
-                //BREAK = 318,
-                //MENU = 319,
-                //POWER = 320,
-                //EURO = 321,
-                //UNDO = 322
             };
 
         public:
@@ -753,75 +689,67 @@ namespace minko
 
         public:
             inline static
-                const std::string&
-                getKeyName(ScanCode scanCode)
+            const std::string&
+            getKeyName(ScanCode scanCode)
             {
-                    return _scanCodeToName[static_cast<int>(scanCode)];
+                return _scanCodeToName[static_cast<int>(scanCode)];
             }
 
             inline static
-                const std::string&
-                getKeyName(uint scanCode)
+            const std::string&
+            getKeyName(uint scanCode)
             {
-                    return _scanCodeToName[scanCode];
+                return _scanCodeToName[scanCode];
             }
 
             virtual
-                Signal<Ptr>::Ptr
-                keyDown()
+            Signal<Ptr>::Ptr
+            keyDown()
             {
-                    return _down;
+                return _down;
             }
 
             virtual
-                Signal<Ptr, uint>::Ptr
-                keyDown(ScanCode scanCode)
+            Signal<Ptr, uint>::Ptr
+            keyDown(ScanCode scanCode)
             {
-                    auto index = static_cast<int>(scanCode);
+                auto index = static_cast<int>(scanCode);
 
-                    if (_keyDown.count(index) == 0)
-                        _keyDown[index] = Signal<Ptr, uint>::create();
+                if (_keyDown.count(index) == 0)
+                    _keyDown[index] = Signal<Ptr, uint>::create();
 
-                    return _keyDown[index];
+                return _keyDown[index];
             }
 
             virtual
-                Signal<Ptr>::Ptr
-                keyUp()
+            Signal<Ptr>::Ptr
+            keyUp()
             {
-                    return _up;
+                return _up;
             }
 
             Signal<Ptr, uint>::Ptr
-                keyUp(ScanCode scanCode)
+            keyUp(ScanCode scanCode)
             {
-                    auto index = static_cast<int>(scanCode);
+                auto index = static_cast<int>(scanCode);
 
-                    if (_keyUp.count(index) == 0)
-                        _keyUp[index] = Signal<Ptr, uint>::create();
+                if (_keyUp.count(index) == 0)
+                    _keyUp[index] = Signal<Ptr, uint>::create();
 
-                    return _keyUp[index];
+                return _keyUp[index];
             }
 
             virtual
-                bool
-                keyIsDown(ScanCode scanCode) = 0;
-
-            virtual
-                bool
-                keyIsDown(KeyCode keyCode) = 0;
-
-            virtual
-                bool
-                keyIsDown(Key key) = 0;
+            bool
+            keyIsDown(Key key) = 0;
 
         protected:
             Keyboard();
 
         private:
             static
-                const ScanCodeToNameArray
-                initializeKeyNames();
+            const ScanCodeToNameArray
+            initializeKeyNames();
         };
     }
 }

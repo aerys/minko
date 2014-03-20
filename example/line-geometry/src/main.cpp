@@ -73,7 +73,7 @@ int main(int argc, char** argv)
 
     auto keyDown = canvas->keyboard()->keyDown()->connect([&](input::Keyboard::Ptr k)
     {
-        if (k->keyIsDown(input::Keyboard::ScanCode::A))
+        if (k->keyIsDown(input::Keyboard::A))
             addStar(root, sceneManager->assets(), stars);
     });
 

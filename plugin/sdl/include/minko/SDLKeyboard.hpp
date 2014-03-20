@@ -41,20 +41,16 @@ namespace minko
 
     public:
         bool
-            keyIsDown(input::Keyboard::ScanCode scanCode);
+        keyIsDown(input::Keyboard::Key key);
 
-        bool
-            keyIsDown(input::Keyboard::KeyCode keyCode);
-
-        bool
-            keyIsDown(input::Keyboard::Key key);
-
+    private:
         enum class KeyType
         {
             KeyCode,
             ScanCode
         };
 
+    public:
         // TODO: change map to unordered_map (doesn't compile with Emscripten 1.13 with unordered_map)
         static const std::map<Key, KeyType> keyTypeMap;
 
@@ -77,9 +73,9 @@ namespace minko
         SDLKeyboard();
 
         KeyCode
-            getKeyCodeFromScanCode(ScanCode scanCode);
+        getKeyCodeFromScanCode(ScanCode scanCode);
 
         ScanCode
-            getScanCodeFromKeyCode(KeyCode keyCode);
+        getScanCodeFromKeyCode(KeyCode keyCode);
     };
 }

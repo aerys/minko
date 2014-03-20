@@ -121,23 +121,23 @@ int main(int argc, char** argv)
 
         auto keyDown = canvas->keyboard()->keyDown()->connect([&](input::Keyboard::Ptr k)
         {
-            if (k->keyIsDown(input::Keyboard::ScanCode::LEFT))
+            if (k->keyIsDown(input::Keyboard::LEFT))
                 cameraMove = Vector3::create(-1.0f, 0.0f, 0.0f);
-            else if (k->keyIsDown(input::Keyboard::ScanCode::UP))
+            else if (k->keyIsDown(input::Keyboard::UP))
                 cameraMove = Vector3::create(0.0f, 0.0f, -1.0f);
-            else if (k->keyIsDown(input::Keyboard::ScanCode::RIGHT))
+            else if (k->keyIsDown(input::Keyboard::RIGHT))
                 cameraMove = Vector3::create(1.0f, 0.0f, 0.0f);
-            else if (k->keyIsDown(input::Keyboard::ScanCode::DOWN))
+            else if (k->keyIsDown(input::Keyboard::DOWN))
                 cameraMove = Vector3::create(0.0f, 0.0f, 1.0f);
 
-            else if (k->keyIsDown(input::Keyboard::ScanCode::P))
+            else if (k->keyIsDown(input::Keyboard::P))
             {
                 material->fogDensity(material->fogDensity() * 2.0f);
                 groundMaterial->fogDensity(material->fogDensity() * 2.0f);
 
                 std::cout << "fog density: " << material->fogDensity() << std::endl;
             }
-            else if (k->keyIsDown(input::Keyboard::ScanCode::M))
+            else if (k->keyIsDown(input::Keyboard::M))
             {
                 material->fogDensity(material->fogDensity() / 2.0f);
                 groundMaterial->fogDensity(material->fogDensity() / 2.0f);
@@ -145,28 +145,28 @@ int main(int argc, char** argv)
                 std::cout << "fog density: " << material->fogDensity() << std::endl;
             }
 
-            else if (k->keyIsDown(input::Keyboard::ScanCode::N))
+            else if (k->keyIsDown(input::Keyboard::N))
             {
                 material->fogType(render::FogType::None);
                 groundMaterial->fogType(render::FogType::None);
 
                 std::cout << "fog is inactive" << std::endl;
             }
-            else if (k->keyIsDown(input::Keyboard::ScanCode::L))
+            else if (k->keyIsDown(input::Keyboard::L))
             {
                 material->fogType(render::FogType::Linear);
                 groundMaterial->fogType(render::FogType::Linear);
 
                 std::cout << "fog type is linear" << std::endl;
             }
-            else if (k->keyIsDown(input::Keyboard::ScanCode::E))
+            else if (k->keyIsDown(input::Keyboard::E))
             {
                 material->fogType(render::FogType::Exponential);
                 groundMaterial->fogType(render::FogType::Exponential);
 
                 std::cout << "fog type is exponential" << std::endl;
             }
-            else if (k->keyIsDown(input::Keyboard::ScanCode::F))
+            else if (k->keyIsDown(input::Keyboard::F))
             {
                 material->fogType(render::FogType::Exponential2);
                 groundMaterial->fogType(render::FogType::Exponential2);
