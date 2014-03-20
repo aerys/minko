@@ -53,24 +53,24 @@ namespace minko
 				public std::enable_shared_from_this<PhysicsWorld>
 			{
 			public:
-				typedef std::shared_ptr<PhysicsWorld> Ptr;
+				typedef std::shared_ptr<PhysicsWorld>                                   Ptr;
 
 			private:
-				typedef std::shared_ptr<LinearIdAllocator>			LinearIdAllocatorPtr;
-				typedef std::shared_ptr<AbstractComponent>			AbsCtrlPtr;
-				typedef std::shared_ptr<scene::Node>				NodePtr;
-				typedef std::shared_ptr<ColliderData>				ColliderDataPtr; 
-				typedef std::shared_ptr<Renderer>					RendererPtr;
-				typedef std::shared_ptr<math::Vector3>				Vector3Ptr;
-				typedef std::shared_ptr<math::Matrix4x4>			Matrix4x4Ptr;
-				typedef std::shared_ptr<math::Quaternion>			QuaternionPtr;
+				typedef std::shared_ptr<LinearIdAllocator>			                    LinearIdAllocatorPtr;
+				typedef std::shared_ptr<AbstractComponent>			                    AbsCtrlPtr;
+				typedef std::shared_ptr<scene::Node>				                    NodePtr;
+				typedef std::shared_ptr<ColliderData>				                    ColliderDataPtr; 
+				typedef std::shared_ptr<Renderer>					                    RendererPtr;
+				typedef std::shared_ptr<math::Vector3>				                    Vector3Ptr;
+				typedef std::shared_ptr<math::Matrix4x4>			                    Matrix4x4Ptr;
+				typedef std::shared_ptr<math::Quaternion>			                    QuaternionPtr;
 
-				typedef std::shared_ptr<btTransform>				btTransformPtr;
-				typedef std::shared_ptr<btBroadphaseInterface>		btBroadphasePtr;
-				typedef std::shared_ptr<btCollisionConfiguration>	btCollisionConfigurationPtr;
-				typedef std::shared_ptr<btConstraintSolver>			btConstraintSolverPtr;
-				typedef std::shared_ptr<btDispatcher>				btDispatcherPtr;
-				typedef std::shared_ptr<btDynamicsWorld>			btDynamicsWorldPtr;
+				typedef std::shared_ptr<btTransform>				                    btTransformPtr;
+				typedef std::shared_ptr<btBroadphaseInterface>		                    btBroadphasePtr;
+				typedef std::shared_ptr<btCollisionConfiguration>	                    btCollisionConfigurationPtr;
+				typedef std::shared_ptr<btConstraintSolver>			                    btConstraintSolverPtr;
+				typedef std::shared_ptr<btDispatcher>				                    btDispatcherPtr;
+				typedef std::shared_ptr<btDynamicsWorld>			                    btDynamicsWorldPtr;
 
 				class BulletCollider;
 				typedef std::shared_ptr<BulletCollider>									BulletColliderPtr;
@@ -78,32 +78,36 @@ namespace minko
 				typedef std::unordered_map<const btCollisionObject*, ColliderDataPtr>	ColliderReverseMap;
 
 				typedef std::set<std::pair<uint, uint>>									CollisionSet;
+                typedef Signal<NodePtr, NodePtr>                                        NodeLayoutsChanged;
+                typedef Signal<ColliderDataPtr>                                         ColliderChanged;
 
 			private:
-				LinearIdAllocatorPtr							_uidAllocator;
-				ColliderMap										_colliderMap;
-				ColliderReverseMap								_colliderReverseMap;
-				std::unordered_map<uint, ColliderDataPtr>		_uidToCollider;
-				CollisionSet									_collisions;
+				LinearIdAllocatorPtr							                        _uidAllocator;
+				ColliderMap										                        _colliderMap;
+				ColliderReverseMap								                        _colliderReverseMap;
+				std::unordered_map<uint, ColliderDataPtr>		                        _uidToCollider;
+				CollisionSet									                        _collisions;
 
-				btBroadphasePtr									_bulletBroadphase;
-				btCollisionConfigurationPtr						_bulletCollisionConfiguration;
-				btConstraintSolverPtr							_bulletConstraintSolver;
-				btDispatcherPtr									_bulletDispatcher;
-				btDynamicsWorldPtr								_bulletDynamicsWorld;
+				btBroadphasePtr									                        _bulletBroadphase;
+				btCollisionConfigurationPtr						                        _bulletCollisionConfiguration;
+				btConstraintSolverPtr							                        _bulletConstraintSolver;
+				btDispatcherPtr									                        _bulletDispatcher;
+				btDynamicsWorldPtr								                        _bulletDynamicsWorld;
 
-				std::shared_ptr<SceneManager>					_sceneManager;
+				std::shared_ptr<SceneManager>					                        _sceneManager;
 
-				Signal<AbsCtrlPtr, NodePtr>::Slot				_targetAddedSlot;
-				Signal<AbsCtrlPtr, NodePtr>::Slot				_targetRemovedSlot;
-				Signal<AbsCtrlPtr, NodePtr>::Slot				_exitFrameSlot;
-				Signal<std::shared_ptr<SceneManager>>::Slot		_frameEndSlot;
-				Signal<NodePtr, NodePtr, NodePtr>::Slot			_addedOrRemovedSlot;
-				Signal<NodePtr, NodePtr, AbsCtrlPtr>::Slot		_componentAddedOrRemovedSlot;
+				Signal<AbsCtrlPtr, NodePtr>::Slot				                        _targetAddedSlot;
+				Signal<AbsCtrlPtr, NodePtr>::Slot				                        _targetRemovedSlot;
+				Signal<AbsCtrlPtr, NodePtr>::Slot				                        _exitFrameSlot;
+				Signal<std::shared_ptr<SceneManager>>::Slot		                        _frameEndSlot;
+				Signal<NodePtr, NodePtr, NodePtr>::Slot			                        _addedOrRemovedSlot;
+				Signal<NodePtr, NodePtr, AbsCtrlPtr>::Slot		                        _componentAddedOrRemovedSlot;
+                std::unordered_map<ColliderDataPtr, NodeLayoutsChanged::Slot>           _colliderGroupChangedSlot;
+                std::unordered_map<ColliderDataPtr, ColliderChanged::Slot>              _colliderMaskChangedSlot;
 
-				static const uint								_MAX_BODIES;
-				static Matrix4x4Ptr								_TMP_MATRIX;
-				static btTransform								_TMP_BTTRANSFORM;
+				static const uint								                        _MAX_BODIES;
+				static Matrix4x4Ptr								                        _TMP_MATRIX;
+				static btTransform								                        _TMP_BTTRANSFORM;
 
 			public:
 				static
@@ -192,6 +196,9 @@ namespace minko
 
 				void
 				setSceneManager(std::shared_ptr<SceneManager> sceneManager);
+
+                void
+                updateCollisionFilter(ColliderDataPtr);
 
 			private:
 				class BulletCollider

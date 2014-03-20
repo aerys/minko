@@ -57,6 +57,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/LuaAbstractCanvas.hpp"
 #include "minko/component/LuaPerspectiveCamera.hpp"
 #include "minko/component/LuaTransform.hpp"
+#include "minko/component/LuaAnimation.hpp"
 
 using namespace minko;
 using namespace minko::component;
@@ -64,9 +65,24 @@ using namespace minko::component;
 void
 LuaScriptManager::initialize()
 {
-    AbstractScript::initialize();
-
+	AbstractScript::initialize();
+	_state.open();
 	initializeBindings();
+
+	_state.open().glue();
+}
+
+void
+LuaScriptManager::initialize(std::vector<std::function<void(LuaGlue&)>> bindingsFunctions)
+{
+	AbstractScript::initialize();
+	_state.open();
+	initializeBindings();
+
+	for (auto f : bindingsFunctions)
+		f(_state);
+
+	_state.glue();
 }
 
 void
@@ -170,16 +186,15 @@ LuaScriptManager::initializeBindings()
     component::LuaTransform::bind(_state);
     scene::LuaNode::bind(_state);
     scene::LuaNodeSet::bind(_state);
+	component::LuaAnimation::bind(_state);
 
     auto& sceneManager = _state.Class<SceneManager>("SceneManager")
         .property("assets",     &SceneManager::assets);
-    MINKO_LUAGLUE_BIND_SIGNAL(_state, SceneManager::Ptr);
+    MINKO_LUAGLUE_BIND_SIGNAL(_state, SceneManager::Ptr, float, float);
     sceneManager.property("nextFrame",  &SceneManager::frameBegin);
 
-    _state
-        .func("getCanvas",          &LuaContext::getCanvas)
-        .func("getSceneManager",    &LuaContext::getSceneManager)
-        .func("getOption",          &LuaContext::getOption);
-
-    _state.open().glue();
+	_state
+		.func("getCanvas", &LuaContext::getCanvas)
+		.func("getSceneManager", &LuaContext::getSceneManager)
+		.func("getOption", &LuaContext::getOption);
 }

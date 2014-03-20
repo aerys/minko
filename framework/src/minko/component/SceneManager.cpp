@@ -27,11 +27,10 @@ using namespace minko;
 using namespace minko::component;
 
 SceneManager::SceneManager(const std::shared_ptr<render::AbstractContext>& context) :
-	_clockStart(clock()),
     _frameId(0),
 	_assets(file::AssetLibrary::create(context)),
-    _frameBegin(Signal<Ptr>::create()),
-    _frameEnd(Signal<Ptr>::create()),
+    _frameBegin(Signal<Ptr, float, float>::create()),
+    _frameEnd(Signal<Ptr, float, float>::create()),
 	_cullBegin(Signal<Ptr>::create()),
 	_cullEnd(Signal<Ptr>::create()),
 	_renderBegin(Signal<Ptr, uint, render::AbstractTexture::Ptr>::create()),
@@ -81,33 +80,16 @@ SceneManager::addedHandler(NodePtr node, NodePtr target, NodePtr ancestor)
 }
 
 void
-SceneManager::nextFrame()
+SceneManager::nextFrame(float time, float deltaTime, render::AbstractTexture::Ptr renderTarget)
 {
-    _frameBegin->execute(shared_from_this());
-    _cullBegin->execute(shared_from_this());
-    _cullEnd->execute(shared_from_this());
-    _renderBegin->execute(shared_from_this(), _frameId, nullptr);
-    _renderEnd->execute(shared_from_this(), _frameId, nullptr);
-    _frameEnd->execute(shared_from_this());
+    _time = time;
 
-	++_frameId;
-}
-
-void
-SceneManager::nextFrame(render::AbstractTexture::Ptr renderTarget)
-{
-	_frameBegin->execute(shared_from_this());
+	_frameBegin->execute(shared_from_this(), time, deltaTime);
 	_cullBegin->execute(shared_from_this());
 	_cullEnd->execute(shared_from_this());
 	_renderBegin->execute(shared_from_this(), _frameId, renderTarget);
 	_renderEnd->execute(shared_from_this(), _frameId, renderTarget);
-    _frameEnd->execute(shared_from_this());
+    _frameEnd->execute(shared_from_this(), time, deltaTime);
 
 	++_frameId;
-}
-
-uint
-SceneManager::getTimer() const
-{
-	return (uint)floorf(1e+3f * float(clock() - _clockStart) / float(CLOCKS_PER_SEC));
 }

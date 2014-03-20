@@ -30,45 +30,59 @@ namespace minko
 		{
 			class AbstractPhysicsShape;
 			class DynamicsProperties;
+            class Collider;
 
 			class ColliderData:
 				public std::enable_shared_from_this<ColliderData>
 			{
+                friend class component::bullet::Collider;
+
 			public:
 				typedef std::shared_ptr<ColliderData> Ptr;
 
+                typedef std::shared_ptr<scene::Node>            NodePtr;
 				typedef std::shared_ptr<AbstractPhysicsShape>	AbsShapePtr;
 				typedef std::shared_ptr<math::Matrix4x4>		Matrix4x4Ptr;
 				typedef std::shared_ptr<math::Quaternion>		QuaternionPtr;
 				typedef std::shared_ptr<math::Vector3>			Vector3Ptr;
 
+            private:
+                static const short  DEFAULT_DYNAMIC_FILTER;
+                static const short  DEFAULT_STATIC_FILTER;
+                static const short  DEFAULT_DYNAMIC_MASK;
+                static const short  DEFAULT_STATIC_MASK;
+
 			private:
-				uint			_uid;
+				uint  	                                    _uid;
 
-				std::string		_name;
-				float			_mass;
-				Matrix4x4Ptr	_correctionMatrix;
-				AbsShapePtr		_shape;
-				Vector3Ptr		_inertia;
+                NodePtr                                     _node;
+				const float                                 _mass;
+				Matrix4x4Ptr	                            _correctionMatrix;
+				AbsShapePtr		                            _shape;
+				Vector3Ptr		                            _inertia;
 
-				Vector3Ptr		_linearVelocity;
-				Vector3Ptr		_linearFactor;
-				float			_linearDamping;
-				float			_linearSleepingThreshold;
-				Vector3Ptr		_angularVelocity;
-				Vector3Ptr		_angularFactor;
-				float			_angularDamping;
-				float			_angularSleepingThreshold;
-				float			_restitution; // from bullet: best simulation results using zero restitution. 
-				float			_friction; // from bullet: best simulation results when friction is non-zero 
-				float			_rollingFriction;
+                short                                       _collisionGroup;
+                short                                       _collisionMask;
 
-				bool			_deactivationDisabled;
-				bool			_triggerCollisions;
+				Vector3Ptr		                            _linearVelocity;
+				Vector3Ptr		                            _linearFactor;
+				float			                            _linearDamping;
+				float			                            _linearSleepingThreshold;
+				Vector3Ptr		                            _angularVelocity;
+				Vector3Ptr		                            _angularFactor;
+				float			                            _angularDamping;
+				float			                            _angularSleepingThreshold;
+				float			                            _restitution;       // from bullet: best simulation results using zero restitution. 
+				float			                            _friction;          // from bullet: best simulation results when friction is non-zero 
+				float			                            _rollingFriction;
+
+				bool			                            _deactivationDisabled;
+				bool			                            _triggerCollisions;
 
 				std::shared_ptr<Signal<Ptr, Matrix4x4Ptr>>	_graphicsWorldTransformChanged;
 				std::shared_ptr<Signal<Ptr, Ptr>>			_collisionStarted;
 				std::shared_ptr<Signal<Ptr, Ptr>>			_collisionEnded;
+                std::shared_ptr<Signal<Ptr>>                _collisionFilterChanged;
 
 			public:
 				inline static
@@ -93,6 +107,33 @@ namespace minko
 				}
 
 				inline
+				bool
+				isStatic() const
+				{
+					return _mass < 1e-6f;
+				}
+
+                inline
+                short
+                collisionGroup() const
+                {
+                    return _collisionGroup;
+                }
+
+                void
+                collisionGroup(short);
+
+                inline
+                short
+                collisionMask() const
+                {
+                    return _collisionMask;
+                }
+
+                void
+                collisionMask(short);
+
+				inline
 				Vector3Ptr
 				inertia() const
 				{
@@ -100,37 +141,25 @@ namespace minko
 				}
 
 				inline
-				bool
-				isStatic() const
-				{
-					return _mass < 1e-6f;
-				}
-
-				inline
-				uint uid() const
+				uint 
+                uid() const
 				{
 					return _uid;
 				}
 
 				inline
-				void uid(uint value)
+				void 
+                uid(uint value)
 				{
 					_uid = value;
 				}
 
-				inline
-				const std::string& 
-				name() const
-				{
-					return _name;
-				}
-
-				inline
-				void 
-				name(const std::string& value)
-				{
-					_name = value;
-				}
+                inline
+                NodePtr
+                node() const
+                {
+                    return _node;
+                }
 
 				inline
 				Vector3Ptr
@@ -310,27 +339,35 @@ namespace minko
 
 				inline
 				Signal<Ptr, Matrix4x4Ptr>::Ptr
-				graphicsWorldTransformChanged()
+				graphicsWorldTransformChanged() const
 				{
 					return _graphicsWorldTransformChanged;
 				}
 
 				inline
 				Signal<Ptr, Ptr>::Ptr
-				collisionStarted()
+				collisionStarted() const
 				{
 					return _collisionStarted;
 				}
 
 				inline
 				Signal<Ptr, Ptr>::Ptr
-				collisionEnded()
+				collisionEnded() const
 				{
 					return _collisionEnded;
 				}
 
+                inline
+                Signal<Ptr>::Ptr
+                collisionFilterChanged() const
+                {
+                    return _collisionFilterChanged;
+                }
+
 			private:
-				ColliderData(float, AbsShapePtr, Vector3Ptr inertia	= nullptr);
+				ColliderData(float, AbsShapePtr, Vector3Ptr = nullptr);
+                ColliderData(float, short, short, AbsShapePtr, Vector3Ptr = nullptr);
 			};
 		}
 	}

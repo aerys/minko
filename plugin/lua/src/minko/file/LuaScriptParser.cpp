@@ -42,6 +42,7 @@ LuaScriptParser::parse(const std::string&				          filename,
     auto scriptCmp = component::LuaScript::create(scriptName, scriptStr);
 
     assetLibrary->script(filename, scriptCmp);
+	assetLibrary->blob(filename, data);
 
     _complete->execute(shared_from_this());
 }

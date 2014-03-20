@@ -87,6 +87,13 @@ namespace minko
 				{
 				}
 
+				inline
+				ColliderDataPtr
+				colliderData()
+				{
+					return _colliderData;
+				}
+
 				void
 				synchronizePhysicsWithGraphics();
 

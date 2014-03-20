@@ -25,7 +25,6 @@ using namespace minko;
 using namespace minko::component;
 using namespace minko::math;
 
-#define POST_PROCESSING 0
 #define WINDOW_WIDTH  	800
 #define WINDOW_HEIGHT 	600
 
@@ -58,8 +57,6 @@ int main(int argc, char** argv)
 
 	canvas->context()->errorsEnabled(true);
 
-	const clock_t startTime	= clock();
-
 	auto sceneManager		= SceneManager::create(canvas->context());
 	auto root				= scene::Node::create("root")->addComponent(sceneManager);
 	auto sphereGeometry		= geometry::SphereGeometry::create(sceneManager->assets()->context(), 32, 32, true);
@@ -84,8 +81,7 @@ int main(int argc, char** argv)
 		->queue("texture/sprite-pointlight.png")
 		->queue("effect/Basic.effect")
 		->queue("effect/Sprite.effect")
-		->queue("effect/Phong.effect")
-		->queue("effect/AnamorphicLensFlare/AnamorphicLensFlare.effect");
+		->queue("effect/Phong.effect");
 
 	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
 	{
@@ -184,44 +180,13 @@ int main(int argc, char** argv)
 		));
 	root->addChild(camera);
 
-	// initialize post processing
-#if POST_PROCESSING
-	auto ppFx = sceneManager->assets()->effect("effect/AnamorphicLensFlare/AnamorphicLensFlare.effect");
-
-	if (!ppFx)
-		throw std::logic_error("AnamorphicLensFlare.effect has not been loaded.");
-
-	auto ppTarget = render::Texture::create(assets->context(), 1024, 1024, false, true);
-
-	ppTarget->upload();
-
-	auto ppRenderer = Renderer::create();
-	auto ppData = data::Provider::create()->set("backbuffer", ppTarget);
-	auto ppScene = scene::Node::create()
-		->addComponent(ppRenderer)
-		->addComponent(Surface::create(
-		geometry::QuadGeometry::create(sceneManager->assets()->context()),
-		ppData,
-		ppFx
-		));
-#endif
-
 	auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, unsigned int width, unsigned int height)
 	{
 		camera->component<PerspectiveCamera>()->aspectRatio((float)width / (float)height);
-
-#if POST_PROCESSING
-		auto oldTarget = ppTarget;
-
-		ppTarget = render::Texture::create(assets->context(), clp2(width), clp2(height), false, true);
-		ppTarget->upload();
-		ppData->set("backbuffer", ppTarget);
-#endif //POST_PROCESSING
 	});
 
 	auto yaw = 0.f;
 	auto pitch = (float)PI * .5f;
-	auto roll = 0.f;
 	auto minPitch = 0.f + 1e-5;
 	auto maxPitch = (float)PI - 1e-5;
 	auto lookAt = Vector3::create(0.f, 2.f, 0.f);
@@ -251,7 +216,7 @@ int main(int argc, char** argv)
 		mouseMove = nullptr;
 	});
 
-	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, float deltaTime)
+	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float deltaTime)
 	{
 		yaw += cameraRotationYSpeed;
 		cameraRotationYSpeed *= 0.9f;
@@ -266,20 +231,15 @@ int main(int argc, char** argv)
 		camera->component<Transform>()->matrix()->lookAt(
 			lookAt,
 			Vector3::create(
-			lookAt->x() + distance * cosf(yaw) * sinf(pitch),
-			lookAt->y() + distance * cosf(pitch),
-			lookAt->z() + distance * sinf(yaw) * sinf(pitch)
+				lookAt->x() + distance * cosf(yaw) * sinf(pitch),
+				lookAt->y() + distance * cosf(pitch),
+				lookAt->z() + distance * sinf(yaw) * sinf(pitch)
 			)
-			);
+		);
 
 		lights->component<Transform>()->matrix()->appendRotationY(.005f);
 
-#if POST_PROCESSING
-		sceneManager->nextFrame(ppTarget);
-		ppRenderer->render(assets->context());
-#else
-		sceneManager->nextFrame();
-#endif
+		sceneManager->nextFrame(time, deltaTime);
 	});
 
 	sceneManager->assets()->load();

@@ -52,17 +52,19 @@ using namespace minko::math;
 using namespace minko::async;
 
 Canvas::Canvas(const std::string& name, const uint width, const uint height, bool useStencil, bool chromeless) :
-    _name(name),
-    _useStencil(useStencil),
-    _chromeless(chromeless),
-    _data(data::Provider::create()),
-    _active(false),
-    _framerate(0.f),
-    _desiredFramerate(60.f),
-    _enterFrame(Signal<Canvas::Ptr, uint, float>::create()),
-    _resized(Signal<AbstractCanvas::Ptr, uint, uint>::create()),
-    _joystickAdded(Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::create()),
-    _joystickRemoved(Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::create())
+	_name(name),
+	_useStencil(useStencil),
+	_chromeless(chromeless),
+	_data(data::Provider::create()),
+	_active(false),
+    _previousTime(std::chrono::high_resolution_clock::now()),
+    _startTime(std::chrono::high_resolution_clock::now()),
+	_framerate(0.f),
+	_desiredFramerate(60.f),
+	_enterFrame(Signal<Canvas::Ptr, float, float>::create()),
+	_resized(Signal<AbstractCanvas::Ptr, uint, uint>::create()),
+	_joystickAdded(Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::create()),
+	_joystickRemoved(Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::create())
 {
     _data->set<math::Vector4::Ptr>("canvas.viewport", Vector4::create(0.0f, 0.0f, (float) width, (float) height));
 }
@@ -330,9 +332,10 @@ Canvas::step()
                     auto sdlJoystick = Canvas::SDLJoystick::create(shared_from_this(), i, joystick);
                     _joysticks[i] = sdlJoystick;
                 }
+
                 _joystickAdded->execute(shared_from_this(), _joysticks[i]);
 
-# if defined(DEBUG)
+#if defined(DEBUG)
                 printf("New joystick found!\n");
                 printf("Joystick %i\n", i);
                 printf("Name: %s\n", SDL_JoystickName(i));
@@ -349,11 +352,11 @@ Canvas::step()
     {
         // We looking for the missing gamepad
         int joystickId = 0;
-        for (int i = 0; i < _joysticks.size(); i++) 
+        for (auto it = _joysticks.begin(); it != _joysticks.end(); ++it)
         {
-            if (!SDL_JoystickOpen(i)) 
+            if (!SDL_JoystickOpen(it->first))
             {
-                joystickId = i;
+                joystickId = it->first;
                 break;
             }
         }
@@ -366,7 +369,6 @@ Canvas::step()
         _joysticks.erase(joystickId);
     }
 #endif
-
     SDL_Event event;
 
     while (SDL_PollEvent(&event))
@@ -415,15 +417,31 @@ Canvas::step()
             break;
         }
         case SDL_MOUSEBUTTONDOWN:
-            _mouse->leftButtonDown()->execute(_mouse);
-            //_mouseLeftButtonDown->execute(shared_from_this(), event.motion.x, event.motion.y);
+        {
+            switch( event.button.button ) 
+            {
+            case SDL_BUTTON_LEFT:
+                _mouse->leftButtonDown()->execute(_mouse);
+                break;
+            case SDL_BUTTON_RIGHT:
+                _mouse->rightButtonDown()->execute(_mouse);
+                break;
+	    }
             break;
-
+        }
         case SDL_MOUSEBUTTONUP:
-            _mouse->leftButtonUp()->execute(_mouse);
-            //_mouseLeftButtonUp->execute(shared_from_this(), event.motion.x, event.motion.y);
+        {
+            switch( event.button.button ) 
+	    {
+	    case SDL_BUTTON_LEFT:
+                _mouse->leftButtonUp()->execute(_mouse);
+                break;
+	    case SDL_BUTTON_RIGHT:
+                _mouse->rightButtonUp()->execute(_mouse);
+                break;
+            }
             break;
-
+        }
         case SDL_MOUSEWHEEL:
             _mouse->wheel()->execute(_mouse, event.wheel.x, event.wheel.y);
             //_mouseWheel->execute(shared_from_this(), event.wheel.x, event.wheel.y);
@@ -561,14 +579,11 @@ Canvas::step()
     for (auto worker : _activeWorkers)
         worker->update();
 #endif
-    auto time = std::chrono::high_resolution_clock::now();
-    auto frameDuration = std::chrono::duration_cast<std::chrono::nanoseconds>(time - _previousTime).count();
+    auto time           = std::chrono::high_resolution_clock::now();
+    auto relativeTime   = 1e-6f * std::chrono::duration_cast<std::chrono::nanoseconds>(time - _startTime).count(); // in milliseconds
+    auto frameDuration  = 1e-6f * std::chrono::duration_cast<std::chrono::nanoseconds>(time - _previousTime).count(); // in milliseconds
 
-    // we convert frameTime from nanoseconds to milliseconds
-    float frameTime = frameDuration / 1000000.f;
-
-    _enterFrame->execute(shared_from_this(), (uint) time.time_since_epoch().count(), frameTime);
-
+    _enterFrame->execute(shared_from_this(), relativeTime, frameDuration);
     _previousTime = time;
 
     // swap buffers
@@ -581,12 +596,12 @@ Canvas::step()
 #endif
 
     // framerate in seconds
-    _framerate = 1000.f / frameTime;
+    _framerate = 1000.f / frameDuration;
 
 #if !defined(EMSCRIPTEN)
     if (_framerate > _desiredFramerate)
     {
-        SDL_Delay((uint) ((1000.f / _desiredFramerate) - frameTime));
+        SDL_Delay((uint) ((1000.f / _desiredFramerate) - frameDuration));
 
         _framerate = _desiredFramerate;
     }

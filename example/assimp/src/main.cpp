@@ -123,7 +123,6 @@ main(int argc, char** argv)
 
 	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
 	{
-
 		auto model = assets->symbol(MODEL_FILENAME);
 
 		auto surfaceNodeSet = scene::NodeSet::create(model)
@@ -133,7 +132,9 @@ main(int argc, char** argv)
 			return n->hasComponent<Surface>();
 		});
 
-		root->addChild(model);
+        root->addComponent(AmbientLight::create())
+            ->addComponent(DirectionalLight::create())
+            ->addChild(model);
 		
 		auto skinnedNodes = scene::NodeSet::create(model)
 			->descendants(true)
@@ -280,9 +281,9 @@ main(int argc, char** argv)
 		}
 	});
 
-	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, float deltaTime)
+	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float deltaTime)
 	{
-		sceneManager->nextFrame();
+		sceneManager->nextFrame(time, deltaTime);
 	});
 
 	sceneManager->assets()->load();

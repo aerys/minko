@@ -5,7 +5,12 @@ newoption {
 
 newoption {
 	trigger	= 'no-tutorial',
-	description = 'Disable tutorial.'
+	description = 'Disable tutorials.'
+}
+
+newoption {
+	trigger	= 'no-plugin',
+	description = 'Disable plugins.'
 }
 
 newoption {
@@ -59,7 +64,7 @@ solution "minko"
 		include 'tutorial/27-working-with-point-lights'
 		include 'tutorial/28-working-with-spot-lights'
 		include 'tutorial/29-hello-falling-cube'
-		include 'tutorial/30-applying-antialiasing-effect'
+		include 'tutorial/30-applying-anti-aliasing-effect'
 	end
 
 	-- plugin
@@ -98,6 +103,7 @@ solution "minko"
 		include 'example/light'
 		include 'example/line-geometry'
 		include 'example/offscreen'
+		include 'example/particles'
 		include 'example/picking'
 		include 'example/raycasting'
 		include 'example/serializer'
@@ -110,8 +116,6 @@ solution "minko"
 		--include 'example/http'
 		include 'example/joystick'
 	end
-
-	include 'example/iphone-cube'
 
 	-- test
 	if not _OPTIONS['no-test'] then

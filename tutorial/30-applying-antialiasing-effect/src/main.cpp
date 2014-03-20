@@ -40,6 +40,11 @@ main(int argc, char** argv)
 
     auto complete = sceneManager->assets()->complete()->connect([&](file::AssetLibrary::Ptr assets)
     {
+        auto effect = sceneManager->assets()->effect("effect/FXAA/FXAA.effect");
+
+        if (!effect)
+            throw std::logic_error("The FXAA effect has not been loaded.");
+
         auto root = scene::Node::create("root")
             ->addComponent(sceneManager);
 
@@ -59,31 +64,26 @@ main(int argc, char** argv)
             geometry::CubeGeometry::create(assets->context()),
             material::BasicMaterial::create()->diffuseColor(Vector4::create(0.f, 0.f, 1.f, 1.f)),
             assets->effect("effect/Basic.effect")
-        ));
+            ));
         root->addChild(cube);
 
-        // Replace 1024 by clp2(width), clp2(height)
-        auto renderTarget = render::Texture::create(assets->context(), 1024, 1024, false, true);
+        auto renderTarget = render::Texture::create(assets->context(), clp2(WINDOW_WIDTH), clp2(WINDOW_HEIGHT), false, true);
         renderTarget->upload();
 
-        auto effect = sceneManager->assets()->effect("effect/FXAA/FXAA.effect");
-
-        if (!effect)
-            throw std::logic_error("The post-processing effect has not been loaded.");
-
         effect->setUniform("textureSampler", renderTarget);
-        effect->setUniform("texcoordOffset", Vector2::create(1.0f / 1024.0f, 1.0f / 1024.0f));
+        effect->setUniform("texcoordOffset",
+            Vector2::create(1.0f / renderTarget->width(), 1.0f / renderTarget->height()));
 
-        auto ppRenderer = Renderer::create();
-        auto ppScene = scene::Node::create()
-            ->addComponent(ppRenderer)
-            ->addComponent(
-                Surface::create(
-                    geometry::QuadGeometry::create(sceneManager->assets()->context()),
-                    material::Material::create(),
-                    effect
-                )
-            );
+        auto renderer = Renderer::create();
+        auto postProcessingScene = scene::Node::create()
+        ->addComponent(renderer)
+        ->addComponent(
+            Surface::create(
+                geometry::QuadGeometry::create(sceneManager->assets()->context()),
+                material::Material::create(),
+                effect
+            )
+        );
 
         auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint width, uint height)
         {
@@ -93,14 +93,15 @@ main(int argc, char** argv)
             renderTarget->upload();
 
             effect->setUniform("textureSampler", renderTarget);
-            effect->setUniform("texcoordOffset", Vector2::create(1.0f / 1024.0f, 1.0f / 1024.0f));
+            effect->setUniform("texcoordOffset",
+                Vector2::create(1.0f / renderTarget->width(), 1.0f / renderTarget->height()));
         });
 
         auto enableFXAA = true;
 
         auto keyDown = canvas->keyboard()->keyDown()->connect([&](input::Keyboard::Ptr k)
         {
-            if (k->keyIsDown(input::Keyboard::SPACE))
+            if (k->keyIsDown(input::Keyboard::ScanCode::SPACE))
             {
                 enableFXAA = !enableFXAA;
 
@@ -109,21 +110,21 @@ main(int argc, char** argv)
                 else
                     std::cout << "Disable FXAA" << std::endl;
             }
-            
+
         });
 
-        auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint t, float dt)
+        auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float t, float dt)
         {
             cube->component<Transform>()->matrix()->prependRotationY(.01f);
 
             if (enableFXAA)
             {
-                sceneManager->nextFrame(renderTarget);
-                ppRenderer->render(assets->context());
+                sceneManager->nextFrame(t, dt, renderTarget);
+                renderer->render(assets->context());
             }
             else
             {
-                sceneManager->nextFrame();
+                sceneManager->nextFrame(t, dt);
             }
         });
 

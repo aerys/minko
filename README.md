@@ -1,4 +1,4 @@
-![logo](https://dl.dropbox.com/s/68w979idplf8j21/256.png)
+![logo](http://minko.io/wp-content/uploads/2014/03/minko_by_aerys_noir_gris.png)
 
 Minko
 =====
@@ -9,34 +9,43 @@ Minko is a technology to develop and design rich, interactive and universal 3D a
 
 It provides a powerful editor on top of a robust, extensible and fully documented open source core framework, and is created and maintained by [Aerys](http://aerys.in/).
 
+The repository hosts the source code of ***Minko 3***. Looking for Minko 2? We've moved the [repository](http://github.com/aerys/minko-as3).
+
+
+Resources
+---------
+* [Official website](http://minko.io/ "Website")
+* [Documentation](http://doc.v3.minko.io/ "Documentation")
+* [Forums](http://minko.io/forums "Forums")
+
 Get started
 ===========
+
+For more detailed instructions, please follow our [Getting started with Minko 3 beta 1](http://doc.v3.minko.io/wiki/Getting_started_with_Minko_3_beta_1) tutorial.
+
+### Windows
+* Set the `MINKO_HOME` environment variable to the root of the SDK.
+* Open the explorer in `tool\win\script`
+* Run `solution_vs2013.bat`
+* Open `minko.sln` at the root of the SDK
+
 ### OS X
 * Make sure you have a recent compiler (tested with GCC 4.8 and Clang 3.3)
+* Set the `MINKO_HOME` environment variable to the root of the SDK
 * Open a command prompt
 * `cd <minko>`
-* `tool/mac/bin/premake5.sh gmake` (`--cc=gcc` or `--cc=clang`)
+* `tool/mac/script/solution_gmake_gcc.sh` (or `solution_gmake_clang.sh`)
 * `make config=release config=osx64_release`
 * `cd example/cube/bin/osx64/release && ./minko-example-cube`
 
 ### Linux
 * Make sure you have a recent compiler (tested with GCC 4.8 and Clang 3.3)
+* Set the `MINKO_HOME` environment variable to the root of the SDK
 * Open a command prompt (or start [Vagrant](http://www.vagrantup.com/))
 * `cd <minko>`
-* `tool/lin/bin/premake5.sh gmake` (`--cc=gcc` or `--cc=clang`)
+* `tool/lin/script/solution_gmake_gcc.sh` (or `solution_gmake_clang.sh`)
 * `make config=release config=linux64_release`
 * `cd example/cube/bin/linux64/release && ./minko-example-cube`
-
-### Windows
-* Open a command prompt
-* `cd <minko>`
-* `tool\win\bin\premake5.exe --no-test vs2013`
-* `start minko.sln`
-
-Or from the explorer:
-
-* Run `tool\win\script\premake_vs2013.bat`
-* Open `minko.sln`
 
 
 Contents
@@ -56,13 +65,21 @@ Tool
 
 Set of scripts to ease the deployment of the Minko SDK without using the command line.
 
-`premake_vs2013.bat` - Windows batch script to create a VS2013 solution and perform other necessary operations such as copying required DLL into the output folders
+`solution_vs2013.bat` - Windows batch script to create a VS2013 solution and perform other necessary operations such as copying required DLL into the output folders
 
-`premake_vs2013ctp.bat` - Windows batch script to create a VS2013 solution (with the Nov. 2013 CTP compiler) and perform other necessary operations such as copying required DLL into the output folders
+`solution_vs2013ctp.bat` - Windows batch script to create a VS2013 solution (with the Nov. 2013 CTP compiler) and perform other necessary operations such as copying required DLL into the output folders
 
-`premake_gmake.bat` - Windows batch script to create a GNU Make solution (supporting HTML5 compilation)
+`solution_gmake.bat` - Windows batch script to create a GNU Make solution (supporting HTML5 compilation)
 
-`premake_clean.bat` - Windows batch script to properly clean the generated solutions and builds
+`clean.bat` - Windows batch script to properly clean the generated solutions and builds
+
+`doc.bat` - Windows batch script to generate the developer reference
+
+`dist.bat` - Windows batch script to make a redistributable Minko SDK
+
+`install_emscripten.bat` - Windows batch script to install Emscripten (needed by the HTML5 target)
+
+You will find similar tools for Linux and OS X.
 
 Template
 --------
@@ -93,11 +110,6 @@ Available plugins are:
 * sdl
 * serializer
 * webgl: please follow `webgl/README.md` to learn how to deploy
-
-Resources
----------
-* [minko.io](http://minko.io/ "Website")
-* [doc.minko.io](http://doc.minko.io/ "Documentation")
 
 Contribute
 ----------

@@ -75,7 +75,7 @@ TEST_F(TransformTest, ModelToWorldUpdate)
 
 	root->addChild(n1)->addChild(n2);
 	// init. transform.modelToWorldMatrix by performing a first frame
-	sceneManager->nextFrame();
+	sceneManager->nextFrame(0.0f, 0.0f);
 
 	auto updated1 = false;
 	auto _ = n1->data()->propertyValueChanged("transform.modelToWorldMatrix")->connect(
@@ -96,7 +96,7 @@ TEST_F(TransformTest, ModelToWorldUpdate)
 	n1->component<Transform>()->matrix()->appendTranslation(1.f);
 	//n2->component<Transform>()->matrix()->appendTranslation(1.f);
 
-	sceneManager->nextFrame();
+	sceneManager->nextFrame(0.0f, 0.0f);
 
 	ASSERT_TRUE(updated1);
 	ASSERT_FALSE(updated2);
@@ -113,7 +113,7 @@ TEST_F(TransformTest, ModelToWorldMultipleUpdates)
 	root->addChild(n1)->addChild(n2);
 	n2->addChild(n3);
 	// init. transform.modelToWorldMatrix by performing a first frame
-	sceneManager->nextFrame();
+	sceneManager->nextFrame(0.0f, 0.0f);
 
 	auto updated1 = false;
 	auto _ = n1->data()->propertyValueChanged("transform.modelToWorldMatrix")->connect(
@@ -134,7 +134,7 @@ TEST_F(TransformTest, ModelToWorldMultipleUpdates)
 	n1->component<Transform>()->matrix()->appendTranslation(1.f);
 	n3->component<Transform>()->matrix()->appendTranslation(1.f);
 
-	sceneManager->nextFrame();
+	sceneManager->nextFrame(0.0f, 0.0f);
 
 	ASSERT_TRUE(updated1);
 	ASSERT_TRUE(updated2);
@@ -152,7 +152,7 @@ TEST_F(TransformTest, ModelToWorldMultipleUpdatesMultipleFrames)
 	root->addChild(n1)->addChild(n2);
 
 	// init. transform.modelToWorldMatrix by performing a first frame
-	sceneManager->nextFrame();
+	sceneManager->nextFrame(0.0f, 0.0f);
 
 	auto updated1 = false;
 	auto _ = n1->data()->propertyValueChanged("transform.modelToWorldMatrix")->connect(
@@ -172,12 +172,12 @@ TEST_F(TransformTest, ModelToWorldMultipleUpdatesMultipleFrames)
 
 	n1->component<Transform>()->matrix()->appendTranslation(1.f);
 
-	sceneManager->nextFrame();
+	sceneManager->nextFrame(0.0f, 0.0f);
 
 	n2->addChild(n3);
 	n3->component<Transform>()->matrix()->appendTranslation(1.f);
 
-	sceneManager->nextFrame();
+	sceneManager->nextFrame(0.0f, 0.0f);
 
 	ASSERT_TRUE(updated1);
 	ASSERT_TRUE(updated2);
