@@ -28,16 +28,10 @@ const uint WINDOW_WIDTH = 800;
 const uint WINDOW_HEIGHT = 600;
 
 std::unordered_map<input::Joystick::Ptr, scene::Node::Ptr> joystickToCube;
-std::unordered_map<input::Joystick::Ptr, Signal<input::Joystick::Ptr, int, int, int>::Slot> joystickToButtonDownSlot;
+std::unordered_map<input::Joystick::Ptr, Signal<input::Joystick::Ptr, int, int>::Slot> joystickToButtonDownSlot;
 
 Signal<AbstractCanvas::Ptr, input::Joystick::Ptr>::Slot joystickAdded;
 Signal<AbstractCanvas::Ptr, input::Joystick::Ptr>::Slot joystickRemoved;
-
-void
-joystickAxisHandler(input::Joystick::Ptr joystick, int which, int axis, int value)
-{
-    std::cout << "Which : " << which << ", axis: " << axis << ", value: " <<  value << std::endl;
-}
 
 void
 joystickButtonDownHandler(input::Joystick::Ptr joystick, int which, int buttonId)
@@ -95,13 +89,12 @@ main(int argc, char** argv)
                 );
 
             joystickToCube[joystick] = mesh;
-            joystickToButtonDownSlot[joystick] = joystick->joystickAxisMotion()->connect(
+            joystickToButtonDownSlot[joystick] = joystick->joystickButtonDown()->connect(
                 std::bind(
-                &joystickAxisHandler,
+                &joystickButtonDownHandler,
                 std::placeholders::_1,
                 std::placeholders::_2,
-                std::placeholders::_3,
-                std::placeholders::_4
+                std::placeholders::_3
                 )
                 );
 
