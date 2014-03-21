@@ -47,6 +47,7 @@ int main(int argc, char** argv)
 
 	// setup assets
 	sceneManager->assets()->defaultOptions()->resizeSmoothly(true);
+	sceneManager->assets()->defaultOptions()->loadAsynchronously(true);
 	sceneManager->assets()->defaultOptions()->generateMipmaps(true);
 	sceneManager->assets()
 		->registerParser<file::PNGParser>("png")
