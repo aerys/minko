@@ -203,9 +203,6 @@ HTTPLoader::load(const std::string& filename, std::shared_ptr<Options> options)
 		{
 			errorHandler(loader.get());
 		}
-
-		eval = "Module._free(delete window.httpLoaderTmpBuffer);";
-		emscripten_run_script(eval.c_str());
 	}
 #else
 	/*if (options->loadAsynchronously())
