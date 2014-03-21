@@ -42,20 +42,9 @@ bullet::ColliderData::ColliderData(float						mass,
 	_correctionMatrix(Matrix4x4::create()->identity()),
 	_shape(shape),
 	_inertia(inertia),
-    _collisionGroup(1),
-    _collisionMask(short((1<<16) - 1)),
-	_linearVelocity(Vector3::create(0.0f, 0.0f, 0.0f)),
-	_linearFactor(Vector3::create(1.0f, 1.0f, 1.0f)),
-	_linearDamping(0.0f),
-	_linearSleepingThreshold(0.8f),
-	_angularVelocity(Vector3::create(0.0f, 0.0f, 0.0f)),
-	_angularFactor(Vector3::create(1.0f, 1.0f, 1.0f)),
-	_angularDamping(0.0f),
-	_angularSleepingThreshold(1.0f),
 	_restitution(0.0f),
 	_friction(0.5f),
 	_rollingFriction(0.0f),
-	_deactivationDisabled(false),
 	_triggerCollisions(false),
 	_physicsWorldTransformChanged(Signal<Ptr, Matrix4x4Ptr>::create()),
 	_graphicsWorldTransformChanged(Signal<Ptr, Matrix4x4Ptr>::create()),
@@ -114,56 +103,6 @@ bullet::ColliderData::Ptr
 bullet::ColliderData::correction(Matrix4x4::Ptr value)
 {
 	_correctionMatrix->copyFrom(value);
-
-	return shared_from_this();
-}
-
-bullet::ColliderData::Ptr
-bullet::ColliderData::linearVelocity(float x, float y, float z)
-{
-	_linearVelocity->setTo(x, y, z);
-
-	return shared_from_this();
-}
-
-bullet::ColliderData::Ptr
-bullet::ColliderData::angularVelocity(float x, float y, float z)
-{
-	_angularVelocity->setTo(x, y, z);
-
-	return shared_from_this();
-}
-
-bullet::ColliderData::Ptr
-bullet::ColliderData::linearFactor(float x, float y, float z)
-{
-	_linearFactor->setTo(x, y, z);
-
-	return shared_from_this();
-}
-
-bullet::ColliderData::Ptr
-bullet::ColliderData::angularFactor(float x, float y, float z)
-{
-	_angularFactor->setTo(x, y, z);
-
-	return shared_from_this();
-}
-
-bullet::ColliderData::Ptr
-bullet::ColliderData::collisionGroup(short value)
-{
-    _collisionGroup = value;
-    _collisionFilterChanged->execute(shared_from_this());
-
-	return shared_from_this();
-}
-
-bullet::ColliderData::Ptr
-bullet::ColliderData::collisionMask(short value)
-{
-    _collisionMask = value;
-    _collisionFilterChanged->execute(shared_from_this());
 
 	return shared_from_this();
 }

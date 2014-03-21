@@ -60,12 +60,23 @@ namespace minko
 																	
 			private:												
 				ColliderDataPtr										_colliderData;
+				short												_collisionGroup;
+                short												_collisionMask;
+				bool												_canSleep;
+				Vector3Ptr											_linearFactor;
+				float												_linearDamping;
+				float												_linearSleepingThreshold;
+				Vector3Ptr											_angularFactor;
+				float												_angularDamping;
+				float												_angularSleepingThreshold;
 				PhysicsWorldPtr										_physicsWorld;
 				Matrix4x4Ptr										_physicsTransform;
 				TransformPtr										_graphicsTransform;
 
 				NodePtr												_colliderDisplayNode;
-																	
+				
+				std::shared_ptr<Signal<Ptr>>						_propertiesChanged;
+
 				Signal<AbsCtrlPtr, NodePtr>::Slot					_targetAddedSlot;
 				Signal<AbsCtrlPtr, NodePtr>::Slot					_targetRemovedSlot;
 				Signal<NodePtr, NodePtr, NodePtr>::Slot				_addedSlot;
@@ -106,6 +117,115 @@ namespace minko
 
 				Ptr
 				hide();
+
+				inline
+                short
+                collisionGroup() const
+                {
+                    return _collisionGroup;
+                }
+
+                Ptr
+                collisionGroup(short);
+
+                inline
+                short
+                collisionMask() const
+                {
+                    return _collisionMask;
+                }
+
+                Ptr
+                collisionMask(short);
+
+				Vector3Ptr
+				linearVelocity(Vector3Ptr = nullptr) const;
+
+				Ptr
+				linearVelocity(Vector3Ptr);
+
+				inline
+				Vector3Ptr
+				linearFactor() const
+				{
+					return _linearFactor;
+				}
+
+				Ptr
+				linearFactor(Vector3Ptr);
+
+				Vector3Ptr
+				angularVelocity(Vector3Ptr = nullptr) const;
+
+				Ptr
+				angularVelocity(Vector3Ptr);
+
+				inline
+				Vector3Ptr
+				angularFactor() const
+				{
+					return _angularFactor;
+				}
+
+				Ptr
+				angularFactor(Vector3Ptr);
+
+				Ptr
+				applyImpulse(Vector3Ptr impulse, Vector3Ptr relPosition = nullptr);
+
+				Ptr
+				applyRelativeImpulse(Vector3Ptr impulse, Vector3Ptr relPosition = nullptr);
+
+				inline
+				bool
+				canSleep() const
+				{
+					return _canSleep;
+				}
+
+				Ptr
+				canSleep(bool);
+
+				inline
+				float 
+				linearDamping() const
+				{
+					return _linearDamping;
+				}
+
+				inline
+				float 
+				angularDamping() const
+				{
+					return _angularDamping;
+				}
+
+				Ptr
+				damping(float linearDamping, float angularDamping);
+
+				inline
+				float
+				linearSleepingThreshold() const
+				{
+					return _linearSleepingThreshold;
+				}
+
+				inline
+				float
+				angularSleepingThreshold() const
+				{
+					return _angularSleepingThreshold;
+				}
+
+				Ptr
+				sleepingThresholds(float linearSleepingThreshold, float angularSleepingThreshold);
+
+				inline
+				std::shared_ptr<Signal<Ptr>>
+				propertiesChanged() const
+				{
+					return _propertiesChanged;
+				}
 
 			private:
 				Collider(ColliderDataPtr);

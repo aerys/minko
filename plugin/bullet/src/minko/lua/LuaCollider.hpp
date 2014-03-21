@@ -37,35 +37,99 @@ namespace minko
 				public LuaWrapper
 			{
 		
-				private:
-					typedef std::shared_ptr<ColliderData> ColliderDataPtr;
+			private:
+				typedef std::shared_ptr<ColliderData>	ColliderDataPtr;
+				typedef std::shared_ptr<math::Vector3>	Vector3Ptr;
 
-				public:
+			public:
 
-					static
-					std::shared_ptr<Collider>
-					extractColliderFromNode(std::shared_ptr<scene::Node> node)
-					{
-						return node->component<Collider>(0);
-					}
+				static
+				void
+				bind(LuaGlue& state)
+				{
+					auto scene_node = (LuaGlueClass<scene::Node>*)state.lookupClass("Node");
 
-					static
-					void
-					bind(LuaGlue& state)
-					{
-						auto scene_node = (LuaGlueClass<scene::Node>*)state.lookupClass("Node");
+					scene_node->methodWrapper("getCollider", &LuaCollider::extractColliderFromNode);
 
-						scene_node->methodWrapper("getCollider", &LuaCollider::extractColliderFromNode);
+					state.Class<Collider>("Collider")
+						.property("colliderData",					&Collider::colliderData)
+						.method("create",							static_cast<Collider::Ptr (*)(ColliderDataPtr)>(&Collider::create))
+						.method("synchronizePhysicsWithGraphics",	&Collider::synchronizePhysicsWithGraphics)
+						.method("show",								&Collider::show)
+						.method("hide",								&Collider::hide)
+						.method("extractCollider",					&LuaCollider::extractColliderFromNode)
+						.method("setLinearVelocity",				static_cast<Collider::Ptr (Collider::*)(Vector3Ptr)>				(&Collider::linearVelocity))
+						.method("getLinearVelocity",				&LuaCollider::getLinearVelocityWrapper)
+						.method("setAngularVelocity",				static_cast<Collider::Ptr (Collider::*)(Vector3Ptr)>				(&Collider::angularVelocity))
+						.method("getAngularVelocity",				&LuaCollider::getAngularVelocityWrapper)
+						.method("applyImpulse",						static_cast<Collider::Ptr (Collider::*)(Vector3Ptr, Vector3Ptr)>	(&Collider::applyImpulse))
+						.method("applyRelativeImpulse",				static_cast<Collider::Ptr (Collider::*)(Vector3Ptr, Vector3Ptr)>	(&Collider::applyRelativeImpulse))
+						.method("applyCentralImpulse",				&LuaCollider::applyCentralImpulse)
+						.method("applyCentralRelativeImpulse",		&LuaCollider::applyCentralRelativeImpulse)
+						.method("setLinearFactor",					static_cast<Collider::Ptr (Collider::*)(Vector3Ptr)>				(&Collider::linearFactor))
+						.method("getLinearFactor",					&LuaCollider::getLinearFactorsWrapper)
+						.method("setAngularFactor",					static_cast<Collider::Ptr (Collider::*)(Vector3Ptr)>				(&Collider::angularFactor))
+						.method("getAngularFactor",					&LuaCollider::getAngularFactorsWrapper)
+						.method("setCanSleep",						static_cast<Collider::Ptr (Collider::*)(bool)>						(&Collider::canSleep))
+						.method("getCanSleep",						&LuaCollider::getCanSleepWrapper);
+				}
 
-						state.Class<Collider>("Collider")
-							.property("colliderData",					&Collider::colliderData)
-							.method("create",							static_cast<Collider::Ptr (*)(ColliderDataPtr)>(&Collider::create))
-							.method("synchronizePhysicsWithGraphics",	&Collider::synchronizePhysicsWithGraphics)
-							.method("show",								&Collider::show)
-							.method("hide",								&Collider::hide)
-							.method("extractCollider",					&LuaCollider::extractColliderFromNode);
-					}
+			private:
+				static
+				bullet::Collider::Ptr
+				extractColliderFromNode(std::shared_ptr<scene::Node> node)
+				{
+					return node->component<Collider>(0);
+				}
 
+				static
+				Vector3Ptr
+				getLinearVelocityWrapper(bullet::Collider::Ptr collider)
+				{
+					return collider->linearVelocity();
+				}
+
+				static
+				Vector3Ptr
+				getAngularVelocityWrapper(bullet::Collider::Ptr collider)
+				{
+					return collider->angularVelocity();
+				}
+
+				static
+				Vector3Ptr
+				getLinearFactorsWrapper(bullet::Collider::Ptr collider)
+				{
+					return collider->linearFactor();
+				}
+
+				static
+				Vector3Ptr
+				getAngularFactorsWrapper(bullet::Collider::Ptr collider)
+				{
+					return collider->angularFactor();
+				}
+
+				static
+				bullet::Collider::Ptr
+				applyCentralImpulse(bullet::Collider::Ptr collider, Vector3Ptr impulse)
+				{
+					return collider->applyImpulse(impulse, nullptr);
+				}
+
+				static
+				bullet::Collider::Ptr
+				applyCentralRelativeImpulse(bullet::Collider::Ptr collider, Vector3Ptr impulse)
+				{
+					return collider->applyRelativeImpulse(impulse, nullptr);
+				}
+
+				static
+				bullet::Collider::Ptr
+				getCanSleepWrapper(bullet::Collider::Ptr collider, bool value)
+				{
+					return collider->canSleep(value);
+				}
 			};
 		}
 	}

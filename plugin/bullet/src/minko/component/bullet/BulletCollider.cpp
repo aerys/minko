@@ -144,9 +144,9 @@ bullet::PhysicsWorld::BulletCollider::initializeMotionState(ColliderData::Ptr co
 }
 
 void
-bullet::PhysicsWorld::BulletCollider::initializeCollisionObject(ColliderData::Ptr data,
-																std::shared_ptr<btCollisionShape> bulletCollisionShape, 
-																std::shared_ptr<btMotionState> bulletMotionState) 
+bullet::PhysicsWorld::BulletCollider::initializeCollisionObject(ColliderData::Ptr					data,
+																std::shared_ptr<btCollisionShape>	bulletCollisionShape, 
+																std::shared_ptr<btMotionState>		bulletMotionState) 
 {
 	// only rigid objects are considerered for the moment
 
@@ -170,135 +170,15 @@ bullet::PhysicsWorld::BulletCollider::initializeCollisionObject(ColliderData::Pt
 		bulletCollisionShape.get(),
 		inertia
 	);
-	info.m_linearDamping			= data->linearDamping();
-	info.m_angularDamping			= data->angularDamping();
+
 	info.m_friction					= data->friction();
 	info.m_rollingFriction			= data->rollingFriction();
 	info.m_restitution				= data->restitution();
-	info.m_linearSleepingThreshold	= data->linearSleepingThreshold();
-	info.m_angularSleepingThreshold	= data->angularSleepingThreshold();
 
-	auto bulletRigidBody = std::shared_ptr<btRigidBody>(new btRigidBody(info));
-
-	// communicate several properties of the rigid object
-	bulletRigidBody->setLinearVelocity(btVector3(
-		data->linearVelocity()->x(), 
-		data->linearVelocity()->y(), 
-		data->linearVelocity()->z()
-		));
-	bulletRigidBody->setLinearFactor(btVector3(
-		data->linearFactor()->x(), 
-		data->linearFactor()->y(), 
-		data->linearFactor()->z()
-		));
-	bulletRigidBody->setAngularVelocity(btVector3(
-		data->angularVelocity()->x(), 
-		data->angularVelocity()->y(), 
-		data->angularVelocity()->z()
-		));
-	bulletRigidBody->setAngularFactor(btVector3(
-		data->angularFactor()->x(), 
-		data->angularFactor()->y(), 
-		data->angularFactor()->z()
-		));
-
-	bulletRigidBody->setActivationState(data->deactivationDisabled() 
-		? DISABLE_DEACTIVATION 
-		: ACTIVE_TAG
-	);
+	auto bulletRigidBody	= std::shared_ptr<btRigidBody>(new btRigidBody(info));
 
 	_bulletCollisionShape	= bulletCollisionShape;
 	_bulletMotionState		= bulletMotionState;
 	_bulletCollisionObject	= bulletRigidBody;
-}
-
-void
-bullet::PhysicsWorld::BulletCollider::setLinearVelocity(Vector3::Ptr velocity)
-{
-	std::shared_ptr<btRigidBody> bulletRigidBody = std::dynamic_pointer_cast<btRigidBody>(_bulletCollisionObject);
-	bulletRigidBody->setLinearVelocity(btVector3(velocity->x(), velocity->y(), velocity->z()));
-}
-
-void 
-bullet::PhysicsWorld::BulletCollider::setWorldTransform(Matrix4x4::Ptr physicsNoScaleTransform)
-{
-#ifdef DEBUG_PHYSICS
-	const float scaling = powf(fabsf(physicsNoScaleTransform->determinant3x3()), 1.0f/3.0f);
-	if (fabsf(scaling - 1.0f) > 1e-3f)
-		throw std::logic_error("World transforms sent to Bullet must not contain any scaling.");
-#endif // DEBUG_PHYSICS
-
-	btTransform bulletTransform;
-	toBulletTransform(physicsNoScaleTransform, bulletTransform);
-
-	auto bulletRigidBody = rigidBody();
-	if (bulletRigidBody != nullptr)
-	{
-
-#ifdef DEBUG_PHYSICS
-	PhysicsWorld::print(std::cout << "BulletCollider::setWorldTransform\n-physicsTrf = \n", bulletTransform) << std::endl;
-#endif // DEBUG_PHYSICS
-
-		bulletRigidBody->getMotionState()->setWorldTransform(bulletTransform);
-
-		bulletRigidBody->getMotionState()->getWorldTransform(bulletTransform);
-#ifdef DEBUG_PHYSICS
-	PhysicsWorld::print(std::cout << "BulletCollider::setWorldTransform\n-motionstate.worldTrf = \n", bulletTransform) << std::endl;
-#endif // DEBUG_PHYSICS
-
-		bulletRigidBody->setWorldTransform(bulletTransform);
-	}
-}
-
-void
-bullet::PhysicsWorld::BulletCollider::applyRelativeImpulse(Vector3::Ptr relativeImpulse)
-{
-	auto bulletRigidBody = rigidBody();
-
-	btVector3 btRelImpulse(relativeImpulse->x(), relativeImpulse->y(), relativeImpulse->z());
-
-	bulletRigidBody->applyImpulse(
-		bulletRigidBody->getWorldTransform().getBasis() * btRelImpulse, 
-		btVector3(0.0f, 0.0f, 0.0f)
-	);
-}
-
-void
-bullet::PhysicsWorld::BulletCollider::prependLocalTranslation(Vector3::Ptr relTranslation)
-{
-	auto bulletRigidBody = rigidBody();
-
-	btVector3 btRelTranslation(relTranslation->x(), relTranslation->y(), relTranslation->z());
-	btVector3 btTranslation = bulletRigidBody->getWorldTransform().getBasis() * btRelTranslation;
-
-	btTransform btNewTransform;
-	btNewTransform.setBasis(bulletRigidBody->getWorldTransform().getBasis());
-	btNewTransform.setOrigin(bulletRigidBody->getWorldTransform().getOrigin() + btTranslation);
-
-	bulletRigidBody->setWorldTransform(btNewTransform);
-}
-
-void
-bullet::PhysicsWorld::BulletCollider::prependRotationY(float radians)
-{
-	btMatrix3x3	btRotation (btQuaternion(btVector3(0.0f, 1.0f, 0.0f), radians));
-
-	auto bulletRigidBody = rigidBody();
-
-	btTransform btNewTransform;
-	btNewTransform.setBasis(bulletRigidBody->getWorldTransform().getBasis() * btRotation);
-	btNewTransform.setOrigin(bulletRigidBody->getWorldTransform().getOrigin());
-
-	bulletRigidBody->setWorldTransform(btNewTransform);
-}
-
-bullet::PhysicsWorld::BulletCollider::Ptr
-bullet::PhysicsWorld::BulletCollider::create(ColliderData::Ptr collider)
-{
-	BulletColliderPtr bulletCollider(new BulletCollider());
-
-	bulletCollider->initialize(collider);
-
-	return bulletCollider;
 }
 
