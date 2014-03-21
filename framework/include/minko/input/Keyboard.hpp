@@ -226,11 +226,13 @@ namespace minko
                 WIN_OEM_CLEAR = 254, // Clear key, but we're not sure the meaning difference from DOM_VK_CLEAR. 
 
                 // Additional keys (specific to Minko and for native support of some keys)
-                CONTROL_RIGHT = 512,
-                SHIFT_RIGHT = 513,
+                CONTROL_RIGHT = 512, // Right control key
+                SHIFT_RIGHT = 513, // Right shift key
 
             } Key;
 
+        //protected:
+        public:
             enum class ScanCode
             {
                 UNKNOWN = 0,
@@ -673,11 +675,10 @@ namespace minko
 
         public:
             static const uint NUM_SCANCODES = 285;
-
+        
         private:
             typedef std::array<std::string, NUM_SCANCODES>      ScanCodeToNameArray;
 
-        private:
             static const ScanCodeToNameArray                    _scanCodeToName;
 
         protected:
