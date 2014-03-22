@@ -581,12 +581,12 @@ Canvas::step()
     for (auto worker : _activeWorkers)
         worker->update();
 #endif
-    auto time           = std::chrono::high_resolution_clock::now();
-    auto relativeTime   = 1e-6f * std::chrono::duration_cast<std::chrono::nanoseconds>(time - _startTime).count(); // in milliseconds
-    auto frameDuration  = 1e-6f * std::chrono::duration_cast<std::chrono::nanoseconds>(time - _previousTime).count(); // in milliseconds
+    auto absoluteTime = std::chrono::high_resolution_clock::now();
+    _relativeTime   = 1e-6f * std::chrono::duration_cast<std::chrono::nanoseconds>(absoluteTime - _startTime).count(); // in milliseconds
+    _frameDuration  = 1e-6f * std::chrono::duration_cast<std::chrono::nanoseconds>(absoluteTime - _previousTime).count(); // in milliseconds
 
-    _enterFrame->execute(shared_from_this(), relativeTime, frameDuration);
-    _previousTime = time;
+    _enterFrame->execute(shared_from_this(), _relativeTime, _frameDuration);
+    _previousTime = absoluteTime;
 
     // swap buffers
 #if defined(MINKO_ANGLE)
@@ -598,12 +598,12 @@ Canvas::step()
 #endif
 
     // framerate in seconds
-    _framerate = 1000.f / frameDuration;
+    _framerate = 1000.f / _frameDuration;
 
 #if !defined(EMSCRIPTEN)
     if (_framerate > _desiredFramerate)
     {
-        SDL_Delay((uint) ((1000.f / _desiredFramerate) - frameDuration));
+        SDL_Delay((uint) ((1000.f / _desiredFramerate) - _frameDuration));
 
         _framerate = _desiredFramerate;
     }

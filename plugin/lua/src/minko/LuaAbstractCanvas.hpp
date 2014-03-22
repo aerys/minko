@@ -40,6 +40,8 @@ namespace minko
 				.property("height",		    &AbstractCanvas::height)
 				.property("mouse", 		    &AbstractCanvas::mouse)
 				.property("keyboard",	    &AbstractCanvas::keyboard)
+				.property("relativeTime",	&AbstractCanvas::relativeTime)
+				.property("frameDuration",	&AbstractCanvas::frameDuration)
                 .methodWrapper("joystick",  &LuaAbstractCanvas::joystickWrapper);
 		    MINKO_LUAGLUE_BIND_SIGNAL(state, AbstractCanvas::Ptr);
 		    MINKO_LUAGLUE_BIND_SIGNAL(state, AbstractCanvas::Ptr, uint, uint);
