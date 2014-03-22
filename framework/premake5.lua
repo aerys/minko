@@ -27,6 +27,11 @@ minko.project.library "minko-framework"
 	defines {
 		"JSON_IS_AMALGAMATION"
 	}
+
+	-- glm
+	includedirs {
+	   "lib/glm"
+	}
 	
 	-- windows
 	configuration { "windows32" }

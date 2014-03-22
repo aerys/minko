@@ -18,6 +18,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "minko/render/DrawCallPool.hpp"
+
 #include "minko/render/DrawCall.hpp"
 #include "minko/component/Renderer.hpp"
 #include "minko/component/Surface.hpp"
@@ -30,13 +31,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/data/ArrayProvider.hpp"
 
 using namespace minko;
-using namespace minko::math;
 using namespace minko::render;
 using namespace minko::component;
 using namespace minko::data;
 
 /*static*/ const unsigned int								DrawCallPool::NUM_FALLBACK_ATTEMPTS		= 32;
-/*static*/ std::unordered_map<DrawCall::Ptr, Vector3::Ptr>	DrawCallPool::_cachedDrawcallPositions;
+/*static*/ std::unordered_map<DrawCall::Ptr, math::Vector3>	DrawCallPool::_cachedDrawcallPositions;
 
 std::unordered_map<std::string, std::pair<std::string, int>> DrawCallPool::_variablePropertyNameToPosition;
 
@@ -91,15 +91,7 @@ DrawCallPool::compareDrawCalls(DrawCall::Ptr a,
 		return aPriority > bPriority;
 
 	if (a->zSorted() || b->zSorted())
-	{
-		static Vector3::Ptr aPosition = Vector3::create();
-		static Vector3::Ptr bPosition = Vector3::create();
-
-		getDrawcallEyePosition(a, aPosition);
-		getDrawcallEyePosition(b, bPosition);
-
-		return aPosition->z() > bPosition->z();
-	}
+		return getDrawcallEyePosition(a).z > getDrawcallEyePosition(b).z;
 	else
 	{
 		// ordered by target texture id, if any
@@ -108,23 +100,15 @@ DrawCallPool::compareDrawCalls(DrawCall::Ptr a,
 }
 
 /*static*/
-Vector3::Ptr
-DrawCallPool::getDrawcallEyePosition(DrawCall::Ptr drawcall, 
-									 Vector3::Ptr output)
+math::Vector3
+DrawCallPool::getDrawcallEyePosition(DrawCall::Ptr drawcall)
 {
 	const auto foundPositionIt = _cachedDrawcallPositions.find(drawcall);
 
 	if (foundPositionIt != _cachedDrawcallPositions.end())
-	{
-		if (output == nullptr)
-			output = Vector3::create(foundPositionIt->second);
-		else
-			output->copyFrom(foundPositionIt->second);
-
-		return output;
-	}
+		return foundPositionIt->second;
 	else
-		return drawcall->getEyeSpacePosition(output);
+		return drawcall->getEyeSpacePosition();
 }
 
 void
@@ -135,7 +119,8 @@ DrawCallPool::addSurface(Surface::Ptr surface)
 		shared_from_this(),
 		std::placeholders::_1,
 		std::placeholders::_2,
-		std::placeholders::_3));
+		std::placeholders::_3
+	));
 
 	_techniqueToMacroNames[surface].clear();
 
@@ -144,14 +129,16 @@ DrawCallPool::addSurface(Surface::Ptr surface)
 		shared_from_this(),
 		std::placeholders::_1,
 		std::placeholders::_2,
-		std::placeholders::_3))));
+		std::placeholders::_3
+	))));
 
 	_surfaceToVisibilityChangedSlot.insert(std::pair<SurfacePtr, VisibilityChangedSlot>(surface, surface->computedVisibilityChanged()->connect(std::bind(
 		&DrawCallPool::visibilityChanged,
 		shared_from_this(),
 		std::placeholders::_1,
 		std::placeholders::_2,
-		std::placeholders::_3))));
+		std::placeholders::_3
+	))));
 
 	_surfaceToIndexChangedSlot.insert(std::pair<SurfacePtr, ArrayProviderIndexChangedSlot>(surface, surface->geometry()->data()->indexChanged()->connect(std::bind(
 		&DrawCallPool::dataProviderIndexChanged,
@@ -159,17 +146,17 @@ DrawCallPool::addSurface(Surface::Ptr surface)
 		std::placeholders::_1,
 		std::placeholders::_2,
 		surface
-		))));
+	))));
 
 	auto arrayProviderMaterial = std::dynamic_pointer_cast<data::ArrayProvider>(surface->material());
 
 	if (arrayProviderMaterial)
 		_surfaceToIndexChangedSlot.insert(std::pair<SurfacePtr, ArrayProviderIndexChangedSlot>(surface, arrayProviderMaterial->indexChanged()->connect(std::bind(
-		&DrawCallPool::dataProviderIndexChanged,
-		shared_from_this(),
-		std::placeholders::_1,
-		std::placeholders::_2,
-		surface
+			&DrawCallPool::dataProviderIndexChanged,
+			shared_from_this(),
+			std::placeholders::_1,
+			std::placeholders::_2,
+			surface
 		))));
 
 	//if (std::find(_toCollect.begin(), _toCollect.end(), surface) == _toCollect.end())
@@ -361,7 +348,8 @@ DrawCallPool::initializeDrawCall(Pass::Ptr		pass,
 		rootData,
 		booleanMacros,
 		integerMacros,
-		incorrectIntegerMacros);
+		incorrectIntegerMacros
+	);
 
 	if (!program)
 		return nullptr;

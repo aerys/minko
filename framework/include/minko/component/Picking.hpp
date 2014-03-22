@@ -41,7 +41,6 @@ namespace minko
 			typedef std::shared_ptr<render::AbstractContext>	ContextPtr;
 			typedef std::shared_ptr<SceneManager>				SceneManagerPtr;
 			typedef std::shared_ptr<input::Mouse>				MousePtr;
-			typedef std::shared_ptr<math::Matrix4x4>			MatrixPtr;
 			typedef std::shared_ptr<Surface>					SurfacePtr;
 			typedef std::shared_ptr<data::ArrayProvider>		ArrayProviderPtr;
 			typedef std::shared_ptr<data::StructureProvider>	StructureProviderPtr;
@@ -53,7 +52,7 @@ namespace minko
 			SceneManagerPtr								_sceneManager;
 			MousePtr									_mouse;
 			NodePtr										_camera;
-			MatrixPtr									_pickingProjection;	
+			math::Matrix4x4								_pickingProjection;	
 			std::map<SurfacePtr, uint>					_surfaceToPickingId; 
 			std::map<uint, SurfacePtr>					_pickingIdToSurface;
 			std::map<SurfacePtr, StructureProviderPtr>	_surfaceToProvider;

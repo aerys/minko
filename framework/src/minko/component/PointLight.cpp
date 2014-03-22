@@ -19,9 +19,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/component/PointLight.hpp"
 
-#include "minko/math/Vector4.hpp"
-#include "minko/math/Matrix4x4.hpp"
-
 using namespace minko;
 using namespace minko::math;
 using namespace minko::component;
@@ -32,8 +29,8 @@ PointLight::PointLight(float diffuse,
 					   float attenuationLinear,
 					   float attenuationQuadratic):
 	AbstractDiscreteLight("pointLights", diffuse, specular),
-	_attenuationCoeffs(Vector3::create(attenuationConstant, attenuationLinear, attenuationQuadratic)),
-	_worldPosition(Vector3::create(0.0f, 0.0f, 0.0f))
+	_attenuationCoeffs(Vector3(attenuationConstant, attenuationLinear, attenuationQuadratic)),
+	_worldPosition(Vector3(0.f))
 {
 	data()
 		->set("attenuationCoeffs",	_attenuationCoeffs)
@@ -41,28 +38,27 @@ PointLight::PointLight(float diffuse,
 }
 
 void
-PointLight::updateModelToWorldMatrix(std::shared_ptr<math::Matrix4x4> modelToWorld)
+PointLight::updateModelToWorldMatrix(const math::Matrix4x4& modelToWorld)
 {
-	modelToWorld->copyTranslation(_worldPosition);
+	data()->set("position", _worldPosition = modelToWorld[3].xyz());
 }
 
-Vector3::Ptr
+const Vector3&
 PointLight::attenuationCoefficients() const
 {
-	return data()->get<math::Vector3::Ptr>("attenuationCoeffs");
+	return _attenuationCoeffs;
 }
 
 PointLight::Ptr
 PointLight::attenuationCoefficients(float constant, float linear, float quadratic) 
 {
-	return attenuationCoefficients(Vector3::create(constant, linear, quadratic));
+	return attenuationCoefficients(Vector3(constant, linear, quadratic));
 }
 
 PointLight::Ptr
-PointLight::attenuationCoefficients(Vector3::Ptr value)
+PointLight::attenuationCoefficients(const Vector3& value)
 {
-	_attenuationCoeffs->copyFrom(value);
-	data()->set<Vector3::Ptr>("attenuationCoeffs", _attenuationCoeffs);
+	data()->set("attenuationCoeffs", _attenuationCoeffs = value);
 
 	return std::static_pointer_cast<PointLight>(shared_from_this());
 }
@@ -70,5 +66,5 @@ PointLight::attenuationCoefficients(Vector3::Ptr value)
 bool
 PointLight::attenuationEnabled() const
 {
-	return !( _attenuationCoeffs->x() < 0.0f || _attenuationCoeffs->y() < 0.0f || _attenuationCoeffs->z() < 0.0f);
+	return !( _attenuationCoeffs.x < 0.0f || _attenuationCoeffs.y < 0.0f || _attenuationCoeffs.z < 0.0f);
 }

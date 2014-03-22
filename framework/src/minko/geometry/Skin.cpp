@@ -20,12 +20,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/geometry/Skin.hpp"
 
 #include <minko/scene/Node.hpp>
-#include <minko/math/Matrix4x4.hpp>
 #include <minko/geometry/Bone.hpp>
 
 using namespace minko;
 using namespace minko::scene;
-using namespace minko::math;
 using namespace minko::geometry;
 
 Skin::Skin(unsigned int numBones, unsigned int duration, unsigned int numFrames):
@@ -43,21 +41,15 @@ Skin::Skin(unsigned int numBones, unsigned int duration, unsigned int numFrames)
 }
 
 void
-Skin::matrix(unsigned int	frameId, 
-			 unsigned int	boneId, 
-			 Matrix4x4::Ptr	value)
+Skin::matrix(unsigned int			frameId, 
+			 unsigned int			boneId, 
+			 const math::Matrix4x4&	value)
 {
 #ifdef DEBUG_SKINNING
 	assert(frameId < numFrames() && boneId < numBones());
 #endif // DEBUG_SKINNING
 
-	memcpy(
-		&(_boneMatricesPerFrame[frameId][boneId << 4]), 
-		&(value->data()[0]), 
-		sizeof(float)*16
-	);
-
-	//_boneMatricesPerFrame[frameId][boneId] = value;
+	std::copy(math::value_ptr(value), math::value_ptr(value) + 16, &(_boneMatricesPerFrame[frameId][boneId << 4]));
 }
 
 Skin::Ptr

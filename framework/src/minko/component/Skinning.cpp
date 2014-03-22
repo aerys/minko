@@ -26,7 +26,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include <minko/geometry/Bone.hpp>
 #include <minko/geometry/Skin.hpp>
 #include <minko/render/AbstractContext.hpp>
-#include <minko/math/Matrix4x4.hpp>
 #include <minko/component/Surface.hpp>
 #include <minko/component/SceneManager.hpp>
 #include <minko/component/Animation.hpp>

@@ -23,7 +23,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 using namespace minko;
 using namespace minko::component;
-using namespace minko::math;
 
 const std::string TEXTURE_FILENAME = "texture/box.png";
 
@@ -34,13 +33,13 @@ int main(int argc, char** argv)
 	auto sceneManager = SceneManager::create(canvas->context());
 
 	// setup assets
-	sceneManager->assets()->loader()->options()->resizeSmoothly(true);
-	sceneManager->assets()->loader()->options()->generateMipmaps(true);
 	sceneManager->assets()->loader()->options()
-                ->registerParser<file::PNGParser>("png");
+		->resizeSmoothly(true)
+		->generateMipmaps(true)
+		->registerParser<file::PNGParser>("png");
 
-        sceneManager->assets()->loader()
-                ->queue(TEXTURE_FILENAME)
+    sceneManager->assets()->loader()
+        ->queue(TEXTURE_FILENAME)
 		->queue("effect/Basic.effect");
 
 	sceneManager->assets()->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()));
@@ -48,13 +47,14 @@ int main(int argc, char** argv)
 	auto root = scene::Node::create("root")
 		->addComponent(sceneManager);
 
-	auto mesh = scene::Node::create("mesh")
-		->addComponent(Transform::create());
+	auto mesh = scene::Node::create("mesh");
+		//->addComponent(Transform::create());
 
 	auto camera = scene::Node::create("camera")
 		->addComponent(Renderer::create(0x7f7f7fff))
 		->addComponent(Transform::create(
-		Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 3.f))
+			//math::inverse(math::lookAt(math::vec3(0.f, 0.f, -3.f), math::vec3(0.f), math::vec3(0.f, 1.f, 0.f)))
+			math::inverse(math::lookAt(math::vec3(0.f, 0.f, 3.f), math::vec3(0.f), math::vec3(0.f, 1.f, 0.f)))
 		))
 		->addComponent(PerspectiveCamera::create(800.f / 600.f, (float)PI * 0.25f, .1f, 1000.f));
 	root->addChild(camera);
@@ -66,11 +66,14 @@ int main(int argc, char** argv)
 		sceneManager->assets()->geometry("cubeGeometry", cubeGeometry);
 
 		mesh->addComponent(Surface::create(
-                        sceneManager->assets()->geometry("cubeGeometry"),
-			material::BasicMaterial::create()->diffuseMap(
-                          sceneManager->assets()->texture(TEXTURE_FILENAME)),
+            sceneManager->assets()->geometry("cubeGeometry"),
+			material::BasicMaterial::create()->diffuseMap(sceneManager->assets()->texture(TEXTURE_FILENAME)),
 			sceneManager->assets()->effect("effect/Basic.effect")
-			));
+		));
+
+		mesh->addComponent(Transform::create(
+		// 	math::translate(math::mat4(1.f), math::vec3(0.f, 0.f, -3.f))
+		));
 
 		root->addChild(mesh);
 	});
@@ -82,7 +85,10 @@ int main(int argc, char** argv)
 
 	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float deltaTime)
 	{
-        mesh->component<Transform>()->matrix()->appendRotationY(0.001f * deltaTime);
+        mesh->component<Transform>()->matrix(
+        	mesh->component<Transform>()->matrix()
+        	* math::rotate(math::mat4(1.f), .001f * deltaTime, math::vec3(0.f, 1.f, 0.f))
+        );
 
 		sceneManager->nextFrame(time, deltaTime);
 	});

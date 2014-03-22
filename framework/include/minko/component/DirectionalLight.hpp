@@ -22,7 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Common.hpp"
 
 #include "minko/component/AbstractDiscreteLight.hpp"
-#include "minko/math/Matrix4x4.hpp"
 
 namespace minko
 {
@@ -35,13 +34,12 @@ namespace minko
 		    typedef std::shared_ptr<DirectionalLight> Ptr;
 
 		private:
-			std::shared_ptr<math::Vector3>	_worldDirection;
+			math::Vector3	_worldDirection;
 
 	    public:
 		    inline static
 		    Ptr
-		    create(float diffuse	= 1.0f,
-				   float specular	= 1.0f)
+		    create(float diffuse = 1.0f, float specular	= 1.0f)
 		    {
                 auto light = std::shared_ptr<DirectionalLight>(new DirectionalLight(diffuse, specular));
 
@@ -56,11 +54,10 @@ namespace minko
 
 		protected:
 			void
-            updateModelToWorldMatrix(std::shared_ptr<math::Matrix4x4> modelToWorld);
+            updateModelToWorldMatrix(const math::Matrix4x4& modelToWorld);
 
 	    private:
-		    DirectionalLight(float diffuse,
-							 float specular);
+		    DirectionalLight(float diffuse, float specular);
 	    };
     }
 }

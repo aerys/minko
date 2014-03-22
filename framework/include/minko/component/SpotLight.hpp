@@ -33,13 +33,6 @@ namespace minko
 		public:
 			typedef std::shared_ptr<SpotLight> Ptr;
 	
-		private:
-			float							_cosInnerConeAngle;
-			float							_cosOuterConeAngle;
-			std::shared_ptr<math::Vector3>	_attenuationCoeffs;
-			std::shared_ptr<math::Vector3>	_worldPosition;
-			std::shared_ptr<math::Vector3>	_worldDirection;
-
 		public:
 			inline static
 			Ptr
@@ -66,22 +59,8 @@ namespace minko
 			    return light;
 			}
 
-			inline
-			float
-			cosInnerConeAngle() const
-			{
-				return _cosInnerConeAngle;
-			}
-
 			Ptr
 			innerConeAngle(float radians);
-
-			inline
-			float
-			cosOuterConeAngle() const
-			{
-				return _cosOuterConeAngle;
-			}
 
 			Ptr
 			outerConeAngle(float radians);
@@ -89,18 +68,18 @@ namespace minko
 			bool
 			attenuationEnabled() const;
 
-			std::shared_ptr<math::Vector3>
+			math::Vector3
 			attenuationCoefficients() const;
 
 			Ptr
 			attenuationCoefficients(float constant, float linear, float quadratic);
 
 			Ptr
-			attenuationCoefficients(std::shared_ptr<math::Vector3>);
+			attenuationCoefficients(const math::Vector3&);
 
 		protected:
 			void
-            updateModelToWorldMatrix(std::shared_ptr<math::Matrix4x4> modelToWorld);
+            updateModelToWorldMatrix(const math::Matrix4x4& modelToWorld);
 
 		private:
 			SpotLight(float diffuse,
@@ -110,8 +89,7 @@ namespace minko
 					  float attenuationQuadratic);
 
 			void 
-			initialize(float innerAngleRadians,
-					   float outerAngleRadians);
+			initialize(float innerAngleRadians, float outerAngleRadians);
 		};
 	}
 }

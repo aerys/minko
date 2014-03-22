@@ -161,9 +161,9 @@ namespace minko
 			cast(std::shared_ptr<math::Ray>		ray,
 				 float&							distance,
 				 uint&							triangle,
-				 std::shared_ptr<math::Vector3>	hitXyz		= nullptr,
-				 std::shared_ptr<math::Vector2>	hitUv 		= nullptr,
-				 std::shared_ptr<math::Vector3>	hitNormal 	= nullptr);
+				 math::Vector3*					hitXyz		= nullptr,
+				 math::Vector2*					hitUv 		= nullptr,
+				 math::Vector3*					hitNormal 	= nullptr);
 
 			void
 			upload();
@@ -208,10 +208,10 @@ namespace minko
 			removeVertexBuffer(std::list<VBPtr>::iterator vertexBufferIt);
 
 			void
-			getHitUv(uint triangle, std::shared_ptr<math::Vector2> lambda, std::shared_ptr<math::Vector2> hitUv);
+			getHitUv(uint triangle, math::Vector2 lambda, math::Vector2& hitUv);
 
 			void
-			getHitNormal(uint triangle, std::shared_ptr<math::Vector3> hitNormal);
+			getHitNormal(uint triangle, math::Vector3& hitNormal);
 		};
 	}
 }

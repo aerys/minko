@@ -89,7 +89,10 @@ minko::input::leap::convert(const Leap::Matrix& value,
 	if (output == nullptr)
 		output = minko::math::Matrix4x4::create();
 
-	value.toArray4x4(&(output->data()[0]));
+	float tmp[16];
+
+	value.toArray4x4(tmp);
+	output->data((float*)&tmp);
 
 	return output->transpose();
 }

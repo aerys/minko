@@ -19,8 +19,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/material/BasicMaterial.hpp"
 
-#include "minko/Color.hpp"
-#include "minko/math/Vector4.hpp"
 #include "minko/render/AbstractTexture.hpp"
 #include "minko/render/Texture.hpp"
 #include "minko/render/CubeTexture.hpp"
@@ -30,7 +28,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::material;
 using namespace minko::render;
-using namespace minko::math;
 
 /*static*/ const States::Ptr BasicMaterial::_defaultStates;
 
@@ -47,7 +44,7 @@ BasicMaterial::initialize()
 }
 
 BasicMaterial::Ptr
-BasicMaterial::diffuseColor(Vector4::Ptr value)
+BasicMaterial::diffuseColor(const math::Vector4& value)
 {
 	set("diffuseColor", value);
 
@@ -55,21 +52,23 @@ BasicMaterial::diffuseColor(Vector4::Ptr value)
 }
 
 BasicMaterial::Ptr
-BasicMaterial::diffuseColor(uint rgba)
+BasicMaterial::diffuseColor(uint diffuseRGBA)
 {
-	return diffuseColor(Color::uintToVec4(rgba));
+	return diffuseColor(math::rgba(diffuseRGBA));
 }
 
-Vector4::Ptr
+math::Vector4
 BasicMaterial::diffuseColor() const
 {
-	return get<Vector4::Ptr>("diffuseColor");
+	return get<math::Vector4>("diffuseColor");
 }
 
 BasicMaterial::Ptr
 BasicMaterial::diffuseMap(render::AbstractTexture::Ptr texture)
 {
+#ifdef DEBUG
 	assert(texture->type() == TextureType::Texture2D);
+#endif
 
 	set("diffuseMap", texture);
 
@@ -103,7 +102,7 @@ BasicMaterial::diffuseCubeMap() const
 }
 
 BasicMaterial::Ptr
-BasicMaterial::fogColor(Vector4::Ptr value)
+BasicMaterial::fogColor(const math::Vector4& value)
 {
 	set("fogColor", value);
 
@@ -111,15 +110,15 @@ BasicMaterial::fogColor(Vector4::Ptr value)
 }
 
 BasicMaterial::Ptr
-BasicMaterial::fogColor(uint rgba)
+BasicMaterial::fogColor(uint fogRGBA)
 {
-	return fogColor(Color::uintToVec4(rgba));
+	return fogColor(math::rgba(fogRGBA));
 }
 
-Vector4::Ptr
+math::Vector4
 BasicMaterial::fogColor() const
 {
-	return get<Vector4::Ptr>("fogColor");
+	return get<math::Vector4>("fogColor");
 }
 
 BasicMaterial::Ptr

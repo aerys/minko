@@ -22,7 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Common.hpp"
 
 #include "minko/math/AbstractShape.hpp"
-#include "minko/math/Vector3.hpp"
 
 namespace minko
 {
@@ -36,8 +35,8 @@ namespace minko
 			typedef std::shared_ptr<Box>	Ptr;
 
 		private:
-			std::shared_ptr<Vector3>	_topRight;
-			std::shared_ptr<Vector3>	_bottomLeft;
+			Vector3	_topRight;
+			Vector3	_bottomLeft;
 
 		public:
 			inline static
@@ -49,12 +48,12 @@ namespace minko
 
 			inline static
 			Ptr
-			create(std::shared_ptr<math::Vector3> topRight, std::shared_ptr<math::Vector3> bottomLeft)
+			create(const math::Vector3& topRight, const math::Vector3& bottomLeft)
 			{
 				auto box = std::shared_ptr<Box>(new Box());
 
-				box->_topRight->copyFrom(topRight);
-				box->_bottomLeft->copyFrom(bottomLeft);
+				box->_topRight = topRight;
+				box->_bottomLeft = bottomLeft;
 
 				return box;
 			}
@@ -67,46 +66,60 @@ namespace minko
 			merge(Ptr box2);
 			
 			inline
-			std::shared_ptr<Vector3>
+			const Vector3&
 			topRight() const
 			{
 				return _topRight;
 			}
 
 			inline
-			std::shared_ptr<Vector3>
+			void
+			topRight(const Vector3& topRight)
+			{
+				_topRight = topRight;
+			}
+
+			inline
+			const Vector3
 			bottomLeft() const
 			{
 				return _bottomLeft;
 			}
 
 			inline
+			void
+			bottomLeft(const Vector3& bottomLeft)
+			{
+				_bottomLeft = bottomLeft;
+			}
+
+			inline
 			float
 			width() const
 			{
-				return _topRight->x() - _bottomLeft->x();
+				return _topRight.x - _bottomLeft.x;
 			}
 
 			inline
 			float
 			height() const
 			{
-				return _topRight->y() - _bottomLeft->y();
+				return _topRight.y - _bottomLeft.y;
 			}
 
 			inline
 			float
 			depth() const
 			{
-				return _topRight->z() - _bottomLeft->z();
+				return _topRight.z - _bottomLeft.z;
 			}
 
 			inline
 			Ptr
 			copyFrom(Ptr box)
 			{
-				_topRight->copyFrom(box->_topRight);
-				_bottomLeft->copyFrom(box->_bottomLeft);
+				_topRight = box->_topRight;
+				_bottomLeft = box->_bottomLeft;
 
 				return shared_from_this();
 			}
@@ -114,7 +127,7 @@ namespace minko
 			bool
 			cast(std::shared_ptr<Ray> ray, float& distance);
 
-			std::array<std::shared_ptr<Vector3>, 8>
+			std::array<Vector3, 8>
 			getVertices();
 
 			
@@ -122,7 +135,7 @@ namespace minko
 			testBoundingBox(std::shared_ptr<math::Box> box);
 
 			void
-			updateFromMatrix(std::shared_ptr<math::Matrix4x4> matrix);
+			updateFromMatrix(const math::Matrix4x4& matrix);
 
 		private:
 			Box();

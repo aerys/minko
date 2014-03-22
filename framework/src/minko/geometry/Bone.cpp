@@ -25,14 +25,13 @@ using namespace minko::math;
 using namespace minko::scene;
 
 #include <minko/scene/Node.hpp>
-#include <minko/math/Matrix4x4.hpp>
 
 Bone::Bone(Node::Ptr							node, 
-		   Matrix4x4::Ptr						offsetMatrix, 
+		   const Matrix4x4&						offsetMatrix, 
 		   const std::vector<unsigned short>&	vertexIds, 
 		   const std::vector<float>&			vertexWeights) :
 	_node(node),
-	_offsetMatrix(Matrix4x4::create()->copyFrom(offsetMatrix)),
+	_offsetMatrix(offsetMatrix),
 	_vertexIds(vertexIds),
 	_vertexWeights(vertexWeights)
 {

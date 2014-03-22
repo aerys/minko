@@ -20,7 +20,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/BoundingBox.hpp"
 
 #include "minko/math/Box.hpp"
-#include "minko/math/Vector3.hpp"
 #include "minko/scene/Node.hpp"
 #include "minko/component/Transform.hpp"
 #include "minko/component/Surface.hpp"
@@ -31,7 +30,7 @@ using namespace minko;
 using namespace math;
 using namespace minko::component;
 
-BoundingBox::BoundingBox(Vector3::Ptr topRight, Vector3::Ptr bottomLeft) :
+BoundingBox::BoundingBox(const Vector3& topRight, const Vector3& bottomLeft) :
 	_fixed(true),
 	_box(math::Box::create(topRight, bottomLeft)),
 	_worldSpaceBox(math::Box::create(topRight, bottomLeft)),
@@ -100,12 +99,12 @@ BoundingBox::update()
 	{
 		if (!surfaces.empty())
 		{
-			auto min = Vector3::create(
+			auto min = Vector3(
 				std::numeric_limits<float>::max(),
 				std::numeric_limits<float>::max(),
 				std::numeric_limits<float>::max()
 			);
-			auto max = Vector3::create(
+			auto max = Vector3(
 				-std::numeric_limits<float>::max(),
 				-std::numeric_limits<float>::max(),
 				-std::numeric_limits<float>::max()
@@ -124,30 +123,30 @@ BoundingBox::update()
 					auto y = xyzBuffer->data()[i * xyzBuffer->vertexSize() + offset + 1];
 					auto z = xyzBuffer->data()[i * xyzBuffer->vertexSize() + offset + 2];
 
-					if (x < min->x())
-						min->x(x);
-					if (x > max->x())
-						max->x(x);
+					if (x < min.x)
+						min.x = x;
+					if (x > max.x)
+						max.x = x;
 
-					if (y < min->y())
-						min->y(y);
-					if (y > max->y())
-						max->y(y);
+					if (y < min.y)
+						min.y = y;
+					if (y > max.y)
+						max.y = y;
 
-					if (z < min->z())
-						min->z(z);
-					if (z > max->z())
-						max->z(z);
+					if (z < min.z)
+						min.z = z;
+					if (z > max.z)
+						max.z = z;
 				}
 			}
 
-			_box->bottomLeft()->copyFrom(min);
-			_box->topRight()->copyFrom(max);
+			_box->bottomLeft(min);
+			_box->topRight(max);
 		}
 		else
 		{
-			_box->bottomLeft()->copyFrom(Vector3::zero());
-			_box->topRight()->copyFrom(Vector3::zero());
+			_box->bottomLeft(Vector3(0.));
+			_box->topRight(Vector3(0.));
 		}
 	}
 
@@ -164,23 +163,24 @@ BoundingBox::updateWorldSpaceBox()
 
 	if (!targets()[0]->data()->hasProperty("transform.modelToWorldMatrix"))
 	{
-		_worldSpaceBox->topRight()->copyFrom(_box->topRight());
-		_worldSpaceBox->bottomLeft()->copyFrom(_box->bottomLeft());
+		_worldSpaceBox->topRight(_box->topRight());
+		_worldSpaceBox->bottomLeft(_box->bottomLeft());
 	}
 	else
 	{
-		auto t = targets()[0]->data()->get<Matrix4x4::Ptr>("transform.modelToWorldMatrix");
+		auto t = targets()[0]->data()->get<Matrix4x4>("transform.modelToWorldMatrix");
 		auto vertices = _box->getVertices();
+		auto numVertices = vertices.size();
 
-		for (auto& vertex : vertices)
-			t->transform(vertex, vertex);
+		for (auto i = 0; i < numVertices; ++i)
+			vertices[i] = (Vector4(vertices[i], 1.f) * t).xyz();
 
-		auto max = _worldSpaceBox->topRight()->setTo(
+		auto max = Vector3(
 			-std::numeric_limits<float>::max(),
 			-std::numeric_limits<float>::max(),
 			-std::numeric_limits<float>::max()
 		);
-		auto min = _worldSpaceBox->bottomLeft()->setTo(
+		auto min = Vector3(
 			std::numeric_limits<float>::max(),
 			std::numeric_limits<float>::max(),
 			std::numeric_limits<float>::max()
@@ -188,20 +188,23 @@ BoundingBox::updateWorldSpaceBox()
 
 		for (auto& vertex : vertices)
 		{
-			if (vertex->x() > max->x())
-				max->x(vertex->x());
-			if (vertex->x() < min->x())
-				min->x(vertex->x());
+			if (vertex.x > max.x)
+				max.x = vertex.x;
+			if (vertex.x < min.x)
+				min.x = vertex.x;
 
-			if (vertex->y() > max->y())
-				max->y(vertex->y());
-			if (vertex->y() < min->y())
-				min->y(vertex->y());
+			if (vertex.y > max.y)
+				max.y = vertex.y;
+			if (vertex.y < min.y)
+				min.y = vertex.y;
 
-			if (vertex->z() > max->z())
-				max->z(vertex->z());
-			if (vertex->z() < min->z())
-				min->z(vertex->z());
+			if (vertex.z > max.z)
+				max.z = vertex.z;
+			if (vertex.z < min.z)
+				min.z = vertex.z;
 		}
+
+		_worldSpaceBox->topRight(max);
+		_worldSpaceBox->bottomLeft(min);
 	}
 }

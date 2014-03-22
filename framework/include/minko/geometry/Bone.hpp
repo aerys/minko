@@ -33,11 +33,10 @@ namespace minko
 
 		private:
 			typedef std::shared_ptr<scene::Node>		NodePtr;
-			typedef std::shared_ptr<math::Matrix4x4>	Matrix4x4Ptr;
 
 		private:
 			const NodePtr								_node;
-			const Matrix4x4Ptr							_offsetMatrix;
+			const math::Matrix4x4						_offsetMatrix;
 			const std::vector<unsigned short>			_vertexIds;
 			const std::vector<float>					_vertexWeights;
 		
@@ -46,7 +45,7 @@ namespace minko
 			inline
 			Ptr
 			create(NodePtr								node, 
-				   Matrix4x4Ptr							offsetMatrix, 
+				   const math::Matrix4x4&				offsetMatrix, 
 				   const std::vector<unsigned short>&	vertexIds, 
 				   const std::vector<float>&			vertexWeights)
 			{
@@ -61,7 +60,7 @@ namespace minko
 			}
 
 			inline
-			Matrix4x4Ptr
+			const math::Matrix4x4&
 			offsetMatrix() const
 			{
 				return _offsetMatrix;
@@ -82,7 +81,7 @@ namespace minko
 			}
 
 		private:
-			Bone(NodePtr, Matrix4x4Ptr, const std::vector<unsigned short>&, const std::vector<float>&);
+			Bone(NodePtr, const math::Matrix4x4&, const std::vector<unsigned short>&, const std::vector<float>&);
 		};
 	}
 }

@@ -23,7 +23,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/math/Frustum.hpp"
 #include "minko/scene/NodeSet.hpp"
 #include "minko/math/OctTree.hpp"
-#include "minko/math/Vector3.hpp"
 #include "minko/component/PerspectiveCamera.hpp"
 #include "minko/component/SceneManager.hpp"
 #include "minko/component/Surface.hpp"
@@ -59,11 +58,10 @@ Culling::targetAddedHandler(AbstractComponent::Ptr ctrl, NodePtr target)
 	if (target->components<component::PerspectiveCamera>().size() < 1)
 		throw std::logic_error("Culling must be added to a camera");
 
-
 	// compute scene bounding box
 
 	if (_octTree == nullptr)
-		_octTree = math::OctTree::create(50, 7, math::Vector3::create(0, 0, 0));
+		_octTree = math::OctTree::create(50, 7, math::Vector3(0.f));
 	
 	if (target->root()->hasComponent<SceneManager>())
 		targetAddedToScene(nullptr, target, nullptr);
@@ -73,14 +71,16 @@ Culling::targetAddedHandler(AbstractComponent::Ptr ctrl, NodePtr target)
 		shared_from_this(),
 		std::placeholders::_1,
 		std::placeholders::_2,
-		std::placeholders::_3));
+		std::placeholders::_3
+	));
 
 
 	_viewMatrixChangedSlot = target->data()->propertyValueChanged(_bindProperty)->connect(std::bind(
 		&Culling::worldToScreenChanged,
 		shared_from_this(),
 		std::placeholders::_1,
-		std::placeholders::_2));
+		std::placeholders::_2
+	));
 }
 
 void
@@ -138,7 +138,7 @@ Culling::layoutChanged(NodePtr node, NodePtr target)
 void
 Culling::worldToScreenChanged(std::shared_ptr<data::Container> data, const std::string& propertyName)
 {
-	_frustum->updateFromMatrix(data->get<std::shared_ptr<math::Matrix4x4>>(propertyName));
+	_frustum->updateFromMatrix(data->get<math::Matrix4x4>(propertyName));
 	
 	auto renderer = targets()[0]->component<Renderer>();
 
@@ -151,5 +151,6 @@ Culling::worldToScreenChanged(std::shared_ptr<data::Container> data, const std::
 		[&](NodePtr node)
 		{
 			node->component<Surface>()->computedVisibility(renderer, false);
-		});
+		}
+	);
 }

@@ -87,7 +87,7 @@ namespace minko
 
 			virtual
 			void
-			updateFromMatrix(std::shared_ptr<math::Matrix4x4> matrix) = 0;
+			updateFromMatrix(const math::Matrix4x4& matrix) = 0;
 		};
 	}
 }

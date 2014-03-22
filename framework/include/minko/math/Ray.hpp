@@ -21,8 +21,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 
-#include "minko/math/Vector3.hpp"
-
 namespace minko
 {
 	namespace math
@@ -33,16 +31,13 @@ namespace minko
 			typedef std::shared_ptr<Ray>	Ptr;
 
 		private:
-			typedef std::shared_ptr<Vector3>	Vector3Ptr;
-
-		private:
-			Vector3Ptr	_origin;
-			Vector3Ptr	_direction;
+			Vector3	_origin;
+			Vector3	_direction;
 
 		public:
 			inline static
 			Ptr
-			create(Vector3Ptr origin, Vector3Ptr direction)
+			create(const Vector3& origin, const Vector3& direction)
 			{
 				return std::shared_ptr<Ray>(new Ray(origin, direction));
 			}
@@ -55,29 +50,29 @@ namespace minko
 			}
 
 			inline
-			Vector3Ptr
+			Vector3&
 			direction()
 			{
 				return _direction;
 			}
 
 			inline
-			Vector3Ptr
+			Vector3&
 			origin()
 			{
 				return _origin;
 			}
 
 		private:
-			Ray(Vector3Ptr origin, Vector3Ptr direction) :
-				_origin(Vector3::create(origin)),
-				_direction(Vector3::create(direction))
+			Ray(const Vector3& origin, const Vector3& direction) :
+				_origin(origin),
+				_direction(direction)
 			{
 			}
 
 			Ray() :
-				_origin(Vector3::create()),
-				_direction(Vector3::create(0.f, 0.f, -1.f))
+				_origin(Vector3(0.)),
+				_direction(Vector3(0.f, 0.f, -1.f))
 			{
 			}
 		};

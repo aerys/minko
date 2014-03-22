@@ -6,7 +6,10 @@ minko.project.library = function(name)
 	language "C++"
 
 	location "."
-	includedirs { minko.sdk.path("/framework/include") }
+	includedirs {
+		minko.sdk.path("/framework/include"),
+		minko.sdk.path("/framework/lib/glm")
+	}
 	
 	configuration { "debug"}
 		defines { "DEBUG" }

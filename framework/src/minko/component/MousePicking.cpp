@@ -36,7 +36,7 @@ MousePicking::MousePicking() :
 	_rollOut(MouseSignal::create()),
 	_leftButtonUp(MouseSignal::create()),
 	_leftButtonDown(MouseSignal::create()),
-	_previousRayOrigin(math::Vector3::create())
+	_previousRayOrigin(0.f)
 {
 
 }
@@ -81,10 +81,10 @@ MousePicking::pick(std::shared_ptr<math::Ray> ray)
 
 	if (!hits.empty())
 	{
-		if (!_previousRayOrigin->equals(ray->origin()))
+		if (_previousRayOrigin == ray->origin())
 		{
 			_move->execute(shared_from_this(), hits, ray);
-			_previousRayOrigin->copyFrom(ray->origin());
+			_previousRayOrigin = ray->origin();
 		}
 
 		_over->execute(shared_from_this(), hits, ray);

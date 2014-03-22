@@ -48,7 +48,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include <thread>
 #include <chrono>
 
-#include "minko/math/Convertible.hpp"
+#define GLM_FORCE_CXX11
+#define GLM_FORCE_INLINE
+#define GLM_FORCE_RADIANS
+#define GLM_SWIZZLE
+#include "glm/mat4x4.hpp"
+#include "glm/gtc/type_ptr.hpp"
+#include "glm/gtc/matrix_transform.hpp"
+#include "glm/gtx/matrix_interpolation.hpp"
+#include "glm/gtc/matrix_inverse.hpp"
 
 #define PI 3.1415926535897932384626433832795
 
@@ -244,16 +252,31 @@ namespace minko
 
 	namespace math
 	{
-		class Vector2;
-		class Vector3;
-		class Vector4;
-		class Matrix4x4;
+		using namespace glm;
+
+		typedef glm::vec2 Vector2;
+		typedef glm::vec3 Vector3;
+		typedef glm::vec4 Vector4;
+		typedef glm::mat4 Matrix4x4;
+
 		class Quaternion;
 		class Ray;
 		class AbstractShape;
 		class Box;
 		class Frustum;
 		class OctTree;
+
+		inline
+		Vector4
+		rgba(uint rgba)
+		{
+			return math::Vector4(
+		        (float)((rgba >> 24) & 0xff) / 255.f,
+		        (float)((rgba >> 16) & 0xff) / 255.f,
+		        (float)((rgba >> 8) & 0xff) / 255.f,
+		        (float)(rgba & 0xff) / 255.f
+		    );
+		}
 
 		inline
 		bool
@@ -340,62 +363,6 @@ namespace minko
 	}
 }
 
-template<typename T>
-std::shared_ptr<T>
-operator*(std::shared_ptr<T> a, float b)
-{
-	return (*a) * b;
-}
-
-template<typename T>
-std::shared_ptr<T>
-operator*(std::shared_ptr<T> a, std::shared_ptr<T> b)
-{
-	return *a * b;
-}
-
-template<typename T>
-std::shared_ptr<T>
-operator-(std::shared_ptr<T> a, std::shared_ptr<T> b)
-{
-	return *a - b;
-}
-
-template<typename T>
-std::shared_ptr<T>
-operator+(std::shared_ptr<T> a, std::shared_ptr<T> b)
-{
-	return *a + b;
-}
-
-template<typename T>
-std::shared_ptr<T>
-operator/(std::shared_ptr<T> a, std::shared_ptr<T> b)
-{
-	return *a / b;
-}
-
-template<typename T>
-std::shared_ptr<T>
-operator*=(std::shared_ptr<T> a, std::shared_ptr<T> b)
-{
-	return *a *= b;
-}
-
-template<typename T>
-std::shared_ptr<T>
-operator+=(std::shared_ptr<T> a, std::shared_ptr<T> b)
-{
-	return *a += b;
-}
-
-template<typename T>
-std::shared_ptr<T>
-operator-=(std::shared_ptr<T> a, std::shared_ptr<T> b)
-{
-	return *a -= b;
-}
-
 namespace std
 {
 	template <class T>
@@ -405,6 +372,52 @@ namespace std
 	{
 		std::hash<T> hasher;
 		seed ^= hasher(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+	}
+
+	template<>
+	struct hash<minko::math::Matrix4x4>
+	{
+		inline
+		size_t
+		operator()(const minko::math::Matrix4x4& matrix) const
+		{
+			return (size_t)minko::math::value_ptr(matrix);
+		}
+	};
+
+	inline
+	std::string
+	to_string(const minko::math::mat4& matrix)
+	{
+		std::string str = "(";
+		auto ptr = minko::math::value_ptr(matrix);
+		for (auto i = 0; i < 15; ++i)
+			str += to_string(ptr[i]) + ", ";
+		str += to_string(ptr[15]) + ")";
+
+		return str;
+	}
+
+	inline
+	std::string
+	to_string(const minko::math::vec2& v)
+	{
+		return "(" + std::to_string(v.x) + ", " + std::to_string(v.y) + ")";
+	}
+
+	inline
+	std::string
+	to_string(const minko::math::vec3& v)
+	{
+		return "(" + std::to_string(v.x) + ", " + std::to_string(v.y) + ", " + std::to_string(v.z) + ")";
+	}
+
+	inline
+	std::string
+	to_string(const minko::math::vec4& v)
+	{
+		return "(" + std::to_string(v.x) + ", " + std::to_string(v.y) + ", " + std::to_string(v.z) + ", "
+			+ std::to_string(v.w) + ")";
 	}
 }
 //using namespace minko;

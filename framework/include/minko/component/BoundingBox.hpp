@@ -23,7 +23,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/component/AbstractComponent.hpp"
 #include "minko/Signal.hpp"
-#include "minko/math/Vector3.hpp"
 #include "minko/math/AbstractShape.hpp"
 #include "minko/math/Box.hpp"
 
@@ -73,28 +72,28 @@ namespace minko
 
 			inline static
 			Ptr
-			create(float size, std::shared_ptr<math::Vector3> center)
+			create(float size, const math::Vector3& center)
 			{
 				return create(size, size, size, center);
 			}
 
 			inline static
 			Ptr
-			create(float width, float height, float depth, std::shared_ptr<math::Vector3> center)
+			create(float width, float height, float depth, const math::Vector3& center)
 			{
 				return create(
-					math::Vector3::create(
-						center->x() - width * .5f, center->y() - height * .5f, center->z() - depth * .5f
+					math::Vector3(
+						center.x - width * .5f, center.y - height * .5f, center.z - depth * .5f
 					),
-					math::Vector3::create(
-						center->x() + width * .5f, center->y() + height * .5f, center->z() + depth * .5f
+					math::Vector3(
+						center.x + width * .5f, center.y + height * .5f, center.z + depth * .5f
 					)
 				);
 			}
 
 			inline static
 			Ptr
-			create(std::shared_ptr<math::Vector3> topRight, std::shared_ptr<math::Vector3> bottomLeft)
+			create(const math::Vector3& topRight, const math::Vector3& bottomLeft)
 			{
 				auto bb = std::shared_ptr<BoundingBox>(new BoundingBox(topRight, bottomLeft));
 
@@ -124,7 +123,7 @@ namespace minko
 			update();
 
 		private:
-			BoundingBox(std::shared_ptr<math::Vector3> topRight, std::shared_ptr<math::Vector3> bottomLeft);
+			BoundingBox(const math::Vector3& topRight, const math::Vector3& bottomLeft);
 
 			BoundingBox();
 

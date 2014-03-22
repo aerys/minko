@@ -46,12 +46,12 @@ namespace minko
 			}
 
 			Ptr
-			specularColor(Vector4Ptr);
+			specularColor(const math::Vector4&);
 
 			Ptr
 			specularColor(uint);
 
-			Vector4Ptr
+			math::Vector4
 			specularColor() const;
 
 			Ptr

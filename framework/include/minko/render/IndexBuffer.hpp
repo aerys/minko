@@ -28,8 +28,7 @@ namespace minko
 	namespace render
 	{
 		class IndexBuffer :
-			public AbstractResource,
-			public Convertible<IndexBuffer>
+			public AbstractResource
 		{
 		public:
 			typedef std::shared_ptr<IndexBuffer>	Ptr;

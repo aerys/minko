@@ -19,7 +19,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/component/Transform.hpp"
 
-#include "minko/math/Matrix4x4.hpp"
 #include "minko/scene/Node.hpp"
 #include "minko/scene/NodeSet.hpp"
 #include "minko/data/Container.hpp"
@@ -32,9 +31,9 @@ using namespace minko::math;
 
 Transform::Transform() :
 	minko::component::AbstractComponent(),
-	_matrix(Matrix4x4::create()),
-	_modelToWorld(Matrix4x4::create()),
-	_worldToModel(Matrix4x4::create()),
+	_matrix(1.),
+	_modelToWorld(1.),
+//	_worldToModel(1.),
 	_data(data::StructureProvider::create("transform"))
 {
 }
@@ -56,9 +55,9 @@ Transform::initialize()
 		std::placeholders::_2
 	));
 
-	_data->set<Matrix4x4::Ptr>("matrix", _matrix);
-	_data->set<Matrix4x4::Ptr>("modelToWorldMatrix", _modelToWorld);
-	//_data->set("transform/worldToModelMatrix", _worldToModel);
+	_data
+		->set<Matrix4x4>("matrix", 				_matrix)
+		->set<Matrix4x4>("modelToWorldMatrix", 	_modelToWorld);
 }
 
 void
@@ -160,7 +159,11 @@ Transform::RootTransform::targetAddedHandler(AbstractComponent::Ptr 	ctrl,
 
 	if (sceneManager != nullptr)
 		_renderingBeginSlot = sceneManager->renderingBegin()->connect(std::bind(
-			&Transform::RootTransform::renderingBeginHandler, shared_from_this(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
+			&Transform::RootTransform::renderingBeginHandler,
+			shared_from_this(),
+			std::placeholders::_1,
+			std::placeholders::_2,
+			std::placeholders::_3
 		), 1000.f);
 
 	addedHandler(nullptr, target, target->parent());
@@ -183,7 +186,11 @@ Transform::RootTransform::componentAddedHandler(scene::Node::Ptr		node,
 
 	if (sceneManager != nullptr)
 		_renderingBeginSlot = sceneManager->renderingBegin()->connect(std::bind(
-			&Transform::RootTransform::renderingBeginHandler, shared_from_this(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
+			&Transform::RootTransform::renderingBeginHandler,
+			shared_from_this(),
+			std::placeholders::_1,
+			std::placeholders::_2,
+			std::placeholders::_3
 		), 1000.f);
 	else if (std::dynamic_pointer_cast<Transform>(ctrl) != nullptr)
 		_invalidLists = true;
@@ -253,10 +260,11 @@ Transform::RootTransform::updateTransformsList()
 		_nodeToId[node] = nodeId;
 
 		_idToNode.push_back(node);
-		_transforms.push_back(transformCtrl->_matrix);
-		_modelToWorld.push_back(transformCtrl->_modelToWorld);
+		_transforms.push_back(transformCtrl);
+		_modelToWorld.push_back(&transformCtrl->_modelToWorld);
 		_numChildren.push_back(0);
 		_firstChildId.push_back(0);
+		_dirty.push_back(true);
 
 		auto ancestor = node->parent();
 		while (ancestor != nullptr && _nodeToId.count(ancestor) == 0)
@@ -288,36 +296,34 @@ Transform::RootTransform::updateTransforms()
 
 	while (nodeId < numNodes)
 	{
-		auto parentModelToWorldMatrix 	= _modelToWorld[nodeId];
 		auto numChildren 				= _numChildren[nodeId];
 		auto firstChildId 				= _firstChildId[nodeId];
 		auto lastChildId 				= firstChildId + numChildren;
 		auto parentId 					= _parentId[nodeId];
-        auto parentTransformChanged     = parentModelToWorldMatrix->_hasChanged;
+		auto parentDirty				= _dirty[nodeId];
+		auto parentModelToWorldMatrix 	= _modelToWorld[nodeId];
 
-        parentModelToWorldMatrix->_hasChanged = false;
-
-		if (parentId == -1)
+		if (parentDirty && parentId == -1)
 		{
-            auto parentTransform = _transforms[nodeId];
-	        
-            if (parentTransformChanged)
-            {
-			    parentModelToWorldMatrix->copyFrom(parentTransform);
-                parentTransform->_hasChanged = false;
-            }
-		}
+			auto transform = _transforms[nodeId];
+
+			*parentModelToWorldMatrix = transform->_matrix;
+        	transform->_data->set("modelToWorldMatrix", *parentModelToWorldMatrix);
+        	_dirty[nodeId] = false;
+        }
 
 		for (auto childId = firstChildId; childId < lastChildId; ++childId)
 		{
-			auto modelToWorld   = _modelToWorld[childId];
-            auto transform      = _transforms[childId];
+			auto childDirty = parentDirty || _dirty[childId];
+			auto transform = _transforms[childId];
+			auto modelToWorldMatrix = _modelToWorld[nodeId];
 
-            if (transform->_hasChanged || parentTransformChanged)
-            {
-			    modelToWorld->copyFrom(transform)->append(parentModelToWorldMatrix);
-			    transform->_hasChanged = false;
-            }
+			if (childDirty)
+			{
+				*modelToWorldMatrix = *parentModelToWorldMatrix * transform->_matrix;
+				transform->_data->set("modelToWorldMatrix", *modelToWorldMatrix);
+				_dirty[childId] = false;				
+			}
 		}
 
 		++nodeId;
@@ -330,6 +336,9 @@ Transform::RootTransform::forceUpdate(scene::Node::Ptr node, bool updateTransfor
 	if (_invalidLists || updateTransformLists)
 		updateTransformsList();
 
+	updateTransforms();
+
+/*
 	auto				targetNodeId	= _nodeToId[node];
 	int					nodeId			= targetNodeId;
 	auto				dirtyRoot		= -1;
@@ -359,6 +368,7 @@ Transform::RootTransform::forceUpdate(scene::Node::Ptr node, bool updateTransfor
 			modelToWorld->append(_modelToWorld[parentId]);
 		modelToWorld->_hasChanged = false;
 	}
+	*/
 }
 
 void

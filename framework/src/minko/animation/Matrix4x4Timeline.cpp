@@ -19,7 +19,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/animation/Matrix4x4Timeline.hpp"
 #include "minko/data/Container.hpp"
-#include "minko/math/Matrix4x4.hpp"
+
 #include "timeline_lookup.hpp"
 
 using namespace minko;
@@ -27,11 +27,11 @@ using namespace minko::component;
 using namespace minko::animation;
 using namespace minko::math;
 
-Matrix4x4Timeline::Matrix4x4Timeline(const std::string& propertyName,
-									 uint duration,
-									 const std::vector<uint>& timetable,
-									 const std::vector<Matrix4x4Ptr>& matrices,
-									 bool interpolate):
+Matrix4x4Timeline::Matrix4x4Timeline(const std::string& 					propertyName,
+									 uint 									duration,
+									 const std::vector<uint>& 				timetable,
+									 const std::vector<math::Matrix4x4>& 	matrices,
+									 bool 									interpolate):
 	AbstractTimeline(propertyName, duration),
 	_matrices(),
 	_interpolate(interpolate)
@@ -40,8 +40,8 @@ Matrix4x4Timeline::Matrix4x4Timeline(const std::string& propertyName,
 }
 
 void
-Matrix4x4Timeline::initializeMatrixTimetable(const std::vector<uint>& timetable,
-											 const std::vector<Matrix4x4Ptr>& matrices)
+Matrix4x4Timeline::initializeMatrixTimetable(const std::vector<uint>& 				timetable,
+											 const std::vector<math::Matrix4x4>& 	matrices)
 {
 	if (timetable.empty())
 		throw new std::invalid_argument("timetable");
@@ -60,7 +60,13 @@ Matrix4x4Timeline::initializeMatrixTimetable(const std::vector<uint>& timetable,
 		_matrices[keyId].second	= matrices[keyId];
 	}
 
-	std::sort(_matrices.begin(), _matrices.end());
+	std::sort(
+		_matrices.begin(),
+		_matrices.end(),
+		[](const std::pair<uint, math::Matrix4x4>& a, const std::pair<uint, math::Matrix4x4>& b)
+		{
+			return a.first < b.first;
+		});
 }
 
 void
@@ -74,50 +80,38 @@ Matrix4x4Timeline::update(uint time,
 	if (data == nullptr || !data->hasProperty(_propertyName))
 		return;
 
-	auto matrix	= data->get<Matrix4x4::Ptr>(_propertyName);
-
-	if (matrix == nullptr)
-		return;
+	auto matrix	= data->get<Matrix4x4>(_propertyName);
 
     if (_interpolate)
-        matrix = interpolate(time, matrix);
+    	data->set(_propertyName, interpolate(time));
     else
     {
         const uint	t		= getTimeInRange(time, _duration + 1);
 	    const uint	keyId	= getIndexForTime(t, _matrices);
 
-   		matrix->copyFrom(_matrices[keyId].second);
+    	data->set(_propertyName, _matrices[keyId].second);
     }
 }
 
-Matrix4x4::Ptr
-Matrix4x4Timeline::interpolate(uint             time, 
-                               Matrix4x4::Ptr   output) const
+Matrix4x4
+Matrix4x4Timeline::interpolate(uint time) const
 {
-    const uint	t		= getTimeInRange(time, _duration + 1);
-	const uint	keyId	= getIndexForTime(t, _matrices);
-
-    if (output == nullptr)
-        output = Matrix4x4::create();
+    const auto	t		= getTimeInRange(time, _duration + 1);
+	const auto	keyId	= getIndexForTime(t, _matrices);
 
     // all matrices are sorted in order of increasing time
     if (t < _matrices.front().first || t >= _matrices.back().first)
-        output->copyFrom(_matrices[keyId].second);
-    else
-    {
-		assert(keyId + 1 < (int)_matrices.size());
-        
-		const auto& current	= _matrices[keyId];
-		const auto& next	= _matrices[keyId + 1];
+        return _matrices[keyId].second;
 
-		const float ratio	= current.first < next.first 
-			? (t - current.first) / (float)(next.first - current.first)
-			: 0.0f;
+#ifdef DEBUG
+	assert(keyId + 1 < (int)_matrices.size());
+#endif
+    
+	const auto& current	= _matrices[keyId];
+	const auto& next	= _matrices[keyId + 1];
+	const float ratio	= current.first < next.first 
+		? (t - current.first) / (float)(next.first - current.first)
+		: 0.0f;
 
-		output
-			->copyFrom(current.second)
-			->interpolateTo(next.second, ratio);
-    }
-
-    return output;
+	return math::interpolate(current.second, next.second, ratio);
 }

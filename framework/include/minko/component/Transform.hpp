@@ -24,8 +24,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/scene/Node.hpp"
 #include "minko/component/AbstractComponent.hpp"
 #include "minko/component/Renderer.hpp"
+#include "minko/data/StructureProvider.hpp"
 #include "minko/Any.hpp"
-#include "minko/math/Matrix4x4.hpp"
 
 namespace minko
 {
@@ -37,16 +37,15 @@ namespace minko
 		{
 
 		public:
-			typedef std::shared_ptr<Transform>	Ptr;
+			typedef std::shared_ptr<Transform>			Ptr;
 
 		private:
-			typedef std::shared_ptr<scene::Node>			NodePtr;
-			typedef std::shared_ptr<AbstractComponent>		AbsCtrlPtr;
+			typedef std::shared_ptr<scene::Node>		NodePtr;
+			typedef std::shared_ptr<AbstractComponent>	AbsCtrlPtr;
 
 		private:
-			std::shared_ptr<math::Matrix4x4>			_matrix;
-			std::shared_ptr<math::Matrix4x4>			_modelToWorld;
-			std::shared_ptr<math::Matrix4x4>			_worldToModel;
+			math::Matrix4x4								_matrix;
+			math::Matrix4x4								_modelToWorld;
 			std::shared_ptr<data::StructureProvider>	_data;
 
 			Signal<AbsCtrlPtr, NodePtr>::Slot 			_targetAddedSlot;
@@ -68,11 +67,11 @@ namespace minko
 
 			inline static
 			Ptr
-			create(std::shared_ptr<math::Matrix4x4> transform)
+			create(const math::Matrix4x4& transform)
 			{
 				auto ctrl = create();
 
-				ctrl->_matrix->copyFrom(transform);
+				ctrl->_matrix = transform;
 
 				return ctrl;
 			}
@@ -82,49 +81,36 @@ namespace minko
 			}
 
 			inline
-			std::shared_ptr<math::Matrix4x4>
+			const math::Matrix4x4&
 			matrix()
 			{
 				return _matrix;
 			}
 
 			inline
-			std::shared_ptr<math::Vector3>
-			modelToWorld(std::shared_ptr<math::Vector3> v, std::shared_ptr<math::Vector3> out = nullptr)
+			void
+			matrix(const math::Matrix4x4& matrix)
 			{
-				return _modelToWorld->transform(v, out);
+				_matrix = matrix;
+				_data->set("matrix", _matrix);
+
+				auto rootTransform = targets()[0]->root()->component<RootTransform>();
+
+				if (rootTransform && !rootTransform->_invalidLists)
+					rootTransform->_dirty[rootTransform->_nodeToId[targets()[0]]] = true;
+				else
+					_modelToWorld = matrix;
 			}
 
 			inline
-			std::shared_ptr<math::Vector3>
-			deltaModelToWorld(std::shared_ptr<math::Vector3> v, std::shared_ptr<math::Vector3> out = nullptr)
-			{
-				return _modelToWorld->deltaTransform(v, out);
-			}
-
-			inline
-			std::shared_ptr<math::Vector3>
-			worldToModel(std::shared_ptr<math::Vector3> v, std::shared_ptr<math::Vector3> out = nullptr)
-			{
-				return _worldToModel->copyFrom(_modelToWorld)->invert()->transform(v, out);
-			}
-
-			inline
-			std::shared_ptr<math::Vector3>
-			deltaWorldToModel(std::shared_ptr<math::Vector3> v, std::shared_ptr<math::Vector3> out = nullptr)
-			{
-				return _worldToModel->copyFrom(_modelToWorld)->invert()->deltaTransform(v, out);
-			}
-
-			inline
-			std::shared_ptr<math::Matrix4x4>
+			const math::Matrix4x4&
 			modelToWorldMatrix()
 			{
 				return modelToWorldMatrix(false);
 			}
 
 			inline
-			std::shared_ptr<math::Matrix4x4>
+			const math::Matrix4x4&
 			modelToWorldMatrix(bool forceUpdate)
 			{
 				if (forceUpdate)
@@ -137,27 +123,6 @@ namespace minko
 
 				return _modelToWorld;
 			}
-
-            inline
-            float
-            x()
-            {
-                return this->modelToWorld(minko::math::Vector3::create())->x();
-            }
-
-            inline
-            float
-            y()
-            {
-                return this->modelToWorld(minko::math::Vector3::create())->y();
-            }
-
-            inline
-            float
-            z()
-            {
-                return this->modelToWorld(minko::math::Vector3::create())->z();
-            }
 
 		private:
 			Transform();
@@ -183,12 +148,19 @@ namespace minko
 				public std::enable_shared_from_this<RootTransform>,
 				public AbstractComponent
 			{
+				friend class Transform;
+
 			public:
 				typedef std::shared_ptr<RootTransform> Ptr;
 
 			private:
-				typedef std::shared_ptr<Renderer>		RendererCtrlPtr;
-				typedef Signal<RendererCtrlPtr>::Slot 	EnterFrameCallback;
+				typedef std::shared_ptr<SceneManager>				SceneMgrPtr;
+				typedef std::shared_ptr<Renderer>					RendererCtrlPtr;
+				typedef Signal<RendererCtrlPtr>::Slot 				EnterFrameCallback;
+				typedef std::shared_ptr<render::AbstractTexture> 	AbsTexturePtr;
+				typedef Signal<SceneMgrPtr, uint, AbsTexturePtr> 	RenderingBeginSignal;
+				typedef RenderingBeginSignal::Slot 					RenderingBeginSlot;
+				typedef std::shared_ptr<Transform>					TransformPtr;
 
 			public:
 				inline static
@@ -206,19 +178,19 @@ namespace minko
 				forceUpdate(NodePtr node, bool updateTransformLists = false);
 
 			private:
-				std::vector<std::shared_ptr<math::Matrix4x4>>	_transforms;
-				std::vector<std::shared_ptr<math::Matrix4x4>>	_modelToWorld;
-				//std::vector<std::shared_ptr<Matrix4x4>>		_worldToModel;
+				std::vector<TransformPtr>		_transforms;
+				std::vector<math::Matrix4x4*>	_modelToWorld;
 
-				std::map<NodePtr, unsigned int>					_nodeToId;
-				std::vector<NodePtr>							_idToNode;
-				std::vector<int>		 						_parentId;
-				std::vector<unsigned int> 						_firstChildId;
-				std::vector<unsigned int>						_numChildren;
-				bool											_invalidLists;
+				std::map<NodePtr, unsigned int>	_nodeToId;
+				std::vector<NodePtr>			_idToNode;
+				std::vector<int>		 		_parentId;
+				std::vector<unsigned int> 		_firstChildId;
+				std::vector<unsigned int>		_numChildren;
+				std::vector<bool>				_dirty;
+				bool							_invalidLists;
 
-				std::list<Any>									_targetSlots;
-				Signal<std::shared_ptr<SceneManager>, uint, std::shared_ptr<render::AbstractTexture>>::Slot		_renderingBeginSlot;
+				std::list<Any>					_targetSlots;
+				RenderingBeginSlot				_renderingBeginSlot;
 
 			private:
 				void
@@ -252,9 +224,9 @@ namespace minko
 				updateTransformPath(const std::vector<unsigned int>& path);
 
 				void
-				renderingBeginHandler(std::shared_ptr<SceneManager> sceneManager, 
-									  uint							frameId, 
-									  std::shared_ptr<render::AbstractTexture>);
+				renderingBeginHandler(SceneMgrPtr 	sceneManager, 
+									  uint			frameId, 
+									  AbsTexturePtr	target);
 			};
 		};
 	}

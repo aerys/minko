@@ -18,41 +18,38 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "minko/math/Frustum.hpp"
-#include "minko/math/Vector4.hpp"
-#include "minko/math/Matrix4x4.hpp"
+
 #include "minko/math/Box.hpp"
 
 using namespace minko;
-using namespace minko::math;
 
 void
-Frustum::updateFromMatrix(std::shared_ptr<math::Matrix4x4> matrix)
+math::Frustum::updateFromMatrix(const math::Matrix4x4& matrix)
 {
-	std::shared_ptr<math::Matrix4x4>	clone	= math::Matrix4x4::create(matrix);
-	std::vector<float>					data	= clone->data();
+	const float* data	= math::value_ptr(matrix);
 
-	_planes[(int)PlanePosition::LEFT]	->setTo(data[12] + data[0], data[13] + data[1], data[14] + data[2], data[15] + data[3])->normalize();
-	_planes[(int)PlanePosition::TOP]	->setTo(data[12] - data[4], data[13] - data[5], data[14] - data[6], data[15] - data[7])->normalize();
-	_planes[(int)PlanePosition::RIGHT]	->setTo(data[12] - data[0], data[13] - data[1], data[14] - data[2], data[15] - data[3])->normalize();
-	_planes[(int)PlanePosition::BOTTOM]	->setTo(data[12] + data[4], data[13] + data[5], data[14] + data[6], data[15] + data[7])->normalize();
-	_planes[(int)PlanePosition::FAR]	->setTo(data[12] - data[8], data[13] - data[9], data[14] - data[10], data[15] - data[11])->normalize();
-	_planes[(int)PlanePosition::NEAR]	->setTo(data[8], data[9], data[10], data[11])->normalize();
+	_planes[(int)PlanePosition::LEFT]	= math::normalize(math::Vector4(data[12] + data[0], data[13] + data[1], data[14] + data[2], data[15] + data[3]));
+	_planes[(int)PlanePosition::TOP]	= math::normalize(math::Vector4(data[12] - data[4], data[13] - data[5], data[14] - data[6], data[15] - data[7]));
+	_planes[(int)PlanePosition::RIGHT]	= math::normalize(math::Vector4(data[12] - data[0], data[13] - data[1], data[14] - data[2], data[15] - data[3]));
+	_planes[(int)PlanePosition::BOTTOM]	= math::normalize(math::Vector4(data[12] + data[4], data[13] + data[5], data[14] + data[6], data[15] + data[7]));
+	_planes[(int)PlanePosition::FAR]	= math::normalize(math::Vector4(data[12] - data[8], data[13] - data[9], data[14] - data[10], data[15] - data[11]));
+	_planes[(int)PlanePosition::NEAR]	= math::normalize(math::Vector4(data[8], data[9], data[10], data[11]));
 }
 
-ShapePosition
-Frustum::testBoundingBox(math::Box::Ptr box)
+math::ShapePosition
+math::Frustum::testBoundingBox(math::Box::Ptr box)
 {
 	int result = 0;
 	
 	// bottom left front
-	float xblf = box->bottomLeft()->x();
-	float yblf = box->bottomLeft()->y();
-	float zblf = box->bottomLeft()->z();
+	float xblf = box->bottomLeft().x;
+	float yblf = box->bottomLeft().y;
+	float zblf = box->bottomLeft().z;
 
 	// top right back
-	float xtrb = box->topRight()->x();
-	float ytrb = box->topRight()->y();
-	float ztrb = box->topRight()->z();
+	float xtrb = box->topRight().x;
+	float ytrb = box->topRight().y;
+	float ztrb = box->topRight().z;
 
 	// bottom right front
 	float xbrf = xtrb;
@@ -86,10 +83,10 @@ Frustum::testBoundingBox(math::Box::Ptr box)
 
 	for (uint planeId = 0; planeId < _planes.size(); ++planeId)
 	{
-		float pa = _planes[planeId]->x();
-		float pb = _planes[planeId]->y();
-		float pc = _planes[planeId]->z();
-		float pd = _planes[planeId]->w();
+		float pa = _planes[planeId].x;
+		float pb = _planes[planeId].y;
+		float pc = _planes[planeId].z;
+		float pd = _planes[planeId].w;
 
 		
 		_blfResult[planeId] = pa * xblf + pb * yblf + pc * zblf + pd < 0.;
@@ -118,8 +115,7 @@ Frustum::testBoundingBox(math::Box::Ptr box)
 			_tlfResult[planeId] &&
 			_trfResult[planeId] &&
 			_tlbResult[planeId] &&
-			_trbResult[planeId]
-			)
+			_trbResult[planeId])
 			return static_cast<ShapePosition>(planeId);
 	}
 
@@ -127,17 +123,7 @@ Frustum::testBoundingBox(math::Box::Ptr box)
 }
 
 bool
-Frustum::cast(std::shared_ptr<Ray> ray, float& distance)
+math::Frustum::cast(std::shared_ptr<Ray> ray, float& distance)
 {
 	return false;
-}
-
-Frustum::Frustum()
-{
-	_planes[(int)PlanePosition::LEFT]	= Vector4::create();
-	_planes[(int)PlanePosition::RIGHT]	= Vector4::create();
-	_planes[(int)PlanePosition::TOP]	= Vector4::create();
-	_planes[(int)PlanePosition::BOTTOM] = Vector4::create();
-	_planes[(int)PlanePosition::FAR]	= Vector4::create();
-	_planes[(int)PlanePosition::NEAR]	= Vector4::create();
 }

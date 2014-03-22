@@ -19,7 +19,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/component/AbstractDiscreteLight.hpp"
 
-#include "minko/math/Matrix4x4.hpp"
 #include "minko/scene/Node.hpp"
 #include "minko/data/Container.hpp"
 
@@ -49,7 +48,7 @@ AbstractDiscreteLight::targetAddedHandler(AbstractComponent::Ptr cmp, std::share
 	));
 
 	if (target->data()->hasProperty("transform.modelToWorldMatrix"))
-		updateModelToWorldMatrix(target->data()->get<math::Matrix4x4::Ptr>("transform.modelToWorldMatrix"));
+		updateModelToWorldMatrix(target->data()->get<math::Matrix4x4>("transform.modelToWorldMatrix"));
 }
 
 void
@@ -64,5 +63,5 @@ void
 AbstractDiscreteLight::modelToWorldMatrixChangedHandler(std::shared_ptr<data::Container> 	container,
 								 						const std::string& 					propertyName)
 {
-	updateModelToWorldMatrix(container->get<math::Matrix4x4::Ptr>(propertyName));
+	updateModelToWorldMatrix(container->get<math::Matrix4x4>(propertyName));
 }

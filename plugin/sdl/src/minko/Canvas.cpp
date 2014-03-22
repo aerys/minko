@@ -21,7 +21,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/input/Mouse.hpp"
 #include "minko/input/Keyboard.hpp"
 #include "minko/data/Provider.hpp"
-#include "minko/math/Vector4.hpp"
 #include "minko/async/Worker.hpp"
 
 #if !defined(EMSCRIPTEN)
@@ -50,11 +49,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #endif
 
 using namespace minko;
-using namespace minko::math;
 using namespace minko::async;
 
 Canvas::Canvas(const std::string& name, const uint width, const uint height, bool useStencil, bool chromeless) :
 	_name(name),
+    _x(0),
+    _y(0),
+    _width(width),
+    _height(height),
 	_useStencil(useStencil),
 	_chromeless(chromeless),
 	_data(data::Provider::create()),
@@ -68,7 +70,7 @@ Canvas::Canvas(const std::string& name, const uint width, const uint height, boo
 	_joystickAdded(Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::create()),
 	_joystickRemoved(Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::create())
 {
-    _data->set<math::Vector4::Ptr>("canvas.viewport", Vector4::create(0.0f, 0.0f, (float) width, (float) height));
+    _data->set<math::Vector4>("canvas.viewport", math::Vector4(0.f, 0.f, (float)width, (float)height));
 }
 
 void
@@ -261,60 +263,48 @@ Canvas::initContext(SDL_Window* window, unsigned int width, unsigned int height)
 }
 #endif
 
-uint
-Canvas::x()
+void
+Canvas::x(const uint value)
 {
-    return (uint) _data->get<math::Vector4::Ptr>("canvas.viewport")->x();
-}
+    auto viewport = _data->get<math::Vector4>("canvas.viewport");
 
-uint
-Canvas::y()
-{
-    return (uint) _data->get<math::Vector4::Ptr>("canvas.viewport")->y();
-}
-
-uint
-Canvas::width()
-{
-    return (uint) _data->get<math::Vector4::Ptr>("canvas.viewport")->z();
-}
-
-uint
-Canvas::height()
-{
-    return (uint) _data->get<math::Vector4::Ptr>("canvas.viewport")->w();
+    viewport.x = (float)value;
+    _data->set("canvas.viewport", viewport);
 }
 
 void
-Canvas::x(uint value)
+Canvas::y(const uint value)
 {
-    auto viewport = _data->get<math::Vector4::Ptr>("canvas.viewport");
+    auto viewport = _data->get<math::Vector4>("canvas.viewport");
 
-    viewport->setTo((float) value, viewport->y(), viewport->z(), viewport->w());
+    viewport.y = (float)value;
+    _data->set("canvas.viewport", viewport);
 }
 
 void
-Canvas::y(uint value)
+Canvas::width(const uint value)
 {
-    auto viewport = _data->get<math::Vector4::Ptr>("canvas.viewport");
+    if (value != _width)
+    {
+        auto viewport = _data->get<math::Vector4>("canvas.viewport");
 
-    viewport->setTo(viewport->x(), (float) value, viewport->z(), viewport->w());
+        viewport.z = (float)value;
+        _width = value;
+        _data->set("canvas.viewport", viewport);        
+    }
 }
 
 void
-Canvas::width(uint value)
+Canvas::height(const uint value)
 {
-    auto viewport = _data->get<math::Vector4::Ptr>("canvas.viewport");
+    if (value != _height)
+    {
+        auto viewport = _data->get<math::Vector4>("canvas.viewport");
 
-    viewport->setTo(viewport->x(), viewport->y(), (float) value, viewport->w());
-}
-
-void
-Canvas::height(uint value)
-{
-    auto viewport = _data->get<math::Vector4::Ptr>("canvas.viewport");
-
-    viewport->setTo(viewport->x(), viewport->y(), viewport->z(), (float) value);
+        viewport.w = (float)value;
+        _height = value;
+        _data->set("canvas.viewport", viewport);        
+    }
 }
 
 void

@@ -35,7 +35,7 @@ using namespace minko::component;
 
 MouseManager::MouseManager() :
 	_ray(math::Ray::create()),
-	_previousRayOrigin(math::Vector3::create()),
+	_previousRayOrigin(0.f),
 	_lastItemUnderCursor(nullptr)
 {
 
@@ -54,7 +54,7 @@ MouseManager::initialize()
 				auto cam = targets()[0]->component<PerspectiveCamera>();
 
 				if (cam)
-					pick(cam->unproject(m->normalizedX(), m->normalizedY(), _ray));
+					pick(_ray = cam->unproject(m->normalizedX(), m->normalizedY()));
 			});
 			_mouseLeftButtonDownSlot = _mouse->leftButtonDown()->connect([&](MousePtr m)
 			{
@@ -119,13 +119,13 @@ MouseManager::pick(std::shared_ptr<math::Ray> ray)
 	{
 		auto mp = hits.front().first->component<MousePicking>();
 
-		if (!_previousRayOrigin->equals(ray->origin()))
+		if (_previousRayOrigin != ray->origin())
 		{
 			//_move->execute(shared_from_this(), hits, ray);
 			if (mp)
 				mp->move()->execute(mp, hits, ray);
 
-			_previousRayOrigin->copyFrom(ray->origin());
+			_previousRayOrigin = ray->origin();
 		}
 
 		//_over->execute(shared_from_this(), hits, ray);

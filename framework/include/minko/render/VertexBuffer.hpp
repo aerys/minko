@@ -22,7 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Common.hpp"
 
 #include "minko/render/AbstractResource.hpp"
-#include "minko/math/Convertible.hpp"
 
 namespace minko
 {
@@ -30,21 +29,20 @@ namespace minko
 	{
 		class VertexBuffer :
 			public AbstractResource,
-			public std::enable_shared_from_this<VertexBuffer>,
-			public Convertible<VertexBuffer>
+			public std::enable_shared_from_this<VertexBuffer>
 		{
 		public:
 			typedef std::shared_ptr<VertexBuffer>								Ptr;
 			typedef const std::tuple<std::string, unsigned int, unsigned int>	Attribute;
 			typedef std::shared_ptr<Attribute>									AttributePtr;
-			typedef std::shared_ptr<math::Vector3>								Vector3Ptr;
 
 		private:
 			std::vector<float>					_data;
 			std::list<AttributePtr>				_attributes;
 			uint								_vertexSize;
-			Vector3Ptr							_minPosition;
-			Vector3Ptr							_maxPosition;
+			bool								_validMinMax;
+			math::Vector3						_minPosition;
+			math::Vector3						_maxPosition;
 
 			std::shared_ptr<Signal<Ptr, int>>	_vertexSizeChanged;
 
@@ -167,14 +165,11 @@ namespace minko
 				return _data == vertexBuffer->_data;
 			}
 
-			Vector3Ptr
-			minPosition(Vector3Ptr output = nullptr);
+			const math::Vector3&
+			minPosition();
 
-			Vector3Ptr
-			maxPosition(Vector3Ptr output = nullptr);
-
-			Vector3Ptr
-			centerPosition(Vector3Ptr output = nullptr);
+			const math::Vector3&
+			maxPosition();
 
 		protected:
 			VertexBuffer(std::shared_ptr<render::AbstractContext> context);

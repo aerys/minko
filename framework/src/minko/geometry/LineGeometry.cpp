@@ -19,7 +19,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/geometry/LineGeometry.hpp"
 
-#include "minko/math/Vector3.hpp"
 #include "minko/render/AbstractContext.hpp"
 #include "minko/render/VertexBuffer.hpp"
 #include "minko/render/IndexBuffer.hpp"
@@ -27,7 +26,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::geometry;
 using namespace minko::render;
-using namespace minko::math;
 
 /*static*/ const uint			LineGeometry::MAX_NUM_LINES			= 16000;
 /*static*/ const std::string	LineGeometry::ATTRNAME_START_POS	= "startPosition";
@@ -62,30 +60,22 @@ LineGeometry::initialize(AbstractContext::Ptr context)
 	indices(_indexBuffer);
 }
 
-math::Vector3::Ptr
-LineGeometry::currentXYZ(math::Vector3::Ptr output) const
+math::Vector3
+LineGeometry::currentXYZ() const
 {
-	if (output == nullptr)
-		output = Vector3::create(_currentX, _currentY, _currentZ);
-	else
-		output->setTo(_currentX, _currentY, _currentZ);
-
-	return output;
+	return math::Vector3(_currentX, _currentY, _currentZ);
 }
 
 LineGeometry::Ptr
-LineGeometry::moveTo(math::Vector3::Ptr xyz)
+LineGeometry::moveTo(const math::Vector3& xyz)
 {
-	if (xyz == nullptr)
-		throw std::invalid_argument("xyz");
-
-	return moveTo(xyz->x(), xyz->y(), xyz->z());
+	return moveTo(xyz.x, xyz.y, xyz.z);
 }
 
 LineGeometry::Ptr
-LineGeometry::lineTo(std::shared_ptr<math::Vector3> xyz, unsigned int numSegments)
+LineGeometry::lineTo(const math::Vector3& xyz, unsigned int numSegments)
 {
-	return lineTo(xyz->x(), xyz->y(), xyz->z(), numSegments);
+	return lineTo(xyz.x, xyz.y, xyz.z, numSegments);
 }
 
 LineGeometry::Ptr
@@ -119,7 +109,9 @@ LineGeometry::lineTo(float x, float y, float z, unsigned int numSegments)
 	for (unsigned int segmentId = 0; segmentId < numSegments; ++segmentId)
 	{
 		if (_numLines >= MAX_NUM_LINES)
-			throw std::logic_error("Maximal number of segments (" + std::to_string(_numLines) + ") for line geometry reached.");
+			throw std::logic_error(
+				"Maximal number of segments (" + std::to_string(_numLines) + ") for line geometry reached."
+			);
 
 		const float nextX = _currentX + stepX;
 		const float nextY = _currentY + stepY;
@@ -162,8 +154,10 @@ LineGeometry::lineTo(float x, float y, float z, unsigned int numSegments)
 		++_numLines;
 	}
 
+#ifdef DEBUG
 	assert(vid == vertexData.size());
 	assert(iid == indexData.size());
+#endif
 
 	std::swap(_vertexBuffer->data(), vertexData);
 	std::swap(_indexBuffer->data(), indexData);

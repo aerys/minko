@@ -86,7 +86,7 @@ namespace minko
 
             virtual
             void
-            updateModelToWorldMatrix(std::shared_ptr<math::Matrix4x4> modelToWorld) = 0;
+            updateModelToWorldMatrix(const math::Matrix4x4& modelToWorld) = 0;
 		};
 	}
 }

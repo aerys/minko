@@ -19,22 +19,20 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/component/DirectionalLight.hpp"
 
-#include "minko/math/Vector3.hpp"
-
 using namespace minko;
 using namespace minko::component;
 using namespace minko::math;
 
-DirectionalLight::DirectionalLight(float diffuse,
-								   float specular) :
+DirectionalLight::DirectionalLight(float diffuse, float specular) :
 	AbstractDiscreteLight("directionalLights", diffuse, specular),
-	_worldDirection(Vector3::create(0.f, 0.f, -1.f))
+	_worldDirection(Vector3(0.f, 0.f, -1.f))
 {
 	data()->set("direction", _worldDirection);
 }
 
 void
-DirectionalLight::updateModelToWorldMatrix(std::shared_ptr<Matrix4x4> modelToWorld)
+DirectionalLight::updateModelToWorldMatrix(const math::Matrix4x4& modelToWorld)
 {
-	modelToWorld->deltaTransform(Vector3::forward(), _worldDirection);
+	_worldDirection = Vector3(0.f, 0.f, -1.f) * math::mat3x3(modelToWorld);
+	data()->set("direction", _worldDirection);
 }

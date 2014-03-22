@@ -58,8 +58,8 @@ namespace minko
 				return ptr;
 			}
 
-			std::shared_ptr<math::Vector3>
-			currentXYZ(std::shared_ptr<math::Vector3> output = nullptr) const;
+			math::Vector3
+			currentXYZ() const;
 
 			inline
 			uint
@@ -80,13 +80,13 @@ namespace minko
 			}
 
 			Ptr
-			moveTo(std::shared_ptr<math::Vector3>);
+			moveTo(const math::Vector3&);
 
 			Ptr
 			lineTo(float x, float y, float z, unsigned int numSegments = 1);
 
 			Ptr
-			lineTo(std::shared_ptr<math::Vector3>, unsigned int numSegments = 1);
+			lineTo(const math::Vector3&, unsigned int numSegments = 1);
 
 
 		private:

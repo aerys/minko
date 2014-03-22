@@ -31,11 +31,10 @@ namespace minko
 			public std::enable_shared_from_this<Skin>
 		{
 		public:
-			typedef std::shared_ptr<Skin>					Ptr;
+			typedef std::shared_ptr<Skin>	Ptr;
 
 		private:
-			typedef std::shared_ptr<Bone>					BonePtr;
-			typedef std::shared_ptr<math::Matrix4x4>		Matrix4x4Ptr;
+			typedef std::shared_ptr<Bone>	BonePtr;
 
 		private:
 			const unsigned int				_numBones;
@@ -119,7 +118,7 @@ namespace minko
 			}
 
 			void
-			matrix(unsigned int frameId, unsigned int boneId, Matrix4x4Ptr);
+			matrix(unsigned int frameId, unsigned int boneId, const math::Matrix4x4&);
 
 			inline
 			unsigned int

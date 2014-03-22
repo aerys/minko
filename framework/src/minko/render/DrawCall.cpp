@@ -35,13 +35,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/States.hpp"
 #include "minko/render/Priority.hpp"
 #include "minko/data/Container.hpp"
-#include "minko/math/Matrix4x4.hpp"
 
 #include "DrawCallZSorter.hpp"
 
 using namespace minko;
 using namespace minko::data;
-using namespace minko::math;
 using namespace minko::render;
 
 SamplerState DrawCall::_defaultSamplerState = SamplerState(WrapMode::CLAMP, TextureFilter::NEAREST, MipFilter::NONE);
@@ -331,13 +329,13 @@ DrawCall::bindUniform(const std::string&	inputName,
 				if (type == ProgramInputs::Type::float1)
 					_uniformFloat[location]		= container->get<float>(propertyName);
 				else if (type == ProgramInputs::Type::float2)
-					_uniformFloat2[location]	= container->get<Vector2::Ptr>(propertyName);
+					_uniformFloat2[location]	= container->get<math::Vector2>(propertyName);
 				else if (type == ProgramInputs::Type::float3)
-					_uniformFloat3[location]	= container->get<Vector3::Ptr>(propertyName);
+					_uniformFloat3[location]	= container->get<math::Vector3>(propertyName);
 				else if (type == ProgramInputs::Type::float4)
-					_uniformFloat4[location]	= container->get<Vector4::Ptr>(propertyName);
+					_uniformFloat4[location]	= container->get<math::Vector4>(propertyName);
 				else if (type == ProgramInputs::Type::float16)
-					_uniformFloat16[location]	= &(container->get<Matrix4x4::Ptr>(propertyName)->data()[0]);
+					_uniformFloat16[location]	= container->get<math::Matrix4x4>(propertyName);
 				else if (type == ProgramInputs::Type::int1)
 					_uniformInt[location]		= container->get<int>(propertyName);
 				else if (type == ProgramInputs::Type::int2)
@@ -551,22 +549,22 @@ DrawCall::render(const AbstractContext::Ptr& context, AbstractTexture::Ptr rende
     {
         auto& float2 = uniformFloat2.second;
 
-        context->setUniform(uniformFloat2.first, float2->x(), float2->y());
+        context->setUniform(uniformFloat2.first, float2.x, float2.y);
     }
     for (auto& uniformFloat3 : _uniformFloat3)
     {
         auto& float3 = uniformFloat3.second;
 
-        context->setUniform(uniformFloat3.first, float3->x(), float3->y(), float3->z());
+        context->setUniform(uniformFloat3.first, float3.x, float3.y, float3.z);
     }
     for (auto& uniformFloat4 : _uniformFloat4)
     {
         auto& float4 = uniformFloat4.second;
 
-        context->setUniform(uniformFloat4.first, float4->x(), float4->y(), float4->z(), float4->w());
+        context->setUniform(uniformFloat4.first, float4.x, float4.y, float4.z, float4.w);
     }
     for (auto& uniformFloat16 : _uniformFloat16)
-        context->setUniform(uniformFloat16.first, 1, true, uniformFloat16.second);
+        context->setUniform(uniformFloat16.first, 1, false, math::value_ptr(uniformFloat16.second));
 
 	// integer uniforms
 	for (auto& uniformInt : _uniformInt)
@@ -698,8 +696,8 @@ DrawCall::getDataContainer(const data::BindingSource& source) const
 	return nullptr;
 }
 
-Vector3::Ptr
-DrawCall::getEyeSpacePosition(Vector3::Ptr output) 
+math::Vector3
+DrawCall::getEyeSpacePosition() 
 {
-	return _zSorter->getEyeSpacePosition(output);
+	return _zSorter->getEyeSpacePosition();
 }

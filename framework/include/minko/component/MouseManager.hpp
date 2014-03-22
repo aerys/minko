@@ -44,7 +44,7 @@ namespace minko
 
 		private:
 			MousePtr										_mouse;
-			std::shared_ptr<math::Vector3>					_previousRayOrigin;
+			math::Vector3									_previousRayOrigin;
 			NodePtr											_lastItemUnderCursor;
 
 			RayPtr											_ray;

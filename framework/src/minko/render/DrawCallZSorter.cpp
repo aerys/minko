@@ -21,14 +21,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/render/DrawCall.hpp"
 #include "minko/data/Container.hpp"
-#include "minko/math/Matrix4x4.hpp"
-#include "minko/math/Vector3.hpp"
 #include "minko/render/VertexBuffer.hpp"
 
 using namespace minko;
 using namespace minko::data;
 using namespace minko::render;
-using namespace minko::math;
 
 // names of the properties that may cause a z-sort change between drawcalls
 /*static*/ const DrawCallZSorter::PropertyInfos	DrawCallZSorter::_rawProperties = initializeRawProperties();
@@ -147,21 +144,21 @@ DrawCallZSorter::propertyAddedHandler(Container::Ptr		container,
 
 	if (_propChangedSlots.find(propertyName) == _propChangedSlots.end())
 	{
+		/*
 		_propChangedSlots[propertyName] = container->propertyReferenceChanged(propertyName)->connect(std::bind(
 			&DrawCallZSorter::requestZSort,
 			shared_from_this()
 		));
 
 		if (container->hasProperty(propertyName) && foundPropIt->second.isMatrix)
-		{
-			auto matrix = container->get<Matrix4x4::Ptr>(propertyName);
-
-			if (matrix)
-				_matrixChangedSlots[propertyName] = matrix->changed()->connect(std::bind(
-					&DrawCallZSorter::requestZSort,
-					shared_from_this()
-				));
-		}
+		{*/
+			_propChangedSlots[propertyName] = container->propertyValueChanged(propertyName)->connect(
+				[&](data::Container::Ptr, const std::string&)
+				{
+					requestZSort();
+				}
+			);
+		//}
 	}
 
 	requestZSort();
@@ -207,41 +204,43 @@ DrawCallZSorter::recordIfPositionalMembers(Container::Ptr		container,
 		if (propertyName == _vertexPositions.first)
 			_vertexPositions.second		= container->get<VertexBuffer::Ptr>(propertyName);
 		else if (propertyName == _modelToWorldMatrix.first)
-			_modelToWorldMatrix.second	= container->get<Matrix4x4::Ptr>(propertyName);
+			_modelToWorldMatrix.second	= new math::Matrix4x4(container->get<math::Matrix4x4>(propertyName));
 		else if (propertyName == _worldToScreenMatrix.first)
-			_worldToScreenMatrix.second	= container->get<Matrix4x4::Ptr>(propertyName);
+			_worldToScreenMatrix.second	= new math::Matrix4x4(container->get<math::Matrix4x4>(propertyName));
 	}
 	else if (isPropertyRemoved)
 	{
 		if (propertyName == _vertexPositions.first)
 			_vertexPositions.second		= nullptr;
 		else if (propertyName == _modelToWorldMatrix.first)
+		{
+			delete _modelToWorldMatrix.second;
 			_modelToWorldMatrix.second	= nullptr;
+		}
 		else if (propertyName == _worldToScreenMatrix.first)
+		{
+			delete _worldToScreenMatrix.second;
 			_worldToScreenMatrix.second	= nullptr;
+		}
 	}
 }
 
-Vector3::Ptr
-DrawCallZSorter::getEyeSpacePosition(Vector3::Ptr output)  const
+math::Vector3
+DrawCallZSorter::getEyeSpacePosition()  const
 {
-	static auto localPos	= Vector3::create();
-	static auto modelView	= Matrix4x4::create();
+	const auto& vb = _vertexPositions.second;
 
-	if (_vertexPositions.second)
-		localPos = _vertexPositions.second->centerPosition(localPos);
-	else
-		localPos->setTo(0.0f, 0.0f, 0.0f);
+	math::Vector3 localPos(0.f);
+	math::Matrix4x4 modelView(1.f);
+
+	if (vb)
+		localPos = vb->minPosition() + (vb->maxPosition() - vb->minPosition()) * .5f;
 
 	if (_modelToWorldMatrix.second)
-		modelView->copyFrom(_modelToWorldMatrix.second);
-	else
-		modelView->identity();
+		modelView = *_modelToWorldMatrix.second;
 
 	if (_worldToScreenMatrix.second)
-		modelView->append(_worldToScreenMatrix.second);
+		modelView = modelView * *_worldToScreenMatrix.second;
 
-	output = modelView->transform(localPos, output);
-	
-	return output;
+	return (math::Vector4(localPos, 1.f) * modelView).xyz();
 }

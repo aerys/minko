@@ -21,7 +21,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 #include "minko/Any.hpp"
-#include "minko/Color.hpp"
 #include "minko/render/AbstractContext.hpp"
 #include "minko/render/OpenGLES2Context.hpp"
 #include "minko/render/ProgramInputs.hpp"
@@ -32,10 +31,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/ProgramSignature.hpp"
 #include "minko/render/CompareMode.hpp"
 #include "minko/render/StencilOperation.hpp"
-#include "minko/math/Vector2.hpp"
-#include "minko/math/Vector3.hpp"
-#include "minko/math/Vector4.hpp"
-#include "minko/math/Matrix4x4.hpp"
 #include "minko/math/AbstractShape.hpp"
 #include "minko/math/Box.hpp"
 #include "minko/math/Ray.hpp"
@@ -102,3 +97,4 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/input/Keyboard.hpp"
 #include "minko/async/FileProtocolWorker.hpp"
 #include "minko/async/Worker.hpp"
+

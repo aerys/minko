@@ -42,7 +42,6 @@ namespace minko
 			typedef std::shared_ptr<render::Texture>			TexturePtr;
 			typedef std::shared_ptr<render::CubeTexture>		CubeTexturePtr;
 			typedef std::shared_ptr<render::States>				RenderStatesPtr;
-			typedef std::shared_ptr<math::Vector4>				Vector4Ptr;
 
 		protected:
 			static const RenderStatesPtr						_defaultStates;
@@ -60,12 +59,12 @@ namespace minko
 			}
 
 			Ptr
-			diffuseColor(Vector4Ptr);
+			diffuseColor(const math::Vector4&);
 
 			Ptr
 			diffuseColor(uint);
 
-			Vector4Ptr
+			math::Vector4
 			diffuseColor() const;
 
 			Ptr
@@ -81,12 +80,12 @@ namespace minko
 			diffuseCubeMap() const;
 
 			Ptr
-			fogColor(Vector4Ptr);
+			fogColor(const math::Vector4&);
 
 			Ptr
 			fogColor(uint);
 
-			Vector4Ptr
+			math::Vector4
 			fogColor() const;
 
             Ptr

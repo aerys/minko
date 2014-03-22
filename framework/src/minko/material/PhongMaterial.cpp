@@ -19,15 +19,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/material/PhongMaterial.hpp"
 
-#include "minko/Color.hpp"
-#include "minko/math/Vector4.hpp"
 #include "minko/render/Texture.hpp"
 #include "minko/render/CubeTexture.hpp"
 
 using namespace minko;
 using namespace minko::material;
 using namespace minko::render;
-using namespace minko::math;
 
 PhongMaterial::PhongMaterial():
 	BasicMaterial()
@@ -49,7 +46,7 @@ PhongMaterial::initialize()
 }
 
 PhongMaterial::Ptr
-PhongMaterial::specularColor(Vector4::Ptr color)
+PhongMaterial::specularColor(const math::Vector4& color)
 {
 	set("specularColor", color);
 
@@ -59,13 +56,13 @@ PhongMaterial::specularColor(Vector4::Ptr color)
 PhongMaterial::Ptr
 PhongMaterial::specularColor(uint color)
 {
-	return specularColor(Color::uintToVec4(color));
+	return specularColor(math::rgba(color));
 }
 
-Vector4::Ptr
+math::Vector4
 PhongMaterial::specularColor() const
 {
-	return get<Vector4::Ptr>("specularColor");
+	return get<math::Vector4>("specularColor");
 }
 
 PhongMaterial::Ptr
@@ -83,8 +80,7 @@ PhongMaterial::shininess() const
 }
 
 PhongMaterial::Ptr
-PhongMaterial::environmentMap(AbstractTexture::Ptr value, 
-							  EnvironmentMap2dType type)
+PhongMaterial::environmentMap(AbstractTexture::Ptr value, EnvironmentMap2dType type)
 {
 	if (value->type() == TextureType::Texture2D)
 	{

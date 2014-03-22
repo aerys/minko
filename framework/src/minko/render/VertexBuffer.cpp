@@ -21,7 +21,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Signal.hpp"
 #include "minko/render/AbstractContext.hpp"
-#include "minko/math/Vector3.hpp"
 
 using namespace minko;
 using namespace minko::math;
@@ -164,39 +163,28 @@ VertexBuffer::vertexSize(unsigned int value)
 }
 
 
-Vector3::Ptr
-VertexBuffer::minPosition(Vector3::Ptr output)
+const math::Vector3&
+VertexBuffer::minPosition()
 {
-	if (_minPosition == nullptr)
+	if (!_validMinMax)
 		updatePositionBounds();
 
-	if (output == nullptr)
-		output = Vector3::create();
-
-	return _minPosition
-		? output->copyFrom(_minPosition)
-		: output->setTo(0.0f, 0.0f, 0.0f);
+	return _minPosition;
 }
 
-Vector3::Ptr
-VertexBuffer::maxPosition(Vector3::Ptr output)
+const math::Vector3&
+VertexBuffer::maxPosition()
 {
-	if (_maxPosition == nullptr)
+	if (!_validMinMax)
 		updatePositionBounds();
 
-	if (output == nullptr)
-		output = Vector3::create();
-
-	return _maxPosition
-		? output->copyFrom(_maxPosition)
-		: output->setTo(0.0f, 0.0f, 0.0f);
+	return _maxPosition;;
 }
 
 void
 VertexBuffer::invalidatePositionBounds()
 {
-	_minPosition = nullptr;
-	_maxPosition = nullptr;
+	_validMinMax = false;
 }
 
 void
@@ -205,7 +193,12 @@ VertexBuffer::updatePositionBounds()
 	invalidatePositionBounds();
 
 	if (!hasAttribute(ATTRNAME_POSITION) || numVertices() == 0)
+	{
+		_minPosition = math::Vector3(0.f);
+		_maxPosition = math::Vector3(0.f);
+		
 		return;
+	}
 
 	auto				xyzAttr = attribute(ATTRNAME_POSITION);
 	const unsigned int	size	= std::max(0, std::min(3, (int)std::get<1>(*xyzAttr)));
@@ -228,15 +221,7 @@ VertexBuffer::updatePositionBounds()
 		vidx += _vertexSize;
 	}
 
-	_minPosition = Vector3::create(minXYZ[0], minXYZ[1], minXYZ[2]);
-	_maxPosition = Vector3::create(maxXYZ[0], maxXYZ[1], maxXYZ[2]);
-}
-
-Vector3::Ptr
-VertexBuffer::centerPosition(Vector3::Ptr output)
-{
-	if (output == nullptr)
-		output = Vector3::create();
-	
-	return output->copyFrom(minPosition())->add(maxPosition())->scaleBy(0.5f);
+	_minPosition = math::Vector3(minXYZ[0], minXYZ[1], minXYZ[2]);
+	_maxPosition = math::Vector3(maxXYZ[0], maxXYZ[1], maxXYZ[2]);
+	_validMinMax = true;
 }

@@ -20,17 +20,18 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
+
 #include "minko/Signal.hpp"
 #include "minko/data/ContainerProperty.hpp"
 
 namespace std
 {
 	template<>
-	struct hash< std::pair< std::shared_ptr<minko::component::Surface>, std::shared_ptr<minko::scene::Node> > >
+	struct hash< std::pair<std::shared_ptr<minko::component::Surface>, std::shared_ptr<minko::scene::Node>>>
 	{
 		inline
 		size_t
-		operator()(const std::pair< std::shared_ptr<minko::component::Surface>, std::shared_ptr<minko::scene::Node> >& x) const
+		operator()(const std::pair<std::shared_ptr<minko::component::Surface>, std::shared_ptr<minko::scene::Node>>& x) const
 		{
 			size_t seed = std::hash<long>()(long(x.first.get()));
 
@@ -50,7 +51,7 @@ namespace minko
 			public std::enable_shared_from_this<DrawCallPool>
 		{
 		public:
-			typedef std::shared_ptr<DrawCallPool>														Ptr;
+			typedef std::shared_ptr<DrawCallPool>	Ptr;
 			
 		private:
 			enum class MacroChange
@@ -62,7 +63,6 @@ namespace minko
 
 		private:
 			typedef std::shared_ptr<DrawCall>															DrawCallPtr;
-			typedef std::shared_ptr<math::Vector3>														Vector3Ptr;
 			typedef std::shared_ptr<data::Container>													ContainerPtr;
 			typedef std::shared_ptr<component::Surface>													SurfacePtr;
 			typedef std::shared_ptr<component::Renderer>												RendererPtr;
@@ -97,7 +97,7 @@ namespace minko
 		private:
 			static const unsigned int											NUM_FALLBACK_ATTEMPTS;
 			static std::unordered_map<std::string, std::pair<std::string, int>>	_variablePropertyNameToPosition;
-			static std::unordered_map<DrawCallPtr, Vector3Ptr>					_cachedDrawcallPositions; // in eye space
+			static std::unordered_map<DrawCallPtr, math::Vector3>				_cachedDrawcallPositions; // in eye space
 
 			RendererPtr															_renderer;
 
@@ -149,7 +149,8 @@ namespace minko
 					&DrawCallPool::formatPropertyName,
 					drawCallPool,
 					std::placeholders::_1,
-					std::placeholders::_2);
+					std::placeholders::_2
+				);
 
 				return drawCallPool;
 			}
@@ -232,8 +233,8 @@ namespace minko
 			compareDrawCalls(DrawCallPtr, DrawCallPtr);
 
 			static
-			Vector3Ptr
-			getDrawcallEyePosition(DrawCallPtr, Vector3Ptr output = nullptr);
+			math::Vector3
+			getDrawcallEyePosition(DrawCallPtr);
 
 			void
 			dataProviderIndexChanged(std::shared_ptr<data::ArrayProvider> provider, uint index, SurfacePtr surface);

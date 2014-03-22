@@ -27,10 +27,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/ProgramSignature.hpp"
 #include "minko/render/Program.hpp"
 #include "minko/render/States.hpp"
-#include "minko/math/Vector2.hpp"
-#include "minko/math/Vector3.hpp"
-#include "minko/math/Vector4.hpp"
-#include "minko/math/Matrix4x4.hpp"
 
 namespace minko
 {
@@ -310,33 +306,33 @@ namespace minko
 		template <>
 		inline
 		void
-		Pass::setUniform(const std::string& name, const math::Vector2::Ptr& v)
+		Pass::setUniform(const std::string& name, const math::Vector2& v)
 		{
-			setUniform(name, v->x(), v->y());
+			setUniform(name, v.x, v.y);
 		};
 
 		template <>
 		inline
 		void
-		Pass::setUniform(const std::string& name, const math::Vector3::Ptr& v)
+		Pass::setUniform(const std::string& name, const math::Vector3& v)
 		{
-			setUniform(name, v->x(), v->y(), v->z());
+			setUniform(name, v.x, v.y, v.z);
 		};
 
 		template <>
 		inline
 		void
-		Pass::setUniform(const std::string& name, const math::Vector4::Ptr& v)
+		Pass::setUniform(const std::string& name, const math::Vector4& v)
 		{
-			setUniform(name, v->x(), v->y(), v->z(), v->w());
+			setUniform(name, v.x, v.y, v.z, v.w);
 		};
 
 		template <>
 		inline
 		void
-		Pass::setUniform(const std::string& name, const math::Matrix4x4::Ptr& v)
+		Pass::setUniform(const std::string& name, const math::Matrix4x4& v)
 		{
-			setUniform(name, 1, true, &v->data()[0]);
+			setUniform(name, 1, false, math::value_ptr(v));
 		};
 	}
 }

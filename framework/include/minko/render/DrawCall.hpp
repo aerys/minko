@@ -101,10 +101,10 @@ namespace minko
 			float														_priority;
 			bool														_zsorted;
             std::unordered_map<uint, float>                             _uniformFloat;
-            std::unordered_map<uint, std::shared_ptr<math::Vector2>>    _uniformFloat2;
-            std::unordered_map<uint, std::shared_ptr<math::Vector3>>    _uniformFloat3;
-            std::unordered_map<uint, std::shared_ptr<math::Vector4>>    _uniformFloat4;
-            std::unordered_map<uint, const float*>                      _uniformFloat16;
+            std::unordered_map<uint, math::Vector2>    					_uniformFloat2;
+            std::unordered_map<uint, math::Vector3>    					_uniformFloat3;
+            std::unordered_map<uint, math::Vector4>    					_uniformFloat4;
+            std::unordered_map<uint, math::Matrix4x4>                   _uniformFloat16;
 			std::unordered_map<uint, int>								_uniformInt;
 			std::unordered_map<uint, Int2>								_uniformInt2;
 			std::unordered_map<uint, Int3>								_uniformInt3;
@@ -227,8 +227,8 @@ namespace minko
 			initialize(ContainerPtr				                    data,
 					   const std::map<std::string, std::string>&	inputNameToBindingName);
 
-			std::shared_ptr<math::Vector3>
-			getEyeSpacePosition(std::shared_ptr<math::Vector3> output = nullptr);
+			math::Vector3
+			getEyeSpacePosition();
 
 		private:
 			DrawCall(const data::BindingMap&	attributeBindings,

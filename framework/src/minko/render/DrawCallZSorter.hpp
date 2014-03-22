@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
+
 #include "minko/Signal.hpp"
 
 namespace minko
@@ -44,7 +45,7 @@ namespace minko
 				bool				isMatrix;
 
 				inline
-				PropertyInfo(): source(data::BindingSource::TARGET), isMatrix(false) { }
+				PropertyInfo() : source(data::BindingSource::TARGET), isMatrix(false) { }
 
 				inline
 				PropertyInfo(data::BindingSource src, bool isMat): source(src), isMatrix(isMat)	{ }
@@ -52,7 +53,6 @@ namespace minko
 
 			typedef std::shared_ptr<Signal<DrawCallPtr>>			ZSortNeedSignalPtr;
 			typedef std::shared_ptr<render::VertexBuffer>			VertexBufferPtr;
-			typedef std::shared_ptr<math::Matrix4x4>				Matrix4x4Ptr;	
 			typedef Signal<ContainerPtr, const std::string&>::Slot	PropertyChangedSlot;
 			typedef Signal<ValuePtr>::Slot							ValueChangedSlot;
 			typedef std::unordered_map<std::string, PropertyInfo>	PropertyInfos;								
@@ -73,8 +73,8 @@ namespace minko
 
 			// positional members
 			std::pair<std::string, VertexBufferPtr>					_vertexPositions;
-			std::pair<std::string, Matrix4x4Ptr>					_modelToWorldMatrix;
-			std::pair<std::string, Matrix4x4Ptr>					_worldToScreenMatrix;
+			std::pair<std::string, math::Matrix4x4*>				_modelToWorldMatrix;
+			std::pair<std::string, math::Matrix4x4*>				_worldToScreenMatrix;
 
 		public:
 			inline static
@@ -90,8 +90,8 @@ namespace minko
 			void
 			clear();
 
-			std::shared_ptr<math::Vector3>
-			getEyeSpacePosition(std::shared_ptr<math::Vector3> output = nullptr) const;
+			math::Vector3
+			getEyeSpacePosition() const;
 
 		private:
 			DrawCallZSorter(DrawCallPtr drawcall);

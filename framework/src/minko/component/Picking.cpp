@@ -27,9 +27,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/AssetLibrary.hpp"
 #include "minko/render/AbstractContext.hpp"
 #include "minko/input/Mouse.hpp"
-#include "minko/math/Matrix4x4.hpp"
 #include "minko/component/Surface.hpp"
-#include "minko/math/Vector4.hpp"
 
 #include "minko/material/BasicMaterial.hpp"
 #include "minko/component/Transform.hpp"
@@ -38,8 +36,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/AbstractCanvas.hpp"
 
 using namespace minko;
-using namespace component;
-
+using namespace minko::component;
 
 Picking::Picking(SceneManagerPtr	sceneManager,
 				 AbstractCanvasPtr	canvas,
@@ -48,7 +45,7 @@ Picking::Picking(SceneManagerPtr	sceneManager,
 	_camera(camera),
 	_pickingId(0),
 	_context(sceneManager->assets()->context()),
-	_pickingProjection(math::Matrix4x4::create()),
+	_pickingProjection(1.f),
 	_sceneManager(sceneManager),
 	_pickingProvider(data::StructureProvider::create("picking")),
 	_mouseMove(Signal<NodePtr>::create()),
@@ -57,7 +54,7 @@ Picking::Picking(SceneManagerPtr	sceneManager,
 	_mouseOut(Signal<NodePtr>::create()),
 	_mouseOver(Signal<NodePtr>::create())
 {
-	_renderer	= Renderer::create(0xFFFF00FF, nullptr, sceneManager->assets()->effect("effect/Picking.effect"), 1000.f);
+	_renderer = Renderer::create(0xFFFF00FF, nullptr, sceneManager->assets()->effect("effect/Picking.effect"), 1000.f);
 }
 
 void
@@ -71,17 +68,19 @@ Picking::initialize()
 		std::placeholders::_1,
 		std::placeholders::_2,
 		std::placeholders::_3
-		));
+	));
 
 	_mouseLeftClickSlot = _mouse->leftButtonUp()->connect(std::bind(
 		&Picking::mouseLeftClickHandler,
 		shared_from_this(),
-		std::placeholders::_1));
+		std::placeholders::_1
+	));
 
 	_mouseRightClickSlot = _mouse->rightButtonUp()->connect(std::bind(
 		&Picking::mouseRightClickHandler,
 		shared_from_this(),
-		std::placeholders::_1));
+		std::placeholders::_1
+	));
 
 	_targetAddedSlot = targetAdded()->connect(std::bind(
 		&Picking::targetAddedHandler,
@@ -251,7 +250,7 @@ Picking::addSurface(SurfacePtr surface)
 	_pickingIdToSurface[_pickingId] = surface;
 	_surfaceToProvider[surface]		= data::StructureProvider::create("picking");
 	
-	_surfaceToProvider[surface]->set<math::Vector4::Ptr>("color", math::Vector4::create(
+	_surfaceToProvider[surface]->set<math::Vector4>("color", math::Vector4(
 		((_pickingId >> 16) & 0xff) / 255.f,
 		((_pickingId >> 8) & 0xff) / 255.f,
 		((_pickingId)& 0xff) / 255.f,
@@ -282,18 +281,13 @@ Picking::removedHandler(NodePtr node, NodePtr target, NodePtr parent)
 void
 Picking::renderingBegin(RendererPtr renderer)
 {
-	float mouseX = (float)_mouse->x();
-	float mouseY = (float)_mouse->y();
-	
 	auto perspectiveCamera	= _camera->component<component::PerspectiveCamera>();
-	auto projection			= math::Matrix4x4::create()->perspective(perspectiveCamera->fieldOfView(), perspectiveCamera->aspectRatio(), perspectiveCamera->zNear(), perspectiveCamera->zFar());
+	auto projection			= perspectiveCamera->projectionMatrix();
 
-	std::vector<float> pickingProjectionData(projection->data());
-	
-	pickingProjectionData[2] = mouseX / _context->viewportWidth() * 2.f;
-	pickingProjectionData[6] = mouseY / _context->viewportHeight() * 2.f;
+	projection[2][0] = (float)_mouse->x() / _context->viewportWidth() * 2.f;
+	projection[1][3] = (float)_mouse->y() / _context->viewportHeight() * 2.f;
 
-	_pickingProjection->initialize(pickingProjectionData);
+	_pickingProvider->set("projection", _pickingProjection);
 }
 
 void
