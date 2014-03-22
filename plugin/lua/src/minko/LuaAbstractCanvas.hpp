@@ -36,18 +36,20 @@ namespace minko
         bind(LuaGlue& state)
         {
             auto& abstractCanvas = state.Class<AbstractCanvas>("AbstractCanvas")
-                .property("width",                    &AbstractCanvas::width)
-                .property("height",                    &AbstractCanvas::height)
-                .property("mouse",                     &AbstractCanvas::mouse)
-                .property("keyboard",                &AbstractCanvas::keyboard)
-                .property("width",                    &AbstractCanvas::width)
-                .property("height",                    &AbstractCanvas::height)
-                .property("numTouches",                &AbstractCanvas::numTouches)
+                .property("width",                  &AbstractCanvas::width)
+                .property("height",                 &AbstractCanvas::height)
                 .property("mouse",                  &AbstractCanvas::mouse)
                 .property("keyboard",               &AbstractCanvas::keyboard)
-                .property("numJoysticks",            &AbstractCanvas::numJoysticks)
+                .property("width",                  &AbstractCanvas::width)
+                .property("height",                 &AbstractCanvas::height)
+                .property("numTouches",             &AbstractCanvas::numTouches)
+                .property("mouse",                  &AbstractCanvas::mouse)
+                .property("keyboard",               &AbstractCanvas::keyboard)
+                .property("relativeTime",           &AbstractCanvas::relativeTime)
+                .property("frameDuration",          &AbstractCanvas::frameDuration)
+                .property("numJoysticks",           &AbstractCanvas::numJoysticks)
                 .methodWrapper("getJoystickAxis",   &LuaAbstractCanvas::getJoystickAxisWrapper)
-                .methodWrapper("joystick",            &LuaAbstractCanvas::joystickWrapper);
+                .methodWrapper("joystick",          &LuaAbstractCanvas::joystickWrapper);
 
             MINKO_LUAGLUE_BIND_SIGNAL(state, AbstractCanvas::Ptr);
             MINKO_LUAGLUE_BIND_SIGNAL(state, AbstractCanvas::Ptr, uint, uint);
