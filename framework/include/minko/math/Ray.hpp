@@ -31,13 +31,13 @@ namespace minko
 			typedef std::shared_ptr<Ray>	Ptr;
 
 		private:
-			Vector3	_origin;
-			Vector3	_direction;
+			vec3	_origin;
+			vec3	_direction;
 
 		public:
 			inline static
 			Ptr
-			create(const Vector3& origin, const Vector3& direction)
+			create(const vec3& origin, const vec3& direction)
 			{
 				return std::shared_ptr<Ray>(new Ray(origin, direction));
 			}
@@ -50,29 +50,29 @@ namespace minko
 			}
 
 			inline
-			Vector3&
+			vec3&
 			direction()
 			{
 				return _direction;
 			}
 
 			inline
-			Vector3&
+			vec3&
 			origin()
 			{
 				return _origin;
 			}
 
 		private:
-			Ray(const Vector3& origin, const Vector3& direction) :
+			Ray(const vec3& origin, const vec3& direction) :
 				_origin(origin),
 				_direction(direction)
 			{
 			}
 
 			Ray() :
-				_origin(Vector3(0.)),
-				_direction(Vector3(0.f, 0.f, -1.f))
+				_origin(vec3(0.)),
+				_direction(vec3(0.f, 0.f, -1.f))
 			{
 			}
 		};

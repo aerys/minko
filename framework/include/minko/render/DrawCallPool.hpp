@@ -97,7 +97,7 @@ namespace minko
 		private:
 			static const unsigned int											NUM_FALLBACK_ATTEMPTS;
 			static std::unordered_map<std::string, std::pair<std::string, int>>	_variablePropertyNameToPosition;
-			static std::unordered_map<DrawCallPtr, math::Vector3>				_cachedDrawcallPositions; // in eye space
+			static std::unordered_map<DrawCallPtr, math::vec3>					_cachedDrawcallPositions; // in eye space
 
 			RendererPtr															_renderer;
 
@@ -233,7 +233,7 @@ namespace minko
 			compareDrawCalls(DrawCallPtr, DrawCallPtr);
 
 			static
-			math::Vector3
+			math::vec3
 			getDrawcallEyePosition(DrawCallPtr);
 
 			void

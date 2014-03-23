@@ -306,7 +306,7 @@ namespace minko
 		template <>
 		inline
 		void
-		Pass::setUniform(const std::string& name, const math::Vector2& v)
+		Pass::setUniform(const std::string& name, const math::vec2& v)
 		{
 			setUniform(name, v.x, v.y);
 		};
@@ -314,7 +314,7 @@ namespace minko
 		template <>
 		inline
 		void
-		Pass::setUniform(const std::string& name, const math::Vector3& v)
+		Pass::setUniform(const std::string& name, const math::vec3& v)
 		{
 			setUniform(name, v.x, v.y, v.z);
 		};
@@ -322,7 +322,7 @@ namespace minko
 		template <>
 		inline
 		void
-		Pass::setUniform(const std::string& name, const math::Vector4& v)
+		Pass::setUniform(const std::string& name, const math::vec4& v)
 		{
 			setUniform(name, v.x, v.y, v.z, v.w);
 		};
@@ -330,7 +330,7 @@ namespace minko
 		template <>
 		inline
 		void
-		Pass::setUniform(const std::string& name, const math::Matrix4x4& v)
+		Pass::setUniform(const std::string& name, const math::mat4& v)
 		{
 			setUniform(name, 1, false, math::value_ptr(v));
 		};

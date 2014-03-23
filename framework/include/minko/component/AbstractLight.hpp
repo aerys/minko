@@ -44,7 +44,7 @@ namespace minko
 			typedef std::unordered_map<NodePtr, SceneSignalSlot> 	NodeToSceneSignalSlotMap;
 
 		private:
-			math::Vector3							_color;
+			math::vec3								_color;
 
 			Signal<AbsCmpPtr, NodePtr>::Slot 		_targetAddedSlot;
 			Signal<AbsCmpPtr, NodePtr>::Slot 		_targetRemovedSlot;
@@ -53,14 +53,14 @@ namespace minko
 
 		public:
 			inline
-			const math::Vector3&
+			const math::vec3&
 			color()
 			{
 				return _color;
 			}
 
 			Ptr
-			color(math::Vector3);
+			color(const math::vec3&);
 			
 		protected:
 			AbstractLight(const std::string& arrayName);

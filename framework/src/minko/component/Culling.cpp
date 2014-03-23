@@ -61,7 +61,7 @@ Culling::targetAddedHandler(AbstractComponent::Ptr ctrl, NodePtr target)
 	// compute scene bounding box
 
 	if (_octTree == nullptr)
-		_octTree = math::OctTree::create(50, 7, math::Vector3(0.f));
+		_octTree = math::OctTree::create(50, 7, math::vec3(0.f));
 	
 	if (target->root()->hasComponent<SceneManager>())
 		targetAddedToScene(nullptr, target, nullptr);
@@ -138,7 +138,7 @@ Culling::layoutChanged(NodePtr node, NodePtr target)
 void
 Culling::worldToScreenChanged(std::shared_ptr<data::Container> data, const std::string& propertyName)
 {
-	_frustum->updateFromMatrix(data->get<math::Matrix4x4>(propertyName));
+	_frustum->updateFromMatrix(data->get<math::mat4>(propertyName));
 	
 	auto renderer = targets()[0]->component<Renderer>();
 

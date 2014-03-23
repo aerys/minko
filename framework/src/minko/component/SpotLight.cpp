@@ -20,7 +20,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/SpotLight.hpp"
 
 using namespace minko;
-using namespace minko::math;
 using namespace minko::component;
 
 SpotLight::SpotLight(float diffuse,
@@ -28,12 +27,13 @@ SpotLight::SpotLight(float diffuse,
 					 float attenuationConstant,
 					 float attenuationLinear,
 					 float attenuationQuadratic) :
-	AbstractDiscreteLight("spotLights", diffuse, specular)
+	AbstractDiscreteLight("spotLights", diffuse, specular),
+	_attenuation(attenuationConstant, attenuationLinear, attenuationQuadratic)
 {
 	data()
-		->set("attenuationCoeffs",	Vector3(attenuationConstant, attenuationLinear, attenuationQuadratic))
-		->set("position",			Vector3(0.f))
-		->set("direction",			Vector3(0.f, 0.f, 1.f));
+		->set("attenuationCoeffs",	_attenuation)
+		->set("position",			math::vec3(0.f))
+		->set("direction",			math::vec3(0.f, 0.f, -1.f));
 }
 
 void 
@@ -46,11 +46,11 @@ SpotLight::initialize(float innerAngleRadians, float outerAngleRadians)
 }
 
 void
-SpotLight::updateModelToWorldMatrix(const math::Matrix4x4& modelToWorld)
+SpotLight::updateModelToWorldMatrix(const math::mat4& modelToWorld)
 {
 	data()
 		->set("position",	modelToWorld[3].xyz())
-		->set("direction",	Vector3(0.f, 0.f, 1.f) * math::mat3(modelToWorld));	
+		->set("direction",	math::normalize(math::mat3(modelToWorld) * math::vec3(0.f, 0.f, 1.f)));	
 }
 
 SpotLight::Ptr
@@ -75,22 +75,23 @@ SpotLight::outerConeAngle(float radians)
 	return std::static_pointer_cast<SpotLight>(shared_from_this());
 }
 
-Vector3
+const math::vec3&
 SpotLight::attenuationCoefficients() const
 {
-	return data()->get<math::Vector3>("attenuationCoeffs");
+	return _attenuation;
 }
 
 SpotLight::Ptr
 SpotLight::attenuationCoefficients(float constant, float linear, float quadratic) 
 {
-	return attenuationCoefficients(Vector3(constant, linear, quadratic));
+	return attenuationCoefficients(math::vec3(constant, linear, quadratic));
 }
 
 SpotLight::Ptr
-SpotLight::attenuationCoefficients(const Vector3& value)
+SpotLight::attenuationCoefficients(const math::vec3& value)
 {
-	data()->set("attenuationCoeffs", value);
+	if (value != _attenuation)
+		data()->set("attenuationCoeffs", _attenuation = value);
 
 	return std::static_pointer_cast<SpotLight>(shared_from_this());
 }
@@ -100,5 +101,5 @@ SpotLight::attenuationEnabled() const
 {
 	auto coef = attenuationCoefficients();
 
-	return !( coef.x < 0.0f || coef.y < 0.0f || coef.z < 0.0f);
+	return !(coef.x < 0.0f || coef.y < 0.0f || coef.z < 0.0f);
 }

@@ -329,13 +329,13 @@ DrawCall::bindUniform(const std::string&	inputName,
 				if (type == ProgramInputs::Type::float1)
 					_uniformFloat[location]		= container->get<float>(propertyName);
 				else if (type == ProgramInputs::Type::float2)
-					_uniformFloat2[location]	= container->get<math::Vector2>(propertyName);
+					_uniformFloat2[location]	= container->get<math::vec2>(propertyName);
 				else if (type == ProgramInputs::Type::float3)
-					_uniformFloat3[location]	= container->get<math::Vector3>(propertyName);
+					_uniformFloat3[location]	= container->get<math::vec3>(propertyName);
 				else if (type == ProgramInputs::Type::float4)
-					_uniformFloat4[location]	= container->get<math::Vector4>(propertyName);
+					_uniformFloat4[location]	= container->get<math::vec4>(propertyName);
 				else if (type == ProgramInputs::Type::float16)
-					_uniformFloat16[location]	= container->get<math::Matrix4x4>(propertyName);
+					_uniformFloat16[location]	= container->get<math::mat4>(propertyName);
 				else if (type == ProgramInputs::Type::int1)
 					_uniformInt[location]		= container->get<int>(propertyName);
 				else if (type == ProgramInputs::Type::int2)
@@ -696,7 +696,7 @@ DrawCall::getDataContainer(const data::BindingSource& source) const
 	return nullptr;
 }
 
-math::Vector3
+math::vec3
 DrawCall::getEyeSpacePosition() 
 {
 	return _zSorter->getEyeSpacePosition();

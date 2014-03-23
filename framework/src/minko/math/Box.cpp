@@ -34,7 +34,7 @@ Box::Box() :
 bool
 Box::cast(Ray::Ptr ray, float& distance)
 {
-	math::Vector3 near, far;
+	math::vec3 near, far;
 
 	if (_topRight.z > _bottomLeft.z)
 	{
@@ -89,19 +89,19 @@ Box::cast(Ray::Ptr ray, float& distance)
 	return true;
 }
 
-std::array<math::Vector3, 8>
+std::array<math::vec3, 8>
 Box::getVertices()
 {
-	std::array<math::Vector3, 8> vertices = 
+	std::array<math::vec3, 8> vertices = 
 	 { {
-		math::Vector3(_topRight),
-		math::Vector3(_topRight.x - width(), _topRight.y, _topRight.z),
-		math::Vector3(_topRight.x - width(), _topRight.y, _topRight.z - depth()),
-		math::Vector3(_topRight.x, _topRight.y, _topRight.z - depth()),
-		math::Vector3(_bottomLeft),
-		math::Vector3(_bottomLeft.x + width(), _bottomLeft.y, _bottomLeft.z),
-		math::Vector3(_bottomLeft.x + width(), _bottomLeft.y, _bottomLeft.z + depth()),
-		math::Vector3(_bottomLeft.x, _bottomLeft.y, _bottomLeft.z + depth()),
+		math::vec3(_topRight),
+		math::vec3(_topRight.x - width(), _topRight.y, _topRight.z),
+		math::vec3(_topRight.x - width(), _topRight.y, _topRight.z - depth()),
+		math::vec3(_topRight.x, _topRight.y, _topRight.z - depth()),
+		math::vec3(_bottomLeft),
+		math::vec3(_bottomLeft.x + width(), _bottomLeft.y, _bottomLeft.z),
+		math::vec3(_bottomLeft.x + width(), _bottomLeft.y, _bottomLeft.z + depth()),
+		math::vec3(_bottomLeft.x, _bottomLeft.y, _bottomLeft.z + depth()),
 	} };
 
 	return vertices;
@@ -119,13 +119,13 @@ Box::merge(Ptr box1, Ptr box2, Ptr out)
 	if (out == nullptr)
 		out = create();
 
-	out->topRight(Vector3(
+	out->topRight(vec3(
 		std::max(box1->_topRight.x, box2->_topRight.x),
 		std::max(box1->_topRight.y, box2->_topRight.y),
 		std::max(box1->_topRight.z, box2->_topRight.z)
 	));
 
-	out->bottomLeft(Vector3(
+	out->bottomLeft(vec3(
 		std::min(box1->_bottomLeft.x, box2->_bottomLeft.x),
 		std::min(box1->_bottomLeft.y, box2->_bottomLeft.y),
 		std::min(box1->_bottomLeft.z, box2->_bottomLeft.z)
@@ -167,7 +167,7 @@ Box::testBoundingBox(std::shared_ptr<math::Box> box)
 }
 
 void
-Box::updateFromMatrix(const math::Matrix4x4& matrix)
+Box::updateFromMatrix(const math::mat4& matrix)
 {
 	// FIXME
 }

@@ -59,12 +59,12 @@ namespace minko
 			}
 
 			Ptr
-			diffuseColor(const math::Vector4&);
+			diffuseColor(const math::vec4&);
 
 			Ptr
 			diffuseColor(uint);
 
-			math::Vector4
+			math::vec4
 			diffuseColor() const;
 
 			Ptr
@@ -80,12 +80,12 @@ namespace minko
 			diffuseCubeMap() const;
 
 			Ptr
-			fogColor(const math::Vector4&);
+			fogColor(const math::vec4&);
 
 			Ptr
 			fogColor(uint);
 
-			math::Vector4
+			math::vec4
 			fogColor() const;
 
             Ptr

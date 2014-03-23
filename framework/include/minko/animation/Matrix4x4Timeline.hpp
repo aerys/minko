@@ -33,7 +33,7 @@ namespace minko
 			typedef std::shared_ptr<Matrix4x4Timeline>			Ptr;
 
 		private:
-			typedef std::vector<std::pair<uint, math::Matrix4x4>>	MatrixTimetable;
+			typedef std::vector<std::pair<uint, math::mat4>>	MatrixTimetable;
 
 		private:
 			MatrixTimetable	_matrices;
@@ -42,11 +42,11 @@ namespace minko
 		public:
 			inline static
 			Ptr
-			create(const std::string&					propertyName,
-				   uint									duration,
-				   const std::vector<uint>&				timetable,
-				   const std::vector<math::Matrix4x4>&	matrices,
-				   bool									interpolate = false)
+			create(const std::string&				propertyName,
+				   uint								duration,
+				   const std::vector<uint>&			timetable,
+				   const std::vector<math::mat4>&	matrices,
+				   bool								interpolate = false)
 			{
 				Ptr ptr	= std::shared_ptr<Matrix4x4Timeline>(
 					new Matrix4x4Timeline(
@@ -64,19 +64,19 @@ namespace minko
 			void
 			update(uint time, UpdateTargetPtr, bool skipPropertyNameFormatting = true);
 
-            math::Matrix4x4
+            math::mat4
             interpolate(uint time) const;
 
 		private:
 			Matrix4x4Timeline(const std::string&,
 							  uint,
 							  const std::vector<uint>&,
-							  const std::vector<math::Matrix4x4>&,
+							  const std::vector<math::mat4>&,
 							  bool);
 
 			void
 			initializeMatrixTimetable(const std::vector<uint>&,
-									  const std::vector<math::Matrix4x4>&);
+									  const std::vector<math::mat4>&);
 		};
 	}
 }

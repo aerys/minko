@@ -23,7 +23,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/AbstractContext.hpp"
 
 using namespace minko;
-using namespace minko::math;
 using namespace minko::render;
 
 static const std::string ATTRNAME_POSITION = "position";
@@ -163,7 +162,7 @@ VertexBuffer::vertexSize(unsigned int value)
 }
 
 
-const math::Vector3&
+const math::vec3&
 VertexBuffer::minPosition()
 {
 	if (!_validMinMax)
@@ -172,7 +171,7 @@ VertexBuffer::minPosition()
 	return _minPosition;
 }
 
-const math::Vector3&
+const math::vec3&
 VertexBuffer::maxPosition()
 {
 	if (!_validMinMax)
@@ -194,8 +193,8 @@ VertexBuffer::updatePositionBounds()
 
 	if (!hasAttribute(ATTRNAME_POSITION) || numVertices() == 0)
 	{
-		_minPosition = math::Vector3(0.f);
-		_maxPosition = math::Vector3(0.f);
+		_minPosition = math::vec3(0.f);
+		_maxPosition = math::vec3(0.f);
 		
 		return;
 	}
@@ -221,7 +220,7 @@ VertexBuffer::updatePositionBounds()
 		vidx += _vertexSize;
 	}
 
-	_minPosition = math::Vector3(minXYZ[0], minXYZ[1], minXYZ[2]);
-	_maxPosition = math::Vector3(maxXYZ[0], maxXYZ[1], maxXYZ[2]);
+	_minPosition = math::vec3(minXYZ[0], minXYZ[1], minXYZ[2]);
+	_maxPosition = math::vec3(maxXYZ[0], maxXYZ[1], maxXYZ[2]);
 	_validMinMax = true;
 }

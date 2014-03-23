@@ -250,7 +250,7 @@ Picking::addSurface(SurfacePtr surface)
 	_pickingIdToSurface[_pickingId] = surface;
 	_surfaceToProvider[surface]		= data::StructureProvider::create("picking");
 	
-	_surfaceToProvider[surface]->set<math::Vector4>("color", math::Vector4(
+	_surfaceToProvider[surface]->set<math::vec4>("color", math::vec4(
 		((_pickingId >> 16) & 0xff) / 255.f,
 		((_pickingId >> 8) & 0xff) / 255.f,
 		((_pickingId)& 0xff) / 255.f,

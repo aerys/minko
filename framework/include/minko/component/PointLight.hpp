@@ -34,8 +34,8 @@ namespace minko
 			typedef std::shared_ptr<PointLight> Ptr;
 	
 		private:
-			math::Vector3	_attenuationCoeffs;
-			math::Vector3	_worldPosition;
+			math::vec3	_attenuationCoeffs;
+			math::vec3	_worldPosition;
 
 		public:
 			inline static
@@ -66,18 +66,18 @@ namespace minko
 			bool
 			attenuationEnabled() const;
 
-			const math::Vector3&
+			const math::vec3&
 			attenuationCoefficients() const;
 
 			Ptr
 			attenuationCoefficients(float constant, float linear, float quadratic);
 
 			Ptr
-			attenuationCoefficients(const math::Vector3& coef);
+			attenuationCoefficients(const math::vec3& coef);
 
 		protected:
 			void
-            updateModelToWorldMatrix(const math::Matrix4x4& modelToWorld);
+            updateModelToWorldMatrix(const math::mat4& modelToWorld);
 
 		private:
 			PointLight(float diffuse,

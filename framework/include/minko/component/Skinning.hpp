@@ -44,7 +44,6 @@ namespace minko
 
 		private:
 			typedef std::shared_ptr<scene::Node>					NodePtr;
-			typedef std::shared_ptr<math::Matrix4x4>				Matrix4x4Ptr;
 			typedef std::shared_ptr<render::AbstractContext>		AbstractContextPtr;
 			typedef std::shared_ptr<render::VertexBuffer>			VertexBufferPtr;
 			typedef std::shared_ptr<component::AbstractComponent>	AbsCmpPtr;

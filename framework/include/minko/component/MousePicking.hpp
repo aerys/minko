@@ -52,7 +52,7 @@ namespace minko
 			MouseSignalPtr									_leftButtonUp;
 			MouseSignalPtr									_leftButtonDown;
 
-			math::Vector3									_previousRayOrigin;
+			math::vec3										_previousRayOrigin;
 			NodePtr											_lastItemUnderCursor;
 
 			Signal<AbstractComponent::Ptr, NodePtr>::Slot	_targetAddedSlot;

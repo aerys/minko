@@ -101,10 +101,10 @@ namespace minko
 			float														_priority;
 			bool														_zsorted;
             std::unordered_map<uint, float>                             _uniformFloat;
-            std::unordered_map<uint, math::Vector2>    					_uniformFloat2;
-            std::unordered_map<uint, math::Vector3>    					_uniformFloat3;
-            std::unordered_map<uint, math::Vector4>    					_uniformFloat4;
-            std::unordered_map<uint, math::Matrix4x4>                   _uniformFloat16;
+            std::unordered_map<uint, math::vec2>    					_uniformFloat2;
+            std::unordered_map<uint, math::vec3>    					_uniformFloat3;
+            std::unordered_map<uint, math::vec4>    					_uniformFloat4;
+            std::unordered_map<uint, math::mat4>           		        _uniformFloat16;
 			std::unordered_map<uint, int>								_uniformInt;
 			std::unordered_map<uint, Int2>								_uniformInt2;
 			std::unordered_map<uint, Int3>								_uniformInt3;
@@ -227,7 +227,7 @@ namespace minko
 			initialize(ContainerPtr				                    data,
 					   const std::map<std::string, std::string>&	inputNameToBindingName);
 
-			math::Vector3
+			math::vec3
 			getEyeSpacePosition();
 
 		private:

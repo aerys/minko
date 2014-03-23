@@ -73,8 +73,8 @@ namespace minko
 
 			// positional members
 			std::pair<std::string, VertexBufferPtr>					_vertexPositions;
-			std::pair<std::string, math::Matrix4x4*>				_modelToWorldMatrix;
-			std::pair<std::string, math::Matrix4x4*>				_worldToScreenMatrix;
+			std::pair<std::string, math::mat4*>				_modelToWorldMatrix;
+			std::pair<std::string, math::mat4*>				_worldToScreenMatrix;
 
 		public:
 			inline static
@@ -90,7 +90,7 @@ namespace minko
 			void
 			clear();
 
-			math::Vector3
+			math::vec3
 			getEyeSpacePosition() const;
 
 		private:

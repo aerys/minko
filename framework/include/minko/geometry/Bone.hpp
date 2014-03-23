@@ -29,23 +29,23 @@ namespace minko
 			public std::enable_shared_from_this<Bone>
 		{
 		public:
-			typedef std::shared_ptr<Bone>				Ptr;
+			typedef std::shared_ptr<Bone>			Ptr;
 
 		private:
-			typedef std::shared_ptr<scene::Node>		NodePtr;
+			typedef std::shared_ptr<scene::Node>	NodePtr;
 
 		private:
-			const NodePtr								_node;
-			const math::Matrix4x4						_offsetMatrix;
-			const std::vector<unsigned short>			_vertexIds;
-			const std::vector<float>					_vertexWeights;
+			const NodePtr						_node;
+			const math::mat4					_offsetMatrix;
+			const std::vector<unsigned short>	_vertexIds;
+			const std::vector<float>			_vertexWeights;
 		
 		public:
 			static
 			inline
 			Ptr
 			create(NodePtr								node, 
-				   const math::Matrix4x4&				offsetMatrix, 
+				   const math::mat4&					offsetMatrix, 
 				   const std::vector<unsigned short>&	vertexIds, 
 				   const std::vector<float>&			vertexWeights)
 			{
@@ -60,7 +60,7 @@ namespace minko
 			}
 
 			inline
-			const math::Matrix4x4&
+			const math::mat4&
 			offsetMatrix() const
 			{
 				return _offsetMatrix;
@@ -81,7 +81,7 @@ namespace minko
 			}
 
 		private:
-			Bone(NodePtr, const math::Matrix4x4&, const std::vector<unsigned short>&, const std::vector<float>&);
+			Bone(NodePtr, const math::mat4&, const std::vector<unsigned short>&, const std::vector<float>&);
 		};
 	}
 }

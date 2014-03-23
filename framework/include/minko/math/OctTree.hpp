@@ -50,7 +50,7 @@ namespace minko
 			std::list<NodePtr>					_content;
 			std::list<NodePtr>					_childrenContent;
 			float								_worldSize;
-			math::Vector3						_center;
+			math::vec3							_center;
 			std::unordered_map<NodePtr, Ptr>	_nodeToOctant;
 			PropertyChangedSlotMap				_nodeToTransformChangedSlot;
 			std::shared_ptr<math::Box>			_octantBox;
@@ -65,7 +65,7 @@ namespace minko
 			Ptr
 			create(float				worldSize,
 				   uint					maxDepth,
-				   const math::Vector3&	center,
+				   const math::vec3&	center,
 				   uint					depth = 0)
 			{
 				return std::shared_ptr<OctTree>(new OctTree(worldSize, maxDepth, center, depth));
@@ -118,7 +118,7 @@ namespace minko
 
 			OctTree(float					worldSize,
 					 uint					maxDepth,
-					 const math::Vector3& 	center,
+					 const math::vec3& 	center,
 					 uint					depth);
 		};
 	}

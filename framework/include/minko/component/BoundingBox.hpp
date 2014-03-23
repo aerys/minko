@@ -26,7 +26,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/math/AbstractShape.hpp"
 #include "minko/math/Box.hpp"
 
-
 namespace minko
 {
 	namespace component
@@ -72,20 +71,20 @@ namespace minko
 
 			inline static
 			Ptr
-			create(float size, const math::Vector3& center)
+			create(float size, const math::vec3& center)
 			{
 				return create(size, size, size, center);
 			}
 
 			inline static
 			Ptr
-			create(float width, float height, float depth, const math::Vector3& center)
+			create(float width, float height, float depth, const math::vec3& center)
 			{
 				return create(
-					math::Vector3(
+					math::vec3(
 						center.x - width * .5f, center.y - height * .5f, center.z - depth * .5f
 					),
-					math::Vector3(
+					math::vec3(
 						center.x + width * .5f, center.y + height * .5f, center.z + depth * .5f
 					)
 				);
@@ -93,7 +92,7 @@ namespace minko
 
 			inline static
 			Ptr
-			create(const math::Vector3& topRight, const math::Vector3& bottomLeft)
+			create(const math::vec3& topRight, const math::vec3& bottomLeft)
 			{
 				auto bb = std::shared_ptr<BoundingBox>(new BoundingBox(topRight, bottomLeft));
 
@@ -123,7 +122,7 @@ namespace minko
 			update();
 
 		private:
-			BoundingBox(const math::Vector3& topRight, const math::Vector3& bottomLeft);
+			BoundingBox(const math::vec3& topRight, const math::vec3& bottomLeft);
 
 			BoundingBox();
 

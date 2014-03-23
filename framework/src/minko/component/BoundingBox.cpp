@@ -30,7 +30,7 @@ using namespace minko;
 using namespace math;
 using namespace minko::component;
 
-BoundingBox::BoundingBox(const Vector3& topRight, const Vector3& bottomLeft) :
+BoundingBox::BoundingBox(const vec3& topRight, const vec3& bottomLeft) :
 	_fixed(true),
 	_box(math::Box::create(topRight, bottomLeft)),
 	_worldSpaceBox(math::Box::create(topRight, bottomLeft)),
@@ -99,12 +99,12 @@ BoundingBox::update()
 	{
 		if (!surfaces.empty())
 		{
-			auto min = Vector3(
+			auto min = vec3(
 				std::numeric_limits<float>::max(),
 				std::numeric_limits<float>::max(),
 				std::numeric_limits<float>::max()
 			);
-			auto max = Vector3(
+			auto max = vec3(
 				-std::numeric_limits<float>::max(),
 				-std::numeric_limits<float>::max(),
 				-std::numeric_limits<float>::max()
@@ -145,8 +145,8 @@ BoundingBox::update()
 		}
 		else
 		{
-			_box->bottomLeft(Vector3(0.));
-			_box->topRight(Vector3(0.));
+			_box->bottomLeft(vec3(0.));
+			_box->topRight(vec3(0.));
 		}
 	}
 
@@ -168,19 +168,19 @@ BoundingBox::updateWorldSpaceBox()
 	}
 	else
 	{
-		auto t = targets()[0]->data()->get<Matrix4x4>("transform.modelToWorldMatrix");
+		auto t = targets()[0]->data()->get<math::mat4>("transform.modelToWorldMatrix");
 		auto vertices = _box->getVertices();
 		auto numVertices = vertices.size();
 
 		for (auto i = 0; i < numVertices; ++i)
-			vertices[i] = (Vector4(vertices[i], 1.f) * t).xyz();
+			vertices[i] = (math::vec4(vertices[i], 1.f) * t).xyz();
 
-		auto max = Vector3(
+		auto max = vec3(
 			-std::numeric_limits<float>::max(),
 			-std::numeric_limits<float>::max(),
 			-std::numeric_limits<float>::max()
 		);
-		auto min = Vector3(
+		auto min = vec3(
 			std::numeric_limits<float>::max(),
 			std::numeric_limits<float>::max(),
 			std::numeric_limits<float>::max()

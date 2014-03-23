@@ -31,8 +31,8 @@ AbstractDiscreteLight::AbstractDiscreteLight(const std::string& arrayName,
 	AbstractLight(arrayName)
 {
 	data()
-		->set("diffuse", diffuse)
-		->set("specular", specular);
+		->set("diffuse", 	diffuse)
+		->set("specular", 	specular);
 }
 
 void
@@ -48,7 +48,7 @@ AbstractDiscreteLight::targetAddedHandler(AbstractComponent::Ptr cmp, std::share
 	));
 
 	if (target->data()->hasProperty("transform.modelToWorldMatrix"))
-		updateModelToWorldMatrix(target->data()->get<math::Matrix4x4>("transform.modelToWorldMatrix"));
+		updateModelToWorldMatrix(target->data()->get<math::mat4>("transform.modelToWorldMatrix"));
 }
 
 void
@@ -63,5 +63,5 @@ void
 AbstractDiscreteLight::modelToWorldMatrixChangedHandler(std::shared_ptr<data::Container> 	container,
 								 						const std::string& 					propertyName)
 {
-	updateModelToWorldMatrix(container->get<math::Matrix4x4>(propertyName));
+	updateModelToWorldMatrix(container->get<math::mat4>(propertyName));
 }

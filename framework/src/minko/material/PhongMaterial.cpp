@@ -46,7 +46,7 @@ PhongMaterial::initialize()
 }
 
 PhongMaterial::Ptr
-PhongMaterial::specularColor(const math::Vector4& color)
+PhongMaterial::specularColor(const math::vec4& color)
 {
 	set("specularColor", color);
 
@@ -59,10 +59,10 @@ PhongMaterial::specularColor(uint color)
 	return specularColor(math::rgba(color));
 }
 
-math::Vector4
+math::vec4
 PhongMaterial::specularColor() const
 {
-	return get<math::Vector4>("specularColor");
+	return get<math::vec4>("specularColor");
 }
 
 PhongMaterial::Ptr

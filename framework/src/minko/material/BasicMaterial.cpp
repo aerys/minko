@@ -44,7 +44,7 @@ BasicMaterial::initialize()
 }
 
 BasicMaterial::Ptr
-BasicMaterial::diffuseColor(const math::Vector4& value)
+BasicMaterial::diffuseColor(const math::vec4& value)
 {
 	set("diffuseColor", value);
 
@@ -57,10 +57,10 @@ BasicMaterial::diffuseColor(uint diffuseRGBA)
 	return diffuseColor(math::rgba(diffuseRGBA));
 }
 
-math::Vector4
+math::vec4
 BasicMaterial::diffuseColor() const
 {
-	return get<math::Vector4>("diffuseColor");
+	return get<math::vec4>("diffuseColor");
 }
 
 BasicMaterial::Ptr
@@ -102,7 +102,7 @@ BasicMaterial::diffuseCubeMap() const
 }
 
 BasicMaterial::Ptr
-BasicMaterial::fogColor(const math::Vector4& value)
+BasicMaterial::fogColor(const math::vec4& value)
 {
 	set("fogColor", value);
 
@@ -115,10 +115,10 @@ BasicMaterial::fogColor(uint fogRGBA)
 	return fogColor(math::rgba(fogRGBA));
 }
 
-math::Vector4
+math::vec4
 BasicMaterial::fogColor() const
 {
-	return get<math::Vector4>("fogColor");
+	return get<math::vec4>("fogColor");
 }
 
 BasicMaterial::Ptr

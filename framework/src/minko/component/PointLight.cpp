@@ -20,7 +20,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/PointLight.hpp"
 
 using namespace minko;
-using namespace minko::math;
 using namespace minko::component;
 
 PointLight::PointLight(float diffuse,
@@ -29,8 +28,8 @@ PointLight::PointLight(float diffuse,
 					   float attenuationLinear,
 					   float attenuationQuadratic):
 	AbstractDiscreteLight("pointLights", diffuse, specular),
-	_attenuationCoeffs(Vector3(attenuationConstant, attenuationLinear, attenuationQuadratic)),
-	_worldPosition(Vector3(0.f))
+	_attenuationCoeffs(math::vec3(attenuationConstant, attenuationLinear, attenuationQuadratic)),
+	_worldPosition(math::vec3(0.f))
 {
 	data()
 		->set("attenuationCoeffs",	_attenuationCoeffs)
@@ -38,12 +37,12 @@ PointLight::PointLight(float diffuse,
 }
 
 void
-PointLight::updateModelToWorldMatrix(const math::Matrix4x4& modelToWorld)
+PointLight::updateModelToWorldMatrix(const math::mat4& modelToWorld)
 {
 	data()->set("position", _worldPosition = modelToWorld[3].xyz());
 }
 
-const Vector3&
+const math::vec3&
 PointLight::attenuationCoefficients() const
 {
 	return _attenuationCoeffs;
@@ -52,11 +51,11 @@ PointLight::attenuationCoefficients() const
 PointLight::Ptr
 PointLight::attenuationCoefficients(float constant, float linear, float quadratic) 
 {
-	return attenuationCoefficients(Vector3(constant, linear, quadratic));
+	return attenuationCoefficients(math::vec3(constant, linear, quadratic));
 }
 
 PointLight::Ptr
-PointLight::attenuationCoefficients(const Vector3& value)
+PointLight::attenuationCoefficients(const math::vec3& value)
 {
 	data()->set("attenuationCoeffs", _attenuationCoeffs = value);
 

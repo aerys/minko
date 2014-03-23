@@ -44,8 +44,8 @@ namespace minko
 			typedef std::shared_ptr<AbstractComponent>	AbsCtrlPtr;
 
 		private:
-			math::Matrix4x4								_matrix;
-			math::Matrix4x4								_modelToWorld;
+			math::mat4								_matrix;
+			math::mat4								_modelToWorld;
 			std::shared_ptr<data::StructureProvider>	_data;
 
 			Signal<AbsCtrlPtr, NodePtr>::Slot 			_targetAddedSlot;
@@ -67,7 +67,7 @@ namespace minko
 
 			inline static
 			Ptr
-			create(const math::Matrix4x4& transform)
+			create(const math::mat4& transform)
 			{
 				auto ctrl = create();
 
@@ -81,7 +81,7 @@ namespace minko
 			}
 
 			inline
-			const math::Matrix4x4&
+			const math::mat4&
 			matrix()
 			{
 				return _matrix;
@@ -89,7 +89,7 @@ namespace minko
 
 			inline
 			void
-			matrix(const math::Matrix4x4& matrix)
+			matrix(const math::mat4& matrix)
 			{
 				_matrix = matrix;
 				_data->set("matrix", _matrix);
@@ -103,14 +103,14 @@ namespace minko
 			}
 
 			inline
-			const math::Matrix4x4&
+			const math::mat4&
 			modelToWorldMatrix()
 			{
 				return modelToWorldMatrix(false);
 			}
 
 			inline
-			const math::Matrix4x4&
+			const math::mat4&
 			modelToWorldMatrix(bool forceUpdate)
 			{
 				if (forceUpdate)
@@ -179,7 +179,7 @@ namespace minko
 
 			private:
 				std::vector<TransformPtr>		_transforms;
-				std::vector<math::Matrix4x4*>	_modelToWorld;
+				std::vector<math::mat4*>	_modelToWorld;
 
 				std::map<NodePtr, unsigned int>	_nodeToId;
 				std::vector<NodePtr>			_idToNode;

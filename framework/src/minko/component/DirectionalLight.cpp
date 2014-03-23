@@ -21,18 +21,17 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 using namespace minko;
 using namespace minko::component;
-using namespace minko::math;
 
 DirectionalLight::DirectionalLight(float diffuse, float specular) :
 	AbstractDiscreteLight("directionalLights", diffuse, specular),
-	_worldDirection(Vector3(0.f, 0.f, -1.f))
+	_worldDirection(math::vec3(0.f, 0.f, -1.f))
 {
 	data()->set("direction", _worldDirection);
 }
 
 void
-DirectionalLight::updateModelToWorldMatrix(const math::Matrix4x4& modelToWorld)
+DirectionalLight::updateModelToWorldMatrix(const math::mat4& modelToWorld)
 {
-	_worldDirection = Vector3(0.f, 0.f, -1.f) * math::mat3x3(modelToWorld);
+	_worldDirection = math::normalize(math::mat3x3(modelToWorld) * math::vec3(0.f, 0.f, -1.f));
 	data()->set("direction", _worldDirection);
 }

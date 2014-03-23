@@ -18,20 +18,19 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "minko/animation/Matrix4x4Timeline.hpp"
-#include "minko/data/Container.hpp"
 
+#include "minko/data/Container.hpp"
 #include "timeline_lookup.hpp"
 
 using namespace minko;
 using namespace minko::component;
 using namespace minko::animation;
-using namespace minko::math;
 
-Matrix4x4Timeline::Matrix4x4Timeline(const std::string& 					propertyName,
-									 uint 									duration,
-									 const std::vector<uint>& 				timetable,
-									 const std::vector<math::Matrix4x4>& 	matrices,
-									 bool 									interpolate):
+Matrix4x4Timeline::Matrix4x4Timeline(const std::string& 				propertyName,
+									 uint 								duration,
+									 const std::vector<uint>& 			timetable,
+									 const std::vector<math::mat4>& 	matrices,
+									 bool 								interpolate):
 	AbstractTimeline(propertyName, duration),
 	_matrices(),
 	_interpolate(interpolate)
@@ -40,8 +39,8 @@ Matrix4x4Timeline::Matrix4x4Timeline(const std::string& 					propertyName,
 }
 
 void
-Matrix4x4Timeline::initializeMatrixTimetable(const std::vector<uint>& 				timetable,
-											 const std::vector<math::Matrix4x4>& 	matrices)
+Matrix4x4Timeline::initializeMatrixTimetable(const std::vector<uint>& 			timetable,
+											 const std::vector<math::mat4>& 	matrices)
 {
 	if (timetable.empty())
 		throw new std::invalid_argument("timetable");
@@ -63,7 +62,7 @@ Matrix4x4Timeline::initializeMatrixTimetable(const std::vector<uint>& 				timeta
 	std::sort(
 		_matrices.begin(),
 		_matrices.end(),
-		[](const std::pair<uint, math::Matrix4x4>& a, const std::pair<uint, math::Matrix4x4>& b)
+		[](const std::pair<uint, math::mat4>& a, const std::pair<uint, math::mat4>& b)
 		{
 			return a.first < b.first;
 		});
@@ -80,7 +79,7 @@ Matrix4x4Timeline::update(uint time,
 	if (data == nullptr || !data->hasProperty(_propertyName))
 		return;
 
-	auto matrix	= data->get<Matrix4x4>(_propertyName);
+	auto matrix	= data->get<math::mat4>(_propertyName);
 
     if (_interpolate)
     	data->set(_propertyName, interpolate(time));
@@ -93,7 +92,7 @@ Matrix4x4Timeline::update(uint time,
     }
 }
 
-Matrix4x4
+math::mat4
 Matrix4x4Timeline::interpolate(uint time) const
 {
     const auto	t		= getTimeInRange(time, _duration + 1);

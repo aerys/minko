@@ -24,7 +24,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/VertexBuffer.hpp"
 
 using namespace minko;
-using namespace minko::math;
 using namespace minko::geometry;
 using namespace minko::render;
 
@@ -127,7 +126,7 @@ Geometry::computeNormals()
 	const unsigned int numFaces					= indices.size() / 3;
 
 	unsigned short vertexIds[3] = { 0, 0, 0 };
-	std::vector<Vector3> xyz(3);
+	std::vector<math::vec3> xyz(3);
 
 	VertexBuffer::Ptr xyzBuffer			= _data->get<VertexBuffer::Ptr>("position");
 	const unsigned int xyzSize			= xyzBuffer->vertexSize();
@@ -142,10 +141,10 @@ Geometry::computeNormals()
 		{
 			vertexIds[k] = indices[offset++];
 			const unsigned int index = xyzOffset + vertexIds[k] * xyzSize;
-			xyz[k] = Vector3(xyzData[index], xyzData[index + 1], xyzData[index + 2]);
+			xyz[k] = math::vec3(xyzData[index], xyzData[index + 1], xyzData[index + 2]);
 		}
 
-		Vector3 faceNormal = math::cross(xyz[0] - xyz[1], xyz[0] - xyz[2]);
+		math::vec3 faceNormal = math::cross(xyz[0] - xyz[1], xyz[0] - xyz[2]);
  		for (unsigned int k = 0; k < 3; ++k)
 		{
 			const unsigned int index = 3 * vertexIds[k];
@@ -195,8 +194,8 @@ Geometry::computeTangentSpace(bool doNormals)
 	const unsigned int numFaces = indices.size() / 3;
 
 	unsigned short vertexIds[3] = { 0, 0, 0 };
-	std::vector<Vector3> xyz(3);
-	std::vector<Vector2> uv(3);
+	std::vector<math::vec3> xyz(3);
+	std::vector<math::vec2> uv(3);
 
 	VertexBuffer::Ptr xyzBuffer			= _data->get<VertexBuffer::Ptr>("position");
 	const unsigned int xyzSize			= xyzBuffer->vertexSize();
@@ -216,17 +215,17 @@ Geometry::computeTangentSpace(bool doNormals)
 		{
 			vertexIds[k] = indices[offset++];
 			unsigned int index = xyzOffset + vertexIds[k] * xyzSize;
-			xyz[k] = Vector3(xyzData[index], xyzData[index + 1], xyzData[index + 2]);
+			xyz[k] = math::vec3(xyzData[index], xyzData[index + 1], xyzData[index + 2]);
 			index = uvOffset + vertexIds[k] * uvSize;
-			uv[k] = Vector2(uvData[index], uvData[index + 1]);
+			uv[k] = math::vec2(uvData[index], uvData[index + 1]);
 		}
 
-		Vector2 uv02			= uv[0] - uv[2];
-		Vector2 uv12			= uv[1] - uv[2];
+		math::vec2 uv02			= uv[0] - uv[2];
+		math::vec2 uv12			= uv[1] - uv[2];
 		const float denom		= uv02.x * uv12.y - uv12.x * uv02.y;
 		const float invDenom	= fabsf(denom) > 1e-6f ? 1.0f/denom : 1.0f;
 
-		Vector3 faceTangent = (xyz[0] - xyz[2]) * uv12.y - (xyz[1] - xyz[2]) * uv02.y * invDenom;
+		math::vec3 faceTangent = (xyz[0] - xyz[2]) * uv12.y - (xyz[1] - xyz[2]) * uv02.y * invDenom;
 
 		for (unsigned int k = 0; k < 3; ++k)
 		{
@@ -337,9 +336,9 @@ bool
 Geometry::cast(std::shared_ptr<math::Ray>	ray,
 			   float&						distance,
 			   uint&						triangle,
-			   Vector3*						hitXyz,
-			   Vector2*						hitUv,
-			   Vector3*						hitNormal)
+			   math::vec3*						hitXyz,
+			   math::vec2*						hitUv,
+			   math::vec3*						hitNormal)
 {
 	static const auto EPSILON = 0.00001f;
 
@@ -356,7 +355,7 @@ Geometry::cast(std::shared_ptr<math::Ray>	ray,
 	auto minDistance = std::numeric_limits<float>::lowest();
 	auto triangleIndice = -3;
 
-	Vector2 lambda;
+	math::vec2 lambda;
 
 	for (uint i = 0; i < numIndices; i += 3)
 	{
@@ -416,7 +415,7 @@ Geometry::cast(std::shared_ptr<math::Ray>	ray,
 }
 
 void
-Geometry::getHitUv(uint triangle, Vector2 lambda, Vector2& hitUv)
+Geometry::getHitUv(uint triangle, math::vec2 lambda, math::vec2& hitUv)
 {
 	auto uvBuffer = vertexBuffer("uv");
 	auto& uvData = uvBuffer->data();
@@ -436,14 +435,14 @@ Geometry::getHitUv(uint triangle, Vector2 lambda, Vector2& hitUv)
 
 	auto z = 1.f - lambda.x - lambda.y;
 
-	hitUv = Vector2(
+	hitUv = math::vec2(
 		z * u0 + lambda.x * u1 + lambda.y * u2,
 		z * v0 + lambda.x * v1 + lambda.y * v2
 	);
 }
 
 void
-Geometry::getHitNormal(uint triangle, Vector3& hitNormal)
+Geometry::getHitNormal(uint triangle, math::vec3& hitNormal)
 {
 	auto normalBuffer = vertexBuffer("normal");
 	auto& normalData = normalBuffer->data();

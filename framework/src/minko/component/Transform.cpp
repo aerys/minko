@@ -56,8 +56,8 @@ Transform::initialize()
 	));
 
 	_data
-		->set<Matrix4x4>("matrix", 				_matrix)
-		->set<Matrix4x4>("modelToWorldMatrix", 	_modelToWorld);
+		->set<mat4>("matrix", 				_matrix)
+		->set<mat4>("modelToWorldMatrix", 	_modelToWorld);
 }
 
 void
@@ -245,6 +245,7 @@ Transform::RootTransform::updateTransformsList()
 	_numChildren.clear();
 	_firstChildId.clear();
 	_parentId.clear();
+	_dirty.clear();
 
 	auto descendants = scene::NodeSet::create(targets())
 		->descendants(true, false)
@@ -309,23 +310,22 @@ Transform::RootTransform::updateTransforms()
 
 			*parentModelToWorldMatrix = transform->_matrix;
         	transform->_data->set("modelToWorldMatrix", *parentModelToWorldMatrix);
-        	_dirty[nodeId] = false;
         }
 
 		for (auto childId = firstChildId; childId < lastChildId; ++childId)
 		{
-			auto childDirty = parentDirty || _dirty[childId];
 			auto transform = _transforms[childId];
-			auto modelToWorldMatrix = _modelToWorld[nodeId];
+			auto modelToWorldMatrix = _modelToWorld[childId];
 
-			if (childDirty)
+			if (parentDirty || _dirty[childId])
 			{
 				*modelToWorldMatrix = *parentModelToWorldMatrix * transform->_matrix;
 				transform->_data->set("modelToWorldMatrix", *modelToWorldMatrix);
-				_dirty[childId] = false;				
+				_dirty[childId] = true;
 			}
 		}
 
+       	_dirty[nodeId] = false;
 		++nodeId;
 	}
 }

@@ -32,6 +32,9 @@ namespace minko
 		{
 		public:
 			typedef std::shared_ptr<SpotLight> Ptr;
+
+		private:
+			math::vec3 	_attenuation;
 	
 		public:
 			inline static
@@ -68,18 +71,18 @@ namespace minko
 			bool
 			attenuationEnabled() const;
 
-			math::Vector3
+			const math::vec3&
 			attenuationCoefficients() const;
 
 			Ptr
 			attenuationCoefficients(float constant, float linear, float quadratic);
 
 			Ptr
-			attenuationCoefficients(const math::Vector3&);
+			attenuationCoefficients(const math::vec3&);
 
 		protected:
 			void
-            updateModelToWorldMatrix(const math::Matrix4x4& modelToWorld);
+            updateModelToWorldMatrix(const math::mat4& modelToWorld);
 
 		private:
 			SpotLight(float diffuse,

@@ -27,17 +27,17 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::component;
 
-PerspectiveCamera::PerspectiveCamera(float				      fov,
-                                     float				      aspectRatio,
-                                     float				      zNear,
-                                     float				      zFar,
-									 const math::Matrix4x4&	  postPerspective) :
+PerspectiveCamera::PerspectiveCamera(float			      fov,
+                                     float			      aspectRatio,
+                                     float			      zNear,
+                                     float			      zFar,
+									 const math::mat4&	  postPerspective) :
 	_data(data::StructureProvider::create("camera")),
 	_fov(fov),
 	_aspectRatio(aspectRatio),
 	_zNear(zNear),
 	_zFar(zFar),
-  	_view(math::Matrix4x4(1.f)),
+  	_view(math::mat4(1.f)),
   	_projection(math::perspective(fov, aspectRatio, zNear, zFar)),
   	_viewProjection(_projection),
     _position(),
@@ -82,7 +82,7 @@ PerspectiveCamera::targetAddedHandler(AbstractComponent::Ptr ctrl, NodePtr targe
   	));
 
     if (target->data()->hasProperty("transform.modelToWorldMatrix"))
-        updateMatrices(target->data()->get<math::Matrix4x4>("transform.modelToWorldMatrix"));
+        updateMatrices(target->data()->get<math::mat4>("transform.modelToWorldMatrix"));
 }
 
 void
@@ -95,29 +95,15 @@ void
 PerspectiveCamera::localToWorldChangedHandler(data::Container::Ptr	data,
 											  const std::string&	propertyName)
 {
-    updateMatrices(data->get<math::Matrix4x4>("transform.modelToWorldMatrix"));
+    updateMatrices(data->get<math::mat4>("transform.modelToWorldMatrix"));
 }
 
 void
-PerspectiveCamera::updateMatrices(const math::Matrix4x4& modelToWorldMatrix)
+PerspectiveCamera::updateMatrices(const math::mat4& modelToWorldMatrix)
 {
-	_position = (math::vec4(0.f, 0.f, 0.f, 1.f) * modelToWorldMatrix).xyz();
-
+	_position = (modelToWorldMatrix * math::vec4(0.f, 0.f, 0.f, 1.f)).xyz();
     _view = math::inverse(modelToWorldMatrix);
-    // std::cout << "viewMatrix" << std::endl;
-    // std::cout << std::to_string(_view) << std::endl;
-    // std::cout << std::to_string(math::inverse(_view)) << std::endl;
-    // std::cout << (_view == math::inverse(_view)) << std::endl;
-
-    // _view = math::inverse(_view);
-    // std::cout << "viewMatrix" << std::endl;
-    // std::cout << std::to_string(_view) << std::endl;
-
-    // std::cout << "modelToWorldMatrix" << std::endl;
-    // std::cout << std::to_string(modelToWorldMatrix) << std::endl;
-    // std::cout << "viewMatrix" << std::endl;
-    // std::cout << std::to_string(_view) << std::endl;
-
+    
 	_data
 		->set("position",	_position)
   		->set("viewMatrix", _view);
@@ -128,7 +114,7 @@ PerspectiveCamera::updateMatrices(const math::Matrix4x4& modelToWorldMatrix)
 void
 PerspectiveCamera::updateProjection(float fieldOfView, float aspectRatio, float zNear, float zFar)
 {
-	_projection = math::perspective(fieldOfView, aspectRatio, zNear, zFar); // * _postProjection ;
+	_projection = _postProjection * math::perspective(fieldOfView, aspectRatio, zNear, zFar);
 	_viewProjection = _projection * _view;
 
 	_data

@@ -36,7 +36,7 @@ using namespace minko;
 
 math::OctTree::OctTree(float				worldSize,
 					   uint					maxDepth,
-					   const math::Vector3&	center,
+					   const math::vec3&	center,
 					   uint					depth) :
 	_worldSize(worldSize),
 	_depth(depth),
@@ -60,7 +60,7 @@ math::OctTree::generateVisual(std::shared_ptr<file::AssetLibrary>	assetLibrary,
 
 	if (_content.size() > 0)
 	{
-		math::Matrix4x4 t;
+		math::mat4 t;
 
 		math::scale(t, math::vec3(1.f));
 		math::translate(t, _center);
@@ -104,7 +104,7 @@ math::OctTree::split()
 				_children[index] = math::OctTree::create(
 					_worldSize,
 					_maxDepth, 
-					math::Vector3(
+					math::vec3(
 						_center.x + (x == 0 ? -size / 2 : size / 2),
 						_center.y + (y == 0 ? -size / 2 : size / 2),
 						_center.z + (z == 0 ? -size / 2 : size / 2)
@@ -136,7 +136,7 @@ math::OctTree::insert(std::shared_ptr<scene::Node> node)
 	uint currentDepth	= 0;
 	auto octant			= shared_from_this();
 
-	math::Vector3		newNodeCenter(
+	math::vec3		newNodeCenter(
 		(nodeBoundingBox->box()->bottomLeft().x + nodeBoundingBox->box()->topRight().x) / 2.f,
 		(nodeBoundingBox->box()->bottomLeft().y + nodeBoundingBox->box()->topRight().y) / 2.f,
 		(nodeBoundingBox->box()->bottomLeft().z + nodeBoundingBox->box()->topRight().z) / 2.f
@@ -166,7 +166,7 @@ math::OctTree::insert(std::shared_ptr<scene::Node> node)
 	octant->_content.push_back(node);
 	octant->addChildContent(node);
 	_nodeToOctant[node] = octant;
-	//_matrixToNode[node->data()->get<math::Matrix4x4>("transform.modelToWorldMatrix")] = node;
+	//_matrixToNode[node->data()->get<math::mat4>("transform.modelToWorldMatrix")] = node;
 
 	if (_nodeToTransformChangedSlot.find(node) == _nodeToTransformChangedSlot.end())
 	{
@@ -186,7 +186,7 @@ math::OctTree::nodeChangedOctant(std::shared_ptr<scene::Node> node)
 	auto octant = _nodeToOctant[node];
 	auto nodeBoundingBox = node->component<component::BoundingBox>();
 
-	math::Vector3 nodeCenter(
+	math::vec3 nodeCenter(
 		(nodeBoundingBox->box()->bottomLeft().x + nodeBoundingBox->box()->topRight().x) / 2.f,
 		(nodeBoundingBox->box()->bottomLeft().y + nodeBoundingBox->box()->topRight().y) / 2.f,
 		(nodeBoundingBox->box()->bottomLeft().z + nodeBoundingBox->box()->topRight().z) / 2.f
@@ -201,12 +201,12 @@ void
 math::OctTree::nodeModelToWorldChanged(data::Container::Ptr	data,
 								 const std::string&		propertyName)
 {
-	/*auto node		= _matrixToNode[data->get<std::shared_ptr<math::Matrix4x4>>(propertyName)];
+	/*auto node		= _matrixToNode[data->get<std::shared_ptr<math::mat4>>(propertyName)];
 	auto octant		= _nodeToOctant[node];
 
 	if (node && nodeChangedOctant(node)) // node is no more in the octant
 	{
-		_matrixToNode.erase(data->get<std::shared_ptr<math::Matrix4x4>>(propertyName));
+		_matrixToNode.erase(data->get<std::shared_ptr<math::mat4>>(propertyName));
 		_nodeToOctant.erase(node);
 		octant->_content.remove(node);
 		insert(node);
@@ -252,7 +252,7 @@ math::OctTree::remove(std::shared_ptr<scene::Node> node)
 	octant->_content.remove(node);
 
 	_nodeToOctant.erase(node);
-	//_matrixToNode.erase(node->data()->get<math::Matrix4x4::Ptr>("transform.modelToWorldMatrix"));
+	//_matrixToNode.erase(node->data()->get<math::mat4::Ptr>("transform.modelToWorldMatrix"));
 	
 
 	return shared_from_this();

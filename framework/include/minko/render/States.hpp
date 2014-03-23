@@ -35,7 +35,6 @@ namespace minko
 	    public:
 		    typedef std::shared_ptr<States>                                 Ptr;
             typedef std::unordered_map<std::string, render::SamplerState>   SamplerStates;
-			typedef std::shared_ptr<math::Vector4>							Vector4Ptr;
 			typedef std::shared_ptr<render::AbstractTexture>				AbstractTexturePtr;
 
         private:

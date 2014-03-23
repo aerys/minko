@@ -41,9 +41,9 @@ Skin::Skin(unsigned int numBones, unsigned int duration, unsigned int numFrames)
 }
 
 void
-Skin::matrix(unsigned int			frameId, 
-			 unsigned int			boneId, 
-			 const math::Matrix4x4&	value)
+Skin::matrix(unsigned int		frameId, 
+			 unsigned int		boneId, 
+			 const math::mat4&	value)
 {
 #ifdef DEBUG_SKINNING
 	assert(frameId < numFrames() && boneId < numBones());

@@ -21,7 +21,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 
-//#include "minko/component/AbstractRootDataComponent.hpp"
 #include "minko/component/AbstractComponent.hpp"
 #include "minko/data/Provider.hpp"
 #include "minko/data/Container.hpp"
@@ -50,11 +49,11 @@ namespace minko
 			float											_zNear;
 			float											_zFar;
 
-			math::Matrix4x4									_view;
-			math::Matrix4x4									_projection;
-			math::Matrix4x4									_viewProjection;
-            math::Vector3                  					_position;
-			math::Matrix4x4									_postProjection;
+			math::mat4										_view;
+			math::mat4										_projection;
+			math::mat4										_viewProjection;
+            math::vec3	                 					_position;
+			math::mat4										_postProjection;
 
 			Signal<AbsCtrlPtr, NodePtr>::Slot				_targetAddedSlot;
 			Signal<AbsCtrlPtr, NodePtr>::Slot				_targetRemovedSlot;
@@ -63,11 +62,11 @@ namespace minko
 		public:
 			inline static
 			Ptr
-			create(float 					aspectRatio, 
-				   float 					fov				= .785f, 
-				   float 					zNear			= 0.1f, 
-				   float 					zFar			= 1000.f,
-				   const math::Matrix4x4& 	postProjection 	= math::Matrix4x4(1.f))
+			create(float 				aspectRatio, 
+				   float 				fov				= .785f, 
+				   float 				zNear			= 0.1f, 
+				   float 				zFar			= 1000.f,
+				   const math::mat4& 	postProjection 	= math::mat4(1.f))
 			{
 				auto ctrl  = std::shared_ptr<PerspectiveCamera>(new PerspectiveCamera(
 					fov, aspectRatio, zNear, zFar, postProjection
@@ -158,21 +157,21 @@ namespace minko
 			}
 
 			inline
-			const math::Matrix4x4&
+			const math::mat4&
 			viewMatrix()
 			{
 				return _view;
 			}
 
 			inline
-			const math::Matrix4x4&
+			const math::mat4&
 			projectionMatrix()
 			{
 				return _projection;
 			}
 
 			inline
-			const math::Matrix4x4&
+			const math::mat4&
 			viewProjectionMatrix()
 			{
 				return _viewProjection;
@@ -200,7 +199,7 @@ namespace minko
 							  float						aspectRatio,
 							  float						zNear,
 							  float						zFar,
-							  const math::Matrix4x4&	postPerspective);
+							  const math::mat4&	postPerspective);
 
 			void
 			initialize();
@@ -210,7 +209,7 @@ namespace minko
 									   const std::string&				propertyName);
 
             void
-            updateMatrices(const math::Matrix4x4& modelToWorldMatrix);
+            updateMatrices(const math::mat4& modelToWorldMatrix);
 
 		};
 	}

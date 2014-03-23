@@ -204,9 +204,9 @@ DrawCallZSorter::recordIfPositionalMembers(Container::Ptr		container,
 		if (propertyName == _vertexPositions.first)
 			_vertexPositions.second		= container->get<VertexBuffer::Ptr>(propertyName);
 		else if (propertyName == _modelToWorldMatrix.first)
-			_modelToWorldMatrix.second	= new math::Matrix4x4(container->get<math::Matrix4x4>(propertyName));
+			_modelToWorldMatrix.second	= new math::mat4(container->get<math::mat4>(propertyName));
 		else if (propertyName == _worldToScreenMatrix.first)
-			_worldToScreenMatrix.second	= new math::Matrix4x4(container->get<math::Matrix4x4>(propertyName));
+			_worldToScreenMatrix.second	= new math::mat4(container->get<math::mat4>(propertyName));
 	}
 	else if (isPropertyRemoved)
 	{
@@ -225,13 +225,13 @@ DrawCallZSorter::recordIfPositionalMembers(Container::Ptr		container,
 	}
 }
 
-math::Vector3
+math::vec3
 DrawCallZSorter::getEyeSpacePosition()  const
 {
 	const auto& vb = _vertexPositions.second;
 
-	math::Vector3 localPos(0.f);
-	math::Matrix4x4 modelView(1.f);
+	math::vec3 localPos(0.f);
+	math::mat4 modelView(1.f);
 
 	if (vb)
 		localPos = vb->minPosition() + (vb->maxPosition() - vb->minPosition()) * .5f;
@@ -242,5 +242,5 @@ DrawCallZSorter::getEyeSpacePosition()  const
 	if (_worldToScreenMatrix.second)
 		modelView = modelView * *_worldToScreenMatrix.second;
 
-	return (math::Vector4(localPos, 1.f) * modelView).xyz();
+	return (math::vec4(localPos, 1.f) * modelView).xyz();
 }

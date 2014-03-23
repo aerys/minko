@@ -60,20 +60,20 @@ LineGeometry::initialize(AbstractContext::Ptr context)
 	indices(_indexBuffer);
 }
 
-math::Vector3
+math::vec3
 LineGeometry::currentXYZ() const
 {
-	return math::Vector3(_currentX, _currentY, _currentZ);
+	return math::vec3(_currentX, _currentY, _currentZ);
 }
 
 LineGeometry::Ptr
-LineGeometry::moveTo(const math::Vector3& xyz)
+LineGeometry::moveTo(const math::vec3& xyz)
 {
 	return moveTo(xyz.x, xyz.y, xyz.z);
 }
 
 LineGeometry::Ptr
-LineGeometry::lineTo(const math::Vector3& xyz, unsigned int numSegments)
+LineGeometry::lineTo(const math::vec3& xyz, unsigned int numSegments)
 {
 	return lineTo(xyz.x, xyz.y, xyz.z, numSegments);
 }

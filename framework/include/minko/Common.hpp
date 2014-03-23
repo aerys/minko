@@ -55,8 +55,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "glm/mat4x4.hpp"
 #include "glm/gtc/type_ptr.hpp"
 #include "glm/gtc/matrix_transform.hpp"
-#include "glm/gtx/matrix_interpolation.hpp"
 #include "glm/gtc/matrix_inverse.hpp"
+#include "glm/gtx/matrix_interpolation.hpp"
+#include "glm/gtx/color_space.hpp"
+
 
 #define PI 3.1415926535897932384626433832795
 
@@ -254,12 +256,6 @@ namespace minko
 	{
 		using namespace glm;
 
-		typedef glm::vec2 Vector2;
-		typedef glm::vec3 Vector3;
-		typedef glm::vec4 Vector4;
-		typedef glm::mat4 Matrix4x4;
-
-		class Quaternion;
 		class Ray;
 		class AbstractShape;
 		class Box;
@@ -267,10 +263,10 @@ namespace minko
 		class OctTree;
 
 		inline
-		Vector4
+		vec4
 		rgba(uint rgba)
 		{
-			return math::Vector4(
+			return math::vec4(
 		        (float)((rgba >> 24) & 0xff) / 255.f,
 		        (float)((rgba >> 16) & 0xff) / 255.f,
 		        (float)((rgba >> 8) & 0xff) / 255.f,
@@ -375,11 +371,11 @@ namespace std
 	}
 
 	template<>
-	struct hash<minko::math::Matrix4x4>
+	struct hash<minko::math::mat4>
 	{
 		inline
 		size_t
-		operator()(const minko::math::Matrix4x4& matrix) const
+		operator()(const minko::math::mat4& matrix) const
 		{
 			return (size_t)minko::math::value_ptr(matrix);
 		}

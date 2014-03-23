@@ -118,7 +118,7 @@ namespace minko
 			}
 
 			void
-			matrix(unsigned int frameId, unsigned int boneId, const math::Matrix4x4&);
+			matrix(unsigned int frameId, unsigned int boneId, const math::mat4&);
 
 			inline
 			unsigned int

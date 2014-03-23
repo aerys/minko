@@ -34,8 +34,8 @@ namespace minko
 			typedef std::shared_ptr<Frustum> Ptr;
 
 		private:
-			std::vector<math::Vector3>		_points;
-			std::array<math::Vector4, 6> 	_planes;
+			std::vector<math::vec3>			_points;
+			std::array<math::vec4, 6> 		_planes;
 			
 			std::array<bool, 6> 			_blfResult;
 			std::array<bool, 6> 			_blbResult;
@@ -58,7 +58,7 @@ namespace minko
 			cast(std::shared_ptr<Ray> ray, float& distance);
 
 			void
-			updateFromMatrix(const math::Matrix4x4& matrix);
+			updateFromMatrix(const math::mat4& matrix);
 
 			ShapePosition
 			testBoundingBox(std::shared_ptr<math::Box> box);

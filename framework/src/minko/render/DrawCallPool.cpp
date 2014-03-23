@@ -36,7 +36,7 @@ using namespace minko::component;
 using namespace minko::data;
 
 /*static*/ const unsigned int								DrawCallPool::NUM_FALLBACK_ATTEMPTS		= 32;
-/*static*/ std::unordered_map<DrawCall::Ptr, math::Vector3>	DrawCallPool::_cachedDrawcallPositions;
+/*static*/ std::unordered_map<DrawCall::Ptr, math::vec3>	DrawCallPool::_cachedDrawcallPositions;
 
 std::unordered_map<std::string, std::pair<std::string, int>> DrawCallPool::_variablePropertyNameToPosition;
 
@@ -100,7 +100,7 @@ DrawCallPool::compareDrawCalls(DrawCall::Ptr a,
 }
 
 /*static*/
-math::Vector3
+math::vec3
 DrawCallPool::getDrawcallEyePosition(DrawCall::Ptr drawcall)
 {
 	const auto foundPositionIt = _cachedDrawcallPositions.find(drawcall);

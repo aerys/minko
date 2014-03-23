@@ -58,7 +58,7 @@ namespace minko
 				return ptr;
 			}
 
-			math::Vector3
+			math::vec3
 			currentXYZ() const;
 
 			inline
@@ -80,13 +80,13 @@ namespace minko
 			}
 
 			Ptr
-			moveTo(const math::Vector3&);
+			moveTo(const math::vec3&);
 
 			Ptr
 			lineTo(float x, float y, float z, unsigned int numSegments = 1);
 
 			Ptr
-			lineTo(const math::Vector3&, unsigned int numSegments = 1);
+			lineTo(const math::vec3&, unsigned int numSegments = 1);
 
 
 		private:

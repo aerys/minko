@@ -24,16 +24,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 
 void
-math::Frustum::updateFromMatrix(const math::Matrix4x4& matrix)
+math::Frustum::updateFromMatrix(const math::mat4& matrix)
 {
 	const float* data	= math::value_ptr(matrix);
 
-	_planes[(int)PlanePosition::LEFT]	= math::normalize(math::Vector4(data[12] + data[0], data[13] + data[1], data[14] + data[2], data[15] + data[3]));
-	_planes[(int)PlanePosition::TOP]	= math::normalize(math::Vector4(data[12] - data[4], data[13] - data[5], data[14] - data[6], data[15] - data[7]));
-	_planes[(int)PlanePosition::RIGHT]	= math::normalize(math::Vector4(data[12] - data[0], data[13] - data[1], data[14] - data[2], data[15] - data[3]));
-	_planes[(int)PlanePosition::BOTTOM]	= math::normalize(math::Vector4(data[12] + data[4], data[13] + data[5], data[14] + data[6], data[15] + data[7]));
-	_planes[(int)PlanePosition::FAR]	= math::normalize(math::Vector4(data[12] - data[8], data[13] - data[9], data[14] - data[10], data[15] - data[11]));
-	_planes[(int)PlanePosition::NEAR]	= math::normalize(math::Vector4(data[8], data[9], data[10], data[11]));
+	_planes[(int)PlanePosition::LEFT]	= math::normalize(math::vec4(data[12] + data[0], data[13] + data[1], data[14] + data[2], data[15] + data[3]));
+	_planes[(int)PlanePosition::TOP]	= math::normalize(math::vec4(data[12] - data[4], data[13] - data[5], data[14] - data[6], data[15] - data[7]));
+	_planes[(int)PlanePosition::RIGHT]	= math::normalize(math::vec4(data[12] - data[0], data[13] - data[1], data[14] - data[2], data[15] - data[3]));
+	_planes[(int)PlanePosition::BOTTOM]	= math::normalize(math::vec4(data[12] + data[4], data[13] + data[5], data[14] + data[6], data[15] + data[7]));
+	_planes[(int)PlanePosition::FAR]	= math::normalize(math::vec4(data[12] - data[8], data[13] - data[9], data[14] - data[10], data[15] - data[11]));
+	_planes[(int)PlanePosition::NEAR]	= math::normalize(math::vec4(data[8], data[9], data[10], data[11]));
 }
 
 math::ShapePosition

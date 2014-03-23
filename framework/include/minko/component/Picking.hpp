@@ -52,7 +52,7 @@ namespace minko
 			SceneManagerPtr								_sceneManager;
 			MousePtr									_mouse;
 			NodePtr										_camera;
-			math::Matrix4x4								_pickingProjection;	
+			math::mat4									_pickingProjection;	
 			std::map<SurfacePtr, uint>					_surfaceToPickingId; 
 			std::map<uint, SurfacePtr>					_pickingIdToSurface;
 			std::map<SurfacePtr, StructureProviderPtr>	_surfaceToProvider;

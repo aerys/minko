@@ -35,8 +35,8 @@ namespace minko
 			typedef std::shared_ptr<Box>	Ptr;
 
 		private:
-			Vector3	_topRight;
-			Vector3	_bottomLeft;
+			vec3	_topRight;
+			vec3	_bottomLeft;
 
 		public:
 			inline static
@@ -48,7 +48,7 @@ namespace minko
 
 			inline static
 			Ptr
-			create(const math::Vector3& topRight, const math::Vector3& bottomLeft)
+			create(const math::vec3& topRight, const math::vec3& bottomLeft)
 			{
 				auto box = std::shared_ptr<Box>(new Box());
 
@@ -66,7 +66,7 @@ namespace minko
 			merge(Ptr box2);
 			
 			inline
-			const Vector3&
+			const vec3&
 			topRight() const
 			{
 				return _topRight;
@@ -74,13 +74,13 @@ namespace minko
 
 			inline
 			void
-			topRight(const Vector3& topRight)
+			topRight(const vec3& topRight)
 			{
 				_topRight = topRight;
 			}
 
 			inline
-			const Vector3
+			const vec3
 			bottomLeft() const
 			{
 				return _bottomLeft;
@@ -88,7 +88,7 @@ namespace minko
 
 			inline
 			void
-			bottomLeft(const Vector3& bottomLeft)
+			bottomLeft(const vec3& bottomLeft)
 			{
 				_bottomLeft = bottomLeft;
 			}
@@ -127,7 +127,7 @@ namespace minko
 			bool
 			cast(std::shared_ptr<Ray> ray, float& distance);
 
-			std::array<Vector3, 8>
+			std::array<vec3, 8>
 			getVertices();
 
 			
@@ -135,7 +135,7 @@ namespace minko
 			testBoundingBox(std::shared_ptr<math::Box> box);
 
 			void
-			updateFromMatrix(const math::Matrix4x4& matrix);
+			updateFromMatrix(const math::mat4& matrix);
 
 		private:
 			Box();

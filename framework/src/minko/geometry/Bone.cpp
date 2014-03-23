@@ -19,15 +19,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/geometry/Bone.hpp"
 
+#include "minko/scene/Node.hpp"
+
 using namespace minko;
 using namespace minko::geometry;
-using namespace minko::math;
 using namespace minko::scene;
 
-#include <minko/scene/Node.hpp>
-
 Bone::Bone(Node::Ptr							node, 
-		   const Matrix4x4&						offsetMatrix, 
+		   const math::mat4&					offsetMatrix, 
 		   const std::vector<unsigned short>&	vertexIds, 
 		   const std::vector<float>&			vertexWeights) :
 	_node(node),

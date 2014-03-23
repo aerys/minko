@@ -41,8 +41,8 @@ namespace minko
 			std::list<AttributePtr>				_attributes;
 			uint								_vertexSize;
 			bool								_validMinMax;
-			math::Vector3						_minPosition;
-			math::Vector3						_maxPosition;
+			math::vec3						_minPosition;
+			math::vec3						_maxPosition;
 
 			std::shared_ptr<Signal<Ptr, int>>	_vertexSizeChanged;
 
@@ -165,10 +165,10 @@ namespace minko
 				return _data == vertexBuffer->_data;
 			}
 
-			const math::Vector3&
+			const math::vec3&
 			minPosition();
 
-			const math::Vector3&
+			const math::vec3&
 			maxPosition();
 
 		protected:

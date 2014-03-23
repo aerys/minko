@@ -34,7 +34,7 @@ namespace minko
 		    typedef std::shared_ptr<DirectionalLight> Ptr;
 
 		private:
-			math::Vector3	_worldDirection;
+			math::vec3	_worldDirection;
 
 	    public:
 		    inline static
@@ -54,7 +54,7 @@ namespace minko
 
 		protected:
 			void
-            updateModelToWorldMatrix(const math::Matrix4x4& modelToWorld);
+            updateModelToWorldMatrix(const math::mat4& modelToWorld);
 
 	    private:
 		    DirectionalLight(float diffuse, float specular);
