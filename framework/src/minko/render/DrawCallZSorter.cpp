@@ -211,11 +211,11 @@ DrawCallZSorter::recordIfPositionalMembers(Container::Ptr		container,
 	else if (isPropertyRemoved)
 	{
 		if (propertyName == _vertexPositions.first)
-			_vertexPositions.second		= nullptr;
+			_vertexPositions.second	= nullptr;
 		else if (propertyName == _modelToWorldMatrix.first)
 		{
 			delete _modelToWorldMatrix.second;
-			_modelToWorldMatrix.second	= nullptr;
+			_modelToWorldMatrix.second = nullptr;
 		}
 		else if (propertyName == _worldToScreenMatrix.first)
 		{
@@ -240,7 +240,7 @@ DrawCallZSorter::getEyeSpacePosition()  const
 		modelView = *_modelToWorldMatrix.second;
 
 	if (_worldToScreenMatrix.second)
-		modelView = modelView * *_worldToScreenMatrix.second;
+		modelView = *_worldToScreenMatrix.second * modelView;
 
-	return (math::vec4(localPos, 1.f) * modelView).xyz();
+	return (modelView * math::vec4(localPos, 1.f)).xyz();
 }
