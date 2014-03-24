@@ -57,15 +57,15 @@ namespace minko
         static const std::map<Key, ScanCode> keyToScanCodeMap;
 
         bool
-        hasKeyDownSignal(input::Keyboard::ScanCode scanCode)
+        hasKeyDownSignal(input::Keyboard::Key key)
         {
-            return _keyDown.count(static_cast<int>(scanCode)) != 0;
+            return _keyDown.count(static_cast<int>(key)) != 0;
         }
 
         bool
-        hasKeyUpSignal(input::Keyboard::ScanCode scanCode)
+        hasKeyUpSignal(input::Keyboard::Key key)
         {
-            return _keyUp.count(static_cast<int>(scanCode)) != 0;
+            return _keyUp.count(static_cast<int>(key)) != 0;
         }
 
         SDLKeyboard();

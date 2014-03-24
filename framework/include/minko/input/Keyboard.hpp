@@ -226,8 +226,8 @@ namespace minko
                 WIN_OEM_CLEAR = 254, // Clear key, but we're not sure the meaning difference from DOM_VK_CLEAR. 
 
                 // Additional keys (specific to Minko and for native support of some keys)
-                CONTROL_RIGHT = 512, // Right control key
-                SHIFT_RIGHT = 513, // Right shift key
+                CONTROL_RIGHT = 300, // Right control key
+                SHIFT_RIGHT = 301, // Right shift key
 
             } Key;
 
@@ -674,12 +674,12 @@ namespace minko
             };
 
         public:
-            static const uint NUM_SCANCODES = 285;
+            static const uint NUM_KEYS = 350;
         
         private:
-            typedef std::array<std::string, NUM_SCANCODES>      ScanCodeToNameArray;
+            typedef std::array<std::string, NUM_KEYS>           KeyToNameArray;
 
-            static const ScanCodeToNameArray                    _scanCodeToName;
+            static const KeyToNameArray                         _keyToName;
 
         protected:
             std::unordered_map<uint, Signal<Ptr, uint>::Ptr>    _keyDown;
@@ -691,16 +691,16 @@ namespace minko
         public:
             inline static
             const std::string&
-            getKeyName(ScanCode scanCode)
+            getKeyName(Key key)
             {
-                return _scanCodeToName[static_cast<int>(scanCode)];
+                return _keyToName[static_cast<int>(key)];
             }
 
             inline static
             const std::string&
-            getKeyName(uint scanCode)
+            getKeyName(uint key)
             {
-                return _scanCodeToName[scanCode];
+                return _keyToName[key];
             }
 
             virtual
@@ -712,9 +712,9 @@ namespace minko
 
             virtual
             Signal<Ptr, uint>::Ptr
-            keyDown(ScanCode scanCode)
+            keyDown(Key key)
             {
-                auto index = static_cast<int>(scanCode);
+                auto index = static_cast<int>(key);
 
                 if (_keyDown.count(index) == 0)
                     _keyDown[index] = Signal<Ptr, uint>::create();
@@ -730,9 +730,9 @@ namespace minko
             }
 
             Signal<Ptr, uint>::Ptr
-            keyUp(ScanCode scanCode)
+            keyUp(Key key)
             {
-                auto index = static_cast<int>(scanCode);
+                auto index = static_cast<int>(key);
 
                 if (_keyUp.count(index) == 0)
                     _keyUp[index] = Signal<Ptr, uint>::create();
@@ -749,7 +749,7 @@ namespace minko
 
         private:
             static
-            const ScanCodeToNameArray
+            const KeyToNameArray
             initializeKeyNames();
         };
     }

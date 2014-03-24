@@ -382,9 +382,9 @@ Canvas::step()
         case SDL_KEYDOWN:
         {
             _keyboard->keyDown()->execute(_keyboard);
-            for (uint i = 0; i < input::Keyboard::NUM_SCANCODES; ++i)
+            for (uint i = 0; i < input::Keyboard::NUM_KEYS; ++i)
             {
-                auto code = static_cast<input::Keyboard::ScanCode>(i);
+                auto code = static_cast<input::Keyboard::Key>(i);
                 if (_keyboard->_keyboardState[i] && _keyboard->hasKeyDownSignal(code))
                     _keyboard->keyDown(code)->execute(_keyboard, i);
             }
@@ -394,9 +394,9 @@ Canvas::step()
         case SDL_KEYUP:
         {
             _keyboard->keyUp()->execute(_keyboard);
-            for (uint i = 0; i < input::Keyboard::NUM_SCANCODES; ++i)
+            for (uint i = 0; i < input::Keyboard::NUM_KEYS; ++i)
             {
-                auto code = static_cast<input::Keyboard::ScanCode>(i);
+                auto code = static_cast<input::Keyboard::Key>(i);
                 if (_keyboard->_keyboardState[i] && _keyboard->hasKeyUpSignal(code))
                     _keyboard->keyUp(code)->execute(_keyboard, i);
             }
