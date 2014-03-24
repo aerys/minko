@@ -29,8 +29,6 @@ using namespace minko::math;
 const uint	WINDOW_WIDTH = 800;
 const uint	WINDOW_HEIGHT = 600;
 
-const std::string TEXTURE_FILENAME = "texture/box.png";
-
 int
 main(int argc, char** argv)
 {
@@ -38,9 +36,7 @@ main(int argc, char** argv)
 
     auto sceneManager = SceneManager::create(canvas->context());
     sceneManager->assets()
-        ->registerParser<file::PNGParser>("png")
-        ->queue(TEXTURE_FILENAME)
-        ->queue("effect/Basic.effect");
+        ->registerParser<file::PNGParser>("png");
 
     auto root = scene::Node::create("root")
         ->addComponent(sceneManager)
@@ -49,7 +45,6 @@ main(int argc, char** argv)
     // init. lua
     LuaContext::initialize(argc, argv, root, canvas);
     root->addComponent(LuaScriptManager::create());
-
 
     // setup assets
     sceneManager->assets()->defaultOptions()->generateMipmaps(true);

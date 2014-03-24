@@ -23,7 +23,6 @@ function main:start(root)
 
 	assets
 		:queue('effect/Basic.effect')
-		:queue('effect/Phong.effect')
 		:queue('texture/box.png')
 		:queue('script/camera.lua')
 	
