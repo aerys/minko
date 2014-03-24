@@ -22,16 +22,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Common.hpp"
 #include "minko/Signal.hpp"
 
+#include "minko/BulletCommon.hpp"
+
 namespace minko
 {
 	namespace component
 	{
 		namespace bullet
 		{
-			class AbstractPhysicsShape;
-			class DynamicsProperties;
-            class Collider;
-
 			class ColliderData: public std::enable_shared_from_this<ColliderData>
 			{
 			public:

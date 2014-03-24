@@ -20,15 +20,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
+#include "minko/BulletCommon.hpp"
 #include "minko/component/AbstractComponent.hpp"
-
-namespace minko
-{
-	namespace Component
-	{
-		class ColliderData;
-	}
-}
 
 namespace minko
 {

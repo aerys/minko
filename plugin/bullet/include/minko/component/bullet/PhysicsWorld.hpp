@@ -20,6 +20,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
+#include "minko/BulletCommon.hpp"
+
 #include "minko/component/AbstractComponent.hpp"
 
 class btDynamicsWorld;
@@ -41,12 +43,6 @@ namespace minko
 		namespace bullet
 		{
 			class LinearIdAllocator; 
-			class AbstractPhysicsShape;
-			class SphereShape;
-			class BoxShape;
-			class ConeShape;
-			class CylinderShape;
-			class Collider;
 
 			class PhysicsWorld:
 				public AbstractComponent,
