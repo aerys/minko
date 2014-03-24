@@ -45,6 +45,7 @@ namespace minko
 			{
 			public:
 				typedef std::shared_ptr<Collider>					Ptr;
+				typedef std::shared_ptr<const Collider>				ConstPtr;
 
 			private:
 				typedef std::shared_ptr<file::AssetLibrary>			AssetLibraryPtr;
@@ -58,33 +59,35 @@ namespace minko
 				typedef std::shared_ptr<PhysicsWorld>				PhysicsWorldPtr;
 				typedef std::shared_ptr<Surface>					SurfacePtr;
 																	
-			private:												
+			private:
+				int													_uid;
 				ColliderDataPtr										_colliderData;
 				short												_collisionGroup;
                 short												_collisionMask;
 				bool												_canSleep;
+				bool												_triggerCollisions;
 				Vector3Ptr											_linearFactor;
 				float												_linearDamping;
 				float												_linearSleepingThreshold;
 				Vector3Ptr											_angularFactor;
 				float												_angularDamping;
 				float												_angularSleepingThreshold;
+
 				PhysicsWorldPtr										_physicsWorld;
+				Matrix4x4Ptr										_correction;
 				Matrix4x4Ptr										_physicsTransform;
 				TransformPtr										_graphicsTransform;
 
 				NodePtr												_colliderDisplayNode;
 				
 				std::shared_ptr<Signal<Ptr>>						_propertiesChanged;
+				std::shared_ptr<Signal<Ptr, Ptr>>					_collisionStarted;
+				std::shared_ptr<Signal<Ptr, Ptr>>					_collisionEnded;
 
 				Signal<AbsCtrlPtr, NodePtr>::Slot					_targetAddedSlot;
 				Signal<AbsCtrlPtr, NodePtr>::Slot					_targetRemovedSlot;
 				Signal<NodePtr, NodePtr, NodePtr>::Slot				_addedSlot;
 				Signal<NodePtr, NodePtr, NodePtr>::Slot				_removedSlot;
-				Signal<ColliderDataPtr, Matrix4x4Ptr>::Slot			_physicsTransformChangedSlot;
-				Signal<ColliderDataPtr, Matrix4x4Ptr>::Slot			_graphicsTransformChangedSlot;
-				Signal<ColliderDataPtr, ColliderDataPtr>::Slot		_collisionStartedHandlerSlot;
-				Signal<ColliderDataPtr, ColliderDataPtr>::Slot		_collisionEndedHandlerSlot;
 																	
 			public:
 				inline static
@@ -112,11 +115,40 @@ namespace minko
 				void
 				synchronizePhysicsWithGraphics();
 
+				void
+				updatePhysicsTransform(Matrix4x4Ptr);
+
 				Ptr
 				show(AssetLibraryPtr);
 
 				Ptr
 				hide();
+
+				inline
+				NodePtr
+				target() const
+				{
+					return targets().empty() ? nullptr : targets().front();
+				}
+
+				inline
+				uint
+				uid() const
+				{
+					if (_uid < 0)
+						throw;
+
+					return uint(_uid);
+				}
+
+				inline
+				Ptr
+				uid(uint value)
+				{
+					_uid = value;
+
+					return shared_from_this();
+				}
 
 				inline
                 short
@@ -187,6 +219,22 @@ namespace minko
 				canSleep(bool);
 
 				inline
+				bool
+				triggerCollisions() const
+				{
+					return _triggerCollisions;
+				}
+
+				inline
+				Ptr
+				triggerCollisions(bool value)
+				{
+					_triggerCollisions = value;
+
+					return shared_from_this();
+				}
+
+				inline
 				float 
 				linearDamping() const
 				{
@@ -227,6 +275,20 @@ namespace minko
 					return _propertiesChanged;
 				}
 
+				inline
+				std::shared_ptr<Signal<Ptr, Ptr>>
+				collisionStarted() const
+				{
+					return _collisionStarted;
+				}
+
+				inline
+				std::shared_ptr<Signal<Ptr, Ptr>>
+				collisionEnded() const
+				{
+					return _collisionEnded;
+				}
+
 			private:
 				Collider(ColliderDataPtr);
 
@@ -247,18 +309,6 @@ namespace minko
 
 				void
 				removedHandler(NodePtr, NodePtr, NodePtr);
-
-				void
-				physicsWorldTransformChangedHandler(ColliderDataPtr, Matrix4x4Ptr);
-
-				void
-				graphicsWorldTransformChangedHandler(ColliderDataPtr, Matrix4x4Ptr);
-
-				void
-				collisionStartedHandler(ColliderDataPtr, ColliderDataPtr);
-
-				void
-				collisionEndedHandler(ColliderDataPtr, ColliderDataPtr);
 			};
 		}
 	}

@@ -34,8 +34,6 @@ namespace minko
 
 			class ColliderData: public std::enable_shared_from_this<ColliderData>
 			{
-                friend class component::bullet::Collider;
-
 			public:
 				typedef std::shared_ptr<ColliderData> Ptr;
 
@@ -45,46 +43,33 @@ namespace minko
 				typedef std::shared_ptr<math::Quaternion>		QuaternionPtr;
 				typedef std::shared_ptr<math::Vector3>			Vector3Ptr;
 
-            private:
-                static const short  DEFAULT_DYNAMIC_FILTER;
-                static const short  DEFAULT_STATIC_FILTER;
-                static const short  DEFAULT_DYNAMIC_MASK;
-                static const short  DEFAULT_STATIC_MASK;
-
 			private:
-				uint  	                                    _uid;
-
-                NodePtr                                     _node;
-				const float                                 _mass;
-				Matrix4x4Ptr	                            _correctionMatrix;
-				AbsShapePtr		                            _shape;
-				Vector3Ptr		                            _inertia;
-				float			                            _restitution;       // from bullet: best simulation results using zero restitution. 
-				float			                            _friction;          // from bullet: best simulation results when friction is non-zero 
-				float			                            _rollingFriction;
-				bool			                            _triggerCollisions;
-
-				std::shared_ptr<Signal<Ptr, Matrix4x4Ptr>>	_physicsWorldTransformChanged;
-				std::shared_ptr<Signal<Ptr, Matrix4x4Ptr>>	_graphicsWorldTransformChanged;
-				std::shared_ptr<Signal<Ptr, Ptr>>			_collisionStarted;
-				std::shared_ptr<Signal<Ptr, Ptr>>			_collisionEnded;
-                std::shared_ptr<Signal<Ptr>>                _collisionFilterChanged;
+				const float										_mass;
+				AbsShapePtr										_shape;
+				Vector3Ptr										_inertia;
+				float											_restitution;       // from bullet: best simulation results using zero restitution. 
+				float											_friction;          // from bullet: best simulation results when friction is non-zero 
+				float											_rollingFriction;
 
 			public:
 				inline static
 				Ptr
-				create(float mass, AbsShapePtr shape, Vector3Ptr inertia = nullptr)
+				create(float		mass, 
+					   AbsShapePtr	shape, 
+					   float		restitution		= 0.0f,
+					   float		friction		= 0.5f,
+					   float		rollingFriction	= 0.0f,
+					   Vector3Ptr	inertia			= nullptr)
 				{
-					return std::shared_ptr<ColliderData>(new ColliderData(mass, shape, inertia));
+					return std::shared_ptr<ColliderData>(new ColliderData(
+						mass, 
+						shape, 
+						restitution,
+						friction,
+						rollingFriction,
+						inertia
+					));
 				}
-
-				void
-				synchronizePhysicsWithGraphics(Matrix4x4Ptr	graphicsModelToWorld,
-											   Matrix4x4Ptr	graphicsNoScaleTransform	= nullptr,
-											   Matrix4x4Ptr	centerOfMassOffset			= nullptr); // updates internal scale correction matrix
-
-				void
-				updatePhysicsTransform(Matrix4x4Ptr); // triggers transform updating signals
 
 				inline
 				AbsShapePtr
@@ -113,70 +98,12 @@ namespace minko
 				{
 					return _inertia;
 				}
-
-				inline
-				uint 
-                uid() const
-				{
-					return _uid;
-				}
-
-				inline
-				Ptr 
-                uid(uint value)
-				{
-					_uid = value;
-
-					return shared_from_this();
-				}
-
-                inline
-                NodePtr
-                node() const
-                {
-                    return _node;
-                }
 				
 				inline
 				float
 				restitution() const
 				{
 					return _restitution;
-				}
-
-				inline
-				Ptr
-				restitution(float value)
-				{
-					_restitution = value;
-
-					return shared_from_this();
-				}
-
-				inline
-				bool 
-				triggerCollisions() const
-				{
-					return _triggerCollisions;
-				}
-
-				inline
-				Ptr
-				triggerCollisions(bool value)
-				{
-					_triggerCollisions = value;
-
-					return shared_from_this();
-				}
-
-				Ptr
-				correction(Matrix4x4Ptr);
-
-				inline
-				Matrix4x4Ptr
-				correction() const
-				{
-					return _correctionMatrix;
 				}
 
 				inline
@@ -187,67 +114,29 @@ namespace minko
 				}
 
 				inline
-				Ptr
-				friction(float value)
-				{
-					_friction = value;
-
-					return shared_from_this();
-				}
-
-				inline
 				float 
 				rollingFriction() const
 				{
 					return _rollingFriction;
 				}
 
-				inline
-				Ptr
-				rollingFriction(float value)
-				{
-					_rollingFriction = value;
-
-					return shared_from_this();
-				}
-
-				inline
-				Signal<Ptr, Matrix4x4Ptr>::Ptr
-				physicsWorldTransformChanged() const
-				{
-					return _physicsWorldTransformChanged;
-				}
-
-				inline
-				Signal<Ptr, Matrix4x4Ptr>::Ptr
-				graphicsWorldTransformChanged() const
-				{
-					return _graphicsWorldTransformChanged;
-				}
-
-				inline
-				Signal<Ptr, Ptr>::Ptr
-				collisionStarted() const
-				{
-					return _collisionStarted;
-				}
-
-				inline
-				Signal<Ptr, Ptr>::Ptr
-				collisionEnded() const
-				{
-					return _collisionEnded;
-				}
-
-                inline
-                Signal<Ptr>::Ptr
-                collisionFilterChanged() const
-                {
-                    return _collisionFilterChanged;
-                }
-
 			private:
-				ColliderData(float, AbsShapePtr, Vector3Ptr = nullptr);
+				inline
+				ColliderData(float			mass,
+							 AbsShapePtr	shape,
+							 float			restitution,
+							 float			friction,
+							 float			rollingFriction,
+						     Vector3Ptr		inertia):
+					_mass(mass),
+					_shape(shape),
+					_inertia(inertia),
+					_restitution(restitution),
+					_friction(friction),
+					_rollingFriction(rollingFriction)
+				{
+				
+				}
 			};
 		}
 	}

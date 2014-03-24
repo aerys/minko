@@ -21,6 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include <btBulletDynamicsCommon.h>
 #include "minko/math/tools.hpp"
+#include <minko/component/bullet/Collider.hpp>
 #include <minko/component/bullet/ColliderData.hpp>
 #include <minko/component/bullet/AbstractPhysicsShape.hpp>
 #include <minko/component/bullet/SphereShape.hpp>
@@ -46,13 +47,13 @@ bullet::PhysicsWorld::BulletCollider::rigidBody() const
 }
 
 void
-bullet::PhysicsWorld::BulletCollider::initialize(ColliderData::Ptr data)
+bullet::PhysicsWorld::BulletCollider::initialize(Collider::Ptr collider)
 {
-	if (data == nullptr)
-		throw std::invalid_argument("data");
+	if (collider == nullptr || collider->colliderData() == nullptr)
+		throw std::invalid_argument("collider");
 
-	std::shared_ptr<btCollisionShape>	bulletCollisionShape	= initializeCollisionShape(data->shape());	
-	std::shared_ptr<btMotionState>		bulletMotionState		= initializeMotionState(data);
+	std::shared_ptr<btCollisionShape>	bulletCollisionShape	= initializeCollisionShape(collider->colliderData()->shape());	
+	std::shared_ptr<btMotionState>		bulletMotionState		= initializeMotionState(collider);
 
 #ifdef DEBUG_PHYSICS
 	std::cout << "[" << data->name() << "]\tinit collision shape\n\t- local scaling = " << bulletCollisionShape->getLocalScaling()[0] 
@@ -60,7 +61,7 @@ bullet::PhysicsWorld::BulletCollider::initialize(ColliderData::Ptr data)
 #endif // DEBUG_PHYSICS
 
 	initializeCollisionObject(
-		data, 
+		collider, 
 		bulletCollisionShape, 
 		bulletMotionState
 	);
@@ -135,7 +136,7 @@ bullet::PhysicsWorld::BulletCollider::initializeCylinderShape(CylinderShape::Ptr
 }
 
 std::shared_ptr<btMotionState>
-bullet::PhysicsWorld::BulletCollider::initializeMotionState(ColliderData::Ptr collider) const
+bullet::PhysicsWorld::BulletCollider::initializeMotionState(Collider::Ptr) const
 {
 	return std::shared_ptr<btMotionState>(new btDefaultMotionState(
 		btTransform(btQuaternion(0.0f, 0.0f, 0.0f, 1.0f), btVector3(0.0f, 0.0f, 0.0f)),
@@ -144,11 +145,12 @@ bullet::PhysicsWorld::BulletCollider::initializeMotionState(ColliderData::Ptr co
 }
 
 void
-bullet::PhysicsWorld::BulletCollider::initializeCollisionObject(ColliderData::Ptr					data,
+bullet::PhysicsWorld::BulletCollider::initializeCollisionObject(Collider::Ptr						collider,
 																std::shared_ptr<btCollisionShape>	bulletCollisionShape, 
 																std::shared_ptr<btMotionState>		bulletMotionState) 
 {
 	// only rigid objects are considerered for the moment
+	auto data = collider->colliderData();
 
 	btVector3 inertia (0.0, 0.0, 0.0);
 	if (data->inertia() == nullptr)

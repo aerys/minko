@@ -47,6 +47,7 @@ bullet::Collider::Collider(ColliderData::Ptr data):
     _collisionGroup(1),
     _collisionMask(short((1<<16) - 1)),
 	_canSleep(false),
+	_triggerCollisions(false),
 	_linearFactor(Vector3::create(1.0f, 1.0f, 1.0f)),
 	_linearDamping(0.0f),
 	_linearSleepingThreshold(0.8f),
@@ -54,17 +55,17 @@ bullet::Collider::Collider(ColliderData::Ptr data):
 	_angularDamping(0.0f),
 	_angularSleepingThreshold(1.0f),
 	_physicsWorld(nullptr),
+	_correction(Matrix4x4::create()),
 	_physicsTransform(Matrix4x4::create()),
 	_graphicsTransform(nullptr),
 	_colliderDisplayNode(nullptr),
 	_propertiesChanged(Signal<Ptr>::create()),
+	_collisionStarted(Signal<Ptr, Ptr>::create()),
+	_collisionEnded(Signal<Ptr, Ptr>::create()),
 	_targetAddedSlot(nullptr),
 	_targetRemovedSlot(nullptr),
 	_addedSlot(nullptr),
-	_removedSlot(nullptr),
-	_graphicsTransformChangedSlot(nullptr),
-	_collisionStartedHandlerSlot(nullptr),
-	_collisionEndedHandlerSlot(nullptr)
+	_removedSlot(nullptr)
 {
 	if (data == nullptr)
 		throw std::invalid_argument("data");
@@ -82,20 +83,6 @@ bullet::Collider::initialize()
 
 	_targetRemovedSlot	= targetRemoved()->connect(std::bind(
 		&bullet::Collider::targetRemovedHandler,
-		shared_from_this(),
-		std::placeholders::_1,
-		std::placeholders::_2
-	));
-
-	_physicsTransformChangedSlot	= _colliderData->physicsWorldTransformChanged()->connect(std::bind(
-		&bullet::Collider::physicsWorldTransformChangedHandler,
-		shared_from_this(),
-		std::placeholders::_1,
-		std::placeholders::_2
-	));
-
-	_graphicsTransformChangedSlot	= _colliderData->graphicsWorldTransformChanged()->connect(std::bind(
-		&bullet::Collider::graphicsWorldTransformChangedHandler,
 		shared_from_this(),
 		std::placeholders::_1,
 		std::placeholders::_2
@@ -141,19 +128,7 @@ bullet::Collider::addedHandler(Node::Ptr node,
 {
 	initializeFromNode(node);
 
-	_collisionStartedHandlerSlot = _colliderData->collisionStarted()->connect(std::bind(
-		&bullet::Collider::collisionStartedHandler,
-		shared_from_this(),
-		std::placeholders::_1,
-		std::placeholders::_2
-		));
-
-	_collisionEndedHandlerSlot	= _colliderData->collisionEnded()->connect(std::bind(
-		&bullet::Collider::collisionEndedHandler,
-		shared_from_this(),
-		std::placeholders::_1,
-		std::placeholders::_2
-		));
+	assert(_graphicsTransform);
 }
 
 void
@@ -164,10 +139,8 @@ bullet::Collider::removedHandler(Node::Ptr, Node::Ptr, Node::Ptr)
 
 	hide();
 
-	_physicsWorld					= nullptr;
-	_graphicsTransform				= nullptr;
-	_collisionStartedHandlerSlot	= nullptr;
-	_collisionEndedHandlerSlot		= nullptr;
+	_physicsWorld		= nullptr;
+	_graphicsTransform	= nullptr;
 }
 
 bullet::Collider::Ptr
@@ -223,29 +196,11 @@ bullet::Collider::hide()
 }
 
 void
-bullet::Collider::collisionStartedHandler(ColliderData::Ptr obj0, ColliderData::Ptr obj1)
-{
-#ifdef DEBUG_PHYSICS_COLLISIONS
-	std::cout << "[" << obj0->name() << "]\t>-< [" << obj1->name() << "]" << std::endl;
-#endif // DEBUG_PHYSICS_COLLISIONS
-}
-
-void
-bullet::Collider::collisionEndedHandler(ColliderData::Ptr obj0, ColliderData::Ptr obj1)
-{
-#ifdef DEBUG_PHYSICS_COLLISIONS
-	std::cout << "[" << obj0->name() << "]\t< > [" << obj1->name() << "]" << std::endl;
-#endif // DEBUG_PHYSICS_COLLISIONS
-}
-
-void
 bullet::Collider::initializeFromNode(Node::Ptr node)
 {
-	if (_graphicsTransform != nullptr && 
-		_physicsWorld != nullptr)
+	if (_graphicsTransform != nullptr && _physicsWorld != nullptr)
 		return;
 
-    _colliderData->_node = node; 
 	_physicsTransform->identity(); // matrix automatically updated by physicsWorldTransformChangedHandler 
 
 	// get existing transform component or create one if necessary
@@ -292,63 +247,77 @@ bullet::Collider::initializeFromNode(Node::Ptr node)
 void
 bullet::Collider::synchronizePhysicsWithGraphics()
 {
-	if (_graphicsTransform == nullptr)
-		return;
+	assert(_graphicsTransform);
 
 	auto		graphicsTransform			= _graphicsTransform->modelToWorldMatrix(true);
 	static auto graphicsNoScaleTransform	= Matrix4x4::create();
 	static auto centerOfMassOffset			= Matrix4x4::create();
+	static auto physicsModelToWorld			= Matrix4x4::create();
 
-	_colliderData->synchronizePhysicsWithGraphics(
-		graphicsTransform,
+	// remove the scaling/shear from the graphics transform, but record it to restitute it during rendering
+	removeScalingShear(
+		graphicsTransform, 
 		graphicsNoScaleTransform,
-		centerOfMassOffset
+		_correction
 	);
+
+	centerOfMassOffset
+		->copyFrom(graphicsNoScaleTransform)->invert()
+		->append(_colliderData->shape()->deltaTransform())
+		->append(graphicsNoScaleTransform)
+		->invert();
+	
+	physicsModelToWorld
+		->copyFrom(centerOfMassOffset)->invert()
+		->prepend(graphicsNoScaleTransform);
+
+	updatePhysicsTransform(physicsModelToWorld);
 
 	if (_physicsWorld)
 		_physicsWorld->updateRigidBodyState(
-			_colliderData, 
+			shared_from_this(), 
 			graphicsNoScaleTransform, 
 			centerOfMassOffset
 		);
 }
 
 void
-bullet::Collider::physicsWorldTransformChangedHandler(ColliderData::Ptr, 
-													  Matrix4x4::Ptr physicsTransform)
+bullet::Collider::updatePhysicsTransform(Matrix4x4::Ptr physicsModelToWorld)
 {
-	_physicsTransform->copyFrom(physicsTransform);
+	assert(_graphicsTransform);
+
+	static auto worldToParent = Matrix4x4::create();
+
+	_physicsTransform->copyFrom(physicsModelToWorld);
+
+	auto graphicsModelToWorld = math::Matrix4x4::create()
+		->copyFrom(physicsModelToWorld)
+		->prepend(_colliderData->shape()->deltaTransformInverse())
+		->prepend(_correction);
 
 	if (_colliderDisplayNode)
 		_colliderDisplayNode->component<Transform>()->matrix()
 			->copyFrom(_physicsTransform);
-}
 
-void
-bullet::Collider::graphicsWorldTransformChangedHandler(ColliderData::Ptr, 
-													   Matrix4x4::Ptr graphicsTransform)
-{
-	if (_graphicsTransform == nullptr)
-		return;
-
-	static auto matrix = Matrix4x4::create();
-
-	// get the world-to-parent matrix in order to update the target's Transform
-	matrix
-		->copyFrom(_graphicsTransform->modelToWorldMatrix(true))
-		->invert()
-		->append(_graphicsTransform->matrix());
-
-	_graphicsTransform->matrix()
-		->copyFrom(graphicsTransform)
-		->append(matrix);
+	if (_graphicsTransform)
+	{
+		// get the world-to-parent matrix in order to update the target's Transform
+		worldToParent
+			->copyFrom(_graphicsTransform->modelToWorldMatrix(true))
+			->invert()
+			->append(_graphicsTransform->matrix());
+	
+		_graphicsTransform->matrix()
+			->copyFrom(graphicsModelToWorld)
+			->append(worldToParent);
+	}
 }
 
 Vector3::Ptr
 bullet::Collider::linearVelocity(Vector3::Ptr output) const
 {
 	return _physicsWorld
-		? _physicsWorld->getColliderLinearVelocity(_colliderData, output)
+		? _physicsWorld->getColliderLinearVelocity(shared_from_this(), output)
 		: output;
 }
 
@@ -356,7 +325,7 @@ bullet::Collider::Ptr
 bullet::Collider::linearVelocity(Vector3::Ptr value)
 {
 	if (_physicsWorld)
-		_physicsWorld->setColliderLinearVelocity(_colliderData, value);
+		_physicsWorld->setColliderLinearVelocity(shared_from_this(), value);
 
 	return shared_from_this();
 }
@@ -365,7 +334,7 @@ Vector3::Ptr
 bullet::Collider::angularVelocity(Vector3::Ptr output) const
 {
 	return _physicsWorld
-		? _physicsWorld->getColliderAngularVelocity(_colliderData, output)
+		? _physicsWorld->getColliderAngularVelocity(shared_from_this(), output)
 		: output;
 }
 
@@ -373,7 +342,7 @@ bullet::Collider::Ptr
 bullet::Collider::angularVelocity(Vector3::Ptr value)
 {
 	if (_physicsWorld)
-		_physicsWorld->setColliderAngularVelocity(_colliderData, value);
+		_physicsWorld->setColliderAngularVelocity(shared_from_this(), value);
 
 	return shared_from_this();
 }
@@ -382,7 +351,7 @@ bullet::Collider::Ptr
 bullet::Collider::applyImpulse(Vector3::Ptr impulse, Vector3::Ptr relPosition)
 {
 	if (_physicsTransform)
-		_physicsWorld->applyImpulse(_colliderData, impulse, false, relPosition);
+		_physicsWorld->applyImpulse(shared_from_this(), impulse, false, relPosition);
 
 	return shared_from_this();
 }
@@ -391,7 +360,7 @@ bullet::Collider::Ptr
 bullet::Collider::applyRelativeImpulse(Vector3::Ptr impulse, Vector3::Ptr relPosition)
 {
 	if (_physicsTransform)
-		_physicsWorld->applyImpulse(_colliderData, impulse, true, nullptr);
+		_physicsWorld->applyImpulse(shared_from_this(), impulse, true, nullptr);
 
 	return shared_from_this();
 }

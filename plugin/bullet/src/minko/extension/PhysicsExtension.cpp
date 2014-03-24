@@ -96,19 +96,23 @@ PhysicsExtension::deserializePhysics(std::string&							serializedAnimation,
 	auto mass = dst.a3 * deserializedShape->volume();
 
 	if (dst.a6 == false)
-		mass = 0.f;
+		mass = 0.0f;
 
-	component::bullet::ColliderData::Ptr data = component::bullet::ColliderData::create(mass, deserializedShape);
+	const auto	friction	= dst.a4;
+	const auto	restitution	= dst.a5;
 
     const short filterGroup = short(dst.a8 & ((1<<16) - 1)); // overriden by node's layouts
     const short filterMask  = short(dst.a9 & ((1<<16) - 1)); 
 
-	data
-		->friction(dst.a4)
-		->restitution(dst.a5)
-		->triggerCollisions(dst.a7);
+	auto data = component::bullet::ColliderData::create(
+		mass, 
+		deserializedShape,
+		restitution,
+		friction
+	);
 
 	return component::bullet::Collider::create(data)
 		->collisionGroup(filterGroup)
-		->collisionMask(filterMask);
+		->collisionMask(filterMask)
+		->triggerCollisions(dst.a7);
 }
