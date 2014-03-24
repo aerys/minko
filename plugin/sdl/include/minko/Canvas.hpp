@@ -302,6 +302,13 @@ namespace minko
 			return _joysticks.size();
 		}
 
+		inline 
+		std::unordered_map<int, std::shared_ptr<SDLJoystick>>
+		joysticks() 
+		{
+			return _joysticks;
+		}
+
 		inline
 		Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::Ptr
 		joystickAdded()
@@ -405,5 +412,8 @@ namespace minko
 	public:
 		void
 		step();
+
+		int
+		getJoystickAxis(input::Joystick::Ptr joystick, int axis);
 	};
 }
