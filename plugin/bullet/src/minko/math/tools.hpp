@@ -30,6 +30,10 @@ namespace minko
 	namespace math
 	{
 		inline
+		btVector3
+		convert(Vector3::Ptr);
+
+		inline
 		Matrix4x4::Ptr
 		removeScalingShear(Matrix4x4::Ptr	input, 
 						   Matrix4x4::Ptr	output		= nullptr, 
@@ -57,6 +61,12 @@ namespace minko
 	}
 }
 
+inline
+btVector3
+minko::math::convert(minko::math::Vector3::Ptr value)
+{
+	return btVector3(value->x(), value->y(), value->z());
+}
 
 inline
 minko::math::Matrix4x4::Ptr

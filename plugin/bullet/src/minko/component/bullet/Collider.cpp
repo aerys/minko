@@ -44,10 +44,20 @@ using namespace minko::component;
 bullet::Collider::Collider(ColliderData::Ptr data):
 	AbstractComponent(),
 	_colliderData(data),
+    _collisionGroup(1),
+    _collisionMask(short((1<<16) - 1)),
+	_canSleep(false),
+	_linearFactor(Vector3::create(1.0f, 1.0f, 1.0f)),
+	_linearDamping(0.0f),
+	_linearSleepingThreshold(0.8f),
+	_angularFactor(Vector3::create(1.0f, 1.0f, 1.0f)),
+	_angularDamping(0.0f),
+	_angularSleepingThreshold(1.0f),
 	_physicsWorld(nullptr),
 	_physicsTransform(Matrix4x4::create()),
 	_graphicsTransform(nullptr),
 	_colliderDisplayNode(nullptr),
+	_propertiesChanged(Signal<Ptr>::create()),
 	_targetAddedSlot(nullptr),
 	_targetRemovedSlot(nullptr),
 	_addedSlot(nullptr),
@@ -150,7 +160,7 @@ void
 bullet::Collider::removedHandler(Node::Ptr, Node::Ptr, Node::Ptr)
 {
 	if (_physicsWorld != nullptr)
-		_physicsWorld->removeChild(_colliderData);
+		_physicsWorld->removeChild(shared_from_this());
 
 	hide();
 
@@ -260,7 +270,7 @@ bullet::Collider::initializeFromNode(Node::Ptr node)
 		: withPhysicsWorld->nodes().front()->component<bullet::PhysicsWorld>();
 
 	if (_physicsWorld)
-		_physicsWorld->addChild(_colliderData);
+		_physicsWorld->addChild(shared_from_this());
 
 	synchronizePhysicsWithGraphics();
 
@@ -332,4 +342,157 @@ bullet::Collider::graphicsWorldTransformChangedHandler(ColliderData::Ptr,
 	_graphicsTransform->matrix()
 		->copyFrom(graphicsTransform)
 		->append(matrix);
+}
+
+Vector3::Ptr
+bullet::Collider::linearVelocity(Vector3::Ptr output) const
+{
+	return _physicsWorld
+		? _physicsWorld->getColliderLinearVelocity(_colliderData, output)
+		: output;
+}
+
+bullet::Collider::Ptr
+bullet::Collider::linearVelocity(Vector3::Ptr value)
+{
+	if (_physicsWorld)
+		_physicsWorld->setColliderLinearVelocity(_colliderData, value);
+
+	return shared_from_this();
+}
+
+Vector3::Ptr
+bullet::Collider::angularVelocity(Vector3::Ptr output) const
+{
+	return _physicsWorld
+		? _physicsWorld->getColliderAngularVelocity(_colliderData, output)
+		: output;
+}
+
+bullet::Collider::Ptr
+bullet::Collider::angularVelocity(Vector3::Ptr value)
+{
+	if (_physicsWorld)
+		_physicsWorld->setColliderAngularVelocity(_colliderData, value);
+
+	return shared_from_this();
+}
+
+bullet::Collider::Ptr
+bullet::Collider::applyImpulse(Vector3::Ptr impulse, Vector3::Ptr relPosition)
+{
+	if (_physicsTransform)
+		_physicsWorld->applyImpulse(_colliderData, impulse, false, relPosition);
+
+	return shared_from_this();
+}
+
+bullet::Collider::Ptr
+bullet::Collider::applyRelativeImpulse(Vector3::Ptr impulse, Vector3::Ptr relPosition)
+{
+	if (_physicsTransform)
+		_physicsWorld->applyImpulse(_colliderData, impulse, true, nullptr);
+
+	return shared_from_this();
+}
+
+bullet::Collider::Ptr
+bullet::Collider::linearFactor(Vector3::Ptr values)
+{
+	const bool changed = fabsf(values->x() - _linearFactor->x()) > 1e-3f 
+		|| fabsf(values->y() - _linearFactor->y()) > 1e-3f 
+		|| fabsf(values->z() - _linearFactor->z()) > 1e-3f;
+
+	_linearFactor->copyFrom(values);
+
+	if (changed)
+		_propertiesChanged->execute(shared_from_this());
+
+	return shared_from_this();
+}
+
+
+bullet::Collider::Ptr
+bullet::Collider::angularFactor(Vector3::Ptr values)
+{
+	const bool changed = fabsf(values->x() - _angularFactor->x()) > 1e-3f 
+		|| fabsf(values->y() - _angularFactor->y()) > 1e-3f 
+		|| fabsf(values->z() - _angularFactor->z()) > 1e-3f;
+
+	_angularFactor->copyFrom(values);
+
+	if (changed)
+		_propertiesChanged->execute(shared_from_this());
+
+	return shared_from_this();
+}
+
+
+bullet::Collider::Ptr
+bullet::Collider::damping(float linearDamping, float angularDamping)
+{
+	const bool changed = fabsf(_linearDamping - linearDamping) > 1e-3f 
+		|| fabsf(_angularDamping - angularDamping) > 1e-3f;
+
+	_linearDamping	= linearDamping;
+	_angularDamping	= angularDamping;
+
+	if (changed)
+		_propertiesChanged->execute(shared_from_this());
+
+	return shared_from_this();
+}
+
+bullet::Collider::Ptr
+bullet::Collider::sleepingThresholds(float linearSleepingThreshold, float angularSleepingThreshold)
+{
+	const bool changed = fabsf(_linearSleepingThreshold - linearSleepingThreshold) > 1e-3f 
+		|| fabsf(_angularSleepingThreshold - angularSleepingThreshold) > 1e-3f;
+
+	_linearSleepingThreshold	= linearSleepingThreshold;
+	_angularSleepingThreshold	= angularSleepingThreshold;
+
+	if (changed)
+		_propertiesChanged->execute(shared_from_this());
+
+	return shared_from_this();
+}
+
+bullet::Collider::Ptr
+bullet::Collider::canSleep(bool value)
+{
+	const bool changed = _canSleep != value;
+
+	_canSleep = value;
+
+	if (changed)
+		_propertiesChanged->execute(shared_from_this());
+
+	return shared_from_this();
+}
+
+bullet::Collider::Ptr
+bullet::Collider::collisionGroup(short value)
+{
+	const bool changed = _collisionGroup != value;
+
+    _collisionGroup = value;
+
+	if (changed)
+		_propertiesChanged->execute(shared_from_this());
+
+	return shared_from_this();
+}
+
+bullet::Collider::Ptr
+bullet::Collider::collisionMask(short value)
+{
+	const bool changed = _collisionMask != value;
+
+    _collisionMask = value;
+
+	if (changed)
+		_propertiesChanged->execute(shared_from_this());
+
+	return shared_from_this();
 }

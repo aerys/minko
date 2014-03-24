@@ -100,16 +100,15 @@ PhysicsExtension::deserializePhysics(std::string&							serializedAnimation,
 
 	component::bullet::ColliderData::Ptr data = component::bullet::ColliderData::create(mass, deserializedShape);
 
-	data->friction(dst.a4);
-	data->restitution(dst.a5);
-	data->triggerCollisions(dst.a7);
-	data->disableDeactivation(true);
-
     const short filterGroup = short(dst.a8 & ((1<<16) - 1)); // overriden by node's layouts
     const short filterMask  = short(dst.a9 & ((1<<16) - 1)); 
 
-    data->collisionGroup(filterGroup);
-    data->collisionMask(filterMask);
+	data
+		->friction(dst.a4)
+		->restitution(dst.a5)
+		->triggerCollisions(dst.a7);
 
-	return component::bullet::Collider::create(data);
+	return component::bullet::Collider::create(data)
+		->collisionGroup(filterGroup)
+		->collisionMask(filterMask);
 }

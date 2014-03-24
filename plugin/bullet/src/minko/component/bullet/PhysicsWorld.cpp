@@ -17,7 +17,6 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include <bitset>
 #include "minko/component/bullet/PhysicsWorld.hpp"
 
 #include <btBulletDynamicsCommon.h>
@@ -28,6 +27,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include <minko/component/Renderer.hpp>
 #include <minko/component/bullet/LinearIdAllocator.hpp>
 #include <minko/component/bullet/ColliderData.hpp>
+#include <minko/component/bullet/Collider.hpp>
 #include <minko/component/bullet/AbstractPhysicsShape.hpp>
 
 #include "minko/math/tools.hpp"
@@ -58,8 +58,8 @@ bullet::PhysicsWorld::PhysicsWorld():
 	_frameEndSlot(nullptr),
 	_componentAddedOrRemovedSlot(nullptr),
 	_addedOrRemovedSlot(nullptr),
-    _colliderGroupChangedSlot(),
-    _colliderMaskChangedSlot()
+    _colliderNodeLayoutChangedSlot(),
+    _colliderPropertiesChangedSlot()
 {
 }
 
@@ -119,6 +119,8 @@ bullet::PhysicsWorld::targetRemovedHandler(AbstractComponent::Ptr	controller,
 	_colliderMap.clear();
 	_colliderReverseMap.clear();
 	_uidToCollider.clear();
+	_colliderNodeLayoutChangedSlot.clear();
+	_colliderPropertiesChangedSlot.clear();
 }
 
 void
@@ -162,13 +164,15 @@ bullet::PhysicsWorld::setSceneManager(std::shared_ptr<SceneManager> sceneManager
 }
 
 void
-bullet::PhysicsWorld::addChild(ColliderData::Ptr data)
+bullet::PhysicsWorld::addChild(Collider::Ptr collider)
 {
-    if (data == nullptr || data->node() == nullptr)
-        throw std::invalid_argument("data");
+	if (collider == nullptr || collider->colliderData()->node() == nullptr)
+		throw std::invalid_argument("collider");
 
-	if (hasCollider(data))
-		throw std::logic_error("The same data cannot be added twice.");
+	if (hasCollider(collider))
+		throw std::logic_error("The same collider cannot be added twice to the physics world.");
+
+	auto data = collider->colliderData();
 
 	//std::cout << "PhysicsWorld::addChild\tnode '" << data->node()->name() 
 	//	<< "'\tgroup = " << std::bitset<16>(data->collisionGroup()) 
@@ -183,18 +187,18 @@ bullet::PhysicsWorld::addChild(ColliderData::Ptr data)
 	_colliderMap.insert(std::pair<ColliderData::Ptr, BulletCollider::Ptr>(data, bulletCollider));
 	_colliderReverseMap.insert(std::pair<btCollisionObject*, ColliderData::Ptr>(bulletCollider->rigidBody().get(), data));
 
-
-	_colliderGroupChangedSlot[data]	= data->node()->layoutsChanged()->connect([&](Node::Ptr, Node::Ptr){ updateCollisionFilter(data); });
-    _colliderMaskChangedSlot[data]	= data->collisionFilterChanged()->connect([&](ColliderData::Ptr){ updateCollisionFilter(data); });
-
+	_colliderPropertiesChangedSlot[collider] = collider->propertiesChanged()->connect([=](Collider::Ptr){ updateColliderProperties(collider); });
+	_colliderNodeLayoutChangedSlot[collider] = data->node()->layoutsChanged()->connect([=](Node::Ptr, Node::Ptr){ updateColliderNodeProperties(collider); });
 
 	std::dynamic_pointer_cast<btDiscreteDynamicsWorld>(_bulletDynamicsWorld)
 		->addRigidBody(
             bulletCollider->rigidBody().get(),
-            //short(data->node()->layouts() & ((1<<16) - 1)), // FIXME
-            data->collisionGroup(),
-            data->collisionMask()
+            collider->collisionGroup(),  //short(data->node()->layouts() & ((1<<16) - 1)), // FIXME
+            collider->collisionMask()
          );
+
+	updateColliderProperties(collider);
+	updateColliderNodeProperties(collider);
 
 #ifdef DEBUG_PHYSICS
 	std::cout << "[" << data->name() << "]\tadd physics body" << std::endl;
@@ -203,28 +207,71 @@ bullet::PhysicsWorld::addChild(ColliderData::Ptr data)
 #endif // DEBUG_PHYSICS
 }
 
+//void
+//bullet::PhysicsWorld::updateCollisionFilter(ColliderData::Ptr data)
+//{
+//    auto foundColliderIt = _colliderMap.find(data);
+//    if (foundColliderIt != _colliderMap.end())
+//    {
+//        auto proxy = foundColliderIt->second->rigidBody()->getBroadphaseProxy();
+//        
+//        //proxy->m_collisionFilterGroup   = short(data->node()->layouts() & ((1<<16) - 1)); // FIXME
+//        proxy->m_collisionFilterGroup   = data->collisionGroup();
+//        proxy->m_collisionFilterMask    = data->collisionMask();
+//    }
+//}
+
 void
-bullet::PhysicsWorld::updateCollisionFilter(ColliderData::Ptr data)
+bullet::PhysicsWorld::updateColliderProperties(Collider::Ptr collider)
 {
-    auto foundColliderIt = _colliderMap.find(data);
-    if (foundColliderIt != _colliderMap.end())
+	if (collider == nullptr)
+		return;
+
+    auto foundColliderIt	= _colliderMap.find(collider->colliderData());
+	if (foundColliderIt != _colliderMap.end())
     {
-        auto proxy = foundColliderIt->second->rigidBody()->getBroadphaseProxy();
-        
+        auto rigidBody = foundColliderIt->second->rigidBody();
+        assert(rigidBody && rigidBody->getBroadphaseProxy());
+
+		rigidBody->setActivationState(collider->canSleep() ? ACTIVE_TAG : DISABLE_DEACTIVATION);
+		rigidBody->setLinearFactor(convert(collider->linearFactor()));
+		rigidBody->setAngularFactor(convert(collider->angularFactor()));
+		rigidBody->setSleepingThresholds(collider->linearSleepingThreshold(), collider->angularSleepingThreshold());
+		rigidBody->setDamping(collider->linearDamping(), collider->angularDamping());
+
         //proxy->m_collisionFilterGroup   = short(data->node()->layouts() & ((1<<16) - 1)); // FIXME
-        proxy->m_collisionFilterGroup   = data->collisionGroup();
-        proxy->m_collisionFilterMask    = data->collisionMask();
+        rigidBody->getBroadphaseProxy()->m_collisionFilterGroup	= collider->collisionGroup();
+        rigidBody->getBroadphaseProxy()->m_collisionFilterMask	= collider->collisionMask();
     }
 }
 
 void
-bullet::PhysicsWorld::removeChild(ColliderData::Ptr data)
+bullet::PhysicsWorld::updateColliderNodeProperties(Collider::Ptr collider)
 {
-    if (_colliderGroupChangedSlot.count(data))
-        _colliderGroupChangedSlot.erase(data);
+	if (collider == nullptr || collider->colliderData()->node() == nullptr)
+		return;
 
-    if (_colliderMaskChangedSlot.count(data))
-        _colliderMaskChangedSlot.erase(data);
+    auto foundColliderIt	= _colliderMap.find(collider->colliderData());
+	if (foundColliderIt != _colliderMap.end())
+    {
+        auto rigidBody = foundColliderIt->second->rigidBody();
+        //proxy->m_collisionFilterGroup   = short(data->node()->layouts() & ((1<<16) - 1)); // FIXME
+    }
+}
+
+void
+bullet::PhysicsWorld::removeChild(Collider::Ptr collider)
+{
+	if (collider == nullptr)
+		return;
+
+	auto data = collider->colliderData();
+
+	if (_colliderNodeLayoutChangedSlot.count(collider))
+		_colliderNodeLayoutChangedSlot.erase(collider);
+
+	if (_colliderPropertiesChangedSlot.count(collider))
+		_colliderPropertiesChangedSlot.erase(collider);
 
 	auto bulletColliderIt = _colliderMap.find(data);
 	if (bulletColliderIt != _colliderMap.end())
@@ -257,9 +304,9 @@ bullet::PhysicsWorld::removeChild(ColliderData::Ptr data)
 }
 
 bool
-bullet::PhysicsWorld::hasCollider(ColliderData::Ptr data) const
+bullet::PhysicsWorld::hasCollider(Collider::Ptr collider) const
 {
-	return _colliderMap.find(data) != _colliderMap.end();
+	return collider && _colliderMap.find(collider->colliderData()) != _colliderMap.end();
 }
 
 
@@ -415,4 +462,90 @@ bullet::PhysicsWorld::notifyCollisions()
 	_collisions.swap(currentCollisions);
 }
 
+Vector3::Ptr
+bullet::PhysicsWorld::getColliderLinearVelocity(ColliderData::Ptr	data, 
+												Vector3::Ptr		output) const
+{
+	if (output == nullptr)
+		output = Vector3::create(0.0f, 0.0f, 0.0f);
+	
+	auto foundDataIt = _colliderMap.find(data);
+	if (foundDataIt == _colliderMap.end())
+		return output;
 
+	auto rigidBody	= foundDataIt->second->rigidBody();
+	auto vec		= rigidBody->getLinearVelocity();
+
+	return output->setTo(vec.x(), vec.y(), vec.z());
+}
+
+void
+bullet::PhysicsWorld::setColliderLinearVelocity(ColliderData::Ptr	data, 
+												Vector3::Ptr		value)
+{
+	assert(value != nullptr);
+
+	auto foundDataIt = _colliderMap.find(data);
+	if (foundDataIt == _colliderMap.end())
+		return;
+
+	auto rigidBody	= foundDataIt->second->rigidBody();
+	rigidBody->setLinearVelocity(convert(value));
+}
+
+Vector3::Ptr
+bullet::PhysicsWorld::getColliderAngularVelocity(ColliderData::Ptr	data, 
+												 Vector3::Ptr		output) const
+{
+	if (output == nullptr)
+		output = Vector3::create(0.0f, 0.0f, 0.0f);
+	
+	auto foundDataIt = _colliderMap.find(data);
+	if (foundDataIt == _colliderMap.end())
+		return output;
+
+	auto rigidBody	= foundDataIt->second->rigidBody();
+	auto vec		= rigidBody->getAngularVelocity();
+
+	return output->setTo(vec.x(), vec.y(), vec.z());
+}
+
+void
+bullet::PhysicsWorld::setColliderAngularVelocity(ColliderData::Ptr	data, 
+												 Vector3::Ptr		value)
+{
+	assert(value != nullptr);
+
+	auto foundDataIt = _colliderMap.find(data);
+	if (foundDataIt == _colliderMap.end())
+		return;
+
+	auto rigidBody	= foundDataIt->second->rigidBody();
+	rigidBody->setAngularVelocity(convert(value));
+}
+
+void
+bullet::PhysicsWorld::applyImpulse(ColliderData::Ptr	data, 
+								   Vector3::Ptr			impulse,
+								   bool					isImpulseRelative,
+								   Vector3::Ptr			relPosition)
+{
+	assert(impulse != nullptr);
+
+	auto foundDataIt	= _colliderMap.find(data);
+	if (foundDataIt == _colliderMap.end())
+		return;
+
+	auto rigidBody		= foundDataIt->second->rigidBody();
+
+	auto impulseVector	= isImpulseRelative
+		? rigidBody->getWorldTransform().getBasis() * convert(impulse)
+		: convert(impulse);
+
+	rigidBody->applyImpulse(
+		impulseVector, 
+		relPosition 
+			? convert(relPosition) 
+			: btVector3(0.0f, 0.0f, 0.0f)
+	);
+}

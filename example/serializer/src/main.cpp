@@ -48,6 +48,14 @@ serializeSceneExample(std::shared_ptr<file::AssetLibrary>		assets,
 	sceneWriter->write(MODEL_FILENAME, assets, file::Options::create(context));
 }
 
+Node::Ptr
+createWorldFrame(float axisLength, file::AssetLibrary::Ptr);
+
+void
+moveScene(Node::Ptr, float& tx, float& ty, float& tz);
+
+void
+toogleParticlesEmittingState(Node::Ptr);
 
 void
 openSceneExample(std::shared_ptr<file::AssetLibrary>	assets, 
@@ -83,16 +91,18 @@ int main(int argc, char** argv)
 		->load("effect/Line.effect")
         ->load("effect/Particles.effect");
 
-	sceneManager->assets()->defaultOptions()->generateMipmaps(true);
-	sceneManager->assets()->defaultOptions()->effect(sceneManager->assets()->effect("basic"));
-	sceneManager->assets()->material("defaultMaterial", material::BasicMaterial::create()->diffuseColor(0xFFFFFFFF));
-	sceneManager->assets()->geometry("defaultGeometry", geometry::CubeGeometry::create(sceneManager->assets()->context())),
+	sceneManager->assets()->defaultOptions()
+		->generateMipmaps(true)
+		->effect(sceneManager->assets()->effect("basic"));
+
 	sceneManager->assets()
+		->material("defaultMaterial",	material::BasicMaterial::create()->diffuseColor(0xFFFFFFFF))
+		->geometry("cube",				geometry::CubeGeometry::create(sceneManager->assets()->context()))
+		->geometry("defaultGeometry",	geometry::CubeGeometry::create(sceneManager->assets()->context()))
 		->registerParser<file::PNGParser>("png")
 #ifdef SERIALIZE
 		->queue("texture/box.png")
 		
-		sceneManager->assets()->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()));
 		sceneManager->assets()->geometry("sphere", geometry::SphereGeometry::create(sceneManager->assets()->context(), 20, 20));
 #else
 		->registerParser<file::SceneParser>("scene")
@@ -175,6 +185,8 @@ int main(int argc, char** argv)
 		serializeSceneExample(assets, root, sceneManager->assets()->context());
 #else
 		openSceneExample(assets, root);
+
+		root->addChild(createWorldFrame(5.0f, sceneManager->assets()));
 #endif
 	});
 
@@ -211,10 +223,11 @@ int main(int argc, char** argv)
 		root->children()[0]->component<PerspectiveCamera>()->aspectRatio((float)w / (float)h);
 	});
 
+	float tx = 0.0f;
+	float ty = 0.0f;
+	float tz = 0.0f;
 	auto keyDown = canvas->keyboard()->keyDown()->connect([&](input::Keyboard::Ptr k)
 	{
-		float tx = 0.0f;
-		float tz = 0.0f;
 		if (k->keyIsDown(input::Keyboard::ScanCode::LEFT))
 			tx -= 0.1f;
 		else if (k->keyIsDown(input::Keyboard::ScanCode::RIGHT))
@@ -224,15 +237,9 @@ int main(int argc, char** argv)
 		else if (k->keyIsDown(input::Keyboard::ScanCode::DOWN))
 			tz -= 0.1f;
 		
-		auto model = sceneManager->assets()->symbol(MODEL_FILENAME);
-		if (model && model->hasComponent<Transform>())
-		{
-			model->component<Transform>()->matrix()->appendTranslation(tx, 0.0f, tz);
-
-			auto withCollider = scene::NodeSet::create(model)->descendants(true)->where([](scene::Node::Ptr n){ return n->hasComponent<bullet::Collider>(); });
-			for (auto& n : withCollider->nodes())
-				n->component<bullet::Collider>()->synchronizePhysicsWithGraphics();
-		}
+		// for particles
+		if (k->keyIsDown(input::Keyboard::ScanCode::SPACE))
+			toogleParticlesEmittingState(root);
 	});
 
 	auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr canvas, float time, float deltaTime)
@@ -256,6 +263,9 @@ int main(int argc, char** argv)
 			)
 		);
 
+		// change the position of the serialized scene
+		moveScene(sceneManager->assets()->symbol(MODEL_FILENAME), tx, ty, tz);
+
 		sceneManager->nextFrame(time, deltaTime);
 	});
 
@@ -264,6 +274,91 @@ int main(int argc, char** argv)
 	canvas->run();
 
 	return 0;
+}
+
+void
+toogleParticlesEmittingState(Node::Ptr root)
+{
+	if (root == nullptr)
+		return;
+
+	auto withParticles = NodeSet::create(root)
+		->descendants(true)
+		->where([](Node::Ptr n){ return n->hasComponent<component::ParticleSystem>(); });
+
+	for (auto& n : withParticles->nodes())
+	{
+		auto particles = n->component<component::ParticleSystem>();
+
+		particles->emitting(!particles->emitting());
+	}
+}
+
+void
+moveScene(Node::Ptr model, float& tx, float& ty, float& tz)
+{
+	if (model && model->hasComponent<Transform>())
+	{
+		model->component<Transform>()->matrix()->appendTranslation(tx, ty, tz);
+
+		auto withColliders = scene::NodeSet::create(model)
+			->descendants(true)
+			->where([](scene::Node::Ptr n){ return n->hasComponent<bullet::Collider>(); });
+
+		for (auto& n : withColliders->nodes())
+			n->component<bullet::Collider>()->synchronizePhysicsWithGraphics();
+	}
+
+	tx = 0.0f;
+	ty = 0.0f;
+	tz = 0.0f;
+}
+
+Node::Ptr
+createWorldFrame(float axisLength, file::AssetLibrary::Ptr assets)
+{
+	assert(assets->geometry("cube") && assets->effect("basic"));
+
+	auto xAxis = Node::create("x-axis")
+		->addComponent(Surface::create(
+			assets->geometry("cube"),
+			material::BasicMaterial::create()->diffuseColor(0xff0000ff),
+			assets->effect("basic")
+		))
+		->addComponent(Transform::create(
+			Matrix4x4::create()
+				->appendTranslation(0.5f, 0.0f, 0.0f)
+				->appendScale(axisLength, 0.01f, 0.01f)
+		));
+
+	auto yAxis = Node::create("y-axis")
+		->addComponent(Surface::create(
+			assets->geometry("cube"),
+			material::BasicMaterial::create()->diffuseColor(0x00ff00ff),
+			assets->effect("basic")
+		))
+		->addComponent(Transform::create(
+			Matrix4x4::create()
+				->appendTranslation(0.0f, 0.5f, 0.0f)
+				->appendScale(0.01f, axisLength, 0.01f)
+		));
+
+	auto zAxis = Node::create("z-axis")
+		->addComponent(Surface::create(
+			assets->geometry("cube"),
+			material::BasicMaterial::create()->diffuseColor(0x0000ffff),
+			assets->effect("basic")
+		))
+		->addComponent(Transform::create(
+			Matrix4x4::create()
+				->appendTranslation(0.0f, 0.0f, 0.5f)
+				->appendScale(0.01f, 0.01f, axisLength)
+		));
+
+	return Node::create("frame")
+		->addChild(xAxis)
+		->addChild(yAxis)
+		->addChild(zAxis);
 }
 
 static

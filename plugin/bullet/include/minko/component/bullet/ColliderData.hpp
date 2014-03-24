@@ -59,23 +59,9 @@ namespace minko
 				Matrix4x4Ptr	                            _correctionMatrix;
 				AbsShapePtr		                            _shape;
 				Vector3Ptr		                            _inertia;
-
-                short                                       _collisionGroup;
-                short                                       _collisionMask;
-
-				Vector3Ptr		                            _linearVelocity;
-				Vector3Ptr		                            _linearFactor;
-				float			                            _linearDamping;
-				float			                            _linearSleepingThreshold;
-				Vector3Ptr		                            _angularVelocity;
-				Vector3Ptr		                            _angularFactor;
-				float			                            _angularDamping;
-				float			                            _angularSleepingThreshold;
 				float			                            _restitution;       // from bullet: best simulation results using zero restitution. 
 				float			                            _friction;          // from bullet: best simulation results when friction is non-zero 
 				float			                            _rollingFriction;
-
-				bool			                            _deactivationDisabled;
 				bool			                            _triggerCollisions;
 
 				std::shared_ptr<Signal<Ptr, Matrix4x4Ptr>>	_physicsWorldTransformChanged;
@@ -121,26 +107,6 @@ namespace minko
 					return _mass < 1e-6f;
 				}
 
-                inline
-                short
-                collisionGroup() const
-                {
-                    return _collisionGroup;
-                }
-
-                Ptr
-                collisionGroup(short);
-
-                inline
-                short
-                collisionMask() const
-                {
-                    return _collisionMask;
-                }
-
-                Ptr
-                collisionMask(short);
-
 				inline
 				Vector3Ptr
 				inertia() const
@@ -170,79 +136,7 @@ namespace minko
                 {
                     return _node;
                 }
-
-				inline
-				Vector3Ptr
-				linearVelocity() const
-				{
-					return _linearVelocity;
-				}
-
-				Ptr
-				linearVelocity(float, float, float);
-
-				inline
-				Vector3Ptr
-				linearFactor() const
-				{
-					return _linearFactor;
-				}
-
-				Ptr
-				linearFactor(float, float, float);
-
-				inline
-				float
-				linearDamping() const
-				{
-					return _linearDamping;
-				}
-
-				inline
-				Ptr 
-				linearDamping(float value)
-				{
-					_linearDamping = value;
-
-					return shared_from_this();
-				}
-
-				inline
-				Vector3Ptr
-				angularVelocity() const
-				{
-					return _angularVelocity;
-				}
-
-				Ptr
-				angularVelocity(float, float, float);
-
-				inline
-				Vector3Ptr
-				angularFactor() const
-				{
-					return _angularFactor;
-				}
-
-				Ptr
-				angularFactor(float, float, float);
-
-				inline
-				float
-				angularDamping() const
-				{
-					return _angularDamping;
-				}
-
-				inline
-				Ptr 
-				angularDamping(float value)
-				{
-					_angularDamping	= value;
-
-					return shared_from_this();
-				}
-
+				
 				inline
 				float
 				restitution() const
@@ -255,22 +149,6 @@ namespace minko
 				restitution(float value)
 				{
 					_restitution = value;
-
-					return shared_from_this();
-				}
-
-				inline 
-				bool
-				deactivationDisabled() const
-				{
-					return _deactivationDisabled;
-				}
-
-				inline
-				Ptr
-				disableDeactivation(bool value)
-				{
-					_deactivationDisabled = value;
 
 					return shared_from_this();
 				}
@@ -299,38 +177,6 @@ namespace minko
 				correction() const
 				{
 					return _correctionMatrix;
-				}
-
-				inline
-				float
-				linearSleepingThreshold()
-				{
-					return _linearSleepingThreshold;
-				}
-
-				inline
-				Ptr
-				linearSleepingThreshold(float value)
-				{
-					_linearSleepingThreshold = value;
-
-					return shared_from_this();
-				}
-
-				inline
-				float
-				angularSleepingThreshold() const
-				{
-					return _angularSleepingThreshold;
-				}
-
-				inline
-				Ptr
-				angularSleepingThreshold(float value)
-				{
-					_angularSleepingThreshold = value;
-
-					return shared_from_this();
 				}
 
 				inline
@@ -402,7 +248,6 @@ namespace minko
 
 			private:
 				ColliderData(float, AbsShapePtr, Vector3Ptr = nullptr);
-                ColliderData(float, short, short, AbsShapePtr, Vector3Ptr = nullptr);
 			};
 		}
 	}

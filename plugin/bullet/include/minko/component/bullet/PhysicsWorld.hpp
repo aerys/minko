@@ -47,11 +47,14 @@ namespace minko
 			class ConeShape;
 			class CylinderShape;
 			class ColliderData;
+			class Collider;
 
 			class PhysicsWorld:
 				public AbstractComponent,
 				public std::enable_shared_from_this<PhysicsWorld>
 			{
+				friend class Collider;
+
 			public:
 				typedef std::shared_ptr<PhysicsWorld>                                   Ptr;
 
@@ -60,6 +63,7 @@ namespace minko
 				typedef std::shared_ptr<AbstractComponent>			                    AbsCtrlPtr;
 				typedef std::shared_ptr<scene::Node>				                    NodePtr;
 				typedef std::shared_ptr<ColliderData>				                    ColliderDataPtr; 
+				typedef std::shared_ptr<Collider>										ColliderPtr; 
 				typedef std::shared_ptr<Renderer>					                    RendererPtr;
 				typedef std::shared_ptr<math::Vector3>				                    Vector3Ptr;
 				typedef std::shared_ptr<math::Matrix4x4>			                    Matrix4x4Ptr;
@@ -79,7 +83,7 @@ namespace minko
 
 				typedef std::set<std::pair<uint, uint>>									CollisionSet;
                 typedef Signal<NodePtr, NodePtr>                                        NodeLayoutsChanged;
-                typedef Signal<ColliderDataPtr>                                         ColliderChanged;
+                typedef Signal<ColliderPtr>												ColliderChanged;
 
 			private:
 				static const uint								                        _MAX_BODIES;
@@ -105,8 +109,8 @@ namespace minko
 				Signal<std::shared_ptr<SceneManager>, float, float>::Slot               _frameEndSlot;
 				Signal<NodePtr, NodePtr, NodePtr>::Slot			                        _addedOrRemovedSlot;
 				Signal<NodePtr, NodePtr, AbsCtrlPtr>::Slot		                        _componentAddedOrRemovedSlot;
-                std::unordered_map<ColliderDataPtr, NodeLayoutsChanged::Slot>           _colliderGroupChangedSlot;
-                std::unordered_map<ColliderDataPtr, ColliderChanged::Slot>              _colliderMaskChangedSlot;
+				std::unordered_map<ColliderPtr, ColliderChanged::Slot>					_colliderPropertiesChangedSlot;
+                std::unordered_map<ColliderPtr, NodeLayoutsChanged::Slot>				_colliderNodeLayoutChangedSlot;
 
 			public:
 				static
@@ -125,22 +129,38 @@ namespace minko
 				}
 
 				bool
-				hasCollider(ColliderDataPtr) const;
+				hasCollider(ColliderPtr) const;
 
 				void
-				addChild(ColliderDataPtr);
+				addChild(ColliderPtr);
 
 				void
-				removeChild(ColliderDataPtr);
+				removeChild(ColliderPtr);
 
 				void
 				setGravity(Vector3Ptr);
 
+			private: // only the Collider class should know of the following
 				void
 				synchronizePhysicsWithGraphics(ColliderDataPtr, Matrix4x4Ptr);
 
 				void
 				updateRigidBodyState(ColliderDataPtr, Matrix4x4Ptr, Matrix4x4Ptr);
+
+				Vector3Ptr
+				getColliderLinearVelocity(ColliderDataPtr, Vector3Ptr = nullptr) const;
+
+				void
+				setColliderLinearVelocity(ColliderDataPtr, Vector3Ptr);
+
+				Vector3Ptr
+				getColliderAngularVelocity(ColliderDataPtr, Vector3Ptr = nullptr) const;
+
+				void
+				setColliderAngularVelocity(ColliderDataPtr, Vector3Ptr);
+
+				void
+				applyImpulse(ColliderDataPtr, Vector3Ptr impulse, bool isImpulseRelative, Vector3Ptr relPosition = nullptr);
 
 			private:
 				PhysicsWorld();
@@ -178,6 +198,12 @@ namespace minko
                 void
                 updateCollisionFilter(ColliderDataPtr);
 
+				void
+				updateColliderProperties(ColliderPtr);
+
+				void
+				updateColliderNodeProperties(ColliderPtr);
+
 			private:
 				class BulletCollider
 				{
@@ -194,7 +220,7 @@ namespace minko
 					typedef std::shared_ptr<btCollisionShape>		btCollisionShapePtr;
 					typedef std::shared_ptr<btMotionState>			btMotionStatePtr;
 					typedef std::shared_ptr<btDefaultMotionState>	btDefaultMotionStatePtr;
-					typedef std::shared_ptr<btCollisionObject>			btCollisionObjectPtr;
+					typedef std::shared_ptr<btCollisionObject>		btCollisionObjectPtr;
 					typedef std::shared_ptr<btRigidBody>			btRigidBodyPtr;
 
 				private:
@@ -203,27 +229,19 @@ namespace minko
 					btCollisionObjectPtr	_bulletCollisionObject;
 
 				public:
-					static
-					BulletColliderPtr
-					create(ColliderDataPtr);
+					inline static
+					Ptr
+					create(ColliderDataPtr data)
+					{
+						Ptr ptr = std::shared_ptr<BulletCollider>(new BulletCollider());
+
+						ptr->initialize(data);
+					
+						return ptr;
+					}
 
 					btRigidBodyPtr
 					rigidBody() const;
-
-					void 
-					setWorldTransform(Matrix4x4Ptr);
-
-					void
-					setLinearVelocity(Vector3Ptr);
-
-					void
-					prependLocalTranslation(Vector3Ptr);
-
-					void
-					prependRotationY(float);
-
-					void
-					applyRelativeImpulse(Vector3Ptr);
 
 				private:
 					BulletCollider();

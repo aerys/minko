@@ -43,7 +43,7 @@ namespace minko
 				void
 				bind(LuaGlue& state)
 				{
-					auto collideData = state.Class<ColliderData>("ColliderData")
+					auto colliderData = state.Class<ColliderData>("ColliderData")
 						/*.method("getMass",				&ColliderData::mass)
 						.method("getInertia",			&ColliderData::inertia)
 						.method("getIsStatic",			&ColliderData::isStatic)
@@ -55,18 +55,7 @@ namespace minko
 						.method("getRollingFriction",	static_cast<float (ColliderData::*)(void) const>(&ColliderData::rollingFriction))
 						*/
 						//.property("triggeredCollision", &ColliderData::triggerCollisions, &ColliderData::triggerCollisions)
-						//.method("disableDeactivation",	&ColliderData::disableDeactivation)
-						/*.method("getangularVelocity",	static_cast<Vector3Ptr(ColliderData::*)(void) const>(&ColliderData::angularVelocity))
-						.method("setangularVelocity",	static_cast<void (ColliderData::*)(float, float, float)>(&ColliderData::angularVelocity))
-						.method("getLinearVelocity",	static_cast<Vector3Ptr(ColliderData::*)(void) const>(&ColliderData::linearVelocity))
-						.method("setLinearVelocity",	static_cast<void (ColliderData::*)(float, float, float)>(&ColliderData::linearVelocity))
-						.method("getLinearFactor",		static_cast<Vector3Ptr(ColliderData::*)(void) const>(&ColliderData::linearFactor))
-						.method("setLinearFactor",		static_cast<void (ColliderData::*)(float, float, float)>(&ColliderData::linearFactor))
-						.method("getAngularDamping",	static_cast<float(ColliderData::*)(void) const>(&ColliderData::angularDamping))
-						.method("setAngularDamping",	static_cast<void (ColliderData::*)(float)>(&ColliderData::angularDamping))
-						.method("getLinearDamping",		static_cast<float(ColliderData::*)(void) const>(&ColliderData::linearDamping))
-						.method("setLinearDamping",		static_cast<void (ColliderData::*)(float)>(&ColliderData::linearDamping))
-						*/;
+						;
 
 	/*				MINKO_LUAGLUE_BIND_SIGNAL(state, ColliderData::Ptr, ColliderData::Ptr);
 					collideData.method("collisionStated", &ColliderData::collisionStarted);
