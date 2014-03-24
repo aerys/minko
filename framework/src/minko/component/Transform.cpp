@@ -289,36 +289,27 @@ void
 Transform::RootTransform::juxtaposeSiblings(std::vector<NodePtr>& nodes)
 {
 	// assumes 'nodes' is the result of a breadth-first search from the nodes
+	std::unordered_map<scene::Node::Ptr, unsigned int>	firstChild;
 
-	std::vector<scene::Node::Ptr>				reorderedNodes;
-	std::unordered_map<scene::Node::Ptr, uint>	firstChild;
-
-	reorderedNodes.reserve(nodes.size());
-
-	uint nodeId = 0;
-	for (auto& node : nodes)
+	for (unsigned int nodeId = 0; nodeId < nodes.size(); ++nodeId)
 	{
-		auto ancestor = node->parent();
+		auto it			= nodes.begin() + nodeId;
+		auto node		= *it;
+		auto ancestor	= node->parent();
 		while (ancestor != nullptr 
-			&& std::find(nodes.begin(), nodes.end(), ancestor) == nodes.end())
+			&& std::find(nodes.begin(), it, ancestor) == nodes.end())
 			ancestor = ancestor->parent();
 
 		if (firstChild.count(ancestor) == 0)
-		{
 			firstChild[ancestor] = nodeId;
-
-			reorderedNodes.push_back(node);
-		}
 		else
-			reorderedNodes.insert(
-				reorderedNodes.begin() + firstChild[ancestor], 
-				node
-			);		
+		{
+			assert(firstChild[ancestor] <= nodeId);
 
-		++nodeId;
+			nodes.erase(it);
+			nodes.insert(nodes.begin() + firstChild[ancestor], node);
+		}
 	}
-
-	nodes.swap(reorderedNodes);
 }
 
 void
