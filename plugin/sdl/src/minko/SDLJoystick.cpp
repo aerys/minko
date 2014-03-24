@@ -22,6 +22,27 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 using namespace minko;
 
+const std::map<SDLJoystick::Button, SDLJoystick::Button> SDLJoystick::nativeToHtmlMap =
+{
+    { Button::DPadUp, Button::X },
+    { Button::DPadDown, Button::Y },
+    { Button::DPadLeft, Button::Home },
+    { Button::DPadRight, Button::LT },
+    { Button::Start, Button::RB },
+    { Button::Select, Button::LB },
+    { Button::L3, Button::A },
+    { Button::R3, Button::B },
+    { Button::LB, Button::Start },
+    { Button::RB, Button::Select },
+    { Button::A, Button::DPadUp },
+    { Button::B, Button::DPadDown },
+    { Button::X, Button::DPadLeft },
+    { Button::Y, Button::DPadRight },
+    { Button::Home, Button::Nothing },
+    { Button::LT, Button::L3 },
+    { Button::RT, Button::R3 },
+};
+
 SDLJoystick::SDLJoystick(std::shared_ptr<Canvas> canvas, int joystickId, SDL_Joystick* joystick) :
     input::Joystick(canvas, joystickId),
     _joystick(joystick)

@@ -34,6 +34,7 @@ namespace minko
 
             enum class Button
             {
+                Nothing = -1,
                 DPadUp = 0,
                 DPadDown = 1,
                 DPadLeft = 2,
@@ -48,7 +49,9 @@ namespace minko
                 B = 11,
                 X = 12,
                 Y = 13,
-                Home = 14
+                Home = 14,
+                LT = 15, // Not a button (axis)
+                RT = 16, // Not a button (axis)
             };
 
 		private:

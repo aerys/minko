@@ -36,6 +36,8 @@ namespace minko
     private:
         SDL_Joystick*	_joystick;
 
+        static const std::map<Button, Button> nativeToHtmlMap;
+
     public:
         static inline
         std::shared_ptr<SDLJoystick>
