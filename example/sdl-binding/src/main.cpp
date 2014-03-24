@@ -64,16 +64,18 @@ main(int argc, char** argv)
             std::cout << "[Key]Key CAPS_LOCK down !" << std::endl;
         if (k->keyIsDown(input::Keyboard::KANA))
             std::cout << "[Key]Key KANA down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::HANGUL))
+        /*if (k->keyIsDown(input::Keyboard::HANGUL))
             std::cout << "[Key]Key HANGUL down !" << std::endl;
+        */
         if (k->keyIsDown(input::Keyboard::EISU))
             std::cout << "[Key]Key EISU down !" << std::endl;
         if (k->keyIsDown(input::Keyboard::JUNJA))
             std::cout << "[Key]Key JUNJA down !" << std::endl;
         if (k->keyIsDown(input::Keyboard::FINAL))
             std::cout << "[Key]Key FINAL down !" << std::endl;
-        if (k->keyIsDown(input::Keyboard::HANJA))
+        /*if (k->keyIsDown(input::Keyboard::HANJA))
             std::cout << "[Key]Key HANJA down !" << std::endl;
+        */
         if (k->keyIsDown(input::Keyboard::KANJI))
             std::cout << "[Key]Key KANJI down !" << std::endl;
         if (k->keyIsDown(input::Keyboard::ESCAPE))
