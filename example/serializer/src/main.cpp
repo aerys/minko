@@ -26,7 +26,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 std::string MODEL_FILENAME = "model/primitives/primitives.scene";
 
-//#define SERIALIZE // comment to test deserialization
+#define SERIALIZE // comment to test deserialization
 
 using namespace minko;
 using namespace minko::component;
@@ -44,7 +44,7 @@ serializeSceneExample(std::shared_ptr<file::AssetLibrary>		assets,
 }
 
 void
-openSceneExample(std::shared_ptr<file::AssetLibrary>	assets, 
+openSceneExample(std::shared_ptr<file::AssetLibrary>	assets,
 				 std::shared_ptr<scene::Node>			root)
 {
 	root->addChild(assets->symbol(MODEL_FILENAME));
@@ -70,9 +70,9 @@ int main(int argc, char** argv)
 	sceneManager->assets()
 		->registerParser<file::PNGParser>("png")
 #ifdef SERIALIZE
-		->queue("effect/Basic.effect");
-		->queue("texture/box.png")
-		
+		->queue("effect/Basic.effect")
+                ->queue("texture/box.png");
+
 		sceneManager->assets()->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()));
 		sceneManager->assets()->geometry("sphere", geometry::SphereGeometry::create(sceneManager->assets()->context(), 20, 20));
 #else
@@ -87,7 +87,7 @@ int main(int argc, char** argv)
 	auto physicWorld = bullet::PhysicsWorld::create();
 	physicWorld->setGravity(math::Vector3::create(0.f, -9.8f, 0.f));
 	root->addComponent(physicWorld);
-	
+
 
 	auto camera = scene::Node::create("camera")
 		->addComponent(Renderer::create(0x7f7f7fff))
@@ -110,18 +110,18 @@ int main(int argc, char** argv)
 		auto cubeMaterial = material::BasicMaterial::create()
 			->diffuseMap(assets->texture("texture/box.png"))
 			->diffuseColor(math::Vector4::create(1.f, 0.f, 0.f, 1.f))
-			->blendMode(render::Blending::Mode::DEFAULT)
+//			->blendMode(render::Blending::Mode::DEFAULT)
 			->set<render::TriangleCulling>("triangleCulling", render::TriangleCulling::BACK);
 
 		auto sphereMaterial = material::BasicMaterial::create()
 			->diffuseMap(assets->texture("texture/box.png"))
 			->diffuseColor(math::Vector4::create(0.f, 1.f, 0.f, 0.2f))
-			->blendMode(render::Blending::Mode::ALPHA)
+//			->blendMode(render::Blending::Mode::ALPHA)
 			->set<render::TriangleCulling>("triangleCulling", render::TriangleCulling::FRONT);
 
 		assets->material("boxMaterial", cubeMaterial);
 		assets->material("sphereMaterial", sphereMaterial);
-		
+
 		mesh->addComponent(Surface::create(
 				assets->geometry("sphere"),
 				assets->material("sphereMaterial"),
@@ -142,7 +142,7 @@ int main(int argc, char** argv)
 		root->addChild(mesh);
 		root->addChild(mesh2);
 		root->addChild(mesh3);
-		
+
 		mesh2->component<Transform>()->matrix()->appendTranslation(0, 1, 0);
 		mesh3->component<Transform>()->matrix()->appendTranslation(0, -1, 0);
 #endif
@@ -199,7 +199,7 @@ int main(int argc, char** argv)
 			tz += 0.1f;
 		else if (k->keyIsDown(input::Keyboard::ScanCode::DOWN))
 			tz -= 0.1f;
-		
+
 		auto model = sceneManager->assets()->symbol(MODEL_FILENAME);
 		if (model && model->hasComponent<Transform>())
 		{
