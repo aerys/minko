@@ -94,7 +94,7 @@ Canvas::initializeInputs()
         if (!joystick)
             continue;
         else
-            _joysticks[i] = Canvas::SDLJoystick::create(shared_from_this(), SDL_JoystickInstanceID(joystick), joystick);
+            _joysticks[i] = SDLJoystick::create(shared_from_this(), SDL_JoystickInstanceID(joystick), joystick);
     }
 #endif
 }
@@ -329,7 +329,7 @@ Canvas::step()
             {
                 if (_joysticks.find(i) == _joysticks.end())
                 {
-                    auto sdlJoystick = Canvas::SDLJoystick::create(shared_from_this(), i, joystick);
+                    auto sdlJoystick = SDLJoystick::create(shared_from_this(), i, joystick);
                     _joysticks[i] = sdlJoystick;
                 }
 
@@ -512,7 +512,7 @@ Canvas::step()
 
             if (_joysticks.find(instance_id) == _joysticks.end())
             {
-                auto sdlJoystick = Canvas::SDLJoystick::create(shared_from_this(), instance_id, joystick);
+                auto sdlJoystick = SDLJoystick::create(shared_from_this(), instance_id, joystick);
                 _joysticks[instance_id] = sdlJoystick;
             }
 

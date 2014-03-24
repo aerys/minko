@@ -24,11 +24,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Common.hpp"
 #include "minko/SDLKeyboard.hpp"
 #include "minko/SDLMouse.hpp"
+#include "minko/SDLJoystick.hpp"
 #include "minko/Signal.hpp"
 #include "minko/render/AbstractContext.hpp"
 #include "minko/render/OpenGLES2Context.hpp"
 #include "minko/AbstractCanvas.hpp"
-#include "minko/input/Joystick.hpp"
 #include "minko/async/Worker.hpp"
 
 #if defined(__APPLE__)
@@ -52,38 +52,6 @@ namespace minko
 	{
 	public:
 		typedef std::shared_ptr<Canvas>	Ptr;
-
-	private:
-		class SDLJoystick : 
-			public input::Joystick
-		{
-			friend class Canvas;
-
-		private:
-			SDL_Joystick*	_joystick;
-
-		public :
-			static inline
-			std::shared_ptr<SDLJoystick>
-			create(Canvas::Ptr canvas, int joystickId, SDL_Joystick* joystick)
-			{
-				return std::shared_ptr<SDLJoystick>(new SDLJoystick(canvas, joystickId, joystick));
-			}
-
-			inline
-			SDL_Joystick* const
-			joystick()
-			{
-				return _joystick;
-			}
-
-		private:
-			SDLJoystick(Canvas::Ptr canvas, int joystickId, SDL_Joystick* joystick) :
-				input::Joystick(canvas, joystickId),
-				_joystick(joystick)
-			{
-			}
-		};
 
 	private:
         typedef std::chrono::high_resolution_clock::time_point	time_point;
