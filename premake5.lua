@@ -90,6 +90,7 @@ solution "minko"
 
 	-- example
 	if not _OPTIONS['no-example'] then
+		include 'example/joystick'
 		include 'example/lua-binding'
 		include 'example/lua-scripts'
 		include 'example/sdl-binding'
@@ -115,7 +116,6 @@ solution "minko"
 		include 'example/physics'
 		include 'example/oculus'
 		--include 'example/http'
-		include 'example/joystick'
 	end
 
 	-- test

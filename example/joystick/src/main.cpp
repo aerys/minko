@@ -36,13 +36,13 @@ Signal<AbstractCanvas::Ptr, input::Joystick::Ptr>::Slot joystickRemoved;
 void
 joystickButtonDownHandler(input::Joystick::Ptr joystick, int which, int buttonId)
 {
-    if (buttonId == 0)
+    if (static_cast<input::Joystick::Button>(buttonId) == input::Joystick::Button::DPadUp)
         joystickToCube[joystick]->component<Transform>()->matrix()->appendTranslation(0.f, 0.f, -0.1f);
-    if (buttonId == 1)
+    if (static_cast<input::Joystick::Button>(buttonId) == input::Joystick::Button::DPadDown)
         joystickToCube[joystick]->component<Transform>()->matrix()->appendTranslation(0.f, 0.f, 0.1f);
-    if (buttonId == 2)
+    if (static_cast<input::Joystick::Button>(buttonId) == input::Joystick::Button::DPadLeft)
         joystickToCube[joystick]->component<Transform>()->matrix()->appendTranslation(-.1f);
-    if (buttonId == 3)
+    if (static_cast<input::Joystick::Button>(buttonId) == input::Joystick::Button::DPadRight)
         joystickToCube[joystick]->component<Transform>()->matrix()->appendTranslation(.1f);
 }
 
@@ -127,6 +127,17 @@ main(int argc, char** argv)
             cube->component<Transform>()->matrix()->prependRotationY(.01f);
 
             sceneManager->nextFrame(t, dt);
+
+            auto joysticks = canvas->joysticks();
+
+            for (auto it = joysticks.begin(); it != joysticks.end(); ++it)
+            {
+                if (it->second->isButtonDown(input::Joystick::Button::A))
+                {
+                    std::cout << "A pressed !" << std::endl;
+                }
+            }
+
         });
 
         canvas->run();

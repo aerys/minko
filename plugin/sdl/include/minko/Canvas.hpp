@@ -172,6 +172,13 @@ namespace minko
 			return id < numJoysticks() ? _joysticks[id] : nullptr;
 		}
 
+        inline
+        std::unordered_map<int, std::shared_ptr<SDLJoystick>>
+        joysticks()
+        {
+            return _joysticks;
+        }
+
 		inline
 		uint
 		numJoysticks()

@@ -20,6 +20,20 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Canvas.hpp"
 #include "minko/SDLJoystick.hpp"
 
+#if defined(EMSCRIPTEN)
+# include "minko/MinkoWebGL.hpp"
+# include "SDL/SDL.h"
+# include "emscripten/emscripten.h"
+#elif defined(MINKO_ANGLE)
+# include "SDL2/SDL.h"
+# include "SDL2/SDL_syswm.h"
+# include <EGL/egl.h>
+# include <GLES2/gl2.h>
+# include <GLES2/gl2ext.h>
+#else
+# include "SDL2/SDL.h"
+#endif
+
 using namespace minko;
 
 const std::map<SDLJoystick::Button, SDLJoystick::Button> SDLJoystick::nativeToHtmlMap =
@@ -47,4 +61,19 @@ SDLJoystick::SDLJoystick(std::shared_ptr<Canvas> canvas, int joystickId, SDL_Joy
     input::Joystick(canvas, joystickId),
     _joystick(joystick)
 {
+}
+
+bool SDLJoystick::isButtonDown(Button button)
+{
+#if defined EMSCRIPTEN
+    auto realButton = nativeToHtmlMap.find(button);
+
+    // This button is not mapped
+    if (realButton == nativeToHtmlMap.end())
+        return false;
+
+    return SDL_JoystickGetButton(_joystick, static_cast<int>(realButton->second));
+#else
+    return SDL_JoystickGetButton(_joystick, static_cast<int>(button));
+#endif
 }

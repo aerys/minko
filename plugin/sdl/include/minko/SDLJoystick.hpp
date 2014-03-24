@@ -53,6 +53,8 @@ namespace minko
             return _joystick;
         }
 
+        bool isButtonDown(Button button);
+
     private:
         SDLJoystick(std::shared_ptr<Canvas> canvas, int joystickId, SDL_Joystick* joystick);
     };
