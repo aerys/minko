@@ -51,11 +51,11 @@ namespace minko
                 PAUSE = 19, // Pause key.
                 CAPS_LOCK = 20, // Caps lock.
                 KANA = 21, // Linux support for this keycode was added in Gecko 4.0.
-                HANGUL = 21, // Linux support for this keycode was added in Gecko 4.0.
+                //HANGUL = 21, // Linux support for this keycode was added in Gecko 4.0.
                 EISU = 22, // "英数" key on Japanese Mac keyboard. 
                 JUNJA = 23, // Linux support for this keycode was added in Gecko 4.0.
                 FINAL = 24, // Linux support for this keycode was added in Gecko 4.0.
-                HANJA = 25, // Linux support for this keycode was added in Gecko 4.0.
+                //HANJA = 25, // Linux support for this keycode was added in Gecko 4.0.
                 KANJI = 25, // Linux support for this keycode was added in Gecko 4.0.
                 ESCAPE = 27, // Escape key.
                 CONVERT = 28, // Linux support for this keycode was added in Gecko 4.0.

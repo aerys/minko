@@ -170,11 +170,11 @@ const std::map<SDLKeyboard::Key, SDLKeyboard::KeyType> SDLKeyboard::keyTypeMap =
     { Key::SCROLL_LOCK, KeyType::ScanCode },
 
     { Key::KANA, KeyType::ScanCode },
-    { Key::HANGUL, KeyType::ScanCode },
+    //{ Key::HANGUL, KeyType::ScanCode },
     { Key::EISU, KeyType::ScanCode },
     { Key::JUNJA, KeyType::ScanCode },
     { Key::FINAL, KeyType::ScanCode },
-    { Key::HANJA, KeyType::ScanCode },
+    //{ Key::HANJA, KeyType::ScanCode },
     { Key::KANJI, KeyType::ScanCode },
 
     { Key::SHIFT, KeyType::ScanCode },
@@ -383,13 +383,13 @@ const std::map<SDLKeyboard::Key, SDLKeyboard::ScanCode> SDLKeyboard::keyToScanCo
 
     { Key::SCROLL_LOCK, input::Keyboard::ScanCode::SCROLLLOCK },
 
-    { Key::KANA, input::Keyboard::ScanCode::LANG3 },
-    { Key::HANGUL, input::Keyboard::ScanCode::LANG1 },
-    { Key::EISU, input::Keyboard::ScanCode::LANG2 },
-    { Key::JUNJA, input::Keyboard::ScanCode::LANG4 },
-    { Key::FINAL, input::Keyboard::ScanCode::LANG5 },
-    { Key::HANJA, input::Keyboard::ScanCode::LANG6 },
-    { Key::KANJI, input::Keyboard::ScanCode::LANG7 },
+    { Key::KANA, input::Keyboard::ScanCode::LANG1 },
+    //{ Key::HANGUL, input::Keyboard::ScanCode::LANG1 },
+    { Key::EISU, input::Keyboard::ScanCode::LANG1 },
+    { Key::JUNJA, input::Keyboard::ScanCode::LANG1 },
+    { Key::FINAL, input::Keyboard::ScanCode::LANG1 },
+    //{ Key::HANJA, input::Keyboard::ScanCode::LANG1},
+    { Key::KANJI, input::Keyboard::ScanCode::LANG1 },
 
     { Key::SHIFT, input::Keyboard::ScanCode::LSHIFT },
     { Key::CONTROL, input::Keyboard::ScanCode::LCTRL },

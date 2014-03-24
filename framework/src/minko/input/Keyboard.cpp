@@ -42,11 +42,11 @@ Keyboard::initializeKeyNames()
     names[19] = "PAUSE";
     names[20] = "CAPS_LOCK";
     names[21] = "KANA";
-    names[21] = "HANGUL";
+    //names[21] = "HANGUL";
     names[22] = "EISU";
     names[23] = "JUNJA";
     names[24] = "FINAL";
-    names[25] = "HANJA";
+    //names[25] = "HANJA";
     names[25] = "KANJI";
     names[27] = "ESCAPE";
     names[28] = "CONVERT";

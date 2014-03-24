@@ -101,11 +101,8 @@ function main:update(node)
 	if keyboard:keyIsDown(Key.CAPS_LOCK) then
 		print'CAPS_LOCK'
 	end
-	--if keyboard:keyIsDown(Key.KANA) then
-		--print'KANA'
-	--end
-	if keyboard:keyIsDown(Key.HANGUL) then
-		print'HANGUL'
+	if keyboard:keyIsDown(Key.KANA) then
+		print'KANA'
 	end
 	if keyboard:keyIsDown(Key.EISU) then
 		print'EISU'
@@ -116,9 +113,6 @@ function main:update(node)
 	if keyboard:keyIsDown(Key.FINAL) then
 		print'FINAL'
 	end
-	--if keyboard:keyIsDown(Key.HANJA) then
-		--print'HANJA'
-	--end
 	if keyboard:keyIsDown(Key.KANJI) then
 		print'KANJI'
 	end
