@@ -19,7 +19,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #pragma once
 
-#include "minko/Canvas.hpp"
 #include "minko/input/Joystick.hpp"
 
 struct _SDL_Joystick;
@@ -27,6 +26,8 @@ typedef struct _SDL_Joystick SDL_Joystick;
 
 namespace minko
 {
+    class Canvas;
+
     class SDLJoystick :
         public input::Joystick
     {
@@ -51,10 +52,6 @@ namespace minko
         }
 
     private:
-        SDLJoystick(std::shared_ptr<Canvas> canvas, int joystickId, SDL_Joystick* joystick) :
-            input::Joystick(canvas, joystickId),
-            _joystick(joystick)
-        {
-        }
+        SDLJoystick(std::shared_ptr<Canvas> canvas, int joystickId, SDL_Joystick* joystick);
     };
 }

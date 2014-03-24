@@ -190,7 +190,7 @@ namespace minko
 		Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::Ptr
 		joystickRemoved()
 		{
-				return _joystickRemoved;
+			return _joystickRemoved;
 		}
 
 		inline

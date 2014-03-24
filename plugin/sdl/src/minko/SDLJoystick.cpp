@@ -17,4 +17,13 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+#include "minko/Canvas.hpp"
 #include "minko/SDLJoystick.hpp"
+
+using namespace minko;
+
+SDLJoystick::SDLJoystick(std::shared_ptr<Canvas> canvas, int joystickId, SDL_Joystick* joystick) :
+    input::Joystick(canvas, joystickId),
+    _joystick(joystick)
+{
+}
