@@ -109,7 +109,7 @@ AbstractASSIMPParser::AbstractASSIMPParser() :
 	_alreadyAnimatedNodes(),
 	_loaderCompleteSlots(),
 	_loaderErrorSlots(),
-    _importer()
+    _importer(nullptr)
 {
 }
 
@@ -144,19 +144,17 @@ AbstractASSIMPParser::parse(const std::string&					filename,
     _filename		= filename;
 	_assetLibrary	= assetLibrary;
 	_options		= options;
-
-    //Init the assimp scene
-    Assimp::Importer& importer = *_importer;
-
+	
 	//fixme : find a way to handle loading dependencies asynchronously
-	options->loadAsynchronously(false);
-	importer.SetIOHandler(new IOHandler(options, _assetLibrary));
+	auto ioHandlerOptions = Options::create(options);
+	ioHandlerOptions->loadAsynchronously(false);
+	_importer->SetIOHandler(new IOHandler(ioHandlerOptions, _assetLibrary));
 
 #ifdef DEBUG
 	std::cout << "AbstractASSIMPParser: preparing to parse" << std::endl;
 #endif // DEBUG
 	
-	const aiScene* scene = importer.ReadFileFromMemory(
+	const aiScene* scene = _importer->ReadFileFromMemory(
 		&data[0],
 		data.size(),
 		//| aiProcess_GenSmoothNormals // assertion is raised by assimp
@@ -174,7 +172,7 @@ AbstractASSIMPParser::parse(const std::string&					filename,
 	);
 
 	if (!scene)
-		throw ParserError(importer.GetErrorString());	
+		throw ParserError(_importer->GetErrorString());	
 
 #ifdef DEBUG
 	std::cout << "AbstractASSIMPParser: scene parsed" << std::endl;
@@ -246,11 +244,9 @@ void
 AbstractASSIMPParser::initImporter()
 {
     if (_importer != nullptr)
-    {
         return;
-    }
 
-    _importer = std::make_shared<Assimp::Importer>();
+    _importer = new Assimp::Importer();
 
 #if (defined ASSIMP_BUILD_NO_IMPORTER_INSTANCIATION)
     provideLoaders(*_importer);
