@@ -47,10 +47,14 @@ updateBlueScore();
 
 int main(int argc, char** argv)
 {
+	auto overlay = Overlay::create(argc, argv);
+
 	redScore = 0;
 	blueScore = 0;
 
 	auto canvas = Canvas::create("Minko Example - Cube", 800, 600);
+
+	overlay->initialize(canvas);
 
 	auto sceneManager = SceneManager::create(canvas->context());
 	
@@ -60,8 +64,8 @@ int main(int argc, char** argv)
 	sceneManager->assets()
 		->registerParser<file::PNGParser>("png")
 		->queue(TEXTURE_FILENAME)
-		->queue("effect/Basic.effect");
-		//->queue("effect/Overlay.effect");
+		->queue("effect/Basic.effect")
+		->queue("effect/Overlay.effect");
 
 	sceneManager->assets()->context()->errorsEnabled(true);
 
@@ -87,8 +91,6 @@ int main(int argc, char** argv)
 	{
 		camera->component<PerspectiveCamera>()->aspectRatio((float)w / (float)h);
 	});
-
-	auto overlay = Overlay::create(canvas);
 
 	auto material = material::BasicMaterial::create()->diffuseColor(0xCCCCCCFF);
 

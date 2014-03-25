@@ -135,6 +135,8 @@ namespace chromium
 
 		private:
 
+			std::atomic<bool>	_blocker;
+
 			CefRefPtr<CefV8Context> _v8Context;
 			CefRefPtr<CefFrame> _frame;
 			CefRefPtr<CefV8Value> _minkoObject;

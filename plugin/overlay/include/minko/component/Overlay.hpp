@@ -44,19 +44,18 @@ namespace minko
 			typedef std::shared_ptr<scene::Node>							NodePtr;
 
 
-			Overlay();
+			Overlay(int argc, char** argv);
+
+		public:
 
 			void
 			initialize(AbstractCanvas::Ptr);
 
-		public:
-
 			static
 			Ptr
-			create(AbstractCanvas::Ptr canvas)
+			create(int argc, char** argv)
 			{
-				Ptr overlay(new Overlay());
-				overlay->initialize(canvas);
+				Ptr overlay(new Overlay(argc, argv));
 
 				return overlay;
 			}

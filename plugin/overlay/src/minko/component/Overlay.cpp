@@ -26,10 +26,19 @@ using namespace emscripten;
 using namespace emscripten::dom;
 #endif
 
-Overlay::Overlay() :
+Overlay::Overlay(int argc, char** argv) :
 	AbstractComponent(),
 	_cleared(false)
 {
+#if defined(CHROMIUM)
+	ChromiumDOMEngine::Ptr engine = ChromiumDOMEngine::create(argc, argv);
+	_domEngine = engine;
+#endif
+
+#if defined(EMSCRIPTEN)
+	EmscriptenDOMEngine::Ptr engine = EmscriptenDOMEngine::create();
+	_domEngine = engine;
+#endif
 }
 
 Overlay::~Overlay()
@@ -55,17 +64,6 @@ Overlay::initialize(AbstractCanvas::Ptr canvas)
 		std::placeholders::_1,
 		std::placeholders::_2
 		));
-
-
-#if defined(CHROMIUM)
-	ChromiumDOMEngine::Ptr engine = ChromiumDOMEngine::create();
-	_domEngine = engine;
-#endif
-
-#if defined(EMSCRIPTEN)
-	EmscriptenDOMEngine::Ptr engine = EmscriptenDOMEngine::create();
-	_domEngine = engine;
-#endif
 }
 
 void

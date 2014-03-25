@@ -104,6 +104,8 @@ namespace chromium
 			static
 			std::list<Ptr> _events;
 
+			std::atomic<bool> _blocker;
+
 			CefRefPtr<CefV8Context> _v8Context;
 
 			bool _cleared;

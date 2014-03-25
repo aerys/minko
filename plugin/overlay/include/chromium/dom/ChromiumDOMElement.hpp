@@ -174,6 +174,8 @@ namespace chromium
 			static
 			std::map<Ptr, CefRefPtr<CefV8Value>> _elementToV8Object;
 
+			std::atomic<bool>	_blocker;
+			
 			bool _onclickCallbackSet;
 			bool _onmousedownCallbackSet;
 			bool _onmousemoveCallbackSet;

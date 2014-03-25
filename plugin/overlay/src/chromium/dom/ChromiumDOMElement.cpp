@@ -18,7 +18,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #if defined(CHROMIUM)
-#pragma once
 
 #include "chromium/dom/ChromiumDOMElement.hpp"
 #include "include/cef_runnable.h"
@@ -48,7 +47,8 @@ ChromiumDOMElement::ChromiumDOMElement(CefRefPtr<CefV8Value> v8NodeObject, CefRe
 	_cleared(false),
 	_v8Handler(),
 	_v8NodeObject(v8NodeObject),
-	_v8Context(v8Context)
+	_v8Context(v8Context),
+	_blocker(true)
 {
 }
 
@@ -109,14 +109,16 @@ ChromiumDOMElement::create(CefRefPtr<CefV8Value> v8NodeObject, CefRefPtr<CefV8Co
 	else
 	{
 		CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
-		std::atomic<bool> blocker = true;
+		std::atomic<bool> blocker(true);
 
-		runner->PostTask(NewCefRunnableFunction(&[&]()
+		auto fn = [&]()
 		{
 			result = ChromiumDOMElement::create(v8NodeObject, v8Context);
-			blocker = false;
-		}));
-		while (blocker);
+			blocker.store(false);
+		};
+
+		runner->PostTask(NewCefRunnableFunction(&fn));
+		while (blocker.load());
 	}
 
 	return result;
@@ -217,15 +219,17 @@ ChromiumDOMElement::id()
 	else
 	{
 		CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
-		std::atomic<bool> blocker = true;
+		_blocker.store(true);
 
-		runner->PostTask(NewCefRunnableFunction(&[&]()
+		auto fn = [&]()
 		{
 			result = id();
-			blocker = false;
-		}));
+			_blocker.store(false);
+		};
 
-		while (blocker);
+		runner->PostTask(NewCefRunnableFunction(&fn));
+
+		while (_blocker.load());
 	}
 	return result;
 }
@@ -242,14 +246,16 @@ ChromiumDOMElement::id(std::string newId)
 	else
 	{
 		CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
-		std::atomic<bool> blocker = true;
+		_blocker.store(true);
 
-		runner->PostTask(NewCefRunnableFunction(&[&]()
+		auto fn = [&]()
 		{
 			id(newId);
-			blocker = false;
-		}));
-		while (blocker);
+			_blocker.store(false);
+		};
+
+		runner->PostTask(NewCefRunnableFunction(&fn));
+		while (_blocker.load());
 	}
 }
 
@@ -267,15 +273,17 @@ ChromiumDOMElement::className()
 	else
 	{
 		CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
-		std::atomic<bool> blocker = true;
+		_blocker.store(true);
 
-		runner->PostTask(NewCefRunnableFunction(&[&]()
+		auto fn =[&]()
 		{
 			result = className();
-			blocker = false;
-		}));
+			_blocker.store(false);
+		};
 
-		while (blocker);
+		runner->PostTask(NewCefRunnableFunction(&fn));
+
+		while (_blocker.load());
 	}
 	return result;
 }
@@ -292,14 +300,16 @@ ChromiumDOMElement::className(std::string newClass)
 	else
 	{
 		CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
-		std::atomic<bool> blocker = true;
+		_blocker.store(true);
 
-		runner->PostTask(NewCefRunnableFunction(&[&]()
+		auto fn = [&]()
 		{
 			className(newClass);
-			blocker = false;
-		}));
-		while (blocker);
+			_blocker.store(false);
+		};
+
+		runner->PostTask(NewCefRunnableFunction(&fn));
+		while (_blocker.load());
 	}
 }
 
@@ -317,15 +327,17 @@ ChromiumDOMElement::tagName()
 	else
 	{
 		CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
-		std::atomic<bool> blocker = true;
+		_blocker.store(true);
 
-		runner->PostTask(NewCefRunnableFunction(&[&]()
+		auto fn = [&]()
 		{
 			result = tagName();
-			blocker = false;
-		}));
+			_blocker.store(false);
+		};
 
-		while (blocker);
+		runner->PostTask(NewCefRunnableFunction(&fn));
+
+		while (_blocker.load());
 	}
 	return result;
 }
@@ -346,15 +358,17 @@ ChromiumDOMElement::parentNode()
 	else
 	{
 		CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
-		std::atomic<bool> blocker = true;
+		_blocker.store(true);
 
-		runner->PostTask(NewCefRunnableFunction(&[&]()
+		auto fn = [&]()
 		{
 			result = parentNode();
-			blocker = false;
-		}));
+			_blocker.store(false);
+		};
 
-		while (blocker);
+		runner->PostTask(NewCefRunnableFunction(&fn));
+
+		while (_blocker.load());
 	}
 	return result;
 }
@@ -373,15 +387,17 @@ ChromiumDOMElement::childNodes()
 	else
 	{
 		CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
-		std::atomic<bool> blocker = true;
+		_blocker.store(true);
 
-		runner->PostTask(NewCefRunnableFunction(&[&]()
+		auto fn = [&]()
 		{
 			result = childNodes();
-			blocker = false;
-		}));
+			_blocker.store(false);
+		};
 
-		while (blocker);
+		runner->PostTask(NewCefRunnableFunction(&fn));
+
+		while (_blocker.load());
 	}
 	return result;
 }
@@ -400,15 +416,17 @@ ChromiumDOMElement::textContent()
 	else
 	{
 		CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
-		std::atomic<bool> blocker = true;
+		_blocker.store(true);
 
-		runner->PostTask(NewCefRunnableFunction(&[&]()
+		auto fn = [&]()
 		{
 			result = textContent();
-			blocker = false;
-		}));
+			_blocker.store(false);
+		};
 
-		while (blocker);
+		runner->PostTask(NewCefRunnableFunction(&fn));
+
+		while (_blocker.load());
 	}
 	return result;
 }
@@ -425,15 +443,17 @@ ChromiumDOMElement::textContent(std::string content)
 	else
 	{
 		CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
-		std::atomic<bool> blocker = true;
+		_blocker.store(true);
 
-		runner->PostTask(NewCefRunnableFunction(&[&]()
+		auto fn = [&]()
 		{
 			textContent(content);
-			blocker = false;
-		}));
+			_blocker.store(false);
+		};
 
-		while (blocker);
+		runner->PostTask(NewCefRunnableFunction(&fn));
+
+		while (_blocker.load());
 	}
 }
 
@@ -451,15 +471,17 @@ ChromiumDOMElement::innerHTML()
 	else
 	{
 		CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
-		std::atomic<bool> blocker = true;
+		_blocker.store(true);
 
-		runner->PostTask(NewCefRunnableFunction(&[&]()
+		auto fn = [&]()
 		{
 			result = innerHTML();
-			blocker = false;
-		}));
+			_blocker.store(false);
+		};
 
-		while (blocker);
+		runner->PostTask(NewCefRunnableFunction(&fn));
+
+		while (_blocker.load());
 	}
 	return result;
 }
@@ -476,15 +498,17 @@ ChromiumDOMElement::innerHTML(std::string html)
 	else
 	{
 		CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
-		std::atomic<bool> blocker = true;
+		_blocker.store(true);
 
-		runner->PostTask(NewCefRunnableFunction(&[&]()
+		auto fn = [&]()
 		{
 			innerHTML(html);
-			blocker = false;
-		}));
+			_blocker.store(false);
+		};
 
-		while (blocker);
+		runner->PostTask(NewCefRunnableFunction(&fn));
+
+		while (_blocker.load());
 	}
 }
 
@@ -508,15 +532,17 @@ ChromiumDOMElement::appendChild(AbstractDOMElement::Ptr child)
 	else
 	{
 		CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
-		std::atomic<bool> blocker = true;
+		_blocker.store(true);
 
-		runner->PostTask(NewCefRunnableFunction(&[&]()
+		auto fn = [&]()
 		{
 			appendChild(child);
-			blocker = false;
-		}));
+			_blocker.store(false);
+		};
 
-		while (blocker);
+		runner->PostTask(NewCefRunnableFunction(&fn));
+
+		while (_blocker.load());
 	}
 
 	return shared_from_this();
@@ -542,15 +568,17 @@ ChromiumDOMElement::removeChild(AbstractDOMElement::Ptr child)
 	else
 	{
 		CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
-		std::atomic<bool> blocker = true;
+		_blocker.store(true);
 
-		runner->PostTask(NewCefRunnableFunction(&[&]()
+		auto fn = [&]()
 		{
 			removeChild(child);
-			blocker = false;
-		}));
+			_blocker.store(false);
+		};
 
-		while (blocker);
+		runner->PostTask(NewCefRunnableFunction(&fn));
+
+		while (_blocker.load());
 	}
 	return shared_from_this();
 }
@@ -577,15 +605,17 @@ ChromiumDOMElement::insertBefore(AbstractDOMElement::Ptr newNode, AbstractDOMEle
 	else
 	{
 		CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
-		std::atomic<bool> blocker = true;
+		_blocker.store(true);
 
-		runner->PostTask(NewCefRunnableFunction(&[&]()
+		auto fn = [&]()
 		{
 			insertBefore(newNode, refNode);
-			blocker = false;
-		}));
+			_blocker.store(false);
+		};
 
-		while (blocker);
+		runner->PostTask(NewCefRunnableFunction(&fn));
+
+		while (_blocker.load());
 	}
 
 	return shared_from_this();
@@ -614,15 +644,17 @@ ChromiumDOMElement::cloneNode(bool deep)
 	else
 	{
 		CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
-		std::atomic<bool> blocker = true;
+		_blocker.store(true);
 
-		runner->PostTask(NewCefRunnableFunction(&[&]()
+		auto fn = [&]()
 		{
 			element = cloneNode(deep);
-			blocker = false;
-		}));
+			_blocker.store(false);
+		};
 
-		while (blocker);
+		runner->PostTask(NewCefRunnableFunction(&fn));
+
+		while (_blocker.load());
 	}
 	return element;
 }
@@ -649,15 +681,17 @@ ChromiumDOMElement::getAttribute(std::string name)
 	else
 	{
 		CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
-		std::atomic<bool> blocker = true;
+		_blocker.store(true);
 
-		runner->PostTask(NewCefRunnableFunction(&[&]()
+		auto fn = [&]()
 		{
 			result = getAttribute(name);
-			blocker = false;
-		}));
+			_blocker.store(false);
+		};
 
-		while (blocker);
+		runner->PostTask(NewCefRunnableFunction(&fn));
+
+		while (_blocker.load());
 	}
 	return result;
 }
@@ -683,14 +717,16 @@ ChromiumDOMElement::setAttribute(std::string name, std::string value)
 	else
 	{
 		CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
-		std::atomic<bool> blocker = true;
+		_blocker.store(true);
 
-		runner->PostTask(NewCefRunnableFunction(&[&]()
+		auto fn = [&]()
 		{
 			setAttribute(name, value);
-			blocker = false;
-		}));
-		while (blocker);
+			_blocker.store(false);
+		};
+
+		runner->PostTask(NewCefRunnableFunction(&fn));
+		while (_blocker.load());
 	}
 }
 
@@ -717,14 +753,16 @@ ChromiumDOMElement::getElementsByTagName(std::string tagName)
 	else
 	{
 		CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
-		std::atomic<bool> blocker = true;
+		_blocker.store(true);
 
-		runner->PostTask(NewCefRunnableFunction(&[&]()
+		auto fn = [&]()
 		{
 			list = getElementsByTagName(tagName);
-			blocker = false;
-		}));
-		while (blocker);
+			_blocker.store(false);
+		};
+
+		runner->PostTask(NewCefRunnableFunction(&fn));
+		while (_blocker.load());
 	}
 	return list;
 }
@@ -749,14 +787,16 @@ ChromiumDOMElement::style(std::string name)
 	else
 	{
 		CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
-		std::atomic<bool> blocker = true;
+		_blocker.store(true);
 
-		runner->PostTask(NewCefRunnableFunction(&[&]()
+		auto fn = [&]()
 		{
 			result = style(name);
-			blocker = false;
-		}));
-		while (blocker);
+			_blocker.store(false);
+		};
+
+		runner->PostTask(NewCefRunnableFunction(&fn));
+		while (_blocker.load());
 	}
 	return result;
 }
@@ -773,14 +813,16 @@ ChromiumDOMElement::style(std::string name, std::string value)
 	else
 	{
 		CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
-		std::atomic<bool> blocker = true;
+		_blocker.store(true);
 
-		runner->PostTask(NewCefRunnableFunction(&[&]()
+		auto fn = [&]()
 		{
 			style(name, value);
-			blocker = false;
-		}));
-		while (blocker);
+			_blocker.store(false);
+		};
+
+		runner->PostTask(NewCefRunnableFunction(&fn));
+		while (_blocker.load());
 	}
 }
 
@@ -806,14 +848,16 @@ ChromiumDOMElement::addEventListener(std::string type)
 	else
 	{
 		CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
-		std::atomic<bool> blocker = true;
+		_blocker.store(true);
 
-		runner->PostTask(NewCefRunnableFunction(&[&]()
+		auto fn = [&]()
 		{
 			addEventListener(type);
-			blocker = false;
-		}));
-		while (blocker);
+			_blocker.store(false);
+		};
+
+		runner->PostTask(NewCefRunnableFunction(&fn));
+		while (_blocker.load());
 	}
 }
 

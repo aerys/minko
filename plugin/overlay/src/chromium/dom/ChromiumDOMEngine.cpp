@@ -49,22 +49,23 @@ ChromiumDOMEngine::~ChromiumDOMEngine()
 }
 
 ChromiumDOMEngine::Ptr
-ChromiumDOMEngine::create()
+ChromiumDOMEngine::create(int argc, char** argv)
 {
 	Ptr engine(new ChromiumDOMEngine());
 	engine->_impl->domEngine = engine;
-	engine->start();
+
+	engine->start(argc, argv);
 
 	return engine;
 }
 
 void
-ChromiumDOMEngine::start()
+ChromiumDOMEngine::start(int argc, char** argv)
 {
 #ifdef _WIN32
 	_impl->mainArgs = new CefMainArgs(GetModuleHandle(NULL));
 #else
-	_impl->mainArgs = new CefMainArgs(0, 0);
+	_impl->mainArgs = new CefMainArgs(argc, argv);
 #endif
 	_impl->app = new ChromiumApp();
 
@@ -88,22 +89,28 @@ ChromiumDOMEngine::initialize(AbstractCanvas::Ptr canvas, std::shared_ptr<compon
 	
 	auto options = minko::file::Options::create(_sceneManager->assets()->defaultOptions());
 	options->loadAsynchronously(false);
-	
-	auto overlayEffect = _sceneManager->assets()->effect("effect/Overlay.effect");
-
-	if (!overlayEffect)
-		throw std::logic_error("Overlay.effect has not been loaded.");
 
 	_overlayMaterial = material::BasicMaterial::create()->diffuseMap(texture);
 
-	auto quad = scene::Node::create("quad")
-		->addComponent(component::Surface::create(
-		geometry::QuadGeometry::create(sceneManager->assets()->context()),
-		_overlayMaterial,
-		overlayEffect
+	auto overlayEffect = _sceneManager->assets()->effect("effect/Overlay.effect");
+
+
+
+	if (overlayEffect)
+	{
+		auto quad = scene::Node::create("quad")
+			->addComponent(component::Surface::create(
+			geometry::QuadGeometry::create(sceneManager->assets()->context()),
+			_overlayMaterial,
+			overlayEffect
 		));
 
-	_sceneManager->getTarget(0)->addChild(quad);
+		_sceneManager->getTarget(0)->addChild(quad);
+	}
+	else
+	{
+		std::cout << "WARNING: Overlay.effect has not been loaded. Overlay will not be displayed" << std::endl;
+	}
 
 	float wRatio = (float)canvas->width() / (float)math::clp2(canvas->width());
 	float hRatio = (float)canvas->height() / (float)math::clp2(canvas->height());

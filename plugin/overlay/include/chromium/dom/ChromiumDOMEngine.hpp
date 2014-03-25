@@ -56,7 +56,7 @@ namespace chromium
 			
 			static
 			Ptr
-			create();
+			create(int argc, char** argv);
 
 			void
 			clear();
