@@ -49,8 +49,8 @@ namespace minko
 
 					scene_node->methodWrapper("getCollider", &LuaCollider::extractColliderFromNode);
 
-					state.Class<Collider>("Collider")
-						.property("colliderData",						&Collider::colliderData)
+					auto& collider = state.Class<Collider>("Collider")
+						.property("colliderData",						&Collider::colliderData)						
 						.method("create",								static_cast<Collider::Ptr (*)(ColliderDataPtr)>(&Collider::create))
 						.method("synchronizePhysicsWithGraphics",		&Collider::synchronizePhysicsWithGraphics)
 						.method("setLinearVelocity",					static_cast<Collider::Ptr (Collider::*)(Vector3Ptr)>				(&Collider::linearVelocity))
@@ -66,7 +66,15 @@ namespace minko
 						.method("setAngularFactor",						static_cast<Collider::Ptr (Collider::*)(Vector3Ptr)>				(&Collider::angularFactor))
 						.methodWrapper("getAngularFactor",				&LuaCollider::getAngularFactorsWrapper)
 						.method("setCanSleep",							static_cast<Collider::Ptr (Collider::*)(bool)>						(&Collider::canSleep))
-						.methodWrapper("getCanSleep",					&LuaCollider::getCanSleepWrapper);
+						.methodWrapper("getCanSleep",					&LuaCollider::getCanSleepWrapper)
+						.method("setCollisionGroup",					static_cast<Collider::Ptr(Collider::*)(short)>						(&Collider::collisionGroup))
+						.methodWrapper("getCollisionGroup",				&LuaCollider::getCollisionGroupWrapper)
+						.method("setCollisionMask",						static_cast<Collider::Ptr(Collider::*)(short)>						(&Collider::collisionMask))
+						.methodWrapper("getCollisionMask",				&LuaCollider::getCollisionMaskWrapper)
+						.methodWrapper("getTriggerCollisions",			&LuaCollider::getTriggerCollisionsWrapper);
+
+					MINKO_LUAGLUE_BIND_SIGNAL(state, Collider::Ptr, Collider::Ptr);
+					collider.property("collisionStarted", &Collider::collisionStarted);
 				}
 
 			private:
@@ -124,6 +132,27 @@ namespace minko
 				getCanSleepWrapper(bullet::Collider::Ptr collider, bool value)
 				{
 					return collider->canSleep(value);
+				}
+
+				static
+				int
+				getCollisionMaskWrapper(bullet::Collider::Ptr collider)
+				{
+					return collider->collisionMask();
+				}
+				
+				static
+				int
+				getCollisionGroupWrapper(bullet::Collider::Ptr collider)
+				{
+					return collider->collisionGroup();
+				}
+
+				static
+				bool
+				getTriggerCollisionsWrapper(bullet::Collider::Ptr collider)
+				{
+					return collider->triggerCollisions();
 				}
 			};
 		}

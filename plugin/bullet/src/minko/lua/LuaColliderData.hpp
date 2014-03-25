@@ -41,8 +41,11 @@ namespace minko
 				void
 				bind(LuaGlue& state)
 				{
-					auto colliderData = state.Class<ColliderData>("ColliderData")
-						/*.method("getMass",				&ColliderData::mass)
+					auto& colliderData = state.Class<ColliderData>("ColliderData")
+						.method("getMass", &ColliderData::mass);
+						/*.property("collisionStated", &ColliderData::collisionStarted);
+					MINKO_LUAGLUE_BIND_SIGNAL(state, ColliderData::Ptr, ColliderData::Ptr);
+						.method("getMass",				&ColliderData::mass)
 						.method("getInertia",			&ColliderData::inertia)
 						.method("getIsStatic",			&ColliderData::isStatic)
 						.method("setRestitution",		static_cast<void (ColliderData::*)(float)>(&ColliderData::restitution))
@@ -53,11 +56,11 @@ namespace minko
 						.method("getRollingFriction",	static_cast<float (ColliderData::*)(void) const>(&ColliderData::rollingFriction))
 						*/
 						//.property("triggeredCollision", &ColliderData::triggerCollisions, &ColliderData::triggerCollisions)
-						;
+						
 
-	/*				MINKO_LUAGLUE_BIND_SIGNAL(state, ColliderData::Ptr, ColliderData::Ptr);
-					collideData.method("collisionStated", &ColliderData::collisionStarted);
-					collideData.method("collisionEnded", &ColliderData::collisionEnded);
+					//MINKO_LUAGLUE_BIND_SIGNAL(state, ColliderData::Ptr, ColliderData::Ptr);
+					//colliderData.property("collisionStarted", &ColliderData::collisionStarted);
+					/*collideData.method("collisionEnded", &ColliderData::collisionEnded);
 					*/
 				}
 
