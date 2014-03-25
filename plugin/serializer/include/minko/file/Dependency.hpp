@@ -151,7 +151,10 @@ namespace minko
 
 		private:
 			void
-			copyEffectDependency(const std::ifstream& source, std::shared_ptr<render::Effect> effect, bool embedAll = false);
+			copyEffectDependency(const std::ifstream&                                   source,
+                                 std::shared_ptr<render::Effect>                        effect,
+                                 msgpack::type::tuple<short, short, std::string>&       result,
+                                 bool                                                   embedAll);
 
 			Dependency()
 			{
