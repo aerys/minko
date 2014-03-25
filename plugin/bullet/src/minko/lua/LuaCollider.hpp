@@ -27,8 +27,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	class LuaWrapper;
-
 	namespace component
 	{
 		namespace bullet
@@ -52,26 +50,23 @@ namespace minko
 					scene_node->methodWrapper("getCollider", &LuaCollider::extractColliderFromNode);
 
 					state.Class<Collider>("Collider")
-						.property("colliderData",					&Collider::colliderData)
-						.method("create",							static_cast<Collider::Ptr (*)(ColliderDataPtr)>(&Collider::create))
-						.method("synchronizePhysicsWithGraphics",	&Collider::synchronizePhysicsWithGraphics)
-						.method("show",								&Collider::show)
-						.method("hide",								&Collider::hide)
-						.method("extractCollider",					&LuaCollider::extractColliderFromNode)
-						.method("setLinearVelocity",				static_cast<Collider::Ptr (Collider::*)(Vector3Ptr)>				(&Collider::linearVelocity))
-						.method("getLinearVelocity",				&LuaCollider::getLinearVelocityWrapper)
-						.method("setAngularVelocity",				static_cast<Collider::Ptr (Collider::*)(Vector3Ptr)>				(&Collider::angularVelocity))
-						.method("getAngularVelocity",				&LuaCollider::getAngularVelocityWrapper)
-						.method("applyImpulse",						static_cast<Collider::Ptr (Collider::*)(Vector3Ptr, Vector3Ptr)>	(&Collider::applyImpulse))
-						.method("applyRelativeImpulse",				static_cast<Collider::Ptr (Collider::*)(Vector3Ptr, Vector3Ptr)>	(&Collider::applyRelativeImpulse))
-						.methodWrapper("applyCentralImpulse",				&LuaCollider::applyCentralImpulseWrapper)
-						.method("applyCentralRelativeImpulse",		&LuaCollider::applyCentralRelativeImpulse)
-						.method("setLinearFactor",					static_cast<Collider::Ptr (Collider::*)(Vector3Ptr)>				(&Collider::linearFactor))
-						.method("getLinearFactor",					&LuaCollider::getLinearFactorsWrapper)
-						.method("setAngularFactor",					static_cast<Collider::Ptr (Collider::*)(Vector3Ptr)>				(&Collider::angularFactor))
-						.method("getAngularFactor",					&LuaCollider::getAngularFactorsWrapper)
-						.method("setCanSleep",						static_cast<Collider::Ptr (Collider::*)(bool)>						(&Collider::canSleep))
-						.method("getCanSleep",						&LuaCollider::getCanSleepWrapper);
+						.property("colliderData",						&Collider::colliderData)
+						.method("create",								static_cast<Collider::Ptr (*)(ColliderDataPtr)>(&Collider::create))
+						.method("synchronizePhysicsWithGraphics",		&Collider::synchronizePhysicsWithGraphics)
+						.method("setLinearVelocity",					static_cast<Collider::Ptr (Collider::*)(Vector3Ptr)>				(&Collider::linearVelocity))
+						.methodWrapper("getLinearVelocity",				&LuaCollider::getLinearVelocityWrapper)
+						.method("setAngularVelocity",					static_cast<Collider::Ptr (Collider::*)(Vector3Ptr)>				(&Collider::angularVelocity))
+						.methodWrapper("getAngularVelocity",			&LuaCollider::getAngularVelocityWrapper)
+						.method("applyImpulse",							static_cast<Collider::Ptr (Collider::*)(Vector3Ptr, Vector3Ptr)>	(&Collider::applyImpulse))
+						.method("applyRelativeImpulse",					static_cast<Collider::Ptr (Collider::*)(Vector3Ptr, Vector3Ptr)>	(&Collider::applyRelativeImpulse))
+						.methodWrapper("applyCentralImpulse",			&LuaCollider::applyCentralImpulseWrapper)
+						.methodWrapper("applyCentralRelativeImpulse",	&LuaCollider::applyCentralRelativeImpulseWrapper)
+						.method("setLinearFactor",						static_cast<Collider::Ptr (Collider::*)(Vector3Ptr)>				(&Collider::linearFactor))
+						.methodWrapper("getLinearFactor",				&LuaCollider::getLinearFactorsWrapper)
+						.method("setAngularFactor",						static_cast<Collider::Ptr (Collider::*)(Vector3Ptr)>				(&Collider::angularFactor))
+						.methodWrapper("getAngularFactor",				&LuaCollider::getAngularFactorsWrapper)
+						.method("setCanSleep",							static_cast<Collider::Ptr (Collider::*)(bool)>						(&Collider::canSleep))
+						.methodWrapper("getCanSleep",					&LuaCollider::getCanSleepWrapper);
 				}
 
 			private:
@@ -119,7 +114,7 @@ namespace minko
 
 				static
 				bullet::Collider::Ptr
-				applyCentralRelativeImpulse(bullet::Collider::Ptr collider, Vector3Ptr impulse)
+				applyCentralRelativeImpulseWrapper(bullet::Collider::Ptr collider, Vector3Ptr impulse)
 				{
 					return collider->applyRelativeImpulse(impulse, nullptr);
 				}

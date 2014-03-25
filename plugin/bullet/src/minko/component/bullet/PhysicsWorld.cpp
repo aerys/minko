@@ -345,8 +345,7 @@ bullet::PhysicsWorld::updateColliders()
 			physicsModelToWorld
 		);
 
-		//data->updatePhysicsTransform(physicsModelToWorld); // triggers updating signals
-		collider->updatePhysicsTransform(physicsModelToWorld);
+		collider->setPhysicsTransform(physicsModelToWorld);
 	}
 }
 

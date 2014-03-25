@@ -243,10 +243,6 @@ createPhysicsObject(unsigned int id, file::AssetLibrary::Ptr assets, bool isCube
 		collider = bullet::Collider::create(sphColliderData);
 	}
 
-#ifdef DISPLAY_COLLIDERS
-	collider->show(assets);
-#endif // DISPLAY_COLLIDERS
-	
 	return scene::Node::create("physicsObject_" + std::to_string(id))
 		->addComponent(Transform::create(
 			Matrix4x4::create()
@@ -261,5 +257,9 @@ createPhysicsObject(unsigned int id, file::AssetLibrary::Ptr assets, bool isCube
 				->diffuseColor(diffColor),
 			assets->effect("phong")
 		))
-		->addComponent(collider);
+		->addComponent(collider)
+#ifdef DISPLAY_COLLIDERS
+		->addComponent(bullet::ColliderDebug::create(assets))
+#endif // DISPLAY_COLLIDERS
+		;
 }

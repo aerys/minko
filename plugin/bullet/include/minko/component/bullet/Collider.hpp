@@ -29,9 +29,6 @@ namespace minko
 	{
 		namespace bullet
 		{
-			class ColliderData;
-			class PhysicsWorld;
-
 			class Collider:
 				public AbstractComponent,
 				public std::enable_shared_from_this<Collider>
@@ -42,7 +39,7 @@ namespace minko
 
 			private:
 				typedef std::shared_ptr<file::AssetLibrary>			AssetLibraryPtr;
-				typedef std::shared_ptr<AbstractComponent>			AbsCtrlPtr;
+				typedef std::shared_ptr<AbstractComponent>			AbsCmpPtr;
 				typedef std::shared_ptr<scene::Node>				NodePtr;
 				typedef std::shared_ptr<scene::NodeSet>				NodeSetPtr;
 				typedef std::shared_ptr<math::Vector3>				Vector3Ptr;
@@ -71,14 +68,14 @@ namespace minko
 				Matrix4x4Ptr										_physicsTransform;
 				TransformPtr										_graphicsTransform;
 
-				NodePtr												_colliderDisplayNode;
-				
 				std::shared_ptr<Signal<Ptr>>						_propertiesChanged;
 				std::shared_ptr<Signal<Ptr, Ptr>>					_collisionStarted;
 				std::shared_ptr<Signal<Ptr, Ptr>>					_collisionEnded;
+				std::shared_ptr<Signal<Ptr, Matrix4x4Ptr>>			_physicsTransformChanged;
+				std::shared_ptr<Signal<Ptr, TransformPtr>>			_graphicsTransformChanged;
 
-				Signal<AbsCtrlPtr, NodePtr>::Slot					_targetAddedSlot;
-				Signal<AbsCtrlPtr, NodePtr>::Slot					_targetRemovedSlot;
+				Signal<AbsCmpPtr, NodePtr>::Slot					_targetAddedSlot;
+				Signal<AbsCmpPtr, NodePtr>::Slot					_targetRemovedSlot;
 				Signal<NodePtr, NodePtr, NodePtr>::Slot				_addedSlot;
 				Signal<NodePtr, NodePtr, NodePtr>::Slot				_removedSlot;
 																	
@@ -108,14 +105,11 @@ namespace minko
 				void
 				synchronizePhysicsWithGraphics();
 
-				void
-				updatePhysicsTransform(Matrix4x4Ptr);
-
 				Ptr
-				show(AssetLibraryPtr);
+				setPhysicsTransform(Matrix4x4Ptr);
 
-				Ptr
-				hide();
+				Matrix4x4Ptr
+				getPhysicsTransform(Matrix4x4Ptr = nullptr) const;
 
 				inline
 				NodePtr
@@ -282,6 +276,20 @@ namespace minko
 					return _collisionEnded;
 				}
 
+				inline
+				std::shared_ptr<Signal<Ptr, Matrix4x4Ptr>>
+				physicsTransformChanged() const
+				{
+					return _physicsTransformChanged;
+				}
+
+				inline
+				std::shared_ptr<Signal<Ptr, TransformPtr>>
+				graphicsTransformChanged() const
+				{
+					return _graphicsTransformChanged;
+				}
+
 			private:
 				Collider(ColliderDataPtr);
 
@@ -292,10 +300,10 @@ namespace minko
 				initializeFromNode(NodePtr);
 
 				void
-				targetAddedHandler(AbsCtrlPtr, NodePtr);
+				targetAddedHandler(AbsCmpPtr, NodePtr);
 
 				void
-				targetRemovedHandler(AbsCtrlPtr, NodePtr);
+				targetRemovedHandler(AbsCmpPtr, NodePtr);
 
 				void 
 				addedHandler(NodePtr, NodePtr, NodePtr);

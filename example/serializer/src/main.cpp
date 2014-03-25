@@ -73,7 +73,7 @@ openSceneExample(std::shared_ptr<file::AssetLibrary>	assets,
 		->where([](Node::Ptr n){ return n->hasComponent<component::bullet::Collider>(); });
 
 	for (auto& n : withColliders->nodes())
-		n->component<component::bullet::Collider>()->show(assets);
+		n->addComponent(bullet::ColliderDebug::create(assets));
 }
 
 int main(int argc, char** argv)
