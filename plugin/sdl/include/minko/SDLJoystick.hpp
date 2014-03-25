@@ -61,7 +61,6 @@ namespace minko
         static Button GetNativeButton(Button htmlButton);
         static std::string GetButtonName(Button button);
 
-
     private:
         SDLJoystick(std::shared_ptr<Canvas> canvas, int joystickId, SDL_Joystick* joystick);
     };

@@ -43,6 +43,12 @@ function main:start(root)
 		root:addChild(self.cube)
 	end)
 
+	-- Joystick connect event
+	self.joystick = self.canvas:joystick(1)
+	self.joystickButtonDown = self.joystick.joystickButtonDown:connect(function(joystick, which, button)						
+		print("Button " .. button .. " pressed")
+	end)
+
 	assets:load()
 end
 
@@ -64,7 +70,7 @@ function main:update(node)
 		self.cube:getTransform().matrix:appendTranslation(0, 0, 0.01)
 	end
 
-	-- Test keys
+	-- Test keyboard
 	if keyboard:keyIsDown(Key.CANCEL) then
 		print'CANCEL'
 	end
