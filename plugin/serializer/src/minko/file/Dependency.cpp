@@ -162,7 +162,7 @@ Dependency::getEffectReference(uint effectId)
 }
 
 std::vector<msgpack::type::tuple<short, short, std::string>>
-Dependency::serialize(std::shared_ptr<file::AssetLibrary>	assetLibrary, 
+Dependency::serialize(std::shared_ptr<file::AssetLibrary>	assetLibrary,
 					  std::shared_ptr<file::Options>		options)
 {
 	GeometryWriter::Ptr geometryWriter = GeometryWriter::create();
@@ -177,24 +177,50 @@ Dependency::serialize(std::shared_ptr<file::AssetLibrary>	assetLibrary,
 
 	while (itGeometry != _geometryDependencies.end())
 	{
-		std::string filename = assetLibrary->geometryName(itGeometry->first) + ".geometry";
+        std::string content;
 
-		geometryWriter->data(itGeometry->first);
-		geometryWriter->write(filename, assetLibrary, options);
+        geometryWriter->data(itGeometry->first);
 
-		msgpack::type::tuple<short, short, std::string> res(0, itGeometry->second, filename);
+        if (options->embedAll())
+        {
+            auto filename = assetLibrary->geometryName(itGeometry->first) + ".geometry";
+
+            geometryWriter->write(filename, assetLibrary, options);
+
+            content = filename;
+        }
+        else
+        {
+            auto geometryDependency = Dependency::create();
+
+            content = geometryWriter->embed(assetLibrary, options, geometryDependency);
+        }
+
+		msgpack::type::tuple<short, short, std::string> res(0, itGeometry->second, content);
 		serializedAsset.push_back(res);
 		itGeometry++;
 	}
 
 	while (itMaterial != _materialDependencies.end())
 	{
-		std::string filename = assetLibrary->materialName(itMaterial->first) + ".material";
+        std::string content;
 
-		materialWriter->data(itMaterial->first);
-		materialWriter->write(filename, assetLibrary, options);
+        materialWriter->data(itMaterial->first);
 
-		msgpack::type::tuple<short, short, std::string> res(1, itMaterial->second, filename);
+        if (options->embedAll())
+        {
+            auto filename = assetLibrary->materialName(itMaterial->first) + ".material";
+
+            materialWriter->write(filename, assetLibrary, options);
+        }
+        else
+        {
+            auto materialDependency = Dependency::create();
+
+            content = materialWriter->embed(assetLibrary, options, materialDependency);
+        }
+
+		msgpack::type::tuple<short, short, std::string> res(1, itMaterial->second, content);
 		serializedAsset.push_back(res);
 		itMaterial++;
 	}
@@ -206,20 +232,38 @@ Dependency::serialize(std::shared_ptr<file::AssetLibrary>	assetLibrary,
 #else
 		std::string filenameInput	= assetLibrary->textureName(itTexture->first);
 #endif
-		std::string filenameOutput	= "";
+        std::ifstream source(filenameInput, std::ios::binary);
 
-		for (int charIndex = filenameInput.size() - 1; charIndex >= 0 && filenameInput[charIndex] != '/'; --charIndex)
-			filenameOutput.insert(0, filenameInput.substr(charIndex, 1));
-		std::ifstream source(filenameInput, std::ios::binary);
-		std::ofstream dst(filenameOutput, std::ios::binary);
+        std::string content;
 
-		dst << source.rdbuf();
+        if (options->embedAll())
+        {
+            content = std::string(std::istreambuf_iterator<char>(source),
+                                  std::istreambuf_iterator<char>());
+        }
+        else
+        {
+            std::string filenameOutput	= "";
 
-		source.close();
-		dst.close();
+            for (int charIndex = filenameInput.size() - 1;
+                 charIndex >= 0 && filenameInput[charIndex] != '/';
+                 --charIndex)
+            {
+                filenameOutput.insert(0, filenameInput.substr(charIndex, 1));
+            }
 
-		msgpack::type::tuple<short, short, std::string> res(2, itTexture->second, filenameOutput);
-		
+            std::ofstream dst(filenameOutput, std::ios::binary);
+
+            dst << source.rdbuf();
+
+            source.close();
+            dst.close();
+
+            content = filenameOutput;
+        }
+
+		msgpack::type::tuple<short, short, std::string> res(2, itTexture->second, content);
+
 		serializedAsset.insert(serializedAsset.begin(), res);
 		itTexture++;
 	}
@@ -231,20 +275,39 @@ Dependency::serialize(std::shared_ptr<file::AssetLibrary>	assetLibrary,
 #else
 		std::string filenameInput	= assetLibrary->effectName(itEffect->first);
 #endif
-		std::string filenameOutput	= "";
-		copyEffectDependency(filenameInput, itEffect->first);
-		for (int charIndex = filenameInput.size() - 1; charIndex >= 0 && filenameInput[charIndex] != '/'; --charIndex)
-			filenameOutput.insert(0, filenameInput.substr(charIndex, 1));
-
 		std::ifstream source(filenameInput, std::ios::binary);
-		std::ofstream dst(filenameOutput, std::ios::binary);
 
-		dst << source.rdbuf();
+		copyEffectDependency(source, itEffect->first, options->embedAll());
 
-		source.close();
-		dst.close();
+        std::string content;
 
-		msgpack::type::tuple<short, short, std::string> res(3, itEffect->second, filenameOutput);
+        if (options->embedAll())
+        {
+            content = std::string(std::istreambuf_iterator<char>(source),
+                                  std::istreambuf_iterator<char>());
+        }
+        else
+        {
+            std::string filenameOutput	= "";
+
+            for (int charIndex = filenameInput.size() - 1;
+                 charIndex >= 0 && filenameInput[charIndex] != '/';
+                 --charIndex)
+            {
+                filenameOutput.insert(0, filenameInput.substr(charIndex, 1));
+            }
+
+            std::ofstream dst(filenameOutput, std::ios::binary);
+
+            dst << source.rdbuf();
+
+            source.close();
+            dst.close();
+
+            content = filenameOutput;
+        }
+
+		msgpack::type::tuple<short, short, std::string> res(3, itEffect->second, content);
 		serializedAsset.insert(serializedAsset.begin(), res);
 		itEffect++;
 	}
@@ -253,15 +316,14 @@ Dependency::serialize(std::shared_ptr<file::AssetLibrary>	assetLibrary,
 }
 
 void
-Dependency::copyEffectDependency(std::string effectFile, std::shared_ptr<render::Effect> effect)
+Dependency::copyEffectDependency(const std::ifstream& source, std::shared_ptr<render::Effect> effect, bool embedAll)
 {
 	std::stringstream	effectContent;
-	std::ifstream		source(effectFile, std::ios::binary);
 	std::size_t			found;
 
 	effectContent << source.rdbuf();
 
-	uint i = 0; 
+	uint i = 0;
 
 	while ((found = effectContent.str().find(".glsl", i)) != std::string::npos)
 	{
@@ -280,15 +342,20 @@ Dependency::copyEffectDependency(std::string effectFile, std::shared_ptr<render:
 		std::ifstream dependencySource("effect/" + dependencyFile, std::ios::binary);
 #endif
 
-		std::ofstream dst(dependencyFile, std::ios::binary);
-		
-		dst << dependencySource.rdbuf();
+        if (embedAll)
+        {
+            // TODO find a way to add effect dep' to serialized scene
+        }
+        else
+        {
+            std::ofstream dst(dependencyFile, std::ios::binary);
 
-		dependencySource.close();
-		dst.close();
+            dst << dependencySource.rdbuf();
+
+            dependencySource.close();
+            dst.close();
+        }
 
 		i = (found + 6);
 	}
-
-	source.close();
 }

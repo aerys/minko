@@ -146,12 +146,12 @@ namespace minko
 			registerReference(uint referenceId, std::shared_ptr<scene::Node> subScene);
 
 			std::vector<msgpack::type::tuple<short, short, std::string>>
-			serialize(std::shared_ptr<file::AssetLibrary>	assetLibrary, 
+			serialize(std::shared_ptr<file::AssetLibrary>	assetLibrary,
 					  std::shared_ptr<file::Options>		options);
 
 		private:
 			void
-			copyEffectDependency(std::string effectFile, std::shared_ptr<render::Effect> effect);
+			copyEffectDependency(const std::ifstream& source, std::shared_ptr<render::Effect> effect, bool embedAll = false);
 
 			Dependency()
 			{
