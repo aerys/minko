@@ -38,6 +38,9 @@ namespace minko
 
         static const std::map<Button, std::string> ButtonNames;
         static const std::map<Button, Button> NativeToHtmlMap;
+        static const std::map<Button, Button> HtmlToNativeMap;
+
+        Button GetHtmlButton(Button button);
 
     public:
         static inline
@@ -55,7 +58,7 @@ namespace minko
         }
 
         bool isButtonDown(Button button);
-        static Button GetHtmlButton(Button button);
+        static Button GetNativeButton(Button htmlButton);
         static std::string GetButtonName(Button button);
 
 

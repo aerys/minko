@@ -57,6 +57,28 @@ const std::map<SDLJoystick::Button, SDLJoystick::Button> SDLJoystick::NativeToHt
     { Button::RT, Button::R3 },
 };
 
+const std::map<SDLJoystick::Button, SDLJoystick::Button> SDLJoystick::HtmlToNativeMap =
+{
+    { Button::X, Button::DPadUp },
+    { Button::Y, Button::DPadDown },
+    { Button::Home, Button::DPadLeft },
+    { Button::LT, Button::DPadRight },
+    { Button::RB, Button::Start },
+    { Button::LB, Button::Select },
+    { Button::A, Button::L3 },
+    { Button::B, Button::R3 },
+    { Button::Start, Button::LB },
+    { Button::Select, Button::RB },
+    { Button::DPadUp, Button::A },
+    { Button::DPadDown, Button::B },
+    { Button::DPadLeft, Button::X },
+    { Button::DPadRight, Button::Y },
+    { Button::Nothing, Button::Home },
+    { Button::L3, Button::LT },
+    { Button::R3, Button::RT },
+};
+
+
 const std::map<SDLJoystick::Button, std::string> SDLJoystick::ButtonNames =
 {
     { Button::DPadUp, "DPadUp" },
@@ -109,13 +131,24 @@ SDLJoystick::Button SDLJoystick::GetHtmlButton(Button button)
     return htmlButton->second;
 }
 
+SDLJoystick::Button SDLJoystick::GetNativeButton(Button htmlButton)
+{
+    auto button = HtmlToNativeMap.find(htmlButton);
+
+    // This button is not mapped
+    if (button == HtmlToNativeMap.end())
+        return Button::Nothing;
+
+    return button->second;
+}
+
 std::string SDLJoystick::GetButtonName(Button button)
 {
     auto buttonName = ButtonNames.find(button);
 
     // This button is not mapped
     if (buttonName == ButtonNames.end())
-        return "";
+        return "[NULL]";
 
     return buttonName->second;
 }

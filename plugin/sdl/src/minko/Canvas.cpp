@@ -486,17 +486,18 @@ Canvas::step()
         }
         case SDL_JOYBUTTONDOWN:
         {
-            auto button = event.jbutton.button;
+            int button = event.jbutton.button;
 
 # if defined(EMSCRIPTEN)
-            auto htmlButton = SDLJoystick::GetHtmlButton(static_cast<SDLJoystick::Button>(button));
+            auto htmlButton = static_cast<SDLJoystick::Button>(button);
+            auto nativeButton = SDLJoystick::GetNativeButton(htmlButton);
 
-            if (htmlButton != SDLJoystick::Button::Nothing)
-                button = static_cast<Uint8>(htmlButton);
+            if (nativeButton != SDLJoystick::Button::Nothing)
+                button = static_cast<int>(nativeButton);
 #endif // EMSCRIPTEN
 
 # if defined(DEBUG)
-            std::cout << "Joystick " << event.jbutton.which
+            std::cout << "Joystick " << static_cast<int>(event.jbutton.which)
                 << " button " << SDLJoystick::GetButtonName(static_cast<SDLJoystick::Button>(button))
                 << " (" << static_cast<int>(button) << ") down" << std::endl;
 #endif // DEBUG
@@ -511,14 +512,15 @@ Canvas::step()
             auto button = event.jbutton.button;
 
 # if defined(EMSCRIPTEN)
-            auto htmlButton = SDLJoystick::GetHtmlButton(static_cast<SDLJoystick::Button>(button));
+            auto htmlButton = static_cast<SDLJoystick::Button>(button);
+            auto nativeButton = SDLJoystick::GetNativeButton(htmlButton);
 
-            if (htmlButton != SDLJoystick::Button::Nothing)
-                button = static_cast<Uint8>(htmlButton);
+            if (nativeButton != SDLJoystick::Button::Nothing)
+                button = static_cast<int>(nativeButton);
 #endif // EMSCRIPTEN
 
 # if defined(DEBUG)
-            std::cout << "Joystick " << event.jbutton.which
+            std::cout << "Joystick " << static_cast<int>(event.jbutton.which)
                 << " button " << SDLJoystick::GetButtonName(static_cast<SDLJoystick::Button>(button)) 
                 << " (" << static_cast<int>(button) << ") up" << std::endl; 
 #endif // DEBUG
