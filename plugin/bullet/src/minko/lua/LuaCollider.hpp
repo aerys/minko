@@ -69,12 +69,14 @@ namespace minko
 						.methodWrapper("getCanSleep",					&LuaCollider::getCanSleepWrapper)
 						.method("setCollisionGroup",					static_cast<Collider::Ptr(Collider::*)(short)>						(&Collider::collisionGroup))
 						.methodWrapper("getCollisionGroup",				&LuaCollider::getCollisionGroupWrapper)
-						.method("setCollisionMask",						static_cast<Collider::Ptr(Collider::*)(short)>						(&Collider::collisionMask))
+						.methodWrapper("setCollisionGroup",				&LuaCollider::setCollisionGroupWrapper)
 						.methodWrapper("getCollisionMask",				&LuaCollider::getCollisionMaskWrapper)
+						.methodWrapper("setCollisionMask",				&LuaCollider::setCollisionMaskWrapper)
 						.methodWrapper("getTriggerCollisions",			&LuaCollider::getTriggerCollisionsWrapper);
 
 					MINKO_LUAGLUE_BIND_SIGNAL(state, Collider::Ptr, Collider::Ptr);
-					collider.property("collisionStarted", &Collider::collisionStarted);
+					collider.property("collisionStarted",	&Collider::collisionStarted);
+					collider.property("collisionEnded",		&Collider::collisionEnded);
 				}
 
 			private:
@@ -140,12 +142,26 @@ namespace minko
 				{
 					return collider->collisionMask();
 				}
-				
+
+				static
+				bullet::Collider::Ptr
+				setCollisionMaskWrapper(bullet::Collider::Ptr collider, int value)
+				{
+					return collider->collisionMask(short(value));
+				}
+
 				static
 				int
 				getCollisionGroupWrapper(bullet::Collider::Ptr collider)
 				{
 					return collider->collisionGroup();
+				}
+
+				static
+				bullet::Collider::Ptr
+				setCollisionGroupWrapper(bullet::Collider::Ptr collider, int value)
+				{
+					return collider->collisionGroup(short(value));
 				}
 
 				static

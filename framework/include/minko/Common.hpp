@@ -47,6 +47,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include <future>
 #include <thread>
 #include <chrono>
+#include <bitset>
 
 #include "minko/math/Convertible.hpp"
 
