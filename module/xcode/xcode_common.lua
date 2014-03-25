@@ -364,7 +364,8 @@
 		if #list > 0 then
 			_p(4,'%s = (', tag)
 			for _, item in ipairs(list) do
-				_p(5, '"%s",', item)
+				local quoted = string.sub(item, 1, 1) == '"'
+				_p(5, quoted and '%s,' or '"%s",', item)
 			end
 			_p(4,');')
 		end
