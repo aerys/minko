@@ -15,6 +15,8 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 	includedirs { "lib/lua/include" }
 	excludes { "lib/lua/src/luac.c" }
 
+	defines { "LUA_COMPAT_ALL" } -- allow loading of older modules (LuaSocket, for debugging)
+
 	configuration { "debug" }
 		defines { "LUA_USE_APICHECK" }
 
