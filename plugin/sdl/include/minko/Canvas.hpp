@@ -198,6 +198,8 @@ namespace minko
 #else
 		SDL_Window*												_window;
 #endif
+		float													_relativeTime;
+		float													_frameDuration;
         time_point                                              _previousTime;
         time_point                                              _startTime;
 		float													_framerate;
@@ -359,6 +361,22 @@ namespace minko
 		desiredFramerate(float desiredFramerate)
 		{
 			_desiredFramerate = desiredFramerate;
+		}
+
+		// Current frame execution time in milliseconds.
+		inline
+		float
+		frameDuration() const
+		{
+			return _frameDuration;
+		}
+
+		// Time in milliseconds since application started.
+		inline
+		float
+		relativeTime() const
+		{
+			return _relativeTime;
 		}
 
 		WorkerPtr

@@ -47,7 +47,7 @@ MaterialWriter::embed(std::shared_ptr<AssetLibrary>		assetLibrary,
 
 	for (std::string structuredPropertyName : material->propertyNames())
 	{
-		std::string propertyName = (structuredPropertyName).substr(material->arrayName().size() + 1);
+		std::string propertyName = (structuredPropertyName).substr(material->arrayName().size() + 4);
 
 		if (serializeMaterialValue<uint>(material, propertyName, assetLibrary, &serializedComplexProperties, &serializedBasicProperties, dependency))
 			continue;
@@ -85,7 +85,7 @@ MaterialWriter::embed(std::shared_ptr<AssetLibrary>		assetLibrary,
 
 	msgpack::type::tuple<std::vector<ComplexPropertyTuple>, std::vector<BasicPropertyTuple>> res(
 		serializedComplexProperties, serializedBasicProperties);
-	
+
 	std::stringstream sbuf;
 	msgpack::pack(sbuf, res);
 

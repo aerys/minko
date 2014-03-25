@@ -58,7 +58,7 @@ void
 toogleParticlesEmittingState(Node::Ptr);
 
 void
-openSceneExample(std::shared_ptr<file::AssetLibrary>	assets, 
+openSceneExample(std::shared_ptr<file::AssetLibrary>	assets,
 				 std::shared_ptr<scene::Node>			root)
 {
 	auto sceneNode = assets->symbol(MODEL_FILENAME);
@@ -144,18 +144,18 @@ int main(int argc, char** argv)
 		auto cubeMaterial = material::BasicMaterial::create()
 			->diffuseMap(assets->texture("texture/box.png"))
 			->diffuseColor(math::Vector4::create(1.f, 0.f, 0.f, 1.f))
-			->blendMode(render::Blending::Mode::DEFAULT)
+//			->blendMode(render::Blending::Mode::DEFAULT)
 			->set<render::TriangleCulling>("triangleCulling", render::TriangleCulling::BACK);
 
 		auto sphereMaterial = material::BasicMaterial::create()
 			->diffuseMap(assets->texture("texture/box.png"))
 			->diffuseColor(math::Vector4::create(0.f, 1.f, 0.f, 0.2f))
-			->blendMode(render::Blending::Mode::ALPHA)
+//			->blendMode(render::Blending::Mode::ALPHA)
 			->set<render::TriangleCulling>("triangleCulling", render::TriangleCulling::FRONT);
 
 		assets->material("boxMaterial", cubeMaterial);
 		assets->material("sphereMaterial", sphereMaterial);
-		
+
 		mesh->addComponent(Surface::create(
 				assets->geometry("sphere"),
 				assets->material("sphereMaterial"),
@@ -176,7 +176,7 @@ int main(int argc, char** argv)
 		root->addChild(mesh);
 		root->addChild(mesh2);
 		root->addChild(mesh3);
-		
+
 		mesh2->component<Transform>()->matrix()->appendTranslation(0, 1, 0);
 		mesh3->component<Transform>()->matrix()->appendTranslation(0, -1, 0);
 #endif
