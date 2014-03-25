@@ -253,6 +253,9 @@ namespace minko
 		uint
 		height();
 
+		int
+		getJoystickAxis(input::Joystick::Ptr joystick, int axis);
+
 		inline
 		std::shared_ptr<data::Provider>
 		data() const
@@ -411,9 +414,6 @@ namespace minko
 
 	public:
 		void
-		step();
-
-		int
-		getJoystickAxis(input::Joystick::Ptr joystick, int axis);
+		step();		
 	};
 }

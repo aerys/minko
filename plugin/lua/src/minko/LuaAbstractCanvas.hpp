@@ -36,13 +36,13 @@ namespace minko
 		bind(LuaGlue& state)
 		{
 			auto& abstractCanvas = state.Class<AbstractCanvas>("AbstractCanvas")
-				.property("width",		    &AbstractCanvas::width)
-				.property("height",		    &AbstractCanvas::height)
-				.property("mouse", 		    &AbstractCanvas::mouse)
-				.property("keyboard",	    &AbstractCanvas::keyboard)
-				.property("numJoysticks",	&AbstractCanvas::numJoysticks)
-				.methodWrapper("joystick", &LuaAbstractCanvas::joystickWrapper)
-				.methodWrapper("getJoystickAxis", &LuaAbstractCanvas::getJoystickAxisWrapper);
+				.property("width",					&AbstractCanvas::width)
+				.property("height",					&AbstractCanvas::height)
+				.property("mouse", 					&AbstractCanvas::mouse)
+				.property("keyboard",				&AbstractCanvas::keyboard)
+				.property("numJoysticks",			&AbstractCanvas::numJoysticks)
+				.methodWrapper("getJoystickAxis",   &LuaAbstractCanvas::getJoystickAxisWrapper)
+				.methodWrapper("joystick",			&LuaAbstractCanvas::joystickWrapper);
 		    MINKO_LUAGLUE_BIND_SIGNAL(state, AbstractCanvas::Ptr);
 		    MINKO_LUAGLUE_BIND_SIGNAL(state, AbstractCanvas::Ptr, uint, uint);
 			MINKO_LUAGLUE_BIND_SIGNAL(state, AbstractCanvas::Ptr, input::Joystick::Ptr);
@@ -63,8 +63,7 @@ namespace minko
 		static
 		int
 		getJoystickAxisWrapper(AbstractCanvas::Ptr c, std::shared_ptr<input::Joystick> joystick, int axis)
-		{
-			std::cout << "wrapper pass" << std::endl;
+		{			
 			return c->getJoystickAxis(joystick, axis);
 		}
 	};

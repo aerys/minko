@@ -685,6 +685,5 @@ Canvas::getWorker(const std::string& name)
 int
 Canvas::getJoystickAxis(input::Joystick::Ptr joystick, int axis)
 {
-	std::cout << "main pass" << std::endl;
 	return SDL_JoystickGetAxis(SDL_JoystickOpen(joystick->joystickId()), axis);
 }
