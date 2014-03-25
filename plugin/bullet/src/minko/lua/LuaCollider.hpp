@@ -64,7 +64,7 @@ namespace minko
 						.method("getAngularVelocity",				&LuaCollider::getAngularVelocityWrapper)
 						.method("applyImpulse",						static_cast<Collider::Ptr (Collider::*)(Vector3Ptr, Vector3Ptr)>	(&Collider::applyImpulse))
 						.method("applyRelativeImpulse",				static_cast<Collider::Ptr (Collider::*)(Vector3Ptr, Vector3Ptr)>	(&Collider::applyRelativeImpulse))
-						.method("applyCentralImpulse",				&LuaCollider::applyCentralImpulse)
+						.methodWrapper("applyCentralImpulse",				&LuaCollider::applyCentralImpulseWrapper)
 						.method("applyCentralRelativeImpulse",		&LuaCollider::applyCentralRelativeImpulse)
 						.method("setLinearFactor",					static_cast<Collider::Ptr (Collider::*)(Vector3Ptr)>				(&Collider::linearFactor))
 						.method("getLinearFactor",					&LuaCollider::getLinearFactorsWrapper)
@@ -112,7 +112,7 @@ namespace minko
 
 				static
 				bullet::Collider::Ptr
-				applyCentralImpulse(bullet::Collider::Ptr collider, Vector3Ptr impulse)
+				applyCentralImpulseWrapper(bullet::Collider::Ptr collider, Vector3Ptr impulse)
 				{
 					return collider->applyImpulse(impulse, nullptr);
 				}

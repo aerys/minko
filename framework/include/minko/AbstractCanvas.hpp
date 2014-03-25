@@ -77,6 +77,10 @@ namespace minko
 		joystickRemoved() = 0;
 
 		virtual
+		int
+		getJoystickAxis(std::shared_ptr<input::Joystick> joystick, int axis) = 0;
+
+		virtual
 		std::shared_ptr<async::Worker>
 		getWorker(const std::string& name) = 0;
 
