@@ -37,13 +37,13 @@ void
 joystickButtonDownHandler(input::Joystick::Ptr joystick, int which, int buttonId)
 {
     if (static_cast<input::Joystick::Button>(buttonId) == input::Joystick::Button::DPadUp)
-        joystickToCube[joystick]->component<Transform>()->matrix()->appendTranslation(0.f, 0.f, -0.1f);
-    if (static_cast<input::Joystick::Button>(buttonId) == input::Joystick::Button::DPadDown)
         joystickToCube[joystick]->component<Transform>()->matrix()->appendTranslation(0.f, 0.f, 0.1f);
+    if (static_cast<input::Joystick::Button>(buttonId) == input::Joystick::Button::DPadDown)
+        joystickToCube[joystick]->component<Transform>()->matrix()->appendTranslation(0.f, 0.f, -0.1f);
     if (static_cast<input::Joystick::Button>(buttonId) == input::Joystick::Button::DPadLeft)
-        joystickToCube[joystick]->component<Transform>()->matrix()->appendTranslation(-.1f);
-    if (static_cast<input::Joystick::Button>(buttonId) == input::Joystick::Button::DPadRight)
         joystickToCube[joystick]->component<Transform>()->matrix()->appendTranslation(.1f);
+    if (static_cast<input::Joystick::Button>(buttonId) == input::Joystick::Button::DPadRight)
+        joystickToCube[joystick]->component<Transform>()->matrix()->appendTranslation(-.1f);
 }
 
 int
@@ -132,10 +132,40 @@ main(int argc, char** argv)
 
             for (auto it = joysticks.begin(); it != joysticks.end(); ++it)
             {
+                if (it->second->isButtonDown(input::Joystick::Button::DPadUp))
+                    std::cout << "DPadUp pressed !" << std::endl;
+                if (it->second->isButtonDown(input::Joystick::Button::DPadDown))
+                    std::cout << "DPadDown pressed !" << std::endl;
+                if (it->second->isButtonDown(input::Joystick::Button::DPadLeft))
+                    std::cout << "DPadLeft pressed !" << std::endl;
+                if (it->second->isButtonDown(input::Joystick::Button::DPadRight))
+                    std::cout << "DPadRight pressed !" << std::endl;
+                if (it->second->isButtonDown(input::Joystick::Button::Start))
+                    std::cout << "Start pressed !" << std::endl;
+                if (it->second->isButtonDown(input::Joystick::Button::Select))
+                    std::cout << "Select pressed !" << std::endl;
+                if (it->second->isButtonDown(input::Joystick::Button::L3))
+                    std::cout << "L3 pressed !" << std::endl;
+                if (it->second->isButtonDown(input::Joystick::Button::R3))
+                    std::cout << "R3 pressed !" << std::endl;
+                if (it->second->isButtonDown(input::Joystick::Button::LB))
+                    std::cout << "LB pressed !" << std::endl;
+                if (it->second->isButtonDown(input::Joystick::Button::RB))
+                    std::cout << "RB pressed !" << std::endl;
                 if (it->second->isButtonDown(input::Joystick::Button::A))
-                {
                     std::cout << "A pressed !" << std::endl;
-                }
+                if (it->second->isButtonDown(input::Joystick::Button::B))
+                    std::cout << "B pressed !" << std::endl;
+                if (it->second->isButtonDown(input::Joystick::Button::X))
+                    std::cout << "X pressed !" << std::endl;
+                if (it->second->isButtonDown(input::Joystick::Button::Y))
+                    std::cout << "Y pressed !" << std::endl;
+                if (it->second->isButtonDown(input::Joystick::Button::Home))
+                    std::cout << "Home pressed !" << std::endl;
+                if (it->second->isButtonDown(input::Joystick::Button::LT))
+                    std::cout << "LT pressed !" << std::endl;
+                if (it->second->isButtonDown(input::Joystick::Button::RT))
+                    std::cout << "RT pressed !" << std::endl;
             }
 
         });

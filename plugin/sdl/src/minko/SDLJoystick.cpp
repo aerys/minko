@@ -36,7 +36,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 using namespace minko;
 
-const std::map<SDLJoystick::Button, SDLJoystick::Button> SDLJoystick::nativeToHtmlMap =
+const std::map<SDLJoystick::Button, SDLJoystick::Button> SDLJoystick::NativeToHtmlMap =
 {
     { Button::DPadUp, Button::X },
     { Button::DPadDown, Button::Y },
@@ -57,6 +57,27 @@ const std::map<SDLJoystick::Button, SDLJoystick::Button> SDLJoystick::nativeToHt
     { Button::RT, Button::R3 },
 };
 
+const std::map<SDLJoystick::Button, std::string> SDLJoystick::ButtonNames =
+{
+    { Button::DPadUp, "DPadUp" },
+    { Button::DPadDown, "DPadDown" },
+    { Button::DPadLeft, "DPadLeft" },
+    { Button::DPadRight, "DPadRight" },
+    { Button::Start, "Start" },
+    { Button::Select, "Select" },
+    { Button::L3, "L3" },
+    { Button::R3, "R3" },
+    { Button::LB, "LB" },
+    { Button::RB, "RB" },
+    { Button::A, "A" },
+    { Button::B, "B" },
+    { Button::X, "X" },
+    { Button::Y, "Y" },
+    { Button::Home, "Home" },
+    { Button::LT, "LT" },
+    { Button::RT, "RT" },
+};
+
 SDLJoystick::SDLJoystick(std::shared_ptr<Canvas> canvas, int joystickId, SDL_Joystick* joystick) :
     input::Joystick(canvas, joystickId),
     _joystick(joystick)
@@ -66,14 +87,35 @@ SDLJoystick::SDLJoystick(std::shared_ptr<Canvas> canvas, int joystickId, SDL_Joy
 bool SDLJoystick::isButtonDown(Button button)
 {
 #if defined EMSCRIPTEN
-    auto realButton = nativeToHtmlMap.find(button);
+    auto htmlButton = GetHtmlButton(button);
 
-    // This button is not mapped
-    if (realButton == nativeToHtmlMap.end())
+    if (htmlButton == Button::Nothing)
         return false;
 
-    return SDL_JoystickGetButton(_joystick, static_cast<int>(realButton->second));
+    return SDL_JoystickGetButton(_joystick, static_cast<int>(htmlButton));
 #else
     return SDL_JoystickGetButton(_joystick, static_cast<int>(button));
 #endif
+}
+
+SDLJoystick::Button SDLJoystick::GetHtmlButton(Button button)
+{
+    auto htmlButton = NativeToHtmlMap.find(button);
+
+    // This button is not mapped
+    if (htmlButton == NativeToHtmlMap.end())
+        return Button::Nothing;
+
+    return htmlButton->second;
+}
+
+std::string SDLJoystick::GetButtonName(Button button)
+{
+    auto buttonName = ButtonNames.find(button);
+
+    // This button is not mapped
+    if (buttonName == ButtonNames.end())
+        return "";
+
+    return buttonName->second;
 }

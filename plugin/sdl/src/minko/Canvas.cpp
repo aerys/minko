@@ -443,11 +443,13 @@ Canvas::step()
             break;
         }
         case SDL_MOUSEWHEEL:
+        {
             _mouse->wheel()->execute(_mouse, event.wheel.x, event.wheel.y);
             //_mouseWheel->execute(shared_from_this(), event.wheel.x, event.wheel.y);
             break;
-
+        }
         case SDL_JOYAXISMOTION:
+        {
 # if defined(DEBUG)
             printf("Joystick %d axis %d value: %d\n",
                 event.jaxis.which,
@@ -458,8 +460,9 @@ Canvas::step()
                 _joysticks[event.jaxis.which], event.jaxis.which, event.jaxis.axis, event.jaxis.value
                 );
             break;
-
+        }
         case SDL_JOYHATMOTION:
+        {
 # if defined(DEBUG)
             printf("Joystick %d hat %d value:",
                 event.jhat.which,
@@ -480,29 +483,51 @@ Canvas::step()
                 _joysticks[event.jhat.which], event.jhat.which, event.jhat.hat, event.jhat.value
                 );
             break;
-
+        }
         case SDL_JOYBUTTONDOWN:
+        {
+            auto button = event.jbutton.button;
+
+# if defined(EMSCRIPTEN)
+            auto htmlButton = SDLJoystick::GetHtmlButton(static_cast<SDLJoystick::Button>(button));
+
+            if (htmlButton != SDLJoystick::Button::Nothing)
+                button = static_cast<Uint8>(htmlButton);
+#endif // EMSCRIPTEN
+
 # if defined(DEBUG)
-            printf("Joystick %d button %d down\n",
-                event.jbutton.which,
-                event.jbutton.button);
-#endif
+            std::cout << "Joystick " << event.jbutton.which
+                << " button " << SDLJoystick::GetButtonName(static_cast<SDLJoystick::Button>(button))
+                << " (" << static_cast<int>(button) << ") down" << std::endl;
+#endif // DEBUG
+
             _joysticks[event.jbutton.which]->joystickButtonDown()->execute(
-                _joysticks[event.jbutton.which], event.jbutton.which, event.jbutton.button
-                );
-            break;
+                _joysticks[event.jbutton.which], event.jbutton.which, button);
 
+            break;
+        }
         case SDL_JOYBUTTONUP:
-# if defined(DEBUG)
-            printf("Joystick %d button %d up\n",
-                event.jbutton.which,
-                event.jbutton.button);
-#endif
-            _joysticks[event.jbutton.which]->joystickButtonUp()->execute(
-                _joysticks[event.jbutton.which], event.jbutton.which, event.jbutton.button
-                );
-            break;
+        {
+            auto button = event.jbutton.button;
 
+# if defined(EMSCRIPTEN)
+            auto htmlButton = SDLJoystick::GetHtmlButton(static_cast<SDLJoystick::Button>(button));
+
+            if (htmlButton != SDLJoystick::Button::Nothing)
+                button = static_cast<Uint8>(htmlButton);
+#endif // EMSCRIPTEN
+
+# if defined(DEBUG)
+            std::cout << "Joystick " << event.jbutton.which
+                << " button " << SDLJoystick::GetButtonName(static_cast<SDLJoystick::Button>(button)) 
+                << " (" << static_cast<int>(button) << ") up" << std::endl; 
+#endif // DEBUG
+
+            _joysticks[event.jbutton.which]->joystickButtonUp()->execute(
+                _joysticks[event.jbutton.which], event.jbutton.which, button);
+
+            break;
+        }
 #ifndef EMSCRIPTEN
         case SDL_JOYDEVICEADDED:
         {
