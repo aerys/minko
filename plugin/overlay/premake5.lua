@@ -14,9 +14,9 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		"lib/cef3/include/**.h",
 		"lib/cef3/include/**.cpp",
 		"lib/cef3/include/**.c",
-		"include/**.hpp",
-		"src/**.cpp",
-		"src/**.hpp"
+		"include/minko/**.hpp",
+		"src/minko/**.cpp",
+		"src/minko/**.hpp"
 	}
 
 	includedirs { "include" }
@@ -25,6 +25,9 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 	configuration {"windows32 or windows64 or linux32 or linux64"}
 		includedirs { "lib/cef3" }
 		files {
+			"include/chromium/**.hpp",
+			"src/chromium/**.cpp",
+			"src/chromium/**.hpp",
 			"lib/cef3/libcef_dll/**.hpp",
 			"lib/cef3/libcef_dll/**.hh",
 			"lib/cef3/libcef_dll/**.h",
@@ -109,6 +112,10 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 			"/usr/include/atk-1.0/"
 		}
 
---[[	-- emscripten
+	-- emscripten
 	configuration { "html5" }
-		includedirs { "" }]]--
+		files {
+			"include/emscripten/**.hpp",
+			"src/emscripten/**.cpp",
+			"src/emscripten/**.hpp"
+		}
