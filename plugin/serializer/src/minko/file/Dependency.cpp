@@ -223,6 +223,8 @@ Dependency::serialize(std::shared_ptr<file::AssetLibrary>	assetLibrary,
             auto filename = assetLibrary->materialName(itMaterial.first) + ".material";
 
             materialWriter->write(filename, assetLibrary, options);
+
+            content = filename;
         }
 
 		msgpack::type::tuple<unsigned int, short, std::string> res(assetType, itMaterial.second, content);
