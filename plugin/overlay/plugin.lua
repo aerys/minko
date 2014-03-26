@@ -29,33 +29,45 @@ function minko.plugin.overlay:enable()
 	
 	minko.plugin.enable("lua")
 
-	configuration { "windows32 or windows64", "debug" }
+	configuration { "windows32 or windows64" }
 		links { "libcef_dll_wrapper", "libcef" }
-		libdirs { minko.plugin.path("overlay") .. "/lib/win/cef3/lib/debug" }
+		libdirs { minko.plugin.path("overlay") .. "/lib/win" }
 		prelinkcommands {
-			minko.action.copy(minko.plugin.path("overlay") .. "/lib/win/cef3/resource/*"),
 			minko.action.copy(minko.plugin.path("overlay") .. "/asset"),
-			minko.action.copy(minko.plugin.path("overlay") .. "/lib/win/cef3/lib/debug/*.dll")
+			minko.action.copy(minko.plugin.path("overlay") .. "/lib/resource/*"),
+			minko.action.copy(minko.plugin.path("overlay") .. "/lib/win/*.dll")
 		}
 
-	configuration { "windows32 or windows64", "release" }
-		links { "libcef_dll_wrapper", "libcef" }
-		libdirs { minko.plugin.path("overlay") .. "/lib/win/cef3/lib/release" }
+	configuration { "linux32 or linux64"}
+		buildoptions {
+			"-pthread"
+		}
+		linkoptions {
+			"-Wl,-rpath,."
+		}
+		links { "cef" }
+		libdirs { minko.plugin.path("overlay") .. "/lib/lin/" }
 		prelinkcommands {
-			minko.action.copy(minko.plugin.path("overlay") .. "/lib/win/cef3/resource/*"),
 			minko.action.copy(minko.plugin.path("overlay") .. "/asset"),
-			minko.action.copy(minko.plugin.path("overlay") .. "/lib/win/cef3/lib/release/*.dll")
+			minko.action.copy(minko.plugin.path("overlay") .. "/lib/resource/locales"),
+			minko.action.copy(minko.plugin.path("overlay") .. "/lib/resource/cef.pak"),
+			minko.action.copy(minko.plugin.path("overlay") .. "/lib/resource/devtools_resources.pak"),
+			minko.action.copy(minko.plugin.path("overlay") .. "/lib/lin/libcef.so"),
+			minko.action.copy(minko.plugin.path("overlay") .. "/lib/lin/libffmpegsumo.so"),
+			minko.action.copy(minko.plugin.path("overlay") .. "/lib/lin/chrome-sandbox")
 		}
 end
 
 function minko.plugin.overlay:dist(pluginDistDir)
-	configuration { "windows32 or windows64", "debug" }
-		os.mkdir(pluginDistDir .. "/lib/win/cef3/lib/debug")
-		minko.os.copyfiles(minko.plugin.path("overlay") .. "/lib/win/cef3/lib/debug", pluginDistDir .. "/lib/win/cef3/lib/debug")
-		
-	configuration { "windows32 or windows64", "release" }
-		os.mkdir(pluginDistDir .. "/lib/win/cef3/lib/release")
-		minko.os.copyfiles(minko.plugin.path("overlay") .. "/lib/win/cef3/lib/release", pluginDistDir .. "/lib/win/cef3/lib/release")
+	configuration { "windows32 or windows64" }
+		os.mkdir(pluginDistDir .. "/lib/win/")
+		minko.os.copyfiles(minko.plugin.path("overlay") .. "/lib/win/", pluginDistDir .. "/lib/win/")
+
+	configuration { "linux32 or linux64" }
+		os.mkdir(pluginDistDir .. "/lib/lin/")
+		os.mkdir(pluginDistDir .. "/lib/resource/")
+		minko.os.copyfiles(minko.plugin.path("overlay") .. "/lib/lin/", pluginDistDir .. "/lib/lin/")
+		minko.os.copyfiles(minko.plugin.path("overlay") .. "/lib/resource/", pluginDistDir .. "/lib/resource/")
 end
 
 newoption {

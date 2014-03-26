@@ -52,7 +52,7 @@ int main(int argc, char** argv)
 	redScore = 0;
 	blueScore = 0;
 
-	auto canvas = Canvas::create("Minko Example - Cube", 800, 600);
+	auto canvas = Canvas::create("Minko Example - Overlay", 800, 600);
 
 	overlay->initialize(canvas);
 
