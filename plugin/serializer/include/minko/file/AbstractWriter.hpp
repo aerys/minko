@@ -36,7 +36,7 @@ namespace minko
 			typedef std::shared_ptr<AbstractWriter> Ptr;
 
 		private:
-			typedef std::vector<msgpack::type::tuple<short, short, std::string>> SerializedDependency;
+			typedef std::vector<msgpack::type::tuple<unsigned int, short, std::string>> SerializedDependency;
 
 		protected :
 			std::shared_ptr<Signal<Ptr>>	_complete;
@@ -96,7 +96,7 @@ namespace minko
 			embed(std::shared_ptr<AssetLibrary>		assetLibrary,
 				  std::shared_ptr<Options>			options,
 				  Dependency::Ptr					dependencies) = 0;
-			
+
 		protected:
 			AbstractWriter() :
 				_complete(Signal<Ptr>::create())

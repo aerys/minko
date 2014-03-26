@@ -162,14 +162,14 @@ Dependency::getEffectReference(uint effectId)
 	return _effectReferences[effectId];
 }
 
-std::vector<msgpack::type::tuple<short, short, std::string>>
+std::vector<msgpack::type::tuple<unsigned int, short, std::string>>
 Dependency::serialize(std::shared_ptr<file::AssetLibrary>	assetLibrary,
 					  std::shared_ptr<file::Options>		options)
 {
 	GeometryWriter::Ptr geometryWriter = GeometryWriter::create();
 	MaterialWriter::Ptr materialWriter = MaterialWriter::create();
 
-	std::vector<msgpack::type::tuple<short, short, std::string>> serializedAsset;
+	std::vector<msgpack::type::tuple<unsigned int, short, std::string>> serializedAsset;
 
     for (const auto& itGeometry : _geometryDependencies)
 	{
@@ -197,7 +197,7 @@ Dependency::serialize(std::shared_ptr<file::AssetLibrary>	assetLibrary,
             content = filename;
         }
 
-		msgpack::type::tuple<short, short, std::string> res(assetType, itGeometry.second, content);
+		msgpack::type::tuple<unsigned int, short, std::string> res(assetType, itGeometry.second, content);
 		serializedAsset.push_back(res);
 	}
 
@@ -225,7 +225,7 @@ Dependency::serialize(std::shared_ptr<file::AssetLibrary>	assetLibrary,
             materialWriter->write(filename, assetLibrary, options);
         }
 
-		msgpack::type::tuple<short, short, std::string> res(assetType, itMaterial.second, content);
+		msgpack::type::tuple<unsigned int, short, std::string> res(assetType, itMaterial.second, content);
 		serializedAsset.push_back(res);
 	}
 
@@ -271,7 +271,7 @@ Dependency::serialize(std::shared_ptr<file::AssetLibrary>	assetLibrary,
             content = filenameOutput;
         }
 
-		msgpack::type::tuple<short, short, std::string> res(assetType, itTexture.second, content);
+		msgpack::type::tuple<unsigned int, short, std::string> res(assetType, itTexture.second, content);
 
 		serializedAsset.insert(serializedAsset.begin(), res);
 	}
@@ -285,7 +285,7 @@ Dependency::serialize(std::shared_ptr<file::AssetLibrary>	assetLibrary,
 #endif
 		std::ifstream source(filenameInput, std::ios::binary);
 
-        msgpack::type::tuple<short, short, std::string> dependencyRes;
+        msgpack::type::tuple<unsigned int, short, std::string> dependencyRes;
 
         copyEffectDependency(assetLibrary, options, source, itEffect.first, dependencyRes);
 
@@ -324,7 +324,7 @@ Dependency::serialize(std::shared_ptr<file::AssetLibrary>	assetLibrary,
             content = filenameOutput;
         }
 
-		msgpack::type::tuple<short, short, std::string> res(assetType, itEffect.second, content);
+		msgpack::type::tuple<unsigned int, short, std::string> res(assetType, itEffect.second, content);
 		serializedAsset.insert(serializedAsset.begin(), res);
 	}
 
@@ -332,11 +332,11 @@ Dependency::serialize(std::shared_ptr<file::AssetLibrary>	assetLibrary,
 }
 
 void
-Dependency::copyEffectDependency(std::shared_ptr<AssetLibrary>                          assets,
-                                 std::shared_ptr<Options>                               options,
-                                 const std::ifstream&                                   source,
-                                 std::shared_ptr<render::Effect>                        effect,
-                                 msgpack::type::tuple<short, short, std::string>&       result)
+Dependency::copyEffectDependency(std::shared_ptr<AssetLibrary>                                  assets,
+                                 std::shared_ptr<Options>                                       options,
+                                 const std::ifstream&                                           source,
+                                 std::shared_ptr<render::Effect>                                effect,
+                                 msgpack::type::tuple<unsigned int, short, std::string>&        result)
 {
 	std::stringstream	effectContent;
 	std::size_t			found;
