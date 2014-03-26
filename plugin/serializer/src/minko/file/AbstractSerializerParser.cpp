@@ -34,10 +34,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::file;
 
-std::unordered_map<uint, std::function<void(unsigned char, 
-											AbstractSerializerParser::AssetLibraryPtr, 
-											std::string&, 
-											std::shared_ptr<Dependency>, 
+std::unordered_map<uint, std::function<void(unsigned char,
+											AbstractSerializerParser::AssetLibraryPtr,
+											std::string&,
+											std::shared_ptr<Dependency>,
 											short,
 											std::list<std::shared_ptr<component::JobManager::Job>>&)>> AbstractSerializerParser::_assetTypeToFunction;
 
@@ -51,7 +51,7 @@ AbstractSerializerParser::Ptr
 AbstractSerializerParser::create()
 {
 	auto abstractParser = std::shared_ptr<AbstractSerializerParser>(new AbstractSerializerParser());
-	
+
 	return abstractParser;
 }
 
@@ -111,7 +111,7 @@ AbstractSerializerParser::deserializedAsset(SerializedAsset				asset,
 	{
 		auto							flags = std::ios::in | std::ios::ate | std::ios::binary;
 		std::fstream					file(assetCompletePath, flags);
-	
+
 		if (file.is_open())
 		{
 			unsigned int size = (unsigned int)file.tellg();
@@ -148,9 +148,9 @@ AbstractSerializerParser::deserializedAsset(SerializedAsset				asset,
 		_dependencies->registerReference(asset.a1, std::dynamic_pointer_cast<data::Provider>(assetLibrary->material(_materialParser->_lastParsedAssetName)));
 		_jobList.merge(_materialParser->_jobList);
 	}
-	else if (asset.a0 == serialize::AssetType::TEXTURE_ASSET || asset.a0 == serialize::AssetType::EMBED_TEXUTRE_ASSET) // texture
+	else if (asset.a0 == serialize::AssetType::TEXTURE_ASSET || asset.a0 == serialize::AssetType::EMBED_TEXTURE_ASSET) // texture
 	{
-		if (asset.a0 == serialize::AssetType::EMBED_TEXUTRE_ASSET)
+		if (asset.a0 == serialize::AssetType::EMBED_TEXTURE_ASSET)
 		{
 			resolvedPath = std::to_string(asset.a1) + ".png";
 			assetCompletePath += resolvedPath;
