@@ -192,6 +192,8 @@ namespace minko
             embedAll(bool value)
             {
                 _embedAll = value;
+
+                return shared_from_this();
             }
 
 			inline
