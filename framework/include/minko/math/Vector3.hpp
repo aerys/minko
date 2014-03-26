@@ -217,7 +217,7 @@ namespace minko
 			{
 				float l = sqrtf(_x * _x + _y * _y + _z * _z);
 
-				if (l != 0.)
+				if (l > 0.)
 				{
 					_x /= l;
 					_y /= l;
