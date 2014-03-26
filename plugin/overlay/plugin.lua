@@ -30,13 +30,18 @@ function minko.plugin.overlay:enable()
 	minko.plugin.enable("lua")
 
 	configuration { "windows32 or windows64" }
-		links { "libcef_dll_wrapper", "libcef" }
-		libdirs { minko.plugin.path("overlay") .. "/lib/win" }
+		links { "libcef" }
 		prelinkcommands {
 			minko.action.copy(minko.plugin.path("overlay") .. "/asset"),
 			minko.action.copy(minko.plugin.path("overlay") .. "/lib/resource/*"),
-			minko.action.copy(minko.plugin.path("overlay") .. "/lib/win/*.dll")
+			minko.action.copy(minko.plugin.path("overlay") .. "/lib/win/dll/*.dll")
 		}
+
+	configuration { "windows32 or windows64", "debug"}
+		libdirs { minko.plugin.path("overlay") .. "/lib/win/debug" }
+
+	configuration { "windows32 or windows64", "release"}
+		libdirs { minko.plugin.path("overlay") .. "/lib/win/release" }
 
 	configuration { "linux32 or linux64"}
 		buildoptions {
