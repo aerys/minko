@@ -66,13 +66,15 @@ namespace minko
 						.method("setAngularFactor",						static_cast<Collider::Ptr (Collider::*)(Vector3Ptr)>				(&Collider::angularFactor))
 						.methodWrapper("getAngularFactor",				&LuaCollider::getAngularFactorsWrapper)
 						.method("setCanSleep",							static_cast<Collider::Ptr (Collider::*)(bool)>						(&Collider::canSleep))
-						.methodWrapper("getCanSleep",					&LuaCollider::getCanSleepWrapper)
-						.method("setCollisionGroup",					static_cast<Collider::Ptr(Collider::*)(short)>						(&Collider::collisionGroup))
+						.methodWrapper("getCanSleep",					&LuaCollider::getCanSleepWrapper)						
 						.methodWrapper("getCollisionGroup",				&LuaCollider::getCollisionGroupWrapper)
 						.methodWrapper("setCollisionGroup",				&LuaCollider::setCollisionGroupWrapper)
 						.methodWrapper("getCollisionMask",				&LuaCollider::getCollisionMaskWrapper)
 						.methodWrapper("setCollisionMask",				&LuaCollider::setCollisionMaskWrapper)
-						.methodWrapper("getTriggerCollisions",			&LuaCollider::getTriggerCollisionsWrapper);
+						.method("setTriggerCollisions",					static_cast<Collider::Ptr(Collider::*)(bool)>						(&Collider::triggerCollisions))
+						.methodWrapper("getTriggerCollisions",			&LuaCollider::getTriggerCollisionsWrapper)
+						.methodWrapper("getNode",						&LuaCollider::getNodeWrapper)
+						;
 
 					MINKO_LUAGLUE_BIND_SIGNAL(state, Collider::Ptr, Collider::Ptr);
 					collider.property("collisionStarted",	&Collider::collisionStarted);
@@ -169,6 +171,13 @@ namespace minko
 				getTriggerCollisionsWrapper(bullet::Collider::Ptr collider)
 				{
 					return collider->triggerCollisions();
+				}
+
+				static
+				std::shared_ptr<scene::Node>
+				getNodeWrapper(bullet::Collider::Ptr collider)
+				{
+					return collider->target();
 				}
 			};
 		}
