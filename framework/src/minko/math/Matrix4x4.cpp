@@ -427,39 +427,48 @@ Matrix4x4::perspective(float fov, // vertical FOV
 Matrix4x4::Ptr
 Matrix4x4::view(Vector3::Ptr eye, Vector3::Ptr lookAt, Vector3::Ptr upAxis)
 {
-    Vector3::Ptr	zAxis = eye - lookAt;
+    auto	newZ	= eye - lookAt;
+	auto	lengthZ	= newZ->length();
 
-	zAxis->normalize();
+	if (lengthZ < 1e-6f)
+		throw std::logic_error("The target and eye positions are the same.");
+	newZ->scaleBy(1.0f / lengthZ);
 
-	if (upAxis == 0)
+	const Vector3::Ptr upCandidates[4] = { upAxis, Vector3::yAxis(), Vector3::xAxis(), Vector3::zAxis() };
+
+	for (unsigned int i = 0; i < 4; ++i)
 	{
-		if (zAxis->x() == 0. && zAxis->y() != 0. && zAxis->z() == 0.)
-			upAxis = Vector3::xAxis();
-		else
-			upAxis = Vector3::yAxis();
-	}
+		auto up = upCandidates[i];
+		if (up == nullptr)
+			continue;
 
-	Vector3::Ptr xAxis = Vector3::create()->copyFrom(upAxis)->cross(zAxis)->normalize();
-	Vector3::Ptr yAxis = Vector3::create()->copyFrom(zAxis)->cross(xAxis)->normalize();
+		auto	newX	= Vector3::create()->copyFrom(up)->cross(newZ);
+		auto	lengthX	= newX->length();
 
-	if ((xAxis->x() == 0.f && xAxis->y() == 0.f && xAxis->z() == 0.f)
-		|| (yAxis->x() == 0.f && yAxis->y() == 0.f && yAxis->z() == 0.f))
-	{
-		throw std::invalid_argument(
-			"the eye direction (look at - eye position) and the up vector appear to be the same"
+		if (lengthX < 1e-6f)
+			continue;
+		newX->scaleBy(1.0f / lengthX);
+
+		auto	newY	= Vector3::create()->copyFrom(newZ)->cross(newX);
+		auto	lengthY	= newY->length();
+
+		if (lengthY < 1e-6f)
+			continue;
+		newY->scaleBy(1.0f / lengthY);
+
+		const float m41	= -(newX->dot(eye));
+		const float m42	= -(newY->dot(eye));
+		const float m43	= -(newZ->dot(eye));
+	
+		return initialize(
+			newX->x(),	newX->y(),	newX->z(),	m41,
+			newY->x(),	newY->y(),	newY->z(),  m42,
+			newZ->x(),	newZ->y(),	newZ->z(),	m43,
+			0.f,		0.f,		0.f,		1.f
 		);
 	}
 
-	float m41 = -(xAxis->dot(eye));
-	float m42 = -(yAxis->dot(eye));
-	float m43 = -(zAxis->dot(eye));
-	
-	return initialize(
-		xAxis->x(),	xAxis->y(),	xAxis->z(),	m41,
-		yAxis->x(),	yAxis->y(),	yAxis->z(), m42,
-		zAxis->x(),	zAxis->y(),	zAxis->z(),	m43,
-		0.f,		0.f,		0.f,		1.f
-	);
+	throw std::logic_error("Failed to compute the viewing transform. Please specify a valid up vector.");
 }
 
 Matrix4x4::Ptr
