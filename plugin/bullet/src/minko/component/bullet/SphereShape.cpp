@@ -21,6 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/render/AbstractContext.hpp"
 #include "minko/geometry/LineGeometry.hpp"
+#include "minko/math/Vector3.hpp"
 
 using namespace minko;
 using namespace minko::component;
@@ -36,17 +37,21 @@ bullet::SphereShape::getGeometry(render::AbstractContext::Ptr context) const
 
 	auto lines = LineGeometry::create(context);
 	
+	const auto radiusX = _radius * localScaling()->x();
+	const auto radiusY = _radius * localScaling()->y();
+	const auto radiusZ = _radius * localScaling()->z();
+
 	for (unsigned int j = 0; j < 3; ++j)
 	{
 		float cAng = 1.0f;
 		float sAng = 0.0f;
 		
 		if (j == 0)
-			lines->moveTo(0.0f,				_radius * cAng,	_radius * sAng);
+			lines->moveTo(0.0f,				radiusY * cAng,	radiusZ * sAng);
 		else if (j == 1)
-			lines->moveTo(_radius * cAng,	0.0f,			_radius * sAng);
+			lines->moveTo(radiusX * cAng,	0.0f,			radiusZ * sAng);
 		else
-			lines->moveTo(_radius * cAng,	_radius * sAng,	0.0f);
+			lines->moveTo(radiusX * cAng,	radiusY * sAng,	0.0f);
 		
 		for (unsigned int i = 0; i < numSteps; ++i)
 		{
@@ -57,11 +62,11 @@ bullet::SphereShape::getGeometry(render::AbstractContext::Ptr context) const
 			sAng	= s;
 		
 			if (j == 0)
-				lines->lineTo(0.0f,				_radius * cAng,	_radius * sAng);
+				lines->lineTo(0.0f,				radiusY * cAng,	radiusZ * sAng);
 			else if (j == 1)
-				lines->lineTo(_radius * cAng,	0.0f,			_radius * sAng);
+				lines->lineTo(radiusX * cAng,	0.0f,			radiusZ * sAng);
 			else
-				lines->lineTo(_radius * cAng,	_radius * sAng,	0.0f);
+				lines->lineTo(radiusX * cAng,	radiusY * sAng,	0.0f);
 		}
 	}
 

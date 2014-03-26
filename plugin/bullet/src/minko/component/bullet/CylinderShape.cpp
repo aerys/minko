@@ -21,6 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/render/AbstractContext.hpp"
 #include "minko/geometry/LineGeometry.hpp"
+#include "minko/math/Vector3.hpp"
 
 using namespace minko;
 using namespace minko::component;
@@ -34,28 +35,32 @@ bullet::CylinderShape::getGeometry(render::AbstractContext::Ptr context) const
 	static const float			cAngStep	= cosf(angStep);
 	static const float			sAngStep	= sinf(angStep);
 	
+	const auto halfExtentX = _halfExtentX * localScaling()->x();
+	const auto halfExtentY = _halfExtentY * localScaling()->y();
+	const auto halfExtentZ = _halfExtentZ * localScaling()->z();
+
 	auto lines = LineGeometry::create(context)
 
-		->moveTo(-_halfExtentX, -_halfExtentY, 0.0f)
-		->lineTo(-_halfExtentX,  _halfExtentY, 0.0f)
+		->moveTo(-halfExtentX, -halfExtentY, 0.0f)
+		->lineTo(-halfExtentX,  halfExtentY, 0.0f)
 	
-		->moveTo(_halfExtentX, -_halfExtentY, 0.0f)
-		->lineTo(_halfExtentX,  _halfExtentY, 0.0f)
+		->moveTo(halfExtentX, -halfExtentY, 0.0f)
+		->lineTo(halfExtentX,  halfExtentY, 0.0f)
 
-		->moveTo(0.0f, -_halfExtentY, -_halfExtentZ)
-		->lineTo(0.0f,  _halfExtentY, -_halfExtentZ)
+		->moveTo(0.0f, -halfExtentY, -halfExtentZ)
+		->lineTo(0.0f,  halfExtentY, -halfExtentZ)
 
-		->moveTo(0.0f, -_halfExtentY, _halfExtentZ)
-		->lineTo(0.0f,  _halfExtentY, _halfExtentZ);
+		->moveTo(0.0f, -halfExtentY, halfExtentZ)
+		->lineTo(0.0f,  halfExtentY, halfExtentZ);
 
 	for (unsigned int j = 0; j < 2; ++j)
 	{
-		const float y = (j & 0x1) == 0 ? -_halfExtentY : _halfExtentY;
+		const float y = (j & 0x1) == 0 ? -halfExtentY : halfExtentY;
 
 		float cAng = 1.0f;
 		float sAng = 0.0f;
 
-		lines->moveTo(_halfExtentX * cAng, y, _halfExtentZ * sAng);
+		lines->moveTo(halfExtentX * cAng, y, halfExtentZ * sAng);
 
 		for (unsigned int i = 0; i < numSteps; ++i)
 		{
@@ -65,7 +70,7 @@ bullet::CylinderShape::getGeometry(render::AbstractContext::Ptr context) const
 			cAng	= c;
 			sAng	= s;
 	
-			lines->lineTo(_halfExtentX * cAng, y, _halfExtentZ * sAng);
+			lines->lineTo(halfExtentX * cAng, y, halfExtentZ * sAng);
 		}
 	}
 

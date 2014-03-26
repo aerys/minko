@@ -29,28 +29,32 @@ using namespace minko::geometry;
 LineGeometry::Ptr
 bullet::BoxShape::getGeometry(render::AbstractContext::Ptr context) const
 {
+	const auto halfExtentX = _halfExtentX * localScaling()->x();
+	const auto halfExtentY = _halfExtentY * localScaling()->y();
+	const auto halfExtentZ = _halfExtentZ * localScaling()->z();
+
 	auto lines = LineGeometry::create(context)
 
-		->moveTo(-_halfExtentX, -_halfExtentY, -_halfExtentZ)
-		->lineTo(-_halfExtentX,  _halfExtentY, -_halfExtentZ)
-		->lineTo( _halfExtentX,  _halfExtentY, -_halfExtentZ)
-		->lineTo( _halfExtentX, -_halfExtentY, -_halfExtentZ)
-		->lineTo(-_halfExtentX, -_halfExtentY, -_halfExtentZ)
+		->moveTo(-halfExtentX, -halfExtentY, -halfExtentZ)
+		->lineTo(-halfExtentX,  halfExtentY, -halfExtentZ)
+		->lineTo( halfExtentX,  halfExtentY, -halfExtentZ)
+		->lineTo( halfExtentX, -halfExtentY, -halfExtentZ)
+		->lineTo(-halfExtentX, -halfExtentY, -halfExtentZ)
 		
-		->moveTo(-_halfExtentX, -_halfExtentY,  _halfExtentZ)
-		->lineTo(-_halfExtentX,  _halfExtentY,  _halfExtentZ)
-		->lineTo( _halfExtentX,  _halfExtentY,  _halfExtentZ)
-		->lineTo( _halfExtentX, -_halfExtentY,  _halfExtentZ)
-		->lineTo(-_halfExtentX, -_halfExtentY,  _halfExtentZ);
+		->moveTo(-halfExtentX, -halfExtentY,  halfExtentZ)
+		->lineTo(-halfExtentX,  halfExtentY,  halfExtentZ)
+		->lineTo( halfExtentX,  halfExtentY,  halfExtentZ)
+		->lineTo( halfExtentX, -halfExtentY,  halfExtentZ)
+		->lineTo(-halfExtentX, -halfExtentY,  halfExtentZ);
 
 	for (unsigned int i = 0; i < 4; ++i)
 	{
-		const float x = (i & 0x1) == 0 ? -_halfExtentX : _halfExtentX;
-		const float y = (i & 0x2) == 0 ? -_halfExtentY : _halfExtentY;
+		const float x = (i & 0x1) == 0 ? -halfExtentX : halfExtentX;
+		const float y = (i & 0x2) == 0 ? -halfExtentY : halfExtentY;
 
 		lines
-			->moveTo(x, y, -_halfExtentZ)
-			->lineTo(x, y,  _halfExtentZ);
+			->moveTo(x, y, -halfExtentZ)
+			->lineTo(x, y,  halfExtentZ);
 	}
 
 	return lines;

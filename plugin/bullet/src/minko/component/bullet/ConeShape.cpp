@@ -21,6 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/render/AbstractContext.hpp"
 #include "minko/geometry/LineGeometry.hpp"
+#include "minko/math/Vector3.hpp"
 
 using namespace minko;
 using namespace minko::component;
@@ -34,21 +35,25 @@ bullet::ConeShape::getGeometry(render::AbstractContext::Ptr context) const
 	static const float			cAngStep	= cosf(angStep);
 	static const float			sAngStep	= sinf(angStep);
 
-	const float upperY	= 0.5f * _height;
-	const float lowerY	= -0.5f * _height;
+	const auto radiusX = _radius * localScaling()->x();
+	const auto heightY = _height * localScaling()->y();
+	const auto radiusZ = _radius * localScaling()->z();
+
+	const float upperY	= 0.5f * heightY;
+	const float lowerY	= -0.5f * heightY;
 	auto lines			= LineGeometry::create(context)
 
 		->moveTo(0.0f,		upperY,	0.0f)
-		->lineTo(-_radius,	lowerY,	0.0f)
+		->lineTo(-radiusX,	lowerY,	0.0f)
 
 		->moveTo(0.0f,		upperY,	0.0f)
-		->lineTo(_radius,	lowerY,	0.0f)
+		->lineTo(radiusX,	lowerY,	0.0f)
 
 		->moveTo(0.0f,		upperY,	0.0f)
-		->lineTo(0.0f,		lowerY,	-_radius)
+		->lineTo(0.0f,		lowerY,	-radiusZ)
 
 		->moveTo(0.0f,		upperY,	0.0f)
-		->lineTo(0.0f,		lowerY,	_radius);
+		->lineTo(0.0f,		lowerY,	radiusZ);
 
 	float cAng = 1.0f;
 	float sAng = 0.0f;
@@ -63,7 +68,7 @@ bullet::ConeShape::getGeometry(render::AbstractContext::Ptr context) const
 		cAng	= c;
 		sAng	= s;
 
-		lines->lineTo(_radius * cAng, lowerY, _radius * sAng);
+		lines->lineTo(radiusX * cAng, lowerY, radiusZ * sAng);
 	}
 
 	return lines;
