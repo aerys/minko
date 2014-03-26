@@ -26,22 +26,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 std::string MODEL_FILENAME = "model/primitives/primitives.scene";
 
-#define SERIALIZE // comment to test deserialization
-
 using namespace minko;
 using namespace minko::component;
 using namespace minko::math;
-
-
-void
-serializeSceneExample(std::shared_ptr<file::AssetLibrary>		assets,
-					  std::shared_ptr<scene::Node>				root,
-					  std::shared_ptr<render::AbstractContext>	context)
-{
-	std::shared_ptr<file::SceneWriter> sceneWriter = file::SceneWriter::create();
-	sceneWriter->data(root);
-	sceneWriter->write(MODEL_FILENAME, assets, file::Options::create(context));
-}
 
 void
 openSceneExample(std::shared_ptr<file::AssetLibrary>	assets,
@@ -69,16 +56,8 @@ int main(int argc, char** argv)
 	sceneManager->assets()->geometry("defaultGeometry", geometry::CubeGeometry::create(sceneManager->assets()->context())),
 	sceneManager->assets()
 		->registerParser<file::PNGParser>("png")
-#ifdef SERIALIZE
-		->queue("effect/Basic.effect")
-                ->queue("texture/box.png");
-
-		sceneManager->assets()->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()));
-		sceneManager->assets()->geometry("sphere", geometry::SphereGeometry::create(sceneManager->assets()->context(), 20, 20));
-#else
 		->registerParser<file::SceneParser>("scene")
 		->queue(MODEL_FILENAME);
-#endif
 
 	auto root = scene::Node::create("root")
 		->addComponent(sceneManager);
@@ -106,52 +85,7 @@ int main(int argc, char** argv)
 
 	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
 	{
-#ifdef SERIALIZE
-		auto cubeMaterial = material::BasicMaterial::create()
-			->diffuseMap(assets->texture("texture/box.png"))
-			->diffuseColor(math::Vector4::create(1.f, 0.f, 0.f, 1.f))
-//			->blendMode(render::Blending::Mode::DEFAULT)
-			->set<render::TriangleCulling>("triangleCulling", render::TriangleCulling::BACK);
-
-		auto sphereMaterial = material::BasicMaterial::create()
-			->diffuseMap(assets->texture("texture/box.png"))
-			->diffuseColor(math::Vector4::create(0.f, 1.f, 0.f, 0.2f))
-//			->blendMode(render::Blending::Mode::ALPHA)
-			->set<render::TriangleCulling>("triangleCulling", render::TriangleCulling::FRONT);
-
-		assets->material("boxMaterial", cubeMaterial);
-		assets->material("sphereMaterial", sphereMaterial);
-
-		mesh->addComponent(Surface::create(
-				assets->geometry("sphere"),
-				assets->material("sphereMaterial"),
-				assets->effect("effect/Basic.effect")
-			));
-
-		mesh2->addComponent(Surface::create(
-				assets->geometry("cube"),
-				assets->material("boxMaterial"),
-				assets->effect("effect/Basic.effect")
-			));
-		mesh3->addComponent(Surface::create(
-				assets->geometry("cube"),
-				assets->material("boxMaterial"),
-				assets->effect("effect/Basic.effect")
-			));
-
-		root->addChild(mesh);
-		root->addChild(mesh2);
-		root->addChild(mesh3);
-
-		mesh2->component<Transform>()->matrix()->appendTranslation(0, 1, 0);
-		mesh3->component<Transform>()->matrix()->appendTranslation(0, -1, 0);
-#endif
-
-#ifdef SERIALIZE
-		serializeSceneExample(assets, root, sceneManager->assets()->context());
-#else
 		openSceneExample(assets, root);
-#endif
 	});
 
 	auto yaw = (float)PI * 0.5f;
