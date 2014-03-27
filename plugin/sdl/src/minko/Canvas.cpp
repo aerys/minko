@@ -49,6 +49,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 # endif
 #endif
 
+#if defined(_WIN32)
+#include "Windows.h"
+#endif
+
 using namespace minko;
 using namespace minko::math;
 using namespace minko::async;
@@ -71,6 +75,21 @@ Canvas::Canvas(const std::string& name, const uint width, const uint height, boo
     _data->set<math::Vector4::Ptr>("canvas.viewport", Vector4::create(0.0f, 0.0f, (float) width, (float) height));
 }
 
+#if defined(_WIN32)
+BOOL
+WINAPI
+ConsoleHandlerRoutine(DWORD dwCtrlType)
+{
+	if (dwCtrlType == CTRL_CLOSE_EVENT)
+	{
+		Canvas::Ptr canvas = std::dynamic_pointer_cast<Canvas>(AbstractCanvas::defaultCanvas());
+		canvas->quit();
+		return true;
+	}
+	return false;
+}
+#endif
+
 void
 Canvas::initialize()
 {
@@ -79,6 +98,10 @@ Canvas::initialize()
 
 #if !defined(EMSCRIPTEN)
     registerWorker<async::FileLoaderWorker>("file-loader");
+#endif
+
+#if defined(_WIN32)
+	SetConsoleCtrlHandler(ConsoleHandlerRoutine, true);
 #endif
 }
 

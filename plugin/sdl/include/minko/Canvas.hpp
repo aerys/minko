@@ -416,6 +416,11 @@ namespace minko
 		void 
 		height(uint);
 
+#if defined(_WIN32)
+		bool
+		consoleHandlerRoutine(DWORD);
+#endif
+
 		void
 		initialize();
 
