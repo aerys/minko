@@ -90,7 +90,11 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 
 	-- linux
 	configuration { "linux32 or linux64" }
-		buildoptions {"-pthread"}
+
+		buildoptions {
+			"`pkg-config --cflags gtk+-2.0 gtkglext-1.0`"
+		}
+
 		defines { 
 			"USE_CAIRO=0",
 			"USE_GLIB=0",
@@ -99,17 +103,9 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 			"GTK_DISABLE_SINGLE_INCLUDES=1",
 			"USE_XI2_MT=2"
 		}
-		--fixme: find a way not to use absolute paths for wider compatibility
+
 		includedirs {
 			"lib/cef3",
-			"/usr/include/gtk-2.0", 
-			"/usr/include/glib-2.0", 
-			"/usr/lib/i386-linux-gnu/glib-2.0/include/", 
-			"/usr/include/cairo/", 
-			"/usr/include/pango-1.0/",
-			"/usr/lib/i386-linux-gnu/gtk-2.0/include/",
-			"/usr/include/gdk-pixbuf-2.0/",
-			"/usr/include/atk-1.0/"
 		}
 
 	-- emscripten
