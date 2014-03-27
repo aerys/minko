@@ -190,7 +190,7 @@ Dependency::serialize(std::shared_ptr<file::AssetLibrary>	assetLibrary,
         {
             assetType = serialize::AssetType::GEOMETRY_ASSET;
 
-            auto filename = assetLibrary->geometryName(itGeometry.first) + ".geometry";
+            auto filename = options->uriFunction()(assetLibrary->geometryName(itGeometry.first) + ".geometry");
 
             geometryWriter->write(filename, assetLibrary, options);
 
@@ -220,7 +220,7 @@ Dependency::serialize(std::shared_ptr<file::AssetLibrary>	assetLibrary,
         {
             assetType = serialize::AssetType::MATERIAL_ASSET;
 
-            auto filename = assetLibrary->materialName(itMaterial.first) + ".material";
+            auto filename = options->uriFunction()(assetLibrary->materialName(itMaterial.first) + ".material");
 
             materialWriter->write(filename, assetLibrary, options);
 
@@ -262,6 +262,8 @@ Dependency::serialize(std::shared_ptr<file::AssetLibrary>	assetLibrary,
             {
                 filenameOutput.insert(0, filenameInput.substr(charIndex, 1));
             }
+
+            filenameOutput = options->uriFunction()(filenameOutput);
 
             std::ofstream dst(filenameOutput, std::ios::binary);
 
@@ -315,6 +317,8 @@ Dependency::serialize(std::shared_ptr<file::AssetLibrary>	assetLibrary,
             {
                 filenameOutput.insert(0, filenameInput.substr(charIndex, 1));
             }
+
+            filenameOutput = options->uriFunction()(filenameOutput);
 
             std::ofstream dst(filenameOutput, std::ios::binary);
 
@@ -381,6 +385,8 @@ Dependency::copyEffectDependency(std::shared_ptr<AssetLibrary>                  
         }
         else
         {
+            dependencyFile = options->uriFunction()(dependencyFile);
+
             std::ofstream dst(dependencyFile, std::ios::binary);
 
             dst << dependencySource.rdbuf();
