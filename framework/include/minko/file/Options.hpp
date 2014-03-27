@@ -68,6 +68,8 @@ namespace minko
 			GeometryFunction							_geometryFunction;
 			LoaderFunction								_loaderFunction;
 			UriFunction									_uriFunction;
+            UriFunction                                 _inputAssetUriFunction;
+            UriFunction                                 _outputAssetUriFunction;
 			NodeFunction								_nodeFunction;
 			EffectFunction								_effectFunction;
 
@@ -97,6 +99,8 @@ namespace minko
 				opt->_geometryFunction			= options->_geometryFunction;
 				opt->_loaderFunction			= options->_loaderFunction;
 				opt->_uriFunction				= options->_uriFunction;
+				opt->_inputAssetUriFunction		= options->_inputAssetUriFunction;
+				opt->_outputAssetUriFunction	= options->_outputAssetUriFunction;
 				opt->_nodeFunction				= options->_nodeFunction;
 				opt->_loadAsynchronously		= options->_loadAsynchronously;
                 opt->_embedAll                  = options->_embedAll;
@@ -352,6 +356,38 @@ namespace minko
 			uriFunction(const UriFunction& func)
 			{
 				_uriFunction = func;
+
+				return shared_from_this();
+			}
+
+ 			inline
+			const UriFunction&
+			inputAssetUriFunction() const
+			{
+				return _inputAssetUriFunction;
+			}
+
+			inline
+			Ptr
+			inputAssetUriFunction(const UriFunction& func)
+			{
+				_inputAssetUriFunction = func;
+
+				return shared_from_this();
+			}
+
+ 			inline
+			const UriFunction&
+			outputAssetUriFunction() const
+			{
+				return _outputAssetUriFunction;
+			}
+
+			inline
+			Ptr
+			outputAssetUriFunction(const UriFunction& func)
+			{
+				_outputAssetUriFunction = func;
 
 				return shared_from_this();
 			}

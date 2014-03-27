@@ -147,6 +147,16 @@ Options::Options(std::shared_ptr<render::AbstractContext> context) :
 		return uri;
 	};
 
+	_inputAssetUriFunction = [](const std::string& uri) -> const std::string
+	{
+		return uri;
+	};
+
+	_outputAssetUriFunction = [](const std::string& uri) -> const std::string
+	{
+		return uri;
+	};
+
 	_nodeFunction = [](NodePtr node) -> NodePtr
 	{
 		return node;

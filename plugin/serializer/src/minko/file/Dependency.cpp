@@ -190,7 +190,8 @@ Dependency::serialize(std::shared_ptr<file::AssetLibrary>	assetLibrary,
         {
             assetType = serialize::AssetType::GEOMETRY_ASSET;
 
-            auto filename = options->uriFunction()(assetLibrary->geometryName(itGeometry.first) + ".geometry");
+            auto filename = options->outputAssetUriFunction()(
+                assetLibrary->geometryName(itGeometry.first) + ".geometry");
 
             geometryWriter->write(filename, assetLibrary, options);
 
@@ -220,7 +221,8 @@ Dependency::serialize(std::shared_ptr<file::AssetLibrary>	assetLibrary,
         {
             assetType = serialize::AssetType::MATERIAL_ASSET;
 
-            auto filename = options->uriFunction()(assetLibrary->materialName(itMaterial.first) + ".material");
+            auto filename = options->outputAssetUriFunction()(
+                assetLibrary->materialName(itMaterial.first) + ".material");
 
             materialWriter->write(filename, assetLibrary, options);
 
@@ -234,9 +236,9 @@ Dependency::serialize(std::shared_ptr<file::AssetLibrary>	assetLibrary,
 	for (const auto& itTexture : _textureDependencies)
 	{
 #ifdef DEBUG
-		std::string     filenameInput	= "asset/" + assetLibrary->textureName(itTexture.first);
+        std::string filenameInput= "asset/" + assetLibrary->textureName(itTexture.first);
 #else
-		std::string     filenameInput	= assetLibrary->textureName(itTexture.first);
+        std::string filenameInput= assetLibrary->textureName(itTexture.first);
 #endif
         std::ifstream   source(filenameInput, std::ios::binary);
 
@@ -263,7 +265,7 @@ Dependency::serialize(std::shared_ptr<file::AssetLibrary>	assetLibrary,
                 filenameOutput.insert(0, filenameInput.substr(charIndex, 1));
             }
 
-            filenameOutput = options->uriFunction()(filenameOutput);
+            filenameOutput = options->outputAssetUriFunction()(filenameOutput);
 
             std::ofstream dst(filenameOutput, std::ios::binary);
 
@@ -283,9 +285,9 @@ Dependency::serialize(std::shared_ptr<file::AssetLibrary>	assetLibrary,
 	for (const auto& itEffect : _effectDependencies)
 	{
 #ifdef DEBUG
-		std::string filenameInput	= "bin/debug/" + assetLibrary->effectName(itEffect.first);
+        std::string filenameInput= "bin/debug/" + assetLibrary->effectName(itEffect.first);
 #else
-		std::string filenameInput	= assetLibrary->effectName(itEffect.first);
+        std::string filenameInput= assetLibrary->effectName(itEffect.first);
 #endif
 		std::ifstream source(filenameInput, std::ios::binary);
 
@@ -318,7 +320,7 @@ Dependency::serialize(std::shared_ptr<file::AssetLibrary>	assetLibrary,
                 filenameOutput.insert(0, filenameInput.substr(charIndex, 1));
             }
 
-            filenameOutput = options->uriFunction()(filenameOutput);
+            filenameOutput = options->outputAssetUriFunction()(filenameOutput);
 
             std::ofstream dst(filenameOutput, std::ios::binary);
 
@@ -355,7 +357,7 @@ Dependency::copyEffectDependency(std::shared_ptr<AssetLibrary>                  
 	{
 		uint position = found;
 
-		while (effectContent.str()[position - 1] != '"')
+		while (effectContent.str()[position - 1] != '\'')
 			position--;
 
 		std::string dependencyFile = effectContent.str().substr(position, found + 5 - position);
@@ -363,29 +365,18 @@ Dependency::copyEffectDependency(std::shared_ptr<AssetLibrary>                  
 		std::cout << dependencyFile << std::endl;
 
 #ifdef DEBUG
-		std::ifstream dependencySource("bin/debug/effect/" + dependencyFile, std::ios::binary);
+        std::ifstream dependencySource("bin/debug/effect/" + dependencyFile, std::ios::binary);
 #else
-		std::ifstream dependencySource("effect/" + dependencyFile, std::ios::binary);
+        std::ifstream dependencySource("effect/" + dependencyFile, std::ios::binary);
 #endif
         if (options->embedAll())
         {
-            auto dependencyReference = assets->effect(dependencyFile);
-
-            if (dependencyReference == nullptr)
-                assets->load(dependencyFile, options, nullptr, false);
-
-            uint dependencyId = registerDependency(dependencyReference);
-
-            auto content = std::string(std::istreambuf_iterator<char>(dependencySource),
-                                       std::istreambuf_iterator<char>());
-
-            result.a0 = serialize::AssetType::EMBED_EFFECT_ASSET;
-            result.a1 = dependencyId;
-            result.a2 = content;
+            // TODO
+            // see how effect dep are processed
         }
         else
         {
-            dependencyFile = options->uriFunction()(dependencyFile);
+            dependencyFile = options->outputAssetUriFunction()(dependencyFile);
 
             std::ofstream dst(dependencyFile, std::ios::binary);
 
