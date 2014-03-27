@@ -26,7 +26,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 std::string MODEL_FILENAME = "model/primitives/primitives.scene";
 
-//#define SERIALIZE // comment to test deserialization
+#define SERIALIZE // comment to test deserialization
 #define DEACTIVATE_PHYSICS
 
 using namespace minko;
@@ -96,12 +96,12 @@ int main(int argc, char** argv)
 		->effect(sceneManager->assets()->effect("basic"));
 
 	sceneManager->assets()
-		->material("defaultMaterial",	material::BasicMaterial::create()->diffuseColor(0xFFFFFFFF))
-		->geometry("cube",				geometry::CubeGeometry::create(sceneManager->assets()->context()))
-		->geometry("defaultGeometry",	geometry::CubeGeometry::create(sceneManager->assets()->context()))
+		->material("defaultMaterial", material::BasicMaterial::create()->diffuseColor(0xFFFFFFFF))
+		->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()))
+		->geometry("defaultGeometry", geometry::CubeGeometry::create(sceneManager->assets()->context()))
 		->registerParser<file::PNGParser>("png")
 #ifdef SERIALIZE
-		->queue("texture/box.png")
+		->queue("texture/box.png");
 		
 		sceneManager->assets()->geometry("sphere", geometry::SphereGeometry::create(sceneManager->assets()->context(), 20, 20));
 #else
