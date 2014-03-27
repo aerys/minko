@@ -32,19 +32,19 @@ namespace minko
 	namespace component
 	{
 
-		class Overlay :
+		class HtmlOverlay :
 			public AbstractComponent,
-			public std::enable_shared_from_this<Overlay>
+			public std::enable_shared_from_this<HtmlOverlay>
 		{
 		public:
-			typedef std::shared_ptr<Overlay> Ptr;
-			~Overlay();
+			typedef std::shared_ptr<HtmlOverlay> Ptr;
+			~HtmlOverlay();
 
 		private:
 			typedef std::shared_ptr<scene::Node>							NodePtr;
 
 
-			Overlay(int argc, char** argv);
+			HtmlOverlay(int argc, char** argv);
 
 		public:
 
@@ -55,7 +55,7 @@ namespace minko
 			Ptr
 			create(int argc, char** argv)
 			{
-				Ptr overlay(new Overlay(argc, argv));
+				Ptr overlay(new HtmlOverlay(argc, argv));
 
 				return overlay;
 			}

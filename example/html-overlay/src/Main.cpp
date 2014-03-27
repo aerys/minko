@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Minko.hpp"
 #include "minko/MinkoPNG.hpp"
 #include "minko/MinkoSDL.hpp"
-#include "minko/MinkoOverlay.hpp"
+#include "minko/MinkoHtmlOverlay.hpp"
 
 using namespace minko;
 using namespace minko::component;
@@ -47,7 +47,7 @@ updateBlueScore();
 
 int main(int argc, char** argv)
 {
-	auto overlay = Overlay::create(argc, argv);
+	auto overlay = HtmlOverlay::create(argc, argv);
 
 	redScore = 0;
 	blueScore = 0;
@@ -144,7 +144,6 @@ int main(int argc, char** argv)
 		mesh->component<Transform>()->matrix()->appendRotationY(.01f);
 
 		sceneManager->nextFrame(time, deltaTime);
-		//sceneManager->nextFrame();
 	});
 
 	sceneManager->assets()->load();

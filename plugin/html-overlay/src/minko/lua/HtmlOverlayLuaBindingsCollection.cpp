@@ -17,56 +17,30 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#pragma once
+#include "minko/lua/HtmlOverlayLuaBindingsCollection.hpp"
+#include "LuaHtmlOverlay.hpp"
+#include "LuaAbstractDOM.hpp"
+#include "LuaAbstractDOMElement.hpp"
+#include "LuaAbstractDOMEvent.hpp"
 
-#include "minko/component/Overlay.hpp"
-#include "minko/MinkoLua.hpp"
+using namespace minko;
+using namespace minko::lua;
+using namespace minko::component;
 
-#include "minko/scene/Node.hpp"
-
-namespace minko
+std::vector<std::function<void(LuaGlue&)>>
+HtmlOverlayLuaBindingsCollection::getHtmlOverlayBindings()
 {
-	class LuaWrapper;
+	std::vector<std::function<void(LuaGlue&)>> bindings;
 
-	namespace component
-	{
-		namespace overlay
-		{
-			class LuaOverlay :
-				public LuaWrapper
-			{
+	return HtmlOverlayLuaBindingsCollection::getHtmlOverlayBindings(bindings);
+}
 
-			private:
-
-			public:
-
-				static
-				std::shared_ptr<Overlay>
-				extractOverlayFromNode(std::shared_ptr<scene::Node> node)
-				{
-					return node->component<Overlay>(0);
-				}
-
-				static
-				void
-				bind(LuaGlue& state)
-				{
-					auto scene_node = (LuaGlueClass<scene::Node>*)state.lookupClass("Node");
-
-					scene_node->methodWrapper("getOverlay", &LuaOverlay::extractOverlayFromNode);
-
-					auto& overlay = state.Class<Overlay>("Overlay")
-						.method("create", &Overlay::create)
-						.method("load", &Overlay::load)
-						.method("clear", &Overlay::clear);
-
-					MINKO_LUAGLUE_BIND_SIGNAL(state, minko::dom::AbstractDOM::Ptr, std::string);
-
-					overlay.property("onload", &Overlay::onload);
-					overlay.property("onmessage", &Overlay::onmessage);
-				}
-
-			};
-		}
-	}
+std::vector<std::function<void(LuaGlue&)>>
+HtmlOverlayLuaBindingsCollection::getHtmlOverlayBindings(std::vector<std::function<void(LuaGlue&)>> bindings)
+{
+	bindings.push_back(&overlay::LuaAbstractDOMEvent::bind);
+	bindings.push_back(&overlay::LuaAbstractDOMElement::bind);
+	bindings.push_back(&overlay::LuaAbstractDOM::bind);
+	bindings.push_back(&overlay::LuaHtmlOverlay::bind);
+	return bindings;
 }

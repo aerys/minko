@@ -17,14 +17,14 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ]]--
 
--- overlay (html5 overlay) plugin
-minko.plugin.overlay = {}
+-- html-overlay plugin
+minko.plugin["html-overlay"] = {}
 
-function minko.plugin.overlay:enable()
-	minko.plugin.links { "overlay" }
-	defines { "MINKO_PLUGIN_OVERLAY" }
+minko.plugin["html-overlay"].enable = function()
+	minko.plugin.links { "html-overlay" }
+	defines { "MINKO_PLUGIN_HTML_OVERLAY" }
 	includedirs {
-		minko.plugin.path("overlay") .. "/include"
+		minko.plugin.path("html-overlay") .. "/include"
 	}
 	
 	minko.plugin.enable("lua")
@@ -32,16 +32,16 @@ function minko.plugin.overlay:enable()
 	configuration { "windows32 or windows64" }
 		links { "libcef" }
 		prelinkcommands {
-			minko.action.copy(minko.plugin.path("overlay") .. "/asset"),
-			minko.action.copy(minko.plugin.path("overlay") .. "/lib/resource/*"),
-			minko.action.copy(minko.plugin.path("overlay") .. "/lib/win/dll/*.dll")
+			minko.action.copy(minko.plugin.path("html-overlay") .. "/asset"),
+			minko.action.copy(minko.plugin.path("html-overlay") .. "/lib/resource/*"),
+			minko.action.copy(minko.plugin.path("html-overlay") .. "/lib/win/dll/*.dll")
 		}
 
 	configuration { "windows32 or windows64", "debug"}
-		libdirs { minko.plugin.path("overlay") .. "/lib/win/debug" }
+		libdirs { minko.plugin.path("html-overlay") .. "/lib/win/debug" }
 
 	configuration { "windows32 or windows64", "release"}
-		libdirs { minko.plugin.path("overlay") .. "/lib/win/release" }
+		libdirs { minko.plugin.path("html-overlay") .. "/lib/win/release" }
 
 	configuration { "linux32 or linux64"}
 		buildoptions {
@@ -51,31 +51,31 @@ function minko.plugin.overlay:enable()
 			"-Wl,-rpath,."
 		}
 		links { "cef" }
-		libdirs { minko.plugin.path("overlay") .. "/lib/lin/" }
+		libdirs { minko.plugin.path("html-overlay") .. "/lib/lin/" }
 		prelinkcommands {
-			minko.action.copy(minko.plugin.path("overlay") .. "/asset"),
-			minko.action.copy(minko.plugin.path("overlay") .. "/lib/resource/locales"),
-			minko.action.copy(minko.plugin.path("overlay") .. "/lib/resource/cef.pak"),
-			minko.action.copy(minko.plugin.path("overlay") .. "/lib/resource/devtools_resources.pak"),
-			minko.action.copy(minko.plugin.path("overlay") .. "/lib/lin/libcef.so"),
-			minko.action.copy(minko.plugin.path("overlay") .. "/lib/lin/libffmpegsumo.so"),
-			minko.action.copy(minko.plugin.path("overlay") .. "/lib/lin/chrome-sandbox")
+			minko.action.copy(minko.plugin.path("html-overlay") .. "/asset"),
+			minko.action.copy(minko.plugin.path("html-overlay") .. "/lib/resource/locales"),
+			minko.action.copy(minko.plugin.path("html-overlay") .. "/lib/resource/cef.pak"),
+			minko.action.copy(minko.plugin.path("html-overlay") .. "/lib/resource/devtools_resources.pak"),
+			minko.action.copy(minko.plugin.path("html-overlay") .. "/lib/lin/libcef.so"),
+			minko.action.copy(minko.plugin.path("html-overlay") .. "/lib/lin/libffmpegsumo.so"),
+			minko.action.copy(minko.plugin.path("html-overlay") .. "/lib/lin/chrome-sandbox")
 		}
 end
 
-function minko.plugin.overlay:dist(pluginDistDir)
+minko.plugin["html-overlay"].dist = function(pluginDistDir)
 	configuration { "windows32 or windows64" }
 		os.mkdir(pluginDistDir .. "/lib/win/")
-		minko.os.copyfiles(minko.plugin.path("overlay") .. "/lib/win/", pluginDistDir .. "/lib/win/")
+		minko.os.copyfiles(minko.plugin.path("html-overlay") .. "/lib/win/", pluginDistDir .. "/lib/win/")
 
 	configuration { "linux32 or linux64" }
 		os.mkdir(pluginDistDir .. "/lib/lin/")
 		os.mkdir(pluginDistDir .. "/lib/resource/")
-		minko.os.copyfiles(minko.plugin.path("overlay") .. "/lib/lin/", pluginDistDir .. "/lib/lin/")
-		minko.os.copyfiles(minko.plugin.path("overlay") .. "/lib/resource/", pluginDistDir .. "/lib/resource/")
+		minko.os.copyfiles(minko.plugin.path("html-overlay") .. "/lib/lin/", pluginDistDir .. "/lib/lin/")
+		minko.os.copyfiles(minko.plugin.path("html-overlay") .. "/lib/resource/", pluginDistDir .. "/lib/resource/")
 end
 
 newoption {
-	trigger			= "with-overlay",
+	trigger			= "with-html-overlay",
 	description		= "Enable the Minko HTML Overlay plugin."
 }

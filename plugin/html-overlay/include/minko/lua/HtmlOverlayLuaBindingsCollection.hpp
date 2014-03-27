@@ -19,8 +19,25 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #pragma once
 
-#include "component/Overlay.hpp"
-#include "dom/AbstractDOMElement.hpp"
-#include "dom/AbstractDOMEvent.hpp"
-#include "dom/AbstractDOMEngine.hpp"
-#include "lua/OverlayLuaBindingsCollection.hpp"
+#include "minko/Common.hpp"
+
+class LuaGlue;
+struct lua_State;
+
+namespace minko
+{
+	namespace lua
+	{
+		class HtmlOverlayLuaBindingsCollection
+		{
+		public:
+			static
+				std::vector<std::function<void(LuaGlue&)>>
+				getHtmlOverlayBindings();
+
+			static
+				std::vector<std::function<void(LuaGlue&)>>
+				getHtmlOverlayBindings(std::vector<std::function<void(LuaGlue&)>> bindings);
+		};
+	}
+}

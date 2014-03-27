@@ -9,7 +9,7 @@
 #if defined(EMSCRIPTEN)
 #include "emscripten/dom/EmscriptenDOMEngine.hpp"
 #endif
-#include "minko/component/Overlay.hpp"
+#include "minko/component/HtmlOverlay.hpp"
 #include "minko/scene/Node.hpp"
 
 
@@ -26,7 +26,7 @@ using namespace emscripten;
 using namespace emscripten::dom;
 #endif
 
-Overlay::Overlay(int argc, char** argv) :
+HtmlOverlay::HtmlOverlay(int argc, char** argv) :
 	AbstractComponent(),
 	_cleared(false)
 {
@@ -41,25 +41,25 @@ Overlay::Overlay(int argc, char** argv) :
 #endif
 }
 
-Overlay::~Overlay()
+HtmlOverlay::~HtmlOverlay()
 {
 	clear();
 }
 
 void
-Overlay::initialize(AbstractCanvas::Ptr canvas)
+HtmlOverlay::initialize(AbstractCanvas::Ptr canvas)
 {
 	_canvas = canvas;
 
 	_targetAddedSlot = targetAdded()->connect(std::bind(
-		&Overlay::targetAddedHandler,
+		&HtmlOverlay::targetAddedHandler,
 		shared_from_this(),
 		std::placeholders::_1,
 		std::placeholders::_2
 		));
 
 	_targetRemovedSlot = targetRemoved()->connect(std::bind(
-		&Overlay::targetRemovedHandler,
+		&HtmlOverlay::targetRemovedHandler,
 		shared_from_this(),
 		std::placeholders::_1,
 		std::placeholders::_2
@@ -67,7 +67,7 @@ Overlay::initialize(AbstractCanvas::Ptr canvas)
 }
 
 void
-Overlay::targetAddedHandler(AbstractComponent::Ptr	ctrl, scene::Node::Ptr		target)
+HtmlOverlay::targetAddedHandler(AbstractComponent::Ptr	ctrl, scene::Node::Ptr		target)
 {
 #if defined(CHROMIUM)
 	if (target->hasComponent<SceneManager>())
@@ -91,7 +91,7 @@ Overlay::targetAddedHandler(AbstractComponent::Ptr	ctrl, scene::Node::Ptr		targe
 }
 
 void
-Overlay::targetRemovedHandler(AbstractComponent::Ptr	ctrl, scene::Node::Ptr		target)
+HtmlOverlay::targetRemovedHandler(AbstractComponent::Ptr	ctrl, scene::Node::Ptr		target)
 {
 	clear();
 }
