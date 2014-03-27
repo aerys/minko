@@ -81,11 +81,7 @@ WINAPI
 ConsoleHandlerRoutine(DWORD dwCtrlType)
 {
 	if (dwCtrlType == CTRL_CLOSE_EVENT)
-	{
-		Canvas::Ptr canvas = std::dynamic_pointer_cast<Canvas>(AbstractCanvas::defaultCanvas());
-		canvas->quit();
 		return true;
-	}
 	return false;
 }
 #endif
