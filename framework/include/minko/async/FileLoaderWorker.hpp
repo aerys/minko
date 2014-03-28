@@ -17,7 +17,7 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#if !defined(EMSCRIPTEN)
+//#if !defined(EMSCRIPTEN)
 #include "minko/async/Worker.hpp"
 
 using namespace minko;
@@ -49,4 +49,4 @@ namespace minko
 		};
 	}
 }
-#endif
+//#endif

@@ -69,6 +69,7 @@ DrawCall::DrawCall(const data::BindingMap&	attributeBindings,
     _vertexAttributeOffsets(MAX_NUM_VERTEXBUFFERS, -1),
 	_target(nullptr),
 	_referenceChangedSlots(),
+	_indicesChanged(nullptr),
 	_zsortNeeded(Signal<Ptr>::create()),
 	_zSorter(nullptr)
 {
@@ -95,6 +96,8 @@ DrawCall::bind(ContainerPtr data, ContainerPtr rendererData, ContainerPtr rootDa
 {
 	reset();
 
+	bindProgramDefaultUniforms();
+
 	_targetData		= data;
 	_rendererData	= rendererData;
 	_rootData		= rootData;
@@ -107,20 +110,41 @@ DrawCall::bind(ContainerPtr data, ContainerPtr rendererData, ContainerPtr rootDa
 }
 
 void
+DrawCall::bindProgramDefaultUniforms()
+{
+	if (_program == nullptr)
+		return;
+
+	for (auto& uniform : _program->uniformFloat())
+		_uniformFloat[uniform.first] = uniform.second;
+	for (auto& uniform : _program->uniformFloat2())
+		_uniformFloat2[uniform.first] = uniform.second;
+	for (auto& uniform : _program->uniformFloat3())
+		_uniformFloat3[uniform.first] = uniform.second;
+	for (auto& uniform : _program->uniformFloat4())
+		_uniformFloat4[uniform.first] = uniform.second;
+}
+
+void
 DrawCall::bindIndexBuffer()
 {
 	const std::string propertyName = "geometry[" + _variablesToValue["geometryId"] + "].indices";
 
 	_indexBuffer	= -1;
 	_numIndices		= 0;
-
+	_indicesChanged	= nullptr;
 
 	// Note: index buffer can only be held by the target node's data container!
 	if (_targetData->hasProperty(propertyName))
 	{
 		auto indexBuffer	= _targetData->get<IndexBuffer::Ptr>(propertyName);
 		_indexBuffer		= indexBuffer->id();
-		_numIndices			= indexBuffer->data().size();
+		_numIndices			= indexBuffer->numIndices();
+
+		_indicesChanged		= indexBuffer->changed()->connect([&](IndexBuffer::Ptr indices){
+			_indexBuffer	= indices->id();
+			_numIndices		= indices->numIndices();
+		});
 	}
 
 	if (_referenceChangedSlots.count(propertyName) == 0)

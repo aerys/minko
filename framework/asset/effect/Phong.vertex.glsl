@@ -10,7 +10,6 @@ attribute vec3 position;
 attribute vec2 uv;
 attribute vec3 normal;
 attribute vec3 tangent;
-uniform vec4 uvTransform;
 
 uniform mat4 modelToWorldMatrix;
 uniform mat4 worldToScreenMatrix;
@@ -24,9 +23,9 @@ varying vec3 vertexTangent;
 
 void main(void)
 {
-	#if defined DIFFUSE_MAP || defined NORMAL_MAP || defined SPECULAR_MAP
+	#if defined DIFFUSE_MAP || defined NORMAL_MAP || defined SPECULAR_MAP || defined ALPHA_MAP
 		vertexUV = uvScale * uv + uvOffset;
-	#endif // defined DIFFUSE_MAP || defined NORMAL_MAP || defined SPECULAR_MAP
+	#endif // defined DIFFUSE_MAP || defined NORMAL_MAP || defined SPECULAR_MAP || defined ALPHA_MAP
 
 	vec4 worldPosition 	= vec4(position, 1.0);
 	

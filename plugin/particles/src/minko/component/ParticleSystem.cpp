@@ -79,7 +79,7 @@ ParticleSystem::ParticleSystem(AssetLibraryPtr		assets,
     _frameBeginSlot     (nullptr)
 {
 	if (_effect == nullptr)
-		throw new std::logic_error("Effect 'particles' is not available in the asset library.");
+		throw std::logic_error("Effect 'particles' is not available in the asset library.");
 
 	_surface = Surface::create(
 		_geometry, 
@@ -752,7 +752,7 @@ ParticleSystem::updateVertexBuffer()
 	if (liveCount != _previousLiveCount)
 	{
         auto particleIndices    = std::static_pointer_cast<render::ParticleIndexBuffer>(_geometry->indices());
-		particleIndices->upload(0, liveCount << 2);
+		particleIndices->upload(0, liveCount * 6);
 		_previousLiveCount = liveCount;
 	}
 }

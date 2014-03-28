@@ -58,6 +58,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/LuaPerspectiveCamera.hpp"
 #include "minko/component/LuaTransform.hpp"
 #include "minko/component/LuaAnimation.hpp"
+#include "minko/component/LuaMasterAnimation.hpp"
+#include "minko/component/LuaSurface.hpp"
 
 using namespace minko;
 using namespace minko::component;
@@ -146,8 +148,8 @@ void
 LuaScriptManager::initializeBindings()
 {
 	_state.Class<render::Texture>("Texture");
-	_state.Class<Surface>("Surface")
-		.method("create", static_cast<Surface::Ptr(*)(geometry::Geometry::Ptr, data::Provider::Ptr, render::Effect::Ptr)>(&Surface::create));
+	//_state.Class<Surface>("Surface")
+	//	.method("create", static_cast<Surface::Ptr(*)(geometry::Geometry::Ptr, data::Provider::Ptr, render::Effect::Ptr)>(&Surface::create));
 	_state.Class<render::AbstractContext>("AbstractContext");
 	_state.Class<BoundingBox>("BoundingBox")
 		.property("box", &BoundingBox::box);
@@ -184,9 +186,11 @@ LuaScriptManager::initializeBindings()
     LuaAbstractCanvas::bind(_state);
     component::LuaPerspectiveCamera::bind(_state);
     component::LuaTransform::bind(_state);
+	component::LuaSurface::bind(_state);
     scene::LuaNode::bind(_state);
     scene::LuaNodeSet::bind(_state);
-	component::LuaAnimation::bind(_state);
+    component::LuaAnimation::bind(_state);
+    component::LuaMasterAnimation::bind(_state);
 
     auto& sceneManager = _state.Class<SceneManager>("SceneManager")
         .property("assets",     &SceneManager::assets);

@@ -238,6 +238,13 @@ namespace minko
 			}
 
 			inline
+			bool
+			emitting() const
+			{
+				return _emitting;
+			}
+
+			inline
 			Ptr
 			play()
 			{
@@ -296,6 +303,13 @@ namespace minko
 		public:
             Ptr
             isInWorldSpace(bool);
+
+			inline
+			bool
+			isInWorldSpace() const
+			{
+				return _isInWorldSpace;
+			}
 
 			Ptr
 			isZSorted(bool);

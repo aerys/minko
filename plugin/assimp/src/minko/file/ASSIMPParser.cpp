@@ -854,7 +854,9 @@ ASSIMPParser::createSkin(const aiMesh* aimesh)
 		skin->reorganizeByVertices()->transposeMatrices()->disposeBones(), 
 		_options->skinningMethod(), 
 		_assetLibrary->context(),
-		slaveAnimations
+		slaveAnimations,
+		skeletonRoot,
+		false
 	));
 
 	auto irrelevantTransforms = NodeSet::create(skeletonRoot)
