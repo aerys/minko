@@ -218,7 +218,7 @@ Dependency::serialize(std::shared_ptr<file::AssetLibrary>	assetLibrary,
         {
             assetType = serialize::AssetType::MATERIAL_ASSET;
 
-            auto filename = /* assetLibrary->materialName(itMaterial.first) */ std::to_string(itMaterial.second) + ".material";
+            auto filename = assetLibrary->materialName(itMaterial.first) + ".material";
 
             auto completeFilename = options->outputAssetUriFunction()(filename);
 
