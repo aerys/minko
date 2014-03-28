@@ -86,7 +86,6 @@ solution "minko"
 		include 'plugin/sdl'
 		include 'plugin/serializer'
 		include 'plugin/webgl'
-		include 'plugin/overlay'
 	end
 
 	-- example
@@ -115,7 +114,6 @@ solution "minko"
 		include 'example/oculus'
 		include 'example/http'
 		include 'example/joystick'
-		include 'example/overlay'
 	end
 
 	-- test
