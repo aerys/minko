@@ -46,6 +46,13 @@ namespace minko
 
 			inline static
 			Ptr
+			create(Ptr value)
+			{
+				return create(value->x(), value->y());
+			}
+
+			inline static
+			Ptr
 			create(float* data)
 			{
 				return create(*data, *(data + 1));
