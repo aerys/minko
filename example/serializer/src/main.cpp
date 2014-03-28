@@ -62,11 +62,9 @@ int main(int argc, char** argv)
 	auto root = scene::Node::create("root")
 		->addComponent(sceneManager);
 
-
 	auto physicWorld = bullet::PhysicsWorld::create();
 	physicWorld->setGravity(math::Vector3::create(0.f, -9.8f, 0.f));
 	root->addComponent(physicWorld);
-
 
 	auto camera = scene::Node::create("camera")
 		->addComponent(Renderer::create(0x7f7f7fff))
@@ -75,13 +73,6 @@ int main(int argc, char** argv)
 		))
 		->addComponent(PerspectiveCamera::create(800.f / 600.f, (float)PI * 0.25f, .1f, 1000.f));
 	root->addChild(camera);
-
-	auto mesh = scene::Node::create("mesh")
-		->addComponent(Transform::create());
-	auto mesh2 = scene::Node::create("mesh2")
-		->addComponent(Transform::create());
-	auto mesh3 = scene::Node::create("mesh3")
-		->addComponent(Transform::create());
 
 	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
 	{

@@ -182,18 +182,17 @@ Dependency::serialize(std::shared_ptr<file::AssetLibrary>	assetLibrary,
         {
             assetType = serialize::AssetType::EMBED_GEOMETRY_ASSET;
 
-            auto geometryDependency = Dependency::create();
-
-            content = geometryWriter->embed(assetLibrary, options, geometryDependency);
+            content = geometryWriter->embedAll(assetLibrary, options);
         }
         else
         {
             assetType = serialize::AssetType::GEOMETRY_ASSET;
 
-            auto filename = options->outputAssetUriFunction()(
-                assetLibrary->geometryName(itGeometry.first) + ".geometry");
+            auto filename = assetLibrary->geometryName(itGeometry.first) + ".geometry";
 
-            geometryWriter->write(filename, assetLibrary, options);
+            auto completFilename = options->outputAssetUriFunction()(filename);
+
+            geometryWriter->write(completFilename, assetLibrary, options);
 
             content = filename;
         }
@@ -213,18 +212,17 @@ Dependency::serialize(std::shared_ptr<file::AssetLibrary>	assetLibrary,
         {
             assetType = serialize::AssetType::EMBED_MATERIAL_ASSET;
 
-            auto materialDependency = Dependency::create();
-
-            content = materialWriter->embed(assetLibrary, options, materialDependency);
+            content = materialWriter->embedAll(assetLibrary, options);
         }
         else
         {
             assetType = serialize::AssetType::MATERIAL_ASSET;
 
-            auto filename = options->outputAssetUriFunction()(
-                assetLibrary->materialName(itMaterial.first) + ".material");
+            auto filename = assetLibrary->materialName(itMaterial.first) + ".material";
 
-            materialWriter->write(filename, assetLibrary, options);
+            auto completFilename = options->outputAssetUriFunction()(filename);
+
+            materialWriter->write(completFilename, assetLibrary, options);
 
             content = filename;
         }
@@ -265,9 +263,9 @@ Dependency::serialize(std::shared_ptr<file::AssetLibrary>	assetLibrary,
                 filenameOutput.insert(0, filenameInput.substr(charIndex, 1));
             }
 
-            filenameOutput = options->outputAssetUriFunction()(filenameOutput);
+            auto completeOutputFilename = options->outputAssetUriFunction()(filenameOutput);
 
-            std::ofstream dst(filenameOutput, std::ios::binary);
+            std::ofstream dst(completeOutputFilename, std::ios::binary);
 
             dst << source.rdbuf();
 
@@ -320,9 +318,9 @@ Dependency::serialize(std::shared_ptr<file::AssetLibrary>	assetLibrary,
                 filenameOutput.insert(0, filenameInput.substr(charIndex, 1));
             }
 
-            filenameOutput = options->outputAssetUriFunction()(filenameOutput);
+            auto completeOutputFilename = options->outputAssetUriFunction()(filenameOutput);
 
-            std::ofstream dst(filenameOutput, std::ios::binary);
+            std::ofstream dst(completeOutputFilename, std::ios::binary);
 
             dst << source.rdbuf();
 

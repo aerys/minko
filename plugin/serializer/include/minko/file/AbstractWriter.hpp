@@ -91,6 +91,25 @@ namespace minko
 				complete()->execute(this->shared_from_this());
 			}
 
+            std::string
+            embedAll(std::shared_ptr<AssetLibrary>	assetLibrary,
+                     std::shared_ptr<Options>		options)
+            {
+                // TODO
+                // refactor with AbstractWriter::write by adding a tier private member function
+
+                Dependency::Ptr			dependencies			= Dependency::create();
+                std::string				serializedData			= embed(assetLibrary, options, dependencies);
+                SerializedDependency	serializedDependencies	= dependencies->serialize(assetLibrary, options);
+
+                msgpack::type::tuple<SerializedDependency, std::string> res(serializedDependencies, serializedData);
+
+                std::stringstream sbuf;
+                msgpack::pack(sbuf, res);
+
+                return sbuf.str();
+            }
+
 			virtual
 			std::string
 			embed(std::shared_ptr<AssetLibrary>		assetLibrary,
