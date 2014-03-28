@@ -52,6 +52,7 @@ namespace minko
 					.method("resetPlaybackWindow",		static_cast<AbstractAnimation::Ptr (MasterAnimation::*)()>(&MasterAnimation::resetPlaybackWindow))
 					.methodWrapper("seekTime",	&LuaMasterAnimation::seekTimeWrapper)
 					.methodWrapper("seekLabel",	&LuaMasterAnimation::seekLabelWrapper)
+					.methodWrapper("labelTime", &LuaMasterAnimation::labelTimeWrapper)
 					.methodWrapper("setPlaybackWindowLabel",	&LuaMasterAnimation::setPlaybackWindowLabelWrapper);
 
 					// FIXME: Bind the rest of MasterAnimation.
@@ -95,6 +96,13 @@ namespace minko
 			seekLabelWrapper(MasterAnimation::Ptr animation, std::string label)
 			{
 				animation->seek(label);
+			}
+
+			static
+			int
+			labelTimeWrapper(MasterAnimation::Ptr animation, std::string label)
+			{
+				return animation->labelTime(label);
 			}
 
 			static
