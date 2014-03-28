@@ -240,12 +240,17 @@ Dependency::serialize(std::shared_ptr<file::AssetLibrary>	assetLibrary,
 #endif
         std::ifstream   source(filenameInput, std::ios::binary);
 
+        auto extension = filenameInput.substr(filenameInput.find_last_of(".") + 1);
+
         serialize::AssetType    assetType;
         std::string             content;
 
         if (options->embedAll())
         {
-            assetType = serialize::AssetType::EMBED_TEXTURE_ASSET;
+            if (extension == "jpg")
+                assetType = serialize::AssetType::JPEG_EMBED_TEXTURE_ASSET;
+            else /* if (extension == "png") */
+                assetType = serialize::AssetType::PNG_EMBED_TEXTURE_ASSET;
 
             content = std::string(std::istreambuf_iterator<char>(source),
                                   std::istreambuf_iterator<char>());

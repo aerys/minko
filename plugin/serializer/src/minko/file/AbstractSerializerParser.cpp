@@ -148,17 +148,15 @@ AbstractSerializerParser::deserializedAsset(SerializedAsset				asset,
 		_dependencies->registerReference(asset.a1, std::dynamic_pointer_cast<data::Provider>(assetLibrary->material(_materialParser->_lastParsedAssetName)));
 		_jobList.merge(_materialParser->_jobList);
 	}
-	else if (asset.a0 == serialize::AssetType::TEXTURE_ASSET || asset.a0 == serialize::AssetType::EMBED_TEXTURE_ASSET) // texture
+	else if (asset.a0 == serialize::AssetType::TEXTURE_ASSET ||
+             asset.a0 == serialize::AssetType::PNG_EMBED_TEXTURE_ASSET ||
+             asset.a0 == serialize::AssetType::JPEG_EMBED_TEXTURE_ASSET) // texture
 	{
-        // TODO
-        // texture format detection
-
-		if (asset.a0 == serialize::AssetType::EMBED_TEXTURE_ASSET)
+		if (asset.a0 == serialize::AssetType::PNG_EMBED_TEXTURE_ASSET ||
+            asset.a0 == serialize::AssetType::JPEG_EMBED_TEXTURE_ASSET)
 		{
-            // TODO
-            // dispatch on texture format
-
-			resolvedPath = std::to_string(asset.a1) + ".png";
+            auto extension = asset.a0 == serialize::AssetType::PNG_EMBED_TEXTURE_ASSET ? ".png" : ".jpg";
+			resolvedPath = std::to_string(asset.a1) + extension;
 			assetCompletePath += resolvedPath;
 		}
 
