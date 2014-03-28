@@ -45,6 +45,27 @@ namespace minko
 				Worker("http")
 			{
 			}
+		};
+
+		class HTTPWorkerHelper
+		{
+		public:
+			HTTPWorkerHelper(std::string url, Worker::MessagePtr output);
+
+			void
+			run();
+
+			Worker::MessagePtr
+			output()
+			{
+				return _output;
+			}
+
+			Signal<float>::Ptr
+			progress()
+			{
+				return _progress;
+			}
 
 			static
 			size_t
@@ -53,6 +74,12 @@ namespace minko
 			static
 			int
 			curlProgressHandler(void* arg, double total, double current, double, double);
-		};		
+
+		private:
+
+			std::string _url;
+			Worker::MessagePtr _output;
+			Signal<float>::Ptr _progress;
+		};
 	}
 }
