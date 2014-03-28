@@ -150,13 +150,21 @@ AbstractSerializerParser::deserializedAsset(SerializedAsset				asset,
 	}
 	else if (asset.a0 == serialize::AssetType::TEXTURE_ASSET || asset.a0 == serialize::AssetType::EMBED_TEXTURE_ASSET) // texture
 	{
+        // TODO
+        // texture format detection
+
 		if (asset.a0 == serialize::AssetType::EMBED_TEXTURE_ASSET)
 		{
+            // TODO
+            // dispatch on texture format
+
 			resolvedPath = std::to_string(asset.a1) + ".png";
 			assetCompletePath += resolvedPath;
 		}
 
-		std::shared_ptr<file::AbstractParser> parser = assetLibrary->getParser("png");
+        auto extension = resolvedPath.substr(resolvedPath.find_last_of(".") + 1);
+
+		std::shared_ptr<file::AbstractParser> parser = assetLibrary->getParser(extension);
 
 		parser->parse(resolvedPath, assetCompletePath, options, data, assetLibrary);
 		_dependencies->registerReference(asset.a1, assetLibrary->texture(resolvedPath));

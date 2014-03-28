@@ -190,9 +190,9 @@ Dependency::serialize(std::shared_ptr<file::AssetLibrary>	assetLibrary,
 
             auto filename = assetLibrary->geometryName(itGeometry.first) + ".geometry";
 
-            auto completFilename = options->outputAssetUriFunction()(filename);
+            auto completeFilename = options->outputAssetUriFunction()(filename);
 
-            geometryWriter->write(completFilename, assetLibrary, options);
+            geometryWriter->write(completeFilename, assetLibrary, options);
 
             content = filename;
         }
@@ -218,11 +218,11 @@ Dependency::serialize(std::shared_ptr<file::AssetLibrary>	assetLibrary,
         {
             assetType = serialize::AssetType::MATERIAL_ASSET;
 
-            auto filename = assetLibrary->materialName(itMaterial.first) + ".material";
+            auto filename = /* assetLibrary->materialName(itMaterial.first) */ std::to_string(itMaterial.second) + ".material";
 
-            auto completFilename = options->outputAssetUriFunction()(filename);
+            auto completeFilename = options->outputAssetUriFunction()(filename);
 
-            materialWriter->write(completFilename, assetLibrary, options);
+            materialWriter->write(completeFilename, assetLibrary, options);
 
             content = filename;
         }
@@ -280,6 +280,7 @@ Dependency::serialize(std::shared_ptr<file::AssetLibrary>	assetLibrary,
 		serializedAsset.insert(serializedAsset.begin(), res);
 	}
 
+#if 0
 	for (const auto& itEffect : _effectDependencies)
 	{
 #ifdef DEBUG
@@ -333,6 +334,7 @@ Dependency::serialize(std::shared_ptr<file::AssetLibrary>	assetLibrary,
 		msgpack::type::tuple<unsigned int, short, std::string> res(assetType, itEffect.second, content);
 		serializedAsset.insert(serializedAsset.begin(), res);
 	}
+#endif
 
 	return serializedAsset;
 }
