@@ -96,6 +96,8 @@ DrawCall::bind(ContainerPtr data, ContainerPtr rendererData, ContainerPtr rootDa
 {
 	reset();
 
+	bindProgramDefaultUniforms();
+
 	_targetData		= data;
 	_rendererData	= rendererData;
 	_rootData		= rootData;
@@ -105,6 +107,22 @@ DrawCall::bind(ContainerPtr data, ContainerPtr rendererData, ContainerPtr rootDa
 	bindStates();
 
 	_zSorter->initialize(data, rendererData, rootData);
+}
+
+void
+DrawCall::bindProgramDefaultUniforms()
+{
+	if (_program == nullptr)
+		return;
+
+	for (auto& uniform : _program->uniformFloat())
+		_uniformFloat[uniform.first] = uniform.second;
+	for (auto& uniform : _program->uniformFloat2())
+		_uniformFloat2[uniform.first] = uniform.second;
+	for (auto& uniform : _program->uniformFloat3())
+		_uniformFloat3[uniform.first] = uniform.second;
+	for (auto& uniform : _program->uniformFloat4())
+		_uniformFloat4[uniform.first] = uniform.second;
 }
 
 void

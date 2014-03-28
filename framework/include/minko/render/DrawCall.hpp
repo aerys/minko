@@ -247,6 +247,9 @@ namespace minko
             bind(ContainerPtr data, ContainerPtr rendererData, ContainerPtr rootData);
 
 			void
+			bindProgramDefaultUniforms();
+
+			void
 			bindProgramInputs();
 
 			void
