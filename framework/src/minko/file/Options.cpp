@@ -40,6 +40,7 @@ Options::Options(std::shared_ptr<render::AbstractContext> context) :
 	_isCubeTexture(false),
 	_startAnimation(true),
 	_loadAsynchronously(false),
+    _embedAll(false),
 	_skinningFramerate(30),
 	_skinningMethod(component::SkinningMethod::HARDWARE),
 	_material(nullptr),
@@ -93,7 +94,7 @@ Options::Options(std::shared_ptr<render::AbstractContext> context) :
 	includePaths().push_back("bin/linux64/release/asset");
 #  else
 	includePaths().push_back("bin/linux32/release/asset");
-#  endif 
+#  endif
 # elif defined(__APPLE__)
 #  include <TargetConditionals.h>
 #  if defined(TARGET_IPHONE_SIMULATOR) or defined(TARGET_OS_IPHONE)
@@ -110,7 +111,7 @@ Options::Options(std::shared_ptr<render::AbstractContext> context) :
 #endif
 
 	_materialFunction = [](const std::string&, material::Material::Ptr material) -> material::Material::Ptr
-	{ 
+	{
 		return material;
 	};
 
@@ -143,7 +144,7 @@ Options::Options(std::shared_ptr<render::AbstractContext> context) :
 
 		return FileLoader::create();
 	};
-	
+
 	_uriFunction = [](const std::string& uri) -> const std::string
 	{
 		return uri;

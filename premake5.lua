@@ -25,12 +25,12 @@ newoption {
 
 solution "minko"
 	MINKO_HOME = path.getabsolute(os.getcwd())
-	
+
 	dofile('sdk.lua')
 
 	-- buildable SDK
 	MINKO_SDK_DIST = false
-	
+
 	include 'framework'
 
 	-- tutorial
@@ -86,36 +86,34 @@ solution "minko"
 		include 'plugin/sdl'
 		include 'plugin/serializer'
 		include 'plugin/webgl'
-		include 'plugin/html-overlay'
 	end
 
 	-- example
 	if not _OPTIONS['no-example'] then
-		-- include 'example/lua-scripts'
-		-- include 'example/assimp'
-		-- include 'example/cube'
-		-- include 'example/devil'
-		-- include 'example/effect-config'
-		-- include 'example/fog'
-		-- include 'example/frustum'
-		-- include 'example/jobs'
-		-- include 'example/leap-motion'
-		-- include 'example/light'
-		-- include 'example/line-geometry'
-		-- include 'example/offscreen'
-		-- include 'example/particles'
-		-- include 'example/picking'
-		-- include 'example/raycasting'
-		-- include 'example/serializer'
-		-- include 'example/sky-box'
-		-- include 'example/stencil'
-		-- include 'example/visibility'
-		-- include 'example/multi-surfaces'
-		-- include 'example/physics'
-		-- include 'example/oculus'
-		-- include 'example/http'
-		-- include 'example/joystick'
-		include 'example/html-overlay'
+		include 'example/lua-scripts'
+		include 'example/assimp'
+		include 'example/cube'
+		include 'example/devil'
+		include 'example/effect-config'
+		include 'example/fog'
+		include 'example/frustum'
+		include 'example/jobs'
+		include 'example/leap-motion'
+		include 'example/light'
+		include 'example/line-geometry'
+		include 'example/offscreen'
+		include 'example/particles'
+		include 'example/picking'
+		include 'example/raycasting'
+		include 'example/serializer'
+		include 'example/sky-box'
+		include 'example/stencil'
+		include 'example/visibility'
+		include 'example/multi-surfaces'
+		include 'example/physics'
+		include 'example/oculus'
+		include 'example/http'
+		include 'example/joystick'
 	end
 
 	-- test
@@ -127,23 +125,23 @@ newaction {
 	trigger		= 'dist',
 	description	= 'Generate the distributable version of the Minko SDK.',
 	execute		= function()
-	
+
 		-- print("Building documentation...")
 		-- os.execute("doxygen doc/Doxyfile")
 
 		local distDir = 'dist'
-		
+
 		if _OPTIONS['dist-dir'] then
 			distDir = _OPTIONS['dist-dir']
 		end
-		
+
 		os.rmdir(distDir)
 
 		os.mkdir(distDir)
 		os.copyfile('sdk.lua', distDir .. '/sdk.lua')
 
 		print("Packaging core framework...")
-		
+
 		-- framework
 		os.mkdir(distDir .. '/framework')
 		os.mkdir(distDir .. '/framework/bin')
@@ -158,19 +156,19 @@ newaction {
 		-- skeleton
 		os.mkdir(distDir .. '/skeleton')
 		minko.os.copyfiles('skeleton', distDir .. '/skeleton')
-		
+
 		-- module
 		os.mkdir(distDir .. '/module')
 		minko.os.copyfiles('module', distDir .. '/module')
-		
+
 		-- -- doc
 		-- os.mkdir(distDir .. '/doc')
 		-- minko.os.copyfiles('doc/html', distDir .. '/doc')
-		
+
 		-- tool
 		os.mkdir(distDir .. '/tool/')
 		minko.os.copyfiles('tool', distDir .. '/tool')
-		
+
 		-- plugin
 		local plugins = os.matchdirs('plugin/*')
 
@@ -185,7 +183,7 @@ newaction {
 			local binDir = dir .. '/bin'
 
 			-- plugin.lua
-			assert(os.isfile(basedir .. '/plugin.lua'), 'missing plugin.lua')			
+			assert(os.isfile(basedir .. '/plugin.lua'), 'missing plugin.lua')
 			os.mkdir(dir)
 			os.copyfile(basedir .. '/plugin.lua', dir .. '/plugin.lua')
 
@@ -204,7 +202,7 @@ newaction {
 				os.mkdir(dir .. '/include')
 				minko.os.copyfiles(basedir .. '/include', dir .. '/include')
 			end
-			
+
 			-- assets
 			if os.isdir(basedir .. '/asset') then
 				os.mkdir(dir .. '/asset')

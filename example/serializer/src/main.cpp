@@ -93,15 +93,15 @@ int main(int argc, char** argv)
 
 	sceneManager->assets()->defaultOptions()
 		->generateMipmaps(true)
-		->effect(sceneManager->assets()->effect("basic"));
+		->effect(sceneManager->assets()->effect("phong"));
 
 	sceneManager->assets()
-		->material("defaultMaterial",	material::BasicMaterial::create()->diffuseColor(0xFFFFFFFF))
-		->geometry("cube",				geometry::CubeGeometry::create(sceneManager->assets()->context()))
-		->geometry("defaultGeometry",	geometry::CubeGeometry::create(sceneManager->assets()->context()))
+		->material("defaultMaterial", material::BasicMaterial::create()->diffuseColor(0xFFFFFFFF))
+		->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()))
+		->geometry("defaultGeometry", geometry::CubeGeometry::create(sceneManager->assets()->context()))
 		->registerParser<file::PNGParser>("png")
 #ifdef SERIALIZE
-		->queue("texture/box.png")
+		->queue("texture/box.png");
 		
 		sceneManager->assets()->geometry("sphere", geometry::SphereGeometry::create(sceneManager->assets()->context(), 20, 20));
 #else

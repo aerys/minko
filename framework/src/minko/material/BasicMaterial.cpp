@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/material/BasicMaterial.hpp"
 
 #include "minko/Color.hpp"
+#include "minko/math/Vector2.hpp"
 #include "minko/math/Vector4.hpp"
 #include "minko/render/AbstractTexture.hpp"
 #include "minko/render/Texture.hpp"
@@ -44,6 +45,52 @@ void
 BasicMaterial::initialize()
 {
 	diffuseColor(0xffffffff);
+	set<Vector2::Ptr>("uvScale",	Vector2::create(1.0f, 1.0f));
+	set<Vector2::Ptr>("uvOffset",	Vector2::create(0.0f, 0.0f));
+}
+
+BasicMaterial::Ptr
+BasicMaterial::uvScale(float u, float v)
+{
+	get<Vector2::Ptr>("uvScale")->setTo(u, v);
+
+	return std::dynamic_pointer_cast<BasicMaterial>(shared_from_this());
+}
+
+BasicMaterial::Ptr
+BasicMaterial::uvScale(Vector2::Ptr value)
+{
+	return uvScale(value->x(), value->y());
+}
+
+Vector2::Ptr
+BasicMaterial::uvScale(Vector2::Ptr output) const
+{
+	return output
+		? output->copyFrom(get<Vector2::Ptr>("uvScale"))
+		: Vector2::create(get<Vector2::Ptr>("uvScale"));
+}
+
+BasicMaterial::Ptr
+BasicMaterial::uvOffset(float u, float v)
+{
+	get<Vector2::Ptr>("uvOffset")->setTo(u, v);
+
+	return std::dynamic_pointer_cast<BasicMaterial>(shared_from_this());
+}
+
+BasicMaterial::Ptr
+BasicMaterial::uvOffset(Vector2::Ptr value)
+{
+	return uvOffset(value->x(), value->y());
+}
+
+Vector2::Ptr
+BasicMaterial::uvOffset(Vector2::Ptr output) const
+{
+	return output
+		? output->copyFrom(get<Vector2::Ptr>("uvOffset"))
+		: Vector2::create(get<Vector2::Ptr>("uvOffset"));
 }
 
 BasicMaterial::Ptr

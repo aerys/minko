@@ -27,7 +27,7 @@ namespace minko
 {
 	namespace file
 	{
-		class Options: 
+		class Options:
 			public std::enable_shared_from_this<Options>
 		{
 		private:
@@ -59,6 +59,7 @@ namespace minko
 			bool										_isCubeTexture;
 			bool										_startAnimation;
 			bool										_loadAsynchronously;
+            bool                                        _embedAll;
 			unsigned int								_skinningFramerate;
 			component::SkinningMethod					_skinningMethod;
             std::shared_ptr<render::Effect>             _effect;
@@ -83,7 +84,7 @@ namespace minko
 			create(Ptr options)
 			{
 				auto opt = std::shared_ptr<Options>(new Options(options->_context));
-				
+
 				opt->_includePaths				= options->_includePaths;
                 opt->_generateMipMaps			= options->_generateMipMaps;
 				opt->_resizeSmoothly			= options->_resizeSmoothly;
@@ -98,6 +99,7 @@ namespace minko
 				opt->_uriFunction				= options->_uriFunction;
 				opt->_nodeFunction				= options->_nodeFunction;
 				opt->_loadAsynchronously		= options->_loadAsynchronously;
+                opt->_embedAll                  = options->_embedAll;
 
 				return opt;
 			}
@@ -108,7 +110,7 @@ namespace minko
 			{
 				return _context;
 			}
-			
+
 			inline
 			std::list<std::string>&
 			includePaths()
@@ -177,6 +179,22 @@ namespace minko
 
 				return shared_from_this();
 			}
+
+            inline
+            bool
+            embedAll() const
+            {
+                return _embedAll;
+            }
+
+            inline
+            Ptr
+            embedAll(bool value)
+            {
+                _embedAll = value;
+
+                return shared_from_this();
+            }
 
 			inline
 			bool
@@ -369,7 +387,7 @@ namespace minko
 
 				return shared_from_this();
 			}
-			
+
 		private:
 			Options(std::shared_ptr<render::AbstractContext> context);
 

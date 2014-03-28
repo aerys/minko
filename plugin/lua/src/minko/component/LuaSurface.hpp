@@ -21,51 +21,41 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 
+#include "minko/component/Surface.hpp"
+#include "minko/math/Vector2.hpp"
+#include "minko/math/Vector3.hpp"
+#include "minko/math/Vector4.hpp"
+#include "minko/math/Matrix4x4.hpp"
+#include "minko/render/Texture.hpp"
+#include "minko/geometry/Geometry.hpp"
+#include "minko/render/Effect.hpp"
+#include "minko/data/Provider.hpp"
+
+#include "minko/LuaWrapper.hpp"
+
 namespace minko
 {
-	namespace serialize
+	namespace component
 	{
-		enum ComponentId
+		class LuaSurface :
+			public LuaWrapper
 		{
-			TRANSFORM			= 100,
-			PROJECTION_CAMERA	= 101,
-			AMBIENT_LIGHT		= 102,
-			DIRECTIONAL_LIGHT	= 103,
-			POINT_LIGHT			= 104,
-			SPOT_LIGHT			= 105,
-			SURFACE				= 106,
-			RENDERER			= 107,
-			BOUNDINGBOX			= 108,
-			ANIMATION			= 109,
-			SKINNING			= 110,
-            PARTICLES           = 60
-		};
-
-		enum MinkoTypes
-		{
-			MATRIX4X4		= 0,
-			VECTOR4			= 3,
-			VECTOR3			= 1,
-			VECTOR2			= 2,
-			INT				= 4,
-			TEXTURE			= 5,
-			FLOAT			= 6,
-			BOOL			= 7,
-			BLENDING		= 8,
-			TRIANGLECULLING = 9,
-			ENVMAPTYPE		= 10
-		};
-
-		enum AssetType
-		{
-			GEOMETRY_ASSET			= 0,
-			EMBED_GEOMETRY_ASSET	= 10,
-			MATERIAL_ASSET			= 1,
-			EMBED_MATERIAL_ASSET	= 11,
-			TEXTURE_ASSET			= 2,
-			EMBED_TEXTURE_ASSET		= 12,
-			EFFECT_ASSET			= 3,
-			EMBED_EFFECT_ASSET		= 13
+		public:
+			static
+			void
+			bind(LuaGlue& state)
+			{
+				state.Class<Surface>("Surface")
+					.method("create", static_cast<Surface::Ptr(*)(geometry::Geometry::Ptr, data::Provider::Ptr, render::Effect::Ptr)>(&Surface::create))
+					.property("material", &Surface::material);
+			}
+			private:
+				static
+				std::string
+				getNameWrapper(Surface::Ptr s)
+				{
+					return s->name();
+				}
 		};
 	}
 }
