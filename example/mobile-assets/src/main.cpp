@@ -31,11 +31,14 @@ const uint WINDOW_WIDTH = 800;
 const uint WINDOW_HEIGHT = 600;
 
 const std::string MODEL_FILENAME = "model/pirate.dae";
-const std::string MINKO_LOGO = "texture/minko-logo.png";
+const std::string MINKO_LOGO = "texture/minko-logo.jpg";
 
 int
 main(int argc, char** argv)
 {
+    uint currentIndex = 0;
+    uint previousIndex = 0;
+
     auto canvas = Canvas::create("Minko Example - Mobile assets", WINDOW_WIDTH, WINDOW_HEIGHT);
     auto sceneManager = SceneManager::create(canvas->context());
 
@@ -47,8 +50,19 @@ main(int argc, char** argv)
 
     sceneManager->assets()->load("effect/Basic.effect");
     
-    // add the model to the asset list
-    sceneManager->assets()->queue(MODEL_FILENAME);
+
+    auto modelPaths = std::vector<std::string> 
+    { 
+        "model/pirate.dae", 
+        "model/ninja.dae",
+       // "model/infirmiere.dae",
+    };
+
+    // add the models to the asset list
+    for (auto modelPath : modelPaths)
+    {
+        sceneManager->assets()->queue(modelPath);
+    }
 
     // add Minko logo to the list of file to load
     sceneManager->assets()->queue(MINKO_LOGO);
@@ -73,8 +87,8 @@ main(int argc, char** argv)
         // Create a quad to display the Minko logo
         auto banner = scene::Node::create("banner")
             ->addComponent(Transform::create(Matrix4x4::create()
-                //->appendScale(5, 2, 0)
-                ->appendTranslation(0.f, 0.f, 0.f)))
+                ->appendScale(4, 1, 0)
+                ->appendTranslation(0.f, 1.f, 1.f)))
             ->addComponent(Surface::create(
                     geometry::QuadGeometry::create(assets->context()),
                     material::BasicMaterial::create()->diffuseMap(assets->texture(MINKO_LOGO)),
@@ -83,14 +97,27 @@ main(int argc, char** argv)
             );
         root->addChild(banner);
 
-        auto daeModel = assets->symbol(MODEL_FILENAME);
+        auto models = std::vector<scene::Node::Ptr>();
 
-        // change position
-        daeModel->component<Transform>()->matrix()->translation(0.f, -2.f, 0.f);
+        for (int i = 0; i < modelPaths.size(); i++)
+        {
+            auto model = assets->symbol(modelPaths[i]);
 
-        // add to the scene
-        root->addChild(daeModel);
+            // change position
+            if (i == currentIndex)
+                model->component<Transform>()->matrix()->translation(0.f, -1.f, 0.f);
+            else
+            {
+                // model->component<Surface>()->visible(false); // No surface!
+                model->component<Transform>()->matrix()->translation(0.f, -5.f, 0.f);
+            }
 
+            // add to the scene
+            root->addChild(model);
+
+            models.push_back(model);
+        }
+        
         Signal<input::Mouse::Ptr, int, int>::Slot mouseMove;
         float cameraRotationSpeed = 0.f;
 
@@ -107,10 +134,46 @@ main(int argc, char** argv)
             mouseMove = nullptr;
         });
 
+        auto keyDown = canvas->keyboard()->keyDown()->connect([&](input::Keyboard::Ptr k)
+        {
+            if (k->keyIsDown(input::Keyboard::KeyCode::SPACE))
+            {
+                if (currentIndex == previousIndex)
+                    currentIndex = (currentIndex + 1) % models.size();
+            }
+        });
+
         auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float t, float dt)
         {
             camera->component<Transform>()->matrix()->appendRotationY(cameraRotationSpeed);
+            banner->component<Transform>()->matrix()->appendRotationY(cameraRotationSpeed);
             cameraRotationSpeed *= .99f;
+
+            if (currentIndex == previousIndex)
+                models[currentIndex]->component<Transform>()->matrix()->appendRotationY(0.001f * dt);
+
+            if (currentIndex != previousIndex)
+            {
+                if (models[currentIndex]->component<Transform>()->y() < -1)
+                {
+                    models[currentIndex]->component<Transform>()->matrix()->appendTranslation(0, 0.01f * dt, 0);
+                    models[previousIndex]->component<Transform>()->matrix()->appendTranslation(0, 0.01f * dt, 0);
+                }
+                else
+                {
+                    models[currentIndex]->component<Transform>()->matrix()->translation(
+                        models[currentIndex]->component<Transform>()->x(),
+                        -1,
+                        models[currentIndex]->component<Transform>()->z());
+
+                    models[previousIndex]->component<Transform>()->matrix()->translation(
+                        models[previousIndex]->component<Transform>()->x(),
+                        -5,
+                        models[previousIndex]->component<Transform>()->z());
+
+                    previousIndex = currentIndex;
+                }
+            }
 
             sceneManager->nextFrame(t, dt);
         });
