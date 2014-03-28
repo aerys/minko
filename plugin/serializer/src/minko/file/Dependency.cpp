@@ -316,7 +316,7 @@ Dependency::serialize(std::shared_ptr<file::AssetLibrary>	assetLibrary,
 }
 
 void
-Dependency::copyEffectDependency(std::string effectFile, std::shared_ptr<render::Effect> effect)
+Dependency::copyEffectDependency(const std::string& effectFile, std::shared_ptr<render::Effect> effect)
 {
 	std::stringstream	effectContent;
 	std::ifstream		source(effectFile, std::ios::binary);

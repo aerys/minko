@@ -24,9 +24,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/MinkoParticles.hpp"
 #include "minko/MinkoSerializer.hpp"
 
-std::string MODEL_FILENAME = "model/primitives/primitives.scene";
+std::string MODEL_FILENAME = "deserialization/full-watch.scene";
 
-#define SERIALIZE // comment to test deserialization
+//#define SERIALIZE // comment to test deserialization
 #define DEACTIVATE_PHYSICS
 
 using namespace minko;
@@ -93,7 +93,7 @@ int main(int argc, char** argv)
 
 	sceneManager->assets()->defaultOptions()
 		->generateMipmaps(true)
-		->effect(sceneManager->assets()->effect("basic"));
+		->effect(sceneManager->assets()->effect("phong"));
 
 	sceneManager->assets()
 		->material("defaultMaterial", material::BasicMaterial::create()->diffuseColor(0xFFFFFFFF))
