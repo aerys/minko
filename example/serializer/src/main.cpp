@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/MinkoParticles.hpp"
 #include "minko/MinkoSerializer.hpp"
 
-std::string MODEL_FILENAME = "deserialization/full-watch.scene";
+std::string MODEL_FILENAME = "model/primitives/primitives.scene";
 
 //#define SERIALIZE // comment to test deserialization
 #define DEACTIVATE_PHYSICS
