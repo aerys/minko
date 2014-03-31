@@ -130,27 +130,34 @@ AbstractSerializerParser::deserializedAsset(SerializedAsset				asset,
 	else
 		std::copy(asset.a2.begin(), asset.a2.end(), back_inserter(data));
 
-	if (asset.a0 == serialize::AssetType::GEOMETRY_ASSET || asset.a0 == serialize::AssetType::EMBED_GEOMETRY_ASSET) // geometry
+	if ((asset.a0 == serialize::AssetType::GEOMETRY_ASSET || asset.a0 == serialize::AssetType::EMBED_GEOMETRY_ASSET) &&
+		_dependencies->geometryReferenceExist(asset.a1) == false) // geometry
 	{
 		_geometryParser->dependecy(_dependencies);
+
 		if (asset.a0 == serialize::AssetType::EMBED_GEOMETRY_ASSET)
 			resolvedPath = "geometry_" + std::to_string(asset.a1);
+		
 		_geometryParser->parse(resolvedPath, assetCompletePath, options, data, assetLibrary);
 		_dependencies->registerReference(asset.a1, assetLibrary->geometry(_geometryParser->_lastParsedAssetName));
 		_jobList.merge(_materialParser->_jobList);
 	}
-	else if (asset.a0 == serialize::AssetType::MATERIAL_ASSET || asset.a0 == serialize::AssetType::EMBED_MATERIAL_ASSET) // material
+	else if ((asset.a0 == serialize::AssetType::MATERIAL_ASSET || asset.a0 == serialize::AssetType::EMBED_MATERIAL_ASSET) &&
+		_dependencies->materialReferenceExist(asset.a1) == false) // material
 	{
 		_materialParser->dependecy(_dependencies);
+
 		if (asset.a0 == serialize::AssetType::EMBED_MATERIAL_ASSET)
 			resolvedPath = "material_" + std::to_string(asset.a1);
+		
 		_materialParser->parse(resolvedPath, assetCompletePath, options, data, assetLibrary);
 		_dependencies->registerReference(asset.a1, std::dynamic_pointer_cast<data::Provider>(assetLibrary->material(_materialParser->_lastParsedAssetName)));
 		_jobList.merge(_materialParser->_jobList);
 	}
-	else if (asset.a0 == serialize::AssetType::TEXTURE_ASSET ||
-             asset.a0 == serialize::AssetType::PNG_EMBED_TEXTURE_ASSET ||
-             asset.a0 == serialize::AssetType::JPEG_EMBED_TEXTURE_ASSET) // texture
+	else if ((asset.a0 == serialize::AssetType::TEXTURE_ASSET ||
+				asset.a0 == serialize::AssetType::PNG_EMBED_TEXTURE_ASSET ||
+				 asset.a0 == serialize::AssetType::JPEG_EMBED_TEXTURE_ASSET) && 
+			_dependencies->textureReferenceExist(asset.a1) == false ) // texture
 	{
 		if (asset.a0 == serialize::AssetType::PNG_EMBED_TEXTURE_ASSET ||
             asset.a0 == serialize::AssetType::JPEG_EMBED_TEXTURE_ASSET)
@@ -167,7 +174,7 @@ AbstractSerializerParser::deserializedAsset(SerializedAsset				asset,
 		parser->parse(resolvedPath, assetCompletePath, options, data, assetLibrary);
 		_dependencies->registerReference(asset.a1, assetLibrary->texture(resolvedPath));
 	}
-	else if (asset.a0 == serialize::AssetType::EFFECT_ASSET) // effect
+	else if (asset.a0 == serialize::AssetType::EFFECT_ASSET && _dependencies->effectReferenceExist(asset.a1) == false) // effect
 	{
 		assetLibrary->load(assetCompletePath, nullptr, nullptr, false);
 		_dependencies->registerReference(asset.a1, assetLibrary->effect(assetCompletePath));

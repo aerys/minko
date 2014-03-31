@@ -197,6 +197,30 @@ Dependency::getEffectReference(uint effectId)
 	return _effectReferences[effectId];
 }
 
+bool
+Dependency::geometryReferenceExist(uint referenceId)
+{
+	return _geometryReferences.find(referenceId) != _geometryReferences.end();
+}
+
+bool
+Dependency::textureReferenceExist(uint referenceId)
+{
+	return _textureReferences.find(referenceId) != _textureReferences.end();
+}
+
+bool
+Dependency::materialReferenceExist(uint referenceId)
+{
+	return _materialReferences.find(referenceId) != _materialReferences.end();
+}
+
+bool
+Dependency::effectReferenceExist(uint referenceId)
+{
+	return _effectReferences.find(referenceId) != _effectReferences.end();
+}
+
 Dependency::SerializedAsset
 Dependency::serializeGeometry(std::shared_ptr<file::AssetLibrary>	assetLibrary,
 							  std::shared_ptr<geometry::Geometry>	geometry,

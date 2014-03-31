@@ -36,7 +36,7 @@ namespace minko
 			typedef msgpack::type::tuple<unsigned int, short, std::string> SerializedAsset;
 			typedef std::function<SerializedAsset(std::shared_ptr<file::AssetLibrary>, std::shared_ptr<geometry::Geometry>, uint, std::shared_ptr<file::Options>)>		GeometryWriterFunction;
 			typedef std::function<SerializedAsset(std::shared_ptr<file::AssetLibrary>, std::shared_ptr<render::AbstractTexture>, uint,std::shared_ptr<file::Options>)>	TextureWriterFunction;
-			typedef std::function<SerializedAsset(std::shared_ptr<file::AssetLibrary>, std::shared_ptr<data::Provider>, uint,std::shared_ptr<file::Options>)>		MaterialWriterFunction;
+			typedef std::function<SerializedAsset(std::shared_ptr<file::AssetLibrary>, std::shared_ptr<data::Provider>, uint,std::shared_ptr<file::Options>)>			MaterialWriterFunction;
 
 		private:
 			std::unordered_map<AbsTexturePtr, uint>							_textureDependencies;
@@ -154,6 +154,18 @@ namespace minko
 
 			void
 			registerReference(uint referenceId, std::shared_ptr<scene::Node> subScene);
+
+			bool
+			geometryReferenceExist(uint referenceId);
+			
+			bool
+			textureReferenceExist(uint referenceId);
+			
+			bool
+			materialReferenceExist(uint referenceId);
+
+			bool
+			effectReferenceExist(uint referenceId);
 
 			std::vector<msgpack::type::tuple<unsigned int, short, std::string>>
 			serialize(std::shared_ptr<file::AssetLibrary>	assetLibrary,
