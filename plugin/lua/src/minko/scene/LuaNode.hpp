@@ -50,6 +50,7 @@ namespace minko
 		            .method("contains",				        &Node::contains)
 		            .method("addComponent",			        &Node::addComponent)
 		            .method("removeComponent",		        &Node::removeComponent)
+					.method("toString", 					&Node::toString)
                     .methodWrapper("getChildren",           &LuaNode::childrenWrapper)
                     .methodWrapper("getBoundingBox",        &LuaNode::getBoundingBoxWrapper)
                     .methodWrapper("getTransform",          &LuaNode::getTransformWrapper)
