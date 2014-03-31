@@ -106,7 +106,8 @@ LuaScriptManager::loadStandardLibrary()
     auto createLoader = assets->defaultOptions()->loaderFunction();
     auto filesToLoad = {
         "script/minko.coroutine.lua",
-        "script/minko.time.lua"
+        "script/minko.time.lua",
+		"script/minko.trace.lua"
     };
 
     _numDependencies = filesToLoad.size();
