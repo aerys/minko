@@ -122,23 +122,6 @@ namespace minko
 			{
 				return node->component<component::Surface>();
 			}
-
-			
-
-			/*static
-			std::shared_ptr<Node>
-			getChildrenByNameWrapper(Node::Ptr node, const std::string& name)
-			{
-				const std::vector<std::shared_ptr<Node>>::iterator it = std::find_if(
-					node->children().begin(),
-					node->children().end(),
-					[=](Node::Ptr n) {
-					return node->name() == name;
-				}
-				);
-				return *it;
-			}*/
-
 		};
 	}
 }
