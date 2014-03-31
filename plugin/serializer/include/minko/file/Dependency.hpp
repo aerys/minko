@@ -33,7 +33,7 @@ namespace minko
 			typedef std::shared_ptr<render::AbstractTexture> AbsTexturePtr;
 
 		private:
-			typedef msgpack::type::tuple<unsigned int, short, std::string> SerializedAsset;
+			typedef msgpack::type::tuple<short, short, std::string> SerializedAsset;
 			typedef std::function<SerializedAsset(std::shared_ptr<file::AssetLibrary>, std::shared_ptr<geometry::Geometry>, uint, std::shared_ptr<file::Options>)>		GeometryWriterFunction;
 			typedef std::function<SerializedAsset(std::shared_ptr<file::AssetLibrary>, std::shared_ptr<render::AbstractTexture>, uint,std::shared_ptr<file::Options>)>	TextureWriterFunction;
 			typedef std::function<SerializedAsset(std::shared_ptr<file::AssetLibrary>, std::shared_ptr<data::Provider>, uint,std::shared_ptr<file::Options>)>		MaterialWriterFunction;
@@ -155,7 +155,7 @@ namespace minko
 			void
 			registerReference(uint referenceId, std::shared_ptr<scene::Node> subScene);
 
-			std::vector<msgpack::type::tuple<unsigned int, short, std::string>>
+			std::vector<SerializedAsset>
 			serialize(std::shared_ptr<file::AssetLibrary>	assetLibrary,
 					  std::shared_ptr<file::Options>		options);
 
