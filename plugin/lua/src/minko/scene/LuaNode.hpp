@@ -50,6 +50,7 @@ namespace minko
 		            .method("contains",				        &Node::contains)
 		            .method("addComponent",			        &Node::addComponent)
 		            .method("removeComponent",		        &Node::removeComponent)
+					.method("toString", 					&Node::toString)
                     .methodWrapper("getChildren",           &LuaNode::childrenWrapper)
                     .methodWrapper("getBoundingBox",        &LuaNode::getBoundingBoxWrapper)
                     .methodWrapper("getTransform",          &LuaNode::getTransformWrapper)
@@ -70,7 +71,7 @@ namespace minko
 			Node::Ptr
 			atWrapper(std::vector<Node::Ptr>* v, uint index)
 			{
-				return (*v)[index - 1];
+				return v->at(index - 1);
 			}
 
 			static
@@ -121,23 +122,6 @@ namespace minko
 			{
 				return node->component<component::Surface>();
 			}
-
-			
-
-			/*static
-			std::shared_ptr<Node>
-			getChildrenByNameWrapper(Node::Ptr node, const std::string& name)
-			{
-				const std::vector<std::shared_ptr<Node>>::iterator it = std::find_if(
-					node->children().begin(),
-					node->children().end(),
-					[=](Node::Ptr n) {
-					return node->name() == name;
-				}
-				);
-				return *it;
-			}*/
-
 		};
 	}
 }
