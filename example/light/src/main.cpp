@@ -117,7 +117,7 @@ int main(int argc, char** argv)
 		root->addChild(lights);
 
 		// handle keyboard signals
-		keyDown = canvas->keyboard()->keyDown()->connect([&](input::Keyboard::Ptr k)
+		keyDown = canvas->keyboard()->keyDown()->connect([=](input::Keyboard::Ptr k)
 		{
 			if (k->keyIsDown(input::Keyboard::KeyCode::a))
 			{
