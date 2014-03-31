@@ -71,7 +71,7 @@ namespace minko
 			Node::Ptr
 			atWrapper(std::vector<Node::Ptr>* v, uint index)
 			{
-				return (*v)[index - 1];
+				return v->at(index - 1);
 			}
 
 			static
