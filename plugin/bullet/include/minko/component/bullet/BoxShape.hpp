@@ -33,15 +33,17 @@ namespace minko
 				public AbstractPhysicsShape
 			{
 			public:
-				typedef std::shared_ptr<BoxShape> Ptr;
+				typedef std::shared_ptr<BoxShape>					Ptr;
 
 			private:
-				typedef std::shared_ptr<math::Vector3>	Vector3Ptr;
+				typedef std::shared_ptr<math::Vector3>				Vector3Ptr;
+				typedef std::shared_ptr<geometry::LineGeometry>		LineGeometryPtr;
+				typedef std::shared_ptr<render::AbstractContext>	AbsContextPtr;
 
 			private:
-				float	_halfExtentX;
-				float	_halfExtentY;
-				float	_halfExtentZ;
+				float												_halfExtentX;
+				float												_halfExtentY;
+				float												_halfExtentZ;
 
 			public:
 				inline static
@@ -113,6 +115,9 @@ namespace minko
 
 					return volume * _volumeScaling;
 				}
+
+				LineGeometryPtr
+				getGeometry(AbsContextPtr) const;
 
 			private:
 				BoxShape(float halfExtentX, float halfExtentY, float halfExtentZ):

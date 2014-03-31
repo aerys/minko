@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/lua/BulletLuaBindingsCollection.hpp"
 #include "LuaCollider.hpp"
 #include "LuaColliderData.hpp"
+#include "LuaColliderDebug.hpp"
 #include "LuaPhysicsWorld.hpp"
 
 using namespace minko;
@@ -39,6 +40,7 @@ BulletLuaBindingsCollection::getBulletBindings(std::vector<std::function<void(Lu
 {
 	bindings.push_back(&bullet::LuaColliderData::bind);
 	bindings.push_back(&bullet::LuaCollider::bind);
+	bindings.push_back(&bullet::LuaColliderDebug::bind);
 	bindings.push_back(&bullet::LuaPhysicsWorld::bind);
 	return bindings;
 }

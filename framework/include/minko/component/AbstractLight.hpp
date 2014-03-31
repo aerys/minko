@@ -32,8 +32,6 @@ namespace minko
 		class AbstractLight :
 			public AbstractRootDataComponent<data::ArrayProvider>
 		{
-			friend LightManager;
-
 		public:
 			typedef std::shared_ptr<AbstractLight> 					Ptr;
 

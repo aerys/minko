@@ -60,7 +60,7 @@ DrawCallZSorter::DrawCallZSorter(DrawCall::Ptr drawcall):
 	_worldToScreenMatrix()
 {
 	if (_drawcall == nullptr)
-		throw new std::invalid_argument("drawcall");
+		throw std::invalid_argument("drawcall");
 }
 
 void

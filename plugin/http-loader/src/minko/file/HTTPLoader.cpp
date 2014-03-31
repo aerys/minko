@@ -205,8 +205,8 @@ HTTPLoader::load(const std::string& filename, std::shared_ptr<Options> options)
 		}
 	}
 #else
-	/*if (options->loadAsynchronously())
-	{*/
+	if (options->loadAsynchronously())
+	{
 		auto worker = AbstractCanvas::defaultCanvas()->getWorker("http");
 
 		_workerSlots.push_back(worker->complete()->connect([=](Worker::MessagePtr data) {
@@ -218,11 +218,24 @@ HTTPLoader::load(const std::string& filename, std::shared_ptr<Options> options)
 		}));
 
 		worker->input(std::make_shared<std::vector<char>>(_resolvedFilename.begin(), _resolvedFilename.end()));
-	/*}
+	}
 	else
 	{
-		//fixme: handle synchronous HTTP loading
-	}*/
+		auto output(std::make_shared<std::vector<char>>());
+
+		auto helper = new HTTPWorkerHelper(_resolvedFilename, output);
+
+		helper->progress()->connect([&](float p){
+			progressHandler(loader.get(), p * 100);
+		});
+
+		helper->run();
+
+		completeHandler(loader.get(), &*output->begin(), output->size());
+
+		delete helper;
+	}
+	std::cout << "end" << std::endl;
 #endif
 }
 

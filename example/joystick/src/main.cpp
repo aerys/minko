@@ -27,8 +27,11 @@ using namespace minko::component;
 const uint WINDOW_WIDTH = 800;
 const uint WINDOW_HEIGHT = 600;
 
+float speedx = 0.f;
+float speedy = 0.f;
+
 std::unordered_map<input::Joystick::Ptr, scene::Node::Ptr> joystickToCube;
-std::unordered_map<input::Joystick::Ptr, Signal<input::Joystick::Ptr, int, int>::Slot> joystickToButtonDownSlot;
+std::unordered_map<input::Joystick::Ptr, Signal<input::Joystick::Ptr, int, int, int>::Slot> joystickToButtonDownSlot;
 
 Signal<AbstractCanvas::Ptr, input::Joystick::Ptr>::Slot joystickAdded;
 Signal<AbstractCanvas::Ptr, input::Joystick::Ptr>::Slot joystickRemoved;
@@ -36,104 +39,125 @@ Signal<AbstractCanvas::Ptr, input::Joystick::Ptr>::Slot joystickRemoved;
 void
 joystickButtonDownHandler(input::Joystick::Ptr joystick, int which, int buttonId)
 {
-    if (buttonId == 0)
-        joystickToCube[joystick]->component<Transform>()->matrix()->appendTranslation(0.f, 0.f, -0.1f);
-    if (buttonId == 1)
-        joystickToCube[joystick]->component<Transform>()->matrix()->appendTranslation(0.f, 0.f, 0.1f);
-    if (buttonId == 2)
-        joystickToCube[joystick]->component<Transform>()->matrix()->appendTranslation(-.1f);
-    if (buttonId == 3)
-        joystickToCube[joystick]->component<Transform>()->matrix()->appendTranslation(.1f);
+	if (buttonId == 0)
+		joystickToCube[joystick]->component<Transform>()->matrix()->appendTranslation(0.f, 0.f, 0.1f);
+	if (buttonId == 1)
+		joystickToCube[joystick]->component<Transform>()->matrix()->appendTranslation(0.f, 0.f, -0.1f);
+	if (buttonId == 2)
+		joystickToCube[joystick]->component<Transform>()->matrix()->appendTranslation(.1f);
+	if (buttonId == 3)
+		joystickToCube[joystick]->component<Transform>()->matrix()->appendTranslation(-.1f);
 }
 
 int
 main(int argc, char** argv)
 {
-    auto canvas = Canvas::create("Minko Tutorial - Hello cube!", WINDOW_WIDTH, WINDOW_HEIGHT);
-    auto sceneManager = SceneManager::create(canvas->context());
+	auto canvas = Canvas::create("Minko Tutorial - Hello cube!", WINDOW_WIDTH, WINDOW_HEIGHT);
+	auto sceneManager = SceneManager::create(canvas->context());
 
-    // setup assets
-    sceneManager->assets()->defaultOptions()->resizeSmoothly(true);
-    sceneManager->assets()->defaultOptions()->generateMipmaps(true);
-    sceneManager->assets()->queue("effect/Basic.effect");
+	// setup assets
+	sceneManager->assets()->defaultOptions()->resizeSmoothly(true);
+	sceneManager->assets()->defaultOptions()->generateMipmaps(true);
+	sceneManager->assets()->queue("effect/Basic.effect");
 
-    std::cout << "Plug a joystick and move the cube." << std::endl;
+	std::cout << "Plug a joystick and move the cube." << std::endl;
 
-    auto complete = sceneManager->assets()->complete()->connect([&](file::AssetLibrary::Ptr assets)
-    {
-        auto root = scene::Node::create("root")
-            ->addComponent(sceneManager);
+	auto complete = sceneManager->assets()->complete()->connect([&](file::AssetLibrary::Ptr assets)
+	{
+		auto root = scene::Node::create("root")
+			->addComponent(sceneManager);
 
-        auto camera = scene::Node::create("camera")
-            ->addComponent(Renderer::create(0x7f7f7fff))
-            ->addComponent(PerspectiveCamera::create(
-            (float) WINDOW_WIDTH / (float) WINDOW_HEIGHT, (float) PI * 0.25f, .1f, 1000.f)
-            )
-            ->addComponent(Transform::create(Matrix4x4::create()->lookAt(
-            Vector3::create(), Vector3::create(0.f, 0.f, -5.f))));
-        root->addChild(camera);
+		auto camera = scene::Node::create("camera")
+			->addComponent(Renderer::create(0x7f7f7fff))
+			->addComponent(PerspectiveCamera::create(
+			(float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, (float)PI * 0.25f, .1f, 1000.f)
+			)
+			->addComponent(Transform::create(Matrix4x4::create()->lookAt(
+			Vector3::create(), Vector3::create(0.f, 0.f, -5.f))));
+		root->addChild(camera);
 
-        joystickAdded = canvas->joystickAdded()->connect([&](AbstractCanvas::Ptr canvas, input::Joystick::Ptr joystick)
-        {
-            auto mesh = scene::Node::create("mesh")
-                ->addComponent(Transform::create())
-                ->addComponent(Surface::create(
-                geometry::CubeGeometry::create(
-                sceneManager->assets()->context()),
-                material::BasicMaterial::create()->diffuseColor(math::Vector4::create(
-                float(rand()) / float(RAND_MAX),
-                float(rand()) / float(RAND_MAX),
-                float(rand()) / float(RAND_MAX))),
-                sceneManager->assets()->effect("effect/Basic.effect")
-                )
-                );
+		std::shared_ptr<scene::Node> currentJoystickCube;
+		input::Joystick::Ptr currentJoystick;
+		joystickAdded = canvas->joystickAdded()->connect([&](AbstractCanvas::Ptr abscanvas, input::Joystick::Ptr joystick)
+		{
+			auto mesh = scene::Node::create("mesh")
+				->addComponent(Transform::create())
+				->addComponent(Surface::create(
+				geometry::CubeGeometry::create(
+				sceneManager->assets()->context()),
+				material::BasicMaterial::create()->diffuseColor(math::Vector4::create(
+				float(rand()) / float(RAND_MAX),
+				float(rand()) / float(RAND_MAX),
+				float(rand()) / float(RAND_MAX))),
+				sceneManager->assets()->effect("effect/Basic.effect")
+				)
+				);
+			currentJoystick = joystick;
+			currentJoystickCube = mesh;
+			
+			joystickToCube[joystick] = mesh;
+			joystickToButtonDownSlot[joystick] = joystick->joystickAxisMotion()->connect(
+				std::bind(
+				&joystickButtonDownHandler,
+				std::placeholders::_1,
+				std::placeholders::_2,
+				std::placeholders::_3
+				)
+				);
 
-            joystickToCube[joystick] = mesh;
-            joystickToButtonDownSlot[joystick] = joystick->joystickButtonDown()->connect(
-                std::bind(
-                &joystickButtonDownHandler,
-                std::placeholders::_1,
-                std::placeholders::_2,
-                std::placeholders::_3
-                )
-                );
+			root->addChild(mesh);
+		});
 
-            root->addChild(mesh);
-        });
+		joystickRemoved = canvas->joystickRemoved()->connect([&](AbstractCanvas::Ptr canvas, input::Joystick::Ptr joystick)
+		{
+			root->removeChild(joystickToCube[joystick]);
+			joystickToButtonDownSlot.erase(joystick);
+			joystickToCube.erase(joystick);
+		});
 
-        joystickRemoved = canvas->joystickRemoved()->connect([&](AbstractCanvas::Ptr canvas, input::Joystick::Ptr joystick)
-        {
-            root->removeChild(joystickToCube[joystick]);
-            joystickToButtonDownSlot.erase(joystick);
-            joystickToCube.erase(joystick);
-        });
+		auto cube = scene::Node::create("cube")
+			->addComponent(Transform::create(Matrix4x4::create()))
+			->addComponent(Surface::create(
+			geometry::CubeGeometry::create(assets->context()),
+			material::BasicMaterial::create()->diffuseColor(Vector4::create(1.f, 0.f, 1.f, 1.f)),
+			assets->effect("effect/Basic.effect")
+			));
+		root->addChild(cube);
 
-        auto cube = scene::Node::create("cube")
-            ->addComponent(Transform::create(Matrix4x4::create()))
-            ->addComponent(Surface::create(
-            geometry::CubeGeometry::create(assets->context()),
-            material::BasicMaterial::create()->diffuseColor(Vector4::create(1.f, 0.f, 1.f, 1.f)),
-            assets->effect("effect/Basic.effect")
-            ));
-        root->addChild(cube);
+		auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
+		{
+			camera->component<PerspectiveCamera>()->aspectRatio((float)w / (float)h);
+		});
 
-        auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
-        {
-            camera->component<PerspectiveCamera>()->aspectRatio((float) w / (float) h);
-        });
+		auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float t, float dt)
+		{
+			cube->component<Transform>()->matrix()->prependRotationY(.01f);			
+			auto joysticksList = canvas->joysticks();			
+			for (auto it = joysticksList.begin(); it != joysticksList.end(); ++it)
+			{
+				auto joy = it->second;
+				if (canvas->getJoystickAxis(joy, 0) > 8000) {
+					joystickToCube[joy]->component<Transform>()->matrix()->appendTranslation(-0.1f, 0.f, 0.f);
+				}
+				if (canvas->getJoystickAxis(joy, 0) < -8000) {
+					joystickToCube[joy]->component<Transform>()->matrix()->appendTranslation(0.1f, 0.f, 0.f);
+				}
+				if (canvas->getJoystickAxis(joy, 1) > 8000) {
+					joystickToCube[joy]->component<Transform>()->matrix()->appendTranslation(0.f, -0.1f, 0.f);
+				}
+				if (canvas->getJoystickAxis(joy, 1) < -8000) {
+					joystickToCube[joy]->component<Transform>()->matrix()->appendTranslation(0.f, 0.1f, 0.f);
+				}				
+			}
+			
+			
+			sceneManager->nextFrame(t, dt);
+		});
 
-        auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float t, float dt)
-        {
-            cube->component<Transform>()->matrix()->prependRotationY(.01f);
+		canvas->run();
+	});
 
-            sceneManager->nextFrame(t, dt);
-        });
+	sceneManager->assets()->load();
 
-        canvas->run();
-    });
-
-    sceneManager->assets()->load();
-
-    return 0;
+	return 0;
 }
-

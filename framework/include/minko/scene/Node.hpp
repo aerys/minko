@@ -112,6 +112,13 @@ namespace minko
 			}
 
 			inline
+			int
+			id() const
+			{
+				return _id;
+			}
+
+			inline
 			void
 			name(const std::string& name)
 			{

@@ -23,6 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/scene/Node.hpp"
 #include "minko/component/BoundingBox.hpp"
+#include "minko/component/MasterAnimation.hpp"
 
 #include "minko/LuaWrapper.hpp"
 
@@ -53,9 +54,13 @@ namespace minko
                     .methodWrapper("getBoundingBox",        &LuaNode::getBoundingBoxWrapper)
                     .methodWrapper("getTransform",          &LuaNode::getTransformWrapper)
 					.methodWrapper("getAnimation",			&LuaNode::getAnimationWrapper)
+					.methodWrapper("getMasterAnimation",	&LuaNode::getMasterAnimationWrapper)
                     .methodWrapper("getPerspectiveCamera",  &LuaNode::getPerspectiveCameraWrapper)
+					.methodWrapper("getSurface",			&LuaNode::getSurfaceWrapper)
+					/*.methodWrapper("getChildrenByName",		&LuaNode::getChildrenByNameWrapper)*/
 		            .property("children",					&Node::children)
 		            .property("data",				        &Node::data)
+					.property("id",							&Node::id)
 		            .property("root",				        &Node::root)
 					.property("parent", 					&Node::parent)
 		            .property("name",				        &Node::name, &Node::name);
@@ -97,11 +102,42 @@ namespace minko
 			}
 
 			static
+			std::shared_ptr<component::MasterAnimation>
+			getMasterAnimationWrapper(Node::Ptr node)
+			{
+				return node->component<component::MasterAnimation>();
+			}
+
+			static
 			std::shared_ptr<component::PerspectiveCamera>
 			getPerspectiveCameraWrapper(Node::Ptr node)
 			{
 				return node->component<component::PerspectiveCamera>();
 			}
+
+			static
+			std::shared_ptr<component::Surface>
+			getSurfaceWrapper(Node::Ptr node)
+			{
+				return node->component<component::Surface>();
+			}
+
+			
+
+			/*static
+			std::shared_ptr<Node>
+			getChildrenByNameWrapper(Node::Ptr node, const std::string& name)
+			{
+				const std::vector<std::shared_ptr<Node>>::iterator it = std::find_if(
+					node->children().begin(),
+					node->children().end(),
+					[=](Node::Ptr n) {
+					return node->name() == name;
+				}
+				);
+				return *it;
+			}*/
+
 		};
 	}
 }

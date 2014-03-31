@@ -120,6 +120,7 @@ namespace minko
 			std::unordered_map<uint, data::UniformArrayPtr<int>>		_uniformInts4;
 
 			std::unordered_map<std::string, std::list<Any>>				_referenceChangedSlots; // Any = ContainerPropertyChangedSlot
+			Signal<std::shared_ptr<IndexBuffer>>::Slot					_indicesChanged;
 
 			std::shared_ptr<Signal<Ptr>>								_zsortNeeded;
 			std::shared_ptr<DrawCallZSorter>					        _zSorter;
@@ -244,6 +245,9 @@ namespace minko
 
 			void
             bind(ContainerPtr data, ContainerPtr rendererData, ContainerPtr rootData);
+
+			void
+			bindProgramDefaultUniforms();
 
 			void
 			bindProgramInputs();

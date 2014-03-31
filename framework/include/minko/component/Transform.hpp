@@ -44,15 +44,15 @@ namespace minko
 			typedef std::shared_ptr<AbstractComponent>		AbsCtrlPtr;
 
 		private:
-			std::shared_ptr<math::Matrix4x4>			_matrix;
-			std::shared_ptr<math::Matrix4x4>			_modelToWorld;
-			std::shared_ptr<math::Matrix4x4>			_worldToModel;
-			std::shared_ptr<data::StructureProvider>	_data;
+			std::shared_ptr<math::Matrix4x4>				_matrix;
+			std::shared_ptr<math::Matrix4x4>				_modelToWorld;
+			std::shared_ptr<math::Matrix4x4>				_worldToModel;
+			std::shared_ptr<data::StructureProvider>		_data;
 
-			Signal<AbsCtrlPtr, NodePtr>::Slot 			_targetAddedSlot;
-			Signal<AbsCtrlPtr, NodePtr>::Slot 			_targetRemovedSlot;
-			Signal<NodePtr, NodePtr, NodePtr>::Slot 	_addedSlot;
-			Signal<NodePtr, NodePtr, NodePtr>::Slot 	_removedSlot;
+			Signal<AbsCtrlPtr, NodePtr>::Slot 				_targetAddedSlot;
+			Signal<AbsCtrlPtr, NodePtr>::Slot 				_targetRemovedSlot;
+			Signal<NodePtr, NodePtr, NodePtr>::Slot 		_addedSlot;
+			Signal<NodePtr, NodePtr, NodePtr>::Slot 		_removedSlot;
 
 		public:
 			inline static
@@ -208,7 +208,6 @@ namespace minko
 			private:
 				std::vector<std::shared_ptr<math::Matrix4x4>>	_transforms;
 				std::vector<std::shared_ptr<math::Matrix4x4>>	_modelToWorld;
-				//std::vector<std::shared_ptr<Matrix4x4>>		_worldToModel;
 
 				std::map<NodePtr, unsigned int>					_nodeToId;
 				std::vector<NodePtr>							_idToNode;
@@ -255,6 +254,10 @@ namespace minko
 				renderingBeginHandler(std::shared_ptr<SceneManager> sceneManager, 
 									  uint							frameId, 
 									  std::shared_ptr<render::AbstractTexture>);
+
+				static
+				void
+				juxtaposeSiblings(std::vector<NodePtr>&);
 			};
 		};
 	}
