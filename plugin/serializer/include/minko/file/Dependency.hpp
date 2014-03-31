@@ -167,7 +167,7 @@ namespace minko
 			bool
 			effectReferenceExist(uint referenceId);
 
-			std::vector<msgpack::type::tuple<unsigned int, short, std::string>>
+			std::vector<SerializedAsset>
 			serialize(std::shared_ptr<file::AssetLibrary>	assetLibrary,
 					  std::shared_ptr<file::Options>		options);
 

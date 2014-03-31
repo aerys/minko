@@ -386,7 +386,7 @@ Dependency::serialize(std::shared_ptr<file::AssetLibrary>	assetLibrary,
 #endif
         std::ifstream source(filenameInput, std::ios::binary);
 
-        msgpack::type::tuple<unsigned int, short, std::string> dependencyRes;
+        SerializedAsset dependencyRes;
 
         copyEffectDependency(assetLibrary, options, source, itEffect.first, dependencyRes);
 
@@ -435,11 +435,11 @@ Dependency::serialize(std::shared_ptr<file::AssetLibrary>	assetLibrary,
 }
 
 void
-Dependency::copyEffectDependency(std::shared_ptr<AssetLibrary>                                  assets,
-                                 std::shared_ptr<Options>                                       options,
-                                 const std::ifstream&                                           source,
-                                 std::shared_ptr<render::Effect>                                effect,
-                                 msgpack::type::tuple<unsigned int, short, std::string>&        result)
+Dependency::copyEffectDependency(std::shared_ptr<AssetLibrary>          assets,
+                                 std::shared_ptr<Options>               options,
+                                 const std::ifstream&                   source,
+                                 std::shared_ptr<render::Effect>        effect,
+                                 SerializedAsset&                       result)
 {
     std::stringstream   effectContent;
     std::size_t         found;
