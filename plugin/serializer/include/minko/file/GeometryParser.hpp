@@ -75,6 +75,11 @@ namespace minko
 			vertexBufferParserFunction = f;
 		}
 
+		static
+		IndexBufferPtr
+		deserializeIndexBuffer(std::string&			serializedIndexBuffer, 
+							   AbstractContextPtr	context);
+	
 	private:
 		GeometryParser()
 		{
@@ -92,10 +97,6 @@ namespace minko
 		deserializeVertexBuffer(std::string&		serializedVertexBuffer, 
 								AbstractContextPtr	context);
 
-		static
-		IndexBufferPtr
-		deserializeIndexBuffer(std::string&			serializedIndexBuffer, 
-							   AbstractContextPtr	context);
 
 		static
 		IndexBufferPtr
