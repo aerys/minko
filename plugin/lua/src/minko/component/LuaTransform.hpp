@@ -42,7 +42,7 @@ namespace minko
 				state.Class<Transform>("Transform")
 					.method("create",				    static_cast<Transform::Ptr(*)(void)>(&Transform::create))
 					.method("createFromMatrix",		    static_cast<Transform::Ptr(*)(math::Matrix4x4::Ptr)>(&Transform::create))
-					.methodWrapper("modelToWorld",		&LuaTransform::worldToModelWrapper)
+					.methodWrapper("modelToWorld",		&LuaTransform::modelToWorldWrapper)
                     .methodWrapper("deltaModelToWorld", &LuaTransform::deltaModelToWorldWrapper)
                     .methodWrapper("worldToModel",      &LuaTransform::worldToModelWrapper)
                     .methodWrapper("deltaWorldToModel", &LuaTransform::deltaWorldToModelWrapper)

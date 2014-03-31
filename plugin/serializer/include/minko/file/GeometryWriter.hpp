@@ -35,10 +35,12 @@ namespace minko
 		{
 		public:
 			typedef std::shared_ptr<GeometryWriter> Ptr;
+			typedef std::function<std::string(std::shared_ptr<render::IndexBuffer>)>	IndexBufferWriteFunc;
+			typedef std::function<std::string(std::shared_ptr<render::VertexBuffer>)>	VertexBufferWriteFunc;
 
 		private :
-			static std::function<std::string(std::shared_ptr<render::IndexBuffer>)>		indexBufferWriterFunction;
-			static std::function<std::string(std::shared_ptr<render::VertexBuffer>)>	vertexBufferWriterFunction;
+			static IndexBufferWriteFunc		indexBufferWriterFunction;
+			static VertexBufferWriteFunc	vertexBufferWriterFunction;
 
 		public:
 			inline static
@@ -75,7 +77,7 @@ namespace minko
 			inline
 			static
 			void
-			registerIndexBufferWriterFunction(std::function<std::string(std::shared_ptr<render::IndexBuffer>)> f)
+			registerIndexBufferWriterFunction(IndexBufferWriteFunc f)
 			{
 				indexBufferWriterFunction = f;
 			}
@@ -83,11 +85,15 @@ namespace minko
 			inline
 			static
 			void
-			registerVertexBufferWriterFunction(std::function<std::string(std::shared_ptr<render::VertexBuffer>)> f)
+			registerVertexBufferWriterFunction(VertexBufferWriteFunc f)
 			{
 				vertexBufferWriterFunction = f;
 			}
 
+			static
+			std::string
+			serializeIndexStream(std::shared_ptr<render::IndexBuffer> indexBuffer); 
+		
 		private:
 
 			void
@@ -96,9 +102,6 @@ namespace minko
 			unsigned char
 			computeMetaByte(std::shared_ptr<geometry::Geometry> geometry);
 
-			static
-			std::string
-			serializeIndexStream(std::shared_ptr<render::IndexBuffer> indexBuffer); 
 
 			static
 			std::string
