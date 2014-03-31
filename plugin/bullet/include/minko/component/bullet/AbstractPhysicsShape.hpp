@@ -43,9 +43,11 @@ namespace minko
 				};
 
 			private:
-				typedef std::shared_ptr<math::Vector3>		Vector3Ptr;
-				typedef std::shared_ptr<math::Quaternion>	QuaternionPtr;
-				typedef std::shared_ptr<math::Matrix4x4>	Matrix4x4Ptr;
+				typedef std::shared_ptr<math::Vector3>				Vector3Ptr;
+				typedef std::shared_ptr<math::Quaternion>			QuaternionPtr;
+				typedef std::shared_ptr<math::Matrix4x4>			Matrix4x4Ptr;
+				typedef std::shared_ptr<geometry::LineGeometry>		LineGeometryPtr;
+				typedef std::shared_ptr<render::AbstractContext>	AbsContextPtr;
 
 			protected:
 				Type			_type;
@@ -74,6 +76,10 @@ namespace minko
 				float
 				volume() const = 0;
 
+				virtual
+				LineGeometryPtr
+				getGeometry(AbsContextPtr) const = 0;
+				
 				inline
 				Type
 				type() const

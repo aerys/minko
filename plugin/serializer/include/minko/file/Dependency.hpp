@@ -33,6 +33,12 @@ namespace minko
 			typedef std::shared_ptr<render::AbstractTexture> AbsTexturePtr;
 
 		private:
+			typedef msgpack::type::tuple<unsigned int, short, std::string> SerializedAsset;
+			typedef std::function<SerializedAsset(std::shared_ptr<file::AssetLibrary>, std::shared_ptr<geometry::Geometry>, uint, std::shared_ptr<file::Options>)>		GeometryWriterFunction;
+			typedef std::function<SerializedAsset(std::shared_ptr<file::AssetLibrary>, std::shared_ptr<render::AbstractTexture>, uint,std::shared_ptr<file::Options>)>	TextureWriterFunction;
+			typedef std::function<SerializedAsset(std::shared_ptr<file::AssetLibrary>, std::shared_ptr<data::Provider>, uint,std::shared_ptr<file::Options>)>		MaterialWriterFunction;
+
+		private:
 			std::unordered_map<AbsTexturePtr, uint>							_textureDependencies;
 			std::unordered_map<std::shared_ptr<data::Provider>, uint>		_materialDependencies;
 			std::unordered_map<std::shared_ptr<scene::Node>, uint>			_subSceneDependencies;
@@ -48,6 +54,10 @@ namespace minko
 			uint															_currentId;
 			std::shared_ptr<Options>										_options;
 			std::shared_ptr<scene::Node>									_loadedRoot;
+
+			static GeometryWriterFunction		_geometryWriteFunction;
+			static TextureWriterFunction		_textureWriteFunction;
+			static MaterialWriterFunction		_materialWriteFunction;
 
 		public:
 			inline static
@@ -149,19 +159,48 @@ namespace minko
 			serialize(std::shared_ptr<file::AssetLibrary>	assetLibrary,
 					  std::shared_ptr<file::Options>		options);
 
-		private:
+			static
+			SerializedAsset
+			serializeGeometry(std::shared_ptr<file::AssetLibrary> assetLibrary, std::shared_ptr<geometry::Geometry> geometry, uint resourceId, std::shared_ptr<file::Options> options);
+
+			static
+			SerializedAsset
+			serializeTexture(std::shared_ptr<file::AssetLibrary> assetLibrary, std::shared_ptr<render::AbstractTexture> texture, uint resourceId, std::shared_ptr<file::Options> options);
+
+			static
+			SerializedAsset
+			serializeMaterial(std::shared_ptr<file::AssetLibrary> assetLibrary, std::shared_ptr<data::Provider> material, uint resourceId, std::shared_ptr<file::Options> options);
+
+			static
 			void
-			copyEffectDependency(std::shared_ptr<AssetLibrary>                                  assets,
-                                 std::shared_ptr<file::Options>                                 options,
-                                 const std::ifstream&                                           source,
-                                 std::shared_ptr<render::Effect>                                effect,
-                                 msgpack::type::tuple<unsigned int, short, std::string>&        result);
-
-
-			Dependency()
+			setMaterialFunction(MaterialWriterFunction materialFunc)
 			{
-				_currentId = 0;
+				_materialWriteFunction = materialFunc;
 			}
+
+			static
+			void
+			setTextureFunction(TextureWriterFunction textureFunc)
+			{
+				_textureWriteFunction = textureFunc;
+			}
+
+			static
+			void
+			setGeometryFunction(GeometryWriterFunction geometryFunc)
+			{
+				_geometryWriteFunction = geometryFunc;
+			}
+
+		private:
+
+            void
+            copyEffectDependency(std::shared_ptr<AssetLibrary>          assets,
+                                 std::shared_ptr<Options>               options,
+                                 const std::ifstream&                   source,
+                                 std::shared_ptr<render::Effect>        effect,
+                                 SerializedAsset&                       result);
+			Dependency();
 		};
 	}
 }

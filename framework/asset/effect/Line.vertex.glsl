@@ -44,15 +44,8 @@ main()
 		0.0
 	));
 	normal 				*= lineSpread;
-	
-	#ifdef LINE_THICKNESS
-		normal			*= lineThickness;
-	#endif // LINE_THICKNESS
-	
-	#ifdef VIEWPORT
-		normal			/= vec3(viewport.zw, 1.0); // ( 1/viewport.width, 1/viewport.height, 1 )
-	#endif // VIEWPORT
-	
+	normal				*= lineThickness;
+	normal				/= vec3(viewport.zw, 1.0); // ( 1/viewport.width, 1/viewport.height, 1 )
 	
 	pos					/= posW;
 	pos.xyz				+= normal;

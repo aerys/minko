@@ -83,7 +83,7 @@ VertexBuffer::upload(uint offset, uint numVertices)
     	&_data[0]
     );
 
-	updatePositionBounds();
+	//updatePositionBounds();
 }
 
 void

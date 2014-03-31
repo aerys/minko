@@ -70,6 +70,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/AbstractAnimation.hpp"
 #include "minko/component/MasterAnimation.hpp"
 #include "minko/component/Animation.hpp"
+#include "minko/component/Skinning.hpp"
 #include "minko/animation/AbstractTimeline.hpp"
 #include "minko/animation/Matrix4x4Timeline.hpp"
 #include "minko/component/JobManager.hpp"

@@ -56,7 +56,7 @@ namespace minko
 				_structureName(name)
 			{
 				if (_structureName.find(NO_STRUCT_SEP) != std::string::npos)
-					throw new std::invalid_argument("The name of a StructureProvider cannot contain the following character sequence: " + NO_STRUCT_SEP);
+					throw std::invalid_argument("The name of a StructureProvider cannot contain the following character sequence: " + NO_STRUCT_SEP);
 			}
 
 			inline

@@ -26,14 +26,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	class LuaWrapper;
-
 	namespace component
 	{
 		namespace bullet
 		{
-			class LuaPhysicsWorld :
-				public LuaWrapper
+			class LuaPhysicsWorld : public LuaWrapper
 			{
 
 			public:
@@ -44,8 +41,6 @@ namespace minko
 				{
 					state.Class<PhysicsWorld>("PhysicsWorld")
 						.method("create", &PhysicsWorld::create);
-						//.method("setGravity", &PhysicsWorld::setGravity)
-						//.method("synchronizePhysicsWithGraphics", &PhysicsWorld::synchronizePhysicsWithGraphics);
 				}
 			};
 		}

@@ -18,9 +18,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "minko/component/bullet/AbstractPhysicsShape.hpp"
-
-#include "minko/math/Matrix4x4.hpp"
-#include "minko/component/bullet/PhysicsWorld.hpp"
+#include "minko/math/tools.hpp"
 
 using namespace minko;
 using namespace minko::math;
@@ -50,7 +48,7 @@ bullet::AbstractPhysicsShape::initialize(Matrix4x4::Ptr deltaTransform,
 										 Matrix4x4::Ptr graphicsStartTransform)
 {
 	auto deltaScaling = Matrix4x4::create();
-	PhysicsWorld::removeScalingShear(
+	removeScalingShear(
 		deltaTransform, 
 		_deltaTransform, 
 		deltaScaling
