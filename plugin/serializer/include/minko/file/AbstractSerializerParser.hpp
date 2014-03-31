@@ -33,7 +33,7 @@ namespace minko
 		{
 		public:
 			typedef std::shared_ptr<AbstractSerializerParser>				Ptr;
-			typedef msgpack::type::tuple<short, short, std::string>	SerializedAsset;
+			typedef msgpack::type::tuple<unsigned int, short, std::string>	SerializedAsset;
 			typedef std::shared_ptr<file::AssetLibrary>						AssetLibraryPtr;
 
 		private:
