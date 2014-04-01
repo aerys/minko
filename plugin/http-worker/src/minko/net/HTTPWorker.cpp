@@ -32,17 +32,17 @@ namespace minko
 
 			HTTPRequest request(url);
 
-			request.progress()->connect([&](float p) {
+			auto _0 = request.progress()->connect([&](float p) {
 				Message message { "progress" };
 				message.set(p);
 				post(message);
 			});
 
-			request.error()->connect([&](int e) {
+			auto _1 = request.error()->connect([&](int e) {
 				post(Message { "error" });
 			});
 
-			request.complete()->connect([&](const std::vector<char>& output) {
+			auto _2 = request.complete()->connect([&](const std::vector<char>& output) {
 				Message message { "complete" };
 				message.set(output);
 				post(message);
