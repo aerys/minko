@@ -17,36 +17,62 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-//#if !defined(EMSCRIPTEN)
-#include "minko/async/Worker.hpp"
+#include "minko/file/FileLoaderWorker.hpp"
 
 using namespace minko;
-using namespace minko::async;
 using namespace minko::file;
 
 namespace minko
 {
-	namespace async
+	namespace file
 	{
-		class FileLoaderWorker : public Worker
+		MINKO_DEFINE_WORKER(FileLoaderWorker,
 		{
-		public:
-			static
-				Ptr
-				create()
+			uint chunkSize = 8 * 1024;
+
+			std::cout << "FileLoaderWorker::run(): enter" << std::endl;
+
+			std::string filename(input.begin(), input.end());
+
+			std::vector<char> output;
+
+			post(Message { "progress" }.set(0.0f));
+
+			auto flags = std::ios::in | std::ios::ate | std::ios::binary;
+
+			std::fstream file(filename, flags);
+
+			if (file.is_open())
+			{
+				unsigned int size = (unsigned int)file.tellg();
+
+				std::cout << "FileLoaderWorker::run(): file is open" << std::endl;
+
+				file.seekg(0, std::ios::beg);
+				
+				uint offset = 0;
+
+				while (offset < size)
 				{
-					return std::shared_ptr<FileLoaderWorker>(new FileLoaderWorker());
+					uint nextOffset = offset + chunkSize;
+					uint readSize = chunkSize;
+
+					if (nextOffset > size)
+						readSize = size % chunkSize;
+
+					output.resize(offset + readSize);
+
+					file.read(&*output.begin() + offset, readSize);
+
+					post(Message { "progress" }.set(float(offset + readSize) / float(size)));
+
+					offset = nextOffset;
 				}
 
-			void
-				run(); // Must be defined in .cpp with the MINKO_WORKER macro.
+				file.close();
 
-		private:
-			FileLoaderWorker() :
-				Worker("file-loader")
-			{
+				std::cout << "FileLoaderWorker::run(): exit" << std::endl;
 			}
-		};
+		});
 	}
 }
-//#endif
