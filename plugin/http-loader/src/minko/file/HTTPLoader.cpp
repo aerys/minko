@@ -155,15 +155,58 @@ HTTPLoader::load(const std::string& filename, std::shared_ptr<Options> options)
 	loader->progress()->execute(loader, 0.0);
 
 #if defined(EMSCRIPTEN)
-	//std::string destFilename = format("prepare%d", _uid++);
-	//std::cout << "HTTPLoader::load(): " << "call emscripten_async_wget2 with filename " << destFilename << std::endl;
-	//emscripten_async_wget2(_filename.c_str(), destFilename.c_str(), "GET", "", loader.get(), &wget2CompleteHandler, &errorHandler, &progressHandler);
+	if (options->loadAsynchronously())
+	{
+		std::cout << "HTTPLoader::load(): " << "call emscripten_async_wget_data " << std::endl;
+		emscripten_async_wget_data(_filename.c_str(), loader.get(), &completeHandler, &errorHandler);
+		//TODO : use emscripten_async_wget2_data once it has been added
+	}
+	else
+	{
+		std::string eval = "";
 
-	std::cout << "HTTPLoader::load(): " << "call emscripten_async_wget_data " << std::endl;
-	emscripten_async_wget_data(_filename.c_str(), loader.get(), &completeHandler, &errorHandler);
+		eval += "var xhr = new XMLHttpRequest();\n";
+		eval += "xhr.open('GET', '" + _filename + "', false);\n";
+
+		eval += "xhr.overrideMimeType('text/plain; charset=x-user-defined');\n";
+
+		eval += "xhr.send(null);\n";
+
+		eval += "if (xhr.status == 200)\n";
+		eval += "{\n";
+		eval += "	var array = new Uint8Array(xhr.responseText.length);";
+
+		eval +=	"	for(var i = 0; i < xhr.responseText.length; ++i)\n";
+		eval +=	"		array[i] = xhr.responseText.charCodeAt(i) & 0xFF;\n";
+
+		eval += "	window.httpLoaderTmpBuffer = Module._malloc(xhr.responseText.length);\n";
+		eval += "	Module.HEAPU8.set(array, window.httpLoaderTmpBuffer);\n";
+
+		eval += "	(xhr.responseText.length);\n";
+		eval += "}\n";
+		eval += "else\n";
+		eval += "{\n";
+		eval += "	(-1);";
+		eval += "}\n";
+
+		int size = emscripten_run_script_int(eval.c_str());
+
+		if (size >= 0)
+		{
+			eval = "(window.httpLoaderTmpBuffer)";
+
+			unsigned char* bytes = (unsigned char*)emscripten_run_script_int(eval.c_str());
+
+			completeHandler(loader.get(), (void*)bytes, size);
+		}
+		else
+		{
+			errorHandler(loader.get());
+		}
+	}
 #else
-	/*if (options->loadAsynchronously())
-	{*/
+	if (options->loadAsynchronously())
+	{
 		auto worker = AbstractCanvas::defaultCanvas()->getWorker("http");
 
 		_workerSlots.push_back(worker->complete()->connect([=](Worker::MessagePtr data) {
@@ -175,11 +218,24 @@ HTTPLoader::load(const std::string& filename, std::shared_ptr<Options> options)
 		}));
 
 		worker->input(std::make_shared<std::vector<char>>(_resolvedFilename.begin(), _resolvedFilename.end()));
-	/*}
+	}
 	else
 	{
-		//fixme: handle synchronous HTTP loading
-	}*/
+		auto output(std::make_shared<std::vector<char>>());
+
+		auto helper = new HTTPWorkerHelper(_resolvedFilename, output);
+
+		helper->progress()->connect([&](float p){
+			progressHandler(loader.get(), p * 100);
+		});
+
+		helper->run();
+
+		completeHandler(loader.get(), &*output->begin(), output->size());
+
+		delete helper;
+	}
+	std::cout << "end" << std::endl;
 #endif
 }
 

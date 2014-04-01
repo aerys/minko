@@ -21,7 +21,7 @@ minko.project.worker("minko-plugin-" .. PROJECT_NAME)
 		links { "curl"}
 
 	-- windows
-	configuration { "windows32 or windows 64" }
+	configuration { "windows32 or windows64" }
 		links { "libcurl" }
 		
 	-- macos

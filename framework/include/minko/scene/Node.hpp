@@ -113,6 +113,13 @@ namespace minko
 			}
 
 			inline
+			int
+			id() const
+			{
+				return _id;
+			}
+
+			inline
 			void
 			name(const std::string& name)
 			{
@@ -270,6 +277,16 @@ namespace minko
 			virtual
 			~Node()
 			{
+			}
+
+			std::string
+			toString()
+			{
+				std::stringstream stream;
+
+				stream << "Node (" << _name << ")";
+
+				return stream.str();
 			}
 
 		protected:

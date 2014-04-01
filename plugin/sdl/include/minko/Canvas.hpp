@@ -198,6 +198,8 @@ namespace minko
 #else
 		SDL_Window*												_window;
 #endif
+		float													_relativeTime;
+		float													_frameDuration;
         time_point                                              _previousTime;
         time_point                                              _startTime;
 		float													_framerate;
@@ -253,6 +255,9 @@ namespace minko
 		uint
 		height();
 
+		int
+		getJoystickAxis(input::Joystick::Ptr joystick, int axis);
+
 		inline
 		std::shared_ptr<data::Provider>
 		data() const
@@ -302,6 +307,13 @@ namespace minko
 			return _joysticks.size();
 		}
 
+		inline 
+		std::unordered_map<int, std::shared_ptr<SDLJoystick>>
+		joysticks() 
+		{
+			return _joysticks;
+		}
+
 		inline
 		Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::Ptr
 		joystickAdded()
@@ -349,6 +361,22 @@ namespace minko
 		desiredFramerate(float desiredFramerate)
 		{
 			_desiredFramerate = desiredFramerate;
+		}
+
+		// Current frame execution time in milliseconds.
+		inline
+		float
+		frameDuration() const
+		{
+			return _frameDuration;
+		}
+
+		// Time in milliseconds since application started.
+		inline
+		float
+		relativeTime() const
+		{
+			return _relativeTime;
 		}
 
 		WorkerPtr
@@ -404,6 +432,6 @@ namespace minko
 
 	public:
 		void
-		step();
+		step();		
 	};
 }

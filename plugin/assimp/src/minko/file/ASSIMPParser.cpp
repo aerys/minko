@@ -854,7 +854,9 @@ ASSIMPParser::createSkin(const aiMesh* aimesh)
 		skin->reorganizeByVertices()->transposeMatrices()->disposeBones(), 
 		_options->skinningMethod(), 
 		_assetLibrary->context(),
-		slaveAnimations
+		slaveAnimations,
+		skeletonRoot,
+		false
 	));
 
 	auto irrelevantTransforms = NodeSet::create(skeletonRoot)
@@ -932,8 +934,8 @@ ASSIMPParser::getBoneCommonAncestor(const aiMesh* aimesh) const
 		{
 			auto node		= bonePath.front()[d];
 			bool isCommon	= true;
-			for (uint boneId = 1; boneId < aimesh->mNumBones && isCommon; ++boneId)
-				if (bonePath[boneId][d] != node)
+			for (uint i = 1; i < bonePath.size() && isCommon; ++i)
+				if (bonePath[i][d] != node)
 				{
 					isCommon = false;
 					break;

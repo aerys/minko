@@ -65,13 +65,26 @@ PhysicsExtension::deserializePhysics(std::string&							serializedAnimation,
 	uint shapeType = dst.a0;
 
 	if (shapeType == 1) // Ball
-		deserializedShape = component::bullet::SphereShape::create(shapedata[0]);
+		deserializedShape = component::bullet::SphereShape::create(
+			shapedata[0]
+		);
 	else if (shapeType == 2) // Box
-		deserializedShape = component::bullet::BoxShape::create(shapedata[0], shapedata[1], shapedata[2]);
+		deserializedShape = component::bullet::BoxShape::create(
+			shapedata[0], 
+			shapedata[1], 
+			shapedata[2]
+		);
 	else if (shapeType == 3) // Cylinder
-		deserializedShape = component::bullet::CylinderShape::create(shapedata[1], shapedata[0], shapedata[1]);
+		deserializedShape = component::bullet::CylinderShape::create(
+			shapedata[1], 
+			0.5f * shapedata[0], 
+			shapedata[1]
+		);
 	else if (shapeType == 4) // Cone
-		deserializedShape = component::bullet::ConeShape::create(shapedata[1], shapedata[0]);
+		deserializedShape = component::bullet::ConeShape::create(
+			shapedata[1], 
+			shapedata[0]
+		);
 
 	std::tuple<uint, std::string&> serializedMatrixTuple(dst.a2.a0, dst.a2.a1);
 
@@ -83,20 +96,23 @@ PhysicsExtension::deserializePhysics(std::string&							serializedAnimation,
 	auto mass = dst.a3 * deserializedShape->volume();
 
 	if (dst.a6 == false)
-		mass = 0.f;
+		mass = 0.0f;
 
-	component::bullet::ColliderData::Ptr data = component::bullet::ColliderData::create(mass, deserializedShape);
-
-	data->friction(dst.a4);
-	data->restitution(dst.a5);
-	data->triggerCollisions(dst.a7);
-	data->disableDeactivation(true);
+	const auto	friction	= dst.a4;
+	const auto	restitution	= dst.a5;
 
     const short filterGroup = short(dst.a8 & ((1<<16) - 1)); // overriden by node's layouts
     const short filterMask  = short(dst.a9 & ((1<<16) - 1)); 
 
-    data->collisionGroup(filterGroup);
-    data->collisionMask(filterMask);
+	auto data = component::bullet::ColliderData::create(
+		mass, 
+		deserializedShape,
+		restitution,
+		friction
+	);
 
-	return component::bullet::Collider::create(data);
+	return component::bullet::Collider::create(data)
+		->collisionGroup(filterGroup)
+		->collisionMask(filterMask)
+		->triggerCollisions(dst.a7);
 }

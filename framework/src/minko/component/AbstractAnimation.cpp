@@ -210,7 +210,7 @@ AbstractAnimation::Ptr
 AbstractAnimation::seek(uint currentTime)
 {
 	if (!isInPlaybackWindow(currentTime))
-		throw new std::logic_error("Provided time value is outside of playback window. In order to reset playback window, call resetPlaybackWindow().");
+		throw std::logic_error("Provided time value is outside of playback window. In order to reset playback window, call resetPlaybackWindow().");
 
 	_currentTime = currentTime;
 
@@ -229,7 +229,7 @@ AbstractAnimation::Ptr
 AbstractAnimation::addLabel(const std::string& name, uint time)
 {
 	if (hasLabel(name))
-		throw new std::logic_error("A label called '" + name + "' already exists.");
+		throw std::logic_error("A label called '" + name + "' already exists.");
 
 	_labelNameToIndex[name] = _labels.size();
 	_labels.push_back(Label(name, time));
@@ -242,7 +242,7 @@ AbstractAnimation::changeLabel(const std::string& name, const std::string& newNa
 {
 	const auto foundLabelIt = _labelNameToIndex.find(name);
 	if (foundLabelIt == _labelNameToIndex.end())
-		throw new std::logic_error("No label called '" + name + "' currently exists.");
+		throw std::logic_error("No label called '" + name + "' currently exists.");
 
 	const uint	labelId	= foundLabelIt->second;
 	auto&		label	= _labels[labelId];
@@ -259,7 +259,7 @@ AbstractAnimation::setTimeForLabel(const std::string& name, uint newTime)
 {
 	const auto foundLabelIt = _labelNameToIndex.find(name);
 	if (foundLabelIt == _labelNameToIndex.end())
-		throw new std::logic_error("No label called '" + name + "' currently exists.");
+		throw std::logic_error("No label called '" + name + "' currently exists.");
 
 	const uint	labelId	= foundLabelIt->second;
 	auto&		label	= _labels[labelId];
@@ -274,7 +274,7 @@ AbstractAnimation::removeLabel(const std::string& name)
 {
 	const auto foundLabelIt = _labelNameToIndex.find(name);
 	if (foundLabelIt == _labelNameToIndex.end())
-		throw new std::logic_error("No label called '" + name + "' currently exists.");
+		throw std::logic_error("No label called '" + name + "' currently exists.");
 
 	const uint			labelId			= foundLabelIt->second;
 	const std::string	lastLabelName	= _labels.back().name;
@@ -292,7 +292,7 @@ AbstractAnimation::labelTime(const std::string& name) const
 {
 	const auto foundLabelIt = _labelNameToIndex.find(name);
 	if (foundLabelIt == _labelNameToIndex.end())
-		throw new std::logic_error("No label called '" + name + "' currently exists.");
+		throw std::logic_error("No label called '" + name + "' currently exists.");
 
 	return labelTime(foundLabelIt->second);
 }

@@ -30,66 +30,88 @@ using namespace minko::file;
 #include "curl/curl.h"
 
 MINKO_WORKER("http", minko::async::HTTPWorker, {
-	std::cout << "HTTPWorker::run(): enter" << std::endl;
-
-	std::string filename(input()->begin(), input()->end());
+	std::string url(input()->begin(), input()->end());
 
 	output(std::make_shared<std::vector<char>>());
 
-	std::cout << "HTTPWorker::run(): before curl init" << std::endl;
+	auto helper = new HTTPWorkerHelper(url, output());
 
-	CURL* curl = curl_easy_init();
+	helper->progress()->connect([&](float p){
+		progress(p);
+	});
 
-	std::cout << "HTTPWorker::run(): after curl init" << std::endl;
-
-	if (!curl)
-		throw std::runtime_error("cURL not enabled");
-
-	std::cout << "HTTPWorker::run(): after curl init success" << std::endl;
-
-	curl_easy_setopt(curl, CURLOPT_URL, filename.c_str());
-
-	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, &curlWriteHandler);
-	curl_easy_setopt(curl, CURLOPT_WRITEDATA, this);
-
-	curl_easy_setopt(curl, CURLOPT_PROGRESSFUNCTION, &curlProgressHandler);
-	curl_easy_setopt(curl, CURLOPT_PROGRESSDATA, this);
-
-	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
-	//curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
-
-	curl_easy_setopt(curl, CURLOPT_USERAGENT, "libcurl-agent/1.0");
-
-	std::cout << "HTTPWorker::run(): before curl perform" << std::endl;
-
-	CURLcode res = curl_easy_perform(curl);
-
-	std::cout << "HTTPWorker::run(): after curl perform" << std::endl;
-
-	if (res != CURLE_OK)
-	{
-		std::cout << "HTTPWorker::run(): curl error" << std::endl;
-		// FIXME: Deal with errors.
-		// errorHandler(loader.get());
-	}
-
-	curl_easy_cleanup(curl);
-
-	std::cout << "HTTPWorker::run(): exit" << std::endl;
+	helper->run();
 });
 
 namespace minko
 {
 	namespace async
 	{
-		size_t
-		HTTPWorker::curlWriteHandler(void* data, size_t size, size_t chunks, void* arg)
+		HTTPWorkerHelper::HTTPWorkerHelper(std::string url, Worker::MessagePtr output) :
+			_url(url),
+			_output(output),
+			_progress(Signal<float>::create())
 		{
-			minko::async::HTTPWorker* worker = static_cast<minko::async::HTTPWorker*>(arg);
+		}
+
+		void
+		HTTPWorkerHelper::run()
+		{
+			std::cout << "HTTPWorkerHelper::run(): enter" << std::endl;
+
+			progress()->execute(0.0f);
+
+			std::cout << "HTTPWorkerHelper::run(): before curl init" << std::endl;
+
+			CURL* curl = curl_easy_init();
+
+			std::cout << "HTTPWorkerHelper::run(): after curl init" << std::endl;
+
+			if (!curl)
+				throw std::runtime_error("cURL not enabled");
+			std::cout << "HTTPWorkerHelper::run(): after curl init success" << std::endl;
+
+			curl_easy_setopt(curl, CURLOPT_URL, _url.c_str());
+
+			curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, &curlWriteHandler);
+			curl_easy_setopt(curl, CURLOPT_WRITEDATA, this);
+
+			curl_easy_setopt(curl, CURLOPT_PROGRESSFUNCTION, &curlProgressHandler);
+			curl_easy_setopt(curl, CURLOPT_PROGRESSDATA, this);
+
+			curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+			//curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+
+			curl_easy_setopt(curl, CURLOPT_USERAGENT, "libcurl-agent/1.0");
+
+			std::cout << "HTTPWorkerHelper::run(): before curl perform" << std::endl;
+
+			CURLcode res = curl_easy_perform(curl);
+
+			std::cout << "HTTPWorkerHelper::run(): after curl perform" << std::endl;
+
+			if (res != CURLE_OK)
+			{
+				std::cout << "HTTPWorkerHelper::run(): curl error" << std::endl;
+				// FIXME: Deal with errors.
+				// errorHandler(loader.get());
+			}
+
+			curl_easy_cleanup(curl);
+
+			progress()->execute(1.0f);
+
+			std::cout << "HTTPWorkerHelper::run(): exit" << std::endl;
+		}
+
+		size_t
+		HTTPWorkerHelper::curlWriteHandler(void* data, size_t size, size_t chunks, void* arg)
+		{
+			minko::async::HTTPWorkerHelper* helper = static_cast<minko::async::HTTPWorkerHelper*>(arg);
 
 			size *= chunks;
 
-			Worker::MessagePtr output = worker->output();
+			Worker::MessagePtr output = helper->output();
 
 			size_t position = output->size();
 
@@ -105,13 +127,13 @@ namespace minko
 		}
 
 		int
-		HTTPWorker::curlProgressHandler(void* arg, double total, double current, double, double)
+		HTTPWorkerHelper::curlProgressHandler(void* arg, double total, double current, double, double)
 		{
-			minko::async::HTTPWorker* worker = static_cast<minko::async::HTTPWorker*>(arg);
+			minko::async::HTTPWorkerHelper* helper = static_cast<minko::async::HTTPWorkerHelper*>(arg);
 
 			double ratio = current / total;
 
-			worker->progress(float(ratio));
+			helper->progress()->execute(float(ratio));
 
 			return 0;
 		}

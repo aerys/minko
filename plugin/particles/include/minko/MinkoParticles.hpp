@@ -50,3 +50,4 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/particle/shape/Cylinder.hpp"
 #include "minko/particle/shape/Point.hpp"
 #include "minko/extension/ParticlesExtension.hpp"
+#include "minko/lua/ParticlesLuaBindingsCollection.hpp"

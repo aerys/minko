@@ -69,6 +69,7 @@ DrawCall::DrawCall(const data::BindingMap&	attributeBindings,
     _vertexAttributeOffsets(MAX_NUM_VERTEXBUFFERS, -1),
 	_target(nullptr),
 	_referenceChangedSlots(),
+	_indicesChanged(nullptr),
 	_zsortNeeded(Signal<Ptr>::create()),
 	_zSorter(nullptr)
 {
@@ -95,6 +96,8 @@ DrawCall::bind(ContainerPtr data, ContainerPtr rendererData, ContainerPtr rootDa
 {
 	reset();
 
+	bindProgramDefaultUniforms();
+
 	_targetData		= data;
 	_rendererData	= rendererData;
 	_rootData		= rootData;
@@ -107,20 +110,41 @@ DrawCall::bind(ContainerPtr data, ContainerPtr rendererData, ContainerPtr rootDa
 }
 
 void
+DrawCall::bindProgramDefaultUniforms()
+{
+	if (_program == nullptr)
+		return;
+
+	for (auto& uniform : _program->uniformFloat())
+		_uniformFloat[uniform.first] = uniform.second;
+	for (auto& uniform : _program->uniformFloat2())
+		_uniformFloat2[uniform.first] = uniform.second;
+	for (auto& uniform : _program->uniformFloat3())
+		_uniformFloat3[uniform.first] = uniform.second;
+	for (auto& uniform : _program->uniformFloat4())
+		_uniformFloat4[uniform.first] = uniform.second;
+}
+
+void
 DrawCall::bindIndexBuffer()
 {
 	const std::string propertyName = "geometry[" + _variablesToValue["geometryId"] + "].indices";
 
 	_indexBuffer	= -1;
 	_numIndices		= 0;
-
+	_indicesChanged	= nullptr;
 
 	// Note: index buffer can only be held by the target node's data container!
 	if (_targetData->hasProperty(propertyName))
 	{
 		auto indexBuffer	= _targetData->get<IndexBuffer::Ptr>(propertyName);
 		_indexBuffer		= indexBuffer->id();
-		_numIndices			= indexBuffer->data().size();
+		_numIndices			= indexBuffer->numIndices();
+
+		_indicesChanged		= indexBuffer->changed()->connect([&](IndexBuffer::Ptr indices){
+			_indexBuffer	= indices->id();
+			_numIndices		= indices->numIndices();
+		});
 	}
 
 	if (_referenceChangedSlots.count(propertyName) == 0)
@@ -158,7 +182,7 @@ DrawCall::bindProgramInputs()
 		{
 		case ProgramInputs::Type::attribute:
 			{
-				bindVertexAttribute(inputName, location, vertexBufferIndex);
+				vertexBufferIndex	= bindVertexAttribute(inputName, location, vertexBufferIndex, true);
 				break;
 			}
 	
@@ -169,7 +193,7 @@ DrawCall::bindProgramInputs()
 					? _states->samplers().at(inputName)
 					: _defaultSamplerState;
 
-				bindTextureSampler(inputName, location, textureIndex, samplerState);
+				textureIndex		= bindTextureSampler(inputName, location, textureIndex, samplerState, true);
 				break;
 			}
 	
@@ -185,10 +209,11 @@ DrawCall::bindProgramInputs()
 	}
 }
 
-void
+uint
 DrawCall::bindVertexAttribute(const std::string&	inputName,
 							  int					location,
-							  uint&					vertexBufferIndex)
+							  uint					vertexBufferIndex,
+							  bool					incrementIndex)
 {
 #ifdef DEBUG
 	if (location < 0)
@@ -197,12 +222,12 @@ DrawCall::bindVertexAttribute(const std::string&	inputName,
 		throw std::invalid_argument("vertexBufferIndex");
 #endif // DEBUG
 	
+	auto index = vertexBufferIndex;
+
 	if (_attributeBindings.count(inputName))
 	{
 		auto propertyName		= formatPropertyName(std::get<0>(_attributeBindings.at(inputName)));
 		const auto& container	= getDataContainer(std::get<1>(_attributeBindings.at(inputName)));
-
-		++vertexBufferIndex;
 
 		if (container && container->hasProperty(propertyName))
 		{
@@ -214,39 +239,41 @@ DrawCall::bindVertexAttribute(const std::string&	inputName,
 				throw std::logic_error("missing required vertex attribute: " + attributeName);
 #endif
 
-			auto attribute = vertexBuffer->attribute(attributeName);
+			auto attribute	= vertexBuffer->attribute(attributeName);
 
-			_vertexBufferIds		[vertexBufferIndex]	= vertexBuffer->id();
-			_vertexBufferLocations	[vertexBufferIndex]	= location;
-			_vertexAttributeSizes	[vertexBufferIndex]	= std::get<1>(*attribute);
-			_vertexSizes			[vertexBufferIndex]	= vertexBuffer->vertexSize();
-			_vertexAttributeOffsets	[vertexBufferIndex]	= std::get<2>(*attribute);
+			_vertexBufferIds		[index]	= vertexBuffer->id();
+			_vertexBufferLocations	[index]	= location;
+			_vertexAttributeSizes	[index]	= std::get<1>(*attribute);
+			_vertexSizes			[index]	= vertexBuffer->vertexSize();
+			_vertexAttributeOffsets	[index]	= std::get<2>(*attribute);
+
+			if (incrementIndex)
+				++index;
 		}
 
 
 		if (_referenceChangedSlots.count(propertyName) == 0)
 		{
-#if defined(EMSCRIPTEN)
-			// See issue #1848 in Emscripten: https://github.com/kripken/emscripten/issues/1848
 			auto that = shared_from_this();
-			_referenceChangedSlots[propertyName].push_back(container->propertyReferenceChanged(propertyName)->connect([&, that](data::Container::Ptr, const std::string&) {
-				that->bindVertexAttribute(inputName, location, vertexBufferIndex);
-			}));
-#else
-			_referenceChangedSlots[propertyName].push_back(container->propertyReferenceChanged(propertyName)->connect(std::bind(
-				&DrawCall::bindVertexAttribute, shared_from_this(), inputName, location, vertexBufferIndex
-			)));
-#endif
+			auto slot = container->propertyReferenceChanged(propertyName)->connect(
+					[=](Container::Ptr, const std::string&)
+					{
+						that->bindVertexAttribute(inputName, location, index, false);
+					}	
+				);
+			_referenceChangedSlots[propertyName].push_back(slot);
 		}
 	}
+
+	return index;
 }
 
-void
+uint
 DrawCall::bindTextureSampler(const std::string&		inputName,
 							 int					location,
-							 uint&					textureIndex,
+							 uint					textureIndex,
    							 const SamplerState&	samplerState, 
-							 bool					incrementTextureIndex)
+							 bool					incrementIndex)
 {
 #ifdef DEBUG
 	if (location < 0)
@@ -255,40 +282,41 @@ DrawCall::bindTextureSampler(const std::string&		inputName,
 		throw std::invalid_argument("textureIndex");
 #endif // DEBUG
 
+	auto index = textureIndex;
+
 	if (_uniformBindings.count(inputName))
 	{
-		if (incrementTextureIndex)
-			++textureIndex;
-
 		auto propertyName		= formatPropertyName(std::get<0>(_uniformBindings.at(inputName)));
 		const auto& container	= getDataContainer(std::get<1>(_uniformBindings.at(inputName)));
 
 		if (container && container->hasProperty(propertyName))
 		{
-			auto texture = container->get<AbstractTexture::Ptr>(propertyName);
+			auto texture	= container->get<AbstractTexture::Ptr>(propertyName);
 
-			_textureIds			[textureIndex] = texture->id();
-			_textureLocations	[textureIndex] = location;
-			_textureWrapMode	[textureIndex] = std::get<0>(samplerState);
-			_textureFilters		[textureIndex] = std::get<1>(samplerState);
-			_textureMipFilters	[textureIndex] = std::get<2>(samplerState);
+			_textureIds			[index] = texture->id();
+			_textureLocations	[index] = location;
+			_textureWrapMode	[index] = std::get<0>(samplerState);
+			_textureFilters		[index] = std::get<1>(samplerState);
+			_textureMipFilters	[index] = std::get<2>(samplerState);
+
+			if (incrementIndex)
+				++index;
 		}
 
 		if (_referenceChangedSlots.count(propertyName) == 0)			
 		{
-#if defined(EMSCRIPTEN)
-			// See issue #1848 in Emscripten: https://github.com/kripken/emscripten/issues/1848
 			auto that = shared_from_this();
-			_referenceChangedSlots[propertyName].push_back(container->propertyReferenceChanged(propertyName)->connect([&, that](Container::Ptr, const std::string&) {
-				that->bindTextureSampler(inputName, location, textureIndex, samplerState, false);
-			}));
-#else
-			_referenceChangedSlots[propertyName].push_back(container->propertyReferenceChanged(propertyName)->connect(std::bind(
-				&DrawCall::bindTextureSampler, shared_from_this(), inputName, location, textureIndex, samplerState, false
-			)));
-#endif
+			auto slot = container->propertyReferenceChanged(propertyName)->connect(
+				[=](Container::Ptr, const std::string&)
+				{
+					that->bindTextureSampler(inputName, location, index, samplerState, false);
+				}
+			);
+			_referenceChangedSlots[propertyName].push_back(slot);
 		}
 	}
+
+	return index;
 }
 
 void

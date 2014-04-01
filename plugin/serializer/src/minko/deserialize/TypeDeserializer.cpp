@@ -142,6 +142,17 @@ TypeDeserializer::deserializeTriangleCulling(std::tuple<uint, std::string&>& ser
 }
 
 Any
+TypeDeserializer::deserializeEnvironmentMap2dType(std::tuple<uint, std::string&>& serialized)
+{
+	if (std::get<1>(serialized) == "p")
+		return Any(render::EnvironmentMap2dType::Probe);
+	if (std::get<1>(serialized) == "b")
+		return Any(render::EnvironmentMap2dType::BlinnNewell);
+
+	return Any(render::EnvironmentMap2dType::Unset);
+}
+
+Any
 TypeDeserializer::deserializeTextureId(std::tuple<uint, std::string&>& seriliazedTextureId)
 {
 	return Any(std::get<0>(seriliazedTextureId) & 0x00FFFFFF);
