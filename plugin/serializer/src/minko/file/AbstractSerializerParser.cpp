@@ -107,7 +107,7 @@ AbstractSerializerParser::deserializedAsset(SerializedAsset				asset,
 	assetCompletePath += asset.a2;
 	resolvedPath = asset.a2;
 
-	if (asset.a0 < 10) // external
+	if (asset.a0 < 10 && _assetTypeToFunction.find(asset.a0) == _assetTypeToFunction.end()) // external
 	{
 		auto							flags = std::ios::in | std::ios::ate | std::ios::binary;
 		std::fstream					file(assetCompletePath, flags);
