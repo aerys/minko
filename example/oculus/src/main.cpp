@@ -36,13 +36,13 @@ const uint			NUM_SPHERES			= 24;
 const float			SPHERES_DIST		= 5.0f;
 const float			SPHERES_MOVE_AMPL	= 2.0f;
 const float			SPHERES_MOVE_SPEED	= 2.5f;
-const float			SPHERES_PRIORITY	= render::priority::TRANSPARENT;
+const float			SPHERES_PRIORITY	= render::Priority::TRANSPARENT;
 
 const uint			NUM_QUADS			= 16;
 const float			QUADS_DIST			= 7.5f;
 const float			QUADS_MOVE_AMPL		= 2.0f;
 const float			QUADS_MOVE_SPEED	= 2.5f;
-const float			QUADS_PRIORITY		= render::priority::TRANSPARENT + 1.0f;
+const float			QUADS_PRIORITY		= render::Priority::TRANSPARENT + 1.0f;
 
 typedef std::pair<Transform::Ptr, Vector3::Ptr> AnimData;
 

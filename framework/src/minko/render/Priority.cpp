@@ -17,40 +17,12 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#pragma once
+#include "minko/render/Priority.hpp"
 
-#include "minko/Common.hpp"
+using namespace minko::render;
 
-namespace minko
-{
-    namespace render
-    {
-		// The higher the priority, the earlier the drawcall is rendered.
-		class Priority
-		{
-		public:
-			static const Priority FIRST;
-			static const Priority BACKGROUND;
-			static const Priority OPAQUE;
-			static const Priority TRANSPARENT;
-			static const Priority LAST;
-
-		private:
-			float _value;
-
-		public:
-			operator float() const
-			{
-				return _value;
-			}
-
-		private:
-			inline
-			Priority(float value):
-				_value(value)
-			{
-
-			}
-		};
-    }
-}
+/*static*/ const Priority Priority::FIRST			= 4000.0f;
+/*static*/ const Priority Priority::BACKGROUND		= 3000.0f;
+/*static*/ const Priority Priority::OPAQUE			= 2000.0f;
+/*static*/ const Priority Priority::TRANSPARENT		= 1000.0f;
+/*static*/ const Priority Priority::LAST			= 0.0f;

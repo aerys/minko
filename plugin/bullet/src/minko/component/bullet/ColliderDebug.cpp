@@ -129,7 +129,7 @@ bullet::ColliderDebug::initializeDisplay()
 				->set("diffuseColor",	math::Vector4::create(0.0f, 1.0f, 1.0f, 1.0f))
 				->set("lineThickness",	1.0f)
 				->set("depthFunc",		render::CompareMode::ALWAYS)
-				->set("priority",		render::priority::LAST),
+				->set("priority",		render::Priority::LAST),
 			_assets->effect("line")
 		))
 		->addComponent(Transform::create(

@@ -119,11 +119,11 @@ EffectParser::initializePriorityMap()
 	std::unordered_map<std::string, float> m;
 
 	// The higher the priority, the earlier the drawcall is rendered.
-	m["first"]			= priority::FIRST;
-	m["background"]		= priority::BACKGROUND;
-	m["opaque"]			= priority::OPAQUE;
-	m["transparent"]	= priority::TRANSPARENT;
-	m["last"]			= priority::LAST;
+	m["first"]			= Priority::FIRST;
+	m["background"]		= Priority::BACKGROUND;
+	m["opaque"]			= Priority::OPAQUE;
+	m["transparent"]	= Priority::TRANSPARENT;
+	m["last"]			= Priority::LAST;
 
 	return m;
 }

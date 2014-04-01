@@ -205,7 +205,7 @@ namespace minko
 			bool
 			zSorted() const
 			{
-				return _zsorted && priority::LAST < _priority && !( _priority > priority::TRANSPARENT);
+				return _zsorted && Priority::LAST < _priority && !( _priority > Priority::TRANSPARENT);
 			}
 			
 			inline
