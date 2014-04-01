@@ -43,7 +43,7 @@ Node::Node() :
 {
 }
 
-void
+Node::Ptr
 Node::layouts(LayoutMask layouts)
 {
 	if (_layouts != layouts)
@@ -60,6 +60,8 @@ Node::layouts(LayoutMask layouts)
 		for (auto ancestor : ancestors->nodes())
 			ancestor->_layoutsChanged->execute(ancestor, shared_from_this());
 	}
+
+	return shared_from_this();
 }
 
 Node::Ptr

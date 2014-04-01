@@ -23,6 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/component/AbstractComponent.hpp"
 #include "minko/Signal.hpp"
+#include "minko/scene/Layout.hpp"
 
 namespace minko
 {
@@ -33,15 +34,15 @@ namespace minko
 			public std::enable_shared_from_this<MousePicking>
 		{
 		private:
-			typedef std::shared_ptr<scene::Node>	NodePtr;
-			typedef std::shared_ptr<math::Ray>		RayPtr;
+			typedef std::shared_ptr<scene::Node>			NodePtr;
+			typedef std::shared_ptr<math::Ray>				RayPtr;
 
 		public:
-			typedef std::pair<NodePtr, float>		Hit;
-			typedef std::list<Hit>					HitList;
-			typedef std::shared_ptr<MousePicking>	Ptr;
-			typedef Signal<Ptr, HitList&, RayPtr>	MouseSignal;
-			typedef MouseSignal::Ptr				MouseSignalPtr;
+			typedef std::pair<NodePtr, float>				Hit;
+			typedef std::list<Hit>							HitList;
+			typedef std::shared_ptr<MousePicking>			Ptr;
+			typedef Signal<Ptr, HitList&, RayPtr>			MouseSignal;
+			typedef MouseSignal::Ptr						MouseSignalPtr;
 
 		private:
 			MouseSignalPtr									_move;
@@ -85,7 +86,8 @@ namespace minko
 			}
 
 			void
-			pick(RayPtr ray);
+			pick(RayPtr, 
+				 scene::LayoutMask = scene::Layout::DEFAULT_RAYCASTING);
 
 		private:
 			MousePicking();

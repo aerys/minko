@@ -21,5 +21,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 using namespace minko::scene;
 
-/*static*/ const LayoutMask Layout::DEFAULT	= 1 << 0;
-/*static*/ const LayoutMask Layout::STATIC	= 1 << 1;
+/*static*/ const LayoutMask	Layout::NOTHING				= 0;
+/*static*/ const LayoutMask Layout::EVERYTHING			= -1;
+/*static*/ const LayoutMask Layout::DEFAULT_RAYCASTING	= EVERYTHING ^ IGNORE_RAYCASTING;
+
+/*static*/ const LayoutMask Layout::DEFAULT				= 1 << 0;
+/*static*/ const LayoutMask Layout::STATIC				= 1 << 1;
+
+/*static*/ const LayoutMask Layout::IGNORE_RAYCASTING	= 1 << 16;

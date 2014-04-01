@@ -133,7 +133,7 @@ namespace minko
 				return _layouts;
 			}
 			
-			void
+			Ptr
 			layouts(LayoutMask);
 
 			inline

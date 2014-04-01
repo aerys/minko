@@ -58,13 +58,19 @@ MousePicking::initialize()
 }
 
 void
-MousePicking::pick(std::shared_ptr<math::Ray> ray)
+MousePicking::pick(std::shared_ptr<math::Ray>	ray,
+				   scene::LayoutMask			mask)
 {
 	MousePicking::HitList hits;
 
 	auto descendants = scene::NodeSet::create(targets())
 		->descendants(true)
-		->where([&](scene::Node::Ptr node) { return node->hasComponent<BoundingBox>(); });
+		->where([&](scene::Node::Ptr node) 
+		{ 
+			return (node->layouts() & mask) != 0 
+				&&  node->hasComponent<BoundingBox>(); 
+		}
+	);
 	
 	std::unordered_map<scene::Node::Ptr, float> distance;
 

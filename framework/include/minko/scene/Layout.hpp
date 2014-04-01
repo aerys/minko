@@ -30,8 +30,13 @@ namespace minko
 		class Layout
 		{
 		public:
+			static const LayoutMask	NOTHING;
+			static const LayoutMask EVERYTHING;
+			static const LayoutMask DEFAULT_RAYCASTING;
+
 			static const LayoutMask DEFAULT;
 			static const LayoutMask STATIC;
+			static const LayoutMask IGNORE_RAYCASTING;
 		};
 	}
 }
