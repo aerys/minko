@@ -95,7 +95,7 @@ int main(int argc, char** argv)
 					material,
 					assets->effect("effect/Basic.effect")
 				));
-			mesh->layouts(mesh->layouts() | (1u << 17)); // static layout
+			mesh->layouts(mesh->layouts() | scene::Layout::STATIC);
 
 			cubeGroup->addChild(mesh);
 		}

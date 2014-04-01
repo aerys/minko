@@ -32,11 +32,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::component;
 
-std::shared_ptr<math::OctTree>	Culling::_octTree;
+/*static*/ std::shared_ptr<math::OctTree>	Culling::_octTree;
+/*static*/ const scene::LayoutMask			Culling::_mask		= scene::Layout::STATIC;
 
-Culling::Culling(ShapePtr shape, std::string bindProperty):
-_frustum(shape),
-_bindProperty(bindProperty)
+Culling::Culling(ShapePtr shape, 
+				 const std::string& bindProperty):
+	_frustum(shape),
+	_bindProperty(bindProperty)
 {
 }
 
@@ -66,18 +68,18 @@ Culling::targetAddedHandler(AbstractComponent::Ptr ctrl, NodePtr target)
 		_octTree = math::OctTree::create(50, 7, math::Vector3::create(0, 0, 0));
 	
 	if (target->root()->hasComponent<SceneManager>())
-		targetAddedToScene(nullptr, target, nullptr);
+		targetAddedToSceneHandler(nullptr, target, nullptr);
 	else
 		_addedToSceneSlot = target->added()->connect(std::bind(
-		&Culling::targetAddedToScene,
-		shared_from_this(),
-		std::placeholders::_1,
-		std::placeholders::_2,
-		std::placeholders::_3));
-
-
+			&Culling::targetAddedToSceneHandler,
+			shared_from_this(),
+			std::placeholders::_1,
+			std::placeholders::_2,
+			std::placeholders::_3
+		));
+	
 	_viewMatrixChangedSlot = target->data()->propertyValueChanged(_bindProperty)->connect(std::bind(
-		&Culling::worldToScreenChanged,
+		&Culling::worldToScreenChangedHandler,
 		shared_from_this(),
 		std::placeholders::_1,
 		std::placeholders::_2));
@@ -91,14 +93,14 @@ Culling::targetRemovedHandler(AbstractComponent::Ptr ctrl, NodePtr target)
 }
 
 void
-Culling::targetAddedToScene(NodePtr node, NodePtr target, NodePtr ancestor)
+Culling::targetAddedToSceneHandler(NodePtr node, NodePtr target, NodePtr ancestor)
 {
 	if (target->root()->hasComponent<SceneManager>())
 	{
 		_addedToSceneSlot = nullptr;
 
 		_layoutChangedSlot = target->root()->layoutsChanged()->connect(std::bind(
-			&Culling::layoutChanged,
+			&Culling::layoutChangedHandler,
 			shared_from_this(),
 			std::placeholders::_1,
 			std::placeholders::_2
@@ -119,7 +121,7 @@ Culling::addedHandler(NodePtr node, NodePtr target, NodePtr ancestor)
 {
 	scene::NodeSet::Ptr nodeSet = scene::NodeSet::create(target)->descendants(true)->where([](NodePtr descendant)
 	{
-		return (descendant->layouts() & (1u << 17)) != 0;
+		return (descendant->layouts() & _mask) != 0;
 	});
 
 	for (auto n : nodeSet->nodes())
@@ -127,16 +129,16 @@ Culling::addedHandler(NodePtr node, NodePtr target, NodePtr ancestor)
 }
 
 void
-Culling::layoutChanged(NodePtr node, NodePtr target)
+Culling::layoutChangedHandler(NodePtr node, NodePtr target)
 {
-	if (target->layouts() & (1u << 17))
+	if ((target->layouts() & _mask) != 0)
 		_octTree->insert(target);
 	else
 		_octTree->remove(target);
 }
 
 void
-Culling::worldToScreenChanged(std::shared_ptr<data::Container> data, const std::string& propertyName)
+Culling::worldToScreenChangedHandler(std::shared_ptr<data::Container> data, const std::string& propertyName)
 {
 	_frustum->updateFromMatrix(data->get<std::shared_ptr<math::Matrix4x4>>(propertyName));
 	
