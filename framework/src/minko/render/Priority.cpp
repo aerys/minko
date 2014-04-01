@@ -21,8 +21,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 using namespace minko::render;
 
-/*static*/ const Priority Priority::FIRST			= 4000.0f;
-/*static*/ const Priority Priority::BACKGROUND		= 3000.0f;
-/*static*/ const Priority Priority::OPAQUE			= 2000.0f;
-/*static*/ const Priority Priority::TRANSPARENT		= 1000.0f;
-/*static*/ const Priority Priority::LAST			= 0.0f;
+/*static*/ const float Priority::FIRST			= 4000.0f;
+/*static*/ const float Priority::BACKGROUND		= 3000.0f;
+/*static*/ const float Priority::OPAQUE			= 2000.0f;
+/*static*/ const float Priority::TRANSPARENT	= 1000.0f;
+/*static*/ const float Priority::LAST			= 0.0f;

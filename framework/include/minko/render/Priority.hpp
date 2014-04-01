@@ -29,28 +29,11 @@ namespace minko
 		class Priority
 		{
 		public:
-			static const Priority FIRST;
-			static const Priority BACKGROUND;
-			static const Priority OPAQUE;
-			static const Priority TRANSPARENT;
-			static const Priority LAST;
-
-		private:
-			float _value;
-
-		public:
-			operator float() const
-			{
-				return _value;
-			}
-
-		private:
-			inline
-			Priority(float value):
-				_value(value)
-			{
-
-			}
+			static const float FIRST;
+			static const float BACKGROUND;
+			static const float OPAQUE;
+			static const float TRANSPARENT;
+			static const float LAST;
 		};
     }
 }
