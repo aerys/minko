@@ -31,7 +31,7 @@ unsigned int Node::_id = 0;
 
 Node::Node() :
 	_name("Node_" + std::to_string(Node::_id++)),
-	_layouts(1),
+	_layouts(Layout::DEFAULT),
 	_root(nullptr),
 	_parent(nullptr),
 	_container(data::Container::create()),
@@ -44,7 +44,7 @@ Node::Node() :
 }
 
 void
-Node::layouts(unsigned int layouts)
+Node::layouts(LayoutMask layouts)
 {
 	if (_layouts != layouts)
 	{

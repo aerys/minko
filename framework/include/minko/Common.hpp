@@ -44,6 +44,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include <type_traits>
 #include <cfloat>
 #include <climits>
+#include <cstdint>
 #include <future>
 #include <thread>
 #include <chrono>

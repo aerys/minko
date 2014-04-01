@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/AbstractParser.hpp"
 #include "minko/file/EffectParser.hpp"
 #include "minko/file/AbstractLoader.hpp"
+#include "minko/scene/Layout.hpp"
 
 namespace minko
 {
@@ -63,7 +64,7 @@ namespace minko
 			std::unordered_map<std::string, std::vector<unsigned char>>				_blobs;
             std::unordered_map<std::string, AbsScriptPtr>                           _scripts;
 
-            std::unordered_map<std::string, uint>									_layouts;
+            std::unordered_map<std::string, scene::LayoutMask>						_layouts;
 
 			std::list<std::string>													_filesQueue;
 			std::list<std::string>													_loading;
@@ -183,11 +184,11 @@ namespace minko
 			const std::string&
 			scriptName(AbsScriptPtr script);
 
-			const unsigned int
-			layout(const std::string& name);
+			scene::LayoutMask
+			layout(const std::string&);
 
 			Ptr
-			layout(const std::string& name, const unsigned int mask);
+			layout(const std::string&, scene::LayoutMask);
 
 			template <typename T>
 			typename std::enable_if<std::is_base_of<file::AbstractParser, T>::value, Ptr>::type

@@ -21,6 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 #include "minko/Signal.hpp"
+#include "minko/scene/Layout.hpp"
 
 namespace minko
 {
@@ -42,7 +43,7 @@ namespace minko
 		private:
 			static unsigned int								_id;
 
-			uint											_layouts;
+			LayoutMask										_layouts;
 			Ptr 											_root;
 			Ptr												_parent;
 			std::shared_ptr<data::Container>				_container;
@@ -126,14 +127,14 @@ namespace minko
 			}
 
 			inline
-			uint
+			LayoutMask
 			layouts() const
 			{
 				return _layouts;
 			}
 			
 			void
-			layouts(uint);
+			layouts(LayoutMask);
 
 			inline
 			Ptr
