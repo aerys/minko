@@ -101,11 +101,11 @@ void main(void)
 	#endif // SHININESS
 
 	#ifdef DIFFUSE_MAP
-		diffuse = texture2D(diffuseMap, vertexUV);
+		diffuse 	*= texture2D(diffuseMap, vertexUV);
 	#endif // DIFFUSE_MAP
 
 	#ifdef ALPHA_MAP
-		diffuse.a = texture2D(alphaMap, vertexUV).r;
+		diffuse.a 	= texture2D(alphaMap, vertexUV).r;
 	#endif // ALPHA_MAP
 
 	#ifdef ALPHA_THRESHOLD
