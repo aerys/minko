@@ -27,10 +27,11 @@ using namespace minko;
 using namespace minko::scene;
 using namespace minko::component;
 
-unsigned int Node::_id = 0;
+unsigned int Node::_lastId = 0;
 
 Node::Node() :
-	_name("Node_" + std::to_string(Node::_id++)),
+	_id(_lastId++),
+	_name("Node_" + std::to_string(_id)),
 	_layouts(1),
 	_root(nullptr),
 	_parent(nullptr),

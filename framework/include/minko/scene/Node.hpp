@@ -40,7 +40,8 @@ namespace minko
 			std::vector<Ptr>								_children;
 
 		private:
-			static unsigned int								_id;
+			static uint										_lastId;
+			uint											_id;
 
 			uint											_layouts;
 			Ptr 											_root;
