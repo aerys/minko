@@ -17,21 +17,22 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "minko/file/HTTPLoader.hpp"
+#include "minko/net/HTTPLoader.hpp"
 
+#include "minko/async/Worker.hpp"
+#include "minko/net/HTTPRequest.hpp"
 #include "minko/file/Options.hpp"
 #include "minko/Signal.hpp"
 #include "minko/AbstractCanvas.hpp"
 
 #if defined(EMSCRIPTEN)
 # include "emscripten/emscripten.h"
-#else
-# include "minko/async/HTTPWorker.hpp"
 #endif
 
 using namespace minko;
 using namespace minko::file;
 using namespace minko::async;
+using namespace minko::net;
 
 std::list<std::shared_ptr<HTTPLoader>>
 HTTPLoader::_runningLoaders;
@@ -209,33 +210,39 @@ HTTPLoader::load(const std::string& filename, std::shared_ptr<Options> options)
 	{
 		auto worker = AbstractCanvas::defaultCanvas()->getWorker("http");
 
-		_workerSlots.push_back(worker->complete()->connect([=](Worker::Ptr, Worker::MessagePtr data) {
-			completeHandler(loader.get(), &*data->begin(), data->size());
+		_workerSlots.push_back(worker->message()->connect([=](Worker::Ptr, Worker::Message message) {
+			if (message.type == "complete")
+			{
+				completeHandler(loader.get(), &*message.data.begin(), message.data.size());
+			}
+			else if (message.type == "progress")
+			{
+				float ratio = *reinterpret_cast<float*>(&*message.data.begin());
+				progressHandler(loader.get(), ratio * 100);				
+			}
+			else if (message.type == "error")
+			{
+				errorHandler(loader.get());
+			}
 		}));
 
-		_workerSlots.push_back(worker->progress()->connect([=](Worker::Ptr, float ratio) {
-			progressHandler(loader.get(), ratio * 100);
-		}));
-
-		worker->input(std::make_shared<std::vector<char>>(_resolvedFilename.begin(), _resolvedFilename.end()));
+		std::vector<char> input(_resolvedFilename.begin(), _resolvedFilename.end());
+		worker->start(input);
 	}
 	else
 	{
-		auto output(std::make_shared<std::vector<char>>());
+		HTTPRequest request(_resolvedFilename);
 
-		auto helper = new HTTPWorkerHelper(_resolvedFilename, output);
-
-		helper->progress()->connect([&](float p){
+		request.progress()->connect([&](float p){
 			progressHandler(loader.get(), p * 100);
 		});
 
-		helper->run();
+		request.run();
 
-		completeHandler(loader.get(), &*output->begin(), output->size());
+		std::vector<char>& output = request.output();
 
-		delete helper;
+		completeHandler(loader.get(), &*output.begin(), output.size());
 	}
-	std::cout << "end" << std::endl;
 #endif
 }
 
