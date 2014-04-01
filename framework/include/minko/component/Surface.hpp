@@ -36,19 +36,19 @@ namespace minko
 			friend render::DrawCallPool;
 
 		public:
-			typedef std::shared_ptr<Surface>									Ptr;
-			typedef Signal<Ptr, const std::string&, bool>						TechniqueChangedSignal;	
-			typedef Signal<Ptr, std::shared_ptr<component::Renderer>, bool>		VisibilityChangedSignal;
+			typedef std::shared_ptr<Surface>										Ptr;
+			typedef Signal<Ptr, const std::string&, bool>							TechniqueChangedSignal;	
+			typedef Signal<Ptr, std::shared_ptr<component::Renderer>, bool>			VisibilityChangedSignal;
 
 		private:
-			typedef std::shared_ptr<data::ArrayProvider>					ArrayProviderPtr;
-			typedef std::shared_ptr<scene::Node>							NodePtr;
-			typedef std::shared_ptr<data::Container>						ContainerPtr;
-			typedef Signal<ContainerPtr, const std::string&>				PropertyChangedSignal;
-			typedef PropertyChangedSignal::Slot								PropertyChangedSlot;
-			typedef std::shared_ptr<render::Effect>							EffectPtr;
-			typedef const std::string&										StringRef;
-			typedef Signal<ArrayProviderPtr, uint>::Slot					ArrayProviderIndexChangedSlot;
+			typedef std::shared_ptr<data::ArrayProvider>							ArrayProviderPtr;
+			typedef std::shared_ptr<scene::Node>									NodePtr;
+			typedef std::shared_ptr<data::Container>								ContainerPtr;
+			typedef Signal<ContainerPtr, const std::string&>						PropertyChangedSignal;
+			typedef PropertyChangedSignal::Slot										PropertyChangedSlot;
+			typedef std::shared_ptr<render::Effect>									EffectPtr;
+			typedef const std::string&												StringRef;
+			typedef Signal<ArrayProviderPtr, uint>::Slot							ArrayProviderIndexChangedSlot;
 
 
 		private:

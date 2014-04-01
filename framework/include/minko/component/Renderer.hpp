@@ -21,6 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 #include "minko/component/AbstractComponent.hpp"
+#include "minko/scene/Layout.hpp"
 
 namespace minko
 {
@@ -59,6 +60,7 @@ namespace minko
 
 			std::set<std::shared_ptr<Surface>>							_toCollect;
 			EffectPtr													_effect;
+			scene::LayoutMask											_mask;
 			float														_priority;
 
 
@@ -134,6 +136,20 @@ namespace minko
 			backgroundColor(const unsigned int backgroundColor)
 			{
 				_backgroundColor = backgroundColor;
+			}
+
+			inline
+			scene::LayoutMask
+			mask() const
+			{
+				return _mask;
+			}
+
+			inline
+			void
+			mask(scene::LayoutMask value)
+			{
+				_mask = value;
 			}
 
 			inline

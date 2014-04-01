@@ -59,7 +59,8 @@
         "scissorBox.width"      : { "property" : "scissorBox.width",    "source" : "renderer" },
         "scissorBox.height"     : { "property" : "scissorBox.height",   "source" : "renderer" },
         "priority"              : "material[${materialId}].priority",
-        "zSort"                 : "material[${materialId}].zSort"
+        "zSort"                 : "material[${materialId}].zSort",
+        "layouts"               : "node.layouts"
     },
     
     "colorMask"         : true,

@@ -26,6 +26,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/FileLoader.hpp"
 #include "minko/render/Blending.hpp"
 #include "minko/render/Shader.hpp"
+#include "minko/scene/Layout.hpp"
 
 namespace Json
 {
@@ -113,7 +114,7 @@ namespace minko
 			std::unordered_map<ShaderPtr, GLSLBlockListPtr>				_glslBlocks;
 
 			std::vector<PassPtr>										_globalPasses;
-			std::unordered_map<std::string, AbstractTexturePtr>					_globalTargets;
+			std::unordered_map<std::string, AbstractTexturePtr>			_globalTargets;
 			std::unordered_map<std::string, TexturePtrMap>				_techniqueTargets;
 			std::unordered_map<std::string, std::vector<PassPtr>>		_techniquePasses;
 			std::unordered_map<std::string, std::string>				_techniqueFallback;
@@ -232,6 +233,9 @@ namespace minko
 			loadTexture(const std::string&				textureFilename,
 						UniformTypeAndValue&			uniformTypeAndValue,
 						std::shared_ptr<file::Options>	options);
+
+			scene::LayoutMask
+			parseLayouts(const Json::Value&, scene::LayoutMask);
 
 			float
 			parsePriority(const Json::Value&, float defaultPriority);

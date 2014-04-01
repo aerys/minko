@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/TriangleCulling.hpp"
 #include "minko/render/CompareMode.hpp"
 #include "minko/render/StencilOperation.hpp"
+#include "minko/scene/Layout.hpp"
 
 namespace minko
 {
@@ -39,6 +40,7 @@ namespace minko
 			typedef std::shared_ptr<render::AbstractTexture>				AbstractTexturePtr;
 
         private:
+			scene::LayoutMask			_layouts;
             float				        _priority;
 			bool						_zsorted;
 		    Blending::Source		    _blendingSourceFactor;
@@ -62,6 +64,7 @@ namespace minko
 		    inline static
 		    Ptr
 		    create(const SamplerStates&     samplerStates,
+				   scene::LayoutMask		layouts						= scene::Layout::DEFAULT,
 				   float					priority					= 0.f,
 				   bool						zSorted						= false,
 				   Blending::Source			blendingSourceFactor		= Blending::Source::ONE,
@@ -82,6 +85,7 @@ namespace minko
 		    {
 			    return std::shared_ptr<States>(new States(
                     samplerStates,
+					layouts,
                     priority,
 					zSorted,
                     blendingSourceFactor,
@@ -108,6 +112,7 @@ namespace minko
 		    {
 		    	return std::shared_ptr<States>(new States(
                     states->_samplerStates,
+					states->_layouts,
                     states->_priority,
 					states->_zsorted,
                     states->_blendingSourceFactor,
@@ -136,6 +141,13 @@ namespace minko
 
 			    return create(states);
 		    }
+
+			inline
+			scene::LayoutMask
+			layouts() const
+			{
+				return _layouts;
+			}
 
             inline
             float
@@ -272,6 +284,7 @@ namespace minko
 
 	    private:
 		    States(const SamplerStates&     samplerSates,
+				   scene::LayoutMask		layouts,
 				   float				    priority,
 				   bool						zSorted,
 				   Blending::Source		    blendingSourceFactor,
@@ -290,6 +303,7 @@ namespace minko
 				   const ScissorBox&		scissorBox,
                    AbstractTexturePtr		target) :
                 _samplerStates(samplerSates),
+				_layouts(layouts),
                 _priority(priority),
 				_zsorted(zSorted),
                 _blendingSourceFactor(blendingSourceFactor),

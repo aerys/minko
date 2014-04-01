@@ -29,6 +29,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/States.hpp"
 #include "minko/render/AbstractTexture.hpp"
 #include "minko/render/Priority.hpp"
+#include "minko/scene/Layout.hpp"
 
 namespace minko
 {
@@ -98,6 +99,7 @@ namespace minko
 			render::StencilOperation									_stencilZPassOp;
 			bool														_scissorTest;
 			render::ScissorBox											_scissorBox;
+			scene::LayoutMask											_layouts;
 			float														_priority;
 			bool														_zsorted;
             std::unordered_map<uint, float>                             _uniformFloat;
@@ -193,6 +195,13 @@ namespace minko
             {
                 return _target;
             }
+
+			inline
+			scene::LayoutMask
+			layouts() const
+			{
+				return _layouts;
+			}
 
 			inline
 			float

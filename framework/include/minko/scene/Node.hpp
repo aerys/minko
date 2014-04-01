@@ -37,25 +37,25 @@ namespace minko
 			typedef std::shared_ptr<component::AbstractComponent>	AbsCtrlPtr;
 
 		protected:
-			std::string 									_name;
-			std::vector<Ptr>								_children;
+			std::string 											_name;
+			std::vector<Ptr>										_children;
 
 		private:
-			static unsigned int								_id;
+			static unsigned int										_id;
 
-			LayoutMask										_layouts;
-			Ptr 											_root;
-			Ptr												_parent;
-			std::shared_ptr<data::Container>				_container;
-			std::list<AbsCtrlPtr>							_components;
+			Ptr 													_root;
+			Ptr														_parent;
+			std::shared_ptr<data::Container>						_container;
+			std::shared_ptr<data::Provider>							_data;
+			std::list<AbsCtrlPtr>									_components;
 
-			uint											_depth;
+			uint													_depth;
 
-			std::shared_ptr<Signal<Ptr, Ptr, Ptr>>			_added;
-			std::shared_ptr<Signal<Ptr, Ptr, Ptr>>			_removed;
-			std::shared_ptr<Signal<Ptr, Ptr>>				_layoutsChanged;
-			std::shared_ptr<Signal<Ptr, Ptr, AbsCtrlPtr>>	_componentAdded;
-			std::shared_ptr<Signal<Ptr, Ptr, AbsCtrlPtr>>	_componentRemoved;
+			std::shared_ptr<Signal<Ptr, Ptr, Ptr>>					_added;
+			std::shared_ptr<Signal<Ptr, Ptr, Ptr>>					_removed;
+			std::shared_ptr<Signal<Ptr, Ptr>>						_layoutsChanged;
+			std::shared_ptr<Signal<Ptr, Ptr, AbsCtrlPtr>>			_componentAdded;
+			std::shared_ptr<Signal<Ptr, Ptr, AbsCtrlPtr>>			_componentRemoved;
 
 		public:
 
@@ -126,12 +126,8 @@ namespace minko
 				_name = name;
 			}
 
-			inline
 			LayoutMask
-			layouts() const
-			{
-				return _layouts;
-			}
+			layouts() const;
 			
 			Ptr
 			layouts(LayoutMask);
@@ -280,7 +276,7 @@ namespace minko
 			}
 
 			std::string
-			toString()
+			toString() const
 			{
 				std::stringstream stream;
 
@@ -294,6 +290,10 @@ namespace minko
 
 			void
 			updateRoot();
+
+		private:
+			void
+			initialize();
 		};
 	}
 }

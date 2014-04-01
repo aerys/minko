@@ -249,11 +249,13 @@ EffectParser::parseRenderStates(const Json::Value&		root,
 	auto stencilZPassOp		= defaultStates->stencilDepthPassOperation();
 	auto scissorTest		= defaultStates->scissorTest();
 	auto scissorBox			= defaultStates->scissorBox();
+	auto layouts			= defaultStates->layouts();
 
 	AbstractTexture::Ptr target = defaultStates->target();
 	std::unordered_map<std::string, SamplerState> samplerStates = defaultStates->samplers();
 
 	const float priority = parsePriority(root, defaultStates->priority() + priorityOffset);
+	parseLayouts(root, layouts);
 	parseZSort(root, zSorted);
 	parseBlendMode(root, blendSrcFactor, blendDstFactor);
 	parseColorMask(root, colorMask);
@@ -266,6 +268,7 @@ EffectParser::parseRenderStates(const Json::Value&		root,
 
 	return render::States::create(
 		samplerStates,
+		layouts,
 		(float)priority,
 		zSorted,
 		blendSrcFactor,
@@ -714,6 +717,19 @@ EffectParser::parsePriority(const Json::Value& contextNode,
 	return ret;
 }
 
+scene::LayoutMask
+EffectParser::parseLayouts(const Json::Value&	contextNode,
+						   scene::LayoutMask	defaultValue)
+{
+	auto				layoutsNode	= contextNode.get("layouts", defaultValue);
+	scene::LayoutMask	ret			= defaultValue;
+
+	if (!layoutsNode.isNull() && layoutsNode.isInt())
+		ret = scene::LayoutMask(layoutsNode.asInt());
+
+	return ret;
+}
+
 void
 EffectParser::parseBindingNameAndSource(const Json::Value& contextNode, std::string& propertyName, BindingSource& source)
 {
@@ -743,12 +759,12 @@ EffectParser::parseBindingNameAndSource(const Json::Value& contextNode, std::str
 }
 
 void
-EffectParser::parseBindings(const Json::Value&		contextNode,
-						    BindingMap&		attributeBindings,
-						    BindingMap&		uniformBindings,
-						    BindingMap&		stateBindings,
+EffectParser::parseBindings(const Json::Value&	contextNode,
+						    BindingMap&			attributeBindings,
+						    BindingMap&			uniformBindings,
+						    BindingMap&			stateBindings,
 							MacroBindingMap&	macroBindings,
-							UniformValues&			uniformDefaultValues)
+							UniformValues&		uniformDefaultValues)
 {
 	auto attributeBindingsValue = contextNode.get("attributeBindings", 0);
 	if (attributeBindingsValue.isObject())
