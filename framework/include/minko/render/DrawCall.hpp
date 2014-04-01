@@ -120,6 +120,7 @@ namespace minko
 			std::unordered_map<uint, data::UniformArrayPtr<int>>		_uniformInts4;
 
 			std::unordered_map<std::string, std::list<Any>>				_referenceChangedSlots; // Any = ContainerPropertyChangedSlot
+			Signal<std::shared_ptr<IndexBuffer>>::Slot					_indicesChanged;
 
 			std::shared_ptr<Signal<Ptr>>								_zsortNeeded;
 			std::shared_ptr<DrawCallZSorter>					        _zSorter;
@@ -246,6 +247,9 @@ namespace minko
             bind(ContainerPtr data, ContainerPtr rendererData, ContainerPtr rootData);
 
 			void
+			bindProgramDefaultUniforms();
+
+			void
 			bindProgramInputs();
 
 			void
@@ -254,11 +258,11 @@ namespace minko
 			void
 			bindStates();
 			
-			void
-			bindVertexAttribute(const std::string& propertyName, int location, uint& vertexBufferIndex);
+			uint
+			bindVertexAttribute(const std::string& propertyName, int location, uint vertexBufferIndex, bool = true);
 			
-			void
-			bindTextureSampler(const std::string& propertyName, int location, uint& textureIndex, const SamplerState&, bool = true);
+			uint
+			bindTextureSampler(const std::string& propertyName, int location, uint textureIndex, const SamplerState&, bool = true);
 
 			void
 			bindUniform(const std::string& propertyName, ProgramInputs::Type, int location);

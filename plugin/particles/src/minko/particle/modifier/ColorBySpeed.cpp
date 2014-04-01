@@ -40,7 +40,7 @@ ColorBySpeed::ColorBySpeed(LinearlyInterpolatedValue<math::Vector3>::Ptr color):
     Modifier1<math::Vector3>(color)
 {
     if (_x == nullptr)
-        throw new std::invalid_argument("color");
+        throw std::invalid_argument("color");
 }
 
 void

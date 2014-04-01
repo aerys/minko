@@ -279,12 +279,12 @@ ComponentDeserializer::deserializeSkinning(std::string&		serializedAnimation,
 		std::vector<float>				boneWeight		= TypeDeserializer::deserializeVector<float>(serializedBone.a2);
 		auto							offsetMatrix	= Any::cast<Matrix4x4Ptr>(deserialize::TypeDeserializer::deserializeMatrix4x4(serializedMatrixTuple));
 
-		auto nodeSet = scene::NodeSet::create(root)->descendants(true, false)->where([&](scene::Node::Ptr n)
-		{
-			return n->name() == nodeName;
-		});
+		auto nodeSet = scene::NodeSet::create(root)
+			->descendants(true, false)
+			->where([&](scene::Node::Ptr n){ return n->name() == nodeName; });
 
-		bones.push_back(geometry::Bone::create(nodeSet->nodes()[0], offsetMatrix, vertexShortIds, boneWeight));
+		if (!nodeSet->nodes().empty())
+			bones.push_back(geometry::Bone::create(nodeSet->nodes()[0], offsetMatrix, vertexShortIds, boneWeight));
 
 	}
 
@@ -292,6 +292,6 @@ ComponentDeserializer::deserializeSkinning(std::string&		serializedAnimation,
         assetLibrary->defaultOptions(), 
         assetLibrary->context(), 
         bones, 
-        root
+        root->children().size() == 1 ? root->children().front() : root  // FIXME (for soccerpunch) there is one extra level wrt minko studio ! ->issues w/ precomputation and collider
    );
 }

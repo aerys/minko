@@ -32,10 +32,14 @@ namespace minko
 				public AbstractPhysicsShape
 			{
 			public:
-				typedef std::shared_ptr<SphereShape> Ptr;
+				typedef std::shared_ptr<SphereShape>				Ptr;
 
 			private:
-				float _radius;
+				typedef std::shared_ptr<geometry::LineGeometry>		LineGeometryPtr;
+				typedef std::shared_ptr<render::AbstractContext>	AbsContextPtr;
+
+			private:
+				float												_radius;
 
 			public:
 				inline static
@@ -71,6 +75,9 @@ namespace minko
 					
 					return volume * _volumeScaling;
 				}
+
+				LineGeometryPtr
+				getGeometry(AbsContextPtr) const;
 
 			private:
 				SphereShape(float radius):

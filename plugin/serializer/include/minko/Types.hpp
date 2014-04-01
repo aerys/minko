@@ -52,7 +52,8 @@ namespace minko
 			FLOAT			= 6,
 			BOOL			= 7,
 			BLENDING		= 8,
-			TRIANGLECULLING = 9
+			TRIANGLECULLING = 9,
+			ENVMAPTYPE		= 10
 		};
 
 		enum AssetType
@@ -62,7 +63,7 @@ namespace minko
 			MATERIAL_ASSET			= 1,
 			EMBED_MATERIAL_ASSET	= 11,
 			TEXTURE_ASSET			= 2,
-			EMBED_TEXUTRE_ASSET		= 12,
+			EMBED_TEXTURE_ASSET		= 12,
 			EFFECT_ASSET			= 3,
 			EMBED_EFFECT_ASSET		= 13
 		};

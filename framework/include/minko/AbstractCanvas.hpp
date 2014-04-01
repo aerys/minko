@@ -77,8 +77,22 @@ namespace minko
 		joystickRemoved() = 0;
 
 		virtual
+		int
+		getJoystickAxis(std::shared_ptr<input::Joystick> joystick, int axis) = 0;
+
+		virtual
 		std::shared_ptr<async::Worker>
 		getWorker(const std::string& name) = 0;
+
+		// Current frame execution time in milliseconds.
+		virtual
+		float
+		frameDuration() const = 0;
+
+		// Time in milliseconds since application started.
+		virtual
+		float
+		relativeTime() const = 0;
 
 		virtual
 		bool

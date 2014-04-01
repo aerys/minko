@@ -39,7 +39,7 @@ if %EMPTY% == 1 (
 	%BIN% %ARGS%
 ) else (
 	@if %verbose% == 1 echo on
-	%BIN% %ARGS% %START_GROUP% %STATIC_LIBS% %STATIC_LIBS% %SHARED_LIBS% %END_GROUP%
+	%BIN% %ARGS% %START_GROUP% %STATIC_LIBS% %STATIC_LIBS% %SHARED_LIBS% %SHARED_LIBS% %END_GROUP%
 )
 
 @set error=%errorlevel%

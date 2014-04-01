@@ -37,7 +37,7 @@ SizeOverTime::SizeOverTime(LinearlyInterpolatedValue<float>::Ptr size):
     Modifier1<float>(size)
 {
     if (_x == nullptr)
-        throw new std::invalid_argument("size");
+        throw std::invalid_argument("size");
 }
 
 void

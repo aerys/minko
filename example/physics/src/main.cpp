@@ -22,6 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/MinkoSDL.hpp"
 #include "minko/MinkoBullet.hpp"
 
+#define DISPLAY_COLLIDERS
+
 using namespace minko;
 using namespace minko::scene;
 using namespace minko::component;
@@ -34,9 +36,10 @@ const float			GROUND_DEPTH		= 5.0f;
 const float			GROUND_THICK		= 0.05f;
 
 const float			MIN_MASS			= 1.0f;
-const float			MAX_MASS			= 5.0f;
+const float			MAX_MASS			= 3.0f;
 const float			MIN_SCALE			= 0.2f;
 const float			MAX_SCALE			= 1.0f;
+const float			IMPULSE_STRENGTH	= 3.0f;
 const auto			MIN_DROP_POS		= Vector3::create(-GROUND_WIDTH * 0.5f + 0.5f, 5.0f, -GROUND_DEPTH * 0.5f + 0.5f);
 const auto			MAX_DROP_POS		= Vector3::create( GROUND_WIDTH * 0.5f - 0.5f, 5.0f,  GROUND_DEPTH * 0.5f - 0.5f);
 
@@ -50,8 +53,7 @@ createPhysicsObject(unsigned int id, file::AssetLibrary::Ptr, bool isCube);
 
 int main(int argc, char** argv)
 {
-	auto canvas = Canvas::create("Minko Example - Physics", 800, 600);
-
+	auto canvas			= Canvas::create("Minko Example - Physics", 800, 600);
 	auto sceneManager	= SceneManager::create(canvas->context());
 
 	// setup assets
@@ -62,11 +64,14 @@ int main(int argc, char** argv)
 		->registerParser<file::PNGParser>("png")
 		->queue(TEXTURE_FILENAME)
 		->queue("effect/Phong.effect")
+#ifdef DISPLAY_COLLIDERS
+		->queue("effect/Line.effect")
+#endif // DISPLAY_COLLIDERS
 		->geometry("sphere",	geometry::SphereGeometry::create(sceneManager->assets()->context(), 16, 16))
 		->geometry("cube",		geometry::CubeGeometry::create(sceneManager->assets()->context()));
 	
 	std::cout << "[space]\tdrop an object onto the scene (up to " << MAX_NUM_OBJECTS << ")" << std::endl;
-
+	std::cout << "[I]\tapply vertical impulse to a ramdomly-picked object of your scene" << std::endl;
 
 	auto root = scene::Node::create("root")
 		->addComponent(sceneManager)
@@ -100,6 +105,10 @@ int main(int argc, char** argv)
 	root
 		->addChild(ambientLightNode)
 		->addChild(dirLightNode);
+	
+#ifdef DISPLAY_COLLIDERS
+	root->data()->addProvider(canvas->data());
+#endif // DISPLAY_COLLIDERS
 
 	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
 	{
@@ -135,7 +144,7 @@ int main(int argc, char** argv)
 					0.0f, // static object (no mass)
 					bullet::BoxShape::create(GROUND_THICK * 0.5f, GROUND_HEIGHT * 0.5f, GROUND_DEPTH * 0.5f))
 			));
-
+		
 		groundNode
 			->addChild(groundNodeA)
 			->addChild(groundNodeB);
@@ -148,13 +157,33 @@ int main(int argc, char** argv)
 			{
 				if (numObjects < MAX_NUM_OBJECTS)
 				{
-					root->addChild(createPhysicsObject(numObjects, sceneManager->assets(), rand() / (float)RAND_MAX > 0.5f));
+					auto physicsObject = createPhysicsObject(numObjects, sceneManager->assets(), rand() / (float)RAND_MAX > 0.5f);
+					root->addChild(physicsObject);
 					++numObjects;
 
 					std::cout << "object #" << numObjects << " dropped" << std::endl;
 				}
 				else
 					std::cout << "You threw away all your possible objects. Try again!" << std::endl;
+			}
+			else if (k->keyIsDown(input::Keyboard::KeyCode::i))
+			{
+				auto physicsObjects = NodeSet::create(root)
+					->descendants(true)
+					->where([](Node::Ptr n)
+				{
+					return n->hasComponent<component::bullet::Collider>() 
+						&& n->component<component::Transform>()->modelToWorldMatrix()->translation()->length() < 10.0f // still close to the origin
+						&& n->name().find("physicsObject") != std::string::npos;
+				});
+
+				if (!physicsObjects->nodes().empty())
+				{
+					auto randomId		= rand() % physicsObjects->nodes().size();
+					auto randomCollider	= physicsObjects->nodes()[randomId]->component<component::bullet::Collider>();
+
+					randomCollider->applyImpulse(Vector3::create(0.0f, IMPULSE_STRENGTH * randomCollider->colliderData()->mass(), 0.0));
+				}
 			}
 		});
 	});
@@ -210,10 +239,11 @@ createPhysicsObject(unsigned int id, file::AssetLibrary::Ptr assets, bool isCube
 			mass,
 			bullet::SphereShape::create(halfSize) 
 		);
+
 		collider = bullet::Collider::create(sphColliderData);
 	}
 
-	return scene::Node::create("node_" + std::to_string(id))
+	return scene::Node::create("physicsObject_" + std::to_string(id))
 		->addComponent(Transform::create(
 			Matrix4x4::create()
 				->appendScale(size)
@@ -227,5 +257,9 @@ createPhysicsObject(unsigned int id, file::AssetLibrary::Ptr assets, bool isCube
 				->diffuseColor(diffColor),
 			assets->effect("phong")
 		))
-		->addComponent(collider);
+		->addComponent(collider)
+#ifdef DISPLAY_COLLIDERS
+		->addComponent(bullet::ColliderDebug::create(assets))
+#endif // DISPLAY_COLLIDERS
+		;
 }

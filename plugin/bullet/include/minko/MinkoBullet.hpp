@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/bullet/PhysicsWorld.hpp"
 #include "minko/component/bullet/Collider.hpp"
 #include "minko/component/bullet/ColliderData.hpp"
+#include "minko/component/bullet/ColliderDebug.hpp"
 #include "minko/component/bullet/AbstractPhysicsShape.hpp"
 #include "minko/component/bullet/SphereShape.hpp"
 #include "minko/component/bullet/BoxShape.hpp"
