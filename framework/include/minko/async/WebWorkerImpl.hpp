@@ -39,25 +39,28 @@ namespace minko
 			{
 				std::cout << "WebWorkerImpl::start()" << std::endl;;
 
-				emscripten_call_worker(_handle, "minkoWorkerEntryPoint", &*_input.begin(), _input.size(), &messageHandler, this);
+				char* data = const_cast<char*>(&*input.begin());
+
+				emscripten_call_worker(_handle, "minkoWorkerEntryPoint", data, input.size(), &messageHandler, this);
 			}
 
 			void
 			poll()
 			{
-				std::cout << "WebWorkerImpl::poll()" << std::endl;;
+				// std::cout << "WebWorkerImpl::poll()" << std::endl;;
 
 				if (!_messages.empty())
 				{
 					std::cout << "WebWorkerImpl::poll(): message execute" << std::endl;
-					_message->execute(shared_from_this(), _messages.pop());
+					_message->execute(_that->shared_from_this(), _messages.front());
+					_messages.pop();
 				}
 			}
 
 			void
 			post(Message message)
 			{
-				emscripten_worker_respond(message.type.c_str(), message.type.size());
+				emscripten_worker_respond(const_cast<char*>(message.type.c_str()), message.type.size());
 				emscripten_worker_respond(&*message.data.begin(), message.data.size());
 			}
 
@@ -73,6 +76,7 @@ namespace minko
 			}
 
 			WorkerImpl(Worker* that, const std::string& name) :
+				_that(that),
 				_message(Signal<Ptr, Message>::create())
 			{
 				std::string path = "minko-worker-" + name + ".js";
@@ -80,35 +84,31 @@ namespace minko
 			}
 
 		private:
-			std::string									_type;
-			std::queue<MessagePtr>						_messages;
+			Worker*										_that;
+			std::string									_messageType;
+			std::queue<Message>							_messages;
 			std::shared_ptr<Signal<Ptr, Message>>		_message;
 			int											_handle;
-
 
 			static
 			void
 			messageHandler(char* data, int size, void* arg)
 			{
-				WebWorkerImpl* worker = static_cast<WebWorkerImpl*>(arg);
+				WorkerImpl* worker = static_cast<WorkerImpl*>(arg);
 
 				std::cout << "WebWorkerImpl::messageHandler(): " << size << std::endl;;
 
-				if (worker->type().empty())
+				if (worker->_messageType.empty())
 				{
 					std::cout << "WebWorkerImpl::messageHandler(): reading type" << std::endl;
-					worker->type().assign(data, size);
+					worker->_messageType.assign(data, size);
 				}
 				else
 				{
 					std::cout << "WebWorkerImpl::messageHandler(): reading data" << std::endl;
 
-					MessagePtr output(new Message);
-					output->first = worker->_type;
-					output->second = std::vector<char>(data, data + size);
-
-					worker->_messages.push(worker, output);
-					worker->_type.erase();
+					worker->_messages.push(Message { worker->_messageType }.set(std::vector<char>(data, data + size)));
+					worker->_messageType.erase();
 				}
 			}
 		};
