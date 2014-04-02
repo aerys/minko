@@ -71,8 +71,14 @@ namespace minko
 
 				file.close();
 
-				std::cout << "FileLoaderWorker::run(): exit" << std::endl;
+				post(Message{ "complete" }.set(output));
 			}
+			else
+			{
+				post(Message{ "error" });
+			}
+
+			std::cout << "FileLoaderWorker::run(): exit" << std::endl;
 		});
 	}
 }
