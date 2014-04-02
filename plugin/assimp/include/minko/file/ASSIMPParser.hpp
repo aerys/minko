@@ -90,6 +90,7 @@ namespace minko
 			std::unordered_map<const aiNode*, NodePtr>				_aiNodeToNode;
 			std::unordered_map<const aiMesh*, NodePtr>				_aiMeshToNode;
 			std::unordered_map<std::string, NodePtr>				_nameToNode;
+			std::unordered_map<std::string, MaterialPtr>				_nameToMaterial;
 			std::unordered_map<std::string, Matrices4x4>			_nameToAnimMatrices;
 			std::set<NodePtr>										_alreadyAnimatedNodes;
 

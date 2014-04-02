@@ -156,6 +156,7 @@ ASSIMPParser::parse(const std::string&					filename,
     _filename		= filename;
 	_assetLibrary	= assetLibrary;
 	_options		= options;
+	_nameToMaterial.clear();
 
     //Init the assimp scene
     Assimp::Importer importer;
@@ -1366,9 +1367,17 @@ ASSIMPParser::createMaterial(const aiMaterial* aiMat)
 		? _options->materialFunction()(materialName.data, material)
 		: material;
 
-    _assetLibrary->material(materialName.data, material);
+	if (_nameToMaterial.find(materialName.data) == _nameToMaterial.end())
+	{
+		_nameToMaterial[materialName.data] = material;
+		_assetLibrary->material(materialName.data, material);
 
-    return material;
+		return material;
+	}
+	else
+	{
+		return _nameToMaterial[materialName.data];
+	}
 }
 
 material::Material::Ptr
