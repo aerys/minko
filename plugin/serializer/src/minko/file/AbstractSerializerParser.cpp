@@ -145,6 +145,7 @@ AbstractSerializerParser::deserializedAsset(SerializedAsset				asset,
 	else if ((asset.a0 == serialize::AssetType::MATERIAL_ASSET || asset.a0 == serialize::AssetType::EMBED_MATERIAL_ASSET) &&
 		_dependencies->materialReferenceExist(asset.a1) == false) // material
 	{
+		_materialParser->_jobList.clear();
 		_materialParser->dependecy(_dependencies);
 
 		if (asset.a0 == serialize::AssetType::EMBED_MATERIAL_ASSET)
@@ -156,7 +157,7 @@ AbstractSerializerParser::deserializedAsset(SerializedAsset				asset,
 	}
 	else if ((asset.a0 == serialize::AssetType::TEXTURE_ASSET ||
 				asset.a0 == serialize::AssetType::PNG_EMBED_TEXTURE_ASSET ||
-				 asset.a0 == serialize::AssetType::JPEG_EMBED_TEXTURE_ASSET) && 
+				asset.a0 == serialize::AssetType::JPEG_EMBED_TEXTURE_ASSET) && 
 			_dependencies->textureReferenceExist(asset.a1) == false ) // texture
 	{
 		if (asset.a0 == serialize::AssetType::PNG_EMBED_TEXTURE_ASSET ||
