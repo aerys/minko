@@ -44,7 +44,7 @@ namespace minko
 
 			if (file.is_open())
 			{
-				unsigned int size = (unsigned int)file.tellg();
+				uint size = uint(file.tellg());
 
 				std::cout << "FileLoaderWorker::run(): file is open" << std::endl;
 

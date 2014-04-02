@@ -39,7 +39,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 # define MINKO_DEFINE_WORKER(Class, Code)										\
 	void minkoWorkerEntryPoint(char* data, int size)							\
 	{																			\
-		auto worker = Class ::create(Name);										\
+		auto worker = Class ::create("");										\
 		std::vector<char> input(data, data + size);								\
 		worker->run(input);														\
 	}																			\
