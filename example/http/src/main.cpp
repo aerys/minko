@@ -20,10 +20,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Minko.hpp"
 #include "minko/MinkoPNG.hpp"
 #include "minko/MinkoSDL.hpp"
-#include "minko/file/HTTPLoader.hpp"
+#include "minko/net/HTTPLoader.hpp"
 
 #if !defined(EMSCRIPTEN) // FIXME: Automate this in the HTTPLoader
-# include "minko/async/HTTPWorker.hpp"
+# include "minko/net/HTTPWorker.hpp"
 #endif
 
 using namespace minko;
@@ -37,13 +37,13 @@ int main(int argc, char** argv)
 	auto canvas = Canvas::create("Minko Example - HTTP", 800, 600);
 
 #if !defined(EMSCRIPTEN) // FIXME: Automate this in the HTTPLoader
-	canvas->registerWorker<async::HTTPWorker>("http");
+	canvas->registerWorker<net::HTTPWorker>("http");
 #endif
 
 	auto sceneManager = SceneManager::create(canvas->context());
 	
-	sceneManager->assets()->registerProtocol<file::HTTPLoader>("http");
-	sceneManager->assets()->registerProtocol<file::HTTPLoader>("https");
+	sceneManager->assets()->registerProtocol<net::HTTPLoader>("http");
+	sceneManager->assets()->registerProtocol<net::HTTPLoader>("https");
 
 	// setup assets
 	sceneManager->assets()->defaultOptions()->resizeSmoothly(true);

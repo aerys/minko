@@ -17,47 +17,60 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "minko/async/Worker.hpp"
-#include "minko/AbstractCanvas.hpp"
+#pragma once
 
-#if defined(MINKO_WORKER_IMPL_WEBWORKER)
-# include "minko/async/WebWorkerImpl.hpp"
-#elif defined(MINKO_WORKER_IMPL_THREAD)
-# include "minko/async/ThreadWorkerImpl.hpp"
-#endif
+#include "minko/Signal.hpp"
 
-using namespace minko;
-using namespace minko::async;
-
-Worker::Worker(const std::string& name)
+namespace minko
 {
-	_impl.reset(new WorkerImpl(this, name));
-}
+	namespace net
+	{
+		class HTTPRequest
+		{
+		public:
+			HTTPRequest(std::string url);
 
-void
-Worker::start(const std::vector<char>& input)
-{
-	_impl->start(input);
-}
+			void
+			run();
 
-void
-Worker::post(Message message)
-{
-	_impl->post(message);
-}
+			std::vector<char>&
+			output()
+			{
+				return _output;
+			}
 
-void
-Worker::poll()
-{
-	_impl->poll();
-}
+			Signal<float>::Ptr
+			progress()
+			{
+				return _progress;
+			}
 
-Signal<Worker::Ptr, Worker::Message>::Ptr
-Worker::message()
-{
-	return _impl->message();
-}
+			Signal<int>::Ptr
+			error()
+			{
+				return _error;
+			}
 
-Worker::~Worker()
-{
+			Signal<const std::vector<char>&>::Ptr
+			complete()
+			{
+				return _complete;
+			}
+
+			static
+			size_t
+			curlWriteHandler(void* data, size_t size, size_t chunks, void* arg);
+
+			static
+			int
+			curlProgressHandler(void* arg, double total, double current, double, double);
+
+		private:
+			std::string _url;
+			std::vector<char> _output;
+			Signal<float>::Ptr _progress;
+			Signal<int>::Ptr _error;
+			Signal<const std::vector<char>&>::Ptr _complete;
+		};
+	}
 }

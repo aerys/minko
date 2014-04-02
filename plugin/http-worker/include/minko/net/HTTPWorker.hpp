@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -17,69 +17,18 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+#pragma once
+
 #include "minko/async/Worker.hpp"
 
-using namespace minko;
-using namespace minko::async;
-using namespace minko::file;
+#if defined(EMSCRIPTEN)
+# error "HTTPWorker cannot be used in HTML5, the browser already has native thread support for HTTP requests."
+#endif
 
 namespace minko
 {
-	namespace async
+	namespace net
 	{
-		class HTTPWorker : public Worker
-		{
-		public:
-			static
-			Ptr
-			create()
-			{
-				return std::shared_ptr<HTTPWorker>(new HTTPWorker());
-			}
-
-			void
-			run(); // Must be defined in .cpp with the MINKO_WORKER macro.
-
-		private:
-			HTTPWorker() :
-				Worker("http")
-			{
-			}
-		};
-
-		class HTTPWorkerHelper
-		{
-		public:
-			HTTPWorkerHelper(std::string url, Worker::MessagePtr output);
-
-			void
-			run();
-
-			Worker::MessagePtr
-			output()
-			{
-				return _output;
-			}
-
-			Signal<float>::Ptr
-			progress()
-			{
-				return _progress;
-			}
-
-			static
-			size_t
-			curlWriteHandler(void* data, size_t size, size_t chunks, void* arg);
-
-			static
-			int
-			curlProgressHandler(void* arg, double total, double current, double, double);
-
-		private:
-
-			std::string _url;
-			Worker::MessagePtr _output;
-			Signal<float>::Ptr _progress;
-		};
+		MINKO_DECLARE_WORKER(HTTPWorker);
 	}
 }
