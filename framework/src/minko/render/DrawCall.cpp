@@ -142,8 +142,16 @@ DrawCall::bindIndexBuffer()
 		_numIndices			= indexBuffer->numIndices();
 
 		_indicesChanged		= indexBuffer->changed()->connect([&](IndexBuffer::Ptr indices){
-			_indexBuffer	= indices->id();
-			_numIndices		= indices->numIndices();
+			if (!indices->isReady())
+			{
+				_numIndices = 0;
+				_indexBuffer = -1;
+			}
+			else
+			{
+				_indexBuffer = indices->id();
+				_numIndices = indices->numIndices();
+			}
 		});
 	}
 
