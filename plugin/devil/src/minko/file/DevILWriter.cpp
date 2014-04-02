@@ -55,7 +55,7 @@ DevILWriter::checkError()
 	ILuint error = ilGetError();
 
 	if (error != IL_NO_ERROR)
-		throw std::runtime_error(std::string("DevILWriter::write"));
+		throw std::runtime_error(std::string("DevILWriter::write, ") + iluErrorString(error));
 }
 
 std::set<std::string>
