@@ -31,7 +31,7 @@ const uint WINDOW_WIDTH = 800;
 const uint WINDOW_HEIGHT = 600;
 
 const std::string MODEL_FILENAME = "model/pirate.dae";
-const std::string MINKO_LOGO = "texture/minko-logo.jpg";
+const std::string MINKO_LOGO = "texture/minko-logo.png";
 
 int
 main(int argc, char** argv)
@@ -85,13 +85,17 @@ main(int argc, char** argv)
         root->addChild(camera);
 
         // Create a quad to display the Minko logo
+        auto bannerMaterial = material::BasicMaterial::create();
+        bannerMaterial->blendingMode(render::Blending::Mode::ALPHA);
+        bannerMaterial->diffuseMap(assets->texture(MINKO_LOGO));
+
         auto banner = scene::Node::create("banner")
             ->addComponent(Transform::create(Matrix4x4::create()
                 ->appendScale(4, 1, 0)
                 ->appendTranslation(0.f, 1.f, 1.f)))
             ->addComponent(Surface::create(
                     geometry::QuadGeometry::create(assets->context()),
-                    material::BasicMaterial::create()->diffuseMap(assets->texture(MINKO_LOGO)),
+                    bannerMaterial,
                     assets->effect("effect/Basic.effect")
                 )
             );

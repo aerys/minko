@@ -572,6 +572,18 @@ Canvas::step()
 
             break;
 #endif // EMSCRIPTEN
+
+        // Touch events
+        case SDL_FINGERDOWN:
+            std::cout << "Finger down!" << std::endl;
+            break;
+        case SDL_FINGERUP:
+            std::cout << "Finger up!" << std::endl;
+            break;
+        case SDL_FINGERMOTION:
+            std::cout << "Finger motion!" << std::endl;
+            break;
+
         default:
             break;
         }
