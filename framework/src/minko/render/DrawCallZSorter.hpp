@@ -39,23 +39,11 @@ namespace minko
 			typedef std::shared_ptr<data::Value>		ValuePtr;
 
 		private:
-			struct PropertyInfo
-			{
-				data::BindingSource source;
-				bool				isMatrix;
-
-				inline
-				PropertyInfo() : source(data::BindingSource::TARGET), isMatrix(false) { }
-
-				inline
-				PropertyInfo(data::BindingSource src, bool isMat): source(src), isMatrix(isMat)	{ }
-			};
-
-			typedef std::shared_ptr<Signal<DrawCallPtr>>			ZSortNeedSignalPtr;
-			typedef std::shared_ptr<render::VertexBuffer>			VertexBufferPtr;
-			typedef Signal<ContainerPtr, const std::string&>::Slot	PropertyChangedSlot;
-			typedef Signal<ValuePtr>::Slot							ValueChangedSlot;
-			typedef std::unordered_map<std::string, PropertyInfo>	PropertyInfos;								
+			typedef std::shared_ptr<Signal<DrawCallPtr>>					ZSortNeedSignalPtr;
+			typedef std::shared_ptr<render::VertexBuffer>					VertexBufferPtr;
+			typedef Signal<ContainerPtr, const std::string&>::Slot			PropertyChangedSlot;
+			typedef Signal<ValuePtr>::Slot									ValueChangedSlot;
+			typedef std::unordered_map<std::string, data::BindingSource>	PropertyInfos;								
 
 		private:	
 			static const PropertyInfos								_rawProperties;
@@ -73,8 +61,8 @@ namespace minko
 
 			// positional members
 			std::pair<std::string, VertexBufferPtr>					_vertexPositions;
-			std::pair<std::string, math::mat4*>				_modelToWorldMatrix;
-			std::pair<std::string, math::mat4*>				_worldToScreenMatrix;
+			std::pair<std::string, math::mat4*>						_modelToWorldMatrix;
+			std::pair<std::string, math::mat4*>						_worldToScreenMatrix;
 
 		public:
 			inline static

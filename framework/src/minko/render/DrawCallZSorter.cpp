@@ -36,11 +36,11 @@ DrawCallZSorter::initializeRawProperties()
 {
 	PropertyInfos props;
 
-	props["material[${materialId}].priority"]	= PropertyInfo(data::BindingSource::TARGET,		false);
-	props["material[${materialId}].zSort"]		= PropertyInfo(data::BindingSource::TARGET,		false);
-	props["geometry[${geometryId}].position"]	= PropertyInfo(data::BindingSource::TARGET,		false);
-	props["transform.modelToWorldMatrix"]		= PropertyInfo(data::BindingSource::TARGET,		true);
-	props["camera.worldToScreenMatrix"]			= PropertyInfo(data::BindingSource::RENDERER,	true);
+	props["material[${materialId}].priority"]	= data::BindingSource::TARGET;
+	props["material[${materialId}].zSort"]		= data::BindingSource::TARGET;
+	props["geometry[${geometryId}].position"]	= data::BindingSource::TARGET;
+	props["transform.modelToWorldMatrix"]		= data::BindingSource::TARGET;
+	props["camera.worldToScreenMatrix"]			= data::BindingSource::RENDERER;
 
 	return props;
 }
@@ -70,14 +70,13 @@ DrawCallZSorter::initialize(Container::Ptr targetData,
 
 	clear();
 
-	// format raw property name to fit with the current
+	// format raw property name to fit with the actual draw call
 	for (auto& prop : _rawProperties)
 		_properties[_drawcall->formatPropertyName(prop.first)] = prop.second;
 
 	_vertexPositions.first		= _drawcall->formatPropertyName("geometry[${geometryId}].position");
 	_modelToWorldMatrix.first	= _drawcall->formatPropertyName("transform.modelToWorldMatrix");
 	_worldToScreenMatrix.first	= _drawcall->formatPropertyName("camera.worldToScreenMatrix");
-
 
 	_targetPropAddedSlot	= targetData->propertyAdded()->connect(std::bind(
 		&DrawCallZSorter::propertyAddedHandler,
@@ -111,8 +110,7 @@ DrawCallZSorter::initialize(Container::Ptr targetData,
 
 	for (auto& prop : _properties)
 	{
-		auto source		= prop.second.source;
-		auto container	= source == data::BindingSource::RENDERER ? rendererData : targetData;
+		auto container = prop.second == data::BindingSource::RENDERER ? rendererData : targetData;
 		if (container->hasProperty(prop.first))
 			propertyAddedHandler(container, prop.first); 
 	}		
@@ -144,21 +142,12 @@ DrawCallZSorter::propertyAddedHandler(Container::Ptr		container,
 
 	if (_propChangedSlots.find(propertyName) == _propChangedSlots.end())
 	{
-		/*
-		_propChangedSlots[propertyName] = container->propertyReferenceChanged(propertyName)->connect(std::bind(
-			&DrawCallZSorter::requestZSort,
-			shared_from_this()
-		));
-
-		if (container->hasProperty(propertyName) && foundPropIt->second.isMatrix)
-		{*/
-			_propChangedSlots[propertyName] = container->propertyValueChanged(propertyName)->connect(
-				[&](data::Container::Ptr, const std::string&)
-				{
-					requestZSort();
-				}
-			);
-		//}
+		_propChangedSlots[propertyName] = container->propertyValueChanged(propertyName)->connect(
+			[&](data::Container::Ptr, const std::string&)
+			{
+				requestZSort();
+			}
+		);
 	}
 
 	requestZSort();
@@ -202,7 +191,7 @@ DrawCallZSorter::recordIfPositionalMembers(Container::Ptr		container,
 	if (isPropertyAdded)
 	{
 		if (propertyName == _vertexPositions.first)
-			_vertexPositions.second		= container->get<VertexBuffer::Ptr>(propertyName);
+			_vertexPositions.second	= container->get<VertexBuffer::Ptr>(propertyName);
 		else if (propertyName == _modelToWorldMatrix.first)
 			_modelToWorldMatrix.second	= new math::mat4(container->get<math::mat4>(propertyName));
 		else if (propertyName == _worldToScreenMatrix.first)
