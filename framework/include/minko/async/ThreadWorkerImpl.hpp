@@ -37,7 +37,9 @@ namespace minko
 			{
 				std::cout << "ThreadWorkerImpl::start()" << std::endl;;
 
-				std::thread(&Worker::run, _that->shared_from_this(), std::ref(input)).detach();
+				_input = input;
+
+				std::thread(&Worker::run, _that->shared_from_this(), std::ref(_input)).detach();
 			}
 
 			void
@@ -90,6 +92,7 @@ namespace minko
 			std::mutex										_mutex;
 			std::queue<Message>								_messages;
 			std::shared_ptr<Signal<Ptr, Message>>			_message;
+			std::vector<char>								_input;
 		};
 	}
 }

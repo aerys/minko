@@ -91,6 +91,10 @@ FileLoader::load(const std::string& filename, std::shared_ptr<Options> options)
 					float ratio = *reinterpret_cast<float*>(&*message.data.begin());
 					_progress->execute(shared_from_this(), ratio);
 				}
+				else if (message.type == "error")
+				{
+					_error->execute(shared_from_this());
+				}
 			}));
 
 			std::vector<char> input(_resolvedFilename.begin(), _resolvedFilename.end());
