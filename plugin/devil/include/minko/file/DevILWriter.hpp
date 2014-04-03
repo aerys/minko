@@ -40,10 +40,13 @@ namespace minko
 			}
 
 			void
-			write(const std::string&                 filename,
-			      const std::vector<unsigned char>&  data,
-			      minko::uint                        width,
-			      minko::uint                        height);
+			write(const std::string&                    filename,
+			      const std::vector<unsigned char>&     data,
+			      uint                                  srcWidth,
+			      uint                                  srcHeight,
+                  uint                                  dstWidth,
+                  uint                                  dstHeight,
+                  uint                                  componentCount);
 
 		private:
 			DevILWriter()

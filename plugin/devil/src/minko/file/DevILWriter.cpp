@@ -26,10 +26,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko::file;
 
 void
-DevILWriter::write(const std::string&                 filename,
-                 const std::vector<unsigned char>&  data,
-                 minko::uint                        width,
-                 minko::uint                        height)
+DevILWriter::write(const std::string&                   filename,
+                   const std::vector<unsigned char>&    data,
+                   uint                                  srcWidth,
+                   uint                                  srcHeight,
+                   uint                                  dstWidth,
+                   uint                                  dstHeight,
+                   uint                                  componentCount)
 {
 	ILuint devilID;
 
@@ -39,12 +42,31 @@ DevILWriter::write(const std::string&                 filename,
 	ilGenImages(1, &devilID);
 	ilBindImage(devilID);
 
-	ilLoadL(IL_TYPE_UNKNOWN, &data[0], data.size());
+    int format;
+
+    switch (componentCount) {
+        case 1:  format = IL_LUMINANCE; break;
+        case 3:  format = IL_RGB; break;
+        case 4:  format = IL_RGBA; break;
+        default: return;
+    }
+
+    ilTexImage(srcWidth,
+               srcHeight,
+               1,
+               componentCount,
+               format,
+               IL_UNSIGNED_BYTE,
+               const_cast<unsigned char*> (data.data()));
+    iluFlipImage();
+    iluScale(dstWidth, dstHeight, 1);
 	checkError();
 
 	ilEnable(IL_FILE_OVERWRITE);
 	ilSaveImage(filename.c_str());
 	checkError();
+
+    ilDeleteImages(1, &devilID);
 
 	ilShutDown();
 }
