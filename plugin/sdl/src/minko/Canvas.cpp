@@ -87,6 +87,7 @@ Canvas::initializeInputs()
 {
     _mouse = Canvas::SDLMouse::create(shared_from_this());
     _keyboard = Canvas::SDLKeyboard::create();
+    _finger = Canvas::SDLFinger::create(shared_from_this());
 
 #ifndef EMSCRIPTEN
     for (int i = 0; i < SDL_NumJoysticks(); ++i)
@@ -448,6 +449,43 @@ Canvas::step()
             _mouse->wheel()->execute(_mouse, event.wheel.x, event.wheel.y);
             //_mouseWheel->execute(shared_from_this(), event.wheel.x, event.wheel.y);
             break;
+                
+                
+                // Touch events
+                case SDL_FINGERDOWN:
+# if defined(DEBUG)
+                std::cout << "Finger down! (x: " << event.tfinger.x << ", y: " << event.tfinger.y << ")" << std::endl;
+#endif // DEBUG
+                
+                _finger->x(event.tfinger.x);
+                _finger->y(event.tfinger.y);
+                
+                _finger->fingerDown()->execute(_finger, event.tfinger.x, event.tfinger.y);
+                
+                break;
+                case SDL_FINGERUP:
+# if defined(DEBUG)
+                std::cout << "Finger up! (x: " << event.tfinger.x << ", y: " << event.tfinger.y << ")" << std::endl;
+#endif // DEBUG
+                _finger->x(event.tfinger.x);
+                _finger->y(event.tfinger.y);
+                
+                _finger->fingerUp()->execute(_finger, event.tfinger.x, event.tfinger.y);
+                
+                break;
+                case SDL_FINGERMOTION:
+# if defined(DEBUG)
+                std::cout << "Finger motion! (x: " << event.tfinger.x << ", y: " << event.tfinger.y << "|dx: " << event.tfinger.dx << ", dy: " << event.tfinger.dy <<")" << std::endl;
+#endif // DEBUG
+                _finger->x(event.tfinger.x);
+                _finger->y(event.tfinger.y);
+                _finger->dx(event.tfinger.dx);
+                _finger->dy(event.tfinger.dy);
+                
+                _finger->fingerMotion()->execute(_finger, event.tfinger.dx, event.tfinger.dy);
+                
+                break;
+
 
         case SDL_JOYAXISMOTION:
 # if defined(DEBUG)
@@ -572,18 +610,6 @@ Canvas::step()
 
             break;
 #endif // EMSCRIPTEN
-
-        // Touch events
-        case SDL_FINGERDOWN:
-            std::cout << "Finger down!" << std::endl;
-            break;
-        case SDL_FINGERUP:
-            std::cout << "Finger up!" << std::endl;
-            break;
-        case SDL_FINGERMOTION:
-            std::cout << "Finger motion!" << std::endl;
-            break;
-
         default:
             break;
         }
