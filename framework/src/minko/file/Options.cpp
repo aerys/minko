@@ -68,15 +68,15 @@ Options::Options(std::shared_ptr<render::AbstractContext> context) :
 	includePaths().push_back("bin/linux32/debug/asset");
 #  endif
 # elif defined(__APPLE__)
-#  include <TargetConditionals.h>
-#  if defined(TARGET_IPHONE_SIMULATOR) or defined(TARGET_OS_IPHONE)
+#  include "TargetConditionals.h"
+#  if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
 	CFURLRef resourcesURL = CFBundleCopyResourcesDirectoryURL(CFBundleGetMainBundle());
 	char path[PATH_MAX];
 	if (!CFURLGetFileSystemRepresentation(resourcesURL, true, (UInt8*) path, PATH_MAX))
 		throw std::runtime_error("cannot find .app path");
 	CFRelease(resourcesURL);
 	includePaths().push_back(std::string(path) + "/asset");
-#  elif defined(TARGET_OS_MAC)
+#  elif TARGET_OS_MAC
 	includePaths().push_back("bin/osx64/debug/asset");
 #  endif
 # endif
