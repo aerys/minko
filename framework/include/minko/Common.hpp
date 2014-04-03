@@ -334,6 +334,7 @@ namespace minko
 		class Mouse;
         class Keyboard;
 		class Joystick;
+        class Finger;
 	}
 
 	namespace async

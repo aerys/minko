@@ -34,16 +34,6 @@ Finger::Finger(std::shared_ptr<AbstractCanvas> canvas) :
     _swipeLeft(Signal<Ptr>::create()),
     _swipeRight(Signal<Ptr>::create()),
     _swipeUp(Signal<Ptr>::create()),
-    _swipeDown(Signal<Ptr>::create()),
-	_fingerId(0)
+    _swipeDown(Signal<Ptr>::create())
 {
-    _slots.push_front(_fingerDown->connect([&](Ptr finger, float x, float y)
-    {
-        _fingerIsDown = true;
-    }));
-    
-	_slots.push_front(_fingerUp->connect([&](Ptr finger, float x, float y)
-    {
-        _fingerIsDown = false;
-    }));
 }

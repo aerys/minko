@@ -493,7 +493,7 @@ Canvas::step()
                 if (event.tfinger.dx > SDLFinger::SWIPE_PRECISION)
                 {
 # if defined(DEBUG)
-                    std::cout << "SWIPE RIGHT! (" << event.tfinger.dx << ")" << std::endl;
+                    std::cout << "Swipe right! (" << event.tfinger.dx << ")" << std::endl;
 #endif // DEBUG
                     _finger->swipeRight()->execute(_finger);
                 }
@@ -501,7 +501,7 @@ Canvas::step()
                 if (-event.tfinger.dx > SDLFinger::SWIPE_PRECISION)
                 {
 # if defined(DEBUG)
-                    std::cout << "SWIPE LEFT! (" << event.tfinger.dx << ")" << std::endl;
+                    std::cout << "Swipe left! (" << event.tfinger.dx << ")" << std::endl;
 #endif // DEBUG
                     
                     _finger->swipeLeft()->execute(_finger);
@@ -510,7 +510,7 @@ Canvas::step()
                 if (event.tfinger.dy > SDLFinger::SWIPE_PRECISION)
                 {
 # if defined(DEBUG)
-                    std::cout << "SWIPE DOWN! (" << event.tfinger.dy << ")" << std::endl;
+                    std::cout << "Swipe down! (" << event.tfinger.dy << ")" << std::endl;
 #endif // DEBUG
                     
                     _finger->swipeDown()->execute(_finger);
@@ -519,7 +519,7 @@ Canvas::step()
                 if (-event.tfinger.dy > SDLFinger::SWIPE_PRECISION)
                 {
 #if defined(DEBUG)
-                    std::cout << "SWIPE UP! (" << event.tfinger.dy << ")" << std::endl;
+                    std::cout << "Swipe up! (" << event.tfinger.dy << ")" << std::endl;
 #endif // DEBUG
                     
                     _finger->swipeUp()->execute(_finger);

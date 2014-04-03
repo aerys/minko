@@ -217,12 +217,6 @@ namespace minko
 				_dy = dy;
 			}
             
-            void
-			fingerId(int fingerId)
-			{
-				_fingerId = fingerId;
-			}
-            
 		private:
 			SDLFinger(Canvas::Ptr canvas) :
             input::Finger(canvas)
@@ -348,6 +342,13 @@ namespace minko
 		{
 			return _keyboard;
 		}
+        
+        inline
+		std::shared_ptr<input::Finger>
+		finger()
+		{
+			return _finger;
+		}
 		
 		inline
 		std::shared_ptr<input::Joystick>
@@ -383,14 +384,6 @@ namespace minko
 		{
 				return _joystickRemoved;
 		}
-        
-        inline
-		std::shared_ptr<input::Finger>
-		finger()
-		{
-			return _finger;
-		}
-
 
 		inline
 		Signal<AbstractCanvas::Ptr, uint, uint>::Ptr

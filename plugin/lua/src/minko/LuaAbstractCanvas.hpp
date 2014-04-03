@@ -40,6 +40,7 @@ namespace minko
 				.property("height",					&AbstractCanvas::height)
 				.property("mouse", 					&AbstractCanvas::mouse)
 				.property("keyboard",				&AbstractCanvas::keyboard)
+                .property("finger",                 &AbstractCanvas::finger)
 				.property("numJoysticks",			&AbstractCanvas::numJoysticks)
 				.property("relativeTime",			&AbstractCanvas::relativeTime)
 				.property("frameDuration",			&AbstractCanvas::frameDuration)

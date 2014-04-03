@@ -42,8 +42,6 @@ namespace minko
             float                                _dx;
 			float                                _dy;
             
-            bool                                _fingerIsDown;
-            
 			Signal<Ptr, float, float>::Ptr		_fingerMotion; // dx, dy
 			Signal<Ptr, float, float>::Ptr		_fingerDown; // x, y
 			Signal<Ptr, float, float>::Ptr		_fingerUp; // x, y
@@ -53,10 +51,6 @@ namespace minko
             Signal<Ptr>::Ptr                    _swipeLeft;
             Signal<Ptr>::Ptr                    _swipeUp;
             Signal<Ptr>::Ptr                    _swipeDown;
-            
-			int									_fingerId;
-            
-            std::list<Any>                      _slots;
 
 		public:
             inline
@@ -86,13 +80,6 @@ namespace minko
 			{
 				return _dy;
 			}
-            
-			inline
-			int
-			fingerId()
-			{
-				return _fingerId;
-			}
 
 			inline
 			Signal<Ptr, float, float>::Ptr
@@ -114,13 +101,6 @@ namespace minko
 			{
 				return _fingerUp;
 			}
-            
-            inline
-            bool
-            fingerIsDown() const
-            {
-                return _fingerIsDown;
-            }
             
             inline
             Signal<Ptr>::Ptr

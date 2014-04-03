@@ -53,6 +53,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/LuaAssetLibrary.hpp"
 #include "minko/input/LuaKeyboard.hpp"
 #include "minko/input/LuaMouse.hpp"
+#include "minko/input/LuaFinger.hpp"
 #include "minko/input/LuaJoystick.hpp"
 #include "minko/LuaAbstractCanvas.hpp"
 #include "minko/component/LuaPerspectiveCamera.hpp"
@@ -183,6 +184,7 @@ LuaScriptManager::initializeBindings()
     file::LuaAssetLibrary::bind(_state);
     input::LuaMouse::bind(_state);
     input::LuaKeyboard::bind(_state);
+    input::LuaFinger::bind(_state);
 	input::LuaJoystick::bind(_state);
     LuaAbstractCanvas::bind(_state);
     component::LuaPerspectiveCamera::bind(_state);
