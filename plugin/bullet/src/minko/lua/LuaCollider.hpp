@@ -67,11 +67,9 @@ namespace minko
 						.methodWrapper("getAngularFactor",				&LuaCollider::getAngularFactorsWrapper)
 						.method("setCanSleep",							static_cast<Collider::Ptr (Collider::*)(bool)>						(&Collider::canSleep))
 						.methodWrapper("getCanSleep",					&LuaCollider::getCanSleepWrapper)						
-						.methodWrapper("getCollisionGroup",				&LuaCollider::getCollisionGroupWrapper)
-						.methodWrapper("setCollisionGroup",				&LuaCollider::setCollisionGroupWrapper)
-						.methodWrapper("getCollisionMask",				&LuaCollider::getCollisionMaskWrapper)
-						.methodWrapper("setCollisionMask",				&LuaCollider::setCollisionMaskWrapper)
-						.method("setTriggerCollisions",					static_cast<Collider::Ptr(Collider::*)(bool)>						(&Collider::triggerCollisions))
+						.method("getMask",								static_cast<Layouts (Collider::*)(void) const>						(&Collider::mask))
+						.method("setMask",								static_cast<Collider::Ptr (Collider::*)(Layouts)>					(&Collider::mask))
+						.method("setTriggerCollisions",					static_cast<Collider::Ptr (Collider::*)(bool)>						(&Collider::triggerCollisions))
 						.methodWrapper("getTriggerCollisions",			&LuaCollider::getTriggerCollisionsWrapper)
 						.methodWrapper("getNode",						&LuaCollider::getNodeWrapper)
 						;
@@ -137,35 +135,7 @@ namespace minko
 				{
 					return collider->canSleep(value);
 				}
-
-				static
-				int
-				getCollisionMaskWrapper(bullet::Collider::Ptr collider)
-				{
-					return collider->collisionMask();
-				}
-
-				static
-				bullet::Collider::Ptr
-				setCollisionMaskWrapper(bullet::Collider::Ptr collider, int value)
-				{
-					return collider->collisionMask(short(value));
-				}
-
-				static
-				int
-				getCollisionGroupWrapper(bullet::Collider::Ptr collider)
-				{
-					return collider->collisionGroup();
-				}
-
-				static
-				bullet::Collider::Ptr
-				setCollisionGroupWrapper(bullet::Collider::Ptr collider, int value)
-				{
-					return collider->collisionGroup(short(value));
-				}
-
+				
 				static
 				bool
 				getTriggerCollisionsWrapper(bullet::Collider::Ptr collider)

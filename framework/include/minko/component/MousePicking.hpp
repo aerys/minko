@@ -87,7 +87,7 @@ namespace minko
 
 			void
 			pick(RayPtr, 
-				 scene::LayoutMask = scene::Layout::DEFAULT_RAYCASTING);
+				 Layouts = scene::Layout::Mask::RAYCASTING_DEFAULT);
 
 		private:
 			MousePicking();

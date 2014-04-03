@@ -49,7 +49,6 @@ Renderer::Renderer(std::shared_ptr<render::AbstractTexture> renderTarget,
 	_surfaceDrawCalls(),
 	_surfaceTechniqueChangedSlot(),
 	_effect(effect),
-	_mask(scene::Layout::EVERYTHING),
 	_priority(priority)
 {
 	if (renderTarget)
@@ -264,8 +263,16 @@ Renderer::render(render::AbstractContext::Ptr	context,
 		(_backgroundColor & 0xff) / 255.f
 	);
 
+	auto targetNode	= targets().empty() 
+		? nullptr 
+		: targets().front();
+
+	auto mask		= targetNode 
+		? targetNode->layouts() 
+		: Layout::Mask::EVERYTHING;
+
 	for (auto& drawCall : _drawCalls)
-		if ((drawCall->layouts() & _mask) != 0)
+		if ((drawCall->layouts() & mask) != 0)
 			drawCall->render(context, renderTarget);
 
 	_beforePresent->execute(shared_from_this());

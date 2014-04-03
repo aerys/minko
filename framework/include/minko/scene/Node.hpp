@@ -31,13 +31,13 @@ namespace minko
 			public std::enable_shared_from_this<Node>
 		{
 		public:
-			typedef std::shared_ptr<Node>	Ptr;
+			typedef std::shared_ptr<Node>							Ptr;
 
 		private:
 			typedef std::shared_ptr<component::AbstractComponent>	AbsCtrlPtr;
 
-			static uint										_lastId;
-			uint											_id;
+			static uint												_lastId;
+			uint													_id;
 
 		protected:
 			std::string 											_name;
@@ -127,11 +127,11 @@ namespace minko
 				_name = name;
 			}
 
-			LayoutMask
+			Layouts
 			layouts() const;
 			
 			Ptr
-			layouts(LayoutMask);
+			layouts(Layouts);
 
 			inline
 			Ptr

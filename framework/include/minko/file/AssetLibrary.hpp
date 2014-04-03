@@ -64,7 +64,7 @@ namespace minko
 			std::unordered_map<std::string, std::vector<unsigned char>>				_blobs;
             std::unordered_map<std::string, AbsScriptPtr>                           _scripts;
 
-            std::unordered_map<std::string, scene::LayoutMask>						_layouts;
+            std::unordered_map<std::string, Layouts>								_layouts;
 
 			std::list<std::string>													_filesQueue;
 			std::list<std::string>													_loading;
@@ -184,11 +184,11 @@ namespace minko
 			const std::string&
 			scriptName(AbsScriptPtr script);
 
-			scene::LayoutMask
+			Layouts
 			layout(const std::string&);
 
 			Ptr
-			layout(const std::string&, scene::LayoutMask);
+			layout(const std::string&, Layouts);
 
 			template <typename T>
 			typename std::enable_if<std::is_base_of<file::AbstractParser, T>::value, Ptr>::type

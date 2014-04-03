@@ -40,7 +40,8 @@
 		"fogColor"				: "material[${materialId}].fogColor",
 		"fogDensity"			: "material[${materialId}].fogDensity",
 		"fogStart"				: "material[${materialId}].fogStart",
-		"fogEnd"				: "material[${materialId}].fogEnd"
+		"fogEnd"				: "material[${materialId}].fogEnd",
+		"layouts"               : "node.layouts"
 	},
 
 	"macroBindings"	: {
@@ -57,7 +58,6 @@
 		"MODEL_TO_WORLD"		: "transform.modelToWorldMatrix",
 		"NUM_BONES"				: "geometry[${geometryId}].numBones",
 		"NUM_AMBIENT_LIGHTS"	: { "property" : "ambientLights.length",		"source" : "root" },
-		"PRECOMPUTED_AMBIENT"	: { "property" : "sumAmbients",					"source" : "root" },
 		"FOG_LIN"				: "material[${materialId}].fogLinear",
 		"FOG_EXP"				: "material[${materialId}].fogExponential",
 		"FOG_EXP2"				: "material[${materialId}].fogExponential2"

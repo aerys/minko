@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Common.hpp"
 #include "minko/BulletCommon.hpp"
 #include "minko/component/AbstractComponent.hpp"
+#include "minko/scene/Layout.hpp"
 
 namespace minko
 {
@@ -52,8 +53,7 @@ namespace minko
 			private:
 				int													_uid;
 				ColliderDataPtr										_colliderData;
-				short												_collisionGroup;
-                short												_collisionMask;
+                Layouts												_mask;
 				bool												_canSleep;
 				bool												_triggerCollisions;
 				Vector3Ptr											_linearFactor;
@@ -137,25 +137,15 @@ namespace minko
 					return shared_from_this();
 				}
 
-				inline
-                short
-                collisionGroup() const
-                {
-                    return _collisionGroup;
-                }
-
-                Ptr
-                collisionGroup(short);
-
                 inline
-                short
-                collisionMask() const
+                Layouts
+                mask() const
                 {
-                    return _collisionMask;
+                    return _mask;
                 }
 
                 Ptr
-                collisionMask(short);
+                mask(Layouts);
 
 				Vector3Ptr
 				linearVelocity(Vector3Ptr = nullptr) const;

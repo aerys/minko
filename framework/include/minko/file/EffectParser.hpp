@@ -234,8 +234,8 @@ namespace minko
 						UniformTypeAndValue&			uniformTypeAndValue,
 						std::shared_ptr<file::Options>	options);
 
-			scene::LayoutMask
-			parseLayouts(const Json::Value&, scene::LayoutMask);
+			Layouts
+			parseLayouts(const Json::Value&, Layouts);
 
 			float
 			parsePriority(const Json::Value&, float defaultPriority);

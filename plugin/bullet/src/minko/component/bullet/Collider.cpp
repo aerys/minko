@@ -40,8 +40,7 @@ using namespace minko::component;
 bullet::Collider::Collider(ColliderData::Ptr data):
 	AbstractComponent(),
 	_colliderData(data),
-    _collisionGroup(1),
-    _collisionMask(short((1<<16) - 1)),
+    _mask(Layout::Mask::COLLISIONS_DYNAMIC_DEFAULT),
 	_canSleep(false),
 	_triggerCollisions(false),
 	_linearFactor(Vector3::create(1.0f, 1.0f, 1.0f)),
@@ -386,24 +385,11 @@ bullet::Collider::canSleep(bool value)
 }
 
 bullet::Collider::Ptr
-bullet::Collider::collisionGroup(short value)
+bullet::Collider::mask(Layouts value)
 {
-	const bool changed = _collisionGroup != value;
+	const bool changed = _mask != value;
 
-    _collisionGroup = value;
-
-	if (changed)
-		_propertiesChanged->execute(shared_from_this());
-
-	return shared_from_this();
-}
-
-bullet::Collider::Ptr
-bullet::Collider::collisionMask(short value)
-{
-	const bool changed = _collisionMask != value;
-
-    _collisionMask = value;
+    _mask = value;
 
 	if (changed)
 		_propertiesChanged->execute(shared_from_this());

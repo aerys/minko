@@ -45,21 +45,21 @@ Node::Node() :
 {
 	_container->addProvider(_data);
 
-	_data->set<LayoutMask>("layouts", Layout::DEFAULT);
+	_data->set<Layouts>("layouts", Layout::Group::DEFAULT);
 }
 
-LayoutMask
+Layouts
 Node::layouts() const
 {
-	return _data->get<LayoutMask>("layouts");
+	return _data->get<Layouts>("layouts");
 }
 
 Node::Ptr
-Node::layouts(LayoutMask value)
+Node::layouts(Layouts value)
 {
 	if (value != layouts())
 	{
-		_data->set<LayoutMask>("layouts", value);
+		_data->set<Layouts>("layouts", value);
 
 		// bubble down
         auto descendants = NodeSet::create(shared_from_this())->descendants(true);

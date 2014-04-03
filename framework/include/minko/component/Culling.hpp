@@ -41,7 +41,7 @@ namespace minko
 
 		private:
 			static std::shared_ptr<math::OctTree>								_octTree;
-			static const scene::LayoutMask										_mask;
+			static const Layouts												_mask;
 
 			std::shared_ptr<math::AbstractShape>								_frustum;
 

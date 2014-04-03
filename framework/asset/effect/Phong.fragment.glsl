@@ -2,15 +2,14 @@
 
 #ifdef GL_ES
 	precision mediump float;
+#else
+	#extension GL_EXT_gpu_shader4: enable
+	#define BITWISE_OPERATORS_OK
 #endif
 
 #pragma include("Phong.function.glsl")
 #pragma include("Envmap.function.glsl")
 #pragma include("Fog.function.glsl")
-
-#ifdef PRECOMPUTED_AMBIENT
-	uniform vec3 sumAmbients;
-#endif // PRECOMPUTED_AMBIENT
 
 #ifndef MINKO_NO_GLSL_STRUCT
 
@@ -36,11 +35,13 @@
 
 	#ifdef NUM_AMBIENT_LIGHTS
 		uniform vec3	ambientLights_color[NUM_AMBIENT_LIGHTS];
+		uniform int		ambientLights_mask[NUM_AMBIENT_LIGHTS];
 		uniform float	ambientLights_ambient[NUM_AMBIENT_LIGHTS];
 	#endif // NUM_AMBIENT_LIGHTS
 
 	#ifdef NUM_DIRECTIONAL_LIGHTS
 		uniform vec3	directionalLights_color[NUM_DIRECTIONAL_LIGHTS];
+		uniform int		directionalLights_mask[NUM_DIRECTIONAL_LIGHTS];
 		uniform float	directionalLights_diffuse[NUM_DIRECTIONAL_LIGHTS];
 		uniform float	directionalLights_specular[NUM_DIRECTIONAL_LIGHTS];
 		uniform vec3	directionalLights_direction[NUM_DIRECTIONAL_LIGHTS];
@@ -48,6 +49,7 @@
 
 	#ifdef NUM_POINT_LIGHTS
 		uniform vec3	pointLights_color[NUM_POINT_LIGHTS];
+		uniform int		pointLights_mask[NUM_POINT_LIGHTS];
 		uniform float	pointLights_diffuse[NUM_POINT_LIGHTS];
 		uniform float	pointLights_specular[NUM_POINT_LIGHTS];
 		uniform vec3	pointLights_attenuationCoeffs[NUM_POINT_LIGHTS];
@@ -56,6 +58,7 @@
 
 	#ifdef NUM_SPOT_LIGHTS
 		uniform vec3	spotLights_color[NUM_SPOT_LIGHTS];
+		uniform int		spotLights_mask[NUM_SPOT_LIGHTS];
 		uniform float	spotLights_diffuse[NUM_SPOT_LIGHTS];
 		uniform float	spotLights_specular[NUM_SPOT_LIGHTS];
 		uniform vec3	spotLights_attenuationCoeffs[NUM_SPOT_LIGHTS];
@@ -66,7 +69,9 @@
 	#endif // NUM_SPOT_LIGHTS
 	
 #endif // MINKO_NO_GLSL_STRUCT
-	
+
+uniform int 		layouts;
+
 // diffuse
 uniform vec4 		diffuseColor;
 uniform sampler2D 	diffuseMap;
@@ -126,36 +131,51 @@ void main(void)
 	vec3	ambientAccum	= vec3(0.0);
 	vec3	diffuseAccum	= vec3(0.0);
 	vec3	specularAccum	= vec3(0.0); 
+	float 	contribution	= 1.0;
 
-	#ifdef PRECOMPUTED_AMBIENT
-	//------------------------
-		ambientAccum += sumAmbients;
-	#else
-	
-		#ifdef NUM_AMBIENT_LIGHTS
-			for (int i = 0; i < NUM_AMBIENT_LIGHTS; ++i)
-			{
-				#ifndef MINKO_NO_GLSL_STRUCT
-					ambientAccum 	+= ambientLights[i].color * ambientLights[i].ambient;
-				#else
-					ambientAccum	+= ambientLights_color[i] * ambientLights_ambient[i];
-				#endif // MINKO_NO_GLSL_STRUCT
-			}
-		#endif // NUM_AMBIENT_LIGHTS
+	#ifdef NUM_AMBIENT_LIGHTS
 
-	#endif // PRECOMPUTED_AMBIENT
-	
+		for (int i = 0; i < NUM_AMBIENT_LIGHTS; ++i)
+		{
+			vec3	lightColor			= vec3(0.0);
+			float	lightAmbientCoeff	= 1.0;
+			int 	lightMask 			= -1;
+
+			#ifndef MINKO_NO_GLSL_STRUCT
+				lightColor 			= ambientLights[i].color;
+				lightMask 			= ambientLights[i].mask;
+				lightAmbientCoeff 	= ambientLights[i].ambient;
+			#else
+				lightColor 			= ambientLights_color[i];
+				lightMask 			= ambientLights_mask[i];
+				lightAmbientCoeff 	= ambientLights_ambient[i];
+			#endif // MINKO_NO_GLSL_STRUCT
+
+			#ifdef BITWISE_OPERATORS_OK
+				contribution = (layouts & lightMask) != 0 ? 1.0 : 0.0;
+			#else
+				contribution = 1.0;
+			#endif // BITWISE_OPERATORS_OK
+
+			ambientAccum +=
+				contribution
+				* lightColor
+				* lightAmbientCoeff;
+		}
+
+	#endif // NUM_AMBIENT_LIGHTS	
 
 	#if defined NUM_DIRECTIONAL_LIGHTS || defined NUM_POINT_LIGHTS || defined NUM_SPOT_LIGHTS || defined ENVIRONMENT_MAP_2D || defined ENVIRONMENT_CUBE_MAP
 
-	vec3	eyeVector		= normalize(cameraPosition - vertexPosition); // always in world-space
-	vec3	normalVector	= normalize(vertexNormal); // always in world-space
+		vec3	eyeVector		= normalize(cameraPosition - vertexPosition); // always in world-space
+		vec3	normalVector	= normalize(vertexNormal); // always in world-space
 
 	#endif // NUM_DIRECTIONAL_LIGHTS || NUM_POINT_LIGHTS || NUM_SPOT_LIGHTS || ENVIRONMENT_MAP_2D || ENVIRONMENT_CUBE_MAP
 
 	#if defined NUM_DIRECTIONAL_LIGHTS || defined NUM_POINT_LIGHTS || defined NUM_SPOT_LIGHTS
 		
 		vec3	lightColor				= vec3(0.0);
+		int 	lightMask 				= -1;
 		vec3 	lightDirection			= vec3(0.0);
 		vec3	lightSpotDirection		= vec3(0.0);
 		vec3 	lightPosition			= vec3(0.0);
@@ -164,7 +184,6 @@ void main(void)
 		vec3	lightAttenuationCoeffs	= vec3(1.0, 0.0, 0.0);
 		float	lightCosInnerAng		= 0.0;
 		float	lightCosOuterAng		= 0.0;
-		float 	contribution			= 0.0;
 				
 		#ifdef NORMAL_MAP
 			// warning: the normal vector must be normalized at this point!
@@ -179,25 +198,36 @@ void main(void)
 		{
 			#ifndef MINKO_NO_GLSL_STRUCT
 				lightColor			= directionalLights[i].color;
+				lightMask 			= directionalLights[i].mask;
 				lightDiffuseCoeff	= directionalLights[i].diffuse;
 				lightSpecularCoeff	= directionalLights[i].specular;
 				lightDirection		= directionalLights[i].direction;
 			#else
 				lightColor			= directionalLights_color[i];
+				lightMask 			= directionalLights_mask[i];
 				lightDiffuseCoeff	= directionalLights_diffuse[i];
 				lightSpecularCoeff	= directionalLights_specular[i];
 				lightDirection		= directionalLights_direction[i];
 			#endif // MINKO_NO_GLSL_STRUCT
-	
+
+			#ifdef BITWISE_OPERATORS_OK
+				contribution = (layouts & lightMask) != 0 ? 1.0 : 0.0;
+			#else
+				contribution = 1.0;
+			#endif // BITWISE_OPERATORS_OK
+
 			lightDirection	= normalize(-lightDirection);
 			
-			diffuseAccum		+= phong_diffuseReflection(normalVector, lightDirection)
+			diffuseAccum	+= 
+				contribution 
+				* phong_diffuseReflection(normalVector, lightDirection)
 				* lightColor
 				* lightDiffuseCoeff;
 
 			#if defined(SHININESS)
 				specularAccum	+= 
-					phong_specularReflection(normalVector, lightDirection, eyeVector, shininessCoeff) 
+					contribution
+					* phong_specularReflection(normalVector, lightDirection, eyeVector, shininessCoeff) 
 					* phong_fresnel(specular.rgb, lightDirection, eyeVector)
 					* lightColor
 					* lightSpecularCoeff;
@@ -211,18 +241,26 @@ void main(void)
 		{
 			#ifndef MINKO_NO_GLSL_STRUCT
 				lightColor				= pointLights[i].color;
+				lightMask 				= pointLights[i].mask;
 				lightDiffuseCoeff		= pointLights[i].diffuse;
 				lightSpecularCoeff		= pointLights[i].specular;
 				lightAttenuationCoeffs	= pointLights[i].attenuationCoeffs;
 				lightPosition			= pointLights[i].position;
 			#else
 				lightColor				= pointLights_color[i];
+				lightMask 				= pointLights_mask[i];
 				lightDiffuseCoeff		= pointLights_diffuse[i];
 				lightSpecularCoeff		= pointLights_specular[i];
 				lightAttenuationCoeffs	= pointLights_attenuationCoeffs[i];
 				lightPosition			= pointLights_position[i];
 			#endif // MINKO_NO_GLSL_STRUCT
 		
+			#ifdef BITWISE_OPERATORS_OK
+				contribution = (layouts & lightMask) != 0 ? 1.0 : 0.0;
+			#else
+				contribution = 1.0;
+			#endif // BITWISE_OPERATORS_OK
+
 			lightDirection			= lightPosition - vertexPosition;
 			float distanceToLight 	= length(lightDirection);
 			lightDirection 			/= distanceToLight;
@@ -232,13 +270,16 @@ void main(void)
 				? 1.0
 				: max(0.0, 1.0 - distanceToLight / dot(lightAttenuationCoeffs, distVec)); 
 
-			diffuseAccum		+= phong_diffuseReflection(normalVector, lightDirection)
+			diffuseAccum		+= 
+				contribution
+				* phong_diffuseReflection(normalVector, lightDirection)
 				* lightColor
 				* (lightDiffuseCoeff * attenuation);
 
 			#if defined(SHININESS)
 				specularAccum	+= 
-					phong_specularReflection(normalVector, lightDirection, eyeVector, shininessCoeff) 
+					contribution
+					* phong_specularReflection(normalVector, lightDirection, eyeVector, shininessCoeff) 
 					* phong_fresnel(specular.rgb, lightDirection, eyeVector)
 					* lightColor
 					* (lightSpecularCoeff * attenuation);
@@ -252,6 +293,7 @@ void main(void)
 		{
 			#ifndef MINKO_NO_GLSL_STRUCT
 				lightColor				= spotLights[i].color;
+				lightMask 				= spotLights[i].mask;
 				lightDiffuseCoeff		= spotLights[i].diffuse;
 				lightSpecularCoeff		= spotLights[i].specular;
 				lightAttenuationCoeffs	= spotLights[i].attenuationCoeffs;
@@ -261,6 +303,7 @@ void main(void)
 				lightCosOuterAng		= spotLights[i].cosOuterConeAngle;
 			#else
 				lightColor				= spotLights_color[i];
+				lightMask 				= spotLights_mask[i];
 				lightDiffuseCoeff		= spotLights_diffuse[i];
 				lightSpecularCoeff		= spotLights_specular[i];
 				lightAttenuationCoeffs	= spotLights_attenuationCoeffs[i];
@@ -270,7 +313,12 @@ void main(void)
 				lightCosOuterAng		= spotLights_cosOuterConeAngle[i];
 			#endif // MINKO_NO_GLSL_STRUCT
 			
-			
+			#ifdef BITWISE_OPERATORS_OK
+				contribution = ((layouts & lightMask) != 0) ? 1.0 : 0.0;
+			#else
+				contribution = 1.0;
+			#endif // BITWISE_OPERATORS_OK
+
 			lightDirection			= lightPosition - vertexPosition;
 			float distanceToLight	= length(lightDirection);
 			lightDirection			/= distanceToLight;
@@ -289,14 +337,16 @@ void main(void)
 					? (cosSpot - lightCosOuterAng) / (lightCosInnerAng - lightCosOuterAng) 
 					: 1.0;	
 
-
-				diffuseAccum		+= phong_diffuseReflection(normalVector, lightDirection)
+				diffuseAccum		+= 
+					contribution
+					* phong_diffuseReflection(normalVector, lightDirection)
 					* lightColor
 					* (lightDiffuseCoeff * attenuation * cutoff);
 
 				#ifdef SHININESS
 					specularAccum	+= 
-						phong_specularReflection(normalVector, lightDirection, eyeVector, shininessCoeff) 
+						contribution
+						* phong_specularReflection(normalVector, lightDirection, eyeVector, shininessCoeff) 
 						* phong_fresnel(specular.rgb, lightDirection, eyeVector)
 						* lightColor
 						* (lightSpecularCoeff * attenuation * cutoff);

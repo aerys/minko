@@ -60,7 +60,6 @@ namespace minko
 
 			std::set<std::shared_ptr<Surface>>							_toCollect;
 			EffectPtr													_effect;
-			scene::LayoutMask											_mask;
 			float														_priority;
 
 
@@ -136,20 +135,6 @@ namespace minko
 			backgroundColor(const unsigned int backgroundColor)
 			{
 				_backgroundColor = backgroundColor;
-			}
-
-			inline
-			scene::LayoutMask
-			mask() const
-			{
-				return _mask;
-			}
-
-			inline
-			void
-			mask(scene::LayoutMask value)
-			{
-				_mask = value;
 			}
 
 			inline

@@ -99,7 +99,7 @@ namespace minko
 			render::StencilOperation									_stencilZPassOp;
 			bool														_scissorTest;
 			render::ScissorBox											_scissorBox;
-			scene::LayoutMask											_layouts;
+			Layouts														_layouts;
 			float														_priority;
 			bool														_zsorted;
             std::unordered_map<uint, float>                             _uniformFloat;
@@ -197,7 +197,7 @@ namespace minko
             }
 
 			inline
-			scene::LayoutMask
+			Layouts
 			layouts() const
 			{
 				return _layouts;

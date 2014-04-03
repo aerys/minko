@@ -58,6 +58,9 @@ namespace minko
 					.methodWrapper("getMasterAnimation",	&LuaNode::getMasterAnimationWrapper)
                     .methodWrapper("getPerspectiveCamera",  &LuaNode::getPerspectiveCameraWrapper)
 					.methodWrapper("getSurface",			&LuaNode::getSurfaceWrapper)
+					.methodWrapper("hasLight",				&LuaNode::hasLightWrapper)
+					.method("getLayouts",					static_cast<Layouts (Node::*)(void) const>(&Node::layouts))
+					.method("setLayouts",					static_cast<Node::Ptr (Node::*)(Layouts)>(&Node::layouts))
 					/*.methodWrapper("getChildrenByName",		&LuaNode::getChildrenByNameWrapper)*/
 		            .property("children",					&Node::children)
 		            .property("data",				        &Node::data)
@@ -121,6 +124,13 @@ namespace minko
 			getSurfaceWrapper(Node::Ptr node)
 			{
 				return node->component<component::Surface>();
+			}
+
+			static
+			bool
+			hasLightWrapper(Node::Ptr node)
+			{
+				return node->hasComponent<component::AbstractLight>();
 			}
 		};
 	}

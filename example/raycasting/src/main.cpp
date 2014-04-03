@@ -32,6 +32,18 @@ int main(int argc, char** argv)
 
 	auto sceneManager = SceneManager::create(canvas->context());
 	
+	std::cout << "-----------------------------" << std::endl;
+	std::cout << "[R]\ttoogle the raycasting layout mask of the RED box" << std::endl;
+	std::cout << "[G]\trender only the GREEN box" << std::endl;
+	std::cout << "[B]\trestrict ray intersection to the BLUE box" << std::endl;
+	std::cout << "-----------------------------" << std::endl;
+
+	bool	toogleRedBoxMask	= false;
+	bool	toogleRayMask		= false;
+	bool	toogleRendererMask	= false;
+	auto	rayMask				= Layout::Mask::RAYCASTING_DEFAULT;
+	auto	rendererMask		= Layout::Mask::EVERYTHING;
+
 	// setup assets
 	sceneManager->assets()->defaultOptions()->generateMipmaps(true);
 	sceneManager->assets()
@@ -44,6 +56,7 @@ int main(int argc, char** argv)
 		->addComponent(sceneManager);
 
 	auto camera = Node::create("camera")
+		->layouts(Layout::Mask::EVERYTHING)
 		->addComponent(Renderer::create(0x7f7f7fff))
 		->addComponent(Transform::create(
 			Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.8f, 3.0f))
@@ -52,32 +65,25 @@ int main(int argc, char** argv)
 	root->addChild(camera);
 
 	auto redBox = Node::create("redBox")
+		->layouts(Layout::Group::DEFAULT)
 		->addComponent(Transform::create(
 			math::Matrix4x4::create()->appendTranslation(0.0f, 0.0f, 1.5f)
 		))
-		->addComponent(BoundingBox::create())
-		->layouts(Layout::DEFAULT);
+		->addComponent(BoundingBox::create());
 
 	auto greenBox = Node::create("greenBox")
+		->layouts(Layout::Group::DEFAULT | (1 << 3))
 		->addComponent(Transform::create(
 			math::Matrix4x4::create()->appendTranslation(1.0f, 0.0f, -0.5f)
 		))
-		->addComponent(BoundingBox::create())
-		->layouts(Layout::DEFAULT);
+		->addComponent(BoundingBox::create());
 
 	auto blueBox = Node::create("blueBox")
+		->layouts(1 << 2)
 		->addComponent(Transform::create(
 			math::Matrix4x4::create()->appendTranslation(-1.0f, 0.0f, -0.5f)
 		))
-		->addComponent(BoundingBox::create())
-		->layouts(1 << 2);
-
-	std::cout << "[R]\ttoogle the raycasting layout mask of the RED box" << std::endl;
-	std::cout << "[B]\trestrict ray intersection to the BLUE box" << std::endl;
-
-	bool		toogleRedBoxMask	= false;
-	bool		toogleRayMask		= false;
-	LayoutMask	rayMask				= Layout::DEFAULT_RAYCASTING;
+		->addComponent(BoundingBox::create());
 
 	auto hitProvider	= data::ArrayProvider::create("material")
 		->set("depthFunc",	render::CompareMode::ALWAYS)
@@ -171,6 +177,8 @@ int main(int argc, char** argv)
 			toogleRedBoxMask	= true;
 		else if (k->keyIsDown(input::Keyboard::ScanCode::B))
 			toogleRayMask		= true;
+		else if (k->keyIsDown(input::Keyboard::ScanCode::G))
+			toogleRendererMask	= true;
 	});
 
 	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float deltaTime)
@@ -185,12 +193,12 @@ int main(int argc, char** argv)
 
 		if (toogleRedBoxMask)
 		{
-			redBox->layouts(redBox->layouts() == Layout::DEFAULT 
-				? Layout::IGNORE_RAYCASTING 
-				: Layout::DEFAULT
+			redBox->layouts(redBox->layouts() == Layout::Group::DEFAULT 
+				? Layout::Group::IGNORE_RAYCASTING 
+				: Layout::Group::DEFAULT
 			);
 			
-			if (redBox->layouts() == Layout::IGNORE_RAYCASTING)
+			if (redBox->layouts() == Layout::Group::IGNORE_RAYCASTING)
 				std::cout << "The RED box ignores ray casting." << std::endl;
 			else
 				std::cout << "The RED box can be ray cast." << std::endl;
@@ -200,9 +208,9 @@ int main(int argc, char** argv)
 
 		if (toogleRayMask)
 		{
-			rayMask = rayMask == Layout::DEFAULT_RAYCASTING 
+			rayMask = rayMask == Layout::Mask::RAYCASTING_DEFAULT 
 				? blueBox->layouts()
-				: Layout::DEFAULT_RAYCASTING;
+				: Layout::Mask::RAYCASTING_DEFAULT ;
 
 			if (rayMask == blueBox->layouts())
 				std::cout << "The ray can only intersect the BLUE box." << std::endl;
@@ -212,6 +220,20 @@ int main(int argc, char** argv)
 			toogleRayMask = false;
 		}
 
+		if (toogleRendererMask)
+		{
+			camera->layouts(camera->layouts() == Layout::Mask::EVERYTHING
+				? (1<<3)
+				: Layout::Mask::EVERYTHING
+			);
+
+			if (camera->layouts() == Layout::Mask::EVERYTHING)
+				std::cout << "All boxes are rendered." << std::endl;
+			else
+				std::cout << "Only the GREEN box is rendered." << std::endl;
+
+			toogleRendererMask = false;
+		}
 
 		redBox->component<Transform>()->matrix()->prependRotationY(0.01f);
 		greenBox->component<Transform>()->matrix()->prependRotationY(-0.01f);

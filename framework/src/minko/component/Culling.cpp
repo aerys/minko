@@ -33,7 +33,7 @@ using namespace minko;
 using namespace minko::component;
 
 /*static*/ std::shared_ptr<math::OctTree>	Culling::_octTree;
-/*static*/ const scene::LayoutMask			Culling::_mask		= scene::Layout::STATIC;
+/*static*/ const Layouts					Culling::_mask		= scene::Layout::Group::CULLING;
 
 Culling::Culling(ShapePtr shape, 
 				 const std::string& bindProperty):

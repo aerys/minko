@@ -59,7 +59,7 @@ MousePicking::initialize()
 
 void
 MousePicking::pick(std::shared_ptr<math::Ray>	ray,
-				   scene::LayoutMask			mask)
+				   Layouts						mask)
 {
 	MousePicking::HitList hits;
 

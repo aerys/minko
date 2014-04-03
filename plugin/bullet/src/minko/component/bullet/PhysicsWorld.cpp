@@ -187,14 +187,14 @@ bullet::PhysicsWorld::addChild(Collider::Ptr collider)
 	_colliderMap[collider]			= bulletCollider;
 	_colliderReverseMap[rigidBody]	= collider;
 
-	_colliderPropertiesChangedSlot[collider] = collider->propertiesChanged()->connect([=](Collider::Ptr){ updateColliderProperties(collider); });
 	_colliderNodeLayoutChangedSlot[collider] = collider->target()->layoutsChanged()->connect([=](Node::Ptr, Node::Ptr){ updateColliderNodeProperties(collider); });
+	_colliderPropertiesChangedSlot[collider] = collider->propertiesChanged()->connect([=](Collider::Ptr){ updateColliderProperties(collider); });
 
 	std::dynamic_pointer_cast<btDiscreteDynamicsWorld>(_bulletDynamicsWorld)
 		->addRigidBody(
             rigidBody,
-            collider->collisionGroup(),  //short(data->node()->layouts() & ((1<<16) - 1)), // FIXME
-            collider->collisionMask()
+            short(collider->target()->layouts()	& ((1<<16) - 1)),
+            short(collider->mask()				& ((1<<16) - 1))
          );
 
 	updateColliderProperties(collider);
@@ -239,9 +239,7 @@ bullet::PhysicsWorld::updateColliderProperties(Collider::Ptr collider)
 		rigidBody->setSleepingThresholds(collider->linearSleepingThreshold(), collider->angularSleepingThreshold());
 		rigidBody->setDamping(collider->linearDamping(), collider->angularDamping());
 
-        //proxy->m_collisionFilterGroup   = short(data->node()->layouts() & ((1<<16) - 1)); // FIXME
-        rigidBody->getBroadphaseProxy()->m_collisionFilterGroup	= collider->collisionGroup();
-        rigidBody->getBroadphaseProxy()->m_collisionFilterMask	= collider->collisionMask();
+        rigidBody->getBroadphaseProxy()->m_collisionFilterMask	= short(collider->mask() & ((1<<16) - 1));
     }
 }
 
@@ -254,8 +252,10 @@ bullet::PhysicsWorld::updateColliderNodeProperties(Collider::Ptr collider)
     auto foundColliderIt	= _colliderMap.find(collider);
 	if (foundColliderIt != _colliderMap.end())
     {
-        auto rigidBody = foundColliderIt->second->rigidBody();
-        //proxy->m_collisionFilterGroup   = short(data->node()->layouts() & ((1<<16) - 1)); // FIXME
+        auto rigidBody	= foundColliderIt->second->rigidBody();
+		assert(rigidBody && rigidBody->getBroadphaseProxy());
+
+		rigidBody->getBroadphaseProxy()->m_collisionFilterGroup = short(collider->target()->layouts() & ((1<<16) - 1));
     }
 }
 
