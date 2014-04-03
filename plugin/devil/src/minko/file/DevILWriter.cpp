@@ -23,6 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "IL/ilu.h"
 #include "IL/ilut.h"
 
+using namespace minko;
 using namespace minko::file;
 
 void
