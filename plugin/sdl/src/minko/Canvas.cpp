@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/async/Worker.hpp"
 
 #if !defined(EMSCRIPTEN)
-#include "minko/async/FileLoaderWorker.hpp"
+# include "minko/file/FileLoaderWorker.hpp"
 #endif
 
 #if defined(EMSCRIPTEN)
@@ -78,7 +78,7 @@ Canvas::initialize()
     initializeInputs();
 
 #if !defined(EMSCRIPTEN)
-    registerWorker<async::FileLoaderWorker>("file-loader");
+    registerWorker<file::FileLoaderWorker>("file-loader");
 #endif
 }
 
@@ -589,10 +589,9 @@ Canvas::step()
         }
     }
 
-#if !defined(EMSCRIPTEN)
     for (auto worker : _activeWorkers)
-        worker->update();
-#endif
+        worker->poll();
+
     auto absoluteTime = std::chrono::high_resolution_clock::now();
     _relativeTime   = 1e-6f * std::chrono::duration_cast<std::chrono::nanoseconds>(absoluteTime - _startTime).count(); // in milliseconds
     _frameDuration  = 1e-6f * std::chrono::duration_cast<std::chrono::nanoseconds>(absoluteTime - _previousTime).count(); // in milliseconds
@@ -685,11 +684,6 @@ Canvas::getWorker(const std::string& name)
     auto worker = _workers[name]();
 
     _activeWorkers.push_back(worker);
-
-    _workerCompleteSlots.push_back(worker->complete()->connect([worker, this](Worker::MessagePtr) {
-        std::cout << "Canvas::getWorker(): " << "remove worker" << std::endl;
-        //_activeWorkers.remove(worker);
-    }));
 
     return worker;
 }

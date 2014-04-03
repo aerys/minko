@@ -17,47 +17,38 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "minko/async/Worker.hpp"
-#include "minko/AbstractCanvas.hpp"
-
-#if defined(MINKO_WORKER_IMPL_WEBWORKER)
-# include "minko/async/WebWorkerImpl.hpp"
-#elif defined(MINKO_WORKER_IMPL_THREAD)
-# include "minko/async/ThreadWorkerImpl.hpp"
-#endif
+#include "minko/net/HTTPWorker.hpp"
+#include "minko/net/HTTPRequest.hpp"
 
 using namespace minko;
-using namespace minko::async;
+using namespace minko::net;
 
-Worker::Worker(const std::string& name)
+namespace minko
 {
-	_impl.reset(new WorkerImpl(this, name));
-}
+	namespace net
+	{
+		MINKO_DEFINE_WORKER(HTTPWorker, {
+			std::string url(input.begin(), input.end());
 
-void
-Worker::start(const std::vector<char>& input)
-{
-	_impl->start(input);
-}
+			HTTPRequest request(url);
 
-void
-Worker::post(Message message)
-{
-	_impl->post(message);
-}
+			auto _0 = request.progress()->connect([&](float p) {
+				Message message { "progress" };
+				message.set(p);
+				post(message);
+			});
 
-void
-Worker::poll()
-{
-	_impl->poll();
-}
+			auto _1 = request.error()->connect([&](int e) {
+				post(Message { "error" });
+			});
 
-Signal<Worker::Ptr, Worker::Message>::Ptr
-Worker::message()
-{
-	return _impl->message();
-}
+			auto _2 = request.complete()->connect([&](const std::vector<char>& output) {
+				Message message { "complete" };
+				message.set(output);
+				post(message);
+			});
 
-Worker::~Worker()
-{
+			request.run();
+		});
+	}
 }
