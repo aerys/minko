@@ -228,6 +228,9 @@ namespace minko
             input::Finger(canvas)
 			{
 			}
+            
+        public:
+            constexpr static const float SWIPE_PRECISION = 0.05f;
 		};
 
 	private:

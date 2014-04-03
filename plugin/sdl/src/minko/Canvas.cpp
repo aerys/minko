@@ -475,7 +475,12 @@ Canvas::step()
                 break;
                 case SDL_FINGERMOTION:
 # if defined(DEBUG)
-                std::cout << "Finger motion! (x: " << event.tfinger.x << ", y: " << event.tfinger.y << "|dx: " << event.tfinger.dx << ", dy: " << event.tfinger.dy <<")" << std::endl;
+                std::cout << "Finger motion! "
+                << "("
+                << "x: " << event.tfinger.x << ", y: " << event.tfinger.y
+                << "|"
+                << "dx: " << event.tfinger.dx << ", dy: " << event.tfinger.dy
+                << ")" << std::endl;
 #endif // DEBUG
                 _finger->x(event.tfinger.x);
                 _finger->y(event.tfinger.y);
@@ -483,6 +488,42 @@ Canvas::step()
                 _finger->dy(event.tfinger.dy);
                 
                 _finger->fingerMotion()->execute(_finger, event.tfinger.dx, event.tfinger.dy);
+                
+                // Gestures
+                if (event.tfinger.dx > SDLFinger::SWIPE_PRECISION)
+                {
+# if defined(DEBUG)
+                    std::cout << "SWIPE RIGHT! (" << event.tfinger.dx << ")" << std::endl;
+#endif // DEBUG
+                    _finger->swipeRight()->execute(_finger);
+                }
+                
+                if (-event.tfinger.dx > SDLFinger::SWIPE_PRECISION)
+                {
+# if defined(DEBUG)
+                    std::cout << "SWIPE LEFT! (" << event.tfinger.dx << ")" << std::endl;
+#endif // DEBUG
+                    
+                    _finger->swipeLeft()->execute(_finger);
+                }
+                
+                if (event.tfinger.dy > SDLFinger::SWIPE_PRECISION)
+                {
+# if defined(DEBUG)
+                    std::cout << "SWIPE DOWN! (" << event.tfinger.dy << ")" << std::endl;
+#endif // DEBUG
+                    
+                    _finger->swipeDown()->execute(_finger);
+                }
+                
+                if (-event.tfinger.dy > SDLFinger::SWIPE_PRECISION)
+                {
+#if defined(DEBUG)
+                    std::cout << "SWIPE UP! (" << event.tfinger.dy << ")" << std::endl;
+#endif // DEBUG
+                    
+                    _finger->swipeUp()->execute(_finger);
+                }
                 
                 break;
 
