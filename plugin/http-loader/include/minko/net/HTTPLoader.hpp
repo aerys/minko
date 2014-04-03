@@ -27,10 +27,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace file
+	namespace net
 	{
 		class HTTPLoader :
-			public AbstractLoader
+			public file::AbstractLoader
 		{
 		public:
 			typedef std::shared_ptr<HTTPLoader>	Ptr;
@@ -44,7 +44,7 @@ namespace minko
 			}
 
 			void
-			load(const std::string& filename, std::shared_ptr<Options> options);
+			load(const std::string& filename, std::shared_ptr<file::Options> options);
 
 		protected:
 			HTTPLoader();

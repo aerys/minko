@@ -46,8 +46,7 @@ namespace minko
 			FileLoader();
 
 		private:
-			std::list<Any>
-			_workerSlots;
+			std::list<Any> _workerSlots;
 		};
 	}
 }
