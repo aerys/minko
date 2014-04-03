@@ -96,5 +96,7 @@ LuaScript::stop(scene::Node::Ptr node)
     if (_hasStopMethod)
         dynamic_cast<LuaGlueClass<LuaScript::LuaStub>*>(_class)->invokeVoidMethod("stop", stub, node);
 
-	delete _targetToStub[node];
+	_targetToStub.erase(_targetToStub.find(node));
+
+	delete stub;
 }
