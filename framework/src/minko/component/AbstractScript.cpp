@@ -77,10 +77,13 @@ AbstractScript::targetAddedHandler(AbstractComponent::Ptr cmp, scene::Node::Ptr 
 void
 AbstractScript::addedOrRemovedHandler(scene::Node::Ptr node, scene::Node::Ptr target, scene::Node::Ptr parent)
 {
-    if (target->root()->hasComponent<SceneManager>())
-        setSceneManager(target->root()->component<SceneManager>());
-    else
-        setSceneManager(nullptr);
+	if (node->root() != target->root())
+		return;
+
+	if (target->root()->hasComponent<SceneManager>())
+		setSceneManager(target->root()->component<SceneManager>());
+	else
+		setSceneManager(nullptr);
 }
 
 void
