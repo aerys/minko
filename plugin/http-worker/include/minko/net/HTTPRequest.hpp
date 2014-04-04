@@ -56,27 +56,6 @@ namespace minko
 			{
 				return _complete;
 			}
-		};
-
-		class HTTPWorkerHelper
-		{
-		public:
-			HTTPWorkerHelper(std::string url, Worker::MessagePtr output);
-
-			void
-			run();
-
-			Worker::MessagePtr
-			output()
-			{
-				return _output;
-			}
-
-			Signal<float>::Ptr
-			progress()
-			{
-				return _progress;
-			}
 
 			static
 			size_t
@@ -87,18 +66,11 @@ namespace minko
 			curlProgressHandler(void* arg, double total, double current, double, double);
 
 		private:
-<<<<<<< HEAD:plugin/http-worker/include/minko/async/HTTPWorker.hpp
-
-			std::string _url;
-			Worker::MessagePtr _output;
-			Signal<float>::Ptr _progress;
-=======
 			std::string _url;
 			std::vector<char> _output;
 			Signal<float>::Ptr _progress;
 			Signal<int>::Ptr _error;
 			Signal<const std::vector<char>&>::Ptr _complete;
->>>>>>> refs/heads/dev:plugin/http-worker/include/minko/net/HTTPRequest.hpp
 		};
 	}
 }
