@@ -40,7 +40,7 @@ namespace minko
 				.property("height",		    &AbstractCanvas::height)
 				.property("mouse", 		    &AbstractCanvas::mouse)
 				.property("keyboard",	    &AbstractCanvas::keyboard)
-                .methodWrapper("joystick",  &LuaAbstractCanvas::joystickWrapper);
+                .method("joystick",         &AbstractCanvas::joystick);
 		    MINKO_LUAGLUE_BIND_SIGNAL(state, AbstractCanvas::Ptr);
 		    MINKO_LUAGLUE_BIND_SIGNAL(state, AbstractCanvas::Ptr, uint, uint);
 			MINKO_LUAGLUE_BIND_SIGNAL(state, AbstractCanvas::Ptr, input::Joystick::Ptr);
@@ -48,14 +48,6 @@ namespace minko
 			abstractCanvas.property("joystickAdded", &AbstractCanvas::joystickAdded);
 			abstractCanvas.property("joystickRemoved", &AbstractCanvas::joystickRemoved);
 			
-		}
-
-	private:
-		static
-		std::shared_ptr<input::Joystick>
-		joystickWrapper(AbstractCanvas::Ptr c, uint id)
-		{
-			return c->joystick(id - 1);
 		}
 	};
 }
