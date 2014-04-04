@@ -364,9 +364,20 @@ ASSIMPParser::createMeshGeometry(scene::Node::Ptr minkoNode, aiMesh* mesh)
 	geometry->addVertexBuffer(vertexBuffer);
 	geometry->indices(render::IndexBuffer::create(_assetLibrary->context(), indexData));
 
-	const auto meshName = std::string(mesh->mName.data);
+	std::string meshName = std::string(mesh->mName.data);
 
 	geometry = _options->geometryFunction()(meshName, geometry);
+
+	if (meshName.empty())
+		meshName = "geometry";
+
+	if (_nameToGeometryName.find(meshName) == _nameToGeometryName.end())
+		_nameToGeometryName[meshName] = 0;
+	else
+	{
+		_nameToGeometryName[meshName]++;
+		meshName += ("_" + std::to_string(_nameToGeometryName[meshName]));
+	}
 
 	// save the geometry in the assets library
 	if (!meshName.empty())
