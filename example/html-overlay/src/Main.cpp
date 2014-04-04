@@ -54,9 +54,9 @@ int main(int argc, char** argv)
 
 	auto canvas = Canvas::create("Minko Example - Overlay", 800, 600);
 
-	overlay->initialize(canvas);
-
 	auto sceneManager = SceneManager::create(canvas->context());
+
+	overlay->initialize(canvas, sceneManager);
 	
 	// setup assets
 	sceneManager->assets()->defaultOptions()->resizeSmoothly(true);
