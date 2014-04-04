@@ -66,7 +66,10 @@ int main(int argc, char** argv)
 		->diffuseColor(Vector4::create(1.f, 1.f, 1.f, 1.f));
 	auto lights				= scene::Node::create("lights");
 
-	std::cout << "Press [SPACE]\tto toogle normal mapping\nPress [A]\tto add random light\nPress [R]\tto remove random light" << std::endl;
+	std::cout 
+		<< "Press [SPACE]\tto toogle normal mapping\nPress [A]\tto add random light\nPress [R]\tto remove random light" 
+		<< "\nPress [B]\tto set the sphere's effect to 'basic'\nPress [P]\tto set the sphere's effect to 'phong'"
+		<< std::endl;
 
 	sphereGeometry->computeTangentSpace(false);
 
@@ -117,9 +120,9 @@ int main(int argc, char** argv)
 		root->addChild(lights);
 
 		// handle keyboard signals
-		keyDown = canvas->keyboard()->keyDown()->connect([&](input::Keyboard::Ptr k)
+		keyDown = canvas->keyboard()->keyDown()->connect([=](input::Keyboard::Ptr k)
 		{
-			if (k->keyIsDown(input::Keyboard::KeyCode::a))
+			if (k->keyIsDown(input::Keyboard::ScanCode::A))
 			{
 				const auto MAX_NUM_LIGHTS = 40;
 
@@ -142,7 +145,7 @@ int main(int argc, char** argv)
 
 				std::cout << lights->children().size() << " lights" << std::endl;
 			}
-			if (k->keyIsDown(input::Keyboard::KeyCode::r))
+			if (k->keyIsDown(input::Keyboard::ScanCode::R))
 			{
 				if (lights->children().size() == 0)
 					return;
@@ -150,7 +153,7 @@ int main(int argc, char** argv)
 				lights->removeChild(lights->children().back());
 				std::cout << lights->children().size() << " lights" << std::endl;
 			}
-			if (k->keyIsDown(input::Keyboard::KeyCode::SPACE))
+			if (k->keyIsDown(input::Keyboard::ScanCode::SPACE))
 			{
 				auto data = sphere->component<Surface>()->material();
 				bool hasNormalMap = data->hasProperty("normalMap");
@@ -164,10 +167,10 @@ int main(int argc, char** argv)
 				else
 					data->set("normalMap", assets->texture("texture/normalmap-cells.png"));
 			}
-			if (k->keyIsDown(input::Keyboard::ScanCode::UP))
-				camera->component<Transform>()->matrix()->prependTranslation(0.f, 0.f, -1.f);
-			if (k->keyIsDown(input::Keyboard::ScanCode::DOWN))
-				camera->component<Transform>()->matrix()->prependTranslation(0.f, 0.f, 1.f);
+			if (k->keyIsDown(input::Keyboard::ScanCode::B))
+				sphere->component<Surface>()->effect(sceneManager->assets()->effect("basic"));
+			if (k->keyIsDown(input::Keyboard::ScanCode::P))
+				sphere->component<Surface>()->effect(sceneManager->assets()->effect("phong"));
 		});
 	});
 

@@ -1,5 +1,5 @@
-/*
-Copyright (c) 2013 Aerys
+--[[
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -15,38 +15,40 @@ BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR P
 NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
 DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-*/
+]]--
 
-//#if !defined(EMSCRIPTEN)
-#include "minko/async/Worker.hpp"
+minko = minko or {}
+minko.trace = {}
 
-using namespace minko;
-using namespace minko::async;
-using namespace minko::file;
+local mt = minko.trace
 
-namespace minko
-{
-	namespace async
-	{
-		class FileLoaderWorker : public Worker
-		{
-		public:
-			static
-				Ptr
-				create()
-				{
-					return std::shared_ptr<FileLoaderWorker>(new FileLoaderWorker());
-				}
+function mt.hierarchy(node)
+	local function pretty(node, indent, last, args)
+		args.output = args.output .. indent
 
-			void
-				run(); // Must be defined in .cpp with the MINKO_WORKER macro.
+		if last then
+			args.output = args.output .. "+-"
+			indent = indent .. "  "
+		else
+			args.output = args.output .. "|-"
+			indent = indent .. "| "
+		end
 
-		private:
-			FileLoaderWorker() :
-				Worker("file-loader")
-			{
-			}
-		};
+		args.output = args.output .. node:toString() .. "\n"
+
+		local children = node.children
+
+		for i = 1, children.size do
+			pretty(children:at(i), indent, i == children.size, args)
+		end
+	end
+
+	local args = {
+		output = "",
+		indent = ""
 	}
-}
-//#endif
+
+	pretty(node, "", true, args)
+
+	return args.output
+end

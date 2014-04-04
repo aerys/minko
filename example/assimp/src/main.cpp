@@ -21,6 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/MinkoASSIMP.hpp"
 #include "minko/MinkoSDL.hpp"
 #include "minko/MinkoJPEG.hpp"
+#include "minko/MinkoPNG.hpp"
 
 using namespace minko;
 using namespace minko::component;
@@ -85,6 +86,7 @@ main(int argc, char** argv)
 		->registerParser<file::ASSIMPParser>("obj")
 		->registerParser<file::ASSIMPParser>("dae")
 		->registerParser<file::JPEGParser>("jpg")
+		->registerParser<file::PNGParser>("png")
 		->load("effect/Basic.effect")
 		->load("effect/Phong.effect");
 
