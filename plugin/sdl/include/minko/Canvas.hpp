@@ -224,7 +224,7 @@ namespace minko
 			}
             
         public:
-            constexpr static const float SWIPE_PRECISION = 0.05f;
+            static const float SWIPE_PRECISION;
 		};
 
 	private:

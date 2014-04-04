@@ -53,6 +53,8 @@ using namespace minko;
 using namespace minko::math;
 using namespace minko::async;
 
+const float Canvas::SDLFinger::SWIPE_PRECISION = 0.05f;
+
 Canvas::Canvas(const std::string& name, const uint width, const uint height, bool useStencil, bool chromeless) :
 	_name(name),
 	_useStencil(useStencil),
