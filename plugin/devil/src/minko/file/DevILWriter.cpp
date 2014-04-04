@@ -26,14 +26,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::file;
 
-void
-DevILWriter::write(const std::string&                   filename,
-                   const std::vector<unsigned char>&    data,
-                   uint                                  srcWidth,
-                   uint                                  srcHeight,
-                   uint                                  dstWidth,
-                   uint                                  dstHeight,
-                   uint                                  componentCount)
+uint
+DevILWriter::createScaledImage(const std::vector<unsigned char>&    src,
+                               uint                                 srcWidth,
+                               uint                                 srcHeight,
+                               uint                                 dstWidth,
+                               uint                                 dstHeight,
+                               uint                                 componentCount)
 {
 	ILuint devilID;
 
@@ -49,7 +48,7 @@ DevILWriter::write(const std::string&                   filename,
         case 1:  format = IL_LUMINANCE; break;
         case 3:  format = IL_RGB; break;
         case 4:  format = IL_RGBA; break;
-        default: return;
+        default: return 0;
     }
 
     ilTexImage(srcWidth,
@@ -58,14 +57,57 @@ DevILWriter::write(const std::string&                   filename,
                componentCount,
                format,
                IL_UNSIGNED_BYTE,
-               const_cast<unsigned char*> (data.data()));
+               const_cast<unsigned char*> (src.data()));
     iluFlipImage();
     iluScale(dstWidth, dstHeight, 1);
 	checkError();
 
+    return devilID;
+}
+
+void
+DevILWriter::writeToFile(const std::string&                     filename,
+                         const std::vector<unsigned char>&      src,
+                         uint                                   srcWidth,
+                         uint                                   srcHeight,
+                         uint                                   dstWidth,
+                         uint                                   dstHeight,
+                         uint                                   componentCount)
+{
+	uint devilID = createScaledImage(src, srcWidth, srcHeight, dstWidth, dstHeight, componentCount);
+
 	ilEnable(IL_FILE_OVERWRITE);
 	ilSaveImage(filename.c_str());
 	checkError();
+
+    ilDeleteImages(1, &devilID);
+
+	ilShutDown();
+}
+
+void
+DevILWriter::writeToStream(std::vector<unsigned char>&          dst,
+                           const std::vector<unsigned char>&    src,
+                           uint                                 srcWidth,
+                           uint                                 srcHeight,
+                           uint                                 dstWidth,
+                           uint                                 dstHeight,
+                           uint                                 componentCount)
+{
+// TODO
+// add enum into minko framework
+    static const ILuint imageType = IL_PNG;
+
+	uint devilID = createScaledImage(src, srcWidth, srcHeight, dstWidth, dstHeight, componentCount);
+
+    uint size = ilSaveL(imageType, nullptr, 0);
+
+    unsigned char* buffer = new unsigned char[size];
+    ilSaveL(imageType, buffer, size);
+
+    std::copy(buffer, buffer + size, std::back_inserter(dst));
+
+    delete[] buffer;
 
     ilDeleteImages(1, &devilID);
 
