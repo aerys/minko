@@ -41,6 +41,7 @@ namespace minko
 					.method("lookAt",               &Matrix4x4::lookAt)
 					.method("identity",             &Matrix4x4::identity)
 					.method("invert",				&Matrix4x4::invert)
+					.method("append",				static_cast<Matrix4x4::Ptr(Matrix4x4::*)(Matrix4x4::Ptr)>(&Matrix4x4::append))
 					.method("translation",			static_cast<Matrix4x4::Ptr (Matrix4x4::*)(float, float, float)>(&Matrix4x4::translation))
 					.method("translationVector",	static_cast<Matrix4x4::Ptr (Matrix4x4::*)(Vector3::Ptr)>(&Matrix4x4::translation))
 					.method("transform",			static_cast<Vector3::Ptr (Matrix4x4::*)(Vector3::Ptr) const>(&Matrix4x4::transform))
@@ -61,7 +62,7 @@ namespace minko
 					.method("prependRotation",      &Matrix4x4::prependRotation)
 					.method("prependTranslation",   static_cast<Matrix4x4::Ptr (Matrix4x4::*)(float, float, float)>(&Matrix4x4::prependTranslation))
 					.method("prependTranslationVector",   static_cast<Matrix4x4::Ptr (Matrix4x4::*)(Vector3::Ptr)>(&Matrix4x4::prependTranslation))
-					.method("getTranslation",		static_cast<Vector3::Ptr (Matrix4x4::*)(void) const>(&Matrix4x4::translation))
+					.method("getTranslation",		static_cast<Vector3::Ptr (Matrix4x4::*)(void) const>(&Matrix4x4::translation))					
 					.method("toString", &Matrix4x4::toString);
 			}
 		};
