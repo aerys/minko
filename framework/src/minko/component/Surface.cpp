@@ -224,6 +224,12 @@ Surface::setEffectAndTechnique(Effect::Ptr			effect,
 	if (!effect->hasTechnique(technique))
 		throw std::logic_error("Effect does not provide a '" + technique + "' technique.");
 
+	for (auto& n : targets())
+	{
+		n->data()->removeProvider(_effect->data());
+		n->data()->addProvider(effect->data());
+	}
+
 	_effect		= effect;
 	_technique	= technique;
 	_techniqueChanged->execute(shared_from_this(), _technique, updateDrawcalls);
