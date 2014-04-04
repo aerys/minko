@@ -131,7 +131,7 @@ void
 DrawCallPool::addSurface(Surface::Ptr surface)
 {
 	_surfaceToTechniqueChangedSlot[surface] = surface->techniqueChanged()->connect(std::bind(
-		&DrawCallPool::techniqueChanged,
+		&DrawCallPool::techniqueChangedHandler,
 		shared_from_this(),
 		std::placeholders::_1,
 		std::placeholders::_2,
@@ -140,21 +140,21 @@ DrawCallPool::addSurface(Surface::Ptr surface)
 	_techniqueToMacroNames[surface].clear();
 
 	_surfaceToVisibilityChangedSlot.insert(std::pair<SurfacePtr, VisibilityChangedSlot>(surface, surface->visibilityChanged()->connect(std::bind(
-		&DrawCallPool::visibilityChanged,
+		&DrawCallPool::visibilityChangedHandler,
 		shared_from_this(),
 		std::placeholders::_1,
 		std::placeholders::_2,
 		std::placeholders::_3))));
 
 	_surfaceToVisibilityChangedSlot.insert(std::pair<SurfacePtr, VisibilityChangedSlot>(surface, surface->computedVisibilityChanged()->connect(std::bind(
-		&DrawCallPool::visibilityChanged,
+		&DrawCallPool::visibilityChangedHandler,
 		shared_from_this(),
 		std::placeholders::_1,
 		std::placeholders::_2,
 		std::placeholders::_3))));
 
 	_surfaceToIndexChangedSlot.insert(std::pair<SurfacePtr, ArrayProviderIndexChangedSlot>(surface, surface->geometry()->data()->indexChanged()->connect(std::bind(
-		&DrawCallPool::dataProviderIndexChanged,
+		&DrawCallPool::dataProviderIndexChangedHandler,
 		shared_from_this(),
 		std::placeholders::_1,
 		std::placeholders::_2,
@@ -165,7 +165,7 @@ DrawCallPool::addSurface(Surface::Ptr surface)
 
 	if (arrayProviderMaterial)
 		_surfaceToIndexChangedSlot.insert(std::pair<SurfacePtr, ArrayProviderIndexChangedSlot>(surface, arrayProviderMaterial->indexChanged()->connect(std::bind(
-		&DrawCallPool::dataProviderIndexChanged,
+		&DrawCallPool::dataProviderIndexChangedHandler,
 		shared_from_this(),
 		std::placeholders::_1,
 		std::placeholders::_2,
@@ -179,16 +179,6 @@ DrawCallPool::addSurface(Surface::Ptr surface)
 		_invisibleSurfaces.insert(surface);
 }
 
-void
-DrawCallPool::dataProviderIndexChanged(std::shared_ptr<data::ArrayProvider> provider, uint index, SurfacePtr surface)
-{
-	//if (std::find(_toCollect.begin(), _toCollect.end(), surface) == _toCollect.end())
-	//{
-	//	std::cout << "   update surface drawcalls" << std::endl;
-		//deleteDrawCalls(surface);
-		_toCollect.insert(surface);
-	//}
-}
 
 void
 DrawCallPool::removeSurface(Surface::Ptr surface)
@@ -214,9 +204,9 @@ DrawCallPool::cleanSurface(Surface::Ptr	surface)
 }
 
 void
-DrawCallPool::techniqueChanged(Surface::Ptr			surface, 
-							   const std::string&	technique, 
-							   bool					updateDrawCall)
+DrawCallPool::techniqueChangedHandler(Surface::Ptr			surface, 
+									  const std::string&	technique, 
+									  bool					updateDrawCall)
 {
 	deleteDrawCalls(surface);
 	if (updateDrawCall && std::find(_toCollect.begin(), _toCollect.end(), surface) == _toCollect.end())
@@ -224,9 +214,9 @@ DrawCallPool::techniqueChanged(Surface::Ptr			surface,
 }
 
 void
-DrawCallPool::visibilityChanged(Surface::Ptr	surface,
-							    Renderer::Ptr	renderer,
-								bool			value)
+DrawCallPool::visibilityChangedHandler(Surface::Ptr		surface,
+									   Renderer::Ptr	renderer,
+									   bool				value)
 {
 	if (renderer != _renderer && renderer != nullptr)
 		return;
@@ -246,6 +236,19 @@ DrawCallPool::visibilityChanged(Surface::Ptr	surface,
 	
 }
 
+void
+DrawCallPool::dataProviderIndexChangedHandler(data::ArrayProvider::Ptr	provider, 
+											  uint						index, 
+											  Surface::Ptr				surface)
+{
+	//if (std::find(_toCollect.begin(), _toCollect.end(), surface) == _toCollect.end())
+	//{
+	//	std::cout << "   update surface drawcalls" << std::endl;
+		//deleteDrawCalls(surface);
+		_toCollect.insert(surface);
+	//}
+}
+
 DrawCallPool::DrawCallList&
 DrawCallPool::generateDrawCall(Surface::Ptr	surface,
 							   unsigned int	numAttempts)
@@ -254,18 +257,18 @@ DrawCallPool::generateDrawCall(Surface::Ptr	surface,
 		deleteDrawCalls(surface);
 
 	bool							mustFallbackTechnique	= false;
-	std::shared_ptr<render::Effect> drawCallEffect			= surface->effect();
+	std::shared_ptr<render::Effect> effect					= surface->effect();
 	std::string						technique				= surface->technique();
 
 	if (_renderer->effect())
 	{
-		drawCallEffect	= _renderer->effect();
-		technique		= _renderer->effect()->techniques().begin()->first;
+		effect		= _renderer->effect();
+		technique	= effect->techniques().begin()->first;
 	}
 
 	_surfaceToDrawCalls	[surface] = std::list<DrawCall::Ptr>();
 
-	for (const auto& pass : drawCallEffect->technique(technique))
+	for (const auto& pass : effect->technique(technique))
 	{
 		auto drawCall = initializeDrawCall(pass, surface);
 
@@ -294,9 +297,9 @@ DrawCallPool::generateDrawCall(Surface::Ptr	surface,
 	{
 		_surfaceToDrawCalls[surface].clear();
 
-		if (numAttempts > 0 && drawCallEffect->hasFallback(technique))
+		if (numAttempts > 0 && effect->hasFallback(technique))
 		{
-			surface->setTechnique(drawCallEffect->fallback(technique), false);
+			surface->setEffectAndTechnique(effect, effect->fallback(technique), false);
 
 			return generateDrawCall(surface, numAttempts - 1);
 		}
@@ -517,7 +520,9 @@ DrawCallPool::macroChangedHandler(Container::Ptr		container,
 								  MacroChange			change)
 {
 	const ContainerProperty	macro(propertyName, container);
-	Effect::Ptr				effect = (_renderer->effect() ? _renderer->effect() : surface->effect());
+	
+	Effect::Ptr			effect		= _renderer->effect() ? _renderer->effect() : surface->effect();
+	const std::string	technique	= surface->technique(); 
 
 	if (change == MacroChange::REF_CHANGED && !_surfaceToDrawCalls[surface].empty())
 	{
@@ -535,12 +540,12 @@ DrawCallPool::macroChangedHandler(Container::Ptr		container,
 
 		if (!failedDrawcallRendererData.empty())
 		{
-			if (effect->hasFallback(surface->technique()))
-				surface->setTechnique(effect->fallback(surface->technique()), true);
+			if (effect->hasFallback(technique))
+				surface->setEffectAndTechnique(effect, effect->fallback(technique), true);
 		}
 	}
-	else if (_techniqueToMacroNames[surface].count(surface->technique()) != 0 
-		&&   _techniqueToMacroNames[surface][surface->technique()].find(macro.name()) != _techniqueToMacroNames[surface][surface->technique()].end())
+	else if (_techniqueToMacroNames[surface].count(technique) != 0 
+		&&   _techniqueToMacroNames[surface][technique].find(macro.name()) != _techniqueToMacroNames[surface][technique].end())
 	{
 		int numListeners = _numMacroListeners[surface].count(macro) == 0 ? 0 : _numMacroListeners[surface][macro];
 
@@ -708,7 +713,10 @@ DrawCallPool::incorrectMacroChangedHandler(Surface::Ptr				surface,
 {
 	if (_incorrectMacroToPasses[surface].count(macro) > 0)
 	{
-		surface->setTechnique(_incorrectMacroToPasses[surface][macro].front().first, true); // FIXME
+		auto effect					= surface->effect();
+		const std::string technique	= _incorrectMacroToPasses[surface][macro].front().first; // FIXME
+
+		surface->setEffectAndTechnique(effect, technique, true); 
 	}
 }
 

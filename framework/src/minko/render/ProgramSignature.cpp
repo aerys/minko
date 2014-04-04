@@ -28,6 +28,8 @@ using namespace minko;
 using namespace minko::render;
 using namespace minko::data;
 
+#define DEACTIVATE_FALLBACK // since beta 1
+
 /*static*/ const uint ProgramSignature::MAX_NUM_BINDINGS = 32;
 
 void
@@ -114,8 +116,9 @@ ProgramSignature::build(std::shared_ptr<render::Pass>	pass,
 					? macro.container()->get<int>(macro.name())
 					: defaultMacro.value.value;
 
-				// for beta 1 : clamp integer macros instead for using fallback technique
+#ifdef DEACTIVATE_FALLBACK
 				value = std::max(min, std::min(max, value)); 
+#endif // DEACTIVATE_FALLBACK
 
 				// update program signature
 				_values[macroId] = value; 
@@ -125,7 +128,9 @@ ProgramSignature::build(std::shared_ptr<render::Pass>	pass,
 					if (macroExists)
 						incorrectIntegerMacros.push_back(macro);
 				
-						throw; // for beta 1, macros are clamped and cannot get out-of-bounds!
+#ifdef DEACTIVATE_FALLBACK
+					throw;
+#endif // DEACTIVATE_FALLBACK
 				}
 				else
 				{
