@@ -67,7 +67,7 @@ configuration { "android"}
 configuration { "cc=gcc"}
 	toolset "gcc"
 
-configuration { "cc=clang"}
+configuration { "cc=clang", "not html5" }
 	toolset "clang"
 
 configuration {}

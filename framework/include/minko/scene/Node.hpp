@@ -35,12 +35,12 @@ namespace minko
 		private:
 			typedef std::shared_ptr<component::AbstractComponent>	AbsCtrlPtr;
 
+			static uint										_lastId;
+			uint											_id;
+
 		protected:
 			std::string 									_name;
 			std::vector<Ptr>								_children;
-
-		private:
-			static unsigned int								_id;
 
 			uint											_layouts;
 			Ptr 											_root;
