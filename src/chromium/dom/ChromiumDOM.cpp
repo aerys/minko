@@ -203,7 +203,7 @@ ChromiumDOM::update()
 
 	for (std::string message : _receivedMessages)
 	{
-		_onload->execute(shared_from_this(), message);
+		_onmessage->execute(shared_from_this(), message);
 		_engine->onmessage()->execute(shared_from_this(), message);
 	}
 	_receivedMessages.clear();

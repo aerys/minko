@@ -62,7 +62,7 @@ namespace chromium
 			clear();
 			
 			void
-			initialize(std::shared_ptr<minko::AbstractCanvas>, std::shared_ptr<minko::component::SceneManager>);
+			initialize(std::shared_ptr<minko::AbstractCanvas>, std::shared_ptr<minko::component::SceneManager>, std::shared_ptr<minko::scene::Node>);
 			
 			minko::dom::AbstractDOM::Ptr
 			load(std::string uri);
@@ -122,6 +122,7 @@ namespace chromium
 
 			minko::Signal<minko::AbstractCanvas::Ptr, minko::uint, minko::uint>::Slot _canvasResizedSlot;
 			minko::Signal<minko::component::SceneManager::Ptr, float, float>::Slot _enterFrameSlot;
+			minko::Signal<minko::component::SceneManager::Ptr, float, float>::Slot _endFrameSlot;
 
 			ChromiumPimpl* _impl;
 			std::shared_ptr<minko::material::BasicMaterial> _overlayMaterial;

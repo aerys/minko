@@ -81,8 +81,8 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 			"_ATL_NO_OPENGL",
 			"_SECURE_ATL",
 			"TOOLKIT_VIEWS=1",
-			"USE_AURA=1",
-			"USE_ASH=1",
+			"USE_AURA=0",
+			"USE_ASH=0",
 			"_CRT_SECURE_NO_DEPRECATE",
 			"_SCL_SECURE_NO_DEPRECATE",
 			"NTDDI_VERSION=0x06020000"

@@ -20,6 +20,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #if defined(CHROMIUM)
 #include "minko/Minko.hpp"
 
+#include "minko/scene/Node.hpp"
+
 #include "chromium/ChromiumApp.hpp"
 #include "chromium/ChromiumPimpl.hpp"
 #include "chromium/dom/ChromiumDOMEngine.hpp"
@@ -74,10 +76,11 @@ ChromiumDOMEngine::start(int argc, char** argv)
 
 
 void
-ChromiumDOMEngine::initialize(AbstractCanvas::Ptr canvas, std::shared_ptr<component::SceneManager> sceneManager)
+ChromiumDOMEngine::initialize(AbstractCanvas::Ptr canvas, std::shared_ptr<component::SceneManager> sceneManager, minko::scene::Node::Ptr root)
 {
 	_canvas = canvas;
 	_sceneManager = sceneManager;
+
 	std::shared_ptr<render::Texture> texture = _impl->app->initialize(canvas, _sceneManager->assets()->context(), _impl);
 
 	CefSettings settings;
@@ -87,14 +90,9 @@ ChromiumDOMEngine::initialize(AbstractCanvas::Ptr canvas, std::shared_ptr<compon
 
 	int result = CefInitialize(*_impl->mainArgs, settings, _impl->app.get(), nullptr);
 	
-	auto options = minko::file::Options::create(_sceneManager->assets()->defaultOptions());
-	options->loadAsynchronously(false);
-
 	_overlayMaterial = material::BasicMaterial::create()->diffuseMap(texture);
 
 	auto overlayEffect = _sceneManager->assets()->effect("effect/Overlay.effect");
-
-
 
 	if (overlayEffect)
 	{
@@ -105,7 +103,7 @@ ChromiumDOMEngine::initialize(AbstractCanvas::Ptr canvas, std::shared_ptr<compon
 			overlayEffect
 		));
 
-		_sceneManager->getTarget(0)->addChild(quad);
+		root->addChild(quad);
 	}
 	else
 	{
@@ -131,6 +129,10 @@ ChromiumDOMEngine::initialize(AbstractCanvas::Ptr canvas, std::shared_ptr<compon
 	_enterFrameSlot = _sceneManager->frameBegin()->connect([&](std::shared_ptr<component::SceneManager>, float, float)
 	{
 		enterFrame();
+	});
+
+	_endFrameSlot = _sceneManager->frameEnd()->connect([&](std::shared_ptr<component::SceneManager>, float, float)
+	{
 	});
 }
 

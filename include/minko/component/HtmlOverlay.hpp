@@ -49,7 +49,7 @@ namespace minko
 		public:
 
 			void
-			initialize(AbstractCanvas::Ptr);
+			initialize(AbstractCanvas::Ptr, SceneManager::Ptr);
 
 			static
 			Ptr
@@ -107,7 +107,8 @@ namespace minko
 			removedHandler(NodePtr node, NodePtr target, NodePtr ancestor);
 			
 		private:
-			AbstractCanvas::Ptr														_canvas;
+			AbstractCanvas::Ptr														_canvas; 
+			SceneManager::Ptr														_sceneManager;
 
 			Signal<AbstractComponent::Ptr, NodePtr>::Slot							_targetAddedSlot;
 			Signal<AbstractComponent::Ptr, NodePtr>::Slot							_targetRemovedSlot;

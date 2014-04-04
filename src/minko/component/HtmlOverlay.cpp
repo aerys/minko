@@ -47,9 +47,10 @@ HtmlOverlay::~HtmlOverlay()
 }
 
 void
-HtmlOverlay::initialize(AbstractCanvas::Ptr canvas)
+HtmlOverlay::initialize(AbstractCanvas::Ptr canvas, SceneManager::Ptr sceneManager)
 {
 	_canvas = canvas;
+	_sceneManager = sceneManager;
 
 	_targetAddedSlot = targetAdded()->connect(std::bind(
 		&HtmlOverlay::targetAddedHandler,
@@ -70,23 +71,13 @@ void
 HtmlOverlay::targetAddedHandler(AbstractComponent::Ptr	ctrl, scene::Node::Ptr		target)
 {
 #if defined(CHROMIUM)
-	if (target->hasComponent<SceneManager>())
-	{
-		SceneManager::Ptr sceneManager = target->component<SceneManager>();
-		
-		ChromiumDOMEngine::Ptr engine = std::dynamic_pointer_cast<ChromiumDOMEngine>(_domEngine);
-		engine->initialize(_canvas, sceneManager);
-	}
+	ChromiumDOMEngine::Ptr engine = std::dynamic_pointer_cast<ChromiumDOMEngine>(_domEngine);
+	engine->initialize(_canvas, _sceneManager, target);
 #endif
 	
 #if defined(EMSCRIPTEN)
-	if (target->hasComponent<SceneManager>())
-	{
-		SceneManager::Ptr sceneManager = target->component<SceneManager>();
-		
-		EmscriptenDOMEngine::Ptr engine = std::dynamic_pointer_cast<EmscriptenDOMEngine>(_domEngine);
-		engine->initialize(_canvas, sceneManager);
-	}
+	EmscriptenDOMEngine::Ptr engine = std::dynamic_pointer_cast<EmscriptenDOMEngine>(_domEngine);
+	engine->initialize(_canvas, _sceneManager);
 #endif
 }
 
