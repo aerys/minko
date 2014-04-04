@@ -42,20 +42,20 @@ namespace minko
 			void
 			writeToFile(const std::string&                    filename,
                         const std::vector<unsigned char>&     data,
-                        uint                                  srcWidth,
-                        uint                                  srcHeight,
-                        uint                                  dstWidth,
-                        uint                                  dstHeight,
-                        uint                                  componentCount);
+                        minko::uint                           srcWidth,
+                        minko::uint                           srcHeight,
+                        minko::uint                           dstWidth,
+                        minko::uint                           dstHeight,
+                        minko::uint                           componentCount);
 
             void
             writeToStream(std::vector<unsigned char>&           dst,
                           const std::vector<unsigned char>&     src,
-                          uint                                  srcWidth,
-                          uint                                  srcHeight,
-                          uint                                  dstWidth,
-                          uint                                  dstHeight,
-                          uint                                  componentCount);
+                          minko::uint                           srcWidth,
+                          minko::uint                           srcHeight,
+                          minko::uint                           dstWidth,
+                          minko::uint                           dstHeight,
+                          minko::uint                           componentCount);
 
 		private:
 			DevILWriter()
@@ -70,11 +70,11 @@ namespace minko
 
             minko::uint
             createScaledImage(const std::vector<unsigned char>&    src,
-                              uint                                 srcWidth,
-                              uint                                 srcHeight,
-                              uint                                 dstWidth,
-                              uint                                 dstHeight,
-                              uint                                 componentCount);
+                              minko::uint                          srcWidth,
+                              minko::uint                          srcHeight,
+                              minko::uint                          dstWidth,
+                              minko::uint                          dstHeight,
+                              minko::uint                          componentCount);
 		};
 	}
 }
