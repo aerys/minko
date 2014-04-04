@@ -50,6 +50,7 @@ namespace minko
 		    MINKO_LUAGLUE_BIND_SIGNAL(state, AbstractCanvas::Ptr);
 		    MINKO_LUAGLUE_BIND_SIGNAL(state, AbstractCanvas::Ptr, uint, uint);
 			MINKO_LUAGLUE_BIND_SIGNAL(state, AbstractCanvas::Ptr, input::Joystick::Ptr);
+            
 		    abstractCanvas.property("resized", &AbstractCanvas::resized);
 			abstractCanvas.property("joystickAdded", &AbstractCanvas::joystickAdded);
 			abstractCanvas.property("joystickRemoved", &AbstractCanvas::joystickRemoved);
