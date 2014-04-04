@@ -36,19 +36,19 @@ namespace minko
 			friend render::DrawCallPool;
 
 		public:
-			typedef std::shared_ptr<Surface>									Ptr;
-			typedef Signal<Ptr, const std::string&, bool>						TechniqueChangedSignal;	
-			typedef Signal<Ptr, std::shared_ptr<component::Renderer>, bool>		VisibilityChangedSignal;
+			typedef std::shared_ptr<Surface>										Ptr;
+			typedef Signal<Ptr, const std::string&, bool>							TechniqueChangedSignal;	
+			typedef Signal<Ptr, std::shared_ptr<component::Renderer>, bool>			VisibilityChangedSignal;
 
 		private:
-			typedef std::shared_ptr<data::ArrayProvider>					ArrayProviderPtr;
-			typedef std::shared_ptr<scene::Node>							NodePtr;
-			typedef std::shared_ptr<data::Container>						ContainerPtr;
-			typedef Signal<ContainerPtr, const std::string&>				PropertyChangedSignal;
-			typedef PropertyChangedSignal::Slot								PropertyChangedSlot;
-			typedef std::shared_ptr<render::Effect>							EffectPtr;
-			typedef const std::string&										StringRef;
-			typedef Signal<ArrayProviderPtr, uint>::Slot					ArrayProviderIndexChangedSlot;
+			typedef std::shared_ptr<data::ArrayProvider>							ArrayProviderPtr;
+			typedef std::shared_ptr<scene::Node>									NodePtr;
+			typedef std::shared_ptr<data::Container>								ContainerPtr;
+			typedef Signal<ContainerPtr, const std::string&>						PropertyChangedSignal;
+			typedef PropertyChangedSignal::Slot										PropertyChangedSlot;
+			typedef std::shared_ptr<render::Effect>									EffectPtr;
+			typedef const std::string&												StringRef;
+			typedef Signal<ArrayProviderPtr, uint>::Slot							ArrayProviderIndexChangedSlot;
 
 
 		private:
@@ -57,27 +57,24 @@ namespace minko
 			std::shared_ptr<geometry::Geometry>										_geometry;
 			std::shared_ptr<data::Provider>											_material;
 			std::shared_ptr<render::Effect>											_effect;
-			
 			std::string 															_technique;
-			std::list<ArrayProviderIndexChangedSlot>								_dataProviderIndexChangedSlots;
 
 			int																		_geometryId;
 			int																		_materialId;
-			
-			TechniqueChangedSignal::Ptr												_techniqueChanged;
-
-			Signal<AbstractComponent::Ptr, NodePtr>::Slot							_targetAddedSlot;
-			Signal<AbstractComponent::Ptr, NodePtr>::Slot							_targetRemovedSlot;
-			Signal<NodePtr, NodePtr, NodePtr>::Slot									_removedSlot;
-			Signal<EffectPtr, StringRef, StringRef>::Slot							_techniqueChangedSlot;
 
 			bool																	_visible;
-
 			std::unordered_map<std::shared_ptr<component::Renderer>, bool>			_rendererToVisibility;
 			std::unordered_map<std::shared_ptr<component::Renderer>, bool>			_rendererToComputedVisibility;
-
+			
+			TechniqueChangedSignal::Ptr												_techniqueChanged;
 			VisibilityChangedSignal::Ptr											_visibilityChanged;
 			VisibilityChangedSignal::Ptr											_computedVisibilityChanged;
+
+			std::list<ArrayProviderIndexChangedSlot>								_dataProviderIndexChangedSlots;
+			Signal<AbstractComponent::Ptr, NodePtr>::Slot							_targetAddedSlot;
+			Signal<AbstractComponent::Ptr, NodePtr>::Slot							_targetRemovedSlot;
+			Signal<NodePtr, NodePtr, NodePtr>::Slot									_addedSlot;
+			Signal<NodePtr, NodePtr, NodePtr>::Slot									_removedSlot;
 
 		public:
 			static
@@ -109,8 +106,56 @@ namespace minko
 			}
 
 			inline
+			const std::string&
+			name() const
+			{
+				return _name;
+			}
+
+			inline
+			void
+			name(const std::string& value)
+			{
+				_name = value;
+			}
+
+			inline
+			std::shared_ptr<geometry::Geometry>
+			geometry() const
+			{
+				return _geometry;
+			}
+
+            void
+            geometry(std::shared_ptr<geometry::Geometry>);
+
+			inline
+			std::shared_ptr<data::Provider>
+			material() const
+			{
+				return _material;
+			}
+
+			inline
+			std::shared_ptr<render::Effect>
+			effect() const
+			{
+				return _effect;
+			}
+
+			inline
+			const std::string&
+			technique() const
+			{
+				return _technique;
+			}
+
+			void
+			effect(std::shared_ptr<render::Effect>, const std::string& = "default");
+
+			inline
 			bool
-			visible()
+			visible() const
 			{
 				return _visible;
 			}
@@ -122,13 +167,6 @@ namespace minko
 				if (_rendererToVisibility.find(renderer) == _rendererToVisibility.end())
 					_rendererToVisibility[renderer] = _visible;
 				return _rendererToVisibility[renderer];
-			}
-
-			inline
-			VisibilityChangedSignal::Ptr
-			visibilityChanged()
-			{
-				return _visibilityChanged;
 			}
 
 			inline
@@ -161,62 +199,24 @@ namespace minko
 			computedVisibility(std::shared_ptr<component::Renderer>, bool value);
 
 			inline
-			VisibilityChangedSignal::Ptr
-			computedVisibilityChanged()
-			{
-				return _computedVisibilityChanged;
-			}
-
-			inline
-			const std::string&
-			name()
-			{
-				return _name;
-			}
-
-			inline
-			void
-			name(const std::string& value)
-			{
-				_name = value;
-			}
-
-			inline
-			std::shared_ptr<geometry::Geometry>
-			geometry()
-			{
-				return _geometry;
-			}
-
-            void
-            geometry(std::shared_ptr<geometry::Geometry> newGeometry);
-
-			inline
-			std::shared_ptr<data::Provider>
-			material()
-			{
-				return _material;
-			}
-
-			inline
-			std::shared_ptr<render::Effect>
-			effect()
-			{
-				return _effect;
-			}
-
-			inline
-			const std::string&
-			technique()
-			{
-				return _technique;
-			}
-
-			inline
 			TechniqueChangedSignal::Ptr	
 			techniqueChanged() const
 			{
 				return _techniqueChanged;
+			}
+
+			inline
+			VisibilityChangedSignal::Ptr
+			visibilityChanged() const
+			{
+				return _visibilityChanged;
+			}
+
+			inline
+			VisibilityChangedSignal::Ptr
+			computedVisibilityChanged() const
+			{
+				return _computedVisibilityChanged;
 			}
 
 		private:
@@ -230,16 +230,19 @@ namespace minko
 			initialize();
 
 			void
-			targetAddedHandler(AbstractComponent::Ptr ctrl, NodePtr target);
+			targetAddedHandler(AbstractComponent::Ptr, NodePtr);
 
 			void
-			targetRemovedHandler(AbstractComponent::Ptr ctrl, NodePtr target);
+			targetRemovedHandler(AbstractComponent::Ptr, NodePtr);
 
 			void
-			removedHandler(NodePtr node, NodePtr target, NodePtr ancestor);
+			addedHandler(NodePtr, NodePtr, NodePtr);
 
 			void
-			setTechnique(const std::string&, bool updateDrawcalls = true);
+			removedHandler(NodePtr, NodePtr, NodePtr);
+
+			void
+			setEffectAndTechnique(EffectPtr, const std::string&, bool updateDrawcalls = true);
 
 			void
 			geometryProviderIndexChanged(ArrayProviderPtr arrayProvider, uint index);
