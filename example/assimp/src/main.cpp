@@ -21,6 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/MinkoASSIMP.hpp"
 #include "minko/MinkoSDL.hpp"
 #include "minko/MinkoJPEG.hpp"
+#include "minko/MinkoPNG.hpp"
 
 using namespace minko;
 using namespace minko::component;
@@ -78,25 +79,27 @@ main(int argc, char** argv)
 {
 	auto canvas = Canvas::create("Minko Example - Assimp", WINDOW_WIDTH, WINDOW_HEIGHT);
 	auto sceneManager = SceneManager::create(canvas->context());
+	auto defaultOptions = sceneManager->assets()->loader()->options();
 
 	// setup assets
-	sceneManager->assets()->loader()->options()->generateMipmaps(true);
-	sceneManager->assets()->loader()->options()
-		->registerParser<file::OBJParser>("obj")
-		->registerParser<file::ColladaParser>("dae")
-        ->registerParser<file::JPEGParser>("jpg");
-    sceneManager->assets()->loader()
-        ->queue("effect/Basic.effect")
-	    ->queue("effect/Phong.effect");
-
-	sceneManager->assets()->loader()->options()
+	defaultOptions
+		->generateMipmaps(true)
 		->skinningFramerate(60)
 		->skinningMethod(SkinningMethod::HARDWARE)
 		->startAnimation(true)
-		->effect(sceneManager->assets()->effect("basic"));
+		->registerParser<file::OBJParser>("obj")
+		->registerParser<file::ColladaParser>("dae")
+		->registerParser<file::PNGParser>("png")
+        ->registerParser<file::JPEGParser>("jpg");
 
-	sceneManager->assets()->loader()
-		->queue(MODEL_FILENAME);
+    auto fxLoader = file::Loader::create(sceneManager->assets()->loader())
+    	->queue("effect/Basic.effect")
+	    ->queue("effect/Phong.effect");
+
+	auto fxComplete = fxLoader->complete()->connect([&](file::Loader::Ptr l)
+	{
+	    sceneManager->assets()->loader()->queue(MODEL_FILENAME);
+	});
 
 	bool beIdle = true;
 	bool doPunch = false;

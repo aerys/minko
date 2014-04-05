@@ -47,6 +47,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include <future>
 #include <thread>
 #include <chrono>
+#include <bitset>
 
 #include "minko/math/Convertible.hpp"
 
@@ -155,7 +156,6 @@ namespace minko
 		class Picking;
 		class JobManager;
 
-        class LightManager;
         class AbstractLight;
         class AmbientLight;
         class AbstractDiscreteLight;
@@ -234,6 +234,7 @@ namespace minko
 		class SphereGeometry;
         class QuadGeometry;
 		class TeapotGeometry;
+		class LineGeometry;
 	}
 
 	namespace animation

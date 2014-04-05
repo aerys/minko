@@ -86,20 +86,27 @@ FileProtocol::load()
 			file.close();
 			auto worker = AbstractCanvas::defaultCanvas()->getWorker("file-loader");
 
-			_workerSlots.push_back(worker->complete()->connect([=](async::Worker::MessagePtr workerData)
-            {
-                void* charData = &*workerData->begin();
-
-                data().assign(static_cast<unsigned char*>(charData), static_cast<unsigned char*>(charData) + workerData->size());
-                _complete->execute(shared_from_this());
+			_workerSlots.push_back(worker->message()->connect([=](async::Worker::Ptr, async::Worker::Message message) {
+				if (message.type == "complete")
+				{
+					void* bytes = &*message.data.begin();
+					data().assign(static_cast<unsigned char*>(bytes), static_cast<unsigned char*>(bytes) + message.data.size());
+					_complete->execute(shared_from_this());					
+				}
+				else if (message.type == "progress")
+				{
+					float ratio = *reinterpret_cast<float*>(&*message.data.begin());
+					_progress->execute(shared_from_this(), ratio);
+				}
+				else if (message.type == "error")
+				{
+					_error->execute(shared_from_this());
+				}
 			}));
 
-			_workerSlots.push_back(worker->progress()->connect([=](float ratio)
-            {
-                _progress->execute(loader, ratio);
-			}));
+			std::vector<char> input(resolvedFilename().begin(), resolvedFilename().end());
 
-            worker->input(std::make_shared<std::vector<char>>(realFilename.begin(), realFilename.end()));
+			worker->start(input);
 		}
 		else
 		{

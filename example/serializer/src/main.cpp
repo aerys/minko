@@ -23,25 +23,20 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/MinkoBullet.hpp"
 #include "minko/MinkoParticles.hpp"
 #include "minko/MinkoSerializer.hpp"
-#include "minko/Any.hpp"
-#include "minko/math/Vector4.hpp"
-#include "minko/math/Vector3.hpp"
-#include "minko/math/Vector2.hpp"
-#include "minko/math/Matrix4x4.hpp"
-#include "minko/MkStats.hpp"
-
-#include "minko/serialize/TypeSerializer.hpp"
-#include "minko/deserialize/TypeDeserializer.hpp"
-#include "minko/geometry/SphereGeometry.hpp"
 
 std::string MODEL_FILENAME = "model/primitives/primitives.scene";
 
 //#define SERIALIZE // comment to test deserialization
+#define DEACTIVATE_PHYSICS
 
 using namespace minko;
+using namespace minko::scene;
 using namespace minko::component;
 using namespace minko::math;
 
+static
+std::ostream&
+printNodeInfo(std::ostream&, Node::Ptr);
 
 void
 serializeSceneExample(std::shared_ptr<file::AssetLibrary>		assets,
@@ -53,52 +48,80 @@ serializeSceneExample(std::shared_ptr<file::AssetLibrary>		assets,
 	sceneWriter->write(MODEL_FILENAME, assets, file::Options::create(context));
 }
 
+Node::Ptr
+createWorldFrame(float axisLength, file::AssetLibrary::Ptr);
+
+void
+moveScene(Node::Ptr, float& tx, float& ty, float& tz);
+
+void
+toogleParticlesEmittingState(Node::Ptr);
+
 void
 openSceneExample(std::shared_ptr<file::AssetLibrary>	assets,
 				 std::shared_ptr<scene::Node>			root)
 {
-	root->addChild(assets->symbol(MODEL_FILENAME));
+	auto sceneNode = assets->symbol(MODEL_FILENAME);
+
+	if (!sceneNode->hasComponent<Transform>())
+		sceneNode->addComponent(Transform::create());
+
+	root->addChild(sceneNode);
+
+	auto withColliders = NodeSet::create(sceneNode)
+		->descendants(true)
+		->where([](Node::Ptr n) { return n->hasComponent<component::bullet::Collider>(); });
+
+	for (auto& n : withColliders->nodes())
+		n->addComponent(bullet::ColliderDebug::create(assets));
 }
 
 int main(int argc, char** argv)
 {
 	auto canvas			= Canvas::create("Minko Example - Serializer/Deserializer", 800, 600);
 	auto sceneManager	= SceneManager::create(canvas->context());
+	auto defaultLoader	= sceneManager->assets()->loader();
 
 	extension::SerializerExtension::activeExtension<extension::PhysicsExtension>();
     extension::SerializerExtension::activeExtension<extension::ParticlesExtension>();
 
 	// setup assets
-    sceneManager->assets()->loader()
+	auto fxLoader = file::Loader::create(defaultLoader);
+    fxLoader
         ->queue("effect/Basic.effect")
         ->queue("effect/Phong.effect")
         ->queue("effect/Particles.effect");
-    sceneManager->assets()->loader()->options()->generateMipmaps(true);
-    sceneManager->assets()->loader()->options()->effect(sceneManager->assets()->effect("basic"));
-	sceneManager->assets()->material("defaultMaterial", material::BasicMaterial::create()->diffuseColor(0xFFFFFFFF));
-	sceneManager->assets()->geometry("defaultGeometry", geometry::CubeGeometry::create(sceneManager->assets()->context())),
-          sceneManager->assets()->loader()->options()
-          ->registerParser<file::PNGParser>("png");
-#ifdef SERIALIZE
-        sceneManager->assets()->loader()
-                ->queue("effect/Basic.effect")
-                ->queue("texture/box.png");
 
-		sceneManager->assets()->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()));
-		sceneManager->assets()->geometry("sphere", geometry::SphereGeometry::create(sceneManager->assets()->context(), 20, 20));
+    auto fxComplete = fxLoader->complete()->connect([&](file::Loader::Ptr loader)
+	{
+	    defaultLoader->options()->effect(sceneManager->assets()->effect("basic"));		
+	});
+    defaultLoader->options()
+    	->generateMipmaps(true)
+    	->registerParser<file::PNGParser>("png");
+
+	sceneManager->assets()
+		->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()))
+		->geometry("sphere", geometry::SphereGeometry::create(sceneManager->assets()->context(), 20, 20));
+#ifdef SERIALIZE
+	defaultLoader->queue("texture/box.png");
 #else
-		sceneManager->assets()->loader()->options()->registerParser<file::SceneParser>("scene");
-		sceneManager->assets()->loader()->queue(MODEL_FILENAME);
+	defaultLoader->options()->registerParser<file::SceneParser>("scene");
+	defaultLoader->queue(MODEL_FILENAME);
 #endif
 
 	auto root = scene::Node::create("root")
 		->addComponent(sceneManager);
 
-
+#ifndef DEACTIVATE_PHYSICS
 	auto physicWorld = bullet::PhysicsWorld::create();
-	physicWorld->setGravity(math::Vector3::create(0.f, -9.8f, 0.f));
-	root->addComponent(physicWorld);
 
+	physicWorld->setGravity(math::Vector3::create(0.f, -9.8f, 0.f));
+
+	root->addComponent(physicWorld);
+#endif // DEACTIVATE_PHYSICS
+
+	root->data()->addProvider(canvas->data()); // FIXME
 
 	auto camera = scene::Node::create("camera")
 		->addComponent(Renderer::create(0x7f7f7fff))
@@ -106,6 +129,7 @@ int main(int argc, char** argv)
 		Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 20.f))
 		))
 		->addComponent(PerspectiveCamera::create(800.f / 600.f, (float)PI * 0.25f, .1f, 1000.f));
+
 	root->addChild(camera);
 
 	auto mesh = scene::Node::create("mesh")
@@ -115,19 +139,19 @@ int main(int argc, char** argv)
 	auto mesh3 = scene::Node::create("mesh3")
 		->addComponent(Transform::create());
 
-	auto _ = sceneManager->assets()->loader()->complete()->connect([=](file::Loader::Ptr loader)
+	auto _ = defaultLoader->complete()->connect([=](file::Loader::Ptr loader)
 	{
 #ifdef SERIALIZE
 		auto cubeMaterial = material::BasicMaterial::create()
 			->diffuseMap(sceneManager->assets()->texture("texture/box.png"))
 			->diffuseColor(math::Vector4::create(1.f, 0.f, 0.f, 1.f))
-			->blendMode(render::Blending::Mode::DEFAULT)
+//			->blendMode(render::Blending::Mode::DEFAULT)
 			->set<render::TriangleCulling>("triangleCulling", render::TriangleCulling::BACK);
 
 		auto sphereMaterial = material::BasicMaterial::create()
 			->diffuseMap(sceneManager->assets()->texture("texture/box.png"))
 			->diffuseColor(math::Vector4::create(0.f, 1.f, 0.f, 0.2f))
-			->blendMode(render::Blending::Mode::ALPHA)
+//			->blendMode(render::Blending::Mode::ALPHA)
 			->set<render::TriangleCulling>("triangleCulling", render::TriangleCulling::FRONT);
 
 		sceneManager->assets()->material("boxMaterial", cubeMaterial);
@@ -159,9 +183,11 @@ int main(int argc, char** argv)
 #endif
 
 #ifdef SERIALIZE
-		serializeSceneExample(assets, root, sceneManager->assets()->context());
+		serializeSceneExample(sceneManager->assets(), root, sceneManager->assets()->context());
 #else
 		openSceneExample(sceneManager->assets(), root);
+
+		root->addChild(createWorldFrame(5.0f, sceneManager->assets()));
 #endif
 	});
 
@@ -171,7 +197,7 @@ int main(int argc, char** argv)
 	float minPitch = 0.f + float(1e-5);
 	float maxPitch = (float)PI - float(1e-5);
 	auto lookAt = Vector3::create(0.f, 0.f, 0.f);
-	auto distance = 50.f;
+	auto distance = 5.f;
 
 
 	Signal<input::Mouse::Ptr, int, int>::Slot mouseMove;
@@ -198,10 +224,11 @@ int main(int argc, char** argv)
 		root->children()[0]->component<PerspectiveCamera>()->aspectRatio((float)w / (float)h);
 	});
 
+	float tx = 0.0f;
+	float ty = 0.0f;
+	float tz = 0.0f;
 	auto keyDown = canvas->keyboard()->keyDown()->connect([&](input::Keyboard::Ptr k)
 	{
-		float tx = 0.0f;
-		float tz = 0.0f;
 		if (k->keyIsDown(input::Keyboard::ScanCode::LEFT))
 			tx -= 0.1f;
 		else if (k->keyIsDown(input::Keyboard::ScanCode::RIGHT))
@@ -210,16 +237,10 @@ int main(int argc, char** argv)
 			tz += 0.1f;
 		else if (k->keyIsDown(input::Keyboard::ScanCode::DOWN))
 			tz -= 0.1f;
-
-		auto model = sceneManager->assets()->symbol(MODEL_FILENAME);
-		if (model && model->hasComponent<Transform>())
-		{
-			model->component<Transform>()->matrix()->appendTranslation(tx, 0.0f, tz);
-
-			auto withCollider = scene::NodeSet::create(model)->descendants(true)->where([](scene::Node::Ptr n){ return n->hasComponent<bullet::Collider>(); });
-			for (auto& n : withCollider->nodes())
-				n->component<bullet::Collider>()->synchronizePhysicsWithGraphics();
-		}
+		
+		// for particles
+		if (k->keyIsDown(input::Keyboard::ScanCode::SPACE))
+			toogleParticlesEmittingState(root);
 	});
 
 	auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr canvas, float time, float deltaTime)
@@ -243,13 +264,127 @@ int main(int argc, char** argv)
 			)
 		);
 
+		// change the position of the serialized scene
+		moveScene(sceneManager->assets()->symbol(MODEL_FILENAME), tx, ty, tz);
+
 		sceneManager->nextFrame(time, deltaTime);
 	});
 
-	sceneManager->assets()->loader()->load();
+	defaultLoader->load();
 
 	canvas->run();
 
 	return 0;
 }
 
+void
+toogleParticlesEmittingState(Node::Ptr root)
+{
+	if (root == nullptr)
+		return;
+
+	auto withParticles = NodeSet::create(root)
+		->descendants(true)
+		->where([](Node::Ptr n){ return n->hasComponent<component::ParticleSystem>(); });
+
+	for (auto& n : withParticles->nodes())
+	{
+		auto particles = n->component<component::ParticleSystem>();
+
+		particles->emitting(!particles->emitting());
+	}
+}
+
+void
+moveScene(Node::Ptr model, float& tx, float& ty, float& tz)
+{
+	if (model && model->hasComponent<Transform>())
+	{
+		model->component<Transform>()->matrix()->appendTranslation(tx, ty, tz);
+
+		auto withColliders = scene::NodeSet::create(model)
+			->descendants(true)
+			->where([](scene::Node::Ptr n){ return n->hasComponent<bullet::Collider>(); });
+
+		for (auto& n : withColliders->nodes())
+			n->component<bullet::Collider>()->synchronizePhysicsWithGraphics();
+	}
+
+	tx = 0.0f;
+	ty = 0.0f;
+	tz = 0.0f;
+}
+
+Node::Ptr
+createWorldFrame(float axisLength, file::AssetLibrary::Ptr assets)
+{
+	assert(assets->geometry("cube") && assets->effect("basic"));
+
+	auto xAxis = Node::create("x-axis")
+		->addComponent(Surface::create(
+			assets->geometry("cube"),
+			material::BasicMaterial::create()->diffuseColor(0xff0000ff),
+			assets->effect("basic")
+		))
+		->addComponent(Transform::create(
+			Matrix4x4::create()
+				->appendTranslation(0.5f, 0.0f, 0.0f)
+				->appendScale(axisLength, 0.01f, 0.01f)
+		));
+
+	auto yAxis = Node::create("y-axis")
+		->addComponent(Surface::create(
+			assets->geometry("cube"),
+			material::BasicMaterial::create()->diffuseColor(0x00ff00ff),
+			assets->effect("basic")
+		))
+		->addComponent(Transform::create(
+			Matrix4x4::create()
+				->appendTranslation(0.0f, 0.5f, 0.0f)
+				->appendScale(0.01f, axisLength, 0.01f)
+		));
+
+	auto zAxis = Node::create("z-axis")
+		->addComponent(Surface::create(
+			assets->geometry("cube"),
+			material::BasicMaterial::create()->diffuseColor(0x0000ffff),
+			assets->effect("basic")
+		))
+		->addComponent(Transform::create(
+			Matrix4x4::create()
+				->appendTranslation(0.0f, 0.0f, 0.5f)
+				->appendScale(0.01f, 0.01f, axisLength)
+		));
+
+	return Node::create("frame")
+		->addChild(xAxis)
+		->addChild(yAxis)
+		->addChild(zAxis);
+}
+
+static
+std::ostream&
+printNodeInfo(std::ostream&	out, 
+			  Node::Ptr		node)
+{
+	if (node == nullptr)
+		return out;
+
+	out << "\n'" << node->name() << "'" << (node->parent() ? "\t<- '" + node->parent()->name() + "'" : "" ) << std::endl;
+
+	if (node->hasComponent<Transform>())
+	{
+		const auto& m = node->component<Transform>()->matrix()->data();
+
+		out << "\t[" << m[0] << " " << m[1] << " " << m[2] << ";\n\t" 
+			<< m[4] << " " << m[5] << " " << m[6] << ";\n\t" 
+			<< m[8] << " " << m[9] << " " << m[10] << "]\n\t"
+			<< "t = (" << m[3] << ", " << m[7] << ", " << m[11] << ")" 
+			<< std::endl; 
+	}
+
+	for (auto& n : node->children())
+		printNodeInfo(out, n);
+
+	return out;
+}

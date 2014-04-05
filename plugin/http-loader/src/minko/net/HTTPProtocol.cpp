@@ -17,21 +17,22 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "minko/file/HTTPProtocol.hpp"
+#include "minko/net/HTTPProtocol.hpp"
 
+#include "minko/async/Worker.hpp"
+#include "minko/net/HTTPRequest.hpp"
 #include "minko/file/Options.hpp"
 #include "minko/Signal.hpp"
 #include "minko/AbstractCanvas.hpp"
 
 #if defined(EMSCRIPTEN)
 # include "emscripten/emscripten.h"
-#else
-# include "minko/async/HTTPWorker.hpp"
 #endif
 
 using namespace minko;
 using namespace minko::file;
 using namespace minko::async;
+using namespace minko::net;
 
 std::list<std::shared_ptr<HTTPProtocol>>
 HTTPProtocol::_runningLoaders;
@@ -127,21 +128,17 @@ HTTPProtocol::load()
 {
 	std::cout << "HTTPProtocol::load(): " << _file->filename() << std::endl;
 
-    auto realFilename = _options->uriFunction()(File::sanitizeFilename(_file->filename()));
-
 	if (_options->includePaths().size() != 0)
 	{
-        if (realFilename.find_first_of("http://") != 0 && realFilename.find_first_of("https://") != 0)
+		if (resolvedFilename().find_first_of("http://") != 0 && resolvedFilename().find_first_of("https://") != 0)
 		{
 			for (auto path : _options->includePaths())
 			{
-                realFilename = path + '/' + realFilename;
+				resolvedFilename(path + '/' + resolvedFilename());
 				break;
 			}
 		}
 	}
-
-    resolvedFilename(realFilename);
 
 	_options->protocolFunction([](const std::string& filename) -> std::shared_ptr<AbstractProtocol>
 	{
@@ -155,31 +152,93 @@ HTTPProtocol::load()
 	loader->progress()->execute(loader, 0.0);
 
 #if defined(EMSCRIPTEN)
-	//std::string destFilename = format("prepare%d", _uid++);
-	//std::cout << "HTTPProtocol::load(): " << "call emscripten_async_wget2 with filename " << destFilename << std::endl;
-	//emscripten_async_wget2(_filename.c_str(), destFilename.c_str(), "GET", "", loader.get(), &wget2CompleteHandler, &errorHandler, &progressHandler);
-
-	std::cout << "HTTPProtocol::load(): " << "call emscripten_async_wget_data " << std::endl;
-    emscripten_async_wget_data(realFilename.c_str(), loader.get(), &completeHandler, &errorHandler);
-#else
-	/*if (options->loadAsynchronously())
-	{*/
-		auto worker = AbstractCanvas::defaultCanvas()->getWorker("http");
-
-		_workerSlots.push_back(worker->complete()->connect([=](Worker::MessagePtr data) {
-			completeHandler(loader.get(), &*data->begin(), data->size());
-		}));
-
-		_workerSlots.push_back(worker->progress()->connect([=](float ratio) {
-			progressHandler(loader.get(), (int)ratio * 100);
-		}));
-
-        worker->input(std::make_shared<std::vector<char>>(realFilename.begin(), realFilename.end()));
-	/*}
+	if (options->loadAsynchronously())
+	{
+		std::cout << "HTTPProtocol::load(): " << "call emscripten_async_wget_data " << std::endl;
+		emscripten_async_wget_data(_filename.c_str(), loader.get(), &completeHandler, &errorHandler);
+		//TODO : use emscripten_async_wget2_data once it has been added
+	}
 	else
 	{
-		//fixme: handle synchronous HTTP loading
-	}*/
+		std::string eval = "";
+
+		eval += "var xhr = new XMLHttpRequest();\n";
+		eval += "xhr.open('GET', '" + _filename + "', false);\n";
+
+		eval += "xhr.overrideMimeType('text/plain; charset=x-user-defined');\n";
+
+		eval += "xhr.send(null);\n";
+
+		eval += "if (xhr.status == 200)\n";
+		eval += "{\n";
+		eval += "	var array = new Uint8Array(xhr.responseText.length);";
+
+		eval +=	"	for(var i = 0; i < xhr.responseText.length; ++i)\n";
+		eval +=	"		array[i] = xhr.responseText.charCodeAt(i) & 0xFF;\n";
+
+		eval += "	window.HTTPProtocolTmpBuffer = Module._malloc(xhr.responseText.length);\n";
+		eval += "	Module.HEAPU8.set(array, window.HTTPProtocolTmpBuffer);\n";
+
+		eval += "	(xhr.responseText.length);\n";
+		eval += "}\n";
+		eval += "else\n";
+		eval += "{\n";
+		eval += "	(-1);";
+		eval += "}\n";
+
+		int size = emscripten_run_script_int(eval.c_str());
+
+		if (size >= 0)
+		{
+			eval = "(window.HTTPProtocolTmpBuffer)";
+
+			unsigned char* bytes = (unsigned char*)emscripten_run_script_int(eval.c_str());
+
+			completeHandler(loader.get(), (void*)bytes, size);
+		}
+		else
+		{
+			errorHandler(loader.get());
+		}
+	}
+#else
+	if (options()->loadAsynchronously())
+	{
+		auto worker = AbstractCanvas::defaultCanvas()->getWorker("http");
+
+		_workerSlots.push_back(worker->message()->connect([=](Worker::Ptr, Worker::Message message) {
+			if (message.type == "complete")
+			{
+				completeHandler(loader.get(), &*message.data.begin(), message.data.size());
+			}
+			else if (message.type == "progress")
+			{
+				float ratio = *reinterpret_cast<float*>(&*message.data.begin());
+				progressHandler(loader.get(), ratio * 100);				
+			}
+			else if (message.type == "error")
+			{
+				errorHandler(loader.get());
+			}
+		}));
+
+		std::vector<char> input(resolvedFilename().begin(), resolvedFilename().end());
+		worker->start(input);
+	}
+	else
+	{
+		HTTPRequest request(resolvedFilename());
+
+		request.progress()->connect([&](float p){
+			progressHandler(loader.get(), p * 100);
+		});
+
+		request.run();
+
+		std::vector<char>& output = request.output();
+
+		completeHandler(loader.get(), &*output.begin(), output.size());
+	}
 #endif
 }
 

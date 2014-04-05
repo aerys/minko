@@ -148,7 +148,8 @@ void main(void)
 
 	#if defined NUM_DIRECTIONAL_LIGHTS || defined NUM_POINT_LIGHTS || defined NUM_SPOT_LIGHTS || defined ENVIRONMENT_MAP_2D || defined ENVIRONMENT_CUBE_MAP
 
-	vec3 eyeVector	= normalize(cameraPosition - vertexPosition); // always in world-space
+	vec3	eyeVector		= normalize(cameraPosition - vertexPosition); // always in world-space
+	vec3	normalVector	= normalize(vertexNormal); // always in world-space
 
 	#endif // NUM_DIRECTIONAL_LIGHTS || NUM_POINT_LIGHTS || NUM_SPOT_LIGHTS || ENVIRONMENT_MAP_2D || ENVIRONMENT_CUBE_MAP
 
@@ -164,9 +165,7 @@ void main(void)
 		float	lightCosInnerAng		= 0.0;
 		float	lightCosOuterAng		= 0.0;
 		float 	contribution			= 0.0;
-		
-		vec3 	normalVector			= normalize(vertexNormal); // always in world-space
-		
+				
 		#ifdef NORMAL_MAP
 			// warning: the normal vector must be normalized at this point!
 			mat3 tangentToWorldMatrix 	= phong_getTangentToWorldSpaceMatrix(normalVector, vertexTangent);
@@ -276,8 +275,8 @@ void main(void)
 			float distanceToLight	= length(lightDirection);
 			lightDirection			/= distanceToLight;
 			
-			lightSpotDirection	= normalize(-lightSpotDirection);						
-			float cosSpot		= dot(-lightDirection, lightSpotDirection);
+			lightSpotDirection	= normalize(lightSpotDirection);						
+			float cosSpot		= dot(- lightDirection, lightSpotDirection);
 
 			if (lightCosOuterAng < cosSpot)
 			{

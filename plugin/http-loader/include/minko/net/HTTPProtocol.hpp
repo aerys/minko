@@ -27,10 +27,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace file
+	namespace net
 	{
 		class HTTPProtocol :
-			public AbstractProtocol
+			public file::AbstractProtocol
 		{
 		public:
 			typedef std::shared_ptr<HTTPProtocol>	Ptr;
@@ -83,9 +83,6 @@ namespace minko
 	}
 }
 
-#pragma warning(push)
-#pragma warning(disable:4996)
-
 namespace
 {
 	inline std::string format(const char* fmt, ...)
@@ -107,5 +104,3 @@ namespace
 		return ret;
 	}	
 }
-
-#pragma warning(pop)

@@ -25,6 +25,35 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::file;
 
+Dependency::GeometryWriterFunction	Dependency::_geometryWriteFunction;
+Dependency::TextureWriterFunction	Dependency::_textureWriteFunction;
+Dependency::MaterialWriterFunction	Dependency::_materialWriteFunction;
+
+Dependency::Dependency()
+{
+	_currentId = 0;
+
+	if (_geometryWriteFunction != nullptr)
+	{
+		_geometryWriteFunction = std::bind(&Dependency::serializeGeometry,
+			std::placeholders::_1,
+			std::placeholders::_2,
+			std::placeholders::_3,
+			std::placeholders::_4);
+
+		_textureWriteFunction = std::bind(&Dependency::serializeTexture,
+			std::placeholders::_1,
+			std::placeholders::_2,
+			std::placeholders::_3,
+			std::placeholders::_4);
+
+		_materialWriteFunction = std::bind(&Dependency::serializeMaterial,
+			std::placeholders::_1,
+			std::placeholders::_2,
+			std::placeholders::_3,
+			std::placeholders::_4);
+	}
+}
 
 bool
 Dependency::hasDependency(std::shared_ptr<render::Effect> effect)
@@ -161,13 +190,74 @@ Dependency::getEffectReference(uint effectId)
 	return _effectReferences[effectId];
 }
 
+Dependency::SerializedAsset
+Dependency::serializeGeometry(std::shared_ptr<file::AssetLibrary>	assetLibrary, 
+							  std::shared_ptr<geometry::Geometry>	geometry, 
+							  uint									resourceId,
+							  std::shared_ptr<file::Options>		options)
+{
+	GeometryWriter::Ptr geometryWriter = GeometryWriter::create();
+
+	std::string filename = assetLibrary->geometryName(geometry) + ".geometry";
+
+	geometryWriter->data(geometry);
+	geometryWriter->write(filename, assetLibrary, options);
+
+	SerializedAsset res(0, resourceId, filename);
+
+	return res;
+}
+
+Dependency::SerializedAsset
+Dependency::serializeTexture(std::shared_ptr<file::AssetLibrary>		assetLibrary, 
+							 std::shared_ptr<render::AbstractTexture>	texture, 
+							 uint										resourceId,
+							 std::shared_ptr<file::Options>				options)
+{
+#ifdef DEBUG
+	std::string filenameInput = "asset/" + assetLibrary->textureName(texture);
+#else
+	std::string filenameInput = assetLibrary->textureName(texture);
+#endif
+	std::string filenameOutput = "";
+
+	for (int charIndex = filenameInput.size() - 1; charIndex >= 0 && filenameInput[charIndex] != '/'; --charIndex)
+		filenameOutput.insert(0, filenameInput.substr(charIndex, 1));
+	std::ifstream source(filenameInput, std::ios::binary);
+	std::ofstream dst(filenameOutput, std::ios::binary);
+
+	dst << source.rdbuf();
+
+	source.close();
+	dst.close();
+
+	SerializedAsset res(2, resourceId, filenameOutput);
+	
+	return res;
+}
+
+Dependency::SerializedAsset
+Dependency::serializeMaterial(std::shared_ptr<file::AssetLibrary>	assetLibrary, 
+							  std::shared_ptr<data::Provider>	material,
+							  uint									resourceId,
+							  std::shared_ptr<file::Options>		options)
+{
+	MaterialWriter::Ptr materialWriter = MaterialWriter::create();
+
+	std::string filename = assetLibrary->materialName(material) + ".material";
+
+	materialWriter->data(material);
+	materialWriter->write(filename, assetLibrary, options);
+
+	SerializedAsset res(1, resourceId, filename);
+
+	return res;
+}
+
 std::vector<msgpack::type::tuple<short, short, std::string>>
 Dependency::serialize(std::shared_ptr<file::AssetLibrary>	assetLibrary, 
 					  std::shared_ptr<file::Options>		options)
 {
-	GeometryWriter::Ptr geometryWriter = GeometryWriter::create();
-	MaterialWriter::Ptr materialWriter = MaterialWriter::create();
-
 	std::vector<msgpack::type::tuple<short, short, std::string>> serializedAsset;
 
 	auto itGeometry = _geometryDependencies.begin();
@@ -177,48 +267,21 @@ Dependency::serialize(std::shared_ptr<file::AssetLibrary>	assetLibrary,
 
 	while (itGeometry != _geometryDependencies.end())
 	{
-		std::string filename = assetLibrary->geometryName(itGeometry->first) + ".geometry";
-
-		geometryWriter->data(itGeometry->first);
-		geometryWriter->write(filename, assetLibrary, options);
-
-		msgpack::type::tuple<short, short, std::string> res(0, itGeometry->second, filename);
+		SerializedAsset res = _geometryWriteFunction(assetLibrary, itGeometry->first, itGeometry->second, options);
 		serializedAsset.push_back(res);
 		itGeometry++;
 	}
 
 	while (itMaterial != _materialDependencies.end())
 	{
-		std::string filename = assetLibrary->materialName(itMaterial->first) + ".material";
-
-		materialWriter->data(itMaterial->first);
-		materialWriter->write(filename, assetLibrary, options);
-
-		msgpack::type::tuple<short, short, std::string> res(1, itMaterial->second, filename);
+		SerializedAsset res = _materialWriteFunction(assetLibrary, itMaterial->first, itMaterial->second, options);
 		serializedAsset.push_back(res);
 		itMaterial++;
 	}
 
 	while (itTexture != _textureDependencies.end())
 	{
-#ifdef DEBUG
-		std::string filenameInput	= "asset/" + assetLibrary->textureName(itTexture->first);
-#else
-		std::string filenameInput	= assetLibrary->textureName(itTexture->first);
-#endif
-		std::string filenameOutput	= "";
-
-		for (int charIndex = filenameInput.size() - 1; charIndex >= 0 && filenameInput[charIndex] != '/'; --charIndex)
-			filenameOutput.insert(0, filenameInput.substr(charIndex, 1));
-		std::ifstream source(filenameInput, std::ios::binary);
-		std::ofstream dst(filenameOutput, std::ios::binary);
-
-		dst << source.rdbuf();
-
-		source.close();
-		dst.close();
-
-		msgpack::type::tuple<short, short, std::string> res(2, itTexture->second, filenameOutput);
+		SerializedAsset res = _textureWriteFunction(assetLibrary, itTexture->first, itTexture->second, options);
 		
 		serializedAsset.insert(serializedAsset.begin(), res);
 		itTexture++;
@@ -253,7 +316,7 @@ Dependency::serialize(std::shared_ptr<file::AssetLibrary>	assetLibrary,
 }
 
 void
-Dependency::copyEffectDependency(std::string effectFile, std::shared_ptr<render::Effect> effect)
+Dependency::copyEffectDependency(const std::string& effectFile, std::shared_ptr<render::Effect> effect)
 {
 	std::stringstream	effectContent;
 	std::ifstream		source(effectFile, std::ios::binary);

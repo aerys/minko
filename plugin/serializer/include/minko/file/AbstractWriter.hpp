@@ -96,7 +96,7 @@ namespace minko
 			embed(std::shared_ptr<AssetLibrary>		assetLibrary,
 				  std::shared_ptr<Options>			options,
 				  Dependency::Ptr					dependencies) = 0;
-			
+
 		protected:
 			AbstractWriter() :
 				_complete(Signal<Ptr>::create())

@@ -847,10 +847,11 @@ AbstractASSIMPParser::createSkin(const aiMesh* aimesh)
 
 	// add skinning component to mesh
 	meshNode->addComponent(Skinning::create(
-		skin->reorganizeByVertices()->transposeMatrices()->disposeBones(),
+		skin,
 		_options->skinningMethod(),
 		_assetLibrary->context(),
-		slaveAnimations
+		slaveAnimations,
+		skeletonRoot
 	));
 
 	auto irrelevantTransforms = NodeSet::create(skeletonRoot)

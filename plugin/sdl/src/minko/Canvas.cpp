@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/async/Worker.hpp"
 
 #if !defined(EMSCRIPTEN)
-#include "minko/async/FileProtocolWorker.hpp"
+#include "minko/file/FileProtocolWorker.hpp"
 #endif
 
 #if defined(EMSCRIPTEN)
@@ -78,7 +78,7 @@ Canvas::initialize()
     initializeInputs();
 
 #if !defined(EMSCRIPTEN)
-    registerWorker<async::FileProtocolWorker>("file-loader");
+    registerWorker<file::FileProtocolWorker>("file-loader");
 #endif
 }
 
@@ -377,9 +377,9 @@ Canvas::step()
     {
         switch (event.type)
         {
-        case SDL_QUIT:
-            _active = false;
-            break;
+		case SDL_QUIT:
+			quit();
+			break;
 
         case SDL_KEYDOWN:
         {
@@ -545,16 +545,15 @@ Canvas::step()
         }
     }
 
-#if !defined(EMSCRIPTEN)
     for (auto worker : _activeWorkers)
-        worker->update();
-#endif
-    auto time           = std::chrono::high_resolution_clock::now();
-    auto relativeTime   = 1e-6f * std::chrono::duration_cast<std::chrono::nanoseconds>(time - _startTime).count(); // in milliseconds
-    auto frameDuration  = 1e-6f * std::chrono::duration_cast<std::chrono::nanoseconds>(time - _previousTime).count(); // in milliseconds
+        worker->poll();
 
-    _enterFrame->execute(shared_from_this(), relativeTime, frameDuration);
-    _previousTime = time;
+    auto absoluteTime = std::chrono::high_resolution_clock::now();
+    _relativeTime   = 1e-6f * std::chrono::duration_cast<std::chrono::nanoseconds>(absoluteTime - _startTime).count(); // in milliseconds
+    _frameDuration  = 1e-6f * std::chrono::duration_cast<std::chrono::nanoseconds>(absoluteTime - _previousTime).count(); // in milliseconds
+
+    _enterFrame->execute(shared_from_this(), _relativeTime, _frameDuration);
+    _previousTime = absoluteTime;
 
     // swap buffers
 #if defined(MINKO_ANGLE)
@@ -566,12 +565,12 @@ Canvas::step()
 #endif
 
     // framerate in seconds
-    _framerate = 1000.f / frameDuration;
+    _framerate = 1000.f / _frameDuration;
 
 #if !defined(EMSCRIPTEN)
     if (_framerate > _desiredFramerate)
     {
-        SDL_Delay((uint) ((1000.f / _desiredFramerate) - frameDuration));
+        SDL_Delay((uint) ((1000.f / _desiredFramerate) - _frameDuration));
 
         _framerate = _desiredFramerate;
     }
@@ -642,10 +641,11 @@ Canvas::getWorker(const std::string& name)
 
     _activeWorkers.push_back(worker);
 
-    _workerCompleteSlots.push_back(worker->complete()->connect([worker, this](Worker::MessagePtr) {
-        std::cout << "Canvas::getWorker(): " << "remove worker" << std::endl;
-        //_activeWorkers.remove(worker);
-    }));
-
     return worker;
+}
+
+int
+Canvas::getJoystickAxis(input::Joystick::Ptr joystick, int axis)
+{
+	return SDL_JoystickGetAxis(SDL_JoystickOpen(joystick->joystickId()), axis);
 }

@@ -28,8 +28,8 @@ namespace minko
 	class AbstractCanvas
 	{
 	public:
-		typedef std::shared_ptr<AbstractCanvas>							Ptr;
-		typedef std::function<std::shared_ptr<async::Worker> ()>		WorkerHandler;
+		typedef std::shared_ptr<AbstractCanvas>						Ptr;
+		typedef std::function<std::shared_ptr<async::Worker> ()>	WorkerHandler;
 
 	public:
 		virtual
@@ -77,8 +77,22 @@ namespace minko
 		joystickRemoved() = 0;
 
 		virtual
+		int
+		getJoystickAxis(std::shared_ptr<input::Joystick> joystick, int axis) = 0;
+
+		virtual
 		std::shared_ptr<async::Worker>
 		getWorker(const std::string& name) = 0;
+
+		// Current frame execution time in milliseconds.
+		virtual
+		float
+		frameDuration() const = 0;
+
+		// Time in milliseconds since application started.
+		virtual
+		float
+		relativeTime() const = 0;
 
 		virtual
 		bool
@@ -86,13 +100,13 @@ namespace minko
 
 		template <typename T>
 		void
-		registerWorker(const std::string& type)
+		registerWorker(const std::string& name)
 		{
-			std::string key(type);
+			std::string key(name);
 
 			std::transform(key.begin(), key.end(), key.begin(), ::tolower);
 
-			_workers[key] = T::create;
+			_workers[key] = std::bind(T::create, key);
 		}
 
 		static

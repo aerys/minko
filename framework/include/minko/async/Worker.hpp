@@ -23,15 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Signal.hpp"
 
-#if EMSCRIPTEN
-#include "emscripten/emscripten.h"
-#endif
-
-// Possible implementations:
-// - Web Worker-based (web, sync)
-// - Callback-based (web, async eg. xhr)
-// - Thread-based (native)
-// - Fork-based (native)
+#include "minko/async/WorkerImpl.hpp"
 
 namespace minko
 {
@@ -41,127 +33,64 @@ namespace minko
 			public std::enable_shared_from_this<Worker>
 		{
 		public:
-			typedef std::shared_ptr<Worker>				Ptr;
-			typedef std::shared_ptr<std::vector<char>>	MessagePtr;
-			typedef float								Progress;
+			typedef std::shared_ptr<Worker>											Ptr;
+			typedef std::function<void (Worker::Ptr, const std::vector<char>&)>		EntryPoint;
 
-		protected:
-			std::shared_ptr<Signal<float>>				_progress;
-			std::shared_ptr<Signal<MessagePtr>>			_complete;
-			bool										_busy;
-			bool										_finished;
+			struct Message
+			{
+				std::string type;
+				std::vector<char> data;
 
-#if defined(EMSCRIPTEN)
-			int											_handle;
-#else
-			std::shared_future<MessagePtr>				_future;
-			std::promise<MessagePtr>					_promise;
-			float										_ratio;
-			float										_oldRatio;
-			std::mutex									_ratioMutex;
-#endif
+				template<typename T>
+				Message&
+				set(T value)
+				{
+					data.resize(sizeof(T));
+					T* dest = reinterpret_cast<T*>(&*data.begin());
+					*dest = value;
+					return *this;
+				}
+
+				Message&
+				set(const std::vector<char>& value)
+				{
+					data = value;
+					return *this;
+				}
+			};
 
 		public:
+			// Starts the worker.
 			void
-			start();
+			start(const std::vector<char>& input);
 
+			// Must be called. Register on this signal to get updates from the worker.
+			Signal<Ptr, Message>::Ptr
+			message();
+
+			// Can be called from the worker code to send data back to the application.
 			void
-			update();
+			post(Message message);
 
-			bool
-			busy() const
-			{
-				return _busy;
-			}
+		public: // For compilation purposes. Anything below must not be called manually.
 
+			// Automatically overloaded when calling MINKO_DEFINE_WORKER.
 			virtual
 			void
-			run() = 0;
+			run(const std::vector<char>& input) = 0;
 
+			// Automated by the canvas.
 			void
-			progress(float value);
+			poll();
 
-			inline
-			Signal<float>::Ptr
-			progress()
-			{
-				return _progress;
-			}
-
-			inline
-			Signal<MessagePtr>::Ptr
-			complete()
-			{
-				return _complete;
-			}
-
-			virtual
 			~Worker();
-
-			MessagePtr
-			input()
-			{
-				return _input;
-			}
-
-			void
-			input(MessagePtr value)
-			{
-				_input = value;
-			}
-
-			MessagePtr
-			output()
-			{
-				return _output;
-			}
 
 		protected:
 			Worker(const std::string& name);
 
-			void
-			output(MessagePtr value)
-			{
-				_output = value;
-			}
-
 		private:
-			MessagePtr _input;
-			MessagePtr _output;
-
-#if defined(EMSCRIPTEN)
-			static
-			void
-			messageHandler(char* data, int size, void* arg);
-#endif
+			class WorkerImpl;
+			std::unique_ptr<WorkerImpl> _impl;
 		};
 	}
 }
-
-#if defined(EMSCRIPTEN)
-
-# define MINKO_WORKER(Name, Class, Code)										\
-void minkoWorkerEntryPoint(char* data, int size)								\
-{																				\
-	auto worker = Class ::create();												\
-	worker->input(std::make_shared<std::vector<char>>(data, data + size));		\
-	worker->run();																\
-}																				\
-void Class ::run()																\
-{																				\
-	auto code = [this]() Code;													\
-	code();																		\
-	emscripten_worker_respond(&*output()->begin(), output()->size());			\
-}
-
-#else
-
-# define MINKO_WORKER(Name, Class, Code)										\
-void Class ::run()																\
-{																				\
-	auto code = [this]() Code;													\
-	code();																		\
-	_promise.set_value(output());												\
-}
-
-#endif

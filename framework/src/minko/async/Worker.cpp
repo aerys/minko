@@ -20,119 +20,44 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/async/Worker.hpp"
 #include "minko/AbstractCanvas.hpp"
 
-#if defined(EMSCRIPTEN)
-# include "emscripten/emscripten.h"
-#else
+#if defined(MINKO_WORKER_IMPL_WEBWORKER)
+# include "minko/async/WebWorkerImpl.hpp"
+#elif defined(MINKO_WORKER_IMPL_THREAD)
+# include "minko/async/ThreadWorkerImpl.hpp"
 #endif
 
 using namespace minko;
 using namespace minko::async;
 
-Worker::Worker(const std::string& name) :
-	_progress(Signal<float>::create()),
-	_complete(Signal<MessagePtr>::create()),
-	_busy(false),
-	_finished(false)
+Worker::Worker(const std::string& name)
 {
-#if defined(EMSCRIPTEN)
-	std::string path = "minko-worker-" + name + ".js";
-	_handle = emscripten_create_worker(path.c_str());
-#else
-	_ratio = 0;
-	_oldRatio = 0;
-	_future = _promise.get_future();
-#endif
+	_impl.reset(new WorkerImpl(this, name));
 }
 
 void
-Worker::start()
+Worker::start(const std::vector<char>& input)
 {
-	std::cout << "Worker::start()" << std::endl;;
-
-	_busy = true;
-
-#if defined(EMSCRIPTEN)
-	emscripten_call_worker(_handle, "minkoWorkerEntryPoint", &*_input->begin(), _input->size(), &messageHandler, this);
-#else
-	std::thread(&Worker::run, shared_from_this()).detach();
-#endif
+	_impl->start(input);
 }
 
 void
-Worker::progress(float value)
+Worker::post(Message message)
 {
-#if defined(EMSCRIPTEN)
-	std::string script = "postMessage(" + std::to_string(value) + ")";
-	emscripten_run_script(script.c_str());
-	// EM_ASM(
-	// 	postMessage(0.5);
-	// );
-#else
-	std::lock_guard<std::mutex> lock(_ratioMutex);
-	_ratio = value;
-	std::cout << "Worker::progress(): " << _ratio << std::endl;
-#endif
+	_impl->post(message);
 }
 
 void
-Worker::update()
+Worker::poll()
 {
-	if (_finished)
-		return;
-
-	std::cout << "Worker::update()" << std::endl;;
-
-	if (!_busy)
-		start();
-
-#if !defined(EMSCRIPTEN)
-	std::lock_guard<std::mutex> lock(_ratioMutex);
-	
-	if (_ratio != _oldRatio)
-	{
-		std::cout << "Worker::update(): progress execute" << std::endl;
-		_progress->execute(_ratio);
-		_oldRatio = _ratio;
-	}
-
-	if (_future.valid() && _future.wait_for(std::chrono::milliseconds(0)) == std::future_status::ready)
-	{
-		std::cout << "Worker::update(): complete execute" << std::endl;
-		_busy = false;
-		_finished = true;
-		_complete->execute(_future.get());
-	}
-#endif
+	_impl->poll();
 }
 
-#if defined(EMSCRIPTEN)
-void
-Worker::messageHandler(char* data, int size, void* arg)
+Signal<Worker::Ptr, Worker::Message>::Ptr
+Worker::message()
 {
-	Worker* worker = static_cast<Worker*>(arg);
-
-	std::cout << "Worker::messageHandler(): " << size << std::endl;;
-
-	if (size == sizeof(float))
-	{
-		std::cout << "Worker::messageHandler(): progress execute" << std::endl;
-		float ratio = reinterpret_cast<float*>(data)[0];
-		worker->progress()->execute(ratio);
-
-	}
-	else
-	{
-		std::cout << "Worker::messageHandler(): complete execute" << std::endl;
-		auto output = std::make_shared<std::vector<char>>(data, data + size);
-		worker->complete()->execute(output);
-	}
+	return _impl->message();
 }
-#endif
 
 Worker::~Worker()
 {
-	std::cout << "Worker::~Worker()" << std::endl;;
-#if defined(EMSCRIPTEN)
-	emscripten_destroy_worker(_handle);
-#endif
 }

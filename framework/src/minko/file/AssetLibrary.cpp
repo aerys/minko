@@ -75,7 +75,7 @@ AssetLibrary::geometryName(GeometryPtr geometry)
 	if (it != _geometries.end())
 		return it->first;
 
-	throw new std::logic_error("AssetLibrary does not reference this geometry.");
+	throw std::logic_error("AssetLibrary does not reference this geometry.");
 }
 
 render::AbstractTexture::Ptr
@@ -110,7 +110,7 @@ AssetLibrary::textureName(render::AbstractTexture::Ptr texture)
 	if (it != _textures.end())
 		return it->first;
 
-	throw new std::logic_error("AssetLibrary does not reference this texture.");
+	throw std::logic_error("AssetLibrary does not reference this texture.");
 }
 
 scene::Node::Ptr
@@ -138,7 +138,7 @@ AssetLibrary::symbolName(NodePtr node)
 	if (it != _symbols.end())
 		return it->first;
 
-	throw new std::logic_error("AssetLibrary does not reference this symbol.");
+	throw std::logic_error("AssetLibrary does not reference this symbol.");
 }
 
 material::Material::Ptr
@@ -173,7 +173,7 @@ AssetLibrary::materialName(MaterialPtr material)
 	if (it != _materials.end())
 		return it->first;
 
-	throw new std::logic_error("AssetLibrary does not reference this material.");
+	throw std::logic_error("AssetLibrary does not reference this material.");
 }
 
 AssetLibrary::EffectPtr
@@ -201,7 +201,7 @@ AssetLibrary::effectName(EffectPtr effect)
 	if (it != _effects.end())
 		return it->first;
 
-	throw new std::logic_error("AssetLibrary does not reference this effect.");
+	throw std::logic_error("AssetLibrary does not reference this effect.");
 }
 
 const std::vector<unsigned char>&
@@ -246,7 +246,7 @@ AssetLibrary::scriptName(AbsScriptPtr script)
 	if (it != _scripts.end())
 		return it->first;
 
-	throw new std::logic_error("AssetLibrary does not reference this script.");
+	throw std::logic_error("AssetLibrary does not reference this script.");
 }
 
 const unsigned int

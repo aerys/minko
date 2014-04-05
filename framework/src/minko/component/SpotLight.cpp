@@ -56,7 +56,7 @@ void
 SpotLight::updateModelToWorldMatrix(std::shared_ptr<math::Matrix4x4> modelToWorld)
 {
 	modelToWorld->copyTranslation(_worldPosition);
-	modelToWorld->deltaTransform(Vector3::zAxis(), _worldDirection);
+	modelToWorld->deltaTransform(Vector3::forward(), _worldDirection);
 }
 
 SpotLight::Ptr
