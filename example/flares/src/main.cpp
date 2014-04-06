@@ -19,6 +19,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Minko.hpp"
 #include "minko/MinkoPNG.hpp"
+#include "minko/MinkoJPEG.hpp"
 #include "minko/MinkoSDL.hpp"
 
 using namespace minko;
@@ -28,82 +29,73 @@ using namespace minko::math;
 #define WINDOW_WIDTH  	800
 #define WINDOW_HEIGHT 	600
 
-scene::Node::Ptr camera = nullptr;
-
-Signal<input::Keyboard::Ptr>::Slot keyDown;
-
 int main(int argc, char** argv)
 {
-	auto canvas 			= Canvas::create("Minko Example - Light", WINDOW_WIDTH, WINDOW_HEIGHT);
-	auto sceneManager		= SceneManager::create(canvas->context());
-	auto defaultLoader		= sceneManager->assets()->loader();
-	auto root				= scene::Node::create("root")->addComponent(sceneManager);
-	auto sphereGeometry		= geometry::SphereGeometry::create(sceneManager->assets()->context(), 32, 32, true);
-	auto lights				= scene::Node::create("lights")->addComponent(Transform::create());
-	auto sphereMaterial		= material::PhongMaterial::create()
-		->shininess(16.f)
-		->specularColor(Vector4::create(1.0f, 1.0f, 1.0f, 1.0f))
-		->diffuseColor(Vector4::create(1.f, 1.f, 1.f, 1.f));
-
-	sphereGeometry->computeTangentSpace(false);
-
-	// setup assets
-    sceneManager->assets()
-        ->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()))
-		->geometry("quad", geometry::QuadGeometry::create(sceneManager->assets()->context()))
-        ->geometry("sphere", sphereGeometry);
+	auto canvas 		= Canvas::create("Minko Example - Flares", WINDOW_WIDTH, WINDOW_HEIGHT);
+	auto context		= canvas->context();
+	auto sceneManager	= SceneManager::create(canvas->context());
+	auto assets			= sceneManager->assets();
+	auto defaultLoader	= assets->loader();
+	auto root			= scene::Node::create("root")->addComponent(sceneManager);
 
 	defaultLoader->options()
 		->generateMipmaps(true)
-        ->registerParser<file::PNGParser>("png");
+		->resizeSmoothly(true)
+		->registerParser<file::PNGParser>("png")
+        ->registerParser<file::JPEGParser>("jpg");
     defaultLoader
-        ->queue("texture/normalmap-cells.png")
+    	->queue("texture/skybox.jpg", file::Options::create(defaultLoader->options())->isCubeTexture(true))
 		->queue("texture/sprite-pointlight.png")
 		->queue("effect/PseudoLensFlare/PseudoLensFlare.effect")
 		->queue("effect/Basic.effect")
 		->queue("effect/Sprite.effect")
 		->queue("effect/Phong.effect");
 
+	// post-processing
+	auto ppScene = scene::Node::create()->addComponent(Renderer::create());
+	auto ppTarget = render::Texture::create(context, math::clp2(WINDOW_WIDTH), math::clp2(WINDOW_HEIGHT), false, true);
+	ppTarget->upload();
+
 	auto _ = defaultLoader->complete()->connect([=](file::Loader::Ptr loader)
 	{
-		// ground
-		auto ground = scene::Node::create("ground")
-			->addComponent(Surface::create(
-				sceneManager->assets()->geometry("quad"),
-				material::Material::create()
-					->set("diffuseColor",	Vector4::create(1.f, 1.f, 1.f, 1.f)),
-				sceneManager->assets()->effect("phong")
+		ppScene->addComponent(Surface::create(
+			geometry::QuadGeometry::create(context),
+			data::Provider::create()->set("backbuffer", ppTarget),
+			assets->effect("effect/PseudoLensFlare/PseudoLensFlare.effect")
+		));
+
+		// sky
+		auto sky = scene::Node::create("sky")
+			->addComponent(Transform::create(
+				Matrix4x4::create()->appendScale(500.f)
 			))
-			->addComponent(Transform::create(Matrix4x4::create()->appendScale(50.f)->appendRotationX(-1.57f)));
-		root->addChild(ground);
-
-		// sphere
-		auto sphere = scene::Node::create("sphere")
 			->addComponent(Surface::create(
-				sceneManager->assets()->geometry("sphere"),
-				sphereMaterial,
-				sceneManager->assets()->effect("phong")
+				geometry::CubeGeometry::create(context),
+				material::BasicMaterial::create()
+					->diffuseCubeMap(assets->texture("texture/skybox.jpg"))
+					->triangleCulling(render::TriangleCulling::FRONT),
+				assets->effect("effect/Basic.effect")
+			));
+		root->addChild(sky);
+
+		// sprite
+		auto sprite = scene::Node::create("sprite")
+			->addComponent(Surface::create(
+				geometry::QuadGeometry::create(context),
+				material::BasicMaterial::create()->diffuseMap(assets->texture("texture/sprite-pointlight.png")),
+				assets->effect("effect/Sprite.effect")
 			))
-			->addComponent(Transform::create(Matrix4x4::create()->appendTranslation(0.f, 2.f, 0.f)->prependScale(3.f)));
-		root->addChild(sphere);
-
-		// spotLight
-		auto spotLight = scene::Node::create("spotLight")
-			->addComponent(SpotLight::create(.15f, .4f))
-			->addComponent(Transform::create(Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(15.f, 20.f, 0.f))));
-		spotLight->component<SpotLight>()->diffuse(.4f);
-		root->addChild(spotLight);
-
-		root->addChild(lights);
+			->addComponent(Transform::create(
+				Matrix4x4::create()->appendTranslation(100.f, 100.f, -150.f)->prependScale(100.f)
+			));
+		root->addChild(sprite);
 	});
 
 	// camera init
-	camera = scene::Node::create("camera")
+	auto camera = scene::Node::create("camera")
 		->addComponent(Renderer::create())
 		->addComponent(PerspectiveCamera::create((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT))
-		->addComponent(Transform::create(
-			Matrix4x4::create()->lookAt(Vector3::create(0.f, 2.f), Vector3::create(10.f, 10.f, 10.f))
-		));
+		->addComponent(Transform::create());
 	root->addChild(camera);
 
 	auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, unsigned int width, unsigned int height)
@@ -111,12 +103,12 @@ int main(int argc, char** argv)
 		camera->component<PerspectiveCamera>()->aspectRatio((float)width / (float)height);
 	});
 
-	auto yaw = 0.f;
-	auto pitch = (float)PI * .5f;
+	auto yaw = -4.03f;
+	auto pitch = 2.05f;
 	auto minPitch = 0.f + 1e-5;
 	auto maxPitch = (float)PI - 1e-5;
-	auto lookAt = Vector3::create(0.f, 2.f, 0.f);
-	auto distance = 20.f;
+	auto lookAt = Vector3::create(0.f, 0.f, 0.f);
+	auto distance = 15.f;
 
 	// handle mouse signals
 	auto mouseWheel = canvas->mouse()->wheel()->connect([&](input::Mouse::Ptr m, int h, int v)
@@ -132,8 +124,8 @@ int main(int argc, char** argv)
 	{
 		mouseMove = canvas->mouse()->move()->connect([&](input::Mouse::Ptr, int dx, int dy)
 		{
-			cameraRotationYSpeed = (float)dx * .01f;
-			cameraRotationXSpeed = (float)dy * -.01f;
+			cameraRotationYSpeed = (float)dx * .0025f;
+			cameraRotationXSpeed = (float)dy * -.0025f;
 		});
 	});
 
@@ -163,12 +155,11 @@ int main(int argc, char** argv)
 			)
 		);
 
-		lights->component<Transform>()->matrix()->appendRotationY(.005f);
-
-		sceneManager->nextFrame(time, deltaTime);
+		sceneManager->nextFrame(time, deltaTime, ppTarget);
+		ppScene->component<Renderer>()->render(context);
 	});
 
-	sceneManager->assets()->loader()->load();
+	assets->loader()->load();
 
 	canvas->run();
 
