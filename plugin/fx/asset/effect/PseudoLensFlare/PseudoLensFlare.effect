@@ -20,7 +20,7 @@
 			"samplerStates" : {
 				"uInputTex"	: { "textureFilter" : "linear" }
 			},
-			"vertexShader" : { "includes"	: [ "PseudoLensFlare.vertex.glsl" ] },
+			"vertexShader" : "#pragma include('PseudoLensFlare.vertex.glsl')",
 			"fragmentShader" : "#pragma include('Threshold.fragment.glsl')"
 		},
 		{
@@ -38,7 +38,7 @@
 			"samplerStates" : {
 				"uInputTex"	: { "textureFilter" : "linear" }
 			},
-			"vertexShader" : { "includes"	: [ "PseudoLensFlare.vertex.glsl" ] },
+			"vertexShader" : "#pragma include ('PseudoLensFlare.vertex.glsl')",
 			"fragmentShader" : "#pragma include('LensFeatures.fragment.glsl')"
 		},
 		{
