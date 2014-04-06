@@ -174,8 +174,11 @@ Loader::processData(const std::string&                      filename,
         }
         catch (ParserError parserError)
         {
+            if (_error->numCallbacks() != 0)
+                _error->execute(shared_from_this());
 #ifdef DEBUG
-			std::cerr << parserError.what() << std::endl;
+            else
+                throw parserError;
 #endif // defined(DEBUG)
         }
     }
