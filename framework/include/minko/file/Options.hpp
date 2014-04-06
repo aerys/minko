@@ -38,7 +38,7 @@ namespace minko
 			typedef std::shared_ptr<geometry::Geometry>									GeomPtr;
 			typedef std::shared_ptr<scene::Node>										NodePtr;
 			typedef std::shared_ptr<render::Effect>										EffectPtr;
-            typedef std::shared_ptr<Loader>                                        LoaderPtr;
+            typedef std::shared_ptr<Loader>                                             LoaderPtr;
             typedef std::shared_ptr<AbstractParser>                                     AbsParserPtr;
             typedef std::function<AbsParserPtr(void)>                                   ParserHandler;
             typedef std::function<AbsProtocolPtr(void)>		                            ProtocolHandler;
