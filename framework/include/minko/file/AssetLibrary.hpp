@@ -42,26 +42,26 @@ namespace minko
 			typedef std::shared_ptr<render::AbstractTexture>	AbsTexturePtr;
 			typedef std::shared_ptr<geometry::Geometry>			GeometryPtr;
 			typedef std::shared_ptr<file::AbstractParser>		AbsParserPtr;
-			typedef std::shared_ptr<file::Loader>		    LoaderPtr;
+			typedef std::shared_ptr<file::Loader>		    	LoaderPtr;
 			typedef std::shared_ptr<scene::Node>				NodePtr;
             typedef std::shared_ptr<component::AbstractScript>  AbsScriptPtr;
 			typedef std::shared_ptr<data::Provider>				MaterialPtr;
 
 		private:
-			AbsContextPtr												        _context;
+			AbsContextPtr												   _context;
             std::shared_ptr<Loader>                                        _loader;
 
-			std::unordered_map<std::string, MaterialPtr>				        _materials;
-			std::unordered_map<std::string, GeometryPtr>				        _geometries;
-			std::unordered_map<std::string, EffectPtr>					        _effects;
-			std::unordered_map<std::string, AbsTexturePtr>				        _textures;
-			std::unordered_map<std::string, NodePtr>					        _symbols;
-			std::unordered_map<std::string, std::vector<unsigned char>>	        _blobs;
-            std::unordered_map<std::string, AbsScriptPtr>                       _scripts;
-            std::unordered_map<std::string, uint>						        _layouts;
+			std::unordered_map<std::string, MaterialPtr>				   _materials;
+			std::unordered_map<std::string, GeometryPtr>				   _geometries;
+			std::unordered_map<std::string, EffectPtr>					   _effects;
+			std::unordered_map<std::string, AbsTexturePtr>				   _textures;
+			std::unordered_map<std::string, NodePtr>					   _symbols;
+			std::unordered_map<std::string, std::vector<unsigned char>>	   _blobs;
+            std::unordered_map<std::string, AbsScriptPtr>                  _scripts;
+            std::unordered_map<std::string, uint>						   _layouts;
 
-            Signal<Ptr, std::shared_ptr<AbstractParser>>::Ptr                   _parserError;
-            Signal<Ptr>::Ptr                                                    _ready;
+            Signal<Ptr, std::shared_ptr<AbstractParser>>::Ptr              _parserError;
+            Signal<Ptr>::Ptr                                               _ready;
 
 		public:
 			static
