@@ -40,8 +40,6 @@ namespace minko
 
 		private:
 			std::string										_name;
-			unsigned int									_index;
-			std::unordered_map<std::string, std::string>	_propertyNameToArrayPropertyName;
 			IndexChangedSignalPtr							_indexChanged;
 
 		public:
@@ -67,25 +65,9 @@ namespace minko
 				return _name;
 			}
 
-			inline
-			unsigned int
-			index() const
-			{
-				return _index;
-			}
-
-			void
-			index(unsigned int index);
-
 		protected:
 			ArrayProvider(const std::string& name, uint index);
-		
-		private:
-			std::string
-			formatPropertyName(const std::string&) const;
-
-			std::string
-			unformatPropertyName(const std::string&) const;
+	
 		};
 	}
 }
