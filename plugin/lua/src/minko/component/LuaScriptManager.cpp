@@ -95,7 +95,7 @@ LuaScriptManager::targetAddedHandler(AbstractComponent::Ptr cmp, scene::Node::Pt
     if (targets().size() > 1)
         throw;
 
-    loadStandardLibrary();
+	loadStandardLibrary();
 }
 
 void
@@ -103,7 +103,7 @@ LuaScriptManager::loadStandardLibrary()
 {
     auto assets = targets()[0]->root()->component<SceneManager>()->assets();
     auto options = assets->defaultOptions();
-    auto createLoader = assets->defaultOptions()->loaderFunction();
+	auto createLoader = options->loaderFunction();
     auto filesToLoad = {
         "script/minko.coroutine.lua",
         "script/minko.time.lua",
@@ -113,14 +113,19 @@ LuaScriptManager::loadStandardLibrary()
     _numDependencies = filesToLoad.size();
 
     for (auto& filename : filesToLoad)
-    {
+	{
 		auto loader = createLoader(filename, assets);
 
-        _dependencySlots.push_back(loader->complete()->connect(std::bind(
-            &LuaScriptManager::dependencyLoadedHandler,
-            std::dynamic_pointer_cast<LuaScriptManager>(shared_from_this()),
-            std::placeholders::_1
-        )));
+		_dependencySlots.push_back(loader->complete()->connect(std::bind(
+			&LuaScriptManager::dependencyLoadedHandler,
+			std::dynamic_pointer_cast<LuaScriptManager>(shared_from_this()),
+			std::placeholders::_1
+		)));
+		_dependencySlots.push_back(loader->error()->connect([](LuaScriptManager::AbsLoaderPtr)
+		{
+			std::cout << "Lua Standard Library load error" << std::endl;
+		}
+		));
         loader->load(filename, options);
     }
 }
@@ -132,17 +137,21 @@ LuaScriptManager::dependencyLoadedHandler(AbsLoaderPtr loader)
 
     _state.doString(std::string((char*)&data[0], data.size()));
 
-    ++_numLoadedDependencies;
+	++_numLoadedDependencies;
 }
 
 void
 LuaScriptManager::update(scene::Node::Ptr target)
 {
+	if (_numLoadedDependencies < _numDependencies)
+		return;
+
     time_point t = std::chrono::high_resolution_clock::now();
     std::chrono::duration<float> deltaT = t - _previousTime;
+	
+	_state.invokeVoidFunction("wakeUpWaitingThreads", deltaT.count() * 1000.f);
 
-    _state.invokeVoidFunction("wakeUpWaitingThreads", deltaT.count() * 1000.f);
-    _previousTime = t;
+	_previousTime = t;
 }
 
 void
