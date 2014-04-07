@@ -26,8 +26,18 @@ if os.is('linux') then
 		cxx = MINKO_HOME .. '/tool/lin/script/em++.sh',
 		ar = MINKO_HOME .. '/tool/lin/script/emar.sh'
 	})
+	insert.insert(premake.tools.clang, 'tools.emscripten', {
+		cc = MINKO_HOME .. '/tool/lin/script/emcc.sh',
+		cxx = MINKO_HOME .. '/tool/lin/script/em++.sh',
+		ar = MINKO_HOME .. '/tool/lin/script/emar.sh'
+	})
 elseif os.is('macosx') then
 	insert.insert(premake.tools.gcc, 'tools.emscripten', {
+		cc = MINKO_HOME .. '/tool/mac/script/emcc.sh',
+		cxx = MINKO_HOME .. '/tool/mac/script/em++.sh',
+		ar = MINKO_HOME .. '/tool/mac/script/emar.sh'
+	})
+	insert.insert(premake.tools.clang, 'tools.emscripten', {
 		cc = MINKO_HOME .. '/tool/mac/script/emcc.sh',
 		cxx = MINKO_HOME .. '/tool/mac/script/em++.sh',
 		ar = MINKO_HOME .. '/tool/mac/script/emar.sh'
@@ -38,9 +48,18 @@ elseif os.is('windows') then
 		cxx = 'call "%MINKO_HOME%\\tool\\win\\script\\em++.bat"',
 		ar = '"' .. EMSCRIPTEN .. '\\emar.bat"'
 	})
+	insert.insert(premake.tools.clang, 'tools.emscripten', {
+		cc = '"' .. EMSCRIPTEN .. '\\emcc.bat"',
+		cxx = 'call "%MINKO_HOME%\\tool\\win\\script\\em++.bat"',
+		ar = '"' .. EMSCRIPTEN .. '\\emar.bat"'
+	})
 end
 
 insert.insert(premake.tools.gcc, 'cppflags.system.emscripten', {
+	"-DEMSCRIPTEN",
+	"-Wno-warn-absolute-paths"
+})
+insert.insert(premake.tools.clang, 'cppflags.system.emscripten', {
 	"-DEMSCRIPTEN",
 	"-Wno-warn-absolute-paths"
 })
