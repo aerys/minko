@@ -11,7 +11,9 @@
     
     "uniformBindings"   : {
         "modelToWorldMatrix"    : "transform.modelToWorldMatrix",
-        "worldToScreenMatrix"   : { "property" : "camera.worldToScreenMatrix", "source" : "renderer" }
+        "worldToScreenMatrix"   : { "property" : "camera.worldToScreenMatrix", 			"source" 	: "renderer" },
+        "uvScale"           	: { "property" : "material[${materialId}].uvScale", 	"default" 	: [1.0, 1.0] },
+        "uvOffset"           	: { "property" : "material[${materialId}].uvOffset", 	"default" 	: [0.0, 0.0] }
     },
 	
 	"macroBindings" : {
