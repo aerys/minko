@@ -31,7 +31,7 @@
 				"uDispersal"		: 0.3,
 				"uTextureSize"		: [ 512.0, 512.0 ],
 				"uHaloWidth"		: 0.45,
-				"uDistortion"		: 5.0,
+				"uDistortion"		: 10.0,
 				"uLensColor"		: { "default" : "lens-color.png" }
 			},
 			"triangleCulling" : "none",
