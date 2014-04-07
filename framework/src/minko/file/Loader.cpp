@@ -112,7 +112,8 @@ Loader::protocolCompleteHandler(std::shared_ptr<AbstractProtocol> protocol)
     _filenameToOptions.erase(filename);
     
 #ifdef DEBUG
-    std::cerr << "Loader::protocolCompleteHandler(): " << _loading.size() << " file(s) still loading, "
+    std::cerr << "Loader: file '" << protocol->file()->filename() << "' loaded, "
+        << _loading.size() << " file(s) still loading, "
         << _filesQueue.size() << " file(s) in the queue" << std::endl;
 #endif // defined(DEBUG)
 
