@@ -41,6 +41,8 @@ using namespace minko::math;
 using namespace minko::animation;
 using namespace minko::deserialize;
 
+/*static*/ const std::string SkinningComponentDeserializer::PNAME_TRANSFORM = "transform.matrix";
+
 /*static*/
 Skinning::Ptr
 SkinningComponentDeserializer::computeSkinning(file::Options::Ptr						options,
@@ -91,8 +93,11 @@ SkinningComponentDeserializer::computeSkinning(file::Options::Ptr						options,
     {
         skin->bone(boneId, bones[boneId]);
 
+		for (auto& m : matrices)
+			m->copyFrom(bones[boneId]->offsetMatrix());
+
         precomputeModelToRootMatrices(
-            bones[boneId],
+            bones[boneId]->node(),
             skeletonRoot,
             nodeToFrameMatrices,
             matrices
@@ -102,19 +107,86 @@ SkinningComponentDeserializer::computeSkinning(file::Options::Ptr						options,
             skin->matrix(frameId, boneId, matrices[frameId]);
     }
 
+	// find bone-dependent surfaces and add animations to them.
+	std::vector<component::Animation::Ptr> slaveAnimations;
+
+	computeSurfaceAnimations(
+		duration, 
+		numFrames, 
+		skeletonRoot, 
+		bones, 
+		nodeToFrameMatrices,
+		slaveAnimations
+	);
+
+	//removeAnimations(skeletonRoot); // FIXME 
     // strip the scene nodes below the skeleton off their obsolete
     // Transform and Animation components.
 	//clean(skeletonRoot);
-	removeAnimations(skeletonRoot); // FIXME 
 
 	return Skinning::create(
         skin->reorganizeByVertices()->transposeMatrices()->disposeBones(),
         options->skinningMethod(),
         context,
-        std::vector<Animation::Ptr>(),
+        slaveAnimations,
 		skeletonRoot,
 		true
     );
+}
+
+/*static */
+void
+SkinningComponentDeserializer::computeSurfaceAnimations(unsigned int				duration, 
+														unsigned int				numFrames, 
+														Node::Ptr					skeletonRoot, 
+														const std::vector<BonePtr>&	bones,
+														const NodeMatrices&			nodeToFrameMatrices,
+														std::vector<AnimationPtr>&	slaveAnimations)
+{
+	slaveAnimations.clear();
+	if (numFrames <= 1 || skeletonRoot == nullptr || bones.empty())
+		return;
+
+	std::set<Node::Ptr>	slaves;
+
+	for (auto& b : bones)
+	{
+		auto childrenWithSurface = NodeSet::create(b->node())
+			->descendants(true)
+			->where([](Node::Ptr n)
+			{ 
+				return n->hasComponent<Surface>(); 
+			});
+
+		slaves.insert(childrenWithSurface->nodes().begin(), childrenWithSurface->nodes().end());
+	}
+
+	auto timetable = std::vector<uint>(numFrames, 0);
+	for (uint i = 0; i < numFrames; ++i)
+		timetable[i] = uint(floorf(i * duration / float(numFrames - 1)));
+
+	slaveAnimations.reserve(slaves.size());
+	for (auto& n : slaves)
+	{
+		auto matrices = std::vector<Matrix4x4::Ptr>(numFrames);
+		for (auto& m : matrices)
+			m = Matrix4x4::create();
+
+		precomputeModelToRootMatrices(n, skeletonRoot, nodeToFrameMatrices, matrices);
+
+		auto timeline	= animation::Matrix4x4Timeline::create(PNAME_TRANSFORM, duration, timetable, matrices);
+		auto animation	= Animation::create(std::vector<animation::AbstractTimeline::Ptr>(1, timeline));
+
+		n->addComponent(animation);
+		slaveAnimations.push_back(animation);
+	}
+
+	for (auto& n : slaves)
+	{
+		if (n->parent())
+			n->parent()->removeChild(n);
+		skeletonRoot->addChild(n);
+	}
 }
 
 /*static*/
@@ -163,17 +235,14 @@ SkinningComponentDeserializer::removeAnimations(Node::Ptr skeletonRoot)
 
 /*static*/
 void
-SkinningComponentDeserializer::precomputeModelToRootMatrices(geometry::Bone::Ptr            bone, 
+SkinningComponentDeserializer::precomputeModelToRootMatrices(Node::Ptr						node, 
                                                              Node::Ptr                      skeletonRoot, 
                                                              const NodeMatrices&            nodeToFrameMatrices,
                                                              std::vector<Matrix4x4::Ptr>&   matrices)
 {
     const unsigned int numFrames = matrices.size();
 
-    for (auto& m : matrices)
-        m->copyFrom(bone->offsetMatrix());
-
-    auto currentNode = bone->node();
+    auto currentNode = node;
     do
     {
         if (currentNode == nullptr)
