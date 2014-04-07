@@ -27,8 +27,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/Program.hpp"
 #include "minko/data/Container.hpp"
 #include "minko/data/ArrayProvider.hpp"
+#include "minko/component/Renderer.hpp"
 
 using namespace minko;
+using namespace minko::scene;
 using namespace minko::data;
 using namespace minko::component;
 using namespace minko::geometry;
@@ -40,18 +42,29 @@ Surface::Surface(std::string				name,
 				 Effect::Ptr				effect,
 				 const std::string&			technique) :
 	AbstractComponent(),
+	_name(name),
 	_geometry(geometry),
 	_material(material),
 	_effect(effect),
 	_technique(technique),
+	_geometryId(-1),
+	_materialId(-1),
+	_visible(true),
+	_rendererToVisibility(),
+	_rendererToComputedVisibility(),
 	_techniqueChanged(TechniqueChangedSignal::create()),
 	_visibilityChanged(VisibilityChangedSignal::create()),
 	_computedVisibilityChanged(VisibilityChangedSignal::create()),
-	_geometryId(-1),
-	_materialId(-1),
-	_name(name),
-	_visible(true)
+	_dataProviderIndexChangedSlots(),
+	_targetAddedSlot(nullptr),
+	_targetRemovedSlot(nullptr),
+	_addedSlot(nullptr),
+	_removedSlot(nullptr)
 {
+	if (_effect == nullptr)
+		throw std::invalid_argument("effect");
+	if (!_effect->hasTechnique(_technique))
+		throw std::logic_error("Effect does not provide a '" + _technique + "' technique.");
 }
 
 void
@@ -81,49 +94,12 @@ Surface::initialize()
 	auto arrayProviderMaterial = std::dynamic_pointer_cast<ArrayProvider>(_material);
 
 	if (arrayProviderMaterial)
-	_dataProviderIndexChangedSlots.push_back(arrayProviderMaterial->indexChanged()->connect(std::bind(
-		&Surface::materialProviderIndexChanged,
-		shared_from_this(),
-		std::placeholders::_1,
-		std::placeholders::_2
-		), 10.f));
-
-	if (_effect->techniques().count(_technique) == 0)
-		throw std::logic_error("The technique '" + _technique + "' does not exist.");
-}
-
-void
-Surface::visible(std::shared_ptr<component::Renderer> renderer, bool value)
-{
-	if (visible(renderer) != value)
-	{
-		_rendererToVisibility[renderer] = value;
-		_visibilityChanged->execute(shared_from_this(), renderer, value);
-	}
-}
-
-void
-Surface::computedVisibility(std::shared_ptr<component::Renderer> renderer, bool value)
-{
-	if (computedVisibility(renderer) != value)
-	{
-		_rendererToComputedVisibility[renderer] = value;
-		_computedVisibilityChanged->execute(shared_from_this(), renderer, value);
-	}
-}
-
-void
-Surface::geometry(std::shared_ptr<geometry::Geometry> newGeometry)
-{
-	for (unsigned int i = 0; i < targets().size(); ++i)
-	{
-		std::shared_ptr<scene::Node> target = targets()[i];
-
-		target->data()->removeProvider(_geometry->data());
-		target->data()->addProvider(newGeometry->data());
-	}
-
-	_geometry = newGeometry;
+		_dataProviderIndexChangedSlots.push_back(arrayProviderMaterial->indexChanged()->connect(std::bind(
+			&Surface::materialProviderIndexChanged,
+			shared_from_this(),
+			std::placeholders::_1,
+			std::placeholders::_2
+			), 10.f));
 }
 
 void
@@ -132,6 +108,14 @@ Surface::targetAddedHandler(AbstractComponent::Ptr	ctrl,
 
 {
 	auto targetData	= target->data();
+
+	_addedSlot = target->added()->connect(std::bind(
+		&Surface::addedHandler,
+		shared_from_this(),
+		std::placeholders::_1,
+		std::placeholders::_2,
+		std::placeholders::_3
+	));
 
 	_removedSlot = target->removed()->connect(std::bind(
 		&Surface::removedHandler,
@@ -159,11 +143,6 @@ Surface::targetAddedHandler(AbstractComponent::Ptr	ctrl,
 }
 
 void
-Surface::removedHandler(NodePtr node, NodePtr target, NodePtr ancestor)
-{
-}
-
-void
 Surface::targetRemovedHandler(AbstractComponent::Ptr	ctrl,
 							  scene::Node::Ptr			target)
 {
@@ -180,32 +159,90 @@ Surface::targetRemovedHandler(AbstractComponent::Ptr	ctrl,
 }
 
 void
-Surface::setTechnique(const std::string&	technique,
-					  bool					updateDrawcalls)
+Surface::addedHandler(Node::Ptr, Node::Ptr target, Node::Ptr)
 {
-	if (_technique == technique)
+}
+
+void
+Surface::removedHandler(Node::Ptr, Node::Ptr target, Node::Ptr)
+{
+}
+
+void
+Surface::geometry(geometry::Geometry::Ptr newGeometry)
+{
+	for (unsigned int i = 0; i < targets().size(); ++i)
+	{
+		std::shared_ptr<scene::Node> target = targets()[i];
+
+		target->data()->removeProvider(_geometry->data());
+		target->data()->addProvider(newGeometry->data());
+	}
+
+	_geometry = newGeometry;
+}
+
+void
+Surface::effect(render::Effect::Ptr		effect, 
+				const std::string&		technique)
+{
+	setEffectAndTechnique(effect, technique, true);
+}
+
+void
+Surface::visible(component::Renderer::Ptr	renderer, 
+				 bool						value)
+{
+	if (visible(renderer) != value)
+	{
+		_rendererToVisibility[renderer] = value;
+		_visibilityChanged->execute(shared_from_this(), renderer, value);
+	}
+}
+
+void
+Surface::computedVisibility(component::Renderer::Ptr	renderer, 
+							bool						value)
+{
+	if (computedVisibility(renderer) != value)
+	{
+		_rendererToComputedVisibility[renderer] = value;
+		_computedVisibilityChanged->execute(shared_from_this(), renderer, value);
+	}
+}
+
+void
+Surface::setEffectAndTechnique(Effect::Ptr			effect,
+							   const std::string&	technique,
+							   bool					updateDrawcalls)
+{
+	if (_effect == effect && _technique == technique)
 		return;
+	
+	if (effect == nullptr)
+		throw std::invalid_argument("effect");
+	if (!effect->hasTechnique(technique))
+		throw std::logic_error("Effect does not provide a '" + technique + "' technique.");
 
-#ifdef DEBUG_FALLBACK
-	std::cout << "surf[" << this << "]\tchange technique\t'" << _technique << "'\t-> '" << technique << "'" << std::endl;
-#endif // DEBUG_FALLBACK
+	for (auto& n : targets())
+	{
+		n->data()->removeProvider(_effect->data());
+		n->data()->addProvider(effect->data());
+	}
 
-	_technique = technique;
-
-	if (!_effect->hasTechnique(_technique))
-		throw std::logic_error("The technique '" + _technique + "' does not exist.");
-
+	_effect		= effect;
+	_technique	= technique;
 	_techniqueChanged->execute(shared_from_this(), _technique, updateDrawcalls);
 }
 
 void
-Surface::geometryProviderIndexChanged(ArrayProviderPtr arrayProvider, uint index)
+Surface::geometryProviderIndexChanged(ArrayProvider::Ptr, uint index)
 {
 	_geometryId = index;
 }
 
 void
-Surface::materialProviderIndexChanged(ArrayProviderPtr arrayProvider, uint index)
+Surface::materialProviderIndexChanged(ArrayProvider::Ptr, uint index)
 {
 	_materialId = index;
 }

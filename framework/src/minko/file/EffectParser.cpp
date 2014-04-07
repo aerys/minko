@@ -159,14 +159,34 @@ EffectParser::parse(const std::string&				    filename,
 	if (!reader.parse((const char*)&data[0], (const char*)&data[data.size() - 1], root, false))
 		throw file::ParserError(resolvedFilename + ": " +reader.getFormattedErrorMessages());
 
-    int pos	= resolvedFilename.find_last_of("/\\");
-
 	_options = file::Options::create(options);
+
 	_options->includePaths().clear();
-	if (pos > 0)
-	{
-		_options->includePaths().push_back(resolvedFilename.substr(0, pos));
-	}
+
+    int pos;
+    std::string resolvedDirectory;
+
+	if ((pos = resolvedFilename.find_last_of("/\\")) > 0)
+		resolvedDirectory = resolvedFilename.substr(0, pos);
+	else
+		resolvedDirectory = ".";
+
+	_options->includePaths().push_back(resolvedDirectory);
+
+#ifdef DEBUG
+    // Situation example: project-specific .effect is found in project/asset
+    // but depends on Basic.fragment.glsl, which is _not_ is the same
+    // directory. We should then look up in the target directory (a.k.a
+    // removing the ../../.. prefix. This cannot happen in release because
+    // projects assets are copied in the target directory, just like framework
+    // assets, so the look up will stop at the target directory for the asset
+    // and its dependencies.
+
+	if (resolvedDirectory.find("../../../") == 0)
+		resolvedDirectory = resolvedDirectory.substr(sizeof("../../../") - 1);
+
+	_options->includePaths().push_back(resolvedDirectory);
+#endif
 	
 	_filename = filename;
 	_resolvedFilename = resolvedFilename;
