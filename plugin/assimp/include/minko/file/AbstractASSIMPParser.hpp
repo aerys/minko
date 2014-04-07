@@ -37,6 +37,10 @@ template <typename> class aiQuaterniont;
 template <typename> class aiMatrix4x4t;
 struct	aiMaterial;
 
+namespace Assimp
+{
+    class Importer;
+}
 
 namespace minko
 {
@@ -48,11 +52,11 @@ namespace minko
 
 	namespace file
 	{
-		class ASSIMPParser :
+		class AbstractASSIMPParser :
 			public AbstractParser
 		{
 		public:
-			typedef std::shared_ptr<ASSIMPParser>					Ptr;
+            typedef std::shared_ptr<AbstractASSIMPParser>					Ptr;
 
         private:
             typedef std::shared_ptr<AbstractLoader>					LoaderPtr;
@@ -67,6 +71,7 @@ namespace minko
 			typedef std::shared_ptr<math::Matrix4x4>				Matrix4x4Ptr;
 			typedef std::shared_ptr<material::Material>				MaterialPtr;
 			typedef std::shared_ptr<render::Effect>					EffectPtr;
+            typedef std::shared_ptr<Assimp::Importer>               ImporterPtr;
 			
 			typedef std::vector<Matrix4x4Ptr>						Matrices4x4;
 
@@ -96,17 +101,11 @@ namespace minko
 			LoaderToSlotMap											_loaderCompleteSlots;
 			LoaderToSlotMap											_loaderErrorSlots;
 
-		public:
-			inline static
-			Ptr
-			create()
-			{
-				return std::shared_ptr<ASSIMPParser>(new ASSIMPParser());
-			}
+            ImporterPtr                                             _importer;
 
-			static
-			std::set<std::string>
-			getSupportedFileExensions();
+		public:
+
+            virtual ~AbstractASSIMPParser();
 
 			void
 			parse(const std::string&				filename,
@@ -115,12 +114,20 @@ namespace minko
 				  const std::vector<unsigned char>&	data,
 				  std::shared_ptr<AssetLibrary>		assetLibrary);
 
+        protected:
+
+            AbstractASSIMPParser();
+
 		private:
-			ASSIMPParser();
+
+            virtual void provideLoaders(Assimp::Importer& importer) = 0;
 
 			static
 			TextureTypeToName
 			initializeTextureTypeToName();
+
+            void
+            initImporter();
 
 			void
 			resetParser();

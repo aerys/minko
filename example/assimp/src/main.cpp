@@ -83,8 +83,7 @@ main(int argc, char** argv)
 	// setup assets
 	sceneManager->assets()->defaultOptions()->generateMipmaps(true);
 	sceneManager->assets()
-		->registerParser<file::ASSIMPParser>("obj")
-		->registerParser<file::ASSIMPParser>("dae")
+        ->registerParser<file::ColladaASSIMPParser>("dae")
 		->registerParser<file::JPEGParser>("jpg")
 		->registerParser<file::PNGParser>("png")
 		->load("effect/Basic.effect")
