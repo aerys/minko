@@ -73,7 +73,7 @@ namespace minko
 
 			inline
 			const std::unordered_map<std::string, Technique>&
-			techniques()
+			techniques() const
 			{
 				return _techniques;
 			}
@@ -87,31 +87,38 @@ namespace minko
 
 			inline
 			const Technique&
-			technique(const std::string& techniqueName)
+			technique(const std::string& techniqueName) const
 			{
-				if (!hasTechnique(techniqueName))
+				auto foundTechniqueIt = _techniques.find(techniqueName);
+
+				if (foundTechniqueIt == _techniques.end())
 					throw std::invalid_argument("techniqueName = " + techniqueName);
 
-				return _techniques[techniqueName];
+				return foundTechniqueIt->second;
 			}
 
 			inline
 			const std::string&
-			fallback(const std::string& techniqueName)
+			fallback(const std::string& techniqueName) const
 			{
-				return _fallback[techniqueName];
+				auto foundFallbackIt = _fallback.find(techniqueName);
+
+				if (foundFallbackIt == _fallback.end())
+					throw std::invalid_argument("techniqueName = " + techniqueName);
+
+				return foundFallbackIt->second;
 			}
 
 			inline
 			bool
-			hasTechnique(const std::string& techniqueName)
+			hasTechnique(const std::string& techniqueName) const
 			{
 				return _techniques.count(techniqueName) != 0;
 			}
 
 			inline
 			bool
-			hasFallback(const std::string& techniqueName)
+			hasFallback(const std::string& techniqueName) const
 			{
 				return _fallback.count(techniqueName) != 0;
 			}

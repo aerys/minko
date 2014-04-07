@@ -34,7 +34,7 @@ SpotLight::SpotLight(float diffuse,
 	AbstractDiscreteLight("spotLights", diffuse, specular),
 	_attenuationCoeffs(Vector3::create(attenuationConstant, attenuationLinear, attenuationQuadratic)),
 	_worldPosition(Vector3::create(0.0f, 0.0f, 0.0f)),
-	_worldDirection(Vector3::create(0.0f, 0.0f, 1.0f))
+	_worldDirection(Vector3::create()->copyFrom(Vector3::forward()))
 {
 
 	data()->set("attenuationCoeffs",	_attenuationCoeffs);
@@ -56,7 +56,7 @@ void
 SpotLight::updateModelToWorldMatrix(std::shared_ptr<math::Matrix4x4> modelToWorld)
 {
 	modelToWorld->copyTranslation(_worldPosition);
-	modelToWorld->deltaTransform(Vector3::zAxis(), _worldDirection);
+	modelToWorld->deltaTransform(Vector3::forward(), _worldDirection);
 }
 
 SpotLight::Ptr
