@@ -105,6 +105,29 @@ EmscriptenDOMEngine::enterFrame()
 	{
 		element->update();
 	}
+
+	if (_currentDOM->initialized())
+	{
+		std::string eval = "(Minko.iframeElement.contentWindow.Minko.messagesToSend.length);";
+		int l = emscripten_run_script_int(eval.c_str());
+
+		if (l > 0)
+		{
+			for(int i = 0; i < l; ++i)
+			{
+				std::string eval = "(Minko.iframeElement.contentWindow.Minko.messagesToSend[" + std::to_string(i) + "])";
+				char* charMessage = emscripten_run_script_string(eval.c_str());
+				
+				std::string message(charMessage);
+
+				_currentDOM->onmessage()->execute(_currentDOM, message);
+				_onmessage->execute(_currentDOM, message);
+			}
+
+			std::string eval = "Minko.iframeElement.contentWindow.Minko.messagesToSend = [];";
+			emscripten_run_script(eval.c_str());
+		}
+	}
 }
 
 void
@@ -189,6 +212,12 @@ EmscriptenDOMEngine::initJavascript()
 	eval +=	"		{\n";
 	eval +=	"			console.log('MINKO: ' + message);\n";
 	eval +=	"		}\n";
+	eval +=	"	}\n";
+	eval +=	"	Minko.iframeElement.contentWindow.Minko.messagesToSend = [];\n";
+
+	eval += "	Minko.iframeElement.contentWindow.Minko.sendMessage = function(message)\n";
+	eval +=	"	{\n";
+	eval +=	"		Minko.iframeElement.contentWindow.Minko.messagesToSend.push(message);\n";
 	eval +=	"	}\n";
 
 	eval += "	Minko.iframeElement.contentWindow.addEventListener('mousemove',		Minko.redispatchMouseEvent);\n";

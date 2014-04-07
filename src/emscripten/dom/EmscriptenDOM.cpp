@@ -31,6 +31,7 @@ using namespace emscripten::dom;
 EmscriptenDOM::EmscriptenDOM(std::string jsAccessor) :
 	_initialized(false),
 	_onload(Signal<AbstractDOM::Ptr, std::string>::create()),
+	_onmessage(Signal<AbstractDOM::Ptr, std::string>::create()),
 	_jsAccessor(jsAccessor)
 {
 }
@@ -115,6 +116,12 @@ Signal<AbstractDOM::Ptr, std::string>::Ptr
 EmscriptenDOM::onload()
 {
 	return _onload;
+}
+
+Signal<AbstractDOM::Ptr, std::string>::Ptr
+EmscriptenDOM::onmessage()
+{
+	return _onmessage;
 }
 
 std::string

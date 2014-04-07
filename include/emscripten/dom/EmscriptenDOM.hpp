@@ -68,6 +68,9 @@ namespace emscripten
 			minko::Signal<minko::dom::AbstractDOM::Ptr, std::string>::Ptr
 			onload();
 
+			minko::Signal<minko::dom::AbstractDOM::Ptr, std::string>::Ptr
+			onmessage();
+
 			std::string
 			fileName();
 
