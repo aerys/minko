@@ -97,7 +97,7 @@ Skinning::initialize()
 
 	_maxTime = _skin->duration();
 
-	setPlaybackWindow(0, _maxTime)->seek(0)->play();
+	setPlaybackWindow(0, _maxTime)->seek(0);
 
 	// FIXME: in certain circumstances (deserialization from minko studio)
 	// it may be necessary to move the target directly below the skeleton root
