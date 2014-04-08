@@ -195,7 +195,27 @@ EmscriptenDOMEngine::initJavascript()
 	eval += "	eventCopy.initMouseEvent(event.type, event.bubbles, event.cancelable, event.view, event.detail,\n";
 	eval += "		pageX, pageY, screenX, screenY, \n";
 	eval += "		event.ctrlKey, event.altKey, event.shiftKey, event.metaKey, event.button, event.relatedTarget);\n";
+
+	eval += "	if (event.type == 'mousewheel')\n";
+	eval += "	{\n";
+	eval += "		eventCopy.detail = event.detail;\n";
+
+	eval += "		eventCopy.wheelDelta = event.wheelDelta;\n";
+	eval += "		eventCopy.wheelDeltaX = event.wheelDeltaX;\n";
+	eval += "		eventCopy.wheelDeltaY = event.wheelDeltaY;\n";
+	eval += "		eventCopy.wheelDeltaZ = event.wheelDeltaZ;\n";
+
+	eval += "		eventCopy.delta = event.delta;\n";
+	eval += "		eventCopy.deltaMode = event.deltaMode;\n";
+	eval += "		eventCopy.deltaX = event.deltaX;\n";
+	eval += "		eventCopy.deltaY = event.deltaY;\n";
+	eval += "		eventCopy.deltaZ = event.deltaZ;\n";
+
+	eval +=	"		event.preventDefault();\n";
+	eval += "	}\n";
+
 	eval += "	Minko.canvasElement.dispatchEvent(eventCopy);\n";
+
 	eval += "}\n\n";
 
 	eval += "Minko.iframeLoadHandler = function(event)\n";
