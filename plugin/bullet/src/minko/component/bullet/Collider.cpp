@@ -184,7 +184,7 @@ bullet::Collider::synchronizePhysicsWithGraphics()
 {
 	assert(_graphicsTransform);
 
-	auto		graphicsTransform		= _graphicsTransform->modelToWorldMatrix(/*true*/);
+	auto		graphicsTransform		= _graphicsTransform->modelToWorldMatrix(true);
 	static auto graphicsNoScale			= Matrix4x4::create();
 	static auto graphicsNoScaleInverse	= Matrix4x4::create();
 	static auto centerOfMassOffset		= Matrix4x4::create();
