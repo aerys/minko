@@ -78,9 +78,10 @@ AbstractSerializerParser::extractDependencies(AssetLibraryPtr						assetLibrary,
 {
 	msgpack::object			msgpackObject;
 	msgpack::zone			mempool;
+	std::string				str(data.begin(), data.end());
 	msgpack::type::tuple<std::vector<SerializedAsset>, std::string> serilizedAssets;
 
-	msgpack::unpack(reinterpret_cast<const char*> (data.data()), data.size(), NULL, &mempool, &msgpackObject);
+	msgpack::unpack(str.data(), str.size(), NULL, &mempool, &msgpackObject);
 	msgpackObject.convert(&serilizedAssets);
 
 	for (uint index = 0; index < serilizedAssets.a0.size(); ++index)
