@@ -28,8 +28,6 @@ namespace minko
 	{
 		MINKO_DEFINE_WORKER(FileLoaderWorker,
 		{
-			uint chunkSize = 8 * 1024;
-
 			std::cout << "FileLoaderWorker::run(): enter" << std::endl;
 
 			std::string filename(input.begin(), input.end());
@@ -45,6 +43,13 @@ namespace minko
 			if (file.is_open())
 			{
 				uint size = uint(file.tellg());
+
+				uint chunkSize = math::clp2((size / 50) / 1024);
+
+				if (chunkSize > 1024)
+					chunkSize = 1024;
+
+				chunkSize *= 1024;
 
 				std::cout << "FileLoaderWorker::run(): file is open" << std::endl;
 

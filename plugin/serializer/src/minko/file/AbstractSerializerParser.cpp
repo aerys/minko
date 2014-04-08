@@ -78,11 +78,14 @@ AbstractSerializerParser::extractDependencies(AssetLibraryPtr						assetLibrary,
 {
 	msgpack::object			msgpackObject;
 	msgpack::zone			mempool;
-	std::string				str(data.begin(), data.end());
 	msgpack::type::tuple<std::vector<SerializedAsset>, std::string> serilizedAssets;
 
-	msgpack::unpack(str.data(), str.size(), NULL, &mempool, &msgpackObject);
+	msgpack::unpack((char*)&data[0], data.size(), NULL, &mempool, &msgpackObject);
 	msgpackObject.convert(&serilizedAssets);
+
+	std::vector<unsigned char>* d = (std::vector<unsigned char>*)&data;
+	d->clear();
+	d->shrink_to_fit();
 
 	for (uint index = 0; index < serilizedAssets.a0.size(); ++index)
 		deserializedAsset(serilizedAssets.a0[index], assetLibrary, options, assetFilePath);
@@ -91,12 +94,11 @@ AbstractSerializerParser::extractDependencies(AssetLibraryPtr						assetLibrary,
 }
 
 void
-AbstractSerializerParser::deserializedAsset(SerializedAsset				asset,
+AbstractSerializerParser::deserializedAsset(SerializedAsset&			asset,
 											AssetLibraryPtr				assetLibrary,
 											std::shared_ptr<Options>	options,
 											std::string&				assetFilePath)
 {
-
 	std::vector<unsigned char>	data;
 	std::string					assetCompletePath	= assetFilePath + "/";
 	std::string					resolvedPath		= "";
@@ -128,7 +130,7 @@ AbstractSerializerParser::deserializedAsset(SerializedAsset				asset,
 			throw std::invalid_argument("file already open");
 	}
 	else
-		std::copy(asset.a2.begin(), asset.a2.end(), back_inserter(data));
+		data.assign(asset.a2.begin(), asset.a2.end());
 
 	if (asset.a0 == serialize::AssetType::GEOMETRY_ASSET || asset.a0 == serialize::AssetType::EMBED_GEOMETRY_ASSET) // geometry
 	{
@@ -159,6 +161,7 @@ AbstractSerializerParser::deserializedAsset(SerializedAsset				asset,
 		std::shared_ptr<file::AbstractParser> parser = assetLibrary->getParser("png");
 
 		parser->parse(resolvedPath, assetCompletePath, options, data, assetLibrary);
+		assetLibrary->texture(resolvedPath)->disposeData();
 		_dependencies->registerReference(asset.a1, assetLibrary->texture(resolvedPath));
 	}
 	else if (asset.a0 == serialize::AssetType::EFFECT_ASSET) // effect
@@ -171,6 +174,12 @@ AbstractSerializerParser::deserializedAsset(SerializedAsset				asset,
 		if (_assetTypeToFunction.find(asset.a0) != _assetTypeToFunction.end())
 			_assetTypeToFunction[asset.a0](metaByte, assetLibrary, assetCompletePath, _dependencies, asset.a1, _jobList);
 	}
+
+	data.clear();
+	data.shrink_to_fit();
+
+	asset.a2.clear();
+	asset.a2.shrink_to_fit();
 }
 
 std::string
