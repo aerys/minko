@@ -19,4 +19,4 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #pragma once
 
-#include "minko/async/HTTPWorker.hpp"
+#include "minko/net/HTTPWorker.hpp"
