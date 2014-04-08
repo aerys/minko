@@ -69,6 +69,27 @@ namespace minko
 			create(AbsContextPtr context);
 
 			inline
+			uint
+			numGeometries()
+			{
+				return _geometries.size();
+			}
+
+			inline
+			uint
+			numMaterials()
+			{
+				return _materials.size();
+			}
+
+			inline
+			uint
+			numTextures()
+			{
+				return _textures.size();
+			}
+
+			inline
 			AbsContextPtr
 			context()
 			{

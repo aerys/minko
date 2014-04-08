@@ -177,7 +177,7 @@ ComponentDeserializer::deserializeSurface(std::string&							serializedSurface,
 
 	geometry::Geometry::Ptr		geometry	= dependencies->getGeometryReference(dst.a0);
 	data::Provider::Ptr			material	= dependencies->getMaterialReference(dst.a1);
-	render::Effect::Ptr			effect = dependencies->getEffectReference(dst.a2);
+	render::Effect::Ptr			effect		= dependencies->getEffectReference(dst.a2);
 
 	if (material == nullptr && dependencies->options()->material() != nullptr)
 		material = dependencies->options()->material();
@@ -190,7 +190,7 @@ ComponentDeserializer::deserializeSurface(std::string&							serializedSurface,
 		geometry,
 		(material != nullptr ? material : assetLibrary->material("defaultMaterial")),
 		(effect != nullptr ? effect : assetLibrary->effect("effect/Phong.effect")),
-		dst.a3);
+		dst.a3 != "" ? dst.a3 : "default");
 
 	return surface;
 }
