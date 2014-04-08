@@ -180,11 +180,11 @@ bullet::Collider::initializeFromNode(Node::Ptr node)
 }
 
 void
-bullet::Collider::synchronizePhysicsWithGraphics()
+bullet::Collider::synchronizePhysicsWithGraphics(bool forceTransformUpdate)
 {
 	assert(_graphicsTransform);
 
-	auto		graphicsTransform		= _graphicsTransform->modelToWorldMatrix(/*true*/);
+	auto		graphicsTransform		= _graphicsTransform->modelToWorldMatrix(forceTransformUpdate);
 	static auto graphicsNoScale			= Matrix4x4::create();
 	static auto graphicsNoScaleInverse	= Matrix4x4::create();
 	static auto centerOfMassOffset		= Matrix4x4::create();
@@ -222,7 +222,8 @@ bullet::Collider::synchronizePhysicsWithGraphics()
 
 bullet::Collider::Ptr
 bullet::Collider::setPhysicsTransform(Matrix4x4::Ptr	physicsTransform,
-									  Matrix4x4::Ptr	graphicsModelToParent)
+									  Matrix4x4::Ptr	graphicsModelToParent,
+									  bool				forceTransformUpdate)
 {
 	assert(_graphicsTransform);
 
@@ -239,7 +240,7 @@ bullet::Collider::setPhysicsTransform(Matrix4x4::Ptr	physicsTransform,
 		static auto worldToParent	= Matrix4x4::create();
 	
 		worldToParent
-			->copyFrom(_graphicsTransform->modelToWorldMatrix())->invert()
+			->copyFrom(_graphicsTransform->modelToWorldMatrix(forceTransformUpdate))->invert()
 			->append(_graphicsTransform->matrix());
 	
 		_graphicsTransform->matrix()
