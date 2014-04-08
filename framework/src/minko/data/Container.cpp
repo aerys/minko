@@ -99,6 +99,7 @@ Container::removeProvider(Provider::Ptr provider)
 		_providerReferenceChangedSlot.erase(provider);
 
 		_providers.erase(std::find(_providers.begin(), _providers.end(), provider));
+		_providerToIndex.erase(provider);
 	}
 
 	/*
@@ -128,8 +129,11 @@ Container::addProvider(std::shared_ptr<ArrayProvider> provider)
 			? _arrayLengths->get<int>(lengthPropertyName)
 			: 0;
 
-		provider->index(length);
+		if (_providerToIndex.find(provider) == _providerToIndex.end())
+			_providerToIndex[provider] = length;
+		
 		addProvider(std::dynamic_pointer_cast<Provider>(provider));
+		provider->indexChanged()->execute(provider, length);
 
 		_arrayLengths->set<int>(lengthPropertyName, ++length);
 	}
@@ -142,7 +146,7 @@ Container::removeProvider(std::shared_ptr<ArrayProvider> provider)
 
 	if (_providersToNumUse[provider] - 1 == 0)
 	{
-		auto	index				= provider->index();
+		auto	index				= _providerToIndex[provider];
 		auto	lengthPropertyName	= provider->arrayName() + ".length";
 		int		length				= _arrayLengths->hasProperty(lengthPropertyName)
 			? _arrayLengths->get<int>(lengthPropertyName)
@@ -157,6 +161,8 @@ Container::removeProvider(std::shared_ptr<ArrayProvider> provider)
 
 		if (index != length - 1)
 		{
+			std::unordered_map<ProviderPtr, uint>& providerToIndex = _providerToIndex;
+
 			auto lastIt = std::find_if(
 				_providers.begin(),
 				_providers.end(),
@@ -164,12 +170,16 @@ Container::removeProvider(std::shared_ptr<ArrayProvider> provider)
 				{
 					auto arrayProvider = std::dynamic_pointer_cast<ArrayProvider>(p);
 
-					return arrayProvider && arrayProvider->index() == length - 1
-						&& arrayProvider->arrayName() == provider->arrayName();
+					return arrayProvider && providerToIndex[p] == length - 1 &&
+						arrayProvider->arrayName() == provider->arrayName();
+					
 				});
 			auto last = std::dynamic_pointer_cast<ArrayProvider>(*lastIt);
 
-			last->index(index);
+			removeProvider(last);
+			_providerToIndex[last] = index;
+			addProvider(last);
+			last->indexChanged()->execute(last, index);
 		}
 
 		--length;
@@ -255,28 +265,35 @@ void
 Container::providerValueChangedHandler(Provider::Ptr		provider,
 									   const std::string& 	propertyName)
 {
-	if (_propValueChanged.count(propertyName) != 0)
-		propertyValueChanged(propertyName)->execute(shared_from_this(), propertyName);
+	auto formatedPropertyName = formatPropertyName(provider, propertyName);
+
+	if (_propValueChanged.count(formatedPropertyName) != 0)
+		propertyValueChanged(formatedPropertyName)->execute(shared_from_this(), formatedPropertyName);
 }
 
 void
 Container::providerReferenceChangedHandler(Provider::Ptr		provider,
 										   const std::string&	propertyName)
 {
-	if (_propReferenceChanged.count(propertyName))
-		propertyReferenceChanged(propertyName)->execute(shared_from_this(), propertyName);
+	auto formatedPropertyName = formatPropertyName(provider, propertyName);
+
+	if (_propReferenceChanged.count(formatedPropertyName))
+		propertyReferenceChanged(formatedPropertyName)->execute(shared_from_this(), formatedPropertyName);
 }
 
 void
 Container::providerPropertyAddedHandler(std::shared_ptr<Provider> 	provider,
 										const std::string& 			propertyName)
 {	
-	if (_propertyNameToProvider.count(propertyName) != 0)
-		throw std::logic_error("duplicate property name: " + propertyName);
 	
-	_propertyNameToProvider[propertyName] = provider;
+	auto formatedPropertyName = formatPropertyName(provider, propertyName);
 
-	if (_propValueChanged.count(propertyName) != 0)
+	if (_propertyNameToProvider.count(formatedPropertyName) != 0)
+		throw std::logic_error("duplicate property name: " + formatedPropertyName);
+	
+	_propertyNameToProvider[formatedPropertyName] = provider;
+
+	if (_propValueChanged.count(formatedPropertyName) != 0)
 		_providerValueChangedSlot[provider] = provider->propertyValueChanged()->connect(std::bind(
 			&Container::providerValueChangedHandler,
 			shared_from_this(),
@@ -284,24 +301,27 @@ Container::providerPropertyAddedHandler(std::shared_ptr<Provider> 	provider,
 			std::placeholders::_2
 		));
 
-	_propertyAdded->execute(shared_from_this(), propertyName);
+	_propertyAdded->execute(shared_from_this(), formatedPropertyName);
 
-	providerValueChangedHandler(provider, propertyName);
+	providerValueChangedHandler(provider, formatedPropertyName);
 }
 
 void
 Container::providerPropertyRemovedHandler(std::shared_ptr<Provider> provider,
 										  const std::string&		propertyName)
 {
-	if (_propertyNameToProvider.count(propertyName) != 0)
+
+	auto formatedPropertyName = formatPropertyName(provider, propertyName);
+
+	if (_propertyNameToProvider.count(formatedPropertyName) != 0)
 	{
-		_propertyNameToProvider.erase(propertyName);
+		_propertyNameToProvider.erase(formatedPropertyName);
 	
-		if (_propValueChanged.count(propertyName) && _propValueChanged[propertyName]->numCallbacks() == 0)
-			_propValueChanged.erase(propertyName);
+		if (_propValueChanged.count(formatedPropertyName) && _propValueChanged[formatedPropertyName]->numCallbacks() == 0)
+			_propValueChanged.erase(formatedPropertyName);
 	
-		if (_propReferenceChanged.count(propertyName) && _propReferenceChanged[propertyName]->numCallbacks() == 0)
-			_propReferenceChanged.erase(propertyName);
+		if (_propReferenceChanged.count(formatedPropertyName) && _propReferenceChanged[formatedPropertyName]->numCallbacks() == 0)
+			_propReferenceChanged.erase(formatedPropertyName);
 	
 		//_propValueChanged.erase(propertyName);
 		//_propReferenceChanged.erase(propertyName);
@@ -317,6 +337,62 @@ Container::providerPropertyRemovedHandler(std::shared_ptr<Provider> provider,
 		std::cout << "cont[" << this << "] removes '" << propertyName << "'" << std::endl;
 		*/
 	
-		_propertyRemoved->execute(shared_from_this(), propertyName);
+		_propertyRemoved->execute(shared_from_this(), formatedPropertyName);
 	}
+}
+
+std::string
+Container::formatPropertyName(ProviderPtr provider, const std::string& propertyName) const
+{
+
+	auto arrayProvider = std::dynamic_pointer_cast<ArrayProvider>(provider);
+
+	if (arrayProvider == nullptr)
+		return propertyName;
+
+#ifndef MINKO_NO_GLSL_STRUCT
+
+	return arrayProvider->arrayName() + "[" + std::to_string(_providerToIndex.find(provider)->second) + "]." + propertyName;
+
+#else
+
+	return arrayProvider->arrayName() + NO_STRUCT_SEP + propertyName + "[" + std::to_string(_index) + "]";
+
+#endif // MINKO_NO_GLSL_STRUCT
+}
+
+std::string
+Container::unformatPropertyName(ProviderPtr provider, const std::string& formattedPropertyName) const
+{
+
+	auto arrayProvider = std::dynamic_pointer_cast<ArrayProvider>(provider);
+
+	if (arrayProvider == nullptr)
+		return formattedPropertyName;
+
+	if (formattedPropertyName.substr(0, arrayProvider->arrayName().size()) != arrayProvider->arrayName())
+		return unformatPropertyName(provider, formattedPropertyName);
+
+#ifndef MINKO_NO_GLSL_STRUCT
+
+	std::size_t pos = formattedPropertyName.rfind("].");
+
+	if (pos == std::string::npos)
+		return unformatPropertyName(provider, formattedPropertyName);
+
+	return formattedPropertyName.substr(pos + 2);
+
+#else
+
+	std::size_t pos1 = formattedPropertyName.find_first_of(NO_STRUCT_SEP);
+	std::size_t pos2 = formattedPropertyName.find_first_of('[');
+
+	if (pos1 == std::string::npos || pos2 == std::string::npos)
+		return unformatPropertyName(provider, formattedPropertyName);
+
+	pos1 += NO_STRUCT_SEP.size();
+
+	return formattedPropertyName.substr(pos1, pos2 - pos1);
+
+#endif // MINKO_NO_GLSL_STRUCT
 }

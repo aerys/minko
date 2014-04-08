@@ -24,6 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/scene/Node.hpp"
 #include "minko/component/BoundingBox.hpp"
 #include "minko/component/MasterAnimation.hpp"
+#include "minko/component/AbstractLight.hpp"
 
 #include "minko/LuaWrapper.hpp"
 
@@ -58,6 +59,7 @@ namespace minko
 					.methodWrapper("getMasterAnimation",	&LuaNode::getMasterAnimationWrapper)
                     .methodWrapper("getPerspectiveCamera",  &LuaNode::getPerspectiveCameraWrapper)
 					.methodWrapper("getSurface",			&LuaNode::getSurfaceWrapper)
+					.methodWrapper("hasLight",				&LuaNode::hasLightWrapper)
 					/*.methodWrapper("getChildrenByName",		&LuaNode::getChildrenByNameWrapper)*/
 		            .property("children",					&Node::children)
 		            .property("data",				        &Node::data)
@@ -121,6 +123,13 @@ namespace minko
 			getSurfaceWrapper(Node::Ptr node)
 			{
 				return node->component<component::Surface>();
+			}
+
+			static
+			bool
+			hasLightWrapper(Node::Ptr node)
+			{
+				return node->hasComponent<component::AbstractLight>();
 			}
 		};
 	}
