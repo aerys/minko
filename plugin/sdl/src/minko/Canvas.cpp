@@ -57,6 +57,8 @@ using namespace minko;
 using namespace minko::math;
 using namespace minko::async;
 
+const float Canvas::SDLFinger::SWIPE_PRECISION = 0.05f;
+
 Canvas::Canvas(const std::string& name, const uint width, const uint height, bool useStencil, bool chromeless) :
 	_name(name),
 	_useStencil(useStencil),
@@ -106,6 +108,7 @@ Canvas::initializeInputs()
 {
     _mouse = Canvas::SDLMouse::create(shared_from_this());
     _keyboard = Canvas::SDLKeyboard::create();
+    _finger = Canvas::SDLFinger::create(shared_from_this());
 
 #ifndef EMSCRIPTEN
     for (int i = 0; i < SDL_NumJoysticks(); ++i)
@@ -474,6 +477,84 @@ Canvas::step()
 		case SDL_MOUSEWHEEL:
             _mouse->wheel()->execute(_mouse, event.wheel.x, event.wheel.y);
             break;
+                
+                
+                // Touch events
+                case SDL_FINGERDOWN:
+# if defined(DEBUG)
+                std::cout << "Finger down! (x: " << event.tfinger.x << ", y: " << event.tfinger.y << ")" << std::endl;
+#endif // DEBUG
+                
+                _finger->x(event.tfinger.x);
+                _finger->y(event.tfinger.y);
+                
+                _finger->fingerDown()->execute(_finger, event.tfinger.x, event.tfinger.y);
+                
+                break;
+                case SDL_FINGERUP:
+# if defined(DEBUG)
+                std::cout << "Finger up! (x: " << event.tfinger.x << ", y: " << event.tfinger.y << ")" << std::endl;
+#endif // DEBUG
+                _finger->x(event.tfinger.x);
+                _finger->y(event.tfinger.y);
+                
+                _finger->fingerUp()->execute(_finger, event.tfinger.x, event.tfinger.y);
+                
+                break;
+                case SDL_FINGERMOTION:
+# if defined(DEBUG)
+                std::cout << "Finger motion! "
+                << "("
+                << "x: " << event.tfinger.x << ", y: " << event.tfinger.y
+                << "|"
+                << "dx: " << event.tfinger.dx << ", dy: " << event.tfinger.dy
+                << ")" << std::endl;
+#endif // DEBUG
+                _finger->x(event.tfinger.x);
+                _finger->y(event.tfinger.y);
+                _finger->dx(event.tfinger.dx);
+                _finger->dy(event.tfinger.dy);
+                
+                _finger->fingerMotion()->execute(_finger, event.tfinger.dx, event.tfinger.dy);
+                
+                // Gestures
+                if (event.tfinger.dx > SDLFinger::SWIPE_PRECISION)
+                {
+# if defined(DEBUG)
+                    std::cout << "Swipe right! (" << event.tfinger.dx << ")" << std::endl;
+#endif // DEBUG
+                    _finger->swipeRight()->execute(_finger);
+                }
+                
+                if (-event.tfinger.dx > SDLFinger::SWIPE_PRECISION)
+                {
+# if defined(DEBUG)
+                    std::cout << "Swipe left! (" << event.tfinger.dx << ")" << std::endl;
+#endif // DEBUG
+                    
+                    _finger->swipeLeft()->execute(_finger);
+                }
+                
+                if (event.tfinger.dy > SDLFinger::SWIPE_PRECISION)
+                {
+# if defined(DEBUG)
+                    std::cout << "Swipe down! (" << event.tfinger.dy << ")" << std::endl;
+#endif // DEBUG
+                    
+                    _finger->swipeDown()->execute(_finger);
+                }
+                
+                if (-event.tfinger.dy > SDLFinger::SWIPE_PRECISION)
+                {
+#if defined(DEBUG)
+                    std::cout << "Swipe up! (" << event.tfinger.dy << ")" << std::endl;
+#endif // DEBUG
+                    
+                    _finger->swipeUp()->execute(_finger);
+                }
+                
+                break;
+
 
         case SDL_JOYAXISMOTION:
             _joysticks[event.jaxis.which]->joystickAxisMotion()->execute(

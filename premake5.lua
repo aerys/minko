@@ -92,6 +92,7 @@ solution "minko"
 
 	-- example
 	if not _OPTIONS['no-example'] then
+		include 'example/mobile-assets'
 		include 'example/lua-scripts'
 		include 'example/assimp'
 		include 'example/cube'
