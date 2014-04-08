@@ -25,6 +25,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include <stack>
 #include "minko/component/Transform.hpp"
 #include "minko/component/JobManager.hpp"
+#include "minko/component/Surface.hpp"
+#include "minko/component/BoundingBox.hpp"
+#include "minko/scene/NodeSet.hpp"
 #include "minko/file/Options.hpp"
 #include "minko/file/Dependency.hpp"
 
@@ -213,6 +216,13 @@ SceneParser::parseNode(std::vector<SerializedNode>&			nodePack,
 
 		for (scene::Node::Ptr node : componentIdToNodes[componentIndex2])
 			node->addComponent(newComponent);
+	}
+    
+    auto nodeSet = scene::NodeSet::create(root)->descendants(true)->where([](scene::Node::Ptr n){ return n->components<component::Surface>().size() != 0; });
+    
+	for (auto n : nodeSet->nodes())
+	{
+		n->addComponent(component::BoundingBox::create());
 	}
 
 	return root;
