@@ -99,13 +99,22 @@ GeometryParser::parse(const std::string&				filename,
 	msgpack::unpack(str.data(), str.size(), NULL, &mempool, &msgpackObject);
 	msgpackObject.convert(&serializedGeometry);
 
+	str.clear();
+	str.shrink_to_fit();
+
 	computeMetaByte(serializedGeometry.a0);
 
 	geom->indices(indexBufferParserFunction(serializedGeometry.a2, options->context()));
+	serializedGeometry.a2.clear();
+	serializedGeometry.a2.shrink_to_fit();
 
 	for (std::string serializedVertexBuffer : serializedGeometry.a3)
+	{
 		geom->addVertexBuffer(vertexBufferParserFunction(serializedVertexBuffer, options->context()));
-
+		serializedVertexBuffer.clear();
+		serializedVertexBuffer.shrink_to_fit();
+	}
+		
 	geom = options->geometryFunction()(serializedGeometry.a1, geom);
 
     if (options->disposeIndexBufferAfterLoading())

@@ -70,6 +70,9 @@ MaterialParser::parse(const std::string&				filename,
 	msgpack::unpack(str.data(), str.size(), NULL, &mempool, &msgpackObject);
 	msgpackObject.convert(&serializedMaterial);
 
+	str.clear();
+	str.shrink_to_fit();
+
 	std::vector<ComplexProperty> complexProperties	= serializedMaterial.a0;
 	std::vector<BasicProperty>	 basicProperties	= serializedMaterial.a1;
 
