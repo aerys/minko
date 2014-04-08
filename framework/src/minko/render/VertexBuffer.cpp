@@ -73,6 +73,9 @@ VertexBuffer::VertexBuffer(std::shared_ptr<AbstractContext> context, float* begi
 void
 VertexBuffer::upload(uint offset, uint numVertices)
 {
+	if (_data.empty())
+		return;
+
     if (_id == -1)
     	_id = _context->createVertexBuffer(_data.size());
 

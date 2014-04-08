@@ -39,15 +39,16 @@ int main(int argc, char** argv)
 	root->addComponent(LuaScriptManager::create());
 
 	// setup assets
-	sceneManager->assets()->defaultOptions()->generateMipmaps(true);
-	sceneManager->assets()
+    auto loader = sceneManager->assets()->loader();
+    loader->options()
+        ->generateMipmaps(true)
 		->registerParser<file::PNGParser>("png")
-        ->registerParser<file::LuaScriptParser>("lua")
-        ->queue("script/main.lua");
+        ->registerParser<file::LuaScriptParser>("lua");
+    loader->queue("script/main.lua");
 
 	Signal<Canvas::Ptr, float, float>::Slot nextFrame;
-	Signal<file::AssetLibrary::Ptr>::Slot loaded = sceneManager->assets()->complete()->connect(
-		[&](file::AssetLibrary::Ptr assets)
+    Signal<file::Loader::Ptr>::Slot loaded = loader->complete()->connect(
+		[&](file::Loader::Ptr assets)
 		{
 			loaded = nullptr;
 
@@ -59,7 +60,7 @@ int main(int argc, char** argv)
 		}
 	);
 
-	sceneManager->assets()->load();
+    loader->load();
 
 	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float deltaTime)
 	{

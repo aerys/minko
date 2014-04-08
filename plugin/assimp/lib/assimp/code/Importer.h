@@ -120,7 +120,7 @@ struct BatchData;
  *  could, this has not yet been implemented at the moment).
  *
  *  @note The class may not be used by more than one thread*/
-class BatchLoader 
+class Loader 
 {
 	// friend of Importer
 
@@ -153,8 +153,8 @@ public:
 	// -------------------------------------------------------------------
 	/** Construct a batch loader from a given IO system to be used 
 	 *  to acess external files */
-	BatchLoader(IOSystem* pIO);
-	~BatchLoader();
+	Loader(IOSystem* pIO);
+	~Loader();
 
 
 	// -------------------------------------------------------------------

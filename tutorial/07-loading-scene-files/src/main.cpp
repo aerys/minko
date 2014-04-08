@@ -34,9 +34,9 @@ int main(int argc, char** argv)
     auto canvas = Canvas::create("Minko Tutorial - Loading .scene files", WINDOW_WIDTH, WINDOW_HEIGHT);
     auto sceneManager = SceneManager::create(canvas->context());
 
-    sceneManager->assets()->registerParser<minko::file::SceneParser>("scene");
-    sceneManager->assets()->queue("effect/Phong.effect");
-    sceneManager->assets()->queue(SCENE_FILENAME);
+    sceneManager->assets()->loader()->options()->registerParser<minko::file::SceneParser>("scene");
+    sceneManager->assets()->loader()->queue("effect/Phong.effect");
+    sceneManager->assets()->loader()->queue(SCENE_FILENAME);
 
     auto root = scene::Node::create("root")->addComponent(sceneManager);
 
@@ -50,9 +50,9 @@ int main(int argc, char** argv)
         );
     root->addChild(camera);
 
-    auto complete = sceneManager->assets()->complete()->connect([&](file::AssetLibrary::Ptr assets)
+    auto complete = sceneManager->assets()->loader()->complete()->connect([&](file::Loader::Ptr loader)
     {
-        root->addChild(assets->symbol(SCENE_FILENAME));
+		root->addChild(sceneManager->assets()->symbol(SCENE_FILENAME));
 
         auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float t, float dt)
         {
@@ -62,7 +62,7 @@ int main(int argc, char** argv)
         canvas->run();
     });
 
-    sceneManager->assets()->load();
+    sceneManager->assets()->loader()->load();
 
     return 0;
 }

@@ -39,21 +39,23 @@ main(int argc, char** argv)
     auto sceneManager = SceneManager::create(canvas->context());
 
     // setup assets
-    sceneManager->assets()
-        ->registerParser<file::ASSIMPParser>("obj")
-        ->registerParser<file::ASSIMPParser>("dae")
+	sceneManager->assets()->loader()->options()
+        ->registerParser<file::OBJParser>("obj")
+        ->registerParser<file::ColladaParser>("dae")
         ->registerParser<file::JPEGParser>("jpg");
 
-    sceneManager->assets()->load("effect/Basic.effect");
-    
+	sceneManager->assets()->loader()
+		->queue("effect/Basic.effect")
+		->queue("effect/Phong.effect");
+
     // add the model to the asset list
-    sceneManager->assets()->queue(OBJ_MODEL_FILENAME);
-    sceneManager->assets()->queue(DAE_MODEL_FILENAME);
+	sceneManager->assets()->loader()->queue(OBJ_MODEL_FILENAME);
+	sceneManager->assets()->loader()->queue(DAE_MODEL_FILENAME);
 
-    sceneManager->assets()->defaultOptions()->generateMipmaps(true);
-    sceneManager->assets()->defaultOptions()->effect(sceneManager->assets()->effect("effect/Basic.effect"));
+	sceneManager->assets()->loader()->options()->generateMipmaps(true);
+	sceneManager->assets()->loader()->options()->effect(sceneManager->assets()->effect("effect/Basic.effect"));
 
-    auto complete = sceneManager->assets()->complete()->connect([&](file::AssetLibrary::Ptr assets)
+	auto complete = sceneManager->assets()->loader()->complete()->connect([&](file::Loader::Ptr loader)
     {
         auto root = scene::Node::create("root")->addComponent(sceneManager);
 
@@ -67,8 +69,8 @@ main(int argc, char** argv)
             );
         root->addChild(camera);
 
-        auto objModel = assets->symbol(OBJ_MODEL_FILENAME);
-        auto daeModel = assets->symbol(DAE_MODEL_FILENAME);
+		auto objModel = sceneManager->assets()->symbol(OBJ_MODEL_FILENAME);
+		auto daeModel = sceneManager->assets()->symbol(DAE_MODEL_FILENAME);
 
         // change scale for the obj file
         objModel->component<Transform>()->matrix()->appendScale(0.01f);
@@ -89,7 +91,7 @@ main(int argc, char** argv)
         canvas->run();
     });
 
-    sceneManager->assets()->load();
+    sceneManager->assets()->loader()->load();
 
     return 0;
 }

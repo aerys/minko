@@ -23,7 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Signal.hpp"
 #include "minko/file/AbstractParser.hpp"
-#include "minko/file/FileLoader.hpp"
+#include "minko/file/FileProtocol.hpp"
 #include "minko/render/Blending.hpp"
 #include "minko/render/Shader.hpp"
 
@@ -72,7 +72,7 @@ namespace minko
 				TEXTURE
 			};
 
-			typedef std::shared_ptr<AbstractLoader>							LoaderPtr;
+			typedef std::shared_ptr<Loader>							LoaderPtr;
 			typedef std::shared_ptr<render::Effect>							EffectPtr;
 			typedef std::shared_ptr<render::Pass>							PassPtr;
 			typedef std::shared_ptr<render::Shader>							ShaderPtr;
@@ -200,9 +200,10 @@ namespace minko
 								 std::shared_ptr<file::Options> options);
 
 			void
-			glslIncludeCompleteHandler(LoaderPtr 				loader,
+			glslIncludeCompleteHandler(LoaderPtr 			    loader,
 									   GLSLBlockListPtr 		blocks,
-	 								   GLSLBlockList::iterator 	fileBlock);
+                                       GLSLBlockList::iterator 	fileBlock,
+                                       const std::string&       filename);
 
 			void
 			parseBindingNameAndSource(const Json::Value& contextNode, std::string& name, data::BindingSource& source);
@@ -297,14 +298,14 @@ namespace minko
 			parseConfiguration(const Json::Value&	root);
 
 			void
-			dependencyCompleteHandler(std::shared_ptr<AbstractLoader> loader);
+			dependencyCompleteHandler(LoaderPtr loader);
 
 
 			void
-			dependencyErrorHandler(std::shared_ptr<AbstractLoader> loader);
+            dependencyErrorHandler(LoaderPtr loader, const std::string& filename);
 
 			void
-			textureErrorHandler(std::shared_ptr<AbstractLoader> loader);
+            textureErrorHandler(LoaderPtr loader);
 
 			std::string
 			concatenateIncludes(std::vector<LoaderPtr>& store);

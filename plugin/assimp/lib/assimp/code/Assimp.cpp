@@ -60,7 +60,7 @@ using namespace Assimp;
 namespace Assimp
 {
 	// underlying structure for aiPropertyStore
-	typedef BatchLoader::PropertyMap PropertyMap;
+	typedef Loader::PropertyMap PropertyMap;
 
 	/** Stores the LogStream objects for all active C log streams */
 	struct mpred {

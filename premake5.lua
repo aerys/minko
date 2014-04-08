@@ -71,6 +71,7 @@ solution "minko"
 	if not _OPTIONS['no-plugin'] then
 		include 'plugin/lua'
 		include 'plugin/angle'
+		include 'plugin/zlib'
 		include 'plugin/assimp'
 		include 'plugin/devil'
 		include 'plugin/bullet'

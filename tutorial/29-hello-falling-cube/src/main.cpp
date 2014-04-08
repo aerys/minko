@@ -37,12 +37,12 @@ int main(int argc, char** argv)
     auto canvas = Canvas::create("Minko Tutorial - Hello falling cube!", WINDOW_WIDTH, WINDOW_HEIGHT);
     auto sceneManager = SceneManager::create(canvas->context());
 
-    sceneManager->assets()
-        ->registerParser<file::PNGParser>("png")
+	sceneManager->assets()->loader()
         ->queue(TEXTURE_FILENAME)
-        ->queue("effect/Basic.effect");
+		->queue("effect/Basic.effect")
+		->options()->registerParser<file::PNGParser>("png");
 
-    auto complete = sceneManager->assets()->complete()->connect([&](file::AssetLibrary::Ptr assets)
+    auto complete = sceneManager->assets()->loader()->complete()->connect([&](file::Loader::Ptr loader)
     {
         auto camera = scene::Node::create("camera")
             ->addComponent(Renderer::create(0x7f7f7fff))
@@ -64,9 +64,9 @@ int main(int argc, char** argv)
         auto boxNode = scene::Node::create("boxNode")
             ->addComponent(bullet::Collider::create(boxColliderData))
             ->addComponent(Surface::create(
-            geometry::CubeGeometry::create(assets->context()),
-            material::BasicMaterial::create()->diffuseMap(assets->texture(TEXTURE_FILENAME)),
-            assets->effect("effect/Basic.effect")
+            geometry::CubeGeometry::create(canvas->context()),
+			material::BasicMaterial::create()->diffuseMap(sceneManager->assets()->texture(TEXTURE_FILENAME)),
+			sceneManager->assets()->effect("effect/Basic.effect")
             ));
 
         root->addChild(camera);
@@ -81,7 +81,7 @@ int main(int argc, char** argv)
         canvas->run();
     });
 
-    sceneManager->assets()->load();
+    sceneManager->assets()->loader()->load();
 
     return 0;
 }

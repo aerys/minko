@@ -305,11 +305,10 @@ namespace minko
 
 	namespace file
 	{
+        class File;
 		class Options;
-		class AbstractLoader;
-		class APKLoader;
 		class Loader;
-		class AbstractLoader;
+        class AbstractProtocol;
 		class AbstractParser;
 		class EffectParser;
         class AssetLibrary;

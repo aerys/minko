@@ -289,7 +289,7 @@ ComponentDeserializer::deserializeSkinning(std::string&		serializedAnimation,
 	}
 
 	return SkinningComponentDeserializer::computeSkinning(
-        assetLibrary->defaultOptions(), 
+        assetLibrary->loader()->options(), 
         assetLibrary->context(), 
         bones, 
         root->children().size() == 1 ? root->children().front() : root  // FIXME (for soccerpunch) there is one extra level wrt minko studio ! ->issues w/ precomputation and collider

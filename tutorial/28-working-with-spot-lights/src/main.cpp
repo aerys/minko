@@ -34,10 +34,10 @@ main(int argc, char** argv)
     auto sceneManager = component::SceneManager::create(canvas->context());
 
     // setup assets
-    sceneManager->assets()->defaultOptions()->generateMipmaps(true);
-    sceneManager->assets()->queue("effect/Phong.effect");
+    sceneManager->assets()->loader()->options()->generateMipmaps(true);
+    sceneManager->assets()->loader()->queue("effect/Phong.effect");
 
-    auto complete = sceneManager->assets()->complete()->connect([&](file::AssetLibrary::Ptr assets)
+    auto complete = sceneManager->assets()->loader()->complete()->connect([&](file::Loader::Ptr loader)
     {
         auto root = scene::Node::create("root")->addComponent(sceneManager);
 
@@ -54,9 +54,9 @@ main(int argc, char** argv)
         // create a ground
         auto ground = scene::Node::create("sphere")
             ->addComponent(Surface::create(
-            geometry::QuadGeometry::create(assets->context()),
-            material::BasicMaterial::create(),
-            assets->effect("effect/Phong.effect")
+				geometry::QuadGeometry::create(canvas->context()),
+				material::BasicMaterial::create(),
+				sceneManager->assets()->effect("effect/Phong.effect")
             ))
             ->addComponent(Transform::create(Matrix4x4::create()->appendScale(3.f)->appendRotationX(-1.57f)));
         root->addChild(ground);
@@ -93,7 +93,7 @@ main(int argc, char** argv)
         canvas->run();
     });
 
-    sceneManager->assets()->load();
+    sceneManager->assets()->loader()->load();
 
     return 0;
 }
