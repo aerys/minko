@@ -9,6 +9,8 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		"src"
 	}
 
+	minko.plugin.enable("zlib")
+
 	--defines { "DEBUG_SKINNING" }
 
 	-- assimp lib
@@ -23,9 +25,15 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		"lib/assimp/contrib/**.cpp",
 		"lib/assimp/contrib/**.hpp",
 	}
-        excludes {
-                 "lib/assimp/code/Assimp.cpp"
-        }
+	excludes {
+		"lib/assimp/code/Assimp.cpp",
+		"lib/assimp/code/STLExporter.cpp",
+		"lib/assimp/code/PlyExporter.cpp",
+		"lib/assimp/code/ColladaExporter.cpp",
+		"lib/assimp/code/ObjExporter.cpp",
+		"lib/assimp/code/Exporter.cpp",
+		"lib/assimp/code/AssimpCExport.cpp"
+	}
 
 	includedirs {
 		"lib/assimp/code",
@@ -35,24 +43,34 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		"lib/assimp/contrib/ConvertUTF",
 		"lib/assimp/contrib/irrXML",
 		"lib/assimp/contrib/poly2tri",
-		"lib/assimp/contrib/unzip",
-		"lib/assimp/contrib/zlib"
+		"lib/assimp/contrib/unzip"
+		--"lib/assimp/contrib/zlib"
 	}
 	defines {
-                "ASSIMP_BUILD_NO_EXPORT",
+		"ASSIMP_BUILD_NO_OWN_ZLIB",
+		"ASSIMP_BUILD_NO_EXPORT",
 		"ASSIMP_BUILD_BOOST_WORKAROUND",
-                "ASSIMP_BUILD_NO_IMPORTER_INSTANCIATION",
-		'"AI_LMW_MAX_WEIGHTS=4"',
-		-- OpenGL ES 2 max vertex count
-		'"AI_SLM_DEFAULT_MAX_VERTICES=128000"',
-		-- OpenGL ES 2 max indices/triangles count
-		'"AI_SLM_DEFAULT_MAX_TRIANGLES=21845"'
+		"ASSIMP_BUILD_NO_IMPORTER_INSTANCIATION",
 	}
 
 	configuration { "vs*" }
 		defines {
 			"_CRT_SECURE_NO_WARNINGS",
-			"_SCL_SECURE_NO_WARNINGS"
+			"_SCL_SECURE_NO_WARNINGS",
+			"AI_LMW_MAX_WEIGHTS=4",
+			-- OpenGL ES 2 max vertex count
+			"AI_SLM_DEFAULT_MAX_VERTICES=128000",
+			-- OpenGL ES 2 max indices/triangles count
+			"AI_SLM_DEFAULT_MAX_TRIANGLES=21845"
+		}
+
+	configuration { "not vs*" }
+		defines {
+			'"AI_LMW_MAX_WEIGHTS=4"',
+			-- OpenGL ES 2 max vertex count
+			'"AI_SLM_DEFAULT_MAX_VERTICES=128000"',
+			-- OpenGL ES 2 max indices/triangles count
+			'"AI_SLM_DEFAULT_MAX_TRIANGLES=21845"'
 		}
 
 	configuration { "cc=clang" }

@@ -29,6 +29,7 @@ namespace minko
 		class Container :
 			public std::enable_shared_from_this<Container>
 		{
+
 		public:
 			typedef std::shared_ptr<Container>								Ptr;
 			typedef Signal<Ptr, const std::string&>							PropertyChangedSignal;
@@ -43,6 +44,7 @@ namespace minko
 			std::list<ProviderPtr>											_providers;
 			std::unordered_map<std::string, ProviderPtr>					_propertyNameToProvider;
 			std::unordered_map<ProviderPtr, uint>							_providersToNumUse;
+			std::unordered_map<ProviderPtr, uint>							_providerToIndex;
 
 			std::shared_ptr<Provider>										_arrayLengths;
 
@@ -88,6 +90,13 @@ namespace minko
 			bool
 			hasProperty(const std::string& propertyName) const;
 
+			inline
+			uint
+			getProviderIndex(ProviderPtr provider)
+			{
+				return _providerToIndex[provider];
+			}
+
 			template <typename T>
 			T
 			get(const std::string& propertyName) const
@@ -95,8 +104,9 @@ namespace minko
 				assertPropertyExists(propertyName);
 
 				const auto& provider = _propertyNameToProvider.find(propertyName)->second;
+				auto unformatedPropertyName = unformatPropertyName(provider, propertyName);
 
-				return provider->get<T>(propertyName, true);
+				return provider->get<T>(unformatedPropertyName, true);
 			}
 
 			template <typename T>
@@ -105,7 +115,10 @@ namespace minko
 			{
 				assertPropertyExists(propertyName);
 
-				_propertyNameToProvider[propertyName]->set<T>(propertyName, value);
+				auto provider = _propertyNameToProvider[propertyName];
+				auto unformatedPropertyName = unformatPropertyName(provider, propertyName);
+
+				provider->set<T>(unformatedPropertyName, value);
 			}
 
 			template <typename T>
@@ -116,7 +129,9 @@ namespace minko
 
 				const auto& provider = _propertyNameToProvider.find(propertyName)->second;
 
-				return provider->propertyHasType<T>(propertyName, skipPropertyNameFormatting);
+				auto unformatedPropertyName = unformatPropertyName(provider, propertyName);
+
+				return provider->propertyHasType<T>(unformatedPropertyName, skipPropertyNameFormatting);
 			}
 
 			inline
@@ -163,6 +178,12 @@ namespace minko
 
 			void
 			providerReferenceChangedHandler(ProviderPtr, const std::string& propertyName);
+
+			std::string
+			formatPropertyName(ProviderPtr  arrayProvider, const std::string&) const;
+
+			std::string
+			unformatPropertyName(ProviderPtr  arrayProvider, const std::string&) const;
 
 			inline
 			void

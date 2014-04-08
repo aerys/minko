@@ -5,13 +5,26 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 	kind "StaticLib"
 	language "C++"
 	
+	minko.plugin.enable("zlib")
+	
 	files {
 		"**.hpp",
 		"**.h",
 		"**.cpp",
 		"**.c"
 	}
-
+	
+	excludes {
+		"lib/devil/src/src-ILU/ilur/ilur.c",
+		"lib/devil/src/src-IL/src/il_main.c",
+		--"lib/devil/src/src-ILU/src/ilu_main.c",
+		"lib/devil/lib/libjpeg/wrjpgcom.c",
+		"lib/devil/lib/libjpeg/jpegtran.c",
+		"lib/devil/lib/libjpeg/djpeg.c",
+		"lib/devil/lib/libjpeg/cjpeg.c",
+		"lib/devil/lib/libjpeg/ckconfig.c"
+	}
+	
 	includedirs {
 		"include",
 		"lib/devil/src/include",
@@ -22,9 +35,13 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		"lib/devil/lib/libjpeg",
 		"lib/devil/lib/libtiff",
 		"lib/devil/lib/libpng",
-		"lib/devil/lib/zlib",
 		"lib/devil/lib/libjasper/include",
 		"lib/devil/lib/lcms/include"
+	}
+	
+	defines {
+		"_CRT_SECURE_NO_WARNINGS",
+		"IL_STATIC_LIB"
 	}
 
 	configuration { "osx64" }

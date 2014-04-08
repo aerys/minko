@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 #include "minko/file/AbstractParser.hpp"
-#include "minko/file/FileLoader.hpp"
+#include "minko/file/FileProtocol.hpp"
 #include "minko/component/Skinning.hpp"
 #include "minko/render/Blending.hpp"
 
@@ -59,7 +59,7 @@ namespace minko
             typedef std::shared_ptr<AbstractASSIMPParser>					Ptr;
 
         private:
-            typedef std::shared_ptr<AbstractLoader>					LoaderPtr;
+            typedef std::shared_ptr<Loader>					LoaderPtr;
 			typedef std::shared_ptr<scene::Node>					NodePtr;
 			typedef std::shared_ptr<component::SceneManager>		SceneManagerPtr;
 			typedef std::shared_ptr<geometry::Geometry>				GeometryPtr;
@@ -71,8 +71,7 @@ namespace minko
 			typedef std::shared_ptr<math::Matrix4x4>				Matrix4x4Ptr;
 			typedef std::shared_ptr<material::Material>				MaterialPtr;
 			typedef std::shared_ptr<render::Effect>					EffectPtr;
-            typedef std::shared_ptr<Assimp::Importer>               ImporterPtr;
-			
+
 			typedef std::vector<Matrix4x4Ptr>						Matrices4x4;
 
 			typedef Signal<LoaderPtr>::Slot							LoaderSignalSlot;
@@ -89,7 +88,7 @@ namespace minko
             std::string												_filename;
             std::shared_ptr<AssetLibrary>							_assetLibrary;
 			std::shared_ptr<file::Options>							_options;
-			
+
 			NodePtr													_symbol;
 
 			std::unordered_map<const aiNode*, NodePtr>				_aiNodeToNode;
@@ -101,7 +100,7 @@ namespace minko
 			LoaderToSlotMap											_loaderCompleteSlots;
 			LoaderToSlotMap											_loaderErrorSlots;
 
-            ImporterPtr                                             _importer;
+            Assimp::Importer*                                       _importer;
 
 		public:
 
@@ -137,7 +136,7 @@ namespace minko
 
             GeometryPtr
             createMeshGeometry(NodePtr, aiMesh*);
-            
+
             std::shared_ptr<component::Transform>
             getTransformFromAssimp(aiNode* ainode);
 
@@ -155,17 +154,18 @@ namespace minko
 
             NodePtr
             findNode(const std::string&) const;
-            
+
             void
 			parseDependencies(const std::string& filename, const aiScene* scene);
-            
+
             void
 			finalize();
 
 			void
 			loadTexture(const std::string&				textureFilename,
 						const std::string&				assetName,
-						std::shared_ptr<file::Options>	options);
+						std::shared_ptr<file::Options>	options,
+						const aiScene*					scene);
 
 			void
 			createSkins(const aiScene*);
@@ -173,7 +173,7 @@ namespace minko
 			void
 			createSkin(const aiMesh*);
 
-			BonePtr 
+			BonePtr
 			createBone(const aiBone*) const;
 
 			NodePtr
@@ -205,11 +205,11 @@ namespace minko
 			static
 			void
 			sample(const aiNodeAnim*, const std::vector<float>&, std::vector<Matrix4x4Ptr>&);
-			
+
 			static
 			Matrix4x4Ptr
 			convert(const aiVector3t<float>&, const aiQuaterniont<float>&, const aiVector3t<float>&, Matrix4x4Ptr output = nullptr);
-			
+
 			static
 			QuaternionPtr
 			convert(const aiQuaterniont<float>&, QuaternionPtr output = nullptr);
@@ -243,7 +243,7 @@ namespace minko
 			render::TriangleCulling
 			getTriangleCulling(const aiMaterial*) const;
 
-			bool 
+			bool
 			getWireframe(const aiMaterial*) const;
 
 			float
@@ -257,6 +257,12 @@ namespace minko
 
 			void
 			apply(NodePtr, const std::function<NodePtr(NodePtr)>&);
+
+			void
+			allDependenciesLoaded(const aiScene* scene);
+
+            void
+            textureCompleteHandler(std::shared_ptr<file::Loader> loader, const aiScene* scene);
 		};
 	}
 }

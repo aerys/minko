@@ -158,15 +158,22 @@ AbstractSerializerParser::deserializedAsset(SerializedAsset&			asset,
 			assetCompletePath += resolvedPath;
 		}
 
-		std::shared_ptr<file::AbstractParser> parser = assetLibrary->getParser("png");
+		std::shared_ptr<file::AbstractParser> parser = options->getParser("png");
 
 		parser->parse(resolvedPath, assetCompletePath, options, data, assetLibrary);
-		assetLibrary->texture(resolvedPath)->disposeData();
-		_dependencies->registerReference(asset.a1, assetLibrary->texture(resolvedPath));
+
+        auto texture = assetLibrary->texture(resolvedPath);
+
+        if (options->disposeTextureAfterLoading())
+        {
+            texture->disposeData();
+        }
+
+		_dependencies->registerReference(asset.a1, texture);
 	}
 	else if (asset.a0 == serialize::AssetType::EFFECT_ASSET) // effect
 	{
-		assetLibrary->load(assetCompletePath, nullptr, nullptr, false);
+		assetLibrary->loader()->queue(assetCompletePath);
 		_dependencies->registerReference(asset.a1, assetLibrary->effect(assetCompletePath));
 	}
 	else

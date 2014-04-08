@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/async/Worker.hpp"
 
 #if !defined(EMSCRIPTEN)
-# include "minko/file/FileLoaderWorker.hpp"
+#include "minko/file/FileProtocolWorker.hpp"
 #endif
 
 #if defined(EMSCRIPTEN)
@@ -93,7 +93,7 @@ Canvas::initialize()
     initializeInputs();
 
 #if !defined(EMSCRIPTEN)
-    registerWorker<file::FileLoaderWorker>("file-loader");
+    registerWorker<file::FileProtocolWorker>("file-loader");
 #endif
 
 #if defined(_WIN32)
@@ -476,56 +476,24 @@ Canvas::step()
             break;
 
         case SDL_JOYAXISMOTION:
-# if defined(DEBUG)
-            printf("Joystick %d axis %d value: %d\n",
-                event.jaxis.which,
-                event.jaxis.axis,
-                event.jaxis.value);
-#endif // DEBUG
             _joysticks[event.jaxis.which]->joystickAxisMotion()->execute(
                 _joysticks[event.jaxis.which], event.jaxis.which, event.jaxis.axis, event.jaxis.value
                 );
             break;
 
         case SDL_JOYHATMOTION:
-# if defined(DEBUG)
-            printf("Joystick %d hat %d value:",
-                event.jhat.which,
-                event.jhat.hat);
-            if (event.jhat.value == SDL_HAT_CENTERED)
-                printf(" centered");
-            if (event.jhat.value & SDL_HAT_UP)
-                printf(" up");
-            if (event.jhat.value & SDL_HAT_RIGHT)
-                printf(" right");
-            if (event.jhat.value & SDL_HAT_DOWN)
-                printf(" down");
-            if (event.jhat.value & SDL_HAT_LEFT)
-                printf(" left");
-            printf("\n");
-#endif // DEBUG
             _joysticks[event.jhat.which]->joystickHatMotion()->execute(
                 _joysticks[event.jhat.which], event.jhat.which, event.jhat.hat, event.jhat.value
                 );
             break;
 
         case SDL_JOYBUTTONDOWN:
-# if defined(DEBUG)
-            printf("Joystick %d button %d down\n",
-                event.jbutton.which,
-                event.jbutton.button);
-#endif
             _joysticks[event.jbutton.which]->joystickButtonDown()->execute(
                 _joysticks[event.jbutton.which], event.jbutton.which, event.jbutton.button
                 );
             break;
 
         case SDL_JOYBUTTONUP:
-# if defined(DEBUG)
-            printf("Joystick %d button %d up\n",
-                event.jbutton.which,
-                event.jbutton.button);
-#endif
             _joysticks[event.jbutton.which]->joystickButtonUp()->execute(
                 _joysticks[event.jbutton.which], event.jbutton.which, event.jbutton.button
                 );

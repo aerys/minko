@@ -34,12 +34,12 @@ main(int argc, char** argv)
 	auto canvas = Canvas::create("Minko Tutorial - Loading and using textures", WINDOW_WIDTH, WINDOW_HEIGHT);
 	auto sceneManager = component::SceneManager::create(canvas->context());
 
-	sceneManager->assets()
-		->registerParser<file::JPEGParser>("jpg")
+	sceneManager->assets()->loader()		
 		->queue("effect/Basic.effect")
-		->queue("texture/my_texture.jpg");
+		->queue("texture/my_texture.jpg")
+		->options()->registerParser<file::JPEGParser>("jpg");
 
-	auto complete = sceneManager->assets()->complete()->connect([&](file::AssetLibrary::Ptr assets)
+	auto complete = sceneManager->assets()->loader()->complete()->connect([&](file::Loader::Ptr loader)
 	{
 		auto root = scene::Node::create("root")
 			->addComponent(sceneManager);
@@ -54,9 +54,9 @@ main(int argc, char** argv)
 		auto cube = scene::Node::create("cube")
 		->addComponent(Transform::create(Matrix4x4::create()->translation(0.f, 0.f, -5.f)))
 			->addComponent(Surface::create(
-			geometry::CubeGeometry::create(assets->context()),
-			material::BasicMaterial::create()->diffuseMap(assets->texture("texture/my_texture.jpg")),
-			assets->effect("effect/Basic.effect")
+			geometry::CubeGeometry::create(sceneManager->assets()->context()),
+			material::BasicMaterial::create()->diffuseMap(sceneManager->assets()->texture("texture/my_texture.jpg")),
+			sceneManager->assets()->effect("effect/Basic.effect")
 			));
 		root->addChild(cube);
 
@@ -69,7 +69,7 @@ main(int argc, char** argv)
 		canvas->run();
 	});
 
-	sceneManager->assets()->load();
+	sceneManager->assets()->loader()->load();
 
 	return 0;
 }

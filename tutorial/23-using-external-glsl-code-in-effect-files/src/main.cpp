@@ -33,11 +33,12 @@ main(int argc, char** argv)
 	auto canvas = Canvas::create("Minko Tutorial - Using external GLSL code in effect files", WINDOW_WIDTH, WINDOW_HEIGHT);
 	auto sceneManager = component::SceneManager::create(canvas->context());
 
-	sceneManager->assets()
+	sceneManager->assets()->loader()
 		->queue("effect/MyCustomEffect.effect");
-	auto complete = sceneManager->assets()->complete()->connect([&](file::AssetLibrary::Ptr assets)
+
+	auto complete = sceneManager->assets()->loader()->complete()->connect([&](file::Loader::Ptr loader)
 	{
-		auto myCustomEffect = assets->effect("effect/MyCustomEffect.effect");
+		auto myCustomEffect = sceneManager->assets()->effect("effect/MyCustomEffect.effect");
 
 		auto root = scene::Node::create("root")
 			->addComponent(sceneManager)
@@ -45,7 +46,7 @@ main(int argc, char** argv)
 
 		auto cube = scene::Node::create("cube")
 			->addComponent(Surface::create(
-			geometry::CubeGeometry::create(assets->context()),
+			geometry::CubeGeometry::create(canvas->context()),
 			material::BasicMaterial::create()->diffuseColor(Vector4::create(0.f, 0.f, 1.f, 1.f)),
 			myCustomEffect
 			));
@@ -70,7 +71,7 @@ main(int argc, char** argv)
 		canvas->run();
 	});
 
-	sceneManager->assets()->load();
+	sceneManager->assets()->loader()->load();
 
 	return 0;
 }

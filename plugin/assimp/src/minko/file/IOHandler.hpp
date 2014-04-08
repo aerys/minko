@@ -21,6 +21,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 
+#include "minko/file/AbstractProtocol.hpp"
+
 #include "minko/file/Options.hpp"
 #include "minko/file/IOStream.hpp"
 
@@ -34,17 +36,17 @@ namespace minko
 		class IOHandler :
 			public Assimp::IOSystem
 		{
-			typedef std::shared_ptr<AbstractLoader>					LoaderPtr;
+			typedef std::shared_ptr<AbstractProtocol>                       AbsProtocolPtr;
 
-			typedef Signal<LoaderPtr>::Slot							LoaderSignalSlot;
+            typedef Signal<AbsProtocolPtr>::Slot					        ProtocolSignalSlot;
 
-			typedef std::unordered_map<LoaderPtr, LoaderSignalSlot>	LoaderToSlotMap;
-			typedef std::unordered_map<uint, std::string>			TextureTypeToName;
+            typedef std::unordered_map<AbsProtocolPtr, ProtocolSignalSlot>	ProtocolToSlotMap;
+			typedef std::unordered_map<uint, std::string>			        TextureTypeToName;
 		private:
-			std::shared_ptr<file::Options>		_options;
-			std::shared_ptr<file::AssetLibrary>	_assets;
-			LoaderToSlotMap											_loaderCompleteSlots;
-			LoaderToSlotMap											_loaderErrorSlots;
+			std::shared_ptr<file::Options>		    _options;
+			std::shared_ptr<file::AssetLibrary>	    _assets;
+            ProtocolToSlotMap						_protocolCompleteSlots;
+            ProtocolToSlotMap						_protocolErrorSlots;
 
 		public:
 			IOHandler(std::shared_ptr<file::Options> options, std::shared_ptr<file::AssetLibrary> assets) :
@@ -82,22 +84,22 @@ namespace minko
 			Open(const char* pFile, const char* pMode = "rb")
 			{
 				auto filename = std::string(pFile);
-				auto loader = _options->loaderFunction()(filename, _assets);
+				auto protocol = _options->protocolFunction()(filename);
 				
 				Assimp::IOStream* stream = 0;
 
-				_loaderCompleteSlots[loader] = loader->complete()->connect([&](file::AbstractLoader::Ptr loader)
+                _protocolCompleteSlots[protocol] = protocol->complete()->connect([&](file::AbstractProtocol::Ptr protocol)
 				{
-					stream = new minko::file::IOStream(loader->data());
+                    stream = new minko::file::IOStream(protocol->file()->data());
 				});
 #ifdef DEBUG
-				_loaderErrorSlots[loader] = loader->error()->connect([&](file::AbstractLoader::Ptr loader)
+                _protocolErrorSlots[protocol] = protocol->error()->connect([&](file::AbstractProtocol::Ptr protocol)
 				{
 					std::cerr << "error: could not load file '" << filename << "'" << std::endl;
 				});
-#endif
+#endif // defined(DEBUG)
 
-				loader->load(filename, _options);
+                protocol->load(filename, _options);
 				
 				return stream;
 			}

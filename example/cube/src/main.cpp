@@ -32,13 +32,15 @@ int main(int argc, char** argv)
 	auto canvas = Canvas::create("Minko Example - Cube", 800, 600);
 
 	auto sceneManager = SceneManager::create(canvas->context());
-	
+
 	// setup assets
-	sceneManager->assets()->defaultOptions()->resizeSmoothly(true);
-	sceneManager->assets()->defaultOptions()->generateMipmaps(true);
-	sceneManager->assets()
-		->registerParser<file::PNGParser>("png")
-		->queue(TEXTURE_FILENAME)
+	sceneManager->assets()->loader()->options()->resizeSmoothly(true);
+	sceneManager->assets()->loader()->options()->generateMipmaps(true);
+	sceneManager->assets()->loader()->options()
+                ->registerParser<file::PNGParser>("png");
+
+        sceneManager->assets()->loader()
+                ->queue(TEXTURE_FILENAME)
 		->queue("effect/Basic.effect");
 
 	sceneManager->assets()->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()));
@@ -57,16 +59,17 @@ int main(int argc, char** argv)
 		->addComponent(PerspectiveCamera::create(800.f / 600.f, (float)PI * 0.25f, .1f, 1000.f));
 	root->addChild(camera);
 
-	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
+	auto _ = sceneManager->assets()->loader()->complete()->connect([=](file::Loader::Ptr loader)
 	{
 		auto cubeGeometry = geometry::CubeGeometry::create(sceneManager->assets()->context());
 
-		assets->geometry("cubeGeometry", cubeGeometry);
-		
+		sceneManager->assets()->geometry("cubeGeometry", cubeGeometry);
+
 		mesh->addComponent(Surface::create(
-			assets->geometry("cubeGeometry"),
-			material::BasicMaterial::create()->diffuseMap(assets->texture(TEXTURE_FILENAME)),
-			assets->effect("effect/Basic.effect")
+                        sceneManager->assets()->geometry("cubeGeometry"),
+			material::BasicMaterial::create()->diffuseMap(
+                          sceneManager->assets()->texture(TEXTURE_FILENAME)),
+			sceneManager->assets()->effect("effect/Basic.effect")
 			));
 
 		root->addChild(mesh);
@@ -84,7 +87,7 @@ int main(int argc, char** argv)
 		sceneManager->nextFrame(time, deltaTime);
 	});
 
-	sceneManager->assets()->load();
+	sceneManager->assets()->loader()->load();
 	canvas->run();
 
 	return 0;

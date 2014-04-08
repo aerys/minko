@@ -36,16 +36,11 @@ namespace minko
 		bind(LuaGlue& state)
 		{
 			auto& abstractCanvas = state.Class<AbstractCanvas>("AbstractCanvas")
-				.property("width",					&AbstractCanvas::width)
-				.property("height",					&AbstractCanvas::height)
-				.property("mouse", 					&AbstractCanvas::mouse)
-				.property("keyboard",				&AbstractCanvas::keyboard)
-				.property("numJoysticks",			&AbstractCanvas::numJoysticks)
-				.property("relativeTime",			&AbstractCanvas::relativeTime)
-				.property("frameDuration",			&AbstractCanvas::frameDuration)
-				.methodWrapper("getJoystickAxis",   &LuaAbstractCanvas::getJoystickAxisWrapper)
-				.methodWrapper("joystick",			&LuaAbstractCanvas::joystickWrapper);
-
+				.property("width",		    &AbstractCanvas::width)
+				.property("height",		    &AbstractCanvas::height)
+				.property("mouse", 		    &AbstractCanvas::mouse)
+				.property("keyboard",	    &AbstractCanvas::keyboard)
+                .method("joystick",         &AbstractCanvas::joystick);
 		    MINKO_LUAGLUE_BIND_SIGNAL(state, AbstractCanvas::Ptr);
 		    MINKO_LUAGLUE_BIND_SIGNAL(state, AbstractCanvas::Ptr, uint, uint);
 			MINKO_LUAGLUE_BIND_SIGNAL(state, AbstractCanvas::Ptr, input::Joystick::Ptr);
@@ -53,21 +48,6 @@ namespace minko
 			abstractCanvas.property("joystickAdded", &AbstractCanvas::joystickAdded);
 			abstractCanvas.property("joystickRemoved", &AbstractCanvas::joystickRemoved);
 			
-		}
-
-	private:
-		static
-		std::shared_ptr<input::Joystick>
-		joystickWrapper(AbstractCanvas::Ptr c, uint id)
-		{
-			return c->joystick(id - 1);
-		}
-
-		static
-		int
-		getJoystickAxisWrapper(AbstractCanvas::Ptr c, std::shared_ptr<input::Joystick> joystick, int axis)
-		{			
-			return c->getJoystickAxis(joystick, axis);
 		}
 	};
 }
