@@ -37,13 +37,13 @@ FileProtocol::FileProtocol()
 void
 FileProtocol::load()
 {
-    auto filename = _file->filename();
-    auto options = _options;
+	auto filename = _file->filename();
+	auto options = _options;
 	auto flags = std::ios::in | std::ios::ate | std::ios::binary;
-	
+
 	std::string cleanFilename = "";
 
-	for(uint i = 0; i < filename.length(); ++i)
+	for (uint i = 0; i < filename.length(); ++i)
 	{
 		if (i < filename.length() - 2 && filename.at(i) == ':' && filename.at(i + 1) == '/' && filename.at(i + 2) == '/')
 		{
@@ -51,33 +51,36 @@ FileProtocol::load()
 			i += 2;
 			continue;
 		}
-		
+
 		cleanFilename += filename.at(i);
 	}
 
 	_options = options;
 
-    auto realFilename = options->uriFunction()(File::sanitizeFilename(cleanFilename));
-	
+	auto realFilename = options->uriFunction()(File::sanitizeFilename(cleanFilename));
+
 	std::fstream file(cleanFilename, flags);
 
 	if (!file.is_open())
+	{
 		for (auto path : _options->includePaths())
 		{
 			auto testFilename = options->uriFunction()(File::sanitizeFilename(path + '/' + cleanFilename));
 
 			file.open(testFilename, flags);
 			if (file.is_open())
-            {
-                realFilename = testFilename;
+			{
+				realFilename = testFilename;
 				break;
-            }
+			}
 		}
-
-    auto loader = shared_from_this();
+	}
+	
+	auto loader = shared_from_this();
 
 	if (file.is_open())
 	{
+
         resolvedFilename(realFilename);
 
 		if (_options->loadAsynchronously() && AbstractCanvas::defaultCanvas() != nullptr
@@ -114,7 +117,7 @@ FileProtocol::load()
 
 			// FIXME: use fixed size buffers and call _progress accordingly
 
-            _progress->execute(shared_from_this(), 0.0);
+			_progress->execute(shared_from_this(), 0.0);
 
 			data().resize(size);
 
@@ -122,11 +125,14 @@ FileProtocol::load()
 			file.read((char*)&data()[0], size);
 			file.close();
 
-            _progress->execute(loader, 1.0);
+			_progress->execute(loader, 1.0);
 
-            _complete->execute(shared_from_this());
+			_complete->execute(shared_from_this());
 		}
 	}
 	else
-        _error->execute(shared_from_this());
+	{
+		std::cout << "FileProtocol::load() : Could not load file " + filename << std::endl;
+		_error->execute(shared_from_this());
+	}
 }
