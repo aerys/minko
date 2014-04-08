@@ -28,7 +28,7 @@ namespace minko
 {
 	namespace file
 	{
-		class Options: 
+		class Options:
 			public std::enable_shared_from_this<Options>
 		{
 		private:
@@ -67,6 +67,10 @@ namespace minko
 			bool										        _isCubeTexture;
 			bool										        _startAnimation;
 			bool										        _loadAsynchronously;
+            bool                                                _disposeIndexBufferAfterLoading;
+            bool                                                _disposeVertexBufferAfterLoading;
+            bool                                                _disposeTextureAfterLoading;
+
 			unsigned int								        _skinningFramerate;
 			component::SkinningMethod					        _skinningMethod;
             std::shared_ptr<render::Effect>                     _effect;
@@ -108,7 +112,7 @@ namespace minko
 			create(Ptr options)
 			{
 				auto opt = create();
-				
+
                 opt->_context = options->_context;
                 opt->_assets = options->_assets;
                 opt->_parsers = options->_parsers;
@@ -259,6 +263,54 @@ namespace minko
 
 				return shared_from_this();
 			}
+
+            inline
+            bool
+            disposeIndexBufferAfterLoading() const
+            {
+                return _disposeIndexBufferAfterLoading;
+            }
+
+            inline
+            Ptr
+            disposeIndexBufferAfterLoading(bool value)
+            {
+                _disposeIndexBufferAfterLoading = value;
+
+                return shared_from_this();
+            }
+
+            inline
+            bool
+            disposeVertexBufferAfterLoading() const
+            {
+                return _disposeVertexBufferAfterLoading;
+            }
+
+            inline
+            Ptr
+            disposeVertexBufferAfterLoading(bool value)
+            {
+                _disposeVertexBufferAfterLoading = value;
+
+                return shared_from_this();
+            }
+
+            inline
+            bool
+            disposeTextureAfterLoading() const
+            {
+                return _disposeIndexBufferAfterLoading;
+            }
+
+            inline
+            Ptr
+            disposeTextureAfterLoading(bool value)
+            {
+                _disposeTextureAfterLoading = value;
+
+                return shared_from_this();
+            }
 
 			inline
 			unsigned int
@@ -451,7 +503,7 @@ namespace minko
 
             AbsProtocolPtr
 			getProtocol(const std::string& protocol);
-			
+
 		private:
 			Options();
 

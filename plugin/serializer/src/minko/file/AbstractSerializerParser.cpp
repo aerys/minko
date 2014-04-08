@@ -158,7 +158,15 @@ AbstractSerializerParser::deserializedAsset(SerializedAsset				asset,
 		std::shared_ptr<file::AbstractParser> parser = options->getParser("png");
 
 		parser->parse(resolvedPath, assetCompletePath, options, data, assetLibrary);
-		_dependencies->registerReference(asset.a1, assetLibrary->texture(resolvedPath));
+
+        auto texture = assetLibrary->texture(resolvedPath);
+
+        if (options->disposeTextureAfterLoading())
+        {
+            texture->disposeData();
+        }
+
+		_dependencies->registerReference(asset.a1, texture);
 	}
 	else if (asset.a0 == serialize::AssetType::EFFECT_ASSET) // effect
 	{
