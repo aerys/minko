@@ -75,12 +75,18 @@ File::getBinaryDirectory()
 
 	return sanitizeFilename(path);
 #elif defined(EMSCRIPTEN) // HTML5
+	/*
 	std::string eval = "(document.location.href)";
 	char* buffer = emscripten_run_script_string(eval.c_str());
 	auto path = sanitizeFilename(std::string(buffer));
 	auto pos = path.find_last_of("/");
-
 	return path.substr(0, pos);
+	*/
+#ifdef DEBUG
+	return "bin/html5/debug";
+#else //RELEASE
+	return "bin/html5/release";
+#endif
 #elif defined(LINUX) || defined(__unix__) // Linux
     char buffer[PATH_MAX];
     size_t l = readlink("/proc/self/exe", buffer, PATH_MAX);
