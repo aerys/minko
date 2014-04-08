@@ -49,6 +49,8 @@ namespace minko
 
 				if (chunkSize > 1024)
 					chunkSize = 1024;
+				else if (chunkSize == 0)
+					chunkSize = 8;
 
 				chunkSize *= 1024;
 
