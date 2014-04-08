@@ -99,6 +99,7 @@ main(int argc, char** argv)
 	auto fxComplete = fxLoader->complete()->connect([&](file::Loader::Ptr l)
 	{
 	    sceneManager->assets()->loader()->queue(MODEL_FILENAME);
+		sceneManager->assets()->loader()->load();
 	});
 
 	bool beIdle = true;
@@ -288,7 +289,7 @@ main(int argc, char** argv)
 		sceneManager->nextFrame(time, deltaTime);
 	});
 
-	sceneManager->assets()->loader()->load();
+	fxLoader->load();
 	canvas->run();
 
 	return 0;
