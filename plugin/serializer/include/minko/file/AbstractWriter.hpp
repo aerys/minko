@@ -36,11 +36,12 @@ namespace minko
 			typedef std::shared_ptr<AbstractWriter> Ptr;
 
 		private:
-			typedef std::vector<msgpack::type::tuple<short, short, std::string>> SerializedDependency;
+			typedef std::vector<msgpack::type::tuple<unsigned int, short, std::string>> SerializedDependency;
 
 		protected :
 			std::shared_ptr<Signal<Ptr>>	_complete;
 			T								_data;
+			std::shared_ptr<Dependency>		_parentDependencies;
 
 		public:
 			inline
@@ -62,6 +63,13 @@ namespace minko
 			data(const T& data)
 			{
 				_data = data;
+			}
+
+			inline
+			void
+			parentDependencies(std::shared_ptr<Dependency> parentDependencies)
+			{
+				_parentDependencies = parentDependencies;
 			}
 
 			void
@@ -91,6 +99,26 @@ namespace minko
 				complete()->execute(this->shared_from_this());
 			}
 
+            std::string
+            embedAll(std::shared_ptr<AssetLibrary>	assetLibrary,
+                     std::shared_ptr<Options>		options)
+            {
+                // TODO
+                // refactor with AbstractWriter::write by adding a tier private member function
+
+				Dependency::Ptr			dependencies	= _parentDependencies;
+				std::string				serializedData	= embed(assetLibrary, options, dependencies);
+				SerializedDependency	serializedDependencies = Dependency::create()->serialize(assetLibrary, options);
+	
+
+                msgpack::type::tuple<SerializedDependency, std::string> res(serializedDependencies, serializedData);
+
+                std::stringstream sbuf;
+                msgpack::pack(sbuf, res);
+
+                return sbuf.str();
+            }
+
 			virtual
 			std::string
 			embed(std::shared_ptr<AssetLibrary>		assetLibrary,
@@ -99,7 +127,8 @@ namespace minko
 
 		protected:
 			AbstractWriter() :
-				_complete(Signal<Ptr>::create())
+				_complete(Signal<Ptr>::create()),
+				_parentDependencies(nullptr)
 			{
 			}
 		};

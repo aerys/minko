@@ -23,13 +23,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "IL/ilu.h"
 #include "IL/ilut.h"
 
+using namespace minko;
 using namespace minko::file;
 
-void
-DevILWriter::write(const std::string&                 filename,
-                 const std::vector<unsigned char>&  data,
-                 minko::uint                        width,
-                 minko::uint                        height)
+uint
+DevILWriter::createScaledImage(const std::vector<unsigned char>&    src,
+                               uint                                 srcWidth,
+                               uint                                 srcHeight,
+                               uint                                 dstWidth,
+                               uint                                 dstHeight,
+                               uint                                 componentCount)
 {
 	ILuint devilID;
 
@@ -39,12 +42,74 @@ DevILWriter::write(const std::string&                 filename,
 	ilGenImages(1, &devilID);
 	ilBindImage(devilID);
 
-	ilLoadL(IL_TYPE_UNKNOWN, &data[0], data.size());
+    int format;
+
+    switch (componentCount) {
+        case 1:  format = IL_LUMINANCE; break;
+        case 3:  format = IL_RGB; break;
+        case 4:  format = IL_RGBA; break;
+        default: return 0;
+    }
+
+    ilTexImage(srcWidth,
+               srcHeight,
+               1,
+               componentCount,
+               format,
+               IL_UNSIGNED_BYTE,
+               const_cast<unsigned char*> (src.data()));
+    iluFlipImage();
+    iluScale(dstWidth, dstHeight, 1);
 	checkError();
+
+    return devilID;
+}
+
+void
+DevILWriter::writeToFile(const std::string&                     filename,
+                         const std::vector<unsigned char>&      src,
+                         uint                                   srcWidth,
+                         uint                                   srcHeight,
+                         uint                                   dstWidth,
+                         uint                                   dstHeight,
+                         uint                                   componentCount)
+{
+	uint devilID = createScaledImage(src, srcWidth, srcHeight, dstWidth, dstHeight, componentCount);
 
 	ilEnable(IL_FILE_OVERWRITE);
 	ilSaveImage(filename.c_str());
 	checkError();
+
+    ilDeleteImages(1, &devilID);
+
+	ilShutDown();
+}
+
+void
+DevILWriter::writeToStream(std::vector<unsigned char>&          dst,
+                           const std::vector<unsigned char>&    src,
+                           uint                                 srcWidth,
+                           uint                                 srcHeight,
+                           uint                                 dstWidth,
+                           uint                                 dstHeight,
+                           uint                                 componentCount)
+{
+// TODO
+// add enum into minko framework
+    static const ILuint imageType = IL_PNG;
+
+	uint devilID = createScaledImage(src, srcWidth, srcHeight, dstWidth, dstHeight, componentCount);
+
+    uint size = ilSaveL(imageType, nullptr, 0);
+
+    unsigned char* buffer = new unsigned char[size];
+    ilSaveL(imageType, buffer, size);
+
+    std::copy(buffer, buffer + size, std::back_inserter(dst));
+
+    delete[] buffer;
+
+    ilDeleteImages(1, &devilID);
 
 	ilShutDown();
 }
@@ -55,7 +120,7 @@ DevILWriter::checkError()
 	ILuint error = ilGetError();
 
 	if (error != IL_NO_ERROR)
-		throw std::runtime_error(std::string("DevILWriter::write"));
+		throw std::runtime_error(std::string("DevILWriter::write, ") + iluErrorString(error));
 }
 
 std::set<std::string>
