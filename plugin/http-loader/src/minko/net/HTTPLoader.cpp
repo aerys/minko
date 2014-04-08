@@ -218,7 +218,7 @@ HTTPLoader::load(const std::string& filename, std::shared_ptr<Options> options)
 			else if (message.type == "progress")
 			{
 				float ratio = *reinterpret_cast<float*>(&*message.data.begin());
-				progressHandler(loader.get(), ratio * 100);				
+				progressHandler(loader.get(), ratio * 100.f);				
 			}
 			else if (message.type == "error")
 			{
@@ -234,7 +234,7 @@ HTTPLoader::load(const std::string& filename, std::shared_ptr<Options> options)
 		HTTPRequest request(_resolvedFilename);
 
 		request.progress()->connect([&](float p){
-			progressHandler(loader.get(), p * 100);
+			progressHandler(loader.get(), p * 100.f);
 		});
 
 		request.run();

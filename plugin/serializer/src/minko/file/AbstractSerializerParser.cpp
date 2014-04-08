@@ -158,7 +158,7 @@ AbstractSerializerParser::deserializedAsset(SerializedAsset				asset,
 	else if ((asset.a0 == serialize::AssetType::TEXTURE_ASSET ||
 				asset.a0 == serialize::AssetType::PNG_EMBED_TEXTURE_ASSET ||
 				asset.a0 == serialize::AssetType::JPEG_EMBED_TEXTURE_ASSET) && 
-			_dependencies->textureReferenceExist(asset.a1) == false ) // texture
+			(_dependencies->textureReferenceExist(asset.a1) == false || _dependencies->getTextureReference(asset.a1) == nullptr)) // texture
 	{
 		if (asset.a0 == serialize::AssetType::PNG_EMBED_TEXTURE_ASSET ||
             asset.a0 == serialize::AssetType::JPEG_EMBED_TEXTURE_ASSET)

@@ -412,10 +412,9 @@ ASSIMPParser::createMeshSurface(scene::Node::Ptr 	minkoNode,
 			)
 		);
 	}
-#ifdef DEBUG
 	else
 		std::cerr << "Failed to find suitable effect for mesh '" << meshName << "' and no default effect provided." << std::endl;
-#endif // DEBUG
+
 }
 
 void

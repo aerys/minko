@@ -41,6 +41,7 @@ namespace minko
 		protected :
 			std::shared_ptr<Signal<Ptr>>	_complete;
 			T								_data;
+			std::shared_ptr<Dependency>		_parentDependencies;
 
 		public:
 			inline
@@ -62,6 +63,13 @@ namespace minko
 			data(const T& data)
 			{
 				_data = data;
+			}
+
+			inline
+			void
+			parentDependencies(std::shared_ptr<Dependency> parentDependencies)
+			{
+				_parentDependencies = parentDependencies;
 			}
 
 			void
@@ -98,9 +106,10 @@ namespace minko
                 // TODO
                 // refactor with AbstractWriter::write by adding a tier private member function
 
-                Dependency::Ptr			dependencies			= Dependency::create();
-                std::string				serializedData			= embed(assetLibrary, options, dependencies);
-                SerializedDependency	serializedDependencies	= dependencies->serialize(assetLibrary, options);
+				Dependency::Ptr			dependencies	= _parentDependencies;
+				std::string				serializedData	= embed(assetLibrary, options, dependencies);
+				SerializedDependency	serializedDependencies = Dependency::create()->serialize(assetLibrary, options);
+	
 
                 msgpack::type::tuple<SerializedDependency, std::string> res(serializedDependencies, serializedData);
 
@@ -118,7 +127,8 @@ namespace minko
 
 		protected:
 			AbstractWriter() :
-				_complete(Signal<Ptr>::create())
+				_complete(Signal<Ptr>::create()),
+				_parentDependencies(nullptr)
 			{
 			}
 		};

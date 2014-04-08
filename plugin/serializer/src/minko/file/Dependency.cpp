@@ -40,7 +40,8 @@ Dependency::Dependency()
 			std::placeholders::_1,
 			std::placeholders::_2,
 			std::placeholders::_3,
-			std::placeholders::_4);
+			std::placeholders::_4,
+			std::placeholders::_5);
     }
 
     if (_textureWriteFunction == nullptr)
@@ -49,7 +50,8 @@ Dependency::Dependency()
 			std::placeholders::_1,
 			std::placeholders::_2,
 			std::placeholders::_3,
-			std::placeholders::_4);
+			std::placeholders::_4,
+			std::placeholders::_5);
     }
 
     if (_materialWriteFunction == nullptr)
@@ -58,7 +60,8 @@ Dependency::Dependency()
 			std::placeholders::_1,
 			std::placeholders::_2,
 			std::placeholders::_3,
-			std::placeholders::_4);
+			std::placeholders::_4,
+			std::placeholders::_5);
 	}
 }
 
@@ -222,7 +225,8 @@ Dependency::effectReferenceExist(uint referenceId)
 }
 
 Dependency::SerializedAsset
-Dependency::serializeGeometry(std::shared_ptr<file::AssetLibrary>	assetLibrary,
+Dependency::serializeGeometry(std::shared_ptr<Dependency>			dependency, 
+							  std::shared_ptr<file::AssetLibrary>	assetLibrary,
 							  std::shared_ptr<geometry::Geometry>	geometry,
 							  uint									resourceId,
 							  std::shared_ptr<file::Options>		options)
@@ -258,7 +262,8 @@ Dependency::serializeGeometry(std::shared_ptr<file::AssetLibrary>	assetLibrary,
 }
 
 Dependency::SerializedAsset
-Dependency::serializeTexture(std::shared_ptr<file::AssetLibrary>		assetLibrary,
+Dependency::serializeTexture(std::shared_ptr<Dependency>				dependency, 
+						     std::shared_ptr<file::AssetLibrary>		assetLibrary,
 							 std::shared_ptr<render::AbstractTexture>	texture,
 							 uint										resourceId,
 							 std::shared_ptr<file::Options>				options)
@@ -316,7 +321,8 @@ Dependency::serializeTexture(std::shared_ptr<file::AssetLibrary>		assetLibrary,
 }
 
 Dependency::SerializedAsset
-Dependency::serializeMaterial(std::shared_ptr<file::AssetLibrary>	assetLibrary,
+Dependency::serializeMaterial(std::shared_ptr<Dependency>			dependency,
+							  std::shared_ptr<file::AssetLibrary>	assetLibrary,
 							  std::shared_ptr<data::Provider>       material,
 							  uint									resourceId,
 							  std::shared_ptr<file::Options>		options)
@@ -330,13 +336,13 @@ Dependency::serializeMaterial(std::shared_ptr<file::AssetLibrary>	assetLibrary,
     if (options->embedAll())
     {
         assetType = serialize::AssetType::EMBED_MATERIAL_ASSET;
-
+		materialWriter->parentDependencies(dependency);
         content = materialWriter->embedAll(assetLibrary, options);
     }
     else
     {
         assetType = serialize::AssetType::MATERIAL_ASSET;
-
+		materialWriter->parentDependencies(nullptr);
         auto filename = assetLibrary->materialName(material) + ".material";
 
         auto completeFilename = options->outputAssetUriFunction()(filename);
@@ -359,19 +365,19 @@ Dependency::serialize(std::shared_ptr<file::AssetLibrary>	assetLibrary,
 
     for (const auto& itGeometry : _geometryDependencies)
 	{
-		SerializedAsset res = _geometryWriteFunction(assetLibrary, itGeometry.first, itGeometry.second, options);
+		SerializedAsset res = _geometryWriteFunction(shared_from_this(), assetLibrary, itGeometry.first, itGeometry.second, options);
 		serializedAsset.push_back(res);
 	}
 
     for (const auto& itMaterial : _materialDependencies)
 	{
-		SerializedAsset res = _materialWriteFunction(assetLibrary, itMaterial.first, itMaterial.second, options);
+		SerializedAsset res = _materialWriteFunction(shared_from_this(), assetLibrary, itMaterial.first, itMaterial.second, options);
 		serializedAsset.push_back(res);
 	}
 
     for (const auto& itTexture : _textureDependencies)
 	{
-		SerializedAsset res = _textureWriteFunction(assetLibrary, itTexture.first, itTexture.second, options);
+		SerializedAsset res = _textureWriteFunction(shared_from_this(), assetLibrary, itTexture.first, itTexture.second, options);
 
 		serializedAsset.insert(serializedAsset.begin(), res);
 	}
