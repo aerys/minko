@@ -441,31 +441,38 @@ Canvas::step()
         {
             switch( event.button.button ) 
             {
-            case SDL_BUTTON_LEFT:
+			case SDL_BUTTON_LEFT:
                 _mouse->leftButtonDown()->execute(_mouse);
                 break;
-            case SDL_BUTTON_RIGHT:
+			case SDL_BUTTON_RIGHT:
                 _mouse->rightButtonDown()->execute(_mouse);
                 break;
-	    }
+#ifdef EMSCRIPTEN
+			case SDL_BUTTON_X1:
+				_mouse->wheel()->execute(_mouse, 0, 1);
+				break;
+			case SDL_BUTTON_X2:
+				_mouse->wheel()->execute(_mouse, 0, -1);
+				break;
+#endif
+			}
             break;
         }
         case SDL_MOUSEBUTTONUP:
-        {
+		{
             switch( event.button.button ) 
-	    {
-	    case SDL_BUTTON_LEFT:
-                _mouse->leftButtonUp()->execute(_mouse);
-                break;
-	    case SDL_BUTTON_RIGHT:
-                _mouse->rightButtonUp()->execute(_mouse);
-                break;
-            }
+			{
+				case SDL_BUTTON_LEFT:
+					_mouse->leftButtonUp()->execute(_mouse);
+					break;
+				case SDL_BUTTON_RIGHT:
+					_mouse->rightButtonUp()->execute(_mouse);
+					break;
+			}
             break;
         }
-        case SDL_MOUSEWHEEL:
+		case SDL_MOUSEWHEEL:
             _mouse->wheel()->execute(_mouse, event.wheel.x, event.wheel.y);
-            //_mouseWheel->execute(shared_from_this(), event.wheel.x, event.wheel.y);
             break;
 
         case SDL_JOYAXISMOTION:
@@ -566,13 +573,14 @@ Canvas::step()
 
 #ifdef EMSCRIPTEN
         case SDL_VIDEORESIZE:
-            width(event.resize.w);
+			//Not working for the moment.
+            /*width(event.resize.w);
             height(event.resize.h);
 
             delete _screen;
             _screen = SDL_SetVideoMode(width(), height(), 0, SDL_OPENGL | SDL_RESIZABLE);
             _context->configureViewport(x(), y(), width(), height());
-            _resized->execute(shared_from_this(), width(), height());
+            _resized->execute(shared_from_this(), width(), height());*/
             break;
 #else
         case SDL_WINDOWEVENT:
@@ -595,6 +603,26 @@ Canvas::step()
             break;
         }
     }
+
+#ifdef EMSCRIPTEN
+	//Temporary resize handling (while SDL_VIDEORESIZE is not working)
+	int canvasW = width();
+	int canvasH = width();
+	int canvasFullscreen = 0;
+
+	emscripten_get_canvas_size(&canvasW, &canvasH, &canvasFullscreen);
+
+	if (canvasW != width() || canvasH != height())
+	{
+		width(canvasW);
+		height(canvasH);
+
+		delete _screen;
+		_screen = SDL_SetVideoMode(canvasW, canvasH, 0, SDL_OPENGL | SDL_RESIZABLE);
+		_context->configureViewport(x(), y(), canvasW, canvasH);
+		_resized->execute(shared_from_this(), canvasW, canvasH);
+	}
+#endif
 
     for (auto worker : _activeWorkers)
         worker->poll();
