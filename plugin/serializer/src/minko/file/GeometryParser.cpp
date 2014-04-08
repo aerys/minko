@@ -40,7 +40,7 @@ GeometryParser::initialize()
 }
 
 std::shared_ptr<render::VertexBuffer>
-GeometryParser::deserializeVertexBuffer(std::string&								serializedVertexBuffer, 
+GeometryParser::deserializeVertexBuffer(std::string&								serializedVertexBuffer,
 										std::shared_ptr<render::AbstractContext>	context)
 {
 	msgpack::object														msgpackObject;
@@ -57,7 +57,7 @@ GeometryParser::deserializeVertexBuffer(std::string&								serializedVertexBuff
 
 	for (unsigned int attributesIndex = 0; attributesIndex < numAttributes; ++attributesIndex)
 		vertexBuffer->addAttribute(
-			deserializedVertex.a1[attributesIndex].a0, 
+			deserializedVertex.a1[attributesIndex].a0,
 			deserializedVertex.a1[attributesIndex].a1,
 			deserializedVertex.a1[attributesIndex].a2);
 
@@ -65,7 +65,7 @@ GeometryParser::deserializeVertexBuffer(std::string&								serializedVertexBuff
 }
 
 GeometryParser::IndexBufferPtr
-GeometryParser::deserializeIndexBuffer(std::string&								serializedIndexBuffer, 
+GeometryParser::deserializeIndexBuffer(std::string&								serializedIndexBuffer,
 									   std::shared_ptr<render::AbstractContext> context)
 {
 	std::vector<unsigned short> vector = deserialize::TypeDeserializer::deserializeVector<unsigned short>(serializedIndexBuffer);
@@ -74,7 +74,7 @@ GeometryParser::deserializeIndexBuffer(std::string&								serializedIndexBuffer
 }
 
 GeometryParser::IndexBufferPtr
-GeometryParser::deserializeIndexBufferChar(std::string&								serializedIndexBuffer, 
+GeometryParser::deserializeIndexBufferChar(std::string&								serializedIndexBuffer,
 										   std::shared_ptr<render::AbstractContext> context)
 {
 	std::vector<unsigned short> vector = deserialize::TypeDeserializer::deserializeVector<unsigned short, unsigned char>(serializedIndexBuffer);
@@ -102,11 +102,23 @@ GeometryParser::parse(const std::string&				filename,
 	computeMetaByte(serializedGeometry.a0);
 
 	geom->indices(indexBufferParserFunction(serializedGeometry.a2, options->context()));
-	
+
 	for (std::string serializedVertexBuffer : serializedGeometry.a3)
 		geom->addVertexBuffer(vertexBufferParserFunction(serializedVertexBuffer, options->context()));
-		
+
 	geom = options->geometryFunction()(serializedGeometry.a1, geom);
+
+    if (options->disposeIndexBufferAfterLoading())
+    {
+// TODO
+// dispose client side index buffer
+    }
+
+    if (options->disposeVertexBufferAfterLoading())
+    {
+// TODO
+// dispose client side vertex buffer
+    }
 
 	assetLibrary->geometry(serializedGeometry.a1, geom);
 	_lastParsedAssetName = serializedGeometry.a1;

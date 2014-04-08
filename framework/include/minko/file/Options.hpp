@@ -122,6 +122,9 @@ namespace minko
                 opt->_resizeSmoothly = options->_resizeSmoothly;
                 opt->_isCubeTexture = options->_isCubeTexture;
                 opt->_startAnimation = options->_startAnimation;
+                opt->_disposeIndexBufferAfterLoading = options->_disposeIndexBufferAfterLoading;
+                opt->_disposeVertexBufferAfterLoading = options->_disposeVertexBufferAfterLoading;
+                opt->_disposeTextureAfterLoading = options->_disposeTextureAfterLoading;
                 opt->_skinningFramerate = options->_skinningFramerate;
                 opt->_skinningMethod = options->_skinningMethod;
                 opt->_effect = options->_effect;
@@ -300,7 +303,7 @@ namespace minko
             bool
             disposeTextureAfterLoading() const
             {
-                return _disposeIndexBufferAfterLoading;
+                return _disposeTextureAfterLoading;
             }
 
             inline
