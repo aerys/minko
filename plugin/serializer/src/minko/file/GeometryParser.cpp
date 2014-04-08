@@ -114,6 +114,8 @@ GeometryParser::parse(const std::string&				filename,
 	computeMetaByte(serializedGeometry.a0);
 
 	geom->indices(indexBufferParserFunction(serializedGeometry.a2, options->context()));
+	serializedGeometry.a2.clear();
+	serializedGeometry.a2.shrink_to_fit();
 
 	for (std::string serializedVertexBuffer : serializedGeometry.a3)
 	{

@@ -58,5 +58,5 @@ IndexBuffer::dispose()
 	_id			= -1;
 	_numIndices	= 0;
 
-	_changed->execute(shared_from_this());
+	//_changed->execute(shared_from_this());
 }

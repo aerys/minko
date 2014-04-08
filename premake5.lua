@@ -117,6 +117,7 @@ solution "minko"
 		include 'example/http'
 		include 'example/joystick'
 		include 'example/html-overlay'
+		include 'example/flares'
 	end
 
 	-- test

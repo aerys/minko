@@ -172,4 +172,15 @@ Options::initializeDefaultFunctions()
     {
         return effect;
     };
+
+// FIXME tmp
+    _inputAssetUriFunction = [](const std::string& uri) -> const std::string
+	{
+		return uri;
+	};
+
+	_outputAssetUriFunction = [](const std::string& uri) -> const std::string
+	{
+		return uri;
+	};
 }
