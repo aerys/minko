@@ -170,7 +170,7 @@ AbstractSerializerParser::deserializedAsset(SerializedAsset				asset,
 
         auto extension = resolvedPath.substr(resolvedPath.find_last_of(".") + 1);
 
-		std::shared_ptr<file::AbstractParser> parser = assetLibrary->getParser(extension);
+		std::shared_ptr<file::AbstractParser> parser = assetLibrary->loader()->options()->getParser(extension);
 
 		parser->parse(resolvedPath, assetCompletePath, options, data, assetLibrary);
 

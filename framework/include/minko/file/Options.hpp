@@ -71,6 +71,10 @@ namespace minko
             bool                                                _disposeVertexBufferAfterLoading;
             bool                                                _disposeTextureAfterLoading;
 
+// TODO fixme
+// tmp
+            bool                                                _embedAll;
+
 			unsigned int								        _skinningFramerate;
 			component::SkinningMethod					        _skinningMethod;
             std::shared_ptr<render::Effect>                     _effect;
@@ -81,6 +85,11 @@ namespace minko
 			UriFunction									        _uriFunction;
 			NodeFunction								        _nodeFunction;
 			EffectFunction								        _effectFunction;
+
+// TODO fixme
+// tmp
+			UriFunction									        _inputAssetUriFunction;
+			UriFunction									        _outputAssetUriFunction;
 
 		public:
             inline static
@@ -134,6 +143,11 @@ namespace minko
                 opt->_uriFunction = options->_uriFunction;
                 opt->_nodeFunction = options->_nodeFunction;
                 opt->_loadAsynchronously = options->_loadAsynchronously;
+
+// TODO fixme
+// tmp
+                opt->_inputAssetUriFunction = options->_inputAssetUriFunction;
+                opt->_outputAssetUriFunction = options->_outputAssetUriFunction;
 
 				return opt;
 			}
@@ -314,6 +328,24 @@ namespace minko
 
                 return shared_from_this();
             }
+
+// TODO fixme
+// tmp
+			inline
+			bool
+			embedAll() const
+			{
+				return _embedAll;
+			}
+
+			inline
+			Ptr
+			embedAll(bool value)
+			{
+				_embedAll = value;
+
+				return shared_from_this();
+			}
 
 			inline
 			unsigned int
