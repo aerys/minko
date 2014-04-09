@@ -190,7 +190,8 @@ DrawCall::bindProgramInputs()
 		{
 		case ProgramInputs::Type::attribute:
 			{
-				vertexBufferIndex	= bindVertexAttribute(inputName, location, vertexBufferIndex, true);
+				bindVertexAttribute(inputName, location, vertexBufferIndex);
+				++vertexBufferIndex;
 				break;
 			}
 	
@@ -201,7 +202,8 @@ DrawCall::bindProgramInputs()
 					? _states->samplers().at(inputName)
 					: _defaultSamplerState;
 
-				textureIndex		= bindTextureSampler(inputName, location, textureIndex, samplerState, true);
+				bindTextureSampler(inputName, location, textureIndex, samplerState);
+				++textureIndex;
 				break;
 			}
 	
@@ -217,11 +219,10 @@ DrawCall::bindProgramInputs()
 	}
 }
 
-uint
+void
 DrawCall::bindVertexAttribute(const std::string&	inputName,
 							  int					location,
-							  uint					vertexBufferIndex,
-							  bool					incrementIndex)
+							  uint					vertexBufferIndex)
 {
 #ifdef DEBUG
 	if (location < 0)
@@ -230,8 +231,6 @@ DrawCall::bindVertexAttribute(const std::string&	inputName,
 		throw std::invalid_argument("vertexBufferIndex");
 #endif // DEBUG
 	
-	auto index = vertexBufferIndex;
-
 	if (_attributeBindings.count(inputName))
 	{
 		auto propertyName		= formatPropertyName(std::get<0>(_attributeBindings.at(inputName)));
@@ -249,14 +248,11 @@ DrawCall::bindVertexAttribute(const std::string&	inputName,
 
 			auto attribute	= vertexBuffer->attribute(attributeName);
 
-			_vertexBufferIds		[index]	= vertexBuffer->id();
-			_vertexBufferLocations	[index]	= location;
-			_vertexAttributeSizes	[index]	= std::get<1>(*attribute);
-			_vertexSizes			[index]	= vertexBuffer->vertexSize();
-			_vertexAttributeOffsets	[index]	= std::get<2>(*attribute);
-
-			if (incrementIndex)
-				++index;
+			_vertexBufferIds		[vertexBufferIndex]	= vertexBuffer->id();
+			_vertexBufferLocations	[vertexBufferIndex]	= location;
+			_vertexAttributeSizes	[vertexBufferIndex]	= std::get<1>(*attribute);
+			_vertexSizes			[vertexBufferIndex]	= vertexBuffer->vertexSize();
+			_vertexAttributeOffsets	[vertexBufferIndex]	= std::get<2>(*attribute);
 		}
 
 
@@ -266,22 +262,19 @@ DrawCall::bindVertexAttribute(const std::string&	inputName,
 			auto slot = container->propertyReferenceChanged(propertyName)->connect(
 					[=](Container::Ptr, const std::string&)
 					{
-						that->bindVertexAttribute(inputName, location, vertexBufferIndex, false);
+						that->bindVertexAttribute(inputName, location, vertexBufferIndex);
 					}	
 				);
 			_referenceChangedSlots[propertyName].push_back(slot);
 		}
 	}
-
-	return index;
 }
 
-uint
+void
 DrawCall::bindTextureSampler(const std::string&		inputName,
 							 int					location,
 							 uint					textureIndex,
-   							 const SamplerState&	samplerState, 
-							 bool					incrementIndex)
+   							 const SamplerState&	samplerState)
 {
 #ifdef DEBUG
 	if (location < 0)
@@ -289,8 +282,6 @@ DrawCall::bindTextureSampler(const std::string&		inputName,
 	if (textureIndex >= MAX_NUM_TEXTURES)
 		throw std::invalid_argument("textureIndex");
 #endif // DEBUG
-
-	auto index = textureIndex;
 
 	if (_uniformBindings.count(inputName))
 	{
@@ -301,14 +292,11 @@ DrawCall::bindTextureSampler(const std::string&		inputName,
 		{
 			auto texture	= container->get<AbstractTexture::Ptr>(propertyName);
 
-			_textureIds			[index] = texture->id();
-			_textureLocations	[index] = location;
-			_textureWrapMode	[index] = std::get<0>(samplerState);
-			_textureFilters		[index] = std::get<1>(samplerState);
-			_textureMipFilters	[index] = std::get<2>(samplerState);
-
-			if (incrementIndex)
-				++index;
+			_textureIds			[textureIndex] = texture->id();
+			_textureLocations	[textureIndex] = location;
+			_textureWrapMode	[textureIndex] = std::get<0>(samplerState);
+			_textureFilters		[textureIndex] = std::get<1>(samplerState);
+			_textureMipFilters	[textureIndex] = std::get<2>(samplerState);
 		}
 
 		if (_referenceChangedSlots.count(propertyName) == 0)			
@@ -317,14 +305,12 @@ DrawCall::bindTextureSampler(const std::string&		inputName,
 			auto slot = container->propertyReferenceChanged(propertyName)->connect(
 				[=](Container::Ptr, const std::string&)
 				{
-					that->bindTextureSampler(inputName, location, textureIndex, samplerState, false);
+					that->bindTextureSampler(inputName, location, textureIndex, samplerState);
 				}
 			);
 			_referenceChangedSlots[propertyName].push_back(slot);
 		}
 	}
-
-	return index;
 }
 
 void
