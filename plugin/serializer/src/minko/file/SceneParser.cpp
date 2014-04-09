@@ -210,20 +210,25 @@ SceneParser::parseNode(std::vector<SerializedNode>&			nodePack,
 		}
 	}
 
+	bool isSkinningFree = true; // FIXME
+
 	for (auto componentIndex2 : markedComponent)
 	{
+		isSkinningFree = false;
 		std::shared_ptr<component::AbstractComponent> newComponent = _componentIdToReadFunction[serialize::SKINNING](componentPack[componentIndex2], assetLibrary, _dependencies);
 
 		for (scene::Node::Ptr node : componentIdToNodes[componentIndex2])
 			node->addComponent(newComponent);
 	}
     
-    auto nodeSet = scene::NodeSet::create(root)->descendants(true)->where([](scene::Node::Ptr n){ return n->components<component::Surface>().size() != 0; });
-    
-	for (auto n : nodeSet->nodes())
+	if (isSkinningFree)
 	{
-		n->addComponent(component::BoundingBox::create());
+		auto nodeSet = scene::NodeSet::create(root)->descendants(true)->where([](scene::Node::Ptr n){ return n->components<component::Surface>().size() != 0; });
+    
+		for (auto n : nodeSet->nodes())
+		{
+			n->addComponent(component::BoundingBox::create());
+		}
 	}
-
 	return root;
 }
