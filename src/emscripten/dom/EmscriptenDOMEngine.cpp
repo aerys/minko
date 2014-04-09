@@ -210,7 +210,6 @@ EmscriptenDOMEngine::initJavascript()
 	eval += "		eventCopy.deltaX = event.deltaX;\n";
 	eval += "		eventCopy.deltaY = event.deltaY;\n";
 	eval += "		eventCopy.deltaZ = event.deltaZ;\n";
-
 	eval +=	"		event.preventDefault();\n";
 	eval += "	}\n";
 
@@ -226,6 +225,9 @@ EmscriptenDOMEngine::initJavascript()
 	eval += "	Minko.loaded = 1;\n";
 	eval +=	"	if (!Minko.iframeElement.contentWindow.Minko)\n";
 	eval += "		Minko.iframeElement.contentWindow.Minko = {};\n";
+
+	eval += "	Minko.iframeElement.contentWindow.document.body.oncontextmenu = function(event){ event.preventDefault(); return false;};\n";
+
 	eval += "	if (!Minko.iframeElement.contentWindow.Minko.onmessage)\n";
 	eval +=	"	{\n";
 	eval +=	"		Minko.iframeElement.contentWindow.Minko.onmessage = function(message)\n";
