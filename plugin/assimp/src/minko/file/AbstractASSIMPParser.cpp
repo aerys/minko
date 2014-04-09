@@ -127,7 +127,7 @@ AbstractASSIMPParser::parse(const std::string&					filename,
 #ifdef DEBUG
 	std::cout << "AbstractASSIMPParser::parse()" << std::endl;
 #endif // DEBUG
-	
+
 	resetParser();
 	initImporter();
 
@@ -144,7 +144,7 @@ AbstractASSIMPParser::parse(const std::string&					filename,
     _filename		= filename;
 	_assetLibrary	= assetLibrary;
 	_options		= options;
-	
+
 	//fixme : find a way to handle loading dependencies asynchronously
 	auto ioHandlerOptions = Options::create(options);
 	ioHandlerOptions->loadAsynchronously(false);
@@ -153,7 +153,7 @@ AbstractASSIMPParser::parse(const std::string&					filename,
 #ifdef DEBUG
 	std::cout << "AbstractASSIMPParser: preparing to parse" << std::endl;
 #endif // DEBUG
-	
+
 	const aiScene* scene = _importer->ReadFileFromMemory(
 		&data[0],
 		data.size(),
@@ -172,12 +172,12 @@ AbstractASSIMPParser::parse(const std::string&					filename,
 	);
 
 	if (!scene)
-		throw ParserError(_importer->GetErrorString());	
+		throw ParserError(_importer->GetErrorString());
 
 #ifdef DEBUG
 	std::cout << "AbstractASSIMPParser: scene parsed" << std::endl;
 #endif // DEBUG
-	
+
 	parseDependencies(resolvedFilename, scene);
 
 #ifdef DEBUG
@@ -666,7 +666,7 @@ AbstractASSIMPParser::textureCompleteHandler(file::Loader::Ptr loader, const aiS
 #ifdef DEBUG
 	std::cerr << "AbstractASSIMPParser: " << _numLoadedDependencies << "/" << _numDependencies << "texture loaded" << std::endl;
 #endif // DEBUG
-	
+
 	++_numLoadedDependencies;
 	if (_numDependencies == _numLoadedDependencies)// && _symbol)
 		allDependenciesLoaded(scene);
@@ -1356,9 +1356,14 @@ AbstractASSIMPParser::createMaterial(const aiMaterial* aiMat)
 
 	// apply material function
 	aiString materialName;
-	return aiMat->Get(AI_MATKEY_NAME, materialName) == AI_SUCCESS
+
+    auto materialRef = aiMat->Get(AI_MATKEY_NAME, materialName) == AI_SUCCESS
 		? _options->materialFunction()(materialName.data, material)
 		: material;
+
+    _assetLibrary->material(materialName.data, materialRef);
+
+    return materialRef;
 }
 
 material::Material::Ptr
