@@ -81,21 +81,21 @@ namespace minko
 			{
 				return std::shared_ptr<VertexBuffer>(new VertexBuffer(context, begin, end));
 			}
-				
+
 			inline static
 			Ptr
 			create(std::shared_ptr<render::AbstractContext>	context, float* begin, float* end)
 			{
 				return std::shared_ptr<VertexBuffer>(new VertexBuffer(
-					context, 
+					context,
 					begin,
 					end
 				));
 			}
-				
+
 			inline static
 			Ptr
-			create(std::shared_ptr<render::AbstractContext>	context, 
+			create(std::shared_ptr<render::AbstractContext>	context,
 				   const std::vector<float>&				data)
 			{
 				return create(context, data.begin(), data.end());
@@ -148,6 +148,9 @@ namespace minko
 
 			void
 			dispose();
+
+            void
+            disposeData();
 
 			void
 			addAttribute(const std::string& name, const unsigned int size, const unsigned int offset = 0);
