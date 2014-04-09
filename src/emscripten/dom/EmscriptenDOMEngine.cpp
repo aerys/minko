@@ -183,6 +183,31 @@ EmscriptenDOMEngine::initJavascript()
 	eval += "	return result;\n";
 	eval += "};\n\n";
 
+	eval += "Minko.redispatchKeyboardEvent = function(event)\n";
+	eval += "{\n";
+	eval += "	var eventCopy = document.createEvent('Event');\n";
+
+	eval += "	eventCopy.initEvent(event.type, event.bubbles, event.cancelable);\n";
+
+	eval += "	eventCopy.type = event.type;\n";
+	eval += "	eventCopy.bubbles = event.bubbles;\n";
+	eval += "	eventCopy.cancelable = event.cancelable;\n";
+	eval += "	eventCopy.view = event.view;\n";
+	eval += "	eventCopy.ctrlKey = event.ctrlKey;\n";
+	eval += "	eventCopy.altKey = event.altKey;\n";
+	eval += "	eventCopy.shiftKey = event.shiftKey;\n";
+	eval += "	eventCopy.metaKey = event.metaKey;\n";
+	eval += "	eventCopy.keyCode = event.keyCode;\n";
+	eval += "	eventCopy.charCode = event.charCode;\n";
+	eval += "	eventCopy.which = event.which;\n";
+	eval += "	eventCopy.key = event.key;\n";
+	eval += "	eventCopy.detail = event.detail;\n";
+	eval += "	eventCopy.keyIdentifier = event.keyIdentifier;\n";
+
+	eval += "	document.dispatchEvent(eventCopy);\n";
+	eval += "}\n";
+
+
 	eval += "Minko.redispatchMouseEvent = function(event)\n";
 	eval += "{\n";
 	eval += "	var pageX = 1 + Minko.getOffsetLeft(Minko.iframeElement) + (event.pageX || event.layerX);\n";
@@ -249,6 +274,9 @@ EmscriptenDOMEngine::initJavascript()
 	eval += "	Minko.iframeElement.contentWindow.addEventListener('mouseover',		Minko.redispatchMouseEvent);\n";
 	eval += "	Minko.iframeElement.contentWindow.addEventListener('mouseout',		Minko.redispatchMouseEvent);\n";
 	eval += "	Minko.iframeElement.contentWindow.addEventListener('mousewheel',	Minko.redispatchMouseEvent);\n";
+	eval += "	Minko.iframeElement.contentWindow.addEventListener('keydown',		Minko.redispatchKeyboardEvent);\n";
+	eval += "	Minko.iframeElement.contentWindow.addEventListener('keyup',			Minko.redispatchKeyboardEvent);\n";
+	eval += "	Minko.iframeElement.contentWindow.addEventListener('keypress',		Minko.redispatchKeyboardEvent);\n";
 	eval += "}\n\n";
 
 	eval += "iframeElement.onload = Minko.iframeLoadHandler;\n";
