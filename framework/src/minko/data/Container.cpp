@@ -396,3 +396,12 @@ Container::unformatPropertyName(ProviderPtr provider, const std::string& formatt
 
 #endif // MINKO_NO_GLSL_STRUCT
 }
+
+std::ostream&
+Container::printPropertyNames(std::ostream& out) const
+{
+	for (auto& n : _propertyNameToProvider)
+		out << n.first << "\n";
+
+	return out;
+}
