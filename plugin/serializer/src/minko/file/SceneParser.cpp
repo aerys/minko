@@ -213,5 +213,11 @@ SceneParser::parseNode(std::vector<SerializedNode>&			nodePack,
 			node->addComponent(newComponent);
 	}
 
+	auto nodeSet = scene::NodeSet::create(root)->descendants(true)->where(
+		[](scene::Node::Ptr n){ return true; });
+
+	for (auto n : nodeSet->nodes())
+		options->nodeFunction()(n);
+
 	return root;
 }
