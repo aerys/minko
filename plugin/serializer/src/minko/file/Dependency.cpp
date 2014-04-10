@@ -225,7 +225,7 @@ Dependency::effectReferenceExist(uint referenceId)
 }
 
 Dependency::SerializedAsset
-Dependency::serializeGeometry(std::shared_ptr<Dependency>			dependency, 
+Dependency::serializeGeometry(std::shared_ptr<Dependency>			dependency,
 							  std::shared_ptr<file::AssetLibrary>	assetLibrary,
 							  std::shared_ptr<geometry::Geometry>	geometry,
 							  uint									resourceId,
@@ -262,18 +262,21 @@ Dependency::serializeGeometry(std::shared_ptr<Dependency>			dependency,
 }
 
 Dependency::SerializedAsset
-Dependency::serializeTexture(std::shared_ptr<Dependency>				dependency, 
+Dependency::serializeTexture(std::shared_ptr<Dependency>				dependency,
 						     std::shared_ptr<file::AssetLibrary>		assetLibrary,
 							 std::shared_ptr<render::AbstractTexture>	texture,
 							 uint										resourceId,
 							 std::shared_ptr<file::Options>				options)
 {
-#ifdef DEBUG
-    std::string filenameInput = "asset/" + assetLibrary->textureName(texture);
-#else
     std::string filenameInput = assetLibrary->textureName(texture);
-#endif
-    std::ifstream source(filenameInput, std::ios::binary);
+
+    auto completeInputFilename = options->inputAssetUriFunction()(filenameInput);
+    std::ifstream source(completeInputFilename, std::ios::binary);
+
+    if (!source)
+    {
+        throw std::runtime_error("Texture file " + completeInputFilename + " not found.");
+    }
 
     auto extension = filenameInput.substr(filenameInput.find_last_of(".") + 1);
 
