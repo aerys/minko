@@ -40,6 +40,9 @@ Options::Options() :
 	_isCubeTexture(false),
 	_startAnimation(true),
 	_loadAsynchronously(false),
+    _disposeIndexBufferAfterLoading(false),
+    _disposeVertexBufferAfterLoading(false),
+    _disposeTextureAfterLoading(false),
 	_skinningFramerate(30),
 	_skinningMethod(component::SkinningMethod::HARDWARE),
 	_material(nullptr),
@@ -169,4 +172,15 @@ Options::initializeDefaultFunctions()
     {
         return effect;
     };
+
+// FIXME tmp
+    _inputAssetUriFunction = [](const std::string& uri) -> const std::string
+	{
+		return uri;
+	};
+
+	_outputAssetUriFunction = [](const std::string& uri) -> const std::string
+	{
+		return uri;
+	};
 }

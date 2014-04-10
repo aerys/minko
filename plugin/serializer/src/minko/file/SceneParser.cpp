@@ -126,6 +126,8 @@ SceneParser::parse(const std::string&					filename,
 	msgpack::unpack(str.data(), str.size(), NULL, &mempool, &deserialized);
 	msgpack::type::tuple<std::vector<std::string>, std::vector<SerializedNode>> dst;
 	deserialized.convert(&dst);
+	str.clear();
+	str.shrink_to_fit();
 
 	assetLibrary->symbol(filename, parseNode(dst.a1, dst.a0, assetLibrary, options));
 

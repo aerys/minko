@@ -29,6 +29,7 @@ precision mediump float;
 #endif
 
 uniform sampler2D uInputTex;
+uniform sampler2D uLensColor;
 
 uniform int uSamples;// = 8;
 uniform float uDispersal;// = 0.25;
@@ -39,15 +40,13 @@ uniform vec2 uTextureSize;
 
 varying vec2 vTexcoord;
 
-vec3 textureDistorted(sampler2D tex,
-					  vec2 texcoord,
-					  vec2 direction,
-					  vec3 distortion)
+vec4 textureDistorted(sampler2D tex, vec2 texcoord, vec2 direction, vec3 distortion)
 {
-	return vec3(
+	return vec4(
 		texture2D(tex, texcoord + direction * distortion.r).r,
 		texture2D(tex, texcoord + direction * distortion.g).g,
-		texture2D(tex, texcoord + direction * distortion.b).b
+		texture2D(tex, texcoord + direction * distortion.b).b,
+		1.0
 	);
 }
 
@@ -62,7 +61,7 @@ void main()
 	vec3 distortion = vec3(-texelSize.x * uDistortion, 0.0, texelSize.x * uDistortion);
 
 	// sample ghosts:
-	vec3 result = vec3(0.0);
+	vec4 result = vec4(0.0);
 	for (int i = 0; i < uSamples; ++i) {
 		vec2 offset = fract(texcoord + ghostVec * float(i));
 		
@@ -77,7 +76,7 @@ void main()
 		) * weight;
 	}
 	
-	//result *= texture(uLensColor, length(vec2(0.5) - texcoord) / length(vec2(0.5)));
+	result *= texture2D(uLensColor, vec2(length(vec2(0.5) - texcoord) / length(vec2(0.5)), 1.0));
 
 	//	sample halo:
 	float weight = length(vec2(0.5) - fract(texcoord + haloVec)) / length(vec2(0.5));
@@ -89,7 +88,7 @@ void main()
 		distortion
 	) * weight;
 	
-	gl_FragColor = vec4(result, 1);
+	gl_FragColor = result;
 }
 
 #endif

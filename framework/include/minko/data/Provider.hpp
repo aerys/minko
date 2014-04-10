@@ -245,10 +245,10 @@ namespace minko
 			}
 
 			virtual
-			void
+			Ptr
 			unset(const std::string& propertyName);
 
-			void
+			Ptr
 			swap(const std::string& propertyName1, const std::string& propertyName2, bool skipPropertyNameFormatting = false);
 
 			Ptr

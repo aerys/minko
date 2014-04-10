@@ -266,7 +266,7 @@ DrawCall::bindVertexAttribute(const std::string&	inputName,
 			auto slot = container->propertyReferenceChanged(propertyName)->connect(
 					[=](Container::Ptr, const std::string&)
 					{
-						that->bindVertexAttribute(inputName, location, index, false);
+						that->bindVertexAttribute(inputName, location, vertexBufferIndex, false);
 					}	
 				);
 			_referenceChangedSlots[propertyName].push_back(slot);
@@ -317,7 +317,7 @@ DrawCall::bindTextureSampler(const std::string&		inputName,
 			auto slot = container->propertyReferenceChanged(propertyName)->connect(
 				[=](Container::Ptr, const std::string&)
 				{
-					that->bindTextureSampler(inputName, location, index, samplerState, false);
+					that->bindTextureSampler(inputName, location, textureIndex, samplerState, false);
 				}
 			);
 			_referenceChangedSlots[propertyName].push_back(slot);

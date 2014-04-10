@@ -115,6 +115,7 @@ solution "minko"
 		include 'example/oculus'
 		include 'example/http'
 		include 'example/joystick'
+		include 'example/flares'
 	end
 
 	-- test
