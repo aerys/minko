@@ -348,7 +348,16 @@ Dependency::serializeMaterial(std::shared_ptr<Dependency>			dependency,
     {
         assetType = serialize::AssetType::MATERIAL_ASSET;
 		materialWriter->parentDependencies(nullptr);
-        auto filename = assetLibrary->materialName(material) + ".material";
+
+        auto materialName = assetLibrary->materialName(material);
+
+        auto materialNameExtensionLocation = materialName.find_last_of(".");
+        auto materialNameExtension = std::string { };
+
+        if (materialNameExtensionLocation != std::string::npos)
+            materialNameExtension = materialName.substr(materialNameExtensionLocation + 1);
+
+        auto filename = materialName + (materialNameExtension == "material" ? "" : ".material");
 
         auto completeFilename = options->outputAssetUriFunction()(filename);
 
