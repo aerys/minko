@@ -476,6 +476,38 @@ namespace minko
 			}
 
 			inline
+				const UriFunction&
+				inputAssetUriFunction() const
+			{
+					return _inputAssetUriFunction;
+				}
+
+			inline
+				Ptr
+				inputAssetUriFunction(const UriFunction& func)
+			{
+					_inputAssetUriFunction = func;
+
+					return shared_from_this();
+				}
+
+			inline
+				const UriFunction&
+				outputAssetUriFunction() const
+			{
+					return _outputAssetUriFunction;
+				}
+
+			inline
+				Ptr
+				outputAssetUriFunction(const UriFunction& func)
+			{
+					_outputAssetUriFunction = func;
+
+					return shared_from_this();
+				}
+
+			inline
 			const NodeFunction&
 			nodeFunction() const
 			{
