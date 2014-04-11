@@ -271,12 +271,16 @@ Dependency::serializeTexture(std::shared_ptr<Dependency>				dependency,
     std::string filenameInput = assetLibrary->textureName(texture);
 
     auto completeInputFilename = options->inputAssetUriFunction()(filenameInput);
-    std::ifstream source(completeInputFilename, std::ios::binary);
 
-    if (!source)
-    {
-        throw std::runtime_error("Texture file " + completeInputFilename + " not found.");
-    }
+    auto loader = file::Loader::create(file::Options::create(assetLibrary->loader()->options()));
+
+    loader->queue(completeInputFilename);
+
+    loader->load();
+
+    auto inputFile = loader->files().at(completeInputFilename);
+
+    auto inputFileContent = std::string(inputFile->data().begin(), inputFile->data().end());
 
     auto extension = filenameInput.substr(filenameInput.find_last_of(".") + 1);
 
@@ -290,8 +294,7 @@ Dependency::serializeTexture(std::shared_ptr<Dependency>				dependency,
         else /* if (extension == "png") */
             assetType = serialize::AssetType::PNG_EMBED_TEXTURE_ASSET;
 
-        content = std::string(std::istreambuf_iterator<char>(source),
-                              std::istreambuf_iterator<char>());
+        content = inputFileContent;
     }
     else
     {
@@ -310,9 +313,8 @@ Dependency::serializeTexture(std::shared_ptr<Dependency>				dependency,
 
         std::ofstream dst(completeOutputFilename, std::ios::binary);
 
-        dst << source.rdbuf();
+        dst << inputFileContent;
 
-        source.close();
         dst.close();
 
         content = filenameOutput;
@@ -346,7 +348,16 @@ Dependency::serializeMaterial(std::shared_ptr<Dependency>			dependency,
     {
         assetType = serialize::AssetType::MATERIAL_ASSET;
 		materialWriter->parentDependencies(nullptr);
-        auto filename = assetLibrary->materialName(material) + ".material";
+
+        auto materialName = assetLibrary->materialName(material);
+
+        auto materialNameExtensionLocation = materialName.find_last_of(".");
+        auto materialNameExtension = std::string { };
+
+        if (materialNameExtensionLocation != std::string::npos)
+            materialNameExtension = materialName.substr(materialNameExtensionLocation + 1);
+
+        auto filename = materialName + (materialNameExtension == "material" ? "" : ".material");
 
         auto completeFilename = options->outputAssetUriFunction()(filename);
 
