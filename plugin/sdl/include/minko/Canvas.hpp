@@ -265,6 +265,17 @@ namespace minko
 		}
 
 		inline
+		std::shared_ptr<SDLJoystick>
+		sdlJoystick(uint id)
+		{
+			auto joystick = _joysticks.find(id);
+			if (joystick == _joysticks.end())
+				return nullptr;
+
+			return joystick->second;
+		}
+
+		inline
 		uint
 		numJoysticks()
 		{
