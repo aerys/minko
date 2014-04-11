@@ -216,6 +216,13 @@ namespace minko
 			isReversed(bool);
 
 			inline
+			uint
+			maxTime() const
+			{
+				return _maxTime;
+			}
+
+			inline
 			void
 			timeFunction(const std::function<uint(uint)>& func)
 			{
