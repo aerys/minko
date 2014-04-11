@@ -93,8 +93,10 @@ ChromiumDOMEngine::initialize(AbstractCanvas::Ptr canvas, std::shared_ptr<compon
 	
 	_overlayMaterial = material::BasicMaterial::create()->diffuseMap(texture);
 
+	loadOverlayEffect();
+	
 	auto overlayEffect = _sceneManager->assets()->effect("effect/Overlay.effect");
-
+	
 	if (overlayEffect)
 	{
 		auto quad = scene::Node::create("quad")
@@ -135,6 +137,17 @@ ChromiumDOMEngine::initialize(AbstractCanvas::Ptr canvas, std::shared_ptr<compon
 	_endFrameSlot = _sceneManager->frameEnd()->connect([&](std::shared_ptr<component::SceneManager>, float, float)
 	{
 	});
+}
+
+void
+ChromiumDOMEngine::loadOverlayEffect()
+{
+	auto overlayEffectLoader = file::Loader::create(_sceneManager->assets()->loader());
+
+	overlayEffectLoader->options(file::Options::create(overlayEffectLoader->options()));
+	overlayEffectLoader->options()->loadAsynchronously(false);
+
+	overlayEffectLoader->queue("effect/Overlay.effect")->load();
 }
 
 void

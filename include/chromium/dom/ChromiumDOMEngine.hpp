@@ -82,7 +82,10 @@ namespace chromium
 			void
 			registerDom(ChromiumDOM::Ptr);
 
-		private:			
+		private:
+			void
+			loadOverlayEffect();
+
 			void
 			start(int argc, char** argv);
 
