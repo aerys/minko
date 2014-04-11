@@ -118,7 +118,7 @@ namespace minko
 			{
 				_errorsEnabled = errorsEnabled;
 			}
-			
+
             inline
             const std::string&
             driverInfo()
@@ -226,6 +226,11 @@ namespace minko
 							      unsigned int 		height,
 							      unsigned int 		mipLevel,
 							      void*				data);
+
+            void
+            setTexture2dMipLevelBoundaries(uint texture,
+                                           uint baseLevel,
+                                           uint maxLevel);
 
 			void
 			deleteTexture(uint texture);
@@ -349,8 +354,8 @@ namespace minko
 			setColorMask(bool);
 
 			void
-			setStencilTest(CompareMode		stencilFunc, 
-						   int				stencilRef, 
+			setStencilTest(CompareMode		stencilFunc,
+						   int				stencilRef,
 						   uint				stencilMask,
 						   StencilOperation	stencilFailOp,
 						   StencilOperation	stencilZFailOp,
@@ -412,8 +417,8 @@ namespace minko
 
             void
             createRTTBuffers(TextureType	type,
-							 uint			texture, 
-							 unsigned int	width, 
+							 uint			texture,
+							 unsigned int	width,
 							 unsigned int height);
 
 			void
