@@ -97,19 +97,7 @@ namespace chromium
 
 			void
 			loadLocal(std::string);
-
-			std::string
-			getWorkingDirectory()
-			{
-				if (!GetCurrentDir(_currentPath, sizeof(_currentPath)))
-				{
-					return "";
-				}
-				_currentPath[sizeof(_currentPath)-1] = '\0'; /* not really required */
-
-				return "file://" + std::string(_currentPath);
-			}
-
+			
 		private:
 
 			std::list<chromium::dom::ChromiumDOM::Ptr> _doms;
@@ -128,8 +116,6 @@ namespace chromium
 			std::shared_ptr<minko::material::BasicMaterial> _overlayMaterial;
 
 			bool _cleared;
-
-			char _currentPath[FILENAME_MAX];
 		};
 	}
 }

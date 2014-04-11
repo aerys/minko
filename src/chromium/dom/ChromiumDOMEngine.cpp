@@ -71,7 +71,7 @@ ChromiumDOMEngine::start(int argc, char** argv)
 #endif
 	_impl->app = new ChromiumApp();
 
-	CefExecuteProcess(*_impl->mainArgs, _impl->app.get(), nullptr);
+	int result = CefExecuteProcess(*_impl->mainArgs, _impl->app.get(), nullptr);
 }
 
 
@@ -87,6 +87,7 @@ ChromiumDOMEngine::initialize(AbstractCanvas::Ptr canvas, std::shared_ptr<compon
 
 	settings.single_process = 1;
 	settings.no_sandbox = 1;
+	settings.command_line_args_disabled = 1;
 
 	int result = CefInitialize(*_impl->mainArgs, settings, _impl->app.get(), nullptr);
 	
@@ -178,7 +179,7 @@ ChromiumDOMEngine::loadHttp(std::string url)
 void
 ChromiumDOMEngine::loadLocal(std::string filename)
 {
-	std::string path = getWorkingDirectory() + "/";
+	std::string path = "file://" + file::File::getBinaryDirectory() + "/";
 
 	//Fixme : find a more elegant way ?
 #if DEBUG
