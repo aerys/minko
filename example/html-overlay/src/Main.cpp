@@ -59,10 +59,12 @@ int main(int argc, char** argv)
 	overlay->initialize(canvas, sceneManager);
 	
 	// setup assets
-	sceneManager->assets()->defaultOptions()->resizeSmoothly(true);
-	sceneManager->assets()->defaultOptions()->generateMipmaps(true);
-	sceneManager->assets()
-		->registerParser<file::PNGParser>("png")
+	sceneManager->assets()->loader()->options()
+		->resizeSmoothly(true)
+		->generateMipmaps(true)
+		->registerParser<file::PNGParser>("png");
+
+	sceneManager->assets()->loader()
 		->queue(TEXTURE_FILENAME)
 		->queue("effect/Basic.effect")
 		->queue("effect/Overlay.effect");
@@ -94,14 +96,14 @@ int main(int argc, char** argv)
 
 	auto material = material::BasicMaterial::create()->diffuseColor(0xCCCCCCFF);
 
-	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
+	auto _ = sceneManager->assets()->loader()->complete()->connect([=](file::Loader::Ptr loader)
 	{
 		root->addComponent(overlay);
 
 		mesh->addComponent(Surface::create(
-			assets->geometry("cubeGeometry"),
+			sceneManager->assets()->geometry("cubeGeometry"),
 			material,
-			assets->effect("effect/Basic.effect")
+			sceneManager->assets()->effect("effect/Basic.effect")
 			));
 
 		overlay->load("html/gameInterface.html");
@@ -139,14 +141,14 @@ int main(int argc, char** argv)
 		updateBlueScore();
 	});
 
-	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, uint deltaTime)
+	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float deltaTime)
 	{
 		mesh->component<Transform>()->matrix()->appendRotationY(.01f);
-
+		
 		sceneManager->nextFrame(time, deltaTime);
 	});
 
-	sceneManager->assets()->load();
+	sceneManager->assets()->loader()->load();
 	canvas->run();
 
 	overlay->clear();
