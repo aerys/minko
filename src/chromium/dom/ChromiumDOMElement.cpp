@@ -127,12 +127,13 @@ ChromiumDOMElement::create(CefRefPtr<CefV8Value> v8NodeObject, CefRefPtr<CefV8Co
 ChromiumDOMElement::Ptr
 ChromiumDOMElement::getDOMElementFromV8Object(CefRefPtr<CefV8Value> v8Object, CefRefPtr<CefV8Context> v8Context)
 {
-	std::map<CefRefPtr<CefV8Value>, ChromiumDOMElement::Ptr>::iterator it = _v8NodeToElement.find(v8Object);
-
-	if (it != _v8NodeToElement.end())
-		return it->second;
-	else
-		return create(v8Object, v8Context);
+	for (auto& it : _v8NodeToElement)
+	{
+		if (v8Object->IsSame(it.first))
+			return it.second;
+	}
+	
+	return create(v8Object, v8Context);
 }
 
 void
@@ -190,13 +191,20 @@ ChromiumDOMElement::v8ElementArrayToList(CefRefPtr<CefV8Value> v8Nodes, CefRefPt
 {
 	std::list<minko::dom::AbstractDOMElement::Ptr> result;
 
-	if (v8Nodes->IsArray())
+	CefRefPtr<CefV8Value> childNodeV8;
+
+	if (v8Nodes->IsArray() || v8Nodes->IsObject())
 	{
-		int l = v8Nodes->GetArrayLength();
+		int l = 0;
+
+		if (v8Nodes->IsArray())
+			l = v8Nodes->GetArrayLength();
+		else
+			l = v8Nodes->GetValue("length")->GetIntValue();
 
 		for (int i = 0; i < l; ++i)
 		{
-			CefRefPtr<CefV8Value> childNodeV8 = v8Nodes->GetValue(i);
+			childNodeV8 = v8Nodes->GetValue(i);
 			result.push_back(getDOMElementFromV8Object(childNodeV8, v8Context));
 		}
 	}
