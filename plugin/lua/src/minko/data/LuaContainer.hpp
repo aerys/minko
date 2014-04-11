@@ -48,6 +48,7 @@ namespace minko
 					.method("propertyValueChanged",		&Container::propertyValueChanged)
 					.method("propertyReferenceChanged",	&Container::propertyReferenceChanged)
 		            .method("getFloat",     			&Container::get<float>)
+					.method("getString",				&Container::get<std::string>)
 		            .method("getVector2",     			&Container::get<std::shared_ptr<math::Vector2>>)
 		            .method("getVector3",     			&Container::get<std::shared_ptr<math::Vector3>>)
 		            .method("getVector4",     			&Container::get<std::shared_ptr<math::Vector4>>)
