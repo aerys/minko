@@ -84,10 +84,10 @@ FileProtocol::load()
         resolvedFilename(realFilename);
 
 		if (_options->loadAsynchronously() && AbstractCanvas::defaultCanvas() != nullptr
-            && AbstractCanvas::defaultCanvas()->isWorkerRegistered("file-loader"))
+            && AbstractCanvas::defaultCanvas()->isWorkerRegistered("file-protocol"))
 		{
 			file.close();
-			auto worker = AbstractCanvas::defaultCanvas()->getWorker("file-loader");
+			auto worker = AbstractCanvas::defaultCanvas()->getWorker("file-protocol");
 
 			_workerSlots.push_back(worker->message()->connect([=](async::Worker::Ptr, async::Worker::Message message) {
 				if (message.type == "complete")

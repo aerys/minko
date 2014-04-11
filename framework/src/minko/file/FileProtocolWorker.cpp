@@ -29,9 +29,9 @@ namespace minko
 		MINKO_DEFINE_WORKER(FileProtocolWorker,
 		{
 
-/*#ifdef DEBUG
+//#ifdef DEBUG
 			std::cout << "FileProtocolWorker::run(): enter" << std::endl;
-#endif // defined(DEBUG)*/
+//#endif // defined(DEBUG)
 
 			std::string filename(input.begin(), input.end());
 
@@ -51,14 +51,14 @@ namespace minko
 
 				if (chunkSize > 1024)
 					chunkSize = 1024;
-				else if (chunkSize == 0)
+				else if (chunkSize <= 0)
 					chunkSize = 8;
 
 				chunkSize *= 1024;
 
-/*#ifdef DEBUG
-				std::cout << "FileProtocolWorker::run(): file is open" << std::endl;
-#endif // defined(DEBUG)*/
+//#ifdef DEBUG
+				std::cout << "FileProtocolWorker::run(): file is open, chunksize " + std::to_string(chunkSize) << std::endl;
+//#endif // defined(DEBUG)
 
 				file.seekg(0, std::ios::beg);
 				
@@ -90,9 +90,9 @@ namespace minko
 				post(Message{ "error" });
 			}
 
-/*#ifdef DEBUG
+//#ifdef DEBUG
 			std::cout << "FileProtocolWorker::run(): exit" << std::endl;
-#endif // defined(DEBUG)*/
+//#endif // defined(DEBUG)
 		});
 	}
 }

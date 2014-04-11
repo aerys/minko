@@ -95,7 +95,7 @@ Canvas::initialize()
     initializeInputs();
 
 #if !defined(EMSCRIPTEN)
-    registerWorker<file::FileProtocolWorker>("file-loader");
+    registerWorker<file::FileProtocolWorker>("file-protocol");
 #endif
 
 #if defined(_WIN32)
