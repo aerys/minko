@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Types.hpp"
 #include "minko/file/Dependency.hpp"
 #include "minko/file/GeometryWriter.hpp"
+#include "minko/file/TextureWriter.hpp"
 #include "minko/geometry/Geometry.hpp"
 #include "minko/file/MaterialWriter.hpp"
 
@@ -268,24 +269,14 @@ Dependency::serializeTexture(std::shared_ptr<Dependency>				dependency,
 							 uint										resourceId,
 							 std::shared_ptr<file::Options>				options)
 {
-    std::string filenameInput = assetLibrary->textureName(texture);
+	auto writer         = TextureWriter::create();
+    auto assetType      = serialize::AssetType { };
+    auto content        = std::string { };
+    auto textureName    = assetLibrary->textureName(texture);
+    auto extension      = textureName.substr(textureName.find_last_of(".") + 1);
 
-    auto completeInputFilename = options->inputAssetUriFunction()(filenameInput);
-
-    auto loader = file::Loader::create(file::Options::create(assetLibrary->loader()->options()));
-
-    loader->queue(completeInputFilename);
-
-    loader->load();
-
-    auto inputFile = loader->files().at(completeInputFilename);
-
-    auto inputFileContent = std::string(inputFile->data().begin(), inputFile->data().end());
-
-    auto extension = filenameInput.substr(filenameInput.find_last_of(".") + 1);
-
-    serialize::AssetType    assetType;
-    std::string             content;
+    writer->data(texture);
+    writer->extension(extension);
 
     if (options->embedAll())
     {
@@ -294,30 +285,28 @@ Dependency::serializeTexture(std::shared_ptr<Dependency>				dependency,
         else /* if (extension == "png") */
             assetType = serialize::AssetType::PNG_EMBED_TEXTURE_ASSET;
 
-        content = inputFileContent;
+        assetType = serialize::AssetType::EMBED_GEOMETRY_ASSET;
+
+        content = writer->embedAll(assetLibrary, options);
     }
     else
     {
         assetType = serialize::AssetType::TEXTURE_ASSET;
 
-        std::string filenameOutput= "";
+        auto filename = std::string { };
 
-        for (int charIndex = filenameInput.size() - 1;
-             charIndex >= 0 && filenameInput[charIndex] != '/';
+        for (int charIndex = textureName.size() - 1;
+             charIndex >= 0 && textureName[charIndex] != '/';
              --charIndex)
         {
-            filenameOutput.insert(0, filenameInput.substr(charIndex, 1));
+            filename.insert(0, textureName.substr(charIndex, 1));
         }
 
-        auto completeOutputFilename = options->outputAssetUriFunction()(filenameOutput);
+        auto completeFilename = options->outputAssetUriFunction()(filename);
 
-        std::ofstream dst(completeOutputFilename, std::ios::binary);
+        writer->writeRawTexture(completeFilename, assetLibrary, options);
 
-        dst << inputFileContent;
-
-        dst.close();
-
-        content = filenameOutput;
+        content = filename;
     }
 
     SerializedAsset res(assetType, resourceId, content);

@@ -50,6 +50,7 @@ namespace minko
 
             void
             writeToStream(std::vector<unsigned char>&           dst,
+                          const std::string&                    extension,
                           const std::vector<unsigned char>&     src,
                           minko::uint                           srcWidth,
                           minko::uint                           srcHeight,

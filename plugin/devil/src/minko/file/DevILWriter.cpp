@@ -87,6 +87,7 @@ DevILWriter::writeToFile(const std::string&                     filename,
 
 void
 DevILWriter::writeToStream(std::vector<unsigned char>&          dst,
+                           const std::string&                   extension,
                            const std::vector<unsigned char>&    src,
                            uint                                 srcWidth,
                            uint                                 srcHeight,
@@ -95,8 +96,14 @@ DevILWriter::writeToStream(std::vector<unsigned char>&          dst,
                            uint                                 componentCount)
 {
 // TODO
-// add enum into minko framework
-    static const ILuint imageType = IL_PNG;
+// find an easy way to dispatch from extension to image type in DevIL
+    auto devilExtensions = std::map<std::string, ILuint>
+    {
+        { "jpg", IL_JPG },
+        { "png", IL_PNG }
+    };
+
+    auto imageType = devilExtensions.at(extension);
 
 	uint devilID = createScaledImage(src, srcWidth, srcHeight, dstWidth, dstHeight, componentCount);
 
