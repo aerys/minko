@@ -267,12 +267,8 @@ Renderer::render(render::AbstractContext::Ptr	context,
 		? nullptr 
 		: targets().front();
 
-	auto mask		= targetNode 
-		? targetNode->layouts() 
-		: Layout::Mask::EVERYTHING;
-
 	for (auto& drawCall : _drawCalls)
-		if ((drawCall->layouts() & mask) != 0)
+		if ((drawCall->layouts() & layoutMask()) != 0)
 			drawCall->render(context, renderTarget);
 
 	_beforePresent->execute(std::static_pointer_cast<Renderer>(shared_from_this()));
