@@ -285,8 +285,6 @@ Dependency::serializeTexture(std::shared_ptr<Dependency>				dependency,
         else /* if (extension == "png") */
             assetType = serialize::AssetType::PNG_EMBED_TEXTURE_ASSET;
 
-        assetType = serialize::AssetType::EMBED_GEOMETRY_ASSET;
-
         content = writer->embedAll(assetLibrary, options);
     }
     else
