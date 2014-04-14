@@ -45,9 +45,9 @@ namespace minko
 			std::shared_ptr<Signal<Ptr>>								_layoutMaskChanged;
 
 		public:
-			AbstractComponent() :
+			AbstractComponent(Layouts layoutMask = scene::Layout::Mask::EVERYTHING) :
 				_targets(),
-				_layoutMask(scene::Layout::Mask::EVERYTHING),
+				_layoutMask(layoutMask),
 				_targetAdded(Signal<Ptr, std::shared_ptr<scene::Node>>::create()),
 				_targetRemoved(Signal<Ptr, std::shared_ptr<scene::Node>>::create()),
 				_layoutMaskChanged(Signal<Ptr>::create())
