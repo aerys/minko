@@ -138,14 +138,22 @@ DrawCall::bindIndexBuffer()
 	if (_targetData->hasProperty(propertyName))
 	{
 		auto indexBuffer	= _targetData->get<IndexBuffer::Ptr>(propertyName);
-		_indexBuffer		= indexBuffer->id();
-		_numIndices			= indexBuffer->numIndices();
+		if (indexBuffer->isReady())
+		{
+			_indexBuffer	= indexBuffer->id();
+			_numIndices		= indexBuffer->numIndices();
+		}
+		else
+		{
+			_indexBuffer	= -1;
+			_numIndices		= 0;
+		}
 
 		_indicesChanged		= indexBuffer->changed()->connect([&](IndexBuffer::Ptr indices){
 			if (!indices->isReady())
 			{
-				_numIndices = 0;
-				_indexBuffer = -1;
+				_indexBuffer	= -1;
+				_numIndices		= 0;
 			}
 			else
 			{
