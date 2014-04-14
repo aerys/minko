@@ -33,8 +33,8 @@ main(int argc, char** argv)
 	auto canvas = Canvas::create("Minko Tutorial - Loading effects", WINDOW_WIDTH, WINDOW_HEIGHT);
 	auto sceneManager = component::SceneManager::create(canvas->context());
 
-	sceneManager->assets()->queue("effect/VertexNormal.effect");
-	auto complete = sceneManager->assets()->complete()->connect([&](file::AssetLibrary::Ptr assets)
+	sceneManager->assets()->loader()->queue("effect/VertexNormal.effect");
+	auto complete = sceneManager->assets()->loader()->complete()->connect([&](file::Loader::Ptr loader)
 	{
 		std::cout << "all assets have been loaded!" << std::endl;
 
@@ -51,9 +51,9 @@ main(int argc, char** argv)
 		auto cube = scene::Node::create("cube")
 		->addComponent(Transform::create(Matrix4x4::create()->translation(0.f, 0.f, -5.f)))
 			->addComponent(Surface::create(
-			geometry::CubeGeometry::create(assets->context()),
+			geometry::CubeGeometry::create(canvas->context()),
 			material::BasicMaterial::create()->diffuseColor(Vector4::create(0.f, 0.f, 1.f, 1.f)),
-			assets->effect("effect/VertexNormal.effect")
+			sceneManager->assets()->effect("effect/VertexNormal.effect")
 			));
 		root->addChild(cube);
 
@@ -66,7 +66,7 @@ main(int argc, char** argv)
 		canvas->run();
 	});
 
-	sceneManager->assets()->load();
+	sceneManager->assets()->loader()->load();
 
 	return 0;
 }

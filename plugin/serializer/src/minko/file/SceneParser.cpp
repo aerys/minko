@@ -27,6 +27,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/JobManager.hpp"
 #include "minko/file/Options.hpp"
 #include "minko/file/Dependency.hpp"
+#include "minko/scene/NodeSet.hpp"
 
 using namespace minko;
 using namespace minko::file;
@@ -125,6 +126,8 @@ SceneParser::parse(const std::string&					filename,
 	msgpack::unpack(str.data(), str.size(), NULL, &mempool, &deserialized);
 	msgpack::type::tuple<std::vector<std::string>, std::vector<SerializedNode>> dst;
 	deserialized.convert(&dst);
+	str.clear();
+	str.shrink_to_fit();
 
 	assetLibrary->symbol(filename, parseNode(dst.a1, dst.a0, assetLibrary, options));
 
@@ -212,6 +215,12 @@ SceneParser::parseNode(std::vector<SerializedNode>&			nodePack,
 		for (scene::Node::Ptr node : componentIdToNodes[componentIndex2])
 			node->addComponent(newComponent);
 	}
+
+	auto nodeSet = scene::NodeSet::create(root)->descendants(true)->where(
+		[](scene::Node::Ptr n){ return true; });
+
+	for (auto n : nodeSet->nodes())
+		options->nodeFunction()(n);
 
 	return root;
 }

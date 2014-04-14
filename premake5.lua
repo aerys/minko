@@ -71,6 +71,7 @@ solution "minko"
 	if not _OPTIONS['no-plugin'] then
 		include 'plugin/lua'
 		include 'plugin/angle'
+		include 'plugin/zlib'
 		include 'plugin/assimp'
 		include 'plugin/devil'
 		include 'plugin/bullet'
@@ -114,6 +115,7 @@ solution "minko"
 		include 'example/oculus'
 		include 'example/http'
 		include 'example/joystick'
+		include 'example/flares'
 	end
 
 	-- test

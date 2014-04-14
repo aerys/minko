@@ -58,14 +58,15 @@ namespace minko
 
 		enum AssetType
 		{
-			GEOMETRY_ASSET			= 0,
-			EMBED_GEOMETRY_ASSET	= 10,
-			MATERIAL_ASSET			= 1,
-			EMBED_MATERIAL_ASSET	= 11,
-			TEXTURE_ASSET			= 2,
-			EMBED_TEXTURE_ASSET		= 12,
-			EFFECT_ASSET			= 3,
-			EMBED_EFFECT_ASSET		= 13
+			GEOMETRY_ASSET              = 0,
+			EMBED_GEOMETRY_ASSET        = 10,
+			MATERIAL_ASSET              = 1,
+			EMBED_MATERIAL_ASSET        = 11,
+			TEXTURE_ASSET               = 2,
+            PNG_EMBED_TEXTURE_ASSET     = 120,
+            JPEG_EMBED_TEXTURE_ASSET    = 121,
+			EFFECT_ASSET                = 3,
+			EMBED_EFFECT_ASSET          = 13
 		};
 	}
 }

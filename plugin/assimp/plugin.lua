@@ -21,6 +21,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 minko.plugin.assimp = {}
 
 function minko.plugin.assimp:enable()
+	minko.plugin.enable("zlib")
+
 	minko.plugin.links { "assimp" }
 	includedirs { minko.plugin.path("assimp") .. "/include" }
 	defines { "MINKO_PLUGIN_ASSIMP" }

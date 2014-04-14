@@ -10,10 +10,6 @@
 #include "minko/component/Skinning.hpp"
 #include "minko/component/Animation.hpp"
 
-using namespace minko;
-using namespace minko::component;
-using namespace minko::scene;
-
 static
 std::ostream&
 printNode(std::ostream& out, Node::Ptr node, uint depth)

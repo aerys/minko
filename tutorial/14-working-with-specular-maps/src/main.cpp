@@ -33,13 +33,13 @@ int main(int argc, char** argv)
 
 	// add the png parser to load textures
 	// add the Phong effect
-	sceneManager->assets()
-		->registerParser<file::JPEGParser>("jpg")
+	sceneManager->assets()->loader()
 		->queue("texture/diffuseMap.jpg")
 		->queue("texture/specularMap.jpg")
-		->queue("effect/Phong.effect");
+		->queue("effect/Phong.effect")
+		->options()->registerParser<file::JPEGParser>("jpg");
 
-	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
+	auto _ = sceneManager->assets()->loader()->complete()->connect([=](file::Loader::Ptr loader)
 	{
 		auto root = scene::Node::create("root")
 			->addComponent(sceneManager);
@@ -47,15 +47,15 @@ int main(int argc, char** argv)
 		auto phongMaterial = material::PhongMaterial::create();
 
 		phongMaterial->diffuseColor(0xFFFFFFFF);
-		phongMaterial->diffuseMap(assets->texture("texture/diffuseMap.jpg"));
-		phongMaterial->specularMap(assets->texture("texture/specularMap.jpg"));
+		phongMaterial->diffuseMap(sceneManager->assets()->texture("texture/diffuseMap.jpg"));
+		phongMaterial->specularMap(sceneManager->assets()->texture("texture/specularMap.jpg"));
 
 		auto mesh = scene::Node::create("mesh")
 			->addComponent(Transform::create(Matrix4x4::create()->prependScale(1.1)))
 			->addComponent(Surface::create(
 			geometry::SphereGeometry::create(sceneManager->assets()->context()),
 			phongMaterial,
-			assets->effect("effect/Phong.effect")
+			sceneManager->assets()->effect("effect/Phong.effect")
 			));
 
 		auto camera = scene::Node::create("camera")
@@ -85,6 +85,6 @@ int main(int argc, char** argv)
 
 		canvas->run();
 	});
-	sceneManager->assets()->load();
+	sceneManager->assets()->loader()->load();
 	return 0;
 }

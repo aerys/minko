@@ -28,7 +28,7 @@ namespace minko
 {
 	namespace render
 	{
-		class IndexBuffer : 
+		class IndexBuffer :
 			public AbstractResource,
 			public Convertible<IndexBuffer>,
 			public std::enable_shared_from_this<IndexBuffer>
@@ -68,12 +68,12 @@ namespace minko
 			template <typename T>
 			inline static
 			Ptr
-			create(AbsContextPtr	context, 
-				   T*				begin, 
+			create(AbsContextPtr	context,
+				   T*				begin,
 				   T*				end)
 			{
 				Ptr ptr = std::shared_ptr<IndexBuffer>(new IndexBuffer(context, begin, end));
-			
+
 				ptr->upload();
 
 				return ptr;
@@ -111,6 +111,9 @@ namespace minko
 			void
 			dispose();
 
+            void
+            disposeData();
+
 			bool
 			equals(Ptr indexBuffer)
 			{
@@ -132,7 +135,7 @@ namespace minko
 				_numIndices(0),
 				_changed(Signal<IndexBuffer::Ptr>::create())
 			{
-			
+
 			}
 
 			inline

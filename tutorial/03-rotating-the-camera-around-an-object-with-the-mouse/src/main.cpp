@@ -34,8 +34,8 @@ main(int argc, char** argv)
     auto sceneManager = component::SceneManager::create(canvas->context());
 
     // We replace the basic effect by the Phong effect to have light effects
-    sceneManager->assets()->queue("effect/Phong.effect");
-    auto complete = sceneManager->assets()->complete()->connect([&](file::AssetLibrary::Ptr assets)
+    sceneManager->assets()->loader()->queue("effect/Phong.effect");
+    auto complete = sceneManager->assets()->loader()->complete()->connect([&](file::Loader::Ptr loader)
     {
         auto root = scene::Node::create("root")
             ->addComponent(sceneManager);
@@ -60,9 +60,9 @@ main(int argc, char** argv)
         // Replace the cube by a sphere to inscrease light visibility
         auto sphere = scene::Node::create("sphere")
             ->addComponent(Surface::create(
-            geometry::SphereGeometry::create(assets->context()),
+            geometry::SphereGeometry::create(canvas->context()),
             material::BasicMaterial::create()->diffuseColor(Vector4::create(0.f, 0.f, 1.f, 1.f)),
-            assets->effect("effect/Phong.effect")
+			sceneManager->assets()->effect("effect/Phong.effect")
             ));
         root->addChild(sphere);
 
@@ -93,7 +93,7 @@ main(int argc, char** argv)
         canvas->run();
     });
 
-    sceneManager->assets()->load();
+    sceneManager->assets()->loader()->load();
 
     return 0;
 }

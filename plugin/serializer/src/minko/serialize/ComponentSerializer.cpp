@@ -173,6 +173,8 @@ ComponentSerializer::serializeSurface(NodePtr		node,
 	uint geometryId = dependencies->registerDependency(surface->geometry());
 	uint effectId	= dependencies->registerDependency(surface->effect());
 
+	std::cout << materialId << " " << geometryId << " " << effectId << std::endl;
+
 	msgpack::type::tuple<unsigned short, unsigned short, unsigned short, std::string> src(
 		geometryId,
 		materialId,

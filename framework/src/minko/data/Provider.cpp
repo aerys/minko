@@ -37,7 +37,7 @@ Provider::Provider() :
 {
 }
 
-void
+Provider::Ptr
 Provider::unset(const std::string& propertyName)
 {
 	const auto& formattedPropertyName = formatPropertyName(propertyName);
@@ -51,9 +51,11 @@ Provider::unset(const std::string& propertyName)
 
 		_propertyRemoved->execute(shared_from_this(), formattedPropertyName);
 	}
+
+	return shared_from_this();
 }
 
-void
+Provider::Ptr
 Provider::swap(const std::string& propertyName1, const std::string& propertyName2, bool skipPropertyNameFormatting)
 {
 	auto formattedPropertyName1	= skipPropertyNameFormatting ? propertyName1 : formatPropertyName(propertyName1);
@@ -99,6 +101,8 @@ Provider::swap(const std::string& propertyName1, const std::string& propertyName
 			_propReferenceChanged->execute(shared_from_this(), formattedPropertyName2);
 		}
 	}
+
+	return shared_from_this();
 }
 
 bool 

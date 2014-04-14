@@ -1,13 +1,13 @@
 // pseudo lens flare effect
 {
-	"name" 		: "pseudo lens flare",
+	"name" 	: "pseudo lens flare",
 	
 	"attributeBindings" : {
 		"aPosition"		: "geometry[${geometryId}].position",
 		"aUv"			: "geometry[${geometryId}].uv"
 	},
 	
-	"passes"	: [
+	"passes" : [
 		{
 			"name" : "downsample and threshold",
 			"uniformBindings" : {
@@ -16,29 +16,30 @@
 				"uBias"			: [ -0.99, -0.99, -0.99, 0.0 ]
 			},
 			"triangleCulling" : "none",
-			"target" : { "name" : "lensflare_downsample", "size" : 512 },
+			"target" : { "name" : "lensflare_downsample", "size" : 512.0},
 			"samplerStates" : {
 				"uInputTex"	: { "textureFilter" : "linear" }
 			},
-			"vertexShader" : { "includes"	: [ "PseudoLensFlare.vertex.glsl" ] },
+			"vertexShader" : "#pragma include('PseudoLensFlare.vertex.glsl')",
 			"fragmentShader" : "#pragma include('Threshold.fragment.glsl')"
 		},
 		{
 			"name" : "lens features",
 			"uniformBindings" : {
 				"uInputTex"			: "lensflare_downsample",
-				"uSamples"			: 8,
+				"uSamples"			: 6,
 				"uDispersal"		: 0.3,
 				"uTextureSize"		: [ 512.0, 512.0 ],
-				"uHaloWidth"		: 0.5,
-				"uDistortion"		: 3.0
+				"uHaloWidth"		: 0.45,
+				"uDistortion"		: 10.0,
+				"uLensColor"		: { "default" : "lens-color.png" }
 			},
 			"triangleCulling" : "none",
 			"target" : { "name" : "lensflare_features", "size" : 512 },
 			"samplerStates" : {
 				"uInputTex"	: { "textureFilter" : "linear" }
 			},
-			"vertexShader" : { "includes"	: [ "PseudoLensFlare.vertex.glsl" ] },
+			"vertexShader" : "#pragma include('PseudoLensFlare.vertex.glsl')",
 			"fragmentShader" : "#pragma include('LensFeatures.fragment.glsl')"
 		},
 		{
@@ -68,7 +69,7 @@
 				"a_texCoord"	: "geometry[${geometryId}].uv"
 			},
 			"triangleCulling" : "none",
-			"target" : { "name" : "lensflare_blur", "size" : 512 },
+			"target" : "lensflare_features",
 			"samplerStates" : {
 				"s_texture"	: { "textureFilter" : "linear" }
 			},
@@ -78,10 +79,11 @@
 		{
 			"name" : "lens compositing",
 			"uniformBindings" : {
-				"uBackbuffer"	: "backbuffer",
-				"uFeatures"		: "lensflare_blur",
-				"uDirt"			: { "default" : "lens-dirt.png" },
-				"uBurst"		: { "default" : "lens-star.png" }
+				"uBackbuffer"		: "backbuffer",
+				"uFeatures"			: "lensflare_features",
+				"uArtefactsScale"	: { "property" : "artefactsScale", "default" : 1.0 },
+				"uDirt"				: { "default" : "lens-dirt.png" },
+				"uBurst"			: { "default" : "lens-star.png" }
 			},
 			"triangleCulling" : "none",
 			"samplerStates" : {
@@ -100,12 +102,14 @@
 				uniform sampler2D uFeatures;
 				uniform sampler2D uDirt;
 				uniform sampler2D uBurst;
+				uniform float uArtefactsScale;
 				
 				varying vec2 vTexcoord;
 				
 				void main(void)
 				{
-					gl_FragColor = texture2D(uFeatures, vTexcoord) * (texture2D(uDirt, vTexcoord) + texture2D(uBurst, vTexcoord));
+					gl_FragColor = texture2D(uFeatures, vTexcoord) * (texture2D(uDirt, vTexcoord) + texture2D(uBurst, vTexcoord))
+						* vec4(vec3(uArtefactsScale), 1.0);
 					gl_FragColor += texture2D(uBackbuffer, vTexcoord);
 				}
 			"

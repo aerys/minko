@@ -45,17 +45,16 @@ namespace minko
 			typedef std::shared_ptr<LuaScriptManager> 				Ptr;
 
 		private:
-			typedef std::shared_ptr<file::AbstractLoader>			AbsLoaderPtr;
+			typedef std::shared_ptr<file::Loader>					LoaderPtr;
 			typedef std::chrono::high_resolution_clock::time_point	time_point;
 
 		private:
-			bool									_ready;
-			uint									_numDependencies;
-			uint									_numLoadedDependencies;
+			bool						_ready;
 
-			LuaGlue									_state;
-			time_point								_previousTime;
-			std::list<Signal<AbsLoaderPtr>::Slot>	_dependencySlots;
+			LuaGlue						_state;
+			time_point					_previousTime;
+
+            Signal<LoaderPtr>::Slot	    _dependencySlot;
 
 		public:
 			inline static
@@ -84,7 +83,7 @@ namespace minko
 			bool
 			ready(std::shared_ptr<scene::Node> node)
 			{
-				return _numDependencies == _numLoadedDependencies;
+				return _ready;
 			}
 
 			void
@@ -99,9 +98,7 @@ namespace minko
 
 		private:
 			LuaScriptManager() :
-				_ready(false),
-				_numDependencies(0),
-				_numLoadedDependencies(0)
+				_ready(false)
 			{
 
 			}
@@ -122,7 +119,7 @@ namespace minko
 			loadStandardLibrary();
 
 			void
-			dependencyLoadedHandler(AbsLoaderPtr loader);
+			dependencyLoadedHandler(LoaderPtr loader);
 		};
 	}
 }

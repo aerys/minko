@@ -20,8 +20,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/LuaScriptManager.hpp"
 #include "minko/component/LuaScript.hpp"
 
+#include "minko/file/AbstractProtocol.hpp"
+
 #include "minko/file/Options.hpp"
-#include "minko/file/FileLoader.hpp"
+#include "minko/file/FileProtocol.hpp"
 #include "minko/render/AbstractContext.hpp"
 #include "minko/render/Texture.hpp"
 
@@ -50,6 +52,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/geometry/LuaGeometry.hpp"
 #include "minko/material/LuaMaterial.hpp"
 #include "minko/render/LuaEffect.hpp"
+#include "minko/file/LuaLoader.hpp"
 #include "minko/file/LuaAssetLibrary.hpp"
 #include "minko/input/LuaKeyboard.hpp"
 #include "minko/input/LuaMouse.hpp"
@@ -102,37 +105,36 @@ void
 LuaScriptManager::loadStandardLibrary()
 {
     auto assets = targets()[0]->root()->component<SceneManager>()->assets();
-    auto options = assets->defaultOptions();
-    auto createLoader = assets->defaultOptions()->loaderFunction();
+    auto options = assets->loader()->options();
+    auto loader = file::Loader::create(assets->loader());
     auto filesToLoad = {
         "script/minko.coroutine.lua",
         "script/minko.time.lua",
 		"script/minko.trace.lua"
     };
 
-    _numDependencies = filesToLoad.size();
+    _dependencySlot = loader->complete()->connect(std::bind(
+        &LuaScriptManager::dependencyLoadedHandler,
+        std::dynamic_pointer_cast<LuaScriptManager>(shared_from_this()),
+        std::placeholders::_1
+    ));
 
     for (auto& filename : filesToLoad)
-    {
-		auto loader = createLoader(filename, assets);
-
-        _dependencySlots.push_back(loader->complete()->connect(std::bind(
-            &LuaScriptManager::dependencyLoadedHandler,
-            std::dynamic_pointer_cast<LuaScriptManager>(shared_from_this()),
-            std::placeholders::_1
-        )));
-        loader->load(filename, options);
-    }
+        loader->queue(filename);
+    loader->load();
 }
 
 void
-LuaScriptManager::dependencyLoadedHandler(AbsLoaderPtr loader)
+LuaScriptManager::dependencyLoadedHandler(file::Loader::Ptr loader)
 {
-    auto& data = loader->data();
+    for (auto& filenameAndFile : loader->files())
+    {
+        auto& data = filenameAndFile.second->data();
 
-    _state.doString(std::string((char*)&data[0], data.size()));
+        _state.doString(std::string((char*)&data[0], data.size()));
+    }
 
-    ++_numLoadedDependencies;
+    _ready = true;
 }
 
 void
@@ -180,6 +182,7 @@ LuaScriptManager::initializeBindings()
     geometry::LuaGeometry::bind(_state);
     material::LuaMaterial::bind(_state);
     render::LuaEffect::bind(_state);
+    file::LuaLoader::bind(_state);
     file::LuaAssetLibrary::bind(_state);
     input::LuaMouse::bind(_state);
     input::LuaKeyboard::bind(_state);
