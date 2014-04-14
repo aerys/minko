@@ -33,10 +33,10 @@ using namespace minko;
 using namespace minko::component;
 
 /*static*/ std::shared_ptr<math::OctTree>	Culling::_octTree;
-/*static*/ const Layouts					Culling::_mask		= scene::Layout::Group::CULLING;
 
 Culling::Culling(ShapePtr shape, 
 				 const std::string& bindProperty):
+	AbstractComponent(scene::Layout::Group::CULLING),
 	_frustum(shape),
 	_bindProperty(bindProperty)
 {
@@ -125,9 +125,10 @@ Culling::targetAddedToSceneHandler(NodePtr node, NodePtr target, NodePtr ancesto
 void
 Culling::addedHandler(NodePtr node, NodePtr target, NodePtr ancestor)
 {
-	scene::NodeSet::Ptr nodeSet = scene::NodeSet::create(target)->descendants(true)->where([](NodePtr descendant)
+	auto layoutMask = this->layoutMask();
+	scene::NodeSet::Ptr nodeSet = scene::NodeSet::create(target)->descendants(true)->where([layoutMask](NodePtr descendant)
 	{
-		return (descendant->layouts() & _mask) != 0;
+		return (descendant->layouts() & layoutMask) != 0;
 	});
 
 	for (auto n : nodeSet->nodes())
@@ -137,7 +138,7 @@ Culling::addedHandler(NodePtr node, NodePtr target, NodePtr ancestor)
 void
 Culling::layoutChangedHandler(NodePtr node, NodePtr target)
 {
-	if ((target->layouts() & _mask) != 0)
+	if ((target->layouts() & layoutMask()) != 0)
 		_octTree->insert(target);
 	else
 		_octTree->remove(target);

@@ -96,7 +96,7 @@ int main(int argc, char** argv)
 					material,
 					sceneManager->assets()->effect("effect/Basic.effect")
 				));
-			mesh->layouts(mesh->layouts() | scene::Layout::STATIC);
+			mesh->layouts(mesh->layouts() | scene::Layout::Group::CULLING);
 
 			cubeGroup->addChild(mesh);
 		}
