@@ -72,14 +72,14 @@ bullet::Collider::initialize()
 {
 	_targetAddedSlot	= targetAdded()->connect(std::bind(
 		&bullet::Collider::targetAddedHandler,
-		shared_from_this(),
+		std::static_pointer_cast<Collider>(shared_from_this()),
 		std::placeholders::_1,
 		std::placeholders::_2
 	));
 
 	_targetRemovedSlot	= targetRemoved()->connect(std::bind(
 		&bullet::Collider::targetRemovedHandler,
-		shared_from_this(),
+		std::static_pointer_cast<Collider>(shared_from_this()),
 		std::placeholders::_1,
 		std::placeholders::_2
 	));
@@ -94,7 +94,7 @@ bullet::Collider::targetAddedHandler(AbstractComponent::Ptr,
 
 	_addedSlot		= targets().front()->added()->connect(std::bind(
 		&bullet::Collider::addedHandler,
-		shared_from_this(),
+		std::static_pointer_cast<Collider>(shared_from_this()),
 		std::placeholders::_1,
 		std::placeholders::_2,
 		std::placeholders::_3
@@ -102,7 +102,7 @@ bullet::Collider::targetAddedHandler(AbstractComponent::Ptr,
 
 	_removedSlot	= targets().front()->removed()->connect(std::bind(
 		&bullet::Collider::removedHandler,
-		shared_from_this(),
+		std::static_pointer_cast<Collider>(shared_from_this()),
 		std::placeholders::_1,
 		std::placeholders::_2,
 		std::placeholders::_3
@@ -114,13 +114,13 @@ bullet::Collider::targetRemovedHandler(AbstractComponent::Ptr,
 									   Node::Ptr target)
 {
 	if (_physicsWorld != nullptr)
-		_physicsWorld->removeChild(shared_from_this());
+		_physicsWorld->removeChild(std::static_pointer_cast<Collider>(shared_from_this()));
 
 	_physicsWorld		= nullptr;
 	_graphicsTransform	= nullptr;
 
-	_addedSlot		= nullptr;
-	_removedSlot	= nullptr;
+	_addedSlot			= nullptr;
+	_removedSlot		= nullptr;
 }
 
 void 
@@ -137,7 +137,7 @@ void
 bullet::Collider::removedHandler(Node::Ptr, Node::Ptr, Node::Ptr)
 {
 	//if (_physicsWorld != nullptr)
-	//	_physicsWorld->removeChild(shared_from_this());
+	//	_physicsWorld->removeChild(std::static_pointer_cast<Collider>(shared_from_this()));
 
 	//_physicsWorld		= nullptr;
 	//_graphicsTransform	= nullptr;
@@ -173,7 +173,7 @@ bullet::Collider::initializeFromNode(Node::Ptr node)
 		: withPhysicsWorld->nodes().front()->component<bullet::PhysicsWorld>();
 
 	if (_physicsWorld)
-		_physicsWorld->addChild(shared_from_this());
+		_physicsWorld->addChild(std::static_pointer_cast<Collider>(shared_from_this()));
 
 	synchronizePhysicsWithGraphics();
 }
@@ -213,7 +213,7 @@ bullet::Collider::synchronizePhysicsWithGraphics(bool forceTransformUpdate)
 
 	if (_physicsWorld)
 		_physicsWorld->updateRigidBodyState(
-			shared_from_this(), 
+			std::static_pointer_cast<Collider>(shared_from_this()), 
 			graphicsNoScale, 
 			centerOfMassOffset
 		);
@@ -250,10 +250,10 @@ bullet::Collider::setPhysicsTransform(Matrix4x4::Ptr	physicsTransform,
 	}
 
 	// fire update signals
-	_physicsTransformChanged->execute(shared_from_this(), _physicsTransform);
-	_graphicsTransformChanged->execute(shared_from_this(), _graphicsTransform);
+	_physicsTransformChanged->execute(std::static_pointer_cast<Collider>(shared_from_this()), _physicsTransform);
+	_graphicsTransformChanged->execute(std::static_pointer_cast<Collider>(shared_from_this()), _graphicsTransform);
 
-	return shared_from_this();
+	return std::static_pointer_cast<Collider>(shared_from_this());
 }
 
 Matrix4x4::Ptr
@@ -268,7 +268,10 @@ Vector3::Ptr
 bullet::Collider::linearVelocity(Vector3::Ptr output) const
 {
 	return _physicsWorld
-		? _physicsWorld->getColliderLinearVelocity(shared_from_this(), output)
+		? _physicsWorld->getColliderLinearVelocity(
+			std::static_pointer_cast<const Collider>(shared_from_this()), 
+			output
+		)
 		: output;
 }
 
@@ -276,16 +279,22 @@ bullet::Collider::Ptr
 bullet::Collider::linearVelocity(Vector3::Ptr value)
 {
 	if (_physicsWorld)
-		_physicsWorld->setColliderLinearVelocity(shared_from_this(), value);
+		_physicsWorld->setColliderLinearVelocity(
+			std::static_pointer_cast<Collider>(shared_from_this()), 
+			value
+		);
 
-	return shared_from_this();
+	return std::static_pointer_cast<Collider>(shared_from_this());
 }
 
 Vector3::Ptr
 bullet::Collider::angularVelocity(Vector3::Ptr output) const
 {
 	return _physicsWorld
-		? _physicsWorld->getColliderAngularVelocity(shared_from_this(), output)
+		? _physicsWorld->getColliderAngularVelocity(
+			std::static_pointer_cast<const Collider>(shared_from_this()), 
+			output
+		)
 		: output;
 }
 
@@ -293,27 +302,40 @@ bullet::Collider::Ptr
 bullet::Collider::angularVelocity(Vector3::Ptr value)
 {
 	if (_physicsWorld)
-		_physicsWorld->setColliderAngularVelocity(shared_from_this(), value);
+		_physicsWorld->setColliderAngularVelocity(
+			std::static_pointer_cast<Collider>(shared_from_this()), 
+			value
+		);
 
-	return shared_from_this();
+	return std::static_pointer_cast<Collider>(shared_from_this());
 }
 
 bullet::Collider::Ptr
 bullet::Collider::applyImpulse(Vector3::Ptr impulse, Vector3::Ptr relPosition)
 {
 	if (_physicsTransform)
-		_physicsWorld->applyImpulse(shared_from_this(), impulse, false, relPosition);
+		_physicsWorld->applyImpulse(
+			std::static_pointer_cast<Collider>(shared_from_this()), 
+			impulse, 
+			false, 
+			relPosition
+		);
 
-	return shared_from_this();
+	return std::static_pointer_cast<Collider>(shared_from_this());
 }
 
 bullet::Collider::Ptr
 bullet::Collider::applyRelativeImpulse(Vector3::Ptr impulse, Vector3::Ptr relPosition)
 {
 	if (_physicsTransform)
-		_physicsWorld->applyImpulse(shared_from_this(), impulse, true, nullptr);
+		_physicsWorld->applyImpulse(
+			std::static_pointer_cast<Collider>(shared_from_this()), 
+			impulse, 
+			true, 
+			nullptr
+		);
 
-	return shared_from_this();
+	return std::static_pointer_cast<Collider>(shared_from_this());
 }
 
 bullet::Collider::Ptr
@@ -326,9 +348,9 @@ bullet::Collider::linearFactor(Vector3::Ptr values)
 	_linearFactor->copyFrom(values);
 
 	if (changed)
-		_propertiesChanged->execute(shared_from_this());
+		_propertiesChanged->execute(std::static_pointer_cast<Collider>(shared_from_this()));
 
-	return shared_from_this();
+	return std::static_pointer_cast<Collider>(shared_from_this());
 }
 
 
@@ -342,9 +364,9 @@ bullet::Collider::angularFactor(Vector3::Ptr values)
 	_angularFactor->copyFrom(values);
 
 	if (changed)
-		_propertiesChanged->execute(shared_from_this());
+		_propertiesChanged->execute(std::static_pointer_cast<Collider>(shared_from_this()));
 
-	return shared_from_this();
+	return std::static_pointer_cast<Collider>(shared_from_this());
 }
 
 
@@ -358,9 +380,9 @@ bullet::Collider::damping(float linearDamping, float angularDamping)
 	_angularDamping	= angularDamping;
 
 	if (changed)
-		_propertiesChanged->execute(shared_from_this());
+		_propertiesChanged->execute(std::static_pointer_cast<Collider>(shared_from_this()));
 
-	return shared_from_this();
+	return std::static_pointer_cast<Collider>(shared_from_this());
 }
 
 bullet::Collider::Ptr
@@ -373,9 +395,9 @@ bullet::Collider::sleepingThresholds(float linearSleepingThreshold, float angula
 	_angularSleepingThreshold	= angularSleepingThreshold;
 
 	if (changed)
-		_propertiesChanged->execute(shared_from_this());
+		_propertiesChanged->execute(std::static_pointer_cast<Collider>(shared_from_this()));
 
-	return shared_from_this();
+	return std::static_pointer_cast<Collider>(shared_from_this());
 }
 
 bullet::Collider::Ptr
@@ -386,9 +408,9 @@ bullet::Collider::canSleep(bool value)
 	_canSleep = value;
 
 	if (changed)
-		_propertiesChanged->execute(shared_from_this());
+		_propertiesChanged->execute(std::static_pointer_cast<Collider>(shared_from_this()));
 
-	return shared_from_this();
+	return std::static_pointer_cast<Collider>(shared_from_this());
 }
 
 bullet::Collider::Ptr
@@ -399,7 +421,7 @@ bullet::Collider::mask(Layouts value)
     _mask = value;
 
 	if (changed)
-		_propertiesChanged->execute(shared_from_this());
+		_propertiesChanged->execute(std::static_pointer_cast<Collider>(shared_from_this()));
 
-	return shared_from_this();
+	return std::static_pointer_cast<Collider>(shared_from_this());
 }

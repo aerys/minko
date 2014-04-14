@@ -59,14 +59,14 @@ bullet::ColliderDebug::initialize()
 {
 	_targetAddedSlot = targetAdded()->connect(std::bind(
 		&ColliderDebug::targetAddedHandler,
-		shared_from_this(),
+		std::static_pointer_cast<ColliderDebug>(shared_from_this()),
 		std::placeholders::_1,
 		std::placeholders::_2
 	));
 
 	_targetRemovedSlot = targetRemoved()->connect(std::bind(
 		&ColliderDebug::targetRemovedHandler,
-		shared_from_this(),
+		std::static_pointer_cast<ColliderDebug>(shared_from_this()),
 		std::placeholders::_1,
 		std::placeholders::_2
 	));
@@ -80,7 +80,7 @@ bullet::ColliderDebug::targetAddedHandler(AbstractComponent::Ptr, Node::Ptr targ
 
 	_addedSlot = target->added()->connect(std::bind(
 		&ColliderDebug::addedHandler,
-		shared_from_this(),
+		std::static_pointer_cast<ColliderDebug>(shared_from_this()),
 		std::placeholders::_1,
 		std::placeholders::_2,
 		std::placeholders::_3
@@ -88,7 +88,7 @@ bullet::ColliderDebug::targetAddedHandler(AbstractComponent::Ptr, Node::Ptr targ
 
 	_removedSlot = target->removed()->connect(std::bind(
 		&ColliderDebug::removedHandler,
-		shared_from_this(),
+		std::static_pointer_cast<ColliderDebug>(shared_from_this()),
 		std::placeholders::_1,
 		std::placeholders::_2,
 		std::placeholders::_3
@@ -138,7 +138,7 @@ bullet::ColliderDebug::initializeDisplay()
 	
 	_physicsTransformChangedSlot = collider->physicsTransformChanged()->connect(std::bind(
 		&bullet::ColliderDebug::physicsTransformChangedHandler,
-		shared_from_this(),
+		std::static_pointer_cast<ColliderDebug>(shared_from_this()),
 		std::placeholders::_1,
 		std::placeholders::_2
 	));

@@ -31,8 +31,7 @@ namespace minko
 		namespace bullet
 		{
 			class Collider:
-				public AbstractComponent,
-				public std::enable_shared_from_this<Collider>
+				public AbstractComponent
 			{
 			public:
 				typedef std::shared_ptr<Collider>					Ptr;
@@ -134,7 +133,7 @@ namespace minko
 				{
 					_uid = value;
 
-					return shared_from_this();
+					return std::static_pointer_cast<Collider>(shared_from_this());
 				}
 
                 inline
@@ -208,7 +207,7 @@ namespace minko
 				{
 					_triggerCollisions = value;
 
-					return shared_from_this();
+					return std::static_pointer_cast<Collider>(shared_from_this());
 				}
 
 				inline

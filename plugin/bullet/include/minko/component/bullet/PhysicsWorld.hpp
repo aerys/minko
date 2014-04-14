@@ -45,8 +45,7 @@ namespace minko
 			class LinearIdAllocator; 
 
 			class PhysicsWorld:
-				public AbstractComponent,
-				public std::enable_shared_from_this<PhysicsWorld>
+				public AbstractComponent
 			{
 				friend class Collider;
 

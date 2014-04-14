@@ -82,14 +82,14 @@ bullet::PhysicsWorld::initialize()
 
 	_targetAddedSlot	= targetAdded()->connect(std::bind(
 		&bullet::PhysicsWorld::targetAddedHandler,
-		shared_from_this(),
+		std::static_pointer_cast<PhysicsWorld>(shared_from_this()),
 		std::placeholders::_1,
 		std::placeholders::_2
 	));
 
 	_targetRemovedSlot	= targetRemoved()->connect(std::bind(
 		&bullet::PhysicsWorld::targetRemovedHandler,
-		shared_from_this(),
+		std::static_pointer_cast<PhysicsWorld>(shared_from_this()),
 		std::placeholders::_1,
 		std::placeholders::_2
 	));
@@ -141,11 +141,21 @@ bullet::PhysicsWorld::setSceneManager(std::shared_ptr<SceneManager> sceneManager
 		if (sceneManager)
 		{
 			_sceneManager = sceneManager;
+
 			_frameBeginSlot = sceneManager->frameBegin()->connect(std::bind(
-				&PhysicsWorld::frameBeginHandler, shared_from_this(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
+				&PhysicsWorld::frameBeginHandler, 
+				std::static_pointer_cast<PhysicsWorld>(shared_from_this()), 
+				std::placeholders::_1, 
+				std::placeholders::_2, 
+				std::placeholders::_3
 			));
+
 			_frameEndSlot = sceneManager->frameEnd()->connect(std::bind(
-				&PhysicsWorld::frameEndHandler, shared_from_this(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
+				&PhysicsWorld::frameEndHandler, 
+				std::static_pointer_cast<PhysicsWorld>(shared_from_this()), 
+				std::placeholders::_1, 
+				std::placeholders::_2, 
+				std::placeholders::_3
 			));
 
 			_componentAddedOrRemovedSlot = target->componentRemoved()->connect(componentCallback);
