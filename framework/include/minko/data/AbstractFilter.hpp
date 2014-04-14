@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -20,75 +20,45 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
-
-#include "minko/data/Provider.hpp"
+#include "minko/Signal.hpp"
 
 namespace minko
 {
 	namespace data
 	{
-		class ArrayProvider :
-			public Provider
+		class AbstractFilter: 
+			public std::enable_shared_from_this<AbstractFilter>
 		{
 		public:
-			typedef std::shared_ptr<ArrayProvider>			Ptr;
+			typedef std::shared_ptr<AbstractFilter>	Ptr;
 
 		private:
-			typedef std::shared_ptr<Provider>				ProviderPtr;
-			typedef Signal<Ptr, uint>						IndexChangedSignal;
-			typedef std::shared_ptr<IndexChangedSignal>		IndexChangedSignalPtr;
+			typedef std::shared_ptr<Signal<Ptr>>	FilterSignalPtr;
 
 		private:
-			std::string										_name;
-			IndexChangedSignalPtr							_indexChanged;
+			FilterSignalPtr							_changed;
 
 		public:
-			inline static
-			Ptr
-			create(const std::string& name)
+			AbstractFilter():
+				_changed(Signal<Ptr>::create())
 			{
-				return std::shared_ptr<ArrayProvider>(new ArrayProvider(name));
 			}
 
+			virtual
+			~AbstractFilter()
+			{
+			}
+
+			virtual
+			bool
+			operator()(std::shared_ptr<Provider>) = 0;
 
 			inline
-			IndexChangedSignalPtr
-			indexChanged()
+			FilterSignalPtr
+			changed() const
 			{
-				return _indexChanged;
+				return _changed;
 			}
-
-			inline
-			const std::string&
-			arrayName() const
-			{
-				return _name;
-			}
-
-			inline
-			Ptr
-			copyFrom(Ptr source)
-			{
-				Provider::copyFrom(std::static_pointer_cast<Provider>(source));
-
-				_name = source->_name;
-
-				return std::static_pointer_cast<ArrayProvider>(shared_from_this());
-			}
-
-			inline
-			Ptr
-			clone()
-			{
-				auto that = std::static_pointer_cast<ArrayProvider>(shared_from_this());
-
-				return ArrayProvider::create(_name)->copyFrom(that);
-			}
-
-		protected:
-			explicit
-			ArrayProvider(const std::string& name);
-	
 		};
 	}
 }

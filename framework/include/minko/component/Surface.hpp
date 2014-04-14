@@ -47,7 +47,7 @@ namespace minko
 			typedef PropertyChangedSignal::Slot										PropertyChangedSlot;
 			typedef std::shared_ptr<render::Effect>									EffectPtr;
 			typedef const std::string&												StringRef;
-			typedef Signal<ArrayProviderPtr, uint>::Slot							ArrayProviderIndexChangedSlot;
+			typedef Signal<ArrayProviderPtr, uint>::Slot							ArrayIndexChangedSlot;
 
 
 		private:
@@ -58,8 +58,8 @@ namespace minko
 			std::shared_ptr<render::Effect>											_effect;
 			std::string 															_technique;
 
-			int																		_geometryId;
-			int																		_materialId;
+			//int																		_geometryId;
+			//int																		_materialId;
 
 			bool																	_visible;
 			std::unordered_map<std::shared_ptr<component::Renderer>, bool>			_rendererToVisibility;
@@ -69,7 +69,7 @@ namespace minko
 			VisibilityChangedSignal::Ptr											_visibilityChanged;
 			VisibilityChangedSignal::Ptr											_computedVisibilityChanged;
 
-			std::list<ArrayProviderIndexChangedSlot>								_dataProviderIndexChangedSlots;
+			//std::list<ArrayIndexChangedSlot>								_dataProviderIndexChangedSlots;
 			Signal<AbstractComponent::Ptr, NodePtr>::Slot							_targetAddedSlot;
 			Signal<AbstractComponent::Ptr, NodePtr>::Slot							_targetRemovedSlot;
 			Signal<NodePtr, NodePtr, NodePtr>::Slot									_addedSlot;
@@ -243,11 +243,11 @@ namespace minko
 			void
 			setEffectAndTechnique(EffectPtr, const std::string&, bool updateDrawcalls = true);
 
-			void
-			geometryProviderIndexChanged(ArrayProviderPtr arrayProvider, uint index);
+			//void
+			//geometryProviderIndexChanged(ArrayProviderPtr arrayProvider, uint index);
 
-			void
-			materialProviderIndexChanged(ArrayProviderPtr arrayProvider, uint index);
+			//void
+			//materialProviderIndexChanged(ArrayProviderPtr arrayProvider, uint index);
 		};
 	}
 }

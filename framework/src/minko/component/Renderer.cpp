@@ -30,6 +30,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/SceneManager.hpp"
 #include "minko/file/AssetLibrary.hpp"
 #include "minko/render/DrawCallPool.hpp"
+#include "minko/data/AbstractFilter.hpp"
 
 using namespace minko;
 using namespace minko::component;
@@ -49,7 +50,14 @@ Renderer::Renderer(std::shared_ptr<render::AbstractTexture> renderTarget,
 	_surfaceDrawCalls(),
 	_surfaceTechniqueChangedSlot(),
 	_effect(effect),
-	_priority(priority)
+	_priority(priority),
+	_targetDataFilters(),
+	_rendererDataFilters(),
+	_rootDataFilters(),
+	_targetDataFilterChangedSlots(),
+	_rendererDataFilterChangedSlots(),
+	_rootDataFilterChangedSlots(),
+	_filterChanged(Signal<Ptr, data::AbstractFilter::Ptr, data::BindingSource>::create())
 {
 	if (renderTarget)
 	{
@@ -112,6 +120,10 @@ Renderer::targetRemovedHandler(std::shared_ptr<AbstractComponent> 	ctrl,
 	_removedSlot = nullptr;
 
 	removedHandler(target->root(), target, target->parent());
+
+	_targetDataFilters.clear();
+	_rendererDataFilters.clear();
+	_rootDataFilters.clear();
 }
 
 void
@@ -326,4 +338,56 @@ Renderer::sceneManagerRenderingBeginHandler(std::shared_ptr<SceneManager>	sceneM
 										    AbstractTexture::Ptr			renderTarget)
 {
 	render(sceneManager->assets()->context(), renderTarget);
+}
+
+Renderer::Ptr
+Renderer::addFilter(data::AbstractFilter::Ptr	filter, 
+					data::BindingSource			source)
+{
+	if (filter)
+	{
+		auto& filters				= this->filtersRef(source);
+		auto& filterChangedSlots	= this->filterChangedSlotsRef(source);
+
+		if (filterChangedSlots.count(filter) == 0)
+		{
+			filters.insert(filter);
+			filterChangedSlots[filter] = filter->changed()->connect([=](AbsFilterPtr){
+				filterChangedHandler(filter, source);
+			});
+		}
+	}
+
+	return std::static_pointer_cast<Renderer>(shared_from_this());
+}
+
+Renderer::Ptr
+Renderer::removeFilter(data::AbstractFilter::Ptr	filter, 
+					   data::BindingSource			source)
+{
+	if (filter)
+	{
+		auto& filters				= this->filtersRef(source);
+		auto& filterChangedSlots	= this->filterChangedSlotsRef(source);
+
+		auto foundFilterIt = filters.find(filter);
+		if (foundFilterIt != filters.end())
+		{
+			filters.erase(foundFilterIt);
+			filterChangedSlots.erase(filter);
+		}
+	}
+
+	return std::static_pointer_cast<Renderer>(shared_from_this());
+}
+
+void
+Renderer::filterChangedHandler(data::AbstractFilter::Ptr	filter, 
+							   data::BindingSource			source)
+{
+	_filterChanged->execute(
+		std::static_pointer_cast<Renderer>(shared_from_this()),
+		filter,
+		source
+	);
 }

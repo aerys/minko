@@ -145,8 +145,8 @@ namespace minko
 					states
                 ));
 
-				ptr->_formatPropertyNameFct = formatPropertyNameFct;
-				ptr->_variablesToValue = variablesToValue;
+				ptr->_formatPropertyNameFct	= formatPropertyNameFct;
+				ptr->_variablesToValue		= variablesToValue;
 
 				ptr->initialize();
 
@@ -182,12 +182,12 @@ namespace minko
 				return _formatPropertyNameFct(rawPropertyName, _variablesToValue);
 			}
 
-			inline
-			const std::unordered_map<std::string, std::string>&
-			variablesToValue()
-			{
-				return _variablesToValue;
-			}
+			//inline
+			//const std::unordered_map<std::string, std::string>&
+			//variablesToValue()
+			//{
+			//	return _variablesToValue;
+			//}
 
             inline
             AbsTexturePtr

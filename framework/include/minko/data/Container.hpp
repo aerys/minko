@@ -38,6 +38,7 @@ namespace minko
 			typedef std::shared_ptr<PropertyChangedSignal>					PropertyChangedSignalPtr;
 
 			typedef std::shared_ptr<Provider>								ProviderPtr;
+			typedef std::shared_ptr<data::AbstractFilter>					AbsFilterPtr;
 			typedef Signal<ProviderPtr, const std::string&>					ProviderPropertyChangedSignal;
 			typedef ProviderPropertyChangedSignal::Slot						ProviderPropertyChangedSlot;
 
@@ -91,10 +92,12 @@ namespace minko
 			hasProperty(const std::string& propertyName) const;
 
 			inline
-			uint
-			getProviderIndex(ProviderPtr provider)
+			int
+			getProviderIndex(ProviderPtr provider) const
 			{
-				return _providerToIndex[provider];
+				auto foundIndexIt = _providerToIndex.find(provider);
+
+				return foundIndexIt != _providerToIndex.end() ? foundIndexIt->second : -1;
 			}
 
 			template <typename T>
@@ -160,6 +163,9 @@ namespace minko
 			{
 				return _providers;
 			}
+
+			Ptr
+			filter(const std::set<AbsFilterPtr>&, Ptr = nullptr) const;
 
 		private:
 			Container();

@@ -153,24 +153,31 @@ DrawCallPool::addSurface(Surface::Ptr surface)
 		std::placeholders::_2,
 		std::placeholders::_3))));
 
-	_surfaceToIndexChangedSlot.insert(std::pair<SurfacePtr, ArrayProviderIndexChangedSlot>(surface, surface->geometry()->data()->indexChanged()->connect(std::bind(
-		&DrawCallPool::dataProviderIndexChangedHandler,
+	// drawcall variable monitoring handlers
+
+	auto geometrySlot		= surface->geometry()->data()->indexChanged()->connect(std::bind(
+		&DrawCallPool::drawCallVariablesChangedHandler,
 		shared_from_this(),
 		std::placeholders::_1,
 		std::placeholders::_2,
 		surface
-		))));
+	));
 
-	auto arrayProviderMaterial = std::dynamic_pointer_cast<data::ArrayProvider>(surface->material());
+	_surfaceToIndexChangedSlot.insert(std::pair<Surface::Ptr, ArrayIndexChangedSlot>(surface, geometrySlot));
 
-	if (arrayProviderMaterial)
-		_surfaceToIndexChangedSlot.insert(std::pair<SurfacePtr, ArrayProviderIndexChangedSlot>(surface, arrayProviderMaterial->indexChanged()->connect(std::bind(
-		&DrawCallPool::dataProviderIndexChangedHandler,
-		shared_from_this(),
-		std::placeholders::_1,
-		std::placeholders::_2,
-		surface
-		))));
+	auto arrayMaterial		= std::dynamic_pointer_cast<data::ArrayProvider>(surface->material());
+	if (arrayMaterial)
+	{
+		auto materialSlot	= arrayMaterial->indexChanged()->connect(std::bind(
+			&DrawCallPool::drawCallVariablesChangedHandler,
+			shared_from_this(),
+			std::placeholders::_1,
+			std::placeholders::_2,
+			surface
+		));
+
+		_surfaceToIndexChangedSlot.insert(std::pair<Surface::Ptr, ArrayIndexChangedSlot>(surface, materialSlot));
+	}
 
 	//if (std::find(_toCollect.begin(), _toCollect.end(), surface) == _toCollect.end())
 	if (surface->visible(_renderer))
@@ -237,7 +244,7 @@ DrawCallPool::visibilityChangedHandler(Surface::Ptr		surface,
 }
 
 void
-DrawCallPool::dataProviderIndexChangedHandler(data::ArrayProvider::Ptr	provider, 
+DrawCallPool::drawCallVariablesChangedHandler(data::ArrayProvider::Ptr	provider, 
 											  uint						index, 
 											  Surface::Ptr				surface)
 {
@@ -245,6 +252,7 @@ DrawCallPool::dataProviderIndexChangedHandler(data::ArrayProvider::Ptr	provider,
 	//{
 	//	std::cout << "   update surface drawcalls" << std::endl;
 		//deleteDrawCalls(surface);
+	if (_toRemove.find(surface) != _toRemove.end())
 		_toCollect.insert(surface);
 	//}
 }
@@ -320,25 +328,36 @@ DrawCallPool::initializeDrawCall(Pass::Ptr		pass,
 		throw std::invalid_argument("pass");
 #endif // DEBUG
 
-	const auto rendererData = _renderer->targets()[0]->data();
-	const float	priority	= drawcall ? drawcall->priority() : pass->states()->priority();
-	const auto	target		= surface->targets()[0];
-	const auto	targetData	= target->data();
-	const auto	rootData	= target->root()->data();
-	bool		firstInit	= false;
+	const auto	target			= surface->targets()[0];
+
+	const auto&	targetFilters	= _renderer->filters(data::BindingSource::TARGET);
+	const auto&	rendererFilters	= _renderer->filters(data::BindingSource::RENDERER);
+	const auto&	rootFilters		= _renderer->filters(data::BindingSource::ROOT);
+
+	const auto	targetData		= target->data()					->filter(targetFilters);
+	const auto	rendererData	= _renderer->targets()[0]->data()	->filter(rendererFilters);
+	const auto	rootData		= target->root()->data()			->filter(rootFilters);
+
+	const float	priority		= drawcall ? drawcall->priority() : pass->states()->priority();
+
+	bool		firstInit		= false;
 
 	Effect::Ptr						effect = _renderer->effect() ? _renderer->effect() : surface->effect();
 	std::list<ContainerProperty>	booleanMacros;
 	std::list<ContainerProperty>	integerMacros;
 	std::list<ContainerProperty>	incorrectIntegerMacros;
+
 	std::unordered_map<std::string, std::string> drawCallVariables;
 
-	if (drawcall)
-		drawCallVariables = drawcall->variablesToValue();
-	else
+	//if (drawcall)
+	//	drawCallVariables = drawcall->variablesToValue();
+	//else
 	{
-		drawCallVariables["geometryId"] = std::to_string(surface->_geometryId);
-		drawCallVariables["materialId"] = std::to_string(surface->_materialId);
+		auto geometryId	= targetData->getProviderIndex(surface->geometry()->data());
+		auto materialId	= targetData->getProviderIndex(surface->material());
+
+		drawCallVariables["geometryId"] = std::to_string(geometryId); //std::to_string(surface->_geometryId);
+		drawCallVariables["materialId"] = std::to_string(materialId); //std::to_string(surface->_materialId);
 	}
 	
 	if (drawcall == nullptr)
@@ -408,7 +427,12 @@ DrawCallPool::initializeDrawCall(Pass::Ptr		pass,
 		}
 	}
 
-	drawcall->configure(program, targetData, rendererData, rootData);
+	drawcall->configure(
+		program, 
+		targetData, 
+		rendererData, 
+		rootData
+	);
 
 	return drawcall;
 }
@@ -752,8 +776,8 @@ DrawCallPool::zsortNeededHandler(Surface::Ptr	surface,
 
 
 std::string
-DrawCallPool::formatPropertyName(const std::string&							rawPropertyName, 
-							     std::unordered_map<std::string, std::string>& variableToValue)
+DrawCallPool::formatPropertyName(const std::string&								rawPropertyName, 
+							     std::unordered_map<std::string, std::string>&	variableToValue)
 {
 	std::string propertyName = rawPropertyName;
 

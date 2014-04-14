@@ -68,12 +68,13 @@ namespace minko
 			typedef std::shared_ptr<component::Renderer>												RendererPtr;
 			typedef std::shared_ptr<render::Pass>														PassPtr;
 			typedef std::shared_ptr<scene::Node>														NodePtr;
+			typedef std::shared_ptr<data::ArrayProvider>												ArrayProviderPtr;
 			typedef std::unordered_map<std::string, std::string>										StringToStringMap;
 
 			typedef std::pair<std::string, PassPtr>														TechniqueNameAndPass;
 			typedef std::pair<SurfacePtr, NodePtr>														SurfaceAndTarget;
 			typedef std::list<DrawCallPtr>																DrawCallList;
-			typedef std::function <std::string(const std::string&, StringToStringMap&)>					FormatFunction;
+			typedef std::function<std::string(const std::string&, StringToStringMap&)>					FormatFunction;
 
 			typedef Signal<ContainerPtr, const std::string&>											PropertyChangedSignal;
 			typedef Signal<Ptr, SurfacePtr, DrawCallPtr>												DrawCallChangedSignal;
@@ -81,7 +82,7 @@ namespace minko
 			typedef Signal<SurfacePtr, const std::string&, bool>::Slot									TechniqueChangeSlot;
 			typedef Signal<SurfacePtr, RendererPtr, bool>::Slot											VisibilityChangedSlot;
 			typedef Signal<DrawCallPtr>::Slot															ZSortNeededSlot;
-			typedef Signal<std::shared_ptr<data::ArrayProvider>, uint>::Slot							ArrayProviderIndexChangedSlot;
+			typedef Signal<ArrayProviderPtr, uint>::Slot												ArrayIndexChangedSlot;
 			typedef PropertyChangedSignal::Slot															PropertyChangedSlot;
 
 			typedef std::unordered_map<DrawCallPtr, PassPtr>											DrawCallToPassMap;
@@ -92,7 +93,6 @@ namespace minko
 			typedef std::unordered_map<std::string, DrawCallList>										MacroNameToDrawCallListMap;
 			typedef std::unordered_map<std::string, std::unordered_set<std::string>>					TechniqueToMacroSetMap;
 			typedef std::unordered_map<DrawCallPtr, ZSortNeededSlot>									DrawCallToZSortSlotMap;
-			typedef std::unordered_map<std::string, data::MacroBinding>									MacroBindingsMap;
 			
 		private:
 			static const unsigned int																	NUM_FALLBACK_ATTEMPTS;
@@ -105,7 +105,7 @@ namespace minko
 
 			std::unordered_map<SurfacePtr, TechniqueChangeSlot>											_surfaceToTechniqueChangedSlot;
 			std::unordered_multimap<SurfacePtr, VisibilityChangedSlot>									_surfaceToVisibilityChangedSlot;
-			std::unordered_multimap<SurfacePtr, ArrayProviderIndexChangedSlot>							_surfaceToIndexChangedSlot;
+			std::unordered_multimap<SurfacePtr, ArrayIndexChangedSlot>									_surfaceToIndexChangedSlot;
 
 			DrawCallChangedSignal::Ptr																	_drawCallAdded;
 			DrawCallChangedSignal::Ptr																	_drawCallRemoved;
@@ -200,7 +200,7 @@ namespace minko
 			visibilityChangedHandler(SurfacePtr, RendererPtr, bool visibility);
 
 			void
-			dataProviderIndexChangedHandler(std::shared_ptr<data::ArrayProvider>, uint index, SurfacePtr);
+			drawCallVariablesChangedHandler(ArrayProviderPtr, uint index, SurfacePtr);
 
 			void
 			macroChangedHandler(ContainerPtr		container, 
@@ -244,7 +244,6 @@ namespace minko
 
 			const data::MacroBindingMap
 			getDrawCallmacroBindings(DrawCallPtr drawcall);
-
 		};
 	}
 }

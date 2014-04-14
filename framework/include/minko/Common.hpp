@@ -185,6 +185,7 @@ namespace minko
 		class ValueBase;
 		class Value;
 		class Container;
+		class AbstractFilter;
         
 		enum class BindingSource
 		{

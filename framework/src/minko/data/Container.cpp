@@ -21,6 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/data/ArrayProvider.hpp"
 #include "minko/data/Provider.hpp"
+#include "minko/data/AbstractFilter.hpp"
 
 using namespace minko;
 using namespace minko::data;
@@ -395,4 +396,43 @@ Container::unformatPropertyName(ProviderPtr provider, const std::string& formatt
 	return formattedPropertyName.substr(pos1, pos2 - pos1);
 
 #endif // MINKO_NO_GLSL_STRUCT
+}
+
+Container::Ptr
+Container::filter(const std::set<data::AbstractFilter::Ptr>&	filters, 
+				  Container::Ptr								output) const
+{
+	//return std::const_pointer_cast<Container>(shared_from_this());
+
+	if (output)
+		while (!output->_providers.empty())
+			output->removeProvider(output->_providers.front());
+	else
+		output = data::Container::create();
+
+	for (auto& p : _providers)
+	{
+		if (p == _arrayLengths)
+			continue;
+
+		bool addProvider = true;
+		for (auto& f : filters)
+			if (!(*f)(p))
+			{
+				addProvider = false;
+				break;
+			}
+
+		if (addProvider)
+		{
+			auto arrayProvider = std::dynamic_pointer_cast<ArrayProvider>(p);
+
+			if (arrayProvider)
+				output->addProvider(arrayProvider);
+			else
+				output->addProvider(p);
+		}
+	}
+
+	return output;
 }
