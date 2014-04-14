@@ -109,8 +109,11 @@ PhysicsExtension::deserializePhysics(std::string&							serializedCollider,
 		friction
 	);
 
-	return component::bullet::Collider::create(data)
+	auto collider = component::bullet::Collider::create(data)
 		//->collisionGroup(filterGroup) // information stored in node layouts 
-		->mask(filterMask)
 		->triggerCollisions(dst.a7);
+
+	collider->layoutMask(filterMask);
+
+	return collider;
 }

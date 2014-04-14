@@ -67,8 +67,10 @@ namespace minko
 						.methodWrapper("getAngularFactor",				&LuaCollider::getAngularFactorsWrapper)
 						.method("setCanSleep",							static_cast<Collider::Ptr (Collider::*)(bool)>						(&Collider::canSleep))
 						.methodWrapper("getCanSleep",					&LuaCollider::getCanSleepWrapper)						
-						.method("getMask",								static_cast<Layouts (Collider::*)(void) const>						(&Collider::mask))
-						.method("setMask",								static_cast<Collider::Ptr (Collider::*)(Layouts)>					(&Collider::mask))
+						.methodWrapper("getCollisionGroup",				&LuaCollider::getCollisionGroupWrapper)
+						.methodWrapper("setCollisionGroup",				&LuaCollider::setCollisionGroupWrapper)
+						.methodWrapper("getCollisionMask",				&LuaCollider::getCollisionMaskWrapper)
+						.methodWrapper("setCollisionMask",				&LuaCollider::setCollisionMaskWrapper)
 						.method("setTriggerCollisions",					static_cast<Collider::Ptr (Collider::*)(bool)>						(&Collider::triggerCollisions))
 						.methodWrapper("getTriggerCollisions",			&LuaCollider::getTriggerCollisionsWrapper)
 						.methodWrapper("getNode",						&LuaCollider::getNodeWrapper)
@@ -148,6 +150,41 @@ namespace minko
 				getNodeWrapper(bullet::Collider::Ptr collider)
 				{
 					return collider->target();
+				}
+
+				static
+				Layouts
+				getCollisionGroupWrapper(bullet::Collider::Ptr collider)
+				{
+					return collider && collider->target()
+						? collider->target()->layouts()
+						: scene::Layout::Mask::NOTHING;
+				}
+
+				static
+				bullet::Collider::Ptr
+				setCollisionGroupWrapper(bullet::Collider::Ptr collider, Layouts value)
+				{
+					if (collider && collider->target())
+						collider->target()->layouts(value);
+
+					return collider;
+				}
+
+				static
+				Layouts
+				getCollisionMaskWrapper(bullet::Collider::Ptr collider)
+				{
+					return collider->layoutMask();
+				}
+
+				static
+				bullet::Collider::Ptr
+				setCollisionMaskWrapper(bullet::Collider::Ptr collider, Layouts value)
+				{
+					collider->layoutMask(value);
+
+					return collider;
 				}
 			};
 		}

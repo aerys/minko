@@ -52,7 +52,6 @@ namespace minko
 			private:
 				int													_uid;
 				ColliderDataPtr										_colliderData;
-                Layouts												_mask;
 				bool												_canSleep;
 				bool												_triggerCollisions;
 				Vector3Ptr											_linearFactor;
@@ -135,16 +134,6 @@ namespace minko
 
 					return std::static_pointer_cast<Collider>(shared_from_this());
 				}
-
-                inline
-                Layouts
-                mask() const
-                {
-                    return _mask;
-                }
-
-                Ptr
-                mask(Layouts);
 
 				Vector3Ptr
 				linearVelocity(Vector3Ptr = nullptr) const;

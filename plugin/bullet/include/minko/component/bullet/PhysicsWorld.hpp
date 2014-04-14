@@ -54,7 +54,7 @@ namespace minko
 
 			private:
 				typedef std::shared_ptr<LinearIdAllocator>			                    LinearIdAllocatorPtr;
-				typedef std::shared_ptr<AbstractComponent>			                    AbsCtrlPtr;
+				typedef std::shared_ptr<AbstractComponent>			                    AbsCmp;
 				typedef std::shared_ptr<scene::Node>				                    NodePtr;
 				typedef std::shared_ptr<Collider>										ColliderPtr; 
 				typedef std::shared_ptr<const Collider>									ConstColliderPtr;
@@ -77,6 +77,7 @@ namespace minko
 
 				typedef std::set<std::pair<uint, uint>>									CollisionSet;
                 typedef Signal<NodePtr, NodePtr>                                        NodeLayoutsChanged;
+				typedef Signal<AbsCmp>			                                        LayoutMaskChanged;
                 typedef Signal<ColliderPtr>												ColliderChanged;
 
 			private:
@@ -96,15 +97,16 @@ namespace minko
 
 				std::shared_ptr<SceneManager>					                        _sceneManager;
 
-				Signal<AbsCtrlPtr, NodePtr>::Slot				                        _targetAddedSlot;
-				Signal<AbsCtrlPtr, NodePtr>::Slot				                        _targetRemovedSlot;
-				Signal<AbsCtrlPtr, NodePtr>::Slot				                        _exitFrameSlot;
+				Signal<AbsCmp, NodePtr>::Slot											_targetAddedSlot;
+				Signal<AbsCmp, NodePtr>::Slot											_targetRemovedSlot;
+				Signal<AbsCmp, NodePtr>::Slot											_exitFrameSlot;
 				Signal<std::shared_ptr<SceneManager>, float, float>::Slot               _frameBeginSlot;
 				Signal<std::shared_ptr<SceneManager>, float, float>::Slot               _frameEndSlot;
 				Signal<NodePtr, NodePtr, NodePtr>::Slot			                        _addedOrRemovedSlot;
-				Signal<NodePtr, NodePtr, AbsCtrlPtr>::Slot		                        _componentAddedOrRemovedSlot;
+				Signal<NodePtr, NodePtr, AbsCmp>::Slot									_componentAddedOrRemovedSlot;
 				std::unordered_map<ColliderPtr, ColliderChanged::Slot>					_colliderPropertiesChangedSlot;
                 std::unordered_map<ColliderPtr, NodeLayoutsChanged::Slot>				_colliderNodeLayoutChangedSlot;
+				std::unordered_map<ColliderPtr, LayoutMaskChanged::Slot>				_colliderLayoutMaskChangedSlot;
 
 			public:
 				static
@@ -163,10 +165,10 @@ namespace minko
 				initialize();
 
 				void 
-				targetAddedHandler(AbsCtrlPtr, NodePtr);
+				targetAddedHandler(AbsCmp, NodePtr);
 
 				void 
-				targetRemovedHandler(AbsCtrlPtr, NodePtr);
+				targetRemovedHandler(AbsCmp, NodePtr);
 
 				void
 				addedHandler(NodePtr, NodePtr, NodePtr);
@@ -184,7 +186,7 @@ namespace minko
 				notifyCollisions();
 
 				void
-				componentAddedHandler(NodePtr, NodePtr, AbsCtrlPtr);
+				componentAddedHandler(NodePtr, NodePtr, AbsCmp);
 
 				void
 				setSceneManager(std::shared_ptr<SceneManager>);
@@ -194,6 +196,9 @@ namespace minko
 
 				void
 				updateColliderProperties(ColliderPtr);
+
+				void
+				updateColliderLayoutMask(ColliderPtr);
 
 				void
 				updateColliderNodeProperties(ColliderPtr);

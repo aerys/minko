@@ -38,9 +38,8 @@ using namespace minko::scene;
 using namespace minko::component;
 
 bullet::Collider::Collider(ColliderData::Ptr data):
-	AbstractComponent(),
+	AbstractComponent(Layout::Mask::COLLISIONS_DYNAMIC_DEFAULT),
 	_colliderData(data),
-    _mask(Layout::Mask::COLLISIONS_DYNAMIC_DEFAULT),
 	_canSleep(false),
 	_triggerCollisions(false),
 	_linearFactor(Vector3::create(1.0f, 1.0f, 1.0f)),
@@ -406,19 +405,6 @@ bullet::Collider::canSleep(bool value)
 	const bool changed = _canSleep != value;
 
 	_canSleep = value;
-
-	if (changed)
-		_propertiesChanged->execute(std::static_pointer_cast<Collider>(shared_from_this()));
-
-	return std::static_pointer_cast<Collider>(shared_from_this());
-}
-
-bullet::Collider::Ptr
-bullet::Collider::mask(Layouts value)
-{
-	const bool changed = _mask != value;
-
-    _mask = value;
 
 	if (changed)
 		_propertiesChanged->execute(std::static_pointer_cast<Collider>(shared_from_this()));
