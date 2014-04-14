@@ -179,68 +179,75 @@ bullet::Collider::initializeFromNode(Node::Ptr node)
 }
 
 void
-bullet::Collider::synchronizePhysicsWithGraphics()
+bullet::Collider::synchronizePhysicsWithGraphics(bool forceTransformUpdate)
 {
 	assert(_graphicsTransform);
 
-	auto		graphicsTransform			= _graphicsTransform->modelToWorldMatrix(true);
-	static auto graphicsNoScaleTransform	= Matrix4x4::create();
-	static auto centerOfMassOffset			= Matrix4x4::create();
-	static auto physicsModelToWorld			= Matrix4x4::create();
+	auto		graphicsTransform		= _graphicsTransform->modelToWorldMatrix(forceTransformUpdate);
+	static auto graphicsNoScale			= Matrix4x4::create();
+	static auto graphicsNoScaleInverse	= Matrix4x4::create();
+	static auto centerOfMassOffset		= Matrix4x4::create();
+	static auto physicsTransform		= Matrix4x4::create();
 
 	// remove the scaling/shear from the graphics transform, but record it to restitute it during rendering
 	removeScalingShear(
 		graphicsTransform, 
-		graphicsNoScaleTransform,
+		graphicsNoScale,
 		_correction
 	);
 
-	centerOfMassOffset
-		->copyFrom(graphicsNoScaleTransform)->invert()
-		->append(_colliderData->shape()->deltaTransform())
-		->append(graphicsNoScaleTransform)
+	graphicsNoScaleInverse
+		->copyFrom(graphicsNoScale)
 		->invert();
-	
-	physicsModelToWorld
-		->copyFrom(centerOfMassOffset)->invert()
-		->prepend(graphicsNoScaleTransform);
 
-	setPhysicsTransform(physicsModelToWorld);
+	centerOfMassOffset
+		->copyFrom(graphicsNoScaleInverse)
+		->append(_colliderData->shape()->deltaTransformInverse())
+		->append(graphicsNoScale);
+
+	physicsTransform
+		->copyFrom(_colliderData->shape()->deltaTransform())
+		->prepend(graphicsNoScale);
+
+	setPhysicsTransform(physicsTransform, _graphicsTransform->matrix());
 
 	if (_physicsWorld)
 		_physicsWorld->updateRigidBodyState(
 			shared_from_this(), 
-			graphicsNoScaleTransform, 
+			graphicsNoScale, 
 			centerOfMassOffset
 		);
 }
 
 bullet::Collider::Ptr
-bullet::Collider::setPhysicsTransform(Matrix4x4::Ptr physicsModelToWorld)
+bullet::Collider::setPhysicsTransform(Matrix4x4::Ptr	physicsTransform,
+									  Matrix4x4::Ptr	graphicsModelToParent,
+									  bool				forceTransformUpdate)
 {
 	assert(_graphicsTransform);
 
-
 	// update the physics world transform
-	_physicsTransform->copyFrom(physicsModelToWorld);
+	_physicsTransform->copyFrom(physicsTransform);
 
-	// update the graphics local transform
-	static auto graphicsModelToWorld	= math::Matrix4x4::create();
-	static auto worldToParent			= Matrix4x4::create();
+	if (graphicsModelToParent)
+		_graphicsTransform->matrix()->copyFrom(graphicsModelToParent);
+	else
+	{
+		// recompute graphics transform from the physics transform
 
-	graphicsModelToWorld
-		->copyFrom(physicsModelToWorld)
-		->prepend(_colliderData->shape()->deltaTransformInverse())
-		->prepend(_correction);
-
-	worldToParent
-		->copyFrom(_graphicsTransform->modelToWorldMatrix(true))
-		->invert()
-		->append(_graphicsTransform->matrix());
+		// update the graphics local transform
+		static auto worldToParent	= Matrix4x4::create();
 	
-	_graphicsTransform->matrix()
-		->copyFrom(graphicsModelToWorld)
-		->append(worldToParent);
+		worldToParent
+			->copyFrom(_graphicsTransform->modelToWorldMatrix(forceTransformUpdate))->invert()
+			->append(_graphicsTransform->matrix());
+	
+		_graphicsTransform->matrix()
+			->copyFrom(_correction)
+			->append(_colliderData->shape()->deltaTransformInverse())
+			->append(physicsTransform)
+			->append(worldToParent);
+	}
 
 	// fire update signals
 	_physicsTransformChanged->execute(shared_from_this(), _physicsTransform);

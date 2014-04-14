@@ -47,7 +47,7 @@ PhysicsExtension::bind()
 }
 
 std::shared_ptr<component::AbstractComponent>
-PhysicsExtension::deserializePhysics(std::string&							serializedAnimation,
+PhysicsExtension::deserializePhysics(std::string&							serializedCollider,
 									 std::shared_ptr<file::AssetLibrary>	assetLibrary,
 									 std::shared_ptr<file::Dependency>		dependencies)
 {
@@ -57,7 +57,7 @@ PhysicsExtension::deserializePhysics(std::string&							serializedAnimation,
 	// shape type, shape data, delta transform, density, friction, restit, dynamic, trigger, filterGroup, filterMask
 	msgpack::type::tuple<int, std::string, msgpack::type::tuple<uint, std::string>, float, float, float, bool, bool, uint, uint> dst;
 
-	msgpack::unpack(serializedAnimation.data(), serializedAnimation.size() - 1, NULL, &mempool, &deserialized);
+	msgpack::unpack(serializedCollider.data(), serializedCollider.size() - 1, NULL, &mempool, &deserialized);
 	deserialized.convert(&dst);
 
 	std::vector<float> shapedata = deserialize::TypeDeserializer::deserializeVector<float>(dst.a1);

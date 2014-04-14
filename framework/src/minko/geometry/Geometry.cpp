@@ -84,7 +84,7 @@ Geometry::removeVertexBuffer(std::list<render::VertexBuffer::Ptr>::iterator vert
 	if (_vertexBuffers.size() == 0)
 		_numVertices = 0;
 
-	_vbToVertexSizeChangedSlot.erase(vertexBuffer);	
+	_vbToVertexSizeChangedSlot.erase(vertexBuffer);
 }
 
 void
@@ -121,7 +121,7 @@ Geometry::computeNormals()
 
 	if (_data->hasProperty("normal"))
 		throw std::logic_error("The geometry already stores precomputed normals.");
-		
+
 	if (!_data->hasProperty("position"))
 		throw std::logic_error("Computation of normals requires positions.");
 
@@ -189,7 +189,7 @@ Geometry::computeTangentSpace(bool doNormals)
 	if (numVertices == 0)
 		return shared_from_this();
 
-	if (!_data->hasProperty("position") 
+	if (!_data->hasProperty("position")
 		|| !_data->hasProperty("uv"))
 		throw std::logic_error("Computation of tangent space requires positions and uv.");
 
@@ -491,4 +491,19 @@ Geometry::upload()
 		vb->upload();
 
 	_indexBuffer->upload();
+}
+
+void
+Geometry::disposeIndexBufferData()
+{
+    _indexBuffer->disposeData();
+}
+
+void
+Geometry::disposeVertexBufferData()
+{
+    for (auto vertexBuffer : _vertexBuffers)
+    {
+        vertexBuffer->disposeData();
+    }
 }

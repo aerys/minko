@@ -177,7 +177,7 @@ ComponentDeserializer::deserializeSurface(std::string&							serializedSurface,
 
 	geometry::Geometry::Ptr		geometry	= dependencies->getGeometryReference(dst.a0);
 	data::Provider::Ptr			material	= dependencies->getMaterialReference(dst.a1);
-	render::Effect::Ptr			effect = dependencies->getEffectReference(dst.a2);
+	render::Effect::Ptr			effect		= dependencies->getEffectReference(dst.a2);
 
 	if (material == nullptr && dependencies->options()->material() != nullptr)
 		material = dependencies->options()->material();
@@ -190,7 +190,7 @@ ComponentDeserializer::deserializeSurface(std::string&							serializedSurface,
 		geometry,
 		(material != nullptr ? material : assetLibrary->material("defaultMaterial")),
 		(effect != nullptr ? effect : assetLibrary->effect("effect/Phong.effect")),
-		dst.a3);
+		dst.a3 != "" ? dst.a3 : "default");
 
 	return surface;
 }
@@ -289,7 +289,7 @@ ComponentDeserializer::deserializeSkinning(std::string&		serializedAnimation,
 	}
 
 	return SkinningComponentDeserializer::computeSkinning(
-        assetLibrary->defaultOptions(), 
+        assetLibrary->loader()->options(), 
         assetLibrary->context(), 
         bones, 
         root->children().size() == 1 ? root->children().front() : root  // FIXME (for soccerpunch) there is one extra level wrt minko studio ! ->issues w/ precomputation and collider

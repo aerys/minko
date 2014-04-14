@@ -45,9 +45,10 @@ int main(int argc, char** argv)
 	auto	rendererMask		= Layout::Mask::EVERYTHING;
 
 	// setup assets
-	sceneManager->assets()->defaultOptions()->generateMipmaps(true);
-	sceneManager->assets()
-		->registerParser<file::PNGParser>("png")
+	sceneManager->assets()->loader()->options()
+		->generateMipmaps(true)
+		->registerParser<file::PNGParser>("png");
+	sceneManager->assets()->loader()
 		->queue("texture/box.png")
 		->queue("effect/Basic.effect")
 		->queue("effect/Line.effect");
@@ -94,7 +95,7 @@ int main(int argc, char** argv)
 
 	root->addComponent(MousePicking::create());
 
-	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
+	auto _ = sceneManager->assets()->loader()->complete()->connect([=](file::Loader::Ptr loader)
 	{
 		redBox->addComponent(Surface::create(
 			geometry::CubeGeometry::create(sceneManager->assets()->context()),
@@ -123,8 +124,7 @@ int main(int argc, char** argv)
 		hit->addComponent(Surface::create(
 				hitGeometry,
 				hitProvider->set("diffuseColor", Vector4::create(1.0f, 1.0f, 1.0f, 1.0f)),
-				assets->effect("line")
-			));
+				assets->effect("line")));
 
 		root
 			->addChild(redBox)
@@ -262,10 +262,10 @@ int main(int argc, char** argv)
 		sceneManager->nextFrame(time, deltaTime);
 	});
 
-	sceneManager->assets()->load();
+	sceneManager->assets()->loader()->load();
 
 	canvas->run();
-	
+
 	return 0;
 }
 

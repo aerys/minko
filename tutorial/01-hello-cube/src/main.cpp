@@ -33,8 +33,8 @@ main(int argc, char** argv)
     auto canvas = Canvas::create("Minko Tutorial - Hello cube!", WINDOW_WIDTH, WINDOW_HEIGHT);
     auto sceneManager = component::SceneManager::create(canvas->context());
 
-    sceneManager->assets()->queue("effect/Basic.effect");
-    auto complete = sceneManager->assets()->complete()->connect([&](file::AssetLibrary::Ptr assets)
+    sceneManager->assets()->loader()->queue("effect/Basic.effect");
+	auto complete = sceneManager->assets()->loader()->complete()->connect([&](file::Loader::Ptr loader)
     {
         auto root = scene::Node::create("root")
             ->addComponent(sceneManager);
@@ -49,9 +49,9 @@ main(int argc, char** argv)
         auto cube = scene::Node::create("cube")
             ->addComponent(Transform::create(Matrix4x4::create()->translation(0.f, 0.f, -5.f)))
             ->addComponent(Surface::create(
-            geometry::CubeGeometry::create(assets->context()),
+			geometry::CubeGeometry::create(canvas->context()),
             material::BasicMaterial::create()->diffuseColor(Vector4::create(0.f, 0.f, 1.f, 1.f)),
-            assets->effect("effect/Basic.effect")
+			sceneManager->assets()->effect("effect/Basic.effect")
             ));
         root->addChild(cube);
 
@@ -64,7 +64,7 @@ main(int argc, char** argv)
         canvas->run();
     });
 
-    sceneManager->assets()->load();
+	sceneManager->assets()->loader()->load();
 
     return 0;
 }

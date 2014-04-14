@@ -323,8 +323,8 @@ void main(void)
 			float distanceToLight	= length(lightDirection);
 			lightDirection			/= distanceToLight;
 			
-			lightSpotDirection	= normalize(-lightSpotDirection);						
-			float cosSpot		= dot(-lightDirection, lightSpotDirection);
+			lightSpotDirection	= normalize(lightSpotDirection);						
+			float cosSpot		= dot(- lightDirection, lightSpotDirection);
 
 			if (lightCosOuterAng < cosSpot)
 			{

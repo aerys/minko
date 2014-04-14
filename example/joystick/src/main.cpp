@@ -54,15 +54,17 @@ main(int argc, char** argv)
 {
 	auto canvas = Canvas::create("Minko Tutorial - Hello cube!", WINDOW_WIDTH, WINDOW_HEIGHT);
 	auto sceneManager = SceneManager::create(canvas->context());
+	auto assets = sceneManager->assets();
 
 	// setup assets
-	sceneManager->assets()->defaultOptions()->resizeSmoothly(true);
-	sceneManager->assets()->defaultOptions()->generateMipmaps(true);
-	sceneManager->assets()->queue("effect/Basic.effect");
+	assets->loader()->options()
+       ->resizeSmoothly(true)
+	   ->generateMipmaps(true);
+	assets->loader()->queue("effect/Basic.effect");
 
 	std::cout << "Plug a joystick and move the cube." << std::endl;
 
-	auto complete = sceneManager->assets()->complete()->connect([&](file::AssetLibrary::Ptr assets)
+	auto complete = assets->loader()->complete()->connect([&](file::Loader::Ptr loader)
 	{
 		auto root = scene::Node::create("root")
 			->addComponent(sceneManager);
@@ -83,27 +85,26 @@ main(int argc, char** argv)
 			auto mesh = scene::Node::create("mesh")
 				->addComponent(Transform::create())
 				->addComponent(Surface::create(
-				geometry::CubeGeometry::create(
-				sceneManager->assets()->context()),
-				material::BasicMaterial::create()->diffuseColor(math::Vector4::create(
-				float(rand()) / float(RAND_MAX),
-				float(rand()) / float(RAND_MAX),
-				float(rand()) / float(RAND_MAX))),
-				sceneManager->assets()->effect("effect/Basic.effect")
-				)
-				);
+    				geometry::CubeGeometry::create(
+    				sceneManager->assets()->context()),
+    				material::BasicMaterial::create()->diffuseColor(math::Vector4::create(
+        				float(rand()) / float(RAND_MAX),
+        				float(rand()) / float(RAND_MAX),
+        				float(rand()) / float(RAND_MAX)
+                    )),
+    				sceneManager->assets()->effect("effect/Basic.effect")
+				));
+
 			currentJoystick = joystick;
 			currentJoystickCube = mesh;
 			
 			joystickToCube[joystick] = mesh;
-			joystickToButtonDownSlot[joystick] = joystick->joystickAxisMotion()->connect(
-				std::bind(
+			joystickToButtonDownSlot[joystick] = joystick->joystickAxisMotion()->connect(std::bind(
 				&joystickButtonDownHandler,
 				std::placeholders::_1,
 				std::placeholders::_2,
 				std::placeholders::_3
-				)
-				);
+			));
 
 			root->addChild(mesh);
 		});
@@ -118,9 +119,9 @@ main(int argc, char** argv)
 		auto cube = scene::Node::create("cube")
 			->addComponent(Transform::create(Matrix4x4::create()))
 			->addComponent(Surface::create(
-			geometry::CubeGeometry::create(assets->context()),
-			material::BasicMaterial::create()->diffuseColor(Vector4::create(1.f, 0.f, 1.f, 1.f)),
-			assets->effect("effect/Basic.effect")
+    			geometry::CubeGeometry::create(assets->context()),
+    			material::BasicMaterial::create()->diffuseColor(Vector4::create(1.f, 0.f, 1.f, 1.f)),
+    			assets->effect("effect/Basic.effect")
 			));
 		root->addChild(cube);
 
@@ -136,18 +137,14 @@ main(int argc, char** argv)
 			for (auto it = joysticksList.begin(); it != joysticksList.end(); ++it)
 			{
 				auto joy = it->second;
-				if (canvas->getJoystickAxis(joy, 0) > 8000) {
+				if (canvas->getJoystickAxis(joy, 0) > 8000)
 					joystickToCube[joy]->component<Transform>()->matrix()->appendTranslation(-0.1f, 0.f, 0.f);
-				}
-				if (canvas->getJoystickAxis(joy, 0) < -8000) {
+				if (canvas->getJoystickAxis(joy, 0) < -8000)
 					joystickToCube[joy]->component<Transform>()->matrix()->appendTranslation(0.1f, 0.f, 0.f);
-				}
-				if (canvas->getJoystickAxis(joy, 1) > 8000) {
+				if (canvas->getJoystickAxis(joy, 1) > 8000)
 					joystickToCube[joy]->component<Transform>()->matrix()->appendTranslation(0.f, -0.1f, 0.f);
-				}
-				if (canvas->getJoystickAxis(joy, 1) < -8000) {
+				if (canvas->getJoystickAxis(joy, 1) < -8000)
 					joystickToCube[joy]->component<Transform>()->matrix()->appendTranslation(0.f, 0.1f, 0.f);
-				}				
 			}
 			
 			
@@ -157,7 +154,7 @@ main(int argc, char** argv)
 		canvas->run();
 	});
 
-	sceneManager->assets()->load();
+	sceneManager->assets()->loader()->load();
 
 	return 0;
 }

@@ -49,6 +49,10 @@ namespace minko
 		height() = 0;
 
 		virtual
+		std::shared_ptr<render::AbstractContext>
+		context() = 0;
+
+		virtual
 		std::shared_ptr<input::Mouse>
 		mouse() = 0;
 

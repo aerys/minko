@@ -103,10 +103,10 @@ namespace minko
 				}
 
 				void
-				synchronizePhysicsWithGraphics();
+				synchronizePhysicsWithGraphics(bool forceTransformUpdate = false);
 
 				Ptr
-				setPhysicsTransform(Matrix4x4Ptr);
+				setPhysicsTransform(Matrix4x4Ptr, Matrix4x4Ptr = nullptr, bool forceTransformUpdate = false);
 
 				Matrix4x4Ptr
 				getPhysicsTransform(Matrix4x4Ptr = nullptr) const;

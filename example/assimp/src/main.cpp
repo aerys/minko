@@ -29,7 +29,7 @@ using namespace minko::math;
 
 const uint			WINDOW_WIDTH	= 800;
 const uint			WINDOW_HEIGHT	= 600;
-const std::string	MODEL_FILENAME	= "pirate.dae";	
+const std::string	MODEL_FILENAME	= "pirate.dae";
 
 const std::string	LABEL_RUN_START		= "run_start";
 const std::string	LABEL_RUN_STOP		= "run_stop";
@@ -74,32 +74,33 @@ Signal<AbstractAnimation::Ptr>::Slot stopped;
 Signal<AbstractAnimation::Ptr>::Slot looped;
 Signal<AbstractAnimation::Ptr, std::string, uint>::Slot labelHit;
 
-int 
+int
 main(int argc, char** argv)
 {
 	auto canvas = Canvas::create("Minko Example - Assimp", WINDOW_WIDTH, WINDOW_HEIGHT);
 	auto sceneManager = SceneManager::create(canvas->context());
+	auto defaultOptions = sceneManager->assets()->loader()->options();
 
 	// setup assets
-	sceneManager->assets()->defaultOptions()->generateMipmaps(true);
-	sceneManager->assets()
-		->registerParser<file::ASSIMPParser>("obj")
-		->registerParser<file::ASSIMPParser>("dae")
-		->registerParser<file::JPEGParser>("jpg")
-		->registerParser<file::PNGParser>("png")
-		->load("effect/Basic.effect")
-		->load("effect/Phong.effect");
-
-	sceneManager->assets()->defaultOptions()
+	defaultOptions
+		->generateMipmaps(true)
 		->skinningFramerate(60)
 		->skinningMethod(SkinningMethod::HARDWARE)
 		->startAnimation(true)
-		->effect(sceneManager->assets()->effect("basic"));
+		->registerParser<file::OBJParser>("obj")
+		->registerParser<file::ColladaParser>("dae")
+		->registerParser<file::PNGParser>("png")
+        ->registerParser<file::JPEGParser>("jpg");
 
-	sceneManager->assets()
-		->queue(MODEL_FILENAME);
+    auto fxLoader = file::Loader::create(sceneManager->assets()->loader())
+    	->queue("effect/Basic.effect")
+	    ->queue("effect/Phong.effect");
 
-	sceneManager->assets()->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()));
+	auto fxComplete = fxLoader->complete()->connect([&](file::Loader::Ptr l)
+	{
+	    sceneManager->assets()->loader()->queue(MODEL_FILENAME);
+		sceneManager->assets()->loader()->load();
+	});
 
 	bool beIdle = true;
 	bool doPunch = false;
@@ -123,9 +124,9 @@ main(int argc, char** argv)
 		);
 	root->addChild(camera);
 
-	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
+	auto _ = sceneManager->assets()->loader()->complete()->connect([=](file::Loader::Ptr loader)
 	{
-		auto model = assets->symbol(MODEL_FILENAME);
+        auto model = sceneManager->assets()->symbol(MODEL_FILENAME);
 
 		auto surfaceNodeSet = scene::NodeSet::create(model)
 			->descendants(true)
@@ -137,7 +138,7 @@ main(int argc, char** argv)
         root->addComponent(AmbientLight::create())
             ->addComponent(DirectionalLight::create())
             ->addChild(model);
-		
+
 		auto skinnedNodes = scene::NodeSet::create(model)
 			->descendants(true)
 			->where([](scene::Node::Ptr n){ return n->hasComponent<Skinning>(); });
@@ -165,7 +166,7 @@ main(int argc, char** argv)
 		stopped		= anim->stopped()->connect([](AbstractAnimation::Ptr){ std::cout << "animation stopped" << std::endl; });
 		looped		= anim->looped()->connect([](AbstractAnimation::Ptr){ std::cout << "\nanimation looped" << std::endl; });
 		labelHit	= anim->labelHit()->connect([](AbstractAnimation::Ptr, std::string name, uint time){ std::cout << "label '" << name << "'\thit at t = " << time << std::endl; });
-		
+
 		printAnimationInfo(anim);
 		idle(anim);
 	});
@@ -288,7 +289,7 @@ main(int argc, char** argv)
 		sceneManager->nextFrame(time, deltaTime);
 	});
 
-	sceneManager->assets()->load();
+	fxLoader->load();
 	canvas->run();
 
 	return 0;

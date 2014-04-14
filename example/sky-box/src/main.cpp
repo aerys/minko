@@ -36,23 +36,24 @@ createTransparentObject(float, float rotationY, file::AssetLibrary::Ptr);
 int main(int argc, char** argv)
 {
 	auto canvas = Canvas::create("Minko Example - Sky Box", 800, 600);
-
 	auto sceneManager = SceneManager::create(canvas->context());
-	
+
 	// setup assets
-	sceneManager->assets()->defaultOptions()->resizeSmoothly(true);
-	sceneManager->assets()->defaultOptions()->generateMipmaps(true);
-	sceneManager->assets()
+    auto loader = sceneManager->assets()->loader();
+	loader->options()->resizeSmoothly(true);
+	loader->options()->generateMipmaps(true);
+	loader->options()
 		->registerParser<file::PNGParser>("png")
 		->registerParser<file::JPEGParser>("jpg")
-		->registerParser<file::JPEGParser>("jpeg")
-		->queue(CUBE_TEXTURE, file::Options::create(canvas->context())->isCubeTexture(true))
+                ->registerParser<file::JPEGParser>("jpeg");
+        sceneManager->assets()->loader()
+                ->queue(CUBE_TEXTURE, file::Options::create(loader->options())->isCubeTexture(true))
 		->queue("effect/Basic.effect");
 
 	sceneManager->assets()
 		->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()))
 		->geometry("sphere", geometry::SphereGeometry::create(sceneManager->assets()->context(), 16, 16));
-	
+
 	auto root = scene::Node::create("root")
 		->addComponent(sceneManager);
 
@@ -62,7 +63,7 @@ int main(int argc, char** argv)
 			Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 3.f))
 		))
 		->addComponent(PerspectiveCamera::create(800.f / 600.f, (float)PI * 0.25f, .1f, 1000.f));
-	
+
 	auto sky = scene::Node::create("sky")
 		->addComponent(Transform::create(
 			Matrix4x4::create()->appendScale(100.0f, 100.0f, 100.0f)
@@ -73,14 +74,14 @@ int main(int argc, char** argv)
 			Matrix4x4::create()->appendRotationX(0.2f)
 		));
 
-	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
+	auto _ = sceneManager->assets()->loader()->complete()->connect([=](file::Loader::Ptr loader)
 	{
 		sky->addComponent(Surface::create(
-				assets->geometry("cube"),
+				sceneManager->assets()->geometry("cube"),
 				material::BasicMaterial::create()
-					->diffuseCubeMap(assets->texture(CUBE_TEXTURE))
+					->diffuseCubeMap(sceneManager->assets()->texture(CUBE_TEXTURE))
 					->triangleCulling(render::TriangleCulling::FRONT),
-				assets->effect("effect/Basic.effect")
+				sceneManager->assets()->effect("effect/Basic.effect")
 			));
 
 		assert(NUM_OBJECTS > 0);
@@ -88,8 +89,8 @@ int main(int argc, char** argv)
 		const float	dAngle = 2.0f * (float) PI / (float)NUM_OBJECTS;
 
 		for (unsigned int objId = 0; objId < NUM_OBJECTS; ++objId)
-			objects->addChild(createTransparentObject(scale, objId * dAngle, assets));
-	
+                  objects->addChild(createTransparentObject(scale, objId * dAngle, sceneManager->assets()));
+
 		root
 			->addChild(camera)
 			->addChild(sky)
@@ -109,7 +110,7 @@ int main(int argc, char** argv)
 		sceneManager->nextFrame(time, deltaTime);
 	});
 
-	sceneManager->assets()->load();
+	sceneManager->assets()->loader()->load();
 
 	canvas->run();
 
@@ -134,7 +135,7 @@ createTransparentObject(float scale, float rotationY, file::AssetLibrary::Ptr as
 				->appendRotationY(rotationY)
 		))
 		->addComponent(Surface::create(
-			assets->geometry("cube"),
+                        assets->geometry("cube"),
 			material::BasicMaterial::create()
 				->diffuseColor(Color::hslaToRgba(0.5f * rotationY / (float)PI, 1.0f, 0.5f, 0.5f))
 				->isTransparent(true, true)

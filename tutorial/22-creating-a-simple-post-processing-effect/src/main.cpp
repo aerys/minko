@@ -33,11 +33,11 @@ main(int argc, char** argv)
 	auto canvas = Canvas::create("Minko Tutorial - Creating a simple post-processing effect", WINDOW_WIDTH, WINDOW_HEIGHT);
 	auto sceneManager = component::SceneManager::create(canvas->context());
 
-	sceneManager->assets()
+	sceneManager->assets()->loader()
 		->queue("effect/Basic.effect")
 		->queue("effect/Desaturate.effect");
 
-	auto complete = sceneManager->assets()->complete()->connect([&](file::AssetLibrary::Ptr assets)
+	auto complete = sceneManager->assets()->loader()->complete()->connect([&](file::Loader::Ptr loader)
 	{
 		auto root = scene::Node::create("root")
 			->addComponent(sceneManager);
@@ -52,13 +52,13 @@ main(int argc, char** argv)
 		auto cube = scene::Node::create("cube")
 		->addComponent(Transform::create(Matrix4x4::create()->translation(0.f, 0.f, -5.f)))
 			->addComponent(Surface::create(
-			geometry::CubeGeometry::create(assets->context()),
+                        geometry::CubeGeometry::create(sceneManager->assets()->context()),
 			material::BasicMaterial::create()->diffuseColor(Vector4::create(0.f, 0.f, 1.f, 1.f)),
-			assets->effect("effect/Basic.effect")
+			sceneManager->assets()->effect("effect/Basic.effect")
 			));
 		root->addChild(cube);
 
-		auto ppTarget = render::Texture::create(assets->context(), 1024, 1024, false, true);
+		auto ppTarget = render::Texture::create(sceneManager->assets()->context(), 1024, 1024, false, true);
 
 		ppTarget->upload();
 
@@ -82,7 +82,7 @@ main(int argc, char** argv)
 		{
 			camera->component<PerspectiveCamera>()->aspectRatio((float)width / (float)height);
 
-			ppTarget = render::Texture::create(assets->context(), clp2(width), clp2(height), false, true);
+			ppTarget = render::Texture::create(sceneManager->assets()->context(), clp2(width), clp2(height), false, true);
 			ppTarget->upload();
 			ppFx->setUniform("uBackbuffer", ppTarget);
 		});
@@ -92,13 +92,13 @@ main(int argc, char** argv)
 			cube->component<Transform>()->matrix()->prependRotationY(.01f);
 
 			sceneManager->nextFrame(t, dt, ppTarget);
-			ppRenderer->render(assets->context());
+			ppRenderer->render(sceneManager->assets()->context());
 		});
 
 		canvas->run();
 	});
 
-	sceneManager->assets()->load();
+	sceneManager->assets()->loader()->load();
 
 	return 0;
 }

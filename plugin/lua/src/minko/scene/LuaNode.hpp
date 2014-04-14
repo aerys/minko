@@ -24,6 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/scene/Node.hpp"
 #include "minko/component/BoundingBox.hpp"
 #include "minko/component/MasterAnimation.hpp"
+#include "minko/component/AbstractLight.hpp"
 
 #include "minko/LuaWrapper.hpp"
 
