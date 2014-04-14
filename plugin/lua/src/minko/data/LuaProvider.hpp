@@ -48,6 +48,7 @@ namespace minko
 		            .method("setUint",      static_cast<Provider::Ptr (Provider::*)(const std::string&, unsigned int)>(&Provider::set<unsigned int>))
 		            .method("setFloat",     static_cast<Provider::Ptr (Provider::*)(const std::string&, float)>(&Provider::set<float>))
 					.method("setString",	static_cast<Provider::Ptr(Provider::*)(const std::string&, std::string)>(&Provider::set<std::string>))
+					.method("setBoolean",	static_cast<Provider::Ptr(Provider::*)(const std::string&, bool)>(&Provider::set<bool>))
 		            .method("setVector2",   static_cast<Provider::Ptr (Provider::*)(const std::string&, math::Vector2::Ptr)>(&Provider::set<math::Vector2::Ptr>))
 		            .method("setVector3",   static_cast<Provider::Ptr (Provider::*)(const std::string&, math::Vector3::Ptr)>(&Provider::set<math::Vector3::Ptr>))
 		            .method("setVector4",   static_cast<Provider::Ptr (Provider::*)(const std::string&, math::Vector4::Ptr)>(&Provider::set<math::Vector4::Ptr>))
