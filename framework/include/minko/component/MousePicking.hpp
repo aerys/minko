@@ -30,8 +30,7 @@ namespace minko
 	namespace component
 	{
 		class MousePicking :
-			public AbstractComponent,
-			public std::enable_shared_from_this<MousePicking>
+			public AbstractComponent
 		{
 		private:
 			typedef std::shared_ptr<scene::Node>			NodePtr;

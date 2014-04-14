@@ -46,10 +46,16 @@ void
 Culling::initialize()
 {
 	_targetAddedSlot = targetAdded()->connect(std::bind(
-        &Culling::targetAddedHandler, shared_from_this(), std::placeholders::_1, std::placeholders::_2
+        &Culling::targetAddedHandler, 
+		std::static_pointer_cast<Culling>(shared_from_this()), 
+		std::placeholders::_1, 
+		std::placeholders::_2
     ));
     _targetRemovedSlot = targetAdded()->connect(std::bind(
-        &Culling::targetAddedHandler, shared_from_this(), std::placeholders::_1, std::placeholders::_2
+        &Culling::targetAddedHandler, 
+		std::static_pointer_cast<Culling>(shared_from_this()), 
+		std::placeholders::_1, 
+		std::placeholders::_2
     ));
 }
 
@@ -72,7 +78,7 @@ Culling::targetAddedHandler(AbstractComponent::Ptr ctrl, NodePtr target)
 	else
 		_addedToSceneSlot = target->added()->connect(std::bind(
 			&Culling::targetAddedToSceneHandler,
-			shared_from_this(),
+			std::static_pointer_cast<Culling>(shared_from_this()),
 			std::placeholders::_1,
 			std::placeholders::_2,
 			std::placeholders::_3
@@ -80,7 +86,7 @@ Culling::targetAddedHandler(AbstractComponent::Ptr ctrl, NodePtr target)
 	
 	_viewMatrixChangedSlot = target->data()->propertyValueChanged(_bindProperty)->connect(std::bind(
 		&Culling::worldToScreenChangedHandler,
-		shared_from_this(),
+		std::static_pointer_cast<Culling>(shared_from_this()),
 		std::placeholders::_1,
 		std::placeholders::_2));
 }
@@ -101,14 +107,14 @@ Culling::targetAddedToSceneHandler(NodePtr node, NodePtr target, NodePtr ancesto
 
 		_layoutChangedSlot = target->root()->layoutsChanged()->connect(std::bind(
 			&Culling::layoutChangedHandler,
-			shared_from_this(),
+			std::static_pointer_cast<Culling>(shared_from_this()),
 			std::placeholders::_1,
 			std::placeholders::_2
 		));
 
 		_addedSlot = target->root()->added()->connect(std::bind(
 			&Culling::addedHandler,
-			shared_from_this(),
+			std::static_pointer_cast<Culling>(shared_from_this()),
 			std::placeholders::_1,
 			std::placeholders::_2,
 			std::placeholders::_3

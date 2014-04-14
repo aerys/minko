@@ -29,8 +29,7 @@ namespace minko
 	namespace component
 	{
 		class Culling :
-			public AbstractComponent,
-			public std::enable_shared_from_this<Culling>
+			public AbstractComponent
 		{
 		public:
 			typedef std::shared_ptr<Culling>									Ptr;

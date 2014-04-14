@@ -30,8 +30,7 @@ namespace minko
 	namespace component
 	{
 		class Surface :
-			public AbstractComponent,
-			public std::enable_shared_from_this<Surface>
+			public AbstractComponent
 		{
 			friend render::DrawCallPool;
 
@@ -179,7 +178,7 @@ namespace minko
 				if (_visible != value)
 				{
 					_visible = value;
-					_visibilityChanged->execute(shared_from_this(), nullptr, _visible);
+					_visibilityChanged->execute(std::static_pointer_cast<Surface>(shared_from_this()), nullptr, _visible);
 				}
 			}
 

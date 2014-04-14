@@ -28,8 +28,7 @@ namespace minko
 	namespace component
 	{
 		class Renderer :
-			public AbstractComponent,
-			public std::enable_shared_from_this<Renderer>
+			public AbstractComponent
 		{
 		public:
 			typedef std::shared_ptr<Renderer>							Ptr;

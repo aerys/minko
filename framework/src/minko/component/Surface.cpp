@@ -72,21 +72,21 @@ Surface::initialize()
 {
 	_targetAddedSlot = targetAdded()->connect(std::bind(
 		&Surface::targetAddedHandler,
-		shared_from_this(),
+		std::static_pointer_cast<Surface>(shared_from_this()),
 		std::placeholders::_1,
 		std::placeholders::_2
 	));
 
 	_targetRemovedSlot = targetRemoved()->connect(std::bind(
 		&Surface::targetRemovedHandler,
-		shared_from_this(),
+		std::static_pointer_cast<Surface>(shared_from_this()),
 		std::placeholders::_1,
 		std::placeholders::_2
 	));
 
 	_dataProviderIndexChangedSlots.push_back(_geometry->data()->indexChanged()->connect(std::bind(
 		&Surface::geometryProviderIndexChanged,
-		shared_from_this(),
+		std::static_pointer_cast<Surface>(shared_from_this()),
 		std::placeholders::_1,
 		std::placeholders::_2
 		), 10.f));
@@ -96,7 +96,7 @@ Surface::initialize()
 	if (arrayProviderMaterial)
 		_dataProviderIndexChangedSlots.push_back(arrayProviderMaterial->indexChanged()->connect(std::bind(
 			&Surface::materialProviderIndexChanged,
-			shared_from_this(),
+			std::static_pointer_cast<Surface>(shared_from_this()),
 			std::placeholders::_1,
 			std::placeholders::_2
 			), 10.f));
@@ -111,7 +111,7 @@ Surface::targetAddedHandler(AbstractComponent::Ptr	ctrl,
 
 	_addedSlot = target->added()->connect(std::bind(
 		&Surface::addedHandler,
-		shared_from_this(),
+		std::static_pointer_cast<Surface>(shared_from_this()),
 		std::placeholders::_1,
 		std::placeholders::_2,
 		std::placeholders::_3
@@ -119,7 +119,7 @@ Surface::targetAddedHandler(AbstractComponent::Ptr	ctrl,
 
 	_removedSlot = target->removed()->connect(std::bind(
 		&Surface::removedHandler,
-		shared_from_this(),
+		std::static_pointer_cast<Surface>(shared_from_this()),
 		std::placeholders::_1,
 		std::placeholders::_2,
 		std::placeholders::_3
@@ -196,7 +196,11 @@ Surface::visible(component::Renderer::Ptr	renderer,
 	if (visible(renderer) != value)
 	{
 		_rendererToVisibility[renderer] = value;
-		_visibilityChanged->execute(shared_from_this(), renderer, value);
+		_visibilityChanged->execute(
+			std::static_pointer_cast<Surface>(shared_from_this()), 
+			renderer, 
+			value
+		);
 	}
 }
 
@@ -207,7 +211,11 @@ Surface::computedVisibility(component::Renderer::Ptr	renderer,
 	if (computedVisibility(renderer) != value)
 	{
 		_rendererToComputedVisibility[renderer] = value;
-		_computedVisibilityChanged->execute(shared_from_this(), renderer, value);
+		_computedVisibilityChanged->execute(
+			std::static_pointer_cast<Surface>(shared_from_this()), 
+			renderer, 
+			value
+		);
 	}
 }
 
@@ -232,7 +240,11 @@ Surface::setEffectAndTechnique(Effect::Ptr			effect,
 
 	_effect		= effect;
 	_technique	= technique;
-	_techniqueChanged->execute(shared_from_this(), _technique, updateDrawcalls);
+	_techniqueChanged->execute(
+		std::static_pointer_cast<Surface>(shared_from_this()), 
+		_technique, 
+		updateDrawcalls
+	);
 }
 
 void

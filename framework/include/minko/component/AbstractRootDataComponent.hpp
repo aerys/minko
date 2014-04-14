@@ -33,8 +33,7 @@ namespace minko
     {
         template <class ProviderClass>
 	    class AbstractRootDataComponent<ProviderClass, typename std::enable_if<std::is_base_of<data::Provider, ProviderClass>::value>::type> :
-            public AbstractComponent,
-            public std::enable_shared_from_this<AbstractRootDataComponent<ProviderClass>>
+            public AbstractComponent
 	    {
         private:
             typedef std::shared_ptr<scene::Node>            NodePtr;
@@ -76,14 +75,14 @@ namespace minko
             {
                 _targetAddedSlot = targetAdded()->connect(std::bind(
                     &AbstractRootDataComponent<ProviderClass>::targetAddedHandler,
-                    this->shared_from_this(),
+                    std::static_pointer_cast<AbstractRootDataComponent<ProviderClass>>(shared_from_this()),
                     std::placeholders::_1,
                     std::placeholders::_2
                 ));
 
                 _targetRemovedSlot = targetRemoved()->connect(std::bind(
                     &AbstractRootDataComponent<ProviderClass>::targetRemovedHandler,
-                    this->shared_from_this(),
+                    std::static_pointer_cast<AbstractRootDataComponent<ProviderClass>>(shared_from_this()),
                     std::placeholders::_1,
                     std::placeholders::_2
                 ));
@@ -98,7 +97,7 @@ namespace minko
 
                 auto cb = std::bind(
                     &AbstractRootDataComponent::addedOrRemovedHandler,
-                    this->shared_from_this(),
+                    std::static_pointer_cast<AbstractRootDataComponent<ProviderClass>>(shared_from_this()),
                     std::placeholders::_1,
                     std::placeholders::_2,
                     std::placeholders::_3

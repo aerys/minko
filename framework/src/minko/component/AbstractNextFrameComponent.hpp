@@ -29,8 +29,7 @@ namespace minko
 	namespace component
 	{
 		class AbstractNextFrameComponent :
-			public AbstractComponent,
-			public std::enable_shared_from_this<AbstractNextFrameComponent>
+			public AbstractComponent
 		{
 		public:
 			typedef std::shared_ptr<AbstractNextFrameComponent>	Ptr;

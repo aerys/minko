@@ -89,10 +89,18 @@ MousePicking::pick(std::shared_ptr<math::Ray>	ray,
 	{
 		if (!_previousRayOrigin->equals(ray->origin()))
 		{
-			_move->execute(shared_from_this(), hits, ray);
+			_move->execute(
+				std::static_pointer_cast<MousePicking>(shared_from_this()), 
+				hits, 
+				ray
+			);
 			_previousRayOrigin->copyFrom(ray->origin());
 		}
 
-		_over->execute(shared_from_this(), hits, ray);
+		_over->execute(
+			std::static_pointer_cast<MousePicking>(shared_from_this()), 
+			hits, 
+			ray
+		);
 	}
 }
