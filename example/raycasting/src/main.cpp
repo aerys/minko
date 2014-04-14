@@ -97,20 +97,22 @@ int main(int argc, char** argv)
 
 	auto _ = sceneManager->assets()->loader()->complete()->connect([=](file::Loader::Ptr loader)
 	{
+		auto assets = sceneManager->assets();
+
 		redBox->addComponent(Surface::create(
-			geometry::CubeGeometry::create(sceneManager->assets()->context()),
+			geometry::CubeGeometry::create(assets->context()),
 			material::BasicMaterial::create()->diffuseMap(assets->texture("texture/box.png"))->diffuseColor(0xff6600ff),
 			assets->effect("basic")
 		));
 		
 		greenBox->addComponent(Surface::create(
-			geometry::CubeGeometry::create(sceneManager->assets()->context()),
+			geometry::CubeGeometry::create(assets->context()),
 			material::BasicMaterial::create()->diffuseMap(assets->texture("texture/box.png"))->diffuseColor(0x00ff00ff),
 			assets->effect("basic")
 		));
 
 		blueBox->addComponent(Surface::create(
-			geometry::CubeGeometry::create(sceneManager->assets()->context()),
+			geometry::CubeGeometry::create(assets->context()),
 			material::BasicMaterial::create()->diffuseMap(assets->texture("texture/box.png"))->diffuseColor(0x0066ffff),
 			assets->effect("basic")
 		));
