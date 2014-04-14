@@ -69,8 +69,13 @@ FileProtocol::load()
 			file.open(testFilename, flags);
 			if (file.is_open())
             {
+                if (testFilename.size() > File::getBinaryDirectory().size())
+                {
+                    testFilename = testFilename.substr(File::getBinaryDirectory().size() + 1, testFilename.size());
+                }
+
                 realFilename = testFilename;
-				break;
+                break;
             }
 		}
 
