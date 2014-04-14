@@ -29,6 +29,7 @@ using namespace minko::component;
 JobManager::Job::Job()
 {
 	_running = false;
+	_oneStepPerFrame = false;
 }
 
 JobManager::JobManager(unsigned int loadingFramerate):
@@ -93,6 +94,9 @@ JobManager::end(NodePtr target)
 			if (_jobs.size() == 0)
 				return;
 		}
+
+		if (currentJob->oneStepPerFrame())
+			return;
 
 		consumeTime = (float(std::clock() - _frameStartTime) / CLOCKS_PER_SEC);
 	}
