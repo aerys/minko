@@ -69,9 +69,11 @@ DrawCall::DrawCall(const data::BindingMap&	attributeBindings,
     _vertexAttributeOffsets(MAX_NUM_VERTEXBUFFERS, -1),
 	_target(nullptr),
 	_referenceChangedSlots(),
-	_indicesChanged(nullptr),
+	_indicesChangedSlot(nullptr),
+	_layoutsPropertyChangedSlot(nullptr),
 	_zsortNeeded(Signal<Ptr>::create()),
-	_zSorter(nullptr)
+	_zSorter(nullptr),
+	_formatFunction(nullptr)
 {
 }
 
@@ -82,31 +84,38 @@ DrawCall::initialize()
 }
 
 void
-DrawCall::configure(std::shared_ptr<Program>  program,
-					ContainerPtr              data,
-					ContainerPtr              rendererData,
-                    ContainerPtr              rootData)
+DrawCall::configure(Program::Ptr				program,
+					FormatNameFunction			formatNameFunc,
+					Container::Ptr				targetData,
+					Container::Ptr				rendererData,
+                    Container::Ptr				rootData)
 {
     _program = program;
-    bind(data, rendererData, rootData);
+
+    bind(formatNameFunc, targetData, rendererData, rootData);
 }
 
 void
-DrawCall::bind(ContainerPtr data, ContainerPtr rendererData, ContainerPtr rootData)
+DrawCall::bind(FormatNameFunction	formatNameFunc,
+			   Container::Ptr		targetData, 
+			   Container::Ptr		rendererData, 
+			   Container::Ptr		rootData)
 {
 	reset();
 
 	bindProgramDefaultUniforms();
 
-	_targetData		= data;
+	_formatFunction	= formatNameFunc;
+	_targetData		= targetData;
 	_rendererData	= rendererData;
 	_rootData		= rootData;
 
+	bindTargetLayouts();
 	bindIndexBuffer();
 	bindProgramInputs();
 	bindStates();
 
-	_zSorter->initialize(data, rendererData, rootData);
+	_zSorter->initialize(targetData, rendererData, rootData);
 }
 
 void
@@ -128,11 +137,11 @@ DrawCall::bindProgramDefaultUniforms()
 void
 DrawCall::bindIndexBuffer()
 {
-	const std::string propertyName = "geometry[" + _variablesToValue["geometryId"] + "].indices";
+	const std::string propertyName = _formatFunction("geometry[${geometryId}].indices"); 
 
 	_indexBuffer	= -1;
 	_numIndices		= 0;
-	_indicesChanged	= nullptr;
+	_indicesChangedSlot	= nullptr;
 
 	// Note: index buffer can only be held by the target node's data container!
 	if (_targetData->hasProperty(propertyName))
@@ -149,7 +158,7 @@ DrawCall::bindIndexBuffer()
 			_numIndices		= 0;
 		}
 
-		_indicesChanged		= indexBuffer->changed()->connect([&](IndexBuffer::Ptr indices){
+		_indicesChangedSlot		= indexBuffer->changed()->connect([&](IndexBuffer::Ptr indices){
 			if (!indices->isReady())
 			{
 				_indexBuffer	= -1;
@@ -168,6 +177,28 @@ DrawCall::bindIndexBuffer()
 		_referenceChangedSlots[propertyName].push_back(
 			_targetData->propertyReferenceChanged(propertyName)->connect(std::bind(
 				&DrawCall::bindIndexBuffer,
+				shared_from_this())
+			)
+		);
+	}
+}
+
+void
+DrawCall::bindTargetLayouts()
+{
+	const std::string propertyName = _formatFunction("node.layouts");
+
+	_layouts	= scene::Layout::Group::DEFAULT;
+
+	// Note: index buffer can only be held by the target node's data container!
+	if (_targetData->hasProperty(propertyName))
+		_layouts = _targetData->get<Layouts>(propertyName);
+
+	if (_referenceChangedSlots.count(propertyName) == 0)
+	{
+		_referenceChangedSlots[propertyName].push_back(
+			_targetData->propertyReferenceChanged(propertyName)->connect(std::bind(
+				&DrawCall::bindTargetLayouts,
 				shared_from_this())
 			)
 		);
@@ -242,7 +273,7 @@ DrawCall::bindVertexAttribute(const std::string&	inputName,
 
 	if (_attributeBindings.count(inputName))
 	{
-		auto propertyName		= formatPropertyName(std::get<0>(_attributeBindings.at(inputName)));
+		auto propertyName		= _formatFunction(std::get<0>(_attributeBindings.at(inputName)));
 		const auto& container	= getDataContainer(std::get<1>(_attributeBindings.at(inputName)));
 
 		if (container && container->hasProperty(propertyName))
@@ -302,7 +333,7 @@ DrawCall::bindTextureSampler(const std::string&		inputName,
 
 	if (_uniformBindings.count(inputName))
 	{
-		auto propertyName		= formatPropertyName(std::get<0>(_uniformBindings.at(inputName)));
+		auto propertyName		= _formatFunction(std::get<0>(_uniformBindings.at(inputName)));
 		const auto& container	= getDataContainer(std::get<1>(_uniformBindings.at(inputName)));
 
 		if (container && container->hasProperty(propertyName))
@@ -359,7 +390,7 @@ DrawCall::bindUniform(const std::string&	inputName,
 	
 	if (_uniformBindings.count(bindingName))
 	{	
-		std::string	propertyName	= formatPropertyName(std::get<0>(_uniformBindings.at(bindingName)));
+		std::string	propertyName	= _formatFunction(std::get<0>(_uniformBindings.at(bindingName)));
 		auto&		source			= std::get<1>(_uniformBindings.at(bindingName));
 		const auto&	container		= getDataContainer(source);
 
@@ -396,7 +427,7 @@ DrawCall::bindUniform(const std::string&	inputName,
 			else if (isArray)
 			{
 				// This case corresponds to continuous base type arrays that are stored in data providers as std::vector<float>.
-				propertyName = formatPropertyName(std::get<0>(_uniformBindings.at(bindingName)));
+				propertyName = _formatFunction(std::get<0>(_uniformBindings.at(bindingName)));
 				
 				bindUniformArray(propertyName, container, type, location);
 			}
@@ -541,7 +572,10 @@ DrawCall::reset()
 	_vertexAttributeSizes	.resize(MAX_NUM_VERTEXBUFFERS, -1);
 	_vertexAttributeOffsets	.resize(MAX_NUM_VERTEXBUFFERS, -1);
 
+	_indicesChangedSlot			= nullptr;
+	_layoutsPropertyChangedSlot	= nullptr;
 	_referenceChangedSlots.clear();
+
 	_zSorter->clear();
 }
 
@@ -565,7 +599,6 @@ DrawCall::bindStates()
 	bindState<int>("scissorBox.width", _states->scissorBox().width, _scissorBox.width);
 	bindState<int>("scissorBox.height", _states->scissorBox().height, _scissorBox.height);
 	bindState<float>("priority", _states->priority(), _priority);
-	bindState<Layouts>("layouts", _states->layouts(), _layouts);
 	bindState<bool>("zSort", _states->zSorted(), _zsorted);
 	bindState<AbstractTexture::Ptr>("target", _states->target(), _target);
 }

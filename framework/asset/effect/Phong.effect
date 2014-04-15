@@ -40,8 +40,7 @@
 		"fogColor"				: "material[${materialId}].fogColor",
 		"fogDensity"			: "material[${materialId}].fogDensity",
 		"fogStart"				: "material[${materialId}].fogStart",
-		"fogEnd"				: "material[${materialId}].fogEnd",
-		"layouts"               : "node.layouts"
+		"fogEnd"				: "material[${materialId}].fogEnd"
 	},
 
 	"macroBindings"	: {

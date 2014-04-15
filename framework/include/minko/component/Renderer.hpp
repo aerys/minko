@@ -25,6 +25,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
+	namespace data
+	{
+		class LightMaskFilter;
+	}
+
 	namespace component
 	{
 		class Renderer :
@@ -81,6 +86,7 @@ namespace minko
 			std::set<AbsFilterPtr>										_targetDataFilters;
 			std::set<AbsFilterPtr>										_rendererDataFilters;
 			std::set<AbsFilterPtr>										_rootDataFilters;
+			std::shared_ptr<data::LightMaskFilter>						_lightMaskFilter;
 
 			std::unordered_map<AbsFilterPtr, FilterChangedSlot>			_targetDataFilterChangedSlots;
 			std::unordered_map<AbsFilterPtr, FilterChangedSlot>			_rendererDataFilterChangedSlots;
@@ -103,7 +109,6 @@ namespace minko
 
 			inline static
 			Ptr
-
 			create(uint					backgroundColor, 
 				   AbsTexturePtr		renderTarget = nullptr,
 				   EffectPtr			effect			= nullptr,
@@ -204,6 +209,9 @@ namespace minko
 					? _rendererDataFilters
 					: _rootDataFilters;
 			}
+
+			Ptr
+			setFilterSurface(SurfacePtr);
 
 			inline
 			std::shared_ptr<RendererFilterChangedSignal>

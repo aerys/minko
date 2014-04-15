@@ -42,8 +42,8 @@ namespace minko
 			}
 			
 			void
-			build(std::shared_ptr<render::Pass>			pass,
-				  std::shared_ptr<render::DrawCall>		drawCall,
+			build(std::shared_ptr<render::Pass>,
+				  FormatNameFunction,
 				  std::shared_ptr<data::Container>		targetData,
 				  std::shared_ptr<data::Container>		rendererData,
 				  std::shared_ptr<data::Container>		rootData,

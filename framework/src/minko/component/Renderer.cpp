@@ -31,6 +31,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/AssetLibrary.hpp"
 #include "minko/render/DrawCallPool.hpp"
 #include "minko/data/AbstractFilter.hpp"
+#include "minko/data/LightMaskFilter.hpp"
 
 using namespace minko;
 using namespace minko::component;
@@ -57,6 +58,7 @@ Renderer::Renderer(std::shared_ptr<render::AbstractTexture> renderTarget,
 	_targetDataFilterChangedSlots(),
 	_rendererDataFilterChangedSlots(),
 	_rootDataFilterChangedSlots(),
+	_lightMaskFilter(data::LightMaskFilter::create()),
 	_filterChanged(Signal<Ptr, data::AbstractFilter::Ptr, data::BindingSource>::create())
 {
 	if (renderTarget)
@@ -84,11 +86,13 @@ Renderer::initialize()
 		std::placeholders::_1,
 		std::placeholders::_2
 	));
+
+	addFilter(_lightMaskFilter, data::BindingSource::ROOT);
 }
 
 void
-Renderer::targetAddedHandler(std::shared_ptr<AbstractComponent> ctrl,
-							 std::shared_ptr<Node> 			target)
+Renderer::targetAddedHandler(std::shared_ptr<AbstractComponent>,
+							 std::shared_ptr<Node> 				target)
 {
 	if (target->components<Renderer>().size() > 1)
 		throw std::logic_error("There cannot be two Renderer on the same node.");
@@ -113,7 +117,7 @@ Renderer::targetAddedHandler(std::shared_ptr<AbstractComponent> ctrl,
 }
 
 void
-Renderer::targetRemovedHandler(std::shared_ptr<AbstractComponent> 	ctrl,
+Renderer::targetRemovedHandler(std::shared_ptr<AbstractComponent>,
 							    std::shared_ptr<Node> 				target)
 {
 	_addedSlot = nullptr;
@@ -165,6 +169,8 @@ Renderer::addedHandler(std::shared_ptr<Node> node,
 		std::placeholders::_3
 	), 10.f);
 
+	_lightMaskFilter->root(target->root());
+
 	rootDescendantAddedHandler(nullptr, target->root(), nullptr);
 }
 
@@ -175,10 +181,10 @@ Renderer::removedHandler(std::shared_ptr<Node> node,
 {
 	findSceneManager();
 
-	_rootDescendantAddedSlot = nullptr;
-	_rootDescendantRemovedSlot = nullptr;
-	_componentAddedSlot = nullptr;
-	_componentRemovedSlot = nullptr;
+	_rootDescendantAddedSlot	= nullptr;
+	_rootDescendantRemovedSlot	= nullptr;
+	_componentAddedSlot			= nullptr;
+	_componentRemovedSlot		= nullptr;
 
 	rootDescendantRemovedHandler(nullptr, target->root(), nullptr);
 }
@@ -377,6 +383,19 @@ Renderer::removeFilter(data::AbstractFilter::Ptr	filter,
 			filterChangedSlots.erase(filter);
 		}
 	}
+
+	return std::static_pointer_cast<Renderer>(shared_from_this());
+}
+
+Renderer::Ptr
+Renderer::setFilterSurface(Surface::Ptr surface)
+{
+	for (auto& f : _targetDataFilters)
+		f->currentSurface(surface);
+	for (auto& f : _rendererDataFilters)
+		f->currentSurface(surface);
+	for (auto& f : _rootDataFilters)
+		f->currentSurface(surface);
 
 	return std::static_pointer_cast<Renderer>(shared_from_this());
 }

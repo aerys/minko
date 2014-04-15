@@ -135,6 +135,8 @@ namespace minko
             Exponential,
             Exponential2,
         };
+
+		typedef std::function<std::string(const std::string&)> FormatNameFunction;
 	}
 
 	namespace scene

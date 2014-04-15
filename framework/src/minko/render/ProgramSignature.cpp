@@ -34,7 +34,7 @@ using namespace minko::data;
 
 void
 ProgramSignature::build(std::shared_ptr<render::Pass>	pass,
-					    DrawCall::Ptr					drawCall,
+						FormatNameFunction				formatNameFunc,
 						Container::Ptr					targetData,
 						Container::Ptr					rendererData,
 						Container::Ptr					rootData,
@@ -64,7 +64,7 @@ ProgramSignature::build(std::shared_ptr<render::Pass>	pass,
 		const auto&					macroName		= macroBinding.first;
 		auto macroDefault = macroBinding.second;
 
-		std::get<0>(macroDefault) = drawCall->formatPropertyName(std::get<0>(macroDefault));
+		std::get<0>(macroDefault) = formatNameFunc(std::get<0>(macroDefault));
 
 		const ContainerProperty		macro(macroDefault, targetData, rendererData, rootData);
 

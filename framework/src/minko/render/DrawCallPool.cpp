@@ -35,16 +35,18 @@ using namespace minko::render;
 using namespace minko::component;
 using namespace minko::data;
 
-/*static*/ const unsigned int								DrawCallPool::NUM_FALLBACK_ATTEMPTS		= 32;
-/*static*/ std::unordered_map<DrawCall::Ptr, Vector3::Ptr>	DrawCallPool::_cachedDrawcallPositions;
+/*static*/ const unsigned int									DrawCallPool::NUM_FALLBACK_ATTEMPTS		= 32;
+/*static*/ std::unordered_map<DrawCall::Ptr, Vector3::Ptr>		DrawCallPool::_cachedDrawcallPositions;
 
-std::unordered_map<std::string, std::pair<std::string, int>> DrawCallPool::_variablePropertyNameToPosition;
+std::unordered_map<std::string, std::pair<std::string, int>>	DrawCallPool::_variablePropertyNameToPosition;
 
 
 DrawCallPool::DrawCallPool(Renderer::Ptr renderer):
 	_renderer(renderer),
 	_mustZSort(true)
 {
+	if (_renderer == nullptr)
+		throw std::invalid_argument("renderer");
 }
 
 const std::list<DrawCall::Ptr>&
@@ -330,6 +332,8 @@ DrawCallPool::initializeDrawCall(Pass::Ptr		pass,
 
 	const auto	target			= surface->targets()[0];
 
+	_renderer->setFilterSurface(surface);
+
 	const auto&	targetFilters	= _renderer->filters(data::BindingSource::TARGET);
 	const auto&	rendererFilters	= _renderer->filters(data::BindingSource::RENDERER);
 	const auto&	rootFilters		= _renderer->filters(data::BindingSource::ROOT);
@@ -347,37 +351,27 @@ DrawCallPool::initializeDrawCall(Pass::Ptr		pass,
 	std::list<ContainerProperty>	integerMacros;
 	std::list<ContainerProperty>	incorrectIntegerMacros;
 
+	// get drawcall's property name formatting function (dependent on filters!)
+	auto geometryId	= targetData->getProviderIndex(surface->geometry()->data());
+	auto materialId	= targetData->getProviderIndex(surface->material());
+
 	std::unordered_map<std::string, std::string> drawCallVariables;
 
-	//if (drawcall)
-	//	drawCallVariables = drawcall->variablesToValue();
-	//else
-	{
-		auto geometryId	= targetData->getProviderIndex(surface->geometry()->data());
-		auto materialId	= targetData->getProviderIndex(surface->material());
+	drawCallVariables["geometryId"] = std::to_string(geometryId);
+	drawCallVariables["materialId"] = std::to_string(materialId);
 
-		drawCallVariables["geometryId"] = std::to_string(geometryId); //std::to_string(surface->_geometryId);
-		drawCallVariables["materialId"] = std::to_string(materialId); //std::to_string(surface->_materialId);
-	}
+	FormatNameFunction formatNameFunc = std::bind(
+		&DrawCallPool::formatPropertyName, 
+		shared_from_this(), 
+		std::placeholders::_1, 
+		drawCallVariables
+	);
 	
-	if (drawcall == nullptr)
-	{
-		drawcall = DrawCall::create(
-			pass->attributeBindings(),
-			pass->uniformBindings(),
-			pass->stateBindings(),
-			pass->states(),
-			_formatFunction,
-			drawCallVariables
-		);
-
-		firstInit = true;
-	}
 
 	auto program = getWorkingProgram(
 		surface,
 		pass,
-		drawcall,
+		formatNameFunc,
 		targetData,
 		rendererData,
 		rootData,
@@ -388,51 +382,58 @@ DrawCallPool::initializeDrawCall(Pass::Ptr		pass,
 	if (!program)
 		return nullptr;
 	
-	if (firstInit)
+	if (drawcall == nullptr)
 	{
+		drawcall = DrawCall::create(
+			pass->attributeBindings(),
+			pass->uniformBindings(),
+			pass->stateBindings(),
+			pass->states()
+		);
 
 		_drawCallToPass[surface][drawcall]			= pass;
 		_drawCallToRendererData[surface][drawcall]	= rendererData;
+	}
 
-		for (auto& technique : effect->techniques())
-		{
-			auto& techniqueName = technique.first;
+	drawcall->configure(
+		program, 
+		formatNameFunc,
+		targetData, 
+		rendererData, 
+		rootData
+	);
 
-			for (auto& pass : technique.second)
-				for (auto& macroBinding : pass->macroBindings())
-				{
-					auto propertyName = drawcall->formatPropertyName(std::get<0>(macroBinding.second));
-					_techniqueToMacroNames[surface][techniqueName].insert(propertyName);
-				}
-		}
+	for (auto& technique : effect->techniques())
+	{
+		auto& techniqueName = technique.first;
 
-		for (const auto& binding : pass->macroBindings())
-		{
-			auto bindingDefault = binding.second;
+		for (auto& pass : technique.second)
+			for (auto& macroBinding : pass->macroBindings())
+			{
+				auto propertyName = formatNameFunc(std::get<0>(macroBinding.second));
+				_techniqueToMacroNames[surface][techniqueName].insert(propertyName);
+			}
+	}
 
-			std::get<0>(bindingDefault) = drawcall->formatPropertyName(std::get<0>(bindingDefault));
+	for (const auto& binding : pass->macroBindings())
+	{
+		auto bindingDefault = binding.second;
 
-			data::ContainerProperty macro(bindingDefault, targetData, rendererData, rootData);
+		std::get<0>(bindingDefault) = formatNameFunc(std::get<0>(bindingDefault));
 
-			_macroNameToDrawCalls[surface][macro.name()].push_back(drawcall);
+		data::ContainerProperty macro(bindingDefault, targetData, rendererData, rootData);
 
-			if (macro.container())
+		_macroNameToDrawCalls[surface][macro.name()].push_back(drawcall);
+
+		if (macro.container())
 			{
 				auto&		listeners		= _numMacroListeners;
 				const int	numListeners	= listeners[surface].count(macro) == 0 ? 0 : listeners[surface][macro];
 
 				if (numListeners == 0)
 					macroChangedHandler(macro.container(), macro.name(), surface, MacroChange::ADDED);
-			}
 		}
 	}
-
-	drawcall->configure(
-		program, 
-		targetData, 
-		rendererData, 
-		rootData
-	);
 
 	return drawcall;
 }
@@ -440,7 +441,7 @@ DrawCallPool::initializeDrawCall(Pass::Ptr		pass,
 std::shared_ptr<Program>
 DrawCallPool::getWorkingProgram(Surface::Ptr					surface,
 								Pass::Ptr						pass,
-								DrawCall::Ptr					drawCall,
+								FormatNameFunction				formatNameFunc,
 								ContainerPtr					targetData,
 								ContainerPtr					rendererData,
 								ContainerPtr					rootData,
@@ -453,7 +454,7 @@ DrawCallPool::getWorkingProgram(Surface::Ptr					surface,
 	do
 	{
 		program = pass->selectProgram(
-			drawCall, 
+			formatNameFunc, 
 			targetData,
 			rendererData,
 			rootData,
@@ -619,10 +620,9 @@ DrawCallPool::watchMacroAdditionOrDeletion(Surface::Ptr surface)
 	if (surface->targets().empty())
 		return;
 
+	auto	targetData		= surface->targets().front()->data();
 	auto	rendererData	= _renderer->targets()[0]->data();
-	auto&	target			= surface->targets().front();
-	auto	targetData		= target->data();
-	auto	rootData		= target->root()->data();
+	auto	rootData		= surface->targets().front()->root()->data();
 
 	_macroAddedOrRemovedSlots[surface].push_back(
 		targetData->propertyAdded()->connect(std::bind(
@@ -694,7 +694,7 @@ DrawCallPool::watchMacroAdditionOrDeletion(Surface::Ptr surface)
 void
 DrawCallPool::blameMacros(Surface::Ptr							surface,
 						  const std::list<ContainerProperty>&	incorrectIntegerMacros,
-						  const TechniqueNameAndPass&					pass)
+						  const TechniqueNameAndPass&			pass)
 {
 	for (auto& macro : incorrectIntegerMacros)
 	{
@@ -768,8 +768,7 @@ DrawCallPool::forgiveMacros(Surface::Ptr						surface,
 }
 
 void
-DrawCallPool::zsortNeededHandler(Surface::Ptr	surface, 
-								 DrawCall::Ptr	drawcall)
+DrawCallPool::zsortNeededHandler(Surface::Ptr, DrawCall::Ptr)
 {
 	_mustZSort = true;
 }

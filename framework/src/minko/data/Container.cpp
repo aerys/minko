@@ -402,8 +402,6 @@ Container::Ptr
 Container::filter(const std::set<data::AbstractFilter::Ptr>&	filters, 
 				  Container::Ptr								output) const
 {
-	//return std::const_pointer_cast<Container>(shared_from_this());
-
 	if (output)
 		while (!output->_providers.empty())
 			output->removeProvider(output->_providers.front());

@@ -30,16 +30,27 @@ namespace minko
 			public std::enable_shared_from_this<AbstractFilter>
 		{
 		public:
-			typedef std::shared_ptr<AbstractFilter>	Ptr;
+			typedef std::shared_ptr<AbstractFilter>					Ptr;
 
 		private:
-			typedef std::shared_ptr<Signal<Ptr>>	FilterSignalPtr;
+			typedef std::shared_ptr<component::Surface>				SurfacePtr;
+			typedef std::shared_ptr<component::AbstractComponent>	AbsCmpPtr;
+			typedef std::shared_ptr<scene::Node>					NodePtr;
+
+			typedef std::shared_ptr<Signal<Ptr>>					FilterSignalPtr;
 
 		private:
-			FilterSignalPtr							_changed;
+			SurfacePtr												_currentSurface;
+			Signal<AbsCmpPtr, NodePtr>::Slot						_currentSurfaceRemovedSlot;
+			Signal<NodePtr, NodePtr, NodePtr>::Slot					_currentSurfaceTargetRemovedSlot;
+
+			FilterSignalPtr											_changed;
 
 		public:
 			AbstractFilter():
+				_currentSurface(nullptr),
+				_currentSurfaceRemovedSlot(nullptr),
+				_currentSurfaceTargetRemovedSlot(nullptr),
 				_changed(Signal<Ptr>::create())
 			{
 			}
@@ -53,11 +64,46 @@ namespace minko
 			bool
 			operator()(std::shared_ptr<Provider>) = 0;
 
+			Ptr
+			currentSurface(SurfacePtr);
+
+			inline
+			SurfacePtr
+			currentSurface() const
+			{
+				return _currentSurface;
+			}
+
 			inline
 			FilterSignalPtr
 			changed() const
 			{
 				return _changed;
+			}
+
+		private:
+			virtual
+			void
+			currentSurfaceRemovedHandler(AbsCmpPtr, NodePtr)
+			{
+				forgetCurrentSurface();
+			}
+
+			virtual
+			void
+			currentSurfaceTargetRemovedHandler(NodePtr, NodePtr, NodePtr)
+			{
+				forgetCurrentSurface();
+			}
+
+			inline
+			void
+			forgetCurrentSurface()
+			{
+				_currentSurface						= nullptr;
+
+				_currentSurfaceRemovedSlot			= nullptr;
+				_currentSurfaceTargetRemovedSlot	= nullptr;
 			}
 		};
 	}

@@ -40,7 +40,6 @@ namespace minko
 			typedef std::shared_ptr<render::AbstractTexture>				AbstractTexturePtr;
 
         private:
-			Layouts						_layouts;
             float				        _priority;
 			bool						_zsorted;
 		    Blending::Source		    _blendingSourceFactor;
@@ -64,7 +63,6 @@ namespace minko
 		    inline static
 		    Ptr
 		    create(const SamplerStates&     samplerStates,
-				   Layouts					layouts						= scene::Layout::Group::DEFAULT,
 				   float					priority					= 0.f,
 				   bool						zSorted						= false,
 				   Blending::Source			blendingSourceFactor		= Blending::Source::ONE,
@@ -85,7 +83,6 @@ namespace minko
 		    {
 			    return std::shared_ptr<States>(new States(
                     samplerStates,
-					layouts,
                     priority,
 					zSorted,
                     blendingSourceFactor,
@@ -112,7 +109,6 @@ namespace minko
 		    {
 		    	return std::shared_ptr<States>(new States(
                     states->_samplerStates,
-					states->_layouts,
                     states->_priority,
 					states->_zsorted,
                     states->_blendingSourceFactor,
@@ -141,13 +137,6 @@ namespace minko
 
 			    return create(states);
 		    }
-
-			inline
-			Layouts
-			layouts() const
-			{
-				return _layouts;
-			}
 
             inline
             float
@@ -284,7 +273,6 @@ namespace minko
 
 	    private:
 		    States(const SamplerStates&     samplerSates,
-				   Layouts					layouts,
 				   float				    priority,
 				   bool						zSorted,
 				   Blending::Source		    blendingSourceFactor,
@@ -303,7 +291,6 @@ namespace minko
 				   const ScissorBox&		scissorBox,
                    AbstractTexturePtr		target) :
                 _samplerStates(samplerSates),
-				_layouts(layouts),
                 _priority(priority),
 				_zsorted(zSorted),
                 _blendingSourceFactor(blendingSourceFactor),

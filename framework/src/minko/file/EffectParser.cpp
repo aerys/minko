@@ -246,13 +246,11 @@ EffectParser::parseRenderStates(const Json::Value&		root,
 	auto stencilZPassOp		= defaultStates->stencilDepthPassOperation();
 	auto scissorTest		= defaultStates->scissorTest();
 	auto scissorBox			= defaultStates->scissorBox();
-	auto layouts			= defaultStates->layouts();
 
 	AbstractTexture::Ptr target = defaultStates->target();
 	std::unordered_map<std::string, SamplerState> samplerStates = defaultStates->samplers();
 
 	const float priority = parsePriority(root, defaultStates->priority() + priorityOffset);
-	parseLayouts(root, layouts);
 	parseZSort(root, zSorted);
 	parseBlendMode(root, blendSrcFactor, blendDstFactor);
 	parseColorMask(root, colorMask);
@@ -265,7 +263,6 @@ EffectParser::parseRenderStates(const Json::Value&		root,
 
 	return render::States::create(
 		samplerStates,
-		layouts,
 		(float)priority,
 		zSorted,
 		blendSrcFactor,
@@ -741,19 +738,6 @@ EffectParser::parsePriority(const Json::Value& contextNode,
 	return ret;
 }
 
-Layouts
-EffectParser::parseLayouts(const Json::Value&	contextNode,
-						   Layouts				defaultValue)
-{
-	auto	layoutsNode	= contextNode.get("layouts", defaultValue);
-	Layouts	ret			= defaultValue;
-
-	if (!layoutsNode.isNull() && layoutsNode.isInt())
-		ret = Layouts(layoutsNode.asInt());
-
-	return ret;
-}
-
 void
 EffectParser::parseBindingNameAndSource(const Json::Value& contextNode, std::string& propertyName, BindingSource& source)
 {
@@ -1195,7 +1179,7 @@ EffectParser::parseTechniques(const Json::Value&				root,
 				BindingMap		uniformBindings(_defaultUniformBindings);
 				BindingMap		stateBindings(_defaultStateBindings);
 				MacroBindingMap	macroBindings(_defaultMacroBindings);
-				UniformValues			uniformDefaultValues(_defaultUniformValues);
+				UniformValues	uniformDefaultValues(_defaultUniformValues);
         
 				// bindings
 				parseBindings(

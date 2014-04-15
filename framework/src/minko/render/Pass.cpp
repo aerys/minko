@@ -57,7 +57,7 @@ Pass::Pass(const std::string&				name,
 }
 
 std::shared_ptr<Program>
-Pass::selectProgram(DrawCall::Ptr						drawCall,
+Pass::selectProgram(FormatNameFunction					formatNameFunc,
 					std::shared_ptr<data::Container>	targetData,
 					std::shared_ptr<data::Container>	rendererData,
 					std::shared_ptr<data::Container>	rootData,
@@ -80,7 +80,7 @@ Pass::selectProgram(DrawCall::Ptr						drawCall,
 
 		signature.build(
 			shared_from_this(),
-			drawCall,
+			formatNameFunc,
 			targetData,
 			rendererData,
 			rootData,

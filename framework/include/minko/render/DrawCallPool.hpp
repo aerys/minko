@@ -69,12 +69,10 @@ namespace minko
 			typedef std::shared_ptr<render::Pass>														PassPtr;
 			typedef std::shared_ptr<scene::Node>														NodePtr;
 			typedef std::shared_ptr<data::ArrayProvider>												ArrayProviderPtr;
-			typedef std::unordered_map<std::string, std::string>										StringToStringMap;
 
 			typedef std::pair<std::string, PassPtr>														TechniqueNameAndPass;
 			typedef std::pair<SurfacePtr, NodePtr>														SurfaceAndTarget;
 			typedef std::list<DrawCallPtr>																DrawCallList;
-			typedef std::function<std::string(const std::string&, StringToStringMap&)>					FormatFunction;
 
 			typedef Signal<ContainerPtr, const std::string&>											PropertyChangedSignal;
 			typedef Signal<Ptr, SurfacePtr, DrawCallPtr>												DrawCallChangedSignal;
@@ -135,7 +133,6 @@ namespace minko
 			// draw call list for renderer
 			std::unordered_map<SurfacePtr, DrawCallList>												_surfaceToDrawCalls;
 			DrawCallList																				_drawCalls;
-			FormatFunction																				_formatFunction;
 
 
 		public:
@@ -143,15 +140,7 @@ namespace minko
 			Ptr
 			create(RendererPtr renderer)
 			{
-				Ptr drawCallPool(new DrawCallPool(renderer));
-
-				drawCallPool->_formatFunction = std::bind(
-					&DrawCallPool::formatPropertyName,
-					drawCallPool,
-					std::placeholders::_1,
-					std::placeholders::_2);
-
-				return drawCallPool;
+				return std::shared_ptr<DrawCallPool>(new DrawCallPool(renderer));
 			}
 
 			const std::list<std::shared_ptr<DrawCall>>&
@@ -164,19 +153,19 @@ namespace minko
 			removeSurface(SurfacePtr);
 			
 		private:
-			
+			explicit
 			DrawCallPool(RendererPtr renderer);
 
 			// generate draw call for one mesh
 			std::shared_ptr<DrawCall>
-			initializeDrawCall(std::shared_ptr<render::Pass>	pass, 
-							   SurfacePtr						surface,
-							   std::shared_ptr<DrawCall>		drawcall = nullptr);
+			initializeDrawCall(PassPtr, 
+							   SurfacePtr,
+							   DrawCallPtr = nullptr);
 
 			std::shared_ptr<Program>
-			getWorkingProgram(SurfacePtr							surface,
-							  PassPtr								pass,
-							  DrawCallPtr							drawCall,
+			getWorkingProgram(SurfacePtr,
+							  PassPtr,
+							  FormatNameFunction,
 							  ContainerPtr							targetData,
 							  ContainerPtr							rendererData,
 							  ContainerPtr							rootData,

@@ -5,14 +5,12 @@
 	struct AmbientLight
 	{
 		vec3 	color;
-		int 	mask;
 		float 	ambient;	
 	};
 
 	struct DirectionalLight
 	{
 		vec3 	color;
-		int 	mask;
 		float 	diffuse;
 		float 	specular;
 		vec3 	direction;	
@@ -21,7 +19,6 @@
 	struct PointLight
 	{
 		vec3	color;
-		int		mask;
 		float	diffuse;
 		float	specular;
 		vec3	attenuationCoeffs;
@@ -31,7 +28,6 @@
 	struct SpotLight
 	{
 		vec3	color;
-		int		mask;
 		float	diffuse;
 		float	specular;
 		vec3	attenuationCoeffs;

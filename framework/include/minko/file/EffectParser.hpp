@@ -73,16 +73,16 @@ namespace minko
 				TEXTURE
 			};
 
-			typedef std::shared_ptr<Loader>							LoaderPtr;
-			typedef std::shared_ptr<render::Effect>							EffectPtr;
-			typedef std::shared_ptr<render::Pass>							PassPtr;
-			typedef std::shared_ptr<render::Shader>							ShaderPtr;
-			typedef std::unordered_map<std::string, AbstractTexturePtr>		TexturePtrMap;
-			typedef std::pair<UniformType, UniformValue>					UniformTypeAndValue;
-			typedef std::unordered_map<std::string, UniformTypeAndValue>	UniformValues;
-			typedef std::pair<GLSLBlockType, std::string> 					GLSLBlock;
-			typedef std::forward_list<GLSLBlock> 							GLSLBlockList;
-			typedef std::shared_ptr<GLSLBlockList>							GLSLBlockListPtr;
+			typedef std::shared_ptr<Loader>										LoaderPtr;
+			typedef std::shared_ptr<render::Effect>								EffectPtr;
+			typedef std::shared_ptr<render::Pass>								PassPtr;
+			typedef std::shared_ptr<render::Shader>								ShaderPtr;
+			typedef std::unordered_map<std::string, AbstractTexturePtr>			TexturePtrMap;
+			typedef std::pair<UniformType, UniformValue>						UniformTypeAndValue;
+			typedef std::unordered_map<std::string, UniformTypeAndValue>		UniformValues;
+			typedef std::pair<GLSLBlockType, std::string> 						GLSLBlock;
+			typedef std::forward_list<GLSLBlock> 								GLSLBlockList;
+			typedef std::shared_ptr<GLSLBlockList>								GLSLBlockListPtr;
 
 		private:
 			static std::unordered_map<std::string, unsigned int>				_blendFactorMap;
@@ -91,36 +91,36 @@ namespace minko
 			static std::unordered_map<std::string, float>						_priorityMap;
 
 		private:
-            std::string                                                 _filename;
-			std::string                                                 _resolvedFilename;
-			std::shared_ptr<file::Options>								_options;
-			std::shared_ptr<render::Effect>								_effect;
-			std::string													_effectName;
+            std::string															_filename;
+			std::string															_resolvedFilename;
+			std::shared_ptr<file::Options>										_options;
+			std::shared_ptr<render::Effect>										_effect;
+			std::string															_effectName;
 			
-			std::string													_defaultTechnique;
-			std::shared_ptr<render::States>								_defaultStates;
+			std::string															_defaultTechnique;
+			std::shared_ptr<render::States>										_defaultStates;
 
-            data::BindingMap				                            _defaultAttributeBindings;
-			data::BindingMap				                            _defaultUniformBindings;
-			data::BindingMap				                            _defaultStateBindings;
-			data::MacroBindingMap                              			_defaultMacroBindings;
-			UniformValues												_defaultUniformValues;
+            data::BindingMap													_defaultAttributeBindings;
+			data::BindingMap													_defaultUniformBindings;
+			data::BindingMap													_defaultStateBindings;
+			data::MacroBindingMap                              					_defaultMacroBindings;
+			UniformValues														_defaultUniformValues;
 
 
-			std::shared_ptr<AssetLibrary>								_assetLibrary;
-			unsigned int												_numDependencies;
-			unsigned int												_numLoadedDependencies;
+			std::shared_ptr<AssetLibrary>										_assetLibrary;
+			unsigned int														_numDependencies;
+			unsigned int														_numLoadedDependencies;
 
-			std::unordered_map<ShaderPtr, GLSLBlockListPtr>				_glslBlocks;
+			std::unordered_map<ShaderPtr, GLSLBlockListPtr>						_glslBlocks;
 
-			std::vector<PassPtr>										_globalPasses;
-			std::unordered_map<std::string, AbstractTexturePtr>			_globalTargets;
-			std::unordered_map<std::string, TexturePtrMap>				_techniqueTargets;
-			std::unordered_map<std::string, std::vector<PassPtr>>		_techniquePasses;
-			std::unordered_map<std::string, std::string>				_techniqueFallback;
+			std::vector<PassPtr>												_globalPasses;
+			std::unordered_map<std::string, AbstractTexturePtr>					_globalTargets;
+			std::unordered_map<std::string, TexturePtrMap>						_techniqueTargets;
+			std::unordered_map<std::string, std::vector<PassPtr>>				_techniquePasses;
+			std::unordered_map<std::string, std::string>						_techniqueFallback;
 			
-			std::unordered_map<LoaderPtr, Signal<LoaderPtr>::Slot>		_loaderCompleteSlots;
-			std::unordered_map<LoaderPtr, Signal<LoaderPtr>::Slot>		_loaderErrorSlots;
+			std::unordered_map<LoaderPtr, Signal<LoaderPtr>::Slot>				_loaderCompleteSlots;
+			std::unordered_map<LoaderPtr, Signal<LoaderPtr>::Slot>				_loaderErrorSlots;
 
 		public:
 			inline static
@@ -234,9 +234,6 @@ namespace minko
 			loadTexture(const std::string&				textureFilename,
 						UniformTypeAndValue&			uniformTypeAndValue,
 						std::shared_ptr<file::Options>	options);
-
-			Layouts
-			parseLayouts(const Json::Value&, Layouts);
 
 			float
 			parsePriority(const Json::Value&, float defaultPriority);

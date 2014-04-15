@@ -41,16 +41,16 @@ namespace minko
             public std::enable_shared_from_this<DrawCall>
 		{
 		public:
-			typedef std::shared_ptr<DrawCall>	Ptr;
+			typedef std::shared_ptr<DrawCall>							Ptr;
 
 		private:
-            typedef std::shared_ptr<AbstractContext>									AbsCtxPtr;
-			typedef std::shared_ptr<AbstractTexture>									AbsTexturePtr;
-			typedef std::shared_ptr<data::Provider>										ProviderPtr;
-            typedef std::shared_ptr<data::Container>									ContainerPtr;
-			typedef data::Container::PropertyChangedSignal::Slot						ContainerPropertyChangedSlot;
-			typedef std::unordered_map<std::string, std::string>						StringToStringMap;
-			typedef std::function <std::string(const std::string&, StringToStringMap&)>	FormatFunction;
+			typedef std::shared_ptr<scene::Node>						NodePtr;
+            typedef std::shared_ptr<AbstractContext>					AbsCtxPtr;
+			typedef std::shared_ptr<AbstractTexture>					AbsTexturePtr;
+			typedef std::shared_ptr<data::Provider>						ProviderPtr;
+            typedef std::shared_ptr<data::Container>					ContainerPtr;
+			typedef std::shared_ptr<Program>							ProgramPtr;
+			typedef data::Container::PropertyChangedSignal::Slot		ContainerPropertyChangedSlot;
 
 			typedef std::tuple<int, int>								Int2;
 			typedef std::tuple<int, int, int>							Int3;
@@ -66,10 +66,11 @@ namespace minko
 			std::shared_ptr<data::Container>					        _targetData;
 			std::shared_ptr<data::Container>					        _rendererData;
             std::shared_ptr<data::Container>					        _rootData;
+			FormatNameFunction											_formatFunction;
             const data::BindingMap&	                                    _attributeBindings;
 			const data::BindingMap&	                                    _uniformBindings;
 			const data::BindingMap&	                                    _stateBindings;
-			std::unordered_map<std::string, std::string>				_variablesToValue;
+			Layouts														_layouts;
 
             std::shared_ptr<States>                                     _states;
             std::vector<int>                                            _vertexBufferIds;
@@ -99,7 +100,6 @@ namespace minko
 			render::StencilOperation									_stencilZPassOp;
 			bool														_scissorTest;
 			render::ScissorBox											_scissorBox;
-			Layouts														_layouts;
 			float														_priority;
 			bool														_zsorted;
             std::unordered_map<uint, float>                             _uniformFloat;
@@ -122,11 +122,11 @@ namespace minko
 			std::unordered_map<uint, data::UniformArrayPtr<int>>		_uniformInts4;
 
 			std::unordered_map<std::string, std::list<Any>>				_referenceChangedSlots; // Any = ContainerPropertyChangedSlot
-			Signal<std::shared_ptr<IndexBuffer>>::Slot					_indicesChanged;
+			Signal<std::shared_ptr<IndexBuffer>>::Slot					_indicesChangedSlot;
+			Signal<ContainerPtr, const std::string&>::Slot				_layoutsPropertyChangedSlot;
 
 			std::shared_ptr<Signal<Ptr>>								_zsortNeeded;
 			std::shared_ptr<DrawCallZSorter>					        _zSorter;
-			FormatFunction												_formatPropertyNameFct;
 
 		public:
 			static inline
@@ -134,9 +134,7 @@ namespace minko
 			create(const data::BindingMap&						attributeBindings,
 				   const data::BindingMap&						uniformBindings,
 				   const data::BindingMap&						stateBindings,
-                   std::shared_ptr<States>						states,
-				   FormatFunction								formatPropertyNameFct,
-				   std::unordered_map<std::string, std::string> variablesToValue)
+                   std::shared_ptr<States>						states)
 			{
 				Ptr ptr = std::shared_ptr<DrawCall>(new DrawCall(
                     attributeBindings, 
@@ -144,9 +142,6 @@ namespace minko
 					stateBindings, 
 					states
                 ));
-
-				ptr->_formatPropertyNameFct	= formatPropertyNameFct;
-				ptr->_variablesToValue		= variablesToValue;
 
 				ptr->initialize();
 
@@ -174,20 +169,21 @@ namespace minko
 				return _rootData;
 			}
 
+			inline
+			Ptr
+			formatNameFunction(FormatNameFunction func)
+			{
+				_formatFunction = func;
+
+				return shared_from_this();
+			}
 
 			inline
 			std::string
 			formatPropertyName(const std::string& rawPropertyName)
 			{
-				return _formatPropertyNameFct(rawPropertyName, _variablesToValue);
+				return _formatFunction ? _formatFunction(rawPropertyName) : rawPropertyName;
 			}
-
-			//inline
-			//const std::unordered_map<std::string, std::string>&
-			//variablesToValue()
-			//{
-			//	return _variablesToValue;
-			//}
 
             inline
             AbsTexturePtr
@@ -197,17 +193,17 @@ namespace minko
             }
 
 			inline
-			Layouts
-			layouts() const
-			{
-				return _layouts;
-			}
-
-			inline
 			float
 			priority() const
 			{
 				return _priority;
+			}
+
+			inline
+			Layouts
+			layouts() const
+			{
+				return _layouts;
 			}
 
 			inline
@@ -225,10 +221,11 @@ namespace minko
 			}
 
             void
-            configure(std::shared_ptr<Program>  program,
-                      ContainerPtr              data,
-					  ContainerPtr              rendererData,
-                      ContainerPtr              rootData);
+            configure(ProgramPtr,
+					  FormatNameFunction,
+                      ContainerPtr	targetData,
+					  ContainerPtr	rendererData,
+                      ContainerPtr	rootData);
 
 			void
 			render(const std::shared_ptr<AbstractContext>& context, AbsTexturePtr renderTarget);
@@ -253,7 +250,10 @@ namespace minko
 			reset();
 
 			void
-            bind(ContainerPtr data, ContainerPtr rendererData, ContainerPtr rootData);
+            bind(FormatNameFunction,
+				 ContainerPtr targetData, 
+				 ContainerPtr rendererData, 
+				 ContainerPtr rootData);
 
 			void
 			bindProgramDefaultUniforms();
@@ -263,6 +263,9 @@ namespace minko
 
 			void
 			bindIndexBuffer();
+
+			void
+			bindTargetLayouts();
 
 			void
 			bindStates();
@@ -287,6 +290,9 @@ namespace minko
 
 			void
 			watchUniformRefChange(ContainerPtr, const std::string& propertyName, ProgramInputs::Type, int location);
+
+			void
+			targetLayoutsChangedHandler(NodePtr, NodePtr);
 
 			ContainerPtr
 			getDataContainer(const data::BindingSource& source) const;

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -20,66 +20,70 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
-
 #include "minko/Signal.hpp"
-#include "minko/component/AbstractRootDataComponent.hpp"
-#include "minko/data/ArrayProvider.hpp"
-#include "minko/scene/Layout.hpp"
+
+#include "minko/data/AbstractFilter.hpp"
 
 namespace minko
 {
 	namespace data
 	{
-		class LightMaskFilter;
-	}
-
-	namespace component
-	{
-		class AbstractLight :
-			public AbstractRootDataComponent<data::ArrayProvider>
+		class LightMaskFilter:
+			public AbstractFilter
 		{
-			friend class data::LightMaskFilter;
-
 		public:
-			typedef std::shared_ptr<AbstractLight> 		Ptr;
+			typedef std::shared_ptr<LightMaskFilter>			Ptr;
 
 		private:
-			typedef	std::shared_ptr<scene::Node>		NodePtr;
-			typedef std::shared_ptr<AbstractComponent>	AbsCmpPtr;
+			typedef std::shared_ptr<scene::Node>				NodePtr;
+			typedef std::shared_ptr<Container>					ContainerPtr;
+			typedef std::shared_ptr<Provider>					ProviderPtr;
+			typedef std::shared_ptr<component::AbstractLight>	AbsLightPtr;
+
+			typedef Signal<ContainerPtr, const std::string&>	ContainerPropertyChangedSignal;
 
 		private:
-			std::shared_ptr<math::Vector3>				_color;
+			static std::vector<std::string>						_numLightPropertyNames;
 
-			Signal<NodePtr, NodePtr>::Slot				_targetLayoutChangedSlot;
+			NodePtr												_target;
+			NodePtr												_root;
+			std::unordered_map<ProviderPtr, AbsLightPtr>		_providerToLight;
+
+			std::list<ContainerPropertyChangedSignal::Slot>		_rootPropertyChangedSlots;
 
 		public:
-			inline
-			std::shared_ptr<math::Vector3>
-			color()
+			inline static
+			Ptr
+			create(NodePtr root = nullptr)
 			{
-				return _color;
+				Ptr ptr = std::shared_ptr<LightMaskFilter>(new LightMaskFilter());
+
+				ptr->root(root);
+
+				return ptr;
 			}
 
 			Ptr
-			color(std::shared_ptr<math::Vector3>);
+			root(NodePtr);
 
-			Ptr
-			color(std::shared_ptr<math::Vector4>);
+			bool
+			operator()(ProviderPtr); 
 
-			Ptr
-			color(uint color);
-
-		protected:
-			AbstractLight(const std::string& arrayName);
+		private:
+			LightMaskFilter();
 
 			void
-            targetAddedHandler(AbsCmpPtr, NodePtr);
-
-            void
-            targetRemovedHandler(AbsCmpPtr, NodePtr);
+			reset();
 
 			void
-			targetLayoutsChangedHandler(NodePtr, NodePtr);
+			initialize(NodePtr);
+
+			void
+			lightsChangedHandler();
+
+			static
+			std::vector<std::string>
+			initializeNumLightPropertyNames();
 		};
 	}
 }
