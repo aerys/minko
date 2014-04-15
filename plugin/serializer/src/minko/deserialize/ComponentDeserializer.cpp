@@ -190,7 +190,7 @@ ComponentDeserializer::deserializeSurface(std::string&							serializedSurface,
 		geometry,
 		(material != nullptr ? material : assetLibrary->material("defaultMaterial")),
 		(effect != nullptr ? effect : assetLibrary->effect("effect/Phong.effect")),
-		dst.a3);
+		"default");
 
 	return surface;
 }
