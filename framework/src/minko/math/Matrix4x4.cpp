@@ -208,31 +208,64 @@ Matrix4x4::transpose()
 std::shared_ptr<Vector3>
 Matrix4x4::transform(std::shared_ptr<Vector3> v, std::shared_ptr<Vector3> output) const
 {
-    if (!output)
-        output = Vector3::create();
+	if (!output)
+		output = Vector3::create();
 
 	output->setTo(
-        v->x() * _m[0] + v->y() * _m[1] + v->z() * _m[2] + _m[3],
-        v->x() * _m[4] + v->y() * _m[5] + v->z() * _m[6] + _m[7],
-        v->x() * _m[8] + v->y() * _m[9] + v->z() * _m[10] + _m[11]
-    );
+		v->x() * _m[0] + v->y() * _m[1] + v->z() * _m[2] + _m[3],
+		v->x() * _m[4] + v->y() * _m[5] + v->z() * _m[6] + _m[7],
+		v->x() * _m[8] + v->y() * _m[9] + v->z() * _m[10] + _m[11]
+		);
 
-    return output;
+	return output;
+}
+
+std::shared_ptr<Vector4>
+Matrix4x4::transform(std::shared_ptr<Vector4> v, std::shared_ptr<Vector4> output) const
+{
+	if (!output)
+		output = Vector4::create();
+
+	output->setTo(
+		v->x() * _m[0]  + v->y() * _m[1]  + v->z() * _m[2]  + v->w() * _m[3],
+		v->x() * _m[4]  + v->y() * _m[5]  + v->z() * _m[6]  + v->w() * _m[7],
+		v->x() * _m[8]  + v->y() * _m[9]  + v->z() * _m[10] + v->w() * _m[11],
+		v->x() * _m[12] + v->y() * _m[13] + v->z() * _m[14] + v->w() * _m[15]
+		);
+
+	return output;
 }
 
 std::shared_ptr<Vector3>
 Matrix4x4::deltaTransform(std::shared_ptr<Vector3> v, std::shared_ptr<Vector3> output) const
 {
-    if (!output)
-        output = Vector3::create();
+	if (!output)
+		output = Vector3::create();
 
 	output->setTo(
-        v->x() * _m[0] + v->y() * _m[1] + v->z() * _m[2],
-        v->x() * _m[4] + v->y() * _m[5] + v->z() * _m[6],
-        v->x() * _m[8] + v->y() * _m[9] + v->z() * _m[10]
-    );
+		v->x() * _m[0] + v->y() * _m[1] + v->z() * _m[2],
+		v->x() * _m[4] + v->y() * _m[5] + v->z() * _m[6],
+		v->x() * _m[8] + v->y() * _m[9] + v->z() * _m[10]
+		);
 
-    return output;
+	return output;
+}
+
+std::shared_ptr<Vector3>
+Matrix4x4::project(std::shared_ptr<Vector3> v, std::shared_ptr<Vector3> output) const
+{
+	if (!output)
+		output = Vector3::create();
+	
+	float w = v->x() * _m[12] + v->y() * _m[13] + v->z() * _m[14] + _m[15];
+
+	output->setTo(
+		(v->x() * _m[0] + v->y() * _m[1] + v->z() * _m[2] + _m[3]) / w,
+		(v->x() * _m[4] + v->y() * _m[5] + v->z() * _m[6] + _m[7]) / w,
+		(v->x() * _m[8] + v->y() * _m[9] + v->z() * _m[10] + _m[11]) / w
+	);
+
+	return output;
 }
 
 Matrix4x4::Ptr

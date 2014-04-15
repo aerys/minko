@@ -179,6 +179,9 @@ namespace minko
 
 			std::shared_ptr<math::Ray>
 			unproject(float x, float y, std::shared_ptr<math::Ray> out = nullptr);
+			
+			std::shared_ptr<math::Vector3>
+			project(std::shared_ptr<math::Vector3> worldPosition, std::shared_ptr<math::Vector3> out = nullptr);
 
         protected:
             void
