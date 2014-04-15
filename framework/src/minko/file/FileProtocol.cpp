@@ -69,7 +69,7 @@ FileProtocol::load()
 			file.open(testFilename, flags);
 			if (file.is_open())
             {
-                if (testFilename.size() > File::getBinaryDirectory().size())
+                if (testFilename.find(File::getBinaryDirectory() + "/") != std::string::npos)
                 {
                     testFilename = testFilename.substr(File::getBinaryDirectory().size() + 1, testFilename.size());
                 }
