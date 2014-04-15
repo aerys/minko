@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/AbstractTexture.hpp"
 #include "minko/render/Texture.hpp"
 #include "minko/file/Dependency.hpp"
-#include "minko/file/DevILWriter.hpp"
+//#include "minko/file/DevILWriter.hpp"
 #include "minko/Types.hpp"
 
 using namespace minko;
@@ -88,6 +88,8 @@ TextureWriter::embed(AssetLibraryPtr	assetLibrary,
             break;
     }
 
+	return "";
+	/*
     auto textureData = std::vector<unsigned char> { };
 
     {
@@ -105,5 +107,5 @@ TextureWriter::embed(AssetLibraryPtr	assetLibrary,
 
     auto textureContent = std::string(textureData.begin(), textureData.end());
 
-    return textureContent;
+    return textureContent;*/
 }
