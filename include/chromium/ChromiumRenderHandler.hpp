@@ -39,8 +39,21 @@ namespace chromium
 		bool
 		GetViewRect(CefRefPtr<CefBrowser> browser, CefRect &rect);
 
+
+		void
+		OnCursorChange(CefRefPtr<CefBrowser> browser, CefCursorHandle cursor);
+
+		void
+		OnPopupSize(CefRefPtr<CefBrowser> browser, const CefRect &rect);
+
+		void
+		OnPopupShow(CefRefPtr<CefBrowser> browser, bool shown);
+
 		void
 		OnPaint(CefRefPtr<CefBrowser> browser, PaintElementType type, const RectList &dirtyRects, const void *buffer, int width, int height);
+
+		void
+		drawPopup();
 
 		void
 		SetResized(int width, int height);
@@ -61,13 +74,22 @@ namespace chromium
 		uint _lastH;
 		uint _texW;
 		uint _texH;
+
+		uint _popupShown;
+		uint _popupX;
+		uint _popupY;
+		uint _popupW;
+		uint _popupH;
+
 		std::shared_ptr<AbstractCanvas> _canvas;
 		std::shared_ptr<render::AbstractContext> _context;
 		Signal<std::shared_ptr<AbstractCanvas>, uint, uint>::Slot _canvasResizedSlot;
 
 	public:
+		unsigned char* _popupBuffer;
 		std::vector<unsigned char>* _textureBuffer;
 		std::shared_ptr<render::Texture> renderTexture;
+
 		bool textureChanged;
 
 		IMPLEMENT_REFCOUNTING(ChromiumRenderHandler);

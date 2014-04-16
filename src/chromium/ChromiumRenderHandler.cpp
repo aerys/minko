@@ -33,8 +33,10 @@ ChromiumRenderHandler::ChromiumRenderHandler(std::shared_ptr<AbstractCanvas> can
 	_canvas(canvas), 
 	_context(context),
 	_textureBuffer(nullptr),
+	_popupBuffer(nullptr),
 	renderTexture(nullptr),
-	textureChanged(false)
+	textureChanged(false),
+	_popupShown(false)
 {
 	generateTexture();
 }
@@ -106,16 +108,44 @@ ChromiumRenderHandler::GetViewRect(CefRefPtr<CefBrowser> browser, CefRect &rect)
 }
 
 void
+ChromiumRenderHandler::OnPopupShow(CefRefPtr<CefBrowser> browser, bool shown)
+{
+	_popupShown = shown;
+
+	if (!_popupShown)
+	{
+		_popupBuffer = nullptr;
+
+		_popupX = 0;
+		_popupY = 0;
+		_popupW = 0;
+		_popupH = 0;
+	}
+}
+
+void
+ChromiumRenderHandler::OnPopupSize(CefRefPtr<CefBrowser> browser, const CefRect &rect)
+{
+	_popupX = rect.x;
+	_popupY = rect.y;
+	_popupW = rect.width;
+	_popupH = rect.height;
+}
+
+void
 ChromiumRenderHandler::OnPaint(CefRefPtr<CefBrowser> browser, PaintElementType type, const RectList &dirtyRects, const void *buffer, int width, int height)
 {
-	if (width != _lastW || height != _lastH)
-		return;
-	if (_lastW > _texW || _lastH > _texH)
+	if (renderTexture == NULL)
 		return;
 
-	if (renderTexture != NULL)
+	if (type == PaintElementType::PET_VIEW) //Main View
 	{
-		unsigned char* charBuffer = (unsigned char*) buffer;
+		if (width != _lastW || height != _lastH)
+			return;
+		if (_lastW > _texW || _lastH > _texH)
+			return;
+
+		unsigned char* charBuffer = (unsigned char*)buffer;
 
 		for (uint y = 0; y < _lastH; ++y)
 		{
@@ -125,6 +155,36 @@ ChromiumRenderHandler::OnPaint(CefRefPtr<CefBrowser> browser, PaintElementType t
 		}
 		textureChanged = true;
 	}
+	else if (type == PaintElementType::PET_POPUP) //Popup
+	{
+		if (width != _popupW || height != _popupH)
+			return;
+				
+		_popupBuffer = (unsigned char*)buffer;
+
+		textureChanged = true;
+	}
+}
+
+void
+ChromiumRenderHandler::drawPopup()
+{
+	if (!_popupShown || _popupBuffer == nullptr)
+		return;
+
+	unsigned char* charBuffer = _popupBuffer;
+
+	int popupYMax = _popupY + _popupH;
+
+	for (uint y = _popupY; y < popupYMax && y < _lastH; ++y)
+	{
+		if (y > _popupY)
+			charBuffer += _popupW * sizeof(int);
+		
+		uint offset = (y * _texW) + _popupX;
+
+		memcpy(&(*_textureBuffer)[offset * sizeof(int)], charBuffer, _popupW * sizeof(int));
+	}
 }
 
 void
@@ -132,6 +192,9 @@ ChromiumRenderHandler::uploadTexture()
 {
 	if (textureChanged)
 	{
+		if (_popupShown)
+			drawPopup();
+
 		renderTexture->data(&(*_textureBuffer)[0]);
 		renderTexture->upload();
 	}
@@ -142,5 +205,13 @@ void
 ChromiumRenderHandler::canvasResized(AbstractCanvas::Ptr canvas, uint w, uint h)
 {
 	generateTexture();
+}
+
+void
+ChromiumRenderHandler::OnCursorChange(CefRefPtr<CefBrowser> browser, CefCursorHandle cursor)
+{
+#if defined(_MSC_VER) 
+	SetCursor(cursor);
+#endif
 }
 #endif
