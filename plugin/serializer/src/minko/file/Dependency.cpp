@@ -425,7 +425,7 @@ Dependency::serialize(std::shared_ptr<file::AssetLibrary>       assetLibrary,
         serialize::AssetType    assetType;
         std::string             content;
 
-        if (_writerOptions->embedAll())
+        if (writerOptions->embedAll())
         {
             assetType = serialize::AssetType::EMBED_EFFECT_ASSET;
 
@@ -447,7 +447,7 @@ Dependency::serialize(std::shared_ptr<file::AssetLibrary>       assetLibrary,
                 filenameOutput.insert(0, filenameInput.substr(charIndex, 1));
             }
 
-            auto completeOutputFilename = _writerOptions->outputAssetUriFunction()(filenameOutput);
+            auto completeOutputFilename = writerOptions->outputAssetUriFunction()(filenameOutput);
 
             std::ofstream dst(completeOutputFilename, std::ios::binary);
 

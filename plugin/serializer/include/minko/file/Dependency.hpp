@@ -20,15 +20,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
+#include "minko/SerializerCommon.hpp"
 #include "msgpack.hpp"
-
-namespace minko
-{
-    namespace file
-    {
-        class WriterOptions;
-    }
-}
 
 namespace minko
 {
