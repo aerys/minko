@@ -53,7 +53,8 @@ namespace minko
 			std::string
 			embed(std::shared_ptr<AssetLibrary>		assetLibrary,
 				  std::shared_ptr<Options>			options,
-				  Dependency::Ptr					dependency)
+				  Dependency::Ptr					dependency,
+                  std::shared_ptr<WriterOptions>    writerOptions)
 			{
 				geometry::Geometry::Ptr		geometry = data();
 				uint						metaByte = computeMetaByte(geometry);
@@ -66,8 +67,8 @@ namespace minko
 
 				msgpack::type::tuple<unsigned char, std::string, std::string, std::vector<std::string>> res(
 					metaByte,
-					assetLibrary->geometryName(geometry), 
-					serializedIndexBuffer, 
+					assetLibrary->geometryName(geometry),
+					serializedIndexBuffer,
 					serializedVertexBuffers);
 				msgpack::pack(sbuf, res);
 
@@ -92,8 +93,8 @@ namespace minko
 
 			static
 			std::string
-			serializeIndexStream(std::shared_ptr<render::IndexBuffer> indexBuffer); 
-		
+			serializeIndexStream(std::shared_ptr<render::IndexBuffer> indexBuffer);
+
 		private:
 
 			void

@@ -30,6 +30,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/Surface.hpp"
 #include "minko/component/Renderer.hpp"
 #include "minko/file/Dependency.hpp"
+#include "minko/file/WriterOptions.hpp"
 #include "minko/serialize/ComponentSerializer.hpp"
 #include "minko/Types.hpp"
 
@@ -45,13 +46,13 @@ std::map<const std::type_info*, SceneWriter::NodeWriterFunc> SceneWriter::_compo
 SceneWriter::SceneWriter()
 {
 	registerComponent(
-		&typeid(component::PerspectiveCamera), 
+		&typeid(component::PerspectiveCamera),
 		std::bind(
 			&serialize::ComponentSerializer::serializePerspectiveCamera,
 			std::placeholders::_1, std::placeholders::_2
 		)
 	);
-	
+
 	registerComponent(
 		&typeid(component::Transform),
 		std::bind(
@@ -117,9 +118,10 @@ SceneWriter::registerComponent(const std::type_info*	componentType,
 }
 
 std::string
-SceneWriter::embed(AssetLibraryPtr		assetLibrary,
-				  OptionsPtr			options,
-				  DependencyPtr			dependency)
+SceneWriter::embed(AssetLibraryPtr                      assetLibrary,
+                   OptionsPtr                           options,
+                   DependencyPtr                        dependency,
+                   std::shared_ptr<WriterOptions>       writerOptions)
 {
 	std::stringstream								sbuf;
 	std::queue<std::shared_ptr<scene::Node>>		queue;
@@ -134,7 +136,7 @@ SceneWriter::embed(AssetLibraryPtr		assetLibrary,
 		std::shared_ptr<scene::Node>	currentNode = queue.front();
 
 		nodePack.push_back(writeNode(currentNode, serializedControllerList, controllerMap, assetLibrary, dependency));
-		
+
 		for (uint i = 0; i < currentNode->children().size(); ++i)
 			queue.push(currentNode->children()[i]);
 
@@ -143,7 +145,7 @@ SceneWriter::embed(AssetLibraryPtr		assetLibrary,
 
 	msgpack::type::tuple<std::vector<std::string>, std::vector<SerializedNode>> res(serializedControllerList, nodePack);
 	msgpack::pack(sbuf, res);
-	
+
 	return sbuf.str();
 }
 
@@ -157,7 +159,7 @@ SceneWriter::writeNode(std::shared_ptr<scene::Node>		node,
 	std::vector<uint>	componentsId;
 	int					componentIndex = 0;
 	AbsComponentPtr		currentComponent = node->component<component::AbstractComponent>(0);
-	
+
 	while (currentComponent != nullptr)
 	{
 		int index = -1;
