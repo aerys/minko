@@ -25,14 +25,6 @@ namespace minko
 {
     namespace file
     {
-        class WriterOptions;
-    }
-}
-
-namespace minko
-{
-    namespace file
-    {
         class WriterOptions:
             public std::enable_shared_from_this<WriterOptions>
         {
