@@ -43,7 +43,7 @@ namespace minko
 			typedef std::shared_ptr<render::AbstractTexture>			TexturePtr;
 			typedef msgpack::type::tuple<uint, std::string>				TupleIntString;
 			typedef msgpack::type::tuple<std::string, TupleIntString>	ComplexPropertyTuple;
-			typedef msgpack::type::tuple<std::string, float>			BasicPropertyTuple;
+			typedef msgpack::type::tuple<std::string, std::string>		BasicPropertyTuple;
 
 		private:
 			static std::map<const std::type_info*, std::function<std::tuple<uint, std::string>(Any)>> _typeToWriteFunction;
@@ -122,9 +122,15 @@ namespace minko
 			{
 				if (material->propertyHasType<T>(propertyName))
 				{
+					std::vector<float> propertyValue;
+					
+					propertyValue.push_back(static_cast<float>(material->get<T>(propertyName)));
+
+					std::string serializePropertyValue = serialize::TypeSerializer::serializeVector<float>(propertyValue);
+
 					BasicPropertyTuple basicTypeSerializedProperty(
 							propertyName,
-							static_cast<float>(material->get<T>(propertyName)));
+							serializePropertyValue);
 						basicTypeSeriliazedProperties->push_back(basicTypeSerializedProperty);
 
 					return true;

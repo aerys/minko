@@ -64,11 +64,14 @@ ComponentSerializer::serializePerspectiveCamera(NodePtr			node,
 	int8_t											type = serialize::PROJECTION_CAMERA;
 	std::shared_ptr<component::PerspectiveCamera>	perspectiveCamera = node->component<component::PerspectiveCamera>();
 	std::stringstream								buffer;
-	
-	msgpack::type::tuple<float, float, float, float>	src(perspectiveCamera->aspectRatio(),
-		perspectiveCamera->fieldOfView(),
-		perspectiveCamera->zNear(),
-		perspectiveCamera->zFar());
+	std::vector<float>								data;
+
+	data.push_back(perspectiveCamera->aspectRatio());
+	data.push_back(perspectiveCamera->fieldOfView());
+	data.push_back(perspectiveCamera->zNear());
+	data.push_back(perspectiveCamera->zFar());
+
+	std::string src = serialize::TypeSerializer::serializeVector<float>(data);
 
 	msgpack::pack(buffer, src);
 	msgpack::pack(buffer, type);
@@ -81,14 +84,17 @@ std::string
 ComponentSerializer::serializeAmbientLight(NodePtr			node, 
 										   DependencyPtr	dependencies)
 {
-	int8_t												type		= serialize::AMBIENT_LIGHT;
-	std::shared_ptr<component::AmbientLight>			ambient		= node->component<component::AmbientLight>();
-	std::stringstream									buffer;
-	msgpack::type::tuple<float, float, float, float>	src(
-		ambient->ambient(),
-		ambient->color()->x(),
-		ambient->color()->y(),
-		ambient->color()->z());
+	int8_t										type		= serialize::AMBIENT_LIGHT;
+	std::shared_ptr<component::AmbientLight>	ambient		= node->component<component::AmbientLight>();
+	std::stringstream							buffer;
+	std::vector<float>							data;
+
+	data.push_back(ambient->ambient());
+	data.push_back(ambient->color()->x());
+	data.push_back(ambient->color()->y());
+	data.push_back(ambient->color()->z());
+
+	std::string src = serialize::TypeSerializer::serializeVector<float>(data);
 
 	msgpack::pack(buffer, src);
 	msgpack::pack(buffer, type);
@@ -100,15 +106,18 @@ std::string
 ComponentSerializer::serializeDirectionalLight(NodePtr			node, 
 											   DependencyPtr	dependencies)
 {
-	int8_t													type		= serialize::DIRECTIONAL_LIGHT;
-	std::shared_ptr<component::DirectionalLight>			directional	= node->component<component::DirectionalLight>();
-	std::stringstream										buffer;
-	msgpack::type::tuple<float, float, float, float, float>	src(
-		directional->diffuse(),
-		directional->specular(),
-		directional->color()->x(),
-		directional->color()->y(),
-		directional->color()->z());
+	int8_t											type		= serialize::DIRECTIONAL_LIGHT;
+	std::shared_ptr<component::DirectionalLight>	directional	= node->component<component::DirectionalLight>();
+	std::stringstream								buffer;
+	std::vector<float>								data;
+
+	data.push_back(directional->diffuse());
+	data.push_back(directional->specular());
+	data.push_back(directional->color()->x());
+	data.push_back(directional->color()->y());
+	data.push_back(directional->color()->z());
+
+	std::string src = serialize::TypeSerializer::serializeVector<float>(data);
 
 	msgpack::pack(buffer, src);
 	msgpack::pack(buffer, type);
@@ -124,13 +133,18 @@ ComponentSerializer::serializePointLight(NodePtr		node,
 	int8_t									type	= serialize::POINT_LIGHT;
 	std::shared_ptr<component::PointLight>	point	= node->component<component::PointLight>();
 	std::stringstream						buffer;
-	msgpack::type::tuple<float, float, float, float, float, float>	src(
-		point->diffuse(),
-		point->specular(),
-		point->attenuationCoefficients()->x(),
-		point->color()->x(),
-		point->color()->y(),
-		point->color()->z());
+	std::vector<float>						data;
+
+	data.push_back(point->diffuse());
+	data.push_back(point->specular());
+	data.push_back(point->attenuationCoefficients()->x());
+	data.push_back(point->attenuationCoefficients()->y());
+	data.push_back(point->attenuationCoefficients()->z());
+	data.push_back(point->color()->x());
+	data.push_back(point->color()->y());
+	data.push_back(point->color()->z());
+
+	std::string src = serialize::TypeSerializer::serializeVector<float>(data);
 
 	msgpack::pack(buffer, src);
 	msgpack::pack(buffer, type);
@@ -142,18 +156,23 @@ std::string
 ComponentSerializer::serializeSpotLight(NodePtr			node, 
 										DependencyPtr	dependencies)
 {
-	int8_t										type	= serialize::SPOT_LIGHT;
-	std::shared_ptr<component::SpotLight>		spot	= node->component<component::SpotLight>();
-	std::stringstream							buffer;
-	msgpack::type::tuple<float, float, float, float, float, float, float, float> src(
-		spot->diffuse(),
-		spot->specular(),
-		spot->attenuationCoefficients()->x(),
-		spot->cosInnerConeAngle(),
-		spot->cosOuterConeAngle(),
-		spot->color()->x(),
-		spot->color()->y(),
-		spot->color()->z());
+	int8_t									type	= serialize::SPOT_LIGHT;
+	std::shared_ptr<component::SpotLight>	spot	= node->component<component::SpotLight>();
+	std::stringstream						buffer;
+	std::vector<float>						data;
+
+	data.push_back(spot->diffuse());
+	data.push_back(spot->specular());
+	data.push_back(spot->attenuationCoefficients()->x());
+	data.push_back(spot->attenuationCoefficients()->y());
+	data.push_back(spot->attenuationCoefficients()->z());
+	data.push_back(acos(spot->cosInnerConeAngle()));
+	data.push_back(acos(spot->cosOuterConeAngle()));
+	data.push_back(spot->color()->x());
+	data.push_back(spot->color()->y());
+	data.push_back(spot->color()->z());
+
+	std::string src = serialize::TypeSerializer::serializeVector<float>(data);
 
 	msgpack::pack(buffer, src);
 	msgpack::pack(buffer, type);
@@ -213,19 +232,20 @@ ComponentSerializer::serializeBoundingBox(NodePtr 			node,
 	math::Vector3::Ptr 	bottomLeft 	= box->bottomLeft();
 	int8_t 				type 		= serialize::BOUNDINGBOX;
 	std::stringstream	buffer;
+	std::vector<float>	data;
 
 	float centerX = topRight->x() - bottomLeft->x();
 	float centerY = topRight->y() - bottomLeft->y();
 	float centerZ = topRight->z() - bottomLeft->z();
 
-	msgpack::type::tuple<float, float, float, float, float, float> src(
-		centerX,
-		centerY,
-		centerZ,
-		box->width(),
-		box->height(),
-		box->depth()
-		);
+	data.push_back(centerX);
+	data.push_back(centerY);
+	data.push_back(centerZ);
+	data.push_back(box->width());
+	data.push_back(box->height());
+	data.push_back(box->depth());
+
+	std::string src = serialize::TypeSerializer::serializeVector<float>(data);
 
 	msgpack::pack(buffer, src);
 	msgpack::pack(buffer, type);
