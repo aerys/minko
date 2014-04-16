@@ -4,8 +4,9 @@ minko.project.application("minko-example-" .. PROJECT_NAME)
 
 	removeplatforms { "ios", "android" }
 	
-	kind "WindowedApp"
-	system "macosx"
+	configuration {"osx64"}
+		kind "WindowedApp"
+		system "macosx"
 
 	files {
 		"src/**.cpp",
