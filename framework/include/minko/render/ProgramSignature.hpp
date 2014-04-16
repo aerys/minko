@@ -44,13 +44,13 @@ namespace minko
 			void
 			build(std::shared_ptr<render::Pass>,
 				  FormatNameFunction,
-				  std::shared_ptr<data::Container>		targetData,
-				  std::shared_ptr<data::Container>		rendererData,
-				  std::shared_ptr<data::Container>		rootData,
-				  std::string&							defines,
-				  std::list<data::ContainerProperty>&	booleanMacros,
-				  std::list<data::ContainerProperty>&	integerMacros,
-				  std::list<data::ContainerProperty>&	incorrectIntegerMacros);
+				  std::shared_ptr<data::Container>	targetData,
+				  std::shared_ptr<data::Container>	rendererData,
+				  std::shared_ptr<data::Container>	rootData,
+				  std::string&						defines,
+				  std::list<std::string>&			booleanMacros,
+				  std::list<std::string>&			integerMacros,
+				  std::list<std::string>&			incorrectIntegerMacros);
 
 			bool 
 			operator==(const ProgramSignature&) const;

@@ -36,10 +36,14 @@ int main(int argc, char** argv)
 	std::cout << "[R]\ttoogle the raycasting layout mask of the RED box" << std::endl;
 	std::cout << "[G]\trender only the GREEN box" << std::endl;
 	std::cout << "[B]\trestrict ray intersection to the BLUE box" << std::endl;
+	std::cout << "[Q]\tchange the green box's layouts" << std::endl;
 	std::cout << "-----------------------------" << std::endl;
 
-	Layouts greenBoxLayouts		= Layout::Group::DEFAULT | (1 << 3);
-	Layouts	blueBoxLayouts		= 1 << 2;
+	bool	toogleGreenBoxLayouts	= false;
+	int		greenBoxLayoutsId		= 0;
+	Layouts greenBoxLayouts[2]		= { Layout::Group::DEFAULT | (1 << 3),  Layout::Group::DEFAULT };
+
+	Layouts	blueBoxLayouts			= 1 << 2;
 
 	bool	toogleRedBoxLayouts	= false;
 	int		redBoxLayoutsId		= 0;
@@ -82,7 +86,7 @@ int main(int argc, char** argv)
 		->addComponent(BoundingBox::create());
 
 	auto greenBox = Node::create("greenBox")
-		->layouts(greenBoxLayouts)
+		->layouts(greenBoxLayouts[0])
 		->addComponent(Transform::create(
 			math::Matrix4x4::create()->appendTranslation(1.0f, 0.0f, -0.5f)
 		))
@@ -185,11 +189,13 @@ int main(int argc, char** argv)
 	auto keyDown = canvas->keyboard()->keyDown()->connect([&](input::Keyboard::Ptr k)
 	{
 		if (k->keyIsDown(input::Keyboard::ScanCode::R))
-			toogleRedBoxLayouts	= true;
+			toogleRedBoxLayouts		= true;
 		else if (k->keyIsDown(input::Keyboard::ScanCode::B))
-			tooglePickingMask	= true;
+			tooglePickingMask		= true;
 		else if (k->keyIsDown(input::Keyboard::ScanCode::G))
-			toogleRendererMask	= true;
+			toogleRendererMask		= true;
+		else if (k->keyIsDown(input::Keyboard::ScanCode::Q)) 
+			toogleGreenBoxLayouts	= true;
 	});
 
 	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float deltaTime)
@@ -212,6 +218,15 @@ int main(int argc, char** argv)
 				std::cout << "The RED box ignores ray casting." << std::endl;
 			else
 				std::cout << "The RED box can be ray cast." << std::endl;
+		}
+
+		if (toogleGreenBoxLayouts)
+		{
+			greenBoxLayoutsId	= (greenBoxLayoutsId + 1) % 2;
+			toogleGreenBoxLayouts	= false;
+			greenBox->layouts(greenBoxLayouts[greenBoxLayoutsId]);
+
+			std::cout << "green box layouts = " << std::bitset<32>(greenBox->layouts()) << std::endl;
 		}
 
 		if (tooglePickingMask)

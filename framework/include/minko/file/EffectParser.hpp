@@ -206,8 +206,21 @@ namespace minko
                                        GLSLBlockList::iterator 	fileBlock,
                                        const std::string&       filename);
 
+			inline
 			void
-			parseBindingNameAndSource(const Json::Value& contextNode, std::string& name, data::BindingSource& source);
+			parseBindingNameAndSource(const Json::Value&	contextNode, 
+									  std::string&			name, 
+									  data::BindingSource&	source)
+			{
+				RegexPtr regex = nullptr;
+				parseBindingNameAndSource(contextNode, name, source, regex);
+			}
+
+			void
+			parseBindingNameAndSource(const Json::Value&	contextNode, 
+									  std::string&			name, 
+									  data::BindingSource&	source,
+									  RegexPtr&				regexp);
 
 			void
 			parseBindings(const Json::Value&		contextNode,

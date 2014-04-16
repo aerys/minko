@@ -58,6 +58,9 @@ namespace minko
 			std::unordered_map<ProviderPtr, ProviderPropertyChangedSlot>	_providerValueChangedSlot;
 			std::unordered_map<ProviderPtr, ProviderPropertyChangedSlot>	_providerReferenceChangedSlot;
 
+			Signal<Ptr, ProviderPtr>::Ptr									_providerAdded;
+			Signal<Ptr, ProviderPtr>::Ptr									_providerRemoved;
+
 		public:
 			static
 			Ptr
@@ -89,7 +92,10 @@ namespace minko
 			hasProvider(std::shared_ptr<Provider> provider) const;
 
 			bool
-			hasProperty(const std::string& propertyName) const;
+			hasProperty(const std::string&) const;
+			
+			bool
+			isLengthProperty(const std::string&) const;
 
 			inline
 			int
@@ -156,6 +162,20 @@ namespace minko
 
 			PropertyChangedSignalPtr
 			propertyReferenceChanged(const std::string& propertyName);
+
+			inline
+			Signal<Ptr, Provider::Ptr>::Ptr
+			providerAdded() const
+			{
+				return _providerAdded;
+			}
+
+			inline
+			Signal<Ptr, Provider::Ptr>::Ptr
+			providerRemoved() const
+			{
+				return _providerRemoved;
+			}
 
 			inline
 			const std::list<ProviderPtr>&

@@ -47,15 +47,12 @@ Surface::Surface(std::string				name,
 	_material(material),
 	_effect(effect),
 	_technique(technique),
-	//_geometryId(-1),
-	//_materialId(-1),
 	_visible(true),
 	_rendererToVisibility(),
 	_rendererToComputedVisibility(),
 	_techniqueChanged(TechniqueChangedSignal::create()),
 	_visibilityChanged(VisibilityChangedSignal::create()),
 	_computedVisibilityChanged(VisibilityChangedSignal::create()),
-	//_dataProviderIndexChangedSlots(),
 	_targetAddedSlot(nullptr),
 	_targetRemovedSlot(nullptr),
 	_addedSlot(nullptr),
@@ -83,23 +80,6 @@ Surface::initialize()
 		std::placeholders::_1,
 		std::placeholders::_2
 	));
-
-	//_dataProviderIndexChangedSlots.push_back(_geometry->data()->indexChanged()->connect(std::bind(
-	//	&Surface::geometryProviderIndexChanged,
-	//	std::static_pointer_cast<Surface>(shared_from_this()),
-	//	std::placeholders::_1,
-	//	std::placeholders::_2
-	//	), 10.f));
-
-	//auto arrayProviderMaterial = std::dynamic_pointer_cast<ArrayProvider>(_material);
-
-	//if (arrayProviderMaterial)
-	//	_dataProviderIndexChangedSlots.push_back(arrayProviderMaterial->indexChanged()->connect(std::bind(
-	//		&Surface::materialProviderIndexChanged,
-	//		std::static_pointer_cast<Surface>(shared_from_this()),
-	//		std::placeholders::_1,
-	//		std::placeholders::_2
-	//		), 10.f));
 }
 
 void
@@ -128,17 +108,11 @@ Surface::targetAddedHandler(AbstractComponent::Ptr	ctrl,
 	auto arrayProviderMaterial = std::dynamic_pointer_cast<data::ArrayProvider>(_material);
 
 	if (arrayProviderMaterial)
-	{
 		targetData->addProvider(std::dynamic_pointer_cast<data::ArrayProvider>(_material));
-		//_materialId = targetData->getProviderIndex(_material);
-	}
 	else
-	{
 		targetData->addProvider(_material);
-	}
 
 	targetData->addProvider(_geometry->data());
-	//_geometryId = targetData->getProviderIndex(_geometry->data());
 	targetData->addProvider(_effect->data());
 }
 
@@ -153,9 +127,6 @@ Surface::targetRemovedHandler(AbstractComponent::Ptr	ctrl,
 	data->removeProvider(_material);
 	data->removeProvider(_geometry->data());
 	data->removeProvider(_effect->data());
-
-	//_materialId = -1;
-	//_geometryId = -1;
 }
 
 void
@@ -240,21 +211,10 @@ Surface::setEffectAndTechnique(Effect::Ptr			effect,
 
 	_effect		= effect;
 	_technique	= technique;
+
 	_techniqueChanged->execute(
 		std::static_pointer_cast<Surface>(shared_from_this()), 
 		_technique, 
 		updateDrawcalls
 	);
 }
-
-//void
-//Surface::geometryProviderIndexChanged(ArrayProvider::Ptr, uint index)
-//{
-//	_geometryId = index;
-//}
-//
-//void
-//Surface::materialProviderIndexChanged(ArrayProvider::Ptr, uint index)
-//{
-//	_materialId = index;
-//}
