@@ -24,6 +24,7 @@ using namespace minko::file;
 
 WriterOptions::WriterOptions() :
     _embedAll(false),
+    _addBoundingBoxes(false),
     _outputAssetUriFunction([=](const std::string& str) -> std::string { return str; })
 {
 }
