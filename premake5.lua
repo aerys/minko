@@ -76,6 +76,7 @@ solution "minko"
 		include 'plugin/devil'
 		include 'plugin/bullet'
 		include 'plugin/fx'
+		include 'plugin/html-overlay'
 		include 'plugin/http-loader'
 		include 'plugin/http-worker'
 		include 'plugin/jpeg'
@@ -90,7 +91,7 @@ solution "minko"
 	end
 
 	-- example
-	if not _OPTIONS['no-example'] then
+	if not _OPTIONS['no-example'] then	
 		include 'example/lua-scripts'
 		include 'example/assimp'
 		include 'example/cube'
@@ -106,6 +107,7 @@ solution "minko"
 		include 'example/particles'
 		include 'example/picking'
 		include 'example/raycasting'
+		include 'example/reflection'
 		include 'example/serializer'
 		include 'example/sky-box'
 		include 'example/stencil'
@@ -115,6 +117,7 @@ solution "minko"
 		include 'example/oculus'
 		include 'example/http'
 		include 'example/joystick'
+		include 'example/html-overlay'
 		include 'example/flares'
 	end
 
