@@ -70,20 +70,14 @@ ComponentDeserializer::deserializeProjectionCamera(std::string&							serialized
 												   std::shared_ptr<file::AssetLibrary>	assetLibrary,
 												   std::shared_ptr<file::Dependency>	dependencies)
 {
-	msgpack::zone			mempool;
-	msgpack::object			deserialized;
-	std::string				dst;
+	msgpack::zone										mempool;
+	msgpack::object										deserialized;
+	msgpack::type::tuple<float, float, float, float>	dst;
 
 	msgpack::unpack(serializedCameraData.data(), serializedCameraData.size() - 1, NULL, &mempool, &deserialized);
-
-	if (deserialized.type != msgpack::type::RAW)
-		return component::PerspectiveCamera::create(800.f / 600.F);
-
 	deserialized.convert(&dst);
 
-	std::vector<float> dstContent = deserialize::TypeDeserializer::deserializeVector<float>(dst);
-
-	return component::PerspectiveCamera::create(dstContent[0], dstContent[1], dstContent[2], dstContent[3]);
+	return component::PerspectiveCamera::create(dst.a0, dst.a1, dst.a2, dst.a3);
 }
 
 std::shared_ptr<component::AbstractComponent>
@@ -91,22 +85,16 @@ ComponentDeserializer::deserializeAmbientLight(std::string&							serializedAmbi
 											   std::shared_ptr<file::AssetLibrary>	assetLibrary,
 											   std::shared_ptr<file::Dependency>	dependencies)
 {
-	msgpack::zone								mempool;
-	msgpack::object								deserialized;
-	std::string 								dst;
-	std::shared_ptr<component::AmbientLight>	ambientLight = component::AmbientLight::create();
-
+	msgpack::zone										mempool;
+	msgpack::object										deserialized;
+	msgpack::type::tuple<float, float, float, float>	dst;
+	std::shared_ptr<component::AmbientLight>			ambientLight = component::AmbientLight::create();
+	
 	msgpack::unpack(serializedAmbientLight.data(), serializedAmbientLight.size() - 1, NULL, &mempool, &deserialized);
-
-	if (deserialized.type != msgpack::type::RAW)
-		return ambientLight;
-
 	deserialized.convert(&dst);
 
-	std::vector<float> dstContent = deserialize::TypeDeserializer::deserializeVector<float>(dst);
-
-	ambientLight->ambient(dstContent[0]);
-	ambientLight->color()->setTo(dstContent[1], dstContent[2], dstContent[3]);
+	ambientLight->ambient(dst.a0);
+	ambientLight->color()->setTo(dst.a1, dst.a2, dst.a3);
 
 	return ambientLight;
 }
@@ -116,23 +104,17 @@ ComponentDeserializer::deserializeDirectionalLight(std::string&							serialized
 												   std::shared_ptr<file::AssetLibrary>	assetLibrary,
 												   std::shared_ptr<file::Dependency>	dependencies)
 {
-	msgpack::zone									mempool;
-	msgpack::object									deserialized;
-	std::string										dst;
-	std::shared_ptr<component::DirectionalLight>	directionalLight = component::DirectionalLight::create();
+	msgpack::zone											mempool;
+	msgpack::object											deserialized;
+	msgpack::type::tuple<float, float, float, float, float>	dst;
+	std::shared_ptr<component::DirectionalLight>			directionalLight = component::DirectionalLight::create();
 	
 	msgpack::unpack(serializedDirectionalLight.data(), serializedDirectionalLight.size() - 1, NULL, &mempool, &deserialized);
-
-	if (deserialized.type != msgpack::type::RAW)
-		return directionalLight;
-
 	deserialized.convert(&dst);
 	
-	std::vector<float> dstContent = deserialize::TypeDeserializer::deserializeVector<float>(dst);
-
-	directionalLight->diffuse(dstContent[0]);
-	directionalLight->specular(dstContent[1]);
-	directionalLight->color()->setTo(dstContent[2], dstContent[3], dstContent[4]);
+	directionalLight->diffuse(dst.a0);
+	directionalLight->specular(dst.a1);
+	directionalLight->color()->setTo(dst.a2, dst.a3, dst.a4);
 
 	return directionalLight;
 }
@@ -142,24 +124,18 @@ ComponentDeserializer::deserializePointLight(std::string&							serializedPointL
 											 std::shared_ptr<file::AssetLibrary>	assetLibrary,
 											 std::shared_ptr<file::Dependency>		dependencies)
 {
-	msgpack::zone								mempool;
-	msgpack::object								deserialized;
-	std::string									dst;
-	std::shared_ptr<component::PointLight>		pointLight = component::PointLight::create();
+	msgpack::zone													mempool;
+	msgpack::object													deserialized;
+	msgpack::type::tuple<float, float, float, float, float, float>	dst;
+	std::shared_ptr<component::PointLight>							pointLight = component::PointLight::create();
 	
 	msgpack::unpack(serializedPointLight.data(), serializedPointLight.size() - 1, NULL, &mempool, &deserialized);
-
-	if (deserialized.type != msgpack::type::RAW)
-		return pointLight;
-
 	deserialized.convert(&dst);
 
-	std::vector<float> dstContent = deserialize::TypeDeserializer::deserializeVector<float>(dst);
-
-	pointLight->diffuse(dstContent[0]);
-	pointLight->specular(dstContent[1]);
-	pointLight->attenuationCoefficients(dstContent[2], dstContent[3], dstContent[4]);
-	pointLight->color()->setTo(dstContent[5], dstContent[6], dstContent[7]);
+	pointLight->diffuse(dst.a0);
+	pointLight->specular(dst.a1);
+	pointLight->attenuationCoefficients(dst.a2, 0.0f, 0.0f);
+	pointLight->color()->setTo(dst.a3, dst.a4, dst.a5);
 
 	return pointLight;
 }
@@ -169,26 +145,20 @@ ComponentDeserializer::deserializeSpotLight(std::string&						serializedSpotLigh
 										    std::shared_ptr<file::AssetLibrary>	assetLibrary,
 											std::shared_ptr<file::Dependency>	dependencies)
 {
-	msgpack::zone								mempool;
-	msgpack::object								deserialized;
-	std::string									dst;
-	std::shared_ptr<component::SpotLight>		spotLight = component::SpotLight::create();
+	msgpack::zone																	mempool;
+	msgpack::object																	deserialized;
+	msgpack::type::tuple<float, float, float, float, float, float, float, float>	dst;
+	std::shared_ptr<component::SpotLight>											spotLight = component::SpotLight::create();
 	
 	msgpack::unpack(serializedSpotLight.data(), serializedSpotLight.size() - 1, NULL, &mempool, &deserialized);
-
-	if (deserialized.type != msgpack::type::RAW)
-		return spotLight;
-
 	deserialized.convert(&dst);
 
-	std::vector<float> dstContent = deserialize::TypeDeserializer::deserializeVector<float>(dst);
-
-	spotLight->diffuse(dstContent[0]);
-	spotLight->specular(dstContent[1]);
-	spotLight->attenuationCoefficients(dstContent[2], dstContent[3], dstContent[4]);
-	spotLight->innerConeAngle(dstContent[5]);
-	spotLight->outerConeAngle(dstContent[6]);
-	spotLight->color()->setTo(dstContent[7], dstContent[8], dstContent[9]);
+	spotLight->diffuse(dst.a0);
+	spotLight->specular(dst.a1);
+	spotLight->attenuationCoefficients(dst.a2, 0.0f, 0.0f);
+	spotLight->innerConeAngle(dst.a3);
+	spotLight->outerConeAngle(dst.a4);
+	spotLight->color()->setTo(dst.a5, dst.a6, dst.a7);
 
 	return spotLight;
 }
@@ -203,7 +173,6 @@ ComponentDeserializer::deserializeSurface(std::string&							serializedSurface,
 	msgpack::type::tuple<unsigned short, unsigned short, unsigned short, std::string>	dst;
 	
 	msgpack::unpack(serializedSurface.data(), serializedSurface.size() - 1, NULL, &mempool, &deserialized);
-
 	deserialized.convert(&dst);
 
 	geometry::Geometry::Ptr		geometry	= dependencies->getGeometryReference(dst.a0);
@@ -221,7 +190,7 @@ ComponentDeserializer::deserializeSurface(std::string&							serializedSurface,
 		geometry,
 		(material != nullptr ? material : assetLibrary->material("defaultMaterial")),
 		(effect != nullptr ? effect : assetLibrary->effect("effect/Phong.effect")),
-		dst.a3 != "" ? dst.a3 : "default");
+		"default");
 
 	return surface;
 }

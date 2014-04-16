@@ -587,7 +587,9 @@ AbstractASSIMPParser::parseDependencies(const std::string& 	filename,
 	std::set<std::string>	loadedFilenames;
 	aiString				path;
 
-	for (unsigned int materialId = 0; materialId < scene->mNumMaterials; materialId++)
+	_numDependencies = 0;
+
+	for (unsigned int materialId = 0; materialId < scene->mNumMaterials; ++materialId)
 	{
 		const aiMaterial* aiMat = scene->mMaterials[materialId];
 
@@ -611,14 +613,16 @@ AbstractASSIMPParser::parseDependencies(const std::string& 	filename,
 						std::cout << "ASSIMParser: loading texture '" << filename << "'..." << std::endl;
 #endif
 						loadedFilenames.insert(filename);
-						_numDependencies++;
-
-						loadTexture(filename, filename, _options, scene);
 					}
 				}
 			}
 		}
 	}
+
+	_numDependencies = loadedFilenames.size();
+
+	for (auto& name : loadedFilenames)
+		loadTexture(name, name, _options, scene);
 }
 
 void
@@ -664,11 +668,12 @@ void
 AbstractASSIMPParser::textureCompleteHandler(file::Loader::Ptr loader, const aiScene* scene)
 {
 #ifdef DEBUG
-	std::cerr << "AbstractASSIMPParser: " << _numLoadedDependencies << "/" << _numDependencies << "texture loaded" << std::endl;
+	std::cerr << "AbstractASSIMPParser: " << _numLoadedDependencies << "/" << _numDependencies << " texture(s) loaded" << std::endl;
 #endif // DEBUG
 
 	++_numLoadedDependencies;
-	if (_numDependencies == _numLoadedDependencies)// && _symbol)
+
+	if (_numDependencies == _numLoadedDependencies)
 		allDependenciesLoaded(scene);
 }
 

@@ -23,7 +23,7 @@ if [[ -n "${EMSCRIPTEN}" ]]; then
 		echo "Updating the SDK installed in ${EMSDK_PATH}..."
 		python "${EMSCRIPTEN}/../../emsdk" update
 		exit 0
-	else
+	else	
 		echo "Environment variable EMSCRIPTEN is defined but this is not an Emscripten SDK."
 		exit 1
 	fi
@@ -51,21 +51,13 @@ curl -fSL "${EMSDK_URL}/${EMSDK_ARCHIVE}" -o "/tmp/${EMSDK_ARCHIVE}"
 unzip -q -d "${EMSDK_PATH}" "/tmp/${EMSDK_ARCHIVE}"
 python "${EMSDK_PATH}/emsdk" update
 python "${EMSDK_PATH}/emsdk" install "${EMSDK_SDK}"
-python "${EMSDK_PATH}/emsdk" activate "${EMSDK_SDK}"
 echo
-
-read -p "The installer will now add the EMSCRIPTEN environment variable to ~/.profile. Proceed? [y/n] " -r
-echo
-
-if [ "${REPLY}" == "y" ]; then
-	echo export EMSCRIPTEN=${EMSDK_PATH}/emscripten/${EMSDK_EMSCRIPTEN_VERSION} >> ~/.profile
-else
-	echo "Ok. Please set the EMSCRIPTEN environment variable to ${EMSDK_PATH}/emscripten/${EMSDK_EMSCRIPTEN_VERSION}."
-	echo "You will need to run something like:"
-	echo
-	echo "    echo export EMSCRIPTEN=${EMSDK_PATH}/emscripten/${EMSDK_EMSCRIPTEN_VERSION} >> ~/.profile"
-	echo
-fi
 
 echo "Success."
+echo
+
+echo "Please set the EMSCRIPTEN environment variable to ${EMSDK_PATH}/emscripten/${EMSDK_EMSCRIPTEN_VERSION}."
+echo "You should run something like:"
+echo
+echo "    echo EMSCRIPTEN=${EMSDK_PATH}/emscripten/${EMSDK_EMSCRIPTEN_VERSION} >> ~/.profile"
 echo

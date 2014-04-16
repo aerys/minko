@@ -161,6 +161,9 @@ namespace minko
 				return _providers;
 			}
 
+			std::ostream&
+			printPropertyNames(std::ostream&) const;
+
 		private:
 			Container();
 

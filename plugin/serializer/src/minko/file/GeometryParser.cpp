@@ -53,6 +53,9 @@ GeometryParser::deserializeVertexBuffer(std::string&								serializedVertexBuff
 	std::vector<float>		vector			= deserialize::TypeDeserializer::deserializeVector<float>(deserializedVertex.a0);
 	VertexBufferPtr			vertexBuffer	= render::VertexBuffer::create(context, vector);
 
+	serializedVertexBuffer.clear();
+	serializedVertexBuffer.shrink_to_fit();
+
 	uint numAttributes = deserializedVertex.a1.size();
 
 	for (unsigned int attributesIndex = 0; attributesIndex < numAttributes; ++attributesIndex)
@@ -70,6 +73,9 @@ GeometryParser::deserializeIndexBuffer(std::string&								serializedIndexBuffer
 {
 	std::vector<unsigned short> vector = deserialize::TypeDeserializer::deserializeVector<unsigned short>(serializedIndexBuffer);
 
+	serializedIndexBuffer.clear();
+	serializedIndexBuffer.shrink_to_fit();
+
 	return render::IndexBuffer::create(context, vector);
 }
 
@@ -78,6 +84,9 @@ GeometryParser::deserializeIndexBufferChar(std::string&								serializedIndexBu
 										   std::shared_ptr<render::AbstractContext> context)
 {
 	std::vector<unsigned short> vector = deserialize::TypeDeserializer::deserializeVector<unsigned short, unsigned char>(serializedIndexBuffer);
+
+	serializedIndexBuffer.clear();
+	serializedIndexBuffer.shrink_to_fit();
 
 	return render::IndexBuffer::create(context, vector);
 }
@@ -111,8 +120,6 @@ GeometryParser::parse(const std::string&				filename,
 	for (std::string serializedVertexBuffer : serializedGeometry.a3)
 	{
 		geom->addVertexBuffer(vertexBufferParserFunction(serializedVertexBuffer, options->context()));
-		serializedVertexBuffer.clear();
-		serializedVertexBuffer.shrink_to_fit();
 	}
 
 	geom = options->geometryFunction()(serializedGeometry.a1, geom);
