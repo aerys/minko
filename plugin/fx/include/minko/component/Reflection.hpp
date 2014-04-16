@@ -21,6 +21,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 #include "minko/component/AbstractComponent.hpp"
+#include "minko/component/PerspectiveCamera.hpp"
+#include "minko/component/Transform.hpp"
 
 namespace minko
 {
@@ -47,16 +49,20 @@ namespace minko
             Signal<AbsCmpPtr, NodePtr>::Slot				                    _targetRemovedSlot;
             Signal<AbsCmpPtr, NodePtr>::Slot				                    _rootAddedSlot;
             Signal<std::shared_ptr<data::Provider>, const std::string&>::Slot	_viewMatrixChangedSlot;
+            Signal<NodePtr, NodePtr, NodePtr>::Slot								_addedToSceneSlot;
 
             uint                                                _width;
             uint                                                _height;
             uint                                                _clearColor;
-            std::shared_ptr<render::AbstractContext>            _assetContext;
+            std::shared_ptr<file::AssetLibrary>                 _assets;
 
             // One active camera only
             std::shared_ptr<render::Texture>                    _renderTarget;
             NodePtr                                             _activeCamera;
             NodePtr                                             _virtualCamera;
+            PerspectiveCamera::Ptr                              _perspectiveCamera;
+            Transform::Ptr                                      _cameraTransform;
+            Transform::Ptr                                      _virtualCameraTransform;
 
             // Multiple active cameras
             std::shared_ptr<render::Effect>                     _reflectionEffect;
@@ -69,13 +75,13 @@ namespace minko
             inline static
             Ptr
             create(
-                std::shared_ptr<render::AbstractContext> context,
+                std::shared_ptr<file::AssetLibrary> assets,
                 uint renderTargetWidth,
                 uint renderTargetHeight,
                 uint clearColor)
             {
                 auto reflection = std::shared_ptr<Reflection>(new Reflection(
-                    context, renderTargetWidth, renderTargetHeight, clearColor));
+                    assets, renderTargetWidth, renderTargetHeight, clearColor));
 
                 reflection->initialize();
 
@@ -96,10 +102,13 @@ namespace minko
                 return _renderTarget;
             }
 
+            void
+            updateReflectionMatrix();
+
         private:
 
             Reflection(
-                std::shared_ptr<render::AbstractContext> context,
+                std::shared_ptr<file::AssetLibrary> assets,
                 uint renderTargetWidth,
                 uint renderTargetHeight,
                 uint clearColor);

@@ -83,7 +83,7 @@ main(int argc, char** argv)
             sceneManager->assets()->context(), clp2(WINDOW_WIDTH), clp2(WINDOW_HEIGHT), false, true);
 
         auto reflectedCamera = scene::Node::create("reflectedCamera")
-            ->addComponent(Renderer::create(0xff000000, ppTarget, sceneManager->assets()->effect("effect/Reflection/PlanarReflection.effect")))
+            ->addComponent(Renderer::create(0xff000000, ppTarget, sceneManager->assets()->effect("effect/Reflection/PlanarReflection.effect"), 10000))
             ->addComponent(PerspectiveCamera::create(
             (float) WINDOW_WIDTH / (float) WINDOW_HEIGHT, (float) PI * 0.25f, .1f, 1000.f))
             ->addComponent(Transform::create(Matrix4x4::create()
@@ -94,9 +94,11 @@ main(int argc, char** argv)
 
         auto reflectedModelToWorldMatrix = reflectedCamera->component<Transform>()->modelToWorldMatrix();
 
+        auto reflectionComponent = Reflection::create(sceneManager->assets(), WINDOW_WIDTH, WINDOW_HEIGHT, 0xff000000);
+
         auto camera = scene::Node::create("camera")
             ->addComponent(Renderer::create(0x7f7f7fff))
-            ->addComponent(Reflection::create(sceneManager->assets()->context(), WINDOW_WIDTH, WINDOW_HEIGHT, 0xff000000))
+            ->addComponent(reflectionComponent)
             ->addComponent(PerspectiveCamera::create(
             (float) WINDOW_WIDTH / (float) WINDOW_HEIGHT, (float) PI * 0.25f, .1f, 1000.f)
             )
@@ -105,9 +107,8 @@ main(int argc, char** argv)
             ;
 
 
-        root->addChild(reflectedCamera);
+        //root->addChild(reflectedCamera);
         root->addChild(camera);
-
 
         // create reflection effects
         auto reflectionEffect = sceneManager->assets()->effect("effect/Reflection/PlanarReflection.effect");
@@ -195,14 +196,15 @@ main(int argc, char** argv)
             cameraRotationSpeedY *= .99f;
 
             cube->component<Transform>()->matrix()->appendRotationY(0.01f);
+            
+            camera->component<Reflection>()->updateReflectionMatrix();
 
             // Get reflection map from camera's reflection component
-            /*
             reflectionPlane->component<Surface>()->material()->set(
                 "diffuseMap", camera->component<Reflection>()->getRenderTarget());
-            */
 
-            reflectionPlane->component<Surface>()->material()->set("diffuseMap", ppTarget);
+
+            //reflectionPlane->component<Surface>()->material()->set("diffuseMap", ppTarget);
 
 
             sceneManager->nextFrame(t, dt);

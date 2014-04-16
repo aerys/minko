@@ -18,6 +18,8 @@ uniform mat4 Projection;
 uniform mat4 ReflectionMatrix;
 uniform mat4 ReflectedProjection;
 
+uniform mat4 ReflectedViewMatrix;
+
 varying vec3 vPosition;
 
 varying vec2 vertexUV;

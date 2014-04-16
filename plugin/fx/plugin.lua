@@ -23,6 +23,7 @@ minko.plugin.fx = {}
 function minko.plugin.fx:enable()
 	defines { "MINKO_PLUGIN_FX" }
 	
+	minko.plugin.links { "fx" }
 	includedirs { minko.plugin.path("fx") .. "/include" }
 	
 	prelinkcommands {
