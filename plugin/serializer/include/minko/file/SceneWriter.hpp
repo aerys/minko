@@ -26,13 +26,19 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
+    namespace file
+    {
+        class WriterOptions;
+    }
+}
+
+namespace minko
+{
 	namespace file
 	{
-		class SceneWriter : 
+		class SceneWriter :
 			public AbstractWriter<std::shared_ptr<scene::Node>>
 		{
-
-		// typedef
 		public:
 			typedef std::shared_ptr<SceneWriter>										Ptr;
 			typedef msgpack::type::tuple<std::string, uint, uint, std::vector<uint>>	SerializedNode;
@@ -43,16 +49,12 @@ namespace minko
 			typedef std::function<std::string(NodePtr, DependencyPtr)>	NodeWriterFunc;
 			typedef std::shared_ptr<component::AbstractComponent>		AbsComponentPtr;
 			typedef std::shared_ptr<file::AssetLibrary>					AssetLibraryPtr;
-			typedef std::shared_ptr<Options>							OptionsPtr;
+			typedef std::shared_ptr<Options>                            OptionsPtr;
 
-
-		// attributes
 		private:
 			static std::map<const std::type_info*, NodeWriterFunc> _componentIdToWriteFunction;
 
-		// methods
 		public:
-
 			static
 			void
 			registerComponent(const std::type_info*	componentType,
@@ -64,12 +66,12 @@ namespace minko
 			{
 				return std::shared_ptr<SceneWriter>(new SceneWriter());
 			}
-			
 
 			std::string
-				embed(AssetLibraryPtr	assetLibrary,
-					  OptionsPtr		options,
-					  DependencyPtr		dependency);
+            embed(AssetLibraryPtr                       assetLibrary,
+                  OptionsPtr                            options,
+                  DependencyPtr                         dependency,
+                  std::shared_ptr<WriterOptions>        writerOptions);
 
 			SerializedNode
 			writeNode(std::shared_ptr<scene::Node>			node,

@@ -23,6 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/TextureWriter.hpp"
 #include "minko/geometry/Geometry.hpp"
 #include "minko/file/MaterialWriter.hpp"
+#include "minko/file/WriterOptions.hpp"
 
 using namespace minko;
 using namespace minko::file;
@@ -42,7 +43,8 @@ Dependency::Dependency()
 			std::placeholders::_2,
 			std::placeholders::_3,
 			std::placeholders::_4,
-			std::placeholders::_5);
+            std::placeholders::_5,
+            std::placeholders::_6);
     }
 
     if (_textureWriteFunction == nullptr)
@@ -52,7 +54,8 @@ Dependency::Dependency()
 			std::placeholders::_2,
 			std::placeholders::_3,
 			std::placeholders::_4,
-			std::placeholders::_5);
+            std::placeholders::_5,
+            std::placeholders::_6);
     }
 
     if (_materialWriteFunction == nullptr)
@@ -62,7 +65,8 @@ Dependency::Dependency()
 			std::placeholders::_2,
 			std::placeholders::_3,
 			std::placeholders::_4,
-			std::placeholders::_5);
+            std::placeholders::_5,
+            std::placeholders::_6);
 	}
 }
 
@@ -230,7 +234,8 @@ Dependency::serializeGeometry(std::shared_ptr<Dependency>			dependency,
 							  std::shared_ptr<file::AssetLibrary>	assetLibrary,
 							  std::shared_ptr<geometry::Geometry>	geometry,
 							  uint									resourceId,
-							  std::shared_ptr<file::Options>		options)
+							  std::shared_ptr<file::Options>		options,
+                              std::shared_ptr<file::WriterOptions>  writerOptions)
 {
 	GeometryWriter::Ptr         geometryWriter = GeometryWriter::create();
     serialize::AssetType        assetType;
@@ -238,11 +243,11 @@ Dependency::serializeGeometry(std::shared_ptr<Dependency>			dependency,
 
     geometryWriter->data(geometry);
 
-    if (options->embedAll())
+    if (writerOptions->embedAll())
     {
         assetType = serialize::AssetType::EMBED_GEOMETRY_ASSET;
 
-        content = geometryWriter->embedAll(assetLibrary, options);
+        content = geometryWriter->embedAll(assetLibrary, options, writerOptions);
     }
     else
     {
@@ -250,9 +255,9 @@ Dependency::serializeGeometry(std::shared_ptr<Dependency>			dependency,
 
         auto filename = assetLibrary->geometryName(geometry) + ".geometry";
 
-        auto completeFilename = options->outputAssetUriFunction()(filename);
+        auto completeFilename = writerOptions->outputAssetUriFunction()(filename);
 
-        geometryWriter->write(completeFilename, assetLibrary, options);
+        geometryWriter->write(completeFilename, assetLibrary, options, writerOptions);
 
         content = filename;
     }
@@ -267,7 +272,8 @@ Dependency::serializeTexture(std::shared_ptr<Dependency>				dependency,
 						     std::shared_ptr<file::AssetLibrary>		assetLibrary,
 							 std::shared_ptr<render::AbstractTexture>	texture,
 							 uint										resourceId,
-							 std::shared_ptr<file::Options>				options)
+							 std::shared_ptr<file::Options>				options,
+                             std::shared_ptr<file::WriterOptions>       writerOptions)
 {
 	auto writer         = TextureWriter::create();
     auto assetType      = serialize::AssetType { };
@@ -278,16 +284,14 @@ Dependency::serializeTexture(std::shared_ptr<Dependency>				dependency,
     writer->data(texture);
     writer->extension(extension);
 
-    if (options->embedAll())
+    if (writerOptions->embedAll())
     {
         if (extension == "jpg")
             assetType = serialize::AssetType::JPEG_EMBED_TEXTURE_ASSET;
         else /* if (extension == "png") */
             assetType = serialize::AssetType::PNG_EMBED_TEXTURE_ASSET;
 
-        assetType = serialize::AssetType::EMBED_GEOMETRY_ASSET;
-
-        content = writer->embedAll(assetLibrary, options);
+        content = writer->embedAll(assetLibrary, options, writerOptions);
     }
     else
     {
@@ -302,9 +306,9 @@ Dependency::serializeTexture(std::shared_ptr<Dependency>				dependency,
             filename.insert(0, textureName.substr(charIndex, 1));
         }
 
-        auto completeFilename = options->outputAssetUriFunction()(filename);
+        auto completeFilename = writerOptions->outputAssetUriFunction()(filename);
 
-        writer->writeRawTexture(completeFilename, assetLibrary, options);
+        writer->writeRawTexture(completeFilename, assetLibrary, options, writerOptions);
 
         content = filename;
     }
@@ -319,7 +323,8 @@ Dependency::serializeMaterial(std::shared_ptr<Dependency>			dependency,
 							  std::shared_ptr<file::AssetLibrary>	assetLibrary,
 							  std::shared_ptr<data::Provider>       material,
 							  uint									resourceId,
-							  std::shared_ptr<file::Options>		options)
+							  std::shared_ptr<file::Options>		options,
+                              std::shared_ptr<file::WriterOptions>  writerOptions)
 {
 	MaterialWriter::Ptr         materialWriter = MaterialWriter::create();
     serialize::AssetType        assetType;
@@ -327,11 +332,11 @@ Dependency::serializeMaterial(std::shared_ptr<Dependency>			dependency,
 
     materialWriter->data(material);
 
-    if (options->embedAll())
+    if (writerOptions->embedAll())
     {
         assetType = serialize::AssetType::EMBED_MATERIAL_ASSET;
 		materialWriter->parentDependencies(dependency);
-        content = materialWriter->embedAll(assetLibrary, options);
+        content = materialWriter->embedAll(assetLibrary, options, writerOptions);
     }
     else
     {
@@ -348,9 +353,9 @@ Dependency::serializeMaterial(std::shared_ptr<Dependency>			dependency,
 
         auto filename = materialName + (materialNameExtension == "material" ? "" : ".material");
 
-        auto completeFilename = options->outputAssetUriFunction()(filename);
+        auto completeFilename = writerOptions->outputAssetUriFunction()(filename);
 
-        materialWriter->write(completeFilename, assetLibrary, options);
+        materialWriter->write(completeFilename, assetLibrary, options, writerOptions);
 
         content = filename;
     }
@@ -361,26 +366,44 @@ Dependency::serializeMaterial(std::shared_ptr<Dependency>			dependency,
 }
 
 std::vector<Dependency::SerializedAsset>
-Dependency::serialize(std::shared_ptr<file::AssetLibrary>	assetLibrary,
-					  std::shared_ptr<file::Options>		options)
+Dependency::serialize(std::shared_ptr<file::AssetLibrary>       assetLibrary,
+					  std::shared_ptr<file::Options>            options,
+                      std::shared_ptr<file::WriterOptions>      writerOptions)
 {
 	std::vector<SerializedAsset> serializedAsset;
 
     for (const auto& itGeometry : _geometryDependencies)
 	{
-		SerializedAsset res = _geometryWriteFunction(shared_from_this(), assetLibrary, itGeometry.first, itGeometry.second, options);
+		auto res = _geometryWriteFunction(shared_from_this(),
+                                          assetLibrary,
+                                          itGeometry.first,
+                                          itGeometry.second,
+                                          options,
+                                          writerOptions);
+
 		serializedAsset.push_back(res);
 	}
 
     for (const auto& itMaterial : _materialDependencies)
 	{
-		SerializedAsset res = _materialWriteFunction(shared_from_this(), assetLibrary, itMaterial.first, itMaterial.second, options);
+		auto res = _materialWriteFunction(shared_from_this(),
+                                          assetLibrary,
+                                          itMaterial.first,
+                                          itMaterial.second,
+                                          options,
+                                          writerOptions);
+
 		serializedAsset.push_back(res);
 	}
 
     for (const auto& itTexture : _textureDependencies)
 	{
-		SerializedAsset res = _textureWriteFunction(shared_from_this(), assetLibrary, itTexture.first, itTexture.second, options);
+		auto res = _textureWriteFunction(shared_from_this(),
+                                         assetLibrary,
+                                         itTexture.first,
+                                         itTexture.second,
+                                         options,
+                                         writerOptions);
 
 		serializedAsset.insert(serializedAsset.begin(), res);
 	}
@@ -402,7 +425,7 @@ Dependency::serialize(std::shared_ptr<file::AssetLibrary>	assetLibrary,
         serialize::AssetType    assetType;
         std::string             content;
 
-        if (options->embedAll())
+        if (writerOptions->embedAll())
         {
             assetType = serialize::AssetType::EMBED_EFFECT_ASSET;
 
@@ -424,7 +447,7 @@ Dependency::serialize(std::shared_ptr<file::AssetLibrary>	assetLibrary,
                 filenameOutput.insert(0, filenameInput.substr(charIndex, 1));
             }
 
-            auto completeOutputFilename = options->outputAssetUriFunction()(filenameOutput);
+            auto completeOutputFilename = writerOptions->outputAssetUriFunction()(filenameOutput);
 
             std::ofstream dst(completeOutputFilename, std::ios::binary);
 
@@ -448,7 +471,8 @@ Dependency::copyEffectDependency(std::shared_ptr<AssetLibrary>          assets,
                                  std::shared_ptr<Options>               options,
                                  const std::ifstream&                   source,
                                  std::shared_ptr<render::Effect>        effect,
-                                 SerializedAsset&                       result)
+                                 SerializedAsset&                       result,
+                                 std::shared_ptr<WriterOptions>         writerOptions)
 {
     std::stringstream   effectContent;
     std::size_t         found;
@@ -473,14 +497,14 @@ Dependency::copyEffectDependency(std::shared_ptr<AssetLibrary>          assets,
 #else
         std::ifstream dependencySource("effect/" + dependencyFile, std::ios::binary);
 #endif
-        if (options->embedAll())
+        if (writerOptions->embedAll())
         {
             // TODO
             // see how effect dep are processed
         }
         else
         {
-            dependencyFile = options->outputAssetUriFunction()(dependencyFile);
+            dependencyFile = writerOptions->outputAssetUriFunction()(dependencyFile);
 
             std::ofstream dst(dependencyFile, std::ios::binary);
 

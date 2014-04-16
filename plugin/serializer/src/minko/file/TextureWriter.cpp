@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/AbstractTexture.hpp"
 #include "minko/render/Texture.hpp"
 #include "minko/file/Dependency.hpp"
-#include "minko/file/DevILWriter.hpp"
+//#include "minko/file/DevILWriter.hpp"
 #include "minko/Types.hpp"
 
 using namespace minko;
@@ -40,17 +40,18 @@ TextureWriter::extension(const std::string& extension)
 }
 
 void
-TextureWriter::writeRawTexture(std::string&					filename,
-                               std::shared_ptr<AssetLibrary>	assetLibrary,
-                               std::shared_ptr<Options>		options)
+TextureWriter::writeRawTexture(std::string&                     filename,
+                               std::shared_ptr<AssetLibrary>    assetLibrary,
+                               std::shared_ptr<Options>         options,
+                               std::shared_ptr<WriterOptions>   writerOptions)
 {
     std::ofstream file(filename, std::ios::out | std::ios::binary | std::ios::trunc);
 
     if (file)
     {
         auto dependencies               = Dependency::create();
-        auto serializedData             = embed(assetLibrary, options, dependencies);
-        auto serializedDependencies     = dependencies->serialize(assetLibrary, options);
+        auto serializedData             = embed(assetLibrary, options, dependencies, writerOptions);
+        auto serializedDependencies     = dependencies->serialize(assetLibrary, options, writerOptions);
 
         auto res                        = serializedData;
 
@@ -64,9 +65,10 @@ TextureWriter::writeRawTexture(std::string&					filename,
 }
 
 std::string
-TextureWriter::embed(AssetLibraryPtr	assetLibrary,
-                     OptionsPtr         options,
-                     DependencyPtr		dependency)
+TextureWriter::embed(AssetLibraryPtr                    assetLibrary,
+                     OptionsPtr                         options,
+                     DependencyPtr                      dependency,
+                     std::shared_ptr<WriterOptions>     writerOptions)
 {
     auto texture = std::dynamic_pointer_cast<render::Texture>(data());
 
@@ -88,6 +90,8 @@ TextureWriter::embed(AssetLibraryPtr	assetLibrary,
             break;
     }
 
+	return "";
+	/*
     auto textureData = std::vector<unsigned char> { };
 
     {
@@ -105,5 +109,5 @@ TextureWriter::embed(AssetLibraryPtr	assetLibrary,
 
     auto textureContent = std::string(textureData.begin(), textureData.end());
 
-    return textureContent;
+    return textureContent;*/
 }
