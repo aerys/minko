@@ -168,5 +168,9 @@ PerspectiveCamera::project(std::shared_ptr<math::Vector3> worldPosition, std::sh
 	out->x(width * ((vector->x() + 1.0) * .5));
 	out->y(height * ((1.0 - ((vector->y() + 1.0) * .5))));
 	
+	//depth
+	_view->transform(worldPosition, vector);
+	out->z(-vector->z());
+	
 	return out;
 }
