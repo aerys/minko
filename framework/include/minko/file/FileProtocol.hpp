@@ -39,7 +39,8 @@ namespace minko
             create()
             {
 				return std::shared_ptr<FileProtocol>(new FileProtocol());
-            }
+			}
+			~FileProtocol();
 
             void
             load();
@@ -48,6 +49,10 @@ namespace minko
 			FileProtocol();
 
 		private:
+			static
+			std::list<std::shared_ptr<FileProtocol>>
+			_runningLoaders;
+
 			std::list<Any> _workerSlots;
 		};
 	}

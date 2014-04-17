@@ -34,9 +34,21 @@ FileProtocol::FileProtocol()
 {
 }
 
+FileProtocol::~FileProtocol()
+{
+	std::cout << "destroy" << std::endl;
+}
+
+std::list<std::shared_ptr<FileProtocol>>
+FileProtocol::_runningLoaders;
+
 void
 FileProtocol::load()
 {
+	auto loader = std::static_pointer_cast<FileProtocol>(shared_from_this());
+
+	_runningLoaders.push_back(loader);
+
 	auto filename = _file->filename();
 	auto options = _options;
 	auto flags = std::ios::in | std::ios::ate | std::ios::binary;
@@ -76,11 +88,8 @@ FileProtocol::load()
 		}
 	}
 	
-	auto loader = shared_from_this();
-
 	if (file.is_open())
 	{
-
         resolvedFilename(realFilename);
 
 		if (_options->loadAsynchronously() && AbstractCanvas::defaultCanvas() != nullptr
@@ -89,21 +98,24 @@ FileProtocol::load()
 			file.close();
 			auto worker = AbstractCanvas::defaultCanvas()->getWorker("file-protocol");
 
-			_workerSlots.push_back(worker->message()->connect([=](async::Worker::Ptr, async::Worker::Message message) {
+			_workerSlots.push_back(worker->message()->connect([=](async::Worker::Ptr, async::Worker::Message message)
+			{
 				if (message.type == "complete")
 				{
 					void* bytes = &*message.data.begin();
 					data().assign(static_cast<unsigned char*>(bytes), static_cast<unsigned char*>(bytes) + message.data.size());
-					_complete->execute(shared_from_this());					
+					_complete->execute(loader);
+					_runningLoaders.remove(loader);
 				}
 				else if (message.type == "progress")
 				{
 					float ratio = *reinterpret_cast<float*>(&*message.data.begin());
-					_progress->execute(shared_from_this(), ratio);
+					_progress->execute(loader, ratio);
 				}
 				else if (message.type == "error")
 				{
-					_error->execute(shared_from_this());
+					_error->execute(loader);
+					_runningLoaders.remove(loader);
 				}
 			}));
 
@@ -128,6 +140,7 @@ FileProtocol::load()
 			_progress->execute(loader, 1.0);
 
 			_complete->execute(shared_from_this());
+			_runningLoaders.remove(loader);
 		}
 	}
 	else
