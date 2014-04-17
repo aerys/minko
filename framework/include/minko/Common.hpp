@@ -402,10 +402,22 @@ namespace std
 	template <class T>
 	inline 
 	void 
-	hash_combine(std::size_t & seed, const T& v)
+	hash_combine(size_t & seed, const T& v)
 	{
-		std::hash<T> hasher;
+		hash<T> hasher;
 		seed ^= hasher(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
 	}
+
+#ifdef __ANDROID__
+	template <typename T>
+	inline
+	string
+	to_string(T v)
+	{
+		ostringstream oss;
+		oss << v;
+		return oss.str();
+	}
+#endif
 }
 //using namespace minko;
