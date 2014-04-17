@@ -42,7 +42,7 @@ using namespace minko::serialize;
 
 
 std::string
-ComponentSerializer::serializeTransform(NodePtr			node, 
+ComponentSerializer::serializeTransform(NodePtr			node,
 										DependencyPtr	dependencies)
 {
 	int8_t										type		= serialize::TRANSFORM;
@@ -58,7 +58,7 @@ ComponentSerializer::serializeTransform(NodePtr			node,
 }
 
 std::string
-ComponentSerializer::serializePerspectiveCamera(NodePtr			node, 
+ComponentSerializer::serializePerspectiveCamera(NodePtr			node,
 												DependencyPtr	dependencies)
 {
 	int8_t											type = serialize::PROJECTION_CAMERA;
@@ -81,7 +81,7 @@ ComponentSerializer::serializePerspectiveCamera(NodePtr			node,
 
 
 std::string
-ComponentSerializer::serializeAmbientLight(NodePtr			node, 
+ComponentSerializer::serializeAmbientLight(NodePtr			node,
 										   DependencyPtr	dependencies)
 {
 	int8_t										type		= serialize::AMBIENT_LIGHT;
@@ -101,9 +101,9 @@ ComponentSerializer::serializeAmbientLight(NodePtr			node,
 
 	return buffer.str();
 }
-			
+
 std::string
-ComponentSerializer::serializeDirectionalLight(NodePtr			node, 
+ComponentSerializer::serializeDirectionalLight(NodePtr			node,
 											   DependencyPtr	dependencies)
 {
 	int8_t											type		= serialize::DIRECTIONAL_LIGHT;
@@ -127,7 +127,7 @@ ComponentSerializer::serializeDirectionalLight(NodePtr			node,
 
 
 std::string
-ComponentSerializer::serializePointLight(NodePtr		node, 
+ComponentSerializer::serializePointLight(NodePtr		node,
 										 DependencyPtr	dependencies)
 {
 	int8_t									type	= serialize::POINT_LIGHT;
@@ -153,7 +153,7 @@ ComponentSerializer::serializePointLight(NodePtr		node,
 }
 
 std::string
-ComponentSerializer::serializeSpotLight(NodePtr			node, 
+ComponentSerializer::serializeSpotLight(NodePtr			node,
 										DependencyPtr	dependencies)
 {
 	int8_t									type	= serialize::SPOT_LIGHT;
@@ -181,7 +181,7 @@ ComponentSerializer::serializeSpotLight(NodePtr			node,
 }
 
 std::string
-ComponentSerializer::serializeSurface(NodePtr		node, 
+ComponentSerializer::serializeSurface(NodePtr		node,
 									  DependencyPtr dependencies)
 {
 	int8_t									type	= serialize::SURFACE;
@@ -207,7 +207,7 @@ ComponentSerializer::serializeSurface(NodePtr		node,
 }
 
 std::string
-ComponentSerializer::serializeRenderer(NodePtr			node, 
+ComponentSerializer::serializeRenderer(NodePtr			node,
 									   DependencyPtr	dependencies)
 {
 	int8_t									type		= serialize::RENDERER;
@@ -234,9 +234,9 @@ ComponentSerializer::serializeBoundingBox(NodePtr 			node,
 	std::stringstream	buffer;
 	std::vector<float>	data;
 
-	float centerX = topRight->x() - bottomLeft->x();
-	float centerY = topRight->y() - bottomLeft->y();
-	float centerZ = topRight->z() - bottomLeft->z();
+	float centerX = (topRight->x() + bottomLeft->x()) / 2.0f;
+	float centerY = (topRight->y() + bottomLeft->y()) / 2.0f;
+	float centerZ = (topRight->z() + bottomLeft->z()) / 2.0f;
 
 	data.push_back(centerX);
 	data.push_back(centerY);
