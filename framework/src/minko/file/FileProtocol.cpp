@@ -34,11 +34,6 @@ FileProtocol::FileProtocol()
 {
 }
 
-FileProtocol::~FileProtocol()
-{
-	std::cout << "destroy" << std::endl;
-}
-
 std::list<std::shared_ptr<FileProtocol>>
 FileProtocol::_runningLoaders;
 

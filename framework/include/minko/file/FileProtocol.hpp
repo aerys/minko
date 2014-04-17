@@ -40,7 +40,6 @@ namespace minko
             {
 				return std::shared_ptr<FileProtocol>(new FileProtocol());
 			}
-			~FileProtocol();
 
             void
             load();
