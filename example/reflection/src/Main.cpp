@@ -38,13 +38,17 @@ UpdateVirtualCamera(scene::Node::Ptr camera, scene::Node::Ptr virtualCamera, flo
 int
 main(int argc, char** argv)
 {
-    // FPS camera info
-    auto cameraPosition = Vector3::create(0.0f, 0.0f, 0.0f);
+    // Camera info
+    auto cameraPosition = Vector3::create(0.f, 3.f, -5.f);
     auto cameraDirection = Vector3::create(0.0f, 0.0f, 1.0f);
-    auto cameraTarget = cameraDirection + cameraPosition;
-    auto cameraSpeed = 100.0f;
-    auto cameraPitch = 0.0f;
-    auto cameraYaw = 0.0f;
+    auto cameraTarget = Vector3::create()/*cameraDirection + cameraPosition*/;
+
+    auto yaw = 0.f;
+    auto pitch = (float) PI * .5f;
+    auto minPitch = 0.f + 1e-5;
+    auto maxPitch = (float) PI - 1e-5;
+    auto lookAt = Vector3::create(0.f, 0.f, 0.f);
+    auto distance = 10.f;
 
     // Reflection plane info
     int planeHeight = 0;
@@ -74,26 +78,6 @@ main(int argc, char** argv)
         auto root = scene::Node::create("root")
             ->addComponent(sceneManager);
 
-        auto position = Vector3::create(0.f, 3.f, -5.f);
-        auto reflectedPosition = Vector3::create(position->x(), -position->y(), position->z());
-        auto cameraTarget = Vector3::create();
-
-        // Render target
-        auto ppTarget = render::Texture::create(
-            sceneManager->assets()->context(), clp2(WINDOW_WIDTH), clp2(WINDOW_HEIGHT), false, true);
-
-        auto reflectedCamera = scene::Node::create("reflectedCamera")
-            ->addComponent(Renderer::create(0xff000000, ppTarget, sceneManager->assets()->effect("effect/Reflection/PlanarReflection.effect"), 10000))
-            ->addComponent(PerspectiveCamera::create(
-            (float) WINDOW_WIDTH / (float) WINDOW_HEIGHT, (float) PI * 0.25f, .1f, 1000.f))
-            ->addComponent(Transform::create(Matrix4x4::create()
-            ->lookAt(cameraTarget, reflectedPosition)));
-
-        auto reflectedWorldToScreenMatrix = reflectedCamera->component<PerspectiveCamera>()
-            ->data()->get<Matrix4x4::Ptr>("worldToScreenMatrix");
-
-        auto reflectedModelToWorldMatrix = reflectedCamera->component<Transform>()->modelToWorldMatrix();
-
         auto reflectionComponent = Reflection::create(sceneManager->assets(), WINDOW_WIDTH, WINDOW_HEIGHT, 0xff000000);
 
         auto camera = scene::Node::create("camera")
@@ -103,19 +87,14 @@ main(int argc, char** argv)
             (float) WINDOW_WIDTH / (float) WINDOW_HEIGHT, (float) PI * 0.25f, .1f, 1000.f)
             )
             ->addComponent(Transform::create(Matrix4x4::create()
-            ->lookAt(cameraTarget, position)))
+            ->lookAt(cameraTarget, cameraPosition)))
             ;
-
 
         //root->addChild(reflectedCamera);
         root->addChild(camera);
 
         // create reflection effects
-        auto reflectionEffect = sceneManager->assets()->effect("effect/Reflection/PlanarReflection.effect");
         auto applyReflectionEffect = sceneManager->assets()->effect("effect/Reflection/ApplyPlanarReflection.effect");
-
-        if (!reflectionEffect)
-            throw std::logic_error("The reflection effect has not been loaded.");
 
         if (!applyReflectionEffect)
             throw std::logic_error("The apply reflection effect has not been loaded.");
@@ -139,7 +118,6 @@ main(int argc, char** argv)
         root->addChild(sphere);
 
         auto reflectionPlane = scene::Node::create("reflectionPlane")
-            //->addComponent(Reflection::create(sceneManager->assets()->context(), WINDOW_WIDTH, WINDOW_HEIGHT, 0xff000000))
             ->addComponent(Transform::create(Matrix4x4::create()
             ->appendScale(5.f)
             ->appendRotationX(-PI / 2.f)
@@ -152,62 +130,56 @@ main(int argc, char** argv)
             );
         root->addChild(reflectionPlane);
 
-        // Move the camera around the object
-        Signal<input::Mouse::Ptr, int, int>::Slot mouseMove;
-        float cameraRotationSpeedX = 0.f;
-        float cameraRotationSpeedY = 0.f;
-
-        auto mouseDown = canvas->mouse()->leftButtonDown()->connect([&](input::Mouse::Ptr mouse)
+        // handle mouse signals
+        auto mouseWheel = canvas->mouse()->wheel()->connect([&](input::Mouse::Ptr m, int h, int v)
         {
-            mouseMove = canvas->mouse()->move()->connect([&](input::Mouse::Ptr mouse, int dx, int dy)
+            distance += (float) v / 10.f;
+        });
+
+        Signal<input::Mouse::Ptr, int, int>::Slot mouseMove;
+        auto cameraRotationXSpeed = 0.f;
+        auto cameraRotationYSpeed = 0.f;
+
+        auto mouseDown = canvas->mouse()->leftButtonDown()->connect([&](input::Mouse::Ptr m)
+        {
+            mouseMove = canvas->mouse()->move()->connect([&](input::Mouse::Ptr, int dx, int dy)
             {
-                cameraRotationSpeedX = (float) -dx * .01f;
-                cameraRotationSpeedY = (float) -dy * .01f;
+                cameraRotationYSpeed = (float) dx * .01f;
+                cameraRotationXSpeed = (float) dy * -.01f;
             });
         });
 
-        auto mouseUp = canvas->mouse()->leftButtonUp()->connect([&](input::Mouse::Ptr mouse)
+        auto mouseUp = canvas->mouse()->leftButtonUp()->connect([&](input::Mouse::Ptr m)
         {
             mouseMove = nullptr;
         });
 
-        auto ppRenderer = Renderer::create();
-        auto ppScene = scene::Node::create()
-            ->addComponent(Surface::create(
-            geometry::QuadGeometry::create(sceneManager->assets()->context()),
-            material::BasicMaterial::create()->diffuseMap(ppTarget),
-            sceneManager->assets()->effect("effect/Basic.effect")
-            ));
+        // Get reflection map from camera's reflection component
+        reflectionPlane->component<Surface>()->material()->set(
+            "diffuseMap", camera->component<Reflection>()->getRenderTarget());
 
-        auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint t, float dt)
+        auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float deltaTime)
         {
-            auto reflectedProjectionMatrix = reflectedCamera->component<PerspectiveCamera>()
-                ->data()->get<Matrix4x4::Ptr>("projectionMatrix");
+            yaw += cameraRotationYSpeed;
+            cameraRotationYSpeed *= 0.9f;
 
-            auto test = Matrix4x4::create(reflectedProjectionMatrix);
+            pitch += cameraRotationXSpeed;
+            cameraRotationXSpeed *= 0.9f;
+            if (pitch > maxPitch)
+                pitch = maxPitch;
+            else if (pitch < minPitch)
+                pitch = minPitch;
 
-            camera->component<Transform>()->matrix()->appendRotationY(cameraRotationSpeedX);
-            //reflectedCamera->component<Transform>()->matrix()->appendRotationY(cameraRotationSpeedX);
+            camera->component<Transform>()->matrix()->lookAt(
+                lookAt,
+                Vector3::create(
+                lookAt->x() + distance * cosf(yaw) * sinf(pitch),
+                lookAt->y() + distance * cosf(pitch),
+                lookAt->z() + distance * sinf(yaw) * sinf(pitch)
+                )
+                );
 
-            camera->component<Transform>()->matrix()->appendRotationX(cameraRotationSpeedY);
-            //reflectedCamera->component<Transform>()->matrix()->appendRotationX(-cameraRotationSpeedY);
-
-            cameraRotationSpeedX *= .99f;
-            cameraRotationSpeedY *= .99f;
-
-            cube->component<Transform>()->matrix()->appendRotationY(0.01f);
-            
-            camera->component<Reflection>()->updateReflectionMatrix();
-
-            // Get reflection map from camera's reflection component
-            reflectionPlane->component<Surface>()->material()->set(
-                "diffuseMap", camera->component<Reflection>()->getRenderTarget());
-
-
-            //reflectionPlane->component<Surface>()->material()->set("diffuseMap", ppTarget);
-
-
-            sceneManager->nextFrame(t, dt);
+            sceneManager->nextFrame(time, deltaTime);
 
             std::cout << canvas->framerate() << std::endl;
         });

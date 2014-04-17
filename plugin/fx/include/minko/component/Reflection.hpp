@@ -23,6 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/AbstractComponent.hpp"
 #include "minko/component/PerspectiveCamera.hpp"
 #include "minko/component/Transform.hpp"
+#include "minko/component/SceneManager.hpp"
 
 namespace minko
 {
@@ -50,6 +51,7 @@ namespace minko
             Signal<AbsCmpPtr, NodePtr>::Slot				                    _rootAddedSlot;
             Signal<std::shared_ptr<data::Provider>, const std::string&>::Slot	_viewMatrixChangedSlot;
             Signal<NodePtr, NodePtr, NodePtr>::Slot								_addedToSceneSlot;
+            Signal<component::SceneManager::Ptr, float, float>::Slot            _frameBeginSlot;
 
             uint                                                _width;
             uint                                                _height;

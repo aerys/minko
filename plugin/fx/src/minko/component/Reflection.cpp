@@ -27,7 +27,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/Effect.hpp"
 #include "minko/component/PerspectiveCamera.hpp"
 #include "minko/data/StructureProvider.hpp"
-#include "minko/component/SceneManager.hpp"
 #include "minko/file/AssetLibrary.hpp"
 
 using namespace minko;
@@ -55,6 +54,9 @@ Reflection::initialize()
 {
     // Load reflection effect
     _reflectionEffect = _assets->effect("effect/Reflection/PlanarReflection.effect");
+
+    if (!_reflectionEffect)
+        throw std::logic_error("The reflection effect has not been loaded.");
 
     _targetAddedSlot = targetAdded()->connect([&](AbstractComponent::Ptr cmp, NodePtr target)
     {
@@ -191,11 +193,8 @@ Reflection::targetAddedToScene(NodePtr node, NodePtr target, NodePtr ancestor)
             auto matrixValues = transform->matrix()->values();
 
             // Compute reflected camera position
-            auto virtualCameraPosition = Vector3::create(
-                transform->x(), -transform->y(), transform->z());
-
-            virtualCameraPosition = Vector3::create(
-                matrixValues[3], -matrixValues[7], matrixValues[11]);
+            auto virtualCameraPosition = transform->matrix()->translation();
+            virtualCameraPosition->y(-virtualCameraPosition->y());
 
             // TODO: Compute reflected camera target
             auto virtualCameraTarget = Vector3::create();
@@ -213,6 +212,13 @@ Reflection::targetAddedToScene(NodePtr node, NodePtr target, NodePtr ancestor)
 
         // Add the virtual camera to the scene
         target->root()->addChild(_virtualCamera);
+
+        // Listen scene manager
+        _frameBeginSlot = target->root()->component<SceneManager>()->frameBegin()->connect(
+            [&](std::shared_ptr<SceneManager> sceneManager, float time, float deltaTime)
+        {
+            updateReflectionMatrix();
+        }, 1001.f);
     }
 }
 
@@ -231,28 +237,24 @@ Reflection::cameraPropertyValueChangedHandler(std::shared_ptr<data::Provider> pr
 void
 Reflection::updateReflectionMatrix()
 {
-    auto transform = _activeCamera->component<Transform>();
-    auto matrixValues = transform->matrix()->values();
+    auto transform = Matrix4x4::create()->copyFrom(_activeCamera->component<Transform>()->modelToWorldMatrix());
 
-    auto cameraPosition = Vector3::create(
-        matrixValues[3], -matrixValues[7], matrixValues[11]);
-    auto cameraTarget = Vector3::create();
+    // Compute active camera data
+    auto cameraPosition = transform->translation();
+    auto cameraDirection = transform->deltaTransform(Vector3::create(0.f, 0.f, -1.f));
+    auto upVector = transform->transform(Vector3::yAxis())->normalize();
+    auto targetPosition = Vector3::create(cameraPosition)->add(cameraDirection);
 
-    auto y = transform->y();
-    transform->matrix()->transform(Vector3::create());
+    // Compute virtual camera data
+    auto reflectedPosition = Vector3::create()->setTo(cameraPosition->x(), -cameraPosition->y(), cameraPosition->z());
+    auto reflectedTargetPosition = Vector3::create()->setTo(targetPosition->x(), -targetPosition->y(), targetPosition->z());
 
+    // Compute reflected view matrix
     auto reflectedViewMatrix = Matrix4x4::create()->lookAt(
-        cameraTarget, cameraPosition);
-
-    _virtualCamera->component<Transform>()->matrix()->identity()->append(reflectedViewMatrix);
-
-
-    //_virtualCameraTransform = Transform::create(reflectedViewMatrix);
-
-    /*_perspectiveCamera->data()->set<Matrix4x4::Ptr>(
-        "reflectedViewMatrix", reflectedViewMatrix); */
-
-    _reflectionEffect->setUniform("ReflectedViewMatrix", reflectedViewMatrix);
+        reflectedTargetPosition, reflectedPosition);
+    
+    // Set new transformation matrix
+    _virtualCamera->component<Transform>()->matrix()->copyFrom(reflectedViewMatrix);
 }
 
 void
