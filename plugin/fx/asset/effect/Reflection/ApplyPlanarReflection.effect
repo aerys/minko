@@ -1,6 +1,6 @@
-// reflection effect
+// apply reflection effect
 {
-    "name"  	: "reflection",
+    "name"  	: "apply-reflection",
     	
     "attributeBindings" : {
         "position"              : "geometry[${geometryId}].position",
@@ -21,7 +21,7 @@
         "Projection"   			: { "property" : "camera.projectionMatrix", "source" : "renderer" },
 		"boneMatrices"			: { "property" : "geometry[${geometryId}].boneMatrices",			"source" : "target" },
 		"numBones"				: { "property" : "geometry[${geometryId}].numBones",				"source" : "target" }
-	},
+    },
     
     "macroBindings" : {
         "DIFFUSE_MAP"           : "material[${materialId}].diffuseMap",
@@ -59,7 +59,13 @@
 	"scissorBox"		: [0, 0, -1, -1],
 	
     "samplerStates" : {
-        "diffuseMap"    : { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" }
+        "diffuseMap"    : { 
+			"wrapMode" : "clamp", 
+			"textureFilter" : "linear", 
+			"mipFilter" : "linear",
+			"minFilter" : "linear",
+			"magFilter" : "linear"
+		}
     },
     
     "defaultTechnique"  : "opaque",
@@ -75,8 +81,8 @@
 
 		"passes"    : [
         {
-			"vertexShader"   : "#pragma include('PlanarReflection.vertex.glsl')",
-			"fragmentShader" : "#pragma include('PlanarReflection.fragment.glsl')"
+			"vertexShader"   : "#pragma include('ApplyPlanarReflection.vertex.glsl')",
+			"fragmentShader" : "#pragma include('ApplyPlanarReflection.fragment.glsl')"
 		}
         ]
 	},
@@ -91,8 +97,8 @@
 
         "passes"    : [
         {
-            "vertexShader"      : "#pragma include('PlanarReflection.vertex.glsl')",
-            "fragmentShader"    : "#pragma include('PlanarReflection.fragment.glsl')"
+            "vertexShader"      : "#pragma include('ApplyPlanarReflection.vertex.glsl')",
+            "fragmentShader"    : "#pragma include('ApplyPlanarReflection.fragment.glsl')"
         }
         ] 
     }

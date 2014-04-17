@@ -1,6 +1,4 @@
-uniform sampler2D reflectionMap;
-
-vec4 getReflectionColor(vec3 reflectionPosition)
+vec4 getReflectionColor(vec4 reflectionPosition, sampler2D reflectionMap)
 {
 	// Transform the projective reflection texcoords to NDC space
 	// and scale and offset xy to correctly sample a DX texture
