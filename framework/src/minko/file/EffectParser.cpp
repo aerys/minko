@@ -954,7 +954,10 @@ EffectParser::loadTexture(const std::string&	textureFilename,
 						  UniformTypeAndValue&	uniformTypeAndValue,
 						  Options::Ptr			options)
 {
-    auto loader = Loader::create(options);
+	Options::Ptr o = Options::create(options);
+    auto loader = Loader::create(o);
+
+	o->loadAsynchronously(false);
 
 	_numDependencies++;
 
