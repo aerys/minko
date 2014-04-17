@@ -84,7 +84,6 @@
     {
         "name"      : "transparent",
 
-
         "blendMode" : "alpha",
         "priority"  : "transparent",
         "zSort"     : "true",

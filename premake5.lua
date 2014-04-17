@@ -76,7 +76,7 @@ solution "minko"
 		include 'plugin/devil'
 		include 'plugin/bullet'
 		include 'plugin/fx'
-		include 'plugin/html-overlay'
+		--include 'plugin/html-overlay'
 		include 'plugin/http-loader'
 		include 'plugin/http-worker'
 		include 'plugin/jpeg'
@@ -117,7 +117,7 @@ solution "minko"
 		include 'example/oculus'
 		include 'example/http'
 		include 'example/joystick'
-		include 'example/html-overlay'
+		--include 'example/html-overlay'
 		include 'example/flares'
 	end
 
