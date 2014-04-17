@@ -44,6 +44,7 @@ namespace minko
 					.property("loopEndTime",	static_cast<uint (Animation::*)() const>(&Animation::loopEndTime))
 					.property("isPlaying",		static_cast<bool (Animation::*)() const>(&Animation::isPlaying))
 					.property("isLooping",		static_cast<bool (Animation::*)() const>(&Animation::isLooping))
+					.property("maxTime",		&MasterAnimation::maxTime)
 					.method("hasLabel",			static_cast<bool (Animation::*)(const std::string&) const>(&Animation::hasLabel))
 					.method("play",				static_cast<AbstractAnimation::Ptr (Animation::*)()>(&Animation::play))
 					.method("stop",				static_cast<AbstractAnimation::Ptr (Animation::*)()>(&Animation::stop))

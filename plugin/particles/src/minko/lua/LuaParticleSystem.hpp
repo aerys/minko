@@ -50,6 +50,8 @@ namespace minko
 				node->methodWrapper("getParticles",	&LuaParticleSystem::extractParticleSystemFromNode);
 				
 				state.Class<ParticleSystem>("ParticleSystem")
+					.method("play",					static_cast<ParticleSystem::Ptr (ParticleSystem::*)()>		(&ParticleSystem::play))
+					.method("stop",					static_cast<ParticleSystem::Ptr (ParticleSystem::*)()>		(&ParticleSystem::stop))
 					.method("getEmitting",			static_cast<bool (ParticleSystem::*)() const>				(&ParticleSystem::emitting))
 					.method("setEmitting",			static_cast<ParticleSystem::Ptr (ParticleSystem::*)(bool)>	(&ParticleSystem::emitting))
 					.method("getIsInWorldSpace",	static_cast<bool (ParticleSystem::*)() const>				(&ParticleSystem::isInWorldSpace))

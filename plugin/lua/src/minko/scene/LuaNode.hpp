@@ -60,6 +60,7 @@ namespace minko
                     .methodWrapper("getPerspectiveCamera",  &LuaNode::getPerspectiveCameraWrapper)
 					.methodWrapper("getSurface",			&LuaNode::getSurfaceWrapper)
 					.methodWrapper("hasLight",				&LuaNode::hasLightWrapper)
+					.methodWrapper("hasAnimation",			&LuaNode::hasAnimationWrapper)
 					/*.methodWrapper("getChildrenByName",		&LuaNode::getChildrenByNameWrapper)*/
 		            .property("children",					&Node::children)
 		            .property("data",				        &Node::data)
@@ -130,6 +131,13 @@ namespace minko
 			hasLightWrapper(Node::Ptr node)
 			{
 				return node->hasComponent<component::AbstractLight>();
+			}
+
+			static
+			bool
+			hasAnimationWrapper(Node::Ptr node)
+			{
+				return node->hasComponent<component::AbstractAnimation>();
 			}
 		};
 	}
