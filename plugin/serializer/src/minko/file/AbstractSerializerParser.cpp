@@ -142,7 +142,7 @@ AbstractSerializerParser::deserializedAsset(SerializedAsset&			asset,
 
 		_geometryParser->parse(resolvedPath, assetCompletePath, options, data, assetLibrary);
 		_dependencies->registerReference(asset.a1, assetLibrary->geometry(_geometryParser->_lastParsedAssetName));
-		_jobList.merge(_materialParser->_jobList);
+		_jobList.merge(_geometryParser->_jobList);
 	}
 	else if ((asset.a0 == serialize::AssetType::MATERIAL_ASSET || asset.a0 == serialize::AssetType::EMBED_MATERIAL_ASSET) &&
 		_dependencies->materialReferenceExist(asset.a1) == false) // material
@@ -155,7 +155,7 @@ AbstractSerializerParser::deserializedAsset(SerializedAsset&			asset,
 
 		_materialParser->parse(resolvedPath, assetCompletePath, options, data, assetLibrary);
 		_dependencies->registerReference(asset.a1, std::dynamic_pointer_cast<data::Provider>(assetLibrary->material(_materialParser->_lastParsedAssetName)));
-		//_jobList.merge(_materialParser->_jobList);
+		_jobList.merge(_materialParser->_jobList);
 	}
 	else if ((asset.a0 == serialize::AssetType::TEXTURE_ASSET ||
 				asset.a0 == serialize::AssetType::PNG_EMBED_TEXTURE_ASSET ||
