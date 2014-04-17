@@ -67,7 +67,7 @@ namespace minko
 			deserializePointLight(std::string&		serializedPointLight,
 								  AssetLibraryPtr	assetLibrary,
 								  DependencyPtr		dependencies);
-		
+
 			static
 			AbsComponentPtr
 			deserializeSpotLight(std::string&		serializedSpotLight,
@@ -97,6 +97,12 @@ namespace minko
 			deserializeSkinning(std::string&		serializedAnimation,
 								AssetLibraryPtr		assetLibrary,
 								DependencyPtr		dependencies);
+
+			static
+			AbsComponentPtr
+			deserializeBoundingBox(std::string&		serializedBoundingBox,
+                                   AssetLibraryPtr  assetLibrary,
+                                   DependencyPtr	dependencies);
 		};
 	}
 }
