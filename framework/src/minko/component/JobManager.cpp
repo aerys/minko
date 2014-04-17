@@ -94,9 +94,14 @@ JobManager::end(NodePtr target)
 			if (_jobs.size() == 0)
 				return;
 		}
-
-		if (currentJob->oneStepPerFrame())
-			return;
+		else
+		{
+			if (currentJob->oneStepPerFrame())
+			{
+				_jobs.push_back(currentJob);
+				currentJob = nullptr;
+			}
+		}
 
 		consumeTime = (float(std::clock() - _frameStartTime) / CLOCKS_PER_SEC);
 	}
