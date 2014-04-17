@@ -49,7 +49,7 @@ namespace minko
 
 				std::lock_guard<std::mutex> lock(_mutex);
 
-				if (!_messages.empty())
+				while (!_messages.empty())
 				{
 					std::cout << "ThreadWorkerImpl::poll(): message execute" << std::endl;
 					_message->execute(_that->shared_from_this(), _messages.front());
