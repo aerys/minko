@@ -49,9 +49,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 # endif
 #endif
 
+#if defined(_WIN32)
+#include "Windows.h"
+#endif
+
 using namespace minko;
 using namespace minko::math;
 using namespace minko::async;
+
+const float Canvas::SDLFinger::SWIPE_PRECISION = 0.05f;
 
 Canvas::Canvas(const std::string& name, const uint width, const uint height, bool useStencil, bool chromeless) :
 	_name(name),
@@ -71,6 +77,17 @@ Canvas::Canvas(const std::string& name, const uint width, const uint height, boo
     _data->set<math::Vector4::Ptr>("canvas.viewport", Vector4::create(0.0f, 0.0f, (float) width, (float) height));
 }
 
+#if defined(_WIN32)
+BOOL
+WINAPI
+ConsoleHandlerRoutine(DWORD dwCtrlType)
+{
+	if (dwCtrlType == CTRL_CLOSE_EVENT)
+		return true;
+	return false;
+}
+#endif
+
 void
 Canvas::initialize()
 {
@@ -78,7 +95,11 @@ Canvas::initialize()
     initializeInputs();
 
 #if !defined(EMSCRIPTEN)
-    registerWorker<file::FileProtocolWorker>("file-loader");
+    registerWorker<file::FileProtocolWorker>("file-protocol");
+#endif
+
+#if defined(_WIN32)
+	SetConsoleCtrlHandler(ConsoleHandlerRoutine, true);
 #endif
 }
 
@@ -87,6 +108,7 @@ Canvas::initializeInputs()
 {
     _mouse = Canvas::SDLMouse::create(shared_from_this());
     _keyboard = Canvas::SDLKeyboard::create();
+    _finger = Canvas::SDLFinger::create(shared_from_this());
 
 #ifndef EMSCRIPTEN
     for (int i = 0; i < SDL_NumJoysticks(); ++i)
@@ -422,32 +444,117 @@ Canvas::step()
         {
             switch( event.button.button ) 
             {
-            case SDL_BUTTON_LEFT:
+			case SDL_BUTTON_LEFT:
                 _mouse->leftButtonDown()->execute(_mouse);
                 break;
-            case SDL_BUTTON_RIGHT:
+			case SDL_BUTTON_RIGHT:
                 _mouse->rightButtonDown()->execute(_mouse);
                 break;
-	    }
+#ifdef EMSCRIPTEN
+			case SDL_BUTTON_X1:
+				_mouse->wheel()->execute(_mouse, 0, 1);
+				break;
+			case SDL_BUTTON_X2:
+				_mouse->wheel()->execute(_mouse, 0, -1);
+				break;
+#endif
+			}
             break;
         }
         case SDL_MOUSEBUTTONUP:
-        {
+		{
             switch( event.button.button ) 
-	    {
-	    case SDL_BUTTON_LEFT:
-                _mouse->leftButtonUp()->execute(_mouse);
-                break;
-	    case SDL_BUTTON_RIGHT:
-                _mouse->rightButtonUp()->execute(_mouse);
-                break;
-            }
+			{
+				case SDL_BUTTON_LEFT:
+					_mouse->leftButtonUp()->execute(_mouse);
+					break;
+				case SDL_BUTTON_RIGHT:
+					_mouse->rightButtonUp()->execute(_mouse);
+					break;
+			}
             break;
         }
-        case SDL_MOUSEWHEEL:
+		case SDL_MOUSEWHEEL:
             _mouse->wheel()->execute(_mouse, event.wheel.x, event.wheel.y);
-            //_mouseWheel->execute(shared_from_this(), event.wheel.x, event.wheel.y);
             break;
+                
+                
+                // Touch events
+                case SDL_FINGERDOWN:
+# if defined(DEBUG)
+                std::cout << "Finger down! (x: " << event.tfinger.x << ", y: " << event.tfinger.y << ")" << std::endl;
+#endif // DEBUG
+                
+                _finger->x(event.tfinger.x);
+                _finger->y(event.tfinger.y);
+                
+                _finger->fingerDown()->execute(_finger, event.tfinger.x, event.tfinger.y);
+                
+                break;
+                case SDL_FINGERUP:
+# if defined(DEBUG)
+                std::cout << "Finger up! (x: " << event.tfinger.x << ", y: " << event.tfinger.y << ")" << std::endl;
+#endif // DEBUG
+                _finger->x(event.tfinger.x);
+                _finger->y(event.tfinger.y);
+                
+                _finger->fingerUp()->execute(_finger, event.tfinger.x, event.tfinger.y);
+                
+                break;
+                case SDL_FINGERMOTION:
+# if defined(DEBUG)
+                std::cout << "Finger motion! "
+                << "("
+                << "x: " << event.tfinger.x << ", y: " << event.tfinger.y
+                << "|"
+                << "dx: " << event.tfinger.dx << ", dy: " << event.tfinger.dy
+                << ")" << std::endl;
+#endif // DEBUG
+                _finger->x(event.tfinger.x);
+                _finger->y(event.tfinger.y);
+                _finger->dx(event.tfinger.dx);
+                _finger->dy(event.tfinger.dy);
+                
+                _finger->fingerMotion()->execute(_finger, event.tfinger.dx, event.tfinger.dy);
+                
+                // Gestures
+                if (event.tfinger.dx > SDLFinger::SWIPE_PRECISION)
+                {
+# if defined(DEBUG)
+                    std::cout << "Swipe right! (" << event.tfinger.dx << ")" << std::endl;
+#endif // DEBUG
+                    _finger->swipeRight()->execute(_finger);
+                }
+                
+                if (-event.tfinger.dx > SDLFinger::SWIPE_PRECISION)
+                {
+# if defined(DEBUG)
+                    std::cout << "Swipe left! (" << event.tfinger.dx << ")" << std::endl;
+#endif // DEBUG
+                    
+                    _finger->swipeLeft()->execute(_finger);
+                }
+                
+                if (event.tfinger.dy > SDLFinger::SWIPE_PRECISION)
+                {
+# if defined(DEBUG)
+                    std::cout << "Swipe down! (" << event.tfinger.dy << ")" << std::endl;
+#endif // DEBUG
+                    
+                    _finger->swipeDown()->execute(_finger);
+                }
+                
+                if (-event.tfinger.dy > SDLFinger::SWIPE_PRECISION)
+                {
+#if defined(DEBUG)
+                    std::cout << "Swipe up! (" << event.tfinger.dy << ")" << std::endl;
+#endif // DEBUG
+                    
+                    _finger->swipeUp()->execute(_finger);
+                }
+                
+                break;
+
 
         case SDL_JOYAXISMOTION:
             _joysticks[event.jaxis.which]->joystickAxisMotion()->execute(
@@ -515,13 +622,14 @@ Canvas::step()
 
 #ifdef EMSCRIPTEN
         case SDL_VIDEORESIZE:
-            width(event.resize.w);
+			//Not working for the moment.
+            /*width(event.resize.w);
             height(event.resize.h);
 
             delete _screen;
             _screen = SDL_SetVideoMode(width(), height(), 0, SDL_OPENGL | SDL_RESIZABLE);
             _context->configureViewport(x(), y(), width(), height());
-            _resized->execute(shared_from_this(), width(), height());
+            _resized->execute(shared_from_this(), width(), height());*/
             break;
 #else
         case SDL_WINDOWEVENT:
@@ -544,6 +652,26 @@ Canvas::step()
             break;
         }
     }
+
+#ifdef EMSCRIPTEN
+	//Temporary resize handling (while SDL_VIDEORESIZE is not working)
+	int canvasW = width();
+	int canvasH = width();
+	int canvasFullscreen = 0;
+
+	emscripten_get_canvas_size(&canvasW, &canvasH, &canvasFullscreen);
+
+	if (canvasW != width() || canvasH != height())
+	{
+		width(canvasW);
+		height(canvasH);
+
+		delete _screen;
+		_screen = SDL_SetVideoMode(canvasW, canvasH, 0, SDL_OPENGL | SDL_RESIZABLE);
+		_context->configureViewport(x(), y(), canvasW, canvasH);
+		_resized->execute(shared_from_this(), canvasW, canvasH);
+	}
+#endif
 
     for (auto worker : _activeWorkers)
         worker->poll();

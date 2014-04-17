@@ -258,11 +258,11 @@ namespace minko
 			void
 			bindStates();
 			
-			uint
-			bindVertexAttribute(const std::string& propertyName, int location, uint vertexBufferIndex, bool = true);
+			void
+			bindVertexAttribute(const std::string& propertyName, int location, uint vertexBufferIndex);
 			
-			uint
-			bindTextureSampler(const std::string& propertyName, int location, uint textureIndex, const SamplerState&, bool = true);
+			void
+			bindTextureSampler(const std::string& propertyName, int location, uint textureIndex, const SamplerState&);
 
 			void
 			bindUniform(const std::string& propertyName, ProgramInputs::Type, int location);

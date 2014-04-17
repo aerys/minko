@@ -47,7 +47,7 @@ Culling::initialize()
         &Culling::targetAddedHandler, shared_from_this(), std::placeholders::_1, std::placeholders::_2
     ));
     _targetRemovedSlot = targetAdded()->connect(std::bind(
-        &Culling::targetAddedHandler, shared_from_this(), std::placeholders::_1, std::placeholders::_2
+        &Culling::targetRemovedHandler, shared_from_this(), std::placeholders::_1, std::placeholders::_2
     ));
 }
 

@@ -205,6 +205,13 @@ namespace minko
 				return _techniqueChanged;
 			}
 
+            inline
+            void
+            effect(std::shared_ptr<render::Effect> effect)
+            {
+                _effect = effect;
+            }
+
 			inline
 			VisibilityChangedSignal::Ptr
 			visibilityChanged() const
