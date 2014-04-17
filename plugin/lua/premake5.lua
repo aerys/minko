@@ -13,7 +13,7 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 	-- lua
 	files { "lib/lua/src/**.c", "lib/lua/include/**.h" }
 	includedirs { "lib/lua/include" }
-	excludes { "lib/lua/src/luac.c", "lib/lua/src/lua.c" }
+	excludes { "lib/lua/src/luac.c" }
 
 	defines { "LUA_COMPAT_ALL" } -- allow loading of older modules (LuaSocket, for debugging)
 

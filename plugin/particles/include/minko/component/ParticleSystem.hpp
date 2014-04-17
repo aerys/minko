@@ -217,9 +217,15 @@ namespace minko
 			Ptr
 			playing(bool value)
 			{
-				_playing = value;
+                _playing = true;
+				//if (value != _playing)
+				//{
+				//	_playing = value;
+				//	if (_playing)
+				//		_previousClock = clock();
+				//}
 
-				return shared_from_this();
+                return shared_from_this();
 			}
 
 			inline
@@ -242,9 +248,6 @@ namespace minko
 			Ptr
 			play()
 			{
-				if (_playing)
-					return shared_from_this();
-
 				reset();
 
 				return playing(true);
@@ -254,9 +257,6 @@ namespace minko
 			Ptr
 			stop()
 			{
-				if (!_playing)
-					return shared_from_this();
-
 				reset();
 				playing(false);
 				updateVertexBuffer();

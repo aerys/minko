@@ -39,10 +39,7 @@ LuaScript::LuaScript(const std::string& name, const std::string& script) :
 bool
 LuaScript::ready(scene::Node::Ptr target)
 {
-	if (target->root() && target->root()->hasComponent<LuaScriptManager>())
-		return target->root()->component<LuaScriptManager>()->ready(nullptr);
-	else
-		return false;
+    return target->root()->component<LuaScriptManager>()->ready(nullptr);
 }
 
 void
@@ -91,12 +88,10 @@ LuaScript::stop(scene::Node::Ptr node)
 {
     auto stub = _targetToStub[node];
 
-    stub->_running = false;
+    _targetToStub[node]->_running = false;
 
     if (_hasStopMethod)
         dynamic_cast<LuaGlueClass<LuaScript::LuaStub>*>(_class)->invokeVoidMethod("stop", stub, node);
 
-	_targetToStub.erase(_targetToStub.find(node));
-
-	delete stub;
+    delete stub;
 }

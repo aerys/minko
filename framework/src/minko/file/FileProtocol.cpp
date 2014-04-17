@@ -37,13 +37,13 @@ FileProtocol::FileProtocol()
 void
 FileProtocol::load()
 {
-	auto filename = _file->filename();
-	auto options = _options;
+    auto filename = _file->filename();
+    auto options = _options;
 	auto flags = std::ios::in | std::ios::ate | std::ios::binary;
 
 	std::string cleanFilename = "";
 
-	for (uint i = 0; i < filename.length(); ++i)
+	for(uint i = 0; i < filename.length(); ++i)
 	{
 		if (i < filename.length() - 2 && filename.at(i) == ':' && filename.at(i + 1) == '/' && filename.at(i + 2) == '/')
 		{
@@ -57,44 +57,76 @@ FileProtocol::load()
 
 	_options = options;
 
-	auto realFilename = options->uriFunction()(File::sanitizeFilename(cleanFilename));
+    auto realFilename = options->uriFunction()(File::sanitizeFilename(cleanFilename));
 
 	std::fstream file(cleanFilename, flags);
 
 	if (!file.is_open())
-	{
 		for (auto path : _options->includePaths())
 		{
+            auto currentPathIsValid = true;
+
+            const auto absolutePrefix = File::getBinaryDirectory() + "/";
+
 			auto testFilename = options->uriFunction()(File::sanitizeFilename(path + '/' + cleanFilename));
 
-			file.open(testFilename, flags);
-			if (file.is_open())
-			{
-				realFilename = testFilename;
-				break;
-			}
+            if (testFilename.find(absolutePrefix) != std::string::npos)
+            {
+                auto currentSeparatorPos = absolutePrefix.size();
+
+                do
+                {
+                    currentSeparatorPos = absolutePrefix.find_last_of("/\\", currentSeparatorPos - 1);
+
+                    if (currentSeparatorPos == std::string::npos)
+                    {
+                        currentPathIsValid = false;
+
+                        break;
+                    }
+
+                    realFilename = testFilename.substr(currentSeparatorPos + 1, testFilename.size());
+
+                    file.open(realFilename, flags);
+
+                } while (!file.is_open());
+
+                if (currentPathIsValid)
+                {
+                    break;
+                }
+            }
+            else
+            {
+                file.open(testFilename, flags);
+
+                if (file.is_open())
+                {
+                    realFilename = testFilename;
+
+                    break;
+                }
+            }
 		}
-	}
-	
-	auto loader = shared_from_this();
+
+    auto loader = shared_from_this();
 
 	if (file.is_open())
 	{
-
         resolvedFilename(realFilename);
 
 		if (_options->loadAsynchronously() && AbstractCanvas::defaultCanvas() != nullptr
-            && AbstractCanvas::defaultCanvas()->isWorkerRegistered("file-protocol"))
+            && AbstractCanvas::defaultCanvas()->isWorkerRegistered("file-loader"))
 		{
 			file.close();
-			auto worker = AbstractCanvas::defaultCanvas()->getWorker("file-protocol");
+			auto worker = AbstractCanvas::defaultCanvas()->getWorker("file-loader");
 
 			_workerSlots.push_back(worker->message()->connect([=](async::Worker::Ptr, async::Worker::Message message) {
 				if (message.type == "complete")
 				{
 					void* bytes = &*message.data.begin();
 					data().assign(static_cast<unsigned char*>(bytes), static_cast<unsigned char*>(bytes) + message.data.size());
-					_complete->execute(shared_from_this());					
+					_complete->execute(shared_from_this());
 				}
 				else if (message.type == "progress")
 				{
@@ -117,7 +149,7 @@ FileProtocol::load()
 
 			// FIXME: use fixed size buffers and call _progress accordingly
 
-			_progress->execute(shared_from_this(), 0.0);
+            _progress->execute(shared_from_this(), 0.0);
 
 			data().resize(size);
 
@@ -125,14 +157,11 @@ FileProtocol::load()
 			file.read((char*)&data()[0], size);
 			file.close();
 
-			_progress->execute(loader, 1.0);
+            _progress->execute(loader, 1.0);
 
-			_complete->execute(shared_from_this());
+            _complete->execute(shared_from_this());
 		}
 	}
 	else
-	{
-		std::cout << "FileProtocol::load() : Could not load file " + filename << std::endl;
-		_error->execute(shared_from_this());
-	}
+        _error->execute(shared_from_this());
 }

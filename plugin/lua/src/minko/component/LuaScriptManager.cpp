@@ -56,7 +56,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/LuaAssetLibrary.hpp"
 #include "minko/input/LuaKeyboard.hpp"
 #include "minko/input/LuaMouse.hpp"
-#include "minko/input/LuaFinger.hpp"
 #include "minko/input/LuaJoystick.hpp"
 #include "minko/LuaAbstractCanvas.hpp"
 #include "minko/component/LuaPerspectiveCamera.hpp"
@@ -99,17 +98,15 @@ LuaScriptManager::targetAddedHandler(AbstractComponent::Ptr cmp, scene::Node::Pt
     if (targets().size() > 1)
         throw;
 
-	loadStandardLibrary();
+    loadStandardLibrary();
 }
 
 void
 LuaScriptManager::loadStandardLibrary()
 {
     auto assets = targets()[0]->root()->component<SceneManager>()->assets();
-
     auto options = assets->loader()->options();
     auto loader = file::Loader::create(assets->loader());
-
     auto filesToLoad = {
         "script/minko.coroutine.lua",
         "script/minko.time.lua",
@@ -124,7 +121,6 @@ LuaScriptManager::loadStandardLibrary()
 
     for (auto& filename : filesToLoad)
         loader->queue(filename);
-
     loader->load();
 }
 
@@ -144,15 +140,11 @@ LuaScriptManager::dependencyLoadedHandler(file::Loader::Ptr loader)
 void
 LuaScriptManager::update(scene::Node::Ptr target)
 {
-	if (!_ready)
-		return;
-
     time_point t = std::chrono::high_resolution_clock::now();
     std::chrono::duration<float> deltaT = t - _previousTime;
-	
-	_state.invokeVoidFunction("wakeUpWaitingThreads", deltaT.count() * 1000.f);
 
-	_previousTime = t;
+    _state.invokeVoidFunction("wakeUpWaitingThreads", deltaT.count() * 1000.f);
+    _previousTime = t;
 }
 
 void
@@ -194,7 +186,6 @@ LuaScriptManager::initializeBindings()
     file::LuaAssetLibrary::bind(_state);
     input::LuaMouse::bind(_state);
     input::LuaKeyboard::bind(_state);
-    input::LuaFinger::bind(_state);
 	input::LuaJoystick::bind(_state);
     LuaAbstractCanvas::bind(_state);
     component::LuaPerspectiveCamera::bind(_state);

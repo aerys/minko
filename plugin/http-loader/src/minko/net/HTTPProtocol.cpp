@@ -128,13 +128,9 @@ HTTPProtocol::load()
 {
 	std::cout << "HTTPProtocol::load(): " << _file->filename() << std::endl;
 
-	resolvedFilename(_file->filename());
-
-	std::cout << resolvedFilename() << std::endl;
-
 	if (_options->includePaths().size() != 0)
 	{
-		if (resolvedFilename().substr(0, 7) != "http://" && resolvedFilename().substr(0, 8) != "https://")
+		if (resolvedFilename().find_first_of("http://") != 0 && resolvedFilename().find_first_of("https://") != 0)
 		{
 			for (auto path : _options->includePaths())
 			{
@@ -143,7 +139,6 @@ HTTPProtocol::load()
 			}
 		}
 	}
-	std::cout << resolvedFilename() << std::endl;
 
 	_options->protocolFunction([](const std::string& filename) -> std::shared_ptr<AbstractProtocol>
 	{
@@ -157,10 +152,10 @@ HTTPProtocol::load()
 	loader->progress()->execute(loader, 0.0);
 
 #if defined(EMSCRIPTEN)
-	if (options()->loadAsynchronously())
+	if (options->loadAsynchronously())
 	{
 		std::cout << "HTTPProtocol::load(): " << "call emscripten_async_wget_data " << std::endl;
-		emscripten_async_wget_data(resolvedFilename().c_str(), loader.get(), &completeHandler, &errorHandler);
+		emscripten_async_wget_data(_filename.c_str(), loader.get(), &completeHandler, &errorHandler);
 		//TODO : use emscripten_async_wget2_data once it has been added
 	}
 	else
@@ -168,7 +163,7 @@ HTTPProtocol::load()
 		std::string eval = "";
 
 		eval += "var xhr = new XMLHttpRequest();\n";
-		eval += "xhr.open('GET', '" + resolvedFilename() + "', false);\n";
+		eval += "xhr.open('GET', '" + _filename + "', false);\n";
 
 		eval += "xhr.overrideMimeType('text/plain; charset=x-user-defined');\n";
 

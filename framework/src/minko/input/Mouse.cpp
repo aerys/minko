@@ -27,7 +27,6 @@ Mouse::Mouse(std::shared_ptr<AbstractCanvas> canvas) :
 	_x(0),
 	_y(0),
 	_leftButtonIsDown(false),
-	_rightButtonIsDown(false),
 	_mouseMove(Signal<Ptr, int, int>::create()),
 	_mouseWheel(Signal<Ptr, int, int>::create()),
 	_mouseLeftButtonDown(Signal<Ptr>::create()),

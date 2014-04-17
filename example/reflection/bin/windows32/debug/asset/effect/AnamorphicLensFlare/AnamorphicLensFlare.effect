@@ -1,0 +1,165 @@
+/*
+Copyright (c) 2013 Aerys
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
+associated documentation files (the "Software"), to deal in the Software without restriction,
+including without limitation the rights to use, copy, modify, merge, publish, distribute,
+sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or
+substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
+// anamorphic lens flare effect
+{
+	"name" 		: "anamorphic lens flare",
+	
+	"attributeBindings" : {
+		"aPosition"		: "geometry[${geometryId}].vertex.attribute.position",
+		"aUv"			: "geometry[${geometryId}].vertex.attribute.uv",
+		"a_position"	: "geometry[${geometryId}].vertex.attribute.position",
+		"a_texCoord"	: "geometry[${geometryId}].vertex.attribute.uv"
+
+	},
+
+	"defaultTechnique" : "very high",
+	"triangleCulling" : "none",
+	"samplerStates" : {
+		"s_texture"	: { "textureFilter" : "linear" }
+	},
+
+	"techniques" : [
+		{
+			"name" : "low",
+			"passes" : [
+				"threshold",
+				"horizontal gaussian blur 1",
+				"horizontal gaussian blur 2",
+				"compositing"
+			]
+		},
+		{
+			"name" : "medium",
+			"passes" : [
+				"threshold",
+				"horizontal gaussian blur 1",
+				"horizontal gaussian blur 2",
+				"horizontal gaussian blur 1",
+				"horizontal gaussian blur 2",
+				"compositing"
+			]
+		},
+		{
+			"name" : "high",
+			"passes" : [
+				"threshold",
+				"horizontal gaussian blur 1",
+				"horizontal gaussian blur 2",
+				"horizontal gaussian blur 1",
+				"horizontal gaussian blur 2",
+				"horizontal gaussian blur 1",
+				"horizontal gaussian blur 2",
+				"compositing"
+			]
+		},
+		{
+			"name" : "very high",
+			"passes" : [
+				"threshold",
+				"horizontal gaussian blur 1",
+				"horizontal gaussian blur 2",
+				"horizontal gaussian blur 1",
+				"horizontal gaussian blur 2",
+				"horizontal gaussian blur 1",
+				"horizontal gaussian blur 2",
+				"horizontal gaussian blur 1",
+				"horizontal gaussian blur 2",
+				"horizontal gaussian blur 1",
+				"horizontal gaussian blur 2",
+				"horizontal gaussian blur 1",
+				"horizontal gaussian blur 2",
+				"horizontal gaussian blur 1",
+				"horizontal gaussian blur 2",
+				"horizontal gaussian blur 1",
+				"horizontal gaussian blur 2",
+				"compositing"
+			]
+		}
+	],
+
+	"passes"	: [
+		{
+			"name" : "threshold",
+			"uniformBindings" : {
+				"uInputTex"		: "backbuffer",
+				"uScale"		: { "property" : "thresholdScale", "default" : [ 200.0, 200.0, 200.0, 1.0 ] },
+				"uBias"			: { "property" : "thresholdBias", "default" : [-0.99, -0.99, -0.99, 0.0 ] }
+			},
+			"target" : { "name" : "blur input 1", "width" : 256, "height" : 256 },
+			"samplerStates" : { "uInputTex"	: { "textureFilter" : "linear" } },
+			"vertexShader" : "#pragma include('AnamorphicLensFlare.vertex.glsl')",
+			"fragmentShader" : "#pragma include('Threshold.fragment.glsl')"
+		},
+		{
+			"name"	: "horizontal gaussian blur 1",
+			"uniformBindings" : { "s_texture" : "blur input 1" },
+			"target" : { "name" : "blur input 2", "width" : 256, "height" : 256 },			
+			"vertexShader" : "#pragma include('HGaussianBlur.vertex.glsl')",
+			"fragmentShader" : "#pragma include('GaussianBlur.fragment.glsl')"
+		},
+		{
+			"name"	: "vertical gaussian blur 1",
+			"uniformBindings" : { "s_texture" : "blur input 1" },
+			"target" : "blur input 2",			
+			"vertexShader" : "#pragma include('VGaussianBlur.vertex.glsl')",
+			"fragmentShader" : "#pragma include('GaussianBlur.fragment.glsl')"
+		},
+		{
+			"name"	: "horizontal gaussian blur 2",
+			"uniformBindings" : { "s_texture" : "blur input 2" },
+			"target" : "blur input 1",
+			"vertexShader" : "#pragma include('HGaussianBlur.vertex.glsl')",
+			"fragmentShader" : "#pragma include('GaussianBlur.fragment.glsl')"
+		},
+		{
+			"name"	: "vertical gaussian blur 2",
+			"uniformBindings" : { "s_texture" : "blur input 2" },
+			"target" : "blur input 1",
+			"vertexShader" : "#pragma include('VGaussianBlur.vertex.glsl')",
+			"fragmentShader" : "#pragma include('GaussianBlur.fragment.glsl')"
+		},
+		{
+			"name" : "compositing",
+			"uniformBindings" : {
+				"uBackbuffer"	: "backbuffer",
+				"uFlares"		: "blur input 1"
+			},
+			"samplerStates" : {
+				"uBackbuffer"	: { "textureFilter" : "linear" },
+				"uFlares"		: { "textureFilter" : "linear" }
+			},
+			"vertexShader" : "#pragma include('AnamorphicLensFlare.vertex.glsl')",
+			"fragmentShader" : "
+				#ifdef GL_ES
+				precision mediump float;
+				#endif
+				
+				uniform sampler2D uBackbuffer;
+				uniform sampler2D uFlares;
+				
+				varying vec2 vTexcoord;
+				
+				void main(void)
+				{
+					gl_FragColor = texture2D(uBackbuffer, vTexcoord) + texture2D(uFlares, vTexcoord);
+				}
+			"
+		}
+	]
+}
