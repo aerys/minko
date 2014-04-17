@@ -58,7 +58,8 @@ namespace minko
 					auto& overlay = state.Class<HtmlOverlay>("HtmlOverlay")
 						.method("create", &HtmlOverlay::create)
 						.method("load", &HtmlOverlay::load)
-						.method("clear", &HtmlOverlay::clear);
+						.method("clear", &HtmlOverlay::clear)
+						.property("mainDOM", &HtmlOverlay::mainDOM);
 
 					MINKO_LUAGLUE_BIND_SIGNAL(state, minko::dom::AbstractDOM::Ptr, std::string);
 

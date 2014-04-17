@@ -82,6 +82,9 @@ namespace chromium
 			void
 			registerDom(ChromiumDOM::Ptr);
 
+			minko::dom::AbstractDOM::Ptr
+			mainDOM();
+
 		private:
 			void
 			loadOverlayEffect();

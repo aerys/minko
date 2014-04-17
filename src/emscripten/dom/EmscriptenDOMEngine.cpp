@@ -81,6 +81,13 @@ EmscriptenDOMEngine::createNewDom()
 	_currentDOM = EmscriptenDOM::create(domName);
 }
 
+
+minko::dom::AbstractDOM::Ptr
+EmscriptenDOMEngine::mainDOM()
+{
+	return _currentDOM;
+}
+
 void
 EmscriptenDOMEngine::enterFrame()
 {

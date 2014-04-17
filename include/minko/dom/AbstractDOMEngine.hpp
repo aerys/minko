@@ -51,6 +51,10 @@ namespace minko
 			virtual
 			Signal<AbstractDOM::Ptr, std::string>::Ptr
 			onmessage() = 0;
+
+			virtual
+			AbstractDOM::Ptr
+			mainDOM() = 0;
 		};
 	}
 }

@@ -182,6 +182,12 @@ ChromiumDOMEngine::registerDom(ChromiumDOM::Ptr dom)
 	_doms.push_back(dom);
 }
 
+AbstractDOM::Ptr
+ChromiumDOMEngine::mainDOM()
+{
+	return _impl->mainDOM;
+}
+
 void
 ChromiumDOMEngine::loadHttp(std::string url)
 {

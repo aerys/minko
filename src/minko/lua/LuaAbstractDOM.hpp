@@ -51,7 +51,8 @@ namespace minko
 						.method("body", &dom::AbstractDOM::body)
 						.method("fileName", &dom::AbstractDOM::fileName)
 						.method("fullUrl", &dom::AbstractDOM::fullUrl)
-						.method("isMain", &dom::AbstractDOM::isMain);
+						.method("isMain", &dom::AbstractDOM::isMain)
+						.method("sendMessage", &dom::AbstractDOM::sendMessage);
 
 						MINKO_LUAGLUE_BIND_SIGNAL(state, minko::dom::AbstractDOM::Ptr, std::string);
 

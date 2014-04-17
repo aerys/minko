@@ -89,6 +89,11 @@ namespace minko
 				return _domEngine->onmessage();
 			}
 
+			dom::AbstractDOM::Ptr mainDOM()
+			{
+				return _domEngine->mainDOM();
+			}
+
 		private:
 
 			minko::dom::AbstractDOMEngine::Ptr
