@@ -238,6 +238,24 @@ minko.project.application = function(name)
 			minko.action.copy("asset")
 		}
 
+	configuration { "android" }
+
+		kind "SharedLib"
+
+		links {
+			"minko-framework",
+			"GLESv1_CM",
+			"z",
+			-- "log",
+			"stdc++"
+		}
+
+		targetprefix "lib"
+		targetextension ".so"
+		architecture "armv5te"
+		linkoptions { "-s", "-shared", "-pthread" }
+
+
 	configuration { }
 	
 end
