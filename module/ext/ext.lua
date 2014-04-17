@@ -40,7 +40,7 @@ function table.clone (t) -- deep-copy a table
     return target
 end
 
-function string.explode(delimiter, value)
+local function explode(delimiter, value)
 	local t = {}
 	local ll = 0
 	if (#string == 1) then
@@ -60,7 +60,7 @@ function string.explode(delimiter, value)
 end
 
 function table.inject(obj, key, value)
-	local keys = string.explode('.', key)
+	local keys = explode('.', key)
 	local last = #keys
 	for i = 1, last do
 		local key = keys[i]
