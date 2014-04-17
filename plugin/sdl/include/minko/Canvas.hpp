@@ -29,6 +29,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/input/Mouse.hpp"
 #include "minko/input/Keyboard.hpp"
 #include "minko/input/Joystick.hpp"
+#include "minko/input/Finger.hpp"
 #include "minko/async/Worker.hpp"
 
 #if defined(__APPLE__)
@@ -177,6 +178,54 @@ namespace minko
 			{
 			}
 		};
+        
+        class SDLFinger :
+            public input::Finger
+		{
+			friend class Canvas;
+            
+		private:
+            public :
+			static inline
+			std::shared_ptr<SDLFinger>
+			create(Canvas::Ptr canvas)
+			{
+				return std::shared_ptr<SDLFinger>(new SDLFinger(canvas));
+			}
+            
+			void
+			x(uint x)
+			{
+				_x = x;
+			}
+            
+			void
+			y(uint y)
+			{
+				_y = y;
+			}
+            
+            void
+			dx(uint dx)
+			{
+				_dx = dx;
+			}
+            
+			void
+			dy(uint dy)
+			{
+				_dy = dy;
+			}
+            
+		private:
+			SDLFinger(Canvas::Ptr canvas) :
+            input::Finger(canvas)
+			{
+			}
+            
+        public:
+            static const float SWIPE_PRECISION;
+		};
 
 	private:
         typedef std::chrono::high_resolution_clock::time_point	time_point;
@@ -208,6 +257,7 @@ namespace minko
 		std::shared_ptr<SDLMouse>								_mouse;
 		std::unordered_map<int, std::shared_ptr<SDLJoystick>>	_joysticks;
         std::shared_ptr<SDLKeyboard>    						_keyboard;
+        std::shared_ptr<SDLFinger>                              _finger;
 
 		Signal<Ptr, float, float>::Ptr											_enterFrame;
 		Signal<AbstractCanvas::Ptr, uint, uint>::Ptr							_resized;
@@ -291,6 +341,13 @@ namespace minko
 		keyboard()
 		{
 			return _keyboard;
+		}
+        
+        inline
+		std::shared_ptr<input::Finger>
+		finger()
+		{
+			return _finger;
 		}
 		
 		inline
@@ -415,6 +472,11 @@ namespace minko
 
 		void 
 		height(uint);
+
+#if defined(_WIN32)
+		bool
+		consoleHandlerRoutine(DWORD);
+#endif
 
 		void
 		initialize();

@@ -76,6 +76,14 @@ namespace minko
 				return _y;
 			}
 
+            inline
+            void
+            setPosition(uint x, uint y)
+            {
+                _x = x;
+                _y = y;
+            }
+
 			inline
 			bool
 			leftButtonIsDown()

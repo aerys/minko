@@ -43,18 +43,19 @@ int main(int argc, char** argv)
 	auto sceneManager = SceneManager::create(canvas->context());
 	auto defaultOptions = sceneManager->assets()->loader()->options();
 
-	// setup assets
 	defaultOptions
 		->resizeSmoothly(true)
-		->generateMipmaps(true)
-		->loadAsynchronously(true)
+		->generateMipmaps(true);
+
+	sceneManager->assets()->loader()->queue("effect/Basic.effect")->load();
+
+	// setup assets
+	defaultOptions->loadAsynchronously(true)
 		->registerProtocol<net::HTTPProtocol>("http")
 		->registerProtocol<net::HTTPProtocol>("https")
 	    ->registerParser<file::PNGParser>("png");
 
-    sceneManager->assets()->loader()
-	    ->queue("effect/Basic.effect")
-    	->queue(TEXTURE_FILENAME);
+	sceneManager->assets()->loader()->queue(TEXTURE_FILENAME);
 
 	sceneManager->assets()->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()));
 

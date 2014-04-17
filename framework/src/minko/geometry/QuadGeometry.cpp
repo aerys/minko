@@ -50,33 +50,30 @@ QuadGeometry::initialize(std::shared_ptr<render::AbstractContext> context)
 			vertexData.push_back((float(x) / float(_numColumns) - 0.5f) * _width);
 			vertexData.push_back((float(y) / float(_numRows) - 0.5f) * _height);
 			vertexData.push_back(0.f);
+			vertexData.push_back(float(x) / float(_numColumns));
+			vertexData.push_back(1.f - float(y) / float(_numRows));
 			vertexData.push_back(0.f);
 			vertexData.push_back(0.f);
 			vertexData.push_back(1.f);
-			vertexData.push_back(float(x) / float(_numColumns));
-			vertexData.push_back(1.f - float(y) / float(_numRows));
-		}
-	}
 
-	for (uint y = 0; y < _numRows; y++)
-	{
-		for (uint x = 0; x < _numColumns;  x++)
-		{
+			if (y < _numRows && x < _numColumns)
+			{
 				indicesData.push_back(x + (_numColumns + 1) * y);
 				indicesData.push_back(x + 1 + y * (_numColumns + 1));
 				indicesData.push_back((y + 1) * (_numColumns + 1) + x);
 				indicesData.push_back(x + 1 + y * (_numColumns + 1));
 				indicesData.push_back((y + 1) * (_numColumns + 1) + x + 1);
 				indicesData.push_back((y + 1) * (_numColumns + 1) + x);
+			}
 		}
 	}
 
 	auto vertexBuffer	= render::VertexBuffer::create(context, vertexData);
 	auto indexBuffer	= render::IndexBuffer::create(context, indicesData);
 
-	vertexBuffer->addAttribute("position", 3, 0);
-	vertexBuffer->addAttribute("normal", 3, 3);
-	vertexBuffer->addAttribute("uv", 2, 6);
+    vertexBuffer->addAttribute("position", 3);
+    vertexBuffer->addAttribute("uv", 2);
+	vertexBuffer->addAttribute("normal", 3);
     addVertexBuffer(vertexBuffer);
 
     indices(indexBuffer);
