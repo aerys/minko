@@ -52,7 +52,7 @@ namespace minko
             Signal<AbsCmpPtr, NodePtr>::Slot				                    _rootAddedSlot;
             Signal<std::shared_ptr<data::Provider>, const std::string&>::Slot	_viewMatrixChangedSlot;
             Signal<NodePtr, NodePtr, NodePtr>::Slot								_addedToSceneSlot;
-            Signal<component::SceneManager::Ptr, float, float>::Slot            _frameBeginSlot;
+			Signal<component::SceneManager::Ptr, uint, std::shared_ptr<render::AbstractTexture>>::Slot            _frameRenderingSlot;
 
             uint                                                _width;
             uint                                                _height;
@@ -61,8 +61,8 @@ namespace minko
 
             // One active camera only
             std::shared_ptr<render::Texture>                    _renderTarget;
+			NodePtr												_virtualCamera;
             NodePtr                                             _activeCamera;
-            NodePtr                                             _virtualCamera;
             PerspectiveCamera::Ptr                              _perspectiveCamera;
             Transform::Ptr                                      _cameraTransform;
             Transform::Ptr                                      _virtualCameraTransform;
@@ -119,6 +119,9 @@ namespace minko
 
             void
             initialize();
+
+			void
+			setSceneManager(NodePtr node, NodePtr target, NodePtr ancestor);
 
             void
             targetAddedHandler(AbstractComponent::Ptr ctrl, NodePtr target);

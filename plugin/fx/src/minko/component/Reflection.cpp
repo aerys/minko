@@ -63,14 +63,7 @@ Reflection::initialize()
         if (target->components<Reflection>().size() > 1)
             throw std::logic_error("A node can't have many reflection components.");
 
-        // Create reflection renderer
-        _reflectionRenderer = Renderer::create(_clearColor, _renderTarget, _reflectionEffect, 10000);
-		_reflectionRenderer->backgroundColor(_clearColor);
-
-        // Add the renderer to the camera
-        target->addComponent(_reflectionRenderer);
-
-        if (_activeCamera == nullptr && target->root()->hasComponent<SceneManager>())
+        if (target->root()->hasComponent<SceneManager>())
             targetAddedToScene(nullptr, target, nullptr);
         else
             _addedToSceneSlot = target->added()->connect(std::bind(
@@ -85,7 +78,7 @@ Reflection::initialize()
     {
     });
 
-    _rootAddedSlot = rootAdded()->connect([&](AbstractComponent::Ptr cmp, scene::Node::Ptr target)
+  /*  _rootAddedSlot = rootAdded()->connect([&](AbstractComponent::Ptr cmp, scene::Node::Ptr target)
     {
         // Get the target's transform to compute clipping plane
         auto transform = target->component<Transform>();
@@ -143,7 +136,7 @@ Reflection::initialize()
                 }
             }
         }
-    });
+    });*/
 }
 
 void
@@ -166,19 +159,48 @@ Reflection::targetAddedToScene(NodePtr node, NodePtr target, NodePtr ancestor)
     {
         _addedToSceneSlot = nullptr;
 
+		auto renderTarget = render::Texture::create(_assets->context(), _width, _height, false, true);
+
+		// Create a new render target
+		_renderTargets.push_back(renderTarget);
+
+		auto originalCamera = target->components<PerspectiveCamera>()[0];
+
+		// Create a virtual camera
+		auto virtualPerspectiveCameraComponent = PerspectiveCamera::create(
+			originalCamera->aspectRatio(), originalCamera->fieldOfView(), originalCamera->zNear(), originalCamera->zFar());
+
+		auto cameraTarget = Vector3::create();
+		auto reflectedPosition = Vector3::create();
+
+		_virtualCamera = scene::Node::create("virtualCamera")
+			->addComponent(Renderer::create(_clearColor, _renderTarget, _reflectionEffect, 1000000.f))
+			->addComponent(virtualPerspectiveCameraComponent)
+			->addComponent(Transform::create());
+
+		// Add the virtual camera to the scene
+		target->root()->addChild(_virtualCamera);
+
+		// Bind this camera with a virtual camera (by index for now)
+		// TODO: Use unordered_map instead
+		//_cameras.push_back(child);
+		//_virtualCameras.push_back(virtualCamera);
+
         // We first check that the target has a camera component
         if (target->components<component::PerspectiveCamera>().size() < 1)
             throw std::logic_error("Reflection must be added to a camera");
 
         // We save the target as active camera
-        _activeCamera = target;
+        //_activeCamera = target;
 
         // Listen scene manager
-        _frameBeginSlot = target->root()->component<SceneManager>()->frameBegin()->connect(
-            [&](std::shared_ptr<SceneManager> sceneManager, float time, float deltaTime)
+		_frameRenderingSlot = target->root()->component<SceneManager>()->renderingBegin()->connect(
+			[&](std::shared_ptr<SceneManager>				sceneManager,
+			uint							frameId,
+			std::shared_ptr<render::AbstractTexture>			renderTarge)
         {
             updateReflectionMatrix();
-        }, 999.f);
+        }, -100.f);
     }
 }
 
@@ -197,7 +219,15 @@ Reflection::cameraPropertyValueChangedHandler(std::shared_ptr<data::Provider> pr
 void
 Reflection::updateReflectionMatrix()
 {
-    auto transform = Matrix4x4::create()->copyFrom(_activeCamera->component<Transform>()->modelToWorldMatrix());
+	auto transformCmp = targets()[0]->component<Transform>();
+
+	auto transform = Matrix4x4::create()->copyFrom(transformCmp->modelToWorldMatrix());
+
+	auto camera = targets()[0]->component<PerspectiveCamera>();
+	auto virtualCamera = _virtualCamera->component<PerspectiveCamera>();
+	
+	virtualCamera->fieldOfView(camera->fieldOfView());
+	virtualCamera->aspectRatio(camera->aspectRatio());
 
     // Compute active camera data
     auto cameraPosition = transform->translation();
@@ -218,6 +248,7 @@ Reflection::updateReflectionMatrix()
     reflectedViewMatrix->unlock();
 
     _reflectionEffect->setUniform("ReflectedViewMatrix", reflectedViewMatrix);
+
 }
 
 void

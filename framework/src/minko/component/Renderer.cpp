@@ -253,7 +253,7 @@ Renderer::render(render::AbstractContext::Ptr	context,
 	
 	_renderingBegin->execute(shared_from_this());
 
-	if (!renderTarget)
+	if (_renderTarget)
 		renderTarget = _renderTarget;
 
 	context->clear(
@@ -299,7 +299,7 @@ Renderer::setSceneManager(std::shared_ptr<SceneManager> sceneManager)
 		if (sceneManager)
 		{
 			_sceneManager = sceneManager;
-			_renderingBeginSlot = _sceneManager->renderingBegin()->connect(std::bind(
+			_renderingBeginSlot = _sceneManager->renderingEnd()->connect(std::bind(
 				&Renderer::sceneManagerRenderingBeginHandler,
 				shared_from_this(),
 				std::placeholders::_1,
