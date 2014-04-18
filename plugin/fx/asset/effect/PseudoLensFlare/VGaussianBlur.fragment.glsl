@@ -22,36 +22,31 @@ Original "Faster Gaussian Blur" implementation by Nilson Souto
 http://xissburg.com/faster-gaussian-blur-in-glsl/
 */
 
-#ifdef VERTEX_SHADER
+#ifdef FRAGMENT_SHADER
 
 #ifdef GL_ES
 precision mediump float;
 #endif
 
-attribute vec3 a_position;
-attribute vec2 a_texCoord;
+varying vec2 vTexcoord;
 
-varying vec2 v_texCoord;
-varying vec2 v_blurTexCoords[14];
- 
-void main()
+uniform sampler2D uTexture;
+uniform float uTextureSize;
+
+void main(void)
 {
-    gl_Position = vec4(a_position, 1) * vec4(1, -1, 1, .5);
-    v_texCoord = a_texCoord;
-    v_blurTexCoords[ 0] = v_texCoord + vec2(-0.028, 0.0);
-    v_blurTexCoords[ 1] = v_texCoord + vec2(-0.024, 0.0);
-    v_blurTexCoords[ 2] = v_texCoord + vec2(-0.020, 0.0);
-    v_blurTexCoords[ 3] = v_texCoord + vec2(-0.016, 0.0);
-    v_blurTexCoords[ 4] = v_texCoord + vec2(-0.012, 0.0);
-    v_blurTexCoords[ 5] = v_texCoord + vec2(-0.008, 0.0);
-    v_blurTexCoords[ 6] = v_texCoord + vec2(-0.004, 0.0);
-    v_blurTexCoords[ 7] = v_texCoord + vec2( 0.004, 0.0);
-    v_blurTexCoords[ 8] = v_texCoord + vec2( 0.008, 0.0);
-    v_blurTexCoords[ 9] = v_texCoord + vec2( 0.012, 0.0);
-    v_blurTexCoords[10] = v_texCoord + vec2( 0.016, 0.0);
-    v_blurTexCoords[11] = v_texCoord + vec2( 0.020, 0.0);
-    v_blurTexCoords[12] = v_texCoord + vec2( 0.024, 0.0);
-    v_blurTexCoords[13] = v_texCoord + vec2( 0.028, 0.0);
+	vec4 fragmentColor = texture2D( uTexture, vTexcoord) * 0.2270270270;
+	
+	fragmentColor += texture2D( uTexture, vTexcoord + vec2(0.0, 0.0) / uTextureSize) * 0.2270270270;
+	fragmentColor += texture2D( uTexture, vTexcoord - vec2(0.0, 0.0) / uTextureSize) * 0.2270270270;
+	
+	fragmentColor += texture2D( uTexture, vTexcoord + vec2(0.0, 1.3846153846) / uTextureSize) * 0.3162162162;
+	fragmentColor += texture2D( uTexture, vTexcoord - vec2(0.0, 1.3846153846) / uTextureSize) * 0.3162162162;
+	
+	fragmentColor += texture2D( uTexture, vTexcoord + vec2(0.0, 3.2307692308) / uTextureSize) * 0.0702702703;
+	fragmentColor += texture2D( uTexture, vTexcoord - vec2(0.0, 3.2307692308) / uTextureSize) * 0.0702702703;
+	
+	gl_FragColor = fragmentColor;
 }
 
 #endif

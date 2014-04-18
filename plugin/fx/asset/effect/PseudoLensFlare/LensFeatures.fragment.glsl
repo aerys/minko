@@ -25,7 +25,7 @@ http://john-chapman-graphics.blogspot.co.uk/2013/02/pseudo-lens-flare.html
 #ifdef FRAGMENT_SHADER
 
 #ifdef GL_ES
-precision mediump float;
+precision highp float;
 #endif
 
 uniform sampler2D uInputTex;
