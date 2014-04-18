@@ -31,7 +31,6 @@ precision mediump float;
 uniform sampler2D uInputTex;
 uniform sampler2D uLensColor;
 
-uniform int uSamples;// = 8;
 uniform float uDispersal;// = 0.25;
 uniform float uHaloWidth;// = 1.0;
 uniform float uDistortion;// = 1.0;
@@ -62,7 +61,7 @@ void main()
 
 	// sample ghosts:
 	vec4 result = vec4(0.0);
-	for (int i = 0; i < uSamples; ++i) {
+	for (int i = 0; i < NUM_SAMPLES; ++i) {
 		vec2 offset = fract(texcoord + ghostVec * float(i));
 		
 		float weight = length(vec2(0.5) - offset) / length(vec2(0.5));

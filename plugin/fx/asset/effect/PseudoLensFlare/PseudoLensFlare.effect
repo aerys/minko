@@ -27,12 +27,14 @@
 			"name" : "lens features",
 			"uniformBindings" : {
 				"uInputTex"			: "lensflare_downsample",
-				"uSamples"			: 6,
 				"uDispersal"		: 0.3,
 				"uTextureSize"		: [ 512.0, 512.0 ],
 				"uHaloWidth"		: 0.45,
 				"uDistortion"		: 10.0,
 				"uLensColor"		: { "default" : "lens-color.png" }
+			},
+			"macroBindings" : {
+				"NUM_SAMPLES"		: { "default" : 6 }
 			},
 			"triangleCulling" : "none",
 			"target" : { "name" : "lensflare_features", "size" : 512 },
