@@ -27,10 +27,10 @@ namespace minko
     {
         enum class TriangleCulling
         {
-            NONE,
-            FRONT,
-            BACK,
-            BOTH
+            NONE = 0,
+            FRONT = 1,
+            BACK = 2,
+            BOTH = 3
         };
     }
 }
