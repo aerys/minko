@@ -4,7 +4,7 @@
 	precision mediump float;
 #endif
 
-#pragma include("Reflection/Reflection.function.glsl")
+#pragma include("../Reflection/Reflection.function.glsl")
 #pragma include("Phong.function.glsl")
 #pragma include("Envmap.function.glsl")
 #pragma include("Water.function.glsl")
