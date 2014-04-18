@@ -45,7 +45,7 @@ namespace minko
 			typedef std::shared_ptr<DrawCall>								Ptr;
 
 		private:
-			enum class ContainerId{ FULL = 0, LOCAL };
+			enum class ContainerId{ COMPLETE = 0, FILTERED };
 
 			typedef std::shared_ptr<scene::Node>							NodePtr;
             typedef std::shared_ptr<AbstractContext>						AbsCtxPtr;
@@ -68,12 +68,18 @@ namespace minko
 
 			std::shared_ptr<render::Pass>									_pass;
 
-			std::shared_ptr<Program>										_program;
+			// filtered data containers
 			std::shared_ptr<data::Container>								_targetData;
 			std::shared_ptr<data::Container>								_rendererData;
             std::shared_ptr<data::Container>								_rootData;
+			// complete data containers
+			std::shared_ptr<data::Container>								_fullTargetData;
+			std::shared_ptr<data::Container>								_fullRendererData;
+            std::shared_ptr<data::Container>								_fullRootData;
 
-			std::list<Signal<ContainerPtr, ProviderPtr>::Slot>				_distantProviderRemovedSlots;
+			std::shared_ptr<Program>										_program;
+
+			std::list<Signal<ContainerPtr, ProviderPtr>::Slot>				_containerUpdateSlots; // FIXME
 
 			FormatNameFunction												_formatFunction;
 
@@ -276,14 +282,10 @@ namespace minko
 			reset();
 
 			void
-            bind(ContainerPtr targetData, // filtered containers
-				 ContainerPtr rendererData, 
-				 ContainerPtr rootData);
+            bind();
 
 			void
-			trackMacros(ContainerPtr fullTargetData, // complete containers
-						ContainerPtr fullRendererData, 
-						ContainerPtr fullRootData);
+			trackMacros();
 
 			void
 			bindProgramDefaultUniforms();
@@ -325,7 +327,7 @@ namespace minko
 			targetLayoutsChangedHandler(NodePtr, NodePtr);
 
 			ContainerPtr
-			getDataContainer(const data::BindingSource& source) const;
+			getContainer(ContainerId, data::BindingSource source) const;
 
 			template <typename T>
 			void
@@ -340,7 +342,7 @@ namespace minko
 					const auto&	binding	= stateBindings.at(stateName);
 					
 					propertyName		= formatPropertyName(std::get<0>(binding));
-					container			= getDataContainer(std::get<1>(binding));
+					container			= getContainer(ContainerId::FILTERED, std::get<1>(binding));
 				}
 
 
@@ -409,7 +411,7 @@ namespace minko
 			macroRemovedHandler(ContainerPtr, ContainerId, const std::string&);
 
 			void
-			distantProviderRemovedHandler(data::BindingSource, ProviderPtr);
+			remoteProviderRemovedHandler(data::BindingSource, ProviderPtr);
 		};		
 	}
 }

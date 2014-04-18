@@ -89,34 +89,8 @@ void
 DrawCall::initialize()
 {
 	_zSorter = DrawCallZSorter::create(shared_from_this());
-
-	//initializePassMacroRegex();
 }
 
-//void
-//DrawCall::initializePassMacroRegex()
-//{
-//	_passMacroToRegex.clear();
-//
-//	const auto withVariableRegex	= std::regex(".*\\[\\$\\{.*\\}\\].*");
-//	const auto variableRegex		= std::regex("(\\$\\{)(.*)\\}");
-//
-//	for (auto binding : _pass->macroBindings())
-//	{
-//		const auto& name	= std::get<0>(binding.second);
-//
-//		if (std::regex_match(name, withVariableRegex))
-//		{
-//			// generate regex to recognize the macro when coming from filtered out data provider
-//
-//			auto regexString	= std::regex_replace(name, variableRegex, "\\d");
-//			regexString			= std::regex_replace(regexString, std::regex("(\\[|\\.|\\])"), "\\$&");
-//			std::cout << binding.first << "\t-> regex = " << regexString << std::endl;
-//
-//			_passMacroToRegex[binding.first]	= std::regex(regexString);
-//		}
-//	}
-//}
 
 void
 DrawCall::configure(Program::Ptr				program,
@@ -128,48 +102,51 @@ DrawCall::configure(Program::Ptr				program,
 					Container::Ptr				rendererData,
                     Container::Ptr				rootData)
 {
-    _program		= program;
-	_formatFunction	= formatNameFunc;
+    _program			= program;
+	
+	_formatFunction		= formatNameFunc;
 
-    bind(targetData, rendererData, rootData);
-	trackMacros(fullTargetData, fullRendererData, fullRootData);
+	_fullTargetData		= fullTargetData;
+	_fullRendererData	= fullRendererData;
+	_fullRootData		= fullRootData;
 
-	auto slot = fullTargetData->providerRemoved()->connect([=](Container::Ptr c, Provider::Ptr p){
-		distantProviderRemovedHandler(BindingSource::TARGET, p);
+	_targetData			= targetData;
+	_rendererData		= rendererData;
+	_rootData			= rootData;
+
+    bind();
+	trackMacros();
+
+	_zSorter->initialize(_targetData, _rendererData, _rootData);
+
+	// FIXME
+	auto slot = _fullTargetData->providerRemoved()->connect([=](Container::Ptr c, Provider::Ptr p){
+		remoteProviderRemovedHandler(BindingSource::TARGET, p);
 	});
-	_distantProviderRemovedSlots.push_back(slot);
+	_containerUpdateSlots.push_back(slot);
 
-	slot = fullRendererData->providerRemoved()->connect([=](Container::Ptr c, Provider::Ptr p){
-		distantProviderRemovedHandler(BindingSource::RENDERER, p);
+	slot = _fullRendererData->providerRemoved()->connect([=](Container::Ptr c, Provider::Ptr p){
+		remoteProviderRemovedHandler(BindingSource::RENDERER, p);
 	});
-	_distantProviderRemovedSlots.push_back(slot);
+	_containerUpdateSlots.push_back(slot);
 
-	slot = fullRootData->providerRemoved()->connect([=](Container::Ptr c, Provider::Ptr p){
-		distantProviderRemovedHandler(BindingSource::ROOT, p);
+	slot = _fullRootData->providerRemoved()->connect([=](Container::Ptr c, Provider::Ptr p){
+		remoteProviderRemovedHandler(BindingSource::ROOT, p);
 	});
-	_distantProviderRemovedSlots.push_back(slot);
+	_containerUpdateSlots.push_back(slot);
 
 }
 
 void
-DrawCall::bind(Container::Ptr		targetData, 
-			   Container::Ptr		rendererData, 
-			   Container::Ptr		rootData)
+DrawCall::bind()
 {
 	reset();
 
 	bindProgramDefaultUniforms();
-
-	_targetData		= targetData;
-	_rendererData	= rendererData;
-	_rootData		= rootData;
-
 	bindTargetLayouts();
 	bindIndexBuffer();
 	bindProgramInputs();
 	bindStates();
-
-	_zSorter->initialize(targetData, rendererData, rootData);
 }
 
 void
@@ -329,7 +306,8 @@ DrawCall::bindVertexAttribute(const std::string&	inputName,
 	if (attributeBindings.count(inputName))
 	{
 		auto propertyName		= _formatFunction(std::get<0>(attributeBindings.at(inputName)));
-		const auto& container	= getDataContainer(std::get<1>(attributeBindings.at(inputName)));
+		auto source				= std::get<1>(attributeBindings.at(inputName));
+		const auto& container	= getContainer(ContainerId::FILTERED, source);
 
 		if (container && container->hasProperty(propertyName))
 		{
@@ -390,7 +368,8 @@ DrawCall::bindTextureSampler(const std::string&		inputName,
 	if (uniformBindings.count(inputName))
 	{
 		auto propertyName		= _formatFunction(std::get<0>(uniformBindings.at(inputName)));
-		const auto& container	= getDataContainer(std::get<1>(uniformBindings.at(inputName)));
+		auto source				= std::get<1>(uniformBindings.at(inputName));
+		const auto& container	= getContainer(ContainerId::FILTERED, source);
 
 		if (container && container->hasProperty(propertyName))
 		{
@@ -448,8 +427,8 @@ DrawCall::bindUniform(const std::string&	inputName,
 	if (uniformBindings.count(bindingName))
 	{	
 		std::string	propertyName	= _formatFunction(std::get<0>(uniformBindings.at(bindingName)));
-		auto&		source			= std::get<1>(uniformBindings.at(bindingName));
-		const auto&	container		= getDataContainer(source);
+		auto		source			= std::get<1>(uniformBindings.at(bindingName));
+		const auto& container		= getContainer(ContainerId::FILTERED, source);
 
 		if (container)
 		{
@@ -648,7 +627,7 @@ DrawCall::reset()
 	_containerMacroPNames.clear();
 	_containerMacroRegex.clear();
 
-	_distantProviderRemovedSlots.clear();
+	_containerUpdateSlots.clear();
 
 	_zSorter->clear();
 }
@@ -840,16 +819,16 @@ DrawCall::render(const AbstractContext::Ptr& context, AbstractTexture::Ptr rende
 }
 
 Container::Ptr
-DrawCall::getDataContainer(const data::BindingSource& source) const
+DrawCall::getContainer(ContainerId id, data::BindingSource source) const
 {
-	if (source == data::BindingSource::TARGET)
-		return _targetData;
-	else if (source == data::BindingSource::RENDERER)
-		return _rendererData;
-	else if (source == data::BindingSource::ROOT)
-		return _rootData;
-
-	return nullptr;
+	if (id == ContainerId::FILTERED)
+		return source == data::BindingSource::TARGET 
+			? _targetData
+			: (source == data::BindingSource::RENDERER ? _rendererData : _rootData);
+	else
+		return source == data::BindingSource::TARGET 
+			? _fullTargetData
+			: (source == data::BindingSource::RENDERER ? _fullRendererData : _fullRootData);
 }
 
 Vector3::Ptr
@@ -859,23 +838,15 @@ DrawCall::getEyeSpacePosition(Vector3::Ptr output)
 }
 
 void
-DrawCall::trackMacros(Container::Ptr fullTargetData,
-					  Container::Ptr fullRendererData,
-					  Container::Ptr fullRootData)
+DrawCall::trackMacros()
 {
-#ifdef DEBUG
-	assert(fullTargetData && fullRendererData && fullRootData);
-#endif // DEBUG
-	std::cout << "\n\ntrack macros\n\tlocal\t= [" << _targetData.get() << "\t" << _rendererData.get() << "\t" << _rootData.get()
-		<< "\n\tdistant\t= [" << fullTargetData.get() << "\t" << fullRendererData.get() << "\t" << fullRootData.get() << std::endl;
-
 	std::vector<std::pair<Container::Ptr, ContainerId>> containersAndIds = { 
-		std::make_pair(fullTargetData,		ContainerId::FULL), 
-		std::make_pair(fullRendererData,	ContainerId::FULL), 
-		std::make_pair(fullRootData,		ContainerId::FULL), 
-		std::make_pair(_targetData,			ContainerId::LOCAL), 
-		std::make_pair(_rendererData,		ContainerId::LOCAL),
-		std::make_pair(_rootData,			ContainerId::LOCAL)
+		std::make_pair(_fullTargetData,		ContainerId::COMPLETE), 
+		std::make_pair(_fullRendererData,	ContainerId::COMPLETE), 
+		std::make_pair(_fullRootData,		ContainerId::COMPLETE), 
+		std::make_pair(_targetData,			ContainerId::FILTERED), 
+		std::make_pair(_rendererData,		ContainerId::FILTERED),
+		std::make_pair(_rootData,			ContainerId::FILTERED)
 	};
 
 	const float TRACKING_PRIORITY = 0.0f;
@@ -895,13 +866,8 @@ DrawCall::trackMacros(Container::Ptr fullTargetData,
 		auto		source	= std::get<1>(m.second);
 		auto		regex	= std::get<5>(m.second);
 		
-		auto container		= source == data::BindingSource::TARGET 
-			? _targetData
-			: (source == data::BindingSource::RENDERER ? _rendererData : _rootData);
-
-		auto fullContainer	= source == data::BindingSource::TARGET 
-			? fullTargetData
-			: (source == data::BindingSource::RENDERER ? fullRendererData : fullRootData);
+		auto container		= getContainer(ContainerId::FILTERED, source);
+		auto fullContainer	= getContainer(ContainerId::COMPLETE, source);
 
 		// look for formatted property in local containers first
 		const auto& formattedName = _formatFunction(name);
@@ -920,8 +886,7 @@ DrawCall::trackMacros(Container::Ptr fullTargetData,
 					_macroChangedSlots[ContainerAndName(fullContainer, formattedName)] = slot;	
 				}
 
-				_containerMacroPNames[uint(ContainerId::FULL)].insert(formattedName);
-				std::cout << "macro = " << m.first << "\t-> " << formattedName << " in distant [" << fullContainer.get() << "]" << std::endl;
+				_containerMacroPNames[uint(ContainerId::COMPLETE)].insert(formattedName);
 			}
 			else
 			{
@@ -931,8 +896,7 @@ DrawCall::trackMacros(Container::Ptr fullTargetData,
 	
 				_macroChangedSlots[ContainerAndName(container, formattedName)] = slot;	
 
-				_containerMacroPNames[uint(ContainerId::LOCAL)].insert(formattedName);
-				std::cout << "macro = " << m.first << "\t-> " << formattedName << " in local [" << container.get() << "]" << std::endl;
+				_containerMacroPNames[uint(ContainerId::FILTERED)].insert(formattedName);
 			}
 		}
 		else
@@ -947,18 +911,15 @@ DrawCall::trackMacros(Container::Ptr fullTargetData,
 	
 				_macroChangedSlots[ContainerAndName(fullContainer, name)] = slot;	
 
-				_containerMacroPNames[uint(ContainerId::FULL)].insert(name);
-				std::cout << "macro = " << m.first << "\t-> " << name << " in distant [" << fullContainer.get() << "]" << std::endl;
+				_containerMacroPNames[uint(ContainerId::COMPLETE)].insert(name);
 			}
 			else if (regex)
 			{
-				_containerMacroRegex[uint(ContainerId::FULL)].push_back(*regex);
-				std::cout << "macro = " << m.first << "\t-> regex in distant [" << fullContainer.get() << "]" << std::endl;
+				_containerMacroRegex[uint(ContainerId::COMPLETE)].push_back(*regex);
 			}
 			else
 			{
-				_containerMacroPNames[uint(ContainerId::FULL)].insert(name);
-				std::cout << "macro = " << m.first << "\t-> " << name << " in distant [" << fullContainer.get() << "]" << std::endl;
+				_containerMacroPNames[uint(ContainerId::COMPLETE)].insert(name);
 			}
 		}
 	}
@@ -1006,8 +967,6 @@ DrawCall::macroAddedHandler(Container::Ptr		container,
 void
 DrawCall::macroChangedHandler(Container::Ptr container, const std::string& name)
 {
-	std::cout << "--- " << name << " reference changed in " << container.get() << std::endl;
-
 	_macroChanged->execute(shared_from_this(), container, name);
 }
 
@@ -1024,9 +983,9 @@ DrawCall::macroRemovedHandler(Container::Ptr		container,
 }
 
 void
-DrawCall::distantProviderRemovedHandler(BindingSource source, Provider::Ptr provider)
+DrawCall::remoteProviderRemovedHandler(BindingSource source, Provider::Ptr provider)
 {
-	auto container = getDataContainer(source);
+	auto container = getContainer(ContainerId::FILTERED, source);
 	if (container == nullptr || !container->hasProvider(provider))
 		return;
 

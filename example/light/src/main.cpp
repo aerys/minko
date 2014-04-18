@@ -40,14 +40,13 @@ createPointLight(Vector3::Ptr color, Vector3::Ptr position, file::AssetLibrary::
 	auto pointLight = scene::Node::create("pointLight_" + std::to_string(lightId++))
 		->addComponent(PointLight::create(10.f))
 		->addComponent(Transform::create(Matrix4x4::create()->appendTranslation(position)))
-		/*->addComponent(Surface::create(
+		->addComponent(Surface::create(
 			assets->geometry("quad"),
 			material::Material::create()
 				->set("diffuseMap",		assets->texture("texture/sprite-pointlight.png"))
 				->set("diffuseTint",	Vector4::create(color->x(), color->y(), color->z(), 1.f)),
 			assets->effect("effect/Sprite.effect")
-		))
-		*/;
+		));
 
 	pointLight->component<PointLight>()->color(color);
 	pointLight->component<PointLight>()->diffuse(.1f);
@@ -58,43 +57,6 @@ createPointLight(Vector3::Ptr color, Vector3::Ptr position, file::AssetLibrary::
 
 int main(int argc, char** argv)
 {
-	const std::string& binding = "materials[${materialId}].color";
-	std::string binding2 = "pointLights.length";
-	std::string str = "materials[0].color";
-
-	auto withVariableRegex = std::regex(".*\\[\\$\\{.*\\}\\].*");
-
-	auto testRegexStr = "materials\\[\\d\\]\\.color";
-	auto testRegex = std::regex(testRegexStr);
-	if (std::regex_match(str, testRegex))
-		std::cout << "test yay" << std::endl;
-
-	if (std::regex_match(binding, withVariableRegex))
-	{
-		std::cout << "binding" << std::endl;
-
-		auto variableRegex = std::regex("(\\$\\{)(.*)\\}");
-
-		std::smatch match;
-
-		auto regexString = std::regex_replace(binding, variableRegex, "\\d");
-		std::cout << "regexString 2 = " << regexString << std::endl;
-		regexString = std::regex_replace(regexString, std::regex("(\\[|\\.|\\])"), "\\$&");
-		std::cout << "regexString 3 = " << regexString << std::endl;
-		//regexString = std::regex_replace(regexString, std::regex("\\]"), "\\]");
-		//std::cout << "regexString 4 = " << regexString << std::endl;
-		//regexString = std::regex_replace(regexString, std::regex("\\."), "\\.");
-		//std::cout << "regexString 5 = " << regexString << std::endl;
-
-		auto newRegex = std::regex(regexString);
-		if (std::regex_match(str, newRegex))
-			std::cout << "yay!" << std::endl;
-	}
-	if (std::regex_match(binding2, withVariableRegex))
-		std::cout << "binding2" << std::endl;
-	if (std::regex_match(str, withVariableRegex))
-		std::cout << "str" << std::endl;
-
 	auto canvas = Canvas::create("Minko Example - Light", WINDOW_WIDTH, WINDOW_HEIGHT);
 
 	canvas->context()->errorsEnabled(true);
@@ -142,7 +104,7 @@ int main(int argc, char** argv)
 				sceneManager->assets()->effect("phong")
 			))
 			->addComponent(Transform::create(Matrix4x4::create()->appendScale(50.f)->appendRotationX(-1.57f)));
-		//root->addChild(ground);
+		root->addChild(ground);
 
 		// sphere
 		auto sphere = scene::Node::create("sphere")

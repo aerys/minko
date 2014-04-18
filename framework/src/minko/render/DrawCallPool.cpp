@@ -231,7 +231,7 @@ DrawCallPool::cleanSurface(Surface::Ptr	surface)
 
 	_surfaceToDrawCalls[surface].clear();
 	_surfaceToTechniqueChangedSlot.erase(surface);
-	_surfaceToVisibilityChangedSlots.erase(surface);
+	//_surfaceToVisibilityChangedSlots.erase(surface);
 	_surfaceToIndexChangedSlots.erase(surface);
 
 	if (_surfaceBadMacroToTechniques.count(surface))

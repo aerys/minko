@@ -21,7 +21,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/render/Pass.hpp"
 #include "minko/data/Container.hpp"
-#include "minko/data/ContainerProperty.hpp"
 #include "minko/render/DrawCall.hpp"
 
 using namespace minko;

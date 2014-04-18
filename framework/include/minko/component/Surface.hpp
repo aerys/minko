@@ -23,8 +23,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/component/AbstractComponent.hpp"
 
-#include "minko/data/ContainerProperty.hpp"
-
 namespace minko
 {
 	namespace component
