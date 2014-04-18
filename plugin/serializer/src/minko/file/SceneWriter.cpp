@@ -21,6 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/component/AbstractComponent.hpp"
 #include "minko/scene/Node.hpp"
+#include "minko/component/BoundingBox.hpp"
 #include "minko/component/PerspectiveCamera.hpp"
 #include "minko/component/Transform.hpp"
 #include "minko/component/AmbientLight.hpp"
@@ -105,6 +106,14 @@ SceneWriter::SceneWriter()
 		&typeid(component::Renderer),
 		std::bind(
 			&serialize::ComponentSerializer::serializeRenderer,
+			std::placeholders::_1, std::placeholders::_2
+		)
+	);
+
+	registerComponent(
+		&typeid(component::BoundingBox),
+		std::bind(
+			&serialize::ComponentSerializer::serializeBoundingBox,
 			std::placeholders::_1, std::placeholders::_2
 		)
 	);
