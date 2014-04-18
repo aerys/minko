@@ -27,5 +27,5 @@ vec4 getDuDvReflectionColor(vec4 reflectionPosition, vec2 uv, sampler2D reflecti
 	// reflect more based on distance from the camera
 	reflectionTexCoord.z = .1f / reflectionTexCoord.z;
 
-	return texture2D(reflectionMap, reflectionTexCoord.xy + offset);
+	return texture2D(reflectionMap, clamp(reflectionTexCoord.xy + offset, 0.0, 1.0));
 }
