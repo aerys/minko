@@ -65,6 +65,7 @@ Reflection::initialize()
 
         // Create reflection renderer
         _reflectionRenderer = Renderer::create(_clearColor, _renderTarget, _reflectionEffect, 10000);
+		_reflectionRenderer->backgroundColor(_clearColor);
 
         // Add the renderer to the camera
         target->addComponent(_reflectionRenderer);
