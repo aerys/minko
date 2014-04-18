@@ -1,4 +1,4 @@
---[[
+/*
 Copyright (c) 2013 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
@@ -15,23 +15,22 @@ BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR P
 NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
 DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-]]--
+*/
 
--- fx plugin
-minko.plugin.fx = {}
+#pragma once
 
-function minko.plugin.fx:enable()
-	defines { "MINKO_PLUGIN_FX" }
-	
-	minko.plugin.links { "fx" }
-	includedirs { minko.plugin.path("fx") .. "/include" }
-	
-	prelinkcommands {
-		minko.action.copy(minko.plugin.path("fx") .. "/asset"),
+#include "minko/Common.hpp"
+
+namespace minko
+{
+	namespace material
+	{
+		class WaterMaterial;
 	}
-end
 
-newoption {
-	trigger		= "with-fx",
-	description	= "Enable the Minko FX plugin."
+	namespace component
+	{
+		class Water;
+		class Reflection;
+	}
 }

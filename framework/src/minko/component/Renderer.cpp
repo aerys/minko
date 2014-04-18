@@ -82,8 +82,8 @@ void
 Renderer::targetAddedHandler(std::shared_ptr<AbstractComponent> ctrl,
 							 std::shared_ptr<Node> 			target)
 {
-	if (target->components<Renderer>().size() > 1)
-		throw std::logic_error("There cannot be two Renderer on the same node.");
+	/*if (target->components<Renderer>().size() > 1)
+		throw std::logic_error("There cannot be two Renderer on the same node.");*/
 
 	_addedSlot = target->added()->connect(std::bind(
 		&Renderer::addedHandler,
