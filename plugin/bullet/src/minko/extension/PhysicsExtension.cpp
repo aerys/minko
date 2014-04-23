@@ -100,9 +100,7 @@ PhysicsExtension::deserializePhysics(std::string&							serializedCollider,
 
 	const auto	friction	= dst.a4;
 	const auto	restitution	= dst.a5;
-
-    const short filterGroup = short(dst.a8 & ((1<<16) - 1)); // overriden by node's layouts
-    const short filterMask  = short(dst.a9 & ((1<<16) - 1)); 
+    const auto	filterMask  = Layouts(dst.a9); 
 
 	auto data = component::bullet::ColliderData::create(
 		mass, 
@@ -111,8 +109,11 @@ PhysicsExtension::deserializePhysics(std::string&							serializedCollider,
 		friction
 	);
 
-	return component::bullet::Collider::create(data)
-		->collisionGroup(filterGroup)
-		->collisionMask(filterMask)
+	auto collider = component::bullet::Collider::create(data)
+		//->collisionGroup(filterGroup) // information stored in node layouts 
 		->triggerCollisions(dst.a7);
+
+	collider->layoutMask(filterMask);
+
+	return collider;
 }

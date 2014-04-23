@@ -22,27 +22,35 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Common.hpp"
 #include "minko/Signal.hpp"
 
+#include "minko/scene/Layout.hpp"
+
 namespace minko
 {
 	namespace component
 	{
-		class AbstractComponent
+		class AbstractComponent:
+			public std::enable_shared_from_this<AbstractComponent>
 		{
 			friend class scene::Node;
 
 		public:
-			typedef std::shared_ptr<AbstractComponent>	Ptr;
+			typedef std::shared_ptr<AbstractComponent>					Ptr;
 
 		private:
 			std::vector<std::shared_ptr<scene::Node>>					_targets;
+			Layouts														_layoutMask;
 
 			std::shared_ptr<Signal<Ptr, std::shared_ptr<scene::Node>>>	_targetAdded;
 			std::shared_ptr<Signal<Ptr, std::shared_ptr<scene::Node>>>	_targetRemoved;
+			std::shared_ptr<Signal<Ptr>>								_layoutMaskChanged;
 
 		public:
-			AbstractComponent() :
+			AbstractComponent(Layouts layoutMask = scene::Layout::Mask::EVERYTHING) :
+				_targets(),
+				_layoutMask(layoutMask),
 				_targetAdded(Signal<Ptr, std::shared_ptr<scene::Node>>::create()),
-				_targetRemoved(Signal<Ptr, std::shared_ptr<scene::Node>>::create())
+				_targetRemoved(Signal<Ptr, std::shared_ptr<scene::Node>>::create()),
+				_layoutMaskChanged(Signal<Ptr>::create())
 			{
 			}
 
@@ -71,6 +79,25 @@ namespace minko
 			}
 
 			inline
+			Layouts
+			layoutMask() const
+			{
+				return _layoutMask;
+			}
+
+			inline
+			void
+			layoutMask(Layouts value)
+			{
+				if (_layoutMask != value)
+				{
+					_layoutMask = value;
+					_layoutMaskChanged->execute(shared_from_this());
+				}
+			}
+
+
+			inline
 			Signal<Ptr, std::shared_ptr<scene::Node>>::Ptr
 			targetAdded() const
 			{
@@ -82,6 +109,13 @@ namespace minko
 			targetRemoved() const
 			{
 				return _targetRemoved;
+			}
+
+			inline
+			Signal<Ptr>::Ptr
+			layoutMaskChanged() const
+			{
+				return _layoutMaskChanged;
 			}
 		};
 

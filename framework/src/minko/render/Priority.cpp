@@ -17,13 +17,12 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "minko/material/Material.hpp"
+#include "minko/render/Priority.hpp"
 
-using namespace minko;
-using namespace minko::material;
+using namespace minko::render;
 
-Material::Material() :
-	data::ArrayProvider("material")
-{
-	
-}
+/*static*/ const float Priority::FIRST			= 4000.0f;
+/*static*/ const float Priority::BACKGROUND		= 3000.0f;
+/*static*/ const float Priority::OPAQUE			= 2000.0f;
+/*static*/ const float Priority::TRANSPARENT	= 1000.0f;
+/*static*/ const float Priority::LAST			= 0.0f;

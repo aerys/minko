@@ -57,7 +57,6 @@
 		"MODEL_TO_WORLD"		: "transform.modelToWorldMatrix",
 		"NUM_BONES"				: "geometry[${geometryId}].numBones",
 		"NUM_AMBIENT_LIGHTS"	: { "property" : "ambientLights.length",		"source" : "root" },
-		"PRECOMPUTED_AMBIENT"	: { "property" : "sumAmbients",					"source" : "root" },
 		"FOG_LIN"				: "material[${materialId}].fogLinear",
 		"FOG_EXP"				: "material[${materialId}].fogExponential",
 		"FOG_EXP2"				: "material[${materialId}].fogExponential2"
@@ -80,7 +79,8 @@
         "scissorBox.width"      : { "property" : "scissorBox.width",    "source" : "renderer" },
         "scissorBox.height"     : { "property" : "scissorBox.height",   "source" : "renderer" },
         "priority"              : "material[${materialId}].priority",
-        "zSort"					: "material[${materialId}].zSort"
+        "zSort"					: "material[${materialId}].zSort",
+        "layouts"               : "node.layouts"
 	},
 
 	"samplerStates" : {

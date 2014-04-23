@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/MinkoSDL.hpp"
 
 using namespace minko;
+using namespace minko::scene;
 using namespace minko::component;
 using namespace minko::math;
 
@@ -30,50 +31,120 @@ int main(int argc, char** argv)
 	auto canvas = Canvas::create("Minko Example - Ray Casting", 800, 600);
 
 	auto sceneManager = SceneManager::create(canvas->context());
+	
+	std::cout << "-----------------------------" << std::endl;
+	std::cout << "[R]\ttoogle the raycasting layout mask of the RED box" << std::endl;
+	std::cout << "[G]\trender only the GREEN box" << std::endl;
+	std::cout << "[B]\trestrict ray intersection to the BLUE box" << std::endl;
+	std::cout << "[Q]\tchange the green box's layouts" << std::endl;
+	std::cout << "-----------------------------" << std::endl;
+
+	bool	toogleGreenBoxLayouts	= false;
+	int		greenBoxLayoutsId		= 0;
+	Layouts greenBoxLayouts[2]		= { Layout::Group::DEFAULT | (1 << 3),  Layout::Group::DEFAULT };
+
+	Layouts	blueBoxLayouts			= 1 << 2;
+
+	bool	toogleRedBoxLayouts	= false;
+	int		redBoxLayoutsId		= 0;
+	Layouts	redBoxLayouts[2]	= { Layout::Group::DEFAULT, Layout::Group::IGNORE_RAYCASTING };
+
+	bool	tooglePickingMask	= false;
+	int		pickingMaskId		= 0;
+	Layouts	pickingMasks[2]		= { Layout::Mask::RAYCASTING_DEFAULT, blueBoxLayouts };
+
+	bool	toogleRendererMask	= false;
+	int		rendererMaskId		= 0;
+	Layouts rendererMasks[2]	= { Layout::Mask::EVERYTHING, 1 << 3 };
 
 	// setup assets
-	sceneManager->assets()->loader()->options()->generateMipmaps(true);
 	sceneManager->assets()->loader()->options()
-                ->registerParser<file::PNGParser>("png");
-        sceneManager->assets()->loader()
-                ->queue("texture/box.png")
-		->queue("effect/Basic.effect");
+		->generateMipmaps(true)
+		->registerParser<file::PNGParser>("png");
+	sceneManager->assets()->loader()
+		->queue("texture/box.png")
+		->queue("effect/Basic.effect")
+		->queue("effect/Line.effect");
 
-	auto root = scene::Node::create("root")
+	auto root = Node::create("root")
 		->addComponent(sceneManager);
 
-	auto camera = scene::Node::create("camera")
+	auto camera = Node::create("camera")
+		->layouts(Layout::Mask::EVERYTHING)
 		->addComponent(Renderer::create(0x7f7f7fff))
 		->addComponent(Transform::create(
-			Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 1.f, 3.f))
+			Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.8f, 3.0f))
 		))
 		->addComponent(PerspectiveCamera::create(800.f / 600.f, (float)PI * 0.25f, .1f, 1000.f));
 	root->addChild(camera);
 
-	auto mesh = scene::Node::create("mesh")
-		->addComponent(Transform::create());
+	auto redBox = Node::create("redBox")
+		->layouts(redBoxLayouts[0])
+		->addComponent(Transform::create(
+			math::Matrix4x4::create()->appendTranslation(0.0f, 0.0f, 1.5f)
+		))
+		->addComponent(BoundingBox::create());
 
+	auto greenBox = Node::create("greenBox")
+		->layouts(greenBoxLayouts[0])
+		->addComponent(Transform::create(
+			math::Matrix4x4::create()->appendTranslation(1.0f, 0.0f, -0.5f)
+		))
+		->addComponent(BoundingBox::create());
 
-	auto hit = scene::Node::create()
+	auto blueBox = Node::create("blueBox")
+		->layouts(blueBoxLayouts)
+		->addComponent(Transform::create(
+			math::Matrix4x4::create()->appendTranslation(-1.0f, 0.0f, -0.5f)
+		))
+		->addComponent(BoundingBox::create());
+
+	auto hitProvider	= data::ArrayProvider::create("material")
+		->set("depthFunc",	render::CompareMode::ALWAYS)
+		->set("priority",	render::Priority::LAST);
+
+	auto hit			= Node::create("hit")
 		->addComponent(Transform::create());
 
 	root->addComponent(MousePicking::create());
 
 	auto _ = sceneManager->assets()->loader()->complete()->connect([=](file::Loader::Ptr loader)
 	{
-		mesh->addComponent(BoundingBox::create())
-			->addComponent(Surface::create(
-				geometry::CubeGeometry::create(sceneManager->assets()->context()),
-				material::BasicMaterial::create()->diffuseMap(sceneManager->assets()->texture("texture/box.png")),
-				sceneManager->assets()->effect("effect/Basic.effect")
-			));
-		root->addChild(mesh);
+		auto assets = sceneManager->assets();
+
+		redBox->addComponent(Surface::create(
+			geometry::CubeGeometry::create(assets->context()),
+			material::BasicMaterial::create()->diffuseMap(assets->texture("texture/box.png"))->diffuseColor(0xff6600ff),
+			assets->effect("basic")
+		));
+		
+		greenBox->addComponent(Surface::create(
+			geometry::CubeGeometry::create(assets->context()),
+			material::BasicMaterial::create()->diffuseMap(assets->texture("texture/box.png"))->diffuseColor(0x00ff00ff),
+			assets->effect("basic")
+		));
+
+		blueBox->addComponent(Surface::create(
+			geometry::CubeGeometry::create(assets->context()),
+			material::BasicMaterial::create()->diffuseMap(assets->texture("texture/box.png"))->diffuseColor(0x0066ffff),
+			assets->effect("basic")
+		));
+
+		auto hitGeometry = geometry::LineGeometry::create(canvas->context())
+			->moveTo(-1.0f, 0.0f, 0.0f)
+			->lineTo(1.0f, 0.0f, 0.0f)
+			->moveTo(0.0f, -1.0f, 0.0f)
+			->lineTo(0.0f, 1.0f, 0.0f);
 
 		hit->addComponent(Surface::create(
-				geometry::CubeGeometry::create(sceneManager->assets()->context()),
-				material::BasicMaterial::create()->diffuseColor(0x00ff00ff),
-				sceneManager->assets()->effect("effect/Basic.effect")
-			));
+				hitGeometry,
+				hitProvider->set("diffuseColor", Vector4::create(1.0f, 1.0f, 1.0f, 1.0f)),
+				assets->effect("line")));
+
+		root
+			->addChild(redBox)
+			->addChild(greenBox)
+			->addChild(blueBox);
 	});
 
 	auto mouseOver = root->component<MousePicking>()->move()->connect(
@@ -81,6 +152,13 @@ int main(int argc, char** argv)
 		{
 			if (hit->parent() != root)
 				root->addChild(hit);
+
+			if (hits.empty())
+			{
+				root->removeChild(hit);
+				return;
+			}
+
 			hit->component<Transform>()->matrix()
 				->identity()
 				->appendScale(.1f)
@@ -89,6 +167,17 @@ int main(int argc, char** argv)
 					ray->origin()->y() + ray->direction()->y() * hits.front().second,
 					ray->origin()->z() + ray->direction()->z() * hits.front().second
 				);
+
+			auto hitNode = hits.front().first;
+
+			if (hitNode->name() == "redBox")
+				hitProvider->set("diffuseColor", Vector4::create(1.0f, 0.5f, 0.0f, 1.0f));
+			else if (hitNode->name() == "greenBox")
+				hitProvider->set("diffuseColor", Vector4::create(0.0f, 1.0f, 0.0f, 1.0f));
+			else if (hitNode->name() == "blueBox")
+				hitProvider->set("diffuseColor", Vector4::create(0.0f, 0.75f, 1.0f, 1.0f));
+			else
+				hitProvider->set("diffuseColor", Vector4::create(1.0f, 1.0f, 1.0f, 1.0f));
 		}
 	);
 
@@ -97,6 +186,17 @@ int main(int argc, char** argv)
 		camera->component<PerspectiveCamera>()->aspectRatio((float)w / (float)h);
 	});
 
+	auto keyDown = canvas->keyboard()->keyDown()->connect([&](input::Keyboard::Ptr k)
+	{
+		if (k->keyIsDown(input::Keyboard::ScanCode::R))
+			toogleRedBoxLayouts		= true;
+		else if (k->keyIsDown(input::Keyboard::ScanCode::B))
+			tooglePickingMask		= true;
+		else if (k->keyIsDown(input::Keyboard::ScanCode::G))
+			toogleRendererMask		= true;
+		else if (k->keyIsDown(input::Keyboard::ScanCode::Q)) 
+			toogleGreenBoxLayouts	= true;
+	});
 
 	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float deltaTime)
 	{
@@ -105,30 +205,60 @@ int main(int argc, char** argv)
 			canvas->mouse()->normalizedX(), canvas->mouse()->normalizedY()
 		);
 
-		mesh->component<Transform>()->matrix()
-			//->translation(sinf((float)time * .001f), 0.f, 0.f);
-			->prependRotationY(.01f);
+		if (tooglePickingMask || toogleRedBoxLayouts)
+			root->removeChild(hit);
+
+		if (toogleRedBoxLayouts)
+		{
+			redBoxLayoutsId		= (redBoxLayoutsId + 1) % 2;
+			toogleRedBoxLayouts	= false;
+			redBox->layouts(redBoxLayouts[redBoxLayoutsId]);
+			
+			if (redBox->layouts() == Layout::Group::IGNORE_RAYCASTING)
+				std::cout << "The RED box ignores ray casting." << std::endl;
+			else
+				std::cout << "The RED box can be ray cast." << std::endl;
+		}
+
+		if (toogleGreenBoxLayouts)
+		{
+			greenBoxLayoutsId	= (greenBoxLayoutsId + 1) % 2;
+			toogleGreenBoxLayouts	= false;
+			greenBox->layouts(greenBoxLayouts[greenBoxLayoutsId]);
+
+			std::cout << "green box layouts = " << std::bitset<32>(greenBox->layouts()) << std::endl;
+		}
+
+		if (tooglePickingMask)
+		{
+			pickingMaskId		= (pickingMaskId + 1) % 2;
+			tooglePickingMask	= false;
+			root->component<MousePicking>()->layoutMask(pickingMasks[pickingMaskId]);
+
+			if (root->component<MousePicking>()->layoutMask() == blueBoxLayouts)
+				std::cout << "The ray can only intersect the BLUE box." << std::endl;
+			else
+				std::cout << "The ray can intersect all boxes." << std::endl;
+		}
+
+		if (toogleRendererMask)
+		{
+			rendererMaskId		= (rendererMaskId + 1) % 2;
+			toogleRendererMask	= false;
+			camera->component<Renderer>()->layoutMask(rendererMasks[rendererMaskId]);
+
+			if (camera->component<Renderer>()->layoutMask() == Layout::Mask::EVERYTHING)
+				std::cout << "All boxes are rendered." << std::endl;
+			else
+				std::cout << "Only the GREEN box is rendered." << std::endl;
+		}
+
+		redBox->component<Transform>()->matrix()->prependRotationY(0.01f);
+		greenBox->component<Transform>()->matrix()->prependRotationY(-0.01f);
+		blueBox->component<Transform>()->matrix()->prependRotationY(-0.01f);
 
 		root->component<MousePicking>()->pick(ray);
 
-		/*
-		if (mesh->component<BoundingBox>()->shape()->cast(ray, distance))
-		{
-			if (hit->parent() != root)
-				root->addChild(hit);
-			hit->component<Transform>()->transform()
-				->identity()
-				->appendScale(.1f)
-				->translation(
-					ray->origin()->x() + ray->direction()->x() * distance,
-					ray->origin()->y() + ray->direction()->y() * distance,
-					ray->origin()->z() + ray->direction()->z() * distance
-				);
-		}
-		else if (hit->parent() == root)
-			root->removeChild(hit);
-		*/
-		//camera->component<Transform>()->matrix()->appendRotationY(.01f);
 		sceneManager->nextFrame(time, deltaTime);
 	});
 

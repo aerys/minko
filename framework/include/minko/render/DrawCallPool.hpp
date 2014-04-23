@@ -21,7 +21,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 #include "minko/Signal.hpp"
-#include "minko/data/ContainerProperty.hpp"
 
 namespace std
 {
@@ -51,14 +50,6 @@ namespace minko
 		{
 		public:
 			typedef std::shared_ptr<DrawCallPool>														Ptr;
-			
-		private:
-			enum class MacroChange
-			{
-				REF_CHANGED	= 0,
-				ADDED		= 1,
-				REMOVED		= 2
-			};
 
 		private:
 			typedef std::shared_ptr<DrawCall>															DrawCallPtr;
@@ -68,31 +59,18 @@ namespace minko
 			typedef std::shared_ptr<component::Renderer>												RendererPtr;
 			typedef std::shared_ptr<render::Pass>														PassPtr;
 			typedef std::shared_ptr<scene::Node>														NodePtr;
-			typedef std::unordered_map<std::string, std::string>										StringToStringMap;
+			typedef std::shared_ptr<data::ArrayProvider>												ArrayProviderPtr;
+			typedef std::shared_ptr<data::AbstractFilter>												AbstractFilterPtr;
 
-			typedef std::pair<std::string, PassPtr>														TechniqueNameAndPass;
-			typedef std::pair<SurfacePtr, NodePtr>														SurfaceAndTarget;
-			typedef std::list<DrawCallPtr>																DrawCallList;
-			typedef std::function <std::string(const std::string&, StringToStringMap&)>					FormatFunction;
+			typedef std::unordered_set<std::string>														Techniques;
 
-			typedef Signal<ContainerPtr, const std::string&>											PropertyChangedSignal;
-			typedef Signal<Ptr, SurfacePtr, DrawCallPtr>												DrawCallChangedSignal;
-
-			typedef Signal<SurfacePtr, const std::string&, bool>::Slot									TechniqueChangeSlot;
-			typedef Signal<SurfacePtr, RendererPtr, bool>::Slot											VisibilityChangedSlot;
-			typedef Signal<DrawCallPtr>::Slot															ZSortNeededSlot;
-			typedef Signal<std::shared_ptr<data::ArrayProvider>, uint>::Slot							ArrayProviderIndexChangedSlot;
-			typedef PropertyChangedSignal::Slot															PropertyChangedSlot;
-
-			typedef std::unordered_map<DrawCallPtr, PassPtr>											DrawCallToPassMap;
-			typedef std::unordered_map<data::ContainerProperty, PropertyChangedSlot>					ContainerPropertyToChangedSlotMap;
-			typedef std::unordered_map<data::ContainerProperty, uint>									ContainerPropertyToNumListenersMap;
-			typedef std::unordered_map<data::ContainerProperty, std::list<TechniqueNameAndPass>>		ContainerPropertyToPassesMap;
-			typedef std::unordered_map<DrawCallPtr, ContainerPtr>										DrawCallToContainerMap;
-			typedef std::unordered_map<std::string, DrawCallList>										MacroNameToDrawCallListMap;
-			typedef std::unordered_map<std::string, std::unordered_set<std::string>>					TechniqueToMacroSetMap;
-			typedef std::unordered_map<DrawCallPtr, ZSortNeededSlot>									DrawCallToZSortSlotMap;
-			typedef std::unordered_map<std::string, data::MacroBinding>									MacroBindingsMap;
+			typedef Signal<DrawCallPtr, ContainerPtr, const std::string&>								DrawCallMacroChanged;
+			typedef Signal<ContainerPtr, const std::string&>											PropertyChanged;
+			typedef Signal<SurfacePtr, const std::string&, bool>										TechniqueChanged;
+			typedef Signal<SurfacePtr, RendererPtr, bool>												VisibilityChanged;
+			typedef Signal<DrawCallPtr>																	ZSortNeeded;
+			typedef Signal<ArrayProviderPtr, uint>														ArrayIndexChanged;
+			typedef Signal<RendererPtr, AbstractFilterPtr, data::BindingSource>							RendererFilterChanged;
 			
 		private:
 			static const unsigned int																	NUM_FALLBACK_ATTEMPTS;
@@ -101,57 +79,39 @@ namespace minko
 
 			RendererPtr																					_renderer;
 
-			// std::unordered_map<SurfaceAndTarget, uint> _test;
-
-			std::unordered_map<SurfacePtr, TechniqueChangeSlot>											_surfaceToTechniqueChangedSlot;
-			std::unordered_multimap<SurfacePtr, VisibilityChangedSlot>									_surfaceToVisibilityChangedSlot;
-			std::unordered_multimap<SurfacePtr, ArrayProviderIndexChangedSlot>							_surfaceToIndexChangedSlot;
-
-			DrawCallChangedSignal::Ptr																	_drawCallAdded;
-			DrawCallChangedSignal::Ptr																	_drawCallRemoved;
-
-			std::unordered_map<SurfacePtr, std::list<Any>>												_macroAddedOrRemovedSlots;
-			std::unordered_map<SurfacePtr, ContainerPropertyToChangedSlotMap>							_macroChangedSlots;
-			std::unordered_map<SurfacePtr, ContainerPropertyToNumListenersMap>							_numMacroListeners;
-			
-			
-			std::unordered_map<SurfacePtr, DrawCallToPassMap>											_drawCallToPass;
-			std::unordered_map<SurfacePtr, DrawCallToContainerMap>										_drawCallToRendererData;
-			std::unordered_map<SurfacePtr, MacroNameToDrawCallListMap>									_macroNameToDrawCalls;
-			std::unordered_map<SurfacePtr, TechniqueToMacroSetMap>										_techniqueToMacroNames;
-
-			std::unordered_map<SurfacePtr, ContainerPropertyToPassesMap>								_incorrectMacroToPasses;
-			std::unordered_map<SurfacePtr, ContainerPropertyToChangedSlotMap>							_incorrectMacroChangedSlot;
-			std::unordered_map<SurfacePtr, DrawCallToZSortSlotMap>										_drawcallToZSortNeededSlots;
-
 			// surface that will generate new draw call next frame
 			std::set<SurfacePtr>																		_toCollect;
 			std::set<SurfacePtr>																		_toRemove;
 			std::set<SurfacePtr>																		_invisibleSurfaces;
 
-			// drawcall z-sorting
+			std::unordered_map<SurfacePtr, std::list<DrawCallPtr>>										_surfaceToDrawCalls;
+			std::unordered_map<DrawCallPtr, SurfacePtr>													_drawcallToSurface;
+			std::unordered_map<DrawCallPtr, DrawCallMacroChanged::Slot>									_drawcallToMacroChangedSlot;
+			std::unordered_map<DrawCallPtr, ZSortNeeded::Slot>											_drawcallToZSortNeededSlot;
+			std::list<DrawCallPtr>																		_drawCalls;
+
+			std::set<DrawCallPtr>																		_dirtyDrawCalls;
 			bool																						_mustZSort; // forces z-sorting at next frame
 
-			// draw call list for renderer
-			std::unordered_map<SurfacePtr, DrawCallList>												_surfaceToDrawCalls;
-			DrawCallList																				_drawCalls;
-			FormatFunction																				_formatFunction;
+			std::unordered_map<SurfacePtr, TechniqueChanged::Slot>										_surfaceToTechniqueChangedSlot;
+			std::unordered_multimap<SurfacePtr, VisibilityChanged::Slot>								_surfaceToVisibilityChangedSlots;
+			std::unordered_multimap<SurfacePtr, ArrayIndexChanged::Slot>								_surfaceToIndexChangedSlots;
 
+			std::unordered_map<SurfacePtr, std::unordered_map<std::string, Techniques>>					_surfaceBadMacroToTechniques;
+			std::unordered_map<SurfacePtr, std::unordered_map<std::string, PropertyChanged::Slot>>		_surfaceBadMacroToChangedSlot;
+
+			RendererFilterChanged::Slot																	_rendererFilterChangedSlot;
 
 		public:
 			inline static
 			Ptr
 			create(RendererPtr renderer)
 			{
-				Ptr drawCallPool(new DrawCallPool(renderer));
+				Ptr ptr = std::shared_ptr<DrawCallPool>(new DrawCallPool(renderer));
 
-				drawCallPool->_formatFunction = std::bind(
-					&DrawCallPool::formatPropertyName,
-					drawCallPool,
-					std::placeholders::_1,
-					std::placeholders::_2);
+				ptr->initialize();
 
-				return drawCallPool;
+				return ptr;
 			}
 
 			const std::list<std::shared_ptr<DrawCall>>&
@@ -164,28 +124,34 @@ namespace minko
 			removeSurface(SurfacePtr);
 			
 		private:
-			
+			explicit
 			DrawCallPool(RendererPtr renderer);
+
+			void
+			initialize();
 
 			// generate draw call for one mesh
 			std::shared_ptr<DrawCall>
-			initializeDrawCall(std::shared_ptr<render::Pass>	pass, 
-							   SurfacePtr						surface,
-							   std::shared_ptr<DrawCall>		drawcall = nullptr);
+			initializeDrawCall(SurfacePtr,
+							   PassPtr,
+							   DrawCallPtr = nullptr);
 
 			std::shared_ptr<Program>
-			getWorkingProgram(SurfacePtr							surface,
-							  PassPtr								pass,
-							  DrawCallPtr							drawCall,
-							  ContainerPtr							targetData,
-							  ContainerPtr							rendererData,
-							  ContainerPtr							rootData,
-						      std::list<data::ContainerProperty>&	booleanMacros,
-						      std::list<data::ContainerProperty>&	integerMacros,
-						      std::list<data::ContainerProperty>&	incorrectIntegerMacros);
+			getWorkingProgram(SurfacePtr,
+							  PassPtr,
+							  FormatNameFunction,
+							  ContainerPtr fullTargetData,
+							  ContainerPtr fullRendererData,
+							  ContainerPtr fullRootData,
+							  ContainerPtr targetData,
+							  ContainerPtr rendererData,
+							  ContainerPtr rootData);
 						
-			DrawCallList&
+			std::list<DrawCallPtr>&
 			generateDrawCall(SurfacePtr, unsigned int numAttempts); 
+
+			void
+			refreshDrawCall(DrawCallPtr);
 			
 			void
 			deleteDrawCalls(SurfacePtr);
@@ -200,51 +166,34 @@ namespace minko
 			visibilityChangedHandler(SurfacePtr, RendererPtr, bool visibility);
 
 			void
-			dataProviderIndexChangedHandler(std::shared_ptr<data::ArrayProvider>, uint index, SurfacePtr);
-
-			void
-			macroChangedHandler(ContainerPtr		container, 
-							    const std::string&	propertyName, 
-								SurfacePtr			surface, 
-								MacroChange			change);
-
-			
-			void
-			watchMacroAdditionOrDeletion(SurfacePtr);
-			
-			void
-			blameMacros(SurfacePtr									surface,
-						const std::list<data::ContainerProperty>&	incorrectIntegerMacros,
-						const TechniqueNameAndPass&						pass);
-			
-			void
-			forgiveMacros(SurfacePtr									surface,
-						  const std::list<data::ContainerProperty>&		booleanMacros,
-						  const std::list<data::ContainerProperty>&		integerMacros,
-						  const TechniqueNameAndPass&							pass);
-						  
-			void
-			incorrectMacroChangedHandler(SurfacePtr						surface,
-										 const data::ContainerProperty& macro);
-
-			void
-			zsortNeededHandler(SurfacePtr, DrawCallPtr);
-
-			static
-			bool
-			compareDrawCalls(DrawCallPtr, DrawCallPtr);
-
-			static
-			Vector3Ptr
-			getDrawcallEyePosition(DrawCallPtr, Vector3Ptr output = nullptr);
-		
-			std::string
-			formatPropertyName(const std::string&								rawPropertyName,
-							   std::unordered_map<std::string, std::string>&	variablesToValue);
+			drawCallVariablesChangedHandler(ArrayProviderPtr, uint index, SurfacePtr);
 
 			const data::MacroBindingMap
 			getDrawCallmacroBindings(DrawCallPtr drawcall);
 
+			void
+			drawcallMacroChangedHandler(DrawCallPtr, ContainerPtr, const std::string&);
+
+			void
+			drawcallZSortNeededHandler(DrawCallPtr);
+
+			void
+			surfaceBadMacroChangedHandler(SurfacePtr, const std::string&);
+
+			void
+			rendererFilterChangedHandler(RendererPtr, AbstractFilterPtr, data::BindingSource);
+
+			std::string
+			formatPropertyName(const std::string&								rawPropertyName,
+							   std::unordered_map<std::string, std::string>&	variablesToValue);
+
+			static
+			Vector3Ptr
+			getDrawcallEyePosition(DrawCallPtr, Vector3Ptr output = nullptr);
+
+			static
+			bool
+			compareDrawCalls(DrawCallPtr, DrawCallPtr);
 		};
 	}
 }

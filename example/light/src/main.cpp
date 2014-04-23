@@ -35,7 +35,9 @@ Signal<input::Keyboard::Ptr>::Slot keyDown;
 scene::Node::Ptr
 createPointLight(Vector3::Ptr color, Vector3::Ptr position, file::AssetLibrary::Ptr assets)
 {
-	auto pointLight = scene::Node::create("pointLight")
+	static int lightId = 0;
+
+	auto pointLight = scene::Node::create("pointLight_" + std::to_string(lightId++))
 		->addComponent(PointLight::create(10.f))
 		->addComponent(Transform::create(Matrix4x4::create()->appendTranslation(position)))
 		->addComponent(Surface::create(
@@ -45,8 +47,10 @@ createPointLight(Vector3::Ptr color, Vector3::Ptr position, file::AssetLibrary::
 				->set("diffuseTint",	Vector4::create(color->x(), color->y(), color->z(), 1.f)),
 			assets->effect("effect/Sprite.effect")
 		));
+
 	pointLight->component<PointLight>()->color(color);
 	pointLight->component<PointLight>()->diffuse(.1f);
+	pointLight->component<PointLight>()->layoutMask(lightId % 2 == 0 ? 1<<2 : 1);
 
 	return pointLight;
 }
@@ -92,6 +96,7 @@ int main(int argc, char** argv)
 	{
 		// ground
 		auto ground = scene::Node::create("ground")
+			->layouts(1 << 2 | 1)
 			->addComponent(Surface::create(
 				sceneManager->assets()->geometry("quad"),
 				material::Material::create()

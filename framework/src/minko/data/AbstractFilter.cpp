@@ -17,13 +17,24 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "minko/material/Material.hpp"
+#include "minko/data/AbstractFilter.hpp"
+
+#include "minko/scene/Node.hpp"
+#include "minko/component/Surface.hpp"
 
 using namespace minko;
-using namespace minko::material;
+using namespace minko::data;
 
-Material::Material() :
-	data::ArrayProvider("material")
+AbstractFilter::Ptr
+AbstractFilter::currentSurface(component::Surface::Ptr value)
 {
-	
+	_currentSurface				= value;
+	_currentSurfaceRemovedSlot	= _currentSurface->targetRemoved()->connect([=](AbsCmpPtr c, NodePtr n){ 
+		currentSurfaceRemovedHandler(c, n); 
+	});
+	_currentSurfaceTargetRemovedSlot = _currentSurface->targets().front()->removed()->connect([=](NodePtr n, NodePtr t, NodePtr a){
+		currentSurfaceTargetRemovedHandler(n, t, a);
+	});
+
+	return shared_from_this();
 }

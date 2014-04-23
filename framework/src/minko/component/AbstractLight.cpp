@@ -29,7 +29,8 @@ using namespace minko::component;
 
 AbstractLight::AbstractLight(const std::string& arrayName) :
 	AbstractRootDataComponent<data::ArrayProvider>(data::ArrayProvider::create(arrayName)),
-	_color(math::Vector3::create(1.0f, 1.0f, 1.0f))
+	_color(math::Vector3::create(1.0f, 1.0f, 1.0f)),
+	_targetLayoutChangedSlot(nullptr)
 {
 	data()->set("color", _color);
 }
@@ -54,4 +55,18 @@ AbstractLight::Ptr
 AbstractLight::color(uint rgba)
 {
 	return color(Color::uintToVec4(rgba));
+}
+
+void
+AbstractLight::targetAddedHandler(component::AbstractComponent::Ptr component, 
+								  scene::Node::Ptr					target)
+{
+	AbstractRootDataComponent<data::ArrayProvider>::targetAddedHandler(component, target);
+}
+
+void
+AbstractLight::targetRemovedHandler(component::AbstractComponent::Ptr component,
+									scene::Node::Ptr					target)
+{
+	AbstractRootDataComponent<data::ArrayProvider>::targetRemovedHandler(component, target);
 }

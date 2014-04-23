@@ -30,14 +30,14 @@ AbstractNextFrameComponent::initialize()
 {
 	_targetAddedSlot = targetAdded()->connect(std::bind(
 		&AbstractNextFrameComponent::targetAddedHandler,
-		shared_from_this(),
+		std::static_pointer_cast<AbstractNextFrameComponent>(shared_from_this()),
 		std::placeholders::_1,
 		std::placeholders::_2
 	));
 
 	_targetRemovedSlot = targetRemoved()->connect(std::bind(
 		&AbstractNextFrameComponent::targetRemovedHandler,
-		shared_from_this(),
+		std::static_pointer_cast<AbstractNextFrameComponent>(shared_from_this()),
 		std::placeholders::_1,
 		std::placeholders::_2
 	));
@@ -48,7 +48,7 @@ AbstractNextFrameComponent::targetAddedHandler(AbstractComponent::Ptr cmp, NodeP
 {
 	_componentAddedSlot = target->componentAdded()->connect(std::bind(
 		&AbstractNextFrameComponent::componentAddedHandler,
-		shared_from_this(),
+		std::static_pointer_cast<AbstractNextFrameComponent>(shared_from_this()),
 		std::placeholders::_1,
 		std::placeholders::_2,
 		std::placeholders::_3
@@ -56,7 +56,7 @@ AbstractNextFrameComponent::targetAddedHandler(AbstractComponent::Ptr cmp, NodeP
 
 	_componentRemovedSlot = target->componentRemoved()->connect(std::bind(
 		&AbstractNextFrameComponent::componentRemovedHandler,
-		shared_from_this(),
+		std::static_pointer_cast<AbstractNextFrameComponent>(shared_from_this()),
 		std::placeholders::_1,
 		std::placeholders::_2,
 		std::placeholders::_3

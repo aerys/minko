@@ -23,7 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::data;
 
-ArrayProvider::ArrayProvider(const std::string& name, uint index) :
+ArrayProvider::ArrayProvider(const std::string& name) :
 	_name(name),
 	_indexChanged(IndexChangedSignal::create())
 {

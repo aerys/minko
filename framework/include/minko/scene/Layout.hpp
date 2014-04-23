@@ -17,13 +17,39 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "minko/material/Material.hpp"
+#pragma once
 
-using namespace minko;
-using namespace minko::material;
+#include "minko/Common.hpp"
 
-Material::Material() :
-	data::ArrayProvider("material")
+namespace minko
 {
-	
+	typedef int32_t Layouts;
+
+	namespace scene
+	{
+		class Layout
+		{
+		public:
+
+			class Group
+			{
+			public:
+				static const Layouts DEFAULT;
+				// static const Layouts STATIC;
+				static const Layouts IGNORE_RAYCASTING;
+				static const Layouts CULLING;
+			};
+
+			class Mask
+			{
+			public:
+				static const Layouts NOTHING;
+				static const Layouts EVERYTHING;
+				static const Layouts COLLISIONS_DYNAMIC_DEFAULT;
+				// static const Layouts COLLISIONS_STATIC_DEFAULT;
+				static const Layouts RAYCASTING_DEFAULT;
+			};
+
+		};
+	}
 }

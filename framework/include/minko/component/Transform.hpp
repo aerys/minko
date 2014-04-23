@@ -32,8 +32,7 @@ namespace minko
 	namespace component
 	{
 		class Transform :
-			public AbstractComponent,
-			public std::enable_shared_from_this<Transform>
+			public AbstractComponent
 		{
 
 		public:
@@ -180,7 +179,6 @@ namespace minko
 		private:
 #endif // MINKO_TEST
 			class RootTransform :
-				public std::enable_shared_from_this<RootTransform>,
 				public AbstractComponent
 			{
 			public:

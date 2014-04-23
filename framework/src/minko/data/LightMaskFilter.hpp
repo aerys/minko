@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -20,75 +20,70 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
+#include "minko/Signal.hpp"
 
-#include "minko/data/Provider.hpp"
+#include "minko/data/AbstractFilter.hpp"
 
 namespace minko
 {
 	namespace data
 	{
-		class ArrayProvider :
-			public Provider
+		class LightMaskFilter:
+			public AbstractFilter
 		{
 		public:
-			typedef std::shared_ptr<ArrayProvider>			Ptr;
+			typedef std::shared_ptr<LightMaskFilter>			Ptr;
 
 		private:
-			typedef std::shared_ptr<Provider>				ProviderPtr;
-			typedef Signal<Ptr, uint>						IndexChangedSignal;
-			typedef std::shared_ptr<IndexChangedSignal>		IndexChangedSignalPtr;
+			typedef std::shared_ptr<scene::Node>				NodePtr;
+			typedef std::shared_ptr<Container>					ContainerPtr;
+			typedef std::shared_ptr<Provider>					ProviderPtr;
+			typedef std::shared_ptr<component::AbstractLight>	AbsLightPtr;
+
+			typedef Signal<ContainerPtr, const std::string&>	ContainerPropertyChangedSignal;
 
 		private:
-			std::string										_name;
-			IndexChangedSignalPtr							_indexChanged;
+			static std::vector<std::string>						_numLightPropertyNames;
+
+			NodePtr												_target;
+			NodePtr												_root;
+			std::unordered_map<ProviderPtr, AbsLightPtr>		_providerToLight;
+
+			std::list<ContainerPropertyChangedSignal::Slot>		_rootPropertyChangedSlots;
 
 		public:
 			inline static
 			Ptr
-			create(const std::string& name)
+			create(NodePtr root = nullptr)
 			{
-				return std::shared_ptr<ArrayProvider>(new ArrayProvider(name));
+				Ptr ptr = std::shared_ptr<LightMaskFilter>(new LightMaskFilter());
+
+				ptr->root(root);
+
+				return ptr;
 			}
 
-
-			inline
-			IndexChangedSignalPtr
-			indexChanged()
-			{
-				return _indexChanged;
-			}
-
-			inline
-			const std::string&
-			arrayName() const
-			{
-				return _name;
-			}
-
-			inline
 			Ptr
-			copyFrom(Ptr source)
-			{
-				Provider::copyFrom(std::static_pointer_cast<Provider>(source));
+			root(NodePtr);
 
-				_name = source->_name;
+			bool
+			operator()(ProviderPtr); 
 
-				return std::static_pointer_cast<ArrayProvider>(shared_from_this());
-			}
+		private:
+			LightMaskFilter();
 
-			inline
-			Ptr
-			clone()
-			{
-				auto that = std::static_pointer_cast<ArrayProvider>(shared_from_this());
+			void
+			reset();
 
-				return ArrayProvider::create(_name)->copyFrom(that);
-			}
+			void
+			initialize(NodePtr);
 
-		protected:
-			explicit
-			ArrayProvider(const std::string& name);
-	
+			void
+			lightsChangedHandler();
+
+			static
+			std::vector<std::string>
+			initializeNumLightPropertyNames();
 		};
 	}
 }
