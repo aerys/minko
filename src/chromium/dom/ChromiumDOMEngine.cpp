@@ -40,7 +40,9 @@ using namespace minko::dom;
 ChromiumDOMEngine::ChromiumDOMEngine() :
 	_onload(minko::Signal<AbstractDOM::Ptr, std::string>::create()),
 	_onmessage(minko::Signal<AbstractDOM::Ptr, std::string>::create()),
-	_cleared(false)
+	_cleared(false),
+	_chromiumInitialized(false),
+	_quad(nullptr)
 {
 	_impl = new ChromiumPimpl();
 }
@@ -74,48 +76,54 @@ ChromiumDOMEngine::start(int argc, char** argv)
 	int result = CefExecuteProcess(*_impl->mainArgs, _impl->app.get(), nullptr);
 }
 
-
 void
 ChromiumDOMEngine::initialize(AbstractCanvas::Ptr canvas, std::shared_ptr<component::SceneManager> sceneManager, minko::scene::Node::Ptr root)
 {
 	_canvas = canvas;
 	_sceneManager = sceneManager;
 
-	std::shared_ptr<render::Texture> texture = _impl->app->initialize(canvas, _sceneManager->assets()->context(), _impl);
+	if (_quad != nullptr)
+		remove();
 
-	CefSettings settings;
-
-	settings.single_process = 1;
-	settings.no_sandbox = 1;
-	settings.command_line_args_disabled = 1;
-
-	int result = CefInitialize(*_impl->mainArgs, settings, _impl->app.get(), nullptr);
-	
-	_overlayMaterial = material::BasicMaterial::create()->diffuseMap(texture);
-
-	loadOverlayEffect();
-	
-	auto overlayEffect = _sceneManager->assets()->effect("effect/Overlay.effect");
-	
-	if (overlayEffect)
+	if (!_chromiumInitialized)
 	{
-		auto quad = scene::Node::create("quad")
-			->addComponent(component::Surface::create(
-			geometry::QuadGeometry::create(sceneManager->assets()->context()),
-			_overlayMaterial,
-			overlayEffect
-		));
+		std::shared_ptr<render::Texture> texture = _impl->app->initialize(canvas, _sceneManager->assets()->context(), _impl);
 
-		root->addChild(quad);
-	}
-	else
-	{
-		std::cout << "WARNING: Overlay.effect has not been loaded. Overlay will not be displayed" << std::endl;
-	}
+		CefSettings settings;
 
-	float wRatio = (float)canvas->width() / (float)math::clp2(canvas->width());
-	float hRatio = (float)canvas->height() / (float)math::clp2(canvas->height());
-	_overlayMaterial->set("overlayRatio", math::Vector2::create(wRatio, hRatio));
+		settings.single_process = 1;
+		settings.no_sandbox = 1;
+		settings.command_line_args_disabled = 1;
+
+		int result = CefInitialize(*_impl->mainArgs, settings, _impl->app.get(), nullptr);
+
+		_overlayMaterial = material::BasicMaterial::create()->diffuseMap(texture);
+
+		loadOverlayEffect();
+
+		float wRatio = (float)canvas->width() / (float)math::clp2(canvas->width());
+		float hRatio = (float)canvas->height() / (float)math::clp2(canvas->height());
+		_overlayMaterial->set("overlayRatio", math::Vector2::create(wRatio, hRatio));
+		
+		auto overlayEffect = _sceneManager->assets()->effect("effect/Overlay.effect");
+
+		if (overlayEffect && _quad == nullptr)
+		{
+			_quad = scene::Node::create("quad")
+				->addComponent(component::Surface::create(
+				geometry::QuadGeometry::create(sceneManager->assets()->context()),
+				_overlayMaterial,
+				overlayEffect
+				));
+
+		}
+		else
+		{
+			std::cout << "WARNING: Overlay.effect has not been loaded. Overlay will not be displayed" << std::endl;
+		}
+
+		_chromiumInitialized = true;
+	}
 
 	_canvasResizedSlot = _canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
 	{
@@ -137,6 +145,19 @@ ChromiumDOMEngine::initialize(AbstractCanvas::Ptr canvas, std::shared_ptr<compon
 	_endFrameSlot = _sceneManager->frameEnd()->connect([&](std::shared_ptr<component::SceneManager>, float, float)
 	{
 	});
+
+	root->addChild(_quad);
+}
+
+void
+ChromiumDOMEngine::remove()
+{
+	_canvasResizedSlot = nullptr;
+	_enterFrameSlot = nullptr;
+	_endFrameSlot = nullptr;
+
+	if (_quad->parent() != nullptr)
+		_quad->parent()->removeChild(_quad);
 }
 
 void

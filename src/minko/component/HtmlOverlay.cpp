@@ -26,6 +26,8 @@ using namespace emscripten;
 using namespace emscripten::dom;
 #endif
 
+HtmlOverlay::Ptr HtmlOverlay::_instance = nullptr;
+
 HtmlOverlay::HtmlOverlay(int argc, char** argv) :
 	AbstractComponent(),
 	_cleared(false)
@@ -84,6 +86,9 @@ HtmlOverlay::targetAddedHandler(AbstractComponent::Ptr	ctrl, scene::Node::Ptr		t
 void
 HtmlOverlay::targetRemovedHandler(AbstractComponent::Ptr	ctrl, scene::Node::Ptr		target)
 {
-	clear();
+#if defined(CHROMIUM)
+	ChromiumDOMEngine::Ptr engine = std::dynamic_pointer_cast<ChromiumDOMEngine>(_domEngine);
+	engine->remove();
+#endif
 }
 

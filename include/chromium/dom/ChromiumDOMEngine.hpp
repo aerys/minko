@@ -21,6 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
+#include "minko/scene/Node.hpp"
 #include "minko/Signal.hpp"
 #include "minko/component/SceneManager.hpp"
 #include "minko/AbstractCanvas.hpp"
@@ -64,6 +65,9 @@ namespace chromium
 			void
 			initialize(std::shared_ptr<minko::AbstractCanvas>, std::shared_ptr<minko::component::SceneManager>, std::shared_ptr<minko::scene::Node>);
 			
+			void
+			remove();
+			
 			minko::dom::AbstractDOM::Ptr
 			load(std::string uri);
 
@@ -105,6 +109,10 @@ namespace chromium
 			loadLocal(std::string);
 			
 		private:
+
+			minko::scene::Node::Ptr _quad;
+
+			bool _chromiumInitialized;
 
 			std::list<chromium::dom::ChromiumDOM::Ptr> _doms;
 

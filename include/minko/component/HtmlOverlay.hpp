@@ -55,9 +55,21 @@ namespace minko
 			Ptr
 			create(int argc, char** argv)
 			{
+				if (_instance != nullptr)
+					throw("Only one instance of HtmlOverlay is permitted");
+
 				Ptr overlay(new HtmlOverlay(argc, argv));
 
+				_instance = overlay;
+
 				return overlay;
+			}
+
+			static
+			Ptr
+			instance()
+			{
+				return _instance;
 			}
 			
 			minko::dom::AbstractDOM::Ptr
@@ -112,6 +124,8 @@ namespace minko
 			removedHandler(NodePtr node, NodePtr target, NodePtr ancestor);
 			
 		private:
+			static HtmlOverlay::Ptr													_instance;
+
 			AbstractCanvas::Ptr														_canvas; 
 			SceneManager::Ptr														_sceneManager;
 

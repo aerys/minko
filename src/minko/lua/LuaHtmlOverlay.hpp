@@ -57,6 +57,7 @@ namespace minko
 
 					auto& overlay = state.Class<HtmlOverlay>("HtmlOverlay")
 						.method("create", &HtmlOverlay::create)
+						.method("instance", &HtmlOverlay::instance)
 						.method("load", &HtmlOverlay::load)
 						.method("clear", &HtmlOverlay::clear)
 						.property("mainDOM", &HtmlOverlay::mainDOM);

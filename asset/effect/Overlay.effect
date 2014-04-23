@@ -17,7 +17,8 @@
 	"blendMode" : "alpha",
 	"priority"	: ["last", -999999999.0],
 
-	"triangleCulling" : "none",
+	"depthTest"			: [false, "always"],
+	"triangleCulling"	: "none",
 
 	"passes" : [{
 		
