@@ -109,7 +109,7 @@ int main(int argc, char** argv)
 
 		pickingMouseOver = root->component<Picking>()->mouseOver()->connect([&](scene::Node::Ptr node)
 		{
-			std::cout << "Over : " << node->name() << std::endl;
+			std::cout << "In : " << node->name() << std::endl;
 		});
 
 		pickingMouseOut = root->component<Picking>()->mouseOut()->connect([&](scene::Node::Ptr node)
