@@ -58,6 +58,9 @@ DrawCall::DrawCall(Pass::Ptr pass) :
 	_targetData(nullptr),
 	_rendererData(nullptr),
 	_rootData(nullptr),
+	_fullRootData(nullptr),
+	_fullRendererData(nullptr),
+	_fullTargetData(nullptr),
 	_formatFunction(nullptr),
     _textureIds(MAX_NUM_TEXTURES, 0),
     _textureLocations(MAX_NUM_TEXTURES, -1),
@@ -106,6 +109,13 @@ DrawCall::configure(Program::Ptr				program,
 	
 	_formatFunction		= formatNameFunc;
 
+	_fullTargetData		= nullptr;
+	_fullRendererData	= nullptr;
+	_fullRootData		= nullptr;
+	_targetData			= nullptr;
+	_rendererData		= nullptr;
+	_rootData			= nullptr;
+
 	_fullTargetData		= fullTargetData;
 	_fullRendererData	= fullRendererData;
 	_fullRootData		= fullRootData;
@@ -114,34 +124,38 @@ DrawCall::configure(Program::Ptr				program,
 	_rendererData		= rendererData;
 	_rootData			= rootData;
 
-    bind();
+	bind();
 	trackMacros();
-
 	_zSorter->initialize(_targetData, _rendererData, _rootData);
-
+	
 	// FIXME
-	auto slot = _fullTargetData->providerRemoved()->connect([=](Container::Ptr c, Provider::Ptr p){
-		remoteProviderRemovedHandler(BindingSource::TARGET, p);
-	});
+	auto slot = fullTargetData->providerRemoved()->connect(
+		std::bind(
+			&DrawCall::remoteProviderRemovedHandler,
+			shared_from_this(),
+			BindingSource::TARGET,
+			std::placeholders::_2));
 	_containerUpdateSlots.push_back(slot);
 
-	slot = _fullRendererData->providerRemoved()->connect([=](Container::Ptr c, Provider::Ptr p){
-		remoteProviderRemovedHandler(BindingSource::RENDERER, p);
-	});
+	slot = fullRendererData->providerRemoved()->connect(std::bind(
+		&DrawCall::remoteProviderRemovedHandler,
+		shared_from_this(),
+		BindingSource::RENDERER,
+		std::placeholders::_2));
 	_containerUpdateSlots.push_back(slot);
 
-	slot = _fullRootData->providerRemoved()->connect([=](Container::Ptr c, Provider::Ptr p){
-		remoteProviderRemovedHandler(BindingSource::ROOT, p);
-	});
+	slot = fullRootData->providerRemoved()->connect(std::bind(
+		&DrawCall::remoteProviderRemovedHandler,
+		shared_from_this(),
+		BindingSource::ROOT,
+		std::placeholders::_2));
 	_containerUpdateSlots.push_back(slot);
-
 }
 
 void
 DrawCall::bind()
 {
 	reset();
-
 	bindProgramDefaultUniforms();
 	bindTargetLayouts();
 	bindIndexBuffer();
@@ -840,6 +854,7 @@ DrawCall::getEyeSpacePosition(Vector3::Ptr output)
 void
 DrawCall::trackMacros()
 {
+	/*
 	std::vector<std::pair<Container::Ptr, ContainerId>> containersAndIds = { 
 		std::make_pair(_fullTargetData,		ContainerId::COMPLETE), 
 		std::make_pair(_fullRendererData,	ContainerId::COMPLETE), 
@@ -847,19 +862,45 @@ DrawCall::trackMacros()
 		std::make_pair(_targetData,			ContainerId::FILTERED), 
 		std::make_pair(_rendererData,		ContainerId::FILTERED),
 		std::make_pair(_rootData,			ContainerId::FILTERED)
-	};
+	};*/
+
+	std::vector<Container::Ptr> containerList;
+
+	containerList.push_back(_fullTargetData);
+	containerList.push_back(_fullRendererData);
+	containerList.push_back(_fullRootData);
+	containerList.push_back(_targetData);
+	containerList.push_back(_rendererData);
+	containerList.push_back(_rootData);
 
 	const float TRACKING_PRIORITY = 0.0f;
 
-	for (auto& cId : containersAndIds)
+	for (auto i = 0; i < 6; ++i)
 	{
-		auto added		= cId.first->propertyAdded()->connect([=](Container::Ptr c, const std::string& n){ macroAddedHandler(c, cId.second, n); }, TRACKING_PRIORITY);
-		auto removed	= cId.first->propertyRemoved()->connect([=](Container::Ptr c, const std::string& n){ macroRemovedHandler(c, cId.second, n); }, TRACKING_PRIORITY);
+		auto containerId = ContainerId::COMPLETE;
+		auto container = containerList[i];
+		if (i >= 3)
+			containerId = ContainerId::FILTERED;
+
+		auto added = container->propertyAdded()->connect(std::bind(
+			&DrawCall::macroAddedHandler,
+			shared_from_this(),
+			std::placeholders::_1,
+			containerId,
+			std::placeholders::_2
+			), TRACKING_PRIORITY);
+		auto removed = container->propertyRemoved()->connect(std::bind(
+			&DrawCall::macroRemovedHandler,
+			shared_from_this(),
+			std::placeholders::_1,
+			containerId,
+			std::placeholders::_2
+			), TRACKING_PRIORITY);
 
 		_macroAddedOrRemovedSlots.push_back(added);
 		_macroAddedOrRemovedSlots.push_back(removed);
 	}
-
+	
 	for (auto& m : _pass->macroBindings())
 	{
 		const auto&	name	= std::get<0>(m.second);
@@ -879,23 +920,27 @@ DrawCall::trackMacros()
 			{
 				if (fullContainer->hasProperty(formattedName))
 				{
-					auto slot = fullContainer->propertyReferenceChanged(formattedName)->connect([=](Container::Ptr c, const std::string& n){
-							macroChangedHandler(c, n);
-					}, TRACKING_PRIORITY);
+					auto slot = fullContainer->propertyReferenceChanged(formattedName)->connect(std::bind(
+						&DrawCall::macroChangedHandler,
+						shared_from_this(),
+						std::placeholders::_1,
+						std::placeholders::_2), TRACKING_PRIORITY);
 	
-					_macroChangedSlots[ContainerAndName(fullContainer, formattedName)] = slot;	
+					_macroChangedSlots[fullContainer][formattedName] = slot;
 				}
 
 				_containerMacroPNames[uint(ContainerId::COMPLETE)].insert(formattedName);
 			}
 			else
 			{
-				auto slot = container->propertyReferenceChanged(formattedName)->connect([=](Container::Ptr c, const std::string& n){
-					macroChangedHandler(c, n);
-				}, TRACKING_PRIORITY);
-	
-				_macroChangedSlots[ContainerAndName(container, formattedName)] = slot;	
-
+				auto slot = container->propertyReferenceChanged(formattedName)->connect(std::bind(
+					&DrawCall::macroChangedHandler,
+					shared_from_this(),
+					std::placeholders::_1,
+					std::placeholders::_2), TRACKING_PRIORITY);
+					
+				_macroChangedSlots[container][formattedName] = slot;
+				
 				_containerMacroPNames[uint(ContainerId::FILTERED)].insert(formattedName);
 			}
 		}
@@ -905,11 +950,13 @@ DrawCall::trackMacros()
 
 			if (fullContainer->hasProperty(name))
 			{
-				auto slot = fullContainer->propertyReferenceChanged(name)->connect([=](Container::Ptr c, const std::string& n){
-					macroChangedHandler(c, n);
-				}, TRACKING_PRIORITY);
+				auto slot = fullContainer->propertyReferenceChanged(name)->connect(std::bind(
+					&DrawCall::macroChangedHandler,
+					shared_from_this(),
+					std::placeholders::_1,
+					std::placeholders::_2), TRACKING_PRIORITY);
 	
-				_macroChangedSlots[ContainerAndName(fullContainer, name)] = slot;	
+				_macroChangedSlots[fullContainer][name] = slot;
 
 				_containerMacroPNames[uint(ContainerId::COMPLETE)].insert(name);
 			}
@@ -956,11 +1003,13 @@ DrawCall::macroAddedHandler(Container::Ptr		container,
 	if (!isTrackedMacro(name, id))
 		return;
 
-	auto slot = container->propertyReferenceChanged(name)->connect([=](Container::Ptr c, const std::string& n){
-		macroChangedHandler(c, n);
-	});
+	auto slot = container->propertyReferenceChanged(name)->connect(std::bind(
+		&DrawCall::macroChangedHandler,
+		shared_from_this(),
+		std::placeholders::_1,
+		std::placeholders::_2));
 
-	_macroChangedSlots[ContainerAndName(container, name)] = slot;	
+	_macroChangedSlots[container][name] = slot;	
 	_macroChanged->execute(shared_from_this(), container, name);
 }
 
@@ -978,7 +1027,7 @@ DrawCall::macroRemovedHandler(Container::Ptr		container,
 	if (!isTrackedMacro(name, id))
 		return;
 
-	_macroChangedSlots.erase(ContainerAndName(container, name));
+	_macroChangedSlots.erase(container);
 	_macroChanged->execute(shared_from_this(), container, name);
 }
 

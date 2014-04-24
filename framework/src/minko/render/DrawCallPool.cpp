@@ -87,7 +87,6 @@ DrawCallPool::drawCalls()
 	for (auto& d : dirtyDrawCalls)
 		refreshDrawCall(d);
 
-
 	for (auto& surface : _toCollect)
 	{
 		auto& newDrawCalls = generateDrawCall(surface, NUM_FALLBACK_ATTEMPTS);
@@ -158,6 +157,8 @@ DrawCallPool::getDrawcallEyePosition(DrawCall::Ptr drawcall,
 void
 DrawCallPool::addSurface(Surface::Ptr surface)
 {
+	_surfaceToRootContainer[surface] = surface->targets()[0]->root()->data();
+
 	_surfaceToTechniqueChangedSlot[surface] = surface->techniqueChanged()->connect(std::bind(
 		&DrawCallPool::techniqueChangedHandler,
 		shared_from_this(),
@@ -352,9 +353,9 @@ DrawCallPool::initializeDrawCall(Surface::Ptr	surface,
 
 	const auto	target			= surface->targets()[0];
 
-	auto	fullTargetData		= target->data();
-	auto	fullRendererData	= _renderer->targets()[0]->data();
-	auto	fullRootData		= target->root()->data();
+	std::shared_ptr<data::Container>	fullTargetData		= target->data();
+	std::shared_ptr<data::Container>	fullRendererData	= _renderer->targets()[0]->data();
+	std::shared_ptr<data::Container>	fullRootData		= target->root()->data();
 
 	ContainerPtr targetData		= nullptr;
 	ContainerPtr rendererData	= nullptr;
@@ -375,9 +376,9 @@ DrawCallPool::initializeDrawCall(Surface::Ptr	surface,
 	const auto&	rendererFilters	= _renderer->filters(data::BindingSource::RENDERER);
 	const auto&	rootFilters		= _renderer->filters(data::BindingSource::ROOT);
 
-	targetData		= fullTargetData->filter(targetFilters, targetData);
-	rendererData	= fullRendererData->filter(rendererFilters, rendererData);
-	rootData		= fullRootData->filter(rootFilters, rootData);
+	targetData		= fullTargetData->filter(targetFilters);
+	rendererData	= fullRendererData->filter(rendererFilters);
+	rootData		= fullRootData->filter(rootFilters);
 
 	// get drawcall's property name formatting function (dependent on filters!)
 	auto geometryId	= targetData->getProviderIndex(surface->geometry()->data());
@@ -423,7 +424,6 @@ DrawCallPool::initializeDrawCall(Surface::Ptr	surface,
 		rendererData, 
 		rootData
 	);
-
 	return drawCall;
 }
 

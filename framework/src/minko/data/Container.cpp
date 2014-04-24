@@ -26,6 +26,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::data;
 
+uint Container::CONTAINER_ID = 0;
+
 Container::Container() :
 	std::enable_shared_from_this<Container>(),
 	_providers(),
@@ -39,7 +41,8 @@ Container::Container() :
 	_providerValueChangedSlot(),
 	_providerReferenceChangedSlot(),
 	_providerAdded(Signal<Ptr, Provider::Ptr>::create()),
-	_providerRemoved(Signal<Ptr, Provider::Ptr>::create())
+	_providerRemoved(Signal<Ptr, Provider::Ptr>::create()),
+	_containerId(CONTAINER_ID++)
 {
 }
 
@@ -429,17 +432,14 @@ Container::filter(const std::set<data::AbstractFilter::Ptr>&	filters,
 				break;
 			}
 
-		auto foundProviderInOutput = std::find(output->_providers.begin(), output->_providers.end(), p);
-		if (isProviderRelevant 
-			&& foundProviderInOutput == output->_providers.end())
+		if (isProviderRelevant && output->hasProvider(p) == false)
 		{
 			if (arrayProvider)
 				output->addProvider(arrayProvider);
 			else
 				output->addProvider(p);
 		}
-		else if (!isProviderRelevant
-			&& foundProviderInOutput != output->_providers.end())
+		else if (!isProviderRelevant && output->hasProvider(p))
 		{
 			if (arrayProvider)
 				output->removeProvider(arrayProvider);

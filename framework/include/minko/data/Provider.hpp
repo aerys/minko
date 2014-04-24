@@ -60,7 +60,9 @@ namespace minko
 			Ptr
 			create()
 			{
-				return std::shared_ptr<Provider>(new Provider());
+				Ptr provider = std::shared_ptr<Provider>(new Provider());
+				
+				return provider;
 			}
 
 			static
@@ -261,6 +263,7 @@ namespace minko
 
 		protected:
 			Provider();
+
 
 			virtual
 			std::string

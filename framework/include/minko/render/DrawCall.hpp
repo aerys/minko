@@ -132,11 +132,11 @@ namespace minko
 			std::unordered_map<uint, data::UniformArrayPtr<int>>			_uniformInts3;
 			std::unordered_map<uint, data::UniformArrayPtr<int>>			_uniformInts4;
 
-			std::unordered_map<std::string, std::list<Any>>					_referenceChangedSlots;		// Any = PropertyChangedSlot
-			std::list<PropertyChangedSlot>									_macroAddedOrRemovedSlots;
-			std::unordered_map<data::ContainerAndName, PropertyChangedSlot>	_macroChangedSlots;			// Any = PropertyChangedSlot
-			Signal<std::shared_ptr<IndexBuffer>>::Slot						_indicesChangedSlot;
-			Signal<ContainerPtr, const std::string&>::Slot					_layoutsPropertyChangedSlot;
+			std::unordered_map<std::string, std::list<Any>>											_referenceChangedSlots;		// Any = PropertyChangedSlot
+			std::list<PropertyChangedSlot>															_macroAddedOrRemovedSlots;
+			std::unordered_map<ContainerPtr, std::unordered_map<std::string, PropertyChangedSlot>>	_macroChangedSlots;			// Any = PropertyChangedSlot
+			Signal<std::shared_ptr<IndexBuffer>>::Slot												_indicesChangedSlot;
+			Signal<ContainerPtr, const std::string&>::Slot											_layoutsPropertyChangedSlot;
 
 			Signal<Ptr>::Ptr												_zsortNeeded;
 			Signal<Ptr, ContainerPtr, const std::string&>::Ptr				_macroChanged;	

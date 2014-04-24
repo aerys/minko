@@ -88,6 +88,7 @@ namespace minko
 			std::unordered_map<DrawCallPtr, SurfacePtr>													_drawcallToSurface;
 			std::unordered_map<DrawCallPtr, DrawCallMacroChanged::Slot>									_drawcallToMacroChangedSlot;
 			std::unordered_map<DrawCallPtr, ZSortNeeded::Slot>											_drawcallToZSortNeededSlot;
+			std::unordered_map<SurfacePtr, ContainerPtr>												_surfaceToRootContainer;
 			std::list<DrawCallPtr>																		_drawCalls;
 
 			std::set<DrawCallPtr>																		_dirtyDrawCalls;

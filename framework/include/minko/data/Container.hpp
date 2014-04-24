@@ -61,7 +61,11 @@ namespace minko
 			Signal<Ptr, ProviderPtr>::Ptr									_providerAdded;
 			Signal<Ptr, ProviderPtr>::Ptr									_providerRemoved;
 
+			static uint CONTAINER_ID;
+
+
 		public:
+			uint _containerId;
 			static
 			Ptr
 			create()
