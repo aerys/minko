@@ -24,6 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/scene/Node.hpp"
 #include "minko/Signal.hpp"
 #include "minko/component/SceneManager.hpp"
+#include "minko/render/AbstractTexture.hpp"
 #include "minko/AbstractCanvas.hpp"
 #include "minko/dom/AbstractDOMEngine.hpp"
 #include "ChromiumDOM.hpp"
@@ -124,6 +125,7 @@ namespace chromium
 
 			minko::Signal<minko::AbstractCanvas::Ptr, minko::uint, minko::uint>::Slot _canvasResizedSlot;
 			minko::Signal<minko::component::SceneManager::Ptr, float, float>::Slot _enterFrameSlot;
+			minko::Signal<minko::component::SceneManager::Ptr, minko::uint, minko::render::AbstractTexture::Ptr>::Slot _renderBeginSlot;
 			minko::Signal<minko::component::SceneManager::Ptr, float, float>::Slot _endFrameSlot;
 
 			ChromiumPimpl* _impl;

@@ -114,7 +114,7 @@ ChromiumDOMEngine::initialize(AbstractCanvas::Ptr canvas, std::shared_ptr<compon
 				geometry::QuadGeometry::create(sceneManager->assets()->context()),
 				_overlayMaterial,
 				overlayEffect
-				));
+			));
 
 		}
 		else
@@ -137,10 +137,10 @@ ChromiumDOMEngine::initialize(AbstractCanvas::Ptr canvas, std::shared_ptr<compon
 		enterFrame();
 	});
 
-	_enterFrameSlot = _sceneManager->frameBegin()->connect([&](std::shared_ptr<component::SceneManager>, float, float)
+	_renderBeginSlot = _sceneManager->renderingBegin()->connect([&](std::shared_ptr<component::SceneManager>, uint, render::AbstractTexture::Ptr)
 	{
 		enterFrame();
-	});
+	}, -100.0f);
 
 	_endFrameSlot = _sceneManager->frameEnd()->connect([&](std::shared_ptr<component::SceneManager>, float, float)
 	{
@@ -153,6 +153,7 @@ void
 ChromiumDOMEngine::remove()
 {
 	_canvasResizedSlot = nullptr;
+	_renderBeginSlot = nullptr;
 	_enterFrameSlot = nullptr;
 	_endFrameSlot = nullptr;
 
