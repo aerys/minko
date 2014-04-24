@@ -263,14 +263,7 @@ EmscriptenDOMElement::style(std::string name, std::string value)
 void
 EmscriptenDOMElement::addEventListener(std::string type)
 {
-	std::string eval = "";
-
-	eval += "if(!" + _jsAccessor + ".minkoEvents)\n";
-	eval +=	"	" + _jsAccessor + ".minkoEvents = [];\n";
-	eval += _jsAccessor + ".addEventListener('" + type + "', function(event)\n";
-	eval += "{\n";
-	eval += "	" + _jsAccessor + ".minkoEvents.push(event);\n";
-	eval += "});\n";
+	std::string eval = "Minko.addListener(" + _jsAccessor + ", '" + type + "');";
 
 	emscripten_run_script(eval.c_str());
 }
@@ -350,7 +343,7 @@ EmscriptenDOMElement::onmouseover()
 void
 EmscriptenDOMElement::update()
 { 
-	std::string eval = "if(" + _jsAccessor + " && " + _jsAccessor + ".minkoEvents) (" + _jsAccessor + ".minkoEvents.length); else (0);";
+	std::string eval = "(Minko.getEventsCount(" + _jsAccessor + "))";
 	int l = emscripten_run_script_int(eval.c_str());
 
 	for(int i = 0; i < l; ++i)
@@ -377,7 +370,7 @@ EmscriptenDOMElement::update()
 			_onmouseout->execute(event);
 	}
 
-	eval = "if(" + _jsAccessor + ") " +  _jsAccessor + ".minkoEvents = [];";
+	eval = "Minko.clearEvents(" + _jsAccessor + ");";
 	emscripten_run_script(eval.c_str());
 }
 

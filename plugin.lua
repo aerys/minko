@@ -28,6 +28,11 @@ minko.plugin["html-overlay"].enable = function()
 	}
 	
 	minko.plugin.enable("lua")
+	
+	configuration { "html5" }
+		prelinkcommands {
+			minko.action.copy(minko.plugin.path("html-overlay") .. "/asset")
+		}
 
 	configuration { "windows32 or windows64" }
 		links { "libcef" }

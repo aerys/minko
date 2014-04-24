@@ -47,9 +47,6 @@ namespace emscripten
 			initialize(minko::AbstractCanvas::Ptr, minko::component::SceneManager::Ptr);
 			
 			void
-			initJavascript();
-
-			void
 			enterFrame();
 
 			minko::dom::AbstractDOM::Ptr
@@ -72,6 +69,9 @@ namespace emscripten
 			mainDOM();
 
 		private:
+
+			void
+			loadScript(std::string filename);
 
 			void
 			createNewDom();

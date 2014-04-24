@@ -20,6 +20,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #if defined(EMSCRIPTEN)
 
 #include "minko/Common.hpp"
+#include "minko/file/Options.hpp"
+#include "minko/file/FileProtocol.hpp"
+#include "minko/file/AssetLibrary.hpp"
 #include "emscripten/dom/EmscriptenDOMEngine.hpp"
 #include "emscripten/emscripten.h"
 
@@ -52,7 +55,8 @@ EmscriptenDOMEngine::initialize(AbstractCanvas::Ptr canvas, SceneManager::Ptr sc
 {
 	_canvas = canvas;
 	_sceneManager = sceneManager;
-	initJavascript();
+
+	loadScript("script/overlay.js");
 
 	_canvasResizedSlot = _canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
 	{
@@ -68,6 +72,25 @@ EmscriptenDOMEngine::initialize(AbstractCanvas::Ptr canvas, SceneManager::Ptr sc
 	{
 		enterFrame();
 	});
+}
+
+void
+EmscriptenDOMEngine::loadScript(std::string filename)
+{
+    auto options = file::Options::create(_sceneManager->assets()->loader()->options());
+    options->loadAsynchronously(false);
+
+    file::AbstractProtocol::Ptr loader = file::FileProtocol::create();
+
+    auto loaderComplete = loader->complete()->connect([](std::shared_ptr<file::AbstractProtocol> loader)
+    {
+    	std::string eval;
+    	eval.assign(loader->file()->data().begin(), loader->file()->data().end());
+
+		emscripten_run_script(eval.c_str());
+    });
+
+	loader->load(filename, options);
 }
 
 void
@@ -135,160 +158,6 @@ EmscriptenDOMEngine::enterFrame()
 			emscripten_run_script(eval.c_str());
 		}
 	}
-}
-
-void
-EmscriptenDOMEngine::initJavascript()
-{
-	std::string eval = "";
-
-	eval += "window.Minko = {};\n";
-	eval +=	"Minko.loaded = -1\n\n";
-
-	eval += "var canvasElement = document.getElementById('canvas');\n";
-	eval += "var iframeElement = document.createElement('iframe');\n\n";
-
-	eval += "iframeElement.id = 'canvasiframe';\n";
-	eval += "iframeElement.className = 'emscripten';\n\n";
-
-	eval += "iframeElement.style.width = canvasElement.clientWidth + 'px';\n";
-	eval += "iframeElement.style.height = canvasElement.clientHeight + 'px';\n\n";
-
-	eval += "iframeElement.style.backgroundColor = 'transparent';\n";
-	eval += "iframeElement.allowTransparency = 'true';\n";
-	eval += "iframeElement.frameBorder = '0';\n\n";
-
-	eval += "iframeElement.style.position = 'relative';\n";
-	eval += "canvasElement.parentNode.style.position = 'relative';\n\n";
-
-	eval += "canvasElement.style.position = 'absolute';\n";
-	eval += "canvasElement.style.left = '0';\n";
-	eval += "canvasElement.style.right = '0';\n\n";
-
-	eval += "canvasElement.parentNode.appendChild(iframeElement);\n\n";
-
-	eval += "Minko.iframeElement = iframeElement;\n";
-	eval += "Minko.canvasElement = canvasElement;\n\n";
-
-	eval += "Minko.getOffsetTop = function(element)\n";
-	eval += "{\n";
-	eval += "	var result = 0;\n";
-	eval += "	while(element){\n";
-	eval += "		result += element.offsetTop;\n";
-	eval += "		element = element.offsetParent;\n";
-	eval += "	}\n";
-	eval += "	return result;\n";
-	eval += "};\n\n";
-
-	eval += "Minko.getOffsetLeft = function(element)";
-	eval += "{\n";
-	eval += "	var result = 0;\n";
-	eval += "	while(element){\n";
-	eval += "		result += element.offsetLeft;\n";
-	eval += "		element = element.offsetParent;\n";
-	eval += "	}\n";
-	eval += "	return result;\n";
-	eval += "};\n\n";
-
-	eval += "Minko.redispatchKeyboardEvent = function(event)\n";
-	eval += "{\n";
-	eval += "	var eventCopy = document.createEvent('Event');\n";
-
-	eval += "	eventCopy.initEvent(event.type, event.bubbles, event.cancelable);\n";
-
-	eval += "	eventCopy.type = event.type;\n";
-	eval += "	eventCopy.bubbles = event.bubbles;\n";
-	eval += "	eventCopy.cancelable = event.cancelable;\n";
-	eval += "	eventCopy.view = event.view;\n";
-	eval += "	eventCopy.ctrlKey = event.ctrlKey;\n";
-	eval += "	eventCopy.altKey = event.altKey;\n";
-	eval += "	eventCopy.shiftKey = event.shiftKey;\n";
-	eval += "	eventCopy.metaKey = event.metaKey;\n";
-	eval += "	eventCopy.keyCode = event.keyCode;\n";
-	eval += "	eventCopy.charCode = event.charCode;\n";
-	eval += "	eventCopy.which = event.which;\n";
-	eval += "	eventCopy.key = event.key;\n";
-	eval += "	eventCopy.detail = event.detail;\n";
-	eval += "	eventCopy.keyIdentifier = event.keyIdentifier;\n";
-
-	eval += "	document.dispatchEvent(eventCopy);\n";
-	eval += "}\n";
-
-
-	eval += "Minko.redispatchMouseEvent = function(event)\n";
-	eval += "{\n";
-	eval += "	var pageX = 1 + Minko.getOffsetLeft(Minko.iframeElement) + (event.pageX || event.layerX);\n";
-	eval += "	var pageY = 1 + Minko.getOffsetTop(Minko.iframeElement) + (event.pageY || event.layerY);\n";
-
-	eval += "	var screenX = pageX - document.body.scrollLeft;\n";
-	eval += "	var screenY = pageY - document.body.scrollTop;\n";
-
-	eval += "	var eventCopy = document.createEvent('MouseEvents');\n";
-	eval += "	eventCopy.initMouseEvent(event.type, event.bubbles, event.cancelable, event.view, event.detail,\n";
-	eval += "		pageX, pageY, screenX, screenY, \n";
-	eval += "		event.ctrlKey, event.altKey, event.shiftKey, event.metaKey, event.button, event.relatedTarget);\n";
-
-	eval += "	if (event.type == 'mousewheel')\n";
-	eval += "	{\n";
-	eval += "		eventCopy.detail = event.detail;\n";
-
-	eval += "		eventCopy.wheelDelta = event.wheelDelta;\n";
-	eval += "		eventCopy.wheelDeltaX = event.wheelDeltaX;\n";
-	eval += "		eventCopy.wheelDeltaY = event.wheelDeltaY;\n";
-	eval += "		eventCopy.wheelDeltaZ = event.wheelDeltaZ;\n";
-
-	eval += "		eventCopy.delta = event.delta;\n";
-	eval += "		eventCopy.deltaMode = event.deltaMode;\n";
-	eval += "		eventCopy.deltaX = event.deltaX;\n";
-	eval += "		eventCopy.deltaY = event.deltaY;\n";
-	eval += "		eventCopy.deltaZ = event.deltaZ;\n";
-	eval +=	"		event.preventDefault();\n";
-	eval += "	}\n";
-
-	eval += "	Minko.canvasElement.dispatchEvent(eventCopy);\n";
-
-	eval += "}\n\n";
-
-	eval += "Minko.iframeLoadHandler = function(event)\n";
-	eval += "{\n";
-	eval += "	if(Minko.loaded == -1)\n";
-	eval += "		return;\n\n";
-
-	eval += "	Minko.loaded = 1;\n";
-	eval +=	"	if (!Minko.iframeElement.contentWindow.Minko)\n";
-	eval += "		Minko.iframeElement.contentWindow.Minko = {};\n";
-
-	eval += "	Minko.iframeElement.contentWindow.document.body.oncontextmenu = function(event){ event.preventDefault(); return false;};\n";
-
-	eval += "	if (!Minko.iframeElement.contentWindow.Minko.onmessage)\n";
-	eval +=	"	{\n";
-	eval +=	"		Minko.iframeElement.contentWindow.Minko.onmessage = function(message)\n";
-	eval +=	"		{\n";
-	eval +=	"			console.log('MINKO: ' + message);\n";
-	eval +=	"		}\n";
-	eval +=	"	}\n";
-	eval +=	"	Minko.iframeElement.contentWindow.Minko.messagesToSend = [];\n";
-
-	eval += "	Minko.iframeElement.contentWindow.Minko.sendMessage = function(message)\n";
-	eval +=	"	{\n";
-	eval +=	"		Minko.iframeElement.contentWindow.Minko.messagesToSend.push(message);\n";
-	eval +=	"	}\n";
-
-	eval += "	Minko.iframeElement.contentWindow.addEventListener('mousemove',		Minko.redispatchMouseEvent);\n";
-	eval += "	Minko.iframeElement.contentWindow.addEventListener('mouseup',		Minko.redispatchMouseEvent);\n";
-	eval += "	Minko.iframeElement.contentWindow.addEventListener('mousedown',		Minko.redispatchMouseEvent);\n";
-	eval += "	Minko.iframeElement.contentWindow.addEventListener('click',			Minko.redispatchMouseEvent);\n";
-	eval += "	Minko.iframeElement.contentWindow.addEventListener('mouseover',		Minko.redispatchMouseEvent);\n";
-	eval += "	Minko.iframeElement.contentWindow.addEventListener('mouseout',		Minko.redispatchMouseEvent);\n";
-	eval += "	Minko.iframeElement.contentWindow.addEventListener('mousewheel',	Minko.redispatchMouseEvent);\n";
-	eval += "	Minko.iframeElement.contentWindow.addEventListener('keydown',		Minko.redispatchKeyboardEvent);\n";
-	eval += "	Minko.iframeElement.contentWindow.addEventListener('keyup',			Minko.redispatchKeyboardEvent);\n";
-	eval += "	Minko.iframeElement.contentWindow.addEventListener('keypress',		Minko.redispatchKeyboardEvent);\n";
-	eval += "}\n\n";
-
-	eval += "iframeElement.onload = Minko.iframeLoadHandler;\n";
-
-	emscripten_run_script(eval.c_str());
 }
 
 EmscriptenDOMEngine::Ptr
