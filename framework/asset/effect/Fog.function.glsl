@@ -12,7 +12,7 @@ fog_sampleFog(vec4 fragColor, vec4 fragCoord)
 	float fogFactor = 1.0;
 	
 #ifdef FOG_LIN
-	fogFactor = (fogEnd - fragDist) / (fogEnd - fogStart);
+	fogFactor = clamp((fogEnd - fragDist) / (fogEnd - fogStart), 0.0, 1.0);
 #elif defined(FOG_EXP)
 	const float LOG2 = 1.442695;
 
