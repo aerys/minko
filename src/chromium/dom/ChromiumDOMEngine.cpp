@@ -41,6 +41,7 @@ ChromiumDOMEngine::ChromiumDOMEngine() :
 	_onload(minko::Signal<AbstractDOM::Ptr, std::string>::create()),
 	_onmessage(minko::Signal<AbstractDOM::Ptr, std::string>::create()),
 	_cleared(false),
+	_visible(true),
 	_chromiumInitialized(false),
 	_quad(nullptr)
 {
@@ -72,6 +73,8 @@ ChromiumDOMEngine::start(int argc, char** argv)
 	_impl->mainArgs = new CefMainArgs(argc, argv);
 #endif
 	_impl->app = new ChromiumApp();
+
+	_impl->app->enableInput(_visible);
 
 	int result = CefExecuteProcess(*_impl->mainArgs, _impl->app.get(), nullptr);
 }
@@ -106,7 +109,7 @@ ChromiumDOMEngine::initialize(AbstractCanvas::Ptr canvas, std::shared_ptr<compon
 		_overlayMaterial->set("overlayRatio", math::Vector2::create(wRatio, hRatio));
 		
 		auto overlayEffect = _sceneManager->assets()->effect("effect/Overlay.effect");
-
+		
 		if (overlayEffect && _quad == nullptr)
 		{
 			_quad = scene::Node::create("quad")
@@ -115,6 +118,8 @@ ChromiumDOMEngine::initialize(AbstractCanvas::Ptr canvas, std::shared_ptr<compon
 				_overlayMaterial,
 				overlayEffect
 			));
+
+			_quad->component<component::Surface>()->visible(_visible);
 
 		}
 		else
@@ -176,9 +181,12 @@ void
 ChromiumDOMEngine::enterFrame()
 {
 	CefDoMessageLoopWork();
+
 	for (auto dom : _doms)
 		dom->update();
-	_impl->renderHandler->uploadTexture();
+
+	if (_visible)
+		_impl->renderHandler->uploadTexture();
 }
 
 AbstractDOM::Ptr
@@ -232,6 +240,20 @@ ChromiumDOMEngine::loadLocal(std::string filename)
 	std::string url = path + filename;
 
 	loadHttp(url);
+}
+
+
+void
+ChromiumDOMEngine::visible(bool value)
+{
+	if (_quad != nullptr && _quad->hasComponent<component::Surface>())
+		_quad->component<component::Surface>()->visible(value);
+
+	if (_impl != nullptr && _impl->app != nullptr)
+		_impl->app->enableInput(_visible);
+
+	_visible = value;
+
 }
 
 void

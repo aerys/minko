@@ -46,7 +46,8 @@ EmscriptenDOMEngine::_domUid = 0;
 EmscriptenDOMEngine::EmscriptenDOMEngine() :
 	_loadedPreviousFrameState(0),
 	_onload(Signal<AbstractDOM::Ptr, std::string>::create()),
-	_onmessage(Signal<AbstractDOM::Ptr, std::string>::create())
+	_onmessage(Signal<AbstractDOM::Ptr, std::string>::create()),
+	_visible(true)
 {
 }
 
@@ -57,6 +58,8 @@ EmscriptenDOMEngine::initialize(AbstractCanvas::Ptr canvas, SceneManager::Ptr sc
 	_sceneManager = sceneManager;
 
 	loadScript("script/overlay.js");
+
+	visible(_visible);
 
 	_canvasResizedSlot = _canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
 	{
@@ -209,5 +212,20 @@ Signal<AbstractDOM::Ptr, std::string>::Ptr
 EmscriptenDOMEngine::onmessage()
 {
 	return _onmessage;
+}
+
+void
+EmscriptenDOMEngine::visible(bool value)
+{
+	if (_canvas != nullptr)
+	{
+		std::string eval = "";
+
+		eval += "Minko.iframeElement.style.visibility = '" + (value ? "visible" : "hidden") + "';\n";
+
+		emscripten_run_script(eval.c_str());
+	}
+
+	_visible = value;
 }
 #endif

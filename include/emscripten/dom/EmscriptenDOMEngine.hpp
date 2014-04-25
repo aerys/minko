@@ -68,6 +68,9 @@ namespace emscripten
 			minko::dom::AbstractDOM::Ptr
 			mainDOM();
 
+			void
+			visible(bool);
+
 		private:
 
 			void
@@ -92,6 +95,8 @@ namespace emscripten
 			int _loadedPreviousFrameState;
 			minko::Signal<minko::dom::AbstractDOM::Ptr, std::string>::Ptr _onload;
 			minko::Signal<minko::dom::AbstractDOM::Ptr, std::string>::Ptr _onmessage;
+
+			bool _visible;
 		};
 	}
 }

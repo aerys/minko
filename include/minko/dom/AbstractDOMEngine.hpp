@@ -55,6 +55,10 @@ namespace minko
 			virtual
 			AbstractDOM::Ptr
 			mainDOM() = 0;
+
+			virtual
+			void
+			visible(bool) = 0;
 		};
 	}
 }

@@ -54,6 +54,12 @@ namespace chromium
 		CefRefPtr<CefRenderProcessHandler>
 		GetRenderProcessHandler();
 
+		void
+		enableInput(bool value)
+		{
+			_enableInput = value;
+		}
+
 	private:
 		void
 		bindControls();
@@ -65,6 +71,8 @@ namespace chromium
 		Signal<std::shared_ptr<input::Mouse>>::Slot _rightUpSlot;
 		Signal<std::shared_ptr<input::Mouse>>::Slot _middleDownSlot;
 		Signal<std::shared_ptr<input::Mouse>>::Slot _middleUpSlot;
+
+		bool _enableInput;
 
 		std::shared_ptr<AbstractCanvas> _canvas;
 		std::shared_ptr<render::AbstractContext> _context;

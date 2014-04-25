@@ -106,6 +106,9 @@ namespace minko
 				return _domEngine->mainDOM();
 			}
 
+			void
+			visible(bool);
+
 		private:
 
 			minko::dom::AbstractDOMEngine::Ptr

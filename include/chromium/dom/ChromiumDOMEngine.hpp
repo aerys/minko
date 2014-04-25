@@ -108,6 +108,9 @@ namespace chromium
 
 			void
 			loadLocal(std::string);
+
+			void
+			visible(bool);
 			
 		private:
 
@@ -132,6 +135,7 @@ namespace chromium
 			std::shared_ptr<minko::material::BasicMaterial> _overlayMaterial;
 
 			bool _cleared;
+			bool _visible;
 		};
 	}
 }

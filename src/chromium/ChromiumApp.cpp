@@ -75,6 +75,9 @@ ChromiumApp::bindControls()
 {
 	_mouseMoveSlot = _canvas->mouse()->move()->connect([&](input::Mouse::Ptr m, int dx, int dy)
 	{
+		if (!_enableInput)
+			return;
+
 		if (dx == 0 && dy == 0)
 			return;
 
@@ -92,6 +95,8 @@ ChromiumApp::bindControls()
 
 	_leftDownSlot = _canvas->mouse()->leftButtonDown()->connect([&](input::Mouse::Ptr m)
 	{
+		if (!_enableInput)
+			return;
 		CefMouseEvent mouseEvent;
 		{
 			mouseEvent.x = m->x();
@@ -103,6 +108,8 @@ ChromiumApp::bindControls()
 
 	_leftUpSlot = _canvas->mouse()->leftButtonUp()->connect([&](input::Mouse::Ptr m)
 	{
+		if (!_enableInput)
+			return;
 		CefMouseEvent mouseEvent;
 		{
 			mouseEvent.x = m->x();
@@ -114,6 +121,8 @@ ChromiumApp::bindControls()
 
 	_rightDownSlot = _canvas->mouse()->rightButtonDown()->connect([&](input::Mouse::Ptr m)
 	{
+		if (!_enableInput)
+			return;
 		CefMouseEvent mouseEvent;
 		{
 			mouseEvent.x = m->x();
@@ -125,6 +134,8 @@ ChromiumApp::bindControls()
 
 	_rightUpSlot = _canvas->mouse()->rightButtonUp()->connect([&](input::Mouse::Ptr m)
 	{
+		if (!_enableInput)
+			return;
 		CefMouseEvent mouseEvent;
 		{
 			mouseEvent.x = m->x();
@@ -136,6 +147,8 @@ ChromiumApp::bindControls()
 
 	_middleDownSlot = _canvas->mouse()->middleButtonDown()->connect([&](input::Mouse::Ptr m)
 	{
+		if (!_enableInput)
+			return;
 		CefMouseEvent mouseEvent;
 		{
 			mouseEvent.x = m->x();
@@ -147,6 +160,8 @@ ChromiumApp::bindControls()
 
 	_middleUpSlot = _canvas->mouse()->middleButtonUp()->connect([&](input::Mouse::Ptr m)
 	{
+		if (!_enableInput)
+			return;
 		CefMouseEvent mouseEvent;
 		{
 			mouseEvent.x = m->x();
