@@ -35,7 +35,6 @@ void main(void)
 
 	vec4 worldPosition 	= vec4(position, 1.0);
 
-	vertexPosition = worldPosition.xyz;
 	
 	#ifdef MODEL_TO_WORLD
 		worldPosition 	= modelToWorldMatrix * worldPosition;
@@ -50,6 +49,8 @@ void main(void)
 			worldPosition += addCircularWave(worldPosition, vec2(waveOrigins[i * 2], waveOrigins[i * 2 + 1]), waveAmplitudes[i], waveSpeed[i], waveLength[i], waveSharpness[i], frameId);
 	}
 	#endif // NUMWAVES
+	
+	vertexPosition = worldPosition.xyz;
 
 	
 	#if defined NUM_DIRECTIONAL_LIGHTS || defined NUM_POINT_LIGHTS || defined NUM_SPOT_LIGHTS || defined ENVIRONMENT_MAP_2D || defined ENVIRONMENT_CUBE_MAP

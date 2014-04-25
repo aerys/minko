@@ -7,6 +7,7 @@
 #pragma include("../Reflection/Reflection.function.glsl")
 #pragma include("Phong.function.glsl")
 #pragma include("Envmap.function.glsl")
+#pragma include("Fog.function.glsl")
 #pragma include("Water.function.glsl")
 
 #ifdef PRECOMPUTED_AMBIENT
@@ -92,6 +93,9 @@ uniform float 		flowMapOffset2;
 uniform float		reflectivity;
 uniform float		dudvSpeed;
 uniform float		dudvFactor;
+uniform float		fresnelMultiplier;
+uniform float		fresnelPow;
+uniform float		normalMultiplier;
 
 varying vec4		vertexScreenPosition;
 varying vec3 		vertexPosition;
@@ -99,15 +103,20 @@ varying vec2 		vertexUV;
 varying vec3 		vertexNormal;
 varying vec3 		vertexTangent;
 
+
 void main(void)
 {
 	vec4 diffuse 			= diffuseColor;
 	vec4 specular 			= specularColor;
 	float specularAlpha		= diffuse.a;
+	float fresnelAccum		= 0.0;
+	float fresnelMax		= 0.0;
+	//float fogPercent		= fog_Percent(gl_FragCoord);
 
 	#ifdef DIFFUSE_MAP
 		diffuse = texture2D(diffuseMap, vertexUV);
 	#endif // DIFFUSE_MAP
+
 
 	vec3	ambientAccum	= vec3(0.0);
 	vec3	diffuseAccum	= vec3(0.0);
@@ -153,6 +162,7 @@ void main(void)
 		
 		vec3 	normalVector			= normalize(vertexNormal); // always in world-space
 		
+
 		#ifdef NORMAL_MAP
 			// warning: the normal vector must be normalized at this point!
 			mat3 tangentToWorldMatrix 	= phong_getTangentToWorldSpaceMatrix(normalVector, vertexTangent);
@@ -178,12 +188,14 @@ void main(void)
 			#else
 				vec2 uvOffset				= vec2(frameId * normalSpeed, frameId * normalSpeed);
 				vec3 normalSample1			= 2.0 * texture2D(normalMap, vertexUV * normalMapScale + uvOffset).xyz - 1.0;
-				vec3 normalSample2			= 2.0 * texture2D(normalMap, vertexUV * normalMapScale - uvOffset).xyz - 1.0;
+				vec3 normalSample2			= 2.0 * texture2D(normalMap, vertexUV * normalMapScale + uvOffset * vec2(-0.71, 0.91)).xyz - 1.0;
 
-				normalVector				= tangentToWorldMatrix * normalize((normalSample1 + normalSample2) / 2.0); // bring normal from tangent-space normal to world-space
+				normalVector				= tangentToWorldMatrix * normalize(mix(normalSample1, normalSample2, 0.5) * vec3(normalMultiplier, 1.0, normalMultiplier)); // bring normal from tangent-space normal to world-space
 			#endif
 		#endif // NORMAL_MAP
 				
+		float dotNormal = 0.0;
+
 		#ifdef NUM_DIRECTIONAL_LIGHTS
 		//---------------------------
 		for (int i = 0; i < NUM_DIRECTIONAL_LIGHTS; ++i)
@@ -214,7 +226,14 @@ void main(void)
 					* lightSpecularCoeff;
 				specularAlpha += phong_specularReflection(normalVector, lightDirection, eyeVector, shininess) * lightSpecularCoeff;
 			#endif // SHININESS
+		
+			fresnelAccum += fresnelFactor(vec3(0.0, 1.0, 0.0), eyeVector, fresnelMultiplier, 0.0, fresnelPow) * lightDiffuseCoeff;
+			fresnelMax   += lightDiffuseCoeff;
+			dotNormal	 += -dot(normalize(vertexNormal), lightDirection);
 		}
+
+		dotNormal /= NUM_DIRECTIONAL_LIGHTS;
+
 		#endif // NUM_DIRECTIONAL_LIGHTS
 		
 				#ifdef NUM_POINT_LIGHTS
@@ -330,14 +349,20 @@ void main(void)
 		#ifdef DUDV_MAP
 			vec2 dudvOffset = ((1.0 - vertexUV) + (frameId * dudvSpeed));
 
-			phongColor = mix(phongColor, getDuDvReflectionColor(vertexScreenPosition, vertexUV.xy, reflectionMap, texture2D(dudvMap, dudvOffset).rb * dudvFactor).rgb, reflectivity);
+			phongColor = mix(phongColor, getDuDvReflectionColor(vertexScreenPosition, vertexUV.xy, reflectionMap, texture2D(dudvMap, dudvOffset).rb * dudvFactor).rgb, max(reflectivity, fresnelAccum / fresnelMax));
 		#else
-			phongColor = mix(phongColor, getReflectionColor(vertexScreenPosition, vertexUV, reflectionMap).rgb, reflectivity);
+			phongColor = mix(phongColor, getReflectionColor(vertexScreenPosition, vertexUV, reflectionMap).rgb, max(reflectivity, fresnelAccum / fresnelMax));
 		#endif
 	#endif
 
+	//phongColor *= (1 + dotNormal);
+	specularAccum *= (1 + dotNormal * 2);
+
 	vec3 phong		= phongColor + specularAccum;
 	gl_FragColor	= vec4(phong.rgb, specularAlpha);
+	gl_FragColor 	= fog_sampleFog(gl_FragColor, gl_FragCoord);
+
+	//gl_FragColor = vec4(dotNormalValue, dotNormalValue, dotNormalValue, 1.0);
 }
 
 #endif // FRAGMENT_SHADER

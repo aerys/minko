@@ -43,7 +43,14 @@
 		"pointLights"			: { "property" : "pointLights",						"source" : "root" },
 		"frameId"				: { "property" : "frameId",							"source" : "root" },
 		"flowMapScale"			: { "property" : "material[${materialId}].flowMapScale", 	"default" : 1.0},
-		"normalMapScale"		: { "property" : "material[${materialId}].normalMapScale", 	"default" : 1.0}
+		"normalMapScale"		: { "property" : "material[${materialId}].normalMapScale", 	"default" : 1.0},
+		"fresnelMultiplier"		: "material[${materialId}].fresnelMultiplier",
+		"fresnelPow"			: "material[${materialId}].fresnelPow",
+		"fogColor"				: "material[${materialId}].fogColor",
+		"fogDensity"			: "material[${materialId}].fogDensity",
+		"fogStart"				: "material[${materialId}].fogStart",
+		"fogEnd"				: "material[${materialId}].fogEnd",
+		"normalMultiplier"		: "material[${materialId}].normalMultiplier"
 	},
 
 	"macroBindings"	: {
@@ -57,7 +64,10 @@
 		"NUMWAVES"				: {"property" : "material[${materialId}].numWaves", "default" : 0},
 		"MODEL_TO_WORLD"		: "transform.modelToWorldMatrix",
 		"NUM_AMBIENT_LIGHTS"	: { "property" : "ambientLights.length",		"source" : "root" },
-		"PRECOMPUTED_AMBIENT"	: { "property" : "sumAmbients",					"source" : "root" }
+		"PRECOMPUTED_AMBIENT"	: { "property" : "sumAmbients",					"source" : "root" },
+		"FOG_LIN"				: "material[${materialId}].fogLinear",
+		"FOG_EXP"				: "material[${materialId}].fogExponential",
+		"FOG_EXP2"				: "material[${materialId}].fogExponential2"
 	},
 		
 	"stateBindings"	: {

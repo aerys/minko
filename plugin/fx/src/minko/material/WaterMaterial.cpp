@@ -57,6 +57,13 @@ WaterMaterial::initialize()
 	flowMapOffset2(0.f);
 	dudvFactor(1.f);
 	dudvSpeed(0.01f);
+	fresnelPow(1.f);
+	fresnelMultiplier(1.0f);
+	fogColor(0x909090FF);
+	fogDensity(0.001f);
+	fogStart(100.f);
+	fogEnd(400.0f);
+	fogType(render::FogType::Exponential);
 
 	data::UniformArrayPtr<float>	amplitudesUniformArray(new data::UniformArray<float>(_numWaves, &(_amplitudes[0])));
 	data::UniformArrayPtr<float>	originsUniformArray(new data::UniformArray<float>(_numWaves * 2, &(_origins[0])));
@@ -207,6 +214,50 @@ WaterMaterial::dudvFactor() const
 {
 	return get<float>("dudvFactor");
 }
+
+WaterMaterial::Ptr
+WaterMaterial::fresnelMultiplier(float s)
+{
+	set("fresnelMultiplier", s);
+
+	return std::static_pointer_cast<WaterMaterial>(shared_from_this());
+}
+
+float
+WaterMaterial::fresnelMultiplier() const
+{
+	return get<float>("fresnelMultiplier");
+}
+
+
+WaterMaterial::Ptr
+WaterMaterial::normalMultiplier(float value)
+{
+	set("normalMultiplier", value);
+
+	return std::static_pointer_cast<WaterMaterial>(shared_from_this());
+}
+
+float
+WaterMaterial::normalMultiplier() const
+{
+	return get<float>("normalMultiplier");
+}
+
+WaterMaterial::Ptr
+WaterMaterial::fresnelPow(float value)
+{
+	set("fresnelPow", value);
+
+	return std::static_pointer_cast<WaterMaterial>(shared_from_this());
+}
+
+float
+WaterMaterial::fresnelPow() const
+{
+	return get<float>("fresnelPow");
+}
+
 WaterMaterial::Ptr
 WaterMaterial::normalMap(render::AbstractTexture::Ptr value)
 {

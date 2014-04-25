@@ -58,3 +58,16 @@ vec3 addNormalCircularWave(vec4 position, vec2 origin, float amplitude, float sp
 
 	return addNormalDirectionalWave(position, direction, amplitude, speed, waveLength, sharpness, time);
 }
+
+float fresnelFactor(vec3 normalVector, vec3 localView, float fresnelMultiplier, float fogPercent, float fresnelPow)
+{
+	float fresnel = dot(normalVector, localView) * fresnelMultiplier;
+
+	float fresnelTerm = 1.0 - fresnel;
+
+	fresnelTerm = pow(fresnelTerm, fresnelPow);
+	fresnelTerm = clamp(fresnelTerm, 0.0, 1.0);
+	fresnelTerm = fresnelTerm * 0.95 + 0.05; // avoid null fresnelTerm
+
+	return fresnelTerm;
+}
