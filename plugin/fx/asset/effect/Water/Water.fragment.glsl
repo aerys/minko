@@ -160,7 +160,7 @@ void main(void)
 		float	lightCosOuterAng		= 0.0;
 		float 	contribution			= 0.0;
 		
-		vec3 	normalVector			= normalize(vertexNormal); // always in world-space
+		vec3 	normalVector			= normalize(vertexNormal * vec3(normalMultiplier, 1.0, normalMultiplier)); // always in world-space
 		
 
 		#ifdef NORMAL_MAP
@@ -229,7 +229,7 @@ void main(void)
 		
 			fresnelAccum += fresnelFactor(vec3(0.0, 1.0, 0.0), eyeVector, fresnelMultiplier, 0.0, fresnelPow) * lightDiffuseCoeff;
 			fresnelMax   += lightDiffuseCoeff;
-			dotNormal	 += -dot(normalize(vertexNormal), lightDirection);
+			dotNormal	 += -dot(normalize(vertexNormal * vec3(normalMultiplier, 1.0, normalMultiplier)), lightDirection);
 		}
 
 		dotNormal /= NUM_DIRECTIONAL_LIGHTS;
@@ -355,13 +355,12 @@ void main(void)
 		#endif
 	#endif
 
-	//phongColor *= (1 + dotNormal);
-	specularAccum *= (1 + dotNormal * 2);
+	//phongColor *= (1 + dotNormal * 2);
 
 	vec3 phong		= phongColor + specularAccum;
 	gl_FragColor	= vec4(phong.rgb, specularAlpha);
 	gl_FragColor 	= fog_sampleFog(gl_FragColor, gl_FragCoord);
-
+	//gl_FragColor	= vec4(dotInitNormal, dotInitNormal, dotInitNormal, 1);
 	//gl_FragColor = vec4(dotNormalValue, dotNormalValue, dotNormalValue, 1.0);
 }
 
