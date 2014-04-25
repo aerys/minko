@@ -176,7 +176,7 @@ Canvas::initializeContext(const std::string& windowTitle, unsigned int width, un
 
     SDL_WM_SetCaption(windowTitle.c_str(), NULL);
 
-    SDL_SetVideoMode(width, height, 0, SDL_OPENGL);
+    SDL_SetVideoMode(width, height, 0, SDL_OPENGL | SDL_WINDOW_RESIZABLE);
 
     _context = minko::render::WebGLContext::create();
 #endif // EMSCRIPTEN
@@ -622,14 +622,17 @@ Canvas::step()
 
 #ifdef EMSCRIPTEN
         case SDL_VIDEORESIZE:
-			//Not working for the moment.
-            /*width(event.resize.w);
+            width(event.resize.w);
             height(event.resize.h);
 
-            delete _screen;
-            _screen = SDL_SetVideoMode(width(), height(), 0, SDL_OPENGL | SDL_RESIZABLE);
-            _context->configureViewport(x(), y(), width(), height());
-            _resized->execute(shared_from_this(), width(), height());*/
+			//delete _screen;
+			std::cout << width() << std::endl;
+			std::cout << height() << std::endl;
+
+			_screen = SDL_SetVideoMode(width(), height(), 0, SDL_OPENGL | SDL_WINDOW_RESIZABLE);
+
+			_context->configureViewport(x(), y(), width(), height());
+			_resized->execute(shared_from_this(), width(), height());
             break;
 #else
         case SDL_WINDOWEVENT:
@@ -652,26 +655,6 @@ Canvas::step()
             break;
         }
     }
-
-#ifdef EMSCRIPTEN
-	//Temporary resize handling (while SDL_VIDEORESIZE is not working)
-	int canvasW = width();
-	int canvasH = width();
-	int canvasFullscreen = 0;
-
-	emscripten_get_canvas_size(&canvasW, &canvasH, &canvasFullscreen);
-
-	if (canvasW != width() || canvasH != height())
-	{
-		width(canvasW);
-		height(canvasH);
-
-		delete _screen;
-		_screen = SDL_SetVideoMode(canvasW, canvasH, 0, SDL_OPENGL | SDL_RESIZABLE);
-		_context->configureViewport(x(), y(), canvasW, canvasH);
-		_resized->execute(shared_from_this(), canvasW, canvasH);
-	}
-#endif
 
     for (auto worker : _activeWorkers)
         worker->poll();
