@@ -31,6 +31,10 @@ if NDK_HOME then
 		"--sysroot=" .. NDK_HOME .. "/platforms/android-9/arch-arm",
 		"-I" .. NDK_HOME .. "/sources/cxx-stl/gnu-libstdc++/4.8/include/",
 		"-I" .. NDK_HOME .. "/sources/cxx-stl/gnu-libstdc++/4.8/libs/armeabi-v7a/include"
+		})
+
+		table.inject(premake.tools.gcc, 'cxxflags.system.android', {
+			"-std=c++11"
 	})
 
 	table.inject(premake.tools.gcc, 'ldflags.system.android', {

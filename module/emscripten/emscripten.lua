@@ -53,10 +53,21 @@ elseif os.is('windows') then
 end
 
 table.inject(premake.tools.gcc, 'cppflags.system.emscripten', {
+	"-MMD", "-MP",
 	"-DEMSCRIPTEN",
 	"-Wno-warn-absolute-paths"
 })
+
 table.inject(premake.tools.clang, 'cppflags.system.emscripten', {
+	"-MMD", "-MP",
 	"-DEMSCRIPTEN",
 	"-Wno-warn-absolute-paths"
+})
+
+table.inject(premake.tools.gcc, 'cxxflags.system.emscripten', {
+	'"-std=c++11"',
+})
+
+table.inject(premake.tools.clang, 'cxxflags.system.emscripten', {
+	'"-std=c++11"',
 })

@@ -1,7 +1,17 @@
-table.inject(premake.tools.gcc, 'cxxflags.system', {
-	linux = { "-MMD", "-MP", "-std=c++11" },
-	macosx = { "-MMD", "-MP", "-std=c++11" },
-	emscripten = { "-MMD", "-MP", '"-std=c++11"' } -- note: double-quoting is needed by cmd.exe
+table.inject(premake.tools.gcc, 'cppflags.system.linux', {
+	"-MMD", "-MP"
+})
+
+table.inject(premake.tools.gcc, 'cppflags.system.macosx', {
+	"-MMD", "-MP"
+})
+
+table.inject(premake.tools.gcc, 'cxxflags.system.linux', {
+	"-std=c++11"
+})
+
+table.inject(premake.tools.gcc, 'cxxflags.system.macosx', {
+	"-std=c++11"
 })
 
 table.inject(premake.tools.gcc, 'tools.linux', {
