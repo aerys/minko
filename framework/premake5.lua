@@ -7,7 +7,7 @@ minko.project.library "minko-framework"
 		"src/**.hpp",
 		"src/**.cpp",
 		"include/**.hpp",
-		"assets/**"
+		"asset/**"
 	}
 
 	includedirs {
