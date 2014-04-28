@@ -34,6 +34,15 @@ ChromiumDOMElement::_v8NodeToElement;
 std::list<std::function<void()>>
 ChromiumDOMElement::_functionList;
 
+std::list<std::function<void()>>
+ChromiumDOMElement::_fnHolder;
+
+std::mutex
+ChromiumDOMElement::_fnHolderMutex;
+
+std::atomic<int>
+ChromiumDOMElement::_waitingFunctions(0);
+
 std::map<ChromiumDOMElement::Ptr, CefRefPtr<CefV8Value>>
 ChromiumDOMElement::_elementToV8Object;
 
@@ -817,20 +826,32 @@ ChromiumDOMElement::style(std::string name, std::string value)
 		_v8Context->Enter();
 		getProperty("style")->SetValue(name, CefV8Value::CreateString(value), V8_PROPERTY_ATTRIBUTE_NONE);
 		_v8Context->Exit();
+
+		_fnHolderMutex.lock();
+
+		_waitingFunctions.store(_waitingFunctions.load() - 1);
+
+		if (_fnHolder.size() > 0 && _waitingFunctions.load() == 0)
+			_fnHolder.clear();
+
+		_fnHolderMutex.unlock();
 	}
 	else
 	{
 		CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
-		_blocker.store(true);
 
-		auto fn = [&]()
-		{
-			style(name, value);
-			_blocker.store(false);
-		};
+		_fnHolderMutex.lock();
+		_waitingFunctions.store(_waitingFunctions.load() + 1);
+		
+		_fnHolder.push_back(std::bind(
+			(void(ChromiumDOMElement::*)(std::string, std::string))&ChromiumDOMElement::style,
+			shared_from_this(),
+			name,
+			value
+		));
 
-		runner->PostTask(NewCefRunnableFunction(&fn));
-		while (_blocker.load());
+		runner->PostTask(NewCefRunnableFunction(&(_fnHolder.back())));
+		_fnHolderMutex.unlock();
 	}
 }
 

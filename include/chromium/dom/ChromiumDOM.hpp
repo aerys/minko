@@ -156,6 +156,10 @@ namespace chromium
 			bool _init;
 			bool _executeOnLoad;
 
+			static std::vector<std::function<void()>> _fnHolder;
+			std::function<void()> _fn;
+			std::vector<std::string> _paramHolder;
+
 			std::list<std::string> _receivedMessages;
 		};
 	}

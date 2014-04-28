@@ -32,6 +32,7 @@ using namespace chromium::dom;
 using namespace minko;
 using namespace minko::dom;
 
+std::vector<std::function<void()>> ChromiumDOM::_fnHolder;
 
 void
 getElementByIdHelper(bool* blocker, ChromiumDOM::Ptr dom, ChromiumDOMElement::Ptr* element, std::string id);
@@ -135,23 +136,21 @@ ChromiumDOM::sendMessage(std::string message, bool async)
 
 			CefRefPtr<CefV8Value> result = func->ExecuteFunctionWithContext(_v8Context, _minkoObject, args);
 		}
+
+		if (!async)
+			_blocker.store(false);
 	}
 	else
 	{
-		CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
-		//if (async)
+		if (!async)
 			_blocker.store(true);
 
-		auto fn = [=]()
-		{
-			sendMessage(message);
-			//if (async)
-				_blocker.store(false);
-		};
-
-		runner->PostTask(NewCefRunnableFunction(&fn));
-
-		//if (async)
+		CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
+		
+		_fnHolder.push_back(std::bind(&ChromiumDOM::sendMessage, shared_from_this(), message, async));
+		runner->PostTask(NewCefRunnableFunction(&(_fnHolder[_fnHolder.size() - 1])));
+		
+		if (!async)
 			while (_blocker.load());
 	}
 }
