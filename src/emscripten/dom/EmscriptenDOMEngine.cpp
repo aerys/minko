@@ -221,7 +221,12 @@ EmscriptenDOMEngine::visible(bool value)
 	{
 		std::string eval = "";
 
-		eval += "Minko.iframeElement.style.visibility = '" + (value ? "visible" : "hidden") + "';\n";
+		std::string visibility = "visible";
+		
+		if (!value)
+			visibility = "hidden";
+
+		eval += "Minko.iframeElement.style.visibility = '" + visibility + "';\n";
 
 		emscripten_run_script(eval.c_str());
 	}

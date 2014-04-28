@@ -44,10 +44,13 @@ EmscriptenDOM::create(std::string jsAccessor)
 }
 
 void
-EmscriptenDOM::sendMessage(std::string message)
+EmscriptenDOM::sendMessage(std::string message, bool async)
 {
 	std::string eval = "if (" + _jsAccessor + ".window.Minko.onmessage) " + _jsAccessor + ".window.Minko.onmessage('" + message + "');";
-	emscripten_run_script(eval.c_str());
+	if (!async)
+		emscripten_run_script(eval.c_str());
+	else
+		emscripten_async_run_script(eval.c_str(), 1);
 }
 
 std::list<AbstractDOMElement::Ptr>

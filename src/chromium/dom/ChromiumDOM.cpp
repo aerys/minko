@@ -121,7 +121,7 @@ ChromiumDOM::body()
 }
 
 void
-ChromiumDOM::sendMessage(std::string message)
+ChromiumDOM::sendMessage(std::string message, bool async)
 {
 	ChromiumDOMElement::Ptr element;
 	if (CefCurrentlyOn(TID_RENDERER))
@@ -139,17 +139,20 @@ ChromiumDOM::sendMessage(std::string message)
 	else
 	{
 		CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
-		_blocker.store(true);
+		//if (async)
+			_blocker.store(true);
 
-		auto fn = [&]()
+		auto fn = [=]()
 		{
 			sendMessage(message);
-			_blocker.store(false);
+			//if (async)
+				_blocker.store(false);
 		};
 
 		runner->PostTask(NewCefRunnableFunction(&fn));
 
-		while (_blocker.load());
+		//if (async)
+			while (_blocker.load());
 	}
 }
 void

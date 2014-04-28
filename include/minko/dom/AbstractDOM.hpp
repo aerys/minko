@@ -35,7 +35,7 @@ namespace minko
 
 			virtual
 			void
-			sendMessage(std::string) = 0;
+			sendMessage(std::string, bool async = true) = 0;
 
 			virtual
 			AbstractDOMElement::Ptr

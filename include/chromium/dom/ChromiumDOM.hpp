@@ -67,7 +67,7 @@ namespace chromium
 			init(CefRefPtr<CefV8Context>, CefRefPtr<CefFrame>);
 
 			void
-			sendMessage(std::string);
+			sendMessage(std::string, bool async = true);
 
 			minko::dom::AbstractDOMElement::Ptr
 			createElement(std::string);
