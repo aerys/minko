@@ -259,20 +259,24 @@ ChromiumDOMElement::id(std::string newId)
 		_v8Context->Enter();
 		setProperty("id", CefV8Value::CreateString(newId));
 		_v8Context->Exit();
+
+		decrementActiveFunctions();
 	}
 	else
 	{
 		CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
-		_blocker.store(true);
 
-		auto fn = [&]()
-		{
-			id(newId);
-			_blocker.store(false);
-		};
+		_fnHolderMutex.lock();
+		_waitingFunctions.store(_waitingFunctions.load() + 1);
 
-		runner->PostTask(NewCefRunnableFunction(&fn));
-		while (_blocker.load());
+		_fnHolder.push_back(std::bind(
+			(void(ChromiumDOMElement::*)(std::string))&ChromiumDOMElement::id,
+			shared_from_this(),
+			newId
+		));
+
+		runner->PostTask(NewCefRunnableFunction(&(_fnHolder.back())));
+		_fnHolderMutex.unlock();
 	}
 }
 
@@ -313,20 +317,24 @@ ChromiumDOMElement::className(std::string newClass)
 		_v8Context->Enter();
 		setProperty("className", CefV8Value::CreateString(newClass));
 		_v8Context->Exit();
+
+		decrementActiveFunctions();
 	}
 	else
 	{
 		CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
-		_blocker.store(true);
 
-		auto fn = [&]()
-		{
-			className(newClass);
-			_blocker.store(false);
-		};
+		_fnHolderMutex.lock();
+		_waitingFunctions.store(_waitingFunctions.load() + 1);
 
-		runner->PostTask(NewCefRunnableFunction(&fn));
-		while (_blocker.load());
+		_fnHolder.push_back(std::bind(
+			(void(ChromiumDOMElement::*)(std::string))&ChromiumDOMElement::className,
+			shared_from_this(),
+			newClass
+		));
+
+		runner->PostTask(NewCefRunnableFunction(&(_fnHolder.back())));
+		_fnHolderMutex.unlock();
 	}
 }
 
@@ -456,21 +464,24 @@ ChromiumDOMElement::textContent(std::string content)
 		_v8Context->Enter();
 		setProperty("textContent", CefV8Value::CreateString(content));
 		_v8Context->Exit();
+
+		decrementActiveFunctions();
 	}
 	else
 	{
 		CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
-		_blocker.store(true);
 
-		auto fn = [&]()
-		{
-			textContent(content);
-			_blocker.store(false);
-		};
+		_fnHolderMutex.lock();
+		_waitingFunctions.store(_waitingFunctions.load() + 1);
 
-		runner->PostTask(NewCefRunnableFunction(&fn));
+		_fnHolder.push_back(std::bind(
+			(void(ChromiumDOMElement::*)(std::string))&ChromiumDOMElement::textContent,
+			shared_from_this(),
+			content
+		));
 
-		while (_blocker.load());
+		runner->PostTask(NewCefRunnableFunction(&(_fnHolder.back())));
+		_fnHolderMutex.unlock();
 	}
 }
 
@@ -511,21 +522,24 @@ ChromiumDOMElement::innerHTML(std::string html)
 		_v8Context->Enter();
 		setProperty("innerHTML", CefV8Value::CreateString(html));
 		_v8Context->Exit();
+
+		decrementActiveFunctions();
 	}
 	else
 	{
 		CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
-		_blocker.store(true);
 
-		auto fn = [&]()
-		{
-			innerHTML(html);
-			_blocker.store(false);
-		};
+		_fnHolderMutex.lock();
+		_waitingFunctions.store(_waitingFunctions.load() + 1);
 
-		runner->PostTask(NewCefRunnableFunction(&fn));
+		_fnHolder.push_back(std::bind(
+			(void(ChromiumDOMElement::*)(std::string))&ChromiumDOMElement::innerHTML,
+			shared_from_this(),
+			html
+		));
 
-		while (_blocker.load());
+		runner->PostTask(NewCefRunnableFunction(&(_fnHolder.back())));
+		_fnHolderMutex.unlock();
 	}
 }
 
@@ -730,20 +744,25 @@ ChromiumDOMElement::setAttribute(std::string name, std::string value)
 
 		func->ExecuteFunction(_v8NodeObject, args);
 		_v8Context->Exit();
+
+		decrementActiveFunctions();
 	}
 	else
 	{
 		CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
-		_blocker.store(true);
 
-		auto fn = [&]()
-		{
-			setAttribute(name, value);
-			_blocker.store(false);
-		};
+		_fnHolderMutex.lock();
+		_waitingFunctions.store(_waitingFunctions.load() + 1);
 
-		runner->PostTask(NewCefRunnableFunction(&fn));
-		while (_blocker.load());
+		_fnHolder.push_back(std::bind(
+			&ChromiumDOMElement::setAttribute,
+			shared_from_this(),
+			name,
+			value
+		));
+
+		runner->PostTask(NewCefRunnableFunction(&(_fnHolder.back())));
+		_fnHolderMutex.unlock();
 	}
 }
 
@@ -827,14 +846,7 @@ ChromiumDOMElement::style(std::string name, std::string value)
 		getProperty("style")->SetValue(name, CefV8Value::CreateString(value), V8_PROPERTY_ATTRIBUTE_NONE);
 		_v8Context->Exit();
 
-		_fnHolderMutex.lock();
-
-		_waitingFunctions.store(_waitingFunctions.load() - 1);
-
-		if (_fnHolder.size() > 0 && _waitingFunctions.load() == 0)
-			_fnHolder.clear();
-
-		_fnHolderMutex.unlock();
+		decrementActiveFunctions();
 	}
 	else
 	{
@@ -873,21 +885,38 @@ ChromiumDOMElement::addEventListener(std::string type)
 
 		getFunction("addEventListener")->ExecuteFunction(_v8NodeObject, args);
 		_v8Context->Exit();
+
+		decrementActiveFunctions();
 	}
 	else
 	{
 		CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
-		_blocker.store(true);
 
-		auto fn = [&]()
-		{
-			addEventListener(type);
-			_blocker.store(false);
-		};
+		_fnHolderMutex.lock();
+		_waitingFunctions.store(_waitingFunctions.load() + 1);
 
-		runner->PostTask(NewCefRunnableFunction(&fn));
-		while (_blocker.load());
+		_fnHolder.push_back(std::bind(
+			&ChromiumDOMElement::addEventListener,
+			shared_from_this(),
+			type
+		));
+
+		runner->PostTask(NewCefRunnableFunction(&(_fnHolder.back())));
+		_fnHolderMutex.unlock();
 	}
+}
+
+void
+ChromiumDOMElement::decrementActiveFunctions()
+{
+	_fnHolderMutex.lock();
+
+	_waitingFunctions.store(_waitingFunctions.load() - 1);
+
+	if (_fnHolder.size() > 0 && _waitingFunctions.load() == 0)
+		_fnHolder.clear();
+
+	_fnHolderMutex.unlock();
 }
 
 Signal<AbstractDOMEvent::Ptr>::Ptr
