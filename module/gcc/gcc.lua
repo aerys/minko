@@ -15,9 +15,11 @@ table.inject(premake.tools.gcc, 'cxxflags.system.macosx', {
 })
 
 table.inject(premake.tools.gcc, 'tools.linux', {
-	cxx = MINKO_HOME .. '/tool/lin/script/g++.sh',
+	cc = 'gcc',
+	cxx = MINKO_HOME .. '/tool/lin/script/g++.sh g++',
 })
 
 table.inject(premake.tools.gcc, 'tools.macosx', {
-	cxx = MINKO_HOME .. '/tool/mac/script/g++.sh',
+	cc = 'gcc',
+	cxx = 'g++',
 })
