@@ -136,7 +136,7 @@ Options::defaultProtocolFunction(const std::string& filename)
             return loader;
     }
 
-    auto defaultProtocol = FileProtocol::create();
+    auto defaultProtocol = this->getProtocol("file"); // "file" might be overriden (by APKProtocol for instance)
 
     defaultProtocol->options(Options::create(this->shared_from_this()));
 
