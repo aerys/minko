@@ -16,9 +16,9 @@ fog_sampleFog(vec4 fragColor, vec4 fragCoord)
 #ifdef FOG_LIN
 	fogFactor = fogDensity * (1.0 - clamp((fogEnd - fragDist) / (fogEnd - fogStart), 0.0, 1.0));
 #elif defined(FOG_EXP)
-    fogFactor = fogDensity * (1.0 - clamp(1.0 / exp2((fragDist - fogStart) * LOG2), 0.0, 1.0));
+    fogFactor = fogDensity * (1.0 - clamp(1.0 / exp2((fragDist - fogStart) * LOG2 / (fogEnd - fogStart) * 4.0), 0.0, 1.0));
 #elif defined(FOG_EXP2)
-    fogFactor = fogDensity * (1.0 - clamp(1.0 / exp2((fragDist * fragDist - fogStart * fogStart) * LOG2), 0.0, 1.0));
+    fogFactor = fogDensity * (1.0 - clamp(1.0 / exp2((fragDist * fragDist - fogStart * fogStart) * LOG2 / (fogEnd - fogStart)), 0.0, 1.0));
 #endif
 
     fogFactor = clamp(fogFactor, 0.0, 1.0);
