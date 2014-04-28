@@ -71,9 +71,9 @@ int main(int argc, char** argv)
             ->diffuseMap(sceneManager->assets()->texture(TEXTURE_FILENAME))
             ->fogType(render::FogType::None)
             ->fogColor(Vector4::create(0.6f, 0.6f, 0.6f, 1.0f))
-            ->fogStart(5.0f) // only for linear
-            ->fogEnd(15.0f)   // only for linear
-            ->fogDensity(0.33f);
+            ->fogStart(5.0f)
+            ->fogEnd(25.0f)
+            ->fogDensity(1.0f);
 
         auto groundMaterial = std::static_pointer_cast<material::PhongMaterial>(material::PhongMaterial::create()->copyFrom(material));
         groundMaterial->unset("diffuseMap");
