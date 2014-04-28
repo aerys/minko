@@ -30,7 +30,7 @@ minko.platform.supports = function(target)
 			return true
 		end
 	elseif target == "android" then
-		if NDK_HOME and string.startswith(_ACTION, "gmake") then
+		if ANDROID_HOME and string.startswith(_ACTION, "gmake") then
 			return true
 		end
 	end
