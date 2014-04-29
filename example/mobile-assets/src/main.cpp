@@ -43,12 +43,12 @@ main(int argc, char** argv)
     auto sceneManager = SceneManager::create(canvas->context());
 
     // setup assets
-    sceneManager->assets()
+	sceneManager->assets()->loader()->options()
         ->registerParser<file::ASSIMPParser>("dae")
         ->registerParser<file::PNGParser>("png")
         ->registerParser<file::JPEGParser>("jpg");
 
-    sceneManager->assets()->load("effect/Basic.effect");
+	sceneManager->assets()->loader()->queue("effect/Basic.effect");
     
 
     auto modelPaths = std::vector<std::string> 
@@ -61,16 +61,16 @@ main(int argc, char** argv)
     // add the models to the asset list
     for (auto modelPath : modelPaths)
     {
-        sceneManager->assets()->queue(modelPath);
+		sceneManager->assets()->loader()->queue(modelPath);
     }
 
     // add Minko logo to the list of file to load
-    sceneManager->assets()->queue(MINKO_LOGO);
+	sceneManager->assets()->loader()->queue(MINKO_LOGO);
 
-    sceneManager->assets()->defaultOptions()->generateMipmaps(true);
-    sceneManager->assets()->defaultOptions()->effect(sceneManager->assets()->effect("effect/Basic.effect"));
+	sceneManager->assets()->loader()->options()->generateMipmaps(true);
+	sceneManager->assets()->loader()->options()->effect(sceneManager->assets()->effect("effect/Basic.effect"));
 
-    auto complete = sceneManager->assets()->complete()->connect([&](file::AssetLibrary::Ptr assets)
+	auto complete = sceneManager->assets()->loader()->complete()->connect([&](file::AssetLibrary::Ptr assets)
     {
         auto root = scene::Node::create("root")->addComponent(sceneManager);
 
@@ -185,7 +185,7 @@ main(int argc, char** argv)
         canvas->run();
     });
 
-    sceneManager->assets()->load();
+	sceneManager->assets()->loader()->load();
 
     return 0;
 }
