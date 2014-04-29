@@ -47,10 +47,10 @@ void
 EmscriptenDOM::sendMessage(std::string message, bool async)
 {
 	std::string eval = "if (" + _jsAccessor + ".window.Minko.onmessage) " + _jsAccessor + ".window.Minko.onmessage('" + message + "');";
-	if (!async)
+	//if (!async)
 		emscripten_run_script(eval.c_str());
-	else
-		emscripten_async_run_script(eval.c_str(), 1);
+	//else
+	//	emscripten_async_run_script(eval.c_str(), 1);
 }
 
 std::list<AbstractDOMElement::Ptr>
