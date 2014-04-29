@@ -168,9 +168,6 @@ namespace chromium
 
 		private:
 
-			void
-			decrementActiveFunctions();
-
 			static
 			std::map<CefRefPtr<CefV8Value>, Ptr> _v8NodeToElement;
 
