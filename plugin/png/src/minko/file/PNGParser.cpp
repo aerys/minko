@@ -36,14 +36,14 @@ PNGParser::parse(const std::string&                 filename,
                  const std::vector<unsigned char>&  data,
                  std::shared_ptr<AssetLibrary>      AssetLibrary)
 {
-	std::vector<unsigned char> out;
+	std::shared_ptr<std::vector<unsigned char>> out(new std::vector<unsigned char>);
 	unsigned int width;
 	unsigned int height;
 
-	unsigned error = lodepng::decode(out, width, height, &data[0], data.size());
+	unsigned error = lodepng::decode(*out, width, height, &data[0], data.size());
 
 	if (error)
-		throw std::invalid_argument("file " + filename + " is not a valid PNG file");
+		throw std::invalid_argument("file '" + filename + "' loading error (" + lodepng_error_text(error) + ")");
 
 	render::AbstractTexture::Ptr texture = nullptr;
 
@@ -68,7 +68,7 @@ PNGParser::parse(const std::string&                 filename,
 			filename
 		);
 
-	texture->data(&out[0]);
+	texture->data(&*out->begin());
 	texture->upload();
 
 	AssetLibrary->texture(filename, texture);
