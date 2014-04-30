@@ -303,7 +303,7 @@ Picking::renderingBegin(RendererPtr renderer)
 	std::vector<float> pickingProjectionData(projection->data());
 	
 	pickingProjectionData[2] = mouseX / _context->viewportWidth() * 2.f;
-	pickingProjectionData[6] = mouseY / _context->viewportHeight() * 2.f;
+	pickingProjectionData[6] = (_context->viewportHeight() - mouseY) / _context->viewportHeight() * 2.f;
 
 	_pickingProjection->initialize(pickingProjectionData);
 }
