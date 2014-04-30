@@ -358,7 +358,7 @@ Geometry::cast(std::shared_ptr<math::Ray>	ray,
 	auto xyzVertexSize = xyzBuffer->vertexSize();
 	auto xyzOffset = std::get<2>(*xyzBuffer->attribute("position"));
 
-	auto minDistance = std::numeric_limits<float>::lowest();
+	auto minDistance = std::numeric_limits<float>::infinity();
 	auto lambda = hitUv ? Vector2::create() : nullptr;
 	auto triangleIndice = -3;
 
@@ -399,7 +399,7 @@ Geometry::cast(std::shared_ptr<math::Ray>	ray,
 			continue;
 
 		qvec->copyFrom(tvec)->cross(edge1);
-		v = ray->origin()->dot(qvec) * invDot;
+		v = ray->direction()->dot(qvec) * invDot;
 		if (v < 0.f || u + v > 1.f)
 			continue;
 
@@ -416,15 +416,15 @@ Geometry::cast(std::shared_ptr<math::Ray>	ray,
 				lambda->x(u);
 				lambda->y(v);
 			}
-		}
 
-		if (hitXyz)
-		{
-			hitXyz->setTo(
-				ray->origin()->x() + minDistance * ray->direction()->x(),
-				ray->origin()->y() + minDistance * ray->direction()->y(),
-				ray->origin()->z() + minDistance * ray->direction()->z()
-			);
+			if (hitXyz)
+			{
+				hitXyz->setTo(
+					ray->origin()->x() + minDistance * ray->direction()->x(),
+					ray->origin()->y() + minDistance * ray->direction()->y(),
+					ray->origin()->z() + minDistance * ray->direction()->z()
+					);
+			}
 		}
 
 		if (hitUv)
