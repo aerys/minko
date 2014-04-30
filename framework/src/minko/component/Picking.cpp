@@ -128,7 +128,7 @@ Picking::targetAddedHandler(AbsCtrlPtr ctrl, NodePtr target)
 	target->data()->addProvider(_pickingProvider);
 	target->data()->addProvider(perspectiveCamera->data());
 	
-	auto surfaces = scene::NodeSet::create(target->root())
+	auto surfaces = scene::NodeSet::create(target)
 		->descendants(true)
 		->where([](scene::Node::Ptr node)
 	{
@@ -152,7 +152,8 @@ Picking::targetRemovedHandler(AbsCtrlPtr ctrl, NodePtr target)
 void
 Picking::addedHandler(NodePtr node, NodePtr target, NodePtr parent)
 {
-	if (node == target)
+	//if (node == target) // <= WORKS ONLY WHEN TARGET IS ROOT
+	if (_renderingBeginSlot == nullptr)
 	{
 		_renderingBeginSlot = _renderer->renderingBegin()->connect(std::bind(
 			&Picking::renderingBegin,
@@ -182,8 +183,16 @@ Picking::addedHandler(NodePtr node, NodePtr target, NodePtr parent)
 	}
 	else
 	{
-		for (auto surface : target->components<Surface>())
-			addSurface(surface);
+		auto surfaces = scene::NodeSet::create(target)
+			->descendants(true)
+			->where([](scene::Node::Ptr node)
+		{
+			return node->hasComponent<Surface>();
+		});
+
+		for (auto surfaceNode : surfaces->nodes())
+			for (auto surface : surfaceNode->components<Surface>())
+				addSurface(surface);
 	}
 
 }
@@ -245,20 +254,23 @@ Picking::componentRemovedHandler(NodePtr							node,
 void
 Picking::addSurface(SurfacePtr surface)
 {
-	_pickingId += 2;
+	if (_surfaceToPickingId.find(surface) == _surfaceToPickingId.end())
+	{
+		_pickingId += 2;
 
-	_surfaceToPickingId[surface] = _pickingId;
-	_pickingIdToSurface[_pickingId] = surface;
-	_surfaceToProvider[surface]		= data::StructureProvider::create("picking");
-	
-	_surfaceToProvider[surface]->set<math::Vector4::Ptr>("color", math::Vector4::create(
-		((_pickingId >> 16) & 0xff) / 255.f,
-		((_pickingId >> 8) & 0xff) / 255.f,
-		((_pickingId)& 0xff) / 255.f,
-		1
-	));
+		_surfaceToPickingId[surface] = _pickingId;
+		_pickingIdToSurface[_pickingId] = surface;
+		_surfaceToProvider[surface] = data::StructureProvider::create("picking");
 
-	surface->targets()[0]->data()->addProvider(_surfaceToProvider[surface]);
+		_surfaceToProvider[surface]->set<math::Vector4::Ptr>("color", math::Vector4::create(
+			((_pickingId >> 16) & 0xff) / 255.f,
+			((_pickingId >> 8) & 0xff) / 255.f,
+			((_pickingId)& 0xff) / 255.f,
+			1
+			));
+
+		surface->targets()[0]->data()->addProvider(_surfaceToProvider[surface]);
+	}
 }
 
 void
