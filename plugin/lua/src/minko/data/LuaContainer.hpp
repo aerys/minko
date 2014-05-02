@@ -55,7 +55,10 @@ namespace minko
 		            .method("getVector4",     			&Container::get<std::shared_ptr<math::Vector4>>)
 		            .method("getInt",       			&Container::get<int>)
 		            .method("getUint",      			&Container::get<unsigned int>)
-		            .method("getMatrix4x4", 			&Container::get<std::shared_ptr<math::Matrix4x4>>);
+		            .method("getMatrix4x4", 			&Container::get<std::shared_ptr<math::Matrix4x4>>)
+					.method("setFloat",					static_cast<void (Container::*)(const std::string&, float)>(&Container::set<float>))
+					.method("setBoolean",				static_cast<void (Container::*)(const std::string&, bool)>(&Container::set<bool>))
+					.method("setString",				static_cast<void (Container::*)(const std::string&, std::string)>(&Container::set<std::string>));
 			}
 		};
 	}
