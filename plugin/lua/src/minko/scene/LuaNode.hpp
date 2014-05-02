@@ -59,6 +59,7 @@ namespace minko
 					.methodWrapper("getMasterAnimation",	&LuaNode::getMasterAnimationWrapper)
                     .methodWrapper("getPerspectiveCamera",  &LuaNode::getPerspectiveCameraWrapper)
 					.methodWrapper("getSurface",			&LuaNode::getSurfaceWrapper)
+					.methodWrapper("getRenderer",			&LuaNode::getRendererWrapper)
 					.methodWrapper("hasLight",				&LuaNode::hasLightWrapper)
 					.methodWrapper("hasAnimation",			&LuaNode::hasAnimationWrapper)
 					/*.methodWrapper("getChildrenByName",		&LuaNode::getChildrenByNameWrapper)*/
@@ -124,6 +125,13 @@ namespace minko
 			getSurfaceWrapper(Node::Ptr node)
 			{
 				return node->component<component::Surface>();
+			}
+
+			static
+			std::shared_ptr<component::Renderer>
+			getRendererWrapper(Node::Ptr node)
+			{
+				return node->component<component::Renderer>();
 			}
 
 			static
