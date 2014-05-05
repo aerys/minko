@@ -106,6 +106,7 @@ solution "minko"
 		include 'example/particles'
 		include 'example/picking'
 		include 'example/raycasting'
+		include 'example/reflection'
 		include 'example/serializer'
 		include 'example/sky-box'
 		include 'example/stencil'

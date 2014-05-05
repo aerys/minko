@@ -33,7 +33,7 @@ namespace minko
 		private:
 			typedef msgpack::type::tuple<uint, std::string>						ComplexPropertyValue;
 			typedef std::shared_ptr<MaterialParser>								Ptr;
-			typedef msgpack::type::tuple<std::string, float>					BasicProperty;
+			typedef msgpack::type::tuple<std::string, std::string>				BasicProperty;
 			typedef msgpack::type::tuple<std::string, ComplexPropertyValue>		ComplexProperty;
 			typedef std::shared_ptr<material::Material>							MaterialPtr;
 			typedef std::shared_ptr<AssetLibrary>								AssetLibraryPtr;

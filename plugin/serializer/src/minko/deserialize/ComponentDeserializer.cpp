@@ -18,6 +18,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "minko/deserialize/ComponentDeserializer.hpp"
+#include "minko/component/BoundingBox.hpp"
 #include "minko/component/Transform.hpp"
 #include "minko/component/PerspectiveCamera.hpp"
 #include "minko/component/AmbientLight.hpp"
@@ -61,7 +62,7 @@ ComponentDeserializer::deserializeTransform(std::string&						serializedTransfor
 	std::tuple<uint, std::string&> serializedMatrixTuple(dst.a0, dst.a1);
 
 	Matrix4x4Ptr transformMatrix = Any::cast<Matrix4x4Ptr>(deserialize::TypeDeserializer::deserializeMatrix4x4(serializedMatrixTuple));
-	
+
 	return component::Transform::create(transformMatrix);
 }
 
@@ -120,14 +121,14 @@ ComponentDeserializer::deserializeDirectionalLight(std::string&							serialized
 	msgpack::object									deserialized;
 	std::string										dst;
 	std::shared_ptr<component::DirectionalLight>	directionalLight = component::DirectionalLight::create();
-	
+
 	msgpack::unpack(serializedDirectionalLight.data(), serializedDirectionalLight.size() - 1, NULL, &mempool, &deserialized);
 
 	if (deserialized.type != msgpack::type::RAW)
 		return directionalLight;
 
 	deserialized.convert(&dst);
-	
+
 	std::vector<float> dstContent = deserialize::TypeDeserializer::deserializeVector<float>(dst);
 
 	directionalLight->diffuse(dstContent[0]);
@@ -146,7 +147,7 @@ ComponentDeserializer::deserializePointLight(std::string&							serializedPointL
 	msgpack::object								deserialized;
 	std::string									dst;
 	std::shared_ptr<component::PointLight>		pointLight = component::PointLight::create();
-	
+
 	msgpack::unpack(serializedPointLight.data(), serializedPointLight.size() - 1, NULL, &mempool, &deserialized);
 
 	if (deserialized.type != msgpack::type::RAW)
@@ -163,7 +164,7 @@ ComponentDeserializer::deserializePointLight(std::string&							serializedPointL
 
 	return pointLight;
 }
-		
+
 std::shared_ptr<component::AbstractComponent>
 ComponentDeserializer::deserializeSpotLight(std::string&						serializedSpotLight,
 										    std::shared_ptr<file::AssetLibrary>	assetLibrary,
@@ -173,7 +174,7 @@ ComponentDeserializer::deserializeSpotLight(std::string&						serializedSpotLigh
 	msgpack::object								deserialized;
 	std::string									dst;
 	std::shared_ptr<component::SpotLight>		spotLight = component::SpotLight::create();
-	
+
 	msgpack::unpack(serializedSpotLight.data(), serializedSpotLight.size() - 1, NULL, &mempool, &deserialized);
 
 	if (deserialized.type != msgpack::type::RAW)
@@ -201,7 +202,7 @@ ComponentDeserializer::deserializeSurface(std::string&							serializedSurface,
 	msgpack::zone																		mempool;
 	msgpack::object																		deserialized;
 	msgpack::type::tuple<unsigned short, unsigned short, unsigned short, std::string>	dst;
-	
+
 	msgpack::unpack(serializedSurface.data(), serializedSurface.size() - 1, NULL, &mempool, &deserialized);
 
 	deserialized.convert(&dst);
@@ -235,7 +236,7 @@ ComponentDeserializer::deserializeRenderer(std::string&							serializedRenderer
 	msgpack::object							deserialized;
 	msgpack::type::tuple<unsigned int>		dst;
 	std::shared_ptr<component::Renderer>	renderer = component::Renderer::create();
-	
+
 	msgpack::unpack(serializedRenderer.data(), serializedRenderer.size() - 1, NULL, &mempool, &deserialized);
 	deserialized.convert(&dst);
 
@@ -266,7 +267,7 @@ ComponentDeserializer::deserializeAnimation(std::string&		serializedAnimation,
 	for (size_t i = 0; i < dst.a1.size(); ++i)
 	{
 		std::tuple<uint, std::string&> serializedMatrixTuple(dst.a2[i].a0, dst.a2[i].a1);
-		
+
 		timetable.push_back(dst.a1[i]);
 		matrices.push_back(Any::cast<Matrix4x4Ptr>(deserialize::TypeDeserializer::deserializeMatrix4x4(serializedMatrixTuple)));
 	}
@@ -320,9 +321,37 @@ ComponentDeserializer::deserializeSkinning(std::string&		serializedAnimation,
 	}
 
 	return SkinningComponentDeserializer::computeSkinning(
-        assetLibrary->loader()->options(), 
-        assetLibrary->context(), 
-        bones, 
+        assetLibrary->loader()->options(),
+        assetLibrary->context(),
+        bones,
         root->children().size() == 1 ? root->children().front() : root  // FIXME (for soccerpunch) there is one extra level wrt minko studio ! ->issues w/ precomputation and collider
    );
+}
+
+std::shared_ptr<component::AbstractComponent>
+ComponentDeserializer::deserializeBoundingBox(std::string&							serializedBoundingBox,
+                                              std::shared_ptr<file::AssetLibrary>	assetLibrary,
+                                              std::shared_ptr<file::Dependency>     dependencies)
+{
+    msgpack::zone mempool;
+    msgpack::object deserialized;
+    std::string dst;
+
+	msgpack::unpack(serializedBoundingBox.data(), serializedBoundingBox.size() - 1, NULL, &mempool, &deserialized);
+
+	if (deserialized.type != msgpack::type::RAW)
+		return component::BoundingBox::create();
+
+	deserialized.convert(&dst);
+
+    auto componentData = deserialize::TypeDeserializer::deserializeVector<float>(dst);
+
+    auto component = component::BoundingBox::create(componentData[3],
+                                                    componentData[4],
+                                                    componentData[5],
+                                                    math::Vector3::create(componentData[0],
+                                                                          componentData[1],
+                                                                          componentData[2]));
+
+	return component;
 }

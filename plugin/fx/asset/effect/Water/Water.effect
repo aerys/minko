@@ -1,0 +1,123 @@
+{
+	"name"	: "phong",
+		
+	"attributeBindings"	: {
+		"position"				: "geometry[${geometryId}].position",
+		"uv"					: "geometry[${geometryId}].uv",
+		"normal"				: "geometry[${geometryId}].normal",
+		"tangent"				: "geometry[${geometryId}].tangent"
+	},
+	
+	"uniformBindings"	: {
+		"diffuseColor"			: "material[${materialId}].diffuseColor",
+		"diffuseMap"			: "material[${materialId}].diffuseMap",
+		"normalMap"				: "material[${materialId}].normalMap",
+		"normalSpeed"			: "material[${materialId}].normalSpeed",
+		"depthMap"				: "material[${materialId}].depthMap",
+		"dudvMap"				: "material[${materialId}].dudvMap",
+		"dudvFactor"			: "material[${materialId}].dudvFactor",
+		"dudvSpeed"				: "material[${materialId}].dudvSpeed",
+		"reflectionMap"			: "material[${materialId}].reflectionMap",
+		"reflectivity"			: "material[${materialId}].reflectivity",
+		"waveOrigins"			: "material[${materialId}].waveOrigins",
+		"waveAmplitudes"		: "material[${materialId}].waveAmplitudes",
+		"waveLength"			: "material[${materialId}].waveLength",
+		"waveSpeed"				: "material[${materialId}].waveSpeed",
+		"waveSharpness"			: "material[${materialId}].waveSharpness",
+		"waveType"				: "material[${materialId}].waveType",
+		"normalSpeed"			: "material[${materialId}].normalSpeed",
+		"flowMap"				: "material[${materialId}].flowMap",
+		"flowMapCycle" 			: "material[${materialId}].flowMapCycle",
+		"flowMapOffset1"		: "material[${materialId}].flowMapOffset1",
+		"flowMapOffset2"		: "material[${materialId}].flowMapOffset2",
+		"noiseMap"				: "material[${materialId}].noiseMap",
+		"specularColor"			: { "property" : "material[${materialId}].specularColor", "default" : [ 1.0, 1.0, 1.0, 1.0 ] },
+		"environmentAlpha"		: "material[${materialId}].environmentAlpha",
+		"shininess"				: "material[${materialId}].shininess",
+		"modelToWorldMatrix"	: "transform.modelToWorldMatrix",
+		"worldToScreenMatrix"	: { "property" : "camera.worldToScreenMatrix", 		"source" : "renderer" },
+		"cameraPosition"		: { "property" : "camera.position", 				"source" : "renderer" },
+		"ambientLights"			: { "property" : "ambientLights",					"source" : "root" },
+		"directionalLights"		: { "property" : "directionalLights",				"source" : "root" },
+		"spotLights"			: { "property" : "spotLights",						"source" : "root" },
+		"pointLights"			: { "property" : "pointLights",						"source" : "root" },
+		"frameId"				: { "property" : "frameId",							"source" : "root" },
+		"flowMapScale"			: { "property" : "material[${materialId}].flowMapScale", 	"default" : 1.0},
+		"normalMapScale"		: { "property" : "material[${materialId}].normalMapScale", 	"default" : 1.0}
+	},
+
+	"macroBindings"	: {
+		"DIFFUSE_MAP"			: "material[${materialId}].diffuseMap",
+		"NORMAL_MAP"			: "material[${materialId}].normalMap",
+		"NOISE_MAP"				: "material[${materialId}].noiseMap",
+		"REFLECTION_MAP"		: "material[${materialId}].reflectionMap",
+		"FLOW_MAP"				: "material[${materialId}].flowMap",
+		"SHININESS"				: "material[${materialId}].shininess",
+		"DUDV_MAP"				: "material[${materialId}].dudvMap",
+		"NUMWAVES"				: {"property" : "material[${materialId}].numWaves", "default" : 0},
+		"MODEL_TO_WORLD"		: "transform.modelToWorldMatrix",
+		"NUM_AMBIENT_LIGHTS"	: { "property" : "ambientLights.length",		"source" : "root" },
+		"PRECOMPUTED_AMBIENT"	: { "property" : "sumAmbients",					"source" : "root" }
+	},
+		
+	"stateBindings"	: {
+        "blendMode"             : "material[${materialId}].blendMode",
+        "colorMask"             : "material[${materialId}].colorMask",
+        "depthMask"             : "material[${materialId}].depthMask",
+        "depthFunc"             : "material[${materialId}].depthFunc",
+        "triangleCulling"       : "material[${materialId}].triangleCulling",
+        "stencilFunc"           : "material[${materialId}].stencilFunc",
+        "stencilRef"            : "material[${materialId}].stencilRef",
+        "stencilMask"           : "material[${materialId}].stencilMask",
+        "stencilFailOp"         : "material[${materialId}].stencilFailOp",
+        "stencilZFailOp"        : "material[${materialId}].stencilZFailOp",
+        "stencilZPassOp"        : "material[${materialId}].stencilZPassOp",
+        "scissorBox.x"          : { "property" : "scissorBox.x",        "source" : "renderer" },
+        "scissorBox.y"          : { "property" : "scissorBox.y",        "source" : "renderer" },
+        "scissorBox.width"      : { "property" : "scissorBox.width",    "source" : "renderer" },
+        "scissorBox.height"     : { "property" : "scissorBox.height",   "source" : "renderer" },
+        "priority"              : "material[${materialId}].priority",
+        "zSort"					: "material[${materialId}].zSort"
+	},
+
+	"samplerStates" : {
+		"diffuseMap"	: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" },
+		"normalMap"		: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" },
+		"specularMap"	: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" },
+		"flowMap"		: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" },
+		"noiseMap"		: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" },
+		"reflectionMap" : { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" },
+		"dudvMap"		: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" }
+	},
+	
+    "colorMask"         : true,
+    "depthTest"         : [true, "less_equal"],
+    "triangleCulling"   : "back",
+	"stencilTest"		: ["always", 0, 1, ["keep", "keep", "keep"]],
+    "scissorTest"		: false,
+	"scissorBox"		: [0, 0, -1, -1],
+
+
+	"defaultTechnique"	: "opaque",
+	
+	"techniques" : [
+		{
+			"name"				: "waterPass",	
+			"blendMode"			: "alpha",
+   			"priority"          : "transparent",
+    		"zSort"             : true,
+			
+			"macroBindings" : {
+				"NUM_DIRECTIONAL_LIGHTS"	: { "property" : "directionalLights.length",	"source" : "root",	"max" : 8 },
+				"NUM_POINT_LIGHTS"			: { "property" : "pointLights.length", 			"source" : "root",	"max" : 8 },
+				"NUM_SPOT_LIGHTS"			: { "property" : "spotLights.length", 			"source" : "root",	"max" : 8 }
+			},
+				
+			"passes"	: [
+			{
+				"vertexShader" 		: "#pragma include('Water.vertex.glsl')",
+				"fragmentShader" 	: "#pragma include('Water.fragment.glsl')"
+			}]
+		}
+	]
+}

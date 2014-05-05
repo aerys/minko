@@ -145,5 +145,6 @@ void
 MaterialParser::deserializeBasicProperty(MaterialPtr		material,
 										 BasicProperty		serializedProperty)
 {
-	material->set<float>(serializedProperty.a0, serializedProperty.a1);
+	std::vector<float> serializedPropertyValue = deserialize::TypeDeserializer::deserializeVector<float>(serializedProperty.a1);
+	material->set<float>(serializedProperty.a0, serializedPropertyValue[0]);
 }
