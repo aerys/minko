@@ -45,8 +45,13 @@ HTTPProtocol::HTTPProtocol()
 }
 
 void
-HTTPProtocol::progressHandler(void* arg, int progress)
+HTTPProtocol::progressHandler(void* arg, int loadedBytes, int totalBytes)
 {
+	int progress = 0;
+
+	if (totalBytes != 0)
+		progress = (int)(100.f * ((float)loadedBytes / (float)totalBytes));
+
 	std::cout << "HTTPProtocol::progressHandler(): " << progress << std::endl;
 	auto iterator = std::find_if(HTTPProtocol::_runningLoaders.begin(),
 								 HTTPProtocol::_runningLoaders.end(),
@@ -62,11 +67,11 @@ HTTPProtocol::progressHandler(void* arg, int progress)
 	std::cout << "HTTPProtocol::progressHandler(): found loader " << format("%d", progress) << "%"  << std::endl;
 	std::shared_ptr<HTTPProtocol> loader = *iterator;
 
-	loader->_progress->execute(loader, float(progress) / 100.0f);
+	loader->_progress->execute(loader, progress);
 }
 
 void
-HTTPProtocol::completeHandler(void* arg, void* data, int size)
+HTTPProtocol::completeHandler(void* arg, void* data, unsigned int size)
 {
 	std::cout << "HTTPProtocol::completeHandler(): size: " << size << std::endl;
 	auto iterator = std::find_if(HTTPProtocol::_runningLoaders.begin(),
@@ -97,7 +102,7 @@ HTTPProtocol::completeHandler(void* arg, void* data, int size)
 }
 
 void
-HTTPProtocol::errorHandler(void* arg)
+HTTPProtocol::errorHandler(void* arg, int code, const char * message)
 {
 	std::cout << "HTTPProtocol::errorHandler(): " << std::endl;
 	auto iterator = std::find_if(HTTPProtocol::_runningLoaders.begin(),
@@ -160,8 +165,12 @@ HTTPProtocol::load()
 	if (options()->loadAsynchronously())
 	{
 		std::cout << "HTTPProtocol::load(): " << "call emscripten_async_wget_data " << std::endl;
-		emscripten_async_wget_data(resolvedFilename().c_str(), loader.get(), &completeHandler, &errorHandler);
-		//TODO : use emscripten_async_wget2_data once it has been added
+
+		//EMSCRIPTEN < 1.13.1
+		//emscripten_async_wget_data(resolvedFilename().c_str(), loader.get(), &completeHandler, &errorHandler);
+
+		//EMSCRIPTEN >= 1.13.1
+		emscripten_async_wget2_data(resolvedFilename().c_str(), "GET", "", loader.get(), 0, &completeHandler, &errorHandler, &progressHandler);
 	}
 	else
 	{
@@ -219,7 +228,7 @@ HTTPProtocol::load()
 			else if (message.type == "progress")
 			{
 				float ratio = *reinterpret_cast<float*>(&*message.data.begin());
-				progressHandler(loader.get(), ratio * 100.f);				
+				progressHandler(loader.get(), (int)(ratio * 100.f), 100);
 			}
 			else if (message.type == "error")
 			{
@@ -235,7 +244,7 @@ HTTPProtocol::load()
 		HTTPRequest request(resolvedFilename());
 
 		request.progress()->connect([&](float p){
-			progressHandler(loader.get(), p * 100.f);
+			progressHandler(loader.get(), (int)(p * 100.f), 100);
 		});
 
 		request.run();

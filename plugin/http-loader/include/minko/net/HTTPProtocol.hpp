@@ -50,19 +50,19 @@ namespace minko
 			HTTPProtocol();
 
 			static void
-			completeHandler(void*, void*, int);
+			completeHandler(void*, void*, unsigned int);
 
 			static void
 			wget2CompleteHandler(void*, const char*);
 
 			static void
-			errorHandler(void*);
+			errorHandler(void*, int code = 0, const char* = "");
 
 			static void
 			wget2ErrorHandler(void*, int);
 
 			static void
-			progressHandler(void*, int);
+			progressHandler(void*, int, int);
 
 		protected:
 			std::list<Any>
