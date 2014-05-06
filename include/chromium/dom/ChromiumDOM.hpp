@@ -69,6 +69,9 @@ namespace chromium
 			void
 			sendMessage(std::string, bool async = true);
 
+			void
+			eval(std::string, bool async = true);
+
 			minko::dom::AbstractDOMElement::Ptr
 			createElement(std::string);
 

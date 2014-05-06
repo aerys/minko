@@ -73,7 +73,7 @@ namespace emscripten
 			minko::dom::AbstractDOMElement::Ptr
 			parentNode();
 
-			std::list<minko::dom::AbstractDOMElement::Ptr>
+			std::vector<minko::dom::AbstractDOMElement::Ptr>
 			childNodes();
 
 			std::string
@@ -106,7 +106,7 @@ namespace emscripten
 			void
 			setAttribute(std::string name, std::string value);
 
-			std::list<minko::dom::AbstractDOMElement::Ptr>
+			std::vector<minko::dom::AbstractDOMElement::Ptr>
 			getElementsByTagName(std::string tagName);
 
 

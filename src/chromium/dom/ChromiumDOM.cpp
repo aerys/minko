@@ -126,6 +126,7 @@ ChromiumDOM::sendMessage(std::string message, bool async)
 	ChromiumDOMElement::Ptr element;
 	if (CefCurrentlyOn(TID_RENDERER))
 	{
+		_v8Context->Enter();
 		CefRefPtr<CefV8Value> func = _minkoObject->GetValue("onmessage");
 
 		if (func->IsFunction())
@@ -133,8 +134,9 @@ ChromiumDOM::sendMessage(std::string message, bool async)
 			CefV8ValueList args;
 			args.push_back(CefV8Value::CreateString(message));
 
-			CefRefPtr<CefV8Value> result = func->ExecuteFunctionWithContext(_v8Context, _minkoObject, args);
+			CefRefPtr<CefV8Value> result = func->ExecuteFunction(_minkoObject, args);
 		}
+		_v8Context->Exit();
 	}
 	else
 	{
@@ -155,6 +157,42 @@ ChromiumDOM::sendMessage(std::string message, bool async)
 			while (_blocker.load());
 	}
 }
+
+void
+ChromiumDOM::eval(std::string message, bool async)
+{
+	ChromiumDOMElement::Ptr element;
+	if (CefCurrentlyOn(TID_RENDERER))
+	{
+		_v8Context->Enter();
+
+		CefRefPtr<CefV8Value> returnValue;
+		CefRefPtr<CefV8Exception> exceptionValue;
+
+		_v8Context->Eval(message, returnValue, exceptionValue);
+		
+		_v8Context->Exit();
+	}
+	else
+	{
+		CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
+		//if (async)
+		_blocker.store(true);
+
+		auto fn = [=]()
+		{
+			eval(message);
+			//if (async)
+			_blocker.store(false);
+		};
+
+		runner->PostTask(NewCefRunnableFunction(&fn));
+
+		//if (async)
+		while (_blocker.load());
+	}
+}
+
 void
 ChromiumDOM::addSendMessageFunction()
 {
@@ -186,7 +224,7 @@ ChromiumDOM::addLoadEventListener()
 	args.push_back(CefV8Value::CreateString("load"));
 	args.push_back(onloadFunction);
 
-	window()->GetValue("addEventListener")->ExecuteFunctionWithContext(_v8Context, window(), args);
+	window()->GetValue("addEventListener")->ExecuteFunction(window(), args);
 
 	_onloadSlot = _v8Handler->received()->connect([=](std::string functionName, CefV8ValueList)
 	{
@@ -234,7 +272,7 @@ ChromiumDOM::createElement(std::string tag)
 		CefV8ValueList args;
 		args.push_back(CefV8Value::CreateString(tag));
 
-		CefRefPtr<CefV8Value> result = func->ExecuteFunctionWithContext(_v8Context, _document, args);
+		CefRefPtr<CefV8Value> result = func->ExecuteFunction(_document, args);
 
 		element = ChromiumDOMElement::create(result, _v8Context);
 		_v8Context->Exit();
@@ -269,7 +307,7 @@ ChromiumDOM::getElementById(std::string id)
 		CefV8ValueList args;
 		args.push_back(CefV8Value::CreateString(id));
 
-		CefRefPtr<CefV8Value> result = func->ExecuteFunctionWithContext(_v8Context, _document, args);
+		CefRefPtr<CefV8Value> result = func->ExecuteFunction(_document, args);
 
 		element = ChromiumDOMElement::getDOMElementFromV8Object(result, _v8Context);
 		_v8Context->Exit();
@@ -305,7 +343,7 @@ ChromiumDOM::getElementsByClassName(std::string className)
 		CefV8ValueList args;
 		args.push_back(CefV8Value::CreateString(className));
 
-		CefRefPtr<CefV8Value> result = func->ExecuteFunctionWithContext(_v8Context, _document, args);
+		CefRefPtr<CefV8Value> result = func->ExecuteFunction(_document, args);
 		list = ChromiumDOMElement::v8ElementArrayToList(result, _v8Context);
 		_v8Context->Exit();
 	}
@@ -340,7 +378,7 @@ ChromiumDOM::getElementsByTagName(std::string tagName)
 		CefV8ValueList args;
 		args.push_back(CefV8Value::CreateString(tagName));
 
-		CefRefPtr<CefV8Value> result = func->ExecuteFunctionWithContext(_v8Context, _document, args);
+		CefRefPtr<CefV8Value> result = func->ExecuteFunction(_document, args);
 
 		list = ChromiumDOMElement::v8ElementArrayToList(result, _v8Context);
 		_v8Context->Exit();

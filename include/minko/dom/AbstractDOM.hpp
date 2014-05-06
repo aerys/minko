@@ -38,6 +38,10 @@ namespace minko
 			sendMessage(std::string, bool async = true) = 0;
 
 			virtual
+			void
+			eval(std::string, bool async = true) = 0;
+
+			virtual
 			AbstractDOMElement::Ptr
 			createElement(std::string) = 0;
 

@@ -53,6 +53,15 @@ EmscriptenDOM::sendMessage(std::string message, bool async)
 	//	emscripten_async_run_script(eval.c_str(), 1);
 }
 
+void
+EmscriptenDOM::eval(std::string message, bool async)
+{
+	//if (!async)
+		emscripten_run_script(message.c_str());
+	//else
+	//	emscripten_async_run_script(message.c_str(), 1);
+}
+
 std::vector<AbstractDOMElement::Ptr>
 EmscriptenDOM::getElementList(std::string expression)
 {

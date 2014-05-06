@@ -47,6 +47,9 @@ namespace emscripten
 			void
 			sendMessage(std::string, bool async);
 
+			void
+			eval(std::string, bool async);
+
 			minko::dom::AbstractDOMElement::Ptr
 			createElement(std::string);
 
