@@ -53,10 +53,10 @@ EmscriptenDOM::sendMessage(std::string message, bool async)
 	//	emscripten_async_run_script(eval.c_str(), 1);
 }
 
-std::list<AbstractDOMElement::Ptr>
+std::vector<AbstractDOMElement::Ptr>
 EmscriptenDOM::getElementList(std::string expression)
 {
-	std::list<minko::dom::AbstractDOMElement::Ptr> l;
+	std::vector<minko::dom::AbstractDOMElement::Ptr> l;
 
 	expression = "Minko.tmpElements = " + expression;
 
@@ -91,13 +91,13 @@ EmscriptenDOM::getElementById(std::string id)
 	return EmscriptenDOMElement::getDOMElement("Minko.tmpElement");
 }
 
-std::list<AbstractDOMElement::Ptr>
+std::vector<AbstractDOMElement::Ptr>
 EmscriptenDOM::getElementsByClassName(std::string className)
 {
 	return getElementList(_jsAccessor + ".document.getElementsByClassName('" + className + "')");
 }
 
-std::list<AbstractDOMElement::Ptr>
+std::vector<AbstractDOMElement::Ptr>
 EmscriptenDOM::getElementsByTagName(std::string tagName)
 {
 	return getElementList(_jsAccessor + ".document.getElementsByTagName('" + tagName + "')");

@@ -75,10 +75,10 @@ namespace chromium
 			minko::dom::AbstractDOMElement::Ptr
 			getElementById(std::string);
 
-			std::list<minko::dom::AbstractDOMElement::Ptr>
+			std::vector<minko::dom::AbstractDOMElement::Ptr>
 			getElementsByClassName(std::string);
 
-			std::list<minko::dom::AbstractDOMElement::Ptr>
+			std::vector<minko::dom::AbstractDOMElement::Ptr>
 			getElementsByTagName(std::string);
 
 			minko::dom::AbstractDOMElement::Ptr

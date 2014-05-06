@@ -43,6 +43,11 @@ namespace minko
 					void
 					bind(LuaGlue& state)
 				{
+						state.Class<std::vector<dom::AbstractDOMElement::Ptr>>("std__vector_dom__AbstractDOMElement__Ptr_")
+							.methodWrapper("at", &LuaAbstractDOMElement::atWrapper)
+							.property("size", &std::vector<dom::AbstractDOMElement::Ptr>::size);
+						//.index(&LuaNode::getWrapper);
+
 						auto& abstractDomElement = state.Class<dom::AbstractDOMElement>("AbstractDOMElement")
 							.property("tagName", &dom::AbstractDOMElement::tagName)
 							.property("parentNode", &dom::AbstractDOMElement::parentNode)
@@ -62,7 +67,7 @@ namespace minko
 							.method("cloneNode", &dom::AbstractDOMElement::cloneNode)
 							.method("getAttribute", &dom::AbstractDOMElement::getAttribute)
 							.method("setAttribute", &dom::AbstractDOMElement::setAttribute)
-							.method("getElementsByTagName", &dom::AbstractDOMElement::setAttribute);
+							.method("getElementsByTagName", &dom::AbstractDOMElement::getElementsByTagName);
 
 						MINKO_LUAGLUE_BIND_SIGNAL(state, dom::AbstractDOMEvent::Ptr);
 
@@ -74,6 +79,12 @@ namespace minko
 						abstractDomElement.property("onmouseover", &dom::AbstractDOMElement::onclick);
 					}
 
+				static
+				dom::AbstractDOMElement::Ptr
+				atWrapper(std::vector<dom::AbstractDOMElement::Ptr>* v, uint index)
+				{
+						return v->at(index - 1);
+				}
 			};
 		}
 	}

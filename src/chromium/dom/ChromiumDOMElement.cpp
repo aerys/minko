@@ -186,10 +186,10 @@ ChromiumDOMElement::setProperty(std::string name, CefRefPtr<CefV8Value> value)
 	_v8NodeObject->SetValue(name, value, V8_PROPERTY_ATTRIBUTE_NONE);
 }
 
-std::list<AbstractDOMElement::Ptr>
+std::vector<AbstractDOMElement::Ptr>
 ChromiumDOMElement::v8ElementArrayToList(CefRefPtr<CefV8Value> v8Nodes, CefRefPtr<CefV8Context> v8Context)
 {
-	std::list<minko::dom::AbstractDOMElement::Ptr> result;
+	std::vector<minko::dom::AbstractDOMElement::Ptr> result;
 
 	CefRefPtr<CefV8Value> childNodeV8;
 
@@ -381,10 +381,10 @@ ChromiumDOMElement::parentNode()
 	return result;
 }
 
-std::list<AbstractDOMElement::Ptr>
+std::vector<AbstractDOMElement::Ptr>
 ChromiumDOMElement::childNodes()
 {
-	std::list<AbstractDOMElement::Ptr> result;
+	std::vector<AbstractDOMElement::Ptr> result;
 
 	if (CefCurrentlyOn(TID_RENDERER))
 	{
@@ -738,10 +738,10 @@ ChromiumDOMElement::setAttribute(std::string name, std::string value)
 	}
 }
 
-std::list<AbstractDOMElement::Ptr>
+std::vector<AbstractDOMElement::Ptr>
 ChromiumDOMElement::getElementsByTagName(std::string tagName)
 {
-	std::list<AbstractDOMElement::Ptr> list;
+	std::vector<AbstractDOMElement::Ptr> list;
 
 	if (CefCurrentlyOn(TID_RENDERER))
 	{

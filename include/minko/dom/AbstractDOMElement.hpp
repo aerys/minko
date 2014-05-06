@@ -64,7 +64,7 @@ namespace minko
 			parentNode() = 0;
 
 			virtual
-			std::list<Ptr>
+			std::vector<Ptr>
 			childNodes() = 0;
 
 			virtual
@@ -110,7 +110,7 @@ namespace minko
 			setAttribute(std::string name, std::string value) = 0;
 
 			virtual
-			std::list<Ptr>
+			std::vector<Ptr>
 			getElementsByTagName(std::string tagName) = 0;
 
 

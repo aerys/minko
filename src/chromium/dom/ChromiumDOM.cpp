@@ -292,10 +292,10 @@ ChromiumDOM::getElementById(std::string id)
 	return element;
 }
 
-std::list<AbstractDOMElement::Ptr>
+std::vector<AbstractDOMElement::Ptr>
 ChromiumDOM::getElementsByClassName(std::string className)
 {
-	std::list<AbstractDOMElement::Ptr> list;
+	std::vector<AbstractDOMElement::Ptr> list;
 
 	if (CefCurrentlyOn(TID_RENDERER))
 	{
@@ -327,10 +327,10 @@ ChromiumDOM::getElementsByClassName(std::string className)
 	return list;
 }
 
-std::list<AbstractDOMElement::Ptr>
+std::vector<AbstractDOMElement::Ptr>
 ChromiumDOM::getElementsByTagName(std::string tagName)
 {
-	std::list<AbstractDOMElement::Ptr> list;
+	std::vector<AbstractDOMElement::Ptr> list;
 
 	if (CefCurrentlyOn(TID_RENDERER))
 	{

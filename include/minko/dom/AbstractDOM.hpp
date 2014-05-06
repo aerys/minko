@@ -46,11 +46,11 @@ namespace minko
 			getElementById(std::string) = 0;
 
 			virtual
-			std::list<AbstractDOMElement::Ptr>
+			std::vector<AbstractDOMElement::Ptr>
 			getElementsByClassName(std::string) = 0;
 
 			virtual
-			std::list<AbstractDOMElement::Ptr>
+			std::vector<AbstractDOMElement::Ptr>
 			getElementsByTagName(std::string) = 0;
 
 			virtual

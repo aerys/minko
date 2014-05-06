@@ -56,7 +56,7 @@ namespace chromium
 			clearAll();
 
 			static
-			std::list<AbstractDOMElement::Ptr>
+			std::vector<AbstractDOMElement::Ptr>
 			v8ElementArrayToList(CefRefPtr<CefV8Value>, CefRefPtr<CefV8Context>);
 
 			void
@@ -81,7 +81,7 @@ namespace chromium
 			AbstractDOMElement::Ptr
 			parentNode();
 
-			std::list<AbstractDOMElement::Ptr>
+			std::vector<AbstractDOMElement::Ptr>
 			childNodes();
 
 			
@@ -116,7 +116,7 @@ namespace chromium
 			void
 			setAttribute(std::string name, std::string value);
 
-			std::list<AbstractDOMElement::Ptr>
+			std::vector<AbstractDOMElement::Ptr>
 			getElementsByTagName(std::string tagName);
 
 

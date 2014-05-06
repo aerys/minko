@@ -147,7 +147,7 @@ EmscriptenDOMElement::parentNode()
 	return EmscriptenDOMElement::getDOMElement("Minko.tmpElement");
 }
 
-std::list<minko::dom::AbstractDOMElement::Ptr>
+std::vector<minko::dom::AbstractDOMElement::Ptr>
 EmscriptenDOMElement::childNodes()
 {
 	return (EmscriptenDOM::getElementList(_jsAccessor + ".childNodes"));
@@ -238,7 +238,7 @@ EmscriptenDOMElement::setAttribute(std::string name, std::string value)
 	emscripten_run_script(eval.c_str());
 }
 
-std::list<minko::dom::AbstractDOMElement::Ptr>
+std::vector<minko::dom::AbstractDOMElement::Ptr>
 EmscriptenDOMElement::getElementsByTagName(std::string tagName)
 {
 	return (EmscriptenDOM::getElementList(_jsAccessor + ".getElementsByTagName('" + tagName + "')"));
