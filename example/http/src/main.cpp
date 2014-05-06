@@ -45,7 +45,8 @@ int main(int argc, char** argv)
 
 	defaultOptions
 		->resizeSmoothly(true)
-		->generateMipmaps(true);
+		->generateMipmaps(true)
+		->loadAsynchronously(true);
 
 	sceneManager->assets()->loader()->queue("effect/Basic.effect")->load();
 
