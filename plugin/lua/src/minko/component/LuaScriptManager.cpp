@@ -64,6 +64,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/LuaAnimation.hpp"
 #include "minko/component/LuaMasterAnimation.hpp"
 #include "minko/component/LuaSurface.hpp"
+#include "minko/component/LuaRenderer.hpp"
+#include "minko/component/LuaLuaScript.hpp"
 
 using namespace minko;
 using namespace minko::component;
@@ -164,9 +166,6 @@ LuaScriptManager::initializeBindings()
 	_state.Class<render::AbstractContext>("AbstractContext");
 	_state.Class<BoundingBox>("BoundingBox")
 		.property("box", &BoundingBox::box);
-	_state.Class<Renderer>("Renderer")
-		.method("create", static_cast<Renderer::Ptr(*)(void)>(&Renderer::create))
-		.property("backgroundColor", &Renderer::backgroundColor, &Renderer::backgroundColor);
 	_state.Class<AmbientLight>("AmbientLight")
 		.method("create", &AmbientLight::create)
 		.property("color", static_cast<math::Vector3::Ptr(AmbientLight::*)()>(&AbstractLight::color));
@@ -200,10 +199,12 @@ LuaScriptManager::initializeBindings()
     component::LuaPerspectiveCamera::bind(_state);
     component::LuaTransform::bind(_state);
 	component::LuaSurface::bind(_state);
-    scene::LuaNode::bind(_state);
-    scene::LuaNodeSet::bind(_state);
     component::LuaAnimation::bind(_state);
     component::LuaMasterAnimation::bind(_state);
+    component::LuaRenderer::bind(_state);
+    component::LuaLuaScript::bind(_state);
+    scene::LuaNode::bind(_state);
+    scene::LuaNodeSet::bind(_state);
 
     auto& sceneManager = _state.Class<SceneManager>("SceneManager")
         .property("assets",     &SceneManager::assets);

@@ -60,6 +60,7 @@ namespace minko
 			std::set<std::shared_ptr<Surface>>							_toCollect;
 			EffectPtr													_effect;
 			float														_priority;
+			bool														_enabled;
 
 
 			Signal<AbsCtrlPtr, NodePtr>::Slot							_targetAddedSlot;
@@ -173,6 +174,20 @@ namespace minko
 			renderingEnd()
 			{
 				return _renderingEnd;
+			}
+
+			inline
+			bool
+			enabled()
+			{
+				return _enabled;
+			}
+
+			inline
+			void
+			enabled(bool value)
+			{
+				_enabled = value;
 			}
 
 		private:

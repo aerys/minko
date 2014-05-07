@@ -49,7 +49,8 @@ Renderer::Renderer(std::shared_ptr<render::AbstractTexture> renderTarget,
 	_surfaceDrawCalls(),
 	_surfaceTechniqueChangedSlot(),
 	_effect(effect),
-	_priority(priority)
+	_priority(priority),
+	_enabled(true)
 {
 	if (renderTarget)
 	{
@@ -320,5 +321,6 @@ Renderer::sceneManagerRenderingBeginHandler(std::shared_ptr<SceneManager>	sceneM
 										    uint							frameId,
 										    AbstractTexture::Ptr			renderTarget)
 {
-	render(sceneManager->assets()->context(), renderTarget);
+	if (_enabled)
+		render(sceneManager->assets()->context(), renderTarget);
 }

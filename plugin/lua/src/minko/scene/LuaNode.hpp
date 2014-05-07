@@ -51,7 +51,8 @@ namespace minko
 		            .method("contains",				        &Node::contains)
 		            .method("addComponent",			        &Node::addComponent)
 		            .method("removeComponent",		        &Node::removeComponent)
-					.method("toString", 					&Node::toString)
+					.method("hasComponent",					&Node::hasComponent)
+					.method("toString",						&Node::toString)
                     .methodWrapper("getChildren",           &LuaNode::childrenWrapper)
                     .methodWrapper("getBoundingBox",        &LuaNode::getBoundingBoxWrapper)
                     .methodWrapper("getTransform",          &LuaNode::getTransformWrapper)
@@ -60,6 +61,7 @@ namespace minko
                     .methodWrapper("getPerspectiveCamera",  &LuaNode::getPerspectiveCameraWrapper)
 					.methodWrapper("getSurface",			&LuaNode::getSurfaceWrapper)
 					.methodWrapper("getRenderer",			&LuaNode::getRendererWrapper)
+					.methodWrapper("getLuaScript",			&LuaNode::getLuaScriptWrapper)
 					.methodWrapper("hasLight",				&LuaNode::hasLightWrapper)
 					.methodWrapper("hasAnimation",			&LuaNode::hasAnimationWrapper)
 					/*.methodWrapper("getChildrenByName",		&LuaNode::getChildrenByNameWrapper)*/
@@ -132,6 +134,13 @@ namespace minko
 			getRendererWrapper(Node::Ptr node)
 			{
 				return node->component<component::Renderer>();
+			}
+
+			static
+			std::shared_ptr<component::LuaScript>
+			getLuaScriptWrapper(Node::Ptr node)
+			{
+				return node->component<component::LuaScript>();
 			}
 
 			static
