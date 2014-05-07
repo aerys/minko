@@ -23,7 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/async/Worker.hpp"
 
 #if !defined(EMSCRIPTEN)
-#include "minko/async/FileLoaderWorker.hpp"
+#include "minko/file/FileProtocolWorker.hpp"
 #endif
 
 #if defined(EMSCRIPTEN)
@@ -47,9 +47,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 # endif
 #endif
 
+#if defined(_WIN32)
+#include "Windows.h"
+#endif
+
 using namespace minko;
 using namespace minko::math;
 using namespace minko::async;
+
+const float Canvas::SDLFinger::SWIPE_PRECISION = 0.05f;
 
 Canvas::Canvas(const std::string& name, const uint width, const uint height, bool useStencil, bool chromeless) :
 	_name(name),
@@ -69,6 +75,17 @@ Canvas::Canvas(const std::string& name, const uint width, const uint height, boo
     _data->set<math::Vector4::Ptr>("canvas.viewport", Vector4::create(0.0f, 0.0f, (float) width, (float) height));
 }
 
+#if defined(_WIN32)
+BOOL
+WINAPI
+ConsoleHandlerRoutine(DWORD dwCtrlType)
+{
+    if (dwCtrlType == CTRL_CLOSE_EVENT)
+        return true;
+    return false;
+}
+#endif
+
 void
 Canvas::initialize()
 {
@@ -76,7 +93,11 @@ Canvas::initialize()
     initializeInputs();
 
 #if !defined(EMSCRIPTEN)
-    registerWorker<async::FileLoaderWorker>("file-loader");
+    registerWorker<file::FileProtocolWorker>("file-protocol");
+#endif
+
+#if defined(_WIN32)
+    SetConsoleCtrlHandler(ConsoleHandlerRoutine, true);
 #endif
 }
 
@@ -85,6 +106,7 @@ Canvas::initializeInputs()
 {
     _mouse = SDLMouse::create(shared_from_this());
     _keyboard = SDLKeyboard::create();
+    _finger = Canvas::SDLFinger::create(shared_from_this());
 
 #ifndef EMSCRIPTEN
     for (int i = 0; i < SDL_NumJoysticks(); ++i)
@@ -152,7 +174,7 @@ Canvas::initializeContext(const std::string& windowTitle, unsigned int width, un
 
     SDL_WM_SetCaption(windowTitle.c_str(), NULL);
 
-    SDL_SetVideoMode(width, height, 0, SDL_OPENGL);
+    SDL_SetVideoMode(width, height, 0, SDL_OPENGL | SDL_WINDOW_RESIZABLE);
 
     _context = minko::render::WebGLContext::create();
 #endif // EMSCRIPTEN
@@ -376,7 +398,7 @@ Canvas::step()
         switch (event.type)
         {
         case SDL_QUIT:
-            _active = false;
+            quit();
             break;
 
         case SDL_KEYDOWN:
@@ -426,6 +448,14 @@ Canvas::step()
             case SDL_BUTTON_RIGHT:
                 _mouse->rightButtonDown()->execute(_mouse);
                 break;
+#ifdef EMSCRIPTEN
+            case SDL_BUTTON_X1:
+                _mouse->wheel()->execute(_mouse, 0, 1);
+                break;
+            case SDL_BUTTON_X2:
+                _mouse->wheel()->execute(_mouse, 0, -1);
+                break;
+#endif
 	    }
             break;
         }
@@ -447,6 +477,81 @@ Canvas::step()
             //_mouseWheel->execute(shared_from_this(), event.wheel.x, event.wheel.y);
             break;
 
+            // Touch events
+        case SDL_FINGERDOWN:
+# if defined(DEBUG)
+            std::cout << "Finger down! (x: " << event.tfinger.x << ", y: " << event.tfinger.y << ")" << std::endl;
+#endif // DEBUG
+
+            _finger->x(event.tfinger.x);
+            _finger->y(event.tfinger.y);
+
+            _finger->fingerDown()->execute(_finger, event.tfinger.x, event.tfinger.y);
+
+            break;
+        case SDL_FINGERUP:
+# if defined(DEBUG)
+            std::cout << "Finger up! (x: " << event.tfinger.x << ", y: " << event.tfinger.y << ")" << std::endl;
+#endif // DEBUG
+            _finger->x(event.tfinger.x);
+            _finger->y(event.tfinger.y);
+
+            _finger->fingerUp()->execute(_finger, event.tfinger.x, event.tfinger.y);
+
+            break;
+        case SDL_FINGERMOTION:
+# if defined(DEBUG)
+            std::cout << "Finger motion! "
+                << "("
+                << "x: " << event.tfinger.x << ", y: " << event.tfinger.y
+                << "|"
+                << "dx: " << event.tfinger.dx << ", dy: " << event.tfinger.dy
+                << ")" << std::endl;
+#endif // DEBUG
+            _finger->x(event.tfinger.x);
+            _finger->y(event.tfinger.y);
+            _finger->dx(event.tfinger.dx);
+            _finger->dy(event.tfinger.dy);
+
+            _finger->fingerMotion()->execute(_finger, event.tfinger.dx, event.tfinger.dy);
+
+            // Gestures
+            if (event.tfinger.dx > SDLFinger::SWIPE_PRECISION)
+            {
+# if defined(DEBUG)
+                std::cout << "Swipe right! (" << event.tfinger.dx << ")" << std::endl;
+#endif // DEBUG
+                _finger->swipeRight()->execute(_finger);
+            }
+
+            if (-event.tfinger.dx > SDLFinger::SWIPE_PRECISION)
+            {
+# if defined(DEBUG)
+                std::cout << "Swipe left! (" << event.tfinger.dx << ")" << std::endl;
+#endif // DEBUG
+
+                _finger->swipeLeft()->execute(_finger);
+            }
+
+            if (event.tfinger.dy > SDLFinger::SWIPE_PRECISION)
+            {
+# if defined(DEBUG)
+                std::cout << "Swipe down! (" << event.tfinger.dy << ")" << std::endl;
+#endif // DEBUG
+
+                _finger->swipeDown()->execute(_finger);
+            }
+
+            if (-event.tfinger.dy > SDLFinger::SWIPE_PRECISION)
+            {
+#if defined(DEBUG)
+                std::cout << "Swipe up! (" << event.tfinger.dy << ")" << std::endl;
+#endif // DEBUG
+
+                _finger->swipeUp()->execute(_finger);
+            }
+
+            break;
         case SDL_JOYAXISMOTION:
 # if defined(DEBUG)
             printf("Joystick %d axis %d value: %d\n",
@@ -549,7 +654,7 @@ Canvas::step()
             height(event.resize.h);
 
             delete _screen;
-            _screen = SDL_SetVideoMode(width(), height(), 0, SDL_OPENGL | SDL_RESIZABLE);
+            _screen = SDL_SetVideoMode(width(), height(), 0, SDL_OPENGL | SDL_WINDOW_RESIZABLE);
             _context->configureViewport(x(), y(), width(), height());
             _resized->execute(shared_from_this(), width(), height());
             break;
@@ -577,7 +682,7 @@ Canvas::step()
 
 #if !defined(EMSCRIPTEN)
     for (auto worker : _activeWorkers)
-        worker->update();
+        worker->poll();
 #endif
     auto absoluteTime = std::chrono::high_resolution_clock::now();
     _relativeTime   = 1e-6f * std::chrono::duration_cast<std::chrono::nanoseconds>(absoluteTime - _startTime).count(); // in milliseconds
@@ -655,10 +760,11 @@ Canvas::getWorker(const std::string& name)
 
     _activeWorkers.push_back(worker);
 
-    _workerCompleteSlots.push_back(worker->complete()->connect([worker, this](Worker::MessagePtr) {
-        std::cout << "Canvas::getWorker(): " << "remove worker" << std::endl;
-        //_activeWorkers.remove(worker);
-    }));
-
     return worker;
+}
+
+int
+Canvas::getJoystickAxis(input::Joystick::Ptr joystick, int axis)
+{
+    return SDL_JoystickGetAxis(SDL_JoystickOpen(joystick->joystickId()), axis);
 }
