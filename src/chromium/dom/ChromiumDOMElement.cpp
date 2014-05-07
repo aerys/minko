@@ -101,13 +101,17 @@ ChromiumDOMElement::create(CefRefPtr<CefV8Value> v8NodeObject, CefRefPtr<CefV8Co
 	{
 		v8Context->Enter();
 		if (v8NodeObject->IsUndefined() || v8NodeObject->IsNull())
-			return nullptr;
-
-		ChromiumDOMElement::Ptr element(new ChromiumDOMElement(v8NodeObject, v8Context));
-		element->_v8Handler = new ChromiumDOMElementV8Handler(element);
-		_v8NodeToElement[v8NodeObject] = element;
-		_elementToV8Object[element] = v8NodeObject;
-		result = element;
+		{
+			result = nullptr;
+		}
+		else
+		{
+			ChromiumDOMElement::Ptr element(new ChromiumDOMElement(v8NodeObject, v8Context));
+			element->_v8Handler = new ChromiumDOMElementV8Handler(element);
+			_v8NodeToElement[v8NodeObject] = element;
+			_elementToV8Object[element] = v8NodeObject;
+			result = element;
+		}
 		v8Context->Exit();
 	}
 	else
