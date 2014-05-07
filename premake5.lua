@@ -119,7 +119,6 @@ solution "minko"
 		include 'example/joystick'
 		include 'example/html-overlay'
 		include 'example/flares'
-		include 'example/water'
 	end
 
 	-- test
