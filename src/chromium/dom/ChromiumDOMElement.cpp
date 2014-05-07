@@ -93,6 +93,10 @@ ChromiumDOMElement::Ptr
 ChromiumDOMElement::create(CefRefPtr<CefV8Value> v8NodeObject, CefRefPtr<CefV8Context> v8Context)
 {
 	ChromiumDOMElement::Ptr result;
+
+	if (v8NodeObject == nullptr)
+		return nullptr;
+
 	if (CefCurrentlyOn(TID_RENDERER))
 	{
 		v8Context->Enter();
@@ -129,7 +133,7 @@ ChromiumDOMElement::getDOMElementFromV8Object(CefRefPtr<CefV8Value> v8Object, Ce
 {
 	for (auto& it : _v8NodeToElement)
 	{
-		if (v8Object->IsSame(it.first))
+		if (v8Object != nullptr && v8Object->IsSame(it.first))
 			return it.second;
 	}
 	
