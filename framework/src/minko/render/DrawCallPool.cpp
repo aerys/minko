@@ -279,7 +279,7 @@ DrawCallPool::drawCallVariablesChangedHandler(data::ArrayProvider::Ptr	provider,
 											  uint						index, 
 											  Surface::Ptr				surface)
 {
-	if (_toRemove.find(surface) != _toRemove.end())
+	if (_toRemove.find(surface) == _toRemove.end())
 		_toCollect.insert(surface);
 }
 
