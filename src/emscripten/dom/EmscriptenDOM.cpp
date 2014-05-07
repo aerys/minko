@@ -46,18 +46,19 @@ EmscriptenDOM::create(std::string jsAccessor)
 void
 EmscriptenDOM::sendMessage(std::string message, bool async)
 {
-	std::string eval = "if (" + _jsAccessor + ".window.Minko.onmessage) " + _jsAccessor + ".window.Minko.onmessage('" + message + "');";
+	std::string eval = "console.log('toto'); if (" + _jsAccessor + ".window.Minko.onmessage) " + _jsAccessor + ".window.Minko.onmessage('" + message + "');";
 	//if (!async)
 		emscripten_run_script(eval.c_str());
 	//else
-	//	emscripten_async_run_script(eval.c_str(), 1);
+	//	emscripten_async_run_script("console.log('toto'); if (" + _jsAccessor + ".window.Minko.onmessage) " + _jsAccessor + ".window.Minko.onmessage('" + message + "');", 1);
 }
 
 void
 EmscriptenDOM::eval(std::string message, bool async)
 {
 	//if (!async)
-		emscripten_run_script(message.c_str());
+		std::string ev = _jsAccessor + ".window.eval('" + message + "')";
+		emscripten_run_script(ev.c_str());
 	//else
 	//	emscripten_async_run_script(message.c_str(), 1);
 }
