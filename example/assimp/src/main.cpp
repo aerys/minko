@@ -85,7 +85,7 @@ main(int argc, char** argv)
 	defaultOptions
 		->generateMipmaps(true)
 		->skinningFramerate(60)
-		->skinningMethod(SkinningMethod::HARDWARE)
+		->skinningMethod(SkinningMethod::HARDWARE)		
 		->startAnimation(true)
 		->registerParser<file::OBJParser>("obj")
 		->registerParser<file::ColladaParser>("dae")
