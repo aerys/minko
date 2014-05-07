@@ -66,37 +66,32 @@ int main(int argc, char** argv)
 		->diffuseColor(Vector4::create(1.f, 1.f, 1.f, 1.f));
 	auto lights				= scene::Node::create("lights");
 
-	std::cout 
-		<< "Press [SPACE]\tto toogle normal mapping\nPress [A]\tto add random light\nPress [R]\tto remove random light" 
-		<< "\nPress [B]\tto set the sphere's effect to 'basic'\nPress [P]\tto set the sphere's effect to 'phong'"
-		<< std::endl;
+	std::cout << "Press [SPACE]\tto toogle normal mapping\nPress [A]\tto add random light\nPress [R]\tto remove random light" << std::endl;
 
 	sphereGeometry->computeTangentSpace(false);
 
 	// setup assets
-	sceneManager->assets()->loader()->options()->generateMipmaps(true);
-	sceneManager->assets()->loader()->options()
-                ->registerParser<file::PNGParser>("png");
-        sceneManager->assets()
-                ->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()))
+	sceneManager->assets()->defaultOptions()->generateMipmaps(true);
+	sceneManager->assets()
+		->registerParser<file::PNGParser>("png")
+		->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()))
 		->geometry("quad", geometry::QuadGeometry::create(sceneManager->assets()->context()))
-                ->geometry("sphere", sphereGeometry);
-        sceneManager->assets()->loader()
-                ->queue("texture/normalmap-cells.png")
+		->geometry("sphere", sphereGeometry)
+		->queue("texture/normalmap-cells.png")
 		->queue("texture/sprite-pointlight.png")
 		->queue("effect/Basic.effect")
 		->queue("effect/Sprite.effect")
 		->queue("effect/Phong.effect");
 
-	auto _ = sceneManager->assets()->loader()->complete()->connect([=](file::Loader::Ptr loader)
+	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
 	{
 		// ground
 		auto ground = scene::Node::create("ground")
 			->addComponent(Surface::create(
-				sceneManager->assets()->geometry("quad"),
+				assets->geometry("quad"),
 				material::Material::create()
 					->set("diffuseColor",	Vector4::create(1.f, 1.f, 1.f, 1.f)),
-				sceneManager->assets()->effect("phong")
+				assets->effect("phong")
 			))
 			->addComponent(Transform::create(Matrix4x4::create()->appendScale(50.f)->appendRotationX(-1.57f)));
 		root->addChild(ground);
@@ -104,9 +99,9 @@ int main(int argc, char** argv)
 		// sphere
 		auto sphere = scene::Node::create("sphere")
 			->addComponent(Surface::create(
-				sceneManager->assets()->geometry("sphere"),
+				assets->geometry("sphere"),
 				sphereMaterial,
-				sceneManager->assets()->effect("phong")
+				assets->effect("phong")
 			))
 			->addComponent(Transform::create(Matrix4x4::create()->appendTranslation(0.f, 2.f, 0.f)->prependScale(3.f)));
 		root->addChild(sphere);
@@ -122,9 +117,9 @@ int main(int argc, char** argv)
 		root->addChild(lights);
 
 		// handle keyboard signals
-		keyDown = canvas->keyboard()->keyDown()->connect([=](input::Keyboard::Ptr k)
+		keyDown = canvas->keyboard()->keyDown()->connect([&](input::Keyboard::Ptr k)
 		{
-			if (k->keyIsDown(input::Keyboard::ScanCode::A))
+			if (k->keyIsDown(input::Keyboard::A))
 			{
 				const auto MAX_NUM_LIGHTS = 40;
 
@@ -147,15 +142,15 @@ int main(int argc, char** argv)
 
 				std::cout << lights->children().size() << " lights" << std::endl;
 			}
-			if (k->keyIsDown(input::Keyboard::ScanCode::R))
+			if (k->keyIsDown(input::Keyboard::R))
 			{
 				if (lights->children().size() == 0)
 					return;
-
+				
 				lights->removeChild(lights->children().back());
 				std::cout << lights->children().size() << " lights" << std::endl;
 			}
-			if (k->keyIsDown(input::Keyboard::ScanCode::SPACE))
+			if (k->keyIsDown(input::Keyboard::SPACE))
 			{
 				auto data = sphere->component<Surface>()->material();
 				bool hasNormalMap = data->hasProperty("normalMap");
@@ -167,12 +162,12 @@ int main(int argc, char** argv)
 				if (hasNormalMap)
 					data->unset("normalMap");
 				else
-					data->set("normalMap", sceneManager->assets()->texture("texture/normalmap-cells.png"));
+					data->set("normalMap", assets->texture("texture/normalmap-cells.png"));
 			}
-			if (k->keyIsDown(input::Keyboard::ScanCode::B))
-				sphere->component<Surface>()->effect(sceneManager->assets()->effect("basic"));
-			if (k->keyIsDown(input::Keyboard::ScanCode::P))
-				sphere->component<Surface>()->effect(sceneManager->assets()->effect("phong"));
+			if (k->keyIsDown(input::Keyboard::UP))
+				camera->component<Transform>()->matrix()->prependTranslation(0.f, 0.f, -1.f);
+			if (k->keyIsDown(input::Keyboard::DOWN))
+				camera->component<Transform>()->matrix()->prependTranslation(0.f, 0.f, 1.f);
 		});
 	});
 
@@ -247,7 +242,7 @@ int main(int argc, char** argv)
 		sceneManager->nextFrame(time, deltaTime);
 	});
 
-	sceneManager->assets()->loader()->load();
+	sceneManager->assets()->load();
 
 	canvas->run();
 

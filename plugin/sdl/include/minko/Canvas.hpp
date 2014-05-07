@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -22,12 +22,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include <chrono>
 
 #include "minko/Common.hpp"
+#include "minko/SDLKeyboard.hpp"
+#include "minko/SDLMouse.hpp"
 #include "minko/Signal.hpp"
 #include "minko/render/AbstractContext.hpp"
 #include "minko/render/OpenGLES2Context.hpp"
 #include "minko/AbstractCanvas.hpp"
-#include "minko/input/Mouse.hpp"
-#include "minko/input/Keyboard.hpp"
 #include "minko/input/Joystick.hpp"
 #include "minko/input/Finger.hpp"
 #include "minko/async/Worker.hpp"
@@ -55,99 +55,6 @@ namespace minko
 		typedef std::shared_ptr<Canvas>	Ptr;
 
 	private:
-		class SDLMouse :
-			public input::Mouse
-		{
-			friend class Canvas;
-
-		public:
-			static inline
-			std::shared_ptr<SDLMouse>
-			create(Canvas::Ptr canvas)
-			{
-				return std::shared_ptr<SDLMouse>(new SDLMouse(canvas));
-			}
-
-		private:
-			SDLMouse(Canvas::Ptr canvas) :
-				input::Mouse(canvas)
-			{
-			}
-
-			void
-			x(uint x)
-			{
-				_x = x;
-			}
-
-			void
-			y(uint y)
-			{
-				_y = y;
-			}
-		};
-
-		class SDLKeyboard :
-			public input::Keyboard
-		{
-			friend class Canvas;
-
-		private:
-			const unsigned char* _keyboardState;
-
-		public:
-			static inline
-			std::shared_ptr<SDLKeyboard>
-			create()
-			{
-				return std::shared_ptr<SDLKeyboard>(new SDLKeyboard());
-			}
-
-		public:
-			bool
-			keyIsDown(input::Keyboard::ScanCode scanCode)
-			{
-#if defined(EMSCRIPTEN)
-				return _keyboardState[static_cast<int>(getKeyCodeFromScanCode(scanCode))] != 0;
-#else
-				return _keyboardState[static_cast<int>(scanCode)] != 0;				
-#endif
-			}
-
-			bool
-			keyIsDown(input::Keyboard::KeyCode keyCode)
-			{
-#if defined(EMSCRIPTEN)
-				// Note: bug in emscripten, GetKeyStates is indexed by key codes.
-				auto scanCode = keyCode;
-				return _keyboardState[static_cast<int>(scanCode)] != 0;
-#else
-				return _keyboardState[static_cast<int>(getScanCodeFromKeyCode(keyCode))] != 0;				
-#endif
-			}
-
-		private:
-			bool
-			hasKeyDownSignal(input::Keyboard::ScanCode scanCode)
-			{
-				return _keyDown.count(static_cast<int>(scanCode)) != 0;
-			}
-
-			bool
-			hasKeyUpSignal(input::Keyboard::ScanCode scanCode)
-			{
-				return _keyUp.count(static_cast<int>(scanCode)) != 0;
-			}
-
-			SDLKeyboard();
-
-			KeyCode
-			getKeyCodeFromScanCode(ScanCode scanCode);
-
-			ScanCode
-			getScanCodeFromKeyCode(KeyCode keyCode);
-		};
-
 		class SDLJoystick : 
 			public input::Joystick
 		{

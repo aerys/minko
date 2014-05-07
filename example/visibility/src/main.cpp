@@ -90,7 +90,7 @@ int main(int argc, char** argv)
 
 	auto keyDown = canvas->keyboard()->keyDown()->connect([&](input::Keyboard::Ptr k)
 	{
-		if (k->keyDown(input::Keyboard::ScanCode::SPACE))
+		if (k->keyDown(input::Keyboard::SPACE))
 		{
 			auto numChildren = cubes->children().size();
 			auto randomChild = cubes->children()[rand() % numChildren];

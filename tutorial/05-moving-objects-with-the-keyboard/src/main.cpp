@@ -57,9 +57,9 @@ main(int argc, char** argv)
 
         auto keyDown = canvas->keyboard()->keyDown()->connect([&](input::Keyboard::Ptr k)
         {
-            if (k->keyIsDown(input::Keyboard::ScanCode::LEFT))
+            if (k->keyIsDown(input::Keyboard::LEFT))
                 cube->component<Transform>()->matrix()->appendTranslation(-0.1f);
-            if (k->keyIsDown(input::Keyboard::ScanCode::RIGHT))
+            if (k->keyIsDown(input::Keyboard::RIGHT))
                 cube->component<Transform>()->matrix()->appendTranslation(0.1f);
         });
 

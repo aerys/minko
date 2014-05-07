@@ -37,13 +37,13 @@ namespace minko
 			void
 			bind(LuaGlue& state)
 			{
-				auto& input_scancode = state.Enum<Keyboard::ScanCode>("ScanCode");
-			    for (int key = 0; key < (int) Keyboard::NUM_SCANCODES; ++key)
+				auto& input_key = state.Enum<Keyboard::Key>("Key");
+			    for (int key = 0; key < (int) Keyboard::NUM_KEYS; ++key)
 			    {
-			        auto& keyName = Keyboard::getKeyName(static_cast<Keyboard::ScanCode>(key));
+			        auto& keyName = Keyboard::getKeyName(static_cast<Keyboard::Key>(key));
 
 			        if (keyName.size())
-						input_scancode.constant(keyName, key);
+                        input_key.constant(keyName, key);
 			    }
 
 				auto& input_keyboard = state.Class<Keyboard>("Keyboard");
@@ -59,23 +59,23 @@ namespace minko
 
 			static
 			Signal<Keyboard::Ptr, uint>::Ptr
-			keyboardKeyDownWrapper(Keyboard::Ptr k, uint s)
+			keyboardKeyDownWrapper(Keyboard::Ptr k, uint key)
 			{
-				return k->keyDown(static_cast<Keyboard::ScanCode>(s));
+				return k->keyDown(static_cast<Keyboard::Key>(key));
 			}
 
 			static
 			Signal<Keyboard::Ptr, uint>::Ptr
-			keyboardKeyUpWrapper(Keyboard::Ptr k, uint s)
+			keyboardKeyUpWrapper(Keyboard::Ptr k, uint key)
 			{
-				return k->keyUp(static_cast<Keyboard::ScanCode>(s));
+				return k->keyUp(static_cast<Keyboard::Key>(key));
 			}
 
 			static
 			bool
 			keyboardKeyIsDownWrapper(Keyboard::Ptr k, uint s)
 			{
-				return k->keyIsDown(static_cast<Keyboard::ScanCode>(s));
+				return k->keyIsDown(static_cast<Keyboard::Key>(s));
 			}
 		};
 	}
