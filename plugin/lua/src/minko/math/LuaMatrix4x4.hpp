@@ -35,8 +35,13 @@ namespace minko
 			void
 			bind(LuaGlue& state)
 			{
+				state.Class<std::vector<float>>("std__vector_float_")
+					.methodWrapper("at",	&LuaMatrix4x4::atWrapper)
+					.property("size", 	    &std::vector<float>::size);
+
 				state.Class<Matrix4x4>("Matrix4x4")
 					.method("create",               static_cast<Matrix4x4::Ptr (*)()>(&Matrix4x4::create))
+					.methodWrapper("data",			&LuaMatrix4x4::dataWrapper)
 					.method("copyFrom",				&Matrix4x4::copyFrom)
 					.method("lookAt",               &Matrix4x4::lookAt)
 					.method("identity",             &Matrix4x4::identity)
@@ -64,6 +69,20 @@ namespace minko
 					.method("prependTranslationVector",   static_cast<Matrix4x4::Ptr (Matrix4x4::*)(Vector3::Ptr)>(&Matrix4x4::prependTranslation))
 					.method("getTranslation",		static_cast<Vector3::Ptr (Matrix4x4::*)(void) const>(&Matrix4x4::translation))					
 					.method("toString", &Matrix4x4::toString);
+			}
+
+			static
+			float
+			atWrapper(std::vector<float>* v, uint index)
+			{
+				return v->at(index - 1);
+			}
+
+			static
+			std::vector<float>*
+			dataWrapper(Matrix4x4::Ptr m)
+			{
+				return const_cast<std::vector<float>*>(&(m->data()));
 			}
 		};
 	}
