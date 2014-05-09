@@ -40,7 +40,6 @@ using namespace minko::extension;
 void
 PhysicsExtension::bind()
 {
-	std::cout << "PhysicsExtension::bind()" << std::endl;
 	file::SceneParser::registerComponent(50, std::bind(&PhysicsExtension::deserializePhysics,
 		std::placeholders::_1,
 		std::placeholders::_2,

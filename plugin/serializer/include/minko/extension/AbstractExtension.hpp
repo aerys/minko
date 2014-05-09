@@ -44,11 +44,8 @@ namespace minko
 			static
 			activeExtension()
 			{
-				std::cout << "BIND 1" << std::endl;
 				std::shared_ptr<T> extension = T::initialize();
-				std::cout << "BIND 2" << std::endl;
 				extension->bind();
-				std::cout << "BIND 3" << std::endl;
 			}
 		};
 	}
