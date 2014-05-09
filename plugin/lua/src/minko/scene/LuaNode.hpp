@@ -46,13 +46,13 @@ namespace minko
 
 				state.Class<Node>("Node")
 		            .method("create",				        static_cast<Node::Ptr (*)(void)>(&Node::create))
-		            .method("addChild",				        &Node::addChild)
+					.method("toString",						&Node::toString)
+					.method("addChild",						&Node::addChild)
 		            .method("removeChild",			        &Node::removeChild)
 		            .method("contains",				        &Node::contains)
 		            .method("addComponent",			        &Node::addComponent)
 		            .method("removeComponent",		        &Node::removeComponent)
-					.method("hasComponent",					&Node::hasComponent)
-					.method("toString",						&Node::toString)
+					.method("hasComponent",					&LuaNode::hasComponentWrapper)
                     .methodWrapper("getChildren",           &LuaNode::childrenWrapper)
                     .methodWrapper("getBoundingBox",        &LuaNode::getBoundingBoxWrapper)
                     .methodWrapper("getTransform",          &LuaNode::getTransformWrapper)
@@ -155,6 +155,13 @@ namespace minko
 			hasAnimationWrapper(Node::Ptr node)
 			{
 				return node->hasComponent<component::AbstractAnimation>();
+			}
+
+			static
+			bool
+			hasComponentWrapper(Node::Ptr node, component::AbstractComponent::Ptr cmp)
+			{
+				return node->hasComponent(cmp);
 			}
 		};
 	}
