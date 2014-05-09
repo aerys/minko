@@ -40,6 +40,7 @@ using namespace minko::extension;
 void
 PhysicsExtension::bind()
 {
+	std::cout << "PhysicsExtension::bind()" << std::endl;
 	file::SceneParser::registerComponent(50, std::bind(&PhysicsExtension::deserializePhysics,
 		std::placeholders::_1,
 		std::placeholders::_2,
@@ -51,6 +52,7 @@ PhysicsExtension::deserializePhysics(std::string&							serializedCollider,
 									 std::shared_ptr<file::AssetLibrary>	assetLibrary,
 									 std::shared_ptr<file::Dependency>		dependencies)
 {
+	std::cout << "deserializePhysics_start" << std::endl;
 	component::bullet::AbstractPhysicsShape::Ptr	deserializedShape;
 	msgpack::zone									mempool;
 	msgpack::object									deserialized;
@@ -63,6 +65,8 @@ PhysicsExtension::deserializePhysics(std::string&							serializedCollider,
 	std::vector<float> shapedata = deserialize::TypeDeserializer::deserializeVector<float>(dst.a1);
 
 	uint shapeType = dst.a0;
+
+	std::cout << "shapetype = " << shapeType << std::endl;
 
 	if (shapeType == 1) // Ball
 		deserializedShape = component::bullet::SphereShape::create(
