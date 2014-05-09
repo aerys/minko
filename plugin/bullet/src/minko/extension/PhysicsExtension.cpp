@@ -98,10 +98,6 @@ PhysicsExtension::deserializePhysics(std::string&							serializedCollider,
 	const auto	friction	= physicsdata[1];
 	const auto	restitution	= physicsdata[2];
 
-	std::cout << "density: " << density << std::endl;
-	std::cout << "friction: " << friction << std::endl;
-	std::cout << "restitution: " << restitution << std::endl;
-
 	auto mass = density * deserializedShape->volume();
 
 	if (dst.a4 == false)
