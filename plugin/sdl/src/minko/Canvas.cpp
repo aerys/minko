@@ -653,7 +653,6 @@ Canvas::step()
             width(event.resize.w);
             height(event.resize.h);
 
-            delete _screen;
             _screen = SDL_SetVideoMode(width(), height(), 0, SDL_OPENGL | SDL_WINDOW_RESIZABLE);
             _context->configureViewport(x(), y(), width(), height());
             _resized->execute(shared_from_this(), width(), height());
