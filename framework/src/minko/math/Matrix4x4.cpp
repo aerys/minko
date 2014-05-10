@@ -425,6 +425,31 @@ Matrix4x4::perspective(float fov, // vertical FOV
 }
 
 Matrix4x4::Ptr
+Matrix4x4::orthographic(float left, // vertical FOV
+						float right,
+						float top,
+						float bottom,
+						float zNear,
+						float zFar)
+{
+
+	float	w = right - left;
+	float	h = top - bottom;
+	float	p = zFar - zNear;
+
+	float	x = (right + left) / w;
+	float	y = (top + bottom) / h;
+	float	z = (zFar + zNear) / p;
+
+	return initialize(
+		2 / w, 0, 0, -x,
+		0, 2 / h, 0, -y, 
+		0, 0, -2 / p , -z, 
+		0, 0, 0, 1
+		);
+}
+
+Matrix4x4::Ptr
 Matrix4x4::view(Vector3::Ptr eye, Vector3::Ptr lookAt, Vector3::Ptr upAxis)
 {
     Vector3::Ptr	zAxis = eye - lookAt;

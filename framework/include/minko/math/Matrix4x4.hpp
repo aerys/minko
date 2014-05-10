@@ -280,6 +280,9 @@ namespace minko
 			Ptr
 			perspective(float fov, float ratio, float zNear, float zFar);
 
+			Ptr
+			orthographic(float left, float right, float top, float bottom, float zNear, float zFar);
+
 			/**
 			 * Builds a (left-handed) view transform.
 			 * <br /><br />

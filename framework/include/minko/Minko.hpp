@@ -54,6 +54,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/Surface.hpp"
 #include "minko/component/Renderer.hpp"
 #include "minko/component/PerspectiveCamera.hpp"
+#include "minko/component/OrthographicCamera.hpp"
 #include "minko/component/SceneManager.hpp"
 #include "minko/component/AbstractLight.hpp"
 #include "minko/component/AmbientLight.hpp"
