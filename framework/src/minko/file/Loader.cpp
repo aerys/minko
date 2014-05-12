@@ -59,6 +59,9 @@ Loader::load()
     }
     else
     {
+		_numFiles = _filesQueue.size();
+		_protocolToProgress.clear();
+
         auto queue = _filesQueue;
 
         for (auto& filename : queue)
@@ -75,12 +78,18 @@ Loader::load()
                 &Loader::protocolErrorHandler,
                 shared_from_this(),
                 std::placeholders::_1
-            )));
-            _protocolSlots.push_back(protocol->complete()->connect(std::bind(
-                &Loader::protocolCompleteHandler,
-                shared_from_this(),
-                std::placeholders::_1
-            )));
+				)));
+			_protocolSlots.push_back(protocol->complete()->connect(std::bind(
+				&Loader::protocolCompleteHandler,
+				shared_from_this(),
+				std::placeholders::_1
+			)));
+			_protocolProgressSlots.push_back(protocol->progress()->connect(std::bind(
+				&Loader::protocolProgressHandler,
+				shared_from_this(),
+				std::placeholders::_1,
+				std::placeholders::_2
+			)));
 
             protocol->load(filename, options);
         }
@@ -98,12 +107,29 @@ Loader::protocolErrorHandler(std::shared_ptr<AbstractProtocol> protocol)
 }
 
 void
+Loader::protocolProgressHandler(std::shared_ptr<AbstractProtocol> protocol, float progress)
+{
+	_protocolToProgress[protocol] = progress;
+
+	float newTotalProgress = 0.f;
+
+	for (auto protocolAndProgress : _protocolToProgress)
+	{
+		newTotalProgress += protocolAndProgress.second / _numFiles;
+	}
+
+	newTotalProgress /= 100.f;
+
+	_progress->execute(
+		std::dynamic_pointer_cast<Loader>(shared_from_this()),
+		newTotalProgress
+	);
+}
+
+void
 Loader::protocolCompleteHandler(std::shared_ptr<AbstractProtocol> protocol)
 {
-    _progress->execute(
-        std::dynamic_pointer_cast<Loader>(shared_from_this()),
-        (float)_loading.size() / (float)_protocolSlots.size()
-    );
+	_protocolToProgress[protocol] = 1.f;
 
     auto filename = protocol->file()->filename();
 
