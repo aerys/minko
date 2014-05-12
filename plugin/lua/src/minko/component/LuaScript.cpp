@@ -53,8 +53,6 @@ LuaScript::start(scene::Node::Ptr node)
 		? _targetToStub[node] = new LuaStub()
 		: _targetToStub[node];
 
-	std::cout << "LuaScript::start: " << _scriptName << std::endl;
-
 	if (!_script.empty())
 	{
 		_state = &(node->root()->component<LuaScriptManager>()->_state);
@@ -75,9 +73,6 @@ LuaScript::start(scene::Node::Ptr node)
 		_hasUpdateMethod = c->hasMethod("update");
 		_hasStopMethod = c->hasMethod("stop");
 
-		std::cout << "_hasStartMethod " << _hasStartMethod << std::endl;
-		std::cout << "_hasUpdateMethod " << _hasUpdateMethod << std::endl;
-		std::cout << "_hasStopMethod " << _hasStopMethod << std::endl;
 	}
 
 	if (!_hasStartMethod)
