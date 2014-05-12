@@ -5,6 +5,8 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 	kind "StaticLib"
 	language "C++"
 
+    minko.plugin.enable("devil")
+
 	files {
 		"**.hpp",
 		"**.h",
