@@ -24,6 +24,7 @@
     },
 
     "macroBindings" : {
+        "HAS_POSITION"          : "geometry[${geometryId}].position",
         "MODEL_TO_WORLD"        : "transform.modelToWorldMatrix",
         "NUM_BONES"             : "geometry[${geometryId}].numBones"
     },

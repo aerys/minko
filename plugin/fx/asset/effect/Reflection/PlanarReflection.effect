@@ -27,6 +27,8 @@
         "DIFFUSE_MAP"           : "material[${materialId}].diffuseMap",
         "DIFFUSE_CUBEMAP"       : "material[${materialId}].diffuseCubeMap",
         "MODEL_TO_WORLD"        : "transform.modelToWorldMatrix",
+        "HAS_POSITION"          : "geometry[${geometryId}].position",
+        "HAS_UV"                : "geometry[${geometryId}].uv",
         "HAS_NORMAL"            : "geometry[${geometryId}].normal",
         "NUM_BONES"             : { "property" : "geometry[${geometryId}].numBones",   "source" : "target" }
     },
