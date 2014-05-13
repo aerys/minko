@@ -112,6 +112,8 @@ DevILWriter::writeToStream(std::vector<unsigned char>&          dst,
     unsigned char* buffer = new unsigned char[size];
     ilSaveL(imageType, buffer, size);
 
+    checkError();
+
     std::copy(buffer, buffer + size, std::back_inserter(dst));
 
     delete[] buffer;

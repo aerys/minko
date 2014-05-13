@@ -97,7 +97,7 @@ namespace minko
 				else
 					std::cerr << "File " << filename << " can't be opened" << std::endl;
 
-				complete()->execute(this->shared_from_this());
+				complete()->execute(shared_from_this());
 			}
 
             std::string
@@ -118,6 +118,8 @@ namespace minko
 
                 std::stringstream sbuf;
                 msgpack::pack(sbuf, res);
+
+                complete()->execute(shared_from_this());
 
                 return sbuf.str();
             }
