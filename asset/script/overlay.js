@@ -91,7 +91,7 @@ Minko.redispatchMouseEvent = function(event)
 		pageX, pageY, screenX, screenY, 
 		event.ctrlKey, event.altKey, event.shiftKey, event.metaKey, event.button, event.relatedTarget);
 
-	if (event.type == 'mousewheel')
+	if (event.type == 'mousewheel' || event.type == "DOMMouseScroll")
 	{
 		eventCopy.detail = event.detail;
 
@@ -137,20 +137,21 @@ Minko.iframeLoadHandler = function(event)
 		Minko.iframeElement.contentWindow.Minko.messagesToSend.push(message);
 	}
 
-	Minko.iframeElement.addEventListener('mouseover',					Minko.redispatchMouseEvent);
-	Minko.iframeElement.addEventListener('mouseout',					Minko.redispatchMouseEvent);
+	Minko.iframeElement.addEventListener('mouseover',						Minko.redispatchMouseEvent);
+	Minko.iframeElement.addEventListener('mouseout',						Minko.redispatchMouseEvent);
 	
-	Minko.iframeElement.contentWindow.addEventListener('mousemove',		Minko.redispatchMouseEvent);
-	Minko.iframeElement.contentWindow.addEventListener('mouseup',		Minko.redispatchMouseEvent);
-	Minko.iframeElement.contentWindow.addEventListener('mousedown',		Minko.redispatchMouseEvent);
+	Minko.iframeElement.contentWindow.addEventListener('mousemove',			Minko.redispatchMouseEvent);
+	Minko.iframeElement.contentWindow.addEventListener('mouseup',			Minko.redispatchMouseEvent);
+	Minko.iframeElement.contentWindow.addEventListener('mousedown',			Minko.redispatchMouseEvent);
 	
-	Minko.iframeElement.contentWindow.addEventListener('click',			Minko.redispatchMouseEvent);
+	Minko.iframeElement.contentWindow.addEventListener('click',				Minko.redispatchMouseEvent);
 	
-	Minko.iframeElement.contentWindow.addEventListener('mousewheel',	Minko.redispatchMouseEvent);
+	Minko.iframeElement.contentWindow.addEventListener('mousewheel',		Minko.redispatchMouseEvent);
+	Minko.iframeElement.contentWindow.addEventListener('DOMMouseScroll',	Minko.redispatchMouseEvent);
 	
-	Minko.iframeElement.contentWindow.addEventListener('keydown',		Minko.redispatchKeyboardEvent);
-	Minko.iframeElement.contentWindow.addEventListener('keyup',			Minko.redispatchKeyboardEvent);
-	Minko.iframeElement.contentWindow.addEventListener('keypress',		Minko.redispatchKeyboardEvent);
+	Minko.iframeElement.contentWindow.addEventListener('keydown',			Minko.redispatchKeyboardEvent);
+	Minko.iframeElement.contentWindow.addEventListener('keyup',				Minko.redispatchKeyboardEvent);
+	Minko.iframeElement.contentWindow.addEventListener('keypress',			Minko.redispatchKeyboardEvent);
 }
 
 iframeElement.onload = Minko.iframeLoadHandler;
