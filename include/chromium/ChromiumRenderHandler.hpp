@@ -35,10 +35,9 @@ namespace chromium
 	public:
 		ChromiumRenderHandler(std::shared_ptr<AbstractCanvas> canvas, std::shared_ptr<render::AbstractContext> context);
 		~ChromiumRenderHandler();
-
+		
 		bool
 		GetViewRect(CefRefPtr<CefBrowser> browser, CefRect &rect);
-
 
 		void
 		OnCursorChange(CefRefPtr<CefBrowser> browser, CefCursorHandle cursor);
@@ -69,6 +68,9 @@ namespace chromium
 		void
 		canvasResized(std::shared_ptr<AbstractCanvas> canvas, uint w, uint h);
 
+		void
+		drawRect(unsigned char* source, int x, int y, int w, int h);
+
 	private:
 		uint _lastW;
 		uint _lastH;
@@ -76,6 +78,7 @@ namespace chromium
 		uint _texH;
 
 		uint _popupShown;
+		uint _popupUpdated;
 		uint _popupX;
 		uint _popupY;
 		uint _popupW;
@@ -87,7 +90,6 @@ namespace chromium
 
 	public:
 		unsigned char* _popupBuffer;
-		std::vector<unsigned char>* _textureBuffer;
 		std::shared_ptr<render::Texture> renderTexture;
 
 		bool textureChanged;
