@@ -40,7 +40,7 @@ FileProtocol::load()
     auto filename = _file->filename();
     auto options = _options;
 	auto flags = std::ios::in | std::ios::ate | std::ios::binary;
-	
+
 	std::string cleanFilename = "";
 
 	for(uint i = 0; i < filename.length(); ++i)
@@ -51,26 +51,61 @@ FileProtocol::load()
 			i += 2;
 			continue;
 		}
-		
+
 		cleanFilename += filename.at(i);
 	}
 
 	_options = options;
 
     auto realFilename = options->uriFunction()(File::sanitizeFilename(cleanFilename));
-	
+
 	std::fstream file(cleanFilename, flags);
 
 	if (!file.is_open())
 		for (auto path : _options->includePaths())
 		{
+            auto currentPathIsValid = true;
+
+            const auto absolutePrefix = File::getBinaryDirectory() + "/";
+
 			auto testFilename = options->uriFunction()(File::sanitizeFilename(path + '/' + cleanFilename));
 
-			file.open(testFilename, flags);
-			if (file.is_open())
+            if (testFilename.find(absolutePrefix) != std::string::npos)
             {
-                realFilename = testFilename;
-				break;
+                auto currentSeparatorPos = absolutePrefix.size();
+
+                do
+                {
+                    currentSeparatorPos = absolutePrefix.find_last_of("/\\", currentSeparatorPos - 1);
+
+                    if (currentSeparatorPos == std::string::npos)
+                    {
+                        currentPathIsValid = false;
+
+                        break;
+                    }
+
+                    realFilename = testFilename.substr(currentSeparatorPos + 1, testFilename.size());
+
+                    file.open(realFilename, flags);
+
+                } while (!file.is_open());
+
+                if (currentPathIsValid)
+                {
+                    break;
+                }
+            }
+            else
+            {
+                file.open(testFilename, flags);
+
+                if (file.is_open())
+                {
+                    realFilename = testFilename;
+
+                    break;
+                }
             }
 		}
 
@@ -91,7 +126,7 @@ FileProtocol::load()
 				{
 					void* bytes = &*message.data.begin();
 					data().assign(static_cast<unsigned char*>(bytes), static_cast<unsigned char*>(bytes) + message.data.size());
-					_complete->execute(shared_from_this());					
+					_complete->execute(shared_from_this());
 				}
 				else if (message.type == "progress")
 				{
