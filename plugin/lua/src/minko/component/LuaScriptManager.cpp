@@ -51,7 +51,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/scene/LuaNodeSet.hpp"
 #include "minko/geometry/LuaGeometry.hpp"
 #include "minko/material/LuaMaterial.hpp"
+#include "minko/material/LuaBasicMaterial.hpp"
 #include "minko/render/LuaEffect.hpp"
+#include "minko/render/LuaTexture.hpp"
 #include "minko/file/LuaLoader.hpp"
 #include "minko/file/LuaAssetLibrary.hpp"
 #include "minko/input/LuaKeyboard.hpp"
@@ -160,7 +162,7 @@ LuaScriptManager::update(scene::Node::Ptr target)
 void
 LuaScriptManager::initializeBindings()
 {
-	_state.Class<render::Texture>("Texture");
+	//_state.Class<render::Texture>("Texture");
 	//_state.Class<Surface>("Surface")
 	//	.method("create", static_cast<Surface::Ptr(*)(geometry::Geometry::Ptr, data::Provider::Ptr, render::Effect::Ptr)>(&Surface::create));
 	_state.Class<render::AbstractContext>("AbstractContext");
@@ -188,6 +190,8 @@ LuaScriptManager::initializeBindings()
     data::LuaContainer::bind(_state);
     geometry::LuaGeometry::bind(_state);
     material::LuaMaterial::bind(_state);
+	material::LuaBasicMaterial::bind(_state);
+	render::LuaTexture::bind(_state);
     render::LuaEffect::bind(_state);
     file::LuaLoader::bind(_state);
     file::LuaAssetLibrary::bind(_state);
