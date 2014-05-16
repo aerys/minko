@@ -69,6 +69,15 @@ namespace minko
 			Ptr
 			color(uint color);
 
+			Layouts
+			layoutMask() const
+			{
+				return AbstractComponent::layoutMask();
+			}
+
+			void
+			layoutMask(Layouts value);
+
 		protected:
 			AbstractLight(const std::string& arrayName);
 

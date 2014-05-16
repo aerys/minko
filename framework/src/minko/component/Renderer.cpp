@@ -59,7 +59,7 @@ Renderer::Renderer(std::shared_ptr<render::AbstractTexture> renderTarget,
 	_rendererDataFilterChangedSlots(),
 	_rootDataFilterChangedSlots(),
 	_lightMaskFilter(data::LightMaskFilter::create()),
-	_filterChanged(Signal<Ptr, data::AbstractFilter::Ptr, data::BindingSource>::create())
+	_filterChanged(Signal<Ptr, data::AbstractFilter::Ptr, data::BindingSource, SurfacePtr>::create())
 {
 	if (renderTarget)
 	{
@@ -359,8 +359,8 @@ Renderer::addFilter(data::AbstractFilter::Ptr	filter,
 		if (filterChangedSlots.count(filter) == 0)
 		{
 			filters.insert(filter);
-			filterChangedSlots[filter] = filter->changed()->connect([=](AbsFilterPtr){
-				filterChangedHandler(filter, source);
+			filterChangedSlots[filter] = filter->changed()->connect([=](AbsFilterPtr, SurfacePtr surface){
+				filterChangedHandler(filter, source, surface);
 			});
 		}
 	}
@@ -403,11 +403,13 @@ Renderer::setFilterSurface(Surface::Ptr surface)
 
 void
 Renderer::filterChangedHandler(data::AbstractFilter::Ptr	filter, 
-							   data::BindingSource			source)
+							   data::BindingSource			source,
+							   SurfacePtr					surface)
 {
 	_filterChanged->execute(
 		std::static_pointer_cast<Renderer>(shared_from_this()),
 		filter,
-		source
+		source,
+		surface
 	);
 }

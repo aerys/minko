@@ -41,6 +41,7 @@ namespace minko
 			typedef std::shared_ptr<component::AbstractLight>	AbsLightPtr;
 
 			typedef Signal<ContainerPtr, const std::string&>	ContainerPropertyChangedSignal;
+			typedef Signal<ProviderPtr, const std::string&>		ProviderPropertyChangedSignal;
 
 		private:
 			static std::vector<std::string>						_numLightPropertyNames;
@@ -51,6 +52,8 @@ namespace minko
 
 			std::list<ContainerPropertyChangedSignal::Slot>		_rootPropertyChangedSlots;
 
+			std::list<ProviderPropertyChangedSignal::Slot>		_layoutMaskChangedSlots;
+
 		public:
 			inline static
 			Ptr
@@ -58,6 +61,7 @@ namespace minko
 			{
 				Ptr ptr = std::shared_ptr<LightMaskFilter>(new LightMaskFilter());
 
+				ptr->watchProperty("node.layouts");
 				ptr->root(root);
 
 				return ptr;

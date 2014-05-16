@@ -51,8 +51,8 @@ namespace minko
 			typedef std::shared_ptr<render::DrawCallPool>				DrawCallFactoryPtr;
 			typedef std::shared_ptr<data::AbstractFilter>				AbsFilterPtr;
 			typedef Signal<SurfacePtr, const std::string&, bool>::Slot	SurfaceTechniqueChangedSlot;
-			typedef Signal<AbsFilterPtr>::Slot							FilterChangedSlot;
-			typedef Signal<Ptr, AbsFilterPtr, data::BindingSource>		RendererFilterChangedSignal;
+			typedef Signal<AbsFilterPtr, SurfacePtr>::Slot				FilterChangedSlot;
+			typedef Signal<Ptr, AbsFilterPtr, data::BindingSource, SurfacePtr>		RendererFilterChangedSignal;
 
 		private:
 			DrawCallList												_drawCalls;
@@ -298,7 +298,7 @@ namespace minko
 			}
 
 			void
-			filterChangedHandler(AbsFilterPtr, data::BindingSource);
+			filterChangedHandler(AbsFilterPtr, data::BindingSource, SurfacePtr);
 		};
 	}
 }

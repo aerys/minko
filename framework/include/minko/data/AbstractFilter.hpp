@@ -30,14 +30,17 @@ namespace minko
 			public std::enable_shared_from_this<AbstractFilter>
 		{
 		public:
-			typedef std::shared_ptr<AbstractFilter>					Ptr;
+			typedef std::shared_ptr<AbstractFilter>							Ptr;
 
 		private:
-			typedef std::shared_ptr<component::Surface>				SurfacePtr;
-			typedef std::shared_ptr<component::AbstractComponent>	AbsCmpPtr;
-			typedef std::shared_ptr<scene::Node>					NodePtr;
+			typedef std::shared_ptr<component::Surface>						SurfacePtr;
+			typedef std::shared_ptr<component::AbstractComponent>			AbsCmpPtr;
+			typedef std::shared_ptr<scene::Node>							NodePtr;
+			typedef std::shared_ptr<Provider>								ProviderPtr;
+			typedef std::shared_ptr<Container>								ContainerPtr;
 
-			typedef std::shared_ptr<Signal<Ptr>>					FilterSignalPtr;
+			typedef std::shared_ptr<Signal<Ptr, SurfacePtr>>				FilterSignalPtr;
+			typedef Signal<ContainerPtr, const std::string&>				ContainerPropertyChangedSignal;
 
 		private:
 			SurfacePtr												_currentSurface;
@@ -46,12 +49,16 @@ namespace minko
 
 			FilterSignalPtr											_changed;
 
+			std::list<const std::string>							_watchedProperties;
+
+			std::unordered_map<NodePtr, std::list<ContainerPropertyChangedSignal::Slot>> _surfaceTargetPropertyChangedSlots;
+
 		public:
 			AbstractFilter():
 				_currentSurface(nullptr),
 				_currentSurfaceRemovedSlot(nullptr),
 				_currentSurfaceTargetRemovedSlot(nullptr),
-				_changed(Signal<Ptr>::create())
+				_changed(Signal<Ptr, SurfacePtr>::create())
 			{
 			}
 
@@ -59,6 +66,12 @@ namespace minko
 			~AbstractFilter()
 			{
 			}
+
+			void
+			watchProperty(const std::string value);
+
+			void
+			unwatchProperty(const std::string value);
 
 			virtual
 			bool

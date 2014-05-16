@@ -23,6 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/scene/Node.hpp"
 #include "minko/math/Vector3.hpp"
 #include "minko/math/Vector4.hpp"
+#include "minko/Signal.hpp"
 
 using namespace minko;
 using namespace minko::component;
@@ -33,6 +34,13 @@ AbstractLight::AbstractLight(const std::string& arrayName) :
 	_targetLayoutChangedSlot(nullptr)
 {
 	data()->set("color", _color);
+}
+
+void
+AbstractLight::layoutMask(Layouts value)
+{
+	data()->set("layoutMask", value);
+	AbstractComponent::layoutMask(value);
 }
 
 AbstractLight::Ptr

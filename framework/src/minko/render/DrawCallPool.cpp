@@ -67,8 +67,8 @@ DrawCallPool::DrawCallPool(Renderer::Ptr renderer):
 void
 DrawCallPool::initialize()
 {
-	_rendererFilterChangedSlot = _renderer->filterChanged()->connect([=](Renderer::Ptr r, AbstractFilterPtr f, data::BindingSource s){
-		rendererFilterChangedHandler(r, f, s);
+	_rendererFilterChangedSlot = _renderer->filterChanged()->connect([=](Renderer::Ptr r, AbstractFilterPtr f, data::BindingSource s, SurfacePtr surface){
+		rendererFilterChangedHandler(r, f, s, surface);
 	});
 }
 
@@ -587,11 +587,25 @@ DrawCallPool::surfaceBadMacroChangedHandler(Surface::Ptr		surface,
 }
 
 void
-DrawCallPool::rendererFilterChangedHandler(Renderer::Ptr, 
-										   DrawCallPool::AbstractFilterPtr, 
-										   data::BindingSource)
+DrawCallPool::rendererFilterChangedHandler(Renderer::Ptr					renderer, 
+										   DrawCallPool::AbstractFilterPtr	filter, 
+										   data::BindingSource				source,
+										   SurfacePtr						surface)
 {
-	std::cout << "TODO\tDrawCallPool::rendererFilterChangedHandler" << std::endl;
+	if (surface != nullptr)
+	{
+		auto drawCalls = _surfaceToDrawCalls[surface];
+
+		for (auto drawCall : drawCalls)
+			_dirtyDrawCalls.insert(drawCall);
+	}
+	else
+	{
+		for (auto drawCallList : _surfaceToDrawCalls)
+			_dirtyDrawCalls.insert(drawCallList.second.begin(), drawCallList.second.end());
+	}
+
+	_mustZSort = true;
 }
 
 void

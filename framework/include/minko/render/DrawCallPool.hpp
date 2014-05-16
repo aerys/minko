@@ -70,7 +70,7 @@ namespace minko
 			typedef Signal<SurfacePtr, RendererPtr, bool>												VisibilityChanged;
 			typedef Signal<DrawCallPtr>																	ZSortNeeded;
 			typedef Signal<ArrayProviderPtr, uint>														ArrayIndexChanged;
-			typedef Signal<RendererPtr, AbstractFilterPtr, data::BindingSource>							RendererFilterChanged;
+			typedef Signal<RendererPtr, AbstractFilterPtr, data::BindingSource, SurfacePtr>				RendererFilterChanged;
 			
 		private:
 			static const unsigned int																	NUM_FALLBACK_ATTEMPTS;
@@ -182,7 +182,7 @@ namespace minko
 			surfaceBadMacroChangedHandler(SurfacePtr, const std::string&);
 
 			void
-			rendererFilterChangedHandler(RendererPtr, AbstractFilterPtr, data::BindingSource);
+			rendererFilterChangedHandler(RendererPtr, AbstractFilterPtr, data::BindingSource, SurfacePtr);
 
 			std::string
 			formatPropertyName(const std::string&								rawPropertyName,

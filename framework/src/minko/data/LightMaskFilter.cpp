@@ -24,6 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/data/Provider.hpp"
 #include "minko/component/Surface.hpp"
 #include "minko/component/AbstractLight.hpp"
+#include "minko/scene/Layout.hpp"
 
 using namespace minko;
 using namespace minko::data;
@@ -93,8 +94,8 @@ LightMaskFilter::operator()(Provider::Ptr data)
 	if (foundLightIt == _providerToLight.end())
 		return true; // the specified provider does not belong to a light
 
-	auto surfaceLayouts = currentSurface()->targets().front()->layouts();
-	auto lightMask		= foundLightIt->second->layoutMask();
+	auto	surfaceLayouts	= currentSurface()->targets().front()->layouts();
+	Layouts	lightMask		= foundLightIt->second->layoutMask();
 
 	return (surfaceLayouts & lightMask) != 0;
 }
@@ -105,6 +106,7 @@ LightMaskFilter::lightsChangedHandler()
 	if (_root == nullptr)
 		return;
 
+	_layoutMaskChangedSlots.clear();
 	_providerToLight.clear();
 
 	auto withLights	= NodeSet::create(_root)
@@ -116,6 +118,11 @@ LightMaskFilter::lightsChangedHandler()
 		auto light = n->component<AbstractLight>();
 
 		_providerToLight[light->data()] = light;
+
+		_layoutMaskChangedSlots.push_back(light->data()->propertyValueChanged()->connect([=](Provider::Ptr provider, const std::string& lightProperty)
+		{
+			changed()->execute(shared_from_this(), nullptr);
+		}));
 	}
 }
 

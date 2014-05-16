@@ -21,6 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/scene/Node.hpp"
 #include "minko/component/Surface.hpp"
+#include "minko/data/Container.hpp"
 
 using namespace minko;
 using namespace minko::data;
@@ -36,5 +37,47 @@ AbstractFilter::currentSurface(component::Surface::Ptr value)
 		currentSurfaceTargetRemovedHandler(n, t, a);
 	});
 
+	auto targets = value->targets();
+
+	for (auto target : targets)
+	{
+		if (_surfaceTargetPropertyChangedSlots.find(target) == _surfaceTargetPropertyChangedSlots.end())
+		{
+			for (auto propertyName : _watchedProperties)
+			{
+				_surfaceTargetPropertyChangedSlots[target].push_back(target->data()->propertyReferenceChanged(propertyName)->connect(
+					[=](Container::Ptr, const std::string&)
+					{
+						changed()->execute(shared_from_this(), value);
+					}
+					));
+			}
+		}
+	}
+
 	return shared_from_this();
+}
+
+void
+AbstractFilter::watchProperty(const std::string propertyName)
+{
+	_watchedProperties.push_back(propertyName);
+
+	_surfaceTargetPropertyChangedSlots.clear();
+
+	changed()->execute(shared_from_this(), nullptr);
+}
+
+void
+AbstractFilter::unwatchProperty(const std::string propertyName)
+{
+	auto it = std::find(_watchedProperties.begin(), _watchedProperties.end(), propertyName);
+
+	if (it == _watchedProperties.end())
+		std::invalid_argument("This property is not watching currently.");
+
+	_watchedProperties.remove(propertyName);
+	_surfaceTargetPropertyChangedSlots.clear();
+
+	changed()->execute(shared_from_this(), nullptr);
 }

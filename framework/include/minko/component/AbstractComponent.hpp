@@ -78,14 +78,14 @@ namespace minko
 				return _targets[index];
 			}
 
-			inline
+			virtual
 			Layouts
 			layoutMask() const
 			{
 				return _layoutMask;
 			}
 
-			inline
+			virtual
 			void
 			layoutMask(Layouts value)
 			{
@@ -95,7 +95,6 @@ namespace minko
 					_layoutMaskChanged->execute(shared_from_this());
 				}
 			}
-
 
 			inline
 			Signal<Ptr, std::shared_ptr<scene::Node>>::Ptr
