@@ -55,6 +55,11 @@
 	
 	"passes"	: [{
 		"vertexShader"	: "
+
+			#ifdef GL_ES
+				precision mediump float;
+			#endif
+
 			uniform mat4 modelToWorldMatrix;
 			uniform mat4 worldToScreenMatrix;
 
@@ -83,6 +88,10 @@
 			}
 		",
 		"fragmentShader"	: "
+			#ifdef GL_ES
+				precision mediump float;
+			#endif
+
 			varying vec2 vertexUV;
 
 			void main(void)
