@@ -41,8 +41,8 @@ namespace minko
 		typedef msgpack::type::tuple<uchar, std::string, std::string, std::vector<std::string>> SerializedGeometry;
 
 	private:
-		static std::function<IndexBufferPtr(std::string&, AbstractContextPtr)>	indexBufferParserFunction;
-		static std::function<VertexBufferPtr(std::string&, AbstractContextPtr)>	vertexBufferParserFunction;
+		static std::unordered_map<uint, std::function<IndexBufferPtr(std::string&, AbstractContextPtr)>>	indexBufferParserFunctions;
+		static std::unordered_map<uint, std::function<VertexBufferPtr(std::string&, AbstractContextPtr)>>	vertexBufferParserFunctions;
 
 	public:
 		inline static
@@ -62,17 +62,17 @@ namespace minko
 		inline
 		static
 		void
-		registerIndexBufferParserFunction(std::function<IndexBufferPtr(std::string&, AbstractContextPtr)> f)
+		registerIndexBufferParserFunction(std::function<IndexBufferPtr(std::string&, AbstractContextPtr)> f, uint functionId)
 		{
-			indexBufferParserFunction = f;
+			indexBufferParserFunctions[functionId] = f;
 		}
 
 		inline
 		static
 		void
-		registerVertexBufferParserFunction(std::function<VertexBufferPtr(std::string&, AbstractContextPtr)> f)
+		registerVertexBufferParserFunction(std::function<VertexBufferPtr(std::string&, AbstractContextPtr)> f, uint functionId)
 		{
-			vertexBufferParserFunction = f;
+			vertexBufferParserFunctions[functionId] = f;
 		}
 
 		static
@@ -87,7 +87,7 @@ namespace minko
 		}
 
 		void
-		computeMetaByte(unsigned char byte);
+		computeMetaByte(unsigned char byte, uint& indexBufferFunctionId, uint& vertexBufferFunctionId);
 
 		void
 		initialize();
