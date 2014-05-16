@@ -129,7 +129,7 @@ int main(int argc, char** argv)
 		// handle keyboard signals
 		keyDown = canvas->keyboard()->keyDown()->connect([=](input::Keyboard::Ptr k)
 		{
-			if (k->keyIsDown(input::Keyboard::ScanCode::A))
+			if (k->keyIsDown(input::Keyboard::KeyCode::a))
 			{
 				const auto MAX_NUM_LIGHTS = 40;
 
@@ -152,7 +152,7 @@ int main(int argc, char** argv)
 
 				std::cout << lights->children().size() << " lights" << std::endl;
 			}
-			if (k->keyIsDown(input::Keyboard::ScanCode::R))
+			if (k->keyIsDown(input::Keyboard::KeyCode::r))
 			{
 				if (lights->children().size() == 0)
 					return;
@@ -160,7 +160,23 @@ int main(int argc, char** argv)
 				lights->removeChild(lights->children().back());
 				std::cout << lights->children().size() << " lights" << std::endl;
 			}
-			if (k->keyIsDown(input::Keyboard::ScanCode::SPACE))
+
+			if (k->keyIsDown(input::Keyboard::KeyCode::s))
+			{
+				auto sphereLayout = sphere->layouts();
+				sphere->layouts(sphereLayout == 1 ? 1 << 2 | 1 : 1);
+			}
+
+			if (k->keyIsDown(input::Keyboard::KeyCode::d))
+			{
+				auto light = lights->children()[0];
+
+				auto mask = light->component<PointLight>()->layoutMask();
+
+				light->component<PointLight>()->layoutMask(mask == 1 ? 1 << 2 : 1);
+			}
+
+			if (k->keyIsDown(input::Keyboard::KeyCode::SPACE))
 			{
 				auto data = sphere->component<Surface>()->material();
 				bool hasNormalMap = data->hasProperty("normalMap");
@@ -174,9 +190,9 @@ int main(int argc, char** argv)
 				else
 					data->set("normalMap", sceneManager->assets()->texture("texture/normalmap-cells.png"));
 			}
-			if (k->keyIsDown(input::Keyboard::ScanCode::B))
+			if (k->keyIsDown(input::Keyboard::KeyCode::b))
 				sphere->component<Surface>()->effect(sceneManager->assets()->effect("basic"));
-			if (k->keyIsDown(input::Keyboard::ScanCode::P))
+			if (k->keyIsDown(input::Keyboard::KeyCode::p))
 				sphere->component<Surface>()->effect(sceneManager->assets()->effect("phong"));
 		});
 	});
