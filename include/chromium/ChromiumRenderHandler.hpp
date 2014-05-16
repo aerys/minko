@@ -52,18 +52,26 @@ namespace chromium
 		OnPaint(CefRefPtr<CefBrowser> browser, PaintElementType type, const RectList &dirtyRects, const void *buffer, int width, int height);
 
 		void
-		drawPopup();
-
-		void
 		SetResized(int width, int height);
-
-		bool
-		generateTexture();
 
 		void
 		uploadTexture();
-	
-	private: 
+
+		void
+		visible(bool v)
+		{
+			_visible = v;
+		}
+
+	private:
+		void
+		clearPopup();
+		
+		void
+		drawPopup();
+
+		bool
+		generateTexture();
 
 		void
 		canvasResized(std::shared_ptr<AbstractCanvas> canvas, uint w, uint h);
@@ -89,10 +97,14 @@ namespace chromium
 		Signal<std::shared_ptr<AbstractCanvas>, uint, uint>::Slot _canvasResizedSlot;
 
 	public:
-		unsigned char* _popupBuffer;
 		std::shared_ptr<render::Texture> renderTexture;
 
 		bool textureChanged;
+
+	private:
+		bool			_visible;
+		unsigned char*	_popupBuffer;
+		unsigned char*	_viewBuffer;
 
 		IMPLEMENT_REFCOUNTING(ChromiumRenderHandler);
 	};

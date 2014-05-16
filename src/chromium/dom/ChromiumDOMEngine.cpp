@@ -92,6 +92,8 @@ ChromiumDOMEngine::initialize(AbstractCanvas::Ptr canvas, std::shared_ptr<compon
 	{
 		std::shared_ptr<render::Texture> texture = _impl->app->initialize(canvas, _sceneManager->assets()->context(), _impl);
 
+		_impl->renderHandler->visible(_visible);
+
 		CefSettings settings;
 
 		settings.single_process = 1;
@@ -184,9 +186,6 @@ ChromiumDOMEngine::enterFrame()
 
 	for (auto dom : _doms)
 		dom->update();
-
-	if (_visible)
-		_impl->renderHandler->uploadTexture();
 }
 
 AbstractDOM::Ptr
@@ -249,8 +248,13 @@ ChromiumDOMEngine::visible(bool value)
 	if (_quad != nullptr && _quad->hasComponent<component::Surface>())
 		_quad->component<component::Surface>()->visible(value);
 
-	if (_impl != nullptr && _impl->app != nullptr)
-		_impl->app->enableInput(_visible);
+	if (_impl != nullptr)
+	{
+		if (_impl->app != nullptr)
+			_impl->app->enableInput(_visible);
+		if (_impl->renderHandler != nullptr)
+			_impl->renderHandler->visible(value);
+	}
 
 	_visible = value;
 

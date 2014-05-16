@@ -32,6 +32,11 @@ using namespace chromium;
 ChromiumRenderHandler::ChromiumRenderHandler(std::shared_ptr<AbstractCanvas> canvas, std::shared_ptr<render::AbstractContext> context) :
 	_canvas(canvas), 
 	_context(context),
+	_popupH(0),
+	_popupW(0),
+	_popupY(0),
+	_popupX(0),
+	_viewBuffer(nullptr),
 	_popupBuffer(nullptr),
 	renderTexture(nullptr),
 	textureChanged(false),
@@ -112,6 +117,7 @@ ChromiumRenderHandler::OnPopupShow(CefRefPtr<CefBrowser> browser, bool shown)
 
 	if (!_popupShown)
 	{
+		clearPopup();
 		_popupBuffer = nullptr;
 	}
 }
@@ -125,10 +131,25 @@ ChromiumRenderHandler::OnPopupSize(CefRefPtr<CefBrowser> browser, const CefRect 
 	_popupH = rect.height;
 }
 
+
+void
+ChromiumRenderHandler::clearPopup()
+{
+	if (_viewBuffer != nullptr && _popupH != 0 && _popupW != 0)
+	{
+		drawRect(_viewBuffer, _popupX, _popupY, _popupW, _popupH);
+
+		_popupX = 0;
+		_popupY = 0;
+		_popupW = 0;
+		_popupH = 0;
+	}
+}
+
 void
 ChromiumRenderHandler::OnPaint(CefRefPtr<CefBrowser> browser, PaintElementType type, const RectList &dirtyRects, const void *buffer, int width, int height)
 {
-	if (renderTexture == NULL)
+	if (renderTexture == nullptr || !_visible)
 		return;
 
 	if (type == PaintElementType::PET_VIEW) //Main View
@@ -138,18 +159,21 @@ ChromiumRenderHandler::OnPaint(CefRefPtr<CefBrowser> browser, PaintElementType t
 		if (_lastW > _texW || _lastH > _texH)
 			return;
 
+		_viewBuffer = (unsigned char *)buffer;
 
 		for (auto rect : dirtyRects)
-			drawRect((unsigned char*)buffer, rect.x, rect.y, rect.width, rect.height);
-
-		if (!_popupShown && _popupW != 0 && _popupH != 0)
 		{
-			drawRect((unsigned char*)buffer, _popupX, _popupY, _popupW, _popupH);
+			// If drawing where the popup is, ask for popup to be drawn over updated rect
+			_popupUpdated =
+				_popupUpdated || _popupShown && 
+				(
+					rect.x  >= _popupX && rect.x  <= _popupX + _popupW ||
+					_popupX >= rect.x  && _popupX <= rect.x  + rect.width ||
+					rect.y  >= _popupY && rect.y  <= _popupY + _popupH ||
+					_popupY >= rect.y  && _popupY <= rect.y  + rect.height
+				);
 
-			_popupX = 0;
-			_popupY = 0;
-			_popupW = 0;
-			_popupH = 0;
+			drawRect((unsigned char*)buffer, rect.x, rect.y, rect.width, rect.height);
 		}
 
 		textureChanged = true;
@@ -214,7 +238,6 @@ ChromiumRenderHandler::uploadTexture()
 		if (_popupShown && _popupUpdated)
 			drawPopup();
 
-		//renderTexture->data(&(*_textureBuffer)[0]);
 		renderTexture->upload();
 	}
 	textureChanged = false;
