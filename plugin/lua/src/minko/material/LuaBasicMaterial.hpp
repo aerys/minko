@@ -44,8 +44,8 @@ namespace minko
 			bind(LuaGlue& state)
 			{
 				state.Class<material::BasicMaterial>("BasicMaterial")
-					.method("create", &material::BasicMaterial::create)
-					.method("diffuseMap", &material::BasicMaterial::diffuseMap);
+					.method("create", &material::BasicMaterial::create);
+					//.method("diffuseMap", &material::BasicMaterial::diffuseMap);
 			}
 		};
 	}
