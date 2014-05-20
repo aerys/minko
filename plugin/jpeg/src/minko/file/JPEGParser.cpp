@@ -56,7 +56,7 @@ JPEGParser::parse(const std::string&				filename,
 
 	if (!options->isCubeTexture())
 	{
-		auto texture = render::Texture::create(
+		auto texture2d = render::Texture::create(
 			options->context(), 
 			width, 
 			height, 
@@ -66,7 +66,8 @@ JPEGParser::parse(const std::string&				filename,
 			filename
 		);
 
-		assetLibrary->texture(filename, texture);
+		texture = texture2d;
+		assetLibrary->texture(filename, texture2d);
 	}
 	else
 	{
@@ -80,6 +81,7 @@ JPEGParser::parse(const std::string&				filename,
 			filename
 		);
 
+		texture = cubeTexture;
 		assetLibrary->cubeTexture(filename, cubeTexture);		
 	}
 
