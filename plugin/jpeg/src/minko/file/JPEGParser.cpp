@@ -52,7 +52,7 @@ JPEGParser::parse(const std::string&				filename,
 	if (comps == 3 || comps == 1)
 		format	= render::TextureFormat::RGB;
 
-	render::Texture::Ptr texture = nullptr;
+	render::AbstractTexture::Ptr texture = nullptr;
 
 	if (!options->isCubeTexture())
 	{
