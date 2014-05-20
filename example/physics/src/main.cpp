@@ -171,7 +171,7 @@ int main(int argc, char** argv)
 				else
 					std::cout << "You threw away all your possible objects. Try again!" << std::endl;
 			}
-			else if (k->keyIsDown(input::Keyboard::KeyCode::i))
+			else if (k->keyIsDown(input::Keyboard::I))
 			{
 				auto physicsObjects = NodeSet::create(root)
 					->descendants(true)

@@ -60,6 +60,7 @@ int main(int argc, char** argv)
 	auto sceneManager		= SceneManager::create(canvas->context());
 	auto root				= scene::Node::create("root")->addComponent(sceneManager);
 	auto sphereGeometry		= geometry::SphereGeometry::create(sceneManager->assets()->context(), 32, 32, true);
+	auto assets				= sceneManager->assets();
 	auto sphereMaterial		= material::PhongMaterial::create()
 		->shininess(16.f)
 		->specularColor(Vector4::create(1.0f, 1.0f, 1.0f, 1.0f))
@@ -71,19 +72,21 @@ int main(int argc, char** argv)
 	sphereGeometry->computeTangentSpace(false);
 
 	// setup assets
-	sceneManager->assets()->defaultOptions()->generateMipmaps(true);
-	sceneManager->assets()
-		->registerParser<file::PNGParser>("png")
+	assets
 		->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()))
 		->geometry("quad", geometry::QuadGeometry::create(sceneManager->assets()->context()))
-		->geometry("sphere", sphereGeometry)
+		->geometry("sphere", sphereGeometry);
+	assets->loader()->options()
+		->generateMipmaps(true)
+		->registerParser<file::PNGParser>("png");
+	assets->loader()
 		->queue("texture/normalmap-cells.png")
 		->queue("texture/sprite-pointlight.png")
 		->queue("effect/Basic.effect")
 		->queue("effect/Sprite.effect")
 		->queue("effect/Phong.effect");
 
-	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
+	auto _ = assets->loader()->complete()->connect([=](file::Loader::Ptr loader)
 	{
 		// ground
 		auto ground = scene::Node::create("ground")
@@ -242,7 +245,7 @@ int main(int argc, char** argv)
 		sceneManager->nextFrame(time, deltaTime);
 	});
 
-	sceneManager->assets()->load();
+	assets->loader()->load();
 
 	canvas->run();
 

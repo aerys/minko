@@ -33,7 +33,7 @@ const std::string TEXTURE_BMP = "texture/bricks.bmp";
 const std::string TEXTURE_PSD = "texture/bricks.psd";
 const std::string TEXTURE_DDS = "texture/bricks.dds";
 
-std::vector<minko::render::AbstractTexture::Ptr> textures;
+std::vector<minko::render::Texture::Ptr> textures;
 
 int main(int argc, char** argv)
 {
