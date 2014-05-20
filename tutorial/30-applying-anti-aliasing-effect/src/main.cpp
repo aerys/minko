@@ -50,19 +50,18 @@ main(int argc, char** argv)
         auto camera = scene::Node::create("camera")
             ->addComponent(Renderer::create(0x00000000))
             ->addComponent(PerspectiveCamera::create(
-            (float) WINDOW_WIDTH / (float) WINDOW_HEIGHT, (float) PI * 0.25f, .1f, 1000.f)
+                (float) WINDOW_WIDTH / (float) WINDOW_HEIGHT, (float) PI * 0.25f, .1f, 1000.f)
             )
             ->addComponent(Transform::create(Matrix4x4::create()
-            ->lookAt(Vector3::create(), Vector3::create(0.f, 0.f, -5.f))))
-            ;
+            ->lookAt(Vector3::create(), Vector3::create(0.f, 0.f, -5.f))));
         root->addChild(camera);
 
         auto cube = scene::Node::create("cube")
             ->addComponent(Transform::create())
             ->addComponent(Surface::create(
-            geometry::CubeGeometry::create(canvas->context()),
-            material::BasicMaterial::create()->diffuseColor(Vector4::create(0.f, 0.f, 1.f, 1.f)),
-			sceneManager->assets()->effect("effect/Basic.effect")
+                geometry::CubeGeometry::create(canvas->context()),
+                material::BasicMaterial::create()->diffuseColor(Vector4::create(0.f, 0.f, 1.f, 1.f)),
+    			sceneManager->assets()->effect("effect/Basic.effect")
             ));
         root->addChild(cube);
 
@@ -70,8 +69,7 @@ main(int argc, char** argv)
         renderTarget->upload();
 
         effect->setUniform("textureSampler", renderTarget);
-        effect->setUniform("texcoordOffset",
-            Vector2::create(1.0f / renderTarget->width(), 1.0f / renderTarget->height()));
+        effect->setUniform("texcoordOffset", Vector2::create(1.0f / renderTarget->width(), 1.0f / renderTarget->height()));
 
         auto renderer = Renderer::create();
         auto postProcessingScene = scene::Node::create()
