@@ -2,7 +2,7 @@ PROJECT_NAME = path.getname(os.getcwd())
 
 minko.project.library("minko-plugin-" .. PROJECT_NAME)
 	
-	removeplatforms { "osx64", "ios", "android" }
+	removeplatforms { "osx64", "android" }
 	
 	kind "StaticLib"
 	language "C++"
@@ -114,4 +114,12 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 			"include/emscripten/**.hpp",
 			"src/emscripten/**.cpp",
 			"src/emscripten/**.hpp"
+		}
+
+	-- ios webview
+	configuration { "ios" }
+		files {
+			"include/ios-webview/**.hpp",
+			"src/ios-webview/**.cpp",
+			"src/ios-webview	/**.hpp"
 		}
