@@ -78,7 +78,7 @@ AssetLibrary::geometryName(GeometryPtr geometry)
 	throw std::logic_error("AssetLibrary does not reference this geometry.");
 }
 
-render::AbstractTexture::Ptr
+render::Texture::Ptr
 AssetLibrary::texture(const std::string& name) const
 {
 	const auto foundTextureIt = _textures.find(name);
@@ -89,9 +89,27 @@ AssetLibrary::texture(const std::string& name) const
 }
 
 AssetLibrary::Ptr
-AssetLibrary::texture(const std::string& name, render::AbstractTexture::Ptr texture)
+AssetLibrary::texture(const std::string& name, render::Texture::Ptr texture)
 {
 	_textures[name] = texture;
+
+	return std::enable_shared_from_this<AssetLibrary>::shared_from_this();
+}
+
+render::CubeTexture::Ptr
+AssetLibrary::cubeTexture(const std::string& name) const
+{
+	const auto foundTextureIt = _cubeTextures.find(name);
+
+	return foundTextureIt != _cubeTextures.end()
+		? foundTextureIt->second
+		: nullptr;
+}
+
+AssetLibrary::Ptr
+AssetLibrary::cubeTexture(const std::string& name, render::CubeTexture::Ptr texture)
+{
+	_cubeTextures[name] = texture;
 
 	return std::enable_shared_from_this<AssetLibrary>::shared_from_this();
 }

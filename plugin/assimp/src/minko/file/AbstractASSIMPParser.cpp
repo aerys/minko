@@ -53,6 +53,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/material/PhongMaterial.hpp"
 #include "minko/render/Effect.hpp"
 #include "minko/render/Priority.hpp"
+#include "minko/render/Texture.hpp"
 
 using namespace minko;
 using namespace minko::component;
@@ -1352,10 +1353,10 @@ AbstractASSIMPParser::createMaterial(const aiMaterial* aiMat)
 		aiString path;
 		if (aiMat->GetTexture(textureType, 0, &path) == AI_SUCCESS)
 		{
-			render::AbstractTexture::Ptr texture = _assetLibrary->texture(std::string(path.data));
+			render::Texture::Ptr texture = _assetLibrary->texture(std::string(path.data));
 
 			if (texture)
-				material->set<render::AbstractTexture::Ptr>(textureName, texture);
+				material->set(textureName, texture);
 		}
 	}
 

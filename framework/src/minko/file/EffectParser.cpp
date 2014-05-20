@@ -1105,8 +1105,8 @@ EffectParser::parseTarget(const Json::Value&                contextNode,
 {
     auto targetValue = contextNode.get("target", 0);
 
-	AbstractTexture::Ptr	target	= nullptr;
-	std::string				targetName;
+	AbstractTexture::Ptr   target;
+	std::string            targetName;
 
     if (targetValue.isObject())
     {
@@ -1132,14 +1132,23 @@ EffectParser::parseTarget(const Json::Value&                contextNode,
 			: false;
 
 		if (!isCubeTexture)
-			target	= Texture::create(context, width, height, false, true);
+        {
+            auto texture = Texture::create(context, width, height, false, true);
+
+            if (targetName.length())
+                _assetLibrary->texture(targetName, texture);
+            target = texture;
+        }
 		else
-			target	= CubeTexture::create(context, width, height, false, true);
+        {
+            auto cubeTexture = CubeTexture::create(context, width, height, false, true);
+
+            if (targetName.length())
+                _assetLibrary->cubeTexture(targetName, cubeTexture);
+            target = cubeTexture;
+        }
 
 		target->upload();
-
-		if (targetName.length())
-	        _assetLibrary->texture(targetName, target);
     }
 	else if (targetValue.isString())
 	{
