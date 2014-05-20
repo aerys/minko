@@ -114,7 +114,7 @@ BasicMaterial::diffuseColor() const
 }
 
 BasicMaterial::Ptr
-BasicMaterial::diffuseMap(render::AbstractTexture::Ptr texture)
+BasicMaterial::diffuseMap(TexturePtr texture)
 {
 	assert(texture->type() == TextureType::Texture2D);
 

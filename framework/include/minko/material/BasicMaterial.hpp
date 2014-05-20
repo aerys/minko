@@ -88,7 +88,7 @@ namespace minko
 			uvOffset(Vector2Ptr = nullptr) const;
 
 			Ptr
-			diffuseMap(AbsTexturePtr);
+            diffuseMap(TexturePtr);
 
 			TexturePtr
 			diffuseMap() const;
