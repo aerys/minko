@@ -272,7 +272,7 @@ Renderer::render(render::AbstractContext::Ptr	context,
 	
 	_renderingBegin->execute(std::static_pointer_cast<Renderer>(shared_from_this()));
 
-	if (!renderTarget)
+	if (_renderTarget)
 		renderTarget = _renderTarget;
 
 	context->clear(
