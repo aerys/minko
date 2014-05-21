@@ -60,6 +60,7 @@ namespace minko
 
 			unsigned int												_backgroundColor;
             render::ScissorBox											_viewportBox;
+			render::ScissorBox											_scissorBox;
 			std::shared_ptr<SceneManager>								_sceneManager;
 			Signal<Ptr>::Ptr											_renderingBegin;
 			Signal<Ptr>::Ptr											_renderingEnd;
@@ -162,6 +163,15 @@ namespace minko
 				_viewportBox.width		= w;
 				_viewportBox.height		= h;
             }
+
+			inline
+			void scissor(const int x, const int y, const int w, const int h)
+			{
+				_scissorBox.x		= x;
+				_scissorBox.y		= y;
+				_scissorBox.width	= w;
+				_scissorBox.height	= h;
+			}
 
 			inline
 			AbsTexturePtr
