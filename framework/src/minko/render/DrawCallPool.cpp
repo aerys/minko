@@ -181,7 +181,7 @@ DrawCallPool::addSurface(Surface::Ptr surface)
 		std::placeholders::_3))));
 
 	// drawcall variable monitoring handlers
-
+	
 	auto geometrySlot		= surface->geometry()->data()->indexChanged()->connect(std::bind(
 		&DrawCallPool::drawCallVariablesChangedHandler,
 		shared_from_this(),
@@ -203,6 +203,7 @@ DrawCallPool::addSurface(Surface::Ptr surface)
 			surface
 		));
 
+		_surfaceToMaterialProviderIndex[surface] = surface->getTarget(0)->data()->getProviderIndex(arrayMaterial);
 		_surfaceToIndexChangedSlots.insert(std::pair<Surface::Ptr, ArrayIndexChanged::Slot>(surface, materialSlot));
 	}
 
@@ -279,8 +280,11 @@ DrawCallPool::drawCallVariablesChangedHandler(data::ArrayProvider::Ptr	provider,
 											  uint						index, 
 											  Surface::Ptr				surface)
 {
-	if (_toRemove.find(surface) == _toRemove.end())
+	if (surface->getTarget(0)->data()->getProviderIndex(provider) != _surfaceToMaterialProviderIndex[surface] && _toRemove.find(surface) == _toRemove.end())
+	{
 		_toCollect.insert(surface);
+		_surfaceToMaterialProviderIndex[surface] = surface->getTarget(0)->data()->getProviderIndex(provider);
+	}
 }
 
 std::list<DrawCall::Ptr>&
