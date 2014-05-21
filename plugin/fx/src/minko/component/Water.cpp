@@ -48,7 +48,7 @@ Water::initialize()
 		else
 			_addedToSceneSlot = target->added()->connect(std::bind(
 				&Water::targetAddedToScene,
-				shared_from_this(),
+				std::static_pointer_cast<Water>(shared_from_this()),
 				std::placeholders::_1,
 				std::placeholders::_2,
 				std::placeholders::_3));

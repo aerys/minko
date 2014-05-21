@@ -75,7 +75,7 @@ Reflection::initialize()
         else
             _addedToSceneSlot = target->added()->connect(std::bind(
             &Reflection::targetAddedToScene,
-            shared_from_this(),
+            std::static_pointer_cast<Reflection>(shared_from_this()),
             std::placeholders::_1,
             std::placeholders::_2,
             std::placeholders::_3));
@@ -134,7 +134,7 @@ Reflection::initialize()
                         _viewMatrixChangedSlot = perspectiveCamera->data()->propertyValueChanged()->connect(
                             std::bind(
                             &Reflection::cameraPropertyValueChangedHandler,
-                            shared_from_this(),
+                            std::static_pointer_cast<Reflection>(shared_from_this()),
                             std::placeholders::_1,
                             std::placeholders::_2
                             )
