@@ -34,6 +34,12 @@ minko.plugin["html-overlay"].enable = function()
 			minko.action.copy(minko.plugin.path("html-overlay") .. "/asset")
 		}
 
+	configuration { "ios" }
+		buildoptions { "-x objective-c++" }
+		prelinkcommands {
+			minko.action.copy(minko.plugin.path("html-overlay") .. "/asset")
+		}
+
 	configuration { "windows32 or windows64" }
 		links { "libcef" }
 		prelinkcommands {

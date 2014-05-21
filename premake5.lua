@@ -35,8 +35,7 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 			"lib/cef3/libcef_dll/**.cc",
 			"lib/cef3/libcef_dll/**.c"
 		}
-		defines { 
-			"CHROMIUM", 
+		defines {  
 			"V8_DEPRECATION_WARNINGS",
 			"CHROMIUM_BUILD",
 			"USING_CEF_SHARED",
@@ -118,8 +117,16 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 
 	-- ios webview
 	configuration { "ios" }
+		buildoptions { "-x objective-c++" }
+		includedirs { "lib/WebViewJavascriptBridge" }
+
 		files {
-			"include/ios-webview/**.hpp",
-			"src/ios-webview/**.cpp",
-			"src/ios-webview	/**.hpp"
+			"include/ioswebview/**.hpp",
+			"src/ioswebview/**.cpp",
+			"src/ioswebview/**.hpp"
+		}
+
+		defines {
+			"TARGET_IPHONE_SIMULATOR",
+			"TARGET_OS_IPHONE"
 		}
