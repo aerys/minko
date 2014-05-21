@@ -45,6 +45,7 @@ Renderer::Renderer(std::shared_ptr<render::AbstractTexture> renderTarget,
 				   EffectPtr								effect,
 				   float									priority) :
     _backgroundColor(0),
+    _viewportBox(),
 	_renderingBegin(Signal<Ptr>::create()),
 	_renderingEnd(Signal<Ptr>::create()),
 	_beforePresent(Signal<Ptr>::create()),
@@ -274,6 +275,14 @@ Renderer::render(render::AbstractContext::Ptr	context,
 
 	if (_renderTarget)
 		renderTarget = _renderTarget;
+        
+        bool bCustomViewport= false;
+        if ( _viewportBox.width>=0 && _viewportBox.height>=0 )
+        {
+            bCustomViewport= true;
+            context->configureViewport( _viewportBox.x,  _viewportBox.y,  _viewportBox.width,_viewportBox.height );
+            context->setScissorTest( true, _viewportBox );
+        }
 
 	context->clear(
 		((_backgroundColor >> 24) & 0xff) / 255.f,
@@ -282,15 +291,19 @@ Renderer::render(render::AbstractContext::Ptr	context,
 		(_backgroundColor & 0xff) / 255.f
 	);
 
-	auto targetNode	= targets().empty() 
-		? nullptr 
-		: targets().front();
+
 
 	for (auto& drawCall : _drawCalls)
 		if ((drawCall->layouts() & layoutMask()) != 0)
 			drawCall->render(context, renderTarget);
 
-	_beforePresent->execute(std::static_pointer_cast<Renderer>(shared_from_this()));
+    if ( bCustomViewport )
+    {
+        context->setScissorTest( false, _viewportBox  );
+    }
+
+	_beforePresent->execute(shared_from_this());
+
 
 	context->present();
 
