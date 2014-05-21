@@ -30,6 +30,7 @@ namespace minko
 
 	namespace component
 	{
+		class Hologram;
 		class Water;
 		class Reflection;
 	}
