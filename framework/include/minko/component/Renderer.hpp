@@ -59,7 +59,7 @@ namespace minko
 			std::unordered_map<SurfacePtr, DrawCallList>				_surfaceDrawCalls; 
 
 			unsigned int												_backgroundColor;
-                    render::ScissorBox _viewportBox;
+            render::ScissorBox											_viewportBox;
 			std::shared_ptr<SceneManager>								_sceneManager;
 			Signal<Ptr>::Ptr											_renderingBegin;
 			Signal<Ptr>::Ptr											_renderingEnd;
@@ -69,7 +69,6 @@ namespace minko
 			std::set<std::shared_ptr<Surface>>							_toCollect;
 			EffectPtr													_effect;
 			float														_priority;
-
 
 			Signal<AbsCmpPtr, NodePtr>::Slot							_targetAddedSlot;
 			Signal<AbsCmpPtr, NodePtr>::Slot							_targetRemovedSlot;
@@ -155,14 +154,14 @@ namespace minko
 				_backgroundColor = backgroundColor;
 			}
 
-                    inline void viewport( const int x, const int y, const int w, const int h)
-                        {
-                            _viewportBox.x= x;
-                            _viewportBox.y= y;
-                            _viewportBox.width= w;
-                            _viewportBox.height= h;
-                        }
-
+            inline 
+			void viewport(const int x, const int y, const int w, const int h)
+            {
+				_viewportBox.x			= x;
+				_viewportBox.y			= y;
+				_viewportBox.width		= w;
+				_viewportBox.height		= h;
+            }
 
 			inline
 			AbsTexturePtr
