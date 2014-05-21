@@ -276,13 +276,13 @@ Renderer::render(render::AbstractContext::Ptr	context,
 	if (_renderTarget)
 		renderTarget = _renderTarget;
         
-        bool bCustomViewport= false;
-        if ( _viewportBox.width>=0 && _viewportBox.height>=0 )
-        {
-            bCustomViewport= true;
-            context->configureViewport( _viewportBox.x,  _viewportBox.y,  _viewportBox.width,_viewportBox.height );
-            context->setScissorTest( true, _viewportBox );
-        }
+     bool bCustomViewport = false;
+     if (_viewportBox.width >= 0 && _viewportBox.height >= 0)
+     {
+         bCustomViewport = true;
+         context->configureViewport(_viewportBox.x, _viewportBox.y, _viewportBox.width, _viewportBox.height);
+         context->setScissorTest(true, _viewportBox);
+     }
 
 	context->clear(
 		((_backgroundColor >> 24) & 0xff) / 255.f,
@@ -297,13 +297,10 @@ Renderer::render(render::AbstractContext::Ptr	context,
 		if ((drawCall->layouts() & layoutMask()) != 0)
 			drawCall->render(context, renderTarget);
 
-    if ( bCustomViewport )
-    {
-        context->setScissorTest( false, _viewportBox  );
-    }
+    if (bCustomViewport)
+        context->setScissorTest(false, _viewportBox);
 
-	_beforePresent->execute(shared_from_this());
-
+	_beforePresent->execute(std::static_pointer_cast<Renderer>(shared_from_this()));
 
 	context->present();
 
