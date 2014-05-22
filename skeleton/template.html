@@ -9,7 +9,8 @@
 		a { color: white; text-decoration: none; }
 		.center { margin-left: auto; margin-right: auto; display: block; }
 		#loader { margin-top: 200px; }
-		#status { display: inline-block; font-size: .8em; vertical-align: top; padding-top: 2px; }
+		#status, #percentage { color: grey; display: inline-block; font-size: .8em; vertical-align: top; padding-top: 2px; }
+		#percentage { float: right; }
 		#progress { width: 400px; height: 2px; background: grey; border: none; margin-bottom: 5px; margin-top: 10px; }
 		#progress::-moz-progress-bar { background: white; }
 		#progress::-webkit-progress-value { background: white; }
@@ -33,10 +34,10 @@
 			-moz-animation: rotation .8s linear infinite;
 			-o-animation: rotation .8s linear infinite;
 			animation: rotation 0.8s linear infinite;
-			border-left: 2px solid white;
-			border-right: 2px solid white;
-			border-bottom: 2px solid white;
-			border-top: 2px solid grey;
+			border-left: 2px solid grey;
+			border-right: 2px solid grey;
+			border-bottom: 2px solid grey;
+			border-top: 2px solid black;
 			border-radius: 100%;
 		}
 		@-webkit-keyframes rotation {
@@ -59,7 +60,7 @@
   </head>
   <body>
 	<div class="center" style="width:400px" id="loader">
-		<a href="http://minko.io" class="center" style="width:140px">
+		<a href="http://minko.io" target="_blank" class="center" style="width:140px">
 			<div id="powered_by">powered by</div>
 			<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="40" height="20">
 				<polygon points="0,0 40,0 20,20" style="fill:white;stroke:black;stroke-width:1"/>
@@ -70,6 +71,7 @@
 		<figure style="overflow:visible;" id="spinner" class="center">
 			<div class="spinner"></div>
 			<span id="status">Downloading...</span>
+			<span id="percentage"></span>
 		</figure>
 	</div>
     
@@ -79,6 +81,7 @@
       var statusElement = document.getElementById('status');
       var progressElement = document.getElementById('progress');
       var loaderElement = document.getElementById('loader');
+	  var percentageElement = document.getElementById('percentage');
 	  
 	  function resizeCanvas()
 	  {
@@ -100,14 +103,25 @@
           if (!Module.setStatus.last) Module.setStatus.last = { time: Date.now(), text: '' };
           if (text === Module.setStatus.text) return;
           var m = text.match(/([^(]+)\((\d+(\.\d+)?)\/(\d+)\)/);
-          var now = Date.now();
+
           if (m) {
+			var loaded = parseInt(m[2])*100;
+			var total = parseInt(m[4])*100;
+		  
             text = m[1];
-            progressElement.value = parseInt(m[2])*100;
-            progressElement.max = parseInt(m[4])*100;
-          } else if (!text) {
-			document.body.removeChild(loaderElement);
-			resizeCanvas();
+			progressElement.value = loaded;
+            progressElement.max = total;
+			percentageElement.innerHTML = Math.ceil(loaded/total*100) + "%";
+          } else {
+			if (progressElement.value != 0)
+			{
+				percentageElement.style.display = 'none';
+				progressElement.value = progressElement.max;
+			}
+			if (!text) {
+				document.body.removeChild(loaderElement);
+				resizeCanvas();
+			}
           }
           statusElement.innerHTML = text;
         },
