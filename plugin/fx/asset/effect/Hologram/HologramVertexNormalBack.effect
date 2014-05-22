@@ -14,7 +14,8 @@
         "modelToWorldMatrix"    : "transform.modelToWorldMatrix",
         "worldToScreenMatrix"   : { "property" : "camera.worldToScreenMatrix", "source" : "renderer" },
 		"boneMatrices"			: "geometry[${geometryId}].boneMatrices",
-		"numBones"				: "geometry[${geometryId}].numBones"
+		"numBones"				: "geometry[${geometryId}].numBones",
+		"time"					: "material[${geometryId}].time"
 	},
 
 	"macroBindings"	: {
@@ -69,7 +70,6 @@
 				vec4 pos    = vec4(position, 1.0);
 				vec4 n 		= vec4(normal, 0.0); 
 
-				
 				#ifdef NUM_BONES
 					pos 	= skinning_moveVertex(pos);
 					n 		= skinning_moveVertex(n);

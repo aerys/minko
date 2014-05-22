@@ -139,6 +139,15 @@ void main(void)
 
 	#endif
 
+	float yFract2 = fract(fract(vertexPosition.y - time / 100000.0) * 8.0);
+
+	if (yFract2 >= 0.1 && yFract2 < 0.2 ||
+		yFract2 >= 0.3 && yFract2 < 0.4 ||
+		yFract2 >= 0.5 && yFract2 < 0.6 ||
+		yFract2 >= 0.7 && yFract2 < 0.8 ||
+		yFract2 >= 0.9)
+		diffuse = vec4(diffuse.rgb * 0.8, diffuse.a);
+
 	gl_FragColor = diffuse;
 
 	//gl_FragColor = texture2D(backFaceNormalMap, vertexUV);

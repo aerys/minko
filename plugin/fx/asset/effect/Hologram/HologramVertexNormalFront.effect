@@ -14,7 +14,8 @@
         "modelToWorldMatrix"    : "transform.modelToWorldMatrix",
         "worldToScreenMatrix"   : { "property" : "camera.worldToScreenMatrix", "source" : "renderer" },
 		"boneMatrices"			: "geometry[${geometryId}].boneMatrices",
-		"numBones"				: "geometry[${geometryId}].numBones"
+		"numBones"				: "geometry[${geometryId}].numBones",
+		"time"					: "geometry[${geometryId}].time"
 	},
 
 	"macroBindings"	: {

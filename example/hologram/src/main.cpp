@@ -27,7 +27,6 @@ using namespace minko;
 using namespace minko::component;
 using namespace minko::math;
 
-const std::string MODEL_FAKEHOLOGRAM = "model/customTextureCube.scene";
 const std::string MODEL_FILENAME	= "model/ironman.scene";
 
 int main(int argc, char** argv)
@@ -57,7 +56,6 @@ int main(int argc, char** argv)
 	{
 		sceneManager->assets()->loader()->options()->effect(sceneManager->assets()->effect("effect/Hologram/Hologram.effect"));
 		sceneManager->assets()->loader()->queue(MODEL_FILENAME);
-		sceneManager->assets()->loader()->queue(MODEL_FAKEHOLOGRAM);
 		sceneManager->assets()->loader()->load();
 	});
 
@@ -73,7 +71,7 @@ int main(int argc, char** argv)
 	auto camera = scene::Node::create("camera")
 		->addComponent(Renderer::create(0x7f7f7fff))
 		->addComponent(Transform::create(
-		Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 3.5f, 3.5f))
+		Matrix4x4::create()->lookAt(Vector3::create(0.f, 0.8f, 0.f), Vector3::create(0.f, 2.0f, 3.5f))
 		))
 		->addComponent(PerspectiveCamera::create(800.f / 600.f, (float)PI * 0.25f, .1f, 1000.f));
 	root->addChild(camera);
@@ -143,6 +141,7 @@ int main(int argc, char** argv)
 			return node->hasComponent<Surface>();
 		});
 
+
 		for (auto node : meshes->nodes())
 		{
 			node->addComponent(hologram);
@@ -152,15 +151,6 @@ int main(int argc, char** argv)
 				->set("diffuseColor", math::Vector4::create(173.f / 255.f, 216.f / 255.f, 230.f / 255.f, 1.f))
 				->set("zSort", true);
 		}
-
-		//sceneManager->assets()->symbol(MODEL_FAKEHOLOGRAM)->component<Transform>()->matrix()->appendTranslation(0.f, 0.f, 1.5f);
-		/*meshes = scene::NodeSet::create(sceneManager->assets()->symbol(MODEL_FAKEHOLOGRAM))->descendants(false, false)->where([=](scene::Node::Ptr node)
-		{
-			return node->hasComponent<Surface>();
-		});*/
-
-		//for (auto node : meshes->nodes())
-		//	node->component<Surface>()->effect(sceneManager->assets()->effect("effect/Basic.effect"));
 
 		// FXAA
 		auto ppFx = sceneManager->assets()->effect("effect/FXAA/FXAA.effect");
@@ -196,8 +186,6 @@ int main(int argc, char** argv)
         mesh->component<Transform>()->matrix()->prependRotationY(0.001f * deltaTime);
 		mesh2->component<Transform>()->matrix()->prependRotationY(0.001f * deltaTime);
 		sceneManager->assets()->symbol(MODEL_FILENAME)->component<Transform>()->matrix()->prependRotationY(0.001f * deltaTime);
-		sceneManager->assets()->symbol(MODEL_FAKEHOLOGRAM)->component<Transform>()->matrix()->prependRotationY(0.001f * deltaTime);
-
 
 		//sceneManager->nextFrame(time, deltaTime);
 		sceneManager->nextFrame(time, deltaTime, ppTarget);
