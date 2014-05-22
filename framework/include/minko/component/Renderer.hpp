@@ -62,8 +62,6 @@ namespace minko
 			std::set<std::shared_ptr<Surface>>							_toCollect;
 			EffectPtr													_effect;
 			float														_priority;
-			bool														_enabled;
-
 
 			Signal<AbsCtrlPtr, NodePtr>::Slot							_targetAddedSlot;
 			Signal<AbsCtrlPtr, NodePtr>::Slot							_targetRemovedSlot;
@@ -77,6 +75,7 @@ namespace minko
 			std::unordered_map<SurfacePtr, SurfaceTechniqueChangedSlot>	_surfaceTechniqueChangedSlot;
 
 			DrawCallFactoryPtr											_drawCallPool;
+			bool														_enable;
 
 			static const unsigned int									NUM_FALLBACK_ATTEMPTS;
 
@@ -93,7 +92,6 @@ namespace minko
 
 			inline static
 			Ptr
-
 			create(uint					backgroundColor, 
 				   AbsTexturePtr		renderTarget = nullptr,
 				   EffectPtr			effect			= nullptr,
@@ -170,6 +168,20 @@ namespace minko
 			target(AbsTexturePtr target)
 			{
 				_renderTarget = target;
+			}
+
+			inline
+			bool
+			enable()
+			{
+				return _enable;
+			}
+
+			inline
+			void
+			enable(bool value)
+			{
+				_enable = value;
 			}
 
 			void

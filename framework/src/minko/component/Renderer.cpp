@@ -46,6 +46,7 @@ Renderer::Renderer(std::shared_ptr<render::AbstractTexture> renderTarget,
 
     _viewportBox(),
 	_scissorBox(),
+	_enable(true),
 	_renderingBegin(Signal<Ptr>::create()),
 	_renderingEnd(Signal<Ptr>::create()),
 	_beforePresent(Signal<Ptr>::create()),
@@ -253,6 +254,9 @@ void
 Renderer::render(render::AbstractContext::Ptr	context, 
 				 render::AbstractTexture::Ptr	renderTarget)
 {
+	if (!_enable)
+		return;
+
 	_drawCalls = _drawCallPool->drawCalls();
 	
 	_renderingBegin->execute(shared_from_this());
