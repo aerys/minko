@@ -200,7 +200,9 @@ minko.project.application = function(name)
 		end
 
 		postbuildcommands {
-			cmd .. ' || ' .. minko.action.fail()
+			cmd .. ' || ' .. minko.action.fail(),
+			-- fix the "invalid increment operand" syntax error caused by ++0 in the output file
+			'python "' .. minko.sdk.path('/module/emscripten/fix_invalid_increment_operand.py') .. '"  ${TARGETDIR}/' .. name .. '.js'
 		}
 
 		libdirs {
@@ -222,7 +224,9 @@ minko.project.application = function(name)
 		}
 
 		postbuildcommands {
-			cmd .. ' || ' .. minko.action.fail()
+			cmd .. ' || ' .. minko.action.fail(),
+			-- fix the "invalid increment operand" syntax error caused by ++0 in the output file
+			'python "' .. minko.sdk.path('/module/emscripten/fix_invalid_increment_operand.py') .. '"  ${TARGETDIR}/' .. name .. '.js'
 		}
 
 		libdirs {
