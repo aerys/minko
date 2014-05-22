@@ -195,6 +195,8 @@ minko.project.application = function(name)
 
 		if os.isfile('template.html') then
 			cmd = cmd .. ' --shell-file "${CURDIR}/template.html"'
+		else
+			cmd = cmd .. ' --shell-file "' .. minko.sdk.path('/skeleton/template.html') .. '"'
 		end
 
 		postbuildcommands {
@@ -211,6 +213,8 @@ minko.project.application = function(name)
 
 		if os.isfile('template.html') then
 			cmd = cmd .. ' --shell-file "${CURDIR}/template.html"'
+		else
+			cmd = cmd .. ' --shell-file "' .. minko.sdk.path('/skeleton/template.html') .. '"'
 		end
 		
 		buildoptions {
