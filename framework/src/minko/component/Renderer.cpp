@@ -256,6 +256,20 @@ Renderer::render(render::AbstractContext::Ptr	context,
 
 	if (_renderTarget)
 		renderTarget = _renderTarget;
+        
+     bool bCustomViewport = false;
+
+     if (_viewportBox.width >= 0 && _viewportBox.height >= 0)
+     {
+         bCustomViewport = true;
+         context->configureViewport(_viewportBox.x, _viewportBox.y, _viewportBox.width, _viewportBox.height);
+         context->setScissorTest(true, _viewportBox);
+     }
+	 else
+	 {
+		 context->configureViewport(0, 0, context->viewportWidth(), context->viewportHeight());
+		 context->setScissorTest(false, _viewportBox);
+	 }
 
 	context->clear(
 		((_backgroundColor >> 24) & 0xff) / 255.f,
