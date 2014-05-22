@@ -281,6 +281,9 @@ Renderer::render(render::AbstractContext::Ptr	context,
 	for (auto& drawCall : _drawCalls)
 		drawCall->render(context, renderTarget);
 
+    if (bCustomViewport)
+		context->setScissorTest(false, _viewportBox);
+
 	_beforePresent->execute(shared_from_this());
 
 	context->present();
