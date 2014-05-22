@@ -79,11 +79,13 @@ IOSWebViewDOMEngine::initialize(AbstractCanvas::Ptr canvas, SceneManager::Ptr sc
         //UIColor * clearColor = [UIColor colorWithRed:255/255.0f green:1/255.0f blue:0/255.0f alpha:1.0f];
         [_webView setBackgroundColor: [UIColor clearColor]];
         [_webView setOpaque:NO];
+        /*
         _webView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin |
                                     UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin |
                                     UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
         
-        //window.autoresizesSubviews = YES;
+        window.autoresizesSubviews = YES;
+        */
         [window addSubview:_webView];
         
         /*
