@@ -67,7 +67,7 @@
 			</svg>
 			<span id="logo">minko</span>
 		</a>
-		<progress max="100" id="progress" class="center"></progress>
+		<progress value="0" max="100" id="progress" class="center"></progress>
 		<figure style="overflow:visible;" id="spinner" class="center">
 			<div class="spinner"></div>
 			<span id="status">Downloading...</span>
@@ -129,7 +129,8 @@
         monitorRunDependencies: function(left) {
           this.totalDependencies = Math.max(this.totalDependencies, left);
           Module.setStatus(left ? 'Preparing... (' + (this.totalDependencies-left) + '/' + this.totalDependencies + ')' : 'All downloads complete.');
-        }
+        },
+		TOTAL_MEMORY: 128 * 1024 * 1024
       };
       Module.setStatus('Downloading...');
 	  

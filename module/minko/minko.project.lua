@@ -191,14 +191,34 @@ minko.project.application = function(name)
 
 	configuration { "html5", "release" }
 		local emcc = premake.tools.gcc.tools.emscripten.cc
-		local cmd = emcc .. ' ${TARGET} -o ${TARGETDIR}/' .. name .. '.html -O2 --closure 1 -s CLOSURE_ANNOTATIONS=1 -s ERROR_ON_UNDEFINED_SYMBOLS=1 -s DISABLE_EXCEPTION_CATCHING=0 -s TOTAL_MEMORY=268435456 --memory-init-file 1 --preload-file ${TARGETDIR}/asset'
+		local cmd = emcc .. ' ${TARGET} -o ${TARGETDIR}/' .. name .. '.html -O2'
 
+		-- enable the closure compiler
+		cmd = cmd .. ' --closure 1 -s CLOSURE_ANNOTATIONS=1'
+		-- treat undefined symbol warnings as errors
+		cmd = cmd .. ' -s ERROR_ON_UNDEFINED_SYMBOLS=1'
+		-- disable exception catching
+		cmd = cmd .. ' -s DISABLE_EXCEPTION_CATCHING=0'
+		--[[
+			optimize (very) long functions by breaking them into smaller ones
+			
+			from emscripten's settings.js:
+			"OUTLINING_LIMIT: break up functions into smaller ones, to avoid the downsides of very
+            large functions (JS engines often compile them very slowly, compile them with lower optimizations,
+			or do not optimize them at all)"
+		]]--
+		cmd = cmd .. ' -s OUTLINING_LIMIT=20000'
+		-- use a separate *.mem file to initialize the app memory
+		cmd = cmd .. ' --memory-init-file 1'
+		-- set the app (or the sdk) template.html
 		if os.isfile('template.html') then
 			cmd = cmd .. ' --shell-file "${CURDIR}/template.html"'
 		else
 			cmd = cmd .. ' --shell-file "' .. minko.sdk.path('/skeleton/template.html') .. '"'
 		end
-
+		-- includ the app's 'asset' directory into the file system
+		cmd = cmd .. ' --preload-file ${TARGETDIR}/asset'
+		
 		postbuildcommands {
 			cmd .. ' || ' .. minko.action.fail(),
 			-- fix the "invalid increment operand" syntax error caused by ++0 in the output file
@@ -211,7 +231,7 @@ minko.project.application = function(name)
 
 	configuration { "html5", "debug" }
 		local emcc = premake.tools.gcc.tools.emscripten.cc
-		local cmd = emcc .. ' ${TARGET} -o ${TARGETDIR}/' .. name .. '.html -O2 --js-opts 0 -g4 -s ASM_JS=0 -s DISABLE_EXCEPTION_CATCHING=0 -s ERROR_ON_UNDEFINED_SYMBOLS=1 -s TOTAL_MEMORY=268435456 --memory-init-file 1 --preload-file ${TARGETDIR}/asset'
+		local cmd = emcc .. ' ${TARGET} -o ${TARGETDIR}/' .. name .. '.html -O2 --js-opts 0 -g4 -s ASM_JS=0 -s DISABLE_EXCEPTION_CATCHING=0 -s ERROR_ON_UNDEFINED_SYMBOLS=1 --memory-init-file 1 --preload-file ${TARGETDIR}/asset'
 
 		if os.isfile('template.html') then
 			cmd = cmd .. ' --shell-file "${CURDIR}/template.html"'
