@@ -47,6 +47,7 @@ Renderer::Renderer(std::shared_ptr<render::AbstractTexture> renderTarget,
     _backgroundColor(0),
     _viewportBox(),
 	_scissorBox(),
+	_enable(true),
 	_renderingBegin(Signal<Ptr>::create()),
 	_renderingEnd(Signal<Ptr>::create()),
 	_beforePresent(Signal<Ptr>::create()),
@@ -270,6 +271,9 @@ void
 Renderer::render(render::AbstractContext::Ptr	context, 
 				 render::AbstractTexture::Ptr	renderTarget)
 {
+	if (!_enable)
+		return;
+
 	_drawCalls = _drawCallPool->drawCalls();
 	
 	_renderingBegin->execute(std::static_pointer_cast<Renderer>(shared_from_this()));
@@ -298,8 +302,6 @@ Renderer::render(render::AbstractContext::Ptr	context,
 		((_backgroundColor >> 8) & 0xff) / 255.f,
 		(_backgroundColor & 0xff) / 255.f
 	);
-
-
 
 	for (auto& drawCall : _drawCalls)
 		if ((drawCall->layouts() & layoutMask()) != 0)

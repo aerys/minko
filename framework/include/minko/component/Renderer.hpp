@@ -94,6 +94,7 @@ namespace minko
 			std::unordered_map<AbsFilterPtr, FilterChangedSlot>			_rootDataFilterChangedSlots;
 
 			std::shared_ptr<RendererFilterChangedSignal>				_filterChanged;
+			bool														_enable;
 
 			static const unsigned int									NUM_FALLBACK_ATTEMPTS;
 
@@ -185,6 +186,20 @@ namespace minko
 			target(AbsTexturePtr target)
 			{
 				_renderTarget = target;
+			}
+
+			inline
+			bool
+			enable()
+			{
+				return _enable;
+			}
+
+			inline
+			void
+			enable(bool value)
+			{
+				_enable = value;
 			}
 
 			void

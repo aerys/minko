@@ -82,6 +82,10 @@ namespace minko
 			Signal<MousePtr>::Slot						_mouseRightClickSlot;
 			Signal<MousePtr>::Slot						_mouseLeftClickSlot;
 
+			bool										_executeMoveHandler;
+			bool										_executeRightClickHandler;
+			bool										_executeLeftClickHandler;
+
 		public:
 			inline static
 			Ptr

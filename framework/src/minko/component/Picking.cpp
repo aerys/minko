@@ -318,33 +318,58 @@ Picking::renderingEnd(RendererPtr renderer)
 
 	if (_lastPickedSurface != _pickingIdToSurface[pickedSurfaceId])
 	{
-		if (_lastPickedSurface)
+		if (_lastPickedSurface && _mouseOut->numCallbacks() > 0)
 			_mouseOut->execute(_lastPickedSurface->targets()[0]);
 
 		_lastPickedSurface = _pickingIdToSurface[pickedSurfaceId];
 
-		if (_lastPickedSurface)
+		if (_lastPickedSurface && _mouseOver->numCallbacks() > 0)
 			_mouseOver->execute(_lastPickedSurface->targets()[0]);
+		
 	}
+
+	if (_executeMoveHandler && _lastPickedSurface)
+	{
+		_mouseMove->execute(_lastPickedSurface->targets()[0]);
+		_executeMoveHandler = false;
+	}
+
+	if (_executeRightClickHandler && _lastPickedSurface)
+	{
+		_mouseRightClick->execute(_lastPickedSurface->targets()[0]);
+		_executeRightClickHandler = false;
+	}
+
+	if (_executeLeftClickHandler && _lastPickedSurface)
+	{
+		_mouseLeftClick->execute(_lastPickedSurface->targets()[0]);
+		_executeLeftClickHandler = false;
+	}
+
+	if (!(_mouseOver->numCallbacks() > 0 || _mouseOut->numCallbacks() > 0))
+		_renderer->enable(false);
 }
 
 void
 Picking::mouseMoveHandler(MousePtr mouse, int dx, int dy)
 {
-	if (_lastPickedSurface)
-		_mouseMove->execute(_lastPickedSurface->targets()[0]);
+	if (_mouseOver->numCallbacks() > 0 || _mouseOut->numCallbacks() > 0)
+	{
+		_executeMoveHandler = true;
+		_renderer->enable(true);
+	}
 }
 
 void
 Picking::mouseRightClickHandler(MousePtr mouse)
 {
-	if (_lastPickedSurface)
-		_mouseRightClick->execute(_lastPickedSurface->targets()[0]);
+		_executeRightClickHandler = true;
+		_renderer->enable(true);
 }
 
 void
 Picking::mouseLeftClickHandler(MousePtr mouse)
 {
-	if (_lastPickedSurface)
-		_mouseLeftClick->execute(_lastPickedSurface->targets()[0]);
+	_executeLeftClickHandler = true;
+	_renderer->enable(true);
 }

@@ -107,7 +107,7 @@ int main(int argc, char** argv)
 			std::cout << "Right Click : " << node->name() << std::endl;
 		});
 
-		pickingMouseOver = root->component<Picking>()->mouseOver()->connect([&](scene::Node::Ptr node)
+		/*pickingMouseOver = root->component<Picking>()->mouseOver()->connect([&](scene::Node::Ptr node)
 		{
 			std::cout << "In : " << node->name() << std::endl;
 		});
@@ -115,7 +115,7 @@ int main(int argc, char** argv)
 		pickingMouseOut = root->component<Picking>()->mouseOut()->connect([&](scene::Node::Ptr node)
 		{
 			std::cout << "Out : " << node->name() << std::endl;
-		});
+		});*/
 	});
 	camera->addComponent(Renderer::create(0x7f7f7fff));
 
