@@ -197,7 +197,7 @@ namespace minko
 
         inline
         SDL_Window*	
-        getWindow()
+        window()
         {
             return _window;
         }
