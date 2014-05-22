@@ -20,6 +20,7 @@
     #define WVJB_PLATFORM_IOS
     #define WVJB_WEBVIEW_TYPE UIWebView
     #define WVJB_WEBVIEW_DELEGATE_TYPE NSObject<UIWebViewDelegate>
+    #import <UIKit/UIKit.h>
 #endif
 
 typedef void (^WVJBResponseCallback)(id responseData);

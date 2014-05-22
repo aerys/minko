@@ -24,6 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/dom/AbstractDOM.hpp"
 #include "minko/dom/AbstractDOMEngine.hpp"
 #include "IOSWebViewDOM.hpp"
+#include <UIKit/UIKit.h>
 
 namespace ioswebview
 {
@@ -97,6 +98,9 @@ namespace ioswebview
 			minko::Signal<minko::dom::AbstractDOM::Ptr, std::string>::Ptr _onmessage;
 
 			bool _visible;
+            
+            // iOS WebView
+            UIWebView *_webView;
 		};
 	}
 }

@@ -25,8 +25,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/AssetLibrary.hpp"
 #include "ioswebview/dom/IOSWebViewDOMEngine.hpp"
 
-#include <UIKit/UIKit.h>
-#include "WebViewJavascriptBridge.h"
+#include "minko/MinkoSDL.hpp"
+
+#import "WebViewJavascriptBridge.h"
+
 #include "../../plugin/sdl/lib/sdl/include/SDL2/SDL.h"
 #include "../../plugin/sdl/lib/sdl/include/SDL2/SDL_syswm.h"
 
@@ -58,35 +60,41 @@ IOSWebViewDOMEngine::initialize(AbstractCanvas::Ptr canvas, SceneManager::Ptr sc
 	visible(_visible);
     
     // Create a web view
-//    NSLog(@"COUCOU");
-//    
-//    // Get window from canvas
-//    SDL_Window *sdlWindow = canvas->getWindow();
-//    UIWindow *window;
-//    SDL_SysWMinfo info;
-//    
-//    SDL_VERSION(&info.version);
-//    
-//    if (SDL_GetWindowWMInfo(sdlWindow, &info))
-//    {
-//        window = (UIWindow*)(info.info.uikit.window);
-//        // Create the web view
-//        UIWebView *webView = [[UIWebView alloc] initWithFrame:window.bounds];
-//        UIColor * clearColor = [UIColor colorWithRed:255/255.0f green:1/255.0f blue:0/255.0f alpha:1.0f];
-//        [webView setBackgroundColor: [UIColor clearColor]];
-//        [webView setOpaque:NO];
-//        [window addSubview:webView];
-//        
-//        NSString *fullURL = @"http://25.media.tumblr.com/tumblr_m7le16FGBS1rp9ag4o1_500.gif";
-//        NSURL *url = [NSURL URLWithString:fullURL];
-//        NSURLRequest *requestObj = [NSURLRequest requestWithURL:url];
-//        [webView loadRequest:requestObj];
-//        /*
-//         WebViewJavascriptBridge* bridge = [WebViewJavascriptBridge bridgeForWebView:webView handler:^   (id data, WVJBResponseCallback responseCallback) {
-//         NSLog(@"Received message from javascript: %@", data);
-//         responseCallback(@"Right back atcha");
-//         }];*/
-//    }
+    NSLog(@"COUCOU");
+    
+    // Get window from canvas
+    auto newCanvas = std::static_pointer_cast<Canvas>(canvas);
+    SDL_Window* sdlWindow = newCanvas->window();
+    UIWindow *window;
+    SDL_SysWMinfo info;
+    
+    SDL_VERSION(&info.version);
+    
+    if (SDL_GetWindowWMInfo(sdlWindow, &info))
+    {
+        window = (UIWindow*)(info.info.uikit.window);
+        
+        // Create the web view
+        _webView = [[UIWebView alloc] initWithFrame:window.bounds];
+        //UIColor * clearColor = [UIColor colorWithRed:255/255.0f green:1/255.0f blue:0/255.0f alpha:1.0f];
+        [_webView setBackgroundColor: [UIColor clearColor]];
+        [_webView setOpaque:NO];
+        _webView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin |
+                                    UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin |
+                                    UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+        
+        //window.autoresizesSubviews = YES;
+        [window addSubview:_webView];
+        
+        /*
+        WebViewJavascriptBridge* bridge = [WebViewJavascriptBridge bridgeForWebView:_webView handler:^(id data, WVJBResponseCallback responseCallback) {
+                                           NSLog(@"Received message from javascript: %@", data);
+                                           responseCallback(@"Right back atcha");
+                                           }];
+        
+        [bridge send:@"Well hello there"];
+        */
+    }
 
 	_canvasResizedSlot = _canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
 	{
@@ -206,17 +214,22 @@ IOSWebViewDOMEngine::load(std::string uri)
 	bool isHttp		= uri.substr(0, 7) == "http://";
 	bool isHttps	= uri.substr(0, 8) == "https://";
 
+    NSURL *url;
+    
 	if (!isHttp && !isHttps)
+    {
 		uri = "asset/" + uri;
-
-    /*
-	std::string eval = "";
-
-	eval += "Minko.loaded = 0;\n";
-	eval += "Minko.iframeElement.src = '" + uri + "';\n";
-
-	emscripten_run_script(eval.c_str());
-    */
+        NSString *fullUrl = [NSString stringWithCString:uri.c_str() encoding:[NSString defaultCStringEncoding]];
+        url = [NSURL fileURLWithPath:fullUrl];
+    }
+    else
+    {
+        NSString *fullUrl = [NSString stringWithCString:uri.c_str() encoding:[NSString defaultCStringEncoding]];
+        url = [NSURL URLWithString:fullUrl];
+    }
+    
+    NSURLRequest *requestObj = [NSURLRequest requestWithURL:url];
+    [_webView loadRequest:requestObj];
     
 	createNewDom();
 

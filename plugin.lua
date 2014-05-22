@@ -27,6 +27,7 @@ minko.plugin["html-overlay"].enable = function()
 		minko.plugin.path("html-overlay") .. "/include"
 	}
 	
+	minko.plugin.enable("sdl")
 	minko.plugin.enable("lua")
 	
 	configuration { "html5" }

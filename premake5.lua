@@ -7,6 +7,7 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 	kind "StaticLib"
 	language "C++"
 
+	minko.plugin.enable("sdl")
 	minko.plugin.enable("lua")
 	
 	files {
@@ -121,6 +122,9 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		includedirs { "lib/WebViewJavascriptBridge" }
 
 		files {
+			--"lib/WebViewJavascriptBridge/*.js.txt",
+			--"lib/WebViewJavascriptBridge/*.h",
+			--"lib/WebViewJavascriptBridge/*.m",
 			"include/ioswebview/**.hpp",
 			"src/ioswebview/**.cpp",
 			"src/ioswebview/**.hpp"
