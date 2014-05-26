@@ -1,5 +1,5 @@
 {
-	"name"	: "phong",
+	"name"	: "water",
 		
 	"attributeBindings"	: {
 		"position"				: "geometry[${geometryId}].position",

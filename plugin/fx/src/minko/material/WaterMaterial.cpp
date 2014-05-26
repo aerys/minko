@@ -26,7 +26,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::material;
 
-WaterMaterial::WaterMaterial(uint numWaves):
+WaterMaterial::WaterMaterial(uint numWaves) :
 _numWaves(numWaves)
 {
 
@@ -43,7 +43,7 @@ WaterMaterial::initialize()
 	_sharpness.resize(_numWaves, 0.f);
 	_speeds.resize(_numWaves, 1.f);
 	_waveType.resize(_numWaves, 0.f);
-	
+
 
 	set<int>("numWaves", _numWaves);
 	specularColor(0xffffffff);
@@ -57,6 +57,13 @@ WaterMaterial::initialize()
 	flowMapOffset2(0.f);
 	dudvFactor(1.f);
 	dudvSpeed(0.01f);
+	fresnelPow(1.f);
+	fresnelMultiplier(1.0f);
+	fogColor(0x909090FF);
+	fogDensity(0.001f);
+	fogStart(100.f);
+	fogEnd(400.0f);
+	fogType(render::FogType::Exponential);
 
 	data::UniformArrayPtr<float>	amplitudesUniformArray(new data::UniformArray<float>(_numWaves, &(_amplitudes[0])));
 	data::UniformArrayPtr<float>	originsUniformArray(new data::UniformArray<float>(_numWaves * 2, &(_origins[0])));
@@ -65,12 +72,12 @@ WaterMaterial::initialize()
 	data::UniformArrayPtr<float>	speedsUniformArray(new data::UniformArray<float>(_numWaves, &(_speeds[0])));
 	data::UniformArrayPtr<float>	waveTypeUniformArray(new data::UniformArray<float>(_numWaves, &(_waveType[0])));
 
-	set<data::UniformArrayPtr<float>>("waveOrigins",	originsUniformArray);
-	set<data::UniformArrayPtr<float>>("waveLength",		waveLengthUniformArray);
+	set<data::UniformArrayPtr<float>>("waveOrigins", originsUniformArray);
+	set<data::UniformArrayPtr<float>>("waveLength", waveLengthUniformArray);
 	set<data::UniformArrayPtr<float>>("waveAmplitudes", amplitudesUniformArray);
-	set<data::UniformArrayPtr<float>>("waveSharpness",	sharpnessUniformArray);
-	set<data::UniformArrayPtr<float>>("waveSpeed",		speedsUniformArray);
-	set<data::UniformArrayPtr<float>>("waveType",		waveTypeUniformArray);
+	set<data::UniformArrayPtr<float>>("waveSharpness", sharpnessUniformArray);
+	set<data::UniformArrayPtr<float>>("waveSpeed", speedsUniformArray);
+	set<data::UniformArrayPtr<float>>("waveType", waveTypeUniformArray);
 }
 
 
@@ -207,6 +214,50 @@ WaterMaterial::dudvFactor() const
 {
 	return get<float>("dudvFactor");
 }
+
+WaterMaterial::Ptr
+WaterMaterial::fresnelMultiplier(float s)
+{
+	set("fresnelMultiplier", s);
+
+	return std::static_pointer_cast<WaterMaterial>(shared_from_this());
+}
+
+float
+WaterMaterial::fresnelMultiplier() const
+{
+	return get<float>("fresnelMultiplier");
+}
+
+
+WaterMaterial::Ptr
+WaterMaterial::normalMultiplier(float value)
+{
+	set("normalMultiplier", value);
+
+	return std::static_pointer_cast<WaterMaterial>(shared_from_this());
+}
+
+float
+WaterMaterial::normalMultiplier() const
+{
+	return get<float>("normalMultiplier");
+}
+
+WaterMaterial::Ptr
+WaterMaterial::fresnelPow(float value)
+{
+	set("fresnelPow", value);
+
+	return std::static_pointer_cast<WaterMaterial>(shared_from_this());
+}
+
+float
+WaterMaterial::fresnelPow() const
+{
+	return get<float>("fresnelPow");
+}
+
 WaterMaterial::Ptr
 WaterMaterial::normalMap(render::AbstractTexture::Ptr value)
 {

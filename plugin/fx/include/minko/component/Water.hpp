@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Common.hpp"
 #include "minko/Signal.hpp"
 #include "minko/component/AbstractComponent.hpp"
-#include "minko/FXCommon.hpp"
+#include "minko/FxCommon.hpp"
 
 namespace minko
 {
