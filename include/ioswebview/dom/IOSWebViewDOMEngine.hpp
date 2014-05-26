@@ -24,13 +24,19 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/dom/AbstractDOM.hpp"
 #include "minko/dom/AbstractDOMEngine.hpp"
 #include "IOSWebViewDOM.hpp"
-#include <UIKit/UIKit.h>
+
+#import "WebViewJavascriptBridge.h"
+#import "ioswebview/dom/IOSTapDetectingWindow.h"
+#import "ioswebview/dom/IOSWebView.h"
+#import "ioswebview/dom/IOSWebViewDelegate.h"
 
 namespace ioswebview
 {
 	namespace dom
 	{
-		class IOSWebViewDOMEngine : public minko::dom::AbstractDOMEngine
+        
+		class IOSWebViewDOMEngine : public minko::dom::AbstractDOMEngine,
+                                    public std::enable_shared_from_this<IOSWebViewDOMEngine>
 		{
 		public:
 			typedef std::shared_ptr<IOSWebViewDOMEngine> Ptr;
@@ -71,6 +77,24 @@ namespace ioswebview
 
 			void
 			visible(bool);
+            
+            bool
+            visible();
+            
+            inline
+            WebViewJavascriptBridge*
+            bridge()
+            {
+                return _bridge;
+            }
+            
+            std::string
+			eval(std::string);
+            
+            void
+            handleJavascriptMessage(std::string message);
+            
+            static std::function<void(std::string&)> handleJavascriptMessageWrapper;
 
 		private:
 
@@ -79,8 +103,6 @@ namespace ioswebview
 
 			void
 			createNewDom();
-
-		private:
 
 			static
 			int _domUid;
@@ -99,8 +121,16 @@ namespace ioswebview
 
 			bool _visible;
             
+            IOSTapDetectingWindow *_window;
             // iOS WebView
-            UIWebView *_webView;
+            IOSWebView *_webView;
+            WebViewJavascriptBridge* _bridge;
+            
+            bool _waitingForLoad;
+            std::string _uriToLoad;
+            
+            
+            __block Ptr _self;
 		};
 	}
 }

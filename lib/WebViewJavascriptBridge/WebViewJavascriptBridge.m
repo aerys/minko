@@ -1,4 +1,4 @@
-//
+    //
 //  WebViewJavascriptBridge.m
 //  ExampleApp-iOS
 //
@@ -25,6 +25,8 @@ typedef NSDictionary WVJBMessage;
     long _uniqueId;
     WVJBHandler _messageHandler;
     
+    NSBundle *_resourceBundle;
+    
 #if defined WVJB_PLATFORM_IOS
     NSUInteger _numRequestsLoading;
 #endif
@@ -42,8 +44,13 @@ static bool logging = false;
 }
 
 + (instancetype)bridgeForWebView:(WVJB_WEBVIEW_TYPE*)webView webViewDelegate:(WVJB_WEBVIEW_DELEGATE_TYPE*)webViewDelegate handler:(WVJBHandler)messageHandler {
+    return [self bridgeForWebView:webView webViewDelegate:webViewDelegate handler:messageHandler resourceBundle:nil];
+}
+
++ (instancetype)bridgeForWebView:(WVJB_WEBVIEW_TYPE*)webView webViewDelegate:(WVJB_WEBVIEW_DELEGATE_TYPE*)webViewDelegate handler:(WVJBHandler)messageHandler resourceBundle:(NSBundle*)bundle
+{
     WebViewJavascriptBridge* bridge = [[WebViewJavascriptBridge alloc] init];
-    [bridge _platformSpecificSetup:webView webViewDelegate:webViewDelegate handler:messageHandler];
+    [bridge _platformSpecificSetup:webView webViewDelegate:webViewDelegate handler:messageHandler resourceBundle:bundle];
     [bridge reset];
     return bridge;
 }
@@ -128,6 +135,8 @@ static bool logging = false;
     messageJSON = [messageJSON stringByReplacingOccurrencesOfString:@"\n" withString:@"\\n"];
     messageJSON = [messageJSON stringByReplacingOccurrencesOfString:@"\r" withString:@"\\r"];
     messageJSON = [messageJSON stringByReplacingOccurrencesOfString:@"\f" withString:@"\\f"];
+    messageJSON = [messageJSON stringByReplacingOccurrencesOfString:@"\u2028" withString:@"\\u2028"];
+    messageJSON = [messageJSON stringByReplacingOccurrencesOfString:@"\u2029" withString:@"\\u2029"];
 
     NSString* javascriptCommand = [NSString stringWithFormat:@"WebViewJavascriptBridge._handleMessageFromObjC('%@');", messageJSON];
     if ([[NSThread currentThread] isMainThread]) {
@@ -222,7 +231,7 @@ static bool logging = false;
  **********************************/
 #if defined WVJB_PLATFORM_OSX
 
-- (void) _platformSpecificSetup:(WVJB_WEBVIEW_TYPE*)webView webViewDelegate:(WVJB_WEBVIEW_DELEGATE_TYPE*)webViewDelegate handler:(WVJBHandler)messageHandler {
+- (void) _platformSpecificSetup:(WVJB_WEBVIEW_TYPE*)webView webViewDelegate:(WVJB_WEBVIEW_DELEGATE_TYPE*)webViewDelegate handler:(WVJBHandler)messageHandler resourceBundle:(NSBundle*)bundle{
     _messageHandler = messageHandler;
     _webView = webView;
     _webViewDelegate = webViewDelegate;
@@ -231,6 +240,8 @@ static bool logging = false;
     _webView.frameLoadDelegate = self;
     _webView.resourceLoadDelegate = self;
     _webView.policyDelegate = self;
+    
+    _resourceBundle = bundle;
 }
 
 - (void) _platformSpecificDealloc {
@@ -244,7 +255,8 @@ static bool logging = false;
     if (webView != _webView) { return; }
     
     if (![[webView stringByEvaluatingJavaScriptFromString:@"typeof WebViewJavascriptBridge == 'object'"] isEqualToString:@"true"]) {
-        NSString *filePath = [[NSBundle mainBundle] pathForResource:@"WebViewJavascriptBridge.js" ofType:@"txt"];
+        NSBundle *bundle = _resourceBundle ? _resourceBundle : [NSBundle mainBundle];
+        NSString *filePath = [bundle pathForResource:@"WebViewJavascriptBridge.js" ofType:@"txt"];
         NSString *js = [NSString stringWithContentsOfFile:filePath encoding:NSUTF8StringEncoding error:nil];
         [webView stringByEvaluatingJavaScriptFromString:js];
     }
@@ -308,16 +320,17 @@ static bool logging = false;
 
 
 
-/* Platform specific internals: OSX
+/* Platform specific internals: iOS
  **********************************/
 #elif defined WVJB_PLATFORM_IOS
 
-- (void) _platformSpecificSetup:(WVJB_WEBVIEW_TYPE*)webView webViewDelegate:(id<UIWebViewDelegate>)webViewDelegate handler:(WVJBHandler)messageHandler {
+- (void) _platformSpecificSetup:(WVJB_WEBVIEW_TYPE*)webView webViewDelegate:(id<UIWebViewDelegate>)webViewDelegate handler:(WVJBHandler)messageHandler resourceBundle:(NSBundle*)bundle{
     _messageHandler = messageHandler;
     _webView = webView;
     _webViewDelegate = webViewDelegate;
     _messageHandlers = [NSMutableDictionary dictionary];
     _webView.delegate = self;
+    _resourceBundle = bundle;
 }
 
 - (void) _platformSpecificDealloc {
@@ -330,7 +343,8 @@ static bool logging = false;
     _numRequestsLoading--;
     
     if (_numRequestsLoading == 0 && ![[webView stringByEvaluatingJavaScriptFromString:@"typeof WebViewJavascriptBridge == 'object'"] isEqualToString:@"true"]) {
-        NSString *filePath = [[NSBundle mainBundle] pathForResource:@"WebViewJavascriptBridge.js" ofType:@"txt"];
+        NSBundle *bundle = _resourceBundle ? _resourceBundle : [NSBundle mainBundle];
+        NSString *filePath = [bundle pathForResource:@"WebViewJavascriptBridge.js" ofType:@"txt"];
         NSString *js = [NSString stringWithContentsOfFile:filePath encoding:NSUTF8StringEncoding error:nil];
         [webView stringByEvaluatingJavaScriptFromString:js];
     }
@@ -342,7 +356,7 @@ static bool logging = false;
         _startupMessageQueue = nil;
     }
     
-    __strong typeof(_webViewDelegate) strongDelegate = _webViewDelegate;
+    __strong id strongDelegate = _webViewDelegate;
     if (strongDelegate && [strongDelegate respondsToSelector:@selector(webViewDidFinishLoad:)]) {
         [strongDelegate webViewDidFinishLoad:webView];
     }
@@ -353,7 +367,7 @@ static bool logging = false;
     
     _numRequestsLoading--;
     
-    __strong typeof(_webViewDelegate) strongDelegate = _webViewDelegate;
+    __strong id strongDelegate = _webViewDelegate;
     if (strongDelegate && [strongDelegate respondsToSelector:@selector(webView:didFailLoadWithError:)]) {
         [strongDelegate webView:webView didFailLoadWithError:error];
     }
@@ -362,7 +376,7 @@ static bool logging = false;
 - (BOOL)webView:(UIWebView *)webView shouldStartLoadWithRequest:(NSURLRequest *)request navigationType:(UIWebViewNavigationType)navigationType {
     if (webView != _webView) { return YES; }
     NSURL *url = [request URL];
-    __strong typeof(_webViewDelegate) strongDelegate = _webViewDelegate;
+    __strong id strongDelegate = _webViewDelegate;
     if ([[url scheme] isEqualToString:kCustomProtocolScheme]) {
         if ([[url host] isEqualToString:kQueueHasMessage]) {
             [self _flushMessageQueue];
@@ -382,7 +396,7 @@ static bool logging = false;
     
     _numRequestsLoading++;
     
-    __strong typeof(_webViewDelegate) strongDelegate = _webViewDelegate;
+    __strong id strongDelegate = _webViewDelegate;
     if (strongDelegate && [strongDelegate respondsToSelector:@selector(webViewDidStartLoad:)]) {
         [strongDelegate webViewDidStartLoad:webView];
     }

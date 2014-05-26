@@ -17,10 +17,10 @@
     #define WVJB_WEBVIEW_TYPE WebView
     #define WVJB_WEBVIEW_DELEGATE_TYPE NSObject
 #elif defined __IPHONE_OS_VERSION_MAX_ALLOWED
+    #import <UIKit/UIKit.h>
     #define WVJB_PLATFORM_IOS
     #define WVJB_WEBVIEW_TYPE UIWebView
     #define WVJB_WEBVIEW_DELEGATE_TYPE NSObject<UIWebViewDelegate>
-    #import <UIKit/UIKit.h>
 #endif
 
 typedef void (^WVJBResponseCallback)(id responseData);
@@ -30,6 +30,7 @@ typedef void (^WVJBHandler)(id data, WVJBResponseCallback responseCallback);
 
 + (instancetype)bridgeForWebView:(WVJB_WEBVIEW_TYPE*)webView handler:(WVJBHandler)handler;
 + (instancetype)bridgeForWebView:(WVJB_WEBVIEW_TYPE*)webView webViewDelegate:(WVJB_WEBVIEW_DELEGATE_TYPE*)webViewDelegate handler:(WVJBHandler)handler;
++ (instancetype)bridgeForWebView:(WVJB_WEBVIEW_TYPE*)webView webViewDelegate:(WVJB_WEBVIEW_DELEGATE_TYPE*)webViewDelegate handler:(WVJBHandler)handler resourceBundle:(NSBundle*)bundle;
 + (void)enableLogging;
 
 - (void)send:(id)message;

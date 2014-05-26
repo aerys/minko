@@ -108,6 +108,9 @@ namespace minko
 
 			void
 			visible(bool);
+            
+            bool
+			visible();
 
 		private:
 

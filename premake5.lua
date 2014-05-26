@@ -122,11 +122,12 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		includedirs { "lib/WebViewJavascriptBridge" }
 
 		files {
-			--"lib/WebViewJavascriptBridge/*.js.txt",
-			--"lib/WebViewJavascriptBridge/*.h",
-			--"lib/WebViewJavascriptBridge/*.m",
+			"lib/WebViewJavascriptBridge/*.h",
+			"lib/WebViewJavascriptBridge/*.m",
 			"include/ioswebview/**.hpp",
+			"include/ioswebview/**.h",
 			"src/ioswebview/**.cpp",
+			"src/ioswebview/**.m",
 			"src/ioswebview/**.hpp"
 		}
 

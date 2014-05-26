@@ -1,0 +1,217 @@
+<html>
+	<head>
+		<link rel="stylesheet" type="text/css" href="css/iframe.css">
+	</head>
+	<body>
+		<iframe id="overlayiframe" allowTransparency="true" frameborder="0" scrolling="no"></iframe>
+		<script>
+			/*window.onerror = function (message, url, linenumber){
+				alert('Javascript error: ' + message + ' on line ' + linenumber + ' for ' + url);
+			}*/
+
+			// document.onload = function()
+			// {
+	            function connectWebViewJavascriptBridge(callback) {
+				    if (window.WebViewJavascriptBridge) {
+				        callback(WebViewJavascriptBridge);
+				    } else {
+				        document.addEventListener('WebViewJavascriptBridgeReady', function() {
+				            callback(WebViewJavascriptBridge);
+				        }, false)
+				    }
+				}
+
+				connectWebViewJavascriptBridge(function(bridge) {
+
+				    /* Init your app here */
+
+				    bridge.init(function(message, responseCallback) {
+				        alert('Received message: ' + message)   
+				        if (responseCallback) {
+				            responseCallback("Right back atcha");
+				        }
+				    })
+				    bridge.send('Hello from the javascript')
+				    bridge.send('Please respond to this', function responseCallback(responseData) {
+				        console.log("Javascript got its response", responseData);
+				    });
+				    bridge.send('ready')
+				});
+			//}
+        </script>
+        <script>
+        	console.log("Minko init");
+
+			var m = {};
+
+			m.loaded = -1;
+
+			//var canvasElement = document;
+			var iframeElement = document.getElementById('overlayiframe');
+
+	        m.getOffsetTop = function(element)
+			{
+				var result = 0;
+				while(element){
+					result += element.offsetTop;
+					element = element.offsetParent;
+				}
+				return result;
+			};
+
+			m.getOffsetLeft = function(element)
+			{
+				var result = 0;
+				while(element){
+					result += element.offsetLeft;
+					element = element.offsetParent;
+				}
+				return result;
+			};
+
+			m.redispatchKeyboardEvent = function(event)
+			{
+				var eventCopy = document.createEvent('Event');
+
+				eventCopy.initEvent(event.type, event.bubbles, event.cancelable);
+
+				eventCopy.type = event.type;
+				eventCopy.bubbles = event.bubbles;
+				eventCopy.cancelable = event.cancelable;
+				eventCopy.view = event.view;
+				eventCopy.ctrlKey = event.ctrlKey;
+				eventCopy.altKey = event.altKey;
+				eventCopy.shiftKey = event.shiftKey;
+				eventCopy.metaKey = event.metaKey;
+				eventCopy.keyCode = event.keyCode;
+				eventCopy.charCode = event.charCode;
+				eventCopy.which = event.which;
+				eventCopy.key = event.key;
+				eventCopy.detail = event.detail;
+				eventCopy.keyIdentifier = event.keyIdentifier;
+
+				document.dispatchEvent(eventCopy);
+			}
+
+
+			m.redispatchMouseEvent = function(event)
+			{
+				if (event.type == 'mouseout' && event.target != event.currentTarget)
+					return;
+
+				if (event.type == 'mouseover' && event.target != event.currentTarget)
+					return;
+
+				var pageX = 1 + Minko.getOffsetLeft(Minko.iframeElement) + (event.pageX || event.layerX);
+				var pageY = 1 + Minko.getOffsetTop(Minko.iframeElement) + (event.pageY || event.layerY);
+
+				var screenX = pageX - document.body.scrollLeft;
+				var screenY = pageY - document.body.scrollTop;
+
+				var eventCopy = document.createEvent('MouseEvents');
+				eventCopy.initMouseEvent(event.type, event.bubbles, event.cancelable, event.view, event.detail,
+					pageX, pageY, screenX, screenY, 
+					event.ctrlKey, event.altKey, event.shiftKey, event.metaKey, event.button, event.relatedTarget);
+
+				if (event.type == 'mousewheel' || event.type == "DOMMouseScroll")
+				{
+					eventCopy.detail = event.detail;
+
+					eventCopy.wheelDelta = event.wheelDelta;
+					eventCopy.wheelDeltaX = event.wheelDeltaX;
+					eventCopy.wheelDeltaY = event.wheelDeltaY;
+					eventCopy.wheelDeltaZ = event.wheelDeltaZ;
+
+					eventCopy.delta = event.delta;
+					eventCopy.deltaMode = event.deltaMode;
+					eventCopy.deltaX = event.deltaX;
+					eventCopy.deltaY = event.deltaY;
+					eventCopy.deltaZ = event.deltaZ;
+					event.preventDefault();
+				}
+
+				//Minko.canvasElement.dispatchEvent(eventCopy);
+
+			}
+
+			m.iframeLoadHandler = function(event)
+			{
+				console.log("loaded");
+				if(Minko.loaded == -1)
+					return;
+
+				Minko.loaded = 1;
+				if (!Minko.iframeElement.contentWindow.Minko)
+					Minko.iframeElement.contentWindow.Minko = {};
+
+				Minko.iframeElement.contentWindow.document.body.oncontextmenu = function(event){ event.preventDefault(); return false;};
+
+				if (!Minko.iframeElement.contentWindow.Minko.onmessage)
+				{
+					Minko.iframeElement.contentWindow.Minko.onmessage = function(message)
+					{
+						console.log('MINKO: ' + message);
+					}
+				}
+				Minko.iframeElement.contentWindow.Minko.messagesToSend = [];
+
+				Minko.iframeElement.contentWindow.Minko.sendMessage = function(message)
+				{
+					Minko.iframeElement.contentWindow.Minko.messagesToSend.push(message);
+				}
+
+				Minko.iframeElement.addEventListener('mouseover',						Minko.redispatchMouseEvent);
+				Minko.iframeElement.addEventListener('mouseout',						Minko.redispatchMouseEvent);
+				
+				Minko.iframeElement.contentWindow.addEventListener('mousemove',			Minko.redispatchMouseEvent);
+				Minko.iframeElement.contentWindow.addEventListener('mouseup',			Minko.redispatchMouseEvent);
+				Minko.iframeElement.contentWindow.addEventListener('mousedown',			Minko.redispatchMouseEvent);
+				
+				Minko.iframeElement.contentWindow.addEventListener('click',				Minko.redispatchMouseEvent);
+				
+				Minko.iframeElement.contentWindow.addEventListener('mousewheel',		Minko.redispatchMouseEvent);
+				Minko.iframeElement.contentWindow.addEventListener('DOMMouseScroll',	Minko.redispatchMouseEvent);
+				
+				Minko.iframeElement.contentWindow.addEventListener('keydown',			Minko.redispatchKeyboardEvent);
+				Minko.iframeElement.contentWindow.addEventListener('keyup',				Minko.redispatchKeyboardEvent);
+				Minko.iframeElement.contentWindow.addEventListener('keypress',			Minko.redispatchKeyboardEvent);
+			}
+
+			iframeElement.onload = m.iframeLoadHandler;
+
+			m.addListener = function(accessor, type)
+			{
+				if(!accessor.minkoEvents)
+					accessor.minkoEvents = [];
+				accessor.addEventListener(type, function(event)
+				{
+					accessor.minkoEvents.push(event);
+				});
+			};
+
+			m.getEventsCount = function(accessor)
+			{
+				if(accessor && accessor.minkoEvents)
+					return accessor.minkoEvents.length;
+				else
+					return 0;
+			};
+
+			m.clearEvents = function(accessor)
+			{
+				if(accessor)
+					accessor.minkoEvents = [];
+			};
+
+			m.loadUrl = function(url)
+			{
+				Minko.loaded = 0;
+				iframeElement.src = url;
+
+				console.log("loaded " + url);
+			}
+
+			window.Minko = m;
+        </script>
+	</body>
+</html>

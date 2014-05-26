@@ -17,52 +17,17 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#pragma once
+#import "IOSWebViewDelegate.h"
 
-#include "minko/Common.hpp"
-#include "AbstractDOM.hpp"
+@implementation IOSWebViewController
 
-namespace minko
-{
-	namespace dom
-	{
-		class AbstractDOMEngine
-		{
-		public:
-			typedef std::shared_ptr<AbstractDOMEngine> Ptr;
-			
-			virtual
-			~AbstractDOMEngine()
-			{
-			}
-
-			virtual
-			AbstractDOM::Ptr
-			load(std::string uri) = 0;
-
-			virtual
-			void
-			clear() = 0;
-
-			virtual
-			Signal<AbstractDOM::Ptr, std::string>::Ptr
-			onload() = 0;
-
-			virtual
-			Signal<AbstractDOM::Ptr, std::string>::Ptr
-			onmessage() = 0;
-
-			virtual
-			AbstractDOM::Ptr
-			mainDOM() = 0;
-
-			virtual
-			void
-			visible(bool) = 0;
-            
-            virtual
-			bool
-			visible() = 0;
-		};
-	}
+- (void)webViewDidFinishLoad:(UIWebView *)webView{
+    NSLog(@"FINISHED TO LOAD!!!!!!!!!!!!!");
 }
+
+- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation
+{
+    return true;
+}
+
+@end

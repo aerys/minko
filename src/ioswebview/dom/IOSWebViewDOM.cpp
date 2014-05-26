@@ -21,6 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 #include "ioswebview/dom/IOSWebViewDOM.hpp"
+#include "ioswebview/dom/IOSWebViewDOMEngine.hpp"
 
 using namespace minko;
 using namespace minko::dom;
@@ -31,25 +32,31 @@ IOSWebViewDOM::IOSWebViewDOM(std::string jsAccessor) :
 	_initialized(false),
 	_onload(Signal<AbstractDOM::Ptr, std::string>::create()),
 	_onmessage(Signal<AbstractDOM::Ptr, std::string>::create()),
-	_jsAccessor(jsAccessor)
+	_jsAccessor(jsAccessor),
+    _engine(nullptr)
 {
 }
 
 IOSWebViewDOM::Ptr
-IOSWebViewDOM::create(std::string jsAccessor)
+IOSWebViewDOM::create(std::string jsAccessor, std::shared_ptr<IOSWebViewDOMEngine> engine)
 {
-	IOSWebViewDOM::Ptr dom(new IOSWebViewDOM(jsAccessor));
+	Ptr dom(new IOSWebViewDOM(jsAccessor));
+    dom->_engine = engine;
+    
 	return dom;
 }
 
 void
 IOSWebViewDOM::sendMessage(std::string message, bool async)
 {
-	std::string eval = "if (" + _jsAccessor + ".window.Minko.onmessage) " + _jsAccessor + ".window.Minko.onmessage('" + message + "');";
+	//std::string eval = "if (" + _jsAccessor + ".window.Minko.onmessage) " + _jsAccessor + ".window.Minko.onmessage('" + message + "');";
 	//if (!async)
 		//emscripten_run_script(eval.c_str());
 	//else
 	//	emscripten_async_run_script("console.log('toto'); if (" + _jsAccessor + ".window.Minko.onmessage) " + _jsAccessor + ".window.Minko.onmessage('" + message + "');", 1);
+
+    WebViewJavascriptBridge* bridge = _engine->bridge();
+    [bridge send:[NSString stringWithCString:message.c_str() encoding:[NSString defaultCStringEncoding]]];
 }
 
 void

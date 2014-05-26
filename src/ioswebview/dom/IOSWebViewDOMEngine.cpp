@@ -24,10 +24,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/FileProtocol.hpp"
 #include "minko/file/AssetLibrary.hpp"
 #include "ioswebview/dom/IOSWebViewDOMEngine.hpp"
+#include "ioswebview/dom/IOSWebViewDOMElement.hpp"
 
 #include "minko/MinkoSDL.hpp"
-
-#import "WebViewJavascriptBridge.h"
 
 #include "../../plugin/sdl/lib/sdl/include/SDL2/SDL.h"
 #include "../../plugin/sdl/lib/sdl/include/SDL2/SDL_syswm.h"
@@ -41,11 +40,15 @@ using namespace ioswebview::dom;
 int
 IOSWebViewDOMEngine::_domUid = 0;
 
+std::function<void(std::string&)>
+IOSWebViewDOMEngine::handleJavascriptMessageWrapper;
+
 IOSWebViewDOMEngine::IOSWebViewDOMEngine() :
 	_loadedPreviousFrameState(0),
 	_onload(Signal<AbstractDOM::Ptr, std::string>::create()),
 	_onmessage(Signal<AbstractDOM::Ptr, std::string>::create()),
-	_visible(true)
+	_visible(true),
+    _waitingForLoad(true)
 {
 }
 
@@ -56,8 +59,6 @@ IOSWebViewDOMEngine::initialize(AbstractCanvas::Ptr canvas, SceneManager::Ptr sc
 	_sceneManager = sceneManager;
 
 	//loadScript("script/overlay.js");
-
-	visible(_visible);
     
     // Create a web view
     NSLog(@"COUCOU");
@@ -65,38 +66,79 @@ IOSWebViewDOMEngine::initialize(AbstractCanvas::Ptr canvas, SceneManager::Ptr sc
     // Get window from canvas
     auto newCanvas = std::static_pointer_cast<Canvas>(canvas);
     SDL_Window* sdlWindow = newCanvas->window();
-    UIWindow *window;
     SDL_SysWMinfo info;
     
     SDL_VERSION(&info.version);
     
     if (SDL_GetWindowWMInfo(sdlWindow, &info))
     {
-        window = (UIWindow*)(info.info.uikit.window);
+        _window = (IOSTapDetectingWindow*)(info.info.uikit.window);
         
         // Create the web view
-        _webView = [[UIWebView alloc] initWithFrame:window.bounds];
+        _webView = [[IOSWebView alloc] initWithFrame:_window.bounds];
         //UIColor * clearColor = [UIColor colorWithRed:255/255.0f green:1/255.0f blue:0/255.0f alpha:1.0f];
         [_webView setBackgroundColor: [UIColor clearColor]];
         [_webView setOpaque:NO];
-        /*
+
         _webView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin |
                                     UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin |
                                     UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
         
-        window.autoresizesSubviews = YES;
-        */
-        [window addSubview:_webView];
+        _webView.scrollView.scrollEnabled = NO;
+        _webView.scrollView.bounces = NO;
         
-        /*
-        WebViewJavascriptBridge* bridge = [WebViewJavascriptBridge bridgeForWebView:_webView handler:^(id data, WVJBResponseCallback responseCallback) {
-                                           NSLog(@"Received message from javascript: %@", data);
-                                           responseCallback(@"Right back atcha");
-                                           }];
+        IOSWebViewController *iOSWebViewDelegate = [[IOSWebViewController alloc] init];
+        [_webView setDelegate: iOSWebViewDelegate];
+        _webView.delegate = iOSWebViewDelegate;
         
-        [bridge send:@"Well hello there"];
-        */
+        //[_webView stringByEvaluatingJavaScriptFromString:@"var e = document.createEvent('Events'); e.initEvent('orientationchange', true, false); document.dispatchEvent(e);"];
+        
+        _window.autoresizesSubviews = YES;
+        
+        // Add the web view to the current window
+        [_window addSubview:_webView];
+        
+        // Load iframe with bridge JS callback handler
+        NSURL *url = [NSURL fileURLWithPath:@"asset/html/iframe.html"];
+        
+        NSURLRequest *requestObj = [NSURLRequest requestWithURL:url];
+        [_webView loadRequest:requestObj];
+        
+        
+        handleJavascriptMessageWrapper = std::bind(
+                       &IOSWebViewDOMEngine::handleJavascriptMessage,
+                       this,
+                       std::placeholders::_1
+        );
+        
+        [WebViewJavascriptBridge enableLogging];
+        _bridge = [WebViewJavascriptBridge bridgeForWebView:_webView handler:
+                   //[=](id data, WVJBResponseCallback responseCallback){
+                   ^(id data, WVJBResponseCallback responseCallback) {
+                   NSLog(@"Received message from javascript: %@", data);
+                   responseCallback(@"Right back atcha");
+
+                   if ([data isKindOfClass:[NSString class]])
+                   {
+                        NSString *dataString = (NSString *)data;
+                        
+                        std::string cppString([dataString UTF8String]);
+                   
+                        IOSWebViewDOMEngine::handleJavascriptMessageWrapper(cppString);
+                   }
+         }];
+        
+        //[_webView stringByEvaluatingJavaScriptFromString:@"alert('CECI EST UN COUCOU DE TEST');"];
+        
+        //window.viewToObserve = _webView;
+        //window.controllerThatObserves = nil;
+        
+        [_bridge send:@"alert('COUCOU');"];
+        
+        
     }
+    
+    visible(_visible);
 
 	_canvasResizedSlot = _canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
 	{
@@ -139,9 +181,11 @@ IOSWebViewDOMEngine::createNewDom()
 	std::string domName = "Minko.dom" + std::to_string(_domUid++);
 
 	std::string eval = domName + " = {};";
+    
+    //[_bridge send: eval];
 	//emscripten_run_script(eval.c_str());
 	
-	_currentDOM = IOSWebViewDOM::create(domName);
+	_currentDOM = IOSWebViewDOM::create(domName, shared_from_this());
 }
 
 
@@ -154,10 +198,24 @@ IOSWebViewDOMEngine::mainDOM()
 void
 IOSWebViewDOMEngine::enterFrame()
 {
-	std::string eval = "(Minko.loaded)";
-    
-    /*
-	int loadedState = emscripten_run_script_int(eval.c_str());
+    if (_waitingForLoad)
+    {
+        std::string jsEval = "try{ var loaded = Minko.loaded; ('true')} catch(e) {('false')}";
+        
+        std::string res = eval(jsEval);
+        
+        if (res == "true")
+        {
+            _waitingForLoad = false;
+            load(_uriToLoad);
+        }
+        
+        return;
+    }
+	std::string jsEval = "(Minko.loaded + '')";
+
+    std::string res = eval(jsEval);
+	int loadedState = atoi(res.c_str());
 
 	if (loadedState == 1)
 	{
@@ -169,38 +227,36 @@ IOSWebViewDOMEngine::enterFrame()
 		_currentDOM->onload()->execute(_currentDOM, _currentDOM->fullUrl());
 		_onload->execute(_currentDOM, _currentDOM->fullUrl());
 
-		eval = "Minko.loaded = 0";
-		emscripten_run_script(eval.c_str());
+		jsEval = "Minko.loaded = 0";
+		eval(jsEval);
 	}
 
-	for(auto element : EmscriptenDOMElement::domElements)
-	{
-		element->update();
-	}
+//	for(auto element : IOSWebViewDOMElement::domElements)
+//	{
+//		element->update();
+//	}
 
 	if (_currentDOM->initialized())
 	{
-		std::string eval = "(Minko.iframeElement.contentWindow.Minko.messagesToSend.length);";
-		int l = emscripten_run_script_int(eval.c_str());
+		std::string jsEval = "(Minko.iframeElement.contentWindow.Minko.messagesToSend.length);";
+		int l = atoi(eval(jsEval).c_str());
 
 		if (l > 0)
 		{
 			for(int i = 0; i < l; ++i)
 			{
-				std::string eval = "(Minko.iframeElement.contentWindow.Minko.messagesToSend[" + std::to_string(i) + "])";
-				char* charMessage = emscripten_run_script_string(eval.c_str());
-				
-				std::string message(charMessage);
+                jsEval = "(Minko.iframeElement.contentWindow.Minko.messagesToSend[" + std::to_string(i) + "])";
+                
+				std::string message = eval(jsEval);
 
 				_currentDOM->onmessage()->execute(_currentDOM, message);
 				_onmessage->execute(_currentDOM, message);
 			}
 
-			std::string eval = "Minko.iframeElement.contentWindow.Minko.messagesToSend = [];";
-			emscripten_run_script(eval.c_str());
+			jsEval = "Minko.iframeElement.contentWindow.Minko.messagesToSend = [];";
+			eval(jsEval);
 		}
 	}
-    */
 }
 
 IOSWebViewDOMEngine::Ptr
@@ -213,27 +269,42 @@ IOSWebViewDOMEngine::create()
 AbstractDOM::Ptr
 IOSWebViewDOMEngine::load(std::string uri)
 {
-	bool isHttp		= uri.substr(0, 7) == "http://";
-	bool isHttps	= uri.substr(0, 8) == "https://";
-
-    NSURL *url;
+	createNewDom();
     
-	if (!isHttp && !isHttps)
+    if (_waitingForLoad)
     {
-		uri = "asset/" + uri;
-        NSString *fullUrl = [NSString stringWithCString:uri.c_str() encoding:[NSString defaultCStringEncoding]];
-        url = [NSURL fileURLWithPath:fullUrl];
+        _uriToLoad = uri;
     }
     else
     {
-        NSString *fullUrl = [NSString stringWithCString:uri.c_str() encoding:[NSString defaultCStringEncoding]];
-        url = [NSURL URLWithString:fullUrl];
+        bool isHttp		= uri.substr(0, 7) == "http://";
+        bool isHttps	= uri.substr(0, 8) == "https://";
+        
+        NSURL *url;
+        
+        /*
+         if (!isHttp && !isHttps)
+         {
+         uri = "asset/" + uri;
+         NSString *fullUrl = [NSString st	ringWithCString:uri.c_str() encoding:[NSString defaultCStringEncoding]];
+         url = [NSURL fileURLWithPath:fullUrl];
+         }
+         else
+         {
+         NSString *fullUrl = [NSString stringWithCString:uri.c_str() encoding:[NSString defaultCStringEncoding]];
+         url = [NSURL URLWithString:fullUrl];
+         }
+         
+         NSURLRequest *requestObj = [NSURLRequest requestWithURL:url];
+         [_webView loadRequest:requestObj];
+         */
+        
+        
+        std::string jsEval = "Minko.loadUrl('" + uri + "')";
+        
+        
+        eval(jsEval);
     }
-    
-    NSURLRequest *requestObj = [NSURLRequest requestWithURL:url];
-    [_webView loadRequest:requestObj];
-    
-	createNewDom();
 
 	return _currentDOM;
 }
@@ -255,9 +326,47 @@ IOSWebViewDOMEngine::onmessage()
 	return _onmessage;
 }
 
+bool
+IOSWebViewDOMEngine::visible()
+{
+    return _visible;
+}
+
 void
 IOSWebViewDOMEngine::visible(bool value)
 {
+    if (_canvas != nullptr)
+	{
+        //[_webView setHidden:value];
+        //_webView.hidden = value;
+        
+        if (value != _visible)
+        {
+            if (value)
+                [_window addSubview:_webView];
+            else
+                [_webView removeFromSuperview];
+        }
+	}
+    
 	_visible = value;
 }
+
+void IOSWebViewDOMEngine::handleJavascriptMessage(std::string message)
+{
+    if (message == "ready")
+    {
+        std::cout << "READY" << std::endl;
+    }
+}
+
+std::string
+IOSWebViewDOMEngine::eval(std::string data)
+{
+    NSString *result = [_webView stringByEvaluatingJavaScriptFromString: [NSString stringWithCString:data.c_str() encoding:[NSString defaultCStringEncoding]]];
+    std::string resultString([result UTF8String]);
+    
+    return resultString;
+}
+
 #endif

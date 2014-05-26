@@ -38,7 +38,8 @@ minko.plugin["html-overlay"].enable = function()
 	configuration { "ios" }
 		buildoptions { "-x objective-c++" }
 		prelinkcommands {
-			minko.action.copy(minko.plugin.path("html-overlay") .. "/asset")
+			minko.action.copy(minko.plugin.path("html-overlay") .. "/asset"),
+			minko.action.copy(minko.plugin.path("html-overlay") .. "/lib/WebViewJavascriptBridge/WebViewJavascriptBridge.js.txt"),
 		}
 
 	configuration { "windows32 or windows64" }

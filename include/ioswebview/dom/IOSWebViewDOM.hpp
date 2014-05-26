@@ -27,11 +27,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "IOSWebViewDOMElement.hpp"
 #include "minko/dom/AbstractDOM.hpp"
 
+#import "WebViewJavascriptBridge.h"
+
 namespace ioswebview
 {
 	namespace dom
 	{
-		class IOSWebViewDOM : public minko::dom::AbstractDOM
+        class IOSWebViewDOMEngine;
+        
+		class IOSWebViewDOM : public minko::dom::AbstractDOM,
+            public std::enable_shared_from_this<IOSWebViewDOM>
 		{
 		public:
 			typedef std::shared_ptr<IOSWebViewDOM> Ptr;
@@ -42,7 +47,7 @@ namespace ioswebview
 		public:
 			static
 			Ptr
-			create(std::string);
+			create(std::string, std::shared_ptr<IOSWebViewDOMEngine> engine);
 
 			void
 			sendMessage(std::string, bool async);
@@ -97,6 +102,8 @@ namespace ioswebview
 			bool _initialized;
 
 			std::string _jsAccessor;
+            
+            std::shared_ptr<IOSWebViewDOMEngine> _engine;
             
 			IOSWebViewDOMElement::Ptr _document;
 			IOSWebViewDOMElement::Ptr _body;

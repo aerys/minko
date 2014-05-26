@@ -17,52 +17,16 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#pragma once
+#import <UIKit/UIKit.h>
+@protocol IOSTapDetectingWindowDelegate
+- (void)userDidTapWebView:(id)tapPoint;
+@end
 
-#include "minko/Common.hpp"
-#include "AbstractDOM.hpp"
-
-namespace minko
-{
-	namespace dom
-	{
-		class AbstractDOMEngine
-		{
-		public:
-			typedef std::shared_ptr<AbstractDOMEngine> Ptr;
-			
-			virtual
-			~AbstractDOMEngine()
-			{
-			}
-
-			virtual
-			AbstractDOM::Ptr
-			load(std::string uri) = 0;
-
-			virtual
-			void
-			clear() = 0;
-
-			virtual
-			Signal<AbstractDOM::Ptr, std::string>::Ptr
-			onload() = 0;
-
-			virtual
-			Signal<AbstractDOM::Ptr, std::string>::Ptr
-			onmessage() = 0;
-
-			virtual
-			AbstractDOM::Ptr
-			mainDOM() = 0;
-
-			virtual
-			void
-			visible(bool) = 0;
-            
-            virtual
-			bool
-			visible() = 0;
-		};
-	}
+@interface IOSTapDetectingWindow : UIWindow {
+    UIView *viewToObserve;
+    id <IOSTapDetectingWindowDelegate> controllerThatObserves;
 }
+
+@property (nonatomic, retain) UIView *viewToObserve;
+@property (nonatomic, assign) id <IOSTapDetectingWindowDelegate> controllerThatObserves;
+@end
