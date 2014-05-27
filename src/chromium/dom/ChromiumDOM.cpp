@@ -44,6 +44,7 @@ ChromiumDOM::ChromiumDOM() :
 	_init(false),
 	_executeOnLoad(false),
 	_receivedMessages(),
+	_receivedMessagesMutex(),
 	_blocker(true)
 {
 }
@@ -209,7 +210,9 @@ ChromiumDOM::addSendMessageFunction()
 			CefRefPtr<CefV8Value> messageV8Value = arguments[0];
 			std::string message = messageV8Value->GetStringValue();
 
+			_receivedMessagesMutex.lock();
 			_receivedMessages.push_back(message);
+			_receivedMessagesMutex.unlock();
 		}
 	});
 }
@@ -242,12 +245,14 @@ ChromiumDOM::update()
 {
 	ChromiumDOMElement::update();
 
+	_receivedMessagesMutex.lock();
 	for (std::string message : _receivedMessages)
 	{
 		_onmessage->execute(shared_from_this(), message);
 		_engine->onmessage()->execute(shared_from_this(), message);
 	}
 	_receivedMessages.clear();
+	_receivedMessagesMutex.unlock();
 
 	if (_executeOnLoad)
 	{
