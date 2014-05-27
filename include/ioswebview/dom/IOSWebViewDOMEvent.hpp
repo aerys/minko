@@ -28,6 +28,8 @@ namespace ioswebview
 {
 	namespace dom
 	{
+        class IOSWebViewDOMEngine;
+        
 		class IOSWebViewDOMEvent : public minko::dom::AbstractDOMEvent
 		{
 		public:
@@ -43,9 +45,11 @@ namespace ioswebview
 
 			static
 			Ptr
-			create(std::string jsAccessor)
+			create(std::string jsAccessor, std::shared_ptr<IOSWebViewDOMEngine> engine)
 			{
 				Ptr event(new IOSWebViewDOMEvent(jsAccessor));
+                event->_engine = engine;
+                
 				return event;
 			}
 
@@ -89,6 +93,7 @@ namespace ioswebview
 
 		private:
 			std::string _jsAccessor;
+            std::shared_ptr<IOSWebViewDOMEngine> _engine;
 		};
 	}
 }

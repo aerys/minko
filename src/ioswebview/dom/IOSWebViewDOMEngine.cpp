@@ -134,8 +134,6 @@ IOSWebViewDOMEngine::initialize(AbstractCanvas::Ptr canvas, SceneManager::Ptr sc
         //window.controllerThatObserves = nil;
         
         [_bridge send:@"alert('COUCOU');"];
-        
-        
     }
     
     visible(_visible);
@@ -231,10 +229,10 @@ IOSWebViewDOMEngine::enterFrame()
 		eval(jsEval);
 	}
 
-//	for(auto element : IOSWebViewDOMElement::domElements)
-//	{
-//		element->update();
-//	}
+	for(auto element : IOSWebViewDOMElement::domElements)
+	{
+		element->update();
+	}
 
 	if (_currentDOM->initialized())
 	{

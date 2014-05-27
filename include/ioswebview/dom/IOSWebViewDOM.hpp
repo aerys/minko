@@ -94,9 +94,18 @@ namespace ioswebview
 			void
 			initialized(bool);
 
-			static
 			std::vector<minko::dom::AbstractDOMElement::Ptr>
 			getElementList(std::string);
+            
+            
+            void
+            runScript(std::string script);
+            
+            std::string
+            runScriptString(std::string script);
+            
+            int
+            runScriptInt(std::string script);
 
 		private:
 			bool _initialized;

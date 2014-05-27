@@ -17,11 +17,12 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#if defined(EMSCRIPTEN)
+#if defined(TARGET_IPHONE_SIMULATOR) or defined(TARGET_OS_IPHONE) // iOS
 
 #include "minko/Common.hpp"
 #include "ioswebview/dom/IOSWebViewDOMElement.hpp"
 #include "ioswebview/dom/IOSWebViewDOMEvent.hpp"
+#include "ioswebview/dom/IOSWebViewDOMEngine.hpp"
 #include "ioswebview/dom/IOSWebViewDOM.hpp"
 #include "minko/dom/AbstractDOMEvent.hpp"
 
@@ -53,45 +54,55 @@ IOSWebViewDOMElement::IOSWebViewDOMElement(std::string jsAccessor) :
 	_onmousemoveSet(false),
 	_onmouseupSet(false),
 	_onmouseoverSet(false),
-	_onmouseoutSet(false)
+	_onmouseoutSet(false),
+    _engine(nullptr)
 {
-	std::string eval = jsAccessor + ".minkoName = '" + jsAccessor + "';";
-	//emscripten_run_script(eval.c_str());
+	
 }
 
-
-IOSWebViewDOMElement::Ptr
-IOSWebViewDOMElement::getDOMElement(std::string jsElement)
+void
+IOSWebViewDOMElement::initialize(std::shared_ptr<IOSWebViewDOMEngine> engine)
 {
-//	std::string eval = "if (" + jsElement + ".minkoName) (" + jsElement + ".minkoName); else ('');";
-//	std::string minkoName = std::string(emscripten_run_script_string(eval.c_str()));
-//
-//	if (minkoName == "")
-//	{
-//		minkoName = "Minko.element" + std::to_string(_elementUid++);
-//
-//		eval = minkoName + " = " + jsElement;
-//		emscripten_run_script(eval.c_str());
-//	}
-//	else
-//	{
-//		auto i = _accessorToElement.find(minkoName);
-//
-//		if (i != _accessorToElement.end())
-//			return i->second;
-//	}
-//
-//	return create(minkoName);
+    _engine = engine;
     
-    return nullptr;
+    std::string jsEval = _jsAccessor + ".minkoName = '" + _jsAccessor + "';";
+    _engine->eval(jsEval);
+}
+
+
+IOSWebViewDOMElement::Ptr
+IOSWebViewDOMElement::getDOMElement(std::string jsElement, std::shared_ptr<IOSWebViewDOMEngine> engine)
+{
+	std::string js = "if (" + jsElement + ".minkoName) (" + jsElement + ".minkoName); else ('');";
+	std::string minkoName = std::string(engine->eval(js.c_str()));
+
+	if (minkoName == "")
+	{
+		minkoName = "Minko.element" + std::to_string(_elementUid++);
+
+		js = minkoName + " = " + jsElement;
+		engine->eval(js);
+	}
+	else
+	{
+		auto i = _accessorToElement.find(minkoName);
+
+		if (i != _accessorToElement.end())
+			return i->second;
+	}
+
+	return create(minkoName, engine);
 }
 
 IOSWebViewDOMElement::Ptr
-IOSWebViewDOMElement::create(std::string jsAccessor)
+IOSWebViewDOMElement::create(std::string jsAccessor, std::shared_ptr<IOSWebViewDOMEngine> engine)
 {
 	IOSWebViewDOMElement::Ptr element(new IOSWebViewDOMElement(jsAccessor));
-	domElements.push_back(element);
+    element->initialize(engine);
+    
+    domElements.push_back(element);
 	_accessorToElement[jsAccessor] = element;
+    
 	return element;
 }
 
@@ -104,97 +115,97 @@ IOSWebViewDOMElement::getJavascriptAccessor()
 std::string
 IOSWebViewDOMElement::id()
 {
-	std::string eval = "(" + _jsAccessor + ".id)";
-	//char* result = emscripten_run_script_string(eval.c_str());
-	
-    return std::string(/*result*/);
+	std::string js = "(" + _jsAccessor + ".id)";
+    std::string result = _engine->eval(js);
+    
+    return result;
 }
 
 void
 IOSWebViewDOMElement::id(std::string newId)
 {
-	std::string eval = _jsAccessor + ".id = '" + newId + "';";
-	//emscripten_run_script(eval.c_str());
+	std::string js = _jsAccessor + ".id = '" + newId + "';";
+	_engine->eval(js);
 }
 
 std::string
 IOSWebViewDOMElement::className()
 {
-	std::string eval = "(" + _jsAccessor + ".className)";
-	//char* result = emscripten_run_script_string(eval.c_str());
+	std::string js = "(" + _jsAccessor + ".className)";
+    std::string result = _engine->eval(js);
 	
-    return std::string(/*result*/);
+    return result;
 }
 
 void
 IOSWebViewDOMElement::className(std::string newClassName)
 {
-	std::string eval = _jsAccessor + ".className = '" + newClassName + "';";
-	//emscripten_run_script(eval.c_str());
+	std::string js = _jsAccessor + ".className = '" + newClassName + "';";
+	_engine->eval(js);
 }
 
 std::string
 IOSWebViewDOMElement::tagName()
 {
-	std::string eval = "(" + _jsAccessor + ".tagName)";
-	//char* result = emscripten_run_script_string(eval.c_str());
-    
-	return std::string(/*result*/);
+	std::string js = "(" + _jsAccessor + ".tagName)";
+	std::string result = _engine->eval(js);
+	
+    return result;
 }
 
 AbstractDOMElement::Ptr
 IOSWebViewDOMElement::parentNode()
 {
-	std::string eval = "Minko.tmpElement  = " + _jsAccessor + ".parentNode;";
-	//emscripten_run_script(eval.c_str());
+	std::string js = "Minko.tmpElement  = " + _jsAccessor + ".parentNode;";
+	_engine->eval(js);
 
-	return IOSWebViewDOMElement::getDOMElement("Minko.tmpElement");
+	return IOSWebViewDOMElement::getDOMElement("Minko.tmpElement", _engine);
 }
 
 std::vector<minko::dom::AbstractDOMElement::Ptr>
 IOSWebViewDOMElement::childNodes()
 {
-	return (IOSWebViewDOM::getElementList(_jsAccessor + ".childNodes"));
+	return (_engine->currentDOM()->getElementList(_jsAccessor + ".childNodes"));
 }
 
 std::string
 IOSWebViewDOMElement::textContent()
 {
-	std::string eval = "(" + _jsAccessor + ".textContent)";
-	//char* result = emscripten_run_script_string(eval.c_str());
-    
-	return std::string(/*result*/);
+	std::string js = "(" + _jsAccessor + ".textContent)";
+	std::string result = _engine->eval(js);
+	
+    return result;
 }
 
 void
 IOSWebViewDOMElement::textContent(std::string newTextContent)
 {
-	std::string eval = _jsAccessor + ".textContent = '" + newTextContent + "';";
-	//emscripten_run_script(eval.c_str());
+	std::string js = _jsAccessor + ".textContent = '" + newTextContent + "';";
+	_engine->eval(js);
 }
 
 std::string
 IOSWebViewDOMElement::innerHTML()
 {
-	std::string eval = "(" + _jsAccessor + ".innerHTML)";
-	//char* result = emscripten_run_script_string(eval.c_str());
+	std::string js = "(" + _jsAccessor + ".innerHTML)";
+	std::string result = _engine->eval(js);
 	
-    return std::string(/*result*/);
+    return result;
 }
 
 void
 IOSWebViewDOMElement::innerHTML(std::string newInnerHTML)
 {
-	std::string eval = _jsAccessor + ".innerHTML = '" + newInnerHTML + "';";
-	//emscripten_run_script(eval.c_str());
+	std::string js = _jsAccessor + ".innerHTML = '" + newInnerHTML + "';";
+	_engine->eval(js);
 }
 
 AbstractDOMElement::Ptr
 IOSWebViewDOMElement::appendChild(minko::dom::AbstractDOMElement::Ptr newChild)
 {
 	IOSWebViewDOMElement::Ptr child = std::dynamic_pointer_cast<IOSWebViewDOMElement>(newChild);
-	std::string eval = _jsAccessor + ".appendChild(" + child->getJavascriptAccessor() + ");";
-	//emscripten_run_script(eval.c_str());
+	std::string js = _jsAccessor + ".appendChild(" + child->getJavascriptAccessor() + ");";
+	_engine->eval(js);
 
 	return shared_from_this();
 }
@@ -203,8 +214,8 @@ AbstractDOMElement::Ptr
 IOSWebViewDOMElement::removeChild(minko::dom::AbstractDOMElement::Ptr childToRemove)
 {
 	IOSWebViewDOMElement::Ptr child = std::dynamic_pointer_cast<IOSWebViewDOMElement>(childToRemove);
-	std::string eval = _jsAccessor + ".removeChild(" + child->getJavascriptAccessor() + ");";
-	//emscripten_run_script(eval.c_str());
+	std::string js = _jsAccessor + ".removeChild(" + child->getJavascriptAccessor() + ");";
+	_engine->eval(js);
 
 	return shared_from_this();
 }
@@ -214,8 +225,8 @@ IOSWebViewDOMElement::insertBefore(minko::dom::AbstractDOMElement::Ptr newChild,
 {
 	IOSWebViewDOMElement::Ptr child = std::dynamic_pointer_cast<IOSWebViewDOMElement>(newChild);
 	IOSWebViewDOMElement::Ptr adjNode = std::dynamic_pointer_cast<IOSWebViewDOMElement>(adjacentNode);
-	std::string eval = _jsAccessor + ".removeChild(" + child->getJavascriptAccessor() + ", " + adjNode->getJavascriptAccessor() + ");";
-	//emscripten_run_script(eval.c_str());
+	std::string js = _jsAccessor + ".removeChild(" + child->getJavascriptAccessor() + ", " + adjNode->getJavascriptAccessor() + ");";
+	_engine->eval(js);
 
 	return shared_from_this();
 }
@@ -223,57 +234,57 @@ IOSWebViewDOMElement::insertBefore(minko::dom::AbstractDOMElement::Ptr newChild,
 AbstractDOMElement::Ptr
 IOSWebViewDOMElement::cloneNode(bool deep)
 {
-	std::string eval = "Minko.tmpElement = " + _jsAccessor + ".cloneNode(" + (deep ? "true" : "false") + ");";
-	//emscripten_run_script(eval.c_str());
+	std::string js = "Minko.tmpElement = " + _jsAccessor + ".cloneNode(" + (deep ? "true" : "false") + ");";
+	_engine->eval(js);
 
-	return IOSWebViewDOMElement::create("Minko.tmpElement");
+	return IOSWebViewDOMElement::create("Minko.tmpElement", _engine);
 }
 
 std::string
 IOSWebViewDOMElement::getAttribute(std::string name)
 {
-	std::string eval = "(" + _jsAccessor + ".getAttribute('" + name + "'))";
-	//char* result = emscripten_run_script_string(eval.c_str());
+	std::string js = "(" + _jsAccessor + ".getAttribute('" + name + "'))";
+	std::string result = _engine->eval(js);
 	
-    return std::string(/*result*/);
+    return result;
 }
 
 void
 IOSWebViewDOMElement::setAttribute(std::string name, std::string value)
 {
-	std::string eval = _jsAccessor + ".setAttribute('" + name + "', '" + value + "');";
-	//emscripten_run_script(eval.c_str());
+	std::string js = _jsAccessor + ".setAttribute('" + name + "', '" + value + "');";
+	_engine->eval(js);
 }
 
 std::vector<minko::dom::AbstractDOMElement::Ptr>
 IOSWebViewDOMElement::getElementsByTagName(std::string tagName)
 {
-	return (EmscriptenDOM::getElementList(_jsAccessor + ".getElementsByTagName('" + tagName + "')"));
+	return (_engine->currentDOM()->getElementList(_jsAccessor + ".getElementsByTagName('" + tagName + "')"));
 }
 
 
 std::string
 IOSWebViewDOMElement::style(std::string name)
 {
-	std::string eval = "(" + _jsAccessor + ".style." + name + ")";
-	//char* result = emscripten_run_script_string(eval.c_str());
+	std::string js = "(" + _jsAccessor + ".style." + name + ")";
+	std::string result = _engine->eval(js);
 	
-    return std::string(/*result*/);
+    return result;
 }
 
 void
 IOSWebViewDOMElement::style(std::string name, std::string value)
 {
-	std::string eval = _jsAccessor + ".style." + name + " = '" + value + "';";
-	//emscripten_run_script(eval.c_str());
+	std::string js = _jsAccessor + ".style." + name + " = '" + value + "';";
+	_engine->eval(js);
 }
 
 void
 IOSWebViewDOMElement::addEventListener(std::string type)
 {
-	std::string eval = "Minko.addListener(" + _jsAccessor + ", '" + type + "');";
+	std::string js = "Minko.addListener(" + _jsAccessor + ", '" + type + "');";
 
-	//emscripten_run_script(eval.c_str());
+	_engine->eval(js);
 }
 
 Signal<std::shared_ptr<AbstractDOMEvent>>::Ptr
@@ -351,16 +362,16 @@ IOSWebViewDOMElement::onmouseover()
 void
 IOSWebViewDOMElement::update()
 { 
-	std::string eval = "(Minko.getEventsCount(" + _jsAccessor + "))";
-	//int l = emscripten_run_script_int(eval.c_str());
+	std::string js = "(Minko.getEventsCount(" + _jsAccessor + "))";
+	int l = atoi(_engine->eval(js).c_str());
 
 	for(int i = 0; i < l; ++i)
 	{
 		std::string eventName = "Minko.event" + std::to_string(_elementUid++);
-		eval =  eventName + " = " + _jsAccessor + ".minkoEvents[" + std::to_string(i) + "];";
-		//emscripten_run_script(eval.c_str());
+		js =  eventName + " = " + _jsAccessor + ".minkoEvents[" + std::to_string(i) + "];";
+		_engine->eval(js);
 
-		EmscriptenDOMEvent::Ptr event = EmscriptenDOMEvent::create(eventName);
+		IOSWebViewDOMEvent::Ptr event = IOSWebViewDOMEvent::create(eventName, _engine);
 
 		std::string type = event->type();
 
@@ -378,8 +389,8 @@ IOSWebViewDOMElement::update()
 			_onmouseout->execute(event);
 	}
 
-	eval = "Minko.clearEvents(" + _jsAccessor + ");";
-	//emscripten_run_script(eval.c_str());
+	js = "Minko.clearEvents(" + _jsAccessor + ");";
+	_engine->eval(js);
 }
 
 #endif

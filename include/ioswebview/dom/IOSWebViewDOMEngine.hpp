@@ -88,14 +88,26 @@ namespace ioswebview
                 return _bridge;
             }
             
+            inline
+            IOSWebViewDOM::Ptr
+            currentDOM()
+            {
+                return _currentDOM;
+            }
+            
             std::string
 			eval(std::string);
             
             void
             handleJavascriptMessage(std::string message);
             
-            static std::function<void(std::string&)> handleJavascriptMessageWrapper;
-
+            static
+            std::function<void(std::string&)>
+            handleJavascriptMessageWrapper;
+            
+//            minko::dom::AbstractDOMEngine::Ptr
+//            abstractInstance();
+    
 		private:
 
 			void
@@ -128,9 +140,6 @@ namespace ioswebview
             
             bool _waitingForLoad;
             std::string _uriToLoad;
-            
-            
-            __block Ptr _self;
 		};
 	}
 }

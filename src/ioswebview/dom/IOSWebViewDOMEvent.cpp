@@ -17,10 +17,12 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#if defined(EMSCRIPTEN)
+#if defined(TARGET_IPHONE_SIMULATOR) or defined(TARGET_OS_IPHONE) // iOS
+
 #include "minko/Common.hpp"
 #include "ioswebview/dom/IOSWebViewDOMEvent.hpp"
 #include "ioswebview/dom/IOSWebViewDOMElement.hpp"
+#include "ioswebview/dom/IOSWebViewDOMEngine.hpp"
 
 using namespace minko;
 using namespace minko::dom;
@@ -31,105 +33,104 @@ void
 IOSWebViewDOMEvent::preventDefault()
 {
 	std::cerr << "Warning : AbstractDOMEvent::preventDefault will have no effect" << std::endl;
-	std::string eval = _jsAccessor + ".preventDefault()";
+	std::string js = _jsAccessor + ".preventDefault()";
 	
-    //emscripten_run_script(eval.c_str());
+    _engine->eval(js);
 }
 
 void
 IOSWebViewDOMEvent::stopPropagation()
 {
 	std::cerr << "Warning : AbstractDOMEvent::stopPropagation will have no effect" << std::endl;
-	std::string eval = _jsAccessor + ".stopPropagation()";
+	std::string js = _jsAccessor + ".stopPropagation()";
 	
-    //emscripten_run_script(eval.c_str());
+    _engine->eval(js);
 }
 
 std::string
 IOSWebViewDOMEvent::type()
 {
-	std::string eval = "(" + _jsAccessor + ".type)";
+	std::string js = "(" + _jsAccessor + ".type)";
+    std::string result = _engine->eval(js);
 
-	//char* result = emscripten_run_script_string(eval.c_str());
-
-	return std::string(/*result*/);
+	return std::string(result);
 }
 
 minko::dom::AbstractDOMElement::Ptr
 IOSWebViewDOMEvent::target()
 {
-	return EmscriptenDOMElement::getDOMElement(_jsAccessor + ".target");
+	return IOSWebViewDOMElement::getDOMElement(_jsAccessor + ".target", _engine);
 }
 
 int
 IOSWebViewDOMEvent::clientX()
 {
-	std::string eval = "(" + _jsAccessor + ".clientX)";
-	//int result = emscripten_run_script_int(eval.c_str());
+	std::string js = "(" + _jsAccessor + ".clientX)";
+	int result = atoi(_engine->eval(js).c_str());
     
-	return 0;//result;
+	return result;
 }
 
 int
 IOSWebViewDOMEvent::clientY()
 {
-	std::string eval = "(" + _jsAccessor + ".clientY)";
-	//int result = emscripten_run_script_int(eval.c_str());
-	
-    return 0;//result;
+	std::string js = "(" + _jsAccessor + ".clientY)";
+	int result = atoi(_engine->eval(js).c_str());
+    
+	return result;
 }
 
 int
 IOSWebViewDOMEvent::pageX()
 {
-	std::string eval = "(" + _jsAccessor + ".pageX)";
-	//int result = emscripten_run_script_int(eval.c_str());
-	
-    return 0;//result;
+	std::string js = "(" + _jsAccessor + ".pageX)";
+	int result = atoi(_engine->eval(js).c_str());
+    
+	return result;
 }
 
 int
 IOSWebViewDOMEvent::pageY()
 {
-	std::string eval = "(" + _jsAccessor + ".pageY)";
-	//int result = emscripten_run_script_int(eval.c_str());
-	
-    return 0;//result;
+	std::string js = "(" + _jsAccessor + ".pageY)";
+	int result = atoi(_engine->eval(js).c_str());
+    
+	return result;
 }
 
 int
 IOSWebViewDOMEvent::layerX()
 {
-	std::string eval = "(" + _jsAccessor + ".layerX)";
-	//int result = emscripten_run_script_int(eval.c_str());
-	
-    return 0;//result;
+	std::string js = "(" + _jsAccessor + ".layerX)";
+	int result = atoi(_engine->eval(js).c_str());
+    
+	return result;
 }
 
 int
 IOSWebViewDOMEvent::layerY()
 {
-	std::string eval = "(" + _jsAccessor + ".layerY)";
-	//int result = emscripten_run_script_int(eval.c_str());
-	
-    return 0;//result;
+	std::string js = "(" + _jsAccessor + ".layerY)";
+	int result = atoi(_engine->eval(js).c_str());
+    
+	return result;
 }
 
 int
 IOSWebViewDOMEvent::screenX()
 {
-	std::string eval = "(" + _jsAccessor + ".screenX)";
-	//int result = emscripten_run_script_int(eval.c_str());
-	
-    return 0;//result;
+	std::string js = "(" + _jsAccessor + ".screenX)";
+	int result = atoi(_engine->eval(js).c_str());
+    
+	return result;
 }
 
 int
 IOSWebViewDOMEvent::screenY()
 {
-	std::string eval = "(" + _jsAccessor + ".screenY)";
-	//int result = emscripten_run_script_int(eval.c_str());
-	
-    return 0;//result;
+	std::string js = "(" + _jsAccessor + ".screenY)";
+	int result = atoi(_engine->eval(js).c_str());
+    
+	return result;
 }
 #endif

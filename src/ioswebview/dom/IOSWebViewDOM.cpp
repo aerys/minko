@@ -62,43 +62,38 @@ IOSWebViewDOM::sendMessage(std::string message, bool async)
 void
 IOSWebViewDOM::eval(std::string message, bool async)
 {
-	//if (!async)
-		std::string ev = _jsAccessor + ".window.eval('" + message + "')";
-		//emscripten_run_script(ev.c_str());
-	//else
-	//	emscripten_async_run_script(message.c_str(), 1);
+    std::string ev = _jsAccessor + ".window.eval('" + message + "')";
+    _engine->eval(ev);
 }
 
 std::vector<AbstractDOMElement::Ptr>
 IOSWebViewDOM::getElementList(std::string expression)
 {
 	std::vector<minko::dom::AbstractDOMElement::Ptr> l;
-
+    
 	expression = "Minko.tmpElements = " + expression;
 
+    std::string expressionStr(expression.begin(), expression.end());
 	//emscripten_run_script(expression.c_str());
-    /*
+    runScript(expressionStr);
+    
 	expression = "(Minko.tmpElements.length)";
-	int numElements = emscripten_run_script_int(expression.c_str());
+	int numElements = runScriptInt(expressionStr);
 
 	for(int i = 0; i < numElements; ++i)
-		l.push_back(IOSWebViewDOMElement::getDOMElement("Minko.tmpElements[" + std::to_string(i) + "]"));
-    */
+		l.push_back(IOSWebViewDOMElement::getDOMElement("Minko.tmpElements[" + std::to_string(i) + "]", _engine));
+    
 	return l;
 }
 
 AbstractDOMElement::Ptr
 IOSWebViewDOM::createElement(std::string element)
 {
-    /*
 	std::string eval = "Minko.tmpElement = " + _jsAccessor + ".document.createElement('" + element + "');";
 
-	//emscripten_run_script(eval.c_str());
+	runScript(eval);
 
-	return IOSWebViewDOMElement::getDOMElement("Minko.tmpElement");
-     */
-    
-    return nullptr;
+	return IOSWebViewDOMElement::getDOMElement("Minko.tmpElement", _engine);
 }
 
 AbstractDOMElement::Ptr
@@ -106,11 +101,9 @@ IOSWebViewDOM::getElementById(std::string id)
 {
 	std::string eval = "Minko.tmpElement = " + _jsAccessor + ".document.getElementById('" + id + "');";
 
-	//emscripten_run_script(eval.c_str());
+	runScript(eval);
 
-	//return IOSWebViewDOMElement::getDOMElement("Minko.tmpElement");
-    
-    return nullptr;
+	return IOSWebViewDOMElement::getDOMElement("Minko.tmpElement", _engine);
 }
 
 std::vector<AbstractDOMElement::Ptr>
@@ -162,10 +155,10 @@ std::string
 IOSWebViewDOM::fullUrl()
 {
 	std::string eval = "(" + _jsAccessor + ".document.location)";
-
-	//char* result = emscripten_run_script_string(eval.c_str());
-
-	return std::string(/*result*/);
+    
+    std::string result = runScriptString(eval);
+    
+	return result;
 }
 
 bool
@@ -184,12 +177,10 @@ IOSWebViewDOM::initialized(bool v)
 		eval += _jsAccessor + ".document	= Minko.iframeElement.contentDocument;\n";
 		eval += _jsAccessor + ".body		= Minko.iframeElement.contentDocument.body;\n";
 		
-        //emscripten_run_script(eval.c_str());
+        runScript(eval);
 
-        /*
-		_document	= IOSWebViewDOMElement::create(_jsAccessor + ".document");
-		_body		= IOSWebViewDOMElement::create(_jsAccessor + ".body");
-        */
+		_document	= IOSWebViewDOMElement::create(_jsAccessor + ".document", _engine);
+		_body		= IOSWebViewDOMElement::create(_jsAccessor + ".body", _engine);
 	}
 
 	_initialized = v;
@@ -200,4 +191,23 @@ IOSWebViewDOM::initialized()
 {
 	return _initialized;
 }
+
+void
+IOSWebViewDOM::runScript(std::string script)
+{
+    _engine->eval(script);
+}
+
+std::string
+IOSWebViewDOM::runScriptString(std::string script)
+{
+    return _engine->eval(script);
+}
+
+int
+IOSWebViewDOM::runScriptInt(std::string script)
+{
+    return atoi(_engine->eval(script).c_str());
+}
+
 #endif

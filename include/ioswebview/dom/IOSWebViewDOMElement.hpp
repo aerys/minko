@@ -29,6 +29,7 @@ namespace ioswebview
 {
 	namespace dom
 	{
+        class IOSWebViewDOMEngine;
 
 		class IOSWebViewDOMElement : public minko::dom::AbstractDOMElement,
 			public std::enable_shared_from_this<IOSWebViewDOMElement>
@@ -46,14 +47,14 @@ namespace ioswebview
 
 			static
 			Ptr
-			getDOMElement(std::string jsElement);
+			getDOMElement(std::string jsElement, std::shared_ptr<IOSWebViewDOMEngine> engine);
 
 			std::string
 			getJavascriptAccessor();
 
 			static
 			Ptr
-			create(std::string javascriptAccessor);
+			create(std::string javascriptAccessor, std::shared_ptr<IOSWebViewDOMEngine> engine);
 
 			std::string
 			id();
@@ -140,6 +141,9 @@ namespace ioswebview
 		private:
 			void
 			addEventListener(std::string);
+            
+            void
+            initialize(std::shared_ptr<IOSWebViewDOMEngine> engine);
 
 		public:
 			static
@@ -168,6 +172,8 @@ namespace ioswebview
 			bool _onmouseupSet;
 			bool _onmouseoverSet;
 			bool _onmouseoutSet;
+            
+            std::shared_ptr<IOSWebViewDOMEngine> _engine;
 		};
 	}
 }
