@@ -1,5 +1,4 @@
 ;(function() {
-	alert('WebViewJavascriptBridge.js.txt has been loaded!');
 	if (window.WebViewJavascriptBridge) { return }
 	var messagingIframe
 	var sendMessageQueue = []

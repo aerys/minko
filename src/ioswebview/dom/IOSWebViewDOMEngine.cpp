@@ -280,28 +280,12 @@ IOSWebViewDOMEngine::load(std::string uri)
         bool isHttp		= uri.substr(0, 7) == "http://";
         bool isHttps	= uri.substr(0, 8) == "https://";
         
-        NSURL *url;
-        
-        /*
-         if (!isHttp && !isHttps)
-         {
-         uri = "asset/" + uri;
-         NSString *fullUrl = [NSString st	ringWithCString:uri.c_str() encoding:[NSString defaultCStringEncoding]];
-         url = [NSURL fileURLWithPath:fullUrl];
-         }
-         else
-         {
-         NSString *fullUrl = [NSString stringWithCString:uri.c_str() encoding:[NSString defaultCStringEncoding]];
-         url = [NSURL URLWithString:fullUrl];
-         }
-         
-         NSURLRequest *requestObj = [NSURLRequest requestWithURL:url];
-         [_webView loadRequest:requestObj];
-         */
-        
+        if (!isHttp && !isHttps)
+        {
+            uri = "../../asset/" + uri;
+        }
         
         std::string jsEval = "Minko.loadUrl('" + uri + "')";
-        
         
         eval(jsEval);
     }
@@ -337,9 +321,6 @@ IOSWebViewDOMEngine::visible(bool value)
 {
     if (_canvas != nullptr)
 	{
-        //[_webView setHidden:value];
-        //_webView.hidden = value;
-        
         if (value != _visible)
         {
             if (value)
