@@ -40,7 +40,7 @@ using namespace ioswebview::dom;
 int
 IOSWebViewDOMEngine::_domUid = 0;
 
-std::function<void(std::string&)>
+std::function<void(std::string&, std::string&)>
 IOSWebViewDOMEngine::handleJavascriptMessageWrapper;
 
 IOSWebViewDOMEngine::IOSWebViewDOMEngine() :
@@ -48,7 +48,8 @@ IOSWebViewDOMEngine::IOSWebViewDOMEngine() :
 	_onload(Signal<AbstractDOM::Ptr, std::string>::create()),
 	_onmessage(Signal<AbstractDOM::Ptr, std::string>::create()),
 	_visible(true),
-    _waitingForLoad(true)
+    _waitingForLoad(true),
+    _isReady(false)
 {
 }
 
@@ -57,11 +58,6 @@ IOSWebViewDOMEngine::initialize(AbstractCanvas::Ptr canvas, SceneManager::Ptr sc
 {
 	_canvas = canvas;
 	_sceneManager = sceneManager;
-
-	//loadScript("script/overlay.js");
-    
-    // Create a web view
-    NSLog(@"COUCOU");
     
     // Get window from canvas
     auto newCanvas = std::static_pointer_cast<Canvas>(canvas);
@@ -72,12 +68,12 @@ IOSWebViewDOMEngine::initialize(AbstractCanvas::Ptr canvas, SceneManager::Ptr sc
     
     if (SDL_GetWindowWMInfo(sdlWindow, &info))
     {
-        _window = (IOSTapDetectingWindow*)(info.info.uikit.window);
+        _window = info.info.uikit.window;
         
         // Create the web view
-        _webView = [[IOSWebView alloc] initWithFrame:_window.bounds];
-        //UIColor * clearColor = [UIColor colorWithRed:255/255.0f green:1/255.0f blue:0/255.0f alpha:1.0f];
-        [_webView setBackgroundColor: [UIColor clearColor]];
+        _webView = [[UIWebView alloc] initWithFrame:_window.bounds];
+        UIColor * clearColor = [UIColor colorWithRed:255/255.0f green:1/255.0f blue:0/255.0f alpha:1.f];
+        [_webView setBackgroundColor: clearColor];
         [_webView setOpaque:NO];
 
         _webView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin |
@@ -86,17 +82,11 @@ IOSWebViewDOMEngine::initialize(AbstractCanvas::Ptr canvas, SceneManager::Ptr sc
         
         _webView.scrollView.scrollEnabled = NO;
         _webView.scrollView.bounces = NO;
-        
-        IOSWebViewController *iOSWebViewDelegate = [[IOSWebViewController alloc] init];
-        [_webView setDelegate: iOSWebViewDelegate];
-        _webView.delegate = iOSWebViewDelegate;
-        
-        //[_webView stringByEvaluatingJavaScriptFromString:@"var e = document.createEvent('Events'); e.initEvent('orientationchange', true, false); document.dispatchEvent(e);"];
-        
-        _window.autoresizesSubviews = YES;
+        _webView.scalesPageToFit = YES;
+        _window.rootViewController.view.autoresizesSubviews = YES;
         
         // Add the web view to the current window
-        [_window addSubview:_webView];
+        [_window.rootViewController.view addSubview:_webView];
         
         // Load iframe with bridge JS callback handler
         NSURL *url = [NSURL fileURLWithPath:@"asset/html/iframe.html"];
@@ -108,45 +98,55 @@ IOSWebViewDOMEngine::initialize(AbstractCanvas::Ptr canvas, SceneManager::Ptr sc
         handleJavascriptMessageWrapper = std::bind(
                        &IOSWebViewDOMEngine::handleJavascriptMessage,
                        this,
-                       std::placeholders::_1
+                       std::placeholders::_1,
+                       std::placeholders::_2
         );
         
         [WebViewJavascriptBridge enableLogging];
         _bridge = [WebViewJavascriptBridge bridgeForWebView:_webView handler:
-                   //[=](id data, WVJBResponseCallback responseCallback){
                    ^(id data, WVJBResponseCallback responseCallback) {
                    NSLog(@"Received message from javascript: %@", data);
                    responseCallback(@"Right back atcha");
 
                    if ([data isKindOfClass:[NSString class]])
                    {
+                   /*
                         NSString *dataString = (NSString *)data;
                         
                         std::string cppString([dataString UTF8String]);
                    
                         IOSWebViewDOMEngine::handleJavascriptMessageWrapper(cppString);
+                   */
+                   }
+                   else if([data isKindOfClass:[NSDictionary class]])
+                   {
+                        std::string type;
+                        std::string value;
+                
+                        for (NSString *key in [data allKeys])
+                        {
+                            id val = [data objectForKey:key];
+                   
+                            if ([key isEqualToString:@"type"])
+                                type = [val UTF8String];
+                            else if ([key isEqualToString:@"value"])
+                                value = [val UTF8String];
+                        }
+                   
+                        IOSWebViewDOMEngine::handleJavascriptMessageWrapper(type, value);
                    }
          }];
-        
-        //[_webView stringByEvaluatingJavaScriptFromString:@"alert('CECI EST UN COUCOU DE TEST');"];
-        
-        //window.viewToObserve = _webView;
-        //window.controllerThatObserves = nil;
-        
-        [_bridge send:@"alert('COUCOU');"];
     }
     
     visible(_visible);
 
 	_canvasResizedSlot = _canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
-	{
-		std::string eval = "";
-
-		eval += "Minko.iframeElement.style.width = '" + std::to_string(w) + "px';\n";
-		eval += "Minko.iframeElement.style.height = '" + std::to_string(h) + "px';\n";
-
-		//emscripten_run_script(eval.c_str());
-	});
+    {
+        CGRect frame = _webView.frame;
+        frame.size.width = w / 2;
+        frame.size.height = h / 2;
+        _webView.frame = frame;
+    });
 
 	_enterFrameSlot = _sceneManager->frameBegin()->connect([&](std::shared_ptr<component::SceneManager>, float, float)
 	{
@@ -162,12 +162,12 @@ IOSWebViewDOMEngine::loadScript(std::string filename)
 
     file::AbstractProtocol::Ptr loader = file::FileProtocol::create();
 
-    auto loaderComplete = loader->complete()->connect([](std::shared_ptr<file::AbstractProtocol> loader)
+    auto loaderComplete = loader->complete()->connect([&](std::shared_ptr<file::AbstractProtocol> loader)
     {
-    	std::string eval;
-    	eval.assign(loader->file()->data().begin(), loader->file()->data().end());
+    	std::string js;
+    	js.assign(loader->file()->data().begin(), loader->file()->data().end());
 
-		//emscripten_run_script(eval.c_str());
+		eval(js);
     });
 
 	loader->load(filename, options);
@@ -178,10 +178,9 @@ IOSWebViewDOMEngine::createNewDom()
 {
 	std::string domName = "Minko.dom" + std::to_string(_domUid++);
 
-	std::string eval = domName + " = {};";
+	std::string js = domName + " = {};";
     
-    //[_bridge send: eval];
-	//emscripten_run_script(eval.c_str());
+    eval(js);
 	
 	_currentDOM = IOSWebViewDOM::create(domName, shared_from_this());
 }
@@ -234,7 +233,7 @@ IOSWebViewDOMEngine::enterFrame()
 		element->update();
 	}
 
-	if (_currentDOM->initialized())
+	if (_currentDOM->initialized() && _isReady)
 	{
 		std::string jsEval = "(Minko.iframeElement.contentWindow.Minko.messagesToSend.length);";
 		int l = atoi(eval(jsEval).c_str());
@@ -331,18 +330,33 @@ IOSWebViewDOMEngine::visible(bool value)
 	_visible = value;
 }
 
-void IOSWebViewDOMEngine::handleJavascriptMessage(std::string message)
+void IOSWebViewDOMEngine::handleJavascriptMessage(std::string type, std::string value)
 {
-    if (message == "ready")
+    std::cout << "Processing the current message: [type: " << type << "; value: " << value << "]" << std::endl;
+    
+    if (type == "ready")
     {
-        std::cout << "READY" << std::endl;
+        _isReady = (value == "true") ? true : false;
+        
+        if (_isReady)
+            std::cout << "Bridge is ready!" << std::endl;
+    }
+    else if (type == "mousemove")
+    {
+        auto element = IOSWebViewDOMElement::getDOMElement(value, shared_from_this());
+        element->update();
+    }
+    else if (type == "mouseclick")
+    {
     }
 }
 
 std::string
 IOSWebViewDOMEngine::eval(std::string data)
 {
-    NSString *result = [_webView stringByEvaluatingJavaScriptFromString: [NSString stringWithCString:data.c_str() encoding:[NSString defaultCStringEncoding]]];
+    const char *dataChar = data.c_str();
+    NSString *nsString = [NSString stringWithCString:dataChar encoding:[NSString defaultCStringEncoding]];
+    NSString *result = [_webView stringByEvaluatingJavaScriptFromString: nsString];
     std::string resultString([result UTF8String]);
     
     return resultString;

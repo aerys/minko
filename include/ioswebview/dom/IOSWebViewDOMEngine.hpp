@@ -26,15 +26,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "IOSWebViewDOM.hpp"
 
 #import "WebViewJavascriptBridge.h"
-#import "ioswebview/dom/IOSTapDetectingWindow.h"
-#import "ioswebview/dom/IOSWebView.h"
-#import "ioswebview/dom/IOSWebViewDelegate.h"
 
 namespace ioswebview
 {
 	namespace dom
 	{
-        
 		class IOSWebViewDOMEngine : public minko::dom::AbstractDOMEngine,
                                     public std::enable_shared_from_this<IOSWebViewDOMEngine>
 		{
@@ -98,15 +94,19 @@ namespace ioswebview
             std::string
 			eval(std::string);
             
+            inline
+            bool
+            isReady()
+            {
+                return _isReady;
+            }
+            
             void
-            handleJavascriptMessage(std::string message);
+            handleJavascriptMessage(std::string type, std::string value);
             
             static
-            std::function<void(std::string&)>
+            std::function<void(std::string&, std::string&)>
             handleJavascriptMessageWrapper;
-            
-//            minko::dom::AbstractDOMEngine::Ptr
-//            abstractInstance();
     
 		private:
 
@@ -133,13 +133,14 @@ namespace ioswebview
 
 			bool _visible;
             
-            IOSTapDetectingWindow *_window;
             // iOS WebView
-            IOSWebView *_webView;
+            UIWindow *_window;
+            UIWebView *_webView;
             WebViewJavascriptBridge* _bridge;
             
             bool _waitingForLoad;
             std::string _uriToLoad;
+            bool _isReady;
 		};
 	}
 }

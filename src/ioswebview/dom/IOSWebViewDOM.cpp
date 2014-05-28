@@ -55,8 +55,7 @@ IOSWebViewDOM::sendMessage(std::string message, bool async)
 	//else
 	//	emscripten_async_run_script("console.log('toto'); if (" + _jsAccessor + ".window.Minko.onmessage) " + _jsAccessor + ".window.Minko.onmessage('" + message + "');", 1);
 
-    WebViewJavascriptBridge* bridge = _engine->bridge();
-    [bridge send:[NSString stringWithCString:message.c_str() encoding:[NSString defaultCStringEncoding]]];
+    [_engine->bridge() send:[NSString stringWithCString:message.c_str() encoding:[NSString defaultCStringEncoding]]];
 }
 
 void

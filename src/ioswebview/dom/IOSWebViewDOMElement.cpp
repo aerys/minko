@@ -361,7 +361,9 @@ IOSWebViewDOMElement::onmouseover()
 
 void
 IOSWebViewDOMElement::update()
-{ 
+{
+    if (_engine->isReady())
+    {
 	std::string js = "(Minko.getEventsCount(" + _jsAccessor + "))";
 	int l = atoi(_engine->eval(js).c_str());
 
@@ -391,6 +393,7 @@ IOSWebViewDOMElement::update()
 
 	js = "Minko.clearEvents(" + _jsAccessor + ");";
 	_engine->eval(js);
+    }
 }
 
 #endif

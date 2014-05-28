@@ -1,53 +1,49 @@
 <html>
 	<head>
 		<link rel="stylesheet" type="text/css" href="css/iframe.css">
+		<meta name='viewport' content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 	</head>
 	<body>
 		<iframe id="overlayiframe" allowTransparency="true" frameborder="0" scrolling="no"></iframe>
 		<script>
-			/*window.onerror = function (message, url, linenumber){
+			window.onerror = function (message, url, linenumber){
 				alert('Javascript error: ' + message + ' on line ' + linenumber + ' for ' + url);
-			}*/
+			}
 
-			// document.onload = function()
-			// {
-	            function connectWebViewJavascriptBridge(callback) {
-				    if (window.WebViewJavascriptBridge) {
-				        callback(WebViewJavascriptBridge);
-				    } else {
-				        document.addEventListener('WebViewJavascriptBridgeReady', function() {
-				            callback(WebViewJavascriptBridge);
-				        }, false)
-				    }
-				}
-
-				connectWebViewJavascriptBridge(function(bridge) {
-
-				    /* Init your app here */
-
-				    bridge.init(function(message, responseCallback) {
-				        alert('Received message: ' + message)   
-				        if (responseCallback) {
-				            responseCallback("Right back atcha");
-				        }
-				    })
-				    bridge.send('Hello from the javascript')
-				    bridge.send('Please respond to this', function responseCallback(responseData) {
-				        console.log("Javascript got its response", responseData);
-				    });
-				    bridge.send('ready')
-				});
-			//}
-        </script>
-        <script>
         	console.log("Minko init");
 
 			var m = {};
 
+			m.bridge = null;
 			m.loaded = -1;
 
-			//var canvasElement = document;
 			var iframeElement = document.getElementById('overlayiframe');
+			m.iframeElement = iframeElement;
+
+			function connectWebViewJavascriptBridge(callback) {
+			    if (window.WebViewJavascriptBridge) {
+			        callback(WebViewJavascriptBridge);
+			    } else {
+			        document.addEventListener('WebViewJavascriptBridgeReady', function() {
+			            callback(WebViewJavascriptBridge);
+			        }, false)
+			    }
+			}
+
+			connectWebViewJavascriptBridge(function(bridge) {
+
+			    /* Init your app here */
+			    m.bridge = bridge;
+
+			    bridge.init(function(message, responseCallback) {
+			        alert('Received message: ' + message)   
+			        if (responseCallback) {
+			            responseCallback("Right back atcha");
+			        }
+			    })
+
+			    bridge.send({type: 'ready', value:'true'});
+			});
 
 	        m.getOffsetTop = function(element)
 			{
@@ -93,9 +89,10 @@
 				document.dispatchEvent(eventCopy);
 			}
 
-
 			m.redispatchMouseEvent = function(event)
 			{
+				alert(event);
+
 				if (event.type == 'mouseout' && event.target != event.currentTarget)
 					return;
 
@@ -129,9 +126,6 @@
 					eventCopy.deltaZ = event.deltaZ;
 					event.preventDefault();
 				}
-
-				//Minko.canvasElement.dispatchEvent(eventCopy);
-
 			}
 
 			m.iframeLoadHandler = function(event)
@@ -157,24 +151,25 @@
 
 				Minko.iframeElement.contentWindow.Minko.sendMessage = function(message)
 				{
+					alert("Try to send a message: " + message);
 					Minko.iframeElement.contentWindow.Minko.messagesToSend.push(message);
 				}
 
-				Minko.iframeElement.addEventListener('mouseover',						Minko.redispatchMouseEvent);
-				Minko.iframeElement.addEventListener('mouseout',						Minko.redispatchMouseEvent);
+				// Minko.iframeElement.addEventListener('mouseover',						Minko.redispatchMouseEvent);
+				// Minko.iframeElement.addEventListener('mouseout',						Minko.redispatchMouseEvent);
 				
-				Minko.iframeElement.contentWindow.addEventListener('mousemove',			Minko.redispatchMouseEvent);
-				Minko.iframeElement.contentWindow.addEventListener('mouseup',			Minko.redispatchMouseEvent);
-				Minko.iframeElement.contentWindow.addEventListener('mousedown',			Minko.redispatchMouseEvent);
+				// Minko.iframeElement.contentWindow.addEventListener('mousemove',			Minko.redispatchMouseEvent);
+				// Minko.iframeElement.contentWindow.addEventListener('mouseup',			Minko.redispatchMouseEvent);
+				// Minko.iframeElement.contentWindow.addEventListener('mousedown',			Minko.redispatchMouseEvent);
 				
-				Minko.iframeElement.contentWindow.addEventListener('click',				Minko.redispatchMouseEvent);
+				// Minko.iframeElement.contentWindow.addEventListener('click',				Minko.redispatchMouseEvent);
 				
-				Minko.iframeElement.contentWindow.addEventListener('mousewheel',		Minko.redispatchMouseEvent);
-				Minko.iframeElement.contentWindow.addEventListener('DOMMouseScroll',	Minko.redispatchMouseEvent);
+				// Minko.iframeElement.contentWindow.addEventListener('mousewheel',		Minko.redispatchMouseEvent);
+				// Minko.iframeElement.contentWindow.addEventListener('DOMMouseScroll',	Minko.redispatchMouseEvent);
 				
-				Minko.iframeElement.contentWindow.addEventListener('keydown',			Minko.redispatchKeyboardEvent);
-				Minko.iframeElement.contentWindow.addEventListener('keyup',				Minko.redispatchKeyboardEvent);
-				Minko.iframeElement.contentWindow.addEventListener('keypress',			Minko.redispatchKeyboardEvent);
+				// Minko.iframeElement.contentWindow.addEventListener('keydown',			Minko.redispatchKeyboardEvent);
+				// Minko.iframeElement.contentWindow.addEventListener('keyup',				Minko.redispatchKeyboardEvent);
+				// Minko.iframeElement.contentWindow.addEventListener('keypress',			Minko.redispatchKeyboardEvent);
 			}
 
 			iframeElement.onload = m.iframeLoadHandler;
@@ -183,9 +178,13 @@
 			{
 				if(!accessor.minkoEvents)
 					accessor.minkoEvents = [];
+
 				accessor.addEventListener(type, function(event)
 				{
 					accessor.minkoEvents.push(event);
+					//alert("addListener: " + type + '(layerX: ' + event.layerX + ', layerY: ' + event.layerY + ')|' + accessor.minkoName)
+					//alert(accessor.minkoEvents);
+					m.bridge.send({type: type, value: accessor.minkoName});
 				});
 			};
 
