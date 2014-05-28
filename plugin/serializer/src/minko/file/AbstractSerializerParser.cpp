@@ -171,7 +171,6 @@ AbstractSerializerParser::deserializedAsset(SerializedAsset&			asset,
 			assetCompletePath += resolvedPath;
 		}
 
-
 		if (assetLibrary->texture(resolvedPath) == nullptr)
 		{
 			auto extension = resolvedPath.substr(resolvedPath.find_last_of(".") + 1);
