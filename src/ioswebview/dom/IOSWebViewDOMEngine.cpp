@@ -71,8 +71,8 @@ IOSWebViewDOMEngine::initialize(AbstractCanvas::Ptr canvas, SceneManager::Ptr sc
         _window = info.info.uikit.window;
         
         // Create the web view
-        _webView = [[UIWebView alloc] initWithFrame:_window.bounds];
-        UIColor * clearColor = [UIColor colorWithRed:255/255.0f green:1/255.0f blue:0/255.0f alpha:1.f];
+        _webView = [[IOSWebView alloc] initWithFrame:_window.bounds];
+        UIColor * clearColor = [UIColor colorWithRed:255/255.0f green:1/255.0f blue:0/255.0f alpha:0.f];
         [_webView setBackgroundColor: clearColor];
         [_webView setOpaque:NO];
 

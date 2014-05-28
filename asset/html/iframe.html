@@ -1,7 +1,6 @@
 <html>
 	<head>
 		<link rel="stylesheet" type="text/css" href="css/iframe.css">
-		<meta name='viewport' content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 	</head>
 	<body>
 		<iframe id="overlayiframe" allowTransparency="true" frameborder="0" scrolling="no"></iframe>
@@ -182,8 +181,9 @@
 				accessor.addEventListener(type, function(event)
 				{
 					accessor.minkoEvents.push(event);
-					//alert("addListener: " + type + '(layerX: ' + event.layerX + ', layerY: ' + event.layerY + ')|' + accessor.minkoName)
+					//alert("addListener: " + type + '(layerX: ' + event.layerX + ', layerY: ' + event.layerY + ')|' + accessor.minkoName);
 					//alert(accessor.minkoEvents);
+					console.log("addListener: " + type + '(layerX: ' + event.layerX + ', layerY: ' + event.layerY + ')|' + accessor.minkoName);
 					m.bridge.send({type: type, value: accessor.minkoName});
 				});
 			};

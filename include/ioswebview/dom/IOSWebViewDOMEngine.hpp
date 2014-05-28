@@ -26,6 +26,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "IOSWebViewDOM.hpp"
 
 #import "WebViewJavascriptBridge.h"
+#import "ioswebview/dom/IOSWebView.h"
 
 namespace ioswebview
 {
@@ -135,7 +136,7 @@ namespace ioswebview
             
             // iOS WebView
             UIWindow *_window;
-            UIWebView *_webView;
+            IOSWebView *_webView;
             WebViewJavascriptBridge* _bridge;
             
             bool _waitingForLoad;
