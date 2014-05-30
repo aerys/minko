@@ -20,11 +20,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #if defined(TARGET_IPHONE_SIMULATOR) or defined(TARGET_OS_IPHONE) // iOS
 
 #include "minko/Common.hpp"
+#include "minko/input/Mouse.hpp"
 #include "ioswebview/dom/IOSWebViewDOMElement.hpp"
 #include "ioswebview/dom/IOSWebViewDOMEvent.hpp"
 #include "ioswebview/dom/IOSWebViewDOMEngine.hpp"
 #include "ioswebview/dom/IOSWebViewDOM.hpp"
 #include "minko/dom/AbstractDOMEvent.hpp"
+
 
 using namespace minko;
 using namespace minko::dom;
@@ -49,12 +51,18 @@ IOSWebViewDOMElement::IOSWebViewDOMElement(std::string jsAccessor) :
 	_onmouseup(Signal<AbstractDOMEvent::Ptr>::create()),
 	_onmouseover(Signal<AbstractDOMEvent::Ptr>::create()),
 	_onmouseout(Signal<AbstractDOMEvent::Ptr>::create()),
+    _ontouchdown(Signal<AbstractDOMEvent::Ptr>::create()),
+    _ontouchup(Signal<AbstractDOMEvent::Ptr>::create()),
+    _ontouchmotion(Signal<AbstractDOMEvent::Ptr>::create()),
 	_onclickSet(false),
 	_onmousedownSet(false),
 	_onmousemoveSet(false),
 	_onmouseupSet(false),
 	_onmouseoverSet(false),
 	_onmouseoutSet(false),
+    _ontouchdownSet(false),
+    _ontouchupSet(false),
+    _ontouchmotionSet(false),
     _engine(nullptr)
 {
 	
@@ -287,12 +295,14 @@ IOSWebViewDOMElement::addEventListener(std::string type)
 	_engine->eval(js);
 }
 
+// Events
+
 Signal<std::shared_ptr<AbstractDOMEvent>>::Ptr
 IOSWebViewDOMElement::onclick()
 {
 	if (!_onclickSet)
 	{
-		addEventListener("click");
+		addEventListener("touchend");
 		_onclickSet = false;
 	}
 
@@ -304,7 +314,7 @@ IOSWebViewDOMElement::onmousedown()
 {
 	if (!_onmousedownSet)
 	{
-		addEventListener("mousedown");
+		addEventListener("touchstart");
 		_onmousedownSet = false;
 	}
 
@@ -316,7 +326,7 @@ IOSWebViewDOMElement::onmousemove()
 {
 	if (!_onmousemoveSet)
 	{
-		addEventListener("mousemove");
+		addEventListener("touchmove");
 		_onmousemoveSet = false;
 	}
 	
@@ -328,7 +338,7 @@ IOSWebViewDOMElement::onmouseup()
 {
 	if (!_onmouseupSet)
 	{
-		addEventListener("mouseup");
+		addEventListener("touchend");
 		_onmouseupSet = false;
 	}
 
@@ -359,6 +369,42 @@ IOSWebViewDOMElement::onmouseover()
 	return _onmouseover;
 }
 
+Signal<std::shared_ptr<AbstractDOMEvent>>::Ptr
+IOSWebViewDOMElement::ontouchdown()
+{
+    if (!_ontouchdownSet)
+	{
+		addEventListener("touchdown");
+		_ontouchdownSet = false;
+	}
+    
+    return _ontouchdown;
+}
+
+Signal<std::shared_ptr<AbstractDOMEvent>>::Ptr
+IOSWebViewDOMElement::ontouchup()
+{
+    if (!_ontouchupSet)
+	{
+		addEventListener("touchdown");
+		_ontouchupSet = false;
+	}
+    
+    return _ontouchup;
+}
+
+Signal<std::shared_ptr<AbstractDOMEvent>>::Ptr
+IOSWebViewDOMElement::ontouchmotion()
+{
+    if (!_ontouchmotionSet)
+	{
+		addEventListener("touchmotion");
+		_ontouchmotionSet = false;
+	}
+    
+    return _ontouchmotion;
+}
+
 void
 IOSWebViewDOMElement::update()
 {
@@ -377,15 +423,23 @@ IOSWebViewDOMElement::update()
 
 		std::string type = event->type();
 
-		if (type == "click")
-			_onclick->execute(event);
-		else if (type == "mousedown")
-			_onmousedown->execute(event);
-		else if (type == "mouseup")
+		if (type == "touchstart")
+        {
+            _ontouchdown->execute(event);
+            _onmousedown->execute(event);
+        }
+		else if (type == "touchend")
+        {
+            _ontouchup->execute(event);
+            _onclick->execute(event);
 			_onmouseup->execute(event);
-		else if (type == "mousemove")
+        }
+		else if (type == "touchmove")
+        {
+            _ontouchmotion->execute(event);
 			_onmousemove->execute(event);
-		else if (type == "mouseover")
+		}
+        else if (type == "mouseover")
 			_onmouseover->execute(event);
 		else if (type == "mouseout")
 			_onmouseout->execute(event);

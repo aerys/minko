@@ -116,6 +116,9 @@ namespace ioswebview
 
 			void
 			createNewDom();
+            
+            void
+            registerDomEvents();
 
 			static
 			int _domUid;

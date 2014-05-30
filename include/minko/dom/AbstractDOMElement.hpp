@@ -145,6 +145,18 @@ namespace minko
 			virtual
 			Signal<std::shared_ptr<AbstractDOMEvent>>::Ptr
 			onmouseover() = 0;
+            
+            virtual
+			Signal<std::shared_ptr<AbstractDOMEvent>>::Ptr
+			ontouchdown() = 0;
+            
+            virtual
+			Signal<std::shared_ptr<AbstractDOMEvent>>::Ptr
+			ontouchup() = 0;
+            
+            virtual
+			Signal<std::shared_ptr<AbstractDOMEvent>>::Ptr
+			ontouchmotion() = 0;
 
 		private:
 

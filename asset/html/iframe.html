@@ -1,11 +1,41 @@
+<!DOCTYPE html>
 <html>
 	<head>
 		<link rel="stylesheet" type="text/css" href="css/iframe.css">
 	</head>
 	<body>
-		<iframe id="overlayiframe" allowTransparency="true" frameborder="0" scrolling="no"></iframe>
-		<script>
+		<!-- <div id="eventCatcher"> -->
+			<iframe id="overlayiframe" allowTransparency="true" frameborder="0" scrolling="no"></iframe>
+		<!-- </div> -->
+		<div id="debug"></div>
+		
+		<script type="text/javascript">
+			
+			function connectWebViewJavascriptBridge(callback) {
+			    if (window.WebViewJavascriptBridge) {
+			        callback(WebViewJavascriptBridge);
+			    } else {
+			        document.addEventListener('WebViewJavascriptBridgeReady', function() {
+			            callback(WebViewJavascriptBridge);
+			        }, false)
+			    }
+			}
+
+			connectWebViewJavascriptBridge(function(bridge) {
+
+			    // Init your app here
+			    m.bridge = bridge;
+
+			    bridge.init(function(message, responseCallback) {  
+			        if (responseCallback) {
+			        }
+			    })
+
+			    bridge.send({type: 'ready', value:'true'});
+			});
+
 			window.onerror = function (message, url, linenumber){
+				//document.getElementById("debug").innerHTML += message + " line " + linenumber + " " + url + "</br>";
 				alert('Javascript error: ' + message + ' on line ' + linenumber + ' for ' + url);
 			}
 
@@ -19,30 +49,10 @@
 			var iframeElement = document.getElementById('overlayiframe');
 			m.iframeElement = iframeElement;
 
-			function connectWebViewJavascriptBridge(callback) {
-			    if (window.WebViewJavascriptBridge) {
-			        callback(WebViewJavascriptBridge);
-			    } else {
-			        document.addEventListener('WebViewJavascriptBridgeReady', function() {
-			            callback(WebViewJavascriptBridge);
-			        }, false)
-			    }
+			window.onload = function()
+			{
+
 			}
-
-			connectWebViewJavascriptBridge(function(bridge) {
-
-			    /* Init your app here */
-			    m.bridge = bridge;
-
-			    bridge.init(function(message, responseCallback) {
-			        alert('Received message: ' + message)   
-			        if (responseCallback) {
-			            responseCallback("Right back atcha");
-			        }
-			    })
-
-			    bridge.send({type: 'ready', value:'true'});
-			});
 
 	        m.getOffsetTop = function(element)
 			{
@@ -90,8 +100,6 @@
 
 			m.redispatchMouseEvent = function(event)
 			{
-				alert(event);
-
 				if (event.type == 'mouseout' && event.target != event.currentTarget)
 					return;
 
@@ -150,25 +158,24 @@
 
 				Minko.iframeElement.contentWindow.Minko.sendMessage = function(message)
 				{
-					alert("Try to send a message: " + message);
 					Minko.iframeElement.contentWindow.Minko.messagesToSend.push(message);
 				}
 
-				// Minko.iframeElement.addEventListener('mouseover',						Minko.redispatchMouseEvent);
-				// Minko.iframeElement.addEventListener('mouseout',						Minko.redispatchMouseEvent);
+				Minko.iframeElement.addEventListener('mouseover',						Minko.redispatchMouseEvent);
+				Minko.iframeElement.addEventListener('mouseout',						Minko.redispatchMouseEvent);
 				
-				// Minko.iframeElement.contentWindow.addEventListener('mousemove',			Minko.redispatchMouseEvent);
-				// Minko.iframeElement.contentWindow.addEventListener('mouseup',			Minko.redispatchMouseEvent);
-				// Minko.iframeElement.contentWindow.addEventListener('mousedown',			Minko.redispatchMouseEvent);
+				Minko.iframeElement.contentWindow.addEventListener('mousemove',			Minko.redispatchMouseEvent);
+				Minko.iframeElement.contentWindow.addEventListener('mouseup',			Minko.redispatchMouseEvent);
+				Minko.iframeElement.contentWindow.addEventListener('mousedown',			Minko.redispatchMouseEvent);
 				
-				// Minko.iframeElement.contentWindow.addEventListener('click',				Minko.redispatchMouseEvent);
+				Minko.iframeElement.contentWindow.addEventListener('click',				Minko.redispatchMouseEvent);
 				
-				// Minko.iframeElement.contentWindow.addEventListener('mousewheel',		Minko.redispatchMouseEvent);
-				// Minko.iframeElement.contentWindow.addEventListener('DOMMouseScroll',	Minko.redispatchMouseEvent);
+				Minko.iframeElement.contentWindow.addEventListener('mousewheel',		Minko.redispatchMouseEvent);
+				Minko.iframeElement.contentWindow.addEventListener('DOMMouseScroll',	Minko.redispatchMouseEvent);
 				
-				// Minko.iframeElement.contentWindow.addEventListener('keydown',			Minko.redispatchKeyboardEvent);
-				// Minko.iframeElement.contentWindow.addEventListener('keyup',				Minko.redispatchKeyboardEvent);
-				// Minko.iframeElement.contentWindow.addEventListener('keypress',			Minko.redispatchKeyboardEvent);
+				Minko.iframeElement.contentWindow.addEventListener('keydown',			Minko.redispatchKeyboardEvent);
+				Minko.iframeElement.contentWindow.addEventListener('keyup',				Minko.redispatchKeyboardEvent);
+				Minko.iframeElement.contentWindow.addEventListener('keypress',			Minko.redispatchKeyboardEvent);
 			}
 
 			iframeElement.onload = m.iframeLoadHandler;
@@ -178,13 +185,17 @@
 				if(!accessor.minkoEvents)
 					accessor.minkoEvents = [];
 
+				//alert(accessor);
+				//alert(type);
+
 				accessor.addEventListener(type, function(event)
 				{
 					accessor.minkoEvents.push(event);
+					//alert('Client: ' + event.clientX + ', ' + event.clientY);
 					//alert("addListener: " + type + '(layerX: ' + event.layerX + ', layerY: ' + event.layerY + ')|' + accessor.minkoName);
 					//alert(accessor.minkoEvents);
-					console.log("addListener: " + type + '(layerX: ' + event.layerX + ', layerY: ' + event.layerY + ')|' + accessor.minkoName);
-					m.bridge.send({type: type, value: accessor.minkoName});
+					//console.log("addListener: " + type + '(layerX: ' + event.layerX + ', layerY: ' + event.layerY + ')|' + accessor.minkoName);
+					//m.bridge.send({type: type, value: accessor.minkoName});
 				});
 			};
 
@@ -209,6 +220,29 @@
 
 				console.log("loaded " + url);
 			}
+
+			// document.getElementById("eventCatcher").addEventListener('mousedown', function(event){
+			// 	document.getElementById("debug").innerHTML = document.getElementById("debug").innerHTML + " down ";
+			// });
+			// document.getElementById("eventCatcher").addEventListener('mousemove', function(event){
+			// 	document.getElementById("debug").innerHTML = document.getElementById("debug").innerHTML + " move ";
+			// });
+			// document.getElementById("eventCatcher").addEventListener('mouseup', function(event){
+			// 	document.getElementById("debug").innerHTML = document.getElementById("debug").innerHTML + " up ";
+			// });
+			// document.getElementById("eventCatcher").addEventListener('click', function(event){
+			// 	document.getElementById("debug").innerHTML = document.getElementById("debug").innerHTML + " click ";
+			// });
+
+			// document.addEventListener('touchstart', function(event){
+			// 	document.getElementById("debug").innerHTML = document.getElementById("debug").innerHTML + " touchbegin ";
+			// });
+			// document.addEventListener('touchmove', function(event){
+			// 	document.getElementById("debug").innerHTML = document.getElementById("debug").innerHTML + " touchmove ";
+			// });
+			// document.addEventListener('touchend', function(event){
+			// 	document.getElementById("debug").innerHTML = document.getElementById("debug").innerHTML + " touchend ";
+			// });
 
 			window.Minko = m;
         </script>

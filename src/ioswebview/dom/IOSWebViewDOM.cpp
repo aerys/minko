@@ -49,13 +49,14 @@ IOSWebViewDOM::create(std::string jsAccessor, std::shared_ptr<IOSWebViewDOMEngin
 void
 IOSWebViewDOM::sendMessage(std::string message, bool async)
 {
-	//std::string eval = "if (" + _jsAccessor + ".window.Minko.onmessage) " + _jsAccessor + ".window.Minko.onmessage('" + message + "');";
+	std::string eval = "if (" + _jsAccessor + ".window.Minko.onmessage) " + _jsAccessor + ".window.Minko.onmessage('" + message + "');";
 	//if (!async)
 		//emscripten_run_script(eval.c_str());
 	//else
 	//	emscripten_async_run_script("console.log('toto'); if (" + _jsAccessor + ".window.Minko.onmessage) " + _jsAccessor + ".window.Minko.onmessage('" + message + "');", 1);
 
-    [_engine->bridge() send:[NSString stringWithCString:message.c_str() encoding:[NSString defaultCStringEncoding]]];
+    //[_engine->bridge() send:[NSString stringWithCString:message.c_str() encoding:[NSString defaultCStringEncoding]]];
+    runScript(eval);
 }
 
 void
@@ -153,7 +154,7 @@ IOSWebViewDOM::fileName()
 std::string
 IOSWebViewDOM::fullUrl()
 {
-	std::string eval = "(" + _jsAccessor + ".document.location)";
+	std::string eval = "(Minko.iframeElement.src)";
     
     std::string result = runScriptString(eval);
     
@@ -171,6 +172,8 @@ IOSWebViewDOM::initialized(bool v)
 {
 	if (!_initialized && v)
 	{
+        runScript(_jsAccessor + " = {};");
+        
 		std::string eval = "";
 		eval += _jsAccessor + ".window		= Minko.iframeElement.contentWindow;\n";
 		eval += _jsAccessor + ".document	= Minko.iframeElement.contentDocument;\n";

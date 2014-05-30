@@ -43,6 +43,15 @@ IOSWebViewDOMEngine::_domUid = 0;
 std::function<void(std::string&, std::string&)>
 IOSWebViewDOMEngine::handleJavascriptMessageWrapper;
 
+// Slots
+Signal<minko::dom::AbstractDOMEvent::Ptr>::Slot onmousemoveSlot;
+Signal<minko::dom::AbstractDOMEvent::Ptr>::Slot onmousedownSlot;
+Signal<minko::dom::AbstractDOMEvent::Ptr>::Slot onmouseupSlot;
+
+Signal<minko::dom::AbstractDOMEvent::Ptr>::Slot ontouchdownSlot;
+Signal<minko::dom::AbstractDOMEvent::Ptr>::Slot ontouchupSlot;
+Signal<minko::dom::AbstractDOMEvent::Ptr>::Slot ontouchmotionSlot;
+
 IOSWebViewDOMEngine::IOSWebViewDOMEngine() :
 	_loadedPreviousFrameState(0),
 	_onload(Signal<AbstractDOM::Ptr, std::string>::create()),
@@ -75,26 +84,27 @@ IOSWebViewDOMEngine::initialize(AbstractCanvas::Ptr canvas, SceneManager::Ptr sc
         UIColor * clearColor = [UIColor colorWithRed:255/255.0f green:1/255.0f blue:0/255.0f alpha:0.f];
         [_webView setBackgroundColor: clearColor];
         [_webView setOpaque:NO];
-
+        
+        // Disable web view scroll
+        _webView.scrollView.scrollEnabled = NO;
+        _webView.scrollView.bounces = NO;
+        
+        // Resize the web view according to device dimension and orientation
         _webView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin |
                                     UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin |
                                     UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-        
-        _webView.scrollView.scrollEnabled = NO;
-        _webView.scrollView.bounces = NO;
         _webView.scalesPageToFit = YES;
         _window.rootViewController.view.autoresizesSubviews = YES;
         
         // Add the web view to the current window
         [_window.rootViewController.view addSubview:_webView];
         
-        // Load iframe with bridge JS callback handler
+        // Load iframe containing bridge JS callback handler
         NSURL *url = [NSURL fileURLWithPath:@"asset/html/iframe.html"];
-        
         NSURLRequest *requestObj = [NSURLRequest requestWithURL:url];
         [_webView loadRequest:requestObj];
         
-        
+        // Create a C++ handler to process the message received by the Javascript bridge
         handleJavascriptMessageWrapper = std::bind(
                        &IOSWebViewDOMEngine::handleJavascriptMessage,
                        this,
@@ -102,23 +112,14 @@ IOSWebViewDOMEngine::initialize(AbstractCanvas::Ptr canvas, SceneManager::Ptr sc
                        std::placeholders::_2
         );
         
-        [WebViewJavascriptBridge enableLogging];
+        // Create the bridge
         _bridge = [WebViewJavascriptBridge bridgeForWebView:_webView handler:
                    ^(id data, WVJBResponseCallback responseCallback) {
                    NSLog(@"Received message from javascript: %@", data);
                    responseCallback(@"Right back atcha");
 
-                   if ([data isKindOfClass:[NSString class]])
-                   {
-                   /*
-                        NSString *dataString = (NSString *)data;
-                        
-                        std::string cppString([dataString UTF8String]);
-                   
-                        IOSWebViewDOMEngine::handleJavascriptMessageWrapper(cppString);
-                   */
-                   }
-                   else if([data isKindOfClass:[NSDictionary class]])
+                   // If the message is a dictionary (of this form: {type: 'ready', value: 'true'})
+                   if([data isKindOfClass:[NSDictionary class]])
                    {
                         std::string type;
                         std::string value;
@@ -135,9 +136,22 @@ IOSWebViewDOMEngine::initialize(AbstractCanvas::Ptr canvas, SceneManager::Ptr sc
                    
                         IOSWebViewDOMEngine::handleJavascriptMessageWrapper(type, value);
                    }
+                   else if ([data isKindOfClass:[NSString class]])
+                   {
+                        NSString* dataString = (NSString *)data;
+                        std::string value([dataString UTF8String]);
+                        std::string type = "alert";
+                   
+                        IOSWebViewDOMEngine::handleJavascriptMessageWrapper(type, value);
+                   }
          }];
+        
+#if DEBUG
+        // Enable bridge logging
+        //[WebViewJavascriptBridge enableLogging];
+#endif
     }
-    
+
     visible(_visible);
 
 	_canvasResizedSlot = _canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
@@ -178,10 +192,6 @@ IOSWebViewDOMEngine::createNewDom()
 {
 	std::string domName = "Minko.dom" + std::to_string(_domUid++);
 
-	std::string js = domName + " = {};";
-    
-    eval(js);
-	
 	_currentDOM = IOSWebViewDOM::create(domName, shared_from_this());
 }
 
@@ -201,7 +211,7 @@ IOSWebViewDOMEngine::enterFrame()
         
         std::string res = eval(jsEval);
         
-        if (res == "true")
+        if (res == "true"/* && _isReady*/)
         {
             _waitingForLoad = false;
             load(_uriToLoad);
@@ -216,6 +226,9 @@ IOSWebViewDOMEngine::enterFrame()
 
 	if (loadedState == 1)
 	{
+		jsEval = "Minko.loaded = 0";
+		eval(jsEval);
+        
 		if (_currentDOM->initialized())
 			createNewDom();
 
@@ -223,9 +236,8 @@ IOSWebViewDOMEngine::enterFrame()
 
 		_currentDOM->onload()->execute(_currentDOM, _currentDOM->fullUrl());
 		_onload->execute(_currentDOM, _currentDOM->fullUrl());
-
-		jsEval = "Minko.loaded = 0";
-		eval(jsEval);
+        
+        registerDOMEvents();
 	}
 
 	for(auto element : IOSWebViewDOMElement::domElements)
@@ -236,16 +248,20 @@ IOSWebViewDOMEngine::enterFrame()
 	if (_currentDOM->initialized() && _isReady)
 	{
 		std::string jsEval = "(Minko.iframeElement.contentWindow.Minko.messagesToSend.length);";
-		int l = atoi(eval(jsEval).c_str());
+        std::string evalResult = eval(jsEval);
+        int l = atoi(evalResult.c_str());
 
 		if (l > 0)
 		{
+            std::cout << "Messages found!" << std::endl;
 			for(int i = 0; i < l; ++i)
 			{
                 jsEval = "(Minko.iframeElement.contentWindow.Minko.messagesToSend[" + std::to_string(i) + "])";
                 
 				std::string message = eval(jsEval);
-
+                
+                std::cout << "Message: " << message << std::endl;
+                
 				_currentDOM->onmessage()->execute(_currentDOM, message);
 				_onmessage->execute(_currentDOM, message);
 			}
@@ -266,7 +282,8 @@ IOSWebViewDOMEngine::create()
 AbstractDOM::Ptr
 IOSWebViewDOMEngine::load(std::string uri)
 {
-	createNewDom();
+    if (_currentDOM == nullptr || _currentDOM->initialized())
+        createNewDom();
     
     if (_waitingForLoad)
     {
@@ -349,6 +366,68 @@ void IOSWebViewDOMEngine::handleJavascriptMessage(std::string type, std::string 
     else if (type == "mouseclick")
     {
     }
+    else if (type == "alert")
+    {
+        eval("Received a message from JS: " + value);
+    }
+}
+
+void
+IOSWebViewDOMEngine::registerDomEvents()
+{
+    onmousemoveSlot = _currentDOM->document()->onmousemove()->connect([&](AbstractDOMEvent::Ptr event)
+    {
+        std::cout << "Event info: " << std::endl
+        << "screen: " << event->screenX() << ", " << event->screenY() << std::endl
+        << "layer: " << event->layerX() << ", " << event->layerY() << std::endl
+        << "page: " << event->pageX() << ", " << event->pageY() << std::endl
+        << "client: " << event->clientX() << ", " << event->clientY() << std::endl;
+      
+        auto oldX = _canvas->mouse()->x();
+        auto oldY = _canvas->mouse()->y();
+      
+        _canvas->mouse()->x(event->clientX());
+        _canvas->mouse()->y(event->clientY());
+      
+        _canvas->mouse()->move()->execute(_canvas->mouse(), event->clientX() - oldX, event->clientY() - oldY);
+    });
+
+    onmouseupSlot = _currentDOM->document()->onmouseup()->connect([&](AbstractDOMEvent::Ptr event)
+    {
+        _canvas->mouse()->x(event->clientX());
+        _canvas->mouse()->y(event->clientY());
+                                                          
+        _canvas->mouse()->leftButtonUp()->execute(_canvas->mouse());
+    });
+
+    onmousedownSlot = _currentDOM->document()->onmousedown()->connect([&](AbstractDOMEvent::Ptr event)
+    {
+        _canvas->mouse()->x(event->clientX());
+        _canvas->mouse()->y(event->clientY());
+                                                              
+        _canvas->mouse()->leftButtonDown()->execute(_canvas->mouse());
+    });
+    
+    ontouchdownSlot = _currentDOM->document()->ontouchdown()->connect([&](AbstractDOMEvent::Ptr event)
+    {
+        _canvas->finger()->fingerDown()->execute(_canvas->finger(), event->layerX(), event->layerY());
+                                                                          
+        std::cout << "Touch down" << std::endl;
+    });
+    
+    ontouchupSlot = _currentDOM->document()->ontouchup()->connect([&](AbstractDOMEvent::Ptr event)
+    {
+        _canvas->finger()->fingerUp()->execute(_canvas->finger(), event->layerX(), event->layerY());
+                                                                      
+        std::cout << "Touch up" << std::endl;
+    });
+    
+    ontouchmotionSlot = _currentDOM->document()->ontouchmotion()->connect([&](AbstractDOMEvent::Ptr event)
+    {
+        _canvas->finger()->fingerMotion()->execute(_canvas->finger(), event->layerX(), event->layerY());
+                                                                              
+        std::cout << "Touch motion" << std::endl;
+    });
 }
 
 std::string

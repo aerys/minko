@@ -117,6 +117,7 @@ namespace ioswebview
 			void
 			style(std::string name, std::string value);
 
+            // Events
 			minko::Signal<std::shared_ptr<minko::dom::AbstractDOMEvent>>::Ptr
 			onclick();
 
@@ -134,6 +135,15 @@ namespace ioswebview
 
 			minko::Signal<std::shared_ptr<minko::dom::AbstractDOMEvent>>::Ptr
 			onmouseover();
+            
+            minko::Signal<std::shared_ptr<minko::dom::AbstractDOMEvent>>::Ptr
+            ontouchdown();
+            
+            minko::Signal<std::shared_ptr<minko::dom::AbstractDOMEvent>>::Ptr
+            ontouchup();
+            
+            minko::Signal<std::shared_ptr<minko::dom::AbstractDOMEvent>>::Ptr
+            ontouchmotion();
 
 			void
 			update();
@@ -159,12 +169,17 @@ namespace ioswebview
 
 			std::string _jsAccessor;
 
+            // Events
 			minko::Signal<minko::dom::AbstractDOMEvent::Ptr>::Ptr _onclick;
 			minko::Signal<minko::dom::AbstractDOMEvent::Ptr>::Ptr _onmousedown;
 			minko::Signal<minko::dom::AbstractDOMEvent::Ptr>::Ptr _onmousemove;
 			minko::Signal<minko::dom::AbstractDOMEvent::Ptr>::Ptr _onmouseup;
 			minko::Signal<minko::dom::AbstractDOMEvent::Ptr>::Ptr _onmouseover;
 			minko::Signal<minko::dom::AbstractDOMEvent::Ptr>::Ptr _onmouseout;
+            
+            minko::Signal<minko::dom::AbstractDOMEvent::Ptr>::Ptr _ontouchdown;
+			minko::Signal<minko::dom::AbstractDOMEvent::Ptr>::Ptr _ontouchup;
+			minko::Signal<minko::dom::AbstractDOMEvent::Ptr>::Ptr _ontouchmotion;
 
 			bool _onclickSet;
 			bool _onmousedownSet;
@@ -172,6 +187,10 @@ namespace ioswebview
 			bool _onmouseupSet;
 			bool _onmouseoverSet;
 			bool _onmouseoutSet;
+            
+			bool _ontouchdownSet;
+            bool _ontouchupSet;
+			bool _ontouchmotionSet;
             
             std::shared_ptr<IOSWebViewDOMEngine> _engine;
 		};

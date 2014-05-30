@@ -26,4 +26,25 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
     return nil;
 }
 
+- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event {
+    [super touchesMoved:touches withEvent:event];
+    [self.nextResponder touchesBegan:touches withEvent:event];
+    
+     NSLog(@"TEST TOUCH BEGAN");
+}
+
+- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event{
+    [super touchesMoved:touches withEvent:event];
+    [self.nextResponder touchesEnded:touches withEvent:event];
+    
+     NSLog(@"TOUCH ENDED");
+}
+
+
+-(void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event{
+    [super touchesMoved:touches withEvent:event];
+    [self.nextResponder touchesMoved:touches withEvent:event];
+    
+     NSLog(@"TOUCH MOVED");
+}
 @end
