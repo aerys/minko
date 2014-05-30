@@ -43,9 +43,11 @@ namespace minko
 			void
 			bind(LuaGlue& state)
 			{
-				state.Class<material::BasicMaterial>("BasicMaterial")
-					.method("create", &material::BasicMaterial::create)
-					.method("diffuseMap", &material::BasicMaterial::diffuseMap);
+				using namespace material;
+
+				state.Class<BasicMaterial>("BasicMaterial")
+					.method("create", &BasicMaterial::create)
+					.method("diffuseMap", static_cast<std::shared_ptr<BasicMaterial> (BasicMaterial::*)(std::shared_ptr<render::Texture>)>(&material::BasicMaterial::diffuseMap));
 			}
 		};
 	}
