@@ -62,6 +62,7 @@ namespace minko
 			std::set<std::shared_ptr<Surface>>							_toCollect;
 			EffectPtr													_effect;
 			float														_priority;
+			bool														_enabled;
 
 			Signal<AbsCtrlPtr, NodePtr>::Slot							_targetAddedSlot;
 			Signal<AbsCtrlPtr, NodePtr>::Slot							_targetRemovedSlot;

@@ -44,7 +44,9 @@ Reflection::Reflection(
     _clearColor(clearColor),
     _rootAdded(Signal<AbsCmpPtr, std::shared_ptr<scene::Node>>::create()),
     _clipPlane(),
-    _activeCamera(nullptr)
+    _activeCamera(nullptr),
+	_enabled(true),
+	_reflectedViewMatrix(Matrix4x4::create())
 {
     _renderTarget = render::Texture::create(_assets->context(), clp2(_width), clp2(_height), false, true);
 }
@@ -178,6 +180,8 @@ Reflection::targetAddedToScene(NodePtr node, NodePtr target, NodePtr ancestor)
 			->addComponent(virtualPerspectiveCameraComponent)
 			->addComponent(Transform::create());
 
+		enabled(_enabled);
+
 		// Add the virtual camera to the scene
 		target->root()->addChild(_virtualCamera);
 
@@ -219,9 +223,12 @@ Reflection::cameraPropertyValueChangedHandler(std::shared_ptr<data::Provider> pr
 void
 Reflection::updateReflectionMatrix()
 {
+	if (!_enabled)
+		return;
+
 	auto transformCmp = targets()[0]->component<Transform>();
 
-	auto transform = Matrix4x4::create()->copyFrom(transformCmp->modelToWorldMatrix());
+	auto transform = transformCmp->modelToWorldMatrix();
 
 	auto camera = targets()[0]->component<PerspectiveCamera>();
 	auto virtualCamera = _virtualCamera->component<PerspectiveCamera>();
@@ -239,19 +246,32 @@ Reflection::updateReflectionMatrix()
     auto reflectedTargetPosition = Vector3::create()->setTo(targetPosition->x(), -targetPosition->y(), targetPosition->z());
 
     // Compute reflected view matrix
-    auto reflectedViewMatrix = Matrix4x4::create()->lookAt(
-        reflectedTargetPosition, reflectedPosition);
+    _reflectedViewMatrix->lookAt(reflectedTargetPosition, reflectedPosition);
     
-    reflectedViewMatrix->lock();
-    reflectedViewMatrix->transform(Vector3::zero(), reflectedPosition);
-    reflectedViewMatrix->invert();
-    reflectedViewMatrix->unlock();
+	_reflectedViewMatrix->lock();
+	_reflectedViewMatrix->transform(Vector3::zero(), reflectedPosition);
+	_reflectedViewMatrix->invert();
+	_reflectedViewMatrix->unlock();
 
-    _reflectionEffect->setUniform("ReflectedViewMatrix", reflectedViewMatrix);
+	_reflectionEffect->setUniform("ReflectedViewMatrix", _reflectedViewMatrix);
 
 }
 
 void
 Reflection::updateReflectionMatrixes()
 {
+}
+
+void
+Reflection::enabled(bool value)
+{
+	_enabled = value;
+
+	if (_virtualCamera != nullptr)
+	{
+		auto renderer = _virtualCamera->component<Renderer>();
+
+		if (renderer != nullptr)
+			renderer->enable(value);
+	}
 }

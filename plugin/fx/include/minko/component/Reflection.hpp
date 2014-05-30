@@ -67,6 +67,7 @@ namespace minko
             Transform::Ptr                                      _cameraTransform;
             Transform::Ptr                                      _virtualCameraTransform;
             Renderer::Ptr                                       _reflectionRenderer;
+			math::Matrix4x4::Ptr								_reflectedViewMatrix;
 
             // Multiple active cameras
             std::shared_ptr<render::Effect>                     _reflectionEffect;
@@ -74,6 +75,8 @@ namespace minko
             std::vector<NodePtr>                                _virtualCameras;
             std::vector<std::shared_ptr<render::Texture>>       _renderTargets;
             std::array<float, 4>                                _clipPlane;
+
+			bool												_enabled;
 
         public:
             inline static
@@ -108,6 +111,9 @@ namespace minko
 
             void
             updateReflectionMatrix();
+
+			void
+			enabled(bool value);
 
         private:
 
