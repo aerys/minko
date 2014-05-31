@@ -59,8 +59,8 @@ int main(int argc, char** argv)
 
 	auto sceneManager		= SceneManager::create(canvas->context());
 	auto root				= scene::Node::create("root")->addComponent(sceneManager);
-	auto sphereGeometry		= geometry::SphereGeometry::create(sceneManager->assets()->context(), 32, 32, true);
 	auto assets				= sceneManager->assets();
+	auto sphereGeometry		= geometry::SphereGeometry::create(assets->context(), 32, 32, true);
 	auto sphereMaterial		= material::PhongMaterial::create()
 		->shininess(16.f)
 		->specularColor(Vector4::create(1.0f, 1.0f, 1.0f, 1.0f))
@@ -76,9 +76,11 @@ int main(int argc, char** argv)
 		->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()))
 		->geometry("quad", geometry::QuadGeometry::create(sceneManager->assets()->context()))
 		->geometry("sphere", sphereGeometry);
+
 	assets->loader()->options()
 		->generateMipmaps(true)
 		->registerParser<file::PNGParser>("png");
+
 	assets->loader()
 		->queue("texture/normalmap-cells.png")
 		->queue("texture/sprite-pointlight.png")
@@ -149,7 +151,7 @@ int main(int argc, char** argv)
 			{
 				if (lights->children().size() == 0)
 					return;
-				
+
 				lights->removeChild(lights->children().back());
 				std::cout << lights->children().size() << " lights" << std::endl;
 			}
@@ -248,6 +250,4 @@ int main(int argc, char** argv)
 	assets->loader()->load();
 
 	canvas->run();
-
-	exit(EXIT_SUCCESS);
 }
