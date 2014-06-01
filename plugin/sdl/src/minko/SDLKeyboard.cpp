@@ -19,26 +19,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/SDLKeyboard.hpp"
 
-#if defined(EMSCRIPTEN)
-# include "minko/MinkoWebGL.hpp"
-# include "SDL/SDL.h"
-# include "emscripten/emscripten.h"
-#elif defined(MINKO_ANGLE)
-# include "SDL2/SDL.h"
-# include "SDL2/SDL_syswm.h"
-# include <EGL/egl.h>
-# include <GLES2/gl2.h>
-# include <GLES2/gl2ext.h>
-#else
-# include "SDL2/SDL.h"
-#endif
-
-#if defined(__APPLE__)
-# include <TargetConditionals.h>
-# if TARGET_OS_IPHONE
-#  include "SDL2/SDL_opengles.h"
-# endif
-#endif
+#include "SDL.h"
 
 using namespace minko;
 

@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/input/Keyboard.hpp"
 
-namespace std 
+namespace std
 {
     template <>
     class hash<minko::input::Keyboard::Key>
