@@ -57,34 +57,34 @@ PhysicsExtension::deserializePhysics(std::string&							serializedCollider,
 	// shape type, shape data, delta transform, <density, friction, restit>, dynamic, trigger, filterGroup, filterMask
 	msgpack::type::tuple<int, std::string, msgpack::type::tuple<uint, std::string>, std::string, bool, bool, uint, uint> dst;
 
-	auto result = msgpack::unpack(serializedCollider.data(), serializedCollider.size() - 1, NULL, &mempool, &deserialized);
+	auto result = msgpack::unpack(serializedCollider.data(), serializedCollider.size() - 1, nullptr, &mempool, &deserialized);
 	deserialized.convert(&dst);
 
-	std::vector<float> shapedata = deserialize::TypeDeserializer::deserializeVector<float>(dst.a1);
-	std::vector<float> physicsdata = deserialize::TypeDeserializer::deserializeVector<float>(dst.a3);
+	std::vector<float> shapeData = deserialize::TypeDeserializer::deserializeVector<float>(dst.a1);
+	std::vector<float> physicsData = deserialize::TypeDeserializer::deserializeVector<float>(dst.a3);
 
 	uint shapeType = dst.a0;
 
 	if (shapeType == 1) // Ball
 		deserializedShape = component::bullet::SphereShape::create(
-			shapedata[0]
+			shapeData[0]
 		);
 	else if (shapeType == 2) // Box
 		deserializedShape = component::bullet::BoxShape::create(
-			shapedata[0], 
-			shapedata[1], 
-			shapedata[2]
+			shapeData[0],
+			shapeData[1],
+			shapeData[2]
 		);
 	else if (shapeType == 3) // Cylinder
 		deserializedShape = component::bullet::CylinderShape::create(
-			shapedata[1], 
-			0.5f * shapedata[0], 
-			shapedata[1]
+			shapeData[1],
+			0.5f * shapeData[0],
+			shapeData[1]
 		);
 	else if (shapeType == 4) // Cone
 		deserializedShape = component::bullet::ConeShape::create(
-			shapedata[1], 
-			shapedata[0]
+			shapeData[1],
+			shapeData[0]
 		);
 
 	std::tuple<uint, std::string&> serializedMatrixTuple(dst.a2.a0, dst.a2.a1);
@@ -94,9 +94,9 @@ PhysicsExtension::deserializePhysics(std::string&							serializedCollider,
 	if (!deltaMatrix->equals(math::Matrix4x4::create()))
 		deserializedShape->initialize(deltaMatrix, math::Matrix4x4::create());
 
-	const auto	density		= physicsdata[0];
-	const auto	friction	= physicsdata[1];
-	const auto	restitution	= physicsdata[2];
+	const auto	density		= physicsData[0];
+	const auto	friction	= physicsData[1];
+	const auto	restitution	= physicsData[2];
 
 	auto mass = density * deserializedShape->volume();
 
