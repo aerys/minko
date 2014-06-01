@@ -19,4 +19,6 @@ cp $TARGETDIR/*.so libs/armeabi-v7a/libmain.so
 tests -d assets || ln -s -f $TARGETDIR/asset assets
 
 ant debug
+# adb uninstall org.libsdl.app
 adb install -r $TARGETDIR/SDLActivity-debug.apk
+#adb devices | tail -n +2 | cut -sf 1 | xargs -I {} adb -s {} install -r $TARGETDIR/SDLActivity-debug.apk

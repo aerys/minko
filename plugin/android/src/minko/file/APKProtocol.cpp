@@ -22,7 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/Options.hpp"
 #include "minko/Signal.hpp"
 
-#include <android/log.h>
 #include "SDL_rwops.h"
 
 using namespace minko;
@@ -56,19 +55,11 @@ APKProtocol::load()
 
 	auto realFilename = options->uriFunction()(File::sanitizeFilename(cleanFilename));
 
-__android_log_print(ANDROID_LOG_INFO, "minko", "loading from APK");
-
-__android_log_print(ANDROID_LOG_INFO, "minko", cleanFilename.c_str());
-
 	SDL_RWops* file = SDL_RWFromFile(cleanFilename.c_str(), "rb");
-
 
 	if (!file)
 		for (auto path : _options->includePaths())
 		{
-__android_log_print(ANDROID_LOG_INFO, "minko", "testing in:");
-__android_log_print(ANDROID_LOG_INFO, "minko", path.c_str());
-
 			auto testFilename = options->uriFunction()(File::sanitizeFilename(path + '/' + cleanFilename));
 
 			file = SDL_RWFromFile(testFilename.c_str(), "rb");

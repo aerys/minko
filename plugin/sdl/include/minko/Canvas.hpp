@@ -109,7 +109,7 @@ namespace minko
 #if defined(EMSCRIPTEN)
 				return _keyboardState[static_cast<int>(getKeyCodeFromScanCode(scanCode))] != 0;
 #else
-				return _keyboardState[static_cast<int>(scanCode)] != 0;				
+				return _keyboardState[static_cast<int>(scanCode)] != 0;
 #endif
 			}
 
@@ -121,7 +121,7 @@ namespace minko
 				auto scanCode = keyCode;
 				return _keyboardState[static_cast<int>(scanCode)] != 0;
 #else
-				return _keyboardState[static_cast<int>(getScanCodeFromKeyCode(keyCode))] != 0;				
+				return _keyboardState[static_cast<int>(getScanCodeFromKeyCode(keyCode))] != 0;
 #endif
 			}
 
@@ -147,7 +147,7 @@ namespace minko
 			getScanCodeFromKeyCode(KeyCode keyCode);
 		};
 
-		class SDLJoystick : 
+		class SDLJoystick :
 			public input::Joystick
 		{
 			friend class Canvas;
@@ -220,9 +220,9 @@ namespace minko
 	public:
 		static inline
 		Ptr
-		create(const std::string&	name, 
-			   const uint			width, 
-			   const uint			height, 
+		create(const std::string&	name,
+			   const uint			width,
+			   const uint			height,
 			   bool					useStencil = false,
 			   bool					chromeless = false)
 		{
@@ -292,7 +292,7 @@ namespace minko
 		{
 			return _keyboard;
 		}
-		
+
 		inline
 		std::shared_ptr<input::Joystick>
 		joystick(uint id)
@@ -307,9 +307,9 @@ namespace minko
 			return _joysticks.size();
 		}
 
-		inline 
+		inline
 		std::unordered_map<int, std::shared_ptr<SDLJoystick>>
-		joysticks() 
+		joysticks()
 		{
 			return _joysticks;
 		}
@@ -398,9 +398,9 @@ namespace minko
 		quit();
 
 	private:
-		Canvas(const std::string&	name, 
-			   const uint			width, 
-			   const uint			height, 
+		Canvas(const std::string&	name,
+			   const uint			width,
+			   const uint			height,
 			   bool					useStencil = false,
 			   bool					chromeless = false);
 
@@ -413,7 +413,7 @@ namespace minko
 		void
 		width(uint);
 
-		void 
+		void
 		height(uint);
 
 		void
@@ -432,6 +432,6 @@ namespace minko
 
 	public:
 		void
-		step();		
+		step();
 	};
 }
