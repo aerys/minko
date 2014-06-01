@@ -13,15 +13,15 @@ minko.platform.supports = function(target)
 		if EMSCRIPTEN and string.startswith(_ACTION, "gmake") then
 			return true
 		end
-	elseif target == "linux32" or target == "linux64" then
+	elseif target == "linux32" or target == "linux64" or target == "linux" then
 		if os.is("linux") then
 			return true
 		end
-	elseif target == "windows32" or target == "windows64" then
+	elseif target == "windows32" or target == "windows64" or target == "windows" then
 		if os.is("windows") then
 			return true
 		end
-	elseif target == "osx64" then
+	elseif target == "osx64" or target == "osx" then
 		if os.is("macosx") and string.startswith(_ACTION, "gmake") then
 			return true
 		end
