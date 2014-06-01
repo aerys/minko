@@ -160,6 +160,11 @@ namespace minko
 				return _mouseMiddleButtonUp;
 			}
 
+			virtual
+			~Mouse()
+			{
+			}
+
 		protected:
 			Mouse(std::shared_ptr<AbstractCanvas> canvas);
 		};

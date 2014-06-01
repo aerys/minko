@@ -603,6 +603,11 @@ namespace minko
             bool
             keyIsDown(KeyCode keyCode) = 0;
 
+            virtual
+            ~Keyboard()
+            {
+            }
+
         protected:
             Keyboard();
 
