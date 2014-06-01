@@ -228,6 +228,10 @@ namespace minko
 		{
 			auto canvas = std::shared_ptr<Canvas>(new Canvas(name, width, height, useStencil, chromeless));
 
+#if defined(__ANDROID__)
+			auto that = canvas->shared_from_this();
+#endif
+
 			canvas->initialize();
 
 			if (_defaultCanvas == nullptr)
