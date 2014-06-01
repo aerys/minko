@@ -70,19 +70,19 @@ PhysicsExtension::deserializePhysics(std::string&							serializedCollider,
 		);
 	else if (shapeType == 2) // Box
 		deserializedShape = component::bullet::BoxShape::create(
-			shapedata[0], 
-			shapedata[1], 
+			shapedata[0],
+			shapedata[1],
 			shapedata[2]
 		);
 	else if (shapeType == 3) // Cylinder
 		deserializedShape = component::bullet::CylinderShape::create(
-			shapedata[1], 
-			0.5f * shapedata[0], 
+			shapedata[1],
+			0.5f * shapedata[0],
 			shapedata[1]
 		);
 	else if (shapeType == 4) // Cone
 		deserializedShape = component::bullet::ConeShape::create(
-			shapedata[1], 
+			shapedata[1],
 			shapedata[0]
 		);
 
@@ -102,10 +102,10 @@ PhysicsExtension::deserializePhysics(std::string&							serializedCollider,
 	const auto	restitution	= dst.a5;
 
     const short filterGroup = short(dst.a8 & ((1<<16) - 1)); // overriden by node's layouts
-    const short filterMask  = short(dst.a9 & ((1<<16) - 1)); 
+    const short filterMask  = short(dst.a9 & ((1<<16) - 1));
 
 	auto data = component::bullet::ColliderData::create(
-		mass, 
+		mass,
 		deserializedShape,
 		restitution,
 		friction
