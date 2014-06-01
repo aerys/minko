@@ -275,8 +275,6 @@ minko.project.application = function(name)
 		-- packagename "app"
 		-- basepackagename "io.minko"
 
-		minko.plugin.enable { "android" }
-
 	configuration { }
 
 end

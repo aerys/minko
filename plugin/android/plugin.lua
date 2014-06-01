@@ -23,6 +23,9 @@ minko.plugin.android = {}
 function minko.plugin.android:enable()
 	defines { "MINKO_PLUGIN_ANDROID" }
 
+	minko.plugin.links { "android" }
+	includedirs { minko.plugin.path("android") .. "/include" }
+
 	postbuildcommands {
 		-- 'echo ' .. abis(),
 		'bash ' .. minko.plugin.path("android") .. '/script/build_android.sh ${TARGETDIR} || ' .. minko.action.fail()

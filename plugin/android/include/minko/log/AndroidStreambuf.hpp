@@ -19,5 +19,42 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #pragma once
 
-#include "minko/file/APKProtocol.hpp"
-#include "minko/log/AndroidStreambuf.hpp"
+#include <android/log.h>
+
+namespace minko
+{
+	namespace log
+	{
+		class AndroidStreambuf : public std::streambuf
+		{
+		public:
+			enum { bufsize = 2048 }; // ... or some other suitable buffer size
+
+			AndroidStreambuf() { this->setp(_buffer, _buffer + bufsize - 1); }
+
+		private:
+			int overflow(int c)
+			{
+				if (c == traits_type::eof())
+				{
+					*this->pptr() = traits_type::to_char_type(c);
+					this->sbumpc();
+				}
+				return this->sync() ? traits_type::eof() : traits_type::not_eof(c);
+			}
+
+			int sync()
+			{
+				if (this->pbase() != this->pptr())
+				{
+					std::string buf(this->pbase(), this->pptr() - this->pbase());
+					__android_log_print(ANDROID_LOG_INFO, "minko", buf.c_str());
+					this->setp(_buffer, _buffer + bufsize - 1);
+				}
+				return 0;
+			}
+
+			char _buffer[bufsize];
+		};
+	}
+}

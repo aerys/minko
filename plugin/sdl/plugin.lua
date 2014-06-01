@@ -64,6 +64,9 @@ function minko.plugin.sdl:enable()
 			"AudioToolbox.framework"
 		}
 		libdirs { minko.plugin.path("sdl") .. "/lib/sdl/lib/ios" }
+
+	configuration { "android" }
+		minko.plugin.enable { "android" }
 end
 
 function minko.plugin.sdl:dist(pluginDistDir)
