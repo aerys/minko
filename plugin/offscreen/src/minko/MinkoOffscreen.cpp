@@ -21,11 +21,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/OpenGLES2Context.hpp"
 
 #include <ctime>
+#include <thread>
 
 bool
 MinkoOffscreen::_active = false;
 
-minko::Signal<>::Ptr
+minko::Signal<float, float>::Ptr
 MinkoOffscreen::_enterFrame = nullptr;
 
 minko::render::AbstractContext::Ptr
@@ -33,6 +34,9 @@ MinkoOffscreen::_context = nullptr;
 
 float
 MinkoOffscreen::_framerate = 0.f;
+
+float
+MinkoOffscreen::_desiredFramerate = 60.f;
 
 std::unique_ptr<GLfloat[]>
 MinkoOffscreen::_backBuffer = nullptr;
@@ -49,6 +53,18 @@ MinkoOffscreen::_width = 0;
 minko::uint
 MinkoOffscreen::_height = 0;
 
+float
+MinkoOffscreen::_relativeTime = 0.f;
+
+float
+MinkoOffscreen::_frameDuration = 0.f;
+
+MinkoOffscreen::time_point
+MinkoOffscreen::_previousTime;
+
+MinkoOffscreen::time_point
+MinkoOffscreen::_startTime;
+
 void
 MinkoOffscreen::run()
 {
@@ -63,11 +79,14 @@ void
 MinkoOffscreen::initialize(const std::string& windowTitle, unsigned int width, unsigned int height, bool useStencil)
 {
 	_active = false;
+    _previousTime = std::chrono::high_resolution_clock::now();
+    _startTime = std::chrono::high_resolution_clock::now();
 	_framerate = 0.f;
+	_desiredFramerate = 60.f;
 	_width = width;
 	_height = height;
 
-	_enterFrame = minko::Signal<>::create();
+	_enterFrame = minko::Signal<float, float>::create();
 
 	initializeContext(windowTitle, width, height, useStencil);
 }
@@ -77,9 +96,22 @@ MinkoOffscreen::step()
 {
 	auto stepStartTime = std::clock();
 
-	_enterFrame->execute();
+    auto absoluteTime = std::chrono::high_resolution_clock::now();
+    _relativeTime   = 1e-6f * std::chrono::duration_cast<std::chrono::nanoseconds>(absoluteTime - _startTime).count(); // in milliseconds
+    _frameDuration  = 1e-6f * std::chrono::duration_cast<std::chrono::nanoseconds>(absoluteTime - _previousTime).count(); // in milliseconds
 
-	_framerate = 1000.f / (1000.f * (std::clock() - stepStartTime) / CLOCKS_PER_SEC);
+	_enterFrame->execute(_relativeTime, _frameDuration);
+    _previousTime = absoluteTime;
+
+    _framerate = 1000.f / _frameDuration;
+
+    if (_framerate > _desiredFramerate)
+    {
+    	unsigned int sleepDuration = (1000.f / _desiredFramerate) - _frameDuration;
+		std::this_thread::sleep_for(std::chrono::milliseconds(sleepDuration));
+
+        _framerate = _desiredFramerate;
+    }
 }
 
 void
@@ -103,12 +135,12 @@ MinkoOffscreen::initializeContext(const std::string& windowTitle, unsigned int w
 }
 
 void
-MinkoOffscreen::takeScreenshot()
+MinkoOffscreen::takeScreenshot(const std::string& filename)
 {
 	glReadPixels(0, 0, _width, _height, GL_RGB, GL_UNSIGNED_BYTE, _pixels.get());
 
 	int i, j;
-	FILE* fp = fopen("screenshot.ppm", "wb");
+	FILE* fp = fopen(filename.c_str(), "wb");
 	fprintf(fp, "P6\n%d %d\n255\n", _width, _height);
 
 	unsigned long long avgColor = 0;
