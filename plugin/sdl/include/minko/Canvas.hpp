@@ -31,11 +31,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/input/Joystick.hpp"
 #include "minko/async/Worker.hpp"
 
-#if defined(__APPLE__)
-# include <TargetConditionals.h>
-# if TARGET_OS_IPHONE
-#  include "SDL2/SDL_main.h"
-# endif
+// Note: cannot be added to the .cpp because this must be compiled within the
+// main compilation-unit.
+#include "SDL_platform.h"
+#if __IPHONEOS__ || __ANDROID__
+# include "SDL_main.h"
 #endif
 
 struct SDL_Window;

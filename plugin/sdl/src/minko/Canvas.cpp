@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Canvas.hpp"
 #include "minko/input/Mouse.hpp"
 #include "minko/input/Keyboard.hpp"
+#include "minko/file/Options.hpp"
 #include "minko/data/Provider.hpp"
 #include "minko/math/Vector4.hpp"
 #include "minko/async/Worker.hpp"
@@ -33,19 +34,22 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 # include "SDL/SDL.h"
 # include "emscripten/emscripten.h"
 #elif defined(MINKO_ANGLE)
-# include "SDL2/SDL.h"
-# include "SDL2/SDL_syswm.h"
+# include "SDL.h"
+# include "SDL_syswm.h"
 # include <EGL/egl.h>
 # include <GLES2/gl2.h>
 # include <GLES2/gl2ext.h>
+#elif defined(__ANDROID__)
+# include "minko/MinkoAndroid.hpp"
+# include "SDL.h"
 #else
-# include "SDL2/SDL.h"
+# include "SDL.h"
 #endif
 
 #if defined(__APPLE__)
 # include <TargetConditionals.h>
 # if TARGET_OS_IPHONE
-#  include "SDL2/SDL_opengles.h"
+#  include "SDL_opengles.h"
 # endif
 #endif
 
@@ -74,6 +78,16 @@ Canvas::Canvas(const std::string& name, const uint width, const uint height, boo
 void
 Canvas::initialize()
 {
+#if defined(__ANDROID__)
+	file::Options::defaultProtocolFunction("file", [](const std::string& filename)
+	{
+		return minko::file::APKProtocol::create();
+	});
+
+	// std::cout.rdbuf(new minko::log::AndroidStreambuf());
+	// std::cerr.rdbuf(new minko::log::AndroidStreambuf());
+#endif
+
     initializeContext(_name, width(), height(), _useStencil);
     initializeInputs();
 
@@ -85,10 +99,10 @@ Canvas::initialize()
 void
 Canvas::initializeInputs()
 {
-    _mouse = Canvas::SDLMouse::create(shared_from_this());
+    _mouse = SDLMouse::create(shared_from_this());
     _keyboard = Canvas::SDLKeyboard::create();
 
-#ifndef EMSCRIPTEN
+#if !defined(EMSCRIPTEN) && !defined(__ANDROID__)
     for (int i = 0; i < SDL_NumJoysticks(); ++i)
     {
         SDL_Joystick* joystick = SDL_JoystickOpen(i);
@@ -121,8 +135,8 @@ Canvas::initializeContext(const std::string& windowTitle, unsigned int width, un
 
     _window = SDL_CreateWindow(
         windowTitle.c_str(),
-        SDL_WINDOWPOS_UNDEFINED,
-        SDL_WINDOWPOS_UNDEFINED,
+        SDL_WINDOWPOS_CENTERED, // SDL_WINDOWPOS_UNDEFINED,
+        SDL_WINDOWPOS_CENTERED, // SDL_WINDOWPOS_UNDEFINED,
         width, height,
         sdlFlags
     );
