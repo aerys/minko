@@ -31,19 +31,22 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 # include "SDL/SDL.h"
 # include "emscripten/emscripten.h"
 #elif defined(MINKO_ANGLE)
-# include "SDL2/SDL.h"
-# include "SDL2/SDL_syswm.h"
+# include "SDL.h"
+# include "SDL_syswm.h"
 # include <EGL/egl.h>
 # include <GLES2/gl2.h>
 # include <GLES2/gl2ext.h>
+#elif defined(__ANDROID__)
+# include "minko/MinkoAndroid.hpp"
+# include "SDL.h"
 #else
-# include "SDL2/SDL.h"
+# include "SDL.h"
 #endif
 
 #if defined(__APPLE__)
 # include <TargetConditionals.h>
 # if TARGET_OS_IPHONE
-#  include "SDL2/SDL_opengles.h"
+#  include "SDL_opengles.h"
 # endif
 #endif
 
@@ -58,19 +61,19 @@ using namespace minko::async;
 const float Canvas::SDLFinger::SWIPE_PRECISION = 0.05f;
 
 Canvas::Canvas(const std::string& name, const uint width, const uint height, bool useStencil, bool chromeless) :
-	_name(name),
-	_useStencil(useStencil),
-	_chromeless(chromeless),
-	_data(data::Provider::create()),
-	_active(false),
+    _name(name),
+    _useStencil(useStencil),
+    _chromeless(chromeless),
+    _data(data::Provider::create()),
+    _active(false),
     _previousTime(std::chrono::high_resolution_clock::now()),
     _startTime(std::chrono::high_resolution_clock::now()),
-	_framerate(0.f),
-	_desiredFramerate(60.f),
-	_enterFrame(Signal<Canvas::Ptr, float, float>::create()),
-	_resized(Signal<AbstractCanvas::Ptr, uint, uint>::create()),
-	_joystickAdded(Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::create()),
-	_joystickRemoved(Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::create())
+    _framerate(0.f),
+    _desiredFramerate(60.f),
+    _enterFrame(Signal<Canvas::Ptr, float, float>::create()),
+    _resized(Signal<AbstractCanvas::Ptr, uint, uint>::create()),
+    _joystickAdded(Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::create()),
+    _joystickRemoved(Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::create())
 {
     _data->set<math::Vector4::Ptr>("canvas.viewport", Vector4::create(0.0f, 0.0f, (float) width, (float) height));
 }
@@ -89,6 +92,16 @@ ConsoleHandlerRoutine(DWORD dwCtrlType)
 void
 Canvas::initialize()
 {
+#if defined(__ANDROID__)
+    file::Options::defaultProtocolFunction("file", [](const std::string& filename)
+    {
+        return minko::file::APKProtocol::create();
+    });
+
+    // std::cout.rdbuf(new minko::log::AndroidStreambuf());
+    // std::cerr.rdbuf(new minko::log::AndroidStreambuf());
+#endif
+
     initializeContext(_name, width(), height(), _useStencil);
     initializeInputs();
 
@@ -106,9 +119,9 @@ Canvas::initializeInputs()
 {
     _mouse = SDLMouse::create(shared_from_this());
     _keyboard = SDLKeyboard::create();
-    _finger = Canvas::SDLFinger::create(shared_from_this());
+    _finger = SDLFinger::create(shared_from_this());
 
-#ifndef EMSCRIPTEN
+#if !defined(EMSCRIPTEN) && !defined(__ANDROID__)
     for (int i = 0; i < SDL_NumJoysticks(); ++i)
     {
         SDL_Joystick* joystick = SDL_JoystickOpen(i);
@@ -135,20 +148,20 @@ Canvas::initializeContext(const std::string& windowTitle, unsigned int width, un
 
     if (_chromeless)
         sdlFlags |= SDL_WINDOW_BORDERLESS;
-    
+
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
     _window = SDL_CreateWindow(
         windowTitle.c_str(),
-        SDL_WINDOWPOS_UNDEFINED,
-        SDL_WINDOWPOS_UNDEFINED,
+        SDL_WINDOWPOS_CENTERED, // SDL_WINDOWPOS_UNDEFINED,
+        SDL_WINDOWPOS_CENTERED, // SDL_WINDOWPOS_UNDEFINED,
         width, height,
         sdlFlags
     );
-    
+
     if (!_window)
-        throw;
+        throw std::runtime_error(SDL_GetError());
 
 # if MINKO_ANGLE
     if (!(_angleContext = initContext(_window, width, height)))
@@ -168,7 +181,7 @@ Canvas::initializeContext(const std::string& windowTitle, unsigned int width, un
 #else // if defined(EMSCRIPTEN)
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK) < 0)
         throw std::runtime_error(SDL_GetError());
-	
+
     if (useStencil)
         SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 
@@ -342,12 +355,12 @@ Canvas::step()
 {
 #if defined(EMSCRIPTEN)
     // Detect new joystick
-    for (int i = 0; i < SDL_NumJoysticks(); i++) 
+    for (int i = 0; i < SDL_NumJoysticks(); i++)
     {
-        if (!SDL_JoystickOpened(i)) 
+        if (!SDL_JoystickOpened(i))
         {
             auto joystick = SDL_JoystickOpen(i);
-            if (joystick) 
+            if (joystick)
             {
                 if (_joysticks.find(i) == _joysticks.end())
                 {
@@ -357,14 +370,14 @@ Canvas::step()
 
                 _joystickAdded->execute(shared_from_this(), _joysticks[i]);
 
-#if defined(DEBUG)
+# if defined(DEBUG)
                 printf("New joystick found!\n");
                 printf("Joystick %i\n", i);
                 printf("Name: %s\n", SDL_JoystickName(i));
                 printf("Number of Axes: %d\n", SDL_JoystickNumAxes(joystick));
                 printf("Number of Buttons: %d\n", SDL_JoystickNumButtons(joystick));
                 printf("Number of Balls: %d\n", SDL_JoystickNumBalls(joystick));
-#endif // DEBUG
+# endif // DEBUG
             }
         }
     }
@@ -398,20 +411,22 @@ Canvas::step()
         switch (event.type)
         {
         case SDL_QUIT:
-            quit();
-            break;
+            {
+                quit();
+                break;
+            }
 
         case SDL_KEYDOWN:
-        {
-            _keyboard->keyDown()->execute(_keyboard);
-            for (uint i = 0; i < input::Keyboard::NUM_KEYS; ++i)
             {
-                auto code = static_cast<input::Keyboard::Key>(i);
-                if (_keyboard->_keyboardState[i] && _keyboard->hasKeyDownSignal(code))
-                    _keyboard->keyDown(code)->execute(_keyboard, i);
+                _keyboard->keyDown()->execute(_keyboard);
+                for (uint i = 0; i < input::Keyboard::NUM_KEYS; ++i)
+                {
+                    auto code = static_cast<input::Keyboard::ScanCode>(i);
+                    if (_keyboard->_keyboardState[i] && _keyboard->hasKeyDownSignal(code))
+                        _keyboard->keyDown(code)->execute(_keyboard, i);
+                }
+                break;
             }
-            break;
-        }
 
         case SDL_KEYUP:
         {
@@ -422,60 +437,61 @@ Canvas::step()
                 if (_keyboard->_keyboardState[i] && _keyboard->hasKeyUpSignal(code))
                     _keyboard->keyUp(code)->execute(_keyboard, i);
             }
-            break;
         }
 
         case SDL_MOUSEMOTION:
-        {
-            auto oldX = mouse()->x();
-            auto oldY = mouse()->y();
-
-            _mouse->x(event.motion.x);
-            _mouse->y(event.motion.y);
-            _mouse->move()->execute(_mouse, event.motion.x - oldX, event.motion.y - oldY);
-            //_mouseX = event.motion.x;
-            //_mouseY = event.motion.y;
-            //_mouseMove->execute(shared_from_this(), _mouseX, _mouseY);
-            break;
-        }
-        case SDL_MOUSEBUTTONDOWN:
-        {
-            switch( event.button.button ) 
             {
-            case SDL_BUTTON_LEFT:
-                _mouse->leftButtonDown()->execute(_mouse);
-                break;
-            case SDL_BUTTON_RIGHT:
-                _mouse->rightButtonDown()->execute(_mouse);
-                break;
-#ifdef EMSCRIPTEN
-            case SDL_BUTTON_X1:
-                _mouse->wheel()->execute(_mouse, 0, 1);
-                break;
-            case SDL_BUTTON_X2:
-                _mouse->wheel()->execute(_mouse, 0, -1);
-                break;
-#endif
-	    }
-            break;
-        }
-        case SDL_MOUSEBUTTONUP:
-        {
-            switch( event.button.button ) 
-	    {
-	    case SDL_BUTTON_LEFT:
-                _mouse->leftButtonUp()->execute(_mouse);
-                break;
-	    case SDL_BUTTON_RIGHT:
-                _mouse->rightButtonUp()->execute(_mouse);
+                auto oldX = _mouse->input::Mouse::x();
+                auto oldY = _mouse->input::Mouse::y();
+
+                _mouse->x(event.motion.x);
+                _mouse->y(event.motion.y);
+                _mouse->move()->execute(_mouse, event.motion.x - oldX, event.motion.y - oldY);
                 break;
             }
-            break;
-        }
+
+        case SDL_MOUSEBUTTONDOWN:
+            {
+                switch (event.button.button)
+                {
+                case SDL_BUTTON_LEFT:
+                    _mouse->leftButtonDown()->execute(_mouse);
+                    break;
+                case SDL_BUTTON_RIGHT:
+                    _mouse->rightButtonDown()->execute(_mouse);
+                    break;
+#ifdef EMSCRIPTEN
+                case SDL_BUTTON_X1:
+                    _mouse->wheel()->execute(_mouse, 0, 1);
+                    break;
+                case SDL_BUTTON_X2:
+                    _mouse->wheel()->execute(_mouse, 0, -1);
+                    break;
+#endif
+                }
+                break;
+            }
+
+        case SDL_MOUSEBUTTONUP:
+            {
+                switch (event.button.button)
+                {
+                case SDL_BUTTON_LEFT:
+                    _mouse->leftButtonUp()->execute(_mouse);
+                    break;
+                case SDL_BUTTON_RIGHT:
+                    _mouse->rightButtonUp()->execute(_mouse);
+                    break;
+                }
+                break;
+            }
+
         case SDL_MOUSEWHEEL:
-            _mouse->wheel()->execute(_mouse, event.wheel.x, event.wheel.y);
-            //_mouseWheel->execute(shared_from_this(), event.wheel.x, event.wheel.y);
-            break;
+            {
+                _mouse->wheel()->execute(_mouse, event.wheel.x, event.wheel.y);
+                //_mouseWheel->execute(shared_from_this(), event.wheel.x, event.wheel.y);
+                break;
+            }
 
             // Touch events
         case SDL_FINGERDOWN:
@@ -552,128 +568,112 @@ Canvas::step()
             }
 
             break;
+
         case SDL_JOYAXISMOTION:
-# if defined(DEBUG)
-            printf("Joystick %d axis %d value: %d\n",
-                event.jaxis.which,
-                event.jaxis.axis,
-                event.jaxis.value);
-#endif // DEBUG
-            _joysticks[event.jaxis.which]->joystickAxisMotion()->execute(
-                _joysticks[event.jaxis.which], event.jaxis.which, event.jaxis.axis, event.jaxis.value
+            {
+                _joysticks[event.jaxis.which]->joystickAxisMotion()->execute(
+                    _joysticks[event.jaxis.which], event.jaxis.which, event.jaxis.axis, event.jaxis.value
                 );
-            break;
+                break;
+            }
 
         case SDL_JOYHATMOTION:
-# if defined(DEBUG)
-            printf("Joystick %d hat %d value:",
-                event.jhat.which,
-                event.jhat.hat);
-            if (event.jhat.value == SDL_HAT_CENTERED)
-                printf(" centered");
-            if (event.jhat.value & SDL_HAT_UP)
-                printf(" up");
-            if (event.jhat.value & SDL_HAT_RIGHT)
-                printf(" right");
-            if (event.jhat.value & SDL_HAT_DOWN)
-                printf(" down");
-            if (event.jhat.value & SDL_HAT_LEFT)
-                printf(" left");
-            printf("\n");
-#endif // DEBUG
-            _joysticks[event.jhat.which]->joystickHatMotion()->execute(
-                _joysticks[event.jhat.which], event.jhat.which, event.jhat.hat, event.jhat.value
+            {
+                _joysticks[event.jhat.which]->joystickHatMotion()->execute(
+                    _joysticks[event.jhat.which], event.jhat.which, event.jhat.hat, event.jhat.value
                 );
-            break;
+                break;
+            }
 
         case SDL_JOYBUTTONDOWN:
-# if defined(DEBUG)
-            printf("Joystick %d button %d down\n",
-                event.jbutton.which,
-                event.jbutton.button);
-#endif
-            _joysticks[event.jbutton.which]->joystickButtonDown()->execute(
-                _joysticks[event.jbutton.which], event.jbutton.which, event.jbutton.button
+            {
+                _joysticks[event.jbutton.which]->joystickButtonDown()->execute(
+                    _joysticks[event.jbutton.which], event.jbutton.which, event.jbutton.button
                 );
-            break;
+                break;
+            }
 
         case SDL_JOYBUTTONUP:
-# if defined(DEBUG)
-            printf("Joystick %d button %d up\n",
-                event.jbutton.which,
-                event.jbutton.button);
-#endif
-            _joysticks[event.jbutton.which]->joystickButtonUp()->execute(
-                _joysticks[event.jbutton.which], event.jbutton.which, event.jbutton.button
+            {
+                _joysticks[event.jbutton.which]->joystickButtonUp()->execute(
+                    _joysticks[event.jbutton.which], event.jbutton.which, event.jbutton.button
                 );
-            break;
+                break;
+            }
 
 #ifndef EMSCRIPTEN
         case SDL_JOYDEVICEADDED:
-        {
-            int				device = event.cdevice.which;
-            auto			joystick = SDL_JoystickOpen(device);
-            SDL_JoystickID  instance_id = SDL_JoystickInstanceID(joystick);
-
-            if (_joysticks.find(instance_id) == _joysticks.end())
             {
-                auto sdlJoystick = Canvas::SDLJoystick::create(shared_from_this(), instance_id, joystick);
-                _joysticks[instance_id] = sdlJoystick;
-            }
+                int             device = event.cdevice.which;
+                auto            joystick = SDL_JoystickOpen(device);
+                SDL_JoystickID  instance_id = SDL_JoystickInstanceID(joystick);
 
-            _joystickAdded->execute(shared_from_this(), _joysticks[instance_id]);
+                if (_joysticks.find(instance_id) == _joysticks.end())
+                {
+                    auto sdlJoystick = Canvas::SDLJoystick::create(shared_from_this(), instance_id, joystick);
+                    _joysticks[instance_id] = sdlJoystick;
+                }
+
+                _joystickAdded->execute(shared_from_this(), _joysticks[instance_id]);
 
 # if defined(DEBUG)
-            std::cout << "Is Gamecontroller : " << SDL_IsGameController(device) << std::endl;
-            std::cout << "Num joystick : " << SDL_NumJoysticks() << std::endl;
-            std::cout << "Name : " << SDL_JoystickName(joystick) << std::endl;
-            std::cout << "Num axes : " << SDL_JoystickNumAxes(joystick) << std::endl;
-            std::cout << "Num buttons : " << SDL_JoystickNumButtons(joystick) << std::endl;
-            std::cout << "Num balls : " << SDL_JoystickNumBalls(joystick) << std::endl;
-            std::cout << "Num hat : " << SDL_JoystickNumHats(joystick) << std::endl;
-            std::cout << "instance_id : " << instance_id << std::endl;
+                std::cout << "Is Gamecontroller : " << SDL_IsGameController(device) << std::endl;
+                std::cout << "Num joystick : " << SDL_NumJoysticks() << std::endl;
+                std::cout << "Name : " << SDL_JoystickName(joystick) << std::endl;
+                std::cout << "Num axes : " << SDL_JoystickNumAxes(joystick) << std::endl;
+                std::cout << "Num buttons : " << SDL_JoystickNumButtons(joystick) << std::endl;
+                std::cout << "Num balls : " << SDL_JoystickNumBalls(joystick) << std::endl;
+                std::cout << "Num hat : " << SDL_JoystickNumHats(joystick) << std::endl;
+                std::cout << "instance_id : " << instance_id << std::endl;
 # endif // DEBUG
-            break;
-        }
+
+                break;
+            }
+
         case SDL_JOYDEVICEREMOVED:
-        {
-            auto joystick = _joysticks[event.cdevice.which]->_joystick;
+            {
+                auto joystick = _joysticks[event.cdevice.which]->_joystick;
 
-            _joystickRemoved->execute(shared_from_this(), _joysticks[event.cdevice.which]);
+                _joystickRemoved->execute(shared_from_this(), _joysticks[event.cdevice.which]);
 
-            SDL_JoystickClose(joystick);
-            _joysticks.erase(event.cdevice.which);
+                SDL_JoystickClose(joystick);
+                _joysticks.erase(event.cdevice.which);
 
-            break;
-        }
+                break;
+            }
 #endif // EMSCRIPTEN
 
 #ifdef EMSCRIPTEN
         case SDL_VIDEORESIZE:
-            width(event.resize.w);
-            height(event.resize.h);
-
-            _screen = SDL_SetVideoMode(width(), height(), 0, SDL_OPENGL | SDL_WINDOW_RESIZABLE);
-            _context->configureViewport(x(), y(), width(), height());
-            _resized->execute(shared_from_this(), width(), height());
-            break;
-#else
-        case SDL_WINDOWEVENT:
-            switch (event.window.event)
             {
-            case SDL_WINDOWEVENT_RESIZED:
-                width(event.window.data1);
-                height(event.window.data2);
+                width(event.resize.w);
+                height(event.resize.h);
 
+                _screen = SDL_SetVideoMode(width(), height(), 0, SDL_OPENGL | SDL_WINDOW_RESIZABLE);
                 _context->configureViewport(x(), y(), width(), height());
                 _resized->execute(shared_from_this(), width(), height());
                 break;
-            default:
+            }
+#else
+        case SDL_WINDOWEVENT:
+            {
+                switch (event.window.event)
+                {
+                    case SDL_WINDOWEVENT_RESIZED:
+                        width(event.window.data1);
+                        height(event.window.data2);
+
+                        _context->configureViewport(x(), y(), width(), height());
+                        _resized->execute(shared_from_this(), width(), height());
+                        break;
+
+                    default:
+                        break;
+                }
                 break;
             }
-
-            break;
 #endif // EMSCRIPTEN
+
         default:
             break;
         }
@@ -765,13 +765,10 @@ Canvas::getWorker(const std::string& name)
 int
 Canvas::getJoystickAxis(input::Joystick::Ptr joy, int axis)
 {
-	//std::cout << "get axis from joystick id = " << joystick->joystickId() << std::endl;
-	int id = joy->joystickId();
+    int id = joy->joystickId();
 
-	if (_joysticks.find(id) != _joysticks.end())
-	{
-		return SDL_JoystickGetAxis(_joysticks[id]->joystick(), axis);
-	}
+    if (_joysticks.find(id) == _joysticks.end())
+        return -1;
 
-	//return SDL_JoystickGetAxis(SDL_JoystickOpen(joy->joystickId()), axis);
+    return SDL_JoystickGetAxis(_joysticks[id]->joystick(), axis);
 }

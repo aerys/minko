@@ -1,15 +1,25 @@
-local insert = require 'insert'
-
-insert.insert(premake.tools.gcc, 'cxxflags.system', {
-	linux = { "-MMD", "-MP", "-std=c++11" },
-	macosx = { "-MMD", "-MP", "-std=c++11" },
-	emscripten = { "-MMD", "-MP", '"-std=c++11"' } -- note: double-quoting is needed by cmd.exe
+table.inject(premake.tools.gcc, 'cppflags.system.linux', {
+	"-MMD", "-MP"
 })
 
-insert.insert(premake.tools.gcc, 'tools.linux', {
-	cxx = MINKO_HOME .. '/tool/lin/script/g++.sh',
+table.inject(premake.tools.gcc, 'cppflags.system.macosx', {
+	"-MMD", "-MP"
 })
 
-insert.insert(premake.tools.gcc, 'tools.macosx', {
-	cxx = MINKO_HOME .. '/tool/mac/script/g++.sh',
+table.inject(premake.tools.gcc, 'cxxflags.system.linux', {
+	"-std=c++11"
+})
+
+table.inject(premake.tools.gcc, 'cxxflags.system.macosx', {
+	"-std=c++11"
+})
+
+table.inject(premake.tools.gcc, 'tools.linux', {
+	cc = 'gcc',
+	cxx = MINKO_HOME .. '/tool/lin/script/g++.sh g++',
+})
+
+table.inject(premake.tools.gcc, 'tools.macosx', {
+	cc = 'gcc',
+	cxx = 'g++',
 })

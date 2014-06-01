@@ -29,6 +29,10 @@ minko.platform.supports = function(target)
 		if os.is("macosx") and string.startswith(_ACTION, "xcode") then
 			return true
 		end
+	elseif target == "android" then
+		if ANDROID_HOME and string.startswith(_ACTION, "gmake") then
+			return true
+		end
 	end
 	return false
 end

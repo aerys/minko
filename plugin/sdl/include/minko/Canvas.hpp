@@ -32,11 +32,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/input/Finger.hpp"
 #include "minko/async/Worker.hpp"
 
-#if defined(__APPLE__)
-# include <TargetConditionals.h>
-# if TARGET_OS_IPHONE
-#  include "SDL2/SDL_main.h"
-# endif
+// Note: cannot be added to the .cpp because this must be compiled within the
+// main compilation-unit.
+#include "SDL_platform.h"
+#if __IPHONEOS__ || __ANDROID__
+# include "SDL_main.h"
 #endif
 
 struct SDL_Window;
@@ -177,13 +177,17 @@ namespace minko
 	public:
 		static inline
 		Ptr
-		create(const std::string&	name, 
-			   const uint			width, 
-			   const uint			height, 
+		create(const std::string&	name,
+			   const uint			width,
+			   const uint			height,
 			   bool					useStencil = false,
 			   bool					chromeless = false)
 		{
 			auto canvas = std::shared_ptr<Canvas>(new Canvas(name, width, height, useStencil, chromeless));
+
+#if defined(__ANDROID__)
+			auto that = canvas->shared_from_this();
+#endif
 
 			canvas->initialize();
 
@@ -256,7 +260,7 @@ namespace minko
 		{
 			return _finger;
 		}
-		
+
 		inline
 		std::shared_ptr<input::Joystick>
 		joystick(uint id)
@@ -282,9 +286,9 @@ namespace minko
 			return _joysticks.size();
 		}
 
-		inline 
+		inline
 		std::unordered_map<int, std::shared_ptr<SDLJoystick>>
-		joysticks() 
+		joysticks()
 		{
 			return _joysticks;
 		}
@@ -373,9 +377,9 @@ namespace minko
 		quit();
 
 	private:
-		Canvas(const std::string&	name, 
-			   const uint			width, 
-			   const uint			height, 
+		Canvas(const std::string&	name,
+			   const uint			width,
+			   const uint			height,
 			   bool					useStencil = false,
 			   bool					chromeless = false);
 
@@ -388,7 +392,7 @@ namespace minko
 		void
 		width(uint);
 
-		void 
+		void
 		height(uint);
 
 #if defined(_WIN32)
@@ -412,6 +416,6 @@ namespace minko
 
 	public:
 		void
-		step();		
+		step();
 	};
 }

@@ -121,18 +121,17 @@ GeometryParser::parse(const std::string&				filename,
 	{
 		geom->addVertexBuffer(vertexBufferParserFunction(serializedVertexBuffer, options->context()));
 	}
+
 	geom = options->geometryFunction()(serializedGeometry.a1, geom);
 
     if (options->disposeIndexBufferAfterLoading())
     {
-// TODO
-// dispose client side index buffer
+        geom->disposeIndexBufferData();
     }
 
     if (options->disposeVertexBufferAfterLoading())
     {
-// TODO
-// dispose client side vertex buffer
+        geom->disposeVertexBufferData();
     }
 
 	assetLibrary->geometry(serializedGeometry.a1, geom);

@@ -7,7 +7,7 @@ minko.project.library = function(name)
 
 	location "."
 	includedirs { minko.sdk.path("/framework/include") }
-	
+
 	configuration { "debug"}
 		defines { "DEBUG" }
 		flags { "Symbols" }
@@ -15,7 +15,7 @@ minko.project.library = function(name)
 	configuration { "release" }
 		defines { "NDEBUG" }
 		optimize "On"
-	
+
 	configuration { "windows32 or windows64" }
 		includedirs { minko.sdk.path("/framework/lib/glew/include") }
 
@@ -27,7 +27,7 @@ minko.project.library = function(name)
 		buildoptions {
 			"/wd4503"				-- remove warnings about too long type names
 		}
-		
+
 	configuration { "html5" }
 		if EMSCRIPTEN then
 			includedirs { EMSCRIPTEN .. "/system/include" }
@@ -146,7 +146,7 @@ minko.project.application = function(name)
 		prelinkcommands {
 			minko.action.copy("asset"),
 		}
-	
+
 	configuration { "osx64" }
 		links {
 			"minko-framework",
@@ -183,7 +183,7 @@ minko.project.application = function(name)
 		}
 
 		targetsuffix ".bc"
-		
+
 		prelinkcommands {
 			minko.action.copy(minko.sdk.path("/framework/asset")),
 			minko.action.copy("asset"),
@@ -254,9 +254,9 @@ minko.project.application = function(name)
 		}
 
 	configuration { "ios" }
-	
+
 		kind "WindowedApp"
-	
+
 		links {
 			"minko-framework",
 			"m",
@@ -276,8 +276,45 @@ minko.project.application = function(name)
 			minko.action.copy("asset")
 		}
 
+	configuration { "android" }
+
+		kind "SharedLib"
+
+		links {
+			"minko-framework",
+			"GLESv1_CM",
+			"GLESv2",
+			"EGL",
+			"dl",
+			"z",
+			"log",
+			"android",
+			"stdc++",
+			-- "gnustl_static",
+		}
+
+		targetprefix "lib"
+		targetextension ".so"
+		linkoptions {
+			-- "-s",
+			"-shared",
+			"-pthread",
+			"-Wl,--no-undefined",
+			"-Wl,--undefined=Java_org_libsdl_app_SDLActivity_nativeInit"
+		}
+
+		prelinkcommands {
+			minko.action.copy(minko.sdk.path("/framework/asset")),
+			minko.action.copy("asset")
+		}
+
+		-- activity "MinkoTest"
+		-- baseactivity "Activity"
+		-- packagename "app"
+		-- basepackagename "io.minko"
+
 	configuration { }
-	
+
 end
 
 minko.project.worker = function(name)

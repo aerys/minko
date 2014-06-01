@@ -155,7 +155,7 @@ AbstractSerializerParser::deserializedAsset(SerializedAsset&			asset,
 
 		_materialParser->parse(resolvedPath, assetCompletePath, options, data, assetLibrary);
 		_dependencies->registerReference(asset.a1, std::dynamic_pointer_cast<data::Provider>(assetLibrary->material(_materialParser->_lastParsedAssetName)));
-		_jobList.merge(_materialParser->_jobList);
+		//_jobList.merge(_materialParser->_jobList);
 	}
 	else if ((asset.a0 == serialize::AssetType::TEXTURE_ASSET ||
 				asset.a0 == serialize::AssetType::PNG_EMBED_TEXTURE_ASSET ||
@@ -170,20 +170,21 @@ AbstractSerializerParser::deserializedAsset(SerializedAsset&			asset,
 			assetCompletePath += resolvedPath;
 		}
 
-        auto extension = resolvedPath.substr(resolvedPath.find_last_of(".") + 1);
 
-		std::shared_ptr<file::AbstractParser> parser = assetLibrary->loader()->options()->getParser(extension);
+		if (assetLibrary->texture(resolvedPath) == nullptr)
+		{
+			auto extension = resolvedPath.substr(resolvedPath.find_last_of(".") + 1);
 
-		parser->parse(resolvedPath, assetCompletePath, options, data, assetLibrary);
+			std::shared_ptr<file::AbstractParser> parser = assetLibrary->loader()->options()->getParser(extension);
 
-        auto texture = assetLibrary->texture(resolvedPath);
+			parser->parse(resolvedPath, assetCompletePath, options, data, assetLibrary);
 
-        if (options->disposeTextureAfterLoading())
-        {
-            texture->disposeData();
-        }
+        	auto texture = assetLibrary->texture(resolvedPath);
 
-		_dependencies->registerReference(asset.a1, texture);
+        	if (options->disposeTextureAfterLoading())
+        	    texture->disposeData();
+		}
+		_dependencies->registerReference(asset.a1, assetLibrary->texture(resolvedPath));
 	}
 	else if (asset.a0 == serialize::AssetType::EFFECT_ASSET && _dependencies->effectReferenceExist(asset.a1) == false) // effect
 	{

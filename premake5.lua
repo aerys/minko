@@ -69,6 +69,7 @@ solution "minko"
 
 	-- plugin
 	if not _OPTIONS['no-plugin'] then
+		include 'plugin/android'
 		include 'plugin/lua'
 		include 'plugin/angle'
 		include 'plugin/zlib'
@@ -92,7 +93,6 @@ solution "minko"
 
 	-- example
 	if not _OPTIONS['no-example'] then
-		include 'example/lua-scripts'
 		include 'example/assimp'
 		include 'example/cube'
 		include 'example/devil'
@@ -103,6 +103,7 @@ solution "minko"
 		include 'example/leap-motion'
 		include 'example/light'
 		include 'example/line-geometry'
+		include 'example/lua-scripts'
 		include 'example/offscreen'
 		include 'example/particles'
 		include 'example/picking'

@@ -24,7 +24,7 @@ function minko.plugin.sdl:enable()
 	defines { "MINKO_PLUGIN_SDL" }
 
 	minko.plugin.links { "sdl" }
-	
+
 	includedirs {
 		minko.plugin.path("sdl") .. "/include",
 		minko.plugin.path("sdl") .. "/lib/sdl/include",
@@ -43,7 +43,7 @@ function minko.plugin.sdl:enable()
 		prelinkcommands {
 			minko.action.copy(minko.plugin.path("sdl") .. "/lib/sdl/lib/windows64/*.dll")
 		}
-		
+
 	configuration { "linux32" }
 		links { "SDL2" }
 
@@ -59,11 +59,14 @@ function minko.plugin.sdl:enable()
 
 	configuration { "ios" }
 		links {
-			"SDL2-Simulator",
+			"SDL2",
 			"CoreAudio.framework",
 			"AudioToolbox.framework"
 		}
 		libdirs { minko.plugin.path("sdl") .. "/lib/sdl/lib/ios" }
+
+	configuration { "android" }
+		minko.plugin.enable { "android" }
 end
 
 function minko.plugin.sdl:dist(pluginDistDir)

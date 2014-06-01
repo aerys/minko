@@ -30,6 +30,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/scene/NodeSet.hpp"
 #include "minko/file/Options.hpp"
 #include "minko/file/Dependency.hpp"
+#include "minko/scene/NodeSet.hpp"
 
 using namespace minko;
 using namespace minko::file;
@@ -230,5 +231,6 @@ SceneParser::parseNode(std::vector<SerializedNode>&			nodePack,
 			n->addComponent(component::BoundingBox::create());
 		}
 	}
+
 	return root;
 }

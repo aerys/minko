@@ -30,61 +30,64 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::file;
 
+Options::ProtocolFunction
+Options::_defaultProtocolFunction = 0;
+
 Options::Options() :
     _context(nullptr),
-	_includePaths(),
-	_platforms(),
-	_userFlags(),
-	_generateMipMaps(false),
-	_resizeSmoothly(false),
-	_isCubeTexture(false),
-	_startAnimation(true),
-	_loadAsynchronously(false),
+    _includePaths(),
+    _platforms(),
+    _userFlags(),
+    _generateMipMaps(false),
+    _resizeSmoothly(false),
+    _isCubeTexture(false),
+    _startAnimation(true),
+    _loadAsynchronously(false),
     _disposeIndexBufferAfterLoading(false),
     _disposeVertexBufferAfterLoading(false),
     _disposeTextureAfterLoading(false),
-	_skinningFramerate(30),
-	_skinningMethod(component::SkinningMethod::HARDWARE),
-	_material(nullptr),
-	_effect(nullptr)
+    _skinningFramerate(30),
+    _skinningMethod(component::SkinningMethod::HARDWARE),
+    _material(nullptr),
+    _effect(nullptr)
 {
-	auto binaryDir = File::getBinaryDirectory();
+    auto binaryDir = File::getBinaryDirectory();
 
     includePaths().push_back(binaryDir + "/asset");
 
 #if defined(DEBUG) && !defined(EMSCRIPTEN)
-	includePaths().push_back(binaryDir + "/../../../asset");
+    includePaths().push_back(binaryDir + "/../../../asset");
 #endif
 
-	initializePlatforms();
-	initializeUserFlags();
+    initializePlatforms();
+    initializeUserFlags();
 }
 
 void
 Options::initializePlatforms()
 {
 #if defined(_WIN32) || defined(_WIN64)
-	_platforms.push_back("windows");
-	_platforms.push_back("desktop");
+    _platforms.push_back("windows");
+    _platforms.push_back("desktop");
 #endif
 #ifdef TARGET_OS_IPHONE
-	_platforms.push_back("iphone");
-	_platforms.push_back("mobile");
+    _platforms.push_back("iphone");
+    _platforms.push_back("mobile");
 #endif
 #ifdef TARGET_OS_MAC
-	_platforms.push_back("macosx");
-	_platforms.push_back("desktop");
+    _platforms.push_back("macosx");
+    _platforms.push_back("desktop");
 #endif
 #ifdef __ANDROID_API__
-	_platforms.push_back("android");
-	_platforms.push_back("mobile");
+    _platforms.push_back("android");
+    _platforms.push_back("mobile");
 #endif
 #ifdef EMSCRIPTEN
-	_platforms.push_back("web");
+    _platforms.push_back("web");
 #endif
 #if defined(LINUX) || defined(__unix__)
-	_platforms.push_back("linux");
-	_platforms.push_back("desktop");
+    _platforms.push_back("linux");
+    _platforms.push_back("desktop");
 #endif
 }
 
@@ -92,7 +95,7 @@ void
 Options::initializeUserFlags()
 {
 #ifdef MINKO_NO_GLSL_STRUCT
-	_userFlags.push_back("no-glsl-struct");
+    _userFlags.push_back("no-glsl-struct");
 #endif // MINKO_NO_GLSL_STRUCT
 }
 
@@ -114,39 +117,15 @@ Options::getProtocol(const std::string& protocol)
 }
 
 std::shared_ptr<AbstractProtocol>
-Options::defaultProtocolFunction(const std::string& filename)
+Options::defaultProtocolFunction(const std::string& filename, const ProtocolFunction& func)
 {
-    std::string protocol = "";
-
-    uint i;
-
-    for (i = 0; i < filename.length(); ++i)
-    {
-        if (i < filename.length() - 2 && filename.at(i) == ':' && filename.at(i + 1) == '/' && filename.at(i + 2) == '/')
-            break;
-
-        protocol += filename.at(i);
-    }
-
-    if (i != filename.length())
-    {
-        auto loader = this->getProtocol(protocol);
-
-        if (loader)
-            return loader;
-    }
-
-    auto defaultProtocol = FileProtocol::create();
-
-    defaultProtocol->options(Options::create(this->shared_from_this()));
-
-    return defaultProtocol;
+    _defaultProtocolFunction = func;
 }
 
 void
 Options::initializeDefaultFunctions()
 {
-    _protocolFunction = std::bind(&Options::defaultProtocolFunction, shared_from_this(), std::placeholders::_1);
+    auto options = shared_from_this();
 
     _materialFunction = [](const std::string&, material::Material::Ptr material) -> material::Material::Ptr
     {
@@ -173,14 +152,48 @@ Options::initializeDefaultFunctions()
         return effect;
     };
 
-// FIXME tmp
     _inputAssetUriFunction = [](const std::string& uri) -> const std::string
-	{
-		return uri;
-	};
+    {
+        return uri;
+    };
 
-	_outputAssetUriFunction = [](const std::string& uri) -> const std::string
-	{
-		return uri;
-	};
+    _outputAssetUriFunction = [](const std::string& uri) -> const std::string
+    {
+        return uri;
+    };
+
+    if (!_defaultProtocolFunction)
+        _defaultProtocolFunction = [=](const std::string& filename) -> std::shared_ptr<AbstractProtocol>
+        {
+            auto defaultProtocol = options->getProtocol("file"); // "file" might be overriden (by APKProtocol for instance)
+
+            defaultProtocol->options(Options::create(options));
+
+            return defaultProtocol;
+        };
+
+    _protocolFunction = [=](const std::string& filename) -> std::shared_ptr<AbstractProtocol>
+    {
+        std::string protocol = "";
+
+        uint i;
+
+        for (i = 0; i < filename.length(); ++i)
+        {
+            if (i < filename.length() - 2 && filename.at(i) == ':' && filename.at(i + 1) == '/' && filename.at(i + 2) == '/')
+                break;
+
+            protocol += filename.at(i);
+        }
+
+        if (i != filename.length())
+        {
+            auto loader = options->getProtocol(protocol);
+
+            if (loader)
+                return loader;
+        }
+
+        return _defaultProtocolFunction(filename);
+    };
 }

@@ -28,7 +28,6 @@ namespace minko
 	{
 		MINKO_DEFINE_WORKER(FileProtocolWorker,
 		{
-
 //#ifdef DEBUG
 			std::cout << "FileProtocolWorker::run(): enter" << std::endl;
 //#endif // defined(DEBUG)

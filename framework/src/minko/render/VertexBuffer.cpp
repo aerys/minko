@@ -97,7 +97,15 @@ VertexBuffer::dispose()
 	    _context->deleteVertexBuffer(_id);
 	    _id = -1;
     }
-	_data.clear();
+
+    disposeData();
+}
+
+void
+VertexBuffer::disposeData()
+{
+    _data.clear();
+    _data.shrink_to_fit();
 }
 
 void
@@ -240,6 +248,6 @@ VertexBuffer::centerPosition(Vector3::Ptr output)
 {
 	if (output == nullptr)
 		output = Vector3::create();
-	
+
 	return output->copyFrom(minPosition())->add(maxPosition())->scaleBy(0.5f);
 }
