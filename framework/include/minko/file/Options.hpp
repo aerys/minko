@@ -38,10 +38,10 @@ namespace minko
 			typedef std::shared_ptr<geometry::Geometry>									GeomPtr;
 			typedef std::shared_ptr<scene::Node>										NodePtr;
 			typedef std::shared_ptr<render::Effect>										EffectPtr;
-            typedef std::shared_ptr<Loader>                                             LoaderPtr;
-            typedef std::shared_ptr<AbstractParser>                                     AbsParserPtr;
-            typedef std::function<AbsParserPtr(void)>                                   ParserHandler;
-            typedef std::function<AbsProtocolPtr(void)>		                            ProtocolHandler;
+			typedef std::shared_ptr<Loader>                                             LoaderPtr;
+			typedef std::shared_ptr<AbstractParser>                                     AbsParserPtr;
+			typedef std::function<AbsParserPtr(void)>                                   ParserHandler;
+			typedef std::function<AbsProtocolPtr(void)>		                            ProtocolHandler;
 
 		public:
 			typedef std::shared_ptr<Options>											Ptr;
@@ -54,30 +54,30 @@ namespace minko
 
 		private:
 			std::shared_ptr<render::AbstractContext>	        _context;
-            std::shared_ptr<AssetLibrary>                       _assets;
+			std::shared_ptr<AssetLibrary>                       _assets;
 			std::list<std::string>						        _includePaths;
 			std::list<std::string>						        _platforms;
 			std::list<std::string>						        _userFlags;
 
-            std::unordered_map<std::string, ParserHandler>	    _parsers;
-            std::unordered_map<std::string, ProtocolHandler>    _protocols;
+			std::unordered_map<std::string, ParserHandler>	    _parsers;
+			std::unordered_map<std::string, ProtocolHandler>    _protocols;
 
-            bool                                                _generateMipMaps;
+			bool                                                _generateMipMaps;
 			bool										        _resizeSmoothly;
 			bool										        _isCubeTexture;
 			bool										        _startAnimation;
 			bool										        _loadAsynchronously;
-            bool                                                _disposeIndexBufferAfterLoading;
-            bool                                                _disposeVertexBufferAfterLoading;
-            bool                                                _disposeTextureAfterLoading;
+			bool                                                _disposeIndexBufferAfterLoading;
+			bool                                                _disposeVertexBufferAfterLoading;
+			bool                                                _disposeTextureAfterLoading;
 
 // TODO fixme
 // tmp
-            bool                                                _embedAll;
+			bool                                                _embedAll;
 
 			unsigned int								        _skinningFramerate;
 			component::SkinningMethod					        _skinningMethod;
-            std::shared_ptr<render::Effect>                     _effect;
+			std::shared_ptr<render::Effect>                     _effect;
 			MaterialPtr									        _material;
 			MaterialFunction							        _materialFunction;
 			GeometryFunction							        _geometryFunction;
@@ -91,30 +91,33 @@ namespace minko
 			UriFunction									        _inputAssetUriFunction;
 			UriFunction									        _outputAssetUriFunction;
 
+			static
+			ProtocolFunction									_defaultProtocolFunction;
+
 		public:
-            inline static
+			inline static
 			Ptr
 			create()
 			{
-                auto opt = std::shared_ptr<Options>(new Options());
+				auto options = std::shared_ptr<Options>(new Options());
 
-                opt->initializeDefaultFunctions();
-                opt->registerParser<file::EffectParser>("effect");
-                opt->registerProtocol<FileProtocol>("file");
+				options->initializeDefaultFunctions();
+				options->registerParser<file::EffectParser>("effect");
+				options->registerProtocol<FileProtocol>("file");
 
-				return opt;
+				return options;
 			}
 
-            inline static
-            Ptr
+			inline static
+			Ptr
 			create(std::shared_ptr<render::AbstractContext> context)
 			{
-				auto opt = create();
+				auto options = create();
 
-                opt->_context = context;
+				options->_context = context;
 
-                return opt;
-            }
+				return options;
+			}
 
 			inline static
 			Ptr
@@ -122,32 +125,32 @@ namespace minko
 			{
 				auto opt = create();
 
-                opt->_context = options->_context;
-                opt->_assets = options->_assets;
-                opt->_parsers = options->_parsers;
-                opt->_protocols = options->_protocols;
-                opt->_includePaths = options->_includePaths;
-                opt->_generateMipMaps = options->_generateMipMaps;
-                opt->_resizeSmoothly = options->_resizeSmoothly;
-                opt->_isCubeTexture = options->_isCubeTexture;
-                opt->_startAnimation = options->_startAnimation;
-                opt->_disposeIndexBufferAfterLoading = options->_disposeIndexBufferAfterLoading;
-                opt->_disposeVertexBufferAfterLoading = options->_disposeVertexBufferAfterLoading;
-                opt->_disposeTextureAfterLoading = options->_disposeTextureAfterLoading;
-                opt->_skinningFramerate = options->_skinningFramerate;
-                opt->_skinningMethod = options->_skinningMethod;
-                opt->_effect = options->_effect;
-                opt->_materialFunction = options->_materialFunction;
-                opt->_geometryFunction = options->_geometryFunction;
-                opt->_protocolFunction = options->_protocolFunction;
-                opt->_uriFunction = options->_uriFunction;
-                opt->_nodeFunction = options->_nodeFunction;
-                opt->_loadAsynchronously = options->_loadAsynchronously;
+				opt->_context = options->_context;
+				opt->_assets = options->_assets;
+				opt->_parsers = options->_parsers;
+				opt->_protocols = options->_protocols;
+				opt->_includePaths = options->_includePaths;
+				opt->_generateMipMaps = options->_generateMipMaps;
+				opt->_resizeSmoothly = options->_resizeSmoothly;
+				opt->_isCubeTexture = options->_isCubeTexture;
+				opt->_startAnimation = options->_startAnimation;
+				opt->_disposeIndexBufferAfterLoading = options->_disposeIndexBufferAfterLoading;
+				opt->_disposeVertexBufferAfterLoading = options->_disposeVertexBufferAfterLoading;
+				opt->_disposeTextureAfterLoading = options->_disposeTextureAfterLoading;
+				opt->_skinningFramerate = options->_skinningFramerate;
+				opt->_skinningMethod = options->_skinningMethod;
+				opt->_effect = options->_effect;
+				opt->_materialFunction = options->_materialFunction;
+				opt->_geometryFunction = options->_geometryFunction;
+				opt->_protocolFunction = options->_protocolFunction;
+				opt->_uriFunction = options->_uriFunction;
+				opt->_nodeFunction = options->_nodeFunction;
+				opt->_loadAsynchronously = options->_loadAsynchronously;
 
 // TODO fixme
 // tmp
-                opt->_inputAssetUriFunction = options->_inputAssetUriFunction;
-                opt->_outputAssetUriFunction = options->_outputAssetUriFunction;
+				opt->_inputAssetUriFunction = options->_inputAssetUriFunction;
+				opt->_outputAssetUriFunction = options->_outputAssetUriFunction;
 
 				return opt;
 			}
@@ -159,26 +162,26 @@ namespace minko
 				return _context;
 			}
 
-            inline
-            void
-            context(std::shared_ptr<render::AbstractContext> context)
-            {
-                _context = context;
-            }
+			inline
+			void
+			context(std::shared_ptr<render::AbstractContext> context)
+			{
+				_context = context;
+			}
 
-            inline
-            std::shared_ptr<AssetLibrary>
-            assetLibrary()
-            {
-                return _assets;
-            }
+			inline
+			std::shared_ptr<AssetLibrary>
+			assetLibrary()
+			{
+				return _assets;
+			}
 
-            inline
-            void
-            assetLibrary(std::shared_ptr<AssetLibrary> assetLibrary)
-            {
-                _assets = assetLibrary;
-            }
+			inline
+			void
+			assetLibrary(std::shared_ptr<AssetLibrary> assetLibrary)
+			{
+				_assets = assetLibrary;
+			}
 
 			inline
 			std::list<std::string>&
@@ -201,18 +204,18 @@ namespace minko
 				return _userFlags;
 			}
 
-            inline
-            bool
-            generateMipmaps() const
-            {
-                return _generateMipMaps;
-            }
+			inline
+			bool
+			generateMipmaps() const
+			{
+				return _generateMipMaps;
+			}
 
-            inline
-            Ptr
-            generateMipmaps(bool generateMipmaps)
-            {
-                _generateMipMaps = generateMipmaps;
+			inline
+			Ptr
+			generateMipmaps(bool generateMipmaps)
+			{
+				_generateMipMaps = generateMipmaps;
 
 				return shared_from_this();
 			}
@@ -281,53 +284,53 @@ namespace minko
 				return shared_from_this();
 			}
 
-            inline
-            bool
-            disposeIndexBufferAfterLoading() const
-            {
-                return _disposeIndexBufferAfterLoading;
-            }
+			inline
+			bool
+			disposeIndexBufferAfterLoading() const
+			{
+				return _disposeIndexBufferAfterLoading;
+			}
 
-            inline
-            Ptr
-            disposeIndexBufferAfterLoading(bool value)
-            {
-                _disposeIndexBufferAfterLoading = value;
+			inline
+			Ptr
+			disposeIndexBufferAfterLoading(bool value)
+			{
+				_disposeIndexBufferAfterLoading = value;
 
-                return shared_from_this();
-            }
+				return shared_from_this();
+			}
 
-            inline
-            bool
-            disposeVertexBufferAfterLoading() const
-            {
-                return _disposeVertexBufferAfterLoading;
-            }
+			inline
+			bool
+			disposeVertexBufferAfterLoading() const
+			{
+				return _disposeVertexBufferAfterLoading;
+			}
 
-            inline
-            Ptr
-            disposeVertexBufferAfterLoading(bool value)
-            {
-                _disposeVertexBufferAfterLoading = value;
+			inline
+			Ptr
+			disposeVertexBufferAfterLoading(bool value)
+			{
+				_disposeVertexBufferAfterLoading = value;
 
-                return shared_from_this();
-            }
+				return shared_from_this();
+			}
 
-            inline
-            bool
-            disposeTextureAfterLoading() const
-            {
-                return _disposeTextureAfterLoading;
-            }
+			inline
+			bool
+			disposeTextureAfterLoading() const
+			{
+				return _disposeTextureAfterLoading;
+			}
 
-            inline
-            Ptr
-            disposeTextureAfterLoading(bool value)
-            {
-                _disposeTextureAfterLoading = value;
+			inline
+			Ptr
+			disposeTextureAfterLoading(bool value)
+			{
+				_disposeTextureAfterLoading = value;
 
-                return shared_from_this();
-            }
+				return shared_from_this();
+			}
 
 // TODO fixme
 // tmp
@@ -379,21 +382,21 @@ namespace minko
 				return shared_from_this();
 			}
 
-            inline
-            std::shared_ptr<render::Effect>
-            effect() const
-            {
-                return _effect;
-            }
+			inline
+			std::shared_ptr<render::Effect>
+			effect() const
+			{
+				return _effect;
+			}
 
-            inline
-            Ptr
-            effect(std::shared_ptr<render::Effect> effect)
-            {
-                _effect = effect;
+			inline
+			Ptr
+			effect(std::shared_ptr<render::Effect> effect)
+			{
+				_effect = effect;
 
 				return shared_from_this();
-            }
+			}
 
 			inline
 			MaterialPtr
@@ -539,7 +542,7 @@ namespace minko
 				return shared_from_this();
 			}
 
-            template <typename T>
+			template <typename T>
 			typename std::enable_if<std::is_base_of<file::AbstractParser, T>::value, Ptr>::type
 			registerParser(const std::string& extension)
 			{
@@ -568,8 +571,12 @@ namespace minko
 				return shared_from_this();
 			}
 
-            AbsProtocolPtr
+			AbsProtocolPtr
 			getProtocol(const std::string& protocol);
+
+			static
+			std::shared_ptr<AbstractProtocol>
+			defaultProtocolFunction(const std::string& filename, const ProtocolFunction& func);
 
 		private:
 			Options();
@@ -580,11 +587,8 @@ namespace minko
 			void
 			initializeUserFlags();
 
-            std::shared_ptr<AbstractProtocol>
-            defaultProtocolFunction(const std::string& filename);
-
-            void
-            initializeDefaultFunctions();
+			void
+			initializeDefaultFunctions();
 		};
 	}
 }

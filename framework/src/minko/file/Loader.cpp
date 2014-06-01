@@ -110,7 +110,7 @@ Loader::protocolCompleteHandler(std::shared_ptr<AbstractProtocol> protocol)
     _loading.erase(std::find(_loading.begin(), _loading.end(), filename));
     //_filenameToProtocol.erase(protocol->filename());
     _filenameToOptions.erase(filename);
-    
+
 #ifdef DEBUG
     std::cerr << "Loader: file '" << protocol->file()->filename() << "' loaded, "
         << _loading.size() << " file(s) still loading, "
