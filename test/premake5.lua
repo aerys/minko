@@ -16,7 +16,7 @@ minko.project.application "minko-tests"
 	minko.plugin.enable("serializer")
 
 	-- googletest framework
-	links { "googletest" }
+	links { "googletest", "pthread" }
 	includedirs { "lib/googletest/include" }
 
 	if _OPTIONS['with-offscreen'] then
