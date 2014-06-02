@@ -70,6 +70,10 @@ namespace minko
 			onload() = 0;
 
 			virtual
+			Signal<Ptr, std::string>::Ptr
+			onmessage() = 0;
+
+			virtual
 			std::string
 			fileName() = 0;
 
