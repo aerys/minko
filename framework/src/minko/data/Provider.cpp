@@ -117,10 +117,22 @@ Provider::hasProperty(const std::string& name, bool skipPropertyNameFormatting) 
 	return it != _names.end();
 }
 
+/*virtual*/
+Provider::Ptr
+Provider::clone()
+{
+	auto provider = Provider::create();
+	
+	provider->copyFrom(shared_from_this());
+
+	return provider;
+}
+
+/*virtual*/
 Provider::Ptr
 Provider::copyFrom(Provider::Ptr source)
 {
-	_names = source->_names;
+	_names	= source->_names;
 	_values = source->_values;
 
 	return shared_from_this();

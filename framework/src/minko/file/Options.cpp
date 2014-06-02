@@ -151,49 +151,4 @@ Options::initializeDefaultFunctions()
     {
         return effect;
     };
-
-    _inputAssetUriFunction = [](const std::string& uri) -> const std::string
-    {
-        return uri;
-    };
-
-    _outputAssetUriFunction = [](const std::string& uri) -> const std::string
-    {
-        return uri;
-    };
-
-    if (!_defaultProtocolFunction)
-        _defaultProtocolFunction = [=](const std::string& filename) -> std::shared_ptr<AbstractProtocol>
-        {
-            auto defaultProtocol = options->getProtocol("file"); // "file" might be overriden (by APKProtocol for instance)
-
-            defaultProtocol->options(Options::create(options));
-
-            return defaultProtocol;
-        };
-
-    _protocolFunction = [=](const std::string& filename) -> std::shared_ptr<AbstractProtocol>
-    {
-        std::string protocol = "";
-
-        uint i;
-
-        for (i = 0; i < filename.length(); ++i)
-        {
-            if (i < filename.length() - 2 && filename.at(i) == ':' && filename.at(i + 1) == '/' && filename.at(i + 2) == '/')
-                break;
-
-            protocol += filename.at(i);
-        }
-
-        if (i != filename.length())
-        {
-            auto loader = options->getProtocol(protocol);
-
-            if (loader)
-                return loader;
-        }
-
-        return _defaultProtocolFunction(filename);
-    };
 }

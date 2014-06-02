@@ -64,7 +64,7 @@ FileProtocol::load()
 
 	_options = options;
 
-	auto realFilename = options->uriFunction()(File::sanitizeFilename(cleanFilename));
+    auto realFilename = options->uriFunction()(File::sanitizeFilename(cleanFilename));
 
 	std::fstream file(cleanFilename, flags);
 
@@ -72,14 +72,49 @@ FileProtocol::load()
 	{
 		for (auto path : _options->includePaths())
 		{
+            auto currentPathIsValid = true;
+
+            const auto absolutePrefix = File::getBinaryDirectory() + "/";
+
 			auto testFilename = options->uriFunction()(File::sanitizeFilename(path + '/' + cleanFilename));
 
-			file.open(testFilename, flags);
-			if (file.is_open())
-			{
-				realFilename = testFilename;
-				break;
-			}
+            if (testFilename.find(absolutePrefix) != std::string::npos)
+            {
+                auto currentSeparatorPos = absolutePrefix.size();
+
+                do
+                {
+                    currentSeparatorPos = absolutePrefix.find_last_of("/\\", currentSeparatorPos - 1);
+
+                    if (currentSeparatorPos == std::string::npos)
+                    {
+                        currentPathIsValid = false;
+
+                        break;
+                    }
+
+                    realFilename = testFilename.substr(currentSeparatorPos + 1, testFilename.size());
+
+                    file.open(realFilename, flags);
+
+                } while (!file.is_open());
+
+                if (currentPathIsValid)
+                {
+                    break;
+                }
+            }
+            else
+            {
+                file.open(testFilename, flags);
+
+                if (file.is_open())
+                {
+                    realFilename = testFilename;
+
+                    break;
+                }
+            }
 		}
 	}
 	

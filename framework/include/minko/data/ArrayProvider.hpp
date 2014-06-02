@@ -31,7 +31,7 @@ namespace minko
 			public Provider
 		{
 		public:
-			typedef std::shared_ptr<ArrayProvider> Ptr;
+			typedef std::shared_ptr<ArrayProvider>			Ptr;
 
 		private:
 			typedef std::shared_ptr<Provider>				ProviderPtr;
@@ -45,9 +45,9 @@ namespace minko
 		public:
 			inline static
 			Ptr
-			create(const std::string& name, uint index = 0)
+			create(const std::string& name)
 			{
-				return std::shared_ptr<ArrayProvider>(new ArrayProvider(name, index));
+				return std::shared_ptr<ArrayProvider>(new ArrayProvider(name));
 			}
 
 
@@ -65,8 +65,29 @@ namespace minko
 				return _name;
 			}
 
+			inline
+			Ptr
+			copyFrom(Ptr source)
+			{
+				Provider::copyFrom(std::static_pointer_cast<Provider>(source));
+
+				_name = source->_name;
+
+				return std::static_pointer_cast<ArrayProvider>(shared_from_this());
+			}
+
+			inline
+			Ptr
+			clone()
+			{
+				auto that = std::static_pointer_cast<ArrayProvider>(shared_from_this());
+
+				return ArrayProvider::create(_name)->copyFrom(that);
+			}
+
 		protected:
-			ArrayProvider(const std::string& name, uint index);
+			explicit
+			ArrayProvider(const std::string& name);
 	
 		};
 	}

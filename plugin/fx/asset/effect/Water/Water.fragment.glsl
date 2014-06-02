@@ -4,11 +4,11 @@
 	precision mediump float;
 #endif
 
-#pragma include("../Reflection/Reflection.function.glsl")
 #pragma include("Phong.function.glsl")
 #pragma include("Envmap.function.glsl")
 #pragma include("Fog.function.glsl")
 #pragma include("Water.function.glsl")
+#pragma include("../Reflection/Reflection.function.glsl")
 
 #ifdef PRECOMPUTED_AMBIENT
 	uniform vec3 sumAmbients;
@@ -103,7 +103,6 @@ varying vec2 		vertexUV;
 varying vec3 		vertexNormal;
 varying vec3 		vertexTangent;
 
-
 void main(void)
 {
 	//float dotNormal			= 0.0;
@@ -161,9 +160,8 @@ void main(void)
 		float	lightCosOuterAng		= 0.0;
 		float 	contribution			= 0.0;
 		
-		vec3 	normalVector			= normalize(vertexNormal * vec3(normalMultiplier, 1.0, normalMultiplier)); // always in world-space
+		vec3 	normalVector			= normalize(vertexNormal); // always in world-space
 		
-
 		#ifdef NORMAL_MAP
 			// warning: the normal vector must be normalized at this point!
 			mat3 tangentToWorldMatrix 	= phong_getTangentToWorldSpaceMatrix(normalVector, vertexTangent);
@@ -191,7 +189,7 @@ void main(void)
 				vec3 normalSample1			= 2.0 * texture2D(normalMap, vertexUV * normalMapScale + uvOffset).xyz - 1.0;
 				vec3 normalSample2			= 2.0 * texture2D(normalMap, vertexUV * normalMapScale + uvOffset * vec2(-0.71, 0.91)).xyz - 1.0;
 
-				normalVector				= tangentToWorldMatrix * normalize(mix(normalSample1, normalSample2, 0.5) * vec3(normalMultiplier, 1.0, normalMultiplier)); // bring normal from tangent-space normal to world-space
+				normalVector				= tangentToWorldMatrix * normalize(mix(normalSample1, normalSample2, 0.5)); // bring normal from tangent-space normal to world-space
 			#endif
 		#endif // NORMAL_MAP
 		
@@ -230,8 +228,6 @@ void main(void)
 			fresnelAccum += fresnelFactor(vec3(0.0, 1.0, 0.0), eyeVector, fresnelMultiplier, 0.0, fresnelPow) * lightDiffuseCoeff;
 			fresnelMax   += lightDiffuseCoeff;
 		}
-
-		//dotNormal /= NUM_DIRECTIONAL_LIGHTS;
 
 		#endif // NUM_DIRECTIONAL_LIGHTS
 		
@@ -342,6 +338,7 @@ void main(void)
 
 	// Final blend of ambient, diffuse, and specular parts
 	//----------------------------------------------------
+
 	vec3 phongColor	= diffuse.rgb * (ambientAccum + diffuseAccum);
 	
 	#ifdef REFLECTION_MAP
@@ -354,13 +351,12 @@ void main(void)
 		#endif
 	#endif
 
-	//phongColor *= (1 + dotNormal);
-	//specularAccum *= (1.0 + dotNormal * 2.0);
-
-
 	vec3 phong		= phongColor + specularAccum;
 	gl_FragColor	= vec4(phong.rgb, specularAlpha);
 	gl_FragColor 	= fog_sampleFog(gl_FragColor, gl_FragCoord);
+
+	//gl_FragColor = vec4(vertexTangent / 2.0 + 0.5, 1.0);
+	//gl_FragColor = vec4(normalize(vertexNormal) / 2.0 + 0.5, 1.0);
 }
 
 #endif // FRAGMENT_SHADER

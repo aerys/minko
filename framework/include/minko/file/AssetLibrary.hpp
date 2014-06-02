@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Signal.hpp"
 #include "minko/file/AbstractParser.hpp"
 #include "minko/file/EffectParser.hpp"
+#include "minko/scene/Layout.hpp"
 
 namespace minko
 {
@@ -61,7 +62,7 @@ namespace minko
 			std::unordered_map<std::string, NodePtr>					   _symbols;
 			std::unordered_map<std::string, std::vector<unsigned char>>	   _blobs;
             std::unordered_map<std::string, AbsScriptPtr>                  _scripts;
-            std::unordered_map<std::string, uint>						   _layouts;
+            std::unordered_map<std::string, Layouts>					   _layouts;
 
             Signal<Ptr, std::shared_ptr<AbstractParser>>::Ptr              _parserError;
             Signal<Ptr>::Ptr                                               _ready;
@@ -179,11 +180,11 @@ namespace minko
 			const std::string&
 			scriptName(AbsScriptPtr script);
 
-			const unsigned int
+			Layouts
 			layout(const std::string& name);
 
 			Ptr
-			layout(const std::string& name, const unsigned int mask);
+			layout(const std::string& name, Layouts);
 
 		private:
 			AssetLibrary(AbsContextPtr context);

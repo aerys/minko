@@ -37,7 +37,7 @@ Texture::Texture(AbstractContext::Ptr	context,
 }
 
 void
-Texture::data(unsigned char*	data, 
+Texture::data(unsigned char*	data,
 			  TextureFormat		format,
 			  int				widthGPU,
 			  int				heightGPU)
@@ -62,7 +62,7 @@ Texture::data(unsigned char*	data,
 	const auto size = _width * _height * sizeof(int);
 
 	std::vector<unsigned char> rgba(size, 0);
-	
+
 	if (format == TextureFormat::RGBA)
 	{
 		std::memcpy(&rgba[0], data, size);
@@ -88,19 +88,19 @@ Texture::upload()
     if (_id == -1)
     	_id = _context->createTexture(
 			_type,
-			_widthGPU, 
-			_heightGPU, 
-			_mipMapping, 
+			_widthGPU,
+			_heightGPU,
+			_mipMapping,
 			_optimizeForRenderToTexture
 		);
-	
+
     if (!_data.empty())
     {
         _context->uploadTexture2dData(
-			_id, 
-			_widthGPU, 
-			_heightGPU, 
-			0, 
+			_id,
+			_widthGPU,
+			_heightGPU,
+			0,
 			&_data.front()
 		);
 
@@ -114,12 +114,19 @@ Texture::uploadMipLevel(uint			level,
 						unsigned char*	data)
 {
 	_context->uploadTexture2dData(
-		_id, 
+		_id,
 		getMipmapWidth(level),
 		getMipmapHeight(level),
 		level,
 		data
-	);		
+	);
+}
+
+void
+Texture::setMipLevelBoundaries(uint baseLevel,
+                               uint maxLevel)
+{
+    _context->setTexture2dMipLevelBoundaries(id(), baseLevel, maxLevel);
 }
 
 void

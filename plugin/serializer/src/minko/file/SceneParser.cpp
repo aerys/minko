@@ -79,7 +79,7 @@ SceneParser::SceneParser()
 		std::placeholders::_1,
 		std::placeholders::_2,
 		std::placeholders::_3));
-		
+
 	registerComponent(serialize::SURFACE,
 		std::bind(&deserialize::ComponentDeserializer::deserializeSurface,
 		std::placeholders::_1,
@@ -100,6 +100,12 @@ SceneParser::SceneParser()
 
 	registerComponent(serialize::SKINNING,
 		std::bind(&deserialize::ComponentDeserializer::deserializeSkinning,
+		std::placeholders::_1,
+		std::placeholders::_2,
+		std::placeholders::_3));
+
+	registerComponent(serialize::BOUNDINGBOX,
+		std::bind(&deserialize::ComponentDeserializer::deserializeBoundingBox,
 		std::placeholders::_1,
 		std::placeholders::_2,
 		std::placeholders::_3));
@@ -137,7 +143,7 @@ SceneParser::parse(const std::string&					filename,
 	if (_jobList.size() > 0)
 	{
 		auto jobManager = component::JobManager::create(30);
-		
+
 		for (auto it = _jobList.begin(); it != _jobList.end(); ++it)
 			jobManager->pushJob(*it);
 
@@ -148,7 +154,7 @@ SceneParser::parse(const std::string&					filename,
 }
 
 scene::Node::Ptr
-SceneParser::parseNode(std::vector<SerializedNode>&			nodePack, 
+SceneParser::parseNode(std::vector<SerializedNode>&			nodePack,
 					   std::vector<std::string>&			componentPack,
 					   AssetLibraryPtr						assetLibrary,
 					   Options::Ptr							options)
@@ -162,11 +168,11 @@ SceneParser::parseNode(std::vector<SerializedNode>&			nodePack,
 		scene::Node::Ptr	newNode			= scene::Node::create();
 		uint				layouts			= nodePack[i].a1;
 		uint				numChildren		= nodePack[i].a2;
-		std::vector<uint>	componentsId	= nodePack[i].a3; 
+		std::vector<uint>	componentsId	= nodePack[i].a3;
 
 		newNode->layouts(layouts);
 		newNode->name(nodePack[i].a0);
-		
+
 		newNode = options->nodeFunction()(newNode);
 
 		for (uint componentId : componentsId)

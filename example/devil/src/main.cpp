@@ -112,12 +112,8 @@ int main(int argc, char** argv)
 		{
 			frames++;
 
-			if ((frames % 100) == 0)
-			{
-				int i = (frames / 100) % textures.size();
-
-				mesh->component<Surface>()->material()->set("diffuseMap", textures[i]);
-			}
+			int i = frames % textures.size();
+			mesh->component<Surface>()->material()->set("diffuseMap", textures[i]);
 		}
 	});
 

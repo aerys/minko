@@ -26,7 +26,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::material;
 
-WaterMaterial::WaterMaterial(uint numWaves):
+WaterMaterial::WaterMaterial(uint numWaves) :
 _numWaves(numWaves)
 {
 
@@ -43,7 +43,7 @@ WaterMaterial::initialize()
 	_sharpness.resize(_numWaves, 0.f);
 	_speeds.resize(_numWaves, 1.f);
 	_waveType.resize(_numWaves, 0.f);
-	
+
 
 	set<int>("numWaves", _numWaves);
 	specularColor(0xffffffff);

@@ -31,8 +31,7 @@ namespace minko
     namespace component
     {
         class Reflection :
-            public AbstractComponent,
-            public std::enable_shared_from_this<Reflection>
+            public AbstractComponent
         {
         public:
             typedef std::shared_ptr<Reflection>	Ptr;

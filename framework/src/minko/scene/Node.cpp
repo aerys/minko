@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/AbstractComponent.hpp"
 #include "minko/scene/NodeSet.hpp"
 #include "minko/data/Container.hpp"
+#include "minko/data/StructureProvider.hpp"
 
 using namespace minko;
 using namespace minko::scene;
@@ -32,24 +33,33 @@ unsigned int Node::_lastId = 0;
 Node::Node() :
 	_id(_lastId++),
 	_name("Node_" + std::to_string(_id)),
-	_layouts(1),
 	_root(nullptr),
 	_parent(nullptr),
 	_container(data::Container::create()),
+	_data(data::StructureProvider::create("node")),
 	_added(Signal<Ptr, Ptr, Ptr>::create()),
 	_removed(Signal<Ptr, Ptr, Ptr>::create()),
 	_componentAdded(Signal<Ptr, Ptr, Node::AbsCtrlPtr>::create()),
 	_componentRemoved(Signal<Ptr, Ptr, Node::AbsCtrlPtr>::create()),
 	_layoutsChanged(Signal<Ptr, Ptr>::create())
 {
+	_container->addProvider(_data);
+
+	_data->set<Layouts>("layouts", Layout::Group::DEFAULT);
 }
 
-void
-Node::layouts(unsigned int layouts)
+Layouts
+Node::layouts() const
 {
-	if (_layouts != layouts)
+	return _data->get<Layouts>("layouts");
+}
+
+Node::Ptr
+Node::layouts(Layouts value)
+{
+	if (value != layouts())
 	{
-		_layouts = layouts;
+		_data->set<Layouts>("layouts", value);
 
 		// bubble down
         auto descendants = NodeSet::create(shared_from_this())->descendants(true);
@@ -61,6 +71,8 @@ Node::layouts(unsigned int layouts)
 		for (auto ancestor : ancestors->nodes())
 			ancestor->_layoutsChanged->execute(ancestor, shared_from_this());
 	}
+
+	return shared_from_this();
 }
 
 Node::Ptr

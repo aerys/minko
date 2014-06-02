@@ -38,6 +38,7 @@ namespace minko
 			typedef std::shared_ptr<PropertyChangedSignal>					PropertyChangedSignalPtr;
 
 			typedef std::shared_ptr<Provider>								ProviderPtr;
+			typedef std::shared_ptr<data::AbstractFilter>					AbsFilterPtr;
 			typedef Signal<ProviderPtr, const std::string&>					ProviderPropertyChangedSignal;
 			typedef ProviderPropertyChangedSignal::Slot						ProviderPropertyChangedSlot;
 
@@ -57,7 +58,14 @@ namespace minko
 			std::unordered_map<ProviderPtr, ProviderPropertyChangedSlot>	_providerValueChangedSlot;
 			std::unordered_map<ProviderPtr, ProviderPropertyChangedSlot>	_providerReferenceChangedSlot;
 
+			Signal<Ptr, ProviderPtr>::Ptr									_providerAdded;
+			Signal<Ptr, ProviderPtr>::Ptr									_providerRemoved;
+
+			static uint CONTAINER_ID;
+
+
 		public:
+			uint _containerId;
 			static
 			Ptr
 			create()
@@ -88,13 +96,18 @@ namespace minko
 			hasProvider(std::shared_ptr<Provider> provider) const;
 
 			bool
-			hasProperty(const std::string& propertyName) const;
+			hasProperty(const std::string&) const;
+			
+			bool
+			isLengthProperty(const std::string&) const;
 
 			inline
-			uint
-			getProviderIndex(ProviderPtr provider)
+			int
+			getProviderIndex(ProviderPtr provider) const
 			{
-				return _providerToIndex[provider];
+				auto foundIndexIt = _providerToIndex.find(provider);
+
+				return foundIndexIt != _providerToIndex.end() ? foundIndexIt->second : -1;
 			}
 
 			template <typename T>
@@ -155,14 +168,28 @@ namespace minko
 			propertyReferenceChanged(const std::string& propertyName);
 
 			inline
+			Signal<Ptr, Provider::Ptr>::Ptr
+			providerAdded() const
+			{
+				return _providerAdded;
+			}
+
+			inline
+			Signal<Ptr, Provider::Ptr>::Ptr
+			providerRemoved() const
+			{
+				return _providerRemoved;
+			}
+
+			inline
 			const std::list<ProviderPtr>&
 			providers() const
 			{
 				return _providers;
 			}
 
-			std::ostream&
-			printPropertyNames(std::ostream&) const;
+			Ptr
+			filter(const std::set<AbsFilterPtr>&, Ptr = nullptr) const;
 
 		private:
 			Container();

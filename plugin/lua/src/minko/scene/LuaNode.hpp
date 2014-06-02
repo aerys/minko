@@ -64,6 +64,8 @@ namespace minko
 					.methodWrapper("getLuaScript",			&LuaNode::getLuaScriptWrapper)
 					.methodWrapper("hasLight",				&LuaNode::hasLightWrapper)
 					.methodWrapper("hasAnimation",			&LuaNode::hasAnimationWrapper)
+					.method("getLayouts",					static_cast<Layouts (Node::*)(void) const>(&Node::layouts))
+					.method("setLayouts",					static_cast<Node::Ptr (Node::*)(Layouts)>(&Node::layouts))
 					/*.methodWrapper("getChildrenByName",		&LuaNode::getChildrenByNameWrapper)*/
 		            .property("children",					&Node::children)
 		            .property("data",				        &Node::data)

@@ -29,8 +29,7 @@ namespace minko
 	namespace component
 	{
 		class Picking :
-			public AbstractComponent,
-			public std::enable_shared_from_this<Picking>
+			public AbstractComponent
 		{
 		public:
 			typedef std::shared_ptr<Picking>					Ptr;

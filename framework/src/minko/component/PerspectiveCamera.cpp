@@ -56,14 +56,14 @@ PerspectiveCamera::initialize()
 {
 	_targetAddedSlot = targetAdded()->connect(std::bind(
 		&PerspectiveCamera::targetAddedHandler,
-		shared_from_this(),
+		std::static_pointer_cast<PerspectiveCamera>(shared_from_this()),
 		std::placeholders::_1,
 		std::placeholders::_2
 	));
 
 	_targetRemovedSlot = targetRemoved()->connect(std::bind(
 		&PerspectiveCamera::targetRemovedHandler,
-		shared_from_this(),
+		std::static_pointer_cast<PerspectiveCamera>(shared_from_this()),
 		std::placeholders::_1,
 		std::placeholders::_2
 	));
@@ -82,7 +82,7 @@ PerspectiveCamera::targetAddedHandler(AbstractComponent::Ptr ctrl, NodePtr targe
 
   	_modelToWorldChangedSlot = target->data()->propertyValueChanged("transform.modelToWorldMatrix")->connect(std::bind(
     	&PerspectiveCamera::localToWorldChangedHandler,
-		shared_from_this(),
+		std::static_pointer_cast<PerspectiveCamera>(shared_from_this()),
     	std::placeholders::_1,
     	std::placeholders::_2
   	));

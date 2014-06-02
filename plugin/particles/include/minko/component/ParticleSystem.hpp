@@ -31,8 +31,7 @@ namespace minko
 	namespace component
 	{
 		class ParticleSystem :
-			public AbstractComponent,
-			public std::enable_shared_from_this<ParticleSystem>
+			public AbstractComponent
 		{
 		public:
 			typedef std::shared_ptr<ParticleSystem>	Ptr;
@@ -165,7 +164,7 @@ namespace minko
 
 				updateMaxParticlesCount();
 
-                return shared_from_this();
+                return std::static_pointer_cast<ParticleSystem>(shared_from_this());
 			}
 
 			inline
@@ -176,7 +175,7 @@ namespace minko
 
 				updateMaxParticlesCount();
 
-                return shared_from_this();
+                return std::static_pointer_cast<ParticleSystem>(shared_from_this());
 			}
 
 			inline
@@ -185,7 +184,7 @@ namespace minko
 			{
 				_shape = value;
 
-                return shared_from_this();
+                return std::static_pointer_cast<ParticleSystem>(shared_from_this());
 			}
 
 			inline
@@ -194,7 +193,7 @@ namespace minko
 			{
 				_emissionDirection = value;
 
-                return shared_from_this();
+                return std::static_pointer_cast<ParticleSystem>(shared_from_this());
 			}
 
 			inline
@@ -203,7 +202,7 @@ namespace minko
 			{
 				_emissionVelocity = value;
 
-                return shared_from_this();
+                return std::static_pointer_cast<ParticleSystem>(shared_from_this());
 			}
 
 			inline
@@ -217,9 +216,9 @@ namespace minko
 			Ptr
 			playing(bool value)
 			{
-				_playing = value;
+                _playing = value;
 
-				return shared_from_this();
+                return std::static_pointer_cast<ParticleSystem>(shared_from_this());
 			}
 
 			inline
@@ -228,7 +227,7 @@ namespace minko
 			{
 				_emitting = value;
 
-                return shared_from_this();
+                return std::static_pointer_cast<ParticleSystem>(shared_from_this());
 			}
 
 			inline
@@ -261,7 +260,7 @@ namespace minko
 				playing(false);
 				updateVertexBuffer();
 
-                return shared_from_this();
+                return std::static_pointer_cast<ParticleSystem>(shared_from_this());
 			}
 
 			inline

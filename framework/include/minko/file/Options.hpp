@@ -67,14 +67,9 @@ namespace minko
 			bool										        _isCubeTexture;
 			bool										        _startAnimation;
 			bool										        _loadAsynchronously;
-			bool                                                _disposeIndexBufferAfterLoading;
-			bool                                                _disposeVertexBufferAfterLoading;
-			bool                                                _disposeTextureAfterLoading;
-
-// TODO fixme
-// tmp
-			bool                                                _embedAll;
-
+            bool                                                _disposeIndexBufferAfterLoading;
+            bool                                                _disposeVertexBufferAfterLoading;
+            bool                                                _disposeTextureAfterLoading;
 			unsigned int								        _skinningFramerate;
 			component::SkinningMethod					        _skinningMethod;
 			std::shared_ptr<render::Effect>                     _effect;
@@ -85,14 +80,6 @@ namespace minko
 			UriFunction									        _uriFunction;
 			NodeFunction								        _nodeFunction;
 			EffectFunction								        _effectFunction;
-
-// TODO fixme
-// tmp
-			UriFunction									        _inputAssetUriFunction;
-			UriFunction									        _outputAssetUriFunction;
-
-			static
-			ProtocolFunction									_defaultProtocolFunction;
 
 		public:
 			inline static
@@ -146,11 +133,6 @@ namespace minko
 				opt->_uriFunction = options->_uriFunction;
 				opt->_nodeFunction = options->_nodeFunction;
 				opt->_loadAsynchronously = options->_loadAsynchronously;
-
-// TODO fixme
-// tmp
-				opt->_inputAssetUriFunction = options->_inputAssetUriFunction;
-				opt->_outputAssetUriFunction = options->_outputAssetUriFunction;
 
 				return opt;
 			}
@@ -332,24 +314,6 @@ namespace minko
 				return shared_from_this();
 			}
 
-// TODO fixme
-// tmp
-			inline
-			bool
-			embedAll() const
-			{
-				return _embedAll;
-			}
-
-			inline
-			Ptr
-			embedAll(bool value)
-			{
-				_embedAll = value;
-
-				return shared_from_this();
-			}
-
 			inline
 			unsigned int
 			skinningFramerate() const
@@ -477,38 +441,6 @@ namespace minko
 
 				return shared_from_this();
 			}
-
-			inline
-				const UriFunction&
-				inputAssetUriFunction() const
-			{
-					return _inputAssetUriFunction;
-				}
-
-			inline
-				Ptr
-				inputAssetUriFunction(const UriFunction& func)
-			{
-					_inputAssetUriFunction = func;
-
-					return shared_from_this();
-				}
-
-			inline
-				const UriFunction&
-				outputAssetUriFunction() const
-			{
-					return _outputAssetUriFunction;
-				}
-
-			inline
-				Ptr
-				outputAssetUriFunction(const UriFunction& func)
-			{
-					_outputAssetUriFunction = func;
-
-					return shared_from_this();
-				}
 
 			inline
 			const NodeFunction&

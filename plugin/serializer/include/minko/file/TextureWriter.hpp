@@ -43,11 +43,6 @@ namespace minko
             std::string _extension;
 
 		public:
-
-            ~TextureWriter()
-            {
-            }
-
 			inline static
 			Ptr
 			create()
@@ -61,12 +56,14 @@ namespace minko
             void
             writeRawTexture(std::string&					filename,
                             std::shared_ptr<AssetLibrary>	assetLibrary,
-                            std::shared_ptr<Options>		options);
+                            std::shared_ptr<Options>		options,
+                            std::shared_ptr<WriterOptions>  writerOptions);
 
 			std::string
-			embed(AssetLibraryPtr	assetLibrary,
-                  OptionsPtr		options,
-                  DependencyPtr		dependency);
+			embed(AssetLibraryPtr                       assetLibrary,
+                  OptionsPtr                            options,
+                  DependencyPtr                         dependency,
+                  std::shared_ptr<WriterOptions>        writerOptions);
 
 		protected:
 			TextureWriter();

@@ -1332,12 +1332,12 @@ AbstractASSIMPParser::createMaterial(const aiMaterial* aiMat)
 		reflectiveColor->w(opacity);
 		transparentColor->w(opacity);
 
-		material->set("priority",	render::priority::TRANSPARENT);
+		material->set("priority",	render::Priority::TRANSPARENT);
 		material->set("zSort",		true);
 	}
 	else
 	{
-		material->set("priority",	render::priority::OPAQUE);
+		material->set("priority",	render::Priority::OPAQUE);
 		material->set("zSort",		false);
 	}
 

@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Common.hpp"
 #include "minko/BulletCommon.hpp"
 #include "minko/component/AbstractComponent.hpp"
+#include "minko/scene/Layout.hpp"
 
 namespace minko
 {
@@ -30,8 +31,7 @@ namespace minko
 		namespace bullet
 		{
 			class Collider:
-				public AbstractComponent,
-				public std::enable_shared_from_this<Collider>
+				public AbstractComponent
 			{
 			public:
 				typedef std::shared_ptr<Collider>					Ptr;
@@ -52,8 +52,6 @@ namespace minko
 			private:
 				int													_uid;
 				ColliderDataPtr										_colliderData;
-				short												_collisionGroup;
-                short												_collisionMask;
 				bool												_canSleep;
 				bool												_triggerCollisions;
 				Vector3Ptr											_linearFactor;
@@ -103,10 +101,10 @@ namespace minko
 				}
 
 				void
-				synchronizePhysicsWithGraphics(bool forceTransformUpdate = false);
+				synchronizePhysicsWithGraphics();
 
 				Ptr
-				setPhysicsTransform(Matrix4x4Ptr, Matrix4x4Ptr = nullptr, bool forceTransformUpdate = false);
+				setPhysicsTransform(Matrix4x4Ptr, Matrix4x4Ptr = nullptr);
 
 				Matrix4x4Ptr
 				getPhysicsTransform(Matrix4x4Ptr = nullptr) const;
@@ -134,28 +132,8 @@ namespace minko
 				{
 					_uid = value;
 
-					return shared_from_this();
+					return std::static_pointer_cast<Collider>(shared_from_this());
 				}
-
-				inline
-                short
-                collisionGroup() const
-                {
-                    return _collisionGroup;
-                }
-
-                Ptr
-                collisionGroup(short);
-
-                inline
-                short
-                collisionMask() const
-                {
-                    return _collisionMask;
-                }
-
-                Ptr
-                collisionMask(short);
 
 				Vector3Ptr
 				linearVelocity(Vector3Ptr = nullptr) const;
@@ -218,7 +196,7 @@ namespace minko
 				{
 					_triggerCollisions = value;
 
-					return shared_from_this();
+					return std::static_pointer_cast<Collider>(shared_from_this());
 				}
 
 				inline

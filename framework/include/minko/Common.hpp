@@ -44,10 +44,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include <type_traits>
 #include <cfloat>
 #include <climits>
+#include <cstdint>
 #include <future>
 #include <thread>
 #include <chrono>
 #include <bitset>
+#include <regex>
 
 #include "minko/math/Convertible.hpp"
 
@@ -58,6 +60,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 namespace minko
 {
     typedef unsigned int uint;
+	typedef std::shared_ptr<std::regex>	RegexPtr;
 
 	class Any;
 	template<typename... A>
@@ -134,6 +137,8 @@ namespace minko
             Exponential,
             Exponential2,
         };
+
+		typedef std::function<std::string(const std::string&)> FormatNameFunction;
 	}
 
 	namespace scene
@@ -184,6 +189,7 @@ namespace minko
 		class ValueBase;
 		class Value;
 		class Container;
+		class AbstractFilter;
         
 		enum class BindingSource
 		{
@@ -192,8 +198,10 @@ namespace minko
 			ROOT
 		};
 
-		typedef std::pair<std::string, BindingSource>		Binding;
-		typedef std::unordered_map<std::string, Binding>	BindingMap;
+		typedef std::pair<std::string, BindingSource>						Binding;
+		typedef std::unordered_map<std::string, Binding>					BindingMap;
+		typedef std::pair<std::shared_ptr<data::Container>, std::string>	ContainerAndName;
+
 
 		template<typename T>
 		using UniformArray = std::pair<uint, const T*>;
@@ -220,7 +228,7 @@ namespace minko
 			MacroBindingDefaultValue			value;
 		};
 
-		typedef std::tuple<std::string, BindingSource, MacroBindingDefault, int, int>	MacroBinding;
+		typedef std::tuple<std::string, BindingSource, MacroBindingDefault, int, int, RegexPtr>	MacroBinding;
 
 		typedef std::unordered_map<std::string, MacroBinding> MacroBindingMap;
 
@@ -420,5 +428,22 @@ namespace std
 		return oss.str();
 	}
 #endif
+}
+
+namespace std
+{
+	template<> struct hash<minko::data::ContainerAndName>
+	{
+		inline
+		size_t 
+		operator()(const minko::data::ContainerAndName& x) const
+		{
+			size_t seed = std::hash<std::shared_ptr<minko::data::Container>>()(x.first);
+
+			hash_combine<std::string>(seed, x.second);
+
+			return seed;
+		}
+	};
 }
 //using namespace minko;

@@ -32,8 +32,7 @@ namespace minko
 	namespace component
 	{
 		class PerspectiveCamera :
-            public AbstractComponent,
-			public std::enable_shared_from_this<PerspectiveCamera>
+            public AbstractComponent
 		{
 		public:
 			typedef std::shared_ptr<PerspectiveCamera> Ptr;

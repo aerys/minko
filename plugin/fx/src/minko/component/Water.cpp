@@ -47,11 +47,11 @@ Water::initialize()
 			targetAddedToScene(nullptr, target, nullptr);
 		else
 			_addedToSceneSlot = target->added()->connect(std::bind(
-				&Water::targetAddedToScene,
-				shared_from_this(),
-				std::placeholders::_1,
-				std::placeholders::_2,
-				std::placeholders::_3));
+			&Water::targetAddedToScene,
+			std::static_pointer_cast<Water>(shared_from_this()),
+			std::placeholders::_1,
+			std::placeholders::_2,
+			std::placeholders::_3));
 	});
 }
 
@@ -82,7 +82,7 @@ Water::targetAddedToScene(NodePtr node, NodePtr target, NodePtr ancestor)
 		[&](std::shared_ptr<SceneManager> sceneManager, float time, float deltaTime)
 	{
 		_provider->set<float>("frameId", _provider->get<float>("frameId") + 1);
-	
+
 		float flowMapOffset1 = _waterMaterial->flowMapOffset1();
 		float flowMapOffset2 = _waterMaterial->flowMapOffset2();
 		float flowSpeed = _waterMaterial->normalMapSpeed();

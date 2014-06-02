@@ -21,14 +21,19 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 #include "minko/component/AbstractComponent.hpp"
+#include "minko/scene/Layout.hpp"
 
 namespace minko
 {
+	namespace data
+	{
+		class LightMaskFilter;
+	}
+
 	namespace component
 	{
 		class Renderer :
-			public AbstractComponent,
-			public std::enable_shared_from_this<Renderer>
+			public AbstractComponent
 		{
 		public:
 			typedef std::shared_ptr<Renderer>							Ptr;
@@ -44,7 +49,10 @@ namespace minko
 			typedef std::shared_ptr<render::AbstractTexture>			AbsTexturePtr;
 			typedef std::shared_ptr<render::Effect>						EffectPtr;
 			typedef std::shared_ptr<render::DrawCallPool>				DrawCallFactoryPtr;
+			typedef std::shared_ptr<data::AbstractFilter>				AbsFilterPtr;
 			typedef Signal<SurfacePtr, const std::string&, bool>::Slot	SurfaceTechniqueChangedSlot;
+			typedef Signal<AbsFilterPtr, SurfacePtr>::Slot				FilterChangedSlot;
+			typedef Signal<Ptr, AbsFilterPtr, data::BindingSource, SurfacePtr>		RendererFilterChangedSignal;
 
 		private:
 			DrawCallList												_drawCalls;
@@ -70,12 +78,24 @@ namespace minko
 			Signal<NodePtr, NodePtr, NodePtr>::Slot						_removedSlot;
 			Signal<NodePtr, NodePtr, NodePtr>::Slot						_rootDescendantAddedSlot;
 			Signal<NodePtr, NodePtr, NodePtr>::Slot						_rootDescendantRemovedSlot;
-			Signal<NodePtr, NodePtr, AbsCtrlPtr>::Slot					_componentAddedSlot;
-			Signal<NodePtr, NodePtr, AbsCtrlPtr>::Slot					_componentRemovedSlot;
+			Signal<NodePtr, NodePtr, AbsCmpPtr>::Slot					_componentAddedSlot;
+			Signal<NodePtr, NodePtr, AbsCmpPtr>::Slot					_componentRemovedSlot;
 			Signal<SceneManagerPtr, uint, AbsTexturePtr>::Slot			_renderingBeginSlot;
 			std::unordered_map<SurfacePtr, SurfaceTechniqueChangedSlot>	_surfaceTechniqueChangedSlot;
 
 			DrawCallFactoryPtr											_drawCallPool;
+			bool														_enable;
+
+			std::set<AbsFilterPtr>										_targetDataFilters;
+			std::set<AbsFilterPtr>										_rendererDataFilters;
+			std::set<AbsFilterPtr>										_rootDataFilters;
+			std::shared_ptr<data::LightMaskFilter>						_lightMaskFilter;
+
+			std::unordered_map<AbsFilterPtr, FilterChangedSlot>			_targetDataFilterChangedSlots;
+			std::unordered_map<AbsFilterPtr, FilterChangedSlot>			_rendererDataFilterChangedSlots;
+			std::unordered_map<AbsFilterPtr, FilterChangedSlot>			_rootDataFilterChangedSlots;
+
+			std::shared_ptr<RendererFilterChangedSignal>				_filterChanged;
 			bool														_enable;
 
 			static const unsigned int									NUM_FALLBACK_ATTEMPTS;
@@ -210,18 +230,31 @@ namespace minko
 				return _renderingEnd;
 			}
 
-			inline
-			bool
-			enabled()
+			Ptr
+			addFilter(AbsFilterPtr, data::BindingSource);
+
+			Ptr
+			removeFilter(AbsFilterPtr, data::BindingSource);
+
+			const std::set<AbsFilterPtr>&
+			filters(data::BindingSource source) const
 			{
-				return _enabled;
+				return 
+				source == data::BindingSource::TARGET
+				? _targetDataFilters
+				: source == data::BindingSource::RENDERER
+					? _rendererDataFilters
+					: _rootDataFilters;
 			}
 
+			Ptr
+			setFilterSurface(SurfacePtr);
+
 			inline
-			void
-			enabled(bool value)
+			std::shared_ptr<RendererFilterChangedSignal>
+			filterChanged() const
 			{
-				_enabled = value;
+				return _filterChanged;
 			}
 
 		private:
@@ -233,10 +266,10 @@ namespace minko
 			initialize();
 
 			void
-			targetAddedHandler(AbsCtrlPtr ctrl, NodePtr target);
+			targetAddedHandler(AbsCmpPtr ctrl, NodePtr target);
 
 			void
-			targetRemovedHandler(AbsCtrlPtr ctrl, NodePtr target);
+			targetRemovedHandler(AbsCmpPtr ctrl, NodePtr target);
 
 			void
 			addedHandler(NodePtr node, NodePtr target, NodePtr parent);
@@ -251,10 +284,10 @@ namespace minko
 			rootDescendantRemovedHandler(NodePtr node, NodePtr target, NodePtr parent);
 
 			void
-			componentAddedHandler(NodePtr node, NodePtr target, AbsCtrlPtr	ctrl);
+			componentAddedHandler(NodePtr node, NodePtr target, AbsCmpPtr	ctrl);
 
 			void
-			componentRemovedHandler(NodePtr node, NodePtr target, AbsCtrlPtr ctrl);
+			componentRemovedHandler(NodePtr node, NodePtr target, AbsCmpPtr ctrl);
 
 			void
 			addSurface(SurfacePtr);
@@ -278,6 +311,31 @@ namespace minko
 
 			void
 			setSceneManager(std::shared_ptr<SceneManager> sceneManager);
+
+			inline
+			std::set<AbsFilterPtr>&
+			filtersRef(data::BindingSource source)
+			{
+				return source == data::BindingSource::TARGET
+				? _targetDataFilters
+				: source == data::BindingSource::RENDERER
+					? _rendererDataFilters
+					: _rootDataFilters;
+			}
+
+			inline
+			std::unordered_map<AbsFilterPtr, FilterChangedSlot>&
+			filterChangedSlotsRef(data::BindingSource source)
+			{
+				return source == data::BindingSource::TARGET
+				? _targetDataFilterChangedSlots
+				: source == data::BindingSource::RENDERER
+					? _rendererDataFilterChangedSlots
+					: _rootDataFilterChangedSlots;
+			}
+
+			void
+			filterChangedHandler(AbsFilterPtr, data::BindingSource, SurfacePtr);
 		};
 	}
 }

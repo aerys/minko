@@ -26,6 +26,7 @@ using namespace minko::file;
 
 std::map<const std::type_info*, std::function<std::tuple<uint, std::string>(Any)>> MaterialWriter::_typeToWriteFunction;
 
+
 MaterialWriter::MaterialWriter()
 {
 	_typeToWriteFunction[&typeid(std::shared_ptr<math::Matrix4x4>)]		= std::bind(&serialize::TypeSerializer::serializeMatrix4x4, std::placeholders::_1);
@@ -39,7 +40,8 @@ MaterialWriter::MaterialWriter()
 std::string
 MaterialWriter::embed(std::shared_ptr<AssetLibrary>		assetLibrary,
 					  std::shared_ptr<Options>			options,
-					  Dependency::Ptr					dependency)
+					  Dependency::Ptr					dependency,
+                      std::shared_ptr<WriterOptions>    writerOptions)
 {
 	material::Material::Ptr				material = std::dynamic_pointer_cast<material::Material>(data());
 	std::vector<ComplexPropertyTuple>	serializedComplexProperties;

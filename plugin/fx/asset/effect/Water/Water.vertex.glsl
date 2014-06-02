@@ -9,7 +9,6 @@
 attribute vec3 position;
 attribute vec2 uv;
 attribute vec3 normal;
-attribute vec3 tangent;
 
 uniform float waveAmplitudes[NUMWAVES];
 uniform float waveOrigins[NUMWAVES * 2];
@@ -55,44 +54,45 @@ void main(void)
 	
 	#if defined NUM_DIRECTIONAL_LIGHTS || defined NUM_POINT_LIGHTS || defined NUM_SPOT_LIGHTS || defined ENVIRONMENT_MAP_2D || defined ENVIRONMENT_CUBE_MAP
 	
-		vertexNormal	= normal;		
+		vertexTangent = vec3(0.0, 0.0, 1.0);
+		vertexNormal = vec3(0.0, 1.0, 0.0);
 
-		#ifdef MODEL_TO_WORLD
-			vertexNormal 	= mat3(modelToWorldMatrix) * vertexNormal;
-		#endif // MODEL_TO_WORLD
-		
-		vec3 tangentWave = tangent;
-		
 		#ifdef NUMWAVES
-		vertexNormal = vec3(0.0, 0.0, 0.0);
+
 		for (int i = 0; i < NUMWAVES; ++i)
 		{
-			vec3 normalWave = vec3(0.0, 0.0, 0.0);
-			tangentWave = vec3(0.0, 0.0, 0.0);
-			if (waveType[i] < 0.5)
-				normalWave = addNormalDirectionalWave(worldPosition, vec2(waveOrigins[i * 2], waveOrigins[i * 2 + 1]), waveAmplitudes[i], waveSpeed[i], waveLength[i], waveSharpness[i], frameId);
-			else
-				normalWave = addNormalCircularWave(worldPosition, vec2(waveOrigins[i * 2], waveOrigins[i * 2 + 1]), waveAmplitudes[i], waveSpeed[i], waveLength[i], waveSharpness[i], frameId);
-			
-			vertexNormal += normalWave;
+			vec3 normalWave		= vec3(0.0, 0.0, 0.0);
+			vec3 tangentWave	= vec3(0.0, 0.0, 0.0);
 
-			tangentWave += vec3(0.0, -normalWave.z, 1.0);
+			if (waveType[i] < 0.5)
+			{
+				normalWave = addNormalDirectionalWave(worldPosition, vec2(waveOrigins[i * 2], waveOrigins[i * 2 + 1]), waveAmplitudes[i], waveSpeed[i], waveLength[i], waveSharpness[i], frameId);
+				tangentWave = addTangentDirectionalWave(worldPosition, vec2(waveOrigins[i * 2], waveOrigins[i * 2 + 1]), waveAmplitudes[i], waveSpeed[i], waveLength[i], waveSharpness[i], frameId);
+			}
+			else
+			{
+				normalWave = addNormalCircularWave(worldPosition, vec2(waveOrigins[i * 2], waveOrigins[i * 2 + 1]), waveAmplitudes[i], waveSpeed[i], waveLength[i], waveSharpness[i], frameId);
+				tangentWave = addTangentCircularWave(worldPosition, vec2(waveOrigins[i * 2], waveOrigins[i * 2 + 1]), waveAmplitudes[i], waveSpeed[i], waveLength[i], waveSharpness[i], frameId);
+			}
+
+			vertexNormal += normalWave;
+			vertexTangent += tangentWave;
 		}
 
 		#endif // NUMWAVES
 
 		vertexNormal 	= normalize(vertexNormal);
-		tangentWave		= normalize(tangentWave);
+		vertexTangent	= normalize(vertexTangent);
 
-		#ifdef NORMAL_MAP
-			vertexTangent = tangentWave;
-			#ifdef MODEL_TO_WORLD
-				vertexTangent = mat3(modelToWorldMatrix) * vertexTangent;
-			#endif // MODEL_TO_WORLD
-			vertexTangent = normalize(vertexTangent);
-		#endif // NORMAL_MAP
-		
 	#endif // NUM_DIRECTIONAL_LIGHTS || NUM_POINT_LIGHTS || NUM_SPOT_LIGHTS || ENVIRONMENT_MAP_2D || ENVIRONMENT_CUBE_MAP
+
+	#ifdef NORMAL_MAP
+		//vertexTangent = tangent;
+		#ifdef MODEL_TO_WORLD
+			vertexTangent = mat3(modelToWorldMatrix) * vertexTangent;
+		#endif // MODEL_TO_WORLD
+		vertexTangent = normalize(vertexTangent);
+	#endif // NORMAL_MAP
 
 	gl_Position =  worldToScreenMatrix * worldPosition;
 

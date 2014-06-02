@@ -29,8 +29,7 @@ namespace minko
 	namespace component
 	{
 		class Water :
-			public AbstractComponent,
-			public std::enable_shared_from_this<Water>
+			public AbstractComponent
 		{
 		public:
 			typedef std::shared_ptr<Water>	Ptr;

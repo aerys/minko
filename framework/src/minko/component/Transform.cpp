@@ -44,14 +44,14 @@ Transform::initialize()
 {
 	_targetAddedSlot = targetAdded()->connect(std::bind(
 		&Transform::targetAddedHandler,
-		shared_from_this(),
+		std::static_pointer_cast<Transform>(shared_from_this()),
 		std::placeholders::_1,
 		std::placeholders::_2
 	));
 
 	_targetRemovedSlot = targetRemoved()->connect(std::bind(
 		&Transform::targetRemovedHandler,
-		shared_from_this(),
+		std::static_pointer_cast<Transform>(shared_from_this()),
 		std::placeholders::_1,
 		std::placeholders::_2
 	));
@@ -74,7 +74,7 @@ Transform::targetAddedHandler(AbstractComponent::Ptr	ctrl,
 
 	auto callback = std::bind(
 		&Transform::addedOrRemovedHandler,
-		shared_from_this(),
+		std::static_pointer_cast<Transform>(shared_from_this()),
 		std::placeholders::_1,
 		std::placeholders::_2,
 		std::placeholders::_3
@@ -110,14 +110,14 @@ Transform::RootTransform::initialize()
 {
 	_targetSlots.push_back(targetAdded()->connect(std::bind(
 		&Transform::RootTransform::targetAddedHandler,
-		shared_from_this(),
+		std::static_pointer_cast<RootTransform>(shared_from_this()),
 		std::placeholders::_1,
 		std::placeholders::_2
 	)));
 
 	_targetSlots.push_back(targetRemoved()->connect(std::bind(
 		&Transform::RootTransform::targetRemovedHandler,
-		shared_from_this(),
+		std::static_pointer_cast<RootTransform>(shared_from_this()),
 		std::placeholders::_1,
 		std::placeholders::_2
 	)));
@@ -129,28 +129,28 @@ Transform::RootTransform::targetAddedHandler(AbstractComponent::Ptr 	ctrl,
 {
 	_targetSlots.push_back(target->added()->connect(std::bind(
 		&Transform::RootTransform::addedHandler,
-		shared_from_this(),
+		std::static_pointer_cast<RootTransform>(shared_from_this()),
 		std::placeholders::_1,
 		std::placeholders::_2,
 		std::placeholders::_3
 	)));
 	_targetSlots.push_back(target->removed()->connect(std::bind(
 		&Transform::RootTransform::removedHandler,
-		shared_from_this(),
+		std::static_pointer_cast<RootTransform>(shared_from_this()),
 		std::placeholders::_1,
 		std::placeholders::_2,
 		std::placeholders::_3
 	)));
 	_targetSlots.push_back(target->componentAdded()->connect(std::bind(
 		&Transform::RootTransform::componentAddedHandler,
-		shared_from_this(),
+		std::static_pointer_cast<RootTransform>(shared_from_this()),
 		std::placeholders::_1,
 		std::placeholders::_2,
 		std::placeholders::_3
 	)));
 	_targetSlots.push_back(target->componentRemoved()->connect(std::bind(
 		&Transform::RootTransform::componentRemovedHandler,
-		shared_from_this(),
+		std::static_pointer_cast<RootTransform>(shared_from_this()),
 		std::placeholders::_1,
 		std::placeholders::_2,
 		std::placeholders::_3
@@ -160,7 +160,11 @@ Transform::RootTransform::targetAddedHandler(AbstractComponent::Ptr 	ctrl,
 
 	if (sceneManager != nullptr)
 		_renderingBeginSlot = sceneManager->renderingBegin()->connect(std::bind(
-			&Transform::RootTransform::renderingBeginHandler, shared_from_this(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
+			&Transform::RootTransform::renderingBeginHandler, 
+			std::static_pointer_cast<RootTransform>(shared_from_this()), 
+			std::placeholders::_1, 
+			std::placeholders::_2, 
+			std::placeholders::_3
 		), 1000.f);
 
 	addedHandler(nullptr, target, target->parent());
@@ -183,7 +187,11 @@ Transform::RootTransform::componentAddedHandler(scene::Node::Ptr		node,
 
 	if (sceneManager != nullptr)
 		_renderingBeginSlot = sceneManager->renderingBegin()->connect(std::bind(
-			&Transform::RootTransform::renderingBeginHandler, shared_from_this(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
+			&Transform::RootTransform::renderingBeginHandler, 
+			std::static_pointer_cast<RootTransform>(shared_from_this()), 
+			std::placeholders::_1, 
+			std::placeholders::_2, 
+			std::placeholders::_3
 		), 1000.f);
 	else if (std::dynamic_pointer_cast<Transform>(ctrl) != nullptr)
 		_invalidLists = true;

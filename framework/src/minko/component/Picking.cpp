@@ -68,7 +68,7 @@ Picking::initialize()
 
 	_mouseMoveSlot = _mouse->move()->connect(std::bind(
 		&Picking::mouseMoveHandler,
-		shared_from_this(),
+		std::static_pointer_cast<Picking>(shared_from_this()),
 		std::placeholders::_1,
 		std::placeholders::_2,
 		std::placeholders::_3
@@ -76,24 +76,24 @@ Picking::initialize()
 
 	_mouseLeftClickSlot = _mouse->leftButtonUp()->connect(std::bind(
 		&Picking::mouseLeftClickHandler,
-		shared_from_this(),
+		std::static_pointer_cast<Picking>(shared_from_this()),
 		std::placeholders::_1));
 
 	_mouseRightClickSlot = _mouse->rightButtonUp()->connect(std::bind(
 		&Picking::mouseRightClickHandler,
-		shared_from_this(),
+		std::static_pointer_cast<Picking>(shared_from_this()),
 		std::placeholders::_1));
 
 	_targetAddedSlot = targetAdded()->connect(std::bind(
 		&Picking::targetAddedHandler,
-		shared_from_this(),
+		std::static_pointer_cast<Picking>(shared_from_this()),
 		std::placeholders::_1,
 		std::placeholders::_2
 	));	
 
 	_targetRemovedSlot = targetRemoved()->connect(std::bind(
 		&Picking::targetRemovedHandler,
-		shared_from_this(),
+		std::static_pointer_cast<Picking>(shared_from_this()),
 		std::placeholders::_1,
 		std::placeholders::_2
 	));
@@ -107,7 +107,7 @@ Picking::targetAddedHandler(AbsCtrlPtr ctrl, NodePtr target)
 
 	_addedSlot = target->added()->connect(std::bind(
 		&Picking::addedHandler,
-		shared_from_this(),
+		std::static_pointer_cast<Picking>(shared_from_this()),
 		std::placeholders::_1,
 		std::placeholders::_2,
 		std::placeholders::_3
@@ -115,7 +115,7 @@ Picking::targetAddedHandler(AbsCtrlPtr ctrl, NodePtr target)
 
 	_removedSlot = target->removed()->connect(std::bind(
 		&Picking::removedHandler,
-		shared_from_this(),
+		std::static_pointer_cast<Picking>(shared_from_this()),
 		std::placeholders::_1,
 		std::placeholders::_2,
 		std::placeholders::_3
@@ -158,17 +158,17 @@ Picking::addedHandler(NodePtr node, NodePtr target, NodePtr parent)
 	{
 		_renderingBeginSlot = _renderer->renderingBegin()->connect(std::bind(
 			&Picking::renderingBegin,
-			shared_from_this(),
+			std::static_pointer_cast<Picking>(shared_from_this()),
 			std::placeholders::_1));
 
 		_renderingEndSlot = _renderer->beforePresent()->connect(std::bind(
 			&Picking::renderingEnd,
-			shared_from_this(),
+			std::static_pointer_cast<Picking>(shared_from_this()),
 			std::placeholders::_1));
 	
 		_componentAddedSlot = target->root()->componentAdded()->connect(std::bind(
 			&Picking::componentAddedHandler,
-			shared_from_this(),
+			std::static_pointer_cast<Picking>(shared_from_this()),
 			std::placeholders::_1,
 			std::placeholders::_2,
 			std::placeholders::_3
@@ -176,7 +176,7 @@ Picking::addedHandler(NodePtr node, NodePtr target, NodePtr parent)
 
 		_componentRemovedSlot = target->root()->componentRemoved()->connect(std::bind(
 			&Picking::componentRemovedHandler,
-			shared_from_this(),
+			std::static_pointer_cast<Picking>(shared_from_this()),
 			std::placeholders::_1,
 			std::placeholders::_2,
 			std::placeholders::_3

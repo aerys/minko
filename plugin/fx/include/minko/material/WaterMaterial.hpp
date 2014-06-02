@@ -127,7 +127,7 @@ namespace minko
 
 			TexturePtr
 			dudvMap() const;
-		
+
 			Ptr
 			dudvFactor(float);
 

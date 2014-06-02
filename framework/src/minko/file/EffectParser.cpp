@@ -741,9 +741,13 @@ EffectParser::parsePriority(const Json::Value& contextNode,
 }
 
 void
-EffectParser::parseBindingNameAndSource(const Json::Value& contextNode, std::string& propertyName, BindingSource& source)
+EffectParser::parseBindingNameAndSource(const Json::Value&	contextNode, 
+										std::string&		propertyName, 
+										BindingSource&		source,
+										RegexPtr&			regexp)
 {
-	source = BindingSource::TARGET;
+	source	= BindingSource::TARGET;
+	regexp	= nullptr;
 	if (contextNode.isString())
 		propertyName = contextNode.asString();
 	else if (contextNode.isObject())
@@ -766,15 +770,31 @@ EffectParser::parseBindingNameAndSource(const Json::Value& contextNode, std::str
 				source = BindingSource::ROOT;
 		}
 	}
+
+	if (!propertyName.empty())
+	{
+		const auto withVariableRegex	= std::regex(".*\\[\\$\\{.*\\}\\].*");
+		const auto variableRegex		= std::regex("(\\$\\{)(.*)\\}");
+	
+		if (std::regex_match(propertyName, withVariableRegex))
+		{
+			// generate regex to recognize the macro when coming from filtered out data provider
+	
+			auto regexString	= std::regex_replace(propertyName, variableRegex, "\\d");
+			regexString			= std::regex_replace(regexString, std::regex("(\\[|\\.|\\])"), "\\$&");
+
+			regexp				= std::shared_ptr<std::regex>(new std::regex(regexString));
+		}
+	}
 }
 
 void
-EffectParser::parseBindings(const Json::Value&		contextNode,
-						    BindingMap&		attributeBindings,
-						    BindingMap&		uniformBindings,
-						    BindingMap&		stateBindings,
+EffectParser::parseBindings(const Json::Value&	contextNode,
+						    BindingMap&			attributeBindings,
+						    BindingMap&			uniformBindings,
+						    BindingMap&			stateBindings,
 							MacroBindingMap&	macroBindings,
-							UniformValues&			uniformDefaultValues)
+							UniformValues&		uniformDefaultValues)
 {
 	auto attributeBindingsValue = contextNode.get("attributeBindings", 0);
 	if (attributeBindingsValue.isObject())
@@ -821,7 +841,8 @@ EffectParser::parseMacroBindings(const Json::Value&	contextNode, MacroBindingMap
 			parseBindingNameAndSource(
 				macroBindingValue,
 				std::get<0>(macroBindings[propertyName]),
-				std::get<1>(macroBindings[propertyName])
+				std::get<1>(macroBindings[propertyName]),
+				std::get<5>(macroBindings[propertyName])
 			);
 
 			if (macroBindingValue.isObject())
@@ -855,8 +876,12 @@ EffectParser::parseMacroBindings(const Json::Value&	contextNode, MacroBindingMap
 				bindingDefault.semantic = MacroBindingDefaultValueSemantic::PROPERTY_EXISTS;
 				bindingDefault.value.propertyExists = macroBindingValue.asBool();
 			}
+
+			
 		}
 	}
+
+	
 }
 
 void
@@ -1193,8 +1218,8 @@ EffectParser::parseTechniques(const Json::Value&				root,
 				BindingMap		uniformBindings(_defaultUniformBindings);
 				BindingMap		stateBindings(_defaultStateBindings);
 				MacroBindingMap	macroBindings(_defaultMacroBindings);
-				UniformValues			uniformDefaultValues(_defaultUniformValues);
-
+				UniformValues	uniformDefaultValues(_defaultUniformValues);
+        
 				// bindings
 				parseBindings(
 					techniqueValue,
