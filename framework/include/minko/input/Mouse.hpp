@@ -76,6 +76,20 @@ namespace minko
 				return _y;
 			}
 
+            inline
+			void
+			x(uint x)
+			{
+				_x = x;
+			}
+            
+			inline
+			void
+			y(uint y)
+			{
+				_y = y;
+			}
+            
 			inline
 			bool
 			leftButtonIsDown() const
