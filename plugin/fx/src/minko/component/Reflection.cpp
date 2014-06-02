@@ -33,6 +33,8 @@ using namespace minko;
 using namespace math;
 using namespace minko::component;
 
+
+
 Reflection::Reflection(
     std::shared_ptr<file::AssetLibrary> assets,
     uint renderTargetWidth,

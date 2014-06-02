@@ -8,6 +8,7 @@
 #pragma include("Envmap.function.glsl")
 #pragma include("Fog.function.glsl")
 #pragma include("Water.function.glsl")
+#pragma include("../Reflection/Reflection.function.glsl")
 
 #ifdef PRECOMPUTED_AMBIENT
 	uniform vec3 sumAmbients;
