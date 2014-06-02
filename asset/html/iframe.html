@@ -74,6 +74,7 @@
 				return result;
 			};
 
+			/*
 			m.redispatchKeyboardEvent = function(event)
 			{
 				var eventCopy = document.createEvent('Event');
@@ -134,10 +135,12 @@
 					event.preventDefault();
 				}
 			}
+			*/
 
 			m.iframeLoadHandler = function(event)
 			{
 				console.log("loaded");
+
 				if(Minko.loaded == -1)
 					return;
 
@@ -145,7 +148,11 @@
 				if (!Minko.iframeElement.contentWindow.Minko)
 					Minko.iframeElement.contentWindow.Minko = {};
 
-				Minko.iframeElement.contentWindow.document.body.oncontextmenu = function(event){ event.preventDefault(); return false;};
+				Minko.iframeElement.contentWindow.document.body.oncontextmenu = function(event)
+				{ 
+					event.preventDefault(); 
+					return false;
+				};
 
 				if (!Minko.iframeElement.contentWindow.Minko.onmessage)
 				{
@@ -161,6 +168,7 @@
 					Minko.iframeElement.contentWindow.Minko.messagesToSend.push(message);
 				}
 
+				/*
 				Minko.iframeElement.addEventListener('mouseover',						Minko.redispatchMouseEvent);
 				Minko.iframeElement.addEventListener('mouseout',						Minko.redispatchMouseEvent);
 				
@@ -176,6 +184,7 @@
 				Minko.iframeElement.contentWindow.addEventListener('keydown',			Minko.redispatchKeyboardEvent);
 				Minko.iframeElement.contentWindow.addEventListener('keyup',				Minko.redispatchKeyboardEvent);
 				Minko.iframeElement.contentWindow.addEventListener('keypress',			Minko.redispatchKeyboardEvent);
+				*/
 			}
 
 			iframeElement.onload = m.iframeLoadHandler;
@@ -184,9 +193,6 @@
 			{
 				if(!accessor.minkoEvents)
 					accessor.minkoEvents = [];
-
-				//alert(accessor);
-				//alert(type);
 
 				accessor.addEventListener(type, function(event)
 				{
@@ -220,29 +226,6 @@
 
 				console.log("loaded " + url);
 			}
-
-			// document.getElementById("eventCatcher").addEventListener('mousedown', function(event){
-			// 	document.getElementById("debug").innerHTML = document.getElementById("debug").innerHTML + " down ";
-			// });
-			// document.getElementById("eventCatcher").addEventListener('mousemove', function(event){
-			// 	document.getElementById("debug").innerHTML = document.getElementById("debug").innerHTML + " move ";
-			// });
-			// document.getElementById("eventCatcher").addEventListener('mouseup', function(event){
-			// 	document.getElementById("debug").innerHTML = document.getElementById("debug").innerHTML + " up ";
-			// });
-			// document.getElementById("eventCatcher").addEventListener('click', function(event){
-			// 	document.getElementById("debug").innerHTML = document.getElementById("debug").innerHTML + " click ";
-			// });
-
-			// document.addEventListener('touchstart', function(event){
-			// 	document.getElementById("debug").innerHTML = document.getElementById("debug").innerHTML + " touchbegin ";
-			// });
-			// document.addEventListener('touchmove', function(event){
-			// 	document.getElementById("debug").innerHTML = document.getElementById("debug").innerHTML + " touchmove ";
-			// });
-			// document.addEventListener('touchend', function(event){
-			// 	document.getElementById("debug").innerHTML = document.getElementById("debug").innerHTML + " touchend ";
-			// });
 
 			window.Minko = m;
         </script>

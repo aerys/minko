@@ -65,7 +65,7 @@ IOSWebViewDOMEvent::target()
 int
 IOSWebViewDOMEvent::clientX()
 {
-	std::string js = "(" + _jsAccessor + ".touches[0].clientX)";
+	std::string js = "(" + _jsAccessor + ".touches[0]." + "clientX)";
 	int result = atoi(_engine->eval(js).c_str());
     
 	return result;
@@ -74,7 +74,7 @@ IOSWebViewDOMEvent::clientX()
 int
 IOSWebViewDOMEvent::clientY()
 {
-	std::string js = "(" + _jsAccessor + ".touches[0].clientY)";
+	std::string js = "(" + _jsAccessor + ".touches[0]" + ".clientY)";
 	int result = atoi(_engine->eval(js).c_str());
     
 	return result;

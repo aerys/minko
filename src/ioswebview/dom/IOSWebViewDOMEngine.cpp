@@ -84,6 +84,7 @@ IOSWebViewDOMEngine::initialize(AbstractCanvas::Ptr canvas, SceneManager::Ptr sc
         UIColor * clearColor = [UIColor colorWithRed:255/255.0f green:1/255.0f blue:0/255.0f alpha:0.f];
         [_webView setBackgroundColor: clearColor];
         [_webView setOpaque:NO];
+        [_webView.scrollView setDelaysContentTouches:NO];
         
         // Disable web view scroll
         _webView.scrollView.scrollEnabled = NO;
@@ -140,7 +141,7 @@ IOSWebViewDOMEngine::initialize(AbstractCanvas::Ptr canvas, SceneManager::Ptr sc
                    {
                         NSString* dataString = (NSString *)data;
                         std::string value([dataString UTF8String]);
-                        std::string type = "alert";
+                        std::string type = "log";
                    
                         IOSWebViewDOMEngine::handleJavascriptMessageWrapper(type, value);
                    }
@@ -237,7 +238,7 @@ IOSWebViewDOMEngine::enterFrame()
 		_currentDOM->onload()->execute(_currentDOM, _currentDOM->fullUrl());
 		_onload->execute(_currentDOM, _currentDOM->fullUrl());
         
-        registerDOMEvents();
+        registerDomEvents();
 	}
 
 	for(auto element : IOSWebViewDOMElement::domElements)
@@ -370,6 +371,10 @@ void IOSWebViewDOMEngine::handleJavascriptMessage(std::string type, std::string 
     {
         eval("Received a message from JS: " + value);
     }
+    else if (type == "log")
+    {
+        std::cout << "[Bridge] " << value << std::endl;
+    }
 }
 
 void
@@ -394,8 +399,8 @@ IOSWebViewDOMEngine::registerDomEvents()
 
     onmouseupSlot = _currentDOM->document()->onmouseup()->connect([&](AbstractDOMEvent::Ptr event)
     {
-        _canvas->mouse()->x(event->clientX());
-        _canvas->mouse()->y(event->clientY());
+        _canvas->mouse()->x(event->layerX());
+        _canvas->mouse()->y(event->layerY());
                                                           
         _canvas->mouse()->leftButtonUp()->execute(_canvas->mouse());
     });
@@ -404,7 +409,7 @@ IOSWebViewDOMEngine::registerDomEvents()
     {
         _canvas->mouse()->x(event->clientX());
         _canvas->mouse()->y(event->clientY());
-                                                              
+        
         _canvas->mouse()->leftButtonDown()->execute(_canvas->mouse());
     });
     
