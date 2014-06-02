@@ -62,7 +62,7 @@ namespace minko
 			static std::shared_ptr<render::Texture> _backFaceNormalRenderTarget;
 			static std::shared_ptr<render::Texture>	_depthMapRenderTarget;
 
-			static const float MAP_RESOLUTION;
+			static const uint MAP_RESOLUTION;
 
 		public:
 			

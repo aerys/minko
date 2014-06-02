@@ -82,7 +82,7 @@ int main(int argc, char** argv)
 
 		for (auto n : nodeSet->nodes())
 		{
-			for (auto i = 0; i < n->children().size(); ++i)
+			for (int i = 0; i < n->children().size(); ++i)
 			{
 				if (n->children()[i]->hasComponent<Surface>())
 					n->children()[i]->component<Surface>()->effect(sceneManager->assets()->effect("effect/Basic.effect"));
@@ -92,7 +92,7 @@ int main(int argc, char** argv)
 		root->addChild(sceneManager->assets()->symbol("model/land3.scene"));
 		
 		auto waves = scene::Node::create("waves")
-			->addComponent(Transform::create(math::Matrix4x4::create()->appendRotationX(-PI / 2)))
+			->addComponent(Transform::create(math::Matrix4x4::create()->appendRotationX(-float(PI) / 2.f)))
 			->addComponent(Surface::create(
 			geometry::QuadGeometry::create(sceneManager->assets()->context(), 200, 200, 400, 400),
 			waterMaterial,
@@ -189,8 +189,8 @@ int main(int argc, char** argv)
 
 	float	yaw = 0.3f;
 	float	pitch = (float)PI * .5f;
-	float	minPitch = 0.f + 1e-5;
-	float	maxPitch = (float)PI - 1e-5;
+	float	minPitch = 0.f + float(1e-5);
+	float	maxPitch = (float)PI - float(1e-5);
 	auto	lookAt = Vector3::create(0.f, 2.f, 0.f);
 	float	distance = 80.f;
 

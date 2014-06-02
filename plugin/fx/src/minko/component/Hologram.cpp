@@ -44,7 +44,7 @@ std::shared_ptr<render::Texture> Hologram::_frontFaceNormalRenderTarget = nullpt
 std::shared_ptr<render::Texture> Hologram::_backFaceNormalRenderTarget = nullptr;
 std::shared_ptr<render::Texture> Hologram::_depthMapRenderTarget = nullptr;
 
-const float Hologram::MAP_RESOLUTION = 1024.f;
+const uint Hologram::MAP_RESOLUTION = 1024;
 
 Hologram::Hologram(std::shared_ptr<render::Effect>			frontEffect, 
 				   std::shared_ptr<render::Effect>			backEffect,
@@ -112,7 +112,7 @@ Hologram::initTarget(AbstractComponent::Ptr cmp, NodePtr target, NodePtr ancesto
 			->set("frontFaceNormalMap", _frontFaceNormalRenderTarget)
 			->set("backFaceNormalMap", _backFaceNormalRenderTarget)
 			->set("depthMap", _depthMapRenderTarget)
-			->set("mapResolution", MAP_RESOLUTION);
+			->set("mapResolution", float(MAP_RESOLUTION));
 
 		target->layouts(target->layouts() | 1u << 21);
 	}
