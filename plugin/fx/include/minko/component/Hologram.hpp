@@ -51,21 +51,29 @@ namespace minko
 			
 			std::shared_ptr<render::Effect>											_frontEffect;
 			std::shared_ptr<render::Effect>											_backEffect;
+			std::shared_ptr<render::Effect>											_depthEffect;
 			std::shared_ptr<render::AbstractContext>								_context;
 
 			static RendererPtr _frontFaceNormalRenderer;
 			static RendererPtr _backFaceNormalRenderer;
+			static RendererPtr _depthMapRenderer;
 
 			static std::shared_ptr<render::Texture> _frontFaceNormalRenderTarget;
 			static std::shared_ptr<render::Texture> _backFaceNormalRenderTarget;
+			static std::shared_ptr<render::Texture>	_depthMapRenderTarget;
+
+			static const float MAP_RESOLUTION;
 
 		public:
 			
 			inline static
 			Ptr
-			create(std::shared_ptr<render::Effect> frontEffect, std::shared_ptr<render::Effect> backEffect, std::shared_ptr<render::AbstractContext> context)
+			create(std::shared_ptr<render::Effect>			frontEffect, 
+				   std::shared_ptr<render::Effect>			backEffect, 
+				   std::shared_ptr<render::Effect>			depthEffect,
+				   std::shared_ptr<render::AbstractContext> context)
 			{
-				Ptr hologram = std::shared_ptr<Hologram>(new Hologram(frontEffect, backEffect, context));
+				Ptr hologram = std::shared_ptr<Hologram>(new Hologram(frontEffect, backEffect, depthEffect, context));
 
 				hologram->initialize();
 
@@ -81,7 +89,10 @@ namespace minko
 
 		private:
 
-			Hologram(std::shared_ptr<render::Effect> frontEffect, std::shared_ptr<render::Effect> backEffect, std::shared_ptr<render::AbstractContext> context);
+			Hologram(std::shared_ptr<render::Effect>			frontEffect, 
+					 std::shared_ptr<render::Effect>			backEffect,
+					 std::shared_ptr<render::Effect>			depthEffect, 
+					 std::shared_ptr<render::AbstractContext>	context);
 
 			void
 			initialize();

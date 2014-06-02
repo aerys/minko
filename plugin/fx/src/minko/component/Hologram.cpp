@@ -38,12 +38,20 @@ using namespace minko::component;
 
 std::shared_ptr<Renderer> Hologram::_frontFaceNormalRenderer = nullptr;
 std::shared_ptr<Renderer> Hologram::_backFaceNormalRenderer = nullptr;
+std::shared_ptr<Renderer> Hologram::_depthMapRenderer = nullptr;
 
 std::shared_ptr<render::Texture> Hologram::_frontFaceNormalRenderTarget = nullptr;
 std::shared_ptr<render::Texture> Hologram::_backFaceNormalRenderTarget = nullptr;
+std::shared_ptr<render::Texture> Hologram::_depthMapRenderTarget = nullptr;
 
-Hologram::Hologram(std::shared_ptr<render::Effect> frontEffect, std::shared_ptr<render::Effect> backEffect, std::shared_ptr<render::AbstractContext> context) :
+const float Hologram::MAP_RESOLUTION = 1024.f;
+
+Hologram::Hologram(std::shared_ptr<render::Effect>			frontEffect, 
+				   std::shared_ptr<render::Effect>			backEffect,
+				   std::shared_ptr<render::Effect>			depthEffect,
+				   std::shared_ptr<render::AbstractContext> context) :
 	_context(context),
+	_depthEffect(depthEffect),
 	_frontEffect(frontEffect),
 	_backEffect(backEffect)
 {
@@ -72,14 +80,20 @@ Hologram::initTarget(AbstractComponent::Ptr cmp, NodePtr target, NodePtr ancesto
 {
 	if (_frontFaceNormalRenderer == nullptr)
 	{
-		_frontFaceNormalRenderTarget = render::Texture::create(_context, 2048, 2048, false, true);
+		_depthMapRenderTarget = render::Texture::create(_context, MAP_RESOLUTION, MAP_RESOLUTION, false, true);
+		_depthMapRenderer = Renderer::create(0xFFFFFFFF, _depthMapRenderTarget, _depthEffect, 10.f);
+
+		_depthMapRenderer->backgroundColor(0xFFFFFFFF);
+
+		_frontFaceNormalRenderTarget = render::Texture::create(_context, MAP_RESOLUTION, MAP_RESOLUTION, false, true);
 		_frontFaceNormalRenderer = Renderer::create(0x000000FF, _frontFaceNormalRenderTarget, _frontEffect, 10.f);
 
-		_backFaceNormalRenderTarget = render::Texture::create(_context, 2048, 2048, false, true);
+		_backFaceNormalRenderTarget = render::Texture::create(_context, MAP_RESOLUTION, MAP_RESOLUTION, false, true);
 		_backFaceNormalRenderer = Renderer::create(0x000000FF, _backFaceNormalRenderTarget, _backEffect, 10.f);
 
 		_frontFaceNormalRenderer->layoutMask(1u << 21);
 		_backFaceNormalRenderer->layoutMask(1u << 21);
+		_depthMapRenderer->layoutMask(1u << 21);
 
 		auto nodeSet = scene::NodeSet::create(target->root())->descendants(false, false)->where(
 			[=](scene::Node::Ptr node) -> bool
@@ -89,12 +103,16 @@ Hologram::initTarget(AbstractComponent::Ptr cmp, NodePtr target, NodePtr ancesto
 
 		nodeSet->nodes()[0]->addComponent(_frontFaceNormalRenderer);
 		nodeSet->nodes()[0]->addComponent(_backFaceNormalRenderer);
+		nodeSet->nodes()[0]->addComponent(_depthMapRenderer);
 	}
 
 	if (target->hasComponent<Surface>())
 	{
-		target->component<Surface>()->material()->set("frontFaceNormalMap", _frontFaceNormalRenderTarget);
-		target->component<Surface>()->material()->set("backFaceNormalMap", _backFaceNormalRenderTarget);
+		target->component<Surface>()->material()
+			->set("frontFaceNormalMap", _frontFaceNormalRenderTarget)
+			->set("backFaceNormalMap", _backFaceNormalRenderTarget)
+			->set("depthMap", _depthMapRenderTarget)
+			->set("mapResolution", MAP_RESOLUTION);
 
 		target->layouts(target->layouts() | 1u << 21);
 	}

@@ -27,11 +27,13 @@ using namespace minko;
 using namespace minko::component;
 using namespace minko::math;
 
-const std::string MODEL_FILENAME	= "model/ironman.scene";
+const std::string MODEL_FILENAME	= "model/walker.scene";
+const float WIDTH	= 1024;
+const float HEIGHT	= 1024;
 
 int main(int argc, char** argv)
 {
-	auto canvas = Canvas::create("Minko Example - Cube", 800, 600);
+	auto canvas = Canvas::create("Minko Example - Cube", WIDTH, HEIGHT);
 
 	auto sceneManager = SceneManager::create(canvas->context());
 
@@ -47,7 +49,8 @@ int main(int argc, char** argv)
 		->queue("effect/FXAA/FXAA.effect")
 		->queue("effect/Basic.effect")
 		->queue("effect/VertexNormal.effect")
-		->queue("texture/halftone.png")
+		->queue("texture/noise.png")
+		->queue("effect/Depth/Depth.effect")
 		->queue("effect/Hologram/HologramVertexNormalFront.effect")
 		->queue("effect/Hologram/HologramVertexNormalBack.effect")
 		->queue("effect/Hologram/Hologram.effect");
@@ -71,9 +74,9 @@ int main(int argc, char** argv)
 	auto camera = scene::Node::create("camera")
 		->addComponent(Renderer::create(0x7f7f7fff))
 		->addComponent(Transform::create(
-		Matrix4x4::create()->lookAt(Vector3::create(0.f, 0.8f, 0.f), Vector3::create(0.f, 2.0f, 3.5f))
+		Matrix4x4::create()->lookAt(Vector3::create(0.f, 0.8f, 0.f), Vector3::create(0.f, 2.0f, 8.f))
 		))
-		->addComponent(PerspectiveCamera::create(800.f / 600.f, (float)PI * 0.25f, .1f, 1000.f));
+		->addComponent(PerspectiveCamera::create(WIDTH / HEIGHT, (float)PI * 0.25f, .1f, 1000.f));
 	root->addChild(camera);
 
 	// FXAA
@@ -100,6 +103,7 @@ int main(int argc, char** argv)
 		auto hologram = Hologram::create(
 			sceneManager->assets()->effect("effect/Hologram/HologramVertexNormalFront.effect"),
 			sceneManager->assets()->effect("effect/Hologram/HologramVertexNormalBack.effect"),
+			sceneManager->assets()->effect("effect/Depth/Depth.effect"),
 			canvas->context());
 
 		sceneManager->assets()->geometry("cubeGeometry", cubeGeometry);
@@ -109,7 +113,7 @@ int main(int argc, char** argv)
             sceneManager->assets()->geometry("cubeGeometry"),
 			material::Material::create()
 				->set("diffuseColor", math::Vector4::create(102.f / 255.f, 205.f / 255.f, 50.f / 255.f, 1.f))
-				->set("noiseMap", sceneManager->assets()->texture("texture/halftone.png"))
+				->set("noiseMap", sceneManager->assets()->texture("texture/noise.png"))
 				->set("zSort", true)
 				->set("blendMode", render::Blending::Mode::ALPHA),
 			sceneManager->assets()->effect("effect/Hologram/Hologram.effect")
@@ -119,14 +123,14 @@ int main(int argc, char** argv)
 			sceneManager->assets()->geometry("sphereGeometry"),
 			material::Material::create()
 				->set("diffuseColor", math::Vector4::create(240.f / 255.f, 95.f / 255.f, 120.f / 255.f, 1.f))
-				->set("noiseMap", sceneManager->assets()->texture("texture/halftone.png"))
+				->set("noiseMap", sceneManager->assets()->texture("texture/noise.png"))
 				->set("zSort", true)
 				->set("blendMode", render::Blending::Mode::ALPHA),
 			sceneManager->assets()->effect("effect/Hologram/Hologram.effect")
 		));
 
-		mesh->component<Transform>()->matrix()->appendTranslation(1.5f, 0.f, 0.f);
-		mesh2->component<Transform>()->matrix()->appendTranslation(-1.5f, 0.f, 0.f);
+		mesh->component<Transform>()->matrix()->appendTranslation(2.5f, 0.f, 0.f);
+		mesh2->component<Transform>()->matrix()->appendTranslation(-2.5f, 0.f, 0.f);
 
 		mesh->addComponent(hologram);
 		mesh2->addComponent(hologram);
@@ -134,7 +138,6 @@ int main(int argc, char** argv)
 		root->addChild(mesh);
 		root->addChild(mesh2);
 		root->addChild(sceneManager->assets()->symbol(MODEL_FILENAME));
-		//root->addChild(sceneManager->assets()->symbol(MODEL_FAKEHOLOGRAM));
 
 		auto meshes = scene::NodeSet::create(sceneManager->assets()->symbol(MODEL_FILENAME))->descendants(false, false)->where([=](scene::Node::Ptr node)
 		{
@@ -147,8 +150,7 @@ int main(int argc, char** argv)
 			node->addComponent(hologram);
 			node->component<Surface>()->material()
 				->set("blendMode", render::Blending::Mode::ALPHA)
-				->set("noiseMap", sceneManager->assets()->texture("texture/halftone.png"))
-				->set("diffuseColor", math::Vector4::create(173.f / 255.f, 216.f / 255.f, 230.f / 255.f, 1.f))
+				->set("noiseMap", sceneManager->assets()->texture("texture/noise.png"))
 				->set("zSort", true);
 		}
 
@@ -183,17 +185,15 @@ int main(int argc, char** argv)
 
 	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float deltaTime)
 	{
-        mesh->component<Transform>()->matrix()->prependRotationY(0.001f * deltaTime);
-		mesh2->component<Transform>()->matrix()->prependRotationY(0.001f * deltaTime);
-		sceneManager->assets()->symbol(MODEL_FILENAME)->component<Transform>()->matrix()->prependRotationY(0.001f * deltaTime);
+        mesh->component<Transform>()->matrix()->prependRotationY(0.0005f * deltaTime);
+		mesh2->component<Transform>()->matrix()->prependRotationY(0.0005f * deltaTime);
+		sceneManager->assets()->symbol(MODEL_FILENAME)->component<Transform>()->matrix()->prependRotationY(0.0005f * deltaTime);
 
-		//sceneManager->nextFrame(time, deltaTime);
 		sceneManager->nextFrame(time, deltaTime, ppTarget);
 		ppRenderer->render(canvas->context());
 	});
-
+	
 	fxLoader->load();
-
 	canvas->run();
 
 	return 0;
