@@ -214,7 +214,7 @@ HTTPProtocol::load()
 			else if (message.type == "progress")
 			{
 				float ratio = *reinterpret_cast<float*>(&*message.data.begin());
-				progressHandler(loader.get(), ratio * 100.f);				
+				progressHandler(loader.get(), int(ratio * 100.f));				
 			}
 			else if (message.type == "error")
 			{
@@ -230,7 +230,7 @@ HTTPProtocol::load()
 		HTTPRequest request(resolvedFilename());
 
 		request.progress()->connect([&](float p){
-			progressHandler(loader.get(), p * 100.f);
+			progressHandler(loader.get(), int(p * 100.f));
 		});
 
 		request.run();

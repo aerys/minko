@@ -379,7 +379,7 @@ Dependency::serialize(std::shared_ptr<file::AssetLibrary>       assetLibrary,
 
     for (const auto& itGeometry : _geometryDependencies)
 	{
-		auto maxPriority = 0;
+		uint maxPriority = 0;
 
 		for (auto testGeomFunc : _geometryTestFunctions)
 			if (testGeomFunc.second(itGeometry.first) && maxPriority < testGeomFunc.first)

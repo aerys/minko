@@ -80,7 +80,7 @@ namespace minko
 			{
 				SerializedDependency includeDependency;
 
-				write(filename, assetLibrary, options, writerOptions);
+				write(filename, assetLibrary, options, writerOptions, includeDependency);
 			}
 
 			void
