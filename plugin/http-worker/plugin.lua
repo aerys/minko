@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 minko.plugin["http-worker"] = {}
 
 minko.plugin["http-worker"].enable = function (self)
---function minko.plugin.["http-worker"]:enable()	
+--function minko.plugin.["http-worker"]:enable()
 	includedirs { minko.plugin.path("http-worker") .. "/include" }
 	defines { "MINKO_PLUGIN_HTTP_WORKER" }
 
@@ -32,35 +32,39 @@ minko.plugin["http-worker"].enable = function (self)
 
 	configuration { "windows32 or windows64" }
 		links { "libcurl" }
-		
+
 	configuration { "windows32", "debug" }
 		libdirs { minko.plugin.path("http-worker") .. "/lib/curl/lib/windows32/debug" }
 		postbuildcommands {
 			minko.action.copy(minko.plugin.path("http-worker") .. "/lib/curl/lib/windows32/debug/*.dll")
 		}
-		
+
 	configuration { "windows32", "release" }
 		libdirs { minko.plugin.path("http-worker") .. "/lib/curl/lib/windows32/release" }
 		postbuildcommands {
 			minko.action.copy(minko.plugin.path("http-worker") .. "/lib/curl/lib/windows32/release/*.dll")
 		}
-		
+
 	configuration { "windows64", "debug" }
 		libdirs { minko.plugin.path("http-worker") .. "/lib/curl/lib/windows64/debug" }
 		postbuildcommands {
 			minko.action.copy(minko.plugin.path("http-worker") .. "/lib/curl/lib/windows64/debug/*.dll")
 		}
-		
+
 	configuration { "windows64", "release" }
 		libdirs { minko.plugin.path("http-worker") .. "/lib/curl/lib/windows64/release" }
 		postbuildcommands {
 			minko.action.copy(minko.plugin.path("http-worker") .. "/lib/curl/lib/windows64/release/*.dll")
 		}
-		
+
 	configuration { "linux32 or linux64" }
 		links { "curl" }
 
 	configuration { "osx64" }
+		links { "curl" }
+
+	configuration { "android" }
+		libdirs { minko.plugin.path("http-worker") .. "/lib/curl/lib/android/debug" }
 		links { "curl" }
 end
 
