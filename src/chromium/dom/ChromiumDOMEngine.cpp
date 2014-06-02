@@ -251,7 +251,7 @@ ChromiumDOMEngine::visible(bool value)
 	if (_impl != nullptr)
 	{
 		if (_impl->app != nullptr)
-			_impl->app->enableInput(_visible);
+			_impl->app->enableInput(value);
 		if (_impl->renderHandler != nullptr)
 			_impl->renderHandler->visible(value);
 	}
