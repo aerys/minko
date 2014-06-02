@@ -31,7 +31,7 @@ using namespace minko;
 using namespace minko::file;
 
 Options::ProtocolFunction
-Options::_defaultProtocolFunction = 0;
+Options::_defaultProtocolFunction = nullptr;
 
 Options::Options() :
     _context(nullptr),
@@ -116,7 +116,7 @@ Options::getProtocol(const std::string& protocol)
     return p;
 }
 
-std::shared_ptr<AbstractProtocol>
+void
 Options::defaultProtocolFunction(const std::string& filename, const ProtocolFunction& func)
 {
     _defaultProtocolFunction = func;

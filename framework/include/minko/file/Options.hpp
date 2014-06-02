@@ -575,7 +575,7 @@ namespace minko
 			getProtocol(const std::string& protocol);
 
 			static
-			std::shared_ptr<AbstractProtocol>
+			void
 			defaultProtocolFunction(const std::string& filename, const ProtocolFunction& func);
 
 		private:
