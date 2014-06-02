@@ -77,7 +77,7 @@ FileProtocol::load()
             const auto absolutePrefix = File::getBinaryDirectory() + "/";
 
 			auto testFilename = options->uriFunction()(File::sanitizeFilename(path + '/' + cleanFilename));
-
+#ifndef EMSCRIPTEN
             if (testFilename.find(absolutePrefix) != std::string::npos)
             {
                 auto currentSeparatorPos = absolutePrefix.size();
@@ -106,15 +106,16 @@ FileProtocol::load()
             }
             else
             {
-                file.open(testFilename, flags);
-
-                if (file.is_open())
-                {
-                    realFilename = testFilename;
-
-                    break;
-                }
-            }
+#endif
+				file.open(testFilename, flags);
+				if (file.is_open())
+				{
+					realFilename = testFilename;
+					break;
+				}
+#ifndef EMSCRIPTEN
+			}
+#endif
 		}
 	}
 	

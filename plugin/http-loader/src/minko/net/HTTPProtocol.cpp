@@ -67,7 +67,7 @@ HTTPProtocol::progressHandler(void* arg, int loadedBytes, int totalBytes)
 	std::cout << "HTTPProtocol::progressHandler(): found loader " << format("%d", progress) << "%"  << std::endl;
 	std::shared_ptr<HTTPProtocol> loader = *iterator;
 
-	loader->_progress->execute(loader, progress);
+	loader->_progress->execute(loader, float(progress));
 }
 
 void
@@ -228,7 +228,7 @@ HTTPProtocol::load()
 			else if (message.type == "progress")
 			{
 				float ratio = *reinterpret_cast<float*>(&*message.data.begin());
-				progressHandler(loader.get(), int(ratio * 100.f));				
+				progressHandler(loader.get(), int(ratio * 100.f), 100);				
 			}
 			else if (message.type == "error")
 			{
@@ -244,7 +244,7 @@ HTTPProtocol::load()
 		HTTPRequest request(resolvedFilename());
 
 		request.progress()->connect([&](float p){
-			progressHandler(loader.get(), int(p * 100.f));
+			progressHandler(loader.get(), int(p * 100.f), 100);
 		});
 
 		request.run();

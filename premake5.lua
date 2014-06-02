@@ -82,7 +82,7 @@ solution "minko"
 		include 'plugin/http-worker'
 		include 'plugin/jpeg'
 		include 'plugin/leap'
-		include 'plugin/oculus'
+		-- include 'plugin/oculus'
 		include 'plugin/offscreen'
 		include 'plugin/particles'
 		include 'plugin/png'

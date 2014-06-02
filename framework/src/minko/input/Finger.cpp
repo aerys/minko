@@ -24,10 +24,10 @@ using namespace minko::input;
 
 Finger::Finger(std::shared_ptr<AbstractCanvas> canvas) :
 	_canvas(canvas),
-    _x(0),
-    _y(0),
-    _dx(0),
-    _dy(0),
+    _x(0.f),
+    _y(0.f),
+    _dx(0.f),
+    _dy(0.f),
 	_fingerMotion(Signal<Ptr, float, float>::create()),
     _fingerDown(Signal<Ptr, float, float>::create()),
     _fingerUp(Signal<Ptr, float, float>::create()),

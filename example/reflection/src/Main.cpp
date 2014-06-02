@@ -39,8 +39,8 @@ main(int argc, char** argv)
 
     auto yaw = 0.f;
     auto pitch = (float) PI * .5f;
-    auto minPitch = 0.f + 1e-5;
-    auto maxPitch = (float) PI - 1e-5;
+    auto minPitch = 0.f + float(1e-5);
+    auto maxPitch = (float) PI - float(1e-5);
     auto lookAt = Vector3::create(0.f, 0.f, 0.f);
     auto distance = 10.f;
 
@@ -110,8 +110,8 @@ main(int argc, char** argv)
         auto reflectionPlane = scene::Node::create("reflectionPlane")
             ->addComponent(Transform::create(Matrix4x4::create()
             ->appendScale(5.f)
-            ->appendRotationX(-PI / 2.f)
-            ->appendTranslation(0.f, planeHeight, 0.f)))
+            ->appendRotationX(-float(PI) / 2.f)
+            ->appendTranslation(0.f, float(planeHeight), 0.f)))
             ->addComponent(Surface::create(
                 geometry::QuadGeometry::create(sceneManager->assets()->context()),
                     material::Material::create()->set("diffuseMap", sceneManager->assets()->texture("texture/box.png")),

@@ -70,7 +70,7 @@ Reflection::initialize()
         else
             _addedToSceneSlot = target->added()->connect(std::bind(
             &Reflection::targetAddedToScene,
-            shared_from_this(),
+            std::static_pointer_cast<Reflection>(shared_from_this()),
             std::placeholders::_1,
             std::placeholders::_2,
             std::placeholders::_3));
@@ -272,6 +272,6 @@ Reflection::enabled(bool value)
 		auto renderer = _virtualCamera->component<Renderer>();
 
 		if (renderer != nullptr)
-			renderer->enable(value);
+			renderer->enabled(value);
 	}
 }

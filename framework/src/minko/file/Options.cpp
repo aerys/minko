@@ -30,8 +30,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::file;
 
-Options::ProtocolFunction
-Options::_defaultProtocolFunction = 0;
+Options::ProtocolFunction Options::_defaultProtocolFunction = nullptr;
 
 Options::Options() :
     _context(nullptr),
@@ -116,7 +115,7 @@ Options::getProtocol(const std::string& protocol)
     return p;
 }
 
-std::shared_ptr<AbstractProtocol>
+void
 Options::defaultProtocolFunction(const std::string& filename, const ProtocolFunction& func)
 {
     _defaultProtocolFunction = func;
@@ -151,4 +150,40 @@ Options::initializeDefaultFunctions()
     {
         return effect;
     };
+
+	if (!_defaultProtocolFunction)
+		_defaultProtocolFunction = [=](const std::string& filename) -> std::shared_ptr<AbstractProtocol>
+	{
+		auto defaultProtocol = options->getProtocol("file"); // "file" might be overriden (by APKProtocol for instance)
+
+		defaultProtocol->options(Options::create(options));
+
+		return defaultProtocol;
+	};
+
+	_protocolFunction = [=](const std::string& filename) -> std::shared_ptr<AbstractProtocol>
+	{
+		std::string protocol = "";
+
+		uint i;
+
+		for (i = 0; i < filename.length(); ++i)
+		{
+			if (i < filename.length() - 2 && filename.at(i) == ':' && filename.at(i + 1) == '/' && filename.at(i + 2) == '/')
+				break;
+
+			protocol += filename.at(i);
+		}
+
+		if (i != filename.length())
+		{
+			auto loader = options->getProtocol(protocol);
+
+			if (loader)
+				return loader;
+		}
+
+		return _defaultProtocolFunction(filename);
+	};
+
 }

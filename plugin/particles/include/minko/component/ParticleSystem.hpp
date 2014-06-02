@@ -242,7 +242,7 @@ namespace minko
 			play()
 			{
 				if (_playing)
-					return shared_from_this();
+					return std::static_pointer_cast<ParticleSystem>(shared_from_this());
 
 				reset();
 
@@ -254,7 +254,7 @@ namespace minko
 			stop()
 			{
 				if (!_playing)
-					return shared_from_this();
+					return std::static_pointer_cast<ParticleSystem>(shared_from_this());
 
 				reset();
 				playing(false);

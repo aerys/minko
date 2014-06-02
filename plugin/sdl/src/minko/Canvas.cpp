@@ -493,7 +493,7 @@ Canvas::step()
             //_mouseWheel->execute(shared_from_this(), event.wheel.x, event.wheel.y);
             break;
         }
-
+#ifndef EMSCRIPTEN
             // Touch events
         case SDL_FINGERDOWN:
         {
@@ -501,8 +501,8 @@ Canvas::step()
             std::cout << "Finger down! (x: " << event.tfinger.x << ", y: " << event.tfinger.y << ")" << std::endl;
 #endif // DEBUG
 
-            _finger->x(event.tfinger.x);
-            _finger->y(event.tfinger.y);
+            _finger->x(uint(event.tfinger.x));
+            _finger->y(uint(event.tfinger.y));
 
             _finger->fingerDown()->execute(_finger, event.tfinger.x, event.tfinger.y);
 
@@ -514,8 +514,8 @@ Canvas::step()
 # if defined(DEBUG)
             std::cout << "Finger up! (x: " << event.tfinger.x << ", y: " << event.tfinger.y << ")" << std::endl;
 #endif // DEBUG
-            _finger->x(event.tfinger.x);
-            _finger->y(event.tfinger.y);
+            _finger->x(uint(event.tfinger.x));
+            _finger->y(uint(event.tfinger.y));
 
             _finger->fingerUp()->execute(_finger, event.tfinger.x, event.tfinger.y);
 
@@ -532,10 +532,10 @@ Canvas::step()
                 << "dx: " << event.tfinger.dx << ", dy: " << event.tfinger.dy
                 << ")" << std::endl;
 #endif // DEBUG
-            _finger->x(event.tfinger.x);
-            _finger->y(event.tfinger.y);
-            _finger->dx(event.tfinger.dx);
-            _finger->dy(event.tfinger.dy);
+            _finger->x(uint(event.tfinger.x));
+            _finger->y(uint(event.tfinger.y));
+            _finger->dx(uint(event.tfinger.dx));
+            _finger->dy(uint(event.tfinger.dy));
 
             _finger->fingerMotion()->execute(_finger, event.tfinger.dx, event.tfinger.dy);
 
@@ -577,7 +577,7 @@ Canvas::step()
 
             break;
         }
-
+#endif
         case SDL_JOYAXISMOTION:
         {
             _joysticks[event.jaxis.which]->joystickAxisMotion()->execute(

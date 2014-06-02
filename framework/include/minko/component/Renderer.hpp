@@ -40,7 +40,7 @@ namespace minko
 
 		private:
 			typedef std::shared_ptr<scene::Node>						NodePtr;
-			typedef std::shared_ptr<AbstractComponent>					AbsCtrlPtr;
+			typedef std::shared_ptr<AbstractComponent>					AbsCmpPtr;
 			typedef std::shared_ptr<render::AbstractContext>			AbsContext;
 			typedef std::shared_ptr<Surface>							SurfacePtr;
 			typedef std::shared_ptr<render::DrawCall>					DrawCallPtr;
@@ -72,8 +72,8 @@ namespace minko
 			float														_priority;
 			bool														_enabled;
 
-			Signal<AbsCtrlPtr, NodePtr>::Slot							_targetAddedSlot;
-			Signal<AbsCtrlPtr, NodePtr>::Slot							_targetRemovedSlot;
+			Signal<AbsCmpPtr, NodePtr>::Slot							_targetAddedSlot;
+			Signal<AbsCmpPtr, NodePtr>::Slot							_targetRemovedSlot;
 			Signal<NodePtr, NodePtr, NodePtr>::Slot						_addedSlot;
 			Signal<NodePtr, NodePtr, NodePtr>::Slot						_removedSlot;
 			Signal<NodePtr, NodePtr, NodePtr>::Slot						_rootDescendantAddedSlot;
@@ -84,7 +84,6 @@ namespace minko
 			std::unordered_map<SurfacePtr, SurfaceTechniqueChangedSlot>	_surfaceTechniqueChangedSlot;
 
 			DrawCallFactoryPtr											_drawCallPool;
-			bool														_enable;
 
 			std::set<AbsFilterPtr>										_targetDataFilters;
 			std::set<AbsFilterPtr>										_rendererDataFilters;
@@ -96,7 +95,6 @@ namespace minko
 			std::unordered_map<AbsFilterPtr, FilterChangedSlot>			_rootDataFilterChangedSlots;
 
 			std::shared_ptr<RendererFilterChangedSignal>				_filterChanged;
-			bool														_enable;
 
 			static const unsigned int									NUM_FALLBACK_ATTEMPTS;
 
@@ -193,16 +191,16 @@ namespace minko
 
 			inline
 			bool
-			enable()
+			enabled()
 			{
-				return _enable;
+				return _enabled;
 			}
 
 			inline
 			void
-			enable(bool value)
+			enabled(bool value)
 			{
-				_enable = value;
+				_enabled = value;
 			}
 
 			void

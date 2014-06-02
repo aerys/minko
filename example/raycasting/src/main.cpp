@@ -188,13 +188,13 @@ int main(int argc, char** argv)
 
 	auto keyDown = canvas->keyboard()->keyDown()->connect([&](input::Keyboard::Ptr k)
 	{
-		if (k->keyIsDown(input::Keyboard::ScanCode::R))
+		if (k->keyIsDown(input::Keyboard::R))
 			toogleRedBoxLayouts		= true;
-		else if (k->keyIsDown(input::Keyboard::ScanCode::B))
+		else if (k->keyIsDown(input::Keyboard::B))
 			tooglePickingMask		= true;
-		else if (k->keyIsDown(input::Keyboard::ScanCode::G))
+		else if (k->keyIsDown(input::Keyboard::G))
 			toogleRendererMask		= true;
-		else if (k->keyIsDown(input::Keyboard::ScanCode::Q)) 
+		else if (k->keyIsDown(input::Keyboard::Q)) 
 			toogleGreenBoxLayouts	= true;
 	});
 

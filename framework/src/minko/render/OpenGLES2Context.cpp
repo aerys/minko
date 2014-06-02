@@ -696,8 +696,10 @@ OpenGLES2Context::setTexture2dMipLevelBoundaries(uint texture,
 {
 	assert(getTextureType(texture) == TextureType::Texture2D);
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, baseLevel);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, maxLevel);
+#ifdef GL_ES_VERSION_3_0
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, baseLevel);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, maxLevel);
+#endif // GL_ES_VERSION_3_0
 }
 
 void

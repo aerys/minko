@@ -103,25 +103,25 @@ namespace minko
 			void
 			x(uint x)
 			{
-				_x = x;
+				_x = float(x);
 			}
             
 			void
 			y(uint y)
 			{
-				_y = y;
+				_y = float(y);
 			}
             
             void
 			dx(uint dx)
 			{
-				_dx = dx;
+				_dx = float(dx);
 			}
             
 			void
 			dy(uint dy)
 			{
-				_dy = dy;
+				_dy = float(dy);
 			}
             
 		private:

@@ -80,7 +80,9 @@ namespace minko
 			UriFunction									        _uriFunction;
 			NodeFunction								        _nodeFunction;
 			EffectFunction								        _effectFunction;
-
+			
+			static ProtocolFunction								_defaultProtocolFunction;
+		
 		public:
 			inline static
 			Ptr
@@ -507,7 +509,7 @@ namespace minko
 			getProtocol(const std::string& protocol);
 
 			static
-			std::shared_ptr<AbstractProtocol>
+			void
 			defaultProtocolFunction(const std::string& filename, const ProtocolFunction& func);
 
 		private:

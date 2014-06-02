@@ -165,8 +165,8 @@ PerspectiveCamera::project(std::shared_ptr<math::Vector3> worldPosition, std::sh
 	auto width = context->viewportWidth();
 	auto height = context->viewportHeight();
 
-	out->x(width * ((vector->x() + 1.0) * .5));
-	out->y(height * ((1.0 - ((vector->y() + 1.0) * .5))));
+	out->x(width * ((vector->x() + 1.0f) * .5f));
+	out->y(height * ((1.0f - ((vector->y() + 1.0f) * .5f))));
 	
 	//depth
 	_view->transform(worldPosition, vector);

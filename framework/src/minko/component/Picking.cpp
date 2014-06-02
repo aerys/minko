@@ -347,7 +347,7 @@ Picking::renderingEnd(RendererPtr renderer)
 	}
 
 	if (!(_mouseOver->numCallbacks() > 0 || _mouseOut->numCallbacks() > 0))
-		_renderer->enable(false);
+		_renderer->enabled(false);
 }
 
 void
@@ -356,7 +356,7 @@ Picking::mouseMoveHandler(MousePtr mouse, int dx, int dy)
 	if (_mouseOver->numCallbacks() > 0 || _mouseOut->numCallbacks() > 0)
 	{
 		_executeMoveHandler = true;
-		_renderer->enable(true);
+		_renderer->enabled(true);
 	}
 }
 
@@ -364,12 +364,12 @@ void
 Picking::mouseRightClickHandler(MousePtr mouse)
 {
 		_executeRightClickHandler = true;
-		_renderer->enable(true);
+		_renderer->enabled(true);
 }
 
 void
 Picking::mouseLeftClickHandler(MousePtr mouse)
 {
 	_executeLeftClickHandler = true;
-	_renderer->enable(true);
+	_renderer->enabled(true);
 }
