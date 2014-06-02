@@ -47,15 +47,12 @@ Surface::Surface(std::string				name,
 	_material(material),
 	_effect(effect),
 	_technique(technique),
-	_geometryId(-1),
-	_materialId(-1),
 	_visible(true),
 	_rendererToVisibility(),
 	_rendererToComputedVisibility(),
 	_techniqueChanged(TechniqueChangedSignal::create()),
 	_visibilityChanged(VisibilityChangedSignal::create()),
 	_computedVisibilityChanged(VisibilityChangedSignal::create()),
-	_dataProviderIndexChangedSlots(),
 	_targetAddedSlot(nullptr),
 	_targetRemovedSlot(nullptr),
 	_addedSlot(nullptr),
@@ -72,34 +69,17 @@ Surface::initialize()
 {
 	_targetAddedSlot = targetAdded()->connect(std::bind(
 		&Surface::targetAddedHandler,
-		shared_from_this(),
+		std::static_pointer_cast<Surface>(shared_from_this()),
 		std::placeholders::_1,
 		std::placeholders::_2
 	));
 
 	_targetRemovedSlot = targetRemoved()->connect(std::bind(
 		&Surface::targetRemovedHandler,
-		shared_from_this(),
+		std::static_pointer_cast<Surface>(shared_from_this()),
 		std::placeholders::_1,
 		std::placeholders::_2
 	));
-
-	_dataProviderIndexChangedSlots.push_back(_geometry->data()->indexChanged()->connect(std::bind(
-		&Surface::geometryProviderIndexChanged,
-		shared_from_this(),
-		std::placeholders::_1,
-		std::placeholders::_2
-		), 10.f));
-
-	auto arrayProviderMaterial = std::dynamic_pointer_cast<ArrayProvider>(_material);
-
-	if (arrayProviderMaterial)
-		_dataProviderIndexChangedSlots.push_back(arrayProviderMaterial->indexChanged()->connect(std::bind(
-			&Surface::materialProviderIndexChanged,
-			shared_from_this(),
-			std::placeholders::_1,
-			std::placeholders::_2
-			), 10.f));
 }
 
 void
@@ -111,7 +91,7 @@ Surface::targetAddedHandler(AbstractComponent::Ptr	ctrl,
 
 	_addedSlot = target->added()->connect(std::bind(
 		&Surface::addedHandler,
-		shared_from_this(),
+		std::static_pointer_cast<Surface>(shared_from_this()),
 		std::placeholders::_1,
 		std::placeholders::_2,
 		std::placeholders::_3
@@ -119,7 +99,7 @@ Surface::targetAddedHandler(AbstractComponent::Ptr	ctrl,
 
 	_removedSlot = target->removed()->connect(std::bind(
 		&Surface::removedHandler,
-		shared_from_this(),
+		std::static_pointer_cast<Surface>(shared_from_this()),
 		std::placeholders::_1,
 		std::placeholders::_2,
 		std::placeholders::_3
@@ -128,17 +108,11 @@ Surface::targetAddedHandler(AbstractComponent::Ptr	ctrl,
 	auto arrayProviderMaterial = std::dynamic_pointer_cast<data::ArrayProvider>(_material);
 
 	if (arrayProviderMaterial)
-	{
 		targetData->addProvider(std::dynamic_pointer_cast<data::ArrayProvider>(_material));
-		_materialId = targetData->getProviderIndex(_material);
-	}
 	else
-	{
 		targetData->addProvider(_material);
-	}
 
 	targetData->addProvider(_geometry->data());
-	_geometryId = targetData->getProviderIndex(_geometry->data());
 	targetData->addProvider(_effect->data());
 }
 
@@ -153,9 +127,6 @@ Surface::targetRemovedHandler(AbstractComponent::Ptr	ctrl,
 	data->removeProvider(_material);
 	data->removeProvider(_geometry->data());
 	data->removeProvider(_effect->data());
-
-	_materialId = -1;
-	_geometryId = -1;
 }
 
 void
@@ -196,7 +167,11 @@ Surface::visible(component::Renderer::Ptr	renderer,
 	if (visible(renderer) != value)
 	{
 		_rendererToVisibility[renderer] = value;
-		_visibilityChanged->execute(shared_from_this(), renderer, value);
+		_visibilityChanged->execute(
+			std::static_pointer_cast<Surface>(shared_from_this()), 
+			renderer, 
+			value
+		);
 	}
 }
 
@@ -207,7 +182,11 @@ Surface::computedVisibility(component::Renderer::Ptr	renderer,
 	if (computedVisibility(renderer) != value)
 	{
 		_rendererToComputedVisibility[renderer] = value;
-		_computedVisibilityChanged->execute(shared_from_this(), renderer, value);
+		_computedVisibilityChanged->execute(
+			std::static_pointer_cast<Surface>(shared_from_this()), 
+			renderer, 
+			value
+		);
 	}
 }
 
@@ -232,17 +211,10 @@ Surface::setEffectAndTechnique(Effect::Ptr			effect,
 
 	_effect		= effect;
 	_technique	= technique;
-	_techniqueChanged->execute(shared_from_this(), _technique, updateDrawcalls);
-}
 
-void
-Surface::geometryProviderIndexChanged(ArrayProvider::Ptr, uint index)
-{
-	_geometryId = index;
-}
-
-void
-Surface::materialProviderIndexChanged(ArrayProvider::Ptr, uint index)
-{
-	_materialId = index;
+	_techniqueChanged->execute(
+		std::static_pointer_cast<Surface>(shared_from_this()), 
+		_technique, 
+		updateDrawcalls
+	);
 }

@@ -494,7 +494,7 @@ BasicMaterial::target() const
 BasicMaterial::Ptr
 BasicMaterial::isTransparent(bool transparent, bool zSort)
 {
-	return priority(transparent ? priority::TRANSPARENT : priority::OPAQUE)
+	return priority(transparent ? Priority::TRANSPARENT : Priority::OPAQUE)
 		->zSorted(zSort)
 		->blendingMode(transparent ? Blending::Mode::ALPHA : Blending::Mode::DEFAULT);
 }

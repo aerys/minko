@@ -26,6 +26,7 @@ using namespace minko::file;
 
 std::map<const std::type_info*, std::function<std::tuple<uint, std::string>(Any)>> MaterialWriter::_typeToWriteFunction;
 
+
 MaterialWriter::MaterialWriter()
 {
 	_typeToWriteFunction[&typeid(std::shared_ptr<math::Matrix4x4>)]		= std::bind(&serialize::TypeSerializer::serializeMatrix4x4, std::placeholders::_1);

@@ -29,14 +29,26 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::file;
 
-std::function<std::shared_ptr<render::IndexBuffer>(std::string&, std::shared_ptr<render::AbstractContext>)>		GeometryParser::indexBufferParserFunction;
-std::function<std::shared_ptr<render::VertexBuffer>(std::string&, std::shared_ptr<render::AbstractContext>)>	GeometryParser::vertexBufferParserFunction;
+std::unordered_map<uint, std::function<std::shared_ptr<render::IndexBuffer>(std::string&, std::shared_ptr<render::AbstractContext>)>>	GeometryParser::indexBufferParserFunctions;
+std::unordered_map<uint, std::function<std::shared_ptr<render::VertexBuffer>(std::string&, std::shared_ptr<render::AbstractContext>)>>	GeometryParser::vertexBufferParserFunctions;
 
 void
 GeometryParser::initialize()
 {
-	indexBufferParserFunction	= std::bind(&GeometryParser::deserializeIndexBuffer, std::placeholders::_1, std::placeholders::_2);
-	vertexBufferParserFunction	= std::bind(&GeometryParser::deserializeVertexBuffer, std::placeholders::_1, std::placeholders::_2);
+	registerIndexBufferParserFunction(
+		std::bind(&GeometryParser::deserializeIndexBuffer, std::placeholders::_1, std::placeholders::_2),
+		0
+	);
+
+	registerIndexBufferParserFunction(
+		std::bind(&GeometryParser::deserializeIndexBufferChar, std::placeholders::_1, std::placeholders::_2),
+		1
+	);
+
+	registerVertexBufferParserFunction(
+		std::bind(&GeometryParser::deserializeVertexBuffer, std::placeholders::_1, std::placeholders::_2),
+		0
+	);
 }
 
 std::shared_ptr<render::VertexBuffer>
@@ -102,15 +114,18 @@ GeometryParser::parse(const std::string&				filename,
 	str.clear();
 	str.shrink_to_fit();
 
-	computeMetaByte(serializedGeometry.a0);
+	uint indexBufferFunction = 0;
+	uint vertexBufferFunction = 0;
 
-	geom->indices(indexBufferParserFunction(serializedGeometry.a2, options->context()));
+	computeMetaByte(serializedGeometry.a0, indexBufferFunction, vertexBufferFunction);
+
+	geom->indices(indexBufferParserFunctions[indexBufferFunction](serializedGeometry.a2, options->context()));
 	serializedGeometry.a2.clear();
 	serializedGeometry.a2.shrink_to_fit();
 
 	for (std::string serializedVertexBuffer : serializedGeometry.a3)
 	{
-		geom->addVertexBuffer(vertexBufferParserFunction(serializedVertexBuffer, options->context()));
+		geom->addVertexBuffer(vertexBufferParserFunctions[vertexBufferFunction](serializedVertexBuffer, options->context()));
 		serializedVertexBuffer.clear();
 		serializedVertexBuffer.shrink_to_fit();
 	}
@@ -132,11 +147,8 @@ GeometryParser::parse(const std::string&				filename,
 }
 
 void
-GeometryParser::computeMetaByte(unsigned char byte)
+GeometryParser::computeMetaByte(unsigned char byte, uint& indexBufferFunctionId, uint& vertexBufferFunctionId)
 {
-	if (byte & (1u << 7))
-		indexBufferParserFunction = std::bind(&GeometryParser::deserializeIndexBufferChar, std::placeholders::_1, std::placeholders::_2);
-	else
-		indexBufferParserFunction = std::bind(&GeometryParser::deserializeIndexBuffer, std::placeholders::_1, std::placeholders::_2);
-
+	indexBufferFunctionId	= 0x00000000 + ((byte >> 4) & 0x0F);
+	vertexBufferFunctionId	= 0x00000000 + (byte & 0x0F);
 }

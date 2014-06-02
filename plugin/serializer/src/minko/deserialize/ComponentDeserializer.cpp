@@ -52,9 +52,9 @@ ComponentDeserializer::deserializeTransform(std::string&						serializedTransfor
 											std::shared_ptr<file::AssetLibrary>	assetLibrary,
 											std::shared_ptr<file::Dependency>	dependencies)
 {
-	msgpack::zone									mempool;
-	msgpack::object									deserialized;
-	msgpack::type::tuple<uint, std::string>	dst;
+	msgpack::zone								mempool;
+	msgpack::object								deserialized;
+	msgpack::type::tuple<uint, std::string>		dst;
 
 	msgpack::unpack(serializedTransformData.data(), serializedTransformData.size() - 1, NULL, &mempool, &deserialized);
 	deserialized.convert(&dst);

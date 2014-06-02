@@ -83,9 +83,11 @@ JobManager::end(NodePtr target)
 				currentJob->beforeFirstStep();
 			}
 		}
-
+		
 		currentJob->step();
-
+		
+		consumeTime = (float(std::clock() - _frameStartTime) / CLOCKS_PER_SEC);
+		
 		if (currentJob->complete())
 		{
 			_jobs.pop_back();
@@ -100,9 +102,9 @@ JobManager::end(NodePtr target)
 			{
 				_jobs.push_back(currentJob);
 				currentJob = nullptr;
+				consumeTime = _frameTime;
 			}
 		}
 
-		consumeTime = (float(std::clock() - _frameStartTime) / CLOCKS_PER_SEC);
 	}
 }

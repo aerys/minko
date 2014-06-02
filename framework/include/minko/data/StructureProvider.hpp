@@ -31,7 +31,7 @@ namespace minko
 			public Provider
 		{
 		public:
-			typedef std::shared_ptr<StructureProvider> Ptr;
+			typedef std::shared_ptr<StructureProvider>			Ptr;
 
 		private:
 			std::string	_structureName;
@@ -46,12 +46,33 @@ namespace minko
 
 			inline
 			const std::string&
-			structureName()
+			structureName() const
 			{
 				return _structureName;
 			}
 
+			inline
+			Ptr
+			copyFrom(Ptr source)
+			{
+				Provider::copyFrom(std::static_pointer_cast<Provider>(source));
+
+				_structureName = source->_structureName;
+
+				return std::static_pointer_cast<StructureProvider>(shared_from_this());
+			}
+
+			inline
+			Ptr
+			clone()
+			{
+				auto that = std::static_pointer_cast<StructureProvider>(shared_from_this());
+
+				return StructureProvider::create(_structureName)->copyFrom(that);
+			}
+
 		protected:
+			inline explicit
 			StructureProvider(const std::string& name) :
 				_structureName(name)
 			{

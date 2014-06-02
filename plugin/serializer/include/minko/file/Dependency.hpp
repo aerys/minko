@@ -31,14 +31,16 @@ namespace minko
 			public std::enable_shared_from_this<Dependency>
 		{
 		public:
-			typedef std::shared_ptr<Dependency> Ptr;
-			typedef std::shared_ptr<render::AbstractTexture> AbsTexturePtr;
+			typedef std::shared_ptr<Dependency>					Ptr;
+			typedef std::shared_ptr<render::AbstractTexture>	AbsTexturePtr;
+			typedef std::shared_ptr<geometry::Geometry>			GeometryPtr;
 
 		private:
 			typedef msgpack::type::tuple<unsigned int, short, std::string> SerializedAsset;
-            typedef std::function<SerializedAsset(std::shared_ptr<file::Dependency>, std::shared_ptr<file::AssetLibrary>, std::shared_ptr<geometry::Geometry>, uint, std::shared_ptr<file::Options>, std::shared_ptr<file::WriterOptions>)>		GeometryWriterFunction;
+			typedef std::function<SerializedAsset(std::shared_ptr<file::Dependency>, std::shared_ptr<file::AssetLibrary>, std::shared_ptr<geometry::Geometry>, uint, std::shared_ptr<file::Options>, std::shared_ptr<file::WriterOptions>, std::vector<Dependency::SerializedAsset>&)>		GeometryWriterFunction;
             typedef std::function<SerializedAsset(std::shared_ptr<file::Dependency>, std::shared_ptr<file::AssetLibrary>, std::shared_ptr<render::AbstractTexture>, uint, std::shared_ptr<file::Options>, std::shared_ptr<file::WriterOptions>)>	TextureWriterFunction;
-                typedef std::function<SerializedAsset(std::shared_ptr<file::Dependency>, std::shared_ptr<file::AssetLibrary>, std::shared_ptr<data::Provider>, uint, std::shared_ptr<file::Options>, std::shared_ptr<file::WriterOptions>)>			MaterialWriterFunction;
+            typedef std::function<SerializedAsset(std::shared_ptr<file::Dependency>, std::shared_ptr<file::AssetLibrary>, std::shared_ptr<data::Provider>, uint, std::shared_ptr<file::Options>, std::shared_ptr<file::WriterOptions>)>			MaterialWriterFunction;
+			typedef std::function<bool(std::shared_ptr<geometry::Geometry>)>			GeometryTestFunc;
 
 		private:
 			std::unordered_map<AbsTexturePtr, uint>							_textureDependencies;
@@ -57,9 +59,12 @@ namespace minko
 			std::shared_ptr<Options>										_options;
 			std::shared_ptr<scene::Node>									_loadedRoot;
 
-			static GeometryWriterFunction		_geometryWriteFunction;
-			static TextureWriterFunction		_textureWriteFunction;
-			static MaterialWriterFunction		_materialWriteFunction;
+			static std::unordered_map<uint, GeometryWriterFunction>			_geometryWriteFunctions;
+			static std::unordered_map<uint, GeometryTestFunc>				_geometryTestFunctions;
+
+			static TextureWriterFunction									_textureWriteFunction;
+			static MaterialWriterFunction									_materialWriteFunction;
+
 
 		public:
 			inline static
@@ -176,12 +181,13 @@ namespace minko
 
 			static
 			SerializedAsset
-			serializeGeometry(std::shared_ptr<file::Dependency>		dependecies,
-							  std::shared_ptr<file::AssetLibrary>	assetLibrary,
-							  std::shared_ptr<geometry::Geometry>	geometry,
-							  uint									resourceId,
-							  std::shared_ptr<file::Options>		options,
-                              std::shared_ptr<file::WriterOptions>  writerOptions);
+			serializeGeometry(std::shared_ptr<file::Dependency>			dependencies,
+							  std::shared_ptr<file::AssetLibrary>		assetLibrary,
+							  std::shared_ptr<geometry::Geometry>		geometry,
+							  uint										resourceId,
+							  std::shared_ptr<file::Options>			options,
+                              std::shared_ptr<file::WriterOptions>		writerOptions,
+							  std::vector<Dependency::SerializedAsset>&	includeDependencies);
 
 			static
 			SerializedAsset
@@ -217,9 +223,10 @@ namespace minko
 
 			static
 			void
-			setGeometryFunction(GeometryWriterFunction geometryFunc)
+			setGeometryFunction(GeometryWriterFunction geometryFunc, GeometryTestFunc testFunc, uint priority)
 			{
-				_geometryWriteFunction = geometryFunc;
+				_geometryTestFunctions[priority]	= testFunc;
+				_geometryWriteFunctions[priority]	= geometryFunc;
 			}
 
 		private:

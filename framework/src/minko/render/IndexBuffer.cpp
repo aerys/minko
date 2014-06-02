@@ -30,7 +30,10 @@ void
 IndexBuffer::upload(uint	offset,
 					int		count)
 {
-	assert(!_data.empty() && count <= (int)_data.size());
+	if (_data.empty())
+		return;
+	
+	assert(count <= (int)_data.size());
 
 	if (_id == -1)
     	_id = _context->createIndexBuffer(_data.size());
@@ -60,7 +63,7 @@ IndexBuffer::dispose()
 
     disposeData();
 
-	//_changed->execute(shared_from_this());
+	_changed->execute(shared_from_this());
 }
 
 void IndexBuffer::disposeData()

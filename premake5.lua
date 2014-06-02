@@ -117,6 +117,8 @@ solution "minko"
 		include 'example/http'
 		include 'example/joystick'
 		include 'example/flares'
+		include 'example/hologram'
+		include 'example/water'
 	end
 
 	-- test

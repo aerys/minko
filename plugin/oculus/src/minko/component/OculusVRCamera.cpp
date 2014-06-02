@@ -83,11 +83,17 @@ void
 OculusVRCamera::initialize()
 {
 	_targetAddedSlot = targetAdded()->connect(std::bind(
-		&OculusVRCamera::targetAddedHandler, shared_from_this(), std::placeholders::_1, std::placeholders::_2
+		&OculusVRCamera::targetAddedHandler, 
+		std::static_pointer_cast<OculusVRCamera>(shared_from_this()), 
+		std::placeholders::_1, 
+		std::placeholders::_2
 	));
 
 	_targetRemovedSlot = targetRemoved()->connect(std::bind(
-		&OculusVRCamera::targetRemovedHandler, shared_from_this(), std::placeholders::_1, std::placeholders::_2
+		&OculusVRCamera::targetRemovedHandler, 
+		std::static_pointer_cast<OculusVRCamera>(shared_from_this()), 
+		std::placeholders::_1, 
+		std::placeholders::_2
 	));
 
 	initializeOVRDevice();
@@ -101,7 +107,7 @@ OculusVRCamera::targetAddedHandler(AbsCmpPtr component, NodePtr target)
 
 	_addedSlot = target->added()->connect(std::bind(
 		&OculusVRCamera::addedHandler,
-		shared_from_this(),
+		std::static_pointer_cast<OculusVRCamera>(shared_from_this()),
 		std::placeholders::_1,
 		std::placeholders::_2,
 		std::placeholders::_3
@@ -109,7 +115,7 @@ OculusVRCamera::targetAddedHandler(AbsCmpPtr component, NodePtr target)
 
 	_removedSlot = target->removed()->connect(std::bind(
 		&OculusVRCamera::removedHandler,
-		shared_from_this(),
+		std::static_pointer_cast<OculusVRCamera>(shared_from_this()),
 		std::placeholders::_1,
 		std::placeholders::_2,
 		std::placeholders::_3
@@ -117,7 +123,7 @@ OculusVRCamera::targetAddedHandler(AbsCmpPtr component, NodePtr target)
 
 	_targetComponentAddedHandler = target->componentAdded()->connect(std::bind(
 		&OculusVRCamera::targetComponentAddedHandler,
-		shared_from_this(),
+		std::static_pointer_cast<OculusVRCamera>(shared_from_this()),
 		std::placeholders::_1,
 		std::placeholders::_2,
 		std::placeholders::_3
@@ -125,7 +131,7 @@ OculusVRCamera::targetAddedHandler(AbsCmpPtr component, NodePtr target)
 
 	_targetComponentRemovedHandler = target->componentRemoved()->connect(std::bind(
 		&OculusVRCamera::targetComponentRemovedHandler,
-		shared_from_this(),
+		std::static_pointer_cast<OculusVRCamera>(shared_from_this()),
 		std::placeholders::_1,
 		std::placeholders::_2,
 		std::placeholders::_3
@@ -409,7 +415,7 @@ OculusVRCamera::setSceneManager(SceneManager::Ptr sceneManager)
 
 	_renderEndSlot = sceneManager->renderingEnd()->connect(std::bind(
 		&OculusVRCamera::renderEndHandler,
-		shared_from_this(),
+		std::static_pointer_cast<OculusVRCamera>(shared_from_this()),
 		std::placeholders::_1,
 		std::placeholders::_2,
 		std::placeholders::_3

@@ -63,20 +63,20 @@ int main(int argc, char** argv)
 
     defaultLoader->options()
     	->generateMipmaps(true)
-    	->registerParser<file::PNGParser>("png");
+    	->registerParser<file::PNGParser>("png")
+		->registerParser<file::SceneParser>("scene");
 
     auto fxComplete = fxLoader->complete()->connect([&](file::Loader::Ptr loader)
 	{
-	    defaultLoader->options()->effect(sceneManager->assets()->effect("effect/Phong.effect"));		
+	    defaultLoader->options()->effect(sceneManager->assets()->effect("effect/Phong.effect"));
+		defaultLoader->options()->disposeTextureAfterLoading(false);
+		defaultLoader->queue(MODEL_FILENAME);
 		defaultLoader->load();
 	});
 
 	sceneManager->assets()
 		->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()))
 		->geometry("sphere", geometry::SphereGeometry::create(sceneManager->assets()->context(), 20, 20));
-
-	defaultLoader->options()->registerParser<file::SceneParser>("scene");
-	defaultLoader->queue(MODEL_FILENAME);
 
 	auto root = scene::Node::create("root")
 		->addComponent(sceneManager);

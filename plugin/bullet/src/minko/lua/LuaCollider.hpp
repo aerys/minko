@@ -71,7 +71,7 @@ namespace minko
 						.methodWrapper("setCollisionGroup",				&LuaCollider::setCollisionGroupWrapper)
 						.methodWrapper("getCollisionMask",				&LuaCollider::getCollisionMaskWrapper)
 						.methodWrapper("setCollisionMask",				&LuaCollider::setCollisionMaskWrapper)
-						.method("setTriggerCollisions",					static_cast<Collider::Ptr(Collider::*)(bool)>						(&Collider::triggerCollisions))
+						.method("setTriggerCollisions",					static_cast<Collider::Ptr (Collider::*)(bool)>						(&Collider::triggerCollisions))
 						.methodWrapper("getTriggerCollisions",			&LuaCollider::getTriggerCollisionsWrapper)
 						.methodWrapper("getNode",						&LuaCollider::getNodeWrapper)
 						;
@@ -137,35 +137,7 @@ namespace minko
 				{
 					return collider->canSleep(value);
 				}
-
-				static
-				int
-				getCollisionMaskWrapper(bullet::Collider::Ptr collider)
-				{
-					return collider->collisionMask();
-				}
-
-				static
-				bullet::Collider::Ptr
-				setCollisionMaskWrapper(bullet::Collider::Ptr collider, int value)
-				{
-					return collider->collisionMask(short(value));
-				}
-
-				static
-				int
-				getCollisionGroupWrapper(bullet::Collider::Ptr collider)
-				{
-					return collider->collisionGroup();
-				}
-
-				static
-				bullet::Collider::Ptr
-				setCollisionGroupWrapper(bullet::Collider::Ptr collider, int value)
-				{
-					return collider->collisionGroup(short(value));
-				}
-
+				
 				static
 				bool
 				getTriggerCollisionsWrapper(bullet::Collider::Ptr collider)
@@ -178,6 +150,41 @@ namespace minko
 				getNodeWrapper(bullet::Collider::Ptr collider)
 				{
 					return collider->target();
+				}
+
+				static
+				Layouts
+				getCollisionGroupWrapper(bullet::Collider::Ptr collider)
+				{
+					return collider && collider->target()
+						? collider->target()->layouts()
+						: scene::Layout::Mask::NOTHING;
+				}
+
+				static
+				bullet::Collider::Ptr
+				setCollisionGroupWrapper(bullet::Collider::Ptr collider, Layouts value)
+				{
+					if (collider && collider->target())
+						collider->target()->layouts(value);
+
+					return collider;
+				}
+
+				static
+				Layouts
+				getCollisionMaskWrapper(bullet::Collider::Ptr collider)
+				{
+					return collider->layoutMask();
+				}
+
+				static
+				bullet::Collider::Ptr
+				setCollisionMaskWrapper(bullet::Collider::Ptr collider, Layouts value)
+				{
+					collider->layoutMask(value);
+
+					return collider;
 				}
 			};
 		}

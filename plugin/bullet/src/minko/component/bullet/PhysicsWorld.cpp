@@ -59,7 +59,8 @@ bullet::PhysicsWorld::PhysicsWorld():
 	_componentAddedOrRemovedSlot(nullptr),
 	_addedOrRemovedSlot(nullptr),
     _colliderNodeLayoutChangedSlot(),
-    _colliderPropertiesChangedSlot()
+    _colliderPropertiesChangedSlot(),
+	_colliderLayoutMaskChangedSlot()
 {
 }
 
@@ -82,14 +83,14 @@ bullet::PhysicsWorld::initialize()
 
 	_targetAddedSlot	= targetAdded()->connect(std::bind(
 		&bullet::PhysicsWorld::targetAddedHandler,
-		shared_from_this(),
+		std::static_pointer_cast<PhysicsWorld>(shared_from_this()),
 		std::placeholders::_1,
 		std::placeholders::_2
 	));
 
 	_targetRemovedSlot	= targetRemoved()->connect(std::bind(
 		&bullet::PhysicsWorld::targetRemovedHandler,
-		shared_from_this(),
+		std::static_pointer_cast<PhysicsWorld>(shared_from_this()),
 		std::placeholders::_1,
 		std::placeholders::_2
 	));
@@ -121,6 +122,7 @@ bullet::PhysicsWorld::targetRemovedHandler(AbstractComponent::Ptr	controller,
 	_uidToCollider.clear();
 	_colliderNodeLayoutChangedSlot.clear();
 	_colliderPropertiesChangedSlot.clear();
+	_colliderLayoutMaskChangedSlot.clear();
 }
 
 void
@@ -129,11 +131,13 @@ bullet::PhysicsWorld::setSceneManager(std::shared_ptr<SceneManager> sceneManager
 	if (sceneManager != _sceneManager || (!_componentAddedOrRemovedSlot && !_addedOrRemovedSlot))
 	{
 		auto target = targets()[0];
-		auto componentCallback = [&](NodePtr node, NodePtr target, AbsCtrlPtr cmp)
+
+		auto componentCallback = [&](Node::Ptr node, Node::Ptr target, AbstractComponent::Ptr cmp)
 		{
 			setSceneManager(target->root()->component<SceneManager>());
 		};
-		auto nodeCallback = [&](NodePtr node, NodePtr target, NodePtr ancestor)
+
+		auto nodeCallback = [&](Node::Ptr node, Node::Ptr target, Node::Ptr ancestor)
 		{
 			setSceneManager(target->root()->component<SceneManager>());
 		};
@@ -141,11 +145,21 @@ bullet::PhysicsWorld::setSceneManager(std::shared_ptr<SceneManager> sceneManager
 		if (sceneManager)
 		{
 			_sceneManager = sceneManager;
+
 			_frameBeginSlot = sceneManager->frameBegin()->connect(std::bind(
-				&PhysicsWorld::frameBeginHandler, shared_from_this(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
+				&PhysicsWorld::frameBeginHandler, 
+				std::static_pointer_cast<PhysicsWorld>(shared_from_this()), 
+				std::placeholders::_1, 
+				std::placeholders::_2, 
+				std::placeholders::_3
 			));
+
 			_frameEndSlot = sceneManager->frameEnd()->connect(std::bind(
-				&PhysicsWorld::frameEndHandler, shared_from_this(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
+				&PhysicsWorld::frameEndHandler, 
+				std::static_pointer_cast<PhysicsWorld>(shared_from_this()), 
+				std::placeholders::_1, 
+				std::placeholders::_2, 
+				std::placeholders::_3
 			));
 
 			_componentAddedOrRemovedSlot = target->componentRemoved()->connect(componentCallback);
@@ -187,14 +201,15 @@ bullet::PhysicsWorld::addChild(Collider::Ptr collider)
 	_colliderMap[collider]			= bulletCollider;
 	_colliderReverseMap[rigidBody]	= collider;
 
-	_colliderPropertiesChangedSlot[collider] = collider->propertiesChanged()->connect([=](Collider::Ptr){ updateColliderProperties(collider); });
 	_colliderNodeLayoutChangedSlot[collider] = collider->target()->layoutsChanged()->connect([=](Node::Ptr, Node::Ptr){ updateColliderNodeProperties(collider); });
+	_colliderPropertiesChangedSlot[collider] = collider->propertiesChanged()->connect([=](Collider::Ptr){ updateColliderProperties(collider); });
+	_colliderLayoutMaskChangedSlot[collider] = collider->layoutMaskChanged()->connect([=](AbstractComponent::Ptr){ updateColliderLayoutMask(collider); });
 
 	std::dynamic_pointer_cast<btDiscreteDynamicsWorld>(_bulletDynamicsWorld)
 		->addRigidBody(
             rigidBody,
-            collider->collisionGroup(),  //short(data->node()->layouts() & ((1<<16) - 1)), // FIXME
-            collider->collisionMask()
+            short(collider->target()->layouts()	& ((1<<16) - 1)),
+            short(collider->layoutMask()		& ((1<<16) - 1))
          );
 
 	updateColliderProperties(collider);
@@ -238,11 +253,23 @@ bullet::PhysicsWorld::updateColliderProperties(Collider::Ptr collider)
 		rigidBody->setAngularFactor(convert(collider->angularFactor()));
 		rigidBody->setSleepingThresholds(collider->linearSleepingThreshold(), collider->angularSleepingThreshold());
 		rigidBody->setDamping(collider->linearDamping(), collider->angularDamping());
-
-        //proxy->m_collisionFilterGroup   = short(data->node()->layouts() & ((1<<16) - 1)); // FIXME
-        rigidBody->getBroadphaseProxy()->m_collisionFilterGroup	= collider->collisionGroup();
-        rigidBody->getBroadphaseProxy()->m_collisionFilterMask	= collider->collisionMask();
     }
+}
+
+void
+bullet::PhysicsWorld::updateColliderLayoutMask(Collider::Ptr collider)
+{
+	if (collider == nullptr)
+		return;
+
+    auto foundColliderIt	= _colliderMap.find(collider);
+	if (foundColliderIt != _colliderMap.end())
+    {
+        auto rigidBody = foundColliderIt->second->rigidBody();
+        assert(rigidBody && rigidBody->getBroadphaseProxy());
+
+        rigidBody->getBroadphaseProxy()->m_collisionFilterMask	= short(collider->layoutMask() & ((1<<16) - 1));
+	}
 }
 
 void
@@ -254,8 +281,10 @@ bullet::PhysicsWorld::updateColliderNodeProperties(Collider::Ptr collider)
     auto foundColliderIt	= _colliderMap.find(collider);
 	if (foundColliderIt != _colliderMap.end())
     {
-        auto rigidBody = foundColliderIt->second->rigidBody();
-        //proxy->m_collisionFilterGroup   = short(data->node()->layouts() & ((1<<16) - 1)); // FIXME
+        auto rigidBody	= foundColliderIt->second->rigidBody();
+		assert(rigidBody && rigidBody->getBroadphaseProxy());
+
+		rigidBody->getBroadphaseProxy()->m_collisionFilterGroup = short(collider->target()->layouts() & ((1<<16) - 1));
     }
 }
 
@@ -270,6 +299,9 @@ bullet::PhysicsWorld::removeChild(Collider::Ptr collider)
 
 	if (_colliderPropertiesChangedSlot.count(collider))
 		_colliderPropertiesChangedSlot.erase(collider);
+
+	if (_colliderLayoutMaskChangedSlot.count(collider))
+		_colliderLayoutMaskChangedSlot.erase(collider);
 
 	auto bulletColliderIt = _colliderMap.find(collider);
 	if (bulletColliderIt != _colliderMap.end())

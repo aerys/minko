@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "msgpack.hpp"
 #include "minko/file/AssetLibrary.hpp"
 #include "minko/file/Dependency.hpp"
+#include "minko/file/WriterOptions.hpp"
 
 namespace minko
 {
@@ -37,10 +38,17 @@ namespace minko
 			typedef std::shared_ptr<GeometryWriter> Ptr;
 			typedef std::function<std::string(std::shared_ptr<render::IndexBuffer>)>	IndexBufferWriteFunc;
 			typedef std::function<std::string(std::shared_ptr<render::VertexBuffer>)>	VertexBufferWriteFunc;
+			typedef std::function<bool(std::shared_ptr<geometry::Geometry>)>			GeometryTestFunc;
 
+		private:
+			typedef std::shared_ptr<file::WriterOptions>																		WriterOptionsPtr;
+			
 		private :
-			static IndexBufferWriteFunc		indexBufferWriterFunction;
-			static VertexBufferWriteFunc	vertexBufferWriterFunction;
+			static std::unordered_map<uint, IndexBufferWriteFunc>		indexBufferWriterFunctions;
+			static std::unordered_map<uint, VertexBufferWriteFunc>		vertexBufferWriterFunctions;
+
+			static std::unordered_map<uint, GeometryTestFunc>			indexBufferTestFunctions;
+			static std::unordered_map<uint, GeometryTestFunc>			vertexBufferTestFunctions;
 
 		public:
 			inline static
@@ -54,46 +62,33 @@ namespace minko
 			embed(std::shared_ptr<AssetLibrary>		assetLibrary,
 				  std::shared_ptr<Options>			options,
 				  Dependency::Ptr					dependency,
-                  std::shared_ptr<WriterOptions>    writerOptions)
+				  WriterOptionsPtr					writerOptions);
+
+			inline
+			static
+			void
+			registerIndexBufferWriterFunction(IndexBufferWriteFunc f, GeometryTestFunc testFunc, uint functionId)
 			{
-				geometry::Geometry::Ptr		geometry = data();
-				uint						metaByte = computeMetaByte(geometry);
-				const std::string&			serializedIndexBuffer = indexBufferWriterFunction(geometry->indices());
-				std::vector<std::string>	serializedVertexBuffers;
-				std::stringstream			sbuf;
-
-				for (std::shared_ptr<render::VertexBuffer> vertexBuffer : geometry->vertexBuffers())
-					serializedVertexBuffers.push_back(vertexBufferWriterFunction(vertexBuffer));
-
-				msgpack::type::tuple<unsigned char, std::string, std::string, std::vector<std::string>> res(
-					metaByte,
-					assetLibrary->geometryName(geometry),
-					serializedIndexBuffer,
-					serializedVertexBuffers);
-				msgpack::pack(sbuf, res);
-
-				return sbuf.str();
+				indexBufferWriterFunctions[functionId]	= f;
+				indexBufferTestFunctions[functionId]	= testFunc;
 			}
 
 			inline
 			static
 			void
-			registerIndexBufferWriterFunction(IndexBufferWriteFunc f)
+			registerVertexBufferWriterFunction(VertexBufferWriteFunc f, GeometryTestFunc testFunc, uint functionId)
 			{
-				indexBufferWriterFunction = f;
-			}
-
-			inline
-			static
-			void
-			registerVertexBufferWriterFunction(VertexBufferWriteFunc f)
-			{
-				vertexBufferWriterFunction = f;
+				vertexBufferWriterFunctions[functionId] = f;
+				vertexBufferTestFunctions[functionId]	= testFunc;
 			}
 
 			static
 			std::string
 			serializeIndexStream(std::shared_ptr<render::IndexBuffer> indexBuffer);
+
+			static
+			bool
+			indexBufferFitCharCompression(std::shared_ptr<geometry::Geometry> geometry);
 
 		private:
 
@@ -101,7 +96,10 @@ namespace minko
 			initialize();
 
 			unsigned char
-			computeMetaByte(std::shared_ptr<geometry::Geometry> geometry);
+			computeMetaByte(std::shared_ptr<geometry::Geometry> geometry,
+							uint&								indexBufferFunctionId,
+							uint&								vertexBufferFunctionId,
+							WriterOptionsPtr					writerOptions);
 
 
 			static

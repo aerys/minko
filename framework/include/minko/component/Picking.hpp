@@ -29,8 +29,7 @@ namespace minko
 	namespace component
 	{
 		class Picking :
-			public AbstractComponent,
-			public std::enable_shared_from_this<Picking>
+			public AbstractComponent
 		{
 		public:
 			typedef std::shared_ptr<Picking>					Ptr;
@@ -82,6 +81,10 @@ namespace minko
 			Signal<MousePtr, int, int>::Slot			_mouseMoveSlot;
 			Signal<MousePtr>::Slot						_mouseRightClickSlot;
 			Signal<MousePtr>::Slot						_mouseLeftClickSlot;
+
+			bool										_executeMoveHandler;
+			bool										_executeRightClickHandler;
+			bool										_executeLeftClickHandler;
 
 		public:
 			inline static

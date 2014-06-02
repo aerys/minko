@@ -4,10 +4,11 @@
 	precision mediump float;
 #endif
 
-#pragma include("../Reflection/Reflection.function.glsl")
 #pragma include("Phong.function.glsl")
 #pragma include("Envmap.function.glsl")
+#pragma include("Fog.function.glsl")
 #pragma include("Water.function.glsl")
+#pragma include("../Reflection/Reflection.function.glsl")
 
 #ifdef PRECOMPUTED_AMBIENT
 	uniform vec3 sumAmbients;
@@ -92,6 +93,9 @@ uniform float 		flowMapOffset2;
 uniform float		reflectivity;
 uniform float		dudvSpeed;
 uniform float		dudvFactor;
+uniform float		fresnelMultiplier;
+uniform float		fresnelPow;
+uniform float		normalMultiplier;
 
 varying vec4		vertexScreenPosition;
 varying vec3 		vertexPosition;
@@ -101,13 +105,18 @@ varying vec3 		vertexTangent;
 
 void main(void)
 {
+	//float dotNormal			= 0.0;
 	vec4 diffuse 			= diffuseColor;
 	vec4 specular 			= specularColor;
 	float specularAlpha		= diffuse.a;
+	float fresnelAccum		= 0.0;
+	float fresnelMax		= 0.001;
+	//float fogPercent		= fog_Percent(gl_FragCoord);
 
 	#ifdef DIFFUSE_MAP
 		diffuse = texture2D(diffuseMap, vertexUV);
 	#endif // DIFFUSE_MAP
+
 
 	vec3	ambientAccum	= vec3(0.0);
 	vec3	diffuseAccum	= vec3(0.0);
@@ -158,32 +167,33 @@ void main(void)
 			mat3 tangentToWorldMatrix 	= phong_getTangentToWorldSpaceMatrix(normalVector, vertexTangent);
 
 			#ifdef FLOW_MAP
-				float noiseOffset 			= 0.f;
+				float noiseOffset 			= 0.0;
 
 				#ifdef NOISE_MAP
 				noiseOffset = texture2D(noiseMap, vertexUV).r;
 				#endif
-				vec2 flowmap 				= (texture2D(flowMap, vertexUV * flowMapScale).rg * 2.0f - 1.f);
+				vec2 flowmap 				= (texture2D(flowMap, vertexUV * flowMapScale).rg * 2.0 - 1.0);
 
-				float phase0 				= noiseOffset * 0.5f + flowMapOffset1;
-				float phase1 				= noiseOffset * 0.5f + flowMapOffset2;
+				float phase0 				= noiseOffset * 0.5 + flowMapOffset1;
+				float phase1 				= noiseOffset * 0.5 + flowMapOffset2;
 
-				vec3 normalSample1			= 2.0f * texture2D(normalMap, vertexUV * normalMapScale + flowmap * phase0).xyz - 1.f;
-				vec3 normalSample2			= 2.0f * texture2D(normalMap, vertexUV * normalMapScale + flowmap * phase1).xyz - 1.f;
+				vec3 normalSample1			= 2.0 * texture2D(normalMap, vertexUV * normalMapScale + flowmap * phase0).xyz - 1.0;
+				vec3 normalSample2			= 2.0 * texture2D(normalMap, vertexUV * normalMapScale + flowmap * phase1).xyz - 1.0;
 
-				float halfCycle				= flowMapCycle / 2.f;
+				float halfCycle				= flowMapCycle / 2.0;
 				float f 					= abs(halfCycle - flowMapOffset1) / halfCycle;
 
 				normalVector 				= tangentToWorldMatrix * normalize(mix(normalSample1, normalSample2, f));
 			#else
 				vec2 uvOffset				= vec2(frameId * normalSpeed, frameId * normalSpeed);
-				vec3 normalSample1			= 2.0f * texture2D(normalMap, vertexUV * normalMapScale + uvOffset).xyz - 1.f;
-				vec3 normalSample2			= 2.0f * texture2D(normalMap, vertexUV * normalMapScale - uvOffset).xyz - 1.f;
+				vec3 normalSample1			= 2.0 * texture2D(normalMap, vertexUV * normalMapScale + uvOffset).xyz - 1.0;
+				vec3 normalSample2			= 2.0 * texture2D(normalMap, vertexUV * normalMapScale + uvOffset * vec2(-0.71, 0.91)).xyz - 1.0;
 
-				normalVector				= tangentToWorldMatrix * normalize((normalSample1 + normalSample2) / 2); // bring normal from tangent-space normal to world-space
+				normalVector				= tangentToWorldMatrix * normalize(mix(normalSample1, normalSample2, 0.5)); // bring normal from tangent-space normal to world-space
 			#endif
 		#endif // NORMAL_MAP
-				
+		
+
 		#ifdef NUM_DIRECTIONAL_LIGHTS
 		//---------------------------
 		for (int i = 0; i < NUM_DIRECTIONAL_LIGHTS; ++i)
@@ -214,7 +224,11 @@ void main(void)
 					* lightSpecularCoeff;
 				specularAlpha += phong_specularReflection(normalVector, lightDirection, eyeVector, shininess) * lightSpecularCoeff;
 			#endif // SHININESS
+		
+			fresnelAccum += fresnelFactor(vec3(0.0, 1.0, 0.0), eyeVector, fresnelMultiplier, 0.0, fresnelPow) * lightDiffuseCoeff;
+			fresnelMax   += lightDiffuseCoeff;
 		}
+
 		#endif // NUM_DIRECTIONAL_LIGHTS
 		
 				#ifdef NUM_POINT_LIGHTS
@@ -324,20 +338,25 @@ void main(void)
 
 	// Final blend of ambient, diffuse, and specular parts
 	//----------------------------------------------------
+
 	vec3 phongColor	= diffuse.rgb * (ambientAccum + diffuseAccum);
 	
 	#ifdef REFLECTION_MAP
 		#ifdef DUDV_MAP
-			vec2 dudvOffset = ((1.f - vertexUV) + (frameId * dudvSpeed));
+			vec2 dudvOffset = ((1.0 - vertexUV) + (frameId * dudvSpeed));
 
-			phongColor = mix(phongColor, getDuDvReflectionColor(vertexScreenPosition, vertexUV.xy, reflectionMap, texture2D(dudvMap, dudvOffset).rb * dudvFactor).rgb, reflectivity);
+			phongColor = mix(phongColor, getDuDvReflectionColor(vertexScreenPosition, vertexUV.xy, reflectionMap, texture2D(dudvMap, dudvOffset).rb * dudvFactor).rgb, max(reflectivity, fresnelAccum / fresnelMax));
 		#else
-			phongColor = mix(phongColor, getReflectionColor(vertexScreenPosition, vertexUV, reflectionMap).rgb, reflectivity);
+			phongColor = mix(phongColor, getReflectionColor(vertexScreenPosition, vertexUV, reflectionMap).rgb, max(reflectivity, fresnelAccum / fresnelMax));
 		#endif
 	#endif
 
 	vec3 phong		= phongColor + specularAccum;
 	gl_FragColor	= vec4(phong.rgb, specularAlpha);
+	gl_FragColor 	= fog_sampleFog(gl_FragColor, gl_FragCoord);
+
+	//gl_FragColor = vec4(vertexTangent / 2.0 + 0.5, 1.0);
+	//gl_FragColor = vec4(normalize(vertexNormal) / 2.0 + 0.5, 1.0);
 }
 
 #endif // FRAGMENT_SHADER

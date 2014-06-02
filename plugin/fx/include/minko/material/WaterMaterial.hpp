@@ -87,6 +87,24 @@ namespace minko
 			shininess() const;
 
 			Ptr
+			fresnelMultiplier(float);
+
+			float
+			fresnelMultiplier() const;
+
+			Ptr
+			normalMultiplier(float);
+
+			float
+			normalMultiplier() const;
+
+			Ptr
+			fresnelPow(float);
+
+			float
+			fresnelPow() const;
+
+			Ptr
 			normalMap(AbsTexturePtr);
 
 			TexturePtr
@@ -109,7 +127,7 @@ namespace minko
 
 			TexturePtr
 			dudvMap() const;
-		
+
 			Ptr
 			dudvFactor(float);
 

@@ -28,7 +28,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::file;
 
-Dependency::GeometryWriterFunction	Dependency::_geometryWriteFunction;
+std::unordered_map<uint, Dependency::GeometryTestFunc>			Dependency::_geometryTestFunctions;
+std::unordered_map<uint, Dependency::GeometryWriterFunction>	Dependency::_geometryWriteFunctions;
 Dependency::TextureWriterFunction	Dependency::_textureWriteFunction;
 Dependency::MaterialWriterFunction	Dependency::_materialWriteFunction;
 
@@ -36,16 +37,19 @@ Dependency::Dependency()
 {
 	_currentId = 0;
 
-	if (_geometryWriteFunction == nullptr)
-	{
-		_geometryWriteFunction = std::bind(&Dependency::serializeGeometry,
-			std::placeholders::_1,
-			std::placeholders::_2,
-			std::placeholders::_3,
-			std::placeholders::_4,
-            std::placeholders::_5,
-            std::placeholders::_6);
-    }
+	setGeometryFunction(std::bind(&Dependency::serializeGeometry,
+		std::placeholders::_1,
+		std::placeholders::_2,
+		std::placeholders::_3,
+		std::placeholders::_4,
+		std::placeholders::_5,
+		std::placeholders::_6,
+		std::placeholders::_7),
+		[=](std::shared_ptr<geometry::Geometry> geometry) -> bool
+			{
+				return true;
+			},
+		0);
 
     if (_textureWriteFunction == nullptr)
     {
@@ -230,12 +234,13 @@ Dependency::effectReferenceExist(uint referenceId)
 }
 
 Dependency::SerializedAsset
-Dependency::serializeGeometry(std::shared_ptr<Dependency>			dependency,
-							  std::shared_ptr<file::AssetLibrary>	assetLibrary,
-							  std::shared_ptr<geometry::Geometry>	geometry,
-							  uint									resourceId,
-							  std::shared_ptr<file::Options>		options,
-                              std::shared_ptr<file::WriterOptions>  writerOptions)
+Dependency::serializeGeometry(std::shared_ptr<Dependency>				dependency,
+							  std::shared_ptr<file::AssetLibrary>		assetLibrary,
+							  std::shared_ptr<geometry::Geometry>		geometry,
+							  uint										resourceId,
+							  std::shared_ptr<file::Options>			options,
+                              std::shared_ptr<file::WriterOptions>		writerOptions,
+							  std::vector<Dependency::SerializedAsset>&	includeDependecies)
 {
 	GeometryWriter::Ptr         geometryWriter = GeometryWriter::create();
     serialize::AssetType        assetType;
@@ -247,7 +252,7 @@ Dependency::serializeGeometry(std::shared_ptr<Dependency>			dependency,
     {
         assetType = serialize::AssetType::EMBED_GEOMETRY_ASSET;
 
-        content = geometryWriter->embedAll(assetLibrary, options, writerOptions);
+		content = geometryWriter->embedAll(assetLibrary, options, writerOptions, includeDependecies);
     }
     else
     {
@@ -257,7 +262,7 @@ Dependency::serializeGeometry(std::shared_ptr<Dependency>			dependency,
 
         auto completeFilename = writerOptions->outputAssetUriFunction()(filename);
 
-        geometryWriter->write(completeFilename, assetLibrary, options, writerOptions);
+		geometryWriter->write(completeFilename, assetLibrary, options, writerOptions, includeDependecies);
 
         content = filename;
     }
@@ -374,12 +379,21 @@ Dependency::serialize(std::shared_ptr<file::AssetLibrary>       assetLibrary,
 
     for (const auto& itGeometry : _geometryDependencies)
 	{
-		auto res = _geometryWriteFunction(shared_from_this(),
-                                          assetLibrary,
-                                          itGeometry.first,
-                                          itGeometry.second,
-                                          options,
-                                          writerOptions);
+		auto maxPriority = 0;
+
+		for (auto testGeomFunc : _geometryTestFunctions)
+			if (testGeomFunc.second(itGeometry.first) && maxPriority < testGeomFunc.first)
+				maxPriority = testGeomFunc.first;
+
+		std::vector<SerializedAsset> includeDependencies;
+
+		auto res = _geometryWriteFunctions[maxPriority](shared_from_this(),
+														assetLibrary,
+														itGeometry.first,
+														itGeometry.second,
+														options,
+														writerOptions,
+														includeDependencies);
 
 		serializedAsset.push_back(res);
 	}

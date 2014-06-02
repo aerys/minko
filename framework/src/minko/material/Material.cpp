@@ -23,7 +23,7 @@ using namespace minko;
 using namespace minko::material;
 
 Material::Material() :
-	data::ArrayProvider("material", 0)
+	data::ArrayProvider("material")
 {
 	
 }

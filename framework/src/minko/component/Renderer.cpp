@@ -30,6 +30,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/SceneManager.hpp"
 #include "minko/file/AssetLibrary.hpp"
 #include "minko/render/DrawCallPool.hpp"
+#include "minko/data/AbstractFilter.hpp"
+#include "minko/data/LightMaskFilter.hpp"
 
 using namespace minko;
 using namespace minko::component;
@@ -43,13 +45,24 @@ Renderer::Renderer(std::shared_ptr<render::AbstractTexture> renderTarget,
 				   EffectPtr								effect,
 				   float									priority) :
     _backgroundColor(0),
+    _viewportBox(),
+	_scissorBox(),
+	_enable(true),
 	_renderingBegin(Signal<Ptr>::create()),
 	_renderingEnd(Signal<Ptr>::create()),
 	_beforePresent(Signal<Ptr>::create()),
 	_surfaceDrawCalls(),
 	_surfaceTechniqueChangedSlot(),
 	_effect(effect),
-	_priority(priority)
+	_priority(priority),
+	_targetDataFilters(),
+	_rendererDataFilters(),
+	_rootDataFilters(),
+	_targetDataFilterChangedSlots(),
+	_rendererDataFilterChangedSlots(),
+	_rootDataFilterChangedSlots(),
+	_lightMaskFilter(data::LightMaskFilter::create()),
+	_filterChanged(Signal<Ptr, data::AbstractFilter::Ptr, data::BindingSource, SurfacePtr>::create())
 {
 	if (renderTarget)
 	{
@@ -61,26 +74,28 @@ Renderer::Renderer(std::shared_ptr<render::AbstractTexture> renderTarget,
 void
 Renderer::initialize()
 {
-	_drawCallPool = DrawCallPool::create(shared_from_this());
+	_drawCallPool = DrawCallPool::create(std::static_pointer_cast<Renderer>(shared_from_this()));
 
 	_targetAddedSlot = targetAdded()->connect(std::bind(
 		&Renderer::targetAddedHandler,
-		shared_from_this(),
+		std::static_pointer_cast<Renderer>(shared_from_this()),
 		std::placeholders::_1,
 		std::placeholders::_2
 	));	
 
 	_targetRemovedSlot = targetRemoved()->connect(std::bind(
 		&Renderer::targetRemovedHandler,
-		shared_from_this(),
+		std::static_pointer_cast<Renderer>(shared_from_this()),
 		std::placeholders::_1,
 		std::placeholders::_2
 	));
+
+	addFilter(_lightMaskFilter, data::BindingSource::ROOT);
 }
 
 void
-Renderer::targetAddedHandler(std::shared_ptr<AbstractComponent> ctrl,
-							 std::shared_ptr<Node> 			target)
+Renderer::targetAddedHandler(std::shared_ptr<AbstractComponent>,
+							 std::shared_ptr<Node> 				target)
 {
     // Comment due to reflection component
 	//if (target->components<Renderer>().size() > 1)
@@ -88,7 +103,7 @@ Renderer::targetAddedHandler(std::shared_ptr<AbstractComponent> ctrl,
 
 	_addedSlot = target->added()->connect(std::bind(
 		&Renderer::addedHandler,
-		shared_from_this(),
+		std::static_pointer_cast<Renderer>(shared_from_this()),
 		std::placeholders::_1,
 		std::placeholders::_2,
 		std::placeholders::_3
@@ -96,7 +111,7 @@ Renderer::targetAddedHandler(std::shared_ptr<AbstractComponent> ctrl,
 
 	_removedSlot = target->removed()->connect(std::bind(
 		&Renderer::removedHandler,
-		shared_from_this(),
+		std::static_pointer_cast<Renderer>(shared_from_this()),
 		std::placeholders::_1,
 		std::placeholders::_2,
 		std::placeholders::_3
@@ -106,13 +121,17 @@ Renderer::targetAddedHandler(std::shared_ptr<AbstractComponent> ctrl,
 }
 
 void
-Renderer::targetRemovedHandler(std::shared_ptr<AbstractComponent> 	ctrl,
+Renderer::targetRemovedHandler(std::shared_ptr<AbstractComponent>,
 							    std::shared_ptr<Node> 				target)
 {
 	_addedSlot = nullptr;
 	_removedSlot = nullptr;
 
 	removedHandler(target->root(), target, target->parent());
+
+	_targetDataFilters.clear();
+	_rendererDataFilters.clear();
+	_rootDataFilters.clear();
 }
 
 void
@@ -124,7 +143,7 @@ Renderer::addedHandler(std::shared_ptr<Node> node,
 
 	_rootDescendantAddedSlot = target->root()->added()->connect(std::bind(
 		&Renderer::rootDescendantAddedHandler,
-		shared_from_this(),
+		std::static_pointer_cast<Renderer>(shared_from_this()),
 		std::placeholders::_1,
 		std::placeholders::_2,
 		std::placeholders::_3
@@ -132,7 +151,7 @@ Renderer::addedHandler(std::shared_ptr<Node> node,
 
 	_rootDescendantRemovedSlot = target->root()->removed()->connect(std::bind(
 		&Renderer::rootDescendantRemovedHandler,
-		shared_from_this(),
+		std::static_pointer_cast<Renderer>(shared_from_this()),
 		std::placeholders::_1,
 		std::placeholders::_2,
 		std::placeholders::_3
@@ -140,7 +159,7 @@ Renderer::addedHandler(std::shared_ptr<Node> node,
 
 	_componentAddedSlot = target->root()->componentAdded()->connect(std::bind(
 		&Renderer::componentAddedHandler,
-		shared_from_this(),
+		std::static_pointer_cast<Renderer>(shared_from_this()),
 		std::placeholders::_1,
 		std::placeholders::_2,
 		std::placeholders::_3
@@ -148,11 +167,13 @@ Renderer::addedHandler(std::shared_ptr<Node> node,
 
 	_componentRemovedSlot = target->root()->componentRemoved()->connect(std::bind(
 		&Renderer::componentRemovedHandler,
-		shared_from_this(),
+		std::static_pointer_cast<Renderer>(shared_from_this()),
 		std::placeholders::_1,
 		std::placeholders::_2,
 		std::placeholders::_3
 	), 10.f);
+
+	_lightMaskFilter->root(target->root());
 
 	rootDescendantAddedHandler(nullptr, target->root(), nullptr);
 }
@@ -164,10 +185,10 @@ Renderer::removedHandler(std::shared_ptr<Node> node,
 {
 	findSceneManager();
 
-	_rootDescendantAddedSlot = nullptr;
-	_rootDescendantRemovedSlot = nullptr;
-	_componentAddedSlot = nullptr;
-	_componentRemovedSlot = nullptr;
+	_rootDescendantAddedSlot	= nullptr;
+	_rootDescendantRemovedSlot	= nullptr;
+	_componentAddedSlot			= nullptr;
+	_componentRemovedSlot		= nullptr;
 
 	rootDescendantRemovedHandler(nullptr, target->root(), nullptr);
 }
@@ -250,13 +271,31 @@ void
 Renderer::render(render::AbstractContext::Ptr	context, 
 				 render::AbstractTexture::Ptr	renderTarget)
 {
+	if (!_enable)
+		return;
+
 	_drawCalls = _drawCallPool->drawCalls();
 	
-	_renderingBegin->execute(shared_from_this());
+	_renderingBegin->execute(std::static_pointer_cast<Renderer>(shared_from_this()));
 
-	if (!renderTarget)
+	if (_renderTarget)
 		renderTarget = _renderTarget;
+        
+     bool bCustomViewport = false;
 
+	 if (_scissorBox.width >= 0 && _scissorBox.height >= 0)
+		 context->setScissorTest(true, _scissorBox);
+	 else
+		 context->setScissorTest(false, _scissorBox);
+	 
+     if (_viewportBox.width >= 0 && _viewportBox.height >= 0)
+     {
+         bCustomViewport = true;
+         context->configureViewport(_viewportBox.x, _viewportBox.y, _viewportBox.width, _viewportBox.height);
+	 }
+	 else
+		 context->configureViewport(0, 0, context->viewportWidth(), context->viewportHeight());
+	
 	context->clear(
 		((_backgroundColor >> 24) & 0xff) / 255.f,
 		((_backgroundColor >> 16) & 0xff) / 255.f,
@@ -265,13 +304,17 @@ Renderer::render(render::AbstractContext::Ptr	context,
 	);
 
 	for (auto& drawCall : _drawCalls)
-		drawCall->render(context, renderTarget);
+		if ((drawCall->layouts() & layoutMask()) != 0)
+			drawCall->render(context, renderTarget);
 
-	_beforePresent->execute(shared_from_this());
+    if (bCustomViewport)
+        context->setScissorTest(false, _viewportBox);
+
+	_beforePresent->execute(std::static_pointer_cast<Renderer>(shared_from_this()));
 
 	context->present();
 
-	_renderingEnd->execute(shared_from_this());
+	_renderingEnd->execute(std::static_pointer_cast<Renderer>(shared_from_this()));
 }
 
 void
@@ -302,7 +345,7 @@ Renderer::setSceneManager(std::shared_ptr<SceneManager> sceneManager)
 			_sceneManager = sceneManager;
 			_renderingBeginSlot = _sceneManager->renderingBegin()->connect(std::bind(
 				&Renderer::sceneManagerRenderingBeginHandler,
-				shared_from_this(),
+				std::static_pointer_cast<Renderer>(shared_from_this()),
 				std::placeholders::_1,
 				std::placeholders::_2,
 				std::placeholders::_3
@@ -322,4 +365,71 @@ Renderer::sceneManagerRenderingBeginHandler(std::shared_ptr<SceneManager>	sceneM
 										    AbstractTexture::Ptr			renderTarget)
 {
 	render(sceneManager->assets()->context(), renderTarget);
+}
+
+Renderer::Ptr
+Renderer::addFilter(data::AbstractFilter::Ptr	filter, 
+					data::BindingSource			source)
+{
+	if (filter)
+	{
+		auto& filters				= this->filtersRef(source);
+		auto& filterChangedSlots	= this->filterChangedSlotsRef(source);
+
+		if (filterChangedSlots.count(filter) == 0)
+		{
+			filters.insert(filter);
+			filterChangedSlots[filter] = filter->changed()->connect([=](AbsFilterPtr, SurfacePtr surface){
+				filterChangedHandler(filter, source, surface);
+			});
+		}
+	}
+
+	return std::static_pointer_cast<Renderer>(shared_from_this());
+}
+
+Renderer::Ptr
+Renderer::removeFilter(data::AbstractFilter::Ptr	filter, 
+					   data::BindingSource			source)
+{
+	if (filter)
+	{
+		auto& filters				= this->filtersRef(source);
+		auto& filterChangedSlots	= this->filterChangedSlotsRef(source);
+
+		auto foundFilterIt = filters.find(filter);
+		if (foundFilterIt != filters.end())
+		{
+			filters.erase(foundFilterIt);
+			filterChangedSlots.erase(filter);
+		}
+	}
+
+	return std::static_pointer_cast<Renderer>(shared_from_this());
+}
+
+Renderer::Ptr
+Renderer::setFilterSurface(Surface::Ptr surface)
+{
+	for (auto& f : _targetDataFilters)
+		f->currentSurface(surface);
+	for (auto& f : _rendererDataFilters)
+		f->currentSurface(surface);
+	for (auto& f : _rootDataFilters)
+		f->currentSurface(surface);
+
+	return std::static_pointer_cast<Renderer>(shared_from_this());
+}
+
+void
+Renderer::filterChangedHandler(data::AbstractFilter::Ptr	filter, 
+							   data::BindingSource			source,
+							   SurfacePtr					surface)
+{
+	_filterChanged->execute(
+		std::static_pointer_cast<Renderer>(shared_from_this()),
+		filter,
+		source,
+		surface
+	);
 }

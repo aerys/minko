@@ -22,15 +22,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Common.hpp"
 #include "minko/Signal.hpp"
 #include "minko/component/AbstractComponent.hpp"
-#include "minko/FXCommon.hpp"
+#include "minko/FxCommon.hpp"
 
 namespace minko
 {
 	namespace component
 	{
 		class Water :
-			public AbstractComponent,
-			public std::enable_shared_from_this<Water>
+			public AbstractComponent
 		{
 		public:
 			typedef std::shared_ptr<Water>	Ptr;

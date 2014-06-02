@@ -21,9 +21,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/data/ArrayProvider.hpp"
 #include "minko/data/Provider.hpp"
+#include "minko/data/AbstractFilter.hpp"
 
 using namespace minko;
 using namespace minko::data;
+
+uint Container::CONTAINER_ID = 0;
 
 Container::Container() :
 	std::enable_shared_from_this<Container>(),
@@ -36,7 +39,10 @@ Container::Container() :
 	_propReferenceChanged(),
 	_propertyAddedOrRemovedSlots(),
 	_providerValueChangedSlot(),
-	_providerReferenceChangedSlot()
+	_providerReferenceChangedSlot(),
+	_providerAdded(Signal<Ptr, Provider::Ptr>::create()),
+	_providerRemoved(Signal<Ptr, Provider::Ptr>::create()),
+	_containerId(CONTAINER_ID++)
 {
 }
 
@@ -80,6 +86,8 @@ Container::addProvider(Provider::Ptr provider)
 
 		for (auto property : provider->values())
 			providerPropertyAddedHandler(provider, property.first);
+
+		_providerAdded->execute(shared_from_this(), provider);
 	}
 }
 
@@ -87,6 +95,9 @@ void
 Container::removeProvider(Provider::Ptr provider)
 {
 	assertProviderExists(provider);
+
+	if (_providersToNumUse.find(provider) == _providersToNumUse.end())
+		return;
 
 	_providersToNumUse[provider]--;
 	if (_providersToNumUse[provider] == 0)
@@ -100,6 +111,9 @@ Container::removeProvider(Provider::Ptr provider)
 
 		_providers.erase(std::find(_providers.begin(), _providers.end(), provider));
 		_providerToIndex.erase(provider);
+		_providersToNumUse.erase(provider);
+
+		_providerRemoved->execute(shared_from_this(), provider);
 	}
 
 	/*
@@ -285,7 +299,6 @@ void
 Container::providerPropertyAddedHandler(std::shared_ptr<Provider> 	provider,
 										const std::string& 			propertyName)
 {	
-	
 	auto formatedPropertyName = formatPropertyName(provider, propertyName);
 
 	if (_propertyNameToProvider.count(formatedPropertyName) != 0)
@@ -395,4 +408,55 @@ Container::unformatPropertyName(ProviderPtr provider, const std::string& formatt
 	return formattedPropertyName.substr(pos1, pos2 - pos1);
 
 #endif // MINKO_NO_GLSL_STRUCT
+}
+
+Container::Ptr
+Container::filter(const std::set<data::AbstractFilter::Ptr>&	filters,
+				  Container::Ptr								output) const
+{
+	if (output == nullptr)
+		output = data::Container::create();
+
+	for (auto& p : _providers)
+	{
+		if (p == _arrayLengths)
+			continue;
+
+		auto arrayProvider = std::dynamic_pointer_cast<ArrayProvider>(p);
+
+		bool isProviderRelevant = true;
+		for (auto& f : filters)
+			if (!(*f)(p))
+			{
+				isProviderRelevant = false;
+				break;
+			}
+
+		if (isProviderRelevant && output->hasProvider(p) == false)
+		{
+			if (arrayProvider)
+				output->addProvider(arrayProvider);
+			else
+				output->addProvider(p);
+		}
+		else if (!isProviderRelevant && output->hasProvider(p))
+		{
+			if (arrayProvider)
+				output->removeProvider(arrayProvider);
+			else
+				output->removeProvider(p);
+		}
+	}
+
+	return output;
+}
+
+bool
+Container::isLengthProperty(const std::string& propertyName) const
+{
+	auto foundProviderIt = _propertyNameToProvider.find(propertyName);
+
+	return foundProviderIt == _propertyNameToProvider.end()
+		? false
+		: foundProviderIt->second.get() == _arrayLengths.get();
 }
