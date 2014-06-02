@@ -64,15 +64,25 @@ minko.plugin["html-overlay"].enable = function()
 			"-Wl,-rpath,."
 		}
 		links { "cef" }
-		libdirs { minko.plugin.path("html-overlay") .. "/lib/lin/" }
 		prelinkcommands {
 			minko.action.copy(minko.plugin.path("html-overlay") .. "/asset"),
 			minko.action.copy(minko.plugin.path("html-overlay") .. "/lib/resource/locales"),
 			minko.action.copy(minko.plugin.path("html-overlay") .. "/lib/resource/cef.pak"),
-			minko.action.copy(minko.plugin.path("html-overlay") .. "/lib/resource/devtools_resources.pak"),
-			minko.action.copy(minko.plugin.path("html-overlay") .. "/lib/lin/libcef.so"),
-			minko.action.copy(minko.plugin.path("html-overlay") .. "/lib/lin/libffmpegsumo.so"),
-			minko.action.copy(minko.plugin.path("html-overlay") .. "/lib/lin/chrome-sandbox")
+			minko.action.copy(minko.plugin.path("html-overlay") .. "/lib/resource/devtools_resources.pak")
+		}
+	configuration { "linux32" }
+		libdirs { minko.plugin.path("html-overlay") .. "/lib/linux32/" }
+		prelinkcommands {
+			minko.action.copy(minko.plugin.path("html-overlay") .. "/lib/linux32/libcef.so"),
+			minko.action.copy(minko.plugin.path("html-overlay") .. "/lib/linux32/libffmpegsumo.so"),
+			minko.action.copy(minko.plugin.path("html-overlay") .. "/lib/linux32/chrome-sandbox")
+		}
+	configuration { "linux64" }
+		libdirs { minko.plugin.path("html-overlay") .. "/lib/linux64/" }
+		prelinkcommands {
+			minko.action.copy(minko.plugin.path("html-overlay") .. "/lib/linux64/libcef.so"),
+			minko.action.copy(minko.plugin.path("html-overlay") .. "/lib/linux64/libffmpegsumo.so"),
+			minko.action.copy(minko.plugin.path("html-overlay") .. "/lib/linux64/chrome-sandbox")
 		}
 end
 
@@ -84,7 +94,8 @@ minko.plugin["html-overlay"].dist = function(pluginDistDir)
 	configuration { "linux32 or linux64" }
 		os.mkdir(pluginDistDir .. "/lib/lin/")
 		os.mkdir(pluginDistDir .. "/lib/resource/")
-		minko.os.copyfiles(minko.plugin.path("html-overlay") .. "/lib/lin/", pluginDistDir .. "/lib/lin/")
+		minko.os.copyfiles(minko.plugin.path("html-overlay") .. "/lib/linux32/", pluginDistDir .. "/lib/linux32/")
+		minko.os.copyfiles(minko.plugin.path("html-overlay") .. "/lib/linux64/", pluginDistDir .. "/lib/linux64/")
 		minko.os.copyfiles(minko.plugin.path("html-overlay") .. "/lib/resource/", pluginDistDir .. "/lib/resource/")
 end
 

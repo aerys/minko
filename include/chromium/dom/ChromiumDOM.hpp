@@ -160,6 +160,7 @@ namespace chromium
 			bool _executeOnLoad;
 
 			std::list<std::string> _receivedMessages;
+			std::mutex _receivedMessagesMutex;
 		};
 	}
 }
