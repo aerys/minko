@@ -64,6 +64,33 @@ GeometryWriter::initialize()
 }
 
 std::string
+GeometryWriter::embed(std::shared_ptr<AssetLibrary>		assetLibrary,
+					  std::shared_ptr<Options>			options,
+					  Dependency::Ptr					dependency,
+					  WriterOptions::Ptr				writerOptions)
+{
+	geometry::Geometry::Ptr		geometry				= data();
+	uint						indexBufferFunctionId	= 0;
+	uint						vertexBufferFunctionId	= 0;
+	uint						metaByte				= computeMetaByte(geometry, indexBufferFunctionId, vertexBufferFunctionId, writerOptions);
+	const std::string&			serializedIndexBuffer	= indexBufferWriterFunctions[indexBufferFunctionId](geometry->indices());
+	std::vector<std::string>	serializedVertexBuffers;
+	std::stringstream			sbuf;
+	
+	for (std::shared_ptr<render::VertexBuffer> vertexBuffer : geometry->vertexBuffers())
+		serializedVertexBuffers.push_back(vertexBufferWriterFunctions[vertexBufferFunctionId](vertexBuffer));
+
+	msgpack::type::tuple<unsigned char, std::string, std::string, std::vector<std::string>> res(
+		metaByte,
+		assetLibrary->geometryName(geometry),
+		serializedIndexBuffer,
+		serializedVertexBuffers);
+	msgpack::pack(sbuf, res);
+
+	return sbuf.str();
+}
+
+std::string
 GeometryWriter::serializeIndexStream(std::shared_ptr<render::IndexBuffer> indexBuffer)
 {
 	return serialize::TypeSerializer::serializeVector<unsigned short>(indexBuffer->data());

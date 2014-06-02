@@ -43,11 +43,6 @@ namespace minko
             std::string _extension;
 
 		public:
-
-            ~TextureWriter()
-            {
-            }
-
 			inline static
 			Ptr
 			create()

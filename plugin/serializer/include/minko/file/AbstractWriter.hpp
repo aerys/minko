@@ -76,7 +76,19 @@ namespace minko
 			write(std::string&                          filename,
 				  std::shared_ptr<AssetLibrary>         assetLibrary,
 				  std::shared_ptr<Options>              options,
-                  std::shared_ptr<WriterOptions>        writerOptions)
+				  std::shared_ptr<WriterOptions>        writerOptions)
+			{
+				SerializedDependency includeDependency;
+
+				write(filename, assetLibrary, options, writerOptions);
+			}
+
+			void
+			write(std::string&                          filename,
+				  std::shared_ptr<AssetLibrary>         assetLibrary,
+				  std::shared_ptr<Options>              options,
+                  std::shared_ptr<WriterOptions>        writerOptions,
+				  SerializedDependency&					includeDependency)
 			{
 				std::ofstream file(filename, std::ios::out | std::ios::binary | std::ios::trunc);
 
@@ -85,6 +97,9 @@ namespace minko
 					Dependency::Ptr			dependencies			= Dependency::create();
 					std::string				serializedData			= embed(assetLibrary, options, dependencies, writerOptions);
 					SerializedDependency	serializedDependencies	= dependencies->serialize(assetLibrary, options, writerOptions);
+					
+					if (includeDependency.size() > 0)
+						serializedDependencies.insert(serializedDependencies.begin(), includeDependency.begin(), includeDependency.end());
 
 					msgpack::type::tuple<SerializedDependency, std::string> res(serializedDependencies, serializedData);
 
@@ -100,10 +115,21 @@ namespace minko
 				complete()->execute(this->shared_from_this());
 			}
 
+			std::string
+			embedAll(std::shared_ptr<AssetLibrary>  assetLibrary,
+					 std::shared_ptr<Options>       options,
+					 std::shared_ptr<WriterOptions> writerOptions)
+			{
+				SerializedDependency includeDependency;
+
+				return embedAll(assetLibrary, options, writerOptions, includeDependency);
+			}
+
             std::string
             embedAll(std::shared_ptr<AssetLibrary>  assetLibrary,
                      std::shared_ptr<Options>       options,
-                     std::shared_ptr<WriterOptions> writerOptions)
+                     std::shared_ptr<WriterOptions> writerOptions,
+					 SerializedDependency&			includeDependency)
             {
                 // TODO
                 // refactor with AbstractWriter::write by adding a tier private member function
@@ -113,6 +139,8 @@ namespace minko
 				SerializedDependency	serializedDependencies = Dependency::create()->serialize(assetLibrary,
                                                                                                  options,
                                                                                                  writerOptions);
+				if (includeDependency.size() > 0)
+					serializedDependencies.insert(serializedDependencies.begin(), includeDependency.begin(), includeDependency.end());
 
                 msgpack::type::tuple<SerializedDependency, std::string> res(serializedDependencies, serializedData);
 
