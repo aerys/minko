@@ -64,14 +64,14 @@ HtmlOverlay::initialize(AbstractCanvas::Ptr canvas, SceneManager::Ptr sceneManag
 
 	_targetAddedSlot = targetAdded()->connect(std::bind(
 		&HtmlOverlay::targetAddedHandler,
-		shared_from_this(),
+		std::static_pointer_cast<HtmlOverlay>(shared_from_this()),
 		std::placeholders::_1,
 		std::placeholders::_2
 		));
 
 	_targetRemovedSlot = targetRemoved()->connect(std::bind(
 		&HtmlOverlay::targetRemovedHandler,
-		shared_from_this(),
+		std::static_pointer_cast<HtmlOverlay>(shared_from_this()),
 		std::placeholders::_1,
 		std::placeholders::_2
 		));
