@@ -33,8 +33,7 @@ namespace minko
 	{
 
 		class HtmlOverlay :
-			public AbstractComponent,
-			public std::enable_shared_from_this<HtmlOverlay>
+			public AbstractComponent
 		{
 		public:
 			typedef std::shared_ptr<HtmlOverlay> Ptr;
