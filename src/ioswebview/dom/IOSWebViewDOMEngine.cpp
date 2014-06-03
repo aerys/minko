@@ -28,8 +28,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/MinkoSDL.hpp"
 
-#include "../../plugin/sdl/lib/sdl/include/SDL2/SDL.h"
-#include "../../plugin/sdl/lib/sdl/include/SDL2/SDL_syswm.h"
+#include "SDL.h"
+#include "SDL_syswm.h"
 
 using namespace minko;
 using namespace minko::component;
