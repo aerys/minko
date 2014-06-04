@@ -780,8 +780,8 @@ EffectParser::parseBindingNameAndSource(const Json::Value&	contextNode,
 		{
 			// generate regex to recognize the macro when coming from filtered out data provider
 	
-			auto regexString	= std::regex_replace(propertyName, variableRegex, "\\d");
-			regexString			= std::regex_replace(regexString, std::regex("(\\[|\\.|\\])"), "\\$&");
+			auto regexString	= std::regex_replace(propertyName, variableRegex, std::string("\\d"));
+			regexString			= std::regex_replace(regexString, std::regex("(\\[|\\.|\\])"), std::string("\\$&"));
 
 			regexp				= std::shared_ptr<std::regex>(new std::regex(regexString));
 		}

@@ -26,7 +26,7 @@ namespace minko
 {
 	namespace data
 	{
-		class AbstractFilter: 
+		class AbstractFilter :
 			public std::enable_shared_from_this<AbstractFilter>
 		{
 		public:
@@ -49,7 +49,7 @@ namespace minko
 
 			FilterSignalPtr											_changed;
 
-			std::list<const std::string>							_watchedProperties;
+			std::list<std::string>									_watchedProperties;
 
 			std::unordered_map<NodePtr, std::list<ContainerPropertyChangedSignal::Slot>> _surfaceTargetPropertyChangedSlots;
 
