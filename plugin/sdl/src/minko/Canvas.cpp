@@ -463,8 +463,8 @@ Canvas::step()
 
 			if (windowW != _width || windowH != _height)
 			{
-				x = int(float(_width) * float(event.motion.x) / float(windowW));
-				y = int(float(_height) * float(event.motion.y) / float(windowH));
+				auto x = int(float(_width) * float(event.motion.x) / float(windowW));
+				auto y = int(float(_height) * float(event.motion.y) / float(windowH));
 			}
 
 			_mouse->x(x);
