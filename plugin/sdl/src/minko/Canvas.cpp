@@ -74,11 +74,7 @@ Canvas::Canvas(const std::string& name, const uint width, const uint height, boo
     _enterFrame(Signal<Canvas::Ptr, float, float>::create()),
     _resized(Signal<AbstractCanvas::Ptr, uint, uint>::create()),
     _joystickAdded(Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::create()),
-    _joystickRemoved(Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::create()),
-	_width(width),
-	_height(height),
-	_x(0),
-	_y(0)
+    _joystickRemoved(Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::create())
 {
     _data->set<math::Vector4::Ptr>("canvas.viewport", Vector4::create(0.0f, 0.0f, (float) width, (float) height));
 }
@@ -328,8 +324,7 @@ Canvas::x(uint value)
 {
     auto viewport = _data->get<math::Vector4::Ptr>("canvas.viewport");
 
-	viewport->setTo((float)value, viewport->y(), viewport->z(), viewport->w());
-	_x = value;
+    viewport->setTo((float) value, viewport->y(), viewport->z(), viewport->w());
 }
 
 void
@@ -337,8 +332,7 @@ Canvas::y(uint value)
 {
     auto viewport = _data->get<math::Vector4::Ptr>("canvas.viewport");
 
-	viewport->setTo(viewport->x(), (float)value, viewport->z(), viewport->w());
-	_y = value;
+    viewport->setTo(viewport->x(), (float) value, viewport->z(), viewport->w());
 }
 
 void
@@ -346,8 +340,7 @@ Canvas::width(uint value)
 {
     auto viewport = _data->get<math::Vector4::Ptr>("canvas.viewport");
 
-	viewport->setTo(viewport->x(), viewport->y(), (float)value, viewport->w());
-	_width = value;
+    viewport->setTo(viewport->x(), viewport->y(), (float) value, viewport->w());
 }
 
 void
@@ -355,8 +348,7 @@ Canvas::height(uint value)
 {
     auto viewport = _data->get<math::Vector4::Ptr>("canvas.viewport");
 
-	viewport->setTo(viewport->x(), viewport->y(), viewport->z(), (float)value);
-	_height = value;
+    viewport->setTo(viewport->x(), viewport->y(), viewport->z(), (float) value);
 }
 
 void
@@ -453,24 +445,9 @@ Canvas::step()
             auto oldX = _mouse->input::Mouse::x();
             auto oldY = _mouse->input::Mouse::y();
 
-			int windowW;
-			int windowH;
-
-			SDL_GetWindowSize(_window, &windowW, &windowH);
-
-			auto x = event.motion.x;
-			auto y = event.motion.y;
-
-			if (windowW != _width || windowH != _height)
-			{
-				auto x = int(float(_width) * float(event.motion.x) / float(windowW));
-				auto y = int(float(_height) * float(event.motion.y) / float(windowH));
-			}
-
-			_mouse->x(x);
-			_mouse->y(y);
-
-            _mouse->move()->execute(_mouse, x - oldX, y - oldY);
+            _mouse->x(event.motion.x);
+            _mouse->y(event.motion.y);
+            _mouse->move()->execute(_mouse, event.motion.x - oldX, event.motion.y - oldY);
             break;
         }
 
