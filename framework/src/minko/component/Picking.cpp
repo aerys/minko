@@ -328,8 +328,6 @@ Picking::renderingEnd(RendererPtr renderer)
 {
 	_context->readPixels(0, 0, 1, 1, &_lastColor[0]);
 	
-	std::cout << "rendering end" << std::endl;
-
 	uint pickedSurfaceId = (_lastColor[0] << 16) + (_lastColor[1] << 8) + _lastColor[2];
 
 	if (_lastPickedSurface != _pickingIdToSurface[pickedSurfaceId])
@@ -431,10 +429,8 @@ Picking::mouseRightDownHandler(MousePtr mouse)
 void
 Picking::mouseLeftDownHandler(MousePtr mouse)
 {
-	std::cout << "mouseLeftDownHandler" << std::endl;
 	if (_mouseLeftClick->numCallbacks() > 0 || _mouseLeftDown->numCallbacks() > 0)
 	{
-		std::cout << "mouseLeftDownHandler 2" << std::endl;
 		_executeLeftDownHandler = true;
 		_renderer->enabled(true);
 	}
