@@ -119,6 +119,9 @@ namespace ioswebview
             
             void
             registerDomEvents();
+            
+            void
+            updateWebViewWidth();
 
 			static
 			int _domUid;
@@ -140,6 +143,7 @@ namespace ioswebview
             // iOS WebView
             UIWindow *_window;
             IOSWebView *_webView;
+            uint _webViewWidth;
             WebViewJavascriptBridge* _bridge;
             
             bool _waitingForLoad;

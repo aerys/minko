@@ -58,7 +58,8 @@ IOSWebViewDOMEngine::IOSWebViewDOMEngine() :
 	_onmessage(Signal<AbstractDOM::Ptr, std::string>::create()),
 	_visible(true),
     _waitingForLoad(true),
-    _isReady(false)
+    _isReady(false),
+    _webViewWidth(0)
 {
 }
 
@@ -95,10 +96,16 @@ IOSWebViewDOMEngine::initialize(AbstractCanvas::Ptr canvas, SceneManager::Ptr sc
                                     UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin |
                                     UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
         _webView.scalesPageToFit = YES;
+        
+        //[_webView setUserInteractionEnabled:NO];
+        
         _window.rootViewController.view.autoresizesSubviews = YES;
         
         // Add the web view to the current window
         [_window.rootViewController.view addSubview:_webView];
+        
+        // Save the web view width
+        _webViewWidth = _webView.frame.size.width;
         
         // Load iframe containing bridge JS callback handler
         NSURL *url = [NSURL fileURLWithPath:@"asset/html/iframe.html"];
@@ -157,10 +164,16 @@ IOSWebViewDOMEngine::initialize(AbstractCanvas::Ptr canvas, SceneManager::Ptr sc
 
 	_canvasResizedSlot = _canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
     {
+        /*
         CGRect frame = _webView.frame;
         frame.size.width = w / 2;
         frame.size.height = h / 2;
         _webView.frame = frame;
+        */
+        
+        _webViewWidth = w;
+        
+        updateWebViewWidth();
     });
 
 	_enterFrameSlot = _sceneManager->frameBegin()->connect([&](std::shared_ptr<component::SceneManager>, float, float)
@@ -216,6 +229,7 @@ IOSWebViewDOMEngine::enterFrame()
         {
             _waitingForLoad = false;
             load(_uriToLoad);
+            updateWebViewWidth();
         }
         
         return;
@@ -391,24 +405,33 @@ IOSWebViewDOMEngine::registerDomEvents()
         auto oldX = _canvas->mouse()->x();
         auto oldY = _canvas->mouse()->y();
       
-        _canvas->mouse()->x(event->clientX());
-        _canvas->mouse()->y(event->clientY());
+        int x = event->clientX();
+        int y = event->clientY();
+        _canvas->mouse()->x(x);
+        _canvas->mouse()->y(y);
       
         _canvas->mouse()->move()->execute(_canvas->mouse(), event->clientX() - oldX, event->clientY() - oldY);
     });
 
     onmouseupSlot = _currentDOM->document()->onmouseup()->connect([&](AbstractDOMEvent::Ptr event)
     {
-        _canvas->mouse()->x(event->layerX());
-        _canvas->mouse()->y(event->layerY());
+        int x = event->layerX();
+        int y = event->layerY();
+        _canvas->mouse()->x(x);
+        _canvas->mouse()->y(y);
                                                           
         _canvas->mouse()->leftButtonUp()->execute(_canvas->mouse());
     });
 
     onmousedownSlot = _currentDOM->document()->onmousedown()->connect([&](AbstractDOMEvent::Ptr event)
     {
-        _canvas->mouse()->x(event->clientX());
-        _canvas->mouse()->y(event->clientY());
+        int x = event->clientX();
+        int y = event->clientY();
+     
+        _canvas->mouse()->x(x);
+        _canvas->mouse()->y(y);
+        
+        std::cout << "Mouse position (webview): (" << _canvas->mouse()->x() << "," << _canvas->mouse()->y() << ")" << std::endl;
         
         _canvas->mouse()->leftButtonDown()->execute(_canvas->mouse());
     });
@@ -416,23 +439,29 @@ IOSWebViewDOMEngine::registerDomEvents()
     ontouchdownSlot = _currentDOM->document()->ontouchdown()->connect([&](AbstractDOMEvent::Ptr event)
     {
         _canvas->finger()->fingerDown()->execute(_canvas->finger(), event->layerX(), event->layerY());
-                                                                          
-        std::cout << "Touch down" << std::endl;
     });
     
     ontouchupSlot = _currentDOM->document()->ontouchup()->connect([&](AbstractDOMEvent::Ptr event)
     {
         _canvas->finger()->fingerUp()->execute(_canvas->finger(), event->layerX(), event->layerY());
-                                                                      
-        std::cout << "Touch up" << std::endl;
     });
     
     ontouchmotionSlot = _currentDOM->document()->ontouchmotion()->connect([&](AbstractDOMEvent::Ptr event)
     {
         _canvas->finger()->fingerMotion()->execute(_canvas->finger(), event->layerX(), event->layerY());
-                                                                              
-        std::cout << "Touch motion" << std::endl;
     });
+}
+
+void
+IOSWebViewDOMEngine::updateWebViewWidth()
+{
+    std::ostringstream ssa;
+    ssa << _webViewWidth;
+    std::string widthString = ssa.str();
+    
+    std::string jsEval = "Minko.changeViewportWidth(" + widthString + ");";
+    
+    eval(jsEval);
 }
 
 std::string

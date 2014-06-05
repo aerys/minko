@@ -2,6 +2,7 @@
 <html>
 	<head>
 		<link rel="stylesheet" type="text/css" href="css/iframe.css">
+		<meta name="viewport" id="metaViewport"/>
 	</head>
 	<body>
 		<!-- <div id="eventCatcher"> -->
@@ -49,11 +50,6 @@
 			var iframeElement = document.getElementById('overlayiframe');
 			m.iframeElement = iframeElement;
 
-			window.onload = function()
-			{
-
-			}
-
 	        m.getOffsetTop = function(element)
 			{
 				var result = 0;
@@ -73,69 +69,6 @@
 				}
 				return result;
 			};
-
-			/*
-			m.redispatchKeyboardEvent = function(event)
-			{
-				var eventCopy = document.createEvent('Event');
-
-				eventCopy.initEvent(event.type, event.bubbles, event.cancelable);
-
-				eventCopy.type = event.type;
-				eventCopy.bubbles = event.bubbles;
-				eventCopy.cancelable = event.cancelable;
-				eventCopy.view = event.view;
-				eventCopy.ctrlKey = event.ctrlKey;
-				eventCopy.altKey = event.altKey;
-				eventCopy.shiftKey = event.shiftKey;
-				eventCopy.metaKey = event.metaKey;
-				eventCopy.keyCode = event.keyCode;
-				eventCopy.charCode = event.charCode;
-				eventCopy.which = event.which;
-				eventCopy.key = event.key;
-				eventCopy.detail = event.detail;
-				eventCopy.keyIdentifier = event.keyIdentifier;
-
-				document.dispatchEvent(eventCopy);
-			}
-
-			m.redispatchMouseEvent = function(event)
-			{
-				if (event.type == 'mouseout' && event.target != event.currentTarget)
-					return;
-
-				if (event.type == 'mouseover' && event.target != event.currentTarget)
-					return;
-
-				var pageX = 1 + Minko.getOffsetLeft(Minko.iframeElement) + (event.pageX || event.layerX);
-				var pageY = 1 + Minko.getOffsetTop(Minko.iframeElement) + (event.pageY || event.layerY);
-
-				var screenX = pageX - document.body.scrollLeft;
-				var screenY = pageY - document.body.scrollTop;
-
-				var eventCopy = document.createEvent('MouseEvents');
-				eventCopy.initMouseEvent(event.type, event.bubbles, event.cancelable, event.view, event.detail,
-					pageX, pageY, screenX, screenY, 
-					event.ctrlKey, event.altKey, event.shiftKey, event.metaKey, event.button, event.relatedTarget);
-
-				if (event.type == 'mousewheel' || event.type == "DOMMouseScroll")
-				{
-					eventCopy.detail = event.detail;
-
-					eventCopy.wheelDelta = event.wheelDelta;
-					eventCopy.wheelDeltaX = event.wheelDeltaX;
-					eventCopy.wheelDeltaY = event.wheelDeltaY;
-					eventCopy.wheelDeltaZ = event.wheelDeltaZ;
-
-					eventCopy.delta = event.delta;
-					eventCopy.deltaMode = event.deltaMode;
-					eventCopy.deltaX = event.deltaX;
-					eventCopy.deltaY = event.deltaY;
-					eventCopy.deltaZ = event.deltaZ;
-					event.preventDefault();
-				}
-			}
-			*/
 
 			m.iframeLoadHandler = function(event)
 			{
@@ -167,24 +100,6 @@
 				{
 					Minko.iframeElement.contentWindow.Minko.messagesToSend.push(message);
 				}
-
-				/*
-				Minko.iframeElement.addEventListener('mouseover',						Minko.redispatchMouseEvent);
-				Minko.iframeElement.addEventListener('mouseout',						Minko.redispatchMouseEvent);
-				
-				Minko.iframeElement.contentWindow.addEventListener('mousemove',			Minko.redispatchMouseEvent);
-				Minko.iframeElement.contentWindow.addEventListener('mouseup',			Minko.redispatchMouseEvent);
-				Minko.iframeElement.contentWindow.addEventListener('mousedown',			Minko.redispatchMouseEvent);
-				
-				Minko.iframeElement.contentWindow.addEventListener('click',				Minko.redispatchMouseEvent);
-				
-				Minko.iframeElement.contentWindow.addEventListener('mousewheel',		Minko.redispatchMouseEvent);
-				Minko.iframeElement.contentWindow.addEventListener('DOMMouseScroll',	Minko.redispatchMouseEvent);
-				
-				Minko.iframeElement.contentWindow.addEventListener('keydown',			Minko.redispatchKeyboardEvent);
-				Minko.iframeElement.contentWindow.addEventListener('keyup',				Minko.redispatchKeyboardEvent);
-				Minko.iframeElement.contentWindow.addEventListener('keypress',			Minko.redispatchKeyboardEvent);
-				*/
 			}
 
 			iframeElement.onload = m.iframeLoadHandler;
@@ -226,6 +141,13 @@
 
 				console.log("loaded " + url);
 			}
+
+			m.changeViewportWidth = function(width)
+			{
+				var metaElement = document.getElementById("metaViewport");
+
+				metaElement.setAttribute("content", "width=" + width);
+			};
 
 			window.Minko = m;
         </script>
