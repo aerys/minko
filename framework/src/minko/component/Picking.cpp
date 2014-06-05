@@ -54,6 +54,10 @@ Picking::Picking(SceneManagerPtr	sceneManager,
 	_mouseMove(Signal<NodePtr>::create()),
 	_mouseLeftClick(Signal<NodePtr>::create()),
 	_mouseRightClick(Signal<NodePtr>::create()),
+	_mouseLeftDown(Signal<NodePtr>::create()),
+	_mouseRightDown(Signal<NodePtr>::create()),
+	_mouseLeftUp(Signal<NodePtr>::create()),
+	_mouseRightUp(Signal<NodePtr>::create()),
 	_mouseOut(Signal<NodePtr>::create()),
 	_mouseOver(Signal<NodePtr>::create())
 {
@@ -73,6 +77,16 @@ Picking::initialize()
 		std::placeholders::_2,
 		std::placeholders::_3
 		));
+
+	_mouseLeftDownSlot = _mouse->leftButtonDown()->connect(std::bind(
+		&Picking::mouseLeftDownHandler,
+		std::static_pointer_cast<Picking>(shared_from_this()),
+		std::placeholders::_1));
+
+	_mouseRightDownSlot = _mouse->rightButtonDown()->connect(std::bind(
+		&Picking::mouseRightDownHandler,
+		std::static_pointer_cast<Picking>(shared_from_this()),
+		std::placeholders::_1));
 
 	_mouseLeftClickSlot = _mouse->leftButtonUp()->connect(std::bind(
 		&Picking::mouseLeftClickHandler,
@@ -313,6 +327,8 @@ void
 Picking::renderingEnd(RendererPtr renderer)
 {
 	_context->readPixels(0, 0, 1, 1, &_lastColor[0]);
+	
+	std::cout << "rendering end" << std::endl;
 
 	uint pickedSurfaceId = (_lastColor[0] << 16) + (_lastColor[1] << 8) + _lastColor[2];
 
@@ -325,7 +341,6 @@ Picking::renderingEnd(RendererPtr renderer)
 
 		if (_lastPickedSurface && _mouseOver->numCallbacks() > 0)
 			_mouseOver->execute(_lastPickedSurface->targets()[0]);
-		
 	}
 
 	if (_executeMoveHandler && _lastPickedSurface)
@@ -334,16 +349,38 @@ Picking::renderingEnd(RendererPtr renderer)
 		_executeMoveHandler = false;
 	}
 
-	if (_executeRightClickHandler && _lastPickedSurface)
+	if (_executeRightDownHandler && _lastPickedSurface)
 	{
-		_mouseRightClick->execute(_lastPickedSurface->targets()[0]);
-		_executeRightClickHandler = false;
+		_mouseRightDown->execute(_lastPickedSurface->targets()[0]);
+		_executeRightDownHandler = false;
+
+		_lastRightDownPickedSurface = _lastPickedSurface;
 	}
 
-	if (_executeLeftClickHandler && _lastPickedSurface)
+	if (_executeLeftDownHandler && _lastPickedSurface)
 	{
-		_mouseLeftClick->execute(_lastPickedSurface->targets()[0]);
+		_mouseLeftDown->execute(_lastPickedSurface->targets()[0]);
+		_executeLeftDownHandler = false;
+
+		_lastLeftDownPickedSurface = _lastPickedSurface;
+	}
+
+	if (_executeRightClickHandler && _lastPickedSurface && _lastPickedSurface == _lastRightDownPickedSurface)
+	{
+		_mouseRightClick->execute(_lastPickedSurface->targets()[0]);
+		_mouseRightUp->execute(_lastPickedSurface->targets()[0]);
+		_executeRightClickHandler = false;
+
+		_lastRightDownPickedSurface = nullptr;
+	}
+
+	if (_executeLeftClickHandler && _lastPickedSurface && _lastPickedSurface == _lastLeftDownPickedSurface)
+	{
+		_mouseLeftClick->execute(_lastLeftDownPickedSurface->targets()[0]);
+		_mouseLeftUp->execute(_lastLeftDownPickedSurface->targets()[0]);
 		_executeLeftClickHandler = false;
+
+		_lastLeftDownPickedSurface = nullptr;
 	}
 
 	if (!(_mouseOver->numCallbacks() > 0 || _mouseOut->numCallbacks() > 0))
@@ -363,13 +400,42 @@ Picking::mouseMoveHandler(MousePtr mouse, int dx, int dy)
 void
 Picking::mouseRightClickHandler(MousePtr mouse)
 {
+	if (_mouseRightClick->numCallbacks() > 0 || _mouseRightUp->numCallbacks() > 0)
+	{
 		_executeRightClickHandler = true;
 		_renderer->enabled(true);
+	}
 }
 
 void
 Picking::mouseLeftClickHandler(MousePtr mouse)
 {
-	_executeLeftClickHandler = true;
-	_renderer->enabled(true);
+	if (_mouseLeftClick->numCallbacks() > 0 || _mouseLeftUp->numCallbacks() > 0)
+	{
+		_executeLeftClickHandler = true;
+		_renderer->enabled(true);
+	}
+}
+
+void
+Picking::mouseRightDownHandler(MousePtr mouse)
+{
+
+	if (_mouseRightClick->numCallbacks() > 0 || _mouseRightDown->numCallbacks() > 0)
+	{
+		_executeRightDownHandler = true;
+		_renderer->enabled(true);
+	}
+}
+
+void
+Picking::mouseLeftDownHandler(MousePtr mouse)
+{
+	std::cout << "mouseLeftDownHandler" << std::endl;
+	if (_mouseLeftClick->numCallbacks() > 0 || _mouseLeftDown->numCallbacks() > 0)
+	{
+		std::cout << "mouseLeftDownHandler 2" << std::endl;
+		_executeLeftDownHandler = true;
+		_renderer->enabled(true);
+	}
 }
