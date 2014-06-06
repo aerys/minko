@@ -112,7 +112,7 @@
 				accessor.addEventListener(type, function(event)
 				{
 					accessor.minkoEvents.push(event);
-					m.bridge.send({type: type, value: accessor.minkoName});
+					Minko.bridge.send({type: type, value: accessor.minkoName});
 				});
 			};
 
