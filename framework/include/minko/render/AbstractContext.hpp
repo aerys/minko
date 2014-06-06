@@ -155,12 +155,6 @@ namespace minko
 							      unsigned int		mipLevel,
 							      void*				data) = 0;
 
-            virtual
-            void
-            setTexture2dMipLevelBoundaries(uint texture,
-                                           uint baseLevel,
-                                           uint maxLevel) = 0;
-
 			virtual
 			void
 			deleteTexture(uint	texture) = 0;
