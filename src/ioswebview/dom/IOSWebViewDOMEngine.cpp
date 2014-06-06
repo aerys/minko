@@ -455,11 +455,7 @@ IOSWebViewDOMEngine::registerDomEvents()
 void
 IOSWebViewDOMEngine::updateWebViewWidth()
 {
-    std::ostringstream ssa;
-    ssa << _webViewWidth;
-    std::string widthString = ssa.str();
-    
-    std::string jsEval = "Minko.changeViewportWidth(" + widthString + ");";
+    std::string jsEval = "Minko.changeViewportWidth(" + std::to_string(_webViewWidth) + ");";
     
     eval(jsEval);
 }

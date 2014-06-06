@@ -69,21 +69,19 @@ IOSWebViewDOM::eval(std::string message, bool async)
 std::vector<AbstractDOMElement::Ptr>
 IOSWebViewDOM::getElementList(std::string expression)
 {
-	std::vector<minko::dom::AbstractDOMElement::Ptr> l;
+    std::vector<minko::dom::AbstractDOMElement::Ptr> l;
     
-	expression = "Minko.tmpElements = " + expression;
-
-    std::string expressionStr(expression.begin(), expression.end());
-	//emscripten_run_script(expression.c_str());
-    runScript(expressionStr);
+    expression = "Minko.tmpElements = " + expression;
     
-	expression = "(Minko.tmpElements.length)";
-	int numElements = runScriptInt(expressionStr);
-
-	for(int i = 0; i < numElements; ++i)
-		l.push_back(IOSWebViewDOMElement::getDOMElement("Minko.tmpElements[" + std::to_string(i) + "]", _engine));
+    runScript(expression);
     
-	return l;
+    expression = "(Minko.tmpElements.length)";
+    int numElements = runScriptInt(expression.c_str());
+    
+    for(int i = 0; i < numElements; ++i)
+        l.push_back(IOSWebViewDOMElement::getDOMElement("Minko.tmpElements[" + std::to_string(i) + "]", _engine));
+    
+    return l;
 }
 
 AbstractDOMElement::Ptr
