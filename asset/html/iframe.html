@@ -112,11 +112,7 @@
 				accessor.addEventListener(type, function(event)
 				{
 					accessor.minkoEvents.push(event);
-					//alert('Client: ' + event.clientX + ', ' + event.clientY);
-					//alert("addListener: " + type + '(layerX: ' + event.layerX + ', layerY: ' + event.layerY + ')|' + accessor.minkoName);
-					//alert(accessor.minkoEvents);
-					//console.log("addListener: " + type + '(layerX: ' + event.layerX + ', layerY: ' + event.layerY + ')|' + accessor.minkoName);
-					//m.bridge.send({type: type, value: accessor.minkoName});
+					m.bridge.send({type: type, value: accessor.minkoName});
 				});
 			};
 

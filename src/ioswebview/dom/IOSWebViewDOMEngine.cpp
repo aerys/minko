@@ -164,13 +164,6 @@ IOSWebViewDOMEngine::initialize(AbstractCanvas::Ptr canvas, SceneManager::Ptr sc
 
 	_canvasResizedSlot = _canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
     {
-        /*
-        CGRect frame = _webView.frame;
-        frame.size.width = w / 2;
-        frame.size.height = h / 2;
-        _webView.frame = frame;
-        */
-        
         _webViewWidth = w;
         
         updateWebViewWidth();
@@ -225,7 +218,7 @@ IOSWebViewDOMEngine::enterFrame()
         
         std::string res = eval(jsEval);
         
-        if (res == "true"/* && _isReady*/)
+        if (res == "true")
         {
             _waitingForLoad = false;
             load(_uriToLoad);
@@ -255,10 +248,12 @@ IOSWebViewDOMEngine::enterFrame()
         registerDomEvents();
 	}
 
+    /*
 	for(auto element : IOSWebViewDOMElement::domElements)
 	{
 		element->update();
 	}
+    */
 
 	if (_currentDOM->initialized() && _isReady)
 	{
@@ -373,14 +368,6 @@ void IOSWebViewDOMEngine::handleJavascriptMessage(std::string type, std::string 
         if (_isReady)
             std::cout << "Bridge is ready!" << std::endl;
     }
-    else if (type == "mousemove")
-    {
-        auto element = IOSWebViewDOMElement::getDOMElement(value, shared_from_this());
-        element->update();
-    }
-    else if (type == "mouseclick")
-    {
-    }
     else if (type == "alert")
     {
         eval("Received a message from JS: " + value);
@@ -388,6 +375,22 @@ void IOSWebViewDOMEngine::handleJavascriptMessage(std::string type, std::string 
     else if (type == "log")
     {
         std::cout << "[Bridge] " << value << std::endl;
+    }
+    // JS event
+    if (type == "touchstart")
+    {
+        auto element = IOSWebViewDOMElement::getDOMElement(value, shared_from_this());
+        element->update();
+    }
+    else if (type == "touchend")
+    {
+        auto element = IOSWebViewDOMElement::getDOMElement(value, shared_from_this());
+        element->update();
+    }
+    else if (type == "touchmove")
+    {
+        auto element = IOSWebViewDOMElement::getDOMElement(value, shared_from_this());
+        element->update();
     }
 }
 
