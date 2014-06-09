@@ -17,8 +17,6 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#if defined(EMSCRIPTEN)
-
 #include "minko/Common.hpp"
 #include "emscripten/dom/EmscriptenDOMElement.hpp"
 #include "emscripten/dom/EmscriptenDOMEvent.hpp"
@@ -300,7 +298,7 @@ EmscriptenDOMElement::onmousemove()
 		addEventListener("mousemove");
 		_onmousemoveSet = false;
 	}
-	
+
 	return _onmousemove;
 }
 
@@ -340,9 +338,45 @@ EmscriptenDOMElement::onmouseover()
 	return _onmouseover;
 }
 
+Signal<std::shared_ptr<AbstractDOMEvent>>::Ptr
+EmscriptenDOMElement::ontouchdown()
+{
+	if (!_ontouchdownSet)
+	{
+		addEventListener("touchdown");
+		_ontouchdownSet = false;
+	}
+
+	return _ontouchdown;
+}
+
+Signal<std::shared_ptr<AbstractDOMEvent>>::Ptr
+EmscriptenDOMElement::ontouchup()
+{
+	if (!_ontouchupSet)
+	{
+		addEventListener("touchup");
+		_ontouchupSet = false;
+	}
+
+	return _ontouchup;
+}
+
+Signal<std::shared_ptr<AbstractDOMEvent>>::Ptr
+EmscriptenDOMElement::ontouchmotion()
+{
+	if (!_ontouchmotionSet)
+	{
+		addEventListener("touchmotion");
+		_ontouchmotionSet = false;
+	}
+
+	return _ontouchmotion;
+}
+
 void
 EmscriptenDOMElement::update()
-{ 
+{
 	std::string eval = "(Minko.getEventsCount(" + _jsAccessor + "))";
 	int l = emscripten_run_script_int(eval.c_str());
 
@@ -373,5 +407,3 @@ EmscriptenDOMElement::update()
 	eval = "Minko.clearEvents(" + _jsAccessor + ");";
 	emscripten_run_script(eval.c_str());
 }
-
-#endif
