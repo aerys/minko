@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/AssetLibrary.hpp"
 #include "ioswebview/dom/IOSWebViewDOMEngine.hpp"
 #include "ioswebview/dom/IOSWebViewDOMElement.hpp"
+#include "ioswebview/dom/IOSWebViewDOMEvent.hpp"
 
 #include "minko/MinkoSDL.hpp"
 
@@ -123,7 +124,7 @@ IOSWebViewDOMEngine::initialize(AbstractCanvas::Ptr canvas, SceneManager::Ptr sc
         // Create the bridge
         _bridge = [WebViewJavascriptBridge bridgeForWebView:_webView handler:
                    ^(id data, WVJBResponseCallback responseCallback) {
-                   NSLog(@"Received message from javascript: %@", data);
+                   //NSLog(@"Received message from javascript: %@", data);
                    responseCallback(@"Right back atcha");
 
                    // If the message is a dictionary (of this form: {type: 'ready', value: 'true'})
@@ -248,13 +249,6 @@ IOSWebViewDOMEngine::enterFrame()
         registerDomEvents();
 	}
 
-    /*
-	for(auto element : IOSWebViewDOMElement::domElements)
-	{
-		element->update();
-	}
-    */
-
 	if (_currentDOM->initialized() && _isReady)
 	{
 		std::string jsEval = "(Minko.iframeElement.contentWindow.Minko.messagesToSend.length);";
@@ -359,7 +353,7 @@ IOSWebViewDOMEngine::visible(bool value)
 
 void IOSWebViewDOMEngine::handleJavascriptMessage(std::string type, std::string value)
 {
-    std::cout << "Processing the current message: [type: " << type << "; value: " << value << "]" << std::endl;
+    //std::cout << "Processing the current message: [type: " << type << "; value: " << value << "]" << std::endl;
     
     if (type == "ready")
     {
@@ -379,18 +373,50 @@ void IOSWebViewDOMEngine::handleJavascriptMessage(std::string type, std::string 
     // JS event
     if (type == "touchstart")
     {
-        auto element = IOSWebViewDOMElement::getDOMElement(value, shared_from_this());
-        element->update();
+        raiseDomEvent(type, value);
     }
     else if (type == "touchend")
     {
-        auto element = IOSWebViewDOMElement::getDOMElement(value, shared_from_this());
-        element->update();
+        raiseDomEvent(type, value);
     }
     else if (type == "touchmove")
     {
-        auto element = IOSWebViewDOMElement::getDOMElement(value, shared_from_this());
-        element->update();
+        raiseDomEvent(type, value);
+    }
+}
+
+void
+IOSWebViewDOMEngine::raiseDomEvent(const std::string& type, const std::string& value)
+{
+    std::size_t separatorIndex = value.find("|");
+    if (separatorIndex != std::string::npos)
+    {
+        std::string accessor = value.substr(0, separatorIndex);
+        std::string eventIndex = value.substr(separatorIndex + 1);
+        
+        std::cout << eventIndex << std::endl;
+        
+        auto element = IOSWebViewDOMElement::getDOMElement(accessor, shared_from_this());
+        
+        std::string eventName = accessor + ".minkoEvents[" + eventIndex + "]";
+        IOSWebViewDOMEvent::Ptr event = IOSWebViewDOMEvent::create(eventName, shared_from_this());
+        
+        if (type == "touchstart")
+        {
+            element->ontouchdown()->execute(event);
+            element->onmousedown()->execute(event);
+        }
+        else if (type == "touchend")
+        {
+            element->ontouchup()->execute(event);
+            element->onclick()->execute(event);
+            element->onmouseup()->execute(event);
+        }
+        else if (type == "touchmove")
+        {
+            element->ontouchmotion()->execute(event);
+            element->onmousemove()->execute(event);
+        }
     }
 }
 
@@ -399,12 +425,14 @@ IOSWebViewDOMEngine::registerDomEvents()
 {
     onmousemoveSlot = _currentDOM->document()->onmousemove()->connect([&](AbstractDOMEvent::Ptr event)
     {
+        /*
         std::cout << "Event info: " << std::endl
         << "screen: " << event->screenX() << ", " << event->screenY() << std::endl
         << "layer: " << event->layerX() << ", " << event->layerY() << std::endl
         << "page: " << event->pageX() << ", " << event->pageY() << std::endl
         << "client: " << event->clientX() << ", " << event->clientY() << std::endl;
-      
+        */
+        
         auto oldX = _canvas->mouse()->x();
         auto oldY = _canvas->mouse()->y();
       
@@ -433,9 +461,7 @@ IOSWebViewDOMEngine::registerDomEvents()
      
         _canvas->mouse()->x(x);
         _canvas->mouse()->y(y);
-        
-        std::cout << "Mouse position (webview): (" << _canvas->mouse()->x() << "," << _canvas->mouse()->y() << ")" << std::endl;
-        
+
         _canvas->mouse()->leftButtonDown()->execute(_canvas->mouse());
     });
     

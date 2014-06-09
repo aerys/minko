@@ -112,22 +112,9 @@
 				accessor.addEventListener(type, function(event)
 				{
 					accessor.minkoEvents.push(event);
-					Minko.bridge.send({type: type, value: accessor.minkoName});
+					var eventIndex = accessor.minkoEvents.length - 1;
+					m.bridge.send({type: type, value: accessor.minkoName + '|' + eventIndex});
 				});
-			};
-
-			m.getEventsCount = function(accessor)
-			{
-				if(accessor && accessor.minkoEvents)
-					return accessor.minkoEvents.length;
-				else
-					return 0;
-			};
-
-			m.clearEvents = function(accessor)
-			{
-				if(accessor)
-					accessor.minkoEvents = [];
 			};
 
 			m.loadUrl = function(url)

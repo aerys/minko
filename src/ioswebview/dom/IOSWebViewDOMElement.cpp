@@ -303,7 +303,7 @@ IOSWebViewDOMElement::onclick()
 	if (!_onclickSet)
 	{
 		addEventListener("touchend");
-		_onclickSet = false;
+		_onclickSet = true;
 	}
 
 	return _onclick;
@@ -315,7 +315,7 @@ IOSWebViewDOMElement::onmousedown()
 	if (!_onmousedownSet)
 	{
 		addEventListener("touchstart");
-		_onmousedownSet = false;
+		_onmousedownSet = true;
 	}
 
 	return _onmousedown;
@@ -327,7 +327,7 @@ IOSWebViewDOMElement::onmousemove()
 	if (!_onmousemoveSet)
 	{
 		addEventListener("touchmove");
-		_onmousemoveSet = false;
+		_onmousemoveSet = true;
 	}
 	
 	return _onmousemove;
@@ -339,7 +339,7 @@ IOSWebViewDOMElement::onmouseup()
 	if (!_onmouseupSet)
 	{
 		addEventListener("touchend");
-		_onmouseupSet = false;
+		_onmouseupSet = true;
 	}
 
 	return _onmouseup;
@@ -351,7 +351,7 @@ IOSWebViewDOMElement::onmouseout()
 	if (!_onmouseoutSet)
 	{
 		addEventListener("mouseout");
-		_onmouseoutSet = false;
+		_onmouseoutSet = true;
 	}
 
 	return _onmouseout;
@@ -363,7 +363,7 @@ IOSWebViewDOMElement::onmouseover()
 	if (!_onmouseoverSet)
 	{
 		addEventListener("mouseover");
-		_onmouseoverSet = false;
+		_onmouseoverSet = true;
 	}
 
 	return _onmouseover;
@@ -375,7 +375,7 @@ IOSWebViewDOMElement::ontouchdown()
     if (!_ontouchdownSet)
 	{
 		addEventListener("touchdown");
-		_ontouchdownSet = false;
+		_ontouchdownSet = true;
 	}
     
     return _ontouchdown;
@@ -387,7 +387,7 @@ IOSWebViewDOMElement::ontouchup()
     if (!_ontouchupSet)
 	{
 		addEventListener("touchdown");
-		_ontouchupSet = false;
+		_ontouchupSet = true;
 	}
     
     return _ontouchup;
@@ -399,55 +399,10 @@ IOSWebViewDOMElement::ontouchmotion()
     if (!_ontouchmotionSet)
 	{
 		addEventListener("touchmotion");
-		_ontouchmotionSet = false;
+		_ontouchmotionSet = true;
 	}
     
     return _ontouchmotion;
-}
-
-void
-IOSWebViewDOMElement::update()
-{
-    if (_engine->isReady())
-    {
-	std::string js = "(Minko.getEventsCount(" + _jsAccessor + "))";
-	int l = atoi(_engine->eval(js).c_str());
-
-	for(int i = 0; i < l; ++i)
-	{
-		std::string eventName = "Minko.event" + std::to_string(_elementUid++);
-		js =  eventName + " = " + _jsAccessor + ".minkoEvents[" + std::to_string(i) + "];";
-		_engine->eval(js);
-
-		IOSWebViewDOMEvent::Ptr event = IOSWebViewDOMEvent::create(eventName, _engine);
-
-		std::string type = event->type();
-
-		if (type == "touchstart")
-        {
-            _ontouchdown->execute(event);
-            _onmousedown->execute(event);
-        }
-		else if (type == "touchend")
-        {
-            _ontouchup->execute(event);
-            _onclick->execute(event);
-			_onmouseup->execute(event);
-        }
-		else if (type == "touchmove")
-        {
-            _ontouchmotion->execute(event);
-			_onmousemove->execute(event);
-		}
-        else if (type == "mouseover")
-			_onmouseover->execute(event);
-		else if (type == "mouseout")
-			_onmouseout->execute(event);
-	}
-
-	js = "Minko.clearEvents(" + _jsAccessor + ");";
-	_engine->eval(js);
-    }
 }
 
 #endif

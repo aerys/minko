@@ -122,6 +122,9 @@ namespace ioswebview
             
             void
             updateWebViewWidth();
+            
+            void
+            raiseDomEvent(const std::string& type, const std::string& value);
 
 			static
 			int _domUid;

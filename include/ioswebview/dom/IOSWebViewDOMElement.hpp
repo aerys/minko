@@ -145,9 +145,6 @@ namespace ioswebview
             minko::Signal<std::shared_ptr<minko::dom::AbstractDOMEvent>>::Ptr
             ontouchmotion();
 
-			void
-			update();
-
 		private:
 			void
 			addEventListener(std::string);
