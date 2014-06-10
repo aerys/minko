@@ -10,7 +10,7 @@ end
 
 minko.platform.supports = function(target)
 	if target == "html5" then
-		if EMSCRIPTEN and string.startswith(_ACTION, "gmake") then
+		if EMSCRIPTEN and _ACTION == "gmake" then
 			return true
 		end
 	elseif target == "linux32" or target == "linux64" or target == "linux" then
@@ -22,15 +22,15 @@ minko.platform.supports = function(target)
 			return true
 		end
 	elseif target == "osx64" or target == "osx" then
-		if os.is("macosx") and string.startswith(_ACTION, "gmake") then
+		if os.is("macosx")  and (_ACTION == "gmake" or _ACTION == "xcode-osx") then
 			return true
 		end
 	elseif target == "ios" then
-		if os.is("macosx") and string.startswith(_ACTION, "xcode") then
+		if os.is("macosx") and (_ACTION == "gmake" or _ACTION == "xcode-ios") then
 			return true
 		end
 	elseif target == "android" then
-		if ANDROID_HOME and string.startswith(_ACTION, "gmake") then
+		if ANDROID_HOME and _ACTION == "gmake" then
 			return true
 		end
 	end
