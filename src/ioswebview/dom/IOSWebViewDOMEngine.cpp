@@ -60,7 +60,8 @@ IOSWebViewDOMEngine::IOSWebViewDOMEngine() :
 	_visible(true),
     _waitingForLoad(true),
     _isReady(false),
-    _webViewWidth(0)
+    _webViewWidth(0),
+    _fingers()
 {
 }
 
@@ -393,9 +394,7 @@ IOSWebViewDOMEngine::raiseDomEvent(const std::string& type, const std::string& v
     {
         std::string accessor = value.substr(0, separatorIndex);
         std::string eventIndex = value.substr(separatorIndex + 1);
-        
-        std::cout << eventIndex << std::endl;
-        
+
         auto element = IOSWebViewDOMElement::getDOMElement(accessor, shared_from_this());
         
         std::string eventName = accessor + ".minkoEvents[" + eventIndex + "]";
@@ -423,61 +422,171 @@ IOSWebViewDOMEngine::raiseDomEvent(const std::string& type, const std::string& v
 void
 IOSWebViewDOMEngine::registerDomEvents()
 {
-    onmousemoveSlot = _currentDOM->document()->onmousemove()->connect([&](AbstractDOMEvent::Ptr event)
+    onmousedownSlot = _currentDOM->document()->onmousedown()->connect([&](AbstractDOMEvent::Ptr event)
     {
-        /*
-        std::cout << "Event info: " << std::endl
-        << "screen: " << event->screenX() << ", " << event->screenY() << std::endl
-        << "layer: " << event->layerX() << ", " << event->layerY() << std::endl
-        << "page: " << event->pageX() << ", " << event->pageY() << std::endl
-        << "client: " << event->clientX() << ", " << event->clientY() << std::endl;
-        */
-        
-        auto oldX = _canvas->mouse()->x();
-        auto oldY = _canvas->mouse()->y();
-      
         int x = event->clientX();
         int y = event->clientY();
+        
         _canvas->mouse()->x(x);
         _canvas->mouse()->y(y);
-      
-        _canvas->mouse()->move()->execute(_canvas->mouse(), event->clientX() - oldX, event->clientY() - oldY);
+
+//        SDL_Event sdlEvent;
+//        sdlEvent.type = SDL_MOUSEBUTTONDOWN;
+//        sdlEvent.button.button = SDL_BUTTON_LEFT;
+//
+//        SDL_PushEvent(&sdlEvent);
+        
+        _canvas->mouse()->leftButtonDown()->execute(_canvas->mouse());
     });
 
     onmouseupSlot = _currentDOM->document()->onmouseup()->connect([&](AbstractDOMEvent::Ptr event)
     {
         int x = event->layerX();
         int y = event->layerY();
+        
         _canvas->mouse()->x(x);
         _canvas->mouse()->y(y);
-                                                          
+
+//        SDL_Event sdlEvent;
+//        sdlEvent.type = SDL_MOUSEBUTTONUP;
+//        sdlEvent.button.button = SDL_BUTTON_LEFT;
+//        
+//        SDL_PushEvent(&sdlEvent);
+        
         _canvas->mouse()->leftButtonUp()->execute(_canvas->mouse());
     });
 
-    onmousedownSlot = _currentDOM->document()->onmousedown()->connect([&](AbstractDOMEvent::Ptr event)
+    onmousemoveSlot = _currentDOM->document()->onmousemove()->connect([&](AbstractDOMEvent::Ptr event)
     {
         int x = event->clientX();
         int y = event->clientY();
-     
+                                                                          
         _canvas->mouse()->x(x);
         _canvas->mouse()->y(y);
+        
+//        SDL_Event sdlEvent;
+//        sdlEvent.type = SDL_MOUSEMOTION;
+//        sdlEvent.motion.x = x;
+//        sdlEvent.motion.y = y;
+//
+//        SDL_PushEvent(&sdlEvent);
+        
+        auto oldX = _canvas->mouse()->x();
+        auto oldY = _canvas->mouse()->y();
 
-        _canvas->mouse()->leftButtonDown()->execute(_canvas->mouse());
+        _canvas->mouse()->move()->execute(_canvas->mouse(), event->clientX() - oldX, event->clientY() - oldY);
     });
     
     ontouchdownSlot = _currentDOM->document()->ontouchdown()->connect([&](AbstractDOMEvent::Ptr event)
     {
-        _canvas->finger()->fingerDown()->execute(_canvas->finger(), event->layerX(), event->layerY());
+        // Get number of finger
+        std::string js = event->accessor() + ".changedTouches.length";
+        int fingerNumber = atoi(eval(js).c_str());
+        
+        for (auto i = 0; i < fingerNumber; i++)
+        {
+            int fingerId = event->identifier(i);
+            int x = event->clientX(i);
+            int y = event->clientY(i);
+            
+            SDL_Event sdlEvent;
+            sdlEvent.type = SDL_FINGERDOWN;
+            sdlEvent.tfinger.fingerId = fingerId;
+            sdlEvent.tfinger.x =  x / _canvas->width();
+            sdlEvent.tfinger.y = y / _canvas->height();
+            
+            //std::cout << "[DOM] Finger down id: " << sdlEvent.tfinger.fingerId << " (for i = " << i << ")" << std::endl;
+            
+            SDL_PushEvent(&sdlEvent);
+            
+            // Add finger to list
+            auto finger = minko::SDLFinger::create(std::static_pointer_cast<Canvas>(_canvas));
+            finger->x(x);
+            finger->y(y);
+
+            _fingers.insert(std::pair<int, std::shared_ptr<minko::SDLFinger>>(sdlEvent.tfinger.fingerId, finger));
+        }
+        
+        //_canvas->finger()->fingerDown()->execute(_canvas->finger(), event->layerX(), event->layerY());
     });
     
     ontouchupSlot = _currentDOM->document()->ontouchup()->connect([&](AbstractDOMEvent::Ptr event)
     {
-        _canvas->finger()->fingerUp()->execute(_canvas->finger(), event->layerX(), event->layerY());
+//        SDL_Event sdlEvent;
+//        sdlEvent.type = SDL_FINGERUP;
+//        sdlEvent.tfinger.fingerId = event->identifier();
+//        sdlEvent.tfinger.x = event->layerX();
+//        sdlEvent.tfinger.y = event->layerY();
+//        
+//        SDL_PushEvent(&sdlEvent);
+
+        // Get number of finger
+        std::string js = event->accessor() + ".changedTouches.length";
+        int fingerNumber = atoi(eval(js).c_str());
+        
+        for (auto i = 0; i < fingerNumber; i++)
+        {
+            SDL_Event sdlEvent;
+            sdlEvent.type = SDL_FINGERUP;
+            sdlEvent.tfinger.fingerId = event->identifier(i);
+            sdlEvent.tfinger.x = event->clientX(i) / _canvas->width();
+            sdlEvent.tfinger.y = event->clientY(i) / _canvas->height();
+            
+            //std::cout << "[DOM] Finger up id: " << sdlEvent.tfinger.fingerId << " (for i = " << i << ")" << std::endl;
+            
+            SDL_PushEvent(&sdlEvent);
+            
+            // Remove finger from list
+            _fingers.erase(sdlEvent.tfinger.fingerId);
+        }
+        
+        //_canvas->finger()->fingerUp()->execute(_canvas->finger(), event->layerX(), event->layerY());
     });
     
     ontouchmotionSlot = _currentDOM->document()->ontouchmotion()->connect([&](AbstractDOMEvent::Ptr event)
     {
-        _canvas->finger()->fingerMotion()->execute(_canvas->finger(), event->layerX(), event->layerY());
+//        SDL_Event sdlEvent;
+//        sdlEvent.type = SDL_FINGERMOTION;
+//        sdlEvent.tfinger.x = event->layerX();
+//        sdlEvent.tfinger.y = event->layerY();
+//        
+//        SDL_PushEvent(&sdlEvent);
+        
+        // Get number of finger
+        std::string js = event->accessor() + ".changedTouches.length";
+        int fingerNumber = atoi(eval(js).c_str());
+        
+        for (auto i = 0; i < fingerNumber; i++)
+        {
+            int fingerId = event->identifier(i);
+            int oldX = _fingers.at(fingerId)->minko::input::Finger::x();
+            int oldY = _fingers.at(fingerId)->minko::input::Finger::y();
+            int x = event->clientX(i);
+            int y = event->clientY(i);
+            
+            SDL_Event sdlEvent;
+            sdlEvent.type = SDL_FINGERMOTION;
+            sdlEvent.tfinger.fingerId = fingerId;
+            sdlEvent.tfinger.x = x / _canvas->width();
+            sdlEvent.tfinger.y = y / _canvas->height();
+            sdlEvent.tfinger.dx = (x - oldX) / _canvas->width();
+            sdlEvent.tfinger.dy = (y - oldY) / _canvas->height();
+            
+            std::cout << "[DOM] Canvas size: " << _canvas->width() << "x" << _canvas->height() << std::endl;
+            
+            std::cout << "[DOM] Finger motion => " << std::endl
+            << "x: " << x << ", y = " << y << std::endl
+            << "oldX: " << oldX << ", oldY: " << oldY << std::endl
+            << "dx: " << (x - oldX) << "(" << sdlEvent.tfinger.dx << "), dy: " << (y - oldY) << "(" << sdlEvent.tfinger.dy << ")" << std::endl;
+            
+            SDL_PushEvent(&sdlEvent);
+            
+            // Store finger information
+            _fingers.at(fingerId)->x(x);
+            _fingers.at(fingerId)->y(y);
+        }
+        
+//        _canvas->finger()->fingerMotion()->execute(_canvas->finger(), event->layerX(), event->layerY());
     });
 }
 

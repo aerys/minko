@@ -28,6 +28,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #import "WebViewJavascriptBridge.h"
 #import "ioswebview/dom/IOSWebView.h"
 
+namespace minko
+{
+    class SDLFinger;
+}
+
 namespace ioswebview
 {
 	namespace dom
@@ -152,6 +157,9 @@ namespace ioswebview
             bool _waitingForLoad;
             std::string _uriToLoad;
             bool _isReady;
+            
+            // Fingers
+            std::map<int, std::shared_ptr<minko::SDLFinger>> _fingers;
 		};
 	}
 }

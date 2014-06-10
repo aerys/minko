@@ -59,12 +59,24 @@ namespace ioswebview
 			void
 			stopPropagation();
 
+            std::string
+            accessor();
+            
 			std::string
 			type();
 
 			minko::dom::AbstractDOMElement::Ptr
 			target();
+            
+            int
+            identifier(int id);
 
+            int
+            clientX(int id);
+            
+            int
+            clientY(int id);
+            
 			int
 			clientX();
 

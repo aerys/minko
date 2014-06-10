@@ -39,6 +39,10 @@ namespace minko
 			void
 			stopPropagation() = 0;
 
+            virtual
+            std::string
+            accessor() = 0;
+            
 			virtual
 			std::string
 			type() = 0;
@@ -46,7 +50,19 @@ namespace minko
 			virtual
 			AbstractDOMElement::Ptr
 			target() = 0;
+            
+            virtual
+            int
+            identifier(int id) = 0;
 
+            virtual
+            int
+            clientX(int id) = 0;
+            
+            virtual
+            int
+            clientY(int id) = 0;
+            
 			virtual
 			int
 			clientX() = 0;

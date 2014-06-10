@@ -48,6 +48,12 @@ IOSWebViewDOMEvent::stopPropagation()
 }
 
 std::string
+IOSWebViewDOMEvent::accessor()
+{
+    return _jsAccessor;
+}
+
+std::string
 IOSWebViewDOMEvent::type()
 {
 	std::string js = "(" + _jsAccessor + ".type)";
@@ -63,9 +69,36 @@ IOSWebViewDOMEvent::target()
 }
 
 int
+IOSWebViewDOMEvent::identifier(int id)
+{
+    std::string js = "(" + _jsAccessor + ".changedTouches[" + std::to_string(id) + "].identifier)";
+    int result = atoi(_engine->eval(js).c_str());
+    
+    return result;
+}
+
+int
+IOSWebViewDOMEvent::clientX(int id)
+{
+    std::string js = "(" + _jsAccessor + ".changedTouches[" + std::to_string(id) + "].clientX)";
+    int result = atoi(_engine->eval(js).c_str());
+    
+    return result;
+}
+
+int
+IOSWebViewDOMEvent::clientY(int id)
+{
+    std::string js = "(" + _jsAccessor + ".changedTouches[" + std::to_string(id) + "].clientY)";
+    int result = atoi(_engine->eval(js).c_str());
+    
+    return result;
+}
+
+int
 IOSWebViewDOMEvent::clientX()
 {
-	std::string js = "(" + _jsAccessor + ".touches[0]." + "clientX)";
+	std::string js = "(" + _jsAccessor + ".changedTouches[0]." + "clientX)";
 	int result = atoi(_engine->eval(js).c_str());
     
 	return result;
@@ -74,7 +107,7 @@ IOSWebViewDOMEvent::clientX()
 int
 IOSWebViewDOMEvent::clientY()
 {
-	std::string js = "(" + _jsAccessor + ".touches[0]" + ".clientY)";
+	std::string js = "(" + _jsAccessor + ".changedTouches[0]" + ".clientY)";
 	int result = atoi(_engine->eval(js).c_str());
     
 	return result;
