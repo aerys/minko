@@ -274,7 +274,7 @@ EmscriptenDOMElement::onclick()
 	if (!_onclickSet)
 	{
 		addEventListener("click");
-		_onclickSet = false;
+		_onclickSet = true;
 	}
 
 	return _onclick;
@@ -286,7 +286,7 @@ EmscriptenDOMElement::onmousedown()
 	if (!_onmousedownSet)
 	{
 		addEventListener("mousedown");
-		_onmousedownSet = false;
+		_onmousedownSet = true;
 	}
 
 	return _onmousedown;
@@ -298,7 +298,7 @@ EmscriptenDOMElement::onmousemove()
 	if (!_onmousemoveSet)
 	{
 		addEventListener("mousemove");
-		_onmousemoveSet = false;
+		_onmousemoveSet = true;
 	}
 	
 	return _onmousemove;
@@ -310,7 +310,7 @@ EmscriptenDOMElement::onmouseup()
 	if (!_onmouseupSet)
 	{
 		addEventListener("mouseup");
-		_onmouseupSet = false;
+		_onmouseupSet = true;
 	}
 
 	return _onmouseup;
@@ -322,7 +322,7 @@ EmscriptenDOMElement::onmouseout()
 	if (!_onmouseoutSet)
 	{
 		addEventListener("mouseout");
-		_onmouseoutSet = false;
+		_onmouseoutSet = true;
 	}
 
 	return _onmouseout;
@@ -334,7 +334,7 @@ EmscriptenDOMElement::onmouseover()
 	if (!_onmouseoverSet)
 	{
 		addEventListener("mouseover");
-		_onmouseoverSet = false;
+		_onmouseoverSet = true;
 	}
 
 	return _onmouseover;
