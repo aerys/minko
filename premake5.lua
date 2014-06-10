@@ -2,7 +2,7 @@ PROJECT_NAME = path.getname(os.getcwd())
 
 minko.project.library("minko-plugin-" .. PROJECT_NAME)
 
-	removeplatforms { "osx64", "android" }
+	removeplatforms { "android" }
 
 	kind "StaticLib"
 	language "C++"
@@ -129,6 +129,29 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 			"src/ioswebview/**.cpp",
 			"src/ioswebview/**.m",
 			"src/ioswebview/**.hpp"
+		}
+
+		defines {
+			-- "TARGET_IPHONE_SIMULATOR",
+			-- "TARGET_OS_IPHONE"
+		}
+
+	configuration { "osx64" }
+		buildoptions { "-x objective-c++" }
+		includedirs { "lib/WebViewJavascriptBridge" }
+
+		files {
+			"lib/WebViewJavascriptBridge/*.h",
+			"lib/WebViewJavascriptBridge/*.m",
+			"include/osxwebview/**.hpp",
+			"include/osxwebview/**.h",
+			"src/osxwebview/**.cpp",
+			"src/osxwebview/**.m",
+			"src/osxwebview/**.hpp"
+		}
+		links {
+			"WebKit.framework",
+			-- "AppKit.framework"
 		}
 
 		defines {

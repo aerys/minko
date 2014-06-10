@@ -92,9 +92,14 @@ HtmlOverlay::targetRemovedHandler(AbstractComponent::Ptr	ctrl, scene::Node::Ptr	
 #endif
 }
 
+bool
+HtmlOverlay::visible()
+{
+	return _domEngine->visible();
+}
+
 void
 HtmlOverlay::visible(bool value)
 {
 	_domEngine->visible(value);
 }
-

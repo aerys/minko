@@ -47,6 +47,7 @@ minko.plugin["html-overlay"].enable = function()
 			minko.action.copy(minko.plugin.path("html-overlay") .. "/asset"),
 			minko.action.copy(minko.plugin.path("html-overlay") .. "/lib/WebViewJavascriptBridge/WebViewJavascriptBridge.js.txt"),
 		}
+		links { "WebKit.framework" }
 
 	configuration { "windows32 or windows64" }
 		links { "libcef" }
