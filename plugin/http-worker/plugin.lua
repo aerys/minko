@@ -69,7 +69,7 @@ minko.plugin["http-worker"].enable = function (self)
 
 	configuration { "ios" }
 		libdirs { minko.plugin.path("http-worker") .. "/lib/curl/lib/ios/debug" }
-		links { "curl" }
+		links { "curl", "Security.framework" }
 end
 
 --function minko.worker.http:dist(workerDistDir)
