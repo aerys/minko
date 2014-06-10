@@ -420,10 +420,19 @@ Canvas::step()
         case SDL_KEYDOWN:
         {
             _keyboard->keyDown()->execute(_keyboard);
+
+			auto keyCode = static_cast<input::Keyboard::KeyCode>(event.key.keysym.sym);
+
             for (uint i = 0; i < input::Keyboard::NUM_KEYS; ++i)
             {
                 auto code = static_cast<input::Keyboard::Key>(i);
-                if (_keyboard->_keyboardState[i] && _keyboard->hasKeyDownSignal(code))
+
+				if (!_keyboard->hasKeyDownSignal(code))
+					continue;
+
+				auto pair = _keyboard->keyToKeyCodeMap.find(code);
+
+				if (pair != _keyboard->keyToKeyCodeMap.end() && pair->second == keyCode)
                     _keyboard->keyDown(code)->execute(_keyboard, i);
             }
             break;
@@ -432,6 +441,22 @@ Canvas::step()
         case SDL_KEYUP:
         {
             _keyboard->keyUp()->execute(_keyboard);
+
+			auto keyCode = static_cast<input::Keyboard::KeyCode>(event.key.keysym.sym);
+
+			for (uint i = 0; i < input::Keyboard::NUM_KEYS; ++i)
+			{
+				auto code = static_cast<input::Keyboard::Key>(i);
+
+				if (!_keyboard->hasKeyUpSignal(code))
+					continue;
+
+				auto pair = _keyboard->keyToKeyCodeMap.find(code);
+
+				if (pair != _keyboard->keyToKeyCodeMap.end() && pair->second == keyCode)
+					_keyboard->keyUp(code)->execute(_keyboard, i);
+			}
+
             for (uint i = 0; i < input::Keyboard::NUM_KEYS; ++i)
             {
                 auto code = static_cast<input::Keyboard::Key>(i);
