@@ -17,7 +17,6 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#if defined(EMSCRIPTEN)
 #include "minko/Common.hpp"
 #include "emscripten/dom/EmscriptenDOMEvent.hpp"
 #include "emscripten/dom/EmscriptenDOMElement.hpp"
@@ -123,4 +122,3 @@ EmscriptenDOMEvent::screenY()
 	int result = emscripten_run_script_int(eval.c_str());
 	return result;
 }
-#endif

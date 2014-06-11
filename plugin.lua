@@ -26,16 +26,24 @@ minko.plugin["html-overlay"].enable = function()
 	includedirs {
 		minko.plugin.path("html-overlay") .. "/include"
 	}
-	
+
 	minko.plugin.enable("sdl")
 	minko.plugin.enable("lua")
-	
+
 	configuration { "html5" }
 		prelinkcommands {
 			minko.action.copy(minko.plugin.path("html-overlay") .. "/asset")
 		}
 
 	configuration { "ios" }
+		buildoptions { "-x objective-c++" }
+		prelinkcommands {
+			minko.action.copy(minko.plugin.path("html-overlay") .. "/asset"),
+			minko.action.copy(minko.plugin.path("html-overlay") .. "/lib/WebViewJavascriptBridge/WebViewJavascriptBridge.js.txt"),
+		}
+
+
+	configuration { "osx64" }
 		buildoptions { "-x objective-c++" }
 		prelinkcommands {
 			minko.action.copy(minko.plugin.path("html-overlay") .. "/asset"),

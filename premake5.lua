@@ -1,15 +1,15 @@
 PROJECT_NAME = path.getname(os.getcwd())
 
 minko.project.library("minko-plugin-" .. PROJECT_NAME)
-	
+
 	removeplatforms { "osx64", "android" }
-	
+
 	kind "StaticLib"
 	language "C++"
 
 	minko.plugin.enable("sdl")
 	minko.plugin.enable("lua")
-	
+
 	files {
 		"lib/cef3/include/**.hpp",
 		"lib/cef3/include/**.h",
@@ -36,7 +36,9 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 			"lib/cef3/libcef_dll/**.cc",
 			"lib/cef3/libcef_dll/**.c"
 		}
-		defines {  
+
+		defines {
+			"CHROMIUM",
 			"V8_DEPRECATION_WARNINGS",
 			"CHROMIUM_BUILD",
 			"USING_CEF_SHARED",
@@ -95,7 +97,7 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 			"`pkg-config --cflags gtk+-2.0 gtkglext-1.0`"
 		}
 
-		defines { 
+		defines {
 			"USE_CAIRO=0",
 			"USE_GLIB=0",
 			"USE_NSS=1",
@@ -132,6 +134,6 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		}
 
 		defines {
-			"TARGET_IPHONE_SIMULATOR",
-			"TARGET_OS_IPHONE"
+			-- "TARGET_IPHONE_SIMULATOR",
+			-- "TARGET_OS_IPHONE"
 		}

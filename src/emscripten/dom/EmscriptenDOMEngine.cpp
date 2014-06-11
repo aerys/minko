@@ -17,8 +17,6 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#if defined(EMSCRIPTEN)
-
 #include "minko/Common.hpp"
 #include "minko/file/Options.hpp"
 #include "minko/file/FileProtocol.hpp"
@@ -103,7 +101,7 @@ EmscriptenDOMEngine::createNewDom()
 
 	std::string eval = domName + " = {};";
 	emscripten_run_script(eval.c_str());
-	
+
 	_currentDOM = EmscriptenDOM::create(domName);
 }
 
@@ -150,7 +148,7 @@ EmscriptenDOMEngine::enterFrame()
 			{
 				std::string eval = "(Minko.iframeElement.contentWindow.Minko.messagesToSend[" + std::to_string(i) + "])";
 				char* charMessage = emscripten_run_script_string(eval.c_str());
-				
+
 				std::string message(charMessage);
 
 				_currentDOM->onmessage()->execute(_currentDOM, message);
@@ -222,7 +220,7 @@ EmscriptenDOMEngine::visible(bool value)
 		std::string eval = "";
 
 		std::string visibility = "visible";
-		
+
 		if (!value)
 			visibility = "hidden";
 
@@ -233,4 +231,9 @@ EmscriptenDOMEngine::visible(bool value)
 
 	_visible = value;
 }
-#endif
+
+bool
+EmscriptenDOMEngine::visible()
+{
+	return _visible;
+}

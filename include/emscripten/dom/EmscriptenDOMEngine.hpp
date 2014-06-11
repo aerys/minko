@@ -17,7 +17,6 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#if defined(EMSCRIPTEN)
 #pragma once
 
 #include "minko/Common.hpp"
@@ -45,7 +44,7 @@ namespace emscripten
 
 			void
 			initialize(minko::AbstractCanvas::Ptr, minko::component::SceneManager::Ptr);
-			
+
 			void
 			enterFrame();
 
@@ -70,6 +69,9 @@ namespace emscripten
 
 			void
 			visible(bool);
+
+			bool
+			visible();
 
 		private:
 
@@ -100,4 +102,3 @@ namespace emscripten
 		};
 	}
 }
-#endif

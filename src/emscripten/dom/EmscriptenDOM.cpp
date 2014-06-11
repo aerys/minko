@@ -17,8 +17,6 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#if defined(EMSCRIPTEN)
-
 #include "minko/Common.hpp"
 #include "emscripten/dom/EmscriptenDOM.hpp"
 #include "emscripten/emscripten.h"
@@ -185,4 +183,3 @@ EmscriptenDOM::initialized()
 {
 	return _initialized;
 }
-#endif
