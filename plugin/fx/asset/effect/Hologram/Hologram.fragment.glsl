@@ -79,10 +79,10 @@ computePixelColorFromNormalMap(sampler2D normalMap, sampler2D depthMap, vec2 scr
 	
 	vec4 dots = vec4(dot(normal, upNormal), dot(normal, downNormal), dot(normal, rightNormal), dot(normal, leftNormal));
 	
-	if (dots.x >= 0 && dots.x <= highLimit ||
-		dots.y >= 0 && dots.y <= highLimit ||
-		dots.z >= 0 && dots.z <= highLimit ||
-		dots.w >= 0 && dots.w <= highLimit ||
+	if (dots.x >= 0.0 && dots.x <= highLimit ||
+		dots.y >= 0.0 && dots.y <= highLimit ||
+		dots.z >= 0.0 && dots.z <= highLimit ||
+		dots.w >= 0.0 && dots.w <= highLimit ||
 		((abs(depthCenter - depthTopRight)		>= depthLimit) && (useDepthMap == 1)) ||
 		((abs(depthCenter - depthBottomRight)	>= depthLimit) && (useDepthMap == 1))  ||
 		((abs(depthCenter - depthBottom)		>= depthLimit) && (useDepthMap == 1))  ||

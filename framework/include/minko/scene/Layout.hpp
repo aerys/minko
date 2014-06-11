@@ -38,6 +38,7 @@ namespace minko
 				// static const Layouts STATIC;
 				static const Layouts IGNORE_RAYCASTING;
 				static const Layouts CULLING;
+				static const Layouts PICKING;
 			};
 
 			class Mask

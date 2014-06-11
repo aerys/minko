@@ -8,7 +8,11 @@ uniform vec4        pickingColor;
 
 void main(void)
 {
+#ifndef PICKING_COLOR
+	discard;
+#else
 	gl_FragColor = pickingColor;
+#endif
 }
 
 #endif // FRAGMENT_SHADER

@@ -63,6 +63,7 @@ Picking::Picking(SceneManagerPtr	sceneManager,
 {
 	_renderer	= Renderer::create(0xFFFF00FF, nullptr, sceneManager->assets()->effect("effect/Picking.effect"), 1000.f);
 	_renderer->scissor(0, 0, 1, 1);
+	//_renderer->layoutMask(scene::Layout::Group::PICKING);
 }
 
 void
@@ -275,6 +276,7 @@ Picking::addSurface(SurfacePtr surface)
 
 		_surfaceToPickingId[surface] = _pickingId;
 		_pickingIdToSurface[_pickingId] = surface;
+
 		_surfaceToProvider[surface] = data::StructureProvider::create("picking");
 
 		_surfaceToProvider[surface]->set<math::Vector4::Ptr>("color", math::Vector4::create(
@@ -284,7 +286,17 @@ Picking::addSurface(SurfacePtr surface)
 			1
 			));
 
-		surface->targets()[0]->data()->addProvider(_surfaceToProvider[surface]);
+
+		auto target = surface->targets()[0];
+
+		if (_targetToProvider.find(target) == _targetToProvider.end())
+		{
+			_targetToProvider[target] = _surfaceToProvider[surface];
+
+			target->data()->addProvider(_surfaceToProvider[surface]);
+		}
+
+		//surface->layoutMask(surface->layoutMask() | scene::Layout::Group::PICKING);
 	}
 }
 
@@ -297,6 +309,8 @@ Picking::removeSurface(SurfacePtr surface)
 	_surfaceToPickingId.erase(surface);
 	_surfaceToProvider.erase(surface);
 	_pickingIdToSurface.erase(surfacePickingId);
+
+	//surface->targets()[0]->layouts(surface->layoutMask() | ~scene::Layout::Group::PICKING);
 }
 
 void

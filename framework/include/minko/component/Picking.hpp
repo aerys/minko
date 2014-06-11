@@ -56,6 +56,7 @@ namespace minko
 			std::map<SurfacePtr, uint>					_surfaceToPickingId; 
 			std::map<uint, SurfacePtr>					_pickingIdToSurface;
 			std::map<SurfacePtr, StructureProviderPtr>	_surfaceToProvider;
+			std::map<NodePtr, StructureProviderPtr>		_targetToProvider;
 			uint										_pickingId;
 			ContextPtr									_context;
 			StructureProviderPtr						_pickingProvider;
