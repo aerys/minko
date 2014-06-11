@@ -69,7 +69,7 @@ IOSWebViewDOMEvent::target()
 int
 IOSWebViewDOMEvent::identifier(int id)
 {
-    std::string js = "(" + _jsAccessor + ".changedTouches[" + std::to_string(id) + "].identifier)";
+    std::string js = "(" + _jsAccessor + ".changedTouches[" + std::to_string(id) + "].identifier % 2147483647)";
     int result = atoi(_engine->eval(js).c_str());
     
     return result;

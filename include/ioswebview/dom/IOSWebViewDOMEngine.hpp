@@ -159,6 +159,7 @@ namespace ioswebview
             
             // Fingers
             std::map<int, std::shared_ptr<minko::SDLFinger>> _fingers;
+            int _firstFingerId;
 		};
 	}
 }

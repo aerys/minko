@@ -116,13 +116,13 @@
 					//m.bridge.send({type: type, value: accessor.minkoName + '|' + eventIndex});
 
 
-					// if (event.type == "touchmove")
+					// if (event.type == "touchstart")
 					// {
-					// 	document.getElementById("debug").innerHTML = event.layerX + " " + event.layerY + "<br/>";
 					// 	var touches = event.changedTouches;
 					// 	for (var i = 0; i < touches.length; i++)
 					// 	{
-					// 		m.bridge.send({type: "log", value: "[JS] Finger move id: " + touches[i].identifier + "(for i = " + i + ")"});
+					// 		var identifier = touches[i].identifier.toString();
+					// 		m.bridge.send({type: "log", value: "[JS] Finger move id: " + identifier + "(for i = " + i + ")"});
 					// 	}
 					// }
 				});
