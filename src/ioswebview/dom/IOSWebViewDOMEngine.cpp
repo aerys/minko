@@ -17,8 +17,6 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#if defined(TARGET_IPHONE_SIMULATOR) or defined(TARGET_OS_IPHONE) // iOS
-
 #include "minko/Common.hpp"
 #include "minko/file/Options.hpp"
 #include "minko/file/FileProtocol.hpp"
@@ -621,5 +619,3 @@ IOSWebViewDOMEngine::eval(std::string data)
     
     return resultString;
 }
-
-#endif

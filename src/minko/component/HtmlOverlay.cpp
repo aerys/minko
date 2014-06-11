@@ -1,11 +1,15 @@
+#if defined(__APPLE__)
+# include "TargetConditionals.h"
+#endif
+
 #if defined(CHROMIUM)
-#include "chromium/dom/ChromiumDOMEngine.hpp"
+# include "chromium/dom/ChromiumDOMEngine.hpp"
 #endif
 #if defined(EMSCRIPTEN)
-#include "emscripten/dom/EmscriptenDOMEngine.hpp"
+# include "emscripten/dom/EmscriptenDOMEngine.hpp"
 #endif
 #if defined(TARGET_IPHONE_SIMULATOR) or defined(TARGET_OS_IPHONE) // iOS
-#include "ioswebview/dom/IOSWebViewDOMEngine.hpp"
+# include "ioswebview/dom/IOSWebViewDOMEngine.hpp"
 #endif
 
 #include "minko/component/HtmlOverlay.hpp"
