@@ -97,12 +97,14 @@ namespace minko
 			bool										_executeRightDownHandler;
 			bool										_executeLeftDownHandler;
 
+			bool										_addPickingLayout;
+
 		public:
 			inline static
 			Ptr
-			create(SceneManagerPtr sceneManager, AbstractCanvasPtr canvas, NodePtr camera)
+			create(SceneManagerPtr sceneManager, AbstractCanvasPtr canvas, NodePtr camera, bool addPickingLayoutToNodes = true)
 			{
-				Ptr picking = std::shared_ptr<Picking>(new Picking(sceneManager, canvas, camera));
+				Ptr picking = std::shared_ptr<Picking>(new Picking(sceneManager, canvas, camera, addPickingLayoutToNodes));
 
 				picking->initialize();
 
@@ -214,7 +216,7 @@ namespace minko
 			void
 			renderingEnd(RendererPtr renderer);
 
-			Picking(SceneManagerPtr sceneManager, AbstractCanvasPtr canvas, NodePtr camera);
+			Picking(SceneManagerPtr sceneManager, AbstractCanvasPtr canvas, NodePtr cameraj, bool addPickingLayoutToNodes);
 
 			void
 			mouseMoveHandler(MousePtr mouse, int dx, int dy);

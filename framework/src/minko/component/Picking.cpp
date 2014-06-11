@@ -43,7 +43,8 @@ using namespace component;
 
 Picking::Picking(SceneManagerPtr	sceneManager,
 				 AbstractCanvasPtr	canvas,
-				 NodePtr			camera) :
+				 NodePtr			camera, 
+				 bool				addPickingLayout) :
 	_mouse(canvas->mouse()),
 	_camera(camera),
 	_pickingId(0),
@@ -59,11 +60,12 @@ Picking::Picking(SceneManagerPtr	sceneManager,
 	_mouseLeftUp(Signal<NodePtr>::create()),
 	_mouseRightUp(Signal<NodePtr>::create()),
 	_mouseOut(Signal<NodePtr>::create()),
-	_mouseOver(Signal<NodePtr>::create())
+	_mouseOver(Signal<NodePtr>::create()),
+	_addPickingLayout(addPickingLayout)
 {
 	_renderer	= Renderer::create(0xFFFF00FF, nullptr, sceneManager->assets()->effect("effect/Picking.effect"), 1000.f);
 	_renderer->scissor(0, 0, 1, 1);
-	//_renderer->layoutMask(scene::Layout::Group::PICKING);
+	_renderer->layoutMask(scene::Layout::Group::PICKING);
 }
 
 void
@@ -296,7 +298,8 @@ Picking::addSurface(SurfacePtr surface)
 			target->data()->addProvider(_surfaceToProvider[surface]);
 		}
 
-		//surface->layoutMask(surface->layoutMask() | scene::Layout::Group::PICKING);
+		if (_addPickingLayout)
+			target->layouts(target->layouts() | scene::Layout::Group::PICKING);
 	}
 }
 
@@ -310,7 +313,8 @@ Picking::removeSurface(SurfacePtr surface)
 	_surfaceToProvider.erase(surface);
 	_pickingIdToSurface.erase(surfacePickingId);
 
-	//surface->targets()[0]->layouts(surface->layoutMask() | ~scene::Layout::Group::PICKING);
+	if (_addPickingLayout)
+		surface->targets()[0]->layouts(surface->layoutMask() | ~scene::Layout::Group::PICKING);
 }
 
 void
