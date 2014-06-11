@@ -113,16 +113,18 @@
 				{
 					accessor.minkoEvents.push(event);
 					var eventIndex = accessor.minkoEvents.length - 1;
-					m.bridge.send({type: type, value: accessor.minkoName + '|' + eventIndex});
+					//m.bridge.send({type: type, value: accessor.minkoName + '|' + eventIndex});
 
-					if (event.type == "touchend")
-					{
-						var touches = event.changedTouches;
-						for (var i = 0; i < touches.length; i++)
-						{
-							m.bridge.send({type: "log", value: "[JS] Finger up id: " + touches[i].identifier + "(for i = " + i + ")"});
-						}
-					}
+
+					// if (event.type == "touchmove")
+					// {
+					// 	document.getElementById("debug").innerHTML = event.layerX + " " + event.layerY + "<br/>";
+					// 	var touches = event.changedTouches;
+					// 	for (var i = 0; i < touches.length; i++)
+					// 	{
+					// 		m.bridge.send({type: "log", value: "[JS] Finger move id: " + touches[i].identifier + "(for i = " + i + ")"});
+					// 	}
+					// }
 				});
 			};
 
@@ -139,6 +141,21 @@
 				var metaElement = document.getElementById("metaViewport");
 
 				metaElement.setAttribute("content", "width=" + width);
+			};
+
+
+			m.getEventsCount = function(accessor)
+			{
+				if(accessor && accessor.minkoEvents)
+					return accessor.minkoEvents.length;
+				else
+					return 0;
+			};
+
+			m.clearEvents = function(accessor)
+			{
+				if(accessor)
+					accessor.minkoEvents = [];
 			};
 
 			window.Minko = m;

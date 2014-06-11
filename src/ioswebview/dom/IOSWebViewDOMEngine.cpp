@@ -249,6 +249,11 @@ IOSWebViewDOMEngine::enterFrame()
         
         registerDomEvents();
 	}
+    
+    for(auto element : IOSWebViewDOMElement::domElements)
+    {
+        element->update();
+    }
 
 	if (_currentDOM->initialized() && _isReady)
 	{
@@ -497,6 +502,8 @@ IOSWebViewDOMEngine::registerDomEvents()
             
             //std::cout << "[DOM] Finger down id: " << sdlEvent.tfinger.fingerId << " (for i = " << i << ")" << std::endl;
             
+            //std::cout << "[DOM] Finger down at: " << sdlEvent.tfinger.x << ", " << sdlEvent.tfinger.y << std::endl;
+            
             SDL_PushEvent(&sdlEvent);
             
             // Add finger to list
@@ -526,13 +533,18 @@ IOSWebViewDOMEngine::registerDomEvents()
         
         for (auto i = 0; i < fingerNumber; i++)
         {
+            int x = event->clientX(i);
+            int y = event->clientY(i);
+            
             SDL_Event sdlEvent;
             sdlEvent.type = SDL_FINGERUP;
             sdlEvent.tfinger.fingerId = event->identifier(i);
-            sdlEvent.tfinger.x = event->clientX(i) / _canvas->width();
-            sdlEvent.tfinger.y = event->clientY(i) / _canvas->height();
+            sdlEvent.tfinger.x = x / _canvas->width();
+            sdlEvent.tfinger.y = y / _canvas->height();
             
             //std::cout << "[DOM] Finger up id: " << sdlEvent.tfinger.fingerId << " (for i = " << i << ")" << std::endl;
+            
+            //std::cout << "[DOM] Finger up at: " << sdlEvent.tfinger.x << ", " << sdlEvent.tfinger.y << "(for i = " << i << ")" << std::endl;
             
             SDL_PushEvent(&sdlEvent);
             
@@ -559,10 +571,10 @@ IOSWebViewDOMEngine::registerDomEvents()
         for (auto i = 0; i < fingerNumber; i++)
         {
             int fingerId = event->identifier(i);
-            int oldX = _fingers.at(fingerId)->minko::input::Finger::x();
-            int oldY = _fingers.at(fingerId)->minko::input::Finger::y();
-            int x = event->clientX(i);
-            int y = event->clientY(i);
+            float oldX = _fingers.at(fingerId)->minko::input::Finger::x();
+            float oldY = _fingers.at(fingerId)->minko::input::Finger::y();
+            float x = event->clientX(i);
+            float y = event->clientY(i);
             
             SDL_Event sdlEvent;
             sdlEvent.type = SDL_FINGERMOTION;
@@ -572,12 +584,13 @@ IOSWebViewDOMEngine::registerDomEvents()
             sdlEvent.tfinger.dx = (x - oldX) / _canvas->width();
             sdlEvent.tfinger.dy = (y - oldY) / _canvas->height();
             
-            std::cout << "[DOM] Canvas size: " << _canvas->width() << "x" << _canvas->height() << std::endl;
-            
-            std::cout << "[DOM] Finger motion => " << std::endl
-            << "x: " << x << ", y = " << y << std::endl
-            << "oldX: " << oldX << ", oldY: " << oldY << std::endl
-            << "dx: " << (x - oldX) << "(" << sdlEvent.tfinger.dx << "), dy: " << (y - oldY) << "(" << sdlEvent.tfinger.dy << ")" << std::endl;
+//            std::cout << "[DOM] Canvas size: " << _canvas->width() << "x" << _canvas->height() << std::endl;
+//            
+//            std::cout << "[DOM] Finger motion => " << std::endl
+//            << "x: " << x << ", y = " << y << std::endl
+//            << "oldX: " << oldX << ", oldY: " << oldY << std::endl
+//            << "dx: " << ((x - oldX) / _canvas->width()) << "(" << sdlEvent.tfinger.dx
+//            << "), dy: " << ((y - oldY) / _canvas->height()) << "(" << sdlEvent.tfinger.dy << ")" << std::endl;
             
             SDL_PushEvent(&sdlEvent);
             

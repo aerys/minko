@@ -54,10 +54,6 @@ IOSWebViewDOMElement::IOSWebViewDOMElement(std::string jsAccessor) :
     _ontouchdown(Signal<AbstractDOMEvent::Ptr>::create()),
     _ontouchup(Signal<AbstractDOMEvent::Ptr>::create()),
     _ontouchmotion(Signal<AbstractDOMEvent::Ptr>::create()),
-	_onclickSet(false),
-	_onmousedownSet(false),
-	_onmousemoveSet(false),
-	_onmouseupSet(false),
 	_onmouseoverSet(false),
 	_onmouseoutSet(false),
     _ontouchdownSet(false),
@@ -270,7 +266,6 @@ IOSWebViewDOMElement::getElementsByTagName(std::string tagName)
 	return (_engine->currentDOM()->getElementList(_jsAccessor + ".getElementsByTagName('" + tagName + "')"));
 }
 
-
 std::string
 IOSWebViewDOMElement::style(std::string name)
 {
@@ -300,10 +295,10 @@ IOSWebViewDOMElement::addEventListener(std::string type)
 Signal<std::shared_ptr<AbstractDOMEvent>>::Ptr
 IOSWebViewDOMElement::onclick()
 {
-	if (!_onclickSet)
+	if (!_ontouchupSet)
 	{
 		addEventListener("touchend");
-		_onclickSet = true;
+		_ontouchupSet = true;
 	}
 
 	return _onclick;
@@ -312,10 +307,10 @@ IOSWebViewDOMElement::onclick()
 Signal<std::shared_ptr<AbstractDOMEvent>>::Ptr
 IOSWebViewDOMElement::onmousedown()
 {
-	if (!_onmousedownSet)
+	if (!_ontouchdownSet)
 	{
 		addEventListener("touchstart");
-		_onmousedownSet = true;
+		_ontouchdownSet = true;
 	}
 
 	return _onmousedown;
@@ -324,10 +319,10 @@ IOSWebViewDOMElement::onmousedown()
 Signal<std::shared_ptr<AbstractDOMEvent>>::Ptr
 IOSWebViewDOMElement::onmousemove()
 {
-	if (!_onmousemoveSet)
+	if (!_ontouchmotionSet)
 	{
 		addEventListener("touchmove");
-		_onmousemoveSet = true;
+		_ontouchmotionSet = true;
 	}
 	
 	return _onmousemove;
@@ -336,37 +331,13 @@ IOSWebViewDOMElement::onmousemove()
 Signal<std::shared_ptr<AbstractDOMEvent>>::Ptr
 IOSWebViewDOMElement::onmouseup()
 {
-	if (!_onmouseupSet)
+	if (!_ontouchupSet)
 	{
 		addEventListener("touchend");
-		_onmouseupSet = true;
+		_ontouchupSet = true;
 	}
 
 	return _onmouseup;
-}
-
-Signal<std::shared_ptr<AbstractDOMEvent>>::Ptr
-IOSWebViewDOMElement::onmouseout()
-{
-	if (!_onmouseoutSet)
-	{
-		addEventListener("mouseout");
-		_onmouseoutSet = true;
-	}
-
-	return _onmouseout;
-}
-
-Signal<std::shared_ptr<AbstractDOMEvent>>::Ptr
-IOSWebViewDOMElement::onmouseover()
-{
-	if (!_onmouseoverSet)
-	{
-		addEventListener("mouseover");
-		_onmouseoverSet = true;
-	}
-
-	return _onmouseover;
 }
 
 Signal<std::shared_ptr<AbstractDOMEvent>>::Ptr
@@ -374,7 +345,7 @@ IOSWebViewDOMElement::ontouchdown()
 {
     if (!_ontouchdownSet)
 	{
-		addEventListener("touchdown");
+		addEventListener("touchstart");
 		_ontouchdownSet = true;
 	}
     
@@ -386,7 +357,7 @@ IOSWebViewDOMElement::ontouchup()
 {
     if (!_ontouchupSet)
 	{
-		addEventListener("touchdown");
+		addEventListener("touchend");
 		_ontouchupSet = true;
 	}
     
@@ -398,11 +369,76 @@ IOSWebViewDOMElement::ontouchmotion()
 {
     if (!_ontouchmotionSet)
 	{
-		addEventListener("touchmotion");
+		addEventListener("touchmove");
 		_ontouchmotionSet = true;
 	}
     
     return _ontouchmotion;
+}
+
+Signal<std::shared_ptr<AbstractDOMEvent>>::Ptr
+IOSWebViewDOMElement::onmouseout()
+{
+    if (!_onmouseoutSet)
+    {
+        addEventListener("mouseout");
+        _onmouseoutSet = true;
+    }
+    
+    return _onmouseout;
+}
+
+Signal<std::shared_ptr<AbstractDOMEvent>>::Ptr
+IOSWebViewDOMElement::onmouseover()
+{
+    if (!_onmouseoverSet)
+    {
+        addEventListener("mouseover");
+        _onmouseoverSet = true;
+    }
+    
+    return _onmouseover;
+}
+
+void
+IOSWebViewDOMElement::update()
+{
+    if (_engine->isReady())
+    {
+        std::string js = "(Minko.getEventsCount(" + _jsAccessor + "))";
+        int l = atoi(_engine->eval(js).c_str());
+        
+        for(int i = 0; i < l; ++i)
+        {
+            std::string eventName = "Minko.event" + std::to_string(_elementUid++);
+            js =  eventName + " = " + _jsAccessor + ".minkoEvents[" + std::to_string(i) + "];";
+            _engine->eval(js);
+            
+            IOSWebViewDOMEvent::Ptr event = IOSWebViewDOMEvent::create(eventName, _engine);
+            
+            std::string type = event->type();
+            
+            if (type == "touchstart")
+            {
+                _ontouchdown->execute(event);
+                _onmousedown->execute(event);
+            }
+            else if (type == "touchend")
+            {
+                _ontouchup->execute(event);
+                _onclick->execute(event);
+                _onmouseup->execute(event);
+            }
+            else if (type == "touchmove")
+            {
+                _ontouchmotion->execute(event);
+                _onmousemove->execute(event);
+            }
+        }
+        
+        js = "Minko.clearEvents(" + _jsAccessor + ");";
+        _engine->eval(js);
+    }
 }
 
 #endif
