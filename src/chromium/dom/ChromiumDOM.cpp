@@ -246,13 +246,20 @@ ChromiumDOM::update()
 	ChromiumDOMElement::update();
 
 	_receivedMessagesMutex.lock();
+
+	std::list<std::string> messages;
+
 	for (std::string message : _receivedMessages)
+		messages.push_back(message);
+
+	_receivedMessages.clear();
+	_receivedMessagesMutex.unlock();
+	
+	for (std::string message : messages)
 	{
 		_onmessage->execute(shared_from_this(), message);
 		_engine->onmessage()->execute(shared_from_this(), message);
 	}
-	_receivedMessages.clear();
-	_receivedMessagesMutex.unlock();
 
 	if (_executeOnLoad)
 	{
