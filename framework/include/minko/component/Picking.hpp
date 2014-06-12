@@ -61,6 +61,8 @@ namespace minko
 			ContextPtr									_context;
 			StructureProviderPtr						_pickingProvider;
 
+			std::vector<NodePtr>						_descendants;
+
 			Signal<AbsCtrlPtr, NodePtr>::Slot			_targetAddedSlot;
 			Signal<AbsCtrlPtr, NodePtr>::Slot			_targetRemovedSlot;
 			Signal<NodePtr, NodePtr, NodePtr>::Slot		_addedSlot;
@@ -205,10 +207,16 @@ namespace minko
 			componentRemovedHandler(NodePtr node, NodePtr target, AbsCtrlPtr ctrl);
 
 			void
+			addSurfacesForNode(NodePtr node);
+
+			void
+			removeSurfacesForNode(NodePtr node);
+
+			void
 			addSurface(SurfacePtr surface);
 
 			void
-			removeSurface(SurfacePtr surface);
+			removeSurface(SurfacePtr surface, NodePtr node);
 
 			void
 			renderingBegin(RendererPtr renderer);
@@ -232,6 +240,9 @@ namespace minko
 
 			void
 			mouseLeftClickHandler(MousePtr mouse);
+			
+			void
+			updateDescendants(NodePtr target);
 		};
 	}
 }
