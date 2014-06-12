@@ -7,18 +7,12 @@
 #pragma include("../Depth/Depth.function.glsl")
 
 uniform vec4        diffuseColor;
-uniform sampler2D   diffuseMap;
 uniform sampler2D	frontFaceNormalMap;
 uniform sampler2D	backFaceNormalMap;
 uniform sampler2D	depthMap;
 uniform sampler2D	noiseMap;
-uniform samplerCube	diffuseCubeMap;
 uniform vec3 		cameraPosition;
-// alpha
-uniform sampler2D 	alphaMap;
-uniform float 		alphaThreshold;
 uniform float		time;
-uniform float		mapResolution;
 
 varying vec3 vertexPosition;
 varying vec3 vertexNormal;
@@ -29,20 +23,19 @@ vec4
 computePixelColorFromNormalMap(sampler2D normalMap, sampler2D depthMap, vec2 screenPositionUV, vec4 color, int useDepthMap)
 {
 	vec4 diffuse		= vec4(0.0, 0.0, 0.0, 0.0);
-	float resolution	= mapResolution;
-	float highLimit		= 0.6;
-	float depthLimit	= 1.0;
+	float highLimit		= 0.9;
+	float depthLimit	= 0.3;
 	
 	// init offsets
-	vec2 centerOffset		= vec2(0.0, 0.0) / resolution;
-	vec2 leftOffset			= vec2(0.0, 1.0) / resolution;
-	vec2 topLeftOffset		= vec2(1.0, 1.0) / resolution;
-	vec2 topOffset			= vec2(1.0, 0.0) / resolution;
-	vec2 topRightOffset		= vec2(1.0, -1.0) / resolution;
-	vec2 rightOffset		= vec2(0.0, -1.0) / resolution;
-	vec2 bottomRightOffset	= vec2(-1.0, -1.0) / resolution;
-	vec2 bottomOffset		= vec2(-1.0, 0.0) / resolution;
-	vec2 bottomLeftOffset	= vec2(-1.0, 1.0) / resolution;
+	vec2 centerOffset		= vec2(0.0, 0.0) / MAP_RESOLUTION;
+	vec2 leftOffset			= vec2(0.0, 1.0) / MAP_RESOLUTION;
+	vec2 topLeftOffset		= vec2(1.0, 1.0) / MAP_RESOLUTION;
+	vec2 topOffset			= vec2(1.0, 0.0) / MAP_RESOLUTION;
+	vec2 topRightOffset		= vec2(1.0, -1.0) / MAP_RESOLUTION;
+	vec2 rightOffset		= vec2(0.0, -1.0) / MAP_RESOLUTION;
+	vec2 bottomRightOffset	= vec2(-1.0, -1.0) / MAP_RESOLUTION;
+	vec2 bottomOffset		= vec2(-1.0, 0.0) / MAP_RESOLUTION;
+	vec2 bottomLeftOffset	= vec2(-1.0, 1.0) / MAP_RESOLUTION;
 
 	// sample normal texture
 	vec3 normalColor		= texture2D(normalMap, screenPositionUV).xyz;
@@ -89,7 +82,7 @@ computePixelColorFromNormalMap(sampler2D normalMap, sampler2D depthMap, vec2 scr
 		((abs(depthCenter - depthBottomLeft)	>= depthLimit) && (useDepthMap == 1)) )
 		diffuse = vec4(color.rgb, 1.0);
 	else
-		diffuse = vec4(color.rgb, 0.09);
+		diffuse = vec4(color.rgb, 0.15);
 
 	return diffuse;
 }
@@ -113,7 +106,7 @@ void main(void)
 	float yFract = fract(vertexPosition.y - time / 1900.0);
 
 	if (yFract >= 0.15 && yFract < 0.21 && diffuse.a < 0.5)
-		diffuse = vec4(mix(diffuse.rgb, vec3(1.0, 1.0, 1.0), 0.9), diffuse.a * 1.2);
+		diffuse = vec4(mix(diffuse.rgb, vec3(1.0, 1.0, 1.0), 0.1), diffuse.a * 4.0);
 
 	float yFract2 = fract(fract(vertexPosition.y - time / 100000.0) * 8.0);
 
@@ -125,8 +118,6 @@ void main(void)
 		diffuse = vec4(diffuse.rgb * 0.7, diffuse.a);
 
 	gl_FragColor = diffuse;
-
-	//gl_FragColor = texture2D(backFaceNormalMap, vertexUV);
 }
 
 #endif // FRAGMENT_SHADER

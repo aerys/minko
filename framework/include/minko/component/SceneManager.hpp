@@ -50,6 +50,8 @@ namespace minko
 			Signal<Ptr, uint, AbsTexturePtr>::Ptr           _renderBegin;
 			Signal<Ptr, uint, AbsTexturePtr>::Ptr           _renderEnd;
 
+			std::shared_ptr<data::StructureProvider>		_data;
+
             Signal<AbstractComponent::Ptr, NodePtr>::Slot   _targetAddedSlot;
             Signal<AbstractComponent::Ptr, NodePtr>::Slot   _targetRemovedSlot;
             Signal<NodePtr, NodePtr, NodePtr>::Slot         _addedSlot;

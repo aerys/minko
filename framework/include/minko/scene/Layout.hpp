@@ -23,7 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	typedef int32_t Layouts;
+	typedef uint32_t Layouts;
 
 	namespace scene
 	{

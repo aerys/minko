@@ -49,9 +49,7 @@ namespace minko
 			Signal<NodePtr, NodePtr, NodePtr>::Slot									_addedToSceneSlot;
 			Signal<std::shared_ptr<component::SceneManager>, float, float>::Slot    _frameBeginSlot;
 
-			std::shared_ptr<render::Effect>											_frontEffect;
-			std::shared_ptr<render::Effect>											_backEffect;
-			std::shared_ptr<render::Effect>											_depthEffect;
+			std::shared_ptr<render::Effect>											_effect;
 			std::shared_ptr<render::AbstractContext>								_context;
 
 			static RendererPtr _frontFaceNormalRenderer0;
@@ -76,12 +74,10 @@ namespace minko
 
 			inline static
 				Ptr
-				create(std::shared_ptr<render::Effect>			frontEffect,
-				std::shared_ptr<render::Effect>			backEffect,
-				std::shared_ptr<render::Effect>			depthEffect,
-				std::shared_ptr<render::AbstractContext> context)
-			{
-					Ptr hologram = std::shared_ptr<Hologram>(new Hologram(frontEffect, backEffect, depthEffect, context));
+				create(std::shared_ptr<render::Effect>			effect,
+					   std::shared_ptr<render::AbstractContext> context)
+				{
+					Ptr hologram = std::shared_ptr<Hologram>(new Hologram(effect, context));
 
 					hologram->initialize();
 
@@ -97,10 +93,8 @@ namespace minko
 
 		private:
 
-			Hologram(std::shared_ptr<render::Effect>			frontEffect,
-				std::shared_ptr<render::Effect>			backEffect,
-				std::shared_ptr<render::Effect>			depthEffect,
-				std::shared_ptr<render::AbstractContext>	context);
+			Hologram(std::shared_ptr<render::Effect>			effect,
+					 std::shared_ptr<render::AbstractContext>	context);
 
 			void
 				initialize();

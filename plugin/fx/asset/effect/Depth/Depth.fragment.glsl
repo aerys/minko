@@ -17,7 +17,6 @@ void main(void)
 	float depth			= eyeToVertex / 100.0;
 
 	gl_FragColor = pack(depth);
-	//gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
 }
 
 #endif // FRAGMENT_SHADER

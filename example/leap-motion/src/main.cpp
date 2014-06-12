@@ -319,11 +319,11 @@ int main(int argc, char** argv)
 				 BasicMaterial::create()
 					 ->diffuseColor(Vector4::create(1.0f, 0.0f, 0.0f, 1.0f))
 					 ->diffuseMap(sceneManager->assets()->texture(HANGAR_TEXTURE))
-					 ->triangleCulling(render::TriangleCulling::FRONT),
+					 ->triangleCulling(render::TriangleCulling::FRONT), 
 				sceneManager->assets()->effect("effect/Basic.effect")
 			));
 
-		root->addChild(dirLight);
+		root->addChild(dirLight); 
 		root->addChild(pointLight);
         root->addChild(skybox);
 		root->addChild(cameraNode);
