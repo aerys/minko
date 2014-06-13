@@ -162,6 +162,7 @@ SceneParser::parseNode(std::vector<SerializedNode>&			nodePack,
 	scene::Node::Ptr									root;
 	std::queue<std::tuple<scene::Node::Ptr, uint>>		nodeStack;
 	std::map<int, std::vector<scene::Node::Ptr>>		componentIdToNodes;
+    std::map<scene::Node::Ptr, scene::Node::Ptr>        nodeToParentMap;
 
 	for (uint i = 0; i < nodePack.size(); ++i)
 	{
@@ -173,22 +174,25 @@ SceneParser::parseNode(std::vector<SerializedNode>&			nodePack,
 		newNode->layouts(layouts);
 		newNode->name(nodePack[i].a0);
 
-		newNode = options->nodeFunction()(newNode);
-
 		for (uint componentId : componentsId)
 			componentIdToNodes[componentId].push_back(newNode);
 
-		if (nodeStack.size() == 0)
-			root = newNode;
+        if (nodeStack.size() == 0)
+        {
+            root = newNode;
+
+            nodeToParentMap.insert(std::make_pair(root, nullptr));
+        }
 		else
 		{
 			scene::Node::Ptr parent = std::get<0>(nodeStack.front());
 
-			parent->addChild(newNode);
 			std::get<1>(nodeStack.front())--;
 
 			if (std::get<1>(nodeStack.front()) == 0)
 				nodeStack.pop();
+
+            nodeToParentMap.insert(std::make_pair(newNode, parent));
 		}
 
 		if (numChildren > 0)
@@ -237,6 +241,17 @@ SceneParser::parseNode(std::vector<SerializedNode>&			nodePack,
 			n->addComponent(component::BoundingBox::create());
 		}
 	}
+
+    for (auto nodeToParentPair : nodeToParentMap)
+    {
+        auto node = nodeToParentPair.first;
+        auto parent = nodeToParentPair.second;
+
+        auto newNode = options->nodeFunction()(node);
+
+        if (parent != nullptr)
+            parent->addChild(newNode);
+    }
 
 	return root;
 }
