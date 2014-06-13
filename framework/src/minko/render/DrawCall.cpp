@@ -673,7 +673,8 @@ DrawCall::render(const AbstractContext::Ptr& context, AbstractTexture::Ptr rende
     	if (renderTarget->id() != context->renderTarget())
     	{
 	        context->setRenderToTexture(renderTarget->id(), true);
-	        context->clear();
+			if (_target)
+				context->clear();
 	    }
     }
     else

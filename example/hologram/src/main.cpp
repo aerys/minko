@@ -34,7 +34,7 @@ const float HEIGHT	= 1024;
 int main(int argc, char** argv)
 {
 	auto canvas = Canvas::create("Minko Example - Hologram", WIDTH, HEIGHT);
-	auto sceneManager = SceneManager::create(canvas->context());
+	auto sceneManager = SceneManager::create(canvas->context()); 
 
 	//canvas->context()->errorsEnabled(true);
 
@@ -46,7 +46,8 @@ int main(int argc, char** argv)
         ->registerParser<file::PNGParser>("png");
 
 	auto fxLoader = file::Loader::create(sceneManager->assets()->loader())
-		//->queue("effect/FXAA/FXAA.effect")
+		->queue("effect/Basic.effect")
+		->queue("effect/FXAA/FXAA.effect")
 		->queue("effect/Hologram/Hologram.effect");
 
 	auto fxComplete = fxLoader->complete()->connect([&](file::Loader::Ptr l)
@@ -74,14 +75,13 @@ int main(int argc, char** argv)
 	root->addChild(camera);
 
 	// FXAA
-	/*
 	render::AbstractTexture::Ptr 	ppTarget = render::Texture::create(
 		sceneManager->assets()->context(),
 		math::clp2(canvas->width()),
 		math::clp2(canvas->height()),
 		false,
 		true
-		);
+	);
 
 	ppTarget->upload();
 
@@ -89,7 +89,7 @@ int main(int argc, char** argv)
 	auto ppData = data::Provider::create()
 		->set("backbuffer", ppTarget)
 		->set("invBackbufferSize", Vector2::create(1.f / (float)ppTarget->width(), 1.f / (float)ppTarget->height()));
-		*/
+	
 	auto _ = sceneManager->assets()->loader()->complete()->connect([=](file::Loader::Ptr loader)
 	{
 		auto cubeGeometry = geometry::CubeGeometry::create(sceneManager->assets()->context());
@@ -114,7 +114,7 @@ int main(int argc, char** argv)
 			sceneManager->assets()->geometry("sphereGeometry"),
 			material::Material::create()
 				->set("diffuseColor", math::Vector4::create(240.f / 255.f, 95.f / 255.f, 120.f / 255.f, 1.f)),
-			sceneManager->assets()->effect("effect/Hologram/Hologram.effect")
+			sceneManager->assets()->effect("effect/Basic.effect")
 		));
 
 		mesh->component<Transform>()->matrix()->appendTranslation(2.5f, 0.f, 0.f);
@@ -130,7 +130,6 @@ int main(int argc, char** argv)
 		root->addChild(sceneManager->assets()->symbol(MODEL_FILENAME));
 
 		// FXAA
-		/*
 		auto ppFx = sceneManager->assets()->effect("effect/FXAA/FXAA.effect");
 
 		auto ppQuad = minko::scene::Node::create()->addComponent(Surface::create( 
@@ -145,14 +144,12 @@ int main(int argc, char** argv)
 		ppScene
 			->addChild(ppQuad)
 			->addComponent(ppRenderer);
-			*/
 	});
 
 	auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
 	{
 		camera->component<PerspectiveCamera>()->aspectRatio((float)w / (float)h);
 
-		/*
 		auto width = math::clp2(w);
 		auto height = math::clp2(h);
 
@@ -160,7 +157,6 @@ int main(int argc, char** argv)
 		ppTarget->upload();
 		ppData->set("backbuffer", ppTarget)
 			->set("invBackbufferSize", Vector2::create(1.f / width, 1.f / height));
-			*/
 	});
 
 	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float deltaTime)
@@ -169,9 +165,9 @@ int main(int argc, char** argv)
 		mesh2->component<Transform>()->matrix()->prependRotationY(0.0005f * deltaTime);
 		sceneManager->assets()->symbol(MODEL_FILENAME)->component<Transform>()->matrix()->prependRotationY(0.0005f * deltaTime);
 
-		sceneManager->nextFrame(time, deltaTime);
-		//sceneManager->nextFrame(time, deltaTime, ppTarget);
-		//ppRenderer->render(canvas->context());
+		//sceneManager->nextFrame(time, deltaTime);
+		sceneManager->nextFrame(time, deltaTime, ppTarget);
+		ppRenderer->render(canvas->context());
 	});
 	
 	fxLoader->load();

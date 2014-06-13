@@ -23,8 +23,8 @@ vec4
 computePixelColorFromNormalMap(sampler2D normalMap, sampler2D depthMap, vec2 screenPositionUV, vec4 color, int useDepthMap)
 {
 	vec4 diffuse		= vec4(0.0, 0.0, 0.0, 0.0);
-	float highLimit		= 0.9;
-	float depthLimit	= 0.3;
+	float highLimit		= 0.98;
+	float depthLimit	= 1.0;
 	
 	// init offsets
 	vec2 centerOffset		= vec2(0.0, 0.0) / MAP_RESOLUTION;
@@ -80,9 +80,9 @@ computePixelColorFromNormalMap(sampler2D normalMap, sampler2D depthMap, vec2 scr
 		((abs(depthCenter - depthBottomRight)	>= depthLimit) && (useDepthMap == 1))  ||
 		((abs(depthCenter - depthBottom)		>= depthLimit) && (useDepthMap == 1))  ||
 		((abs(depthCenter - depthBottomLeft)	>= depthLimit) && (useDepthMap == 1)) )
-		diffuse = vec4(color.rgb, 1.0);
+		diffuse = vec4(color.rgb, 0.8);
 	else
-		diffuse = vec4(color.rgb, 0.15);
+		diffuse = vec4(color.rgb, 0.1);
 
 	return diffuse;
 }
@@ -100,13 +100,16 @@ void main(void)
 		vec4 computedColor = computePixelColorFromNormalMap(backFaceNormalMap, depthMap, screenPositionUV, diffuseColor, 0);
 
 		if (computedColor.a > diffuse.a)
-			diffuse = vec4(computedColor.rgb, computedColor.a * 0.6);
+			diffuse = vec4(computedColor.rgb, computedColor.a * 0.4);
 	#endif
 
-	float yFract = fract(vertexPosition.y - time / 1900.0);
+	float yFract = fract(vertexPosition.y - time * 100.0);
 
-	if (yFract >= 0.15 && yFract < 0.21 && diffuse.a < 0.5)
-		diffuse = vec4(mix(diffuse.rgb, vec3(1.0, 1.0, 1.0), 0.1), diffuse.a * 4.0);
+	if (diffuse.a < 0.5)
+	{
+		//diffuse.rgb = mix(diffuse.rgb, vec3(1.0, 1.0, 1.0), 0.1);
+		diffuse.a += pow(sin(vertexPosition.y - time / 1000.0), 6) * .2;
+	}
 
 	float yFract2 = fract(fract(vertexPosition.y - time / 100000.0) * 8.0);
 

@@ -296,7 +296,10 @@ Renderer::render(render::AbstractContext::Ptr	context,
 	 else
 		 context->configureViewport(0, 0, context->viewportWidth(), context->viewportHeight());
 	
-	context->setRenderToBackBuffer();
+	 if (renderTarget)
+		 context->setRenderToTexture(renderTarget->id(), true);
+	 else
+		context->setRenderToBackBuffer();
 	context->clear(
 		((_backgroundColor >> 24) & 0xff) / 255.f,
 		((_backgroundColor >> 16) & 0xff) / 255.f,

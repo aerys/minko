@@ -26,7 +26,7 @@
 	"techniques" : [{
 		"passes"	: [{
 			"name"				: "hologram_depth_pass",
-			"priority"			: [ "transparent", 3 ],
+			"priority"			: [ "transparent", 3.0 ],
 			"target"			: { "name" : "hologram_depthMap", "size" : 1024 },
 			"uniformBindings"	: {
 				"cameraPosition"	: { "property" : "camera.position",	"source" : "renderer" }
@@ -36,7 +36,7 @@
 		},
 		{
 			"name"				: "hologram_normal_back_pass",
-			"priority"			: [ "transparent", 2 ],
+			"priority"			: [ "transparent", 2.0 ],
 			"triangleCulling"   : "front",
 			"target"			: { "name" : "hologram_backFaceNormalMap", "size" : 1024 },
 			"attributeBindings"	: {
@@ -56,7 +56,7 @@
 		},
 		{
 			"name"				: "hologram_normal_front_pass",
-			"priority"			: [ "transparent", 1 ],
+			"priority"			: [ "transparent", 1.0 ],
 			"triangleCulling"   : "back",
 			"target"			: { "name" : "hologram_frontFaceNormalMap", "size" : 1024 },
 			"attributeBindings"	: {
@@ -76,7 +76,8 @@
 		},
 		{
 			"name"				: "hologram_render_pass",
-			"priority"			: [ "transparent", 0 ],
+			"priority"			: [ "transparent", 0.0 ],
+			"depthTest"			: "always",
 			"blendMode"			: "alpha",
 			"zSort"				: "true",
 
@@ -99,11 +100,11 @@
 			},
 
 			"samplerStates" : {
-				"diffuseMap"			: { "wrapMode" : "repeat", "textureFilter" : "linear" },
-				"depthMap"				: { "wrapMode" : "repeat", "textureFilter" : "linear" },
-				"frontFaceNormalMap"    : { "wrapMode" : "repeat", "textureFilter" : "linear" },
-				"backFaceNormalMap"		: { "wrapMode" : "repeat", "textureFilter" : "linear" },
-				"noiseMap"				: { "wrapMode" : "repeat", "textureFilter" : "linear" }
+				"diffuseMap"			: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" },
+				"depthMap"				: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" },
+				"frontFaceNormalMap"    : { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" },
+				"backFaceNormalMap"		: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" },
+				"noiseMap"				: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" }
 			},
 
 			"vertexShader"      : "#pragma include('Hologram.vertex.glsl')",
