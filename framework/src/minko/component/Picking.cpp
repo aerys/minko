@@ -358,63 +358,64 @@ Picking::renderingBegin(RendererPtr renderer)
 void
 Picking::renderingEnd(RendererPtr renderer)
 {
-	_context->readPixels(0, 0, 1, 1, &_lastColor[0]);
-	
-	uint pickedSurfaceId = (_lastColor[0] << 16) + (_lastColor[1] << 8) + _lastColor[2];
+    _context->readPixels(0, 0, 1, 1, &_lastColor[0]);
 
-	if (_lastPickedSurface != _pickingIdToSurface[pickedSurfaceId])
-	{
-		if (_lastPickedSurface && _mouseOut->numCallbacks() > 0)
-			_mouseOut->execute(_lastPickedSurface->targets()[0]);
+    uint pickedSurfaceId = (_lastColor[0] << 16) + (_lastColor[1] << 8) + _lastColor[2];
 
-		_lastPickedSurface = _pickingIdToSurface[pickedSurfaceId];
+    if (_lastPickedSurface != _pickingIdToSurface[pickedSurfaceId])
+    {
+        if (_lastPickedSurface && _mouseOut->numCallbacks() > 0)
+            _mouseOut->execute(_lastPickedSurface->targets()[0]);
 
-		if (_lastPickedSurface && _mouseOver->numCallbacks() > 0)
-			_mouseOver->execute(_lastPickedSurface->targets()[0]);
-	}
+        _lastPickedSurface = _pickingIdToSurface[pickedSurfaceId];
 
-	if (_executeMoveHandler && _lastPickedSurface)
-	{
-		_mouseMove->execute(_lastPickedSurface->targets()[0]);
-		_executeMoveHandler = false;
-	}
+        if (_lastPickedSurface && _mouseOver->numCallbacks() > 0)
+            _mouseOver->execute(_lastPickedSurface->targets()[0]);
+    }
 
-	if (_executeRightDownHandler && _lastPickedSurface)
-	{
-		_mouseRightDown->execute(_lastPickedSurface->targets()[0]);
-		_executeRightDownHandler = false;
+    if (_executeMoveHandler && _lastPickedSurface)
+    {
+        _mouseMove->execute(_lastPickedSurface->targets()[0]);
+    }
 
-		_lastRightDownPickedSurface = _lastPickedSurface;
-	}
+    if (_executeRightDownHandler && _lastPickedSurface)
+    {
+        _mouseRightDown->execute(_lastPickedSurface->targets()[0]);
 
-	if (_executeLeftDownHandler && _lastPickedSurface)
-	{
-		_mouseLeftDown->execute(_lastPickedSurface->targets()[0]);
-		_executeLeftDownHandler = false;
+        _lastRightDownPickedSurface = _lastPickedSurface;
+    }
 
-		_lastLeftDownPickedSurface = _lastPickedSurface;
-	}
+    if (_executeLeftDownHandler && _lastPickedSurface)
+    {
+        _mouseLeftDown->execute(_lastPickedSurface->targets()[0]);
 
-	if (_executeRightClickHandler && _lastPickedSurface && _lastPickedSurface == _lastRightDownPickedSurface)
-	{
-		_mouseRightClick->execute(_lastPickedSurface->targets()[0]);
-		_mouseRightUp->execute(_lastPickedSurface->targets()[0]);
-		_executeRightClickHandler = false;
+        _lastLeftDownPickedSurface = _lastPickedSurface;
+    }
 
-		_lastRightDownPickedSurface = nullptr;
-	}
+    if (_executeRightClickHandler && _lastPickedSurface && _lastPickedSurface == _lastRightDownPickedSurface)
+    {
+        _mouseRightClick->execute(_lastPickedSurface->targets()[0]);
+        _mouseRightUp->execute(_lastPickedSurface->targets()[0]);
 
-	if (_executeLeftClickHandler && _lastPickedSurface && _lastPickedSurface == _lastLeftDownPickedSurface)
-	{
-		_mouseLeftClick->execute(_lastLeftDownPickedSurface->targets()[0]);
-		_mouseLeftUp->execute(_lastLeftDownPickedSurface->targets()[0]);
-		_executeLeftClickHandler = false;
+        _lastRightDownPickedSurface = nullptr;
+    }
 
-		_lastLeftDownPickedSurface = nullptr;
-	}
+    if (_executeLeftClickHandler && _lastPickedSurface && _lastPickedSurface == _lastLeftDownPickedSurface)
+    {
+        _mouseLeftClick->execute(_lastLeftDownPickedSurface->targets()[0]);
+        _mouseLeftUp->execute(_lastLeftDownPickedSurface->targets()[0]);
 
-	if (!(_mouseOver->numCallbacks() > 0 || _mouseOut->numCallbacks() > 0))
-		_renderer->enabled(false);
+        _lastLeftDownPickedSurface = nullptr;
+    }
+
+    if (!(_mouseOver->numCallbacks() > 0 || _mouseOut->numCallbacks() > 0))
+        _renderer->enabled(false);
+
+    _executeMoveHandler = false;
+    _executeRightDownHandler = false;
+    _executeLeftDownHandler = false;
+    _executeRightClickHandler = false;
+    _executeLeftClickHandler = false;
 }
 
 void
