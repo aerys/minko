@@ -163,11 +163,9 @@ EffectParser::parse(const std::string&				    filename,
     int pos	= resolvedFilename.find_last_of("/\\");
 
 	_options = file::Options::create(options);
-	// _options->includePaths().clear();
-	_options->includePaths().push_back("effect"); // FIXME: Ugly.
 
 	if (pos != std::string::npos)
-		_options->includePaths().push_back(resolvedFilename.substr(0, pos));
+		_options->includePaths().push_front(resolvedFilename.substr(0, pos));
 
 	_filename = filename;
 	_resolvedFilename = resolvedFilename;
@@ -224,6 +222,8 @@ EffectParser::parse(const std::string&				    filename,
 
 	if (_numDependencies == _numLoadedDependencies)
 		finalize();
+	
+	_options->includePaths().pop_front();
 }
 
 render::States::Ptr
