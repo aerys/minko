@@ -19,6 +19,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/file/EffectParser.hpp"
 
+#include "minko/file/Loader.hpp"
 #include "minko/data/Provider.hpp"
 #include "minko/render/Effect.hpp"
 #include "minko/render/Program.hpp"
@@ -35,7 +36,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/CubeTexture.hpp"
 #include "minko/render/Pass.hpp"
 #include "minko/render/Priority.hpp"
-#include "minko/file/FileLoader.hpp"
+#include "minko/file/FileProtocol.hpp"
 #include "minko/file/Options.hpp"
 #include "minko/file/AssetLibrary.hpp"
 #include "json/json.h"
@@ -119,11 +120,11 @@ EffectParser::initializePriorityMap()
 	std::unordered_map<std::string, float> m;
 
 	// The higher the priority, the earlier the drawcall is rendered.
-	m["first"]			= priority::FIRST;
-	m["background"]		= priority::BACKGROUND;
-	m["opaque"]			= priority::OPAQUE;
-	m["transparent"]	= priority::TRANSPARENT;
-	m["last"]			= priority::LAST;
+	m["first"]			= Priority::FIRST;
+	m["background"]		= Priority::BACKGROUND;
+	m["opaque"]			= Priority::OPAQUE;
+	m["transparent"]	= Priority::TRANSPARENT;
+	m["last"]			= Priority::LAST;
 
 	return m;
 }
@@ -162,18 +163,18 @@ EffectParser::parse(const std::string&				    filename,
     int pos	= resolvedFilename.find_last_of("/\\");
 
 	_options = file::Options::create(options);
-	_options->includePaths().clear();
-	if (pos > 0)
-	{
+	// _options->includePaths().clear();
+	_options->includePaths().push_back("effect"); // FIXME: Ugly.
+
+	if (pos != std::string::npos)
 		_options->includePaths().push_back(resolvedFilename.substr(0, pos));
-	}
-	
+
 	_filename = filename;
 	_resolvedFilename = resolvedFilename;
 	_assetLibrary = assetLibrary;
 	_effectName	= root.get("name", filename).asString();
 	_defaultTechnique = root.get("defaultTechnique", "default").asString();
-	
+
 	auto context = _assetLibrary->context();
 
 	// parse default values for bindings and states
@@ -196,7 +197,7 @@ EffectParser::parse(const std::string&				    filename,
 	parsePasses(
 		root,
 		resolvedFilename,
-		options,
+		_options,
 		context,
 		_globalPasses,
 		_globalTargets,
@@ -217,11 +218,9 @@ EffectParser::parse(const std::string&				    filename,
 
 	// parse the list of techniques, if no "techniques" directive is found then
 	// the global list of passes becomes the "default" techinque
-	parseTechniques(root, resolvedFilename, options, context);
+	parseTechniques(root, resolvedFilename, _options, context);
 
-
-
-	_effect = render::Effect::create();
+    _effect = render::Effect::create();
 
 	if (_numDependencies == _numLoadedDependencies)
 		finalize();
@@ -293,10 +292,10 @@ EffectParser::parsePasses(const Json::Value&		root,
 						  AbstractContext::Ptr		context,
 						  std::vector<Pass::Ptr>&	passes,
 						  TexturePtrMap&			targets,
-						  BindingMap&			defaultAttributeBindings,
-						  BindingMap&			defaultUniformBindings,
-						  BindingMap&			defaultStateBindings,
-						  MacroBindingMap&	defaultMacroBindings,
+						  BindingMap&			    defaultAttributeBindings,
+						  BindingMap&			    defaultUniformBindings,
+						  BindingMap&			    defaultStateBindings,
+						  MacroBindingMap&	        defaultMacroBindings,
 						  render::States::Ptr		defaultStates,
 						  UniformValues&			defaultUniformDefaultValues)
 {
@@ -329,7 +328,7 @@ EffectParser::parsePasses(const Json::Value&		root,
 			passCopy->states()->priority(defaultStates->priority() + priorityOffset);
 			_glslBlocks[passCopy->program()->vertexShader()] = _glslBlocks[pass->program()->vertexShader()];
 			_glslBlocks[passCopy->program()->fragmentShader()] = _glslBlocks[pass->program()->fragmentShader()];
-			
+
             // set uniform default values
             for (auto& nameAndValues : defaultUniformDefaultValues)
                 setUniformDefaultValueOnPass(
@@ -463,7 +462,7 @@ EffectParser::parseShader(const Json::Value& 		shaderNode,
 
 	auto shader = Shader::create(options->context(), type, glsl);
 	auto blocks = std::shared_ptr<GLSLBlockList>(new GLSLBlockList());
-	
+
 	blocks->push_front(GLSLBlock(GLSLBlockType::TEXT, ""));
 	_glslBlocks[shader] = blocks;
 	parseGLSL(glsl, options, blocks, blocks->begin());
@@ -501,7 +500,7 @@ EffectParser::parseGLSL(std::string 			glsl,
 		}
 		i += line.size() + 1;
 	}
-	
+
 	if (i != lastBlockEnd)
 		insertIt = blocks->insert_after(insertIt, GLSLBlock(GLSLBlockType::TEXT, glsl.substr(lastBlockEnd)));
 
@@ -519,65 +518,92 @@ EffectParser::loadGLSLDependencies(GLSLBlockListPtr		blocks,
 
 		if (block.first == GLSLBlockType::FILE)
 		{
-			auto loader = _options->loaderFunction()(block.second, _assetLibrary);
+			if (options->assetLibrary()->hasBlob(block.second))
+			{
+				auto& data = options->assetLibrary()->blob(block.second);
 
-			++_numDependencies;
+				block.first = GLSLBlockType::TEXT;
+#ifdef DEBUG
+				block.second = "//#pragma include(\"" + block.second + "\")\n";
+#else
+				block.second = "\n";
+#endif
+				parseGLSL(std::string((const char*)&data[0], data.size()), options, blocks, blockIt);
+			}
+			else
+			{
+				auto loader = Loader::create(options);
 
-			_loaderCompleteSlots[loader] = loader->complete()->connect(std::bind(
-				&EffectParser::glslIncludeCompleteHandler,
-				std::static_pointer_cast<EffectParser>(shared_from_this()),
-				std::placeholders::_1,
-				blocks,
-				blockIt
-			));
+				++_numDependencies;
 
-			_loaderErrorSlots[loader] = loader->error()->connect(std::bind(
-				&EffectParser::dependencyErrorHandler,
-				std::static_pointer_cast<EffectParser>(shared_from_this()),
-				std::placeholders::_1
-			));
+				_loaderCompleteSlots[loader] = loader->complete()->connect(std::bind(
+				    &EffectParser::glslIncludeCompleteHandler,
+				    std::static_pointer_cast<EffectParser>(shared_from_this()),
+					std::placeholders::_1,
+					blocks,
+					blockIt,
+					block.second
+				));
 
-			loader->load(block.second, _options);
+				_loaderErrorSlots[loader] = loader->error()->connect(std::bind(
+				    &EffectParser::dependencyErrorHandler,
+					std::static_pointer_cast<EffectParser>(shared_from_this()),
+					std::placeholders::_1,
+					block.second
+			    ));
+
+				loader->queue(block.second)->load();
+			}
 		}
 	}
-}
-
-void
-EffectParser::glslIncludeCompleteHandler(LoaderPtr 					loader,
-										 GLSLBlockListPtr 			blocks,
-	 								     GLSLBlockList::iterator 	blockIt)
-{
-	auto& block = *blockIt;
-
-	block.first = GLSLBlockType::TEXT;
-#ifdef DEBUG
-	block.second = "//#pragma include(\"" + loader->resolvedFilename() + "\")\n";
-#else
-	block.second = "\n";
-#endif
-
-	++_numLoadedDependencies;
-
-	auto options = _options;
-	auto pos = loader->resolvedFilename().find_last_of('/');
-	if (pos != std::string::npos)
-	{
-		options = file::Options::create(options);
-		options->includePaths().push_back(loader->resolvedFilename().substr(0, pos));
-	}
-
-	parseGLSL(std::string((const char*)&loader->data()[0], loader->data().size()), options, blocks, blockIt);
 
 	if (_numDependencies == _numLoadedDependencies && _effect)
 		finalize();
 }
 
 void
-EffectParser::dependencyErrorHandler(std::shared_ptr<AbstractLoader> loader)
+EffectParser::glslIncludeCompleteHandler(LoaderPtr 			        loader,
+										 GLSLBlockListPtr 			blocks,
+	 								     GLSLBlockList::iterator 	blockIt,
+                                         const std::string&         filename)
 {
-	std::cerr << "Unable to load dependency '" << loader->filename() << "', included paths are:" << std::endl;
+	auto& block = *blockIt;
+
+	block.first = GLSLBlockType::TEXT;
+#ifdef DEBUG
+	block.second = "//#pragma include(\"" + filename + "\")\n";
+#else
+	block.second = "\n";
+#endif
+
+	++_numLoadedDependencies;
+
+    auto file = loader->files().at(filename);
+    auto resolvedFilename = file->resolvedFilename();
+	auto options = Options::create(_options);
+	auto pos = resolvedFilename.find_last_of("/\\");
+
+    //options->includePaths().clear();
+	if (pos != std::string::npos)
+	{
+		options = file::Options::create(options);
+        options->includePaths().push_back(resolvedFilename.substr(0, pos));
+	}
+
+    parseGLSL(std::string((const char*)&file->data()[0], file->data().size()), options, blocks, blockIt);
+
+	if (_numDependencies == _numLoadedDependencies && _effect)
+		finalize();
+}
+
+void
+EffectParser::dependencyErrorHandler(std::shared_ptr<Loader> loader, const std::string& filename)
+{
+#ifdef DEBUG
+	std::cerr << "Unable to load dependency '" << filename << "', included paths are:" << std::endl;
 	for (auto& path : loader->options()->includePaths())
 		std::cerr << path << std::endl;
+#endif // defined(DEBUG)
 
 	throw file::ParserError("Unable to load dependencies.");
 }
@@ -588,7 +614,7 @@ EffectParser::parseBlendMode(const Json::Value&				contextNode,
 						     render::Blending::Destination&	dstFactor)
 {
 	auto blendModeArray	= contextNode.get("blendMode", 0);
-	
+
 	if (blendModeArray.isArray())
 	{
 		auto blendSrcFactorString = "src_" + blendModeArray[0].asString();
@@ -634,12 +660,12 @@ EffectParser::parseColorMask(const Json::Value&	contextNode,
 }
 
 void
-EffectParser::parseDepthTest(const Json::Value& contextNode, 
-							 bool& depthMask, 
+EffectParser::parseDepthTest(const Json::Value& contextNode,
+							 bool& depthMask,
 							 render::CompareMode& depthFunc)
 {
 	auto depthTest	= contextNode.get("depthTest", 0);
-	
+
 	if (depthTest.isObject())
 	{
         auto depthMaskValue = depthTest.get("depthMask", 0);
@@ -669,7 +695,7 @@ EffectParser::parseDepthTest(const Json::Value& contextNode,
 }
 
 void
-EffectParser::parseTriangleCulling(const Json::Value& contextNode, 
+EffectParser::parseTriangleCulling(const Json::Value& contextNode,
 								   TriangleCulling& triangleCulling)
 {
     auto triangleCullingValue   = contextNode.get("triangleCulling", 0);
@@ -690,7 +716,7 @@ EffectParser::parseTriangleCulling(const Json::Value& contextNode,
 }
 
 float
-EffectParser::parsePriority(const Json::Value& contextNode, 
+EffectParser::parsePriority(const Json::Value& contextNode,
 							float defaultPriority)
 {
 	auto	priorityNode	= contextNode.get("priority", defaultPriority);
@@ -715,9 +741,13 @@ EffectParser::parsePriority(const Json::Value& contextNode,
 }
 
 void
-EffectParser::parseBindingNameAndSource(const Json::Value& contextNode, std::string& propertyName, BindingSource& source)
+EffectParser::parseBindingNameAndSource(const Json::Value&	contextNode, 
+										std::string&		propertyName, 
+										BindingSource&		source,
+										RegexPtr&			regexp)
 {
-	source = BindingSource::TARGET;
+	source	= BindingSource::TARGET;
+	regexp	= nullptr;
 	if (contextNode.isString())
 		propertyName = contextNode.asString();
 	else if (contextNode.isObject())
@@ -740,15 +770,31 @@ EffectParser::parseBindingNameAndSource(const Json::Value& contextNode, std::str
 				source = BindingSource::ROOT;
 		}
 	}
+
+	if (!propertyName.empty())
+	{
+		const auto withVariableRegex	= std::regex(".*\\[\\$\\{.*\\}\\].*");
+		const auto variableRegex		= std::regex("(\\$\\{)(.*)\\}");
+	
+		if (std::regex_match(propertyName, withVariableRegex))
+		{
+			// generate regex to recognize the macro when coming from filtered out data provider
+	
+			auto regexString	= std::regex_replace(propertyName, variableRegex, std::string("\\d"));
+			regexString			= std::regex_replace(regexString, std::regex("(\\[|\\.|\\])"), std::string("\\$&"));
+
+			regexp				= std::shared_ptr<std::regex>(new std::regex(regexString));
+		}
+	}
 }
 
 void
-EffectParser::parseBindings(const Json::Value&		contextNode,
-						    BindingMap&		attributeBindings,
-						    BindingMap&		uniformBindings,
-						    BindingMap&		stateBindings,
+EffectParser::parseBindings(const Json::Value&	contextNode,
+						    BindingMap&			attributeBindings,
+						    BindingMap&			uniformBindings,
+						    BindingMap&			stateBindings,
 							MacroBindingMap&	macroBindings,
-							UniformValues&			uniformDefaultValues)
+							UniformValues&		uniformDefaultValues)
 {
 	auto attributeBindingsValue = contextNode.get("attributeBindings", 0);
 	if (attributeBindingsValue.isObject())
@@ -760,7 +806,7 @@ EffectParser::parseBindings(const Json::Value&		contextNode,
 			);
 
 	parseUniformBindings(contextNode, uniformBindings, uniformDefaultValues);
-			
+
 	auto stateBindingsValue = contextNode.get("stateBindings", 0);
 	if (stateBindingsValue.isObject())
 		for (auto propertyName : stateBindingsValue.getMemberNames())
@@ -769,7 +815,7 @@ EffectParser::parseBindings(const Json::Value&		contextNode,
 				stateBindings[propertyName].first,
 				stateBindings[propertyName].second
 			);
-	
+
 	parseMacroBindings(contextNode, macroBindings);
 }
 
@@ -787,7 +833,7 @@ EffectParser::parseMacroBindings(const Json::Value&	contextNode, MacroBindingMap
 			MacroBindingDefault&	bindingDefault	= std::get<2>(macroBindings[propertyName]);
 			auto&					min				= std::get<3>(macroBindings[propertyName]);
 			auto&					max				= std::get<4>(macroBindings[propertyName]);
-		
+
 			bindingDefault.semantic = MacroBindingDefaultValueSemantic::UNSET;
 			min						= -INT_MAX;
 			max						= INT_MAX;
@@ -795,7 +841,8 @@ EffectParser::parseMacroBindings(const Json::Value&	contextNode, MacroBindingMap
 			parseBindingNameAndSource(
 				macroBindingValue,
 				std::get<0>(macroBindings[propertyName]),
-				std::get<1>(macroBindings[propertyName])
+				std::get<1>(macroBindings[propertyName]),
+				std::get<5>(macroBindings[propertyName])
 			);
 
 			if (macroBindingValue.isObject())
@@ -829,8 +876,12 @@ EffectParser::parseMacroBindings(const Json::Value&	contextNode, MacroBindingMap
 				bindingDefault.semantic = MacroBindingDefaultValueSemantic::PROPERTY_EXISTS;
 				bindingDefault.value.propertyExists = macroBindingValue.asBool();
 			}
+
+			
 		}
 	}
+
+	
 }
 
 void
@@ -849,7 +900,7 @@ EffectParser::parseUniformBindings(const Json::Value&	contextNode,
 				uniformBindings[propertyName].first,
 				uniformBindings[propertyName].second
 			);
-			
+
 			if (uniformBindingValue.isObject())
 			{
 				auto nameValue = uniformBindingValue.get("property", 0);
@@ -930,42 +981,29 @@ EffectParser::loadTexture(const std::string&	textureFilename,
 						  UniformTypeAndValue&	uniformTypeAndValue,
 						  Options::Ptr			options)
 {
-	auto loader = _options->loaderFunction()(textureFilename, _assetLibrary);
+	Options::Ptr o = Options::create(options);
+    auto loader = Loader::create(o);
+
+	o->loadAsynchronously(false);
 
 	_numDependencies++;
 
-	_loaderCompleteSlots[loader] = loader->complete()->connect([&](file::AbstractLoader::Ptr loader)
+	_loaderCompleteSlots[loader] = loader->complete()->connect([&](file::Loader::Ptr loader)
 	{
-		auto pos = loader->resolvedFilename().find_last_of('.');
-		auto extension = loader->resolvedFilename().substr(pos + 1);
-		auto parser = _assetLibrary->getParser(extension);
+		uniformTypeAndValue.second.textureValue = _assetLibrary->texture(textureFilename);
+		uniformTypeAndValue.second.textureValue->upload();
 
-		auto completeSlot = parser->complete()->connect([&](file::AbstractParser::Ptr parser)
-		{
-			uniformTypeAndValue.second.textureValue = _assetLibrary->texture(textureFilename);
-			uniformTypeAndValue.second.textureValue->upload();
-
-			_numLoadedDependencies++;
-
-			if (_numDependencies == _numLoadedDependencies && _effect)
-				finalize();
-		});
-
-		parser->parse(
-			loader->filename(),
-			loader->resolvedFilename(),
-			loader->options(), loader->data(),
-			_assetLibrary
-		);
+        ++_numLoadedDependencies;
 	});
 
 	_loaderErrorSlots[loader] = loader->error()->connect(std::bind(
 		&EffectParser::dependencyErrorHandler,
 		std::static_pointer_cast<EffectParser>(shared_from_this()),
-		std::placeholders::_1
+		std::placeholders::_1,
+        textureFilename
 	));
 
-	loader->load(textureFilename, options);
+	loader->queue(textureFilename)->load();
 }
 
 void
@@ -998,16 +1036,16 @@ EffectParser::parseSamplerStates(const Json::Value&                             
 }
 
 void
-EffectParser::parseStencilState(const Json::Value& contextNode, 
-								CompareMode& stencilFunc, 
-								int& stencilRef, 
-								uint& stencilMask, 
+EffectParser::parseStencilState(const Json::Value& contextNode,
+								CompareMode& stencilFunc,
+								int& stencilRef,
+								uint& stencilMask,
 								StencilOperation& stencilFailOp,
 								StencilOperation& stencilZFailOp,
 								StencilOperation& stencilZPassOp) const
 {
 	auto stencilTest	= contextNode.get("stencilTest", 0);
-	
+
 	if (stencilTest.isObject())
 	{
         auto stencilFuncValue	= stencilTest.get("stencilFunc", 0);
@@ -1094,8 +1132,8 @@ EffectParser::parseTarget(const Json::Value&                contextNode,
 {
     auto targetValue = contextNode.get("target", 0);
 
-	AbstractTexture::Ptr	target	= nullptr;
-	std::string				targetName;
+	AbstractTexture::Ptr   target;
+	std::string            targetName;
 
     if (targetValue.isObject())
     {
@@ -1121,14 +1159,23 @@ EffectParser::parseTarget(const Json::Value&                contextNode,
 			: false;
 
 		if (!isCubeTexture)
-			target	= Texture::create(context, width, height, false, true);
+        {
+            auto texture = Texture::create(context, width, height, false, true);
+
+            if (targetName.length())
+                _assetLibrary->texture(targetName, texture);
+            target = texture;
+        }
 		else
-			target	= CubeTexture::create(context, width, height, false, true);
+        {
+            auto cubeTexture = CubeTexture::create(context, width, height, false, true);
+
+            if (targetName.length())
+                _assetLibrary->cubeTexture(targetName, cubeTexture);
+            target = cubeTexture;
+        }
 
 		target->upload();
-
-		if (targetName.length())
-	        _assetLibrary->texture(targetName, target);
     }
 	else if (targetValue.isString())
 	{
@@ -1171,7 +1218,7 @@ EffectParser::parseTechniques(const Json::Value&				root,
 				BindingMap		uniformBindings(_defaultUniformBindings);
 				BindingMap		stateBindings(_defaultStateBindings);
 				MacroBindingMap	macroBindings(_defaultMacroBindings);
-				UniformValues			uniformDefaultValues(_defaultUniformValues);
+				UniformValues	uniformDefaultValues(_defaultUniformValues);
         
 				// bindings
 				parseBindings(
@@ -1224,8 +1271,8 @@ EffectParser::parseConfiguration(const Json::Value&	root)
 		{
 			// if the config. token is a string and we can find it in the list of platforms,
 			// then the configuration is ok and we return true
-			if (value.isString() && 
-				(std::find(platforms.begin(), platforms.end(), value.asString()) != platforms.end() || 
+			if (value.isString() &&
+				(std::find(platforms.begin(), platforms.end(), value.asString()) != platforms.end() ||
 				std::find(userFlags.begin(), userFlags.end(), value.asString()) != userFlags.end()))
 				return true;
 			else if (value.isArray())
@@ -1234,7 +1281,7 @@ EffectParser::parseConfiguration(const Json::Value&	root)
 				// the platforms list; if a single of them is not there then the config. token
 				// is considered to be false
 				for (auto str : value)
-				if (str.isString() && 
+				if (str.isString() &&
 					(std::find(platforms.begin(), platforms.end(), str.asString()) == platforms.end() ||
 					std::find(userFlags.begin(), userFlags.end(), str.asString()) != userFlags.end()))
 				{
@@ -1300,8 +1347,8 @@ EffectParser::finalize()
 
 	if (!_effect->techniques().empty() && _effect->techniques().count("default") == 0)
 	{
-		// FIXME 
-		const std::string&		viableTechniqueName = _effect->techniques().begin()->first; 
+		// FIXME
+		const std::string&		viableTechniqueName = _effect->techniques().begin()->first;
 		std::vector<Pass::Ptr>	viableTechnique		(_effect->technique(viableTechniqueName));
 
 		if (_effect->hasFallback(viableTechniqueName))
@@ -1341,7 +1388,7 @@ EffectParser::finalize()
 
 	for (auto& targetNameAndPtr : _globalTargets)
 		_effect->data()->set(targetNameAndPtr.first, targetNameAndPtr.second);
-	
+
 	_assetLibrary->effect(_effectName, _effect);
     _assetLibrary->effect(_filename, _effect);
 

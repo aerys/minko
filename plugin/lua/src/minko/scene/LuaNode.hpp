@@ -23,6 +23,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/scene/Node.hpp"
 #include "minko/component/BoundingBox.hpp"
+#include "minko/component/MasterAnimation.hpp"
+#include "minko/component/AbstractLight.hpp"
 
 #include "minko/LuaWrapper.hpp"
 
@@ -44,18 +46,30 @@ namespace minko
 
 				state.Class<Node>("Node")
 		            .method("create",				        static_cast<Node::Ptr (*)(void)>(&Node::create))
-		            .method("addChild",				        &Node::addChild)
+					.method("toString",						&Node::toString)
+					.method("addChild",						&Node::addChild)
 		            .method("removeChild",			        &Node::removeChild)
 		            .method("contains",				        &Node::contains)
 		            .method("addComponent",			        &Node::addComponent)
 		            .method("removeComponent",		        &Node::removeComponent)
+					.methodWrapper("hasComponent",			&LuaNode::hasComponentWrapper)
                     .methodWrapper("getChildren",           &LuaNode::childrenWrapper)
                     .methodWrapper("getBoundingBox",        &LuaNode::getBoundingBoxWrapper)
                     .methodWrapper("getTransform",          &LuaNode::getTransformWrapper)
 					.methodWrapper("getAnimation",			&LuaNode::getAnimationWrapper)
+					.methodWrapper("getMasterAnimation",	&LuaNode::getMasterAnimationWrapper)
                     .methodWrapper("getPerspectiveCamera",  &LuaNode::getPerspectiveCameraWrapper)
+					.methodWrapper("getSurface",			&LuaNode::getSurfaceWrapper)
+					.methodWrapper("getRenderer",			&LuaNode::getRendererWrapper)
+					.methodWrapper("getLuaScript",			&LuaNode::getLuaScriptWrapper)
+					.methodWrapper("hasLight",				&LuaNode::hasLightWrapper)
+					.methodWrapper("hasAnimation",			&LuaNode::hasAnimationWrapper)
+					.method("getLayouts",					static_cast<Layouts (Node::*)(void) const>(&Node::layouts))
+					.method("setLayouts",					static_cast<Node::Ptr (Node::*)(Layouts)>(&Node::layouts))
+					/*.methodWrapper("getChildrenByName",		&LuaNode::getChildrenByNameWrapper)*/
 		            .property("children",					&Node::children)
 		            .property("data",				        &Node::data)
+					.property("id",							&Node::id)
 		            .property("root",				        &Node::root)
 					.property("parent", 					&Node::parent)
 		            .property("name",				        &Node::name, &Node::name);
@@ -65,7 +79,7 @@ namespace minko
 			Node::Ptr
 			atWrapper(std::vector<Node::Ptr>* v, uint index)
 			{
-				return (*v)[index - 1];
+				return v->at(index - 1);
 			}
 
 			static
@@ -97,10 +111,59 @@ namespace minko
 			}
 
 			static
+			std::shared_ptr<component::MasterAnimation>
+			getMasterAnimationWrapper(Node::Ptr node)
+			{
+				return node->component<component::MasterAnimation>();
+			}
+
+			static
 			std::shared_ptr<component::PerspectiveCamera>
 			getPerspectiveCameraWrapper(Node::Ptr node)
 			{
 				return node->component<component::PerspectiveCamera>();
+			}
+
+			static
+			std::shared_ptr<component::Surface>
+			getSurfaceWrapper(Node::Ptr node)
+			{
+				return node->component<component::Surface>();
+			}
+
+			static
+			std::shared_ptr<component::Renderer>
+			getRendererWrapper(Node::Ptr node)
+			{
+				return node->component<component::Renderer>();
+			}
+
+			static
+			std::shared_ptr<component::LuaScript>
+			getLuaScriptWrapper(Node::Ptr node)
+			{
+				return node->component<component::LuaScript>();
+			}
+
+			static
+			bool
+			hasLightWrapper(Node::Ptr node)
+			{
+				return node->hasComponent<component::AbstractLight>();
+			}
+
+			static
+			bool
+			hasAnimationWrapper(Node::Ptr node)
+			{
+				return node->hasComponent<component::AbstractAnimation>();
+			}
+
+			static
+			bool
+			hasComponentWrapper(Node::Ptr node, component::AbstractComponent::Ptr cmp)
+			{
+				return node->hasComponent(cmp);
 			}
 		};
 	}

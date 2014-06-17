@@ -29,6 +29,7 @@ namespace minko
 		class Container :
 			public std::enable_shared_from_this<Container>
 		{
+
 		public:
 			typedef std::shared_ptr<Container>								Ptr;
 			typedef Signal<Ptr, const std::string&>							PropertyChangedSignal;
@@ -37,12 +38,14 @@ namespace minko
 			typedef std::shared_ptr<PropertyChangedSignal>					PropertyChangedSignalPtr;
 
 			typedef std::shared_ptr<Provider>								ProviderPtr;
+			typedef std::shared_ptr<data::AbstractFilter>					AbsFilterPtr;
 			typedef Signal<ProviderPtr, const std::string&>					ProviderPropertyChangedSignal;
 			typedef ProviderPropertyChangedSignal::Slot						ProviderPropertyChangedSlot;
 
 			std::list<ProviderPtr>											_providers;
 			std::unordered_map<std::string, ProviderPtr>					_propertyNameToProvider;
 			std::unordered_map<ProviderPtr, uint>							_providersToNumUse;
+			std::unordered_map<ProviderPtr, uint>							_providerToIndex;
 
 			std::shared_ptr<Provider>										_arrayLengths;
 
@@ -55,7 +58,14 @@ namespace minko
 			std::unordered_map<ProviderPtr, ProviderPropertyChangedSlot>	_providerValueChangedSlot;
 			std::unordered_map<ProviderPtr, ProviderPropertyChangedSlot>	_providerReferenceChangedSlot;
 
+			Signal<Ptr, ProviderPtr>::Ptr									_providerAdded;
+			Signal<Ptr, ProviderPtr>::Ptr									_providerRemoved;
+
+			static uint CONTAINER_ID;
+
+
 		public:
+			uint _containerId;
 			static
 			Ptr
 			create()
@@ -86,7 +96,19 @@ namespace minko
 			hasProvider(std::shared_ptr<Provider> provider) const;
 
 			bool
-			hasProperty(const std::string& propertyName) const;
+			hasProperty(const std::string&) const;
+			
+			bool
+			isLengthProperty(const std::string&) const;
+
+			inline
+			int
+			getProviderIndex(ProviderPtr provider) const
+			{
+				auto foundIndexIt = _providerToIndex.find(provider);
+
+				return foundIndexIt != _providerToIndex.end() ? foundIndexIt->second : -1;
+			}
 
 			template <typename T>
 			T
@@ -95,8 +117,9 @@ namespace minko
 				assertPropertyExists(propertyName);
 
 				const auto& provider = _propertyNameToProvider.find(propertyName)->second;
+				auto unformatedPropertyName = unformatPropertyName(provider, propertyName);
 
-				return provider->get<T>(propertyName, true);
+				return provider->get<T>(unformatedPropertyName, true);
 			}
 
 			template <typename T>
@@ -105,7 +128,10 @@ namespace minko
 			{
 				assertPropertyExists(propertyName);
 
-				_propertyNameToProvider[propertyName]->set<T>(propertyName, value);
+				auto provider = _propertyNameToProvider[propertyName];
+				auto unformatedPropertyName = unformatPropertyName(provider, propertyName);
+
+				provider->set<T>(unformatedPropertyName, value);
 			}
 
 			template <typename T>
@@ -116,7 +142,9 @@ namespace minko
 
 				const auto& provider = _propertyNameToProvider.find(propertyName)->second;
 
-				return provider->propertyHasType<T>(propertyName, skipPropertyNameFormatting);
+				auto unformatedPropertyName = unformatPropertyName(provider, propertyName);
+
+				return provider->propertyHasType<T>(unformatedPropertyName, skipPropertyNameFormatting);
 			}
 
 			inline
@@ -140,11 +168,28 @@ namespace minko
 			propertyReferenceChanged(const std::string& propertyName);
 
 			inline
+			Signal<Ptr, Provider::Ptr>::Ptr
+			providerAdded() const
+			{
+				return _providerAdded;
+			}
+
+			inline
+			Signal<Ptr, Provider::Ptr>::Ptr
+			providerRemoved() const
+			{
+				return _providerRemoved;
+			}
+
+			inline
 			const std::list<ProviderPtr>&
 			providers() const
 			{
 				return _providers;
 			}
+
+			Ptr
+			filter(const std::set<AbsFilterPtr>&, Ptr = nullptr) const;
 
 		private:
 			Container();
@@ -163,6 +208,12 @@ namespace minko
 
 			void
 			providerReferenceChangedHandler(ProviderPtr, const std::string& propertyName);
+
+			std::string
+			formatPropertyName(ProviderPtr  arrayProvider, const std::string&) const;
+
+			std::string
+			unformatPropertyName(ProviderPtr  arrayProvider, const std::string&) const;
 
 			inline
 			void

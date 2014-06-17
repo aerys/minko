@@ -9,7 +9,7 @@ PROJECT_NAME = path.getname(os.getcwd())
 minko.project.library("minko-plugin-" .. PROJECT_NAME)
 
 	removeplatforms { "windows32" , "windows64", "osx64", "html5", "ios", "android" }
-	
+
 	kind "StaticLib"
 	language "C++"
 

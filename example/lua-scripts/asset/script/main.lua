@@ -22,14 +22,14 @@ function main:start(root)
 
 	local assets = 	getSceneManager().assets
 
-	assets
+	assets.loader
 		:queue('effect/Basic.effect')
 		:queue('effect/Phong.effect')
 		:queue('texture/box.png')
 		:queue('script/framerate.lua')
 		:queue('script/camera.lua')
 	
-	self.assetsComplete = assets.complete:connect(function(assets)
+	self.assetsComplete = assets.loader.complete:connect(function(loader)
 		self.assetsComplete:disconnect()
 		self.assetsComplete = nil
 
@@ -47,7 +47,7 @@ function main:start(root)
 		root:addChild(cube)
 	end)
 
-	assets:load()
+	assets.loader:load()
 end
 
 function main:initializeCamera(root, assets)

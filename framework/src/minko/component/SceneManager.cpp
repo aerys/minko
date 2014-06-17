@@ -42,10 +42,16 @@ void
 SceneManager::initialize()
 {
     _targetAddedSlot = targetAdded()->connect(std::bind(
-        &SceneManager::targetAddedHandler, shared_from_this(), std::placeholders::_1, std::placeholders::_2
+        &SceneManager::targetAddedHandler, 
+		std::static_pointer_cast<SceneManager>(shared_from_this()), 
+		std::placeholders::_1, 
+		std::placeholders::_2
     ));
     _targetRemovedSlot = targetAdded()->connect(std::bind(
-        &SceneManager::targetAddedHandler, shared_from_this(), std::placeholders::_1, std::placeholders::_2
+        &SceneManager::targetAddedHandler, 
+		std::static_pointer_cast<SceneManager>(shared_from_this()), 
+		std::placeholders::_1, 
+		std::placeholders::_2
     ));
 }
 
@@ -59,7 +65,7 @@ SceneManager::targetAddedHandler(AbstractComponent::Ptr ctrl, NodePtr target)
 
     _addedSlot = target->added()->connect(std::bind(
         &SceneManager::addedHandler,
-        shared_from_this(),
+        std::static_pointer_cast<SceneManager>(shared_from_this()), 
         std::placeholders::_1,
         std::placeholders::_2,
         std::placeholders::_3
@@ -84,12 +90,12 @@ SceneManager::nextFrame(float time, float deltaTime, render::AbstractTexture::Pt
 {
     _time = time;
 
-	_frameBegin->execute(shared_from_this(), time, deltaTime);
-	_cullBegin->execute(shared_from_this());
-	_cullEnd->execute(shared_from_this());
-	_renderBegin->execute(shared_from_this(), _frameId, renderTarget);
-	_renderEnd->execute(shared_from_this(), _frameId, renderTarget);
-    _frameEnd->execute(shared_from_this(), time, deltaTime);
+	_frameBegin->execute(std::static_pointer_cast<SceneManager>(shared_from_this()), time, deltaTime);
+	_cullBegin->execute(std::static_pointer_cast<SceneManager>(shared_from_this()));
+	_cullEnd->execute(std::static_pointer_cast<SceneManager>(shared_from_this()));
+	_renderBegin->execute(std::static_pointer_cast<SceneManager>(shared_from_this()), _frameId, renderTarget);
+	_renderEnd->execute(std::static_pointer_cast<SceneManager>(shared_from_this()), _frameId, renderTarget);
+    _frameEnd->execute(std::static_pointer_cast<SceneManager>(shared_from_this()), time, deltaTime);
 
 	++_frameId;
 }

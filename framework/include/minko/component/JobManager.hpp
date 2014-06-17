@@ -44,6 +44,7 @@ namespace minko
 			protected :
 				std::shared_ptr<JobManager>		_jobManager;
 				bool							_running;
+				bool							_oneStepPerFrame;
 				
 			public:
 
@@ -79,6 +80,20 @@ namespace minko
 				running(bool value)
 				{
 					_running = value;
+				}
+
+				inline
+				bool
+				oneStepPerFrame()
+				{
+					return _oneStepPerFrame;
+				}
+
+				inline
+				void
+				oneStepPerFrame(bool value)
+				{
+					_oneStepPerFrame = value;
 				}
 
 				inline

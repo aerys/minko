@@ -36,13 +36,13 @@ const uint			NUM_SPHERES			= 24;
 const float			SPHERES_DIST		= 5.0f;
 const float			SPHERES_MOVE_AMPL	= 2.0f;
 const float			SPHERES_MOVE_SPEED	= 2.5f;
-const float			SPHERES_PRIORITY	= render::priority::TRANSPARENT;
+const float			SPHERES_PRIORITY	= render::Priority::TRANSPARENT;
 
 const uint			NUM_QUADS			= 16;
 const float			QUADS_DIST			= 7.5f;
 const float			QUADS_MOVE_AMPL		= 2.0f;
 const float			QUADS_MOVE_SPEED	= 2.5f;
-const float			QUADS_PRIORITY		= render::priority::TRANSPARENT + 1.0f;
+const float			QUADS_PRIORITY		= render::Priority::TRANSPARENT + 1.0f;
 
 typedef std::pair<Transform::Ptr, Vector3::Ptr> AnimData;
 
@@ -50,17 +50,17 @@ float
 getTime();
 
 Node::Ptr
-createObjectGroup(unsigned int	numObjects, 
-				  bool			doSpheres, 
+createObjectGroup(unsigned int	numObjects,
+				  bool			doSpheres,
 				  float			distanceToEye,
 				  float			priority,
-				  file::AssetLibrary::Ptr, 
+				  file::AssetLibrary::Ptr,
 				  std::vector<AnimData>&);
 
 void
 animateObjects(float	moveAmplitude,
 			   float	moveSpeed,
-			   float&	prevTime, 
+			   float&	prevTime,
 			   const std::vector<AnimData>&);
 
 int main(int argc, char** argv)
@@ -68,19 +68,24 @@ int main(int argc, char** argv)
 	auto canvas = Canvas::create("Minko Example - Oculus", WINDOW_WIDTH, WINDOW_HEIGHT);
 
 	auto sceneManager = SceneManager::create(canvas->context());
-	
+
 	// setup assets
-	sceneManager->assets()->defaultOptions()
+	sceneManager->assets()->loader()->options()
 		->resizeSmoothly(true)
 		->generateMipmaps(true);
 
-	sceneManager->assets()
-		->registerParser<file::JPEGParser>("jpg")
-		->queue(CUBE_TEXTURE, file::Options::create(sceneManager->assets()->context())->isCubeTexture(true))
-		->geometry("cube",		geometry::CubeGeometry::create(sceneManager->assets()->context()))
+	sceneManager->assets()->loader()->options()
+                ->registerParser<file::JPEGParser>("jpg");
+
+        sceneManager->assets()->loader()->queue(CUBE_TEXTURE, file::Options::create(sceneManager->assets()->context())->isCubeTexture(true));
+
+        sceneManager->assets()
+                ->geometry("cube",		geometry::CubeGeometry::create(sceneManager->assets()->context()))
 		->geometry("quad",		geometry::QuadGeometry::create(sceneManager->assets()->context()))
-		->geometry("sphere",	geometry::SphereGeometry::create(sceneManager->assets()->context(), 16, 16))
-		->queue("effect/Basic.effect")
+                ->geometry("sphere",	geometry::SphereGeometry::create(sceneManager->assets()->context(), 16, 16));
+
+        sceneManager->assets()->loader()
+                ->queue("effect/Basic.effect")
 		->queue("effect/OculusVR/OculusVR.effect");
 
 	auto prevTime = getTime();
@@ -91,7 +96,7 @@ int main(int argc, char** argv)
 	Node::Ptr spheres	= nullptr;
 	Node::Ptr quads		= nullptr;
 
-	auto _ = sceneManager->assets()->complete()->connect([&](file::AssetLibrary::Ptr assets)
+	auto _ = sceneManager->assets()->loader()->complete()->connect([&](file::Loader::Ptr loader)
 	{
 
 		auto root = scene::Node::create("root")
@@ -101,18 +106,18 @@ int main(int argc, char** argv)
 			->addComponent(Renderer::create(0x7f7f7fff))
 			->addComponent(Transform::create())
 			->addComponent(OculusVRCamera::create(WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f));
-		
-		spheres	= createObjectGroup(NUM_SPHERES, false, SPHERES_DIST, SPHERES_PRIORITY, assets, spheresAnimData);
-		quads	= createObjectGroup(NUM_QUADS, true, QUADS_DIST, QUADS_PRIORITY, assets, quadsAnimData);
+
+		spheres	= createObjectGroup(NUM_SPHERES, false, SPHERES_DIST, SPHERES_PRIORITY, sceneManager->assets(), spheresAnimData);
+		quads	= createObjectGroup(NUM_QUADS, true, QUADS_DIST, QUADS_PRIORITY, sceneManager->assets(), quadsAnimData);
 
 		auto cube	= scene::Node::create("cube")
 			->addComponent(Transform::create(
 				Matrix4x4::create()->appendScale(50.0f)
 			))
 			->addComponent(Surface::create(
-				assets->geometry("cube"),
-				material::BasicMaterial::create()->diffuseCubeMap(assets->texture(CUBE_TEXTURE))->set("triangleCulling", render::TriangleCulling::FRONT),
-				assets->effect("basic")
+				sceneManager->assets()->geometry("cube"),
+				material::BasicMaterial::create()->diffuseCubeMap(sceneManager->assets()->texture(CUBE_TEXTURE))->set("triangleCulling", render::TriangleCulling::FRONT),
+				sceneManager->assets()->effect("basic")
 			));
 
 		root->addChild(camera);
@@ -125,25 +130,25 @@ int main(int argc, char** argv)
 	{
 		animateObjects(SPHERES_MOVE_AMPL, SPHERES_MOVE_SPEED, prevTime, spheresAnimData);
 		spheres->component<Transform>()->matrix()->appendRotationY(.001f);
-	
+
 		animateObjects(QUADS_MOVE_AMPL, QUADS_MOVE_SPEED, prevTime, quadsAnimData);
 		quads->component<Transform>()->matrix()->appendRotationY(-.0005f);
-	
+
 		sceneManager->nextFrame(time, deltaTime);
 	});
-			
-	sceneManager->assets()->load();
+
+	sceneManager->assets()->loader()->load();
 	canvas->run();
 
 	return 0;
 }
 
 Node::Ptr
-createObjectGroup(unsigned int				numObjects, 
-				  bool						doQuads, 
+createObjectGroup(unsigned int				numObjects,
+				  bool						doQuads,
 				  float						distanceToEye,
 				  float						priority,
-				  file::AssetLibrary::Ptr	assets, 
+				  file::AssetLibrary::Ptr	assets,
 				  std::vector<AnimData>&	nodeAnimData)
 {
 	nodeAnimData.clear();
@@ -214,7 +219,7 @@ createObjectGroup(unsigned int				numObjects,
 void
 animateObjects(float	moveAmplitude,
 			   float	moveSpeed,
-			   float&	prevTime, 
+			   float&	prevTime,
 			   const std::vector<AnimData>&	nodeAnimData)
 {
 	const float	currTime	= getTime();

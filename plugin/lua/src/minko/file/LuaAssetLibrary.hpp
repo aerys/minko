@@ -36,26 +36,26 @@ namespace minko
 {
 	namespace file
 	{
-		class LuaAssetLibrary
+		class LuaAssetLibrary : public LuaWrapper
 		{
 		public:
 			static
 			void
 			bind(LuaGlue& state)
 			{
-				auto& assetLibrary = state.Class<file::AssetLibrary>("AssetLibrary")
-			        .method("queue",        static_cast<file::AssetLibrary::Ptr (file::AssetLibrary::*)(const std::string&)>(&file::AssetLibrary::queue))
-			        .method("load",         static_cast<file::AssetLibrary::Ptr (file::AssetLibrary::*)(bool)>(&file::AssetLibrary::load))
-			        .method("geometry",     static_cast<geometry::Geometry::Ptr (file::AssetLibrary::*)(const std::string&)>(&file::AssetLibrary::geometry))
-			        .method("effect",       static_cast<render::Effect::Ptr (file::AssetLibrary::*)(const std::string&)>(&file::AssetLibrary::effect))
-			        .method("texture",		static_cast<render::AbstractTexture::Ptr (file::AssetLibrary::*)(const std::string&) const>(&file::AssetLibrary::texture))
-			        .method("script",       static_cast<component::AbstractScript::Ptr (file::AssetLibrary::*)(const std::string&)>(&file::AssetLibrary::script))
-					.method("symbol",		static_cast<scene::Node::Ptr (file::AssetLibrary::*)(const std::string&)>(&file::AssetLibrary::symbol))
-					.property("context",    &file::AssetLibrary::context);
+				auto& assetLibrary = state.Class<AssetLibrary>("AssetLibrary")
+			        .method("geometry",     static_cast<geometry::Geometry::Ptr (AssetLibrary::*)(const std::string&)>(&AssetLibrary::geometry))
+			        .method("effect",       static_cast<render::Effect::Ptr (AssetLibrary::*)(const std::string&)>(&AssetLibrary::effect))
+			        .method("texture",		static_cast<render::Texture::Ptr (AssetLibrary::*)(const std::string&) const>(&AssetLibrary::texture))
+			        .method("cubeTexture",	static_cast<render::CubeTexture::Ptr (AssetLibrary::*)(const std::string&) const>(&AssetLibrary::cubeTexture))
+			        .method("script",       static_cast<component::AbstractScript::Ptr (AssetLibrary::*)(const std::string&)>(&AssetLibrary::script))
+					.method("symbol",		static_cast<scene::Node::Ptr (AssetLibrary::*)(const std::string&)>(&AssetLibrary::symbol))
+					.property("context",    &AssetLibrary::context)
+                    .property("loader",     &AssetLibrary::loader);
 
-			    MINKO_LUAGLUE_BIND_SIGNAL(state, file::AssetLibrary::Ptr);
+			    //MINKO_LUAGLUE_BIND_SIGNAL(state, AssetLibrary::Ptr);
 
-			    assetLibrary.property("complete", &file::AssetLibrary::complete);
+			    //assetLibrary.property("complete", &AssetLibrary::complete);
 			}
 		};
 	}

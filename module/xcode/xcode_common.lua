@@ -8,10 +8,8 @@
 	local tree  = premake.tree
     local solution = premake.solution
 	local project = premake.project
-    local config = premake.config 	
+    local config = premake.config
 	local fileconfig = premake.fileconfig
-
-	local inspect = require 'inspect'
 
 
 --

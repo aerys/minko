@@ -29,8 +29,7 @@ namespace minko
 	namespace component
 	{
 		class AbstractScript :
-			public AbstractComponent,
-			public std::enable_shared_from_this<AbstractScript>
+			public AbstractComponent
 		{
 		public:
 			typedef std::shared_ptr<AbstractScript>                         Ptr;

@@ -1,6 +1,7 @@
 include "lib/googletest"
 
 minko.project.application "minko-tests"
+
 	removeplatforms { "html5" }
 
 	files {
@@ -16,7 +17,12 @@ minko.project.application "minko-tests"
 
 	-- googletest framework
 	links { "googletest" }
+		
 	includedirs { "lib/googletest/include" }
 
-	configuration { "linux" }
+	if _OPTIONS['with-offscreen'] then
+		minko.plugin.enable("offscreen")
+	end
+	
+	configuration { "not windows" }
 		links { "pthread" }

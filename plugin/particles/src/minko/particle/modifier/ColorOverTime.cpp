@@ -40,7 +40,7 @@ ColorOverTime::ColorOverTime(LinearlyInterpolatedValue<math::Vector3>::Ptr color
     Modifier1<math::Vector3>(color)
 {
     if (_x == nullptr)
-        throw new std::invalid_argument("size");
+        throw std::invalid_argument("size");
 }
 
 void

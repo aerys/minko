@@ -31,7 +31,7 @@ namespace minko
 			public Provider
 		{
 		public:
-			typedef std::shared_ptr<ArrayProvider> Ptr;
+			typedef std::shared_ptr<ArrayProvider>			Ptr;
 
 		private:
 			typedef std::shared_ptr<Provider>				ProviderPtr;
@@ -40,16 +40,14 @@ namespace minko
 
 		private:
 			std::string										_name;
-			unsigned int									_index;
-			std::unordered_map<std::string, std::string>	_propertyNameToArrayPropertyName;
 			IndexChangedSignalPtr							_indexChanged;
 
 		public:
 			inline static
 			Ptr
-			create(const std::string& name, uint index = 0)
+			create(const std::string& name)
 			{
-				return std::shared_ptr<ArrayProvider>(new ArrayProvider(name, index));
+				return std::shared_ptr<ArrayProvider>(new ArrayProvider(name));
 			}
 
 
@@ -68,24 +66,29 @@ namespace minko
 			}
 
 			inline
-			unsigned int
-			index() const
+			Ptr
+			copyFrom(Ptr source)
 			{
-				return _index;
+				Provider::copyFrom(std::static_pointer_cast<Provider>(source));
+
+				_name = source->_name;
+
+				return std::static_pointer_cast<ArrayProvider>(shared_from_this());
 			}
 
-			void
-			index(unsigned int index);
+			inline
+			Ptr
+			clone()
+			{
+				auto that = std::static_pointer_cast<ArrayProvider>(shared_from_this());
+
+				return ArrayProvider::create(_name)->copyFrom(that);
+			}
 
 		protected:
-			ArrayProvider(const std::string& name, uint index);
-		
-		private:
-			std::string
-			formatPropertyName(const std::string&) const;
-
-			std::string
-			unformatPropertyName(const std::string&) const;
+			explicit
+			ArrayProvider(const std::string& name);
+	
 		};
 	}
 }

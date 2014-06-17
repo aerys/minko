@@ -56,7 +56,7 @@ MasterAnimation::play()
 	for (auto& animation : _animations)
 		animation->play();
 
-	return shared_from_this();
+	return std::static_pointer_cast<AbstractAnimation>(shared_from_this());
 }
 
 /*virtual*/
@@ -68,7 +68,7 @@ MasterAnimation::stop()
 	for (auto& animation : _animations)
 		animation->stop();
 
-	return shared_from_this();
+	return std::static_pointer_cast<AbstractAnimation>(shared_from_this());
 }
 
 /*virtual*/
@@ -80,7 +80,7 @@ MasterAnimation::addLabel(const std::string& name, uint time)
 	for (auto& animation : _animations)
 		animation->addLabel(name, time);
 
-	return shared_from_this();
+	return std::static_pointer_cast<AbstractAnimation>(shared_from_this());
 }
 
 /*virtual*/
@@ -92,7 +92,7 @@ MasterAnimation::changeLabel(const std::string& name, const std::string& newName
 	for (auto& animation : _animations)
 		animation->changeLabel(name, newName);
 
-	return shared_from_this();
+	return std::static_pointer_cast<AbstractAnimation>(shared_from_this());
 }
 
 /*virtual*/
@@ -104,7 +104,7 @@ MasterAnimation::setTimeForLabel(const std::string& name, uint newTime)
 	for (auto& animation : _animations)
 		animation->setTimeForLabel(name, newTime);
 
-	return shared_from_this();
+	return std::static_pointer_cast<AbstractAnimation>(shared_from_this());
 }
 
 /*virtual*/
@@ -116,7 +116,7 @@ MasterAnimation::removeLabel(const std::string& name)
 	for (auto& animation : _animations)
 		animation->removeLabel(name);
 
-	return shared_from_this();
+	return std::static_pointer_cast<AbstractAnimation>(shared_from_this());
 }
 
 /*virtual*/
@@ -130,7 +130,7 @@ MasterAnimation::setPlaybackWindow(uint beginTime,
 	for (auto& animation : _animations)
 		animation->setPlaybackWindow(beginTime, endTime, forceRestart);
 
-	return shared_from_this();
+	return std::static_pointer_cast<AbstractAnimation>(shared_from_this());
 }
 
 /*virtual*/
@@ -144,7 +144,7 @@ MasterAnimation::setPlaybackWindow(const std::string&	beginLabelName,
 	for (auto& animation : _animations)
 		animation->setPlaybackWindow(beginLabelName, endLabelName, forceRestart);
 
-	return shared_from_this();
+	return std::static_pointer_cast<AbstractAnimation>(shared_from_this());
 }
 
 /*virtual*/
@@ -156,7 +156,7 @@ MasterAnimation::resetPlaybackWindow()
 	for (auto& animation : _animations)
 		animation->resetPlaybackWindow();
 
-	return shared_from_this();
+	return std::static_pointer_cast<AbstractAnimation>(shared_from_this());
 }
 
 /*virtual*/

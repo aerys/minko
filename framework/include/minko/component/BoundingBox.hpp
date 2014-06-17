@@ -33,8 +33,7 @@ namespace minko
 	namespace component
 	{
 		class BoundingBox :
-			public AbstractComponent,
-			public std::enable_shared_from_this<BoundingBox>
+			public AbstractComponent
 		{
 		public:
 			typedef std::shared_ptr<BoundingBox>	Ptr;

@@ -19,30 +19,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/SDLKeyboard.hpp"
 
-#if defined(EMSCRIPTEN)
-# include "minko/MinkoWebGL.hpp"
-# include "SDL/SDL.h"
-# include "emscripten/emscripten.h"
-#elif defined(MINKO_ANGLE)
-# include "SDL2/SDL.h"
-# include "SDL2/SDL_syswm.h"
-# include <EGL/egl.h>
-# include <GLES2/gl2.h>
-# include <GLES2/gl2ext.h>
-#else
-# include "SDL2/SDL.h"
-#endif
-
-#if defined(__APPLE__)
-# include <TargetConditionals.h>
-# if TARGET_OS_IPHONE
-#  include "SDL2/SDL_opengles.h"
-# endif
-#endif
+#include "SDL.h"
 
 using namespace minko;
 
-const std::map<SDLKeyboard::Key, SDLKeyboard::KeyType> SDLKeyboard::keyTypeMap =
+const std::unordered_map<SDLKeyboard::Key, SDLKeyboard::KeyType> SDLKeyboard::keyTypeMap =
 {
     // Key codes
 
@@ -255,7 +236,7 @@ const std::map<SDLKeyboard::Key, SDLKeyboard::KeyType> SDLKeyboard::keyTypeMap =
     { Key::SHIFT_RIGHT, KeyType::ScanCode },
 };
 
-const std::map<SDLKeyboard::Key, SDLKeyboard::KeyCode> SDLKeyboard::keyToKeyCodeMap =
+const std::unordered_map<SDLKeyboard::Key, SDLKeyboard::KeyCode> SDLKeyboard::keyToKeyCodeMap =
 {
     { Key::CANCEL, input::Keyboard::KeyCode::CANCEL },
     { Key::BACK_SPACE, input::Keyboard::KeyCode::BACKSPACE },
@@ -377,7 +358,7 @@ const std::map<SDLKeyboard::Key, SDLKeyboard::KeyCode> SDLKeyboard::keyToKeyCode
     //{ Key::WIN_OEM_CLEAR, input::Keyboard::KeyCode::WIN_OEM_CLEAR },
 };
 
-const std::map<SDLKeyboard::Key, SDLKeyboard::ScanCode> SDLKeyboard::keyToScanCodeMap =
+const std::unordered_map<SDLKeyboard::Key, SDLKeyboard::ScanCode> SDLKeyboard::keyToScanCodeMap =
 {
     { Key::HELP, input::Keyboard::ScanCode::HELP },
 

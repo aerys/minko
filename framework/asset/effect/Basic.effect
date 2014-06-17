@@ -12,8 +12,12 @@
     },
     
     "uniformBindings"   : {
+        "uvScale"               : { "property" : "material[${materialId}].uvScale", "default" : [1.0, 1.0] },
+        "uvOffset"              : { "property" : "material[${materialId}].uvOffset", "default" : [0.0, 0.0] },
         "diffuseColor"          : "material[${materialId}].diffuseColor",
         "diffuseMap"            : "material[${materialId}].diffuseMap",
+		"alphaMap"				: "material[${materialId}].alphaMap",
+		"alphaThreshold"		: "material[${materialId}].alphaThreshold",
         "diffuseCubeMap"        : "material[${materialId}].diffuseCubeMap",
         "modelToWorldMatrix"    : "transform.modelToWorldMatrix",
         "worldToScreenMatrix"   : { "property" : "camera.worldToScreenMatrix", "source" : "renderer" },
@@ -28,6 +32,8 @@
     "macroBindings" : {
         "DIFFUSE_MAP"           : "material[${materialId}].diffuseMap",
         "DIFFUSE_CUBEMAP"       : "material[${materialId}].diffuseCubeMap",
+		"ALPHA_MAP"				: "material[${materialId}].alphaMap",
+		"ALPHA_THRESHOLD"		: "material[${materialId}].alphaThreshold",
         "MODEL_TO_WORLD"        : "transform.modelToWorldMatrix",
         "HAS_NORMAL"            : "geometry[${geometryId}].normal",
         "NUM_BONES"             : { "property" : "geometry[${geometryId}].numBones",   "source" : "target" },
@@ -53,7 +59,8 @@
         "scissorBox.width"      : { "property" : "scissorBox.width",    "source" : "renderer" },
         "scissorBox.height"     : { "property" : "scissorBox.height",   "source" : "renderer" },
         "priority"              : "material[${materialId}].priority",
-        "zSort"                 : "material[${materialId}].zSort"
+        "zSort"                 : "material[${materialId}].zSort",
+        "layouts"               : "node.layouts"
     },
     
     "colorMask"         : true,

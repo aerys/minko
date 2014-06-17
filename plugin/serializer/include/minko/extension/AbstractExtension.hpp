@@ -45,7 +45,6 @@ namespace minko
 			activeExtension()
 			{
 				std::shared_ptr<T> extension = T::initialize();
-
 				extension->bind();
 			}
 		};

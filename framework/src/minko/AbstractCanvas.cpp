@@ -23,8 +23,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 using namespace minko;
 
-std::shared_ptr<AbstractCanvas>
+AbstractCanvas::Ptr
 AbstractCanvas::_defaultCanvas;
 
-std::unordered_map<std::string, std::function<std::shared_ptr<async::Worker>()>>
+std::unordered_map<std::string, AbstractCanvas::WorkerHandler>
 AbstractCanvas::_workers;

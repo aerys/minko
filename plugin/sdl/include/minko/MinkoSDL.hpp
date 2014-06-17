@@ -19,4 +19,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #pragma once
 
-#include "Canvas.hpp"
+#include "minko/Canvas.hpp"
+
+#ifdef __ANDROID__
+# include "minko/MinkoAndroid.hpp"
+#endif

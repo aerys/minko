@@ -42,6 +42,7 @@ namespace minko
 			typedef std::shared_ptr<render::Texture>			TexturePtr;
 			typedef std::shared_ptr<render::CubeTexture>		CubeTexturePtr;
 			typedef std::shared_ptr<render::States>				RenderStatesPtr;
+			typedef std::shared_ptr<math::Vector2>				Vector2Ptr;
 			typedef std::shared_ptr<math::Vector4>				Vector4Ptr;
 
 		protected:
@@ -69,7 +70,25 @@ namespace minko
 			diffuseColor() const;
 
 			Ptr
-			diffuseMap(AbsTexturePtr);
+			uvScale(float, float);
+
+			Ptr
+			uvScale(Vector2Ptr);
+
+			Vector2Ptr
+			uvScale(Vector2Ptr = nullptr) const;
+
+			Ptr
+			uvOffset(float, float);
+
+			Ptr
+			uvOffset(Vector2Ptr);
+
+			Vector2Ptr
+			uvOffset(Vector2Ptr = nullptr) const;
+
+			Ptr
+            diffuseMap(TexturePtr);
 
 			TexturePtr
 			diffuseMap() const;

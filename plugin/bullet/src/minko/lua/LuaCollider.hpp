@@ -27,8 +27,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	class LuaWrapper;
-
 	namespace component
 	{
 		namespace bullet
@@ -37,29 +35,157 @@ namespace minko
 				public LuaWrapper
 			{
 		
-				private:
-					typedef std::shared_ptr<ColliderData> ColliderDataPtr;
+			private:
+				typedef std::shared_ptr<ColliderData>	ColliderDataPtr;
+				typedef std::shared_ptr<math::Vector3>	Vector3Ptr;
 
-				public:
+			public:
 
-					static
-					std::shared_ptr<Collider>
-					extractColliderFromNode(std::shared_ptr<scene::Node> node)
-					{
-						return node->component<Collider>(0);
-					}
+				static
+				void
+				bind(LuaGlue& state)
+				{
+					auto scene_node = (LuaGlueClass<scene::Node>*)state.lookupClass("Node");
 
-					static
-					void
-					bind(LuaGlue& state)
-					{
-						state.Class<Collider>("Collider");
-							//.property("colliderData",					&Collider::colliderData)
-							//.method("create", static_cast<Collider::Ptr(*)(ColliderDataPtr)>(&Collider::create))
-							//.method("synchronizePhysicsWithGraphics", &Collider::synchronizePhysicsWithGraphics);
-							//.method("extractCollider",					&LuaCollider::extractColliderFromNode);
-					}
+					scene_node->methodWrapper("getCollider", &LuaCollider::extractColliderFromNode);
 
+					auto& collider = state.Class<Collider>("Collider")
+						.property("colliderData",						&Collider::colliderData)						
+						.method("create",								static_cast<Collider::Ptr (*)(ColliderDataPtr)>(&Collider::create))
+						.method("synchronizePhysicsWithGraphics",		&Collider::synchronizePhysicsWithGraphics)
+						.method("setLinearVelocity",					static_cast<Collider::Ptr (Collider::*)(Vector3Ptr)>				(&Collider::linearVelocity))
+						.methodWrapper("getLinearVelocity",				&LuaCollider::getLinearVelocityWrapper)
+						.method("setAngularVelocity",					static_cast<Collider::Ptr (Collider::*)(Vector3Ptr)>				(&Collider::angularVelocity))
+						.methodWrapper("getAngularVelocity",			&LuaCollider::getAngularVelocityWrapper)
+						.method("applyImpulse",							static_cast<Collider::Ptr (Collider::*)(Vector3Ptr, Vector3Ptr)>	(&Collider::applyImpulse))
+						.method("applyRelativeImpulse",					static_cast<Collider::Ptr (Collider::*)(Vector3Ptr, Vector3Ptr)>	(&Collider::applyRelativeImpulse))
+						.methodWrapper("applyCentralImpulse",			&LuaCollider::applyCentralImpulseWrapper)
+						.methodWrapper("applyCentralRelativeImpulse",	&LuaCollider::applyCentralRelativeImpulseWrapper)
+						.method("setLinearFactor",						static_cast<Collider::Ptr (Collider::*)(Vector3Ptr)>				(&Collider::linearFactor))
+						.methodWrapper("getLinearFactor",				&LuaCollider::getLinearFactorsWrapper)
+						.method("setAngularFactor",						static_cast<Collider::Ptr (Collider::*)(Vector3Ptr)>				(&Collider::angularFactor))
+						.methodWrapper("getAngularFactor",				&LuaCollider::getAngularFactorsWrapper)
+						.method("setCanSleep",							static_cast<Collider::Ptr (Collider::*)(bool)>						(&Collider::canSleep))
+						.methodWrapper("getCanSleep",					&LuaCollider::getCanSleepWrapper)						
+						.methodWrapper("getCollisionGroup",				&LuaCollider::getCollisionGroupWrapper)
+						.methodWrapper("setCollisionGroup",				&LuaCollider::setCollisionGroupWrapper)
+						.methodWrapper("getCollisionMask",				&LuaCollider::getCollisionMaskWrapper)
+						.methodWrapper("setCollisionMask",				&LuaCollider::setCollisionMaskWrapper)
+						.method("setTriggerCollisions",					static_cast<Collider::Ptr (Collider::*)(bool)>						(&Collider::triggerCollisions))
+						.methodWrapper("getTriggerCollisions",			&LuaCollider::getTriggerCollisionsWrapper)
+						.methodWrapper("getNode",						&LuaCollider::getNodeWrapper)
+						;
+
+					MINKO_LUAGLUE_BIND_SIGNAL(state, Collider::Ptr, Collider::Ptr);
+					collider.property("collisionStarted",	&Collider::collisionStarted);
+					collider.property("collisionEnded",		&Collider::collisionEnded);
+				}
+
+			private:
+				static
+				bullet::Collider::Ptr
+				extractColliderFromNode(std::shared_ptr<scene::Node> node)
+				{
+					return node->component<Collider>(0);
+				}
+
+				static
+				Vector3Ptr
+				getLinearVelocityWrapper(bullet::Collider::Ptr collider)
+				{
+					return collider->linearVelocity();
+				}
+
+				static
+				Vector3Ptr
+				getAngularVelocityWrapper(bullet::Collider::Ptr collider)
+				{
+					return collider->angularVelocity();
+				}
+
+				static
+				Vector3Ptr
+				getLinearFactorsWrapper(bullet::Collider::Ptr collider)
+				{
+					return collider->linearFactor();
+				}
+
+				static
+				Vector3Ptr
+				getAngularFactorsWrapper(bullet::Collider::Ptr collider)
+				{
+					return collider->angularFactor();
+				}
+
+				static
+				bullet::Collider::Ptr
+				applyCentralImpulseWrapper(bullet::Collider::Ptr collider, Vector3Ptr impulse)
+				{
+					return collider->applyImpulse(impulse, nullptr);
+				}
+
+				static
+				bullet::Collider::Ptr
+				applyCentralRelativeImpulseWrapper(bullet::Collider::Ptr collider, Vector3Ptr impulse)
+				{
+					return collider->applyRelativeImpulse(impulse, nullptr);
+				}
+
+				static
+				bullet::Collider::Ptr
+				getCanSleepWrapper(bullet::Collider::Ptr collider, bool value)
+				{
+					return collider->canSleep(value);
+				}
+				
+				static
+				bool
+				getTriggerCollisionsWrapper(bullet::Collider::Ptr collider)
+				{
+					return collider->triggerCollisions();
+				}
+
+				static
+				std::shared_ptr<scene::Node>
+				getNodeWrapper(bullet::Collider::Ptr collider)
+				{
+					return collider->target();
+				}
+
+				static
+				Layouts
+				getCollisionGroupWrapper(bullet::Collider::Ptr collider)
+				{
+					return collider && collider->target()
+						? collider->target()->layouts()
+						: scene::Layout::Mask::NOTHING;
+				}
+
+				static
+				bullet::Collider::Ptr
+				setCollisionGroupWrapper(bullet::Collider::Ptr collider, Layouts value)
+				{
+					if (collider && collider->target())
+						collider->target()->layouts(value);
+
+					return collider;
+				}
+
+				static
+				Layouts
+				getCollisionMaskWrapper(bullet::Collider::Ptr collider)
+				{
+					return collider->layoutMask();
+				}
+
+				static
+				bullet::Collider::Ptr
+				setCollisionMaskWrapper(bullet::Collider::Ptr collider, Layouts value)
+				{
+					collider->layoutMask(value);
+
+					return collider;
+				}
 			};
 		}
 	}

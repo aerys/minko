@@ -23,9 +23,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Signal.hpp"
 #include "minko/file/AbstractParser.hpp"
-#include "minko/file/FileLoader.hpp"
+#include "minko/file/FileProtocol.hpp"
 #include "minko/render/Blending.hpp"
 #include "minko/render/Shader.hpp"
+#include "minko/scene/Layout.hpp"
 
 namespace Json
 {
@@ -72,16 +73,16 @@ namespace minko
 				TEXTURE
 			};
 
-			typedef std::shared_ptr<AbstractLoader>							LoaderPtr;
-			typedef std::shared_ptr<render::Effect>							EffectPtr;
-			typedef std::shared_ptr<render::Pass>							PassPtr;
-			typedef std::shared_ptr<render::Shader>							ShaderPtr;
-			typedef std::unordered_map<std::string, AbstractTexturePtr>		TexturePtrMap;
-			typedef std::pair<UniformType, UniformValue>					UniformTypeAndValue;
-			typedef std::unordered_map<std::string, UniformTypeAndValue>	UniformValues;
-			typedef std::pair<GLSLBlockType, std::string> 					GLSLBlock;
-			typedef std::forward_list<GLSLBlock> 							GLSLBlockList;
-			typedef std::shared_ptr<GLSLBlockList>							GLSLBlockListPtr;
+			typedef std::shared_ptr<Loader>										LoaderPtr;
+			typedef std::shared_ptr<render::Effect>								EffectPtr;
+			typedef std::shared_ptr<render::Pass>								PassPtr;
+			typedef std::shared_ptr<render::Shader>								ShaderPtr;
+			typedef std::unordered_map<std::string, AbstractTexturePtr>			TexturePtrMap;
+			typedef std::pair<UniformType, UniformValue>						UniformTypeAndValue;
+			typedef std::unordered_map<std::string, UniformTypeAndValue>		UniformValues;
+			typedef std::pair<GLSLBlockType, std::string> 						GLSLBlock;
+			typedef std::forward_list<GLSLBlock> 								GLSLBlockList;
+			typedef std::shared_ptr<GLSLBlockList>								GLSLBlockListPtr;
 
 		private:
 			static std::unordered_map<std::string, unsigned int>				_blendFactorMap;
@@ -90,36 +91,36 @@ namespace minko
 			static std::unordered_map<std::string, float>						_priorityMap;
 
 		private:
-            std::string                                                 _filename;
-			std::string                                                 _resolvedFilename;
-			std::shared_ptr<file::Options>								_options;
-			std::shared_ptr<render::Effect>								_effect;
-			std::string													_effectName;
+            std::string															_filename;
+			std::string															_resolvedFilename;
+			std::shared_ptr<file::Options>										_options;
+			std::shared_ptr<render::Effect>										_effect;
+			std::string															_effectName;
 			
-			std::string													_defaultTechnique;
-			std::shared_ptr<render::States>								_defaultStates;
+			std::string															_defaultTechnique;
+			std::shared_ptr<render::States>										_defaultStates;
 
-            data::BindingMap				                            _defaultAttributeBindings;
-			data::BindingMap				                            _defaultUniformBindings;
-			data::BindingMap				                            _defaultStateBindings;
-			data::MacroBindingMap                              			_defaultMacroBindings;
-			UniformValues												_defaultUniformValues;
+            data::BindingMap													_defaultAttributeBindings;
+			data::BindingMap													_defaultUniformBindings;
+			data::BindingMap													_defaultStateBindings;
+			data::MacroBindingMap                              					_defaultMacroBindings;
+			UniformValues														_defaultUniformValues;
 
 
-			std::shared_ptr<AssetLibrary>								_assetLibrary;
-			unsigned int												_numDependencies;
-			unsigned int												_numLoadedDependencies;
+			std::shared_ptr<AssetLibrary>										_assetLibrary;
+			unsigned int														_numDependencies;
+			unsigned int														_numLoadedDependencies;
 
-			std::unordered_map<ShaderPtr, GLSLBlockListPtr>				_glslBlocks;
+			std::unordered_map<ShaderPtr, GLSLBlockListPtr>						_glslBlocks;
 
-			std::vector<PassPtr>										_globalPasses;
+			std::vector<PassPtr>												_globalPasses;
 			std::unordered_map<std::string, AbstractTexturePtr>					_globalTargets;
-			std::unordered_map<std::string, TexturePtrMap>				_techniqueTargets;
-			std::unordered_map<std::string, std::vector<PassPtr>>		_techniquePasses;
-			std::unordered_map<std::string, std::string>				_techniqueFallback;
+			std::unordered_map<std::string, TexturePtrMap>						_techniqueTargets;
+			std::unordered_map<std::string, std::vector<PassPtr>>				_techniquePasses;
+			std::unordered_map<std::string, std::string>						_techniqueFallback;
 			
-			std::unordered_map<LoaderPtr, Signal<LoaderPtr>::Slot>		_loaderCompleteSlots;
-			std::unordered_map<LoaderPtr, Signal<LoaderPtr>::Slot>		_loaderErrorSlots;
+			std::unordered_map<LoaderPtr, Signal<LoaderPtr>::Slot>				_loaderCompleteSlots;
+			std::unordered_map<LoaderPtr, Signal<LoaderPtr>::Slot>				_loaderErrorSlots;
 
 		public:
 			inline static
@@ -200,12 +201,26 @@ namespace minko
 								 std::shared_ptr<file::Options> options);
 
 			void
-			glslIncludeCompleteHandler(LoaderPtr 				loader,
+			glslIncludeCompleteHandler(LoaderPtr 			    loader,
 									   GLSLBlockListPtr 		blocks,
-	 								   GLSLBlockList::iterator 	fileBlock);
+                                       GLSLBlockList::iterator 	fileBlock,
+                                       const std::string&       filename);
+
+			inline
+			void
+			parseBindingNameAndSource(const Json::Value&	contextNode, 
+									  std::string&			name, 
+									  data::BindingSource&	source)
+			{
+				RegexPtr regex = nullptr;
+				parseBindingNameAndSource(contextNode, name, source, regex);
+			}
 
 			void
-			parseBindingNameAndSource(const Json::Value& contextNode, std::string& name, data::BindingSource& source);
+			parseBindingNameAndSource(const Json::Value&	contextNode, 
+									  std::string&			name, 
+									  data::BindingSource&	source,
+									  RegexPtr&				regexp);
 
 			void
 			parseBindings(const Json::Value&		contextNode,
@@ -297,14 +312,14 @@ namespace minko
 			parseConfiguration(const Json::Value&	root);
 
 			void
-			dependencyCompleteHandler(std::shared_ptr<AbstractLoader> loader);
+			dependencyCompleteHandler(LoaderPtr loader);
 
 
 			void
-			dependencyErrorHandler(std::shared_ptr<AbstractLoader> loader);
+            dependencyErrorHandler(LoaderPtr loader, const std::string& filename);
 
 			void
-			textureErrorHandler(std::shared_ptr<AbstractLoader> loader);
+            textureErrorHandler(LoaderPtr loader);
 
 			std::string
 			concatenateIncludes(std::vector<LoaderPtr>& store);

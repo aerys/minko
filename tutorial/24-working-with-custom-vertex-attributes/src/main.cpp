@@ -41,8 +41,8 @@ main(int argc, char** argv)
 	auto canvas = Canvas::create("Minko Tutorial - Working with custom vertex attributes", WINDOW_WIDTH, WINDOW_HEIGHT);
 	auto sceneManager = component::SceneManager::create(canvas->context());
 
-	sceneManager->assets()->queue("effect/MyCustomEffect.effect");
-	auto complete = sceneManager->assets()->complete()->connect([&](file::AssetLibrary::Ptr assets)
+	sceneManager->assets()->loader()->queue("effect/MyCustomEffect.effect");
+	auto complete = sceneManager->assets()->loader()->complete()->connect([&](file::Loader::Ptr loader)
 	{
 		auto root = scene::Node::create("root")
 			->addComponent(sceneManager);
@@ -61,9 +61,9 @@ main(int argc, char** argv)
 			Matrix4x4::create()->translation(0.f, 0.0f, -5.f)
 			))
 			->addComponent(Surface::create(
-			createGeometryWithAttribute(assets->context()), // geometry with add. vertex attribute
+			createGeometryWithAttribute(canvas->context()), // geometry with add. vertex attribute
 			myCustomMaterial,
-			getEffectWithAttribute(assets)
+			getEffectWithAttribute(sceneManager->assets())
 			));
 		root->addChild(cube);
 
@@ -77,7 +77,7 @@ main(int argc, char** argv)
 		canvas->run();
 	});
 
-	sceneManager->assets()->load();
+	sceneManager->assets()->loader()->load();
 
 	return 0;
 }

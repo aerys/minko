@@ -118,7 +118,7 @@ namespace minko
 			{
 				_errorsEnabled = errorsEnabled;
 			}
-			
+
             inline
             const std::string&
             driverInfo()
@@ -349,8 +349,8 @@ namespace minko
 			setColorMask(bool);
 
 			void
-			setStencilTest(CompareMode		stencilFunc, 
-						   int				stencilRef, 
+			setStencilTest(CompareMode		stencilFunc,
+						   int				stencilRef,
 						   uint				stencilMask,
 						   StencilOperation	stencilFailOp,
 						   StencilOperation	stencilZFailOp,
@@ -412,8 +412,8 @@ namespace minko
 
             void
             createRTTBuffers(TextureType	type,
-							 uint			texture, 
-							 unsigned int	width, 
+							 uint			texture,
+							 unsigned int	width,
 							 unsigned int height);
 
 			void

@@ -20,6 +20,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
+#include "minko/BulletCommon.hpp"
+
 #include "minko/component/AbstractComponent.hpp"
 
 class btDynamicsWorld;
@@ -41,25 +43,21 @@ namespace minko
 		namespace bullet
 		{
 			class LinearIdAllocator; 
-			class AbstractPhysicsShape;
-			class SphereShape;
-			class BoxShape;
-			class ConeShape;
-			class CylinderShape;
-			class ColliderData;
 
 			class PhysicsWorld:
-				public AbstractComponent,
-				public std::enable_shared_from_this<PhysicsWorld>
+				public AbstractComponent
 			{
+				friend class Collider;
+
 			public:
 				typedef std::shared_ptr<PhysicsWorld>                                   Ptr;
 
 			private:
 				typedef std::shared_ptr<LinearIdAllocator>			                    LinearIdAllocatorPtr;
-				typedef std::shared_ptr<AbstractComponent>			                    AbsCtrlPtr;
+				typedef std::shared_ptr<AbstractComponent>			                    AbsCmp;
 				typedef std::shared_ptr<scene::Node>				                    NodePtr;
-				typedef std::shared_ptr<ColliderData>				                    ColliderDataPtr; 
+				typedef std::shared_ptr<Collider>										ColliderPtr; 
+				typedef std::shared_ptr<const Collider>									ConstColliderPtr;
 				typedef std::shared_ptr<Renderer>					                    RendererPtr;
 				typedef std::shared_ptr<math::Vector3>				                    Vector3Ptr;
 				typedef std::shared_ptr<math::Matrix4x4>			                    Matrix4x4Ptr;
@@ -74,18 +72,21 @@ namespace minko
 
 				class BulletCollider;
 				typedef std::shared_ptr<BulletCollider>									BulletColliderPtr;
-				typedef std::unordered_map<ColliderDataPtr, BulletColliderPtr>			ColliderMap;
-				typedef std::unordered_map<const btCollisionObject*, ColliderDataPtr>	ColliderReverseMap;
+				typedef std::unordered_map<ColliderPtr, BulletColliderPtr>				ColliderMap;
+				typedef std::unordered_map<const btCollisionObject*, ColliderPtr>		ColliderReverseMap;
 
 				typedef std::set<std::pair<uint, uint>>									CollisionSet;
                 typedef Signal<NodePtr, NodePtr>                                        NodeLayoutsChanged;
-                typedef Signal<ColliderDataPtr>                                         ColliderChanged;
+				typedef Signal<AbsCmp>			                                        LayoutMaskChanged;
+                typedef Signal<ColliderPtr>												ColliderChanged;
 
 			private:
+				static const uint								                        _MAX_BODIES;
+
 				LinearIdAllocatorPtr							                        _uidAllocator;
 				ColliderMap										                        _colliderMap;
 				ColliderReverseMap								                        _colliderReverseMap;
-				std::unordered_map<uint, ColliderDataPtr>		                        _uidToCollider;
+				std::unordered_map<uint, ColliderPtr>									_uidToCollider;
 				CollisionSet									                        _collisions;
 
 				btBroadphasePtr									                        _bulletBroadphase;
@@ -96,18 +97,16 @@ namespace minko
 
 				std::shared_ptr<SceneManager>					                        _sceneManager;
 
-				Signal<AbsCtrlPtr, NodePtr>::Slot				                        _targetAddedSlot;
-				Signal<AbsCtrlPtr, NodePtr>::Slot				                        _targetRemovedSlot;
-				Signal<AbsCtrlPtr, NodePtr>::Slot				                        _exitFrameSlot;
-				Signal<std::shared_ptr<SceneManager>>::Slot		                        _frameEndSlot;
+				Signal<AbsCmp, NodePtr>::Slot											_targetAddedSlot;
+				Signal<AbsCmp, NodePtr>::Slot											_targetRemovedSlot;
+				Signal<AbsCmp, NodePtr>::Slot											_exitFrameSlot;
+				Signal<std::shared_ptr<SceneManager>, float, float>::Slot               _frameBeginSlot;
+				Signal<std::shared_ptr<SceneManager>, float, float>::Slot               _frameEndSlot;
 				Signal<NodePtr, NodePtr, NodePtr>::Slot			                        _addedOrRemovedSlot;
-				Signal<NodePtr, NodePtr, AbsCtrlPtr>::Slot		                        _componentAddedOrRemovedSlot;
-                std::unordered_map<ColliderDataPtr, NodeLayoutsChanged::Slot>           _colliderGroupChangedSlot;
-                std::unordered_map<ColliderDataPtr, ColliderChanged::Slot>              _colliderMaskChangedSlot;
-
-				static const uint								                        _MAX_BODIES;
-				static Matrix4x4Ptr								                        _TMP_MATRIX;
-				static btTransform								                        _TMP_BTTRANSFORM;
+				Signal<NodePtr, NodePtr, AbsCmp>::Slot									_componentAddedOrRemovedSlot;
+				std::unordered_map<ColliderPtr, ColliderChanged::Slot>					_colliderPropertiesChangedSlot;
+                std::unordered_map<ColliderPtr, NodeLayoutsChanged::Slot>				_colliderNodeLayoutChangedSlot;
+				std::unordered_map<ColliderPtr, LayoutMaskChanged::Slot>				_colliderLayoutMaskChangedSlot;
 
 			public:
 				static
@@ -126,34 +125,38 @@ namespace minko
 				}
 
 				bool
-				hasCollider(ColliderDataPtr) const;
+				hasCollider(ColliderPtr) const;
 
 				void
-				addChild(ColliderDataPtr);
+				addChild(ColliderPtr);
 
 				void
-				removeChild(ColliderDataPtr);
+				removeChild(ColliderPtr);
 
 				void
 				setGravity(Vector3Ptr);
 
-				void 
-				update(float timeStep = 1.0f/60.0f);
+			private: // only the Collider class should know of the following functions
+				void
+				synchronizePhysicsWithGraphics(ColliderPtr, Matrix4x4Ptr);
 
 				void
-				synchronizePhysicsWithGraphics(ColliderDataPtr, Matrix4x4Ptr);
+				updateRigidBodyState(ColliderPtr, Matrix4x4Ptr, Matrix4x4Ptr);
 
-				static
-				Matrix4x4Ptr
-				removeScalingShear(Matrix4x4Ptr, Matrix4x4Ptr output = nullptr, Matrix4x4Ptr correction = nullptr);
+				Vector3Ptr
+				getColliderLinearVelocity(ConstColliderPtr, Vector3Ptr = nullptr) const;
 
-				static
-				std::ostream&
-				print(std::ostream&, const btTransform&);
+				void
+				setColliderLinearVelocity(ColliderPtr, Vector3Ptr);
 
-				static
-				std::ostream&
-				print(std::ostream&, Matrix4x4Ptr);
+				Vector3Ptr
+				getColliderAngularVelocity(ConstColliderPtr, Vector3Ptr = nullptr) const;
+
+				void
+				setColliderAngularVelocity(ColliderPtr, Vector3Ptr);
+
+				void
+				applyImpulse(ColliderPtr, Vector3Ptr impulse, bool isImpulseRelative, Vector3Ptr relPosition = nullptr);
 
 			private:
 				PhysicsWorld();
@@ -162,16 +165,19 @@ namespace minko
 				initialize();
 
 				void 
-				targetAddedHandler(AbsCtrlPtr, NodePtr);
+				targetAddedHandler(AbsCmp, NodePtr);
 
 				void 
-				targetRemovedHandler(AbsCtrlPtr, NodePtr);
+				targetRemovedHandler(AbsCmp, NodePtr);
 
 				void
-				addedHandler(NodePtr node, NodePtr target, NodePtr ancestor);
+				addedHandler(NodePtr, NodePtr, NodePtr);
 
 				void
-				frameEndHandler(std::shared_ptr<SceneManager> sceneManager);
+				frameBeginHandler(std::shared_ptr<SceneManager>, float time, float deltaTime);
+
+				void
+				frameEndHandler(std::shared_ptr<SceneManager>, float time, float deltaTime);
 
 				void
 				updateColliders();
@@ -179,26 +185,23 @@ namespace minko
 				void
 				notifyCollisions();
 
-				static
-				Matrix4x4Ptr
-				fromBulletTransform(const btTransform&, Matrix4x4Ptr output = nullptr);
-
-				static
 				void
-				toBulletTransform(Matrix4x4Ptr, btTransform&);
-
-				static
-				void
-				toBulletTransform(QuaternionPtr, Vector3Ptr, btTransform&);
+				componentAddedHandler(NodePtr, NodePtr, AbsCmp);
 
 				void
-				componentAddedHandler(NodePtr node, NodePtr target, AbsCtrlPtr component);
-
-				void
-				setSceneManager(std::shared_ptr<SceneManager> sceneManager);
+				setSceneManager(std::shared_ptr<SceneManager>);
 
                 void
-                updateCollisionFilter(ColliderDataPtr);
+                updateCollisionFilter(ColliderPtr);
+
+				void
+				updateColliderProperties(ColliderPtr);
+
+				void
+				updateColliderLayoutMask(ColliderPtr);
+
+				void
+				updateColliderNodeProperties(ColliderPtr);
 
 			private:
 				class BulletCollider
@@ -216,7 +219,7 @@ namespace minko
 					typedef std::shared_ptr<btCollisionShape>		btCollisionShapePtr;
 					typedef std::shared_ptr<btMotionState>			btMotionStatePtr;
 					typedef std::shared_ptr<btDefaultMotionState>	btDefaultMotionStatePtr;
-					typedef std::shared_ptr<btCollisionObject>			btCollisionObjectPtr;
+					typedef std::shared_ptr<btCollisionObject>		btCollisionObjectPtr;
 					typedef std::shared_ptr<btRigidBody>			btRigidBodyPtr;
 
 				private:
@@ -225,33 +228,25 @@ namespace minko
 					btCollisionObjectPtr	_bulletCollisionObject;
 
 				public:
-					static
-					BulletColliderPtr
-					create(ColliderDataPtr);
+					inline static
+					Ptr
+					create(ColliderPtr collider)
+					{
+						Ptr ptr = std::shared_ptr<BulletCollider>(new BulletCollider());
+
+						ptr->initialize(collider);
+					
+						return ptr;
+					}
 
 					btRigidBodyPtr
 					rigidBody() const;
-
-					void 
-					setWorldTransform(Matrix4x4Ptr);
-
-					void
-					setLinearVelocity(Vector3Ptr);
-
-					void
-					prependLocalTranslation(Vector3Ptr);
-
-					void
-					prependRotationY(float);
-
-					void
-					applyRelativeImpulse(Vector3Ptr);
 
 				private:
 					BulletCollider();
 
 					void
-					initialize(ColliderDataPtr);
+					initialize(ColliderPtr);
 
 					btCollisionShapePtr
 					initializeCollisionShape(AbsShapePtr) const;
@@ -269,10 +264,10 @@ namespace minko
 					initializeCylinderShape(CylinderShapePtr) const;
 
 					btMotionStatePtr
-					initializeMotionState(ColliderDataPtr) const;
+					initializeMotionState(ColliderPtr) const;
 
 					void
-					initializeCollisionObject(ColliderDataPtr, btCollisionShapePtr, btMotionStatePtr);
+					initializeCollisionObject(ColliderPtr, btCollisionShapePtr, btMotionStatePtr);
 				};
 			};
 		}

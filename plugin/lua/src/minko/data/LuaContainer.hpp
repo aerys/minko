@@ -48,12 +48,17 @@ namespace minko
 					.method("propertyValueChanged",		&Container::propertyValueChanged)
 					.method("propertyReferenceChanged",	&Container::propertyReferenceChanged)
 		            .method("getFloat",     			&Container::get<float>)
+					.method("getBoolean",				&Container::get<bool>)
+					.method("getString",				&Container::get<std::string>)
 		            .method("getVector2",     			&Container::get<std::shared_ptr<math::Vector2>>)
 		            .method("getVector3",     			&Container::get<std::shared_ptr<math::Vector3>>)
 		            .method("getVector4",     			&Container::get<std::shared_ptr<math::Vector4>>)
 		            .method("getInt",       			&Container::get<int>)
 		            .method("getUint",      			&Container::get<unsigned int>)
-		            .method("getMatrix4x4", 			&Container::get<std::shared_ptr<math::Matrix4x4>>);
+		            .method("getMatrix4x4", 			&Container::get<std::shared_ptr<math::Matrix4x4>>)
+					.method("setFloat",					static_cast<void (Container::*)(const std::string&, float)>(&Container::set<float>))
+					.method("setBoolean",				static_cast<void (Container::*)(const std::string&, bool)>(&Container::set<bool>))
+					.method("setString",				static_cast<void (Container::*)(const std::string&, std::string)>(&Container::set<std::string>));
 			}
 		};
 	}

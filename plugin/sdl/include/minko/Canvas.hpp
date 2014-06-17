@@ -29,13 +29,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/AbstractContext.hpp"
 #include "minko/render/OpenGLES2Context.hpp"
 #include "minko/AbstractCanvas.hpp"
+#include "minko/input/Joystick.hpp"
+#include "minko/input/Finger.hpp"
 #include "minko/async/Worker.hpp"
 
-#if defined(__APPLE__)
-# include <TargetConditionals.h>
-# if TARGET_OS_IPHONE
-#  include "SDL2/SDL_main.h"
-# endif
+// Note: cannot be added to the .cpp because this must be compiled within the
+// main compilation-unit.
+#include "SDL_platform.h"
+#if __IPHONEOS__ || __ANDROID__
+# include "SDL_main.h"
 #endif
 
 struct SDL_Window;
@@ -52,6 +54,86 @@ namespace minko
 	{
 	public:
 		typedef std::shared_ptr<Canvas>	Ptr;
+
+	private:
+		class SDLJoystick : 
+			public input::Joystick
+		{
+			friend class Canvas;
+
+		private:
+			SDL_Joystick*	_joystick;
+
+		public :
+			static inline
+			std::shared_ptr<SDLJoystick>
+			create(Canvas::Ptr canvas, int joystickId, SDL_Joystick* joystick)
+			{
+				return std::shared_ptr<SDLJoystick>(new SDLJoystick(canvas, joystickId, joystick));
+			}
+
+			inline
+			SDL_Joystick* const
+			joystick()
+			{
+				return _joystick;
+			}
+
+		private:
+			SDLJoystick(Canvas::Ptr canvas, int joystickId, SDL_Joystick* joystick) :
+				input::Joystick(canvas, joystickId),
+				_joystick(joystick)
+			{
+			}
+		};
+        
+        class SDLFinger :
+            public input::Finger
+		{
+			friend class Canvas;
+            
+		private:
+            public :
+			static inline
+			std::shared_ptr<SDLFinger>
+			create(Canvas::Ptr canvas)
+			{
+				return std::shared_ptr<SDLFinger>(new SDLFinger(canvas));
+			}
+            
+			void
+			x(uint x)
+			{
+				_x = float(x);
+			}
+            
+			void
+			y(uint y)
+			{
+				_y = float(y);
+			}
+            
+            void
+			dx(uint dx)
+			{
+				_dx = float(dx);
+			}
+            
+			void
+			dy(uint dy)
+			{
+				_dy = float(dy);
+			}
+            
+		private:
+			SDLFinger(Canvas::Ptr canvas) :
+            input::Finger(canvas)
+			{
+			}
+            
+        public:
+            static const float SWIPE_PRECISION;
+		};
 
 	private:
         typedef std::chrono::high_resolution_clock::time_point	time_point;
@@ -83,6 +165,7 @@ namespace minko
 		std::shared_ptr<SDLMouse>								_mouse;
 		std::unordered_map<int, std::shared_ptr<SDLJoystick>>	_joysticks;
         std::shared_ptr<SDLKeyboard>    						_keyboard;
+        std::shared_ptr<SDLFinger>                              _finger;
 
 		Signal<Ptr, float, float>::Ptr											_enterFrame;
 		Signal<AbstractCanvas::Ptr, uint, uint>::Ptr							_resized;
@@ -95,13 +178,17 @@ namespace minko
 	public:
 		static inline
 		Ptr
-		create(const std::string&	name, 
-			   const uint			width, 
-			   const uint			height, 
+		create(const std::string&	name,
+			   const uint			width,
+			   const uint			height,
 			   bool					useStencil = false,
 			   bool					chromeless = false)
 		{
 			auto canvas = std::shared_ptr<Canvas>(new Canvas(name, width, height, useStencil, chromeless));
+
+#if defined(__ANDROID__)
+			auto that = canvas->shared_from_this();
+#endif
 
 			canvas->initialize();
 
@@ -129,6 +216,9 @@ namespace minko
 
 		uint
 		height();
+
+		int
+		getJoystickAxis(input::Joystick::Ptr joystick, int axis);
 
 		inline
 		std::shared_ptr<data::Provider>
@@ -164,7 +254,14 @@ namespace minko
 		{
 			return _keyboard;
 		}
-		
+        
+        inline
+		std::shared_ptr<input::Finger>
+		finger()
+		{
+			return _finger;
+		}
+
 		inline
 		std::shared_ptr<input::Joystick>
 		joystick(uint id)
@@ -180,10 +277,28 @@ namespace minko
         }
 
 		inline
+		std::shared_ptr<SDLJoystick>
+		sdlJoystick(uint id)
+		{
+			auto joystick = _joysticks.find(id);
+			if (joystick == _joysticks.end())
+				return nullptr;
+
+			return joystick->second;
+		}
+
+		inline
 		uint
 		numJoysticks()
 		{
 			return _joysticks.size();
+		}
+
+		inline
+		std::unordered_map<int, std::shared_ptr<SDLJoystick>>
+		joysticks()
+		{
+			return _joysticks;
 		}
 
 		inline
@@ -270,9 +385,9 @@ namespace minko
 		quit();
 
 	private:
-		Canvas(const std::string&	name, 
-			   const uint			width, 
-			   const uint			height, 
+		Canvas(const std::string&	name,
+			   const uint			width,
+			   const uint			height,
 			   bool					useStencil = false,
 			   bool					chromeless = false);
 
@@ -285,8 +400,13 @@ namespace minko
 		void
 		width(uint);
 
-		void 
+		void
 		height(uint);
+
+#if defined(_WIN32)
+		bool
+		consoleHandlerRoutine(DWORD);
+#endif
 
 		void
 		initialize();

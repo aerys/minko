@@ -6,6 +6,7 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 	language "C++"
 
 	minko.plugin.enable("serializer")
+	minko.plugin.enable("lua")
 	
 	files {
 		"include/**.hpp",

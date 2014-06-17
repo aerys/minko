@@ -744,6 +744,11 @@ namespace minko
             bool
             keyIsDown(Key key) = 0;
 
+            virtual
+            ~Keyboard()
+            {
+            }
+
         protected:
             Keyboard();
 

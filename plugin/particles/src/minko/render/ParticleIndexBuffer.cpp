@@ -38,28 +38,34 @@ using namespace minko::render;
 void 
 ParticleIndexBuffer::resize(unsigned int nParticles)
 {	
-	std::vector<unsigned short>& isData = data();
-	unsigned int oldSize = isData.size();
-	unsigned int size = nParticles * 6;
+	std::vector<unsigned short>& isData	= data();
+	unsigned int oldSize				= isData.size();
+	unsigned int size					= nParticles * 6;
 
 	if (oldSize != size)
-	{	
-		isData.resize(size);
-		_padding.resize(size, 0);
-		if (oldSize < size)
+	{
+		if (nParticles == 0)
+			dispose();
+		else
 		{
-			for (unsigned int i = 0; i < nParticles; ++i)
-			{
-				isData[i * 6] = i * 4;
-				isData[i * 6 + 1] = i * 4 + 2;
-				isData[i * 6 + 2] = i * 4 + 1;
-				isData[i * 6 + 3] = i * 4 + 1;
-				isData[i * 6 + 4] = i * 4 + 2; 
-				isData[i * 6 + 5] = i * 4 + 3;
-			}
-		}
+			isData.resize(size);
+			_padding.resize(size, 0);
 	
-		dispose();
-		upload();
+			if (oldSize < size)
+			{
+				for (unsigned int i = 0, j = 0, k = 0; i < nParticles; ++i)
+				{
+					isData[j++] = k;
+					isData[j++] = k + 2;
+					isData[j++] = k + 1;
+					isData[j++] = k + 1;
+					isData[j++] = k + 2; 
+					isData[j++] = k + 3;
+	
+					k += 4;
+				}
+			}		
+			upload();
+		}
 	}
 }

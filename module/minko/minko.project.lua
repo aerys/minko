@@ -7,7 +7,7 @@ minko.project.library = function(name)
 
 	location "."
 	includedirs { minko.sdk.path("/framework/include") }
-	
+
 	configuration { "debug"}
 		defines { "DEBUG" }
 		flags { "Symbols" }
@@ -15,7 +15,7 @@ minko.project.library = function(name)
 	configuration { "release" }
 		defines { "NDEBUG" }
 		optimize "On"
-	
+
 	configuration { "windows32 or windows64" }
 		includedirs { minko.sdk.path("/framework/lib/glew/include") }
 
@@ -27,7 +27,7 @@ minko.project.library = function(name)
 		buildoptions {
 			"/wd4503"				-- remove warnings about too long type names
 		}
-		
+
 	configuration { "html5" }
 		if EMSCRIPTEN then
 			includedirs { EMSCRIPTEN .. "/system/include" }
@@ -45,7 +45,7 @@ minko.project.application = function(name)
 
 	minko.project.library(name)
 
-	kind "WindowedApp"
+	kind "ConsoleApp"
 
 	configuration { "windows32" }
 		libdirs {
@@ -146,7 +146,7 @@ minko.project.application = function(name)
 		prelinkcommands {
 			minko.action.copy("asset"),
 		}
-	
+
 	configuration { "osx64" }
 		links {
 			"minko-framework",
@@ -183,7 +183,7 @@ minko.project.application = function(name)
 		}
 
 		targetsuffix ".bc"
-		
+
 		prelinkcommands {
 			minko.action.copy(minko.sdk.path("/framework/asset")),
 			minko.action.copy("asset"),
@@ -191,9 +191,38 @@ minko.project.application = function(name)
 
 	configuration { "html5", "release" }
 		local emcc = premake.tools.gcc.tools.emscripten.cc
+		local cmd = emcc .. ' ${TARGET} -o ${TARGETDIR}/' .. name .. '.html -O2'
 
+		-- enable the closure compiler
+		cmd = cmd .. ' --closure 1 -s CLOSURE_ANNOTATIONS=1'
+		-- treat undefined symbol warnings as errors
+		cmd = cmd .. ' -s ERROR_ON_UNDEFINED_SYMBOLS=1'
+		-- disable exception catching
+		cmd = cmd .. ' -s DISABLE_EXCEPTION_CATCHING=0'
+		--[[
+			optimize (very) long functions by breaking them into smaller ones
+			
+			from emscripten's settings.js:
+			"OUTLINING_LIMIT: break up functions into smaller ones, to avoid the downsides of very
+            large functions (JS engines often compile them very slowly, compile them with lower optimizations,
+			or do not optimize them at all)"
+		]]--
+		cmd = cmd .. ' -s OUTLINING_LIMIT=20000'
+		-- use a separate *.mem file to initialize the app memory
+		cmd = cmd .. ' --memory-init-file 1'
+		-- set the app (or the sdk) template.html
+		if os.isfile('template.html') then
+			cmd = cmd .. ' --shell-file "${CURDIR}/template.html"'
+		else
+			cmd = cmd .. ' --shell-file "' .. minko.sdk.path('/skeleton/template.html') .. '"'
+		end
+		-- includ the app's 'asset' directory into the file system
+		cmd = cmd .. ' --preload-file ${TARGETDIR}/asset'
+		
 		postbuildcommands {
-			emcc .. ' ${TARGET} -o ${TARGETDIR}/' .. name .. '.html -O2 --closure 1 -s CLOSURE_ANNOTATIONS=1 -s ERROR_ON_UNDEFINED_SYMBOLS=1 -s DISABLE_EXCEPTION_CATCHING=0 -s TOTAL_MEMORY=268435456 --preload-file ${TARGETDIR}/asset || ' .. minko.action.fail()
+			cmd .. ' || ' .. minko.action.fail(),
+			-- fix the "invalid increment operand" syntax error caused by ++0 in the output file
+			'python "' .. minko.sdk.path('/module/emscripten/fix_invalid_increment_operand.py') .. '"  ${TARGETDIR}/' .. name .. '.js'
 		}
 
 		libdirs {
@@ -202,13 +231,22 @@ minko.project.application = function(name)
 
 	configuration { "html5", "debug" }
 		local emcc = premake.tools.gcc.tools.emscripten.cc
+		local cmd = emcc .. ' ${TARGET} -o ${TARGETDIR}/' .. name .. '.html -O2 --js-opts 0 -g4 -s ASM_JS=0 -s DISABLE_EXCEPTION_CATCHING=0 -s ERROR_ON_UNDEFINED_SYMBOLS=1 --memory-init-file 1 --preload-file ${TARGETDIR}/asset'
 
+		if os.isfile('template.html') then
+			cmd = cmd .. ' --shell-file "${CURDIR}/template.html"'
+		else
+			cmd = cmd .. ' --shell-file "' .. minko.sdk.path('/skeleton/template.html') .. '"'
+		end
+		
 		buildoptions {
 			"-g4" -- allow source maps in final .js
 		}
 
 		postbuildcommands {
-			emcc .. ' ${TARGET} -o ${TARGETDIR}/' .. name .. '.html -O2 --js-opts 0 -g4 -s ASM_JS=0 -s DISABLE_EXCEPTION_CATCHING=0 -s ERROR_ON_UNDEFINED_SYMBOLS=1 -s TOTAL_MEMORY=268435456 --preload-file ${TARGETDIR}/asset || ' .. minko.action.fail()
+			cmd .. ' || ' .. minko.action.fail(),
+			-- fix the "invalid increment operand" syntax error caused by ++0 in the output file
+			'python "' .. minko.sdk.path('/module/emscripten/fix_invalid_increment_operand.py') .. '"  ${TARGETDIR}/' .. name .. '.js'
 		}
 
 		libdirs {
@@ -216,6 +254,9 @@ minko.project.application = function(name)
 		}
 
 	configuration { "ios" }
+
+		kind "WindowedApp"
+
 		links {
 			"minko-framework",
 			"m",
@@ -235,11 +276,45 @@ minko.project.application = function(name)
 			minko.action.copy("asset")
 		}
 
-	configuration { "vs*" }
-		kind "ConsoleApp" -- make the console visible in VS 2013
+	configuration { "android" }
+
+		kind "SharedLib"
+
+		links {
+			"minko-framework",
+			"GLESv1_CM",
+			"GLESv2",
+			"EGL",
+			"dl",
+			"z",
+			"log",
+			"android",
+			"stdc++",
+			-- "gnustl_static",
+		}
+
+		targetprefix "lib"
+		targetextension ".so"
+		linkoptions {
+			-- "-s",
+			"-shared",
+			"-pthread",
+			"-Wl,--no-undefined",
+			"-Wl,--undefined=Java_org_libsdl_app_SDLActivity_nativeInit"
+		}
+
+		prelinkcommands {
+			minko.action.copy(minko.sdk.path("/framework/asset")),
+			minko.action.copy("asset")
+		}
+
+		-- activity "MinkoTest"
+		-- baseactivity "Activity"
+		-- packagename "app"
+		-- basepackagename "io.minko"
 
 	configuration { }
-	
+
 end
 
 minko.project.worker = function(name)

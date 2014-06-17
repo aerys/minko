@@ -111,10 +111,10 @@ namespace minko
 								   const uint 	size,
 								   void* 				data) = 0;
 
-			virtual	
+			virtual
 			void
 			deleteVertexBuffer(const uint vertexBuffer) = 0;
-				
+
 			virtual
 			const uint
 			createIndexBuffer(const uint size) = 0;
@@ -295,7 +295,7 @@ namespace minko
             void
             setBlendMode(Blending::Mode blendMode) = 0;
 
-			virtual 
+			virtual
 			void
 			setColorMask(bool) = 0;
 
@@ -305,8 +305,8 @@ namespace minko
 
 			virtual
 			void
-			setStencilTest(CompareMode		stencilFunc, 
-						   int				stencilRef, 
+			setStencilTest(CompareMode		stencilFunc,
+						   int				stencilRef,
 						   uint				stencilMask,
 						   StencilOperation	stencilFailOp,
 						   StencilOperation	stencilZFailOp,
@@ -340,5 +340,5 @@ namespace minko
             void
             generateMipmaps(unsigned int texture) = 0;
 		};
-	}	
+	}
 }

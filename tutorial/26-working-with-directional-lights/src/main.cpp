@@ -33,10 +33,10 @@ main(int argc, char** argv)
   auto canvas = Canvas::create("Minko Tutorial - Working with directional lights", WINDOW_WIDTH, WINDOW_HEIGHT);
   auto sceneManager = component::SceneManager::create(canvas->context());
  
-  sceneManager->assets()
+  sceneManager->assets()->loader()
 	  ->queue("effect/Phong.effect");
   
-  auto complete = sceneManager->assets()->complete()->connect([&](file::AssetLibrary::Ptr assets)
+  auto complete = sceneManager->assets()->loader()->complete()->connect([&](file::Loader::Ptr loader)
   {
     auto root = scene::Node::create("root")
       ->addComponent(sceneManager);
@@ -56,9 +56,9 @@ main(int argc, char** argv)
     auto sphere = scene::Node::create("sphere")
       ->addComponent(Transform::create(Matrix4x4::create()->translation(0.f, 0.f, -5.f)))
 	  ->addComponent(Surface::create(
-        geometry::SphereGeometry::create(assets->context()),
+        geometry::SphereGeometry::create(canvas->context()),
 		phongMaterial,
-        assets->effect("effect/Phong.effect")
+		sceneManager->assets()->effect("effect/Phong.effect")
       ));
 	sphere->component<Transform>()->matrix()->prependRotationY(PI * 0.25f);
 	root->addChild(sphere);
@@ -81,7 +81,7 @@ main(int argc, char** argv)
     canvas->run();
   });
  
-  sceneManager->assets()->load();
+  sceneManager->assets()->loader()->load();
  
   return 0;
 }

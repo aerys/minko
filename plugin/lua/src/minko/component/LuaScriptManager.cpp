@@ -20,8 +20,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/LuaScriptManager.hpp"
 #include "minko/component/LuaScript.hpp"
 
+#include "minko/file/AbstractProtocol.hpp"
+
 #include "minko/file/Options.hpp"
-#include "minko/file/FileLoader.hpp"
+#include "minko/file/FileProtocol.hpp"
 #include "minko/render/AbstractContext.hpp"
 #include "minko/render/Texture.hpp"
 
@@ -49,15 +51,23 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/scene/LuaNodeSet.hpp"
 #include "minko/geometry/LuaGeometry.hpp"
 #include "minko/material/LuaMaterial.hpp"
+#include "minko/material/LuaBasicMaterial.hpp"
 #include "minko/render/LuaEffect.hpp"
+#include "minko/render/LuaTexture.hpp"
+#include "minko/file/LuaLoader.hpp"
 #include "minko/file/LuaAssetLibrary.hpp"
 #include "minko/input/LuaKeyboard.hpp"
 #include "minko/input/LuaMouse.hpp"
+#include "minko/input/LuaFinger.hpp"
 #include "minko/input/LuaJoystick.hpp"
 #include "minko/LuaAbstractCanvas.hpp"
 #include "minko/component/LuaPerspectiveCamera.hpp"
 #include "minko/component/LuaTransform.hpp"
 #include "minko/component/LuaAnimation.hpp"
+#include "minko/component/LuaMasterAnimation.hpp"
+#include "minko/component/LuaSurface.hpp"
+#include "minko/component/LuaRenderer.hpp"
+#include "minko/component/LuaLuaScript.hpp"
 
 using namespace minko;
 using namespace minko::component;
@@ -93,67 +103,71 @@ LuaScriptManager::targetAddedHandler(AbstractComponent::Ptr cmp, scene::Node::Pt
     if (targets().size() > 1)
         throw;
 
-    loadStandardLibrary();
+	loadStandardLibrary();
 }
 
 void
 LuaScriptManager::loadStandardLibrary()
 {
     auto assets = targets()[0]->root()->component<SceneManager>()->assets();
-    auto options = assets->defaultOptions();
-    auto createLoader = assets->defaultOptions()->loaderFunction();
+
+    auto options = assets->loader()->options();
+    auto loader = file::Loader::create(assets->loader());
+
     auto filesToLoad = {
         "script/minko.coroutine.lua",
-        "script/minko.time.lua"
+        "script/minko.time.lua",
+		"script/minko.trace.lua"
     };
 
-    _numDependencies = filesToLoad.size();
+    _dependencySlot = loader->complete()->connect(std::bind(
+        &LuaScriptManager::dependencyLoadedHandler,
+        std::dynamic_pointer_cast<LuaScriptManager>(shared_from_this()),
+        std::placeholders::_1
+    ));
 
     for (auto& filename : filesToLoad)
-    {
-		auto loader = createLoader(filename, assets);
+        loader->queue(filename);
 
-        _dependencySlots.push_back(loader->complete()->connect(std::bind(
-            &LuaScriptManager::dependencyLoadedHandler,
-            std::dynamic_pointer_cast<LuaScriptManager>(shared_from_this()),
-            std::placeholders::_1
-        )));
-        loader->load(filename, options);
-    }
+    loader->load();
 }
 
 void
-LuaScriptManager::dependencyLoadedHandler(AbsLoaderPtr loader)
+LuaScriptManager::dependencyLoadedHandler(file::Loader::Ptr loader)
 {
-    auto& data = loader->data();
+    for (auto& filenameAndFile : loader->files())
+    {
+        auto& data = filenameAndFile.second->data();
 
-    _state.doString(std::string((char*)&data[0], data.size()));
+        _state.doString(std::string((char*)&data[0], data.size()));
+    }
 
-    ++_numLoadedDependencies;
+    _ready = true;
 }
 
 void
 LuaScriptManager::update(scene::Node::Ptr target)
 {
+	if (!_ready)
+		return;
+
     time_point t = std::chrono::high_resolution_clock::now();
     std::chrono::duration<float> deltaT = t - _previousTime;
+	
+	_state.invokeVoidFunction("wakeUpWaitingThreads", deltaT.count() * 1000.f);
 
-    _state.invokeVoidFunction("wakeUpWaitingThreads", deltaT.count() * 1000.f);
-    _previousTime = t;
+	_previousTime = t;
 }
 
 void
 LuaScriptManager::initializeBindings()
 {
-	_state.Class<render::Texture>("Texture");
-	_state.Class<Surface>("Surface")
-		.method("create", static_cast<Surface::Ptr(*)(geometry::Geometry::Ptr, data::Provider::Ptr, render::Effect::Ptr)>(&Surface::create));
+	//_state.Class<render::Texture>("Texture");
+	//_state.Class<Surface>("Surface")
+	//	.method("create", static_cast<Surface::Ptr(*)(geometry::Geometry::Ptr, data::Provider::Ptr, render::Effect::Ptr)>(&Surface::create));
 	_state.Class<render::AbstractContext>("AbstractContext");
 	_state.Class<BoundingBox>("BoundingBox")
 		.property("box", &BoundingBox::box);
-	_state.Class<Renderer>("Renderer")
-		.method("create", static_cast<Renderer::Ptr(*)(void)>(&Renderer::create))
-		.property("backgroundColor", &Renderer::backgroundColor, &Renderer::backgroundColor);
 	_state.Class<AmbientLight>("AmbientLight")
 		.method("create", &AmbientLight::create)
 		.property("color", static_cast<math::Vector3::Ptr(AmbientLight::*)()>(&AbstractLight::color));
@@ -176,17 +190,25 @@ LuaScriptManager::initializeBindings()
     data::LuaContainer::bind(_state);
     geometry::LuaGeometry::bind(_state);
     material::LuaMaterial::bind(_state);
+	material::LuaBasicMaterial::bind(_state);
+	render::LuaTexture::bind(_state);
     render::LuaEffect::bind(_state);
+    file::LuaLoader::bind(_state);
     file::LuaAssetLibrary::bind(_state);
     input::LuaMouse::bind(_state);
     input::LuaKeyboard::bind(_state);
+    input::LuaFinger::bind(_state);
 	input::LuaJoystick::bind(_state);
     LuaAbstractCanvas::bind(_state);
     component::LuaPerspectiveCamera::bind(_state);
     component::LuaTransform::bind(_state);
+	component::LuaSurface::bind(_state);
+    component::LuaAnimation::bind(_state);
+    component::LuaMasterAnimation::bind(_state);
+    component::LuaRenderer::bind(_state);
+    component::LuaLuaScript::bind(_state);
     scene::LuaNode::bind(_state);
     scene::LuaNodeSet::bind(_state);
-	component::LuaAnimation::bind(_state);
 
     auto& sceneManager = _state.Class<SceneManager>("SceneManager")
         .property("assets",     &SceneManager::assets);

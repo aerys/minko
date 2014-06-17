@@ -32,13 +32,14 @@ int main(int argc, char** argv)
 	auto canvas = Canvas::create("Minko Example - Visibility", 800, 600);
 
 	auto sceneManager = SceneManager::create(canvas->context());
-	
+
 	// setup assets
-	sceneManager->assets()->defaultOptions()->resizeSmoothly(true);
-	sceneManager->assets()->defaultOptions()->generateMipmaps(true);
-	sceneManager->assets()
-		->registerParser<file::PNGParser>("png")
-		->queue(TEXTURE_FILENAME)
+	sceneManager->assets()->loader()->options()->resizeSmoothly(true);
+	sceneManager->assets()->loader()->options()->generateMipmaps(true);
+	sceneManager->assets()->loader()->options()
+                ->registerParser<file::PNGParser>("png");
+        sceneManager->assets()->loader()
+                ->queue(TEXTURE_FILENAME)
 		->queue("effect/Basic.effect");
 
 	sceneManager->assets()->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()));
@@ -59,10 +60,10 @@ int main(int argc, char** argv)
 
 	auto cubes = scene::Node::create("cubesContainer");
 
-	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
+	auto _ = sceneManager->assets()->loader()->complete()->connect([=](file::Loader::Ptr loader)
 	{
-		assets->material("boxMaterial", material::BasicMaterial::create()->diffuseMap(assets->texture(TEXTURE_FILENAME)));
-		assets->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()));
+		sceneManager->assets()->material("boxMaterial", material::BasicMaterial::create()->diffuseMap(sceneManager->assets()->texture(TEXTURE_FILENAME)));
+		sceneManager->assets()->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()));
 
 		for (int j = 3; j >= -3; --j)
 		{
@@ -70,9 +71,9 @@ int main(int argc, char** argv)
 			{
 				auto mesh = scene::Node::create("mesh")
 					->addComponent(Surface::create(
-						assets->geometry("cube"),
-						assets->material("boxMaterial"),
-						assets->effect("effect/Basic.effect")
+						sceneManager->assets()->geometry("cube"),
+						sceneManager->assets()->material("boxMaterial"),
+						sceneManager->assets()->effect("effect/Basic.effect")
 						))
 					->addComponent(Transform::create(Matrix4x4::create()->appendTranslation(i * 2.f, j * 2.f)));
 				cubes->addChild(mesh);
@@ -118,7 +119,7 @@ int main(int argc, char** argv)
 		}
 	});
 
-	sceneManager->assets()->load();
+	sceneManager->assets()->loader()->load();
 
 	canvas->run();
 

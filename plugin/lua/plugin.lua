@@ -34,7 +34,7 @@ function minko.plugin.lua:enable()
 		minko.plugin.path("lua") .. "/lib/LuaGlue/include",
 	}
 
-	postbuildcommands {
+	prelinkcommands {
 		minko.action.copy(minko.plugin.path("lua") .. "/asset"),
 	}
 end

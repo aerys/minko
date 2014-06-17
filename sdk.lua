@@ -14,10 +14,10 @@ package.path = MINKO_HOME .. "/module/?/?.lua;".. package.path
 
 print('Minko SDK home directory: ' .. MINKO_HOME)
 
+require 'ext'
 require 'minko'
-require 'color'
 require 'emscripten'
-require 'android'
+require 'jni'
 require 'vs2013ctp'
 require 'gcc'
 require 'clang'
@@ -67,7 +67,7 @@ configuration { "android"}
 configuration { "cc=gcc"}
 	toolset "gcc"
 
-configuration { "cc=clang"}
+configuration { "cc=clang", "not html5" }
 	toolset "clang"
 
 configuration {}

@@ -48,6 +48,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "IRRShared.h"
 #include "SceneCombiner.h"
+#include "Importer.h"
 
 namespace Assimp	{
 
@@ -242,7 +243,7 @@ private:
 	/** Fill the scenegraph recursively
 	 */
 	void GenerateGraph(Node* root,aiNode* rootOut ,aiScene* scene,
-		BatchLoader& batch,
+		Loader& batch,
 		std::vector<aiMesh*>& meshes,
 		std::vector<aiNodeAnim*>& anims,
 		std::vector<AttachmentInfo>& attach,

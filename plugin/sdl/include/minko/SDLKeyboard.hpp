@@ -21,6 +21,18 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/input/Keyboard.hpp"
 
+namespace std
+{
+    template <>
+    class hash<minko::input::Keyboard::Key>
+    {
+    public:
+        size_t operator()(const minko::input::Keyboard::Key &key) const{
+            return hash<int>()(key);
+        }
+    };
+}
+
 namespace minko
 {
     class SDLKeyboard :
@@ -51,10 +63,10 @@ namespace minko
         };
 
         // TODO: change map to unordered_map (doesn't compile with Emscripten 1.13 with unordered_map)
-        static const std::map<Key, KeyType> keyTypeMap;
+        static const std::unordered_map<Key, KeyType> keyTypeMap;
 
-        static const std::map<Key, KeyCode> keyToKeyCodeMap;
-        static const std::map<Key, ScanCode> keyToScanCodeMap;
+        static const std::unordered_map<Key, KeyCode> keyToKeyCodeMap;
+        static const std::unordered_map<Key, ScanCode> keyToScanCodeMap;
 
         bool
         hasKeyDownSignal(input::Keyboard::Key key)

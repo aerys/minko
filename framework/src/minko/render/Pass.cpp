@@ -20,7 +20,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/Pass.hpp"
 
 #include "minko/data/Container.hpp"
-#include "minko/data/ContainerProperty.hpp"
 #include "minko/render/Program.hpp"
 #include "minko/render/Shader.hpp"
 #include "minko/render/DrawCall.hpp"
@@ -29,15 +28,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 using namespace minko;
 using namespace minko::render;
+using namespace minko::data;
 
-Pass::Pass(const std::string&				name,
-		   std::shared_ptr<render::Program>	program,
-		   const data::BindingMap&			attributeBindings,
-		   const data::BindingMap&			uniformBindings,
-		   const data::BindingMap&			stateBindings,
-		   const data::MacroBindingMap&		macroBindings,
-           std::shared_ptr<States>          states,
-		   const std::string&				fallback) :
+Pass::Pass(const std::string&		name,
+		   Program::Ptr				program,
+		   const BindingMap&		attributeBindings,
+		   const BindingMap&		uniformBindings,
+		   const BindingMap&		stateBindings,
+		   const MacroBindingMap&	macroBindings,
+           std::shared_ptr<States>  states,
+		   const std::string&		fallback) :
 	_name(name),
 	_programTemplate(program),
 	_attributeBindings(attributeBindings),
@@ -57,13 +57,13 @@ Pass::Pass(const std::string&				name,
 }
 
 std::shared_ptr<Program>
-Pass::selectProgram(DrawCall::Ptr						drawCall,
-					std::shared_ptr<data::Container>	targetData,
-					std::shared_ptr<data::Container>	rendererData,
-					std::shared_ptr<data::Container>	rootData,
-					std::list<data::ContainerProperty>&	booleanMacros,
-					std::list<data::ContainerProperty>&	integerMacros,
-					std::list<data::ContainerProperty>&	incorrectIntegerMacros)
+Pass::selectProgram(FormatNameFunction		formatNameFunc,
+					Container::Ptr			targetData,
+					Container::Ptr			rendererData,
+					Container::Ptr			rootData,
+					std::list<std::string>&	booleanMacros,
+					std::list<std::string>&	integerMacros,
+					std::list<std::string>&	incorrectIntegerMacros)
 {
 	booleanMacros.clear();
 	integerMacros.clear();
@@ -80,7 +80,7 @@ Pass::selectProgram(DrawCall::Ptr						drawCall,
 
 		signature.build(
 			shared_from_this(),
-			drawCall,
+			formatNameFunc,
 			targetData,
 			rendererData,
 			rootData,
@@ -89,14 +89,6 @@ Pass::selectProgram(DrawCall::Ptr						drawCall,
 			integerMacros,
 			incorrectIntegerMacros
 		);
-
-#ifdef DEBUG_FALLBACK
-		if (!incorrectIntegerMacros.empty())
-			for (auto& m : incorrectIntegerMacros)
-				std::cout << "- incorrect macro\t'" << m.name() << "' from container[" << m.container().get() << "]" << std::endl;
-		if (!defines.empty())
-			std::cout << "MACRO DEFINES\n" << defines << std::endl;
-#endif // DEBUG_FALLBACK
 
 		if (!incorrectIntegerMacros.empty())
 			return nullptr;
@@ -168,16 +160,16 @@ Pass::finalizeProgram(Program::Ptr program)
 }
 
 void
-Pass::getExplicitDefinitions(std::unordered_map<std::string, data::MacroBindingDefault>& macroNameToValue) const
+Pass::getExplicitDefinitions(std::unordered_map<std::string, MacroBindingDefault>& macroNameToValue) const
 {
 	macroNameToValue.clear();
 
 	for (auto& macroName : _definedBoolMacros)
 		if (!isExplicitlyUndefined(macroName))
 		{
-			data::MacroBindingDefault macroValue;
+			MacroBindingDefault macroValue;
 
-			macroValue.semantic				= data::MacroBindingDefaultValueSemantic::PROPERTY_EXISTS;
+			macroValue.semantic				= MacroBindingDefaultValueSemantic::PROPERTY_EXISTS;
 			macroValue.value.propertyExists = true;
 
 			macroNameToValue[macroName] = macroValue;
@@ -189,9 +181,9 @@ Pass::getExplicitDefinitions(std::unordered_map<std::string, data::MacroBindingD
 
 		if (!isExplicitlyUndefined(macroName))
 		{
-			data::MacroBindingDefault	macroValue;
+			MacroBindingDefault	macroValue;
 
-			macroValue.semantic		= data::MacroBindingDefaultValueSemantic::VALUE;
+			macroValue.semantic		= MacroBindingDefaultValueSemantic::VALUE;
 			macroValue.value.value	= macroNameAndValue.second;
 
 			macroNameToValue[macroName] = macroValue; // integer definitions will overwrite boolean definitions

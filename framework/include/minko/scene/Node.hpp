@@ -21,6 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 #include "minko/Signal.hpp"
+#include "minko/scene/Layout.hpp"
 
 namespace minko
 {
@@ -30,31 +31,32 @@ namespace minko
 			public std::enable_shared_from_this<Node>
 		{
 		public:
-			typedef std::shared_ptr<Node>	Ptr;
+			typedef std::shared_ptr<Node>							Ptr;
 
 		private:
 			typedef std::shared_ptr<component::AbstractComponent>	AbsCtrlPtr;
 
+			static uint												_lastId;
+			uint													_id;
+
 		protected:
-			std::string 									_name;
-			std::vector<Ptr>								_children;
+			std::string 											_name;
+			std::vector<Ptr>										_children;
 
 		private:
-			static unsigned int								_id;
+			Ptr 													_root;
+			Ptr														_parent;
+			std::shared_ptr<data::Container>						_container;
+			std::shared_ptr<data::Provider>							_data;
+			std::list<AbsCtrlPtr>									_components;
 
-			uint											_layouts;
-			Ptr 											_root;
-			Ptr												_parent;
-			std::shared_ptr<data::Container>				_container;
-			std::list<AbsCtrlPtr>							_components;
+			uint													_depth;
 
-			uint											_depth;
-
-			std::shared_ptr<Signal<Ptr, Ptr, Ptr>>			_added;
-			std::shared_ptr<Signal<Ptr, Ptr, Ptr>>			_removed;
-			std::shared_ptr<Signal<Ptr, Ptr>>				_layoutsChanged;
-			std::shared_ptr<Signal<Ptr, Ptr, AbsCtrlPtr>>	_componentAdded;
-			std::shared_ptr<Signal<Ptr, Ptr, AbsCtrlPtr>>	_componentRemoved;
+			std::shared_ptr<Signal<Ptr, Ptr, Ptr>>					_added;
+			std::shared_ptr<Signal<Ptr, Ptr, Ptr>>					_removed;
+			std::shared_ptr<Signal<Ptr, Ptr>>						_layoutsChanged;
+			std::shared_ptr<Signal<Ptr, Ptr, AbsCtrlPtr>>			_componentAdded;
+			std::shared_ptr<Signal<Ptr, Ptr, AbsCtrlPtr>>			_componentRemoved;
 
 		public:
 
@@ -112,21 +114,24 @@ namespace minko
 			}
 
 			inline
+			int
+			id() const
+			{
+				return _id;
+			}
+
+			inline
 			void
 			name(const std::string& name)
 			{
 				_name = name;
 			}
 
-			inline
-			uint
-			layouts() const
-			{
-				return _layouts;
-			}
+			Layouts
+			layouts() const;
 			
-			void
-			layouts(uint);
+			Ptr
+			layouts(Layouts);
 
 			inline
 			Ptr
@@ -271,11 +276,25 @@ namespace minko
 			{
 			}
 
+			std::string
+			toString() const
+			{
+				std::stringstream stream;
+
+				stream << "Node (" << _name << ")";
+
+				return stream.str();
+			}
+
 		protected:
 			Node();
 
 			void
 			updateRoot();
+
+		private:
+			void
+			initialize();
 		};
 	}
 }

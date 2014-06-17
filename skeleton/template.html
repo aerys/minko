@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Powered by Minko</title>
+    <style>
+		body, html {
+			background: black;
+			padding: 0;
+			margin: 0;
+			color: white;
+			font-family: "Century Gothic","Apple Gothic",AppleGothic,"URW Gothic L","Avant Garde",Futura,sans-serif;
+			overflow: hidden;
+		}
+		a { color: white; text-decoration: none; }
+		.center { margin-left: auto; margin-right: auto; display: block; }
+		#loader { margin-top: 200px; }
+		#status, #percentage { color: grey; display: inline-block; font-size: .8em; vertical-align: top; padding-top: 2px; }
+		#percentage { float: right; }
+		#progress { width: 400px; height: 2px; background: grey; border: none; margin-bottom: 5px; margin-top: 10px; }
+		#progress::-moz-progress-bar { background: white; }
+		#progress::-webkit-progress-value { background: white; }
+		/* the canvas *must not* have any border or padding, or mouse coords will be wrong */
+		canvas.emscripten { border: 0px none; }
+		.emscripten {
+			padding-right: 0;
+			margin-left: auto;
+			margin-right: auto;
+			display: block;
+		}
+		#powered_by { font-size: .7em; margin-bottom: -7px; color: grey; }
+		#logo { font-size: 2em; }
+		#spinner { margin: 0; }
+		.spinner {
+			height: 9px;
+			width: 9px;
+			display: inline-block;
+			margin-right: 5px;
+			-webkit-animation: rotation .8s linear infinite;
+			-moz-animation: rotation .8s linear infinite;
+			-o-animation: rotation .8s linear infinite;
+			animation: rotation 0.8s linear infinite;
+			border-left: 2px solid grey;
+			border-right: 2px solid grey;
+			border-bottom: 2px solid grey;
+			border-top: 2px solid black;
+			border-radius: 100%;
+		}
+		@-webkit-keyframes rotation {
+			from {-webkit-transform: rotate(0deg);}
+			to {-webkit-transform: rotate(360deg);}
+		}
+		@-moz-keyframes rotation {
+			from {-moz-transform: rotate(0deg);}
+			to {-moz-transform: rotate(360deg);}
+		}
+		@-o-keyframes rotation {
+			from {-o-transform: rotate(0deg);}
+			to {-o-transform: rotate(360deg);}
+		}
+		@keyframes rotation {
+			from {transform: rotate(0deg);}
+			to {transform: rotate(360deg);}
+		}
+    </style>
+  </head>
+  <body>
+	<div class="center" style="width:400px" id="loader">
+		<a href="http://minko.io" target="_blank" class="center" style="width:140px">
+			<div id="powered_by">powered by</div>
+			<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="40" height="20">
+				<polygon points="0,0 40,0 20,20" style="fill:white;stroke:black;stroke-width:1"/>
+			</svg>
+			<span id="logo">minko</span>
+		</a>
+		<progress value="0" max="100" id="progress" class="center"></progress>
+		<figure style="overflow:visible;" id="spinner" class="center">
+			<div class="spinner"></div>
+			<span id="status">Downloading...</span>
+			<span id="percentage"></span>
+		</figure>
+	</div>
+    
+	<canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()"></canvas>
+	
+    <script type='text/javascript'>
+      var statusElement = document.getElementById('status');
+      var progressElement = document.getElementById('progress');
+      var loaderElement = document.getElementById('loader');
+	  var percentageElement = document.getElementById('percentage');
+	  
+	  function resizeCanvas()
+	  {
+		if (Module && Module.setCanvasSize && (canvas.width != window.innerWidth || canvas.height != window.innerHeight))
+			Module.setCanvasSize(window.innerWidth, window.innerHeight, false);
+	  }
+
+      var Module = {
+        preRun: [],
+        postRun: [],
+        print: function(text) {
+            console.log(Array.prototype.slice.call(arguments).join(' '));
+        },
+        printErr: function(text) {
+			console.error(Array.prototype.slice.call(arguments).join(' '));
+        },
+        canvas: document.getElementById('canvas'),
+        setStatus: function(text) {
+          if (!Module.setStatus.last) Module.setStatus.last = { time: Date.now(), text: '' };
+          if (text === Module.setStatus.text) return;
+          var m = text.match(/([^(]+)\((\d+(\.\d+)?)\/(\d+)\)/);
+
+          if (m) {
+			var loaded = parseInt(m[2])*100;
+			var total = parseInt(m[4])*100;
+		  
+            text = m[1];
+			progressElement.value = loaded;
+            progressElement.max = total;
+			percentageElement.innerHTML = Math.ceil(loaded/total*100) + "%";
+          } else {
+			if (progressElement.value != 0)
+			{
+				percentageElement.style.display = 'none';
+				progressElement.value = progressElement.max;
+			}
+			if (!text) {
+				document.body.removeChild(loaderElement);
+				resizeCanvas();
+			}
+          }
+          statusElement.innerHTML = text;
+        },
+        totalDependencies: 0,
+        monitorRunDependencies: function(left) {
+          this.totalDependencies = Math.max(this.totalDependencies, left);
+          Module.setStatus(left ? 'Preparing... (' + (this.totalDependencies-left) + '/' + this.totalDependencies + ')' : 'All downloads complete.');
+        },
+		TOTAL_MEMORY: 128 * 1024 * 1024
+      };
+      Module.setStatus('Downloading...');
+	  
+	  window.onresize = function(event)
+	  {
+		resizeCanvas();
+	  }
+    </script>
+    {{{ SCRIPT }}}
+  </body>
+</html>

@@ -84,7 +84,7 @@ Geometry::removeVertexBuffer(std::list<render::VertexBuffer::Ptr>::iterator vert
 	if (_vertexBuffers.size() == 0)
 		_numVertices = 0;
 
-	_vbToVertexSizeChangedSlot.erase(vertexBuffer);	
+	_vbToVertexSizeChangedSlot.erase(vertexBuffer);
 }
 
 void
@@ -121,7 +121,7 @@ Geometry::computeNormals()
 
 	if (_data->hasProperty("normal"))
 		throw std::logic_error("The geometry already stores precomputed normals.");
-		
+
 	if (!_data->hasProperty("position"))
 		throw std::logic_error("Computation of normals requires positions.");
 
@@ -189,7 +189,7 @@ Geometry::computeTangentSpace(bool doNormals)
 	if (numVertices == 0)
 		return shared_from_this();
 
-	if (!_data->hasProperty("position") 
+	if (!_data->hasProperty("position")
 		|| !_data->hasProperty("uv"))
 		throw std::logic_error("Computation of tangent space requires positions and uv.");
 
@@ -358,7 +358,7 @@ Geometry::cast(std::shared_ptr<math::Ray>	ray,
 	auto xyzVertexSize = xyzBuffer->vertexSize();
 	auto xyzOffset = std::get<2>(*xyzBuffer->attribute("position"));
 
-	auto minDistance = std::numeric_limits<float>::lowest();
+	auto minDistance = std::numeric_limits<float>::infinity();
 	auto lambda = hitUv ? Vector2::create() : nullptr;
 	auto triangleIndice = -3;
 
@@ -399,7 +399,7 @@ Geometry::cast(std::shared_ptr<math::Ray>	ray,
 			continue;
 
 		qvec->copyFrom(tvec)->cross(edge1);
-		v = ray->origin()->dot(qvec) * invDot;
+		v = ray->direction()->dot(qvec) * invDot;
 		if (v < 0.f || u + v > 1.f)
 			continue;
 
@@ -416,15 +416,15 @@ Geometry::cast(std::shared_ptr<math::Ray>	ray,
 				lambda->x(u);
 				lambda->y(v);
 			}
-		}
 
-		if (hitXyz)
-		{
-			hitXyz->setTo(
-				ray->origin()->x() + minDistance * ray->direction()->x(),
-				ray->origin()->y() + minDistance * ray->direction()->y(),
-				ray->origin()->z() + minDistance * ray->direction()->z()
-			);
+			if (hitXyz)
+			{
+				hitXyz->setTo(
+					ray->origin()->x() + minDistance * ray->direction()->x(),
+					ray->origin()->y() + minDistance * ray->direction()->y(),
+					ray->origin()->z() + minDistance * ray->direction()->z()
+					);
+			}
 		}
 
 		if (hitUv)
@@ -491,4 +491,19 @@ Geometry::upload()
 		vb->upload();
 
 	_indexBuffer->upload();
+}
+
+void
+Geometry::disposeIndexBufferData()
+{
+    _indexBuffer->disposeData();
+}
+
+void
+Geometry::disposeVertexBufferData()
+{
+    for (auto vertexBuffer : _vertexBuffers)
+    {
+        vertexBuffer->disposeData();
+    }
 }

@@ -70,10 +70,15 @@ MaterialParser::parse(const std::string&				filename,
 	msgpack::unpack(str.data(), str.size(), NULL, &mempool, &msgpackObject);
 	msgpackObject.convert(&serializedMaterial);
 
+	str.clear();
+	str.shrink_to_fit();
+
 	std::vector<ComplexProperty> complexProperties	= serializedMaterial.a0;
 	std::vector<BasicProperty>	 basicProperties	= serializedMaterial.a1;
 
 	MaterialPtr material = material::Material::create();
+
+	material->set("diffuseColor", math::Vector4::create(1.0, 1.0, 1.0, 1.0));
 
 	for (auto serializedComplexProperty : complexProperties)
 		deserializeComplexProperty(material, serializedComplexProperty);
@@ -93,48 +98,55 @@ MaterialParser::deserializeComplexProperty(MaterialPtr			material,
 {
 	uint type = serializedProperty.a1.a0 >> 24;
 
-	std::tuple<uint, std::string&> serializedPropertyTulpe(serializedProperty.a1.a0, serializedProperty.a1.a1);
+	std::tuple<uint, std::string&> serializedPropertyTuple(serializedProperty.a1.a0, serializedProperty.a1.a1);
 
 	if (type == VECTOR4)
 		material->set<Vector4Ptr>(
 			serializedProperty.a0, 
-			Any::cast<Vector4Ptr>(TypeDeserializer::deserializeVector4(serializedPropertyTulpe)));
+			Any::cast<Vector4Ptr>(TypeDeserializer::deserializeVector4(serializedPropertyTuple)));
 	else if (type == MATRIX4X4)
 		material->set<Matrix4x4Ptr>(
 			serializedProperty.a0, 
-			Any::cast<Matrix4x4Ptr>(TypeDeserializer::deserializeMatrix4x4(serializedPropertyTulpe)));
+			Any::cast<Matrix4x4Ptr>(TypeDeserializer::deserializeMatrix4x4(serializedPropertyTuple)));
 	else if (type == VECTOR2)
 		material->set<Vector2Ptr>(
 			serializedProperty.a0, 
-			Any::cast<Vector2Ptr>(TypeDeserializer::deserializeVector2(serializedPropertyTulpe)));
+			Any::cast<Vector2Ptr>(TypeDeserializer::deserializeVector2(serializedPropertyTuple)));
 	else if (type == VECTOR3)
 		material->set<Vector3Ptr>(
 			serializedProperty.a0, 
-			Any::cast<Vector3Ptr>(TypeDeserializer::deserializeVector3(serializedPropertyTulpe)));
+			Any::cast<Vector3Ptr>(TypeDeserializer::deserializeVector3(serializedPropertyTuple)));
 	else if (type == BLENDING)
 	{
 		material->set<render::Blending::Mode>(
 			serializedProperty.a0, 
-			Any::cast<render::Blending::Mode>(TypeDeserializer::deserializeBlending(serializedPropertyTulpe)));
+			Any::cast<render::Blending::Mode>(TypeDeserializer::deserializeBlending(serializedPropertyTuple)));
 		
 		if (material->get<render::Blending::Mode>("blendMode") != render::Blending::Mode::DEFAULT)
 
-		material->set("priority", render::priority::TRANSPARENT);
+		material->set("priority", render::Priority::TRANSPARENT);
 		material->set("zSort", true);
 	}
 	else if (type == TRIANGLECULLING)
 		material->set<render::TriangleCulling>(
 			serializedProperty.a0, 
-			Any::cast<render::TriangleCulling>(TypeDeserializer::deserializeTriangleCulling(serializedPropertyTulpe)));
+			Any::cast<render::TriangleCulling>(TypeDeserializer::deserializeTriangleCulling(serializedPropertyTuple)));
 	else if (type == TEXTURE)
 		material->set<TexturePtr>(
 			serializedProperty.a0,
-			_dependencies->getTextureReference(Any::cast<uint>(TypeDeserializer::deserializeTextureId(serializedPropertyTulpe))));
+			_dependencies->getTextureReference(Any::cast<uint>(TypeDeserializer::deserializeTextureId(serializedPropertyTuple))));
+	else if (type == ENVMAPTYPE)
+	{
+		auto envMapType = Any::cast<render::EnvironmentMap2dType>(TypeDeserializer::deserializeEnvironmentMap2dType(serializedPropertyTuple));
+
+		material->set<int>(serializedProperty.a0, int(envMapType));
+	}
 }
 
 void
 MaterialParser::deserializeBasicProperty(MaterialPtr		material,
 										 BasicProperty		serializedProperty)
 {
-	material->set<float>(serializedProperty.a0, serializedProperty.a1);
+	std::vector<float> serializedPropertyValue = deserialize::TypeDeserializer::deserializeVector<float>(serializedProperty.a1);
+	material->set<float>(serializedProperty.a0, serializedPropertyValue[0]);
 }

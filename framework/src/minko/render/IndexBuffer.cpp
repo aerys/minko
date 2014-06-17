@@ -24,21 +24,50 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::render;
 
+
+
 void
-IndexBuffer::upload(uint offset, uint count)
-{   
+IndexBuffer::upload(uint	offset,
+					int		count)
+{
+	if (_data.empty())
+		return;
+	
+	assert(count <= (int)_data.size());
+
 	if (_id == -1)
     	_id = _context->createIndexBuffer(_data.size());
-	
-	_context->uploaderIndexBufferData(_id, offset, count == 0 ? _data.size() : count, &_data[0]);
+
+	const auto oldNumIndices	= _numIndices;
+	_numIndices					= count >= 0 ? count : _data.size();
+
+	_context->uploaderIndexBufferData(
+		_id,
+		offset,
+		_numIndices,
+		&_data[0]
+	);
+
+	if (_numIndices != oldNumIndices)
+		_changed->execute(shared_from_this());
 }
 
 void
 IndexBuffer::dispose()
 {
     if (_id != -1)
-    {
 	    _context->deleteIndexBuffer(_id);
-	    _id = -1;
-    }
+
+	_id			= -1;
+	_numIndices	= 0;
+
+    disposeData();
+
+	_changed->execute(shared_from_this());
+}
+
+void IndexBuffer::disposeData()
+{
+    _data.clear();
+    _data.shrink_to_fit();
 }

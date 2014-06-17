@@ -79,7 +79,7 @@ ParticleSystem::ParticleSystem(AssetLibraryPtr		assets,
     _frameBeginSlot     (nullptr)
 {
 	if (_effect == nullptr)
-		throw new std::logic_error("Effect 'particles' is not available in the asset library.");
+		throw std::logic_error("Effect 'particles' is not available in the asset library.");
 
 	_surface = Surface::create(
 		_geometry, 
@@ -97,14 +97,14 @@ ParticleSystem::initialize()
 {
 	_targetAddedSlot = targetAdded()->connect(std::bind(
 		&ParticleSystem::targetAddedHandler,
-		shared_from_this(),
+		std::static_pointer_cast<ParticleSystem>(shared_from_this()),
 		std::placeholders::_1,
 		std::placeholders::_2
 	));	
 
 	_targetRemovedSlot = targetRemoved()->connect(std::bind(
 		&ParticleSystem::targetRemovedHandler,
-		shared_from_this(),
+		std::static_pointer_cast<ParticleSystem>(shared_from_this()),
 		std::placeholders::_1,
 		std::placeholders::_2
 	));
@@ -158,7 +158,7 @@ ParticleSystem::findSceneManager()
 	else if (roots->nodes().size() == 1)
 		_frameBeginSlot = roots->nodes()[0]->component<SceneManager>()->frameEnd()->connect(std::bind(
 			&ParticleSystem::frameBeginHandler, 
-            shared_from_this(), 
+            std::static_pointer_cast<ParticleSystem>(shared_from_this()), 
             std::placeholders::_1,
             std::placeholders::_2,
             std::placeholders::_3
@@ -213,7 +213,7 @@ ParticleSystem::add(ModifierPtr	modifier)
 	{
 		_initializers.push_back(i);
 
-		return shared_from_this();	
+		return std::static_pointer_cast<ParticleSystem>(shared_from_this());	
 	}
 
 	IUpdaterPtr u = std::dynamic_pointer_cast<modifier::IParticleUpdater> (modifier);
@@ -221,7 +221,7 @@ ParticleSystem::add(ModifierPtr	modifier)
 	if (u != 0)
 		_updaters.push_back(u);
 
-    return shared_from_this();	
+    return std::static_pointer_cast<ParticleSystem>(shared_from_this());	
 }
 
 ParticleSystem::Ptr
@@ -239,11 +239,11 @@ ParticleSystem::remove(ModifierPtr	modifier)
 				modifier->unsetProperties(_material);
 				updateVertexFormat();
 
-				return shared_from_this();
+				return std::static_pointer_cast<ParticleSystem>(shared_from_this());
 			}
 		}
 
-		return shared_from_this();
+		return std::static_pointer_cast<ParticleSystem>(shared_from_this());
 	}
 	
 	IUpdaterPtr u = std::dynamic_pointer_cast<modifier::IParticleUpdater> (modifier);
@@ -258,12 +258,12 @@ ParticleSystem::remove(ModifierPtr	modifier)
 				modifier->unsetProperties(_material);
 				updateVertexFormat();
 
-				return shared_from_this();
+				return std::static_pointer_cast<ParticleSystem>(shared_from_this());
 			}
 		}
 	}
 
-    return shared_from_this();
+    return std::static_pointer_cast<ParticleSystem>(shared_from_this());
 }
 
 bool
@@ -752,7 +752,7 @@ ParticleSystem::updateVertexBuffer()
 	if (liveCount != _previousLiveCount)
 	{
         auto particleIndices    = std::static_pointer_cast<render::ParticleIndexBuffer>(_geometry->indices());
-		particleIndices->upload(0, liveCount << 2);
+		particleIndices->upload(0, liveCount * 6);
 		_previousLiveCount = liveCount;
 	}
 }

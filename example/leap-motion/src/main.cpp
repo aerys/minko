@@ -14,11 +14,11 @@ using namespace minko::scene;
 using namespace minko::material;
 using namespace minko::component;
 
-static const std::string	SCENE_NAME		= "model/airplane_engine_n.scene";
+static const std::string	SCENE_NAME		= "model/crossCubes.scene";
 static const std::string	DEFAULT_EFFECT	= "effect/Basic.effect";
 static const std::string	HANGAR_TEXTURE	= "texture/hangar.png";
 
-void 
+void
 explodeModel(float magnitude, float previousMagnitude, Node::Ptr);
 
 Matrix4x4::Ptr
@@ -166,7 +166,7 @@ int main(int argc, char** argv)
 				}
 				else if (fabsf(swipeDirection->x()) > 0.5f)
 				{
-					const float goalRotation	= atan2f(goalSinRotation, goalCosRotation) 
+					const float goalRotation	= atan2f(goalSinRotation, goalCosRotation)
 						+ (swipeDirection->x() < 0.0f ? (float)PI * 0.25f : - (float)PI * 0.25f);
 
 					isInProgress	= true;
@@ -185,7 +185,7 @@ int main(int argc, char** argv)
 		const float diffSinRotation		= goalSinRotation - sinRotation;
 
 		if (fabsf(diffExplosionValue) < 0.01f &&
-			fabsf(diffCameraDistance) < 0.01f && 
+			fabsf(diffCameraDistance) < 0.01f &&
 			fabsf(diffCosRotation) < 0.01f &&
 			fabsf(diffSinRotation) < 0.01f)
 		{
@@ -206,7 +206,7 @@ int main(int argc, char** argv)
 		cameraDistance	+= diffCameraDistance	* std::min(1.0f, 2.5f * deltaTime);
 		cosRotation		+= diffCosRotation		* std::min(1.0f, 3.0f * deltaTime);
 		sinRotation		+= diffSinRotation		* std::min(1.0f, 3.0f * deltaTime);
-		 
+
 		explodeModel(
 			explosionValue,
 			previousExplosionValue,
@@ -216,8 +216,8 @@ int main(int argc, char** argv)
 		previousExplosionValue	= explosionValue;
 
 		placeCamera(
-			cameraDistance, 
-			atan2f(sinRotation, cosRotation), 
+			cameraDistance,
+			atan2f(sinRotation, cosRotation),
 			cameraNode->component<Transform>()->matrix()
 		);
 	});
@@ -238,7 +238,7 @@ int main(int argc, char** argv)
 
 
     auto root				= Node::create("root");
-    
+
 	// setup assets
 	auto defaultMaterial	= Material::create()
 		->set("diffuseColor", Vector4::create(1.f, 1.f, 1.f, 1.f))
@@ -246,30 +246,32 @@ int main(int argc, char** argv)
 
 	sceneManager->assets()->context()->errorsEnabled(true);
 
-	sceneManager->assets()->defaultOptions()->generateMipmaps(false);
-	sceneManager->assets()->defaultOptions()->material(std::static_pointer_cast<Material>(
+	sceneManager->assets()->loader()->options()->generateMipmaps(false);
+	sceneManager->assets()->loader()->options()->material(std::static_pointer_cast<Material>(
 			Material::create()->set("triangleCulling", render::TriangleCulling::NONE)
 	));
-	sceneManager->assets()->defaultOptions()->materialFunction([&](const std::string&, Material::Ptr)
+	sceneManager->assets()->loader()->options()->materialFunction([&](const std::string&, Material::Ptr)
 	{
 		return std::static_pointer_cast<Material>(defaultMaterial);
 	});
 
-	sceneManager->assets()
+	sceneManager->assets()->loader()->options()
 		->registerParser<file::PNGParser>("png")
-		->registerParser<file::SceneParser>("scene")
-		->geometry("cube",		geometry::CubeGeometry::create(sceneManager->assets()->context()))
-		->geometry("sphere",	geometry::SphereGeometry::create(sceneManager->assets()->context()))
-		->geometry("skybox",	geometry::SphereGeometry::create(sceneManager->assets()->context(), 80, 80, true))
-		->queue(HANGAR_TEXTURE);
+                ->registerParser<file::SceneParser>("scene");
 
-	sceneManager->assets()
-		->load("effect/Phong.effect", nullptr, nullptr, false)
-		->load("effect/Basic.effect", nullptr, nullptr, false);
-    
-	sceneManager->assets()->defaultOptions()->effect(sceneManager->assets()->effect("effect/Phong.effect"));
-    
-	sceneManager->assets()->queue(SCENE_NAME);
+        sceneManager->assets()->geometry("cube",		geometry::CubeGeometry::create(sceneManager->assets()->context()))
+		->geometry("sphere",	geometry::SphereGeometry::create(sceneManager->assets()->context()))
+                ->geometry("skybox",	geometry::SphereGeometry::create(sceneManager->assets()->context(), 80, 80, true));
+
+        sceneManager->assets()->loader()->queue(HANGAR_TEXTURE);
+
+	sceneManager->assets()->loader()
+                ->queue("effect/Phong.effect")
+                ->queue("effect/Basic.effect");
+
+	sceneManager->assets()->loader()->options()->effect(sceneManager->assets()->effect("effect/Phong.effect"));
+
+	sceneManager->assets()->loader()->queue(SCENE_NAME);
 
 	auto renderer = Renderer::create();
 	renderer->backgroundColor(0x7F7F7FFF);
@@ -308,17 +310,17 @@ int main(int argc, char** argv)
 
 	root->addComponent(sceneManager);
 
-	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
+	auto _ = sceneManager->assets()->loader()->complete()->connect([=](file::Loader::Ptr loader)
 	{
-		sceneNode->addChild(assets->symbol(SCENE_NAME));
-		
+		sceneNode->addChild(sceneManager->assets()->symbol(SCENE_NAME));
+
 		skybox->addComponent(Surface::create(
-				 assets->geometry("skybox"),
+				 sceneManager->assets()->geometry("skybox"),
 				 BasicMaterial::create()
 					 ->diffuseColor(Vector4::create(1.0f, 0.0f, 0.0f, 1.0f))
-					 ->diffuseMap(assets->texture(HANGAR_TEXTURE))
+					 ->diffuseMap(sceneManager->assets()->texture(HANGAR_TEXTURE))
 					 ->triangleCulling(render::TriangleCulling::FRONT),
-				assets->effect("effect/Basic.effect")
+				sceneManager->assets()->effect("effect/Basic.effect")
 			));
 
 		root->addChild(dirLight);
@@ -340,7 +342,7 @@ int main(int argc, char** argv)
 				data::Provider::create()
 					->set("backbuffer", ppTarget)
 					->set("texcoordOffset", Vector2::create(1.0f/2048.f, 1.0f/2048.0f)),
-				assets->effect("effect/fxaa.effect")
+				sceneManager->assets()->effect("effect/fxaa.effect")
 			));
 		*/
 
@@ -355,17 +357,17 @@ int main(int argc, char** argv)
 	{
 		sceneManager->nextFrame(time, deltaTime);
 	});
-    
+
 	controller->start();
-	sceneManager->assets()->load();
+	sceneManager->assets()->loader()->load();
 
 	canvas->run();
 	return 0;
 }
 
 Matrix4x4::Ptr
-placeCamera(float			cameraDistance, 
-			float			rotation, 
+placeCamera(float			cameraDistance,
+			float			rotation,
 			Matrix4x4::Ptr	output = nullptr)
 {
 	static const float	CAMERA_ANGLE_X	= 35.0f * (float)PI / 180.0f;
@@ -387,7 +389,7 @@ placeCamera(float			cameraDistance,
 	return output->lookAt(Vector3::zero(), cameraPosition);
 }
 
-void 
+void
 explodeModel(float		magnitude,
 			float		previousMagnitude,
 			Node::Ptr	node)
