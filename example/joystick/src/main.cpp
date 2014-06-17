@@ -49,7 +49,7 @@ joystickButtonDownHandler(input::Joystick::Ptr joystick, int which, int buttonId
 int
 main(int argc, char** argv)
 {
-	auto canvas = Canvas::create("Minko Tutorial - Hello cube!", WINDOW_WIDTH, WINDOW_HEIGHT);
+	auto canvas = Canvas::create("Minko Tutorial - Joystick", WINDOW_WIDTH, WINDOW_HEIGHT);
 	auto sceneManager = SceneManager::create(canvas->context());
 	auto assets = sceneManager->assets();
 

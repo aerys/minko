@@ -31,7 +31,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 # include <GLES2/gl2.h>
 # include <GLES2/gl2ext.h>
 #else
-# include "SDL2/SDL.h"
+# include "SDL.h"
 #endif
 
 using namespace minko;

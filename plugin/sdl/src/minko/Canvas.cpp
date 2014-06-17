@@ -595,7 +595,7 @@ Canvas::step()
 #endif // EMSCRIPTEN
 
             _joysticks[event.jbutton.which]->joystickButtonDown()->execute(
-                _joysticks[event.jbutton.which], event.jbutton.which, button);
+                _joysticks[event.jbutton.which], event.jbutton.which, button
             );
             break;
         }
@@ -613,7 +613,7 @@ Canvas::step()
 #endif // EMSCRIPTEN
 
             _joysticks[event.jbutton.which]->joystickButtonUp()->execute(
-                _joysticks[event.jbutton.which], event.jbutton.which, button);
+                _joysticks[event.jbutton.which], event.jbutton.which, button
             );
             break;
         }

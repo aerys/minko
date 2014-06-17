@@ -22,7 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/input/Joystick.hpp"
 
 struct _SDL_Joystick;
-typedef struct _SDL_Joystick SDL_Joystick;
 
 namespace minko
 {
@@ -34,6 +33,8 @@ namespace minko
         friend class Canvas;
 
     private:
+        typedef struct _SDL_Joystick SDL_Joystick;
+
         SDL_Joystick*	_joystick;
 
         static const std::map<Button, std::string> ButtonNames;

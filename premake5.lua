@@ -111,7 +111,6 @@ solution "minko"
 		include 'example/picking'
 		include 'example/raycasting'
 		include 'example/reflection'
-		include 'example/sdl-binding'
 		include 'example/serializer'
 		include 'example/sky-box'
 		include 'example/stencil'

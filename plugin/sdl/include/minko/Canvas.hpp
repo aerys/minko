@@ -42,9 +42,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 struct SDL_Window;
 struct SDL_Surface;
-struct _SDL_Joystick;
-typedef struct _SDL_Joystick SDL_Joystick;
-typedef unsigned char Uint8;
 
 namespace minko
 {
@@ -56,37 +53,6 @@ namespace minko
 		typedef std::shared_ptr<Canvas>	Ptr;
 
 	private:
-		class SDLJoystick : 
-			public input::Joystick
-		{
-			friend class Canvas;
-
-		private:
-			SDL_Joystick*	_joystick;
-
-		public :
-			static inline
-			std::shared_ptr<SDLJoystick>
-			create(Canvas::Ptr canvas, int joystickId, SDL_Joystick* joystick)
-			{
-				return std::shared_ptr<SDLJoystick>(new SDLJoystick(canvas, joystickId, joystick));
-			}
-
-			inline
-			SDL_Joystick* const
-			joystick()
-			{
-				return _joystick;
-			}
-
-		private:
-			SDLJoystick(Canvas::Ptr canvas, int joystickId, SDL_Joystick* joystick) :
-				input::Joystick(canvas, joystickId),
-				_joystick(joystick)
-			{
-			}
-		};
-        
         class SDLFinger :
             public input::Finger
 		{
@@ -127,7 +93,7 @@ namespace minko
             
 		private:
 			SDLFinger(Canvas::Ptr canvas) :
-            input::Finger(canvas)
+            	input::Finger(canvas)
 			{
 			}
             
@@ -281,6 +247,7 @@ namespace minko
 		sdlJoystick(uint id)
 		{
 			auto joystick = _joysticks.find(id);
+
 			if (joystick == _joysticks.end())
 				return nullptr;
 
@@ -292,13 +259,6 @@ namespace minko
 		numJoysticks()
 		{
 			return _joysticks.size();
-		}
-
-		inline
-		std::unordered_map<int, std::shared_ptr<SDLJoystick>>
-		joysticks()
-		{
-			return _joysticks;
 		}
 
 		inline
