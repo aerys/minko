@@ -955,6 +955,25 @@ ChromiumDOMElement::onmouseover()
 	return _onmouseover;
 }
 
+Signal<AbstractDOMEvent::Ptr>::Ptr
+ChromiumDOMElement::ontouchdown()
+{
+	return nullptr;
+}
+
+Signal<AbstractDOMEvent::Ptr>::Ptr
+ChromiumDOMElement::ontouchup()
+{
+	return nullptr;
+}
+
+Signal<AbstractDOMEvent::Ptr>::Ptr
+ChromiumDOMElement::ontouchmotion()
+{
+	return nullptr;
+}
+
+
 void
 ChromiumDOMElement::update()
 {

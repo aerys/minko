@@ -260,6 +260,12 @@ ChromiumDOMEngine::visible(bool value)
 
 }
 
+bool
+ChromiumDOMEngine::visible()
+{
+	return _visible;
+}
+
 void
 ChromiumDOMEngine::clear()
 {

@@ -144,6 +144,15 @@ namespace chromium
 			minko::Signal<minko::dom::AbstractDOMEvent::Ptr>::Ptr
 			onmouseover();
 
+			minko::Signal<minko::dom::AbstractDOMEvent::Ptr>::Ptr
+			ontouchdown();
+
+			minko::Signal<minko::dom::AbstractDOMEvent::Ptr>::Ptr
+			ontouchup();
+
+			minko::Signal<minko::dom::AbstractDOMEvent::Ptr>::Ptr
+			ontouchmotion();
+
 			static
 			void
 			addFunction(std::function<void()>);

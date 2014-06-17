@@ -58,7 +58,6 @@ namespace minko
 			std::string
 			tagName() = 0;
 
-
 			virtual
 			Ptr
 			parentNode() = 0;

@@ -157,6 +157,11 @@ ChromiumDOMEvent::stopPropagation()
 	}
 }
 
+std::string
+ChromiumDOMEvent::accessor()
+{
+	return "";
+}
 
 std::string
 ChromiumDOMEvent::type()
@@ -218,6 +223,17 @@ ChromiumDOMEvent::target()
 	return result;
 }
 
+int
+ChromiumDOMEvent::identifier(int id)
+{
+	return 0;
+}
+
+int
+ChromiumDOMEvent::clientX(int id)
+{
+	return clientX();
+}
 
 int
 ChromiumDOMEvent::clientX()
@@ -247,6 +263,12 @@ ChromiumDOMEvent::clientX()
 	}
 
 	return result;
+}
+
+int
+ChromiumDOMEvent::clientY(int id)
+{
+	return clientY();
 }
 
 int
