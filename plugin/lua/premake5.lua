@@ -5,7 +5,7 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 	language "C++"
 	files { "src/**.hpp", "src/**.cpp", "include/**.hpp" }
 	includedirs { "src", "include" }
-	
+
 	-- luaglue
 	includedirs { "lib/LuaGlue/include" }
 	files { "lib/LuaGlue/include/**.h" }
