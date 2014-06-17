@@ -15,6 +15,7 @@ if os.getenv('EMSCRIPTEN') then
 	EMSCRIPTEN = os.getenv('EMSCRIPTEN');
 else
 	print(color.fg.yellow .. 'You must define the environment variable EMSCRIPTEN to be able to target HTML5.' .. color.reset)
+	EMSCRIPTEN = ''
 end
 
 if os.is('linux') then

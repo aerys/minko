@@ -130,7 +130,7 @@ Canvas::initializeInputs()
         if (!joystick)
             continue;
         else
-            _joysticks[i] = Canvas::SDLJoystick::create(shared_from_this(), SDL_JoystickInstanceID(joystick), joystick);
+            _joysticks[i] = SDLJoystick::create(shared_from_this(), SDL_JoystickInstanceID(joystick), joystick);
     }
 #endif
 }
@@ -365,7 +365,7 @@ Canvas::step()
             {
                 if (_joysticks.find(i) == _joysticks.end())
                 {
-                    auto sdlJoystick = Canvas::SDLJoystick::create(shared_from_this(), i, joystick);
+                    auto sdlJoystick = SDLJoystick::create(shared_from_this(), i, joystick);
                     _joysticks[i] = sdlJoystick;
                 }
 
@@ -420,10 +420,19 @@ Canvas::step()
         case SDL_KEYDOWN:
         {
             _keyboard->keyDown()->execute(_keyboard);
+
+			auto keyCode = static_cast<input::Keyboard::KeyCode>(event.key.keysym.sym);
+
             for (uint i = 0; i < input::Keyboard::NUM_KEYS; ++i)
             {
                 auto code = static_cast<input::Keyboard::Key>(i);
-                if (_keyboard->_keyboardState[i] && _keyboard->hasKeyDownSignal(code))
+
+				if (!_keyboard->hasKeyDownSignal(code))
+					continue;
+
+				auto pair = _keyboard->keyToKeyCodeMap.find(code);
+
+				if (pair != _keyboard->keyToKeyCodeMap.end() && pair->second == keyCode)
                     _keyboard->keyDown(code)->execute(_keyboard, i);
             }
             break;
@@ -432,6 +441,22 @@ Canvas::step()
         case SDL_KEYUP:
         {
             _keyboard->keyUp()->execute(_keyboard);
+
+			auto keyCode = static_cast<input::Keyboard::KeyCode>(event.key.keysym.sym);
+
+			for (uint i = 0; i < input::Keyboard::NUM_KEYS; ++i)
+			{
+				auto code = static_cast<input::Keyboard::Key>(i);
+
+				if (!_keyboard->hasKeyUpSignal(code))
+					continue;
+
+				auto pair = _keyboard->keyToKeyCodeMap.find(code);
+
+				if (pair != _keyboard->keyToKeyCodeMap.end() && pair->second == keyCode)
+					_keyboard->keyUp(code)->execute(_keyboard, i);
+			}
+
             for (uint i = 0; i < input::Keyboard::NUM_KEYS; ++i)
             {
                 auto code = static_cast<input::Keyboard::Key>(i);
@@ -493,14 +518,11 @@ Canvas::step()
             //_mouseWheel->execute(shared_from_this(), event.wheel.x, event.wheel.y);
             break;
         }
+
 #ifndef EMSCRIPTEN
             // Touch events
         case SDL_FINGERDOWN:
         {
-# if defined(DEBUG)
-            std::cout << "Finger down! (x: " << event.tfinger.x << ", y: " << event.tfinger.y << ")" << std::endl;
-#endif // DEBUG
-
             _finger->x(uint(event.tfinger.x));
             _finger->y(uint(event.tfinger.y));
 
@@ -511,9 +533,6 @@ Canvas::step()
 
         case SDL_FINGERUP:
         {
-# if defined(DEBUG)
-            std::cout << "Finger up! (x: " << event.tfinger.x << ", y: " << event.tfinger.y << ")" << std::endl;
-#endif // DEBUG
             _finger->x(uint(event.tfinger.x));
             _finger->y(uint(event.tfinger.y));
 
@@ -524,14 +543,6 @@ Canvas::step()
 
         case SDL_FINGERMOTION:
         {
-# if defined(DEBUG)
-            std::cout << "Finger motion! "
-                << "("
-                << "x: " << event.tfinger.x << ", y: " << event.tfinger.y
-                << "|"
-                << "dx: " << event.tfinger.dx << ", dy: " << event.tfinger.dy
-                << ")" << std::endl;
-#endif // DEBUG
             _finger->x(uint(event.tfinger.x));
             _finger->y(uint(event.tfinger.y));
             _finger->dx(uint(event.tfinger.dx));
@@ -541,39 +552,16 @@ Canvas::step()
 
             // Gestures
             if (event.tfinger.dx > SDLFinger::SWIPE_PRECISION)
-            {
-# if defined(DEBUG)
-                std::cout << "Swipe right! (" << event.tfinger.dx << ")" << std::endl;
-#endif // DEBUG
                 _finger->swipeRight()->execute(_finger);
-            }
 
             if (-event.tfinger.dx > SDLFinger::SWIPE_PRECISION)
-            {
-# if defined(DEBUG)
-                std::cout << "Swipe left! (" << event.tfinger.dx << ")" << std::endl;
-#endif // DEBUG
-
                 _finger->swipeLeft()->execute(_finger);
-            }
 
             if (event.tfinger.dy > SDLFinger::SWIPE_PRECISION)
-            {
-# if defined(DEBUG)
-                std::cout << "Swipe down! (" << event.tfinger.dy << ")" << std::endl;
-#endif // DEBUG
-
                 _finger->swipeDown()->execute(_finger);
-            }
 
             if (-event.tfinger.dy > SDLFinger::SWIPE_PRECISION)
-            {
-#if defined(DEBUG)
-                std::cout << "Swipe up! (" << event.tfinger.dy << ")" << std::endl;
-#endif // DEBUG
-
                 _finger->swipeUp()->execute(_finger);
-            }
 
             break;
         }
@@ -596,16 +584,36 @@ Canvas::step()
 
         case SDL_JOYBUTTONDOWN:
         {
+            int button = event.jbutton.button;
+
+#if defined(EMSCRIPTEN)
+            auto htmlButton = static_cast<SDLJoystick::Button>(button);
+            auto nativeButton = SDLJoystick::GetNativeButton(htmlButton);
+
+            if (nativeButton != SDLJoystick::Button::Nothing)
+                button = static_cast<int>(nativeButton);
+#endif // EMSCRIPTEN
+
             _joysticks[event.jbutton.which]->joystickButtonDown()->execute(
-                _joysticks[event.jbutton.which], event.jbutton.which, event.jbutton.button
+                _joysticks[event.jbutton.which], event.jbutton.which, button
             );
             break;
         }
 
         case SDL_JOYBUTTONUP:
         {
+            auto button = event.jbutton.button;
+
+# if defined(EMSCRIPTEN)
+            auto htmlButton = static_cast<SDLJoystick::Button>(button);
+            auto nativeButton = SDLJoystick::GetNativeButton(htmlButton);
+
+            if (nativeButton != SDLJoystick::Button::Nothing)
+                button = static_cast<int>(nativeButton);
+#endif // EMSCRIPTEN
+
             _joysticks[event.jbutton.which]->joystickButtonUp()->execute(
-                _joysticks[event.jbutton.which], event.jbutton.which, event.jbutton.button
+                _joysticks[event.jbutton.which], event.jbutton.which, button
             );
             break;
         }
@@ -619,23 +627,11 @@ Canvas::step()
 
             if (_joysticks.find(instance_id) == _joysticks.end())
             {
-                auto sdlJoystick = Canvas::SDLJoystick::create(shared_from_this(), instance_id, joystick);
+                auto sdlJoystick = SDLJoystick::create(shared_from_this(), instance_id, joystick);
                 _joysticks[instance_id] = sdlJoystick;
             }
 
             _joystickAdded->execute(shared_from_this(), _joysticks[instance_id]);
-
-# if defined(DEBUG)
-            std::cout << "Is Gamecontroller : " << SDL_IsGameController(device) << std::endl;
-            std::cout << "Num joystick : " << SDL_NumJoysticks() << std::endl;
-            std::cout << "Name : " << SDL_JoystickName(joystick) << std::endl;
-            std::cout << "Num axes : " << SDL_JoystickNumAxes(joystick) << std::endl;
-            std::cout << "Num buttons : " << SDL_JoystickNumButtons(joystick) << std::endl;
-            std::cout << "Num balls : " << SDL_JoystickNumBalls(joystick) << std::endl;
-            std::cout << "Num hat : " << SDL_JoystickNumHats(joystick) << std::endl;
-            std::cout << "instance_id : " << instance_id << std::endl;
-# endif // DEBUG
-
             break;
         }
 

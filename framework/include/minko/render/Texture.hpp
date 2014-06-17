@@ -94,10 +94,6 @@ namespace minko
 			uploadMipLevel(uint				level,
 						   unsigned char*	data);
 
-            void
-            setMipLevelBoundaries(uint baseLevel,
-                                  uint maxLevel);
-
 			~Texture()
 			{
 				dispose();

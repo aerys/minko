@@ -163,11 +163,9 @@ EffectParser::parse(const std::string&				    filename,
     int pos	= resolvedFilename.find_last_of("/\\");
 
 	_options = file::Options::create(options);
-	// _options->includePaths().clear();
-	_options->includePaths().push_back("effect"); // FIXME: Ugly.
 
 	if (pos != std::string::npos)
-		_options->includePaths().push_back(resolvedFilename.substr(0, pos));
+		_options->includePaths().push_front(resolvedFilename.substr(0, pos));
 
 	_filename = filename;
 	_resolvedFilename = resolvedFilename;
@@ -224,6 +222,8 @@ EffectParser::parse(const std::string&				    filename,
 
 	if (_numDependencies == _numLoadedDependencies)
 		finalize();
+	
+	_options->includePaths().pop_front();
 }
 
 render::States::Ptr
@@ -780,8 +780,8 @@ EffectParser::parseBindingNameAndSource(const Json::Value&	contextNode,
 		{
 			// generate regex to recognize the macro when coming from filtered out data provider
 	
-			auto regexString	= std::regex_replace(propertyName, variableRegex, "\\d");
-			regexString			= std::regex_replace(regexString, std::regex("(\\[|\\.|\\])"), "\\$&");
+			auto regexString	= std::regex_replace(propertyName, variableRegex, std::string("\\d"));
+			regexString			= std::regex_replace(regexString, std::regex("(\\[|\\.|\\])"), std::string("\\$&"));
 
 			regexp				= std::shared_ptr<std::regex>(new std::regex(regexString));
 		}

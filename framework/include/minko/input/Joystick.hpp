@@ -32,6 +32,28 @@ namespace minko
 		public:
 			typedef std::shared_ptr<Joystick> Ptr;
 
+            enum class Button
+            {
+                Nothing = -1,
+                DPadUp = 0,
+                DPadDown = 1,
+                DPadLeft = 2,
+                DPadRight = 3,
+                Start = 4,
+                Select = 5,
+                L3 = 6,
+                R3 = 7,
+                LB = 8,
+                RB = 9,
+                A = 10,
+                B = 11,
+                X = 12,
+                Y = 13,
+                Home = 14,
+                LT = 15, // Not a button (axis)
+                RT = 16, // Not a button (axis)
+            };
+
 		private:
 			std::shared_ptr<AbstractCanvas> _canvas;
 

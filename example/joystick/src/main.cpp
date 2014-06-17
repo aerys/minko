@@ -27,9 +27,6 @@ using namespace minko::component;
 const uint WINDOW_WIDTH = 800;
 const uint WINDOW_HEIGHT = 600;
 
-float speedx = 0.f;
-float speedy = 0.f;
-
 std::unordered_map<input::Joystick::Ptr, scene::Node::Ptr> joystickToCube;
 std::unordered_map<input::Joystick::Ptr, Signal<input::Joystick::Ptr, int, int, int>::Slot> joystickToButtonDownSlot;
 
@@ -39,20 +36,20 @@ Signal<AbstractCanvas::Ptr, input::Joystick::Ptr>::Slot joystickRemoved;
 void
 joystickButtonDownHandler(input::Joystick::Ptr joystick, int which, int buttonId)
 {
-	if (buttonId == 0)
-		joystickToCube[joystick]->component<Transform>()->matrix()->appendTranslation(0.f, 0.f, 0.1f);
-	if (buttonId == 1)
-		joystickToCube[joystick]->component<Transform>()->matrix()->appendTranslation(0.f, 0.f, -0.1f);
-	if (buttonId == 2)
-		joystickToCube[joystick]->component<Transform>()->matrix()->appendTranslation(.1f);
-	if (buttonId == 3)
-		joystickToCube[joystick]->component<Transform>()->matrix()->appendTranslation(-.1f);
+    if (static_cast<input::Joystick::Button>(buttonId) == input::Joystick::Button::DPadUp)
+        joystickToCube[joystick]->component<Transform>()->matrix()->appendTranslation(0.f, 0.f, 0.1f);
+    if (static_cast<input::Joystick::Button>(buttonId) == input::Joystick::Button::DPadDown)
+        joystickToCube[joystick]->component<Transform>()->matrix()->appendTranslation(0.f, 0.f, -0.1f);
+    if (static_cast<input::Joystick::Button>(buttonId) == input::Joystick::Button::DPadLeft)
+        joystickToCube[joystick]->component<Transform>()->matrix()->appendTranslation(.1f);
+    if (static_cast<input::Joystick::Button>(buttonId) == input::Joystick::Button::DPadRight)
+        joystickToCube[joystick]->component<Transform>()->matrix()->appendTranslation(-.1f);
 }
 
 int
 main(int argc, char** argv)
 {
-	auto canvas = Canvas::create("Minko Tutorial - Hello cube!", WINDOW_WIDTH, WINDOW_HEIGHT);
+	auto canvas = Canvas::create("Minko Tutorial - Joystick", WINDOW_WIDTH, WINDOW_HEIGHT);
 	auto sceneManager = SceneManager::create(canvas->context());
 	auto assets = sceneManager->assets();
 
@@ -97,7 +94,7 @@ main(int argc, char** argv)
 
 			currentJoystick = joystick;
 			currentJoystickCube = mesh;
-			
+
 			joystickToCube[joystick] = mesh;
 			joystickToButtonDownSlot[joystick] = joystick->joystickAxisMotion()->connect(std::bind(
 				&joystickButtonDownHandler,
@@ -132,11 +129,48 @@ main(int argc, char** argv)
 
 		auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float t, float dt)
 		{
-			cube->component<Transform>()->matrix()->prependRotationY(.01f);			
-			auto joysticksList = canvas->joysticks();			
+			cube->component<Transform>()->matrix()->prependRotationY(.01f);
+
+			auto joysticksList = canvas->joysticks();
 			for (auto it = joysticksList.begin(); it != joysticksList.end(); ++it)
 			{
 				auto joy = it->second;
+
+                if (joy->isButtonDown(input::Joystick::Button::DPadUp))
+                    std::cout << "DPadUp pressed !" << std::endl;
+                if (joy->isButtonDown(input::Joystick::Button::DPadDown))
+                    std::cout << "DPadDown pressed !" << std::endl;
+                if (joy->isButtonDown(input::Joystick::Button::DPadLeft))
+                    std::cout << "DPadLeft pressed !" << std::endl;
+                if (joy->isButtonDown(input::Joystick::Button::DPadRight))
+                    std::cout << "DPadRight pressed !" << std::endl;
+                if (joy->isButtonDown(input::Joystick::Button::Start))
+                    std::cout << "Start pressed !" << std::endl;
+                if (joy->isButtonDown(input::Joystick::Button::Select))
+                    std::cout << "Select pressed !" << std::endl;
+                if (joy->isButtonDown(input::Joystick::Button::L3))
+                    std::cout << "L3 pressed !" << std::endl;
+                if (joy->isButtonDown(input::Joystick::Button::R3))
+                    std::cout << "R3 pressed !" << std::endl;
+                if (joy->isButtonDown(input::Joystick::Button::LB))
+                    std::cout << "LB pressed !" << std::endl;
+                if (joy->isButtonDown(input::Joystick::Button::RB))
+                    std::cout << "RB pressed !" << std::endl;
+                if (joy->isButtonDown(input::Joystick::Button::A))
+                    std::cout << "A pressed !" << std::endl;
+                if (joy->isButtonDown(input::Joystick::Button::B))
+                    std::cout << "B pressed !" << std::endl;
+                if (joy->isButtonDown(input::Joystick::Button::X))
+                    std::cout << "X pressed !" << std::endl;
+                if (joy->isButtonDown(input::Joystick::Button::Y))
+                    std::cout << "Y pressed !" << std::endl;
+                if (joy->isButtonDown(input::Joystick::Button::Home))
+                    std::cout << "Home pressed !" << std::endl;
+                if (joy->isButtonDown(input::Joystick::Button::LT))
+                    std::cout << "LT pressed !" << std::endl;
+                if (joy->isButtonDown(input::Joystick::Button::RT))
+                    std::cout << "RT pressed !" << std::endl;
+
 				if (canvas->getJoystickAxis(joy, 0) > 8000)
 					joystickToCube[joy]->component<Transform>()->matrix()->appendTranslation(-0.1f, 0.f, 0.f);
 				if (canvas->getJoystickAxis(joy, 0) < -8000)
@@ -146,8 +180,7 @@ main(int argc, char** argv)
 				if (canvas->getJoystickAxis(joy, 1) < -8000)
 					joystickToCube[joy]->component<Transform>()->matrix()->appendTranslation(0.f, 0.1f, 0.f);
 			}
-			
-			
+
 			sceneManager->nextFrame(t, dt);
 		});
 

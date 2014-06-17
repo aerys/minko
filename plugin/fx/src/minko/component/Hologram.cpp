@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/Hologram.hpp"
 #include "minko/scene/Node.hpp"
 #include "minko/file/AssetLibrary.hpp"
-#include "minko/data/provider.hpp"
+#include "minko/data/Provider.hpp"
 #include "minko/component/SceneManager.hpp"
 #include "minko/data/Container.hpp"
 #include "minko/component/Renderer.hpp"

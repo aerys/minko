@@ -665,7 +665,7 @@ DrawCall::bindStates()
 void
 DrawCall::render(const AbstractContext::Ptr& context, AbstractTexture::Ptr renderTarget)
 {
-	if (!renderTarget)
+	if (_target)
 		renderTarget = _target;
 
     if (renderTarget)

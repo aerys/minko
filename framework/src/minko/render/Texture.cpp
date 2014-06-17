@@ -123,13 +123,6 @@ Texture::uploadMipLevel(uint			level,
 }
 
 void
-Texture::setMipLevelBoundaries(uint baseLevel,
-                               uint maxLevel)
-{
-    _context->setTexture2dMipLevelBoundaries(id(), baseLevel, maxLevel);
-}
-
-void
 Texture::dispose()
 {
     if (_id != -1)

@@ -51,11 +51,13 @@ function minko.plugin.sdl:enable()
 		links { "SDL2" }
 
 	configuration { "osx64" }
-		linkoptions { "-F " .. minko.plugin.path("sdl") .. "/lib/sdl/lib/osx64" }
-		links { "SDL2.framework" }
-		prelinkcommands {
-			minko.action.link(minko.plugin.path("sdl") .. "/lib/sdl/lib/osx64/*.framework")
-		}
+		if kind() ~= "StaticLib" then -- Xcode: libtool doesn't like linking dynamic libraries when building a static library.
+			linkoptions { "-F " .. minko.plugin.path("sdl") .. "/lib/sdl/lib/osx64" }
+			links { "SDL2.framework" }
+			prelinkcommands {
+				minko.action.link(minko.plugin.path("sdl") .. "/lib/sdl/lib/osx64/*.framework")
+			}
+		end
 
 	configuration { "ios" }
 		links {
