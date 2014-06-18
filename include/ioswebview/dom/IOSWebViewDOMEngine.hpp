@@ -29,7 +29,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-    class SDLFinger;
+    class SDLTouch;
 }
 
 namespace ioswebview
@@ -158,7 +158,7 @@ namespace ioswebview
             bool _isReady;
             
             // Fingers
-            std::map<int, std::shared_ptr<minko::SDLFinger>> _fingers;
+            std::map<int, std::shared_ptr<minko::SDLTouch>> _touches;
             int _firstFingerId;
 		};
 	}

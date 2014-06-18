@@ -59,7 +59,7 @@ IOSWebViewDOMEngine::IOSWebViewDOMEngine() :
     _waitingForLoad(true),
     _isReady(false),
     _webViewWidth(0),
-    _fingers(),
+    _touches(),
     _firstFingerId(-1)
 {
 }
@@ -431,7 +431,7 @@ IOSWebViewDOMEngine::registerDomEvents()
         int x = event->clientX();
         int y = event->clientY();
         
-        if (_fingers.size() == 1)
+        if (_touches.size() == 1)
         {
         _canvas->mouse()->x(x);
         _canvas->mouse()->y(y);
@@ -450,7 +450,7 @@ IOSWebViewDOMEngine::registerDomEvents()
 
     onmouseupSlot = _currentDOM->document()->onmouseup()->connect([&](AbstractDOMEvent::Ptr event)
     {
-        if (_fingers.size() == 0)
+        if (_touches.size() == 0)
         {
         int x = event->layerX();
         int y = event->layerY();
@@ -472,14 +472,14 @@ IOSWebViewDOMEngine::registerDomEvents()
 
     onmousemoveSlot = _currentDOM->document()->onmousemove()->connect([&](AbstractDOMEvent::Ptr event)
     {
-        // Get number of finger
+        // Get number of touch
         std::string js = event->accessor() + ".changedTouches.length";
-        int fingerNumber = atoi(eval(js).c_str());
+        int touchNumber = atoi(eval(js).c_str());
         
         int i = 0;
-        if (_fingers.size() == 1)
+        if (_touches.size() == 1)
         {
-            for (i = 0; i < fingerNumber; i++)
+            for (i = 0; i < touchNumber; i++)
             {
                 int fingerId = event->identifier(i);
                 if (_firstFingerId == fingerId)
@@ -487,7 +487,7 @@ IOSWebViewDOMEngine::registerDomEvents()
             }
         }
         
-        if (i == fingerNumber)
+        if (i == touchNumber)
             return;
         
         int x = event->clientX(i);
@@ -513,9 +513,9 @@ IOSWebViewDOMEngine::registerDomEvents()
     {
         // Get number of finger
         std::string js = event->accessor() + ".changedTouches.length";
-        int fingerNumber = atoi(eval(js).c_str());
+        int touchNumber = atoi(eval(js).c_str());
         
-        for (auto i = 0; i < fingerNumber; i++)
+        for (auto i = 0; i < touchNumber; i++)
         {
             int fingerId = event->identifier(i);
             int x = event->clientX(i);
@@ -534,11 +534,11 @@ IOSWebViewDOMEngine::registerDomEvents()
             SDL_PushEvent(&sdlEvent);
             
             // Add finger to list
-            auto finger = minko::SDLFinger::create(std::static_pointer_cast<Canvas>(_canvas));
-            finger->x(x);
-            finger->y(y);
+            auto touch = minko::SDLTouch::create(std::static_pointer_cast<Canvas>(_canvas));
+            touch->x(x);
+            touch->y(y);
 
-            _fingers.insert(std::pair<int, std::shared_ptr<minko::SDLFinger>>(fingerId, finger));
+            _touches.insert(std::pair<int, std::shared_ptr<minko::SDLTouch>>(fingerId, touch));
         }
         
         //_canvas->finger()->fingerDown()->execute(_canvas->finger(), event->layerX(), event->layerY());
@@ -556,9 +556,9 @@ IOSWebViewDOMEngine::registerDomEvents()
 
         // Get number of finger
         std::string js = event->accessor() + ".changedTouches.length";
-        int fingerNumber = atoi(eval(js).c_str());
+        int touchNumber = atoi(eval(js).c_str());
         
-        for (auto i = 0; i < fingerNumber; i++)
+        for (auto i = 0; i < touchNumber; i++)
         {
             int x = event->clientX(i);
             int y = event->clientY(i);
@@ -576,7 +576,7 @@ IOSWebViewDOMEngine::registerDomEvents()
             SDL_PushEvent(&sdlEvent);
             
             // Remove finger from list
-            _fingers.erase(sdlEvent.tfinger.fingerId);
+            _touches.erase(sdlEvent.tfinger.fingerId);
         }
         
         //_canvas->finger()->fingerUp()->execute(_canvas->finger(), event->layerX(), event->layerY());
@@ -593,13 +593,13 @@ IOSWebViewDOMEngine::registerDomEvents()
         
         // Get number of finger
         std::string js = event->accessor() + ".changedTouches.length";
-        int fingerNumber = atoi(eval(js).c_str());
+        int touchNumber = atoi(eval(js).c_str());
         
-        for (auto i = 0; i < fingerNumber; i++)
+        for (auto i = 0; i < touchNumber; i++)
         {
             int fingerId = event->identifier(i);
-            float oldX = _fingers.at(fingerId)->minko::input::Finger::x();
-            float oldY = _fingers.at(fingerId)->minko::input::Finger::y();
+            float oldX = _touches.at(fingerId)->minko::input::Touch::x();
+            float oldY = _touches.at(fingerId)->minko::input::Touch::y();
             float x = event->clientX(i);
             float y = event->clientY(i);
             
@@ -622,8 +622,8 @@ IOSWebViewDOMEngine::registerDomEvents()
             SDL_PushEvent(&sdlEvent);
             
             // Store finger information
-            _fingers.at(fingerId)->x(x);
-            _fingers.at(fingerId)->y(y);
+            _touches.at(fingerId)->x(x);
+            _touches.at(fingerId)->y(y);
         }
         
 //        _canvas->finger()->fingerMotion()->execute(_canvas->finger(), event->layerX(), event->layerY());
