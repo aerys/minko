@@ -28,6 +28,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/Options.hpp"
 #include "minko/serialize/TypeSerializer.hpp"
 #include "minko/file/Dependency.hpp"
+#include "minko/render/Texture.hpp"
 
 namespace minko
 {
@@ -40,7 +41,7 @@ namespace minko
 
 		public:
 			typedef std::shared_ptr<MaterialWriter>						Ptr;
-			typedef std::shared_ptr<render::AbstractTexture>			TexturePtr;
+			typedef std::shared_ptr<render::Texture>			        TexturePtr;
 			typedef msgpack::type::tuple<uint, std::string>				TupleIntString;
 			typedef msgpack::type::tuple<std::string, TupleIntString>	ComplexPropertyTuple;
 			typedef msgpack::type::tuple<std::string, std::string>		BasicPropertyTuple;
@@ -88,7 +89,7 @@ namespace minko
 			}
 
 			template <typename T>
-			typename std::enable_if<!std::is_arithmetic<T>::value && !std::is_base_of<std::shared_ptr<render::AbstractTexture>, T>::value, bool>::type
+			typename std::enable_if<!std::is_arithmetic<T>::value && !std::is_base_of<TexturePtr, T>::value, bool>::type
 			serializeMaterialValue(material::Material::Ptr										material,
 								   	std::string&												propertyName,
 								   	file::AssetLibrary::Ptr										assets,
