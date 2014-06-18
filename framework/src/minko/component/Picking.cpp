@@ -277,13 +277,17 @@ Picking::removeSurface(SurfacePtr surface, NodePtr node)
 
 	auto surfacePickingId = _surfaceToPickingId[surface];
 
-	node->data()->removeProvider(_surfaceToProvider[surface]);
+	if (_surfaceToProvider.find(surface) == _surfaceToProvider.end())
+	{
+		node->data()->removeProvider(_surfaceToProvider[surface]);
 
-	if (_targetToProvider[node] == _surfaceToProvider[surface])
-		_targetToProvider.erase(node);
+		if (_targetToProvider[node] == _surfaceToProvider[surface])
+			_targetToProvider.erase(node);
+
+		_surfaceToProvider.erase(surface);
+	}
 
 	_surfaceToPickingId.erase(surface);
-	_surfaceToProvider.erase(surface);
 	_pickingIdToSurface.erase(surfacePickingId);
 }
 
