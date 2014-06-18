@@ -58,6 +58,8 @@ namespace minko
 			std::shared_ptr<Signal<Ptr, Ptr, AbsCtrlPtr>>			_componentAdded;
 			std::shared_ptr<Signal<Ptr, Ptr, AbsCtrlPtr>>			_componentRemoved;
 
+			std::string												_uuid;
+
 		public:
 
 			static
@@ -118,6 +120,20 @@ namespace minko
 			id() const
 			{
 				return _id;
+			}
+
+			inline
+			std::string
+			uuid() const
+			{
+				return _uuid;
+			}
+
+			inline
+			void
+			uuid(std::string uuid)
+			{
+				_uuid = uuid;
 			}
 
 			inline
