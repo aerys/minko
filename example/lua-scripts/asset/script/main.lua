@@ -28,7 +28,7 @@ function main:start(root)
 		:queue('texture/box.png')
 		:queue('script/framerate.lua')
 		:queue('script/camera.lua')
-	
+
 	self.assetsComplete = assets.loader.complete:connect(function(loader)
 		self.assetsComplete:disconnect()
 		self.assetsComplete = nil
@@ -37,14 +37,15 @@ function main:start(root)
 
 		root:addComponent(assets:script('script/framerate.lua'))
 
-		local cube = Node.create()
+		self.cube = Node.create()
 			:addComponent(Transform.create())
 			:addComponent(Surface.create(
 				CubeGeometry.create(assets.context),
 				Material.create():setTexture('diffuseMap', assets:texture('texture/box.png')),
 				assets:effect('effect/Phong.effect')
 			))
-		root:addChild(cube)
+
+		root:addChild(self.cube)
 	end)
 
 	assets.loader:load()
@@ -64,4 +65,33 @@ function main:initializeLights(root)
 	root:addChild(lights)
 
 	return lights
+end
+
+function main:update(node)
+	local canvas = getCanvas()
+
+	local keyboard	= canvas.keyboard
+	local speed = 1
+
+	self.cube:getTransform().matrix:prependRotationY(0.01)
+
+	if keyboard:keyIsDown(Key.CONTROL) then
+		speed = 0.5
+	end
+	if keyboard:keyIsDown(Key.SHIFT) then
+		speed = 5
+	end
+
+	if keyboard:keyIsDown(Key.RIGHT) then
+		self.cube:getTransform().matrix:appendTranslation(0.01 * speed, 0, 0)
+	end
+	if keyboard:keyIsDown(Key.LEFT) then
+		self.cube:getTransform().matrix:appendTranslation(-0.01 * speed, 0, 0)
+	end
+	if keyboard:keyIsDown(Key.UP) then
+		self.cube:getTransform().matrix:appendTranslation(0, 0, -0.01 * speed)
+	end
+	if keyboard:keyIsDown(Key.DOWN) then
+		self.cube:getTransform().matrix:appendTranslation(0, 0, 0.01 * speed)
+	end
 end
