@@ -40,10 +40,23 @@ namespace minko
 			}
 
 			void
-			write(const std::string&                 filename,
-			      const std::vector<unsigned char>&  data,
-			      minko::uint                        width,
-			      minko::uint                        height);
+			writeToFile(const std::string&                    filename,
+                        const std::vector<unsigned char>&     data,
+                        minko::uint                           srcWidth,
+                        minko::uint                           srcHeight,
+                        minko::uint                           dstWidth,
+                        minko::uint                           dstHeight,
+                        minko::uint                           componentCount);
+
+            void
+            writeToStream(std::vector<unsigned char>&           dst,
+                          const std::string&                    extension,
+                          const std::vector<unsigned char>&     src,
+                          minko::uint                           srcWidth,
+                          minko::uint                           srcHeight,
+                          minko::uint                           dstWidth,
+                          minko::uint                           dstHeight,
+                          minko::uint                           componentCount);
 
 		private:
 			DevILWriter()
@@ -55,6 +68,14 @@ namespace minko
 
 			std::set<std::string>
 			getSupportedFileExensions();
+
+            minko::uint
+            createScaledImage(const std::vector<unsigned char>&    src,
+                              minko::uint                          srcWidth,
+                              minko::uint                          srcHeight,
+                              minko::uint                          dstWidth,
+                              minko::uint                          dstHeight,
+                              minko::uint                          componentCount);
 		};
 	}
 }

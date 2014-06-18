@@ -23,15 +23,24 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Signal.hpp"
 #include "minko/render/AbstractContext.hpp"
 
+#include <chrono>
 #include <GL/osmesa.h>
 
 class MinkoOffscreen
 {
+public:
+    typedef std::chrono::high_resolution_clock::time_point	time_point;
+
 private:
 	static bool                                 _active;
 	static minko::render::AbstractContext::Ptr  _context;
 	static float                                _framerate;
-	static minko::Signal<>::Ptr                 _enterFrame;
+	static float                                _desiredFramerate;
+	static float								_relativeTime;
+	static float								_frameDuration;
+    static time_point                           _previousTime;
+    static time_point                           _startTime;
+	static minko::Signal<float, float>::Ptr     _enterFrame; // time, deltaTime
 	static std::unique_ptr<GLfloat[]>           _backBuffer;
 	static OSMesaContext                        _offscreenContext;
 	static std::unique_ptr<char[]>              _pixels;
@@ -47,7 +56,7 @@ public:
 	}
 
 	inline static
-	minko::Signal<>::Ptr
+	minko::Signal<float, float>::Ptr
 	enterFrame()
 	{
 		return _enterFrame;
@@ -77,7 +86,7 @@ public:
 
 	static
 	void
-	takeScreenshot();
+	takeScreenshot(const std::string& filename);
 
 private:
 	static

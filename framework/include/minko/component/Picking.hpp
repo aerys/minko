@@ -29,8 +29,7 @@ namespace minko
 	namespace component
 	{
 		class Picking :
-			public AbstractComponent,
-			public std::enable_shared_from_this<Picking>
+			public AbstractComponent
 		{
 		public:
 			typedef std::shared_ptr<Picking>					Ptr;
@@ -53,7 +52,7 @@ namespace minko
 			SceneManagerPtr								_sceneManager;
 			MousePtr									_mouse;
 			NodePtr										_camera;
-			MatrixPtr									_pickingProjection;	
+			MatrixPtr									_pickingProjection;
 			std::map<SurfacePtr, uint>					_surfaceToPickingId; 
 			std::map<uint, SurfacePtr>					_pickingIdToSurface;
 			std::map<SurfacePtr, StructureProviderPtr>	_surfaceToProvider;
@@ -71,6 +70,10 @@ namespace minko
 			Signal<NodePtr, NodePtr, AbsCtrlPtr>::Slot	_componentRemovedSlot;
 
 			Signal<NodePtr>::Ptr						_mouseOver;
+			Signal<NodePtr>::Ptr						_mouseRightDown;
+			Signal<NodePtr>::Ptr						_mouseLeftDown;
+			Signal<NodePtr>::Ptr						_mouseRightUp;
+			Signal<NodePtr>::Ptr						_mouseLeftUp;
 			Signal<NodePtr>::Ptr						_mouseRightClick;
 			Signal<NodePtr>::Ptr						_mouseLeftClick;
 			Signal<NodePtr>::Ptr						_mouseOut;
@@ -78,10 +81,20 @@ namespace minko
 
 			unsigned char								_lastColor[4];
 			SurfacePtr									_lastPickedSurface;
+			SurfacePtr									_lastRightDownPickedSurface;
+			SurfacePtr									_lastLeftDownPickedSurface;
 
 			Signal<MousePtr, int, int>::Slot			_mouseMoveSlot;
+			Signal<MousePtr>::Slot						_mouseRightDownSlot;
+			Signal<MousePtr>::Slot						_mouseLeftDownSlot;
 			Signal<MousePtr>::Slot						_mouseRightClickSlot;
 			Signal<MousePtr>::Slot						_mouseLeftClickSlot;
+
+			bool										_executeMoveHandler;
+			bool										_executeRightClickHandler;
+			bool										_executeLeftClickHandler;
+			bool										_executeRightDownHandler;
+			bool										_executeLeftDownHandler;
 
 		public:
 			inline static
@@ -100,6 +113,34 @@ namespace minko
 			mouseOver()
 			{
 				return _mouseOver;
+			}
+
+			inline
+			Signal<NodePtr>::Ptr
+			mouseRightDown()
+			{
+				return _mouseRightDown;
+			}
+
+			inline
+			Signal<NodePtr>::Ptr
+			mouseRightUp()
+			{
+				return _mouseRightUp;
+			}
+
+			inline
+			Signal<NodePtr>::Ptr
+			mouseDown()
+			{
+				return _mouseLeftDown;
+			}
+
+			inline
+			Signal<NodePtr>::Ptr
+			mouseUp()
+			{
+				return _mouseLeftUp;
 			}
 
 			inline
@@ -176,6 +217,12 @@ namespace minko
 
 			void
 			mouseMoveHandler(MousePtr mouse, int dx, int dy);
+
+			void
+			mouseRightDownHandler(MousePtr mouse);
+
+			void
+			mouseLeftDownHandler(MousePtr mouse);
 
 			void
 			mouseRightClickHandler(MousePtr mouse);

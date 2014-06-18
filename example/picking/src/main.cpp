@@ -35,13 +35,14 @@ int main(int argc, char** argv)
 	auto canvas = Canvas::create("Minko Example - Picking", 800, 600);
 
 	auto sceneManager = SceneManager::create(canvas->context());
-	
+
 	// setup assets
-	sceneManager->assets()->defaultOptions()->resizeSmoothly(true);
-	sceneManager->assets()->defaultOptions()->generateMipmaps(true);
-	sceneManager->assets()
-		->registerParser<file::PNGParser>("png")
-		->queue("effect/Basic.effect")
+	sceneManager->assets()->loader()->options()->resizeSmoothly(true);
+	sceneManager->assets()->loader()->options()->generateMipmaps(true);
+	sceneManager->assets()->loader()->options()
+                ->registerParser<file::PNGParser>("png");
+        sceneManager->assets()->loader()
+                ->queue("effect/Basic.effect")
 		->queue("effect/Picking.effect");
 
 	sceneManager->assets()
@@ -58,7 +59,7 @@ int main(int argc, char** argv)
 
 	auto root = scene::Node::create("root")
 		->addComponent(sceneManager);
-	
+
 	auto camera = scene::Node::create("camera")
 		->addComponent(Transform::create(
 		Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 4.f))
@@ -66,28 +67,28 @@ int main(int argc, char** argv)
 		->addComponent(PerspectiveCamera::create(800.f / 600.f, (float)PI * 0.25f, .1f, 1000.f));
 
 	root->addChild(camera);
-	
-	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
+
+	auto _ = sceneManager->assets()->loader()->complete()->connect([=](file::Loader::Ptr loader)
 	{
 		auto cube = scene::Node::create("cubeNode")
 			->addComponent(Surface::create(
-				assets->geometry("cube"),
-				assets->material("redMaterial"),
-				assets->effect("effect/Basic.effect")))
+				sceneManager->assets()->geometry("cube"),
+				sceneManager->assets()->material("redMaterial"),
+				sceneManager->assets()->effect("effect/Basic.effect")))
 			->addComponent(Transform::create(Matrix4x4::create()->appendTranslation(Vector3::create(-1.4f))));
-			
+
 		auto sphere = scene::Node::create("sphereNode")
 			->addComponent(Surface::create(
-				assets->geometry("sphere"),
-				assets->material("greenMaterial"),
-				assets->effect("effect/Basic.effect")))
+				sceneManager->assets()->geometry("sphere"),
+				sceneManager->assets()->material("greenMaterial"),
+				sceneManager->assets()->effect("effect/Basic.effect")))
 			->addComponent(Transform::create());
-		
+
 		auto teapot = scene::Node::create("planeNode")
 			->addComponent(Surface::create(
-				assets->geometry("plane"),
-				assets->material("blueMaterial"),
-				assets->effect("effect/Basic.effect")))
+				sceneManager->assets()->geometry("plane"),
+				sceneManager->assets()->material("blueMaterial"),
+				sceneManager->assets()->effect("effect/Basic.effect")))
 			->addComponent(Transform::create(Matrix4x4::create()->appendTranslation(Vector3::create(1.4f))));
 
 		root->addChild(cube)
@@ -106,15 +107,15 @@ int main(int argc, char** argv)
 			std::cout << "Right Click : " << node->name() << std::endl;
 		});
 
-		pickingMouseOver = root->component<Picking>()->mouseOver()->connect([&](scene::Node::Ptr node)
+		/*pickingMouseOver = root->component<Picking>()->mouseOver()->connect([&](scene::Node::Ptr node)
 		{
-			std::cout << "Over : " << node->name() << std::endl;
+			std::cout << "In : " << node->name() << std::endl;
 		});
 
 		pickingMouseOut = root->component<Picking>()->mouseOut()->connect([&](scene::Node::Ptr node)
 		{
 			std::cout << "Out : " << node->name() << std::endl;
-		});
+		});*/
 	});
 	camera->addComponent(Renderer::create(0x7f7f7fff));
 
@@ -128,7 +129,7 @@ int main(int argc, char** argv)
 		sceneManager->nextFrame(time, deltaTime);
 	});
 
-	sceneManager->assets()->load();
+	sceneManager->assets()->loader()->load();
 
 	canvas->run();
 

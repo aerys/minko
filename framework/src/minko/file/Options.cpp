@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/Options.hpp"
 
 #include "minko/material/Material.hpp"
-#include "minko/file/FileLoader.hpp"
+#include "minko/file/AbstractProtocol.hpp"
 #include "minko/file/AssetLibrary.hpp"
 
 #ifdef __APPLE__
@@ -30,97 +30,138 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::file;
 
-Options::Options(std::shared_ptr<render::AbstractContext> context) :
-	_context(context),
-	_includePaths(),
-	_platforms(),
-	_userFlags(),
-	_generateMipMaps(false),
-	_resizeSmoothly(false),
-	_isCubeTexture(false),
-	_startAnimation(true),
-	_loadAsynchronously(false),
-    _embedAll(false),
-	_skinningFramerate(30),
-	_skinningMethod(component::SkinningMethod::HARDWARE),
-	_material(nullptr),
-	_effect(nullptr)
+Options::ProtocolFunction Options::_defaultProtocolFunction = nullptr;
+
+Options::Options() :
+    _context(nullptr),
+    _includePaths(),
+    _platforms(),
+    _userFlags(),
+    _generateMipMaps(false),
+    _resizeSmoothly(false),
+    _isCubeTexture(false),
+    _startAnimation(true),
+    _loadAsynchronously(false),
+    _disposeIndexBufferAfterLoading(false),
+    _disposeVertexBufferAfterLoading(false),
+    _disposeTextureAfterLoading(false),
+    _skinningFramerate(30),
+    _skinningMethod(component::SkinningMethod::HARDWARE),
+    _material(nullptr),
+    _effect(nullptr)
 {
+    auto binaryDir = File::getBinaryDirectory();
 
+    includePaths().push_back(binaryDir + "/asset");
 
-//# if !defined(EMSCRIPTEN)
-	includePaths().push_back("../../../asset");
-//# endif
-
-    includePaths().push_back("asset");
-
-#if defined(DEBUG)
-# if defined(_WIN32)
-	includePaths().push_back("bin/windows32/debug/asset");
-# elif defined(_WIN64)
-	includePaths().push_back("bin/windows64/debug/asset");
-# elif defined(EMSCRIPTEN)
-	includePaths().push_back("bin/html5/debug/asset");
-# elif defined(LINUX) || defined(__unix__)
-#  if defined(__x86_64__)
-	includePaths().push_back("bin/linux64/debug/asset");
-#  else
-	includePaths().push_back("bin/linux32/debug/asset");
-#  endif
-# elif defined(__APPLE__)
-#  include "TargetConditionals.h"
-#  if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
-	CFURLRef resourcesURL = CFBundleCopyResourcesDirectoryURL(CFBundleGetMainBundle());
-	char path[PATH_MAX];
-	if (!CFURLGetFileSystemRepresentation(resourcesURL, true, (UInt8*) path, PATH_MAX))
-		throw std::runtime_error("cannot find .app path");
-	CFRelease(resourcesURL);
-	includePaths().push_back(std::string(path) + "/asset");
-#  elif TARGET_OS_MAC
-	includePaths().push_back("bin/osx64/debug/asset");
-#  endif
-# endif
-#else // release
-# if defined(_WIN32)
-	includePaths().push_back("bin/windows32/release/asset");
-# elif defined(_WIN64)
-	includePaths().push_back("bin/windows64/release/asset");
-# elif defined(TARGET_OS_MAC)
-	includePaths().push_back("bin/osx64/release/asset");
-# elif defined(EMSCRIPTEN)
-	includePaths().push_back("bin/html5/release/asset");
-# elif defined(LINUX) || defined(__unix__)
-#  if defined(__x86_64__)
-	includePaths().push_back("bin/linux64/release/asset");
-#  else
-	includePaths().push_back("bin/linux32/release/asset");
-#  endif
-# elif defined(__APPLE__)
-#  include <TargetConditionals.h>
-#  if defined(TARGET_IPHONE_SIMULATOR) or defined(TARGET_OS_IPHONE)
-	CFURLRef resourcesURL = CFBundleCopyResourcesDirectoryURL(CFBundleGetMainBundle());
-	char path[PATH_MAX];
-	if (!CFURLGetFileSystemRepresentation(resourcesURL, true, (UInt8*) path, PATH_MAX))
-		throw std::runtime_error("cannot find .app path");
-	CFRelease(resourcesURL);
-	includePaths().push_back(std::string(path) + "/asset");
-#  elif defined(TARGET_OS_MAC)
-	includePaths().push_back("bin/osx64/debug/asset");
-#  endif
-# endif
+#if defined(DEBUG) && !defined(EMSCRIPTEN)
+    includePaths().push_back(binaryDir + "/../../../asset");
 #endif
 
-	_materialFunction = [](const std::string&, material::Material::Ptr material) -> material::Material::Ptr
+    initializePlatforms();
+    initializeUserFlags();
+}
+
+void
+Options::initializePlatforms()
+{
+#if defined(_WIN32) || defined(_WIN64)
+    _platforms.push_back("windows");
+    _platforms.push_back("desktop");
+#endif
+#ifdef TARGET_OS_IPHONE
+    _platforms.push_back("iphone");
+    _platforms.push_back("mobile");
+#endif
+#ifdef TARGET_OS_MAC
+    _platforms.push_back("macosx");
+    _platforms.push_back("desktop");
+#endif
+#ifdef __ANDROID_API__
+    _platforms.push_back("android");
+    _platforms.push_back("mobile");
+#endif
+#ifdef EMSCRIPTEN
+    _platforms.push_back("web");
+#endif
+#if defined(LINUX) || defined(__unix__)
+    _platforms.push_back("linux");
+    _platforms.push_back("desktop");
+#endif
+}
+
+void
+Options::initializeUserFlags()
+{
+#ifdef MINKO_NO_GLSL_STRUCT
+    _userFlags.push_back("no-glsl-struct");
+#endif // MINKO_NO_GLSL_STRUCT
+}
+
+AbstractParser::Ptr
+Options::getParser(const std::string& extension)
+{
+    return _parsers.count(extension) == 0 ? nullptr : _parsers[extension]();
+}
+
+Options::AbsProtocolPtr
+Options::getProtocol(const std::string& protocol)
+{
+    auto p = _protocols.count(protocol) == 0 ? nullptr : _protocols[protocol]();
+
+    if (p)
+        p->options(Options::create(p->options()));
+
+    return p;
+}
+
+void
+Options::defaultProtocolFunction(const std::string& filename, const ProtocolFunction& func)
+{
+    _defaultProtocolFunction = func;
+}
+
+void
+Options::initializeDefaultFunctions()
+{
+    auto options = shared_from_this();
+
+    _materialFunction = [](const std::string&, material::Material::Ptr material) -> material::Material::Ptr
+    {
+        return material;
+    };
+
+    _geometryFunction = [](const std::string&, GeomPtr geom) -> GeomPtr
+    {
+        return geom;
+    };
+
+    _uriFunction = [](const std::string& uri) -> const std::string
+    {
+        return uri;
+    };
+
+    _nodeFunction = [](NodePtr node) -> NodePtr
+    {
+        return node;
+    };
+
+    _effectFunction = [](EffectPtr effect) -> EffectPtr
+    {
+        return effect;
+    };
+
+	if (!_defaultProtocolFunction)
+		_defaultProtocolFunction = [=](const std::string& filename) -> std::shared_ptr<AbstractProtocol>
 	{
-		return material;
+		auto defaultProtocol = options->getProtocol("file"); // "file" might be overriden (by APKProtocol for instance)
+
+		defaultProtocol->options(Options::create(options));
+
+		return defaultProtocol;
 	};
 
-	_geometryFunction = [](const std::string&, GeomPtr geom) -> GeomPtr
-	{
-		return geom;
-	};
-
-	_loaderFunction = [](const std::string& filename, std::shared_ptr<AssetLibrary> assets) -> std::shared_ptr<AbstractLoader>
+	_protocolFunction = [=](const std::string& filename) -> std::shared_ptr<AbstractProtocol>
 	{
 		std::string protocol = "";
 
@@ -136,66 +177,13 @@ Options::Options(std::shared_ptr<render::AbstractContext> context) :
 
 		if (i != filename.length())
 		{
-			std::shared_ptr<AbstractLoader> loader = assets->getLoader(protocol);
+			auto loader = options->getProtocol(protocol);
 
 			if (loader)
 				return loader;
 		}
 
-		return FileLoader::create();
+		return _defaultProtocolFunction(filename);
 	};
 
-	_uriFunction = [](const std::string& uri) -> const std::string
-	{
-		return uri;
-	};
-
-	_nodeFunction = [](NodePtr node) -> NodePtr
-	{
-		return node;
-	};
-
-	_effectFunction = [](EffectPtr effect) -> EffectPtr
-	{
-		return effect;
-	};
-
-	initializePlatforms();
-	initializeUserFlags();
-}
-
-void
-Options::initializePlatforms()
-{
-#if defined(_WIN32) || defined(_WIN64)
-	_platforms.push_back("windows");
-	_platforms.push_back("desktop");
-#endif
-#ifdef TARGET_OS_IPHONE
-	_platforms.push_back("iphone");
-	_platforms.push_back("mobile");
-#endif
-#ifdef TARGET_OS_MAC
-	_platforms.push_back("macosx");
-	_platforms.push_back("desktop");
-#endif
-#ifdef __ANDROID_API__
-	_platforms.push_back("android");
-	_platforms.push_back("mobile");
-#endif
-#ifdef EMSCRIPTEN
-	_platforms.push_back("web");
-#endif
-#if defined(LINUX) || defined(__unix__)
-	_platforms.push_back("linux");
-	_platforms.push_back("desktop");
-#endif
-}
-
-void
-Options::initializeUserFlags()
-{
-#ifdef MINKO_NO_GLSL_STRUCT
-	_userFlags.push_back("no-glsl-struct");
-#endif // MINKO_NO_GLSL_STRUCT
 }

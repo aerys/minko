@@ -50,7 +50,7 @@ int main(int argc, char** argv)
     auto canvas = Canvas::create("Minko Example - Line Geometry", 800, 600);
 
     auto sceneManager = SceneManager::create(canvas->context());
-    sceneManager->assets()->queue("effect/Line.effect");
+    sceneManager->assets()->loader()->queue("effect/Line.effect");
 
     auto root = scene::Node::create("root")
         ->addComponent(sceneManager);
@@ -66,14 +66,14 @@ int main(int argc, char** argv)
     root->data()->addProvider(canvas->data()); // FIXME
 
     std::vector<Star> stars;
-    auto _ = sceneManager->assets()->complete()->connect([&](file::AssetLibrary::Ptr assets)
+    auto _ = sceneManager->assets()->loader()->complete()->connect([&](file::Loader::Ptr loader)
     {
-        addStar(root, assets, stars);
+        addStar(root, sceneManager->assets(), stars);
     });
 
     auto keyDown = canvas->keyboard()->keyDown()->connect([&](input::Keyboard::Ptr k)
     {
-        if (k->keyIsDown(input::Keyboard::ScanCode::A))
+        if (k->keyIsDown(input::Keyboard::A))
             addStar(root, sceneManager->assets(), stars);
     });
 
@@ -90,7 +90,7 @@ int main(int argc, char** argv)
         sceneManager->nextFrame(t, dt);
     });
 
-    sceneManager->assets()->load();
+    sceneManager->assets()->loader()->load();
 
     canvas->run();
 

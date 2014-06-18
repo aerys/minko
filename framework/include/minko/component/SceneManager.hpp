@@ -29,8 +29,7 @@ namespace minko
     namespace component
     {
 	    class SceneManager :
-            public AbstractComponent,
-            public std::enable_shared_from_this<SceneManager>
+            public AbstractComponent
 	    {
 	    public:
 		    typedef std::shared_ptr<SceneManager> Ptr;

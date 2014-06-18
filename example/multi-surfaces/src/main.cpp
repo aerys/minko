@@ -38,14 +38,15 @@ int main(int argc, char** argv)
 	auto canvas = Canvas::create("Minko Example - Multi Surface", 800, 600);
 
 	auto sceneManager = SceneManager::create(canvas->context());
-	
+
 	// setup assets
-	sceneManager->assets()->defaultOptions()->resizeSmoothly(true);
-	sceneManager->assets()->defaultOptions()->generateMipmaps(true);
-	sceneManager->assets()
-		->registerParser<file::PNGParser>("png")
-		->queue("effect/Basic.effect");
-	
+	sceneManager->assets()->loader()->options()->resizeSmoothly(true);
+	sceneManager->assets()->loader()->options()->generateMipmaps(true);
+	sceneManager->assets()->loader()->options()
+                ->registerParser<file::PNGParser>("png");
+
+        sceneManager->assets()->loader()->queue("effect/Basic.effect");
+
 
 	std::cout << "Press [Q] to add/remove the first surface." << std::endl;
 	std::cout << "Press [W] to add/remove the second surface." << std::endl;
@@ -79,26 +80,26 @@ int main(int argc, char** argv)
 	auto mesh = scene::Node::create("mesh")
 		->addComponent(Transform::create());
 
-	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
+	auto _ = sceneManager->assets()->loader()->complete()->connect([=](file::Loader::Ptr loader)
 	{
 		surface1 = Surface::create(
-			assets->geometry("cubeGeometryDown"),
-			assets->material("redMaterial"),
-			assets->effect("effect/Basic.effect")
+			sceneManager->assets()->geometry("cubeGeometryDown"),
+			sceneManager->assets()->material("redMaterial"),
+			sceneManager->assets()->effect("effect/Basic.effect")
 			);
 
 		surface2 = Surface::create(
-			assets->geometry("cubeGeometry"),
-			assets->material("blueMaterial"),
-			assets->effect("effect/Basic.effect")
+			sceneManager->assets()->geometry("cubeGeometry"),
+			sceneManager->assets()->material("blueMaterial"),
+			sceneManager->assets()->effect("effect/Basic.effect")
 			);
 
 		surface3 = Surface::create(
-			assets->geometry("cubeGeometryUp"),
-			assets->material("greenMaterial"),
-			assets->effect("effect/Basic.effect")
+			sceneManager->assets()->geometry("cubeGeometryUp"),
+			sceneManager->assets()->material("greenMaterial"),
+			sceneManager->assets()->effect("effect/Basic.effect")
 			);
-		
+
 		mesh->addComponent(surface1)
 			->addComponent(surface2)
 			->addComponent(surface3);
@@ -107,21 +108,21 @@ int main(int argc, char** argv)
 
 		keyDown = canvas->keyboard()->keyDown()->connect([&](input::Keyboard::Ptr k)
 		{
-			if (k->keyIsDown(input::Keyboard::ScanCode::Q))
+			if (k->keyIsDown(input::Keyboard::Q))
 			{
 				if (mesh->hasComponent(surface1))
 					mesh->removeComponent(surface1);
 				else
 					mesh->addComponent(surface1);
 			}
-			if (k->keyIsDown(input::Keyboard::ScanCode::W))
+			if (k->keyIsDown(input::Keyboard::W))
 			{
 				if (mesh->hasComponent(surface2))
 					mesh->removeComponent(surface2);
 				else
 					mesh->addComponent(surface2);
 			}
-			if (k->keyIsDown(input::Keyboard::ScanCode::E))
+			if (k->keyIsDown(input::Keyboard::E))
 			{
 				if (mesh->hasComponent(surface3))
 					mesh->removeComponent(surface3);
@@ -142,7 +143,7 @@ int main(int argc, char** argv)
 		sceneManager->nextFrame(time, deltaTime);
 	});
 
-	sceneManager->assets()->load();
+	sceneManager->assets()->loader()->load();
 	canvas->run();
 
 	return 0;

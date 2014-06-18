@@ -41,11 +41,8 @@ namespace minko
 				.property("mouse", 					&AbstractCanvas::mouse)
 				.property("keyboard",				&AbstractCanvas::keyboard)
 				.property("numJoysticks",			&AbstractCanvas::numJoysticks)
-				.property("relativeTime",			&AbstractCanvas::relativeTime)
-				.property("frameDuration",			&AbstractCanvas::frameDuration)
 				.methodWrapper("getJoystickAxis",   &LuaAbstractCanvas::getJoystickAxisWrapper)
 				.methodWrapper("joystick",			&LuaAbstractCanvas::joystickWrapper);
-
 		    MINKO_LUAGLUE_BIND_SIGNAL(state, AbstractCanvas::Ptr);
 		    MINKO_LUAGLUE_BIND_SIGNAL(state, AbstractCanvas::Ptr, uint, uint);
 			MINKO_LUAGLUE_BIND_SIGNAL(state, AbstractCanvas::Ptr, input::Joystick::Ptr);

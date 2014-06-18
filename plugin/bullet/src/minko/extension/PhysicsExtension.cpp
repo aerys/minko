@@ -47,43 +47,44 @@ PhysicsExtension::bind()
 }
 
 std::shared_ptr<component::AbstractComponent>
-PhysicsExtension::deserializePhysics(std::string&							serializedAnimation,
+PhysicsExtension::deserializePhysics(std::string&							serializedCollider,
 									 std::shared_ptr<file::AssetLibrary>	assetLibrary,
 									 std::shared_ptr<file::Dependency>		dependencies)
 {
 	component::bullet::AbstractPhysicsShape::Ptr	deserializedShape;
 	msgpack::zone									mempool;
 	msgpack::object									deserialized;
-	// shape type, shape data, delta transform, density, friction, restit, dynamic, trigger, filterGroup, filterMask
-	msgpack::type::tuple<int, std::string, msgpack::type::tuple<uint, std::string>, float, float, float, bool, bool, uint, uint> dst;
+	// shape type, shape data, delta transform, <density, friction, restit>, dynamic, trigger, filterGroup, filterMask
+	msgpack::type::tuple<int, std::string, msgpack::type::tuple<uint, std::string>, std::string, bool, bool, uint, uint> dst;
 
-	msgpack::unpack(serializedAnimation.data(), serializedAnimation.size() - 1, NULL, &mempool, &deserialized);
+	auto result = msgpack::unpack(serializedCollider.data(), serializedCollider.size() - 1, nullptr, &mempool, &deserialized);
 	deserialized.convert(&dst);
 
-	std::vector<float> shapedata = deserialize::TypeDeserializer::deserializeVector<float>(dst.a1);
+	std::vector<float> shapeData = deserialize::TypeDeserializer::deserializeVector<float>(dst.a1);
+	std::vector<float> physicsData = deserialize::TypeDeserializer::deserializeVector<float>(dst.a3);
 
 	uint shapeType = dst.a0;
 
 	if (shapeType == 1) // Ball
 		deserializedShape = component::bullet::SphereShape::create(
-			shapedata[0]
+			shapeData[0]
 		);
 	else if (shapeType == 2) // Box
 		deserializedShape = component::bullet::BoxShape::create(
-			shapedata[0], 
-			shapedata[1], 
-			shapedata[2]
+			shapeData[0],
+			shapeData[1],
+			shapeData[2]
 		);
 	else if (shapeType == 3) // Cylinder
 		deserializedShape = component::bullet::CylinderShape::create(
-			shapedata[1], 
-			0.5f * shapedata[0], 
-			shapedata[1]
+			shapeData[1],
+			0.5f * shapeData[0],
+			shapeData[1]
 		);
 	else if (shapeType == 4) // Cone
 		deserializedShape = component::bullet::ConeShape::create(
-			shapedata[1], 
-			shapedata[0]
+			shapeData[1],
+			shapeData[0]
 		);
 
 	std::tuple<uint, std::string&> serializedMatrixTuple(dst.a2.a0, dst.a2.a1);
@@ -93,26 +94,30 @@ PhysicsExtension::deserializePhysics(std::string&							serializedAnimation,
 	if (!deltaMatrix->equals(math::Matrix4x4::create()))
 		deserializedShape->initialize(deltaMatrix, math::Matrix4x4::create());
 
-	auto mass = dst.a3 * deserializedShape->volume();
+	const auto	density		= physicsData[0];
+	const auto	friction	= physicsData[1];
+	const auto	restitution	= physicsData[2];
 
-	if (dst.a6 == false)
+	auto mass = density * deserializedShape->volume();
+
+	if (dst.a4 == false)
 		mass = 0.0f;
 
-	const auto	friction	= dst.a4;
-	const auto	restitution	= dst.a5;
-
-    const short filterGroup = short(dst.a8 & ((1<<16) - 1)); // overriden by node's layouts
-    const short filterMask  = short(dst.a9 & ((1<<16) - 1)); 
+    const short filterGroup = short(dst.a6 & ((1<<16) - 1)); // overriden by node's layouts
+	const auto	filterMask = Layouts(dst.a7);
 
 	auto data = component::bullet::ColliderData::create(
-		mass, 
+		mass,
 		deserializedShape,
 		restitution,
 		friction
-	);
+		);
 
-	return component::bullet::Collider::create(data)
-		->collisionGroup(filterGroup)
-		->collisionMask(filterMask)
+	auto collider = component::bullet::Collider::create(data)
+		//->collisionGroup(filterGroup) // information stored in node layouts 
 		->triggerCollisions(dst.a7);
+
+	collider->layoutMask(filterMask);
+
+	return collider;
 }

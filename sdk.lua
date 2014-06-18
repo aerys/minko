@@ -14,10 +14,10 @@ package.path = MINKO_HOME .. "/module/?/?.lua;".. package.path
 
 print('Minko SDK home directory: ' .. MINKO_HOME)
 
+require 'ext'
 require 'minko'
-require 'color'
 require 'emscripten'
-require 'android'
+require 'jni'
 require 'vs2013ctp'
 require 'gcc'
 require 'clang'

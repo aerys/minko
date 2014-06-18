@@ -23,7 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::render;
 
-const uint AbstractTexture::MAX_SIZE = 2048;
+const uint AbstractTexture::MAX_SIZE = 4096;
 
 AbstractTexture::AbstractTexture(TextureType			type,
 								AbstractContext::Ptr	context,

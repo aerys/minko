@@ -114,7 +114,7 @@ BasicMaterial::diffuseColor() const
 }
 
 BasicMaterial::Ptr
-BasicMaterial::diffuseMap(render::AbstractTexture::Ptr texture)
+BasicMaterial::diffuseMap(TexturePtr texture)
 {
 	assert(texture->type() == TextureType::Texture2D);
 
@@ -494,7 +494,7 @@ BasicMaterial::target() const
 BasicMaterial::Ptr
 BasicMaterial::isTransparent(bool transparent, bool zSort)
 {
-	return priority(transparent ? priority::TRANSPARENT : priority::OPAQUE)
+	return priority(transparent ? Priority::TRANSPARENT : Priority::OPAQUE)
 		->zSorted(zSort)
 		->blendingMode(transparent ? Blending::Mode::ALPHA : Blending::Mode::DEFAULT);
 }

@@ -32,11 +32,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::component;
 
-std::shared_ptr<math::OctTree>	Culling::_octTree;
+/*static*/ std::shared_ptr<math::OctTree>	Culling::_octTree;
 
-Culling::Culling(ShapePtr shape, std::string bindProperty):
-_frustum(shape),
-_bindProperty(bindProperty)
+Culling::Culling(ShapePtr shape, 
+				 const std::string& bindProperty):
+	AbstractComponent(scene::Layout::Group::CULLING),
+	_frustum(shape),
+	_bindProperty(bindProperty)
 {
 }
 
@@ -44,10 +46,16 @@ void
 Culling::initialize()
 {
 	_targetAddedSlot = targetAdded()->connect(std::bind(
-        &Culling::targetAddedHandler, shared_from_this(), std::placeholders::_1, std::placeholders::_2
+        &Culling::targetAddedHandler, 
+		std::static_pointer_cast<Culling>(shared_from_this()), 
+		std::placeholders::_1, 
+		std::placeholders::_2
     ));
     _targetRemovedSlot = targetAdded()->connect(std::bind(
-        &Culling::targetAddedHandler, shared_from_this(), std::placeholders::_1, std::placeholders::_2
+        &Culling::targetAddedHandler, 
+		std::static_pointer_cast<Culling>(shared_from_this()), 
+		std::placeholders::_1, 
+		std::placeholders::_2
     ));
 }
 
@@ -66,19 +74,19 @@ Culling::targetAddedHandler(AbstractComponent::Ptr ctrl, NodePtr target)
 		_octTree = math::OctTree::create(50, 7, math::Vector3::create(0, 0, 0));
 	
 	if (target->root()->hasComponent<SceneManager>())
-		targetAddedToScene(nullptr, target, nullptr);
+		targetAddedToSceneHandler(nullptr, target, nullptr);
 	else
 		_addedToSceneSlot = target->added()->connect(std::bind(
-		&Culling::targetAddedToScene,
-		shared_from_this(),
-		std::placeholders::_1,
-		std::placeholders::_2,
-		std::placeholders::_3));
-
-
+			&Culling::targetAddedToSceneHandler,
+			std::static_pointer_cast<Culling>(shared_from_this()),
+			std::placeholders::_1,
+			std::placeholders::_2,
+			std::placeholders::_3
+		));
+	
 	_viewMatrixChangedSlot = target->data()->propertyValueChanged(_bindProperty)->connect(std::bind(
-		&Culling::worldToScreenChanged,
-		shared_from_this(),
+		&Culling::worldToScreenChangedHandler,
+		std::static_pointer_cast<Culling>(shared_from_this()),
 		std::placeholders::_1,
 		std::placeholders::_2));
 }
@@ -91,22 +99,22 @@ Culling::targetRemovedHandler(AbstractComponent::Ptr ctrl, NodePtr target)
 }
 
 void
-Culling::targetAddedToScene(NodePtr node, NodePtr target, NodePtr ancestor)
+Culling::targetAddedToSceneHandler(NodePtr node, NodePtr target, NodePtr ancestor)
 {
 	if (target->root()->hasComponent<SceneManager>())
 	{
 		_addedToSceneSlot = nullptr;
 
 		_layoutChangedSlot = target->root()->layoutsChanged()->connect(std::bind(
-			&Culling::layoutChanged,
-			shared_from_this(),
+			&Culling::layoutChangedHandler,
+			std::static_pointer_cast<Culling>(shared_from_this()),
 			std::placeholders::_1,
 			std::placeholders::_2
 		));
 
 		_addedSlot = target->root()->added()->connect(std::bind(
 			&Culling::addedHandler,
-			shared_from_this(),
+			std::static_pointer_cast<Culling>(shared_from_this()),
 			std::placeholders::_1,
 			std::placeholders::_2,
 			std::placeholders::_3
@@ -117,9 +125,10 @@ Culling::targetAddedToScene(NodePtr node, NodePtr target, NodePtr ancestor)
 void
 Culling::addedHandler(NodePtr node, NodePtr target, NodePtr ancestor)
 {
-	scene::NodeSet::Ptr nodeSet = scene::NodeSet::create(target)->descendants(true)->where([](NodePtr descendant)
+	auto layoutMask = this->layoutMask();
+	scene::NodeSet::Ptr nodeSet = scene::NodeSet::create(target)->descendants(true)->where([layoutMask](NodePtr descendant)
 	{
-		return (descendant->layouts() & (1u << 17)) != 0;
+		return (descendant->layouts() & layoutMask) != 0;
 	});
 
 	for (auto n : nodeSet->nodes())
@@ -127,16 +136,16 @@ Culling::addedHandler(NodePtr node, NodePtr target, NodePtr ancestor)
 }
 
 void
-Culling::layoutChanged(NodePtr node, NodePtr target)
+Culling::layoutChangedHandler(NodePtr node, NodePtr target)
 {
-	if (target->layouts() & (1u << 17))
+	if ((target->layouts() & layoutMask()) != 0)
 		_octTree->insert(target);
 	else
 		_octTree->remove(target);
 }
 
 void
-Culling::worldToScreenChanged(std::shared_ptr<data::Container> data, const std::string& propertyName)
+Culling::worldToScreenChangedHandler(std::shared_ptr<data::Container> data, const std::string& propertyName)
 {
 	_frustum->updateFromMatrix(data->get<std::shared_ptr<math::Matrix4x4>>(propertyName));
 	

@@ -23,15 +23,24 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/scene/Node.hpp"
 #include "minko/math/Vector3.hpp"
 #include "minko/math/Vector4.hpp"
+#include "minko/Signal.hpp"
 
 using namespace minko;
 using namespace minko::component;
 
 AbstractLight::AbstractLight(const std::string& arrayName) :
 	AbstractRootDataComponent<data::ArrayProvider>(data::ArrayProvider::create(arrayName)),
-	_color(math::Vector3::create(1.0f, 1.0f, 1.0f))
+	_color(math::Vector3::create(1.0f, 1.0f, 1.0f)),
+	_targetLayoutChangedSlot(nullptr)
 {
 	data()->set("color", _color);
+}
+
+void
+AbstractLight::layoutMask(Layouts value)
+{
+	data()->set("layoutMask", value);
+	AbstractComponent::layoutMask(value);
 }
 
 AbstractLight::Ptr
@@ -54,4 +63,18 @@ AbstractLight::Ptr
 AbstractLight::color(uint rgba)
 {
 	return color(Color::uintToVec4(rgba));
+}
+
+void
+AbstractLight::targetAddedHandler(component::AbstractComponent::Ptr component, 
+								  scene::Node::Ptr					target)
+{
+	AbstractRootDataComponent<data::ArrayProvider>::targetAddedHandler(component, target);
+}
+
+void
+AbstractLight::targetRemovedHandler(component::AbstractComponent::Ptr component,
+									scene::Node::Ptr					target)
+{
+	AbstractRootDataComponent<data::ArrayProvider>::targetRemovedHandler(component, target);
 }

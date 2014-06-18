@@ -78,6 +78,8 @@ MaterialParser::parse(const std::string&				filename,
 
 	MaterialPtr material = material::Material::create();
 
+	material->set("diffuseColor", math::Vector4::create(1.0, 1.0, 1.0, 1.0));
+
 	for (auto serializedComplexProperty : complexProperties)
 		deserializeComplexProperty(material, serializedComplexProperty);
 
@@ -122,7 +124,7 @@ MaterialParser::deserializeComplexProperty(MaterialPtr			material,
 		
 		if (material->get<render::Blending::Mode>("blendMode") != render::Blending::Mode::DEFAULT)
 
-		material->set("priority", render::priority::TRANSPARENT);
+		material->set("priority", render::Priority::TRANSPARENT);
 		material->set("zSort", true);
 	}
 	else if (type == TRIANGLECULLING)
@@ -145,5 +147,6 @@ void
 MaterialParser::deserializeBasicProperty(MaterialPtr		material,
 										 BasicProperty		serializedProperty)
 {
-	material->set<float>(serializedProperty.a0, serializedProperty.a1);
+	std::vector<float> serializedPropertyValue = deserialize::TypeDeserializer::deserializeVector<float>(serializedProperty.a1);
+	material->set<float>(serializedProperty.a0, serializedPropertyValue[0]);
 }

@@ -33,6 +33,7 @@ namespace minko
 		class MaterialParser;
 		class MaterialWriter;
 		class Dependency;
+        class WriterOptions;
 	}
 
 	namespace serialize

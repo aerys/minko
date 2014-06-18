@@ -113,7 +113,7 @@ namespace minko
 						* _localScaling->y() * (_halfExtentY + _margin)
 						* _localScaling->z() * (_halfExtentZ + _margin); 
 
-					return volume * _volumeScaling;
+					return volume;
 				}
 
 				LineGeometryPtr

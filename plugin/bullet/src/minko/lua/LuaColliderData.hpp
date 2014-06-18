@@ -42,6 +42,8 @@ namespace minko
 				bind(LuaGlue& state)
 				{
 					auto& colliderData = state.Class<ColliderData>("ColliderData")
+						.method("getRestitution", &ColliderData::restitution)
+						.method("getFriction", &ColliderData::friction)
 						.method("getMass", &ColliderData::mass);
 						/*.property("collisionStated", &ColliderData::collisionStarted);
 					MINKO_LUAGLUE_BIND_SIGNAL(state, ColliderData::Ptr, ColliderData::Ptr);
@@ -51,8 +53,7 @@ namespace minko
 						.method("setRestitution",		static_cast<void (ColliderData::*)(float)>(&ColliderData::restitution))
 						.method("setFriction",			static_cast<void (ColliderData::*)(float)>(&ColliderData::friction))
 						.method("setRollingFriction",	static_cast<void (ColliderData::*)(float)>(&ColliderData::rollingFriction))
-						.method("getRestitution",		static_cast<float (ColliderData::*)(void) const>(&ColliderData::restitution))
-						.method("getFriction",			static_cast<float (ColliderData::*)(void) const>(&ColliderData::friction))
+						
 						.method("getRollingFriction",	static_cast<float (ColliderData::*)(void) const>(&ColliderData::rollingFriction))
 						*/
 						//.property("triggeredCollision", &ColliderData::triggerCollisions, &ColliderData::triggerCollisions)

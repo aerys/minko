@@ -27,21 +27,24 @@ using namespace minko::render;
 
 
 void
-IndexBuffer::upload(uint	offset, 
+IndexBuffer::upload(uint	offset,
 					int		count)
-{   
-	assert(!_data.empty() && count <= (int)_data.size());
+{
+	if (_data.empty())
+		return;
+	
+	assert(count <= (int)_data.size());
 
 	if (_id == -1)
     	_id = _context->createIndexBuffer(_data.size());
-	
+
 	const auto oldNumIndices	= _numIndices;
 	_numIndices					= count >= 0 ? count : _data.size();
 
 	_context->uploaderIndexBufferData(
-		_id, 
-		offset, 
-		_numIndices, 
+		_id,
+		offset,
+		_numIndices,
 		&_data[0]
 	);
 
@@ -58,5 +61,13 @@ IndexBuffer::dispose()
 	_id			= -1;
 	_numIndices	= 0;
 
+    disposeData();
+
 	_changed->execute(shared_from_this());
+}
+
+void IndexBuffer::disposeData()
+{
+    _data.clear();
+    _data.shrink_to_fit();
 }

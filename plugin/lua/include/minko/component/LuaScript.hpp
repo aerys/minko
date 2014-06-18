@@ -81,23 +81,19 @@ namespace minko
             }
 
         protected:
-            virtual
 			void
-			start(NodePtr target);
+			start(NodePtr target) override;
 
-			virtual
 			void
-			update(NodePtr target);
+			update(NodePtr target) override;
 
-            virtual
             void
-            stop(NodePtr target);
+            stop(NodePtr target) override;
 
-            virtual
             bool
-            ready(NodePtr target);
+            ready(NodePtr target) override;
 
-        private:
+		private:
             LuaScript(const std::string& name, const std::string& script);
 
             static

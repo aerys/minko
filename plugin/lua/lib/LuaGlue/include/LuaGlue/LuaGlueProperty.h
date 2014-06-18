@@ -318,14 +318,14 @@ private:
 	}
 };
 
-template<typename _Type, typename _Class>
+template<typename _Type, typename _Class, typename _SetterReturnType = void>
 class LuaGlueProperty : public LuaGluePropertyBase
 {
 public:
 	typedef typename std::remove_const<typename std::remove_reference<_Type>::type>::type Type;
 	typedef _Type(_Class::*GetterType)();
 	typedef _Type(_Class::*ConstGetterType)() const;
-	typedef void (_Class::*SetterType)(_Type);
+    typedef _SetterReturnType (_Class::*SetterType)(_Type);
 
 	LuaGlueProperty(LuaGlueClass<_Class> *luaClass, const std::string &name, GetterType getter, SetterType setter) : name_(name), getter(getter), setter(setter), glueClass(luaClass)
 	{
@@ -408,7 +408,7 @@ private:
 
 	static int lua_access(lua_State *state)
 	{
-		auto pimp = (LuaGlueProperty<_Type, _Class> *)lua_touserdata(state, lua_upvalueindex(1));
+		auto pimp = (LuaGlueProperty<_Type, _Class, _SetterReturnType> *)lua_touserdata(state, lua_upvalueindex(1));
 		return pimp->access(state);
 	}
 };

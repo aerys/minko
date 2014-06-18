@@ -4,16 +4,16 @@
 
 	struct AmbientLight
 	{
-		vec3 color;
-		float ambient;	
+		vec3 	color;
+		float 	ambient;	
 	};
 
 	struct DirectionalLight
 	{
-		vec3 color;
-		float diffuse;
-		float specular;
-		vec3 direction;	
+		vec3 	color;
+		float 	diffuse;
+		float 	specular;
+		vec3 	direction;	
 	};
 
 	struct PointLight

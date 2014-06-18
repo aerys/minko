@@ -35,21 +35,21 @@ main(int argc, char** argv)
 	auto canvas = Canvas::create("Minko Tutorial - Binding the model to world transform", WINDOW_WIDTH, WINDOW_HEIGHT);
 	auto sceneManager = component::SceneManager::create(canvas->context());
 
-	sceneManager->assets()->queue("effect/MyCustomEffect.effect");
-	auto complete = sceneManager->assets()->complete()->connect([&](file::AssetLibrary::Ptr assets)
+	sceneManager->assets()->loader()->queue("effect/MyCustomEffect.effect");
+	auto complete = sceneManager->assets()->loader()->complete()->connect([&](file::Loader::Ptr loader)
 	{
 		auto root = scene::Node::create("root")
 			->addComponent(sceneManager)
 			->addComponent(Renderer::create(0x7f7f7fff));
 
-		auto myCustomEffect = assets->effect("effect/MyCustomEffect.effect");
+		auto myCustomEffect = sceneManager->assets()->effect("effect/MyCustomEffect.effect");
 		auto myCustomMaterial = material::MyCustomMaterial::create();
 		auto cube = scene::Node::create("cube")
 		->addComponent(Transform::create(
 		Matrix4x4::create()->translation(0.f, 0.f, -10.f)
 			))
 			->addComponent(Surface::create(
-			geometry::CubeGeometry::create(assets->context()),
+			geometry::CubeGeometry::create(canvas->context()),
 			myCustomMaterial,
 			myCustomEffect
 			));
@@ -70,7 +70,7 @@ main(int argc, char** argv)
 		canvas->run();
 	});
 
-	sceneManager->assets()->load();
+	sceneManager->assets()->loader()->load();
 
 	return 0;
 }

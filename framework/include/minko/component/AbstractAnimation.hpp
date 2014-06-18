@@ -29,8 +29,7 @@ namespace minko
 	namespace component
 	{
 		class AbstractAnimation :
-			public AbstractComponent,
-			public std::enable_shared_from_this<AbstractAnimation>
+			public AbstractComponent
 		{
 		public:
 			typedef std::shared_ptr<AbstractAnimation>		Ptr;
@@ -214,6 +213,13 @@ namespace minko
 
 			void
 			isReversed(bool);
+
+			inline
+			uint
+			maxTime() const
+			{
+				return _maxTime;
+			}
 
 			inline
 			void

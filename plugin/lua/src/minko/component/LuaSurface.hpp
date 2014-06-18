@@ -48,6 +48,7 @@ namespace minko
 				state.Class<Surface>("Surface")
 					.method("create", static_cast<Surface::Ptr(*)(geometry::Geometry::Ptr, data::Provider::Ptr, render::Effect::Ptr)>(&Surface::create))
 					.property("material", &Surface::material)
+					.method("setEffect", static_cast<void(Surface::*)(std::shared_ptr<render::Effect>, const std::string&)>(&Surface::effect))
 					.method("setVisible", static_cast<void(Surface::*)(bool)>(&Surface::visible));
 			}
 			private:

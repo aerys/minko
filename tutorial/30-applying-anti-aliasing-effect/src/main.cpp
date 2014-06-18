@@ -30,68 +30,63 @@ const uint WINDOW_HEIGHT = 600;
 int
 main(int argc, char** argv)
 {
-    auto canvas = Canvas::create("Minko Tutorial - Applying anti-aliasing effect", WINDOW_WIDTH, WINDOW_HEIGHT);
+    auto canvas = Canvas::create("Minko Tutorial - Applying antialiasing effect", WINDOW_WIDTH, WINDOW_HEIGHT);
     auto sceneManager = SceneManager::create(canvas->context());
 
-    sceneManager->assets()
+	sceneManager->assets()->loader()
         ->queue("effect/Basic.effect")
-        ->queue("effect/FXAA/FXAA.effect")
-        ;
+        ->queue("effect/FXAA/FXAA.effect");
 
-    auto complete = sceneManager->assets()->complete()->connect([&](file::AssetLibrary::Ptr assets)
+	auto complete = sceneManager->assets()->loader()->complete()->connect([&](file::Loader::Ptr loader)
     {
+        auto effect = sceneManager->assets()->effect("effect/FXAA/FXAA.effect");
+
+        if (!effect)
+            throw std::logic_error("The FXAA effect has not been loaded.");
+
         auto root = scene::Node::create("root")
             ->addComponent(sceneManager);
 
         auto camera = scene::Node::create("camera")
             ->addComponent(Renderer::create(0x00000000))
             ->addComponent(PerspectiveCamera::create(
-                (float) WINDOW_WIDTH / (float) WINDOW_HEIGHT, (float) PI * 0.25f, .1f, 1000.f))
+                (float) WINDOW_WIDTH / (float) WINDOW_HEIGHT, (float) PI * 0.25f, .1f, 1000.f)
+            )
             ->addComponent(Transform::create(Matrix4x4::create()
-                ->lookAt(Vector3::create(), Vector3::create(0.f, 0.f, -5.f)))
-            );
+            ->lookAt(Vector3::create(), Vector3::create(0.f, 0.f, -5.f))));
         root->addChild(camera);
 
         auto cube = scene::Node::create("cube")
             ->addComponent(Transform::create())
             ->addComponent(Surface::create(
-            geometry::CubeGeometry::create(assets->context()),
-            material::BasicMaterial::create()->diffuseColor(Vector4::create(0.f, 0.f, 1.f, 1.f)),
-            assets->effect("effect/Basic.effect")
+                geometry::CubeGeometry::create(canvas->context()),
+                material::BasicMaterial::create()->diffuseColor(Vector4::create(0.f, 0.f, 1.f, 1.f)),
+    			sceneManager->assets()->effect("effect/Basic.effect")
             ));
         root->addChild(cube);
 
-        auto effect = sceneManager->assets()->effect("effect/FXAA/FXAA.effect");
-
-        // Check that the FXAA effect has been properly loaded
-        if (!effect)
-            throw std::logic_error("The FXAA effect has not been loaded.");
-
-        auto renderTarget = render::Texture::create(
-            assets->context(), clp2(WINDOW_WIDTH), clp2(WINDOW_HEIGHT), false, true);
+        auto renderTarget = render::Texture::create(canvas->context(), clp2(WINDOW_WIDTH), clp2(WINDOW_HEIGHT), false, true);
         renderTarget->upload();
 
         effect->setUniform("textureSampler", renderTarget);
-        effect->setUniform("texcoordOffset",
-            Vector2::create(1.0f / renderTarget->width(), 1.0f / renderTarget->height()));
+        effect->setUniform("texcoordOffset", Vector2::create(1.0f / renderTarget->width(), 1.0f / renderTarget->height()));
 
         auto renderer = Renderer::create();
-        // Create a scene just to display the post processing render target texture
         auto postProcessingScene = scene::Node::create()
-            ->addComponent(renderer)
-            ->addComponent(
-                Surface::create(
-                    geometry::QuadGeometry::create(sceneManager->assets()->context()),
-                    material::Material::create(),
-                    effect
-                )
-            );
+        ->addComponent(renderer)
+        ->addComponent(
+            Surface::create(
+                geometry::QuadGeometry::create(sceneManager->assets()->context()),
+                material::Material::create(),
+                effect
+            )
+        );
 
         auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint width, uint height)
         {
             camera->component<PerspectiveCamera>()->aspectRatio((float) width / (float) height);
 
-            renderTarget = render::Texture::create(assets->context(), clp2(width), clp2(height), false, true);
+			renderTarget = render::Texture::create(sceneManager->assets()->context(), clp2(width), clp2(height), false, true);
             renderTarget->upload();
 
             effect->setUniform("textureSampler", renderTarget);
@@ -99,11 +94,11 @@ main(int argc, char** argv)
                 Vector2::create(1.0f / renderTarget->width(), 1.0f / renderTarget->height()));
         });
 
-        // Enable/Disable FXAA pressing space key
         auto enableFXAA = true;
+
         auto keyDown = canvas->keyboard()->keyDown()->connect([&](input::Keyboard::Ptr k)
         {
-            if (k->keyIsDown(input::Keyboard::ScanCode::SPACE))
+            if (k->keyIsDown(input::Keyboard::SPACE))
             {
                 enableFXAA = !enableFXAA;
 
@@ -122,7 +117,7 @@ main(int argc, char** argv)
             if (enableFXAA)
             {
                 sceneManager->nextFrame(t, dt, renderTarget);
-                renderer->render(assets->context());
+				renderer->render(sceneManager->assets()->context());
             }
             else
             {
@@ -133,7 +128,7 @@ main(int argc, char** argv)
         canvas->run();
     });
 
-    sceneManager->assets()->load();
+	sceneManager->assets()->loader()->load();
 
     return 0;
 }

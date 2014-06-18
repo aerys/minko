@@ -25,8 +25,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include <stack>
 #include "minko/component/Transform.hpp"
 #include "minko/component/JobManager.hpp"
+#include "minko/component/Surface.hpp"
+#include "minko/component/BoundingBox.hpp"
+#include "minko/scene/NodeSet.hpp"
 #include "minko/file/Options.hpp"
 #include "minko/file/Dependency.hpp"
+#include "minko/scene/NodeSet.hpp"
 
 using namespace minko;
 using namespace minko::file;
@@ -75,7 +79,7 @@ SceneParser::SceneParser()
 		std::placeholders::_1,
 		std::placeholders::_2,
 		std::placeholders::_3));
-		
+
 	registerComponent(serialize::SURFACE,
 		std::bind(&deserialize::ComponentDeserializer::deserializeSurface,
 		std::placeholders::_1,
@@ -96,6 +100,12 @@ SceneParser::SceneParser()
 
 	registerComponent(serialize::SKINNING,
 		std::bind(&deserialize::ComponentDeserializer::deserializeSkinning,
+		std::placeholders::_1,
+		std::placeholders::_2,
+		std::placeholders::_3));
+
+	registerComponent(serialize::BOUNDINGBOX,
+		std::bind(&deserialize::ComponentDeserializer::deserializeBoundingBox,
 		std::placeholders::_1,
 		std::placeholders::_2,
 		std::placeholders::_3));
@@ -133,7 +143,7 @@ SceneParser::parse(const std::string&					filename,
 	if (_jobList.size() > 0)
 	{
 		auto jobManager = component::JobManager::create(30);
-		
+
 		for (auto it = _jobList.begin(); it != _jobList.end(); ++it)
 			jobManager->pushJob(*it);
 
@@ -144,7 +154,7 @@ SceneParser::parse(const std::string&					filename,
 }
 
 scene::Node::Ptr
-SceneParser::parseNode(std::vector<SerializedNode>&			nodePack, 
+SceneParser::parseNode(std::vector<SerializedNode>&			nodePack,
 					   std::vector<std::string>&			componentPack,
 					   AssetLibraryPtr						assetLibrary,
 					   Options::Ptr							options)
@@ -158,11 +168,11 @@ SceneParser::parseNode(std::vector<SerializedNode>&			nodePack,
 		scene::Node::Ptr	newNode			= scene::Node::create();
 		uint				layouts			= nodePack[i].a1;
 		uint				numChildren		= nodePack[i].a2;
-		std::vector<uint>	componentsId	= nodePack[i].a3; 
+		std::vector<uint>	componentsId	= nodePack[i].a3;
 
 		newNode->layouts(layouts);
 		newNode->name(nodePack[i].a0);
-		
+
 		newNode = options->nodeFunction()(newNode);
 
 		for (uint componentId : componentsId)
@@ -207,12 +217,25 @@ SceneParser::parseNode(std::vector<SerializedNode>&			nodePack,
 		}
 	}
 
+	bool isSkinningFree = true; // FIXME
+
 	for (auto componentIndex2 : markedComponent)
 	{
+		isSkinningFree = false;
 		std::shared_ptr<component::AbstractComponent> newComponent = _componentIdToReadFunction[serialize::SKINNING](componentPack[componentIndex2], assetLibrary, _dependencies);
 
 		for (scene::Node::Ptr node : componentIdToNodes[componentIndex2])
 			node->addComponent(newComponent);
+	}
+    
+	if (isSkinningFree)
+	{
+		auto nodeSet = scene::NodeSet::create(root)->descendants(true)->where([](scene::Node::Ptr n){ return n->components<component::Surface>().size() != 0; });
+    
+		for (auto n : nodeSet->nodes())
+		{
+			n->addComponent(component::BoundingBox::create());
+		}
 	}
 
 	return root;

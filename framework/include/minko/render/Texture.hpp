@@ -38,7 +38,7 @@ namespace minko
 
 		private:
 			std::vector<unsigned char>	_data;
-		
+
 		public:
 			inline static
 			Ptr
@@ -52,12 +52,12 @@ namespace minko
 			{
 				return std::shared_ptr<Texture>(
 					new Texture(
-						context, 
-						width, 
-						height, 
-						mipMapping, 
-						optimizeForRenderToTexture, 
-						resizeSmoothly, 
+						context,
+						width,
+						height,
+						mipMapping,
+						optimizeForRenderToTexture,
+						resizeSmoothly,
 						filename
 					)
 				);
@@ -76,7 +76,7 @@ namespace minko
 			}
 
 			void
-			data(unsigned char*, 
+			data(unsigned char*,
 				 TextureFormat	format		= TextureFormat::RGBA,
 				 int			widthGPU	= -1,
 				 int			heightGPU	= -1);

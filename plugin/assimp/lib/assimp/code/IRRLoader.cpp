@@ -639,7 +639,7 @@ void SetupMapping (aiMaterial* mat, aiTextureMapping mode, const aiVector3D& axi
 
 // ------------------------------------------------------------------------------------------------
 void IRRImporter::GenerateGraph(Node* root,aiNode* rootOut ,aiScene* scene,
-	BatchLoader& batch,
+	Loader& batch,
 	std::vector<aiMesh*>&        meshes,
 	std::vector<aiNodeAnim*>&    anims,
 	std::vector<AttachmentInfo>& attach,
@@ -920,7 +920,7 @@ void IRRImporter::InternReadFile( const std::string& pFile,
 	std::vector<aiLight*> lights;
 
 	// Batch loader used to load external models
-	BatchLoader batch(pIOHandler);
+	Loader batch(pIOHandler);
 //	batch.SetBasePath(pFile);
 	
 	cameras.reserve(5);
@@ -1271,7 +1271,7 @@ void IRRImporter::InternReadFile( const std::string& pFile,
 									 *  the correct postprocessing settings here.
 									 */
 									unsigned int pp = 0;
-									BatchLoader::PropertyMap map;
+									Loader::PropertyMap map;
 
 									/* If the mesh is a static one remove all animations from the impor data
 									 */
@@ -1282,7 +1282,7 @@ void IRRImporter::InternReadFile( const std::string& pFile,
 									}
 
 									/*  TODO: maybe implement the protection against recursive
-									*  loading calls directly in BatchLoader? The current
+									*  loading calls directly in Loader? The current
 									*  implementation is not absolutely safe. A LWS and an IRR
 									*  file referencing each other *could* cause the system to
 									*  recurse forever.

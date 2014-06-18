@@ -34,7 +34,7 @@ SpotLight::SpotLight(float diffuse,
 	AbstractDiscreteLight("spotLights", diffuse, specular),
 	_attenuationCoeffs(Vector3::create(attenuationConstant, attenuationLinear, attenuationQuadratic)),
 	_worldPosition(Vector3::create(0.0f, 0.0f, 0.0f)),
-	_worldDirection(Vector3::create(0.0f, 0.0f, 1.0f))
+	_worldDirection(Vector3::create()->copyFrom(Vector3::forward()))
 {
 
 	data()->set("attenuationCoeffs",	_attenuationCoeffs);

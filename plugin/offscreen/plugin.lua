@@ -21,11 +21,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 minko.plugin.offscreen = {}
 
 function minko.plugin.offscreen:enable()
-	defines { "MINKO_OFFSCREEN" }
+	defines { "MINKO_PLUGIN_OFFSCREEN" }
 
 	libdirs { "/opt/local/lib" }
-	
-	links { "minko-offscreen", "OSMesa" }
+
+	minko.plugin.links { "offscreen" }
+	links { "OSMesa" }
+
 	includedirs {
 		minko.plugin.path("offscreen") .. "/lib/osmesa/include",
 		minko.plugin.path("offscreen") .. "/include"

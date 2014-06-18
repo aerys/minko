@@ -24,6 +24,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/data/StructureProvider.hpp"
 #include "minko/math/Ray.hpp"
 #include "minko/component/Transform.hpp"
+#include "minko/scene/Node.hpp"
+#include "minko/component/SceneManager.hpp"
+#include "minko/file/AssetLibrary.hpp"
+#include "minko/render/AbstractContext.hpp"
 
 using namespace minko;
 using namespace minko::component;
@@ -52,14 +56,14 @@ PerspectiveCamera::initialize()
 {
 	_targetAddedSlot = targetAdded()->connect(std::bind(
 		&PerspectiveCamera::targetAddedHandler,
-		shared_from_this(),
+		std::static_pointer_cast<PerspectiveCamera>(shared_from_this()),
 		std::placeholders::_1,
 		std::placeholders::_2
 	));
 
 	_targetRemovedSlot = targetRemoved()->connect(std::bind(
 		&PerspectiveCamera::targetRemovedHandler,
-		shared_from_this(),
+		std::static_pointer_cast<PerspectiveCamera>(shared_from_this()),
 		std::placeholders::_1,
 		std::placeholders::_2
 	));
@@ -78,7 +82,7 @@ PerspectiveCamera::targetAddedHandler(AbstractComponent::Ptr ctrl, NodePtr targe
 
   	_modelToWorldChangedSlot = target->data()->propertyValueChanged("transform.modelToWorldMatrix")->connect(std::bind(
     	&PerspectiveCamera::localToWorldChangedHandler,
-		shared_from_this(),
+		std::static_pointer_cast<PerspectiveCamera>(shared_from_this()),
     	std::placeholders::_1,
     	std::placeholders::_2
   	));
@@ -145,5 +149,28 @@ PerspectiveCamera::unproject(float x, float y, std::shared_ptr<math::Ray> out)
 		out->direction()->normalize();
 	}
 
+	return out;
+}
+
+std::shared_ptr<math::Vector3>
+PerspectiveCamera::project(std::shared_ptr<math::Vector3> worldPosition, std::shared_ptr<math::Vector3> out)
+{
+	if (!out)
+		out = Vector3::create();
+		
+	auto vector = _viewProjection->project(worldPosition);
+
+	auto context = getTarget(0)->root()->component<SceneManager>()->assets()->context();
+
+	auto width = context->viewportWidth();
+	auto height = context->viewportHeight();
+
+	out->x(width * ((vector->x() + 1.0f) * .5f));
+	out->y(height * ((1.0f - ((vector->y() + 1.0f) * .5f))));
+	
+	//depth
+	_view->transform(worldPosition, vector);
+	out->z(-vector->z());
+	
 	return out;
 }

@@ -35,14 +35,14 @@ main(int argc, char** argv)
     auto sceneManager = component::SceneManager::create(canvas->context());
 
     // setup assets
-    sceneManager->assets()->defaultOptions()->generateMipmaps(true);
-    sceneManager->assets()->registerParser<file::PNGParser>("png");
-    sceneManager->assets()
+    sceneManager->assets()->loader()->options()->generateMipmaps(true);
+	sceneManager->assets()->loader()->options()->registerParser<file::PNGParser>("png");
+	sceneManager->assets()->loader()
         ->queue("effect/Sprite.effect")
         ->queue("effect/Phong.effect")
         ->queue("texture/sprite-pointlight.png");
 
-    auto complete = sceneManager->assets()->complete()->connect([&](file::AssetLibrary::Ptr assets)
+    auto complete = sceneManager->assets()->loader()->complete()->connect([&](file::Loader::Ptr loader)
     {
         auto root = scene::Node::create("root")->addComponent(sceneManager);
 
@@ -59,9 +59,9 @@ main(int argc, char** argv)
         // create a ground
         auto ground = scene::Node::create("ground")
             ->addComponent(Surface::create(
-            geometry::QuadGeometry::create(assets->context()),
+            geometry::QuadGeometry::create(canvas->context()),
             material::BasicMaterial::create()->diffuseColor(Vector4::create(0.5f, 0.5f, 0.5f, 1.f)),
-            assets->effect("effect/Phong.effect")
+			sceneManager->assets()->effect("effect/Phong.effect")
             ))
             ->addComponent(Transform::create(Matrix4x4::create()->appendScale(4.f)->appendRotationX(-(PI /2))));
         root->addChild(ground);
@@ -69,9 +69,9 @@ main(int argc, char** argv)
         // create a left wall
         auto leftWall = scene::Node::create("leftWall")
             ->addComponent(Surface::create(
-            geometry::QuadGeometry::create(assets->context()),
+            geometry::QuadGeometry::create(canvas->context()),
             material::BasicMaterial::create()->diffuseColor(Vector4::create(0.5f, 0.5f, 0.5f, 1.f)),
-            assets->effect("effect/Phong.effect")
+			sceneManager->assets()->effect("effect/Phong.effect")
             ))
             ->addComponent(Transform::create(Matrix4x4::create()
             ->appendScale(4.f)
@@ -82,9 +82,9 @@ main(int argc, char** argv)
         // create a right wall
         auto rightWall = scene::Node::create("rightWall")
             ->addComponent(Surface::create(
-            geometry::QuadGeometry::create(assets->context()),
+            geometry::QuadGeometry::create(canvas->context()),
             material::BasicMaterial::create()->diffuseColor(Vector4::create(0.5f, 0.5f, 0.5f, 1.f)),
-            assets->effect("effect/Phong.effect")
+			sceneManager->assets()->effect("effect/Phong.effect")
             ))
             ->addComponent(Transform::create(Matrix4x4::create()
             ->appendScale(4.f)
@@ -95,9 +95,9 @@ main(int argc, char** argv)
         // create a back wall
         auto backWall = scene::Node::create("backWall")
             ->addComponent(Surface::create(
-            geometry::QuadGeometry::create(assets->context()),
+            geometry::QuadGeometry::create(canvas->context()),
             material::BasicMaterial::create()->diffuseColor(Vector4::create(0.5f, 0.5f, 0.5f, 1.f)),
-            assets->effect("effect/Phong.effect")
+			sceneManager->assets()->effect("effect/Phong.effect")
             ))
             ->addComponent(Transform::create(Matrix4x4::create()
             ->appendScale(4.f)
@@ -111,11 +111,11 @@ main(int argc, char** argv)
 
         // add a sprite to have a light representation
         pointLightNode->addComponent(Surface::create(
-            geometry::QuadGeometry::create(assets->context()),
+            geometry::QuadGeometry::create(canvas->context()),
             material::Material::create()
-            ->set("diffuseMap", assets->texture("texture/sprite-pointlight.png"))
+			->set("diffuseMap", sceneManager->assets()->texture("texture/sprite-pointlight.png"))
             ->set("diffuseTint", Vector4::create(1.f, 1.f, 1.f, 1.f)),
-            assets->effect("effect/Sprite.effect")
+			sceneManager->assets()->effect("effect/Sprite.effect")
             ));
 
         // create the point light component
@@ -138,7 +138,7 @@ main(int argc, char** argv)
         canvas->run();
     });
 
-    sceneManager->assets()->load();
+    sceneManager->assets()->loader()->load();
 
     return 0;
 }

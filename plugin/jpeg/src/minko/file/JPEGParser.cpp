@@ -34,7 +34,7 @@ JPEGParser::parse(const std::string&				filename,
 				  const std::string&                resolvedFilename,
                   std::shared_ptr<Options>          options,
 				  const std::vector<unsigned char>&	data,
-				  std::shared_ptr<AssetLibrary>	AssetLibrary)
+				  std::shared_ptr<AssetLibrary>		assetLibrary)
 {
 	int width;
 	int height;
@@ -55,7 +55,8 @@ JPEGParser::parse(const std::string&				filename,
 	render::AbstractTexture::Ptr texture = nullptr;
 
 	if (!options->isCubeTexture())
-		texture	= render::Texture::create(
+	{
+		auto texture2d = render::Texture::create(
 			options->context(), 
 			width, 
 			height, 
@@ -64,8 +65,13 @@ JPEGParser::parse(const std::string&				filename,
 			options->resizeSmoothly(), 
 			filename
 		);
+
+		texture = texture2d;
+		assetLibrary->texture(filename, texture2d);
+	}
 	else
-		texture = render::CubeTexture::create(
+	{
+		auto cubeTexture = render::CubeTexture::create(
 			options->context(), 
 			width, 
 			height, 
@@ -74,11 +80,13 @@ JPEGParser::parse(const std::string&				filename,
 			options->resizeSmoothly(), 
 			filename
 		);
+
+		texture = cubeTexture;
+		assetLibrary->cubeTexture(filename, cubeTexture);		
+	}
 
 	texture->data(bmpData, format);
 	texture->upload();
-
-	AssetLibrary->texture(filename, texture);
 
 	free(bmpData);
 

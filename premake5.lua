@@ -69,8 +69,10 @@ solution "minko"
 
 	-- plugin
 	if not _OPTIONS['no-plugin'] then
+		include 'plugin/android'
 		include 'plugin/lua'
 		include 'plugin/angle'
+		include 'plugin/zlib'
 		include 'plugin/assimp'
 		include 'plugin/devil'
 		include 'plugin/bullet'
@@ -91,7 +93,6 @@ solution "minko"
 
 	-- example
 	if not _OPTIONS['no-example'] then
-		include 'example/lua-scripts'
 		include 'example/assimp'
 		include 'example/cube'
 		include 'example/devil'
@@ -99,13 +100,17 @@ solution "minko"
 		include 'example/fog'
 		include 'example/frustum'
 		include 'example/jobs'
+		include 'example/joystick'
 		include 'example/leap-motion'
 		include 'example/light'
 		include 'example/line-geometry'
+		include 'example/lua-binding'
+		include 'example/lua-scripts'
 		include 'example/offscreen'
 		include 'example/particles'
 		include 'example/picking'
 		include 'example/raycasting'
+		include 'example/reflection'
 		include 'example/serializer'
 		include 'example/sky-box'
 		include 'example/stencil'
@@ -114,8 +119,11 @@ solution "minko"
 		include 'example/physics'
 		include 'example/oculus'
 		include 'example/http'
-		include 'example/joystick'
 		include 'example/html-overlay'
+		include 'example/flares'
+		include 'example/keyboard'
+		include 'example/hologram'
+		include 'example/water'
 	end
 
 	-- test

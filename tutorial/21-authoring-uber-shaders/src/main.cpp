@@ -34,12 +34,12 @@ main(int argc, char** argv)
     auto canvas = Canvas::create("Minko Tutorial - Authoring uber-shaders", WINDOW_WIDTH, WINDOW_HEIGHT);
     auto sceneManager = component::SceneManager::create(canvas->context());
 
-    sceneManager->assets()
-        ->registerParser<file::PNGParser>("png")
+	sceneManager->assets()->loader()
         ->queue("effect/MyCustomUberEffect.effect")
-        ->queue("texture/box.png");
+		->queue("texture/box.png")
+		->options()->registerParser<file::PNGParser>("png");
 
-    auto complete = sceneManager->assets()->complete()->connect([&](file::AssetLibrary::Ptr assets)
+    auto complete = sceneManager->assets()->loader()->complete()->connect([&](file::Loader::Ptr loader)
     {
         auto root = scene::Node::create("root")
             ->addComponent(sceneManager);
@@ -54,17 +54,17 @@ main(int argc, char** argv)
         auto texturedCube = scene::Node::create("texturedCube")
             ->addComponent(Transform::create(Matrix4x4::create()->translation(-2.f, 0.f, -5.f)))
             ->addComponent(Surface::create(
-            geometry::CubeGeometry::create(assets->context()),
+            geometry::CubeGeometry::create(canvas->context()),
             material::Material::create()->set("diffuseMap", sceneManager->assets()->texture("texture/box.png")),
-            assets->effect("effect/MyCustomUberEffect.effect")));
+			sceneManager->assets()->effect("effect/MyCustomUberEffect.effect")));
         root->addChild(texturedCube);
 
         auto coloredCube = scene::Node::create("coloredCube")
             ->addComponent(Transform::create(Matrix4x4::create()->translation(2.f, 0.f, -5.f)))
             ->addComponent(Surface::create(
-            geometry::CubeGeometry::create(assets->context()),
+            geometry::CubeGeometry::create(canvas->context()),
             material::Material::create()->set("diffuseColor", Vector4::create(0.f, 0.f, 1.f, 1.f)),
-            assets->effect("effect/MyCustomUberEffect.effect")
+			sceneManager->assets()->effect("effect/MyCustomUberEffect.effect")
             ));
         root->addChild(coloredCube);
 
@@ -76,7 +76,7 @@ main(int argc, char** argv)
         canvas->run();
     });
 
-    sceneManager->assets()->load();
+    sceneManager->assets()->loader()->load();
 
     return 0;
 }

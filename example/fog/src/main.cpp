@@ -38,16 +38,18 @@ int main(int argc, char** argv)
     auto canvas = Canvas::create("Minko Example - Fog", WINDOW_WIDTH, WINDOW_HEIGHT);
 
 	auto sceneManager = SceneManager::create(canvas->context());
-	
+
 	// setup assets
-	sceneManager->assets()->defaultOptions()->resizeSmoothly(true);
-	sceneManager->assets()->defaultOptions()->generateMipmaps(true);
-	sceneManager->assets()
-		->registerParser<file::PNGParser>("png")
-		->queue(TEXTURE_FILENAME)
+	sceneManager->assets()->loader()->options()->resizeSmoothly(true);
+	sceneManager->assets()->loader()->options()->generateMipmaps(true);
+	sceneManager->assets()->loader()->options()
+                ->registerParser<file::PNGParser>("png");
+
+        sceneManager->assets()->loader()
+                ->queue(TEXTURE_FILENAME)
 		->queue(EFFECT_FILENAME);
 
-	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
+	auto _ = sceneManager->assets()->loader()->complete()->connect([=](file::Loader::Ptr loader)
 	{
         std::cout << "Press [L]\tto activate linear fog\nPress [E]\tto activate exponential fog\nPress [F]\tto activate square exponential fog\nPress [N]\tto deactivate fog\nPress [P]\tto to increase fog density\nPress [M]\tto to decrease fog density" << std::endl;
 
@@ -66,12 +68,12 @@ int main(int argc, char** argv)
 		root->addChild(camera);
 
         auto material = material::PhongMaterial::create()
-            ->diffuseMap(assets->texture(TEXTURE_FILENAME))
+            ->diffuseMap(sceneManager->assets()->texture(TEXTURE_FILENAME))
             ->fogType(render::FogType::None)
             ->fogColor(Vector4::create(0.6f, 0.6f, 0.6f, 1.0f))
-            ->fogStart(0.5f) // only for linear
-            ->fogEnd(2.0f)   // only for linear
-            ->fogDensity(0.15f);
+            ->fogStart(5.0f)
+            ->fogEnd(25.0f)
+            ->fogDensity(1.0f);
 
         auto groundMaterial = std::static_pointer_cast<material::PhongMaterial>(material::PhongMaterial::create()->copyFrom(material));
         groundMaterial->unset("diffuseMap");
@@ -80,14 +82,14 @@ int main(int argc, char** argv)
         mesh->addComponent(Surface::create(
             geometry::CubeGeometry::create(sceneManager->assets()->context()),
             material,
-            assets->effect(EFFECT_FILENAME)));
+            sceneManager->assets()->effect(EFFECT_FILENAME)));
 
         auto groundNode = scene::Node::create("ground")
             ->addComponent(Transform::create(Matrix4x4::create()->appendScale(16.0f)->appendRotationX((float) -PI / 2.0f)))
             ->addComponent(Surface::create(
             geometry::QuadGeometry::create(sceneManager->assets()->context()),
             groundMaterial,
-            assets->effect(EFFECT_FILENAME)));
+            sceneManager->assets()->effect(EFFECT_FILENAME)));
         root->addChild(groundNode);
 
         auto ambientLight = scene::Node::create("ambientLight")
@@ -121,23 +123,23 @@ int main(int argc, char** argv)
 
         auto keyDown = canvas->keyboard()->keyDown()->connect([&](input::Keyboard::Ptr k)
         {
-            if (k->keyIsDown(input::Keyboard::ScanCode::LEFT))
+            if (k->keyIsDown(input::Keyboard::LEFT))
                 cameraMove = Vector3::create(-1.0f, 0.0f, 0.0f);
-            else if (k->keyIsDown(input::Keyboard::ScanCode::UP))
+            else if (k->keyIsDown(input::Keyboard::UP))
                 cameraMove = Vector3::create(0.0f, 0.0f, -1.0f);
-            else if (k->keyIsDown(input::Keyboard::ScanCode::RIGHT))
+            else if (k->keyIsDown(input::Keyboard::RIGHT))
                 cameraMove = Vector3::create(1.0f, 0.0f, 0.0f);
-            else if (k->keyIsDown(input::Keyboard::ScanCode::DOWN))
+            else if (k->keyIsDown(input::Keyboard::DOWN))
                 cameraMove = Vector3::create(0.0f, 0.0f, 1.0f);
 
-            else if (k->keyIsDown(input::Keyboard::ScanCode::P))
+            else if (k->keyIsDown(input::Keyboard::P))
             {
                 material->fogDensity(material->fogDensity() * 2.0f);
                 groundMaterial->fogDensity(material->fogDensity() * 2.0f);
 
                 std::cout << "fog density: " << material->fogDensity() << std::endl;
             }
-            else if (k->keyIsDown(input::Keyboard::ScanCode::M))
+            else if (k->keyIsDown(input::Keyboard::M))
             {
                 material->fogDensity(material->fogDensity() / 2.0f);
                 groundMaterial->fogDensity(material->fogDensity() / 2.0f);
@@ -145,28 +147,28 @@ int main(int argc, char** argv)
                 std::cout << "fog density: " << material->fogDensity() << std::endl;
             }
 
-            else if (k->keyIsDown(input::Keyboard::ScanCode::N))
+            else if (k->keyIsDown(input::Keyboard::N))
             {
                 material->fogType(render::FogType::None);
                 groundMaterial->fogType(render::FogType::None);
 
                 std::cout << "fog is inactive" << std::endl;
             }
-            else if (k->keyIsDown(input::Keyboard::ScanCode::L))
+            else if (k->keyIsDown(input::Keyboard::L))
             {
                 material->fogType(render::FogType::Linear);
                 groundMaterial->fogType(render::FogType::Linear);
 
                 std::cout << "fog type is linear" << std::endl;
             }
-            else if (k->keyIsDown(input::Keyboard::ScanCode::E))
+            else if (k->keyIsDown(input::Keyboard::E))
             {
                 material->fogType(render::FogType::Exponential);
                 groundMaterial->fogType(render::FogType::Exponential);
 
                 std::cout << "fog type is exponential" << std::endl;
             }
-            else if (k->keyIsDown(input::Keyboard::ScanCode::F))
+            else if (k->keyIsDown(input::Keyboard::F))
             {
                 material->fogType(render::FogType::Exponential2);
                 groundMaterial->fogType(render::FogType::Exponential2);
@@ -194,7 +196,7 @@ int main(int argc, char** argv)
 		canvas->run();
 	});
 
-	sceneManager->assets()->load();
+	sceneManager->assets()->loader()->load();
 
 	return 0;
 }

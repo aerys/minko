@@ -35,7 +35,9 @@ Signal<input::Keyboard::Ptr>::Slot keyDown;
 scene::Node::Ptr
 createPointLight(Vector3::Ptr color, Vector3::Ptr position, file::AssetLibrary::Ptr assets)
 {
-	auto pointLight = scene::Node::create("pointLight")
+	static int lightId = 0;
+
+	auto pointLight = scene::Node::create("pointLight_" + std::to_string(lightId++))
 		->addComponent(PointLight::create(10.f))
 		->addComponent(Transform::create(Matrix4x4::create()->appendTranslation(position)))
 		->addComponent(Surface::create(
@@ -45,8 +47,10 @@ createPointLight(Vector3::Ptr color, Vector3::Ptr position, file::AssetLibrary::
 				->set("diffuseTint",	Vector4::create(color->x(), color->y(), color->z(), 1.f)),
 			assets->effect("effect/Sprite.effect")
 		));
+
 	pointLight->component<PointLight>()->color(color);
 	pointLight->component<PointLight>()->diffuse(.1f);
+	pointLight->component<PointLight>()->layoutMask(lightId % 2 == 0 ? 1<<2 : 1);
 
 	return pointLight;
 }
@@ -59,37 +63,40 @@ int main(int argc, char** argv)
 
 	auto sceneManager		= SceneManager::create(canvas->context());
 	auto root				= scene::Node::create("root")->addComponent(sceneManager);
-	auto sphereGeometry		= geometry::SphereGeometry::create(sceneManager->assets()->context(), 32, 32, true);
+	auto assets				= sceneManager->assets();
+	auto sphereGeometry		= geometry::SphereGeometry::create(assets->context(), 32, 32, true);
 	auto sphereMaterial		= material::PhongMaterial::create()
 		->shininess(16.f)
 		->specularColor(Vector4::create(1.0f, 1.0f, 1.0f, 1.0f))
 		->diffuseColor(Vector4::create(1.f, 1.f, 1.f, 1.f));
 	auto lights				= scene::Node::create("lights");
 
-	std::cout 
-		<< "Press [SPACE]\tto toogle normal mapping\nPress [A]\tto add random light\nPress [R]\tto remove random light" 
-		<< "\nPress [B]\tto set the sphere's effect to 'basic'\nPress [P]\tto set the sphere's effect to 'phong'"
-		<< std::endl;
+	std::cout << "Press [SPACE]\tto toogle normal mapping\nPress [A]\tto add random light\nPress [R]\tto remove random light" << std::endl;
 
 	sphereGeometry->computeTangentSpace(false);
 
 	// setup assets
-	sceneManager->assets()->defaultOptions()->generateMipmaps(true);
-	sceneManager->assets()
-		->registerParser<file::PNGParser>("png")
+	assets
 		->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()))
 		->geometry("quad", geometry::QuadGeometry::create(sceneManager->assets()->context()))
-		->geometry("sphere", sphereGeometry)
+		->geometry("sphere", sphereGeometry);
+
+	assets->loader()->options()
+		->generateMipmaps(true)
+		->registerParser<file::PNGParser>("png");
+
+	assets->loader()
 		->queue("texture/normalmap-cells.png")
 		->queue("texture/sprite-pointlight.png")
 		->queue("effect/Basic.effect")
 		->queue("effect/Sprite.effect")
 		->queue("effect/Phong.effect");
 
-	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
+	auto _ = assets->loader()->complete()->connect([=](file::Loader::Ptr loader)
 	{
 		// ground
 		auto ground = scene::Node::create("ground")
+			->layouts(1 << 2 | 1)
 			->addComponent(Surface::create(
 				assets->geometry("quad"),
 				material::Material::create()
@@ -120,9 +127,9 @@ int main(int argc, char** argv)
 		root->addChild(lights);
 
 		// handle keyboard signals
-		keyDown = canvas->keyboard()->keyDown()->connect([=](input::Keyboard::Ptr k)
+		keyDown = canvas->keyboard()->keyDown()->connect([&](input::Keyboard::Ptr k)
 		{
-			if (k->keyIsDown(input::Keyboard::ScanCode::A))
+			if (k->keyIsDown(input::Keyboard::A))
 			{
 				const auto MAX_NUM_LIGHTS = 40;
 
@@ -145,15 +152,31 @@ int main(int argc, char** argv)
 
 				std::cout << lights->children().size() << " lights" << std::endl;
 			}
-			if (k->keyIsDown(input::Keyboard::ScanCode::R))
+			if (k->keyIsDown(input::Keyboard::R))
 			{
 				if (lights->children().size() == 0)
 					return;
-				
+
 				lights->removeChild(lights->children().back());
 				std::cout << lights->children().size() << " lights" << std::endl;
 			}
-			if (k->keyIsDown(input::Keyboard::ScanCode::SPACE))
+
+			if (k->keyIsDown(input::Keyboard::S))
+			{
+				auto sphereLayout = sphere->layouts();
+				sphere->layouts(sphereLayout == 1 ? 1 << 2 | 1 : 1);
+			}
+
+			if (k->keyIsDown(input::Keyboard::D))
+			{
+				auto light = lights->children()[0];
+
+				auto mask = light->component<PointLight>()->layoutMask();
+
+				light->component<PointLight>()->layoutMask(mask == 1 ? 1 << 2 : 1);
+			}
+
+			if (k->keyIsDown(input::Keyboard::SPACE))
 			{
 				auto data = sphere->component<Surface>()->material();
 				bool hasNormalMap = data->hasProperty("normalMap");
@@ -167,10 +190,10 @@ int main(int argc, char** argv)
 				else
 					data->set("normalMap", assets->texture("texture/normalmap-cells.png"));
 			}
-			if (k->keyIsDown(input::Keyboard::ScanCode::B))
-				sphere->component<Surface>()->effect(sceneManager->assets()->effect("basic"));
-			if (k->keyIsDown(input::Keyboard::ScanCode::P))
-				sphere->component<Surface>()->effect(sceneManager->assets()->effect("phong"));
+			if (k->keyIsDown(input::Keyboard::UP))
+				camera->component<Transform>()->matrix()->prependTranslation(0.f, 0.f, -1.f);
+			if (k->keyIsDown(input::Keyboard::DOWN))
+				camera->component<Transform>()->matrix()->prependTranslation(0.f, 0.f, 1.f);
 		});
 	});
 
@@ -245,9 +268,7 @@ int main(int argc, char** argv)
 		sceneManager->nextFrame(time, deltaTime);
 	});
 
-	sceneManager->assets()->load();
+	assets->loader()->load();
 
 	canvas->run();
-
-	exit(EXIT_SUCCESS);
 }

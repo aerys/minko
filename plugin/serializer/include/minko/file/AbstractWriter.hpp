@@ -36,11 +36,12 @@ namespace minko
 			typedef std::shared_ptr<AbstractWriter> Ptr;
 
 		private:
-			typedef std::vector<msgpack::type::tuple<short, short, std::string>> SerializedDependency;
+			typedef std::vector<msgpack::type::tuple<unsigned int, short, std::string>> SerializedDependency;
 
 		protected :
 			std::shared_ptr<Signal<Ptr>>	_complete;
 			T								_data;
+			std::shared_ptr<Dependency>		_parentDependencies;
 
 		public:
 			inline
@@ -64,18 +65,41 @@ namespace minko
 				_data = data;
 			}
 
+			inline
 			void
-			write(std::string&					filename,
-				  std::shared_ptr<AssetLibrary>	assetLibrary,
-				  std::shared_ptr<Options>		options)
+			parentDependencies(std::shared_ptr<Dependency> parentDependencies)
+			{
+				_parentDependencies = parentDependencies;
+			}
+
+			void
+			write(std::string&                          filename,
+				  std::shared_ptr<AssetLibrary>         assetLibrary,
+				  std::shared_ptr<Options>              options,
+				  std::shared_ptr<WriterOptions>        writerOptions)
+			{
+				SerializedDependency includeDependency;
+
+				write(filename, assetLibrary, options, writerOptions, includeDependency);
+			}
+
+			void
+			write(std::string&                          filename,
+				  std::shared_ptr<AssetLibrary>         assetLibrary,
+				  std::shared_ptr<Options>              options,
+                  std::shared_ptr<WriterOptions>        writerOptions,
+				  SerializedDependency&					includeDependency)
 			{
 				std::ofstream file(filename, std::ios::out | std::ios::binary | std::ios::trunc);
 
 				if (file)
 				{
 					Dependency::Ptr			dependencies			= Dependency::create();
-					std::string				serializedData			= embed(assetLibrary, options, dependencies);
-					SerializedDependency	serializedDependencies	= dependencies->serialize(assetLibrary, options);
+					std::string				serializedData			= embed(assetLibrary, options, dependencies, writerOptions);
+					SerializedDependency	serializedDependencies	= dependencies->serialize(assetLibrary, options, writerOptions);
+					
+					if (includeDependency.size() > 0)
+						serializedDependencies.insert(serializedDependencies.begin(), includeDependency.begin(), includeDependency.end());
 
 					msgpack::type::tuple<SerializedDependency, std::string> res(serializedDependencies, serializedData);
 
@@ -91,15 +115,54 @@ namespace minko
 				complete()->execute(this->shared_from_this());
 			}
 
+			std::string
+			embedAll(std::shared_ptr<AssetLibrary>  assetLibrary,
+					 std::shared_ptr<Options>       options,
+					 std::shared_ptr<WriterOptions> writerOptions)
+			{
+				SerializedDependency includeDependency;
+
+				return embedAll(assetLibrary, options, writerOptions, includeDependency);
+			}
+
+            std::string
+            embedAll(std::shared_ptr<AssetLibrary>  assetLibrary,
+                     std::shared_ptr<Options>       options,
+                     std::shared_ptr<WriterOptions> writerOptions,
+					 SerializedDependency&			includeDependency)
+            {
+                // TODO
+                // refactor with AbstractWriter::write by adding a tier private member function
+
+				Dependency::Ptr			dependencies	= _parentDependencies;
+				std::string				serializedData	= embed(assetLibrary, options, dependencies, writerOptions);
+				SerializedDependency	serializedDependencies = Dependency::create()->serialize(assetLibrary,
+                                                                                                 options,
+                                                                                                 writerOptions);
+				if (includeDependency.size() > 0)
+					serializedDependencies.insert(serializedDependencies.begin(), includeDependency.begin(), includeDependency.end());
+
+                msgpack::type::tuple<SerializedDependency, std::string> res(serializedDependencies, serializedData);
+
+                std::stringstream sbuf;
+                msgpack::pack(sbuf, res);
+
+                complete()->execute(this->shared_from_this());
+
+                return sbuf.str();
+            }
+
 			virtual
 			std::string
 			embed(std::shared_ptr<AssetLibrary>		assetLibrary,
 				  std::shared_ptr<Options>			options,
-				  Dependency::Ptr					dependencies) = 0;
+				  Dependency::Ptr					dependencies,
+                  std::shared_ptr<WriterOptions>    writerOptions) = 0;
 
 		protected:
 			AbstractWriter() :
-				_complete(Signal<Ptr>::create())
+				_complete(Signal<Ptr>::create()),
+				_parentDependencies(nullptr)
 			{
 			}
 		};

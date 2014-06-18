@@ -30,6 +30,7 @@ using namespace minko::component;
 LuaScript::LuaScript(const std::string& name, const std::string& script) :
     _scriptName(name),
     _script(script),
+	_state(nullptr),
     _hasStartMethod(false),
     _hasUpdateMethod(false),
     _hasStopMethod(false)
@@ -48,55 +49,62 @@ LuaScript::ready(scene::Node::Ptr target)
 void
 LuaScript::start(scene::Node::Ptr node)
 {
-    if (!_script.empty())
-    {
-        _state = &(node->root()->component<LuaScriptManager>()->_state);
+	auto stub = _targetToStub.count(node) == 0
+		? _targetToStub[node] = new LuaStub()
+		: _targetToStub[node];
 
-        auto name = _scriptName.c_str();
+	if (!_script.empty())
+	{
+		_state = &(node->root()->component<LuaScriptManager>()->_state);
 
-        _state->Class<LuaStub>(name)
-            .property("running", &LuaStub::running);
-        _class = _state->lookupClass(name);
-        _class->glue(_state);
+		auto name = _scriptName.c_str();
 
-        if(!_state->doString(_script))
-            printf("err: %s\n", _state->lastError().c_str());
-        _script.clear();
+		_state->Class<LuaStub>(name)
+			.property("running", &LuaStub::running);
+		_class = _state->lookupClass(name);
+		_class->glue(_state);
 
-        auto c = dynamic_cast<LuaGlueClass<LuaScript::LuaStub>*>(_class);
-        _hasStartMethod = c->hasMethod("start");
-        _hasUpdateMethod = c->hasMethod("update");
-        _hasStopMethod = c->hasMethod("stop");
-    }
+		if (!_state->doString(_script))
+			printf("err: %s\n", _state->lastError().c_str());
+		_script.clear();
 
-    auto stub = _targetToStub.count(node) == 0
-        ? _targetToStub[node] = new LuaStub()
-        : _targetToStub[node];
+		auto c = dynamic_cast<LuaGlueClass<LuaScript::LuaStub>*>(_class);
+		_hasStartMethod = c->hasMethod("start");
+		_hasUpdateMethod = c->hasMethod("update");
+		_hasStopMethod = c->hasMethod("stop");
 
-    if (_hasStartMethod)
-        dynamic_cast<LuaGlueClass<LuaScript::LuaStub>*>(_class)->invokeVoidMethod("start", stub, node);
+	}
+
+	if (!_hasStartMethod)
+		return;
+
+	dynamic_cast<LuaGlueClass<LuaScript::LuaStub>*>(_class)->invokeVoidMethod("start", stub, node);
 }
 
 void
 LuaScript::update(scene::Node::Ptr node)
 {
-    auto stub = _targetToStub[node];
+	if (!_hasUpdateMethod)
+		return;
 
-    if (_hasUpdateMethod)
-        dynamic_cast<LuaGlueClass<LuaScript::LuaStub>*>(_class)->invokeVoidMethod("update", stub, node);
+	auto stub = _targetToStub[node];
+
+	dynamic_cast<LuaGlueClass<LuaScript::LuaStub>*>(_class)->invokeVoidMethod("update", stub, node);
 }
 
 void
 LuaScript::stop(scene::Node::Ptr node)
 {
-    auto stub = _targetToStub[node];
-
+	auto stub = _targetToStub.count(node) == 0
+		? _targetToStub[node] = new LuaStub()
+		: _targetToStub[node];
+		
     stub->_running = false;
 
-    if (_hasStopMethod)
-        dynamic_cast<LuaGlueClass<LuaScript::LuaStub>*>(_class)->invokeVoidMethod("stop", stub, node);
+	if (_hasStopMethod)
+		dynamic_cast<LuaGlueClass<LuaScript::LuaStub>*>(_class)->invokeVoidMethod("stop", stub, node);
 
-	_targetToStub.erase(_targetToStub.find(node));
+	_targetToStub.erase(node);
 
 	delete stub;
 }

@@ -43,7 +43,10 @@ TEST_F(GeometrySerializerTest, CubeGeometrySerialization)
 
 	assetLibrary->geometry("cube", cubeGeometry);
 	geometryWriter->data(cubeGeometry);
-	geometryWriter->write(filename, assetLibrary, file::Options::create(MinkoTests::context()));
+	geometryWriter->write(filename,
+                          assetLibrary,
+                          file::Options::create(MinkoTests::context()),
+                          file::WriterOptions::create());
 
 	std::vector<unsigned char>  data;
 	auto						flags = std::ios::in | std::ios::ate | std::ios::binary;
@@ -72,7 +75,10 @@ TEST_F(GeometrySerializerTest, SphereGeometrySerialization)
 
 	assetLibrary->geometry("Sphere", sphereGeometry);
 	geometryWriter->data(sphereGeometry);
-	geometryWriter->write(filename, assetLibrary, file::Options::create(MinkoTests::context()));
+	geometryWriter->write(filename,
+                          assetLibrary,
+                          file::Options::create(MinkoTests::context()),
+                          file::WriterOptions::create());
 
 	std::vector<unsigned char>  data;
 	auto						flags = std::ios::in | std::ios::ate | std::ios::binary;
