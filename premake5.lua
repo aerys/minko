@@ -104,7 +104,6 @@ solution "minko"
 		include 'example/leap-motion'
 		include 'example/light'
 		include 'example/line-geometry'
-		include 'example/lua-binding'
 		include 'example/lua-scripts'
 		include 'example/offscreen'
 		include 'example/particles'
