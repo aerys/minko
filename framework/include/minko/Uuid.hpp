@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -43,9 +43,10 @@ namespace minko
 		{
 			if (!_randSeeded)
 			{
-				std::srand(unsigned int(std::time(0)));
+				std::srand(std::time(0));
 				_randSeeded = true;
 			}
+
 			int rand = std::rand();
 
 			std::ostringstream os;
