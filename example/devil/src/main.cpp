@@ -62,7 +62,7 @@ int main(int argc, char** argv)
 	}
 
 	sceneManager->assets()->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()));
-    
+
 	auto root = scene::Node::create("root")
 		->addComponent(sceneManager);
 
@@ -77,8 +77,6 @@ int main(int argc, char** argv)
 		))
 		->addComponent(PerspectiveCamera::create(800.f / 600.f, (float)PI * 0.25f, .1f, 1000.f));
 	root->addChild(camera);
-
-	int frames = 0;
 
 	auto _ = sceneManager->assets()->loader()->complete()->connect([=](file::Loader::Ptr loader)
 	{
@@ -102,18 +100,20 @@ int main(int argc, char** argv)
 		camera->component<PerspectiveCamera>()->aspectRatio((float)w / (float)h);
 	});
 
+	float lastChangeTime = 0;
+	int currentTextureId = 0;
+
 	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float deltaTime)
 	{
 		mesh->component<Transform>()->matrix()->appendRotationY(.01f);
 
 		sceneManager->nextFrame(time, deltaTime);
 
-		if (textures.size() > 0)
+		if (lastChangeTime + 1000 < time)
 		{
-			frames++;
+			lastChangeTime = time;
 
-			int i = frames % textures.size();
-			mesh->component<Surface>()->material()->set("diffuseMap", textures[i]);
+			mesh->component<Surface>()->material()->set("diffuseMap", textures[++currentTextureId % textures.size()]);
 		}
 	});
 
