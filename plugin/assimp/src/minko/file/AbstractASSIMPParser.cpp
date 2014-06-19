@@ -1375,7 +1375,7 @@ AbstractASSIMPParser::createMaterial(const aiMaterial* aiMat)
 		aiString path;
 		if (aiMat->GetTexture(textureType, 0, &path) == AI_SUCCESS)
 		{
-			render::Texture::Ptr texture = _assetLibrary->texture(std::string(path.data));
+			render::AbstractTexture::Ptr texture = _assetLibrary->texture(std::string(path.data));
 
 			if (texture)
 				material->set(textureName, texture);

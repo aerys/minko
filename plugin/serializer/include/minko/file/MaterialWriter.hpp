@@ -41,7 +41,7 @@ namespace minko
 
 		public:
 			typedef std::shared_ptr<MaterialWriter>						Ptr;
-			typedef std::shared_ptr<render::Texture>			        TexturePtr;
+			typedef std::shared_ptr<render::AbstractTexture>			        TexturePtr;
 			typedef msgpack::type::tuple<uint, std::string>				TupleIntString;
 			typedef msgpack::type::tuple<std::string, TupleIntString>	ComplexPropertyTuple;
 			typedef msgpack::type::tuple<std::string, std::string>		BasicPropertyTuple;
