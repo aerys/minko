@@ -18,7 +18,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "minko/Common.hpp"
-#include "ioswebview/dom/IOSWebViewDOMEvent.hpp"
+#include "ioswebview/dom/IOSWebViewDOMTouchEvent.hpp"
 #include "ioswebview/dom/IOSWebViewDOMElement.hpp"
 #include "ioswebview/dom/IOSWebViewDOMEngine.hpp"
 
@@ -28,7 +28,7 @@ using namespace ioswebview;
 using namespace ioswebview::dom;
 
 void
-IOSWebViewDOMEvent::preventDefault()
+IOSWebViewDOMTouchEvent::preventDefault()
 {
 	std::cerr << "Warning : AbstractDOMEvent::preventDefault will have no effect" << std::endl;
 	std::string js = _jsAccessor + ".preventDefault()";
@@ -37,7 +37,7 @@ IOSWebViewDOMEvent::preventDefault()
 }
 
 void
-IOSWebViewDOMEvent::stopPropagation()
+IOSWebViewDOMTouchEvent::stopPropagation()
 {
 	std::cerr << "Warning : AbstractDOMEvent::stopPropagation will have no effect" << std::endl;
 	std::string js = _jsAccessor + ".stopPropagation()";
@@ -45,14 +45,20 @@ IOSWebViewDOMEvent::stopPropagation()
     _engine->eval(js);
 }
 
-std::string
-IOSWebViewDOMEvent::accessor()
+int
+IOSWebViewDOMTouchEvent::fingerId()
+{
+    return _fingerId;
+}
+
+std::string&
+IOSWebViewDOMTouchEvent::jsAccessor()
 {
     return _jsAccessor;
 }
 
 std::string
-IOSWebViewDOMEvent::type()
+IOSWebViewDOMTouchEvent::type()
 {
 	std::string js = "(" + _jsAccessor + ".type)";
     std::string result = _engine->eval(js);
@@ -61,58 +67,31 @@ IOSWebViewDOMEvent::type()
 }
 
 minko::dom::AbstractDOMElement::Ptr
-IOSWebViewDOMEvent::target()
+IOSWebViewDOMTouchEvent::target()
 {
 	return IOSWebViewDOMElement::getDOMElement(_jsAccessor + ".target", _engine);
 }
 
 int
-IOSWebViewDOMEvent::identifier(int id)
+IOSWebViewDOMTouchEvent::clientX()
 {
-    std::string js = "(" + _jsAccessor + ".changedTouches[" + std::to_string(id) + "].identifier % 2147483647)";
-    int result = atoi(_engine->eval(js).c_str());
-    
-    return result;
-}
-
-int
-IOSWebViewDOMEvent::clientX(int id)
-{
-    std::string js = "(" + _jsAccessor + ".changedTouches[" + std::to_string(id) + "].clientX)";
-    int result = atoi(_engine->eval(js).c_str());
-    
-    return result;
-}
-
-int
-IOSWebViewDOMEvent::clientY(int id)
-{
-    std::string js = "(" + _jsAccessor + ".changedTouches[" + std::to_string(id) + "].clientY)";
-    int result = atoi(_engine->eval(js).c_str());
-    
-    return result;
-}
-
-int
-IOSWebViewDOMEvent::clientX()
-{
-	std::string js = "(" + _jsAccessor + ".changedTouches[0]." + "clientX)";
+	std::string js = "(" + _jsAccessor + ".changedTouches[" + std::to_string(_index) + "]." + "clientX)";
 	int result = atoi(_engine->eval(js).c_str());
     
 	return result;
 }
 
 int
-IOSWebViewDOMEvent::clientY()
+IOSWebViewDOMTouchEvent::clientY()
 {
-	std::string js = "(" + _jsAccessor + ".changedTouches[0]" + ".clientY)";
+	std::string js = "(" + _jsAccessor + ".changedTouches[" + std::to_string(_index) + "]" + ".clientY)";
 	int result = atoi(_engine->eval(js).c_str());
     
 	return result;
 }
 
 int
-IOSWebViewDOMEvent::pageX()
+IOSWebViewDOMTouchEvent::pageX()
 {
 	std::string js = "(" + _jsAccessor + ".pageX)";
 	int result = atoi(_engine->eval(js).c_str());
@@ -121,7 +100,7 @@ IOSWebViewDOMEvent::pageX()
 }
 
 int
-IOSWebViewDOMEvent::pageY()
+IOSWebViewDOMTouchEvent::pageY()
 {
 	std::string js = "(" + _jsAccessor + ".pageY)";
 	int result = atoi(_engine->eval(js).c_str());
@@ -130,7 +109,7 @@ IOSWebViewDOMEvent::pageY()
 }
 
 int
-IOSWebViewDOMEvent::layerX()
+IOSWebViewDOMTouchEvent::layerX()
 {
 	std::string js = "(" + _jsAccessor + ".layerX)";
 	int result = atoi(_engine->eval(js).c_str());
@@ -139,7 +118,7 @@ IOSWebViewDOMEvent::layerX()
 }
 
 int
-IOSWebViewDOMEvent::layerY()
+IOSWebViewDOMTouchEvent::layerY()
 {
 	std::string js = "(" + _jsAccessor + ".layerY)";
 	int result = atoi(_engine->eval(js).c_str());
@@ -148,7 +127,7 @@ IOSWebViewDOMEvent::layerY()
 }
 
 int
-IOSWebViewDOMEvent::screenX()
+IOSWebViewDOMTouchEvent::screenX()
 {
 	std::string js = "(" + _jsAccessor + ".screenX)";
 	int result = atoi(_engine->eval(js).c_str());
@@ -157,7 +136,7 @@ IOSWebViewDOMEvent::screenX()
 }
 
 int
-IOSWebViewDOMEvent::screenY()
+IOSWebViewDOMTouchEvent::screenY()
 {
 	std::string js = "(" + _jsAccessor + ".screenY)";
 	int result = atoi(_engine->eval(js).c_str());

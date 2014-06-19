@@ -19,37 +19,36 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #pragma once
 
-#include "minko/dom/AbstractDOMEvent.hpp"
+#include "minko/lua/LuaAbstractDOMMouseEvent"
+#include "minko/dom/AbstractDOMTouchEvent"
 #include "minko/MinkoLua.hpp"
 
 namespace minko
 {
-	class LuaWrapper;
-
-	namespace component
-	{
-		namespace overlay
-		{
-			class LuaAbstractDOMEvent :
-				public LuaWrapper
-			{
-
-			private:
-
-			public:
-
-				static
-					void
-					bind(LuaGlue& state)
-				{
-						state.Class<dom::AbstractDOMEvent>("AbstractDOMEvent")
-							.property("type", &dom::AbstractDOMEvent::type)
-							.property("target", &dom::AbstractDOMEvent::target)
-							.method("preventDefault", &dom::AbstractDOMEvent::preventDefault)
-							.method("stopPropagation", &dom::AbstractDOMEvent::stopPropagation);
-					}
-
-			};
-		}
-	}
+    class LuaWrapper;
+    
+    namespace component
+    {
+        namespace overlay
+        {
+            class LuaAbstractDOMTouchEvent :
+            public LuaAbstractDOMMouseEvent
+            {
+                
+            private:
+                
+            public:
+                
+                static
+                void
+                bind(LuaGlue& state)
+                {
+                    state.Class<dom::LuaAbstractDOMTouchEvent>("LuaAbstractDOMTouchEvent")
+                        .property("fingerId", &dom::AbstractDOMTouchEvent::fingerId)
+                        .property("jsAccessor", &dom::AbstractDOMMouseEvent::jsAccessor)
+                }
+                
+            };
+        }
+    }
 }

@@ -112,7 +112,41 @@ namespace ioswebview
             static
             std::function<void(std::string&, std::string&)>
             handleJavascriptMessageWrapper;
+            
+            inline
+            void
+            firstFingerId(int id)
+            {
+                _firstFingerId = id;
+            }
+            
+            inline
+            int
+            firstFingerId()
+            {
+                return _firstFingerId;
+            }
+            
+            void
+            addTouch(std::shared_ptr<minko::SDLTouch> touch);
     
+            void
+            removeTouch(int touch);
+            
+            inline
+            int
+            touchNumber()
+            {
+                return _touches.size();
+            }
+            
+            inline
+            std::map<int, std::shared_ptr<minko::SDLTouch>>
+            touches()
+            {
+                return _touches;
+            }
+            
 		private:
 
 			void

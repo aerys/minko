@@ -20,91 +20,51 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
-#include "minko/dom/AbstractDOMElement.hpp"
-#include "minko/dom/AbstractDOMEvent.hpp"
+#include "AbstractDOMEvent.hpp"
 
-namespace ioswebview
+namespace minko
 {
 	namespace dom
 	{
-        class IOSWebViewDOMEngine;
-        
-		class IOSWebViewDOMEvent : public minko::dom::AbstractDOMEvent
+		class AbstractDOMMouseEvent : public AbstractDOMEvent
 		{
 		public:
-			typedef std::shared_ptr<IOSWebViewDOMEvent> Ptr;
+			typedef std::shared_ptr<AbstractDOMMouseEvent> Ptr;
 
-		private:
-			IOSWebViewDOMEvent(std::string jsAccessor):
-				_jsAccessor(jsAccessor)
-			{
-			}
-
-		public:
-
-			static
-			Ptr
-			create(std::string jsAccessor, std::shared_ptr<IOSWebViewDOMEngine> engine)
-			{
-				Ptr event(new IOSWebViewDOMEvent(jsAccessor));
-                event->_engine = engine;
-                
-				return event;
-			}
-
-			void
-			preventDefault();
-
-			void
-			stopPropagation();
-
-            std::string
-            accessor();
-            
-			std::string
-			type();
-
-			minko::dom::AbstractDOMElement::Ptr
-			target();
-            
-            int
-            identifier(int id);
-
-            int
-            clientX(int id);
-            
-            int
-            clientY(int id);
-            
+			virtual
 			int
-			clientX();
+			clientX() = 0;
 
+			virtual
 			int
-			clientY();
+			clientY() = 0;
 
+
+			virtual
 			int
-			pageX();
+			pageX() = 0;
 
+			virtual
 			int
-			pageY();
+			pageY() = 0;
 
 
+			virtual
 			int
-			layerX();
+			layerX() = 0;
 
+			virtual
 			int
-			layerY();
+			layerY() = 0;
 
 
+			virtual
 			int
-			screenX();
+			screenX() = 0;
 
+			virtual
 			int
-			screenY();
-
-		private:
-			std::string _jsAccessor;
-            std::shared_ptr<IOSWebViewDOMEngine> _engine;
+			screenY() = 0;
 		};
 	}
 }

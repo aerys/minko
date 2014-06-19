@@ -23,7 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/AssetLibrary.hpp"
 #include "ioswebview/dom/IOSWebViewDOMEngine.hpp"
 #include "ioswebview/dom/IOSWebViewDOMElement.hpp"
-#include "ioswebview/dom/IOSWebViewDOMEvent.hpp"
+#include "ioswebview/dom/IOSWebViewDOMTouchEvent.hpp"
 
 #include "minko/MinkoSDL.hpp"
 
@@ -43,13 +43,13 @@ std::function<void(std::string&, std::string&)>
 IOSWebViewDOMEngine::handleJavascriptMessageWrapper;
 
 // Slots
-Signal<minko::dom::AbstractDOMEvent::Ptr>::Slot onmousemoveSlot;
-Signal<minko::dom::AbstractDOMEvent::Ptr>::Slot onmousedownSlot;
-Signal<minko::dom::AbstractDOMEvent::Ptr>::Slot onmouseupSlot;
+Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Slot onmousemoveSlot;
+Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Slot onmousedownSlot;
+Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Slot onmouseupSlot;
 
-Signal<minko::dom::AbstractDOMEvent::Ptr>::Slot ontouchdownSlot;
-Signal<minko::dom::AbstractDOMEvent::Ptr>::Slot ontouchupSlot;
-Signal<minko::dom::AbstractDOMEvent::Ptr>::Slot ontouchmotionSlot;
+Signal<minko::dom::AbstractDOMTouchEvent::Ptr>::Slot ontouchdownSlot;
+Signal<minko::dom::AbstractDOMTouchEvent::Ptr>::Slot ontouchupSlot;
+Signal<minko::dom::AbstractDOMTouchEvent::Ptr>::Slot ontouchmotionSlot;
 
 IOSWebViewDOMEngine::IOSWebViewDOMEngine() :
 	_loadedPreviousFrameState(0),
@@ -402,7 +402,8 @@ IOSWebViewDOMEngine::raiseDomEvent(const std::string& type, const std::string& v
         auto element = IOSWebViewDOMElement::getDOMElement(accessor, shared_from_this());
         
         std::string eventName = accessor + ".minkoEvents[" + eventIndex + "]";
-        IOSWebViewDOMEvent::Ptr event = IOSWebViewDOMEvent::create(eventName, shared_from_this());
+        // TODO: change 0 by the fingerId property of changedTouches and -1 by the index of changedTouches
+        IOSWebViewDOMTouchEvent::Ptr event = IOSWebViewDOMTouchEvent::create(eventName, 0, -1, shared_from_this());
         
         if (type == "touchstart")
         {
@@ -424,19 +425,31 @@ IOSWebViewDOMEngine::raiseDomEvent(const std::string& type, const std::string& v
 }
 
 void
+IOSWebViewDOMEngine::addTouch(std::shared_ptr<minko::SDLTouch> touch)
+{
+    _touches.insert(std::pair<int, std::shared_ptr<minko::SDLTouch>>(touch->minko::input::Touch::fingerId(), touch));
+}
+
+void
+IOSWebViewDOMEngine::removeTouch(int fingerId)
+{
+    // If the touch exists
+    if (_touches.find(fingerId) != _touches.end())
+        _touches.erase(fingerId);
+}
+
+void
 IOSWebViewDOMEngine::registerDomEvents()
 {
-    onmousedownSlot = _currentDOM->document()->onmousedown()->connect([&](AbstractDOMEvent::Ptr event)
+    onmousedownSlot = _currentDOM->document()->onmousedown()->connect([&](AbstractDOMMouseEvent::Ptr event)
     {
         int x = event->clientX();
         int y = event->clientY();
         
-        if (_touches.size() == 1)
-        {
-        _canvas->mouse()->x(x);
-        _canvas->mouse()->y(y);
+            _canvas->mouse()->x(x);
+            _canvas->mouse()->y(y);
 
-        _firstFingerId = event->identifier(0);
+//        _firstFingerId = event->identifier(0);
             
 //        SDL_Event sdlEvent;
 //        sdlEvent.type = SDL_MOUSEBUTTONDOWN;
@@ -445,53 +458,31 @@ IOSWebViewDOMEngine::registerDomEvents()
 //        SDL_PushEvent(&sdlEvent);
         
         _canvas->mouse()->leftButtonDown()->execute(_canvas->mouse());
-        }
     });
 
-    onmouseupSlot = _currentDOM->document()->onmouseup()->connect([&](AbstractDOMEvent::Ptr event)
+    onmouseupSlot = _currentDOM->document()->onmouseup()->connect([&](AbstractDOMMouseEvent::Ptr event)
     {
-        if (_touches.size() == 0)
-        {
-        int x = event->layerX();
-        int y = event->layerY();
+            int x = event->layerX();
+            int y = event->layerY();
         
-        _firstFingerId = -1;
+            _firstFingerId = -1;
             
-        _canvas->mouse()->x(x);
-        _canvas->mouse()->y(y);
+            _canvas->mouse()->x(x);
+            _canvas->mouse()->y(y);
 
-//        SDL_Event sdlEvent;
-//        sdlEvent.type = SDL_MOUSEBUTTONUP;
-//        sdlEvent.button.button = SDL_BUTTON_LEFT;
+//          SDL_Event sdlEvent;
+//          sdlEvent.type = SDL_MOUSEBUTTONUP;
+//          sdlEvent.button.button = SDL_BUTTON_LEFT;
 //        
-//        SDL_PushEvent(&sdlEvent);
+//          SDL_PushEvent(&sdlEvent);
         
-        _canvas->mouse()->leftButtonUp()->execute(_canvas->mouse());
-        }
+            _canvas->mouse()->leftButtonUp()->execute(_canvas->mouse());
     });
 
-    onmousemoveSlot = _currentDOM->document()->onmousemove()->connect([&](AbstractDOMEvent::Ptr event)
+    onmousemoveSlot = _currentDOM->document()->onmousemove()->connect([&](AbstractDOMMouseEvent::Ptr event)
     {
-        // Get number of touch
-        std::string js = event->accessor() + ".changedTouches.length";
-        int touchNumber = atoi(eval(js).c_str());
-        
-        int i = 0;
-        if (_touches.size() == 1)
-        {
-            for (i = 0; i < touchNumber; i++)
-            {
-                int fingerId = event->identifier(i);
-                if (_firstFingerId == fingerId)
-                    break;
-            }
-        }
-        
-        if (i == touchNumber)
-            return;
-        
-        int x = event->clientX(i);
-        int y = event->clientY(i);
+        int x = event->clientX();
+        int y = event->clientY();
         
         _canvas->mouse()->x(x);
         _canvas->mouse()->y(y);
@@ -509,17 +500,11 @@ IOSWebViewDOMEngine::registerDomEvents()
         _canvas->mouse()->move()->execute(_canvas->mouse(), event->clientX() - oldX, event->clientY() - oldY);
     });
     
-    ontouchdownSlot = _currentDOM->document()->ontouchdown()->connect([&](AbstractDOMEvent::Ptr event)
+    ontouchdownSlot = _currentDOM->document()->ontouchdown()->connect([&](AbstractDOMTouchEvent::Ptr event)
     {
-        // Get number of finger
-        std::string js = event->accessor() + ".changedTouches.length";
-        int touchNumber = atoi(eval(js).c_str());
-        
-        for (auto i = 0; i < touchNumber; i++)
-        {
-            int fingerId = event->identifier(i);
-            int x = event->clientX(i);
-            int y = event->clientY(i);
+            int fingerId = event->fingerId();
+            float x = event->clientX();
+            float y = event->clientY();
             
             SDL_Event sdlEvent;
             sdlEvent.type = SDL_FINGERDOWN;
@@ -527,24 +512,22 @@ IOSWebViewDOMEngine::registerDomEvents()
             sdlEvent.tfinger.x =  x / _canvas->width();
             sdlEvent.tfinger.y = y / _canvas->height();
             
-//            std::cout << "[DOM] Finger down id: " << sdlEvent.tfinger.fingerId << " (for i = " << i << ")" << std::endl;
-            
-//            std::cout << "[DOM] Finger down at: " << sdlEvent.tfinger.x << ", " << sdlEvent.tfinger.y << std::endl;
-            
+            std::cout << "[DOM] Finger #" << fingerId << " down at: " << sdlEvent.tfinger.x << ", " << sdlEvent.tfinger.y << std::endl;
+        
             SDL_PushEvent(&sdlEvent);
             
             // Add finger to list
             auto touch = minko::SDLTouch::create(std::static_pointer_cast<Canvas>(_canvas));
+            touch->fingerId(fingerId);
             touch->x(x);
             touch->y(y);
 
             _touches.insert(std::pair<int, std::shared_ptr<minko::SDLTouch>>(fingerId, touch));
-        }
         
         //_canvas->finger()->fingerDown()->execute(_canvas->finger(), event->layerX(), event->layerY());
     });
     
-    ontouchupSlot = _currentDOM->document()->ontouchup()->connect([&](AbstractDOMEvent::Ptr event)
+    ontouchupSlot = _currentDOM->document()->ontouchup()->connect([&](AbstractDOMTouchEvent::Ptr event)
     {
 //        SDL_Event sdlEvent;
 //        sdlEvent.type = SDL_FINGERUP;
@@ -554,35 +537,33 @@ IOSWebViewDOMEngine::registerDomEvents()
 //        
 //        SDL_PushEvent(&sdlEvent);
 
-        // Get number of finger
-        std::string js = event->accessor() + ".changedTouches.length";
-        int touchNumber = atoi(eval(js).c_str());
-        
-        for (auto i = 0; i < touchNumber; i++)
-        {
-            int x = event->clientX(i);
-            int y = event->clientY(i);
+        int fingerId = event->fingerId();
+        float x = event->clientX();
+        float y = event->clientY();
             
-            SDL_Event sdlEvent;
-            sdlEvent.type = SDL_FINGERUP;
-            sdlEvent.tfinger.fingerId = event->identifier(i);
-            sdlEvent.tfinger.x = x / _canvas->width();
-            sdlEvent.tfinger.y = y / _canvas->height();
+        SDL_Event sdlEvent;
+        sdlEvent.type = SDL_FINGERUP;
+        sdlEvent.tfinger.fingerId = fingerId;
+        sdlEvent.tfinger.x = x / _canvas->width();
+        sdlEvent.tfinger.y = y / _canvas->height();
             
 //            std::cout << "[DOM] Finger up id: " << sdlEvent.tfinger.fingerId << " (for i = " << i << ")" << std::endl;
             
-//            std::cout << "[DOM] Finger up at: " << sdlEvent.tfinger.x << ", " << sdlEvent.tfinger.y << "(for i = " << i << ")" << std::endl;
+        std::cout << "[DOM] Finger " << event->fingerId() << " up at: " << sdlEvent.tfinger.x << ", " << sdlEvent.tfinger.y << std::endl;
             
-            SDL_PushEvent(&sdlEvent);
-            
+        SDL_PushEvent(&sdlEvent);
+        
+        // If the touch exists
+        if (_touches.find(fingerId) != _touches.end())
+        {
             // Remove finger from list
-            _touches.erase(sdlEvent.tfinger.fingerId);
+            _touches.erase(fingerId);
         }
         
         //_canvas->finger()->fingerUp()->execute(_canvas->finger(), event->layerX(), event->layerY());
     });
     
-    ontouchmotionSlot = _currentDOM->document()->ontouchmotion()->connect([&](AbstractDOMEvent::Ptr event)
+    ontouchmotionSlot = _currentDOM->document()->ontouchmotion()->connect([&](AbstractDOMTouchEvent::Ptr event)
     {
 //        SDL_Event sdlEvent;
 //        sdlEvent.type = SDL_FINGERMOTION;
@@ -591,17 +572,11 @@ IOSWebViewDOMEngine::registerDomEvents()
 //        
 //        SDL_PushEvent(&sdlEvent);
         
-        // Get number of finger
-        std::string js = event->accessor() + ".changedTouches.length";
-        int touchNumber = atoi(eval(js).c_str());
-        
-        for (auto i = 0; i < touchNumber; i++)
-        {
-            int fingerId = event->identifier(i);
+            int fingerId = event->fingerId();
             float oldX = _touches.at(fingerId)->minko::input::Touch::x();
             float oldY = _touches.at(fingerId)->minko::input::Touch::y();
-            float x = event->clientX(i);
-            float y = event->clientY(i);
+            float x = event->clientX();
+            float y = event->clientY();
             
             SDL_Event sdlEvent;
             sdlEvent.type = SDL_FINGERMOTION;
@@ -624,7 +599,6 @@ IOSWebViewDOMEngine::registerDomEvents()
             // Store finger information
             _touches.at(fingerId)->x(x);
             _touches.at(fingerId)->y(y);
-        }
         
 //        _canvas->finger()->fingerMotion()->execute(_canvas->finger(), event->layerX(), event->layerY());
     });
