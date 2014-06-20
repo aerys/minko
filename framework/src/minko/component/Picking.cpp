@@ -63,7 +63,7 @@ Picking::Picking(SceneManagerPtr	sceneManager,
 	_mouseOver(Signal<NodePtr>::create()),
 	_addPickingLayout(addPickingLayout)
 {
-	_renderer	= Renderer::create(0xFFFF00FF, nullptr, sceneManager->assets()->effect("effect/Picking.effect"), 1000.f);
+	_renderer	= Renderer::create(0xFFFF00FF, nullptr, sceneManager->assets()->effect("effect/Picking.effect"), 1000.f, "Picking Renderer");
 	_renderer->scissor(0, 0, 1, 1);
 	_renderer->layoutMask(scene::Layout::Group::PICKING);
 }
@@ -345,7 +345,7 @@ Picking::removeSurfacesForNode(NodePtr node)
 void
 Picking::renderingBegin(RendererPtr renderer)
 {
-	float mouseX = (float)_mouse->x();
+	/*float mouseX = (float)_mouse->x();
 	float mouseY = (float)_mouse->y();
 	
 	auto perspectiveCamera	= _camera->component<component::PerspectiveCamera>();
@@ -356,13 +356,13 @@ Picking::renderingBegin(RendererPtr renderer)
 	pickingProjectionData[2] = mouseX / _context->viewportWidth() * 2.f;
 	pickingProjectionData[6] = (_context->viewportHeight() - mouseY) / _context->viewportHeight() * 2.f;
 
-	_pickingProjection->initialize(pickingProjectionData);
+	_pickingProjection->initialize(pickingProjectionData);*/
 }
 
 void
 Picking::renderingEnd(RendererPtr renderer)
 {
-    _context->readPixels(0, 0, 1, 1, &_lastColor[0]);
+    /*_context->readPixels(0, 0, 1, 1, &_lastColor[0]);
 
     uint pickedSurfaceId = (_lastColor[0] << 16) + (_lastColor[1] << 8) + _lastColor[2];
 
@@ -419,7 +419,7 @@ Picking::renderingEnd(RendererPtr renderer)
     _executeRightDownHandler = false;
     _executeLeftDownHandler = false;
     _executeRightClickHandler = false;
-    _executeLeftClickHandler = false;
+    _executeLeftClickHandler = false;*/
 }
 
 void
