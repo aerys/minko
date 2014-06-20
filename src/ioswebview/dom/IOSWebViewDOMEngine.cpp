@@ -549,7 +549,7 @@ IOSWebViewDOMEngine::registerDomEvents()
             
 //            std::cout << "[DOM] Finger up id: " << sdlEvent.tfinger.fingerId << " (for i = " << i << ")" << std::endl;
             
-        std::cout << "[DOM] Finger " << event->fingerId() << " up at: " << sdlEvent.tfinger.x << ", " << sdlEvent.tfinger.y << std::endl;
+        std::cout << "[DOM] Finger #" << event->fingerId() << " up at: " << sdlEvent.tfinger.x << ", " << sdlEvent.tfinger.y << std::endl;
             
         SDL_PushEvent(&sdlEvent);
         

@@ -21,6 +21,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/dom/AbstractDOMElement.hpp"
 #include "minko/dom/AbstractDOMEvent.hpp"
+#include "minko/dom/AbstractDOMMouseEvent.hpp"
+#include "minko/dom/AbstractDOMTouchEvent.hpp"
 #include "minko/MinkoLua.hpp"
 
 namespace minko
@@ -70,13 +72,15 @@ namespace minko
 							.method("getElementsByTagName", &dom::AbstractDOMElement::getElementsByTagName);
 
 						MINKO_LUAGLUE_BIND_SIGNAL(state, dom::AbstractDOMEvent::Ptr);
+                        MINKO_LUAGLUE_BIND_SIGNAL(state, dom::AbstractDOMMouseEvent::Ptr);
+                        MINKO_LUAGLUE_BIND_SIGNAL(state, dom::AbstractDOMTouchEvent::Ptr);
 
 						abstractDomElement.property("onclick", &dom::AbstractDOMElement::onclick);
-						abstractDomElement.property("onmousedown", &dom::AbstractDOMElement::onclick);
-						abstractDomElement.property("onmousemove", &dom::AbstractDOMElement::onclick);
-						abstractDomElement.property("onmouseup", &dom::AbstractDOMElement::onclick);
-						abstractDomElement.property("onmouseout", &dom::AbstractDOMElement::onclick);
-						abstractDomElement.property("onmouseover", &dom::AbstractDOMElement::onclick);
+						abstractDomElement.property("onmousedown", &dom::AbstractDOMElement::onmousedown);
+						abstractDomElement.property("onmousemove", &dom::AbstractDOMElement::onmousemove);
+						abstractDomElement.property("onmouseup", &dom::AbstractDOMElement::onmouseup);
+						abstractDomElement.property("onmouseout", &dom::AbstractDOMElement::onmouseout);
+						abstractDomElement.property("onmouseover", &dom::AbstractDOMElement::onmouseover);
 					}
 
 				static

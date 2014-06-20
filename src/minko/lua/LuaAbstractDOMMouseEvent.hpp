@@ -19,8 +19,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #pragma once
 
-#include "minko/lua/LuaAbstractDOMEvent"
-#include "minko/dom/AbstractDOMMouseEvent"
+#include "LuaAbstractDOMEvent.hpp"
+#include "minko/dom/AbstractDOMMouseEvent.hpp"
 #include "minko/MinkoLua.hpp"
 
 namespace minko
@@ -44,14 +44,14 @@ namespace minko
 					bind(LuaGlue& state)
 				{
 						state.Class<dom::AbstractDOMMouseEvent>("AbstractDOMMouseEvent")
-							.property("clientX", &dom::AbstractDOMMouseEvent::clientX)
+                            .property("clientX", &dom::AbstractDOMMouseEvent::clientX)
 							.property("clientY", &dom::AbstractDOMMouseEvent::clientY)
 							.property("pageX", &dom::AbstractDOMMouseEvent::pageX)
 							.property("pageY", &dom::AbstractDOMMouseEvent::pageY)
 							.property("layerX", &dom::AbstractDOMMouseEvent::layerX)
 							.property("layerY", &dom::AbstractDOMMouseEvent::layerY)
 							.property("screenX", &dom::AbstractDOMMouseEvent::screenX)
-							.property("screenY", &dom::AbstractDOMMouseEvent::screenY)
+                            .property("screenY", &dom::AbstractDOMMouseEvent::screenY);
 					}
 
 			};

@@ -19,8 +19,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #pragma once
 
-#include "minko/lua/LuaAbstractDOMMouseEvent"
-#include "minko/dom/AbstractDOMTouchEvent"
+#include "LuaAbstractDOMTouchEvent.hpp"
+#include "minko/dom/AbstractDOMTouchEvent.hpp"
 #include "minko/MinkoLua.hpp"
 
 namespace minko
@@ -43,9 +43,9 @@ namespace minko
                 void
                 bind(LuaGlue& state)
                 {
-                    state.Class<dom::LuaAbstractDOMTouchEvent>("LuaAbstractDOMTouchEvent")
+                    state.Class<dom::AbstractDOMTouchEvent>("AbstractDOMTouchEvent")
                         .property("fingerId", &dom::AbstractDOMTouchEvent::fingerId)
-                        .property("jsAccessor", &dom::AbstractDOMMouseEvent::jsAccessor)
+                        .property("jsAccessor", &dom::AbstractDOMTouchEvent::jsAccessor);
                 }
                 
             };
