@@ -27,6 +27,7 @@ using namespace minko::scene;
 /*static*/ const Layouts Layout::Group::IGNORE_RAYCASTING	= 1 << 16;
 /*static*/ const Layouts Layout::Group::CULLING				= 1 << 17;
 /*static*/ const Layouts Layout::Group::PICKING				= 1 << 18;
+/*static*/ const Layouts Layout::Group::REFLECTION			= 1 << 19;
 
 /*static*/ const Layouts Layout::Mask::NOTHING						= 0;
 /*static*/ const Layouts Layout::Mask::EVERYTHING					= -1;
