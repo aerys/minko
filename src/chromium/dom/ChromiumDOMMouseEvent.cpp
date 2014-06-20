@@ -19,8 +19,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #if defined(CHROMIUM)
 
-#include "chromium/dom/ChromiumDOMEvent.hpp"
-#include "minko/dom/AbstractDOMEvent.hpp"
+#include "chromium/dom/ChromiumDOMMouseEvent.hpp"
+#include "minko/dom/AbstractDOMMouseEvent.hpp"
 #include "chromium/dom/ChromiumDOMElement.hpp"
 #include "include/cef_runnable.h"
 #include "include/cef_task.h"
@@ -30,10 +30,10 @@ using namespace chromium::dom;
 using namespace minko;
 using namespace minko::dom;
 
-std::list<ChromiumDOMEvent::Ptr>
-ChromiumDOMEvent::_events;
+std::list<ChromiumDOMMouseEvent::Ptr>
+ChromiumDOMMouseEvent::_events;
 
-ChromiumDOMEvent::ChromiumDOMEvent(CefRefPtr<CefV8Value> v8NodeObject, CefRefPtr<CefV8Context> v8Context):
+ChromiumDOMMouseEvent::ChromiumDOMMouseEvent(CefRefPtr<CefV8Value> v8NodeObject, CefRefPtr<CefV8Context> v8Context):
 	_cleared(false),
 	_v8Context(v8Context),
 	_blocker(false)
@@ -44,13 +44,13 @@ ChromiumDOMEvent::ChromiumDOMEvent(CefRefPtr<CefV8Value> v8NodeObject, CefRefPtr
 	_v8NodeObject = v8NodeObject;
 }
 
-ChromiumDOMEvent::~ChromiumDOMEvent()
+ChromiumDOMMouseEvent::~ChromiumDOMMouseEvent()
 {
 	clear();
 }
 
 void
-ChromiumDOMEvent::clear()
+ChromiumDOMMouseEvent::clear()
 {
 	if (_cleared)
 		return;
@@ -61,7 +61,7 @@ ChromiumDOMEvent::clear()
 
 
 void
-ChromiumDOMEvent::clearAll()
+ChromiumDOMMouseEvent::clearAll()
 {
 	for (Ptr event : _events)
 	{
@@ -71,17 +71,17 @@ ChromiumDOMEvent::clearAll()
 	_events.clear();
 }
 
-ChromiumDOMEvent::Ptr
-ChromiumDOMEvent::create(CefRefPtr<CefV8Value> v8NodeObject, CefRefPtr<CefV8Context> v8Context)
+ChromiumDOMMouseEvent::Ptr
+ChromiumDOMMouseEvent::create(CefRefPtr<CefV8Value> v8NodeObject, CefRefPtr<CefV8Context> v8Context)
 {
-	ChromiumDOMEvent::Ptr event(new ChromiumDOMEvent(v8NodeObject, v8Context));
+	ChromiumDOMMouseEvent::Ptr event(new ChromiumDOMMouseEvent(v8NodeObject, v8Context));
 	_events.push_back(event);
 	return event;
 }
 
 
 CefRefPtr<CefV8Value>
-ChromiumDOMEvent::getFunction(std::string name)
+ChromiumDOMMouseEvent::getFunction(std::string name)
 {
 	CefRefPtr<CefV8Value> func = _v8NodeObject->GetValue(name);
 
@@ -92,7 +92,7 @@ ChromiumDOMEvent::getFunction(std::string name)
 }
 
 CefRefPtr<CefV8Value>
-ChromiumDOMEvent::getProperty(std::string name)
+ChromiumDOMMouseEvent::getProperty(std::string name)
 {
 	CefRefPtr<CefV8Value> prop = _v8NodeObject->GetValue(name);
 
@@ -104,7 +104,7 @@ ChromiumDOMEvent::getProperty(std::string name)
 
 
 void
-ChromiumDOMEvent::preventDefault()
+ChromiumDOMMouseEvent::preventDefault()
 {
 	if (CefCurrentlyOn(TID_RENDERER))
 	{
@@ -131,7 +131,7 @@ ChromiumDOMEvent::preventDefault()
 }
 
 void
-ChromiumDOMEvent::stopPropagation()
+ChromiumDOMMouseEvent::stopPropagation()
 {
 	if (CefCurrentlyOn(TID_RENDERER))
 	{
@@ -158,13 +158,13 @@ ChromiumDOMEvent::stopPropagation()
 }
 
 std::string
-ChromiumDOMEvent::accessor()
+ChromiumDOMMouseEvent::accessor()
 {
 	return "";
 }
 
 std::string
-ChromiumDOMEvent::type()
+ChromiumDOMMouseEvent::type()
 {
 	std::string result;
 
@@ -194,7 +194,7 @@ ChromiumDOMEvent::type()
 }
 
 AbstractDOMElement::Ptr
-ChromiumDOMEvent::target()
+ChromiumDOMMouseEvent::target()
 {
 	AbstractDOMElement::Ptr result;
 
@@ -224,19 +224,7 @@ ChromiumDOMEvent::target()
 }
 
 int
-ChromiumDOMEvent::identifier(int id)
-{
-	return 0;
-}
-
-int
-ChromiumDOMEvent::clientX(int id)
-{
-	return clientX();
-}
-
-int
-ChromiumDOMEvent::clientX()
+ChromiumDOMMouseEvent::clientX()
 {
 	int result;
 
@@ -266,13 +254,7 @@ ChromiumDOMEvent::clientX()
 }
 
 int
-ChromiumDOMEvent::clientY(int id)
-{
-	return clientY();
-}
-
-int
-ChromiumDOMEvent::clientY()
+ChromiumDOMMouseEvent::clientY()
 {
 	int result;
 
@@ -303,7 +285,7 @@ ChromiumDOMEvent::clientY()
 
 
 int
-ChromiumDOMEvent::pageX()
+ChromiumDOMMouseEvent::pageX()
 {
 	int result;
 
@@ -333,7 +315,7 @@ ChromiumDOMEvent::pageX()
 }
 
 int
-ChromiumDOMEvent::pageY()
+ChromiumDOMMouseEvent::pageY()
 {
 	int result;
 
@@ -364,7 +346,7 @@ ChromiumDOMEvent::pageY()
 
 
 int
-ChromiumDOMEvent::layerX()
+ChromiumDOMMouseEvent::layerX()
 {
 	int result;
 
@@ -394,7 +376,7 @@ ChromiumDOMEvent::layerX()
 }
 
 int
-ChromiumDOMEvent::layerY()
+ChromiumDOMMouseEvent::layerY()
 {
 	int result;
 
@@ -425,7 +407,7 @@ ChromiumDOMEvent::layerY()
 
 
 int
-ChromiumDOMEvent::screenX()
+ChromiumDOMMouseEvent::screenX()
 {
 	int result;
 
@@ -455,7 +437,7 @@ ChromiumDOMEvent::screenX()
 }
 
 int
-ChromiumDOMEvent::screenY()
+ChromiumDOMMouseEvent::screenY()
 {
 	int result;
 

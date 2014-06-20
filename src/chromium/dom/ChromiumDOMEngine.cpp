@@ -280,7 +280,7 @@ ChromiumDOMEngine::clear()
 	_doms.clear();
 
 	ChromiumDOMElement::clearAll();
-	ChromiumDOMEvent::clearAll();
+	ChromiumDOMMouseEvent::clearAll();
 	_impl->mainArgs = nullptr;
 	_impl->browser = nullptr;
 	_impl->app = nullptr;
