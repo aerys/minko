@@ -18,7 +18,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "minko/Common.hpp"
-#include "emscripten/dom/EmscriptenDOMEvent.hpp"
+#include "emscripten/dom/EmscriptenDOMMouseEvent.hpp"
 #include "emscripten/dom/EmscriptenDOMElement.hpp"
 #include "emscripten/emscripten.h"
 
@@ -28,7 +28,7 @@ using namespace emscripten;
 using namespace emscripten::dom;
 
 void
-EmscriptenDOMEvent::preventDefault()
+EmscriptenDOMMouseEvent::preventDefault()
 {
 	std::cerr << "Warning : AbstractDOMEvent::preventDefault will have no effect" << std::endl;
 	std::string eval = _jsAccessor + ".preventDefault()";
@@ -36,7 +36,7 @@ EmscriptenDOMEvent::preventDefault()
 }
 
 void
-EmscriptenDOMEvent::stopPropagation()
+EmscriptenDOMMouseEvent::stopPropagation()
 {
 	std::cerr << "Warning : AbstractDOMEvent::stopPropagation will have no effect" << std::endl;
 	std::string eval = _jsAccessor + ".stopPropagation()";
@@ -44,7 +44,7 @@ EmscriptenDOMEvent::stopPropagation()
 }
 
 std::string
-EmscriptenDOMEvent::type()
+EmscriptenDOMMouseEvent::type()
 {
 	std::string eval = "(" + _jsAccessor + ".type)";
 
@@ -54,13 +54,13 @@ EmscriptenDOMEvent::type()
 }
 
 minko::dom::AbstractDOMElement::Ptr
-EmscriptenDOMEvent::target()
+EmscriptenDOMMouseEvent::target()
 {
 	return EmscriptenDOMElement::getDOMElement(_jsAccessor + ".target");
 }
 
 int
-EmscriptenDOMEvent::clientX()
+EmscriptenDOMMouseEvent::clientX()
 {
 	std::string eval = "(" + _jsAccessor + ".clientX)";
 	int result = emscripten_run_script_int(eval.c_str());
@@ -68,7 +68,7 @@ EmscriptenDOMEvent::clientX()
 }
 
 int
-EmscriptenDOMEvent::clientY()
+EmscriptenDOMMouseEvent::clientY()
 {
 	std::string eval = "(" + _jsAccessor + ".clientY)";
 	int result = emscripten_run_script_int(eval.c_str());
@@ -76,7 +76,7 @@ EmscriptenDOMEvent::clientY()
 }
 
 int
-EmscriptenDOMEvent::pageX()
+EmscriptenDOMMouseEvent::pageX()
 {
 	std::string eval = "(" + _jsAccessor + ".pageX)";
 	int result = emscripten_run_script_int(eval.c_str());
@@ -84,7 +84,7 @@ EmscriptenDOMEvent::pageX()
 }
 
 int
-EmscriptenDOMEvent::pageY()
+EmscriptenDOMMouseEvent::pageY()
 {
 	std::string eval = "(" + _jsAccessor + ".pageY)";
 	int result = emscripten_run_script_int(eval.c_str());
@@ -92,7 +92,7 @@ EmscriptenDOMEvent::pageY()
 }
 
 int
-EmscriptenDOMEvent::layerX()
+EmscriptenDOMMouseEvent::layerX()
 {
 	std::string eval = "(" + _jsAccessor + ".layerX)";
 	int result = emscripten_run_script_int(eval.c_str());
@@ -100,7 +100,7 @@ EmscriptenDOMEvent::layerX()
 }
 
 int
-EmscriptenDOMEvent::layerY()
+EmscriptenDOMMouseEvent::layerY()
 {
 	std::string eval = "(" + _jsAccessor + ".layerY)";
 	int result = emscripten_run_script_int(eval.c_str());
@@ -108,7 +108,7 @@ EmscriptenDOMEvent::layerY()
 }
 
 int
-EmscriptenDOMEvent::screenX()
+EmscriptenDOMMouseEvent::screenX()
 {
 	std::string eval = "(" + _jsAccessor + ".screenX)";
 	int result = emscripten_run_script_int(eval.c_str());
@@ -116,7 +116,7 @@ EmscriptenDOMEvent::screenX()
 }
 
 int
-EmscriptenDOMEvent::screenY()
+EmscriptenDOMMouseEvent::screenY()
 {
 	std::string eval = "(" + _jsAccessor + ".screenY)";
 	int result = emscripten_run_script_int(eval.c_str());

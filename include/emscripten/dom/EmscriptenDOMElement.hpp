@@ -23,7 +23,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Common.hpp"
 #include "minko/Signal.hpp"
 #include "minko/dom/AbstractDOMElement.hpp"
-#include "minko/dom/AbstractDOMEvent.hpp"
+#include "minko/dom/AbstractDOMMouseEvent.hpp"
+#include "minko/dom/AbstractDOMTouchEvent.hpp"
 
 namespace emscripten
 {
@@ -109,38 +110,37 @@ namespace emscripten
 			std::vector<minko::dom::AbstractDOMElement::Ptr>
 			getElementsByTagName(std::string tagName);
 
-
 			std::string
 			style(std::string name);
 
 			void
 			style(std::string name, std::string value);
 
-			minko::Signal<std::shared_ptr<minko::dom::AbstractDOMEvent>>::Ptr
+			minko::Signal<std::shared_ptr<minko::dom::AbstractDOMMouseEvent>>::Ptr
 			onclick();
 
-			minko::Signal<std::shared_ptr<minko::dom::AbstractDOMEvent>>::Ptr
+			minko::Signal<std::shared_ptr<minko::dom::AbstractDOMMouseEvent>>::Ptr
 			onmousedown();
 
-			minko::Signal<std::shared_ptr<minko::dom::AbstractDOMEvent>>::Ptr
+			minko::Signal<std::shared_ptr<minko::dom::AbstractDOMMouseEvent>>::Ptr
 			onmousemove();
 
-			minko::Signal<std::shared_ptr<minko::dom::AbstractDOMEvent>>::Ptr
+			minko::Signal<std::shared_ptr<minko::dom::AbstractDOMMouseEvent>>::Ptr
 			onmouseup();
 
-			minko::Signal<std::shared_ptr<minko::dom::AbstractDOMEvent>>::Ptr
+			minko::Signal<std::shared_ptr<minko::dom::AbstractDOMMouseEvent>>::Ptr
 			onmouseout();
 
-			minko::Signal<std::shared_ptr<minko::dom::AbstractDOMEvent>>::Ptr
+			minko::Signal<std::shared_ptr<minko::dom::AbstractDOMMouseEvent>>::Ptr
 			onmouseover();
 
-			minko::Signal<std::shared_ptr<minko::dom::AbstractDOMEvent>>::Ptr
+			minko::Signal<std::shared_ptr<minko::dom::AbstractDOMTouchEvent>>::Ptr
 			ontouchdown();
 
-			minko::Signal<std::shared_ptr<minko::dom::AbstractDOMEvent>>::Ptr
+			minko::Signal<std::shared_ptr<minko::dom::AbstractDOMTouchEvent>>::Ptr
 			ontouchup();
 
-			minko::Signal<std::shared_ptr<minko::dom::AbstractDOMEvent>>::Ptr
+			minko::Signal<std::shared_ptr<minko::dom::AbstractDOMTouchEvent>>::Ptr
 			ontouchmotion();
 
 			void
@@ -164,15 +164,16 @@ namespace emscripten
 
 			std::string _jsAccessor;
 
-			minko::Signal<minko::dom::AbstractDOMEvent::Ptr>::Ptr _onclick;
-			minko::Signal<minko::dom::AbstractDOMEvent::Ptr>::Ptr _onmousedown;
-			minko::Signal<minko::dom::AbstractDOMEvent::Ptr>::Ptr _onmousemove;
-			minko::Signal<minko::dom::AbstractDOMEvent::Ptr>::Ptr _onmouseup;
-			minko::Signal<minko::dom::AbstractDOMEvent::Ptr>::Ptr _onmouseover;
-			minko::Signal<minko::dom::AbstractDOMEvent::Ptr>::Ptr _onmouseout;
-			minko::Signal<minko::dom::AbstractDOMEvent::Ptr>::Ptr _ontouchdown;
-			minko::Signal<minko::dom::AbstractDOMEvent::Ptr>::Ptr _ontouchup;
-			minko::Signal<minko::dom::AbstractDOMEvent::Ptr>::Ptr _ontouchmotion;
+			minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Ptr _onclick;
+			minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Ptr _onmousedown;
+			minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Ptr _onmousemove;
+			minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Ptr _onmouseup;
+			minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Ptr _onmouseover;
+			minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Ptr _onmouseout;
+			
+			minko::Signal<minko::dom::AbstractDOMTouchEvent::Ptr>::Ptr _ontouchdown;
+			minko::Signal<minko::dom::AbstractDOMTouchEvent::Ptr>::Ptr _ontouchup;
+			minko::Signal<minko::dom::AbstractDOMTouchEvent::Ptr>::Ptr _ontouchmotion;
 
 			bool _onclickSet;
 			bool _onmousedownSet;
