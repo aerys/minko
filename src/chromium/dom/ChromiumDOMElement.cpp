@@ -44,6 +44,9 @@ ChromiumDOMElement::ChromiumDOMElement(CefRefPtr<CefV8Value> v8NodeObject, CefRe
 	_onmouseupCallbackSet(false),
 	_onmouseoverCallbackSet(false),
 	_onmouseoutCallbackSet(false),
+	_ontouchdownCallbackSet(false),
+	_ontouchupCallbackSet(false),
+	_ontouchmoveCallbackSet(false),
 	_cleared(false),
 	_v8Handler(),
 	_v8NodeObject(v8NodeObject),
@@ -958,21 +961,41 @@ ChromiumDOMElement::onmouseover()
 Signal<AbstractDOMTouchEvent::Ptr>::Ptr
 ChromiumDOMElement::ontouchdown()
 {
-	return nullptr;
+	if (!_ontouchdownCallbackSet)
+	{
+		_ontouchdown = Signal<minko::dom::AbstractDOMTouchEvent::Ptr>::create();
+		addEventListener("touchstart");
+		_ontouchdownCallbackSet = true;
+	}
+
+	return _ontouchdown;
 }
 
 Signal<AbstractDOMTouchEvent::Ptr>::Ptr
 ChromiumDOMElement::ontouchup()
 {
-	return nullptr;
+	if (!_ontouchupCallbackSet)
+	{
+		_ontouchup = Signal<minko::dom::AbstractDOMTouchEvent::Ptr>::create();
+		addEventListener("touchend");
+		_ontouchupCallbackSet = true;
+	}
+
+	return _ontouchup;
 }
 
 Signal<AbstractDOMTouchEvent::Ptr>::Ptr
 ChromiumDOMElement::ontouchmotion()
 {
-	return nullptr;
-}
+	if (!_ontouchmoveCallbackSet)
+	{
+		_ontouchmove = Signal<minko::dom::AbstractDOMTouchEvent::Ptr>::create();
+		addEventListener("touchmove");
+		_ontouchmoveCallbackSet = true;
+	}
 
+	return _ontouchmove;
+}
 
 void
 ChromiumDOMElement::update()

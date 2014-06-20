@@ -194,12 +194,20 @@ namespace chromium
 			bool _onmouseoverCallbackSet;
 			bool _onmouseoutCallbackSet;
 
+			bool _ontouchdownCallbackSet;
+			bool _ontouchupCallbackSet;
+			bool _ontouchmoveCallbackSet;
+
 			std::shared_ptr<minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>> _onclick;
 			std::shared_ptr<minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>> _onmousedown;
 			std::shared_ptr<minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>> _onmousemove;
 			std::shared_ptr<minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>> _onmouseup;
 			std::shared_ptr<minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>> _onmouseover;
 			std::shared_ptr<minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>> _onmouseout;
+
+			std::shared_ptr<minko::Signal<minko::dom::AbstractDOMTouchEvent::Ptr>> _ontouchdown;
+			std::shared_ptr<minko::Signal<minko::dom::AbstractDOMTouchEvent::Ptr>> _ontouchup;
+			std::shared_ptr<minko::Signal<minko::dom::AbstractDOMTouchEvent::Ptr>> _ontouchmove;
 
 			CefRefPtr<ChromiumDOMElementV8Handler> _v8Handler;
 			CefRefPtr<CefV8Value> _v8NodeObject;
