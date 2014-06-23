@@ -175,8 +175,12 @@ Reflection::targetAddedToScene(NodePtr node, NodePtr target, NodePtr ancestor)
 		auto cameraTarget = Vector3::create();
 		auto reflectedPosition = Vector3::create();
 
+		auto renderer = Renderer::create(_clearColor, _renderTarget, _reflectionEffect, 1000000.f, "Reflection");
+
+		renderer->layoutMask(scene::Layout::Group::REFLECTION);
+
 		_virtualCamera = scene::Node::create("virtualCamera")
-			->addComponent(Renderer::create(_clearColor, _renderTarget, _reflectionEffect, 1000000.f))
+			->addComponent(renderer)
 			->addComponent(virtualPerspectiveCameraComponent)
 			->addComponent(Transform::create());
 
