@@ -446,11 +446,9 @@ IOSWebViewDOMEngine::registerDomEvents()
         int x = event->clientX();
         int y = event->clientY();
         
-            _canvas->mouse()->x(x);
-            _canvas->mouse()->y(y);
-
-//        _firstFingerId = event->identifier(0);
-            
+        _canvas->mouse()->x(x);
+        _canvas->mouse()->y(y);
+        
 //        SDL_Event sdlEvent;
 //        sdlEvent.type = SDL_MOUSEBUTTONDOWN;
 //        sdlEvent.button.button = SDL_BUTTON_LEFT;
@@ -462,21 +460,19 @@ IOSWebViewDOMEngine::registerDomEvents()
 
     onmouseupSlot = _currentDOM->document()->onmouseup()->connect([&](AbstractDOMMouseEvent::Ptr event)
     {
-            int x = event->layerX();
-            int y = event->layerY();
+        int x = event->layerX();
+        int y = event->layerY();
         
-            _firstFingerId = -1;
-            
-            _canvas->mouse()->x(x);
-            _canvas->mouse()->y(y);
+        _canvas->mouse()->x(x);
+        _canvas->mouse()->y(y);
 
-//          SDL_Event sdlEvent;
-//          sdlEvent.type = SDL_MOUSEBUTTONUP;
-//          sdlEvent.button.button = SDL_BUTTON_LEFT;
+//        SDL_Event sdlEvent;
+//        sdlEvent.type = SDL_MOUSEBUTTONUP;
+//        sdlEvent.button.button = SDL_BUTTON_LEFT;
 //        
-//          SDL_PushEvent(&sdlEvent);
+//        SDL_PushEvent(&sdlEvent);
         
-            _canvas->mouse()->leftButtonUp()->execute(_canvas->mouse());
+        _canvas->mouse()->leftButtonUp()->execute(_canvas->mouse());
     });
 
     onmousemoveSlot = _currentDOM->document()->onmousemove()->connect([&](AbstractDOMMouseEvent::Ptr event)
@@ -487,13 +483,13 @@ IOSWebViewDOMEngine::registerDomEvents()
         _canvas->mouse()->x(x);
         _canvas->mouse()->y(y);
         
-        //        SDL_Event sdlEvent;
-        //        sdlEvent.type = SDL_MOUSEMOTION;
-        //        sdlEvent.motion.x = x;
-        //        sdlEvent.motion.y = y;
-        //
-        //        SDL_PushEvent(&sdlEvent);
-            
+//        SDL_Event sdlEvent;
+//        sdlEvent.type = SDL_MOUSEMOTION;
+//        sdlEvent.motion.x = x;
+//        sdlEvent.motion.y = y;
+//
+//        SDL_PushEvent(&sdlEvent);
+        
         auto oldX = _canvas->mouse()->x();
         auto oldY = _canvas->mouse()->y();
         

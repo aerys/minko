@@ -39,7 +39,6 @@ namespace minko
 			int
 			clientY() = 0;
 
-
 			virtual
 			int
 			pageX() = 0;

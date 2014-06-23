@@ -444,12 +444,6 @@ IOSWebViewDOMElement::update()
                 {
                     _ontouchup->execute(event);
                     
-                    // There is only one finger left
-                    if (_engine->touchNumber() == 1)
-                    {
-                        fingerId = _engine->touches().begin()->first;
-                    }
-                    
                     // If it's the first finger
                     if (fingerId == _engine->firstFingerId())
                     {
@@ -466,7 +460,6 @@ IOSWebViewDOMElement::update()
                     // If it's the first finger
                     if (fingerId == _engine->firstFingerId())
                     {
-                        std::cout << "We move the first finger!" << std::endl;
                         _onmousemove->execute(event);
                     }
                 }
