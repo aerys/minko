@@ -44,7 +44,7 @@ EmscriptenDOM::create(std::string jsAccessor)
 void
 EmscriptenDOM::sendMessage(std::string message, bool async)
 {
-	std::string eval = "if (" + _jsAccessor + ".window.Minko.onmessage) " + _jsAccessor + ".window.Minko.onmessage('" + message + "');";
+	std::string eval = "if (" + _jsAccessor + " !== undefined && " + _jsAccessor + ".window !== undefined && " + _jsAccessor + ".window.Minko !== undefined && " + _jsAccessor + ".window.Minko.onmessage !== undefined) " + _jsAccessor + ".window.Minko.onmessage('" + message + "');";
 	//if (!async)
 		emscripten_run_script(eval.c_str());
 	//else
