@@ -7,6 +7,7 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 	kind "StaticLib"
 	language "C++"
 
+	minko.plugin.enable("sdl")
 	minko.plugin.enable("lua")
 
 	files {
@@ -35,8 +36,9 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 			"lib/cef3/libcef_dll/**.cc",
 			"lib/cef3/libcef_dll/**.c"
 		}
+
 		defines {
-			"CHROMIUM", 
+			"CHROMIUM",
 			"V8_DEPRECATION_WARNINGS",
 			"CHROMIUM_BUILD",
 			"USING_CEF_SHARED",

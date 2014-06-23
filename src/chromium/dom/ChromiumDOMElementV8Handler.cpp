@@ -41,7 +41,7 @@ ChromiumDOMElementV8Handler::Execute(const CefString& name, CefRefPtr<CefV8Value
 		{
 			std::string type = event->GetValue("type")->GetStringValue();
 
-			minko::Signal<minko::dom::AbstractDOMEvent::Ptr>::Ptr signal;
+			minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Ptr signal;
 
 			if (type == "click" && _element->onclick()->numCallbacks() > 0)
 				signal = _element->onclick();
@@ -58,7 +58,7 @@ ChromiumDOMElementV8Handler::Execute(const CefString& name, CefRefPtr<CefV8Value
 
 			if (signal != nullptr)
 			{
-				ChromiumDOMEvent::Ptr domEvent = ChromiumDOMEvent::create(event, CefV8Context::GetCurrentContext());
+				ChromiumDOMMouseEvent::Ptr domEvent = ChromiumDOMMouseEvent::create(event, CefV8Context::GetCurrentContext());
 				_element->addFunction([=]()
 				{
 					signal->execute(domEvent);

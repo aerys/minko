@@ -19,7 +19,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #pragma once
 
-#include "minko/dom/AbstractDOMEvent.hpp"
+#include "LuaAbstractDOMEvent.hpp"
+#include "minko/dom/AbstractDOMMouseEvent.hpp"
 #include "minko/MinkoLua.hpp"
 
 namespace minko
@@ -30,8 +31,8 @@ namespace minko
 	{
 		namespace overlay
 		{
-			class LuaAbstractDOMEvent :
-				public LuaWrapper
+			class LuaAbstractDOMMouseEvent :
+				public LuaAbstractDOMEvent
 			{
 
 			private:
@@ -42,11 +43,15 @@ namespace minko
 					void
 					bind(LuaGlue& state)
 				{
-						state.Class<dom::AbstractDOMEvent>("AbstractDOMEvent")
-							.property("type", &dom::AbstractDOMEvent::type)
-							.property("target", &dom::AbstractDOMEvent::target)
-							.method("preventDefault", &dom::AbstractDOMEvent::preventDefault)
-							.method("stopPropagation", &dom::AbstractDOMEvent::stopPropagation);
+						state.Class<dom::AbstractDOMMouseEvent>("AbstractDOMMouseEvent")
+                            .property("clientX", &dom::AbstractDOMMouseEvent::clientX)
+							.property("clientY", &dom::AbstractDOMMouseEvent::clientY)
+							.property("pageX", &dom::AbstractDOMMouseEvent::pageX)
+							.property("pageY", &dom::AbstractDOMMouseEvent::pageY)
+							.property("layerX", &dom::AbstractDOMMouseEvent::layerX)
+							.property("layerY", &dom::AbstractDOMMouseEvent::layerY)
+							.property("screenX", &dom::AbstractDOMMouseEvent::screenX)
+                            .property("screenY", &dom::AbstractDOMMouseEvent::screenY);
 					}
 
 			};

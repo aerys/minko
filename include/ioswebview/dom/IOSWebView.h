@@ -17,39 +17,8 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#pragma once
+#import <UIKit/UIKit.h>
 
-#include "minko/dom/AbstractDOMEvent.hpp"
-#include "minko/MinkoLua.hpp"
+@interface IOSWebView : UIWebView
 
-namespace minko
-{
-	class LuaWrapper;
-
-	namespace component
-	{
-		namespace overlay
-		{
-			class LuaAbstractDOMEvent :
-				public LuaWrapper
-			{
-
-			private:
-
-			public:
-
-				static
-					void
-					bind(LuaGlue& state)
-				{
-						state.Class<dom::AbstractDOMEvent>("AbstractDOMEvent")
-							.property("type", &dom::AbstractDOMEvent::type)
-							.property("target", &dom::AbstractDOMEvent::target)
-							.method("preventDefault", &dom::AbstractDOMEvent::preventDefault)
-							.method("stopPropagation", &dom::AbstractDOMEvent::stopPropagation);
-					}
-
-			};
-		}
-	}
-}
+@end

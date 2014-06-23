@@ -19,9 +19,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 #include "emscripten/dom/EmscriptenDOMElement.hpp"
-#include "emscripten/dom/EmscriptenDOMEvent.hpp"
+#include "emscripten/dom/EmscriptenDOMMouseEvent.hpp"
 #include "emscripten/dom/EmscriptenDOM.hpp"
-#include "minko/dom/AbstractDOMEvent.hpp"
+#include "minko/dom/AbstractDOMTouchEvent.hpp"
 #include "emscripten/emscripten.h"
 
 using namespace minko;
@@ -41,12 +41,12 @@ EmscriptenDOMElement::_accessorToElement;
 
 EmscriptenDOMElement::EmscriptenDOMElement(std::string jsAccessor) :
 	_jsAccessor(jsAccessor),
-	_onclick(Signal<AbstractDOMEvent::Ptr>::create()),
-	_onmousedown(Signal<AbstractDOMEvent::Ptr>::create()),
-	_onmousemove(Signal<AbstractDOMEvent::Ptr>::create()),
-	_onmouseup(Signal<AbstractDOMEvent::Ptr>::create()),
-	_onmouseover(Signal<AbstractDOMEvent::Ptr>::create()),
-	_onmouseout(Signal<AbstractDOMEvent::Ptr>::create()),
+	_onclick(Signal<AbstractDOMMouseEvent::Ptr>::create()),
+	_onmousedown(Signal<AbstractDOMMouseEvent::Ptr>::create()),
+	_onmousemove(Signal<AbstractDOMMouseEvent::Ptr>::create()),
+	_onmouseup(Signal<AbstractDOMMouseEvent::Ptr>::create()),
+	_onmouseover(Signal<AbstractDOMMouseEvent::Ptr>::create()),
+	_onmouseout(Signal<AbstractDOMMouseEvent::Ptr>::create()),
 	_onclickSet(false),
 	_onmousedownSet(false),
 	_onmousemoveSet(false),
@@ -266,79 +266,79 @@ EmscriptenDOMElement::addEventListener(std::string type)
 	emscripten_run_script(eval.c_str());
 }
 
-Signal<std::shared_ptr<AbstractDOMEvent>>::Ptr
+Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
 EmscriptenDOMElement::onclick()
 {
 	if (!_onclickSet)
 	{
 		addEventListener("click");
-		_onclickSet = false;
+		_onclickSet = true;
 	}
 
 	return _onclick;
 }
 
-Signal<std::shared_ptr<AbstractDOMEvent>>::Ptr
+Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
 EmscriptenDOMElement::onmousedown()
 {
 	if (!_onmousedownSet)
 	{
 		addEventListener("mousedown");
-		_onmousedownSet = false;
+		_onmousedownSet = true;
 	}
 
 	return _onmousedown;
 }
 
-Signal<std::shared_ptr<AbstractDOMEvent>>::Ptr
+Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
 EmscriptenDOMElement::onmousemove()
 {
 	if (!_onmousemoveSet)
 	{
 		addEventListener("mousemove");
-		_onmousemoveSet = false;
+		_onmousemoveSet = true;
 	}
 
 	return _onmousemove;
 }
 
-Signal<std::shared_ptr<AbstractDOMEvent>>::Ptr
+Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
 EmscriptenDOMElement::onmouseup()
 {
 	if (!_onmouseupSet)
 	{
 		addEventListener("mouseup");
-		_onmouseupSet = false;
+		_onmouseupSet = true;
 	}
 
 	return _onmouseup;
 }
 
-Signal<std::shared_ptr<AbstractDOMEvent>>::Ptr
+Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
 EmscriptenDOMElement::onmouseout()
 {
 	if (!_onmouseoutSet)
 	{
 		addEventListener("mouseout");
-		_onmouseoutSet = false;
+		_onmouseoutSet = true;
 	}
 
 	return _onmouseout;
 }
 
-Signal<std::shared_ptr<AbstractDOMEvent>>::Ptr
+Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
 EmscriptenDOMElement::onmouseover()
 {
 	if (!_onmouseoverSet)
 	{
 		addEventListener("mouseover");
-		_onmouseoverSet = false;
+		_onmouseoverSet = true;
 	}
 
 	return _onmouseover;
 }
 
-Signal<std::shared_ptr<AbstractDOMEvent>>::Ptr
+Signal<std::shared_ptr<AbstractDOMTouchEvent>>::Ptr
 EmscriptenDOMElement::ontouchdown()
 {
 	if (!_ontouchdownSet)
@@ -350,7 +350,7 @@ EmscriptenDOMElement::ontouchdown()
 	return _ontouchdown;
 }
 
-Signal<std::shared_ptr<AbstractDOMEvent>>::Ptr
+Signal<std::shared_ptr<AbstractDOMTouchEvent>>::Ptr
 EmscriptenDOMElement::ontouchup()
 {
 	if (!_ontouchupSet)
@@ -362,7 +362,7 @@ EmscriptenDOMElement::ontouchup()
 	return _ontouchup;
 }
 
-Signal<std::shared_ptr<AbstractDOMEvent>>::Ptr
+Signal<std::shared_ptr<AbstractDOMTouchEvent>>::Ptr
 EmscriptenDOMElement::ontouchmotion()
 {
 	if (!_ontouchmotionSet)
@@ -386,7 +386,7 @@ EmscriptenDOMElement::update()
 		eval =  eventName + " = " + _jsAccessor + ".minkoEvents[" + std::to_string(i) + "];";
 		emscripten_run_script(eval.c_str());
 
-		EmscriptenDOMEvent::Ptr event = EmscriptenDOMEvent::create(eventName);
+		EmscriptenDOMMouseEvent::Ptr event = EmscriptenDOMMouseEvent::create(eventName);
 
 		std::string type = event->type();
 

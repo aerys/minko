@@ -27,7 +27,9 @@ namespace minko
 	namespace dom
 	{
 		class AbstractDOMEvent;
-
+        class AbstractDOMMouseEvent;
+        class AbstractDOMTouchEvent;
+        
 		class AbstractDOMElement
 		{
 		public:
@@ -57,7 +59,6 @@ namespace minko
 			virtual
 			std::string
 			tagName() = 0;
-
 
 			virtual
 			Ptr
@@ -123,28 +124,40 @@ namespace minko
 			style(std::string name, std::string value) = 0;
 
 			virtual
-			Signal<std::shared_ptr<AbstractDOMEvent>>::Ptr
+			Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
 			onclick() = 0;
 
 			virtual
-			Signal<std::shared_ptr<AbstractDOMEvent>>::Ptr
+			Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
 			onmousedown() = 0;
 
 			virtual
-			Signal<std::shared_ptr<AbstractDOMEvent>>::Ptr
+			Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
 			onmousemove() = 0;
 
 			virtual
-			Signal<std::shared_ptr<AbstractDOMEvent>>::Ptr
+			Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
 			onmouseup() = 0;
 
 			virtual
-			Signal<std::shared_ptr<AbstractDOMEvent>>::Ptr
+			Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
 			onmouseout() = 0;
 
 			virtual
-			Signal<std::shared_ptr<AbstractDOMEvent>>::Ptr
+			Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
 			onmouseover() = 0;
+            
+            virtual
+			Signal<std::shared_ptr<AbstractDOMTouchEvent>>::Ptr
+			ontouchdown() = 0;
+            
+            virtual
+			Signal<std::shared_ptr<AbstractDOMTouchEvent>>::Ptr
+			ontouchup() = 0;
+            
+            virtual
+			Signal<std::shared_ptr<AbstractDOMTouchEvent>>::Ptr
+			ontouchmotion() = 0;
 
 		private:
 

@@ -111,6 +111,9 @@ namespace chromium
 
 			void
 			visible(bool);
+
+			bool
+			visible();
 			
 		private:
 

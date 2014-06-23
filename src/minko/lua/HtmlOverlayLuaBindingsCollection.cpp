@@ -22,6 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "LuaAbstractDOM.hpp"
 #include "LuaAbstractDOMElement.hpp"
 #include "LuaAbstractDOMEvent.hpp"
+#include "LuaAbstractDOMMouseEvent.hpp"
+#include "LuaAbstractDOMTouchEvent.hpp"
 
 using namespace minko;
 using namespace minko::lua;
@@ -39,6 +41,8 @@ std::vector<std::function<void(LuaGlue&)>>
 HtmlOverlayLuaBindingsCollection::getHtmlOverlayBindings(std::vector<std::function<void(LuaGlue&)>> bindings)
 {
 	bindings.push_back(&overlay::LuaAbstractDOMEvent::bind);
+    bindings.push_back(&overlay::LuaAbstractDOMMouseEvent::bind);
+    bindings.push_back(&overlay::LuaAbstractDOMTouchEvent::bind);
 	bindings.push_back(&overlay::LuaAbstractDOMElement::bind);
 	bindings.push_back(&overlay::LuaAbstractDOM::bind);
 	bindings.push_back(&overlay::LuaHtmlOverlay::bind);

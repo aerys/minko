@@ -59,6 +59,10 @@ namespace minko
 			virtual
 			void
 			visible(bool) = 0;
+            
+            virtual
+			bool
+			visible() = 0;
 		};
 	}
 }

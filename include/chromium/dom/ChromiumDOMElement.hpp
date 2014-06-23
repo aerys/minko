@@ -23,6 +23,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Common.hpp"
 #include "minko/Signal.hpp"
 #include "minko/dom/AbstractDOMEvent.hpp"
+#include "minko/dom/AbstractDOMMouseEvent.hpp"
+#include "minko/dom/AbstractDOMTouchEvent.hpp"
 #include "minko/dom/AbstractDOMElement.hpp"
 #include "chromium/dom/ChromiumDOMElementV8Handler.hpp"
 #include "include/cef_render_process_handler.h"
@@ -126,23 +128,32 @@ namespace chromium
 			void
 			style(std::string name, std::string value);
 
-			minko::Signal<minko::dom::AbstractDOMEvent::Ptr>::Ptr
+			minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Ptr
 			onclick();
 
-			minko::Signal<minko::dom::AbstractDOMEvent::Ptr>::Ptr
+			minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Ptr
 			onmousedown();
 
-			minko::Signal<minko::dom::AbstractDOMEvent::Ptr>::Ptr
+			minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Ptr
 			onmousemove();
 
-			minko::Signal<minko::dom::AbstractDOMEvent::Ptr>::Ptr
+			minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Ptr
 			onmouseup();
 
-			minko::Signal<minko::dom::AbstractDOMEvent::Ptr>::Ptr
+			minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Ptr
 			onmouseout();
 
-			minko::Signal<minko::dom::AbstractDOMEvent::Ptr>::Ptr
+			minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Ptr
 			onmouseover();
+
+			minko::Signal<minko::dom::AbstractDOMTouchEvent::Ptr>::Ptr
+			ontouchdown();
+
+			minko::Signal<minko::dom::AbstractDOMTouchEvent::Ptr>::Ptr
+			ontouchup();
+
+			minko::Signal<minko::dom::AbstractDOMTouchEvent::Ptr>::Ptr
+			ontouchmotion();
 
 			static
 			void
@@ -183,12 +194,20 @@ namespace chromium
 			bool _onmouseoverCallbackSet;
 			bool _onmouseoutCallbackSet;
 
-			std::shared_ptr<minko::Signal<minko::dom::AbstractDOMEvent::Ptr>> _onclick;
-			std::shared_ptr<minko::Signal<minko::dom::AbstractDOMEvent::Ptr>> _onmousedown;
-			std::shared_ptr<minko::Signal<minko::dom::AbstractDOMEvent::Ptr>> _onmousemove;
-			std::shared_ptr<minko::Signal<minko::dom::AbstractDOMEvent::Ptr>> _onmouseup;
-			std::shared_ptr<minko::Signal<minko::dom::AbstractDOMEvent::Ptr>> _onmouseover;
-			std::shared_ptr<minko::Signal<minko::dom::AbstractDOMEvent::Ptr>> _onmouseout;
+			bool _ontouchdownCallbackSet;
+			bool _ontouchupCallbackSet;
+			bool _ontouchmoveCallbackSet;
+
+			std::shared_ptr<minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>> _onclick;
+			std::shared_ptr<minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>> _onmousedown;
+			std::shared_ptr<minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>> _onmousemove;
+			std::shared_ptr<minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>> _onmouseup;
+			std::shared_ptr<minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>> _onmouseover;
+			std::shared_ptr<minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>> _onmouseout;
+
+			std::shared_ptr<minko::Signal<minko::dom::AbstractDOMTouchEvent::Ptr>> _ontouchdown;
+			std::shared_ptr<minko::Signal<minko::dom::AbstractDOMTouchEvent::Ptr>> _ontouchup;
+			std::shared_ptr<minko::Signal<minko::dom::AbstractDOMTouchEvent::Ptr>> _ontouchmove;
 
 			CefRefPtr<ChromiumDOMElementV8Handler> _v8Handler;
 			CefRefPtr<CefV8Value> _v8NodeObject;
