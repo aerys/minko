@@ -25,12 +25,12 @@ namespace minko
 {
     namespace file
     {
-        class MissingDependencyFileParserError :
+        class MissingTextureDependencyParserError :
             public ParserError
         {
         public:
             explicit
-            MissingDependencyFileParserError(const std::string& message) :
+            MissingTextureDependencyParserError(const std::string& message) :
                 ParserError(message)
             {
             }
