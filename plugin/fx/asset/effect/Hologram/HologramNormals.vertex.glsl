@@ -16,8 +16,8 @@ varying vec3 worldTangent;
 
 void main(void)
 {
-	vec4 pos    = vec4(position, 1.0);
-	vec4 n 		= vec4(normal, 0.0); 
+	vec4 pos    = vec4(position, 1.0f);
+	vec4 n 		= vec4(normal, 0.0f); 
 
 	#ifdef NUM_BONES
 		pos 	= skinning_moveVertex(pos);

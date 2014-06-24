@@ -15,7 +15,7 @@ varying vec3 worldPosition;
 
 void main(void)
 {
-	vec4 pos = vec4(position, 1.0);
+	vec4 pos = vec4(position, 1.0f);
 
 	#ifdef NUM_BONES
 		pos = skinning_moveVertex(pos);

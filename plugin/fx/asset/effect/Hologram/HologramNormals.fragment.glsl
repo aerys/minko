@@ -15,10 +15,10 @@ void main(void)
 	#ifdef NORMAL_MAP
 		mat3 tangentToWorldMatrix 	= phong_getTangentToWorldSpaceMatrix(normal, normalize(worldTangent));
 			
-		normal = tangentToWorldMatrix * normalize(2.0 * texture2D(normalMap, vertexUV).xyz - 1.0);
+		normal = tangentToWorldMatrix * normalize(2.0f * texture2D(normalMap, vertexUV).xyz - 1.0f);
 	#endif
 
-	gl_FragColor = vec4((normalize(normal) + 1) * .5, 1);
+	gl_FragColor = vec4((normalize(normal) + 1.0f) * 0.5f, 1.0f);
 }
 
 #endif

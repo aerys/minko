@@ -25,7 +25,7 @@ void main(void)
 {
 	vertexUV = uvScale * uv + uvOffset;
 	
-	vec4 worldPosition 	= vec4(position, 1.0);
+	vec4 worldPosition 	= vec4(position, 1.0f);
 	
 	#ifdef NUM_BONES
 		worldPosition	= skinning_moveVertex(worldPosition);
@@ -40,7 +40,7 @@ void main(void)
 	vertexNormal	= normal;		
 
 	#ifdef NUM_BONES
-		vertexNormal	= skinning_moveVertex(vec4(normal, 0.0)).xyz;
+		vertexNormal	= skinning_moveVertex(vec4(normal, 0.0f)).xyz;
 	#endif // NUM_BONES
 		
 	#ifdef MODEL_TO_WORLD
