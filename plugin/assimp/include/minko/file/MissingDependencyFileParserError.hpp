@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -17,27 +17,23 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "minko/file/LuaLoader.hpp"
+#pragma once
 
-using namespace minko;
-using namespace minko::file;
+#include "minko/Common.hpp"
 
-void
-LuaLoader::bind(LuaGlue& state)
+namespace minko
 {
-    auto& batchLoader = state.Class<Loader>("Loader");
-
-    MINKO_LUAGLUE_BIND_SIGNAL(state, Loader::Ptr);
-    MINKO_LUAGLUE_BIND_SIGNAL(state, Loader::Ptr, const ParserError&);
-    MINKO_LUAGLUE_BIND_SIGNAL(state, Loader::Ptr, float);
-
-    batchLoader
-        .method("create",           static_cast<Loader::Ptr(*)(void)>(&Loader::create))
-        .method("createCopy",       static_cast<Loader::Ptr(*)(Loader::Ptr)>(&Loader::create))
-        .method("queue",            static_cast<Loader::Ptr (Loader::*)(const std::string&)>(&Loader::queue))
-        .method("load",             &Loader::load)
-        .property("complete",       &Loader::complete)
-        .property("progress",       &Loader::progress)
-        .property("protocolError",  &Loader::protocolError)
-        .property("parserError",    &Loader::parserError);
+    namespace file
+    {
+        class MissingDependencyFileParserError :
+            public ParserError
+        {
+        public:
+            explicit
+            MissingDependencyFileParserError(const std::string& message) :
+                ParserError(message)
+            {
+            }
+        };
+    }
 }

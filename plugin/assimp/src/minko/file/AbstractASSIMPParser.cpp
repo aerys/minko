@@ -47,6 +47,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/geometry/Bone.hpp"
 #include "minko/material/Material.hpp"
 #include "minko/file/AssetLibrary.hpp"
+#include "minko/file/MissingDependencyFileParserError.hpp"
 #include "minko/render/Effect.hpp"
 #include "minko/material/Material.hpp"
 #include "minko/material/BasicMaterial.hpp"
@@ -654,12 +655,14 @@ AbstractASSIMPParser::loadTexture(const std::string&	textureFilename,
         scene
 	));
 
-    _loaderErrorSlots[loader] = loader->error()->connect([=](file::Loader::Ptr loader)
+    _loaderErrorSlots[loader] = loader->protocolError()->connect([=](Loader::Ptr loader)
 	{
 		++_numLoadedDependencies;
 #ifdef DEBUG
         std::cerr << "AbstractASSIMPParser: unable to find texture with filename '" << textureFilename << "'" << std::endl;
 #endif // DEBUG
+
+        throw MissingDependencyFileParserError("missing texture dep");
 	});
 
 	loader->queue(textureFilename, options)->load();

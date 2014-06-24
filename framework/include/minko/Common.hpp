@@ -324,7 +324,8 @@ namespace minko
         class ParserError : public std::runtime_error
         {
         public:
-            ParserError(std::string message) : std::runtime_error(message)
+            explicit
+            ParserError(const std::string& message) : std::runtime_error(message)
             {}
         };
 	}

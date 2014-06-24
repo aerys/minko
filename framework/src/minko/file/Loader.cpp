@@ -30,7 +30,8 @@ Loader::Loader() :
     _options(Options::create()),
     _complete(Signal<Loader::Ptr>::create()),
     _progress(Signal<Loader::Ptr, float>::create()),
-    _error(Signal<Loader::Ptr>::create())
+    _protocolError(Signal<Loader::Ptr>::create()),
+    _parserError(Signal<Loader::Ptr, const ParserError&>::create())
 {
 }
 
@@ -103,7 +104,10 @@ Loader::protocolErrorHandler(std::shared_ptr<AbstractProtocol> protocol)
     std::cerr << "error: Loader::protocolErrorHandler(): " << protocol->file()->filename() << std::endl;
 #endif // defined(DEBUG)
 
-    throw std::invalid_argument(protocol->file()->filename());
+    if (_protocolError->numCallbacks() != 0)
+        _protocolError->execute(shared_from_this());
+    else
+        throw std::invalid_argument(protocol->file()->filename());
 }
 
 void
@@ -178,10 +182,10 @@ Loader::processData(const std::string&                      filename,
         {
             parser->parse(filename, resolvedFilename, options, data, options->assetLibrary());
         }
-        catch (ParserError parserError)
+        catch (const ParserError& parserError)
         {
-            if (_error->numCallbacks() != 0)
-                _error->execute(shared_from_this());
+            if (_parserError->numCallbacks() != 0)
+                _parserError->execute(shared_from_this(), parserError);
 #ifdef DEBUG
             else
                 throw parserError;

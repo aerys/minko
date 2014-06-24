@@ -43,24 +43,26 @@ namespace minko
             typedef std::unordered_map<AbsParserPtr, Signal<AbsParserPtr>::Slot>			ParserSlots;
 
         protected:
-            std::shared_ptr<Options>            _options;
+            std::shared_ptr<Options>                            _options;
 
-            std::list<std::string>	            _filesQueue;
-            std::list<std::string>	            _loading;
-            FilenameToOptions	                _filenameToOptions;
-            FilenameToFile                      _files;
+            std::list<std::string>	                            _filesQueue;
+            std::list<std::string>	                            _loading;
+            FilenameToOptions	                                _filenameToOptions;
+            FilenameToFile                                      _files;
 
-            std::shared_ptr<Signal<Ptr, float>> _progress;
-            std::shared_ptr<Signal<Ptr>>        _complete;
-            std::shared_ptr<Signal<Ptr>>        _error;
+            std::shared_ptr<Signal<Ptr, float>>                 _progress;
+            std::shared_ptr<Signal<Ptr>>                        _complete;
 
-			ProtocolSlots                       _protocolSlots;
-			ProtocolProgressSlots               _protocolProgressSlots;
-            ParserSlots                         _parserSlots;
+            std::shared_ptr<Signal<Ptr>>                        _protocolError;
+            std::shared_ptr<Signal<Ptr, const ParserError&>>    _parserError;
 
-			ProtocolToProgress					_protocolToProgress;
+			ProtocolSlots                                       _protocolSlots;
+			ProtocolProgressSlots                               _protocolProgressSlots;
+            ParserSlots                                         _parserSlots;
 
-			int									_numFiles;
+			ProtocolToProgress					                _protocolToProgress;
+
+			int									                _numFiles;
 
         public:
             inline static
@@ -122,9 +124,16 @@ namespace minko
 
             inline
             std::shared_ptr<Signal<Ptr>>
-            error()
+            protocolError()
             {
-                return _error;
+                return _protocolError;
+            }
+
+            inline
+            std::shared_ptr<Signal<Ptr, const ParserError&>>
+            parserError()
+            {
+                return _parserError;
             }
 
             inline

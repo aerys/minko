@@ -545,7 +545,7 @@ EffectParser::loadGLSLDependencies(GLSLBlockListPtr		blocks,
 					block.second
 				));
 
-				_loaderErrorSlots[loader] = loader->error()->connect(std::bind(
+				_loaderErrorSlots[loader] = loader->protocolError()->connect(std::bind(
 				    &EffectParser::dependencyErrorHandler,
 					std::static_pointer_cast<EffectParser>(shared_from_this()),
 					std::placeholders::_1,
@@ -996,7 +996,7 @@ EffectParser::loadTexture(const std::string&	textureFilename,
         ++_numLoadedDependencies;
 	});
 
-	_loaderErrorSlots[loader] = loader->error()->connect(std::bind(
+	_loaderErrorSlots[loader] = loader->protocolError()->connect(std::bind(
 		&EffectParser::dependencyErrorHandler,
 		std::static_pointer_cast<EffectParser>(shared_from_this()),
 		std::placeholders::_1,
