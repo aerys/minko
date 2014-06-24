@@ -312,8 +312,13 @@ AbstractASSIMPParser::getTransformFromAssimp(aiNode* ainode)
 }
 
 Geometry::Ptr
-AbstractASSIMPParser::createMeshGeometry(scene::Node::Ptr minkoNode, aiMesh* mesh)
+AbstractASSIMPParser::createMeshGeometry(scene::Node::Ptr minkoNode, aiMesh* mesh, const std::string& meshName)
 {
+    auto existingGeometry = _assetLibrary->geometry(meshName);
+
+    if (existingGeometry != nullptr)
+        return existingGeometry;
+
 	unsigned int vertexSize = 0;
 
     if (mesh->HasPositions())
@@ -389,15 +394,19 @@ AbstractASSIMPParser::createMeshGeometry(scene::Node::Ptr minkoNode, aiMesh* mes
 	geometry->addVertexBuffer(vertexBuffer);
 	geometry->indices(render::IndexBuffer::create(_assetLibrary->context(), indexData));
 
-	const auto meshName = std::string(mesh->mName.data);
-
 	geometry = _options->geometryFunction()(meshName, geometry);
 
-	// save the geometry in the assets library
-	if (!meshName.empty())
-		_assetLibrary->geometry(meshName, geometry);
+    _assetLibrary->geometry(meshName, geometry);
 
 	return geometry;
+}
+
+std::string
+AbstractASSIMPParser::getMeshName(const std::string& meshName)
+{
+    static int currentId = 0;
+
+    return meshName.empty() ? std::string("default" + std::to_string(currentId++)) : meshName;
 }
 
 void
@@ -408,9 +417,9 @@ AbstractASSIMPParser::createMeshSurface(scene::Node::Ptr 	minkoNode,
 	if (mesh == nullptr)
 		return;
 
-	const auto	meshName	= std::string(mesh->mName.data);
+	const auto	meshName	= getMeshName(std::string(mesh->mName.data));
 	const auto	aiMat		= scene->mMaterials[mesh->mMaterialIndex];
-	auto		geometry	= createMeshGeometry(minkoNode, mesh);
+	auto		geometry	= createMeshGeometry(minkoNode, mesh, meshName);
 	auto		material	= createMaterial(aiMat);
 	auto		effect		= chooseEffectByShadingMode(aiMat);
 
@@ -1299,10 +1308,23 @@ AbstractASSIMPParser::convert(const aiVector3D&		scaling,
 material::Material::Ptr
 AbstractASSIMPParser::createMaterial(const aiMaterial* aiMat)
 {
-	auto material	= chooseMaterialByShadingMode(aiMat);
+    auto material = chooseMaterialByShadingMode(aiMat);
 
 	if (aiMat == nullptr)
 		return material;
+
+    auto materialName = std::string();
+
+    aiString rawMaterialName;
+    if (aiMat->Get(AI_MATKEY_NAME, rawMaterialName) != AI_SUCCESS)
+        return material;
+
+    materialName = rawMaterialName.data;
+
+    auto existingMaterial = _assetLibrary->material(materialName);
+
+    if (existingMaterial != nullptr)
+        return existingMaterial;
 
 	material->set("blendMode",			getBlendingMode(aiMat));
 	material->set("triangleCulling",	getTriangleCulling(aiMat));
@@ -1356,23 +1378,18 @@ AbstractASSIMPParser::createMaterial(const aiMaterial* aiMat)
 		aiString path;
 		if (aiMat->GetTexture(textureType, 0, &path) == AI_SUCCESS)
 		{
-			render::Texture::Ptr texture = _assetLibrary->texture(std::string(path.data));
+			render::AbstractTexture::Ptr texture = _assetLibrary->texture(std::string(path.data));
 
 			if (texture)
 				material->set(textureName, texture);
 		}
 	}
 
-	// apply material function
-	aiString materialName;
+    auto processedMaterial = _options->materialFunction()(materialName, material);
 
-    auto materialRef = aiMat->Get(AI_MATKEY_NAME, materialName) == AI_SUCCESS
-		? _options->materialFunction()(materialName.data, material)
-		: material;
+    _assetLibrary->material(materialName, processedMaterial);
 
-    _assetLibrary->material(materialName.data, materialRef);
-
-    return materialRef;
+    return processedMaterial;
 }
 
 material::Material::Ptr

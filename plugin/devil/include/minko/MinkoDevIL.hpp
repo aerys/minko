@@ -20,3 +20,4 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/file/DevILParser.hpp"
+#include "minko/file/DevILWriter.hpp"

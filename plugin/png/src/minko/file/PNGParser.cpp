@@ -45,6 +45,11 @@ PNGParser::parse(const std::string&                 filename,
 	if (error)
 	{
 		const char* text = lodepng_error_text(error);
+
+#ifdef DEBUG
+        std::cout << "Failed to decode PNG: " << text << std::endl;
+#endif // DEBUG
+
 		throw std::invalid_argument("file '" + filename + "' loading error (" + text + ")");
 	}
 

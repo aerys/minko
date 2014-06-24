@@ -137,7 +137,11 @@ namespace minko
 			createSceneTree(NodePtr minkoNode, const aiScene* scene, aiNode* ainode, std::shared_ptr<AssetLibrary> assets);
 
             GeometryPtr
-            createMeshGeometry(NodePtr, aiMesh*);
+            createMeshGeometry(NodePtr, aiMesh*, const std::string&);
+
+            static
+            std::string
+            getMeshName(const std::string& meshName);
 
             std::shared_ptr<component::Transform>
             getTransformFromAssimp(aiNode* ainode);
