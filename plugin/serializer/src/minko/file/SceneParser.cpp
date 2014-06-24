@@ -127,16 +127,40 @@ SceneParser::parse(const std::string&					filename,
 {
 	_dependencies->options(options);
 
+	//READING HEADER
+
+	int magicNumber = readInt(data, 0);
+
+	if (magicNumber != 0x4D4B0300)
+		throw std::logic_error("Invalid scene file");
+
+	int version				= readInt(data, 4);
+
+	int versionHi			= int(data[4]);
+	int versionLow			= int(data[5]);
+	int versionBuild		= readShort(data, 6);
+
+	auto fileSize			= readUInt(data, 8);
+
+	auto headerSize			= readShort(data, 12);
+
+	auto dependenciesSize	= readUInt(data, 14);
+	auto sceneDataSize		= readUInt(data, 18);
+	
 	msgpack::object		deserialized;
 	msgpack::zone		mempool;
 	std::string 		folderPath = extractFolderPath(resolvedFilename);
-	std::string			str = extractDependencies(assetLibrary, data, options, folderPath);
 
-	msgpack::unpack(str.data(), str.size(), NULL, &mempool, &deserialized);
+	extractDependencies(assetLibrary, data, headerSize, dependenciesSize, options, folderPath);
+
+	msgpack::unpack((char*)&data[headerSize + dependenciesSize], sceneDataSize, NULL, &mempool, &deserialized);
+
 	msgpack::type::tuple<std::vector<std::string>, std::vector<SerializedNode>> dst;
 	deserialized.convert(&dst);
-	str.clear();
-	str.shrink_to_fit();
+
+	std::vector<unsigned char>* d = (std::vector<unsigned char>*)&data;
+	d->clear();
+	d->shrink_to_fit();
 
 	assetLibrary->symbol(filename, parseNode(dst.a1, dst.a0, assetLibrary, options));
 

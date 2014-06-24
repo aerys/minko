@@ -70,27 +70,23 @@ AbstractSerializerParser::parse(const std::string&					filename,
 {
 }
 
-std::string
+void
 AbstractSerializerParser::extractDependencies(AssetLibraryPtr						assetLibrary,
 											  const std::vector<unsigned char>&		data,
+											  short									dataOffset,
+											  unsigned int							dependenciesSize,
 											  std::shared_ptr<Options>				options,
 											  std::string&							assetFilePath)
 {
 	msgpack::object			msgpackObject;
 	msgpack::zone			mempool;
-	msgpack::type::tuple<std::vector<SerializedAsset>, std::string> serilizedAssets;
+	msgpack::type::tuple<std::vector<SerializedAsset>> serializedAssets;
 
-	msgpack::unpack((char*)&data[0], data.size(), NULL, &mempool, &msgpackObject);
-	msgpackObject.convert(&serilizedAssets);
-
-	std::vector<unsigned char>* d = (std::vector<unsigned char>*)&data;
-	d->clear();
-	d->shrink_to_fit();
-
-	for (uint index = 0; index < serilizedAssets.a0.size(); ++index)
-		deserializedAsset(serilizedAssets.a0[index], assetLibrary, options, assetFilePath);
-
-	return serilizedAssets.a1;
+	msgpack::unpack((char*)&data[dataOffset], dependenciesSize, NULL, &mempool, &msgpackObject);
+	msgpackObject.convert(&serializedAssets);
+	
+	for (uint index = 0; index < serializedAssets.a0.size(); ++index)
+		deserializedAsset(serializedAssets.a0[index], assetLibrary, options, assetFilePath);
 }
 
 void

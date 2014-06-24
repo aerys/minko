@@ -70,11 +70,13 @@ namespace minko
 			registerAssetFunction(uint assetTypeId, AssetDeserializeFunction f);
 
 		protected:
-			std::string
-			extractDependencies(AssetLibraryPtr						assetLibrary,
-								const std::vector<unsigned char>&	data,
-								std::shared_ptr<Options>			options,
-								std::string&						assetFilePath);
+			void
+			extractDependencies(AssetLibraryPtr							assetLibrary, 
+			  				    const std::vector<unsigned char>&		data,
+								short									dataOffset,
+								unsigned int							dependenciesSize,
+								std::shared_ptr<Options>				options,
+								std::string&							assetFilePath);
 
 			inline
 			void
@@ -94,6 +96,24 @@ namespace minko
 
 			std::string
 			extractFolderPath(const std::string& filepath);
+
+			int
+			readInt(const std::vector<unsigned char>& data, int offset)
+			{
+				return (int)(data[offset] << 24 | data[offset + 1] << 16 | data[offset + 2] << 8 | data[offset + 3]);
+			}
+
+			unsigned int
+			readUInt(const std::vector<unsigned char>& data, int offset)
+			{
+				return (unsigned int)(data[offset] << 24 | data[offset + 1] << 16 | data[offset + 2] << 8 | data[offset + 3]);
+			}
+
+			short
+			readShort(const std::vector<unsigned char>& data, int offset)
+			{
+				return (short)(data[offset] << 8 | data[offset + 1]);
+			}
 		};
 	}
 }

@@ -110,18 +110,39 @@ GeometryParser::parse(const std::string&				filename,
 					  const std::vector<unsigned char>&	data,
 					  std::shared_ptr<AssetLibrary>		assetLibrary)
 {
+	//READING HEADER
+
+	int magicNumber = readInt(data, 0);
+
+	if (magicNumber != 0x4D4B0347)
+		throw std::logic_error("Invalid geometry data");
+
+	int version = readInt(data, 4);
+
+	int versionHi = int(data[4]);
+	int versionLow = int(data[5]);
+	int versionBuild = readShort(data, 6);
+
+	auto fileSize = readUInt(data, 8);
+
+	auto headerSize = readShort(data, 12);
+
+	auto dependenciesSize = readUInt(data, 14);
+	auto sceneDataSize = readUInt(data, 18);
+
 	msgpack::object			msgpackObject;
 	msgpack::zone			mempool;
 	std::string				folderPathName = extractFolderPath(resolvedFilename);
-	std::string				str		= extractDependencies(assetLibrary, data, options, folderPathName);
+	extractDependencies(assetLibrary, data, headerSize, dependenciesSize, options, folderPathName);
 	geometry::Geometry::Ptr geom	= geometry::Geometry::create();
 	SerializedGeometry		serializedGeometry;
 
-	msgpack::unpack(str.data(), str.size(), NULL, &mempool, &msgpackObject);
+	msgpack::unpack((char*)&data[headerSize + dependenciesSize], sceneDataSize, NULL, &mempool, &msgpackObject);
 	msgpackObject.convert(&serializedGeometry);
 
-	str.clear();
-	str.shrink_to_fit();
+	std::vector<unsigned char>* d = (std::vector<unsigned char>*)&data;
+	d->clear();
+	d->shrink_to_fit();
 
 	uint indexBufferFunction = 0;
 	uint vertexBufferFunction = 0;
