@@ -28,6 +28,34 @@ namespace minko
 {
 	namespace file
 	{
+        class WriterError :
+            public std::runtime_error
+        {
+        private:
+            std::string _type;
+
+        public:
+            explicit
+            WriterError(const std::string& message) :
+                std::runtime_error(message),
+                _type()
+            {
+            }
+
+            WriterError(const std::string& type, const std::string& message) :
+                std::runtime_error(message),
+                _type(type)
+            {
+            }
+
+            inline
+            const std::string&
+            type() const
+            {
+                return _type;
+            }
+        };
+
 		template <typename T>
 		class AbstractWriter :
 			public std::enable_shared_from_this<AbstractWriter<T>>
@@ -38,10 +66,11 @@ namespace minko
 		private:
 			typedef std::vector<msgpack::type::tuple<unsigned int, short, std::string>> SerializedDependency;
 
-		protected :
-			std::shared_ptr<Signal<Ptr>>	_complete;
-			T								_data;
-			std::shared_ptr<Dependency>		_parentDependencies;
+		protected:
+			std::shared_ptr<Signal<Ptr>>	                    _complete;
+            std::shared_ptr<Signal<Ptr, const WriterError&>>    _error;
+			T								                    _data;
+			std::shared_ptr<Dependency>		                    _parentDependencies;
 
 		public:
 			inline
@@ -50,6 +79,13 @@ namespace minko
 			{
 				return _complete;
 			}
+
+            inline
+            std::shared_ptr<Signal<Ptr, const WriterError&>>
+            error()
+            {
+                return _error;
+            }
 
 			inline
 			T
@@ -84,36 +120,46 @@ namespace minko
 			}
 
 			void
-			write(std::string&                          filename,
-				  std::shared_ptr<AssetLibrary>         assetLibrary,
-				  std::shared_ptr<Options>              options,
+            write(std::string&                          filename,
+                  std::shared_ptr<AssetLibrary>         assetLibrary,
+                  std::shared_ptr<Options>              options,
                   std::shared_ptr<WriterOptions>        writerOptions,
-				  SerializedDependency&					includeDependency)
-			{
-				std::ofstream file(filename, std::ios::out | std::ios::binary | std::ios::trunc);
+                  SerializedDependency&					includeDependency)
+            {
+                try
+                {
+                    std::ofstream file(filename, std::ios::out | std::ios::binary | std::ios::trunc);
 
-				if (file)
-				{
-					Dependency::Ptr			dependencies			= Dependency::create();
-					std::string				serializedData			= embed(assetLibrary, options, dependencies, writerOptions);
-					SerializedDependency	serializedDependencies	= dependencies->serialize(assetLibrary, options, writerOptions);
-					
-					if (includeDependency.size() > 0)
-						serializedDependencies.insert(serializedDependencies.begin(), includeDependency.begin(), includeDependency.end());
+                    if (file)
+                    {
+                        Dependency::Ptr			dependencies = Dependency::create();
+                        std::string				serializedData = embed(assetLibrary, options, dependencies, writerOptions);
+                        SerializedDependency	serializedDependencies = dependencies->serialize(assetLibrary, options, writerOptions);
 
-					msgpack::type::tuple<SerializedDependency, std::string> res(serializedDependencies, serializedData);
+                        if (includeDependency.size() > 0)
+                            serializedDependencies.insert(serializedDependencies.begin(), includeDependency.begin(), includeDependency.end());
 
-					std::stringstream sbuf;
-					msgpack::pack(sbuf, res);
+                        msgpack::type::tuple<SerializedDependency, std::string> res(serializedDependencies, serializedData);
 
-					file.write(sbuf.str().c_str(), sbuf.str().size());
-					file.close();
-				}
-				else
-					std::cerr << "File " << filename << " can't be opened" << std::endl;
+                        std::stringstream sbuf;
+                        msgpack::pack(sbuf, res);
 
-				complete()->execute(this->shared_from_this());
-			}
+                        file.write(sbuf.str().c_str(), sbuf.str().size());
+                        file.close();
+                    }
+                    else
+                        std::cerr << "File " << filename << " can't be opened" << std::endl;
+
+                    complete()->execute(this->shared_from_this());
+                }
+                catch (const WriterError& exception)
+                {
+                    if (error()->numCallbacks() > 0)
+                        error()->execute(this->shared_from_this(), exception);
+                    else
+                        throw exception;
+                }
+            }
 
 			std::string
 			embedAll(std::shared_ptr<AssetLibrary>  assetLibrary,
@@ -131,25 +177,32 @@ namespace minko
                      std::shared_ptr<WriterOptions> writerOptions,
 					 SerializedDependency&			includeDependency)
             {
-                // TODO
-                // refactor with AbstractWriter::write by adding a tier private member function
+                try
+                {
+                    Dependency::Ptr			dependencies = _parentDependencies;
+                    std::string				serializedData = embed(assetLibrary, options, dependencies, writerOptions);
+                    SerializedDependency	serializedDependencies = Dependency::create()->serialize(assetLibrary,
+                                                                                                     options,
+                                                                                                     writerOptions);
+                    if (includeDependency.size() > 0)
+                        serializedDependencies.insert(serializedDependencies.begin(), includeDependency.begin(), includeDependency.end());
 
-				Dependency::Ptr			dependencies	= _parentDependencies;
-				std::string				serializedData	= embed(assetLibrary, options, dependencies, writerOptions);
-				SerializedDependency	serializedDependencies = Dependency::create()->serialize(assetLibrary,
-                                                                                                 options,
-                                                                                                 writerOptions);
-				if (includeDependency.size() > 0)
-					serializedDependencies.insert(serializedDependencies.begin(), includeDependency.begin(), includeDependency.end());
+                    msgpack::type::tuple<SerializedDependency, std::string> res(serializedDependencies, serializedData);
 
-                msgpack::type::tuple<SerializedDependency, std::string> res(serializedDependencies, serializedData);
+                    std::stringstream sbuf;
+                    msgpack::pack(sbuf, res);
 
-                std::stringstream sbuf;
-                msgpack::pack(sbuf, res);
+                    complete()->execute(this->shared_from_this());
 
-                complete()->execute(this->shared_from_this());
-
-                return sbuf.str();
+                    return sbuf.str();
+                }
+                catch (const WriterError& exception)
+                {
+                    if (error()->numCallbacks() > 0)
+                        error()->execute(this->shared_from_this(), exception);
+                    else
+                        throw exception;
+                }
             }
 
 			virtual
@@ -162,6 +215,7 @@ namespace minko
 		protected:
 			AbstractWriter() :
 				_complete(Signal<Ptr>::create()),
+                _error(Signal<Ptr, const WriterError&>::create()),
 				_parentDependencies(nullptr)
 			{
 			}

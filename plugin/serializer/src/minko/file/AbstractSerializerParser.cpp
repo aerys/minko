@@ -126,8 +126,28 @@ AbstractSerializerParser::deserializedAsset(SerializedAsset&			asset,
 			file.read((char*)&data[0], size);
 			file.close();
 		}
-		else
-			throw std::invalid_argument("file already open");
+        else
+        {
+            auto filePath = assetCompletePath;
+
+            switch (asset.a0)
+            {
+            case serialize::AssetType::GEOMETRY_ASSET:
+                throw ParserError("MissingGeometryDependency", "Missing geometry dependency: '" + filePath + "'");
+
+            case serialize::AssetType::MATERIAL_ASSET:
+                throw ParserError("MissingMaterialDependency", "Missing material dependency: '" + filePath + "'");
+
+            case serialize::AssetType::TEXTURE_ASSET:
+                throw ParserError("MissingTextureDependency", "Missing texture dependency: '" + filePath + "'");
+
+            case serialize::AssetType::EFFECT_ASSET:
+                throw ParserError("MissingEffectDependency", "Missing effect dependency: '" + filePath + "'");
+
+            default:
+                break;
+            }
+        }
 	}
 	else
 		data.assign(asset.a2.begin(), asset.a2.end());

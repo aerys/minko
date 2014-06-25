@@ -27,6 +27,7 @@ namespace minko
 	{
 		class AbstractMkParser;
 		class AbtractWriter;
+        class SceneWriter;
 		class SceneParser;
 		class GeometryWriter;
 		class GeometryParser;
