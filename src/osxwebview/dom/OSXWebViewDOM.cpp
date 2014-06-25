@@ -48,12 +48,7 @@ void
 OSXWebViewDOM::sendMessage(std::string message, bool async)
 {
 	std::string eval = "if (" + _jsAccessor + ".window.Minko.onmessage) " + _jsAccessor + ".window.Minko.onmessage('" + message + "');";
-	//if (!async)
-		//emscripten_run_script(eval.c_str());
-	//else
-	//	emscripten_async_run_script("console.log('toto'); if (" + _jsAccessor + ".window.Minko.onmessage) " + _jsAccessor + ".window.Minko.onmessage('" + message + "');", 1);
 
-    //[_engine->bridge() send:[NSString stringWithCString:message.c_str() encoding:[NSString defaultCStringEncoding]]];
     runScript(eval);
 }
 

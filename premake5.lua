@@ -133,11 +133,7 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 			"src/ioswebview/**.hpp"
 		}
 
-		defines {
-			-- "TARGET_IPHONE_SIMULATOR",
-			-- "TARGET_OS_IPHONE"
-		}
-
+	-- osx
 	configuration { "osx64" }
 		buildoptions { "-x objective-c++" }
 		includedirs { "lib/WebViewJavascriptBridge" }
@@ -152,11 +148,5 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 			"src/osxwebview/**.hpp"
 		}
 		links {
-			"WebKit.framework",
-			-- "AppKit.framework"
-		}
-
-		defines {
-			-- "TARGET_IPHONE_SIMULATOR",
-			-- "TARGET_OS_IPHONE"
+			"WebKit.framework"
 		}

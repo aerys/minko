@@ -12,29 +12,6 @@
 		
 		<script type="text/javascript">
 			
-			function connectWebViewJavascriptBridge(callback) {
-			    if (window.WebViewJavascriptBridge) {
-			        callback(WebViewJavascriptBridge);
-			    } else {
-			        document.addEventListener('WebViewJavascriptBridgeReady', function() {
-			            callback(WebViewJavascriptBridge);
-			        }, false)
-			    }
-			}
-
-			connectWebViewJavascriptBridge(function(bridge) {
-
-			    // Init your app here
-			    m.bridge = bridge;
-
-			    bridge.init(function(message, responseCallback) {  
-			        if (responseCallback) {
-			        }
-			    })
-
-			    bridge.send({type: 'ready', value:'true'});
-			});
-
 			window.onerror = function (message, url, linenumber){
 				//document.getElementById("debug").innerHTML += message + " line " + linenumber + " " + url + "</br>";
 				alert('Javascript error: ' + message + ' on line ' + linenumber + ' for ' + url);
@@ -108,23 +85,15 @@
 			{
 				if(!accessor.minkoEvents)
 					accessor.minkoEvents = [];
-
+				
 				accessor.addEventListener(type, function(event)
 				{
-					accessor.minkoEvents.push(event);
-					var eventIndex = accessor.minkoEvents.length - 1;
-					//m.bridge.send({type: type, value: accessor.minkoName + '|' + eventIndex});
-
-
-					// if (event.type == "touchstart")
-					// {
-					// 	var touches = event.changedTouches;
-					// 	for (var i = 0; i < touches.length; i++)
-					// 	{
-					// 		var identifier = touches[i].identifier.toString();
-					// 		m.bridge.send({type: "log", value: "[JS] Finger move id: " + identifier + "(for i = " + i + ")"});
-					// 	}
-					// }
+					// If it's a MouseEvent, we propagate the event only for left click
+					if ((event.button != undefined && event.button == 0) || event.button == undefined)
+					{
+						accessor.minkoEvents.push(event);
+						var eventIndex = accessor.minkoEvents.length - 1;
+					}
 				});
 			};
 
@@ -159,6 +128,29 @@
 			};
 
 			window.Minko = m;
+
+			function connectWebViewJavascriptBridge(callback) {
+			    if (window.WebViewJavascriptBridge) {
+			        callback(WebViewJavascriptBridge);
+			    } else {
+			        document.addEventListener('WebViewJavascriptBridgeReady', function() {
+			            callback(WebViewJavascriptBridge);
+			        }, false)
+			    }
+			}
+
+			connectWebViewJavascriptBridge(function(bridge) {
+
+			    // Init your app here
+			    m.bridge = bridge;
+
+			    bridge.init(function(message, responseCallback) {  
+			        if (responseCallback) {
+			        }
+			    })
+
+			    bridge.send({type: 'ready', value:'true'});
+			});
         </script>
 	</body>
 </html>

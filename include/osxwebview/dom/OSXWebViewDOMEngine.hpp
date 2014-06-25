@@ -107,7 +107,7 @@ namespace osxwebview
             static
             std::function<void(std::string&, std::string&)>
             handleJavascriptMessageWrapper;
-    
+            
 		private:
 
 			void
@@ -119,9 +119,6 @@ namespace osxwebview
             void
             registerDomEvents();
             
-            void
-            updateWebViewWidth();
-
 			static
 			int _domUid;
 
@@ -133,16 +130,14 @@ namespace osxwebview
 			minko::Signal<minko::AbstractCanvas::Ptr, minko::uint, minko::uint>::Slot _canvasResizedSlot;
 			minko::Signal<minko::component::SceneManager::Ptr, float, float>::Slot _enterFrameSlot;
 
-			int _loadedPreviousFrameState;
 			minko::Signal<minko::dom::AbstractDOM::Ptr, std::string>::Ptr _onload;
 			minko::Signal<minko::dom::AbstractDOM::Ptr, std::string>::Ptr _onmessage;
 
 			bool _visible;
             
-            // iOS WebView
+            // OSX WebView
             NSWindow *_window;
             OSXWebView *_webView;
-            uint _webViewWidth;
             WebViewJavascriptBridge* _bridge;
             
             bool _waitingForLoad;

@@ -17,14 +17,8 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#import "osxwebview/dom/OSXWebView.h"
+#import "OSXWebView.h"
 
 @implementation OSXWebView
-
-- (void)webView:(WebView *)sender didFinishLoadForFrame:(WebFrame *)frame {
-    NSScrollView *mainScrollView = sender.mainFrame.frameView.documentView.enclosingScrollView;
-    [mainScrollView setVerticalScrollElasticity:NSScrollElasticityNone];
-    [mainScrollView setHorizontalScrollElasticity:NSScrollElasticityNone];
-}
 
 @end

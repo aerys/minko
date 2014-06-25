@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Common.hpp"
 #include "minko/input/Mouse.hpp"
 #include "osxwebview/dom/OSXWebViewDOMElement.hpp"
-#include "osxwebview/dom/OSXWebViewDOMEvent.hpp"
+#include "osxwebview/dom/OSXWebViewDOMMouseEvent.hpp"
 #include "osxwebview/dom/OSXWebViewDOMEngine.hpp"
 #include "osxwebview/dom/OSXWebViewDOM.hpp"
 #include "minko/dom/AbstractDOMEvent.hpp"
@@ -43,24 +43,18 @@ OSXWebViewDOMElement::_accessorToElement;
 
 OSXWebViewDOMElement::OSXWebViewDOMElement(std::string jsAccessor) :
 	_jsAccessor(jsAccessor),
-	_onclick(Signal<AbstractDOMEvent::Ptr>::create()),
-	_onmousedown(Signal<AbstractDOMEvent::Ptr>::create()),
-	_onmousemove(Signal<AbstractDOMEvent::Ptr>::create()),
-	_onmouseup(Signal<AbstractDOMEvent::Ptr>::create()),
-	_onmouseover(Signal<AbstractDOMEvent::Ptr>::create()),
-	_onmouseout(Signal<AbstractDOMEvent::Ptr>::create()),
-    _ontouchdown(Signal<AbstractDOMEvent::Ptr>::create()),
-    _ontouchup(Signal<AbstractDOMEvent::Ptr>::create()),
-    _ontouchmotion(Signal<AbstractDOMEvent::Ptr>::create()),
-	_onclickSet(false),
-	_onmousedownSet(false),
-	_onmousemoveSet(false),
-	_onmouseupSet(false),
-	_onmouseoverSet(false),
-	_onmouseoutSet(false),
-    _ontouchdownSet(false),
-    _ontouchupSet(false),
-    _ontouchmotionSet(false),
+	_onclick(Signal<AbstractDOMMouseEvent::Ptr>::create()),
+	_onmousedown(Signal<AbstractDOMMouseEvent::Ptr>::create()),
+	_onmousemove(Signal<AbstractDOMMouseEvent::Ptr>::create()),
+	_onmouseup(Signal<AbstractDOMMouseEvent::Ptr>::create()),
+    _onmouseout(Signal<AbstractDOMMouseEvent::Ptr>::create()),
+    _onmouseover(Signal<AbstractDOMMouseEvent::Ptr>::create()),
+    _onclickSet(false),
+    _onmousedownSet(false),
+    _onmousemoveSet(false),
+    _onmouseupSet(false),
+    _onmouseoverSet(false),
+    _onmouseoutSet(false),
     _engine(nullptr)
 {
 	
@@ -268,7 +262,6 @@ OSXWebViewDOMElement::getElementsByTagName(std::string tagName)
 	return (_engine->currentDOM()->getElementList(_jsAccessor + ".getElementsByTagName('" + tagName + "')"));
 }
 
-
 std::string
 OSXWebViewDOMElement::style(std::string name)
 {
@@ -295,112 +288,78 @@ OSXWebViewDOMElement::addEventListener(std::string type)
 
 // Events
 
-Signal<std::shared_ptr<AbstractDOMEvent>>::Ptr
+Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
 OSXWebViewDOMElement::onclick()
 {
 	if (!_onclickSet)
 	{
-		addEventListener("touchend");
-		_onclickSet = false;
+		addEventListener("click");
+		_onclickSet = true;
 	}
 
 	return _onclick;
 }
 
-Signal<std::shared_ptr<AbstractDOMEvent>>::Ptr
+Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
 OSXWebViewDOMElement::onmousedown()
 {
 	if (!_onmousedownSet)
 	{
-		addEventListener("touchstart");
-		_onmousedownSet = false;
+		addEventListener("mousedown");
+		_onmousedownSet = true;
 	}
 
 	return _onmousedown;
 }
 
-Signal<std::shared_ptr<AbstractDOMEvent>>::Ptr
+Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
+OSXWebViewDOMElement::onmouseup()
+{
+    if (!_onmouseupSet)
+    {
+        addEventListener("mouseup");
+        _onmouseupSet = true;
+    }
+    
+    return _onmouseup;
+}
+
+
+Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
 OSXWebViewDOMElement::onmousemove()
 {
 	if (!_onmousemoveSet)
 	{
-		addEventListener("touchmove");
-		_onmousemoveSet = false;
+		addEventListener("mousemove");
+		_onmousemoveSet = true;
 	}
 	
 	return _onmousemove;
 }
 
-Signal<std::shared_ptr<AbstractDOMEvent>>::Ptr
-OSXWebViewDOMElement::onmouseup()
-{
-	if (!_onmouseupSet)
-	{
-		addEventListener("touchend");
-		_onmouseupSet = false;
-	}
-
-	return _onmouseup;
-}
-
-Signal<std::shared_ptr<AbstractDOMEvent>>::Ptr
+Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
 OSXWebViewDOMElement::onmouseout()
 {
-	if (!_onmouseoutSet)
-	{
-		addEventListener("mouseout");
-		_onmouseoutSet = false;
-	}
-
-	return _onmouseout;
+    if (!_onmouseoutSet)
+    {
+        addEventListener("mouseout");
+        _onmouseoutSet = true;
+    }
+    
+    return _onmouseout;
 }
 
-Signal<std::shared_ptr<AbstractDOMEvent>>::Ptr
+
+Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
 OSXWebViewDOMElement::onmouseover()
 {
 	if (!_onmouseoverSet)
 	{
 		addEventListener("mouseover");
-		_onmouseoverSet = false;
+		_onmouseoverSet = true;
 	}
 
 	return _onmouseover;
-}
-
-Signal<std::shared_ptr<AbstractDOMEvent>>::Ptr
-OSXWebViewDOMElement::ontouchdown()
-{
-    if (!_ontouchdownSet)
-	{
-		addEventListener("touchdown");
-		_ontouchdownSet = false;
-	}
-    
-    return _ontouchdown;
-}
-
-Signal<std::shared_ptr<AbstractDOMEvent>>::Ptr
-OSXWebViewDOMElement::ontouchup()
-{
-    if (!_ontouchupSet)
-	{
-		addEventListener("touchdown");
-		_ontouchupSet = false;
-	}
-    
-    return _ontouchup;
-}
-
-Signal<std::shared_ptr<AbstractDOMEvent>>::Ptr
-OSXWebViewDOMElement::ontouchmotion()
-{
-    if (!_ontouchmotionSet)
-	{
-		addEventListener("touchmotion");
-		_ontouchmotionSet = false;
-	}
-    
-    return _ontouchmotion;
 }
 
 void
@@ -408,42 +367,34 @@ OSXWebViewDOMElement::update()
 {
     if (_engine->isReady())
     {
-	std::string js = "(Minko.getEventsCount(" + _jsAccessor + "))";
-	int l = atoi(_engine->eval(js).c_str());
-
-	for(int i = 0; i < l; ++i)
-	{
-		std::string eventName = "Minko.event" + std::to_string(_elementUid++);
-		js =  eventName + " = " + _jsAccessor + ".minkoEvents[" + std::to_string(i) + "];";
-		_engine->eval(js);
-
-		OSXWebViewDOMEvent::Ptr event = OSXWebViewDOMEvent::create(eventName, _engine);
-
-		std::string type = event->type();
-
-		if (type == "touchstart")
+        std::string js = "(Minko.getEventsCount(" + _jsAccessor + "))";
+        int l = atoi(_engine->eval(js).c_str());
+        
+        for(int i = 0; i < l; ++i)
         {
-            _ontouchdown->execute(event);
-            _onmousedown->execute(event);
+            std::string eventName = "Minko.event" + std::to_string(_elementUid++);
+            js =  eventName + " = " + _jsAccessor + ".minkoEvents[" + std::to_string(i) + "];";
+            _engine->eval(js);
+            
+            OSXWebViewDOMMouseEvent::Ptr event = OSXWebViewDOMMouseEvent::create(eventName, _engine);
+            
+            std::string type = event->type();
+            
+            if (type == "click")
+                _onclick->execute(event);
+            else if (type == "mousedown")
+                _onmousedown->execute(event);
+            else if (type == "mouseup")
+                _onmouseup->execute(event);
+            else if (type == "mousemove")
+                _onmousemove->execute(event);
+            else if (type == "mouseover")
+                _onmouseover->execute(event);
+            else if (type == "mouseout")
+                _onmouseout->execute(event);
         }
-		else if (type == "touchend")
-        {
-            _ontouchup->execute(event);
-            _onclick->execute(event);
-			_onmouseup->execute(event);
-        }
-		else if (type == "touchmove")
-        {
-            _ontouchmotion->execute(event);
-			_onmousemove->execute(event);
-		}
-        else if (type == "mouseover")
-			_onmouseover->execute(event);
-		else if (type == "mouseout")
-			_onmouseout->execute(event);
-	}
-
-	js = "Minko.clearEvents(" + _jsAccessor + ");";
-	_engine->eval(js);
+        
+        js = "Minko.clearEvents(" + _jsAccessor + ");";
+        _engine->eval(js);
     }
 }

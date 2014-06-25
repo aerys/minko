@@ -127,14 +127,8 @@ namespace ioswebview
                 return _firstFingerId;
             }
             
-            void
-            addTouch(std::shared_ptr<minko::SDLTouch> touch);
-    
-            void
-            removeTouch(int touch);
-            
             inline
-            int
+            unsigned long
             touchNumber()
             {
                 return _touches.size();
@@ -148,10 +142,7 @@ namespace ioswebview
             }
             
 		private:
-
-			void
-			loadScript(std::string filename);
-
+            
 			void
 			createNewDom();
             
@@ -161,9 +152,6 @@ namespace ioswebview
             void
             updateWebViewWidth();
             
-            void
-            raiseDomEvent(const std::string& type, const std::string& value);
-
 			static
 			int _domUid;
 
@@ -175,7 +163,6 @@ namespace ioswebview
 			minko::Signal<minko::AbstractCanvas::Ptr, minko::uint, minko::uint>::Slot _canvasResizedSlot;
 			minko::Signal<minko::component::SceneManager::Ptr, float, float>::Slot _enterFrameSlot;
 
-			int _loadedPreviousFrameState;
 			minko::Signal<minko::dom::AbstractDOM::Ptr, std::string>::Ptr _onload;
 			minko::Signal<minko::dom::AbstractDOM::Ptr, std::string>::Ptr _onmessage;
 
@@ -184,8 +171,8 @@ namespace ioswebview
             // iOS WebView
             UIWindow *_window;
             IOSWebView *_webView;
-            uint _webViewWidth;
             WebViewJavascriptBridge* _bridge;
+            uint _webViewWidth;
             
             bool _waitingForLoad;
             std::string _uriToLoad;

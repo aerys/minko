@@ -22,13 +22,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/FileProtocol.hpp"
 #include "minko/file/AssetLibrary.hpp"
 #include "osxwebview/dom/OSXWebViewDOMEngine.hpp"
-#include "osxwebview/dom/OSXWebViewDOMEvent.hpp"
+#include "osxwebview/dom/OSXWebViewDOMMouseEvent.hpp"
 
 #include "minko/MinkoSDL.hpp"
 
 #include "SDL.h"
 #include "SDL_syswm.h"
-// #include <UIKit/NSWindow.h>
+
+#import "OSXWebUIDelegate.h"
 
 using namespace minko;
 using namespace minko::component;
@@ -43,22 +44,17 @@ std::function<void(std::string&, std::string&)>
 OSXWebViewDOMEngine::handleJavascriptMessageWrapper;
 
 // Slots
-Signal<minko::dom::AbstractDOMEvent::Ptr>::Slot onmousemoveSlot;
-Signal<minko::dom::AbstractDOMEvent::Ptr>::Slot onmousedownSlot;
-Signal<minko::dom::AbstractDOMEvent::Ptr>::Slot onmouseupSlot;
+Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Slot onmousemoveSlot;
+Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Slot onmousedownSlot;
+Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Slot onmouseupSlot;
 
-Signal<minko::dom::AbstractDOMEvent::Ptr>::Slot ontouchdownSlot;
-Signal<minko::dom::AbstractDOMEvent::Ptr>::Slot ontouchupSlot;
-Signal<minko::dom::AbstractDOMEvent::Ptr>::Slot ontouchmotionSlot;
 
 OSXWebViewDOMEngine::OSXWebViewDOMEngine() :
-	_loadedPreviousFrameState(0),
 	_onload(Signal<AbstractDOM::Ptr, std::string>::create()),
 	_onmessage(Signal<AbstractDOM::Ptr, std::string>::create()),
 	_visible(true),
     _waitingForLoad(true),
-    _isReady(false),
-    _webViewWidth(0)
+    _isReady(false)
 {
 }
 
@@ -80,36 +76,36 @@ OSXWebViewDOMEngine::initialize(AbstractCanvas::Ptr canvas, SceneManager::Ptr sc
         _window = info.info.cocoa.window;
         
         // Create the web view
-        _webView = [[OSXWebView alloc] initWithFrame:_window.frame];
-        CIColor* clearColor = [CIColor colorWithRed:255/255.0f green:1/255.0f blue:0/255.0f alpha:0.f];
-        // [_webView setBackgroundColor:clearColor];
-        // [_webView setOpaque:NO];
-        // [_webView.scrollView setDelaysContentTouches:NO];
+        _webView = [[OSXWebView alloc] initWithFrame:NSMakeRect(0, 0, _canvas->width(), _canvas->height())];
+
+        // Display the webview
+        [_webView setWantsLayer: YES];
+        
+        // Webview's background
+        CGColorRef clearColor = CGColorCreateGenericRGB(255/255.0f, 1/255.0f, 0/255.0f, 0.f);
+        _webView.layer.backgroundColor = clearColor;
+
+        // Display the canvas behind the overlay
+        [_webView setDrawsBackground:NO];
         
         // Disable web view scroll
-        // _webView.scrollView.scrollEnabled = NO;
-        // _webView.scrollView.bounces = NO;
+        [[[_webView mainFrame] frameView] setAllowsScrolling:NO];
+        _webView.mainFrame.frameView.documentView.enclosingScrollView.verticalScrollElasticity = NSScrollElasticityNone;
         
-        // Resize the web view according to device dimension and orientation
-        // _webView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin |
-        //                             UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin |
-        //                             UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-        // _webView.scalesPageToFit = YES;
-        
-        //[_webView setUserInteractionEnabled:NO];
-        
-        _window.contentViewController.view.autoresizesSubviews = YES;
+        // Set UIDelegate (used to enable JS alert and disable right click)
+        [_webView setUIDelegate:[OSXWebUIDelegate alloc]];
+
+        // Resize the overlay according to the window's size
+        [_window.contentView setAutoresizesSubviews:YES];
+        [_webView setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
         
         // Add the web view to the current window
-        [_window.contentViewController.view addSubview:_webView];
-        
-        // Save the web view width
-        _webViewWidth = _webView.frame.size.width;
+        [_window.contentView addSubview:_webView];
         
         // Load iframe containing bridge JS callback handler
         NSURL *url = [NSURL fileURLWithPath:@"asset/html/iframe.html"];
-        NSURLRequest *requestObj = [NSURLRequest requestWithURL:url];
-        [_webView.mainFrame loadRequest:requestObj];
+        NSURLRequest *request = [NSURLRequest requestWithURL:url];
+        [[_webView mainFrame] loadRequest:request];
         
         // Create a C++ handler to process the message received by the Javascript bridge
         handleJavascriptMessageWrapper = std::bind(
@@ -122,8 +118,6 @@ OSXWebViewDOMEngine::initialize(AbstractCanvas::Ptr canvas, SceneManager::Ptr sc
         // Create the bridge
         _bridge = [WebViewJavascriptBridge bridgeForWebView:_webView handler:
                    ^(id data, WVJBResponseCallback responseCallback) {
-                   NSLog(@"Received message from javascript: %@", data);
-                   responseCallback(@"Right back atcha");
 
                    // If the message is a dictionary (of this form: {type: 'ready', value: 'true'})
                    if([data isKindOfClass:[NSDictionary class]])
@@ -155,42 +149,16 @@ OSXWebViewDOMEngine::initialize(AbstractCanvas::Ptr canvas, SceneManager::Ptr sc
         
 #if DEBUG
         // Enable bridge logging
-        //[WebViewJavascriptBridge enableLogging];
+//        [WebViewJavascriptBridge enableLogging];
 #endif
     }
 
     visible(_visible);
 
-	_canvasResizedSlot = _canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
-    {
-        _webViewWidth = w;
-        
-        updateWebViewWidth();
-    });
-
 	_enterFrameSlot = _sceneManager->frameBegin()->connect([&](std::shared_ptr<component::SceneManager>, float, float)
 	{
 		enterFrame();
 	});
-}
-
-void
-OSXWebViewDOMEngine::loadScript(std::string filename)
-{
-    auto options = file::Options::create(_sceneManager->assets()->loader()->options());
-    options->loadAsynchronously(false);
-
-    file::AbstractProtocol::Ptr loader = file::FileProtocol::create();
-
-    auto loaderComplete = loader->complete()->connect([&](std::shared_ptr<file::AbstractProtocol> loader)
-    {
-    	std::string js;
-    	js.assign(loader->file()->data().begin(), loader->file()->data().end());
-
-		eval(js);
-    });
-
-	loader->load(filename, options);
 }
 
 void
@@ -221,7 +189,6 @@ OSXWebViewDOMEngine::enterFrame()
         {
             _waitingForLoad = false;
             load(_uriToLoad);
-            updateWebViewWidth();
         }
         
         return;
@@ -246,13 +213,11 @@ OSXWebViewDOMEngine::enterFrame()
         
         registerDomEvents();
 	}
-
-    /*
-	for(auto element : OSXWebViewDOMEvent::domElements)
-	{
-		element->update();
-	}
-    */
+    
+    for(auto element : OSXWebViewDOMElement::domElements)
+    {
+        element->update();
+    }
 
 	if (_currentDOM->initialized() && _isReady)
 	{
@@ -358,8 +323,6 @@ OSXWebViewDOMEngine::visible(bool value)
 
 void OSXWebViewDOMEngine::handleJavascriptMessage(std::string type, std::string value)
 {
-    std::cout << "Processing the current message: [type: " << type << "; value: " << value << "]" << std::endl;
-    
     if (type == "ready")
     {
         _isReady = (value == "true") ? true : false;
@@ -375,91 +338,46 @@ void OSXWebViewDOMEngine::handleJavascriptMessage(std::string type, std::string 
     {
         std::cout << "[Bridge] " << value << std::endl;
     }
-    // JS event
-    if (type == "touchstart")
-    {
-        auto element = OSXWebViewDOMElement::getDOMElement(value, shared_from_this());
-        element->update();
-    }
-    else if (type == "touchend")
-    {
-        auto element = OSXWebViewDOMElement::getDOMElement(value, shared_from_this());
-        element->update();
-    }
-    else if (type == "touchmove")
-    {
-        auto element = OSXWebViewDOMElement::getDOMElement(value, shared_from_this());
-        element->update();
-    }
 }
 
 void
 OSXWebViewDOMEngine::registerDomEvents()
 {
-    onmousemoveSlot = _currentDOM->document()->onmousemove()->connect([&](AbstractDOMEvent::Ptr event)
-    {
-        std::cout << "Event info: " << std::endl
-        << "screen: " << event->screenX() << ", " << event->screenY() << std::endl
-        << "layer: " << event->layerX() << ", " << event->layerY() << std::endl
-        << "page: " << event->pageX() << ", " << event->pageY() << std::endl
-        << "client: " << event->clientX() << ", " << event->clientY() << std::endl;
-      
-        auto oldX = _canvas->mouse()->x();
-        auto oldY = _canvas->mouse()->y();
-      
-        int x = event->clientX();
-        int y = event->clientY();
-        _canvas->mouse()->x(x);
-        _canvas->mouse()->y(y);
-      
-        _canvas->mouse()->move()->execute(_canvas->mouse(), event->clientX() - oldX, event->clientY() - oldY);
-    });
-
-    onmouseupSlot = _currentDOM->document()->onmouseup()->connect([&](AbstractDOMEvent::Ptr event)
-    {
-        int x = event->layerX();
-        int y = event->layerY();
-        _canvas->mouse()->x(x);
-        _canvas->mouse()->y(y);
-                                                          
-        _canvas->mouse()->leftButtonUp()->execute(_canvas->mouse());
-    });
-
-    onmousedownSlot = _currentDOM->document()->onmousedown()->connect([&](AbstractDOMEvent::Ptr event)
+    onmousedownSlot = _currentDOM->document()->onmousedown()->connect([&](AbstractDOMMouseEvent::Ptr event)
     {
         int x = event->clientX();
         int y = event->clientY();
-     
-        _canvas->mouse()->x(x);
-        _canvas->mouse()->y(y);
         
-        std::cout << "Mouse position (webview): (" << _canvas->mouse()->x() << "," << _canvas->mouse()->y() << ")" << std::endl;
+        _canvas->mouse()->x(x);
+        _canvas->mouse()->y(y);
         
         _canvas->mouse()->leftButtonDown()->execute(_canvas->mouse());
     });
-    
-    ontouchdownSlot = _currentDOM->document()->ontouchdown()->connect([&](AbstractDOMEvent::Ptr event)
-    {
-        _canvas->finger()->fingerDown()->execute(_canvas->finger(), event->layerX(), event->layerY());
-    });
-    
-    ontouchupSlot = _currentDOM->document()->ontouchup()->connect([&](AbstractDOMEvent::Ptr event)
-    {
-        _canvas->finger()->fingerUp()->execute(_canvas->finger(), event->layerX(), event->layerY());
-    });
-    
-    ontouchmotionSlot = _currentDOM->document()->ontouchmotion()->connect([&](AbstractDOMEvent::Ptr event)
-    {
-        _canvas->finger()->fingerMotion()->execute(_canvas->finger(), event->layerX(), event->layerY());
-    });
-}
 
-void
-OSXWebViewDOMEngine::updateWebViewWidth()
-{
-    std::string jsEval = "Minko.changeViewportWidth(" + std::to_string(_webViewWidth) + ");";
-    
-    eval(jsEval);
+    onmouseupSlot = _currentDOM->document()->onmouseup()->connect([&](AbstractDOMMouseEvent::Ptr event)
+    {
+        int x = event->layerX();
+        int y = event->layerY();
+        
+        _canvas->mouse()->x(x);
+        _canvas->mouse()->y(y);
+        
+        _canvas->mouse()->leftButtonUp()->execute(_canvas->mouse());
+    });
+
+    onmousemoveSlot = _currentDOM->document()->onmousemove()->connect([&](AbstractDOMMouseEvent::Ptr event)
+    {
+        int x = event->clientX();
+        int y = event->clientY();
+        
+        _canvas->mouse()->x(x);
+        _canvas->mouse()->y(y);
+        
+        auto oldX = _canvas->mouse()->x();
+        auto oldY = _canvas->mouse()->y();
+        
+        _canvas->mouse()->move()->execute(_canvas->mouse(), event->clientX() - oldX, event->clientY() - oldY);
+    });
 }
 
 std::string
