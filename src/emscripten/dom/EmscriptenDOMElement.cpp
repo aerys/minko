@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "emscripten/dom/EmscriptenDOMElement.hpp"
 #include "emscripten/dom/EmscriptenDOMMouseEvent.hpp"
 #include "emscripten/dom/EmscriptenDOM.hpp"
-#include "minko/dom/AbstractDOMTouchEvent.hpp"
+#include "minko/dom/AbstractDOMMouseEvent.hpp"
 #include "emscripten/emscripten.h"
 
 using namespace minko;
@@ -336,42 +336,6 @@ EmscriptenDOMElement::onmouseover()
 	}
 
 	return _onmouseover;
-}
-
-Signal<std::shared_ptr<AbstractDOMTouchEvent>>::Ptr
-EmscriptenDOMElement::ontouchdown()
-{
-	if (!_ontouchdownSet)
-	{
-		addEventListener("touchdown");
-		_ontouchdownSet = false;
-	}
-
-	return _ontouchdown;
-}
-
-Signal<std::shared_ptr<AbstractDOMTouchEvent>>::Ptr
-EmscriptenDOMElement::ontouchup()
-{
-	if (!_ontouchupSet)
-	{
-		addEventListener("touchup");
-		_ontouchupSet = false;
-	}
-
-	return _ontouchup;
-}
-
-Signal<std::shared_ptr<AbstractDOMTouchEvent>>::Ptr
-EmscriptenDOMElement::ontouchmotion()
-{
-	if (!_ontouchmotionSet)
-	{
-		addEventListener("touchmotion");
-		_ontouchmotionSet = false;
-	}
-
-	return _ontouchmotion;
 }
 
 void
