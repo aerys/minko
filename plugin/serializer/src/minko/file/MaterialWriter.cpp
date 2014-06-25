@@ -29,6 +29,8 @@ std::map<const std::type_info*, std::function<std::tuple<uint, std::string>(Any)
 
 MaterialWriter::MaterialWriter()
 {
+	_magicNumber = 0x0000004D | MINKO_SCENE_MAGIC_NUMBER;
+
 	_typeToWriteFunction[&typeid(std::shared_ptr<math::Matrix4x4>)]		= std::bind(&serialize::TypeSerializer::serializeMatrix4x4, std::placeholders::_1);
 	_typeToWriteFunction[&typeid(std::shared_ptr<math::Vector2>)]		= std::bind(&serialize::TypeSerializer::serializeVector2, std::placeholders::_1);
 	_typeToWriteFunction[&typeid(std::shared_ptr<math::Vector3>)]		= std::bind(&serialize::TypeSerializer::serializeVector3, std::placeholders::_1);

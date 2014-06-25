@@ -43,6 +43,8 @@ namespace minko
 			T								_data;
 			std::shared_ptr<Dependency>		_parentDependencies;
 
+			int								_magicNumber;
+
 		public:
 			inline
 			std::shared_ptr<Signal<Ptr>>
@@ -101,18 +103,78 @@ namespace minko
 					if (includeDependency.size() > 0)
 						serializedDependencies.insert(serializedDependencies.begin(), includeDependency.begin(), includeDependency.end());
 
-					msgpack::type::tuple<SerializedDependency, std::string> res(serializedDependencies, serializedData);
+					msgpack::type::tuple<SerializedDependency> res(serializedDependencies);
 
 					std::stringstream sbuf;
 					msgpack::pack(sbuf, res);
 
+					auto dependenciesSize = sbuf.str().size();
+					auto dataSize = serializedData.size();
+
+					char* header = getHeader(dependenciesSize, dataSize);
+					
+					auto headerSize = MINKO_SCENE_HEADER_SIZE;
+
+					file.write(header, headerSize);
 					file.write(sbuf.str().c_str(), sbuf.str().size());
+					file.write(serializedData.c_str(), serializedData.size());
 					file.close();
 				}
 				else
 					std::cerr << "File " << filename << " can't be opened" << std::endl;
 
 				complete()->execute(this->shared_from_this());
+			}
+
+			char *
+			getHeader(unsigned int dependenciesSize, unsigned int dataSize)
+			{
+				auto headerSize = MINKO_SCENE_HEADER_SIZE;
+
+				char *header = (char*)(malloc(headerSize));
+
+				//MAGIC NUMBER
+				writeInt(header, _magicNumber, 0);
+
+				//VERSION
+				auto version = ((MINKO_SCENE_VERSION_HI & 0xFF) << 24) | ((MINKO_SCENE_VERSION_LO << 8) & 0xFFFF) | (MINKO_SCENE_VERSION_BUILD & 0xFF);
+				writeInt(header, version, 4);
+
+				auto fileSize = headerSize + dependenciesSize + dataSize;
+
+				//FILE SIZE
+				writeInt(header, fileSize, 8);
+
+				//HEADER SIZE
+				writeShort(header, headerSize, 12);
+
+				//DEPENDENCIES SIZE
+				writeInt(header, dependenciesSize, 14);
+
+				//DATA SIZE
+				writeInt(header, dataSize, 18);
+
+				//RESERVED FOR FUTURE USE
+				writeInt(header, 0x00000000, 22);
+				writeInt(header, 0x00000000, 26);
+
+				return header;
+			}
+
+			void
+			writeInt(char *data, int i, int offset)
+			{
+				data[offset] = (i >> 24) & 0xFF;
+				data[offset + 1] = (i >> 16) & 0xFF;
+				data[offset + 2] = (i >> 8) & 0xFF;
+				data[offset + 3] = i & 0xFF;
+			}
+
+			void
+			writeShort(char *data, int s, int offset)
+			{
+				data[offset] = (s >> 8) & 0xFF;
+				data[offset + 1] = s & 0xFF;
 			}
 
 			std::string
@@ -142,14 +204,31 @@ namespace minko
 				if (includeDependency.size() > 0)
 					serializedDependencies.insert(serializedDependencies.begin(), includeDependency.begin(), includeDependency.end());
 
-                msgpack::type::tuple<SerializedDependency, std::string> res(serializedDependencies, serializedData);
+                msgpack::type::tuple<SerializedDependency> res(serializedDependencies);
 
-                std::stringstream sbuf;
-                msgpack::pack(sbuf, res);
+				std::stringstream data;
+
+				std::stringstream sbuf;
+				msgpack::pack(sbuf, res);
+
+				auto dependenciesSize = sbuf.str().size();
+				auto sceneDataSize = serializedData.size();
+				auto header = getHeader(dependenciesSize, sceneDataSize);
+
+				auto headerSize = MINKO_SCENE_HEADER_SIZE;
+
+				data.write(header, headerSize);
+				data.write(sbuf.str().c_str(), dependenciesSize);
+				data.write(serializedData.c_str(), sceneDataSize);
 
                 complete()->execute(this->shared_from_this());
 
-                return sbuf.str();
+				sbuf.clear();
+				serializedData.clear();
+				serializedData.shrink_to_fit();
+				free(header);
+
+				return data.str();
             }
 
 			virtual

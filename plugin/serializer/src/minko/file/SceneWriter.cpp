@@ -46,6 +46,8 @@ std::map<const std::type_info*, SceneWriter::NodeWriterFunc> SceneWriter::_compo
 
 SceneWriter::SceneWriter()
 {
+	_magicNumber = MINKO_SCENE_MAGIC_NUMBER;
+
 	registerComponent(
 		&typeid(component::PerspectiveCamera),
 		std::bind(

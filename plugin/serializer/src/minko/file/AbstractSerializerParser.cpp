@@ -229,7 +229,7 @@ AbstractSerializerParser::readHeader(const std::string&					filename,
 		auto fileVersion = std::to_string(_versionHi) + "." + std::to_string(_versionLow) + "." + std::to_string(_versionBuild);
 		auto sceneVersion = std::to_string(MINKO_SCENE_VERSION_HI) + "." + std::to_string(MINKO_SCENE_VERSION_LO) + "." + std::to_string(MINKO_SCENE_VERSION_BUILD);
 
-		std::cerr << "Error: file " + filename + " doesn't match serializer version (file has v" + fileVersion + " while current version is v" + sceneVersion + ")" << std::endl;
+		std::cerr << "File " + filename + " doesn't match serializer version (file has v" + fileVersion + " while current version is v" + sceneVersion + ")" << std::endl;
 
 		throw std::logic_error("Scene file version mismatch");
 	}
