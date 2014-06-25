@@ -61,7 +61,8 @@ minko.plugin["http-worker"].enable = function (self)
 		links { "curl" }
 
 	configuration { "osx64" }
-		links { "curl" }
+		libdirs { minko.plugin.path("http-worker") .. "/lib/curl/lib/osx64" }
+		links { "curl", "Security.framework", "LDAP.framework" }
 
 	configuration { "android" }
 		libdirs { minko.plugin.path("http-worker") .. "/lib/curl/lib/android/debug" }
