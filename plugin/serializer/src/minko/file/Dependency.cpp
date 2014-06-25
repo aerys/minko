@@ -280,21 +280,22 @@ Dependency::serializeTexture(std::shared_ptr<Dependency>				dependency,
 							 std::shared_ptr<file::Options>				options,
                              std::shared_ptr<file::WriterOptions>       writerOptions)
 {
-	auto writer         = TextureWriter::create();
-    auto assetType      = serialize::AssetType { };
-    auto content        = std::string { };
-    auto textureName    = assetLibrary->textureName(texture);
-    auto extension      = textureName.substr(textureName.find_last_of(".") + 1);
+	auto writer                 = TextureWriter::create();
+    auto assetType              = serialize::AssetType { };
+    auto content                = std::string { };
+    auto textureName            = assetLibrary->textureName(texture);
+    auto sourceExtension        = textureName.substr(textureName.find_last_of(".") + 1);
+    auto destinationExtension   = "jpg";
+
+    if (sourceExtension != destinationExtension)
+        textureName = textureName.substr(0, textureName.size() - sourceExtension.size()) + destinationExtension;
 
     writer->data(texture);
-    writer->extension(extension);
+    writer->extension(destinationExtension);
 
     if (writerOptions->embedAll())
     {
-        if (extension == "jpg")
-            assetType = serialize::AssetType::JPEG_EMBED_TEXTURE_ASSET;
-        else /* if (extension == "png") */
-            assetType = serialize::AssetType::PNG_EMBED_TEXTURE_ASSET;
+        assetType = serialize::AssetType::EMBED_TEXTURE_ASSET;
 
         content = writer->embedAll(assetLibrary, options, writerOptions);
     }
