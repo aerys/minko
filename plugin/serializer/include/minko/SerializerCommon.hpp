@@ -3,6 +3,10 @@
 #include "minko/Common.hpp"
 #include <queue>
 
+#define MINKO_SCENE_VERSION_HI		0
+#define MINKO_SCENE_VERSION_LO		1
+#define MINKO_SCENE_VERSION_BUILD	3
+
 namespace minko
 {
 	namespace extension

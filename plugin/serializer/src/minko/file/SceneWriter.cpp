@@ -137,7 +137,7 @@ SceneWriter::embed(AssetLibraryPtr                      assetLibrary,
 	std::vector<SerializedNode>						nodePack;
 	std::vector<std::string>						serializedControllerList;
 	std::map<AbsComponentPtr, int>					controllerMap;
-
+	
 	queue.push(data());
 
 	while (queue.size() > 0)

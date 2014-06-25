@@ -26,7 +26,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/GeometryParser.hpp"
 #include "minko/file/MaterialParser.hpp"
 
-
 namespace minko
 {
 	namespace file

@@ -49,6 +49,18 @@ namespace minko
 			std::string												_lastParsedAssetName;
 			std::list<std::shared_ptr<component::JobManager::Job>>	_jobList;
 
+			int														_magicNumber;
+
+			unsigned int											_fileSize;
+			short													_headerSize;
+			unsigned int											_dependenciesSize;
+			unsigned int											_sceneDataSize;
+
+			int														_version;
+			int														_versionHi;
+			int														_versionLow;
+			int														_versionBuild;
+
 		private:
 			static std::unordered_map<uint, AssetDeserializeFunction> _assetTypeToFunction;
 
@@ -96,6 +108,10 @@ namespace minko
 
 			std::string
 			extractFolderPath(const std::string& filepath);
+
+			void
+			readHeader(const std::string&					filename, 
+					   const std::vector<unsigned char>&	data);
 
 			int
 			readInt(const std::vector<unsigned char>& data, int offset)

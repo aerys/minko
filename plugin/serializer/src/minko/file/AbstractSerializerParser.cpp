@@ -207,3 +207,48 @@ AbstractSerializerParser::extractFolderPath(const std::string& filepath)
 
 	return filepath.substr(0, found);
 }
+
+void
+AbstractSerializerParser::readHeader(const std::string&					filename,
+									 const std::vector<unsigned char>&	data)
+{
+	_magicNumber = readInt(data, 0);
+
+	//File should start with 0x4D4B03 (MK3). Last byte reserved for extensions (Material, Geometry...)
+	if ((_magicNumber & 0xFFFFFF00) != 0x4D4B0300)
+		throw std::logic_error("Invalid scene file: magic number mismatch");
+
+	_version = readInt(data, 4);
+
+	_versionHi = int(data[4]);
+	_versionLow = readShort(data, 5);
+	_versionBuild = int(data[7]);
+
+	if (_versionHi != MINKO_SCENE_VERSION_HI || _versionLow != MINKO_SCENE_VERSION_LO || _versionBuild > MINKO_SCENE_VERSION_BUILD)
+	{
+		auto fileVersion = std::to_string(_versionHi) + "." + std::to_string(_versionLow) + "." + std::to_string(_versionBuild);
+		auto sceneVersion = std::to_string(MINKO_SCENE_VERSION_HI) + "." + std::to_string(MINKO_SCENE_VERSION_LO) + "." + std::to_string(MINKO_SCENE_VERSION_BUILD);
+
+		std::cerr << "Error: file " + filename + " doesn't match serializer version (file has v" + fileVersion + " while current version is v" + sceneVersion + ")" << std::endl;
+
+		throw std::logic_error("Scene file version mismatch");
+	}
+
+	//Versions with the same HI and LOW value but different BUILD value should be compatible
+#if DEBUG
+	if (_versionBuild != MINKO_SCENE_VERSION_BUILD)
+	{
+		auto fileVersion = std::to_string(_versionHi) + "." + std::to_string(_versionLow) + "." + std::to_string(_versionBuild);
+		auto sceneVersion = std::to_string(MINKO_SCENE_VERSION_HI) + "." + std::to_string(MINKO_SCENE_VERSION_LO) + "." + std::to_string(MINKO_SCENE_VERSION_BUILD);
+
+		std::cout << "Warning: file " + filename + " is v" + fileVersion + " while current version is v" + sceneVersion << std::endl;
+	}
+#endif
+
+	_fileSize = readUInt(data, 8);
+
+	_headerSize = readShort(data, 12);
+
+	_dependenciesSize = readUInt(data, 14);
+	_sceneDataSize = readUInt(data, 18);
+}
