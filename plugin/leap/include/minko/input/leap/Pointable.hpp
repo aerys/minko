@@ -50,10 +50,16 @@ namespace minko
 
 				typedef std::shared_ptr<math::Vector3>	Vector3Ptr;
 
-			private:
+			protected:
 				std::shared_ptr<Leap::Pointable>		_leapPointable;
 
 			public:
+                virtual
+                ~Pointable()
+                {
+
+                }
+
 				int32_t
 				id() const;
 
@@ -106,11 +112,12 @@ namespace minko
 				bool
 				operator==(const Pointable&) const;
 
+            protected:
+                explicit
+                Pointable(const Leap::Pointable&);
+
 			private:
 				Pointable(); // no implementation!
-				
-				explicit
-				Pointable(const Leap::Pointable&);
 			};
 		}
 	}

@@ -35,17 +35,24 @@ namespace minko
 		{
 			class Hand;
 			class Pointable;
+            class Finger;
 
 			class Frame : public std::enable_shared_from_this<Frame>
 			{
 				friend class Controller; // Only a Controller can instanciate a Frame
 
 			public:
-				typedef std::shared_ptr<Frame>		Ptr;
+				typedef std::shared_ptr<Frame>		            Ptr;
 
-				typedef std::shared_ptr<Hand>		HandPtr;
-				typedef std::shared_ptr<Gesture>	GesturePtr;
-				typedef std::shared_ptr<Pointable>	PointablePtr;
+				typedef std::shared_ptr<Hand>		            HandPtr;
+				typedef std::shared_ptr<Gesture>	            GesturePtr;
+				typedef std::shared_ptr<Pointable>	            PointablePtr;
+
+                typedef std::shared_ptr<Finger>                 FingerPtr;
+                typedef std::vector<FingerPtr>                  FingerList;
+
+                typedef std::shared_ptr<math::Vector3>	        Vector3Ptr;
+                typedef std::shared_ptr<math::Matrix4x4>        Matrix4x4Ptr;
 
 			private:
 				std::shared_ptr<Leap::Frame>	_leapFrame;
@@ -96,6 +103,15 @@ namespace minko
 
 				PointablePtr
 				pointableByIndex(int) const;
+
+                FingerList
+                fingers() const;
+
+                Vector3Ptr
+                translation(int32_t handId, Ptr sinceFrame) const;
+
+                Matrix4x4Ptr
+                rotationMatrix(int32_t handId, Ptr sinceFrame) const;
 
 				// (In)Equality tests
 				bool
