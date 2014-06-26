@@ -52,7 +52,7 @@ namespace minko
 			std::string																_name;
 
 			std::shared_ptr<geometry::Geometry>										_geometry;
-			std::shared_ptr<data::Provider>											_material;
+			std::shared_ptr<material::Material>										_material;
 			std::shared_ptr<render::Effect>											_effect;
 			std::string 															_technique;
 
@@ -73,8 +73,8 @@ namespace minko
 			static
 			Ptr
 			create(std::shared_ptr<geometry::Geometry> 		geometry,
-				   std::shared_ptr<data::Provider>			material,
-				   std::shared_ptr<render::Effect>			effect)
+					std::shared_ptr<material::Material>		material,
+					std::shared_ptr<render::Effect>			effect)
 			{
 				return create("", geometry, material, effect, "default");
 			}
@@ -83,7 +83,7 @@ namespace minko
 			Ptr
 			create(const std::string&					    name,
 				   std::shared_ptr<geometry::Geometry> 		geometry,
-				   std::shared_ptr<data::Provider>			material,
+				   std::shared_ptr<material::Material>		material,
 				   std::shared_ptr<render::Effect>			effect,
 				   const std::string&						technique)
 			{
@@ -94,9 +94,9 @@ namespace minko
 				return surface;
 			}
 
-
+			
 			AbstractComponent::Ptr
-			clone();
+			clone(const CloneOption& option);
 
 			~Surface()
 			{
@@ -127,7 +127,7 @@ namespace minko
             geometry(std::shared_ptr<geometry::Geometry>);
 
 			inline
-			std::shared_ptr<data::Provider>
+			std::shared_ptr<material::Material>
 			material() const
 			{
 				return _material;
@@ -217,11 +217,13 @@ namespace minko
 			}
 
 		private:
-			Surface(std::string								name,
-					std::shared_ptr<geometry::Geometry>		geometry,
-					std::shared_ptr<data::Provider>			material,
-					std::shared_ptr<render::Effect>			effect,
-					const std::string&						technique);
+			Surface(std::string									name,
+					std::shared_ptr<geometry::Geometry>			geometry,
+					std::shared_ptr<material::Material>			material,
+					std::shared_ptr<render::Effect>				effect,
+					const std::string&							technique);
+
+			Surface(const Surface& surface, const CloneOption& option);
 
 			void
 			initialize();

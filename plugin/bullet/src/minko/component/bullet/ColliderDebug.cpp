@@ -32,6 +32,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/data/ArrayProvider.hpp"
 #include "minko/render/CompareMode.hpp"
 #include "minko/render/Priority.hpp"
+#include "minko/material/Material.hpp"
 
 using namespace minko;
 using namespace minko::scene;
@@ -55,7 +56,7 @@ _removedSlot(nullptr)
 }
 
 AbstractComponent::Ptr
-bullet::ColliderDebug::clone()
+bullet::ColliderDebug::clone(const CloneOption& option)
 {
 	ColliderDebug::Ptr origin = std::static_pointer_cast<ColliderDebug>(shared_from_this());
 	for (auto component : targets().front()->components<Surface>())
@@ -156,7 +157,7 @@ bullet::ColliderDebug::initializeDisplay()
 	_surface = Surface::create(
 		"ColliderDebugSurface",
 		geom_collider,
-		data::ArrayProvider::create("material")
+		material::Material::create("material")
 		->set("diffuseColor", math::Vector4::create(0.0f, 1.0f, 1.0f, 1.0f))
 		->set("lineThickness", 1.0f)
 		->set("depthFunc", render::CompareMode::ALWAYS)

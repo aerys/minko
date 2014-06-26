@@ -50,6 +50,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/data/ParticlesProvider.hpp"
 #include "minko/math/Vector3.hpp"
 #include "minko/math/Vector4.hpp"
+#include "minko/material/Material.hpp"
 
 using namespace minko;
 using namespace minko::extension;

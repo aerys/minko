@@ -28,6 +28,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/Blending.hpp"
 #include "minko/geometry/Geometry.hpp"
 #include "minko/data/ArrayProvider.hpp"
+#include "minko/material/Material.hpp"
 
 using namespace minko;
 using namespace minko::math;
@@ -386,7 +387,7 @@ DrawCallPool::initializeDrawCall(Surface::Ptr	surface,
 
 	// get drawcall's property name formatting function (dependent on filters!)
 	auto geometryId	= targetData->getProviderIndex(surface->geometry()->data());
-	auto materialId	= targetData->getProviderIndex(surface->material());
+	auto materialId = targetData->getProviderIndex(surface->material());
 
 	std::unordered_map<std::string, std::string> drawCallVariables;
 

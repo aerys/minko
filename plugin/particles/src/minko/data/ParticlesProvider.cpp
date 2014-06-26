@@ -29,7 +29,7 @@ using namespace minko::data;
 using namespace minko::render;
 
 ParticlesProvider::ParticlesProvider():
-    Provider()
+    Material()
 {
 }
 

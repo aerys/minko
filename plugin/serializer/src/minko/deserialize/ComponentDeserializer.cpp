@@ -208,7 +208,7 @@ ComponentDeserializer::deserializeSurface(std::string&							serializedSurface,
 	deserialized.convert(&dst);
 
 	geometry::Geometry::Ptr		geometry	= dependencies->getGeometryReference(dst.a0);
-	data::Provider::Ptr			material	= dependencies->getMaterialReference(dst.a1);
+	material::Material::Ptr		material	= dependencies->getMaterialReference(dst.a1);
 	render::Effect::Ptr			effect		= dependencies->getEffectReference(dst.a2);
 	std::string					technique	= "default";
 	bool						visible		= true;

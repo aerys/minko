@@ -35,6 +35,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/AssetLibrary.hpp"
 #include "minko/math/Matrix4x4.hpp"
 #include "minko/render/Effect.hpp"
+#include "minko/material/Material.hpp"
 
 using namespace minko;
 using namespace minko::scene;
@@ -398,7 +399,7 @@ OculusVRCamera::setSceneManager(SceneManager::Ptr sceneManager)
 		->addComponent(_renderer)
 		->addComponent(Surface::create(
 			geometry::QuadGeometry::create(_sceneManager->assets()->context()),
-			data::StructureProvider::create("oculusvr")
+			material::Material::create("oculusvr")
 				->set("distortionK",			hmdInfo.distortionK)
 				->set("pixelOffset",			pixelOffset)
 				->set("scalePriorDistortion",	scalePriorDistortion)

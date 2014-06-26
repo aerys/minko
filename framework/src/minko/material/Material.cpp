@@ -27,3 +27,9 @@ Material::Material() :
 {
 	
 }
+
+Material::Material(const std::string& name) :
+	data::ArrayProvider(name)
+{
+
+}
