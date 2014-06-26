@@ -90,6 +90,9 @@ namespace minko
 				return ctrl;
 			}
 
+			AbstractComponent::Ptr
+			clone(const CloneOption& option);
+
 			inline
 			float
 			fieldOfView()
@@ -195,6 +198,8 @@ namespace minko
 							  float								zNear,
 							  float								zFar,
 							  std::shared_ptr<math::Matrix4x4>	postPerspective = nullptr);
+
+			PerspectiveCamera(const PerspectiveCamera& camera, const CloneOption& option);
 
 			void
 			initialize();

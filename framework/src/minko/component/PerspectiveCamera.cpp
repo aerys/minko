@@ -51,6 +51,30 @@ PerspectiveCamera::PerspectiveCamera(float			fov,
 {
 }
 
+PerspectiveCamera::PerspectiveCamera(const PerspectiveCamera& camera, const CloneOption& option) :
+	_data(camera._data->clone()),
+	_fov(camera._fov),
+	_aspectRatio(camera._aspectRatio),
+	_zNear(camera._zNear),
+	_zFar(camera._zFar),
+	_view(camera._view),
+	_projection(camera._projection),
+	_viewProjection(camera._viewProjection),
+	_position(camera._position),
+	_postProjection(camera._postProjection)
+{
+}
+
+AbstractComponent::Ptr
+PerspectiveCamera::clone(const CloneOption& option)
+{
+	auto ctrl = std::shared_ptr<PerspectiveCamera>(new PerspectiveCamera(*this, option));
+
+	ctrl->initialize();
+
+	return ctrl;
+}
+
 void
 PerspectiveCamera::initialize()
 {
