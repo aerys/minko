@@ -67,7 +67,7 @@ bullet::Collider::Collider(ColliderData::Ptr data):
 }
 
 AbstractComponent::Ptr
-bullet::Collider::clone()
+bullet::Collider::clone(const CloneOption& option)
 {
 	Collider::Ptr origin = std::static_pointer_cast<Collider>(shared_from_this());
 	return Collider::create(origin->_colliderData);

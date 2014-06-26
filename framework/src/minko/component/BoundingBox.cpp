@@ -26,6 +26,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/Surface.hpp"
 #include "minko/geometry/Geometry.hpp"
 #include "minko/data/Container.hpp"
+#include "minko/CloneOption.hpp"
 
 using namespace minko;
 using namespace math;
@@ -49,6 +50,26 @@ BoundingBox::BoundingBox() :
 	_invalidWorldSpaceBox(true)
 {
 
+}
+
+BoundingBox::BoundingBox(const BoundingBox& bbox, const CloneOption& option) :
+_fixed(bbox._fixed),
+_box(option == CloneOption::SHALLOW ? bbox._box : math::Box::create(bbox._box->topRight(), bbox._box->bottomLeft())),
+_worldSpaceBox(option == CloneOption::SHALLOW ? bbox._worldSpaceBox : math::Box::create(bbox._worldSpaceBox->topRight(), bbox._worldSpaceBox->bottomLeft())),
+_invalidBox(bbox._invalidBox),
+_invalidWorldSpaceBox(bbox._invalidWorldSpaceBox)
+{
+
+}
+
+AbstractComponent::Ptr
+BoundingBox::clone(const CloneOption& option)
+{
+	Ptr bbox(new BoundingBox(*this, option));
+
+	bbox->initialize();
+
+	return bbox;
 }
 
 void
