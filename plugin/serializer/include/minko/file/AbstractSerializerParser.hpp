@@ -101,7 +101,7 @@ namespace minko
 			AbstractSerializerParser();
 
 			void
-			deserializedAsset(SerializedAsset&					asset,
+			deserializeAsset(SerializedAsset&					asset,
 							  AssetLibraryPtr					assetLibrary,
 							  std::shared_ptr<Options>			options,
 							  std::string&						assetFilePath);

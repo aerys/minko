@@ -103,12 +103,25 @@ namespace minko
 					if (includeDependency.size() > 0)
 						serializedDependencies.insert(serializedDependencies.begin(), includeDependency.begin(), includeDependency.end());
 
+					std::vector<std::string> serializedDependenciesBufs;
+					
+					unsigned int dependenciesSize = 2;
+
+					for (auto serializedDependency : serializedDependencies)
+					{
+						dependenciesSize += 4;
+
+						std::stringstream sbuf;
+						msgpack::pack(sbuf, serializedDependency);
+
+						serializedDependenciesBufs.push_back(sbuf.str());
+
+						dependenciesSize += sbuf.str().size();
+					}
+
 					msgpack::type::tuple<SerializedDependency> res(serializedDependencies);
 
-					std::stringstream sbuf;
-					msgpack::pack(sbuf, res);
 
-					auto dependenciesSize = sbuf.str().size();
 					auto dataSize = serializedData.size();
 
 					char* header = getHeader(dependenciesSize, dataSize);
@@ -116,7 +129,17 @@ namespace minko
 					auto headerSize = MINKO_SCENE_HEADER_SIZE;
 
 					file.write(header, headerSize);
-					file.write(sbuf.str().c_str(), sbuf.str().size());
+
+					writeShort(file, serializedDependenciesBufs.size());
+
+					for (auto& dependencyBuffer : serializedDependenciesBufs)
+					{
+						writeInt(file, dependencyBuffer.size());
+						file.write(dependencyBuffer.c_str(), dependencyBuffer.size());
+
+						dependencyBuffer.clear();
+					}
+
 					file.write(serializedData.c_str(), serializedData.size());
 					file.close();
 				}
@@ -159,6 +182,30 @@ namespace minko
 				writeInt(header, 0x00000000, 26);
 
 				return header;
+			}
+
+			void
+			writeInt(std::ofstream& file, int i)
+			{
+				char data[4];
+
+				data[0] = (i >> 24) & 0xFF;
+				data[1] = (i >> 16) & 0xFF;
+				data[2] = (i >> 8) & 0xFF;
+				data[3] = i & 0xFF;
+
+				file.write(data, 4);
+			}
+
+			void
+			writeShort(std::ofstream& file, int s)
+			{
+				char data[2];
+
+				data[0] = (s >> 8) & 0xFF;
+				data[1] = s & 0xFF;
+
+				file.write(data, 2);
 			}
 
 			void
