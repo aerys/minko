@@ -36,7 +36,7 @@ namespace minko
 
 		protected:
 			std::shared_ptr<AbstractCanvas>	_canvas;
-			
+
 			uint							_x;
 			uint							_y;
 
@@ -64,42 +64,42 @@ namespace minko
 
 			inline
 			uint
-			x()
+			x() const
 			{
 				return _x;
 			}
 
 			inline
 			uint
-			y()
+			y() const
 			{
 				return _y;
 			}
 
 			inline
 			bool
-			leftButtonIsDown()
+			leftButtonIsDown() const
 			{
 				return _leftButtonIsDown;
 			}
 
 			inline
 			bool
-			rightButtonIsDown()
+			rightButtonIsDown() const
 			{
 				return _rightButtonIsDown;
 			}
 
 			inline
 			float
-			normalizedX()
+			normalizedX() const
 			{
 				return 2.f * ((float)_x / _canvas->width() - .5f);
 			}
 
 			inline
 			float
-			normalizedY()
+			normalizedY() const
 			{
 				return 2.f * ((float)_y / _canvas->height() - .5f);
 			}
@@ -158,6 +158,11 @@ namespace minko
 			middleButtonUp()
 			{
 				return _mouseMiddleButtonUp;
+			}
+
+			virtual
+			~Mouse()
+			{
 			}
 
 		protected:

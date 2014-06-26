@@ -4,7 +4,7 @@ PROJECT_NAME = path.getname(os.getcwd())
 
 minko.project.application("minko-example-" .. PROJECT_NAME)
 
-	removeplatforms { "android", "ios", "win", "osx", "html5" }
+	removeplatforms { "android", "ios", "windows32", "windows64", "osx64", "html5" }
 
 	files {
 		"src/**.hpp",
@@ -15,9 +15,6 @@ minko.project.application("minko-example-" .. PROJECT_NAME)
 	includedirs { "src" }
 
 	minko.plugin.enable("png");
-
-	-- linux
-	configuration { "linux" }
-		links { "OSMesa" }
+	minko.plugin.enable("offscreen");
 
 end

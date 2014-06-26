@@ -45,6 +45,10 @@
 		"PARTICLE_SPRITE_INDEX"		: "geometry[${geometryId}].spriteIndex"
 	},
 	
+	"stateBindings" : {
+        "layouts"	: "node.layouts"
+    },
+
 	"priority"			: 0,
 	"blendMode"			: "additive",
 	"depthTest"			: [false, "less"],

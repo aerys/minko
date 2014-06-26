@@ -23,7 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/MinkoHTTP.hpp"
 
 #if !defined(EMSCRIPTEN) // FIXME: Automate this in the HTTPLoader
-# include "minko/async/HTTPWorker.hpp"
+# include "minko/net/HTTPWorker.hpp"
 #endif
 
 using namespace minko;
@@ -37,22 +37,26 @@ int main(int argc, char** argv)
 	auto canvas = Canvas::create("Minko Example - HTTP", 800, 600);
 
 #if !defined(EMSCRIPTEN) // FIXME: Automate this in the HTTPLoader
-	canvas->registerWorker<async::HTTPWorker>("http");
+	canvas->registerWorker<net::HTTPWorker>("http");
 #endif
 
 	auto sceneManager = SceneManager::create(canvas->context());
+	auto defaultOptions = sceneManager->assets()->loader()->options();
 
-	sceneManager->assets()->loader()->options()->registerProtocol<file::HTTPProtocol>("http");
-	sceneManager->assets()->loader()->options()->registerProtocol<file::HTTPProtocol>("https");
+	defaultOptions
+		->resizeSmoothly(true)
+		->generateMipmaps(true)
+		->loadAsynchronously(true);
+
+	sceneManager->assets()->loader()->queue("effect/Basic.effect")->load();
 
 	// setup assets
-	sceneManager->assets()->loader()->options()->resizeSmoothly(true);
-	sceneManager->assets()->loader()->options()->generateMipmaps(true);
-	sceneManager->assets()->loader()->options()
-                ->registerParser<file::PNGParser>("png");
-        sceneManager->assets()->loader()
-                ->queue(TEXTURE_FILENAME)
-		->queue("effect/Basic.effect");
+	defaultOptions->loadAsynchronously(true)
+		->registerProtocol<net::HTTPProtocol>("http")
+		->registerProtocol<net::HTTPProtocol>("https")
+	    ->registerParser<file::PNGParser>("png");
+
+	sceneManager->assets()->loader()->queue(TEXTURE_FILENAME);
 
 	sceneManager->assets()->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()));
 

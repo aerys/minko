@@ -14,7 +14,7 @@ using namespace minko::scene;
 using namespace minko::material;
 using namespace minko::component;
 
-static const std::string	SCENE_NAME		= "model/airplane_engine_n.scene";
+static const std::string	SCENE_NAME		= "model/crossCubes.scene";
 static const std::string	DEFAULT_EFFECT	= "effect/Basic.effect";
 static const std::string	HANGAR_TEXTURE	= "texture/hangar.png";
 

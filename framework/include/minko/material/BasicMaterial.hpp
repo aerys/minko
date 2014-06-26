@@ -68,7 +68,19 @@ namespace minko
 			diffuseColor() const;
 
 			Ptr
-			diffuseMap(AbsTexturePtr);
+			uvScale(const math::vec2 v);
+
+			const math::vec2&
+			uvScale() const;
+
+			Ptr
+			uvOffset(const math::vec2 v);
+
+			const math::vec2&
+			uvOffset() const;
+
+			Ptr
+            diffuseMap(TexturePtr);
 
 			TexturePtr
 			diffuseMap() const;

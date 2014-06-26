@@ -29,6 +29,7 @@ using namespace minko;
 using namespace minko::component;
 
 MousePicking::MousePicking() :
+	AbstractComponent(scene::Layout::Mask::RAYCASTING_DEFAULT),
 	_move(MouseSignal::create()),
 	_over(MouseSignal::create()),
 	_out(MouseSignal::create()),
@@ -58,13 +59,18 @@ MousePicking::initialize()
 }
 
 void
-MousePicking::pick(std::shared_ptr<math::Ray> ray)
+MousePicking::pick(std::shared_ptr<math::Ray>	ray)
 {
 	MousePicking::HitList hits;
 
 	auto descendants = scene::NodeSet::create(targets())
 		->descendants(true)
-		->where([&](scene::Node::Ptr node) { return node->hasComponent<BoundingBox>(); });
+		->where([&](scene::Node::Ptr node) 
+		{ 
+			return (node->layouts() & layoutMask()) != 0 
+				&&  node->hasComponent<BoundingBox>(); 
+		}
+	);
 	
 	std::unordered_map<scene::Node::Ptr, float> distance;
 
@@ -83,10 +89,18 @@ MousePicking::pick(std::shared_ptr<math::Ray> ray)
 	{
 		if (_previousRayOrigin == ray->origin())
 		{
-			_move->execute(shared_from_this(), hits, ray);
-			_previousRayOrigin = ray->origin();
+			_move->execute(
+				std::static_pointer_cast<MousePicking>(shared_from_this()), 
+				hits, 
+				ray
+			);
+			_previousRayOrigin->copyFrom(ray->origin());
 		}
 
-		_over->execute(shared_from_this(), hits, ray);
+		_over->execute(
+			std::static_pointer_cast<MousePicking>(shared_from_this()), 
+			hits, 
+			ray
+		);
 	}
 }

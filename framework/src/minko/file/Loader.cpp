@@ -44,9 +44,7 @@ Loader::Ptr
 Loader::queue(const std::string& filename, std::shared_ptr<Options> options)
 {
     _filesQueue.push_back(filename);
-
-    if (options)
-        _filenameToOptions[filename] = Options::create(options);
+    _filenameToOptions[filename] = Options::create(options ? options : _options);
 
     return std::dynamic_pointer_cast<Loader>(shared_from_this());
 }
@@ -61,13 +59,14 @@ Loader::load()
     }
     else
     {
+		_numFiles = _filesQueue.size();
+		_protocolToProgress.clear();
+
         auto queue = _filesQueue;
 
         for (auto& filename : queue)
         {
-            auto options = _filenameToOptions.count(filename)
-                ? _filenameToOptions[filename]
-                : _filenameToOptions[filename] = Options::create(_options);
+            auto options = _filenameToOptions[filename];
             auto protocol =  options->protocolFunction()(filename);
 
             _files[filename] = protocol->file();
@@ -79,21 +78,20 @@ Loader::load()
                 &Loader::protocolErrorHandler,
                 shared_from_this(),
                 std::placeholders::_1
-            )));
-            _protocolSlots.push_back(protocol->complete()->connect(std::bind(
-                &Loader::protocolCompleteHandler,
-                shared_from_this(),
-                std::placeholders::_1
-            )));
-#ifdef DEBUG
-            std::cout << "Batchprotocol::load(): before " << filename << std::endl;
-#endif // defined(DEBUG)
+				)));
+			_protocolSlots.push_back(protocol->complete()->connect(std::bind(
+				&Loader::protocolCompleteHandler,
+				shared_from_this(),
+				std::placeholders::_1
+			)));
+			_protocolProgressSlots.push_back(protocol->progress()->connect(std::bind(
+				&Loader::protocolProgressHandler,
+				shared_from_this(),
+				std::placeholders::_1,
+				std::placeholders::_2
+			)));
 
             protocol->load(filename, options);
-
-#ifdef DEBUG
-            std::cout << "Loader::load(): after " << filename << std::endl;
-#endif // defined(DEBUG)
         }
     }
 }
@@ -109,25 +107,39 @@ Loader::protocolErrorHandler(std::shared_ptr<AbstractProtocol> protocol)
 }
 
 void
+Loader::protocolProgressHandler(std::shared_ptr<AbstractProtocol> protocol, float progress)
+{
+	_protocolToProgress[protocol] = progress;
+
+	float newTotalProgress = 0.f;
+
+	for (auto protocolAndProgress : _protocolToProgress)
+	{
+		newTotalProgress += protocolAndProgress.second / _numFiles;
+	}
+
+	newTotalProgress /= 100.f;
+
+	_progress->execute(
+		std::dynamic_pointer_cast<Loader>(shared_from_this()),
+		newTotalProgress
+	);
+}
+
+void
 Loader::protocolCompleteHandler(std::shared_ptr<AbstractProtocol> protocol)
 {
-#ifdef DEBUG
-    std::cerr << "Loader::protocolCompleteHandler(): " << std::endl;
-#endif // defined(DEBUG)
-
-    _progress->execute(
-        std::dynamic_pointer_cast<Loader>(shared_from_this()),
-        (float)_loading.size() / (float)_protocolSlots.size()
-    );
+	_protocolToProgress[protocol] = 1.f;
 
     auto filename = protocol->file()->filename();
 
     _loading.erase(std::find(_loading.begin(), _loading.end(), filename));
     //_filenameToProtocol.erase(protocol->filename());
     _filenameToOptions.erase(filename);
-    
+
 #ifdef DEBUG
-    std::cerr << "Loader::finalize(): " << _loading.size() << " file(s) still loading, "
+    std::cerr << "Loader: file '" << protocol->file()->filename() << "' loaded, "
+        << _loading.size() << " file(s) still loading, "
         << _filesQueue.size() << " file(s) in the queue" << std::endl;
 #endif // defined(DEBUG)
 
@@ -164,23 +176,24 @@ Loader::processData(const std::string&                      filename,
 
         try
         {
-            parser->parse(
-                filename,
-                resolvedFilename,
-                options,
-                data,
-                options->assetLibrary()
-            );
+            parser->parse(filename, resolvedFilename, options, data, options->assetLibrary());
         }
         catch (ParserError parserError)
         {
+            if (_error->numCallbacks() != 0)
+                _error->execute(shared_from_this());
 #ifdef DEBUG
-			std::cerr << parserError.what() << std::endl;
+            else
+                throw parserError;
 #endif // defined(DEBUG)
         }
     }
     else
     {
+#ifdef DEBUG
+        if (extension != "glsl")
+            std::cerr << "Loader::processData(): no parser found for extension '" << extension << "'" << std::endl;
+#endif // defined(DEBUG)
         options->assetLibrary()->blob(filename, data);
     }
 

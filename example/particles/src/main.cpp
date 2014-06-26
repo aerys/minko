@@ -30,16 +30,18 @@ int main(int argc, char** argv)
 {
 	auto canvas = Canvas::create("Minko Example - Particles", 800, 600);
 	auto sceneManager = SceneManager::create(canvas->context());
-
+    auto assets = sceneManager->assets();
+	
 	// setup assets
-	sceneManager->assets()->loader()->options()->resizeSmoothly(true);
-	sceneManager->assets()->loader()->options()->generateMipmaps(true);
-	sceneManager->assets()->loader()->options()
-                ->registerParser<file::PNGParser>("png");
-        sceneManager->assets()->loader()
-                ->queue("texture/heal.png")
-                ->queue("texture/fire_spritesheet.png")
-                ->queue("effect/Basic.effect")
+	assets->loader()->options()
+        ->resizeSmoothly(true)
+        ->generateMipmaps(true)
+        ->registerParser<file::PNGParser>("png");
+    
+    assets->loader()
+        ->queue("texture/heal.png")
+        ->queue("texture/fire_spritesheet.png")
+        ->queue("effect/Basic.effect")
 		->queue("effect/Particles.effect");
 
 	auto root = scene::Node::create("root")
@@ -55,47 +57,48 @@ int main(int argc, char** argv)
 		))
 		->addComponent(PerspectiveCamera::create(800.f / 600.f, (float)PI * 0.25f, .1f, 1000.f));
 	root->addChild(camera);
+    
+	std::cout << "Control the particle system's emittive state with the keyboard" << std::endl;
 
-	auto _ = sceneManager->assets()->loader()->complete()->connect([=](file::Loader::Ptr loader)
+	bool toogleEmitting = false;
+
+	auto _ = assets->loader()->complete()->connect([=](file::Loader::Ptr loader)
 	{
         auto particles = ParticleSystem::create(
-            sceneManager->assets(),
+            assets,
             100.0f,
             particle::sampler::Constant<float>::create(2.0f),
             particle::shape::Sphere::create(0.5f),
             particle::StartDirection::UP,
             particle::sampler::Constant<float>::create(0.00f)
-        );
+        );  
+        
+        auto startcolor	= Vector3::create(1.0f, 0.0f, 0.0f);
+        auto endcolor	= Vector3::create(0.0f, 1.0f, 0.0f);
 
-        auto color = Vector3::create(1.0f, 0.0f, 0.0f);
+        particles->material()
+			->diffuseMap(assets->texture("texture/heal.png"))
+			->diffuseColor(0xffffffff);
 
-        auto startcolor1    = Vector3::create(1.0f, 0.0f, 0.0f);
-        auto endcolor1      = Vector3::create(0.0f, 1.0f, 0.0f);
-
-        std::cout << "particles play ... " << std::endl;
-
-        particles->material()->diffuseMap(sceneManager->assets()->texture("texture/heal.png"))->diffuseColor(0xffffffff);
         particles
-        ->add(particle::modifier::StartSize::create(particle::sampler::Constant<float>::create(0.1f)))
-        ->add(particle::modifier::SizeOverTime::create(particle::sampler::LinearlyInterpolatedValue<float>::create(1.0, 5.0f, 0.0f, 1.0f)))
-        ->add(particle::modifier::VelocityOverTime::create(
-            particle::sampler::Constant<float>::create(0.0f),
-            particle::sampler::LinearlyInterpolatedValue<float>::create(1.0, 0.0f, 0.0f, 1.0f),
-            particle::sampler::Constant<float>::create(0.0f)
-        ))
-        //->add(particle::modifier::ColorOverTime::create(particle::sampler::LinearlyInterpolatedValue<math::Vector3>::create(*startcolor1, *endcolor1)))
-        ->add(particle::modifier::ColorBySpeed::create(particle::sampler::LinearlyInterpolatedValue<math::Vector3>::create(*startcolor1, *endcolor1, 0.0f, 1.0f)))
-        ->add(particle::modifier::SizeBySpeed::create(particle::sampler::LinearlyInterpolatedValue<float>::create(0.05f, 2.0f)))
+            ->add(particle::modifier::StartSize::create(particle::sampler::Constant<float>::create(0.1f)))
+            ->add(particle::modifier::SizeOverTime::create(particle::sampler::LinearlyInterpolatedValue<float>::create(1.0, 5.0f, 0.0f, 1.0f)))
+            ->add(particle::modifier::VelocityOverTime::create(
+                particle::sampler::Constant<float>::create(0.0f),
+                particle::sampler::LinearlyInterpolatedValue<float>::create(1.0, 0.0f, 0.0f, 1.0f),
+                particle::sampler::Constant<float>::create(0.0f)
+            ))
+        //->add(particle::modifier::ColorOverTime::create(particle::sampler::LinearlyInterpolatedValue<math::Vector3>::create(*startcolor, *endcolor)))
+            ->add(particle::modifier::ColorBySpeed::create(particle::sampler::LinearlyInterpolatedValue<math::Vector3>::create(*startcolor, *endcolor, 0.0f, 1.0f)))
+            ->add(particle::modifier::SizeBySpeed::create(particle::sampler::LinearlyInterpolatedValue<float>::create(0.05f, 2.0f)))
         /*->add(particle::modifier::StartRotation::create(particle::sampler::Constant<float>::create(PI * 0.25f)))
         ->add(particle::modifier::StartColor::create(
             particle::sampler::Constant<math::Vector3>::create(*color)
         ))
         ->add(particle::modifier::StartSprite::create(
             particle::sampler::RandomValue<float>::create(0.0f, 4.0f),
-            sceneManager->assets()->texture("texture/fire_spritesheet.png"), 2, 2))*/
-        ->play();
-
-        std::cout << "particles play done" << std::endl;
+            assets->texture("texture/fire_spritesheet.png"), 2, 2))*/
+            ->play();
 
         particlesNode->addComponent(particles);
 
@@ -109,10 +112,30 @@ int main(int argc, char** argv)
 
 	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float deltaTime)
 	{
+		if (toogleEmitting)
+		{
+			auto withParticles = scene::NodeSet::create(root)
+				->descendants(true)
+				->where([](scene::Node::Ptr n){ return n->hasComponent<component::ParticleSystem>(); });
+
+			for (auto& n : withParticles->nodes())
+			{
+				auto particles = n->component<component::ParticleSystem>();
+
+				particles->emitting(!particles->emitting());
+			}
+		}
+		toogleEmitting = false;
+
 		sceneManager->nextFrame(time, deltaTime);
 	});
 
-	sceneManager->assets()->loader()->load();
+	auto keydown = canvas->keyboard()->keyDown()->connect([&](input::Keyboard::Ptr k)
+	{
+		toogleEmitting = true;
+	});
+
+	assets->loader()->load();
 	canvas->run();
 
 	return 0;

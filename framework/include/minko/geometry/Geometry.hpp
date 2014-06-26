@@ -50,7 +50,7 @@ namespace minko
 			virtual
 			~Geometry()
 			{
-				
+
 			}
 
 			static
@@ -128,13 +128,13 @@ namespace minko
 			void
 			removeVertexBuffer(const std::string& vertexAttributeName);
 
-			inline 
+			inline
 			unsigned int
 			numVertices() const
 			{
 				return _numVertices;
 			}
-			
+
 			inline
 			unsigned int
 			vertexSize() const
@@ -167,6 +167,12 @@ namespace minko
 
 			void
 			upload();
+
+            void
+            disposeIndexBufferData();
+
+            void
+            disposeVertexBufferData();
 
 			inline
 			bool

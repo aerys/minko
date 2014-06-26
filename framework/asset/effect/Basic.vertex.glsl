@@ -11,14 +11,16 @@ attribute vec2 uv;
 
 uniform mat4 modelToWorldMatrix;
 uniform mat4 worldToScreenMatrix;
+uniform vec2 uvScale;
+uniform vec2 uvOffset;
 
 varying vec2 vertexUV;
 varying vec3 vertexUVW;
 
 void main(void)
 {
-	#ifdef DIFFUSE_MAP
-		vertexUV = uv;
+	#if defined(DIFFUSE_MAP) || defined(ALPHA_MAP)
+		vertexUV = uvScale * uv + uvOffset;
 	#endif
 
 	#ifdef DIFFUSE_CUBEMAP

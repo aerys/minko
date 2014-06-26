@@ -53,6 +53,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/material/PhongMaterial.hpp"
 #include "minko/render/Effect.hpp"
 #include "minko/render/Priority.hpp"
+#include "minko/render/Texture.hpp"
 
 using namespace minko;
 using namespace minko::component;
@@ -109,7 +110,7 @@ AbstractASSIMPParser::AbstractASSIMPParser() :
 	_alreadyAnimatedNodes(),
 	_loaderCompleteSlots(),
 	_loaderErrorSlots(),
-    _importer()
+    _importer(nullptr)
 {
 }
 
@@ -127,7 +128,7 @@ AbstractASSIMPParser::parse(const std::string&					filename,
 #ifdef DEBUG
 	std::cout << "AbstractASSIMPParser::parse()" << std::endl;
 #endif // DEBUG
-	
+
 	resetParser();
 	initImporter();
 
@@ -145,18 +146,16 @@ AbstractASSIMPParser::parse(const std::string&					filename,
 	_assetLibrary	= assetLibrary;
 	_options		= options;
 
-    //Init the assimp scene
-    Assimp::Importer& importer = *_importer;
-
 	//fixme : find a way to handle loading dependencies asynchronously
-	options->loadAsynchronously(false);
-	importer.SetIOHandler(new IOHandler(options, _assetLibrary));
+	auto ioHandlerOptions = Options::create(options);
+	ioHandlerOptions->loadAsynchronously(false);
+	_importer->SetIOHandler(new IOHandler(ioHandlerOptions, _assetLibrary));
 
 #ifdef DEBUG
 	std::cout << "AbstractASSIMPParser: preparing to parse" << std::endl;
 #endif // DEBUG
-	
-	const aiScene* scene = importer.ReadFileFromMemory(
+
+	const aiScene* scene = _importer->ReadFileFromMemory(
 		&data[0],
 		data.size(),
 		//| aiProcess_GenSmoothNormals // assertion is raised by assimp
@@ -174,12 +173,12 @@ AbstractASSIMPParser::parse(const std::string&					filename,
 	);
 
 	if (!scene)
-		throw ParserError(importer.GetErrorString());	
+		throw ParserError(_importer->GetErrorString());
 
 #ifdef DEBUG
 	std::cout << "AbstractASSIMPParser: scene parsed" << std::endl;
 #endif // DEBUG
-	
+
 	parseDependencies(resolvedFilename, scene);
 
 #ifdef DEBUG
@@ -246,11 +245,9 @@ void
 AbstractASSIMPParser::initImporter()
 {
     if (_importer != nullptr)
-    {
         return;
-    }
 
-    _importer = std::make_shared<Assimp::Importer>();
+    _importer = new Assimp::Importer();
 
 #if (defined ASSIMP_BUILD_NO_IMPORTER_INSTANCIATION)
     provideLoaders(*_importer);
@@ -591,7 +588,9 @@ AbstractASSIMPParser::parseDependencies(const std::string& 	filename,
 	std::set<std::string>	loadedFilenames;
 	aiString				path;
 
-	for (unsigned int materialId = 0; materialId < scene->mNumMaterials; materialId++)
+	_numDependencies = 0;
+
+	for (unsigned int materialId = 0; materialId < scene->mNumMaterials; ++materialId)
 	{
 		const aiMaterial* aiMat = scene->mMaterials[materialId];
 
@@ -615,14 +614,16 @@ AbstractASSIMPParser::parseDependencies(const std::string& 	filename,
 						std::cout << "ASSIMParser: loading texture '" << filename << "'..." << std::endl;
 #endif
 						loadedFilenames.insert(filename);
-						_numDependencies++;
-
-						loadTexture(filename, filename, _options, scene);
 					}
 				}
 			}
 		}
 	}
+
+	_numDependencies = loadedFilenames.size();
+
+	for (auto& name : loadedFilenames)
+		loadTexture(name, name, _options, scene);
 }
 
 void
@@ -668,11 +669,12 @@ void
 AbstractASSIMPParser::textureCompleteHandler(file::Loader::Ptr loader, const aiScene* scene)
 {
 #ifdef DEBUG
-	std::cerr << "AbstractASSIMPParser: " << _numLoadedDependencies << "/" << _numDependencies << "texture loaded" << std::endl;
+	std::cerr << "AbstractASSIMPParser: " << _numLoadedDependencies << "/" << _numDependencies << " texture(s) loaded" << std::endl;
 #endif // DEBUG
-	
+
 	++_numLoadedDependencies;
-	if (_numDependencies == _numLoadedDependencies)// && _symbol)
+
+	if (_numDependencies == _numLoadedDependencies)
 		allDependenciesLoaded(scene);
 }
 
@@ -854,7 +856,8 @@ AbstractASSIMPParser::createSkin(const aiMesh* aimesh)
 		skin->reorganizeByVertices()->transposeMatrices()->disposeBones(),
 		_options->skinningMethod(),
 		_assetLibrary->context(),
-		slaveAnimations
+		slaveAnimations,
+		skeletonRoot
 	));
 
 	auto irrelevantTransforms = NodeSet::create(skeletonRoot)
@@ -1329,12 +1332,12 @@ AbstractASSIMPParser::createMaterial(const aiMaterial* aiMat)
 		reflectiveColor->w(opacity);
 		transparentColor->w(opacity);
 
-		material->set("priority",	render::priority::TRANSPARENT);
+		material->set("priority",	render::Priority::TRANSPARENT);
 		material->set("zSort",		true);
 	}
 	else
 	{
-		material->set("priority",	render::priority::OPAQUE);
+		material->set("priority",	render::Priority::OPAQUE);
 		material->set("zSort",		false);
 	}
 
@@ -1350,18 +1353,23 @@ AbstractASSIMPParser::createMaterial(const aiMaterial* aiMat)
 		aiString path;
 		if (aiMat->GetTexture(textureType, 0, &path) == AI_SUCCESS)
 		{
-			render::AbstractTexture::Ptr texture = _assetLibrary->texture(std::string(path.data));
+			render::Texture::Ptr texture = _assetLibrary->texture(std::string(path.data));
 
 			if (texture)
-				material->set<render::AbstractTexture::Ptr>(textureName, texture);
+				material->set(textureName, texture);
 		}
 	}
 
 	// apply material function
 	aiString materialName;
-	return aiMat->Get(AI_MATKEY_NAME, materialName) == AI_SUCCESS
+
+    auto materialRef = aiMat->Get(AI_MATKEY_NAME, materialName) == AI_SUCCESS
 		? _options->materialFunction()(materialName.data, material)
 		: material;
+
+    _assetLibrary->material(materialName.data, materialRef);
+
+    return materialRef;
 }
 
 material::Material::Ptr
@@ -1397,6 +1405,10 @@ AbstractASSIMPParser::chooseMaterialByShadingMode(const aiMaterial* aiMat) const
 	else
 		return material::Material::create(_options->material());
 }
+
+#ifdef NDEBUG
+# pragma optimize("", off)
+#endif // NDEBUG
 
 render::Effect::Ptr
 AbstractASSIMPParser::chooseEffectByShadingMode(const aiMaterial* aiMat) const
@@ -1447,6 +1459,9 @@ AbstractASSIMPParser::chooseEffectByShadingMode(const aiMaterial* aiMat) const
 	return _options->effectFunction()(effect);
 }
 
+#ifdef NDEBUG
+# pragma optimize("", on)
+#endif // NDEBUG
 
 render::Blending::Mode
 AbstractASSIMPParser::getBlendingMode(const aiMaterial* aiMat) const

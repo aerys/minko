@@ -12,17 +12,15 @@
     
     "uniformBindings"   : {
         "diffuseColor"          : "material[${materialId}].diffuseColor",
-		"lineThickness"			: "material[${materialId}].lineThickness",
 		"modelToWorldMatrix"    : "transform.modelToWorldMatrix",
-		"worldToScreenMatrix"   : { "property" : "camera.worldToScreenMatrix", "source" : "renderer" },
-		"viewport"				: { "property" : "canvas.viewport", "source" : "root" }
+		"worldToScreenMatrix"   : { "property" : "camera.worldToScreenMatrix",            "source" : "renderer" },
+        "lineThickness"         : { "property" : "material[${materialId}].lineThickness", "source" : "target", "default" : 1.0 },
+		"viewport"				: { "property" : "canvas.viewport",                       "source" : "root",   "default" : [0.0, 0.0, 800.0, 600.0] }
     },
     
     "macroBindings" : {
         "DIFFUSE_COLOR"         : "material[${materialId}].diffuseColor",
-        "LINE_THICKNESS"        : "material[${materialId}].lineThickness",
-        "MODEL_TO_WORLD"        : "transform.modelToWorldMatrix",
-        "VIEWPORT"              : { "property" : "canvas.viewport", "source" : "root" }
+        "MODEL_TO_WORLD"        : "transform.modelToWorldMatrix"
     },
 
     "stateBindings" : {
@@ -42,7 +40,8 @@
         "scissorBox.width"      : { "property" : "scissorBox.width",    "source" : "renderer" },
         "scissorBox.height"     : { "property" : "scissorBox.height",   "source" : "renderer" },
         "priority"              : "material[${materialId}].priority",
-        "zSort"                 : "material[${materialId}].zSort"
+        "zSort"                 : "material[${materialId}].zSort",
+        "layouts"               : "node.layouts"
     },
     
     "blendMode"         : ["one", "zero"],

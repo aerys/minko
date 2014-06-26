@@ -61,13 +61,10 @@ int main(int argc, char** argv)
 
 	auto _ = sceneManager->assets()->loader()->complete()->connect([=](file::Loader::Ptr loader)
 	{
-		auto cubeGeometry = geometry::CubeGeometry::create(sceneManager->assets()->context());
-
-		sceneManager->assets()->geometry("cubeGeometry", cubeGeometry);
-
 		mesh->addComponent(Surface::create(
-            sceneManager->assets()->geometry("cubeGeometry"),
-			material::BasicMaterial::create()->diffuseMap(sceneManager->assets()->texture(TEXTURE_FILENAME)),
+            sceneManager->assets()->geometry("cube"),
+			material::BasicMaterial::create()
+				->diffuseMap(sceneManager->assets()->texture(TEXTURE_FILENAME)),
 			sceneManager->assets()->effect("effect/Basic.effect")
 		));
 
@@ -98,5 +95,3 @@ int main(int argc, char** argv)
 
 	return 0;
 }
-
-

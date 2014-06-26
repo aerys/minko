@@ -3,7 +3,7 @@ minko.plugin.serializer = {}
 
 function minko.plugin.serializer:enable()
 	minko.plugin.links { "serializer" }
-	includedirs { 
+	includedirs {
 		minko.plugin.path("serializer") .. "/include",
 		minko.plugin.path("serializer") .. "/lib/msgpack-c/include" -- fixme: hide implementation
 	}
@@ -13,6 +13,8 @@ function minko.plugin.serializer:enable()
 		buildoptions {
 			"-Wno-deprecated-declarations"
 		}
+
+    minko.plugin.enable("devil")
 end
 
 function minko.plugin.serializer:dist(pluginDistDir)

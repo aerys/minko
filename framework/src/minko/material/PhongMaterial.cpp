@@ -85,7 +85,7 @@ PhongMaterial::environmentMap(AbstractTexture::Ptr value, EnvironmentMap2dType t
 	if (value->type() == TextureType::Texture2D)
 	{
 		if (type != EnvironmentMap2dType::Probe && type != EnvironmentMap2dType::BlinnNewell)
-			throw new std::invalid_argument("type");
+			throw std::invalid_argument("type");
 	
 		set("environmentMap2d", std::static_pointer_cast<AbstractTexture>(value));
 		set("environmentMap2dType", int(type));
@@ -139,7 +139,7 @@ PhongMaterial::Ptr
 PhongMaterial::normalMap(AbstractTexture::Ptr value)
 {
 	if (value->type() == TextureType::CubeTexture)
-		throw new std::logic_error("Only 2d normal maps are currently supported.");
+		throw std::logic_error("Only 2d normal maps are currently supported.");
 
 	set("normalMap", std::static_pointer_cast<AbstractTexture>(value));
 
@@ -158,7 +158,7 @@ PhongMaterial::Ptr
 PhongMaterial::specularMap(AbstractTexture::Ptr value)
 {
 	if (value->type() == TextureType::CubeTexture)
-		throw new std::logic_error("Only 2d specular maps are currently supported.");
+		throw std::logic_error("Only 2d specular maps are currently supported.");
 
 	set("specularMap", std::static_pointer_cast<AbstractTexture>(value));
 
@@ -177,7 +177,7 @@ PhongMaterial::Ptr
 PhongMaterial::alphaMap(AbstractTexture::Ptr value)
 {
 	if (value->type() == TextureType::CubeTexture)
-		throw new std::logic_error("Only 2d transparency maps are currently supported.");
+		throw std::logic_error("Only 2d transparency maps are currently supported.");
 
 	set("alphaMap", std::static_pointer_cast<AbstractTexture>(value));
 

@@ -75,10 +75,10 @@ AssetLibrary::geometryName(GeometryPtr geometry)
 	if (it != _geometries.end())
 		return it->first;
 
-	throw new std::logic_error("AssetLibrary does not reference this geometry.");
+	throw std::logic_error("AssetLibrary does not reference this geometry.");
 }
 
-render::AbstractTexture::Ptr
+render::Texture::Ptr
 AssetLibrary::texture(const std::string& name) const
 {
 	const auto foundTextureIt = _textures.find(name);
@@ -89,9 +89,27 @@ AssetLibrary::texture(const std::string& name) const
 }
 
 AssetLibrary::Ptr
-AssetLibrary::texture(const std::string& name, render::AbstractTexture::Ptr texture)
+AssetLibrary::texture(const std::string& name, render::Texture::Ptr texture)
 {
 	_textures[name] = texture;
+
+	return std::enable_shared_from_this<AssetLibrary>::shared_from_this();
+}
+
+render::CubeTexture::Ptr
+AssetLibrary::cubeTexture(const std::string& name) const
+{
+	const auto foundTextureIt = _cubeTextures.find(name);
+
+	return foundTextureIt != _cubeTextures.end()
+		? foundTextureIt->second
+		: nullptr;
+}
+
+AssetLibrary::Ptr
+AssetLibrary::cubeTexture(const std::string& name, render::CubeTexture::Ptr texture)
+{
+	_cubeTextures[name] = texture;
 
 	return std::enable_shared_from_this<AssetLibrary>::shared_from_this();
 }
@@ -110,7 +128,7 @@ AssetLibrary::textureName(render::AbstractTexture::Ptr texture)
 	if (it != _textures.end())
 		return it->first;
 
-	throw new std::logic_error("AssetLibrary does not reference this texture.");
+	throw std::logic_error("AssetLibrary does not reference this texture.");
 }
 
 scene::Node::Ptr
@@ -138,7 +156,7 @@ AssetLibrary::symbolName(NodePtr node)
 	if (it != _symbols.end())
 		return it->first;
 
-	throw new std::logic_error("AssetLibrary does not reference this symbol.");
+	throw std::logic_error("AssetLibrary does not reference this symbol.");
 }
 
 material::Material::Ptr
@@ -173,7 +191,7 @@ AssetLibrary::materialName(MaterialPtr material)
 	if (it != _materials.end())
 		return it->first;
 
-	throw new std::logic_error("AssetLibrary does not reference this material.");
+	throw std::logic_error("AssetLibrary does not reference this material.");
 }
 
 AssetLibrary::EffectPtr
@@ -201,7 +219,7 @@ AssetLibrary::effectName(EffectPtr effect)
 	if (it != _effects.end())
 		return it->first;
 
-	throw new std::logic_error("AssetLibrary does not reference this effect.");
+	throw std::logic_error("AssetLibrary does not reference this effect.");
 }
 
 const std::vector<unsigned char>&
@@ -246,20 +264,20 @@ AssetLibrary::scriptName(AbsScriptPtr script)
 	if (it != _scripts.end())
 		return it->first;
 
-	throw new std::logic_error("AssetLibrary does not reference this script.");
+	throw std::logic_error("AssetLibrary does not reference this script.");
 }
 
-const unsigned int
+Layouts
 AssetLibrary::layout(const std::string& name)
 {
 	if (_layouts.count(name) == 0)
 	{
-		unsigned int existingMask = 0;
+		Layouts existingMask = 0;
 
 		for (auto layout : _layouts)
 			existingMask |= layout.second;
 
-		auto mask = 1;
+		Layouts mask = 1;
 		for (auto i = 0; i < 32 && (existingMask & mask); ++i, mask <<= 1)
 			continue;
 
@@ -273,7 +291,7 @@ AssetLibrary::layout(const std::string& name)
 }
 
 AssetLibrary::Ptr
-AssetLibrary::layout(const std::string& name, const unsigned int mask)
+AssetLibrary::layout(const std::string& name, Layouts mask)
 {
 	_layouts[name] = mask;
 

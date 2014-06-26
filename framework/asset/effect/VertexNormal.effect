@@ -39,21 +39,27 @@
         "scissorBox.width"      : { "property" : "scissorBox.width",    "source" : "renderer" },
         "scissorBox.height"     : { "property" : "scissorBox.height",   "source" : "renderer" },
         "priority"              : "material[${materialId}].priority",
-        "zSort"					: "material[${materialId}].zSort"
+        "zSort"					: "material[${materialId}].zSort",
+        "layouts"               : "node.layouts"
     },
 
     "blendMode"         : ["one", "zero"],
     "colorMask"         : true,
     "depthTest"         : [true, "less_equal"],
     "triangleCulling"   : "none",
-	"stencilTest"		: ["always", 0, 1, ["keep", "keep", "keep"]],
+	"stencilTest"		: ["always", 0.0, 1.0, ["keep", "keep", "keep"]],
     "scissorTest"		: false,
-	"scissorBox"		: [0, 0, -1, -1],
+	"scissorBox"		: [0.0, 0.0, -1.0, -1.0],
     "priority"          : "opaque",
     "zSort"             : false,
 	
 	"passes"	: [{
 		"vertexShader"	: "
+		
+			#ifdef GL_ES
+				precision mediump float;
+			#endif
+
 			uniform mat4 modelToWorldMatrix;
 			uniform mat4 worldToScreenMatrix;
 
@@ -86,11 +92,15 @@
 			}
 		",
 		"fragmentShader"	: "
+			#ifdef GL_ES
+				precision mediump float;
+			#endif
+
 			varying vec3 worldNormal;
 
 			void main(void)
 			{
-				gl_FragColor = vec4((normalize(worldNormal.xyz) + 1) * .5, 1);
+				gl_FragColor = vec4((normalize(worldNormal.xyz) + 1.0) * 0.5, 1.0);
 			}
 		"
 	}]

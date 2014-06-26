@@ -43,11 +43,11 @@ Matrix4x4Timeline::initializeMatrixTimetable(const std::vector<uint>& 			timetab
 											 const std::vector<math::mat4>& 	matrices)
 {
 	if (timetable.empty())
-		throw new std::invalid_argument("timetable");
+		throw std::invalid_argument("timetable");
 	if (matrices.empty())
-		throw new std::invalid_argument("matrices");
+		throw std::invalid_argument("matrices");
 	if (timetable.size() != matrices.size())
-		throw new std::logic_error("The number of keys must match in both the 'timetable' and 'matrices' parameters.");
+		throw std::logic_error("The number of keys must match in both the 'timetable' and 'matrices' parameters.");
 
 	const uint numKeys = timetable.size();
 

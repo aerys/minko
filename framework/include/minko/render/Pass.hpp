@@ -47,8 +47,6 @@ namespace minko
 			typedef std::shared_ptr<std::function<void(ProgramPtr)>>					OnProgramFunctionPtr;
 			typedef std::list<std::function<void(ProgramPtr)>>							OnProgramFunctionList;	
 			typedef std::unordered_map<std::string, data::MacroBinding>					MacroBindingsMap;
-			typedef std::unordered_map<std::string, std::string>						StringToStringMap;
-			typedef std::function<std::string(const std::string&, StringToStringMap&)>	FormatFunction;
 
 		private:
 			const std::string						_name;
@@ -183,13 +181,13 @@ namespace minko
 			}
 
 			std::shared_ptr<Program>
-			selectProgram(std::shared_ptr<render::DrawCall>		drawCall,
-						  std::shared_ptr<data::Container>		targetData,
-						  std::shared_ptr<data::Container>		rendererData,
-						  std::shared_ptr<data::Container>		rootData,
-						  std::list<data::ContainerProperty>&	booleanMacros,
-						  std::list<data::ContainerProperty>&	integerMacros,
-						  std::list<data::ContainerProperty>&	incorrectIntegerMacros);
+			selectProgram(FormatNameFunction,
+						  std::shared_ptr<data::Container>	targetData,
+						  std::shared_ptr<data::Container>	rendererData,
+						  std::shared_ptr<data::Container>	rootData,
+						  std::list<std::string>&			booleanMacros,
+						  std::list<std::string>&			integerMacros,
+						  std::list<std::string>&			incorrectIntegerMacros);
 			
 			template <typename... T>
 			void

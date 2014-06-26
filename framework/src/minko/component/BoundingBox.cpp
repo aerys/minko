@@ -22,7 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/math/Box.hpp"
 #include "minko/scene/Node.hpp"
 #include "minko/component/Transform.hpp"
-#include "minko/component/Surface.hpp"
 #include "minko/geometry/Geometry.hpp"
 #include "minko/data/Container.hpp"
 
@@ -113,30 +112,38 @@ BoundingBox::update()
 			for (auto& surface : surfaces)
 			{
 				auto geom = surface->geometry();
-				auto xyzBuffer = geom->vertexBuffer("position");
-				auto attr = xyzBuffer->attribute("position");
-				auto offset = std::get<2>(*attr);
-
-				for (uint i = 0; i < xyzBuffer->numVertices(); ++i)
+				if (geom->hasVertexAttribute("position"))
 				{
-					auto x = xyzBuffer->data()[i * xyzBuffer->vertexSize() + offset];
-					auto y = xyzBuffer->data()[i * xyzBuffer->vertexSize() + offset + 1];
-					auto z = xyzBuffer->data()[i * xyzBuffer->vertexSize() + offset + 2];
+					auto xyzBuffer = geom->vertexBuffer("position");
+					auto attr = xyzBuffer->attribute("position");
+					auto offset = std::get<2>(*attr);
 
-					if (x < min.x)
-						min.x = x;
-					if (x > max.x)
-						max.x = x;
+					for (uint i = 0; i < xyzBuffer->numVertices(); ++i)
+					{
+						auto x = xyzBuffer->data()[i * xyzBuffer->vertexSize() + offset];
+						auto y = xyzBuffer->data()[i * xyzBuffer->vertexSize() + offset + 1];
+						auto z = xyzBuffer->data()[i * xyzBuffer->vertexSize() + offset + 2];
 
-					if (y < min.y)
-						min.y = y;
-					if (y > max.y)
-						max.y = y;
+						if (x < min.x)
+							min.x = x;
+						if (x > max.x)
+							max.x = x;
 
-					if (z < min.z)
-						min.z = z;
-					if (z > max.z)
-						max.z = z;
+						if (y < min.y)
+							min.y = y;
+						if (y > max.y)
+							max.y = y;
+
+						if (z < min.z)
+							min.z = z;
+						if (z > max.z)
+							max.z = z;
+					}
+				}
+				else
+				{
+					min->setTo(0.f, 0.f, 0.f);
+					max->setTo(0.f, 0.f, 0.f);
 				}
 			}
 

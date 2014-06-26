@@ -32,8 +32,7 @@ namespace minko
 	namespace component
 	{
 		class Transform :
-			public AbstractComponent,
-			public std::enable_shared_from_this<Transform>
+			public AbstractComponent
 		{
 
 		public:
@@ -44,14 +43,14 @@ namespace minko
 			typedef std::shared_ptr<AbstractComponent>	AbsCtrlPtr;
 
 		private:
-			math::mat4								_matrix;
-			math::mat4								_modelToWorld;
-			std::shared_ptr<data::StructureProvider>	_data;
+			math::mat4										_matrix;
+			math::mat4										_modelToWorld;
+			std::shared_ptr<data::StructureProvider>		_data;
 
-			Signal<AbsCtrlPtr, NodePtr>::Slot 			_targetAddedSlot;
-			Signal<AbsCtrlPtr, NodePtr>::Slot 			_targetRemovedSlot;
-			Signal<NodePtr, NodePtr, NodePtr>::Slot 	_addedSlot;
-			Signal<NodePtr, NodePtr, NodePtr>::Slot 	_removedSlot;
+			Signal<AbsCtrlPtr, NodePtr>::Slot 				_targetAddedSlot;
+			Signal<AbsCtrlPtr, NodePtr>::Slot 				_targetRemovedSlot;
+			Signal<NodePtr, NodePtr, NodePtr>::Slot 		_addedSlot;
+			Signal<NodePtr, NodePtr, NodePtr>::Slot 		_removedSlot;
 
 		public:
 			inline static
@@ -145,7 +144,6 @@ namespace minko
 		private:
 #endif // MINKO_TEST
 			class RootTransform :
-				public std::enable_shared_from_this<RootTransform>,
 				public AbstractComponent
 			{
 				friend class Transform;
@@ -179,7 +177,7 @@ namespace minko
 
 			private:
 				std::vector<TransformPtr>		_transforms;
-				std::vector<math::mat4*>	_modelToWorld;
+				std::vector<math::mat4*>		_modelToWorld;
 
 				std::map<NodePtr, unsigned int>	_nodeToId;
 				std::vector<NodePtr>			_idToNode;
@@ -227,6 +225,10 @@ namespace minko
 				renderingBeginHandler(SceneMgrPtr 	sceneManager, 
 									  uint			frameId, 
 									  AbsTexturePtr	target);
+
+				static
+				void
+				juxtaposeSiblings(std::vector<NodePtr>&);
 			};
 		};
 	}

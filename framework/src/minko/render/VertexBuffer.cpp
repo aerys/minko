@@ -71,6 +71,9 @@ VertexBuffer::VertexBuffer(std::shared_ptr<AbstractContext> context, float* begi
 void
 VertexBuffer::upload(uint offset, uint numVertices)
 {
+	if (_data.empty())
+		return;
+
     if (_id == -1)
     	_id = _context->createVertexBuffer(_data.size());
 
@@ -81,7 +84,7 @@ VertexBuffer::upload(uint offset, uint numVertices)
     	&_data[0]
     );
 
-	updatePositionBounds();
+	//updatePositionBounds();
 }
 
 void
@@ -92,7 +95,15 @@ VertexBuffer::dispose()
 	    _context->deleteVertexBuffer(_id);
 	    _id = -1;
     }
-	_data.clear();
+
+    disposeData();
+}
+
+void
+VertexBuffer::disposeData()
+{
+    _data.clear();
+    _data.shrink_to_fit();
 }
 
 void
@@ -223,4 +234,10 @@ VertexBuffer::updatePositionBounds()
 	_minPosition = math::vec3(minXYZ[0], minXYZ[1], minXYZ[2]);
 	_maxPosition = math::vec3(maxXYZ[0], maxXYZ[1], maxXYZ[2]);
 	_validMinMax = true;
+}
+
+math::vec3
+VertexBuffer::centerPosition()
+{
+	return (_minPosition + _maxPosition) * .5f;
 }

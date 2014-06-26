@@ -1,4 +1,4 @@
-/*
+﻿/*
 Copyright (c) 2013 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
@@ -33,7 +33,206 @@ namespace minko
         public:
             typedef std::shared_ptr<Keyboard>   Ptr;
 
-            // from SDL_scancode.h
+            typedef enum 
+            {
+                // IDs are the same than the official DOM codes: 
+                // https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent
+
+                CANCEL = 3, // Cancel key.
+                HELP = 6, // Help key.
+                BACK_SPACE = 8, // Backspace key.
+                TAB = 9, // Tab key.
+                CLEAR = 12, // "5" key on Numpad when NumLock is unlocked. Or on Mac, clear key which is positioned at NumLock key.
+                RETURN = 13, // Return/enter key on the main keyboard.
+                ENTER = 14, // Reserved, but not used.  </code><code>Obsolete since Gecko 30 (Dropped, see bug&nbsp;969247.)
+                SHIFT = 16, // Shift key.
+                CONTROL = 17, // Control key.
+                ALT = 18, // Alt (Option on Mac) key.
+                PAUSE = 19, // Pause key.
+                CAPS_LOCK = 20, // Caps lock.
+                KANA = 21, // Linux support for this keycode was added in Gecko 4.0.
+                //HANGUL = 21, // Linux support for this keycode was added in Gecko 4.0.
+                EISU = 22, // "英数" key on Japanese Mac keyboard. 
+                JUNJA = 23, // Linux support for this keycode was added in Gecko 4.0.
+                FINAL = 24, // Linux support for this keycode was added in Gecko 4.0.
+                //HANJA = 25, // Linux support for this keycode was added in Gecko 4.0.
+                KANJI = 25, // Linux support for this keycode was added in Gecko 4.0.
+                ESCAPE = 27, // Escape key.
+                CONVERT = 28, // Linux support for this keycode was added in Gecko 4.0.
+                NONCONVERT = 29, // Linux support for this keycode was added in Gecko 4.0.
+                ACCEPT = 30, // Linux support for this keycode was added in Gecko 4.0.
+                MODECHANGE = 31, // Linux support for this keycode was added in Gecko 4.0.
+                SPACE = 32, // Space bar.
+                PAGE_UP = 33, // Page Up key.
+                PAGE_DOWN = 34, // Page Down key.
+                END = 35, // End key.
+                HOME = 36, // Home key.
+                LEFT = 37, // Left arrow.
+                UP = 38, // Up arrow.
+                RIGHT = 39, // Right arrow.
+                DOWN = 40, // Down arrow.
+                SELECT = 41, // Linux support for this keycode was added in Gecko 4.0.
+                PRINT = 42, // Linux support for this keycode was added in Gecko 4.0.
+                EXECUTE = 43, // Linux support for this keycode was added in Gecko 4.0.
+                PRINTSCREEN = 44, // Print Screen key.
+                INSERT = 45, // Ins(ert) key.
+                DELETE = 46, // Del(ete) key.
+                _0 = 48, // "0" key in standard key location.
+                _1 = 49, // "1" key in standard key location.
+                _2 = 50, // "2" key in standard key location.
+                _3 = 51, // "3" key in standard key location.
+                _4 = 52, // "4" key in standard key location.
+                _5 = 53, // "5" key in standard key location.
+                _6 = 54, // "6" key in standard key location.
+                _7 = 55, // "7" key in standard key location.
+                _8 = 56, // "8" key in standard key location.
+                _9 = 57, // "9" key in standard key location.
+                COLON = 58, // Colon (":") key. 
+                SEMICOLON = 59, // Semicolon (";") key.
+                LESS_THAN = 60, // Less-than ("&lt;") key. 
+                EQUALS = 61, // Equals ("=") key.
+                GREATER_THAN = 62, // Greater-than ("&gt;") key. 
+                QUESTION_MARK = 63, // Question mark ("?") key. 
+                AT = 64, // Atmark ("@") key. 
+                A = 65, // "A" key.
+                B = 66, // "B" key.
+                C = 67, // "C" key.
+                D = 68, // "D" key.
+                E = 69, // "E" key.
+                F = 70, // "F" key.
+                G = 71, // "G" key.
+                H = 72, // "H" key.
+                I = 73, // "I" key.
+                J = 74, // "J" key.
+                K = 75, // "K" key.
+                L = 76, // "L" key.
+                M = 77, // "M" key.
+                N = 78, // "N" key.
+                O = 79, // "O" key.
+                P = 80, // "P" key.
+                Q = 81, // "Q" key.
+                R = 82, // "R" key.
+                S = 83, // "S" key.
+                T = 84, // "T" key.
+                U = 85, // "U" key.
+                V = 86, // "V" key.
+                W = 87, // "W" key.
+                X = 88, // "X" key.
+                Y = 89, // "Y" key.
+                Z = 90, // "Z" key.
+                WIN = 91, // Windows logo key on Windows. Or Super or Hyper key on Linux. 
+                CONTEXT_MENU = 93, // Opening context menu key.
+                SLEEP = 95, // Linux support for this keycode was added in Gecko 4.0.
+                NUMPAD0 = 96, // "0" on the numeric keypad.
+                NUMPAD1 = 97, // "1" on the numeric keypad.
+                NUMPAD2 = 98, // "2" on the numeric keypad.
+                NUMPAD3 = 99, // "3" on the numeric keypad.
+                NUMPAD4 = 100, // "4" on the numeric keypad.
+                NUMPAD5 = 101, // "5" on the numeric keypad.
+                NUMPAD6 = 102, // "6" on the numeric keypad.
+                NUMPAD7 = 103, // "7" on the numeric keypad.
+                NUMPAD8 = 104, // "8" on the numeric keypad.
+                NUMPAD9 = 105, // "9" on the numeric keypad.
+                MULTIPLY = 106, // "*" on the numeric keypad.
+                ADD = 107, // "+" on the numeric keypad.
+                SEPARATOR = 108, // &nbsp;
+                SUBTRACT = 109, // "-" on the numeric keypad.
+                DECIMAL = 110, // Decimal point on the numeric keypad.
+                DIVIDE = 111, // "/" on the numeric keypad.
+                F1 = 112, // F1 key.
+                F2 = 113, // F2 key.
+                F3 = 114, // F3 key.
+                F4 = 115, // F4 key.
+                F5 = 116, // F5 key.
+                F6 = 117, // F6 key.
+                F7 = 118, // F7 key.
+                F8 = 119, // F8 key.
+                F9 = 120, // F9 key.
+                F10 = 121, // F10 key.
+                F11 = 122, // F11 key.
+                F12 = 123, // F12 key.
+                F13 = 124, // F13 key.
+                F14 = 125, // F14 key.
+                F15 = 126, // F15 key.
+                F16 = 127, // F16 key.
+                F17 = 128, // F17 key.
+                F18 = 129, // F18 key.
+                F19 = 130, // F19 key.
+                F20 = 131, // F20 key.
+                F21 = 132, // F21 key.
+                F22 = 133, // F22 key.
+                F23 = 134, // F23 key.
+                F24 = 135, // F24 key.
+                NUM_LOCK = 144, // Num Lock key.
+                SCROLL_LOCK = 145, // Scroll Lock key.
+                WIN_OEM_FJ_JISHO = 146, // An OEM specific key on Windows. This was used for "Dictionary" key on Fujitsu OASYS. 
+                WIN_OEM_FJ_MASSHOU = 147, // An OEM specific key on Windows. This was used for "Unregister word" key on Fujitsu OASYS. 
+                WIN_OEM_FJ_TOUROKU = 148, // An OEM specific key on Windows. This was used for "Register word" key on Fujitsu OASYS. 
+                WIN_OEM_FJ_LOYA = 149, // An OEM specific key on Windows. This was used for "Left OYAYUBI" key on Fujitsu OASYS. 
+                WIN_OEM_FJ_ROYA = 150, // An OEM specific key on Windows. This was used for "Right OYAYUBI" key on Fujitsu OASYS. 
+                CIRCUMFLEX = 160, // Circumflex ("^") key. 
+                EXCLAMATION = 161, // Exclamation ("!") key. 
+                DOUBLE_QUOTE = 162, // Double quote (""") key. 
+                HASH = 163, // Hash ("#") key. 
+                DOLLAR = 164, // Dollar sign ("$") key. 
+                PERCENT = 165, // Percent ("%") key. 
+                AMPERSAND = 166, // Ampersand ("&amp;") key. 
+                UNDERSCORE = 167, // Underscore ("_") key. 
+                OPEN_PAREN = 168, // Open parenthesis ("(") key. 
+                CLOSE_PAREN = 169, // Close parenthesis (")") key. 
+                ASTERISK = 170, // Asterisk ("*") key. 
+                PLUS = 171, // Plus ("+") key. 
+                PIPE = 172, // Pipe ("|") key. 
+                HYPHEN_MINUS = 173, // Hyphen-US/docs/Minus ("-") key. 
+                OPEN_CURLY_BRACKET = 174, // Open curly bracket ("{") key. 
+                CLOSE_CURLY_BRACKET = 175, // Close curly bracket ("}") key. 
+                TILDE = 176, // Tilde ("~") key. 
+                VOLUME_MUTE = 181, // Audio mute key. 
+                VOLUME_DOWN = 182, // Audio volume down key 
+                VOLUME_UP = 183, // Audio volume up key 
+                COMMA = 188, // Comma (",") key.
+                PERIOD = 190, // Period (".") key.
+                SLASH = 191, // Slash ("/") key.
+                BACK_QUOTE = 192, // Back tick ("`") key.
+                OPEN_BRACKET = 219, // Open square bracket ("[") key.
+                BACK_SLASH = 220, // Back slash ("\") key.
+                CLOSE_BRACKET = 221, // Close square bracket ("]") key.
+                QUOTE = 222, // Quote (''') key.
+                META = 224, // Meta key on Linux, Command key on Mac.
+                ALTGR = 225, // AltGr key (Level 3 Shift key or Level 5 Shift key) on Linux. 
+                WIN_ICO_HELP = 227, // An OEM specific key on Windows. This is (was?) used for Olivetti ICO keyboard.
+                WIN_ICO_00 = 228, // An OEM specific key on Windows. This is (was?) used for Olivetti ICO keyboard.
+                WIN_ICO_CLEAR = 230, // An OEM specific key on Windows. This is (was?) used for Olivetti ICO keyboard.
+                WIN_OEM_RESET = 233, // An OEM specific key on Windows. This was used for Nokia/Ericsson's device.
+                WIN_OEM_JUMP = 234, // An OEM specific key on Windows. This was used for Nokia/Ericsson's device.
+                WIN_OEM_PA1 = 235, // An OEM specific key on Windows. This was used for Nokia/Ericsson's device.
+                WIN_OEM_PA2 = 236, // An OEM specific key on Windows. This was used for Nokia/Ericsson's device.
+                WIN_OEM_PA3 = 237, // An OEM specific key on Windows. This was used for Nokia/Ericsson's device.
+                WIN_OEM_WSCTRL = 238, // An OEM specific key on Windows. This was used for Nokia/Ericsson's device.
+                WIN_OEM_CUSEL = 239, // An OEM specific key on Windows. This was used for Nokia/Ericsson's device.
+                WIN_OEM_ATTN = 240, // An OEM specific key on Windows. This was used for Nokia/Ericsson's device.
+                WIN_OEM_FINISH = 241, // An OEM specific key on Windows. This was used for Nokia/Ericsson's device.
+                WIN_OEM_COPY = 242, // An OEM specific key on Windows. This was used for Nokia/Ericsson's device.
+                WIN_OEM_AUTO = 243, // An OEM specific key on Windows. This was used for Nokia/Ericsson's device.
+                WIN_OEM_ENLW = 244, // An OEM specific key on Windows. This was used for Nokia/Ericsson's device.
+                WIN_OEM_BACKTAB = 245, // An OEM specific key on Windows. This was used for Nokia/Ericsson's device.
+                ATTN = 246, // Attn (Attension) key of IBM midrange computers, e.g., AS/400. 
+                CRSEL = 247, // CrSel (Cursor Selection) key of IBM 3270 keyboard layout. 
+                EXSEL = 248, // ExSel (Extend Selection) key of IBM 3270 keyboard layout. 
+                EREOF = 249, // Erase EOF key of IBM 3270 keyboard layout. 
+                PLAY = 250, // Play key of IBM 3270 keyboard layout. 
+                ZOOM = 251, // Zoom key. 
+                PA1 = 253, // PA1 key of IBM 3270 keyboard layout. 
+                WIN_OEM_CLEAR = 254, // Clear key, but we're not sure the meaning difference from DOM_VK_CLEAR. 
+
+                // Additional keys (specific to Minko and for native support of some keys)
+                CONTROL_RIGHT = 300, // Right control key
+                SHIFT_RIGHT = 301, // Right shift key
+
+            } Key;
+
+        //protected:
+        public:
             enum class ScanCode
             {
                 UNKNOWN = 0,
@@ -86,11 +285,11 @@ namespace minko
                 EQUALS = 46,
                 LEFTBRACKET = 47,
                 RIGHTBRACKET = 48,
-                BACKSLASH = 49, 
-                NONUSHASH = 50, 
+                BACKSLASH = 49,
+                NONUSHASH = 50,
                 SEMICOLON = 51,
                 APOSTROPHE = 52,
-                GRAVE = 53, 
+                GRAVE = 53,
                 COMMA = 54,
                 PERIOD = 55,
                 SLASH = 56,
@@ -113,7 +312,7 @@ namespace minko
                 PRINTSCREEN = 70,
                 SCROLLLOCK = 71,
                 PAUSE = 72,
-                INSERT = 73, 
+                INSERT = 73,
                 HOME = 74,
                 PAGEUP = 75,
                 DELETE = 76,
@@ -123,7 +322,7 @@ namespace minko
                 LEFT = 80,
                 DOWN = 81,
                 UP = 82,
-                NUMLOCKCLEAR = 83, 
+                NUMLOCKCLEAR = 83,
                 KP_DIVIDE = 84,
                 KP_MULTIPLY = 85,
                 KP_MINUS = 86,
@@ -140,9 +339,9 @@ namespace minko
                 KP_9 = 97,
                 KP_0 = 98,
                 KP_PERIOD = 99,
-                NONUSBACKSLASH = 100, 
-                APPLICATION = 101, 
-                POWER = 102, 
+                NONUSBACKSLASH = 100,
+                APPLICATION = 101,
+                POWER = 102,
                 KP_EQUALS = 103,
                 F13 = 104,
                 F14 = 105,
@@ -172,7 +371,7 @@ namespace minko
                 VOLUMEDOWN = 129,
                 KP_COMMA = 133,
                 KP_EQUALSAS400 = 134,
-                INTERNATIONAL1 = 135, 
+                INTERNATIONAL1 = 135,
                 INTERNATIONAL2 = 136,
                 INTERNATIONAL3 = 137,
                 INTERNATIONAL4 = 138,
@@ -257,7 +456,7 @@ namespace minko
                 RSHIFT = 229,
                 RALT = 230,
                 RGUI = 231,
-                MODE = 257,    
+                MODE = 257,
 
                 AUDIONEXT = 258,
                 AUDIOPREV = 259,
@@ -279,7 +478,7 @@ namespace minko
 
                 BRIGHTNESSDOWN = 275,
                 BRIGHTNESSUP = 276,
-                DISPLAYSWITCH = 277, 
+                DISPLAYSWITCH = 277,
                 KBDILLUMTOGGLE = 278,
                 KBDILLUMDOWN = 279,
                 KBDILLUMUP = 280,
@@ -299,12 +498,18 @@ namespace minko
                 CLEAR = 12,
                 RETURN = 13,
                 PAUSE = 19,
+                CANCEL = 24,
                 ESCAPE = 27,
+                FS = 28, // File separator
+                GS = 29, // Group separator
+                RS = 30, // Record separator
+                US = 31, // Unit separator
                 SPACE = 32,
                 EXCLAIM = 33,
                 QUOTEDBL = 34,
                 HASH = 35,
                 DOLLAR = 36,
+                PERCENT = 37,
                 AMPERSAND = 38,
                 QUOTE = 39,
                 LEFTPAREN = 40,
@@ -332,38 +537,43 @@ namespace minko
                 GREATER = 62,
                 QUESTION = 63,
                 AT = 64,
+                // 65 -> 90 = capital letters
                 LEFTBRACKET = 91,
                 BACKSLASH = 92,
                 RIGHTBRACKET = 93,
                 CARET = 94,
                 UNDERSCORE = 95,
                 BACKQUOTE = 96,
-                a = 97,
-                b = 98,
-                c = 99,
-                d = 100,
-                e = 101,
-                f = 102,
-                g = 103,
-                h = 104,
-                i = 105,
-                j = 106,
-                k = 107,
-                l = 108,
-                m = 109,
-                n = 110,
-                o = 111,
-                p = 112,
-                q = 113,
-                r = 114,
-                s = 115,
-                t = 116,
-                u = 117,
-                v = 118,
-                w = 119,
-                x = 120,
-                y = 121,
-                z = 122,
+                A = 97,
+                B = 98,
+                C = 99,
+                D = 100,
+                E = 101,
+                F = 102,
+                G = 103,
+                H = 104,
+                I = 105,
+                J = 106,
+                K = 107,
+                L = 108,
+                M = 109,
+                N = 110,
+                O = 111,
+                P = 112,
+                Q = 113,
+                R = 114,
+                S = 115,
+                T = 116,
+                U = 117,
+                V = 118,
+                W = 119,
+                X = 120,
+                Y = 121,
+                Z = 122,
+                LEFTCURLYBRACKET = 123,
+                PIPE = 124,
+                RIGHTCURLYBRACKET = 125,
+                TILDE = 126,
                 DELETE = 127,
                 WORLD_0 = 160,
                 WORLD_1 = 161,
@@ -461,80 +671,15 @@ namespace minko
                 WORLD_93 = 253,
                 WORLD_94 = 254,
                 WORLD_95 = 255,
-                KP0 = 256,
-                KP1 = 257,
-                KP2 = 258,
-                KP3 = 259,
-                KP4 = 260,
-                KP5 = 261,
-                KP6 = 262,
-                KP7 = 263,
-                KP8 = 264,
-                KP9 = 265,
-                KP_PERIOD = 266,
-                KP_DIVIDE = 267,
-                KP_MULTIPLY = 268,
-                KP_MINUS = 269,
-                KP_PLUS = 270,
-                KP_ENTER = 271,
-                KP_EQUALS = 272,
-                UP = 273,
-                DOWN = 274,
-                RIGHT = 275,
-                LEFT = 276,
-                INSERT = 277,
-                HOME = 278,
-                END = 279,
-                PAGEUP = 280,
-                PAGEDOWN = 281,
-                F1 = 282,
-                F2 = 283,
-                F3 = 284,
-                F4 = 285,
-                F5 = 286,
-                F6 = 287,
-                F7 = 288,
-                F8 = 289,
-                F9 = 290,
-                F10 = 291,
-                F11 = 292,
-                F12 = 293,
-                F13 = 294,
-                F14 = 295,
-                F15 = 296,
-                NUMLOCK = 300,
-                CAPSLOCK = 301,
-                SCROLLOCK = 302,
-                RSHIFT = 303,
-                LSHIFT = 304,
-                RCTRL = 305,
-                LCTRL = 306,
-                RALT = 307,
-                LALT = 308,
-                RMETA = 309,
-                LMETA = 310,
-                LSUPER = 311,
-                RSUPER = 312,
-                MODE = 313,
-                COMPOSE = 314,
-                HELP = 315,
-                PRINT = 316,
-                SYSREQ = 317,
-                BREAK = 318,
-                MENU = 319,
-                POWER = 320,
-                EURO = 321,
-                UNDO = 322
             };
 
         public:
-            static const uint NUM_SCANCODES = 285;
-
+            static const uint NUM_KEYS = 350;
+        
         private:
-            typedef std::array<std::string, NUM_SCANCODES>      ScanCodeToNameArray;
+            typedef std::array<std::string, NUM_KEYS>           KeyToNameArray;
 
-        private:
-            static const ScanCodeToNameArray                    _scanCodeToName;
+            static const KeyToNameArray                         _keyToName;
 
         protected:
             std::unordered_map<uint, Signal<Ptr, uint>::Ptr>    _keyDown;
@@ -546,16 +691,16 @@ namespace minko
         public:
             inline static
             const std::string&
-            getKeyName(ScanCode scanCode)
+            getKeyName(Key key)
             {
-                return _scanCodeToName[static_cast<int>(scanCode)];
+                return _keyToName[static_cast<int>(key)];
             }
 
             inline static
             const std::string&
-            getKeyName(uint scanCode)
+            getKeyName(uint key)
             {
-                return _scanCodeToName[scanCode];
+                return _keyToName[key];
             }
 
             virtual
@@ -567,9 +712,9 @@ namespace minko
 
             virtual
             Signal<Ptr, uint>::Ptr
-            keyDown(ScanCode scanCode)
+            keyDown(Key key)
             {
-                auto index = static_cast<int>(scanCode);
+                auto index = static_cast<int>(key);
 
                 if (_keyDown.count(index) == 0)
                     _keyDown[index] = Signal<Ptr, uint>::create();
@@ -585,9 +730,9 @@ namespace minko
             }
 
             Signal<Ptr, uint>::Ptr
-            keyUp(ScanCode scanCode)
+            keyUp(Key key)
             {
-                auto index = static_cast<int>(scanCode);
+                auto index = static_cast<int>(key);
 
                 if (_keyUp.count(index) == 0)
                     _keyUp[index] = Signal<Ptr, uint>::create();
@@ -597,19 +742,20 @@ namespace minko
 
             virtual
             bool
-            keyIsDown(ScanCode scanCode) = 0;
+            keyIsDown(Key key) = 0;
 
             virtual
-            bool
-            keyIsDown(KeyCode keyCode) = 0;
+            ~Keyboard()
+            {
+            }
 
         protected:
             Keyboard();
 
         private:
             static
-            const ScanCodeToNameArray
+            const KeyToNameArray
             initializeKeyNames();
-         };
+        };
     }
 }

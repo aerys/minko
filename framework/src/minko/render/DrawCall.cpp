@@ -35,7 +35,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/States.hpp"
 #include "minko/render/Priority.hpp"
 #include "minko/data/Container.hpp"
-
+#include "minko/render/Pass.hpp"
+#include "minko/data/Provider.hpp"
+#include "minko/data/ArrayProvider.hpp"
 #include "DrawCallZSorter.hpp"
 
 using namespace minko;
@@ -46,15 +48,17 @@ SamplerState DrawCall::_defaultSamplerState = SamplerState(WrapMode::CLAMP, Text
 /*static*/ const unsigned int	DrawCall::MAX_NUM_TEXTURES		= 8;
 /*static*/ const unsigned int	DrawCall::MAX_NUM_VERTEXBUFFERS	= 8;
 
-DrawCall::DrawCall(const data::BindingMap&	attributeBindings,
-				   const data::BindingMap&	uniformBindings,
-				   const data::BindingMap&	stateBindings,
-                   States::Ptr              states) :
+
+DrawCall::DrawCall(Pass::Ptr pass) :
+	_pass(pass),
 	_program(nullptr),
-	_attributeBindings(attributeBindings),
-	_uniformBindings(uniformBindings),
-	_stateBindings(stateBindings),
-    _states(states),
+	_targetData(nullptr),
+	_rendererData(nullptr),
+	_rootData(nullptr),
+	_fullRootData(nullptr),
+	_fullRendererData(nullptr),
+	_fullTargetData(nullptr),
+	_formatFunction(nullptr),
     _textureIds(MAX_NUM_TEXTURES, 0),
     _textureLocations(MAX_NUM_TEXTURES, -1),
     _textureWrapMode(MAX_NUM_TEXTURES, WrapMode::CLAMP),
@@ -67,9 +71,18 @@ DrawCall::DrawCall(const data::BindingMap&	attributeBindings,
     _vertexAttributeOffsets(MAX_NUM_VERTEXBUFFERS, -1),
 	_target(nullptr),
 	_referenceChangedSlots(),
+	_macroChangedSlots(),
+	_macroAddedOrRemovedSlots(),
+	_indicesChangedSlot(nullptr),
+	_layoutsPropertyChangedSlot(nullptr),
 	_zsortNeeded(Signal<Ptr>::create()),
+	_macroChanged(Signal<Ptr, ContainerPtr, const std::string&>::create()),
+	_containerMacroPNames(),
+	_containerMacroRegex(),
 	_zSorter(nullptr)
 {
+	if (_pass == nullptr)
+		throw std::invalid_argument("pass");
 }
 
 void
@@ -78,47 +91,127 @@ DrawCall::initialize()
 	_zSorter = DrawCallZSorter::create(shared_from_this());
 }
 
+
 void
-DrawCall::configure(std::shared_ptr<Program>  program,
-					ContainerPtr              data,
-					ContainerPtr              rendererData,
-                    ContainerPtr              rootData)
+DrawCall::configure(Program::Ptr				program,
+					FormatNameFunction			formatNameFunc,
+					Container::Ptr				fullTargetData,
+					Container::Ptr				fullRendererData,
+					Container::Ptr				fullRootData,
+					Container::Ptr				targetData,
+					Container::Ptr				rendererData,
+                    Container::Ptr				rootData)
 {
-    _program = program;
-    bind(data, rendererData, rootData);
+    _program			= program;
+	
+	_formatFunction		= formatNameFunc;
+
+	_fullTargetData		= nullptr;
+	_fullRendererData	= nullptr;
+	_fullRootData		= nullptr;
+	_targetData			= nullptr;
+	_rendererData		= nullptr;
+	_rootData			= nullptr;
+
+	_fullTargetData		= fullTargetData;
+	_fullRendererData	= fullRendererData;
+	_fullRootData		= fullRootData;
+
+	_targetData			= targetData;
+	_rendererData		= rendererData;
+	_rootData			= rootData;
+
+	bind();
+	trackMacros();
+	_zSorter->initialize(_targetData, _rendererData, _rootData);
+	
+	// FIXME
+	auto slot = fullTargetData->providerRemoved()->connect(
+		std::bind(
+			&DrawCall::remoteProviderRemovedHandler,
+			shared_from_this(),
+			BindingSource::TARGET,
+			std::placeholders::_2));
+	_containerUpdateSlots.push_back(slot);
+
+	slot = fullRendererData->providerRemoved()->connect(std::bind(
+		&DrawCall::remoteProviderRemovedHandler,
+		shared_from_this(),
+		BindingSource::RENDERER,
+		std::placeholders::_2));
+	_containerUpdateSlots.push_back(slot);
+
+	slot = fullRootData->providerRemoved()->connect(std::bind(
+		&DrawCall::remoteProviderRemovedHandler,
+		shared_from_this(),
+		BindingSource::ROOT,
+		std::placeholders::_2));
+	_containerUpdateSlots.push_back(slot);
 }
 
 void
-DrawCall::bind(ContainerPtr data, ContainerPtr rendererData, ContainerPtr rootData)
+DrawCall::bind()
 {
 	reset();
-
-	_targetData		= data;
-	_rendererData	= rendererData;
-	_rootData		= rootData;
-
+	bindProgramDefaultUniforms();
+	bindTargetLayouts();
 	bindIndexBuffer();
 	bindProgramInputs();
 	bindStates();
+}
 
-	_zSorter->initialize(data, rendererData, rootData);
+void
+DrawCall::bindProgramDefaultUniforms()
+{
+	if (_program == nullptr)
+		return;
+
+	for (auto& uniform : _program->uniformFloat())
+		_uniformFloat[uniform.first] = uniform.second;
+	for (auto& uniform : _program->uniformFloat2())
+		_uniformFloat2[uniform.first] = uniform.second;
+	for (auto& uniform : _program->uniformFloat3())
+		_uniformFloat3[uniform.first] = uniform.second;
+	for (auto& uniform : _program->uniformFloat4())
+		_uniformFloat4[uniform.first] = uniform.second;
 }
 
 void
 DrawCall::bindIndexBuffer()
 {
-	const std::string propertyName = "geometry[" + _variablesToValue["geometryId"] + "].indices";
+	const std::string propertyName = _formatFunction("geometry[${geometryId}].indices"); 
 
-	_indexBuffer	= -1;
-	_numIndices		= 0;
-
+	_indexBuffer		= -1;
+	_numIndices			= 0;
+	_indicesChangedSlot	= nullptr;
 
 	// Note: index buffer can only be held by the target node's data container!
 	if (_targetData->hasProperty(propertyName))
 	{
 		auto indexBuffer	= _targetData->get<IndexBuffer::Ptr>(propertyName);
-		_indexBuffer		= indexBuffer->id();
-		_numIndices			= indexBuffer->data().size();
+		if (indexBuffer->isReady())
+		{
+			_indexBuffer	= indexBuffer->id();
+			_numIndices		= indexBuffer->numIndices();
+		}
+		else
+		{
+			_indexBuffer	= -1;
+			_numIndices		= 0;
+		}
+
+		_indicesChangedSlot		= indexBuffer->changed()->connect([&](IndexBuffer::Ptr indices){
+			if (!indices->isReady())
+			{
+				_indexBuffer	= -1;
+				_numIndices		= 0;
+			}
+			else
+			{
+				_indexBuffer = indices->id();
+				_numIndices = indices->numIndices();
+			}
+		});
 	}
 
 	if (_referenceChangedSlots.count(propertyName) == 0)
@@ -126,6 +219,28 @@ DrawCall::bindIndexBuffer()
 		_referenceChangedSlots[propertyName].push_back(
 			_targetData->propertyReferenceChanged(propertyName)->connect(std::bind(
 				&DrawCall::bindIndexBuffer,
+				shared_from_this())
+			)
+		);
+	}
+}
+
+void
+DrawCall::bindTargetLayouts()
+{
+	const std::string propertyName = _formatFunction("node.layouts");
+
+	_layouts = scene::Layout::Group::DEFAULT;
+
+	// Note: index buffer can only be held by the target node's data container!
+	if (_targetData->hasProperty(propertyName))
+		_layouts = _targetData->get<Layouts>(propertyName);
+
+	if (_referenceChangedSlots.count(propertyName) == 0)
+	{
+		_referenceChangedSlots[propertyName].push_back(
+			_targetData->propertyReferenceChanged(propertyName)->connect(std::bind(
+				&DrawCall::bindTargetLayouts,
 				shared_from_this())
 			)
 		);
@@ -157,17 +272,19 @@ DrawCall::bindProgramInputs()
 		case ProgramInputs::Type::attribute:
 			{
 				bindVertexAttribute(inputName, location, vertexBufferIndex);
+				++vertexBufferIndex;
 				break;
 			}
 	
 		case ProgramInputs::Type::sampler2d:
 		case ProgramInputs::Type::samplerCube:
 			{
-				auto& samplerState = _states->samplers().count(inputName)
-					? _states->samplers().at(inputName)
+				auto& samplerState = _pass->states()->samplers().count(inputName)
+					? _pass->states()->samplers().at(inputName)
 					: _defaultSamplerState;
 
 				bindTextureSampler(inputName, location, textureIndex, samplerState);
+				++textureIndex;
 				break;
 			}
 	
@@ -186,7 +303,7 @@ DrawCall::bindProgramInputs()
 void
 DrawCall::bindVertexAttribute(const std::string&	inputName,
 							  int					location,
-							  uint&					vertexBufferIndex)
+							  uint					vertexBufferIndex)
 {
 #ifdef DEBUG
 	if (location < 0)
@@ -195,12 +312,14 @@ DrawCall::bindVertexAttribute(const std::string&	inputName,
 		throw std::invalid_argument("vertexBufferIndex");
 #endif // DEBUG
 	
-	if (_attributeBindings.count(inputName))
-	{
-		auto propertyName		= formatPropertyName(std::get<0>(_attributeBindings.at(inputName)));
-		const auto& container	= getDataContainer(std::get<1>(_attributeBindings.at(inputName)));
+	const auto& attributeBindings	= _pass->attributeBindings();
+	auto		index				= vertexBufferIndex;
 
-		++vertexBufferIndex;
+	if (attributeBindings.count(inputName))
+	{
+		auto propertyName		= _formatFunction(std::get<0>(attributeBindings.at(inputName)));
+		auto source				= std::get<1>(attributeBindings.at(inputName));
+		const auto& container	= getContainer(ContainerId::FILTERED, source);
 
 		if (container && container->hasProperty(propertyName))
 		{
@@ -212,7 +331,7 @@ DrawCall::bindVertexAttribute(const std::string&	inputName,
 				throw std::logic_error("missing required vertex attribute: " + attributeName);
 #endif
 
-			auto attribute = vertexBuffer->attribute(attributeName);
+			auto attribute	= vertexBuffer->attribute(attributeName);
 
 			_vertexBufferIds		[vertexBufferIndex]	= vertexBuffer->id();
 			_vertexBufferLocations	[vertexBufferIndex]	= location;
@@ -224,17 +343,14 @@ DrawCall::bindVertexAttribute(const std::string&	inputName,
 
 		if (_referenceChangedSlots.count(propertyName) == 0)
 		{
-#if defined(EMSCRIPTEN)
-			// See issue #1848 in Emscripten: https://github.com/kripken/emscripten/issues/1848
 			auto that = shared_from_this();
-			_referenceChangedSlots[propertyName].push_back(container->propertyReferenceChanged(propertyName)->connect([&, that](data::Container::Ptr, const std::string&) {
-				that->bindVertexAttribute(inputName, location, vertexBufferIndex);
-			}));
-#else
-			_referenceChangedSlots[propertyName].push_back(container->propertyReferenceChanged(propertyName)->connect(std::bind(
-				&DrawCall::bindVertexAttribute, shared_from_this(), inputName, location, vertexBufferIndex
-			)));
-#endif
+			auto slot = container->propertyReferenceChanged(propertyName)->connect(
+					[=](Container::Ptr, const std::string&)
+					{
+						that->bindVertexAttribute(inputName, location, vertexBufferIndex);
+					}	
+				);
+			_referenceChangedSlots[propertyName].push_back(slot);
 		}
 	}
 }
@@ -242,9 +358,8 @@ DrawCall::bindVertexAttribute(const std::string&	inputName,
 void
 DrawCall::bindTextureSampler(const std::string&		inputName,
 							 int					location,
-							 uint&					textureIndex,
-   							 const SamplerState&	samplerState, 
-							 bool					incrementTextureIndex)
+							 uint					textureIndex,
+   							 const SamplerState&	samplerState)
 {
 #ifdef DEBUG
 	if (location < 0)
@@ -253,17 +368,18 @@ DrawCall::bindTextureSampler(const std::string&		inputName,
 		throw std::invalid_argument("textureIndex");
 #endif // DEBUG
 
-	if (_uniformBindings.count(inputName))
-	{
-		if (incrementTextureIndex)
-			++textureIndex;
+	const auto& uniformBindings = _pass->uniformBindings();
+	auto		index			= textureIndex;
 
-		auto propertyName		= formatPropertyName(std::get<0>(_uniformBindings.at(inputName)));
-		const auto& container	= getDataContainer(std::get<1>(_uniformBindings.at(inputName)));
+	if (uniformBindings.count(inputName))
+	{
+		auto propertyName		= _formatFunction(std::get<0>(uniformBindings.at(inputName)));
+		auto source				= std::get<1>(uniformBindings.at(inputName));
+		const auto& container	= getContainer(ContainerId::FILTERED, source);
 
 		if (container && container->hasProperty(propertyName))
 		{
-			auto texture = container->get<AbstractTexture::Ptr>(propertyName);
+			auto texture	= container->get<AbstractTexture::Ptr>(propertyName);
 
 			_textureIds			[textureIndex] = texture->id();
 			_textureLocations	[textureIndex] = location;
@@ -274,17 +390,14 @@ DrawCall::bindTextureSampler(const std::string&		inputName,
 
 		if (_referenceChangedSlots.count(propertyName) == 0)			
 		{
-#if defined(EMSCRIPTEN)
-			// See issue #1848 in Emscripten: https://github.com/kripken/emscripten/issues/1848
 			auto that = shared_from_this();
-			_referenceChangedSlots[propertyName].push_back(container->propertyReferenceChanged(propertyName)->connect([&, that](Container::Ptr, const std::string&) {
-				that->bindTextureSampler(inputName, location, textureIndex, samplerState, false);
-			}));
-#else
-			_referenceChangedSlots[propertyName].push_back(container->propertyReferenceChanged(propertyName)->connect(std::bind(
-				&DrawCall::bindTextureSampler, shared_from_this(), inputName, location, textureIndex, samplerState, false
-			)));
-#endif
+			auto slot = container->propertyReferenceChanged(propertyName)->connect(
+				[=](Container::Ptr, const std::string&)
+				{
+					that->bindTextureSampler(inputName, location, textureIndex, samplerState);
+				}
+			);
+			_referenceChangedSlots[propertyName].push_back(slot);
 		}
 	}
 }
@@ -301,9 +414,10 @@ DrawCall::bindUniform(const std::string&	inputName,
 		throw std::invalid_argument("location");
 #endif // DEBUG
 
-	bool		isArray		= false;
-	auto		pos			= inputName.find_first_of('[');
-	std::string	bindingName	= inputName;
+	const auto& uniformBindings = _pass->uniformBindings();
+	bool		isArray			= false;
+	auto		pos				= inputName.find_first_of('[');
+	std::string	bindingName		= inputName;
 
 	if (pos != std::string::npos)
 	{
@@ -311,11 +425,11 @@ DrawCall::bindUniform(const std::string&	inputName,
 		isArray = true;
 	}
 	
-	if (_uniformBindings.count(bindingName))
+	if (uniformBindings.count(bindingName))
 	{	
-		std::string	propertyName	= formatPropertyName(std::get<0>(_uniformBindings.at(bindingName)));
-		auto&		source			= std::get<1>(_uniformBindings.at(bindingName));
-		const auto&	container		= getDataContainer(source);
+		std::string	propertyName	= _formatFunction(std::get<0>(uniformBindings.at(bindingName)));
+		auto		source			= std::get<1>(uniformBindings.at(bindingName));
+		const auto& container		= getContainer(ContainerId::FILTERED, source);
 
 		if (container)
 		{
@@ -350,7 +464,7 @@ DrawCall::bindUniform(const std::string&	inputName,
 			else if (isArray)
 			{
 				// This case corresponds to continuous base type arrays that are stored in data providers as std::vector<float>.
-				propertyName = formatPropertyName(std::get<0>(_uniformBindings.at(bindingName)));
+				propertyName = _formatFunction(std::get<0>(uniformBindings.at(bindingName)));
 				
 				bindUniformArray(propertyName, container, type, location);
 			}
@@ -443,6 +557,15 @@ DrawCall::bindIntegerUniformArray(const std::string&	propertyName,
 		throw std::logic_error("unsupported uniform type.");
 }
 
+void
+DrawCall::unbind()
+{
+	_referenceChangedSlots.clear();
+	_macroAddedOrRemovedSlots.clear();
+	_macroChangedSlots.clear();
+	_indicesChangedSlot			= nullptr;
+	_layoutsPropertyChangedSlot	= nullptr;
+}
 
 void
 DrawCall::reset()
@@ -495,38 +618,51 @@ DrawCall::reset()
 	_vertexAttributeSizes	.resize(MAX_NUM_VERTEXBUFFERS, -1);
 	_vertexAttributeOffsets	.resize(MAX_NUM_VERTEXBUFFERS, -1);
 
+	_indicesChangedSlot			= nullptr;
+	_layoutsPropertyChangedSlot	= nullptr;
 	_referenceChangedSlots.clear();
+
+	_macroAddedOrRemovedSlots.clear();
+	_macroChangedSlots.clear();
+
+	_containerMacroPNames.clear();
+	_containerMacroRegex.clear();
+
+	_containerUpdateSlots.clear();
+
 	_zSorter->clear();
 }
 
 void
 DrawCall::bindStates()
 {
-	bindState<Blending::Mode>("blendMode", _states->blendingSourceFactor() | _states->blendingDestinationFactor(), _blendMode);
-	bindState<bool>("colorMask", _states->colorMask(), _colorMask);
-	bindState<bool>("depthMask", _states->depthMask(), _depthMask);
-	bindState<CompareMode>("depthFunc", _states->depthFunc(), _depthFunc);
-	bindState<TriangleCulling>("triangleCulling", _states->triangleCulling(), _triangleCulling);
-	bindState<CompareMode>("stencilFunc", _states->stencilFunction(), _stencilFunc);
-	bindState<int>("stencilRef", _states->stencilReference(), _stencilRef);
-	bindState<uint>("stencilMask", _states->stencilMask(), _stencilMask);
-	bindState<StencilOperation>("stencilFailOp", _states->stencilFailOperation(), _stencilFailOp);
-	bindState<StencilOperation>("stencilZFailOp", _states->stencilDepthFailOperation(), _stencilZFailOp);
-	bindState<StencilOperation>("stencilZPassOp", _states->stencilDepthPassOperation(), _stencilZPassOp);
-	bindState<bool>("scissorTest", _states->scissorTest(), _scissorTest);
-	bindState<int>("scissorBox.x", _states->scissorBox().x, _scissorBox.x);
-	bindState<int>("scissorBox.y", _states->scissorBox().y, _scissorBox.y);
-	bindState<int>("scissorBox.width", _states->scissorBox().width, _scissorBox.width);
-	bindState<int>("scissorBox.height", _states->scissorBox().height, _scissorBox.height);
-	bindState<float>("priority", _states->priority(), _priority);
-	bindState<bool>("zSort", _states->zSorted(), _zsorted);
-	bindState<AbstractTexture::Ptr>("target", _states->target(), _target);
+	const auto& states = _pass->states();
+
+	bindState<Blending::Mode>("blendMode", states->blendingSourceFactor() | states->blendingDestinationFactor(), _blendMode);
+	bindState<bool>("colorMask", states->colorMask(), _colorMask);
+	bindState<bool>("depthMask", states->depthMask(), _depthMask);
+	bindState<CompareMode>("depthFunc", states->depthFunc(), _depthFunc);
+	bindState<TriangleCulling>("triangleCulling", states->triangleCulling(), _triangleCulling);
+	bindState<CompareMode>("stencilFunc", states->stencilFunction(), _stencilFunc);
+	bindState<int>("stencilRef", states->stencilReference(), _stencilRef);
+	bindState<uint>("stencilMask", states->stencilMask(), _stencilMask);
+	bindState<StencilOperation>("stencilFailOp", states->stencilFailOperation(), _stencilFailOp);
+	bindState<StencilOperation>("stencilZFailOp", states->stencilDepthFailOperation(), _stencilZFailOp);
+	bindState<StencilOperation>("stencilZPassOp", states->stencilDepthPassOperation(), _stencilZPassOp);
+	bindState<bool>("scissorTest", states->scissorTest(), _scissorTest);
+	bindState<int>("scissorBox.x", states->scissorBox().x, _scissorBox.x);
+	bindState<int>("scissorBox.y", states->scissorBox().y, _scissorBox.y);
+	bindState<int>("scissorBox.width", states->scissorBox().width, _scissorBox.width);
+	bindState<int>("scissorBox.height", states->scissorBox().height, _scissorBox.height);
+	bindState<float>("priority", states->priority(), _priority);
+	bindState<bool>("zSort", states->zSorted(), _zsorted);
+	bindState<AbstractTexture::Ptr>("target", states->target(), _target);
 }
 
 void
 DrawCall::render(const AbstractContext::Ptr& context, AbstractTexture::Ptr renderTarget)
 {
-	if (!renderTarget)
+	if (_target)
 		renderTarget = _target;
 
     if (renderTarget)
@@ -684,20 +820,214 @@ DrawCall::render(const AbstractContext::Ptr& context, AbstractTexture::Ptr rende
 }
 
 Container::Ptr
-DrawCall::getDataContainer(const data::BindingSource& source) const
+DrawCall::getContainer(ContainerId id, data::BindingSource source) const
 {
-	if (source == data::BindingSource::TARGET)
-		return _targetData;
-	else if (source == data::BindingSource::RENDERER)
-		return _rendererData;
-	else if (source == data::BindingSource::ROOT)
-		return _rootData;
-
-	return nullptr;
+	if (id == ContainerId::FILTERED)
+		return source == data::BindingSource::TARGET 
+			? _targetData
+			: (source == data::BindingSource::RENDERER ? _rendererData : _rootData);
+	else
+		return source == data::BindingSource::TARGET 
+			? _fullTargetData
+			: (source == data::BindingSource::RENDERER ? _fullRendererData : _fullRootData);
 }
 
 math::vec3
 DrawCall::getEyeSpacePosition() 
 {
 	return _zSorter->getEyeSpacePosition();
+}
+
+void
+DrawCall::trackMacros()
+{
+	/*
+	std::vector<std::pair<Container::Ptr, ContainerId>> containersAndIds = { 
+		std::make_pair(_fullTargetData,		ContainerId::COMPLETE), 
+		std::make_pair(_fullRendererData,	ContainerId::COMPLETE), 
+		std::make_pair(_fullRootData,		ContainerId::COMPLETE), 
+		std::make_pair(_targetData,			ContainerId::FILTERED), 
+		std::make_pair(_rendererData,		ContainerId::FILTERED),
+		std::make_pair(_rootData,			ContainerId::FILTERED)
+	};*/
+
+	std::vector<Container::Ptr> containerList;
+
+	containerList.push_back(_fullTargetData);
+	containerList.push_back(_fullRendererData);
+	containerList.push_back(_fullRootData);
+	containerList.push_back(_targetData);
+	containerList.push_back(_rendererData);
+	containerList.push_back(_rootData);
+
+	const float TRACKING_PRIORITY = 0.0f;
+
+	for (auto i = 0; i < 6; ++i)
+	{
+		auto containerId = ContainerId::COMPLETE;
+		auto container = containerList[i];
+		if (i >= 3)
+			containerId = ContainerId::FILTERED;
+
+		auto added = container->propertyAdded()->connect(std::bind(
+			&DrawCall::macroAddedHandler,
+			shared_from_this(),
+			std::placeholders::_1,
+			containerId,
+			std::placeholders::_2
+			), TRACKING_PRIORITY);
+		auto removed = container->propertyRemoved()->connect(std::bind(
+			&DrawCall::macroRemovedHandler,
+			shared_from_this(),
+			std::placeholders::_1,
+			containerId,
+			std::placeholders::_2
+			), TRACKING_PRIORITY);
+
+		_macroAddedOrRemovedSlots.push_back(added);
+		_macroAddedOrRemovedSlots.push_back(removed);
+	}
+	
+	for (auto& m : _pass->macroBindings())
+	{
+		const auto&	name	= std::get<0>(m.second);
+		auto		source	= std::get<1>(m.second);
+		auto		regex	= std::get<5>(m.second);
+		
+		auto container		= getContainer(ContainerId::FILTERED, source);
+		auto fullContainer	= getContainer(ContainerId::COMPLETE, source);
+
+		// look for formatted property in local containers first
+		const auto& formattedName = _formatFunction(name);
+
+		if (container->hasProperty(formattedName))
+		{
+			// special case for lengths that must listen to distant values
+			if (container->isLengthProperty(formattedName))
+			{
+				if (fullContainer->hasProperty(formattedName))
+				{
+					auto slot = fullContainer->propertyReferenceChanged(formattedName)->connect(std::bind(
+						&DrawCall::macroChangedHandler,
+						shared_from_this(),
+						std::placeholders::_1,
+						std::placeholders::_2), TRACKING_PRIORITY);
+	
+					_macroChangedSlots[fullContainer][formattedName] = slot;
+				}
+
+				_containerMacroPNames[uint(ContainerId::COMPLETE)].insert(formattedName);
+			}
+			else
+			{
+				auto slot = container->propertyReferenceChanged(formattedName)->connect(std::bind(
+					&DrawCall::macroChangedHandler,
+					shared_from_this(),
+					std::placeholders::_1,
+					std::placeholders::_2), TRACKING_PRIORITY);
+					
+				_macroChangedSlots[container][formattedName] = slot;
+				
+				_containerMacroPNames[uint(ContainerId::FILTERED)].insert(formattedName);
+			}
+		}
+		else
+		{
+			// formattedName does not have any value up to this point
+
+			if (fullContainer->hasProperty(name))
+			{
+				auto slot = fullContainer->propertyReferenceChanged(name)->connect(std::bind(
+					&DrawCall::macroChangedHandler,
+					shared_from_this(),
+					std::placeholders::_1,
+					std::placeholders::_2), TRACKING_PRIORITY);
+	
+				_macroChangedSlots[fullContainer][name] = slot;
+
+				_containerMacroPNames[uint(ContainerId::COMPLETE)].insert(name);
+			}
+			else if (regex)
+			{
+				_containerMacroRegex[uint(ContainerId::COMPLETE)].push_back(*regex);
+			}
+			else
+			{
+				_containerMacroPNames[uint(ContainerId::COMPLETE)].insert(name);
+			}
+		}
+	}
+}
+
+bool
+DrawCall::isTrackedMacro(const std::string& propertyName, ContainerId id) const
+{
+	if (_containerMacroPNames.count(uint(id)) > 0)
+	{
+		const auto& macroNames	= _containerMacroPNames.find(uint(id))->second;
+
+		if (macroNames.find(propertyName) != macroNames.end())
+			return true;
+	}
+
+	if (_containerMacroRegex.count(uint(id)) > 0)
+	{
+		const auto& macroRegex	= _containerMacroRegex.find(uint(id))->second;
+	
+		for (auto& regex : macroRegex)
+			if (std::regex_match(propertyName, regex))
+				return true;
+	}
+
+	return false;
+}
+
+void
+DrawCall::macroAddedHandler(Container::Ptr		container, 
+							ContainerId			id,
+							const std::string&	name)
+{
+	if (!isTrackedMacro(name, id))
+		return;
+
+	auto slot = container->propertyReferenceChanged(name)->connect(std::bind(
+		&DrawCall::macroChangedHandler,
+		shared_from_this(),
+		std::placeholders::_1,
+		std::placeholders::_2));
+
+	_macroChangedSlots[container][name] = slot;	
+	_macroChanged->execute(shared_from_this(), container, name);
+}
+
+void
+DrawCall::macroChangedHandler(Container::Ptr container, const std::string& name)
+{
+	_macroChanged->execute(shared_from_this(), container, name);
+}
+
+void
+DrawCall::macroRemovedHandler(Container::Ptr		container, 
+							  ContainerId			id,
+							  const std::string&	name)
+{
+	if (!isTrackedMacro(name, id))
+		return;
+
+	_macroChangedSlots.erase(container);
+	_macroChanged->execute(shared_from_this(), container, name);
+}
+
+void
+DrawCall::remoteProviderRemovedHandler(BindingSource source, Provider::Ptr provider)
+{
+	auto container = getContainer(ContainerId::FILTERED, source);
+	if (container == nullptr || !container->hasProvider(provider))
+		return;
+
+	auto arrayProvider = std::dynamic_pointer_cast<ArrayProvider>(provider);
+	if (arrayProvider)
+		container->removeProvider(arrayProvider);
+	else
+		container->removeProvider(provider);
 }

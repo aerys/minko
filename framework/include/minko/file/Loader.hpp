@@ -34,11 +34,13 @@ namespace minko
             typedef std::shared_ptr<Loader>        Ptr;
 
         private:
-            typedef std::shared_ptr<AbstractParser>                                 AbsParserPtr;
-            typedef std::unordered_map<std::string, std::shared_ptr<Options>>       FilenameToOptions;
-            typedef std::unordered_map<std::string, std::shared_ptr<File>>          FilenameToFile;
-            typedef std::vector<Signal<std::shared_ptr<AbstractProtocol>>::Slot>    ProtocolSlots;
-            typedef std::unordered_map<AbsParserPtr, Signal<AbsParserPtr>::Slot>    ParserSlots;
+            typedef std::shared_ptr<AbstractParser>											AbsParserPtr;
+			typedef std::unordered_map<std::string, std::shared_ptr<Options>>				FilenameToOptions;
+			typedef std::unordered_map<std::string, std::shared_ptr<File>>					FilenameToFile;
+			typedef std::unordered_map<std::shared_ptr<AbstractProtocol>, float>			ProtocolToProgress;
+			typedef std::vector<Signal<std::shared_ptr<AbstractProtocol>>::Slot>			ProtocolSlots;
+			typedef std::vector<Signal<std::shared_ptr<AbstractProtocol>, float>::Slot>		ProtocolProgressSlots;
+            typedef std::unordered_map<AbsParserPtr, Signal<AbsParserPtr>::Slot>			ParserSlots;
 
         protected:
             std::shared_ptr<Options>            _options;
@@ -52,8 +54,13 @@ namespace minko
             std::shared_ptr<Signal<Ptr>>        _complete;
             std::shared_ptr<Signal<Ptr>>        _error;
 
-            ProtocolSlots                       _protocolSlots;
+			ProtocolSlots                       _protocolSlots;
+			ProtocolProgressSlots               _protocolProgressSlots;
             ParserSlots                         _parserSlots;
+
+			ProtocolToProgress					_protocolToProgress;
+
+			int									_numFiles;
 
         public:
             inline static
@@ -157,7 +164,10 @@ namespace minko
             protocolErrorHandler(std::shared_ptr<AbstractProtocol> protocol);
 
 			void
-            protocolCompleteHandler(std::shared_ptr<AbstractProtocol> protocol);
+			protocolCompleteHandler(std::shared_ptr<AbstractProtocol> protocol);
+
+			void
+			protocolProgressHandler(std::shared_ptr<AbstractProtocol> protocol, float);
 
             void
 			finalize();

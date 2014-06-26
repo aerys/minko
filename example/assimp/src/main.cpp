@@ -21,6 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/MinkoASSIMP.hpp"
 #include "minko/MinkoSDL.hpp"
 #include "minko/MinkoJPEG.hpp"
+#include "minko/MinkoPNG.hpp"
 
 using namespace minko;
 using namespace minko::component;
@@ -78,25 +79,28 @@ main(int argc, char** argv)
 {
 	auto canvas = Canvas::create("Minko Example - Assimp", WINDOW_WIDTH, WINDOW_HEIGHT);
 	auto sceneManager = SceneManager::create(canvas->context());
+	auto defaultOptions = sceneManager->assets()->loader()->options();
 
 	// setup assets
-	sceneManager->assets()->loader()->options()->generateMipmaps(true);
-	sceneManager->assets()->loader()->options()
+	defaultOptions
+		->generateMipmaps(true)
+		->skinningFramerate(60)
+		->skinningMethod(SkinningMethod::HARDWARE)		
+		->startAnimation(true)
 		->registerParser<file::OBJParser>("obj")
 		->registerParser<file::ColladaParser>("dae")
+		->registerParser<file::PNGParser>("png")
         ->registerParser<file::JPEGParser>("jpg");
-    sceneManager->assets()->loader()
-        ->queue("effect/Basic.effect")
+
+    auto fxLoader = file::Loader::create(sceneManager->assets()->loader())
+    	->queue("effect/Basic.effect")
 	    ->queue("effect/Phong.effect");
 
-	sceneManager->assets()->loader()->options()
-		->skinningFramerate(60)
-		->skinningMethod(SkinningMethod::HARDWARE)
-		->startAnimation(true)
-		->effect(sceneManager->assets()->effect("basic"));
-
-	sceneManager->assets()->loader()
-		->queue(MODEL_FILENAME);
+	auto fxComplete = fxLoader->complete()->connect([&](file::Loader::Ptr l)
+	{
+	    sceneManager->assets()->loader()->queue(MODEL_FILENAME);
+		sceneManager->assets()->loader()->load();
+	});
 
 	bool beIdle = true;
 	bool doPunch = false;
@@ -178,58 +182,58 @@ main(int argc, char** argv)
 		if (!anim)
 			return;
 
-		if (k->keyIsDown(input::Keyboard::ScanCode::UP))
+		if (k->keyIsDown(input::Keyboard::UP))
 		{
 			beIdle = doPunch = doKick = doWalk = beStun = reverseAnim = false;
 			speedId = 0;
 			doRun = true;
 		}
-		else if (k->keyIsDown(input::Keyboard::ScanCode::DOWN))
+		else if (k->keyIsDown(input::Keyboard::DOWN))
 		{
 			beIdle = doPunch = doRun = doKick = beStun = reverseAnim = false;
 			speedId = 0;
 			doWalk = true;
 		}
-		else if (k->keyIsDown(input::Keyboard::ScanCode::LEFT))
+		else if (k->keyIsDown(input::Keyboard::LEFT))
 		{
 			beIdle = doRun = doKick = doWalk = beStun = reverseAnim = false;
 			speedId = 0;
 			doPunch = true;
 		}
-		else if (k->keyIsDown(input::Keyboard::ScanCode::RIGHT))
+		else if (k->keyIsDown(input::Keyboard::RIGHT))
 		{
 			beIdle = doPunch = doRun = doWalk = beStun = reverseAnim = false;
 			speedId = 0;
 			doKick = true;
 		}
-		else if (k->keyIsDown(input::Keyboard::ScanCode::SPACE))
+		else if (k->keyIsDown(input::Keyboard::SPACE))
 		{
 			beIdle = doPunch = doRun = doKick = doWalk = reverseAnim = false;
 			speedId = 0;
 			beStun = true;
 		}
-		else if (k->keyIsDown(input::Keyboard::ScanCode::END))
+		else if (k->keyIsDown(input::Keyboard::END))
 		{
 			doPunch = doRun = doKick = doWalk = beStun = reverseAnim = false;
 			speedId = 0;
 			beIdle = true;
 		}
-		else if (k->keyIsDown(input::Keyboard::ScanCode::_1))
+		else if (k->keyIsDown(input::Keyboard::_1))
 		{
 			doPunch = doRun = doKick = doWalk = beStun = beIdle = reverseAnim = false;
 			speedId = 1;
 		}
-		else if (k->keyIsDown(input::Keyboard::ScanCode::_2))
+		else if (k->keyIsDown(input::Keyboard::_2))
 		{
 			doPunch = doRun = doKick = doWalk = beStun = beIdle = reverseAnim = false;
 			speedId = 2;
 		}
-		else if (k->keyIsDown(input::Keyboard::ScanCode::_3))
+		else if (k->keyIsDown(input::Keyboard::_3))
 		{
 			doPunch = doRun = doKick = doWalk = beStun = beIdle = reverseAnim = false;
 			speedId = 3;
 		}
-		else if (k->keyIsDown(input::Keyboard::ScanCode::R))
+		else if (k->keyIsDown(input::Keyboard::R))
 		{
 			doPunch = doRun = doKick = doWalk = beStun = beIdle = false;
 			reverseAnim = true;
@@ -285,7 +289,7 @@ main(int argc, char** argv)
 		sceneManager->nextFrame(time, deltaTime);
 	});
 
-	sceneManager->assets()->loader()->load();
+	fxLoader->load();
 	canvas->run();
 
 	return 0;

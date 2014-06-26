@@ -24,6 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Signal.hpp"
 #include "minko/component/AbstractRootDataComponent.hpp"
 #include "minko/data/ArrayProvider.hpp"
+#include "minko/scene/Layout.hpp"
 
 namespace minko
 {
@@ -32,24 +33,17 @@ namespace minko
 		class AbstractLight :
 			public AbstractRootDataComponent<data::ArrayProvider>
 		{
-			friend LightManager;
+			friend class data::LightMaskFilter;
 
 		public:
-			typedef std::shared_ptr<AbstractLight> 					Ptr;
+			typedef std::shared_ptr<AbstractLight> 		Ptr;
 
 		private:
-			typedef	std::shared_ptr<scene::Node>					NodePtr;
-			typedef std::shared_ptr<AbstractComponent>				AbsCmpPtr;
-			typedef Signal<NodePtr, NodePtr, NodePtr>::Slot 		SceneSignalSlot;
-			typedef std::unordered_map<NodePtr, SceneSignalSlot> 	NodeToSceneSignalSlotMap;
+			typedef	std::shared_ptr<scene::Node>		NodePtr;
+			typedef std::shared_ptr<AbstractComponent>	AbsCmpPtr;
 
 		private:
-			math::vec3								_color;
-
-			Signal<AbsCmpPtr, NodePtr>::Slot 		_targetAddedSlot;
-			Signal<AbsCmpPtr, NodePtr>::Slot 		_targetRemovedSlot;
-			NodeToSceneSignalSlotMap 				_addedSlots;
-			NodeToSceneSignalSlotMap				_removedSlots;
+			math::vec3 	_color;
 
 		public:
 			inline
@@ -59,11 +53,24 @@ namespace minko
 				return _color;
 			}
 
-			Ptr
 			color(const math::vec3&);
-			
+
+			Layouts
+			layoutMask() const
+			{
+				return AbstractComponent::layoutMask();
+			}
+
+			void
+			layoutMask(Layouts value);
 		protected:
 			AbstractLight(const std::string& arrayName);
+
+			void
+            targetAddedHandler(AbsCmpPtr, NodePtr);
+
+            void
+            targetRemovedHandler(AbsCmpPtr, NodePtr);
 		};
 	}
 }

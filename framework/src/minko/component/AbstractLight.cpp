@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/AbstractLight.hpp"
 
 #include "minko/scene/Node.hpp"
+#include "minko/Signal.hpp"
 
 using namespace minko;
 using namespace minko::component;
@@ -29,6 +30,13 @@ AbstractLight::AbstractLight(const std::string& arrayName) :
 	_color(math::vec3(1.0f, 1.0f, 1.0f))
 {
 	data()->set("color", _color);
+}
+
+void
+AbstractLight::layoutMask(Layouts value)
+{
+	data()->set("layoutMask", value);
+	AbstractComponent::layoutMask(value);
 }
 
 AbstractLight::Ptr
@@ -41,4 +49,18 @@ AbstractLight::color(const math::vec3& color)
 	}
 
 	return std::static_pointer_cast<AbstractLight>(shared_from_this());
+}
+
+void
+AbstractLight::targetAddedHandler(component::AbstractComponent::Ptr component, 
+								  scene::Node::Ptr					target)
+{
+	AbstractRootDataComponent<data::ArrayProvider>::targetAddedHandler(component, target);
+}
+
+void
+AbstractLight::targetRemovedHandler(component::AbstractComponent::Ptr 	component,
+									scene::Node::Ptr					target)
+{
+	AbstractRootDataComponent<data::ArrayProvider>::targetRemovedHandler(component, target);
 }

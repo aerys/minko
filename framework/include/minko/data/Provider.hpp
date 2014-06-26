@@ -32,7 +32,8 @@ namespace minko
 			public std::enable_shared_from_this<Provider>
 		{
 		public:
-			typedef std::shared_ptr<Provider> Ptr;
+			typedef std::shared_ptr<Provider>						Ptr;
+			typedef std::shared_ptr<const Provider>					ConstPtr;
 
 		private:
 			template <typename P>
@@ -59,7 +60,9 @@ namespace minko
 			Ptr
 			create()
 			{
-				return std::shared_ptr<Provider>(new Provider());
+				Ptr provider = std::shared_ptr<Provider>(new Provider());
+				
+				return provider;
 			}
 
 			static
@@ -245,17 +248,22 @@ namespace minko
 			}
 
 			virtual
-			void
+			Ptr
 			unset(const std::string& propertyName);
 
-			void
+			Ptr
 			swap(const std::string& propertyName1, const std::string& propertyName2, bool skipPropertyNameFormatting = false);
 
+			Ptr
+			clone();
+
+			virtual
 			Ptr
 			copyFrom(Ptr source);
 
 		protected:
 			Provider();
+
 
 			virtual
 			std::string

@@ -19,11 +19,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/geometry/Geometry.hpp"
 
+#include "minko/math/Vector2.hpp"
+#include "minko/math/Vector3.hpp"
 #include "minko/math/Ray.hpp"
 #include "minko/render/IndexBuffer.hpp"
 #include "minko/render/VertexBuffer.hpp"
 
 using namespace minko;
+using namespace minko::math;
 using namespace minko::geometry;
 using namespace minko::render;
 
@@ -81,7 +84,7 @@ Geometry::removeVertexBuffer(std::list<render::VertexBuffer::Ptr>::iterator vert
 	if (_vertexBuffers.size() == 0)
 		_numVertices = 0;
 
-	_vbToVertexSizeChangedSlot.erase(vertexBuffer);	
+	_vbToVertexSizeChangedSlot.erase(vertexBuffer);
 }
 
 void
@@ -118,7 +121,7 @@ Geometry::computeNormals()
 
 	if (_data->hasProperty("normal"))
 		throw std::logic_error("The geometry already stores precomputed normals.");
-		
+
 	if (!_data->hasProperty("position"))
 		throw std::logic_error("Computation of normals requires positions.");
 
@@ -126,7 +129,7 @@ Geometry::computeNormals()
 	const unsigned int numFaces					= indices.size() / 3;
 
 	unsigned short vertexIds[3] = { 0, 0, 0 };
-	std::vector<math::vec3> xyz(3);
+	std::vector<Vector3::Ptr> xyz(3);
 
 	VertexBuffer::Ptr xyzBuffer			= _data->get<VertexBuffer::Ptr>("position");
 	const unsigned int xyzSize			= xyzBuffer->vertexSize();
@@ -141,17 +144,20 @@ Geometry::computeNormals()
 		{
 			vertexIds[k] = indices[offset++];
 			const unsigned int index = xyzOffset + vertexIds[k] * xyzSize;
-			xyz[k] = math::vec3(xyzData[index], xyzData[index + 1], xyzData[index + 2]);
+			xyz[k] = Vector3::create(xyzData[index], xyzData[index + 1], xyzData[index + 2]);
 		}
 
-		math::vec3 faceNormal = math::cross(xyz[0] - xyz[1], xyz[0] - xyz[2]);
+		Vector3::Ptr faceNormal = Vector3::create()
+			->copyFrom(xyz[0] - xyz[1])
+			->cross(xyz[0] - xyz[2]);
+
  		for (unsigned int k = 0; k < 3; ++k)
 		{
 			const unsigned int index = 3 * vertexIds[k];
 
-			normalsData[index]		+= faceNormal.x;
-			normalsData[index + 1]	+= faceNormal.y;
-			normalsData[index + 2]	+= faceNormal.z;
+			normalsData[index]		+= faceNormal->x();
+			normalsData[index + 1]	+= faceNormal->y();
+			normalsData[index + 2]	+= faceNormal->z();
 		}
 	}
 
@@ -183,7 +189,7 @@ Geometry::computeTangentSpace(bool doNormals)
 	if (numVertices == 0)
 		return shared_from_this();
 
-	if (!_data->hasProperty("position") 
+	if (!_data->hasProperty("position")
 		|| !_data->hasProperty("uv"))
 		throw std::logic_error("Computation of tangent space requires positions and uv.");
 
@@ -194,8 +200,8 @@ Geometry::computeTangentSpace(bool doNormals)
 	const unsigned int numFaces = indices.size() / 3;
 
 	unsigned short vertexIds[3] = { 0, 0, 0 };
-	std::vector<math::vec3> xyz(3);
-	std::vector<math::vec2> uv(3);
+	std::vector<Vector3::Ptr> xyz(3);
+	std::vector<Vector2::Ptr> uv(3);
 
 	VertexBuffer::Ptr xyzBuffer			= _data->get<VertexBuffer::Ptr>("position");
 	const unsigned int xyzSize			= xyzBuffer->vertexSize();
@@ -215,25 +221,25 @@ Geometry::computeTangentSpace(bool doNormals)
 		{
 			vertexIds[k] = indices[offset++];
 			unsigned int index = xyzOffset + vertexIds[k] * xyzSize;
-			xyz[k] = math::vec3(xyzData[index], xyzData[index + 1], xyzData[index + 2]);
+			xyz[k] = Vector3::create(xyzData[index], xyzData[index + 1], xyzData[index + 2]);
 			index = uvOffset + vertexIds[k] * uvSize;
-			uv[k] = math::vec2(uvData[index], uvData[index + 1]);
+			uv[k] = Vector2::create(uvData[index], uvData[index + 1]);
 		}
 
-		math::vec2 uv02			= uv[0] - uv[2];
-		math::vec2 uv12			= uv[1] - uv[2];
-		const float denom		= uv02.x * uv12.y - uv12.x * uv02.y;
+		Vector2::Ptr uv02		= uv[0] - uv[2];
+		Vector2::Ptr uv12		= uv[1] - uv[2];
+		const float denom		= uv02->x() * uv12->y() - uv12->x() * uv02->y();
 		const float invDenom	= fabsf(denom) > 1e-6f ? 1.0f/denom : 1.0f;
 
-		math::vec3 faceTangent = (xyz[0] - xyz[2]) * uv12.y - (xyz[1] - xyz[2]) * uv02.y * invDenom;
+		Vector3::Ptr faceTangent = ((xyz[0]-xyz[2]) * uv12->y() - (xyz[1]-xyz[2]) * uv02->y()) * invDenom;
 
-		for (unsigned int k = 0; k < 3; ++k)
+		for (unsigned int k=0; k<3; ++k)
 		{
 			const unsigned int index = 3 * vertexIds[k];
 
-			tangentsData[index]		+= faceTangent.x;
-			tangentsData[index + 1]	+= faceTangent.y;
-			tangentsData[index + 2]	+= faceTangent.z;
+			tangentsData[index]		+= faceTangent->x();
+			tangentsData[index + 1]	+= faceTangent->y();
+			tangentsData[index + 2]	+= faceTangent->z();
 		}
 	}
 
@@ -336,9 +342,9 @@ bool
 Geometry::cast(std::shared_ptr<math::Ray>	ray,
 			   float&						distance,
 			   uint&						triangle,
-			   math::vec3*						hitXyz,
-			   math::vec2*						hitUv,
-			   math::vec3*						hitNormal)
+			   std::shared_ptr<Vector3>		hitXyz,
+			   std::shared_ptr<Vector2>		hitUv,
+			   std::shared_ptr<Vector3>		hitNormal)
 {
 	static const auto EPSILON = 0.00001f;
 
@@ -352,37 +358,52 @@ Geometry::cast(std::shared_ptr<math::Ray>	ray,
 	auto xyzVertexSize = xyzBuffer->vertexSize();
 	auto xyzOffset = std::get<2>(*xyzBuffer->attribute("position"));
 
-	auto minDistance = std::numeric_limits<float>::lowest();
+	auto minDistance = std::numeric_limits<float>::infinity();
+	auto lambda = hitUv ? Vector2::create() : nullptr;
 	auto triangleIndice = -3;
 
-	math::vec2 lambda;
+	auto v0 = Vector3::create();
+	auto v1 = Vector3::create();
+	auto v2 = Vector3::create();
+	auto edge1 = Vector3::create();
+	auto edge2 = Vector3::create();
+	auto pvec = Vector3::create();
+	auto tvec = Vector3::create();
+	auto qvec = Vector3::create();
+	auto dot = 0.f;
+	auto invDot = 0.f;
+	auto u = 0.f;
+	auto v = 0.f;
+	auto t = 0.f;
 
 	for (uint i = 0; i < numIndices; i += 3)
 	{
-		auto v0 = math::make_vec3(xyzPtr + indicesData[i] * xyzVertexSize);
-		auto v1 = math::make_vec3(xyzPtr + indicesData[i + 1] * xyzVertexSize);
-		auto v2 = math::make_vec3(xyzPtr + indicesData[i + 2] * xyzVertexSize);
-		auto edge1 = v1 - v0;
-		auto edge2 = v2 - v0;
-		auto pvec = math::cross(ray->direction(), edge2);
-		auto dot = math::dot(edge1, pvec);
+		v0->copyFrom(xyzPtr + indicesData[i] * xyzVertexSize);
+		v1->copyFrom(xyzPtr + indicesData[i + 1] * xyzVertexSize);
+		v2->copyFrom(xyzPtr + indicesData[i + 2] * xyzVertexSize);
+
+		edge1->copyFrom(v1)->subtract(v0);
+		edge2->copyFrom(v2)->subtract(v0);
+
+		pvec->copyFrom(ray->direction())->cross(edge2);
+		dot = edge1->dot(pvec);
 
 		if (dot > -EPSILON && dot < EPSILON)
 			continue;
 
-		auto invDot = 1.f / dot;
-		auto tvec = ray->origin() - v0;
+		invDot = 1.f / dot;
 
-		auto u = math::dot(tvec, pvec) * invDot;
+		tvec->copyFrom(ray->origin())->subtract(v0);
+		u = tvec->dot(pvec) * invDot;
 		if (u < 0.f || u > 1.f)
 			continue;
 
-		auto qvec = math::cross(tvec, edge1);
-		auto v = math::dot(ray->origin(), qvec) * invDot;
+		qvec->copyFrom(tvec)->cross(edge1);
+		v = ray->direction()->dot(qvec) * invDot;
 		if (v < 0.f || u + v > 1.f)
 			continue;
 
-		auto t = math::dot(edge2, qvec) * invDot;
+		t = edge2->dot(qvec) * invDot;
 		if (t < minDistance)
 		{
 			minDistance = t;
@@ -392,30 +413,32 @@ Geometry::cast(std::shared_ptr<math::Ray>	ray,
 
 			if (hitUv)
 			{
-				lambda.x = u;
-				lambda.y = v;
+				lambda->x(u);
+				lambda->y(v);
+			}
+
+			if (hitXyz)
+			{
+				hitXyz->setTo(
+					ray->origin()->x() + minDistance * ray->direction()->x(),
+					ray->origin()->y() + minDistance * ray->direction()->y(),
+					ray->origin()->z() + minDistance * ray->direction()->z()
+					);
 			}
 		}
 
-		if (hitXyz)
-		{
-			hitXyz->x = ray->origin().x + minDistance * ray->direction().x;
-			hitXyz->y = ray->origin().y + minDistance * ray->direction().y;
-			hitXyz->z = ray->origin().z + minDistance * ray->direction().z;
-		}
-
 		if (hitUv)
-			getHitUv(triangle, lambda, *hitUv);
+			getHitUv(triangle, lambda, hitUv);
 
 		if (hitNormal)
-			getHitNormal(triangle, *hitNormal);
+			getHitNormal(triangle, hitNormal);
 	}
 
 	return hit;
 }
 
 void
-Geometry::getHitUv(uint triangle, math::vec2 lambda, math::vec2& hitUv)
+Geometry::getHitUv(uint triangle, Vector2::Ptr lambda, Vector2::Ptr hitUv)
 {
 	auto uvBuffer = vertexBuffer("uv");
 	auto& uvData = uvBuffer->data();
@@ -433,16 +456,16 @@ Geometry::getHitUv(uint triangle, math::vec2 lambda, math::vec2& hitUv)
 	auto u2 = uvData[indicesData[triangle + 2] * uvVertexSize + uvOffset];
 	auto v2 = uvData[indicesData[triangle + 2] * uvVertexSize + uvOffset + 1];
 
-	auto z = 1.f - lambda.x - lambda.y;
+	auto z = 1.f - lambda->x() - lambda->y();
 
-	hitUv = math::vec2(
-		z * u0 + lambda.x * u1 + lambda.y * u2,
-		z * v0 + lambda.x * v1 + lambda.y * v2
+	hitUv->setTo(
+		z * u0 + lambda->x() * u1 + lambda->y() * u2,
+		z * v0 + lambda->x() * v1 + lambda->y() * v2
 	);
 }
 
 void
-Geometry::getHitNormal(uint triangle, math::vec3& hitNormal)
+Geometry::getHitNormal(uint triangle, Vector3::Ptr hitNormal)
 {
 	auto normalBuffer = vertexBuffer("normal");
 	auto& normalData = normalBuffer->data();
@@ -451,14 +474,14 @@ Geometry::getHitNormal(uint triangle, math::vec3& hitNormal)
 	auto normalOffset = std::get<2>(*normalBuffer->attribute("normal"));
 	auto& indicesData = _indexBuffer->data();
 
-	auto v0 = math::make_vec3(normalPtr + indicesData[triangle] * normalVertexSize + normalOffset);
-	auto v1 = math::make_vec3(normalPtr + indicesData[triangle] * normalVertexSize + normalOffset);
-	auto v2 = math::make_vec3(normalPtr + indicesData[triangle] * normalVertexSize + normalOffset);
+	auto v0 = Vector3::create(normalPtr + indicesData[triangle] * normalVertexSize + normalOffset);
+	auto v1 = Vector3::create(normalPtr + indicesData[triangle] * normalVertexSize + normalOffset);
+	auto v2 = Vector3::create(normalPtr + indicesData[triangle] * normalVertexSize + normalOffset);
 
-	auto edge1 = math::normalize(v1 - v0);
-	auto edge2 = math::normalize(v2 - v0);
+	auto edge1 = Vector3::create(v1)->subtract(v0)->normalize();
+	auto edge2 = Vector3::create(v2)->subtract(v0)->normalize();
 
-	hitNormal = math::cross(edge2, edge1);
+	hitNormal->copyFrom(edge2)->cross(edge1);
 }
 
 void
@@ -468,4 +491,19 @@ Geometry::upload()
 		vb->upload();
 
 	_indexBuffer->upload();
+}
+
+void
+Geometry::disposeIndexBufferData()
+{
+    _indexBuffer->disposeData();
+}
+
+void
+Geometry::disposeVertexBufferData()
+{
+    for (auto vertexBuffer : _vertexBuffers)
+    {
+        vertexBuffer->disposeData();
+    }
 }

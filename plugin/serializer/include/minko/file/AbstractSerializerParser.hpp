@@ -35,7 +35,7 @@ namespace minko
 			typedef std::shared_ptr<AbstractSerializerParser>				Ptr;
 			typedef msgpack::type::tuple<unsigned int, short, std::string>	SerializedAsset;
 			typedef std::shared_ptr<file::AssetLibrary>						AssetLibraryPtr;
-		
+
 		private:
 			typedef std::shared_ptr<component::JobManager::Job>												JobPtr;
 			typedef std::shared_ptr<Dependency>																DependencyPtr;
@@ -87,7 +87,7 @@ namespace minko
 			AbstractSerializerParser();
 
 			void
-			deserializedAsset(SerializedAsset					asset,
+			deserializedAsset(SerializedAsset&					asset,
 							  AssetLibraryPtr					assetLibrary,
 							  std::shared_ptr<Options>			options,
 							  std::string&						assetFilePath);

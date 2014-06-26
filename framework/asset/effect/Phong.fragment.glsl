@@ -8,10 +8,6 @@
 #pragma include("Envmap.function.glsl")
 #pragma include("Fog.function.glsl")
 
-#ifdef PRECOMPUTED_AMBIENT
-	uniform vec3 sumAmbients;
-#endif // PRECOMPUTED_AMBIENT
-
 #ifndef MINKO_NO_GLSL_STRUCT
 
 	#pragma include("Phong.struct.glsl")
@@ -66,7 +62,7 @@
 	#endif // NUM_SPOT_LIGHTS
 	
 #endif // MINKO_NO_GLSL_STRUCT
-	
+
 // diffuse
 uniform vec4 		diffuseColor;
 uniform sampler2D 	diffuseMap;
@@ -101,11 +97,11 @@ void main(void)
 	#endif // SHININESS
 
 	#ifdef DIFFUSE_MAP
-		diffuse = texture2D(diffuseMap, vertexUV);
+		diffuse 	*= texture2D(diffuseMap, vertexUV);
 	#endif // DIFFUSE_MAP
 
 	#ifdef ALPHA_MAP
-		diffuse.a = texture2D(alphaMap, vertexUV).r;
+		diffuse.a 	= texture2D(alphaMap, vertexUV).r;
 	#endif // ALPHA_MAP
 
 	#ifdef ALPHA_THRESHOLD
@@ -127,28 +123,33 @@ void main(void)
 	vec3	diffuseAccum	= vec3(0.0);
 	vec3	specularAccum	= vec3(0.0); 
 
-	#ifdef PRECOMPUTED_AMBIENT
-	//------------------------
-		ambientAccum += sumAmbients;
-	#else
-	
-		#ifdef NUM_AMBIENT_LIGHTS
-			for (int i = 0; i < NUM_AMBIENT_LIGHTS; ++i)
-			{
-				#ifndef MINKO_NO_GLSL_STRUCT
-					ambientAccum 	+= ambientLights[i].color * ambientLights[i].ambient;
-				#else
-					ambientAccum	+= ambientLights_color[i] * ambientLights_ambient[i];
-				#endif // MINKO_NO_GLSL_STRUCT
-			}
-		#endif // NUM_AMBIENT_LIGHTS
+	#ifdef NUM_AMBIENT_LIGHTS
 
-	#endif // PRECOMPUTED_AMBIENT
-	
+		for (int i = 0; i < NUM_AMBIENT_LIGHTS; ++i)
+		{
+			vec3	lightColor			= vec3(0.0);
+			float	lightAmbientCoeff	= 1.0;
+			int 	lightMask 			= -1;
+
+			#ifndef MINKO_NO_GLSL_STRUCT
+				lightColor 			= ambientLights[i].color;
+				lightAmbientCoeff 	= ambientLights[i].ambient;
+			#else
+				lightColor 			= ambientLights_color[i];
+				lightAmbientCoeff 	= ambientLights_ambient[i];
+			#endif // MINKO_NO_GLSL_STRUCT
+
+			ambientAccum +=
+				lightColor
+				* lightAmbientCoeff;
+		}
+
+	#endif // NUM_AMBIENT_LIGHTS	
 
 	#if defined NUM_DIRECTIONAL_LIGHTS || defined NUM_POINT_LIGHTS || defined NUM_SPOT_LIGHTS || defined ENVIRONMENT_MAP_2D || defined ENVIRONMENT_CUBE_MAP
 
-	vec3 eyeVector	= normalize(cameraPosition - vertexPosition); // always in world-space
+		vec3	eyeVector		= normalize(cameraPosition - vertexPosition); // always in world-space
+		vec3	normalVector	= normalize(vertexNormal); // always in world-space
 
 	#endif // NUM_DIRECTIONAL_LIGHTS || NUM_POINT_LIGHTS || NUM_SPOT_LIGHTS || ENVIRONMENT_MAP_2D || ENVIRONMENT_CUBE_MAP
 
@@ -163,10 +164,7 @@ void main(void)
 		vec3	lightAttenuationCoeffs	= vec3(1.0, 0.0, 0.0);
 		float	lightCosInnerAng		= 0.0;
 		float	lightCosOuterAng		= 0.0;
-		float 	contribution			= 0.0;
-		
-		vec3 	normalVector			= normalize(vertexNormal); // always in world-space
-		
+				
 		#ifdef NORMAL_MAP
 			// warning: the normal vector must be normalized at this point!
 			mat3 tangentToWorldMatrix 	= phong_getTangentToWorldSpaceMatrix(normalVector, vertexTangent);
@@ -189,10 +187,11 @@ void main(void)
 				lightSpecularCoeff	= directionalLights_specular[i];
 				lightDirection		= directionalLights_direction[i];
 			#endif // MINKO_NO_GLSL_STRUCT
-	
+
 			lightDirection	= normalize(-lightDirection);
 			
-			diffuseAccum		+= phong_diffuseReflection(normalVector, lightDirection)
+			diffuseAccum	+= 
+				phong_diffuseReflection(normalVector, lightDirection)
 				* lightColor
 				* lightDiffuseCoeff;
 
@@ -223,7 +222,7 @@ void main(void)
 				lightAttenuationCoeffs	= pointLights_attenuationCoeffs[i];
 				lightPosition			= pointLights_position[i];
 			#endif // MINKO_NO_GLSL_STRUCT
-		
+
 			lightDirection			= lightPosition - vertexPosition;
 			float distanceToLight 	= length(lightDirection);
 			lightDirection 			/= distanceToLight;
@@ -233,7 +232,8 @@ void main(void)
 				? 1.0
 				: max(0.0, 1.0 - distanceToLight / dot(lightAttenuationCoeffs, distVec)); 
 
-			diffuseAccum		+= phong_diffuseReflection(normalVector, lightDirection)
+			diffuseAccum		+= 
+				phong_diffuseReflection(normalVector, lightDirection)
 				* lightColor
 				* (lightDiffuseCoeff * attenuation);
 
@@ -270,14 +270,13 @@ void main(void)
 				lightCosInnerAng		= spotLights_cosInnerConeAngle[i];
 				lightCosOuterAng		= spotLights_cosOuterConeAngle[i];
 			#endif // MINKO_NO_GLSL_STRUCT
-			
-			
+
 			lightDirection			= lightPosition - vertexPosition;
 			float distanceToLight	= length(lightDirection);
 			lightDirection			/= distanceToLight;
 			
-			lightSpotDirection	= normalize(-lightSpotDirection);						
-			float cosSpot		= dot(-lightDirection, lightSpotDirection);
+			lightSpotDirection	= normalize(lightSpotDirection);						
+			float cosSpot		= dot(- lightDirection, lightSpotDirection);
 
 			if (lightCosOuterAng < cosSpot)
 			{
@@ -290,8 +289,8 @@ void main(void)
 					? (cosSpot - lightCosOuterAng) / (lightCosInnerAng - lightCosOuterAng) 
 					: 1.0;	
 
-
-				diffuseAccum		+= phong_diffuseReflection(normalVector, lightDirection)
+				diffuseAccum		+= 
+					phong_diffuseReflection(normalVector, lightDirection)
 					* lightColor
 					* (lightDiffuseCoeff * attenuation * cutoff);
 

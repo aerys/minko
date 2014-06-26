@@ -1,0 +1,73 @@
+{
+    "name"  	: "depth",
+    	
+    "attributeBindings" : {
+        "position"              : "geometry[${geometryId}].position",
+		"boneIdsA"				: "geometry[${geometryId}].boneIdsA",
+		"boneIdsB"				: "geometry[${geometryId}].boneIdsB",		
+		"boneWeightsA"			: "geometry[${geometryId}].boneWeightsA",
+		"boneWeightsB"			: "geometry[${geometryId}].boneWeightsB"
+    },
+    
+    "uniformBindings"   : {
+        "modelToWorldMatrix"	: "transform.modelToWorldMatrix",
+		"worldToScreenMatrix"	: { "property" : "camera.worldToScreenMatrix", 		"source" : "renderer" },
+		"cameraPosition"		: { "property" : "camera.position", 				"source" : "renderer" },
+		"boneMatrices"			: { "property" : "geometry[${geometryId}].boneMatrices",			"source" : "target" },
+		"numBones"				: { "property" : "geometry[${geometryId}].numBones",				"source" : "target" }
+    },
+    
+    "macroBindings" : {
+        "MODEL_TO_WORLD"        : "transform.modelToWorldMatrix",
+        "NUM_BONES"             : { "property" : "geometry[${geometryId}].numBones",   "source" : "target" }
+    },
+
+    "stateBindings" : {
+        "blendMode"             : "material[${materialId}].blendMode",
+        "colorMask"             : "material[${materialId}].colorMask",
+        "depthMask"             : "material[${materialId}].depthMask",
+        "depthFunc"             : "material[${materialId}].depthFunc",
+        "triangleCulling"       : "material[${materialId}].triangleCulling",
+        "stencilFunc"           : "material[${materialId}].stencilFunc",
+        "stencilRef"            : "material[${materialId}].stencilRef",
+        "stencilMask"           : "material[${materialId}].stencilMask",
+        "stencilFailOp"         : "material[${materialId}].stencilFailOp",
+        "stencilZFailOp"        : "material[${materialId}].stencilZFailOp",
+        "stencilZPassOp"        : "material[${materialId}].stencilZPassOp",
+        "scissorBox.x"          : { "property" : "scissorBox.x",        "source" : "renderer" },
+        "scissorBox.y"          : { "property" : "scissorBox.y",        "source" : "renderer" },
+        "scissorBox.width"      : { "property" : "scissorBox.width",    "source" : "renderer" },
+        "scissorBox.height"     : { "property" : "scissorBox.height",   "source" : "renderer" },
+        "priority"              : "material[${materialId}].priority",
+        "zSort"                 : "material[${materialId}].zSort",
+        "layouts"               : "node.layouts"
+    },
+    
+    "colorMask"         : true,
+    "depthTest"         : [true, "less_equal"],
+    "triangleCulling"   : "none",
+	"stencilTest"		: ["always", 0, 1, ["keep", "keep", "keep"]],
+    "scissorTest"		: false,
+	"scissorBox"		: [0, 0, -1, -1],
+	
+    "samplerStates" : {
+    },
+    
+    "defaultTechnique"  : "transparent",
+
+	"techniques" : [
+    {
+        "name"      : "transparent",
+        "blendMode" : "alpha",
+        "priority"  : "transparent",
+        "zSort"     : "true",
+
+        "passes"    : [
+        {
+            "vertexShader"      : "#pragma include('Depth.vertex.glsl')",
+            "fragmentShader"    : "#pragma include('Depth.fragment.glsl')"
+        }
+        ] 
+    }
+    ]
+}

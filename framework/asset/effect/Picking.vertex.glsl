@@ -22,18 +22,23 @@ void main(void)
 	#ifdef DIFFUSE_MAP
 		vertexUV = uv;
 	#endif
-
-	vec4 pos = vec4(position, 1.0);
-
-	#ifdef NUM_BONES
-		pos = skinning_moveVertex(pos);
-	#endif // NUM_BONES
 	
-	#ifdef MODEL_TO_WORLD
-		pos = modelToWorldMatrix * pos;
-	#endif
+	#if defined(HAS_POSITION)
+		vec4 pos = vec4(position, 1.0);
+
+		#ifdef NUM_BONES
+			pos = skinning_moveVertex(pos);
+		#endif // NUM_BONES
 	
-	gl_Position =  pickingProjection * (worldToViewMatrix * pos);
+		#ifdef MODEL_TO_WORLD
+			pos = modelToWorldMatrix * pos;
+		#endif
+	
+		gl_Position =  pickingProjection * (worldToViewMatrix * pos);
+		
+	#else //HAS_POSITION
+		gl_Position =  vec4(0.0, 0.0, 1.1, 1.0);
+	#endif //HAS_POSITION
 }
 
 #endif // VERTEX_SHADER

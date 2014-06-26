@@ -41,6 +41,36 @@ void
 BasicMaterial::initialize()
 {
 	diffuseColor(0xffffffff);
+	set("uvScale",	math::vec2(1.f));
+	set("uvOffset",	math::vec2(0.f));
+}
+
+BasicMaterial::Ptr
+BasicMaterial::uvScale(const math::vec2& value)
+{
+    set("uvScale", value);
+
+	return std::dynamic_pointer_cast<BasicMaterial>(shared_from_this());
+}
+
+const math::vec2&
+BasicMaterial::uvScale()
+{
+    return get<math::vec2>("uvScale");
+}
+
+BasicMaterial::Ptr
+BasicMaterial::uvOffset(const math::vec2& value)
+{
+    set("uvOffset", value);
+
+	return std::dynamic_pointer_cast<BasicMaterial>(shared_from_this());
+}
+
+const math::vec2&
+BasicMaterial::uvOffset()
+{
+    return get<math::vec2>("uvOffset");
 }
 
 BasicMaterial::Ptr
@@ -64,7 +94,7 @@ BasicMaterial::diffuseColor() const
 }
 
 BasicMaterial::Ptr
-BasicMaterial::diffuseMap(render::AbstractTexture::Ptr texture)
+BasicMaterial::diffuseMap(TexturePtr texture)
 {
 #ifdef DEBUG
 	assert(texture->type() == TextureType::Texture2D);
@@ -446,7 +476,7 @@ BasicMaterial::target() const
 BasicMaterial::Ptr
 BasicMaterial::isTransparent(bool transparent, bool zSort)
 {
-	return priority(transparent ? priority::TRANSPARENT : priority::OPAQUE)
+	return priority(transparent ? Priority::TRANSPARENT : Priority::OPAQUE)
 		->zSorted(zSort)
 		->blendingMode(transparent ? Blending::Mode::ALPHA : Blending::Mode::DEFAULT);
 }

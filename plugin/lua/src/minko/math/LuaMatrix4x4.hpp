@@ -35,32 +35,54 @@ namespace minko
 			void
 			bind(LuaGlue& state)
 			{
+				state.Class<std::vector<float>>("std__vector_float_")
+					.methodWrapper("at",	&LuaMatrix4x4::atWrapper)
+					.property("size", 	    &std::vector<float>::size);
+
 				state.Class<Matrix4x4>("Matrix4x4")
-		            .method("create",               static_cast<Matrix4x4::Ptr (*)()>(&Matrix4x4::create))
+					.method("create",               static_cast<Matrix4x4::Ptr (*)()>(&Matrix4x4::create))
+					.methodWrapper("data",			&LuaMatrix4x4::dataWrapper)
 					.method("copyFrom",				&Matrix4x4::copyFrom)
-		            .method("lookAt",               &Matrix4x4::lookAt)
-		            .method("identity",             &Matrix4x4::identity)
-		            .method("invert",				&Matrix4x4::invert)
+					.method("lookAt",               &Matrix4x4::lookAt)
+					.method("identity",             &Matrix4x4::identity)
+					.method("invert",				&Matrix4x4::invert)
+					.method("append",				static_cast<Matrix4x4::Ptr(Matrix4x4::*)(Matrix4x4::Ptr)>(&Matrix4x4::append))
 					.method("translation",			static_cast<Matrix4x4::Ptr (Matrix4x4::*)(float, float, float)>(&Matrix4x4::translation))
+					.method("translationVector",	static_cast<Matrix4x4::Ptr (Matrix4x4::*)(Vector3::Ptr)>(&Matrix4x4::translation))
 					.method("transform",			static_cast<Vector3::Ptr (Matrix4x4::*)(Vector3::Ptr) const>(&Matrix4x4::transform))
 					.method("deltaTransform",		static_cast<Vector3::Ptr(Matrix4x4::*)(Vector3::Ptr) const>(&Matrix4x4::deltaTransform))
-		            .method("appendUniformScale",	static_cast<Matrix4x4::Ptr (Matrix4x4::*)(float)>(&Matrix4x4::appendScale))
-		            .method("appendScale",			static_cast<Matrix4x4::Ptr (Matrix4x4::*)(float, float, float)>(&Matrix4x4::appendScale))
-		            .method("appendRotationX",      &Matrix4x4::appendRotationX)
-		            .method("appendRotationY",      &Matrix4x4::appendRotationY)
-		            .method("appendRotationZ",      &Matrix4x4::appendRotationZ)
-		            .method("appendRotation",       &Matrix4x4::appendRotation)
-		            .method("appendTranslation",    static_cast<Matrix4x4::Ptr (Matrix4x4::*)(float, float, float)>(&Matrix4x4::appendTranslation))
-		            .method("appendTranslation",    static_cast<Matrix4x4::Ptr(Matrix4x4::*)(Vector3::Ptr)>(&Matrix4x4::appendTranslation))
-		            .method("prependUniformScale",	static_cast<Matrix4x4::Ptr (Matrix4x4::*)(float)>(&Matrix4x4::prependScale))
-		            .method("prependScale",			static_cast<Matrix4x4::Ptr (Matrix4x4::*)(float, float, float)>(&Matrix4x4::prependScale))
-		            .method("prependRotationX",     &Matrix4x4::prependRotationX)
-		            .method("prependRotationY",     &Matrix4x4::prependRotationY)
-		            .method("prependRotationZ",     &Matrix4x4::prependRotationZ)
-		            .method("prependRotation",      &Matrix4x4::prependRotation)
-		            .method("prependTranslation",   static_cast<Matrix4x4::Ptr(Matrix4x4::*)(float, float, float)>(&Matrix4x4::prependTranslation))
-		            .method("prependTranslation",   static_cast<Matrix4x4::Ptr(Matrix4x4::*)(Vector3::Ptr)>(&Matrix4x4::prependTranslation))
-					.method("getTranslation",		static_cast<Vector3::Ptr(Matrix4x4::*)(void) const>(&Matrix4x4::translation));
+					.method("appendUniformScale",	static_cast<Matrix4x4::Ptr (Matrix4x4::*)(float)>(&Matrix4x4::appendScale))
+					.method("appendScale",			static_cast<Matrix4x4::Ptr (Matrix4x4::*)(float, float, float)>(&Matrix4x4::appendScale))
+					.method("appendRotationX",      &Matrix4x4::appendRotationX)
+					.method("appendRotationY",      &Matrix4x4::appendRotationY)
+					.method("appendRotationZ",      &Matrix4x4::appendRotationZ)
+					.method("appendRotation",       &Matrix4x4::appendRotation)
+					.method("appendTranslation",    static_cast<Matrix4x4::Ptr (Matrix4x4::*)(float, float, float)>(&Matrix4x4::appendTranslation))
+					.method("appendTranslationVector",    static_cast<Matrix4x4::Ptr(Matrix4x4::*)(Vector3::Ptr)>(&Matrix4x4::appendTranslation))
+					.method("prependUniformScale",	static_cast<Matrix4x4::Ptr (Matrix4x4::*)(float)>(&Matrix4x4::prependScale))
+					.method("prependScale",			static_cast<Matrix4x4::Ptr (Matrix4x4::*)(float, float, float)>(&Matrix4x4::prependScale))
+					.method("prependRotationX",     &Matrix4x4::prependRotationX)
+					.method("prependRotationY",     &Matrix4x4::prependRotationY)
+					.method("prependRotationZ",     &Matrix4x4::prependRotationZ)
+					.method("prependRotation",      &Matrix4x4::prependRotation)
+					.method("prependTranslation",   static_cast<Matrix4x4::Ptr (Matrix4x4::*)(float, float, float)>(&Matrix4x4::prependTranslation))
+					.method("prependTranslationVector",   static_cast<Matrix4x4::Ptr (Matrix4x4::*)(Vector3::Ptr)>(&Matrix4x4::prependTranslation))
+					.method("getTranslation",		static_cast<Vector3::Ptr (Matrix4x4::*)(void) const>(&Matrix4x4::translation))					
+					.method("toString", &Matrix4x4::toString);
+			}
+
+			static
+			float
+			atWrapper(std::vector<float>* v, uint index)
+			{
+				return v->at(index - 1);
+			}
+
+			static
+			std::vector<float>*
+			dataWrapper(Matrix4x4::Ptr m)
+			{
+				return const_cast<std::vector<float>*>(&(m->data()));
 			}
 		};
 	}

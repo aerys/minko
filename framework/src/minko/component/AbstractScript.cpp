@@ -31,11 +31,17 @@ void
 AbstractScript::initialize()
 {
 	_targetAddedSlot = targetAdded()->connect(std::bind(
-		&AbstractScript::targetAddedHandler, shared_from_this(), std::placeholders::_1, std::placeholders::_2
+		&AbstractScript::targetAddedHandler, 
+		std::static_pointer_cast<AbstractScript>(shared_from_this()), 
+		std::placeholders::_1, 
+		std::placeholders::_2
 	));
 
 	_targetRemovedSlot = targetRemoved()->connect(std::bind(
-		&AbstractScript::targetRemovedHandler, shared_from_this(), std::placeholders::_1, std::placeholders::_2
+		&AbstractScript::targetRemovedHandler, 
+		std::static_pointer_cast<AbstractScript>(shared_from_this()), 
+		std::placeholders::_1, 
+		std::placeholders::_2
 	));
 }
 
@@ -44,7 +50,7 @@ AbstractScript::targetAddedHandler(AbstractComponent::Ptr cmp, scene::Node::Ptr 
 {
 	_componentAddedSlot = target->componentAdded()->connect(std::bind(
 		&AbstractScript::componentAddedHandler,
-		shared_from_this(),
+		std::static_pointer_cast<AbstractScript>(shared_from_this()), 
 		std::placeholders::_1,
 		std::placeholders::_2,
 		std::placeholders::_3
@@ -52,7 +58,7 @@ AbstractScript::targetAddedHandler(AbstractComponent::Ptr cmp, scene::Node::Ptr 
 
 	_componentRemovedSlot = target->componentRemoved()->connect(std::bind(
 		&AbstractScript::componentRemovedHandler,
-		shared_from_this(),
+		std::static_pointer_cast<AbstractScript>(shared_from_this()), 
 		std::placeholders::_1,
 		std::placeholders::_2,
 		std::placeholders::_3
@@ -60,7 +66,7 @@ AbstractScript::targetAddedHandler(AbstractComponent::Ptr cmp, scene::Node::Ptr 
 
     auto addedOrRemovedCallback = std::bind(
         &AbstractScript::addedOrRemovedHandler,
-        shared_from_this(),
+        std::static_pointer_cast<AbstractScript>(shared_from_this()), 
         std::placeholders::_1,
         std::placeholders::_2,
         std::placeholders::_3
@@ -77,10 +83,13 @@ AbstractScript::targetAddedHandler(AbstractComponent::Ptr cmp, scene::Node::Ptr 
 void
 AbstractScript::addedOrRemovedHandler(scene::Node::Ptr node, scene::Node::Ptr target, scene::Node::Ptr parent)
 {
-    if (target->root()->hasComponent<SceneManager>())
-        setSceneManager(target->root()->component<SceneManager>());
-    else
-        setSceneManager(nullptr);
+	if (node->root() != target->root())
+		return;
+
+	if (target->root()->hasComponent<SceneManager>())
+		setSceneManager(target->root()->component<SceneManager>());
+	else
+		setSceneManager(nullptr);
 }
 
 void
@@ -172,11 +181,19 @@ AbstractScript::setSceneManager(SceneManager::Ptr sceneManager)
 	{
 		if (!_frameBeginSlot)
 			_frameBeginSlot = sceneManager->frameBegin()->connect(std::bind(
-				&AbstractScript::frameBeginHandler, shared_from_this(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
+				&AbstractScript::frameBeginHandler, 
+				std::static_pointer_cast<AbstractScript>(shared_from_this()),  
+				std::placeholders::_1, 
+				std::placeholders::_2, 
+				std::placeholders::_3
 			));
 		if (!_frameEndSlot)
 			_frameEndSlot = sceneManager->frameEnd()->connect(std::bind(
-				&AbstractScript::frameEndHandler, shared_from_this(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
+				&AbstractScript::frameEndHandler, 
+				std::static_pointer_cast<AbstractScript>(shared_from_this()),  
+				std::placeholders::_1, 
+				std::placeholders::_2, 
+				std::placeholders::_3
             ));
 	}
 	else if (_frameBeginSlot)

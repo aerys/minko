@@ -108,21 +108,21 @@ int main(int argc, char** argv)
 
 		keyDown = canvas->keyboard()->keyDown()->connect([&](input::Keyboard::Ptr k)
 		{
-			if (k->keyIsDown(input::Keyboard::ScanCode::Q))
+			if (k->keyIsDown(input::Keyboard::Q))
 			{
 				if (mesh->hasComponent(surface1))
 					mesh->removeComponent(surface1);
 				else
 					mesh->addComponent(surface1);
 			}
-			if (k->keyIsDown(input::Keyboard::ScanCode::W))
+			if (k->keyIsDown(input::Keyboard::W))
 			{
 				if (mesh->hasComponent(surface2))
 					mesh->removeComponent(surface2);
 				else
 					mesh->addComponent(surface2);
 			}
-			if (k->keyIsDown(input::Keyboard::ScanCode::E))
+			if (k->keyIsDown(input::Keyboard::E))
 			{
 				if (mesh->hasComponent(surface3))
 					mesh->removeComponent(surface3);

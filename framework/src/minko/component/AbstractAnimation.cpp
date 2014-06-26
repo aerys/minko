@@ -69,14 +69,14 @@ AbstractAnimation::initialize()
 {
 	_targetAddedSlot = targetAdded()->connect(std::bind(
 		&AbstractAnimation::targetAddedHandler,
-		shared_from_this(),
+		std::static_pointer_cast<AbstractAnimation>(shared_from_this()),
 		std::placeholders::_1,
 		std::placeholders::_2
 	));
 
 	_targetRemovedSlot = targetRemoved()->connect(std::bind(
 		&AbstractAnimation::targetRemovedHandler,
-		shared_from_this(),
+		std::static_pointer_cast<AbstractAnimation>(shared_from_this()),
 		std::placeholders::_1,
 		std::placeholders::_2
 	));
@@ -88,7 +88,7 @@ AbstractAnimation::targetAddedHandler(AbstractComponent::Ptr cmp,
 {
 	_addedSlot = node->added()->connect(std::bind(
 		&AbstractAnimation::addedHandler,
-		shared_from_this(),
+		std::static_pointer_cast<AbstractAnimation>(shared_from_this()),
 		std::placeholders::_1,
 		std::placeholders::_2,
 		std::placeholders::_3
@@ -96,7 +96,7 @@ AbstractAnimation::targetAddedHandler(AbstractComponent::Ptr cmp,
 
 	_removedSlot = node->removed()->connect(std::bind(
 		&AbstractAnimation::removedHandler,
-		shared_from_this(),
+		std::static_pointer_cast<AbstractAnimation>(shared_from_this()),
 		std::placeholders::_1,
 		std::placeholders::_2,
 		std::placeholders::_3
@@ -154,7 +154,7 @@ AbstractAnimation::setSceneManager(SceneManager::Ptr sceneManager)
 	{
 		_frameBeginSlot = sceneManager->frameBegin()->connect(std::bind(
 			&AbstractAnimation::frameBeginHandler, 
-			shared_from_this(), 
+			std::static_pointer_cast<AbstractAnimation>(shared_from_this()),
 			std::placeholders::_1,
             std::placeholders::_2,
             std::placeholders::_3
@@ -177,10 +177,10 @@ AbstractAnimation::play()
 {
 	_previousGlobalTime = _timeFunction(_sceneManager ? uint(_sceneManager->time()) : 0);
 	_isPlaying	 		= true;
-	_started->execute(shared_from_this());
+	_started->execute(std::static_pointer_cast<AbstractAnimation>(shared_from_this()));
 	checkLabelHit(_currentTime, _currentTime);
 
-	return shared_from_this();
+	return std::static_pointer_cast<AbstractAnimation>(shared_from_this());
 }
 
 AbstractAnimation::Ptr
@@ -193,11 +193,11 @@ AbstractAnimation::stop()
 	}
 
 	_isPlaying			= false;
-	_stopped->execute(shared_from_this());
+	_stopped->execute(std::static_pointer_cast<AbstractAnimation>(shared_from_this()));
 	_canUpdateOnce		= true;
 	_previousGlobalTime = _timeFunction(_sceneManager ? uint(_sceneManager->time()) : 0);
 
-	return shared_from_this();
+	return std::static_pointer_cast<AbstractAnimation>(shared_from_this());
 }
 
 AbstractAnimation::Ptr
@@ -210,13 +210,13 @@ AbstractAnimation::Ptr
 AbstractAnimation::seek(uint currentTime)
 {
 	if (!isInPlaybackWindow(currentTime))
-		throw new std::logic_error("Provided time value is outside of playback window. In order to reset playback window, call resetPlaybackWindow().");
+		throw std::logic_error("Provided time value is outside of playback window. In order to reset playback window, call resetPlaybackWindow().");
 
 	_currentTime = currentTime;
 
 	updateNextLabelIds(_currentTime);
 
-	return shared_from_this();
+	return std::static_pointer_cast<AbstractAnimation>(shared_from_this());
 }
 
 bool
@@ -229,12 +229,12 @@ AbstractAnimation::Ptr
 AbstractAnimation::addLabel(const std::string& name, uint time)
 {
 	if (hasLabel(name))
-		throw new std::logic_error("A label called '" + name + "' already exists.");
+		throw std::logic_error("A label called '" + name + "' already exists.");
 
 	_labelNameToIndex[name] = _labels.size();
 	_labels.push_back(Label(name, time));
 
-	return shared_from_this();
+	return std::static_pointer_cast<AbstractAnimation>(shared_from_this());
 }
 
 AbstractAnimation::Ptr
@@ -242,7 +242,7 @@ AbstractAnimation::changeLabel(const std::string& name, const std::string& newNa
 {
 	const auto foundLabelIt = _labelNameToIndex.find(name);
 	if (foundLabelIt == _labelNameToIndex.end())
-		throw new std::logic_error("No label called '" + name + "' currently exists.");
+		throw std::logic_error("No label called '" + name + "' currently exists.");
 
 	const uint	labelId	= foundLabelIt->second;
 	auto&		label	= _labels[labelId];
@@ -251,7 +251,7 @@ AbstractAnimation::changeLabel(const std::string& name, const std::string& newNa
 	label.name = newName;
 	_labelNameToIndex[newName] = labelId;
 
-	return shared_from_this();
+	return std::static_pointer_cast<AbstractAnimation>(shared_from_this());
 }
 
 AbstractAnimation::Ptr
@@ -259,14 +259,14 @@ AbstractAnimation::setTimeForLabel(const std::string& name, uint newTime)
 {
 	const auto foundLabelIt = _labelNameToIndex.find(name);
 	if (foundLabelIt == _labelNameToIndex.end())
-		throw new std::logic_error("No label called '" + name + "' currently exists.");
+		throw std::logic_error("No label called '" + name + "' currently exists.");
 
 	const uint	labelId	= foundLabelIt->second;
 	auto&		label	= _labels[labelId];
 
 	label.time = newTime;
 
-	return shared_from_this();
+	return std::static_pointer_cast<AbstractAnimation>(shared_from_this());
 }
 
 AbstractAnimation::Ptr
@@ -274,7 +274,7 @@ AbstractAnimation::removeLabel(const std::string& name)
 {
 	const auto foundLabelIt = _labelNameToIndex.find(name);
 	if (foundLabelIt == _labelNameToIndex.end())
-		throw new std::logic_error("No label called '" + name + "' currently exists.");
+		throw std::logic_error("No label called '" + name + "' currently exists.");
 
 	const uint			labelId			= foundLabelIt->second;
 	const std::string	lastLabelName	= _labels.back().name;
@@ -284,7 +284,7 @@ AbstractAnimation::removeLabel(const std::string& name)
 	_labelNameToIndex[lastLabelName]	= labelId;
 	_labels.pop_back();
 
-	return shared_from_this();
+	return std::static_pointer_cast<AbstractAnimation>(shared_from_this());
 }
 
 uint
@@ -292,7 +292,7 @@ AbstractAnimation::labelTime(const std::string& name) const
 {
 	const auto foundLabelIt = _labelNameToIndex.find(name);
 	if (foundLabelIt == _labelNameToIndex.end())
-		throw new std::logic_error("No label called '" + name + "' currently exists.");
+		throw std::logic_error("No label called '" + name + "' currently exists.");
 
 	return labelTime(foundLabelIt->second);
 }
@@ -315,7 +315,7 @@ AbstractAnimation::setPlaybackWindow(uint beginTime,
 
 	updateNextLabelIds(_currentTime);
 
-	return shared_from_this();
+	return std::static_pointer_cast<AbstractAnimation>(shared_from_this());
 }
 
 AbstractAnimation::Ptr
@@ -457,7 +457,11 @@ AbstractAnimation::checkLabelHit(uint previousTime, uint newTime)
 		{
 			const auto& label = _labels[labelId];
 
-			_labelHit->execute(shared_from_this(), label.name, label.time);
+			_labelHit->execute(
+				std::static_pointer_cast<AbstractAnimation>(shared_from_this()), 
+				label.name, 
+				label.time
+			);
 		}
 
 		updateNextLabelIds(getNewLoopTime(_currentTime, !_isReversed ? 1 : -1));
@@ -506,7 +510,7 @@ AbstractAnimation::update(uint rawGlobalTime)
 	if (looped)
 	{
 		if (_isLooping)
-			_looped->execute(shared_from_this());
+			_looped->execute(std::static_pointer_cast<AbstractAnimation>(shared_from_this()));
 		else
 		{
 			_currentTime = loopEndTime();

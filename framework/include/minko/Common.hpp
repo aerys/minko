@@ -44,9 +44,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include <type_traits>
 #include <cfloat>
 #include <climits>
+#include <cstdint>
 #include <future>
 #include <thread>
 #include <chrono>
+#include <bitset>
+#include <regex>
 
 #define GLM_FORCE_CXX11
 #define GLM_FORCE_INLINE
@@ -67,6 +70,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 namespace minko
 {
     typedef unsigned int uint;
+	typedef std::shared_ptr<std::regex>	RegexPtr;
 
 	class Any;
 	template<typename... A>
@@ -143,6 +147,8 @@ namespace minko
             Exponential,
             Exponential2,
         };
+
+		typedef std::function<std::string(const std::string&)> FormatNameFunction;
 	}
 
 	namespace scene
@@ -165,7 +171,6 @@ namespace minko
 		class Picking;
 		class JobManager;
 
-        class LightManager;
         class AbstractLight;
         class AmbientLight;
         class AbstractDiscreteLight;
@@ -194,6 +199,7 @@ namespace minko
 		class ValueBase;
 		class Value;
 		class Container;
+		class AbstractFilter;
         
 		enum class BindingSource
 		{
@@ -202,8 +208,10 @@ namespace minko
 			ROOT
 		};
 
-		typedef std::pair<std::string, BindingSource>		Binding;
-		typedef std::unordered_map<std::string, Binding>	BindingMap;
+		typedef std::pair<std::string, BindingSource>						Binding;
+		typedef std::unordered_map<std::string, Binding>					BindingMap;
+		typedef std::pair<std::shared_ptr<data::Container>, std::string>	ContainerAndName;
+
 
 		template<typename T>
 		using UniformArray = std::pair<uint, const T*>;
@@ -230,11 +238,13 @@ namespace minko
 			MacroBindingDefaultValue			value;
 		};
 
-		typedef std::tuple<std::string, BindingSource, MacroBindingDefault, int, int>	MacroBinding;
+		typedef std::tuple<std::string, BindingSource, MacroBindingDefault, int, int, RegexPtr>	MacroBinding;
 
 		typedef std::unordered_map<std::string, MacroBinding> MacroBindingMap;
 
 		class ContainerProperty;
+
+		class LightMaskFilter;
 	}
 
 	namespace geometry
@@ -244,6 +254,7 @@ namespace minko
 		class SphereGeometry;
         class QuadGeometry;
 		class TeapotGeometry;
+		class LineGeometry;
 	}
 
 	namespace animation
@@ -351,6 +362,7 @@ namespace minko
 		class Mouse;
         class Keyboard;
 		class Joystick;
+        class Finger;
 	}
 
 	namespace async
@@ -364,9 +376,9 @@ namespace std
 	template <class T>
 	inline 
 	void 
-	hash_combine(std::size_t & seed, const T& v)
+	hash_combine(size_t & seed, const T& v)
 	{
-		std::hash<T> hasher;
+		hash<T> hasher;
 		seed ^= hasher(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
 	}
 
@@ -415,5 +427,34 @@ namespace std
 		return "(" + std::to_string(v.x) + ", " + std::to_string(v.y) + ", " + std::to_string(v.z) + ", "
 			+ std::to_string(v.w) + ")";
 	}
+	
+#ifdef __ANDROID__
+	template <typename T>
+	inline
+	string
+	to_string(T v)
+	{
+		ostringstream oss;
+		oss << v;
+		return oss.str();
+	}
+#endif
+}
+
+namespace std
+{
+	template<> struct hash<minko::data::ContainerAndName>
+	{
+		inline
+		size_t 
+		operator()(const minko::data::ContainerAndName& x) const
+		{
+			size_t seed = std::hash<std::shared_ptr<minko::data::Container>>()(x.first);
+
+			hash_combine<std::string>(seed, x.second);
+
+			return seed;
+		}
+	};
 }
 //using namespace minko;

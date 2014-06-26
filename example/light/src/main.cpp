@@ -34,6 +34,8 @@ Signal<input::Keyboard::Ptr>::Slot keyDown;
 scene::Node::Ptr
 createPointLight(math::vec3 color, math::vec3 position, file::AssetLibrary::Ptr assets)
 {
+	static int lightId = 0;
+
 	auto pointLight = scene::Node::create("pointLight")
 		->addComponent(PointLight::create(.3f))
 		->addComponent(Transform::create(math::translate(math::mat4(1.f), position)))
@@ -44,7 +46,10 @@ createPointLight(math::vec3 color, math::vec3 position, file::AssetLibrary::Ptr 
 				->set("diffuseTint",	math::vec4(color, 1.f)),
 			assets->effect("effect/Sprite.effect")
 		));
+
 	pointLight->component<PointLight>()->color(color);
+	pointLight->component<PointLight>()->diffuse(.1f);
+	pointLight->component<PointLight>()->layoutMask(lightId % 2 == 0 ? 1<<2 : 1);
 
 	return pointLight;
 }
@@ -57,8 +62,8 @@ int main(int argc, char** argv)
 
 	auto sceneManager		= SceneManager::create(canvas->context());
 	auto root				= scene::Node::create("root")->addComponent(sceneManager);
-	auto lights				= scene::Node::create("lights");
-	auto sphereGeometry		= geometry::SphereGeometry::create(sceneManager->assets()->context(), 32, 32, true);
+	auto assets				= sceneManager->assets();
+	auto sphereGeometry		= geometry::SphereGeometry::create(assets->context(), 32, 32, true);
 	auto sphereMaterial		= material::PhongMaterial::create()
 		->shininess(16.f)
 		->specularColor(math::vec4(1.0f, 1.0f, 1.0f, 1.0f))
@@ -69,28 +74,32 @@ int main(int argc, char** argv)
 	sphereGeometry->computeTangentSpace(false);
 
 	// setup assets
-	sceneManager->assets()->loader()->options()
+	assets
+		->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()))
+		->geometry("quad", geometry::QuadGeometry::create(sceneManager->assets()->context()))
+		->geometry("sphere", sphereGeometry);
+
+	assets->loader()->options()
 		->generateMipmaps(true)
-        ->registerParser<file::PNGParser>("png");
-    sceneManager->assets()
-            ->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()))
-			->geometry("quad", geometry::QuadGeometry::create(sceneManager->assets()->context()))
-            ->geometry("sphere", sphereGeometry);
-    sceneManager->assets()->loader()
-        ->queue("texture/normalmap-cells.png")
+		->registerParser<file::PNGParser>("png");
+
+	assets->loader()
+		->queue("texture/normalmap-cells.png")
 		->queue("texture/sprite-pointlight.png")
 		->queue("effect/VertexNormal.effect")
 		->queue("effect/Basic.effect")
 		->queue("effect/Sprite.effect")
 		->queue("effect/Phong.effect");
 
-	auto _ = sceneManager->assets()->loader()->complete()->connect([=](file::Loader::Ptr loader)
+	auto _ = assets->loader()->complete()->connect([=](file::Loader::Ptr loader)
 	{
 		// ground
 		auto ground = scene::Node::create("ground")
+			->layouts(1 << 2 | 1)
 			->addComponent(Surface::create(
 				sceneManager->assets()->geometry("quad"),
-				material::Material::create()->set("diffuseColor", math::vec4(1.f)),
+				material::Material::create()
+					->set("diffuseColor", math::vec4(1.f)),
 				sceneManager->assets()->effect("effect/Phong.effect")
 			))
 			->addComponent(Transform::create(
@@ -101,9 +110,9 @@ int main(int argc, char** argv)
 		// sphere
 		auto sphere = scene::Node::create("sphere")
 			->addComponent(Surface::create(
-				sceneManager->assets()->geometry("sphere"),
+				assets->geometry("sphere"),
 				sphereMaterial,
-				sceneManager->assets()->effect("effect/Phong.effect")
+				assets->effect("effect/Phong.effect")
 			))
 			->addComponent(Transform::create(
 				math::translate(math::scale(math::mat4(1.f), math::vec3(4.f)), math::vec3(0.f, 1.f, 0.f))
@@ -132,7 +141,7 @@ int main(int argc, char** argv)
 		// handle keyboard signals
 		keyDown = canvas->keyboard()->keyDown()->connect([=](input::Keyboard::Ptr k)
 		{
-			if (k->keyIsDown(input::Keyboard::KeyCode::a))
+			if (k->keyIsDown(input::Keyboard::A))
 			{
 				const auto MAX_NUM_LIGHTS = 400;
 
@@ -155,7 +164,7 @@ int main(int argc, char** argv)
 
 				std::cout << lights->children().size() << " lights" << std::endl;
 			}
-			if (k->keyIsDown(input::Keyboard::KeyCode::r))
+			if (k->keyIsDown(input::Keyboard::R))
 			{
 				if (lights->children().size() == 0)
 					return;
@@ -163,7 +172,23 @@ int main(int argc, char** argv)
 				lights->removeChild(lights->children().back());
 				std::cout << lights->children().size() << " lights" << std::endl;
 			}
-			if (k->keyIsDown(input::Keyboard::KeyCode::SPACE))
+
+			if (k->keyIsDown(input::Keyboard::S))
+			{
+				auto sphereLayout = sphere->layouts();
+				sphere->layouts(sphereLayout == 1 ? 1 << 2 | 1 : 1);
+			}
+
+			if (k->keyIsDown(input::Keyboard::D))
+			{
+				auto light = lights->children()[0];
+
+				auto mask = light->component<PointLight>()->layoutMask();
+
+				light->component<PointLight>()->layoutMask(mask == 1 ? 1 << 2 : 1);
+			}
+
+			if (k->keyIsDown(input::Keyboard::SPACE))
 			{
 				auto data = sphere->component<Surface>()->material();
 				bool hasNormalMap = data->hasProperty("normalMap");
@@ -175,14 +200,12 @@ int main(int argc, char** argv)
 				if (hasNormalMap)
 					data->unset("normalMap");
 				else
-					data->set("normalMap", sceneManager->assets()->texture("texture/normalmap-cells.png"));
+					data->set("normalMap", assets->texture("texture/normalmap-cells.png"));
 			}
-
-			auto t = camera->component<Transform>();
-			if (k->keyIsDown(input::Keyboard::ScanCode::UP))
-				t->matrix(math::translate(math::mat4(1.f), math::vec3(0.f, 0.f, -1.f)) * t->matrix());
-			if (k->keyIsDown(input::Keyboard::ScanCode::DOWN))
-				t->matrix(math::translate(math::mat4(1.f), math::vec3(0.f, 0.f, 1.f)) * t->matrix());
+			if (k->keyIsDown(input::Keyboard::UP))
+				camera->component<Transform>()->matrix()->prependTranslation(0.f, 0.f, -1.f);
+			if (k->keyIsDown(input::Keyboard::DOWN))
+				camera->component<Transform>()->matrix()->prependTranslation(0.f, 0.f, 1.f);
 		});
 	});
 
@@ -262,9 +285,7 @@ int main(int argc, char** argv)
 		sceneManager->nextFrame(time, deltaTime);
 	});
 
-	sceneManager->assets()->loader()->load();
+	assets->loader()->load();
 
 	canvas->run();
-
-	exit(EXIT_SUCCESS);
 }

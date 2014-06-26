@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -22,27 +22,26 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include <chrono>
 
 #include "minko/Common.hpp"
+#include "minko/SDLKeyboard.hpp"
+#include "minko/SDLMouse.hpp"
+#include "minko/SDLJoystick.hpp"
 #include "minko/Signal.hpp"
 #include "minko/render/AbstractContext.hpp"
 #include "minko/render/OpenGLES2Context.hpp"
 #include "minko/AbstractCanvas.hpp"
-#include "minko/input/Mouse.hpp"
-#include "minko/input/Keyboard.hpp"
 #include "minko/input/Joystick.hpp"
+#include "minko/input/Finger.hpp"
 #include "minko/async/Worker.hpp"
 
-#if defined(__APPLE__)
-# include <TargetConditionals.h>
-# if TARGET_OS_IPHONE
-#  include "SDL2/SDL_main.h"
-# endif
+// Note: cannot be added to the .cpp because this must be compiled within the
+// main compilation-unit.
+#include "SDL_platform.h"
+#if __IPHONEOS__ || __ANDROID__
+# include "SDL_main.h"
 #endif
 
 struct SDL_Window;
 struct SDL_Surface;
-struct _SDL_Joystick;
-typedef struct _SDL_Joystick SDL_Joystick;
-typedef unsigned char Uint8;
 
 namespace minko
 {
@@ -54,137 +53,57 @@ namespace minko
 		typedef std::shared_ptr<Canvas>	Ptr;
 
 	private:
-		class SDLMouse :
-			public input::Mouse
+        class SDLFinger :
+            public input::Finger
 		{
 			friend class Canvas;
-
-		public:
+            
+		private:
+            public :
 			static inline
-			std::shared_ptr<SDLMouse>
+			std::shared_ptr<SDLFinger>
 			create(Canvas::Ptr canvas)
 			{
-				return std::shared_ptr<SDLMouse>(new SDLMouse(canvas));
+				return std::shared_ptr<SDLFinger>(new SDLFinger(canvas));
 			}
-
-		private:
-			SDLMouse(Canvas::Ptr canvas) :
-				input::Mouse(canvas)
-			{
-			}
-
+            
 			void
 			x(uint x)
 			{
-				_x = x;
+				_x = float(x);
 			}
-
+            
 			void
 			y(uint y)
 			{
-				_y = y;
+				_y = float(y);
 			}
-		};
-
-		class SDLKeyboard :
-			public input::Keyboard
-		{
-			friend class Canvas;
-
+            
+            void
+			dx(uint dx)
+			{
+				_dx = float(dx);
+			}
+            
+			void
+			dy(uint dy)
+			{
+				_dy = float(dy);
+			}
+            
 		private:
-			const unsigned char* _keyboardState;
-
-		public:
-			static inline
-			std::shared_ptr<SDLKeyboard>
-			create()
-			{
-				return std::shared_ptr<SDLKeyboard>(new SDLKeyboard());
-			}
-
-		public:
-			bool
-			keyIsDown(input::Keyboard::ScanCode scanCode)
-			{
-#if defined(EMSCRIPTEN)
-				return _keyboardState[static_cast<int>(getKeyCodeFromScanCode(scanCode))] != 0;
-#else
-				return _keyboardState[static_cast<int>(scanCode)] != 0;				
-#endif
-			}
-
-			bool
-			keyIsDown(input::Keyboard::KeyCode keyCode)
-			{
-#if defined(EMSCRIPTEN)
-				// Note: bug in emscripten, GetKeyStates is indexed by key codes.
-				auto scanCode = keyCode;
-				return _keyboardState[static_cast<int>(scanCode)] != 0;
-#else
-				return _keyboardState[static_cast<int>(getScanCodeFromKeyCode(keyCode))] != 0;				
-#endif
-			}
-
-		private:
-			bool
-			hasKeyDownSignal(input::Keyboard::ScanCode scanCode)
-			{
-				return _keyDown.count(static_cast<int>(scanCode)) != 0;
-			}
-
-			bool
-			hasKeyUpSignal(input::Keyboard::ScanCode scanCode)
-			{
-				return _keyUp.count(static_cast<int>(scanCode)) != 0;
-			}
-
-			SDLKeyboard();
-
-			KeyCode
-			getKeyCodeFromScanCode(ScanCode scanCode);
-
-			ScanCode
-			getScanCodeFromKeyCode(KeyCode keyCode);
-		};
-
-		class SDLJoystick : 
-			public input::Joystick
-		{
-			friend class Canvas;
-
-		private:
-			SDL_Joystick*	_joystick;
-
-		public :
-			static inline
-			std::shared_ptr<SDLJoystick>
-			create(Canvas::Ptr canvas, int joystickId, SDL_Joystick* joystick)
-			{
-				return std::shared_ptr<SDLJoystick>(new SDLJoystick(canvas, joystickId, joystick));
-			}
-
-			inline
-			SDL_Joystick* const
-			joystick()
-			{
-				return _joystick;
-			}
-
-		private:
-			SDLJoystick(Canvas::Ptr canvas, int joystickId, SDL_Joystick* joystick) :
-				input::Joystick(canvas, joystickId),
-				_joystick(joystick)
+			SDLFinger(Canvas::Ptr canvas) :
+            	input::Finger(canvas)
 			{
 			}
+            
+        public:
+            static const float SWIPE_PRECISION;
 		};
 
 	private:
-        typedef std::chrono::high_resolution_clock::time_point						time_point;
-		typedef std::shared_ptr<async::Worker>			        					WorkerPtr;
-		typedef Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::Ptr  JoystickSignal;
-		typedef std::unordered_map<int, std::shared_ptr<SDLJoystick>> 				Joysticks;
-
-	private:
+        typedef std::chrono::high_resolution_clock::time_point	time_point;
+		typedef std::shared_ptr<async::Worker>			        WorkerPtr;
 
 		std::string										_name;
 		uint											_x;
@@ -198,37 +117,44 @@ namespace minko
 		bool											_active;
 		render::AbstractContext::Ptr					_context;
 #ifdef EMSCRIPTEN
-		SDL_Surface*									_screen;
+		SDL_Surface*											_screen;
 #else
-		SDL_Window*										_window;
+		SDL_Window*												_window;
 #endif
-        time_point                                      _previousTime;
-        time_point                                      _startTime;
-		float											_framerate;
-		float											_desiredFramerate;
+		float													_relativeTime;
+		float													_frameDuration;
+        time_point                                              _previousTime;
+        time_point                                              _startTime;
+		float													_framerate;
+		float													_desiredFramerate;
 
-		std::shared_ptr<SDLMouse>						_mouse;
-		Joysticks										_joysticks;
-        std::shared_ptr<SDLKeyboard>    				_keyboard;
+		std::shared_ptr<SDLMouse>								_mouse;
+		std::unordered_map<int, std::shared_ptr<SDLJoystick>>	_joysticks;
+        std::shared_ptr<SDLKeyboard>    						_keyboard;
+        std::shared_ptr<SDLFinger>                              _finger;
 
-		Signal<Ptr, float, float>::Ptr					_enterFrame;
-		Signal<AbstractCanvas::Ptr, uint, uint>::Ptr	_resized;
-		JoystickSignal									_joystickAdded;
-		JoystickSignal									_joystickRemoved;
-		std::list<std::shared_ptr<async::Worker>>		_activeWorkers;
-		std::list<Any>									_workerCompleteSlots;
+		Signal<Ptr, float, float>::Ptr											_enterFrame;
+		Signal<AbstractCanvas::Ptr, uint, uint>::Ptr							_resized;
+		Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::Ptr		_joystickAdded;
+		Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::Ptr		_joystickRemoved;
+		std::list<std::shared_ptr<async::Worker>>								_activeWorkers;
+		std::list<Any>															_workerCompleteSlots;
 
 
 	public:
 		static inline
 		Ptr
-		create(const std::string&	name, 
-			   const uint			width, 
-			   const uint			height, 
+		create(const std::string&	name,
+			   const uint			width,
+			   const uint			height,
 			   bool					useStencil = false,
 			   bool					chromeless = false)
 		{
 			auto canvas = std::shared_ptr<Canvas>(new Canvas(name, width, height, useStencil, chromeless));
+
+#if defined(__ANDROID__)
+			auto that = canvas->shared_from_this();
+#endif
 
 			canvas->initialize();
 
@@ -245,33 +171,20 @@ namespace minko
 			return _name;
 		}
 
-		inline
 		uint
-		x()
-		{
-			return _x;
-		}
+		x();
 
-		inline
 		uint
-		y()
-		{
-			return _y;
-		}
+		y();
 
-		inline
 		uint
-		width()
-		{
-			return _width;
-		}
+		width();
 
-		inline
 		uint
-		height()
-		{
-			return _height;
-		}
+		height();
+
+		int
+		getJoystickAxis(input::Joystick::Ptr joystick, int axis);
 
 		inline
 		std::shared_ptr<data::Provider>
@@ -307,13 +220,27 @@ namespace minko
 		{
 			return _keyboard;
 		}
-		
+        
+        inline
+		std::shared_ptr<input::Finger>
+		finger()
+		{
+			return _finger;
+		}
+
 		inline
 		std::shared_ptr<input::Joystick>
 		joystick(uint id)
 		{
 			return id < numJoysticks() ? _joysticks[id] : nullptr;
 		}
+
+        inline
+        std::unordered_map<int, std::shared_ptr<SDLJoystick>>
+        joysticks()
+        {
+            return _joysticks;
+        }
 
 		inline
 		uint
@@ -333,7 +260,7 @@ namespace minko
 		Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::Ptr
 		joystickRemoved()
 		{
-				return _joystickRemoved;
+			return _joystickRemoved;
 		}
 
 		inline
@@ -371,6 +298,22 @@ namespace minko
 			_desiredFramerate = desiredFramerate;
 		}
 
+		// Current frame execution time in milliseconds.
+		inline
+		float
+		frameDuration() const
+		{
+			return _frameDuration;
+		}
+
+		// Time in milliseconds since application started.
+		inline
+		float
+		relativeTime() const
+		{
+			return _relativeTime;
+		}
+
 		WorkerPtr
 		getWorker(const std::string& name);
 
@@ -390,9 +333,9 @@ namespace minko
 		quit();
 
 	private:
-		Canvas(const std::string&	name, 
-			   const uint			width, 
-			   const uint			height, 
+		Canvas(const std::string&	name,
+			   const uint			width,
+			   const uint			height,
 			   bool					useStencil = false,
 			   bool					chromeless = false);
 
@@ -405,8 +348,13 @@ namespace minko
 		void
 		width(uint);
 
-		void 
+		void
 		height(uint);
+
+#if defined(_WIN32)
+		bool
+		consoleHandlerRoutine(DWORD);
+#endif
 
 		void
 		initialize();

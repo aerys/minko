@@ -31,8 +31,7 @@ namespace minko
 	namespace component
 	{
 		class PerspectiveCamera :
-            public AbstractComponent,
-			public std::enable_shared_from_this<PerspectiveCamera>
+            public AbstractComponent
 		{
 		public:
 			typedef std::shared_ptr<PerspectiveCamera> Ptr;
@@ -186,6 +185,9 @@ namespace minko
 
 			std::shared_ptr<math::Ray>
 			unproject(float x, float y);
+			
+			math::vec3
+			project(math::vec3 worldPosition);
 
         protected:
             void

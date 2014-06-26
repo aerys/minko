@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -18,13 +18,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "minko/Canvas.hpp"
-#include "minko/input/Mouse.hpp"
-#include "minko/input/Keyboard.hpp"
 #include "minko/data/Provider.hpp"
+#include "minko/math/Vector4.hpp"
 #include "minko/async/Worker.hpp"
+#include "minko/file/Options.hpp"
 
 #if !defined(EMSCRIPTEN)
-#include "minko/async/FileProtocolWorker.hpp"
+#include "minko/file/FileProtocolWorker.hpp"
 #endif
 
 #if defined(EMSCRIPTEN)
@@ -32,65 +32,97 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 # include "SDL/SDL.h"
 # include "emscripten/emscripten.h"
 #elif defined(MINKO_ANGLE)
-# include "SDL2/SDL.h"
-# include "SDL2/SDL_syswm.h"
+# include "SDL.h"
+# include "SDL_syswm.h"
 # include <EGL/egl.h>
 # include <GLES2/gl2.h>
 # include <GLES2/gl2ext.h>
+#elif defined(__ANDROID__)
+# include "minko/MinkoAndroid.hpp"
+# include "SDL.h"
 #else
-# include "SDL2/SDL.h"
+# include "SDL.h"
 #endif
 
 #if defined(__APPLE__)
 # include <TargetConditionals.h>
 # if TARGET_OS_IPHONE
-#  include "SDL2/SDL_opengles.h"
+#  include "SDL_opengles.h"
 # endif
 #endif
 
+#if defined(_WIN32)
+#include "Windows.h"
+#endif
+
 using namespace minko;
+using namespace minko::math;
 using namespace minko::async;
 
+const float Canvas::SDLFinger::SWIPE_PRECISION = 0.05f;
+
 Canvas::Canvas(const std::string& name, const uint width, const uint height, bool useStencil, bool chromeless) :
-	_name(name),
-    _x(0),
-    _y(0),
-    _width(width),
-    _height(height),
-	_useStencil(useStencil),
-	_chromeless(chromeless),
-	_data(data::Provider::create()),
-	_active(false),
+    _name(name),
+    _useStencil(useStencil),
+    _chromeless(chromeless),
+    _data(data::Provider::create()),
+    _active(false),
     _previousTime(std::chrono::high_resolution_clock::now()),
     _startTime(std::chrono::high_resolution_clock::now()),
-	_framerate(0.f),
-	_desiredFramerate(60.f),
-	_enterFrame(Signal<Canvas::Ptr, float, float>::create()),
-	_resized(Signal<AbstractCanvas::Ptr, uint, uint>::create()),
-	_joystickAdded(Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::create()),
-	_joystickRemoved(Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::create())
+    _framerate(0.f),
+    _desiredFramerate(60.f),
+    _enterFrame(Signal<Canvas::Ptr, float, float>::create()),
+    _resized(Signal<AbstractCanvas::Ptr, uint, uint>::create()),
+    _joystickAdded(Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::create()),
+    _joystickRemoved(Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::create())
 {
-    _data->set<math::Vector4>("canvas.viewport", math::Vector4(0.f, 0.f, (float)width, (float)height));
+    _data->set<math::Vector4::Ptr>("canvas.viewport", Vector4::create(0.0f, 0.0f, (float) width, (float) height));
 }
+
+#if defined(_WIN32)
+BOOL
+WINAPI
+ConsoleHandlerRoutine(DWORD dwCtrlType)
+{
+    if (dwCtrlType == CTRL_CLOSE_EVENT)
+        return true;
+    return false;
+}
+#endif
 
 void
 Canvas::initialize()
 {
+#if defined(__ANDROID__)
+    file::Options::defaultProtocolFunction("file", [](const std::string& filename)
+    {
+        return minko::file::APKProtocol::create();
+    });
+
+    // std::cout.rdbuf(new minko::log::AndroidStreambuf());
+    // std::cerr.rdbuf(new minko::log::AndroidStreambuf());
+#endif
+
     initializeContext(_name, width(), height(), _useStencil);
     initializeInputs();
 
 #if !defined(EMSCRIPTEN)
-    registerWorker<async::FileProtocolWorker>("file-loader");
+    registerWorker<file::FileProtocolWorker>("file-protocol");
+#endif
+
+#if defined(_WIN32)
+    SetConsoleCtrlHandler(ConsoleHandlerRoutine, true);
 #endif
 }
 
 void
 Canvas::initializeInputs()
 {
-    _mouse = Canvas::SDLMouse::create(shared_from_this());
-    _keyboard = Canvas::SDLKeyboard::create();
+    _mouse = SDLMouse::create(shared_from_this());
+    _keyboard = SDLKeyboard::create();
+    _finger = SDLFinger::create(shared_from_this());
 
-#ifndef EMSCRIPTEN
+#if !defined(EMSCRIPTEN) && !defined(__ANDROID__)
     for (int i = 0; i < SDL_NumJoysticks(); ++i)
     {
         SDL_Joystick* joystick = SDL_JoystickOpen(i);
@@ -98,7 +130,7 @@ Canvas::initializeInputs()
         if (!joystick)
             continue;
         else
-            _joysticks[i] = Canvas::SDLJoystick::create(shared_from_this(), SDL_JoystickInstanceID(joystick), joystick);
+            _joysticks[i] = SDLJoystick::create(shared_from_this(), SDL_JoystickInstanceID(joystick), joystick);
     }
 #endif
 }
@@ -117,20 +149,20 @@ Canvas::initializeContext(const std::string& windowTitle, unsigned int width, un
 
     if (_chromeless)
         sdlFlags |= SDL_WINDOW_BORDERLESS;
-    
+
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
     _window = SDL_CreateWindow(
         windowTitle.c_str(),
-        SDL_WINDOWPOS_UNDEFINED,
-        SDL_WINDOWPOS_UNDEFINED,
+        SDL_WINDOWPOS_CENTERED, // SDL_WINDOWPOS_UNDEFINED,
+        SDL_WINDOWPOS_CENTERED, // SDL_WINDOWPOS_UNDEFINED,
         width, height,
         sdlFlags
     );
-    
+
     if (!_window)
-        throw;
+        throw std::runtime_error(SDL_GetError());
 
 # if MINKO_ANGLE
     if (!(_angleContext = initContext(_window, width, height)))
@@ -150,13 +182,13 @@ Canvas::initializeContext(const std::string& windowTitle, unsigned int width, un
 #else // if defined(EMSCRIPTEN)
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK) < 0)
         throw std::runtime_error(SDL_GetError());
-	
+
     if (useStencil)
         SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 
     SDL_WM_SetCaption(windowTitle.c_str(), NULL);
 
-    SDL_SetVideoMode(width, height, 0, SDL_OPENGL);
+    SDL_SetVideoMode(width, height, 0, SDL_OPENGL | SDL_WINDOW_RESIZABLE);
 
     _context = minko::render::WebGLContext::create();
 #endif // EMSCRIPTEN
@@ -263,48 +295,60 @@ Canvas::initContext(SDL_Window* window, unsigned int width, unsigned int height)
 }
 #endif
 
-void
-Canvas::x(const uint value)
+uint
+Canvas::x()
 {
-    auto viewport = _data->get<math::Vector4>("canvas.viewport");
+    return (uint) _data->get<math::Vector4::Ptr>("canvas.viewport")->x();
+}
 
-    viewport.x = (float)value;
-    _data->set("canvas.viewport", viewport);
+uint
+Canvas::y()
+{
+    return (uint) _data->get<math::Vector4::Ptr>("canvas.viewport")->y();
+}
+
+uint
+Canvas::width()
+{
+    return (uint) _data->get<math::Vector4::Ptr>("canvas.viewport")->z();
+}
+
+uint
+Canvas::height()
+{
+    return (uint) _data->get<math::Vector4::Ptr>("canvas.viewport")->w();
 }
 
 void
-Canvas::y(const uint value)
+Canvas::x(uint value)
 {
-    auto viewport = _data->get<math::Vector4>("canvas.viewport");
+    auto viewport = _data->get<math::Vector4::Ptr>("canvas.viewport");
 
-    viewport.y = (float)value;
-    _data->set("canvas.viewport", viewport);
+    viewport->setTo((float) value, viewport->y(), viewport->z(), viewport->w());
 }
 
 void
-Canvas::width(const uint value)
+Canvas::y(uint value)
 {
-    if (value != _width)
-    {
-        auto viewport = _data->get<math::Vector4>("canvas.viewport");
+    auto viewport = _data->get<math::Vector4::Ptr>("canvas.viewport");
 
-        viewport.z = (float)value;
-        _width = value;
-        _data->set("canvas.viewport", viewport);        
-    }
+    viewport->setTo(viewport->x(), (float) value, viewport->z(), viewport->w());
 }
 
 void
-Canvas::height(const uint value)
+Canvas::width(uint value)
 {
-    if (value != _height)
-    {
-        auto viewport = _data->get<math::Vector4>("canvas.viewport");
+    auto viewport = _data->get<math::Vector4::Ptr>("canvas.viewport");
 
-        viewport.w = (float)value;
-        _height = value;
-        _data->set("canvas.viewport", viewport);        
-    }
+    viewport->setTo(viewport->x(), viewport->y(), (float) value, viewport->w());
+}
+
+void
+Canvas::height(uint value)
+{
+    auto viewport = _data->get<math::Vector4::Ptr>("canvas.viewport");
+
+    viewport->setTo(viewport->x(), viewport->y(), viewport->z(), (float) value);
 }
 
 void
@@ -312,29 +356,29 @@ Canvas::step()
 {
 #if defined(EMSCRIPTEN)
     // Detect new joystick
-    for (int i = 0; i < SDL_NumJoysticks(); i++) 
+    for (int i = 0; i < SDL_NumJoysticks(); i++)
     {
-        if (!SDL_JoystickOpened(i)) 
+        if (!SDL_JoystickOpened(i))
         {
             auto joystick = SDL_JoystickOpen(i);
-            if (joystick) 
+            if (joystick)
             {
                 if (_joysticks.find(i) == _joysticks.end())
                 {
-                    auto sdlJoystick = Canvas::SDLJoystick::create(shared_from_this(), i, joystick);
+                    auto sdlJoystick = SDLJoystick::create(shared_from_this(), i, joystick);
                     _joysticks[i] = sdlJoystick;
                 }
 
                 _joystickAdded->execute(shared_from_this(), _joysticks[i]);
 
-#if defined(DEBUG)
+# if defined(DEBUG)
                 printf("New joystick found!\n");
                 printf("Joystick %i\n", i);
                 printf("Name: %s\n", SDL_JoystickName(i));
                 printf("Number of Axes: %d\n", SDL_JoystickNumAxes(joystick));
                 printf("Number of Buttons: %d\n", SDL_JoystickNumButtons(joystick));
                 printf("Number of Balls: %d\n", SDL_JoystickNumBalls(joystick));
-#endif // DEBUG
+# endif // DEBUG
             }
         }
     }
@@ -368,16 +412,27 @@ Canvas::step()
         switch (event.type)
         {
         case SDL_QUIT:
-            _active = false;
+        {
+            quit();
             break;
+        }
 
         case SDL_KEYDOWN:
         {
             _keyboard->keyDown()->execute(_keyboard);
-            for (uint i = 0; i < input::Keyboard::NUM_SCANCODES; ++i)
+
+			auto keyCode = static_cast<input::Keyboard::KeyCode>(event.key.keysym.sym);
+
+            for (uint i = 0; i < input::Keyboard::NUM_KEYS; ++i)
             {
-                auto code = static_cast<input::Keyboard::ScanCode>(i);
-                if (_keyboard->_keyboardState[i] && _keyboard->hasKeyDownSignal(code))
+                auto code = static_cast<input::Keyboard::Key>(i);
+
+				if (!_keyboard->hasKeyDownSignal(code))
+					continue;
+
+				auto pair = _keyboard->keyToKeyCodeMap.find(code);
+
+				if (pair != _keyboard->keyToKeyCodeMap.end() && pair->second == keyCode)
                     _keyboard->keyDown(code)->execute(_keyboard, i);
             }
             break;
@@ -386,31 +441,44 @@ Canvas::step()
         case SDL_KEYUP:
         {
             _keyboard->keyUp()->execute(_keyboard);
-            for (uint i = 0; i < input::Keyboard::NUM_SCANCODES; ++i)
+
+			auto keyCode = static_cast<input::Keyboard::KeyCode>(event.key.keysym.sym);
+
+			for (uint i = 0; i < input::Keyboard::NUM_KEYS; ++i)
+			{
+				auto code = static_cast<input::Keyboard::Key>(i);
+
+				if (!_keyboard->hasKeyUpSignal(code))
+					continue;
+
+				auto pair = _keyboard->keyToKeyCodeMap.find(code);
+
+				if (pair != _keyboard->keyToKeyCodeMap.end() && pair->second == keyCode)
+					_keyboard->keyUp(code)->execute(_keyboard, i);
+			}
+
+            for (uint i = 0; i < input::Keyboard::NUM_KEYS; ++i)
             {
-                auto code = static_cast<input::Keyboard::ScanCode>(i);
+                auto code = static_cast<input::Keyboard::Key>(i);
                 if (_keyboard->_keyboardState[i] && _keyboard->hasKeyUpSignal(code))
                     _keyboard->keyUp(code)->execute(_keyboard, i);
             }
-            break;
         }
 
         case SDL_MOUSEMOTION:
         {
-            auto oldX = mouse()->x();
-            auto oldY = mouse()->y();
+            auto oldX = _mouse->input::Mouse::x();
+            auto oldY = _mouse->input::Mouse::y();
 
             _mouse->x(event.motion.x);
             _mouse->y(event.motion.y);
             _mouse->move()->execute(_mouse, event.motion.x - oldX, event.motion.y - oldY);
-            //_mouseX = event.motion.x;
-            //_mouseY = event.motion.y;
-            //_mouseMove->execute(shared_from_this(), _mouseX, _mouseY);
             break;
         }
+
         case SDL_MOUSEBUTTONDOWN:
         {
-            switch( event.button.button ) 
+            switch (event.button.button)
             {
             case SDL_BUTTON_LEFT:
                 _mouse->leftButtonDown()->execute(_mouse);
@@ -418,110 +486,155 @@ Canvas::step()
             case SDL_BUTTON_RIGHT:
                 _mouse->rightButtonDown()->execute(_mouse);
                 break;
-	    }
+#ifdef EMSCRIPTEN
+            case SDL_BUTTON_X1:
+                _mouse->wheel()->execute(_mouse, 0, 1);
+                break;
+            case SDL_BUTTON_X2:
+                _mouse->wheel()->execute(_mouse, 0, -1);
+                break;
+#endif
+            }
             break;
         }
+
         case SDL_MOUSEBUTTONUP:
         {
-            switch( event.button.button ) 
-	    {
-	    case SDL_BUTTON_LEFT:
+            switch (event.button.button)
+            {
+            case SDL_BUTTON_LEFT:
                 _mouse->leftButtonUp()->execute(_mouse);
                 break;
-	    case SDL_BUTTON_RIGHT:
+            case SDL_BUTTON_RIGHT:
                 _mouse->rightButtonUp()->execute(_mouse);
                 break;
             }
             break;
         }
+
         case SDL_MOUSEWHEEL:
+        {
             _mouse->wheel()->execute(_mouse, event.wheel.x, event.wheel.y);
             //_mouseWheel->execute(shared_from_this(), event.wheel.x, event.wheel.y);
             break;
+        }
 
+#ifndef EMSCRIPTEN
+            // Touch events
+        case SDL_FINGERDOWN:
+        {
+            _finger->x(uint(event.tfinger.x));
+            _finger->y(uint(event.tfinger.y));
+
+            _finger->fingerDown()->execute(_finger, event.tfinger.x, event.tfinger.y);
+
+            break;
+        }
+
+        case SDL_FINGERUP:
+        {
+            _finger->x(uint(event.tfinger.x));
+            _finger->y(uint(event.tfinger.y));
+
+            _finger->fingerUp()->execute(_finger, event.tfinger.x, event.tfinger.y);
+
+            break;
+        }
+
+        case SDL_FINGERMOTION:
+        {
+            _finger->x(uint(event.tfinger.x));
+            _finger->y(uint(event.tfinger.y));
+            _finger->dx(uint(event.tfinger.dx));
+            _finger->dy(uint(event.tfinger.dy));
+
+            _finger->fingerMotion()->execute(_finger, event.tfinger.dx, event.tfinger.dy);
+
+            // Gestures
+            if (event.tfinger.dx > SDLFinger::SWIPE_PRECISION)
+                _finger->swipeRight()->execute(_finger);
+
+            if (-event.tfinger.dx > SDLFinger::SWIPE_PRECISION)
+                _finger->swipeLeft()->execute(_finger);
+
+            if (event.tfinger.dy > SDLFinger::SWIPE_PRECISION)
+                _finger->swipeDown()->execute(_finger);
+
+            if (-event.tfinger.dy > SDLFinger::SWIPE_PRECISION)
+                _finger->swipeUp()->execute(_finger);
+
+            break;
+        }
+#endif
         case SDL_JOYAXISMOTION:
-# if defined(DEBUG)
-            printf("Joystick %d axis %d value: %d\n",
-                event.jaxis.which,
-                event.jaxis.axis,
-                event.jaxis.value);
-#endif // DEBUG
+        {
             _joysticks[event.jaxis.which]->joystickAxisMotion()->execute(
                 _joysticks[event.jaxis.which], event.jaxis.which, event.jaxis.axis, event.jaxis.value
-                );
+            );
             break;
+        }
 
         case SDL_JOYHATMOTION:
-# if defined(DEBUG)
-            printf("Joystick %d hat %d value:",
-                event.jhat.which,
-                event.jhat.hat);
-            if (event.jhat.value == SDL_HAT_CENTERED)
-                printf(" centered");
-            if (event.jhat.value & SDL_HAT_UP)
-                printf(" up");
-            if (event.jhat.value & SDL_HAT_RIGHT)
-                printf(" right");
-            if (event.jhat.value & SDL_HAT_DOWN)
-                printf(" down");
-            if (event.jhat.value & SDL_HAT_LEFT)
-                printf(" left");
-            printf("\n");
-#endif // DEBUG
+        {
             _joysticks[event.jhat.which]->joystickHatMotion()->execute(
                 _joysticks[event.jhat.which], event.jhat.which, event.jhat.hat, event.jhat.value
-                );
+            );
             break;
+        }
 
         case SDL_JOYBUTTONDOWN:
-# if defined(DEBUG)
-            printf("Joystick %d button %d down\n",
-                event.jbutton.which,
-                event.jbutton.button);
-#endif
+        {
+            int button = event.jbutton.button;
+
+#if defined(EMSCRIPTEN)
+            auto htmlButton = static_cast<SDLJoystick::Button>(button);
+            auto nativeButton = SDLJoystick::GetNativeButton(htmlButton);
+
+            if (nativeButton != SDLJoystick::Button::Nothing)
+                button = static_cast<int>(nativeButton);
+#endif // EMSCRIPTEN
+
             _joysticks[event.jbutton.which]->joystickButtonDown()->execute(
-                _joysticks[event.jbutton.which], event.jbutton.which, event.jbutton.button
-                );
+                _joysticks[event.jbutton.which], event.jbutton.which, button
+            );
             break;
+        }
 
         case SDL_JOYBUTTONUP:
-# if defined(DEBUG)
-            printf("Joystick %d button %d up\n",
-                event.jbutton.which,
-                event.jbutton.button);
-#endif
+        {
+            auto button = event.jbutton.button;
+
+# if defined(EMSCRIPTEN)
+            auto htmlButton = static_cast<SDLJoystick::Button>(button);
+            auto nativeButton = SDLJoystick::GetNativeButton(htmlButton);
+
+            if (nativeButton != SDLJoystick::Button::Nothing)
+                button = static_cast<int>(nativeButton);
+#endif // EMSCRIPTEN
+
             _joysticks[event.jbutton.which]->joystickButtonUp()->execute(
-                _joysticks[event.jbutton.which], event.jbutton.which, event.jbutton.button
-                );
+                _joysticks[event.jbutton.which], event.jbutton.which, button
+            );
             break;
+        }
 
 #ifndef EMSCRIPTEN
         case SDL_JOYDEVICEADDED:
         {
-            int				device = event.cdevice.which;
-            auto			joystick = SDL_JoystickOpen(device);
+            int             device = event.cdevice.which;
+            auto            joystick = SDL_JoystickOpen(device);
             SDL_JoystickID  instance_id = SDL_JoystickInstanceID(joystick);
 
             if (_joysticks.find(instance_id) == _joysticks.end())
             {
-                auto sdlJoystick = Canvas::SDLJoystick::create(shared_from_this(), instance_id, joystick);
+                auto sdlJoystick = SDLJoystick::create(shared_from_this(), instance_id, joystick);
                 _joysticks[instance_id] = sdlJoystick;
             }
 
             _joystickAdded->execute(shared_from_this(), _joysticks[instance_id]);
-
-# if defined(DEBUG)
-            std::cout << "Is Gamecontroller : " << SDL_IsGameController(device) << std::endl;
-            std::cout << "Num joystick : " << SDL_NumJoysticks() << std::endl;
-            std::cout << "Name : " << SDL_JoystickName(joystick) << std::endl;
-            std::cout << "Num axes : " << SDL_JoystickNumAxes(joystick) << std::endl;
-            std::cout << "Num buttons : " << SDL_JoystickNumButtons(joystick) << std::endl;
-            std::cout << "Num balls : " << SDL_JoystickNumBalls(joystick) << std::endl;
-            std::cout << "Num hat : " << SDL_JoystickNumHats(joystick) << std::endl;
-            std::cout << "instance_id : " << instance_id << std::endl;
-# endif // DEBUG
             break;
         }
+
         case SDL_JOYDEVICEREMOVED:
         {
             auto joystick = _joysticks[event.cdevice.which]->_joystick;
@@ -537,31 +650,35 @@ Canvas::step()
 
 #ifdef EMSCRIPTEN
         case SDL_VIDEORESIZE:
+        {
             width(event.resize.w);
             height(event.resize.h);
 
-            delete _screen;
-            _screen = SDL_SetVideoMode(width(), height(), 0, SDL_OPENGL | SDL_RESIZABLE);
+            _screen = SDL_SetVideoMode(width(), height(), 0, SDL_OPENGL | SDL_WINDOW_RESIZABLE);
             _context->configureViewport(x(), y(), width(), height());
             _resized->execute(shared_from_this(), width(), height());
             break;
+        }
 #else
         case SDL_WINDOWEVENT:
+        {
             switch (event.window.event)
             {
-            case SDL_WINDOWEVENT_RESIZED:
-                width(event.window.data1);
-                height(event.window.data2);
+                case SDL_WINDOWEVENT_RESIZED:
+                    width(event.window.data1);
+                    height(event.window.data2);
 
-                _context->configureViewport(x(), y(), width(), height());
-                _resized->execute(shared_from_this(), width(), height());
-                break;
-            default:
-                break;
+                    _context->configureViewport(x(), y(), width(), height());
+                    _resized->execute(shared_from_this(), width(), height());
+                    break;
+
+                default:
+                    break;
             }
-
             break;
+        }
 #endif // EMSCRIPTEN
+
         default:
             break;
         }
@@ -569,14 +686,14 @@ Canvas::step()
 
 #if !defined(EMSCRIPTEN)
     for (auto worker : _activeWorkers)
-        worker->update();
+        worker->poll();
 #endif
-    auto time           = std::chrono::high_resolution_clock::now();
-    auto relativeTime   = 1e-6f * std::chrono::duration_cast<std::chrono::nanoseconds>(time - _startTime).count(); // in milliseconds
-    auto frameDuration  = 1e-6f * std::chrono::duration_cast<std::chrono::nanoseconds>(time - _previousTime).count(); // in milliseconds
+    auto absoluteTime = std::chrono::high_resolution_clock::now();
+    _relativeTime   = 1e-6f * std::chrono::duration_cast<std::chrono::nanoseconds>(absoluteTime - _startTime).count(); // in milliseconds
+    _frameDuration  = 1e-6f * std::chrono::duration_cast<std::chrono::nanoseconds>(absoluteTime - _previousTime).count(); // in milliseconds
 
-    _enterFrame->execute(shared_from_this(), relativeTime, frameDuration);
-    _previousTime = time;
+    _enterFrame->execute(shared_from_this(), _relativeTime, _frameDuration);
+    _previousTime = absoluteTime;
 
     // swap buffers
 #if defined(MINKO_ANGLE)
@@ -588,12 +705,12 @@ Canvas::step()
 #endif
 
     // framerate in seconds
-    _framerate = 1000.f / frameDuration;
+    _framerate = 1000.f / _frameDuration;
 
 #if !defined(EMSCRIPTEN)
     if (_framerate > _desiredFramerate)
     {
-        SDL_Delay((uint) ((1000.f / _desiredFramerate) - frameDuration));
+        SDL_Delay((uint) ((1000.f / _desiredFramerate) - _frameDuration));
 
         _framerate = _desiredFramerate;
     }
@@ -637,23 +754,6 @@ Canvas::quit()
     _active = false;
 }
 
-Canvas::SDLKeyboard::SDLKeyboard()
-{
-    _keyboardState = SDL_GetKeyboardState(NULL);
-}
-
-input::Keyboard::KeyCode
-Canvas::SDLKeyboard::getKeyCodeFromScanCode(input::Keyboard::ScanCode scanCode)
-{
-    return static_cast<input::Keyboard::KeyCode>(SDL_SCANCODE_TO_KEYCODE(static_cast<int>(scanCode)));
-}
-
-input::Keyboard::ScanCode
-Canvas::SDLKeyboard::getScanCodeFromKeyCode(input::Keyboard::KeyCode keyCode)
-{
-    return static_cast<input::Keyboard::ScanCode>(SDL_GetScancodeFromKey(static_cast<int>(keyCode)));
-}
-
 Canvas::WorkerPtr
 Canvas::getWorker(const std::string& name)
 {
@@ -664,10 +764,16 @@ Canvas::getWorker(const std::string& name)
 
     _activeWorkers.push_back(worker);
 
-    _workerCompleteSlots.push_back(worker->complete()->connect([worker, this](Worker::MessagePtr) {
-        std::cout << "Canvas::getWorker(): " << "remove worker" << std::endl;
-        //_activeWorkers.remove(worker);
-    }));
-
     return worker;
+}
+
+int
+Canvas::getJoystickAxis(input::Joystick::Ptr joy, int axis)
+{
+    int id = joy->joystickId();
+
+    if (_joysticks.find(id) == _joysticks.end())
+        return -1;
+
+    return SDL_JoystickGetAxis(_joysticks[id]->joystick(), axis);
 }

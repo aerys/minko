@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
+#include "minko/Signal.hpp"
 
 #include "minko/render/AbstractResource.hpp"
 
@@ -28,41 +29,59 @@ namespace minko
 	namespace render
 	{
 		class IndexBuffer :
-			public AbstractResource
+			public AbstractResource,
+			public Convertible<IndexBuffer>,
+			public std::enable_shared_from_this<IndexBuffer>
 		{
 		public:
-			typedef std::shared_ptr<IndexBuffer>	Ptr;
+			typedef std::shared_ptr<IndexBuffer>		Ptr;
 
 		private:
-			std::vector<unsigned short>	_data;
+			typedef std::shared_ptr<AbstractContext>	AbsContextPtr;
+
+		private:
+			std::vector<unsigned short>					_data;
+			unsigned int								_numIndices;
+
+			std::shared_ptr<Signal<Ptr>>				_changed;
 
 		public:
-			~IndexBuffer()
-			{
-				dispose();
-			}
-
 			inline static
 			Ptr
-			create(std::shared_ptr<render::AbstractContext> context)
+			create(AbsContextPtr context)
 			{
 				return std::shared_ptr<IndexBuffer>(new IndexBuffer(context));
 			}
 
 			inline static
 			Ptr
-			create(std::shared_ptr<render::AbstractContext> context,
-				   const std::vector<unsigned short>&		data)
+			create(AbsContextPtr						context,
+				   const std::vector<unsigned short>&	data)
 			{
-				return std::shared_ptr<IndexBuffer>(new IndexBuffer(context, data));
+				Ptr ptr = std::shared_ptr<IndexBuffer>(new IndexBuffer(context, data));
+
+				ptr->upload();
+
+				return ptr;
 			}
 
 			template <typename T>
 			inline static
 			Ptr
-			create(std::shared_ptr<render::AbstractContext> context, T* begin, T* end)
+			create(AbsContextPtr	context,
+				   T*				begin,
+				   T*				end)
 			{
-				return std::shared_ptr<IndexBuffer>(new IndexBuffer(context, begin, end));
+				Ptr ptr = std::shared_ptr<IndexBuffer>(new IndexBuffer(context, begin, end));
+
+				ptr->upload();
+
+				return ptr;
+			}
+
+			~IndexBuffer()
+			{
+				dispose();
 			}
 
 			inline
@@ -73,46 +92,73 @@ namespace minko
 			}
 
 			inline
+			unsigned int
+			numIndices() const
+			{
+				return _numIndices;
+			}
+
+			inline
 			void
 			upload()
 			{
-				upload(0, 0);
+				upload(0);
 			}
 
 			void
-			upload(uint offset, uint count = 0);
+			upload(uint offset, int count = -1);
 
 			void
 			dispose();
 
+            void
+            disposeData();
+
 			bool
-			equals(std::shared_ptr<IndexBuffer> indexBuffer)
+			equals(Ptr indexBuffer)
 			{
 				return _data == indexBuffer->_data;
 			}
+
+			inline
+			std::shared_ptr<Signal<Ptr>>
+			changed() const
+			{
+				return _changed;
+			}
+
 		protected:
-			IndexBuffer(std::shared_ptr<render::AbstractContext> context) :
-				AbstractResource(context)
+			inline
+			IndexBuffer(AbsContextPtr context) :
+				AbstractResource(context),
+				_data(),
+				_numIndices(0),
+				_changed(Signal<IndexBuffer::Ptr>::create())
 			{
 
 			}
 
-			IndexBuffer(std::shared_ptr<render::AbstractContext>	context,
-						const std::vector<unsigned short>&			data) :
+			inline
+			IndexBuffer(AbsContextPtr						context,
+						const std::vector<unsigned short>&	data) :
 				AbstractResource(context),
-				_data(data)
+				_data(data),
+				_numIndices(data.size()),
+				_changed(Signal<IndexBuffer::Ptr>::create())
 			{
-				upload();
+
 			}
 
 			template <typename T>
-			IndexBuffer(std::shared_ptr<render::AbstractContext>	context,
-						T*											begin,
-						T*											end) :
+			IndexBuffer(AbsContextPtr	context,
+						T*				begin,
+						T*				end) :
 				AbstractResource(context),
-				_data(begin, end)
+				_data(begin, end),
+				_numIndices(0),
+				_changed(Signal<Ptr>::create())
 			{
-				upload();
+
 			}
 		};
 	}

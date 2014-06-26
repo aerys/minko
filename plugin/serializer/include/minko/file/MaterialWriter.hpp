@@ -43,7 +43,7 @@ namespace minko
 			typedef std::shared_ptr<render::AbstractTexture>			TexturePtr;
 			typedef msgpack::type::tuple<uint, std::string>				TupleIntString;
 			typedef msgpack::type::tuple<std::string, TupleIntString>	ComplexPropertyTuple;
-			typedef msgpack::type::tuple<std::string, float>			BasicPropertyTuple;
+			typedef msgpack::type::tuple<std::string, std::string>		BasicPropertyTuple;
 
 		private:
 			static std::map<const std::type_info*, std::function<std::tuple<uint, std::string>(Any)>> _typeToWriteFunction;
@@ -59,14 +59,15 @@ namespace minko
 			std::string
 			embed(std::shared_ptr<AssetLibrary>		assetLibrary,
 				  std::shared_ptr<Options>			options,
-				  Dependency::Ptr					dependency);
+				  Dependency::Ptr					dependency,
+                  std::shared_ptr<WriterOptions>    writerOptions);
 
 		private:
 			MaterialWriter();
 
 			template <typename T>
 			typename std::enable_if<std::is_base_of<TexturePtr, T>::value, bool>::type
-			serializeMaterialValue(material::Material::Ptr										material, 
+			serializeMaterialValue(material::Material::Ptr										material,
 								   std::string&													propertyName,
 								   file::AssetLibrary::Ptr										assets,
 								   std::vector<ComplexPropertyTuple>							*complexSerializedProperties,
@@ -88,7 +89,7 @@ namespace minko
 
 			template <typename T>
 			typename std::enable_if<!std::is_arithmetic<T>::value && !std::is_base_of<std::shared_ptr<render::AbstractTexture>, T>::value, bool>::type
-			serializeMaterialValue(material::Material::Ptr										material, 
+			serializeMaterialValue(material::Material::Ptr										material,
 								   	std::string&												propertyName,
 								   	file::AssetLibrary::Ptr										assets,
 									std::vector<ComplexPropertyTuple>							*complexSerializedProperties,
@@ -106,13 +107,13 @@ namespace minko
 					complexSerializedProperties->push_back(serializedProperty);
 					return true;
 				}
-				
+
 				return false;
 			}
 
 			template <typename T>
 			typename std::enable_if<std::is_arithmetic<T>::value, bool>::type
-			serializeMaterialValue(material::Material::Ptr							material, 
+			serializeMaterialValue(material::Material::Ptr							material,
 								   std::string&										propertyName,
 								   file::AssetLibrary::Ptr							assets,
 								   std::vector<ComplexPropertyTuple>				*complexSerializedProperties,
@@ -121,14 +122,20 @@ namespace minko
 			{
 				if (material->propertyHasType<T>(propertyName))
 				{
+					std::vector<float> propertyValue;
+					
+					propertyValue.push_back(static_cast<float>(material->get<T>(propertyName)));
+
+					std::string serializePropertyValue = serialize::TypeSerializer::serializeVector<float>(propertyValue);
+
 					BasicPropertyTuple basicTypeSerializedProperty(
 							propertyName,
-							static_cast<float>(material->get<T>(propertyName)));
+							serializePropertyValue);
 						basicTypeSeriliazedProperties->push_back(basicTypeSerializedProperty);
 
 					return true;
 				}
-				
+
 				return false;
 			}
 		};

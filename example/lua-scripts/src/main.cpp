@@ -34,16 +34,17 @@ int main(int argc, char** argv)
 		->addComponent(sceneManager)
 		->addComponent(MouseManager::create(canvas->mouse()));
 
-	// init. lua
-	LuaContext::initialize(argc, argv, root, canvas);
-	root->addComponent(LuaScriptManager::create());
-
-	// setup assets
     auto loader = sceneManager->assets()->loader();
     loader->options()
         ->generateMipmaps(true)
 		->registerParser<file::PNGParser>("png")
         ->registerParser<file::LuaScriptParser>("lua");
+
+	// init. lua
+	LuaContext::initialize(argc, argv, root, canvas);
+	root->addComponent(LuaScriptManager::create());
+
+	// setup assets
     loader->queue("script/main.lua");
 
 	Signal<Canvas::Ptr, float, float>::Slot nextFrame;

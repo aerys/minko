@@ -286,7 +286,7 @@ OpenGLES2Context::present()
 	//
 	// force execution of GL commands in finite time
 	//glFlush();
-	
+
 	setRenderToBackBuffer();
 }
 
@@ -428,7 +428,7 @@ OpenGLES2Context::setVertexBufferAt(const uint	position,
 	else
 	{
 		glDisableVertexAttribArray(position);
-		
+
 		return;
 	}
 
@@ -475,7 +475,7 @@ OpenGLES2Context::uploaderIndexBufferData(const uint 	indexBuffer,
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
 
 	_currentIndexBuffer = indexBuffer;
-	
+
 	glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, offset * sizeof(GLushort), size * sizeof(GLushort), data);
 
 	checkForErrors();
@@ -527,8 +527,8 @@ OpenGLES2Context::createTexture(TextureType	type,
 	// texture Specifies the name of a texture.
 	//
 	// glBindTexture bind a named texture to a texturing target
-	const auto glTarget = type == TextureType::Texture2D 
-		? GL_TEXTURE_2D 
+	const auto glTarget = type == TextureType::Texture2D
+		? GL_TEXTURE_2D
 		: GL_TEXTURE_CUBE_MAP;
 
 	glBindTexture(glTarget, texture);
@@ -573,7 +573,7 @@ OpenGLES2Context::createTexture(TextureType	type,
 		uint level = 0;
 		uint h = height;
 		uint w = width;
-		
+
 		for (uint size = width > height ? width : height;
 			 size > 0;
 			 size = size >> 1, w = w >> 1, h = h >> 1)
@@ -637,7 +637,7 @@ OpenGLES2Context::uploadTexture2dData(uint 		texture,
 
 	glBindTexture(GL_TEXTURE_2D, texture);
 	glTexImage2D(GL_TEXTURE_2D, mipLevel, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-	
+
 	_currentBoundTexture = texture;
 
 	checkForErrors();
@@ -732,11 +732,11 @@ OpenGLES2Context::setTextureAt(uint	position,
 	if (position >= _currentTexture.size())
 		return;
 
-	const auto glTarget	= getTextureType(texture) == TextureType::Texture2D 
-		? GL_TEXTURE_2D 
+	const auto glTarget	= getTextureType(texture) == TextureType::Texture2D
+		? GL_TEXTURE_2D
 		: GL_TEXTURE_CUBE_MAP;
 
-	if (_currentTexture[position] != texture || 
+	if (_currentTexture[position] != texture ||
 		_currentBoundTexture != texture)
 	{
 		glActiveTexture(GL_TEXTURE0 + position);
@@ -753,15 +753,15 @@ OpenGLES2Context::setTextureAt(uint	position,
 }
 
 void
-OpenGLES2Context::setSamplerStateAt(uint			position, 
-									WrapMode		wrapping, 
-									TextureFilter	filtering, 
+OpenGLES2Context::setSamplerStateAt(uint			position,
+									WrapMode		wrapping,
+									TextureFilter	filtering,
 									MipFilter		mipFiltering)
 {
 	const auto	texture		= _currentTexture[position];
-	const auto	glTarget	= getTextureType(texture) == TextureType::Texture2D 
-		? GL_TEXTURE_2D 
-		: GL_TEXTURE_CUBE_MAP; 
+	const auto	glTarget	= getTextureType(texture) == TextureType::Texture2D
+		? GL_TEXTURE_2D
+		: GL_TEXTURE_CUBE_MAP;
 
 	auto active	= false;
 
@@ -788,7 +788,7 @@ OpenGLES2Context::setSamplerStateAt(uint			position,
 			break;
 		}
 	}
-	
+
 	if (_currentTextureFilter[texture] != filtering || _currentMipFilter[texture] != mipFiltering)
 	{
 		_currentTextureFilter[texture] = filtering;
@@ -843,7 +843,7 @@ const uint
 OpenGLES2Context::createProgram()
 {
 	auto handle = glCreateProgram();
-	
+
 	checkForErrors();
 	_programs.push_back(handle);
 
@@ -1442,16 +1442,16 @@ OpenGLES2Context::setColorMask(bool colorMask)
 }
 
 void
-OpenGLES2Context::setStencilTest(CompareMode stencilFunc, 
-								 int stencilRef, 
-								 uint stencilMask, 
+OpenGLES2Context::setStencilTest(CompareMode stencilFunc,
+								 int stencilRef,
+								 uint stencilMask,
 								 StencilOperation stencilFailOp,
 								 StencilOperation stencilZFailOp,
 								 StencilOperation stencilZPassOp)
 {
 #ifndef MINKO_NO_STENCIL
-	if (stencilFunc != _currentStencilFunc 
-		|| stencilRef != _currentStencilRef 
+	if (stencilFunc != _currentStencilFunc
+		|| stencilRef != _currentStencilRef
 		|| stencilMask != _currentStencilMask)
 	{
 		_currentStencilFunc	= stencilFunc;
@@ -1488,7 +1488,7 @@ OpenGLES2Context::readPixels(unsigned int x, unsigned int y, unsigned int width,
 }
 
 void
-OpenGLES2Context::setScissorTest(bool						scissorTest, 
+OpenGLES2Context::setScissorTest(bool						scissorTest,
 								 const render::ScissorBox&	scissorBox)
 {
 	if (scissorTest)
@@ -1602,8 +1602,8 @@ OpenGLES2Context::setRenderToTexture(uint texture, bool enableDepthAndStencil)
 
 void
 OpenGLES2Context::createRTTBuffers(TextureType	type,
-								   uint			texture, 
-								   unsigned int	width, 
+								   uint			texture,
+								   unsigned int	width,
 								   unsigned int	height)
 {
 	uint frameBuffer = -1;

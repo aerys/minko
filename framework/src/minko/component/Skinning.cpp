@@ -29,6 +29,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include <minko/component/Surface.hpp>
 #include <minko/component/SceneManager.hpp>
 #include <minko/component/Animation.hpp>
+#include <minko/component/Transform.hpp>
 
 using namespace minko;
 using namespace minko::data;
@@ -52,15 +53,20 @@ Skinning::Skinning(const Skin::Ptr						skin,
 				   SkinningMethod						method,
 				   AbstractContext::Ptr					context,
 				   const std::vector<Animation::Ptr>&	animations,
+				   Node::Ptr							skeletonRoot,
+				   bool									moveTargetBelowRoot,
 				   bool									isLooping):
 	MasterAnimation(animations, isLooping),
 	_skin(skin),
 	_context(context),
 	_method(method),
+	_skeletonRoot(skeletonRoot),
+	_moveTargetBelowRoot(moveTargetBelowRoot),
 	_boneVertexBuffer(nullptr),
 	_targetGeometry(),
 	_targetInputPositions(),
-	_targetInputNormals()
+	_targetInputNormals(),
+	_targetAddedSlot(nullptr)
 {
 }
 
@@ -90,7 +96,17 @@ Skinning::initialize()
 
 	_maxTime = _skin->duration();
 
-	setPlaybackWindow(0, _maxTime)->seek(0)->play();
+	setPlaybackWindow(0, _maxTime)->seek(0);
+
+	// FIXME: in certain circumstances (deserialization from minko studio)
+	// it may be necessary to move the target directly below the skeleton root
+	// for which the skinning matrices have been computed.
+	_targetAddedSlot = targetAdded()->connect(std::bind(
+		&Skinning::targetAddedHandler,
+		std::static_pointer_cast<Skinning>(shared_from_this()),
+		std::placeholders::_1,
+		std::placeholders::_2
+	));
 }
 
 void
@@ -335,4 +351,24 @@ Skinning::performSoftwareSkinning(VertexBuffer::AttributePtr		attr,
 	}
 
 	vertexBuffer->upload();
+}
+
+void
+Skinning::targetAddedHandler(component::AbstractComponent::Ptr, 
+							 Node::Ptr target)
+{
+	// FIXME: in certain circumstances (deserialization from minko studio)
+	// it may be necessary to move the target directly below the skeleton root
+	// for which the skinning matrices have been computed.
+
+	if (_skeletonRoot == nullptr || !_moveTargetBelowRoot)
+		return;
+
+	if (target->parent())
+		target->parent()->removeChild(target);
+
+	_skeletonRoot->addChild(target);
+
+	if (target->hasComponent<Transform>())
+		target->component<Transform>()->matrix()->identity();
 }

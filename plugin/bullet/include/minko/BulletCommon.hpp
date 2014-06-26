@@ -23,6 +23,29 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
+	namespace component
+	{
+		namespace bullet
+		{
+			class Collider;
+			class ColliderData;
+			class ColliderDebug;
+
+			class PhysicsWorld;
+
+			class AbstractPhysicsShape;
+			class BoxShape;
+			class ConeShape;
+			class CylinderShape;
+			class SphereShape;
+		}
+	}
+
+	namespace extension
+	{
+		class PhysicsExtension;
+	}
+
 	namespace lua
 	{
 		class BulletLuaBindingsCollection;

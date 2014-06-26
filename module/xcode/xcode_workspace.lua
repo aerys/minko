@@ -17,6 +17,9 @@ end
 function xcode.workspace_file_ref(prj)
 
 		local projpath = path.getrelative(prj.solution.location, prj.location)
+		if #prj.platforms == 0 then
+			return
+		end
 		if projpath == '.' then projpath = '' 
 		else projpath = projpath ..'/' 
 		end

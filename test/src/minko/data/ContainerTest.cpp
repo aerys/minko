@@ -204,9 +204,9 @@ TEST_F(ContainerTest, ArrayAdd)
 	c->addProvider(array2);
 	c->addProvider(array3);
 
-	ASSERT_EQ(array1->index(), 0);
-	ASSERT_EQ(array2->index(), 1);
-	ASSERT_EQ(array3->index(), 2);
+	ASSERT_TRUE(c->hasProvider(array1));
+	ASSERT_TRUE(c->hasProvider(array2));
+	ASSERT_TRUE(c->hasProvider(array3));
 }
 
 TEST_F(ContainerTest, ArrayRemove)
@@ -222,11 +222,12 @@ TEST_F(ContainerTest, ArrayRemove)
 
 	c->removeProvider(array2);
 
-	ASSERT_EQ(array1->index(), 0);
-	ASSERT_EQ(array3->index(), 1);
+	ASSERT_TRUE(c->hasProvider(array1));
+	ASSERT_FALSE(c->hasProvider(array2));
+	ASSERT_TRUE(c->hasProvider(array3));
 }
 
-TEST_F(ContainerTest, ArrayRemoveFront)
+TEST_F(ContainerTest, ArrayRemoveAdd)
 {
 	auto array1 = ArrayProvider::create("array");
 	auto array2 = ArrayProvider::create("array");
@@ -238,24 +239,11 @@ TEST_F(ContainerTest, ArrayRemoveFront)
 	c->addProvider(array3);
 
 	c->removeProvider(array1);
-
-	ASSERT_EQ(array3->index(), 0);
-	ASSERT_EQ(array2->index(), 1);
-}
-
-TEST_F(ContainerTest, ArrayRemoveBack)
-{
-	auto array1 = ArrayProvider::create("array");
-	auto array2 = ArrayProvider::create("array");
-	auto array3 = ArrayProvider::create("array");
-	auto c = Container::create();
-
-	c->addProvider(array1);
-	c->addProvider(array2);
-	c->addProvider(array3);
-
 	c->removeProvider(array3);
 
-	ASSERT_EQ(array1->index(), 0);
-	ASSERT_EQ(array2->index(), 1);
+	c->addProvider(array1);
+
+	ASSERT_TRUE(c->hasProvider(array1));
+	ASSERT_TRUE(c->hasProvider(array2));
+	ASSERT_FALSE(c->hasProvider(array3));
 }

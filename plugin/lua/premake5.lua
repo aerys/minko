@@ -5,7 +5,7 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 	language "C++"
 	files { "src/**.hpp", "src/**.cpp", "include/**.hpp" }
 	includedirs { "src", "include" }
-	
+
 	-- luaglue
 	includedirs { "lib/LuaGlue/include" }
 	files { "lib/LuaGlue/include/**.h" }
@@ -13,7 +13,9 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 	-- lua
 	files { "lib/lua/src/**.c", "lib/lua/include/**.h" }
 	includedirs { "lib/lua/include" }
-	excludes { "lib/lua/src/luac.c" }
+	excludes { "lib/lua/src/luac.c", "lib/lua/src/lua.c" }
+
+	defines { "LUA_COMPAT_ALL" } -- allow loading of older modules (LuaSocket, for debugging)
 
 	configuration { "debug" }
 		defines { "LUA_USE_APICHECK" }
