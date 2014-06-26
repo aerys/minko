@@ -40,7 +40,7 @@ Transform::Transform() :
 }
 
 AbstractComponent::Ptr
-Transform::clone()
+Transform::clone(const CloneOption& option)
 {
 	return Transform::create(this->matrix());
 }
@@ -112,7 +112,7 @@ Transform::targetRemovedHandler(AbstractComponent::Ptr ctrl,
 }
 
 AbstractComponent::Ptr
-Transform::RootTransform::clone()
+Transform::RootTransform::clone(const CloneOption& option)
 {
 	Transform::RootTransform::Ptr origin = std::static_pointer_cast<Transform::RootTransform>(shared_from_this());
 	return Transform::RootTransform::create();

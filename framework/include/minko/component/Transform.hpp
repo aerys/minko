@@ -79,7 +79,7 @@ namespace minko
 			~Transform() = default;
 			
 			AbstractComponent::Ptr
-			clone();
+			clone(const CloneOption& option);
 
 			inline
 			std::shared_ptr<math::Matrix4x4>
@@ -202,7 +202,7 @@ namespace minko
 				}
 
 				AbstractComponent::Ptr
-				clone();
+				clone(const CloneOption& option);
 
 				void
 				forceUpdate(NodePtr node, bool updateTransformLists = false);
