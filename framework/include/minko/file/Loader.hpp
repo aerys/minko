@@ -52,9 +52,7 @@ namespace minko
 
             std::shared_ptr<Signal<Ptr, float>>                 _progress;
             std::shared_ptr<Signal<Ptr>>                        _complete;
-
-            std::shared_ptr<Signal<Ptr>>                        _protocolError;
-            std::shared_ptr<Signal<Ptr, const ParserError&>>    _parserError;
+            std::shared_ptr<Signal<Ptr, const ParserError&>>    _error;
 
 			ProtocolSlots                                       _protocolSlots;
 			ProtocolProgressSlots                               _protocolProgressSlots;
@@ -123,17 +121,10 @@ namespace minko
             }
 
             inline
-            std::shared_ptr<Signal<Ptr>>
-            protocolError()
-            {
-                return _protocolError;
-            }
-
-            inline
             std::shared_ptr<Signal<Ptr, const ParserError&>>
-            parserError()
+            error()
             {
-                return _parserError;
+                return _error;
             }
 
             inline

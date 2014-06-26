@@ -38,6 +38,5 @@ LuaLoader::bind(LuaGlue& state)
         .method("load",             &Loader::load)
         .property("complete",       &Loader::complete)
         .property("progress",       &Loader::progress)
-        .property("protocolError",  &Loader::protocolError)
-        .property("parserError",    &Loader::parserError);
+        .property("error",          &Loader::error);
 }

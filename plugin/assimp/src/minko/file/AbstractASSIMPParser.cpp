@@ -663,7 +663,7 @@ AbstractASSIMPParser::loadTexture(const std::string&	textureFilename,
         scene
 	));
 
-    _loaderErrorSlots[loader] = loader->protocolError()->connect([=](Loader::Ptr loader)
+    _loaderErrorSlots[loader] = loader->error()->connect([=](Loader::Ptr loader, const ParserError& error)
 	{
 		++_numLoadedDependencies;
 #ifdef DEBUG
