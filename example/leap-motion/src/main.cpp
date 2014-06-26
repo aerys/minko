@@ -14,9 +14,9 @@ using namespace minko::scene;
 using namespace minko::material;
 using namespace minko::component;
 
-static const std::string	SCENE_NAME		= "model/crossCubes.scene";
+static const std::string	SCENE_NAME		= "model/cubes.scene";
 static const std::string	DEFAULT_EFFECT	= "effect/Basic.effect";
-static const std::string	HANGAR_TEXTURE	= "texture/hangar.png";
+static const std::string	HANGAR_TEXTURE	= "texture/studio24.png";
 
 void
 explodeModel(float magnitude, float previousMagnitude, Node::Ptr);
