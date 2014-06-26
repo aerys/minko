@@ -352,6 +352,7 @@ OculusVRCamera::setSceneManager(SceneManager::Ptr sceneManager)
 	));
 
 	_root = scene::Node::create("oculusvr");
+	_root->addComponent(Transform::create());
 	_root->addChild(leftEye)->addChild(rightEye);
 
 	targets().front()->addChild(_root);

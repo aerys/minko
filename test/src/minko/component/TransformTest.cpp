@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/MinkoTests.hpp"
 
 using namespace minko;
+using namespace minko::math;
 using namespace minko::component;
 using namespace minko::scene;
 
@@ -181,4 +182,127 @@ TEST_F(TransformTest, ModelToWorldMultipleUpdatesMultipleFrames)
 
 	ASSERT_TRUE(updated1);
 	ASSERT_TRUE(updated2);
+}
+
+TEST_F(TransformTest, NodeHierarchyTransformIssueWithBlockingNode)
+{
+	auto sceneManager = SceneManager::create(MinkoTests::context());
+
+	auto root = scene::Node::create("root")
+		->addComponent(sceneManager);
+
+	auto n1 = Node::create("b");
+	auto n2 = Node::create("j");
+	auto n3 = Node::create("r");
+	auto n4 = Node::create("g");
+	auto p3 = Node::create("z");
+	auto p2 = Node::create("t");
+	p2->addComponent(Transform::create());
+	auto p1 = Node::create("f");
+	//p1->addComponent(Transform::create());
+	
+
+	auto n5 = Node::create("cb");
+	n5->addComponent(Transform::create());
+
+	n1->addComponent(Transform::create(Matrix4x4::create()->appendTranslation(-4, 0, 0)));
+
+	n2->addComponent(Transform::create(Matrix4x4::create()->appendTranslation(-5, 0, 0)));
+
+	n3->addComponent(Transform::create(Matrix4x4::create()->appendTranslation(4, 0, 0)));
+
+	n4->addComponent(Transform::create(Matrix4x4::create()->appendTranslation(5, 0, 0)));
+
+
+	root->addChild(p2);
+		p2->addChild(p1);
+			p1->addChild(n3);
+			p1->addChild(n4);
+		p2->addChild(n5);
+
+	root->addChild(p3);
+		p3->addChild(n1);
+		p3->addChild(n2);
+
+	sceneManager->nextFrame(0.0f, 0.0f);
+
+	n1->component<Transform>()->matrix()->prependTranslation(0, -1, 0);
+	p2->component<Transform>()->matrix()->prependTranslation(0, 1, 0);
+
+	sceneManager->nextFrame(0.0f, 0.0f);
+
+	ASSERT_TRUE(n1->component<Transform>()->matrix()->transform(Vector3::create())->equals(Vector3::create(-4, -1, 0)));
+	ASSERT_TRUE(n2->component<Transform>()->matrix()->transform(Vector3::create())->equals(Vector3::create(-5, 0, 0)));
+	ASSERT_TRUE(n3->component<Transform>()->modelToWorld(Vector3::create())->equals(Vector3::create(4, 1, 0)));
+	ASSERT_TRUE(n4->component<Transform>()->modelToWorld(Vector3::create())->equals(Vector3::create(5, 1, 0)));
+}
+
+TEST_F(TransformTest, NodeHierarchyTransformIssueWithoutBlockingNode)
+{
+	auto sceneManager = SceneManager::create(MinkoTests::context());
+
+	auto root = scene::Node::create("root")
+		->addComponent(sceneManager);
+
+	auto n1 = Node::create("b");
+	auto n2 = Node::create("j");
+	auto n3 = Node::create("r");
+	auto n4 = Node::create("g");
+	auto p3 = Node::create("z");
+	auto p2 = Node::create("t");
+	auto p1 = Node::create("f");
+	p2->addComponent(Transform::create());
+
+	auto n5 = Node::create("cb");
+	n5->addComponent(Transform::create());
+
+	n1
+		->addComponent(Transform::create(
+		Matrix4x4::create()
+		->appendScale(1.f)
+		->appendTranslation(-4, 0, 0)
+		));
+
+	n2
+		->addComponent(Transform::create(
+		Matrix4x4::create()
+		->appendScale(1.f)
+		->appendTranslation(-5, 0, 0)
+		));
+
+	n3
+		->addComponent(Transform::create(
+		Matrix4x4::create()
+		->appendScale(5.f)
+		->appendTranslation(4, 0, 0)
+		));
+	n4
+		->addComponent(Transform::create(
+		Matrix4x4::create()
+		->appendScale(10.f)
+		->appendTranslation(5, 0, 0)
+		));
+
+
+	root->addChild(p2);
+		p2->addChild(p1);
+			p1->addChild(n3);
+			p1->addChild(n4);
+		//p2->addChild(n5);
+
+	root->addChild(p3);
+		p3->addChild(n1);
+		p3->addChild(n2);
+
+	sceneManager->nextFrame(0.0f, 0.0f);
+
+	n1->component<Transform>()->matrix()->prependTranslation(0, -1, 0);
+	p2->component<Transform>()->matrix()->prependTranslation(0, 1, 0);
+
+	sceneManager->nextFrame(0.0f, 0.0f);
+
+	ASSERT_TRUE(n1->component<Transform>()->matrix()->transform(Vector3::create())->equals(Vector3::create(-4, -1, 0)));
+	ASSERT_TRUE(n2->component<Transform>()->matrix()->transform(Vector3::create())->equals(Vector3::create(-5, 0, 0)));
+	ASSERT_TRUE(n3->component<Transform>()->modelToWorld(Vector3::create())->equals(Vector3::create(4, 1, 0)));
+	ASSERT_TRUE(n4->component<Transform>()->modelToWorld(Vector3::create())->equals(Vector3::create(5, 1, 0)));
 }
