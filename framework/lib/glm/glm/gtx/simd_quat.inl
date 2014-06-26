@@ -194,7 +194,7 @@ GLM_FUNC_QUALIFIER fvec4SIMD operator* (fquatSIMD const & q, fvec4SIMD const & v
 
 GLM_FUNC_QUALIFIER fvec4SIMD operator* (fvec4SIMD const & v, fquatSIMD const & q)
 {
-	return inverse(q) * v;
+	return glm::inverse(q) * v;
 }
 
 GLM_FUNC_QUALIFIER fquatSIMD operator* (fquatSIMD const & q, float s)

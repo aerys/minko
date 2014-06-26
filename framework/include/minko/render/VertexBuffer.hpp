@@ -174,6 +174,9 @@ namespace minko
 			const math::vec3&
 			maxPosition();
 
+			math::vec3
+			centerPosition();
+
 		protected:
 			VertexBuffer(std::shared_ptr<render::AbstractContext> context);
 

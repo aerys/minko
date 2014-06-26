@@ -30,7 +30,6 @@ namespace minko
 	{
 		class IndexBuffer :
 			public AbstractResource,
-			public Convertible<IndexBuffer>,
 			public std::enable_shared_from_this<IndexBuffer>
 		{
 		public:

@@ -51,6 +51,7 @@
 #include "../vec2.hpp"
 #include "../vec3.hpp"
 #include "../vec4.hpp"
+#include "../gtc/constants.hpp"
 
 #if(defined(GLM_MESSAGES) && !defined(GLM_EXT_INCLUDED))
 #	pragma message("GLM: GLM_GTC_matrix_transform extension included")
@@ -164,8 +165,8 @@ namespace glm
 	/// @param far 
 	/// @tparam T Value type used to build the matrix. Currently supported: half (not recommanded), float or double.
 	/// @see gtc_matrix_transform
-	template <typename T, precision P>
-	GLM_FUNC_DECL detail::tmat4x4<T, P> frustum(
+	template <typename T>
+	GLM_FUNC_DECL detail::tmat4x4<T, defaultp> frustum(
 		T const & left,
 		T const & right,
 		T const & bottom,
@@ -181,8 +182,8 @@ namespace glm
 	/// @param far 
 	/// @tparam T Value type used to build the matrix. Currently supported: half (not recommanded), float or double.
 	/// @see gtc_matrix_transform
-	template <typename T, precision P>
-	GLM_FUNC_DECL detail::tmat4x4<T, P> perspective(
+	template <typename T>
+	GLM_FUNC_DECL detail::tmat4x4<T, defaultp> perspective(
 		T const & fovy,
 		T const & aspect,
 		T const & near,
@@ -197,8 +198,8 @@ namespace glm
 	/// @param far 
 	/// @tparam T Value type used to build the matrix. Currently supported: half (not recommanded), float or double.
 	/// @see gtc_matrix_transform
-	template <typename T, precision P>
-	GLM_FUNC_DECL detail::tmat4x4<T, P> perspectiveFov(
+	template <typename T>
+	GLM_FUNC_DECL detail::tmat4x4<T, defaultp> perspectiveFov(
 		T const & fov,
 		T const & width,
 		T const & height,
@@ -212,8 +213,8 @@ namespace glm
 	/// @param near 
 	/// @tparam T Value type used to build the matrix. Currently supported: half (not recommanded), float or double.
 	/// @see gtc_matrix_transform
-	template <typename T, precision P>
-	GLM_FUNC_DECL detail::tmat4x4<T, P> infinitePerspective(
+	template <typename T>
+	GLM_FUNC_DECL detail::tmat4x4<T, defaultp> infinitePerspective(
 		T fovy, T aspect, T near);
 
 	/// Creates a matrix for a symmetric perspective-view frustum with far plane at infinite for graphics hardware that doesn't support depth clamping.
@@ -223,9 +224,20 @@ namespace glm
 	/// @param near 
 	/// @tparam T Value type used to build the matrix. Currently supported: half (not recommanded), float or double.
 	/// @see gtc_matrix_transform
-	template <typename T, precision P>
-	GLM_FUNC_DECL detail::tmat4x4<T, P> tweakedInfinitePerspective(
+	template <typename T>
+	GLM_FUNC_DECL detail::tmat4x4<T, defaultp> tweakedInfinitePerspective(
 		T fovy, T aspect, T near);
+
+	/// Creates a matrix for a symmetric perspective-view frustum with far plane at infinite for graphics hardware that doesn't support depth clamping.
+	/// 
+	/// @param fovy Expressed in radians if GLM_FORCE_RADIANS is define or degrees otherwise.
+	/// @param aspect 
+	/// @param near 
+	/// @tparam T Value type used to build the matrix. Currently supported: half (not recommanded), float or double.
+	/// @see gtc_matrix_transform
+	template <typename T>
+	GLM_FUNC_DECL detail::tmat4x4<T, defaultp> tweakedInfinitePerspective(
+		T fovy, T aspect, T near, T ep);
 
 	/// Map the specified object coordinates (obj.x, obj.y, obj.z) into window coordinates.
 	/// 

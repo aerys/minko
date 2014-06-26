@@ -27,13 +27,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/AssetLibrary.hpp"
 #include "minko/render/AbstractContext.hpp"
 #include "minko/input/Mouse.hpp"
-#include "minko/math/Matrix4x4.hpp"
 #include "minko/component/Surface.hpp"
-#include "minko/math/Vector4.hpp"
-
 #include "minko/material/BasicMaterial.hpp"
 #include "minko/component/Transform.hpp"
-
 #include "minko/data/StructureProvider.hpp"
 #include "minko/AbstractCanvas.hpp"
 
@@ -48,7 +44,7 @@ Picking::Picking(SceneManagerPtr	sceneManager,
 	_camera(camera),
 	_pickingId(0),
 	_context(sceneManager->assets()->context()),
-	_pickingProjection(math::Matrix4x4::create()),
+	_pickingProjection(1.f),
 	_sceneManager(sceneManager),
 	_pickingProvider(data::StructureProvider::create("picking")),
 	_mouseMove(Signal<NodePtr>::create()),
@@ -277,12 +273,12 @@ Picking::addSurface(SurfacePtr surface)
 		_pickingIdToSurface[_pickingId] = surface;
 		_surfaceToProvider[surface] = data::StructureProvider::create("picking");
 
-		_surfaceToProvider[surface]->set<math::Vector4::Ptr>("color", math::Vector4::create(
+		_surfaceToProvider[surface]->set("color", math::vec4(
 			((_pickingId >> 16) & 0xff) / 255.f,
 			((_pickingId >> 8) & 0xff) / 255.f,
 			((_pickingId)& 0xff) / 255.f,
 			1
-			));
+		));
 
 		surface->targets()[0]->data()->addProvider(_surfaceToProvider[surface]);
 	}
@@ -313,14 +309,17 @@ Picking::renderingBegin(RendererPtr renderer)
 	float mouseY = (float)_mouse->y();
 	
 	auto perspectiveCamera	= _camera->component<component::PerspectiveCamera>();
-	auto projection			= math::Matrix4x4::create()->perspective(perspectiveCamera->fieldOfView(), perspectiveCamera->aspectRatio(), perspectiveCamera->zNear(), perspectiveCamera->zFar());
+	auto projection			= math::perspective(
+		perspectiveCamera->fieldOfView(),
+		perspectiveCamera->aspectRatio(),
+		perspectiveCamera->zNear(),
+		perspectiveCamera->zFar()
+	);
 
-	std::vector<float> pickingProjectionData(projection->data());
-	
-	pickingProjectionData[2] = mouseX / _context->viewportWidth() * 2.f;
-	pickingProjectionData[6] = (_context->viewportHeight() - mouseY) / _context->viewportHeight() * 2.f;
+	projection[2][0] = mouseX / _context->viewportWidth() * 2.f;
+	projection[1][3] = (_context->viewportHeight() - mouseY) / _context->viewportHeight() * 2.f;
 
-	_pickingProjection->initialize(pickingProjectionData);
+	_pickingProvider->set("projection", projection);
 }
 
 void

@@ -54,7 +54,7 @@ BasicMaterial::uvScale(const math::vec2& value)
 }
 
 const math::vec2&
-BasicMaterial::uvScale()
+BasicMaterial::uvScale() const
 {
     return get<math::vec2>("uvScale");
 }
@@ -68,7 +68,7 @@ BasicMaterial::uvOffset(const math::vec2& value)
 }
 
 const math::vec2&
-BasicMaterial::uvOffset()
+BasicMaterial::uvOffset() const
 {
     return get<math::vec2>("uvOffset");
 }

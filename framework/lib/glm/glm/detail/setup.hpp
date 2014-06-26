@@ -38,7 +38,7 @@
 #define GLM_VERSION_MAJOR			0
 #define GLM_VERSION_MINOR			9
 #define GLM_VERSION_PATCH			5
-#define GLM_VERSION_REVISION		3
+#define GLM_VERSION_REVISION		4
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Platform
@@ -552,23 +552,26 @@
 
 #define GLM_ARCH_PURE		0x0000
 #define GLM_ARCH_SSE2		0x0001
-#define GLM_ARCH_SSE3		0x0002// | GLM_ARCH_SSE2
-#define GLM_ARCH_AVX		0x0008// | GLM_ARCH_SSE3 | GLM_ARCH_SSE2
-#define GLM_ARCH_AVX2		0x0010// | GLM_ARCH_AVX | GLM_ARCH_SSE3 | GLM_ARCH_SSE2
+#define GLM_ARCH_SSE3		0x0002
+#define GLM_ARCH_SSE4		0x0004
+#define GLM_ARCH_AVX		0x0008
+#define GLM_ARCH_AVX2		0x0010
 
 #if(defined(GLM_FORCE_PURE))
 #	define GLM_ARCH GLM_ARCH_PURE
 #elif(defined(GLM_FORCE_AVX2))
-#	define GLM_ARCH (GLM_ARCH_AVX2 | GLM_ARCH_AVX | GLM_ARCH_SSE3 | GLM_ARCH_SSE2)
+#	define GLM_ARCH (GLM_ARCH_AVX2 | GLM_ARCH_AVX | GLM_ARCH_SSE4 | GLM_ARCH_SSE3 | GLM_ARCH_SSE2)
 #elif(defined(GLM_FORCE_AVX))
-#	define GLM_ARCH (GLM_ARCH_AVX | GLM_ARCH_SSE3 | GLM_ARCH_SSE2)
+#	define GLM_ARCH (GLM_ARCH_AVX | GLM_ARCH_SSE4 | GLM_ARCH_SSE3 | GLM_ARCH_SSE2)
+#elif(defined(GLM_FORCE_SSE4))
+#	define GLM_ARCH (GLM_ARCH_SSE4 | GLM_ARCH_SSE3 | GLM_ARCH_SSE2)
 #elif(defined(GLM_FORCE_SSE3))
 #	define GLM_ARCH (GLM_ARCH_SSE3 | GLM_ARCH_SSE2)
 #elif(defined(GLM_FORCE_SSE2))
 #	define GLM_ARCH (GLM_ARCH_SSE2)
 #elif(GLM_COMPILER & GLM_COMPILER_VC)
 #	if _M_IX86_FP == 2 && defined(__AVX__)
-#		define GLM_ARCH (GLM_ARCH_AVX | GLM_ARCH_SSE3 | GLM_ARCH_SSE2)
+#		define GLM_ARCH (GLM_ARCH_AVX | GLM_ARCH_SSE4 | GLM_ARCH_SSE3 | GLM_ARCH_SSE2)
 #	elif _M_IX86_FP == 2
 #		define GLM_ARCH (GLM_ARCH_SSE2)
 #	else
@@ -576,11 +579,13 @@
 #	endif
 #elif((GLM_PLATFORM & GLM_PLATFORM_APPLE) && (GLM_COMPILER & GLM_COMPILER_GCC))
 #	define GLM_ARCH GLM_ARCH_PURE
-#elif(((GLM_COMPILER & GLM_COMPILER_GCC) && (defined(__i386__) || defined(__x86_64__))) || (GLM_COMPILER & GLM_COMPILER_LLVM_GCC))
+#elif(((GLM_COMPILER & GLM_COMPILER_GCC) && (defined(__i386__) || defined(__x86_64__))) || (GLM_COMPILER & GLM_COMPILER_LLVM_GCC) || (GLM_COMPILER & GLM_COMPILER_CLANG))
 #	if defined(__AVX2__) 
-#		define GLM_ARCH (GLM_ARCH_AVX2 | GLM_ARCH_AVX | GLM_ARCH_SSE3 | GLM_ARCH_SSE2)
+#		define GLM_ARCH (GLM_ARCH_AVX2 | GLM_ARCH_AVX | GLM_ARCH_SSE4 | GLM_ARCH_SSE3 | GLM_ARCH_SSE2)
 #	elif defined(__AVX__)
-#		define GLM_ARCH (GLM_ARCH_AVX | GLM_ARCH_SSE3 | GLM_ARCH_SSE2)
+#		define GLM_ARCH (GLM_ARCH_AVX | GLM_ARCH_SSE4 | GLM_ARCH_SSE3 | GLM_ARCH_SSE2)
+#	elif defined(__SSE4_1__ )
+#		define GLM_ARCH (GLM_ARCH_SSE4 | GLM_ARCH_SSE3 | GLM_ARCH_SSE2)
 #	elif defined(__SSE3__)
 #		define GLM_ARCH (GLM_ARCH_SSE3 | GLM_ARCH_SSE2)
 #	elif defined(__SSE2__)

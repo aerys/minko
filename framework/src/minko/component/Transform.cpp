@@ -238,6 +238,7 @@ void
 Transform::RootTransform::updateTransformsList()
 {
 	_transforms.clear();
+	_matrix.clear();
 	_modelToWorld.clear();
 	_nodeToId.clear();
 	_idToNode.clear();
@@ -254,6 +255,7 @@ Transform::RootTransform::updateTransformsList()
 	juxtaposeSiblings(nodesWithTransform); // make sure siblings are at contiguous positions in the vector
 
 	_transforms.resize(nodesWithTransform.size());
+	_matrix.resize(nodesWithTransform.size());
 	_modelToWorld.resize(nodesWithTransform.size());
 	_idToNode.resize(nodesWithTransform.size());
 	_parentId.resize(nodesWithTransform.size(), -1);
@@ -262,17 +264,18 @@ Transform::RootTransform::updateTransformsList()
 
 	for (uint nodeId = 0; nodeId < nodesWithTransform.size(); ++nodeId)
 	{
-		auto	node		= nodesWithTransform[nodeId];
-		auto	transform	= node->component<Transform>();
-		auto	ancestor	= node->parent();
+		auto node		= nodesWithTransform[nodeId];
+		auto transform	= node->component<Transform>();
+		auto ancestor	= node->parent();
 
 		while (ancestor != nullptr && _nodeToId.count(ancestor) == 0)
 			ancestor = ancestor->parent();
 
 		_nodeToId[node]			= nodeId;
 
-		_transforms[nodeId]		= transform->_matrix;
-		_modelToWorld[nodeId]	= transform->_modelToWorld;
+		_transforms[nodeId]		= transform;
+		_matrix[nodeId]			= &transform->_matrix;
+		_modelToWorld[nodeId]	= &transform->_modelToWorld;
 		_idToNode[nodeId]		= node;
 		_dirty[nodeId]			= true;
 		
@@ -323,41 +326,32 @@ Transform::RootTransform::juxtaposeSiblings(std::vector<NodePtr>& nodes)
 void
 Transform::RootTransform::updateTransforms()
 {
-	unsigned int numNodes 	= _transforms.size();
-	unsigned int nodeId 	= 0;
-
-	while (nodeId < numNodes)
+	// update the root node if it's dirty
+	if (_dirty[0])
 	{
-		auto numChildren 				= _numChildren[nodeId];
-		auto firstChildId 				= _firstChildId[nodeId];
-		auto lastChildId 				= firstChildId + numChildren;
-		auto parentId 					= _parentId[nodeId];
-		auto parentDirty				= _dirty[nodeId];
-		auto parentModelToWorldMatrix 	= _modelToWorld[nodeId];
+		*_modelToWorld[0] = *_matrix[0];
+		_transforms[0]->_data->set("modelToWorldMatrix", *_matrix[0]);		
+	}
 
-		if (parentDirty && parentId == -1)
+	// update all other nodes
+	for (unsigned int nodeId = 1; nodeId < _transforms.size(); ++nodeId)
+	{
+		if (_dirty[nodeId])
 		{
-			auto transform = _transforms[nodeId];
+			auto modelToWorldMatrix = _modelToWorld[nodeId];
 
-			*parentModelToWorldMatrix = transform->_matrix;
-        	transform->_data->set("modelToWorldMatrix", *parentModelToWorldMatrix);
-        }
+			*modelToWorldMatrix = *modelToWorldMatrix * *_matrix[nodeId];
+        	_transforms[nodeId]->_data->set("modelToWorldMatrix", *modelToWorldMatrix);
 
-		for (auto childId = firstChildId; childId < lastChildId; ++childId)
-		{
-			auto transform = _transforms[childId];
-			auto modelToWorldMatrix = _modelToWorld[childId];
+			auto numChildren 		= _numChildren[nodeId];
+			auto firstChildId 		= _firstChildId[nodeId];
+			auto lastChildId 		= firstChildId + numChildren;
 
-			if (parentDirty || _dirty[childId])
-			{
-				*modelToWorldMatrix = *parentModelToWorldMatrix * transform->_matrix;
-				transform->_data->set("modelToWorldMatrix", *modelToWorldMatrix);
+			for (auto childId = firstChildId; childId < lastChildId; ++childId)
 				_dirty[childId] = true;
-			}
-		}
 
-       	_dirty[nodeId] = false;
-		++nodeId;
+	       	_dirty[nodeId] = false;
+		}
 	}
 }
 

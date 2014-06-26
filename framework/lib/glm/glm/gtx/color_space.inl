@@ -106,16 +106,16 @@ namespace glm
 		return hsv;
 	}
 
-	template <typename T, precision P>
-	GLM_FUNC_QUALIFIER detail::tmat4x4<T, P> saturation(const T s)
+	template <typename T>
+	GLM_FUNC_QUALIFIER detail::tmat4x4<T, defaultp> saturation(T const s)
 	{
-		detail::tvec3<T, P> rgbw = detail::tvec3<T, P>(T(0.2126), T(0.7152), T(0.0722));
+		detail::tvec3<T, defaultp> rgbw = detail::tvec3<T, defaultp>(T(0.2126), T(0.7152), T(0.0722));
 
 		T col0 = (T(1) - s) * rgbw.r;
 		T col1 = (T(1) - s) * rgbw.g;
 		T col2 = (T(1) - s) * rgbw.b;
 
-		detail::tmat4x4<T, P> result(T(1));
+		detail::tmat4x4<T, defaultp> result(T(1));
 		result[0][0] = col0 + s;
 		result[0][1] = col0;
 		result[0][2] = col0;

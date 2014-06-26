@@ -177,6 +177,7 @@ namespace minko
 
 			private:
 				std::vector<TransformPtr>		_transforms;
+				std::vector<math::mat4*>		_matrix;
 				std::vector<math::mat4*>		_modelToWorld;
 
 				std::map<NodePtr, unsigned int>	_nodeToId;

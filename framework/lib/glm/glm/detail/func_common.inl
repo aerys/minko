@@ -716,7 +716,7 @@ namespace detail
 #		if(GLM_COMPILER & (GLM_COMPILER_VC | GLM_COMPILER_INTEL))
 			return _isnan(x) != 0;
 #		elif(GLM_COMPILER & (GLM_COMPILER_GCC | GLM_COMPILER_CLANG))
-#			if(GLM_PLATFORM & GLM_PLATFORM_ANDROID)
+#			if(GLM_PLATFORM & GLM_PLATFORM_ANDROID && __cplusplus < 201103L)
 				return _isnan(x) != 0;
 #			else
 				return std::isnan(x);
@@ -787,7 +787,7 @@ namespace detail
 #		if(GLM_COMPILER & (GLM_COMPILER_INTEL | GLM_COMPILER_VC))
 			return _fpclass(x) == _FPCLASS_NINF || _fpclass(x) == _FPCLASS_PINF;
 #		elif(GLM_COMPILER & (GLM_COMPILER_GCC | GLM_COMPILER_CLANG))
-#			if(GLM_PLATFORM & GLM_PLATFORM_ANDROID)
+#			if(GLM_PLATFORM & GLM_PLATFORM_ANDROID && __cplusplus < 201103L)
 				return _isinf(x) != 0;
 #			else
 				return std::isinf(x);

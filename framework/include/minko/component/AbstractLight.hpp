@@ -53,6 +53,7 @@ namespace minko
 				return _color;
 			}
 
+			AbstractLight::Ptr
 			color(const math::vec3&);
 
 			Layouts

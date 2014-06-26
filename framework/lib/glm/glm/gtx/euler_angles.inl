@@ -70,10 +70,10 @@ namespace glm
 		T sinY = glm::sin(angleY);
 
 		return detail::tmat4x4<T, defaultp>(
-			cosY,	-sinX * sinY,	cosX * sinY,	T(0),
-			T(0),	cosX,			sinX,			T(0),
-			-sinY,	-sinX * cosY,	cosX * cosY,	T(0),
-			T(0),	T(0),			T(0),			T(1));
+			cosY,   -sinX * -sinY,  cosX * -sinY,   T(0),
+			T(0),   cosX,           sinX,           T(0),
+			sinY,   -sinX * cosY,   cosX * cosY,    T(0),
+			T(0),   T(0),           T(0),           T(1));
 	}
 
 	template <typename T>
@@ -89,10 +89,10 @@ namespace glm
 		T sinY = glm::sin(angleY);
 
 		return detail::tmat4x4<T, defaultp>(
-			cosY,			T(0),		sinY,			T(0),
-			-sinX * sinY,	cosX,		sinX * cosY,	T(0),
-			-cosX * sinY,	-sinX,		cosX * cosY,	T(0),
-			T(0),			T(0),		T(0),			T(1));
+			cosY,          0,      -sinY,    T(0),
+			sinY * sinX,  cosX, cosY * sinX, T(0),
+			sinY * cosX, -sinX, cosY * cosX, T(0),
+			T(0),         T(0),     T(0),    T(1));
 	}
 
 	template <typename T>
@@ -113,6 +113,26 @@ namespace glm
 	)
 	{
 		return eulerAngleZ(angleZ) * eulerAngleX(angleX);
+	}
+
+	template <typename T>
+	GLM_FUNC_QUALIFIER detail::tmat4x4<T, defaultp> eulerAngleYZ
+	(
+		T const & angleY,
+		T const & angleZ
+	)
+	{
+		return eulerAngleY(angleY) * eulerAngleZ(angleZ);
+	}
+
+	template <typename T>
+	GLM_FUNC_QUALIFIER detail::tmat4x4<T, defaultp> eulerAngleZY
+	(
+		T const & angleZ,
+		T const & angleY
+	)
+	{
+		return eulerAngleZ(angleZ) * eulerAngleY(angleY);
 	}
 
 	template <typename T>
@@ -230,7 +250,7 @@ namespace glm
 		detail::tvec3<T, P> const & angles
 	)
 	{
-		return detail::tmat3x3<T, P>(yawPitchRoll(angles.x, angles.y, angles.z));
+		return detail::tmat3x3<T, P>(yawPitchRoll(angles.z, angles.x, angles.y));
 	}
 
 	template <typename T, precision P>

@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/math/Box.hpp"
 #include "minko/scene/Node.hpp"
 #include "minko/component/Transform.hpp"
+#include "minko/component/Surface.hpp"
 #include "minko/geometry/Geometry.hpp"
 #include "minko/data/Container.hpp"
 
@@ -142,8 +143,8 @@ BoundingBox::update()
 				}
 				else
 				{
-					min->setTo(0.f, 0.f, 0.f);
-					max->setTo(0.f, 0.f, 0.f);
+					min = { 0.f, 0.f, 0.f };
+					max = { 0.f, 0.f, 0.f };
 				}
 			}
 

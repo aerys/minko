@@ -68,13 +68,13 @@ namespace minko
 			diffuseColor() const;
 
 			Ptr
-			uvScale(const math::vec2 v);
+			uvScale(const math::vec2& v);
 
 			const math::vec2&
 			uvScale() const;
 
 			Ptr
-			uvOffset(const math::vec2 v);
+			uvOffset(const math::vec2& v);
 
 			const math::vec2&
 			uvOffset() const;

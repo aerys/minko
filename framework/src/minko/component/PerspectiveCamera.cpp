@@ -150,14 +150,17 @@ PerspectiveCamera::unproject(float x, float y)
 math::vec3
 PerspectiveCamera::project(math::vec3 worldPosition)
 {
-	auto vector    = _viewProjection->project(worldPosition);
-	auto context   = getTarget(0)->root()->component<SceneManager>()->assets()->context();
-	auto width     = context->viewportWidth();
-	auto height    = context->viewportHeight();
+    auto context   = getTarget(0)->root()->component<SceneManager>()->assets()->context();
+    auto width     = context->viewportWidth();
+    auto height    = context->viewportHeight();
+    auto pos       = math::vec4(worldPosition, 1.f);
+    auto vector    = _viewProjection * pos;
     
+    vector /= vector.w;
+
     return {
-       width * ((vector->x() + 1.0f) * .5f),
-	   height * ((1.0f - ((vector->y() + 1.0f) * .5f))),
-       -_view * vector
+       width * ((vector.x + 1.0f) * .5f),
+	   height * ((1.0f - ((vector.y + 1.0f) * .5f))),
+       -(_view * pos).z
     };
 }

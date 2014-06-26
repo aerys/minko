@@ -214,10 +214,10 @@ namespace minko
 			removeVertexBuffer(std::list<VBPtr>::iterator vertexBufferIt);
 
 			void
-			getHitUv(uint triangle, math::vec2 lambda, math::vec2& hitUv);
+			getHitUv(uint triangle, math::vec2& lambda, math::vec2* hitUv);
 
 			void
-			getHitNormal(uint triangle, math::vec3& hitNormal);
+			getHitNormal(uint triangle, math::vec3* hitNormal);
 		};
 	}
 }

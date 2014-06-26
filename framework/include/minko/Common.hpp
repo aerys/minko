@@ -55,13 +55,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #define GLM_FORCE_INLINE
 #define GLM_FORCE_RADIANS
 #define GLM_SWIZZLE
-#include "glm/mat4x4.hpp"
+#include "glm/glm.hpp"
 #include "glm/gtc/type_ptr.hpp"
-#include "glm/gtc/matrix_transform.hpp"
-#include "glm/gtc/matrix_inverse.hpp"
 #include "glm/gtx/matrix_interpolation.hpp"
+#include "glm/gtc/matrix_transform.hpp"
+/*
+#include "glm/gtc/matrix_inverse.hpp"
 #include "glm/gtx/color_space.hpp"
-
+*/
 
 #define PI 3.1415926535897932384626433832795
 

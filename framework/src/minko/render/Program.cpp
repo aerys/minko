@@ -26,9 +26,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/Texture.hpp"
 #include "minko/render/CubeTexture.hpp"
 #include "minko/render/IndexBuffer.hpp"
-#include "minko/math/Vector2.hpp"
-#include "minko/math/Vector3.hpp"
-#include "minko/math/Vector4.hpp"
 
 using namespace minko;
 using namespace minko::render;
@@ -36,7 +33,6 @@ using namespace minko::math;
 
 Program::Program(Program::AbstractContextPtr context) :
 	AbstractResource(context),
-	_uniformFloat2(),
 	_textures(),
 	_vertexBuffers(),
 	_indexBuffer(nullptr)
@@ -85,7 +81,7 @@ Program::setUniform(const std::string& name, float v1, float v2)
 	if (!_inputs->hasName(name))
 		return;
 
-	_uniformFloat2[_inputs->location(name)] = Vector2::create(v1, v2);
+	_uniformFloat2[_inputs->location(name)] = math::vec2(v1, v2);
 }
 
 void
@@ -94,7 +90,7 @@ Program::setUniform(const std::string& name, float v1, float v2, float v3)
 	if (!_inputs->hasName(name))
 		return;
 
-	_uniformFloat3[_inputs->location(name)] = Vector3::create(v1, v2, v3);
+	_uniformFloat3[_inputs->location(name)] = math::vec3(v1, v2, v3);
 }
 
 void
@@ -103,7 +99,7 @@ Program::setUniform(const std::string& name, float v1, float v2, float v3, float
 	if (!_inputs->hasName(name))
 		return;
 
-	_uniformFloat4[_inputs->location(name)] = Vector4::create(v1, v2, v3, v4);
+	_uniformFloat4[_inputs->location(name)] = math::vec4(v1, v2, v3, v4);
 }
 
 void

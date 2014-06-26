@@ -44,9 +44,6 @@ namespace minko
 			typedef std::shared_ptr<render::CubeTexture>		CubeTexturePtr;
 			typedef std::shared_ptr<render::AbstractContext>	AbstractContextPtr;
 			typedef std::shared_ptr<render::ProgramInputs>		ProgramInputsPtr;
-			typedef std::shared_ptr<math::Vector2>				Vector2Ptr;
-			typedef std::shared_ptr<math::Vector3>				Vector3Ptr;
-			typedef std::shared_ptr<math::Vector4>				Vector4Ptr;
 
 		private:
 			std::shared_ptr<Shader>								_vertexShader;
@@ -54,9 +51,9 @@ namespace minko
 			ProgramInputsPtr									_inputs;
 
 			std::unordered_map<int, float>						_uniformFloat;
-			std::unordered_map<int, Vector2Ptr>					_uniformFloat2;
-			std::unordered_map<int, Vector3Ptr>					_uniformFloat3;
-			std::unordered_map<int, Vector4Ptr>					_uniformFloat4;
+			std::unordered_map<int, math::vec2>					_uniformFloat2;
+			std::unordered_map<int, math::vec3>					_uniformFloat3;
+			std::unordered_map<int, math::vec4>					_uniformFloat4;
 			std::unordered_map<int, AbstractTexturePtr>			_textures;
 			std::unordered_map<int, VertexBufferPtr>			_vertexBuffers;
 			IndexBufferPtr										_indexBuffer;
@@ -128,21 +125,21 @@ namespace minko
 			}
 
 			inline
-			const std::unordered_map<int, Vector2Ptr>&
+			const std::unordered_map<int, math::vec2>&
 			uniformFloat2() const
 			{
 				return _uniformFloat2;
 			}
 
 			inline
-			const std::unordered_map<int, Vector3Ptr>&
+			const std::unordered_map<int, math::vec3>&
 			uniformFloat3() const
 			{
 				return _uniformFloat3;
 			}
 
 			inline
-			const std::unordered_map<int, Vector4Ptr>&
+			const std::unordered_map<int, math::vec4>&
 			uniformFloat4() const
 			{
 				return _uniformFloat4;

@@ -287,7 +287,7 @@ namespace glm
 		assert(ToBit <= sizeof(genIUType) * std::size_t(8));
 
 		genIUType Result = Value;
-		for(std::size_t i = 0; i <= ToBit; ++i)
+		for(signed i = 0; i <= ToBit; ++i)
 			Result |= (1 << i);
 		return Result;
 	}
@@ -304,7 +304,7 @@ namespace glm
 		assert(ToBit <= sizeof(genIUType) * std::size_t(8));
 
 		genIUType Result = Value;
-		for(std::size_t i = 0; i <= ToBit; ++i)
+		for(signed i = 0; i <= ToBit; ++i)
 			Result &= ~(1 << i);
 		return Result;
 	}

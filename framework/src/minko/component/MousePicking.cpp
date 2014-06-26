@@ -94,7 +94,7 @@ MousePicking::pick(std::shared_ptr<math::Ray>	ray)
 				hits, 
 				ray
 			);
-			_previousRayOrigin->copyFrom(ray->origin());
+			_previousRayOrigin = ray->origin();
 		}
 
 		_over->execute(

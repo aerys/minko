@@ -370,5 +370,5 @@ Skinning::targetAddedHandler(component::AbstractComponent::Ptr,
 	_skeletonRoot->addChild(target);
 
 	if (target->hasComponent<Transform>())
-		target->component<Transform>()->matrix()->identity();
+		target->component<Transform>()->matrix(math::mat4(1.f));
 }

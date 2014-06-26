@@ -59,6 +59,7 @@ namespace detail
 	private:
 		/// @cond DETAIL
 		col_type value[4];
+		/// @endcond
 
 	public:
 		// Constructors

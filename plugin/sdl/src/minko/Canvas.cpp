@@ -19,7 +19,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Canvas.hpp"
 #include "minko/data/Provider.hpp"
-#include "minko/math/Vector4.hpp"
 #include "minko/async/Worker.hpp"
 #include "minko/file/Options.hpp"
 
@@ -76,7 +75,7 @@ Canvas::Canvas(const std::string& name, const uint width, const uint height, boo
     _joystickAdded(Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::create()),
     _joystickRemoved(Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::create())
 {
-    _data->set<math::Vector4::Ptr>("canvas.viewport", Vector4::create(0.0f, 0.0f, (float) width, (float) height));
+    _data->set("canvas.viewport", math::vec4(0.0f, 0.0f, (float) width, (float) height));
 }
 
 #if defined(_WIN32)
@@ -298,57 +297,57 @@ Canvas::initContext(SDL_Window* window, unsigned int width, unsigned int height)
 uint
 Canvas::x()
 {
-    return (uint) _data->get<math::Vector4::Ptr>("canvas.viewport")->x();
+    return (uint) _data->get<math::vec4>("canvas.viewport").x;
 }
 
 uint
 Canvas::y()
 {
-    return (uint) _data->get<math::Vector4::Ptr>("canvas.viewport")->y();
+    return (uint) _data->get<math::vec4>("canvas.viewport").y;
 }
 
 uint
 Canvas::width()
 {
-    return (uint) _data->get<math::Vector4::Ptr>("canvas.viewport")->z();
+    return (uint) _data->get<math::vec4>("canvas.viewport").z;
 }
 
 uint
 Canvas::height()
 {
-    return (uint) _data->get<math::Vector4::Ptr>("canvas.viewport")->w();
+    return (uint) _data->get<math::vec4>("canvas.viewport").w;
 }
 
 void
 Canvas::x(uint value)
 {
-    auto viewport = _data->get<math::Vector4::Ptr>("canvas.viewport");
+    auto viewport = _data->get<math::vec4>("canvas.viewport");
 
-    viewport->setTo((float) value, viewport->y(), viewport->z(), viewport->w());
+     _data->set("canvas.viewport", math::vec4((float) value, viewport.y, viewport.z, viewport.w));
 }
 
 void
 Canvas::y(uint value)
 {
-    auto viewport = _data->get<math::Vector4::Ptr>("canvas.viewport");
+    auto viewport = _data->get<math::vec4>("canvas.viewport");
 
-    viewport->setTo(viewport->x(), (float) value, viewport->z(), viewport->w());
+     _data->set("canvas.viewport", math::vec4(viewport.x, (float) value, viewport.z, viewport.w));
 }
 
 void
 Canvas::width(uint value)
 {
-    auto viewport = _data->get<math::Vector4::Ptr>("canvas.viewport");
+    auto viewport = _data->get<math::vec4>("canvas.viewport");
 
-    viewport->setTo(viewport->x(), viewport->y(), (float) value, viewport->w());
+    _data->set("canvas.viewport", math::vec4(viewport.x, viewport.y, (float) value, viewport.w));
 }
 
 void
 Canvas::height(uint value)
 {
-    auto viewport = _data->get<math::Vector4::Ptr>("canvas.viewport");
+    auto viewport = _data->get<math::vec4>("canvas.viewport");
 
-    viewport->setTo(viewport->x(), viewport->y(), viewport->z(), (float) value);
+    _data->set("canvas.viewport", math::vec4(viewport.x, viewport.y, viewport.z, (float) value));
 }
 
 void
