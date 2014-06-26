@@ -184,9 +184,14 @@ AbstractSerializerParser::deserializedAsset(SerializedAsset&			asset,
 	{
 		if (asset.a0 == serialize::AssetType::EMBED_TEXTURE_ASSET)
 		{
-            auto extension = ".jpg";
-			resolvedPath = std::to_string(asset.a1) + extension;
+            auto imageFormat = static_cast<serialize::ImageFormat>(asset.a2.at(0));
+
+            auto extension = serialize::extensionFromImageFormat(imageFormat);
+
+			resolvedPath = std::to_string(asset.a1) + "." + extension;
 			assetCompletePath += resolvedPath;
+
+            data.erase(data.begin());
 		}
 
 		if (assetLibrary->texture(resolvedPath) == nullptr)

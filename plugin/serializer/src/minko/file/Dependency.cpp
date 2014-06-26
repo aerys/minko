@@ -285,7 +285,13 @@ Dependency::serializeTexture(std::shared_ptr<Dependency>				dependency,
     auto content                = std::string { };
     auto textureName            = assetLibrary->textureName(texture);
     auto sourceExtension        = textureName.substr(textureName.find_last_of(".") + 1);
-    auto destinationExtension   = "jpg";
+
+    auto destinationFormat = writerOptions->imageFormat();
+
+    if (destinationFormat == serialize::ImageFormat::SOURCE)
+        destinationFormat = serialize::imageFormatFromExtension(sourceExtension);
+
+    auto destinationExtension = serialize::extensionFromImageFormat(destinationFormat);
 
     if (sourceExtension != destinationExtension)
         textureName = textureName.substr(0, textureName.size() - sourceExtension.size()) + destinationExtension;
@@ -298,6 +304,10 @@ Dependency::serializeTexture(std::shared_ptr<Dependency>				dependency,
         assetType = serialize::AssetType::EMBED_TEXTURE_ASSET;
 
         content = writer->embedAll(assetLibrary, options, writerOptions);
+
+        auto formatByte = static_cast<char>(destinationFormat);
+
+        content.insert(content.begin(), formatByte);
     }
     else
     {

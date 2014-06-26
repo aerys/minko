@@ -67,5 +67,47 @@ namespace minko
 			EFFECT_ASSET                = 3,
 			EMBED_EFFECT_ASSET          = 13
 		};
+
+        enum class ImageFormat
+        {
+            SOURCE  = 1,
+            PNG     = 2,
+            JPEG    = 3,
+            TGA     = 4
+        };
+
+        namespace
+        {
+            static const auto imageFormatToExtensionMap = std::unordered_map<ImageFormat, std::string>
+            {
+                { ImageFormat::PNG, "png" },
+                { ImageFormat::JPEG, "jpg" },
+                { ImageFormat::TGA, "tga" },
+            };
+        }
+
+        inline
+        std::string
+        extensionFromImageFormat(ImageFormat format)
+        {
+            return imageFormatToExtensionMap.at(format);
+        }
+
+        inline
+        ImageFormat
+        imageFormatFromExtension(const std::string& extension)
+        {
+            auto imageFormatToExtensionPairIt = std::find_if(imageFormatToExtensionMap.begin(),
+                                              imageFormatToExtensionMap.end(),
+            [=](const std::pair<ImageFormat, std::string>& imageFormatToExtensionPair)
+            {
+                return imageFormatToExtensionPair.second == extension;
+            });
+
+            if (imageFormatToExtensionPairIt == imageFormatToExtensionMap.end())
+                return ImageFormat::SOURCE;
+
+            return imageFormatToExtensionPairIt->first;
+        }
 	}
 }
