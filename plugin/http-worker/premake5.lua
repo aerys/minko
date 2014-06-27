@@ -16,15 +16,12 @@ minko.project.worker("minko-plugin-" .. PROJECT_NAME)
 
 	defines { "CURL_STATICLIB" }
 
-	-- linux
 	configuration { "linux32 or linux64" }
 		links { "curl"}
 
-	-- windows
 	configuration { "windows32 or windows64" }
 		links { "libcurl" }
 
-	-- macos
 	configuration { "osx64" }
-		links { "curl",  "Security.framework"}
+		links { "curl",  "z", "Security.framework"}
 		libdirs { minko.plugin.path("http-worker") .. "/lib/curl/lib/osx64/release" }
