@@ -29,10 +29,10 @@ namespace minko
 {
 	namespace input
 	{
-		class Finger
+		class Touch
 		{
 		public:
-			typedef std::shared_ptr<Finger> Ptr;
+			typedef std::shared_ptr<Touch> Ptr;
 
 		protected:
 			std::shared_ptr<AbstractCanvas> _canvas;
@@ -44,9 +44,9 @@ namespace minko
             float                                _dx;
 			float                                _dy;
             
-			Signal<Ptr, float, float>::Ptr		_fingerMotion; // dx, dy
-			Signal<Ptr, float, float>::Ptr		_fingerDown; // x, y
-			Signal<Ptr, float, float>::Ptr		_fingerUp; // x, y
+			Signal<Ptr, float, float>::Ptr		_touchMotion; // dx, dy
+			Signal<Ptr, float, float>::Ptr		_touchDown; // x, y
+			Signal<Ptr, float, float>::Ptr		_touchUp; // x, y
             
             // Gestures
             Signal<Ptr>::Ptr                    _swipeRight;
@@ -92,23 +92,23 @@ namespace minko
 
 			inline
 			Signal<Ptr, float, float>::Ptr
-			fingerMotion()
+			touchMotion()
 			{
-				return _fingerMotion;
+				return _touchMotion;
 			}
 
 			inline
 			Signal<Ptr, float, float>::Ptr
-			fingerDown()
+			touchDown()
 			{
-				return _fingerDown;
+				return _touchDown;
 			}
 
 			inline
 			Signal<Ptr, float, float>::Ptr
-			fingerUp()
+			touchUp()
 			{
-				return _fingerUp;
+				return _touchUp;
 			}
             
             inline
@@ -141,7 +141,7 @@ namespace minko
             
 
 		protected:
-			Finger(std::shared_ptr<AbstractCanvas> canvas);
+			Touch(std::shared_ptr<AbstractCanvas> canvas);
 		};
 	}
 }

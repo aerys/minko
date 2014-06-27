@@ -40,18 +40,24 @@ namespace minko
 				.property("height",					&AbstractCanvas::height)
 				.property("mouse", 					&AbstractCanvas::mouse)
 				.property("keyboard",				&AbstractCanvas::keyboard)
+				.property("width",		            &AbstractCanvas::width)
+				.property("height",		            &AbstractCanvas::height)
+				.property("numTouches",				&AbstractCanvas::numTouches)
+                .property("mouse",                  &AbstractCanvas::mouse)
+                .property("keyboard",               &AbstractCanvas::keyboard)
 				.property("numJoysticks",			&AbstractCanvas::numJoysticks)
-                .property("numFingers",				&AbstractCanvas::numFingers)
 				.methodWrapper("getJoystickAxis",   &LuaAbstractCanvas::getJoystickAxisWrapper)
 				.methodWrapper("joystick",			&LuaAbstractCanvas::joystickWrapper);
+
 		    MINKO_LUAGLUE_BIND_SIGNAL(state, AbstractCanvas::Ptr);
 		    MINKO_LUAGLUE_BIND_SIGNAL(state, AbstractCanvas::Ptr, uint, uint);
 			MINKO_LUAGLUE_BIND_SIGNAL(state, AbstractCanvas::Ptr, input::Joystick::Ptr);
-            MINKO_LUAGLUE_BIND_SIGNAL(state, input::Finger::Ptr, float);
+            MINKO_LUAGLUE_BIND_SIGNAL(state, input::Touch::Ptr, float);
+
 		    abstractCanvas.property("resized", &AbstractCanvas::resized);
 			abstractCanvas.property("joystickAdded", &AbstractCanvas::joystickAdded);
 			abstractCanvas.property("joystickRemoved", &AbstractCanvas::joystickRemoved);
-			abstractCanvas.property("fingerZoom", &AbstractCanvas::fingerZoom);
+			abstractCanvas.property("touchZoom", &AbstractCanvas::touchZoom);
 		}
 
 	private:

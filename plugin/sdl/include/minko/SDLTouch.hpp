@@ -20,20 +20,20 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Canvas.hpp"
-#include "minko/input/Finger.hpp"
+#include "minko/input/Touch.hpp"
 
 namespace minko
 {
     class Canvas;
 
-    class SDLFinger :
-    public input::Finger
+    class SDLTouch :
+    public input::Touch
     {
         friend class Canvas;
         
     public :
         static
-        std::shared_ptr<SDLFinger>
+        std::shared_ptr<SDLTouch>
         create(std::shared_ptr<Canvas> canvas);
         
         void
@@ -67,7 +67,7 @@ namespace minko
         }
         
     private:
-        SDLFinger(std::shared_ptr<Canvas> canvas);
+        SDLTouch(std::shared_ptr<Canvas> canvas);
         
     public:
         static const float SWIPE_PRECISION;

@@ -17,21 +17,21 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "minko/input/Finger.hpp"
+#include "minko/input/Touch.hpp"
 
 using namespace minko;
 using namespace minko::input;
 
-Finger::Finger(std::shared_ptr<AbstractCanvas> canvas) :
+Touch::Touch(std::shared_ptr<AbstractCanvas> canvas) :
 	_canvas(canvas),
     _fingerId(0),
     _x(0.f),
     _y(0.f),
     _dx(0.f),
     _dy(0.f),
-	_fingerMotion(Signal<Ptr, float, float>::create()),
-    _fingerDown(Signal<Ptr, float, float>::create()),
-    _fingerUp(Signal<Ptr, float, float>::create()),
+	_touchMotion(Signal<Ptr, float, float>::create()),
+    _touchDown(Signal<Ptr, float, float>::create()),
+    _touchUp(Signal<Ptr, float, float>::create()),
     _swipeLeft(Signal<Ptr>::create()),
     _swipeRight(Signal<Ptr>::create()),
     _swipeUp(Signal<Ptr>::create()),

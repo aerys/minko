@@ -31,7 +31,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/OpenGLES2Context.hpp"
 #include "minko/AbstractCanvas.hpp"
 #include "minko/input/Joystick.hpp"
-#include "minko/input/Finger.hpp"
+#include "minko/input/Touch.hpp"
 #include "minko/async/Worker.hpp"
 
 // Note: cannot be added to the .cpp because this must be compiled within the
@@ -112,8 +112,8 @@ namespace minko
 		std::shared_ptr<SDLMouse>								_mouse;
 		std::unordered_map<int, std::shared_ptr<SDLJoystick>>	_joysticks;
         std::shared_ptr<SDLKeyboard>    						_keyboard;
-        std::shared_ptr<SDLFinger>                              _finger; // To store any finger activity
-        std::vector<std::shared_ptr<SDLFinger>>                 _fingers; // To keep finger order
+        std::shared_ptr<SDLTouch>                              _touch; // To store any finger activity
+		std::vector<std::shared_ptr<SDLTouch>>                 _touches; // To keep finger order
 
         // Events
 		Signal<Ptr, float, float>::Ptr											_enterFrame;
@@ -122,7 +122,7 @@ namespace minko
         Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::Ptr		_joystickAdded;
 		Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::Ptr		_joystickRemoved;
 		// Finger events
-        Signal<std::shared_ptr<input::Finger>, float>::Ptr                      _fingerZoom;
+        Signal<std::shared_ptr<input::Touch>, float>::Ptr						_touchZoom;
         
         std::list<std::shared_ptr<async::Worker>>								_activeWorkers;
 		std::list<Any>															_workerCompleteSlots;
@@ -216,32 +216,32 @@ namespace minko
 		}
         
         inline
-        std::shared_ptr<input::Finger>
-        finger()
+        std::shared_ptr<input::Touch>
+        touch()
         {
-            return _finger;
+            return _touch;
         }
         
         inline
-		std::shared_ptr<input::Finger>
-		finger(uint id)
+		std::shared_ptr<input::Touch>
+		touch(uint id)
 		{
-            return id < _fingers.size() ? _fingers[id] : nullptr;
+            return id < _touches.size() ? _touches[id] : nullptr;
 		}
         
-        // Multi finger events
+        // Multi touch events
         inline
-        Signal<std::shared_ptr<input::Finger>, float>::Ptr
-        fingerZoom()
+        Signal<std::shared_ptr<input::Touch>, float>::Ptr
+        touchZoom()
         {
-            return _fingerZoom;
+            return _touchZoom;
         }
         
         inline
 		uint
-		numFingers()
+		numTouches()
 		{
-			return _fingers.size();
+			return _touches.size();
 		}
 		
 		inline

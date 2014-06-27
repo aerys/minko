@@ -74,7 +74,11 @@ Canvas::Canvas(const std::string& name, const uint width, const uint height, boo
     _resized(Signal<AbstractCanvas::Ptr, uint, uint>::create()),
     _joystickAdded(Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::create()),
     _joystickRemoved(Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::create()),
-    _fingerZoom(Signal<std::shared_ptr<input::Finger>, float>::create())
+	_touchZoom(Signal<std::shared_ptr<input::Touch>, float>::create()),
+	_width(width),
+	_height(height),
+	_x(0),
+	_y(0)
 {
     _data->set<math::Vector4::Ptr>("canvas.viewport", Vector4::create(0.0f, 0.0f, (float) width, (float) height));
 }
@@ -120,8 +124,8 @@ Canvas::initializeInputs()
 {
     _mouse = SDLMouse::create(shared_from_this());
     _keyboard = SDLKeyboard::create();
-    _finger = SDLFinger::create(shared_from_this());
-    _fingers = std::vector<std::shared_ptr<SDLFinger>>();
+    _touch = SDLTouch::create(shared_from_this());
+    _touches = std::vector<std::shared_ptr<SDLTouch>>();
 
 #if !defined(EMSCRIPTEN) && !defined(__ANDROID__)
     for (int i = 0; i < SDL_NumJoysticks(); ++i)
@@ -548,23 +552,23 @@ Canvas::step()
 # if defined(DEBUG)
             //std::cout << "Finger down! (x: " << event.tfinger.x << ", y: " << event.tfinger.y << ")" << std::endl;
 #endif // DEBUG
-            _finger->fingerId(event.tfinger.fingerId);
-            _finger->x(uint(event.tfinger.x));
-            _finger->y(uint(event.tfinger.y));
+            _touch->fingerId(event.tfinger.fingerId);
+            _touch->x(uint(event.tfinger.x));
+            _touch->y(uint(event.tfinger.y));
 
-            _finger->fingerDown()->execute(_finger, event.tfinger.x, event.tfinger.y);
+            _touch->touchDown()->execute(_touch, event.tfinger.x, event.tfinger.y);
             
-            // Create a new finger
-            auto finger = SDLFinger::create(shared_from_this());
+            // Create a new touch
+            auto touch = SDLTouch::create(shared_from_this());
             
-            finger->fingerId(event.tfinger.fingerId);
-            finger->x(event.tfinger.x);
-            finger->y(event.tfinger.y);
+            touch->fingerId(event.tfinger.fingerId);
+            touch->x(event.tfinger.x);
+            touch->y(event.tfinger.y);
             
-            finger->fingerDown()->execute(finger, event.tfinger.x, event.tfinger.y);
+            touch->touchDown()->execute(touch, event.tfinger.x, event.tfinger.y);
             
-            // Add the finger to the finger list
-            _fingers.push_back(finger);
+            // Add the touch to the touch list
+            _touches.push_back(touch);
             break;
         }
 
@@ -573,11 +577,27 @@ Canvas::step()
 # if defined(DEBUG)
             //std::cout << "Finger up! (x: " << event.tfinger.x << ", y: " << event.tfinger.y << ")" << std::endl;
 #endif // DEBUG
-            _finger->x(uint(event.tfinger.x));
-            _finger->y(uint(event.tfinger.y));
-
-            _finger->fingerUp()->execute(_finger, event.tfinger.x, event.tfinger.y);
-
+            _touch->x(uint(event.tfinger.x));
+            _touch->y(uint(event.tfinger.y));
+            
+            _touch->touchUp()->execute(_touch, event.tfinger.x, event.tfinger.y);
+            
+            // Get the real touch up
+            auto fingerUp = std::find_if(_touches.begin(), _touches.end(), [&] (SDLTouch::Ptr f) { return f->Touch::fingerId() == event.tfinger.fingerId; } );
+            
+            // If this touch exists
+            if (fingerUp != _touches.end())
+            {
+                auto touch = *fingerUp;
+            
+                touch->x(event.tfinger.x);
+                touch->y(event.tfinger.y);
+                
+                touch->touchUp()->execute(touch, event.tfinger.x, event.tfinger.y);
+            
+                // Remove it from the list
+                _touches.erase(fingerUp);
+            }
             break;
         }
 
@@ -593,41 +613,84 @@ Canvas::step()
             << ")" << std::endl;
             */
 #endif // DEBUG
-            _finger->x(uint(event.tfinger.x));
-            _finger->y(uint(event.tfinger.y));
-            _finger->dx(uint(event.tfinger.dx));
-            _finger->dy(uint(event.tfinger.dy));
+            _touch->x(uint(event.tfinger.x));
+            _touch->y(uint(event.tfinger.y));
+            _touch->dx(uint(event.tfinger.dx));
+            _touch->dy(uint(event.tfinger.dy));
 
-            _finger->fingerMotion()->execute(_finger, event.tfinger.dx, event.tfinger.dy);
-
-            // Gestures
-            if (event.tfinger.dx > SDLFinger::SWIPE_PRECISION)
-                _finger->swipeRight()->execute(_finger);
-
-            if (-event.tfinger.dx > SDLFinger::SWIPE_PRECISION)
-                _finger->swipeLeft()->execute(_finger);
-
-            if (event.tfinger.dy > SDLFinger::SWIPE_PRECISION)
-                _finger->swipeDown()->execute(_finger);
-
-            if (-event.tfinger.dy > SDLFinger::SWIPE_PRECISION)
-                _finger->swipeUp()->execute(_finger);
-
-            // If it's the second finger
-            if (_fingers.size() > 1 && _fingers.at(1)->Finger::fingerId() == event.tfinger.fingerId)
+            _touch->touchMotion()->execute(_touch, event.tfinger.dx, event.tfinger.dy);
+            
+            // Get the real touch in motion
+            auto fingerMotion = std::find_if(_touches.begin(), _touches.end(), [&] (SDLTouch::Ptr f) { return f->Touch::fingerId() == event.tfinger.fingerId; } );
+            
+            if (fingerMotion != _touches.end())
             {
-                // Get the first finger
-                auto firstFinger = _fingers[0];
+                auto touch = *fingerMotion;
                 
-                // Compute distance between first finger and second finger
-                auto distance = sqrt(pow(event.tfinger.x - firstFinger->Finger::x(), 2) + pow(event.tfinger.y - firstFinger->Finger::y(), 2));
-                auto deltaDistance = sqrt(
-                                          pow((event.tfinger.x + event.tfinger.dx) - firstFinger->Finger::x(), 2) +
-                                          pow((event.tfinger.y + event.tfinger.dy) - firstFinger->Finger::y(), 2));
+                // Store event data
+                touch->x(event.tfinger.x);
+                touch->y(event.tfinger.y);
+                touch->dx(event.tfinger.dx);
+                touch->dy(event.tfinger.dy);
+            
+                touch->touchMotion()->execute(touch, event.tfinger.dx, event.tfinger.dy);
                 
-                if (deltaDistance != distance)
+                // Gestures
+				if (event.tfinger.dx > SDLTouch::SWIPE_PRECISION)
                 {
-                    fingerZoom()->execute(finger, distance - deltaDistance);
+# if defined(DEBUG)
+                std::cout << "Swipe right! (" << event.tfinger.dx << ")" << std::endl;
+#endif // DEBUG
+                    _touch->swipeRight()->execute(_touch);
+                    touch->swipeRight()->execute(touch);
+                }
+                
+				if (-event.tfinger.dx > SDLTouch::SWIPE_PRECISION)
+                {
+
+# if defined(DEBUG)
+                    std::cout << "Swipe left! (" << event.tfinger.dx << ")" << std::endl;
+#endif // DEBUG               
+                    _touch->swipeLeft()->execute(_touch);
+                    touch->swipeLeft()->execute(touch);
+                }
+                
+				if (event.tfinger.dy > SDLTouch::SWIPE_PRECISION)
+                {
+
+# if defined(DEBUG)
+                    std::cout << "Swipe down! (" << event.tfinger.dy << ")" << std::endl;
+#endif // DEBUG      
+                    _touch->swipeDown()->execute(_touch);
+                    touch->swipeDown()->execute(touch);
+                }
+                
+                if (-event.tfinger.dy > SDLTouch::SWIPE_PRECISION)
+                {
+#if defined(DEBUG)
+                std::cout << "Swipe up! (" << event.tfinger.dy << ")" << std::endl;
+#endif // DEBUG               
+                    _touch->swipeUp()->execute(_touch);
+                    touch->swipeUp()->execute(touch);
+                }
+                
+                // If it's the second touch
+                if (_touches.size() > 1 && _touches.at(1)->Touch::fingerId() == event.tfinger.fingerId)
+                {
+                    // Get the first touch
+                    auto firstFinger = _touches[0];
+                    
+                    // Compute distance between first touch and second touch
+                    auto distance = sqrt(pow(event.tfinger.x - firstFinger->Touch::x(), 2) + pow(event.tfinger.y - firstFinger->Touch::y(), 2));
+                    auto deltaDistance = sqrt(
+                                              pow((event.tfinger.x + event.tfinger.dx) - firstFinger->Touch::x(), 2) +
+                                              pow((event.tfinger.y + event.tfinger.dy) - firstFinger->Touch::y(), 2));
+                    
+                    if (deltaDistance != distance)
+                    {
+                        //std::cout << "[Canvas] Zoom value: " << distance - deltaDistance << "(dx: " << event.tfinger.dx << ", dy: " << event.tfinger.dy << ")" << std::endl;
+                        touchZoom()->execute(touch, distance - deltaDistance);
+                    }
                 }
             }
 

@@ -22,15 +22,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 using namespace minko;
 
-const float SDLFinger::SWIPE_PRECISION = 0.05f;
+const float SDLTouch::SWIPE_PRECISION = 0.05f;
 
-SDLFinger::SDLFinger(std::shared_ptr<Canvas> canvas) :
-    input::Finger(canvas)
+SDLTouch::SDLTouch(std::shared_ptr<Canvas> canvas) :
+    input::Touch(canvas)
 {
 }
 
-std::shared_ptr<SDLFinger>
-SDLFinger::create(std::shared_ptr<Canvas> canvas)
+std::shared_ptr<SDLTouch>
+SDLTouch::create(std::shared_ptr<Canvas> canvas)
 {
-    return std::shared_ptr<SDLFinger>(new SDLFinger(canvas));
+	return std::shared_ptr<SDLTouch>(new SDLTouch(canvas));
 }
