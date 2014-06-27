@@ -66,6 +66,10 @@ minko.plugin["http-worker"].enable = function (self)
 	configuration { "android" }
 		libdirs { minko.plugin.path("http-worker") .. "/lib/curl/lib/android/debug" }
 		links { "curl" }
+
+	configuration { "ios" }
+		libdirs { minko.plugin.path("http-worker") .. "/lib/curl/lib/ios/debug" }
+		links { "curl" }
 end
 
 --function minko.worker.http:dist(workerDistDir)
