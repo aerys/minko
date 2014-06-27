@@ -313,6 +313,16 @@ minko.project.application = function(name)
 		-- packagename "app"
 		-- basepackagename "io.minko"
 
+	configuration { "ios", "debug" }
+		libdirs {
+			minko.sdk.path("/framework/bin/ios/debug")
+		}
+
+	configuration { "ios", "release" }
+		libdirs {
+			minko.sdk.path("/framework/bin/ios/release")
+		}
+
 	configuration { }
 
 end

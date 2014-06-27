@@ -25,12 +25,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/SDLKeyboard.hpp"
 #include "minko/SDLMouse.hpp"
 #include "minko/SDLJoystick.hpp"
+#include "minko/SDLTouch.hpp"
 #include "minko/Signal.hpp"
 #include "minko/render/AbstractContext.hpp"
 #include "minko/render/OpenGLES2Context.hpp"
 #include "minko/AbstractCanvas.hpp"
 #include "minko/input/Joystick.hpp"
-#include "minko/input/Finger.hpp"
+#include "minko/input/Touch.hpp"
 #include "minko/async/Worker.hpp"
 
 // Note: cannot be added to the .cpp because this must be compiled within the
@@ -53,55 +54,6 @@ namespace minko
 		typedef std::shared_ptr<Canvas>	Ptr;
 
 	private:
-        class SDLFinger :
-            public input::Finger
-		{
-			friend class Canvas;
-            
-		private:
-            public :
-			static inline
-			std::shared_ptr<SDLFinger>
-			create(Canvas::Ptr canvas)
-			{
-				return std::shared_ptr<SDLFinger>(new SDLFinger(canvas));
-			}
-            
-			void
-			x(uint x)
-			{
-				_x = float(x);
-			}
-            
-			void
-			y(uint y)
-			{
-				_y = float(y);
-			}
-            
-            void
-			dx(uint dx)
-			{
-				_dx = float(dx);
-			}
-            
-			void
-			dy(uint dy)
-			{
-				_dy = float(dy);
-			}
-            
-		private:
-			SDLFinger(Canvas::Ptr canvas) :
-            	input::Finger(canvas)
-			{
-			}
-            
-        public:
-            static const float SWIPE_PRECISION;
-		};
-
-	private:
         typedef std::chrono::high_resolution_clock::time_point	time_point;
 		typedef std::shared_ptr<async::Worker>			        WorkerPtr;
 
@@ -116,11 +68,8 @@ namespace minko
 
 		bool											_active;
 		render::AbstractContext::Ptr					_context;
-#ifdef EMSCRIPTEN
 		SDL_Surface*											_screen;
-#else
 		SDL_Window*												_window;
-#endif
 		float													_relativeTime;
 		float													_frameDuration;
         time_point                                              _previousTime;
@@ -131,13 +80,19 @@ namespace minko
 		std::shared_ptr<SDLMouse>								_mouse;
 		std::unordered_map<int, std::shared_ptr<SDLJoystick>>	_joysticks;
         std::shared_ptr<SDLKeyboard>    						_keyboard;
-        std::shared_ptr<SDLFinger>                              _finger;
+        std::shared_ptr<SDLTouch>                              _touch; // To store any finger activity
+		std::vector<std::shared_ptr<SDLTouch>>                 _touches; // To keep finger order
 
+        // Events
 		Signal<Ptr, float, float>::Ptr											_enterFrame;
 		Signal<AbstractCanvas::Ptr, uint, uint>::Ptr							_resized;
-		Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::Ptr		_joystickAdded;
+		// Joystick events
+        Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::Ptr		_joystickAdded;
 		Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::Ptr		_joystickRemoved;
-		std::list<std::shared_ptr<async::Worker>>								_activeWorkers;
+		// Finger events
+        Signal<std::shared_ptr<input::Touch>, float>::Ptr						_touchZoom;
+        
+        std::list<std::shared_ptr<async::Worker>>								_activeWorkers;
 		std::list<Any>															_workerCompleteSlots;
 
 
@@ -183,6 +138,13 @@ namespace minko
 		uint
 		height();
 
+        inline
+        SDL_Window*	
+        window()
+        {
+            return _window;
+        }
+        
 		int
 		getJoystickAxis(input::Joystick::Ptr joystick, int axis);
 
@@ -222,12 +184,34 @@ namespace minko
 		}
         
         inline
-		std::shared_ptr<input::Finger>
-		finger()
+        std::shared_ptr<input::Touch>
+        touch()
+        {
+            return _touch;
+        }
+        
+        inline
+		std::shared_ptr<input::Touch>
+		touch(uint id)
 		{
-			return _finger;
+            return id < _touches.size() ? _touches[id] : nullptr;
 		}
-
+        
+        // Multi touch events
+        inline
+        Signal<std::shared_ptr<input::Touch>, float>::Ptr
+        touchZoom()
+        {
+            return _touchZoom;
+        }
+        
+        inline
+		uint
+		numTouches()
+		{
+			return _touches.size();
+		}
+		
 		inline
 		std::shared_ptr<input::Joystick>
 		joystick(uint id)

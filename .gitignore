@@ -25,3 +25,4 @@ doc/html
 remove.me
 dist
 packages
+.DS_Store

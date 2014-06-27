@@ -22,9 +22,9 @@ void main(void)
 	vec4 	diffuse 		= diffuseColor;
 	
 	#if defined(DIFFUSE_CUBEMAP)
-		diffuse		*= textureCube(diffuseCubeMap, vertexUVW);
+		diffuse		= textureCube(diffuseCubeMap, vertexUVW);
 	#elif defined(DIFFUSE_MAP)
-		diffuse 	*= texture2D(diffuseMap, vertexUV);
+		diffuse 	= texture2D(diffuseMap, vertexUV);
 	#endif
 	
 	#ifdef ALPHA_MAP

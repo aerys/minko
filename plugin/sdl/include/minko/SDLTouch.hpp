@@ -17,23 +17,59 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "minko/input/Finger.hpp"
+#pragma once
 
-using namespace minko;
-using namespace minko::input;
+#include "minko/Canvas.hpp"
+#include "minko/input/Touch.hpp"
 
-Finger::Finger(std::shared_ptr<AbstractCanvas> canvas) :
-	_canvas(canvas),
-    _x(0.f),
-    _y(0.f),
-    _dx(0.f),
-    _dy(0.f),
-	_fingerMotion(Signal<Ptr, float, float>::create()),
-    _fingerDown(Signal<Ptr, float, float>::create()),
-    _fingerUp(Signal<Ptr, float, float>::create()),
-    _swipeLeft(Signal<Ptr>::create()),
-    _swipeRight(Signal<Ptr>::create()),
-    _swipeUp(Signal<Ptr>::create()),
-    _swipeDown(Signal<Ptr>::create())
+namespace minko
 {
+    class Canvas;
+
+    class SDLTouch :
+    public input::Touch
+    {
+        friend class Canvas;
+        
+    public :
+        static
+        std::shared_ptr<SDLTouch>
+        create(std::shared_ptr<Canvas> canvas);
+        
+        void
+        fingerId(int fingerId)
+        {
+            _fingerId = fingerId;
+        }
+        
+        void
+        x(float x)
+        {
+            _x = float(x);
+        }
+        
+        void
+        y(float y)
+        {
+            _y = float(y);
+        }
+        
+        void
+        dx(float dx)
+        {
+            _dx = float(dx);
+        }
+        
+        void
+        dy(float dy)
+        {
+            _dy = float(dy);
+        }
+        
+    private:
+        SDLTouch(std::shared_ptr<Canvas> canvas);
+        
+    public:
+        static const float SWIPE_PRECISION;
+    };
 }

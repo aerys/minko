@@ -1384,8 +1384,8 @@ EffectParser::finalize()
 	}
 #endif // DEBUG_FALLBACK
 
-	for (auto& targets : _techniqueTargets)
-		for (auto& target : targets.second)
+	for (auto& techniqueNameAndTargets : _techniqueTargets)
+		for (auto& target : techniqueNameAndTargets.second)
 			_effect->data()->set(target.first, target.second);
 
 	for (auto& targetNameAndPtr : _globalTargets)

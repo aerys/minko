@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/math/Matrix4x4.hpp"
 #include "minko/input/leap/Gesture.hpp"
 #include "minko/input/leap/Pointable.hpp"
+#include "minko/input/leap/Finger.hpp"
 
 /*
 * Below are defined a couple of methods that are used to convert basic objects from the
@@ -66,6 +67,18 @@ namespace minko
 			static
 			Pointable::Zone
 			convert(Leap::Pointable::Zone);
+
+            static
+            Finger::Type
+            convert(Leap::Finger::Type);
+
+            static
+            Finger::Bone::Type
+            convert(Leap::Bone::Type);
+
+            static
+            Leap::Bone::Type
+            convert(Finger::Bone::Type);
 		}
 	}
 }
@@ -190,4 +203,73 @@ minko::input::leap::convert(Leap::Pointable::Zone value)
 	default:
 		return minko::input::leap::Pointable::Zone::None;
 	}
+}
+
+minko::input::leap::Finger::Type
+minko::input::leap::convert(Leap::Finger::Type value)
+{
+    switch (value)
+    {
+    case Leap::Finger::Type::TYPE_INDEX:
+        return minko::input::leap::Finger::Type::Index;
+
+    case Leap::Finger::Type::TYPE_MIDDLE:
+        return minko::input::leap::Finger::Type::Middle;
+
+    case Leap::Finger::Type::TYPE_PINKY:
+        return minko::input::leap::Finger::Type::Pinky;
+
+    case Leap::Finger::Type::TYPE_RING:
+        return minko::input::leap::Finger::Type::Ring;
+
+    case Leap::Finger::Type::TYPE_THUMB:
+        return minko::input::leap::Finger::Type::Thumb;
+
+    default:
+        throw std::invalid_argument("Invalid Finger::Type to convert");
+    }
+}
+
+minko::input::leap::Finger::Bone::Type
+minko::input::leap::convert(Leap::Bone::Type value)
+{
+    switch (value)
+    {
+    case Leap::Bone::TYPE_DISTAL:
+        return minko::input::leap::Finger::Bone::Type::Distal;
+
+    case Leap::Bone::TYPE_INTERMEDIATE:
+        return minko::input::leap::Finger::Bone::Type::Intermediate;
+
+    case Leap::Bone::TYPE_METACARPAL:
+        return minko::input::leap::Finger::Bone::Type::Metacarpal;
+
+    case Leap::Bone::TYPE_PROXIMAL:
+        return minko::input::leap::Finger::Bone::Type::Proximal;
+
+    default:
+        throw std::invalid_argument("Invalid Leap::Bone::Type to convert");
+    }
+}
+
+Leap::Bone::Type
+minko::input::leap::convert(Finger::Bone::Type value)
+{
+    switch (value)
+    {
+    case minko::input::leap::Finger::Bone::Type::Distal:
+        return Leap::Bone::TYPE_DISTAL;
+
+    case minko::input::leap::Finger::Bone::Type::Intermediate:
+        return Leap::Bone::TYPE_INTERMEDIATE;
+
+    case minko::input::leap::Finger::Bone::Type::Metacarpal:
+        return Leap::Bone::TYPE_METACARPAL;
+
+    case minko::input::leap::Finger::Bone::Type::Proximal:
+        return Leap::Bone::TYPE_PROXIMAL;
+
+    default:
+        throw std::invalid_argument("Invalid Finger::Bone::Type to convert");
+    }
 }

@@ -18,11 +18,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "LeapPimpl.hpp" // voluntarily not pointed to by the includedirs
+#include "minko/input/leap/Finger.hpp"
+#include "minko/input/leap/Frame.hpp"
 #include "minko/input/leap/Hand.hpp"
 
 using namespace minko;
 using namespace minko::input;
 using namespace minko::input::leap;
+using namespace minko::math;
+
 
 Hand::Hand(const Leap::Hand& leapHand):
 	_leapHand(std::make_shared<Leap::Hand>(leapHand))
@@ -43,6 +47,12 @@ Hand::isValid() const
 	return _leapHand->isValid();
 }
 
+bool
+Hand::isRight() const
+{
+    return _leapHand->isRight();
+}
+
 uint64_t
 Hand::frameID() const
 {
@@ -56,6 +66,12 @@ Hand::palmPosition(math::Vector3::Ptr output) const
 }
 
 math::Vector3::Ptr
+Hand::direction(math::Vector3::Ptr output) const
+{
+    return convert(_leapHand->direction(), output);
+}
+
+math::Vector3::Ptr
 Hand::palmNormal(math::Vector3::Ptr output) const
 {
 	return convert(_leapHand->palmNormal(), output);
@@ -65,6 +81,51 @@ math::Vector3::Ptr
 Hand::palmVelocity(math::Vector3::Ptr output) const
 {
 	return convert(_leapHand->palmVelocity(), output);
+}
+
+float
+Hand::palmWidth() const
+{
+    return _leapHand->palmWidth();
+}
+
+float
+Hand::pinchStrength() const
+{
+    return _leapHand->pinchStrength();
+}
+
+float
+Hand::grabStrength() const
+{
+    return _leapHand->grabStrength();
+}
+
+math::Matrix4x4::Ptr
+Hand::basis() const
+{
+    auto basis = _leapHand->basis();
+
+    return convert(basis);
+}
+
+Hand::FingerList
+Hand::fingers() const
+{
+    FingerList fingers;
+
+    for (auto finger : _leapHand->fingers())
+    {
+        fingers.push_back(std::shared_ptr<Finger>(new Finger(finger)));
+    }
+
+    return fingers;
+}
+
+float
+Hand::confidence() const
+{
+    return _leapHand->confidence();
 }
 
 bool

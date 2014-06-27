@@ -8,7 +8,8 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 	files {
 		"include/**.hpp",
 		"src/**.cpp",
-		"src/**.hpp"
+		"src/**.hpp",
+		"src/**.m"
 	}
 
 	includedirs {
@@ -74,3 +75,12 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 
 	configuration { "html5" }
 		minko.plugin.enable { "webgl" }
+
+	configuration { "ios" }
+		buildoptions { "-x objective-c++" }
+
+		files {
+			"lib/**.h",
+			"lib/**.c",
+			"lib/**.m"
+		}

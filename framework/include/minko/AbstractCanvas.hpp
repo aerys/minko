@@ -61,8 +61,12 @@ namespace minko
         keyboard() = 0;
         
         virtual
-        std::shared_ptr<input::Finger>
-        finger() = 0;
+        std::shared_ptr<input::Touch>
+        touch() = 0;
+        
+        virtual
+			std::shared_ptr<input::Touch>
+        touch(uint id) = 0;
 
 		virtual
 		std::shared_ptr<input::Joystick>
@@ -76,6 +80,14 @@ namespace minko
 		Signal<Ptr, uint, uint>::Ptr
 		resized() = 0;
 
+        virtual
+		uint
+		numTouches() = 0;
+        
+        virtual
+		Signal<std::shared_ptr<input::Touch>, float>::Ptr
+		touchZoom() = 0;
+        
 		virtual
 		Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::Ptr
 		joystickAdded() = 0;

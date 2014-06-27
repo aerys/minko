@@ -60,6 +60,7 @@ function minko.plugin.sdl:enable()
 		end
 
 	configuration { "ios" }
+		buildoptions { "-x objective-c++" }
 		links {
 			"SDL2",
 			"CoreAudio.framework",

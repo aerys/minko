@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 
-#include "minko/input/Finger.hpp"
+#include "minko/input/Touch.hpp"
 
 #include "minko/LuaWrapper.hpp"
 
@@ -29,7 +29,7 @@ namespace minko
 {
 	namespace input
 	{
-		class LuaFinger :
+		class LuaTouch :
 			public LuaWrapper
 		{
 		public:
@@ -37,24 +37,24 @@ namespace minko
 			void
 			bind(LuaGlue& state)
 			{
-			    auto& inputFinger = state.Class<input::Finger>("Finger");
+			    auto& inputTouch = state.Class<input::Touch>("Touch");
 			        
 
-			    MINKO_LUAGLUE_BIND_SIGNAL(state, input::Finger::Ptr);
-			    MINKO_LUAGLUE_BIND_SIGNAL(state, input::Finger::Ptr, float, float);
+			    MINKO_LUAGLUE_BIND_SIGNAL(state, input::Touch::Ptr);
+			    MINKO_LUAGLUE_BIND_SIGNAL(state, input::Touch::Ptr, float, float);
 
-			    inputFinger
-                    .property("x",                  &Finger::x)
-                    .property("y",                  &input::Finger::y)
-                    .property("dx",                 &input::Finger::dx)
-                    .property("dy",                 &input::Finger::dy)
-			        .property("fingerDown",         &Finger::fingerDown)
-                    .property("fingerUp",           &input::Finger::fingerUp)
-			        .property("fingerMotion",       &input::Finger::fingerMotion)
-			        .property("swipeLeft",          &input::Finger::swipeLeft)
-                    .property("swipeRight",         &input::Finger::swipeRight)
-                    .property("swipeUp",            &input::Finger::swipeUp)
-                    .property("swipeDown",          &input::Finger::swipeDown)
+			    inputTouch
+                    .property("x",                  &Touch::x)
+                    .property("y",                  &input::Touch::y)
+                    .property("dx",                 &input::Touch::dx)
+                    .property("dy",                 &input::Touch::dy)
+			        .property("touchDown",         &Touch::touchDown)
+                    .property("touchUp",           &input::Touch::touchUp)
+			        .property("touchMotion",       &input::Touch::touchMotion)
+			        .property("swipeLeft",          &input::Touch::swipeLeft)
+                    .property("swipeRight",         &input::Touch::swipeRight)
+                    .property("swipeUp",            &input::Touch::swipeUp)
+                    .property("swipeDown",          &input::Touch::swipeDown)
                 ;
 			}
 		};

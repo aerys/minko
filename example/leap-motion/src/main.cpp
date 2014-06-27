@@ -14,9 +14,9 @@ using namespace minko::scene;
 using namespace minko::material;
 using namespace minko::component;
 
-static const std::string	SCENE_NAME		= "model/crossCubes.scene";
+static const std::string	SCENE_NAME		= "model/cubes.scene";
 static const std::string	DEFAULT_EFFECT	= "effect/Basic.effect";
-static const std::string	HANGAR_TEXTURE	= "texture/hangar.png";
+static const std::string	HANGAR_TEXTURE	= "texture/studio24.png";
 
 void
 explodeModel(float magnitude, float previousMagnitude, Node::Ptr);
@@ -319,11 +319,11 @@ int main(int argc, char** argv)
 				 BasicMaterial::create()
 					 ->diffuseColor(Vector4::create(1.0f, 0.0f, 0.0f, 1.0f))
 					 ->diffuseMap(sceneManager->assets()->texture(HANGAR_TEXTURE))
-					 ->triangleCulling(render::TriangleCulling::FRONT),
+					 ->triangleCulling(render::TriangleCulling::FRONT), 
 				sceneManager->assets()->effect("effect/Basic.effect")
 			));
 
-		root->addChild(dirLight);
+		root->addChild(dirLight); 
 		root->addChild(pointLight);
         root->addChild(skybox);
 		root->addChild(cameraNode);

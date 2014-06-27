@@ -28,3 +28,4 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/input/leap/ScreenTapGesture.hpp"
 #include "minko/input/leap/KeyTapGesture.hpp"
 #include "minko/input/leap/Pointable.hpp"
+#include "minko/input/leap/Finger.hpp"

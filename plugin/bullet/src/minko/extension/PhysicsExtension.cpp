@@ -115,7 +115,7 @@ PhysicsExtension::deserializePhysics(std::string&							serializedCollider,
 
 	auto collider = component::bullet::Collider::create(data)
 		//->collisionGroup(filterGroup) // information stored in node layouts 
-		->triggerCollisions(dst.a7);
+		->triggerCollisions(dst.a7 != 0);
 
 	collider->layoutMask(filterMask);
 

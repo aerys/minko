@@ -49,6 +49,18 @@ namespace minko
 			std::string												_lastParsedAssetName;
 			std::list<std::shared_ptr<component::JobManager::Job>>	_jobList;
 
+			int														_magicNumber;
+
+			unsigned int											_fileSize;
+			short													_headerSize;
+			unsigned int											_dependenciesSize;
+			unsigned int											_sceneDataSize;
+
+			int														_version;
+			int														_versionHi;
+			int														_versionLow;
+			int														_versionBuild;
+
 		private:
 			static std::unordered_map<uint, AssetDeserializeFunction> _assetTypeToFunction;
 
@@ -70,11 +82,13 @@ namespace minko
 			registerAssetFunction(uint assetTypeId, AssetDeserializeFunction f);
 
 		protected:
-			std::string
-			extractDependencies(AssetLibraryPtr						assetLibrary,
-								const std::vector<unsigned char>&	data,
-								std::shared_ptr<Options>			options,
-								std::string&						assetFilePath);
+			void
+			extractDependencies(AssetLibraryPtr							assetLibrary, 
+			  				    const std::vector<unsigned char>&		data,
+								short									dataOffset,
+								unsigned int							dependenciesSize,
+								std::shared_ptr<Options>				options,
+								std::string&							assetFilePath);
 
 			inline
 			void
@@ -87,13 +101,35 @@ namespace minko
 			AbstractSerializerParser();
 
 			void
-			deserializedAsset(SerializedAsset&					asset,
+			deserializeAsset(SerializedAsset&					asset,
 							  AssetLibraryPtr					assetLibrary,
 							  std::shared_ptr<Options>			options,
 							  std::string&						assetFilePath);
 
 			std::string
 			extractFolderPath(const std::string& filepath);
+
+			void
+			readHeader(const std::string&					filename, 
+					   const std::vector<unsigned char>&	data);
+
+			int
+			readInt(const std::vector<unsigned char>& data, int offset)
+			{
+				return (int)(data[offset] << 24 | data[offset + 1] << 16 | data[offset + 2] << 8 | data[offset + 3]);
+			}
+
+			unsigned int
+			readUInt(const std::vector<unsigned char>& data, int offset)
+			{
+				return (unsigned int)(data[offset] << 24 | data[offset + 1] << 16 | data[offset + 2] << 8 | data[offset + 3]);
+			}
+
+			short
+			readShort(const std::vector<unsigned char>& data, int offset)
+			{
+				return (short)(data[offset] << 8 | data[offset + 1]);
+			}
 		};
 	}
 }

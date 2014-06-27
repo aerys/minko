@@ -23,7 +23,8 @@ minko.project.worker("minko-plugin-" .. PROJECT_NAME)
 	-- windows
 	configuration { "windows32 or windows64" }
 		links { "libcurl" }
-		
+
 	-- macos
 	configuration { "osx64" }
-		links { "curl"}
+		links { "curl",  "Security.framework"}
+		libdirs { minko.plugin.path("http-worker") .. "/lib/curl/lib/osx64/release" }

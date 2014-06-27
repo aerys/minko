@@ -40,8 +40,8 @@ namespace minko
 			public AbstractWriter<std::shared_ptr<scene::Node>>
 		{
 		public:
-			typedef std::shared_ptr<SceneWriter>										Ptr;
-			typedef msgpack::type::tuple<std::string, uint, uint, std::vector<uint>>	SerializedNode;
+			typedef std::shared_ptr<SceneWriter>													Ptr;
+			typedef msgpack::type::tuple<std::string, uint, uint, std::vector<uint>, std::string>	SerializedNode;
 
 		private:
 			typedef std::shared_ptr<file::Dependency> 					DependencyPtr;
