@@ -833,15 +833,12 @@ Canvas::step()
 }
 
 #if defined(EMSCRIPTEN)
-namespace
-{
-    Canvas::Ptr currentCanvas;
+Canvas::Ptr currentCanvas;
 
-    void
-    emscriptenMainLoop()
-    {
-        currentCanvas->step();
-    }
+void
+emscriptenMainLoop()
+{
+    currentCanvas->step();
 }
 #endif
 
