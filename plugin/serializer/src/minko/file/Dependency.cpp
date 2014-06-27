@@ -297,14 +297,14 @@ Dependency::serializeTexture(std::shared_ptr<Dependency>				dependency,
     if (sourceExtension != destinationExtension)
         textureName = textureName.substr(0, textureName.size() - sourceExtension.size()) + destinationExtension;
 
-    writer->data(texture);
-    writer->extension(destinationExtension);
+    writer->data(std::static_pointer_cast<render::Texture>(texture));
+    writer->imageFormat(destinationFormat);
 
     if (writerOptions->embedAll())
     {
         assetType = serialize::AssetType::EMBED_TEXTURE_ASSET;
 
-        content = writer->embedAll(assetLibrary, options, writerOptions);
+        content = writer->embedTexture(assetLibrary, options, writerOptions);
 
         metaByte = static_cast<unsigned char>(destinationFormat);
     }

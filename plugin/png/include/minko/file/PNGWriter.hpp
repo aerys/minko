@@ -45,6 +45,12 @@ namespace minko
 			      minko::uint                        width,
 			      minko::uint                        height);
 
+            void
+            writeToStream(std::vector<unsigned char>&       destination,
+                          const std::vector<unsigned char>& source,
+                          minko::uint                       width,
+                          minko::uint                       height);
+
 		private:
 			PNGWriter()
 			{

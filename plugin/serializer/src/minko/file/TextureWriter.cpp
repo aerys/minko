@@ -19,90 +19,75 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/file/TextureWriter.hpp"
 
+#include "minko/file/AbstractWriter.hpp"
 #include "minko/render/AbstractTexture.hpp"
 #include "minko/render/Texture.hpp"
 #include "minko/file/Dependency.hpp"
-#include "minko/file/DevILWriter.hpp"
+#include "minko/file/PNGWriter.hpp"
 #include "minko/Types.hpp"
 
 using namespace minko;
 using namespace minko::file;
 
 TextureWriter::TextureWriter() :
-    _extension()
+    _imageFormat()
 {
 }
 
 void
-TextureWriter::extension(const std::string& extension)
+TextureWriter::data(TexturePtr data)
 {
-    _extension = extension;
+    _data = data;
 }
 
 void
-TextureWriter::writeRawTexture(std::string&                     filename,
-                               std::shared_ptr<AssetLibrary>    assetLibrary,
-                               std::shared_ptr<Options>         options,
-                               std::shared_ptr<WriterOptions>   writerOptions)
+TextureWriter::imageFormat(serialize::ImageFormat imageFormat)
+{
+    _imageFormat = imageFormat;
+}
+
+void
+TextureWriter::writeRawTexture(std::string&     filename,
+                               AssetLibraryPtr  assetLibrary,
+                               OptionsPtr       options,
+                               WriterOptionsPtr writerOptions)
 {
     std::ofstream file(filename, std::ios::out | std::ios::binary | std::ios::trunc);
 
     if (file)
     {
-        auto dependencies               = Dependency::create();
-        auto serializedData             = embed(assetLibrary, options, dependencies, writerOptions);
-        auto serializedDependencies     = dependencies->serialize(assetLibrary, options, writerOptions);
+        auto serializedData = embedTexture(assetLibrary, options, writerOptions);
 
-        auto res                        = serializedData;
-
-        file.write(res.c_str(), res.size());
+        file.write(serializedData.c_str(), serializedData.size());
         file.close();
     }
     else
         std::cerr << "File " << filename << " can't be opened" << std::endl;
-
-    complete()->execute(this->shared_from_this());
 }
 
 std::string
-TextureWriter::embed(AssetLibraryPtr                    assetLibrary,
-                     OptionsPtr                         options,
-                     DependencyPtr                      dependency,
-                     std::shared_ptr<WriterOptions>     writerOptions)
+TextureWriter::embedTexture(AssetLibraryPtr      assetLibrary,
+                            OptionsPtr           options,
+                            WriterOptionsPtr     writerOptions)
 {
-    auto texture = std::dynamic_pointer_cast<render::Texture>(data());
+    auto extension = serialize::extensionFromImageFormat(_imageFormat);
 
-    auto textureFormat = /* texture->format(); */ render::TextureFormat::RGBA;
+    auto texture = std::dynamic_pointer_cast<render::Texture>(_data);
 
-    uint componentCount = { };
+    auto textureData = std::vector<unsigned char>();
 
-    switch (textureFormat)
+    switch (_imageFormat)
     {
-        case render::TextureFormat::RGB:
-            componentCount = 3;
-            break;
+    case serialize::ImageFormat::PNG:
+    {
+        auto writer = PNGWriter::create();
 
-        case render::TextureFormat::RGBA:
-            componentCount = 4;
-            break;
+        writer->writeToStream(textureData, texture->data(), texture->width(), texture->height());
 
-        default:
-            break;
+        break;
     }
-	
-    auto textureData = std::vector<unsigned char> { };
-
-    {
-        auto devilWriter = file::DevILWriter::create();
-
-        devilWriter->writeToStream(textureData,
-                                   _extension,
-                                   texture->data(),
-                                   texture->width(),
-                                   texture->height(),
-                                   texture->width(),
-                                   texture->height(),
-                                   componentCount);
+    default:
+        throw WriterError("UnsupportedOutputImageFormat", "No writer found for extension: '" + extension + "'");
     }
 
     auto textureContent = std::string(textureData.begin(), textureData.end());

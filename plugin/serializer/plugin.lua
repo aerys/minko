@@ -3,7 +3,7 @@ minko.plugin.serializer = {}
 
 function minko.plugin.serializer:enable()
 
-    minko.plugin.enable("devil")
+    minko.plugin.enable("png")
 
 	minko.plugin.links { "serializer" }
 	includedirs {
