@@ -282,7 +282,7 @@ Dependency::serializeTexture(std::shared_ptr<Dependency>				dependency,
 {
 	auto writer                 = TextureWriter::create();
     auto assetType              = serialize::AssetType();
-    auto metaByte               = unsigned char(0);
+    unsigned char metaByte      = 0;
     auto content                = std::string();
     auto textureName            = assetLibrary->textureName(texture);
     auto sourceExtension        = textureName.substr(textureName.find_last_of(".") + 1);
