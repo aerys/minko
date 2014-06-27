@@ -30,12 +30,12 @@
 
 #if _MSC_VER
 # include "SDL_config_windows.h"
-#elif TARGET_OS_MAC
-# include "SDL_config_macosx.h"
 #elif __ANDROID__
 # include "SDL_config_android.h"
 #elif TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
 # include "SDL_config_iphoneos.h"
+#elif TARGET_OS_MAC
+# include "SDL_config_macosx.h"
 #elif LINUX || __unix__
 # include "SDL_config_linux.h"
 #elif EMSCRIPTEN
