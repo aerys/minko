@@ -195,6 +195,13 @@ namespace minko
 		uint
 		height();
 
+        inline
+        SDL_Window*	
+        getWindow()
+        {
+            return _window;
+        }
+        
 		int
 		getJoystickAxis(input::Joystick::Ptr joystick, int axis);
 
