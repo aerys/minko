@@ -64,9 +64,14 @@ Node::clone(minko::CloneOption option)
 	if (option == minko::CloneOption::SHALLOW) {
 		Node::Ptr node = Node::create();
 		node->_name = shared_from_this()->name() + "_clone";
-		for (auto component : shared_from_this()->_components)			
-			node->addComponent(component->clone());
-		
+		for (auto component : shared_from_this()->_components)
+		{
+			auto componentClone = component->clone(minko::CloneOption::DEEP);
+			if (componentClone != nullptr)
+			{
+				node->addComponent(componentClone);
+			}
+		}	
 
 		return node;
 	}
