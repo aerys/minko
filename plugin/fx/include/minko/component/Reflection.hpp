@@ -43,15 +43,15 @@ namespace minko
 
         private:
             // Signals
-            Signal<AbsCmpPtr, NodePtr>::Ptr				            _rootAdded;
+            Signal<AbsCmpPtr, NodePtr>::Ptr																_rootAdded;
 
             // Slots
-            Signal<AbsCmpPtr, NodePtr>::Slot				                    _targetAddedSlot;
-            Signal<AbsCmpPtr, NodePtr>::Slot				                    _targetRemovedSlot;
-            Signal<AbsCmpPtr, NodePtr>::Slot				                    _rootAddedSlot;
-            Signal<std::shared_ptr<data::Provider>, const std::string&>::Slot	_viewMatrixChangedSlot;
-            Signal<NodePtr, NodePtr, NodePtr>::Slot								_addedToSceneSlot;
-			Signal<component::SceneManager::Ptr, uint, std::shared_ptr<render::AbstractTexture>>::Slot            _frameRenderingSlot;
+            Signal<AbsCmpPtr, NodePtr>::Slot															_targetAddedSlot;
+            Signal<AbsCmpPtr, NodePtr>::Slot															_targetRemovedSlot;
+            Signal<AbsCmpPtr, NodePtr>::Slot															_rootAddedSlot;
+            Signal<std::shared_ptr<data::Provider>, const std::string&>::Slot							_viewMatrixChangedSlot;
+            Signal<NodePtr, NodePtr, NodePtr>::Slot														_addedToSceneSlot;
+			Signal<component::SceneManager::Ptr, uint, std::shared_ptr<render::AbstractTexture>>::Slot  _frameRenderingSlot;
 
             uint                                                _width;
             uint                                                _height;
@@ -94,6 +94,9 @@ namespace minko
                 return reflection;
             }
 
+			AbstractComponent::Ptr
+			clone(const CloneOption& option);
+
             inline
             Signal<AbsCmpPtr, std::shared_ptr<scene::Node>>::Ptr
             rootAdded() const
@@ -121,6 +124,8 @@ namespace minko
                 uint renderTargetWidth,
                 uint renderTargetHeight,
                 uint clearColor);
+
+			Reflection(const Reflection& reflection, const CloneOption& option);
 
             void
             initialize();
