@@ -277,6 +277,7 @@ Transform::RootTransform::updateTransformsList()
 		_matrix[nodeId]			= &transform->_matrix;
 		_modelToWorld[nodeId]	= &transform->_modelToWorld;
 		_idToNode[nodeId]		= node;
+        _dirty[nodeId]          = true;
 		
 		if (ancestor)
 		{
