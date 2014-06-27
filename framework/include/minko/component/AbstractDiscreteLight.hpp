@@ -37,7 +37,7 @@ namespace minko
 		public:
 			inline
 		    float
-		    diffuse()
+		    diffuse() const
 		    {
 		    	return data()->get<float>("diffuse");
 		    }
@@ -53,7 +53,7 @@ namespace minko
 
 			inline
 			float
-			specular()
+			specular() const
 			{
 				return data()->get<float>("specular");
 			}

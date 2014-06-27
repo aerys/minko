@@ -68,7 +68,7 @@ namespace minko
 				}
 
 				AbstractComponent::Ptr
-				clone();
+				clone(const CloneOption& option);
 
 			private:
 				ColliderDebug(AssetLibraryPtr);

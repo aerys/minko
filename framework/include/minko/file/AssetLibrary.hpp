@@ -88,6 +88,13 @@ namespace minko
 
 			inline
 			uint
+			numEffects()
+			{
+				return _effects.size();
+			}
+
+			inline
+			uint
 			numTextures()
 			{
 				return _textures.size();
