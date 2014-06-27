@@ -74,7 +74,8 @@ Canvas::Canvas(const std::string& name, const uint width, const uint height, boo
     _enterFrame(Signal<Canvas::Ptr, float, float>::create()),
     _resized(Signal<AbstractCanvas::Ptr, uint, uint>::create()),
     _joystickAdded(Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::create()),
-    _joystickRemoved(Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::create())
+    _joystickRemoved(Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::create()),
+    _fingerZoom(Signal<std::shared_ptr<input::Finger>, float>::create())
 {
     _data->set<math::Vector4::Ptr>("canvas.viewport", Vector4::create(0.0f, 0.0f, (float) width, (float) height));
 }
@@ -121,6 +122,7 @@ Canvas::initializeInputs()
     _mouse = SDLMouse::create(shared_from_this());
     _keyboard = SDLKeyboard::create();
     _finger = SDLFinger::create(shared_from_this());
+    _fingers = std::vector<std::shared_ptr<Canvas::SDLFinger>>();
 
 #if !defined(EMSCRIPTEN) && !defined(__ANDROID__)
     for (int i = 0; i < SDL_NumJoysticks(); ++i)
@@ -562,6 +564,19 @@ Canvas::step()
 
             if (-event.tfinger.dy > SDLFinger::SWIPE_PRECISION)
                 _finger->swipeUp()->execute(_finger);
+
+            // If it's the second finger
+            if (_fingers.size() > 1 && _fingers.at(1)->Finger::fingerId() == event.tfinger.fingerId)
+            {
+                // Zoom
+                if (event.tfinger.dy != 0)
+                {
+                    float zoomValue = event.tfinger.dy;
+                    std::cout << "Zoom (value = " << zoomValue << ")" << std::endl;
+                    
+                    fingerZoom()->execute(finger, zoomValue);
+                }
+            }
 
             break;
         }

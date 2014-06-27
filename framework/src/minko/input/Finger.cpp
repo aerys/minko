@@ -24,6 +24,7 @@ using namespace minko::input;
 
 Finger::Finger(std::shared_ptr<AbstractCanvas> canvas) :
 	_canvas(canvas),
+    _fingerId(0),
     _x(0.f),
     _y(0.f),
     _dx(0.f),

@@ -67,6 +67,12 @@ namespace minko
 				return std::shared_ptr<SDLFinger>(new SDLFinger(canvas));
 			}
             
+            void
+			fingerId(int fingerId)
+			{
+				_fingerId = fingerId;
+			}
+            
 			void
 			x(uint x)
 			{
@@ -131,13 +137,19 @@ namespace minko
 		std::shared_ptr<SDLMouse>								_mouse;
 		std::unordered_map<int, std::shared_ptr<SDLJoystick>>	_joysticks;
         std::shared_ptr<SDLKeyboard>    						_keyboard;
-        std::shared_ptr<SDLFinger>                              _finger;
+        std::shared_ptr<SDLFinger>                              _finger; // To store any finger activity
+        std::vector<std::shared_ptr<SDLFinger>>                 _fingers; // To keep finger order
 
+        // Events
 		Signal<Ptr, float, float>::Ptr											_enterFrame;
 		Signal<AbstractCanvas::Ptr, uint, uint>::Ptr							_resized;
-		Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::Ptr		_joystickAdded;
+		// Joystick events
+        Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::Ptr		_joystickAdded;
 		Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::Ptr		_joystickRemoved;
-		std::list<std::shared_ptr<async::Worker>>								_activeWorkers;
+		// Finger events
+        Signal<std::shared_ptr<input::Finger>, float>::Ptr                      _fingerZoom;
+        
+        std::list<std::shared_ptr<async::Worker>>								_activeWorkers;
 		std::list<Any>															_workerCompleteSlots;
 
 
@@ -222,12 +234,27 @@ namespace minko
 		}
         
         inline
+        std::shared_ptr<input::Finger>
+        finger()
+        {
+            return _finger;
+        }
+        
+        inline
 		std::shared_ptr<input::Finger>
-		finger()
+		finger(uint id)
 		{
-			return _finger;
+            return id < _fingers.size() ? _fingers[id] : nullptr;
 		}
-
+        
+        // Multi finger events
+        inline
+        Signal<std::shared_ptr<input::Finger>, float>::Ptr
+        fingerZoom()
+        {
+            return _fingerZoom;
+        }
+		
 		inline
 		std::shared_ptr<input::Joystick>
 		joystick(uint id)

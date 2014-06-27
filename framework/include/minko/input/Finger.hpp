@@ -37,6 +37,8 @@ namespace minko
 		protected:
 			std::shared_ptr<AbstractCanvas> _canvas;
             
+            int                                  _fingerId;
+            
             float                                _x;
 			float                                _y;
             float                                _dx;
@@ -53,6 +55,13 @@ namespace minko
             Signal<Ptr>::Ptr                    _swipeDown;
 
 		public:
+            inline
+            int
+            fingerId()
+            {
+                return _fingerId;
+            }
+            
             inline
 			float
 			x()

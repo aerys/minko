@@ -63,6 +63,10 @@ namespace minko
         virtual
         std::shared_ptr<input::Finger>
         finger() = 0;
+        
+        virtual
+        std::shared_ptr<input::Finger>
+        finger(uint id) = 0;
 
 		virtual
 		std::shared_ptr<input::Joystick>
