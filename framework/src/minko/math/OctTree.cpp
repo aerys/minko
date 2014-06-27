@@ -192,7 +192,7 @@ math::OctTree::nodeChangedOctant(std::shared_ptr<scene::Node> node)
 		(nodeBoundingBox->box()->bottomLeft().z + nodeBoundingBox->box()->topRight().z) / 2.f
 	);
 
-	if (sqrt(pow(nodeCenter.x - octant->_center.x, 2.f) + pow(nodeCenter.y - octant->_center.y, 2.f) + pow(nodeCenter.z - octant->_center.z, 2.f)) < octant->edgeLength())
+	if (::sqrt(pow(nodeCenter.x - octant->_center.x, 2.f) + pow(nodeCenter.y - octant->_center.y, 2.f) + pow(nodeCenter.z - octant->_center.z, 2.f)) < octant->edgeLength())
 		return false;
 	return true;
 }

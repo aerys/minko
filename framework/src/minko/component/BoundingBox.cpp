@@ -27,10 +27,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/data/Container.hpp"
 
 using namespace minko;
-using namespace math;
 using namespace minko::component;
 
-BoundingBox::BoundingBox(const vec3& topRight, const vec3& bottomLeft) :
+BoundingBox::BoundingBox(const math::vec3& topRight, const math::vec3& bottomLeft) :
 	_fixed(true),
 	_box(math::Box::create(topRight, bottomLeft)),
 	_worldSpaceBox(math::Box::create(topRight, bottomLeft)),
@@ -99,12 +98,12 @@ BoundingBox::update()
 	{
 		if (!surfaces.empty())
 		{
-			auto min = vec3(
+			auto min = math::vec3(
 				std::numeric_limits<float>::max(),
 				std::numeric_limits<float>::max(),
 				std::numeric_limits<float>::max()
 			);
-			auto max = vec3(
+			auto max = math::vec3(
 				-std::numeric_limits<float>::max(),
 				-std::numeric_limits<float>::max(),
 				-std::numeric_limits<float>::max()
@@ -153,8 +152,8 @@ BoundingBox::update()
 		}
 		else
 		{
-			_box->bottomLeft(vec3(0.));
-			_box->topRight(vec3(0.));
+			_box->bottomLeft(math::vec3(0.));
+			_box->topRight(math::vec3(0.));
 		}
 	}
 
@@ -183,12 +182,12 @@ BoundingBox::updateWorldSpaceBox()
 		for (uint i = 0; i < numVertices; ++i)
 			vertices[i] = (math::vec4(vertices[i], 1.f) * t).xyz();
 
-		auto max = vec3(
+		auto max = math::vec3(
 			-std::numeric_limits<float>::max(),
 			-std::numeric_limits<float>::max(),
 			-std::numeric_limits<float>::max()
 		);
-		auto min = vec3(
+		auto min = math::vec3(
 			std::numeric_limits<float>::max(),
 			std::numeric_limits<float>::max(),
 			std::numeric_limits<float>::max()
