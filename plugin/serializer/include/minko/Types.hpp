@@ -63,7 +63,7 @@ namespace minko
 			MATERIAL_ASSET              = 1,
 			EMBED_MATERIAL_ASSET        = 11,
 			TEXTURE_ASSET               = 2,
-            EMBED_TEXTURE_ASSET         = 12,
+            EMBED_TEXTURE_ASSET         = 120,
 			EFFECT_ASSET                = 3,
 			EMBED_EFFECT_ASSET          = 13
 		};
@@ -73,7 +73,7 @@ namespace minko
             SOURCE  = 1,
             PNG     = 2,
             JPEG    = 3,
-            TGA     = 4
+            TGA     = 4,
         };
 
         namespace
@@ -84,13 +84,20 @@ namespace minko
                 { ImageFormat::JPEG, "jpg" },
                 { ImageFormat::TGA, "tga" },
             };
+
+            static const auto defaultImageFormat = ImageFormat::PNG;
         }
 
         inline
         std::string
         extensionFromImageFormat(ImageFormat format)
         {
-            return imageFormatToExtensionMap.at(format);
+            auto imageFormatToExtensionPairIt = imageFormatToExtensionMap.find(format);
+
+            if (imageFormatToExtensionPairIt == imageFormatToExtensionMap.end())
+                return imageFormatToExtensionMap.at(defaultImageFormat);
+
+            return imageFormatToExtensionPairIt->second;
         }
 
         inline
