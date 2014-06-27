@@ -1,12 +1,16 @@
 #!/bin/bash
 
-BIN="astyle"
-OPTIONS="-rn -NYwcfpH -xd -s2 -k1 -W1 -z2 --style=allman"
+ASTYLE="astyle"
+SED="sed"
+
+ASTYLE_OPTIONS="--style=allman --indent=spaces=4 --convert-tabs --break-blocks --unpad-paren --pad-oper --pad-header --close-templates --indent-preproc-define --indent-namespaces --indent-col1-comments --align-pointer=type --align-reference=type --lineend=linux"
+MODE_OPTIONS="--suffix=none --recursive"
 PROJECTS="framework plugin/*"
 FILES="src/*.cpp src/*.hpp include/*.hpp"
 
 for PROJECT in $PROJECTS ; do
     pushd ${PROJECT}/${DIR}
-    ${BIN} ${OPTIONS} ${FILES}
+    ${ASTYLE} ${MODE_OPTIONS} ${STYLE_OPTIONS} ${FILES}
+    ${SED} -i'' -e 's/[ \t]*$//' ${FILES}
     popd
 done
