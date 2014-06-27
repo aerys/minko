@@ -281,8 +281,9 @@ Dependency::serializeTexture(std::shared_ptr<Dependency>				dependency,
                              std::shared_ptr<file::WriterOptions>       writerOptions)
 {
 	auto writer                 = TextureWriter::create();
-    auto assetType              = serialize::AssetType { };
-    auto content                = std::string { };
+    auto assetType              = serialize::AssetType();
+    auto metaByte               = unsigned char(0);
+    auto content                = std::string();
     auto textureName            = assetLibrary->textureName(texture);
     auto sourceExtension        = textureName.substr(textureName.find_last_of(".") + 1);
 
@@ -305,9 +306,7 @@ Dependency::serializeTexture(std::shared_ptr<Dependency>				dependency,
 
         content = writer->embedAll(assetLibrary, options, writerOptions);
 
-        auto formatByte = static_cast<char>(destinationFormat);
-
-        content.insert(content.begin(), formatByte);
+        metaByte = static_cast<unsigned char>(destinationFormat);
     }
     else
     {
@@ -329,7 +328,10 @@ Dependency::serializeTexture(std::shared_ptr<Dependency>				dependency,
         content = filename;
     }
 
-    SerializedAsset res(assetType, resourceId, content);
+    auto metaData = static_cast<unsigned int>(metaByte << 24) +
+                    static_cast<unsigned int>(assetType);
+
+    SerializedAsset res(metaData, resourceId, content);
 
 	return res;
 }

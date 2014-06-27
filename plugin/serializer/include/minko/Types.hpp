@@ -78,7 +78,7 @@ namespace minko
 
         namespace
         {
-            static const auto imageFormatToExtensionMap = std::unordered_map<ImageFormat, std::string>
+            static const auto imageFormatToExtensionMap = std::map<ImageFormat, std::string>
             {
                 { ImageFormat::PNG, "png" },
                 { ImageFormat::JPEG, "jpg" },
