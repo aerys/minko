@@ -28,14 +28,15 @@ LuaLoader::bind(LuaGlue& state)
     auto& batchLoader = state.Class<Loader>("Loader");
 
     MINKO_LUAGLUE_BIND_SIGNAL(state, Loader::Ptr);
+    MINKO_LUAGLUE_BIND_SIGNAL(state, Loader::Ptr, const ParserError&);
     MINKO_LUAGLUE_BIND_SIGNAL(state, Loader::Ptr, float);
 
     batchLoader
-        .method("create",       static_cast<Loader::Ptr(*)(void)>(&Loader::create))
-        .method("createCopy",   static_cast<Loader::Ptr(*)(Loader::Ptr)>(&Loader::create))
-        .method("queue",        static_cast<Loader::Ptr (Loader::*)(const std::string&)>(&Loader::queue))
-        .method("load",         &Loader::load)
-        .property("complete",   &Loader::complete)
-        .property("progress",   &Loader::progress)
-        .property("error",      &Loader::error);
+        .method("create",           static_cast<Loader::Ptr(*)(void)>(&Loader::create))
+        .method("createCopy",       static_cast<Loader::Ptr(*)(Loader::Ptr)>(&Loader::create))
+        .method("queue",            static_cast<Loader::Ptr (Loader::*)(const std::string&)>(&Loader::queue))
+        .method("load",             &Loader::load)
+        .property("complete",       &Loader::complete)
+        .property("progress",       &Loader::progress)
+        .property("error",          &Loader::error);
 }

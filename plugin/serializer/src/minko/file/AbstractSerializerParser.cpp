@@ -113,7 +113,7 @@ AbstractSerializerParser::deserializeAsset(SerializedAsset&			asset,
 	std::vector<unsigned char>	data;
 	std::string					assetCompletePath	= assetFilePath + "/";
 	std::string					resolvedPath		= "";
-	unsigned char				metaByte			= (asset.a0 & 0xFF00) >> 8;
+	unsigned char				metaByte			= (asset.a0 & 0xFF000000) >> 24;
 
 	asset.a0 = asset.a0 & 0x00FF;
 
@@ -137,8 +137,28 @@ AbstractSerializerParser::deserializeAsset(SerializedAsset&			asset,
 			file.read((char*)&data[0], size);
 			file.close();
 		}
-		else
-			throw std::invalid_argument("file already open");
+        else
+        {
+            auto filePath = assetCompletePath;
+
+            switch (asset.a0)
+            {
+            case serialize::AssetType::GEOMETRY_ASSET:
+                throw ParserError("MissingGeometryDependency", "Missing geometry dependency: '" + filePath + "'");
+
+            case serialize::AssetType::MATERIAL_ASSET:
+                throw ParserError("MissingMaterialDependency", "Missing material dependency: '" + filePath + "'");
+
+            case serialize::AssetType::TEXTURE_ASSET:
+                throw ParserError("MissingTextureDependency", "Missing texture dependency: '" + filePath + "'");
+
+            case serialize::AssetType::EFFECT_ASSET:
+                throw ParserError("MissingEffectDependency", "Missing effect dependency: '" + filePath + "'");
+
+            default:
+                break;
+            }
+        }
 	}
 	else
 		data.assign(asset.a2.begin(), asset.a2.end());
@@ -170,15 +190,16 @@ AbstractSerializerParser::deserializeAsset(SerializedAsset&			asset,
 		_jobList.splice(_jobList.end(), _materialParser->_jobList);
 	}
 	else if ((asset.a0 == serialize::AssetType::TEXTURE_ASSET ||
-				asset.a0 == serialize::AssetType::PNG_EMBED_TEXTURE_ASSET ||
-				asset.a0 == serialize::AssetType::JPEG_EMBED_TEXTURE_ASSET) &&
+			  asset.a0 == serialize::AssetType::EMBED_TEXTURE_ASSET) &&
 			(_dependencies->textureReferenceExist(asset.a1) == false || _dependencies->getTextureReference(asset.a1) == nullptr)) // texture
 	{
-		if (asset.a0 == serialize::AssetType::PNG_EMBED_TEXTURE_ASSET ||
-            asset.a0 == serialize::AssetType::JPEG_EMBED_TEXTURE_ASSET)
+		if (asset.a0 == serialize::AssetType::EMBED_TEXTURE_ASSET)
 		{
-            auto extension = asset.a0 == serialize::AssetType::PNG_EMBED_TEXTURE_ASSET ? ".png" : ".jpg";
-			resolvedPath = std::to_string(asset.a1) + extension;
+            auto imageFormat = static_cast<serialize::ImageFormat>(metaByte);
+
+            auto extension = serialize::extensionFromImageFormat(imageFormat);
+
+			resolvedPath = std::to_string(asset.a1) + "." + extension;
 			assetCompletePath += resolvedPath;
 		}
 

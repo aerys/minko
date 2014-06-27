@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
+#include "minko/Types.hpp"
 
 namespace minko
 {
@@ -35,10 +36,12 @@ namespace minko
             typedef std::shared_ptr<WriterOptions>                              Ptr;
 
         private:
-            bool        _embedAll;
-            bool        _addBoundingBoxes;
+            bool                    _embedAll;
+            bool                    _addBoundingBoxes;
 
-            UriFunction _outputAssetUriFunction;
+            UriFunction             _outputAssetUriFunction;
+
+            serialize::ImageFormat  _imageFormat;
 
         public:
             inline static
@@ -97,6 +100,22 @@ namespace minko
 
                 return shared_from_this();
             }
+
+            inline
+			serialize::ImageFormat
+			imageFormat() const
+			{
+				return _imageFormat;
+			}
+
+			inline
+			Ptr
+			imageFormat(serialize::ImageFormat value)
+			{
+				_imageFormat = value;
+
+				return shared_from_this();
+			}
 
         private:
             WriterOptions();

@@ -549,6 +549,7 @@ EffectParser::loadGLSLDependencies(GLSLBlockListPtr		blocks,
 				    &EffectParser::dependencyErrorHandler,
 					std::static_pointer_cast<EffectParser>(shared_from_this()),
 					std::placeholders::_1,
+					std::placeholders::_2,
 					block.second
 			    ));
 
@@ -597,7 +598,7 @@ EffectParser::glslIncludeCompleteHandler(LoaderPtr 			        loader,
 }
 
 void
-EffectParser::dependencyErrorHandler(std::shared_ptr<Loader> loader, const std::string& filename)
+EffectParser::dependencyErrorHandler(std::shared_ptr<Loader> loader, const ParserError& error, const std::string& filename)
 {
 #ifdef DEBUG
 	std::cerr << "Unable to load dependency '" << filename << "', included paths are:" << std::endl;
@@ -999,7 +1000,8 @@ EffectParser::loadTexture(const std::string&	textureFilename,
 	_loaderErrorSlots[loader] = loader->error()->connect(std::bind(
 		&EffectParser::dependencyErrorHandler,
 		std::static_pointer_cast<EffectParser>(shared_from_this()),
-		std::placeholders::_1,
+        std::placeholders::_1,
+		std::placeholders::_2,
         textureFilename
 	));
 

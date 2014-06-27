@@ -28,6 +28,34 @@ namespace minko
 {
 	namespace file
 	{
+        class WriterError :
+            public std::runtime_error
+        {
+        private:
+            std::string _type;
+
+        public:
+            explicit
+            WriterError(const std::string& message) :
+                std::runtime_error(message),
+                _type()
+            {
+            }
+
+            WriterError(const std::string& type, const std::string& message) :
+                std::runtime_error(message),
+                _type(type)
+            {
+            }
+
+            inline
+            const std::string&
+            type() const
+            {
+                return _type;
+            }
+        };
+
 		template <typename T>
 		class AbstractWriter :
 			public std::enable_shared_from_this<AbstractWriter<T>>
@@ -38,10 +66,11 @@ namespace minko
 		private:
 			typedef std::vector<msgpack::type::tuple<unsigned int, short, std::string>> SerializedDependency;
 
-		protected :
-			std::shared_ptr<Signal<Ptr>>	_complete;
-			T								_data;
-			std::shared_ptr<Dependency>		_parentDependencies;
+		protected:
+			std::shared_ptr<Signal<Ptr>>	                    _complete;
+            std::shared_ptr<Signal<Ptr, const WriterError&>>    _error;
+			T								                    _data;
+			std::shared_ptr<Dependency>		                    _parentDependencies;
 
 			int								_magicNumber;
 
@@ -52,6 +81,13 @@ namespace minko
 			{
 				return _complete;
 			}
+
+            inline
+            std::shared_ptr<Signal<Ptr, const WriterError&>>
+            error()
+            {
+                return _error;
+            }
 
 			inline
 			T
@@ -86,68 +122,78 @@ namespace minko
 			}
 
 			void
-			write(std::string&                          filename,
-				  std::shared_ptr<AssetLibrary>         assetLibrary,
-				  std::shared_ptr<Options>              options,
+            write(std::string&                          filename,
+                  std::shared_ptr<AssetLibrary>         assetLibrary,
+                  std::shared_ptr<Options>              options,
                   std::shared_ptr<WriterOptions>        writerOptions,
-				  SerializedDependency&					includeDependency)
-			{
-				std::ofstream file(filename, std::ios::out | std::ios::binary | std::ios::trunc);
+                  SerializedDependency&					includeDependency)
+            {
+                try
+                {
+                    std::ofstream file(filename, std::ios::out | std::ios::binary | std::ios::trunc);
 
-				if (file)
-				{
-					Dependency::Ptr			dependencies			= Dependency::create();
-					std::string				serializedData			= embed(assetLibrary, options, dependencies, writerOptions);
-					SerializedDependency	serializedDependencies	= dependencies->serialize(assetLibrary, options, writerOptions);
-					
-					if (includeDependency.size() > 0)
-						serializedDependencies.insert(serializedDependencies.begin(), includeDependency.begin(), includeDependency.end());
+                    if (file)
+                    {
+                        Dependency::Ptr			dependencies = Dependency::create();
+                        std::string				serializedData = embed(assetLibrary, options, dependencies, writerOptions);
+                        SerializedDependency	serializedDependencies = dependencies->serialize(assetLibrary, options, writerOptions);
 
-					std::vector<std::string> serializedDependenciesBufs;
-					
-					unsigned int dependenciesSize = 2;
+                        if (includeDependency.size() > 0)
+                            serializedDependencies.insert(serializedDependencies.begin(), includeDependency.begin(), includeDependency.end());
 
-					for (auto serializedDependency : serializedDependencies)
-					{
-						dependenciesSize += 4;
+                        std::vector<std::string> serializedDependenciesBufs;
 
-						std::stringstream sbuf;
-						msgpack::pack(sbuf, serializedDependency);
+                        unsigned int dependenciesSize = 2;
 
-						serializedDependenciesBufs.push_back(sbuf.str());
+                        for (auto serializedDependency : serializedDependencies)
+                        {
+                            dependenciesSize += 4;
 
-						dependenciesSize += sbuf.str().size();
-					}
+                            std::stringstream sbuf;
+                            msgpack::pack(sbuf, serializedDependency);
 
-					msgpack::type::tuple<SerializedDependency> res(serializedDependencies);
+                            serializedDependenciesBufs.push_back(sbuf.str());
+
+                            dependenciesSize += sbuf.str().size();
+                        }
+
+                        msgpack::type::tuple<SerializedDependency> res(serializedDependencies);
 
 
-					auto dataSize = serializedData.size();
+                        auto dataSize = serializedData.size();
 
-					char* header = getHeader(dependenciesSize, dataSize);
-					
-					auto headerSize = MINKO_SCENE_HEADER_SIZE;
+                        char* header = getHeader(dependenciesSize, dataSize);
 
-					file.write(header, headerSize);
+                        auto headerSize = MINKO_SCENE_HEADER_SIZE;
 
-					writeShort(file, serializedDependenciesBufs.size());
+                        file.write(header, headerSize);
 
-					for (auto& dependencyBuffer : serializedDependenciesBufs)
-					{
-						writeInt(file, dependencyBuffer.size());
-						file.write(dependencyBuffer.c_str(), dependencyBuffer.size());
+                        writeShort(file, serializedDependenciesBufs.size());
 
-						dependencyBuffer.clear();
-					}
+                        for (auto& dependencyBuffer : serializedDependenciesBufs)
+                        {
+                            writeInt(file, dependencyBuffer.size());
+                            file.write(dependencyBuffer.c_str(), dependencyBuffer.size());
 
-					file.write(serializedData.c_str(), serializedData.size());
-					file.close();
-				}
-				else
-					std::cerr << "File " << filename << " can't be opened" << std::endl;
+                            dependencyBuffer.clear();
+                        }
 
-				complete()->execute(this->shared_from_this());
-			}
+                        file.write(serializedData.c_str(), serializedData.size());
+                        file.close();
+                    }
+                    else
+                        std::cerr << "File " << filename << " can't be opened" << std::endl;
+                }
+                catch (const WriterError& exception)
+                {
+                    if (error()->numCallbacks() > 0)
+                        error()->execute(this->shared_from_this(), exception);
+                    else
+                        throw exception;
+                }
+
+                complete()->execute(this->shared_from_this());
+            }
 
 			char *
 			getHeader(unsigned int dependenciesSize, unsigned int dataSize)
@@ -240,12 +286,12 @@ namespace minko
                      std::shared_ptr<WriterOptions> writerOptions,
 					 SerializedDependency&			includeDependency)
             {
-                // TODO
-                // refactor with AbstractWriter::write by adding a tier private member function
 
-				Dependency::Ptr			dependencies	= _parentDependencies;
-				std::string				serializedData	= embed(assetLibrary, options, dependencies, writerOptions);
-				SerializedDependency	serializedDependencies = Dependency::create()->serialize(assetLibrary,
+            try
+            {
+					Dependency::Ptr			dependencies	= _parentDependencies;
+					std::string				serializedData	= embed(assetLibrary, options, dependencies, writerOptions);
+					SerializedDependency	serializedDependencies = Dependency::create()->serialize(assetLibrary,
                                                                                                  options,
                                                                                                  writerOptions);
 				if (includeDependency.size() > 0)
@@ -276,6 +322,17 @@ namespace minko
 				free(header);
 
 				return data.str();
+
+				}
+                catch (const WriterError& exception)
+                {
+                    if (error()->numCallbacks() > 0)
+                        error()->execute(this->shared_from_this(), exception);
+                    else
+                        throw exception;
+                }
+
+                return std::string();
             }
 
 			virtual
@@ -288,6 +345,7 @@ namespace minko
 		protected:
 			AbstractWriter() :
 				_complete(Signal<Ptr>::create()),
+                _error(Signal<Ptr, const WriterError&>::create()),
 				_parentDependencies(nullptr)
 			{
 			}

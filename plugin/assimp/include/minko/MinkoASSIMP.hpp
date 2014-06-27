@@ -23,7 +23,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 # include "minko/file/ASSIMPParser.hpp"
 #endif
 
-
 #include "minko/file/COBParser.hpp"
 #include "minko/file/NDOParser.hpp"
 #include "minko/file/MDLParser.hpp"

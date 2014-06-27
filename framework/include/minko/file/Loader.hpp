@@ -43,24 +43,24 @@ namespace minko
             typedef std::unordered_map<AbsParserPtr, Signal<AbsParserPtr>::Slot>			ParserSlots;
 
         protected:
-            std::shared_ptr<Options>            _options;
+            std::shared_ptr<Options>                            _options;
 
-            std::list<std::string>	            _filesQueue;
-            std::list<std::string>	            _loading;
-            FilenameToOptions	                _filenameToOptions;
-            FilenameToFile                      _files;
+            std::list<std::string>	                            _filesQueue;
+            std::list<std::string>	                            _loading;
+            FilenameToOptions	                                _filenameToOptions;
+            FilenameToFile                                      _files;
 
-            std::shared_ptr<Signal<Ptr, float>> _progress;
-            std::shared_ptr<Signal<Ptr>>        _complete;
-            std::shared_ptr<Signal<Ptr>>        _error;
+            std::shared_ptr<Signal<Ptr, float>>                 _progress;
+            std::shared_ptr<Signal<Ptr>>                        _complete;
+            std::shared_ptr<Signal<Ptr, const ParserError&>>    _error;
 
-			ProtocolSlots                       _protocolSlots;
-			ProtocolProgressSlots               _protocolProgressSlots;
-            ParserSlots                         _parserSlots;
+			ProtocolSlots                                       _protocolSlots;
+			ProtocolProgressSlots                               _protocolProgressSlots;
+            ParserSlots                                         _parserSlots;
 
-			ProtocolToProgress					_protocolToProgress;
+			ProtocolToProgress					                _protocolToProgress;
 
-			int									_numFiles;
+			int									                _numFiles;
 
         public:
             inline static
@@ -121,7 +121,7 @@ namespace minko
             }
 
             inline
-            std::shared_ptr<Signal<Ptr>>
+            std::shared_ptr<Signal<Ptr, const ParserError&>>
             error()
             {
                 return _error;

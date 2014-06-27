@@ -20,27 +20,28 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
-
-#include "minko/file/AbstractWriter.hpp"
+#include "minko/Types.hpp"
+#include "minko/SerializerCommon.hpp"
 
 namespace minko
 {
 	namespace file
 	{
-		class TextureWriter :
-            public AbstractWriter<std::shared_ptr<render::AbstractTexture>>
+		class TextureWriter
 		{
 		public:
 			typedef std::shared_ptr<TextureWriter>										Ptr;
-			typedef msgpack::type::tuple<std::string, uint, uint, std::vector<uint>>	SerializedNode;
 
 		private:
-			typedef std::shared_ptr<file::Dependency> 					DependencyPtr;
-			typedef std::shared_ptr<file::AssetLibrary>					AssetLibraryPtr;
+			typedef std::shared_ptr<AssetLibrary>					AssetLibraryPtr;
 			typedef std::shared_ptr<Options>							OptionsPtr;
+			typedef std::shared_ptr<WriterOptions>					    WriterOptionsPtr;
+
+            typedef std::shared_ptr<render::Texture>                    TexturePtr;
 
         private:
-            std::string _extension;
+            serialize::ImageFormat _imageFormat;
+            TexturePtr _data;
 
 		public:
 			inline static
@@ -51,19 +52,21 @@ namespace minko
 			}
 
             void
-            extension(const std::string& extension);
+            data(TexturePtr data);
 
             void
-            writeRawTexture(std::string&					filename,
-                            std::shared_ptr<AssetLibrary>	assetLibrary,
-                            std::shared_ptr<Options>		options,
-                            std::shared_ptr<WriterOptions>  writerOptions);
+            imageFormat(serialize::ImageFormat imageFormat);
+
+            void
+            writeRawTexture(std::string&        filename,
+                            AssetLibraryPtr     assetLibrary,
+                            OptionsPtr		    options,
+                            WriterOptionsPtr    writerOptions);
 
 			std::string
-			embed(AssetLibraryPtr                       assetLibrary,
-                  OptionsPtr                            options,
-                  DependencyPtr                         dependency,
-                  std::shared_ptr<WriterOptions>        writerOptions);
+			embedTexture(AssetLibraryPtr    assetLibrary,
+                         OptionsPtr         options,
+                         WriterOptionsPtr   writerOptions);
 
 		protected:
 			TextureWriter();

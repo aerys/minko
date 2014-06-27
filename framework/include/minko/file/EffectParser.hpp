@@ -120,7 +120,7 @@ namespace minko
 			std::unordered_map<std::string, std::string>						_techniqueFallback;
 			
 			std::unordered_map<LoaderPtr, Signal<LoaderPtr>::Slot>				_loaderCompleteSlots;
-			std::unordered_map<LoaderPtr, Signal<LoaderPtr>::Slot>				_loaderErrorSlots;
+			std::unordered_map<LoaderPtr, Signal<LoaderPtr, const ParserError&>::Slot>				_loaderErrorSlots;
 
 		public:
 			inline static
@@ -316,7 +316,7 @@ namespace minko
 
 
 			void
-            dependencyErrorHandler(LoaderPtr loader, const std::string& filename);
+            dependencyErrorHandler(LoaderPtr loader, const ParserError& error, const std::string& filename);
 
 			void
             textureErrorHandler(LoaderPtr loader);
