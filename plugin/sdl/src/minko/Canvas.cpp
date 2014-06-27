@@ -153,7 +153,13 @@ Canvas::initializeContext(const std::string& windowTitle, unsigned int width, un
 
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-
+    
+    SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
+    SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
+    SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
+    SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
+    SDL_GL_SetAttribute(SDL_GL_BUFFER_SIZE, 32);
+    
     _window = SDL_CreateWindow(
         windowTitle.c_str(),
         SDL_WINDOWPOS_CENTERED, // SDL_WINDOWPOS_UNDEFINED,
@@ -164,7 +170,7 @@ Canvas::initializeContext(const std::string& windowTitle, unsigned int width, un
 
     if (!_window)
         throw std::runtime_error(SDL_GetError());
-
+    
 # if MINKO_ANGLE
     if (!(_angleContext = initContext(_window, width, height)))
         throw std::runtime_error("Could not create Angle context");
@@ -471,9 +477,24 @@ Canvas::step()
             auto oldX = _mouse->input::Mouse::x();
             auto oldY = _mouse->input::Mouse::y();
 
-            _mouse->x(event.motion.x);
-            _mouse->y(event.motion.y);
-            _mouse->move()->execute(_mouse, event.motion.x - oldX, event.motion.y - oldY);
+			int windowW;
+			int windowH;
+
+			SDL_GetWindowSize(_window, &windowW, &windowH);
+
+			auto x = event.motion.x;
+			auto y = event.motion.y;
+
+			if (windowW != _width || windowH != _height)
+			{
+                x = int(float(_width) * float(event.motion.x) / float(windowW));
+				y = int(float(_height) * float(event.motion.y) / float(windowH));
+			}
+
+			_mouse->x(x);
+			_mouse->y(y);
+
+            _mouse->move()->execute(_mouse, x - oldX, y - oldY);
             break;
         }
 
@@ -562,6 +583,16 @@ Canvas::step()
 
         case SDL_FINGERMOTION:
         {
+# if defined(DEBUG)
+            /*
+            std::cout << "Finger motion! "
+            << "("
+            << "x: " << event.tfinger.x << ", y: " << event.tfinger.y
+            << "|"
+            << "dx: " << event.tfinger.dx << ", dy: " << event.tfinger.dy
+            << ")" << std::endl;
+            */
+#endif // DEBUG
             _finger->x(uint(event.tfinger.x));
             _finger->y(uint(event.tfinger.y));
             _finger->dx(uint(event.tfinger.dx));
