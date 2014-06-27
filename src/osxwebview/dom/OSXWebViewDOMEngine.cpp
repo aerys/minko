@@ -29,7 +29,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "SDL.h"
 #include "SDL_syswm.h"
 
-#import "OSXWebUIDelegate.h"
+#import "osxwebview/dom/OSXWebUIDelegate.h"
 
 using namespace minko;
 using namespace minko::component;
