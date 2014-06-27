@@ -80,6 +80,10 @@ namespace minko
 		Signal<Ptr, uint, uint>::Ptr
 		resized() = 0;
 
+        virtual
+		Signal<std::shared_ptr<input::Finger>, float>::Ptr
+		fingerZoom() = 0;
+        
 		virtual
 		Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::Ptr
 		joystickAdded() = 0;

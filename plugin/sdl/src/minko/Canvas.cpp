@@ -574,7 +574,7 @@ Canvas::step()
                     float zoomValue = event.tfinger.dy;
                     std::cout << "Zoom (value = " << zoomValue << ")" << std::endl;
                     
-                    fingerZoom()->execute(finger, zoomValue);
+                    fingerZoom()->execute(finger, -zoomValue);
                 }
             }
 
