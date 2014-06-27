@@ -55,7 +55,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #endif
 
 using namespace minko;
-using namespace minko::math;
 using namespace minko::async;
 
 const float Canvas::SDLFinger::SWIPE_PRECISION = 0.05f;
