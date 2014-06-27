@@ -128,13 +128,12 @@ SceneParser::parse(const std::string&					filename,
 	_dependencies->options(options);
 	
 	readHeader(filename, data);
-
-	msgpack::object		deserialized;
-	msgpack::zone		mempool;
 	std::string 		folderPath = extractFolderPath(resolvedFilename);
 
 	extractDependencies(assetLibrary, data, _headerSize, _dependenciesSize, options, folderPath);
 
+	msgpack::object		deserialized;
+	msgpack::zone		mempool;
 	msgpack::unpack((char*)&data[_headerSize + _dependenciesSize], _sceneDataSize, NULL, &mempool, &deserialized);
 
 	msgpack::type::tuple<std::vector<std::string>, std::vector<SerializedNode>> dst;

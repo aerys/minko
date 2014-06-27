@@ -239,7 +239,7 @@ AbstractSerializerParser::readHeader(const std::string&					filename,
 	_versionLow = readShort(data, 5);
 	_versionBuild = int(data[7]);
 
-	/*if (_versionHi != MINKO_SCENE_VERSION_HI || _versionLow != MINKO_SCENE_VERSION_LO || _versionBuild > MINKO_SCENE_VERSION_BUILD)
+	if (_versionHi != MINKO_SCENE_VERSION_HI || _versionLow != MINKO_SCENE_VERSION_LO || _versionBuild > MINKO_SCENE_VERSION_BUILD)
 	{
 		auto fileVersion = std::to_string(_versionHi) + "." + std::to_string(_versionLow) + "." + std::to_string(_versionBuild);
 		auto sceneVersion = std::to_string(MINKO_SCENE_VERSION_HI) + "." + std::to_string(MINKO_SCENE_VERSION_LO) + "." + std::to_string(MINKO_SCENE_VERSION_BUILD);
@@ -259,7 +259,6 @@ AbstractSerializerParser::readHeader(const std::string&					filename,
 		std::cout << "Warning: file " + filename + " is v" + fileVersion + " while current version is v" + sceneVersion << std::endl;
 	}
 #endif
-	*/
 	_fileSize = readUInt(data, 8);
 
 	_headerSize = readShort(data, 12);
