@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/SDLKeyboard.hpp"
 #include "minko/SDLMouse.hpp"
 #include "minko/SDLJoystick.hpp"
+#include "minko/SDLTouch.hpp"
 #include "minko/Signal.hpp"
 #include "minko/render/AbstractContext.hpp"
 #include "minko/render/OpenGLES2Context.hpp"
@@ -53,58 +54,35 @@ namespace minko
 		typedef std::shared_ptr<Canvas>	Ptr;
 
 	private:
-        class SDLFinger :
-            public input::Finger
+		class SDLJoystick : 
+			public input::Joystick
 		{
 			friend class Canvas;
-            
+
 		private:
-            public :
+			SDL_Joystick*	_joystick;
+
+		public :
 			static inline
-			std::shared_ptr<SDLFinger>
-			create(Canvas::Ptr canvas)
+			std::shared_ptr<SDLJoystick>
+			create(Canvas::Ptr canvas, int joystickId, SDL_Joystick* joystick)
 			{
-				return std::shared_ptr<SDLFinger>(new SDLFinger(canvas));
+				return std::shared_ptr<SDLJoystick>(new SDLJoystick(canvas, joystickId, joystick));
 			}
-            
-            void
-			fingerId(int fingerId)
+
+			inline
+			SDL_Joystick* const
+			joystick()
 			{
-				_fingerId = fingerId;
+				return _joystick;
 			}
-            
-			void
-			x(float x)
-			{
-				_x = float(x);
-			}
-            
-			void
-			y(float y)
-			{
-				_y = float(y);
-			}
-            
-            void
-			dx(float dx)
-			{
-				_dx = float(dx);
-			}
-            
-			void
-			dy(float dy)
-			{
-				_dy = float(dy);
-			}
-            
+
 		private:
-			SDLFinger(Canvas::Ptr canvas) :
-            	input::Finger(canvas)
+			SDLJoystick(Canvas::Ptr canvas, int joystickId, SDL_Joystick* joystick) :
+				input::Joystick(canvas, joystickId),
+				_joystick(joystick)
 			{
 			}
-            
-        public:
-            static const float SWIPE_PRECISION;
 		};
 
 	private:

@@ -60,8 +60,6 @@ using namespace minko;
 using namespace minko::math;
 using namespace minko::async;
 
-const float Canvas::SDLFinger::SWIPE_PRECISION = 0.05f;
-
 Canvas::Canvas(const std::string& name, const uint width, const uint height, bool useStencil, bool chromeless) :
     _name(name),
     _useStencil(useStencil),
@@ -123,7 +121,7 @@ Canvas::initializeInputs()
     _mouse = SDLMouse::create(shared_from_this());
     _keyboard = SDLKeyboard::create();
     _finger = SDLFinger::create(shared_from_this());
-    _fingers = std::vector<std::shared_ptr<Canvas::SDLFinger>>();
+    _fingers = std::vector<std::shared_ptr<SDLFinger>>();
 
 #if !defined(EMSCRIPTEN) && !defined(__ANDROID__)
     for (int i = 0; i < SDL_NumJoysticks(); ++i)
@@ -526,13 +524,17 @@ Canvas::step()
             // Touch events
         case SDL_FINGERDOWN:
         {
+# if defined(DEBUG)
+            //std::cout << "Finger down! (x: " << event.tfinger.x << ", y: " << event.tfinger.y << ")" << std::endl;
+#endif // DEBUG
+            _finger->fingerId(event.tfinger.fingerId);
             _finger->x(uint(event.tfinger.x));
             _finger->y(uint(event.tfinger.y));
 
             _finger->fingerDown()->execute(_finger, event.tfinger.x, event.tfinger.y);
             
             // Create a new finger
-            auto finger = Canvas::SDLFinger::create(shared_from_this());
+            auto finger = SDLFinger::create(shared_from_this());
             
             finger->fingerId(event.tfinger.fingerId);
             finger->x(event.tfinger.x);
@@ -547,6 +549,9 @@ Canvas::step()
 
         case SDL_FINGERUP:
         {
+# if defined(DEBUG)
+            //std::cout << "Finger up! (x: " << event.tfinger.x << ", y: " << event.tfinger.y << ")" << std::endl;
+#endif // DEBUG
             _finger->x(uint(event.tfinger.x));
             _finger->y(uint(event.tfinger.y));
 
