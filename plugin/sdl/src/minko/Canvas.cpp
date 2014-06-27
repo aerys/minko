@@ -46,8 +46,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #if defined(__APPLE__)
 # include <TargetConditionals.h>
-# if TARGET_OS_IPHONE
+# if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
 #  include "SDL_opengles.h"
+#  include "SDL_syswm.h"
 # endif
 #endif
 
@@ -169,7 +170,7 @@ Canvas::initializeContext(const std::string& windowTitle, unsigned int width, un
 # if MINKO_ANGLE
     if (!(_angleContext = initContext(_window, width, height)))
         throw std::runtime_error("Could not create Angle context");
-# elif TARGET_IPHONE_SIMULATOR
+# elif TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
 //    SDL_CreateRenderer(_window, -1, 0);
     SDL_GLContext glContext = SDL_GL_CreateContext(_window);
     if (!glContext)

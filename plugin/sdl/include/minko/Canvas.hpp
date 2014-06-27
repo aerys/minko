@@ -122,11 +122,8 @@ namespace minko
 
 		bool											_active;
 		render::AbstractContext::Ptr					_context;
-#ifdef EMSCRIPTEN
 		SDL_Surface*											_screen;
-#else
 		SDL_Window*												_window;
-#endif
 		float													_relativeTime;
 		float													_frameDuration;
         time_point                                              _previousTime;
