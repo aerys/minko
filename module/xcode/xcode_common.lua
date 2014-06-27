@@ -760,12 +760,22 @@
 			local commands = table.join(prjcmds, {})
 
 			-- see if there are any config-specific commands to add
-			for _, cfg in ipairs(tr.configs) do
+			for key, cfg in ipairs(tr.configs) do
 				local cfgcmds = cfg[which]
 				if #cfgcmds > #prjcmds then
 					table.insert(commands, 'if [ "${CONFIGURATION}" = "' .. xcode.getconfigname(cfg) .. '" ]; then')
-					for i = #prjcmds + 1, #cfgcmds do
-						table.insert(commands, cfgcmds[i])
+					for _, cfgvalue in ipairs(cfgcmds) do
+						local exist = false; 
+						for _, prjvalue in ipairs(prjcmds) do
+							if prjvalue == cfgvalue then
+								exist = true
+								break
+							end 
+						end
+
+						if exist == false then
+							table.insert(commands, cfgvalue)
+						end
 					end
 					table.insert(commands, 'fi')
 				end
