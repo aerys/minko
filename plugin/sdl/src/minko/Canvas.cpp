@@ -715,36 +715,20 @@ Canvas::step()
 
         case SDL_JOYBUTTONDOWN:
         {
-            int button = event.jbutton.button;
-
-#if defined(EMSCRIPTEN)
-            auto htmlButton = static_cast<SDLJoystick::Button>(button);
-            auto nativeButton = SDLJoystick::GetNativeButton(htmlButton);
-
-            if (nativeButton != SDLJoystick::Button::Nothing)
-                button = static_cast<int>(nativeButton);
-#endif // EMSCRIPTEN
+            SDLJoystick::Button button = SDLJoystick::button(event.jbutton.button);
 
             _joysticks[event.jbutton.which]->joystickButtonDown()->execute(
-                _joysticks[event.jbutton.which], event.jbutton.which, button
+                _joysticks[event.jbutton.which], event.jbutton.which, SDLJoystick::buttonId(button)
             );
             break;
         }
 
         case SDL_JOYBUTTONUP:
         {
-            auto button = event.jbutton.button;
-
-# if defined(EMSCRIPTEN)
-            auto htmlButton = static_cast<SDLJoystick::Button>(button);
-            auto nativeButton = SDLJoystick::GetNativeButton(htmlButton);
-
-            if (nativeButton != SDLJoystick::Button::Nothing)
-                button = static_cast<int>(nativeButton);
-#endif // EMSCRIPTEN
+            SDLJoystick::Button button = SDLJoystick::button(event.jbutton.button);
 
             _joysticks[event.jbutton.which]->joystickButtonUp()->execute(
-                _joysticks[event.jbutton.which], event.jbutton.which, button
+                _joysticks[event.jbutton.which], event.jbutton.which, SDLJoystick::buttonId(button)
             );
             break;
         }

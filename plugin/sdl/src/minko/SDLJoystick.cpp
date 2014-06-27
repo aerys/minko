@@ -106,49 +106,46 @@ SDLJoystick::SDLJoystick(std::shared_ptr<Canvas> canvas, int joystickId, SDL_Joy
 {
 }
 
-bool SDLJoystick::isButtonDown(Button button)
+SDLJoystick::Button
+SDLJoystick::button(int platformSpecificButtonId)
 {
-#if defined EMSCRIPTEN
-    auto htmlButton = GetHtmlButton(button);
+    Button button = static_cast<SDLJoystick::Button>(platformSpecificButtonId);
 
-    if (htmlButton == Button::Nothing)
-        return false;
+#if defined(EMSCRIPTEN)
+    // Conversion from HTML5 buttons.
+    auto buttonIterator = HtmlToNativeMap.find(button);
+    button = buttonIterator == HtmlToNativeMap.end() ? Button::Nothing : buttonIterator->second;
+#endif // EMSCRIPTEN
 
-    return SDL_JoystickGetButton(_joystick, static_cast<int>(htmlButton));
-#else
-    return SDL_JoystickGetButton(_joystick, static_cast<int>(button));
-#endif
+    return button;
 }
 
-SDLJoystick::Button SDLJoystick::GetHtmlButton(Button button)
+int
+SDLJoystick::buttonId(Button button)
 {
-    auto htmlButton = NativeToHtmlMap.find(button);
-
-    // This button is not mapped
-    if (htmlButton == NativeToHtmlMap.end())
-        return Button::Nothing;
-
-    return htmlButton->second;
+    return static_cast<int>(button);
 }
 
-SDLJoystick::Button SDLJoystick::GetNativeButton(Button htmlButton)
+bool
+SDLJoystick::isButtonDown(Button button)
 {
-    auto button = HtmlToNativeMap.find(htmlButton);
+#if defined(EMSCRIPTEN)
+    // Conversion to HTML5 buttons.
+    auto buttonIterator = NativeToHtmlMap.find(button);
+    button = buttonIterator == NativeToHtmlMap.end() ? Button::Nothing : buttonIterator->second;
+#endif // EMSCRIPTEN
 
-    // This button is not mapped
-    if (button == HtmlToNativeMap.end())
-        return Button::Nothing;
-
-    return button->second;
+    return SDL_JoystickGetButton(_joystick, buttonId(button));
 }
 
-std::string SDLJoystick::GetButtonName(Button button)
+std::string
+SDLJoystick::buttonName(Button button)
 {
     auto buttonName = ButtonNames.find(button);
 
     // This button is not mapped
     if (buttonName == ButtonNames.end())
-        return "[NULL]";
+        return "None";
 
     return buttonName->second;
 }
