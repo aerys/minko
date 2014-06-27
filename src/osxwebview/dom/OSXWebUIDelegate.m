@@ -17,39 +17,25 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#pragma once
+#import "OSXWebUIDelegate.h"
+#import <WebKit/WebView.h>
 
-#include "minko/dom/AbstractDOMEvent.hpp"
-#include "minko/MinkoLua.hpp"
+@implementation OSXWebUIDelegate
 
-namespace minko
+// To display Javascript alerts
+- (void)webView:(WebView *)sender runJavaScriptAlertPanelWithMessage:(NSString *)message initiatedByFrame:(WebFrame *)frame
 {
-	class LuaWrapper;
-
-	namespace component
-	{
-		namespace overlay
-		{
-			class LuaAbstractDOMEvent :
-				public LuaWrapper
-			{
-
-			private:
-
-			public:
-
-				static
-					void
-					bind(LuaGlue& state)
-				{
-						state.Class<dom::AbstractDOMEvent>("AbstractDOMEvent")
-							.property("type", &dom::AbstractDOMEvent::type)
-							.property("target", &dom::AbstractDOMEvent::target)
-							.method("preventDefault", &dom::AbstractDOMEvent::preventDefault)
-							.method("stopPropagation", &dom::AbstractDOMEvent::stopPropagation);
-					}
-
-			};
-		}
-	}
+    NSAlert* jsAlert = [NSAlert alertWithMessageText:@"Javascript"
+                                       defaultButton:@"OK"
+                                     alternateButton:nil otherButton:nil informativeTextWithFormat:@"%@", message];
+    
+    [jsAlert beginSheetModalForWindow:sender.window modalDelegate:nil didEndSelector:NULL contextInfo:NULL];
 }
+
+// Disable right click
+-(NSArray *)webView:(WebView *)sender contextMenuItemsForElement:(NSDictionary *)element defaultMenuItems:(NSArray *)defaultMenuItems
+{
+    return nil;
+}
+
+@end

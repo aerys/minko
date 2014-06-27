@@ -19,37 +19,50 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #pragma once
 
-#include "minko/dom/AbstractDOMEvent.hpp"
-#include "minko/MinkoLua.hpp"
+#include "minko/Common.hpp"
+#include "AbstractDOMEvent.hpp"
 
 namespace minko
 {
-	class LuaWrapper;
-
-	namespace component
+	namespace dom
 	{
-		namespace overlay
+		class AbstractDOMMouseEvent : public AbstractDOMEvent
 		{
-			class LuaAbstractDOMEvent :
-				public LuaWrapper
-			{
+		public:
+			typedef std::shared_ptr<AbstractDOMMouseEvent> Ptr;
 
-			private:
+			virtual
+			int
+			clientX() = 0;
 
-			public:
+			virtual
+			int
+			clientY() = 0;
 
-				static
-					void
-					bind(LuaGlue& state)
-				{
-						state.Class<dom::AbstractDOMEvent>("AbstractDOMEvent")
-							.property("type", &dom::AbstractDOMEvent::type)
-							.property("target", &dom::AbstractDOMEvent::target)
-							.method("preventDefault", &dom::AbstractDOMEvent::preventDefault)
-							.method("stopPropagation", &dom::AbstractDOMEvent::stopPropagation);
-					}
+			virtual
+			int
+			pageX() = 0;
 
-			};
-		}
+			virtual
+			int
+			pageY() = 0;
+
+
+			virtual
+			int
+			layerX() = 0;
+
+			virtual
+			int
+			layerY() = 0;
+
+			virtual
+			int
+			screenX() = 0;
+
+			virtual
+			int
+			screenY() = 0;
+		};
 	}
 }

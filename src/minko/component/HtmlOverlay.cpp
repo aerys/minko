@@ -1,27 +1,35 @@
-#ifndef EMSCRIPTEN
-#define CHROMIUM 1
+#if defined(__APPLE__)
+# include "TargetConditionals.h"
+# if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE // iOS
+#  include "ioswebview/dom/IOSWebViewDOMEngine.hpp"
+# elif TARGET_OS_MAC // OSX
+#  include "osxwebview/dom/OSXWebViewDOMEngine.hpp"
+# endif
+#elif defined(CHROMIUM)
+# include "chromium/dom/ChromiumDOMEngine.hpp"
+#elif defined(EMSCRIPTEN)
+# include "emscripten/dom/EmscriptenDOMEngine.hpp"
 #endif
 
-
-#if defined(CHROMIUM)
-#include "chromium/dom/ChromiumDOMEngine.hpp"
-#endif
-#if defined(EMSCRIPTEN)
-#include "emscripten/dom/EmscriptenDOMEngine.hpp"
-#endif
 #include "minko/component/HtmlOverlay.hpp"
 #include "minko/scene/Node.hpp"
-
 
 using namespace minko;
 using namespace minko::component;
 
-#if defined(CHROMIUM)
+#if defined(__APPLE__)
+# include "TargetConditionals.h"
+# if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE // iOS
+using namespace ioswebview;
+using namespace ioswebview::dom;
+# elif TARGET_OS_MAC // OSX
+using namespace osxwebview;
+using namespace osxwebview::dom;
+# endif
+#elif defined(CHROMIUM)
 using namespace chromium;
 using namespace chromium::dom;
-#endif
-
-#if defined(EMSCRIPTEN)
+#elif defined(EMSCRIPTEN)
 using namespace emscripten;
 using namespace emscripten::dom;
 #endif
@@ -32,14 +40,21 @@ HtmlOverlay::HtmlOverlay(int argc, char** argv) :
 	AbstractComponent(),
 	_cleared(false)
 {
-#if defined(CHROMIUM)
-	ChromiumDOMEngine::Ptr engine = ChromiumDOMEngine::create(argc, argv);
-	_domEngine = engine;
-#endif
-
-#if defined(EMSCRIPTEN)
-	EmscriptenDOMEngine::Ptr engine = EmscriptenDOMEngine::create();
-	_domEngine = engine;
+#if defined(__APPLE__)
+# include "TargetConditionals.h"
+# if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE // iOS
+    IOSWebViewDOMEngine::Ptr engine = IOSWebViewDOMEngine::create();
+    _domEngine = engine;
+# elif TARGET_OS_MAC // OSX
+    OSXWebViewDOMEngine::Ptr engine = OSXWebViewDOMEngine::create();
+    _domEngine = engine;
+# endif
+#elif defined(CHROMIUM)
+    ChromiumDOMEngine::Ptr engine = ChromiumDOMEngine::create(argc, argv);
+    _domEngine = engine;
+#elif defined(EMSCRIPTEN)
+    EmscriptenDOMEngine::Ptr engine = EmscriptenDOMEngine::create();
+    _domEngine = engine;
 #endif
 }
 
@@ -72,14 +87,21 @@ HtmlOverlay::initialize(AbstractCanvas::Ptr canvas, SceneManager::Ptr sceneManag
 void
 HtmlOverlay::targetAddedHandler(AbstractComponent::Ptr	ctrl, scene::Node::Ptr		target)
 {
-#if defined(CHROMIUM)
-	ChromiumDOMEngine::Ptr engine = std::dynamic_pointer_cast<ChromiumDOMEngine>(_domEngine);
-	engine->initialize(_canvas, _sceneManager, target);
-#endif
-	
-#if defined(EMSCRIPTEN)
-	EmscriptenDOMEngine::Ptr engine = std::dynamic_pointer_cast<EmscriptenDOMEngine>(_domEngine);
-	engine->initialize(_canvas, _sceneManager);
+#if defined(__APPLE__)
+# include "TargetConditionals.h"
+# if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE // iOS
+    IOSWebViewDOMEngine::Ptr engine = std::dynamic_pointer_cast<IOSWebViewDOMEngine>(_domEngine);
+    engine->initialize(_canvas, _sceneManager);
+# elif TARGET_OS_MAC // OSX
+    OSXWebViewDOMEngine::Ptr engine = std::dynamic_pointer_cast<OSXWebViewDOMEngine>(_domEngine);
+    engine->initialize(_canvas, _sceneManager);
+# endif
+#elif defined(CHROMIUM)
+    ChromiumDOMEngine::Ptr engine = std::dynamic_pointer_cast<ChromiumDOMEngine>(_domEngine);
+    engine->initialize(_canvas, _sceneManager, target);
+#elif defined(EMSCRIPTEN)
+    EmscriptenDOMEngine::Ptr engine = std::dynamic_pointer_cast<EmscriptenDOMEngine>(_domEngine);
+    engine->initialize(_canvas, _sceneManager);
 #endif
 }
 
@@ -92,9 +114,14 @@ HtmlOverlay::targetRemovedHandler(AbstractComponent::Ptr	ctrl, scene::Node::Ptr	
 #endif
 }
 
+bool
+HtmlOverlay::visible()
+{
+	return _domEngine->visible();
+}
+
 void
 HtmlOverlay::visible(bool value)
 {
 	_domEngine->visible(value);
 }
-

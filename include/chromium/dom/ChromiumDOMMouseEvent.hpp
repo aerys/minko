@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
-#include "minko/dom/AbstractDOMEvent.hpp"
+#include "minko/dom/AbstractDOMMouseEvent.hpp"
 #include "minko/dom/AbstractDOMElement.hpp"
 #include "include/cef_render_process_handler.h"
 
@@ -29,15 +29,15 @@ namespace chromium
 {
 	namespace dom
 	{
-		class ChromiumDOMEvent : public minko::dom::AbstractDOMEvent,
-			public std::enable_shared_from_this<ChromiumDOMEvent>
+		class ChromiumDOMMouseEvent : public minko::dom::AbstractDOMMouseEvent,
+			public std::enable_shared_from_this<ChromiumDOMMouseEvent>
 		{
 		public:
-			typedef std::shared_ptr<ChromiumDOMEvent> Ptr;
-			~ChromiumDOMEvent();
+			typedef std::shared_ptr<ChromiumDOMMouseEvent> Ptr;
+			~ChromiumDOMMouseEvent();
 
 		private:
-			ChromiumDOMEvent(CefRefPtr<CefV8Value>, CefRefPtr<CefV8Context>);
+			ChromiumDOMMouseEvent(CefRefPtr<CefV8Value>, CefRefPtr<CefV8Context>);
 			
 		public:
 			static
@@ -57,6 +57,8 @@ namespace chromium
 			void
 			stopPropagation();
 
+			std::string
+			accessor();
 
 			std::string
 			type();
@@ -64,13 +66,11 @@ namespace chromium
 			minko::dom::AbstractDOMElement::Ptr
 			target();
 
-
 			int
 			clientX();
 
 			int
 			clientY();
-
 
 			int
 			pageX();

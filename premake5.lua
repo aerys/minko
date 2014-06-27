@@ -2,11 +2,12 @@ PROJECT_NAME = path.getname(os.getcwd())
 
 minko.project.library("minko-plugin-" .. PROJECT_NAME)
 
-	removeplatforms { "osx64", "android" }
+	removeplatforms { "android" }
 
 	kind "StaticLib"
 	language "C++"
 
+	minko.plugin.enable("sdl")
 	minko.plugin.enable("lua")
 
 	files {
@@ -35,8 +36,9 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 			"lib/cef3/libcef_dll/**.cc",
 			"lib/cef3/libcef_dll/**.c"
 		}
+
 		defines {
-			"CHROMIUM", 
+			"CHROMIUM",
 			"V8_DEPRECATION_WARNINGS",
 			"CHROMIUM_BUILD",
 			"USING_CEF_SHARED",
@@ -131,7 +133,20 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 			"src/ioswebview/**.hpp"
 		}
 
-		defines {
-			-- "TARGET_IPHONE_SIMULATOR",
-			-- "TARGET_OS_IPHONE"
+	-- osx
+	configuration { "osx64" }
+		buildoptions { "-x objective-c++" }
+		includedirs { "lib/WebViewJavascriptBridge" }
+
+		files {
+			"lib/WebViewJavascriptBridge/*.h",
+			"lib/WebViewJavascriptBridge/*.m",
+			"include/osxwebview/**.hpp",
+			"include/osxwebview/**.h",
+			"src/osxwebview/**.cpp",
+			"src/osxwebview/**.m",
+			"src/osxwebview/**.hpp"
+		}
+		links {
+			"WebKit.framework"
 		}

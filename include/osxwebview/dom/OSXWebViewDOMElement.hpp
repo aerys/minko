@@ -17,44 +17,43 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#if defined(EMSCRIPTEN)
 #pragma once
 
 #include "minko/Common.hpp"
 #include "minko/Signal.hpp"
 #include "minko/dom/AbstractDOMElement.hpp"
 #include "minko/dom/AbstractDOMMouseEvent.hpp"
-#include "minko/dom/AbstractDOMTouchEvent.hpp"
 
-namespace emscripten
+namespace osxwebview
 {
 	namespace dom
 	{
+        class OSXWebViewDOMEngine;
 
-		class EmscriptenDOMElement : public minko::dom::AbstractDOMElement,
-			public std::enable_shared_from_this<EmscriptenDOMElement>
+		class OSXWebViewDOMElement : public minko::dom::AbstractDOMElement,
+			public std::enable_shared_from_this<OSXWebViewDOMElement>
 		{
 		public:
-			typedef std::shared_ptr<EmscriptenDOMElement> Ptr;
+			typedef std::shared_ptr<OSXWebViewDOMElement> Ptr;
 
 		private:
-			EmscriptenDOMElement(std::string jsAccessor);
+			OSXWebViewDOMElement(std::string jsAccessor);
 
 		public:
-			~EmscriptenDOMElement()
+			~OSXWebViewDOMElement()
 			{
 			};
 
 			static
 			Ptr
-			getDOMElement(std::string jsElement);
+			getDOMElement(std::string jsElement, std::shared_ptr<OSXWebViewDOMEngine> engine);
 
 			std::string
 			getJavascriptAccessor();
 
 			static
 			Ptr
-			create(std::string javascriptAccessor);
+			create(std::string javascriptAccessor, std::shared_ptr<OSXWebViewDOMEngine> engine);
 
 			std::string
 			id();
@@ -110,12 +109,14 @@ namespace emscripten
 			std::vector<minko::dom::AbstractDOMElement::Ptr>
 			getElementsByTagName(std::string tagName);
 
+
 			std::string
 			style(std::string name);
 
 			void
 			style(std::string name, std::string value);
 
+            // Events
 			minko::Signal<std::shared_ptr<minko::dom::AbstractDOMMouseEvent>>::Ptr
 			onclick();
 
@@ -134,43 +135,47 @@ namespace emscripten
 			minko::Signal<std::shared_ptr<minko::dom::AbstractDOMMouseEvent>>::Ptr
 			onmouseover();
 
-			void
-			update();
-
+            void
+            update();
 		private:
 			void
 			addEventListener(std::string);
+            
+            void
+            initialize(std::shared_ptr<OSXWebViewDOMEngine> engine);
 
 		public:
 			static
-			std::list<EmscriptenDOMElement::Ptr> domElements;
+			std::list<OSXWebViewDOMElement::Ptr> domElements;
 
 		private:
 			static
 			int
 			_elementUid;
-
+			
 			static
 			std::map<std::string,Ptr> _accessorToElement;
 
 			std::string _jsAccessor;
 
+            // Events
 			minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Ptr _onclick;
 			minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Ptr _onmousedown;
 			minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Ptr _onmousemove;
 			minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Ptr _onmouseup;
-			
-			minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Ptr _onmouseover;
-			minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Ptr _onmouseout;
-
-			bool _onclickSet;
-			bool _onmousedownSet;
-			bool _onmousemoveSet;
-			bool _onmouseupSet;
-			
-			bool _onmouseoverSet;
-			bool _onmouseoutSet;
+            
+            minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Ptr _onmouseout;
+            minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Ptr _onmouseover;
+            
+            bool _onclickSet;
+            bool _onmousedownSet;
+            bool _onmousemoveSet;
+            bool _onmouseupSet;
+            
+            bool _onmouseoverSet;
+            bool _onmouseoutSet;
+            
+            std::shared_ptr<OSXWebViewDOMEngine> _engine;
 		};
 	}
 }
-#endif

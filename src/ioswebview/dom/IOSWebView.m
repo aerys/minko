@@ -17,39 +17,34 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#pragma once
+#import "IOSWebView.h"
 
-#include "minko/dom/AbstractDOMEvent.hpp"
-#include "minko/MinkoLua.hpp"
+@implementation IOSWebView
 
-namespace minko
+- (UIView *) viewForZoomingInScrollView:(UIScrollView *)scrollView
 {
-	class LuaWrapper;
-
-	namespace component
-	{
-		namespace overlay
-		{
-			class LuaAbstractDOMEvent :
-				public LuaWrapper
-			{
-
-			private:
-
-			public:
-
-				static
-					void
-					bind(LuaGlue& state)
-				{
-						state.Class<dom::AbstractDOMEvent>("AbstractDOMEvent")
-							.property("type", &dom::AbstractDOMEvent::type)
-							.property("target", &dom::AbstractDOMEvent::target)
-							.method("preventDefault", &dom::AbstractDOMEvent::preventDefault)
-							.method("stopPropagation", &dom::AbstractDOMEvent::stopPropagation);
-					}
-
-			};
-		}
-	}
+    return nil;
 }
+
+- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event {
+    [super touchesMoved:touches withEvent:event];
+    [self.nextResponder touchesBegan:touches withEvent:event];
+    
+     NSLog(@"TEST TOUCH BEGAN");
+}
+
+- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event{
+    [super touchesMoved:touches withEvent:event];
+    [self.nextResponder touchesEnded:touches withEvent:event];
+    
+     NSLog(@"TOUCH ENDED");
+}
+
+
+-(void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event{
+    [super touchesMoved:touches withEvent:event];
+    [self.nextResponder touchesMoved:touches withEvent:event];
+    
+     NSLog(@"TOUCH MOVED");
+}
+@end

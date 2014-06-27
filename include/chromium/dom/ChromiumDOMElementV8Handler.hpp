@@ -21,8 +21,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Signal.hpp"
-#include "minko/dom/AbstractDOMEvent.hpp"
-#include "chromium/dom/ChromiumDOMEvent.hpp"
+#include "minko/dom/AbstractDOMMouseEvent.hpp"
+#include "chromium/dom/ChromiumDOMMouseEvent.hpp"
 #include "include/cef_render_process_handler.h"
 
 namespace chromium
