@@ -28,9 +28,9 @@ minko.action.copy = function(sourcePath)
 
 		return existenceTest .. 'xcopy /y /i /e "' .. sourcePath .. '" "' .. targetDir .. '"'
 	elseif os.is("macosx") then
-		local targetDir = nil
+		local targetDir = '${TARGETDIR}'
 
-		if (_ACTION == "gmake" or _ACTION == "xcode-osx") then
+		if (_ACTION == "xcode-osx") then
 			targetDir = '${TARGET_BUILD_DIR}'
 		elseif (_ACTION == "xcode-ios") then
 			targetDir = '${TARGET_BUILD_DIR}/${TARGET_NAME}.app'
@@ -52,9 +52,9 @@ minko.action.link = function(sourcePath)
 	if os.is('windows') then
 		-- fixme: not needed yet
 	elseif os.is("macosx") then
-		local targetDir = nil
+		local targetDir = '${TARGETDIR}'
 
-		if (_ACTION == "gmake" or _ACTION == "xcode-osx") then
+		if (_ACTION == "xcode-osx") then
 			targetDir = '${TARGET_BUILD_DIR}'
 		elseif (_ACTION == "xcode-ios") then
 			targetDir = '${TARGET_BUILD_DIR}/${TARGET_NAME}.app'
