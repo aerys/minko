@@ -27,7 +27,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 using namespace minko;
 using namespace minko::component;
-using namespace minko::math;
 
 Transform::Transform() :
 	minko::component::AbstractComponent(),
@@ -56,8 +55,8 @@ Transform::initialize()
 	));
 
 	_data
-		->set<mat4>("matrix", 				_matrix)
-		->set<mat4>("modelToWorldMatrix", 	_modelToWorld);
+		->set<math::mat4>("matrix", 				_matrix)
+		->set<math::mat4>("modelToWorldMatrix", 	_modelToWorld);
 }
 
 void
@@ -326,7 +325,7 @@ Transform::RootTransform::juxtaposeSiblings(std::vector<NodePtr>& nodes)
 void
 Transform::RootTransform::updateTransforms()
 {
-	for (unsigned int nodeId = 1; nodeId < _transforms.size(); ++nodeId)
+	for (unsigned int nodeId = 0; nodeId < _transforms.size(); ++nodeId)
 	{
 		if (_dirty[nodeId])
 		{
