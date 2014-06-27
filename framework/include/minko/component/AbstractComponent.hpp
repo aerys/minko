@@ -54,12 +54,21 @@ namespace minko
 			{
 			}
 
+			AbstractComponent(const AbstractComponent& abstractComponent, const CloneOption& option) :
+				_targets(),
+				_layoutMask(abstractComponent._layoutMask),
+				_targetAdded(Signal<Ptr, std::shared_ptr<scene::Node>>::create()),
+				_targetRemoved(Signal<Ptr, std::shared_ptr<scene::Node>>::create()),
+				_layoutMaskChanged(Signal<Ptr>::create())
+			{
+			}
+
 			virtual
 			~AbstractComponent() = 0;
 
 			virtual
 			AbstractComponent::Ptr
-			clone()
+			clone(const CloneOption& option)
 			{
 				throw std::logic_error("Missing clone function for a component.");
 				return shared_from_this();
