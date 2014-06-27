@@ -81,6 +81,10 @@ namespace minko
 		resized() = 0;
 
         virtual
+		uint
+		numFingers() = 0;
+        
+        virtual
 		Signal<std::shared_ptr<input::Finger>, float>::Ptr
 		fingerZoom() = 0;
         

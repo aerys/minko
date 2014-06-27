@@ -529,7 +529,18 @@ Canvas::step()
             _finger->y(uint(event.tfinger.y));
 
             _finger->fingerDown()->execute(_finger, event.tfinger.x, event.tfinger.y);
-
+            
+            // Create a new finger
+            auto finger = Canvas::SDLFinger::create(shared_from_this());
+            
+            finger->fingerId(event.tfinger.fingerId);
+            finger->x(event.tfinger.x);
+            finger->y(event.tfinger.y);
+            
+            finger->fingerDown()->execute(finger, event.tfinger.x, event.tfinger.y);
+            
+            // Add the finger to the finger list
+            _fingers.push_back(finger);
             break;
         }
 
@@ -568,13 +579,18 @@ Canvas::step()
             // If it's the second finger
             if (_fingers.size() > 1 && _fingers.at(1)->Finger::fingerId() == event.tfinger.fingerId)
             {
-                // Zoom
-                if (event.tfinger.dy != 0)
+                // Get the first finger
+                auto firstFinger = _fingers[0];
+                
+                // Compute distance between first finger and second finger
+                auto distance = sqrt(pow(event.tfinger.x - firstFinger->Finger::x(), 2) + pow(event.tfinger.y - firstFinger->Finger::y(), 2));
+                auto deltaDistance = sqrt(
+                                          pow((event.tfinger.x + event.tfinger.dx) - firstFinger->Finger::x(), 2) +
+                                          pow((event.tfinger.y + event.tfinger.dy) - firstFinger->Finger::y(), 2));
+                
+                if (deltaDistance != distance)
                 {
-                    float zoomValue = event.tfinger.dy;
-                    std::cout << "Zoom (value = " << zoomValue << ")" << std::endl;
-                    
-                    fingerZoom()->execute(finger, -zoomValue);
+                    fingerZoom()->execute(finger, distance - deltaDistance);
                 }
             }
 

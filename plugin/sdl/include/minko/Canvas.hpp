@@ -74,25 +74,25 @@ namespace minko
 			}
             
 			void
-			x(uint x)
+			x(float x)
 			{
 				_x = float(x);
 			}
             
 			void
-			y(uint y)
+			y(float y)
 			{
 				_y = float(y);
 			}
             
             void
-			dx(uint dx)
+			dx(float dx)
 			{
 				_dx = float(dx);
 			}
             
 			void
-			dy(uint dy)
+			dy(float dy)
 			{
 				_dy = float(dy);
 			}
@@ -254,6 +254,13 @@ namespace minko
         {
             return _fingerZoom;
         }
+        
+        inline
+		uint
+		numFingers()
+		{
+			return _fingers.size();
+		}
 		
 		inline
 		std::shared_ptr<input::Joystick>

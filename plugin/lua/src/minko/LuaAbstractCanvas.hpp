@@ -41,6 +41,7 @@ namespace minko
 				.property("mouse", 					&AbstractCanvas::mouse)
 				.property("keyboard",				&AbstractCanvas::keyboard)
 				.property("numJoysticks",			&AbstractCanvas::numJoysticks)
+                .property("numFingers",				&AbstractCanvas::numFingers)
 				.methodWrapper("getJoystickAxis",   &LuaAbstractCanvas::getJoystickAxisWrapper)
 				.methodWrapper("joystick",			&LuaAbstractCanvas::joystickWrapper);
 		    MINKO_LUAGLUE_BIND_SIGNAL(state, AbstractCanvas::Ptr);
