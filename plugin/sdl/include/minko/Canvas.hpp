@@ -54,38 +54,6 @@ namespace minko
 		typedef std::shared_ptr<Canvas>	Ptr;
 
 	private:
-		class SDLJoystick : 
-			public input::Joystick
-		{
-			friend class Canvas;
-
-		private:
-			SDL_Joystick*	_joystick;
-
-		public :
-			static inline
-			std::shared_ptr<SDLJoystick>
-			create(Canvas::Ptr canvas, int joystickId, SDL_Joystick* joystick)
-			{
-				return std::shared_ptr<SDLJoystick>(new SDLJoystick(canvas, joystickId, joystick));
-			}
-
-			inline
-			SDL_Joystick* const
-			joystick()
-			{
-				return _joystick;
-			}
-
-		private:
-			SDLJoystick(Canvas::Ptr canvas, int joystickId, SDL_Joystick* joystick) :
-				input::Joystick(canvas, joystickId),
-				_joystick(joystick)
-			{
-			}
-		};
-
-	private:
         typedef std::chrono::high_resolution_clock::time_point	time_point;
 		typedef std::shared_ptr<async::Worker>			        WorkerPtr;
 
