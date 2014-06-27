@@ -2,7 +2,7 @@ PROJECT_NAME = path.getname(os.getcwd())
 
 minko.project.application("minko-example-" .. PROJECT_NAME)
 
-	removeplatforms { "ios", "android" }
+	removeplatforms { "android" }
 	
 	--fixme: only for osx
 	--kind "WindowedApp"
