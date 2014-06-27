@@ -65,3 +65,11 @@ AbstractDiscreteLight::modelToWorldMatrixChangedHandler(std::shared_ptr<data::Co
 {
 	updateModelToWorldMatrix(container->get<math::mat4>(propertyName));
 }
+
+void
+AbstractDiscreteLight::initialize()
+{
+	AbstractLight::initialize();
+
+	updateModelToWorldMatrix(math::mat4(1.f));
+}

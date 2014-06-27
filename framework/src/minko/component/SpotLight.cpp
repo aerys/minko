@@ -30,10 +30,6 @@ SpotLight::SpotLight(float diffuse,
 	AbstractDiscreteLight("spotLights", diffuse, specular),
 	_attenuation(attenuationConstant, attenuationLinear, attenuationQuadratic)
 {
-	data()
-		->set("attenuationCoeffs",	_attenuation)
-		->set("position",			math::vec3(0.f))
-		->set("direction",			math::vec3(0.f, 0.f, -1.f));
 }
 
 void 
@@ -41,6 +37,7 @@ SpotLight::initialize(float innerAngleRadians, float outerAngleRadians)
 {
 	AbstractDiscreteLight::initialize();
 
+	attenuationCoefficients(_attenuation);
 	innerConeAngle(innerAngleRadians);
 	outerConeAngle(std::max(outerAngleRadians, innerAngleRadians));
 }

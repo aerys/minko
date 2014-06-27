@@ -63,11 +63,12 @@ int main(int argc, char** argv)
 	auto sceneManager		= SceneManager::create(canvas->context());
 	auto root				= scene::Node::create("root")->addComponent(sceneManager);
 	auto assets				= sceneManager->assets();
+	auto lights 			= scene::Node::create("lights");
 	auto sphereGeometry		= geometry::SphereGeometry::create(assets->context(), 32, 32, true);
 	auto sphereMaterial		= material::PhongMaterial::create()
 		->shininess(16.f)
-		->specularColor(math::vec4(1.0f, 1.0f, 1.0f, 1.0f))
-		->diffuseColor(math::vec4(1.f, 1.f, 1.f, 1.f));
+		->specularColor({ 1.0f, 1.0f, 1.0f, 1.0f })
+		->diffuseColor({ 1.f, 1.f, 1.f, 1.f });
 
 	std::cout << "Press [SPACE]\tto toogle normal mapping\nPress [A]\tto add random light\nPress [R]\tto remove random light" << std::endl;
 
@@ -105,7 +106,7 @@ int main(int argc, char** argv)
 			->addComponent(Transform::create(
 				math::rotate(math::scale(math::mat4(1.f), math::vec3(300.f)), -1.57f, math::vec3(1.f, 0.f, 0.f))
 			));
-		root->addChild(ground);
+		//root->addChild(ground);
 
 		// sphere
 		auto sphere = scene::Node::create("sphere")
@@ -115,8 +116,9 @@ int main(int argc, char** argv)
 				assets->effect("effect/Phong.effect")
 			))
 			->addComponent(Transform::create(
-				math::translate(math::scale(math::mat4(1.f), math::vec3(4.f)), math::vec3(0.f, 1.f, 0.f))
+				math::scale(math::mat4(1.f), math::vec3(4.f))
 			));
+		std::cout << std::to_string(sphere->component<Transform>()->matrix() * math::vec4(0.f, 0.f, 0.f, 1.f)) << std::endl;
 		root->addChild(sphere);
 
 		// spotLight
@@ -128,10 +130,10 @@ int main(int argc, char** argv)
 				math::vec3(0.f, 1.f, 0.f)
 			))));
 		spotLight->component<SpotLight>()->diffuse(.2f);
-		root->addChild(spotLight);
+		lights->addChild(spotLight);
 
 		lights->addComponent(Transform::create());
-		root->addChild(lights);
+		//root->addChild(lights);
 
 		// std::cout << "test" << std::to_string(
 		// 	math::vec3(0.f, 0.f, 1.f)
@@ -182,7 +184,6 @@ int main(int argc, char** argv)
 			if (k->keyIsDown(input::Keyboard::D))
 			{
 				auto light = lights->children()[0];
-
 				auto mask = light->component<PointLight>()->layoutMask();
 
 				light->component<PointLight>()->layoutMask(mask == 1 ? 1 << 2 : 1);
@@ -203,9 +204,15 @@ int main(int argc, char** argv)
 					data->set("normalMap", assets->texture("texture/normalmap-cells.png"));
 			}
 			if (k->keyIsDown(input::Keyboard::UP))
-				camera->component<Transform>()->matrix()->prependTranslation(0.f, 0.f, -1.f);
+				camera->component<Transform>()->matrix(math::translate(
+					camera->component<Transform>()->matrix(),
+					{ 0.f, 0.f, -1.f }
+				));
 			if (k->keyIsDown(input::Keyboard::DOWN))
-				camera->component<Transform>()->matrix()->prependTranslation(0.f, 0.f, 1.f);
+				camera->component<Transform>()->matrix(math::translate(
+					camera->component<Transform>()->matrix(),
+					{ 0.f, 0.f, 1.f }
+				));
 		});
 	});
 
@@ -269,18 +276,22 @@ int main(int argc, char** argv)
 			pitch = minPitch;
 
 		camera->component<Transform>()->matrix(math::inverse(math::lookAt(
-			math::vec3(
+			{
 				lookAt.x + distance * cosf(yaw) * sinf(pitch),
 				lookAt.y + distance * cosf(pitch),
 				lookAt.z + distance * sinf(yaw) * sinf(pitch)
-			),
+			},
 			lookAt,
-			math::vec3(0.f, 1.f, 0.f)
+			{ 0.f, 1.f, 0.f }
 		)));
 
+		//std::cout << std::to_string(camera->component<Transform>()->modelToWorldMatrix()) << std::endl;
+
+		/*
 		lights->component<Transform>()->matrix(
 			math::rotate(lights->component<Transform>()->matrix(), .005f, math::vec3(0.f, 1.f, 0.f))
 		);
+		*/
 
 		sceneManager->nextFrame(time, deltaTime);
 	});

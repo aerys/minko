@@ -79,6 +79,9 @@ namespace minko
 			void
             updateModelToWorldMatrix(const math::mat4& modelToWorld);
 
+            void
+            initialize();
+
 		private:
 			PointLight(float diffuse,
 					   float specular,

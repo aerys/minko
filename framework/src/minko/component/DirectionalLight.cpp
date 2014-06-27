@@ -24,9 +24,8 @@ using namespace minko::component;
 
 DirectionalLight::DirectionalLight(float diffuse, float specular) :
 	AbstractDiscreteLight("directionalLights", diffuse, specular),
-	_worldDirection(math::vec3(0.f, 0.f, -1.f))
+	_worldDirection()
 {
-	data()->set("direction", _worldDirection);
 }
 
 void

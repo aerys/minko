@@ -31,9 +31,16 @@ PointLight::PointLight(float diffuse,
 	_attenuationCoeffs(math::vec3(attenuationConstant, attenuationLinear, attenuationQuadratic)),
 	_worldPosition(math::vec3(0.f))
 {
+}
+
+void
+PointLight::initialize()
+{
+	AbstractDiscreteLight::initialize();
+
 	data()
 		->set("attenuationCoeffs",	_attenuationCoeffs)
-		->set("position",			_worldPosition);
+		->set("position",			_worldPosition);	
 }
 
 void

@@ -53,7 +53,6 @@ int main(int argc, char** argv)
 	auto camera = scene::Node::create("camera")
 		->addComponent(Renderer::create(0x7f7f7fff))
 		->addComponent(Transform::create(
-			//math::inverse(math::lookAt(math::vec3(0.f, 0.f, -3.f), math::vec3(0.f), math::vec3(0.f, 1.f, 0.f)))
 			math::inverse(math::lookAt(math::vec3(0.f, 0.f, 3.f), math::vec3(0.f), math::vec3(0.f, 1.f, 0.f)))
 		))
 		->addComponent(PerspectiveCamera::create(800.f / 600.f, (float)PI * 0.25f, .1f, 1000.f));
