@@ -180,7 +180,7 @@ BoundingBox::updateWorldSpaceBox()
 		auto vertices = _box->getVertices();
 		auto numVertices = vertices.size();
 
-		for (auto i = 0; i < numVertices; ++i)
+		for (uint i = 0; i < numVertices; ++i)
 			vertices[i] = (math::vec4(vertices[i], 1.f) * t).xyz();
 
 		auto max = vec3(
