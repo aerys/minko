@@ -203,6 +203,8 @@ namespace minko
                     else
                         throw exception;
                 }
+
+                return std::string();
             }
 
 			virtual
