@@ -268,9 +268,15 @@ OSXWebViewDOMEngine::load(std::string uri)
         bool isHttp		= uri.substr(0, 7) == "http://";
         bool isHttps	= uri.substr(0, 8) == "https://";
         
+        
         if (!isHttp && !isHttps)
         {
-            uri = "../../asset/" + uri;
+            std::string path = file::File::getBinaryDirectory();
+#if DEBUG
+            uri = path + "/../../../asset/" + uri;
+#else
+            uri = path + "/asset/" + uri;
+#endif
         }
         
         std::string jsEval = "Minko.loadUrl('" + uri + "')";
