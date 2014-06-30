@@ -8,23 +8,12 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 	files {
 		"include/**.hpp",
 		"src/**.cpp",
-		"src/**.hpp",
-		"src/**.m"
+		"src/**.hpp"
 	}
 
 	includedirs {
 		"include"
 	}
-
-	configuration { "osx64" }
-		-- buildoptions {
-		-- 	"-fobjc-exceptions"
-		-- }
-
-		-- files {
-		-- 	"lib/sdl/src/video/cocoa/*.m",
-		-- 	"lib/sdl/src/audio/coreaudio/*.c"
-		-- }
 
 	configuration { "android" }
 		defines {
@@ -75,12 +64,3 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 
 	configuration { "html5" }
 		minko.plugin.enable { "webgl" }
-
-	configuration { "ios" }
-		buildoptions { "-x objective-c++" }
-
-		files {
-			"lib/**.h",
-			"lib/**.c",
-			"lib/**.m"
-		}
