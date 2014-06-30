@@ -25,11 +25,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 // To display Javascript alerts
 - (void)webView:(WebView *)sender runJavaScriptAlertPanelWithMessage:(NSString *)message initiatedByFrame:(WebFrame *)frame
 {
-    NSAlert* jsAlert = [NSAlert alertWithMessageText:@"Javascript"
-                                       defaultButton:@"OK"
-                                     alternateButton:nil otherButton:nil informativeTextWithFormat:@"%@", message];
+    NSAlert *jsAlert = [[[NSAlert alloc] init] autorelease];
+    [jsAlert addButtonWithTitle:@"OK"];
+    [jsAlert setMessageText:@"Javascript"];
+    [jsAlert setInformativeText:message];
+    [jsAlert setAlertStyle:NSWarningAlertStyle];
     
-    [jsAlert beginSheetModalForWindow:sender.window modalDelegate:nil didEndSelector:NULL contextInfo:NULL];
+    [jsAlert beginSheetModalForWindow: sender.window completionHandler: NULL];
 }
 
 // Disable right click

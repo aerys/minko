@@ -57,7 +57,6 @@ OSXWebViewDOMElement::OSXWebViewDOMElement(std::string jsAccessor) :
     _onmouseoutSet(false),
     _engine(nullptr)
 {
-	
 }
 
 void
