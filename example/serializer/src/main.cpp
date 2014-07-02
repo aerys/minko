@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/MinkoParticles.hpp"
 #include "minko/MinkoSerializer.hpp"
 
-std::string MODEL_FILENAME = "lights.scene";
+std::string MODEL_FILENAME = "pirate.scene";
 
 #define DEACTIVATE_PHYSICS
 
@@ -53,13 +53,20 @@ int main(int argc, char** argv)
 	auto defaultLoader	= sceneManager->assets()->loader();
 	auto fxLoader		= file::Loader::create(defaultLoader);
 
+#ifndef DEACTIVATE_PHYSICS
 	extension::SerializerExtension::activeExtension<extension::PhysicsExtension>();
+#endif //DEACTIVATE_PHYSICS
     extension::SerializerExtension::activeExtension<extension::ParticlesExtension>();
 
     fxLoader
         ->queue("effect/Phong.effect")
         ->queue("effect/Basic.effect")
-        ->queue("effect/Particles.effect");
+		->queue("effect/Particles.effect");
+
+#ifndef DEACTIVATE_PHYSICS
+	fxLoader
+		->queue("effect/Line.effect");
+#endif //DEACTIVATE_PHYSICS
 
     defaultLoader->options()
     	->generateMipmaps(true)
@@ -109,12 +116,14 @@ int main(int argc, char** argv)
 		if (!sceneNode->hasComponent<Transform>())
 			sceneNode->addComponent(Transform::create());
 
+#if !defined(DEACTIVATE_PHYSICS) && defined(DEBUG)
 		auto withColliders = NodeSet::create(sceneNode)
 			->descendants(true)
 			->where([](Node::Ptr n) { return n->hasComponent<component::bullet::Collider>(); });
 
 		for (auto& n : withColliders->nodes())
 			n->addComponent(bullet::ColliderDebug::create(sceneManager->assets()));
+#endif //DEACTIVATE_PHYSICS
 
 		root->addChild(createWorldFrame(5.0f, sceneManager->assets()));
 	});
@@ -229,12 +238,14 @@ moveScene(Node::Ptr model, float& tx, float& ty, float& tz)
 	{
 		model->component<Transform>()->matrix()->appendTranslation(tx, ty, tz);
 
+#if !defined(DEACTIVATE_PHYSICS) && defined(DEBUG)
 		auto withColliders = scene::NodeSet::create(model)
 			->descendants(true)
 			->where([](scene::Node::Ptr n){ return n->hasComponent<bullet::Collider>(); });
 
 		for (auto& n : withColliders->nodes())
 			n->component<bullet::Collider>()->synchronizePhysicsWithGraphics();
+#endif //DEACTIVATE_PHYSICS
 	}
 
 	tx = 0.0f;
