@@ -64,6 +64,21 @@
 		end,
 		
 		onproject = function(prj)
+
+			local destfolder = prj.location
+
+			-- check that this is not the framework of a plugin
+			local isextprj = not((string.find(destfolder, 'framework') ~= nil) or (string.find(destfolder, 'plugin') ~= nil))
+
+			if isextprj then
+				-- copy Info.plist and Default-568h@2x.png from skeleton to project folder
+				local plist = MINKO_HOME .. "/skeleton/Info.plist"
+				local defaultpng = MINKO_HOME .. "/skeleton/Default-568h@2x.png"
+
+				os.copyfile(plist, destfolder)
+				os.copyfile(defaultpng, destfolder)
+			end
+			
 			premake.generate(prj, ".xcodeproj/project.pbxproj", premake.xcode.project)
 		end,
 		
