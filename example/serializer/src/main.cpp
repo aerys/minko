@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/MinkoParticles.hpp"
 #include "minko/MinkoSerializer.hpp"
 
-std::string MODEL_FILENAME = "lights.scene";
+std::string MODEL_FILENAME = "pirate.scene";
 
 #define DEACTIVATE_PHYSICS
 
