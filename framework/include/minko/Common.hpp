@@ -147,6 +147,7 @@ namespace minko
 	namespace component
 	{
 		class AbstractComponent;
+		class AbstractRebindableComponent;
 		template <class ProviderClass, class Enable = void>
 	    class AbstractRootDataComponent;
 	    class SceneManager;
