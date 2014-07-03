@@ -202,9 +202,9 @@ ComponentDeserializer::deserializeSurface(std::string&							serializedSurface,
 	msgpack::zone																		mempool;
 	msgpack::object																		deserialized;
 	msgpack::type::tuple<unsigned short, unsigned short, unsigned short, std::string>	dst;
+	msgpack::type::tuple<std::vector<SurfaceExtension>>									ext;
 
 	msgpack::unpack(serializedSurface.data(), serializedSurface.size() - 1, NULL, &mempool, &deserialized);
-
 	deserialized.convert(&dst);
 
 	geometry::Geometry::Ptr		geometry	= dependencies->getGeometryReference(dst.a0);
@@ -223,6 +223,25 @@ ComponentDeserializer::deserializeSurface(std::string&							serializedSurface,
 		(material != nullptr ? material : assetLibrary->material("defaultMaterial")),
 		(effect != nullptr ? effect : assetLibrary->effect("effect/Phong.effect")),
 		"default");
+
+	if (dst.a3.size() > 0)
+	{
+		msgpack::unpack(dst.a3.data(), dst.a3.size(), NULL, &mempool, &deserialized);
+		deserialized.convert(&ext);
+
+		for (int i = 0; i < ext.a0.size(); ++i)
+		{
+			auto extension = ext.a0[i];
+
+			std::vector<float> serializedPropertyValue = deserialize::TypeDeserializer::deserializeVector<float>(extension.a1);
+			auto value = serializedPropertyValue[0];
+
+			if (extension.a0 == "visible")
+			{
+				surface->visible(value != 0.0);
+			}
+		}
+	}
 
 	return surface;
 }
