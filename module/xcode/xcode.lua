@@ -68,15 +68,21 @@
 			local destfolder = prj.location
 
 			-- check that this is not the framework of a plugin
-			local isextprj = not((string.find(destfolder, 'framework') ~= nil) or (string.find(destfolder, 'plugin') ~= nil))
+			local isextprj = not((string.endswith(destfolder, '/framework') ~= nil) or (string.find(destfolder, '/plugin/') ~= nil))
 
 			if isextprj then
 				-- copy Info.plist and Default-568h@2x.png from skeleton to project folder
-				local plist = MINKO_HOME .. "/skeleton/Info.plist"
-				local defaultpng = MINKO_HOME .. "/skeleton/Default-568h@2x.png"
-
-				os.copyfile(plist, destfolder)
-				os.copyfile(defaultpng, destfolder)
+				local plist = "Info.plist"
+				local plistpath = MINKO_HOME .. "/skeleton/" .. plist
+				local defaultpng =  "Default-568h@2x.png"
+				local defaultpngpath = MINKO_HOME .. "/skeleton/" .. defaultpng
+				
+				if not(os.isfile(destfolder .. "/" .. plist)) then
+					os.copyfile(plistpath, destfolder)
+				end
+				if not(os.isfile(destfolder .. "/" .. defaultpng)) then
+					os.copyfile(defaultpngpath, destfolder)
+				end
 			end
 			
 			premake.generate(prj, ".xcodeproj/project.pbxproj", premake.xcode.project)
@@ -135,15 +141,21 @@
 			local destfolder = prj.location
 
 			-- check that this is not the framework of a plugin
-			local isextprj = not((string.find(destfolder, 'framework') ~= nil) or (string.find(destfolder, 'plugin') ~= nil))
+			local isextprj = not((string.endswith(destfolder, '/framework') ~= nil) or (string.find(destfolder, '/plugin/') ~= nil))
 
 			if isextprj then
 				-- copy Info.plist and Default-568h@2x.png from skeleton to project folder
-				local plist = MINKO_HOME .. "/skeleton/Info.plist"
-				local defaultpng = MINKO_HOME .. "/skeleton/Default-568h@2x.png"
-
-				os.copyfile(plist, destfolder)
-				os.copyfile(defaultpng, destfolder)
+				local plist = "Info.plist"
+				local plistpath = MINKO_HOME .. "/skeleton/" .. plist
+				local defaultpng =  "Default-568h@2x.png"
+				local defaultpngpath = MINKO_HOME .. "/skeleton/" .. defaultpng
+				
+				if not(os.isfile(destfolder .. "/" .. plist)) then
+					os.copyfile(plistpath, destfolder)
+				end
+				if not(os.isfile(destfolder .. "/" .. defaultpng)) then
+					os.copyfile(defaultpngpath, destfolder)
+				end
 			end
 
 			premake.generate(prj, ".xcodeproj/project.pbxproj", premake.xcode.project)
