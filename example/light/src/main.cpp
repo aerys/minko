@@ -65,10 +65,6 @@ int main(int argc, char** argv)
 	auto assets				= sceneManager->assets();
 	auto lights 			= scene::Node::create("lights");
 	auto sphereGeometry		= geometry::SphereGeometry::create(assets->context(), 32, 32, true);
-	auto sphereMaterial		= material::PhongMaterial::create()
-		->shininess(16.f)
-		->specularColor({ 1.0f, 1.0f, 1.0f, 1.0f })
-		->diffuseColor({ 1.f, 1.f, 1.f, 1.f });
 
 	std::cout << "Press [SPACE]\tto toogle normal mapping\nPress [A]\tto add random light\nPress [R]\tto remove random light" << std::endl;
 
@@ -106,39 +102,36 @@ int main(int argc, char** argv)
 			->addComponent(Transform::create(
 				math::rotate(math::scale(math::mat4(1.f), math::vec3(300.f)), -1.57f, math::vec3(1.f, 0.f, 0.f))
 			));
-		//root->addChild(ground);
+		root->addChild(ground);
 
 		// sphere
 		auto sphere = scene::Node::create("sphere")
+            ->layouts(1 << 2 | 1)
 			->addComponent(Surface::create(
 				assets->geometry("sphere"),
-				sphereMaterial,
+                material::PhongMaterial::create()
+                    ->shininess(16.f)
+                    ->specularColor({ 1.0f, 1.0f, 1.0f, 1.0f })
+                    ->diffuseColor({ 1.f, 1.f, 1.f, 1.f }),
 				assets->effect("effect/Phong.effect")
 			))
 			->addComponent(Transform::create(
-				math::scale(math::mat4(1.f), math::vec3(4.f))
+                math::translate(math::scale(math::mat4(1.f), math::vec3(4.f)), math::vec3(0.f, 1.f, 0.f))
 			));
-		std::cout << std::to_string(sphere->component<Transform>()->matrix() * math::vec4(0.f, 0.f, 0.f, 1.f)) << std::endl;
 		root->addChild(sphere);
 
 		// spotLight
 		auto spotLight = scene::Node::create("spotLight")
 			->addComponent(SpotLight::create(.2f, .6f))
-			->addComponent(Transform::create(math::inverse(math::lookAt(
+            ->addComponent(Transform::create(math::inverse(math::lookAt(
 				math::vec3(20.f, 30.f, 20.f),
 				math::vec3(0.f),
 				math::vec3(0.f, 1.f, 0.f)
 			))));
-		spotLight->component<SpotLight>()->diffuse(.2f);
-		lights->addChild(spotLight);
+		root->addChild(spotLight);
 
 		lights->addComponent(Transform::create());
-		//root->addChild(lights);
-
-		// std::cout << "test" << std::to_string(
-		// 	math::vec3(0.f, 0.f, 1.f)
-		// 	* math::mat3(math::rotate(math::mat4(1.f), (float)PI * .5f, math::vec3(0.f, 1.f, 0.f)))
-		// ) << std::endl;
+		root->addChild(lights);
 
 		// handle keyboard signals
 		keyDown = canvas->keyboard()->keyDown()->connect([=](input::Keyboard::Ptr k)
@@ -206,12 +199,12 @@ int main(int argc, char** argv)
 			if (k->keyIsDown(input::Keyboard::UP))
 				camera->component<Transform>()->matrix(math::translate(
 					camera->component<Transform>()->matrix(),
-					{ 0.f, 0.f, -1.f }
+					math::vec3(0.f, 0.f, -1.f)
 				));
 			if (k->keyIsDown(input::Keyboard::DOWN))
 				camera->component<Transform>()->matrix(math::translate(
 					camera->component<Transform>()->matrix(),
-					{ 0.f, 0.f, 1.f }
+					math::vec3(0.f, 0.f, 1.f)
 				));
 		});
 	});
@@ -276,13 +269,13 @@ int main(int argc, char** argv)
 			pitch = minPitch;
 
 		camera->component<Transform>()->matrix(math::inverse(math::lookAt(
-			{
+            math::vec3(
 				lookAt.x + distance * cosf(yaw) * sinf(pitch),
 				lookAt.y + distance * cosf(pitch),
 				lookAt.z + distance * sinf(yaw) * sinf(pitch)
-			},
+			),
 			lookAt,
-			{ 0.f, 1.f, 0.f }
+			math::vec3(0.f, 1.f, 0.f)
 		)));
 
 		//std::cout << std::to_string(camera->component<Transform>()->modelToWorldMatrix()) << std::endl;
