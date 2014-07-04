@@ -23,21 +23,21 @@ using namespace minko;
 using namespace minko::component;
 
 SpotLight::SpotLight(float diffuse,
-					 float specular,
-					 float attenuationConstant,
-					 float attenuationLinear,
-					 float attenuationQuadratic) :
-	AbstractDiscreteLight("spotLights", diffuse, specular),
-	_attenuation(attenuationConstant, attenuationLinear, attenuationQuadratic)
+					 float specular) :
+	AbstractDiscreteLight("spotLights", diffuse, specular)
 {
 }
 
 void 
-SpotLight::initialize(float innerAngleRadians, float outerAngleRadians)
+SpotLight::initialize(float innerAngleRadians,
+                      float outerAngleRadians,
+                      float attenuationConstant,
+                      float attenuationLinear,
+                      float attenuationQuadratic)
 {
 	AbstractDiscreteLight::initialize();
 
-	attenuationCoefficients(_attenuation);
+    attenuationCoefficients(math::vec3(attenuationConstant, attenuationLinear, attenuationQuadratic));
 	innerConeAngle(innerAngleRadians);
 	outerConeAngle(std::max(outerAngleRadians, innerAngleRadians));
 }
@@ -75,7 +75,7 @@ SpotLight::outerConeAngle(float radians)
 const math::vec3&
 SpotLight::attenuationCoefficients() const
 {
-	return _attenuation;
+	return data()->get<math::vec3>("attenuationCoefficients");
 }
 
 SpotLight::Ptr
@@ -87,8 +87,7 @@ SpotLight::attenuationCoefficients(float constant, float linear, float quadratic
 SpotLight::Ptr
 SpotLight::attenuationCoefficients(const math::vec3& value)
 {
-	if (value != _attenuation)
-		data()->set("attenuationCoeffs", _attenuation = value);
+	data()->set("attenuationCoeffs", value);
 
 	return std::static_pointer_cast<SpotLight>(shared_from_this());
 }
@@ -96,7 +95,7 @@ SpotLight::attenuationCoefficients(const math::vec3& value)
 bool
 SpotLight::attenuationEnabled() const
 {
-	auto coef = attenuationCoefficients();
+	auto& coef = attenuationCoefficients();
 
 	return !(coef.x < 0.0f || coef.y < 0.0f || coef.z < 0.0f);
 }

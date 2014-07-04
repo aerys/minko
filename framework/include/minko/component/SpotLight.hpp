@@ -33,31 +33,26 @@ namespace minko
 		public:
 			typedef std::shared_ptr<SpotLight> Ptr;
 
-		private:
-			math::vec3 	_attenuation;
-	
 		public:
 			inline static
 			Ptr
-			create(float innerAngleRadians		= (float)PI * 0.25f,
-				   float outerAngleRadians		= -1.0f,
-				   float diffuse				= 1.0f,
+			create(float diffuse				= 1.0f,
 				   float specular				= 1.0f,
+                   float innerAngleRadians      = (float)PI * 0.25f,
+                   float outerAngleRadians      = -1.0f,
 				   float attenuationConstant	= -1.0f,
 				   float attenuationLinear		= -1.0f,
 				   float attenuationQuadratic	= -1.0f)
 			{
-				auto light = std::shared_ptr<SpotLight>(
-					new SpotLight(
-						diffuse,
-						specular,
-						attenuationConstant,
-						attenuationLinear,
-						attenuationQuadratic
-					)
-				);
+				auto light = std::shared_ptr<SpotLight>(new SpotLight(diffuse, specular));
 
-                light->initialize(innerAngleRadians, outerAngleRadians);
+                light->initialize(
+                    innerAngleRadians,
+                    outerAngleRadians,
+                    attenuationConstant,
+                    attenuationLinear,
+                    attenuationQuadratic
+                );
 
 			    return light;
 			}
@@ -85,14 +80,14 @@ namespace minko
             updateModelToWorldMatrix(const math::mat4& modelToWorld);
 
 		private:
-			SpotLight(float diffuse,
-					  float specular,
-					  float attenuationConstant,
-					  float attenuationLinear,
-					  float attenuationQuadratic);
+			SpotLight(float diffuse, float specular);
 
 			void 
-			initialize(float innerAngleRadians, float outerAngleRadians);
+			initialize(float innerAngleRadians,
+                       float outerAngleRadians,
+                       float attenuationConstant,
+                       float attenuationLinear,
+                       float attenuationQuadratic);
 		};
 	}
 }
