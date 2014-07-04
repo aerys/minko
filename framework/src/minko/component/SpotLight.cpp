@@ -39,7 +39,7 @@ SpotLight::initialize(float innerAngleRadians,
 
     attenuationCoefficients(math::vec3(attenuationConstant, attenuationLinear, attenuationQuadratic));
 	innerConeAngle(innerAngleRadians);
-	outerConeAngle(std::max(outerAngleRadians, innerAngleRadians));
+	outerConeAngle(outerAngleRadians);
 }
 
 void
@@ -47,7 +47,7 @@ SpotLight::updateModelToWorldMatrix(const math::mat4& modelToWorld)
 {
 	data()
 		->set("position",	modelToWorld * math::vec4(0.f, 0.f, 0.f, 1.f))
-		->set("direction",	math::normalize(math::mat3(modelToWorld) * math::vec3(0.f, 0.f, 1.f)));	
+		->set("direction",	math::normalize(math::mat3(modelToWorld) * math::vec3(0.f, 0.f, -1.f)));	
 }
 
 SpotLight::Ptr

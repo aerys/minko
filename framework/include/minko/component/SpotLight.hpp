@@ -38,8 +38,8 @@ namespace minko
 			Ptr
 			create(float diffuse				= 1.0f,
 				   float specular				= 1.0f,
-                   float innerAngleRadians      = (float)PI * 0.25f,
-                   float outerAngleRadians      = -1.0f,
+                   float innerAngleRadians      = (float)PI * 0.20f,
+                   float outerAngleRadians      = (float)PI * 0.25f,
 				   float attenuationConstant	= -1.0f,
 				   float attenuationLinear		= -1.0f,
 				   float attenuationQuadratic	= -1.0f)
