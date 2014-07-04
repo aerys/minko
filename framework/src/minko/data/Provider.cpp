@@ -105,6 +105,7 @@ Provider::swap(const std::string& propertyName1, const std::string& propertyName
 	return shared_from_this();
 }
 
+/*
 bool 
 Provider::hasProperty(const std::string& name, bool skipPropertyNameFormatting) const
 {
@@ -116,6 +117,7 @@ Provider::hasProperty(const std::string& name, bool skipPropertyNameFormatting) 
 
 	return it != _names.end();
 }
+*/
 
 /*virtual*/
 Provider::Ptr
@@ -132,7 +134,7 @@ Provider::clone()
 Provider::Ptr
 Provider::copyFrom(Provider::Ptr source)
 {
-	_names	= source->_names;
+	//_names	= source->_names;
 	_values = source->_values;
 
 	return shared_from_this();

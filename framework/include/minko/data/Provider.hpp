@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Common.hpp"
 #include "minko/Any.hpp"
 #include "minko/Signal.hpp"
-#include "minko/data/Value.hpp"
+//#include "minko/data/Value.hpp"
 
 namespace minko
 {
@@ -42,14 +42,15 @@ namespace minko
 			typedef Signal<std::shared_ptr<Value>>::Slot ChangedSignalSlot;
 
 		private:
-			std::vector<std::string>								_names;
+			//std::vector<std::string>								_names;
 			std::unordered_map<std::string, Any>					_values;
-			std::unordered_map<std::string, ChangedSignalSlot>		_valueChangedSlots;
-			std::unordered_map<std::string, ChangedSignalSlot>		_referenceChangedSlots;
+			//std::unordered_map<std::string, ChangedSignalSlot>		_valueChangedSlots;
+			//std::unordered_map<std::string, ChangedSignalSlot>		_referenceChangedSlots;
 
 			std::shared_ptr<Signal<Ptr, const std::string&>>		_propertyAdded;
-			std::shared_ptr<Signal<Ptr, const std::string&>>		_propValueChanged;
-			std::shared_ptr<Signal<Ptr, const std::string&>>		_propReferenceChanged;
+            std::shared_ptr<Signal<Ptr, const std::string&>>		_propertyChanged;
+			//std::shared_ptr<Signal<Ptr, const std::string&>>		_propValueChanged;
+			//std::shared_ptr<Signal<Ptr, const std::string&>>		_propReferenceChanged;
 			std::shared_ptr<Signal<Ptr, const std::string&>>		_propertyRemoved;
 
 		public:
@@ -72,16 +73,21 @@ namespace minko
 				return create()->copyFrom(source);
 			}
 
+            /*
 			inline
 			const std::vector<std::string>&
 			propertyNames() const
 			{
 				return _names;
 			}
+            */
 
-			virtual
+			inline
 			bool 
-			hasProperty(const std::string&, bool skipPropertyNameFormatting = false) const;
+            hasProperty(const std::string& name, bool skipPropertyNameFormatting = false) const
+            {
+                return _values.count(skipPropertyNameFormatting ? name : formatPropertyName(name)) != 0;
+            }
 
 			inline
 			const std::unordered_map<std::string, Any>&
@@ -90,6 +96,7 @@ namespace minko
 				return _values;
 			}
 
+            /*
 			inline
 			const std::string&
 			propertyName(const unsigned int propertyIndex) const
@@ -110,12 +117,20 @@ namespace minko
 			{
 				return _propReferenceChanged;
 			}
+            */
 
 			inline
 			std::shared_ptr<Signal<Ptr, const std::string&>>
 			propertyAdded() const
 			{
 				return _propertyAdded;
+			}
+
+            inline
+			std::shared_ptr<Signal<Ptr, const std::string&>>
+			propertyChanged() const
+			{
+				return _propertyChanged;
 			}
 
 			inline
@@ -126,25 +141,47 @@ namespace minko
 			}
 
 			template <typename T>
-		    T
-			get(const std::string& propertyName, bool skipPropertyNameFormatting) const
-			{
-				const std::string&	formattedName	= skipPropertyNameFormatting ? propertyName : formatPropertyName(propertyName);
-				auto				foundIt			= values().find(formattedName);
-
-				if (foundIt == values().end())
-					throw std::invalid_argument("propertyName");
-				
-				return Any::unsafe_cast<T>(foundIt->second);
-			}
-
-			template <typename T>
 			inline
-			T
+			const T&
 			get(const std::string& propertyName) const
 			{
-				return get<T>(propertyName, false);
+				return *Any::cast<T>(&_data[name]);
 			}
+
+            template <typename T>
+            inline
+            const T*
+            getPointer(const std::string& name) const
+            {
+                return Any::cast<T>(&_data[name]);
+            }
+
+            template <typename T>
+            inline
+            Ptr
+            set(const std::string& name, const T& value)
+            {
+                if (_data.count(name) != 0)
+                    *Any::cast<T>(&_data[name]) = value;
+                else
+                    _data[name] = value;
+
+                return shared_from_this();
+            }
+
+            /*
+            template <typename T>
+            T
+            get(const std::string& propertyName, bool skipPropertyNameFormatting) const
+            {
+                const std::string&	formattedName	= skipPropertyNameFormatting ? propertyName : formatPropertyName(propertyName);
+                auto				foundIt			= values().find(formattedName);
+
+                if (foundIt == values().end())
+                    throw std::invalid_argument("propertyName");
+
+                return Any::unsafe_cast<T>(foundIt->second);
+            }
 
 			template <typename T>
 			bool
@@ -246,6 +283,7 @@ namespace minko
 			{
 				return set(propertyName, value, false);
 			}
+            */
 
 			virtual
 			Ptr
