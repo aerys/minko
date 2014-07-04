@@ -23,8 +23,7 @@ using namespace minko;
 using namespace minko::component;
 
 DirectionalLight::DirectionalLight(float diffuse, float specular) :
-	AbstractDiscreteLight("directionalLights", diffuse, specular),
-	_worldDirection()
+	AbstractDiscreteLight("directionalLights", diffuse, specular)
 {
 }
 
