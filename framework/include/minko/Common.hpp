@@ -51,6 +51,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include <bitset>
 #include <regex>
 
+#ifndef _MSC_VER
+# define GLM_FORCE_CXX11
+#endif
 #define GLM_FORCE_INLINE
 #define GLM_FORCE_RADIANS
 #define GLM_SWIZZLE
@@ -59,9 +62,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "glm/gtx/matrix_interpolation.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtx/color_space.hpp"
-/*
-#include "glm/gtc/matrix_inverse.hpp"
-*/
 
 #define PI 3.1415926535897932384626433832795
 
