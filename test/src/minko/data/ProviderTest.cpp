@@ -133,25 +133,25 @@ TEST_F(ProviderTest, ValueChanged)
 	ASSERT_EQ(v, 42);
 }
 
-TEST_F(ProviderTest, ValueChangedNot)
-{
-	auto p = Provider::create();
-	auto v = 0;
-
-	p->set("foo", 42);
-
-	auto _ = p->propertyValueChanged()->connect(
-		[&](Provider::Ptr provider, const std::string& propertyName)
-		{
-			if (provider == p && propertyName == "foo")
-				v = provider->get<int>("foo");
-		}
-	);
-
-	p->set("foo", 42);
-
-	ASSERT_NE(v, 42);
-}
+//TEST_F(ProviderTest, ValueChangedNot)
+//{
+//	auto p = Provider::create();
+//	auto v = 0;
+//
+//	p->set("foo", 42);
+//
+//	auto _ = p->propertyValueChanged()->connect(
+//		[&](Provider::Ptr provider, const std::string& propertyName)
+//		{
+//			if (provider == p && propertyName == "foo")
+//				v = provider->get<int>("foo");
+//		}
+//	);
+//
+//	p->set("foo", 42);
+//
+//	ASSERT_NE(v, 42);
+//}
 
 TEST_F(ProviderTest, Swap)
 {

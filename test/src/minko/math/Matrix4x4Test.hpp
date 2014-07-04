@@ -62,14 +62,14 @@ namespace minko
 
 			static inline
 			bool
-			nearEqual(float x, float y, float epsilon = 1e-6f)
+			nearEqual(float x, float y, float epsilon = 1e-3f)
 			{
 				return fabsf(x - y) < epsilon;
 			}
 
 			static inline
 			bool
-			nearEqual(std::shared_ptr<Matrix4x4> m1, std::shared_ptr<Matrix4x4> m2, float epsilon = 1e-6f)
+			nearEqual(std::shared_ptr<Matrix4x4> m1, std::shared_ptr<Matrix4x4> m2, float epsilon = 1e-3f)
 			{
 				for (auto i = 0; i < 16; ++i)
 					if (!nearEqual(m1->data()[i], m2->data()[i], epsilon))

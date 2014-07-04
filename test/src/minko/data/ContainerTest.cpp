@@ -170,27 +170,27 @@ TEST_F(ContainerTest, PropertyValueChangedWhenSetOnProvider)
 	ASSERT_EQ(v, 42);
 }
 
-TEST_F(ContainerTest, PropertyValueChangedNot)
-{
-	auto c = Container::create();
-	auto p = Provider::create();
-	int v = 0;
-
-	c->addProvider(p);
-	p->set("foo", 42);
-
-	auto _ = c->propertyValueChanged("foo")->connect(
-		[&](Container::Ptr container, const std::string& propertyName)
-		{
-			if (container == c && propertyName == "foo")
-				v = container->get<int>("foo");
-		}
-	);
-
-	p->set("foo", 42);
-
-	ASSERT_NE(v, 42);
-}
+//TEST_F(ContainerTest, PropertyValueChangedNot)
+//{
+//	auto c = Container::create();
+//	auto p = Provider::create();
+//	int v = 0;
+//
+//	c->addProvider(p);
+//	p->set("foo", 42);
+//
+//	auto _ = c->propertyValueChanged("foo")->connect(
+//		[&](Container::Ptr container, const std::string& propertyName)
+//		{
+//			if (container == c && propertyName == "foo")
+//				v = container->get<int>("foo");
+//		}
+//	);
+//
+//	p->set("foo", 42);
+//
+//	ASSERT_NE(v, 42);
+//}
 
 
 TEST_F(ContainerTest, ArrayAdd)
