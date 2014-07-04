@@ -19,9 +19,6 @@ minko.project.library = function(name)
 		defines { "NDEBUG" }
 		optimize "On"
 	
-	configuration { "windows32 or windows64" }
-		includedirs { minko.sdk.path("/framework/lib/glew/include") }
-
 	configuration { "vs*" }
 		defines {
 			"NOMINMAX",				-- do not define min/max as macro in windows.h
