@@ -51,12 +51,14 @@ namespace minko
 
 			PropertyChangedSignalPtr										_propertyAdded;
 			PropertyChangedSignalPtr										_propertyRemoved;
-			std::unordered_map<std::string, PropertyChangedSignalPtr>		_propValueChanged;
-			std::unordered_map<std::string, PropertyChangedSignalPtr>		_propReferenceChanged;
+            std::unordered_map<std::string, PropertyChangedSignalPtr>		_propertyChanged;
+			//std::unordered_map<std::string, PropertyChangedSignalPtr>		_propValueChanged;
+			//std::unordered_map<std::string, PropertyChangedSignalPtr>		_propReferenceChanged;
 
-			std::unordered_map<ProviderPtr, std::list<Any>>					_propertyAddedOrRemovedSlots;
-			std::unordered_map<ProviderPtr, ProviderPropertyChangedSlot>	_providerValueChangedSlot;
-			std::unordered_map<ProviderPtr, ProviderPropertyChangedSlot>	_providerReferenceChangedSlot;
+            std::unordered_map<ProviderPtr, std::list<Any>>					_propertySlots;
+            std::unordered_map<std::string, PropertyChangedSignalPtr>	    _propertyChangedSlots;
+			//std::unordered_map<ProviderPtr, ProviderPropertyChangedSlot>	_providerValueChangedSlot;
+			//std::unordered_map<ProviderPtr, ProviderPropertyChangedSlot>	_providerReferenceChangedSlot;
 
 			Signal<Ptr, ProviderPtr>::Ptr									_providerAdded;
 			Signal<Ptr, ProviderPtr>::Ptr									_providerRemoved;
@@ -161,11 +163,23 @@ namespace minko
 				return _propertyRemoved;
 			}
 
+            /*
 			PropertyChangedSignalPtr
 			propertyValueChanged(const std::string& propertyName);
 
 			PropertyChangedSignalPtr
 			propertyReferenceChanged(const std::string& propertyName);
+            */
+
+            inline
+            PropertyChangedSignalPtr
+            propertyChanged(const std::string& propertyName)
+            {
+                if (_propertyChanged.count(propertyName) == 0)
+                    _propertyChanged[propertyName] = Signal<Container::Ptr, const std::string&>::create();
+
+                return _propertyChanged[propertyName];
+            }
 
 			inline
 			Signal<Ptr, Provider::Ptr>::Ptr
@@ -203,11 +217,16 @@ namespace minko
 			void
 			providerPropertyRemovedHandler(ProviderPtr, const std::string& propertyName);
 
+            void
+            providerPropertyChangedHandler(ProviderPtr, const std::string& propertyName);
+
+            /*
 			void 
 			providerValueChangedHandler(ProviderPtr, const std::string& propertyName);
 
 			void
 			providerReferenceChangedHandler(ProviderPtr, const std::string& propertyName);
+            */
 
 			std::string
 			formatPropertyName(ProviderPtr  arrayProvider, const std::string&) const;
