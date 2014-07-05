@@ -94,6 +94,18 @@ namespace minko
     }
 
     bool
+    operator==(Any rhs) const
+    {
+        return _content == rhs._content;
+    }
+
+    bool
+    operator!=(Any rhs) const
+    {
+        return _content != rhs._content;
+    }
+
+    bool
     empty() const
     {
       return !_content;
