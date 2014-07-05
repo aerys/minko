@@ -26,13 +26,10 @@ using namespace minko::data;
 
 Provider::Provider() :
 	enable_shared_from_this(),
-	_names(),
-	_values(),
-	_valueChangedSlots(),
-	_referenceChangedSlots(),
 	_propertyAdded(Signal<Ptr, const std::string&>::create()),
-	_propValueChanged(Signal<Ptr, const std::string&>::create()),
-	_propReferenceChanged(Signal<Ptr, const std::string&>::create()),
+    _propertyChanged(Signal<Ptr, const std::string&>::create()),
+	//_propValueChanged(Signal<Ptr, const std::string&>::create()),
+	//_propReferenceChanged(Signal<Ptr, const std::string&>::create()),
 	_propertyRemoved(Signal<Ptr, const std::string&>::create())
 {
 }
@@ -44,10 +41,10 @@ Provider::unset(const std::string& propertyName)
 	
 	if (_values.count(formattedPropertyName) != 0)
 	{
-		_names.erase(std::find(_names.begin(), _names.end(), formattedPropertyName));
+		//_names.erase(std::find(_names.begin(), _names.end(), formattedPropertyName));
 		_values.erase(formattedPropertyName);
-		_valueChangedSlots.erase(formattedPropertyName);
-		_referenceChangedSlots.erase(formattedPropertyName);
+		//_valueChangedSlots.erase(formattedPropertyName);
+		//_referenceChangedSlots.erase(formattedPropertyName);
 
 		_propertyRemoved->execute(shared_from_this(), formattedPropertyName);
 	}
@@ -70,35 +67,38 @@ Provider::swap(const std::string& propertyName1, const std::string& propertyName
 	{
 		auto source = hasProperty1 ? formattedPropertyName1 : formattedPropertyName2;
 		auto destination = hasProperty1 ? formattedPropertyName2 : formattedPropertyName1;
-		auto namesIt = std::find(_names.begin(), _names.end(), source);
+		//auto namesIt = std::find(_names.begin(), _names.end(), source);
 
-		*namesIt = destination;
+		//*namesIt = destination;
 
 		_values[destination] = _values[source];
 		_values.erase(source);
 
-		_valueChangedSlots[destination] = _valueChangedSlots[source];
-		_valueChangedSlots.erase(source);
+		//_valueChangedSlots[destination] = _valueChangedSlots[source];
+		//_valueChangedSlots.erase(source);
 
 		_propertyRemoved->execute(shared_from_this(), source);
 		_propertyAdded->execute(shared_from_this(), destination);
+        _propertyChanged->execute(shared_from_this(), destination);
 	}
 	else
 	{
-		const auto	value1	= _values[formattedPropertyName1];
-		const auto	value2	= _values[formattedPropertyName2];
-		const bool	changed = true;//!( (*value1) == (*value2) );
+		const auto&	value1	= _values[formattedPropertyName1];
+		const auto&	value2	= _values[formattedPropertyName2];
+		const bool	changed = value1 != value2;
 
 		_values[formattedPropertyName1] = value2;
 		_values[formattedPropertyName2] = value1;
 
-		_propValueChanged->execute(shared_from_this(), formattedPropertyName1);
-		_propValueChanged->execute(shared_from_this(), formattedPropertyName2);
-
+		//_propValueChanged->execute(shared_from_this(), formattedPropertyName1);
+		//_propValueChanged->execute(shared_from_this(), formattedPropertyName2);
+        
 		if (changed)
 		{
-			_propReferenceChanged->execute(shared_from_this(), formattedPropertyName1);
-			_propReferenceChanged->execute(shared_from_this(), formattedPropertyName2);
+            _propertyChanged->execute(shared_from_this(), formattedPropertyName1);
+            _propertyChanged->execute(shared_from_this(), formattedPropertyName2);
+			//_propReferenceChanged->execute(shared_from_this(), formattedPropertyName1);
+			//_propReferenceChanged->execute(shared_from_this(), formattedPropertyName2);
 		}
 	}
 
