@@ -109,9 +109,7 @@ namespace minko
 			initialize();
 
 			void
-            bind(ContainerPtr rootData,
-                 ContainerPtr rendererData,
-                 ContainerPtr targetData);
+            bind(ContainerPtr rootData, ContainerPtr rendererData, ContainerPtr targetData);
 
             void
             bindVertexAttribute(const std::string&	inputName,

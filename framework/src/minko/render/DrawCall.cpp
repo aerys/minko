@@ -22,9 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::render;
 
-/*static*/ const unsigned int	DrawCall::MAX_NUM_TEXTURES		= 8;
-/*static*/ const unsigned int	DrawCall::MAX_NUM_VERTEXBUFFERS	= 8;
-
+const unsigned int	DrawCall::MAX_NUM_TEXTURES		= 8;
+const unsigned int	DrawCall::MAX_NUM_VERTEXBUFFERS	= 8;
 
 DrawCall::DrawCall(Pass::Ptr pass) :
 	_pass(pass)
@@ -39,9 +38,7 @@ DrawCall::initialize()
 }
 
 void
-DrawCall::bind(ContainerPtr rootData,
-               ContainerPtr rendererData,
-               ContainerPtr targetData)
+DrawCall::bind(ContainerPtr rootData, ContainerPtr rendererData, ContainerPtr targetData)
 {
     // FIXME
 }
