@@ -143,28 +143,30 @@ namespace minko
 			template <typename T>
 			inline
 			const T&
-			get(const std::string& propertyName) const
+            get(const std::string& propertyName, bool skipPropertyNameFormatting = false) const
 			{
-				return *Any::cast<T>(&_values[name]);
+                return *Any::cast<T>(&_values[skipPropertyNameFormatting ? name : formatPropertyName(name)]);
 			}
 
             template <typename T>
             inline
             const T*
-            getPointer(const std::string& name) const
+            getPointer(const std::string& name, bool skipPropertyNameFormatting = false) const
             {
-                return Any::cast<T>(&_values[name]);
+                return Any::cast<T>(&_values[skipPropertyNameFormatting ? name : formatPropertyName(name)]);
             }
 
             template <typename T>
             inline
             Ptr
-            set(const std::string& name, const T& value)
+            set(const std::string& name, const T& value, bool skipPropertyNameFormatting = false)
             {
-                if (_values.count(name) != 0)
-                    *Any::cast<T>(&_values[name]) = value;
+                auto formattedPropertyName = skipPropertyNameFormatting ? name : formatPropertyName(name);
+
+                if (_values.count(formattedPropertyName) != 0)
+                    *Any::cast<T>(&_values[formattedPropertyName]) = value;
                 else
-                    _values[name] = value;
+                    _values[formattedPropertyName] = value;
 
                 return shared_from_this();
             }
