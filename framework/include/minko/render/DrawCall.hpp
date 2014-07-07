@@ -20,17 +20,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
-#include "minko/Signal.hpp"
 
 #include "minko/Signal.hpp"
-#include "minko/render/Blending.hpp"
 #include "minko/data/Container.hpp"
 #include "minko/render/Pass.hpp"
-#include "minko/render/ProgramInputs.hpp"
 #include "minko/render/States.hpp"
-#include "minko/render/AbstractTexture.hpp"
-#include "minko/render/Priority.hpp"
-#include "minko/scene/Layout.hpp"
 
 namespace minko
 {
@@ -42,109 +36,55 @@ namespace minko
             public std::enable_shared_from_this<DrawCall>
 		{
 		public:
-			typedef std::shared_ptr<DrawCall>								Ptr;
+			typedef std::shared_ptr<DrawCall>   Ptr;
 
 		private:
-			enum class ContainerId{ COMPLETE = 0, FILTERED };
+            template <typename T>
+            struct UniformValue
+            {
+                int location;
+                uint size;
+                const T* data;
+            };
 
-			typedef std::shared_ptr<scene::Node>							NodePtr;
-            typedef std::shared_ptr<AbstractContext>						AbsCtxPtr;
-			typedef std::shared_ptr<AbstractTexture>						AbsTexturePtr;
-			typedef std::shared_ptr<data::Provider>							ProviderPtr;
-            typedef std::shared_ptr<data::Container>						ContainerPtr;
-			typedef std::shared_ptr<Program>								ProgramPtr;
+            struct SamplerValue
+            {
+                int location;
+                int resourceId;
+                WrapMode wrapMode;
+                TextureFilter textureFilter;
+                MipFilter mipFilter;
+                TextureType type;
+            };
 
-			typedef data::Container::PropertyChangedSignal::Slot			PropertyChangedSlot;
+            struct AttributeValue
+            {
+                int location;
+                uint size;
+                uint offset;
+                uint data;
+            };
 
-			typedef std::tuple<int, int>									Int2;
-			typedef std::tuple<int, int, int>								Int3;
-			typedef std::tuple<int, int, int, int>							Int4;					
+            typedef std::shared_ptr<AbstractContext>	AbsCtxPtr;
+			typedef std::shared_ptr<AbstractTexture>	AbsTexturePtr;
+            typedef std::shared_ptr<data::Container>	ContainerPtr;
+			typedef std::shared_ptr<Program>			ProgramPtr;
 
 		private:
-			static const unsigned int										MAX_NUM_TEXTURES;
-			static const unsigned int										MAX_NUM_VERTEXBUFFERS;
+			static const unsigned int			MAX_NUM_TEXTURES;
+			static const unsigned int			MAX_NUM_VERTEXBUFFERS;
 
-            static SamplerState												_defaultSamplerState;
-
-			std::shared_ptr<render::Pass>									_pass;
-
-			// filtered data containers
-			std::shared_ptr<data::Container>								_targetData;
-			std::shared_ptr<data::Container>								_rendererData;
-            std::shared_ptr<data::Container>								_rootData;
-			// complete data containers
-			std::shared_ptr<data::Container>								_fullTargetData;
-			std::shared_ptr<data::Container>								_fullRendererData;
-            std::shared_ptr<data::Container>								_fullRootData;
-
-			std::shared_ptr<Program>										_program;
-
-			std::list<Signal<ContainerPtr, ProviderPtr>::Slot>				_containerUpdateSlots; // FIXME
-
-			FormatNameFunction												_formatFunction;
-
-            std::vector<int>												_vertexBufferIds;
-            std::vector<int>												_vertexBufferLocations;
-            std::vector<int>												_vertexSizes;
-            std::vector<int>												_vertexAttributeSizes;
-            std::vector<int>												_vertexAttributeOffsets;
-            std::vector<int>												_textureIds;
-            std::vector<int>												_textureLocations;
-            std::vector<WrapMode>											_textureWrapMode;
-            std::vector<TextureFilter>										_textureFilters;
-            std::vector<MipFilter>											_textureMipFilters;
-			std::vector<TextureType>										_textureTypes;
-            uint															_numIndices;
-            uint															_indexBuffer;
-            AbsTexturePtr													_target;
-            render::Blending::Mode											_blendMode;
-			bool															_colorMask;
-            bool															_depthMask;
-            render::CompareMode												_depthFunc;
-            render::TriangleCulling											_triangleCulling;
-			render::CompareMode												_stencilFunc;
-			int																_stencilRef;
-			uint															_stencilMask;
-			render::StencilOperation										_stencilFailOp;
-			render::StencilOperation										_stencilZFailOp;
-			render::StencilOperation										_stencilZPassOp;
-			bool															_scissorTest;
-			render::ScissorBox												_scissorBox;
-			Layouts															_layouts;
-			float															_priority;
-			bool															_zsorted;
-            std::unordered_map<uint, float>									_uniformFloat;
-            std::unordered_map<uint, math::vec2>							_uniformFloat2;
-            std::unordered_map<uint, math::vec3>							_uniformFloat3;
-            std::unordered_map<uint, math::vec4>							_uniformFloat4;
-            std::unordered_map<uint, math::mat4>							_uniformFloat16;
-			std::unordered_map<uint, int>									_uniformInt;
-			std::unordered_map<uint, Int2>									_uniformInt2;
-			std::unordered_map<uint, Int3>									_uniformInt3;
-			std::unordered_map<uint, Int4>									_uniformInt4;
-			std::unordered_map<uint, data::UniformArrayPtr<float>>			_uniformFloats;
-			std::unordered_map<uint, data::UniformArrayPtr<float>>			_uniformFloats2;
-			std::unordered_map<uint, data::UniformArrayPtr<float>>			_uniformFloats3;
-			std::unordered_map<uint, data::UniformArrayPtr<float>>			_uniformFloats4;
-			std::unordered_map<uint, data::UniformArrayPtr<float>>			_uniformFloats16;
-			std::unordered_map<uint, data::UniformArrayPtr<int>>			_uniformInts;
-			std::unordered_map<uint, data::UniformArrayPtr<int>>			_uniformInts2;
-			std::unordered_map<uint, data::UniformArrayPtr<int>>			_uniformInts3;
-			std::unordered_map<uint, data::UniformArrayPtr<int>>			_uniformInts4;
-
-			std::unordered_map<std::string, std::list<Any>>											_referenceChangedSlots;		// Any = PropertyChangedSlot
-			std::list<PropertyChangedSlot>															_macroAddedOrRemovedSlots;
-			std::unordered_map<ContainerPtr, std::unordered_map<std::string, PropertyChangedSlot>>	_macroChangedSlots;			// Any = PropertyChangedSlot
-			Signal<std::shared_ptr<IndexBuffer>>::Slot												_indicesChangedSlot;
-			Signal<ContainerPtr, const std::string&>::Slot											_layoutsPropertyChangedSlot;
-
-			Signal<Ptr>::Ptr												_zsortNeeded;
-			Signal<Ptr, ContainerPtr, const std::string&>::Ptr				_macroChanged;	
-
-			std::unordered_map<uint, std::set<std::string>>					_containerMacroPNames;
-			std::unordered_map<uint, std::list<std::regex>>					_containerMacroRegex;
-
-			std::shared_ptr<DrawCallZSorter>								_zSorter;
+			std::shared_ptr<render::Pass>		_pass;
+			std::shared_ptr<Program>			_program;
+            uint								_numIndices;
+            uint                                _firstIndex;
+            uint								_indexBuffer;
+            std::vector<UniformValue<int>>      _uniformInt;
+            std::vector<UniformValue<float>>    _uniformFloat;
+            std::vector<UniformValue<bool>>     _uniformBool;
+            std::vector<SamplerValue>           _samplers;
+            std::vector<AttributeValue>         _attributes;
+            std::shared_ptr<States>             _states;
 
 		public:
 			static inline
@@ -158,115 +98,8 @@ namespace minko
 				return ptr;
 			}
 
-			inline
-			std::shared_ptr<Pass>
-			pass() const
-			{
-				return _pass;
-			}
-
-			inline
-			ContainerPtr
-			targetData() const
-			{
-				return _targetData;
-			}
-
-			inline
-			ContainerPtr
-			rendererData() const
-			{
-				return _rendererData;
-			}
-
-			inline
-			ContainerPtr
-			rootData() const
-			{
-				return _rootData;
-			}
-
-			inline
-			Ptr
-			formatNameFunction(FormatNameFunction func)
-			{
-				_formatFunction = func;
-
-				return shared_from_this();
-			}
-
-			inline
-			std::string
-			formatPropertyName(const std::string& rawPropertyName)
-			{
-				return _formatFunction ? _formatFunction(rawPropertyName) : rawPropertyName;
-			}
-
-            inline
-            AbsTexturePtr
-            target() const
-            {
-                return _target;
-            }
-
-			inline
-			float
-			priority() const
-			{
-				return _priority;
-			}
-
-			inline
-			Layouts
-			layouts() const
-			{
-				return _layouts;
-			}
-
-			inline
-			bool
-			zSorted() const
-			{
-				return _zsorted && Priority::LAST < _priority && !( _priority > Priority::TRANSPARENT);
-			}
-			
-
-            void
-            configure(ProgramPtr,
-					  FormatNameFunction,
-					  ContainerPtr	fullTargetData, // original containers
-					  ContainerPtr	fullRendererData,
-                      ContainerPtr	fullRootData,
-                      ContainerPtr	targetData, // filtered containers
-					  ContainerPtr	rendererData,
-                      ContainerPtr	rootData);
-
-			void
-			unbind();
-
 			void
 			render(const std::shared_ptr<AbstractContext>& context, AbsTexturePtr renderTarget);
-
-			void
-			initialize(ContainerPtr				                    data,
-					   const std::map<std::string, std::string>&	inputNameToBindingName);
-
-			math::vec3
-			getEyeSpacePosition();
-
-			inline
-			Signal<Ptr>::Ptr
-			zsortNeeded() const
-			{
-				return _zsortNeeded;
-			}
-
-			inline
-			Signal<Ptr, ContainerPtr, const std::string&>::Ptr
-			macroChanged() const
-			{
-				return _macroChanged;
-			}
 
 		private:
 			explicit
@@ -276,34 +109,20 @@ namespace minko
 			initialize();
 
 			void
-			initializePassMacroRegex();
+            bind(ContainerPtr rootData,
+                 ContainerPtr rendererData,
+                 ContainerPtr targetData);
 
-			void
-			reset();
-
-			void
-            bind();
-
-			void
-			trackMacros();
-
-			void
-			bindProgramDefaultUniforms();
-
-			void
-			bindProgramInputs();
+            void
+            bindVertexAttribute(const std::string&	inputName,
+							    int					location,
+							    uint				vertexBufferIndex);
 
 			void
 			bindIndexBuffer();
 
 			void
-			bindTargetLayouts();
-
-			void
 			bindStates();
-			
-			void
-			bindVertexAttribute(const std::string& propertyName, int location, uint vertexBufferIndex);
 			
 			void
 			bindTextureSampler(const std::string& propertyName, int location, uint textureIndex, const SamplerState&);
@@ -312,106 +131,7 @@ namespace minko
 			bindUniform(const std::string& propertyName, ProgramInputs::Type, int location);
 
 			void
-			bindUniformArray(const std::string&	propertyName, ContainerPtr, ProgramInputs::Type, int location);
-
-			void
-			bindFloatUniformArray(const std::string& propertyName, ContainerPtr, ProgramInputs::Type, int location);
-
-			void
-			bindIntegerUniformArray(const std::string& propertyName, ContainerPtr, ProgramInputs::Type, int location);
-
-			void
-			watchUniformRefChange(ContainerPtr, const std::string& propertyName, ProgramInputs::Type, int location);
-
-			void
-			targetLayoutsChangedHandler(NodePtr, NodePtr);
-
-			ContainerPtr
-			getContainer(ContainerId, data::BindingSource source) const;
-
-			template <typename T>
-			void
-			bindState(const std::string& stateName, T defaultValue, T& stateValue)
-			{
-				const auto&				stateBindings	= _pass->stateBindings();
-				data::Container::Ptr	container		= nullptr;
-				std::string				propertyName	= "";
-					
-				if (stateBindings.count(stateName) > 0)
-				{
-					const auto&	binding	= stateBindings.at(stateName);
-					
-					propertyName		= formatPropertyName(std::get<0>(binding));
-					container			= getContainer(ContainerId::FILTERED, std::get<1>(binding));
-				}
-
-
-				if (container)
-				{
-					stateValue = container->hasProperty(propertyName)
-						? container->get<T>(propertyName)
-						: defaultValue;
-				
-					if (_referenceChangedSlots.count(propertyName) == 0)
-					{
-#if defined(EMSCRIPTEN)
-			// See issue #1848 in Emscripten: https://github.com/kripken/emscripten/issues/1848
-						auto that = shared_from_this();
-
-						_referenceChangedSlots[propertyName].push_back(container->propertyReferenceChanged(propertyName)->connect([&, that, defaultValue](data::Container::Ptr, const std::string&) {
-							that->bindState<T>(stateName, defaultValue, stateValue);
-						}));
-#else
-						_referenceChangedSlots[propertyName].push_back(container->propertyReferenceChanged(propertyName)->connect(std::bind(
-							&DrawCall::bindState<T>,
-							shared_from_this(),
-							stateName, 
-							defaultValue, 
-							stateValue
-						)));
-#endif
-					}
-				}
-				else
-					stateValue = defaultValue;
-
-				uploadIfTexture<T>(stateValue);
-			}
-
-			
-			template <typename T>
-			typename std::enable_if<std::is_convertible< T, std::shared_ptr<render::AbstractTexture> >::value, T>::type
-			uploadIfTexture(T value)
-			{
-				render::AbstractTexture::Ptr texture = value;
-
-				if (texture && !texture->isReady())
-					texture->upload();
-
-				return value;
-			}
-			template <typename T>
-			typename std::enable_if<!std::is_convertible< T, std::shared_ptr<render::AbstractTexture> >::value, T>::type
-			uploadIfTexture(T value)
-			{
-				// actually does nothing
-				return value;
-			}
-
-			bool
-			isTrackedMacro(const std::string&, ContainerId) const;
-
-			void
-			macroAddedHandler(ContainerPtr, ContainerId, const std::string&);
-
-			void
-			macroChangedHandler(ContainerPtr, const std::string&);
-
-			void
-			macroRemovedHandler(ContainerPtr, ContainerId, const std::string&);
-
-			void
-			remoteProviderRemovedHandler(data::BindingSource, ProviderPtr);
+			bindState(const std::string& stateName);
 		};		
 	}
 }
