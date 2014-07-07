@@ -110,7 +110,10 @@ namespace minko
 			initialize();
 
 			void
-            bind(ContainerPtr rootData, ContainerPtr rendererData, ContainerPtr targetData);
+            bind(ContainerPtr                   rootData,
+                 ContainerPtr                   rendererData,
+                 ContainerPtr                   targetData,
+                 std::shared_ptr<ProgramInputs> inputs);
 
             void
             bindVertexAttribute(const std::string&	inputName,
@@ -127,10 +130,17 @@ namespace minko
 			bindTextureSampler(const std::string& propertyName, int location, uint textureIndex, const SamplerState&);
 
 			void
-			bindUniform(const std::string& propertyName, ProgramInputs::Type, int location);
+			bindUniform(ContainerPtr container, const std::string& propertyName, ProgramInputs::Type, int location);
 
 			void
 			bindState(const std::string& stateName);
+
+            ContainerPtr
+            getContainer(ContainerPtr           rootData,
+                         ContainerPtr           rendererData,
+                         ContainerPtr           targetData,
+                         data::BindingSource    source,
+                         const std::string&     name);
 		};		
 	}
 }

@@ -19,6 +19,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/render/DrawCall.hpp"
 
+#include "minko/data/Container.hpp"
+
 using namespace minko;
 using namespace minko::render;
 
@@ -37,8 +39,31 @@ DrawCall::initialize()
 {
 }
 
+DrawCall::ContainerPtr
+DrawCall::getContainer(ContainerPtr         rootData,
+                       ContainerPtr         rendererData,
+                       ContainerPtr         targetData,
+                       data::BindingSource  source,
+                       const std::string&   name)
+{
+    switch (source)
+    {
+        case data::BindingSource::ROOT:
+            return rootData;
+        case data::BindingSource::RENDERER:
+            return rendererData;
+        case data::BindingSource::TARGET:
+            return targetData;
+    }
+
+    return nullptr;
+}
+
 void
-DrawCall::bind(ContainerPtr rootData, ContainerPtr rendererData, ContainerPtr targetData)
+DrawCall::bind(ContainerPtr         rootData,
+               ContainerPtr         rendererData,
+               ContainerPtr         targetData,
+               ProgramInputs::Ptr   inputs)
 {
     // FIXME
 }
@@ -67,11 +92,41 @@ DrawCall::bindTextureSampler(const std::string&		inputName,
 }
 
 void
-DrawCall::bindUniform(const std::string&	inputName,
+DrawCall::bindUniform(ContainerPtr          container,
+                      const std::string&	inputName,
 					  ProgramInputs::Type	type,
 					  int					location)
 {
-    // FIXME
+    switch (type)
+    {
+        case ProgramInputs::Type::int1:
+            _uniformInt.push_back({ location, 1, container->getPointer<int>(inputName) });
+            break;
+        case ProgramInputs::Type::int2:
+            _uniformInt.push_back({ location, 2, math::value_ptr(container->get<math::ivec2>(inputName)) });
+            break;
+        case ProgramInputs::Type::int3:
+            _uniformInt.push_back({ location, 3, math::value_ptr(container->get<math::ivec3>(inputName)) });
+            break;
+        case ProgramInputs::Type::int4:
+            _uniformInt.push_back({ location, 4, math::value_ptr(container->get<math::ivec4>(inputName)) });
+            break;
+        case ProgramInputs::Type::float1:
+            _uniformFloat.push_back({ location, 1, container->getPointer<float>(inputName) });
+            break;
+        case ProgramInputs::Type::float2:
+            _uniformFloat.push_back({ location, 2, math::value_ptr(container->get<math::vec4>(inputName)) });
+            break;
+        case ProgramInputs::Type::float3:
+            _uniformFloat.push_back({ location, 3, math::value_ptr(container->get<math::vec4>(inputName)) });
+            break;
+        case ProgramInputs::Type::float4:
+            _uniformFloat.push_back({ location, 4, math::value_ptr(container->get<math::vec4>(inputName)) });
+            break;
+        case ProgramInputs::Type::float16:
+            _uniformFloat.push_back({ location, 16, math::value_ptr(container->get<math::mat4>(inputName)) });
+            break;
+    }
 }
 
 void
