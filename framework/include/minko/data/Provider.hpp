@@ -145,7 +145,7 @@ namespace minko
 			const T&
 			get(const std::string& propertyName) const
 			{
-				return *Any::cast<T>(&_data[name]);
+				return *Any::cast<T>(&_values[name]);
 			}
 
             template <typename T>
@@ -153,7 +153,7 @@ namespace minko
             const T*
             getPointer(const std::string& name) const
             {
-                return Any::cast<T>(&_data[name]);
+                return Any::cast<T>(&_values[name]);
             }
 
             template <typename T>
@@ -161,10 +161,10 @@ namespace minko
             Ptr
             set(const std::string& name, const T& value)
             {
-                if (_data.count(name) != 0)
-                    *Any::cast<T>(&_data[name]) = value;
+                if (_values.count(name) != 0)
+                    *Any::cast<T>(&_values[name]) = value;
                 else
-                    _data[name] = value;
+                    _values[name] = value;
 
                 return shared_from_this();
             }
