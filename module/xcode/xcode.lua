@@ -4,8 +4,27 @@
 -- Copyright (c) 2009 Jason Perkins and the Premake project
 --
 
+	-- Copy Info.plist and Default-568h@2x.png from skeleton to project folder
+	function copymacfiles(prj)
+		local destfolder = prj.location
 
+		-- We don't want these files if the project comes from framework or a plugin
+		local isextprj = not((string.endswith(destfolder, '/framework')) or (string.find(destfolder, '/plugin/') ~= nil))
 
+		if isextprj then
+			local plist = "Info.plist"
+			local plistpath = MINKO_HOME .. "/skeleton/" .. plist
+			local defaultpng =  "Default-568h@2x.png"
+			local defaultpngpath = MINKO_HOME .. "/skeleton/" .. defaultpng
+			
+			if not(os.isfile(destfolder .. "/" .. plist)) then
+				os.copyfile(plistpath, destfolder)
+			end
+			if not(os.isfile(destfolder .. "/" .. defaultpng)) then
+				os.copyfile(defaultpngpath, destfolder)
+			end
+		end
+	end
 
 	premake.xcode = { }
 	local api = premake.api
@@ -65,26 +84,8 @@
 		
 		onproject = function(prj)
 
-			local destfolder = prj.location
+			copymacfiles(prj)
 
-			-- check that this is not the framework of a plugin
-			local isextprj = not((string.endswith(destfolder, '/framework') ~= nil) or (string.find(destfolder, '/plugin/') ~= nil))
-
-			if isextprj then
-				-- copy Info.plist and Default-568h@2x.png from skeleton to project folder
-				local plist = "Info.plist"
-				local plistpath = MINKO_HOME .. "/skeleton/" .. plist
-				local defaultpng =  "Default-568h@2x.png"
-				local defaultpngpath = MINKO_HOME .. "/skeleton/" .. defaultpng
-				
-				if not(os.isfile(destfolder .. "/" .. plist)) then
-					os.copyfile(plistpath, destfolder)
-				end
-				if not(os.isfile(destfolder .. "/" .. defaultpng)) then
-					os.copyfile(defaultpngpath, destfolder)
-				end
-			end
-			
 			premake.generate(prj, ".xcodeproj/project.pbxproj", premake.xcode.project)
 		end,
 		
@@ -138,25 +139,7 @@
 		
 		onproject = function(prj)
 
-			local destfolder = prj.location
-
-			-- check that this is not the framework of a plugin
-			local isextprj = not((string.endswith(destfolder, '/framework') ~= nil) or (string.find(destfolder, '/plugin/') ~= nil))
-
-			if isextprj then
-				-- copy Info.plist and Default-568h@2x.png from skeleton to project folder
-				local plist = "Info.plist"
-				local plistpath = MINKO_HOME .. "/skeleton/" .. plist
-				local defaultpng =  "Default-568h@2x.png"
-				local defaultpngpath = MINKO_HOME .. "/skeleton/" .. defaultpng
-				
-				if not(os.isfile(destfolder .. "/" .. plist)) then
-					os.copyfile(plistpath, destfolder)
-				end
-				if not(os.isfile(destfolder .. "/" .. defaultpng)) then
-					os.copyfile(defaultpngpath, destfolder)
-				end
-			end
+			copymacfiles(prj)
 
 			premake.generate(prj, ".xcodeproj/project.pbxproj", premake.xcode.project)
 		end,
