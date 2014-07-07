@@ -18,15 +18,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "minko/Common.hpp"
-#include "osxwebview/dom/OSXWebViewDOM.hpp"
-#include "osxwebview/dom/OSXWebViewDOMEngine.hpp"
+#include "macwebview/dom/MacWebViewDOM.hpp"
+#include "macwebview/dom/MacWebViewDOMEngine.hpp"
 
 using namespace minko;
 using namespace minko::dom;
-using namespace osxwebview;
-using namespace osxwebview::dom;
+using namespace macwebview;
+using namespace macwebview::dom;
 
-OSXWebViewDOM::OSXWebViewDOM(std::string jsAccessor) :
+MacWebViewDOM::MacWebViewDOM(std::string jsAccessor) :
 	_initialized(false),
 	_onload(Signal<AbstractDOM::Ptr, std::string>::create()),
 	_onmessage(Signal<AbstractDOM::Ptr, std::string>::create()),
@@ -35,17 +35,17 @@ OSXWebViewDOM::OSXWebViewDOM(std::string jsAccessor) :
 {
 }
 
-OSXWebViewDOM::Ptr
-OSXWebViewDOM::create(std::string jsAccessor, std::shared_ptr<OSXWebViewDOMEngine> engine)
+MacWebViewDOM::Ptr
+MacWebViewDOM::create(std::string jsAccessor, std::shared_ptr<MacWebViewDOMEngine> engine)
 {
-	Ptr dom(new OSXWebViewDOM(jsAccessor));
+	Ptr dom(new MacWebViewDOM(jsAccessor));
     dom->_engine = engine;
     
 	return dom;
 }
 
 void
-OSXWebViewDOM::sendMessage(std::string message, bool async)
+MacWebViewDOM::sendMessage(std::string message, bool async)
 {
 	std::string eval = "if (" + _jsAccessor + ".window.Minko.onmessage) " + _jsAccessor + ".window.Minko.onmessage('" + message + "');";
 
@@ -53,14 +53,14 @@ OSXWebViewDOM::sendMessage(std::string message, bool async)
 }
 
 void
-OSXWebViewDOM::eval(std::string message, bool async)
+MacWebViewDOM::eval(std::string message, bool async)
 {
     std::string ev = _jsAccessor + ".window.eval('" + message + "')";
     _engine->eval(ev);
 }
 
 std::vector<AbstractDOMElement::Ptr>
-OSXWebViewDOM::getElementList(std::string expression)
+MacWebViewDOM::getElementList(std::string expression)
 {
     std::vector<minko::dom::AbstractDOMElement::Ptr> l;
     
@@ -72,69 +72,69 @@ OSXWebViewDOM::getElementList(std::string expression)
     int numElements = runScriptInt(expression.c_str());
     
     for(int i = 0; i < numElements; ++i)
-        l.push_back(OSXWebViewDOMElement::getDOMElement("Minko.tmpElements[" + std::to_string(i) + "]", _engine));
+        l.push_back(MacWebViewDOMElement::getDOMElement("Minko.tmpElements[" + std::to_string(i) + "]", _engine));
     
     return l;
 }
 
 AbstractDOMElement::Ptr
-OSXWebViewDOM::createElement(std::string element)
+MacWebViewDOM::createElement(std::string element)
 {
 	std::string eval = "Minko.tmpElement = " + _jsAccessor + ".document.createElement('" + element + "');";
 
 	runScript(eval);
 
-	return OSXWebViewDOMElement::getDOMElement("Minko.tmpElement", _engine);
+	return MacWebViewDOMElement::getDOMElement("Minko.tmpElement", _engine);
 }
 
 AbstractDOMElement::Ptr
-OSXWebViewDOM::getElementById(std::string id)
+MacWebViewDOM::getElementById(std::string id)
 {
 	std::string eval = "Minko.tmpElement = " + _jsAccessor + ".document.getElementById('" + id + "');";
 
 	runScript(eval);
 
-	return OSXWebViewDOMElement::getDOMElement("Minko.tmpElement", _engine);
+	return MacWebViewDOMElement::getDOMElement("Minko.tmpElement", _engine);
 }
 
 std::vector<AbstractDOMElement::Ptr>
-OSXWebViewDOM::getElementsByClassName(std::string className)
+MacWebViewDOM::getElementsByClassName(std::string className)
 {
 	return getElementList(_jsAccessor + ".document.getElementsByClassName('" + className + "')");
 }
 
 std::vector<AbstractDOMElement::Ptr>
-OSXWebViewDOM::getElementsByTagName(std::string tagName)
+MacWebViewDOM::getElementsByTagName(std::string tagName)
 {
 	return getElementList(_jsAccessor + ".document.getElementsByTagName('" + tagName + "')");
 }
 
 AbstractDOMElement::Ptr
-OSXWebViewDOM::document()
+MacWebViewDOM::document()
 {
 	return _document;
 }
 
 AbstractDOMElement::Ptr
-OSXWebViewDOM::body()
+MacWebViewDOM::body()
 {
 	return _body;
 }
 
 Signal<AbstractDOM::Ptr, std::string>::Ptr
-OSXWebViewDOM::onload()
+MacWebViewDOM::onload()
 {
 	return _onload;
 }
 
 Signal<AbstractDOM::Ptr, std::string>::Ptr
-OSXWebViewDOM::onmessage()
+MacWebViewDOM::onmessage()
 {
 	return _onmessage;
 }
 
 std::string
-OSXWebViewDOM::fileName()
+MacWebViewDOM::fileName()
 {
 	std::string completeUrl = fullUrl();
 	int i = completeUrl.find_last_of('/');
@@ -143,7 +143,7 @@ OSXWebViewDOM::fileName()
 }
 
 std::string
-OSXWebViewDOM::fullUrl()
+MacWebViewDOM::fullUrl()
 {
 	std::string eval = "(Minko.iframeElement.src)";
     
@@ -153,13 +153,13 @@ OSXWebViewDOM::fullUrl()
 }
 
 bool
-OSXWebViewDOM::isMain()
+MacWebViewDOM::isMain()
 {
 	return true;
 }
 
 void
-OSXWebViewDOM::initialized(bool v)
+MacWebViewDOM::initialized(bool v)
 {
 	if (!_initialized && v)
 	{
@@ -172,33 +172,33 @@ OSXWebViewDOM::initialized(bool v)
 		
         runScript(eval);
 
-		_document	= OSXWebViewDOMElement::create(_jsAccessor + ".document", _engine);
-		_body		= OSXWebViewDOMElement::create(_jsAccessor + ".body", _engine);
+		_document	= MacWebViewDOMElement::create(_jsAccessor + ".document", _engine);
+		_body		= MacWebViewDOMElement::create(_jsAccessor + ".body", _engine);
 	}
 
 	_initialized = v;
 }
 
 bool
-OSXWebViewDOM::initialized()
+MacWebViewDOM::initialized()
 {
 	return _initialized;
 }
 
 void
-OSXWebViewDOM::runScript(std::string script)
+MacWebViewDOM::runScript(std::string script)
 {
     _engine->eval(script);
 }
 
 std::string
-OSXWebViewDOM::runScriptString(std::string script)
+MacWebViewDOM::runScriptString(std::string script)
 {
     return _engine->eval(script);
 }
 
 int
-OSXWebViewDOM::runScriptInt(std::string script)
+MacWebViewDOM::runScriptInt(std::string script)
 {
     return atoi(_engine->eval(script).c_str());
 }

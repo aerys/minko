@@ -17,27 +17,8 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#import "osxwebview/dom/OSXWebUIDelegate.h"
-#import <WebKit/WebView.h>
+#import <WebKit/WebKit.h>
 
-@implementation OSXWebUIDelegate
-
-// To display Javascript alerts
-- (void)webView:(WebView *)sender runJavaScriptAlertPanelWithMessage:(NSString *)message initiatedByFrame:(WebFrame *)frame
-{
-    NSAlert *jsAlert = [[[NSAlert alloc] init] autorelease];
-    [jsAlert addButtonWithTitle:@"OK"];
-    [jsAlert setMessageText:@"Javascript"];
-    [jsAlert setInformativeText:message];
-    [jsAlert setAlertStyle:NSWarningAlertStyle];
-    
-    [jsAlert beginSheetModalForWindow: sender.window completionHandler: NULL];
-}
-
-// Disable right click
--(NSArray *)webView:(WebView *)sender contextMenuItemsForElement:(NSDictionary *)element defaultMenuItems:(NSArray *)defaultMenuItems
-{
-    return nil;
-}
+@interface MacWebView : WebView
 
 @end

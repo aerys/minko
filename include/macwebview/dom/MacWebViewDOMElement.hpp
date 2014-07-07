@@ -24,36 +24,36 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/dom/AbstractDOMElement.hpp"
 #include "minko/dom/AbstractDOMMouseEvent.hpp"
 
-namespace osxwebview
+namespace macwebview
 {
 	namespace dom
 	{
-        class OSXWebViewDOMEngine;
+        class MacWebViewDOMEngine;
 
-		class OSXWebViewDOMElement : public minko::dom::AbstractDOMElement,
-			public std::enable_shared_from_this<OSXWebViewDOMElement>
+		class MacWebViewDOMElement : public minko::dom::AbstractDOMElement,
+			public std::enable_shared_from_this<MacWebViewDOMElement>
 		{
 		public:
-			typedef std::shared_ptr<OSXWebViewDOMElement> Ptr;
+			typedef std::shared_ptr<MacWebViewDOMElement> Ptr;
 
 		private:
-			OSXWebViewDOMElement(std::string jsAccessor);
+			MacWebViewDOMElement(std::string jsAccessor);
 
 		public:
-			~OSXWebViewDOMElement()
+			~MacWebViewDOMElement()
 			{
 			};
 
 			static
 			Ptr
-			getDOMElement(std::string jsElement, std::shared_ptr<OSXWebViewDOMEngine> engine);
+			getDOMElement(std::string jsElement, std::shared_ptr<MacWebViewDOMEngine> engine);
 
 			std::string
 			getJavascriptAccessor();
 
 			static
 			Ptr
-			create(std::string javascriptAccessor, std::shared_ptr<OSXWebViewDOMEngine> engine);
+			create(std::string javascriptAccessor, std::shared_ptr<MacWebViewDOMEngine> engine);
 
 			std::string
 			id();
@@ -142,11 +142,11 @@ namespace osxwebview
 			addEventListener(std::string);
             
             void
-            initialize(std::shared_ptr<OSXWebViewDOMEngine> engine);
+            initialize(std::shared_ptr<MacWebViewDOMEngine> engine);
 
 		public:
 			static
-			std::list<OSXWebViewDOMElement::Ptr> domElements;
+			std::list<MacWebViewDOMElement::Ptr> domElements;
 
 		private:
 			static
@@ -175,7 +175,7 @@ namespace osxwebview
             bool _onmouseoverSet;
             bool _onmouseoutSet;
             
-            std::shared_ptr<OSXWebViewDOMEngine> _engine;
+            std::shared_ptr<MacWebViewDOMEngine> _engine;
 		};
 	}
 }

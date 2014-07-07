@@ -18,17 +18,17 @@
  */
 
 #include "minko/Common.hpp"
-#include "osxwebview/dom/OSXWebViewDOMMouseEvent.hpp"
-#include "osxwebview/dom/OSXWebViewDOMElement.hpp"
-#include "osxwebview/dom/OSXWebViewDOMEngine.hpp"
+#include "macwebview/dom/MacWebViewDOMMouseEvent.hpp"
+#include "macwebview/dom/MacWebViewDOMElement.hpp"
+#include "macwebview/dom/MacWebViewDOMEngine.hpp"
 
 using namespace minko;
 using namespace minko::dom;
-using namespace osxwebview;
-using namespace osxwebview::dom;
+using namespace macwebview;
+using namespace macwebview::dom;
 
 void
-OSXWebViewDOMMouseEvent::preventDefault()
+MacWebViewDOMMouseEvent::preventDefault()
 {
     std::cerr << "Warning : AbstractDOMEvent::preventDefault will have no effect" << std::endl;
     std::string js = _jsAccessor + ".preventDefault()";
@@ -37,7 +37,7 @@ OSXWebViewDOMMouseEvent::preventDefault()
 }
 
 void
-OSXWebViewDOMMouseEvent::stopPropagation()
+MacWebViewDOMMouseEvent::stopPropagation()
 {
     std::cerr << "Warning : AbstractDOMEvent::stopPropagation will have no effect" << std::endl;
     std::string js = _jsAccessor + ".stopPropagation()";
@@ -46,7 +46,7 @@ OSXWebViewDOMMouseEvent::stopPropagation()
 }
 
 std::string
-OSXWebViewDOMMouseEvent::type()
+MacWebViewDOMMouseEvent::type()
 {
     std::string js = "(" + _jsAccessor + ".type)";
     std::string result = _engine->eval(js);
@@ -55,13 +55,13 @@ OSXWebViewDOMMouseEvent::type()
 }
 
 minko::dom::AbstractDOMElement::Ptr
-OSXWebViewDOMMouseEvent::target()
+MacWebViewDOMMouseEvent::target()
 {
-    return OSXWebViewDOMElement::getDOMElement(_jsAccessor + ".target", _engine);
+    return MacWebViewDOMElement::getDOMElement(_jsAccessor + ".target", _engine);
 }
 
 int
-OSXWebViewDOMMouseEvent::clientX()
+MacWebViewDOMMouseEvent::clientX()
 {
     std::string js = "(" + _jsAccessor + ".clientX)";
     int result = atoi(_engine->eval(js).c_str());
@@ -70,7 +70,7 @@ OSXWebViewDOMMouseEvent::clientX()
 }
 
 int
-OSXWebViewDOMMouseEvent::clientY()
+MacWebViewDOMMouseEvent::clientY()
 {
     std::string js = "(" + _jsAccessor + ".clientY)";
     int result = atoi(_engine->eval(js).c_str());
@@ -79,7 +79,7 @@ OSXWebViewDOMMouseEvent::clientY()
 }
 
 int
-OSXWebViewDOMMouseEvent::pageX()
+MacWebViewDOMMouseEvent::pageX()
 {
     std::string js = "(" + _jsAccessor + ".pageX)";
     int result = atoi(_engine->eval(js).c_str());
@@ -88,7 +88,7 @@ OSXWebViewDOMMouseEvent::pageX()
 }
 
 int
-OSXWebViewDOMMouseEvent::pageY()
+MacWebViewDOMMouseEvent::pageY()
 {
     std::string js = "(" + _jsAccessor + ".pageY)";
     int result = atoi(_engine->eval(js).c_str());
@@ -97,7 +97,7 @@ OSXWebViewDOMMouseEvent::pageY()
 }
 
 int
-OSXWebViewDOMMouseEvent::layerX()
+MacWebViewDOMMouseEvent::layerX()
 {
     std::string js = "(" + _jsAccessor + ".layerX)";
     int result = atoi(_engine->eval(js).c_str());
@@ -106,7 +106,7 @@ OSXWebViewDOMMouseEvent::layerX()
 }
 
 int
-OSXWebViewDOMMouseEvent::layerY()
+MacWebViewDOMMouseEvent::layerY()
 {
     std::string js = "(" + _jsAccessor + ".layerY)";
     int result = atoi(_engine->eval(js).c_str());
@@ -115,7 +115,7 @@ OSXWebViewDOMMouseEvent::layerY()
 }
 
 int
-OSXWebViewDOMMouseEvent::screenX()
+MacWebViewDOMMouseEvent::screenX()
 {
     std::string js = "(" + _jsAccessor + ".screenX)";
     int result = atoi(_engine->eval(js).c_str());
@@ -124,7 +124,7 @@ OSXWebViewDOMMouseEvent::screenX()
 }
 
 int
-OSXWebViewDOMMouseEvent::screenY()
+MacWebViewDOMMouseEvent::screenY()
 {
     std::string js = "(" + _jsAccessor + ".screenY)";
     int result = atoi(_engine->eval(js).c_str());

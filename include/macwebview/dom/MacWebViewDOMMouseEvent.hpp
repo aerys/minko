@@ -23,19 +23,19 @@
 #include "minko/dom/AbstractDOMElement.hpp"
 #include "minko/dom/AbstractDOMMouseEvent.hpp"
 
-namespace osxwebview
+namespace macwebview
 {
     namespace dom
     {
-        class OSXWebViewDOMEngine;
+        class MacWebViewDOMEngine;
         
-        class OSXWebViewDOMMouseEvent : public minko::dom::AbstractDOMMouseEvent
+        class MacWebViewDOMMouseEvent : public minko::dom::AbstractDOMMouseEvent
         {
         public:
-            typedef std::shared_ptr<OSXWebViewDOMMouseEvent> Ptr;
+            typedef std::shared_ptr<MacWebViewDOMMouseEvent> Ptr;
             
         private:
-            OSXWebViewDOMMouseEvent(std::string jsAccessor) :
+            MacWebViewDOMMouseEvent(std::string jsAccessor) :
                 _jsAccessor(jsAccessor)
             {
             }
@@ -44,9 +44,9 @@ namespace osxwebview
             
             static
             Ptr
-            create(std::string jsAccessor, std::shared_ptr<OSXWebViewDOMEngine> engine)
+            create(std::string jsAccessor, std::shared_ptr<MacWebViewDOMEngine> engine)
             {
-                Ptr event(new OSXWebViewDOMMouseEvent(jsAccessor));
+                Ptr event(new MacWebViewDOMMouseEvent(jsAccessor));
                 event->_engine = engine;
                 
                 return event;
@@ -90,7 +90,7 @@ namespace osxwebview
             screenY();
         private:
             std::string _jsAccessor;
-            std::shared_ptr<OSXWebViewDOMEngine> _engine;
+            std::shared_ptr<MacWebViewDOMEngine> _engine;
         };
     }
 }

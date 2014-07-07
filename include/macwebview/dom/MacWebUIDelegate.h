@@ -17,8 +17,8 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#import <WebKit/WebKit.h>
+#import <WebKit/WebUIDelegate.h>
 
-@interface OSXWebView : WebView
+@interface MacWebUIDelegate : NSObject
 
 @end

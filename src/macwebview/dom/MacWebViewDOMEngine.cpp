@@ -21,27 +21,27 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/Options.hpp"
 #include "minko/file/FileProtocol.hpp"
 #include "minko/file/AssetLibrary.hpp"
-#include "osxwebview/dom/OSXWebViewDOMEngine.hpp"
-#include "osxwebview/dom/OSXWebViewDOMMouseEvent.hpp"
+#include "macwebview/dom/MacWebViewDOMEngine.hpp"
+#include "macwebview/dom/MacWebViewDOMMouseEvent.hpp"
 
 #include "minko/MinkoSDL.hpp"
 
 #include "SDL.h"
 #include "SDL_syswm.h"
 
-#import "osxwebview/dom/OSXWebUIDelegate.h"
+#import "macwebview/dom/MacWebUIDelegate.h"
 
 using namespace minko;
 using namespace minko::component;
 using namespace minko::dom;
-using namespace osxwebview;
-using namespace osxwebview::dom;
+using namespace macwebview;
+using namespace macwebview::dom;
 
 int
-OSXWebViewDOMEngine::_domUid = 0;
+MacWebViewDOMEngine::_domUid = 0;
 
 std::function<void(std::string&, std::string&)>
-OSXWebViewDOMEngine::handleJavascriptMessageWrapper;
+MacWebViewDOMEngine::handleJavascriptMessageWrapper;
 
 // Slots
 Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Slot onmousemoveSlot;
@@ -49,7 +49,7 @@ Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Slot onmousedownSlot;
 Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Slot onmouseupSlot;
 
 
-OSXWebViewDOMEngine::OSXWebViewDOMEngine() :
+MacWebViewDOMEngine::MacWebViewDOMEngine() :
 	_onload(Signal<AbstractDOM::Ptr, std::string>::create()),
 	_onmessage(Signal<AbstractDOM::Ptr, std::string>::create()),
 	_visible(true),
@@ -59,7 +59,7 @@ OSXWebViewDOMEngine::OSXWebViewDOMEngine() :
 }
 
 void
-OSXWebViewDOMEngine::initialize(AbstractCanvas::Ptr canvas, SceneManager::Ptr sceneManager)
+MacWebViewDOMEngine::initialize(AbstractCanvas::Ptr canvas, SceneManager::Ptr sceneManager)
 {
 	_canvas = canvas;
 	_sceneManager = sceneManager;
@@ -76,7 +76,7 @@ OSXWebViewDOMEngine::initialize(AbstractCanvas::Ptr canvas, SceneManager::Ptr sc
         _window = info.info.cocoa.window;
         
         // Create the web view
-        _webView = [[OSXWebView alloc] initWithFrame:NSMakeRect(0, 0, _canvas->width(), _canvas->height())];
+        _webView = [[MacWebView alloc] initWithFrame:NSMakeRect(0, 0, _canvas->width(), _canvas->height())];
 
         // Display the webview
         [_webView setWantsLayer: YES];
@@ -93,7 +93,7 @@ OSXWebViewDOMEngine::initialize(AbstractCanvas::Ptr canvas, SceneManager::Ptr sc
         _webView.mainFrame.frameView.documentView.enclosingScrollView.verticalScrollElasticity = NSScrollElasticityNone;
         
         // Set UIDelegate (used to enable JS alert and disable right click)
-        [_webView setUIDelegate:[OSXWebUIDelegate alloc]];
+        [_webView setUIDelegate:[MacWebUIDelegate alloc]];
 
         // Resize the overlay according to the window's size
         [_window.contentView setAutoresizesSubviews:YES];
@@ -109,7 +109,7 @@ OSXWebViewDOMEngine::initialize(AbstractCanvas::Ptr canvas, SceneManager::Ptr sc
         
         // Create a C++ handler to process the message received by the Javascript bridge
         handleJavascriptMessageWrapper = std::bind(
-                       &OSXWebViewDOMEngine::handleJavascriptMessage,
+                       &MacWebViewDOMEngine::handleJavascriptMessage,
                        this,
                        std::placeholders::_1,
                        std::placeholders::_2
@@ -135,7 +135,7 @@ OSXWebViewDOMEngine::initialize(AbstractCanvas::Ptr canvas, SceneManager::Ptr sc
                                 value = [val UTF8String];
                         }
                    
-                        OSXWebViewDOMEngine::handleJavascriptMessageWrapper(type, value);
+                        MacWebViewDOMEngine::handleJavascriptMessageWrapper(type, value);
                    }
                    else if ([data isKindOfClass:[NSString class]])
                    {
@@ -143,7 +143,7 @@ OSXWebViewDOMEngine::initialize(AbstractCanvas::Ptr canvas, SceneManager::Ptr sc
                         std::string value([dataString UTF8String]);
                         std::string type = "log";
                    
-                        OSXWebViewDOMEngine::handleJavascriptMessageWrapper(type, value);
+                        MacWebViewDOMEngine::handleJavascriptMessageWrapper(type, value);
                    }
          }];
         
@@ -162,22 +162,22 @@ OSXWebViewDOMEngine::initialize(AbstractCanvas::Ptr canvas, SceneManager::Ptr sc
 }
 
 void
-OSXWebViewDOMEngine::createNewDom()
+MacWebViewDOMEngine::createNewDom()
 {
 	std::string domName = "Minko.dom" + std::to_string(_domUid++);
 
-	_currentDOM = OSXWebViewDOM::create(domName, shared_from_this());
+	_currentDOM = MacWebViewDOM::create(domName, shared_from_this());
 }
 
 
 minko::dom::AbstractDOM::Ptr
-OSXWebViewDOMEngine::mainDOM()
+MacWebViewDOMEngine::mainDOM()
 {
 	return _currentDOM;
 }
 
 void
-OSXWebViewDOMEngine::enterFrame()
+MacWebViewDOMEngine::enterFrame()
 {
     if (_waitingForLoad)
     {
@@ -214,7 +214,7 @@ OSXWebViewDOMEngine::enterFrame()
         registerDomEvents();
 	}
     
-    for(auto element : OSXWebViewDOMElement::domElements)
+    for(auto element : MacWebViewDOMElement::domElements)
     {
         element->update();
     }
@@ -246,15 +246,15 @@ OSXWebViewDOMEngine::enterFrame()
 	}
 }
 
-OSXWebViewDOMEngine::Ptr
-OSXWebViewDOMEngine::create()
+MacWebViewDOMEngine::Ptr
+MacWebViewDOMEngine::create()
 {
-	OSXWebViewDOMEngine::Ptr engine(new OSXWebViewDOMEngine);
+	MacWebViewDOMEngine::Ptr engine(new MacWebViewDOMEngine);
 	return engine;
 }
 
 AbstractDOM::Ptr
-OSXWebViewDOMEngine::load(std::string uri)
+MacWebViewDOMEngine::load(std::string uri)
 {
     if (_currentDOM == nullptr || _currentDOM->initialized())
         createNewDom();
@@ -288,30 +288,30 @@ OSXWebViewDOMEngine::load(std::string uri)
 }
 
 void
-OSXWebViewDOMEngine::clear()
+MacWebViewDOMEngine::clear()
 {
 }
 
 Signal<AbstractDOM::Ptr, std::string>::Ptr
-OSXWebViewDOMEngine::onload()
+MacWebViewDOMEngine::onload()
 {
 	return _onload;
 }
 
 Signal<AbstractDOM::Ptr, std::string>::Ptr
-OSXWebViewDOMEngine::onmessage()
+MacWebViewDOMEngine::onmessage()
 {
 	return _onmessage;
 }
 
 bool
-OSXWebViewDOMEngine::visible()
+MacWebViewDOMEngine::visible()
 {
     return _visible;
 }
 
 void
-OSXWebViewDOMEngine::visible(bool value)
+MacWebViewDOMEngine::visible(bool value)
 {
     if (_canvas != nullptr)
 	{
@@ -327,7 +327,7 @@ OSXWebViewDOMEngine::visible(bool value)
 	_visible = value;
 }
 
-void OSXWebViewDOMEngine::handleJavascriptMessage(std::string type, std::string value)
+void MacWebViewDOMEngine::handleJavascriptMessage(std::string type, std::string value)
 {
     if (type == "ready")
     {
@@ -347,7 +347,7 @@ void OSXWebViewDOMEngine::handleJavascriptMessage(std::string type, std::string 
 }
 
 void
-OSXWebViewDOMEngine::registerDomEvents()
+MacWebViewDOMEngine::registerDomEvents()
 {
     onmousedownSlot = _currentDOM->document()->onmousedown()->connect([&](AbstractDOMMouseEvent::Ptr event)
     {
@@ -387,7 +387,7 @@ OSXWebViewDOMEngine::registerDomEvents()
 }
 
 std::string
-OSXWebViewDOMEngine::eval(std::string data)
+MacWebViewDOMEngine::eval(std::string data)
 {
     const char *dataChar = data.c_str();
     NSString *nsString = [NSString stringWithCString:dataChar encoding:[NSString defaultCStringEncoding]];

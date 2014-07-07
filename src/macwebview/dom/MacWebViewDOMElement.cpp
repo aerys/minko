@@ -19,29 +19,29 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 #include "minko/input/Mouse.hpp"
-#include "osxwebview/dom/OSXWebViewDOMElement.hpp"
-#include "osxwebview/dom/OSXWebViewDOMMouseEvent.hpp"
-#include "osxwebview/dom/OSXWebViewDOMEngine.hpp"
-#include "osxwebview/dom/OSXWebViewDOM.hpp"
+#include "macwebview/dom/MacWebViewDOMElement.hpp"
+#include "macwebview/dom/MacWebViewDOMMouseEvent.hpp"
+#include "macwebview/dom/MacWebViewDOMEngine.hpp"
+#include "macwebview/dom/MacWebViewDOM.hpp"
 #include "minko/dom/AbstractDOMEvent.hpp"
 
 
 using namespace minko;
 using namespace minko::dom;
-using namespace osxwebview;
-using namespace osxwebview::dom;
+using namespace macwebview;
+using namespace macwebview::dom;
 
 
 int
-OSXWebViewDOMElement::_elementUid = 0;
+MacWebViewDOMElement::_elementUid = 0;
 
-std::list<OSXWebViewDOMElement::Ptr>
-OSXWebViewDOMElement::domElements;
+std::list<MacWebViewDOMElement::Ptr>
+MacWebViewDOMElement::domElements;
 
-std::map<std::string,OSXWebViewDOMElement::Ptr>
-OSXWebViewDOMElement::_accessorToElement;
+std::map<std::string,MacWebViewDOMElement::Ptr>
+MacWebViewDOMElement::_accessorToElement;
 
-OSXWebViewDOMElement::OSXWebViewDOMElement(std::string jsAccessor) :
+MacWebViewDOMElement::MacWebViewDOMElement(std::string jsAccessor) :
 	_jsAccessor(jsAccessor),
 	_onclick(Signal<AbstractDOMMouseEvent::Ptr>::create()),
 	_onmousedown(Signal<AbstractDOMMouseEvent::Ptr>::create()),
@@ -60,7 +60,7 @@ OSXWebViewDOMElement::OSXWebViewDOMElement(std::string jsAccessor) :
 }
 
 void
-OSXWebViewDOMElement::initialize(std::shared_ptr<OSXWebViewDOMEngine> engine)
+MacWebViewDOMElement::initialize(std::shared_ptr<MacWebViewDOMEngine> engine)
 {
     _engine = engine;
     
@@ -69,8 +69,8 @@ OSXWebViewDOMElement::initialize(std::shared_ptr<OSXWebViewDOMEngine> engine)
 }
 
 
-OSXWebViewDOMElement::Ptr
-OSXWebViewDOMElement::getDOMElement(std::string jsElement, std::shared_ptr<OSXWebViewDOMEngine> engine)
+MacWebViewDOMElement::Ptr
+MacWebViewDOMElement::getDOMElement(std::string jsElement, std::shared_ptr<MacWebViewDOMEngine> engine)
 {
 	std::string js = "if (" + jsElement + ".minkoName) (" + jsElement + ".minkoName); else ('');";
 	std::string minkoName = std::string(engine->eval(js.c_str()));
@@ -93,10 +93,10 @@ OSXWebViewDOMElement::getDOMElement(std::string jsElement, std::shared_ptr<OSXWe
 	return create(minkoName, engine);
 }
 
-OSXWebViewDOMElement::Ptr
-OSXWebViewDOMElement::create(std::string jsAccessor, std::shared_ptr<OSXWebViewDOMEngine> engine)
+MacWebViewDOMElement::Ptr
+MacWebViewDOMElement::create(std::string jsAccessor, std::shared_ptr<MacWebViewDOMEngine> engine)
 {
-	OSXWebViewDOMElement::Ptr element(new OSXWebViewDOMElement(jsAccessor));
+	MacWebViewDOMElement::Ptr element(new MacWebViewDOMElement(jsAccessor));
     element->initialize(engine);
     
     domElements.push_back(element);
@@ -106,13 +106,13 @@ OSXWebViewDOMElement::create(std::string jsAccessor, std::shared_ptr<OSXWebViewD
 }
 
 std::string
-OSXWebViewDOMElement::getJavascriptAccessor()
+MacWebViewDOMElement::getJavascriptAccessor()
 {
 	return _jsAccessor;
 }
 
 std::string
-OSXWebViewDOMElement::id()
+MacWebViewDOMElement::id()
 {
 	std::string js = "(" + _jsAccessor + ".id)";
     std::string result = _engine->eval(js);
@@ -121,14 +121,14 @@ OSXWebViewDOMElement::id()
 }
 
 void
-OSXWebViewDOMElement::id(std::string newId)
+MacWebViewDOMElement::id(std::string newId)
 {
 	std::string js = _jsAccessor + ".id = '" + newId + "';";
 	_engine->eval(js);
 }
 
 std::string
-OSXWebViewDOMElement::className()
+MacWebViewDOMElement::className()
 {
 	std::string js = "(" + _jsAccessor + ".className)";
     std::string result = _engine->eval(js);
@@ -137,14 +137,14 @@ OSXWebViewDOMElement::className()
 }
 
 void
-OSXWebViewDOMElement::className(std::string newClassName)
+MacWebViewDOMElement::className(std::string newClassName)
 {
 	std::string js = _jsAccessor + ".className = '" + newClassName + "';";
 	_engine->eval(js);
 }
 
 std::string
-OSXWebViewDOMElement::tagName()
+MacWebViewDOMElement::tagName()
 {
 	std::string js = "(" + _jsAccessor + ".tagName)";
 	std::string result = _engine->eval(js);
@@ -153,22 +153,22 @@ OSXWebViewDOMElement::tagName()
 }
 
 AbstractDOMElement::Ptr
-OSXWebViewDOMElement::parentNode()
+MacWebViewDOMElement::parentNode()
 {
 	std::string js = "Minko.tmpElement  = " + _jsAccessor + ".parentNode;";
 	_engine->eval(js);
 
-	return OSXWebViewDOMElement::getDOMElement("Minko.tmpElement", _engine);
+	return MacWebViewDOMElement::getDOMElement("Minko.tmpElement", _engine);
 }
 
 std::vector<minko::dom::AbstractDOMElement::Ptr>
-OSXWebViewDOMElement::childNodes()
+MacWebViewDOMElement::childNodes()
 {
 	return (_engine->currentDOM()->getElementList(_jsAccessor + ".childNodes"));
 }
 
 std::string
-OSXWebViewDOMElement::textContent()
+MacWebViewDOMElement::textContent()
 {
 	std::string js = "(" + _jsAccessor + ".textContent)";
 	std::string result = _engine->eval(js);
@@ -177,14 +177,14 @@ OSXWebViewDOMElement::textContent()
 }
 
 void
-OSXWebViewDOMElement::textContent(std::string newTextContent)
+MacWebViewDOMElement::textContent(std::string newTextContent)
 {
 	std::string js = _jsAccessor + ".textContent = '" + newTextContent + "';";
 	_engine->eval(js);
 }
 
 std::string
-OSXWebViewDOMElement::innerHTML()
+MacWebViewDOMElement::innerHTML()
 {
 	std::string js = "(" + _jsAccessor + ".innerHTML)";
 	std::string result = _engine->eval(js);
@@ -193,16 +193,16 @@ OSXWebViewDOMElement::innerHTML()
 }
 
 void
-OSXWebViewDOMElement::innerHTML(std::string newInnerHTML)
+MacWebViewDOMElement::innerHTML(std::string newInnerHTML)
 {
 	std::string js = _jsAccessor + ".innerHTML = '" + newInnerHTML + "';";
 	_engine->eval(js);
 }
 
 AbstractDOMElement::Ptr
-OSXWebViewDOMElement::appendChild(minko::dom::AbstractDOMElement::Ptr newChild)
+MacWebViewDOMElement::appendChild(minko::dom::AbstractDOMElement::Ptr newChild)
 {
-	OSXWebViewDOMElement::Ptr child = std::dynamic_pointer_cast<OSXWebViewDOMElement>(newChild);
+	MacWebViewDOMElement::Ptr child = std::dynamic_pointer_cast<MacWebViewDOMElement>(newChild);
 	std::string js = _jsAccessor + ".appendChild(" + child->getJavascriptAccessor() + ");";
 	_engine->eval(js);
 
@@ -210,9 +210,9 @@ OSXWebViewDOMElement::appendChild(minko::dom::AbstractDOMElement::Ptr newChild)
 }
 
 AbstractDOMElement::Ptr
-OSXWebViewDOMElement::removeChild(minko::dom::AbstractDOMElement::Ptr childToRemove)
+MacWebViewDOMElement::removeChild(minko::dom::AbstractDOMElement::Ptr childToRemove)
 {
-	OSXWebViewDOMElement::Ptr child = std::dynamic_pointer_cast<OSXWebViewDOMElement>(childToRemove);
+	MacWebViewDOMElement::Ptr child = std::dynamic_pointer_cast<MacWebViewDOMElement>(childToRemove);
 	std::string js = _jsAccessor + ".removeChild(" + child->getJavascriptAccessor() + ");";
 	_engine->eval(js);
 
@@ -220,10 +220,10 @@ OSXWebViewDOMElement::removeChild(minko::dom::AbstractDOMElement::Ptr childToRem
 }
 
 AbstractDOMElement::Ptr
-OSXWebViewDOMElement::insertBefore(minko::dom::AbstractDOMElement::Ptr newChild, minko::dom::AbstractDOMElement::Ptr adjacentNode)
+MacWebViewDOMElement::insertBefore(minko::dom::AbstractDOMElement::Ptr newChild, minko::dom::AbstractDOMElement::Ptr adjacentNode)
 {
-	OSXWebViewDOMElement::Ptr child = std::dynamic_pointer_cast<OSXWebViewDOMElement>(newChild);
-	OSXWebViewDOMElement::Ptr adjNode = std::dynamic_pointer_cast<OSXWebViewDOMElement>(adjacentNode);
+	MacWebViewDOMElement::Ptr child = std::dynamic_pointer_cast<MacWebViewDOMElement>(newChild);
+	MacWebViewDOMElement::Ptr adjNode = std::dynamic_pointer_cast<MacWebViewDOMElement>(adjacentNode);
 	std::string js = _jsAccessor + ".removeChild(" + child->getJavascriptAccessor() + ", " + adjNode->getJavascriptAccessor() + ");";
 	_engine->eval(js);
 
@@ -231,16 +231,16 @@ OSXWebViewDOMElement::insertBefore(minko::dom::AbstractDOMElement::Ptr newChild,
 }
 
 AbstractDOMElement::Ptr
-OSXWebViewDOMElement::cloneNode(bool deep)
+MacWebViewDOMElement::cloneNode(bool deep)
 {
 	std::string js = "Minko.tmpElement = " + _jsAccessor + ".cloneNode(" + (deep ? "true" : "false") + ");";
 	_engine->eval(js);
 
-	return OSXWebViewDOMElement::create("Minko.tmpElement", _engine);
+	return MacWebViewDOMElement::create("Minko.tmpElement", _engine);
 }
 
 std::string
-OSXWebViewDOMElement::getAttribute(std::string name)
+MacWebViewDOMElement::getAttribute(std::string name)
 {
 	std::string js = "(" + _jsAccessor + ".getAttribute('" + name + "'))";
 	std::string result = _engine->eval(js);
@@ -249,20 +249,20 @@ OSXWebViewDOMElement::getAttribute(std::string name)
 }
 
 void
-OSXWebViewDOMElement::setAttribute(std::string name, std::string value)
+MacWebViewDOMElement::setAttribute(std::string name, std::string value)
 {
 	std::string js = _jsAccessor + ".setAttribute('" + name + "', '" + value + "');";
 	_engine->eval(js);
 }
 
 std::vector<minko::dom::AbstractDOMElement::Ptr>
-OSXWebViewDOMElement::getElementsByTagName(std::string tagName)
+MacWebViewDOMElement::getElementsByTagName(std::string tagName)
 {
 	return (_engine->currentDOM()->getElementList(_jsAccessor + ".getElementsByTagName('" + tagName + "')"));
 }
 
 std::string
-OSXWebViewDOMElement::style(std::string name)
+MacWebViewDOMElement::style(std::string name)
 {
 	std::string js = "(" + _jsAccessor + ".style." + name + ")";
 	std::string result = _engine->eval(js);
@@ -271,14 +271,14 @@ OSXWebViewDOMElement::style(std::string name)
 }
 
 void
-OSXWebViewDOMElement::style(std::string name, std::string value)
+MacWebViewDOMElement::style(std::string name, std::string value)
 {
 	std::string js = _jsAccessor + ".style." + name + " = '" + value + "';";
 	_engine->eval(js);
 }
 
 void
-OSXWebViewDOMElement::addEventListener(std::string type)
+MacWebViewDOMElement::addEventListener(std::string type)
 {
 	std::string js = "Minko.addListener(" + _jsAccessor + ", '" + type + "');";
 
@@ -288,7 +288,7 @@ OSXWebViewDOMElement::addEventListener(std::string type)
 // Events
 
 Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
-OSXWebViewDOMElement::onclick()
+MacWebViewDOMElement::onclick()
 {
 	if (!_onclickSet)
 	{
@@ -300,7 +300,7 @@ OSXWebViewDOMElement::onclick()
 }
 
 Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
-OSXWebViewDOMElement::onmousedown()
+MacWebViewDOMElement::onmousedown()
 {
 	if (!_onmousedownSet)
 	{
@@ -312,7 +312,7 @@ OSXWebViewDOMElement::onmousedown()
 }
 
 Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
-OSXWebViewDOMElement::onmouseup()
+MacWebViewDOMElement::onmouseup()
 {
     if (!_onmouseupSet)
     {
@@ -325,7 +325,7 @@ OSXWebViewDOMElement::onmouseup()
 
 
 Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
-OSXWebViewDOMElement::onmousemove()
+MacWebViewDOMElement::onmousemove()
 {
 	if (!_onmousemoveSet)
 	{
@@ -337,7 +337,7 @@ OSXWebViewDOMElement::onmousemove()
 }
 
 Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
-OSXWebViewDOMElement::onmouseout()
+MacWebViewDOMElement::onmouseout()
 {
     if (!_onmouseoutSet)
     {
@@ -350,7 +350,7 @@ OSXWebViewDOMElement::onmouseout()
 
 
 Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
-OSXWebViewDOMElement::onmouseover()
+MacWebViewDOMElement::onmouseover()
 {
 	if (!_onmouseoverSet)
 	{
@@ -362,7 +362,7 @@ OSXWebViewDOMElement::onmouseover()
 }
 
 void
-OSXWebViewDOMElement::update()
+MacWebViewDOMElement::update()
 {
     if (_engine->isReady())
     {
@@ -375,7 +375,7 @@ OSXWebViewDOMElement::update()
             js =  eventName + " = " + _jsAccessor + ".minkoEvents[" + std::to_string(i) + "];";
             _engine->eval(js);
             
-            OSXWebViewDOMMouseEvent::Ptr event = OSXWebViewDOMMouseEvent::create(eventName, _engine);
+            MacWebViewDOMMouseEvent::Ptr event = MacWebViewDOMMouseEvent::create(eventName, _engine);
             
             std::string type = event->type();
             

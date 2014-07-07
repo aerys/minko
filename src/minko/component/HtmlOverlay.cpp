@@ -1,10 +1,11 @@
 #if defined(__APPLE__)
 # include "TargetConditionals.h"
-# if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE // iOS
-#  include "ioswebview/dom/IOSWebViewDOMEngine.hpp"
-# elif TARGET_OS_MAC // OSX
-#  include "osxwebview/dom/OSXWebViewDOMEngine.hpp"
-# endif
+# include "macwebview/dom/MacWebViewDOMEngine.hpp"
+//# if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE // iOS
+//#  include "ioswebview/dom/IOSWebViewDOMEngine.hpp"
+//# elif TARGET_OS_MAC // OSX
+//#  include "osxwebview/dom/OSXWebViewDOMEngine.hpp"
+//# endif
 #elif defined(CHROMIUM)
 # include "chromium/dom/ChromiumDOMEngine.hpp"
 #elif defined(EMSCRIPTEN)
@@ -19,13 +20,15 @@ using namespace minko::component;
 
 #if defined(__APPLE__)
 # include "TargetConditionals.h"
-# if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE // iOS
-using namespace ioswebview;
-using namespace ioswebview::dom;
-# elif TARGET_OS_MAC // OSX
-using namespace osxwebview;
-using namespace osxwebview::dom;
-# endif
+using namespace macwebview;
+using namespace macwebview::dom;
+//# if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE // iOS
+//using namespace ioswebview;
+//using namespace ioswebview::dom;
+//# elif TARGET_OS_MAC // OSX
+//using namespace osxwebview;
+//using namespace osxwebview::dom;
+//# endif
 #elif defined(CHROMIUM)
 using namespace chromium;
 using namespace chromium::dom;
@@ -42,13 +45,15 @@ HtmlOverlay::HtmlOverlay(int argc, char** argv) :
 {
 #if defined(__APPLE__)
 # include "TargetConditionals.h"
-# if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE // iOS
-    IOSWebViewDOMEngine::Ptr engine = IOSWebViewDOMEngine::create();
+    MacWebViewDOMEngine::Ptr engine = MacWebViewDOMEngine::create();
     _domEngine = engine;
-# elif TARGET_OS_MAC // OSX
-    OSXWebViewDOMEngine::Ptr engine = OSXWebViewDOMEngine::create();
-    _domEngine = engine;
-# endif
+//# if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE // iOS
+//    IOSWebViewDOMEngine::Ptr engine = IOSWebViewDOMEngine::create();
+//    _domEngine = engine;
+//# elif TARGET_OS_MAC // OSX
+//    OSXWebViewDOMEngine::Ptr engine = OSXWebViewDOMEngine::create();
+//    _domEngine = engine;
+//# endif
 #elif defined(CHROMIUM)
     ChromiumDOMEngine::Ptr engine = ChromiumDOMEngine::create(argc, argv);
     _domEngine = engine;
@@ -89,13 +94,15 @@ HtmlOverlay::targetAddedHandler(AbstractComponent::Ptr	ctrl, scene::Node::Ptr		t
 {
 #if defined(__APPLE__)
 # include "TargetConditionals.h"
-# if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE // iOS
-    IOSWebViewDOMEngine::Ptr engine = std::dynamic_pointer_cast<IOSWebViewDOMEngine>(_domEngine);
+    MacWebViewDOMEngine::Ptr engine = std::dynamic_pointer_cast<MacWebViewDOMEngine>(_domEngine);
     engine->initialize(_canvas, _sceneManager);
-# elif TARGET_OS_MAC // OSX
-    OSXWebViewDOMEngine::Ptr engine = std::dynamic_pointer_cast<OSXWebViewDOMEngine>(_domEngine);
-    engine->initialize(_canvas, _sceneManager);
-# endif
+//# if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE // iOS
+//    IOSWebViewDOMEngine::Ptr engine = std::dynamic_pointer_cast<IOSWebViewDOMEngine>(_domEngine);
+//    engine->initialize(_canvas, _sceneManager);
+//# elif TARGET_OS_MAC // OSX
+//    OSXWebViewDOMEngine::Ptr engine = std::dynamic_pointer_cast<OSXWebViewDOMEngine>(_domEngine);
+//    engine->initialize(_canvas, _sceneManager);
+//# endif
 #elif defined(CHROMIUM)
     ChromiumDOMEngine::Ptr engine = std::dynamic_pointer_cast<ChromiumDOMEngine>(_domEngine);
     engine->initialize(_canvas, _sceneManager, target);

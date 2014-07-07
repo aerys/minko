@@ -22,27 +22,27 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Common.hpp"
 #include "minko/dom/AbstractDOM.hpp"
 #include "minko/dom/AbstractDOMEngine.hpp"
-#include "OSXWebViewDOM.hpp"
+#include "MacWebViewDOM.hpp"
 
 #import "WebViewJavascriptBridge.h"
-#import "osxwebview/dom/OSXWebView.h"
+#import "macwebview/dom/MacWebView.h"
 
-namespace osxwebview
+namespace macwebview
 {
 	namespace dom
 	{
-		class OSXWebViewDOMEngine : public minko::dom::AbstractDOMEngine,
-                                    public std::enable_shared_from_this<OSXWebViewDOMEngine>
+		class MacWebViewDOMEngine : public minko::dom::AbstractDOMEngine,
+                                    public std::enable_shared_from_this<MacWebViewDOMEngine>
 		{
 		public:
-			typedef std::shared_ptr<OSXWebViewDOMEngine> Ptr;
+			typedef std::shared_ptr<MacWebViewDOMEngine> Ptr;
 
 		private:
-			OSXWebViewDOMEngine();
+			MacWebViewDOMEngine();
 
 		public:
 
-			~OSXWebViewDOMEngine()
+			~MacWebViewDOMEngine()
 			{
 			}
 
@@ -85,7 +85,7 @@ namespace osxwebview
             }
             
             inline
-            OSXWebViewDOM::Ptr
+            MacWebViewDOM::Ptr
             currentDOM()
             {
                 return _currentDOM;
@@ -122,7 +122,7 @@ namespace osxwebview
 			static
 			int _domUid;
 
-			OSXWebViewDOM::Ptr _currentDOM;
+			MacWebViewDOM::Ptr _currentDOM;
 
 			minko::AbstractCanvas::Ptr _canvas;
 			minko::component::SceneManager::Ptr _sceneManager;
@@ -135,9 +135,9 @@ namespace osxwebview
 
 			bool _visible;
             
-            // OSX WebView
+            // Mac WebView
             NSWindow *_window;
-            OSXWebView *_webView;
+            MacWebView *_webView;
             WebViewJavascriptBridge* _bridge;
             
             bool _waitingForLoad;
