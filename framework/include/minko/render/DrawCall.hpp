@@ -35,6 +35,10 @@ namespace minko
 		class DrawCall :
             public std::enable_shared_from_this<DrawCall>
 		{
+        public:
+            static const unsigned int			MAX_NUM_TEXTURES;
+            static const unsigned int			MAX_NUM_VERTEXBUFFERS;
+
 		public:
 			typedef std::shared_ptr<DrawCall>   Ptr;
 
@@ -71,9 +75,6 @@ namespace minko
 			typedef std::shared_ptr<Program>			ProgramPtr;
 
 		private:
-			static const unsigned int			MAX_NUM_TEXTURES;
-			static const unsigned int			MAX_NUM_VERTEXBUFFERS;
-
 			std::shared_ptr<render::Pass>		_pass;
 			std::shared_ptr<Program>			_program;
             uint								_numIndices;
