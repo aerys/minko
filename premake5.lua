@@ -123,34 +123,30 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		includedirs { "lib/WebViewJavascriptBridge" }
 		buildoptions { "-x objective-c++" }
 		files {
-			"lib/WebViewJavascriptBridge/*.h",
-			"lib/WebViewJavascriptBridge/*.m",
 			"include/macwebview/**.hpp",
-			"include/macwebview/**.h",
 			"src/macwebview/**.cpp",
-			"src/macwebview/**.m",
-			"src/macwebview/**.hpp"
+			"lib/WebViewJavascriptBridge/*.h",
+			"lib/WebViewJavascriptBridge/*.m"
 		}
 
 	-- iOS webview
 	configuration { "ios" }
 		files {
 			"include/ioswebview/**.hpp",
-			"include/ioswebview/**.h",
 			"src/ioswebview/**.cpp",
-			"src/ioswebview/**.m",
-			"src/ioswebview/**.hpp"
+
+			"include/macwebview/dom/IOSWebView.h",
+			"src/macwebview/dom/IOSWebView.m",
 		}
 
 	-- OSX webview
 	configuration { "osx64" }
-		-- files {
-		-- 	"include/osxwebview/**.hpp",
-		-- 	"include/osxwebview/**.h",
-		-- 	"src/osxwebview/**.cpp",
-		-- 	"src/osxwebview/**.m",
-		-- 	"src/osxwebview/**.hpp"
-		-- }
+		files {
+			"include/macwebview/dom/OSXWebView.h",
+			"include/macwebview/dom/OSXWebUIDelegate.h",
+			"src/macwebview/dom/OSXWebView.m",
+			"src/macwebview/dom/OSXWebUIDelegate.m",
+		}
 		links {
 			"WebKit.framework"
 		}

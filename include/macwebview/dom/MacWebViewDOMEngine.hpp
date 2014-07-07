@@ -19,13 +19,19 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #pragma once
 
+# include "TargetConditionals.h"
+#if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE // iOS
+# import "macwebview/dom/IOSWebView.h"
+#elif TARGET_OS_MAC // OSX
+# include "macwebview/dom/OSXWebView.h"
+#endif
+
 #include "minko/Common.hpp"
 #include "minko/dom/AbstractDOM.hpp"
 #include "minko/dom/AbstractDOMEngine.hpp"
 #include "MacWebViewDOM.hpp"
 
 #import "WebViewJavascriptBridge.h"
-#import "macwebview/dom/MacWebView.h"
 
 namespace macwebview
 {
@@ -136,8 +142,14 @@ namespace macwebview
 			bool _visible;
             
             // Mac WebView
+#if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE // iOS
+            UIWindow *_window;
+            IOSWebView *_webView;
+#elif TARGET_OS_MAC // OSX
             NSWindow *_window;
-            MacWebView *_webView;
+            OSXWebView *_webView;
+#endif
+            
             WebViewJavascriptBridge* _bridge;
             
             bool _waitingForLoad;

@@ -29,7 +29,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "SDL.h"
 #include "SDL_syswm.h"
 
-#import "macwebview/dom/MacWebUIDelegate.h"
+# include "TargetConditionals.h"
+#if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE // iOS
+#elif TARGET_OS_MAC // OSX
+# include "macwebview/dom/OSXWebUIDelegate.h"
+#endif
 
 using namespace minko;
 using namespace minko::component;
@@ -76,7 +80,7 @@ MacWebViewDOMEngine::initialize(AbstractCanvas::Ptr canvas, SceneManager::Ptr sc
         _window = info.info.cocoa.window;
         
         // Create the web view
-        _webView = [[MacWebView alloc] initWithFrame:NSMakeRect(0, 0, _canvas->width(), _canvas->height())];
+        _webView = [[OSXWebView alloc] initWithFrame:NSMakeRect(0, 0, _canvas->width(), _canvas->height())];
 
         // Display the webview
         [_webView setWantsLayer: YES];
@@ -93,7 +97,7 @@ MacWebViewDOMEngine::initialize(AbstractCanvas::Ptr canvas, SceneManager::Ptr sc
         _webView.mainFrame.frameView.documentView.enclosingScrollView.verticalScrollElasticity = NSScrollElasticityNone;
         
         // Set UIDelegate (used to enable JS alert and disable right click)
-        [_webView setUIDelegate:[MacWebUIDelegate alloc]];
+        [_webView setUIDelegate:[OSXWebUIDelegate alloc]];
 
         // Resize the overlay according to the window's size
         [_window.contentView setAutoresizesSubviews:YES];

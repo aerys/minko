@@ -17,8 +17,34 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#import <WebKit/WebKit.h>
+#import "IOSWebView.h"
 
-@interface MacWebView : WebView
+@implementation IOSWebView
 
+- (UIView *) viewForZoomingInScrollView:(UIScrollView *)scrollView
+{
+    return nil;
+}
+
+- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event {
+    [super touchesMoved:touches withEvent:event];
+    [self.nextResponder touchesBegan:touches withEvent:event];
+    
+     NSLog(@"TEST TOUCH BEGAN");
+}
+
+- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event{
+    [super touchesMoved:touches withEvent:event];
+    [self.nextResponder touchesEnded:touches withEvent:event];
+    
+     NSLog(@"TOUCH ENDED");
+}
+
+
+-(void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event{
+    [super touchesMoved:touches withEvent:event];
+    [self.nextResponder touchesMoved:touches withEvent:event];
+    
+     NSLog(@"TOUCH MOVED");
+}
 @end
