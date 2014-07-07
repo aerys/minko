@@ -113,7 +113,7 @@ namespace minko
 			}
 
 			template <typename T>
-			T
+			const T&
 			get(const std::string& propertyName) const
 			{
 				assertPropertyExists(propertyName);
@@ -123,6 +123,18 @@ namespace minko
 
 				return provider->get<T>(unformatedPropertyName, true);
 			}
+
+            template <typename T>
+            const T*
+            getPointer(const std::string& propertyName) const
+            {
+                assertPropertyExists(propertyName);
+
+                const auto& provider = _propertyNameToProvider.find(propertyName)->second;
+                auto unformatedPropertyName = unformatPropertyName(provider, propertyName);
+
+                return provider->getPointer<T>(unformatedPropertyName, true);
+            }
 
 			template <typename T>
 			void
