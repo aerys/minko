@@ -41,8 +41,8 @@ namespace minko
 			std::list<AttributePtr>				_attributes;
 			uint								_vertexSize;
 			bool								_validMinMax;
-			math::vec3						_minPosition;
-			math::vec3						_maxPosition;
+			math::vec3						    _minPosition;
+			math::vec3						    _maxPosition;
 
 			std::shared_ptr<Signal<Ptr, int>>	_vertexSizeChanged;
 
