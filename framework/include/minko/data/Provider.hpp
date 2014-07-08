@@ -34,6 +34,17 @@ namespace minko
 			typedef std::shared_ptr<Provider>					Ptr;
 			typedef std::shared_ptr<const Provider>				ConstPtr;
 
+        private:
+            template <typename T>
+            struct is_shared_ptr : std::false_type {};
+            template <typename T>
+            struct is_shared_ptr<std::shared_ptr<T>> : std::true_type {};
+
+            template <typename T>
+            struct is_valid {
+                static const bool value = !std::is_pointer<T>::value && !std::is_reference<T>::value && !is_shared_ptr<T>::value;
+            };
+
 		private:
 			std::unordered_map<std::string, Any>				_values;
 
@@ -98,23 +109,23 @@ namespace minko
 
 			template <typename T>
 			inline
-			const T&
-            get(const std::string& propertyName, bool skipPropertyNameFormatting = false) const
+            typename std::enable_if<is_valid<T>::value, const T&>::type
+            get(const std::string& name, bool skipPropertyNameFormatting = false)
 			{
                 return *Any::cast<T>(&_values[skipPropertyNameFormatting ? name : formatPropertyName(name)]);
 			}
 
             template <typename T>
             inline
-            const T*
-            getPointer(const std::string& name, bool skipPropertyNameFormatting = false) const
+            typename std::enable_if<is_valid<T>::value, const T*>::type
+            getPointer(const std::string& name, bool skipPropertyNameFormatting = false)
             {
                 return Any::cast<T>(&_values[skipPropertyNameFormatting ? name : formatPropertyName(name)]);
             }
 
             template <typename T>
             inline
-            std::enable_if<!std::is_pointer<T>::value && !std::is_reference<T>::value, Ptr>
+            typename std::enable_if<is_valid<T>::value, Ptr>::type
             set(const std::string& name, T value, bool skipPropertyNameFormatting = false)
             {
                 auto formattedPropertyName = skipPropertyNameFormatting ? name : formatPropertyName(name);
@@ -126,6 +137,28 @@ namespace minko
 
                 return shared_from_this();
             }
+
+            template <typename T>
+			bool
+			propertyHasType(const std::string& name, bool skipPropertyNameFormatting = false) const
+			{
+                const std::string&	formattedName   = skipPropertyNameFormatting ? name : formatPropertyName(name);
+				const auto			foundIt			= _values.find(formattedName);
+
+				if (foundIt == _values.end())
+					throw std::invalid_argument("propertyName");
+
+				try
+				{
+					Any::cast<T>(foundIt->second);
+				}
+				catch (...)
+				{
+					return false;
+				}
+				
+				return true;
+			}
 
 			virtual
 			Ptr
