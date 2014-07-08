@@ -22,7 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Common.hpp"
 #include "minko/Any.hpp"
 #include "minko/Signal.hpp"
-//#include "minko/data/Value.hpp"
 
 namespace minko
 {
@@ -34,12 +33,6 @@ namespace minko
 		public:
 			typedef std::shared_ptr<Provider>						Ptr;
 			typedef std::shared_ptr<const Provider>					ConstPtr;
-
-		private:
-			template <typename P>
-			class ValueWrapper;
-
-			typedef Signal<std::shared_ptr<Value>>::Slot ChangedSignalSlot;
 
 		private:
 			std::unordered_map<std::string, Any>					_values;
