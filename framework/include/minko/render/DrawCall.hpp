@@ -30,8 +30,6 @@ namespace minko
 {
 	namespace render
 	{
-		class DrawCallZSorter;
-
 		class DrawCall :
             public std::enable_shared_from_this<DrawCall>
 		{
@@ -110,10 +108,13 @@ namespace minko
 			initialize();
 
 			void
-            bind(ContainerPtr                   rootData,
-                 ContainerPtr                   rendererData,
-                 ContainerPtr                   targetData,
-                 std::shared_ptr<ProgramInputs> inputs);
+            bind(ContainerPtr               rootData,
+                 ContainerPtr               rendererData,
+                 ContainerPtr               targetData,
+                 const data::BindingMap&    attributeBindings,
+                 const data::BindingMap&    uniformBindings,
+                 const data::BindingMap&    stateBindings,
+                 const ProgramInputs&       inputs);
 
             void
             bindVertexAttribute(const std::string&	inputName,
@@ -130,7 +131,9 @@ namespace minko
 			bindTextureSampler(const std::string& propertyName, int location, uint textureIndex, const SamplerState&);
 
 			void
-			bindUniform(ContainerPtr container, const std::string& propertyName, ProgramInputs::Type, int location);
+            bindUniform(const ProgramInputs::UniformInput&    uniformInput,
+                        ContainerPtr                          container,
+                        const std::string&                    propertyName);
 
 			void
 			bindState(const std::string& stateName);
@@ -139,8 +142,7 @@ namespace minko
             getContainer(ContainerPtr           rootData,
                          ContainerPtr           rendererData,
                          ContainerPtr           targetData,
-                         data::BindingSource    source,
-                         const std::string&     name);
+                         data::BindingSource    source);
 		};		
 	}
 }

@@ -43,8 +43,7 @@ DrawCall::ContainerPtr
 DrawCall::getContainer(ContainerPtr         rootData,
                        ContainerPtr         rendererData,
                        ContainerPtr         targetData,
-                       data::BindingSource  source,
-                       const std::string&   name)
+                       data::BindingSource  source)
 {
     switch (source)
     {
@@ -60,12 +59,22 @@ DrawCall::getContainer(ContainerPtr         rootData,
 }
 
 void
-DrawCall::bind(ContainerPtr         rootData,
-               ContainerPtr         rendererData,
-               ContainerPtr         targetData,
-               ProgramInputs::Ptr   inputs)
+DrawCall::bind(ContainerPtr                 rootData,
+               ContainerPtr                 rendererData,
+               ContainerPtr                 targetData,
+               const data::BindingMap&      attributeBindings,
+               const data::BindingMap&      uniformBindings,
+               const data::BindingMap&      stateBindings,
+               const ProgramInputs&         inputs)
 {
-    // FIXME
+    for (const auto& uniformInput : inputs.uniforms)
+    {
+        const auto& binding = uniformBindings[uniformInput.name];
+
+        // FIXME: format binding.propertyName
+        bindUniform(uniformInput, getContainer(rootData, rendererData, targetData, binding.source), binding.propertyName);
+    }
+        
 }
 
 void
@@ -75,7 +84,7 @@ DrawCall::bindIndexBuffer()
 }
 
 void
-DrawCall::bindVertexAttribute(const std::string&	inputName,
+DrawCall::bindVertexAttribute(const std::string&    inputName,
 							  int					location,
 							  uint					vertexBufferIndex)
 {
@@ -92,39 +101,38 @@ DrawCall::bindTextureSampler(const std::string&		inputName,
 }
 
 void
-DrawCall::bindUniform(ContainerPtr          container,
-                      const std::string&	inputName,
-					  ProgramInputs::Type	type,
-					  int					location)
+DrawCall::bindUniform(const ProgramInputs::UniformInput&    uniformInput,
+                      ContainerPtr                          container,
+                      const std::string&                    propertyName)
 {
-    switch (type)
+    switch (uniformInput.type)
     {
         case ProgramInputs::Type::int1:
-            _uniformInt.push_back({ location, 1, container->getPointer<int>(inputName) });
+            _uniformInt.push_back({ uniformInput.location, 1, container->getPointer<int>(propertyName) });
             break;
         case ProgramInputs::Type::int2:
-            _uniformInt.push_back({ location, 2, math::value_ptr(container->get<math::ivec2>(inputName)) });
+            _uniformInt.push_back({ uniformInput.location, 2, math::value_ptr(container->get<math::ivec2>(propertyName)) });
             break;
         case ProgramInputs::Type::int3:
-            _uniformInt.push_back({ location, 3, math::value_ptr(container->get<math::ivec3>(inputName)) });
+            _uniformInt.push_back({ uniformInput.location, 3, math::value_ptr(container->get<math::ivec3>(propertyName)) });
             break;
         case ProgramInputs::Type::int4:
-            _uniformInt.push_back({ location, 4, math::value_ptr(container->get<math::ivec4>(inputName)) });
+            _uniformInt.push_back({ uniformInput.location, 4, math::value_ptr(container->get<math::ivec4>(propertyName)) });
             break;
         case ProgramInputs::Type::float1:
-            _uniformFloat.push_back({ location, 1, container->getPointer<float>(inputName) });
+            _uniformFloat.push_back({ uniformInput.location, 1, container->getPointer<float>(propertyName) });
             break;
         case ProgramInputs::Type::float2:
-            _uniformFloat.push_back({ location, 2, math::value_ptr(container->get<math::vec4>(inputName)) });
+            _uniformFloat.push_back({ uniformInput.location, 2, math::value_ptr(container->get<math::vec4>(propertyName)) });
             break;
         case ProgramInputs::Type::float3:
-            _uniformFloat.push_back({ location, 3, math::value_ptr(container->get<math::vec4>(inputName)) });
+            _uniformFloat.push_back({ uniformInput.location, 3, math::value_ptr(container->get<math::vec4>(propertyName)) });
             break;
         case ProgramInputs::Type::float4:
-            _uniformFloat.push_back({ location, 4, math::value_ptr(container->get<math::vec4>(inputName)) });
+            _uniformFloat.push_back({ uniformInput.location, 4, math::value_ptr(container->get<math::vec4>(propertyName)) });
             break;
         case ProgramInputs::Type::float16:
-            _uniformFloat.push_back({ location, 16, math::value_ptr(container->get<math::mat4>(inputName)) });
+            _uniformFloat.push_back({ uniformInput.location, 16, math::value_ptr(container->get<math::mat4>(propertyName)) });
             break;
     }
 }
