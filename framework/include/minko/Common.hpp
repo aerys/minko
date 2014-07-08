@@ -208,7 +208,12 @@ namespace minko
 			ROOT
 		};
 
-		typedef std::pair<std::string, BindingSource>						Binding;
+        struct Binding
+        {
+            std::string propertyName;
+            BindingSource source;
+        };
+
 		typedef std::unordered_map<std::string, Binding>					BindingMap;
 		typedef std::pair<std::shared_ptr<data::Container>, std::string>	ContainerAndName;
 
@@ -369,6 +374,35 @@ namespace minko
 	{
 		class Worker;
 	}
+
+    namespace traits
+    {
+        template <typename T>
+        struct remove_all_pointers
+        {
+            typedef T type;
+        };
+        template <typename T>
+        struct remove_all_pointers<T*>
+        {
+            typedef typename remove_all_pointers<T>::type type;
+        };
+        template <typename T>
+        struct remove_all_pointers<T* const>
+        {
+            typedef typename remove_all_pointers<T>::type type;
+        };
+        template <typename T>
+        struct remove_all_pointers<T* volatile>
+        {
+            typedef typename remove_all_pointers<T>::type type;
+        };
+        template <typename T>
+        struct remove_all_pointers<T* const volatile >
+        {
+            typedef typename remove_all_pointers<T>::type type;
+        };
+    }
 }
 
 namespace std
