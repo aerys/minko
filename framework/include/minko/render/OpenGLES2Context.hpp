@@ -275,7 +275,7 @@ namespace minko
 			void
 			deleteFragmentShader(const uint fragmentShader);
 
-			std::shared_ptr<ProgramInputs>
+			ProgramInputs
 			getProgramInputs(const uint program);
 
 			std::string
@@ -283,58 +283,6 @@ namespace minko
 
 			std::string
 			getProgramInfoLogs(const uint program);
-
-			void
-			setUniform(uint location, int);
-
-			void
-			setUniform(uint location, int, int);
-
-			void
-			setUniform(uint location, int, int, int);
-
-			void
-			setUniform(uint location, int, int, int, int);
-
-			void
-			setUniform(uint location, float);
-
-			void
-			setUniform(uint location, float, float);
-
-			void
-			setUniform(uint location, float, float, float);
-
-			void
-			setUniform(uint location, float, float, float, float);
-
-			void
-			setUniforms(uint location, uint size, const int*);
-
-			void
-			setUniforms2(uint location, uint size, const int*);
-
-			void
-			setUniforms3(uint location, uint size, const int*);
-
-			void
-			setUniforms4(uint location, uint size, const int*);
-
-			void
-			setUniforms(uint location, uint size, const float*);
-
-			void
-			setUniforms2(uint location, uint size, const float*);
-
-			void
-			setUniforms3(uint location, uint size, const float*);
-
-			void
-			setUniforms4(uint location, uint size, const float*);
-
-			virtual
-			void
-			setUniform(const uint& location, const uint& size, bool transpose, const float* values);
 
             void
             setBlendMode(Blending::Source source, Blending::Destination destination);
@@ -381,18 +329,12 @@ namespace minko
 			OpenGLES2Context();
 
 			virtual
-			void
-			fillUniformInputs(const uint				program,
-							  std::vector<std::string>&			names,
-							  std::vector<ProgramInputs::Type>&	types,
-							  std::vector<unsigned int>&		locations);
+			std::vector<ProgramInputs::UniformInput>
+			getUniformInputs(const uint program);
 
 			virtual
-			void
-			fillAttributeInputs(const uint					program,
-								std::vector<std::string>&			names,
-								std::vector<ProgramInputs::Type>&	types,
-								std::vector<unsigned int>&			locations);
+            std::vector<ProgramInputs::AttributeInput>
+            getAttributeInputs(const uint program);
 
 			static
 			ProgramInputs::Type
@@ -414,7 +356,7 @@ namespace minko
             createRTTBuffers(TextureType	type,
 							 uint			texture,
 							 unsigned int	width,
-							 unsigned int height);
+							 unsigned int   height);
 
 			void
 			getShaderSource(unsigned int shader, std::string&);
@@ -440,6 +382,30 @@ namespace minko
 
 			TextureType
 			getTextureType(uint textureId) const;
+
+            void
+            setUniformFloat(uint location, uint count, const float* v);
+
+            void
+            setUniformFloat2(uint location, uint count, const float* v);
+
+            void
+            setUniformFloat3(uint location, uint count, const float* v);
+
+            void
+            setUniformFloat4(uint location, uint count, const float* v);
+
+            void
+            setUniformInt(uint location, uint count, const int* v);
+
+            void
+            setUniformInt2(uint location, uint count, const int* v);
+
+            void
+            setUniformInt3(uint location, uint count, const int* v);
+
+            void
+            setUniformInt4(uint location, uint count, const int* v);
 		};
 	}
 }

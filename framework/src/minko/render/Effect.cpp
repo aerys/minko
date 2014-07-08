@@ -31,7 +31,6 @@ _fallback(),
 _data(data::Provider::create()),
 _uniformFunctions(),
 _attributeFunctions(),
-_indexFunction(nullptr),
 _macroFunctions()
 {
 
@@ -49,8 +48,6 @@ Effect::addTechnique(const std::string& name, Technique& passes)
 			func(pass);
 		for (auto& func : _attributeFunctions)
 			func(pass);
-		if (_indexFunction)
-			_indexFunction->operator()(pass);
 		for (auto& func : _macroFunctions)
 			func(pass);
 	}

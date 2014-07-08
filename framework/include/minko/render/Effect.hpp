@@ -49,7 +49,6 @@ namespace minko
 
 			OnPassFunctionList								_uniformFunctions;
 			OnPassFunctionList								_attributeFunctions;
-			OnPassFunctionPtr								_indexFunction;
 			OnPassFunctionList								_macroFunctions;
 
 		public:
@@ -142,32 +141,18 @@ namespace minko
 						pass->setUniform(name, values...);
 			}
 
-		private:
-			inline
-			void
-			setIndexBuffer(const std::vector<unsigned short>& indices)
-			{
-				_indexFunction = std::make_shared<std::function<void(PassPtr)>>(std::bind(
-					&Effect::setIndexBufferOnPass, std::placeholders::_1, indices
-				));
-
-				for (auto& technique : _techniques)
-					for (auto& pass : technique.second)
-						pass->setIndexBuffer(indices);
-			}
-
 		public:
 			inline
 			void
-			setVertexAttribute(const std::string& name, unsigned int attributeSize, const std::vector<float>& data)
+			setVertexAttribute(const std::string& name, std::shared_ptr<VertexBuffer> buffer)
 			{
 				_attributeFunctions.push_back(std::bind(
-					&Effect::setVertexAttributeOnPass, std::placeholders::_1, name, attributeSize, data
+					&Effect::setVertexAttributeOnPass, std::placeholders::_1, name, buffer
 				));
 
 				for (auto& technique : _techniques)
 					for (auto& pass : technique.second)
-						pass->setVertexAttribute(name, attributeSize, data);
+						pass->setVertexAttribute(name, buffer);
 			}
 
 			inline
@@ -231,16 +216,9 @@ namespace minko
 
 			inline static 
 			void
-			setVertexAttributeOnPass(std::shared_ptr<Pass> pass, const std::string& name, unsigned int attributeSize, const std::vector<float>& data)
+			setVertexAttributeOnPass(std::shared_ptr<Pass> pass, const std::string& name, std::shared_ptr<VertexBuffer> buffer)
 			{
-				pass->setVertexAttribute(name, attributeSize, data);
-			}
-
-			inline static
-			void
-			setIndexBufferOnPass(std::shared_ptr<Pass> pass, const std::vector<unsigned short>& indices)
-			{
-				pass->setIndexBuffer(indices);
+				pass->setVertexAttribute(name, buffer);
 			}
 
 			inline static

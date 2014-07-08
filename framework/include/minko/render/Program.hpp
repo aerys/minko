@@ -42,26 +42,20 @@ namespace minko
 			typedef std::shared_ptr<render::AbstractTexture>	AbstractTexturePtr;
 			typedef std::shared_ptr<render::Texture>			TexturePtr;
 			typedef std::shared_ptr<render::CubeTexture>		CubeTexturePtr;
-			typedef std::shared_ptr<render::AbstractContext>	AbstractContextPtr;
-			typedef std::shared_ptr<render::ProgramInputs>		ProgramInputsPtr;
+			typedef std::shared_ptr<render::AbstractContext>	AbsContextPtr;
 
 		private:
 			std::shared_ptr<Shader>								_vertexShader;
 			std::shared_ptr<Shader>								_fragmentShader;
-			ProgramInputsPtr									_inputs;
+			ProgramInputs   									_inputs;
 
-			std::unordered_map<int, float>						_uniformFloat;
-			std::unordered_map<int, math::vec2>					_uniformFloat2;
-			std::unordered_map<int, math::vec3>					_uniformFloat3;
-			std::unordered_map<int, math::vec4>					_uniformFloat4;
-			std::unordered_map<int, AbstractTexturePtr>			_textures;
-			std::unordered_map<int, VertexBufferPtr>			_vertexBuffers;
-			IndexBufferPtr										_indexBuffer;
+            std::set<std::string>                               _setTextures;
+            std::set<std::string>                               _setAttributes;
 
 		public:
 			inline static
 			Ptr
-			create(AbstractContextPtr context)
+			create(AbsContextPtr context)
 			{
 				return std::shared_ptr<Program>(new Program(context));
 			}
@@ -74,17 +68,16 @@ namespace minko
 
 				p->_vertexShader	= deepCopy ? Shader::create(program->_vertexShader) : program->_vertexShader;
 				p->_fragmentShader	= deepCopy ? Shader::create(program->_fragmentShader) : program->_fragmentShader;
-				p->_inputs			= program->inputs();
-				p->_textures		= program->_textures;
-				p->_vertexBuffers	= program->_vertexBuffers;
-				p->_indexBuffer		= program->_indexBuffer;
+				p->_inputs			= program->_inputs;
+                p->_setTextures     = program->_setTextures;
+                p->_setAttributes   = program->_setAttributes;
 
 				return p;
 			}
 
 			inline static
 			Ptr
-			create(AbstractContextPtr		context,
+			create(AbsContextPtr		    context,
 				   std::shared_ptr<Shader>	vertexShader,
 				   std::shared_ptr<Shader>	fragmentShader)
 			{
@@ -110,67 +103,25 @@ namespace minko
 				return _fragmentShader;
 			}
 
+            inline
+            const std::set<std::string>
+            setTextures()
+            {
+                return _setTextures;
+            }
+
+            inline
+            const std::set<std::string>
+            setAttributes()
+            {
+                return _setAttributes;
+            }
+
 			inline
-			ProgramInputsPtr
+			const ProgramInputs&
 			inputs() const
 			{
 				return _inputs;
-			}
-
-			inline
-			const std::unordered_map<int, float>&
-			uniformFloat() const
-			{
-				return _uniformFloat;
-			}
-
-			inline
-			const std::unordered_map<int, math::vec2>&
-			uniformFloat2() const
-			{
-				return _uniformFloat2;
-			}
-
-			inline
-			const std::unordered_map<int, math::vec3>&
-			uniformFloat3() const
-			{
-				return _uniformFloat3;
-			}
-
-			inline
-			const std::unordered_map<int, math::vec4>&
-			uniformFloat4() const
-			{
-				return _uniformFloat4;
-			}
-
-			inline
-			const std::unordered_map<int, AbstractTexturePtr>&
-			textures() const
-			{
-				return _textures;
-			}
-
-			inline
-			const std::unordered_map<int, VertexBufferPtr>&
-			vertexBuffers() const
-			{
-				return _vertexBuffers;
-			}
-
-			inline
-			bool
-			hasVertexBufferLocation(uint vertexLocation) const
-			{
-				return _vertexBuffers.find(vertexLocation) != _vertexBuffers.end();
-			}
-
-			inline
-			IndexBufferPtr
-			indexBuffer() const
-			{
-				return _indexBuffer;
 			}
 
 			void
@@ -179,49 +130,142 @@ namespace minko
 			void
 			dispose();
 
-			template <typename... T>
-			void
-			setUniform(const std::string& name, const T&... values)
+			template <typename T, int size>
+			Program&
+			setUniform(const std::string& name, uint count, T* v)
 			{
-				if (!_inputs->hasName(name))
-					return;
+                auto it = std::find_if(_inputs.uniforms().begin(), _inputs.uniforms().end(), [&](const ProgramInputs::UniformInput& u)
+                {
+                    return u.name == name;
+                });
 
-				auto oldProgram = _context->currentProgram();
+                if (it != _inputs.uniforms().end())
+                {
+                    auto oldProgram = _context->currentProgram();
 
-				_context->setProgram(_id);
-				_context->setUniform(_inputs->location(name), values...);
-				_context->setProgram(oldProgram);
+                    _context->setProgram(_id);
+                    setUniformOnContext<T, size>(it->location, count, v);
+                    _context->setProgram(oldProgram);
+                }
+
+                return *this;
 			}
 
-			void
-			setUniform(const std::string&, float);
+            template <typename T>
+            Program&
+            setUniform(const std::string& name, T v)
+            {
+                return setUniform<1>(name, 1, &v);
+            }
 
-			void
-			setUniform(const std::string&, float, float);
+            template <typename T, int P>
+            Program&
+            setUniform(const std::string& name, math::detail::tvec2<T, P> value)
+            {
+                return setUniform<T, 2>(name, 1, math::value_ptr(value));
+            }
 
-			void
-			setUniform(const std::string&, float, float, float);
+            template <typename T, int P>
+            Program&
+            setUniform(const std::string& name, math::detail::tvec3<T, P> value)
+            {
+                return setUniform<T, 3>(name, 1, math::value_ptr(value));
+            }
 
-			void
-			setUniform(const std::string&, float, float, float, float);
+            template <typename T, int P>
+            Program&
+            setUniform(const std::string& name, math::detail::tvec4<T, P> value)
+            {
+                return setUniform<T, 4>(name, 1, math::value_ptr(value));
+            }
 
-			void
+            Program&
 			setUniform(const std::string&, AbstractTexturePtr);
 
-			void
+            Program&
 			setUniform(const std::string&, TexturePtr);
 			
-			void
+            Program&
 			setUniform(const std::string&, CubeTexturePtr);
 
-			void
-			setVertexAttribute(const std::string& name, unsigned int attributeSize, const std::vector<float>& data);
+            inline
+            Program&
+            setVertexAttribute(const std::string& name, std::shared_ptr<VertexBuffer> buffer)
+            {
+                return setVertexAttribute(name, buffer, name);
+            }
 
-			void
-			setIndexBuffer(const std::vector<unsigned short>&);
+            Program&
+            setVertexAttribute(const std::string& name, std::shared_ptr<VertexBuffer> buffer, const std::string& attributeName);
+
+            ~Program()
+            {
+                dispose();
+            }
 
 		private:
-			Program(AbstractContextPtr context);
+			Program(AbsContextPtr context);
+
+            template <typename T, size_t size>
+            void
+            setUniformOnContext(uint location, uint count, T* v)
+            {}
+
+            template <>
+            void
+            setUniformOnContext<float, 1>(uint location, uint count, float* v)
+            {
+                _context->setUniformFloat(location, count, v);
+            }
+
+            template <>
+            void
+            setUniformOnContext<float, 2>(uint location, uint count, float* v)
+            {
+                _context->setUniformFloat2(location, count, v);
+            }
+
+            template <>
+            void
+            setUniformOnContext<float, 3>(uint location, uint count, float* v)
+            {
+                _context->setUniformFloat3(location, count, v);
+            }
+
+            template <>
+            void
+            setUniformOnContext<float, 4>(uint location, uint count, float* v)
+            {
+                _context->setUniformFloat4(location, count, v);
+            }
+
+            template <>
+            void
+            setUniformOnContext<int, 1>(uint location, uint count, int* v)
+            {
+                _context->setUniformInt(location, count, v);
+            }
+
+            template <>
+            void
+            setUniformOnContext<int, 2>(uint location, uint count, int* v)
+            {
+                _context->setUniformInt2(location, count, v);
+            }
+
+            template <>
+            void
+            setUniformOnContext<int, 3>(uint location, uint count, int* v)
+            {
+                _context->setUniformInt3(location, count, v);
+            }
+
+            template <>
+            void
+            setUniformOnContext<int, 4>(uint location, uint count, int* v)
+            {
+                _context->setUniformInt4(location, count, v);
+            }
 		};
 	}
 }

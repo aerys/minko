@@ -216,76 +216,8 @@ namespace minko
 			deleteFragmentShader(const uint fragmentShader) = 0;
 
 			virtual
-			std::shared_ptr<ProgramInputs>
+			ProgramInputs
 			getProgramInputs(const uint program) = 0;
-
-			virtual
-			void
-			setUniform(uint location, int value) = 0;
-
-			virtual
-			void
-			setUniform(uint location, int v1, int v2) = 0;
-
-			virtual
-			void
-			setUniform(uint location, int v1, int v2, int v3) = 0;
-
-			virtual
-			void
-			setUniform(uint location, int v1, int v2, int v3, int v4) = 0;
-
-			virtual
-			void
-			setUniform(uint location, float value) = 0;
-
-			virtual
-			void
-			setUniform(uint location, float v1, float v2) = 0;
-
-			virtual
-			void
-			setUniform(uint location, float v1, float v2, float v3) = 0;
-
-			virtual
-			void
-			setUniform(uint location, float v1, float v2, float v3, float v4) = 0;
-
-			virtual
-			void
-			setUniform(const uint& location, const uint& size, bool transpose, const float* values) = 0;
-
-			virtual
-			void
-			setUniforms(uint location, uint size, const float* values) = 0;
-
-			virtual
-			void
-			setUniforms2(uint location, uint size, const float* values) = 0;
-
-			virtual
-			void
-			setUniforms3(uint location, uint size, const float* values) = 0;
-
-			virtual
-			void
-			setUniforms4(uint location, uint size, const float* values) = 0;
-
-			virtual
-			void
-			setUniforms(uint location, uint size, const int* values) = 0;
-
-			virtual
-			void
-			setUniforms2(uint location, uint size, const int* values) = 0;
-
-			virtual
-			void
-			setUniforms3(uint location, uint size, const int* values) = 0;
-
-			virtual
-			void
-			setUniforms4(uint location, uint size, const int* values) = 0;
 
             virtual
             void
@@ -339,6 +271,38 @@ namespace minko
             virtual
             void
             generateMipmaps(unsigned int texture) = 0;
+
+            virtual
+            void
+            setUniformFloat(uint location, uint count, const float* v) = 0;
+
+            virtual
+            void
+            setUniformFloat2(uint location, uint count, const float* v) = 0;
+
+            virtual
+            void
+            setUniformFloat3(uint location, uint count, const float* v) = 0;
+
+            virtual
+            void
+            setUniformFloat4(uint location, uint count, const float* v) = 0;
+
+            virtual
+            void
+            setUniformInt(uint location, uint count, const int* v) = 0;
+
+            virtual
+            void
+            setUniformInt2(uint location, uint count, const int* v) = 0;
+
+            virtual
+            void
+            setUniformInt3(uint location, uint count, const int* v) = 0;
+
+            virtual
+            void
+            setUniformInt4(uint location, uint count, const int* v) = 0;
 		};
 	}
 }

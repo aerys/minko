@@ -39,14 +39,14 @@ namespace minko
 			typedef std::shared_ptr<Pass> Ptr;
 
 		private:
- 			typedef std::shared_ptr<Program>											ProgramPtr;
-			typedef std::shared_ptr<VertexBuffer>										VertexBufferPtr;
-            typedef std::unordered_map<std::string, SamplerState>						SamplerStatesMap;
-			typedef std::shared_ptr<States>												StatesPtr;
-			typedef std::unordered_map<ProgramSignature, ProgramPtr>					SignatureProgramMap;
-			typedef std::shared_ptr<std::function<void(ProgramPtr)>>					OnProgramFunctionPtr;
-			typedef std::list<std::function<void(ProgramPtr)>>							OnProgramFunctionList;	
-			typedef std::unordered_map<std::string, data::MacroBinding>					MacroBindingsMap;
+ 			typedef std::shared_ptr<Program>							ProgramPtr;
+			typedef std::shared_ptr<VertexBuffer>						VertexBufferPtr;
+            typedef std::unordered_map<std::string, SamplerState>		SamplerStatesMap;
+			typedef std::shared_ptr<States>								StatesPtr;
+			typedef std::unordered_map<ProgramSignature, ProgramPtr>	SignatureProgramMap;
+			typedef std::shared_ptr<std::function<void(ProgramPtr)>>	OnProgramFunctionPtr;
+			typedef std::list<std::function<void(ProgramPtr)>>			OnProgramFunctionList;	
+			typedef std::unordered_map<std::string, data::MacroBinding> MacroBindingsMap;
 
 		private:
 			const std::string						_name;
@@ -205,30 +205,16 @@ namespace minko
 
 			inline
 			void
-			setVertexAttribute(const std::string& name, unsigned int attributeSize, const std::vector<float>& data)
+            setVertexAttribute(const std::string& name, std::shared_ptr<VertexBuffer> buffer)
 			{
 				_attributeFunctions.push_back(std::bind(
-					&Pass::setVertexAttributeOnProgram, std::placeholders::_1, name, attributeSize, data
+					&Pass::setVertexAttributeOnProgram, std::placeholders::_1, name, buffer
 				));
 
 				if (_programTemplate->isReady())
-					_programTemplate->setVertexAttribute(name, attributeSize, data);
+					_programTemplate->setVertexAttribute(name, buffer);
 				for (auto signatureAndProgram : _signatureToProgram)
-					signatureAndProgram.second->setVertexAttribute(name, attributeSize, data);
-			}
-
-			inline
-			void
-			setIndexBuffer(const std::vector<unsigned short>& indices)
-			{
-				_indexFunction = std::make_shared<std::function<void(ProgramPtr)>>(std::bind(
-					&Pass::setIndexBufferOnProgram, std::placeholders::_1, indices
-				));
-					
-				if (_programTemplate->isReady())
-					_programTemplate->setIndexBuffer(indices);
-				for (auto signatureAndProgram : _signatureToProgram)
-					signatureAndProgram.second->setIndexBuffer(indices);
+					signatureAndProgram.second->setVertexAttribute(name, buffer);
 			}
 
 			inline
@@ -285,52 +271,13 @@ namespace minko
 
 			static
 			void
-			setVertexAttributeOnProgram(std::shared_ptr<Program> program, const std::string& name, unsigned int attributeSize, const std::vector<float>& data)
+            setVertexAttributeOnProgram(std::shared_ptr<Program> program, const std::string& name, std::shared_ptr<VertexBuffer> buffer)
 			{
-				program->setVertexAttribute(name, attributeSize, data);
-			}
-
-			static 
-			void
-			setIndexBufferOnProgram(std::shared_ptr<Program> program, const std::vector<unsigned short>& indices)
-			{
-				program->setIndexBuffer(indices);
+				program->setVertexAttribute(name, buffer);
 			}
 
 			ProgramPtr
 			finalizeProgram(ProgramPtr program);
-		};
-
-		template <>
-		inline
-		void
-		Pass::setUniform(const std::string& name, const math::vec2& v)
-		{
-			setUniform(name, v.x, v.y);
-		};
-
-		template <>
-		inline
-		void
-		Pass::setUniform(const std::string& name, const math::vec3& v)
-		{
-			setUniform(name, v.x, v.y, v.z);
-		};
-
-		template <>
-		inline
-		void
-		Pass::setUniform(const std::string& name, const math::vec4& v)
-		{
-			setUniform(name, v.x, v.y, v.z, v.w);
-		};
-
-		template <>
-		inline
-		void
-		Pass::setUniform(const std::string& name, const math::mat4& v)
-		{
-			setUniform(name, 1, false, math::value_ptr(v));
 		};
 	}
 }
