@@ -49,8 +49,7 @@ namespace minko
 				float16,
 				sampler2d,
 				samplerCube,
-				attribute,
-				constant
+				attribute
 			};
 
 		public:
