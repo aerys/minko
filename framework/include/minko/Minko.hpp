@@ -41,7 +41,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/data/Provider.hpp"
 #include "minko/data/ArrayProvider.hpp"
 #include "minko/data/StructureProvider.hpp"
-#include "minko/data/Value.hpp"
 #include "minko/data/Container.hpp"
 #include "minko/data/AbstractFilter.hpp"
 #include "minko/component/AbstractComponent.hpp"
