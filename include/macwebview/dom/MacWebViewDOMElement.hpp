@@ -19,10 +19,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #pragma once
 
+#include "TargetConditionals.h"
+
 #include "minko/Common.hpp"
 #include "minko/Signal.hpp"
 #include "minko/dom/AbstractDOMElement.hpp"
 #include "minko/dom/AbstractDOMMouseEvent.hpp"
+#include "minko/dom/AbstractDOMTouchEvent.hpp"
 
 namespace macwebview
 {
@@ -135,6 +138,17 @@ namespace macwebview
 			minko::Signal<std::shared_ptr<minko::dom::AbstractDOMMouseEvent>>::Ptr
 			onmouseover();
 
+#if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE // iOS
+            minko::Signal<std::shared_ptr<minko::dom::AbstractDOMTouchEvent>>::Ptr
+            ontouchdown();
+            
+            minko::Signal<std::shared_ptr<minko::dom::AbstractDOMTouchEvent>>::Ptr
+            ontouchup();
+            
+            minko::Signal<std::shared_ptr<minko::dom::AbstractDOMTouchEvent>>::Ptr
+            ontouchmotion();
+#endif
+            
             void
             update();
 		private:
@@ -174,6 +188,16 @@ namespace macwebview
             
             bool _onmouseoverSet;
             bool _onmouseoutSet;
+            
+#if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE // iOS
+            minko::Signal<minko::dom::AbstractDOMTouchEvent::Ptr>::Ptr _ontouchdown;
+            minko::Signal<minko::dom::AbstractDOMTouchEvent::Ptr>::Ptr _ontouchup;
+            minko::Signal<minko::dom::AbstractDOMTouchEvent::Ptr>::Ptr _ontouchmotion;
+            
+            bool _ontouchdownSet;
+            bool _ontouchupSet;
+            bool _ontouchmotionSet;
+#endif
             
             std::shared_ptr<MacWebViewDOMEngine> _engine;
 		};

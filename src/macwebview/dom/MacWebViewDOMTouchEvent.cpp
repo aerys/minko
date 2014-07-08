@@ -18,17 +18,17 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "minko/Common.hpp"
-#include "ioswebview/dom/IOSWebViewDOMTouchEvent.hpp"
-#include "ioswebview/dom/IOSWebViewDOMElement.hpp"
-#include "ioswebview/dom/IOSWebViewDOMEngine.hpp"
+#include "macwebview/dom/MacWebViewDOMTouchEvent.hpp"
+#include "macwebview/dom/MacWebViewDOMElement.hpp"
+#include "macwebview/dom/MacWebViewDOMEngine.hpp"
 
 using namespace minko;
 using namespace minko::dom;
-using namespace ioswebview;
-using namespace ioswebview::dom;
+using namespace macwebview;
+using namespace macwebview::dom;
 
 void
-IOSWebViewDOMTouchEvent::preventDefault()
+MacWebViewDOMTouchEvent::preventDefault()
 {
 	std::cerr << "Warning : AbstractDOMEvent::preventDefault will have no effect" << std::endl;
 	std::string js = _jsAccessor + ".preventDefault()";
@@ -37,7 +37,7 @@ IOSWebViewDOMTouchEvent::preventDefault()
 }
 
 void
-IOSWebViewDOMTouchEvent::stopPropagation()
+MacWebViewDOMTouchEvent::stopPropagation()
 {
 	std::cerr << "Warning : AbstractDOMEvent::stopPropagation will have no effect" << std::endl;
 	std::string js = _jsAccessor + ".stopPropagation()";
@@ -46,19 +46,19 @@ IOSWebViewDOMTouchEvent::stopPropagation()
 }
 
 int
-IOSWebViewDOMTouchEvent::fingerId()
+MacWebViewDOMTouchEvent::fingerId()
 {
     return _fingerId;
 }
 
 std::string&
-IOSWebViewDOMTouchEvent::jsAccessor()
+MacWebViewDOMTouchEvent::jsAccessor()
 {
     return _jsAccessor;
 }
 
 std::string
-IOSWebViewDOMTouchEvent::type()
+MacWebViewDOMTouchEvent::type()
 {
 	std::string js = "(" + _jsAccessor + ".type)";
     std::string result = _engine->eval(js);
@@ -67,13 +67,13 @@ IOSWebViewDOMTouchEvent::type()
 }
 
 minko::dom::AbstractDOMElement::Ptr
-IOSWebViewDOMTouchEvent::target()
+MacWebViewDOMTouchEvent::target()
 {
-	return IOSWebViewDOMElement::getDOMElement(_jsAccessor + ".target", _engine);
+	return MacWebViewDOMElement::getDOMElement(_jsAccessor + ".target", _engine);
 }
 
 int
-IOSWebViewDOMTouchEvent::clientX()
+MacWebViewDOMTouchEvent::clientX()
 {
 	std::string js = "(" + _jsAccessor + ".changedTouches[" + std::to_string(_index) + "]." + "clientX)";
 	int result = atoi(_engine->eval(js).c_str());
@@ -82,7 +82,7 @@ IOSWebViewDOMTouchEvent::clientX()
 }
 
 int
-IOSWebViewDOMTouchEvent::clientY()
+MacWebViewDOMTouchEvent::clientY()
 {
 	std::string js = "(" + _jsAccessor + ".changedTouches[" + std::to_string(_index) + "]" + ".clientY)";
 	int result = atoi(_engine->eval(js).c_str());
@@ -91,7 +91,7 @@ IOSWebViewDOMTouchEvent::clientY()
 }
 
 int
-IOSWebViewDOMTouchEvent::pageX()
+MacWebViewDOMTouchEvent::pageX()
 {
 	std::string js = "(" + _jsAccessor + ".pageX)";
 	int result = atoi(_engine->eval(js).c_str());
@@ -100,7 +100,7 @@ IOSWebViewDOMTouchEvent::pageX()
 }
 
 int
-IOSWebViewDOMTouchEvent::pageY()
+MacWebViewDOMTouchEvent::pageY()
 {
 	std::string js = "(" + _jsAccessor + ".pageY)";
 	int result = atoi(_engine->eval(js).c_str());
@@ -109,7 +109,7 @@ IOSWebViewDOMTouchEvent::pageY()
 }
 
 int
-IOSWebViewDOMTouchEvent::layerX()
+MacWebViewDOMTouchEvent::layerX()
 {
 	std::string js = "(" + _jsAccessor + ".layerX)";
 	int result = atoi(_engine->eval(js).c_str());
@@ -118,7 +118,7 @@ IOSWebViewDOMTouchEvent::layerX()
 }
 
 int
-IOSWebViewDOMTouchEvent::layerY()
+MacWebViewDOMTouchEvent::layerY()
 {
 	std::string js = "(" + _jsAccessor + ".layerY)";
 	int result = atoi(_engine->eval(js).c_str());
@@ -127,7 +127,7 @@ IOSWebViewDOMTouchEvent::layerY()
 }
 
 int
-IOSWebViewDOMTouchEvent::screenX()
+MacWebViewDOMTouchEvent::screenX()
 {
 	std::string js = "(" + _jsAccessor + ".screenX)";
 	int result = atoi(_engine->eval(js).c_str());
@@ -136,7 +136,7 @@ IOSWebViewDOMTouchEvent::screenX()
 }
 
 int
-IOSWebViewDOMTouchEvent::screenY()
+MacWebViewDOMTouchEvent::screenY()
 {
 	std::string js = "(" + _jsAccessor + ".screenY)";
 	int result = atoi(_engine->eval(js).c_str());

@@ -21,15 +21,17 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/Options.hpp"
 #include "minko/file/FileProtocol.hpp"
 #include "minko/file/AssetLibrary.hpp"
-#include "macwebview/dom/MacWebViewDOMEngine.hpp"
-#include "macwebview/dom/MacWebViewDOMMouseEvent.hpp"
 
 #include "minko/MinkoSDL.hpp"
 
 #include "SDL.h"
 #include "SDL_syswm.h"
 
-# include "TargetConditionals.h"
+#include "minko/dom/AbstractDOMTouchEvent.hpp"
+
+#include "macwebview/dom/MacWebViewDOMEngine.hpp"
+#include "macwebview/dom/MacWebViewDOMMouseEvent.hpp"
+
 #if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE // iOS
 #elif TARGET_OS_MAC // OSX
 # include "macwebview/dom/OSXWebUIDelegate.h"
@@ -52,6 +54,11 @@ Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Slot onmousemoveSlot;
 Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Slot onmousedownSlot;
 Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Slot onmouseupSlot;
 
+#if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE // iOS
+Signal<minko::dom::AbstractDOMTouchEvent::Ptr>::Slot ontouchdownSlot;
+Signal<minko::dom::AbstractDOMTouchEvent::Ptr>::Slot ontouchupSlot;
+Signal<minko::dom::AbstractDOMTouchEvent::Ptr>::Slot ontouchmotionSlot;
+#endif
 
 MacWebViewDOMEngine::MacWebViewDOMEngine() :
 	_onload(Signal<AbstractDOM::Ptr, std::string>::create()),
@@ -68,6 +75,10 @@ MacWebViewDOMEngine::initialize(AbstractCanvas::Ptr canvas, SceneManager::Ptr sc
 	_canvas = canvas;
 	_sceneManager = sceneManager;
     
+    // URL of the local file that contains JS callback handler
+    NSURL *url = [NSURL fileURLWithPath:@"asset/html/iframe.html"];
+    NSURLRequest *request = [NSURLRequest requestWithURL:url];
+    
     // Get window from canvas
     auto newCanvas = std::static_pointer_cast<Canvas>(canvas);
     SDL_Window* sdlWindow = newCanvas->window();
@@ -77,6 +88,52 @@ MacWebViewDOMEngine::initialize(AbstractCanvas::Ptr canvas, SceneManager::Ptr sc
     
     if (SDL_GetWindowWMInfo(sdlWindow, &info))
     {
+#if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE // iOS
+        // Get the UIKit window from SDL
+        _window = info.info.uikit.window;
+        
+        // Create the web view
+        _webView = [[IOSWebView alloc] initWithFrame:_window.bounds];
+        
+        // Change web view's background properties
+        UIColor * clearColor = [UIColor colorWithRed:255/255.0f green:1/255.0f blue:0/255.0f alpha:0.f];
+        [_webView setBackgroundColor: clearColor];
+        [_webView setOpaque: NO];
+        [_webView.scrollView setDelaysContentTouches: NO];
+        
+        // Disable web view scroll
+        _webView.scrollView.scrollEnabled = NO;
+        _webView.scrollView.bounces = NO;
+        
+        // Resize the web view according to device dimension and orientation
+        _webView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin |
+        UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin |
+        UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+        _webView.scalesPageToFit = YES;
+        
+        // Disable web view interaction
+        //[_webView setUserInteractionEnabled:NO];
+        
+        _window.rootViewController.view.autoresizesSubviews = YES;
+        
+        // Add the web view to the current window
+        [_window.rootViewController.view addSubview:_webView];
+        
+        // Save the web view width
+        _webViewWidth = _webView.frame.size.width;
+        
+        // Load iframe containing bridge JS callback handler
+        [_webView loadRequest:request];
+        
+        _canvasResizedSlot = _canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
+        {
+            _webViewWidth = w;
+            // Useful on iOS to have the same coordinates on the web view as on the canvas
+            updateWebViewWidth();
+        });
+
+#elif TARGET_OS_MAC // OSX
+        // Get the Cocoa window from SDL
         _window = info.info.cocoa.window;
         
         // Create the web view
@@ -88,7 +145,7 @@ MacWebViewDOMEngine::initialize(AbstractCanvas::Ptr canvas, SceneManager::Ptr sc
         // Webview's background
         CGColorRef clearColor = CGColorCreateGenericRGB(255/255.0f, 1/255.0f, 0/255.0f, 0.f);
         _webView.layer.backgroundColor = clearColor;
-
+        
         // Display the canvas behind the overlay
         [_webView setDrawsBackground:NO];
         
@@ -98,7 +155,7 @@ MacWebViewDOMEngine::initialize(AbstractCanvas::Ptr canvas, SceneManager::Ptr sc
         
         // Set UIDelegate (used to enable JS alert and disable right click)
         [_webView setUIDelegate:[OSXWebUIDelegate alloc]];
-
+        
         // Resize the overlay according to the window's size
         [_window.contentView setAutoresizesSubviews:YES];
         [_webView setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
@@ -107,9 +164,8 @@ MacWebViewDOMEngine::initialize(AbstractCanvas::Ptr canvas, SceneManager::Ptr sc
         [_window.contentView addSubview:_webView];
         
         // Load iframe containing bridge JS callback handler
-        NSURL *url = [NSURL fileURLWithPath:@"asset/html/iframe.html"];
-        NSURLRequest *request = [NSURLRequest requestWithURL:url];
         [[_webView mainFrame] loadRequest:request];
+#endif
         
         // Create a C++ handler to process the message received by the Javascript bridge
         handleJavascriptMessageWrapper = std::bind(
@@ -173,7 +229,6 @@ MacWebViewDOMEngine::createNewDom()
 	_currentDOM = MacWebViewDOM::create(domName, shared_from_this());
 }
 
-
 minko::dom::AbstractDOM::Ptr
 MacWebViewDOMEngine::mainDOM()
 {
@@ -193,6 +248,9 @@ MacWebViewDOMEngine::enterFrame()
         {
             _waitingForLoad = false;
             load(_uriToLoad);
+#if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE // iOS
+            updateWebViewWidth();
+#endif
         }
         
         return;
@@ -275,11 +333,15 @@ MacWebViewDOMEngine::load(std::string uri)
         
         if (!isHttp && !isHttps)
         {
+#if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE // iOS
+            uri = "../../asset/" + uri;
+#elif TARGET_OS_MAC // OSX
             std::string path = file::File::getBinaryDirectory();
-#if DEBUG
+# if DEBUG
             uri = path + "/../../../asset/" + uri;
-#else
+# else
             uri = path + "/asset/" + uri;
+# endif
 #endif
         }
         
@@ -322,7 +384,13 @@ MacWebViewDOMEngine::visible(bool value)
         if (value != _visible)
         {
             if (value)
+            {
+#if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE // iOS
+                [_window addSubview:_webView];
+#elif TARGET_OS_MAC // OSX
                 [_window.contentView addSubview:_webView];
+#endif
+            }
             else
                 [_webView removeFromSuperview];
         }
@@ -388,7 +456,86 @@ MacWebViewDOMEngine::registerDomEvents()
         
         _canvas->mouse()->move()->execute(_canvas->mouse(), event->clientX() - oldX, event->clientY() - oldY);
     });
+    
+#if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE // iOS
+    ontouchdownSlot = std::static_pointer_cast<MacWebViewDOMElement>(_currentDOM->document())->ontouchdown()->connect([&](AbstractDOMTouchEvent::Ptr event)
+    {
+            int fingerId = event->fingerId();
+            float x = event->clientX();
+            float y = event->clientY();
+            
+            SDL_Event sdlEvent;
+            sdlEvent.type = SDL_FINGERDOWN;
+            sdlEvent.tfinger.fingerId = fingerId;
+            sdlEvent.tfinger.x =  x / _canvas->width();
+            sdlEvent.tfinger.y = y / _canvas->height();
+
+            SDL_PushEvent(&sdlEvent);
+            
+            // Create a new touch object and keep it with a list
+            auto touch = minko::SDLTouch::create(std::static_pointer_cast<Canvas>(_canvas));
+            touch->fingerId(fingerId);
+            touch->x(x);
+            touch->y(y);
+
+            _touches.insert(std::pair<int, std::shared_ptr<minko::SDLTouch>>(fingerId, touch));
+    });
+    
+    ontouchupSlot = std::static_pointer_cast<MacWebViewDOMElement>(_currentDOM->document())->ontouchup()->connect([&](AbstractDOMTouchEvent::Ptr event)
+    {
+        int fingerId = event->fingerId();
+        float x = event->clientX();
+        float y = event->clientY();
+            
+        SDL_Event sdlEvent;
+        sdlEvent.type = SDL_FINGERUP;
+        sdlEvent.tfinger.fingerId = fingerId;
+        sdlEvent.tfinger.x = x / _canvas->width();
+        sdlEvent.tfinger.y = y / _canvas->height();
+
+        SDL_PushEvent(&sdlEvent);
+        
+        // We check that the finger is into the list before removing it
+        if (_touches.find(fingerId) != _touches.end())
+        {
+            _touches.erase(fingerId);
+        }
+    });
+    
+    ontouchmotionSlot = std::static_pointer_cast<MacWebViewDOMElement>(_currentDOM->document())->ontouchmotion()->connect([&](AbstractDOMTouchEvent::Ptr event)
+    {
+            int fingerId = event->fingerId();
+            float oldX = _touches.at(fingerId)->minko::input::Touch::x();
+            float oldY = _touches.at(fingerId)->minko::input::Touch::y();
+            float x = event->clientX();
+            float y = event->clientY();
+            
+            SDL_Event sdlEvent;
+            sdlEvent.type = SDL_FINGERMOTION;
+            sdlEvent.tfinger.fingerId = fingerId;
+            sdlEvent.tfinger.x = x / _canvas->width();
+            sdlEvent.tfinger.y = y / _canvas->height();
+            sdlEvent.tfinger.dx = (x - oldX) / _canvas->width();
+            sdlEvent.tfinger.dy = (y - oldY) / _canvas->height();
+        
+            SDL_PushEvent(&sdlEvent);
+            
+            // Store finger information
+            _touches.at(fingerId)->x(x);
+            _touches.at(fingerId)->y(y);
+    });
+#endif
 }
+
+#if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE // iOS
+void
+MacWebViewDOMEngine::updateWebViewWidth()
+{
+    std::string jsEval = "Minko.changeViewportWidth(" + std::to_string(_webViewWidth) + ");";
+    
+    eval(jsEval);
+}
+#endif
 
 std::string
 MacWebViewDOMEngine::eval(std::string data)

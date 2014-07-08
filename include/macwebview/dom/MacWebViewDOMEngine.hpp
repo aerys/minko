@@ -19,7 +19,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #pragma once
 
-# include "TargetConditionals.h"
+#include "TargetConditionals.h"
 #if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE // iOS
 # import "macwebview/dom/IOSWebView.h"
 #elif TARGET_OS_MAC // OSX
@@ -32,6 +32,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "MacWebViewDOM.hpp"
 
 #import "WebViewJavascriptBridge.h"
+
+namespace minko
+{
+    class SDLTouch;
+}
 
 namespace macwebview
 {
@@ -125,6 +130,40 @@ namespace macwebview
             void
             registerDomEvents();
             
+#if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE // iOS
+            void
+            updateWebViewWidth();
+            
+        public:
+            inline
+            void
+            firstFingerId(int id)
+            {
+                _firstFingerId = id;
+            }
+            
+            inline
+            int
+            firstFingerId()
+            {
+                return _firstFingerId;
+            }
+            
+            inline
+            unsigned long
+            touchNumber()
+            {
+                return _touches.size();
+            }
+            
+            inline
+            std::map<int, std::shared_ptr<minko::SDLTouch>>
+            touches()
+            {
+                return _touches;
+            }
+#endif
+            
 			static
 			int _domUid;
 
@@ -141,11 +180,18 @@ namespace macwebview
 
 			bool _visible;
             
-            // Mac WebView
 #if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE // iOS
+            // WebView
             UIWindow *_window;
             IOSWebView *_webView;
+            uint _webViewWidth;
+            
+            // Fingers
+            std::map<int, std::shared_ptr<minko::SDLTouch>> _touches;
+            int _firstFingerId;
+            
 #elif TARGET_OS_MAC // OSX
+            // WebView
             NSWindow *_window;
             OSXWebView *_webView;
 #endif

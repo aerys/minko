@@ -132,11 +132,12 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 	-- iOS webview
 	configuration { "ios" }
 		files {
-			"include/ioswebview/**.hpp",
-			"src/ioswebview/**.cpp",
-
 			"include/macwebview/dom/IOSWebView.h",
-			"src/macwebview/dom/IOSWebView.m",
+			"src/macwebview/dom/IOSWebView.m"
+		}
+		excludes {
+			"include/macwebview/dom/MacWebViewDOMMouseEvent.hpp",
+			"src/macwebview/dom/MacWebViewDOMMouseEvent.cpp"
 		}
 
 	-- OSX webview
@@ -145,7 +146,11 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 			"include/macwebview/dom/OSXWebView.h",
 			"include/macwebview/dom/OSXWebUIDelegate.h",
 			"src/macwebview/dom/OSXWebView.m",
-			"src/macwebview/dom/OSXWebUIDelegate.m",
+			"src/macwebview/dom/OSXWebUIDelegate.m"
+		}
+		excludes {
+			"include/macwebview/dom/MacWebViewDOMTouchEvent.hpp",
+			"src/macwebview/dom/MacWebViewDOMTouchEvent.cpp"
 		}
 		links {
 			"WebKit.framework"

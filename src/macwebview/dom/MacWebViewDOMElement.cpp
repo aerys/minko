@@ -19,18 +19,21 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 #include "minko/input/Mouse.hpp"
+#include "minko/dom/AbstractDOMEvent.hpp"
 #include "macwebview/dom/MacWebViewDOMElement.hpp"
-#include "macwebview/dom/MacWebViewDOMMouseEvent.hpp"
 #include "macwebview/dom/MacWebViewDOMEngine.hpp"
 #include "macwebview/dom/MacWebViewDOM.hpp"
-#include "minko/dom/AbstractDOMEvent.hpp"
 
+#if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE // iOS
+# include "macwebview/dom/MacWebViewDOMTouchEvent.hpp"
+#elif TARGET_OS_MAC // OSX
+# include "macwebview/dom/MacWebViewDOMMouseEvent.hpp"
+#endif
 
 using namespace minko;
 using namespace minko::dom;
 using namespace macwebview;
 using namespace macwebview::dom;
-
 
 int
 MacWebViewDOMElement::_elementUid = 0;
@@ -55,6 +58,14 @@ MacWebViewDOMElement::MacWebViewDOMElement(std::string jsAccessor) :
     _onmouseupSet(false),
     _onmouseoverSet(false),
     _onmouseoutSet(false),
+#if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE // iOS
+    _ontouchdown(Signal<AbstractDOMTouchEvent::Ptr>::create()),
+    _ontouchup(Signal<AbstractDOMTouchEvent::Ptr>::create()),
+    _ontouchmotion(Signal<AbstractDOMTouchEvent::Ptr>::create()),
+    _ontouchdownSet(false),
+    _ontouchupSet(false),
+    _ontouchmotionSet(false),
+#endif
     _engine(nullptr)
 {
 }
@@ -361,6 +372,44 @@ MacWebViewDOMElement::onmouseover()
 	return _onmouseover;
 }
 
+#if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE // iOS
+Signal<std::shared_ptr<AbstractDOMTouchEvent>>::Ptr
+MacWebViewDOMElement::ontouchdown()
+{
+    if (!_ontouchdownSet)
+    {
+        addEventListener("touchstart");
+        _ontouchdownSet = true;
+    }
+    
+    return _ontouchdown;
+}
+
+Signal<std::shared_ptr<AbstractDOMTouchEvent>>::Ptr
+MacWebViewDOMElement::ontouchup()
+{
+    if (!_ontouchupSet)
+    {
+        addEventListener("touchend");
+        _ontouchupSet = true;
+    }
+    
+    return _ontouchup;
+}
+
+Signal<std::shared_ptr<AbstractDOMTouchEvent>>::Ptr
+MacWebViewDOMElement::ontouchmotion()
+{
+    if (!_ontouchmotionSet)
+    {
+        addEventListener("touchmove");
+        _ontouchmotionSet = true;
+    }
+    
+    return _ontouchmotion;
+}
+#endif
+
 void
 MacWebViewDOMElement::update()
 {
@@ -375,6 +424,60 @@ MacWebViewDOMElement::update()
             js =  eventName + " = " + _jsAccessor + ".minkoEvents[" + std::to_string(i) + "];";
             _engine->eval(js);
             
+#if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE // iOS
+            // Get number of finger
+            std::string js = eventName + ".changedTouches.length";
+            int touchNumber = atoi(_engine->eval(js).c_str());
+            
+            for (auto i = 0; i < touchNumber; i++)
+            {
+                // Get the finger id (note: JS events can send identifier > INT_MAX, that's why there is a modulo)
+                js = "(" + eventName + ".changedTouches[" + std::to_string(i) + "].identifier % 2147483647)";
+                int fingerId = atoi(_engine->eval(js).c_str());
+                
+                // Create the touch event
+                MacWebViewDOMTouchEvent::Ptr event = MacWebViewDOMTouchEvent::create(eventName, fingerId, i, _engine);
+                
+                std::string type = event->type();
+                
+                if (type == "touchstart")
+                {
+                    _ontouchdown->execute(event);
+                    
+                    // If it's the first finger
+                    if (_engine->touchNumber() == 1)
+                    {
+                        // Set the first finger id
+                        _engine->firstFingerId(fingerId);
+                        
+                        _onmousedown->execute(event);
+                    }
+                }
+                else if (type == "touchend")
+                {
+                    _ontouchup->execute(event);
+                    
+                    // If it's the first finger
+                    if (fingerId == _engine->firstFingerId())
+                    {
+                        _engine->firstFingerId(-1);
+                        
+                        _onclick->execute(event);
+                        _onmouseup->execute(event);
+                    }
+                }
+                else if (type == "touchmove")
+                {
+                    _ontouchmotion->execute(event);
+                    
+                    // If it's the first finger
+                    if (fingerId == _engine->firstFingerId())
+                    {
+                        _onmousemove->execute(event);
+                    }
+                }
+            }
+#elif TARGET_OS_MAC // OSX
             MacWebViewDOMMouseEvent::Ptr event = MacWebViewDOMMouseEvent::create(eventName, _engine);
             
             std::string type = event->type();
@@ -391,6 +494,7 @@ MacWebViewDOMElement::update()
                 _onmouseover->execute(event);
             else if (type == "mouseout")
                 _onmouseout->execute(event);
+#endif
         }
         
         js = "Minko.clearEvents(" + _jsAccessor + ");";

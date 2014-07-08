@@ -23,19 +23,19 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/dom/AbstractDOMElement.hpp"
 #include "minko/dom/AbstractDOMTouchEvent.hpp"
 
-namespace ioswebview
+namespace macwebview
 {
 	namespace dom
 	{
-        class IOSWebViewDOMEngine;
+        class MacWebViewDOMEngine;
         
-		class IOSWebViewDOMTouchEvent : public minko::dom::AbstractDOMTouchEvent
+		class MacWebViewDOMTouchEvent : public minko::dom::AbstractDOMTouchEvent
 		{
 		public:
-			typedef std::shared_ptr<IOSWebViewDOMTouchEvent> Ptr;
+			typedef std::shared_ptr<MacWebViewDOMTouchEvent> Ptr;
 
 		private:
-			IOSWebViewDOMTouchEvent(std::string jsAccessor, int fingerId, int index):
+			MacWebViewDOMTouchEvent(std::string jsAccessor, int fingerId, int index):
 				_jsAccessor(jsAccessor),
                 _fingerId(fingerId),
                 _index(index)
@@ -46,9 +46,9 @@ namespace ioswebview
 
 			static
 			Ptr
-			create(std::string jsAccessor, int fingerId, int index, std::shared_ptr<IOSWebViewDOMEngine> engine)
+			create(std::string jsAccessor, int fingerId, int index, std::shared_ptr<MacWebViewDOMEngine> engine)
 			{
-				Ptr event(new IOSWebViewDOMTouchEvent(jsAccessor, fingerId, index));
+				Ptr event(new MacWebViewDOMTouchEvent(jsAccessor, fingerId, index));
                 event->_engine = engine;
                 
 				return event;
@@ -100,7 +100,7 @@ namespace ioswebview
 
 		private:
 			std::string _jsAccessor;
-            std::shared_ptr<IOSWebViewDOMEngine> _engine;
+            std::shared_ptr<MacWebViewDOMEngine> _engine;
             // The JS touch event property called "identifier" similar to SDL fingerId (a unique id)
             int _fingerId;
             // The index in the current changedTouches array
