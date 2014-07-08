@@ -1041,18 +1041,12 @@ OpenGLES2Context::deleteFragmentShader(const uint fragmentShader)
 	checkForErrors();
 }
 
-std::shared_ptr<ProgramInputs>
+ProgramInputs
 OpenGLES2Context::getProgramInputs(const uint program)
 {
-	std::vector<std::string> names;
-	std::vector<ProgramInputs::Type> types;
-	std::vector<uint> locations;
-
 	setProgram(program);
-	fillUniformInputs(program, names, types, locations);
-	fillAttributeInputs(program, names, types, locations);
 
-	return ProgramInputs::create(shared_from_this(), program, names, types, locations);
+    return { getUniformInputs(program), getAttributeInputs(program) };
 }
 
 /*static*/
@@ -1100,12 +1094,11 @@ OpenGLES2Context::convertInputType(unsigned int type)
 }
 
 
-void
-OpenGLES2Context::fillUniformInputs(const uint					program,
-									std::vector<std::string>&			names,
-									std::vector<ProgramInputs::Type>&	types,
-									std::vector<uint>&			locations)
+std::vector<ProgramInputs::UniformInput>
+OpenGLES2Context::getUniformInputs(const uint program)
 {
+    std::vector<ProgramInputs::UniformInput> inputs;
+
 	int total = -1;
 	int maxUniformNameLength = -1;
 
@@ -1127,21 +1120,18 @@ OpenGLES2Context::fillUniformInputs(const uint					program,
 		ProgramInputs::Type	inputType	= convertInputType(type);
 		int					location	= glGetUniformLocation(program, &name[0]);
 
-		if (location >= 0 && inputType != ProgramInputs::Type::unknown)
-		{
-			names.push_back(std::string(&name[0], nameLength));
-			types.push_back(inputType);
-			locations.push_back(location);
-		}
+        if (location >= 0 && inputType != ProgramInputs::Type::unknown)
+            inputs.push_back({ std::string(&name[0], nameLength), inputType, location });
 	}
+
+    return inputs;
 }
 
-void
-OpenGLES2Context::fillAttributeInputs(const uint				program,
-									 std::vector<std::string>&			names,
-									 std::vector<ProgramInputs::Type>&	types,
-									 std::vector<uint>&			locations)
+std::vector<ProgramInputs::AttributeInput>
+OpenGLES2Context::getAttributeInputs(const uint program)
 {
+    std::vector<ProgramInputs::AttributeInput> inputs;
+
 	int total = -1;
 	int maxAttributeNameLength = -1;
 
@@ -1160,17 +1150,13 @@ OpenGLES2Context::fillAttributeInputs(const uint				program,
 
 		name[nameLength] = 0;
 
-		ProgramInputs::Type inputType = ProgramInputs::Type::attribute;
-
 		int location = glGetAttribLocation(program, &name[0]);
 
-		if (location >= 0)
-		{
-			names.push_back(std::string(&name[0], nameLength));
-			types.push_back(inputType);
-			locations.push_back(location);
-		}
+        if (location >= 0)
+            inputs.push_back({ std::string(&name[0], nameLength), location });
 	}
+
+    return inputs;
 }
 
 std::string
@@ -1219,166 +1205,6 @@ OpenGLES2Context::getProgramInfoLogs(const uint program)
 	glGetProgramInfoLog(program, programInfoMaxLength, &programInfoLength, &programInfo[0]);
 
 	return std::string(&programInfo[0]);
-}
-
-void
-OpenGLES2Context::setUniform(uint location, int value)
-{
-	glUniform1i(location, value);
-	checkForErrors();
-}
-
-void
-OpenGLES2Context::setUniform(uint location, int v1, int v2)
-{
-	glUniform2i(location, v1, v2);
-	checkForErrors();
-}
-
-void
-OpenGLES2Context::setUniform(uint location, int v1, int v2, int v3)
-{
-	glUniform3i(location, v1, v2, v3);
-	checkForErrors();
-}
-
-void
-OpenGLES2Context::setUniform(uint location, int v1, int v2, int v3, int v4)
-{
-	glUniform4i(location, v1, v2, v3, v4);
-	checkForErrors();
-}
-
-void
-OpenGLES2Context::setUniform(uint location, float value)
-{
-	glUniform1f(location, value);
-	checkForErrors();
-}
-
-void
-OpenGLES2Context::setUniform(uint location, float v1, float v2)
-{
-	glUniform2f(location, v1, v2);
-	checkForErrors();
-}
-
-void
-OpenGLES2Context::setUniform(uint location, float v1, float v2, float v3)
-{
-	glUniform3f(location, v1, v2, v3);
-	checkForErrors();
-}
-
-void
-OpenGLES2Context::setUniform(uint location, float v1, float v2, float v3, float v4)
-{
-	glUniform4f(location, v1, v2, v3, v4);
-	checkForErrors();
-}
-
-void
-OpenGLES2Context::setUniforms(uint location, uint size, const float* values)
-{
-	glUniform1fv(location, size, values);
-	checkForErrors();
-}
-
-void
-OpenGLES2Context::setUniforms2(uint location, uint size, const float* values)
-{
-	glUniform2fv(location, size, values);
-	checkForErrors();
-}
-
-void
-OpenGLES2Context::setUniforms3(uint location, uint size, const float* values)
-{
-	glUniform3fv(location, size, values);
-	checkForErrors();
-}
-
-void
-OpenGLES2Context::setUniforms4(uint location, uint size, const float* values)
-{
-	glUniform4fv(location, size, values);
-	checkForErrors();
-}
-
-void
-OpenGLES2Context::setUniforms(uint location, uint size, const int* values)
-{
-	glUniform1iv(location, size, values);
-	checkForErrors();
-}
-
-void
-OpenGLES2Context::setUniforms2(uint location, uint size, const int* values)
-{
-	glUniform2iv(location, size, values);
-	checkForErrors();
-}
-
-void
-OpenGLES2Context::setUniforms3(uint location, uint size, const int* values)
-{
-	glUniform3iv(location, size, values);
-	checkForErrors();
-}
-
-void
-OpenGLES2Context::setUniforms4(uint location, uint size, const int* values)
-{
-	glUniform4iv(location, size, values);
-	checkForErrors();
-}
-
-void
-OpenGLES2Context::setUniform(const uint& location, const uint& size, bool transpose, const float* values)
-{
-#ifdef GL_ES_VERSION_2_0
-
-	if (transpose)
-	{
-		float* transposed = new float[size << 4];
-
-		for (uint i = 0; i < size; ++i)
-		{
-			const float*	matrix	= values		+ (i << 4);
-			float*			tmatrix	= transposed	+ (i << 4);
-
-			tmatrix[0]	= matrix[0];
-			tmatrix[1]	= matrix[4];
-			tmatrix[2]	= matrix[8];
-			tmatrix[3]	= matrix[12];
-			tmatrix[4]	= matrix[1];
-			tmatrix[5]	= matrix[5];
-			tmatrix[6]	= matrix[9];
-			tmatrix[7]	= matrix[13];
-			tmatrix[8]	= matrix[2];
-			tmatrix[9]	= matrix[6];
-			tmatrix[10] = matrix[10];
-			tmatrix[11] = matrix[14];
-			tmatrix[12] = matrix[3];
-			tmatrix[13] = matrix[7];
-			tmatrix[14] = matrix[11];
-			tmatrix[15] = matrix[15];
-		}
-
-		glUniformMatrix4fv(location, size, false, transposed);
-
-		delete[] transposed;
-	}
-	else
-		glUniformMatrix4fv(location, size, false, values);
-
-#else
-
-	glUniformMatrix4fv(location, size, transpose, values);
-
-#endif
-
-	checkForErrors();
 }
 
 void
@@ -1695,4 +1521,52 @@ OpenGLES2Context::generateMipmaps(uint texture)
 	_currentBoundTexture = texture;
 
 	checkForErrors();
+}
+
+void
+OpenGLES2Context::setUniformFloat(uint location, uint count, const float* v)
+{
+    glUniform1fv(location, count, v);
+}
+
+void
+OpenGLES2Context::setUniformFloat2(uint location, uint count, const float* v)
+{
+    glUniform2fv(location, count, v);
+}
+
+void
+OpenGLES2Context::setUniformFloat3(uint location, uint count, const float* v)
+{
+    glUniform3fv(location, count, v);
+}
+
+void
+OpenGLES2Context::setUniformFloat4(uint location, uint count, const float* v)
+{
+    glUniform4fv(location, count, v);
+}
+
+void
+OpenGLES2Context::setUniformInt(uint location, uint count, const int* v)
+{
+    glUniform1iv(location, count, v);
+}
+
+void
+OpenGLES2Context::setUniformInt2(uint location, uint count, const int* v)
+{
+    glUniform2iv(location, count, v);
+}
+
+void
+OpenGLES2Context::setUniformInt3(uint location, uint count, const int* v)
+{
+    glUniform3iv(location, count, v);
+}
+
+void
+OpenGLES2Context::setUniformInt4(uint location, uint count, const int* v)
+{
+    glUniform4iv(location, count, v);
 }
