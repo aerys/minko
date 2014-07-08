@@ -31,15 +31,15 @@ namespace minko
 			public std::enable_shared_from_this<Provider>
 		{
 		public:
-			typedef std::shared_ptr<Provider>						Ptr;
-			typedef std::shared_ptr<const Provider>					ConstPtr;
+			typedef std::shared_ptr<Provider>					Ptr;
+			typedef std::shared_ptr<const Provider>				ConstPtr;
 
 		private:
-			std::unordered_map<std::string, Any>					_values;
+			std::unordered_map<std::string, Any>				_values;
 
-			std::shared_ptr<Signal<Ptr, const std::string&>>		_propertyAdded;
-            std::shared_ptr<Signal<Ptr, const std::string&>>		_propertyChanged;
-			std::shared_ptr<Signal<Ptr, const std::string&>>		_propertyRemoved;
+			std::shared_ptr<Signal<Ptr, const std::string&>>	_propertyAdded;
+            std::shared_ptr<Signal<Ptr, const std::string&>>	_propertyChanged;
+			std::shared_ptr<Signal<Ptr, const std::string&>>	_propertyRemoved;
 
 		public:
 			static const std::string NO_STRUCT_SEP;
@@ -114,8 +114,8 @@ namespace minko
 
             template <typename T>
             inline
-            Ptr
-            set(const std::string& name, const T& value, bool skipPropertyNameFormatting = false)
+            std::enable_if<!std::is_pointer<T>::value && !std::is_reference<T>::value, Ptr>
+            set(const std::string& name, T value, bool skipPropertyNameFormatting = false)
             {
                 auto formattedPropertyName = skipPropertyNameFormatting ? name : formatPropertyName(name);
 
@@ -143,7 +143,6 @@ namespace minko
 
 		protected:
 			Provider();
-
 
 			virtual
 			std::string
