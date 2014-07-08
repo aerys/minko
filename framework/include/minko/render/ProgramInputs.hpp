@@ -28,8 +28,6 @@ namespace minko
 		class ProgramInputs
 		{
 		public:
-			typedef std::shared_ptr<ProgramInputs>	Ptr;
-
 			enum class Type
 			{
 				unknown,
@@ -48,28 +46,21 @@ namespace minko
 				float9,
 				float16,
 				sampler2d,
-				samplerCube,
-				attribute
+				samplerCube
 			};
 
-		public:
-			static
-			Ptr
-			create(std::shared_ptr<AbstractContext>	context,
-				   const unsigned int 				program,
-				   const std::vector<std::string>& 	names,
-				   const std::vector<Type>& 		types,
-				   const std::vector<unsigned int>& locations)
-			{
-				return std::shared_ptr<ProgramInputs>(new ProgramInputs(
-					context,
-					program,
-					names,
-					types,
-					locations
-				));
-			}
+            struct UniformInput  {
+                std::string name;
+                Type type;
+                int location;
+            };
 
+            struct AttributeInput  {
+                std::string name;
+                int location;
+            };
+
+		public:
 			static
 			std::string
 			typeToString(const Type type)
@@ -115,89 +106,58 @@ namespace minko
 				}
 			}
 
-		public:
+            inline
+            std::vector<UniformInput>&
+            uniforms()
+            {
+                return _uniforms;
+            }
 
-			inline
-			bool
-			hasName(const std::string& name) const
-			{
-				return _nameToType.find(name) != _nameToType.end();
-			}
+            inline
+            std::vector<AttributeInput>&
+            attributes()
+            {
+                return _attributes;
+            }
 
-			inline
-			const std::vector<std::string>&
-			names() const
-			{
-				return _names;
-			}
+            ProgramInputs()
+            {}
 
-			inline
-			const std::vector<Type>&
-			types() const
-			{
-				return _types;
-			}
+            ProgramInputs(const ProgramInputs& inputs) :
+                _uniforms(inputs._uniforms),
+                _attributes(inputs._attributes)
+            {}
 
-			inline
-			const std::vector<unsigned int>&
-			locations() const
-			{
-				return _locations;
-			}
+            ProgramInputs(ProgramInputs&& p) :
+                _uniforms(std::move(p._uniforms)),
+                _attributes(std::move(p._attributes))
+            {}
 
-			inline
-			const int
-			location(const std::string& name) const
-			{
-				auto foundLocationIt = _nameToLocation.find(name);
+            ProgramInputs(const std::vector<UniformInput>&     uniforms,
+                          const std::vector<AttributeInput>&   attributes) :
+                _uniforms(uniforms),
+                _attributes(attributes)
+            {}
 
-				return foundLocationIt != _nameToLocation.end() ? (int)foundLocationIt->second : -1;
-			}
+            ProgramInputs(std::vector<UniformInput>&&     uniforms,
+                          std::vector<AttributeInput>&&   attributes) :
+                _uniforms(uniforms),
+                _attributes(attributes)
+            {}
 
-			inline
-			const Type
-			type(const std::string& name) const
-			{
-				auto foundTypeIt = _nameToType.find(name);
+            ProgramInputs&
+            operator=(ProgramInputs&& rhs)
+            {
+                if (this != &rhs)
+                {
+                    _uniforms = rhs._uniforms;
+                    _attributes = rhs._attributes;
+                }
+            }
 
-				return foundTypeIt != _nameToType.end() ? foundTypeIt->second : Type::unknown;
-			}
-
-		private:
-			std::shared_ptr<AbstractContext>				_context;
-			const unsigned int 								_program;
-			std::vector<std::string>						_names;
-			std::vector<Type> 								_types;
-			std::vector<unsigned int>						_locations;
-			std::unordered_map<std::string, Type>			_nameToType;
-			std::unordered_map<std::string, unsigned int>	_nameToLocation;
-
-		private:
-			ProgramInputs(std::shared_ptr<AbstractContext>	context,
-						  const unsigned int 				program,
-						  const std::vector<std::string>& 	names,
-						  const std::vector<Type>& 			types,
-						  const std::vector<unsigned int>& 	locations) :
-				_context(context),
-				_program(program),
-				_names(names),
-				_types(types),
-				_locations(locations),
-				_nameToType(),
-				_nameToLocation()
-			{
-#ifdef DEBUG
-				if (_types.size() != _names.size() || _locations.size() != _names.size())
-					throw;
-#endif // DEBUG
-
-				for (unsigned int i = 0; i < _names.size(); ++i)
-				{
-					const std::string& name = _names[i];
-					_nameToType[name]		= _types[i];
-					_nameToLocation[name]	= _locations[i];
-				}
-			}
+        private:
+            std::vector<UniformInput>   _uniforms;
+            std::vector<AttributeInput> _attributes;
 		};
 	}
 }
