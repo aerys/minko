@@ -31,40 +31,35 @@ namespace minko
 		{
 
 		public:
-			typedef std::shared_ptr<Container>								Ptr;
-			typedef Signal<Ptr, const std::string&>							PropertyChangedSignal;
+			typedef std::shared_ptr<Container>							Ptr;
+			typedef Signal<Ptr, const std::string&>						PropertyChangedSignal;
 
 		private:
-			typedef std::shared_ptr<PropertyChangedSignal>					PropertyChangedSignalPtr;
+			typedef std::shared_ptr<PropertyChangedSignal>				PropertyChangedSignalPtr;
 
-			typedef std::shared_ptr<Provider>								ProviderPtr;
-			typedef std::shared_ptr<data::AbstractFilter>					AbsFilterPtr;
-			typedef Signal<ProviderPtr, const std::string&>					ProviderPropertyChangedSignal;
-			typedef ProviderPropertyChangedSignal::Slot						ProviderPropertyChangedSlot;
+			typedef std::shared_ptr<Provider>							ProviderPtr;
+			typedef std::shared_ptr<data::AbstractFilter>				AbsFilterPtr;
+			typedef Signal<ProviderPtr, const std::string&>				ProviderPropertyChangedSignal;
+			typedef ProviderPropertyChangedSignal::Slot					ProviderPropertyChangedSlot;
 
-			std::list<ProviderPtr>											_providers;
-			std::unordered_map<std::string, ProviderPtr>					_propertyNameToProvider;
-			std::unordered_map<ProviderPtr, uint>							_providersToNumUse;
-			std::unordered_map<ProviderPtr, uint>							_providerToIndex;
+        private:
+            static uint CONTAINER_ID;
 
-			std::shared_ptr<Provider>										_arrayLengths;
+			std::list<ProviderPtr>										_providers;
+			std::unordered_map<std::string, ProviderPtr>				_propertyNameToProvider;
+			std::unordered_map<ProviderPtr, uint>						_providersToNumUse;
+			std::unordered_map<ProviderPtr, uint>						_providerToIndex;
 
-			PropertyChangedSignalPtr										_propertyAdded;
-			PropertyChangedSignalPtr										_propertyRemoved;
-            std::unordered_map<std::string, PropertyChangedSignalPtr>		_propertyChanged;
-			//std::unordered_map<std::string, PropertyChangedSignalPtr>		_propValueChanged;
-			//std::unordered_map<std::string, PropertyChangedSignalPtr>		_propReferenceChanged;
+			std::shared_ptr<Provider>									_arrayLengths;
 
-            std::unordered_map<ProviderPtr, std::list<Any>>					_propertySlots;
-            std::unordered_map<std::string, PropertyChangedSignalPtr>	    _propertyChangedSlots;
-			//std::unordered_map<ProviderPtr, ProviderPropertyChangedSlot>	_providerValueChangedSlot;
-			//std::unordered_map<ProviderPtr, ProviderPropertyChangedSlot>	_providerReferenceChangedSlot;
+			PropertyChangedSignalPtr									_propertyAdded;
+			PropertyChangedSignalPtr									_propertyRemoved;
+            std::unordered_map<std::string, PropertyChangedSignalPtr>   _propertyChanged;
+            Signal<Ptr, ProviderPtr>::Ptr								_providerAdded;
+            Signal<Ptr, ProviderPtr>::Ptr								_providerRemoved;
 
-			Signal<Ptr, ProviderPtr>::Ptr									_providerAdded;
-			Signal<Ptr, ProviderPtr>::Ptr									_providerRemoved;
-
-			static uint CONTAINER_ID;
-
+            std::unordered_map<ProviderPtr, std::list<Any>>				_propertySlots;
+            std::unordered_map<std::string, PropertyChangedSignalPtr>	_propertyChangedSlots;
 
 		public:
 			uint _containerId;
@@ -112,6 +107,19 @@ namespace minko
 				return foundIndexIt != _providerToIndex.end() ? foundIndexIt->second : -1;
 			}
 
+            template <typename T>
+			bool
+			propertyHasType(const std::string& propertyName, bool skipPropertyNameFormatting = false) const
+			{
+				assertPropertyExists(propertyName);
+
+				const auto& provider = _propertyNameToProvider.find(propertyName)->second;
+
+				auto unformatedPropertyName = unformatPropertyName(provider, propertyName);
+
+				return provider->propertyHasType<T>(unformatedPropertyName, skipPropertyNameFormatting);
+			}
+
 			template <typename T>
 			const T&
 			get(const std::string& propertyName) const
@@ -148,19 +156,6 @@ namespace minko
 				provider->set<T>(unformatedPropertyName, value);
 			}
 
-			template <typename T>
-			bool
-			propertyHasType(const std::string& propertyName, bool skipPropertyNameFormatting = false) const
-			{
-				assertPropertyExists(propertyName);
-
-				const auto& provider = _propertyNameToProvider.find(propertyName)->second;
-
-				auto unformatedPropertyName = unformatPropertyName(provider, propertyName);
-
-				return provider->propertyHasType<T>(unformatedPropertyName, skipPropertyNameFormatting);
-			}
-
 			inline
 			PropertyChangedSignalPtr
 			propertyAdded() const
@@ -174,14 +169,6 @@ namespace minko
 			{
 				return _propertyRemoved;
 			}
-
-            /*
-			PropertyChangedSignalPtr
-			propertyValueChanged(const std::string& propertyName);
-
-			PropertyChangedSignalPtr
-			propertyReferenceChanged(const std::string& propertyName);
-            */
 
             inline
             PropertyChangedSignalPtr
@@ -231,14 +218,6 @@ namespace minko
 
             void
             providerPropertyChangedHandler(ProviderPtr, const std::string& propertyName);
-
-            /*
-			void 
-			providerValueChangedHandler(ProviderPtr, const std::string& propertyName);
-
-			void
-			providerReferenceChangedHandler(ProviderPtr, const std::string& propertyName);
-            */
 
 			std::string
 			formatPropertyName(ProviderPtr  arrayProvider, const std::string&) const;
