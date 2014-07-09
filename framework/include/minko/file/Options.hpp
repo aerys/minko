@@ -48,6 +48,7 @@ namespace minko
 			typedef std::function<MaterialPtr(const std::string&, MaterialPtr)>			MaterialFunction;
 			typedef std::function<GeomPtr(const std::string&, GeomPtr)> 				GeometryFunction;
 			typedef std::function<AbsProtocolPtr(const std::string&)>	                ProtocolFunction;
+            typedef std::function<AbsParserPtr(const std::string&)>                     ParserFunction;
 			typedef std::function<const std::string(const std::string&)>				UriFunction;
 			typedef std::function<NodePtr(NodePtr)>										NodeFunction;
 			typedef std::function<EffectPtr(EffectPtr)>									EffectFunction;
@@ -77,9 +78,13 @@ namespace minko
 			MaterialFunction							        _materialFunction;
 			GeometryFunction							        _geometryFunction;
 			ProtocolFunction								    _protocolFunction;
+            ParserFunction                                      _parserFunction;
 			UriFunction									        _uriFunction;
 			NodeFunction								        _nodeFunction;
 			EffectFunction								        _effectFunction;
+
+            int                                                 _seekingOffset;
+            int                                                 _seekedLength;
 			
 			static ProtocolFunction								_defaultProtocolFunction;
 		
@@ -132,9 +137,12 @@ namespace minko
 				opt->_materialFunction = options->_materialFunction;
 				opt->_geometryFunction = options->_geometryFunction;
 				opt->_protocolFunction = options->_protocolFunction;
+                opt->_parserFunction = options->_parserFunction;
 				opt->_uriFunction = options->_uriFunction;
 				opt->_nodeFunction = options->_nodeFunction;
 				opt->_loadAsynchronously = options->_loadAsynchronously;
+                opt->_seekingOffset = options->_seekingOffset;
+                opt->_seekedLength = options->_seekedLength;
 
 				return opt;
 			}
@@ -395,6 +403,22 @@ namespace minko
 
 				return shared_from_this();
 			}
+            
+            inline
+			const ParserFunction&
+			parserFunction() const
+			{
+				return _parserFunction;
+			}
+
+			inline
+			Ptr
+			parserFunction(const ParserFunction& func)
+			{
+				_parserFunction = func;
+
+				return shared_from_this();
+			}
 
 			inline
 			const MaterialFunction&
@@ -472,6 +496,38 @@ namespace minko
 			effectFunction(const EffectFunction& func)
 			{
 				_effectFunction = func;
+
+				return shared_from_this();
+			}
+
+            inline
+            int
+			seekingOffset() const
+			{
+				return _seekingOffset;
+			}
+
+			inline
+			Ptr
+			seekingOffset(int value)
+			{
+				_seekingOffset = value;
+
+				return shared_from_this();
+			}
+
+            inline
+			int
+			seekedLength() const
+			{
+				return _seekedLength;
+			}
+
+			inline
+			Ptr
+			seekedLength(int value)
+			{
+				_seekedLength = value;
 
 				return shared_from_this();
 			}

@@ -48,7 +48,9 @@ Options::Options() :
     _skinningFramerate(30),
     _skinningMethod(component::SkinningMethod::HARDWARE),
     _material(nullptr),
-    _effect(nullptr)
+    _effect(nullptr),
+    _seekingOffset(0),
+    _seekedLength(0)
 {
     auto binaryDir = File::getBinaryDirectory();
 
@@ -101,6 +103,9 @@ Options::initializeUserFlags()
 AbstractParser::Ptr
 Options::getParser(const std::string& extension)
 {
+    if (_parserFunction)
+        return _parserFunction(extension);
+
     return _parsers.count(extension) == 0 ? nullptr : _parsers[extension]();
 }
 
