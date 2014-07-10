@@ -207,6 +207,9 @@
 			StaticLib   = "com.apple.product-type.library.static",
 			SharedLib   = "com.apple.product-type.library.dynamic",
 		}
+		if not types[node.cfg.kind] then
+			error("Kind " .. node.cfg.kind .. " is unsupported by Xcode.")
+		end
 		return types[node.cfg.kind]
 	end
 
@@ -227,6 +230,9 @@
 			StaticLib   = "archive.ar",
 			SharedLib   = "\"compiled.mach-o.dylib\"",
 		}
+		if not types[node.cfg.kind] then
+			error("Kind " .. node.cfg.kind .. " is unsupported by Xcode.")
+		end
 		return types[node.cfg.kind]
 	end
 
