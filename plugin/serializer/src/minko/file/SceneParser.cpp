@@ -206,6 +206,15 @@ SceneParser::parseNode(std::vector<SerializedNode>&			nodePack,
 			nodeStack.push(std::make_tuple(newNode, numChildren));
 	}
 
+	for (auto nodeToParentPair : nodeToParentMap)
+	{
+		auto node = nodeToParentPair.first;
+		auto parent = nodeToParentPair.second;
+
+		if (parent != nullptr)
+			parent->addChild(node);
+	}
+
 	_dependencies->loadedRoot(root);
 
 	std::set<uint> markedComponent;
@@ -249,16 +258,19 @@ SceneParser::parseNode(std::vector<SerializedNode>&			nodePack,
 		}
 	}
 
-    for (auto nodeToParentPair : nodeToParentMap)
-    {
-        auto node = nodeToParentPair.first;
-        auto parent = nodeToParentPair.second;
+	for (auto nodeToParentPair : nodeToParentMap)
+	{
+		auto node = nodeToParentPair.first;
 
-        auto newNode = options->nodeFunction()(node);
-
-        if (parent != nullptr)
-            parent->addChild(newNode);
-    }
+		auto newNode = options->nodeFunction()(node);
+		
+		if (newNode != node)
+		{
+			auto parent = node->parent();
+			parent->removeChild(node);
+			parent->addChild(newNode);
+		}
+	}
 
 	return root;
 }

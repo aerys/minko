@@ -117,14 +117,14 @@ AbstractSerializerParser::deserializeAsset(SerializedAsset&			asset,
 
 	asset.a0 = asset.a0 & 0x00FF;
 
-	assetCompletePath += asset.a2;
-	resolvedPath = asset.a2;
-
 	if (asset.a0 < 10 && _assetTypeToFunction.find(asset.a0) == _assetTypeToFunction.end()) // external
 	{
+		assetCompletePath += asset.a2;
+		resolvedPath = asset.a2;
+
 		auto							flags = std::ios::in | std::ios::ate | std::ios::binary;
 		std::fstream					file(assetCompletePath, flags);
-
+		
 		if (file.is_open())
 		{
 			unsigned int size = (unsigned int)file.tellg();

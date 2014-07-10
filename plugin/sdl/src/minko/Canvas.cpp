@@ -349,6 +349,8 @@ Canvas::y(uint value)
 void
 Canvas::width(uint value)
 {
+	_width = value;
+
     auto viewport = _data->get<math::Vector4::Ptr>("canvas.viewport");
 
     viewport->setTo(viewport->x(), viewport->y(), (float) value, viewport->w());
@@ -357,6 +359,8 @@ Canvas::width(uint value)
 void
 Canvas::height(uint value)
 {
+	_height = value;
+
     auto viewport = _data->get<math::Vector4::Ptr>("canvas.viewport");
 
     viewport->setTo(viewport->x(), viewport->y(), viewport->z(), (float) value);
