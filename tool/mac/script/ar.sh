@@ -1,0 +1,1 @@
+../../lin/script/ar.sh
