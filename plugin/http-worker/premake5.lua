@@ -23,5 +23,5 @@ minko.project.worker("minko-plugin-" .. PROJECT_NAME)
 		links { "libcurl" }
 
 	configuration { "osx64" }
-		links { "curl",  "z", "Security.framework"}
+		links { "curl",  "minko-plugin-zlib", "Security.framework"}
 		libdirs { minko.plugin.path("http-worker") .. "/lib/curl/lib/osx64/release" }

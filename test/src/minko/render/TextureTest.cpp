@@ -1,4 +1,4 @@
---[[
+/*
 Copyright (c) 2013 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
@@ -15,29 +15,45 @@ BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR P
 NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
 DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-]]--
+*/
 
--- angle plugin
-minko.plugin.angle = {}
+#include "TextureTest.hpp"
 
-function minko.plugin.angle:enable()
-	local kind = configuration().kind
+using namespace minko;
 
-	configuration { "windows32 or windows64" }
-		defines { "MINKO_ANGLE" }
+TEST_F(TextureTest, Create)
+{
+    try
+    {
+        auto texture = render::Texture::create(MinkoTests::context(), 32, 32);
+    }
+    catch (...)
+    {
+        ASSERT_TRUE(false);
+    }
+}
 
-		libdirs { minko.plugin.path("angle") .. "/lib/win/ANGLE/lib" }
-		links { "libGLESv2", "libEGL" }
-		includedirs { minko.plugin.path("angle") .. "/lib/win/ANGLE/include" }
+TEST_F(TextureTest, CreateRenderTarget)
+{
+    try
+    {
+        auto renderTarget = render::Texture::create(MinkoTests::context(), 32, 32, false, true);
+    }
+    catch (...)
+    {
+        ASSERT_TRUE(false);
+    }
+}
 
-		if kind ~= "StaticLib" and kind ~= "SharedLib" then
-			prelinkcommands {
-				minko.action.copy(minko.plugin.path("angle") .. "/lib/win/ANGLE/lib/*.dll")
-			}
-		end
-end
-
-newoption {
-	trigger			= "with-angle",
-	description		= "Enable the ANGLE plugin to use the DirectX backend provided by the Google ANGLE project."
+TEST_F(TextureTest, UploadRenderTarget)
+{
+    try
+    {
+        auto renderTarget = render::Texture::create(MinkoTests::context(), 32, 32, false, true);
+        renderTarget->upload();
+    }
+    catch (...)
+    {
+        ASSERT_TRUE(false);
+    }
 }

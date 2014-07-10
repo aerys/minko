@@ -89,6 +89,17 @@ solution "minko"
 		include 'plugin/sdl'
 		include 'plugin/serializer'
 		include 'plugin/webgl'
+
+		-- work around the inability of Xcode to build all projects if no dependency exists between them
+		if os.is("macosx")  and (_ACTION == "xcode-ios" or _ACTION == "xcode-osx") then
+			minko.project.library("minko-all")
+				local plugins = os.matchdirs('plugin/*')
+
+				for i, basedir in ipairs(plugins) do
+					local pluginName = path.getbasename(basedir)
+					minko.plugin.enable(pluginName)
+				end
+		end
 	end
 
 	-- example

@@ -4,9 +4,6 @@
 -- Copyright (c) 2009 Jason Perkins and the Premake project
 --
 
-
-
-
 	premake.xcode = { }
 	local api = premake.api
 
@@ -64,6 +61,9 @@
 		end,
 		
 		onproject = function(prj)
+
+			premake.xcode.copymacfiles(prj)
+
 			premake.generate(prj, ".xcodeproj/project.pbxproj", premake.xcode.project)
 		end,
 		
@@ -116,6 +116,9 @@
 		end,
 		
 		onproject = function(prj)
+
+			premake.xcode.copymacfiles(prj)
+
 			premake.generate(prj, ".xcodeproj/project.pbxproj", premake.xcode.project)
 		end,
 		

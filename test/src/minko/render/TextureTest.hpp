@@ -1,4 +1,4 @@
---[[
+/*
 Copyright (c) 2013 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
@@ -15,29 +15,20 @@ BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR P
 NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
 DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-]]--
+*/
 
--- angle plugin
-minko.plugin.angle = {}
+#pragma once
 
-function minko.plugin.angle:enable()
-	local kind = configuration().kind
+#include "minko/Minko.hpp"
+#include "minko/MinkoTests.hpp"
 
-	configuration { "windows32 or windows64" }
-		defines { "MINKO_ANGLE" }
+#include "gtest/gtest.h"
 
-		libdirs { minko.plugin.path("angle") .. "/lib/win/ANGLE/lib" }
-		links { "libGLESv2", "libEGL" }
-		includedirs { minko.plugin.path("angle") .. "/lib/win/ANGLE/include" }
-
-		if kind ~= "StaticLib" and kind ~= "SharedLib" then
-			prelinkcommands {
-				minko.action.copy(minko.plugin.path("angle") .. "/lib/win/ANGLE/lib/*.dll")
-			}
-		end
-end
-
-newoption {
-	trigger			= "with-angle",
-	description		= "Enable the ANGLE plugin to use the DirectX backend provided by the Google ANGLE project."
+namespace minko
+{
+    class TextureTest :
+    public ::testing::Test
+    {
+        
+    };
 }
