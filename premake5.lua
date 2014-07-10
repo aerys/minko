@@ -4,9 +4,6 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 
 	removeplatforms { "android" }
 
-	kind "StaticLib"
-	language "C++"
-
 	minko.plugin.enable("sdl")
 	minko.plugin.enable("lua")
 
