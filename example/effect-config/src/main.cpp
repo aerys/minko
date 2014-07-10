@@ -33,18 +33,17 @@ int main(int argc, char** argv)
 
 	// setup assets
 	sceneManager->assets()->loader()->options()
-        ->generateMipmaps(true)
-        ->includePaths().push_back("effect");
+		->generateMipmaps(true);
 
 	sceneManager->assets()->loader()->options()
-                ->registerParser<file::JPEGParser>("jpg");
+		->registerParser<file::JPEGParser>("jpg");
 
-        sceneManager->assets()
+	sceneManager->assets()
 		->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()))
-                ->geometry("sphere", geometry::SphereGeometry::create(sceneManager->assets()->context()));
+		->geometry("sphere", geometry::SphereGeometry::create(sceneManager->assets()->context()));
 
-        sceneManager->assets()->loader()
-                ->queue("effect/windows.jpg")
+	sceneManager->assets()->loader()
+		->queue("effect/windows.jpg")
 		->queue("effect/macosx.jpg")
 		->queue("effect/linux.jpg")
 		->queue("effect/PlatformTexture.effect");
@@ -66,10 +65,10 @@ int main(int argc, char** argv)
 	auto _ = sceneManager->assets()->loader()->complete()->connect([=](file::Loader::Ptr loader)
 	{
 		mesh->addComponent(Surface::create(
-				sceneManager->assets()->geometry("cube"),
-				material::Material::create()->set("diffuseColor", Vector4::one()),
-				sceneManager->assets()->effect("effect/PlatformTexture.effect")
-			));
+			sceneManager->assets()->geometry("cube"),
+			material::Material::create()->set("diffuseColor", Vector4::one()),
+			sceneManager->assets()->effect("effect/PlatformTexture.effect")
+		));
 		root->addChild(mesh);
 	});
 

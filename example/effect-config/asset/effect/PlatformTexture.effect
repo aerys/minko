@@ -58,7 +58,7 @@
 	
 	"passes"    : [{
 		"name" : "basic pass",
-		"vertexShader" : "#pragma include('Basic.vertex.glsl')",
-		"fragmentShader" : "#pragma include('Basic.fragment.glsl')"
+		"vertexShader" : "#pragma include('effect/Basic.vertex.glsl')",
+		"fragmentShader" : "#pragma include('effect/Basic.fragment.glsl')"
 	}]
 }

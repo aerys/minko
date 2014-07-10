@@ -158,7 +158,7 @@ EffectParser::parse(const std::string&				    filename,
 	Json::Reader reader;
 
 	if (!reader.parse((const char*)&data[0], (const char*)&data[data.size() - 1], root, false))
-		throw file::ParserError(resolvedFilename + ": " +reader.getFormattedErrorMessages());
+		throw file::ParserError(resolvedFilename + ": " + reader.getFormattedErrorMessages());
 
     int pos	= resolvedFilename.find_last_of("/\\");
 
