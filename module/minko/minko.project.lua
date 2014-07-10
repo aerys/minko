@@ -4,6 +4,7 @@ minko.project.library = function(name)
 	project(name)
 
 	language "C++"
+	kind "StaticLib"
 
 	location "."
 	includedirs { minko.sdk.path("/framework/include") }

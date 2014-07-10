@@ -12,6 +12,33 @@
 	local fileconfig = premake.fileconfig
 
 
+	-- Copy Info.plist and Default-568h@2x.png from skeleton to project folder
+	function xcode.copymacfiles(prj)
+		local kind
+		for cfg in project.eachconfig(prj) do
+			if kind and kind ~= cfg.kind then
+				error("Project '" .. prj.name .. "' uses more than one target kind; not supported by Xcode", 0)
+			end
+			kind = cfg.kind
+		end
+
+		if kind == "ConsoleApp" or kind == "WindowedApp" then
+			-- fixme: should not hard-code the list of files
+			-- fixme: should not depend on MINKO_HOME
+			local plist = "Info.plist"
+			local plistpath = MINKO_HOME .. "/skeleton/" .. plist
+			local defaultpng =  "Default-568h@2x.png"
+			local defaultpngpath = MINKO_HOME .. "/skeleton/" .. defaultpng
+
+			if not os.isfile(prj.location .. "/" .. plist) and os.isfile(plistpath) then
+				os.copyfile(plistpath, prj.location)
+			end
+			if not os.isfile(prj.location .. "/" .. defaultpng) and os.isfile(defaultpngpath) then
+				os.copyfile(defaultpngpath, prj.location)
+			end
+		end
+	end
+
 --
 -- Return the Xcode build category for a given file, based on the file extension.
 --
