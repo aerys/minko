@@ -44,7 +44,7 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		"IL_STATIC_LIB"
 	}
 
-	configuration { "osx64" }
+	configuration { "osx64", "cc=gcc" }
 		buildoptions {
 			"-std=gnu89"
 		}
