@@ -202,7 +202,7 @@ minko.project.application = function(name)
 		cmd = cmd .. ' -s DISABLE_EXCEPTION_CATCHING=0'
 		--[[
 			optimize (very) long functions by breaking them into smaller ones
-			
+
 			from emscripten's settings.js:
 			"OUTLINING_LIMIT: break up functions into smaller ones, to avoid the downsides of very
             large functions (JS engines often compile them very slowly, compile them with lower optimizations,
@@ -219,7 +219,7 @@ minko.project.application = function(name)
 		end
 		-- includ the app's 'asset' directory into the file system
 		cmd = cmd .. ' --preload-file ${TARGETDIR}/asset'
-		
+
 		postbuildcommands {
 			cmd .. ' || ' .. minko.action.fail(),
 			-- fix the "invalid increment operand" syntax error caused by ++0 in the output file
@@ -239,7 +239,7 @@ minko.project.application = function(name)
 		else
 			cmd = cmd .. ' --shell-file "' .. minko.sdk.path('/skeleton/template.html') .. '"'
 		end
-		
+
 		buildoptions {
 			"-g4" -- allow source maps in final .js
 		}

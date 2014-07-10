@@ -1,9 +1,7 @@
 PROJECT_NAME = path.getname(os.getcwd())
 
 minko.project.library("minko-plugin-" .. PROJECT_NAME)
-	kind "StaticLib"
-	language "C++"
-	
+
 	files {
 		"lib/zlib/**.c",
 		"lib/zlib/**.h"
@@ -16,4 +14,3 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 	configuration { "vs*" }
 		buildoptions { "/wd4996" }
 		defines { "_CRT_SECURE_NO_WARNINGS" }
-	
