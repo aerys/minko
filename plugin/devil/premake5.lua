@@ -1,7 +1,8 @@
 PROJECT_NAME = path.getname(os.getcwd())
 
 minko.project.library("minko-plugin-" .. PROJECT_NAME)
-	removeplatforms { "html5", "ios", "android" }
+
+	removeplatforms { "ios", "android" }
 	kind "StaticLib"
 	language "C++"
 	
@@ -17,7 +18,6 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 	excludes {
 		"lib/devil/src/src-ILU/ilur/ilur.c",
 		"lib/devil/src/src-IL/src/il_main.c",
-		--"lib/devil/src/src-ILU/src/ilu_main.c",
 		"lib/devil/lib/libjpeg/wrjpgcom.c",
 		"lib/devil/lib/libjpeg/jpegtran.c",
 		"lib/devil/lib/libjpeg/djpeg.c",
@@ -44,15 +44,32 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		"IL_STATIC_LIB"
 	}
 
-	configuration { "osx64", "cc=gcc" }
+	configuration { "osx64", "cc=clang" }
+		defines {
+			"NOINLINE"
+		}
 		buildoptions {
-			"-std=gnu89"
+			"-Wno-implicit-function-declaration",
+			"-Wno-format",
+			"-Wno-int-to-void-pointer-cast",
+			"-Wno-incompatible-pointer-types",
+			"-Wno-unused-value",
+			"-Wno-sizeof-pointer-memaccess",
+			"-Wno-tautological-constant-out-of-range-compare",
+			"-Wno-deprecated-declarations"
 		}
 
-	configuration { "linux" }
-		defines {}
-
 	configuration { "html5" }
+		defines {
+			"NOINLINE"
+		}
 		buildoptions {
-			"-std=gnu89"
+			"-Wno-implicit-function-declaration",
+			"-Wno-format",
+			"-Wno-int-to-pointer-cast",
+			"-Wno-incompatible-pointer-types",
+			"-Wno-unused-value",
+			"-Wno-sizeof-pointer-memaccess",
+			"-Wno-tautological-constant-out-of-range-compare",
+			"-Wno-deprecated-declarations"
 		}
