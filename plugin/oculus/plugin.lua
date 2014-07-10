@@ -33,8 +33,10 @@ minko.plugin.oculus = {}
 -- The 'libudev' and 'libxinerama' libraries must be prealably installed.
 
 function minko.plugin.oculus:enable()
-	defines { "MINKO_PLUGIN_OCULUS" }
-	minko.plugin.links { "oculus" }
+
+	configuration { "windows32", "windows64", "linux32", "linux64", "osx64" }
+		defines { "MINKO_PLUGIN_OCULUS" }
+		minko.plugin.links { "oculus" }
 
 	includedirs {
 		minko.plugin.path("oculus") .. "/include"
