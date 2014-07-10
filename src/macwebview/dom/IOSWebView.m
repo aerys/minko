@@ -17,8 +17,13 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#import "osxwebview/dom/OSXWebView.h"
+#import "IOSWebView.h"
 
-@implementation OSXWebView
+@implementation IOSWebView
+
+- (UIView *) viewForZoomingInScrollView:(UIScrollView *)scrollView
+{
+    return nil;
+}
 
 @end

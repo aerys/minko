@@ -23,30 +23,30 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/SceneManager.hpp"
 #include "minko/AbstractCanvas.hpp"
 #include "minko/dom/AbstractDOMElement.hpp"
-#include "IOSWebViewDOMElement.hpp"
+#include "MacWebViewDOMElement.hpp"
 #include "minko/dom/AbstractDOM.hpp"
 
 #import "WebViewJavascriptBridge.h"
 
-namespace ioswebview
+namespace macwebview
 {
 	namespace dom
 	{
-        class IOSWebViewDOMEngine;
+        class MacWebViewDOMEngine;
         
-		class IOSWebViewDOM : public minko::dom::AbstractDOM,
-            public std::enable_shared_from_this<IOSWebViewDOM>
+		class MacWebViewDOM : public minko::dom::AbstractDOM,
+            public std::enable_shared_from_this<MacWebViewDOM>
 		{
 		public:
-			typedef std::shared_ptr<IOSWebViewDOM> Ptr;
+			typedef std::shared_ptr<MacWebViewDOM> Ptr;
 
 		private:
-			IOSWebViewDOM(std::string);
+			MacWebViewDOM(std::string);
 
 		public:
 			static
 			Ptr
-			create(std::string, std::shared_ptr<IOSWebViewDOMEngine> engine);
+			create(std::string, std::shared_ptr<MacWebViewDOMEngine> engine);
 
 			void
 			sendMessage(std::string, bool async);
@@ -96,7 +96,6 @@ namespace ioswebview
 			std::vector<minko::dom::AbstractDOMElement::Ptr>
 			getElementList(std::string);
             
-            
             void
             runScript(std::string script);
             
@@ -111,10 +110,10 @@ namespace ioswebview
 
 			std::string _jsAccessor;
             
-            std::shared_ptr<IOSWebViewDOMEngine> _engine;
+            std::shared_ptr<MacWebViewDOMEngine> _engine;
             
-			IOSWebViewDOMElement::Ptr _document;
-			IOSWebViewDOMElement::Ptr _body;
+			MacWebViewDOMElement::Ptr _document;
+			MacWebViewDOMElement::Ptr _body;
             
 			minko::Signal<minko::dom::AbstractDOM::Ptr, std::string>::Ptr _onload;
 			minko::Signal<minko::dom::AbstractDOM::Ptr, std::string>::Ptr _onmessage;

@@ -19,30 +19,41 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #pragma once
 
+#include "TargetConditionals.h"
+#if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE // iOS
+# import "macwebview/dom/IOSWebView.h"
+#elif TARGET_OS_MAC // OSX
+# include "macwebview/dom/OSXWebView.h"
+#endif
+
 #include "minko/Common.hpp"
 #include "minko/dom/AbstractDOM.hpp"
 #include "minko/dom/AbstractDOMEngine.hpp"
-#include "OSXWebViewDOM.hpp"
+#include "MacWebViewDOM.hpp"
 
 #import "WebViewJavascriptBridge.h"
-#import "osxwebview/dom/OSXWebView.h"
 
-namespace osxwebview
+namespace minko
+{
+    class SDLTouch;
+}
+
+namespace macwebview
 {
 	namespace dom
 	{
-		class OSXWebViewDOMEngine : public minko::dom::AbstractDOMEngine,
-                                    public std::enable_shared_from_this<OSXWebViewDOMEngine>
+		class MacWebViewDOMEngine : public minko::dom::AbstractDOMEngine,
+                                    public std::enable_shared_from_this<MacWebViewDOMEngine>
 		{
 		public:
-			typedef std::shared_ptr<OSXWebViewDOMEngine> Ptr;
+			typedef std::shared_ptr<MacWebViewDOMEngine> Ptr;
 
 		private:
-			OSXWebViewDOMEngine();
+			MacWebViewDOMEngine();
 
 		public:
 
-			~OSXWebViewDOMEngine()
+			~MacWebViewDOMEngine()
 			{
 			}
 
@@ -85,7 +96,7 @@ namespace osxwebview
             }
             
             inline
-            OSXWebViewDOM::Ptr
+            MacWebViewDOM::Ptr
             currentDOM()
             {
                 return _currentDOM;
@@ -119,10 +130,44 @@ namespace osxwebview
             void
             registerDomEvents();
             
+#if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE // iOS
+            void
+            updateWebViewWidth();
+            
+        public:
+            inline
+            void
+            firstFingerId(int id)
+            {
+                _firstFingerId = id;
+            }
+            
+            inline
+            int
+            firstFingerId()
+            {
+                return _firstFingerId;
+            }
+            
+            inline
+            unsigned long
+            touchNumber()
+            {
+                return _touches.size();
+            }
+            
+            inline
+            std::map<int, std::shared_ptr<minko::SDLTouch>>
+            touches()
+            {
+                return _touches;
+            }
+#endif
+            
 			static
 			int _domUid;
 
-			OSXWebViewDOM::Ptr _currentDOM;
+			MacWebViewDOM::Ptr _currentDOM;
 
 			minko::AbstractCanvas::Ptr _canvas;
 			minko::component::SceneManager::Ptr _sceneManager;
@@ -135,9 +180,22 @@ namespace osxwebview
 
 			bool _visible;
             
-            // OSX WebView
+#if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE // iOS
+            // WebView
+            UIWindow *_window;
+            IOSWebView *_webView;
+            uint _webViewWidth;
+            
+            // Fingers
+            std::map<int, std::shared_ptr<minko::SDLTouch>> _touches;
+            int _firstFingerId;
+            
+#elif TARGET_OS_MAC // OSX
+            // WebView
             NSWindow *_window;
             OSXWebView *_webView;
+#endif
+            
             WebViewJavascriptBridge* _bridge;
             
             bool _waitingForLoad;

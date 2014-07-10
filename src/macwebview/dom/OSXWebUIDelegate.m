@@ -17,34 +17,27 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#import "IOSWebView.h"
+#import "macwebview/dom/OSXWebUIDelegate.h"
+#import <WebKit/WebView.h>
 
-@implementation IOSWebView
+@implementation OSXWebUIDelegate
 
-- (UIView *) viewForZoomingInScrollView:(UIScrollView *)scrollView
+// To display Javascript alerts
+- (void)webView:(WebView *)sender runJavaScriptAlertPanelWithMessage:(NSString *)message initiatedByFrame:(WebFrame *)frame
+{
+    NSAlert *jsAlert = [[[NSAlert alloc] init] autorelease];
+    [jsAlert addButtonWithTitle:@"OK"];
+    [jsAlert setMessageText:@"Javascript"];
+    [jsAlert setInformativeText:message];
+    [jsAlert setAlertStyle:NSWarningAlertStyle];
+    
+    [jsAlert beginSheetModalForWindow: sender.window completionHandler: NULL];
+}
+
+// Disable right click
+-(NSArray *)webView:(WebView *)sender contextMenuItemsForElement:(NSDictionary *)element defaultMenuItems:(NSArray *)defaultMenuItems
 {
     return nil;
 }
 
-- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event {
-    [super touchesMoved:touches withEvent:event];
-    [self.nextResponder touchesBegan:touches withEvent:event];
-    
-     NSLog(@"TEST TOUCH BEGAN");
-}
-
-- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event{
-    [super touchesMoved:touches withEvent:event];
-    [self.nextResponder touchesEnded:touches withEvent:event];
-    
-     NSLog(@"TOUCH ENDED");
-}
-
-
--(void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event{
-    [super touchesMoved:touches withEvent:event];
-    [self.nextResponder touchesMoved:touches withEvent:event];
-    
-     NSLog(@"TOUCH MOVED");
-}
 @end

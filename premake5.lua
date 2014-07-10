@@ -115,34 +115,39 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 			"src/emscripten/**.hpp"
 		}
 
-	-- ios webview
-	configuration { "ios" }
-		buildoptions { "-x objective-c++" }
+	-- Mac plateforms
+	configuration { "ios or osx64" }
 		includedirs { "lib/WebViewJavascriptBridge" }
-
+		buildoptions { "-x objective-c++" }
 		files {
+			"include/macwebview/**.hpp",
+			"src/macwebview/**.cpp",
 			"lib/WebViewJavascriptBridge/*.h",
-			"lib/WebViewJavascriptBridge/*.m",
-			"include/ioswebview/**.hpp",
-			"include/ioswebview/**.h",
-			"src/ioswebview/**.cpp",
-			"src/ioswebview/**.m",
-			"src/ioswebview/**.hpp"
+			"lib/WebViewJavascriptBridge/*.m"
 		}
 
-	-- osx
-	configuration { "osx64" }
-		buildoptions { "-x objective-c++" }
-		includedirs { "lib/WebViewJavascriptBridge" }
-
+	-- iOS webview
+	configuration { "ios" }
 		files {
-			"lib/WebViewJavascriptBridge/*.h",
-			"lib/WebViewJavascriptBridge/*.m",
-			"include/osxwebview/**.hpp",
-			"include/osxwebview/**.h",
-			"src/osxwebview/**.cpp",
-			"src/osxwebview/**.m",
-			"src/osxwebview/**.hpp"
+			"include/macwebview/dom/IOSWebView.h",
+			"src/macwebview/dom/IOSWebView.m"
+		}
+		excludes {
+			"include/macwebview/dom/MacWebViewDOMMouseEvent.hpp",
+			"src/macwebview/dom/MacWebViewDOMMouseEvent.cpp"
+		}
+
+	-- OSX webview
+	configuration { "osx64" }
+		files {
+			"include/macwebview/dom/OSXWebView.h",
+			"include/macwebview/dom/OSXWebUIDelegate.h",
+			"src/macwebview/dom/OSXWebView.m",
+			"src/macwebview/dom/OSXWebUIDelegate.m"
+		}
+		excludes {
+			"include/macwebview/dom/MacWebViewDOMTouchEvent.hpp",
+			"src/macwebview/dom/MacWebViewDOMTouchEvent.cpp"
 		}
 		links {
 			"WebKit.framework"
