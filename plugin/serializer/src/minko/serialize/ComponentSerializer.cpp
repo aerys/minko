@@ -198,10 +198,30 @@ ComponentSerializer::serializeSurface(NodePtr		node,
 		geometryId,
 		materialId,
 		effectId,
-		surface->technique());
+		getSurfaceExtension(node, surface));
 
 	msgpack::pack(buffer, src);
 	msgpack::pack(buffer, type);
+
+	return buffer.str();
+}
+
+std::string
+ComponentSerializer::getSurfaceExtension(NodePtr node, SurfacePtr surface)
+{
+	std::vector<SimpleProperty> properties;
+
+	std::string technique = surface->technique();
+
+	if (surface->technique() != "default")
+		properties.push_back(serializeSimpleProperty(std::string("technique"), technique));
+
+	if (!surface->visible())
+		properties.push_back(serializeSimpleProperty(std::string("visible"), surface->visible()));
+
+	std::stringstream buffer;
+
+	msgpack::pack(buffer, SimplePropertyVector(properties));
 
 	return buffer.str();
 }

@@ -210,6 +210,30 @@ ComponentDeserializer::deserializeSurface(std::string&							serializedSurface,
 	geometry::Geometry::Ptr		geometry	= dependencies->getGeometryReference(dst.a0);
 	data::Provider::Ptr			material	= dependencies->getMaterialReference(dst.a1);
 	render::Effect::Ptr			effect		= dependencies->getEffectReference(dst.a2);
+	std::string					technique	= "default";
+	bool						visible		= true;
+
+	if (dst.a3.size() > 0)
+	{
+		msgpack::unpack(dst.a3.data(), dst.a3.size(), NULL, &mempool, &deserialized);
+		deserialized.convert(&ext);
+
+		for (int i = 0; i < ext.a0.size(); ++i)
+		{
+			auto extension = ext.a0[i];
+
+
+			if (extension.a0 == "visible")
+			{
+				visible = TypeDeserializer::deserializeVector<float>(extension.a1)[0] != 0.0;
+			}
+			else if (extension.a0 == "technique")
+			{
+				technique = extension.a1;
+			}
+		}
+	}
+
 
 	if (material == nullptr && dependencies->options()->material() != nullptr)
 		material = dependencies->options()->material();
@@ -222,26 +246,9 @@ ComponentDeserializer::deserializeSurface(std::string&							serializedSurface,
 		geometry,
 		(material != nullptr ? material : assetLibrary->material("defaultMaterial")),
 		(effect != nullptr ? effect : assetLibrary->effect("effect/Phong.effect")),
-		"default");
+		technique);
 
-	if (dst.a3.size() > 0)
-	{
-		msgpack::unpack(dst.a3.data(), dst.a3.size(), NULL, &mempool, &deserialized);
-		deserialized.convert(&ext);
-
-		for (int i = 0; i < ext.a0.size(); ++i)
-		{
-			auto extension = ext.a0[i];
-
-			std::vector<float> serializedPropertyValue = deserialize::TypeDeserializer::deserializeVector<float>(extension.a1);
-			auto value = serializedPropertyValue[0];
-
-			if (extension.a0 == "visible")
-			{
-				surface->visible(value != 0.0);
-			}
-		}
-	}
+	surface->visible(visible);
 
 	return surface;
 }
