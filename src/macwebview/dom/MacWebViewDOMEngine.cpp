@@ -65,7 +65,8 @@ MacWebViewDOMEngine::MacWebViewDOMEngine() :
 	_onmessage(Signal<AbstractDOM::Ptr, std::string>::create()),
 	_visible(true),
     _waitingForLoad(true),
-    _isReady(false)
+    _isReady(false),
+    _webViewWidth(0)
 {
 }
 
@@ -137,6 +138,12 @@ MacWebViewDOMEngine::initialize(AbstractCanvas::Ptr canvas, SceneManager::Ptr sc
         
         _canvasResizedSlot = _canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
         {
+            // Change the width of the webview directly
+            CGRect webViewFrame = _webView.frame;
+            webViewFrame.size.width = w / 2;
+            webViewFrame.size.height = h / 2;
+            _webView.frame = webViewFrame;
+            
             _webViewWidth = w;
             // Useful on iOS to have the same coordinates on the web view as on the canvas
             updateWebViewWidth();
