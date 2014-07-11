@@ -74,9 +74,19 @@ MacWebViewDOMEngine::initialize(AbstractCanvas::Ptr canvas, SceneManager::Ptr sc
 {
 	_canvas = canvas;
 	_sceneManager = sceneManager;
-    
+
     // URL of the local file that contains JS callback handler
-    NSURL *url = [NSURL fileURLWithPath:@"asset/html/iframe.html"];
+    std::string uri = "asset/html/iframe.html";
+
+#if TARGET_OS_MAC // OSX
+    uri = "file://" + file::File::getBinaryDirectory() + "/" + uri;
+#endif
+
+    const char *cURI = uri.c_str();
+    NSString *nsURI = [NSString stringWithCString:cURI encoding:[NSString defaultCStringEncoding]];
+
+    // FIXME: Replate by a proper call to Loader.
+    NSURL *url = [NSURL URLWithString:nsURI];
     NSURLRequest *request = [NSURLRequest requestWithURL:url];
     
     // Get window from canvas
@@ -207,10 +217,8 @@ MacWebViewDOMEngine::initialize(AbstractCanvas::Ptr canvas, SceneManager::Ptr sc
                    }
          }];
         
-#if DEBUG
         // Enable bridge logging
-//        [WebViewJavascriptBridge enableLogging];
-#endif
+        // [WebViewJavascriptBridge enableLogging];
     }
 
     visible(_visible);
@@ -403,18 +411,15 @@ void MacWebViewDOMEngine::handleJavascriptMessage(std::string type, std::string 
 {
     if (type == "ready")
     {
-        _isReady = (value == "true") ? true : false;
-        
-        if (_isReady)
-            std::cout << "Bridge is ready!" << std::endl;
+        _isReady = (value == "true");
     }
     else if (type == "alert")
     {
-        eval("Received a message from JS: " + value);
+        eval("[html-overlay] " + value);
     }
     else if (type == "log")
     {
-        std::cout << "[Bridge] " << value << std::endl;
+        std::cout << "[html-overlay] " << value << std::endl;
     }
 }
 
