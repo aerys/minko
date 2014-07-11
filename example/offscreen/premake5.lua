@@ -1,10 +1,10 @@
-if minko.platform.supports("linux") then
+if not minko.platform.supports { "linux32", "linux64" } then
+	return
+end
 
 PROJECT_NAME = path.getname(os.getcwd())
 
 minko.project.application("minko-example-" .. PROJECT_NAME)
-
-	removeplatforms { "android", "ios", "windows32", "windows64", "osx64", "html5" }
 
 	files {
 		"src/**.hpp",
@@ -16,5 +16,3 @@ minko.project.application("minko-example-" .. PROJECT_NAME)
 
 	minko.plugin.enable("png");
 	minko.plugin.enable("offscreen");
-
-end

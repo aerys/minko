@@ -7,7 +7,7 @@ minko.project.application("minko-example-" .. PROJECT_NAME)
 		"src/**.hpp",
 		"asset/**"
 	}
-	
+
 	includedirs { "src" }
 
 	-- plugins

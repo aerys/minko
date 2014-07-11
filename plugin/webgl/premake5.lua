@@ -2,7 +2,9 @@
 -- Since this plugin is only supported on Linux, we must not define it
 -- if the host platform is not Linux.
 
-if minko.platform.supports("html5") then
+if not minko.platform.supports { "html5" } then
+	return
+end
 
 PROJECT_NAME = path.getname(os.getcwd())
 
@@ -20,5 +22,3 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 	}
 
 	includedirs { "include" }
-
-end
