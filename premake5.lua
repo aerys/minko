@@ -1,8 +1,10 @@
 PROJECT_NAME = path.getname(os.getcwd())
 
-minko.project.library("minko-plugin-" .. PROJECT_NAME)
+if not minko.platform.supports { "windows32", "windows64", "linux32", "linux64", "osx64", "html5", "ios" } then
+	return
+end
 
-	removeplatforms { "android" }
+minko.project.library("minko-plugin-" .. PROJECT_NAME)
 
 	minko.plugin.enable("sdl")
 	minko.plugin.enable("lua")
