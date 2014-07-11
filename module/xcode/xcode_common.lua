@@ -15,6 +15,11 @@
 	-- Copy Info.plist and Default-568h@2x.png from skeleton to project folder
 	function xcode.copymacfiles(prj)
 		local kind
+
+		if prj.name == "all" then
+			return
+		end
+
 		for cfg in project.eachconfig(prj) do
 			if kind and kind ~= cfg.kind then
 				error("Project '" .. prj.name .. "' uses more than one target kind; not supported by Xcode", 0)

@@ -92,7 +92,7 @@ solution "minko"
 
 		-- work around the inability of Xcode to build all projects if no dependency exists between them
 		if os.is("macosx")  and (_ACTION == "xcode-ios" or _ACTION == "xcode-osx") then
-			minko.project.application "/tmp/minko-all"
+			minko.project.application "all"
 				local plugins = os.matchdirs('plugin/*')
 
 				for i, basedir in ipairs(plugins) do
