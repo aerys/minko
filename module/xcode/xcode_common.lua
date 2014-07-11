@@ -4,7 +4,7 @@
 -- Copyright (c) 2009-2011 Jason Perkins and the Premake project
 --
 
-	local xcode = premake.xcode
+	local xcode = premake.extensions.xcode
 	local tree  = premake.tree
     local solution = premake.solution
 	local project = premake.project
@@ -373,8 +373,8 @@
 			local node = premake.tree.new(path.getname(bundlepath))
 				
 			node.cfg = cfg
-			node.id = premake.xcode.newid(node, "product")
-			node.targetid = premake.xcode.newid(node, "target")
+			node.id = xcode.newid(node, "product")
+			node.targetid = xcode.newid(node, "target")
 			
 			-- attach it to the project
 			prj.xcode = {}

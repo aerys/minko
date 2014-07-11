@@ -4,7 +4,7 @@
 -- Copyright (c) 2009 Jason Perkins and the Premake project
 --
 
-	premake.xcode = { }
+	premake.extensions.xcode = { }
 	local api = premake.api
 
 ---
@@ -57,11 +57,10 @@
 		default_platform = "ios",
 		
 		onsolution = function(sln)
-			premake.generate(sln, ".xcworkspace/contents.xcworkspacedata", premake.xcode.workspace_generate)
+			premake.generate(sln, ".xcworkspace/contents.xcworkspacedata", xcode.workspace_generate)
 		end,
 		
 		onproject = function(prj)
-
 			premake.xcode.copymacfiles(prj)
 
 			premake.generate(prj, ".xcodeproj/project.pbxproj", premake.xcode.project)
@@ -112,11 +111,10 @@
 		default_platform = "osx64",
 		
 		onsolution = function(sln)
-			premake.generate(sln, ".xcworkspace/contents.xcworkspacedata", premake.xcode.workspace_generate)
+			premake.generate(sln, ".xcworkspace/contents.xcworkspacedata", premake.workspace_generate)
 		end,
 		
 		onproject = function(prj)
-
 			premake.xcode.copymacfiles(prj)
 
 			premake.generate(prj, ".xcodeproj/project.pbxproj", premake.xcode.project)
