@@ -32,7 +32,7 @@ namespace minko
 		{
 		public:
 			typedef std::shared_ptr<SpotLight> Ptr;
-	
+
 		private:
 			float							_cosInnerConeAngle;
 			float							_cosOuterConeAngle;
@@ -109,7 +109,7 @@ namespace minko
 					  float attenuationLinear,
 					  float attenuationQuadratic);
 
-			void 
+			void
 			initialize(float innerAngleRadians,
 					   float outerAngleRadians);
 		};

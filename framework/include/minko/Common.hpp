@@ -53,8 +53,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include <bitset>
 #include <regex>
 
-#include "minko/math/Convertible.hpp"
-
 #define PI M_PI
 
 namespace minko
