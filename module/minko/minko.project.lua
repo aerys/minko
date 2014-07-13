@@ -49,6 +49,10 @@ minko.project.application = function(name)
 
 	kind "ConsoleApp"
 
+	defines {
+		"MINKO_APPLICATION_NAME=" .. name
+	}
+
 	configuration { "windows32" }
 		libdirs {
 			minko.sdk.path("/framework/lib/glew/lib/windows32")
