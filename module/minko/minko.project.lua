@@ -23,7 +23,8 @@ minko.project.library = function(name)
 	configuration { "vs*" }
 		defines {
 			"NOMINMAX",				-- do not define min/max as macro in windows.h
-			"_VARIADIC_MAX=10"		-- fix for faux variadic templates limited to 5 arguments by default
+			"_VARIADIC_MAX=10",		-- fix for faux variadic templates limited to 5 arguments by default
+			"_USE_MATH_DEFINES"		-- enable M_PI
 		}
 		buildoptions {
 			"/wd4503"				-- remove warnings about too long type names
