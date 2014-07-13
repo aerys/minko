@@ -38,9 +38,9 @@ main(int argc, char** argv)
     auto cameraTarget = Vector3::create()/*cameraDirection + cameraPosition*/;
 
     auto yaw = 0.f;
-    auto pitch = (float) PI * .5f;
+    auto pitch = float(M_PI) * .5f;
     auto minPitch = 0.f + float(1e-5);
-    auto maxPitch = (float) PI - float(1e-5);
+    auto maxPitch = float(M_PI) - float(1e-5);
     auto lookAt = Vector3::create(0.f, 0.f, 0.f);
     auto distance = 10.f;
 
@@ -74,7 +74,7 @@ main(int argc, char** argv)
             ->addComponent(Renderer::create(0x7f7f7fff))
             ->addComponent(reflectionComponent)
             ->addComponent(PerspectiveCamera::create(
-            (float) WINDOW_WIDTH / (float) WINDOW_HEIGHT, (float) PI * 0.25f, .1f, 1000.f)
+            (float) WINDOW_WIDTH / (float) WINDOW_HEIGHT, float(M_PI) * 0.25f, .1f, 1000.f)
             )
             ->addComponent(Transform::create(Matrix4x4::create()
             ->lookAt(cameraTarget, cameraPosition)))

@@ -38,10 +38,7 @@ void
 addStar(Node::Ptr, file::AssetLibrary::Ptr, std::vector<Star>&);
 
 LineGeometry::Ptr
-createStarLineGeometry(unsigned int,
-float inRadius,
-float outRadius,
-AbstractContext::Ptr);
+createStarLineGeometry(unsigned int, float inRadius, float outRadius, AbstractContext::Ptr);
 
 int main(int argc, char** argv)
 {
@@ -60,7 +57,7 @@ int main(int argc, char** argv)
         ->addComponent(Transform::create(
         Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 3.f))
         ))
-        ->addComponent(PerspectiveCamera::create(800.f / 600.f, (float) PI * 0.25f, .1f, 1000.f));
+        ->addComponent(PerspectiveCamera::create(800.f / 600.f, float(M_PI) * 0.25f, .1f, 1000.f));
 
     root->addChild(camera);
     root->data()->addProvider(canvas->data()); // FIXME
@@ -79,7 +76,7 @@ int main(int argc, char** argv)
 
     auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
     {
-        camera->component<PerspectiveCamera>()->aspectRatio((float) w / (float) h);
+        camera->component<PerspectiveCamera>()->aspectRatio(float(w) / float(h));
     });
 
     auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float t, float dt)
@@ -119,7 +116,7 @@ addStar(Node::Ptr root, file::AssetLibrary::Ptr assets, std::vector<Star>& stars
         ->set("lineThickness", 1.0f + 3.0f * (rand() / (float) RAND_MAX)),
         assets->effect("line")
         ))
-        ->addComponent(Transform::create(Matrix4x4::create()->appendRotationZ(2.0f * (float) PI * rand() / (float) RAND_MAX)));
+        ->addComponent(Transform::create(Matrix4x4::create()->appendRotationZ(2.0f * float(M_PI) * rand() / (float) RAND_MAX)));
 
     stars.push_back(Star());
 
@@ -130,19 +127,16 @@ addStar(Node::Ptr root, file::AssetLibrary::Ptr assets, std::vector<Star>& stars
 }
 
 LineGeometry::Ptr
-createStarLineGeometry(unsigned int numStarBranches,
-float inRadius,
-float outRadius,
-AbstractContext::Ptr context)
+createStarLineGeometry(unsigned int numStarBranches, float inRadius, float outRadius, AbstractContext::Ptr context)
 {
     if (context == nullptr)
         throw std::invalid_argument("context");
 
-    const unsigned int	numBranches = std::max((unsigned int) 3, numStarBranches);
+    const unsigned int	numBranches = std::max(3u, numStarBranches);
     const float			innerRadius = std::min(inRadius, outRadius);
     const float			outerRadius = std::max(inRadius, outRadius);
-    const float			cStep = cosf((float) PI / (float) numBranches);
-    const float			sStep = sinf((float) PI / (float) numBranches);
+    const float			cStep = cosf(float(M_PI) / (float) numBranches);
+    const float			sStep = sinf(float(M_PI) / (float) numBranches);
 
     LineGeometry::Ptr	lines = LineGeometry::create(context);
 

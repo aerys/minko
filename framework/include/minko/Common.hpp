@@ -53,8 +53,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include <bitset>
 #include <regex>
 
-#define PI M_PI
-
 namespace minko
 {
     typedef unsigned int uint;

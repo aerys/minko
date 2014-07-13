@@ -52,7 +52,7 @@ main(int argc, char** argv)
             Matrix4x4::create()->lookAt(Vector3::create(0.f, 1.f, 0.f), Vector3::create(0.f, 1.f, -3.f))
             ))
             ->addComponent(PerspectiveCamera::create(
-            (float) WINDOW_WIDTH / (float) WINDOW_HEIGHT, (float) PI * 0.25f, .1f, 1000.f)
+            (float) WINDOW_WIDTH / (float) WINDOW_HEIGHT, float(M_PI) * 0.25f, .1f, 1000.f)
             );
         root->addChild(camera);
 
@@ -63,7 +63,7 @@ main(int argc, char** argv)
             material::BasicMaterial::create()->diffuseColor(Vector4::create(0.5f, 0.5f, 0.5f, 1.f)),
 			sceneManager->assets()->effect("effect/Phong.effect")
             ))
-            ->addComponent(Transform::create(Matrix4x4::create()->appendScale(4.f)->appendRotationX(-(PI /2))));
+            ->addComponent(Transform::create(Matrix4x4::create()->appendScale(4.f)->appendRotationX(-(float(M_PI) /2))));
         root->addChild(ground);
 
         // create a left wall
@@ -75,7 +75,7 @@ main(int argc, char** argv)
             ))
             ->addComponent(Transform::create(Matrix4x4::create()
             ->appendScale(4.f)
-            ->appendRotationY(-(PI / 2))
+            ->appendRotationY(-(float(M_PI) / 2))
             ->appendTranslation(1.f, 1.f, 0.f)));
         root->addChild(leftWall);
 
@@ -88,7 +88,7 @@ main(int argc, char** argv)
             ))
             ->addComponent(Transform::create(Matrix4x4::create()
             ->appendScale(4.f)
-            ->appendRotationY((PI / 2))
+            ->appendRotationY((float(M_PI) / 2))
             ->appendTranslation(-1.f, 1.f, 0.f)));
         root->addChild(rightWall);
 
@@ -101,7 +101,7 @@ main(int argc, char** argv)
             ))
             ->addComponent(Transform::create(Matrix4x4::create()
             ->appendScale(4.f)
-            ->appendRotationX(PI)
+            ->appendRotationX(float(M_PI))
             ->appendTranslation(0.f, 1.f, 1.f)));
         root->addChild(backWall);
 

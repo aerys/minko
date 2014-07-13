@@ -51,7 +51,7 @@ StarGeometry::initialize(render::AbstractContext::Ptr	context,
 	const unsigned int			numVertices = 1 + 2*numBranches;
 	std::vector<float>			vertexData(numVertices * vertexSize, 0.0f);
 
-	const float		step	= (float)PI / (float)numBranches;
+	const float		step	= float(M_PI) / (float)numBranches;
 	const float		cStep	= cosf(step);
 	const float		sStep	= sinf(step);
 

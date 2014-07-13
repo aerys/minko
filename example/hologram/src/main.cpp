@@ -69,7 +69,7 @@ int main(int argc, char** argv)
 		->addComponent(Transform::create(
 		Matrix4x4::create()->lookAt(Vector3::create(0.f, 0.8f, 0.f), Vector3::create(0.f, 2.0f, 8.f))
 		))
-		->addComponent(PerspectiveCamera::create(WIDTH / HEIGHT, (float)PI * 0.25f, .1f, 1000.f));
+		->addComponent(PerspectiveCamera::create(WIDTH / HEIGHT, float(M_PI) * 0.25f, .1f, 1000.f));
 	root->addChild(camera);
 
 	// FXAA
@@ -146,7 +146,7 @@ int main(int argc, char** argv)
 
 	auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
 	{
-		camera->component<PerspectiveCamera>()->aspectRatio((float)w / (float)h);
+		camera->component<PerspectiveCamera>()->aspectRatio(float(w) / float(h));
 
 		auto width = math::clp2(w);
 		auto height = math::clp2(h);

@@ -140,7 +140,7 @@ int main(int argc, char** argv)
 				}
 
 				auto r = rand() / (float)RAND_MAX;
-				auto theta = 2.0f * (float)PI *  r;
+				auto theta = 2.0f * float(M_PI) *  r;
 				auto color = Color::hslaToRgba(r, 1.f, .5f);
 				auto pos = Vector3::create(
 					cosf(theta) * 5.f + rand() / ((float)RAND_MAX * 3.f),
@@ -212,9 +212,9 @@ int main(int argc, char** argv)
 	});
 
 	auto yaw = 0.f;
-	auto pitch = (float)PI * .5f;
+	auto pitch = float(M_PI) * .5f;
 	auto minPitch = 0.f + 1e-5;
-	auto maxPitch = (float)PI - 1e-5;
+	auto maxPitch = float(M_PI) - 1e-5;
 	auto lookAt = Vector3::create(0.f, 2.f, 0.f);
 	auto distance = 20.f;
 
