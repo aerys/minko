@@ -92,7 +92,7 @@ int main(int argc, char** argv)
 		root->addChild(sceneManager->assets()->symbol("model/land3.scene"));
 		
 		auto waves = scene::Node::create("waves")
-			->addComponent(Transform::create(math::Matrix4x4::create()->appendRotationX(-float(PI) / 2.f)))
+			->addComponent(Transform::create(math::Matrix4x4::create()->appendRotationX(-float(M_PI) / 2.f)))
 			->addComponent(Surface::create(
 			geometry::QuadGeometry::create(sceneManager->assets()->context(), 200, 200, 400, 400),
 			waterMaterial,

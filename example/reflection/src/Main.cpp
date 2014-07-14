@@ -110,7 +110,7 @@ main(int argc, char** argv)
         auto reflectionPlane = scene::Node::create("reflectionPlane")
             ->addComponent(Transform::create(Matrix4x4::create()
             ->appendScale(5.f)
-            ->appendRotationX(-float(PI) / 2.f)
+            ->appendRotationX(-float(M_PI) / 2.f)
             ->appendTranslation(0.f, float(planeHeight), 0.f)))
             ->addComponent(Surface::create(
                 geometry::QuadGeometry::create(sceneManager->assets()->context()),

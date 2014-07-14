@@ -85,7 +85,7 @@ int main(int argc, char** argv)
             sceneManager->assets()->effect(EFFECT_FILENAME)));
 
         auto groundNode = scene::Node::create("ground")
-            ->addComponent(Transform::create(Matrix4x4::create()->appendScale(16.0f)->appendRotationX((float) -PI / 2.0f)))
+            ->addComponent(Transform::create(Matrix4x4::create()->appendScale(16.0f)->appendRotationX(-float(M_PI) / 2.0f)))
             ->addComponent(Surface::create(
             geometry::QuadGeometry::create(sceneManager->assets()->context()),
             groundMaterial,
