@@ -44,7 +44,7 @@ int main(int argc, char** argv)
 
 	sceneManager->assets()->loader()
 		->queue("effect/windows.jpg")
-		->queue("effect/macosx.jpg")
+		->queue("effect/osx.jpg")
 		->queue("effect/linux.jpg")
 		->queue("effect/PlatformTexture.effect");
 
