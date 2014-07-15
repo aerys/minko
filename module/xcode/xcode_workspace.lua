@@ -1,4 +1,4 @@
-local xcode = premake.xcode
+local xcode = premake.extensions.xcode
 local solution = premake.solution
 local project = premake.project
 local tree  = premake.tree
@@ -29,7 +29,7 @@ function xcode.workspace_file_ref(prj)
 end
 
 function xcode.workspace_generate(sln)
-	premake.xcode.preparesolution(sln)
+	xcode.preparesolution(sln)
 	xcode.workspace_head()
    
 	for prj in premake.solution.eachproject(sln) do
