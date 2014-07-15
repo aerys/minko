@@ -6,6 +6,7 @@
 
 	premake.extensions.xcode = { }
 	local api = premake.api
+	local xcode = premake.extensions.xcode
 
 ---
 ---
@@ -61,9 +62,9 @@
 		end,
 		
 		onproject = function(prj)
-			premake.xcode.copymacfiles(prj)
+			xcode.copymacfiles(prj)
 
-			premake.generate(prj, ".xcodeproj/project.pbxproj", premake.xcode.project)
+			premake.generate(prj, ".xcodeproj/project.pbxproj", xcode.project)
 		end,
 		
 		oncleanproject = function(prj)
@@ -111,13 +112,13 @@
 		default_platform = "osx64",
 		
 		onsolution = function(sln)
-			premake.generate(sln, ".xcworkspace/contents.xcworkspacedata", premake.workspace_generate)
+			premake.generate(sln, ".xcworkspace/contents.xcworkspacedata", xcode.workspace_generate)
 		end,
 		
 		onproject = function(prj)
-			premake.xcode.copymacfiles(prj)
+			xcode.copymacfiles(prj)
 
-			premake.generate(prj, ".xcodeproj/project.pbxproj", premake.xcode.project)
+			premake.generate(prj, ".xcodeproj/project.pbxproj", xcode.project)
 		end,
 		
 		oncleanproject = function(prj)
