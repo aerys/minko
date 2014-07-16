@@ -425,55 +425,60 @@ MacWebViewDOMElement::update()
             _engine->eval(js);
             
 #if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE // iOS
-            // Get number of finger
-            std::string js = eventName + ".changedTouches.length";
-            int touchNumber = atoi(_engine->eval(js).c_str());
             
-            for (auto i = 0; i < touchNumber; i++)
+            // It's a touch event ?
+            if (_engine->eval(eventName + ".type").find("touch") == 0)
             {
-                // Get the finger id (note: JS events can send identifier > INT_MAX, that's why there is a modulo)
-                js = "(" + eventName + ".changedTouches[" + std::to_string(i) + "].identifier % 2147483647)";
-                int fingerId = atoi(_engine->eval(js).c_str());
+                // Get number of finger
+                std::string js = eventName + ".changedTouches.length";
+                int touchNumber = atoi(_engine->eval(js).c_str());
                 
-                // Create the touch event
-                MacWebViewDOMTouchEvent::Ptr event = MacWebViewDOMTouchEvent::create(eventName, fingerId, i, _engine);
-                
-                std::string type = event->type();
-                
-                if (type == "touchstart")
+                for (auto i = 0; i < touchNumber; i++)
                 {
-                    _ontouchdown->execute(event);
+                    // Get the finger id (note: JS events can send identifier > INT_MAX, that's why there is a modulo)
+                    js = "(" + eventName + ".changedTouches[" + std::to_string(i) + "].identifier % 2147483647)";
+                    int fingerId = atoi(_engine->eval(js).c_str());
                     
-                    // If it's the first finger
-                    if (_engine->touchNumber() == 1)
+                    // Create the touch event
+                    MacWebViewDOMTouchEvent::Ptr event = MacWebViewDOMTouchEvent::create(eventName, fingerId, i, _engine);
+                    
+                    std::string type = event->type();
+                    
+                    if (type == "touchstart")
                     {
-                        // Set the first finger id
-                        _engine->firstFingerId(fingerId);
+                        _ontouchdown->execute(event);
                         
-                        _onmousedown->execute(event);
+                        // If it's the first finger
+                        if (_engine->touchNumber() == 1)
+                        {
+                            // Set the first finger id
+                            _engine->firstFingerId(fingerId);
+                            
+                            _onmousedown->execute(event);
+                        }
                     }
-                }
-                else if (type == "touchend")
-                {
-                    _ontouchup->execute(event);
-                    
-                    // If it's the first finger
-                    if (fingerId == _engine->firstFingerId())
+                    else if (type == "touchend")
                     {
-                        _engine->firstFingerId(-1);
+                        _ontouchup->execute(event);
                         
-                        _onclick->execute(event);
-                        _onmouseup->execute(event);
+                        // If it's the first finger
+                        if (fingerId == _engine->firstFingerId())
+                        {
+                            _engine->firstFingerId(-1);
+                            
+                            _onclick->execute(event);
+                            _onmouseup->execute(event);
+                        }
                     }
-                }
-                else if (type == "touchmove")
-                {
-                    _ontouchmotion->execute(event);
-                    
-                    // If it's the first finger
-                    if (fingerId == _engine->firstFingerId())
+                    else if (type == "touchmove")
                     {
-                        _onmousemove->execute(event);
+                        _ontouchmotion->execute(event);
+                        
+                        // If it's the first finger
+                        if (fingerId == _engine->firstFingerId())
+                        {
+                            _onmousemove->execute(event);
+                        }
                     }
                 }
             }
