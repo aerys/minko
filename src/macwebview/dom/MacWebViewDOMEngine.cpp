@@ -65,8 +65,10 @@ MacWebViewDOMEngine::MacWebViewDOMEngine() :
 	_onmessage(Signal<AbstractDOM::Ptr, std::string>::create()),
 	_visible(true),
     _waitingForLoad(true),
-    _isReady(false),
-    _webViewWidth(0)
+    _isReady(false)
+#if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE // iOS
+    , _webViewWidth(0)
+#endif
 {
 }
 
