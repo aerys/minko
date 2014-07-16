@@ -89,7 +89,7 @@ namespace minko
 
 			static
 			SimpleProperty
-			serializeSimpleProperty(std::string& propertyName, int value)
+			serializeSimpleProperty(std::string propertyName, int value)
 			{
 				std::string serializedValue = TypeSerializer::serializeVector(std::vector<int>(value));
 
@@ -98,7 +98,7 @@ namespace minko
 
 			static
 			SimpleProperty
-			serializeSimpleProperty(std::string& propertyName, bool value)
+			serializeSimpleProperty(std::string propertyName, bool value)
 			{
 				std::string serializedValue = TypeSerializer::serializeVector(std::vector<float>(value ? 1.0 : 0.0));
 
@@ -107,7 +107,7 @@ namespace minko
 
 			static
 			SimpleProperty
-			serializeSimpleProperty(std::string& propertyName, float value)
+			serializeSimpleProperty(std::string propertyName, float value)
 			{
 				std::string serializedValue = TypeSerializer::serializeVector(std::vector<float>(value));
 
@@ -116,7 +116,7 @@ namespace minko
 
 			static
 			SimpleProperty
-			serializeSimpleProperty(std::string& propertyName, std::string& value)
+			serializeSimpleProperty(std::string propertyName, std::string value)
 			{
 				return SimpleProperty(propertyName, value);
 			}
