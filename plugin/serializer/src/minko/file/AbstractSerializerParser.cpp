@@ -105,7 +105,7 @@ AbstractSerializerParser::extractDependencies(AssetLibraryPtr						assetLibrary,
 }
 
 void
-AbstractSerializerParser::deserializeAsset(SerializedAsset&			asset,
+AbstractSerializerParser::deserializeAsset(SerializedAsset&				asset,
 											AssetLibraryPtr				assetLibrary,
 											std::shared_ptr<Options>	options,
 											std::string&				assetFilePath)
@@ -122,43 +122,39 @@ AbstractSerializerParser::deserializeAsset(SerializedAsset&			asset,
 		assetCompletePath += asset.a2;
 		resolvedPath = asset.a2;
 
-		auto							flags = std::ios::in | std::ios::ate | std::ios::binary;
-		std::fstream					file(assetCompletePath, flags);
-		
-		if (file.is_open())
+		auto protocolFunction = options->protocolFunction();
+		auto protocol = protocolFunction(assetCompletePath);
+
+		auto fileOptions = Options::create(options);
+		fileOptions->loadAsynchronously(false);
+
+		auto errorSlot = protocol->error()->connect([&](AbstractProtocol::Ptr)
 		{
-			unsigned int size = (unsigned int)file.tellg();
+			switch (asset.a0)
+			{
+			case serialize::AssetType::GEOMETRY_ASSET:
+				throw ParserError("MissingGeometryDependency", "Missing geometry dependency: '" + assetCompletePath + "'");
 
-			// FIXME: use fixed size buffers and call _progress accordingly
+			case serialize::AssetType::MATERIAL_ASSET:
+				throw ParserError("MissingMaterialDependency", "Missing material dependency: '" + assetCompletePath + "'");
 
-			data.resize(size);
+			case serialize::AssetType::TEXTURE_ASSET:
+				throw ParserError("MissingTextureDependency", "Missing texture dependency: '" + assetCompletePath + "'");
 
-			file.seekg(0, std::ios::beg);
-			file.read((char*)&data[0], size);
-			file.close();
-		}
-        else
-        {
-            auto filePath = assetCompletePath;
+			case serialize::AssetType::EFFECT_ASSET:
+				throw ParserError("MissingEffectDependency", "Missing effect dependency: '" + assetCompletePath + "'");
 
-            switch (asset.a0)
-            {
-            case serialize::AssetType::GEOMETRY_ASSET:
-                throw ParserError("MissingGeometryDependency", "Missing geometry dependency: '" + filePath + "'");
+			default:
+				break;
+			}
+		});
 
-            case serialize::AssetType::MATERIAL_ASSET:
-                throw ParserError("MissingMaterialDependency", "Missing material dependency: '" + filePath + "'");
+		auto completeSlot = protocol->complete()->connect([&](AbstractProtocol::Ptr p)
+		{
+			data.assign(p->file()->data().begin(), p->file()->data().end());
+		});
 
-            case serialize::AssetType::TEXTURE_ASSET:
-                throw ParserError("MissingTextureDependency", "Missing texture dependency: '" + filePath + "'");
-
-            case serialize::AssetType::EFFECT_ASSET:
-                throw ParserError("MissingEffectDependency", "Missing effect dependency: '" + filePath + "'");
-
-            default:
-                break;
-            }
-        }
+		protocol->load(assetCompletePath, fileOptions);
 	}
 	else
 		data.assign(asset.a2.begin(), asset.a2.end());
