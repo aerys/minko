@@ -64,7 +64,6 @@ int main(int argc, char** argv)
 	auto sceneManager		= SceneManager::create(canvas->context());
 	auto root				= scene::Node::create("root")->addComponent(sceneManager);
 	auto assets				= sceneManager->assets();
-	auto sphereGeometry		= geometry::SphereGeometry::create(assets->context(), 32, 32, true);
 	auto sphereMaterial		= material::PhongMaterial::create()
 		->shininess(16.f)
 		->specularColor(Vector4::create(1.0f, 1.0f, 1.0f, 1.0f))
@@ -73,13 +72,11 @@ int main(int argc, char** argv)
 
 	std::cout << "Press [SPACE]\tto toogle normal mapping\nPress [A]\tto add random light\nPress [R]\tto remove random light" << std::endl;
 
-	sphereGeometry->computeTangentSpace(false);
-
 	// setup assets
 	assets
 		->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()))
 		->geometry("quad", geometry::QuadGeometry::create(sceneManager->assets()->context()))
-		->geometry("sphere", sphereGeometry);
+		->geometry("sphere", geometry::SphereGeometry::create(assets->context(), 32, 32, true)->computeTangentSpace(false));
 
 	assets->loader()->options()
 		->generateMipmaps(true)
@@ -127,7 +124,7 @@ int main(int argc, char** argv)
 		root->addChild(lights);
 
 		// handle keyboard signals
-		keyDown = canvas->keyboard()->keyDown()->connect([&](input::Keyboard::Ptr k)
+		keyDown = canvas->keyboard()->keyDown()->connect([=](input::Keyboard::Ptr k)
 		{
 			if (k->keyIsDown(input::Keyboard::A))
 			{
@@ -202,7 +199,7 @@ int main(int argc, char** argv)
 		->addComponent(Renderer::create())
 		->addComponent(PerspectiveCamera::create((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT))
 		->addComponent(Transform::create(
-		Matrix4x4::create()->lookAt(Vector3::create(0.f, 2.f), Vector3::create(10.f, 10.f, 10.f))
+            Matrix4x4::create()->lookAt(Vector3::create(0.f, 2.f), Vector3::create(10.f, 10.f, 10.f))
 		));
 	root->addChild(camera);
 
