@@ -27,7 +27,7 @@ using namespace minko;
 using namespace minko::component;
 using namespace minko::math;
 
-const std::string MODEL_FILENAME = "model/ironmanFull.scene";
+const std::string MODEL_FILENAME = "model/walker.scene";
 const float WIDTH	= 1024;
 const float HEIGHT	= 1024;
 
