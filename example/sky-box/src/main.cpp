@@ -62,7 +62,7 @@ int main(int argc, char** argv)
 		->addComponent(Transform::create(
 			Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 3.f))
 		))
-		->addComponent(PerspectiveCamera::create(800.f / 600.f, (float)PI * 0.25f, .1f, 1000.f));
+		->addComponent(PerspectiveCamera::create(800.f / 600.f, float(M_PI) * 0.25f, .1f, 1000.f));
 
 	auto sky = scene::Node::create("sky")
 		->addComponent(Transform::create(
@@ -85,8 +85,8 @@ int main(int argc, char** argv)
 			));
 
 		assert(NUM_OBJECTS > 0);
-		const float scale = 1.25f * (float) PI / (float)NUM_OBJECTS;
-		const float	dAngle = 2.0f * (float) PI / (float)NUM_OBJECTS;
+		const float scale = 1.25f * float(M_PI) / float(NUM_OBJECTS);
+		const float	dAngle = 2.0f * float(M_PI) / float(NUM_OBJECTS);
 
 		for (unsigned int objId = 0; objId < NUM_OBJECTS; ++objId)
                   objects->addChild(createTransparentObject(scale, objId * dAngle, sceneManager->assets()));
@@ -99,7 +99,7 @@ int main(int argc, char** argv)
 
 	auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
 	{
-		camera->component<PerspectiveCamera>()->aspectRatio((float)w / (float)h);
+		camera->component<PerspectiveCamera>()->aspectRatio(float(w) / float(h));
 	});
 
 	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float deltaTime)
@@ -123,8 +123,8 @@ createTransparentObject(float scale, float rotationY, file::AssetLibrary::Ptr as
 	assert(assets);
 	assert(NUM_OBJECTS > 0);
 
-	auto		randomAxis	= Vector3::create((float)rand(), (float)rand(), (float)rand())->normalize();
-	const float randomAng	= 2.0f * (float)PI * rand() / (float)RAND_MAX;
+	auto		randomAxis	= Vector3::create(rand(), rand(), rand())->normalize();
+	const float randomAng	= 2.0f * float(M_PI) * rand() / float(RAND_MAX);
 
 	return scene::Node::create()
 		->addComponent(Transform::create(
@@ -137,7 +137,7 @@ createTransparentObject(float scale, float rotationY, file::AssetLibrary::Ptr as
 		->addComponent(Surface::create(
                         assets->geometry("cube"),
 			material::BasicMaterial::create()
-				->diffuseColor(Color::hslaToRgba(0.5f * rotationY / (float)PI, 1.0f, 0.5f, 0.5f))
+				->diffuseColor(Color::hslaToRgba(0.5f * rotationY / float(M_PI), 1.0f, 0.5f, 0.5f))
 				->isTransparent(true, true)
 				->triangleCulling(render::TriangleCulling::BACK),
 			assets->effect("effect/Basic.effect")

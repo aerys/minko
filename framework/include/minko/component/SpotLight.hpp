@@ -32,7 +32,7 @@ namespace minko
 		{
 		public:
 			typedef std::shared_ptr<SpotLight> Ptr;
-	
+
 		private:
 			float							_cosInnerConeAngle;
 			float							_cosOuterConeAngle;
@@ -43,7 +43,7 @@ namespace minko
 		public:
 			inline static
 			Ptr
-			create(float innerAngleRadians		= (float)PI * 0.25f,
+			create(float innerAngleRadians		= float(M_PI) * 0.25f,
 				   float outerAngleRadians		= -1.0f,
 				   float diffuse				= 1.0f,
 				   float specular				= 1.0f,
@@ -109,7 +109,7 @@ namespace minko
 					  float attenuationLinear,
 					  float attenuationQuadratic);
 
-			void 
+			void
 			initialize(float innerAngleRadians,
 					   float outerAngleRadians);
 		};

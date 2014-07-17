@@ -29,29 +29,29 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include <iomanip>
 
-#define GL_GLEXT_PROTOTYPES
-#if __APPLE__
-# include "TargetConditionals.h"
-# if TARGET_IPHONE_SIMULATOR
-#  include <OpenGLES/ES2/gl.h>
-# elif TARGET_OS_IPHONE
-#  include <OpenGLES/ES2/gl.h>
-# elif TARGET_OS_MAC
-#  include <OpenGL/gl.h>
-#  include <GLUT/glut.h>
+#ifndef GL_GLEXT_PROTOTYPES
+# define GL_GLEXT_PROTOTYPES
+#endif
+
+#if MINKO_PLATFORM & MINKO_PLATFORM_WINDOWS
+# if MINKO_ANGLE
+#  include "GLES2/gl2.h"
+# else
+#  include "GL/glew.h"
 # endif
-#elif MINKO_ANGLE
-# include "GLES2/gl2.h"
-#elif _WIN32
-# include "GL/glew.h"
-#elif EMSCRIPTEN
-# include <GLES2/gl2.h>
-# include <EGL/egl.h>
-#elif __ANDROID__
-# include <GLES2/gl2.h>
-#else
+#elif MINKO_PLATFORM & MINKO_PLATFORM_OSX
+# include <OpenGL/gl.h>
+# include <GLUT/glut.h>
+#elif MINKO_PLATFORM & MINKO_PLATFORM_LINUX
 # include <GL/gl.h>
 # include <GL/glu.h>
+#elif MINKO_PLATFORM & MINKO_PLATFORM_IOS
+# include <OpenGLES/ES2/gl.h>
+#elif MINKO_PLATFORM & MINKO_PLATFORM_ANDROID
+# include <GLES2/gl2.h>
+#elif MINKO_PLATFORM & MINKO_PLATFORM_HTML5
+# include <GLES2/gl2.h>
+# include <EGL/egl.h>
 #endif
 
 using namespace minko;

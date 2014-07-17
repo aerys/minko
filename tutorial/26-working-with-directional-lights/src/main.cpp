@@ -44,7 +44,7 @@ main(int argc, char** argv)
     auto camera = scene::Node::create("camera")
       ->addComponent(Renderer::create(0x7f7f7fff))
       ->addComponent(PerspectiveCamera::create(
-		(float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, (float)PI * 0.25f, .1f, 1000.f));
+		(float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, float(M_PI) * 0.25f, .1f, 1000.f));
     root->addChild(camera);
  
 	auto phongMaterial = material::PhongMaterial::create();
@@ -60,7 +60,7 @@ main(int argc, char** argv)
 		phongMaterial,
 		sceneManager->assets()->effect("effect/Phong.effect")
       ));
-	sphere->component<Transform>()->matrix()->prependRotationY(PI * 0.25f);
+	sphere->component<Transform>()->matrix()->prependRotationY(float(M_PI) * 0.25f);
 	root->addChild(sphere);
 
 	auto ambientLight = scene::Node::create("ambientLight")

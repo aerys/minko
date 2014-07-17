@@ -179,7 +179,7 @@ TEST_F(Matrix4x4Test, InvertRotationX)
 {
 	auto m1 = Matrix4x4::create();
 	auto m2 = Matrix4x4::create();
-	auto theta = random(2.f * (float)PI);
+	auto theta = random(2.f * float(M_PI));
 
 	m1->appendRotationX(theta);
 	m2->appendRotationX(-theta)->invert();
@@ -191,7 +191,7 @@ TEST_F(Matrix4x4Test, InvertRotationY)
 {
 	auto m1 = Matrix4x4::create();
 	auto m2 = Matrix4x4::create();
-	auto theta = random(2.f * (float)PI);
+	auto theta = random(2.f * float(M_PI));
 
 	m1->appendRotationY(theta);
 	m2->appendRotationY(-theta)->invert();
@@ -203,7 +203,7 @@ TEST_F(Matrix4x4Test, InvertRotationZ)
 {
 	auto m1 = Matrix4x4::create();
 	auto m2 = Matrix4x4::create();
-	auto theta = random(2.f * (float)PI);
+	auto theta = random(2.f * float(M_PI));
 
 	m1->appendRotationZ(theta);
 	m2->appendRotationZ(-theta)->invert();
@@ -279,7 +279,7 @@ TEST_F(Matrix4x4Test, TransformRotationXPi)
 {
 	auto m = Matrix4x4::create();
 
-	m->appendRotationX((float)PI);
+	m->appendRotationX(float(M_PI));
 
 	auto xAxis = m->transform(Vector3::xAxis());
 	auto yNegAxis = m->transform(Vector3::yAxis());
@@ -300,7 +300,7 @@ TEST_F(Matrix4x4Test, TransformRotationYPi)
 {
 	auto m = Matrix4x4::create();
 
-	m->appendRotationY((float)PI);
+	m->appendRotationY(float(M_PI));
 
 	auto xNegAxis = m->transform(Vector3::xAxis());
 	auto yAxis = m->transform(Vector3::yAxis());
@@ -321,7 +321,7 @@ TEST_F(Matrix4x4Test, TransformRotationZPi)
 {
 	auto m = Matrix4x4::create();
 
-	m->appendRotationZ((float)PI);
+	m->appendRotationZ(float(M_PI));
 
 	auto xNegAxis = m->transform(Vector3::xAxis());
 	auto yNegAxis = m->transform(Vector3::yAxis());
@@ -348,7 +348,7 @@ TEST_F(Matrix4x4Test, TransformAppendRotationXRandom)
 	for (uint i = 0; i < r; ++i)
 	{
 		v.push_back(m1->transform(Vector3::zAxis()));
-		m1->appendRotationX((float)PI * 2.f / (float)r);
+		m1->appendRotationX(float(M_PI) * 2.f / (float)r);
 	}
 
 	ASSERT_TRUE(nearEqual(m1, m2));
@@ -371,7 +371,7 @@ TEST_F(Matrix4x4Test, TransformAppendRotationYRandom)
 	for (uint i = 0; i < r; ++i)
 	{
 		v.push_back(m1->transform(Vector3::xAxis()));
-		m1->appendRotationY((float)PI * 2.f / (float)r);
+		m1->appendRotationY(float(M_PI) * 2.f / (float)r);
 	}
 
 	ASSERT_TRUE(nearEqual(m1, m2));
@@ -394,7 +394,7 @@ TEST_F(Matrix4x4Test, TransformAppendRotationZRandom)
 	for (uint i = 0; i < r; ++i)
 	{
 		v.push_back(m1->transform(Vector3::yAxis()));
-		m1->appendRotationZ((float)PI * 2.f / (float)r);
+		m1->appendRotationZ(float(M_PI) * 2.f / (float)r);
 	}
 
 	ASSERT_TRUE(nearEqual(m1, m2));
@@ -417,7 +417,7 @@ TEST_F(Matrix4x4Test, TransformPrependRotationXRandom)
 	for (uint i = 0; i < r; ++i)
 	{
 		v.push_back(m1->transform(Vector3::zAxis()));
-		m1->prependRotationX((float)PI * 2.f / (float)r);
+		m1->prependRotationX(float(M_PI) * 2.f / (float)r);
 	}
 
 	ASSERT_TRUE(nearEqual(m1, m2));
@@ -440,7 +440,7 @@ TEST_F(Matrix4x4Test, TransformPrependRotationYRandom)
 	for (uint i = 0; i < r; ++i)
 	{
 		v.push_back(m1->transform(Vector3::xAxis()));
-		m1->prependRotationY((float)PI * 2.f / (float)r);
+		m1->prependRotationY(float(M_PI) * 2.f / (float)r);
 	}
 
 	ASSERT_TRUE(nearEqual(m1, m2));
@@ -463,7 +463,7 @@ TEST_F(Matrix4x4Test, TransformPrependRotationZRandom)
 	for (uint i = 0; i < r; ++i)
 	{
 		v.push_back(m1->transform(Vector3::yAxis()));
-		m1->prependRotationZ((float)PI * 2.f / (float)r);
+		m1->prependRotationZ(float(M_PI) * 2.f / (float)r);
 	}
 
 	ASSERT_TRUE(nearEqual(m1, m2));
@@ -484,8 +484,8 @@ TEST_F(Matrix4x4Test, AppendRotationXVsAppendRotation)
 
 	for (uint i = 0; i < r; ++i)
 	{
-		m1->appendRotationX((float)PI * 2.f / (float)r);
-		m2->appendRotation((float)PI * 2.f / (float)r, Vector3::xAxis());
+		m1->appendRotationX(float(M_PI) * 2.f / (float)r);
+		m2->appendRotation(float(M_PI) * 2.f / (float)r, Vector3::xAxis());
 
 		for (auto i = 0; i < 16; ++i)
 			ASSERT_TRUE(nearEqual(m1->data()[i], m2->data()[i]));
@@ -500,8 +500,8 @@ TEST_F(Matrix4x4Test, AppendRotationYVsAppendRotation)
 
 	for (uint i = 0; i < r; ++i)
 	{
-		m1->appendRotationY((float)PI * 2.f / (float)r);
-		m2->appendRotation((float)PI * 2.f / (float)r, Vector3::yAxis());
+		m1->appendRotationY(float(M_PI) * 2.f / (float)r);
+		m2->appendRotation(float(M_PI) * 2.f / (float)r, Vector3::yAxis());
 
 		for (auto i = 0; i < 16; ++i)
 			ASSERT_TRUE(nearEqual(m1->data()[i], m2->data()[i]));
@@ -516,8 +516,8 @@ TEST_F(Matrix4x4Test, AppendRotationZVsAppendRotation)
 
 	for (uint i = 0; i < r; ++i)
 	{
-		m1->appendRotationZ((float)PI * 2.f / (float)r);
-		m2->appendRotation((float)PI * 2.f / (float)r, Vector3::zAxis());
+		m1->appendRotationZ(float(M_PI) * 2.f / (float)r);
+		m2->appendRotation(float(M_PI) * 2.f / (float)r, Vector3::zAxis());
 
 		for (auto i = 0; i < 16; ++i)
 			ASSERT_TRUE(nearEqual(m1->data()[i], m2->data()[i]));
@@ -532,8 +532,8 @@ TEST_F(Matrix4x4Test, PrependRotationXVsPrependRotation)
 
 	for (uint i = 0; i < r; ++i)
 	{
-		m1->prependRotationX((float)PI * 2.f / (float)r);
-		m2->prependRotation((float)PI * 2.f / (float)r, Vector3::xAxis());
+		m1->prependRotationX(float(M_PI) * 2.f / (float)r);
+		m2->prependRotation(float(M_PI) * 2.f / (float)r, Vector3::xAxis());
 
 		for (auto i = 0; i < 16; ++i)
 			ASSERT_TRUE(nearEqual(m1->data()[i], m2->data()[i]));
@@ -548,8 +548,8 @@ TEST_F(Matrix4x4Test, PrependRotationYVsPrependRotation)
 
 	for (uint i = 0; i < r; ++i)
 	{
-		m1->prependRotationY((float)PI * 2.f / (float)r);
-		m2->prependRotation((float)PI * 2.f / (float)r, Vector3::yAxis());
+		m1->prependRotationY(float(M_PI) * 2.f / (float)r);
+		m2->prependRotation(float(M_PI) * 2.f / (float)r, Vector3::yAxis());
 
 		for (auto i = 0; i < 16; ++i)
 			ASSERT_TRUE(nearEqual(m1->data()[i], m2->data()[i]));
@@ -564,8 +564,8 @@ TEST_F(Matrix4x4Test, PrependRotationZVsPrependRotation)
 
 	for (uint i = 0; i < r; ++i)
 	{
-		m1->prependRotationZ((float)PI * 2.f / (float)r);
-		m2->prependRotation((float)PI * 2.f / (float)r, Vector3::zAxis());
+		m1->prependRotationZ(float(M_PI) * 2.f / (float)r);
+		m2->prependRotation(float(M_PI) * 2.f / (float)r, Vector3::zAxis());
 
 		for (auto i = 0; i < 16; ++i)
 			ASSERT_TRUE(nearEqual(m1->data()[i], m2->data()[i]));
@@ -644,7 +644,7 @@ TEST_F(Matrix4x4Test, QuaternionConversion)
 	for (uint k = 0; k < axes.size(); ++k)
 		for (uint i = 0; i < numAngSteps; ++i)
 		{
-			matR1->identity()->appendRotation(2.0f * (float)PI * (float)i / (float)numAngSteps, axes[k]);
+			matR1->identity()->appendRotation(2.0f * float(M_PI) * (float)i / (float)numAngSteps, axes[k]);
 			quat->fromMatrix(matR1);
 			matR2->fromQuaternion(quat);
 	
@@ -697,7 +697,7 @@ TEST_F(Matrix4x4Test, DecomposeRecompose)
 		mat1
 			->identity()
 			->appendScale(-5.0f + 0.5f * random(10.0f), -5.0f + 0.5f * random(10.0f), -5.0f + 0.5f * random(10.0f))
-			->appendRotation(random(2.0f * (float)PI), randomVector3(10.0f)->normalize())
+			->appendRotation(random(2.0f * float(M_PI)), randomVector3(10.0f)->normalize())
 			->appendTranslation(-5.0f + 0.5f * random(10.0f), -5.0f + 0.5f * random(10.0f), -5.0f + 0.5f * random(10.0f));
 		
 		mat1->decompose(transl, rot, sc);

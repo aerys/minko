@@ -65,28 +65,18 @@ Options::Options() :
 void
 Options::initializePlatforms()
 {
-#if defined(_WIN32) || defined(_WIN64)
+#if MINKO_PLATFORM & MINKO_PLATFORM_WINDOWS
     _platforms.push_back("windows");
-    _platforms.push_back("desktop");
-#endif
-#ifdef TARGET_OS_IPHONE
-    _platforms.push_back("iphone");
-    _platforms.push_back("mobile");
-#endif
-#ifdef TARGET_OS_MAC
-    _platforms.push_back("macosx");
-    _platforms.push_back("desktop");
-#endif
-#ifdef __ANDROID_API__
-    _platforms.push_back("android");
-    _platforms.push_back("mobile");
-#endif
-#ifdef EMSCRIPTEN
-    _platforms.push_back("web");
-#endif
-#if defined(LINUX) || defined(__unix__)
+#elif MINKO_PLATFORM & MINKO_PLATFORM_OSX
+    _platforms.push_back("osx");
+#elif MINKO_PLATFORM & MINKO_PLATFORM_LINUX
     _platforms.push_back("linux");
-    _platforms.push_back("desktop");
+#elif MINKO_PLATFORM & MINKO_PLATFORM_IOS
+    _platforms.push_back("ios");
+#elif MINKO_PLATFORM & MINKO_PLATFORM_ANDROID
+    _platforms.push_back("android");
+#elif MINKO_PLATFORM & MINKO_PLATFORM_HTML5
+    _platforms.push_back("html5");
 #endif
 }
 

@@ -24,8 +24,8 @@ using namespace minko;
 using namespace minko::particle;
 using namespace minko::particle::shape;
 
-Sphere::Sphere(float	radius,
-		   	   float 	innerRadius): 
+Sphere::Sphere(float radius,
+		   	   float innerRadius) :
     EmitterShape(),
     _radius (radius),
     _innerRadius (innerRadius)
@@ -38,7 +38,7 @@ Sphere::initPosition(ParticleData& particle) const
 	float u			= tools::rand01();
 	float sqrt1mu2	= sqrtf(1.0f - u * u);
 	
-	float theta		= (tools::rand01() * 2.0f - 1.0f) * (float)PI;
+	float theta		= (tools::rand01() * 2.0f - 1.0f) * float(M_PI);
 	
 	float cosTheta	= cosf(theta);
 	float sinTheta	= sinf(theta);
@@ -51,6 +51,3 @@ Sphere::initPosition(ParticleData& particle) const
 	particle.y = r * sqrt1mu2 * sinTheta;
 	particle.z = r * u;
 }
-
-
-

@@ -106,7 +106,7 @@ Reflection::initialize()
 
                         // Create a virtual camera
                         auto virtualPerspectiveCameraComponent = PerspectiveCamera::create(
-                            (float) _width / (float) _height, (float) PI * 0.25f, .1f, 1000.f);
+                            (float) _width / (float) _height, float(M_PI) * 0.25f, .1f, 1000.f);
 
                         auto cameraTarget = Vector3::create();
                         auto reflectedPosition = Vector3::create();

@@ -62,7 +62,7 @@ int main(int argc, char** argv)
 			->addComponent(Renderer::create(0x00000000))
 			->addComponent(Transform::create(Matrix4x4::create()->lookAt(Vector3::create(), Vector3::create(0.0f, 2.f, 2.6f))
 			))
-			->addComponent(PerspectiveCamera::create(800.f / 600.f, (float)PI * 0.25f, .1f, 1000.f));
+			->addComponent(PerspectiveCamera::create(800.f / 600.f, float(M_PI) * 0.25f, .1f, 1000.f));
 
 		auto spotLight = scene::Node::create("SpotLight")
 			->addComponent(SpotLight::create(0.6f, 0.78f, 20.f))

@@ -49,7 +49,7 @@ int main(int argc, char** argv)
             ->addComponent(Transform::create(
             Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.5f, 2.0f, 2.0f))
             ))
-            ->addComponent(PerspectiveCamera::create(WINDOW_WIDTH / WINDOW_HEIGHT, (float) PI * 0.25f, .1f, 1000.f));
+            ->addComponent(PerspectiveCamera::create(WINDOW_WIDTH / WINDOW_HEIGHT, float(M_PI) * 0.25f, .1f, 1000.f));
 
         // STEP 1: create and add your physics world to the scene
         auto root = scene::Node::create("root")
