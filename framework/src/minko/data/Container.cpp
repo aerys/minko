@@ -30,7 +30,6 @@ uint Container::CONTAINER_ID = 0;
 
 Container::Container() :
 	std::enable_shared_from_this<Container>(),
-	_providers(),
 	_arrayLengths(data::Provider::create()),
 	_propertyAdded(Container::PropertyChangedSignal::create()),
 	_propertyRemoved(Container::PropertyChangedSignal::create()),
@@ -49,11 +48,8 @@ Container::initialize()
 void
 Container::addProvider(Provider::Ptr provider)
 {
-    // warning! each provider can be added mutiple times to the same container
-    // example: the same material can be used by multiple meshes on the same node
-    // assertProviderDoesNotExist(provider) does not apply here;
+    assertProviderDoesNotExist(provider);
 
-    // 
     if (std::find(_providers.begin(), _providers.end(), provider) != _providers.end())
         _providersToNumUse[provider]++;
     else
