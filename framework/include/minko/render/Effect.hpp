@@ -218,7 +218,7 @@ namespace minko
 			void
 			setVertexAttributeOnPass(std::shared_ptr<Pass> pass, const std::string& name, const VertexAttribute& attribute)
 			{
-				pass->setVertexAttribute(name, attribute);
+				pass->setAttribute(name, attribute);
 			}
 
 			inline static

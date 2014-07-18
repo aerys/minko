@@ -190,13 +190,13 @@ namespace minko
 
             inline
             Program&
-            setVertexAttribute(const std::string& name, const VertexAttribute& attribute)
+            setAttribute(const std::string& name, const VertexAttribute& attribute)
             {
-                return setVertexAttribute(name, attribute, name);
+                return setAttribute(name, attribute, name);
             }
 
             Program&
-            setVertexAttribute(const std::string& name, const VertexAttribute& attribute, const std::string& attributeName);
+            setAttribute(const std::string& name, const VertexAttribute& attribute, const std::string& attributeName);
 
             ~Program()
             {

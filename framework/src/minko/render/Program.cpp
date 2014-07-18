@@ -91,7 +91,7 @@ Program::setUniform(const std::string& name, CubeTexture::Ptr texture)
 }
 
 Program&
-Program::setVertexAttribute(const std::string& name, const VertexAttribute& attribute, const std::string& attributeName)
+Program::setAttribute(const std::string& name, const VertexAttribute& attribute, const std::string& attributeName)
 {
     auto it = std::find_if(_inputs.attributes().begin(), _inputs.attributes().end(), [&](const ProgramInputs::AttributeInput& a)
     {

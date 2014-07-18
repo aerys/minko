@@ -212,9 +212,9 @@ namespace minko
 				));
 
 				if (_programTemplate->isReady())
-					_programTemplate->setVertexAttribute(name, buffer);
+					_programTemplate->setAttribute(name, attribute);
 				for (auto signatureAndProgram : _signatureToProgram)
-					signatureAndProgram.second->setVertexAttribute(name, buffer);
+					signatureAndProgram.second->setAttribute(name, attribute);
 			}
 
 			inline
@@ -273,7 +273,7 @@ namespace minko
 			void
             setVertexAttributeOnProgram(std::shared_ptr<Program> program, const std::string& name, const VertexAttribute& attribute)
 			{
-				program->setVertexAttribute(name, attribute);
+				program->setAttribute(name, attribute);
 			}
 
 			ProgramPtr
