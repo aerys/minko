@@ -41,30 +41,38 @@ namespace minko
 			typedef std::shared_ptr<DrawCall>   Ptr;
 
 		private:
+            typedef const ProgramInputs::UniformInput&      ConstUniformInputRef;
+            typedef const ProgramInputs::AttributeInput&    ConstAttrInputRef;
+
             template <typename T>
             struct UniformValue
             {
-                int location;
-                uint size;
-                const T* data;
+                const int location;
+                const uint size;
+                const const T* data;
             };
 
             struct SamplerValue
             {
-                int location;
-                int resourceId;
-                WrapMode wrapMode;
-                TextureFilter textureFilter;
-                MipFilter mipFilter;
-                TextureType type;
+                const uint position;
+                const int* resourceId;
+                const int location;
+                /*
+                WrapMode* wrapMode;
+                TextureFilter* textureFilter;
+                MipFilter* mipFilter;
+                TextureType* type;
+                */
             };
 
             struct AttributeValue
             {
-                int location;
-                uint size;
-                uint offset;
-                uint data;
+                const uint position;
+                const int location;
+                const int* resourceId;
+                const uint size;
+                const uint* stride;
+                const uint offset;
             };
 
             typedef std::shared_ptr<AbstractContext>	AbsCtxPtr;
@@ -75,9 +83,9 @@ namespace minko
 		private:
 			std::shared_ptr<render::Pass>		_pass;
 			std::shared_ptr<Program>			_program;
-            uint								_numIndices;
-            uint                                _firstIndex;
-            uint								_indexBuffer;
+            uint*								_numIndices;
+            uint*                               _firstIndex;
+            uint*								_indexBuffer;
             std::vector<UniformValue<int>>      _uniformInt;
             std::vector<UniformValue<float>>    _uniformFloat;
             std::vector<UniformValue<bool>>     _uniformBool;
@@ -108,18 +116,25 @@ namespace minko
 			initialize();
 
 			void
-            bind(ContainerPtr               rootData,
+            bind(std::shared_ptr<Program>   Program,
+                 ContainerPtr               rootData,
                  ContainerPtr               rendererData,
                  ContainerPtr               targetData,
                  const data::BindingMap&    attributeBindings,
                  const data::BindingMap&    uniformBindings,
-                 const data::BindingMap&    stateBindings,
-                 const ProgramInputs&       inputs);
+                 const data::BindingMap&    stateBindings);
 
             void
-            bindVertexAttribute(const std::string&	inputName,
-							    int					location,
-							    uint				vertexBufferIndex);
+            bindUniform(std::shared_ptr<Program>    program,
+                        ConstUniformInputRef        uniformInput,
+                        ContainerPtr                container,
+                        const std::string&          propertyName);
+
+            void
+            bindAttribute(std::shared_ptr<Program>    program,
+                          ConstAttrInputRef           input,
+						  ContainerPtr                container,
+						  const std::string&          propertyName);
 
 			void
 			bindIndexBuffer();
@@ -127,14 +142,6 @@ namespace minko
 			void
 			bindStates();
 			
-			void
-			bindTextureSampler(const std::string& propertyName, int location, uint textureIndex, const SamplerState&);
-
-			void
-            bindUniform(const ProgramInputs::UniformInput&    uniformInput,
-                        ContainerPtr                          container,
-                        const std::string&                    propertyName);
-
 			void
 			bindState(const std::string& stateName);
 
