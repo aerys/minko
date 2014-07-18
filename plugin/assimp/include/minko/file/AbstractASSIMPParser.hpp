@@ -56,28 +56,30 @@ namespace minko
 			public AbstractParser
 		{
 		public:
-            typedef std::shared_ptr<AbstractASSIMPParser>					Ptr;
+            typedef std::shared_ptr<AbstractASSIMPParser>					    Ptr;
 
         private:
-            typedef std::shared_ptr<Loader>					LoaderPtr;
-			typedef std::shared_ptr<scene::Node>					NodePtr;
-			typedef std::shared_ptr<component::SceneManager>		SceneManagerPtr;
-			typedef std::shared_ptr<geometry::Geometry>				GeometryPtr;
-			typedef std::shared_ptr<geometry::Bone>					BonePtr;
-			typedef std::shared_ptr<geometry::Skin>					SkinPtr;
-			typedef std::shared_ptr<math::Vector3>					Vector3Ptr;
-			typedef std::shared_ptr<math::Vector4>					Vector4Ptr;
-			typedef std::shared_ptr<math::Quaternion>				QuaternionPtr;
-			typedef std::shared_ptr<math::Matrix4x4>				Matrix4x4Ptr;
-			typedef std::shared_ptr<material::Material>				MaterialPtr;
-			typedef std::shared_ptr<render::Effect>					EffectPtr;
+            typedef std::shared_ptr<Loader>					                    LoaderPtr;
+			typedef std::shared_ptr<scene::Node>					            NodePtr;
+			typedef std::shared_ptr<component::SceneManager>		            SceneManagerPtr;
+			typedef std::shared_ptr<geometry::Geometry>				            GeometryPtr;
+			typedef std::shared_ptr<geometry::Bone>					            BonePtr;
+			typedef std::shared_ptr<geometry::Skin>					            SkinPtr;
+			typedef std::shared_ptr<math::Vector3>					            Vector3Ptr;
+			typedef std::shared_ptr<math::Vector4>					            Vector4Ptr;
+			typedef std::shared_ptr<math::Quaternion>				            QuaternionPtr;
+			typedef std::shared_ptr<math::Matrix4x4>				            Matrix4x4Ptr;
+			typedef std::shared_ptr<material::Material>				            MaterialPtr;
+			typedef std::shared_ptr<render::Effect>					            EffectPtr;
 
-			typedef std::vector<Matrix4x4Ptr>						Matrices4x4;
+			typedef std::vector<Matrix4x4Ptr>						            Matrices4x4;
 
-			typedef Signal<LoaderPtr>::Slot							LoaderSignalSlot;
+			typedef Signal<LoaderPtr>::Slot		                                LoaderCompleteSignalSlot;
+			typedef Signal<LoaderPtr, const file::ParserError&>::Slot		    LoaderErrorSignalSlot;
 
-			typedef std::unordered_map<LoaderPtr, LoaderSignalSlot>	LoaderToSlotMap;
-			typedef std::unordered_map<uint, std::string>			TextureTypeToName;
+			typedef std::unordered_map<LoaderPtr, LoaderCompleteSignalSlot>	    LoaderToCompleteSlotMap;
+			typedef std::unordered_map<LoaderPtr, LoaderErrorSignalSlot>	    LoaderToErrorSlotMap;
+			typedef std::unordered_map<uint, std::string>			            TextureTypeToName;
 
         private:
 			static const TextureTypeToName							_textureTypeToName;
@@ -97,8 +99,8 @@ namespace minko
 			std::unordered_map<std::string, Matrices4x4>			_nameToAnimMatrices;
 			std::set<NodePtr>										_alreadyAnimatedNodes;
 
-			LoaderToSlotMap											_loaderCompleteSlots;
-			LoaderToSlotMap											_loaderErrorSlots;
+			LoaderToCompleteSlotMap									_loaderCompleteSlots;
+			LoaderToErrorSlotMap									_loaderErrorSlots;
 
             Assimp::Importer*                                       _importer;
 
@@ -135,7 +137,11 @@ namespace minko
 			createSceneTree(NodePtr minkoNode, const aiScene* scene, aiNode* ainode, std::shared_ptr<AssetLibrary> assets);
 
             GeometryPtr
-            createMeshGeometry(NodePtr, aiMesh*);
+            createMeshGeometry(NodePtr, aiMesh*, const std::string&);
+
+            static
+            std::string
+            getMeshName(const std::string& meshName);
 
             std::shared_ptr<component::Transform>
             getTransformFromAssimp(aiNode* ainode);

@@ -23,6 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/scene/NodeSet.hpp"
 #include "minko/data/Container.hpp"
 #include "minko/data/StructureProvider.hpp"
+#include "minko/Uuid.hpp"
 
 using namespace minko;
 using namespace minko::scene;
@@ -41,7 +42,8 @@ Node::Node() :
 	_removed(Signal<Ptr, Ptr, Ptr>::create()),
 	_componentAdded(Signal<Ptr, Ptr, Node::AbsCtrlPtr>::create()),
 	_componentRemoved(Signal<Ptr, Ptr, Node::AbsCtrlPtr>::create()),
-	_layoutsChanged(Signal<Ptr, Ptr>::create())
+	_layoutsChanged(Signal<Ptr, Ptr>::create()),
+	_uuid(minko::Uuid::getUuid())
 {
 	_container->addProvider(_data);
 

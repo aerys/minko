@@ -21,6 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/scene/Node.hpp"
 #include "minko/file/AssetLibrary.hpp"
 #include "minko/data/Provider.hpp"
+#include "minko/data/StructureProvider.hpp"
 #include "minko/component/SceneManager.hpp"
 #include "minko/data/Container.hpp"
 #include "minko/component/Renderer.hpp"
@@ -36,24 +37,28 @@ using namespace minko;
 using namespace math;
 using namespace minko::component;
 
-std::shared_ptr<Renderer> Hologram::_frontFaceNormalRenderer = nullptr;
-std::shared_ptr<Renderer> Hologram::_backFaceNormalRenderer = nullptr;
-std::shared_ptr<Renderer> Hologram::_depthMapRenderer = nullptr;
+std::shared_ptr<Renderer> Hologram::_frontFaceNormalRenderer0 = nullptr;
+std::shared_ptr<Renderer> Hologram::_backFaceNormalRenderer0 = nullptr;
+std::shared_ptr<Renderer> Hologram::_depthMapRenderer0 = nullptr;
 
-std::shared_ptr<render::Texture> Hologram::_frontFaceNormalRenderTarget = nullptr;
-std::shared_ptr<render::Texture> Hologram::_backFaceNormalRenderTarget = nullptr;
-std::shared_ptr<render::Texture> Hologram::_depthMapRenderTarget = nullptr;
+std::shared_ptr<Renderer> Hologram::_frontFaceNormalRenderer1 = nullptr;
+std::shared_ptr<Renderer> Hologram::_backFaceNormalRenderer1 = nullptr;
+std::shared_ptr<Renderer> Hologram::_depthMapRenderer1 = nullptr;
+
+std::shared_ptr<render::Texture> Hologram::_frontFaceNormalRenderTarget0 = nullptr;
+std::shared_ptr<render::Texture> Hologram::_backFaceNormalRenderTarget0 = nullptr;
+std::shared_ptr<render::Texture> Hologram::_depthMapRenderTarget0 = nullptr;
+
+std::shared_ptr<render::Texture> Hologram::_frontFaceNormalRenderTarget1 = nullptr;
+std::shared_ptr<render::Texture> Hologram::_backFaceNormalRenderTarget1 = nullptr;
+std::shared_ptr<render::Texture> Hologram::_depthMapRenderTarget1 = nullptr;
 
 const uint Hologram::MAP_RESOLUTION = 1024;
 
-Hologram::Hologram(std::shared_ptr<render::Effect>			frontEffect, 
-				   std::shared_ptr<render::Effect>			backEffect,
-				   std::shared_ptr<render::Effect>			depthEffect,
+Hologram::Hologram(std::shared_ptr<render::Effect>			effect,
 				   std::shared_ptr<render::AbstractContext> context) :
 	_context(context),
-	_depthEffect(depthEffect),
-	_frontEffect(frontEffect),
-	_backEffect(backEffect)
+	_effect(effect)
 {
 }
 
@@ -67,33 +72,21 @@ Hologram::initialize()
 			initTarget(nullptr, target, nullptr);
 		else
 			_addedToSceneSlot = target->added()->connect(std::bind(
-				&Hologram::targetAddedToScene,
-				std::static_pointer_cast<Hologram>(shared_from_this()),
-				std::placeholders::_1,
-				std::placeholders::_2,
-				std::placeholders::_3));
+			&Hologram::targetAddedToScene,
+			std::static_pointer_cast<Hologram>(shared_from_this()),
+			std::placeholders::_1,
+			std::placeholders::_2,
+			std::placeholders::_3));
 	});
 }
 
 void
 Hologram::initTarget(AbstractComponent::Ptr cmp, NodePtr target, NodePtr ancestor)
 {
-	if (_frontFaceNormalRenderer == nullptr)
+	if (_frontFaceNormalRenderer0 == nullptr && _frontFaceNormalRenderer1 == nullptr)
 	{
-		_depthMapRenderTarget = render::Texture::create(_context, MAP_RESOLUTION, MAP_RESOLUTION, false, true);
-		_depthMapRenderer = Renderer::create(0xFFFFFFFF, _depthMapRenderTarget, _depthEffect, 10.f);
-
-		_depthMapRenderer->backgroundColor(0xFFFFFFFF);
-
-		_frontFaceNormalRenderTarget = render::Texture::create(_context, MAP_RESOLUTION, MAP_RESOLUTION, false, true);
-		_frontFaceNormalRenderer = Renderer::create(0x000000FF, _frontFaceNormalRenderTarget, _frontEffect, 10.f);
-
-		_backFaceNormalRenderTarget = render::Texture::create(_context, MAP_RESOLUTION, MAP_RESOLUTION, false, true);
-		_backFaceNormalRenderer = Renderer::create(0x000000FF, _backFaceNormalRenderTarget, _backEffect, 10.f);
-
-		_frontFaceNormalRenderer->layoutMask(1u << 21);
-		_backFaceNormalRenderer->layoutMask(1u << 21);
-		_depthMapRenderer->layoutMask(1u << 21);
+		_depthMapRenderer0 = Renderer::create(0xFFFFFFFF, nullptr, _effect, 10.f);
+		//_depthMapRenderer0->layoutMask(1u << 21);
 
 		auto nodeSet = scene::NodeSet::create(target->root())->descendants(false, false)->where(
 			[=](scene::Node::Ptr node) -> bool
@@ -101,21 +94,39 @@ Hologram::initTarget(AbstractComponent::Ptr cmp, NodePtr target, NodePtr ancesto
 			return node->hasComponent<PerspectiveCamera>();
 		});
 
-		nodeSet->nodes()[0]->addComponent(_frontFaceNormalRenderer);
-		nodeSet->nodes()[0]->addComponent(_backFaceNormalRenderer);
-		nodeSet->nodes()[0]->addComponent(_depthMapRenderer);
+		auto leftEyeNode = nodeSet->nodes()[0];
+
+		//leftEyeNode->addComponent(_depthMapRenderer0);		
+
+		if (nodeSet->nodes().size() > 1)
+		{
+			auto rightEyeNode = nodeSet->nodes()[1];
+
+			_depthMapRenderer1 = Renderer::create(0xFFFFFFFF, nullptr, _effect, 11.f);
+			//_depthMapRenderer1->layoutMask(1u << 21);
+
+			//rightEyeNode->addComponent(_depthMapRenderer1);
+		}
+
+		
 	}
 
 	if (target->hasComponent<Surface>())
 	{
-		target->component<Surface>()->material()
-			->set("frontFaceNormalMap", _frontFaceNormalRenderTarget)
-			->set("backFaceNormalMap", _backFaceNormalRenderTarget)
-			->set("depthMap", _depthMapRenderTarget)
-			->set("mapResolution", float(MAP_RESOLUTION));
 
-		target->layouts(target->layouts() | 1u << 21);
+		/*target->component<Surface>()->material()			
+			->set("mapResolution", float(MAP_RESOLUTION));*/
+
+		/*target->component<Surface>()->material()
+			->set("frontFaceNormalMap", _frontFaceNormalRenderTarget1)
+			->set("backFaceNormalMap", _backFaceNormalRenderTarget1)
+			->set("depthMap", _depthMapRenderTarget1)
+			->set("mapResolution", float(MAP_RESOLUTION));*/
+
+		//target->layouts(target->layouts() | 1u << 21);
 	}
+
+	//targetAddedToScene(target, target, target->parent());
 }
 
 void

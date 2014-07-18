@@ -12,6 +12,6 @@ vec4 pack(const float value)
 // Unpacking a [0-1] float value from a 4D vector where each component was a 8-bits integer
 float unpack(const vec4 value)
 {
-   const vec4 bitSh = vec4(1.0 / (256.0 * 256.0 * 256.0), 1.0 / (256.0 * 256.0), 1.0 / 256.0, 1.0);
+   const vec4 bitSh = vec4(1.0f / (256.0f * 256.0f * 256.0f), 1.0f / (256.0f * 256.0f), 1.0f / 256.0f, 1.0f);
    return(dot(value, bitSh));
 }

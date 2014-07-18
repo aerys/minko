@@ -26,7 +26,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/GeometryParser.hpp"
 #include "minko/file/MaterialParser.hpp"
 
-
 namespace minko
 {
 	namespace file
@@ -40,7 +39,7 @@ namespace minko
 		public:
 			typedef std::shared_ptr<SceneParser>																														Ptr;
 			typedef std::function<std::shared_ptr<component::AbstractComponent>(std::string&, std::shared_ptr<file::AssetLibrary>, std::shared_ptr<file::Dependency>)>	ComponentReadFunction;
-			typedef msgpack::type::tuple<std::string, uint, uint, std::vector<uint>>																					SerializedNode;
+			typedef msgpack::type::tuple<std::string, uint, uint, std::vector<uint>, std::string>																		SerializedNode;
 			typedef std::shared_ptr<AssetLibrary>																														AssetLibraryPtr;
 
 		private:

@@ -64,7 +64,7 @@ int main(int argc, char** argv)
 			->addComponent(Transform::create(
 			Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 1.5f, 6.f))
 			))
-			->addComponent(PerspectiveCamera::create(WINDOW_WIDTH / (float)WINDOW_HEIGHT, (float)PI * 0.25f, .1f, 1000.f));
+			->addComponent(PerspectiveCamera::create(WINDOW_WIDTH / (float)WINDOW_HEIGHT, float(M_PI) * 0.25f, .1f, 1000.f));
 		root->addChild(camera);
 
         auto material = material::PhongMaterial::create()
@@ -85,7 +85,7 @@ int main(int argc, char** argv)
             sceneManager->assets()->effect(EFFECT_FILENAME)));
 
         auto groundNode = scene::Node::create("ground")
-            ->addComponent(Transform::create(Matrix4x4::create()->appendScale(16.0f)->appendRotationX((float) -PI / 2.0f)))
+            ->addComponent(Transform::create(Matrix4x4::create()->appendScale(16.0f)->appendRotationX(-float(M_PI) / 2.0f)))
             ->addComponent(Surface::create(
             geometry::QuadGeometry::create(sceneManager->assets()->context()),
             groundMaterial,
@@ -179,7 +179,7 @@ int main(int argc, char** argv)
 
 		auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
 		{
-			camera->component<PerspectiveCamera>()->aspectRatio((float)w / (float)h);
+			camera->component<PerspectiveCamera>()->aspectRatio(float(w) / float(h));
 		});
 
 		auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float dt)

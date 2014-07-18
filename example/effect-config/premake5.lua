@@ -7,7 +7,7 @@ minko.project.application("minko-example-" .. PROJECT_NAME)
 		"src/**.hpp",
 		"asset/**"
 	}
-	
+
 	includedirs { "src" }
 
 	-- plugins
@@ -17,3 +17,10 @@ minko.project.application("minko-example-" .. PROJECT_NAME)
 	--minko.plugin.enable("mk")
 	--minko.plugin.enable("particles")
 	--minko.plugin.enable("png")
+
+	configuration { "debug" }
+		-- note: this is usually unnecessary, but we have a case where
+		-- PlatformTexture.effect depends on effect/Basic.vertex.glsl.
+		prelinkcommands {
+			minko.action.copy("asset"),
+		}

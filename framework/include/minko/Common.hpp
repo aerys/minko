@@ -19,6 +19,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #pragma once
 
+#include "minko/Setup.hpp"
+
 #include <algorithm>
 #include <array>
 #include <cmath>
@@ -62,10 +64,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "glm/gtx/matrix_interpolation.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtx/color_space.hpp"
-
-#define PI 3.1415926535897932384626433832795
-
-#define MINKO_VERSION "3.0"
 
 namespace minko
 {
@@ -359,9 +357,29 @@ namespace minko
 
         class ParserError : public std::runtime_error
         {
+        private:
+            std::string _type;
+
         public:
-            ParserError(std::string message) : std::runtime_error(message)
-            {}
+            explicit
+            ParserError(const std::string& message) :
+                std::runtime_error(message),
+                _type()
+            {
+            }
+
+            ParserError(const std::string& type, const std::string& message) :
+                std::runtime_error(message),
+                _type(type)
+            {
+            }
+
+            inline
+            const std::string&
+            type() const
+            {
+                return _type;
+            }
         };
 	}
 
@@ -377,7 +395,7 @@ namespace minko
 		class Mouse;
         class Keyboard;
 		class Joystick;
-        class Finger;
+        class Touch;
 	}
 
 	namespace async

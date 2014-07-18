@@ -29,7 +29,6 @@ minko.plugin["http-worker"].enable = function (self)
 
     configuration { "not html5" }
 	    minko.plugin.links { "http-worker" }
-
 	configuration { "windows32 or windows64" }
 		links { "libcurl" }
 
@@ -61,11 +60,28 @@ minko.plugin["http-worker"].enable = function (self)
 		links { "curl" }
 
 	configuration { "osx64" }
-		links { "curl" }
+		libdirs { minko.plugin.path("http-worker") .. "/lib/curl/lib/osx64/release" }
+		links { "curl", "minko-plugin-zlib", "Security.framework", "LDAP.framework" }
+
+	configuration { "osx64", "debug" }
+		libdirs { minko.plugin.path("zlib") .. "/bin/osx64/debug" }
+
+	configuration { "osx64", "release" }
+		libdirs { minko.plugin.path("zlib") .. "/bin/osx64/release" }
 
 	configuration { "android" }
-		libdirs { minko.plugin.path("http-worker") .. "/lib/curl/lib/android/debug" }
+		libdirs { minko.plugin.path("http-worker") .. "/lib/curl/lib/android/release" }
 		links { "curl" }
+
+	configuration { "ios" }
+		libdirs { minko.plugin.path("http-worker") .. "/lib/curl/lib/ios/release" }
+		links { "curl", "minko-plugin-zlib", "Security.framework" }
+
+	configuration { "ios", "debug" }
+		libdirs { minko.plugin.path("zlib") .. "/bin/ios/debug" }
+
+	configuration { "ios", "release" }
+		libdirs { minko.plugin.path("zlib") .. "/bin/ios/release" }
 end
 
 --function minko.worker.http:dist(workerDistDir)

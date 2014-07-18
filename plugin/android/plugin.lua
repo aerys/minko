@@ -21,13 +21,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 minko.plugin.android = {}
 
 function minko.plugin.android:enable()
-	defines { "MINKO_PLUGIN_ANDROID" }
+	configuration { "android" }
+		defines { "MINKO_PLUGIN_ANDROID" }
 
-	minko.plugin.links { "android" }
-	includedirs { minko.plugin.path("android") .. "/include" }
+		minko.plugin.links { "android" }
+		includedirs { minko.plugin.path("android") .. "/include" }
 
-	postbuildcommands {
-		-- 'echo ' .. abis(),
-		'bash ' .. minko.plugin.path("android") .. '/script/build_android.sh ${TARGETDIR} || ' .. minko.action.fail()
-	}
+		postbuildcommands {
+			-- 'echo ' .. abis(),
+			'bash ' .. minko.plugin.path("android") .. '/script/build_android.sh ${TARGETDIR} || ' .. minko.action.fail()
+		}
 end

@@ -63,10 +63,58 @@ namespace minko
 			MATERIAL_ASSET              = 1,
 			EMBED_MATERIAL_ASSET        = 11,
 			TEXTURE_ASSET               = 2,
-            PNG_EMBED_TEXTURE_ASSET     = 120,
-            JPEG_EMBED_TEXTURE_ASSET    = 121,
+            EMBED_TEXTURE_ASSET         = 120,
 			EFFECT_ASSET                = 3,
 			EMBED_EFFECT_ASSET          = 13
 		};
+
+        enum class ImageFormat
+        {
+            SOURCE  = 1,
+            PNG     = 2,
+            JPEG    = 3,
+            TGA     = 4,
+        };
+
+        namespace
+        {
+            static const auto imageFormatToExtensionMap = std::map<ImageFormat, std::string>
+            {
+                { ImageFormat::PNG, "png" },
+                { ImageFormat::JPEG, "jpg" },
+                { ImageFormat::TGA, "tga" },
+            };
+
+            static const auto defaultImageFormat = ImageFormat::PNG;
+        }
+
+        inline
+        std::string
+        extensionFromImageFormat(ImageFormat format)
+        {
+            auto imageFormatToExtensionPairIt = imageFormatToExtensionMap.find(format);
+
+            if (imageFormatToExtensionPairIt == imageFormatToExtensionMap.end())
+                return imageFormatToExtensionMap.at(defaultImageFormat);
+
+            return imageFormatToExtensionPairIt->second;
+        }
+
+        inline
+        ImageFormat
+        imageFormatFromExtension(const std::string& extension)
+        {
+            auto imageFormatToExtensionPairIt = std::find_if(imageFormatToExtensionMap.begin(),
+                                              imageFormatToExtensionMap.end(),
+            [=](const std::pair<ImageFormat, std::string>& imageFormatToExtensionPair)
+            {
+                return imageFormatToExtensionPair.second == extension;
+            });
+
+            if (imageFormatToExtensionPairIt == imageFormatToExtensionMap.end())
+                return ImageFormat::SOURCE;
+
+            return imageFormatToExtensionPairIt->first;
+        }
 	}
 }

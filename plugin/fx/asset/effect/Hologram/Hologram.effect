@@ -1,105 +1,115 @@
 {
-    "name"  	: "hologram",
-    	
-    "attributeBindings" : {
-        "position"              : "geometry[${geometryId}].position",
-        "uv"                    : "geometry[${geometryId}].uv",
+	"name"				: "hologram",
+
+	"attributeBindings"	: {
+		"position"				: "geometry[${geometryId}].position",
 		"normal"				: "geometry[${geometryId}].normal",
+		"uv"					: "geometry[${geometryId}].uv",
 		"boneIdsA"				: "geometry[${geometryId}].boneIdsA",
 		"boneIdsB"				: "geometry[${geometryId}].boneIdsB",		
 		"boneWeightsA"			: "geometry[${geometryId}].boneWeightsA",
 		"boneWeightsB"			: "geometry[${geometryId}].boneWeightsB"
-    },
-    
-    "uniformBindings"   : {
-        "uvScale"               : { "property" : "material[${materialId}].uvScale", "default" : [1.0, 1.0] },
-        "uvOffset"              : { "property" : "material[${materialId}].uvOffset", "default" : [0.0, 0.0] },
-        "diffuseColor"          : "material[${materialId}].diffuseColor",
-        "diffuseMap"            : "material[${materialId}].diffuseMap",
-		"depthMap"				: "material[${materialId}].depthMap",
-		"mapResolution"			: "material[${materialId}].mapResolution",
-        "modelToWorldMatrix"	: "transform.modelToWorldMatrix",
-		"noiseMap"				: "material[${materialId}].noiseMap",
-		"frontFaceNormalMap"	: "material[${materialId}].frontFaceNormalMap",
-		"backFaceNormalMap"		: "material[${materialId}].backFaceNormalMap",
-		"worldToScreenMatrix"	: { "property" : "camera.worldToScreenMatrix", 		"source" : "renderer" },
-		"cameraPosition"		: { "property" : "camera.position", 				"source" : "renderer" },
-		"boneMatrices"			: { "property" : "geometry[${geometryId}].boneMatrices",			"source" : "target" },
-		"numBones"				: { "property" : "geometry[${geometryId}].numBones",				"source" : "target" },
-		"fogColor"				: "material[${materialId}].fogColor",
-		"fogDensity"			: "material[${materialId}].fogDensity",
-		"fogStart"				: "material[${materialId}].fogStart",
-		"fogEnd"				: "material[${materialId}].fogEnd",
-		"time"					: "material[${materialId}].time"
-    },
-    
-    "macroBindings" : {
-        "DIFFUSE_MAP"           : "material[${materialId}].diffuseMap",
-		"DEPTH_MAP"				: "material[${materialId}].depthMap",
-		"FRONT_FACE_NORMAL_MAP"	: "material[${materialId}].frontFaceNormalMap",
-		"BACK_FACE_NORMAL_MAP"	: "material[${materialId}].backFaceNormalMap",
-		"NOISE_MAP"				: "material[${materialId}].noiseMap",
-        "MODEL_TO_WORLD"        : "transform.modelToWorldMatrix",
-        "HAS_NORMAL"            : "geometry[${geometryId}].normal",
-        "NUM_BONES"             : { "property" : "geometry[${geometryId}].numBones",   "source" : "target" },
-		"FOG_LIN"				: "material[${materialId}].fogLinear",
-		"FOG_EXP"				: "material[${materialId}].fogExponential",
-		"FOG_EXP2"				: "material[${materialId}].fogExponential2"
-    },
+	},
 
-    "stateBindings" : {
-        "blendMode"             : "material[${materialId}].blendMode",
-        "colorMask"             : "material[${materialId}].colorMask",
-        "depthMask"             : "material[${materialId}].depthMask",
-        "depthFunc"             : "material[${materialId}].depthFunc",
-        "triangleCulling"       : "material[${materialId}].triangleCulling",
-        "stencilFunc"           : "material[${materialId}].stencilFunc",
-        "stencilRef"            : "material[${materialId}].stencilRef",
-        "stencilMask"           : "material[${materialId}].stencilMask",
-        "stencilFailOp"         : "material[${materialId}].stencilFailOp",
-        "stencilZFailOp"        : "material[${materialId}].stencilZFailOp",
-        "stencilZPassOp"        : "material[${materialId}].stencilZPassOp",
-        "scissorBox.x"          : { "property" : "scissorBox.x",        "source" : "renderer" },
-        "scissorBox.y"          : { "property" : "scissorBox.y",        "source" : "renderer" },
-        "scissorBox.width"      : { "property" : "scissorBox.width",    "source" : "renderer" },
-        "scissorBox.height"     : { "property" : "scissorBox.height",   "source" : "renderer" },
-        "priority"              : "material[${materialId}].priority",
-        "zSort"                 : "material[${materialId}].zSort",
-        "layouts"               : "node.layouts"
-    },
-    
-    "colorMask"         : true,
-    "depthTest"         : [true, "less_equal"],
-    "triangleCulling"   : "back",
-	"stencilTest"		: ["always", 0, 1, ["keep", "keep", "keep"]],
-    "scissorTest"		: false,
-	"scissorBox"		: [0, 0, -1, -1],
+	"uniformBindings"	: {
+        "modelToWorldMatrix"    : "transform.modelToWorldMatrix",
+        "worldToScreenMatrix"   : { "property" : "camera.worldToScreenMatrix", "source" : "renderer" },
+		"boneMatrices"			: "geometry[${geometryId}].boneMatrices",
+		"numBones"				: "geometry[${geometryId}].numBones"
+	},
+
+	"macroBindings"	: {
+		"MODEL_TO_WORLD"		: "transform.modelToWorldMatrix",
+		"NUM_BONES"				: "geometry[${geometryId}].numBones"
+	},
+
+	"techniques" : [{
+		"passes"	: [{
+			"name"				: "hologram_depth_pass",
+			"priority"			: [ "transparent", 3.0 ],
+			"target"			: { "name" : "hologram_depthMap", "size" : 1024 },
+			"uniformBindings"	: {
+				"cameraPosition"	: { "property" : "camera.position",	"source" : "renderer" }
+			},
+			"vertexShader"      : "#pragma include('../Depth/Depth.vertex.glsl')",
+			"fragmentShader"    : "#pragma include('../Depth/Depth.fragment.glsl')"
+		},
+		{
+			"name"				: "hologram_normal_back_pass",
+			"priority"			: [ "transparent", 2.0 ],
+			"triangleCulling"   : "front",
+			"target"			: { "name" : "hologram_backFaceNormalMap", "size" : 1024 },
+			"attributeBindings"	: {
+				"tangent"	: "geometry[${geometryId}].tangent"
+			},
+			"uniformBindings"	: {
+				"normalMap"	: "material[${materialId}].normalMap"
+			},
+			"macroBindings"		: {
+				"NORMAL_MAP"	: "material[${materialId}].normalMap"
+			},
+			"samplerStates"	: {
+				"normalMap"	: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" }
+			},
+			"vertexShader"		: "#pragma include('HologramNormals.vertex.glsl')",
+			"fragmentShader"	: "#pragma include('HologramNormals.fragment.glsl')"
+		},
+		{
+			"name"				: "hologram_normal_front_pass",
+			"priority"			: [ "transparent", 1.0 ],
+			"triangleCulling"   : "back",
+			"target"			: { "name" : "hologram_frontFaceNormalMap", "size" : 1024 },
+			"attributeBindings"	: {
+				"tangent"	: "geometry[${geometryId}].tangent"
+			},
+			"uniformBindings"	: {
+				"normalMap"	: "material[${materialId}].normalMap"
+			},
+			"macroBindings"		: {
+				"NORMAL_MAP"	: "material[${materialId}].normalMap"
+			},
+			"samplerStates"	: {
+				"normalMap"	: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" }
+			},
+			"vertexShader"		: "#pragma include('HologramNormals.vertex.glsl')",
+			"fragmentShader"	: "#pragma include('HologramNormals.fragment.glsl')"
+		},
+		{
+			"name"				: "hologram_render_pass",
+			"priority"			: [ "transparent", 0.0 ],
+			"depthTest"			: "always",
+			"blendMode"			: "alpha",
+			"zSort"				: "true",
+
+			"uniformBindings"	: {
+				"depthMap"				: "hologram_depthMap",
+				"frontFaceNormalMap"	: "hologram_frontFaceNormalMap",
+				"backFaceNormalMap"		: "hologram_backFaceNormalMap",
+				"diffuseColor"          : "material[${materialId}].diffuseColor",
+				"noiseMap"				: { "property" : "material[${materialId}].hologramNoiseMap", "default" : "hologram_noise.png" },
+				"time"					: { "property" : "scene.time", "source" : "root" },
+				"cameraPosition"		: { "property" : "camera.position", "source" : "renderer" }
+			},
+
+			"macroBindings"	: {
+				"MAP_RESOLUTION"		: { "default" : 1024 },
+				"DEPTH_MAP"				: "hologram_depthMap",
+				"FRONT_FACE_NORMAL_MAP"	: "hologram_frontFaceNormalMap",
+				"BACK_FACE_NORMAL_MAP"	: "hologram_backFaceNormalMap",
+				"NOISE_MAP"				: "material[${materialId}].hologramNoiseMap"
+			},
+
+			"samplerStates" : {
+				"diffuseMap"			: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" },
+				"depthMap"				: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" },
+				"frontFaceNormalMap"    : { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" },
+				"backFaceNormalMap"		: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" },
+				"noiseMap"				: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" }
+			},
+
+			"vertexShader"      : "#pragma include('Hologram.vertex.glsl')",
+			"fragmentShader"    : "#pragma include('Hologram.fragment.glsl')"
+		}]
+	}]
 	
-    "samplerStates" : {
-        "diffuseMap"			: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" },
-		"depthMap"				: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" },
-		"frontFaceNormalMap"    : { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" },
-		"backFaceNormalMap"		: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" },
-		"noiseMap"				: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" }
-    },
-    
-    "defaultTechnique"  : "transparent",
-
-	"techniques" : [
-    {
-        "name"      : "transparent",
-
-
-        "blendMode" : "alpha",
-        "priority"  : "transparent",
-        "zSort"     : "true",
-
-        "passes"    : [
-        {
-            "vertexShader"      : "#pragma include('Hologram.vertex.glsl')",
-            "fragmentShader"    : "#pragma include('Hologram.fragment.glsl')"
-        }
-        ] 
-    }
-    ]
 }

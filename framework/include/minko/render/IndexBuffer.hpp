@@ -23,6 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Signal.hpp"
 
 #include "minko/render/AbstractResource.hpp"
+#include "minko/math/Convertible.hpp"
 
 namespace minko
 {

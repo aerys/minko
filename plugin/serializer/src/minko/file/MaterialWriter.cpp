@@ -29,6 +29,8 @@ std::map<const std::type_info*, std::function<std::tuple<uint, std::string>(Any)
 
 MaterialWriter::MaterialWriter()
 {
+	_magicNumber = 0x0000004D | MINKO_SCENE_MAGIC_NUMBER;
+
 	_typeToWriteFunction[&typeid(std::shared_ptr<math::Matrix4x4>)]		= std::bind(&serialize::TypeSerializer::serializeMatrix4x4, std::placeholders::_1);
 	_typeToWriteFunction[&typeid(std::shared_ptr<math::Vector2>)]		= std::bind(&serialize::TypeSerializer::serializeVector2, std::placeholders::_1);
 	_typeToWriteFunction[&typeid(std::shared_ptr<math::Vector3>)]		= std::bind(&serialize::TypeSerializer::serializeVector3, std::placeholders::_1);
@@ -49,7 +51,7 @@ MaterialWriter::embed(std::shared_ptr<AssetLibrary>		assetLibrary,
 
 	for (std::string structuredPropertyName : material->propertyNames())
 	{
-		std::string propertyName = structuredPropertyName;//).substr(material->arrayName().size() + 4);
+		std::string propertyName = structuredPropertyName;
 
 		if (serializeMaterialValue<uint>(material, propertyName, assetLibrary, &serializedComplexProperties, &serializedBasicProperties, dependency))
 			continue;

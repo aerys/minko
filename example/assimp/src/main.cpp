@@ -120,7 +120,7 @@ main(int argc, char** argv)
 			Matrix4x4::create()->lookAt(Vector3::create(0.f, 0.75f, 0.f), Vector3::create(0.25f, 0.75f, 2.5f))
 		))
 		->addComponent(PerspectiveCamera::create(
-			(float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, (float)PI * 0.25f, .1f, 1000.f)
+			(float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, float(M_PI) * 0.25f, .1f, 1000.f)
 		);
 	root->addChild(camera);
 
@@ -173,7 +173,7 @@ main(int argc, char** argv)
 
 	auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
 	{
-		camera->component<PerspectiveCamera>()->aspectRatio((float)w / (float)h);
+		camera->component<PerspectiveCamera>()->aspectRatio(float(w) / float(h));
 	});
 
 	// currently, keyUp events seem not to be fired at the individual key level

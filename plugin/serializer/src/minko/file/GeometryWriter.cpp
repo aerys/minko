@@ -33,6 +33,8 @@ std::unordered_map<uint, GeometryWriter::GeometryTestFunc>		GeometryWriter::vert
 void
 GeometryWriter::initialize()
 {
+	_magicNumber = 0x00000047 | MINKO_SCENE_MAGIC_NUMBER;
+
 	registerIndexBufferWriterFunction(
 		std::bind(
 			GeometryWriter::serializeIndexStream,

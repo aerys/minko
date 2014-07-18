@@ -29,9 +29,21 @@ PNGWriter::write(const std::string&                 filename,
                  minko::uint                        width,
                  minko::uint                        height)
 {
-	unsigned error = lodepng::encode(filename, data, width, height);
+	unsigned status = lodepng::encode(filename, data, width, height);
 
-	if (error)
-		throw std::runtime_error(std::string("PNGWriter::write: ") + lodepng_error_text(error));
+	if (status != 0)
+		throw std::runtime_error(std::string("PNGWriter::write: ") + lodepng_error_text(status));
 }
 
+void
+PNGWriter::writeToStream(std::vector<unsigned char>&       destination,
+                         const std::vector<unsigned char>& source,
+                         minko::uint                       width,
+                         minko::uint                       height)
+
+{
+    unsigned status = lodepng::encode(destination, source, width, height);
+
+    if (status != 0)
+		throw std::runtime_error(std::string("PNGWriter::writeToStream: ") + lodepng_error_text(status));
+}

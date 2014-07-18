@@ -17,7 +17,7 @@
  
       void main(void)
       {
-        vVertexUv = vec2(aUv.x, 1 - aUv.y);
+        vVertexUv = vec2(aUv.x, 1. - aUv.y);
  
         gl_Position = vec4(aPosition, 1) * vec4(1., 1., 1., .5);
       }

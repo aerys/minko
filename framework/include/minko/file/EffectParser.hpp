@@ -120,7 +120,7 @@ namespace minko
 			std::unordered_map<std::string, std::string>						_techniqueFallback;
 			
 			std::unordered_map<LoaderPtr, Signal<LoaderPtr>::Slot>				_loaderCompleteSlots;
-			std::unordered_map<LoaderPtr, Signal<LoaderPtr>::Slot>				_loaderErrorSlots;
+			std::unordered_map<LoaderPtr, Signal<LoaderPtr, const ParserError&>::Slot>				_loaderErrorSlots;
 
 		public:
 			inline static
@@ -153,6 +153,9 @@ namespace minko
 
 		private:
 			EffectParser();
+
+			data::MacroBindingMap
+			initializeDefaultMacroBindings() const;
 
 			std::shared_ptr<render::States>
 			parseRenderStates(const Json::Value&						root,
@@ -316,7 +319,7 @@ namespace minko
 
 
 			void
-            dependencyErrorHandler(LoaderPtr loader, const std::string& filename);
+            dependencyErrorHandler(LoaderPtr loader, const ParserError& error, const std::string& filename);
 
 			void
             textureErrorHandler(LoaderPtr loader);
@@ -327,6 +330,9 @@ namespace minko
 			static
 			std::unordered_map<std::string, unsigned int>
 			initializeBlendFactorMap();
+
+			std::string
+			concatenateGLSLBlocks(GLSLBlockListPtr blocks);
 
 			static
 			std::unordered_map<std::string, render::CompareMode>
@@ -344,12 +350,8 @@ namespace minko
 			float
 			priority(const std::string&);
 
-			std::string
-			concatenateGLSLBlocks(GLSLBlockListPtr blocks);
-
 			void
 			finalize();
-
 		};
 	}
 }

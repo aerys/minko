@@ -3,10 +3,10 @@
 -- Generate an Xcode C/C++ project.
 -- Copyright (c) 2009 Jason Perkins and the Premake project
 --
+	local xcode = premake.extensions.xcode
     local project = premake.project
     local config = premake.config
 	local fileconfig = premake.fileconfig
-	local xcode = premake.xcode
 	local tree = premake.tree
 
 --
@@ -147,7 +147,7 @@
 --    The Premake project to generate.
 --
 
-	function premake.xcode.project(prj)	
+	function xcode.project(prj)	
 		
 		local tr = xcode.buildprjtree(prj)
 		xcode.Header(tr)

@@ -4,13 +4,45 @@
 -- Copyright (c) 2009-2011 Jason Perkins and the Premake project
 --
 
-	local xcode = premake.xcode
+	local xcode = premake.extensions.xcode
 	local tree  = premake.tree
     local solution = premake.solution
 	local project = premake.project
     local config = premake.config
 	local fileconfig = premake.fileconfig
 
+
+	-- Copy Info.plist and Default-568h@2x.png from skeleton to project folder
+	function xcode.copymacfiles(prj)
+		local kind
+
+		if prj.name == "all" then
+			return
+		end
+
+		for cfg in project.eachconfig(prj) do
+			if kind and kind ~= cfg.kind then
+				error("Project '" .. prj.name .. "' uses more than one target kind; not supported by Xcode", 0)
+			end
+			kind = cfg.kind
+		end
+
+		if kind == "ConsoleApp" or kind == "WindowedApp" then
+			-- fixme: should not hard-code the list of files
+			-- fixme: should not depend on MINKO_HOME
+			local plist = "Info.plist"
+			local plistpath = MINKO_HOME .. "/skeleton/" .. plist
+			local defaultpng =  "Default-568h@2x.png"
+			local defaultpngpath = MINKO_HOME .. "/skeleton/" .. defaultpng
+
+			if not os.isfile(prj.location .. "/" .. plist) and os.isfile(plistpath) then
+				os.copyfile(plistpath, prj.location)
+			end
+			if not os.isfile(prj.location .. "/" .. defaultpng) and os.isfile(defaultpngpath) then
+				os.copyfile(defaultpngpath, prj.location)
+			end
+		end
+	end
 
 --
 -- Return the Xcode build category for a given file, based on the file extension.
@@ -180,6 +212,9 @@
 			StaticLib   = "com.apple.product-type.library.static",
 			SharedLib   = "com.apple.product-type.library.dynamic",
 		}
+		if not types[node.cfg.kind] then
+			error("Kind " .. node.cfg.kind .. " is unsupported by Xcode.")
+		end
 		return types[node.cfg.kind]
 	end
 
@@ -200,6 +235,9 @@
 			StaticLib   = "archive.ar",
 			SharedLib   = "\"compiled.mach-o.dylib\"",
 		}
+		if not types[node.cfg.kind] then
+			error("Kind " .. node.cfg.kind .. " is unsupported by Xcode.")
+		end
 		return types[node.cfg.kind]
 	end
 
@@ -335,8 +373,8 @@
 			local node = premake.tree.new(path.getname(bundlepath))
 				
 			node.cfg = cfg
-			node.id = premake.xcode.newid(node, "product")
-			node.targetid = premake.xcode.newid(node, "target")
+			node.id = xcode.newid(node, "product")
+			node.targetid = xcode.newid(node, "target")
 			
 			-- attach it to the project
 			prj.xcode = {}
@@ -760,12 +798,22 @@
 			local commands = table.join(prjcmds, {})
 
 			-- see if there are any config-specific commands to add
-			for _, cfg in ipairs(tr.configs) do
+			for key, cfg in ipairs(tr.configs) do
 				local cfgcmds = cfg[which]
 				if #cfgcmds > #prjcmds then
 					table.insert(commands, 'if [ "${CONFIGURATION}" = "' .. xcode.getconfigname(cfg) .. '" ]; then')
-					for i = #prjcmds + 1, #cfgcmds do
-						table.insert(commands, cfgcmds[i])
+					for _, cfgvalue in ipairs(cfgcmds) do
+						local exist = false; 
+						for _, prjvalue in ipairs(prjcmds) do
+							if prjvalue == cfgvalue then
+								exist = true
+								break
+							end 
+						end
+
+						if exist == false then
+							table.insert(commands, cfgvalue)
+						end
 					end
 					table.insert(commands, 'fi')
 				end

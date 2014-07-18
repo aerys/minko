@@ -61,17 +61,23 @@ MaterialParser::parse(const std::string&				filename,
 					  const std::vector<unsigned char>&	data,
 					  AssetLibraryPtr					assetLibrary)
 {
+	readHeader(filename, data);
+	
+	if (_magicNumber != 0x4D4B034D)
+		throw std::logic_error("Invalid material data");
+
 	msgpack::object		msgpackObject;
 	msgpack::zone		mempool;
 	std::string 		folderpath = extractFolderPath(resolvedFilename);
-	std::string			str = extractDependencies(assetLibrary, data, options, folderpath);
+	extractDependencies(assetLibrary, data, _headerSize, _dependenciesSize, options, folderpath);
 
 	msgpack::type::tuple<std::vector<ComplexProperty>, std::vector<BasicProperty>> serializedMaterial;
-	msgpack::unpack(str.data(), str.size(), NULL, &mempool, &msgpackObject);
+	msgpack::unpack((char*)&data[_headerSize + _dependenciesSize], _sceneDataSize, NULL, &mempool, &msgpackObject);
 	msgpackObject.convert(&serializedMaterial);
 
-	str.clear();
-	str.shrink_to_fit();
+	std::vector<unsigned char>* d = (std::vector<unsigned char>*)&data;
+	d->clear();
+	d->shrink_to_fit();
 
 	std::vector<ComplexProperty> complexProperties	= serializedMaterial.a0;
 	std::vector<BasicProperty>	 basicProperties	= serializedMaterial.a1;

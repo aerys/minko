@@ -106,7 +106,7 @@ int main(int argc, char** argv)
 	auto yaw = -4.03f;
 	auto pitch = 2.05f;
 	auto minPitch = 0.f + 1e-5;
-	auto maxPitch = (float)PI - 1e-5;
+	auto maxPitch = float(M_PI) - 1e-5;
 	auto lookAt = Vector3::create(0.f, 0.f, 0.f);
 	auto distance = 15.f;
 

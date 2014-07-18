@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/input/leap/Hand.hpp"
 #include "minko/input/leap/Gesture.hpp"
 #include "minko/input/leap/Pointable.hpp"
+#include "minko/input/leap/Finger.hpp"
 
 using namespace minko;
 using namespace minko::input;
@@ -128,6 +129,35 @@ Frame::pointableByIndex(int index) const
 	return index >=0 && index < (int)pointables.count()
 	? std::shared_ptr<Pointable>(new Pointable(pointables[index]))
 	: nullptr;	
+}
+
+Frame::FingerList
+Frame::fingers() const
+{
+    FingerList fingers;
+
+    for (auto finger : _leapFrame->fingers())
+    {
+        fingers.push_back(std::shared_ptr<Finger>(new Finger(finger)));
+    }
+
+    return fingers;
+}
+
+math::Vector3::Ptr
+Frame::translation(int32_t handId, Ptr sinceFrame) const
+{
+    const auto& leapFrame = *sinceFrame->_leapFrame;
+
+    return convert(_leapFrame->hand(handId).translation(leapFrame));
+}
+
+math::Matrix4x4::Ptr
+Frame::rotationMatrix(int32_t handId, Ptr sinceFrame) const
+{
+    const auto& leapFrame = *sinceFrame->_leapFrame;
+
+    return convert(_leapFrame->hand(handId).rotationMatrix(leapFrame));
 }
 
 bool

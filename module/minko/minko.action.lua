@@ -27,8 +27,20 @@ minko.action.copy = function(sourcePath)
 		local existenceTest = string.find(sourcePath, '*') and '' or ('if exist "' .. sourcePath .. '" ')
 
 		return existenceTest .. 'xcopy /y /i /e "' .. sourcePath .. '" "' .. targetDir .. '"'
+	elseif os.is("macosx") then
+		local targetDir = '${TARGETDIR}'
+
+		if (_ACTION == "xcode-osx") then
+			targetDir = '${TARGET_BUILD_DIR}'
+		elseif (_ACTION == "xcode-ios") then
+			targetDir = '${TARGET_BUILD_DIR}/${TARGET_NAME}.app'
+		end
+
+		local existenceTest = string.find(sourcePath, '*') and '' or ('test -e ' .. sourcePath .. ' && ')
+
+		return existenceTest .. 'cp -R ' .. sourcePath .. ' "' .. targetDir .. '" || :'
 	else
-		local targetDir = string.startswith(_ACTION, "xcode") and '${TARGET_BUILD_DIR}/${TARGET_NAME}.app' or '${TARGETDIR}'
+		local targetDir = '${TARGETDIR}'
 
 		local existenceTest = string.find(sourcePath, '*') and '' or ('test -e ' .. sourcePath .. ' && ')
 
@@ -39,10 +51,24 @@ end
 minko.action.link = function(sourcePath)
 	if os.is('windows') then
 		-- fixme: not needed yet
-	else
-		local targetDir = string.startswith(_ACTION, "xcode") and '${TARGET_BUILD_DIR}/${TARGET_NAME}.app' or '${TARGETDIR}'
+	elseif os.is("macosx") then
+		local targetDir = '${TARGETDIR}'
 
-		return 'test -e ' .. sourcePath .. ' && ln -s -f ' .. sourcePath .. ' "' .. targetDir .. '" || :'
+		if (_ACTION == "xcode-osx") then
+			targetDir = '${TARGET_BUILD_DIR}'
+		elseif (_ACTION == "xcode-ios") then
+			targetDir = '${TARGET_BUILD_DIR}/${TARGET_NAME}.app'
+		end
+
+		local existenceTest = string.find(sourcePath, '*') and '' or ('test -e ' .. sourcePath .. ' && ')
+
+		return existenceTest .. 'ln -s -f ' .. sourcePath .. ' "' .. targetDir .. '" || :'
+	else
+		local targetDir = '${TARGETDIR}'
+
+		local existenceTest = string.find(sourcePath, '*') and '' or ('test -e ' .. sourcePath .. ' && ')
+
+		return existenceTest .. 'ln -s -f ' .. sourcePath .. ' "' .. targetDir .. '" || :'
 	end
 end
 

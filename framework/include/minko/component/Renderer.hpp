@@ -55,6 +55,8 @@ namespace minko
 			typedef Signal<Ptr, AbsFilterPtr, data::BindingSource, SurfacePtr>		RendererFilterChangedSignal;
 
 		private:
+			std::string													_name;
+
 			DrawCallList												_drawCalls;
 			std::unordered_map<SurfacePtr, DrawCallList>				_surfaceDrawCalls; 
 
@@ -114,12 +116,14 @@ namespace minko
 			create(uint					backgroundColor, 
 				   AbsTexturePtr		renderTarget = nullptr,
 				   EffectPtr			effect			= nullptr,
-				   float				priority		= 0.f)
+				   float				priority		= 0.f, 
+				   std::string			name			= "")
 			{
 				auto ctrl = std::shared_ptr<Renderer>(new Renderer(renderTarget, effect, priority));
 
 				ctrl->initialize();
 				ctrl->backgroundColor(backgroundColor);
+				ctrl->name(name);
 
 				return ctrl;
 			}
@@ -154,6 +158,20 @@ namespace minko
 			backgroundColor(const unsigned int backgroundColor)
 			{
 				_backgroundColor = backgroundColor;
+			}
+
+			inline
+			void
+			name(const std::string name)
+			{
+				_name = name;
+			}
+
+			inline
+			std::string
+			name()
+			{
+				return _name;
 			}
 
 

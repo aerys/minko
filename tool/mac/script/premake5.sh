@@ -1,0 +1,1 @@
+../../lin/script/premake5.sh

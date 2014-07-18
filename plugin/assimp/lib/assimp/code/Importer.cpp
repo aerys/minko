@@ -484,7 +484,7 @@ const aiScene* Importer::ReadFileFromMemory( const void* pBuffer,
 		pHint = "";
 	}
 
-	if (!pBuffer || !pLength || strlen(pHint) > 500) {
+	if (!pBuffer || !pLength || strlen(pHint) > 200) {
 		pimpl->mErrorString = "Invalid parameters passed to ReadFileFromMemory()";
 		return NULL;
 	}
@@ -496,7 +496,7 @@ const aiScene* Importer::ReadFileFromMemory( const void* pBuffer,
 	SetIOHandler(new MemoryIOSystem((const uint8_t*)pBuffer, pLength, io));
 
 	// read the file and recover the previous IOSystem
-	char fbuff[128];
+	char fbuff[256];
 	sprintf(fbuff,"%s.%s",AI_MEMORYIO_MAGIC_FILENAME,pHint);
 
 	ReadFile(fbuff,pFlags);

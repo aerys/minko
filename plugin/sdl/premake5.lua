@@ -2,9 +2,6 @@ PROJECT_NAME = path.getname(os.getcwd())
 
 minko.project.library("minko-plugin-" .. PROJECT_NAME)
 
-	kind "StaticLib"
-	language "C++"
-
 	files {
 		"include/**.hpp",
 		"src/**.cpp",
@@ -14,16 +11,6 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 	includedirs {
 		"include"
 	}
-
-	configuration { "osx64" }
-		-- buildoptions {
-		-- 	"-fobjc-exceptions"
-		-- }
-
-		-- files {
-		-- 	"lib/sdl/src/video/cocoa/*.m",
-		-- 	"lib/sdl/src/audio/coreaudio/*.c"
-		-- }
 
 	configuration { "android" }
 		defines {

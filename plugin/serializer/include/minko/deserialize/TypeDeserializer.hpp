@@ -86,6 +86,7 @@ namespace minko
 			static
 			Any
 			deserializeEnvironmentMap2dType(std::tuple<uint, std::string&>&);
+
 		};
 	}
 }

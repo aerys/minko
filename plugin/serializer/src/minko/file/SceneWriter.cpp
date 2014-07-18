@@ -46,6 +46,8 @@ std::map<const std::type_info*, SceneWriter::NodeWriterFunc> SceneWriter::_compo
 
 SceneWriter::SceneWriter()
 {
+	_magicNumber = MINKO_SCENE_MAGIC_NUMBER;
+
 	registerComponent(
 		&typeid(component::PerspectiveCamera),
 		std::bind(
@@ -137,7 +139,7 @@ SceneWriter::embed(AssetLibraryPtr                      assetLibrary,
 	std::vector<SerializedNode>						nodePack;
 	std::vector<std::string>						serializedControllerList;
 	std::map<AbsComponentPtr, int>					controllerMap;
-
+	
 	queue.push(data());
 
 	while (queue.size() > 0)
@@ -192,8 +194,7 @@ SceneWriter::writeNode(std::shared_ptr<scene::Node>		node,
 		currentComponent = node->component<component::AbstractComponent>(++componentIndex);
 	}
 
-	SerializedNode res(node->name(), node->layouts(), node->children().size(), componentsId);
+	SerializedNode res(node->name(), node->layouts(), node->children().size(), componentsId, node->uuid());
 
 	return res;
 }
-

@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
-#include <minko/component/bullet/AbstractPhysicsShape.hpp>
+#include "minko/component/bullet/AbstractPhysicsShape.hpp"
 
 namespace minko
 {
@@ -106,7 +106,7 @@ namespace minko
 				float
 				volume() const
 				{
-					const float volume	= (float)PI * (_halfExtentX + _margin) * (_halfExtentZ + _margin) // elliptical basis area approx
+					const float volume	= float(M_PI) * (_halfExtentX + _margin) * (_halfExtentZ + _margin) // elliptical basis area approx
 						* (_halfExtentY + _margin);
 
 					return volume * _volumeScaling;

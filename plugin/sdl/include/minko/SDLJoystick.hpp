@@ -41,8 +41,6 @@ namespace minko
         static const std::map<Button, Button> NativeToHtmlMap;
         static const std::map<Button, Button> HtmlToNativeMap;
 
-        Button GetHtmlButton(Button button);
-
     public:
         static inline
         std::shared_ptr<SDLJoystick>
@@ -58,11 +56,22 @@ namespace minko
             return _joystick;
         }
 
-        bool isButtonDown(Button button);
-        static Button GetNativeButton(Button htmlButton);
-        static std::string GetButtonName(Button button);
+        bool
+        isButtonDown(Button button);
+
+        static
+        Button
+        button(int platformSpecificButtonId);
+
+        static
+        std::string
+        buttonName(Button button);
 
     private:
         SDLJoystick(std::shared_ptr<Canvas> canvas, int joystickId, SDL_Joystick* joystick);
+
+        static
+        int
+        buttonId(Button button);
     };
 }

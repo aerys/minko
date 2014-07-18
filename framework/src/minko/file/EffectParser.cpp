@@ -129,6 +129,36 @@ EffectParser::initializePriorityMap()
 	return m;
 }
 
+data::MacroBindingMap
+EffectParser::initializeDefaultMacroBindings() const
+{
+	data::MacroBindingMap m;
+	std::string propertyName;
+
+#if MINKO_PLATFORM & MINKO_PLATFORM_WINDOWS
+	propertyName = "MINKO_PLATFORM_WINDOWS";
+#elif MINKO_PLATFORM & MINKO_PLATFORM_OSX
+	propertyName = "MINKO_PLATFORM_OSX";
+#elif MINKO_PLATFORM & MINKO_PLATFORM_LINUX
+	propertyName = "MINKO_PLATFORM_LINUX";
+#elif MINKO_PLATFORM & MINKO_PLATFORM_IOS
+	propertyName = "MINKO_PLATFORM_IOS";
+#elif MINKO_PLATFORM & MINKO_PLATFORM_ANDROID
+	propertyName = "MINKO_PLATFORM_ANDROID";
+#elif MINKO_PLATFORM & MINKO_PLATFORM_HTML5
+	propertyName = "MINKO_PLATFORM_HTML5";
+#else
+	return m;
+#endif
+
+	MacroBindingDefault&	bindingDefault	= std::get<2>(m[propertyName]);
+
+	bindingDefault.semantic = MacroBindingDefaultValueSemantic::PROPERTY_EXISTS;
+	bindingDefault.value.propertyExists = true;
+
+	return m;
+}
+
 float
 EffectParser::priority(const std::string& name)
 {
@@ -158,7 +188,7 @@ EffectParser::parse(const std::string&				    filename,
 	Json::Reader reader;
 
 	if (!reader.parse((const char*)&data[0], (const char*)&data[data.size() - 1], root, false))
-		throw file::ParserError(resolvedFilename + ": " +reader.getFormattedErrorMessages());
+		throw file::ParserError(resolvedFilename + ": " + reader.getFormattedErrorMessages());
 
     int pos	= resolvedFilename.find_last_of("/\\");
 
@@ -181,6 +211,7 @@ EffectParser::parse(const std::string&				    filename,
 	_defaultStates->priority(priority(defaultQueue));
 	*/
 	_defaultStates = parseRenderStates(root, context, _globalTargets, _defaultStates, 0.0f);
+	_defaultMacroBindings = initializeDefaultMacroBindings();
 
 	parseBindings(
 		root,
@@ -549,6 +580,7 @@ EffectParser::loadGLSLDependencies(GLSLBlockListPtr		blocks,
 				    &EffectParser::dependencyErrorHandler,
 					std::static_pointer_cast<EffectParser>(shared_from_this()),
 					std::placeholders::_1,
+					std::placeholders::_2,
 					block.second
 			    ));
 
@@ -597,7 +629,7 @@ EffectParser::glslIncludeCompleteHandler(LoaderPtr 			        loader,
 }
 
 void
-EffectParser::dependencyErrorHandler(std::shared_ptr<Loader> loader, const std::string& filename)
+EffectParser::dependencyErrorHandler(std::shared_ptr<Loader> loader, const ParserError& error, const std::string& filename)
 {
 #ifdef DEBUG
 	std::cerr << "Unable to load dependency '" << filename << "', included paths are:" << std::endl;
@@ -876,12 +908,8 @@ EffectParser::parseMacroBindings(const Json::Value&	contextNode, MacroBindingMap
 				bindingDefault.semantic = MacroBindingDefaultValueSemantic::PROPERTY_EXISTS;
 				bindingDefault.value.propertyExists = macroBindingValue.asBool();
 			}
-
-			
 		}
 	}
-
-	
 }
 
 void
@@ -999,7 +1027,8 @@ EffectParser::loadTexture(const std::string&	textureFilename,
 	_loaderErrorSlots[loader] = loader->error()->connect(std::bind(
 		&EffectParser::dependencyErrorHandler,
 		std::static_pointer_cast<EffectParser>(shared_from_this()),
-		std::placeholders::_1,
+        std::placeholders::_1,
+		std::placeholders::_2,
         textureFilename
 	));
 
@@ -1382,8 +1411,8 @@ EffectParser::finalize()
 	}
 #endif // DEBUG_FALLBACK
 
-	for (auto& targets : _techniqueTargets)
-		for (auto& target : targets.second)
+	for (auto& techniqueNameAndTargets : _techniqueTargets)
+		for (auto& target : techniqueNameAndTargets.second)
 			_effect->data()->set(target.first, target.second);
 
 	for (auto& targetNameAndPtr : _globalTargets)

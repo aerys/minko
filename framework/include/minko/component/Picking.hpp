@@ -55,9 +55,12 @@ namespace minko
 			std::map<SurfacePtr, uint>					_surfaceToPickingId; 
 			std::map<uint, SurfacePtr>					_pickingIdToSurface;
 			std::map<SurfacePtr, StructureProviderPtr>	_surfaceToProvider;
+			std::map<NodePtr, StructureProviderPtr>		_targetToProvider;
 			uint										_pickingId;
 			ContextPtr									_context;
 			StructureProviderPtr						_pickingProvider;
+
+			std::vector<NodePtr>						_descendants;
 
 			Signal<AbsCtrlPtr, NodePtr>::Slot			_targetAddedSlot;
 			Signal<AbsCtrlPtr, NodePtr>::Slot			_targetRemovedSlot;
@@ -95,12 +98,14 @@ namespace minko
 			bool										_executeRightDownHandler;
 			bool										_executeLeftDownHandler;
 
+			bool										_addPickingLayout;
+
 		public:
 			inline static
 			Ptr
-			create(SceneManagerPtr sceneManager, AbstractCanvasPtr canvas, NodePtr camera)
+			create(SceneManagerPtr sceneManager, AbstractCanvasPtr canvas, NodePtr camera, bool addPickingLayoutToNodes = true)
 			{
-				Ptr picking = std::shared_ptr<Picking>(new Picking(sceneManager, canvas, camera));
+				Ptr picking = std::shared_ptr<Picking>(new Picking(sceneManager, canvas, camera, addPickingLayoutToNodes));
 
 				picking->initialize();
 
@@ -201,10 +206,16 @@ namespace minko
 			componentRemovedHandler(NodePtr node, NodePtr target, AbsCtrlPtr ctrl);
 
 			void
+			addSurfacesForNode(NodePtr node);
+
+			void
+			removeSurfacesForNode(NodePtr node);
+
+			void
 			addSurface(SurfacePtr surface);
 
 			void
-			removeSurface(SurfacePtr surface);
+			removeSurface(SurfacePtr surface, NodePtr node);
 
 			void
 			renderingBegin(RendererPtr renderer);
@@ -212,7 +223,7 @@ namespace minko
 			void
 			renderingEnd(RendererPtr renderer);
 
-			Picking(SceneManagerPtr sceneManager, AbstractCanvasPtr canvas, NodePtr camera);
+			Picking(SceneManagerPtr sceneManager, AbstractCanvasPtr canvas, NodePtr cameraj, bool addPickingLayoutToNodes);
 
 			void
 			mouseMoveHandler(MousePtr mouse, int dx, int dy);
@@ -228,6 +239,9 @@ namespace minko
 
 			void
 			mouseLeftClickHandler(MousePtr mouse);
+			
+			void
+			updateDescendants(NodePtr target);
 		};
 	}
 }

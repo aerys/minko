@@ -14,9 +14,9 @@ using namespace minko::scene;
 using namespace minko::material;
 using namespace minko::component;
 
-static const std::string	SCENE_NAME		= "model/crossCubes.scene";
+static const std::string	SCENE_NAME		= "model/cubes.scene";
 static const std::string	DEFAULT_EFFECT	= "effect/Basic.effect";
-static const std::string	HANGAR_TEXTURE	= "texture/hangar.png";
+static const std::string	HANGAR_TEXTURE	= "texture/studio24.png";
 
 void
 explodeModel(float magnitude, float previousMagnitude, Node::Ptr);
@@ -167,13 +167,13 @@ int main(int argc, char** argv)
 				else if (fabsf(swipeDirection->x()) > 0.5f)
 				{
 					const float goalRotation	= atan2f(goalSinRotation, goalCosRotation)
-						+ (swipeDirection->x() < 0.0f ? (float)PI * 0.25f : - (float)PI * 0.25f);
+						+ (swipeDirection->x() < 0.0f ? float(M_PI) * 0.25f : - float(M_PI) * 0.25f);
 
 					isInProgress	= true;
 					goalCosRotation	= cosf(goalRotation);
 					goalSinRotation	= sinf(goalRotation);
 #ifdef DEBUG
-					std::cout << "\t-> new rotation angle = " << 180.0f * goalRotation / (float)PI << std::endl;
+					std::cout << "\t-> new rotation angle = " << 180.0f * goalRotation / float(M_PI) << std::endl;
 #endif // DEBUG
 				}
 			}
@@ -319,11 +319,11 @@ int main(int argc, char** argv)
 				 BasicMaterial::create()
 					 ->diffuseColor(Vector4::create(1.0f, 0.0f, 0.0f, 1.0f))
 					 ->diffuseMap(sceneManager->assets()->texture(HANGAR_TEXTURE))
-					 ->triangleCulling(render::TriangleCulling::FRONT),
+					 ->triangleCulling(render::TriangleCulling::FRONT), 
 				sceneManager->assets()->effect("effect/Basic.effect")
 			));
 
-		root->addChild(dirLight);
+		root->addChild(dirLight); 
 		root->addChild(pointLight);
         root->addChild(skybox);
 		root->addChild(cameraNode);
@@ -350,7 +350,7 @@ int main(int argc, char** argv)
 
 	auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
 	{
-		cameraNode->component<PerspectiveCamera>()->aspectRatio((float)w / (float)h);
+		cameraNode->component<PerspectiveCamera>()->aspectRatio(float(w) / float(h));
 	});
 
 	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float deltaTime)
@@ -370,8 +370,8 @@ placeCamera(float			cameraDistance,
 			float			rotation,
 			Matrix4x4::Ptr	output = nullptr)
 {
-	static const float	CAMERA_ANGLE_X	= 35.0f * (float)PI / 180.0f;
-	static const float	CAMERA_ANGLE_Y	= 45.0f * (float)PI / 180.0f;
+	static const float	CAMERA_ANGLE_X	= 35.0f * float(M_PI) / 180.0f;
+	static const float	CAMERA_ANGLE_Y	= 45.0f * float(M_PI) / 180.0f;
 	static const float	CAMERA_MIN_DIST	= 10.0f;
 	static const float	CAMERA_MAX_DIST	= 20.0f;
 

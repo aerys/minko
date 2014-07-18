@@ -55,7 +55,7 @@ int main(int argc, char** argv)
 		->addComponent(Transform::create(
 			math::inverse(math::lookAt(math::vec3(0.f, 0.f, 3.f), math::vec3(0.f), math::vec3(0.f, 1.f, 0.f)))
 		))
-		->addComponent(PerspectiveCamera::create(800.f / 600.f, (float)PI * 0.25f, .1f, 1000.f));
+		->addComponent(PerspectiveCamera::create(800.f / 600.f, float(M_PI) * 0.25f, .1f, 1000.f));
 	root->addChild(camera);
 
 	auto _ = sceneManager->assets()->loader()->complete()->connect([=](file::Loader::Ptr loader)
@@ -76,7 +76,7 @@ int main(int argc, char** argv)
 
 	auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
 	{
-		camera->component<PerspectiveCamera>()->aspectRatio((float)w / (float)h);
+		camera->component<PerspectiveCamera>()->aspectRatio(float(w) / float(h));
 	});
 
 	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float deltaTime)

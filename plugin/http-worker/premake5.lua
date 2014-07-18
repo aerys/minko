@@ -1,5 +1,9 @@
 PROJECT_NAME = path.getname(os.getcwd())
 
+if not minko.platform.supports { "windows32", "windows64", "linux32", "linux64", "osx64", "ios", "android" } then
+	return
+end
+
 minko.project.worker("minko-plugin-" .. PROJECT_NAME)
 
 	removeplatforms { "html5" }
@@ -16,14 +20,12 @@ minko.project.worker("minko-plugin-" .. PROJECT_NAME)
 
 	defines { "CURL_STATICLIB" }
 
-	-- linux
 	configuration { "linux32 or linux64" }
 		links { "curl"}
 
-	-- windows
 	configuration { "windows32 or windows64" }
 		links { "libcurl" }
-		
-	-- macos
+
 	configuration { "osx64" }
-		links { "curl"}
+		links { "curl",  "minko-plugin-zlib", "Security.framework"}
+		libdirs { minko.plugin.path("http-worker") .. "/lib/curl/lib/osx64/release" }

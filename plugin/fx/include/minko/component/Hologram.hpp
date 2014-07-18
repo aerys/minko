@@ -48,63 +48,65 @@ namespace minko
 			Signal<AbsCmpPtr, NodePtr>::Slot										_rootAddedSlot;
 			Signal<NodePtr, NodePtr, NodePtr>::Slot									_addedToSceneSlot;
 			Signal<std::shared_ptr<component::SceneManager>, float, float>::Slot    _frameBeginSlot;
-			
-			std::shared_ptr<render::Effect>											_frontEffect;
-			std::shared_ptr<render::Effect>											_backEffect;
-			std::shared_ptr<render::Effect>											_depthEffect;
+
+			std::shared_ptr<render::Effect>											_effect;
 			std::shared_ptr<render::AbstractContext>								_context;
 
-			static RendererPtr _frontFaceNormalRenderer;
-			static RendererPtr _backFaceNormalRenderer;
-			static RendererPtr _depthMapRenderer;
+			static RendererPtr _frontFaceNormalRenderer0;
+			static RendererPtr _backFaceNormalRenderer0;
+			static RendererPtr _depthMapRenderer0;
 
-			static std::shared_ptr<render::Texture> _frontFaceNormalRenderTarget;
-			static std::shared_ptr<render::Texture> _backFaceNormalRenderTarget;
-			static std::shared_ptr<render::Texture>	_depthMapRenderTarget;
+			static RendererPtr _frontFaceNormalRenderer1;
+			static RendererPtr _backFaceNormalRenderer1;
+			static RendererPtr _depthMapRenderer1;
+
+			static std::shared_ptr<render::Texture> _frontFaceNormalRenderTarget0;
+			static std::shared_ptr<render::Texture> _backFaceNormalRenderTarget0;
+			static std::shared_ptr<render::Texture>	_depthMapRenderTarget0;
+
+			static std::shared_ptr<render::Texture> _frontFaceNormalRenderTarget1;
+			static std::shared_ptr<render::Texture> _backFaceNormalRenderTarget1;
+			static std::shared_ptr<render::Texture>	_depthMapRenderTarget1;
 
 			static const uint MAP_RESOLUTION;
 
 		public:
-			
+
 			inline static
-			Ptr
-			create(std::shared_ptr<render::Effect>			frontEffect, 
-				   std::shared_ptr<render::Effect>			backEffect, 
-				   std::shared_ptr<render::Effect>			depthEffect,
-				   std::shared_ptr<render::AbstractContext> context)
-			{
-				Ptr hologram = std::shared_ptr<Hologram>(new Hologram(frontEffect, backEffect, depthEffect, context));
+				Ptr
+				create(std::shared_ptr<render::Effect>			effect,
+					   std::shared_ptr<render::AbstractContext> context)
+				{
+					Ptr hologram = std::shared_ptr<Hologram>(new Hologram(effect, context));
 
-				hologram->initialize();
+					hologram->initialize();
 
-				return hologram;
-			}
+					return hologram;
+				}
 
 			inline
-			Signal<AbsCmpPtr, std::shared_ptr<scene::Node>>::Ptr
-			rootAdded() const
+				Signal<AbsCmpPtr, std::shared_ptr<scene::Node>>::Ptr
+				rootAdded() const
 			{
-				return _rootAdded;
-			}
+					return _rootAdded;
+				}
 
 		private:
 
-			Hologram(std::shared_ptr<render::Effect>			frontEffect, 
-					 std::shared_ptr<render::Effect>			backEffect,
-					 std::shared_ptr<render::Effect>			depthEffect, 
+			Hologram(std::shared_ptr<render::Effect>			effect,
 					 std::shared_ptr<render::AbstractContext>	context);
 
 			void
-			initialize();
+				initialize();
 
 			void
-			targetAddedHandler(AbstractComponent::Ptr ctrl, NodePtr target);
+				targetAddedHandler(AbstractComponent::Ptr ctrl, NodePtr target);
 
 			void
-			targetAddedToScene(NodePtr node, NodePtr target, NodePtr ancestor);
+				targetAddedToScene(NodePtr node, NodePtr target, NodePtr ancestor);
 
 			void
-			initTarget(AbstractComponent::Ptr cmp, NodePtr target, NodePtr ancestor);
+				initTarget(AbstractComponent::Ptr cmp, NodePtr target, NodePtr ancestor);
 		};
 	}
 }

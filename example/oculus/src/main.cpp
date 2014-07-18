@@ -155,9 +155,9 @@ createObjectGroup(unsigned int				numObjects,
 	nodeAnimData.resize(numObjects);
 
 	const float invNumObjects	= 1.0f / (float)numObjects;
-	const float maxSize			= (float)PI * distanceToEye * invNumObjects - 1e-2f;
+	const float maxSize			= float(M_PI) * distanceToEye * invNumObjects - 1e-2f;
 	const float minSize			= maxSize * 0.75f;
-	const float deltaAng		= 2.0f * (float)PI * invNumObjects;
+	const float deltaAng		= 2.0f * float(M_PI) * invNumObjects;
 	const float cDelta			= cosf(deltaAng);
 	const float sDelta			= sinf(deltaAng);
 

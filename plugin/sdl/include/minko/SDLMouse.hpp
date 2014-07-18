@@ -38,8 +38,5 @@ namespace minko
 
     private:
         SDLMouse(std::shared_ptr<Canvas> canvas);
-
-        void x(uint x);
-        void y(uint y);
     };
 }

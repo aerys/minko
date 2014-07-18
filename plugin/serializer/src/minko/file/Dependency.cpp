@@ -280,23 +280,33 @@ Dependency::serializeTexture(std::shared_ptr<Dependency>				dependency,
 							 std::shared_ptr<file::Options>				options,
                              std::shared_ptr<file::WriterOptions>       writerOptions)
 {
-	auto writer         = TextureWriter::create();
-    auto assetType      = serialize::AssetType { };
-    auto content        = std::string { };
-    auto textureName    = assetLibrary->textureName(texture);
-    auto extension      = textureName.substr(textureName.find_last_of(".") + 1);
+	auto writer                 = TextureWriter::create();
+    auto assetType              = serialize::AssetType();
+    unsigned char metaByte      = 0;
+    auto content                = std::string();
+    auto textureName            = assetLibrary->textureName(texture);
+    auto sourceExtension        = textureName.substr(textureName.find_last_of(".") + 1);
 
-    writer->data(texture);
-    writer->extension(extension);
+    auto destinationFormat = writerOptions->imageFormat();
+
+    if (destinationFormat == serialize::ImageFormat::SOURCE)
+        destinationFormat = serialize::imageFormatFromExtension(sourceExtension);
+
+    auto destinationExtension = serialize::extensionFromImageFormat(destinationFormat);
+
+    if (sourceExtension != destinationExtension)
+        textureName = textureName.substr(0, textureName.size() - sourceExtension.size()) + destinationExtension;
+
+    writer->data(std::static_pointer_cast<render::Texture>(texture));
+    writer->imageFormat(destinationFormat);
 
     if (writerOptions->embedAll())
     {
-        if (extension == "jpg")
-            assetType = serialize::AssetType::JPEG_EMBED_TEXTURE_ASSET;
-        else /* if (extension == "png") */
-            assetType = serialize::AssetType::PNG_EMBED_TEXTURE_ASSET;
+        assetType = serialize::AssetType::EMBED_TEXTURE_ASSET;
 
-        content = writer->embedAll(assetLibrary, options, writerOptions);
+        content = writer->embedTexture(assetLibrary, options, writerOptions);
+
+        metaByte = static_cast<unsigned char>(destinationFormat);
     }
     else
     {
@@ -318,7 +328,10 @@ Dependency::serializeTexture(std::shared_ptr<Dependency>				dependency,
         content = filename;
     }
 
-    SerializedAsset res(assetType, resourceId, content);
+    auto metaData = static_cast<unsigned int>(metaByte << 24) +
+                    static_cast<unsigned int>(assetType);
+
+    SerializedAsset res(metaData, resourceId, content);
 
 	return res;
 }

@@ -39,7 +39,8 @@ using namespace component;
 
 Picking::Picking(SceneManagerPtr	sceneManager,
 				 AbstractCanvasPtr	canvas,
-				 NodePtr			camera) :
+				 NodePtr			camera, 
+				 bool				addPickingLayout) :
 	_mouse(canvas->mouse()),
 	_camera(camera),
 	_pickingId(0),
@@ -55,10 +56,12 @@ Picking::Picking(SceneManagerPtr	sceneManager,
 	_mouseLeftUp(Signal<NodePtr>::create()),
 	_mouseRightUp(Signal<NodePtr>::create()),
 	_mouseOut(Signal<NodePtr>::create()),
-	_mouseOver(Signal<NodePtr>::create())
+	_mouseOver(Signal<NodePtr>::create()),
+	_addPickingLayout(addPickingLayout)
 {
-	_renderer	= Renderer::create(0xFFFF00FF, nullptr, sceneManager->assets()->effect("effect/Picking.effect"), 1000.f);
+	_renderer	= Renderer::create(0xFFFF00FF, nullptr, sceneManager->assets()->effect("effect/Picking.effect"), 1000.f, "Picking Renderer");
 	_renderer->scissor(0, 0, 1, 1);
+	_renderer->layoutMask(scene::Layout::Group::PICKING);
 }
 
 void
@@ -115,6 +118,8 @@ Picking::targetAddedHandler(AbsCtrlPtr ctrl, NodePtr target)
 	if (target->components<Picking>().size() > 1)
 		throw std::logic_error("There cannot be two Picking on the same node.");
 
+	updateDescendants(target);
+
 	_addedSlot = target->added()->connect(std::bind(
 		&Picking::addedHandler,
 		std::static_pointer_cast<Picking>(shared_from_this()),
@@ -131,7 +136,9 @@ Picking::targetAddedHandler(AbsCtrlPtr ctrl, NodePtr target)
 		std::placeholders::_3
 	));
 
-	addedHandler(target->root(), target, target->parent());
+	if (target->parent() != nullptr || target->hasComponent<SceneManager>())
+		addedHandler(target, target, target->parent());
+	
 	target->addComponent(_renderer);
 
 	auto perspectiveCamera = _camera->component<component::PerspectiveCamera>();
@@ -139,16 +146,7 @@ Picking::targetAddedHandler(AbsCtrlPtr ctrl, NodePtr target)
 	target->data()->addProvider(_pickingProvider);
 	target->data()->addProvider(perspectiveCamera->data());
 	
-	auto surfaces = scene::NodeSet::create(target)
-		->descendants(true)
-		->where([](scene::Node::Ptr node)
-	{
-		return node->hasComponent<Surface>();
-	});
-
-	for (auto surfaceNode : surfaces->nodes())
-		for (auto surface : surfaceNode->components<Surface>())
-			addSurface(surface);
+	addSurfacesForNode(target);
 }
 
 void
@@ -161,10 +159,14 @@ Picking::targetRemovedHandler(AbsCtrlPtr ctrl, NodePtr target)
 }
 
 void
-Picking::addedHandler(NodePtr node, NodePtr target, NodePtr parent)
+Picking::addedHandler(NodePtr target, NodePtr child, NodePtr parent)
 {
-	//if (node == target) // <= WORKS ONLY WHEN TARGET IS ROOT
-	if (_renderingBeginSlot == nullptr)
+	updateDescendants(target);
+
+	if (std::find(_descendants.begin(), _descendants.end(), child) == _descendants.end())
+		return;
+
+	if (child == target && _renderingBeginSlot == nullptr)
 	{
 		_renderingBeginSlot = _renderer->renderingBegin()->connect(std::bind(
 			&Picking::renderingBegin,
@@ -176,7 +178,7 @@ Picking::addedHandler(NodePtr node, NodePtr target, NodePtr parent)
 			std::static_pointer_cast<Picking>(shared_from_this()),
 			std::placeholders::_1));
 	
-		_componentAddedSlot = target->root()->componentAdded()->connect(std::bind(
+		_componentAddedSlot = child->componentAdded()->connect(std::bind(
 			&Picking::componentAddedHandler,
 			std::static_pointer_cast<Picking>(shared_from_this()),
 			std::placeholders::_1,
@@ -184,7 +186,7 @@ Picking::addedHandler(NodePtr node, NodePtr target, NodePtr parent)
 			std::placeholders::_3
 		));
 
-		_componentRemovedSlot = target->root()->componentRemoved()->connect(std::bind(
+		_componentRemovedSlot = child->componentRemoved()->connect(std::bind(
 			&Picking::componentRemovedHandler,
 			std::static_pointer_cast<Picking>(shared_from_this()),
 			std::placeholders::_1,
@@ -192,74 +194,41 @@ Picking::addedHandler(NodePtr node, NodePtr target, NodePtr parent)
 			std::placeholders::_3
 		));
 	}
-	else
-	{
-		auto surfaces = scene::NodeSet::create(target)
-			->descendants(true)
-			->where([](scene::Node::Ptr node)
-		{
-			return node->hasComponent<Surface>();
-		});
 
-		for (auto surfaceNode : surfaces->nodes())
-			for (auto surface : surfaceNode->components<Surface>())
-				addSurface(surface);
-	}
-
+	if (std::find(_descendants.begin(), _descendants.end(), child) != _descendants.end())
+		addSurfacesForNode(child);
 }
 
 void
-Picking::componentAddedHandler(NodePtr								node,
-							   NodePtr								target,
+Picking::componentAddedHandler(NodePtr								target,
+							   NodePtr								node,
 							   std::shared_ptr<AbstractComponent>	ctrl)
 {
+	if (std::find(_descendants.begin(), _descendants.end(), node) == _descendants.end())
+		return;
+
 	auto surfaceCtrl = std::dynamic_pointer_cast<Surface>(ctrl);
 	
 	if (surfaceCtrl)
 		addSurface(surfaceCtrl);
-
-	auto sceneManagerCtrl = std::dynamic_pointer_cast<SceneManager>(ctrl);
-
-	if (sceneManagerCtrl)
-	{
-		auto surfaces = scene::NodeSet::create()
-			->descendants(true)
-			->where([](scene::Node::Ptr node)
-		{
-			return node->hasComponent<Surface>();
-		});
-
-		for (auto surfaceNode : surfaces->nodes())
-			for (auto surface : surfaceNode->components<Surface>())
-				addSurface(surface);
-	}
 }
 
 void
-Picking::componentRemovedHandler(NodePtr							node,
-								 NodePtr							target,
+Picking::componentRemovedHandler(NodePtr							target,
+								 NodePtr							node,
 								 std::shared_ptr<AbstractComponent>	ctrl)
 {
+	if (std::find(_descendants.begin(), _descendants.end(), node) == _descendants.end())
+		return;
+
 	auto surfaceCtrl = std::dynamic_pointer_cast<Surface>(ctrl);
 	auto sceneManager = std::dynamic_pointer_cast<SceneManager>(ctrl);
 
 	if (surfaceCtrl)
-		removeSurface(surfaceCtrl);
-		auto sceneManagerCtrl = std::dynamic_pointer_cast<SceneManager>(ctrl);
+		removeSurface(surfaceCtrl, node);
 
-	if (sceneManagerCtrl)
-	{
-		auto surfaces = scene::NodeSet::create()
-			->descendants(true)
-			->where([](scene::Node::Ptr node)
-		{
-			return node->hasComponent<Surface>();
-		});
-
-		for (auto surfaceNode : surfaces->nodes())
-			for (auto surface : surfaceNode->components<Surface>())
-				removeSurface(surface);
-	}
+	if (!node->hasComponent<Surface>() && _addPickingLayout)
+		node->layouts(node->layouts() & ~scene::Layout::Group::PICKING);
 }
 
 void
@@ -271,6 +240,7 @@ Picking::addSurface(SurfacePtr surface)
 
 		_surfaceToPickingId[surface] = _pickingId;
 		_pickingIdToSurface[_pickingId] = surface;
+
 		_surfaceToProvider[surface] = data::StructureProvider::create("picking");
 
 		_surfaceToProvider[surface]->set("color", math::vec4(
@@ -280,26 +250,92 @@ Picking::addSurface(SurfacePtr surface)
 			1
 		));
 
-		surface->targets()[0]->data()->addProvider(_surfaceToProvider[surface]);
+
+		auto target = surface->targets()[0];
+
+		if (_targetToProvider.find(target) == _targetToProvider.end())
+		{
+			_targetToProvider[target] = _surfaceToProvider[surface];
+
+			target->data()->addProvider(_surfaceToProvider[surface]);
+		}
+
+		if (_addPickingLayout)
+			target->layouts(target->layouts() | scene::Layout::Group::PICKING);
 	}
 }
 
 void
-Picking::removeSurface(SurfacePtr surface)
+Picking::removeSurface(SurfacePtr surface, NodePtr node)
 {
+	if (_surfaceToPickingId.find(surface) == _surfaceToPickingId.end())
+		return;
+
 	auto surfacePickingId = _surfaceToPickingId[surface];
 
-	surface->targets()[0]->data()->removeProvider(_surfaceToProvider[surface]);
+	if (_surfaceToProvider.find(surface) == _surfaceToProvider.end())
+	{
+		node->data()->removeProvider(_surfaceToProvider[surface]);
+
+		if (_targetToProvider[node] == _surfaceToProvider[surface])
+			_targetToProvider.erase(node);
+
+		_surfaceToProvider.erase(surface);
+	}
+
 	_surfaceToPickingId.erase(surface);
-	_surfaceToProvider.erase(surface);
 	_pickingIdToSurface.erase(surfacePickingId);
 }
 
 void
-Picking::removedHandler(NodePtr node, NodePtr target, NodePtr parent)
+Picking::removedHandler(NodePtr target, NodePtr child, NodePtr parent)
 {
-	_renderingBeginSlot = nullptr;
-	_renderingEndSlot	= nullptr;
+	if (std::find(_descendants.begin(), _descendants.end(), child) == _descendants.end())
+		return;
+
+	if (target == child)
+	{
+		_renderingBeginSlot = nullptr;
+		_renderingEndSlot = nullptr;
+	}
+
+	removeSurfacesForNode(child);
+
+	updateDescendants(target);
+}
+
+void
+Picking::addSurfacesForNode(NodePtr node)
+{
+	auto surfaces = scene::NodeSet::create(node)
+		->descendants(true)
+		->where([](scene::Node::Ptr node)
+	{
+		return node->hasComponent<Surface>();
+	});
+
+	for (auto surfaceNode : surfaces->nodes())
+		for (auto surface : surfaceNode->components<Surface>())
+			addSurface(surface);
+}
+
+void
+Picking::removeSurfacesForNode(NodePtr node)
+{
+	auto surfaces = scene::NodeSet::create(node)
+		->descendants(true)
+		->where([](scene::Node::Ptr node)
+	{
+		return node->hasComponent<Surface>();
+	});
+
+	for (auto surfaceNode : surfaces->nodes())
+	{
+		surfaceNode->layouts(surfaceNode->layouts() & ~scene::Layout::Group::PICKING);
+
+		for (auto surface : surfaceNode->components<Surface>())
+			removeSurface(surface, surfaceNode);
+	}
 }
 
 void
@@ -325,63 +361,64 @@ Picking::renderingBegin(RendererPtr renderer)
 void
 Picking::renderingEnd(RendererPtr renderer)
 {
-	_context->readPixels(0, 0, 1, 1, &_lastColor[0]);
-	
-	uint pickedSurfaceId = (_lastColor[0] << 16) + (_lastColor[1] << 8) + _lastColor[2];
+    _context->readPixels(0, 0, 1, 1, &_lastColor[0]);
 
-	if (_lastPickedSurface != _pickingIdToSurface[pickedSurfaceId])
-	{
-		if (_lastPickedSurface && _mouseOut->numCallbacks() > 0)
-			_mouseOut->execute(_lastPickedSurface->targets()[0]);
+    uint pickedSurfaceId = (_lastColor[0] << 16) + (_lastColor[1] << 8) + _lastColor[2];
 
-		_lastPickedSurface = _pickingIdToSurface[pickedSurfaceId];
+    if (_lastPickedSurface != _pickingIdToSurface[pickedSurfaceId])
+    {
+        if (_lastPickedSurface && _mouseOut->numCallbacks() > 0)
+            _mouseOut->execute(_lastPickedSurface->targets()[0]);
 
-		if (_lastPickedSurface && _mouseOver->numCallbacks() > 0)
-			_mouseOver->execute(_lastPickedSurface->targets()[0]);
-	}
+        _lastPickedSurface = _pickingIdToSurface[pickedSurfaceId];
 
-	if (_executeMoveHandler && _lastPickedSurface)
-	{
-		_mouseMove->execute(_lastPickedSurface->targets()[0]);
-		_executeMoveHandler = false;
-	}
+        if (_lastPickedSurface && _mouseOver->numCallbacks() > 0)
+            _mouseOver->execute(_lastPickedSurface->targets()[0]);
+    }
 
-	if (_executeRightDownHandler && _lastPickedSurface)
-	{
-		_mouseRightDown->execute(_lastPickedSurface->targets()[0]);
-		_executeRightDownHandler = false;
+    if (_executeMoveHandler && _lastPickedSurface)
+    {
+        _mouseMove->execute(_lastPickedSurface->targets()[0]);
+    }
 
-		_lastRightDownPickedSurface = _lastPickedSurface;
-	}
+    if (_executeRightDownHandler && _lastPickedSurface)
+    {
+        _mouseRightDown->execute(_lastPickedSurface->targets()[0]);
 
-	if (_executeLeftDownHandler && _lastPickedSurface)
-	{
-		_mouseLeftDown->execute(_lastPickedSurface->targets()[0]);
-		_executeLeftDownHandler = false;
+        _lastRightDownPickedSurface = _lastPickedSurface;
+    }
 
-		_lastLeftDownPickedSurface = _lastPickedSurface;
-	}
+    if (_executeLeftDownHandler && _lastPickedSurface)
+    {
+        _mouseLeftDown->execute(_lastPickedSurface->targets()[0]);
 
-	if (_executeRightClickHandler && _lastPickedSurface && _lastPickedSurface == _lastRightDownPickedSurface)
-	{
-		_mouseRightClick->execute(_lastPickedSurface->targets()[0]);
-		_mouseRightUp->execute(_lastPickedSurface->targets()[0]);
-		_executeRightClickHandler = false;
+        _lastLeftDownPickedSurface = _lastPickedSurface;
+    }
 
-		_lastRightDownPickedSurface = nullptr;
-	}
+    if (_executeRightClickHandler && _lastPickedSurface && _lastPickedSurface == _lastRightDownPickedSurface)
+    {
+        _mouseRightClick->execute(_lastPickedSurface->targets()[0]);
+        _mouseRightUp->execute(_lastPickedSurface->targets()[0]);
 
-	if (_executeLeftClickHandler && _lastPickedSurface && _lastPickedSurface == _lastLeftDownPickedSurface)
-	{
-		_mouseLeftClick->execute(_lastLeftDownPickedSurface->targets()[0]);
-		_mouseLeftUp->execute(_lastLeftDownPickedSurface->targets()[0]);
-		_executeLeftClickHandler = false;
+        _lastRightDownPickedSurface = nullptr;
+    }
 
-		_lastLeftDownPickedSurface = nullptr;
-	}
+    if (_executeLeftClickHandler && _lastPickedSurface && _lastPickedSurface == _lastLeftDownPickedSurface)
+    {
+        _mouseLeftClick->execute(_lastLeftDownPickedSurface->targets()[0]);
+        _mouseLeftUp->execute(_lastLeftDownPickedSurface->targets()[0]);
 
-	if (!(_mouseOver->numCallbacks() > 0 || _mouseOut->numCallbacks() > 0))
-		_renderer->enabled(false);
+        _lastLeftDownPickedSurface = nullptr;
+    }
+
+    if (!(_mouseOver->numCallbacks() > 0 || _mouseOut->numCallbacks() > 0))
+        _renderer->enabled(false);
+
+    _executeMoveHandler = false;
+    _executeRightDownHandler = false;
+    _executeLeftDownHandler = false;
+    _executeRightClickHandler = false;
+    _executeLeftClickHandler = false;
 }
 
 void
@@ -433,4 +470,12 @@ Picking::mouseLeftDownHandler(MousePtr mouse)
 		_executeLeftDownHandler = true;
 		_renderer->enabled(true);
 	}
+}
+
+void
+Picking::updateDescendants(NodePtr target)
+{
+	auto nodeSet = scene::NodeSet::create(target)->descendants(true);
+	
+	_descendants = nodeSet->nodes();
 }

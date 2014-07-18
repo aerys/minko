@@ -3,3 +3,6 @@
 /effect
 /texture
 lib/googletest/bin
+Info.plist
+Default-568h@2x.png
+.DS_Store

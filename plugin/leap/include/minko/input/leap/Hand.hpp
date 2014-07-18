@@ -22,9 +22,21 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Common.hpp"
 #include "minko/Signal.hpp"
 
+namespace minko
+{
+    namespace input
+    {
+        namespace leap
+        {
+            class Finger;
+            class Frame;
+        }
+    }
+}
+
 namespace Leap
 {
-	class Hand;
+    class Hand;
 }
 
 namespace minko
@@ -38,11 +50,16 @@ namespace minko
 				friend class Frame; // Only a Frame can instanciate a Hand
 
 			public:	
-				typedef std::shared_ptr<Hand>			Ptr;
+				typedef std::shared_ptr<Hand>			        Ptr;
 
-				typedef std::shared_ptr<math::Vector3>	Vector3Ptr;
+                typedef std::shared_ptr<Frame>                  FramePtr;
+                typedef std::shared_ptr<Finger>                 FingerPtr;
+                typedef std::vector<FingerPtr>                  FingerList;
 
-			private:
+				typedef std::shared_ptr<math::Vector3>	        Vector3Ptr;
+                typedef std::shared_ptr<math::Matrix4x4>        Matrix4x4Ptr;
+
+            private:
 				std::shared_ptr<Leap::Hand>				_leapHand;
 
 			public:
@@ -52,17 +69,41 @@ namespace minko
 				bool
 				isValid() const;
 
+                bool
+                isRight() const;
+
 				uint64_t
 				frameID() const;
 
 				Vector3Ptr
 				palmPosition(Vector3Ptr output = nullptr) const;
 
+                Vector3Ptr
+                direction(Vector3Ptr output = nullptr) const;
+
 				Vector3Ptr
 				palmNormal(Vector3Ptr output = nullptr) const;
 
 				Vector3Ptr
 				palmVelocity(Vector3Ptr output = nullptr) const;
+
+                float
+                palmWidth() const;
+
+                float
+                pinchStrength() const;
+
+                float
+                grabStrength() const;
+
+                Matrix4x4Ptr
+                basis() const;
+
+                FingerList
+                fingers() const;
+
+                float
+                confidence() const;
 				
 				// (In)Equality tests
 				bool

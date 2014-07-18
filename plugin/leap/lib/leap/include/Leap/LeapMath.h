@@ -13,6 +13,7 @@
 #include <iostream>
 #include <sstream>
 #include <float.h>
+#include <algorithm>
 
 namespace Leap {
 
@@ -20,7 +21,7 @@ namespace Leap {
  * The constant pi as a single precision floating point number.
  * @since 1.0
  */
-//static const float PI          = 3.1415926536f;
+static const float PI          = 3.1415926536f;
 /**
  * The constant ratio to convert an angle measure from degrees to radians.
  * Multiply a value in degrees by this constant to convert to radians.
@@ -33,6 +34,13 @@ static const float DEG_TO_RAD  = 0.0174532925f;
  * @since 1.0
  */
 static const float RAD_TO_DEG  = 57.295779513f;
+
+/**
+* The difference between 1 and the least value greater than 1 that is
+* representable as a float.
+* @since 2.0
+*/
+static const float EPSILON = 1.192092896e-07f;
 
 /**
  * The Vector struct represents a three-component mathematical vector or point
@@ -238,10 +246,16 @@ struct Vector {
    */
   float angleTo(const Vector& other) const {
     float denom = this->magnitudeSquared() * other.magnitudeSquared();
-    if (denom <= 0.0f) {
+    if (denom <= EPSILON) {
       return 0.0f;
     }
-    return std::acos(this->dot(other) / std::sqrt(denom));
+    float val = this->dot(other) / std::sqrt(denom);
+    if (val >= 1.0f) {
+      return 0.0f;
+    } else if (val <= -1.0f) {
+      return PI;
+    }
+    return std::acos(val);
   }
 
   /**
@@ -363,7 +377,7 @@ struct Vector {
    */
   Vector normalized() const {
     float denom = this->magnitudeSquared();
-    if (denom <= 0.0f) {
+    if (denom <= EPSILON) {
       return Vector::zero();
     }
     denom = 1.0f / std::sqrt(denom);
@@ -647,6 +661,9 @@ struct Matrix
 {
   /**
    * Constructs an identity transformation matrix.
+   *
+   * \include Matrix_Matrix.txt
+   *
    * @since 1.0
    */
   Matrix() :
@@ -658,6 +675,9 @@ struct Matrix
 
   /**
    * Constructs a copy of the specified Matrix object.
+   *
+   * \include Matrix_Matrix_copy.txt
+   *
    * @since 1.0
    */
   Matrix(const Matrix& other) :
@@ -669,6 +689,8 @@ struct Matrix
 
   /**
    * Constructs a transformation matrix from the specified basis vectors.
+   *
+   * \include Matrix_Matrix_basis.txt
    *
    * @param _xBasis A Vector specifying rotation and scale factors for the x-axis.
    * @param _yBasis A Vector specifying rotation and scale factors for the y-axis.
@@ -684,6 +706,8 @@ struct Matrix
 
   /**
    * Constructs a transformation matrix from the specified basis and translation vectors.
+   *
+   * \include Matrix_Matrix_basis_origin.txt
    *
    * @param _xBasis A Vector specifying rotation and scale factors for the x-axis.
    * @param _yBasis A Vector specifying rotation and scale factors for the y-axis.
@@ -701,6 +725,8 @@ struct Matrix
   /**
    * Constructs a transformation matrix specifying a rotation around the specified vector.
    *
+   * \include Matrix_Matrix_rotation.txt
+   *
    * @param axis A Vector specifying the axis of rotation.
    * @param angleRadians The amount of rotation in radians.
    * @since 1.0
@@ -713,6 +739,8 @@ struct Matrix
   /**
    * Constructs a transformation matrix specifying a rotation around the specified vector
    * and a translation by the specified vector.
+   *
+   * \include Matrix_Matrix_rotation_translation.txt
    *
    * @param axis A Vector specifying the axis of rotation.
    * @param angleRadians The angle of rotation in radians.
@@ -727,6 +755,8 @@ struct Matrix
   /**
    * Returns the identity matrix specifying no translation, rotation, and scale.
    *
+   * \include Matrix_identity.txt
+   *
    * @returns The identity matrix.
    * @since 1.0
    */
@@ -737,6 +767,8 @@ struct Matrix
 
   /**
    * Sets this transformation matrix to represent a rotation around the specified vector.
+   *
+   * \include Matrix_setRotation.txt
    *
    * This function erases any previous rotation and scale transforms applied
    * to this matrix, but does not affect translation.
@@ -760,6 +792,8 @@ struct Matrix
    * Transforms a vector with this matrix by transforming its rotation,
    * scale, and translation.
    *
+   * \include Matrix_transformPoint.txt
+   *
    * Translation is applied after rotation and scale.
    *
    * @param in The Vector to transform.
@@ -774,6 +808,8 @@ struct Matrix
    * Transforms a vector with this matrix by transforming its rotation and
    * scale only.
    *
+   * \include Matrix_transformDirection.txt
+   *
    * @param in The Vector to transform.
    * @returns A new Vector representing the transformed original.
    * @since 1.0
@@ -787,7 +823,9 @@ struct Matrix
    * transformations (translations and rotations).  If the matrix is not rigid,
    * this operation will not represent an inverse.
    *
-   * Note that all matricies that are directly returned by the API are rigid.
+   * \include Matrix_rigidInverse.txt
+   *
+   * Note that all matrices that are directly returned by the API are rigid.
    *
    * @returns The rigid inverse of the matrix.
    * @since 1.0
@@ -805,6 +843,8 @@ struct Matrix
    *
    * Combines two transformations into a single equivalent transformation.
    *
+   * \include Matrix_operator_times.txt
+   *
    * @param other A Matrix to multiply on the right hand side.
    * @returns A new Matrix representing the transformation equivalent to
    * applying the other transformation followed by this transformation.
@@ -819,6 +859,9 @@ struct Matrix
 
   /**
    * Multiply transform matrices and assign the product.
+   *
+   * \include Matrix_operator_times_equal.txt
+   *
    * @since 1.0
    */
   Matrix& operator*=(const Matrix& other) {
@@ -827,6 +870,9 @@ struct Matrix
 
   /**
    * Compare Matrix equality component-wise.
+   *
+   * \include Matrix_operator_equals.txt
+   *
    * @since 1.0
    */
   bool operator==(const Matrix& other) const {
@@ -837,6 +883,9 @@ struct Matrix
   }
   /**
    * Compare Matrix inequality component-wise.
+   *
+   * \include Matrix_operator_not_equals.txt
+   *
    * @since 1.0
    */
   bool operator!=(const Matrix& other) const {
@@ -899,6 +948,8 @@ struct Matrix
    *
    * Translation factors are discarded.
    *
+   * \include Matrix_toArray3x3.txt
+   *
    * Returns a FloatArray struct to avoid dynamic memory allocation.
    * @since 1.0
    */
@@ -927,6 +978,8 @@ struct Matrix
   /**
    * Convert a 4x4 Matrix object to a 16 element row-major float array.
    *
+   * \include Matrix_toArray4x4.txt
+   *
    * Returns a FloatArray struct to avoid dynamic memory allocation.
    * @since 1.0
    */
@@ -949,6 +1002,9 @@ struct Matrix
 
   /**
    * Write the matrix to an output stream in a human readable format.
+   *
+   * \include Matrix_operator_stream.txt
+   *
    * @since 1.0
    */
   friend std::ostream& operator<<(std::ostream& out, const Matrix& matrix) {
@@ -956,22 +1012,34 @@ struct Matrix
   }
 
   /**
-   * The rotation and scale factors for the x-axis.
+   * The basis vector for the x-axis.
+   *
+   * \include Matrix_xBasis.txt
+   *
    * @since 1.0
    */
   Vector xBasis;
   /**
-   * The rotation and scale factors for the y-axis.
+   * The basis vector for the y-axis.
+   *
+   * \include Matrix_yBasis.txt
+   *
    * @since 1.0
    */
   Vector yBasis;
   /**
-   * The rotation and scale factors for the z-axis.
+   * The basis vector for the z-axis.
+   *
+   * \include Matrix_zBasis.txt
+   *
    * @since 1.0
    */
   Vector zBasis;
   /**
    * The translation factors for all three axes.
+   *
+   * \include Matrix_origin.txt
+   *
    * @since 1.0
    */
   Vector origin;

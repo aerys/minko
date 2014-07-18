@@ -32,13 +32,3 @@ SDLMouse::create(std::shared_ptr<Canvas> canvas)
 {
     return std::shared_ptr<SDLMouse>(new SDLMouse(canvas));
 }
-
-void SDLMouse::x(uint x)
-{
-    _x = x;
-}
-
-void SDLMouse::y(uint y)
-{
-    _y = y;
-}
