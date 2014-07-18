@@ -80,6 +80,15 @@ namespace minko
     
 	namespace render
 	{
+        struct VertexAttribute
+        {
+            const int* resourceId;
+            const uint* vertexSize;
+            std::string name;
+            uint size;
+            uint offset;
+        };
+
 		class DrawCallPool;
 		class AbstractContext;
 		class OpenGLES2Context;
@@ -125,13 +134,14 @@ namespace minko
 			RGB,
 			RGBA
 		};
+
 		class AbstractTexture;
 		class Texture;
 		class CubeTexture;
 
 		struct ScissorBox
 		{
-			int		x, y;
+			int	x, y;
 			int	width, height;
 
 			inline

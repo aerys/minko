@@ -32,15 +32,6 @@ namespace minko
 			public std::enable_shared_from_this<VertexBuffer>
 		{
 		public:
-            struct VertexAttribute
-            {
-                const int* resourceId;
-                const uint* vertexSize;
-                std::string name;
-                uint size;
-                uint offset;
-            };
-
 			typedef std::shared_ptr<VertexBuffer>		Ptr;
 
 		private:
