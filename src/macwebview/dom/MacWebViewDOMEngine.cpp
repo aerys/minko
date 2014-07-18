@@ -448,8 +448,8 @@ MacWebViewDOMEngine::registerDomEvents()
 
     onmouseupSlot = _currentDOM->document()->onmouseup()->connect([&](AbstractDOMMouseEvent::Ptr event)
     {
-        int x = event->layerX();
-        int y = event->layerY();
+        int x = event->clientX();
+        int y = event->clientY();
         
         _canvas->mouse()->x(x);
         _canvas->mouse()->y(y);
@@ -500,7 +500,7 @@ MacWebViewDOMEngine::registerDomEvents()
         int fingerId = event->fingerId();
         float x = event->clientX();
         float y = event->clientY();
-            
+        
         SDL_Event sdlEvent;
         sdlEvent.type = SDL_FINGERUP;
         sdlEvent.tfinger.fingerId = fingerId;
