@@ -32,13 +32,20 @@ namespace minko
 			public std::enable_shared_from_this<VertexBuffer>
 		{
 		public:
-			typedef std::shared_ptr<VertexBuffer>								Ptr;
-			typedef const std::tuple<std::string, unsigned int, unsigned int>	Attribute;
-			typedef std::shared_ptr<Attribute>									AttributePtr;
+            struct VertexAttribute
+            {
+                const int* resourceId;
+                const uint* vertexSize;
+                std::string name;
+                uint size;
+                uint offset;
+            };
+
+			typedef std::shared_ptr<VertexBuffer>		Ptr;
 
 		private:
 			std::vector<float>					_data;
-			std::list<AttributePtr>				_attributes;
+            std::list<VertexAttribute>		    _attributes;
 			uint								_vertexSize;
 			bool								_validMinMax;
 			math::vec3						    _minPosition;
@@ -107,7 +114,7 @@ namespace minko
 			}
 
 			inline
-			std::list<AttributePtr>&
+            const std::list<VertexAttribute>&
 			attributes()
 			{
 				return _attributes;
@@ -159,7 +166,7 @@ namespace minko
 			bool
 			hasAttribute(const std::string& attributeName) const;
 
-			AttributePtr
+            const VertexAttribute&
 			attribute(const std::string& attributeName) const;
 
 			bool

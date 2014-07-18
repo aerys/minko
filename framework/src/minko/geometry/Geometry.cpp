@@ -44,8 +44,8 @@ Geometry::addVertexBuffer(render::VertexBuffer::Ptr vertexBuffer)
 	const unsigned bufVertexSize	= vertexBuffer->vertexSize();
 	const unsigned bufNumVertices	= vertexBuffer->numVertices();
 
-	for (auto attribute : vertexBuffer->attributes())
-		_data->set(std::get<0>(*attribute), vertexBuffer);
+	for (const auto& attribute : vertexBuffer->attributes())
+		_data->set(attribute.name, attribute);
 	_vertexSize	+= bufVertexSize;
 	_data->set("vertex.size", _vertexSize);
 
@@ -71,7 +71,7 @@ Geometry::removeVertexBuffer(std::list<render::VertexBuffer::Ptr>::iterator vert
 	vertexBuffer->dispose();
 
 	for (auto attribute : vertexBuffer->attributes())
-		_data->unset(std::get<0>(*attribute));
+		_data->unset(attribute.name);
 
 	_vertexSize	-= vertexBuffer->vertexSize();
 	_data->set("vertex.size", _vertexSize);
@@ -116,10 +116,11 @@ Geometry::computeNormals()
 	if (numVertices == 0)
 		return shared_from_this();
 
-	if (_data->hasProperty("normal"))
+	if (vertexBuffer("normal"))
 		throw std::logic_error("The geometry already stores precomputed normals.");
 
-	if (!_data->hasProperty("position"))
+    auto xyzBuffer = vertexBuffer("position");
+	if (!xyzBuffer)
 		throw std::logic_error("Computation of normals requires positions.");
 
 	const std::vector<unsigned short>& indices	= this->indices()->data();
@@ -128,10 +129,10 @@ Geometry::computeNormals()
 	unsigned short vertexIds[3] = { 0, 0, 0 };
 	std::vector<math::vec3> xyz(3);
 
-	VertexBuffer::Ptr xyzBuffer			= _data->get<VertexBuffer::Ptr>("position");
-	const unsigned int xyzSize			= xyzBuffer->vertexSize();
-	const unsigned int xyzOffset		= std::get<2>(*xyzBuffer->attribute("position"));
-	const std::vector<float>& xyzData	= xyzBuffer->data();
+	const auto& xyzAttribute			= xyzBuffer->attribute("position");
+    const unsigned int xyzSize          = *xyzAttribute.vertexSize;
+    const unsigned int xyzOffset        = xyzAttribute.offset;
+    const std::vector<float>& xyzData   = xyzBuffer->data();
 
 	std::vector<float> normalsData(3 * numVertices, 0.0f);
 
@@ -184,9 +185,14 @@ Geometry::computeTangentSpace(bool doNormals)
 	if (numVertices == 0)
 		return shared_from_this();
 
-	if (!_data->hasProperty("position")
-		|| !_data->hasProperty("uv"))
-		throw std::logic_error("Computation of tangent space requires positions and uv.");
+
+    auto xyzBuffer = vertexBuffer("position");
+    if (!xyzBuffer)
+        throw std::logic_error("Computation of tangent space requires positions.");
+
+    auto uvBuffer = vertexBuffer("uv");
+    if (!uvBuffer)
+		throw std::logic_error("Computation of tangent space requires uvs.");
 
 	if (doNormals)
 		computeNormals();
@@ -198,14 +204,12 @@ Geometry::computeTangentSpace(bool doNormals)
 	std::vector<math::vec3> xyz(3);
 	std::vector<math::vec2> uv(3);
 
-	VertexBuffer::Ptr xyzBuffer			= _data->get<VertexBuffer::Ptr>("position");
 	const unsigned int xyzSize			= xyzBuffer->vertexSize();
-	const unsigned int xyzOffset		= std::get<2>(*xyzBuffer->attribute("position"));
+    const unsigned int xyzOffset        = xyzBuffer->attribute("position").offset;
 	const std::vector<float>& xyzData	= xyzBuffer->data();
 
-	VertexBuffer::Ptr uvBuffer			= _data->get<VertexBuffer::Ptr>("uv");
 	const unsigned int uvSize			= uvBuffer->vertexSize();
-	const unsigned int uvOffset			= std::get<2>(*uvBuffer->attribute("uv"));
+	const unsigned int uvOffset			= uvBuffer->attribute("uv").offset;
 	const std::vector<float>& uvData	= uvBuffer->data();
 
 	std::vector<float> tangentsData(3 * numVertices, 0.0f);
@@ -351,7 +355,7 @@ Geometry::cast(std::shared_ptr<math::Ray>	ray,
 	auto& xyzData = xyzBuffer->data();
 	auto xyzPtr = &xyzData[0];
 	auto xyzVertexSize = xyzBuffer->vertexSize();
-	auto xyzOffset = std::get<2>(*xyzBuffer->attribute("position"));
+	auto xyzOffset = xyzBuffer->attribute("position").offset;
 
 	auto minDistance = std::numeric_limits<float>::infinity();
 	auto lambda = math::vec2(0.f);
@@ -440,7 +444,7 @@ Geometry::getHitUv(uint triangle, math::vec2& lambda, math::vec2* hitUv)
 	auto& uvData = uvBuffer->data();
 	auto uvPtr = &uvData[0];
 	auto uvVertexSize = uvBuffer->vertexSize();
-	auto uvOffset = std::get<2>(*uvBuffer->attribute("uv"));
+	auto uvOffset = uvBuffer->attribute("uv").offset;
 	auto& indicesData = _indexBuffer->data();
 
 	auto u0 = uvData[indicesData[triangle] * uvVertexSize + uvOffset];
@@ -467,7 +471,7 @@ Geometry::getHitNormal(uint triangle, math::vec3* hitNormal)
 	auto& normalData = normalBuffer->data();
 	auto normalPtr = &normalData[0];
 	auto normalVertexSize = normalBuffer->vertexSize();
-	auto normalOffset = std::get<2>(*normalBuffer->attribute("normal"));
+	auto normalOffset = normalBuffer->attribute("normal").offset;
 	auto& indicesData = _indexBuffer->data();
 
 	auto v0 = math::make_vec3(normalPtr + indicesData[triangle] * normalVertexSize + normalOffset);

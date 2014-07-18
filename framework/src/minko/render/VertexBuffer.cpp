@@ -114,9 +114,7 @@ VertexBuffer::addAttribute(const std::string& 	name,
 	if (hasAttribute(name))
 		throw std::invalid_argument("name");
 
-	_attributes.push_back(
-		VertexBuffer::AttributePtr(new VertexBuffer::Attribute(name, size, offset == 0 ? _vertexSize : offset))
-	);
+	_attributes.push_back({ &_id, &_vertexSize, name, size, offset });
 
 	vertexSize(_vertexSize + size);
 
@@ -127,9 +125,9 @@ VertexBuffer::addAttribute(const std::string& 	name,
 bool
 VertexBuffer::hasAttribute(const std::string& attributeName) const
 {
-	auto it = std::find_if(_attributes.begin(), _attributes.end(), [&](AttributePtr attr)
+	auto it = std::find_if(_attributes.begin(), _attributes.end(), [&](const VertexAttribute& attr)
 	{
-		return std::get<0>(*attr) == attributeName;
+		return attr.name == attributeName;
 	});
 
 	return it != _attributes.end();
@@ -138,29 +136,33 @@ VertexBuffer::hasAttribute(const std::string& attributeName) const
 void
 VertexBuffer::removeAttribute(const std::string& attributeName)
 {
-	auto it = std::find_if(_attributes.begin(), _attributes.end(), [&](AttributePtr attr)
+	auto it = std::find_if(_attributes.begin(), _attributes.end(), [&](const VertexAttribute attr)
 	{
-		return std::get<0>(*attr) == attributeName;
+		return attr.name == attributeName;
 	});
 
 	if (it == _attributes.end())
 		throw std::invalid_argument("attributeName = " + attributeName);
 
-	vertexSize(_vertexSize - std::get<1>(**it));
+	vertexSize(_vertexSize - it->size);
     _attributes.erase(it);
 
 	if (attributeName == ATTRNAME_POSITION)
 		invalidatePositionBounds();
 }
 
-VertexBuffer::AttributePtr
+const VertexBuffer::VertexAttribute&
 VertexBuffer::attribute(const std::string& attributeName) const
 {
-	for (auto& attr : _attributes)
-		if (std::get<0>(*attr) == attributeName)
-			return attr;
+    auto it = std::find_if(_attributes.begin(), _attributes.end(), [&](const VertexAttribute attr)
+    {
+        return attr.name == attributeName;
+    });
 
-	throw std::invalid_argument("attributeName = " + attributeName);
+    if (it == _attributes.end())
+        throw std::invalid_argument("attributeName = " + attributeName);
+
+    return *it;
 }
 
 void
@@ -210,9 +212,9 @@ VertexBuffer::updatePositionBounds()
 		return;
 	}
 
-	auto				xyzAttr = attribute(ATTRNAME_POSITION);
-	const unsigned int	size	= std::max(0, std::min(3, (int)std::get<1>(*xyzAttr)));
-	const unsigned int	offset	= std::get<2>(*xyzAttr);
+	const auto&			xyzAttr = attribute(ATTRNAME_POSITION);
+	const unsigned int	size	= std::max(0u, std::min(3u, xyzAttr.size));
+	const unsigned int	offset	= xyzAttr.offset;
 
 	float minXYZ[3] = {FLT_MAX, FLT_MAX, FLT_MAX};
 	float maxXYZ[3] = {-FLT_MAX, -FLT_MAX, -FLT_MAX};
