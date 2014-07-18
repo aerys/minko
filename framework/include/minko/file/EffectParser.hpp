@@ -154,6 +154,9 @@ namespace minko
 		private:
 			EffectParser();
 
+			data::MacroBindingMap
+			initializeDefaultMacroBindings() const;
+
 			std::shared_ptr<render::States>
 			parseRenderStates(const Json::Value&						root,
 							  std::shared_ptr<render::AbstractContext>	context,
@@ -328,6 +331,9 @@ namespace minko
 			std::unordered_map<std::string, unsigned int>
 			initializeBlendFactorMap();
 
+			std::string
+			concatenateGLSLBlocks(GLSLBlockListPtr blocks);
+
 			static
 			std::unordered_map<std::string, render::CompareMode>
 			initializeCompareFuncMap();
@@ -344,12 +350,8 @@ namespace minko
 			float
 			priority(const std::string&);
 
-			std::string
-			concatenateGLSLBlocks(GLSLBlockListPtr blocks);
-
 			void
 			finalize();
-
 		};
 	}
 }

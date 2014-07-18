@@ -19,6 +19,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #pragma once
 
+#include "minko/Setup.hpp"
+
 #include <algorithm>
 #include <array>
 #include <cmath>
@@ -50,12 +52,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include <chrono>
 #include <bitset>
 #include <regex>
-
-#include "minko/math/Convertible.hpp"
-
-#define PI 3.1415926535897932384626433832795
-
-#define MINKO_VERSION "3.0"
 
 namespace minko
 {

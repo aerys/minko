@@ -69,7 +69,7 @@ main(int argc, char** argv)
 		auto camera = scene::Node::create("camera")
 			->addComponent(Renderer::create(0x7f7f7fff))
 			->addComponent(PerspectiveCamera::create(
-			(float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, (float)PI * 0.25f, .1f, 1000.f)
+			(float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, float(M_PI) * 0.25f, .1f, 1000.f)
 			)
 			->addComponent(Transform::create(Matrix4x4::create()->lookAt(
 			Vector3::create(), Vector3::create(0.f, 0.f, -5.f))));
@@ -124,7 +124,7 @@ main(int argc, char** argv)
 
 		auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
 		{
-			camera->component<PerspectiveCamera>()->aspectRatio((float)w / (float)h);
+			camera->component<PerspectiveCamera>()->aspectRatio(float(w) / float(h));
 		});
 
 		auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float t, float dt)
