@@ -37,7 +37,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 // Note: cannot be added to the .cpp because this must be compiled within the
 // main compilation-unit.
 #include "SDL_platform.h"
-#if __IPHONEOS__ || __ANDROID__
+#if defined(MINKO_PLATFORM_IOS) || defined(MINKO_PLATFORM_ANDROID)
 # include "SDL_main.h"
 #endif
 
@@ -91,7 +91,7 @@ namespace minko
 		Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::Ptr		_joystickRemoved;
 		// Finger events
         Signal<std::shared_ptr<input::Touch>, float>::Ptr						_touchZoom;
-        
+
         std::list<std::shared_ptr<async::Worker>>								_activeWorkers;
 		std::list<Any>															_workerCompleteSlots;
 
@@ -139,12 +139,12 @@ namespace minko
 		height();
 
         inline
-        SDL_Window*	
+        SDL_Window*
         window()
         {
             return _window;
         }
-        
+
 		int
 		getJoystickAxis(input::Joystick::Ptr joystick, int axis);
 
@@ -182,21 +182,21 @@ namespace minko
 		{
 			return _keyboard;
 		}
-        
+
         inline
         std::shared_ptr<input::Touch>
         touch()
         {
             return _touch;
         }
-        
+
         inline
 		std::shared_ptr<input::Touch>
 		touch(uint id)
 		{
             return id < _touches.size() ? _touches[id] : nullptr;
 		}
-        
+
         // Multi touch events
         inline
         Signal<std::shared_ptr<input::Touch>, float>::Ptr
@@ -204,14 +204,14 @@ namespace minko
         {
             return _touchZoom;
         }
-        
+
         inline
 		uint
 		numTouches()
 		{
 			return _touches.size();
 		}
-		
+
 		inline
 		std::shared_ptr<input::Joystick>
 		joystick(uint id)

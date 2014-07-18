@@ -87,12 +87,12 @@ int main(int argc, char** argv)
 		->addComponent(Transform::create(
 		Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(5.0f, 1.5f, 5.0f))
 		))
-		->addComponent(PerspectiveCamera::create(800.f / 600.f, (float)PI * 0.25f, .1f, 1000.f));
+		->addComponent(PerspectiveCamera::create(800.f / 600.f, float(M_PI) * 0.25f, .1f, 1000.f));
 
 	root->addChild(camera);
 
 	auto groundNode = scene::Node::create("groundNode")->addComponent(Transform::create(
-		Matrix4x4::create()->appendRotationZ(-(float)PI * 0.1f)
+		Matrix4x4::create()->appendRotationZ(-float(M_PI) * 0.1f)
 	));
 
 	// set-up lighting environment
@@ -195,7 +195,7 @@ int main(int argc, char** argv)
 
 	auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
 	{
-		camera->component<PerspectiveCamera>()->aspectRatio((float)w / (float)h);
+		camera->component<PerspectiveCamera>()->aspectRatio(float(w) / float(h));
 	});
 
 	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float deltaTime)

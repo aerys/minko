@@ -61,7 +61,7 @@ int main(int argc, char** argv)
 			->addComponent(Renderer::create(0x00000000))
 			->addComponent(Transform::create(Matrix4x4::create()->lookAt(Vector3::create(), Vector3::create(0.0f, 3.f, 3.3f))
 			))
-			->addComponent(PerspectiveCamera::create(800.f / 600.f, (float)PI * 0.25f, .1f, 1000.f));
+			->addComponent(PerspectiveCamera::create(800.f / 600.f, float(M_PI) * 0.25f, .1f, 1000.f));
 
 		auto ambientLight = scene::Node::create("ambientLight")
 			->addComponent(AmbientLight::create(0.25f));

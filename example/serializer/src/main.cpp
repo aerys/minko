@@ -103,7 +103,7 @@ int main(int argc, char** argv)
 		->addComponent(Transform::create(
 		Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 20.f))
 		))
-		->addComponent(PerspectiveCamera::create(800.f / 600.f, (float)PI * 0.25f, .1f, 1000.f));
+		->addComponent(PerspectiveCamera::create(800.f / 600.f, float(M_PI) * 0.25f, .1f, 1000.f));
 
 	root->addChild(camera);
 
@@ -128,11 +128,11 @@ int main(int argc, char** argv)
 		root->addChild(createWorldFrame(5.0f, sceneManager->assets()));
 	});
 
-	auto yaw		= (float)PI * 0.25f;
-	auto pitch		= (float)PI * .25f;
+	auto yaw		= float(M_PI) * 0.25f;
+	auto pitch		= float(M_PI) * .25f;
 	auto roll		= 0.f;
 	float minPitch	= 0.f + float(1e-5);
-	float maxPitch	= (float)PI - float(1e-5);
+	float maxPitch	= float(M_PI) - float(1e-5);
 	auto lookAt		= Vector3::create(0.f, 0.f, 0.f);
 	auto distance	= 25.f;
 
@@ -150,14 +150,14 @@ int main(int argc, char** argv)
 	{
 		if (m->leftButtonIsDown())
 		{
-			cameraRotationYSpeed = (float)dx * .01f;
-			cameraRotationXSpeed = (float)dy * -.01f;
+			cameraRotationYSpeed = float(dx) * .01f;
+			cameraRotationXSpeed = float(dy) * -.01f;
 		}
 	});
 
 	auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
 	{
-		root->children()[0]->component<PerspectiveCamera>()->aspectRatio((float)w / (float)h);
+		root->children()[0]->component<PerspectiveCamera>()->aspectRatio(float(w) / float(h));
 	});
 
 	float tx = 0.0f;
@@ -241,7 +241,7 @@ moveScene(Node::Ptr model, float& tx, float& ty, float& tz)
 #if !defined(DEACTIVATE_PHYSICS) && defined(DEBUG)
 		auto withColliders = scene::NodeSet::create(model)
 			->descendants(true)
-			->where([](scene::Node::Ptr n){ return n->hasComponent<bullet::Collider>(); });
+			->where([](scene::Node::Ptr n) { return n->hasComponent<bullet::Collider>(); });
 
 		for (auto& n : withColliders->nodes())
 			n->component<bullet::Collider>()->synchronizePhysicsWithGraphics();

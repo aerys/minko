@@ -24,15 +24,15 @@ using namespace minko;
 using namespace minko::particle;
 using namespace minko::particle::shape;
 
-Cone::Cone(float	angle,
-		   float 	baseRadius,
-		   float	length, 
-		   float 	innerRadius): 
-      EmitterShape(),
-      _angle (angle),
-	  _baseRadius (baseRadius),
-	  _length (length),
-	  _innerRadius (innerRadius)
+Cone::Cone(float angle,
+		   float baseRadius,
+		   float length,
+		   float innerRadius) :
+	EmitterShape(),
+	_angle (angle),
+	_baseRadius (baseRadius),
+	_length (length),
+	_innerRadius (innerRadius)
 {}
 
 void
@@ -51,7 +51,7 @@ void
 Cone::initParticle(ParticleData& particle,
 				   bool direction) const
 {
-	float theta		= (tools::rand01() * 2.f - 1.f) * (float)PI;
+	float theta		= (tools::rand01() * 2.f - 1.f) * float(M_PI);
 	
 	float cosTheta	= cosf(theta);
 	float sinTheta	= sinf(theta);
@@ -80,5 +80,3 @@ Cone::initParticle(ParticleData& particle,
 	particle.y = height;
 	particle.z = r * sinTheta;
 }
-
-

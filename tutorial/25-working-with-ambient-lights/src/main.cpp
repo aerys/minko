@@ -31,35 +31,35 @@ const uint WINDOW_HEIGHT = 600;
 int
 main(int argc, char** argv)
 {
-  auto canvas = Canvas::create("Minko Tutorial - Working with ambient lights", WINDOW_WIDTH, WINDOW_HEIGHT);
-  auto sceneManager = component::SceneManager::create(canvas->context());
+	auto canvas = Canvas::create("Minko Tutorial - Working with ambient lights", WINDOW_WIDTH, WINDOW_HEIGHT);
+	auto sceneManager = component::SceneManager::create(canvas->context());
  
-  sceneManager->assets()->loader()
-    ->queue("effect/Phong.effect")
+	sceneManager->assets()->loader()
+		->queue("effect/Phong.effect")
 	->queue("texture/box.png")
 	->options()->registerParser<file::PNGParser>("png");
-  
-  auto complete = sceneManager->assets()->loader()->complete()->connect([&](file::Loader::Ptr loader)
-  {
-    auto root = scene::Node::create("root")
-      ->addComponent(sceneManager);
+	
+	auto complete = sceneManager->assets()->loader()->complete()->connect([&](file::Loader::Ptr loader)
+	{
+		auto root = scene::Node::create("root")
+			->addComponent(sceneManager);
  
-    auto camera = scene::Node::create("camera")
-      ->addComponent(Renderer::create(0x7f7f7fff))
-      ->addComponent(PerspectiveCamera::create(
-        (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, (float)PI * 0.25f, .1f, 1000.f)
-      );
-    root->addChild(camera);
+		auto camera = scene::Node::create("camera")
+			->addComponent(Renderer::create(0x7f7f7fff))
+			->addComponent(PerspectiveCamera::create(
+				(float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, float(M_PI) * 0.25f, .1f, 1000.f)
+			);
+		root->addChild(camera);
  
-    auto texturedCube = scene::Node::create("texturedCube")
-      ->addComponent(Transform::create(Matrix4x4::create()->translation(0.f, 0.f, -5.f)))
-	  ->addComponent(Surface::create(
-        geometry::CubeGeometry::create(canvas->context()),
+		auto texturedCube = scene::Node::create("texturedCube")
+			->addComponent(Transform::create(Matrix4x4::create()->translation(0.f, 0.f, -5.f)))
+		->addComponent(Surface::create(
+				geometry::CubeGeometry::create(canvas->context()),
 		material::Material::create()->set("diffuseMap", sceneManager->assets()->texture("texture/box.png")),
 		sceneManager->assets()->effect("effect/Phong.effect")
-      ));
-	texturedCube->component<Transform>()->matrix()->prependRotationY(PI * 0.25f);
-    root->addChild(texturedCube);
+			));
+	texturedCube->component<Transform>()->matrix()->prependRotationY(float(M_PI) * 0.25f);
+		root->addChild(texturedCube);
 
 	// adding an ambient light to the scene
 	auto ambientLightNode = scene::Node::create("ambientLight")
@@ -72,10 +72,10 @@ main(int argc, char** argv)
 		sceneManager->nextFrame(t, dt);
 	});
 
-    canvas->run();
-  });
+		canvas->run();
+	});
  
-  sceneManager->assets()->loader()->load();
+	sceneManager->assets()->loader()->load();
  
-  return 0;
+	return 0;
 }

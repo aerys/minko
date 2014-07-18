@@ -56,7 +56,7 @@ main(int argc, char** argv)
 
 		myCustomEffect->setUniform("uModelToWorldMatrix", modelToWorldMatrix);
 		myCustomEffect->setUniform("uViewMatrix", Matrix4x4::create());
-		myCustomEffect->setUniform("uProjectionMatrix", Matrix4x4::create()->perspective((float)PI * 0.25f, (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, .1f, 1000.f));
+		myCustomEffect->setUniform("uProjectionMatrix", Matrix4x4::create()->perspective(float(M_PI) * 0.25f, (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, .1f, 1000.f));
 
 		myCustomEffect->setUniform("uColor", Vector4::create(0.f, 0.f, 1.f, 1.f));
 

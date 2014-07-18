@@ -36,6 +36,7 @@ namespace minko
 			typedef std::shared_ptr<component::AbstractComponent>	AbsComponentPtr;
 			typedef msgpack::type::tuple<uint, std::string>			SerializedMatrix;
 			typedef std::vector<SerializedMatrix>					VectorOfSerializedMatrix;
+			typedef msgpack::type::tuple<std::string, std::string>	SurfaceExtension;
 
 		public:
 			static
