@@ -1046,7 +1046,7 @@ OpenGLES2Context::getProgramInputs(const uint program)
 {
 	setProgram(program);
 
-    return { getUniformInputs(program), getAttributeInputs(program) };
+    return ProgramInputs(getUniformInputs(program), getAttributeInputs(program));
 }
 
 /*static*/
