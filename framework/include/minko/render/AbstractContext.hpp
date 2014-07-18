@@ -109,7 +109,7 @@ namespace minko
 			uploadVertexBufferData(const uint 	vertexBuffer,
 								   const uint 	offset,
 								   const uint 	size,
-								   void* 				data) = 0;
+								   void* 		data) = 0;
 
 			virtual
 			void
@@ -124,7 +124,7 @@ namespace minko
 			uploaderIndexBufferData(const uint 	indexBuffer,
 									const uint 	offset,
 									const uint 	size,
-									void*				data) = 0;
+									void*		data) = 0;
 
 			virtual
 			void
