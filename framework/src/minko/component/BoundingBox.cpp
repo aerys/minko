@@ -57,7 +57,7 @@ BoundingBox::initialize()
 		if (targets().size() > 1)
 			throw std::logic_error("The same BoundingBox cannot have 2 different targets");
 
-		_modelToWorldChangedSlot = target->data()->propertyValueChanged("transform.modelToWorldMatrix")->connect(
+		_modelToWorldChangedSlot = target->data()->propertyChanged("transform.modelToWorldMatrix")->connect(
 			[&](data::Container::Ptr data, const std::string& propertyName)
 			{
 				_invalidWorldSpaceBox = true;
