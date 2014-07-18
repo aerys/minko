@@ -46,9 +46,6 @@ namespace minko
             static uint CONTAINER_ID;
 
 			std::list<ProviderPtr>										_providers;
-			std::unordered_map<std::string, ProviderPtr>				_propertyNameToProvider;
-			std::unordered_map<ProviderPtr, uint>						_providersToNumUse;
-			std::unordered_map<ProviderPtr, uint>						_providerToIndex;
 
 			std::shared_ptr<Provider>									_arrayLengths;
 
@@ -98,15 +95,6 @@ namespace minko
 			bool
 			isLengthProperty(const std::string&) const;
 
-			inline
-			int
-			getProviderIndex(ProviderPtr provider) const
-			{
-				auto foundIndexIt = _providerToIndex.find(provider);
-
-				return foundIndexIt != _providerToIndex.end() ? foundIndexIt->second : -1;
-			}
-
             template <typename T>
 			bool
 			propertyHasType(const std::string& propertyName, bool skipPropertyNameFormatting = false) const
@@ -114,7 +102,6 @@ namespace minko
 				assertPropertyExists(propertyName);
 
 				const auto& provider = _propertyNameToProvider.find(propertyName)->second;
-
 				auto unformatedPropertyName = unformatPropertyName(provider, propertyName);
 
 				return provider->propertyHasType<T>(unformatedPropertyName, skipPropertyNameFormatting);
