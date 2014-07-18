@@ -205,10 +205,10 @@ namespace minko
 
 			inline
 			void
-            setVertexAttribute(const std::string& name, std::shared_ptr<VertexBuffer> buffer)
+            setAttribute(const std::string& name, const VertexAttribute& attribute)
 			{
 				_attributeFunctions.push_back(std::bind(
-					&Pass::setVertexAttributeOnProgram, std::placeholders::_1, name, buffer
+					&Pass::setVertexAttributeOnProgram, std::placeholders::_1, name, attribute
 				));
 
 				if (_programTemplate->isReady())
@@ -271,9 +271,9 @@ namespace minko
 
 			static
 			void
-            setVertexAttributeOnProgram(std::shared_ptr<Program> program, const std::string& name, std::shared_ptr<VertexBuffer> buffer)
+            setVertexAttributeOnProgram(std::shared_ptr<Program> program, const std::string& name, const VertexAttribute& attribute)
 			{
-				program->setVertexAttribute(name, buffer);
+				program->setVertexAttribute(name, attribute);
 			}
 
 			ProgramPtr

@@ -105,14 +105,14 @@ namespace minko
 
             inline
             const std::set<std::string>
-            setTextures()
+            setTextureNames()
             {
                 return _setTextures;
             }
 
             inline
             const std::set<std::string>
-            setAttributes()
+            setAttributeNames()
             {
                 return _setAttributes;
             }
@@ -190,13 +190,13 @@ namespace minko
 
             inline
             Program&
-            setVertexAttribute(const std::string& name, std::shared_ptr<VertexBuffer> buffer)
+            setVertexAttribute(const std::string& name, const VertexAttribute& attribute)
             {
-                return setVertexAttribute(name, buffer, name);
+                return setVertexAttribute(name, attribute, name);
             }
 
             Program&
-            setVertexAttribute(const std::string& name, std::shared_ptr<VertexBuffer> buffer, const std::string& attributeName);
+            setVertexAttribute(const std::string& name, const VertexAttribute& attribute, const std::string& attributeName);
 
             ~Program()
             {

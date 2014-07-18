@@ -144,15 +144,15 @@ namespace minko
 		public:
 			inline
 			void
-			setVertexAttribute(const std::string& name, std::shared_ptr<VertexBuffer> buffer)
+			setAttribute(const std::string& name, const VertexAttribute& attribute)
 			{
 				_attributeFunctions.push_back(std::bind(
-					&Effect::setVertexAttributeOnPass, std::placeholders::_1, name, buffer
+					&Effect::setVertexAttributeOnPass, std::placeholders::_1, name, attribute
 				));
 
 				for (auto& technique : _techniques)
 					for (auto& pass : technique.second)
-						pass->setVertexAttribute(name, buffer);
+						pass->setAttribute(name, attribute);
 			}
 
 			inline
@@ -216,9 +216,9 @@ namespace minko
 
 			inline static 
 			void
-			setVertexAttributeOnPass(std::shared_ptr<Pass> pass, const std::string& name, std::shared_ptr<VertexBuffer> buffer)
+			setVertexAttributeOnPass(std::shared_ptr<Pass> pass, const std::string& name, const VertexAttribute& attribute)
 			{
-				pass->setVertexAttribute(name, buffer);
+				pass->setVertexAttribute(name, attribute);
 			}
 
 			inline static
