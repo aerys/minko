@@ -110,6 +110,8 @@ bool
 DrawCallPool::compareDrawCalls(DrawCall::Ptr a, 
 							   DrawCall::Ptr b)
 {
+    /*
+    // FIXME
 	const float	aPriority			= a->priority();
 	const float	bPriority			= b->priority();
 	const bool	arePrioritiesEqual	= fabsf(aPriority - bPriority) < 1e-3f;
@@ -124,18 +126,25 @@ DrawCallPool::compareDrawCalls(DrawCall::Ptr a,
 		// ordered by target texture id, if any
 		return a->target() && (!b->target() || (a->target()->id() > b->target()->id()));
 	}
+    */
+
+    return true;
 }
 
 /*static*/
 math::vec3
 DrawCallPool::getDrawcallEyePosition(DrawCall::Ptr drawcall)
 {
+    /*
 	const auto foundPositionIt = _cachedDrawcallPositions.find(drawcall);
 
 	if (foundPositionIt != _cachedDrawcallPositions.end())
 		return foundPositionIt->second;
 	else
 		return drawcall->getEyeSpacePosition();
+    */
+
+    return math::vec3(0.f);
 }
 
 void
@@ -658,3 +667,25 @@ DrawCallPool::formatPropertyName(const std::string&								rawPropertyName,
 
 	return propertyName;
 }
+
+/*
+math::vec3
+DrawCallPool::getEyeSpacePosition()  const
+{
+    const auto& vb = _vertexPositions.second;
+
+    math::vec3 localPos(0.f);
+    math::mat4 modelView(1.f);
+
+    if (vb)
+        localPos = vb->minPosition() + (vb->maxPosition() - vb->minPosition()) * .5f;
+
+    if (_modelToWorldMatrix.second)
+        modelView = *_modelToWorldMatrix.second;
+
+    if (_worldToScreenMatrix.second)
+        modelView = *_worldToScreenMatrix.second * modelView;
+
+    return (modelView * math::vec4(localPos, 1.f)).xyz();
+}
+*/
