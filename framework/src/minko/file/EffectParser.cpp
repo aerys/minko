@@ -801,8 +801,8 @@ EffectParser::parseBindings(const Json::Value&	contextNode,
 		for (auto propertyName : attributeBindingsValue.getMemberNames())
 			parseBindingNameAndSource(
 				attributeBindingsValue.get(propertyName, 0),
-				attributeBindings[propertyName].first,
-				attributeBindings[propertyName].second
+				attributeBindings[propertyName].propertyName,
+				attributeBindings[propertyName].source
 			);
 
 	parseUniformBindings(contextNode, uniformBindings, uniformDefaultValues);
@@ -812,8 +812,8 @@ EffectParser::parseBindings(const Json::Value&	contextNode,
 		for (auto propertyName : stateBindingsValue.getMemberNames())
 			parseBindingNameAndSource(
 				stateBindingsValue.get(propertyName, 0),
-				stateBindings[propertyName].first,
-				stateBindings[propertyName].second
+				stateBindings[propertyName].propertyName,
+				stateBindings[propertyName].source
 			);
 
 	parseMacroBindings(contextNode, macroBindings);
@@ -897,8 +897,8 @@ EffectParser::parseUniformBindings(const Json::Value&	contextNode,
 
 			parseBindingNameAndSource(
 				uniformBindingValue,
-				uniformBindings[propertyName].first,
-				uniformBindings[propertyName].second
+				uniformBindings[propertyName].propertyName,
+				uniformBindings[propertyName].source
 			);
 
 			if (uniformBindingValue.isObject())
