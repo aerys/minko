@@ -91,11 +91,8 @@ Program::setUniform(const std::string& name, CubeTexture::Ptr texture)
 }
 
 Program&
-Program::setVertexAttribute(const std::string& name, VertexBuffer::Ptr buffer, const std::string& attributeName)
+Program::setVertexAttribute(const std::string& name, const VertexAttribute& attribute, const std::string& attributeName)
 {
-    if (!buffer->hasAttribute(attributeName))
-        throw std::invalid_argument("buffer has no '" + attributeName + "' attribute");
-
     auto it = std::find_if(_inputs.attributes().begin(), _inputs.attributes().end(), [&](const ProgramInputs::AttributeInput& a)
     {
         return a.name == name;
@@ -104,9 +101,8 @@ Program::setVertexAttribute(const std::string& name, VertexBuffer::Ptr buffer, c
     if (it != _inputs.attributes().end())
     {
         auto oldProgram = _context->currentProgram();
-        const auto& attribute = buffer->attribute(attributeName);
 
-        _context->setVertexBufferAt(_setAttributes.size(), buffer->id(), std::get<1>(*attribute), buffer->vertexSize(), std::get<2>(*attribute));
+        _context->setVertexBufferAt(_setAttributes.size(), (uint)attribute.resourceId, attribute.size, *attribute.vertexSize, attribute.offset);
         _context->setProgram(oldProgram);
 
         _setAttributes.insert(name);
