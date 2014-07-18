@@ -41,11 +41,19 @@ namespace minko
             struct is_shared_ptr<std::shared_ptr<T>> : std::true_type {};
 
             template <typename T>
+            struct is_weak_ptr : std::false_type {};
+            template <typename T>
+            struct is_weak_ptr<std::weak_ptr<T>> : std::true_type{};
+
+            template <typename T>
             struct is_valid {
-                static const bool value = !std::is_pointer<T>::value && !std::is_reference<T>::value && !is_shared_ptr<T>::value;
+                static const bool value = !std::is_pointer<T>::value && !std::is_reference<T>::value
+                    && !is_shared_ptr<T>::value &&!is_weak_ptr<T>::value;
             };
 
 		private:
+            std::string                                         _name;
+            
 			std::unordered_map<std::string, Any>				_values;
 
 			std::shared_ptr<Signal<Ptr, const std::string&>>	_propertyAdded;
