@@ -49,13 +49,15 @@ namespace minko
 				samplerCube
 			};
 
-            struct UniformInput  {
+            struct UniformInput
+            {
                 std::string name;
                 Type type;
                 int location;
             };
 
-            struct AttributeInput  {
+            struct AttributeInput
+            {
                 std::string name;
                 int location;
             };
