@@ -54,8 +54,9 @@ namespace minko
 			{
 			}
 
-			virtual
-			~AbstractComponent() = 0;
+            ~AbstractComponent()
+            {
+            }
 
 			inline
 			const std::vector<std::shared_ptr<scene::Node>>&
@@ -117,10 +118,5 @@ namespace minko
 				return _layoutMaskChanged;
 			}
 		};
-
-		inline
-		AbstractComponent::~AbstractComponent()
-		{
-		}
 	}
 }
