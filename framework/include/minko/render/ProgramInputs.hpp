@@ -109,15 +109,15 @@ namespace minko
 			}
 
             inline
-            std::vector<UniformInput>&
-            uniforms()
+            const std::vector<UniformInput>&
+            uniforms() const
             {
                 return _uniforms;
             }
 
             inline
-            std::vector<AttributeInput>&
-            attributes()
+            const std::vector<AttributeInput>&
+            attributes() const
             {
                 return _attributes;
             }
