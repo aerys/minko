@@ -67,18 +67,18 @@ DrawCall::bind(Program::Ptr                 program,
                const data::BindingMap&      uniformBindings,
                const data::BindingMap&      stateBindings)
 {
-    for (const auto& input : program->inputs().uniforms)
+    for (const auto& input : program->inputs().uniforms())
     {
-        const auto& binding = uniformBindings[input.name];
+        const auto& binding = uniformBindings.at(input.name);
         auto container = getContainer(rootData, rendererData, targetData, binding.source);
 
         // FIXME: format binding.propertyName
         bindUniform(program, input, container, binding.propertyName);
     }
      
-    for (const auto& input : program->inputs().attributes)
+    for (const auto& input : program->inputs().attributes())
     {
-        const auto& binding = attributeBindings[input.name];
+        const auto& binding = attributeBindings.at(input.name);
         auto container = getContainer(rootData, rendererData, targetData, binding.source);
 
         // FIXME: format binding.propertyName
