@@ -151,7 +151,7 @@ VertexBuffer::removeAttribute(const std::string& attributeName)
 		invalidatePositionBounds();
 }
 
-const VertexBuffer::VertexAttribute&
+const VertexAttribute&
 VertexBuffer::attribute(const std::string& attributeName) const
 {
     auto it = std::find_if(_attributes.begin(), _attributes.end(), [&](const VertexAttribute attr)
