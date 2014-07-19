@@ -49,7 +49,7 @@ namespace minko
             {
                 const int location;
                 const uint size;
-                const const T* data;
+                const T* data;
             };
 
             struct SamplerValue
