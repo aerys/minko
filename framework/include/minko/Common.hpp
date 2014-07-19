@@ -78,16 +78,7 @@ namespace minko
     
 	namespace render
 	{
-        struct VertexAttribute
-        {
-            const int* resourceId;
-            const uint* vertexSize;
-            std::string name;
-            uint size;
-            uint offset;
-        };
-
-		class DrawCallPool;
+        class DrawCallPool;
 		class AbstractContext;
 		class OpenGLES2Context;
         class Blending;
@@ -111,7 +102,8 @@ namespace minko
 		class Program;
 		class ProgramSignature;
 		class VertexFormat;
-		class VertexBuffer;
+        class VertexAttribute;
+        class VertexBuffer;
 		class IndexBuffer;
 
 		enum class TextureType
@@ -168,7 +160,6 @@ namespace minko
 	namespace component
 	{
 		class AbstractComponent;
-		template <class ProviderClass, class Enable = void>
 	    class AbstractRootDataComponent;
 	    class SceneManager;
     	class Transform;
