@@ -43,7 +43,7 @@ namespace minko
 		{
 			if (!_randSeeded)
 			{
-				std::srand(std::time(0));
+				std::srand(static_cast<uint>(std::time(0)));
 				_randSeeded = true;
 			}
 
