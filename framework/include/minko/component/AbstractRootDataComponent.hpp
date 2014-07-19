@@ -31,15 +31,14 @@ namespace minko
 {
     namespace component
     {
-        template <class ProviderClass>
-	    class AbstractRootDataComponent<ProviderClass, typename std::enable_if<std::is_base_of<data::Provider, ProviderClass>::value>::type> :
+	    class AbstractRootDataComponent :
             public AbstractComponent
 	    {
         private:
             typedef std::shared_ptr<scene::Node>            NodePtr;
 
         private:
-            std::shared_ptr<ProviderClass>                  _data;
+            std::shared_ptr<data::Provider>                 _data;
             bool                                            _enabled;
             NodePtr                                         _root;
 
@@ -50,7 +49,7 @@ namespace minko
 
 	    protected:
             inline
-            std::shared_ptr<ProviderClass>
+            std::shared_ptr<data::Provider>
             data() const
             {
                 return _data;
@@ -63,7 +62,7 @@ namespace minko
                 return _root;
             }
 
-            AbstractRootDataComponent(std::shared_ptr<ProviderClass> provider) :
+            AbstractRootDataComponent(std::shared_ptr<data::Provider> provider) :
                 _data(provider),
                 _enabled(true)
             {
@@ -74,15 +73,15 @@ namespace minko
             initialize()
             {
                 _targetAddedSlot = targetAdded()->connect(std::bind(
-                    &AbstractRootDataComponent<ProviderClass>::targetAddedHandler,
-                    std::static_pointer_cast<AbstractRootDataComponent<ProviderClass>>(shared_from_this()),
+                    &AbstractRootDataComponent::targetAddedHandler,
+                    std::static_pointer_cast<AbstractRootDataComponent>(shared_from_this()),
                     std::placeholders::_1,
                     std::placeholders::_2
                 ));
 
                 _targetRemovedSlot = targetRemoved()->connect(std::bind(
-                    &AbstractRootDataComponent<ProviderClass>::targetRemovedHandler,
-                    std::static_pointer_cast<AbstractRootDataComponent<ProviderClass>>(shared_from_this()),
+                    &AbstractRootDataComponent::targetRemovedHandler,
+                    std::static_pointer_cast<AbstractRootDataComponent>(shared_from_this()),
                     std::placeholders::_1,
                     std::placeholders::_2
                 ));
@@ -97,7 +96,7 @@ namespace minko
 
                 auto cb = std::bind(
                     &AbstractRootDataComponent::addedOrRemovedHandler,
-                    std::static_pointer_cast<AbstractRootDataComponent<ProviderClass>>(shared_from_this()),
+                    std::static_pointer_cast<AbstractRootDataComponent>(shared_from_this()),
                     std::placeholders::_1,
                     std::placeholders::_2,
                     std::placeholders::_3

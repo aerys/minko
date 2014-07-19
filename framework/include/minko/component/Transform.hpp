@@ -24,7 +24,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/scene/Node.hpp"
 #include "minko/component/AbstractComponent.hpp"
 #include "minko/component/Renderer.hpp"
-#include "minko/data/StructureProvider.hpp"
 #include "minko/Any.hpp"
 
 namespace minko
@@ -45,7 +44,7 @@ namespace minko
 		private:
 			math::mat4										_matrix;
 			math::mat4										_modelToWorld;
-			std::shared_ptr<data::StructureProvider>		_data;
+			std::shared_ptr<data::Provider>		            _data;
 
 			Signal<AbsCtrlPtr, NodePtr>::Slot 				_targetAddedSlot;
 			Signal<AbsCtrlPtr, NodePtr>::Slot 				_targetRemovedSlot;

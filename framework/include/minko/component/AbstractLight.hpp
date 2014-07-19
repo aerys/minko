@@ -23,7 +23,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Signal.hpp"
 #include "minko/component/AbstractRootDataComponent.hpp"
-#include "minko/data/ArrayProvider.hpp"
 #include "minko/scene/Layout.hpp"
 
 namespace minko
@@ -31,7 +30,7 @@ namespace minko
 	namespace component
 	{
 		class AbstractLight :
-			public AbstractRootDataComponent<data::ArrayProvider>
+			public AbstractRootDataComponent
 		{
 			friend class data::LightMaskFilter;
 
@@ -56,22 +55,11 @@ namespace minko
 			AbstractLight::Ptr
 			color(const math::vec3&);
 
-			Layouts
-			layoutMask() const
-			{
-				return AbstractComponent::layoutMask();
-			}
-
 			void
 			layoutMask(Layouts value);
+
 		protected:
 			AbstractLight(const std::string& arrayName);
-
-			void
-            targetAddedHandler(AbsCmpPtr, NodePtr);
-
-            void
-            targetRemovedHandler(AbsCmpPtr, NodePtr);
 		};
 	}
 }

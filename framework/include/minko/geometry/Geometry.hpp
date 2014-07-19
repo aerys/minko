@@ -20,8 +20,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
-#include "minko/data/ArrayProvider.hpp"
+#include "minko/data/Provider.hpp"
 #include "minko/render/VertexBuffer.hpp"
+#include "minko/render/IndexBuffer.hpp"
 
 namespace minko
 {
@@ -34,8 +35,8 @@ namespace minko
 			typedef std::shared_ptr<Geometry> Ptr;
 
 		private:
-			typedef std::shared_ptr<render::VertexBuffer> VBPtr;
-			typedef std::shared_ptr<data::ArrayProvider>  ProviderPtr;
+			typedef std::shared_ptr<render::VertexBuffer>   VBPtr;
+			typedef std::shared_ptr<data::Provider>         ProviderPtr;
 
 		private:
 			ProviderPtr								_data;
@@ -109,7 +110,7 @@ namespace minko
 			indices(std::shared_ptr<render::IndexBuffer> indices)
 			{
 				_indexBuffer = indices;
-				_data->set("indices", indices);
+				_data->set("indices", indices->id());
 			}
 
 			inline

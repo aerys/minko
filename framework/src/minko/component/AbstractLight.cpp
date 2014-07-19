@@ -26,7 +26,7 @@ using namespace minko;
 using namespace minko::component;
 
 AbstractLight::AbstractLight(const std::string& arrayName) :
-	AbstractRootDataComponent<data::ArrayProvider>(data::ArrayProvider::create(arrayName)),
+	AbstractRootDataComponent(data::Provider::create(arrayName)),
 	_color(math::vec3(1.0f, 1.0f, 1.0f))
 {
 	data()->set("color", _color);
@@ -49,18 +49,4 @@ AbstractLight::color(const math::vec3& color)
 	}
 
 	return std::static_pointer_cast<AbstractLight>(shared_from_this());
-}
-
-void
-AbstractLight::targetAddedHandler(component::AbstractComponent::Ptr component, 
-								  scene::Node::Ptr					target)
-{
-	AbstractRootDataComponent<data::ArrayProvider>::targetAddedHandler(component, target);
-}
-
-void
-AbstractLight::targetRemovedHandler(component::AbstractComponent::Ptr 	component,
-									scene::Node::Ptr					target)
-{
-	AbstractRootDataComponent<data::ArrayProvider>::targetRemovedHandler(component, target);
 }
