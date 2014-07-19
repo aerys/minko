@@ -52,9 +52,9 @@ namespace minko
             };
 
 		private:
-            std::string                                         _name;
-            
+            std::string                                         _key;
 			std::unordered_map<std::string, Any>				_values;
+            std::string                                         _uuid;
 
 			std::shared_ptr<Signal<Ptr, const std::string&>>	_propertyAdded;
             std::shared_ptr<Signal<Ptr, const std::string&>>	_propertyChanged;
@@ -79,6 +79,18 @@ namespace minko
 			{
 				return create()->copyFrom(source);
 			}
+
+            const std::string&
+            key()
+            {
+                return _key;
+            }
+
+            const std::string&
+            uuid()
+            {
+                return _uuid;
+            }
 
 			inline
 			bool 
@@ -183,21 +195,13 @@ namespace minko
 			copyFrom(Ptr source);
 
 		protected:
-			Provider();
+			Provider(const std::string& key);
 
-			virtual
 			std::string
-			formatPropertyName(const std::string& propertyName) const
-			{
-				return propertyName;
-			}
+			formatPropertyName(const std::string& propertyName) const;
 
-			virtual
 			std::string
-			unformatPropertyName(const std::string& propertyName) const
-			{
-				return propertyName;
-			}
+			unformatPropertyName(const std::string& propertyName) const;
 		};
 	}
 }

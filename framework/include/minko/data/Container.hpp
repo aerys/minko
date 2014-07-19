@@ -46,8 +46,9 @@ namespace minko
             static uint CONTAINER_ID;
 
 			std::list<ProviderPtr>										_providers;
-
+            std::unordered_map<ProviderPtr, uint>                       _numUses;
 			std::shared_ptr<Provider>									_arrayLengths;
+            std::unordered_map<std::string, ProviderPtr>                _propertyNameToProvider;
 
 			PropertyChangedSignalPtr									_propertyAdded;
 			PropertyChangedSignalPtr									_propertyRemoved;
@@ -92,9 +93,6 @@ namespace minko
 			bool
 			hasProperty(const std::string&) const;
 			
-			bool
-			isLengthProperty(const std::string&) const;
-
             template <typename T>
 			bool
 			propertyHasType(const std::string& propertyName, bool skipPropertyNameFormatting = false) const
@@ -205,12 +203,6 @@ namespace minko
 
             void
             providerPropertyChangedHandler(ProviderPtr, const std::string& propertyName);
-
-			std::string
-			formatPropertyName(ProviderPtr  arrayProvider, const std::string&) const;
-
-			std::string
-			unformatPropertyName(ProviderPtr  arrayProvider, const std::string&) const;
 
 			inline
 			void
