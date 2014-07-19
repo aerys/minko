@@ -1413,10 +1413,10 @@ EffectParser::finalize()
 
 	for (auto& techniqueNameAndTargets : _techniqueTargets)
 		for (auto& target : techniqueNameAndTargets.second)
-			_effect->data()->set(target.first, target.second);
+			_effect->data()->set(target.first, target.second->id());
 
 	for (auto& targetNameAndPtr : _globalTargets)
-		_effect->data()->set(targetNameAndPtr.first, targetNameAndPtr.second);
+		_effect->data()->set(targetNameAndPtr.first, targetNameAndPtr.second->id());
 
 	_assetLibrary->effect(_effectName, _effect);
     _assetLibrary->effect(_filename, _effect);
