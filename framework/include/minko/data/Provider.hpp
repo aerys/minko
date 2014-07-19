@@ -66,9 +66,9 @@ namespace minko
 		public:
 			static
 			Ptr
-			create()
+			create(const std::string& key)
 			{
-				Ptr provider = std::shared_ptr<Provider>(new Provider());
+				Ptr provider = std::shared_ptr<Provider>(new Provider(key));
 				
 				return provider;
 			}
@@ -77,7 +77,7 @@ namespace minko
 			Ptr
 			create(Ptr source)
 			{
-				return create()->copyFrom(source);
+				return create(source->_key)->copyFrom(source);
 			}
 
             const std::string&
