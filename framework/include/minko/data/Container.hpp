@@ -100,9 +100,8 @@ namespace minko
 				assertPropertyExists(propertyName);
 
 				const auto& provider = _propertyNameToProvider.find(propertyName)->second;
-				auto unformatedPropertyName = unformatPropertyName(provider, propertyName);
 
-				return provider->propertyHasType<T>(unformatedPropertyName, skipPropertyNameFormatting);
+				return provider->propertyHasType<T>(propertyName, skipPropertyNameFormatting);
 			}
 
 			template <typename T>
@@ -112,9 +111,8 @@ namespace minko
 				assertPropertyExists(propertyName);
 
 				const auto& provider = _propertyNameToProvider.find(propertyName)->second;
-				auto unformatedPropertyName = unformatPropertyName(provider, propertyName);
 
-				return provider->get<T>(unformatedPropertyName, true);
+				return provider->get<T>(propertyName, true);
 			}
 
             template <typename T>
