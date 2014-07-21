@@ -6,7 +6,7 @@ end
 
 minko.project.library("minko-plugin-" .. PROJECT_NAME)
 
-	removeplatforms { "ios", "android" }
+	removeplatforms { "ios", "android", "html5" }
 
 	minko.plugin.enable("zlib")
 
