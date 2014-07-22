@@ -50,9 +50,9 @@ fi
 ANDROID_NDK_HOME="${ANDROID}/toolchains/${ANDROID_TOOLCHAIN}"
 
 # Build a standalone toolchain
-pushd "${ANDROID}/build-tools/${ANDROID_NDK_VERSION}"
+pushd "${ANDROID}/build-tools/${ANDROID_NDK_VERSION}" > /dev/null
 build/tools/make-standalone-toolchain.sh --platform=${ANDROID_SDK_VERSION} --toolchain=${ANDROID_TOOLCHAIN} --install-dir=${ANDROID_NDK_HOME}
-popd
+popd > /dev/null
 
 # Simulate symbolic link
 echo ${ANDROID_TOOLCHAIN} > "${ANDROID}/toolchains/default.txt"
