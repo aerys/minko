@@ -11,7 +11,7 @@ local project = premake.project
 local config = premake.config
 local fileconfig = premake.fileconfig
 
-api.addAllowed('system', { 'android' })
+api.addAllowed("system", { "android" })
 api.addAllowed("architecture", { "armv5te" })
 
 local ANDROID
@@ -29,21 +29,32 @@ if not os.isfile(ANDROID .. "/tools/android") then
 	error(color.fg.red .. 'Cannot find SDK tools for Android. Make sure ANDROID points to a correct Android SDK directory.' .. color.reset)
 end
 
-if not os.isfile(ANDROID .. "/ndk") then
-	error(color.fg.red .. 'Cannot find NDK tools for Android. Please install NDK in "' .. ANDROID .. '/ndk".' .. color.reset)
+if not os.isdir(ANDROID .. "/toolchains") then
+	error(color.fg.red .. 'Cannot find NDK tools for Android. Please install NDK in "' .. ANDROID .. '/toolchains".' .. color.reset)
 end
-NDK_HOME = os.getenv('NDK_HOME')
 
-local TOOLCHAIN = "arm-linux-androideabi"
--- local TOOLCHAIN = "i686-linux-android"
+local NDK_HOME = ANDROID .. "/toolchains/" .. io.lines(ANDROID .. "/toolchains/default.txt")()
+
+local matches = os.matchdirs(NDK_HOME .. "/*abi")
+
+local TOOLCHAIN
+
+for i, basedir in ipairs(matches) do
+	TOOLCHAIN = path.getbasename(basedir)
+	break
+end
+
+if not TOOLCHAIN then
+	error(color.fg.red .. 'Installed NDK is not supported: ' .. NDK_HOME .. color.reset)
+end
 
 table.inject(premake.tools.gcc, 'tools.android', {
-	cc			= ANDROID .. '/ndk' .. '/bin/' .. TOOLCHAIN .. '-gcc',
-	cxx			= MINKO_HOME .. '/tool/lin/script/g++.sh ' .. ANDROID .. '/ndk' .. '/bin/' .. TOOLCHAIN .. '-g++',
-	ar			= ANDROID .. '/ndk' .. '/bin/' .. TOOLCHAIN .. '-ar',
-	ld			= ANDROID .. '/ndk' .. '/bin/' .. TOOLCHAIN .. '-ld',
-	ranlib		= ANDROID .. '/ndk' .. '/bin/' .. TOOLCHAIN .. '-ranlib',
-	strip		= ANDROID .. '/ndk' .. '/bin/' .. TOOLCHAIN .. '-strip',
+	cc			= NDK_HOME .. '/bin/' .. TOOLCHAIN .. '-gcc',
+	cxx			= MINKO_HOME .. '/tool/lin/script/g++.sh ' .. NDK_HOME .. '/bin/' .. TOOLCHAIN .. '-g++',
+	ar			= NDK_HOME .. '/bin/' .. TOOLCHAIN .. '-ar',
+	ld			= NDK_HOME .. '/bin/' .. TOOLCHAIN .. '-ld',
+	ranlib		= NDK_HOME .. '/bin/' .. TOOLCHAIN .. '-ranlib',
+	strip		= NDK_HOME .. '/bin/' .. TOOLCHAIN .. '-strip',
 })
 
 table.inject(premake.tools.gcc, 'cppflags.system.android', {

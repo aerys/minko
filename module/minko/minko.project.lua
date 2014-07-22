@@ -31,7 +31,7 @@ minko.project.library = function(name)
 		}
 
 	configuration { "html5" }
-		if EMSCRIPTEN then
+		if premake.tools.gcc.tools.emscripten then
 			includedirs { EMSCRIPTEN .. "/system/include" }
 		end
 
