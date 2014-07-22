@@ -179,10 +179,10 @@ Loader::processData(const std::string&                      filename,
             std::placeholders::_1
         ));
 
-        ///try
-        //{
+        try
+        {
             parser->parse(filename, resolvedFilename, options, data, options->assetLibrary());
-        /*}
+        }
         catch (const ParserError& parserError)
         {
             if (_error->numCallbacks() != 0)
@@ -191,7 +191,7 @@ Loader::processData(const std::string&                      filename,
             else
                 throw parserError;
 #endif // defined(DEBUG)
-        }*/
+        }
     }
     else
     {
