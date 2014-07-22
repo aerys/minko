@@ -15,7 +15,7 @@ for ARG in "$@"; do
 	ARGS+=("${ARG}")
 done
 
-test "$verbose" != 0 && echo "${BIN} ${ARGS}"
+test "$verbose" != 0 && echo "${BIN} ${ARGS[@]}"
 
 python "${BIN}" "${ARGS[@]}" 2>&1 >/dev/null | GREP_COLOR="${YELLOW}" grep -E -i --color '^warning|$' | GREP_COLOR="${RED}" grep -E -i --color '^error|$'
 

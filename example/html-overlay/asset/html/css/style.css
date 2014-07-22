@@ -54,7 +54,7 @@ html, body
 	position: absolute;
 	width: 786px;
 	height: 257px;
-	background-image: url('../image/ingame.png');
+	background-image: url('../image/header.png');
 	background-repeat: no-repeat;
 	opacity: 0.6;
 }

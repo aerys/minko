@@ -6,7 +6,7 @@ minko.project.application("minko-example-" .. PROJECT_NAME)
 		"src/**.cpp",
 		"src/**.hpp"
 	}
-	
+
 	includedirs { "src" }
 
 	-- plugins

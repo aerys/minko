@@ -62,7 +62,7 @@ SpotLight::updateModelToWorldMatrix(std::shared_ptr<math::Matrix4x4> modelToWorl
 SpotLight::Ptr
 SpotLight::innerConeAngle(float radians)
 {
-	_cosInnerConeAngle = cosf(std::max(0.0f, std::min(0.5f * (float)PI, radians)));
+	_cosInnerConeAngle = cosf(std::max(0.0f, std::min(0.5f * float(M_PI), radians)));
 	data()->set<float>("cosInnerConeAngle", _cosInnerConeAngle);
 
 	return std::static_pointer_cast<SpotLight>(shared_from_this());
@@ -71,7 +71,7 @@ SpotLight::innerConeAngle(float radians)
 SpotLight::Ptr
 SpotLight::outerConeAngle(float radians)
 {
-	_cosOuterConeAngle = cosf(std::max(0.0f, std::min(0.5f * (float)PI, radians)));
+	_cosOuterConeAngle = cosf(std::max(0.0f, std::min(0.5f * float(M_PI), radians)));
 	data()->set<float>("cosOuterConeAngle", _cosOuterConeAngle);
 
 	return std::static_pointer_cast<SpotLight>(shared_from_this());
@@ -84,7 +84,7 @@ SpotLight::attenuationCoefficients() const
 }
 
 SpotLight::Ptr
-SpotLight::attenuationCoefficients(float constant, float linear, float quadratic) 
+SpotLight::attenuationCoefficients(float constant, float linear, float quadratic)
 {
 	return attenuationCoefficients(Vector3::create(constant, linear, quadratic));
 }

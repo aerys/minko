@@ -26,18 +26,18 @@ using namespace minko::particle::shape;
 
 Cylinder::Cylinder(float	height,
 				   float	radius,
-		   		   float 	innerRadius): 
-      EmitterShape(),
-      _height (height),
-	  _radius (radius),
-	  _innerRadius (innerRadius)
+		   		   float 	innerRadius) :
+	EmitterShape(),
+	_height (height),
+	_radius (radius),
+	_innerRadius (innerRadius)
 {
 }
 
 void
 Cylinder::initPosition(ParticleData& particle) const
 {
-	float theta		= (tools::rand01() * 2.f - 1.f) * (float)PI;
+	float theta		= (tools::rand01() * 2.f - 1.f) * float(M_PI);
 	
 	float cosTheta	= cosf(theta);
 	float sinTheta	= sinf(theta);
@@ -50,5 +50,3 @@ Cylinder::initPosition(ParticleData& particle) const
 	particle.y = tools::rand01() * _height;
 	particle.z = r * sinTheta;
 }
-
-

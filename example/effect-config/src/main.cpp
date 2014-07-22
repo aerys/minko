@@ -33,22 +33,21 @@ int main(int argc, char** argv)
 
 	// setup assets
 	sceneManager->assets()->loader()->options()
-        ->generateMipmaps(true)
-        ->includePaths().push_back("effect");
+		->generateMipmaps(true);
 
 	sceneManager->assets()->loader()->options()
-                ->registerParser<file::JPEGParser>("jpg");
+		->registerParser<file::JPEGParser>("jpg");
 
-        sceneManager->assets()
+	sceneManager->assets()
 		->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()))
-                ->geometry("sphere", geometry::SphereGeometry::create(sceneManager->assets()->context()));
+		->geometry("sphere", geometry::SphereGeometry::create(sceneManager->assets()->context()));
 
-        sceneManager->assets()->loader()
-			->queue("effect/windows.jpg")
-			->queue("effect/macosx.jpg")
-			->queue("effect/linux.jpg")
-			->queue("effect/Basic.effect")
-			->queue("effect/PlatformTexture.effect");
+	sceneManager->assets()->loader()
+		->queue("effect/windows.jpg")
+		->queue("effect/osx.jpg")
+		->queue("effect/linux.jpg")
+		->queue("effect/Basic.effect")
+		->queue("effect/PlatformTexture.effect");
 
 	auto root = scene::Node::create("root")
 		->addComponent(sceneManager);
@@ -58,7 +57,7 @@ int main(int argc, char** argv)
 		->addComponent(Transform::create(
 			Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 3.f))
 		))
-		->addComponent(PerspectiveCamera::create(800.f / 600.f, (float)PI * 0.25f, .1f, 1000.f));
+		->addComponent(PerspectiveCamera::create(800.f / 600.f, float(M_PI) * 0.25f, .1f, 1000.f));
 	root->addChild(camera);
 
 	auto mesh = scene::Node::create("mesh")
@@ -67,16 +66,16 @@ int main(int argc, char** argv)
 	auto _ = sceneManager->assets()->loader()->complete()->connect([=](file::Loader::Ptr loader)
 	{
 		mesh->addComponent(Surface::create(
-				sceneManager->assets()->geometry("cube"),
-				material::Material::create()->set("diffuseColor", Vector4::one()),
-				sceneManager->assets()->effect("effect/PlatformTexture.effect")
-			));
+			sceneManager->assets()->geometry("cube"),
+			material::Material::create()->set("diffuseColor", Vector4::one()),
+			sceneManager->assets()->effect("effect/PlatformTexture.effect")
+		));
 		root->addChild(mesh);
 	});
 
 	auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
 	{
-		root->children()[0]->component<PerspectiveCamera>()->aspectRatio((float)w / (float)h);
+		root->children()[0]->component<PerspectiveCamera>()->aspectRatio(float(w) / float(h));
 	});
 
 	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float deltaTime)

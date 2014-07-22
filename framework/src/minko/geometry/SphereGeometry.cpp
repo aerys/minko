@@ -42,8 +42,8 @@ SphereGeometry::initializeVertices(std::shared_ptr<AbstractContext>	context,
 	{
 		for (unsigned int i = 0; i < numMeridians + 1; i++, c += 3, k += 2)
 		{
-			float theta	= j / ((float)numParallels - 1.f) * (float)PI;
-			float phi 	= i / (float)numMeridians * 2.f * (float)PI;
+			float theta	= j / ((float)numParallels - 1.f) * float(M_PI);
+			float phi 	= i / (float)numMeridians * 2.f * float(M_PI);
 			float x		= sinf(theta) * cosf(phi) * .5f;
 			float y		= cosf(theta) * .5f;
 			float z		= -sinf(theta) * sinf(phi) * .5f;
@@ -54,8 +54,8 @@ SphereGeometry::initializeVertices(std::shared_ptr<AbstractContext>	context,
 			data.push_back(z);
 
 			// u, v
-			data.push_back(1.f - i / (float)numMeridians);
-			data.push_back(j / ((float)numParallels - 1.f));
+			data.push_back(1.f - i / float(numMeridians));
+			data.push_back(j / (float(numParallels) - 1.f));
 
 			// normal
 			if (withNormals)

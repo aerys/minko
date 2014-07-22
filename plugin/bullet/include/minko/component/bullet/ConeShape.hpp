@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
-#include <minko/component/bullet/AbstractPhysicsShape.hpp>
+#include "minko/component/bullet/AbstractPhysicsShape.hpp"
 
 namespace minko
 {
@@ -89,7 +89,7 @@ namespace minko
 				volume() const
 				{
 					const float radius	= _radius + _margin; 
-					const float volume	= ((float)PI / 3.0f) * radius * radius * (_height + _margin);
+					const float volume	= (float(M_PI) / 3.0f) * radius * radius * (_height + _margin);
 
 					return volume * _volumeScaling;
 				}

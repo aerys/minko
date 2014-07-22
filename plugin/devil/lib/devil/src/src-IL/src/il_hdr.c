@@ -454,7 +454,7 @@ typedef struct {
 #define RGBE_VALID_GAMMA       0x02
 #define RGBE_VALID_EXPOSURE    0x04
 
-/* offsets to red, green, and blue components in a data (float) pixel */
+/* offsets to red, green, and blue components in a data float(M_PI)xel */
 #define RGBE_DATA_RED    0
 #define RGBE_DATA_GREEN  1
 #define RGBE_DATA_BLUE   2

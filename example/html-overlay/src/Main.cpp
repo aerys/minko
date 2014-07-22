@@ -18,15 +18,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "minko/Minko.hpp"
-#include "minko/MinkoPNG.hpp"
 #include "minko/MinkoSDL.hpp"
 #include "minko/MinkoHtmlOverlay.hpp"
 
 using namespace minko;
 using namespace minko::component;
 using namespace minko::math;
-
-const std::string TEXTURE_FILENAME = "texture/box.png";
 
 Signal<minko::dom::AbstractDOM::Ptr, std::string>::Slot onloadSlot;
 
@@ -57,15 +54,13 @@ int main(int argc, char** argv)
 	auto sceneManager = SceneManager::create(canvas->context());
 
 	overlay->initialize(canvas, sceneManager);
-	
+
 	// setup assets
 	sceneManager->assets()->loader()->options()
 		->resizeSmoothly(true)
-		->generateMipmaps(true)
-		->registerParser<file::PNGParser>("png");
+		->generateMipmaps(true);
 
 	sceneManager->assets()->loader()
-		->queue(TEXTURE_FILENAME)
 		->queue("effect/Basic.effect")
 		->queue("effect/Overlay.effect");
 
@@ -86,12 +81,12 @@ int main(int argc, char** argv)
 		->addComponent(Transform::create(
 		Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 3.f))
 		))
-		->addComponent(PerspectiveCamera::create(800.f / 600.f, (float)PI * 0.25f, .1f, 1000.f));
+		->addComponent(PerspectiveCamera::create(800.f / 600.f, float(M_PI) * 0.25f, .1f, 1000.f));
 	root->addChild(camera);
 
 	auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
 	{
-		camera->component<PerspectiveCamera>()->aspectRatio((float)w / (float)h);
+		camera->component<PerspectiveCamera>()->aspectRatio(float(w) / float(h));
 	});
 
 	auto material = material::BasicMaterial::create()->diffuseColor(0xCCCCCCFF);
@@ -106,24 +101,21 @@ int main(int argc, char** argv)
 			sceneManager->assets()->effect("effect/Basic.effect")
 			));
 
-		overlay->load("html/gameInterface.html");
+		overlay->load("html/interface.html");
 	});
 
 	onloadSlot = overlay->onload()->connect([=](minko::dom::AbstractDOM::Ptr dom, std::string page)
 	{
-		std::cout << "OnLoad: " << dom->fileName() << std::endl;
-
 		if (!dom->isMain())
 			return;
 
-		if (dom->fileName() == "gameInterface.html")
+		if (dom->fileName() == "interface.html")
 		{
-			std::cout << "before on click" << std::endl;
 			onclickSlot = dom->document()->onclick()->connect([=](dom::AbstractDOMMouseEvent::Ptr event)
 			{
-				dom->sendMessage("trololo");
+				dom->sendMessage("hello");
 			});
-			std::cout << "after on click" << std::endl;
+
 			gameInterfaceDom = dom;
 			redScoreElement = gameInterfaceDom->getElementById("teamScoreRed");
 			blueScoreElement = gameInterfaceDom->getElementById("teamScoreBlue");
@@ -144,7 +136,7 @@ int main(int argc, char** argv)
 	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float deltaTime)
 	{
 		mesh->component<Transform>()->matrix()->appendRotationY(.01f);
-		
+
 		sceneManager->nextFrame(time, deltaTime);
 	});
 
@@ -152,6 +144,7 @@ int main(int argc, char** argv)
 	canvas->run();
 
 	overlay->clear();
+
 	return 0;
 }
 

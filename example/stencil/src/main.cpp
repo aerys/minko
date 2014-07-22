@@ -85,7 +85,7 @@ generateStars(unsigned int numStars,
 
 		starNodes[i]->component<Transform>()->matrix()
 			->appendScale(0.25f, 0.25f, 0.25f)
-			->appendRotationZ(2.0f * (float)PI * (rand() / (float)RAND_MAX))
+			->appendRotationZ(2.0f * float(M_PI) * (rand() / (float)RAND_MAX))
 			->appendTranslation(
 				minX + (rand() / (float)RAND_MAX)*rangeX,
 				minY + (rand() / (float)RAND_MAX)*rangeY,
@@ -116,7 +116,7 @@ main(int argc, char** argv)
 
 	auto camera	= Node::create("camera")
 		->addComponent(Renderer::create(generateHexColor()))
-		->addComponent(PerspectiveCamera::create(800.0f / 600.0f, (float)PI * 0.25f, 0.1f, 1000.0f))
+		->addComponent(PerspectiveCamera::create(800.0f / 600.0f, float(M_PI) * 0.25f, 0.1f, 1000.0f))
 		->addComponent(Transform::create());
 	camera->component<Transform>()->matrix()
 		->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 3.f));

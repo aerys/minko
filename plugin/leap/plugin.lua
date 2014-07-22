@@ -21,11 +21,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 minko.plugin.leap = {}
 
 function minko.plugin.leap:enable()
-	minko.plugin.links { "leap" }
-	defines { "MINKO_PLUGIN_LEAP" }
-	
-	includedirs { minko.plugin.path("leap") .. "/include" }
-	
+
+	configuration { "windows32 or windows64 or linux32 or linux64 or osx64" }
+		minko.plugin.links { "leap" }
+		defines { "MINKO_PLUGIN_LEAP" }
+
+		includedirs { minko.plugin.path("leap") .. "/include" }
+
 	configuration { "windows32" }
 		links { "Leap" }
 		libdirs { minko.plugin.path("leap") .. "/lib/leap/lib/windows32" }
@@ -66,7 +68,6 @@ function minko.plugin.leap:enable()
 			minko.action.copy(minko.plugin.path("leap") .. "/lib/leap/lib/osx64/*.dylib")
 		}
 
-	configuration {}
 end
 
 newoption {

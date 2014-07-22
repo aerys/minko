@@ -4,6 +4,7 @@ minko.project.library = function(name)
 	project(name)
 
 	language "C++"
+	kind "StaticLib"
 
 	location "."
 	includedirs { minko.sdk.path("/framework/include") }
@@ -22,7 +23,8 @@ minko.project.library = function(name)
 	configuration { "vs*" }
 		defines {
 			"NOMINMAX",				-- do not define min/max as macro in windows.h
-			"_VARIADIC_MAX=10"		-- fix for faux variadic templates limited to 5 arguments by default
+			"_VARIADIC_MAX=10",		-- fix for faux variadic templates limited to 5 arguments by default
+			"_USE_MATH_DEFINES"		-- enable M_PI
 		}
 		buildoptions {
 			"/wd4503"				-- remove warnings about too long type names
@@ -46,6 +48,10 @@ minko.project.application = function(name)
 	minko.project.library(name)
 
 	kind "ConsoleApp"
+
+	defines {
+		"MINKO_APPLICATION_NAME=" .. name
+	}
 
 	configuration { "windows32" }
 		libdirs {
@@ -201,7 +207,7 @@ minko.project.application = function(name)
 		cmd = cmd .. ' -s DISABLE_EXCEPTION_CATCHING=0'
 		--[[
 			optimize (very) long functions by breaking them into smaller ones
-			
+
 			from emscripten's settings.js:
 			"OUTLINING_LIMIT: break up functions into smaller ones, to avoid the downsides of very
             large functions (JS engines often compile them very slowly, compile them with lower optimizations,
@@ -218,7 +224,7 @@ minko.project.application = function(name)
 		end
 		-- includ the app's 'asset' directory into the file system
 		cmd = cmd .. ' --preload-file ${TARGETDIR}/asset'
-		
+
 		postbuildcommands {
 			cmd .. ' || ' .. minko.action.fail(),
 			-- fix the "invalid increment operand" syntax error caused by ++0 in the output file
@@ -238,7 +244,7 @@ minko.project.application = function(name)
 		else
 			cmd = cmd .. ' --shell-file "' .. minko.sdk.path('/skeleton/template.html') .. '"'
 		end
-		
+
 		buildoptions {
 			"-g4" -- allow source maps in final .js
 		}

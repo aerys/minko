@@ -11,7 +11,7 @@ using namespace minko::component;
 using namespace minko::math;
 
 const float CAMERA_LIN_SPEED	= 0.05f;
-const float CAMERA_ANG_SPEED	= (float)PI * 2.f / 180.0f;
+const float CAMERA_ANG_SPEED	= float(M_PI) * 2.f / 180.0f;
 const float flowMapCycle		= 0.25f;
 Signal<input::Keyboard::Ptr>::Slot keyDown;
 
@@ -49,7 +49,7 @@ int main(int argc, char** argv)
 		->addComponent(Transform::create(
 		Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(3.f, 3.f, 3.f))
 		))
-		->addComponent(PerspectiveCamera::create(800.f / 600.f, (float)PI * 0.25f, .1f, 1000.f));
+		->addComponent(PerspectiveCamera::create(800.f / 600.f, float(M_PI) * 0.25f, .1f, 1000.f));
 
 	auto fxLoader = file::Loader::create(sceneManager->assets()->loader())
 		->queue("effect/Basic.effect")
@@ -88,7 +88,7 @@ int main(int argc, char** argv)
 		root->addChild(sceneManager->assets()->symbol("model/skybox.scene"));
 		
 		auto waves = scene::Node::create("waves")
-			->addComponent(Transform::create(math::Matrix4x4::create()->appendRotationX(-float(PI) / 2.f)))
+			->addComponent(Transform::create(math::Matrix4x4::create()->appendRotationX(-float(M_PI) / 2.f)))
 			->addComponent(Surface::create(
 			geometry::QuadGeometry::create(sceneManager->assets()->context(), 200, 200, 400, 400),
 			waterMaterial,
@@ -180,13 +180,13 @@ int main(int argc, char** argv)
 
 	auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
 	{
-		camera->component<PerspectiveCamera>()->aspectRatio((float)w / (float)h);
+		camera->component<PerspectiveCamera>()->aspectRatio(float(w) / float(h));
 	});
 
 	float	yaw = 0.3f;
-	float	pitch = (float)PI * .5f;
+	float	pitch = float(M_PI) * .5f;
 	float	minPitch = 0.f + float(1e-5);
-	float	maxPitch = (float)PI - float(1e-5);
+	float	maxPitch = float(M_PI) - float(1e-5);
 	auto	lookAt = Vector3::create(0.f, 2.f, 0.f);
 	float	distance = 80.f;
 
