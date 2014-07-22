@@ -69,23 +69,25 @@ int main(int argc, char** argv)
 
 	auto sceneManager = SceneManager::create(canvas->context());
 
+	auto loader = sceneManager->assets()->loader();
 	// setup assets
-	sceneManager->assets()->loader()->options()
+	loader->options()
 		->resizeSmoothly(true)
 		->generateMipmaps(true);
 
-	sceneManager->assets()->loader()->options()
-                ->registerParser<file::JPEGParser>("jpg");
+	loader->options()
+		->registerParser<file::JPEGParser>("jpg");
 
-        sceneManager->assets()->loader()->queue(CUBE_TEXTURE, file::Options::create(sceneManager->assets()->context())->isCubeTexture(true));
+	loader
+		->queue(CUBE_TEXTURE, file::Options::create(loader->options())->isCubeTexture(true));
 
-        sceneManager->assets()
-                ->geometry("cube",		geometry::CubeGeometry::create(sceneManager->assets()->context()))
+    sceneManager->assets()
+        ->geometry("cube",		geometry::CubeGeometry::create(sceneManager->assets()->context()))
 		->geometry("quad",		geometry::QuadGeometry::create(sceneManager->assets()->context()))
-                ->geometry("sphere",	geometry::SphereGeometry::create(sceneManager->assets()->context(), 16, 16));
+        ->geometry("sphere",	geometry::SphereGeometry::create(sceneManager->assets()->context(), 16, 16));
 
-        sceneManager->assets()->loader()
-                ->queue("effect/Basic.effect")
+    loader
+        ->queue("effect/Basic.effect")
 		->queue("effect/OculusVR/OculusVR.effect");
 
 	auto prevTime = getTime();
@@ -116,7 +118,7 @@ int main(int argc, char** argv)
 			))
 			->addComponent(Surface::create(
 				sceneManager->assets()->geometry("cube"),
-				material::BasicMaterial::create()->diffuseCubeMap(sceneManager->assets()->texture(CUBE_TEXTURE))->set("triangleCulling", render::TriangleCulling::FRONT),
+				material::BasicMaterial::create()->diffuseCubeMap(sceneManager->assets()->cubeTexture(CUBE_TEXTURE))->set("triangleCulling", render::TriangleCulling::FRONT),
 				sceneManager->assets()->effect("basic")
 			));
 
@@ -137,7 +139,7 @@ int main(int argc, char** argv)
 		sceneManager->nextFrame(time, deltaTime);
 	});
 
-	sceneManager->assets()->loader()->load();
+	loader->load();
 	canvas->run();
 
 	return 0;
