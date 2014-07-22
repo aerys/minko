@@ -79,7 +79,7 @@ int main(int argc, char** argv)
 		sky->addComponent(Surface::create(
 				sceneManager->assets()->geometry("cube"),
 				material::BasicMaterial::create()
-					->diffuseCubeMap(sceneManager->assets()->texture(CUBE_TEXTURE))
+					->diffuseCubeMap(sceneManager->assets()->cubeTexture(CUBE_TEXTURE))
 					->triangleCulling(render::TriangleCulling::FRONT),
 				sceneManager->assets()->effect("effect/Basic.effect")
 			));
