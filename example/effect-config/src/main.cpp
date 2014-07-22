@@ -44,10 +44,11 @@ int main(int argc, char** argv)
                 ->geometry("sphere", geometry::SphereGeometry::create(sceneManager->assets()->context()));
 
         sceneManager->assets()->loader()
-                ->queue("effect/windows.jpg")
-		->queue("effect/macosx.jpg")
-		->queue("effect/linux.jpg")
-		->queue("effect/PlatformTexture.effect");
+			->queue("effect/windows.jpg")
+			->queue("effect/macosx.jpg")
+			->queue("effect/linux.jpg")
+			->queue("effect/Basic.effect")
+			->queue("effect/PlatformTexture.effect");
 
 	auto root = scene::Node::create("root")
 		->addComponent(sceneManager);
