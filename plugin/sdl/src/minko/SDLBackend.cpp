@@ -24,7 +24,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 using namespace minko;
 
-SDLBackend::SDLBackend(std::shared_ptr<Canvas> canvas)
+void
+SDLBackend::initialize(std::shared_ptr<Canvas> canvas)
 {
     SDL_GLContext glContext = SDL_GL_CreateContext(canvas->window());
 

@@ -18,8 +18,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "minko/SDLWebGLBackend.hpp"
+#include "minko/Canvas.hpp"
 
 #include "emscripten/emscripten.h"
+#include "SDL.h"
 
 using namespace minko;
 
@@ -31,12 +33,13 @@ emscriptenMainLoop()
     currentCanvas->step();
 }
 
-SDLWebGLBackend::SDLWebGLBackend(std::shared_ptr<Canvas> canvas)
+void
+SDLWebGLBackend::initialize(std::shared_ptr<Canvas> canvas)
 {
     SDL_GLContext glContext = SDL_GL_CreateContext(canvas->window());
 
     if (!glContext)
-        throw std::runtime_error("Could not create WebGL context backend.")
+        throw std::runtime_error("Could not create WebGL context backend.");
 }
 
 void
@@ -53,7 +56,7 @@ SDLWebGLBackend::run(std::shared_ptr<Canvas> canvas)
 }
 
 void
-SDLBackend::wait(std::shared_ptr<Canvas> canvas, uint ms)
+SDLWebGLBackend::wait(std::shared_ptr<Canvas> canvas, uint ms)
 {
 	// Nothing, because emscripten_set_main_loop calls step on a timer.
 }

@@ -36,18 +36,18 @@ namespace minko
 	public:
 		static
 		std::shared_ptr<SDLAngleBackend>
-		create(std::shared_ptr<Canvas> canvas)
+		create()
 		{
-		    return std::shared_ptr<SDLAngleBackend>(new SDLAngleBackend(canvas));
+		    return std::shared_ptr<SDLAngleBackend>(new SDLAngleBackend());
 		}
 
-		bool
-		initialize();
+		virtual void
+		initialize(std::shared_ptr<Canvas> canvas);
 
 		virtual void
 		swapBuffers(std::shared_ptr<Canvas> canvas);
 
 	private:
-		SDLAngleBackend(std::shared_ptr<Canvas> canvas);
+		SDLAngleBackend() = default;
 	};
 }

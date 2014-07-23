@@ -23,7 +23,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 using namespace minko;
 
-SDLWebGLBackend::SDLWebGLBackend(std::shared_ptr<Canvas> canvas)
+void
+SDLWebGLBackend::initialize(std::shared_ptr<Canvas> canvas)
 {
 	GLfloat[]* backBuffer = new GLfloat[canvas->width() * canvas->height() * 4]);
 

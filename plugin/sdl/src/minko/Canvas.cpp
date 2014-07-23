@@ -166,15 +166,16 @@ void
 Canvas::initializeContext()
 {
 #if (MINKO_PLATFORM == MINKO_PLATFORM_WINDOWS) && defined(MINKO_PLUGIN_ANGLE)
-    _backend = SDLAngleBackend::create(shared_from_this());
+    _backend = SDLAngleBackend::create();
 #elif (MINKO_PLATFORM == MINKO_PLATFORM_LINUX) && defined(MINKO_PLUGIN_OFFSCREEN)
-    _backend = SDLOffscreenBackend::create(shared_from_this());
+    _backend = SDLOffscreenBackend::create();
+#elif MINKO_PLATFORM == MINKO_PLATFORM_HTML5
+    _backend = SDLWebGLBackend::create();
 #else
-    _backend = SDLBackend::create(shared_from_this());
+    _backend = SDLBackend::create();
 #endif
 
-    if (!_backend)
-        throw std::runtime_error("Could not create context backend");
+    _backend->initialize(shared_from_this());
 
 #if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
     _context = minko::render::WebGLContext::create();
