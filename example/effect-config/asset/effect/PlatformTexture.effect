@@ -53,6 +53,14 @@
 				"diffuseMap"	: { "property" : "material[${materialId}].diffuseMap", "default" : "linux.jpg" }
 			},
 			"passes" : [ "basic pass" ]
+		},
+		{
+			"name" : "html5",
+			"configuration" : [ "html5" ],
+			"uniformBindings" : {
+				"diffuseMap"	: { "property" : "material[${materialId}].diffuseMap", "default" : "html5.jpg" }
+			},
+			"passes" : [ "basic pass" ]
 		}
 	],
 	
