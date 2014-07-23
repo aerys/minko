@@ -57,6 +57,7 @@ configuration { "linux64" }
 
 configuration { "osx64" }
 	system "macosx"
+	toolset "clang"
 
 configuration { "html5" }
 	system "emscripten"

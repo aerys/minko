@@ -46,7 +46,7 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		"IL_STATIC_LIB"
 	}
 
-	configuration { "cc=clang" }
+	configuration { "cc=clang or osx64" }
 		defines {
 			"NOINLINE"
 		}
