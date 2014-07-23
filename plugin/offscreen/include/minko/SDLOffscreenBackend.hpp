@@ -17,12 +17,31 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "minko/Canvas.hpp"
-#include "minko/SDLMouse.hpp"
+#pragma once
 
-using namespace minko;
+#include "minko/Common.hpp"
+#include "minko/SDLBackend.hpp"
 
-SDLMouse::SDLMouse(std::shared_ptr<Canvas> canvas) :
-    input::Mouse(canvas)
+namespace minko
 {
+	class SDLOffscreenBackend :
+		public SDLBackend
+	{
+	public:
+		typedef std::shared_ptr<SDLOffscreenBackend>		Ptr;
+
+	public:
+		static
+		std::shared_ptr<SDLOffscreenBackend>
+		create(std::shared_ptr<Canvas> canvas)
+		{
+		    return std::shared_ptr<SDLOffscreenBackend>(new SDLOffscreenBackend(canvas));
+		}
+
+		virtual void
+		swapBuffers(std::shared_ptr<Canvas> canvas);
+
+	private:
+		SDLOffscreenBackend(std::shared_ptr<Canvas> canvas);
+	};
 }

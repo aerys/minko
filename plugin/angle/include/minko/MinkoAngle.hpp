@@ -17,12 +17,6 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "minko/Canvas.hpp"
-#include "minko/SDLMouse.hpp"
+#pragma once
 
-using namespace minko;
-
-SDLMouse::SDLMouse(std::shared_ptr<Canvas> canvas) :
-    input::Mouse(canvas)
-{
-}
+#include "minko/SDLAngleBackend.hpp"

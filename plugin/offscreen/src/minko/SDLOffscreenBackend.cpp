@@ -17,12 +17,30 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "minko/Canvas.hpp"
-#include "minko/SDLMouse.hpp"
+#include "minko/SDLWebGLBackend.hpp"
+
+#include <GL/osmesa.h>
 
 using namespace minko;
 
-SDLMouse::SDLMouse(std::shared_ptr<Canvas> canvas) :
-    input::Mouse(canvas)
+SDLWebGLBackend::SDLWebGLBackend(std::shared_ptr<Canvas> canvas)
 {
+	GLfloat[]* backBuffer = new GLfloat[canvas->width() * canvas->height() * 4]);
+
+	if (!backBuffer)
+		throw std::runtime_error("Could not create offscreen backbuffer");
+
+	OSMesaContext offscreenContext = OSMesaCreateContextExt(GL_RGBA, 32, 0, 0, NULL);
+
+	if (!offscreenContext)
+		throw std::runtime_error("Could not create offscreen context");
+
+	if (!OSMesaMakeCurrent(offscreenContext, backBuffer, GL_FLOAT, canvas->width(), canvas->height()))
+		throw std::runtime_error("Could not make offscreen context current");
+}
+
+void
+SDLWebGLBackend::swapBuffers(std::shared_ptr<Canvas> canvas)
+{
+	// Nothing.
 }

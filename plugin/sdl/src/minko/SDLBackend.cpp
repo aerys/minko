@@ -17,12 +17,38 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+#include "minko/SDLBackend.hpp"
 #include "minko/Canvas.hpp"
-#include "minko/SDLMouse.hpp"
+
+#include "SDL.h"
 
 using namespace minko;
 
-SDLMouse::SDLMouse(std::shared_ptr<Canvas> canvas) :
-    input::Mouse(canvas)
+SDLBackend::SDLBackend(std::shared_ptr<Canvas> canvas)
 {
+    SDL_GLContext glContext = SDL_GL_CreateContext(canvas->window());
+
+    if (!glContext)
+        throw std::runtime_error("Could not create default context");
+}
+
+void
+SDLBackend::swapBuffers(std::shared_ptr<Canvas> canvas)
+{
+    SDL_GL_SwapWindow(canvas->window());
+}
+
+void
+SDLBackend::run(std::shared_ptr<Canvas> canvas)
+{
+    while (canvas->active())
+    {
+        canvas->step();
+    }
+}
+
+void
+SDLBackend::wait(std::shared_ptr<Canvas> canvas, uint ms)
+{
+    SDL_Delay(ms);
 }
