@@ -36,10 +36,7 @@ emscriptenMainLoop()
 void
 SDLWebGLBackend::initialize(std::shared_ptr<Canvas> canvas)
 {
-    SDL_GLContext glContext = SDL_GL_CreateContext(canvas->window());
-
-    if (!glContext)
-        throw std::runtime_error("Could not create WebGL context backend.");
+	// Nothing, because we already have the browser.
 }
 
 void
