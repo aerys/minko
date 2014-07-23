@@ -39,7 +39,7 @@
 			"passes" : [ "basic pass" ]
 		},
 		{
-			"name" : "macosx",
+			"name" : "osx",
 			"configuration" : [ "osx" ],
 			"uniformBindings" : {
 				"diffuseMap"	: { "property" : "material[${materialId}].diffuseMap", "default" : "osx.jpg" }
