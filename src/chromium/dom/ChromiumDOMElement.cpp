@@ -34,6 +34,9 @@ ChromiumDOMElement::_v8NodeToElement;
 std::list<std::function<void()>>
 ChromiumDOMElement::_functionList;
 
+std::mutex
+ChromiumDOMElement::_functionListMutex;
+
 std::map<ChromiumDOMElement::Ptr, CefRefPtr<CefV8Value>>
 ChromiumDOMElement::_elementToV8Object;
 
@@ -958,19 +961,29 @@ ChromiumDOMElement::onmouseover()
 void
 ChromiumDOMElement::update()
 {
+	_functionListMutex.lock();
+
+	std::list<std::function<void()>> functionList;
+
 	for (auto func : _functionList)
+		functionList.push_back(func);
+
+	_functionList.clear();
+	_functionListMutex.unlock();
+
+	for (auto func : functionList)
 	{
 		func();
 	}
-
-	_functionList.clear();
 }
 
 
 void
 ChromiumDOMElement::addFunction(std::function<void()> func)
 {
+	_functionListMutex.lock();
 	_functionList.push_back(func);
+	_functionListMutex.unlock();
 }
 
 #endif

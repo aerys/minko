@@ -199,6 +199,7 @@ namespace chromium
 			CefRefPtr<CefV8Context> _v8Context;
 
 			static std::list<std::function<void()>>	_functionList;
+			static std::mutex _functionListMutex;
 
 			bool _cleared;
 		};
