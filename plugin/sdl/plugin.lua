@@ -71,12 +71,12 @@ function minko.plugin.sdl:enable()
 		libdirs { minko.plugin.path("sdl") .. "/lib/sdl/lib/ios" }
 
 	configuration { "html5" }
+		removeincludedirs { minko.plugin.path("sdl") .. "/lib/sdl/include" }
 		includedirs { EMSCRIPTEN .. "/system/include/SDL" }
+		minko.plugin.enable { "webgl" }
 
 	configuration { "android" }
-		links {
-			"SDL2"
-		}
+		links { "SDL2" }
 		libdirs { minko.plugin.path("sdl") .. "/lib/sdl/lib/android" }
 		minko.plugin.enable { "android" }
 

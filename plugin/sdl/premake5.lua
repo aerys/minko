@@ -21,4 +21,6 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		minko.plugin.enable { "android" }
 
 	configuration { "html5" }
+		removeincludedirs { "lib/sdl/include" }
+		includedirs { EMSCRIPTEN .. "/system/include/SDL" }
 		minko.plugin.enable { "webgl" }
