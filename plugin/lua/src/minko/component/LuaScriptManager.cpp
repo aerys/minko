@@ -210,10 +210,12 @@ LuaScriptManager::initializeBindings()
     scene::LuaNode::bind(_state);
     scene::LuaNodeSet::bind(_state);
 
-    auto& sceneManager = _state.Class<SceneManager>("SceneManager")
-        .property("assets",     &SceneManager::assets);
     MINKO_LUAGLUE_BIND_SIGNAL(_state, SceneManager::Ptr, float, float);
-    sceneManager.property("nextFrame",  &SceneManager::frameBegin);
+
+    _state.Class<SceneManager>("SceneManager")
+        .property("assets",     &SceneManager::assets)
+        .property("nextFrame",  &SceneManager::frameBegin)
+        .property("frameEnd",   &SceneManager::frameEnd);
 
 	_state
 		.func("getCanvas", &LuaContext::getCanvas)
