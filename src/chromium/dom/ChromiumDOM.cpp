@@ -202,6 +202,9 @@ ChromiumDOM::addSendMessageFunction()
 	// [javascript] Minko.sendMessage('message');
 	CefRefPtr<CefV8Value> sendMessageFunction = CefV8Value::CreateFunction(sendMessageFunctionName, _v8Handler.get());
 	_minkoObject->SetValue(sendMessageFunctionName, sendMessageFunction, V8_PROPERTY_ATTRIBUTE_NONE);
+
+	CefRefPtr<CefV8Value> alertFunction = CefV8Value::CreateFunction("alert", _v8Handler.get());
+	window()->SetValue("alert", alertFunction, V8_PROPERTY_ATTRIBUTE_NONE);
 	
 	_onmessageSlot = _v8Handler->received()->connect([=](std::string functionName, CefV8ValueList arguments)
 	{
@@ -213,6 +216,13 @@ ChromiumDOM::addSendMessageFunction()
 			_receivedMessagesMutex.lock();
 			_receivedMessages.push_back(message);
 			_receivedMessagesMutex.unlock();
+		}
+		else if (functionName == "alert")
+		{
+			CefRefPtr<CefV8Value> messageV8Value = arguments[0];
+			std::string message = messageV8Value->GetStringValue();
+
+			std::cout << "alert: " << message << std::endl;
 		}
 	});
 }
