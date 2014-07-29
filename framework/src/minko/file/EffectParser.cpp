@@ -39,6 +39,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/FileProtocol.hpp"
 #include "minko/file/Options.hpp"
 #include "minko/file/AssetLibrary.hpp"
+#include "minko/log/Logger.hpp"
 #include "json/json.h"
 
 using namespace minko;
@@ -631,11 +632,9 @@ EffectParser::glslIncludeCompleteHandler(LoaderPtr 			        loader,
 void
 EffectParser::dependencyErrorHandler(std::shared_ptr<Loader> loader, const ParserError& error, const std::string& filename)
 {
-#ifdef DEBUG
-	std::cerr << "Unable to load dependency '" << filename << "', included paths are:" << std::endl;
+	LOG_ERROR("unable to load dependency '" << filename << "', included paths are:");
 	for (auto& path : loader->options()->includePaths())
-		std::cerr << path << std::endl;
-#endif // defined(DEBUG)
+		LOG_ERROR("\t" << path);
 
 	throw file::ParserError("Unable to load dependencies.");
 }
@@ -1455,9 +1454,7 @@ EffectParser::finalize()
 		else
 			_effect->addTechnique("default", viableTechnique);
 
-#ifdef DEBUG
-		std::cerr << "Warning:\tEffect '" << _effectName << "' does not provide achievable default technique ('" << _defaultTechnique << "'), switched to '" << viableTechniqueName << "'" << std::endl;
-#endif // DEBUG
+		LOG_WARNING("Effect '" << _effectName << "' does not provide achievable default technique ('" << _defaultTechnique << "'), switched to '" << viableTechniqueName << "'");
 	}
 
 #ifdef DEBUG_FALLBACK

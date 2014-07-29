@@ -101,9 +101,7 @@ Loader::load()
 void
 Loader::protocolErrorHandler(std::shared_ptr<AbstractProtocol> protocol)
 {
-#ifdef DEBUG
-    std::cerr << "error: Loader::protocolErrorHandler(): " << protocol->file()->filename() << std::endl;
-#endif // defined(DEBUG)
+    LOG_ERROR(protocol->file()->filename());
 
     auto error = ParserError("ProtocolError", "Protocol error: " + protocol->file()->filename());
 
@@ -144,11 +142,9 @@ Loader::protocolCompleteHandler(std::shared_ptr<AbstractProtocol> protocol)
     //_filenameToProtocol.erase(protocol->filename());
     _filenameToOptions.erase(filename);
 
-#ifdef DEBUG
-    std::cerr << "Loader: file '" << protocol->file()->filename() << "' loaded, "
+    LOG_DEBUG("file '" << protocol->file()->filename() << "' loaded, "
         << _loading.size() << " file(s) still loading, "
-        << _filesQueue.size() << " file(s) in the queue" << std::endl;
-#endif // defined(DEBUG)
+        << _filesQueue.size() << " file(s) in the queue");
 
     auto parsed = processData(
         filename,
@@ -191,21 +187,18 @@ Loader::processData(const std::string&                      filename,
             {
                 _error->execute(shared_from_this(), parserError);
             }
-#ifdef DEBUG
             else
             {
-                LOG_DEBUG("Loader parsing failed (" << parserError.type() << "): " << parserError.what());
+                LOG_DEBUG("parsing failed (" << parserError.type() << "): " << parserError.what());
                 throw parserError;
             }
-#endif // defined(DEBUG)
         }
     }
     else
     {
-#ifdef DEBUG
         if (extension != "glsl")
-            std::cerr << "Loader::processData(): no parser found for extension '" << extension << "'" << std::endl;
-#endif // defined(DEBUG)
+            LOG_DEBUG("no parser found for extension '" << extension << "'");
+
         options->assetLibrary()->blob(filename, data);
     }
 
