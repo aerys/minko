@@ -29,6 +29,6 @@ function minko.plugin.android:enable()
 
 		postbuildcommands {
 			-- 'echo ' .. abis(),
-			'bash ' .. minko.plugin.path("android") .. '/script/build_android.sh ${TARGETDIR} || ' .. minko.action.fail()
+			'bash ' .. minko.plugin.path("android") .. '/script/build_android.sh ${TARGET} || ' .. minko.action.fail()
 		}
 end
