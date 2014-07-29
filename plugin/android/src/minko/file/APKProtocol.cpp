@@ -74,6 +74,8 @@ APKProtocol::load()
 
 	if (file)
 	{
+        resolvedFilename(realFilename);
+
 		unsigned int size = file->size(file);
 
 		_progress->execute(shared_from_this(), 0.0);
