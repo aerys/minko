@@ -51,13 +51,16 @@ function minko.plugin.sdl:enable()
 		links { "SDL2" }
 
 	configuration { "osx64" }
-		if kind() ~= "StaticLib" then -- Xcode: libtool doesn't like linking dynamic libraries when building a static library.
-			linkoptions { "-F " .. minko.plugin.path("sdl") .. "/lib/sdl/lib/osx64" }
-			links { "SDL2.framework" }
-			prelinkcommands {
-				minko.action.link(minko.plugin.path("sdl") .. "/lib/sdl/lib/osx64/*.framework")
-			}
-		end
+		links {
+			"SDL2",
+			-- "CoreFoundation.framework",
+			"Carbon.framework",
+			-- "AudioToolbox.framework",
+			"AudioUnit.framework",
+			"CoreAudio.framework",
+			"ForceFeedback.framework"
+		}
+		libdirs { minko.plugin.path("sdl") .. "/lib/sdl/lib/osx64" }
 
 	configuration { "ios" }
 		links {
@@ -67,8 +70,19 @@ function minko.plugin.sdl:enable()
 		}
 		libdirs { minko.plugin.path("sdl") .. "/lib/sdl/lib/ios" }
 
+	configuration { "html5" }
+		removeincludedirs { minko.plugin.path("sdl") .. "/lib/sdl/include" }
+		includedirs { EMSCRIPTEN .. "/system/include/SDL" }
+		minko.plugin.enable { "webgl" }
+
 	configuration { "android" }
+		links { "SDL2" }
+		libdirs { minko.plugin.path("sdl") .. "/lib/sdl/lib/android" }
 		minko.plugin.enable { "android" }
+
+	configuration { "offscreen" }
+		minko.plugin.enable { "offscreen" }
+
 end
 
 function minko.plugin.sdl:dist(pluginDistDir)

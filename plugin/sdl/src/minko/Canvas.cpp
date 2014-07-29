@@ -22,38 +22,30 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/math/Vector4.hpp"
 #include "minko/async/Worker.hpp"
 #include "minko/file/Options.hpp"
+#include "minko/SDLBackend.hpp"
 
-#if !defined(EMSCRIPTEN)
-#include "minko/file/FileProtocolWorker.hpp"
+#if MINKO_PLATFORM != MINKO_PLATFORM_HTML5
+# include "minko/file/FileProtocolWorker.hpp"
 #endif
 
-#if defined(EMSCRIPTEN)
+#include "SDL.h"
+
+#if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
 # include "minko/MinkoWebGL.hpp"
-# include "SDL/SDL.h"
-# include "emscripten/emscripten.h"
-#elif defined(MINKO_ANGLE)
-# include "SDL.h"
-# include "SDL_syswm.h"
-# include <EGL/egl.h>
-# include <GLES2/gl2.h>
-# include <GLES2/gl2ext.h>
-#elif defined(__ANDROID__)
+#elif MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
 # include "minko/MinkoAndroid.hpp"
-# include "SDL.h"
-#else
-# include "SDL.h"
+#elif MINKO_PLATFORM == MINKO_PLATFORM_IOS
+// # include "SDL_opengles.h"
+// # include "SDL_syswm.h"
+#elif defined(MINKO_PLUGIN_ANGLE)
+# include "minko/MinkoAngle.hpp"
+// # include "SDL_syswm.h"
+#elif defined(MINKO_PLUGIN_OFFSCREEN)
+# include "minko/MinkoOffscreen.hpp"
 #endif
 
-#if defined(__APPLE__)
-# include <TargetConditionals.h>
-# if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
-#  include "SDL_opengles.h"
-#  include "SDL_syswm.h"
-# endif
-#endif
-
-#if defined(_WIN32)
-#include "Windows.h"
+#if MINKO_PLATFORM == MINKO_PLATFORM_WINDOWS
+# include "Windows.h"
 #endif
 
 using namespace minko;
@@ -83,21 +75,10 @@ Canvas::Canvas(const std::string& name, const uint width, const uint height, boo
     _data->set<math::Vector4::Ptr>("canvas.viewport", Vector4::create(0.0f, 0.0f, (float) width, (float) height));
 }
 
-#if defined(_WIN32)
-BOOL
-WINAPI
-ConsoleHandlerRoutine(DWORD dwCtrlType)
-{
-    if (dwCtrlType == CTRL_CLOSE_EVENT)
-        return true;
-    return false;
-}
-#endif
-
 void
 Canvas::initialize()
 {
-#if defined(__ANDROID__)
+#if MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
     file::Options::defaultProtocolFunction("file", [](const std::string& filename)
     {
         return minko::file::APKProtocol::create();
@@ -107,15 +88,16 @@ Canvas::initialize()
     // std::cerr.rdbuf(new minko::log::AndroidStreambuf());
 #endif
 
-    initializeContext(_name, width(), height(), _useStencil);
+    initializeWindow();
+    initializeContext();
     initializeInputs();
 
-#if !defined(EMSCRIPTEN)
+#if MINKO_PLATFORM != MINKO_PLATFORM_HTML5
     registerWorker<file::FileProtocolWorker>("file-protocol");
 #endif
 
-#if defined(_WIN32)
-    SetConsoleCtrlHandler(ConsoleHandlerRoutine, true);
+#if MINKO_PLATFORM == MINKO_PLATFORM_WINDOWS
+    SetConsoleCtrlHandler([](uint type) { return type == CTRL_CLOSE_EVENT; }, true);
 #endif
 }
 
@@ -127,7 +109,7 @@ Canvas::initializeInputs()
     _touch = SDLTouch::create(shared_from_this());
     _touches = std::vector<std::shared_ptr<SDLTouch>>();
 
-#if !defined(EMSCRIPTEN) && !defined(__ANDROID__)
+#if (MINKO_PLATFORM & (MINKO_PLATFORM_LINUX | MINKO_PLATFORM_OSX | MINKO_PLATFORM_WINDOWS))
     for (int i = 0; i < SDL_NumJoysticks(); ++i)
     {
         SDL_Joystick* joystick = SDL_JoystickOpen(i);
@@ -141,170 +123,73 @@ Canvas::initializeInputs()
 }
 
 void
-Canvas::initializeContext(const std::string& windowTitle, unsigned int width, unsigned int height, bool useStencil)
+Canvas::initializeWindow()
 {
-#ifndef EMSCRIPTEN
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK) < 0)
         throw std::runtime_error(SDL_GetError());
 
-    if (useStencil)
+    if (_useStencil)
         SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
-
-    auto sdlFlags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_SHOWN;
-
-    if (_chromeless)
-        sdlFlags |= SDL_WINDOW_BORDERLESS;
 
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-    
+
     SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
     SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
     SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
     SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
     SDL_GL_SetAttribute(SDL_GL_BUFFER_SIZE, 32);
-    
+
+#if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
+    SDL_WM_SetCaption(_name.c_str(), nullptr);
+
+    SDL_SetVideoMode(_width, _height, 0, SDL_OPENGL | SDL_WINDOW_RESIZABLE);
+
+    _window = nullptr;
+#else
+    auto sdlFlags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE;
+
+    if (_chromeless)
+        sdlFlags |= SDL_WINDOW_BORDERLESS;
+
     _window = SDL_CreateWindow(
-        windowTitle.c_str(),
+        _name.c_str(),
         SDL_WINDOWPOS_CENTERED, // SDL_WINDOWPOS_UNDEFINED,
         SDL_WINDOWPOS_CENTERED, // SDL_WINDOWPOS_UNDEFINED,
-        width, height,
+        _width, _height,
         sdlFlags
     );
-
-    if (!_window)
-        throw std::runtime_error(SDL_GetError());
-    
-# if MINKO_ANGLE
-    if (!(_angleContext = initContext(_window, width, height)))
-        throw std::runtime_error("Could not create Angle context");
-# elif TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
-//    SDL_CreateRenderer(_window, -1, 0);
-    SDL_GLContext glContext = SDL_GL_CreateContext(_window);
-    if (!glContext)
-        throw std::runtime_error("Could not create iOS context");
-# else
-    SDL_GLContext glContext = SDL_GL_CreateContext(_window);
-    if (!glContext)
-        throw std::runtime_error("Could not create a window context from SDL");
-# endif // MINKO_ANGLE
-
-    _context = minko::render::OpenGLES2Context::create();
-#else // if defined(EMSCRIPTEN)
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK) < 0)
-        throw std::runtime_error(SDL_GetError());
-
-    if (useStencil)
-        SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
-
-    SDL_WM_SetCaption(windowTitle.c_str(), NULL);
-
-    SDL_SetVideoMode(width, height, 0, SDL_OPENGL | SDL_WINDOW_RESIZABLE);
-
-    _context = minko::render::WebGLContext::create();
-#endif // EMSCRIPTEN
-
-    this->width(width);
-    this->height(height);
-}
-
-#ifdef MINKO_ANGLE
-ESContext*
-Canvas::initContext(SDL_Window* window, unsigned int width, unsigned int height)
-{
-    this->width(0);
-    this->height(0);
-
-    EGLint configAttribList[] =
-    {
-        EGL_RED_SIZE, 8,
-        EGL_GREEN_SIZE, 8,
-        EGL_BLUE_SIZE, 8,
-        EGL_ALPHA_SIZE, 8,
-        EGL_DEPTH_SIZE, 16,
-        EGL_STENCIL_SIZE, 8,
-        EGL_SAMPLE_BUFFERS, 0,
-        EGL_NONE
-    };
-    EGLint surfaceAttribList[] =
-    {
-        EGL_RENDER_BUFFER, EGL_BACK_BUFFER,
-        EGL_NONE, EGL_NONE
-    };
-
-    SDL_SysWMinfo info;
-    SDL_VERSION(&info.version);
-    if (!SDL_GetWindowWMInfo(window, &info))
-        return GL_FALSE;
-    EGLNativeWindowType hWnd = info.info.win.window;
-
-    ESContext* es_context = new ESContext();
-    es_context->width = width;
-    es_context->height = height;
-    es_context->hWnd = hWnd;
-
-    EGLDisplay display;
-    EGLint numConfigs;
-    EGLint majorVersion;
-    EGLint minorVersion;
-    EGLContext context;
-    EGLSurface surface;
-    EGLConfig config;
-    EGLint contextAttribs[] = { EGL_CONTEXT_CLIENT_VERSION, 2, EGL_NONE, EGL_NONE };
-
-    display = eglGetDisplay(GetDC(hWnd)); // EGL_DEFAULT_DISPLAY
-    if (display == EGL_NO_DISPLAY)
-    {
-        return EGL_FALSE;
-    }
-
-    // Initialize EGL
-    if (!eglInitialize(display, &majorVersion, &minorVersion))
-    {
-        return EGL_FALSE;
-    }
-
-    // Get configs
-    if (!eglGetConfigs(display, NULL, 0, &numConfigs))
-    {
-        return EGL_FALSE;
-    }
-
-    // Choose config
-    if (!eglChooseConfig(display, configAttribList, &config, 1, &numConfigs))
-    {
-        return EGL_FALSE;
-    }
-
-    // Create a surface
-    surface = eglCreateWindowSurface(display, config, (EGLNativeWindowType)hWnd, surfaceAttribList);
-    if (surface == EGL_NO_SURFACE)
-    {
-        return EGL_FALSE;
-    }
-
-    // Create a GL context
-    context = eglCreateContext(display, config, EGL_NO_CONTEXT, contextAttribs);
-    if (context == EGL_NO_CONTEXT)
-    {
-        return EGL_FALSE;
-    }
-
-    // Make the context current
-    if (!eglMakeCurrent(display, surface, surface, context))
-    {
-        return EGL_FALSE;
-    }
-    es_context->eglDisplay = display;
-    es_context->eglSurface = surface;
-    es_context->eglContext = context;
-
-    this->width(width);
-    this->height(height);
-
-    return es_context;
-}
 #endif
+}
+
+void
+Canvas::initializeContext()
+{
+#if (MINKO_PLATFORM == MINKO_PLATFORM_WINDOWS) && defined(MINKO_PLUGIN_ANGLE)
+    _backend = SDLAngleBackend::create();
+#elif (MINKO_PLATFORM == MINKO_PLATFORM_LINUX) && defined(MINKO_PLUGIN_OFFSCREEN)
+    _backend = SDLOffscreenBackend::create();
+#elif MINKO_PLATFORM == MINKO_PLATFORM_HTML5
+    _backend = SDLWebGLBackend::create();
+#else
+    _backend = SDLBackend::create();
+#endif
+
+    _backend->initialize(shared_from_this());
+
+#if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
+    _context = minko::render::WebGLContext::create();
+#else
+    _context = minko::render::OpenGLES2Context::create();
+#endif
+
+    if (!_context)
+        throw std::runtime_error("Could not create context");
+
+    // Reset after context is created to trigger resized signal.
+    width(_width);
+    height(_height);
+}
 
 uint
 Canvas::x()
@@ -369,7 +254,9 @@ Canvas::height(uint value)
 void
 Canvas::step()
 {
-#if defined(EMSCRIPTEN)
+    auto that = shared_from_this();
+
+#if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
     // Detect new joystick
     for (int i = 0; i < SDL_NumJoysticks(); i++)
     {
@@ -380,11 +267,11 @@ Canvas::step()
             {
                 if (_joysticks.find(i) == _joysticks.end())
                 {
-                    auto sdlJoystick = SDLJoystick::create(shared_from_this(), i, joystick);
+                    auto sdlJoystick = SDLJoystick::create(that, i, joystick);
                     _joysticks[i] = sdlJoystick;
                 }
 
-                _joystickAdded->execute(shared_from_this(), _joysticks[i]);
+                _joystickAdded->execute(that, _joysticks[i]);
 
 # if defined(DEBUG)
                 printf("New joystick found!\n");
@@ -414,12 +301,13 @@ Canvas::step()
 
         auto joystick = _joysticks[joystickId]->_joystick;
 
-        _joystickRemoved->execute(shared_from_this(), _joysticks[joystickId]);
+        _joystickRemoved->execute(that, _joysticks[joystickId]);
 
         SDL_JoystickClose(joystick);
         _joysticks.erase(joystickId);
     }
 #endif
+
     SDL_Event event;
 
     while (SDL_PollEvent(&event))
@@ -516,7 +404,7 @@ Canvas::step()
             case SDL_BUTTON_RIGHT:
                 _mouse->rightButtonDown()->execute(_mouse);
                 break;
-#ifdef EMSCRIPTEN
+#if MINKO_PLATFORM != MINKO_PLATFORM_HTML5
             case SDL_BUTTON_X1:
                 _mouse->wheel()->execute(_mouse, 0, 1);
                 break;
@@ -545,15 +433,15 @@ Canvas::step()
         case SDL_MOUSEWHEEL:
         {
             _mouse->wheel()->execute(_mouse, event.wheel.x, event.wheel.y);
-            //_mouseWheel->execute(shared_from_this(), event.wheel.x, event.wheel.y);
+            //_mouseWheel->execute(that, event.wheel.x, event.wheel.y);
             break;
         }
 
-#ifndef EMSCRIPTEN
+#if MINKO_PLATFORM != MINKO_PLATFORM_HTML5
             // Touch events
         case SDL_FINGERDOWN:
         {
-# if defined(DEBUG)
+#if defined(DEBUG)
             //std::cout << "Finger down! (x: " << event.tfinger.x << ", y: " << event.tfinger.y << ")" << std::endl;
 #endif // DEBUG
             _touch->fingerId(event.tfinger.fingerId);
@@ -561,16 +449,16 @@ Canvas::step()
             _touch->y(uint(event.tfinger.y));
 
             _touch->touchDown()->execute(_touch, event.tfinger.x, event.tfinger.y);
-            
+
             // Create a new touch
-            auto touch = SDLTouch::create(shared_from_this());
-            
+            auto touch = SDLTouch::create(that);
+
             touch->fingerId(event.tfinger.fingerId);
             touch->x(event.tfinger.x);
             touch->y(event.tfinger.y);
-            
+
             touch->touchDown()->execute(touch, event.tfinger.x, event.tfinger.y);
-            
+
             // Add the touch to the touch list
             _touches.push_back(touch);
             break;
@@ -578,27 +466,27 @@ Canvas::step()
 
         case SDL_FINGERUP:
         {
-# if defined(DEBUG)
+#if defined(DEBUG)
             //std::cout << "Finger up! (x: " << event.tfinger.x << ", y: " << event.tfinger.y << ")" << std::endl;
 #endif // DEBUG
             _touch->x(uint(event.tfinger.x));
             _touch->y(uint(event.tfinger.y));
-            
+
             _touch->touchUp()->execute(_touch, event.tfinger.x, event.tfinger.y);
-            
+
             // Get the real touch up
             auto fingerUp = std::find_if(_touches.begin(), _touches.end(), [&] (SDLTouch::Ptr f) { return f->Touch::fingerId() == event.tfinger.fingerId; } );
-            
+
             // If this touch exists
             if (fingerUp != _touches.end())
             {
                 auto touch = *fingerUp;
-            
+
                 touch->x(event.tfinger.x);
                 touch->y(event.tfinger.y);
-                
+
                 touch->touchUp()->execute(touch, event.tfinger.x, event.tfinger.y);
-            
+
                 // Remove it from the list
                 _touches.erase(fingerUp);
             }
@@ -607,7 +495,7 @@ Canvas::step()
 
         case SDL_FINGERMOTION:
         {
-# if defined(DEBUG)
+#if defined(DEBUG)
             /*
             std::cout << "Finger motion! "
             << "("
@@ -623,22 +511,22 @@ Canvas::step()
             _touch->dy(uint(event.tfinger.dy));
 
             _touch->touchMotion()->execute(_touch, event.tfinger.dx, event.tfinger.dy);
-            
+
             // Get the real touch in motion
             auto fingerMotion = std::find_if(_touches.begin(), _touches.end(), [&] (SDLTouch::Ptr f) { return f->Touch::fingerId() == event.tfinger.fingerId; } );
-            
+
             if (fingerMotion != _touches.end())
             {
                 auto touch = *fingerMotion;
-                
+
                 // Store event data
                 touch->x(event.tfinger.x);
                 touch->y(event.tfinger.y);
                 touch->dx(event.tfinger.dx);
                 touch->dy(event.tfinger.dy);
-            
+
                 touch->touchMotion()->execute(touch, event.tfinger.dx, event.tfinger.dy);
-                
+
                 // Gestures
 				if (event.tfinger.dx > SDLTouch::SWIPE_PRECISION)
                 {
@@ -648,48 +536,48 @@ Canvas::step()
                     _touch->swipeRight()->execute(_touch);
                     touch->swipeRight()->execute(touch);
                 }
-                
+
 				if (-event.tfinger.dx > SDLTouch::SWIPE_PRECISION)
                 {
 
 # if defined(DEBUG)
                     std::cout << "Swipe left! (" << event.tfinger.dx << ")" << std::endl;
-#endif // DEBUG               
+#endif // DEBUG
                     _touch->swipeLeft()->execute(_touch);
                     touch->swipeLeft()->execute(touch);
                 }
-                
+
 				if (event.tfinger.dy > SDLTouch::SWIPE_PRECISION)
                 {
 
 # if defined(DEBUG)
                     std::cout << "Swipe down! (" << event.tfinger.dy << ")" << std::endl;
-#endif // DEBUG      
+#endif // DEBUG
                     _touch->swipeDown()->execute(_touch);
                     touch->swipeDown()->execute(touch);
                 }
-                
+
                 if (-event.tfinger.dy > SDLTouch::SWIPE_PRECISION)
                 {
 #if defined(DEBUG)
                 std::cout << "Swipe up! (" << event.tfinger.dy << ")" << std::endl;
-#endif // DEBUG               
+#endif // DEBUG
                     _touch->swipeUp()->execute(_touch);
                     touch->swipeUp()->execute(touch);
                 }
-                
+
                 // If it's the second touch
                 if (_touches.size() > 1 && _touches.at(1)->Touch::fingerId() == event.tfinger.fingerId)
                 {
                     // Get the first touch
                     auto firstFinger = _touches[0];
-                    
+
                     // Compute distance between first touch and second touch
                     auto distance = sqrt(pow(event.tfinger.x - firstFinger->Touch::x(), 2) + pow(event.tfinger.y - firstFinger->Touch::y(), 2));
                     auto deltaDistance = sqrt(
                                               pow((event.tfinger.x + event.tfinger.dx) - firstFinger->Touch::x(), 2) +
                                               pow((event.tfinger.y + event.tfinger.dy) - firstFinger->Touch::y(), 2));
-                    
+
                     if (deltaDistance != distance)
                     {
                         //std::cout << "[Canvas] Zoom value: " << distance - deltaDistance << "(dx: " << event.tfinger.dx << ", dy: " << event.tfinger.dy << ")" << std::endl;
@@ -737,7 +625,7 @@ Canvas::step()
             break;
         }
 
-#ifndef EMSCRIPTEN
+#if MINKO_PLATFORM != MINKO_PLATFORM_HTML5
         case SDL_JOYDEVICEADDED:
         {
             int             device = event.cdevice.which;
@@ -746,11 +634,11 @@ Canvas::step()
 
             if (_joysticks.find(instance_id) == _joysticks.end())
             {
-                auto sdlJoystick = SDLJoystick::create(shared_from_this(), instance_id, joystick);
+                auto sdlJoystick = SDLJoystick::create(that, instance_id, joystick);
                 _joysticks[instance_id] = sdlJoystick;
             }
 
-            _joystickAdded->execute(shared_from_this(), _joysticks[instance_id]);
+            _joystickAdded->execute(that, _joysticks[instance_id]);
             break;
         }
 
@@ -758,16 +646,16 @@ Canvas::step()
         {
             auto joystick = _joysticks[event.cdevice.which]->_joystick;
 
-            _joystickRemoved->execute(shared_from_this(), _joysticks[event.cdevice.which]);
+            _joystickRemoved->execute(that, _joysticks[event.cdevice.which]);
 
             SDL_JoystickClose(joystick);
             _joysticks.erase(event.cdevice.which);
 
             break;
         }
-#endif // EMSCRIPTEN
+#endif // MINKO_PLATFORM_HTML5
 
-#ifdef EMSCRIPTEN
+#if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
         case SDL_VIDEORESIZE:
         {
             width(event.resize.w);
@@ -775,7 +663,7 @@ Canvas::step()
 
             _screen = SDL_SetVideoMode(width(), height(), 0, SDL_OPENGL | SDL_WINDOW_RESIZABLE);
             _context->configureViewport(x(), y(), width(), height());
-            _resized->execute(shared_from_this(), width(), height());
+            _resized->execute(that, width(), height());
             break;
         }
 #else
@@ -788,7 +676,7 @@ Canvas::step()
                     height(event.window.data2);
 
                     _context->configureViewport(x(), y(), width(), height());
-                    _resized->execute(shared_from_this(), width(), height());
+                    _resized->execute(that, width(), height());
                     break;
 
                 default:
@@ -796,55 +684,37 @@ Canvas::step()
             }
             break;
         }
-#endif // EMSCRIPTEN
+#endif // MINKO_PLATFORM_HTML5
 
         default:
             break;
         }
     }
 
-#if !defined(EMSCRIPTEN)
+#if MINKO_PLATFORM != MINKO_PLATFORM_HTML5
     for (auto worker : _activeWorkers)
         worker->poll();
 #endif
+
     auto absoluteTime = std::chrono::high_resolution_clock::now();
     _relativeTime   = 1e-6f * std::chrono::duration_cast<std::chrono::nanoseconds>(absoluteTime - _startTime).count(); // in milliseconds
     _frameDuration  = 1e-6f * std::chrono::duration_cast<std::chrono::nanoseconds>(absoluteTime - _previousTime).count(); // in milliseconds
 
-    _enterFrame->execute(shared_from_this(), _relativeTime, _frameDuration);
+    _enterFrame->execute(that, _relativeTime, _frameDuration);
     _previousTime = absoluteTime;
 
-    // swap buffers
-#if defined(MINKO_ANGLE)
-    eglSwapBuffers(_angleContext->eglDisplay, _angleContext->eglSurface);
-#elif defined(EMSCRIPTEN)
-    SDL_GL_SwapBuffers();
-#else
-    SDL_GL_SwapWindow(_window);
-#endif
+    _backend->swapBuffers(that);
 
     // framerate in seconds
     _framerate = 1000.f / _frameDuration;
 
-#if !defined(EMSCRIPTEN)
     if (_framerate > _desiredFramerate)
     {
-        SDL_Delay((uint) ((1000.f / _desiredFramerate) - _frameDuration));
+        _backend->wait(that, (1000.f / _desiredFramerate) - _frameDuration);
 
         _framerate = _desiredFramerate;
     }
-#endif
 }
-
-#if defined(EMSCRIPTEN)
-Canvas::Ptr currentCanvas;
-
-void
-emscriptenMainLoop()
-{
-    currentCanvas->step();
-}
-#endif
 
 void
 Canvas::run()
@@ -852,16 +722,7 @@ Canvas::run()
     _active = true;
     _framerate = 0.f;
 
-#if defined(EMSCRIPTEN)
-    currentCanvas = shared_from_this();
-    emscripten_set_main_loop(emscriptenMainLoop, 0, 1);
-#else
-    while (_active)
-    {
-        step();
-        // usleep(1000000 / TARGET_FPS);
-    }
-#endif
+    _backend->run(shared_from_this());
 }
 
 void
@@ -892,4 +753,61 @@ Canvas::getJoystickAxis(input::Joystick::Ptr joy, int axis)
         return -1;
 
     return SDL_JoystickGetAxis(_joysticks[id]->joystick(), axis);
+}
+
+bool
+Canvas::takeScreenshot(const std::string& filename)
+{
+    auto infoSurface    = SDL_GetWindowSurface(_window);
+    auto renderer       = SDL_GetRenderer(_window);
+
+    if (infoSurface == nullptr)
+    {
+        std::cerr << "Failed to create info surface from window in saveScreenshotBMP(string), SDL_GetError() - " << SDL_GetError() << std::endl;
+        return false;
+    }
+    else
+    {
+        static unsigned char* pixels = new (std::nothrow) unsigned char[infoSurface->w * infoSurface->h * infoSurface->format->BytesPerPixel];
+
+        if (pixels == nullptr)
+        {
+            std::cerr << "Unable to allocate memory for screenshot pixel data buffer!\n";
+            return false;
+        }
+        else
+        {
+            if (SDL_RenderReadPixels(renderer, &infoSurface->clip_rect, infoSurface->format->format, pixels, infoSurface->w * infoSurface->format->BytesPerPixel))
+            {
+                std::cerr << "Failed to read pixel data from SDL_Renderer object. SDL_GetError() - " << SDL_GetError() << std::endl;
+                pixels = nullptr;
+                return false;
+            }
+            else
+            {
+                auto format = infoSurface->format;
+                auto saveSurface = SDL_CreateRGBSurfaceFrom(
+                    pixels,
+                    infoSurface->w, infoSurface->h,
+                    format->BitsPerPixel, infoSurface->w * format->BytesPerPixel,
+                    format->Rmask, format->Gmask, format->Bmask, format->Amask
+                );
+
+                if (saveSurface == nullptr)
+                {
+                    std::cerr << "Couldn't create SDL_Surface from renderer pixel data. SDL_GetError() - " << SDL_GetError() << std::endl;
+                    return false;
+                }
+
+                SDL_SaveBMP(saveSurface, filename.c_str());
+                SDL_FreeSurface(saveSurface);
+                saveSurface = nullptr;
+            }
+        }
+
+        SDL_FreeSurface(infoSurface);
+        infoSurface = nullptr;
+    }
+
+    return true;
 }
