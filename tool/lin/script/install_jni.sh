@@ -54,5 +54,8 @@ pushd "${ANDROID}/build-tools/${ANDROID_NDK_VERSION}" > /dev/null
 build/tools/make-standalone-toolchain.sh --platform=${ANDROID_SDK_VERSION} --toolchain=${ANDROID_TOOLCHAIN} --install-dir=${ANDROID_NDK_HOME}
 popd > /dev/null
 
-# Simulate symbolic link
-echo ${ANDROID_TOOLCHAIN} > "${ANDROID}/toolchains/default.txt"
+# Link default NDK and simulate symbolic link
+pushd "${ANDROID}/toolchains/" > /dev/null
+echo ${ANDROID_TOOLCHAIN} > default.txt
+ln -s ${ANDROID_TOOLCHAIN} default
+popd > /dev/null

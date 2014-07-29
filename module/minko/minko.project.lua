@@ -309,11 +309,6 @@ minko.project.application = function(name)
 			minko.action.copy("asset")
 		}
 
-		-- activity "MinkoTest"
-		-- baseactivity "Activity"
-		-- packagename "app"
-		-- basepackagename "io.minko"
-
 	configuration { "ios", "debug" }
 		libdirs {
 			minko.sdk.path("/framework/bin/ios/debug")

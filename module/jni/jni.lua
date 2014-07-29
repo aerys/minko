@@ -30,9 +30,10 @@ if not os.isfile(ANDROID .. "/tools/android") then
 end
 
 if not os.isdir(ANDROID .. "/toolchains") then
-	error(color.fg.red .. 'Cannot find NDK tools for Android. Please install NDK in "' .. ANDROID .. '/toolchains".' .. color.reset)
+	error(color.fg.red .. 'Cannot find NDK tools for Android. Please install NDK in "' .. ANDROID .. '/toolchains" and run `install_jni.sh` or `install_jni.bat`.' .. color.reset)
 end
 
+-- writing toolchain name in a fake symlink to avoid actual symlinks on Windows (requiring privileges)
 local NDK_HOME = ANDROID .. "/toolchains/" .. io.lines(ANDROID .. "/toolchains/default.txt")()
 
 local matches = os.matchdirs(NDK_HOME .. "/*abi")
