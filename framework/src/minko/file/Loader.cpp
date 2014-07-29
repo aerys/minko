@@ -23,6 +23,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/Options.hpp"
 #include "minko/file/AssetLibrary.hpp"
 
+#include "minko/log/Logger.hpp"
+
 using namespace minko;
 using namespace minko::file;
 
@@ -186,10 +188,15 @@ Loader::processData(const std::string&                      filename,
         catch (const ParserError& parserError)
         {
             if (_error->numCallbacks() != 0)
+            {
                 _error->execute(shared_from_this(), parserError);
+            }
 #ifdef DEBUG
             else
+            {
+                LOG_DEBUG("Loader parsing failed (" << parserError.type() << "): " << parserError.what());
                 throw parserError;
+            }
 #endif // defined(DEBUG)
         }
     }

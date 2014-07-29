@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -17,6 +17,25 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#pragma once
+#include "minko/log/Logger.hpp"
+#include "minko/log/ConsoleSink.hpp"
 
-#include "minko/file/APKLoader.hpp"
+using namespace minko;
+using namespace minko::log;
+
+
+Logger::Ptr
+Logger::_default = Logger::create(Logger::Level::Debug, ConsoleSink::create());
+
+void
+Logger::operator()(const std::string&		message,
+				   const char*				function,
+				   const char*				file,
+				   int						line)
+{
+	std::ostringstream os;
+
+	os << file << ":" << line << "\t" << function << "(): " << message;
+
+	_sink->write(os.str());
+}

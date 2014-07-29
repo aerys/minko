@@ -100,11 +100,12 @@ Canvas::initialize()
 #if defined(__ANDROID__)
     file::Options::defaultProtocolFunction("file", [](const std::string& filename)
     {
-        return minko::file::APKProtocol::create();
+        return file::APKProtocol::create();
     });
 
-    // std::cout.rdbuf(new minko::log::AndroidStreambuf());
-    // std::cerr.rdbuf(new minko::log::AndroidStreambuf());
+    log::Logger::defaultLogger(
+        log::Logger::create(log::Logger::Level::Debug, log::AndroidLogSink::create())
+    );
 #endif
 
     initializeContext(_name, width(), height(), _useStencil);
