@@ -80,9 +80,7 @@ namespace minko
 			sanitizeFilename(const std::string& filename);
 
         private:
-            File()
-            {
-            };
+            File() = default;
         };
     }
 }
