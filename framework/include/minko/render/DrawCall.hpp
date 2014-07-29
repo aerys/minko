@@ -142,7 +142,7 @@ namespace minko
 			Signal<Ptr, ContainerPtr, const std::string&>::Ptr				_macroChanged;	
 
 			std::unordered_map<uint, std::set<std::string>>					_containerMacroPNames;
-			std::unordered_map<uint, std::list<std::regex>>					_containerMacroRegex;
+			std::unordered_map<uint, std::list<data::MacroRegexPredicate>>	_containerMacroRegex;
 
 			std::shared_ptr<DrawCallZSorter>								_zSorter;
 

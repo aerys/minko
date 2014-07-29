@@ -27,7 +27,7 @@ using namespace minko::component;
 using namespace minko::math;
 using namespace minko::scene;
 
-const std::string	CUBE_TEXTURE	= "texture/cubemap_sea.jpeg";
+const std::string	CUBE_TEXTURE	= "texture/cubemap_sea.jpg";
 const unsigned int	NUM_OBJECTS		= 15;
 
 Node::Ptr
@@ -44,10 +44,11 @@ int main(int argc, char** argv)
 	loader->options()->generateMipmaps(true);
 	loader->options()
 		->registerParser<file::PNGParser>("png")
-		->registerParser<file::JPEGParser>("jpg")
-                ->registerParser<file::JPEGParser>("jpeg");
-        sceneManager->assets()->loader()
-                ->queue(CUBE_TEXTURE, file::Options::create(loader->options())->isCubeTexture(true))
+        ->registerParser<file::JPEGParser>("jpg");
+    
+    auto options = file::Options::create(loader->options())->isCubeTexture(true);
+    loader
+        ->queue(CUBE_TEXTURE, options)
 		->queue("effect/Basic.effect");
 
 	sceneManager->assets()
@@ -79,7 +80,7 @@ int main(int argc, char** argv)
 		sky->addComponent(Surface::create(
 				sceneManager->assets()->geometry("cube"),
 				material::BasicMaterial::create()
-					->diffuseCubeMap(sceneManager->assets()->texture(CUBE_TEXTURE))
+					->diffuseCubeMap(sceneManager->assets()->cubeTexture(CUBE_TEXTURE))
 					->triangleCulling(render::TriangleCulling::FRONT),
 				sceneManager->assets()->effect("effect/Basic.effect")
 			));
@@ -110,7 +111,7 @@ int main(int argc, char** argv)
 		sceneManager->nextFrame(time, deltaTime);
 	});
 
-	sceneManager->assets()->loader()->load();
+	loader->load();
 
 	canvas->run();
 

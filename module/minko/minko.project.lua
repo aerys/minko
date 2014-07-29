@@ -44,9 +44,9 @@ minko.project.application = function(name)
 
 	kind "ConsoleApp"
 
-	defines {
-		"MINKO_APPLICATION_NAME=" .. name
-	}
+	-- defines {
+	-- 	"MINKO_APPLICATION_NAME=" .. name
+	-- }
 
 	configuration { "windows32" }
 		libdirs {

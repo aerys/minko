@@ -46,6 +46,7 @@ int main(int argc, char** argv)
 		->queue("effect/windows.jpg")
 		->queue("effect/osx.jpg")
 		->queue("effect/linux.jpg")
+		->queue("effect/Basic.effect")
 		->queue("effect/PlatformTexture.effect");
 
 	auto root = scene::Node::create("root")

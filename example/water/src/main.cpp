@@ -16,7 +16,7 @@ const float flowMapCycle		= 0.25f;
 Signal<input::Keyboard::Ptr>::Slot keyDown;
 
 #define FLOW_MAP // comment to deactivate flowmap
-#define REFLECTION // comment to deactivate reflections
+#define ENABLE_REFLECTION // comment to deactivate reflections
 
 int main(int argc, char** argv)
 {
@@ -61,7 +61,7 @@ int main(int argc, char** argv)
 
 	auto fxComplete = fxLoader->complete()->connect([&](file::Loader::Ptr l)
 	{
-		sceneManager->assets()->loader()->queue("model/land3.scene");
+		sceneManager->assets()->loader()->queue("model/skybox.scene");
 		sceneManager->assets()->loader()->load();
 	});
 	
@@ -69,27 +69,23 @@ int main(int argc, char** argv)
 
 	auto _ = sceneManager->assets()->loader()->complete()->connect([=](file::Loader::Ptr loader)
 	{
-#ifdef REFLECTION
-		auto reflectionComponent = Reflection::create(sceneManager->assets(), 2048, 2048, 0xFF0000FF);
+#ifdef ENABLE_REFLECTION
+		auto reflectionComponent = Reflection::create(sceneManager->assets(), 2048, 2048, 0x00000000);
 		camera->addComponent(reflectionComponent);
 #endif
 		root->addChild(camera);
 
-		auto nodeSet = scene::NodeSet::create(sceneManager->assets()->symbol("model/land3.scene"))->descendants(false, true)->where([&](scene::Node::Ptr node)
-		{
-			return node->name() == "skybox";
-		});
+		auto nodeSet = scene::NodeSet::create(sceneManager->assets()->symbol("model/skybox.scene"))->descendants(false, true);
 
 		for (auto n : nodeSet->nodes())
 		{
-			for (int i = 0; i < n->children().size(); ++i)
-			{
-				if (n->children()[i]->hasComponent<Surface>())
-					n->children()[i]->component<Surface>()->effect(sceneManager->assets()->effect("effect/Basic.effect"));
-			}
+			n->layouts(n->layouts() | scene::Layout::Group::REFLECTION);
+
+			if (n->hasComponent<Surface>())
+				n->component<Surface>()->effect(sceneManager->assets()->effect("effect/Basic.effect"));
 		}
 
-		root->addChild(sceneManager->assets()->symbol("model/land3.scene"));
+		root->addChild(sceneManager->assets()->symbol("model/skybox.scene"));
 		
 		auto waves = scene::Node::create("waves")
 			->addComponent(Transform::create(math::Matrix4x4::create()->appendRotationX(-float(M_PI) / 2.f)))
@@ -109,10 +105,10 @@ int main(int argc, char** argv)
 		waterMaterial->flowMapOffset2(flowMapCycle / 2.f);
 #endif
 		waterMaterial->normalMap(sceneManager->assets()->texture("texture/water_normalmap4.jpg"));
-#ifdef REFLECTION
+#ifdef ENABLE_REFLECTION
 		waterMaterial->dudvMap(sceneManager->assets()->texture("texture/water_dudv.jpg"));
 		waterMaterial->reflectionMap(camera->components<Reflection>()[0]->getRenderTarget());
-		waterMaterial->reflectivity(0.5f);
+		waterMaterial->reflectivity(0.4f);
 		waterMaterial->dudvFactor(0.02f);
 		waterMaterial->dudvSpeed(0.00015f);
 		waterMaterial->diffuseColor(0x052540FF);
