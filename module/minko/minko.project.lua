@@ -30,14 +30,9 @@ minko.project.library = function(name)
 			"/wd4503"				-- remove warnings about too long type names
 		}
 
-	configuration { "html5" }
-		if premake.tools.gcc.tools.emscripten then
-			includedirs { EMSCRIPTEN .. "/system/include" }
-		end
-
 	configuration { "html5", "debug" }
 		buildoptions {
-			"-g4"
+			"-g4"					-- for source maps
 		}
 
 	configuration { }
