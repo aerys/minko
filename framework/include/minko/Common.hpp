@@ -224,7 +224,8 @@ namespace minko
 			MacroBindingDefaultValue			value;
 		};
 
-		typedef std::tuple<std::string, BindingSource, MacroBindingDefault, int, int, RegexPtr>	MacroBinding;
+        typedef std::function<bool(const std::string&)> MacroRegexPredicate;
+		typedef std::tuple<std::string, BindingSource, MacroBindingDefault, int, int, MacroRegexPredicate>	MacroBinding;
 
 		typedef std::unordered_map<std::string, MacroBinding> MacroBindingMap;
 
