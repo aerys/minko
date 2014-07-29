@@ -32,7 +32,10 @@ namespace minko
 
 			enum Level
 			{
-				Debug
+				Debug,
+				Info,
+				Warning,
+				Error
 			};
 
 			class Sink
@@ -42,7 +45,7 @@ namespace minko
 
 				virtual
 				void
-				write(const std::string& log) = 0;
+				write(const std::string& log, Level level) = 0;
 
 				virtual
 				~Sink() = default;
@@ -59,6 +62,7 @@ namespace minko
 
 			void
 			operator()(const std::string&			message,
+					   Level						level,
 					   char const*					function,
 					   char const*					file,
 					   int							line);
@@ -94,11 +98,12 @@ namespace minko
 }
 
 // From http://stackoverflow.com/questions/8337300/c11-how-do-i-implement-convenient-logging-without-a-singleton
-#define LOG(Logger_, Message_)                  		\
+#define LOG(Logger_, Message_, Level_)                  \
 	Logger_(                                      		\
 		static_cast<std::ostringstream&>(           	\
 			std::ostringstream().flush() << Message_  	\
 		).str(),                                    	\
+		Level_,											\
 		__FUNCTION__,                               	\
 		__FILE__,                                   	\
 		__LINE__                                    	\
@@ -107,5 +112,9 @@ namespace minko
 #ifdef NDEBUG
 # define LOG_DEBUG(_) do {} while (0);
 #else
-# define LOG_DEBUG(Message_) LOG((*minko::log::Logger::defaultLogger()), Message_)
+# define LOG_DEBUG(Message_) LOG((*minko::log::Logger::defaultLogger()), Message_, minko::log::Logger::Level::Debug)
 #endif
+
+#define LOG_INFO(Message_) LOG((*minko::log::Logger::defaultLogger()), Message_, minko::log::Logger::Level::Info)
+#define LOG_WARNING(Message_) LOG((*minko::log::Logger::defaultLogger()), Message_, minko::log::Logger::Level::Warning)
+#define LOG_ERROR(Message_) LOG((*minko::log::Logger::defaultLogger()), Message_, minko::log::Logger::Level::Error)

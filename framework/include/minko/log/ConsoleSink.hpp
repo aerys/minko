@@ -39,9 +39,27 @@ namespace minko
 			}
 
 			void
-			write(const std::string& log) override
+			write(const std::string& log, Logger::Level level) override
 			{
-				std::cout << log << std::endl;
+				std::cout << getLevelName(level) << ": " << log << std::endl;
+			}
+
+			std::string
+			getLevelName(Logger::Level level) const
+			{
+				switch (level)
+				{
+				case Logger::Level::Debug:
+					return "debug";
+				case Logger::Level::Info:
+					return "info";
+				case Logger::Level::Warning:
+					return "warning";
+				case Logger::Level::Error:
+					return "error";
+				}
+
+				return "info";
 			}
 
 		private:

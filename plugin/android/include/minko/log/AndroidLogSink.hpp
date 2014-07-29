@@ -39,9 +39,20 @@ namespace minko
 			}
 
 			void
-			write(const std::string& log)
+			write(const std::string& log, Logger::Level level)
 			{
-				__android_log_print(ANDROID_LOG_INFO /* ANDROID_LOG_DEBUG */, "minko", log.c_str());
+				auto logLevel = ANDROID_LOG_INFO;
+
+				if (level == Logger::Level::Debug)
+					logLevel = ANDROID_LOG_DEBUG;
+				else if (level == Logger::Level::Info)
+					logLevel = ANDROID_LOG_INFO;
+				else if (level == Logger::Level::Warning)
+					logLevel = ANDROID_LOG_WARN;
+				else if (level == Logger::Level::Error)
+					logLevel = ANDROID_LOG_ERROR;
+
+				__android_log_print(logLevel, "minko", log.c_str());
 			}
 
 		private:

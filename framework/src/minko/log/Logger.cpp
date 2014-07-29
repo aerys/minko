@@ -29,13 +29,17 @@ Logger::_default = Logger::create(Logger::Level::Debug, ConsoleSink::create());
 
 void
 Logger::operator()(const std::string&		message,
+				   Level					level,
 				   const char*				function,
 				   const char*				file,
 				   int						line)
 {
+	if (static_cast<int>(level) < static_cast<int>(_level))
+		return;
+
 	std::ostringstream os;
 
 	os << file << ":" << line << "\t" << function << "(): " << message;
 
-	_sink->write(os.str());
+	_sink->write(os.str(), level);
 }
