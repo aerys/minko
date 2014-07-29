@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -19,81 +19,4 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #pragma once
 
-#include "minko/Minko.hpp"
-#include "minko/Signal.hpp"
-#include "minko/render/AbstractContext.hpp"
-
-#include <chrono>
-#include <GL/osmesa.h>
-
-class MinkoOffscreen
-{
-public:
-    typedef std::chrono::high_resolution_clock::time_point	time_point;
-
-private:
-	static bool                                 _active;
-	static minko::render::AbstractContext::Ptr  _context;
-	static float                                _framerate;
-	static float                                _desiredFramerate;
-	static float								_relativeTime;
-	static float								_frameDuration;
-    static time_point                           _previousTime;
-    static time_point                           _startTime;
-	static minko::Signal<float, float>::Ptr     _enterFrame; // time, deltaTime
-	static std::unique_ptr<GLfloat[]>           _backBuffer;
-	static OSMesaContext                        _offscreenContext;
-	static std::unique_ptr<char[]>              _pixels;
-	static minko::uint							_width;
-	static minko::uint							_height;
-
-public:
-	inline static
-	bool
-	active()
-	{
-		return _active;
-	}
-
-	inline static
-	minko::Signal<float, float>::Ptr
-	enterFrame()
-	{
-		return _enterFrame;
-	}
-
-	inline static
-	minko::render::AbstractContext::Ptr
-	context()
-	{
-		return _context;
-	}
-
-	inline static
-	float
-	framerate()
-	{
-		return _framerate;
-	}
-
-	static
-	void
-	run();
-
-	static
-	void
-	initialize(const std::string& windowTitle, unsigned int width = 0, unsigned int height = 0, bool useStencil = false);
-
-	static
-	void
-	takeScreenshot(const std::string& filename);
-
-private:
-	static
-	void
-	step();
-
-	static
-	void
-	initializeContext(const std::string& windowTitle, unsigned int width, unsigned int height, bool useStencil);
-};
+#include "minko/SDLOffscreenBackend.hpp"

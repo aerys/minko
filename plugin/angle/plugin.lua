@@ -24,11 +24,10 @@ function minko.plugin.angle:enable()
 	local kind = configuration().kind
 
 	configuration { "windows32 or windows64" }
-		defines { "MINKO_ANGLE" }
+		defines { "MINKO_PLUGIN_ANGLE" }
 
 		libdirs { minko.plugin.path("angle") .. "/lib/win/ANGLE/lib" }
 		links { "libGLESv2", "libEGL" }
-		includedirs { minko.plugin.path("angle") .. "/lib/win/ANGLE/include" }
 
 		if kind ~= "StaticLib" and kind ~= "SharedLib" then
 			prelinkcommands {

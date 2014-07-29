@@ -44,6 +44,8 @@ namespace minko
 					.property("size", 	    &std::vector<Node::Ptr>::size);
 					//.index(&LuaNode::getWrapper);
 
+				MINKO_LUAGLUE_BIND_SIGNAL(state, Node::Ptr, Node::Ptr, Node::Ptr);
+
 				state.Class<Node>("Node")
 		            .method("create",				        static_cast<Node::Ptr (*)(void)>(&Node::create))
 					.method("toString",						&Node::toString)
@@ -72,7 +74,8 @@ namespace minko
 					.property("id",							&Node::id)
 		            .property("root",				        &Node::root)
 					.property("parent", 					&Node::parent)
-		            .property("name",				        &Node::name, &Node::name);
+		            .property("name",				        &Node::name, &Node::name)
+		            .property("added",     					&Node::added);
 			}
 
 			static

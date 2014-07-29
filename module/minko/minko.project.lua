@@ -156,9 +156,9 @@ minko.project.application = function(name)
 			"OpenGL.framework",
 			"IOKit.framework"
 		}
-		linkoptions {
-			"-Wl,-rpath,."
-		}
+		-- linkoptions {
+		-- 	"-Wl,-rpath,."
+		-- }
 		prelinkcommands {
 			minko.action.copy(minko.sdk.path("/framework/asset")),
 		}
