@@ -1,5 +1,5 @@
 if minko.platform.supports { "android" } then
-	include "lib/android"
+	include "lib/sdl"
 end
 
 PROJECT_NAME = path.getname(os.getcwd())
@@ -22,5 +22,5 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 
 	configuration { "html5" }
 		removeincludedirs { "lib/sdl/include" }
-		includedirs { EMSCRIPTEN .. "/system/include/SDL" }
+		includedirs { "SDL" }
 		minko.plugin.enable { "webgl" }
