@@ -141,6 +141,10 @@ namespace minko
 
             static
             std::string
+            getMaterialName(const std::string& materialName);
+
+            static
+            std::string
             getMeshName(const std::string& meshName);
 
             std::shared_ptr<component::Transform>

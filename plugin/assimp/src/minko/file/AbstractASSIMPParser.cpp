@@ -401,6 +401,14 @@ AbstractASSIMPParser::createMeshGeometry(scene::Node::Ptr minkoNode, aiMesh* mes
 }
 
 std::string
+AbstractASSIMPParser::getMaterialName(const std::string& materialName)
+{
+    static int currentId = 0;
+
+    return materialName.empty() ? std::string("default" + std::to_string(currentId++)) : materialName;
+}
+
+std::string
 AbstractASSIMPParser::getMeshName(const std::string& meshName)
 {
     static int currentId = 0;
@@ -1315,10 +1323,12 @@ AbstractASSIMPParser::createMaterial(const aiMaterial* aiMat)
     auto materialName = std::string();
 
     aiString rawMaterialName;
-    if (aiMat->Get(AI_MATKEY_NAME, rawMaterialName) != AI_SUCCESS)
-        return material;
+    if (aiMat->Get(AI_MATKEY_NAME, rawMaterialName) == AI_SUCCESS)
+    {
+        materialName = rawMaterialName.data;
+    }
 
-    materialName = rawMaterialName.data;
+    materialName = getMaterialName(materialName);
 
     auto existingMaterial = _assetLibrary->material(materialName);
 
