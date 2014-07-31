@@ -27,8 +27,10 @@ function minko.plugin.android:enable()
 		minko.plugin.links { "android" }
 		includedirs { minko.plugin.path("android") .. "/include" }
 
-		postbuildcommands {
-			-- 'echo ' .. abis(),
-			'bash ' .. minko.plugin.path("android") .. '/script/build_android.sh ${TARGET} || ' .. minko.action.fail()
-		}
+		if kind() ~= "StaticLib" then
+			postbuildcommands {
+				-- 'echo ' .. abis(),
+				'bash ' .. minko.plugin.path("android") .. '/script/build_android.sh ${TARGET} || ' .. minko.action.fail()
+			}
+		end
 end
