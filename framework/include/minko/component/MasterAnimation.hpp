@@ -92,6 +92,9 @@ namespace minko
 			resetPlaybackWindow();
 
 			void
+			initAnimations();
+
+			void
 			rebindDependencies(std::map<AbsCmpPtr, AbsCmpPtr>& componentsMap, std::map<NodePtr, NodePtr>& nodeMap, CloneOption option);
 
 		protected:

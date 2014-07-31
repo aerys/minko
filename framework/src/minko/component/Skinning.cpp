@@ -30,6 +30,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include <minko/math/Matrix4x4.hpp>
 #include <minko/component/Surface.hpp>
 #include <minko/component/SceneManager.hpp>
+#include <minko/component/MasterAnimation.hpp>
 #include <minko/component/Animation.hpp>
 #include <minko/component/Transform.hpp>
 
@@ -83,36 +84,15 @@ Skinning::Skinning(const Skinning& skinning, const CloneOption& option) :
 	_targetInputPositions(),
 	_targetInputNormals(),
 	_targetAddedSlot(nullptr)
-{
-	
-
+{	
 	_skin = skinning._skin->clone();
 
-	auto targetGeometry = skinning._targetGeometry;
-
-	
+	auto targetGeometry = skinning._targetGeometry;	
 
 	for (auto it = targetGeometry.begin(); it != targetGeometry.end(); ++it)
 	{
 		_targetGeometry[it->first] = it->second->clone();
 	}
-
-	//auto oldBones = skinning._skin->bones();
-
-	/*_skin = Skin::create(skinning._skin->numBones(), skinning._skin->duration(), skinning._skin->numFrames());
-
-	std::vector<BonePtr> newBones;
-
-	for (auto bone : oldBones)
-	{
-		newBones.push_back(Bone::create(bone->offsetMatrix(), bone->vertexIds(), bone->vertexWeights()));
-	}
-
-	_skin->bones(newBones);
-
-	_skin->setBoneMatricesPerFrame(skinning._skin->getBoneMatricesPerFrame());*/
-
-	//_skin->reorganizeByVertices()->transposeMatrices();
 }
 
 AbstractComponent::Ptr
@@ -201,6 +181,8 @@ Skinning::addedHandler(Node::Ptr node, Node::Ptr target, Node::Ptr parent)
 			}
 		}
 	}
+	
+	
 }
 
 void
@@ -276,8 +258,6 @@ Skinning::createVertexBufferForBones() const
 void
 Skinning::update()
 {
-	//AbstractAnimation::update();
-
 	const uint frameId = _skin->getFrameId(_currentTime);
 
 	for (auto& target : targets())
@@ -426,6 +406,12 @@ Skinning::targetAddedHandler(component::AbstractComponent::Ptr,
 
 	if (target->hasComponent<Transform>())
 		target->component<Transform>()->matrix()->identity();
+
+	if (target->hasComponent<MasterAnimation>())
+	{
+		auto masterAnimation = target->component<MasterAnimation>();
+		masterAnimation->initAnimations();
+	}
 }
 
 void

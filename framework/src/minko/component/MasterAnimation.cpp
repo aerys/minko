@@ -19,6 +19,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/component/MasterAnimation.hpp"
 #include "minko/component/Animation.hpp"
+#include "minko/component/Skinning.hpp"
 #include "minko/scene/Node.hpp"
 #include "minko/scene/NodeSet.hpp"
 
@@ -105,12 +106,22 @@ MasterAnimation::targetAddedHandler(AbstractComponent::Ptr cmp,
 
 	_target = node;
 
-	auto descendants = NodeSet::create(node)->descendants(true);
+	if (node->hasComponent<Skinning>())
+	{
+		initAnimations();
+	}	
+
+}
+
+void
+MasterAnimation::initAnimations()
+{
+	auto descendants = NodeSet::create(_target)->descendants(true);
 	for (auto descendant : descendants->nodes())
 	{
-		if (descendant->hasComponent<AbstractAnimation>())
+		if (descendant->hasComponent<Skinning>())
 		{
-			_animations.push_back(descendant->component<AbstractAnimation>());
+			_animations.push_back(descendant->component<Skinning>());
 		}
 	}
 
@@ -118,14 +129,12 @@ MasterAnimation::targetAddedHandler(AbstractComponent::Ptr cmp,
 
 	for (auto& animation : _animations)
 	{
-		
-			//animation->_master = std::dynamic_pointer_cast<MasterAnimation>(shared_from_this());
+		//animation->_master = std::dynamic_pointer_cast<MasterAnimation>(shared_from_this());
 		_maxTime = std::max(_maxTime, animation->getMaxTime());
-		
+
 	}
 
 	setPlaybackWindow(0, _maxTime)->seek(0)->play();
-
 }
 
 void
