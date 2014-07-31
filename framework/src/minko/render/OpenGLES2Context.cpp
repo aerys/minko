@@ -26,6 +26,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/TriangleCulling.hpp"
 #include "minko/render/StencilOperation.hpp"
 #include "minko/math/Matrix4x4.hpp"
+#include "minko/log/Logger.hpp"
 
 #include <iomanip>
 
@@ -33,23 +34,23 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 # define GL_GLEXT_PROTOTYPES
 #endif
 
-#if MINKO_PLATFORM & MINKO_PLATFORM_WINDOWS
-# if MINKO_ANGLE
+#if MINKO_PLATFORM == MINKO_PLATFORM_WINDOWS
+# if defined(MINKO_PLUGIN_ANGLE)
 #  include "GLES2/gl2.h"
 # else
 #  include "GL/glew.h"
 # endif
-#elif MINKO_PLATFORM & MINKO_PLATFORM_OSX
+#elif MINKO_PLATFORM == MINKO_PLATFORM_OSX
 # include <OpenGL/gl.h>
 # include <GLUT/glut.h>
-#elif MINKO_PLATFORM & MINKO_PLATFORM_LINUX
+#elif MINKO_PLATFORM == MINKO_PLATFORM_LINUX
 # include <GL/gl.h>
 # include <GL/glu.h>
-#elif MINKO_PLATFORM & MINKO_PLATFORM_IOS
+#elif MINKO_PLATFORM == MINKO_PLATFORM_IOS
 # include <OpenGLES/ES2/gl.h>
-#elif MINKO_PLATFORM & MINKO_PLATFORM_ANDROID
+#elif MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
 # include <GLES2/gl2.h>
-#elif MINKO_PLATFORM & MINKO_PLATFORM_HTML5
+#elif MINKO_PLATFORM == MINKO_PLATFORM_HTML5
 # include <GLES2/gl2.h>
 # include <EGL/egl.h>
 #endif
@@ -153,14 +154,15 @@ OpenGLES2Context::OpenGLES2Context() :
 	_currentStencilZFailOp(StencilOperation::UNSET),
 	_currentStencilZPassOp(StencilOperation::UNSET)
 {
-#if defined _WIN32 && !defined MINKO_ANGLE
+#if (MINKO_PLATFORM == MINKO_PLATFORM_WINDOWS) && !defined(MINKO_PLUGIN_ANGLE)
 	glewInit();
 #endif
 
-	glEnable(GL_DEPTH_TEST);
-#ifndef MINKO_NO_STENCIL
+#if !defined(MINKO_NO_STENCIL)
 	glEnable(GL_STENCIL_TEST);
 #endif
+
+	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
@@ -896,16 +898,13 @@ OpenGLES2Context::compileShader(const uint shader)
 
 	if (!errors.empty())
 	{
-		std::stringstream	stream;
-		stream << "glShaderSource_" << shader << ".txt";
+		std::string	source;
+		getShaderSource(shader, source);
 
-		const std::string&	filename	= stream.str();
+		LOG_DEBUG("Shader source (glShaderSource_" << shader << "):\n" << source);
+		LOG_DEBUG("Shader errors (glShaderSource_" << shader << "):\n" << errors);
 
-		saveShaderSourceToFile(filename, shader);
-
-		std::cerr << "\nERRORS\n------\n" << errors << std::endl;
-		std::cerr << "\nerrorneous shader source saved to \'" << filename << "\'" << std::endl;
-		throw;
+		throw std::runtime_error("Shader compilation failed. Enable debug logs to display errors.");
 	}
 #endif
 
@@ -939,45 +938,6 @@ OpenGLES2Context::setShaderSource(const uint shader,
 	glShaderSource(shader, 1, &sourceString, 0);
 
 	checkForErrors();
-}
-
-void
-OpenGLES2Context::saveShaderSourceToFile(const std::string& filename, uint shader)
-{
-	std::string	source;
-	getShaderSource(shader, source);
-
-#ifndef MINKO_GLSL_OPTIMIZER
-	std::cout << "\nSHADER SOURCE\n-------------" << std::endl;
-	unsigned int i		= 0;
-	unsigned int line	= 1;
-	while(i < source.size())
-	{
-		std::string lineString;
-		while(i < source.size() && source[i] != '\n')
-			lineString.push_back(source[i++]);
-		++i;
-
-#ifndef EMSCRIPTEN
-		std::cerr
-#else
-		std::cout
-#endif // EMSCRIPTEN
-			<< "(" << std::setfill('0') << std::setw(4) << line << ") " << lineString << std::endl;
-
-		++line;
-	}
-#endif //MINKO_GLSL_OPTIMIZER
-
-#ifndef EMSCRIPTEN
-	std::ofstream	file;
-
-	file.open(filename.c_str());
-	if (!file.is_open())
-		return;
-	file << source;
-	file.close();
-#endif // EMSCRIPTEN
 }
 
 void

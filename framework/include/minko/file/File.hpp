@@ -79,10 +79,12 @@ namespace minko
 			std::string
 			sanitizeFilename(const std::string& filename);
 
+            static
+            std::string
+            canonizeFilename(const std::string& filename);
+
         private:
-            File()
-            {
-            };
+            File() = default;
         };
     }
 }

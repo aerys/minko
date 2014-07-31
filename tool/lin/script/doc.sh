@@ -2,6 +2,6 @@
 
 DIR="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)"
 
-pushd ${DIR}/../../..
+pushd ${DIR}/../../.. > /dev/null
 tool/lin/script/premake5.sh doc
-popd
+popd > /dev/null

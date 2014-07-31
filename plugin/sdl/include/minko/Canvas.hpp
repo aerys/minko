@@ -34,10 +34,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/input/Touch.hpp"
 #include "minko/async/Worker.hpp"
 
+#include "minko/SDLBackend.hpp"
+
 // Note: cannot be added to the .cpp because this must be compiled within the
 // main compilation-unit.
-#include "SDL_platform.h"
-#if defined(MINKO_PLATFORM_IOS) || defined(MINKO_PLATFORM_ANDROID)
+#if MINKO_PLATFORM & (MINKO_PLATFORM_IOS | MINKO_PLATFORM_ANDROID)
 # include "SDL_main.h"
 #endif
 
@@ -57,17 +58,18 @@ namespace minko
         typedef std::chrono::high_resolution_clock::time_point	time_point;
 		typedef std::shared_ptr<async::Worker>			        WorkerPtr;
 
-		std::string										_name;
-		uint											_x;
-		uint											_y;
-		uint											_width;
-		uint											_height;
-		std::shared_ptr<data::Provider>					_data;
-		bool											_useStencil;
-		bool											_chromeless;
+		std::string												_name;
+		uint													_x;
+		uint													_y;
+		uint													_width;
+		uint													_height;
+		std::shared_ptr<data::Provider>							_data;
+		bool													_useStencil;
+		bool													_chromeless;
 
-		bool											_active;
-		render::AbstractContext::Ptr					_context;
+		bool													_active;
+		render::AbstractContext::Ptr							_context;
+		std::shared_ptr<SDLBackend>								_backend;
 		SDL_Surface*											_screen;
 		SDL_Window*												_window;
 		float													_relativeTime;
@@ -80,8 +82,8 @@ namespace minko
 		std::shared_ptr<SDLMouse>								_mouse;
 		std::unordered_map<int, std::shared_ptr<SDLJoystick>>	_joysticks;
         std::shared_ptr<SDLKeyboard>    						_keyboard;
-        std::shared_ptr<SDLTouch>                              _touch; // To store any finger activity
-		std::vector<std::shared_ptr<SDLTouch>>                 _touches; // To keep finger order
+        std::shared_ptr<SDLTouch>                               _touch; // To store any finger activity
+		std::vector<std::shared_ptr<SDLTouch>>                  _touches; // To keep finger order
 
         // Events
 		Signal<Ptr, float, float>::Ptr											_enterFrame;
@@ -94,7 +96,6 @@ namespace minko
 
         std::list<std::shared_ptr<async::Worker>>								_activeWorkers;
 		std::list<Any>															_workerCompleteSlots;
-
 
 	public:
 		static inline
@@ -304,11 +305,11 @@ namespace minko
 		bool
 		isWorkerRegistered(const std::string& name)
 		{
-			if (_workers.count(name))
-				return true;
-			else
-				return false;
+			return _workers.count(name);
 		};
+
+		bool
+		takeScreenshot(const std::string& filename);
 
 		void
 		run();
@@ -335,11 +336,6 @@ namespace minko
 		void
 		height(uint);
 
-#if defined(_WIN32)
-		bool
-		consoleHandlerRoutine(DWORD);
-#endif
-
 		void
 		initialize();
 
@@ -347,12 +343,10 @@ namespace minko
 		initializeInputs();
 
 		void
-		initializeContext(const std::string& windowTitle, unsigned int width, unsigned int height, bool useStencil);
+		initializeContext();
 
-#ifdef MINKO_ANGLE
-		ESContext*
-		initContext(SDL_Window* window, unsigned int width, unsigned int height);
-#endif
+		void
+		initializeWindow();
 
 	public:
 		void

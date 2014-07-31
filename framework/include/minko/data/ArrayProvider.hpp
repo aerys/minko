@@ -88,7 +88,6 @@ namespace minko
 		protected:
 			explicit
 			ArrayProvider(const std::string& name);
-	
 		};
 	}
 }

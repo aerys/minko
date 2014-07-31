@@ -63,9 +63,7 @@ namespace minko
 			}
 
 			virtual
-			~AbstractFilter()
-			{
-			}
+			~AbstractFilter() = default;
 
 			void
 			watchProperty(const std::string value);

@@ -51,6 +51,8 @@ APKProtocol::load()
 		cleanFilename += filename.at(i);
 	}
 
+	cleanFilename = File::canonizeFilename(cleanFilename);
+
 	_options = options;
 
 	auto realFilename = options->uriFunction()(File::sanitizeFilename(cleanFilename));
@@ -74,6 +76,8 @@ APKProtocol::load()
 
 	if (file)
 	{
+        resolvedFilename(realFilename);
+
 		unsigned int size = file->size(file);
 
 		_progress->execute(shared_from_this(), 0.0);
@@ -89,5 +93,7 @@ APKProtocol::load()
 		_complete->execute(shared_from_this());
 	}
 	else
+	{
 		_error->execute(shared_from_this());
+	}
 }

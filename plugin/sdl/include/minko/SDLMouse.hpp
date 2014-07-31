@@ -19,7 +19,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #pragma once
 
-#include "minko/Canvas.hpp"
 #include "minko/input/Mouse.hpp"
 
 namespace minko
@@ -33,8 +32,11 @@ namespace minko
 
     public:
         static
-            std::shared_ptr<SDLMouse>
-            create(std::shared_ptr<Canvas> canvas);
+        std::shared_ptr<SDLMouse>
+        create(std::shared_ptr<Canvas> canvas)
+        {
+            return std::shared_ptr<SDLMouse>(new SDLMouse(canvas));
+        }
 
     private:
         SDLMouse(std::shared_ptr<Canvas> canvas);

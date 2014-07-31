@@ -259,7 +259,7 @@ OctTree::computeDepth(std::shared_ptr<scene::Node> node)
 	component::Surface::Ptr surface = node->component<component::Surface>();
 	float					radius	= computeRadius(node->component<component::BoundingBox>());
 
-	return (uint)floor(log(_worldSize / radius) / log(2));
+	return (uint)std::floor(std::log(_worldSize / radius) / std::log(2));
 }
 
 float

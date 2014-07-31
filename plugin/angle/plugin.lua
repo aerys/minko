@@ -21,16 +21,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 minko.plugin.angle = {}
 
 function minko.plugin.angle:enable()
-	local kind = configuration().kind
-
 	configuration { "windows32 or windows64" }
-		defines { "MINKO_ANGLE" }
+		defines { "MINKO_PLUGIN_ANGLE" }
 
 		libdirs { minko.plugin.path("angle") .. "/lib/win/ANGLE/lib" }
 		links { "libGLESv2", "libEGL" }
-		includedirs { minko.plugin.path("angle") .. "/lib/win/ANGLE/include" }
 
-		if kind ~= "StaticLib" and kind ~= "SharedLib" then
+		if kind() ~= "StaticLib" and kind() ~= "SharedLib" then
 			prelinkcommands {
 				minko.action.copy(minko.plugin.path("angle") .. "/lib/win/ANGLE/lib/*.dll")
 			}

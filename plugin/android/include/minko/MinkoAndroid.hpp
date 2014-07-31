@@ -20,4 +20,4 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/file/APKProtocol.hpp"
-#include "minko/log/AndroidStreambuf.hpp"
+#include "minko/log/AndroidLogSink.hpp"
