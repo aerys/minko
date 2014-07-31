@@ -115,3 +115,49 @@ File::sanitizeFilename(const std::string& filename)
 	return f;
 }
 
+std::string
+File::canonizeFilename(const std::string& filename)
+{
+	// Split input string on '/'
+    std::vector<std::string> segments;
+    std::stringstream ss(filename);
+    std::string item;
+
+    while (std::getline(ss, item, '/'))
+        segments.push_back(item);
+
+	// Moving path into a stack (but using deque for later iterative access).
+	std::deque<std::string> path;
+
+	for (auto current : segments)
+	{
+		if (current.empty() || current == ".")
+			continue;
+
+		if (current != "..")
+			path.push_back(current);
+		else if (path.size() > 0 && path.back() != "..")
+			path.pop_back();
+		else
+			path.push_back(current);
+	}
+
+	// Keep leading '/' if absolute and reset stream.
+	ss.str(filename.size() && filename.at(0) == '/' ? "/" : "");
+	ss.clear();
+
+	// Recompose path.
+    std::copy(path.begin(), path.end(), std::ostream_iterator<std::string>(ss, "/"));
+
+    std::string output = ss.str();
+
+    // Remove trailing '/' inserted by ostream_iterator.
+    if (path.size())
+	    output.erase(output.size() - 1);
+
+	// Relative to nothing means relative to current directory.
+	if (output.size() == 0)
+		output = ".";
+
+	return output;
+}
