@@ -9,15 +9,17 @@ TARGET_NAME=$(basename $TARGET)
 TARGET_DIR=$(dirname $TARGET)
 CONFIG=$(basename $TARGET_DIR)
 APP_NAME=$(sed -r 's/lib(.*).so/\1/;s/([A-Za-z])([A-Za-z]+)/\U\1\L\2/g;s/[^[:alpha:]]//g' <<< "${TARGET_NAME}")
-
-set
-pwd
-# echo $ANDROID_HOME
+PACKAGE=$(sed -r 's/lib(.*).so/\1/;s/-/\./g;s/(.*)/\L\1/' <<< "${TARGET_NAME}")
 
 pushd $TARGET_DIR > /dev/null
 
+rm -rf src
 rsync -vr "${MINKO_HOME}/plugin/android/template/" .
+mkdir -p src/${PACKAGE//.//}
+mv src/MinkoActivity.java src/${PACKAGE//.//}
+
 sed -i "s/{{APP_NAME}}/${APP_NAME}/" res/values/strings.xml build.xml
+sed -i "s/{{PACKAGE}}/${PACKAGE}/" AndroidManifest.xml src/${PACKAGE//.//}/MinkoActivity.java
 
 mkdir -p libs/armeabi-v7a/
 # mkdir -p libs/x86/
@@ -30,7 +32,7 @@ mv asset assets
 
 ant $CONFIG
 # adb uninstall org.libsdl.app
-adb install -r $APP_NAME-$CONFIG.apk
+adb install -r bin/$APP_NAME-$CONFIG.apk
 #adb devices | tail -n +2 | cut -sf 1 | xargs -I {} adb -s {} install -r $TARGET_NAME-$CONFIG.apk
 
 popd > /dev/null
