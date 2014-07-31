@@ -85,6 +85,7 @@ ProgramSignature::ProgramSignature(const data::MacroBindingMap&             macr
     {
         _values[macroId] = 0;
         _states[macroId] = MacroBindingState::UNDEFINED;
+        ++macroId;
     }
 }
 
