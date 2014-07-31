@@ -82,7 +82,7 @@ Culling::targetAddedHandler(AbstractComponent::Ptr ctrl, NodePtr target)
 			std::placeholders::_3
 		));
 	
-	_viewMatrixChangedSlot = target->data()->propertyValueChanged(_bindProperty)->connect(std::bind(
+	_viewMatrixChangedSlot = target->data()->propertyChanged(_bindProperty)->connect(std::bind(
 		&Culling::worldToScreenChangedHandler,
 		std::static_pointer_cast<Culling>(shared_from_this()),
 		std::placeholders::_1,

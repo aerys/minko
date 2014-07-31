@@ -32,7 +32,7 @@ using namespace minko::render;
 /*static*/ const States::Ptr BasicMaterial::_defaultStates;
 
 BasicMaterial::BasicMaterial():
-	Material()
+	Material("BasicMaterial")
 {
 }
 
@@ -100,17 +100,17 @@ BasicMaterial::diffuseMap(TexturePtr texture)
 	assert(texture->type() == TextureType::Texture2D);
 #endif
 
-	set("diffuseMap", texture);
+	set("diffuseMap", texture->id());
 
 	return std::dynamic_pointer_cast<BasicMaterial>(shared_from_this());
 }
 
-Texture::Ptr
+render::ResourceId
 BasicMaterial::diffuseMap() const
 {
 	return hasProperty("diffuseMap")
-		? std::dynamic_pointer_cast<Texture>(get<AbstractTexture::Ptr>("diffuseMap"))
-		: nullptr;
+		? get<render::ResourceId>("diffuseMap")
+		: -1;
 }
 
 BasicMaterial::Ptr
@@ -118,17 +118,17 @@ BasicMaterial::diffuseCubeMap(std::shared_ptr<render::AbstractTexture> texture)
 {
 	assert(texture->type() == TextureType::CubeTexture);
 
-	set("diffuseCubeMap", texture);
+	set("diffuseCubeMap", texture->id());
 
 	return std::dynamic_pointer_cast<BasicMaterial>(shared_from_this());
 }
 
-CubeTexture::Ptr
+render::ResourceId
 BasicMaterial::diffuseCubeMap() const
 {
 	return hasProperty("diffuseCubeMap")
-		? std::dynamic_pointer_cast<CubeTexture>(get<AbstractTexture::Ptr>("diffuseCubeMap"))
-		: nullptr;
+		? get<render::ResourceId>("diffuseCubeMap")
+		: -1;
 }
 
 BasicMaterial::Ptr
@@ -456,28 +456,3 @@ BasicMaterial::zSorted() const
 		? get<bool>("zSort")
 		: _defaultStates->zSorted();
 }
-
-BasicMaterial::Ptr
-BasicMaterial::target(AbstractTexture::Ptr value)
-{
-	set("target", value);
-
-	return std::static_pointer_cast<BasicMaterial>(shared_from_this());
-}
-
-AbstractTexture::Ptr
-BasicMaterial::target() const
-{
-	return hasProperty("target")
-		? get<AbstractTexture::Ptr>("zSort")
-		: nullptr;
-}
-
-BasicMaterial::Ptr
-BasicMaterial::isTransparent(bool transparent, bool zSort)
-{
-	return priority(transparent ? Priority::TRANSPARENT : Priority::OPAQUE)
-		->zSorted(zSort)
-		->blendingMode(transparent ? Blending::Mode::ALPHA : Blending::Mode::DEFAULT);
-}
-

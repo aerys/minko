@@ -40,7 +40,7 @@ AbstractDiscreteLight::targetAddedHandler(AbstractComponent::Ptr cmp, std::share
 {
 	AbstractLight::targetAddedHandler(cmp, target);
 
-	_modelToWorldChangedSlot = target->data()->propertyValueChanged("transform.modelToWorldMatrix")->connect(std::bind(
+	_modelToWorldChangedSlot = target->data()->propertyChanged("transform.modelToWorldMatrix")->connect(std::bind(
 		&AbstractDiscreteLight::modelToWorldMatrixChangedHandler,
 		std::dynamic_pointer_cast<AbstractDiscreteLight>(shared_from_this()),
 		std::placeholders::_1,

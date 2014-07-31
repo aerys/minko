@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Common.hpp"
 #include "minko/Signal.hpp"
 #include "minko/component/AbstractComponent.hpp"
-#include "minko/data/ArrayProvider.hpp"
+#include "minko/data/Provider.hpp"
 
 namespace minko
 {
@@ -41,24 +41,23 @@ namespace minko
 			typedef std::shared_ptr<SceneManager>				SceneManagerPtr;
 			typedef std::shared_ptr<input::Mouse>				MousePtr;
 			typedef std::shared_ptr<Surface>					SurfacePtr;
-			typedef std::shared_ptr<data::ArrayProvider>		ArrayProviderPtr;
-			typedef std::shared_ptr<data::StructureProvider>	StructureProviderPtr;
+			typedef std::shared_ptr<data::Provider>	            ProviderPtr;
 			typedef std::shared_ptr<AbstractCanvas>				AbstractCanvasPtr;
 
 		private:
-			TexturePtr									_renderTarget;
-			RendererPtr									_renderer;
-			SceneManagerPtr								_sceneManager;
-			MousePtr									_mouse;
-			NodePtr										_camera;
-			math::mat4									_pickingProjection;	
-			std::map<SurfacePtr, uint>					_surfaceToPickingId; 
-			std::map<uint, SurfacePtr>					_pickingIdToSurface;
-			std::map<SurfacePtr, StructureProviderPtr>	_surfaceToProvider;
-			std::map<NodePtr, StructureProviderPtr>		_targetToProvider;
-			uint										_pickingId;
-			ContextPtr									_context;
-			StructureProviderPtr						_pickingProvider;
+			TexturePtr							        _renderTarget;
+			RendererPtr							        _renderer;
+			SceneManagerPtr						        _sceneManager;
+			MousePtr							        _mouse;
+			NodePtr								        _camera;
+			math::mat4							        _pickingProjection;	
+			std::map<SurfacePtr, uint>			        _surfaceToPickingId; 
+			std::map<uint, SurfacePtr>			        _pickingIdToSurface;
+			std::map<SurfacePtr, ProviderPtr>	        _surfaceToProvider;
+            std::map<NodePtr, ProviderPtr>		        _targetToProvider;
+			uint							        	_pickingId;
+			ContextPtr					        		_context;
+            ProviderPtr				        		    _pickingProvider;
 
 			std::vector<NodePtr>						_descendants;
 

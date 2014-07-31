@@ -32,7 +32,7 @@ namespace minko
 
 		protected:
 			std::shared_ptr<render::AbstractContext>	_context;
-			int											_id;
+			ResourceId									_id;
 
 		public:
 			inline
@@ -43,7 +43,7 @@ namespace minko
 			}
 
 			inline
-			const int
+			const ResourceId
 			id()
 			{
 				if (_id == -1)

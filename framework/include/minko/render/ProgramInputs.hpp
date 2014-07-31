@@ -155,6 +155,8 @@ namespace minko
                     _uniforms = rhs._uniforms;
                     _attributes = rhs._attributes;
                 }
+
+                return *this;
             }
 
         private:

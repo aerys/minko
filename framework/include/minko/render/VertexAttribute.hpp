@@ -27,11 +27,19 @@ namespace minko
     {
         class VertexAttribute
         {
+        public:
             const int* resourceId;
             const uint* vertexSize;
             std::string name;
             uint size;
             uint offset;
+
+            bool
+            operator==(const VertexAttribute& rhs) const
+            {
+                return resourceId == rhs.resourceId && vertexSize == rhs.vertexSize && name == rhs.name
+                    && size == rhs.size && offset == rhs.offset;
+            }
         };
     }
 }

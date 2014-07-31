@@ -26,9 +26,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-    class TextureTest :
-    public ::testing::Test
+    namespace render
     {
-        
-    };
+        class TextureTest :
+            public ::testing::Test
+        {
+
+        };
+    }
 }

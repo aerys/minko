@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -20,23 +20,27 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Minko.hpp"
+#include "minko/MinkoTests.hpp"
 
 #include "gtest/gtest.h"
 
 namespace minko
 {
-	namespace math
-	{
-		class Vector4Test :
-			public ::testing::Test
-		{
-		public:
-			static inline
-			float
-			random(float max = 1000.f)
-			{
-				return rand() / (float)RAND_MAX * 1000.f;
-			}
-		};
-	}
+    namespace render
+    {
+        class ProgramSignatureTest : public ::testing::Test
+        {
+        protected:
+            data::Container::Ptr            _targetData;
+            data::Container::Ptr            _rendererData;
+            data::Container::Ptr            _rootData;
+            data::Provider::Ptr             _targetProvider;
+            data::Provider::Ptr             _rendererProvider;
+            data::Provider::Ptr             _rootProvider;
+            data::TranslatedPropertyNameMap _names;
+
+        protected:
+            virtual void SetUp();
+        };
+    }
 }

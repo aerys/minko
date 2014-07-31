@@ -129,36 +129,6 @@ EffectParser::initializePriorityMap()
 	return m;
 }
 
-data::MacroBindingMap
-EffectParser::initializeDefaultMacroBindings() const
-{
-	data::MacroBindingMap m;
-	std::string propertyName;
-
-#if MINKO_PLATFORM & MINKO_PLATFORM_WINDOWS
-	propertyName = "MINKO_PLATFORM_WINDOWS";
-#elif MINKO_PLATFORM & MINKO_PLATFORM_OSX
-	propertyName = "MINKO_PLATFORM_OSX";
-#elif MINKO_PLATFORM & MINKO_PLATFORM_LINUX
-	propertyName = "MINKO_PLATFORM_LINUX";
-#elif MINKO_PLATFORM & MINKO_PLATFORM_IOS
-	propertyName = "MINKO_PLATFORM_IOS";
-#elif MINKO_PLATFORM & MINKO_PLATFORM_ANDROID
-	propertyName = "MINKO_PLATFORM_ANDROID";
-#elif MINKO_PLATFORM & MINKO_PLATFORM_HTML5
-	propertyName = "MINKO_PLATFORM_HTML5";
-#else
-	return m;
-#endif
-
-	MacroBindingDefault&	bindingDefault	= std::get<2>(m[propertyName]);
-
-	bindingDefault.semantic = MacroBindingDefaultValueSemantic::PROPERTY_EXISTS;
-	bindingDefault.value.propertyExists = true;
-
-	return m;
-}
-
 float
 EffectParser::priority(const std::string& name)
 {
@@ -211,7 +181,6 @@ EffectParser::parse(const std::string&				    filename,
 	_defaultStates->priority(priority(defaultQueue));
 	*/
 	_defaultStates = parseRenderStates(root, context, _globalTargets, _defaultStates, 0.0f);
-	_defaultMacroBindings = initializeDefaultMacroBindings();
 
 	parseBindings(
 		root,
@@ -250,6 +219,7 @@ EffectParser::parse(const std::string&				    filename,
 	parseTechniques(root, resolvedFilename, _options, context);
 
     _effect = render::Effect::create();
+    definePlatform();
 
 	if (_numDependencies == _numLoadedDependencies)
 		finalize();
@@ -453,11 +423,11 @@ EffectParser::setUniformDefaultValueOnPass(render::Pass::Ptr	pass,
 		if (nv.size() == 1)
 			pass->setUniform(name, nv[0].intValue);
 		else if (nv.size() == 2)
-			pass->setUniform(name, nv[0].intValue, nv[1].intValue);
+			pass->setUniform(name, math::ivec2(nv[0].intValue, nv[1].intValue));
 		else if (nv.size() == 3)
-			pass->setUniform(name, nv[0].intValue, nv[1].intValue, nv[2].intValue);
+			pass->setUniform(name, math::ivec3(nv[0].intValue, nv[1].intValue, nv[2].intValue));
 		else if (nv.size() == 4)
-			pass->setUniform(name, nv[0].intValue, nv[1].intValue, nv[2].intValue, nv[3].intValue);
+			pass->setUniform(name, math::ivec4(nv[0].intValue, nv[1].intValue, nv[2].intValue, nv[3].intValue));
 	}
 	else if (type == UniformType::FLOAT)
 	{
@@ -466,15 +436,34 @@ EffectParser::setUniformDefaultValueOnPass(render::Pass::Ptr	pass,
 		if (nv.size() == 1)
 			pass->setUniform(name, nv[0].floatValue);
 		else if (nv.size() == 2)
-			pass->setUniform(name, nv[0].floatValue, nv[1].floatValue);
+			pass->setUniform(name, math::vec2(nv[0].floatValue, nv[1].floatValue));
 		else if (nv.size() == 3)
-			pass->setUniform(name, nv[0].floatValue, nv[1].floatValue, nv[2].floatValue);
+            pass->setUniform(name, math::vec3(nv[0].floatValue, nv[1].floatValue, nv[2].floatValue));
 		else if (nv.size() == 4)
-			pass->setUniform(name, nv[0].floatValue, nv[1].floatValue, nv[2].floatValue, nv[3].floatValue);
+            pass->setUniform(name, math::vec4(nv[0].floatValue, nv[1].floatValue, nv[2].floatValue, nv[3].floatValue));
+        else if (nv.size() == 9)
+            pass->setUniform(
+                name,
+                math::mat3(
+                    nv[0].floatValue, nv[1].floatValue, nv[2].floatValue,
+                    nv[3].floatValue, nv[4].floatValue, nv[5].floatValue,
+                    nv[6].floatValue, nv[7].floatValue, nv[8].floatValue
+                )
+            );
+        else if (nv.size() == 16)
+            pass->setUniform(
+                name,
+                math::mat4(
+                    nv[0].floatValue, nv[1].floatValue, nv[2].floatValue, nv[3].floatValue,
+                    nv[4].floatValue, nv[5].floatValue, nv[6].floatValue, nv[7].floatValue,
+                    nv[8].floatValue, nv[9].floatValue, nv[10].floatValue, nv[11].floatValue,
+                    nv[12].floatValue, nv[13].floatValue, nv[14].floatValue, nv[15].floatValue
+                )
+            );
 	}
 	else if (type == UniformType::TEXTURE)
 	{
-		pass->setUniform(name, value.textureValue);
+		pass->setUniform(name, value.textureValue->id());
 	}
 }
 
@@ -852,7 +841,7 @@ EffectParser::parseBindings(const Json::Value&	contextNode,
 }
 
 void
-EffectParser::parseMacroBindings(const Json::Value&	contextNode, MacroBindingMap&	macroBindings)
+EffectParser::parseMacroBindings(const Json::Value&	contextNode, MacroBindingMap& macroBindings)
 {
 	auto macroBindingsValue = contextNode.get("macroBindings", 0);
 
@@ -861,20 +850,16 @@ EffectParser::parseMacroBindings(const Json::Value&	contextNode, MacroBindingMap
 		for (auto propertyName : macroBindingsValue.getMemberNames())
 		{
 			auto macroBindingValue = macroBindingsValue.get(propertyName, 0);
+            auto macroBinding = macroBindings[propertyName];
 
-			MacroBindingDefault&	bindingDefault	= std::get<2>(macroBindings[propertyName]);
-			auto&					min				= std::get<3>(macroBindings[propertyName]);
-			auto&					max				= std::get<4>(macroBindings[propertyName]);
-
-			bindingDefault.semantic = MacroBindingDefaultValueSemantic::UNSET;
-			min						= -INT_MAX;
-			max						= INT_MAX;
+            macroBinding.defaultState = MacroBindingState::UNDEFINED;
+            macroBinding.minValue = -INT_MAX;
+            macroBinding.maxValue = INT_MAX;
 
 			parseBindingNameAndSource(
 				macroBindingValue,
-				std::get<0>(macroBindings[propertyName]),
-				std::get<1>(macroBindings[propertyName]),
-				std::get<5>(macroBindings[propertyName])
+                macroBinding.propertyName,
+                macroBinding.source
 			);
 
 			if (macroBindingValue.isObject())
@@ -886,27 +871,27 @@ EffectParser::parseMacroBindings(const Json::Value&	contextNode, MacroBindingMap
 
 				if (defaultValue.isInt())
 				{
-					bindingDefault.semantic = MacroBindingDefaultValueSemantic::VALUE;
-					bindingDefault.value.value = defaultValue.asInt();
+                    macroBinding.defaultState = MacroBindingState::DEFINED_INTEGER_VALUE;
+					macroBinding.defaultValue.value = defaultValue.asInt();
 				}
 				else if (defaultValue.isBool())
 				{
-					bindingDefault.semantic = MacroBindingDefaultValueSemantic::PROPERTY_EXISTS;
-					bindingDefault.value.propertyExists = defaultValue.asBool();
+                    macroBinding.defaultState = MacroBindingState::DEFINED;
+                    macroBinding.defaultValue.defined = defaultValue.asBool();
 				}
 
-				min = minValue.asInt();
-				max = maxValue.asInt();
+				macroBinding.minValue = minValue.asInt();
+                macroBinding.maxValue = maxValue.asInt();
 			}
 			else if (macroBindingValue.isInt())
 			{
-				bindingDefault.semantic = MacroBindingDefaultValueSemantic::VALUE;
-				bindingDefault.value.value = macroBindingValue.asInt();
+                macroBinding.defaultState = MacroBindingState::UNDEFINED;
+                macroBinding.defaultValue.value = macroBindingValue.asInt();
 			}
 			else if (macroBindingValue.isBool())
 			{
-				bindingDefault.semantic = MacroBindingDefaultValueSemantic::PROPERTY_EXISTS;
-				bindingDefault.value.propertyExists = macroBindingValue.asBool();
+                macroBinding.defaultState = MacroBindingState::DEFINED_INTEGER_VALUE;
+                macroBinding.defaultValue.defined = macroBindingValue.asBool();
 			}
 		}
 	}
@@ -1335,6 +1320,24 @@ EffectParser::concatenateGLSLBlocks(GLSLBlockListPtr blocks)
 		glsl += block.second;
 
 	return glsl;
+}
+
+void
+EffectParser::definePlatform()
+{
+#if MINKO_PLATFORM & MINKO_PLATFORM_WINDOWS
+    _effect->define("MINKO_PLATFORM_WINDOWS");
+#elif MINKO_PLATFORM & MINKO_PLATFORM_OSX
+    _effect->define("MINKO_PLATFORM_OSX";
+#elif MINKO_PLATFORM & MINKO_PLATFORM_LINUX
+    _effect->define("MINKO_PLATFORM_LINUX";
+#elif MINKO_PLATFORM & MINKO_PLATFORM_IOS
+    _effect->define("MINKO_PLATFORM_IOS";
+#elif MINKO_PLATFORM & MINKO_PLATFORM_ANDROID
+    _effect->define("MINKO_PLATFORM_ANDROID";
+#elif MINKO_PLATFORM & MINKO_PLATFORM_HTML5
+    _effect->define("MINKO_PLATFORM_HTML5";
+#endif
 }
 
 void

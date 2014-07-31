@@ -79,13 +79,7 @@ namespace minko
 			addProvider(std::shared_ptr<Provider> provider);
 
 			void
-			addProvider(std::shared_ptr<ArrayProvider> provider);
-
-			void
 			removeProvider(std::shared_ptr<Provider> provider);
-
-			void
-			removeProvider(std::shared_ptr<ArrayProvider> provider);
 
 			bool
 			hasProvider(std::shared_ptr<Provider> provider) const;
@@ -122,9 +116,8 @@ namespace minko
                 assertPropertyExists(propertyName);
 
                 const auto& provider = _propertyNameToProvider.find(propertyName)->second;
-                auto unformatedPropertyName = unformatPropertyName(provider, propertyName);
 
-                return provider->getPointer<T>(unformatedPropertyName, true);
+                return provider->getPointer<T>(propertyName, true);
             }
 
 			template <typename T>
@@ -134,9 +127,8 @@ namespace minko
 				assertPropertyExists(propertyName);
 
 				auto provider = _propertyNameToProvider[propertyName];
-				auto unformatedPropertyName = unformatPropertyName(provider, propertyName);
 
-				provider->set<T>(unformatedPropertyName, value);
+				provider->set<T>(propertyName, value);
 			}
 
 			inline

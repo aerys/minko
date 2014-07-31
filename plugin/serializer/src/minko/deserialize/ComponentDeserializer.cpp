@@ -61,7 +61,7 @@ ComponentDeserializer::deserializeTransform(std::string&						serializedTransfor
 
 	std::tuple<uint, std::string&> serializedMatrixTuple(dst.a0, dst.a1);
 
-	Matrix4x4Ptr transformMatrix = Any::cast<Matrix4x4Ptr>(deserialize::TypeDeserializer::deserializeMatrix4x4(serializedMatrixTuple));
+	auto transformMatrix = Any::cast<math::mat4>(deserialize::TypeDeserializer::deserializeMatrix4x4(serializedMatrixTuple));
 
 	return component::Transform::create(transformMatrix);
 }
@@ -107,7 +107,7 @@ ComponentDeserializer::deserializeAmbientLight(std::string&							serializedAmbi
 	std::vector<float> dstContent = deserialize::TypeDeserializer::deserializeVector<float>(dst);
 
 	ambientLight->ambient(dstContent[0]);
-	ambientLight->color()->setTo(dstContent[1], dstContent[2], dstContent[3]);
+	ambientLight->color(math::vec3(dstContent[1], dstContent[2], dstContent[3]));
 
 	return ambientLight;
 }
@@ -133,7 +133,7 @@ ComponentDeserializer::deserializeDirectionalLight(std::string&							serialized
 
 	directionalLight->diffuse(dstContent[0]);
 	directionalLight->specular(dstContent[1]);
-	directionalLight->color()->setTo(dstContent[2], dstContent[3], dstContent[4]);
+	directionalLight->color(math::vec3(dstContent[2], dstContent[3], dstContent[4]));
 
 	return directionalLight;
 }
@@ -160,7 +160,7 @@ ComponentDeserializer::deserializePointLight(std::string&							serializedPointL
 	pointLight->diffuse(dstContent[0]);
 	pointLight->specular(dstContent[1]);
 	pointLight->attenuationCoefficients(dstContent[2], dstContent[3], dstContent[4]);
-	pointLight->color()->setTo(dstContent[5], dstContent[6], dstContent[7]);
+	pointLight->color(math::vec3(dstContent[5], dstContent[6], dstContent[7]));
 
 	return pointLight;
 }
@@ -189,7 +189,7 @@ ComponentDeserializer::deserializeSpotLight(std::string&						serializedSpotLigh
 	spotLight->attenuationCoefficients(dstContent[2], dstContent[3], dstContent[4]);
 	spotLight->innerConeAngle(dstContent[5]);
 	spotLight->outerConeAngle(dstContent[6]);
-	spotLight->color()->setTo(dstContent[7], dstContent[8], dstContent[9]);
+	spotLight->color(math::vec3(dstContent[7], dstContent[8], dstContent[9]));
 
 	return spotLight;
 }
@@ -285,17 +285,17 @@ ComponentDeserializer::deserializeAnimation(std::string&		serializedAnimation,
 	msgpack::unpack(serializedAnimation.data(), serializedAnimation.size() - 1, NULL, &mempool, &deserialized);
 	deserialized.convert(&dst);
 
-	std::vector<math::Matrix4x4::Ptr>	matrices;
-	std::vector<uint>					timetable;
-	uint								duration = dst.a0;
-	bool								interpolate = dst.a3;
+	std::vector<math::mat4>	matrices;
+	std::vector<uint> timetable;
+	uint duration = dst.a0;
+	bool interpolate = dst.a3;
 
 	for (size_t i = 0; i < dst.a1.size(); ++i)
 	{
 		std::tuple<uint, std::string&> serializedMatrixTuple(dst.a2[i].a0, dst.a2[i].a1);
 
 		timetable.push_back(dst.a1[i]);
-		matrices.push_back(Any::cast<Matrix4x4Ptr>(deserialize::TypeDeserializer::deserializeMatrix4x4(serializedMatrixTuple)));
+		matrices.push_back(Any::cast<math::mat4>(deserialize::TypeDeserializer::deserializeMatrix4x4(serializedMatrixTuple)));
 	}
 
 	timelines.push_back(animation::Matrix4x4Timeline::create("transform.matrix", duration, timetable, matrices, interpolate));
@@ -308,9 +308,9 @@ ComponentDeserializer::deserializeSkinning(std::string&		serializedAnimation,
 										   AssetLibraryPtr	assetLibrary,
 										   DependencyPtr	dependencies)
 {
-	msgpack::zone																	mempool;
-	msgpack::object																	deserialized;
-	msgpack::type::tuple<std::vector<msgpack::type::tuple<std::string, std::string, std::string, SerializedMatrix>>, std::string, short>	dst;
+	msgpack::zone mempool;
+	msgpack::object deserialized;
+	msgpack::type::tuple<std::vector<msgpack::type::tuple<std::string, std::string, std::string, SerializedMatrix>>, std::string, short> dst;
 
 	msgpack::unpack(serializedAnimation.data(), serializedAnimation.size() - 1, NULL, &mempool, &deserialized);
 	deserialized.convert(&dst);
@@ -325,7 +325,7 @@ ComponentDeserializer::deserializeSkinning(std::string&		serializedAnimation,
 	std::vector<std::vector<uint>> bonesVertexIds;
 	std::vector<std::vector<float>> bonesWeights;
 	std::vector<scene::Node::Ptr> nodes;
-	std::vector<std::shared_ptr<math::Matrix4x4>> offsetMatrices;
+	std::vector<math::mat4> offsetMatrices;
 
 	for (uint i = 0; i < numBones; i++)
 	{
@@ -335,7 +335,7 @@ ComponentDeserializer::deserializeSkinning(std::string&		serializedAnimation,
 		std::vector<uint>				vertexIntIds	= TypeDeserializer::deserializeVector<uint, uint>(serializedBone.a1);
 		std::vector<unsigned short>		vertexShortIds(vertexIntIds.begin(), vertexIntIds.end());
 		std::vector<float>				boneWeight		= TypeDeserializer::deserializeVector<float>(serializedBone.a2);
-		auto							offsetMatrix	= Any::cast<Matrix4x4Ptr>(deserialize::TypeDeserializer::deserializeMatrix4x4(serializedMatrixTuple));
+		auto							offsetMatrix	= Any::cast<math::mat4>(deserialize::TypeDeserializer::deserializeMatrix4x4(serializedMatrixTuple));
 
 		auto nodeSet = scene::NodeSet::create(root)
 			->descendants(true, false)
@@ -372,12 +372,10 @@ ComponentDeserializer::deserializeBoundingBox(std::string&							serializedBound
 
     auto componentData = deserialize::TypeDeserializer::deserializeVector<float>(dst);
 
-    auto component = component::BoundingBox::create(componentData[3],
-                                                    componentData[4],
-                                                    componentData[5],
-                                                    math::Vector3::create(componentData[0],
-                                                                          componentData[1],
-                                                                          componentData[2]));
-
-	return component;
+	return component::BoundingBox::create(
+        componentData[3],
+        componentData[4],
+        componentData[5],
+        math::vec3(componentData[0], componentData[1], componentData[2])
+    );
 }

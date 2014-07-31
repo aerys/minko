@@ -21,6 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Signal.hpp"
 #include "minko/render/AbstractContext.hpp"
+#include "minko/render/VertexAttribute.hpp"
 
 using namespace minko;
 using namespace minko::render;
@@ -136,7 +137,7 @@ VertexBuffer::hasAttribute(const std::string& attributeName) const
 void
 VertexBuffer::removeAttribute(const std::string& attributeName)
 {
-	auto it = std::find_if(_attributes.begin(), _attributes.end(), [&](const VertexAttribute attr)
+	auto it = std::find_if(_attributes.begin(), _attributes.end(), [&](const VertexAttribute& attr)
 	{
 		return attr.name == attributeName;
 	});
@@ -154,7 +155,7 @@ VertexBuffer::removeAttribute(const std::string& attributeName)
 const VertexAttribute&
 VertexBuffer::attribute(const std::string& attributeName) const
 {
-    auto it = std::find_if(_attributes.begin(), _attributes.end(), [&](const VertexAttribute attr)
+    auto it = std::find_if(_attributes.begin(), _attributes.end(), [&](const VertexAttribute& attr)
     {
         return attr.name == attributeName;
     });

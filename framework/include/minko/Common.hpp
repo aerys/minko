@@ -97,6 +97,7 @@ namespace minko
 		class Effect;
 		class ProgramInputs;
 
+        typedef int ResourceId;
 		class AbstractResource;
 		class Shader;
 		class Program;
@@ -193,13 +194,9 @@ namespace minko
 	namespace data
 	{
 		class Provider;
-		class ArrayProvider;
-		class StructureProvider;
-		class ValueBase;
-		class Value;
 		class Container;
 		class AbstractFilter;
-        
+
 		enum class BindingSource
 		{
 			TARGET,
@@ -209,44 +206,72 @@ namespace minko
 
         struct Binding
         {
-            std::string propertyName;
-            BindingSource source;
+            std::string     propertyName;
+            BindingSource   source;
+
+            Binding() :
+                propertyName(),
+                source(BindingSource::TARGET)
+            {}
+
+            Binding(const std::string& propertyName, BindingSource source) :
+                propertyName(propertyName),
+                source(source)
+            {
+            }
         };
 
-		typedef std::unordered_map<std::string, Binding>					BindingMap;
-		typedef std::pair<std::shared_ptr<data::Container>, std::string>	ContainerAndName;
+        enum class MacroBindingState
+        {
+            UNDEFINED,
+            DEFINED,
+            DEFINED_INTEGER_VALUE
+        };
 
+        union MacroBindingValue
+        {
+            int value;
+            bool defined;
+        };
 
-		template<typename T>
-		using UniformArray = std::pair<uint, const T*>;
+        struct MacroBinding : public Binding
+        {
+            MacroBindingState   defaultState;
+            MacroBindingValue   defaultValue;
+            int                 minValue;
+            int                 maxValue;
 
-		template<typename T>
-		using UniformArrayPtr = std::shared_ptr<UniformArray<T>>;
+            MacroBinding(const std::string&  propertyName,
+                         BindingSource       source,
+                         MacroBindingState   defaultState,
+                         MacroBindingValue   defaultValue,
+                         int                 min,
+                         int                 max) :
+                Binding(propertyName, source),
+                defaultState(defaultState),
+                defaultValue(defaultValue),
+                minValue(min),
+                maxValue(max)
+            {}
 
-		enum class MacroBindingDefaultValueSemantic
-		{
-			UNSET,
-			VALUE,
-			PROPERTY_EXISTS
-		};
+            MacroBinding() :
+                Binding(),
+                defaultState(MacroBindingState::UNDEFINED),
+                defaultValue(),
+                minValue(0),
+                maxValue(0)
+            {}
+        };
 
-		union MacroBindingDefaultValue
-		{
-			bool	propertyExists;
-			int		value;
-		};
+        typedef std::unordered_map<std::string, Binding>        BindingMap;
+        typedef std::unordered_map<std::string, std::string>    TranslatedPropertyNameMap;
+        typedef std::unordered_map<std::string, MacroBinding>   MacroBindingMap;
 
-		struct MacroBindingDefault
-		{
-			MacroBindingDefaultValueSemantic	semantic;
-			MacroBindingDefaultValue			value;
-		};
+        template<typename T>
+        using UniformArray = std::pair<uint, const T*>;
 
-		typedef std::tuple<std::string, BindingSource, MacroBindingDefault, int, int, RegexPtr>	MacroBinding;
-
-		typedef std::unordered_map<std::string, MacroBinding> MacroBindingMap;
-
-		class ContainerProperty;
+        template<typename T>
+        using UniformArrayPtr = std::shared_ptr<UniformArray<T>>;
 
 		class LightMaskFilter;
 	}
@@ -464,21 +489,3 @@ namespace std
 	}
 #endif
 }
-
-namespace std
-{
-	template<> struct hash<minko::data::ContainerAndName>
-	{
-		inline
-		size_t 
-		operator()(const minko::data::ContainerAndName& x) const
-		{
-			size_t seed = std::hash<std::shared_ptr<minko::data::Container>>()(x.first);
-
-			hash_combine<std::string>(seed, x.second);
-
-			return seed;
-		}
-	};
-}
-//using namespace minko;

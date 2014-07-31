@@ -31,12 +31,12 @@ MaterialWriter::MaterialWriter()
 {
 	_magicNumber = 0x0000004D | MINKO_SCENE_MAGIC_NUMBER;
 
-	_typeToWriteFunction[&typeid(std::shared_ptr<math::Matrix4x4>)]		= std::bind(&serialize::TypeSerializer::serializeMatrix4x4, std::placeholders::_1);
-	_typeToWriteFunction[&typeid(std::shared_ptr<math::Vector2>)]		= std::bind(&serialize::TypeSerializer::serializeVector2, std::placeholders::_1);
-	_typeToWriteFunction[&typeid(std::shared_ptr<math::Vector3>)]		= std::bind(&serialize::TypeSerializer::serializeVector3, std::placeholders::_1);
-	_typeToWriteFunction[&typeid(std::shared_ptr<math::Vector4>)]		= std::bind(&serialize::TypeSerializer::serializeVector4, std::placeholders::_1);
-	_typeToWriteFunction[&typeid(render::Blending::Mode)]				= std::bind(&serialize::TypeSerializer::serializeBlending, std::placeholders::_1);
-	_typeToWriteFunction[&typeid(render::TriangleCulling)]				= std::bind(&serialize::TypeSerializer::serializeCulling, std::placeholders::_1);
+	_typeToWriteFunction[&typeid(math::mat4)]		        = std::bind(&serialize::TypeSerializer::serializeMatrix4x4, std::placeholders::_1);
+	_typeToWriteFunction[&typeid(math::vec2)]		        = std::bind(&serialize::TypeSerializer::serializeVector2, std::placeholders::_1);
+	_typeToWriteFunction[&typeid(math::vec3)]		        = std::bind(&serialize::TypeSerializer::serializeVector3, std::placeholders::_1);
+	_typeToWriteFunction[&typeid(math::vec4)]		        = std::bind(&serialize::TypeSerializer::serializeVector4, std::placeholders::_1);
+	_typeToWriteFunction[&typeid(render::Blending::Mode)]	= std::bind(&serialize::TypeSerializer::serializeBlending, std::placeholders::_1);
+	_typeToWriteFunction[&typeid(render::TriangleCulling)]	= std::bind(&serialize::TypeSerializer::serializeCulling, std::placeholders::_1);
 }
 
 std::string
@@ -49,9 +49,9 @@ MaterialWriter::embed(std::shared_ptr<AssetLibrary>		assetLibrary,
 	std::vector<ComplexPropertyTuple>	serializedComplexProperties;
 	std::vector<BasicPropertyTuple>		serializedBasicProperties;
 
-	for (std::string structuredPropertyName : material->propertyNames())
+	for (const auto& value : material->values())
 	{
-		std::string propertyName = structuredPropertyName;
+		std::string propertyName = value.first;
 
 		if (serializeMaterialValue<uint>(material, propertyName, assetLibrary, &serializedComplexProperties, &serializedBasicProperties, dependency))
 			continue;
@@ -73,13 +73,13 @@ MaterialWriter::embed(std::shared_ptr<AssetLibrary>		assetLibrary,
 			continue;
 		else if (serializeMaterialValue<render::TriangleCulling>(material, propertyName, assetLibrary, &serializedComplexProperties, &serializedBasicProperties, dependency))
 			continue;
-		else if (serializeMaterialValue<std::shared_ptr<math::Vector2>>(material, propertyName, assetLibrary, &serializedComplexProperties, &serializedBasicProperties, dependency))
+		else if (serializeMaterialValue<math::vec2>(material, propertyName, assetLibrary, &serializedComplexProperties, &serializedBasicProperties, dependency))
 			continue;
-		else if (serializeMaterialValue<std::shared_ptr<math::Vector3>>(material, propertyName, assetLibrary, &serializedComplexProperties, &serializedBasicProperties, dependency))
+		else if (serializeMaterialValue<math::vec3>(material, propertyName, assetLibrary, &serializedComplexProperties, &serializedBasicProperties, dependency))
 			continue;
-		else if (serializeMaterialValue<std::shared_ptr<math::Vector4>>(material, propertyName, assetLibrary, &serializedComplexProperties, &serializedBasicProperties, dependency))
+		else if (serializeMaterialValue<math::vec4>(material, propertyName, assetLibrary, &serializedComplexProperties, &serializedBasicProperties, dependency))
 			continue;
-		else if (serializeMaterialValue<std::shared_ptr<math::Matrix4x4>>(material, propertyName, assetLibrary, &serializedComplexProperties, &serializedBasicProperties, dependency))
+		else if (serializeMaterialValue<math::mat4>(material, propertyName, assetLibrary, &serializedComplexProperties, &serializedBasicProperties, dependency))
 			continue;
 		else if (serializeMaterialValue<TexturePtr>(material, propertyName, assetLibrary, &serializedComplexProperties, &serializedBasicProperties, dependency))
 			continue;

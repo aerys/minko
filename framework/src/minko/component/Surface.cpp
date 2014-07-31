@@ -26,7 +26,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/Pass.hpp"
 #include "minko/render/Program.hpp"
 #include "minko/data/Container.hpp"
-#include "minko/data/ArrayProvider.hpp"
+#include "minko/data/Provider.hpp"
 #include "minko/component/Renderer.hpp"
 
 using namespace minko;
@@ -105,10 +105,10 @@ Surface::targetAddedHandler(AbstractComponent::Ptr	ctrl,
 		std::placeholders::_3
 	));
 
-	auto arrayProviderMaterial = std::dynamic_pointer_cast<data::ArrayProvider>(_material);
+	auto arrayProviderMaterial = std::dynamic_pointer_cast<data::Provider>(_material);
 
 	if (arrayProviderMaterial)
-		targetData->addProvider(std::dynamic_pointer_cast<data::ArrayProvider>(_material));
+		targetData->addProvider(std::dynamic_pointer_cast<data::Provider>(_material));
 	else
 		targetData->addProvider(_material);
 

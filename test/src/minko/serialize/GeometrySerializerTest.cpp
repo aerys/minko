@@ -27,7 +27,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/Dependency.hpp"
 
 using namespace minko;
-using namespace minko::math;
 using namespace minko::serialize;
 using namespace minko::deserialize;
 
@@ -43,10 +42,12 @@ TEST_F(GeometrySerializerTest, CubeGeometrySerialization)
 
 	assetLibrary->geometry("cube", cubeGeometry);
 	geometryWriter->data(cubeGeometry);
-	geometryWriter->write(filename,
-                          assetLibrary,
-                          file::Options::create(MinkoTests::context()),
-                          file::WriterOptions::create());
+	geometryWriter->write(
+        filename,
+        assetLibrary,
+        file::Options::create(MinkoTests::context()),
+        file::WriterOptions::create()
+    );
 
 	std::vector<unsigned char>  data;
 	auto						flags = std::ios::in | std::ios::ate | std::ios::binary;

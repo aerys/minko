@@ -19,7 +19,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/data/Container.hpp"
 
-#include "minko/data/ArrayProvider.hpp"
 #include "minko/data/Provider.hpp"
 #include "minko/data/AbstractFilter.hpp"
 
@@ -30,7 +29,7 @@ uint Container::CONTAINER_ID = 0;
 
 Container::Container() :
 	std::enable_shared_from_this<Container>(),
-	_arrayLengths(data::Provider::create()),
+	_arrayLengths(data::Provider::create("fixme")),
 	_propertyAdded(Container::PropertyChangedSignal::create()),
 	_propertyRemoved(Container::PropertyChangedSignal::create()),
 	_providerAdded(Signal<Ptr, Provider::Ptr>::create()),
@@ -184,8 +183,6 @@ Container::filter(const std::set<data::AbstractFilter::Ptr>&	filters,
 		if (p == _arrayLengths)
 			continue;
 
-		auto arrayProvider = std::dynamic_pointer_cast<ArrayProvider>(p);
-
 		bool isProviderRelevant = true;
 		for (auto& f : filters)
 			if (!(*f)(p))
@@ -195,19 +192,9 @@ Container::filter(const std::set<data::AbstractFilter::Ptr>&	filters,
 			}
 
 		if (isProviderRelevant && output->hasProvider(p) == false)
-		{
-			if (arrayProvider)
-				output->addProvider(arrayProvider);
-			else
-				output->addProvider(p);
-		}
+			output->addProvider(p);
 		else if (!isProviderRelevant && output->hasProvider(p))
-		{
-			if (arrayProvider)
-				output->removeProvider(arrayProvider);
-			else
-				output->removeProvider(p);
-		}
+			output->removeProvider(p);
 	}
 
 	return output;

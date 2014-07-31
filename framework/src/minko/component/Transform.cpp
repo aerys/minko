@@ -22,7 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/scene/Node.hpp"
 #include "minko/scene/NodeSet.hpp"
 #include "minko/data/Container.hpp"
-#include "minko/data/StructureProvider.hpp"
 #include "minko/component/SceneManager.hpp"
 
 using namespace minko;
@@ -33,7 +32,7 @@ Transform::Transform() :
 	_matrix(1.),
 	_modelToWorld(1.),
 //	_worldToModel(1.),
-	_data(data::StructureProvider::create("transform"))
+	_data(data::Provider::create("transform"))
 {
 }
 

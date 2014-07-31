@@ -19,10 +19,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/serialize/TypeSerializer.hpp"
 #include "minko/Any.hpp"
-#include "minko/math/Vector4.hpp"
-#include "minko/math/Vector3.hpp"
-#include "minko/math/Vector2.hpp"
-#include "minko/math/Matrix4x4.hpp"
 #include "minko/render/Blending.hpp"
 #include "minko/render/TriangleCulling.hpp"
 #include "minko/Types.hpp"
@@ -33,11 +29,10 @@ using namespace minko::serialize;
 std::tuple<uint, std::string>
 TypeSerializer::serializeVector4(Any value)
 {
-	math::Vector4::Ptr	vect4 = Any::cast<std::shared_ptr<math::Vector4>>(value);
-	std::vector<float>	res;
-	uint				type		= 0x00000000;
-	float				values[4]	= {vect4->x(), vect4->y(), vect4->z(), vect4->w()};
-	std::stringstream	stream;
+	auto& vect4 = Any::cast<math::vec4>(value);
+	uint type = 0x00000000;
+	float* values = math::value_ptr(vect4);
+	std::stringstream stream;
 
 	type += VECTOR4 << 24;
 
@@ -62,11 +57,10 @@ TypeSerializer::serializeVector4(Any value)
 std::tuple<uint, std::string>
 TypeSerializer::serializeVector3(Any value)
 {
-	math::Vector3::Ptr vect3 = Any::cast<std::shared_ptr<math::Vector3>>(value);
-	std::vector<float>	res;
-	uint				type		= 0x00000000;
-	float				values[3]	= {vect3->x(), vect3->y(), vect3->z()};
-	std::stringstream	stream;
+	auto& vect3 = Any::cast<math::vec3>(value);
+	uint type = 0x00000000;
+    float* values = math::value_ptr(vect3);
+	std::stringstream stream;
 
 	type += VECTOR3 << 24;
 
@@ -86,10 +80,9 @@ TypeSerializer::serializeVector3(Any value)
 std::tuple<uint, std::string>
 TypeSerializer::serializeVector2(Any value)
 {
-	math::Vector2::Ptr	vect2 = Any::cast<std::shared_ptr<math::Vector2>>(value);
-	std::vector<float>	res;
-	uint				type		= 0x00000000;
-	float				values[2]	= {vect2->x(), vect2->y()};
+	auto& vect2 = Any::cast<math::vec2>(value);
+	uint type = 0x00000000;
+	float* values = math::value_ptr(vect2);
 	std::stringstream	stream;
 
 	type += VECTOR2 << 24;
@@ -110,10 +103,9 @@ TypeSerializer::serializeVector2(Any value)
 std::tuple<uint, std::string>
 TypeSerializer::serializeMatrix4x4(Any value)
 {
-	math::Matrix4x4::Ptr		mat		= Any::cast<std::shared_ptr<math::Matrix4x4>>(value);
-	const std::vector<float>&	values	= mat->values();
-	std::vector<float>			res;
-	std::stringstream			stream;
+	auto& mat = Any::cast<math::mat4>(value);
+	float* values = math::value_ptr(mat);
+	std::stringstream stream;
 
 	uint type = 0x00000000;
 

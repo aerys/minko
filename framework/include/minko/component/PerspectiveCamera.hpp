@@ -42,7 +42,7 @@ namespace minko
             typedef std::shared_ptr<scene::NodeSet>     NodeSetPtr;
 
 		private:
-			std::shared_ptr<data::StructureProvider>		_data;
+			std::shared_ptr<data::Provider>		            _data;
 			float											_fov;
 			float											_aspectRatio;
 			float											_zNear;
@@ -149,7 +149,7 @@ namespace minko
 			}
 
 			inline
-			std::shared_ptr<data::StructureProvider>
+			std::shared_ptr<data::Provider>
 			data()
 			{
 				return _data;
@@ -197,10 +197,10 @@ namespace minko
 			targetRemovedHandler(AbstractComponent::Ptr ctrl, NodePtr target);
 
 		private:
-			PerspectiveCamera(float						fov,
-							  float						aspectRatio,
-							  float						zNear,
-							  float						zFar,
+			PerspectiveCamera(float				fov,
+							  float				aspectRatio,
+							  float				zNear,
+							  float				zFar,
 							  const math::mat4&	postPerspective);
 
 			void

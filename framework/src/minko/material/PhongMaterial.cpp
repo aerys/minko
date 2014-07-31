@@ -83,32 +83,32 @@ PhongMaterial::environmentMap(AbstractTexture::Ptr value, EnvironmentMap2dType t
 		if (type != EnvironmentMap2dType::Probe && type != EnvironmentMap2dType::BlinnNewell)
 			throw std::invalid_argument("type");
 	
-		set("environmentMap2d", std::static_pointer_cast<AbstractTexture>(value));
+		set("environmentMap2d", std::static_pointer_cast<AbstractTexture>(value)->id());
 		set("environmentMap2dType", int(type));
 	}
 	else
 	{
-		set("environmentCubemap", std::static_pointer_cast<AbstractTexture>(value));
+		set("environmentCubemap", std::static_pointer_cast<AbstractTexture>(value)->id());
 		set("environmentMap2dType", int(EnvironmentMap2dType::Unset));
 	}
 
 	return std::static_pointer_cast<PhongMaterial>(shared_from_this());
 }
 
-CubeTexture::Ptr
+render::ResourceId
 PhongMaterial::environmentCubemap() const
 {
 	return hasProperty("environmentCubemap") 
-		? std::dynamic_pointer_cast<CubeTexture>(get<AbstractTexture::Ptr>("environmentCubemap"))
-		: nullptr;
+		? get<render::ResourceId>("environmentCubemap")
+		: -1;
 }
 
-Texture::Ptr
+render::ResourceId
 PhongMaterial::environmentMap2d() const
 {
 	return hasProperty("environmentMap2d") 
-		? std::dynamic_pointer_cast<Texture>(get<AbstractTexture::Ptr>("environmentMap2d"))
-		: nullptr;
+		? get<render::ResourceId>("environmentMap2d")
+		: -1;
 }
 
 EnvironmentMap2dType
@@ -137,17 +137,17 @@ PhongMaterial::normalMap(AbstractTexture::Ptr value)
 	if (value->type() == TextureType::CubeTexture)
 		throw std::logic_error("Only 2d normal maps are currently supported.");
 
-	set("normalMap", std::static_pointer_cast<AbstractTexture>(value));
+	set("normalMap", std::static_pointer_cast<AbstractTexture>(value)->id());
 
 	return std::static_pointer_cast<PhongMaterial>(shared_from_this());
 }
 
-Texture::Ptr
+render::ResourceId
 PhongMaterial::normalMap() const
 {
 	return hasProperty("normalMap") 
-		? std::dynamic_pointer_cast<Texture>(get<AbstractTexture::Ptr>("normalMap"))
-		: nullptr;
+		? get<render::ResourceId>("normalMap")
+		: -1;
 }
 
 PhongMaterial::Ptr
@@ -156,17 +156,17 @@ PhongMaterial::specularMap(AbstractTexture::Ptr value)
 	if (value->type() == TextureType::CubeTexture)
 		throw std::logic_error("Only 2d specular maps are currently supported.");
 
-	set("specularMap", std::static_pointer_cast<AbstractTexture>(value));
+	set("specularMap", std::static_pointer_cast<AbstractTexture>(value)->id());
 
 	return std::static_pointer_cast<PhongMaterial>(shared_from_this());
 }
 
-Texture::Ptr
+render::ResourceId
 PhongMaterial::specularMap() const
 {
 	return hasProperty("specularMap") 
-		? std::dynamic_pointer_cast<Texture>(get<AbstractTexture::Ptr>("specularMap"))
-		: nullptr;
+		? get<render::ResourceId>("specularMap")
+		: -1;
 }
 
 PhongMaterial::Ptr
@@ -175,17 +175,17 @@ PhongMaterial::alphaMap(AbstractTexture::Ptr value)
 	if (value->type() == TextureType::CubeTexture)
 		throw std::logic_error("Only 2d transparency maps are currently supported.");
 
-	set("alphaMap", std::static_pointer_cast<AbstractTexture>(value));
+	set("alphaMap", std::static_pointer_cast<AbstractTexture>(value)->id());
 
 	return std::static_pointer_cast<PhongMaterial>(shared_from_this());
 }
 
-Texture::Ptr
+render::ResourceId
 PhongMaterial::alphaMap() const
 {
 	return hasProperty("alphaMap") 
-		? std::dynamic_pointer_cast<Texture>(get<AbstractTexture::Ptr>("alphaMap"))
-		: nullptr;
+		? get<render::ResourceId>("alphaMap")
+		: -1;
 }
 
 PhongMaterial::Ptr

@@ -96,7 +96,7 @@ Provider::swap(const std::string& propertyName1, const std::string& propertyName
 Provider::Ptr
 Provider::clone()
 {
-	auto provider = Provider::create();
+	auto provider = Provider::create(_key);
 	
 	provider->copyFrom(shared_from_this());
 
@@ -106,7 +106,7 @@ Provider::clone()
 Provider::Ptr
 Provider::copyFrom(Provider::Ptr source)
 {
-	//_names	= source->_names;
+    _key = source->_key;
 	_values = source->_values;
 
 	return shared_from_this();

@@ -27,6 +27,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/ProgramSignature.hpp"
 #include "minko/render/Program.hpp"
 #include "minko/render/States.hpp"
+#include "minko/render/VertexAttribute.hpp"
 
 namespace minko
 {
@@ -181,13 +182,10 @@ namespace minko
 			}
 
 			std::shared_ptr<Program>
-			selectProgram(FormatNameFunction,
-						  std::shared_ptr<data::Container>	targetData,
-						  std::shared_ptr<data::Container>	rendererData,
-						  std::shared_ptr<data::Container>	rootData,
-						  std::list<std::string>&			booleanMacros,
-						  std::list<std::string>&			integerMacros,
-						  std::list<std::string>&			incorrectIntegerMacros);
+            selectProgram(const data::TranslatedPropertyNameMap&    translatedPropertyNames,
+						  std::shared_ptr<data::Container>	        targetData,
+						  std::shared_ptr<data::Container>	        rendererData,
+						  std::shared_ptr<data::Container>	        rootData);
 			
 			template <typename... T>
 			void
@@ -239,16 +237,6 @@ namespace minko
 			{
 				if (!macroName.empty())
 					_undefinedMacros.insert(macroName);
-			}
-
-			void
-			getExplicitDefinitions(std::unordered_map<std::string, data::MacroBindingDefault>& macroNameToValue) const;
-
-			inline
-			bool
-			isExplicitlyUndefined(const std::string& macroName) const
-			{
-				return _undefinedMacros.find(macroName) != _undefinedMacros.end();
 			}
 
 		private:

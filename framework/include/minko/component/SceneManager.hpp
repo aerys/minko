@@ -50,7 +50,7 @@ namespace minko
 			Signal<Ptr, uint, AbsTexturePtr>::Ptr           _renderBegin;
 			Signal<Ptr, uint, AbsTexturePtr>::Ptr           _renderEnd;
 
-			std::shared_ptr<data::StructureProvider>		_data;
+			std::shared_ptr<data::Provider>		            _data;
 
             Signal<AbstractComponent::Ptr, NodePtr>::Slot   _targetAddedSlot;
             Signal<AbstractComponent::Ptr, NodePtr>::Slot   _targetRemovedSlot;
@@ -132,7 +132,7 @@ namespace minko
             float
             time() const
             {
-                return _time; // in milliseconds
+                return _time;
             }
 
             void

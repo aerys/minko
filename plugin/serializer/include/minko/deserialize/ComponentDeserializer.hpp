@@ -30,7 +30,6 @@ namespace minko
 		{
 
 		private:
-			typedef std::shared_ptr<math::Matrix4x4>				Matrix4x4Ptr;
 			typedef std::shared_ptr<file::Dependency>				DependencyPtr;
 			typedef std::shared_ptr<file::AssetLibrary>				AssetLibraryPtr;
 			typedef std::shared_ptr<component::AbstractComponent>	AbsComponentPtr;

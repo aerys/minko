@@ -115,8 +115,7 @@ BoundingBox::update()
 				if (geom->hasVertexAttribute("position"))
 				{
 					auto xyzBuffer = geom->vertexBuffer("position");
-					auto attr = xyzBuffer->attribute("position");
-					auto offset = std::get<2>(*attr);
+                    auto offset = xyzBuffer->attribute("position").offset;
 
 					for (uint i = 0; i < xyzBuffer->numVertices(); ++i)
 					{

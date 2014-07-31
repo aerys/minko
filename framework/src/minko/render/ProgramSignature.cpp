@@ -29,147 +29,63 @@ using namespace minko::data;
 
 //#define DEACTIVATE_FALLBACK // since beta 1
 
-/*static*/ const uint ProgramSignature::MAX_NUM_BINDINGS = 32;
-
-void
-ProgramSignature::build(Pass::Ptr				pass,
-						FormatNameFunction		formatNameFunc,
-						Container::Ptr			targetData,
-						Container::Ptr			rendererData,
-						Container::Ptr			rootData,
-						std::string&			defines,
-						std::list<std::string>&	booleanMacros,
-						std::list<std::string>&	integerMacros,
-						std::list<std::string>&	incorrectIntegerMacros)
+ProgramSignature::ProgramSignature(const data::MacroBindingMap&             macroBindings,
+                                   const data::TranslatedPropertyNameMap&   translatedPropertyNames,
+                                   Container::Ptr			                targetData,
+                                   Container::Ptr			                rendererData,
+                                   Container::Ptr			                rootData,
+                                   std::string&			                    defines) :
+    _mask(0),
+    _values(),
+    _states()
 {
-	_mask = 0;
-	_values.clear();
-	_values.resize(MAX_NUM_BINDINGS, 0);
-
-	defines.clear();
-
-	booleanMacros.clear();
-	integerMacros.clear();
-	incorrectIntegerMacros.clear();
-
-	std::unordered_map<std::string, MacroBindingDefault> explicitDefinitions;
-	
-	pass->getExplicitDefinitions(explicitDefinitions);
-
 	unsigned int macroId	= 0;
-	for (auto& macroBinding : pass->macroBindings())
+	for (const auto& macroNameAndBinding : macroBindings)
     {
-		const auto&	macroName		= macroBinding.first;
-		auto		macroDefault	= macroBinding.second;
+        const auto&	macroName = macroNameAndBinding.first;
+        const auto&	macroBinding = macroNameAndBinding.second;
+        auto propertyName = macroBinding.propertyName;
+        auto container = macroBinding.source == BindingSource::TARGET
+            ? targetData
+            : (macroBinding.source == BindingSource::RENDERER ? rendererData : rootData);
+        bool macroIsDefined = container->hasProperty(propertyName);
+        bool macroIsInteger = macroIsDefined && container->propertyHasType<int>(propertyName, true);
 
-		const auto& propertyName	= formatNameFunc(std::get<0>(macroDefault));
-		auto		source			= std::get<1>(macroDefault);
-		auto		container		= source == BindingSource::TARGET
-			? targetData
-			: (source == BindingSource::RENDERER ? rendererData : rootData);
+        if (translatedPropertyNames.count(propertyName) != 0)
+            propertyName = translatedPropertyNames.at(propertyName);
 
-		bool				macroExists;		
-		bool				isMacroInteger;
-		MacroBindingDefault	defaultMacro;
-
-		const auto					foundExplicitDefIt	= explicitDefinitions.find(macroName);
-		if (foundExplicitDefIt == explicitDefinitions.end())
+        if (macroIsDefined || macroBinding.defaultState != MacroBindingState::UNDEFINED)
 		{
-			// no explicit definition
-			macroExists		= container->hasProperty(propertyName); 
-			isMacroInteger	= macroExists && container->propertyHasType<int>(propertyName, true);
-			defaultMacro	= std::get<2>(macroBinding.second);
-		}
-		else
-		{
-			// explicit definition by the pass
-			macroExists		= true;
-			defaultMacro	= foundExplicitDefIt->second;
-			isMacroInteger	= (defaultMacro.semantic == MacroBindingDefaultValueSemantic::VALUE);
-
-			explicitDefinitions.erase(macroName); 
-		}
-
-		const auto	defaultMacroExists		= defaultMacro.semantic == MacroBindingDefaultValueSemantic::PROPERTY_EXISTS;
-		const bool	isDefaultMacroInteger	= defaultMacro.semantic == MacroBindingDefaultValueSemantic::VALUE;
-		const bool	canUseDefaultMacro		= defaultMacroExists || isDefaultMacroInteger;
-
-
-		if (macroExists || canUseDefaultMacro)
-		{
-			if (pass->isExplicitlyUndefined(macroName))
-				continue;
-
 			// WARNING: we do not support more than 32 macro bindings
-			if (macroId == MAX_NUM_BINDINGS)
+			if (macroId == 32)
 				throw;
 
 			_mask |= 1 << macroId; // update program signature
 
-
-			if (isMacroInteger || isDefaultMacroInteger)
+            if (macroIsInteger || macroBinding.defaultState == MacroBindingState::DEFINED_INTEGER_VALUE)
 			{
-				const int	min		= std::get<3>(macroBinding.second);
-				const int	max		= std::get<4>(macroBinding.second);
-
-				int			value	= isMacroInteger 
+				int	value = macroIsDefined 
 					? container->get<int>(propertyName)
-					: defaultMacro.value.value;
+					: macroBinding.defaultValue.value;
 
-#ifdef DEACTIVATE_FALLBACK
-				value = std::max(min, std::min(max, value)); 
-#endif // DEACTIVATE_FALLBACK
+				value = std::max(macroBinding.minValue, std::min(macroBinding.maxValue, value)); 
 
 				// update program signature
 				_values[macroId] = value; 
 
-				if (value < min || value > max)
-				{
-					if (macroExists)
-						incorrectIntegerMacros.push_back(macroName);
-				
-#ifdef DEACTIVATE_FALLBACK
-					throw;
-#endif // DEACTIVATE_FALLBACK
-				}
-				else
-				{
-					defines += "#define " + macroName + " " + std::to_string(value) + "\n";
-				
-					if (macroExists && value > 0) // FIXME
-						integerMacros.push_back(macroName);
-				}
+				defines += "#define " + macroName + " " + std::to_string(value) + "\n";
 			}
-			else if (macroExists || defaultMacroExists)
-			{
+			else
 				defines += "#define " + macroName + "\n";
-
-				if (macroExists)
-					booleanMacros.push_back(macroName);
-			}
 		}
 		++macroId;
 	}
 
-	// treat remaining unprocessed explicit macro definitions
-	for (auto& macroNameAndDefault : explicitDefinitions)
-	{
-		// WARNING: we do not support more than 32 macro bindings
-		if (macroId == MAX_NUM_BINDINGS)
-			throw;
-
-		_mask |= 1 << macroId; // update program signature
-
-		const auto& macroName		= macroNameAndDefault.first;
-		const auto& macroDefault	= macroNameAndDefault.second;
-
-		if (macroDefault.semantic ==MacroBindingDefaultValueSemantic::VALUE)
-			defines += "#define " + macroName + " " + std::to_string(macroDefault.value.value) + "\n";
-		else
-			defines += "#define " + macroName + "\n";
-
-		++macroId;
-	}
+    while (macroId < 32)
+    {
+        _values[macroId] = 0;
+        _states[macroId] = MacroBindingState::UNDEFINED;
+    }
 }
 
 bool 
@@ -178,11 +94,9 @@ ProgramSignature::operator==(const ProgramSignature& x) const
 	if (_mask != x._mask)
 		return false;
 
-	for (unsigned int i = 0; i < MAX_NUM_BINDINGS; ++i)
-	{
-		if ((_mask >> i) != 0 
-			&& _values[i] != x._values[i])
+	for (unsigned int i = 0; i < 32; ++i)
+		if (_values[i] != x._values[i] && _states[i] != x._states[i])
 			return false;
-	}
+
 	return true;
 }

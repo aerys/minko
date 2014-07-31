@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/PerspectiveCamera.hpp"
 
 #include "minko/scene/Node.hpp"
-#include "minko/data/StructureProvider.hpp"
+#include "minko/data/Provider.hpp"
 #include "minko/math/Ray.hpp"
 #include "minko/component/Transform.hpp"
 #include "minko/scene/Node.hpp"
@@ -36,7 +36,7 @@ PerspectiveCamera::PerspectiveCamera(float			      fov,
                                      float			      zNear,
                                      float			      zFar,
 									 const math::mat4&	  postPerspective) :
-	_data(data::StructureProvider::create("camera")),
+	_data(data::Provider::create("camera")),
 	_fov(fov),
 	_aspectRatio(aspectRatio),
 	_zNear(zNear),
@@ -78,7 +78,7 @@ PerspectiveCamera::targetAddedHandler(AbstractComponent::Ptr ctrl, NodePtr targe
 {
 	target->data()->addProvider(_data);
 
-  	_modelToWorldChangedSlot = target->data()->propertyValueChanged("transform.modelToWorldMatrix")->connect(std::bind(
+  	_modelToWorldChangedSlot = target->data()->propertyChanged("transform.modelToWorldMatrix")->connect(std::bind(
     	&PerspectiveCamera::localToWorldChangedHandler,
 		std::static_pointer_cast<PerspectiveCamera>(shared_from_this()),
     	std::placeholders::_1,

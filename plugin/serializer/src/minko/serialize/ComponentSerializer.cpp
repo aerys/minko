@@ -32,7 +32,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/Effect.hpp"
 #include "minko/component/Renderer.hpp"
 #include "minko/component/BoundingBox.hpp"
-#include "minko/math/Vector3.hpp"
 #include "minko/math/Box.hpp"
 #include "minko/serialize/TypeSerializer.hpp"
 #include "minko/file/Dependency.hpp"
@@ -90,9 +89,9 @@ ComponentSerializer::serializeAmbientLight(NodePtr			node,
 	std::vector<float>							data;
 
 	data.push_back(ambient->ambient());
-	data.push_back(ambient->color()->x());
-	data.push_back(ambient->color()->y());
-	data.push_back(ambient->color()->z());
+	data.push_back(ambient->color().x);
+	data.push_back(ambient->color().y);
+	data.push_back(ambient->color().z);
 
 	std::string src = serialize::TypeSerializer::serializeVector<float>(data);
 
@@ -113,9 +112,9 @@ ComponentSerializer::serializeDirectionalLight(NodePtr			node,
 
 	data.push_back(directional->diffuse());
 	data.push_back(directional->specular());
-	data.push_back(directional->color()->x());
-	data.push_back(directional->color()->y());
-	data.push_back(directional->color()->z());
+	data.push_back(directional->color().x);
+	data.push_back(directional->color().y);
+	data.push_back(directional->color().z);
 
 	std::string src = serialize::TypeSerializer::serializeVector<float>(data);
 
@@ -137,12 +136,12 @@ ComponentSerializer::serializePointLight(NodePtr		node,
 
 	data.push_back(point->diffuse());
 	data.push_back(point->specular());
-	data.push_back(point->attenuationCoefficients()->x());
-	data.push_back(point->attenuationCoefficients()->y());
-	data.push_back(point->attenuationCoefficients()->z());
-	data.push_back(point->color()->x());
-	data.push_back(point->color()->y());
-	data.push_back(point->color()->z());
+	data.push_back(point->attenuationCoefficients().x);
+	data.push_back(point->attenuationCoefficients().y);
+	data.push_back(point->attenuationCoefficients().z);
+	data.push_back(point->color().x);
+	data.push_back(point->color().y);
+	data.push_back(point->color().z);
 
 	std::string src = serialize::TypeSerializer::serializeVector<float>(data);
 
@@ -163,14 +162,14 @@ ComponentSerializer::serializeSpotLight(NodePtr			node,
 
 	data.push_back(spot->diffuse());
 	data.push_back(spot->specular());
-	data.push_back(spot->attenuationCoefficients()->x());
-	data.push_back(spot->attenuationCoefficients()->y());
-	data.push_back(spot->attenuationCoefficients()->z());
-	data.push_back(acos(spot->cosInnerConeAngle()));
-	data.push_back(acos(spot->cosOuterConeAngle()));
-	data.push_back(spot->color()->x());
-	data.push_back(spot->color()->y());
-	data.push_back(spot->color()->z());
+	data.push_back(spot->attenuationCoefficients().x);
+	data.push_back(spot->attenuationCoefficients().y);
+	data.push_back(spot->attenuationCoefficients().z);
+	data.push_back(spot->innerConeAngle());
+	data.push_back(spot->outerConeAngle());
+	data.push_back(spot->color().x);
+	data.push_back(spot->color().y);
+	data.push_back(spot->color().z);
 
 	std::string src = serialize::TypeSerializer::serializeVector<float>(data);
 
@@ -248,15 +247,15 @@ ComponentSerializer::serializeBoundingBox(NodePtr 			node,
 					 				      DependencyPtr 	dependencies)
 {
 	math::Box::Ptr 		box 		= node->component<component::BoundingBox>()->box();
-	math::Vector3::Ptr 	topRight 	= box->topRight();
-	math::Vector3::Ptr 	bottomLeft 	= box->bottomLeft();
+	const math::vec3&	topRight 	= box->topRight();
+    const math::vec3& 	bottomLeft  = box->bottomLeft();
 	int8_t 				type 		= serialize::BOUNDINGBOX;
 	std::stringstream	buffer;
 	std::vector<float>	data;
 
-	float centerX = (topRight->x() + bottomLeft->x()) / 2.0f;
-	float centerY = (topRight->y() + bottomLeft->y()) / 2.0f;
-	float centerZ = (topRight->z() + bottomLeft->z()) / 2.0f;
+	float centerX = (topRight.x + bottomLeft.x) / 2.0f;
+	float centerY = (topRight.y + bottomLeft.y) / 2.0f;
+	float centerZ = (topRight.z + bottomLeft.z) / 2.0f;
 
 	data.push_back(centerX);
 	data.push_back(centerY);

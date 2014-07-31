@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/AbstractComponent.hpp"
 #include "minko/component/Renderer.hpp"
 #include "minko/Any.hpp"
+#include "minko/data/Provider.hpp"
 
 namespace minko
 {

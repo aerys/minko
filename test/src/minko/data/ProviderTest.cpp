@@ -26,7 +26,7 @@ TEST_F(ProviderTest, Create)
 {
 	try
 	{
-		auto p = Provider::create();
+		auto p = Provider::create("test");
 	}
 	catch (...)
 	{
@@ -38,7 +38,7 @@ TEST_F(ProviderTest, CreateCopy)
 {
 	try
 	{
-		auto p1 = Provider::create();
+		auto p1 = Provider::create("test");
 
 		p1->set("foo", 42);
 
@@ -54,7 +54,7 @@ TEST_F(ProviderTest, CreateCopy)
 
 TEST_F(ProviderTest, TestInt)
 {
-	auto provider = Provider::create();
+	auto provider = Provider::create("test");
 
 	provider->set("foo", 42);
 
@@ -63,7 +63,7 @@ TEST_F(ProviderTest, TestInt)
 
 TEST_F(ProviderTest, TestUint)
 {
-	auto provider = Provider::create();
+	auto provider = Provider::create("test");
 	uint v = 42;
 
 	provider->set("foo", v);
@@ -73,7 +73,7 @@ TEST_F(ProviderTest, TestUint)
 
 TEST_F(ProviderTest, TestFloat)
 {
-	auto provider = Provider::create();
+	auto provider = Provider::create("test");
 	float v = 42;
 
 	provider->set("foo", v);
@@ -83,7 +83,7 @@ TEST_F(ProviderTest, TestFloat)
 
 TEST_F(ProviderTest, PropertyAdded)
 {
-	auto p = Provider::create();
+	auto p = Provider::create("test");
 	auto v = 0;
 	auto _ = p->propertyAdded()->connect(
 		[&](Provider::Ptr provider, const std::string& propertyName)
@@ -100,7 +100,7 @@ TEST_F(ProviderTest, PropertyAdded)
 
 TEST_F(ProviderTest, PropertyRemoved)
 {
-	auto p = Provider::create();
+	auto p = Provider::create("test");
 	auto v = 0;
 	auto _ = p->propertyRemoved()->connect(
 		[&](Provider::Ptr provider, const std::string& propertyName)
@@ -118,9 +118,9 @@ TEST_F(ProviderTest, PropertyRemoved)
 
 TEST_F(ProviderTest, ValueChanged)
 {
-	auto p = Provider::create();
+	auto p = Provider::create("test");
 	auto v = 0;
-	auto _ = p->propertyValueChanged()->connect(
+	auto _ = p->propertyChanged()->connect(
 		[&](Provider::Ptr provider, const std::string& propertyName)
 		{
 			if (provider == p && propertyName == "foo")
@@ -135,7 +135,7 @@ TEST_F(ProviderTest, ValueChanged)
 
 //TEST_F(ProviderTest, ValueChangedNot)
 //{
-//	auto p = Provider::create();
+//	auto p = Provider::create("test");
 //	auto v = 0;
 //
 //	p->set("foo", 42);
@@ -155,14 +155,14 @@ TEST_F(ProviderTest, ValueChanged)
 
 TEST_F(ProviderTest, Swap)
 {
-	auto p = Provider::create();
+	auto p = Provider::create("test");
 	auto vFoo = 0;
 	auto vBar = 0;
 
 	p->set("foo", 42);
 	p->set("bar", 24);
 
-	auto _ = p->propertyValueChanged()->connect(
+	auto _ = p->propertyChanged()->connect(
 		[&](Provider::Ptr provider, const std::string& propertyName)
 		{
 			if (provider == p && propertyName == "foo")

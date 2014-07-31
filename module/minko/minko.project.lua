@@ -10,8 +10,7 @@ minko.project.library = function(name)
 	includedirs { minko.sdk.path("/framework/include") }
 	
 	-- glm
-	files { "lib/glm/**.hpp" }
-	includedirs { "lib/glm" }
+	includedirs { minko.sdk.path("/framework/lib/glm") }
 
 	configuration { "debug"}
 		defines { "DEBUG" }

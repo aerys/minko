@@ -50,15 +50,27 @@ SpotLight::updateModelToWorldMatrix(const math::mat4& modelToWorld)
 		->set("direction",	math::normalize(math::mat3(modelToWorld) * math::vec3(0.f, 0.f, -1.f)));	
 }
 
+float
+SpotLight::innerConeAngle()
+{
+    return acos(data()->get<float>("cosInnerConeAngle"));
+}
+
 SpotLight::Ptr
 SpotLight::innerConeAngle(float radians)
 {
 	data()->set<float>(
 		"cosInnerConeAngle",
-		cosf(std::max(0.0f, std::min(0.5f * (float)PI, radians)))
+		cosf(std::max(0.0f, std::min(0.5f * math::pi<float>(), radians)))
 	);
 
 	return std::static_pointer_cast<SpotLight>(shared_from_this());
+}
+
+float
+SpotLight::outerConeAngle()
+{
+    return acos(data()->get<float>("cosOuterConeAngle"));
 }
 
 SpotLight::Ptr
@@ -66,7 +78,7 @@ SpotLight::outerConeAngle(float radians)
 {
 	data()->set<float>(
 		"cosOuterConeAngle",
-		cosf(std::max(0.0f, std::min(0.5f * (float)PI, radians)))
+        cosf(std::max(0.0f, std::min(0.5f * math::pi<float>(), radians)))
 	);
 
 	return std::static_pointer_cast<SpotLight>(shared_from_this());

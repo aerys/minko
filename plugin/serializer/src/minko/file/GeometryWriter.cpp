@@ -107,27 +107,24 @@ GeometryWriter::serializeIndexStreamChar(std::shared_ptr<render::IndexBuffer> in
 std::string
 GeometryWriter::serializeVertexStream(std::shared_ptr<render::VertexBuffer> vertexBuffer)
 {
-	std::list<render::VertexBuffer::AttributePtr>									attributes			= vertexBuffer->attributes();
-	std::vector<msgpack::type::tuple<std::string, unsigned char, unsigned char>>	serializedAttributes;
+	std::vector<msgpack::type::tuple<std::string, unsigned char, unsigned char>> serializedAttributes;
 	
-	auto attributesIt = attributes.begin();
-	
-	while (attributesIt != attributes.end())
+    for (const auto& attribute : vertexBuffer->attributes())
 	{
 		serializedAttributes.push_back(msgpack::type::tuple<std::string, unsigned char, unsigned char>(
-			std::get<0>((**attributesIt)), 
-			std::get<1>((**attributesIt)), 
-			std::get<2>((**attributesIt))));
-
-		attributesIt++;
+            attribute.name,
+            attribute.size,
+            attribute.offset
+        ));
 	}
 
 	std::string serializedVector = serialize::TypeSerializer::serializeVector<float>(vertexBuffer->data());
 
-	std::stringstream			sbuf;
+	std::stringstream sbuf;
 	msgpack::type::tuple<std::string, std::vector<msgpack::type::tuple<std::string, unsigned char, unsigned char>>> res(
 		serializedVector,
-		serializedAttributes);
+		serializedAttributes
+    );
 
 	msgpack::pack(sbuf, res);
 
@@ -143,16 +140,12 @@ GeometryWriter::computeMetaByte(std::shared_ptr<geometry::Geometry> geometry,
 	unsigned char metaByte = 0x00;
 	
 	for (auto functionIdTestFunc : indexBufferTestFunctions)
-	{
 		if (functionIdTestFunc.second(geometry) && functionIdTestFunc.first >= indexBufferFunctionId)
 			indexBufferFunctionId = functionIdTestFunc.first;
-	}
 
 	for (auto functionIdTestFunc : vertexBufferTestFunctions)
-	{
 		if (functionIdTestFunc.second(geometry) && functionIdTestFunc.first >= vertexBufferFunctionId)
 			vertexBufferFunctionId = functionIdTestFunc.first;
-	}
 
 	metaByte = ((indexBufferFunctionId << 4) & 0xF0) + (vertexBufferFunctionId & 0x0F);
 

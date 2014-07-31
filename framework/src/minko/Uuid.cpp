@@ -17,13 +17,6 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "minko/material/Material.hpp"
+#include "minko/Uuid.hpp"
 
-using namespace minko;
-using namespace minko::material;
-
-Material::Material() :
-	data::ArrayProvider("material")
-{
-	
-}
+bool minko::Uuid::_randSeeded = false;

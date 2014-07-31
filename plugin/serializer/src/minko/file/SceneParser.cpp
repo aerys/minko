@@ -34,9 +34,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 using namespace minko;
 using namespace minko::file;
-using namespace minko::math;
 
-std::unordered_map<int8_t, SceneParser::ComponentReadFunction> SceneParser::_componentIdToReadFunction;
+std::unordered_map<std::int8_t, SceneParser::ComponentReadFunction> SceneParser::_componentIdToReadFunction;
 
 
 SceneParser::SceneParser()
@@ -112,7 +111,7 @@ SceneParser::SceneParser()
 }
 
 void
-SceneParser::registerComponent(int8_t					componentId,
+SceneParser::registerComponent(std::int8_t				componentId,
 							   ComponentReadFunction	readFunction)
 {
 	_componentIdToReadFunction[componentId] = readFunction;

@@ -154,9 +154,6 @@ namespace minko
 		private:
 			EffectParser();
 
-			data::MacroBindingMap
-			initializeDefaultMacroBindings() const;
-
 			std::shared_ptr<render::States>
 			parseRenderStates(const Json::Value&						root,
 							  std::shared_ptr<render::AbstractContext>	context,
@@ -349,6 +346,9 @@ namespace minko
 			static
 			float
 			priority(const std::string&);
+
+            void
+            definePlatform();
 
 			void
 			finalize();

@@ -27,18 +27,6 @@ using namespace minko::render;
 const unsigned int	DrawCall::MAX_NUM_TEXTURES		= 8;
 const unsigned int	DrawCall::MAX_NUM_VERTEXBUFFERS	= 8;
 
-DrawCall::DrawCall(Pass::Ptr pass) :
-	_pass(pass)
-{
-	if (_pass == nullptr)
-		throw std::invalid_argument("pass");
-}
-
-void
-DrawCall::initialize()
-{
-}
-
 DrawCall::ContainerPtr
 DrawCall::getContainer(ContainerPtr         rootData,
                        ContainerPtr         rendererData,
@@ -174,7 +162,7 @@ DrawCall::bindStates()
 }
 
 void
-DrawCall::render(const AbstractContext::Ptr& context, AbstractTexture::Ptr renderTarget)
+DrawCall::render(const AbstractContext::Ptr& context, AbstractTexture::Ptr renderTarget) const
 {
     context->setProgram(_program->id());
 

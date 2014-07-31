@@ -18,13 +18,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "minko/deserialize/TypeDeserializer.hpp"
-#include "minko/math/Matrix4x4.hpp"
 #include "minko/Any.hpp"
 #include "minko/data/Provider.hpp"
-#include "minko/math/Vector2.hpp"
-#include "minko/math/Vector3.hpp"
-#include "minko/math/Vector4.hpp"
-#include "minko/math/Matrix4x4.hpp"
 #include "minko/render/Texture.hpp"
 #include "minko/render/Blending.hpp"
 #include "minko/render/TriangleCulling.hpp"
@@ -50,7 +45,7 @@ TypeDeserializer::deserializeVector4(std::tuple<uint, std::string&>& serializedV
 			//defaultValues[i] = serializedVector.a1[serializedIndex++];
 	}
 
-	return Any(math::Vector4::create(defaultValues[0], defaultValues[1], defaultValues[2], defaultValues[3]));
+	return Any(math::vec4(defaultValues[0], defaultValues[1], defaultValues[2], defaultValues[3]));
 }
 		
 Any
@@ -70,7 +65,7 @@ TypeDeserializer::deserializeVector3(std::tuple<uint, std::string&>& serializedV
 //			defaultValues[i] = serializedVector.a1[serializedIndex++];
 	}
 
-	return Any(math::Vector3::create(defaultValues[0], defaultValues[1], defaultValues[2]));
+    return Any(math::vec3(defaultValues[0], defaultValues[1], defaultValues[2]));
 }
 			
 Any
@@ -89,7 +84,7 @@ TypeDeserializer::deserializeVector2(std::tuple<uint, std::string&>& serializedV
 			//defaultValues[i] = serializedVector.a1[serializedIndex++];
 	}
 
-	return Any(math::Vector2::create(defaultValues[0], defaultValues[1]));
+    return Any(math::vec2(defaultValues[0], defaultValues[1]));
 }
 
 Any
@@ -114,7 +109,7 @@ TypeDeserializer::deserializeMatrix4x4(std::tuple<uint, std::string&>& serialize
 			//matrixValues[i] = serializeMatrix.a1[serializedIndex++];
 	}
 
-	return Any(math::Matrix4x4::create()->initialize(matrixValues));
+	return Any(math::make_mat4(&matrixValues[0]));
 }
 
 Any

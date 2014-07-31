@@ -17,6 +17,8 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+#pragma once
+
 #include "minko/Common.hpp"
 
 namespace minko
@@ -24,7 +26,7 @@ namespace minko
 	class Uuid
 	{
 	private:
-		static bool			_randSeeded;
+		static bool	_randSeeded;
 
 	public:
 
@@ -56,5 +58,3 @@ namespace minko
 		}
 	};
 }
-
-bool minko::Uuid::_randSeeded = false;

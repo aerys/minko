@@ -23,6 +23,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/scene/NodeSet.hpp"
 #include "minko/data/Provider.hpp"
 #include "minko/component/Surface.hpp"
+#include "minko/component/AbstractComponent.hpp"
+#include "minko/component/AbstractRootDataComponent.hpp"
 #include "minko/component/AbstractLight.hpp"
 #include "minko/scene/Layout.hpp"
 
@@ -53,7 +55,7 @@ LightMaskFilter::root(Node::Ptr root)
 
 		for (auto& n : _numLightPropertyNames)
 		{
-			auto slot = _root->data()->propertyReferenceChanged(n)->connect([=](Container::Ptr, const std::string&){ 
+			auto slot = _root->data()->propertyChanged(n)->connect([=](Container::Ptr, const std::string&){ 
 				lightsChangedHandler(); 
 			}, 
 			10.0f);
@@ -119,7 +121,7 @@ LightMaskFilter::lightsChangedHandler()
 
 		_providerToLight[light->data()] = light;
 
-		_layoutMaskChangedSlots.push_back(light->data()->propertyValueChanged()->connect([=](Provider::Ptr provider, const std::string& lightProperty)
+		_layoutMaskChangedSlots.push_back(light->data()->propertyChanged()->connect([=](Provider::Ptr provider, const std::string& lightProperty)
 		{
 			changed()->execute(shared_from_this(), nullptr);
 		}));

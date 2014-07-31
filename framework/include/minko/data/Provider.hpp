@@ -132,15 +132,15 @@ namespace minko
             typename std::enable_if<is_valid<T>::value, const T&>::type
             get(const std::string& name, bool skipPropertyNameFormatting = false) const
 			{
-                return *Any::cast<T>(&_values[skipPropertyNameFormatting ? name : formatPropertyName(name)]);
+                return *Any::cast<T>(&_values.at(skipPropertyNameFormatting ? name : formatPropertyName(name)));
 			}
 
             template <typename T>
             inline
             typename std::enable_if<is_valid<T>::value, const T*>::type
-            getPointer(const std::string& name, bool skipPropertyNameFormatting = false)
+            getPointer(const std::string& name, bool skipPropertyNameFormatting = false) const
             {
-                return Any::cast<T>(&_values[skipPropertyNameFormatting ? name : formatPropertyName(name)]);
+                return Any::cast<T>(&_values.at(skipPropertyNameFormatting ? name : formatPropertyName(name)));
             }
 
             template <typename T>

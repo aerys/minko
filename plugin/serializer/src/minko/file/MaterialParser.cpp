@@ -22,13 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Types.hpp"
 #include "minko/deserialize/TypeDeserializer.hpp"
 #include "minko/file/AssetLibrary.hpp"
-#include "minko/math/Matrix4x4.hpp"
 #include "minko/Any.hpp"
 #include "minko/data/Provider.hpp"
-#include "minko/math/Vector2.hpp"
-#include "minko/math/Vector3.hpp"
-#include "minko/math/Vector4.hpp"
-#include "minko/math/Matrix4x4.hpp"
 #include "minko/render/Texture.hpp"
 #include "minko/file/Dependency.hpp"
 #include "minko/render/Blending.hpp"
@@ -84,15 +79,13 @@ MaterialParser::parse(const std::string&				filename,
 
 	MaterialPtr material = material::Material::create();
 
-	material->set("diffuseColor", math::Vector4::create(1.0, 1.0, 1.0, 1.0));
-
 	for (auto serializedComplexProperty : complexProperties)
 		deserializeComplexProperty(material, serializedComplexProperty);
 
 	for (auto serializedBasicProperty : basicProperties)
 		deserializeBasicProperty(material, serializedBasicProperty);
 
-	material = options->materialFunction()(material->arrayName(), material);
+	material = options->materialFunction()(material->name(), material);
 
 	assetLibrary->material(filename, material);
 	_lastParsedAssetName = filename;
@@ -107,21 +100,25 @@ MaterialParser::deserializeComplexProperty(MaterialPtr			material,
 	std::tuple<uint, std::string&> serializedPropertyTuple(serializedProperty.a1.a0, serializedProperty.a1.a1);
 
 	if (type == VECTOR4)
-		material->set<Vector4Ptr>(
+		material->set(
 			serializedProperty.a0, 
-			Any::cast<Vector4Ptr>(TypeDeserializer::deserializeVector4(serializedPropertyTuple)));
+			Any::cast<math::vec4>(TypeDeserializer::deserializeVector4(serializedPropertyTuple))
+        );
 	else if (type == MATRIX4X4)
-		material->set<Matrix4x4Ptr>(
+		material->set(
 			serializedProperty.a0, 
-			Any::cast<Matrix4x4Ptr>(TypeDeserializer::deserializeMatrix4x4(serializedPropertyTuple)));
+			Any::cast<math::mat4>(TypeDeserializer::deserializeMatrix4x4(serializedPropertyTuple))
+        );
 	else if (type == VECTOR2)
-		material->set<Vector2Ptr>(
+		material->set(
 			serializedProperty.a0, 
-			Any::cast<Vector2Ptr>(TypeDeserializer::deserializeVector2(serializedPropertyTuple)));
+			Any::cast<math::vec2>(TypeDeserializer::deserializeVector2(serializedPropertyTuple))
+        );
 	else if (type == VECTOR3)
-		material->set<Vector3Ptr>(
+		material->set(
 			serializedProperty.a0, 
-			Any::cast<Vector3Ptr>(TypeDeserializer::deserializeVector3(serializedPropertyTuple)));
+			Any::cast<math::vec3>(TypeDeserializer::deserializeVector3(serializedPropertyTuple))
+        );
 	else if (type == BLENDING)
 	{
 		material->set<render::Blending::Mode>(
@@ -138,9 +135,10 @@ MaterialParser::deserializeComplexProperty(MaterialPtr			material,
 			serializedProperty.a0, 
 			Any::cast<render::TriangleCulling>(TypeDeserializer::deserializeTriangleCulling(serializedPropertyTuple)));
 	else if (type == TEXTURE)
-		material->set<TexturePtr>(
+		material->set(
 			serializedProperty.a0,
-			_dependencies->getTextureReference(Any::cast<uint>(TypeDeserializer::deserializeTextureId(serializedPropertyTuple))));
+            _dependencies->getTextureReference(Any::cast<uint>(TypeDeserializer::deserializeTextureId(serializedPropertyTuple)))->id()
+        );
 	else if (type == ENVMAPTYPE)
 	{
 		auto envMapType = Any::cast<render::EnvironmentMap2dType>(TypeDeserializer::deserializeEnvironmentMap2dType(serializedPropertyTuple));

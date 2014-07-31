@@ -19,8 +19,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "ContainerTest.hpp"
 
-#include "minko/data/ArrayProvider.hpp"
-
 using namespace minko::data;
 
 TEST_F(ContainerTest, Create)
@@ -38,7 +36,7 @@ TEST_F(ContainerTest, Create)
 TEST_F(ContainerTest, AddProvider)
 {
 	auto c = Container::create();
-	auto p = Provider::create();
+	auto p = Provider::create("test");
 
 	p->set("foo", 42);
 
@@ -52,7 +50,7 @@ TEST_F(ContainerTest, AddProvider)
 TEST_F(ContainerTest, RemoveProvider)
 {
 	auto c = Container::create();
-	auto p = Provider::create();
+	auto p = Provider::create("test");
 
 	p->set("foo", 42);
 
@@ -66,7 +64,7 @@ TEST_F(ContainerTest, RemoveProvider)
 TEST_F(ContainerTest, PropertyAdded)
 {
 	auto c = Container::create();
-	auto p = Provider::create();
+	auto p = Provider::create("test");
 	int v = 0;
 
 	p->set("foo", 42);
@@ -87,7 +85,7 @@ TEST_F(ContainerTest, PropertyAdded)
 TEST_F(ContainerTest, PropertyRemoved)
 {
 	auto c = Container::create();
-	auto p = Provider::create();
+	auto p = Provider::create("test");
 	int v = 0;
 
 	p->set("foo", 42);
@@ -106,15 +104,15 @@ TEST_F(ContainerTest, PropertyRemoved)
 	ASSERT_EQ(v, 42);
 }
 
-TEST_F(ContainerTest, PropertyValueChangedWhenAdded)
+TEST_F(ContainerTest, propertyChangedWhenAdded)
 {
 	auto c = Container::create();
-	auto p = Provider::create();
+	auto p = Provider::create("test");
 	int v = 0;
 
 	p->set("foo", 42);
 
-	auto _ = c->propertyValueChanged("foo")->connect(
+	auto _ = c->propertyChanged("foo")->connect(
 		[&](Container::Ptr container, const std::string& propertyName)
 		{
 			if (container == c && propertyName == "foo")
@@ -127,15 +125,15 @@ TEST_F(ContainerTest, PropertyValueChangedWhenAdded)
 	ASSERT_EQ(v, 42);
 }
 
-TEST_F(ContainerTest, PropertyValueChangedWhenAddedOnProvider)
+TEST_F(ContainerTest, propertyChangedWhenAddedOnProvider)
 {
 	auto c = Container::create();
-	auto p = Provider::create();
+	auto p = Provider::create("test");
 	int v = 0;
 
 	c->addProvider(p);
 
-	auto _ = c->propertyValueChanged("foo")->connect(
+	auto _ = c->propertyChanged("foo")->connect(
 		[&](Container::Ptr container, const std::string& propertyName)
 		{
 			if (container == c && propertyName == "foo")
@@ -148,16 +146,16 @@ TEST_F(ContainerTest, PropertyValueChangedWhenAddedOnProvider)
 	ASSERT_EQ(v, 42);
 }
 
-TEST_F(ContainerTest, PropertyValueChangedWhenSetOnProvider)
+TEST_F(ContainerTest, propertyChangedWhenSetOnProvider)
 {
 	auto c = Container::create();
-	auto p = Provider::create();
+	auto p = Provider::create("test");
 	int v = 0;
 
 	c->addProvider(p);
 	p->set("foo", 23);
 
-	auto _ = c->propertyValueChanged("foo")->connect(
+	auto _ = c->propertyChanged("foo")->connect(
 		[&](Container::Ptr container, const std::string& propertyName)
 		{
 			if (container == c && propertyName == "foo")
@@ -170,80 +168,24 @@ TEST_F(ContainerTest, PropertyValueChangedWhenSetOnProvider)
 	ASSERT_EQ(v, 42);
 }
 
-//TEST_F(ContainerTest, PropertyValueChangedNot)
-//{
-//	auto c = Container::create();
-//	auto p = Provider::create();
-//	int v = 0;
-//
-//	c->addProvider(p);
-//	p->set("foo", 42);
-//
-//	auto _ = c->propertyValueChanged("foo")->connect(
-//		[&](Container::Ptr container, const std::string& propertyName)
-//		{
-//			if (container == c && propertyName == "foo")
-//				v = container->get<int>("foo");
-//		}
-//	);
-//
-//	p->set("foo", 42);
-//
-//	ASSERT_NE(v, 42);
-//}
-
-
-TEST_F(ContainerTest, ArrayAdd)
+TEST_F(ContainerTest, propertyChangedNot)
 {
-	auto array1 = ArrayProvider::create("array");
-	auto array2 = ArrayProvider::create("array");
-	auto array3 = ArrayProvider::create("array");
 	auto c = Container::create();
+	auto p = Provider::create("test");
+	int v = 0;
 
-	c->addProvider(array1);
-	c->addProvider(array2);
-	c->addProvider(array3);
+	c->addProvider(p);
+	p->set("foo", 42);
 
-	ASSERT_TRUE(c->hasProvider(array1));
-	ASSERT_TRUE(c->hasProvider(array2));
-	ASSERT_TRUE(c->hasProvider(array3));
-}
+	auto _ = c->propertyChanged("foo")->connect(
+		[&](Container::Ptr container, const std::string& propertyName)
+		{
+			if (container == c && propertyName == "foo")
+				v = container->get<int>("foo");
+		}
+	);
 
-TEST_F(ContainerTest, ArrayRemove)
-{
-	auto array1 = ArrayProvider::create("array");
-	auto array2 = ArrayProvider::create("array");
-	auto array3 = ArrayProvider::create("array");
-	auto c = Container::create();
+	p->set("foo", 42);
 
-	c->addProvider(array1);
-	c->addProvider(array2);
-	c->addProvider(array3);
-
-	c->removeProvider(array2);
-
-	ASSERT_TRUE(c->hasProvider(array1));
-	ASSERT_FALSE(c->hasProvider(array2));
-	ASSERT_TRUE(c->hasProvider(array3));
-}
-
-TEST_F(ContainerTest, ArrayRemoveAdd)
-{
-	auto array1 = ArrayProvider::create("array");
-	auto array2 = ArrayProvider::create("array");
-	auto array3 = ArrayProvider::create("array");
-	auto c = Container::create();
-
-	c->addProvider(array1);
-	c->addProvider(array2);
-	c->addProvider(array3);
-
-	c->removeProvider(array1);
-	c->removeProvider(array3);
-
-	c->addProvider(array1);
-
-	ASSERT_TRUE(c->hasProvider(array1));
-	ASSERT_TRUE(c->hasProvider(array2));
-	ASSERT_FALSE(c->hasProvider(array3));
+	ASSERT_NE(v, 42);
 }

@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include <minko/scene/Node.hpp>
 #include <minko/scene/NodeSet.hpp>
-#include <minko/data/ArrayProvider.hpp>
+#include <minko/data/Provider.hpp>
 #include <minko/geometry/Geometry.hpp>
 #include <minko/geometry/Bone.hpp>
 #include <minko/geometry/Skin.hpp>
@@ -140,9 +140,8 @@ Skinning::addedHandler(Node::Ptr node, Node::Ptr target, Node::Ptr parent)
 			{
 				geometry->addVertexBuffer(_boneVertexBuffer);
 			
-				UniformArrayPtr<float>	uniformArray(new UniformArray<float>(0, nullptr));
-				geometry->data()->set<UniformArrayPtr<float>>(PNAME_BONE_MATRICES,	uniformArray);
-				geometry->data()->set<int>					 (PNAME_NUM_BONES,		0);
+                geometry->data()->set(PNAME_BONE_MATRICES, std::vector<float>());
+				geometry->data()->set(PNAME_NUM_BONES, 0);
 			}
 		}
 	}
@@ -247,9 +246,8 @@ Skinning::updateFrame(unsigned int	frameId,
 			geometry->data()->get<int>(PNAME_NUM_BONES) != _skin->numBones())
 			geometry->data()->set<int>(PNAME_NUM_BONES, _skin->numBones());
 	
-		const auto& uniformArray	= geometry->data()->get<UniformArrayPtr<float>>	(PNAME_BONE_MATRICES);
-		uniformArray->first			= _skin->numBones();
-		uniformArray->second		= &(boneMatrices[0]); 
+        geometry->data()->set(PNAME_BONE_MATRICES, boneMatrices);
+        geometry->data()->set(PNAME_NUM_BONES, _skin->numBones());
 	}
 	else
 		performSoftwareSkinning(target, boneMatrices);
@@ -266,33 +264,27 @@ Skinning::performSoftwareSkinning(Node::Ptr					target,
 	auto geometry	= _targetGeometry[target];
 
 	// transform positions
-	auto						xyzBuffer	= geometry->vertexBuffer(ATTRNAME_POSITION);
-	VertexBuffer::AttributePtr	xyzAttr		= nullptr;
-	for (auto& attr : xyzBuffer->attributes())
-		if (std::get<0>(*attr) == ATTRNAME_POSITION)
-			xyzAttr = attr;
+	auto xyzBuffer	= geometry->vertexBuffer(ATTRNAME_POSITION);
+    const auto& xyzAttr = xyzBuffer->attribute(ATTRNAME_POSITION);
 
 	performSoftwareSkinning(xyzAttr, xyzBuffer, _targetInputPositions[target], boneMatrices, false);
 
 	// transform normals
 	if (geometry->hasVertexAttribute(ATTRNAME_NORMAL) && _targetInputNormals.count(target) > 0)
 	{
-		auto						normalBuffer	= geometry->vertexBuffer(ATTRNAME_NORMAL);
-		VertexBuffer::AttributePtr	normalAttr		= nullptr;
-		for (auto& attr : normalBuffer->attributes())
-			if (std::get<0>(*attr) == ATTRNAME_NORMAL)
-				normalAttr = attr;
+		auto normalBuffer	= geometry->vertexBuffer(ATTRNAME_NORMAL);
+        const auto&	normalAttr = normalBuffer->attribute(ATTRNAME_NORMAL);
 
 		performSoftwareSkinning(normalAttr, normalBuffer, _targetInputNormals[target], boneMatrices, true);
 	}
 }
 
 void
-Skinning::performSoftwareSkinning(VertexBuffer::AttributePtr		attr,
-								 VertexBuffer::Ptr					vertexBuffer, 
-								 const std::vector<float>&			inputData,
-								 const std::vector<float>&			boneMatrices,
-								 bool								doDeltaTransform)
+Skinning::performSoftwareSkinning(const VertexAttribute&		attr,
+								  VertexBuffer::Ptr				vertexBuffer, 
+								  const std::vector<float>&		inputData,
+								  const std::vector<float>&		boneMatrices,
+								  bool							doDeltaTransform)
 {
 #ifdef DEBUG_SKINNING
 	assert(vertexBuffer && vertexBuffer->data().size() == inputData.size());
@@ -308,7 +300,7 @@ Skinning::performSoftwareSkinning(VertexBuffer::AttributePtr		attr,
 	assert(numVertices == _skin->numVertices());
 #endif // DEBUG_SKINNING
 
-	unsigned int index = std::get<2>(*attr);
+	unsigned int index = attr.offset;
 	for (unsigned int vId = 0; vId < numVertices; ++vId)
 	{
 		const float x1 = inputData[index];

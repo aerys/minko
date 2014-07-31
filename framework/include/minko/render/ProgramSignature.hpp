@@ -28,30 +28,18 @@ namespace minko
 		class ProgramSignature
 		{
 		private:
-			static const uint	MAX_NUM_BINDINGS;
-
-			uint				_mask;
-			std::vector<int>	_values;
+			uint				                    _mask;
+            std::array<int, 32>	                    _values;
+            std::array<data::MacroBindingState, 32> _states;
 
 		public:
-			inline
-			ProgramSignature():
-				_mask(0),
-				_values(MAX_NUM_BINDINGS, 0)
-			{
-			}
+			ProgramSignature(const data::MacroBindingMap&           macroBindings,
+						     const data::TranslatedPropertyNameMap& translatedPropertyNames,
+						     std::shared_ptr<data::Container>       targetData,
+                             std::shared_ptr<data::Container>		rendererData,
+                             std::shared_ptr<data::Container>       rootData,
+						     std::string&			                defines);
 			
-			void
-			build(std::shared_ptr<render::Pass>,
-				  FormatNameFunction,
-				  std::shared_ptr<data::Container>	targetData,
-				  std::shared_ptr<data::Container>	rendererData,
-				  std::shared_ptr<data::Container>	rootData,
-				  std::string&						defines,
-				  std::list<std::string>&			booleanMacros,
-				  std::list<std::string>&			integerMacros,
-				  std::list<std::string>&			incorrectIntegerMacros);
-
 			bool 
 			operator==(const ProgramSignature&) const;
 
@@ -63,10 +51,17 @@ namespace minko
 			}
 
 			inline
-			const std::vector<int>&
+			const std::array<int, 32>&
 			values() const
 			{
 				return _values;
+			}
+
+            inline
+			const std::array<data::MacroBindingState, 32>&
+			states() const
+			{
+				return _states;
 			}
 		};
 	}
@@ -74,7 +69,8 @@ namespace minko
 
 namespace std
 {
-	template<> struct hash<minko::render::ProgramSignature>
+	template<>
+    struct hash<minko::render::ProgramSignature>
 	{
 		inline
 		size_t 
@@ -82,7 +78,7 @@ namespace std
 		{
 			size_t seed = std::hash<minko::uint>()(x.mask());
 
-			for (unsigned int i=0; i < x.values().size(); ++i)
+			for (unsigned int i = 0; i < x.values().size(); ++i)
 			{
 				const int value = (x.mask() >> i) != 0 
 					? x.values()[i]

@@ -57,18 +57,11 @@ Pass::Pass(const std::string&		name,
 }
 
 std::shared_ptr<Program>
-Pass::selectProgram(FormatNameFunction		formatNameFunc,
-					Container::Ptr			targetData,
-					Container::Ptr			rendererData,
-					Container::Ptr			rootData,
-					std::list<std::string>&	booleanMacros,
-					std::list<std::string>&	integerMacros,
-					std::list<std::string>&	incorrectIntegerMacros)
+Pass::selectProgram(const data::TranslatedPropertyNameMap&  translatedPropertyNames,
+					Container::Ptr			                targetData,
+					Container::Ptr			                rendererData,
+					Container::Ptr			                rootData)
 {
-	booleanMacros.clear();
-	integerMacros.clear();
-	incorrectIntegerMacros.clear();
-
 	Program::Ptr program;
 
 	if (_macroBindings.size() == 0)
@@ -76,22 +69,14 @@ Pass::selectProgram(FormatNameFunction		formatNameFunc,
 	else
 	{
 		std::string			defines = "";
-		ProgramSignature	signature;
-
-		signature.build(
-			shared_from_this(),
-			formatNameFunc,
+		ProgramSignature	signature(
+            _macroBindings,
+			translatedPropertyNames,
 			targetData,
 			rendererData,
 			rootData,
-			defines, 
-			booleanMacros,
-			integerMacros,
-			incorrectIntegerMacros
+			defines
 		);
-
-		if (!incorrectIntegerMacros.empty())
-			return nullptr;
 
 		const auto foundProgramIt = _signatureToProgram.find(signature);
 
@@ -100,11 +85,6 @@ Pass::selectProgram(FormatNameFunction		formatNameFunc,
 		else
 		{
 			// compile a new shader program from template with macros
-
-#ifdef MINKO_NO_GLSL_STRUCT
-			defines += "#define MINKO_NO_GLSL_STRUCT\n";
-#endif // MINKO_NO_GLSL_STRUCT
-
 			auto vs = Shader::create(
 				_programTemplate->context(),
 				Shader::Type::VERTEX_SHADER,
@@ -157,36 +137,4 @@ Pass::finalizeProgram(Program::Ptr program)
 	}
 
 	return program;
-}
-
-void
-Pass::getExplicitDefinitions(std::unordered_map<std::string, MacroBindingDefault>& macroNameToValue) const
-{
-	macroNameToValue.clear();
-
-	for (auto& macroName : _definedBoolMacros)
-		if (!isExplicitlyUndefined(macroName))
-		{
-			MacroBindingDefault macroValue;
-
-			macroValue.semantic				= MacroBindingDefaultValueSemantic::PROPERTY_EXISTS;
-			macroValue.value.propertyExists = true;
-
-			macroNameToValue[macroName] = macroValue;
-		}
-
-	for (auto& macroNameAndValue : _definedIntMacros)
-	{
-		const auto& macroName	= macroNameAndValue.first;
-
-		if (!isExplicitlyUndefined(macroName))
-		{
-			MacroBindingDefault	macroValue;
-
-			macroValue.semantic		= MacroBindingDefaultValueSemantic::VALUE;
-			macroValue.value.value	= macroNameAndValue.second;
-
-			macroNameToValue[macroName] = macroValue; // integer definitions will overwrite boolean definitions
-		}
-	}
 }

@@ -51,7 +51,6 @@ Renderer::Renderer(std::shared_ptr<render::AbstractTexture> renderTarget,
 	_renderingBegin(Signal<Ptr>::create()),
 	_renderingEnd(Signal<Ptr>::create()),
 	_beforePresent(Signal<Ptr>::create()),
-	_surfaceDrawCalls(),
 	_surfaceTechniqueChangedSlot(),
 	_effect(effect),
 	_priority(priority),
@@ -74,7 +73,7 @@ Renderer::Renderer(std::shared_ptr<render::AbstractTexture> renderTarget,
 void
 Renderer::initialize()
 {
-	_drawCallPool = DrawCallPool::create(std::static_pointer_cast<Renderer>(shared_from_this()));
+	_drawCallPool = DrawCallPool::create();
 
 	_targetAddedSlot = targetAdded()->connect(std::bind(
 		&Renderer::targetAddedHandler,
@@ -258,13 +257,13 @@ Renderer::componentRemovedHandler(std::shared_ptr<Node>					node,
 void
 Renderer::addSurface(Surface::Ptr surface)
 {
-	_drawCallPool->addSurface(surface);
+    // FIXME
 }
 
 void
 Renderer::removeSurface(Surface::Ptr surface)
 {
-	_drawCallPool->removeSurface(surface);
+    // FIXME
 }
 
 void
@@ -274,8 +273,6 @@ Renderer::render(render::AbstractContext::Ptr	context,
 	if (!_enabled)
 		return;
 
-	_drawCalls = _drawCallPool->drawCalls();
-	
 	_renderingBegin->execute(std::static_pointer_cast<Renderer>(shared_from_this()));
 
 	if (_renderTarget)
@@ -307,9 +304,10 @@ Renderer::render(render::AbstractContext::Ptr	context,
 		(_backgroundColor & 0xff) / 255.f
 	);
 
-	for (auto& drawCall : _drawCalls)
-		if ((drawCall->layouts() & layoutMask()) != 0)
-			drawCall->render(context, renderTarget);
+    for (const auto& drawCall : _drawCallPool->drawCalls())
+        // FIXME: render the draw call only if it's the right layout
+		//if ((drawCall->layouts() & layoutMask()) != 0)
+			drawCall.render(context, renderTarget);
 
     if (bCustomViewport)
         context->setScissorTest(false, _viewportBox);

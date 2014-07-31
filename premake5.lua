@@ -87,7 +87,7 @@ solution "minko"
 		--include 'plugin/particles'
 		include 'plugin/png'
 		include 'plugin/sdl'
-		--include 'plugin/serializer'
+		include 'plugin/serializer'
 		include 'plugin/webgl'
 
 		-- work around the inability of Xcode to build all projects if no dependency exists between them

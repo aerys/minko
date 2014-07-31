@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "TextureTest.hpp"
 
 using namespace minko;
+using namespace minko::render;
 
 TEST_F(TextureTest, Create)
 {

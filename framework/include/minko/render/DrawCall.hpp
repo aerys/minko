@@ -37,9 +37,6 @@ namespace minko
             static const unsigned int			MAX_NUM_TEXTURES;
             static const unsigned int			MAX_NUM_VERTEXBUFFERS;
 
-		public:
-			typedef std::shared_ptr<DrawCall>   Ptr;
-
 		private:
             typedef const ProgramInputs::UniformInput&      ConstUniformInputRef;
             typedef const ProgramInputs::AttributeInput&    ConstAttrInputRef;
@@ -81,6 +78,8 @@ namespace minko
 			typedef std::shared_ptr<Program>			ProgramPtr;
 
 		private:
+            const data::BindingMap&             _macroBindings;
+
 			std::shared_ptr<render::Pass>		_pass;
 			std::shared_ptr<Program>			_program;
             uint*								_numIndices;
@@ -94,28 +93,22 @@ namespace minko
             std::shared_ptr<States>             _states;
 
 		public:
-			static inline
-			Ptr
-			create(std::shared_ptr<Pass> pass)
-			{
-				Ptr ptr = std::shared_ptr<DrawCall>(new DrawCall(pass));
+            DrawCall(const data::BindingMap& macroBindings) :
+                _macroBindings(macroBindings)
+            {
 
-				ptr->initialize();
+            }
 
-				return ptr;
-			}
-
+            const data::BindingMap&
+            macroBindings()
+            {
+                return _macroBindings;
+            }
+            
 			void
-			render(const std::shared_ptr<AbstractContext>& context, AbsTexturePtr renderTarget);
+			render(const std::shared_ptr<AbstractContext>& context, AbsTexturePtr renderTarget) const;
 
-		private:
-			explicit
-			DrawCall(std::shared_ptr<Pass>);
-
-			void
-			initialize();
-
-			void
+            void
             bind(std::shared_ptr<Program>   Program,
                  ContainerPtr               rootData,
                  ContainerPtr               rendererData,
@@ -124,6 +117,7 @@ namespace minko
                  const data::BindingMap&    uniformBindings,
                  const data::BindingMap&    stateBindings);
 
+		private:
             void
             bindUniform(std::shared_ptr<Program>    program,
                         ConstUniformInputRef        uniformInput,

@@ -63,22 +63,22 @@ namespace minko
 			Ptr
 			normalMap(AbsTexturePtr);
 
-			TexturePtr
+            render::ResourceId
 			normalMap() const;
 
 			Ptr
 			specularMap(AbsTexturePtr);
 
-			TexturePtr
+			render::ResourceId
 			specularMap() const;
 
 			Ptr
 			environmentMap(AbsTexturePtr, render::EnvironmentMap2dType type = render::EnvironmentMap2dType::Unset);
 
-			CubeTexturePtr
+            render::ResourceId
 			environmentCubemap() const;
 
-			TexturePtr
+            render::ResourceId
 			environmentMap2d() const;
 
 			render::EnvironmentMap2dType
@@ -93,7 +93,7 @@ namespace minko
 			Ptr
 			alphaMap(AbsTexturePtr);
 
-			TexturePtr
+            render::ResourceId
 			alphaMap() const;
 
 			Ptr

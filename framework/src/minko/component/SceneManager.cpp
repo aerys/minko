@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/AssetLibrary.hpp"
 #include "minko/scene/Node.hpp"
 #include "minko/render/AbstractTexture.hpp"
-#include "minko/data/StructureProvider.hpp"
+#include "minko/data/Provider.hpp"
 #include "minko/data/Container.hpp"
 
 using namespace minko;
@@ -38,7 +38,7 @@ SceneManager::SceneManager(const std::shared_ptr<render::AbstractContext>& conte
 	_cullEnd(Signal<Ptr>::create()),
 	_renderBegin(Signal<Ptr, uint, render::AbstractTexture::Ptr>::create()),
 	_renderEnd(Signal<Ptr, uint, render::AbstractTexture::Ptr>::create()),
-	_data(data::StructureProvider::create("scene"))
+	_data(data::Provider::create("scene"))
 {
 }
 

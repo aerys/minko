@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Common.hpp"
 #include "minko/component/AbstractComponent.hpp"
 #include "minko/scene/Layout.hpp"
+#include "minko/render/DrawCallPool.hpp"
 
 namespace minko
 {
@@ -36,29 +37,25 @@ namespace minko
 			public AbstractComponent
 		{
 		public:
-			typedef std::shared_ptr<Renderer>							Ptr;
+			typedef std::shared_ptr<Renderer>   Ptr;
 
 		private:
-			typedef std::shared_ptr<scene::Node>						NodePtr;
-			typedef std::shared_ptr<AbstractComponent>					AbsCmpPtr;
-			typedef std::shared_ptr<render::AbstractContext>			AbsContext;
-			typedef std::shared_ptr<Surface>							SurfacePtr;
-			typedef std::shared_ptr<render::DrawCall>					DrawCallPtr;
-			typedef std::list<DrawCallPtr>								DrawCallList;
-			typedef std::shared_ptr<SceneManager>						SceneManagerPtr;
-			typedef std::shared_ptr<render::AbstractTexture>			AbsTexturePtr;
-			typedef std::shared_ptr<render::Effect>						EffectPtr;
-			typedef std::shared_ptr<render::DrawCallPool>				DrawCallFactoryPtr;
-			typedef std::shared_ptr<data::AbstractFilter>				AbsFilterPtr;
-			typedef Signal<SurfacePtr, const std::string&, bool>::Slot	SurfaceTechniqueChangedSlot;
-			typedef Signal<AbsFilterPtr, SurfacePtr>::Slot				FilterChangedSlot;
-			typedef Signal<Ptr, AbsFilterPtr, data::BindingSource, SurfacePtr>		RendererFilterChangedSignal;
+			typedef std::shared_ptr<scene::Node>						        NodePtr;
+			typedef std::shared_ptr<AbstractComponent>					        AbsCmpPtr;
+			typedef std::shared_ptr<render::AbstractContext>			        AbsContext;
+			typedef std::shared_ptr<Surface>							        SurfacePtr;
+			typedef std::shared_ptr<render::DrawCall>					        DrawCallPtr;
+			typedef std::shared_ptr<SceneManager>						        SceneManagerPtr;
+			typedef std::shared_ptr<render::AbstractTexture>			        AbsTexturePtr;
+			typedef std::shared_ptr<render::Effect>						        EffectPtr;
+			typedef std::shared_ptr<render::DrawCallPool>				        DrawCallPoolPtr;
+			typedef std::shared_ptr<data::AbstractFilter>				        AbsFilterPtr;
+			typedef Signal<SurfacePtr, const std::string&, bool>::Slot	        SurfaceTechniqueChangedSlot;
+			typedef Signal<AbsFilterPtr, SurfacePtr>::Slot				        FilterChangedSlot;
+			typedef Signal<Ptr, AbsFilterPtr, data::BindingSource, SurfacePtr>	RendererFilterChangedSignal;
 
 		private:
 			std::string													_name;
-
-			DrawCallList												_drawCalls;
-			std::unordered_map<SurfacePtr, DrawCallList>				_surfaceDrawCalls; 
 
 			unsigned int												_backgroundColor;
             render::ScissorBox											_viewportBox;
@@ -85,7 +82,7 @@ namespace minko
 			Signal<SceneManagerPtr, uint, AbsTexturePtr>::Slot			_renderingBeginSlot;
 			std::unordered_map<SurfacePtr, SurfaceTechniqueChangedSlot>	_surfaceTechniqueChangedSlot;
 
-			DrawCallFactoryPtr											_drawCallPool;
+			DrawCallPoolPtr											    _drawCallPool;
 
 			std::set<AbsFilterPtr>										_targetDataFilters;
 			std::set<AbsFilterPtr>										_rendererDataFilters;
@@ -143,7 +140,7 @@ namespace minko
 			unsigned int
 			numDrawCalls()
 			{
-				return _drawCalls.size();
+				return _drawCallPool->drawCalls().size();
 			}
 
 			inline

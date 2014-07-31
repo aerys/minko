@@ -43,9 +43,8 @@ namespace minko
             typedef std::shared_ptr<animation::Matrix4x4Timeline>   MatrixTimelinePtr;
             typedef std::shared_ptr<render::AbstractContext>        AbsContextPtr;
 			typedef std::shared_ptr<component::Animation>			AnimationPtr;
-
-            typedef std::vector<std::shared_ptr<math::Matrix4x4>>   Matrices4x4Ptr;
-            typedef std::unordered_map<NodePtr, Matrices4x4Ptr>     NodeMatrices;
+            typedef std::vector<math::mat4>                         MatrixVector;
+            typedef std::unordered_map<NodePtr, MatrixVector>       NodeMatrices;
             typedef std::unordered_map<NodePtr, MatrixTimelinePtr>  NodeTransformTimeline;
 
         public:
@@ -79,7 +78,7 @@ namespace minko
             precomputeModelToRootMatrices(NodePtr, 
 										  NodePtr, 
 										  const NodeMatrices&, 
-										  Matrices4x4Ptr&);
+										  std::vector<math::mat4>&);
 
 			static 
 			void

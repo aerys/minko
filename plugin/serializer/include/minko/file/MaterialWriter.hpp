@@ -77,7 +77,9 @@ namespace minko
 			{
 				if (material->propertyHasType<TexturePtr>(propertyName))
 				{
-					std::tuple<uint, std::string> serializedTexture = serialize::TypeSerializer::serializeTexture(Any(dependency->registerDependency(material->get<TexturePtr>(propertyName))));
+					std::tuple<uint, std::string> serializedTexture = serialize::TypeSerializer::serializeTexture(Any(dependency->registerDependency(
+                        assets->getTextureByResourceId(material->get<int>(propertyName)))
+                    ));
 					TupleIntString serializedMsgTexture(std::get<0>(serializedTexture), std::get<1>(serializedTexture));
 
 					ComplexPropertyTuple serializedProperty(propertyName, serializedMsgTexture);

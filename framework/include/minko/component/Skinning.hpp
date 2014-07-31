@@ -36,8 +36,6 @@ namespace minko
 	{
 		class Skinning:
 			public MasterAnimation
-			/*,
-			public std::enable_shared_from_this<Skinning>*/
 		{
 		public:	
 			typedef std::shared_ptr<Skinning>						Ptr;
@@ -52,7 +50,7 @@ namespace minko
 			typedef std::shared_ptr<geometry::Geometry>				GeometryPtr;
 			typedef std::shared_ptr<geometry::Skin>					SkinPtr;
 			typedef std::shared_ptr<data::Provider>					ProviderPtr;
-			typedef std::shared_ptr<data::ArrayProvider>			ArrayProviderPtr;
+			typedef std::shared_ptr<data::Provider>			        ArrayProviderPtr;
 
 			typedef Signal<AbsCmpPtr, NodePtr>						TargetAddedOrRemovedSignal;
 			typedef Signal<NodePtr, NodePtr, NodePtr>				AddedOrRemovedSignal;
@@ -136,7 +134,7 @@ namespace minko
 			performSoftwareSkinning(NodePtr, const std::vector<float>&);
 
 			void
-			performSoftwareSkinning(render::VertexBuffer::AttributePtr, 
+			performSoftwareSkinning(const render::VertexAttribute&, 
 									render::VertexBuffer::Ptr, 
 									const std::vector<float>&, 
 									const std::vector<float>&, 

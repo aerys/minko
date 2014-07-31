@@ -45,12 +45,12 @@ AbstractFilter::currentSurface(component::Surface::Ptr value)
 		{
 			for (auto propertyName : _watchedProperties)
 			{
-				_surfaceTargetPropertyChangedSlots[target].push_back(target->data()->propertyReferenceChanged(propertyName)->connect(
+				_surfaceTargetPropertyChangedSlots[target].push_back(target->data()->propertyChanged(propertyName)->connect(
 					[=](Container::Ptr, const std::string&)
 					{
 						changed()->execute(shared_from_this(), value);
 					}
-					));
+		        ));
 			}
 		}
 	}

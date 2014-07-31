@@ -55,6 +55,12 @@ namespace minko
 			AbstractLight::Ptr
 			color(const math::vec3&);
 
+            Layouts
+            layoutMask() const
+            {
+                return AbstractComponent::layoutMask();
+            }
+
 			void
 			layoutMask(Layouts value);
 

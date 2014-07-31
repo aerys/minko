@@ -82,13 +82,13 @@ namespace minko
 			Ptr
             diffuseMap(TexturePtr);
 
-			TexturePtr
+			render::ResourceId
 			diffuseMap() const;
 
 			Ptr
 			diffuseCubeMap(AbsTexturePtr);
 
-			CubeTexturePtr
+			render::ResourceId
 			diffuseCubeMap() const;
 
 			Ptr
@@ -207,15 +207,6 @@ namespace minko
 
 			bool
 			zSorted() const;
-
-			Ptr
-			isTransparent(bool transparent, bool zSort = false);
-
-			Ptr
-			target(AbsTexturePtr);
-
-			AbsTexturePtr
-			target() const;
 
 		protected:
 			BasicMaterial();

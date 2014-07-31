@@ -155,7 +155,7 @@ namespace minko
             Program&
             setUniform(const std::string& name, T v)
             {
-                return setUniform<1>(name, 1, &v);
+                return setUniform<T, 1>(name, 1, &v);
             }
 
             template <typename T, int P>

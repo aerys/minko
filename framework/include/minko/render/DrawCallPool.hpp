@@ -22,24 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Common.hpp"
 
 #include "minko/Signal.hpp"
-
-namespace std
-{
-	template<>
-	struct hash< std::pair<std::shared_ptr<minko::component::Surface>, std::shared_ptr<minko::scene::Node>>>
-	{
-		inline
-		size_t
-		operator()(const std::pair<std::shared_ptr<minko::component::Surface>, std::shared_ptr<minko::scene::Node>>& x) const
-		{
-			size_t seed = std::hash<long>()(long(x.first.get()));
-
-			hash_combine(seed, std::hash<long>()(long(x.second.get())));
-
-			return seed;
-		}
-	};
-}
+#include "minko/render/Effect.hpp"
+#include "minko/render/DrawCall.hpp"
 
 namespace minko
 {
@@ -50,10 +34,11 @@ namespace minko
 			public std::enable_shared_from_this<DrawCallPool>
 		{
 		public:
-			typedef std::shared_ptr<DrawCallPool>														Ptr;
+			typedef std::shared_ptr<DrawCallPool>   Ptr;
 
 		private:
-            std::list<std::shared_ptr<DrawCall>> _drawCalls;
+            std::list<DrawCall>     _drawCalls;
+            std::set<std::string>   _watchedProperties;
 
 		public:
 			inline static
@@ -65,7 +50,7 @@ namespace minko
 				return ptr;
 			}
 
-			const std::list<std::shared_ptr<DrawCall>>&
+			const std::list<DrawCall>&
 			drawCalls();
 			
 		private:
@@ -74,6 +59,48 @@ namespace minko
 
 			void
 			initialize();
+
+            void
+            addDrawCalls(std::shared_ptr<Effect>                                effect,
+                         const std::unordered_map<std::string, std::string>&    variables,
+                         const std::string&                                     techniqueName,
+                         std::shared_ptr<data::Container>                       rootData,
+                         std::shared_ptr<data::Container>                       rendererData,
+                         std::shared_ptr<data::Container>                       targetData)
+            {
+                const auto& technique = effect->technique(techniqueName);
+                
+                for (const auto& pass : technique)
+                {
+                    auto program = pass->selectProgram(
+                        translateMacroPropertyNames(pass->macroBindings(), variables),
+                        targetData,
+                        rendererData,
+                        rootData
+                    );
+                }
+            }
+
+            std::unordered_map<std::string, std::string>
+            translateMacroPropertyNames(const data::MacroBindingMap&                        macroBindings,
+                                        const std::unordered_map<std::string, std::string>& variables)
+            {
+                std::unordered_map<std::string, std::string> formattedNames;
+
+                for (const auto& macroBinding : macroBindings)
+                {
+                    for (const auto& variable : variables)
+                    {
+                        auto pos = macroBinding.first.find(variable.first);
+
+                        if (pos != std::string::npos)
+                            formattedNames[macroBinding.first] = macroBinding.first.substr(0, pos)
+                            + variable.second + macroBinding.first.substr(pos + variable.second.size());
+                    }
+                }
+
+                return formattedNames;
+            }
 		};
 	}
 }
