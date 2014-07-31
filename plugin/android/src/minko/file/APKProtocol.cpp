@@ -51,6 +51,8 @@ APKProtocol::load()
 		cleanFilename += filename.at(i);
 	}
 
+	cleanFilename = File::canonizeFilename(cleanFilename);
+
 	_options = options;
 
 	auto realFilename = options->uriFunction()(File::sanitizeFilename(cleanFilename));
@@ -91,5 +93,7 @@ APKProtocol::load()
 		_complete->execute(shared_from_this());
 	}
 	else
+	{
 		_error->execute(shared_from_this());
+	}
 }
