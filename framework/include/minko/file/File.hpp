@@ -84,9 +84,7 @@ namespace minko
             canonizeFilename(const std::string& filename);
 
         private:
-            File()
-            {
-            };
+            File() = default;
         };
     }
 }

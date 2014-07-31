@@ -365,6 +365,12 @@ namespace minko
 	{
 		class Worker;
 	}
+
+	namespace log
+	{
+		class Logger;
+		class ConsoleSink;
+	}
 }
 
 template<typename T>

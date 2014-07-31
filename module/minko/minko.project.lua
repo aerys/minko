@@ -30,14 +30,9 @@ minko.project.library = function(name)
 			"/wd4503"				-- remove warnings about too long type names
 		}
 
-	configuration { "html5" }
-		if EMSCRIPTEN then
-			includedirs { EMSCRIPTEN .. "/system/include" }
-		end
-
 	configuration { "html5", "debug" }
 		buildoptions {
-			"-g4"
+			"-g4"					-- for source maps
 		}
 
 	configuration { }
@@ -313,11 +308,6 @@ minko.project.application = function(name)
 			minko.action.copy(minko.sdk.path("/framework/asset")),
 			minko.action.copy("asset")
 		}
-
-		-- activity "MinkoTest"
-		-- baseactivity "Activity"
-		-- packagename "app"
-		-- basepackagename "io.minko"
 
 	configuration { "ios", "debug" }
 		libdirs {

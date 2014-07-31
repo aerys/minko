@@ -81,11 +81,12 @@ Canvas::initialize()
 #if MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
     file::Options::defaultProtocolFunction("file", [](const std::string& filename)
     {
-        return minko::file::APKProtocol::create();
+        return file::APKProtocol::create();
     });
 
-    // std::cout.rdbuf(new minko::log::AndroidStreambuf());
-    // std::cerr.rdbuf(new minko::log::AndroidStreambuf());
+    log::Logger::defaultLogger(
+        log::Logger::create(log::Logger::Level::Debug, log::AndroidLogSink::create())
+    );
 #endif
 
     initializeWindow();
@@ -159,6 +160,13 @@ Canvas::initializeWindow()
         _width, _height,
         sdlFlags
     );
+
+    // Reset window size after window creation because certain platforms (iOS, Android)
+    // ignore passed arguments and use fullscreen window size.
+    int w, h;
+    SDL_GetWindowSize(_window, &w, &h);
+    width(w);
+    height(h);
 #endif
 }
 
@@ -185,10 +193,6 @@ Canvas::initializeContext()
 
     if (!_context)
         throw std::runtime_error("Could not create context");
-
-    // Reset after context is created to trigger resized signal.
-    width(_width);
-    height(_height);
 }
 
 uint
@@ -680,6 +684,7 @@ Canvas::step()
                     break;
 
                 default:
+                    _resized->execute(that, width(), height());
                     break;
             }
             break;

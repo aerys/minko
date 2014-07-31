@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -17,44 +17,29 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#pragma once
+#include "minko/log/Logger.hpp"
+#include "minko/log/ConsoleSink.hpp"
 
-#include <android/log.h>
+using namespace minko;
+using namespace minko::log;
 
-namespace minko
+
+Logger::Ptr
+Logger::_default = Logger::create(Logger::Level::Debug, ConsoleSink::create());
+
+void
+Logger::operator()(const std::string&		message,
+				   Level					level,
+				   const char*				function,
+				   const char*				file,
+				   int						line)
 {
-	namespace log
-	{
-		class AndroidStreambuf : public std::streambuf
-		{
-		public:
-			enum { bufsize = 2048 }; // ... or some other suitable buffer size
+	if (static_cast<int>(level) < static_cast<int>(_level))
+		return;
 
-			AndroidStreambuf() { this->setp(_buffer, _buffer + bufsize - 1); }
+	std::ostringstream os;
 
-		private:
-			int overflow(int c)
-			{
-				if (c == traits_type::eof())
-				{
-					*this->pptr() = traits_type::to_char_type(c);
-					this->sbumpc();
-				}
-				return this->sync() ? traits_type::eof() : traits_type::not_eof(c);
-			}
+	os << file << ":" << line << "\t" << function << "(): " << message;
 
-			int sync()
-			{
-				if (this->pbase() != this->pptr())
-				{
-					std::string buf(this->pbase(), this->pptr() - this->pbase());
-					__android_log_print(ANDROID_LOG_INFO, "minko", buf.c_str());
-					this->setp(_buffer, _buffer + bufsize - 1);
-				}
-				return 0;
-			}
-
-			char _buffer[bufsize];
-		};
-	}
+	_sink->write(os.str(), level);
 }

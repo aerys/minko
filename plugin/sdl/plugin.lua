@@ -72,7 +72,7 @@ function minko.plugin.sdl:enable()
 
 	configuration { "html5" }
 		removeincludedirs { minko.plugin.path("sdl") .. "/lib/sdl/include" }
-		includedirs { EMSCRIPTEN .. "/system/include/SDL" }
+		includedirs { "SDL" }
 		minko.plugin.enable { "webgl" }
 
 	configuration { "android" }

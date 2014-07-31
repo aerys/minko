@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -19,4 +19,51 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #pragma once
 
-#include "minko/file/APKLoader.hpp"
+#include "minko/log/Logger.hpp"
+
+#include <iostream>
+
+namespace minko
+{
+	namespace log
+	{
+		class ConsoleSink :
+			public Logger::Sink
+		{
+		public:
+			static
+			Ptr
+			create()
+			{
+				return std::shared_ptr<ConsoleSink>(new ConsoleSink());
+			}
+
+			void
+			write(const std::string& log, Logger::Level level) override
+			{
+				std::cout << getLevelName(level) << ": " << log << std::endl;
+			}
+
+			std::string
+			getLevelName(Logger::Level level) const
+			{
+				switch (level)
+				{
+				case Logger::Level::Debug:
+					return "debug";
+				case Logger::Level::Info:
+					return "info";
+				case Logger::Level::Warning:
+					return "warning";
+				case Logger::Level::Error:
+					return "error";
+				}
+
+				return "info";
+			}
+
+		private:
+			ConsoleSink() = default;
+		};
+	}
+}

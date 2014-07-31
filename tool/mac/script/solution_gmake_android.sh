@@ -1,0 +1,1 @@
+../../lin/script/solution_gmake_android.sh

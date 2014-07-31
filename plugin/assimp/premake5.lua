@@ -90,3 +90,8 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 			"-Wimplicit-function-declaration",
 			"-Wparentheses-equality"
 		}
+
+	configuration { "android" }
+		buildoptions {
+			"-Wno-attributes"
+		}
