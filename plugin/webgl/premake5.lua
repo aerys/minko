@@ -24,7 +24,7 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 	includedirs {
 		"include",
 		minko.plugin.path("sdl") .. "/include",
-		EMSCRIPTEN .. "/system/include/SDL"
+		"SDL"
 	}
 
 	-- minko.plugin.enable { "sdl" }
