@@ -39,6 +39,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/FileProtocol.hpp"
 #include "minko/file/Options.hpp"
 #include "minko/file/AssetLibrary.hpp"
+#include "minko/log/Logger.hpp"
 #include "json/json.h"
 
 using namespace minko;
@@ -631,11 +632,9 @@ EffectParser::glslIncludeCompleteHandler(LoaderPtr 			        loader,
 void
 EffectParser::dependencyErrorHandler(std::shared_ptr<Loader> loader, const ParserError& error, const std::string& filename)
 {
-#ifdef DEBUG
-	std::cerr << "Unable to load dependency '" << filename << "', included paths are:" << std::endl;
+	LOG_ERROR("unable to load dependency '" << filename << "', included paths are:");
 	for (auto& path : loader->options()->includePaths())
-		std::cerr << path << std::endl;
-#endif // defined(DEBUG)
+		LOG_ERROR("\t" << path);
 
 	throw file::ParserError("Unable to load dependencies.");
 }
@@ -772,14 +771,59 @@ EffectParser::parsePriority(const Json::Value& contextNode,
 	return ret;
 }
 
+static
+bool
+subStringIsNotEmpty(const std::string& str, char endDelimiter, int& offset)
+{
+    auto endDelimiterOffset = str.find_first_of(endDelimiter);
+
+    if (endDelimiterOffset == std::string::npos)
+        return false;
+
+    auto subString = str.substr(offset, endDelimiterOffset - offset);
+
+    offset = endDelimiterOffset + 1;
+
+    return !subString.empty();
+}
+
+static
+bool
+propertyHasVariable(const std::string& propertyName)
+{
+    // match regex: ".*\\[\\$\\{.*\\}\\]\\."
+
+    auto offset = 0;
+
+    if (!subStringIsNotEmpty(propertyName, '[', offset))
+        return false;
+
+    if (offset < propertyName.size() || propertyName[offset++] != '$')
+        return false;
+
+    if (offset < propertyName.size() || propertyName[offset++] != '{')
+        return false;
+
+    if (!subStringIsNotEmpty(propertyName, '}', offset))
+        return false;
+
+    if (offset < propertyName.size() || propertyName[offset++] != ']')
+        return false;
+
+    if (offset < propertyName.size() || propertyName[offset++] != '.')
+        return false;
+
+    return true;
+}
+
 void
-EffectParser::parseBindingNameAndSource(const Json::Value&	contextNode, 
-										std::string&		propertyName, 
-										BindingSource&		source,
-										RegexPtr&			regexp)
+EffectParser::parseBindingNameAndSource(const Json::Value&	    contextNode, 
+										std::string&		    propertyName, 
+										BindingSource&		    source,
+										MacroRegexPredicate&	regex)
 {
 	source	= BindingSource::TARGET;
-	regexp	= nullptr;
+
 	if (contextNode.isString())
 		propertyName = contextNode.asString();
 	else if (contextNode.isObject())
@@ -805,17 +849,42 @@ EffectParser::parseBindingNameAndSource(const Json::Value&	contextNode,
 
 	if (!propertyName.empty())
 	{
-		const auto withVariableRegex	= std::regex(".*\\[\\$\\{.*\\}\\].*");
-		const auto variableRegex		= std::regex("(\\$\\{)(.*)\\}");
-	
-		if (std::regex_match(propertyName, withVariableRegex))
+        auto filteredMacroHandler = [](const std::string& macro) -> bool
+        {
+            // match regex ".*\\[\\d\\]\\.*"
+
+            auto offset = 0;
+
+            if (!subStringIsNotEmpty(macro, '[', offset))
+                return false;
+
+            auto nextOffset = macro.find_first_of(']', offset);
+
+            if (nextOffset == std::string::npos)
+                return false;
+
+            auto indexString = macro.substr(offset, nextOffset - offset);
+
+            for (auto i = 0; i < indexString.size(); ++i)
+                if (indexString[i] < '0' || indexString[i] > '9')
+                    return false;
+
+            offset = nextOffset + 1;
+
+            if (macro[offset++] != '.')
+                return false;
+
+            if (offset >= macro.size())
+                return false;
+
+            return true;
+        };
+
+        if (propertyHasVariable(propertyName))
 		{
 			// generate regex to recognize the macro when coming from filtered out data provider
 	
-			auto regexString	= std::regex_replace(propertyName, variableRegex, std::string("\\d"));
-			regexString			= std::regex_replace(regexString, std::regex("(\\[|\\.|\\])"), std::string("\\$&"));
-
-			regexp				= std::shared_ptr<std::regex>(new std::regex(regexString));
+            regex = filteredMacroHandler;
 		}
 	}
 }
@@ -852,7 +921,7 @@ EffectParser::parseBindings(const Json::Value&	contextNode,
 }
 
 void
-EffectParser::parseMacroBindings(const Json::Value&	contextNode, MacroBindingMap&	macroBindings)
+EffectParser::parseMacroBindings(const Json::Value&	contextNode, MacroBindingMap& macroBindings)
 {
 	auto macroBindingsValue = contextNode.get("macroBindings", 0);
 
@@ -1385,9 +1454,7 @@ EffectParser::finalize()
 		else
 			_effect->addTechnique("default", viableTechnique);
 
-#ifdef DEBUG
-		std::cerr << "Warning:\tEffect '" << _effectName << "' does not provide achievable default technique ('" << _defaultTechnique << "'), switched to '" << viableTechniqueName << "'" << std::endl;
-#endif // DEBUG
+		LOG_WARNING("Effect '" << _effectName << "' does not provide achievable default technique ('" << _defaultTechnique << "'), switched to '" << viableTechniqueName << "'");
 	}
 
 #ifdef DEBUG_FALLBACK

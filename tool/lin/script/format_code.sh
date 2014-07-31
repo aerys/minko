@@ -9,8 +9,8 @@ PROJECTS="framework plugin/*"
 FILES="src/*.cpp src/*.hpp include/*.hpp"
 
 for PROJECT in $PROJECTS ; do
-    pushd ${PROJECT}/${DIR}
+    pushd ${PROJECT}/${DIR} > /dev/null
     ${ASTYLE} ${MODE_OPTIONS} ${STYLE_OPTIONS} ${FILES}
     ${SED} -i'' -e 's/[ \t]*$//' ${FILES}
-    popd
+    popd > /dev/null
 done

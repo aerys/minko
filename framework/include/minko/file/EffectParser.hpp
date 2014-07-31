@@ -215,15 +215,16 @@ namespace minko
 									  std::string&			name, 
 									  data::BindingSource&	source)
 			{
-				RegexPtr regex = nullptr;
+				data::MacroRegexPredicate regex;
+
 				parseBindingNameAndSource(contextNode, name, source, regex);
 			}
 
 			void
-			parseBindingNameAndSource(const Json::Value&	contextNode, 
-									  std::string&			name, 
-									  data::BindingSource&	source,
-									  RegexPtr&				regexp);
+			parseBindingNameAndSource(const Json::Value&	        contextNode, 
+									  std::string&			        name, 
+									  data::BindingSource&	        source,
+									  data::MacroRegexPredicate&	regex);
 
 			void
 			parseBindings(const Json::Value&		contextNode,

@@ -72,7 +72,7 @@ int main(int argc, char** argv)
 			->addComponent(Surface::create(
 				geometry::CubeGeometry::create(context),
 				material::BasicMaterial::create()
-					->diffuseCubeMap(assets->texture("texture/skybox.jpg"))
+					->diffuseCubeMap(assets->cubeTexture("texture/skybox.jpg"))
 					->triangleCulling(render::TriangleCulling::FRONT),
 				assets->effect("effect/Basic.effect")
 			));

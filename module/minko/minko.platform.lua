@@ -15,7 +15,7 @@ minko.platform.supports = function(targets)
 
 	for _, target in pairs(targets) do
 		if target == "html5" then
-			if EMSCRIPTEN and _ACTION == "gmake" then
+			if premake.tools.gcc.tools.emscripten and _ACTION == "gmake" then
 				return true
 			end
 		elseif target == "linux32" or target == "linux64" or target == "linux" then
@@ -35,7 +35,7 @@ minko.platform.supports = function(targets)
 				return true
 			end
 		elseif target == "android" then
-			if ANDROID_HOME and _ACTION == "gmake" then
+			if premake.tools.gcc.tools.android and _ACTION == "gmake" then
 				return true
 			end
 		end

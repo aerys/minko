@@ -953,7 +953,7 @@ DrawCall::trackMacros()
 			}
 			else if (regex)
 			{
-				_containerMacroRegex[uint(ContainerId::COMPLETE)].push_back(*regex);
+				_containerMacroRegex[uint(ContainerId::COMPLETE)].push_back(regex);
 			}
 			else
 			{
@@ -979,7 +979,7 @@ DrawCall::isTrackedMacro(const std::string& propertyName, ContainerId id) const
 		const auto& macroRegex	= _containerMacroRegex.find(uint(id))->second;
 	
 		for (auto& regex : macroRegex)
-			if (std::regex_match(propertyName, regex))
+            if (regex(propertyName))
 				return true;
 	}
 

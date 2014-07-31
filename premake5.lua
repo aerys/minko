@@ -93,6 +93,8 @@ solution "minko"
 		-- work around the inability of Xcode to build all projects if no dependency exists between them
 		if os.is("macosx")  and (_ACTION == "xcode-ios" or _ACTION == "xcode-osx") then
 			minko.project.library "all"
+				objdir "/tmp/minko/obj"
+
 				local plugins = os.matchdirs('plugin/*')
 
 				for i, basedir in ipairs(plugins) do
@@ -128,7 +130,6 @@ solution "minko"
 		include 'example/physics'
 		include 'example/picking'
 		include 'example/raycasting'
-		include 'example/reflection'
 		include 'example/serializer'
 		include 'example/sky-box'
 		include 'example/stencil'

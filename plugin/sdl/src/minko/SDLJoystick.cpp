@@ -20,19 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Canvas.hpp"
 #include "minko/SDLJoystick.hpp"
 
-#if defined(EMSCRIPTEN)
-# include "minko/MinkoWebGL.hpp"
-# include "SDL/SDL.h"
-# include "emscripten/emscripten.h"
-#elif defined(MINKO_ANGLE)
-# include "SDL2/SDL.h"
-# include "SDL2/SDL_syswm.h"
-# include <EGL/egl.h>
-# include <GLES2/gl2.h>
-# include <GLES2/gl2ext.h>
-#else
-# include "SDL.h"
-#endif
+#include "SDL.h"
 
 using namespace minko;
 
