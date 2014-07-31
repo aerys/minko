@@ -21,7 +21,7 @@ void main()
 	vec4 pos = uViewMatrix * uModelToWorldMatrix * vec4(0., 0., 0., 1.);
 	vec3 scale = mat3(uModelToWorldMatrix) * vec3(1.0);
 
-	pos += vec4(aPosition, 0.);
+	pos += vec4(aPosition * scale, 0.);
 	
 	#ifdef DIFFUSE_MAP
 		vUV = aUV;
