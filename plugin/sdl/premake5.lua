@@ -1,4 +1,9 @@
-if minko.platform.supports { "android" } then
+newoption {
+	trigger			= "rebuild-sdl",
+	description		= "Rebuilds SDL for the specified platform."
+}
+
+if _OPTIONS["rebuild-sdl"] then
 	include "lib/sdl"
 end
 
