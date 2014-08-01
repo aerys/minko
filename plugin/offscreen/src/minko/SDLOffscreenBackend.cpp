@@ -17,31 +17,36 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "minko/SDLWebGLBackend.hpp"
+#include "minko/SDLOffscreenBackend.hpp"
+#include "minko/MinkoSDL.hpp"
 
 #include <GL/osmesa.h>
 
 using namespace minko;
 
 void
-SDLWebGLBackend::initialize(std::shared_ptr<Canvas> canvas)
+SDLOffscreenBackend::initialize(std::shared_ptr<Canvas> canvas)
 {
-	GLfloat[]* backBuffer = new GLfloat[canvas->width() * canvas->height() * 4]);
-
-	if (!backBuffer)
+	try
+	{
+		_backBuffer.resize(canvas->width() * canvas->height() * 4);
+	}
+	catch (const std::bad_alloc&)
+	{
 		throw std::runtime_error("Could not create offscreen backbuffer");
+	}
 
 	OSMesaContext offscreenContext = OSMesaCreateContextExt(GL_RGBA, 32, 0, 0, NULL);
 
 	if (!offscreenContext)
 		throw std::runtime_error("Could not create offscreen context");
 
-	if (!OSMesaMakeCurrent(offscreenContext, backBuffer, GL_FLOAT, canvas->width(), canvas->height()))
+	if (!OSMesaMakeCurrent(offscreenContext, &*_backBuffer.begin(), GL_FLOAT, canvas->width(), canvas->height()))
 		throw std::runtime_error("Could not make offscreen context current");
 }
 
 void
-SDLWebGLBackend::swapBuffers(std::shared_ptr<Canvas> canvas)
+SDLOffscreenBackend::swapBuffers(std::shared_ptr<Canvas> canvas)
 {
 	// Nothing.
 }
