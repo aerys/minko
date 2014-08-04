@@ -305,7 +305,7 @@ namespace minko
 		bool
 		isWorkerRegistered(const std::string& name)
 		{
-			return _workers.count(name);
+			return _workers.count(name) != 0;
 		};
 
 		bool

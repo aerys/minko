@@ -98,7 +98,7 @@ Canvas::initialize()
 #endif
 
 #if MINKO_PLATFORM == MINKO_PLATFORM_WINDOWS
-    SetConsoleCtrlHandler([](uint type) { return type == CTRL_CLOSE_EVENT; }, true);
+	SetConsoleCtrlHandler([](DWORD type) -> BOOL WINAPI { return type == CTRL_CLOSE_EVENT; }, true);
 #endif
 }
 
