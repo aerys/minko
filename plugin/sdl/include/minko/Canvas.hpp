@@ -101,14 +101,14 @@ namespace minko
         static inline
         Ptr
         create(const std::string&    name,
-               const uint            width,
-               const uint            height,
+               const uint            width      = 1280,
+               const uint            height     = 720,
                bool                  useStencil = false,
                bool                  chromeless = false)
         {
             auto canvas = std::shared_ptr<Canvas>(new Canvas(name, width, height, useStencil, chromeless));
 
-#if defined(__ANDROID__)
+#if MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
             auto that = canvas->shared_from_this();
 #endif
 
@@ -139,7 +139,11 @@ namespace minko
         uint
         height();
 
+<<<<<<< HEAD
         float
+=======
+        uint
+>>>>>>> Add Canvas::aspectRatio() and set width/height argument default values to 720p.
         aspectRatio()
         {
             return float(width()) / float(height());
