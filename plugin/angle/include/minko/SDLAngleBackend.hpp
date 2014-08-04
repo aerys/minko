@@ -44,9 +44,6 @@ namespace minko
 		virtual void
 		initialize(std::shared_ptr<Canvas> canvas);
 
-		virtual void
-		swapBuffers(std::shared_ptr<Canvas> canvas);
-
 	private:
 		SDLAngleBackend() = default;
 	};

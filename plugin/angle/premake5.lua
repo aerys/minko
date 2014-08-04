@@ -21,5 +21,6 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 
 	includedirs {
 		"include",
-		"lib/win/ANGLE/include"
+		minko.plugin.path("sdl") .. "/include",
+		minko.plugin.path("sdl") .. "/lib/sdl/include"
 	}

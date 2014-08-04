@@ -19,94 +19,22 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/SDLAngleBackend.hpp"
 
-#include <EGL/egl.h>
-#include <GLES2/gl2.h>
-#include <GLES2/gl2ext.h>
+#include "minko/Canvas.hpp"
+
+#include "SDL.h"
 
 using namespace minko;
 
 void
 SDLAngleBackend::initialize(std::shared_ptr<Canvas> canvas)
 {
-    EGLint configAttribList[] =
-    {
-        EGL_RED_SIZE, 8,
-        EGL_GREEN_SIZE, 8,
-        EGL_BLUE_SIZE, 8,
-        EGL_ALPHA_SIZE, 8,
-        EGL_DEPTH_SIZE, 16,
-        EGL_STENCIL_SIZE, 8,
-        EGL_SAMPLE_BUFFERS, 0,
-        EGL_NONE
-    };
-    EGLint surfaceAttribList[] =
-    {
-        EGL_RENDER_BUFFER, EGL_BACK_BUFFER,
-        EGL_NONE, EGL_NONE
-    };
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_EGL, 1);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
 
-    SDL_SysWMinfo info;
-    SDL_VERSION(&info.version);
+	SDL_GLContext glContext = SDL_GL_CreateContext(canvas->window());
 
-    if (!SDL_GetWindowWMInfo(window, &info))
-        throw std::runtime_error("Could not create Angle context backend");
-
-    EGLNativeWindowType hWnd = info.info.win.window;
-
-    ESContext* es_context = new ESContext();
-    es_context->width = width;
-    es_context->height = height;
-    es_context->hWnd = hWnd;
-
-    EGLDisplay display;
-    EGLint numConfigs;
-    EGLint majorVersion;
-    EGLint minorVersion;
-    EGLContext context;
-    EGLSurface surface;
-    EGLConfig config;
-    EGLint contextAttribs[] = { EGL_CONTEXT_CLIENT_VERSION, 2, EGL_NONE, EGL_NONE };
-
-    display = eglGetDisplay(GetDC(hWnd)); // EGL_DEFAULT_DISPLAY
-    if (display == EGL_NO_DISPLAY)
-        throw std::runtime_error("Could not create Angle context backend");
-
-    // Initialize EGL
-    if (!eglInitialize(display, &majorVersion, &minorVersion))
-        throw std::runtime_error("Could not create Angle context backend");
-
-    // Get configs
-    if (!eglGetConfigs(display, NULL, 0, &numConfigs))
-        throw std::runtime_error("Could not create Angle context backend");
-
-    // Choose config
-    if (!eglChooseConfig(display, configAttribList, &config, 1, &numConfigs))
-        throw std::runtime_error("Could not create Angle context backend");
-
-    // Create a surface
-    surface = eglCreateWindowSurface(display, config, (EGLNativeWindowType)hWnd, surfaceAttribList);
-    if (surface == EGL_NO_SURFACE)
-        throw std::runtime_error("Could not create Angle context backend");
-
-    // Create a GL context
-    context = eglCreateContext(display, config, EGL_NO_CONTEXT, contextAttribs);
-    if (context == EGL_NO_CONTEXT)
-        throw std::runtime_error("Could not create Angle context backend");
-
-    // Make the context current
-    if (!eglMakeCurrent(display, surface, surface, context))
-        throw std::runtime_error("Could not create Angle context backend");
-
-    es_context->eglDisplay = display;
-    es_context->eglSurface = surface;
-    es_context->eglContext = context;
-
-    _context = es_context;
-}
-
-void
-SDLAngleBackend::swapBuffers(std::shared_ptr<Canvas> canvas)
-{
-	auto context = reinterpret_cast<ESContext>(_context);
-    eglSwapBuffers(context->eglDisplay, context->eglSurface);
+	if (!glContext)
+		throw std::runtime_error("Could not create Angle context");
 }
