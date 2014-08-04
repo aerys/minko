@@ -3,11 +3,7 @@
 #include "minko/Minko.hpp"
 #include "minko/MinkoTests.hpp"
 
-#if defined(MINKO_PLUGIN_OFFSCREEN)
-# include "minko/MinkoOffscreen.hpp"
-#else
-# include "minko/MinkoSDL.hpp"
-#endif
+#include "minko/MinkoSDL.hpp"
 
 using namespace minko;
 
@@ -19,19 +15,11 @@ void wait()
 
 int main(int argc, char **argv)
 {
-#if defined(MINKO_PLUGIN_OFFSCREEN)
-	MinkoOffscreen::initialize("Minko Tests", 640, 480);
-#else
 	auto canvas = Canvas::create("Minko Tests", 640, 480);
-#endif
 
 	::testing::InitGoogleTest(&argc, argv);
 
-#if defined(MINKO_PLUGIN_OFFSCREEN)
-	MinkoTests::context(MinkoOffscreen::context());
-#else
 	MinkoTests::context(canvas->context());
-#endif
 
 	auto output = RUN_ALL_TESTS();
 
