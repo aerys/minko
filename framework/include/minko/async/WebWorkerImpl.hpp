@@ -29,88 +29,88 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace async
-	{
-		class Worker::WorkerImpl
-		{
-		public:
-			void
-			start(const std::vector<char>& input)
-			{
-				std::cout << "WebWorkerImpl::start()" << std::endl;;
+    namespace async
+    {
+        class Worker::WorkerImpl
+        {
+        public:
+            void
+            start(const std::vector<char>& input)
+            {
+                std::cout << "WebWorkerImpl::start()" << std::endl;;
 
-				char* data = const_cast<char*>(&*input.begin());
+                char* data = const_cast<char*>(&*input.begin());
 
-				emscripten_call_worker(_handle, "minkoWorkerEntryPoint", data, input.size(), &messageHandler, this);
-			}
+                emscripten_call_worker(_handle, "minkoWorkerEntryPoint", data, input.size(), &messageHandler, this);
+            }
 
-			void
-			poll()
-			{
-				// std::cout << "WebWorkerImpl::poll()" << std::endl;;
+            void
+            poll()
+            {
+                // std::cout << "WebWorkerImpl::poll()" << std::endl;;
 
-				if (!_messages.empty())
-				{
-					std::cout << "WebWorkerImpl::poll(): message execute" << std::endl;
-					_message->execute(_that->shared_from_this(), _messages.front());
-					_messages.pop();
-				}
-			}
+                if (!_messages.empty())
+                {
+                    std::cout << "WebWorkerImpl::poll(): message execute" << std::endl;
+                    _message->execute(_that->shared_from_this(), _messages.front());
+                    _messages.pop();
+                }
+            }
 
-			void
-			post(Message message)
-			{
-				emscripten_worker_respond(const_cast<char*>(message.type.c_str()), message.type.size());
-				emscripten_worker_respond(&*message.data.begin(), message.data.size());
-			}
+            void
+            post(Message message)
+            {
+                emscripten_worker_respond(const_cast<char*>(message.type.c_str()), message.type.size());
+                emscripten_worker_respond(&*message.data.begin(), message.data.size());
+            }
 
-			Signal<Ptr, Message>::Ptr
-			message()
-			{
-				return _message;
-			}
+            Signal<Ptr, Message>::Ptr
+            message()
+            {
+                return _message;
+            }
 
-			~WorkerImpl()
-			{
-				emscripten_destroy_worker(_handle);
-			}
+            ~WorkerImpl()
+            {
+                emscripten_destroy_worker(_handle);
+            }
 
-			WorkerImpl(Worker* that, const std::string& name) :
-				_that(that),
-				_message(Signal<Ptr, Message>::create())
-			{
-				std::string path = "minko-worker-" + name + ".js";
-				_handle = emscripten_create_worker(path.c_str());
-			}
+            WorkerImpl(Worker* that, const std::string& name) :
+                _that(that),
+                _message(Signal<Ptr, Message>::create())
+            {
+                std::string path = "minko-worker-" + name + ".js";
+                _handle = emscripten_create_worker(path.c_str());
+            }
 
-		private:
-			Worker*										_that;
-			std::string									_messageType;
-			std::queue<Message>							_messages;
-			std::shared_ptr<Signal<Ptr, Message>>		_message;
-			int											_handle;
+        private:
+            Worker*                                        _that;
+            std::string                                    _messageType;
+            std::queue<Message>                            _messages;
+            std::shared_ptr<Signal<Ptr, Message>>        _message;
+            int                                            _handle;
 
-			static
-			void
-			messageHandler(char* data, int size, void* arg)
-			{
-				WorkerImpl* worker = static_cast<WorkerImpl*>(arg);
+            static
+            void
+            messageHandler(char* data, int size, void* arg)
+            {
+                WorkerImpl* worker = static_cast<WorkerImpl*>(arg);
 
-				std::cout << "WebWorkerImpl::messageHandler(): " << size << std::endl;;
+                std::cout << "WebWorkerImpl::messageHandler(): " << size << std::endl;;
 
-				if (worker->_messageType.empty())
-				{
-					std::cout << "WebWorkerImpl::messageHandler(): reading type" << std::endl;
-					worker->_messageType.assign(data, size);
-				}
-				else
-				{
-					std::cout << "WebWorkerImpl::messageHandler(): reading data" << std::endl;
+                if (worker->_messageType.empty())
+                {
+                    std::cout << "WebWorkerImpl::messageHandler(): reading type" << std::endl;
+                    worker->_messageType.assign(data, size);
+                }
+                else
+                {
+                    std::cout << "WebWorkerImpl::messageHandler(): reading data" << std::endl;
 
-					worker->_messages.push(Message { worker->_messageType }.set(std::vector<char>(data, data + size)));
-					worker->_messageType.erase();
-				}
-			}
-		};
-	}
+                    worker->_messages.push(Message { worker->_messageType }.set(std::vector<char>(data, data + size)));
+                    worker->_messageType.erase();
+                }
+            }
+        };
+    }
 }

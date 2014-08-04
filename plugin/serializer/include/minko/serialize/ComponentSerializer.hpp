@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -25,101 +25,101 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace serialize
-	{
-		class ComponentSerializer
-		{
-		public:
-			typedef std::shared_ptr<scene::Node>						NodePtr;
-			typedef std::shared_ptr<component::Surface>					SurfacePtr;
-			typedef std::shared_ptr<file::Dependency>					DependencyPtr;
-			typedef msgpack::type::tuple<std::string, std::string>		SimpleProperty;
-			typedef msgpack::type::tuple<std::vector<SimpleProperty>>	SimplePropertyVector;
+    namespace serialize
+    {
+        class ComponentSerializer
+        {
+        public:
+            typedef std::shared_ptr<scene::Node>                        NodePtr;
+            typedef std::shared_ptr<component::Surface>                    SurfacePtr;
+            typedef std::shared_ptr<file::Dependency>                    DependencyPtr;
+            typedef msgpack::type::tuple<std::string, std::string>        SimpleProperty;
+            typedef msgpack::type::tuple<std::vector<SimpleProperty>>    SimplePropertyVector;
 
-		public:
-			static
-			std::string
-			serializeTransform(NodePtr			node, 
-							   DependencyPtr	dependencies);
+        public:
+            static
+            std::string
+            serializeTransform(NodePtr            node,
+                               DependencyPtr    dependencies);
 
-			static
-			std::string
-			serializePerspectiveCamera(NodePtr			node, 
-									   DependencyPtr	dependencies);
+            static
+            std::string
+            serializePerspectiveCamera(NodePtr            node,
+                                       DependencyPtr    dependencies);
 
-			static
-			std::string
-			serializeAmbientLight(NodePtr		node, 
-								  DependencyPtr dependencies);
+            static
+            std::string
+            serializeAmbientLight(NodePtr        node,
+                                  DependencyPtr dependencies);
 
-			static
-			std::string
-			serializeDirectionalLight(NodePtr		node, 
-									  DependencyPtr dependencies);
+            static
+            std::string
+            serializeDirectionalLight(NodePtr        node,
+                                      DependencyPtr dependencies);
 
-			static
-			std::string
-			serializePointLight(NodePtr			node, 
-								DependencyPtr	dependencies);
+            static
+            std::string
+            serializePointLight(NodePtr            node,
+                                DependencyPtr    dependencies);
 
-			static
-			std::string
-			serializeSpotLight(NodePtr			node, 
-							   DependencyPtr	dependencies);
+            static
+            std::string
+            serializeSpotLight(NodePtr            node,
+                               DependencyPtr    dependencies);
 
-			static
-			std::string
-			serializeSurface(NodePtr		node, 
-							 DependencyPtr	dependencies);
+            static
+            std::string
+            serializeSurface(NodePtr        node,
+                             DependencyPtr    dependencies);
 
-			static
-			std::string
-			serializeRenderer(NodePtr		node, 
-							  DependencyPtr dependencies);
+            static
+            std::string
+            serializeRenderer(NodePtr        node,
+                              DependencyPtr dependencies);
 
-			static
-			std::string
-			serializeBoundingBox(NodePtr 		node,
-								 DependencyPtr 	dependencies);
+            static
+            std::string
+            serializeBoundingBox(NodePtr         node,
+                                 DependencyPtr     dependencies);
 
-			static
-			std::string
-			getSurfaceExtension(NodePtr, SurfacePtr);
+            static
+            std::string
+            getSurfaceExtension(NodePtr, SurfacePtr);
 
 
-			static
-			SimpleProperty
-			serializeSimpleProperty(std::string propertyName, int value)
-			{
-				std::string serializedValue = TypeSerializer::serializeVector(std::vector<int>(value));
+            static
+            SimpleProperty
+            serializeSimpleProperty(std::string propertyName, int value)
+            {
+                std::string serializedValue = TypeSerializer::serializeVector(std::vector<int>(value));
 
-				return SimpleProperty(propertyName, serializedValue);
-			}
+                return SimpleProperty(propertyName, serializedValue);
+            }
 
-			static
-			SimpleProperty
-			serializeSimpleProperty(std::string propertyName, bool value)
-			{
-				std::string serializedValue = TypeSerializer::serializeVector(std::vector<float>(value ? 1.0 : 0.0));
+            static
+            SimpleProperty
+            serializeSimpleProperty(std::string propertyName, bool value)
+            {
+                std::string serializedValue = TypeSerializer::serializeVector(std::vector<float>(value ? 1.0 : 0.0));
 
-				return SimpleProperty(propertyName, serializedValue);
-			}
+                return SimpleProperty(propertyName, serializedValue);
+            }
 
-			static
-			SimpleProperty
-			serializeSimpleProperty(std::string propertyName, float value)
-			{
-				std::string serializedValue = TypeSerializer::serializeVector(std::vector<float>(value));
+            static
+            SimpleProperty
+            serializeSimpleProperty(std::string propertyName, float value)
+            {
+                std::string serializedValue = TypeSerializer::serializeVector(std::vector<float>(value));
 
-				return SimpleProperty(propertyName, serializedValue);
-			}
+                return SimpleProperty(propertyName, serializedValue);
+            }
 
-			static
-			SimpleProperty
-			serializeSimpleProperty(std::string propertyName, std::string value)
-			{
-				return SimpleProperty(propertyName, value);
-			}
-		};
-	}
+            static
+            SimpleProperty
+            serializeSimpleProperty(std::string propertyName, std::string value)
+            {
+                return SimpleProperty(propertyName, value);
+            }
+        };
+    }
 }

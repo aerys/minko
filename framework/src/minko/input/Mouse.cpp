@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -23,35 +23,35 @@ using namespace minko;
 using namespace minko::input;
 
 Mouse::Mouse(std::shared_ptr<AbstractCanvas> canvas) :
-	_canvas(canvas),
-	_x(0),
-	_y(0),
-	_leftButtonIsDown(false),
-	_rightButtonIsDown(false),
-	_mouseMove(Signal<Ptr, int, int>::create()),
-	_mouseWheel(Signal<Ptr, int, int>::create()),
-	_mouseLeftButtonDown(Signal<Ptr>::create()),
-	_mouseLeftButtonUp(Signal<Ptr>::create()),
-	_mouseRightButtonDown(Signal<Ptr>::create()),
-	_mouseRightButtonUp(Signal<Ptr>::create()),
-	_mouseMiddleButtonDown(Signal<Ptr>::create()),
-	_mouseMiddleButtonUp(Signal<Ptr>::create())
+    _canvas(canvas),
+    _x(0),
+    _y(0),
+    _leftButtonIsDown(false),
+    _rightButtonIsDown(false),
+    _mouseMove(Signal<Ptr, int, int>::create()),
+    _mouseWheel(Signal<Ptr, int, int>::create()),
+    _mouseLeftButtonDown(Signal<Ptr>::create()),
+    _mouseLeftButtonUp(Signal<Ptr>::create()),
+    _mouseRightButtonDown(Signal<Ptr>::create()),
+    _mouseRightButtonUp(Signal<Ptr>::create()),
+    _mouseMiddleButtonDown(Signal<Ptr>::create()),
+    _mouseMiddleButtonUp(Signal<Ptr>::create())
 {
-	_slots.push_front(_mouseLeftButtonDown->connect([&](Ptr mouse)
-	{
-		_leftButtonIsDown = true;
-	}));
-	_slots.push_front(_mouseLeftButtonUp->connect([&](Ptr mouse)
-	{
-		_leftButtonIsDown = false;
-	}));
+    _slots.push_front(_mouseLeftButtonDown->connect([&](Ptr mouse)
+    {
+        _leftButtonIsDown = true;
+    }));
+    _slots.push_front(_mouseLeftButtonUp->connect([&](Ptr mouse)
+    {
+        _leftButtonIsDown = false;
+    }));
 
-	_slots.push_front(_mouseRightButtonDown->connect([&](Ptr mouse)
-	{
-		_rightButtonIsDown = true;
-	}));
-	_slots.push_front(_mouseRightButtonUp->connect([&](Ptr mouse)
-	{
-		_rightButtonIsDown = false;
-	}));
+    _slots.push_front(_mouseRightButtonDown->connect([&](Ptr mouse)
+    {
+        _rightButtonIsDown = true;
+    }));
+    _slots.push_front(_mouseRightButtonUp->connect([&](Ptr mouse)
+    {
+        _rightButtonIsDown = false;
+    }));
 }

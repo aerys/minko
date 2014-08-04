@@ -23,34 +23,34 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	class Canvas;
+    class Canvas;
 
-	class SDLBackend
-	{
-	public:
-		typedef std::shared_ptr<SDLBackend>		Ptr;
+    class SDLBackend
+    {
+    public:
+        typedef std::shared_ptr<SDLBackend>        Ptr;
 
-	public:
-		static
-		std::shared_ptr<SDLBackend>
-		create()
-		{
-		    return std::shared_ptr<SDLBackend>(new SDLBackend());
-		}
+    public:
+        static
+        std::shared_ptr<SDLBackend>
+        create()
+        {
+            return std::shared_ptr<SDLBackend>(new SDLBackend());
+        }
 
-		virtual void
-		initialize(std::shared_ptr<Canvas> canvas);
+        virtual void
+        initialize(std::shared_ptr<Canvas> canvas);
 
-		virtual void
-		swapBuffers(std::shared_ptr<Canvas> canvas);
+        virtual void
+        swapBuffers(std::shared_ptr<Canvas> canvas);
 
-		virtual void
-		run(std::shared_ptr<Canvas> canvas);
+        virtual void
+        run(std::shared_ptr<Canvas> canvas);
 
-		virtual void
-		wait(std::shared_ptr<Canvas> canvas, uint ms);
+        virtual void
+        wait(std::shared_ptr<Canvas> canvas, uint ms);
 
-	protected:
-		SDLBackend() = default;
-	};
+    protected:
+        SDLBackend() = default;
+    };
 }

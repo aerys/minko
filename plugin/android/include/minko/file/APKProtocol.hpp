@@ -24,27 +24,27 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace file
-	{
-		class APKProtocol :
-		    public AbstractProtocol
-		{
+    namespace file
+    {
+        class APKProtocol :
+            public AbstractProtocol
+        {
         public:
-            typedef std::shared_ptr<APKProtocol>	Ptr;
+            typedef std::shared_ptr<APKProtocol>    Ptr;
 
-		public:
-		    inline static
+        public:
+            inline static
             Ptr
             create()
             {
-				return std::shared_ptr<APKProtocol>(new APKProtocol());
+                return std::shared_ptr<APKProtocol>(new APKProtocol());
             }
 
             void
             load();
 
-		protected:
-			APKProtocol();
-		};
-	}
+        protected:
+            APKProtocol();
+        };
+    }
 }

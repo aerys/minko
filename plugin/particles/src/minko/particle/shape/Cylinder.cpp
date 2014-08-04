@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -24,29 +24,29 @@ using namespace minko;
 using namespace minko::particle;
 using namespace minko::particle::shape;
 
-Cylinder::Cylinder(float	height,
-				   float	radius,
-		   		   float 	innerRadius) :
-	EmitterShape(),
-	_height (height),
-	_radius (radius),
-	_innerRadius (innerRadius)
+Cylinder::Cylinder(float    height,
+                   float    radius,
+                      float     innerRadius) :
+    EmitterShape(),
+    _height (height),
+    _radius (radius),
+    _innerRadius (innerRadius)
 {
 }
 
 void
 Cylinder::initPosition(ParticleData& particle) const
 {
-	float theta		= (tools::rand01() * 2.f - 1.f) * float(M_PI);
-	
-	float cosTheta	= cosf(theta);
-	float sinTheta	= sinf(theta);
-	
-	float r			= _innerRadius + sqrtf(tools::rand01()) * (_radius - _innerRadius);
-	
-	r = tools::rand01() > .5 ? r : -r;
+    float theta        = (tools::rand01() * 2.f - 1.f) * float(M_PI);
 
-	particle.x = r * cosTheta;
-	particle.y = tools::rand01() * _height;
-	particle.z = r * sinTheta;
+    float cosTheta    = cosf(theta);
+    float sinTheta    = sinf(theta);
+
+    float r            = _innerRadius + sqrtf(tools::rand01()) * (_radius - _innerRadius);
+
+    r = tools::rand01() > .5 ? r : -r;
+
+    particle.x = r * cosTheta;
+    particle.y = tools::rand01() * _height;
+    particle.z = r * sinTheta;
 }

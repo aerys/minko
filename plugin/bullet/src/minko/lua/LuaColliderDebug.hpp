@@ -26,21 +26,21 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace component
-	{
-		namespace bullet
-		{
-			class LuaColliderDebug: public LuaWrapper
-			{
-			public:
-				static
-				void
-				bind(LuaGlue& state)
-				{
-					state.Class<ColliderDebug>("ColliderDebug")
-						.method("create", &ColliderDebug::create);
-				}
-			};
-		}
-	}
+    namespace component
+    {
+        namespace bullet
+        {
+            class LuaColliderDebug: public LuaWrapper
+            {
+            public:
+                static
+                void
+                bind(LuaGlue& state)
+                {
+                    state.Class<ColliderDebug>("ColliderDebug")
+                        .method("create", &ColliderDebug::create);
+                }
+            };
+        }
+    }
 }

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -35,29 +35,29 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace component
-	{
-		class LuaSurface :
-			public LuaWrapper
-		{
-		public:
-			static
-			void
-			bind(LuaGlue& state)
-			{
-				state.Class<Surface>("Surface")
-					.method("create", static_cast<Surface::Ptr(*)(geometry::Geometry::Ptr, data::Provider::Ptr, render::Effect::Ptr)>(&Surface::create))
-					.property("material", &Surface::material)
-					.method("setEffect", static_cast<void(Surface::*)(std::shared_ptr<render::Effect>, const std::string&)>(&Surface::effect))
-					.method("setVisible", static_cast<void(Surface::*)(bool)>(&Surface::visible));
-			}
-			private:
-				static
-				std::string
-				getNameWrapper(Surface::Ptr s)
-				{
-					return s->name();
-				}
-		};
-	}
+    namespace component
+    {
+        class LuaSurface :
+            public LuaWrapper
+        {
+        public:
+            static
+            void
+            bind(LuaGlue& state)
+            {
+                state.Class<Surface>("Surface")
+                    .method("create", static_cast<Surface::Ptr(*)(geometry::Geometry::Ptr, data::Provider::Ptr, render::Effect::Ptr)>(&Surface::create))
+                    .property("material", &Surface::material)
+                    .method("setEffect", static_cast<void(Surface::*)(std::shared_ptr<render::Effect>, const std::string&)>(&Surface::effect))
+                    .method("setVisible", static_cast<void(Surface::*)(bool)>(&Surface::visible));
+            }
+            private:
+                static
+                std::string
+                getNameWrapper(Surface::Ptr s)
+                {
+                    return s->name();
+                }
+        };
+    }
 }

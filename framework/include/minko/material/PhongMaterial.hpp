@@ -25,88 +25,88 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace material
-	{
-		class PhongMaterial:
-			public BasicMaterial
-		{
-		public:
-			typedef std::shared_ptr<PhongMaterial>	Ptr;
+    namespace material
+    {
+        class PhongMaterial:
+            public BasicMaterial
+        {
+        public:
+            typedef std::shared_ptr<PhongMaterial>    Ptr;
 
-		public:
-			inline static
-			Ptr
-			create()
-			{
-				Ptr ptr = std::shared_ptr<PhongMaterial>(new PhongMaterial());
+        public:
+            inline static
+            Ptr
+            create()
+            {
+                Ptr ptr = std::shared_ptr<PhongMaterial>(new PhongMaterial());
 
-				ptr->initialize();
+                ptr->initialize();
 
-				return ptr;
-			}
+                return ptr;
+            }
 
-			Ptr
-			specularColor(Vector4Ptr);
+            Ptr
+            specularColor(Vector4Ptr);
 
-			Ptr
-			specularColor(uint);
+            Ptr
+            specularColor(uint);
 
-			Vector4Ptr
-			specularColor() const;
+            Vector4Ptr
+            specularColor() const;
 
-			Ptr
-			shininess(float);
+            Ptr
+            shininess(float);
 
-			float
-			shininess() const;
+            float
+            shininess() const;
 
-			Ptr
-			normalMap(AbsTexturePtr);
+            Ptr
+            normalMap(AbsTexturePtr);
 
-			TexturePtr
-			normalMap() const;
+            TexturePtr
+            normalMap() const;
 
-			Ptr
-			specularMap(AbsTexturePtr);
+            Ptr
+            specularMap(AbsTexturePtr);
 
-			TexturePtr
-			specularMap() const;
+            TexturePtr
+            specularMap() const;
 
-			Ptr
-			environmentMap(AbsTexturePtr, render::EnvironmentMap2dType type = render::EnvironmentMap2dType::Unset);
+            Ptr
+            environmentMap(AbsTexturePtr, render::EnvironmentMap2dType type = render::EnvironmentMap2dType::Unset);
 
-			CubeTexturePtr
-			environmentCubemap() const;
+            CubeTexturePtr
+            environmentCubemap() const;
 
-			TexturePtr
-			environmentMap2d() const;
+            TexturePtr
+            environmentMap2d() const;
 
-			render::EnvironmentMap2dType
-			environmentMap2dType() const;
+            render::EnvironmentMap2dType
+            environmentMap2dType() const;
 
-			Ptr
-			environmentAlpha(float);
+            Ptr
+            environmentAlpha(float);
 
-			float
-			environmentAlpha() const;
+            float
+            environmentAlpha() const;
 
-			Ptr
-			alphaMap(AbsTexturePtr);
+            Ptr
+            alphaMap(AbsTexturePtr);
 
-			TexturePtr
-			alphaMap() const;
+            TexturePtr
+            alphaMap() const;
 
-			Ptr
-			alphaThreshold(float);
+            Ptr
+            alphaThreshold(float);
 
-			float
-			alphaThreshold() const;
+            float
+            alphaThreshold() const;
 
-		private:
-			PhongMaterial();
+        private:
+            PhongMaterial();
 
-			void
-			initialize();
-		};
-	}
+            void
+            initialize();
+        };
+    }
 }

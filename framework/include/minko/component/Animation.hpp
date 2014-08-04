@@ -24,48 +24,48 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace component
-	{
-		class Animation: public AbstractAnimation
-		{
-			friend class MasterAnimation;
+    namespace component
+    {
+        class Animation: public AbstractAnimation
+        {
+            friend class MasterAnimation;
 
-		public:
-			typedef std::shared_ptr<Animation>						Ptr;
+        public:
+            typedef std::shared_ptr<Animation>                        Ptr;
 
-		private:
-			typedef std::shared_ptr<animation::AbstractTimeline>	AbsTimelinePtr;
-			typedef std::shared_ptr<MasterAnimation>				MasterAnimationPtr;
+        private:
+            typedef std::shared_ptr<animation::AbstractTimeline>    AbsTimelinePtr;
+            typedef std::shared_ptr<MasterAnimation>                MasterAnimationPtr;
 
-		private:
-			const std::vector<AbsTimelinePtr>						_timelines;
-			MasterAnimationPtr										_master;
+        private:
+            const std::vector<AbsTimelinePtr>                        _timelines;
+            MasterAnimationPtr                                        _master;
 
-		public:
-			inline static
-			Ptr
-			create(const std::vector<AbsTimelinePtr>& timelines, bool isLooping = true)
-			{
-				Ptr ptr = std::shared_ptr<Animation>(new Animation(timelines, isLooping));
+        public:
+            inline static
+            Ptr
+            create(const std::vector<AbsTimelinePtr>& timelines, bool isLooping = true)
+            {
+                Ptr ptr = std::shared_ptr<Animation>(new Animation(timelines, isLooping));
 
-				ptr->initialize();
+                ptr->initialize();
 
-				return ptr;
-			}
+                return ptr;
+            }
 
-			inline
-			uint
-			numTimelines() const
-			{
-				return _timelines.size();
-			}
+            inline
+            uint
+            numTimelines() const
+            {
+                return _timelines.size();
+            }
 
-			inline
-			AbsTimelinePtr
-			timeline(uint timelineId) const
-			{
-				return _timelines[timelineId];
-			}
+            inline
+            AbsTimelinePtr
+            timeline(uint timelineId) const
+            {
+                return _timelines[timelineId];
+            }
 
             inline
             const std::vector<AbsTimelinePtr>&
@@ -74,40 +74,40 @@ namespace minko
                 return _timelines;
             }
 
-		private:
-			Animation(const std::vector<AbsTimelinePtr>&, bool isLooping);
+        private:
+            Animation(const std::vector<AbsTimelinePtr>&, bool isLooping);
 
-			/*virtual*/
-			void
-			initialize();
+            /*virtual*/
+            void
+            initialize();
 
-			/*virtual*/
-			void
-			update();
+            /*virtual*/
+            void
+            update();
 
-			/*virtual*/
-			void
-			frameBeginHandler(std::shared_ptr<SceneManager> manager, float time, float deltaTime)
-			{
-				if (_master == nullptr)
-					AbstractAnimation::frameBeginHandler(manager, time, deltaTime);
-			}
+            /*virtual*/
+            void
+            frameBeginHandler(std::shared_ptr<SceneManager> manager, float time, float deltaTime)
+            {
+                if (_master == nullptr)
+                    AbstractAnimation::frameBeginHandler(manager, time, deltaTime);
+            }
 
-			inline /*virtual*/
-			void
-			updateNextLabelIds(uint time)
-			{
-				if (_master == nullptr)
-					AbstractAnimation::updateNextLabelIds(time);
-			}
+            inline /*virtual*/
+            void
+            updateNextLabelIds(uint time)
+            {
+                if (_master == nullptr)
+                    AbstractAnimation::updateNextLabelIds(time);
+            }
 
-			inline /*virtual*/
-			void 
-			checkLabelHit(uint previousTime, uint newTime)
-			{
-				if (_master == nullptr)
-					AbstractAnimation::checkLabelHit(previousTime, newTime);
-			}
-		};
-	}
+            inline /*virtual*/
+            void
+            checkLabelHit(uint previousTime, uint newTime)
+            {
+                if (_master == nullptr)
+                    AbstractAnimation::checkLabelHit(previousTime, newTime);
+            }
+        };
+    }
 }

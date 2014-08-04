@@ -31,31 +31,31 @@ using namespace minko::async;
 
 Worker::Worker(const std::string& name)
 {
-	_impl.reset(new WorkerImpl(this, name));
+    _impl.reset(new WorkerImpl(this, name));
 }
 
 void
 Worker::start(const std::vector<char>& input)
 {
-	_impl->start(input);
+    _impl->start(input);
 }
 
 void
 Worker::post(Message message)
 {
-	_impl->post(message);
+    _impl->post(message);
 }
 
 void
 Worker::poll()
 {
-	_impl->poll();
+    _impl->poll();
 }
 
 Signal<Worker::Ptr, Worker::Message>::Ptr
 Worker::message()
 {
-	return _impl->message();
+    return _impl->message();
 }
 
 Worker::~Worker()

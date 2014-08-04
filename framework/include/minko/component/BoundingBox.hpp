@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -30,108 +30,108 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace component
-	{
-		class BoundingBox :
-			public AbstractComponent
-		{
-		public:
-			typedef std::shared_ptr<BoundingBox>	Ptr;
+    namespace component
+    {
+        class BoundingBox :
+            public AbstractComponent
+        {
+        public:
+            typedef std::shared_ptr<BoundingBox>    Ptr;
 
-		private:
-			typedef std::shared_ptr<scene::Node>		NodePtr;
-			typedef std::shared_ptr<AbstractComponent>	AbsCmpPtr;
-			typedef std::shared_ptr<data::Container>	ContainerPtr;
+        private:
+            typedef std::shared_ptr<scene::Node>        NodePtr;
+            typedef std::shared_ptr<AbstractComponent>    AbsCmpPtr;
+            typedef std::shared_ptr<data::Container>    ContainerPtr;
 
-		private:
-			const bool										_fixed;
+        private:
+            const bool                                        _fixed;
 
-			std::shared_ptr<math::Box>						_box;
-			std::shared_ptr<math::Box>						_worldSpaceBox;
+            std::shared_ptr<math::Box>                        _box;
+            std::shared_ptr<math::Box>                        _worldSpaceBox;
 
-			bool											_invalidBox;
-			bool											_invalidWorldSpaceBox;
+            bool                                            _invalidBox;
+            bool                                            _invalidWorldSpaceBox;
 
-			Signal<AbsCmpPtr, NodePtr>::Slot				_targetAddedSlot;
-			Signal<AbsCmpPtr, NodePtr>::Slot				_targetRemovedSlot;
-			Signal<NodePtr, NodePtr, AbsCmpPtr>::Slot		_componentAddedSlot;
-			Signal<NodePtr, NodePtr, AbsCmpPtr>::Slot		_componentRemovedSlot;
-			Signal<ContainerPtr, const std::string&>::Slot	_modelToWorldChangedSlot;
+            Signal<AbsCmpPtr, NodePtr>::Slot                _targetAddedSlot;
+            Signal<AbsCmpPtr, NodePtr>::Slot                _targetRemovedSlot;
+            Signal<NodePtr, NodePtr, AbsCmpPtr>::Slot        _componentAddedSlot;
+            Signal<NodePtr, NodePtr, AbsCmpPtr>::Slot        _componentRemovedSlot;
+            Signal<ContainerPtr, const std::string&>::Slot    _modelToWorldChangedSlot;
 
-		public:
-			inline static
-			Ptr
-			create()
-			{
-				auto bb = std::shared_ptr<BoundingBox>(new BoundingBox());
+        public:
+            inline static
+            Ptr
+            create()
+            {
+                auto bb = std::shared_ptr<BoundingBox>(new BoundingBox());
 
-				bb->initialize();
+                bb->initialize();
 
-				return bb;
-			}
+                return bb;
+            }
 
-			inline static
-			Ptr
-			create(float size, std::shared_ptr<math::Vector3> center)
-			{
-				return create(size, size, size, center);
-			}
+            inline static
+            Ptr
+            create(float size, std::shared_ptr<math::Vector3> center)
+            {
+                return create(size, size, size, center);
+            }
 
-			inline static
-			Ptr
-			create(float width, float height, float depth, std::shared_ptr<math::Vector3> center)
-			{
-				return create(
-					math::Vector3::create(
-						center->x() - width * .5f, center->y() - height * .5f, center->z() - depth * .5f
-					),
-					math::Vector3::create(
-						center->x() + width * .5f, center->y() + height * .5f, center->z() + depth * .5f
-					)
-				);
-			}
+            inline static
+            Ptr
+            create(float width, float height, float depth, std::shared_ptr<math::Vector3> center)
+            {
+                return create(
+                    math::Vector3::create(
+                        center->x() - width * .5f, center->y() - height * .5f, center->z() - depth * .5f
+                    ),
+                    math::Vector3::create(
+                        center->x() + width * .5f, center->y() + height * .5f, center->z() + depth * .5f
+                    )
+                );
+            }
 
-			inline static
-			Ptr
-			create(std::shared_ptr<math::Vector3> topRight, std::shared_ptr<math::Vector3> bottomLeft)
-			{
-				auto bb = std::shared_ptr<BoundingBox>(new BoundingBox(topRight, bottomLeft));
+            inline static
+            Ptr
+            create(std::shared_ptr<math::Vector3> topRight, std::shared_ptr<math::Vector3> bottomLeft)
+            {
+                auto bb = std::shared_ptr<BoundingBox>(new BoundingBox(topRight, bottomLeft));
 
-				bb->initialize();
+                bb->initialize();
 
-				return bb;
-			}
+                return bb;
+            }
 
-			inline
-			std::shared_ptr<math::AbstractShape>
-			shape()
-			{
-				return std::static_pointer_cast<math::AbstractShape>(box());
-			}
+            inline
+            std::shared_ptr<math::AbstractShape>
+            shape()
+            {
+                return std::static_pointer_cast<math::AbstractShape>(box());
+            }
 
-			inline
-			std::shared_ptr<math::Box>
-			box()
-			{
-				if (_invalidWorldSpaceBox)
-					updateWorldSpaceBox();
+            inline
+            std::shared_ptr<math::Box>
+            box()
+            {
+                if (_invalidWorldSpaceBox)
+                    updateWorldSpaceBox();
 
-				return _worldSpaceBox;
-			}
+                return _worldSpaceBox;
+            }
 
-			void
-			update();
+            void
+            update();
 
-		private:
-			BoundingBox(std::shared_ptr<math::Vector3> topRight, std::shared_ptr<math::Vector3> bottomLeft);
+        private:
+            BoundingBox(std::shared_ptr<math::Vector3> topRight, std::shared_ptr<math::Vector3> bottomLeft);
 
-			BoundingBox();
+            BoundingBox();
 
-			void
-			initialize();
+            void
+            initialize();
 
-			void
-			updateWorldSpaceBox();
-		};
-	}
+            void
+            updateWorldSpaceBox();
+        };
+    }
 }

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -26,110 +26,110 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace file
-	{
-		class AbstractSerializerParser:
-			public AbstractParser
-		{
-		public:
-			typedef std::shared_ptr<AbstractSerializerParser>				Ptr;
-			typedef msgpack::type::tuple<unsigned int, short, std::string>	SerializedAsset;
-			typedef std::shared_ptr<file::AssetLibrary>						AssetLibraryPtr;
+    namespace file
+    {
+        class AbstractSerializerParser:
+            public AbstractParser
+        {
+        public:
+            typedef std::shared_ptr<AbstractSerializerParser>                Ptr;
+            typedef msgpack::type::tuple<unsigned int, short, std::string>    SerializedAsset;
+            typedef std::shared_ptr<file::AssetLibrary>                        AssetLibraryPtr;
 
-		private:
-			typedef std::shared_ptr<component::JobManager::Job>												JobPtr;
-			typedef std::shared_ptr<Dependency>																DependencyPtr;
-			typedef std::function<void(unsigned char, AssetLibraryPtr, std::string&, DependencyPtr, short, std::list<JobPtr>&)>	AssetDeserializeFunction;
+        private:
+            typedef std::shared_ptr<component::JobManager::Job>                                                JobPtr;
+            typedef std::shared_ptr<Dependency>                                                                DependencyPtr;
+            typedef std::function<void(unsigned char, AssetLibraryPtr, std::string&, DependencyPtr, short, std::list<JobPtr>&)>    AssetDeserializeFunction;
 
-		protected:
-			DependencyPtr						_dependencies;
-			std::shared_ptr<GeometryParser>		_geometryParser;
-			std::shared_ptr<MaterialParser>		_materialParser;
+        protected:
+            DependencyPtr                        _dependencies;
+            std::shared_ptr<GeometryParser>        _geometryParser;
+            std::shared_ptr<MaterialParser>        _materialParser;
 
-			std::string												_lastParsedAssetName;
-			std::list<std::shared_ptr<component::JobManager::Job>>	_jobList;
+            std::string                                                _lastParsedAssetName;
+            std::list<std::shared_ptr<component::JobManager::Job>>    _jobList;
 
-			int														_magicNumber;
+            int                                                        _magicNumber;
 
-			unsigned int											_fileSize;
-			short													_headerSize;
-			unsigned int											_dependenciesSize;
-			unsigned int											_sceneDataSize;
+            unsigned int                                            _fileSize;
+            short                                                    _headerSize;
+            unsigned int                                            _dependenciesSize;
+            unsigned int                                            _sceneDataSize;
 
-			int														_version;
-			int														_versionHi;
-			int														_versionLow;
-			int														_versionBuild;
+            int                                                        _version;
+            int                                                        _versionHi;
+            int                                                        _versionLow;
+            int                                                        _versionBuild;
 
-		private:
-			static std::unordered_map<uint, AssetDeserializeFunction> _assetTypeToFunction;
+        private:
+            static std::unordered_map<uint, AssetDeserializeFunction> _assetTypeToFunction;
 
-		public:
-			inline static
-			Ptr
-			create();
+        public:
+            inline static
+            Ptr
+            create();
 
-			virtual
-			void
-			parse(const std::string&				filename,
-				  const std::string&                resolvedFilename,
-				  std::shared_ptr<Options>          options,
-				  const std::vector<unsigned char>&	data,
-				  AssetLibraryPtr					assetLibrary);
+            virtual
+            void
+            parse(const std::string&                filename,
+                  const std::string&                resolvedFilename,
+                  std::shared_ptr<Options>          options,
+                  const std::vector<unsigned char>&    data,
+                  AssetLibraryPtr                    assetLibrary);
 
-			static
-			void
-			registerAssetFunction(uint assetTypeId, AssetDeserializeFunction f);
+            static
+            void
+            registerAssetFunction(uint assetTypeId, AssetDeserializeFunction f);
 
-		protected:
-			void
-			extractDependencies(AssetLibraryPtr							assetLibrary, 
-			  				    const std::vector<unsigned char>&		data,
-								short									dataOffset,
-								unsigned int							dependenciesSize,
-								std::shared_ptr<Options>				options,
-								std::string&							assetFilePath);
+        protected:
+            void
+            extractDependencies(AssetLibraryPtr                            assetLibrary,
+                                  const std::vector<unsigned char>&        data,
+                                short                                    dataOffset,
+                                unsigned int                            dependenciesSize,
+                                std::shared_ptr<Options>                options,
+                                std::string&                            assetFilePath);
 
-			inline
-			void
-			dependecy(std::shared_ptr<Dependency> dependecies)
-			{
-				_dependencies = dependecies;
-			}
+            inline
+            void
+            dependecy(std::shared_ptr<Dependency> dependecies)
+            {
+                _dependencies = dependecies;
+            }
 
-		protected:
-			AbstractSerializerParser();
+        protected:
+            AbstractSerializerParser();
 
-			void
-			deserializeAsset(SerializedAsset&					asset,
-							  AssetLibraryPtr					assetLibrary,
-							  std::shared_ptr<Options>			options,
-							  std::string&						assetFilePath);
+            void
+            deserializeAsset(SerializedAsset&                    asset,
+                              AssetLibraryPtr                    assetLibrary,
+                              std::shared_ptr<Options>            options,
+                              std::string&                        assetFilePath);
 
-			std::string
-			extractFolderPath(const std::string& filepath);
+            std::string
+            extractFolderPath(const std::string& filepath);
 
-			void
-			readHeader(const std::string&					filename, 
-					   const std::vector<unsigned char>&	data);
+            void
+            readHeader(const std::string&                    filename,
+                       const std::vector<unsigned char>&    data);
 
-			int
-			readInt(const std::vector<unsigned char>& data, int offset)
-			{
-				return (int)(data[offset] << 24 | data[offset + 1] << 16 | data[offset + 2] << 8 | data[offset + 3]);
-			}
+            int
+            readInt(const std::vector<unsigned char>& data, int offset)
+            {
+                return (int)(data[offset] << 24 | data[offset + 1] << 16 | data[offset + 2] << 8 | data[offset + 3]);
+            }
 
-			unsigned int
-			readUInt(const std::vector<unsigned char>& data, int offset)
-			{
-				return (unsigned int)(data[offset] << 24 | data[offset + 1] << 16 | data[offset + 2] << 8 | data[offset + 3]);
-			}
+            unsigned int
+            readUInt(const std::vector<unsigned char>& data, int offset)
+            {
+                return (unsigned int)(data[offset] << 24 | data[offset + 1] << 16 | data[offset + 2] << 8 | data[offset + 3]);
+            }
 
-			short
-			readShort(const std::vector<unsigned char>& data, int offset)
-			{
-				return (short)(data[offset] << 8 | data[offset + 1]);
-			}
-		};
-	}
+            short
+            readShort(const std::vector<unsigned char>& data, int offset)
+            {
+                return (short)(data[offset] << 8 | data[offset + 1]);
+            }
+        };
+    }
 }

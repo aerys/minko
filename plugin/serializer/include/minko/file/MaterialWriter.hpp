@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -32,114 +32,114 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace file
-	{
+    namespace file
+    {
 
-		class MaterialWriter:
-			public AbstractWriter<data::Provider::Ptr>
-		{
+        class MaterialWriter:
+            public AbstractWriter<data::Provider::Ptr>
+        {
 
-		public:
-			typedef std::shared_ptr<MaterialWriter>						Ptr;
-			typedef std::shared_ptr<render::AbstractTexture>			        TexturePtr;
-			typedef msgpack::type::tuple<uint, std::string>				TupleIntString;
-			typedef msgpack::type::tuple<std::string, TupleIntString>	ComplexPropertyTuple;
-			typedef msgpack::type::tuple<std::string, std::string>		BasicPropertyTuple;
+        public:
+            typedef std::shared_ptr<MaterialWriter>                        Ptr;
+            typedef std::shared_ptr<render::AbstractTexture>                    TexturePtr;
+            typedef msgpack::type::tuple<uint, std::string>                TupleIntString;
+            typedef msgpack::type::tuple<std::string, TupleIntString>    ComplexPropertyTuple;
+            typedef msgpack::type::tuple<std::string, std::string>        BasicPropertyTuple;
 
-		private:
-			static std::map<const std::type_info*, std::function<std::tuple<uint, std::string>(Any)>> _typeToWriteFunction;
+        private:
+            static std::map<const std::type_info*, std::function<std::tuple<uint, std::string>(Any)>> _typeToWriteFunction;
 
-		public:
-			inline static
-			Ptr
-			create()
-			{
-				return std::shared_ptr<MaterialWriter>(new MaterialWriter());
-			}
+        public:
+            inline static
+            Ptr
+            create()
+            {
+                return std::shared_ptr<MaterialWriter>(new MaterialWriter());
+            }
 
-			std::string
-			embed(std::shared_ptr<AssetLibrary>		assetLibrary,
-				  std::shared_ptr<Options>			options,
-				  Dependency::Ptr					dependency,
+            std::string
+            embed(std::shared_ptr<AssetLibrary>        assetLibrary,
+                  std::shared_ptr<Options>            options,
+                  Dependency::Ptr                    dependency,
                   std::shared_ptr<WriterOptions>    writerOptions);
 
-		private:
-			MaterialWriter();
+        private:
+            MaterialWriter();
 
-			template <typename T>
-			typename std::enable_if<std::is_base_of<TexturePtr, T>::value, bool>::type
-			serializeMaterialValue(material::Material::Ptr										material,
-								   std::string&													propertyName,
-								   file::AssetLibrary::Ptr										assets,
-								   std::vector<ComplexPropertyTuple>							*complexSerializedProperties,
-								   std::vector<BasicPropertyTuple>								*basicTypeSeriliazedProperties,
-								   Dependency::Ptr												dependency)
-			{
-				if (material->propertyHasType<TexturePtr>(propertyName))
-				{
-					std::tuple<uint, std::string> serializedTexture = serialize::TypeSerializer::serializeTexture(Any(dependency->registerDependency(material->get<TexturePtr>(propertyName))));
-					TupleIntString serializedMsgTexture(std::get<0>(serializedTexture), std::get<1>(serializedTexture));
+            template <typename T>
+            typename std::enable_if<std::is_base_of<TexturePtr, T>::value, bool>::type
+            serializeMaterialValue(material::Material::Ptr                                        material,
+                                   std::string&                                                    propertyName,
+                                   file::AssetLibrary::Ptr                                        assets,
+                                   std::vector<ComplexPropertyTuple>                            *complexSerializedProperties,
+                                   std::vector<BasicPropertyTuple>                                *basicTypeSeriliazedProperties,
+                                   Dependency::Ptr                                                dependency)
+            {
+                if (material->propertyHasType<TexturePtr>(propertyName))
+                {
+                    std::tuple<uint, std::string> serializedTexture = serialize::TypeSerializer::serializeTexture(Any(dependency->registerDependency(material->get<TexturePtr>(propertyName))));
+                    TupleIntString serializedMsgTexture(std::get<0>(serializedTexture), std::get<1>(serializedTexture));
 
-					ComplexPropertyTuple serializedProperty(propertyName, serializedMsgTexture);
-					complexSerializedProperties->push_back(serializedProperty);
+                    ComplexPropertyTuple serializedProperty(propertyName, serializedMsgTexture);
+                    complexSerializedProperties->push_back(serializedProperty);
 
-					return true;
-				}
-				return false;
-			}
+                    return true;
+                }
+                return false;
+            }
 
-			template <typename T>
-			typename std::enable_if<!std::is_arithmetic<T>::value && !std::is_base_of<TexturePtr, T>::value, bool>::type
-			serializeMaterialValue(material::Material::Ptr										material,
-								   	std::string&												propertyName,
-								   	file::AssetLibrary::Ptr										assets,
-									std::vector<ComplexPropertyTuple>							*complexSerializedProperties,
-									std::vector<BasicPropertyTuple>								*basicTypeSeriliazedProperties,
-								   	Dependency::Ptr												dependency)
-			{
-				if (_typeToWriteFunction.find(&typeid(T)) != _typeToWriteFunction.end() &&
-					material->propertyHasType<T>(propertyName))
-				{
-					Any								propertyValue			= material->get<T>(propertyName);
-					std::tuple<uint, std::string>	serializedMaterialValue = _typeToWriteFunction[&typeid(T)](propertyValue);
-					TupleIntString					serializedMsgMaterialValue(std::get<0>(serializedMaterialValue), std::get<1>(serializedMaterialValue));
+            template <typename T>
+            typename std::enable_if<!std::is_arithmetic<T>::value && !std::is_base_of<TexturePtr, T>::value, bool>::type
+            serializeMaterialValue(material::Material::Ptr                                        material,
+                                       std::string&                                                propertyName,
+                                       file::AssetLibrary::Ptr                                        assets,
+                                    std::vector<ComplexPropertyTuple>                            *complexSerializedProperties,
+                                    std::vector<BasicPropertyTuple>                                *basicTypeSeriliazedProperties,
+                                       Dependency::Ptr                                                dependency)
+            {
+                if (_typeToWriteFunction.find(&typeid(T)) != _typeToWriteFunction.end() &&
+                    material->propertyHasType<T>(propertyName))
+                {
+                    Any                                propertyValue            = material->get<T>(propertyName);
+                    std::tuple<uint, std::string>    serializedMaterialValue = _typeToWriteFunction[&typeid(T)](propertyValue);
+                    TupleIntString                    serializedMsgMaterialValue(std::get<0>(serializedMaterialValue), std::get<1>(serializedMaterialValue));
 
-					ComplexPropertyTuple serializedProperty(propertyName, serializedMsgMaterialValue);
-					complexSerializedProperties->push_back(serializedProperty);
-					return true;
-				}
+                    ComplexPropertyTuple serializedProperty(propertyName, serializedMsgMaterialValue);
+                    complexSerializedProperties->push_back(serializedProperty);
+                    return true;
+                }
 
-				return false;
-			}
+                return false;
+            }
 
-			template <typename T>
-			typename std::enable_if<std::is_arithmetic<T>::value, bool>::type
-			serializeMaterialValue(material::Material::Ptr							material,
-								   std::string&										propertyName,
-								   file::AssetLibrary::Ptr							assets,
-								   std::vector<ComplexPropertyTuple>				*complexSerializedProperties,
-								   std::vector<BasicPropertyTuple>					*basicTypeSeriliazedProperties,
-								   Dependency::Ptr									dependency)
-			{
-				if (material->propertyHasType<T>(propertyName))
-				{
-					std::vector<float> propertyValue;
-					
-					propertyValue.push_back(static_cast<float>(material->get<T>(propertyName)));
+            template <typename T>
+            typename std::enable_if<std::is_arithmetic<T>::value, bool>::type
+            serializeMaterialValue(material::Material::Ptr                            material,
+                                   std::string&                                        propertyName,
+                                   file::AssetLibrary::Ptr                            assets,
+                                   std::vector<ComplexPropertyTuple>                *complexSerializedProperties,
+                                   std::vector<BasicPropertyTuple>                    *basicTypeSeriliazedProperties,
+                                   Dependency::Ptr                                    dependency)
+            {
+                if (material->propertyHasType<T>(propertyName))
+                {
+                    std::vector<float> propertyValue;
 
-					std::string serializePropertyValue = serialize::TypeSerializer::serializeVector<float>(propertyValue);
+                    propertyValue.push_back(static_cast<float>(material->get<T>(propertyName)));
 
-					BasicPropertyTuple basicTypeSerializedProperty(
-							propertyName,
-							serializePropertyValue);
-						basicTypeSeriliazedProperties->push_back(basicTypeSerializedProperty);
+                    std::string serializePropertyValue = serialize::TypeSerializer::serializeVector<float>(propertyValue);
 
-					return true;
-				}
+                    BasicPropertyTuple basicTypeSerializedProperty(
+                            propertyName,
+                            serializePropertyValue);
+                        basicTypeSeriliazedProperties->push_back(basicTypeSerializedProperty);
 
-				return false;
-			}
-		};
+                    return true;
+                }
 
-	}
+                return false;
+            }
+        };
+
+    }
 }

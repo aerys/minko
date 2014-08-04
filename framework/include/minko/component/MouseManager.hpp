@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -27,72 +27,72 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace component
-	{
-		class MouseManager :
-			public AbstractComponent
-		{
-		private:
-			typedef std::shared_ptr<scene::Node>	NodePtr;
-			typedef std::shared_ptr<math::Ray>		RayPtr;
-			typedef std::shared_ptr<input::Mouse>	MousePtr;
+    namespace component
+    {
+        class MouseManager :
+            public AbstractComponent
+        {
+        private:
+            typedef std::shared_ptr<scene::Node>    NodePtr;
+            typedef std::shared_ptr<math::Ray>        RayPtr;
+            typedef std::shared_ptr<input::Mouse>    MousePtr;
 
-		public:
-			typedef std::pair<NodePtr, float>		Hit;
-			typedef std::list<Hit>					HitList;
-			typedef std::shared_ptr<MouseManager>	Ptr;
+        public:
+            typedef std::pair<NodePtr, float>        Hit;
+            typedef std::list<Hit>                    HitList;
+            typedef std::shared_ptr<MouseManager>    Ptr;
 
-		private:
-			MousePtr										_mouse;
-			std::shared_ptr<math::Vector3>					_previousRayOrigin;
-			NodePtr											_lastItemUnderCursor;
+        private:
+            MousePtr                                        _mouse;
+            std::shared_ptr<math::Vector3>                    _previousRayOrigin;
+            NodePtr                                            _lastItemUnderCursor;
 
-			RayPtr											_ray;
+            RayPtr                                            _ray;
 
-			Signal<AbstractComponent::Ptr, NodePtr>::Slot	_targetAddedSlot;
-			Signal<AbstractComponent::Ptr, NodePtr>::Slot	_targetRemovedSlot;
-			Signal<MousePtr, int, int>::Slot				_mouseMoveSlot;
-			Signal<MousePtr>::Slot							_mouseLeftButtonDownSlot;
+            Signal<AbstractComponent::Ptr, NodePtr>::Slot    _targetAddedSlot;
+            Signal<AbstractComponent::Ptr, NodePtr>::Slot    _targetRemovedSlot;
+            Signal<MousePtr, int, int>::Slot                _mouseMoveSlot;
+            Signal<MousePtr>::Slot                            _mouseLeftButtonDownSlot;
 
-		public:
-			inline static
-			Ptr
-			create()
-			{
-				auto mm = std::shared_ptr<MouseManager>(new MouseManager());
+        public:
+            inline static
+            Ptr
+            create()
+            {
+                auto mm = std::shared_ptr<MouseManager>(new MouseManager());
 
-				mm->initialize();
+                mm->initialize();
 
-				return mm;
-			}
+                return mm;
+            }
 
-			inline static
-			Ptr
-			create(std::shared_ptr<input::Mouse> mouse)
-			{
-				auto mm = std::shared_ptr<MouseManager>(new MouseManager());
+            inline static
+            Ptr
+            create(std::shared_ptr<input::Mouse> mouse)
+            {
+                auto mm = std::shared_ptr<MouseManager>(new MouseManager());
 
-				mm->_mouse = mouse;
-				mm->initialize();
+                mm->_mouse = mouse;
+                mm->initialize();
 
-				return mm;
-			}
+                return mm;
+            }
 
-			inline
-			MousePtr
-			mouse()
-			{
-				return _mouse;
-			}
+            inline
+            MousePtr
+            mouse()
+            {
+                return _mouse;
+            }
 
-			void
-			pick(std::shared_ptr<math::Ray> ray);
+            void
+            pick(std::shared_ptr<math::Ray> ray);
 
-		private:
-			MouseManager();
+        private:
+            MouseManager();
 
-			void
-			initialize();
-		};
-	}
+            void
+            initialize();
+        };
+    }
 }

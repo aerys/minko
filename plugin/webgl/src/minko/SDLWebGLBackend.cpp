@@ -36,7 +36,7 @@ emscriptenMainLoop()
 void
 SDLWebGLBackend::initialize(std::shared_ptr<Canvas> canvas)
 {
-	// Nothing, because we already have the browser.
+    // Nothing, because we already have the browser.
 }
 
 void
@@ -55,5 +55,5 @@ SDLWebGLBackend::run(std::shared_ptr<Canvas> canvas)
 void
 SDLWebGLBackend::wait(std::shared_ptr<Canvas> canvas, uint ms)
 {
-	// Nothing, because emscripten_set_main_loop calls step on a timer.
+    // Nothing, because emscripten_set_main_loop calls step on a timer.
 }

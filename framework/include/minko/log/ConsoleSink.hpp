@@ -25,45 +25,45 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace log
-	{
-		class ConsoleSink :
-			public Logger::Sink
-		{
-		public:
-			static
-			Ptr
-			create()
-			{
-				return std::shared_ptr<ConsoleSink>(new ConsoleSink());
-			}
+    namespace log
+    {
+        class ConsoleSink :
+            public Logger::Sink
+        {
+        public:
+            static
+            Ptr
+            create()
+            {
+                return std::shared_ptr<ConsoleSink>(new ConsoleSink());
+            }
 
-			void
-			write(const std::string& log, Logger::Level level) override
-			{
-				std::cout << getLevelName(level) << ": " << log << std::endl;
-			}
+            void
+            write(const std::string& log, Logger::Level level) override
+            {
+                std::cout << getLevelName(level) << ": " << log << std::endl;
+            }
 
-			std::string
-			getLevelName(Logger::Level level) const
-			{
-				switch (level)
-				{
-				case Logger::Level::Debug:
-					return "debug";
-				case Logger::Level::Info:
-					return "info";
-				case Logger::Level::Warning:
-					return "warning";
-				case Logger::Level::Error:
-					return "error";
-				}
+            std::string
+            getLevelName(Logger::Level level) const
+            {
+                switch (level)
+                {
+                case Logger::Level::Debug:
+                    return "debug";
+                case Logger::Level::Info:
+                    return "info";
+                case Logger::Level::Warning:
+                    return "warning";
+                case Logger::Level::Error:
+                    return "error";
+                }
 
-				return "info";
-			}
+                return "info";
+            }
 
-		private:
-			ConsoleSink() = default;
-		};
-	}
+        private:
+            ConsoleSink() = default;
+        };
+    }
 }

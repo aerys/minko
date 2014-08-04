@@ -27,7 +27,7 @@ const Keyboard::KeyToNameArray Keyboard::_keyToName = initializeKeyNames();
 const Keyboard::KeyToNameArray
 Keyboard::initializeKeyNames()
 {
-	KeyToNameArray names;
+    KeyToNameArray names;
 
     names[3] = "CANCEL";
     names[6] = "HELP";
@@ -220,11 +220,11 @@ Keyboard::initializeKeyNames()
     names[300] = "CONTROL_RIGHT";
     names[301] = "SHIFT_RIGHT";
 
-	return names;
+    return names;
 }
 
-Keyboard::Keyboard() : 
-	_down(Signal<Ptr>::create()),
-	_up(Signal<Ptr>::create())
+Keyboard::Keyboard() :
+    _down(Signal<Ptr>::create()),
+    _up(Signal<Ptr>::create())
 {
 }

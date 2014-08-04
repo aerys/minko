@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -60,7 +60,7 @@ ParticlesProvider::diffuseMap(AbstractTexture::Ptr  texture)
     if (texture)
         set<AbstractTexture::Ptr>("particles.spritesheet", texture);
 
-    return std::static_pointer_cast<ParticlesProvider>(shared_from_this()); 
+    return std::static_pointer_cast<ParticlesProvider>(shared_from_this());
 }
 
 ParticlesProvider::Ptr
@@ -69,12 +69,12 @@ ParticlesProvider::unsetDiffuseMap()
     if (hasProperty("particles.spritesheet"))
         unset("particles.spritesheet");
 
-    return std::static_pointer_cast<ParticlesProvider>(shared_from_this()); 
+    return std::static_pointer_cast<ParticlesProvider>(shared_from_this());
 }
 
 
 ParticlesProvider::Ptr
-ParticlesProvider::spritesheetSize(unsigned int numCols, 
+ParticlesProvider::spritesheetSize(unsigned int numCols,
                                    unsigned int numRows)
 {
     set<Vector2::Ptr>("particles.spritesheetSize", Vector2::create(float(numCols), float(numRows)));

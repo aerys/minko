@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -40,37 +40,37 @@ _macroFunctions()
 void
 Effect::addTechnique(const std::string& name, Technique& passes)
 {
-	if (_techniques.count(name) != 0)
-		throw std::logic_error("A technique named '" + name + "' already exists.");
+    if (_techniques.count(name) != 0)
+        throw std::logic_error("A technique named '" + name + "' already exists.");
 
-	for (auto& pass : passes)
-	{
-		for (auto& func : _uniformFunctions)
-			func(pass);
-		for (auto& func : _attributeFunctions)
-			func(pass);
-		if (_indexFunction)
-			_indexFunction->operator()(pass);
-		for (auto& func : _macroFunctions)
-			func(pass);
-	}
-	_techniques[name] = passes;
+    for (auto& pass : passes)
+    {
+        for (auto& func : _uniformFunctions)
+            func(pass);
+        for (auto& func : _attributeFunctions)
+            func(pass);
+        if (_indexFunction)
+            _indexFunction->operator()(pass);
+        for (auto& func : _macroFunctions)
+            func(pass);
+    }
+    _techniques[name] = passes;
 }
 
 void
 Effect::addTechnique(const std::string& name, Technique& passes, const std::string& fallback)
 {
-	_fallback[name] = fallback;
+    _fallback[name] = fallback;
 
-	addTechnique(name, passes);
+    addTechnique(name, passes);
 }
 
 void
 Effect::removeTechnique(const std::string& name)
 {
-	if (_techniques.count(name) == 0)
-		throw std::logic_error("The technique named '" + name + "' does not exist.");
+    if (_techniques.count(name) == 0)
+        throw std::logic_error("The technique named '" + name + "' does not exist.");
 
-	_techniques.erase(name);
-	_fallback.erase(name);
+    _techniques.erase(name);
+    _fallback.erase(name);
 }

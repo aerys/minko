@@ -1,5 +1,5 @@
 /*
-Copyright(c) 2013 Aerys
+Copyright(c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files(the "Software"), to deal in the Software without restriction,
@@ -31,78 +31,78 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace file
-	{
-		class IOHandler :
-			public Assimp::IOSystem
-		{
-			typedef std::shared_ptr<AbstractProtocol>                       AbsProtocolPtr;
+    namespace file
+    {
+        class IOHandler :
+            public Assimp::IOSystem
+        {
+            typedef std::shared_ptr<AbstractProtocol>                       AbsProtocolPtr;
 
-            typedef Signal<AbsProtocolPtr>::Slot					        ProtocolSignalSlot;
+            typedef Signal<AbsProtocolPtr>::Slot                            ProtocolSignalSlot;
 
-            typedef std::unordered_map<AbsProtocolPtr, ProtocolSignalSlot>	ProtocolToSlotMap;
-			typedef std::unordered_map<uint, std::string>			        TextureTypeToName;
-		private:
-			std::shared_ptr<file::Options>		    _options;
-			std::shared_ptr<file::AssetLibrary>	    _assets;
-            ProtocolToSlotMap						_protocolCompleteSlots;
-            ProtocolToSlotMap						_protocolErrorSlots;
+            typedef std::unordered_map<AbsProtocolPtr, ProtocolSignalSlot>    ProtocolToSlotMap;
+            typedef std::unordered_map<uint, std::string>                    TextureTypeToName;
+        private:
+            std::shared_ptr<file::Options>            _options;
+            std::shared_ptr<file::AssetLibrary>        _assets;
+            ProtocolToSlotMap                        _protocolCompleteSlots;
+            ProtocolToSlotMap                        _protocolErrorSlots;
 
-		public:
-			IOHandler(std::shared_ptr<file::Options> options, std::shared_ptr<file::AssetLibrary> assets) :
-				_options(options),
-				_assets(assets)
-			{
+        public:
+            IOHandler(std::shared_ptr<file::Options> options, std::shared_ptr<file::AssetLibrary> assets) :
+                _options(options),
+                _assets(assets)
+            {
 
-			}
+            }
 
-			void
-			Close(Assimp::IOStream* pFile)
-			{
+            void
+            Close(Assimp::IOStream* pFile)
+            {
 
-			}
+            }
 
-			bool
-			Exists(const char*  pFile) const
-			{
-				std::ifstream f(pFile);
+            bool
+            Exists(const char*  pFile) const
+            {
+                std::ifstream f(pFile);
 
-				return (bool)f;
-			}
+                return (bool)f;
+            }
 
-			char
-			getOsSeparator() const
-			{
+            char
+            getOsSeparator() const
+            {
 #ifdef _WIN32
-				return '\\';
+                return '\\';
 #else
-				return '/';
+                return '/';
 #endif
-			}
+            }
 
-			Assimp::IOStream*
-			Open(const char* pFile, const char* pMode = "rb")
-			{
-				auto filename = std::string(pFile);
-				auto protocol = _options->protocolFunction()(filename);
-				
-				Assimp::IOStream* stream = 0;
+            Assimp::IOStream*
+            Open(const char* pFile, const char* pMode = "rb")
+            {
+                auto filename = std::string(pFile);
+                auto protocol = _options->protocolFunction()(filename);
+
+                Assimp::IOStream* stream = 0;
 
                 _protocolCompleteSlots[protocol] = protocol->complete()->connect([&](file::AbstractProtocol::Ptr protocol)
-				{
+                {
                     stream = new minko::file::IOStream(protocol->file()->data());
-				});
+                });
 #ifdef DEBUG
                 _protocolErrorSlots[protocol] = protocol->error()->connect([&](file::AbstractProtocol::Ptr protocol)
-				{
-					std::cerr << "error: could not load file '" << filename << "'" << std::endl;
-				});
+                {
+                    std::cerr << "error: could not load file '" << filename << "'" << std::endl;
+                });
 #endif // defined(DEBUG)
 
                 protocol->load(filename, _options);
-				
-				return stream;
-			}
-		};
-	}
+
+                return stream;
+            }
+        };
+    }
 }

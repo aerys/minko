@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -29,111 +29,111 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace component
-	{
-		class Transform :
-			public AbstractComponent
-		{
+    namespace component
+    {
+        class Transform :
+            public AbstractComponent
+        {
 
-		public:
-			typedef std::shared_ptr<Transform>	Ptr;
+        public:
+            typedef std::shared_ptr<Transform>    Ptr;
 
-		private:
-			typedef std::shared_ptr<scene::Node>			NodePtr;
-			typedef std::shared_ptr<AbstractComponent>		AbsCtrlPtr;
+        private:
+            typedef std::shared_ptr<scene::Node>            NodePtr;
+            typedef std::shared_ptr<AbstractComponent>        AbsCtrlPtr;
 
-		private:
-			std::shared_ptr<math::Matrix4x4>				_matrix;
-			std::shared_ptr<math::Matrix4x4>				_modelToWorld;
-			std::shared_ptr<math::Matrix4x4>				_worldToModel;
-			std::shared_ptr<data::StructureProvider>		_data;
+        private:
+            std::shared_ptr<math::Matrix4x4>                _matrix;
+            std::shared_ptr<math::Matrix4x4>                _modelToWorld;
+            std::shared_ptr<math::Matrix4x4>                _worldToModel;
+            std::shared_ptr<data::StructureProvider>        _data;
 
-			Signal<AbsCtrlPtr, NodePtr>::Slot 				_targetAddedSlot;
-			Signal<AbsCtrlPtr, NodePtr>::Slot 				_targetRemovedSlot;
-			Signal<NodePtr, NodePtr, NodePtr>::Slot 		_addedSlot;
-			Signal<NodePtr, NodePtr, NodePtr>::Slot 		_removedSlot;
+            Signal<AbsCtrlPtr, NodePtr>::Slot                 _targetAddedSlot;
+            Signal<AbsCtrlPtr, NodePtr>::Slot                 _targetRemovedSlot;
+            Signal<NodePtr, NodePtr, NodePtr>::Slot         _addedSlot;
+            Signal<NodePtr, NodePtr, NodePtr>::Slot         _removedSlot;
 
-		public:
-			inline static
-			Ptr
-			create()
-			{
-				Ptr ctrl = std::shared_ptr<Transform>(new Transform());
+        public:
+            inline static
+            Ptr
+            create()
+            {
+                Ptr ctrl = std::shared_ptr<Transform>(new Transform());
 
-				ctrl->initialize();
+                ctrl->initialize();
 
-				return ctrl;
-			}
+                return ctrl;
+            }
 
-			inline static
-			Ptr
-			create(std::shared_ptr<math::Matrix4x4> transform)
-			{
-				auto ctrl = create();
+            inline static
+            Ptr
+            create(std::shared_ptr<math::Matrix4x4> transform)
+            {
+                auto ctrl = create();
 
-				ctrl->_matrix->copyFrom(transform);
+                ctrl->_matrix->copyFrom(transform);
 
-				return ctrl;
-			}
+                return ctrl;
+            }
 
-			~Transform() = default;
+            ~Transform() = default;
 
-			inline
-			std::shared_ptr<math::Matrix4x4>
-			matrix()
-			{
-				return _matrix;
-			}
+            inline
+            std::shared_ptr<math::Matrix4x4>
+            matrix()
+            {
+                return _matrix;
+            }
 
-			inline
-			std::shared_ptr<math::Vector3>
-			modelToWorld(std::shared_ptr<math::Vector3> v, std::shared_ptr<math::Vector3> out = nullptr)
-			{
-				return _modelToWorld->transform(v, out);
-			}
+            inline
+            std::shared_ptr<math::Vector3>
+            modelToWorld(std::shared_ptr<math::Vector3> v, std::shared_ptr<math::Vector3> out = nullptr)
+            {
+                return _modelToWorld->transform(v, out);
+            }
 
-			inline
-			std::shared_ptr<math::Vector3>
-			deltaModelToWorld(std::shared_ptr<math::Vector3> v, std::shared_ptr<math::Vector3> out = nullptr)
-			{
-				return _modelToWorld->deltaTransform(v, out);
-			}
+            inline
+            std::shared_ptr<math::Vector3>
+            deltaModelToWorld(std::shared_ptr<math::Vector3> v, std::shared_ptr<math::Vector3> out = nullptr)
+            {
+                return _modelToWorld->deltaTransform(v, out);
+            }
 
-			inline
-			std::shared_ptr<math::Vector3>
-			worldToModel(std::shared_ptr<math::Vector3> v, std::shared_ptr<math::Vector3> out = nullptr)
-			{
-				return _worldToModel->copyFrom(_modelToWorld)->invert()->transform(v, out);
-			}
+            inline
+            std::shared_ptr<math::Vector3>
+            worldToModel(std::shared_ptr<math::Vector3> v, std::shared_ptr<math::Vector3> out = nullptr)
+            {
+                return _worldToModel->copyFrom(_modelToWorld)->invert()->transform(v, out);
+            }
 
-			inline
-			std::shared_ptr<math::Vector3>
-			deltaWorldToModel(std::shared_ptr<math::Vector3> v, std::shared_ptr<math::Vector3> out = nullptr)
-			{
-				return _worldToModel->copyFrom(_modelToWorld)->invert()->deltaTransform(v, out);
-			}
+            inline
+            std::shared_ptr<math::Vector3>
+            deltaWorldToModel(std::shared_ptr<math::Vector3> v, std::shared_ptr<math::Vector3> out = nullptr)
+            {
+                return _worldToModel->copyFrom(_modelToWorld)->invert()->deltaTransform(v, out);
+            }
 
-			inline
-			std::shared_ptr<math::Matrix4x4>
-			modelToWorldMatrix()
-			{
-				return modelToWorldMatrix(false);
-			}
+            inline
+            std::shared_ptr<math::Matrix4x4>
+            modelToWorldMatrix()
+            {
+                return modelToWorldMatrix(false);
+            }
 
-			inline
-			std::shared_ptr<math::Matrix4x4>
-			modelToWorldMatrix(bool forceUpdate)
-			{
-				if (forceUpdate)
-				{
-					auto node		= targets()[0];
-					auto rootCtrl	= node->root()->component<RootTransform>();
+            inline
+            std::shared_ptr<math::Matrix4x4>
+            modelToWorldMatrix(bool forceUpdate)
+            {
+                if (forceUpdate)
+                {
+                    auto node        = targets()[0];
+                    auto rootCtrl    = node->root()->component<RootTransform>();
 
-					rootCtrl->forceUpdate(node, true);
-				}
+                    rootCtrl->forceUpdate(node, true);
+                }
 
-				return _modelToWorld;
-			}
+                return _modelToWorld;
+            }
 
             inline
             float
@@ -156,105 +156,105 @@ namespace minko
                 return this->modelToWorld(minko::math::Vector3::create())->z();
             }
 
-		private:
-			Transform();
+        private:
+            Transform();
 
-			void
-			initialize();
+            void
+            initialize();
 
-			void
-			targetAddedHandler(AbsCtrlPtr ctrl, NodePtr target);
+            void
+            targetAddedHandler(AbsCtrlPtr ctrl, NodePtr target);
 
-			void
-			targetRemovedHandler(AbsCtrlPtr ctrl, NodePtr target);
+            void
+            targetRemovedHandler(AbsCtrlPtr ctrl, NodePtr target);
 
-			void
-			addedOrRemovedHandler(NodePtr node, NodePtr target, NodePtr ancestor);
+            void
+            addedOrRemovedHandler(NodePtr node, NodePtr target, NodePtr ancestor);
 
 #ifdef MINKO_TEST
-		public:
+        public:
 #else
-		private:
+        private:
 #endif // MINKO_TEST
-			class RootTransform :
-				public AbstractComponent
-			{
-			public:
-				typedef std::shared_ptr<RootTransform> Ptr;
+            class RootTransform :
+                public AbstractComponent
+            {
+            public:
+                typedef std::shared_ptr<RootTransform> Ptr;
 
-			private:
-				typedef std::shared_ptr<Renderer>		RendererCtrlPtr;
-				typedef Signal<RendererCtrlPtr>::Slot 	EnterFrameCallback;
+            private:
+                typedef std::shared_ptr<Renderer>        RendererCtrlPtr;
+                typedef Signal<RendererCtrlPtr>::Slot     EnterFrameCallback;
 
-			public:
-				inline static
-				Ptr
-				create()
-				{
-					auto ctrl = std::shared_ptr<RootTransform>(new RootTransform());
+            public:
+                inline static
+                Ptr
+                create()
+                {
+                    auto ctrl = std::shared_ptr<RootTransform>(new RootTransform());
 
-					ctrl->initialize();
+                    ctrl->initialize();
 
-					return ctrl;
-				}
+                    return ctrl;
+                }
 
-				void
-				forceUpdate(NodePtr node, bool updateTransformLists = false);
+                void
+                forceUpdate(NodePtr node, bool updateTransformLists = false);
 
-			private:
-				std::vector<std::shared_ptr<math::Matrix4x4>>	_transforms;
-				std::vector<std::shared_ptr<math::Matrix4x4>>	_modelToWorld;
+            private:
+                std::vector<std::shared_ptr<math::Matrix4x4>>    _transforms;
+                std::vector<std::shared_ptr<math::Matrix4x4>>    _modelToWorld;
 
-				std::map<NodePtr, unsigned int>					_nodeToId;
-				std::vector<NodePtr>							_idToNode;
-				std::vector<int>		 						_parentId;
-				std::vector<unsigned int> 						_firstChildId;
-				std::vector<unsigned int>						_numChildren;
-				bool											_invalidLists;
+                std::map<NodePtr, unsigned int>                    _nodeToId;
+                std::vector<NodePtr>                            _idToNode;
+                std::vector<int>                                 _parentId;
+                std::vector<unsigned int>                         _firstChildId;
+                std::vector<unsigned int>                        _numChildren;
+                bool                                            _invalidLists;
 
-				std::list<Any>									_targetSlots;
-				Signal<std::shared_ptr<SceneManager>, uint, std::shared_ptr<render::AbstractTexture>>::Slot		_renderingBeginSlot;
+                std::list<Any>                                    _targetSlots;
+                Signal<std::shared_ptr<SceneManager>, uint, std::shared_ptr<render::AbstractTexture>>::Slot        _renderingBeginSlot;
 
-			private:
-				void
-				initialize();
+            private:
+                void
+                initialize();
 
-				void
-				targetAddedHandler(AbsCtrlPtr ctrl, NodePtr target);
+                void
+                targetAddedHandler(AbsCtrlPtr ctrl, NodePtr target);
 
-				void
-				targetRemovedHandler(AbsCtrlPtr ctrl, NodePtr target);
+                void
+                targetRemovedHandler(AbsCtrlPtr ctrl, NodePtr target);
 
-				void
-				componentRemovedHandler(NodePtr node, NodePtr target, AbsCtrlPtr ctrl);
+                void
+                componentRemovedHandler(NodePtr node, NodePtr target, AbsCtrlPtr ctrl);
 
-				void
-				componentAddedHandler(NodePtr node, NodePtr target, AbsCtrlPtr	ctrl);
+                void
+                componentAddedHandler(NodePtr node, NodePtr target, AbsCtrlPtr    ctrl);
 
-				void
-				removedHandler(NodePtr node, NodePtr target, NodePtr parent);
+                void
+                removedHandler(NodePtr node, NodePtr target, NodePtr parent);
 
-				void
-				addedHandler(NodePtr node, NodePtr target, NodePtr parent);
+                void
+                addedHandler(NodePtr node, NodePtr target, NodePtr parent);
 
-				void
-				updateTransformsList();
+                void
+                updateTransformsList();
 
-				void
-				updateTransforms();
+                void
+                updateTransforms();
 
-				void
-				updateTransformPath(const std::vector<unsigned int>& path);
+                void
+                updateTransformPath(const std::vector<unsigned int>& path);
 
-				void
-				renderingBeginHandler(std::shared_ptr<SceneManager> sceneManager, 
-									  uint							frameId, 
-									  std::shared_ptr<render::AbstractTexture>);
+                void
+                renderingBeginHandler(std::shared_ptr<SceneManager> sceneManager,
+                                      uint                            frameId,
+                                      std::shared_ptr<render::AbstractTexture>);
 
-				static
-				void
-				juxtaposeSiblings(std::vector<NodePtr>&);
-			};
-		};
-	}
+                static
+                void
+                juxtaposeSiblings(std::vector<NodePtr>&);
+            };
+        };
+    }
 }

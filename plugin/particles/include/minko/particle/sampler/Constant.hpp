@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -24,71 +24,71 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace particle
-	{
-		namespace sampler
-		{
-			template <class T>
-			class Constant : public Sampler<T>
-			{
-			public:
-				typedef std::shared_ptr<Constant<T> > Ptr;
-				
-			private:
-				T _value;
+    namespace particle
+    {
+        namespace sampler
+        {
+            template <class T>
+            class Constant : public Sampler<T>
+            {
+            public:
+                typedef std::shared_ptr<Constant<T> > Ptr;
 
-			public:
-				static
-				Ptr
-				create(T value)
-				{
-					Ptr sampler = std::shared_ptr<Constant>(new Constant(value));
+            private:
+                T _value;
 
-					return sampler;
-				};
-				
-				inline
-				void
-				value(T value)
-				{
-					_value = value;
-				};
+            public:
+                static
+                Ptr
+                create(T value)
+                {
+                    Ptr sampler = std::shared_ptr<Constant>(new Constant(value));
 
-			public:
-				virtual
-				T
-				value(float time) const
-				{
-					return _value;
-				};
-				
-				virtual
-				void
-				set(T& value, float time) const
-				{
-					value = _value;
-				};
-
-				virtual
-				T
-				min() const
-				{
-					return _value;
-				};
-
-				virtual 
-				T
-				max() const
-				{
-					return _value;
-				};
-				
-			protected:
-				Constant(T value): 
-                    _value (value)
-				{
+                    return sampler;
                 };
-			};
-		}
-	}
+
+                inline
+                void
+                value(T value)
+                {
+                    _value = value;
+                };
+
+            public:
+                virtual
+                T
+                value(float time) const
+                {
+                    return _value;
+                };
+
+                virtual
+                void
+                set(T& value, float time) const
+                {
+                    value = _value;
+                };
+
+                virtual
+                T
+                min() const
+                {
+                    return _value;
+                };
+
+                virtual
+                T
+                max() const
+                {
+                    return _value;
+                };
+
+            protected:
+                Constant(T value):
+                    _value (value)
+                {
+                };
+            };
+        }
+    }
 }

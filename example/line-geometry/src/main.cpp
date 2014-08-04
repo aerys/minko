@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -30,8 +30,8 @@ using namespace minko::render;
 
 struct Star
 {
-    Node::Ptr	node;
-    float		angRate;
+    Node::Ptr    node;
+    float        angRate;
 };
 
 void
@@ -104,9 +104,9 @@ addStar(Node::Ptr root, file::AssetLibrary::Ptr assets, std::vector<Star>& stars
         return;
     }
 
-    unsigned int	numBranches = 4 + rand() % 4;
-    float			outRadius = 0.9f + 0.2f * (rand() / (float) RAND_MAX - 0.5f);
-    float			inRadius = outRadius * (0.5f + 0.1f * (rand() / (float) RAND_MAX - 0.5f));
+    unsigned int    numBranches = 4 + rand() % 4;
+    float            outRadius = 0.9f + 0.2f * (rand() / (float) RAND_MAX - 0.5f);
+    float            inRadius = outRadius * (0.5f + 0.1f * (rand() / (float) RAND_MAX - 0.5f));
 
     auto starNode = Node::create("star_" + std::to_string(stars.size()))
         ->addComponent(Surface::create(
@@ -132,33 +132,33 @@ createStarLineGeometry(unsigned int numStarBranches, float inRadius, float outRa
     if (context == nullptr)
         throw std::invalid_argument("context");
 
-    const unsigned int	numBranches = std::max(3u, numStarBranches);
-    const float			innerRadius = std::min(inRadius, outRadius);
-    const float			outerRadius = std::max(inRadius, outRadius);
-    const float			cStep = cosf(float(M_PI) / (float) numBranches);
-    const float			sStep = sinf(float(M_PI) / (float) numBranches);
+    const unsigned int    numBranches = std::max(3u, numStarBranches);
+    const float            innerRadius = std::min(inRadius, outRadius);
+    const float            outerRadius = std::max(inRadius, outRadius);
+    const float            cStep = cosf(float(M_PI) / (float) numBranches);
+    const float            sStep = sinf(float(M_PI) / (float) numBranches);
 
-    LineGeometry::Ptr	lines = LineGeometry::create(context);
+    LineGeometry::Ptr    lines = LineGeometry::create(context);
 
-    float				cAng = 1.0f;
-    float				sAng = 0.0f;
+    float                cAng = 1.0f;
+    float                sAng = 0.0f;
     for (unsigned int i = 0; i < numBranches; ++i)
     {
-        const float	outX = outerRadius * cAng;
-        const float	outY = outerRadius * sAng;
+        const float    outX = outerRadius * cAng;
+        const float    outY = outerRadius * sAng;
 
         if (lines->numLines() > 0)
             lines->lineTo(outX, outY, 0.0f, 2);
         else
             lines->moveTo(outX, outY, 0.0f);
 
-        float	c = cAng*cStep - sAng*sStep;
-        float	s = sAng*cStep + cAng*sStep;
+        float    c = cAng*cStep - sAng*sStep;
+        float    s = sAng*cStep + cAng*sStep;
         cAng = c;
         sAng = s;
 
-        const float	inX = innerRadius * cAng;
-        const float	inY = innerRadius * sAng;
+        const float    inX = innerRadius * cAng;
+        const float    inY = innerRadius * sAng;
 
         lines->lineTo(inX, inY, 0.0f, 2);
 

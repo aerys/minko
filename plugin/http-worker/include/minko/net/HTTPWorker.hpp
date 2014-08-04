@@ -27,8 +27,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace net
-	{
-		MINKO_DECLARE_WORKER(HTTPWorker);
-	}
+    namespace net
+    {
+        MINKO_DECLARE_WORKER(HTTPWorker);
+    }
 }

@@ -26,48 +26,48 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace Leap
 {
-	class ScreenTapGesture;
+    class ScreenTapGesture;
 }
 
 namespace minko
 {
-	namespace input
-	{
-		namespace leap
-		{
-			class ScreenTapGesture : public Gesture
-			{
-				friend class Gesture; // Only a Gesture can instanciate a ScreenTapGesture
+    namespace input
+    {
+        namespace leap
+        {
+            class ScreenTapGesture : public Gesture
+            {
+                friend class Gesture; // Only a Gesture can instanciate a ScreenTapGesture
 
-			public:
-				typedef std::shared_ptr<ScreenTapGesture>	Ptr;
+            public:
+                typedef std::shared_ptr<ScreenTapGesture>    Ptr;
 
-			private:
-				typedef std::shared_ptr<math::Vector3>		Vector3Ptr;
+            private:
+                typedef std::shared_ptr<math::Vector3>        Vector3Ptr;
 
-			private:
-				std::shared_ptr<Leap::ScreenTapGesture>		_leapScreenTap;
+            private:
+                std::shared_ptr<Leap::ScreenTapGesture>        _leapScreenTap;
 
-			public:
-				
-				Vector3Ptr
-				direction(Vector3Ptr output = nullptr) const;
+            public:
 
-				Vector3Ptr
-				position(Vector3Ptr output = nullptr) const;
+                Vector3Ptr
+                direction(Vector3Ptr output = nullptr) const;
 
-				float
-				progress() const;
+                Vector3Ptr
+                position(Vector3Ptr output = nullptr) const;
 
-				uint32_t
-				pointableID() const;
+                float
+                progress() const;
 
-			private:
-				ScreenTapGesture(); // no implementation
+                uint32_t
+                pointableID() const;
 
-				explicit
-				ScreenTapGesture(const Gesture&);
-			};
-		}
-	}
+            private:
+                ScreenTapGesture(); // no implementation
+
+                explicit
+                ScreenTapGesture(const Gesture&);
+            };
+        }
+    }
 }

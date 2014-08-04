@@ -28,18 +28,18 @@ Logger::Ptr
 Logger::_default = Logger::create(Logger::Level::Debug, ConsoleSink::create());
 
 void
-Logger::operator()(const std::string&		message,
-				   Level					level,
-				   const char*				function,
-				   const char*				file,
-				   int						line)
+Logger::operator()(const std::string&        message,
+                   Level                    level,
+                   const char*                function,
+                   const char*                file,
+                   int                        line)
 {
-	if (static_cast<int>(level) < static_cast<int>(_level))
-		return;
+    if (static_cast<int>(level) < static_cast<int>(_level))
+        return;
 
-	std::ostringstream os;
+    std::ostringstream os;
 
-	os << file << ":" << line << "\t" << function << "(): " << message;
+    os << file << ":" << line << "\t" << function << "(): " << message;
 
-	_sink->write(os.str(), level);
+    _sink->write(os.str(), level);
 }

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -24,63 +24,63 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace particle
-	{
-		namespace shape
-		{
-			class Cylinder : public EmitterShape
-			{
-			public:
-				typedef std::shared_ptr<Cylinder>	Ptr;
-				
-			private:
-				float _height;
-				float _radius;
-				float _innerRadius;
-			public:
-				static
-				Ptr
-				create(float	height,
-					   float	radius,
-					   float 	innerRadius = 0)
-				{
-					Ptr cylinder = std::shared_ptr<Cylinder>(new Cylinder(height,
-																		  radius,
-																		  innerRadius));
+    namespace particle
+    {
+        namespace shape
+        {
+            class Cylinder : public EmitterShape
+            {
+            public:
+                typedef std::shared_ptr<Cylinder>    Ptr;
 
-					return cylinder;
-				};
-				
-				inline
-				void
-				height(float value)
-				{
-					_height = value;
-				};
-				
-				inline
-				void
-				radius(float value)
-				{
-					_radius = value;
-				};
-				
-				inline
-				void
-				innerRadius(float value)
-				{
-					_innerRadius = value;
-				};
+            private:
+                float _height;
+                float _radius;
+                float _innerRadius;
+            public:
+                static
+                Ptr
+                create(float    height,
+                       float    radius,
+                       float     innerRadius = 0)
+                {
+                    Ptr cylinder = std::shared_ptr<Cylinder>(new Cylinder(height,
+                                                                          radius,
+                                                                          innerRadius));
 
-				virtual
-				void
-				initPosition(ParticleData& particle) const;
+                    return cylinder;
+                };
 
-			protected:
-				Cylinder(float	height,
-						 float	radius,
-						 float 	innerRadius = 0);
-			};
-		}
-	}
+                inline
+                void
+                height(float value)
+                {
+                    _height = value;
+                };
+
+                inline
+                void
+                radius(float value)
+                {
+                    _radius = value;
+                };
+
+                inline
+                void
+                innerRadius(float value)
+                {
+                    _innerRadius = value;
+                };
+
+                virtual
+                void
+                initPosition(ParticleData& particle) const;
+
+            protected:
+                Cylinder(float    height,
+                         float    radius,
+                         float     innerRadius = 0);
+            };
+        }
+    }
 }

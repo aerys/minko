@@ -23,10 +23,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::component;
 
-MasterAnimation::MasterAnimation(const std::vector<AnimationPtr>& animations, 
-								 bool isLooping) :
-	AbstractAnimation(isLooping),
-	_animations(animations)
+MasterAnimation::MasterAnimation(const std::vector<AnimationPtr>& animations,
+                                 bool isLooping) :
+    AbstractAnimation(isLooping),
+    _animations(animations)
 {
 }
 
@@ -34,138 +34,138 @@ MasterAnimation::MasterAnimation(const std::vector<AnimationPtr>& animations,
 void
 MasterAnimation::initialize()
 {
-	AbstractAnimation::initialize();
-	
-	_maxTime = 0;
+    AbstractAnimation::initialize();
 
-	for (auto& animation : _animations)
-	{
-		animation->_master = std::static_pointer_cast<MasterAnimation>(shared_from_this());
-		_maxTime = std::max(_maxTime, animation->_maxTime);
-	}
+    _maxTime = 0;
 
-	setPlaybackWindow(0, _maxTime)->seek(0)->play();
+    for (auto& animation : _animations)
+    {
+        animation->_master = std::static_pointer_cast<MasterAnimation>(shared_from_this());
+        _maxTime = std::max(_maxTime, animation->_maxTime);
+    }
+
+    setPlaybackWindow(0, _maxTime)->seek(0)->play();
 }
 
 /*virtual*/
 AbstractAnimation::Ptr
 MasterAnimation::play()
 {
-	AbstractAnimation::play();
+    AbstractAnimation::play();
 
-	for (auto& animation : _animations)
-		animation->play();
+    for (auto& animation : _animations)
+        animation->play();
 
-	return std::static_pointer_cast<AbstractAnimation>(shared_from_this());
+    return std::static_pointer_cast<AbstractAnimation>(shared_from_this());
 }
 
 /*virtual*/
 AbstractAnimation::Ptr
 MasterAnimation::stop()
 {
-	AbstractAnimation::stop();
+    AbstractAnimation::stop();
 
-	for (auto& animation : _animations)
-		animation->stop();
+    for (auto& animation : _animations)
+        animation->stop();
 
-	return std::static_pointer_cast<AbstractAnimation>(shared_from_this());
+    return std::static_pointer_cast<AbstractAnimation>(shared_from_this());
 }
 
 /*virtual*/
 AbstractAnimation::Ptr
 MasterAnimation::addLabel(const std::string& name, uint time)
 {
-	AbstractAnimation::addLabel(name, time);
+    AbstractAnimation::addLabel(name, time);
 
-	for (auto& animation : _animations)
-		animation->addLabel(name, time);
+    for (auto& animation : _animations)
+        animation->addLabel(name, time);
 
-	return std::static_pointer_cast<AbstractAnimation>(shared_from_this());
+    return std::static_pointer_cast<AbstractAnimation>(shared_from_this());
 }
 
 /*virtual*/
 AbstractAnimation::Ptr
 MasterAnimation::changeLabel(const std::string& name, const std::string& newName)
 {
-	AbstractAnimation::changeLabel(name, newName);
+    AbstractAnimation::changeLabel(name, newName);
 
-	for (auto& animation : _animations)
-		animation->changeLabel(name, newName);
+    for (auto& animation : _animations)
+        animation->changeLabel(name, newName);
 
-	return std::static_pointer_cast<AbstractAnimation>(shared_from_this());
+    return std::static_pointer_cast<AbstractAnimation>(shared_from_this());
 }
 
 /*virtual*/
 AbstractAnimation::Ptr
 MasterAnimation::setTimeForLabel(const std::string& name, uint newTime)
 {
-	AbstractAnimation::setTimeForLabel(name, newTime);
+    AbstractAnimation::setTimeForLabel(name, newTime);
 
-	for (auto& animation : _animations)
-		animation->setTimeForLabel(name, newTime);
+    for (auto& animation : _animations)
+        animation->setTimeForLabel(name, newTime);
 
-	return std::static_pointer_cast<AbstractAnimation>(shared_from_this());
+    return std::static_pointer_cast<AbstractAnimation>(shared_from_this());
 }
 
 /*virtual*/
 AbstractAnimation::Ptr
 MasterAnimation::removeLabel(const std::string& name)
 {
-	AbstractAnimation::removeLabel(name);
+    AbstractAnimation::removeLabel(name);
 
-	for (auto& animation : _animations)
-		animation->removeLabel(name);
+    for (auto& animation : _animations)
+        animation->removeLabel(name);
 
-	return std::static_pointer_cast<AbstractAnimation>(shared_from_this());
+    return std::static_pointer_cast<AbstractAnimation>(shared_from_this());
 }
 
 /*virtual*/
 AbstractAnimation::Ptr
-MasterAnimation::setPlaybackWindow(uint beginTime, 
-								   uint endTime, 
-								   bool forceRestart)
+MasterAnimation::setPlaybackWindow(uint beginTime,
+                                   uint endTime,
+                                   bool forceRestart)
 {
-	AbstractAnimation::setPlaybackWindow(beginTime, endTime, forceRestart);
+    AbstractAnimation::setPlaybackWindow(beginTime, endTime, forceRestart);
 
-	for (auto& animation : _animations)
-		animation->setPlaybackWindow(beginTime, endTime, forceRestart);
+    for (auto& animation : _animations)
+        animation->setPlaybackWindow(beginTime, endTime, forceRestart);
 
-	return std::static_pointer_cast<AbstractAnimation>(shared_from_this());
+    return std::static_pointer_cast<AbstractAnimation>(shared_from_this());
 }
 
 /*virtual*/
 AbstractAnimation::Ptr
-MasterAnimation::setPlaybackWindow(const std::string&	beginLabelName, 
-								   const std::string&	endLabelName, 
-								   bool					forceRestart)
+MasterAnimation::setPlaybackWindow(const std::string&    beginLabelName,
+                                   const std::string&    endLabelName,
+                                   bool                    forceRestart)
 {
-	AbstractAnimation::setPlaybackWindow(beginLabelName, endLabelName, forceRestart);
+    AbstractAnimation::setPlaybackWindow(beginLabelName, endLabelName, forceRestart);
 
-	for (auto& animation : _animations)
-		animation->setPlaybackWindow(beginLabelName, endLabelName, forceRestart);
+    for (auto& animation : _animations)
+        animation->setPlaybackWindow(beginLabelName, endLabelName, forceRestart);
 
-	return std::static_pointer_cast<AbstractAnimation>(shared_from_this());
+    return std::static_pointer_cast<AbstractAnimation>(shared_from_this());
 }
 
 /*virtual*/
 AbstractAnimation::Ptr
 MasterAnimation::resetPlaybackWindow()
 {
-	AbstractAnimation::resetPlaybackWindow();
+    AbstractAnimation::resetPlaybackWindow();
 
-	for (auto& animation : _animations)
-		animation->resetPlaybackWindow();
+    for (auto& animation : _animations)
+        animation->resetPlaybackWindow();
 
-	return std::static_pointer_cast<AbstractAnimation>(shared_from_this());
+    return std::static_pointer_cast<AbstractAnimation>(shared_from_this());
 }
 
 /*virtual*/
 void
 MasterAnimation::update()
 {
-	for (auto& animation : _animations)
-	{
-		animation->_currentTime = _currentTime;
-		animation->update();
-	}
+    for (auto& animation : _animations)
+    {
+        animation->_currentTime = _currentTime;
+        animation->update();
+    }
 }

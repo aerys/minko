@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -28,221 +28,221 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::file;
 
-std::unordered_map<uint, Dependency::GeometryTestFunc>			Dependency::_geometryTestFunctions;
-std::unordered_map<uint, Dependency::GeometryWriterFunction>	Dependency::_geometryWriteFunctions;
-Dependency::TextureWriterFunction	Dependency::_textureWriteFunction;
-Dependency::MaterialWriterFunction	Dependency::_materialWriteFunction;
+std::unordered_map<uint, Dependency::GeometryTestFunc>            Dependency::_geometryTestFunctions;
+std::unordered_map<uint, Dependency::GeometryWriterFunction>    Dependency::_geometryWriteFunctions;
+Dependency::TextureWriterFunction    Dependency::_textureWriteFunction;
+Dependency::MaterialWriterFunction    Dependency::_materialWriteFunction;
 
 Dependency::Dependency()
 {
-	_currentId = 0;
+    _currentId = 0;
 
-	setGeometryFunction(std::bind(&Dependency::serializeGeometry,
-		std::placeholders::_1,
-		std::placeholders::_2,
-		std::placeholders::_3,
-		std::placeholders::_4,
-		std::placeholders::_5,
-		std::placeholders::_6,
-		std::placeholders::_7),
-		[=](std::shared_ptr<geometry::Geometry> geometry) -> bool
-			{
-				return true;
-			},
-		0);
+    setGeometryFunction(std::bind(&Dependency::serializeGeometry,
+        std::placeholders::_1,
+        std::placeholders::_2,
+        std::placeholders::_3,
+        std::placeholders::_4,
+        std::placeholders::_5,
+        std::placeholders::_6,
+        std::placeholders::_7),
+        [=](std::shared_ptr<geometry::Geometry> geometry) -> bool
+            {
+                return true;
+            },
+        0);
 
     if (_textureWriteFunction == nullptr)
     {
         _textureWriteFunction = std::bind(&Dependency::serializeTexture,
-			std::placeholders::_1,
-			std::placeholders::_2,
-			std::placeholders::_3,
-			std::placeholders::_4,
+            std::placeholders::_1,
+            std::placeholders::_2,
+            std::placeholders::_3,
+            std::placeholders::_4,
             std::placeholders::_5,
             std::placeholders::_6);
     }
 
     if (_materialWriteFunction == nullptr)
     {
-		_materialWriteFunction = std::bind(&Dependency::serializeMaterial,
-			std::placeholders::_1,
-			std::placeholders::_2,
-			std::placeholders::_3,
-			std::placeholders::_4,
+        _materialWriteFunction = std::bind(&Dependency::serializeMaterial,
+            std::placeholders::_1,
+            std::placeholders::_2,
+            std::placeholders::_3,
+            std::placeholders::_4,
             std::placeholders::_5,
             std::placeholders::_6);
-	}
+    }
 }
 
 bool
 Dependency::hasDependency(std::shared_ptr<render::Effect> effect)
 {
-	return _effectDependencies.find(effect) != _effectDependencies.end();
+    return _effectDependencies.find(effect) != _effectDependencies.end();
 }
 
 uint
 Dependency::registerDependency(std::shared_ptr<render::Effect> effect)
 {
-	if (!hasDependency(effect))
-		_effectDependencies[effect] = _currentId++;
+    if (!hasDependency(effect))
+        _effectDependencies[effect] = _currentId++;
 
-	return _effectDependencies[effect];
+    return _effectDependencies[effect];
 }
 
 bool
 Dependency::hasDependency(std::shared_ptr<geometry::Geometry> geometry)
 {
-	return _geometryDependencies.find(geometry) != _geometryDependencies.end();
+    return _geometryDependencies.find(geometry) != _geometryDependencies.end();
 }
 
 uint
 Dependency::registerDependency(std::shared_ptr<geometry::Geometry> geometry)
 {
-	if (!hasDependency(geometry))
-		_geometryDependencies[geometry] = _currentId++;
+    if (!hasDependency(geometry))
+        _geometryDependencies[geometry] = _currentId++;
 
-	return _geometryDependencies[geometry];
+    return _geometryDependencies[geometry];
 }
 
 bool
 Dependency::hasDependency(std::shared_ptr<data::Provider> material)
 {
-	return _materialDependencies.find(material) != _materialDependencies.end();
+    return _materialDependencies.find(material) != _materialDependencies.end();
 }
 
 uint
 Dependency::registerDependency(std::shared_ptr<data::Provider> material)
 {
-	if (!hasDependency(material))
-		_materialDependencies[material] = _currentId++;
+    if (!hasDependency(material))
+        _materialDependencies[material] = _currentId++;
 
-	return _materialDependencies[material];
+    return _materialDependencies[material];
 }
 
 bool
 Dependency::hasDependency(AbsTexturePtr texture)
 {
-	return _textureDependencies.find(texture) != _textureDependencies.end();
+    return _textureDependencies.find(texture) != _textureDependencies.end();
 }
 
 uint
 Dependency::registerDependency(AbsTexturePtr texture)
 {
-	if (!hasDependency(texture))
-		_textureDependencies[texture] = _currentId++;
+    if (!hasDependency(texture))
+        _textureDependencies[texture] = _currentId++;
 
-	return _textureDependencies[texture];
+    return _textureDependencies[texture];
 }
 
 bool
 Dependency::hasDependency(std::shared_ptr<scene::Node> subScene)
 {
-	return _subSceneDependencies.find(subScene) != _subSceneDependencies.end();
+    return _subSceneDependencies.find(subScene) != _subSceneDependencies.end();
 }
 
 uint
 Dependency::registerDependency(std::shared_ptr<scene::Node> subScene)
 {
-	if (!hasDependency(subScene))
-		_subSceneDependencies[subScene] = _currentId++;
+    if (!hasDependency(subScene))
+        _subSceneDependencies[subScene] = _currentId++;
 
-	return _subSceneDependencies[subScene];
+    return _subSceneDependencies[subScene];
 }
 
 std::shared_ptr<geometry::Geometry>
 Dependency::getGeometryReference(uint geometryId)
 {
-	return _geometryReferences[geometryId];
+    return _geometryReferences[geometryId];
 }
 
 void
 Dependency::registerReference(uint referenceId, std::shared_ptr<geometry::Geometry> geometry)
 {
-	_geometryReferences[referenceId] = geometry;
+    _geometryReferences[referenceId] = geometry;
 }
 
 std::shared_ptr<data::Provider>
 Dependency::getMaterialReference(uint materialId)
 {
-	return _materialReferences[materialId];
+    return _materialReferences[materialId];
 }
 
 void
 Dependency::registerReference(uint referenceId, std::shared_ptr<data::Provider> material)
 {
-	_materialReferences[referenceId] = material;
+    _materialReferences[referenceId] = material;
 }
 
 Dependency::AbsTexturePtr
 Dependency::getTextureReference(uint textureId)
 {
-	return _textureReferences[textureId];
+    return _textureReferences[textureId];
 }
 
 void
 Dependency::registerReference(uint referenceId, AbsTexturePtr texture)
 {
-	_textureReferences[referenceId] = texture;
+    _textureReferences[referenceId] = texture;
 }
 
 std::shared_ptr<scene::Node>
 Dependency::getSubsceneReference(uint subSceneId)
 {
-	return _subSceneReferences[subSceneId];
+    return _subSceneReferences[subSceneId];
 }
 
 void
 Dependency::registerReference(uint referenceId, std::shared_ptr<scene::Node> subScene)
 {
-	_subSceneReferences[referenceId] = subScene;
+    _subSceneReferences[referenceId] = subScene;
 }
 
 void
 Dependency::registerReference(uint referenceId, std::shared_ptr<render::Effect> effect)
 {
-	_effectReferences[referenceId] = effect;
+    _effectReferences[referenceId] = effect;
 }
 
 std::shared_ptr<render::Effect>
 Dependency::getEffectReference(uint effectId)
 {
-	return _effectReferences[effectId];
+    return _effectReferences[effectId];
 }
 
 bool
 Dependency::geometryReferenceExist(uint referenceId)
 {
-	return _geometryReferences.find(referenceId) != _geometryReferences.end();
+    return _geometryReferences.find(referenceId) != _geometryReferences.end();
 }
 
 bool
 Dependency::textureReferenceExist(uint referenceId)
 {
-	return _textureReferences.find(referenceId) != _textureReferences.end();
+    return _textureReferences.find(referenceId) != _textureReferences.end();
 }
 
 bool
 Dependency::materialReferenceExist(uint referenceId)
 {
-	return _materialReferences.find(referenceId) != _materialReferences.end();
+    return _materialReferences.find(referenceId) != _materialReferences.end();
 }
 
 bool
 Dependency::effectReferenceExist(uint referenceId)
 {
-	return _effectReferences.find(referenceId) != _effectReferences.end();
+    return _effectReferences.find(referenceId) != _effectReferences.end();
 }
 
 Dependency::SerializedAsset
-Dependency::serializeGeometry(std::shared_ptr<Dependency>				dependency,
-							  std::shared_ptr<file::AssetLibrary>		assetLibrary,
-							  std::shared_ptr<geometry::Geometry>		geometry,
-							  uint										resourceId,
-							  std::shared_ptr<file::Options>			options,
-                              std::shared_ptr<file::WriterOptions>		writerOptions,
-							  std::vector<Dependency::SerializedAsset>&	includeDependecies)
+Dependency::serializeGeometry(std::shared_ptr<Dependency>                dependency,
+                              std::shared_ptr<file::AssetLibrary>        assetLibrary,
+                              std::shared_ptr<geometry::Geometry>        geometry,
+                              uint                                        resourceId,
+                              std::shared_ptr<file::Options>            options,
+                              std::shared_ptr<file::WriterOptions>        writerOptions,
+                              std::vector<Dependency::SerializedAsset>&    includeDependecies)
 {
-	GeometryWriter::Ptr         geometryWriter = GeometryWriter::create();
+    GeometryWriter::Ptr         geometryWriter = GeometryWriter::create();
     serialize::AssetType        assetType;
     std::string                 content;
 
@@ -252,7 +252,7 @@ Dependency::serializeGeometry(std::shared_ptr<Dependency>				dependency,
     {
         assetType = serialize::AssetType::EMBED_GEOMETRY_ASSET;
 
-		content = geometryWriter->embedAll(assetLibrary, options, writerOptions, includeDependecies);
+        content = geometryWriter->embedAll(assetLibrary, options, writerOptions, includeDependecies);
     }
     else
     {
@@ -262,25 +262,25 @@ Dependency::serializeGeometry(std::shared_ptr<Dependency>				dependency,
 
         auto completeFilename = writerOptions->outputAssetUriFunction()(filename);
 
-		geometryWriter->write(completeFilename, assetLibrary, options, writerOptions, includeDependecies);
+        geometryWriter->write(completeFilename, assetLibrary, options, writerOptions, includeDependecies);
 
         content = filename;
     }
 
     SerializedAsset res(assetType, resourceId, content);
 
-	return res;
+    return res;
 }
 
 Dependency::SerializedAsset
-Dependency::serializeTexture(std::shared_ptr<Dependency>				dependency,
-						     std::shared_ptr<file::AssetLibrary>		assetLibrary,
-							 std::shared_ptr<render::AbstractTexture>	texture,
-							 uint										resourceId,
-							 std::shared_ptr<file::Options>				options,
+Dependency::serializeTexture(std::shared_ptr<Dependency>                dependency,
+                             std::shared_ptr<file::AssetLibrary>        assetLibrary,
+                             std::shared_ptr<render::AbstractTexture>    texture,
+                             uint                                        resourceId,
+                             std::shared_ptr<file::Options>                options,
                              std::shared_ptr<file::WriterOptions>       writerOptions)
 {
-	auto writer                 = TextureWriter::create();
+    auto writer                 = TextureWriter::create();
     auto assetType              = serialize::AssetType();
     unsigned char metaByte      = 0;
     auto content                = std::string();
@@ -333,18 +333,18 @@ Dependency::serializeTexture(std::shared_ptr<Dependency>				dependency,
 
     SerializedAsset res(metaData, resourceId, content);
 
-	return res;
+    return res;
 }
 
 Dependency::SerializedAsset
-Dependency::serializeMaterial(std::shared_ptr<Dependency>			dependency,
-							  std::shared_ptr<file::AssetLibrary>	assetLibrary,
-							  std::shared_ptr<data::Provider>       material,
-							  uint									resourceId,
-							  std::shared_ptr<file::Options>		options,
+Dependency::serializeMaterial(std::shared_ptr<Dependency>            dependency,
+                              std::shared_ptr<file::AssetLibrary>    assetLibrary,
+                              std::shared_ptr<data::Provider>       material,
+                              uint                                    resourceId,
+                              std::shared_ptr<file::Options>        options,
                               std::shared_ptr<file::WriterOptions>  writerOptions)
 {
-	MaterialWriter::Ptr         materialWriter = MaterialWriter::create();
+    MaterialWriter::Ptr         materialWriter = MaterialWriter::create();
     serialize::AssetType        assetType;
     std::string                 content;
 
@@ -353,13 +353,13 @@ Dependency::serializeMaterial(std::shared_ptr<Dependency>			dependency,
     if (writerOptions->embedAll())
     {
         assetType = serialize::AssetType::EMBED_MATERIAL_ASSET;
-		materialWriter->parentDependencies(dependency);
+        materialWriter->parentDependencies(dependency);
         content = materialWriter->embedAll(assetLibrary, options, writerOptions);
     }
     else
     {
         assetType = serialize::AssetType::MATERIAL_ASSET;
-		materialWriter->parentDependencies(nullptr);
+        materialWriter->parentDependencies(nullptr);
 
         auto materialName = assetLibrary->materialName(material);
 
@@ -380,60 +380,60 @@ Dependency::serializeMaterial(std::shared_ptr<Dependency>			dependency,
 
     SerializedAsset res(assetType, resourceId, content);
 
-	return res;
+    return res;
 }
 
 std::vector<Dependency::SerializedAsset>
 Dependency::serialize(std::shared_ptr<file::AssetLibrary>       assetLibrary,
-					  std::shared_ptr<file::Options>            options,
+                      std::shared_ptr<file::Options>            options,
                       std::shared_ptr<file::WriterOptions>      writerOptions)
 {
-	std::vector<SerializedAsset> serializedAsset;
+    std::vector<SerializedAsset> serializedAsset;
 
     for (const auto& itGeometry : _geometryDependencies)
-	{
-		uint maxPriority = 0;
+    {
+        uint maxPriority = 0;
 
-		for (auto testGeomFunc : _geometryTestFunctions)
-			if (testGeomFunc.second(itGeometry.first) && maxPriority < testGeomFunc.first)
-				maxPriority = testGeomFunc.first;
+        for (auto testGeomFunc : _geometryTestFunctions)
+            if (testGeomFunc.second(itGeometry.first) && maxPriority < testGeomFunc.first)
+                maxPriority = testGeomFunc.first;
 
-		std::vector<SerializedAsset> includeDependencies;
+        std::vector<SerializedAsset> includeDependencies;
 
-		auto res = _geometryWriteFunctions[maxPriority](shared_from_this(),
-														assetLibrary,
-														itGeometry.first,
-														itGeometry.second,
-														options,
-														writerOptions,
-														includeDependencies);
+        auto res = _geometryWriteFunctions[maxPriority](shared_from_this(),
+                                                        assetLibrary,
+                                                        itGeometry.first,
+                                                        itGeometry.second,
+                                                        options,
+                                                        writerOptions,
+                                                        includeDependencies);
 
-		serializedAsset.push_back(res);
-	}
+        serializedAsset.push_back(res);
+    }
 
     for (const auto& itMaterial : _materialDependencies)
-	{
-		auto res = _materialWriteFunction(shared_from_this(),
+    {
+        auto res = _materialWriteFunction(shared_from_this(),
                                           assetLibrary,
                                           itMaterial.first,
                                           itMaterial.second,
                                           options,
                                           writerOptions);
 
-		serializedAsset.push_back(res);
-	}
+        serializedAsset.push_back(res);
+    }
 
     for (const auto& itTexture : _textureDependencies)
-	{
-		auto res = _textureWriteFunction(shared_from_this(),
+    {
+        auto res = _textureWriteFunction(shared_from_this(),
                                          assetLibrary,
                                          itTexture.first,
                                          itTexture.second,
                                          options,
                                          writerOptions);
 
-		serializedAsset.insert(serializedAsset.begin(), res);
-	}
+        serializedAsset.insert(serializedAsset.begin(), res);
+    }
 
 #if 0
     for (const auto& itEffect : _effectDependencies)

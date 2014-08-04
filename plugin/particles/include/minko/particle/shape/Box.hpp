@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -24,75 +24,75 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace particle
-	{
-		namespace shape
-		{
-			class Box : public EmitterShape
-			{
-			public:
-				typedef std::shared_ptr<Box>	Ptr;
-				
-			private:
-				float _width;
-				float _height;
-				float _length;
-				float _limitToSides;
+    namespace particle
+    {
+        namespace shape
+        {
+            class Box : public EmitterShape
+            {
+            public:
+                typedef std::shared_ptr<Box>    Ptr;
 
-			public:
-				static
-				Ptr
-				create(float	width,
-					   float 	height,
-					   float	length,
-					   bool 	limitToSides)
-				{
-					Ptr box = std::shared_ptr<Box>(new Box(width,
-														   height,
-														   length,
-														   limitToSides));
+            private:
+                float _width;
+                float _height;
+                float _length;
+                float _limitToSides;
 
-					return box;
-				};
+            public:
+                static
+                Ptr
+                create(float    width,
+                       float     height,
+                       float    length,
+                       bool     limitToSides)
+                {
+                    Ptr box = std::shared_ptr<Box>(new Box(width,
+                                                           height,
+                                                           length,
+                                                           limitToSides));
 
-				inline
-				void
-				width(float value)
-				{
-					_width = value;
-				};
-				
-				inline
-				void
-				height(float value)
-				{
-					_height = value;
-				};
-				
-				inline
-				void
-				length(float value)
-				{
-					_length = value;
-				};
-				
-				inline
-				void
-				limitToSides(float value)
-				{
-					_limitToSides = value;
-				};
+                    return box;
+                };
 
-				virtual
-				void
-				initPosition(ParticleData& particle) const;
+                inline
+                void
+                width(float value)
+                {
+                    _width = value;
+                };
 
-			protected:
-				Box(float	width,
-					float 	height,
-					float	length,
-					bool 	limitToSides);
-			};
-		}
-	}
+                inline
+                void
+                height(float value)
+                {
+                    _height = value;
+                };
+
+                inline
+                void
+                length(float value)
+                {
+                    _length = value;
+                };
+
+                inline
+                void
+                limitToSides(float value)
+                {
+                    _limitToSides = value;
+                };
+
+                virtual
+                void
+                initPosition(ParticleData& particle) const;
+
+            protected:
+                Box(float    width,
+                    float     height,
+                    float    length,
+                    bool     limitToSides);
+            };
+        }
+    }
 }

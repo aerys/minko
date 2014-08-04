@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -27,18 +27,18 @@ using namespace minko::scene;
 #include <minko/scene/Node.hpp>
 #include <minko/math/Matrix4x4.hpp>
 
-Bone::Bone(Node::Ptr							node, 
-		   Matrix4x4::Ptr						offsetMatrix, 
-		   const std::vector<unsigned short>&	vertexIds, 
-		   const std::vector<float>&			vertexWeights) :
-	_node(node),
-	_offsetMatrix(Matrix4x4::create()->copyFrom(offsetMatrix)),
-	_vertexIds(vertexIds),
-	_vertexWeights(vertexWeights)
+Bone::Bone(Node::Ptr                            node,
+           Matrix4x4::Ptr                        offsetMatrix,
+           const std::vector<unsigned short>&    vertexIds,
+           const std::vector<float>&            vertexWeights) :
+    _node(node),
+    _offsetMatrix(Matrix4x4::create()->copyFrom(offsetMatrix)),
+    _vertexIds(vertexIds),
+    _vertexWeights(vertexWeights)
 {
-	if (_node == nullptr)
-		throw std::invalid_argument("node");
+    if (_node == nullptr)
+        throw std::invalid_argument("node");
 
-	if (_vertexIds.size() != _vertexWeights.size())
-		throw std::logic_error("A bone's arrays of vertex indices and vertex weights must have the same size.");
+    if (_vertexIds.size() != _vertexWeights.size())
+        throw std::logic_error("A bone's arrays of vertex indices and vertex weights must have the same size.");
 }

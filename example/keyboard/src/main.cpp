@@ -24,8 +24,8 @@ using namespace minko;
 using namespace minko::component;
 using namespace minko::math;
 
-const uint	WINDOW_WIDTH = 800;
-const uint	WINDOW_HEIGHT = 600;
+const uint    WINDOW_WIDTH = 800;
+const uint    WINDOW_HEIGHT = 600;
 
 int
 main(int argc, char** argv)

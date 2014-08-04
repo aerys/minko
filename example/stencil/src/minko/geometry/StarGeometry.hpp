@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -24,37 +24,37 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace geometry
-	{
-		class StarGeometry:
-			public Geometry
-		{
-		public:
-			typedef std::shared_ptr<StarGeometry> Ptr;
-	
-		public:
-			inline static
-			Ptr
-			create(std::shared_ptr<render::AbstractContext>	context, 
-				   unsigned int								numBranches, 
-				   float									outerRadius, 
-				   float									innerRadius)
-			{
-				Ptr ptr = std::shared_ptr<StarGeometry>(new StarGeometry());
+    namespace geometry
+    {
+        class StarGeometry:
+            public Geometry
+        {
+        public:
+            typedef std::shared_ptr<StarGeometry> Ptr;
 
-				ptr->initialize(context, numBranches, outerRadius, innerRadius);
+        public:
+            inline static
+            Ptr
+            create(std::shared_ptr<render::AbstractContext>    context,
+                   unsigned int                                numBranches,
+                   float                                    outerRadius,
+                   float                                    innerRadius)
+            {
+                Ptr ptr = std::shared_ptr<StarGeometry>(new StarGeometry());
 
-				return ptr;
-			}
-	
-		private:
-			StarGeometry();
+                ptr->initialize(context, numBranches, outerRadius, innerRadius);
 
-			void
-			initialize(std::shared_ptr<render::AbstractContext>	context,
-					   unsigned int								numBranches, 
-					   float									outerRadius, 
-					   float									innerRadius);
-		};
-	}
+                return ptr;
+            }
+
+        private:
+            StarGeometry();
+
+            void
+            initialize(std::shared_ptr<render::AbstractContext>    context,
+                       unsigned int                                numBranches,
+                       float                                    outerRadius,
+                       float                                    innerRadius);
+        };
+    }
 }

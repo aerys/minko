@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -29,76 +29,76 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace file
-	{
-		class AssetLibrary :
-			public std::enable_shared_from_this<AssetLibrary>
-		{
-		public:
-			typedef std::shared_ptr<AssetLibrary>				Ptr;
+    namespace file
+    {
+        class AssetLibrary :
+            public std::enable_shared_from_this<AssetLibrary>
+        {
+        public:
+            typedef std::shared_ptr<AssetLibrary>                Ptr;
 
-		private:
-			typedef std::shared_ptr<render::AbstractContext>	AbsContextPtr;
-			typedef std::shared_ptr<render::Effect>				EffectPtr;
-			typedef std::shared_ptr<render::AbstractTexture>	AbsTexturePtr;
-			typedef std::shared_ptr<render::Texture>			TexturePtr;
-			typedef std::shared_ptr<render::CubeTexture>		CubeTexturePtr;
-			typedef std::shared_ptr<geometry::Geometry>			GeometryPtr;
-			typedef std::shared_ptr<file::AbstractParser>		AbsParserPtr;
-			typedef std::shared_ptr<file::Loader>		    	LoaderPtr;
-			typedef std::shared_ptr<scene::Node>				NodePtr;
+        private:
+            typedef std::shared_ptr<render::AbstractContext>    AbsContextPtr;
+            typedef std::shared_ptr<render::Effect>                EffectPtr;
+            typedef std::shared_ptr<render::AbstractTexture>    AbsTexturePtr;
+            typedef std::shared_ptr<render::Texture>            TexturePtr;
+            typedef std::shared_ptr<render::CubeTexture>        CubeTexturePtr;
+            typedef std::shared_ptr<geometry::Geometry>            GeometryPtr;
+            typedef std::shared_ptr<file::AbstractParser>        AbsParserPtr;
+            typedef std::shared_ptr<file::Loader>                LoaderPtr;
+            typedef std::shared_ptr<scene::Node>                NodePtr;
             typedef std::shared_ptr<component::AbstractScript>  AbsScriptPtr;
-			typedef std::shared_ptr<data::Provider>				MaterialPtr;
+            typedef std::shared_ptr<data::Provider>                MaterialPtr;
 
-		private:
-			AbsContextPtr												   _context;
+        private:
+            AbsContextPtr                                                   _context;
             std::shared_ptr<Loader>                                        _loader;
 
-			std::unordered_map<std::string, MaterialPtr>				   _materials;
-			std::unordered_map<std::string, GeometryPtr>				   _geometries;
-			std::unordered_map<std::string, EffectPtr>					   _effects;
-			std::unordered_map<std::string, TexturePtr>				   	   _textures;
-			std::unordered_map<std::string, CubeTexturePtr>				   _cubeTextures;
-			std::unordered_map<std::string, NodePtr>					   _symbols;
-			std::unordered_map<std::string, std::vector<unsigned char>>	   _blobs;
+            std::unordered_map<std::string, MaterialPtr>                   _materials;
+            std::unordered_map<std::string, GeometryPtr>                   _geometries;
+            std::unordered_map<std::string, EffectPtr>                       _effects;
+            std::unordered_map<std::string, TexturePtr>                          _textures;
+            std::unordered_map<std::string, CubeTexturePtr>                   _cubeTextures;
+            std::unordered_map<std::string, NodePtr>                       _symbols;
+            std::unordered_map<std::string, std::vector<unsigned char>>       _blobs;
             std::unordered_map<std::string, AbsScriptPtr>                  _scripts;
-            std::unordered_map<std::string, Layouts>					   _layouts;
+            std::unordered_map<std::string, Layouts>                       _layouts;
 
             Signal<Ptr, std::shared_ptr<AbstractParser>>::Ptr              _parserError;
             Signal<Ptr>::Ptr                                               _ready;
 
-		public:
-			static
-			Ptr
-			create(AbsContextPtr context);
+        public:
+            static
+            Ptr
+            create(AbsContextPtr context);
 
-			inline
-			uint
-			numGeometries()
-			{
-				return _geometries.size();
-			}
+            inline
+            uint
+            numGeometries()
+            {
+                return _geometries.size();
+            }
 
-			inline
-			uint
-			numMaterials()
-			{
-				return _materials.size();
-			}
+            inline
+            uint
+            numMaterials()
+            {
+                return _materials.size();
+            }
 
-			inline
-			uint
-			numTextures()
-			{
-				return _textures.size();
-			}
+            inline
+            uint
+            numTextures()
+            {
+                return _textures.size();
+            }
 
-			inline
-			AbsContextPtr
-			context()
-			{
-				return _context;
-			}
+            inline
+            AbsContextPtr
+            context()
+            {
+                return _context;
+            }
 
             inline
             std::shared_ptr<Loader>
@@ -107,69 +107,69 @@ namespace minko
                 return _loader;
             }
 
-			GeometryPtr
-			geometry(const std::string& name);
+            GeometryPtr
+            geometry(const std::string& name);
 
-			Ptr
-			geometry(const std::string& name, GeometryPtr geometry);
+            Ptr
+            geometry(const std::string& name, GeometryPtr geometry);
 
-			const std::string&
-			geometryName(GeometryPtr geometry);
-			
-			Ptr
-			texture(const std::string& name, TexturePtr texture);
+            const std::string&
+            geometryName(GeometryPtr geometry);
 
-			TexturePtr
-			texture(const std::string& name) const;
+            Ptr
+            texture(const std::string& name, TexturePtr texture);
 
-			Ptr
-			cubeTexture(const std::string& name, CubeTexturePtr texture);
+            TexturePtr
+            texture(const std::string& name) const;
 
-			CubeTexturePtr
-			cubeTexture(const std::string& name) const;
+            Ptr
+            cubeTexture(const std::string& name, CubeTexturePtr texture);
 
-			const std::string&
-			textureName(AbsTexturePtr texture);
+            CubeTexturePtr
+            cubeTexture(const std::string& name) const;
 
-			std::shared_ptr<material::Material>
-			material(const std::string& name);
+            const std::string&
+            textureName(AbsTexturePtr texture);
 
-			Ptr
-			material(const std::string& name, MaterialPtr material);
+            std::shared_ptr<material::Material>
+            material(const std::string& name);
 
-			const std::string&
-			materialName(MaterialPtr material);
+            Ptr
+            material(const std::string& name, MaterialPtr material);
 
-			NodePtr
-			symbol(const std::string& name);
+            const std::string&
+            materialName(MaterialPtr material);
 
-			Ptr
-			symbol(const std::string& name, NodePtr symbol);
+            NodePtr
+            symbol(const std::string& name);
 
-			const std::string&
-			symbolName(NodePtr node);
+            Ptr
+            symbol(const std::string& name, NodePtr symbol);
 
-			EffectPtr
-			effect(const std::string& name);
+            const std::string&
+            symbolName(NodePtr node);
 
-			Ptr
-			effect(const std::string& name, EffectPtr effect);
+            EffectPtr
+            effect(const std::string& name);
 
-			const std::string&
-			effectName(EffectPtr effect);
+            Ptr
+            effect(const std::string& name, EffectPtr effect);
 
-			const std::vector<unsigned char>&
-			blob(const std::string& name);
+            const std::string&
+            effectName(EffectPtr effect);
 
-			Ptr
-			blob(const std::string& name, const std::vector<unsigned char>& blob);
+            const std::vector<unsigned char>&
+            blob(const std::string& name);
 
-			inline
-			bool
-			hasBlob(const std::string& name)
-			{
-				return _blobs.count(name) != 0;
-			}
+            Ptr
+            blob(const std::string& name, const std::vector<unsigned char>& blob);
+
+            inline
+            bool
+            hasBlob(const std::string& name)
+            {
+                return _blobs.count(name) != 0;
+            }
 
             AbsScriptPtr
             script(const std::string& name);
@@ -177,17 +177,17 @@ namespace minko
             AssetLibrary::Ptr
             script(const std::string& name, AbsScriptPtr script);
 
-			const std::string&
-			scriptName(AbsScriptPtr script);
+            const std::string&
+            scriptName(AbsScriptPtr script);
 
-			Layouts
-			layout(const std::string& name);
+            Layouts
+            layout(const std::string& name);
 
-			Ptr
-			layout(const std::string& name, Layouts);
+            Ptr
+            layout(const std::string& name, Layouts);
 
-		private:
-			AssetLibrary(AbsContextPtr context);
-		};
-	}
+        private:
+            AssetLibrary(AbsContextPtr context);
+        };
+    }
 }

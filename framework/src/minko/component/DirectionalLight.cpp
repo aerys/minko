@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -26,15 +26,15 @@ using namespace minko::component;
 using namespace minko::math;
 
 DirectionalLight::DirectionalLight(float diffuse,
-								   float specular) :
-	AbstractDiscreteLight("directionalLights", diffuse, specular),
-	_worldDirection(Vector3::create(0.f, 0.f, -1.f))
+                                   float specular) :
+    AbstractDiscreteLight("directionalLights", diffuse, specular),
+    _worldDirection(Vector3::create(0.f, 0.f, -1.f))
 {
-	data()->set("direction", _worldDirection);
+    data()->set("direction", _worldDirection);
 }
 
 void
 DirectionalLight::updateModelToWorldMatrix(std::shared_ptr<Matrix4x4> modelToWorld)
 {
-	modelToWorld->deltaTransform(Vector3::forward(), _worldDirection);
+    modelToWorld->deltaTransform(Vector3::forward(), _worldDirection);
 }

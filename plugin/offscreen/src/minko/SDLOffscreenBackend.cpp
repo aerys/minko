@@ -27,26 +27,26 @@ using namespace minko;
 void
 SDLOffscreenBackend::initialize(std::shared_ptr<Canvas> canvas)
 {
-	try
-	{
-		_backBuffer.reset(new std::vector<float>(canvas->width() * canvas->height() * 4));
-	}
-	catch (const std::bad_alloc&)
-	{
-		throw std::runtime_error("Could not create offscreen backbuffer");
-	}
+    try
+    {
+        _backBuffer.reset(new std::vector<float>(canvas->width() * canvas->height() * 4));
+    }
+    catch (const std::bad_alloc&)
+    {
+        throw std::runtime_error("Could not create offscreen backbuffer");
+    }
 
-	OSMesaContext offscreenContext = OSMesaCreateContextExt(GL_RGBA, 32, 0, 0, NULL);
+    OSMesaContext offscreenContext = OSMesaCreateContextExt(GL_RGBA, 32, 0, 0, NULL);
 
-	if (!offscreenContext)
-		throw std::runtime_error("Could not create offscreen context");
+    if (!offscreenContext)
+        throw std::runtime_error("Could not create offscreen context");
 
-	if (!OSMesaMakeCurrent(offscreenContext, &*_backBuffer->begin(), GL_FLOAT, canvas->width(), canvas->height()))
-		throw std::runtime_error("Could not make offscreen context current");
+    if (!OSMesaMakeCurrent(offscreenContext, &*_backBuffer->begin(), GL_FLOAT, canvas->width(), canvas->height()))
+        throw std::runtime_error("Could not make offscreen context current");
 }
 
 void
 SDLOffscreenBackend::swapBuffers(std::shared_ptr<Canvas> canvas)
 {
-	// Nothing.
+    // Nothing.
 }

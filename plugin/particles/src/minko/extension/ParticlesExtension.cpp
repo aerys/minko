@@ -69,8 +69,8 @@ ParticlesExtension::bind()
 
 /*static*/
 component::AbstractComponent::Ptr
-ParticlesExtension::deserializeParticles(std::string&       serialized, 
-                                         AssetLibrary::Ptr  assets, 
+ParticlesExtension::deserializeParticles(std::string&       serialized,
+                                         AssetLibrary::Ptr  assets,
                                          Dependency::Ptr    dependencies)
 {
     typedef msgpack::type::tuple<unsigned short, float, uint, bool, bool, bool, uint, IdAndString, IdAndString, IdAndString, std::vector<IdAndString>>  SerializedParticles;
@@ -102,16 +102,16 @@ ParticlesExtension::deserializeParticles(std::string&       serialized,
         startVelocity
     );
     particles->emitting(emit);
-	
+
     for (auto& modifier : dst.a10)
     {
         auto mod = deserializeParticleModifier(
-            serialize::ModifierId(modifier.a0), 
+            serialize::ModifierId(modifier.a0),
             modifier.a1
         );
-        
+
         if (mod)
-             particles->add(mod);   
+             particles->add(mod);
     }
 
     // retrieve the diffuse color and diffuse texture from associated material if any
@@ -147,7 +147,7 @@ ParticlesExtension::deserializeParticles(std::string&       serialized,
 
 /*static*/
 modifier::IParticleModifier::Ptr
-ParticlesExtension::deserializeParticleModifier(serialize::ModifierId           id, 
+ParticlesExtension::deserializeParticleModifier(serialize::ModifierId           id,
                                                 const std::string&              serialized)
 {
     switch (id)
@@ -409,7 +409,7 @@ ParticlesExtension::deserializeVelocityOverTimeUpdater(const std::string& serial
 //---------------
 /*static*/
 shape::EmitterShape::Ptr
-ParticlesExtension::deserializeEmitterShape(serialize::EmitterShapeId   id, 
+ParticlesExtension::deserializeEmitterShape(serialize::EmitterShapeId   id,
                                             const std::string&          serialized)
 {
     switch (id)
@@ -501,7 +501,7 @@ ParticlesExtension::deserializeBoxShape(const std::string& serialized)
 
 /*static*/
 sampler::Sampler<float>::Ptr
-ParticlesExtension::deserializeFloatSampler(serialize::SamplerId   id, 
+ParticlesExtension::deserializeFloatSampler(serialize::SamplerId   id,
                                             const std::string&     serialized)
 {
     switch (id)
@@ -521,7 +521,7 @@ ParticlesExtension::deserializeFloatSampler(serialize::SamplerId   id,
 
 /*static*/
 sampler::Sampler<math::Vector3>::Ptr
-ParticlesExtension::deserializeColorSampler(serialize::SamplerId   id, 
+ParticlesExtension::deserializeColorSampler(serialize::SamplerId   id,
                                              const std::string&     serialized)
 {
     switch (id)

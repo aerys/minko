@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -25,46 +25,46 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace render
-	{
-		class WebGLContext :
-			public OpenGLES2Context
-		{
-		public:
-			typedef std::shared_ptr<WebGLContext> Ptr;
+    namespace render
+    {
+        class WebGLContext :
+            public OpenGLES2Context
+        {
+        public:
+            typedef std::shared_ptr<WebGLContext> Ptr;
 
-		public:
-			static
-			Ptr
-			create()
-			{
-				return std::shared_ptr<WebGLContext>(new WebGLContext());
-			}
+        public:
+            static
+            Ptr
+            create()
+            {
+                return std::shared_ptr<WebGLContext>(new WebGLContext());
+            }
 
-		protected:
-			WebGLContext();
-			
-			void
-			setShaderSource(const unsigned int shader,
-							const std::string& source);
+        protected:
+            WebGLContext();
 
-			void
-			fillUniformInputs(const unsigned int				program,
-							  std::vector<std::string>&			names,
-							  std::vector<ProgramInputs::Type>&	types,
-							  std::vector<unsigned int>&		locations);
+            void
+            setShaderSource(const unsigned int shader,
+                            const std::string& source);
 
-			void
-			fillAttributeInputs(const unsigned int					program,
-								std::vector<std::string>&			names,
-								std::vector<ProgramInputs::Type>&	types,
-								std::vector<unsigned int>&			locations);
+            void
+            fillUniformInputs(const unsigned int                program,
+                              std::vector<std::string>&            names,
+                              std::vector<ProgramInputs::Type>&    types,
+                              std::vector<unsigned int>&        locations);
 
-			void
-			setUniform(const unsigned int&	location,
-					   const unsigned int&	size,
-					   bool			transpose,
-					   const float*	values);
-		};
-	}
+            void
+            fillAttributeInputs(const unsigned int                    program,
+                                std::vector<std::string>&            names,
+                                std::vector<ProgramInputs::Type>&    types,
+                                std::vector<unsigned int>&            locations);
+
+            void
+            setUniform(const unsigned int&    location,
+                       const unsigned int&    size,
+                       bool            transpose,
+                       const float*    values);
+        };
+    }
 }

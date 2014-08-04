@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -28,67 +28,67 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace data
-	{
-		class LightMaskFilter;
-	}
+    namespace data
+    {
+        class LightMaskFilter;
+    }
 
-	namespace component
-	{
-		class AbstractLight :
-			public AbstractRootDataComponent<data::ArrayProvider>
-		{
-			friend class data::LightMaskFilter;
+    namespace component
+    {
+        class AbstractLight :
+            public AbstractRootDataComponent<data::ArrayProvider>
+        {
+            friend class data::LightMaskFilter;
 
-		public:
-			typedef std::shared_ptr<AbstractLight> 		Ptr;
+        public:
+            typedef std::shared_ptr<AbstractLight>         Ptr;
 
-		private:
-			typedef	std::shared_ptr<scene::Node>		NodePtr;
-			typedef std::shared_ptr<AbstractComponent>	AbsCmpPtr;
+        private:
+            typedef    std::shared_ptr<scene::Node>        NodePtr;
+            typedef std::shared_ptr<AbstractComponent>    AbsCmpPtr;
 
-		private:
-			std::shared_ptr<math::Vector3>				_color;
+        private:
+            std::shared_ptr<math::Vector3>                _color;
 
-			Signal<NodePtr, NodePtr>::Slot				_targetLayoutChangedSlot;
+            Signal<NodePtr, NodePtr>::Slot                _targetLayoutChangedSlot;
 
-		public:
-			inline
-			std::shared_ptr<math::Vector3>
-			color()
-			{
-				return _color;
-			}
+        public:
+            inline
+            std::shared_ptr<math::Vector3>
+            color()
+            {
+                return _color;
+            }
 
-			Ptr
-			color(std::shared_ptr<math::Vector3>);
+            Ptr
+            color(std::shared_ptr<math::Vector3>);
 
-			Ptr
-			color(std::shared_ptr<math::Vector4>);
+            Ptr
+            color(std::shared_ptr<math::Vector4>);
 
-			Ptr
-			color(uint color);
+            Ptr
+            color(uint color);
 
-			Layouts
-			layoutMask() const
-			{
-				return AbstractComponent::layoutMask();
-			}
+            Layouts
+            layoutMask() const
+            {
+                return AbstractComponent::layoutMask();
+            }
 
-			void
-			layoutMask(Layouts value);
+            void
+            layoutMask(Layouts value);
 
-		protected:
-			AbstractLight(const std::string& arrayName);
+        protected:
+            AbstractLight(const std::string& arrayName);
 
-			void
+            void
             targetAddedHandler(AbsCmpPtr, NodePtr);
 
             void
             targetRemovedHandler(AbsCmpPtr, NodePtr);
 
-			void
-			targetLayoutsChangedHandler(NodePtr, NodePtr);
-		};
-	}
+            void
+            targetLayoutsChangedHandler(NodePtr, NodePtr);
+        };
+    }
 }

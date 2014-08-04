@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -32,9 +32,9 @@ namespace minko
     namespace component
     {
         template <class ProviderClass>
-	    class AbstractRootDataComponent<ProviderClass, typename std::enable_if<std::is_base_of<data::Provider, ProviderClass>::value>::type> :
+        class AbstractRootDataComponent<ProviderClass, typename std::enable_if<std::is_base_of<data::Provider, ProviderClass>::value>::type> :
             public AbstractComponent
-	    {
+        {
         private:
             typedef std::shared_ptr<scene::Node>            NodePtr;
 
@@ -48,7 +48,7 @@ namespace minko
             Signal<NodePtr, NodePtr, NodePtr>::Slot         _addedSlot;
             Signal<NodePtr, NodePtr, NodePtr>::Slot         _removedSlot;
 
-	    protected:
+        protected:
             inline
             std::shared_ptr<ProviderClass>
             data() const
@@ -132,12 +132,12 @@ namespace minko
 
                 if (_root)
                     _root->data()->removeProvider(_data);
-                
+
                 _root = root;
 
                 if (_root)
                     _root->data()->addProvider(_data);
             }
-	    };
+        };
     }
 }

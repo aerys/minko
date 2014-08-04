@@ -35,7 +35,7 @@ namespace minko
     private:
         typedef struct _SDL_Joystick SDL_Joystick;
 
-        SDL_Joystick*	_joystick;
+        SDL_Joystick*    _joystick;
 
         static const std::map<Button, std::string> ButtonNames;
         static const std::map<Button, Button> NativeToHtmlMap;

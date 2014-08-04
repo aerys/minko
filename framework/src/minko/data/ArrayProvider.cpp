@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -24,9 +24,9 @@ using namespace minko;
 using namespace minko::data;
 
 ArrayProvider::ArrayProvider(const std::string& name) :
-	_name(name),
-	_indexChanged(IndexChangedSignal::create())
+    _name(name),
+    _indexChanged(IndexChangedSignal::create())
 {
-	if (_name.find(NO_STRUCT_SEP) != std::string::npos)
-		throw std::invalid_argument("The name of a ArrayProvider cannot contain the following character sequence: " + NO_STRUCT_SEP);
+    if (_name.find(NO_STRUCT_SEP) != std::string::npos)
+        throw std::invalid_argument("The name of a ArrayProvider cannot contain the following character sequence: " + NO_STRUCT_SEP);
 }

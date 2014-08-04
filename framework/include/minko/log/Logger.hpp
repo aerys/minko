@@ -23,91 +23,91 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace log
-	{
-		class Logger
-		{
-		public:
-			typedef std::shared_ptr<Logger>			Ptr;
+    namespace log
+    {
+        class Logger
+        {
+        public:
+            typedef std::shared_ptr<Logger>            Ptr;
 
-			enum Level
-			{
-				Debug,
-				Info,
-				Warning,
-				Error
-			};
+            enum Level
+            {
+                Debug,
+                Info,
+                Warning,
+                Error
+            };
 
-			class Sink
-			{
-			public:
-				typedef std::shared_ptr<Sink>		Ptr;
+            class Sink
+            {
+            public:
+                typedef std::shared_ptr<Sink>        Ptr;
 
-				virtual
-				void
-				write(const std::string& log, Level level) = 0;
+                virtual
+                void
+                write(const std::string& log, Level level) = 0;
 
-				virtual
-				~Sink() = default;
-			};
+                virtual
+                ~Sink() = default;
+            };
 
-			static
-			Ptr
-			create(Level level, Sink::Ptr sink)
-			{
-				Ptr logger = std::shared_ptr<Logger>(new Logger(level, sink));
+            static
+            Ptr
+            create(Level level, Sink::Ptr sink)
+            {
+                Ptr logger = std::shared_ptr<Logger>(new Logger(level, sink));
 
-				return logger;
-			}
+                return logger;
+            }
 
-			void
-			operator()(const std::string&			message,
-					   Level						level,
-					   char const*					function,
-					   char const*					file,
-					   int							line);
+            void
+            operator()(const std::string&            message,
+                       Level                        level,
+                       char const*                    function,
+                       char const*                    file,
+                       int                            line);
 
-			static
-			void
-			defaultLogger(std::shared_ptr<Logger> logger)
-			{
-				_default = logger;
-			}
+            static
+            void
+            defaultLogger(std::shared_ptr<Logger> logger)
+            {
+                _default = logger;
+            }
 
-			static
-			Ptr
-			defaultLogger()
-			{
-				return _default;
-			}
+            static
+            Ptr
+            defaultLogger()
+            {
+                return _default;
+            }
 
-		private:
-			Logger(Level level, Sink::Ptr sink) :
-				_level(level),
-				_sink(sink)
-			{
-			}
+        private:
+            Logger(Level level, Sink::Ptr sink) :
+                _level(level),
+                _sink(sink)
+            {
+            }
 
-		private:
-			Level				_level;
-			Sink::Ptr			_sink;
+        private:
+            Level                _level;
+            Sink::Ptr            _sink;
 
-			static Ptr			_default;
-		};
-	}
+            static Ptr            _default;
+        };
+    }
 }
 
 // From http://stackoverflow.com/questions/8337300/c11-how-do-i-implement-convenient-logging-without-a-singleton
 #define LOG(Logger_, Message_, Level_)                  \
-	Logger_(                                      		\
-		static_cast<std::ostringstream&>(           	\
-			std::ostringstream().flush() << Message_  	\
-		).str(),                                    	\
-		Level_,											\
-		__FUNCTION__,                               	\
-		__FILE__,                                   	\
-		__LINE__                                    	\
-	);
+    Logger_(                                              \
+        static_cast<std::ostringstream&>(               \
+            std::ostringstream().flush() << Message_      \
+        ).str(),                                        \
+        Level_,                                            \
+        __FUNCTION__,                                   \
+        __FILE__,                                       \
+        __LINE__                                        \
+    );
 
 #ifdef NDEBUG
 # define LOG_DEBUG(_) do {} while (0);

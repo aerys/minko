@@ -29,55 +29,55 @@ using namespace minko::data;
 AbstractFilter::Ptr
 AbstractFilter::currentSurface(component::Surface::Ptr value)
 {
-	_currentSurface				= value;
-	_currentSurfaceRemovedSlot	= _currentSurface->targetRemoved()->connect([=](AbsCmpPtr c, NodePtr n){ 
-		currentSurfaceRemovedHandler(c, n); 
-	});
-	_currentSurfaceTargetRemovedSlot = _currentSurface->targets().front()->removed()->connect([=](NodePtr n, NodePtr t, NodePtr a){
-		currentSurfaceTargetRemovedHandler(n, t, a);
-	});
+    _currentSurface                = value;
+    _currentSurfaceRemovedSlot    = _currentSurface->targetRemoved()->connect([=](AbsCmpPtr c, NodePtr n){
+        currentSurfaceRemovedHandler(c, n);
+    });
+    _currentSurfaceTargetRemovedSlot = _currentSurface->targets().front()->removed()->connect([=](NodePtr n, NodePtr t, NodePtr a){
+        currentSurfaceTargetRemovedHandler(n, t, a);
+    });
 
-	auto targets = value->targets();
+    auto targets = value->targets();
 
-	for (auto target : targets)
-	{
-		if (_surfaceTargetPropertyChangedSlots.find(target) == _surfaceTargetPropertyChangedSlots.end())
-		{
-			for (auto propertyName : _watchedProperties)
-			{
-				_surfaceTargetPropertyChangedSlots[target].push_back(target->data()->propertyReferenceChanged(propertyName)->connect(
-					[=](Container::Ptr, const std::string&)
-					{
-						changed()->execute(shared_from_this(), value);
-					}
-					));
-			}
-		}
-	}
+    for (auto target : targets)
+    {
+        if (_surfaceTargetPropertyChangedSlots.find(target) == _surfaceTargetPropertyChangedSlots.end())
+        {
+            for (auto propertyName : _watchedProperties)
+            {
+                _surfaceTargetPropertyChangedSlots[target].push_back(target->data()->propertyReferenceChanged(propertyName)->connect(
+                    [=](Container::Ptr, const std::string&)
+                    {
+                        changed()->execute(shared_from_this(), value);
+                    }
+                    ));
+            }
+        }
+    }
 
-	return shared_from_this();
+    return shared_from_this();
 }
 
 void
 AbstractFilter::watchProperty(const std::string propertyName)
 {
-	_watchedProperties.push_back(propertyName);
+    _watchedProperties.push_back(propertyName);
 
-	_surfaceTargetPropertyChangedSlots.clear();
+    _surfaceTargetPropertyChangedSlots.clear();
 
-	changed()->execute(shared_from_this(), nullptr);
+    changed()->execute(shared_from_this(), nullptr);
 }
 
 void
 AbstractFilter::unwatchProperty(const std::string propertyName)
 {
-	auto it = std::find(_watchedProperties.begin(), _watchedProperties.end(), propertyName);
+    auto it = std::find(_watchedProperties.begin(), _watchedProperties.end(), propertyName);
 
-	if (it == _watchedProperties.end())
-		std::invalid_argument("This property is not watching currently.");
+    if (it == _watchedProperties.end())
+        std::invalid_argument("This property is not watching currently.");
 
-	_watchedProperties.remove(propertyName);
-	_surfaceTargetPropertyChangedSlots.clear();
+    _watchedProperties.remove(propertyName);
+    _surfaceTargetPropertyChangedSlots.clear();
 
-	changed()->execute(shared_from_this(), nullptr);
+    changed()->execute(shared_from_this(), nullptr);
 }

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -24,32 +24,32 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace particle
-	{
-		namespace shape
-		{
-			class Point : public EmitterShape
-			{
-			public:
-				typedef std::shared_ptr<Point>	Ptr;
+    namespace particle
+    {
+        namespace shape
+        {
+            class Point : public EmitterShape
+            {
+            public:
+                typedef std::shared_ptr<Point>    Ptr;
 
-			public:
-				static
-				Ptr
-				create()
-				{
-					Ptr point = std::shared_ptr<Point>(new Point());
+            public:
+                static
+                Ptr
+                create()
+                {
+                    Ptr point = std::shared_ptr<Point>(new Point());
 
-					return point;
-				};
+                    return point;
+                };
 
-				virtual
-				void
-				initPosition(ParticleData& particle) const;
+                virtual
+                void
+                initPosition(ParticleData& particle) const;
 
-			protected:
-				Point();
-			};
-		}
-	}
+            protected:
+                Point();
+            };
+        }
+    }
 }

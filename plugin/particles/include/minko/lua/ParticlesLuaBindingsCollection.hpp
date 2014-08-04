@@ -26,18 +26,18 @@ class LuaGlue;
 
 namespace minko
 {
-	namespace lua
-	{
-		class ParticlesLuaBindingsCollection
-		{
-		public:
-			static
-			std::vector<std::function<void(LuaGlue&)>>
-			getParticlesBindings();
+    namespace lua
+    {
+        class ParticlesLuaBindingsCollection
+        {
+        public:
+            static
+            std::vector<std::function<void(LuaGlue&)>>
+            getParticlesBindings();
 
-			static
-			std::vector<std::function<void(LuaGlue&)>>
-			getParticlesBindings(std::vector<std::function<void(LuaGlue&)>> bindings);
-		};
-	}
+            static
+            std::vector<std::function<void(LuaGlue&)>>
+            getParticlesBindings(std::vector<std::function<void(LuaGlue&)>> bindings);
+        };
+    }
 }

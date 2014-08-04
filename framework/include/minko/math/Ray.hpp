@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -25,61 +25,61 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace math
-	{
-		class Ray
-		{
-		public:
-			typedef std::shared_ptr<Ray>	Ptr;
+    namespace math
+    {
+        class Ray
+        {
+        public:
+            typedef std::shared_ptr<Ray>    Ptr;
 
-		private:
-			typedef std::shared_ptr<Vector3>	Vector3Ptr;
+        private:
+            typedef std::shared_ptr<Vector3>    Vector3Ptr;
 
-		private:
-			Vector3Ptr	_origin;
-			Vector3Ptr	_direction;
+        private:
+            Vector3Ptr    _origin;
+            Vector3Ptr    _direction;
 
-		public:
-			inline static
-			Ptr
-			create(Vector3Ptr origin, Vector3Ptr direction)
-			{
-				return std::shared_ptr<Ray>(new Ray(origin, direction));
-			}
+        public:
+            inline static
+            Ptr
+            create(Vector3Ptr origin, Vector3Ptr direction)
+            {
+                return std::shared_ptr<Ray>(new Ray(origin, direction));
+            }
 
-			inline static
-			Ptr
-			create()
-			{
-				return std::shared_ptr<Ray>(new Ray());
-			}
+            inline static
+            Ptr
+            create()
+            {
+                return std::shared_ptr<Ray>(new Ray());
+            }
 
-			inline
-			Vector3Ptr
-			direction()
-			{
-				return _direction;
-			}
+            inline
+            Vector3Ptr
+            direction()
+            {
+                return _direction;
+            }
 
-			inline
-			Vector3Ptr
-			origin()
-			{
-				return _origin;
-			}
+            inline
+            Vector3Ptr
+            origin()
+            {
+                return _origin;
+            }
 
-		private:
-			Ray(Vector3Ptr origin, Vector3Ptr direction) :
-				_origin(Vector3::create(origin)),
-				_direction(Vector3::create(direction))
-			{
-			}
+        private:
+            Ray(Vector3Ptr origin, Vector3Ptr direction) :
+                _origin(Vector3::create(origin)),
+                _direction(Vector3::create(direction))
+            {
+            }
 
-			Ray() :
-				_origin(Vector3::create()),
-				_direction(Vector3::create(0.f, 0.f, -1.f))
-			{
-			}
-		};
-	}
+            Ray() :
+                _origin(Vector3::create()),
+                _direction(Vector3::create(0.f, 0.f, -1.f))
+            {
+            }
+        };
+    }
 }

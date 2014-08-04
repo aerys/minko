@@ -65,11 +65,11 @@ Canvas::Canvas(const std::string& name, const uint width, const uint height, boo
     _resized(Signal<AbstractCanvas::Ptr, uint, uint>::create()),
     _joystickAdded(Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::create()),
     _joystickRemoved(Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::create()),
-	_touchZoom(Signal<std::shared_ptr<input::Touch>, float>::create()),
-	_width(width),
-	_height(height),
-	_x(0),
-	_y(0)
+    _touchZoom(Signal<std::shared_ptr<input::Touch>, float>::create()),
+    _width(width),
+    _height(height),
+    _x(0),
+    _y(0)
 {
     _data->set<math::Vector4::Ptr>("canvas.viewport", Vector4::create(0.0f, 0.0f, (float) width, (float) height));
 }
@@ -247,7 +247,7 @@ Canvas::y(uint value)
 void
 Canvas::width(uint value)
 {
-	_width = value;
+    _width = value;
 
     auto viewport = _data->get<math::Vector4::Ptr>("canvas.viewport");
 
@@ -257,7 +257,7 @@ Canvas::width(uint value)
 void
 Canvas::height(uint value)
 {
-	_height = value;
+    _height = value;
 
     auto viewport = _data->get<math::Vector4::Ptr>("canvas.viewport");
 
@@ -337,18 +337,18 @@ Canvas::step()
         {
             _keyboard->keyDown()->execute(_keyboard);
 
-			auto keyCode = static_cast<input::Keyboard::KeyCode>(event.key.keysym.sym);
+            auto keyCode = static_cast<input::Keyboard::KeyCode>(event.key.keysym.sym);
 
             for (uint i = 0; i < input::Keyboard::NUM_KEYS; ++i)
             {
                 auto code = static_cast<input::Keyboard::Key>(i);
 
-				if (!_keyboard->hasKeyDownSignal(code))
-					continue;
+                if (!_keyboard->hasKeyDownSignal(code))
+                    continue;
 
-				auto pair = _keyboard->keyToKeyCodeMap.find(code);
+                auto pair = _keyboard->keyToKeyCodeMap.find(code);
 
-				if (pair != _keyboard->keyToKeyCodeMap.end() && pair->second == keyCode)
+                if (pair != _keyboard->keyToKeyCodeMap.end() && pair->second == keyCode)
                     _keyboard->keyDown(code)->execute(_keyboard, i);
             }
             break;
@@ -358,20 +358,20 @@ Canvas::step()
         {
             _keyboard->keyUp()->execute(_keyboard);
 
-			auto keyCode = static_cast<input::Keyboard::KeyCode>(event.key.keysym.sym);
+            auto keyCode = static_cast<input::Keyboard::KeyCode>(event.key.keysym.sym);
 
-			for (uint i = 0; i < input::Keyboard::NUM_KEYS; ++i)
-			{
-				auto code = static_cast<input::Keyboard::Key>(i);
+            for (uint i = 0; i < input::Keyboard::NUM_KEYS; ++i)
+            {
+                auto code = static_cast<input::Keyboard::Key>(i);
 
-				if (!_keyboard->hasKeyUpSignal(code))
-					continue;
+                if (!_keyboard->hasKeyUpSignal(code))
+                    continue;
 
-				auto pair = _keyboard->keyToKeyCodeMap.find(code);
+                auto pair = _keyboard->keyToKeyCodeMap.find(code);
 
-				if (pair != _keyboard->keyToKeyCodeMap.end() && pair->second == keyCode)
-					_keyboard->keyUp(code)->execute(_keyboard, i);
-			}
+                if (pair != _keyboard->keyToKeyCodeMap.end() && pair->second == keyCode)
+                    _keyboard->keyUp(code)->execute(_keyboard, i);
+            }
 
             for (uint i = 0; i < input::Keyboard::NUM_KEYS; ++i)
             {
@@ -386,22 +386,22 @@ Canvas::step()
             auto oldX = _mouse->input::Mouse::x();
             auto oldY = _mouse->input::Mouse::y();
 
-			int windowW;
-			int windowH;
+            int windowW;
+            int windowH;
 
-			SDL_GetWindowSize(_window, &windowW, &windowH);
+            SDL_GetWindowSize(_window, &windowW, &windowH);
 
-			auto x = event.motion.x;
-			auto y = event.motion.y;
+            auto x = event.motion.x;
+            auto y = event.motion.y;
 
-			if (windowW != _width || windowH != _height)
-			{
+            if (windowW != _width || windowH != _height)
+            {
                 x = int(float(_width) * float(event.motion.x) / float(windowW));
-				y = int(float(_height) * float(event.motion.y) / float(windowH));
-			}
+                y = int(float(_height) * float(event.motion.y) / float(windowH));
+            }
 
-			_mouse->x(x);
-			_mouse->y(y);
+            _mouse->x(x);
+            _mouse->y(y);
 
             _mouse->move()->execute(_mouse, x - oldX, y - oldY);
             break;
@@ -541,7 +541,7 @@ Canvas::step()
                 touch->touchMotion()->execute(touch, event.tfinger.dx, event.tfinger.dy);
 
                 // Gestures
-				if (event.tfinger.dx > SDLTouch::SWIPE_PRECISION)
+                if (event.tfinger.dx > SDLTouch::SWIPE_PRECISION)
                 {
 # if defined(DEBUG)
                 std::cout << "Swipe right! (" << event.tfinger.dx << ")" << std::endl;
@@ -550,7 +550,7 @@ Canvas::step()
                     touch->swipeRight()->execute(touch);
                 }
 
-				if (-event.tfinger.dx > SDLTouch::SWIPE_PRECISION)
+                if (-event.tfinger.dx > SDLTouch::SWIPE_PRECISION)
                 {
 
 # if defined(DEBUG)
@@ -560,7 +560,7 @@ Canvas::step()
                     touch->swipeLeft()->execute(touch);
                 }
 
-				if (event.tfinger.dy > SDLTouch::SWIPE_PRECISION)
+                if (event.tfinger.dy > SDLTouch::SWIPE_PRECISION)
                 {
 
 # if defined(DEBUG)

@@ -23,13 +23,13 @@ using namespace minko;
 using namespace minko::input;
 
 Touch::Touch(std::shared_ptr<AbstractCanvas> canvas) :
-	_canvas(canvas),
+    _canvas(canvas),
     _fingerId(0),
     _x(0.f),
     _y(0.f),
     _dx(0.f),
     _dy(0.f),
-	_touchMotion(Signal<Ptr, float, float>::create()),
+    _touchMotion(Signal<Ptr, float, float>::create()),
     _touchDown(Signal<Ptr, float, float>::create()),
     _touchUp(Signal<Ptr, float, float>::create()),
     _swipeLeft(Signal<Ptr>::create()),

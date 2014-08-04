@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -25,75 +25,75 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace geometry
-	{
-		class LineGeometry:	public Geometry
-		{
-		public:
-			typedef std::shared_ptr<LineGeometry> Ptr;
-	
-		private:
-			static const uint						MAX_NUM_LINES;
-			static const std::string				ATTRNAME_START_POS;
-			static const std::string				ATTRNAME_STOP_POS;
-			static const std::string				ATTRNAME_WEIGHTS;
+    namespace geometry
+    {
+        class LineGeometry:    public Geometry
+        {
+        public:
+            typedef std::shared_ptr<LineGeometry> Ptr;
 
-			float									_currentX;
-			float									_currentY;
-			float									_currentZ;
-			uint									_numLines;
-		
-			std::shared_ptr<render::VertexBuffer>	_vertexBuffer;
-			std::shared_ptr<render::IndexBuffer>	_indexBuffer;
+        private:
+            static const uint                        MAX_NUM_LINES;
+            static const std::string                ATTRNAME_START_POS;
+            static const std::string                ATTRNAME_STOP_POS;
+            static const std::string                ATTRNAME_WEIGHTS;
 
-		public:
-			inline static
-			Ptr
-			create(std::shared_ptr<render::AbstractContext> context)
-			{
-				Ptr ptr = std::shared_ptr<LineGeometry>(new LineGeometry());
+            float                                    _currentX;
+            float                                    _currentY;
+            float                                    _currentZ;
+            uint                                    _numLines;
 
-				ptr->initialize(context);
+            std::shared_ptr<render::VertexBuffer>    _vertexBuffer;
+            std::shared_ptr<render::IndexBuffer>    _indexBuffer;
 
-				return ptr;
-			}
+        public:
+            inline static
+            Ptr
+            create(std::shared_ptr<render::AbstractContext> context)
+            {
+                Ptr ptr = std::shared_ptr<LineGeometry>(new LineGeometry());
 
-			std::shared_ptr<math::Vector3>
-			currentXYZ(std::shared_ptr<math::Vector3> output = nullptr) const;
+                ptr->initialize(context);
 
-			inline
-			uint
-			numLines() const
-			{
-				return _numLines;
-			}
+                return ptr;
+            }
 
-			inline
-			Ptr
-			moveTo(float x, float y, float z)
-			{
-				_currentX	= x;
-				_currentY	= y;
-				_currentZ	= z;
+            std::shared_ptr<math::Vector3>
+            currentXYZ(std::shared_ptr<math::Vector3> output = nullptr) const;
 
-				return std::static_pointer_cast<LineGeometry>(shared_from_this());
-			}
+            inline
+            uint
+            numLines() const
+            {
+                return _numLines;
+            }
 
-			Ptr
-			moveTo(std::shared_ptr<math::Vector3>);
+            inline
+            Ptr
+            moveTo(float x, float y, float z)
+            {
+                _currentX    = x;
+                _currentY    = y;
+                _currentZ    = z;
 
-			Ptr
-			lineTo(float x, float y, float z, unsigned int numSegments = 1);
+                return std::static_pointer_cast<LineGeometry>(shared_from_this());
+            }
 
-			Ptr
-			lineTo(std::shared_ptr<math::Vector3>, unsigned int numSegments = 1);
+            Ptr
+            moveTo(std::shared_ptr<math::Vector3>);
+
+            Ptr
+            lineTo(float x, float y, float z, unsigned int numSegments = 1);
+
+            Ptr
+            lineTo(std::shared_ptr<math::Vector3>, unsigned int numSegments = 1);
 
 
-		private:
-			LineGeometry();
+        private:
+            LineGeometry();
 
-			void
-			initialize(std::shared_ptr<render::AbstractContext>);
-		};
-	}
+            void
+            initialize(std::shared_ptr<render::AbstractContext>);
+        };
+    }
 }

@@ -28,13 +28,13 @@ using namespace minko;
 void
 SDLAngleBackend::initialize(std::shared_ptr<Canvas> canvas)
 {
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_EGL, 1);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_EGL, 1);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
 
-	SDL_GLContext glContext = SDL_GL_CreateContext(canvas->window());
+    SDL_GLContext glContext = SDL_GL_CreateContext(canvas->window());
 
-	if (!glContext)
-		throw std::runtime_error("Could not create Angle context");
+    if (!glContext)
+        throw std::runtime_error("Could not create Angle context");
 }

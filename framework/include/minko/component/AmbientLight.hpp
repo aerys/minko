@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -25,52 +25,52 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace component
-	{
-		class AmbientLight :
-			public AbstractLight
-		{
-		public:
-			typedef std::shared_ptr<AmbientLight>	Ptr;
+    namespace component
+    {
+        class AmbientLight :
+            public AbstractLight
+        {
+        public:
+            typedef std::shared_ptr<AmbientLight>    Ptr;
 
-		private:
-			float	_ambient;
+        private:
+            float    _ambient;
 
-		public:
-			inline static
-			Ptr
-			create(float ambient = .2f)
-			{
-				auto al = std::shared_ptr<AmbientLight>(new AmbientLight(ambient));
+        public:
+            inline static
+            Ptr
+            create(float ambient = .2f)
+            {
+                auto al = std::shared_ptr<AmbientLight>(new AmbientLight(ambient));
 
-				al->initialize();
+                al->initialize();
 
-				return al;
-			}
+                return al;
+            }
 
-			~AmbientLight()
-			{
-			}
+            ~AmbientLight()
+            {
+            }
 
-			inline
-			float
-			ambient()
-			{
-				return _ambient;
-			}
+            inline
+            float
+            ambient()
+            {
+                return _ambient;
+            }
 
-			inline
-			Ptr
-			ambient(float ambient)
-			{
-				_ambient = ambient;
-				data()->set("ambient", ambient);
+            inline
+            Ptr
+            ambient(float ambient)
+            {
+                _ambient = ambient;
+                data()->set("ambient", ambient);
 
-				return std::static_pointer_cast<AmbientLight>(shared_from_this());
-			}
+                return std::static_pointer_cast<AmbientLight>(shared_from_this());
+            }
 
-		protected:
-			AmbientLight(float ambient);
-		};
-	}
+        protected:
+            AmbientLight(float ambient);
+        };
+    }
 }

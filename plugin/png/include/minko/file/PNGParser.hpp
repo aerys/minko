@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -25,33 +25,33 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace file
-	{
-		class PNGParser :
-			public AbstractParser
-		{
-		public:
-			typedef std::shared_ptr<PNGParser> Ptr;
+    namespace file
+    {
+        class PNGParser :
+            public AbstractParser
+        {
+        public:
+            typedef std::shared_ptr<PNGParser> Ptr;
 
-		public:
-			inline static
-			Ptr
-			create()
-			{
-				return std::shared_ptr<PNGParser>(new PNGParser());
-			}
+        public:
+            inline static
+            Ptr
+            create()
+            {
+                return std::shared_ptr<PNGParser>(new PNGParser());
+            }
 
-			void
-			parse(const std::string&				filename,
-				  const std::string&                resolvedFilename,
+            void
+            parse(const std::string&                filename,
+                  const std::string&                resolvedFilename,
                   std::shared_ptr<Options>          options,
-				  const std::vector<unsigned char>&	data,
-				  std::shared_ptr<AssetLibrary>	AssetLibrary);
+                  const std::vector<unsigned char>&    data,
+                  std::shared_ptr<AssetLibrary>    AssetLibrary);
 
-		private:
-			PNGParser()
-			{
-			}
-		};
-	}
+        private:
+            PNGParser()
+            {
+            }
+        };
+    }
 }

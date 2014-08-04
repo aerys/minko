@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -61,8 +61,8 @@ Loader::load()
     }
     else
     {
-		_numFiles = _filesQueue.size();
-		_protocolToProgress.clear();
+        _numFiles = _filesQueue.size();
+        _protocolToProgress.clear();
 
         auto queue = _filesQueue;
 
@@ -80,18 +80,18 @@ Loader::load()
                 &Loader::protocolErrorHandler,
                 shared_from_this(),
                 std::placeholders::_1
-				)));
-			_protocolSlots.push_back(protocol->complete()->connect(std::bind(
-				&Loader::protocolCompleteHandler,
-				shared_from_this(),
-				std::placeholders::_1
-			)));
-			_protocolProgressSlots.push_back(protocol->progress()->connect(std::bind(
-				&Loader::protocolProgressHandler,
-				shared_from_this(),
-				std::placeholders::_1,
-				std::placeholders::_2
-			)));
+                )));
+            _protocolSlots.push_back(protocol->complete()->connect(std::bind(
+                &Loader::protocolCompleteHandler,
+                shared_from_this(),
+                std::placeholders::_1
+            )));
+            _protocolProgressSlots.push_back(protocol->progress()->connect(std::bind(
+                &Loader::protocolProgressHandler,
+                shared_from_this(),
+                std::placeholders::_1,
+                std::placeholders::_2
+            )));
 
             protocol->load(filename, options);
         }
@@ -114,27 +114,27 @@ Loader::protocolErrorHandler(std::shared_ptr<AbstractProtocol> protocol)
 void
 Loader::protocolProgressHandler(std::shared_ptr<AbstractProtocol> protocol, float progress)
 {
-	_protocolToProgress[protocol] = progress;
+    _protocolToProgress[protocol] = progress;
 
-	float newTotalProgress = 0.f;
+    float newTotalProgress = 0.f;
 
-	for (auto protocolAndProgress : _protocolToProgress)
-	{
-		newTotalProgress += protocolAndProgress.second / _numFiles;
-	}
+    for (auto protocolAndProgress : _protocolToProgress)
+    {
+        newTotalProgress += protocolAndProgress.second / _numFiles;
+    }
 
-	newTotalProgress /= 100.f;
+    newTotalProgress /= 100.f;
 
-	_progress->execute(
-		std::dynamic_pointer_cast<Loader>(shared_from_this()),
-		newTotalProgress
-	);
+    _progress->execute(
+        std::dynamic_pointer_cast<Loader>(shared_from_this()),
+        newTotalProgress
+    );
 }
 
 void
 Loader::protocolCompleteHandler(std::shared_ptr<AbstractProtocol> protocol)
 {
-	_protocolToProgress[protocol] = 1.f;
+    _protocolToProgress[protocol] = 1.f;
 
     auto filename = protocol->file()->filename();
 

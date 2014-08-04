@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -25,53 +25,53 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace file
-	{
-		class MaterialParser :
-			public AbstractSerializerParser
-		{
-		private:
-			typedef msgpack::type::tuple<uint, std::string>						ComplexPropertyValue;
-			typedef std::shared_ptr<MaterialParser>								Ptr;
-			typedef msgpack::type::tuple<std::string, std::string>				BasicProperty;
-			typedef msgpack::type::tuple<std::string, ComplexPropertyValue>		ComplexProperty;
-			typedef std::shared_ptr<material::Material>							MaterialPtr;
-			typedef std::shared_ptr<AssetLibrary>								AssetLibraryPtr;
-			typedef std::shared_ptr<Options>									OptionsPtr;
-			typedef std::shared_ptr<math::Vector4>								Vector4Ptr;
-			typedef std::shared_ptr<math::Vector3>								Vector3Ptr;
-			typedef std::shared_ptr<math::Vector2>								Vector2Ptr;
-			typedef std::shared_ptr<math::Matrix4x4>							Matrix4x4Ptr;
-			typedef std::shared_ptr<render::AbstractTexture>					TexturePtr;
+    namespace file
+    {
+        class MaterialParser :
+            public AbstractSerializerParser
+        {
+        private:
+            typedef msgpack::type::tuple<uint, std::string>                        ComplexPropertyValue;
+            typedef std::shared_ptr<MaterialParser>                                Ptr;
+            typedef msgpack::type::tuple<std::string, std::string>                BasicProperty;
+            typedef msgpack::type::tuple<std::string, ComplexPropertyValue>        ComplexProperty;
+            typedef std::shared_ptr<material::Material>                            MaterialPtr;
+            typedef std::shared_ptr<AssetLibrary>                                AssetLibraryPtr;
+            typedef std::shared_ptr<Options>                                    OptionsPtr;
+            typedef std::shared_ptr<math::Vector4>                                Vector4Ptr;
+            typedef std::shared_ptr<math::Vector3>                                Vector3Ptr;
+            typedef std::shared_ptr<math::Vector2>                                Vector2Ptr;
+            typedef std::shared_ptr<math::Matrix4x4>                            Matrix4x4Ptr;
+            typedef std::shared_ptr<render::AbstractTexture>                    TexturePtr;
 
-		private:
-			static std::map<uint, std::function<Any(std::tuple<uint, std::string&>&)>> _typeIdToReadFunction;
+        private:
+            static std::map<uint, std::function<Any(std::tuple<uint, std::string&>&)>> _typeIdToReadFunction;
 
-		public:
-			inline static
-			Ptr
-			create()
-			{
-				return std::shared_ptr<MaterialParser>(new MaterialParser());
-			}
+        public:
+            inline static
+            Ptr
+            create()
+            {
+                return std::shared_ptr<MaterialParser>(new MaterialParser());
+            }
 
-			void
-			parse(const std::string&				filename,
-				  const std::string&                resolvedFilename,
-				  OptionsPtr						options,
-				  const std::vector<unsigned char>&	data,
-				  AssetLibraryPtr					assetLibrary);
+            void
+            parse(const std::string&                filename,
+                  const std::string&                resolvedFilename,
+                  OptionsPtr                        options,
+                  const std::vector<unsigned char>&    data,
+                  AssetLibraryPtr                    assetLibrary);
 
-		private:
-			void
-			deserializeComplexProperty(MaterialPtr			material,
-									   ComplexProperty		serializedProperty);
+        private:
+            void
+            deserializeComplexProperty(MaterialPtr            material,
+                                       ComplexProperty        serializedProperty);
 
-			void
-			deserializeBasicProperty(MaterialPtr		material,
-									 BasicProperty		serializedProperty);
+            void
+            deserializeBasicProperty(MaterialPtr        material,
+                                     BasicProperty        serializedProperty);
 
-			MaterialParser();
-		};
-	}
+            MaterialParser();
+        };
+    }
 }

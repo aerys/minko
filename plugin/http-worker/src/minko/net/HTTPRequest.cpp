@@ -25,97 +25,97 @@ using namespace minko;
 using namespace minko::net;
 
 HTTPRequest::HTTPRequest(std::string url) :
-	_url(url),
-	_progress(Signal<float>::create()),
-	_error(Signal<int>::create()),
-	_complete(Signal<const std::vector<char>&>::create())
+    _url(url),
+    _progress(Signal<float>::create()),
+    _error(Signal<int>::create()),
+    _complete(Signal<const std::vector<char>&>::create())
 {
 }
 
 void
 HTTPRequest::run()
 {
-	std::cout << "HTTPRequest::run(): enter" << std::endl;
+    std::cout << "HTTPRequest::run(): enter" << std::endl;
 
-	progress()->execute(0.0f);
+    progress()->execute(0.0f);
 
-	std::cout << "HTTPRequest::run(): before curl init" << std::endl;
+    std::cout << "HTTPRequest::run(): before curl init" << std::endl;
 
-	CURL* curl = curl_easy_init();
+    CURL* curl = curl_easy_init();
 
-	std::cout << "HTTPRequest::run(): after curl init" << std::endl;
+    std::cout << "HTTPRequest::run(): after curl init" << std::endl;
 
-	if (!curl)
-		throw std::runtime_error("cURL not enabled");
+    if (!curl)
+        throw std::runtime_error("cURL not enabled");
 
-	std::cout << "HTTPRequest::run(): after curl init success" << std::endl;
+    std::cout << "HTTPRequest::run(): after curl init success" << std::endl;
 
-	curl_easy_setopt(curl, CURLOPT_URL, _url.c_str());
+    curl_easy_setopt(curl, CURLOPT_URL, _url.c_str());
 
-	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, &curlWriteHandler);
-	curl_easy_setopt(curl, CURLOPT_WRITEDATA, this);
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, &curlWriteHandler);
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, this);
 
-	curl_easy_setopt(curl, CURLOPT_PROGRESSFUNCTION, &curlProgressHandler);
-	curl_easy_setopt(curl, CURLOPT_PROGRESSDATA, this);
+    curl_easy_setopt(curl, CURLOPT_PROGRESSFUNCTION, &curlProgressHandler);
+    curl_easy_setopt(curl, CURLOPT_PROGRESSDATA, this);
 
-	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
-	//curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+    curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+    //curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
 
-	curl_easy_setopt(curl, CURLOPT_USERAGENT, "libcurl-agent/1.0");
+    curl_easy_setopt(curl, CURLOPT_USERAGENT, "libcurl-agent/1.0");
 
-	std::cout << "HTTPRequest::run(): before curl perform" << std::endl;
+    std::cout << "HTTPRequest::run(): before curl perform" << std::endl;
 
-	CURLcode res = curl_easy_perform(curl);
+    CURLcode res = curl_easy_perform(curl);
 
-	std::cout << "HTTPRequest::run(): after curl perform" << std::endl;
+    std::cout << "HTTPRequest::run(): after curl perform" << std::endl;
 
-	curl_easy_cleanup(curl);
+    curl_easy_cleanup(curl);
 
-	if (res != CURLE_OK)
-	{
-		std::cout << "HTTPRequest::run(): curl error" << std::endl;
+    if (res != CURLE_OK)
+    {
+        std::cout << "HTTPRequest::run(): curl error" << std::endl;
 
-		error()->execute(res);
-	}
-	else
-	{
-		std::cout << "HTTPRequest::run(): curl success" << std::endl;		
+        error()->execute(res);
+    }
+    else
+    {
+        std::cout << "HTTPRequest::run(): curl success" << std::endl;
 
-		progress()->execute(1.0f);
-		complete()->execute(_output);
-	}
+        progress()->execute(1.0f);
+        complete()->execute(_output);
+    }
 }
 
 size_t
 HTTPRequest::curlWriteHandler(void* data, size_t size, size_t chunks, void* arg)
 {
-	HTTPRequest* request = static_cast<HTTPRequest*>(arg);
+    HTTPRequest* request = static_cast<HTTPRequest*>(arg);
 
-	size *= chunks;
+    size *= chunks;
 
-	std::vector<char>& output = request->output();
+    std::vector<char>& output = request->output();
 
-	size_t position = output.size();
+    size_t position = output.size();
 
-	// Resizing to the new size.
-	output.resize(position + size);
+    // Resizing to the new size.
+    output.resize(position + size);
 
-	char* source = reinterpret_cast<char*>(data);
+    char* source = reinterpret_cast<char*>(data);
 
-	// Adding the chunk to the end of the vector.
-	std::copy(source, source + size, output.begin() + position);
+    // Adding the chunk to the end of the vector.
+    std::copy(source, source + size, output.begin() + position);
 
-	return size;
+    return size;
 }
 
 int
 HTTPRequest::curlProgressHandler(void* arg, double total, double current, double, double)
 {
-	HTTPRequest* request = static_cast<HTTPRequest*>(arg);
+    HTTPRequest* request = static_cast<HTTPRequest*>(arg);
 
-	double ratio = current / total;
+    double ratio = current / total;
 
-	request->progress()->execute(float(ratio));
+    request->progress()->execute(float(ratio));
 
-	return 0;
+    return 0;
 }

@@ -31,7 +31,7 @@ namespace minko
     namespace file
     {
         template <>
-	class AnyASSIMPParser<Assimp::UnrealImporter> : public AbstractASSIMPParser
+    class AnyASSIMPParser<Assimp::UnrealImporter> : public AbstractASSIMPParser
         {
         public:
 

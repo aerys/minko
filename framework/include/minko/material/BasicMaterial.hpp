@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -29,84 +29,84 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace material
-	{
-		class BasicMaterial :
-			public Material
-		{
-		public:
-			typedef std::shared_ptr<BasicMaterial>				Ptr;
+    namespace material
+    {
+        class BasicMaterial :
+            public Material
+        {
+        public:
+            typedef std::shared_ptr<BasicMaterial>                Ptr;
 
-		protected:
-			typedef std::shared_ptr<render::AbstractTexture>	AbsTexturePtr;
-			typedef std::shared_ptr<render::Texture>			TexturePtr;
-			typedef std::shared_ptr<render::CubeTexture>		CubeTexturePtr;
-			typedef std::shared_ptr<render::States>				RenderStatesPtr;
-			typedef std::shared_ptr<math::Vector2>				Vector2Ptr;
-			typedef std::shared_ptr<math::Vector4>				Vector4Ptr;
+        protected:
+            typedef std::shared_ptr<render::AbstractTexture>    AbsTexturePtr;
+            typedef std::shared_ptr<render::Texture>            TexturePtr;
+            typedef std::shared_ptr<render::CubeTexture>        CubeTexturePtr;
+            typedef std::shared_ptr<render::States>                RenderStatesPtr;
+            typedef std::shared_ptr<math::Vector2>                Vector2Ptr;
+            typedef std::shared_ptr<math::Vector4>                Vector4Ptr;
 
-		protected:
-			static const RenderStatesPtr						_defaultStates;
+        protected:
+            static const RenderStatesPtr                        _defaultStates;
 
-		public:
-			inline static
-			Ptr
-			create()
-			{
-				Ptr ptr = std::shared_ptr<BasicMaterial>(new BasicMaterial());
+        public:
+            inline static
+            Ptr
+            create()
+            {
+                Ptr ptr = std::shared_ptr<BasicMaterial>(new BasicMaterial());
 
-				ptr->initialize();
+                ptr->initialize();
 
-				return ptr;
-			}
+                return ptr;
+            }
 
-			Ptr
-			diffuseColor(Vector4Ptr);
+            Ptr
+            diffuseColor(Vector4Ptr);
 
-			Ptr
-			diffuseColor(uint);
+            Ptr
+            diffuseColor(uint);
 
-			Vector4Ptr
-			diffuseColor() const;
+            Vector4Ptr
+            diffuseColor() const;
 
-			Ptr
-			uvScale(float, float);
+            Ptr
+            uvScale(float, float);
 
-			Ptr
-			uvScale(Vector2Ptr);
+            Ptr
+            uvScale(Vector2Ptr);
 
-			Vector2Ptr
-			uvScale(Vector2Ptr = nullptr) const;
+            Vector2Ptr
+            uvScale(Vector2Ptr = nullptr) const;
 
-			Ptr
-			uvOffset(float, float);
+            Ptr
+            uvOffset(float, float);
 
-			Ptr
-			uvOffset(Vector2Ptr);
+            Ptr
+            uvOffset(Vector2Ptr);
 
-			Vector2Ptr
-			uvOffset(Vector2Ptr = nullptr) const;
+            Vector2Ptr
+            uvOffset(Vector2Ptr = nullptr) const;
 
-			Ptr
+            Ptr
             diffuseMap(TexturePtr);
 
-			TexturePtr
-			diffuseMap() const;
+            TexturePtr
+            diffuseMap() const;
 
-			Ptr
-			diffuseCubeMap(AbsTexturePtr);
+            Ptr
+            diffuseCubeMap(AbsTexturePtr);
 
-			CubeTexturePtr
-			diffuseCubeMap() const;
+            CubeTexturePtr
+            diffuseCubeMap() const;
 
-			Ptr
-			fogColor(Vector4Ptr);
+            Ptr
+            fogColor(Vector4Ptr);
 
-			Ptr
-			fogColor(uint);
+            Ptr
+            fogColor(uint);
 
-			Vector4Ptr
-			fogColor() const;
+            Vector4Ptr
+            fogColor() const;
 
             Ptr
             fogDensity(float);
@@ -132,105 +132,105 @@ namespace minko
             render::FogType
             fogType() const;
 
-			Ptr
-			blendingMode(render::Blending::Source, render::Blending::Destination);
+            Ptr
+            blendingMode(render::Blending::Source, render::Blending::Destination);
 
-			Ptr
-			blendingMode(render::Blending::Mode);
+            Ptr
+            blendingMode(render::Blending::Mode);
 
-			render::Blending::Source
-			blendingSourceFactor() const;
+            render::Blending::Source
+            blendingSourceFactor() const;
 
-			render::Blending::Destination
-			blendingDestinationFactor() const;
+            render::Blending::Destination
+            blendingDestinationFactor() const;
 
-			Ptr
-			colorMask(bool);
+            Ptr
+            colorMask(bool);
 
-			bool
-			colorMask() const;
+            bool
+            colorMask() const;
 
-			Ptr
-			depthMask(bool);
+            Ptr
+            depthMask(bool);
 
-			bool
-			depthMask() const;
+            bool
+            depthMask() const;
 
-			Ptr
-			depthFunction(render::CompareMode);
+            Ptr
+            depthFunction(render::CompareMode);
 
-			render::CompareMode
-			depthFunction() const;
+            render::CompareMode
+            depthFunction() const;
 
-			Ptr
-			triangleCulling(render::TriangleCulling);
+            Ptr
+            triangleCulling(render::TriangleCulling);
 
-			render::TriangleCulling
-			triangleCulling() const;
+            render::TriangleCulling
+            triangleCulling() const;
 
-			Ptr
-			stencilFunction(render::CompareMode);
+            Ptr
+            stencilFunction(render::CompareMode);
 
-			render::CompareMode
-			stencilFunction() const;
+            render::CompareMode
+            stencilFunction() const;
 
-			Ptr
-			stencilReference(int);
+            Ptr
+            stencilReference(int);
 
-			int
-			stencilReference() const;
+            int
+            stencilReference() const;
 
-			Ptr
-			stencilMask(uint);
+            Ptr
+            stencilMask(uint);
 
-			uint
-			stencilMask() const;
+            uint
+            stencilMask() const;
 
-			Ptr
-			stencilFailOperation(render::StencilOperation);
+            Ptr
+            stencilFailOperation(render::StencilOperation);
 
-			render::StencilOperation
-			stencilFailOperation() const;
+            render::StencilOperation
+            stencilFailOperation() const;
 
-			Ptr
-			stencilDepthFailOperation(render::StencilOperation);
+            Ptr
+            stencilDepthFailOperation(render::StencilOperation);
 
-			render::StencilOperation
-			stencilDepthFailOperation() const;
+            render::StencilOperation
+            stencilDepthFailOperation() const;
 
-			Ptr
-			stencilDepthPassOperation(render::StencilOperation);
+            Ptr
+            stencilDepthPassOperation(render::StencilOperation);
 
-			render::StencilOperation
-			stencilDepthPassOperation() const;
+            render::StencilOperation
+            stencilDepthPassOperation() const;
 
-			Ptr
-			priority(float);
+            Ptr
+            priority(float);
 
-			float 
-			priority() const;
+            float
+            priority() const;
 
-			Ptr
-			zSorted(bool);
+            Ptr
+            zSorted(bool);
 
-			bool
-			zSorted() const;
+            bool
+            zSorted() const;
 
-			Ptr
-			isTransparent(bool transparent, bool zSort = false);
+            Ptr
+            isTransparent(bool transparent, bool zSort = false);
 
-			Ptr
-			target(AbsTexturePtr);
+            Ptr
+            target(AbsTexturePtr);
 
-			AbsTexturePtr
-			target() const;
+            AbsTexturePtr
+            target() const;
 
-		protected:
-			BasicMaterial();
+        protected:
+            BasicMaterial();
 
-			virtual
-			void
-			initialize();
-		};
-	}
+            virtual
+            void
+            initialize();
+        };
+    }
 }

@@ -26,51 +26,51 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace Leap
 {
-	class SwipeGesture;
+    class SwipeGesture;
 }
 
 namespace minko
 {
-	namespace input
-	{
-		namespace leap
-		{
-			class SwipeGesture : public Gesture
-			{
-				friend class Gesture; // Only a Gesture can instanciate a SwipeGesture
+    namespace input
+    {
+        namespace leap
+        {
+            class SwipeGesture : public Gesture
+            {
+                friend class Gesture; // Only a Gesture can instanciate a SwipeGesture
 
-			public:
-				typedef std::shared_ptr<SwipeGesture>	Ptr;
+            public:
+                typedef std::shared_ptr<SwipeGesture>    Ptr;
 
-			private:
-				typedef std::shared_ptr<math::Vector3>	Vector3Ptr;
+            private:
+                typedef std::shared_ptr<math::Vector3>    Vector3Ptr;
 
-			private:
-				std::shared_ptr<Leap::SwipeGesture>	_leapSwipe;
+            private:
+                std::shared_ptr<Leap::SwipeGesture>    _leapSwipe;
 
-			public:
-				
-				Vector3Ptr
-				direction(Vector3Ptr output = nullptr) const;
+            public:
 
-				Vector3Ptr
-				position(Vector3Ptr output = nullptr) const;
-				
-				Vector3Ptr
-				startPosition(Vector3Ptr output = nullptr) const;
+                Vector3Ptr
+                direction(Vector3Ptr output = nullptr) const;
 
-				float
-				speed() const;
+                Vector3Ptr
+                position(Vector3Ptr output = nullptr) const;
 
-				uint32_t
-				pointableID() const;
+                Vector3Ptr
+                startPosition(Vector3Ptr output = nullptr) const;
 
-			private:
-				SwipeGesture(); // no implementation
+                float
+                speed() const;
 
-				explicit
-				SwipeGesture(const Gesture&);
-			};
-		}
-	}
+                uint32_t
+                pointableID() const;
+
+            private:
+                SwipeGesture(); // no implementation
+
+                explicit
+                SwipeGesture(const Gesture&);
+            };
+        }
+    }
 }

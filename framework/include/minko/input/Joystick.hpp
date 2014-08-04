@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -25,12 +25,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace input
-	{
-		class Joystick
-		{
-		public:
-			typedef std::shared_ptr<Joystick> Ptr;
+    namespace input
+    {
+        class Joystick
+        {
+        public:
+            typedef std::shared_ptr<Joystick> Ptr;
 
             enum class Button
             {
@@ -54,55 +54,55 @@ namespace minko
                 RT = 16, // Not a button (axis)
             };
 
-		private:
-			std::shared_ptr<AbstractCanvas> _canvas;
+        private:
+            std::shared_ptr<AbstractCanvas> _canvas;
 
-			Signal<Ptr, int, int, int>::Ptr		_joystickAxisMotion;
-			Signal<Ptr, int, int, int>::Ptr		_joystickHatMotion;
-			Signal<Ptr, int, int>::Ptr			_joystickButtonDown;
-			Signal<Ptr, int, int>::Ptr			_joystickButtonUp;
+            Signal<Ptr, int, int, int>::Ptr        _joystickAxisMotion;
+            Signal<Ptr, int, int, int>::Ptr        _joystickHatMotion;
+            Signal<Ptr, int, int>::Ptr            _joystickButtonDown;
+            Signal<Ptr, int, int>::Ptr            _joystickButtonUp;
 
-			int									_joystickId;
+            int                                    _joystickId;
 
-		public:
-			inline
-			int
-			joystickId()
-			{
-				return _joystickId;
-			}
+        public:
+            inline
+            int
+            joystickId()
+            {
+                return _joystickId;
+            }
 
-			inline
-			Signal<Ptr, int, int, int>::Ptr
-			joystickAxisMotion() const
-			{
-				return _joystickAxisMotion;
-			}
+            inline
+            Signal<Ptr, int, int, int>::Ptr
+            joystickAxisMotion() const
+            {
+                return _joystickAxisMotion;
+            }
 
-			inline
-			Signal<Ptr, int, int, int>::Ptr
-			joystickHatMotion() const
-			{
-				return _joystickHatMotion;
-			}
+            inline
+            Signal<Ptr, int, int, int>::Ptr
+            joystickHatMotion() const
+            {
+                return _joystickHatMotion;
+            }
 
 
-			inline
-			Signal<Ptr, int, int>::Ptr
-			joystickButtonDown() const
-			{
-				return _joystickButtonDown;
-			}
+            inline
+            Signal<Ptr, int, int>::Ptr
+            joystickButtonDown() const
+            {
+                return _joystickButtonDown;
+            }
 
-			inline
-			Signal<Ptr, int, int>::Ptr
-			joystickButtonUp() const
-			{
-				return _joystickButtonUp;
-			}
+            inline
+            Signal<Ptr, int, int>::Ptr
+            joystickButtonUp() const
+            {
+                return _joystickButtonUp;
+            }
 
-		protected:
-			Joystick(std::shared_ptr<AbstractCanvas> canvas, int joystickId);
-		};
-	}
+        protected:
+            Joystick(std::shared_ptr<AbstractCanvas> canvas, int joystickId);
+        };
+    }
 }

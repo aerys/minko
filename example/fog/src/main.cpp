@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -37,35 +37,35 @@ int main(int argc, char** argv)
 {
     auto canvas = Canvas::create("Minko Example - Fog", WINDOW_WIDTH, WINDOW_HEIGHT);
 
-	auto sceneManager = SceneManager::create(canvas->context());
+    auto sceneManager = SceneManager::create(canvas->context());
 
-	// setup assets
-	sceneManager->assets()->loader()->options()->resizeSmoothly(true);
-	sceneManager->assets()->loader()->options()->generateMipmaps(true);
-	sceneManager->assets()->loader()->options()
+    // setup assets
+    sceneManager->assets()->loader()->options()->resizeSmoothly(true);
+    sceneManager->assets()->loader()->options()->generateMipmaps(true);
+    sceneManager->assets()->loader()->options()
                 ->registerParser<file::PNGParser>("png");
 
         sceneManager->assets()->loader()
                 ->queue(TEXTURE_FILENAME)
-		->queue(EFFECT_FILENAME);
+        ->queue(EFFECT_FILENAME);
 
-	auto _ = sceneManager->assets()->loader()->complete()->connect([=](file::Loader::Ptr loader)
-	{
+    auto _ = sceneManager->assets()->loader()->complete()->connect([=](file::Loader::Ptr loader)
+    {
         std::cout << "Press [L]\tto activate linear fog\nPress [E]\tto activate exponential fog\nPress [F]\tto activate square exponential fog\nPress [N]\tto deactivate fog\nPress [P]\tto to increase fog density\nPress [M]\tto to decrease fog density" << std::endl;
 
-		auto root = scene::Node::create("root")
-			->addComponent(sceneManager);
+        auto root = scene::Node::create("root")
+            ->addComponent(sceneManager);
 
-		auto mesh = scene::Node::create("mesh")
-			->addComponent(Transform::create(Matrix4x4::create()->appendTranslation(Vector3::create(0.0f, 0.5f, 0.0f))));
+        auto mesh = scene::Node::create("mesh")
+            ->addComponent(Transform::create(Matrix4x4::create()->appendTranslation(Vector3::create(0.0f, 0.5f, 0.0f))));
 
-		auto camera = scene::Node::create("camera")
-			->addComponent(Renderer::create(0x7f7f7fff))
-			->addComponent(Transform::create(
-			Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 1.5f, 6.f))
-			))
-			->addComponent(PerspectiveCamera::create(WINDOW_WIDTH / (float)WINDOW_HEIGHT, float(M_PI) * 0.25f, .1f, 1000.f));
-		root->addChild(camera);
+        auto camera = scene::Node::create("camera")
+            ->addComponent(Renderer::create(0x7f7f7fff))
+            ->addComponent(Transform::create(
+            Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 1.5f, 6.f))
+            ))
+            ->addComponent(PerspectiveCamera::create(WINDOW_WIDTH / (float)WINDOW_HEIGHT, float(M_PI) * 0.25f, .1f, 1000.f));
+        root->addChild(camera);
 
         auto material = material::PhongMaterial::create()
             ->diffuseMap(sceneManager->assets()->texture(TEXTURE_FILENAME))
@@ -102,22 +102,22 @@ int main(int argc, char** argv)
             ->addComponent(Transform::create(Matrix4x4::create()->lookAt(Vector3::create(), Vector3::create(3.0f, 2.0f, 3.0f))));
         root->addChild(directionalLight);
 
-		std::vector<Matrix4x4::Ptr> keyTransforms;
+        std::vector<Matrix4x4::Ptr> keyTransforms;
 
-		keyTransforms.push_back(Matrix4x4::create()->appendTranslation(Vector3::create(0.0f, 0.5f, 0.0f)));
-		keyTransforms.push_back(Matrix4x4::create()->copyFrom(keyTransforms[0])->appendTranslation(Vector3::create(0.0f, 0.0f, -15.0f)));
-		keyTransforms.push_back(Matrix4x4::create()->copyFrom(keyTransforms[1])->appendTranslation(Vector3::create(0.0f, 0.0f, 15.0f)));
+        keyTransforms.push_back(Matrix4x4::create()->appendTranslation(Vector3::create(0.0f, 0.5f, 0.0f)));
+        keyTransforms.push_back(Matrix4x4::create()->copyFrom(keyTransforms[0])->appendTranslation(Vector3::create(0.0f, 0.0f, -15.0f)));
+        keyTransforms.push_back(Matrix4x4::create()->copyFrom(keyTransforms[1])->appendTranslation(Vector3::create(0.0f, 0.0f, 15.0f)));
 
-		auto segmentDuration = 1500U;
+        auto segmentDuration = 1500U;
 
-		auto cubeAnimation = Animation::create(
-		{ minko::animation::Matrix4x4Timeline::create("transform.matrix", segmentDuration * 3,
-		{ segmentDuration * 0, segmentDuration * 1, segmentDuration * 2 },
-		keyTransforms, true) }, true);
+        auto cubeAnimation = Animation::create(
+        { minko::animation::Matrix4x4Timeline::create("transform.matrix", segmentDuration * 3,
+        { segmentDuration * 0, segmentDuration * 1, segmentDuration * 2 },
+        keyTransforms, true) }, true);
 
-		mesh->addComponent(cubeAnimation);
+        mesh->addComponent(cubeAnimation);
 
-		root->addChild(mesh);
+        root->addChild(mesh);
 
         auto cameraMove = Vector3::create();
 
@@ -177,28 +177,28 @@ int main(int argc, char** argv)
             }
         });
 
-		auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
-		{
-			camera->component<PerspectiveCamera>()->aspectRatio(float(w) / float(h));
-		});
+        auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
+        {
+            camera->component<PerspectiveCamera>()->aspectRatio(float(w) / float(h));
+        });
 
-		auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float dt)
-		{
+        auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float dt)
+        {
             cameraMove = cameraMove->normalize() * CAMERA_SPEED * (dt / 1000.0f);
             camera->component<Transform>()->matrix()->appendTranslation(cameraMove);
             cameraMove = Vector3::create()->zero();
 
-			mesh->component<Transform>()->matrix()->prependRotationY(.01f);
+            mesh->component<Transform>()->matrix()->prependRotationY(.01f);
 
-			sceneManager->nextFrame(time, dt);
-		});
+            sceneManager->nextFrame(time, dt);
+        });
 
-		canvas->run();
-	});
+        canvas->run();
+    });
 
-	sceneManager->assets()->loader()->load();
+    sceneManager->assets()->loader()->load();
 
-	return 0;
+    return 0;
 }
 
 

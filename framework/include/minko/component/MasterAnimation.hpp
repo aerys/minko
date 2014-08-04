@@ -26,56 +26,56 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace component
-	{
-		class MasterAnimation :
-			public AbstractAnimation
-		{
-		public:
-			typedef std::shared_ptr<MasterAnimation>	Ptr;
+    namespace component
+    {
+        class MasterAnimation :
+            public AbstractAnimation
+        {
+        public:
+            typedef std::shared_ptr<MasterAnimation>    Ptr;
 
-		private:
-			typedef std::shared_ptr<Animation>			AnimationPtr;
+        private:
+            typedef std::shared_ptr<Animation>            AnimationPtr;
 
-		private:
-			std::vector<AnimationPtr>					_animations;
+        private:
+            std::vector<AnimationPtr>                    _animations;
 
-		public:
-			AbstractAnimation::Ptr
-			play();
+        public:
+            AbstractAnimation::Ptr
+            play();
 
-			AbstractAnimation::Ptr
-			stop();
+            AbstractAnimation::Ptr
+            stop();
 
-			AbstractAnimation::Ptr
-			addLabel(const std::string& name, uint time);
+            AbstractAnimation::Ptr
+            addLabel(const std::string& name, uint time);
 
-			AbstractAnimation::Ptr
-			changeLabel(const std::string& name, const std::string& newName);
+            AbstractAnimation::Ptr
+            changeLabel(const std::string& name, const std::string& newName);
 
-			AbstractAnimation::Ptr
-			setTimeForLabel(const std::string& name, uint newTime);
+            AbstractAnimation::Ptr
+            setTimeForLabel(const std::string& name, uint newTime);
 
-			AbstractAnimation::Ptr
-			removeLabel(const std::string& name);
+            AbstractAnimation::Ptr
+            removeLabel(const std::string& name);
 
-			AbstractAnimation::Ptr
-			setPlaybackWindow(uint, uint, bool forceRestart = false);
+            AbstractAnimation::Ptr
+            setPlaybackWindow(uint, uint, bool forceRestart = false);
 
-			AbstractAnimation::Ptr
-			setPlaybackWindow(const std::string&, const std::string&, bool forceRestart = false);
+            AbstractAnimation::Ptr
+            setPlaybackWindow(const std::string&, const std::string&, bool forceRestart = false);
 
-			AbstractAnimation::Ptr
-			resetPlaybackWindow();
+            AbstractAnimation::Ptr
+            resetPlaybackWindow();
 
-		protected:
-			MasterAnimation(const std::vector<AnimationPtr>&, bool isLooping);
+        protected:
+            MasterAnimation(const std::vector<AnimationPtr>&, bool isLooping);
 
-			void
-			initialize();
+            void
+            initialize();
 
-			void
-			update();
-		};
-	}
+            void
+            update();
+        };
+    }
 }

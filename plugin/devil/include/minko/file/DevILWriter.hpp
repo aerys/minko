@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -23,24 +23,24 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace file
-	{
-		class DevILWriter :
-			public std::enable_shared_from_this<DevILWriter>
-		{
-		public:
-			typedef std::shared_ptr<DevILWriter> Ptr;
+    namespace file
+    {
+        class DevILWriter :
+            public std::enable_shared_from_this<DevILWriter>
+        {
+        public:
+            typedef std::shared_ptr<DevILWriter> Ptr;
 
-		public:
-			inline static
-			Ptr
-			create()
-			{
-				return std::shared_ptr<DevILWriter>(new DevILWriter());
-			}
+        public:
+            inline static
+            Ptr
+            create()
+            {
+                return std::shared_ptr<DevILWriter>(new DevILWriter());
+            }
 
-			void
-			writeToFile(const std::string&                    filename,
+            void
+            writeToFile(const std::string&                    filename,
                         const std::vector<unsigned char>&     data,
                         minko::uint                           srcWidth,
                         minko::uint                           srcHeight,
@@ -58,16 +58,16 @@ namespace minko
                           minko::uint                           dstHeight,
                           minko::uint                           componentCount);
 
-		private:
-			DevILWriter()
-			{
-			}
+        private:
+            DevILWriter()
+            {
+            }
 
-			void
-			checkError();
+            void
+            checkError();
 
-			std::set<std::string>
-			getSupportedFileExensions();
+            std::set<std::string>
+            getSupportedFileExensions();
 
             minko::uint
             createScaledImage(const std::vector<unsigned char>&    src,
@@ -76,6 +76,6 @@ namespace minko
                               minko::uint                          dstWidth,
                               minko::uint                          dstHeight,
                               minko::uint                          componentCount);
-		};
-	}
+        };
+    }
 }

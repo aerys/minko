@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -38,238 +38,238 @@ class btRigidBody;
 
 namespace minko
 {
-	namespace component
-	{
-		namespace bullet
-		{
-			class LinearIdAllocator; 
+    namespace component
+    {
+        namespace bullet
+        {
+            class LinearIdAllocator;
 
-			class PhysicsWorld:
-				public AbstractComponent
-			{
-				friend class Collider;
+            class PhysicsWorld:
+                public AbstractComponent
+            {
+                friend class Collider;
 
-			public:
-				typedef std::shared_ptr<PhysicsWorld>                                   Ptr;
+            public:
+                typedef std::shared_ptr<PhysicsWorld>                                   Ptr;
 
-			private:
-				typedef std::shared_ptr<LinearIdAllocator>			                    LinearIdAllocatorPtr;
-				typedef std::shared_ptr<AbstractComponent>			                    AbsCmp;
-				typedef std::shared_ptr<scene::Node>				                    NodePtr;
-				typedef std::shared_ptr<Collider>										ColliderPtr; 
-				typedef std::shared_ptr<const Collider>									ConstColliderPtr;
-				typedef std::shared_ptr<Renderer>					                    RendererPtr;
-				typedef std::shared_ptr<math::Vector3>				                    Vector3Ptr;
-				typedef std::shared_ptr<math::Matrix4x4>			                    Matrix4x4Ptr;
-				typedef std::shared_ptr<math::Quaternion>			                    QuaternionPtr;
+            private:
+                typedef std::shared_ptr<LinearIdAllocator>                                LinearIdAllocatorPtr;
+                typedef std::shared_ptr<AbstractComponent>                                AbsCmp;
+                typedef std::shared_ptr<scene::Node>                                    NodePtr;
+                typedef std::shared_ptr<Collider>                                        ColliderPtr;
+                typedef std::shared_ptr<const Collider>                                    ConstColliderPtr;
+                typedef std::shared_ptr<Renderer>                                        RendererPtr;
+                typedef std::shared_ptr<math::Vector3>                                    Vector3Ptr;
+                typedef std::shared_ptr<math::Matrix4x4>                                Matrix4x4Ptr;
+                typedef std::shared_ptr<math::Quaternion>                                QuaternionPtr;
 
-				typedef std::shared_ptr<btTransform>				                    btTransformPtr;
-				typedef std::shared_ptr<btBroadphaseInterface>		                    btBroadphasePtr;
-				typedef std::shared_ptr<btCollisionConfiguration>	                    btCollisionConfigurationPtr;
-				typedef std::shared_ptr<btConstraintSolver>			                    btConstraintSolverPtr;
-				typedef std::shared_ptr<btDispatcher>				                    btDispatcherPtr;
-				typedef std::shared_ptr<btDynamicsWorld>			                    btDynamicsWorldPtr;
+                typedef std::shared_ptr<btTransform>                                    btTransformPtr;
+                typedef std::shared_ptr<btBroadphaseInterface>                            btBroadphasePtr;
+                typedef std::shared_ptr<btCollisionConfiguration>                        btCollisionConfigurationPtr;
+                typedef std::shared_ptr<btConstraintSolver>                                btConstraintSolverPtr;
+                typedef std::shared_ptr<btDispatcher>                                    btDispatcherPtr;
+                typedef std::shared_ptr<btDynamicsWorld>                                btDynamicsWorldPtr;
 
-				class BulletCollider;
-				typedef std::shared_ptr<BulletCollider>									BulletColliderPtr;
-				typedef std::unordered_map<ColliderPtr, BulletColliderPtr>				ColliderMap;
-				typedef std::unordered_map<const btCollisionObject*, ColliderPtr>		ColliderReverseMap;
+                class BulletCollider;
+                typedef std::shared_ptr<BulletCollider>                                    BulletColliderPtr;
+                typedef std::unordered_map<ColliderPtr, BulletColliderPtr>                ColliderMap;
+                typedef std::unordered_map<const btCollisionObject*, ColliderPtr>        ColliderReverseMap;
 
-				typedef std::set<std::pair<uint, uint>>									CollisionSet;
+                typedef std::set<std::pair<uint, uint>>                                    CollisionSet;
                 typedef Signal<NodePtr, NodePtr>                                        NodeLayoutsChanged;
-				typedef Signal<AbsCmp>			                                        LayoutMaskChanged;
-                typedef Signal<ColliderPtr>												ColliderChanged;
+                typedef Signal<AbsCmp>                                                    LayoutMaskChanged;
+                typedef Signal<ColliderPtr>                                                ColliderChanged;
 
-			private:
-				static const uint								                        _MAX_BODIES;
+            private:
+                static const uint                                                        _MAX_BODIES;
 
-				LinearIdAllocatorPtr							                        _uidAllocator;
-				ColliderMap										                        _colliderMap;
-				ColliderReverseMap								                        _colliderReverseMap;
-				std::unordered_map<uint, ColliderPtr>									_uidToCollider;
-				CollisionSet									                        _collisions;
+                LinearIdAllocatorPtr                                                    _uidAllocator;
+                ColliderMap                                                                _colliderMap;
+                ColliderReverseMap                                                        _colliderReverseMap;
+                std::unordered_map<uint, ColliderPtr>                                    _uidToCollider;
+                CollisionSet                                                            _collisions;
 
-				btBroadphasePtr									                        _bulletBroadphase;
-				btCollisionConfigurationPtr						                        _bulletCollisionConfiguration;
-				btConstraintSolverPtr							                        _bulletConstraintSolver;
-				btDispatcherPtr									                        _bulletDispatcher;
-				btDynamicsWorldPtr								                        _bulletDynamicsWorld;
+                btBroadphasePtr                                                            _bulletBroadphase;
+                btCollisionConfigurationPtr                                                _bulletCollisionConfiguration;
+                btConstraintSolverPtr                                                    _bulletConstraintSolver;
+                btDispatcherPtr                                                            _bulletDispatcher;
+                btDynamicsWorldPtr                                                        _bulletDynamicsWorld;
 
-				std::shared_ptr<SceneManager>					                        _sceneManager;
+                std::shared_ptr<SceneManager>                                            _sceneManager;
 
-				Signal<AbsCmp, NodePtr>::Slot											_targetAddedSlot;
-				Signal<AbsCmp, NodePtr>::Slot											_targetRemovedSlot;
-				Signal<AbsCmp, NodePtr>::Slot											_exitFrameSlot;
-				Signal<std::shared_ptr<SceneManager>, float, float>::Slot               _frameBeginSlot;
-				Signal<std::shared_ptr<SceneManager>, float, float>::Slot               _frameEndSlot;
-				Signal<NodePtr, NodePtr, NodePtr>::Slot			                        _addedOrRemovedSlot;
-				Signal<NodePtr, NodePtr, AbsCmp>::Slot									_componentAddedOrRemovedSlot;
-				std::unordered_map<ColliderPtr, ColliderChanged::Slot>					_colliderPropertiesChangedSlot;
-                std::unordered_map<ColliderPtr, NodeLayoutsChanged::Slot>				_colliderNodeLayoutChangedSlot;
-				std::unordered_map<ColliderPtr, LayoutMaskChanged::Slot>				_colliderLayoutMaskChangedSlot;
+                Signal<AbsCmp, NodePtr>::Slot                                            _targetAddedSlot;
+                Signal<AbsCmp, NodePtr>::Slot                                            _targetRemovedSlot;
+                Signal<AbsCmp, NodePtr>::Slot                                            _exitFrameSlot;
+                Signal<std::shared_ptr<SceneManager>, float, float>::Slot               _frameBeginSlot;
+                Signal<std::shared_ptr<SceneManager>, float, float>::Slot               _frameEndSlot;
+                Signal<NodePtr, NodePtr, NodePtr>::Slot                                    _addedOrRemovedSlot;
+                Signal<NodePtr, NodePtr, AbsCmp>::Slot                                    _componentAddedOrRemovedSlot;
+                std::unordered_map<ColliderPtr, ColliderChanged::Slot>                    _colliderPropertiesChangedSlot;
+                std::unordered_map<ColliderPtr, NodeLayoutsChanged::Slot>                _colliderNodeLayoutChangedSlot;
+                std::unordered_map<ColliderPtr, LayoutMaskChanged::Slot>                _colliderLayoutMaskChangedSlot;
 
-			public:
-				static
-				Ptr
-				create()
-				{
-					Ptr ptr(new PhysicsWorld());
+            public:
+                static
+                Ptr
+                create()
+                {
+                    Ptr ptr(new PhysicsWorld());
 
-					ptr->initialize();
+                    ptr->initialize();
 
-					return ptr;
-				}
+                    return ptr;
+                }
 
-				~PhysicsWorld()
-				{
-				}
+                ~PhysicsWorld()
+                {
+                }
 
-				bool
-				hasCollider(ColliderPtr) const;
+                bool
+                hasCollider(ColliderPtr) const;
 
-				void
-				addChild(ColliderPtr);
+                void
+                addChild(ColliderPtr);
 
-				void
-				removeChild(ColliderPtr);
+                void
+                removeChild(ColliderPtr);
 
-				void
-				setGravity(Vector3Ptr);
+                void
+                setGravity(Vector3Ptr);
 
-			private: // only the Collider class should know of the following functions
-				void
-				synchronizePhysicsWithGraphics(ColliderPtr, Matrix4x4Ptr);
+            private: // only the Collider class should know of the following functions
+                void
+                synchronizePhysicsWithGraphics(ColliderPtr, Matrix4x4Ptr);
 
-				void
-				updateRigidBodyState(ColliderPtr, Matrix4x4Ptr, Matrix4x4Ptr);
+                void
+                updateRigidBodyState(ColliderPtr, Matrix4x4Ptr, Matrix4x4Ptr);
 
-				Vector3Ptr
-				getColliderLinearVelocity(ConstColliderPtr, Vector3Ptr = nullptr) const;
+                Vector3Ptr
+                getColliderLinearVelocity(ConstColliderPtr, Vector3Ptr = nullptr) const;
 
-				void
-				setColliderLinearVelocity(ColliderPtr, Vector3Ptr);
+                void
+                setColliderLinearVelocity(ColliderPtr, Vector3Ptr);
 
-				Vector3Ptr
-				getColliderAngularVelocity(ConstColliderPtr, Vector3Ptr = nullptr) const;
+                Vector3Ptr
+                getColliderAngularVelocity(ConstColliderPtr, Vector3Ptr = nullptr) const;
 
-				void
-				setColliderAngularVelocity(ColliderPtr, Vector3Ptr);
+                void
+                setColliderAngularVelocity(ColliderPtr, Vector3Ptr);
 
-				void
-				applyImpulse(ColliderPtr, Vector3Ptr impulse, bool isImpulseRelative, Vector3Ptr relPosition = nullptr);
+                void
+                applyImpulse(ColliderPtr, Vector3Ptr impulse, bool isImpulseRelative, Vector3Ptr relPosition = nullptr);
 
-			private:
-				PhysicsWorld();
+            private:
+                PhysicsWorld();
 
-				void 
-				initialize();
+                void
+                initialize();
 
-				void 
-				targetAddedHandler(AbsCmp, NodePtr);
+                void
+                targetAddedHandler(AbsCmp, NodePtr);
 
-				void 
-				targetRemovedHandler(AbsCmp, NodePtr);
+                void
+                targetRemovedHandler(AbsCmp, NodePtr);
 
-				void
-				addedHandler(NodePtr, NodePtr, NodePtr);
+                void
+                addedHandler(NodePtr, NodePtr, NodePtr);
 
-				void
-				frameBeginHandler(std::shared_ptr<SceneManager>, float time, float deltaTime);
+                void
+                frameBeginHandler(std::shared_ptr<SceneManager>, float time, float deltaTime);
 
-				void
-				frameEndHandler(std::shared_ptr<SceneManager>, float time, float deltaTime);
+                void
+                frameEndHandler(std::shared_ptr<SceneManager>, float time, float deltaTime);
 
-				void
-				updateColliders();
+                void
+                updateColliders();
 
-				void
-				notifyCollisions();
+                void
+                notifyCollisions();
 
-				void
-				componentAddedHandler(NodePtr, NodePtr, AbsCmp);
+                void
+                componentAddedHandler(NodePtr, NodePtr, AbsCmp);
 
-				void
-				setSceneManager(std::shared_ptr<SceneManager>);
+                void
+                setSceneManager(std::shared_ptr<SceneManager>);
 
                 void
                 updateCollisionFilter(ColliderPtr);
 
-				void
-				updateColliderProperties(ColliderPtr);
+                void
+                updateColliderProperties(ColliderPtr);
 
-				void
-				updateColliderLayoutMask(ColliderPtr);
+                void
+                updateColliderLayoutMask(ColliderPtr);
 
-				void
-				updateColliderNodeProperties(ColliderPtr);
+                void
+                updateColliderNodeProperties(ColliderPtr);
 
-			private:
-				class BulletCollider
-				{
-				public:
-					typedef std::shared_ptr<BulletCollider> Ptr;
+            private:
+                class BulletCollider
+                {
+                public:
+                    typedef std::shared_ptr<BulletCollider> Ptr;
 
-				private:
-					typedef std::shared_ptr<AbstractPhysicsShape>	AbsShapePtr;
-					typedef std::shared_ptr<SphereShape>			SphereShapePtr;
-					typedef std::shared_ptr<BoxShape>				BoxShapePtr;
-					typedef std::shared_ptr<ConeShape>				ConeShapePtr;
-					typedef std::shared_ptr<CylinderShape>			CylinderShapePtr;
+                private:
+                    typedef std::shared_ptr<AbstractPhysicsShape>    AbsShapePtr;
+                    typedef std::shared_ptr<SphereShape>            SphereShapePtr;
+                    typedef std::shared_ptr<BoxShape>                BoxShapePtr;
+                    typedef std::shared_ptr<ConeShape>                ConeShapePtr;
+                    typedef std::shared_ptr<CylinderShape>            CylinderShapePtr;
 
-					typedef std::shared_ptr<btCollisionShape>		btCollisionShapePtr;
-					typedef std::shared_ptr<btMotionState>			btMotionStatePtr;
-					typedef std::shared_ptr<btDefaultMotionState>	btDefaultMotionStatePtr;
-					typedef std::shared_ptr<btCollisionObject>		btCollisionObjectPtr;
-					typedef std::shared_ptr<btRigidBody>			btRigidBodyPtr;
+                    typedef std::shared_ptr<btCollisionShape>        btCollisionShapePtr;
+                    typedef std::shared_ptr<btMotionState>            btMotionStatePtr;
+                    typedef std::shared_ptr<btDefaultMotionState>    btDefaultMotionStatePtr;
+                    typedef std::shared_ptr<btCollisionObject>        btCollisionObjectPtr;
+                    typedef std::shared_ptr<btRigidBody>            btRigidBodyPtr;
 
-				private:
-					btCollisionShapePtr		_bulletCollisionShape;
-					btMotionStatePtr		_bulletMotionState;
-					btCollisionObjectPtr	_bulletCollisionObject;
+                private:
+                    btCollisionShapePtr        _bulletCollisionShape;
+                    btMotionStatePtr        _bulletMotionState;
+                    btCollisionObjectPtr    _bulletCollisionObject;
 
-				public:
-					inline static
-					Ptr
-					create(ColliderPtr collider)
-					{
-						Ptr ptr = std::shared_ptr<BulletCollider>(new BulletCollider());
+                public:
+                    inline static
+                    Ptr
+                    create(ColliderPtr collider)
+                    {
+                        Ptr ptr = std::shared_ptr<BulletCollider>(new BulletCollider());
 
-						ptr->initialize(collider);
-					
-						return ptr;
-					}
+                        ptr->initialize(collider);
 
-					btRigidBodyPtr
-					rigidBody() const;
+                        return ptr;
+                    }
 
-				private:
-					BulletCollider();
+                    btRigidBodyPtr
+                    rigidBody() const;
 
-					void
-					initialize(ColliderPtr);
+                private:
+                    BulletCollider();
 
-					btCollisionShapePtr
-					initializeCollisionShape(AbsShapePtr) const;
+                    void
+                    initialize(ColliderPtr);
 
-					btCollisionShapePtr
-					initializeSphereShape(SphereShapePtr) const;
+                    btCollisionShapePtr
+                    initializeCollisionShape(AbsShapePtr) const;
 
-					btCollisionShapePtr
-					initializeBoxShape(BoxShapePtr) const;
+                    btCollisionShapePtr
+                    initializeSphereShape(SphereShapePtr) const;
 
-					btCollisionShapePtr
-					initializeConeShape(ConeShapePtr) const;
+                    btCollisionShapePtr
+                    initializeBoxShape(BoxShapePtr) const;
 
-					btCollisionShapePtr
-					initializeCylinderShape(CylinderShapePtr) const;
+                    btCollisionShapePtr
+                    initializeConeShape(ConeShapePtr) const;
 
-					btMotionStatePtr
-					initializeMotionState(ColliderPtr) const;
+                    btCollisionShapePtr
+                    initializeCylinderShape(CylinderShapePtr) const;
 
-					void
-					initializeCollisionObject(ColliderPtr, btCollisionShapePtr, btMotionStatePtr);
-				};
-			};
-		}
-	}
+                    btMotionStatePtr
+                    initializeMotionState(ColliderPtr) const;
+
+                    void
+                    initializeCollisionObject(ColliderPtr, btCollisionShapePtr, btMotionStatePtr);
+                };
+            };
+        }
+    }
 }

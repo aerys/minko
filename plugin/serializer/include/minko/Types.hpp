@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -23,50 +23,50 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace serialize
-	{
-		enum ComponentId
-		{
-			TRANSFORM			= 100,
-			PROJECTION_CAMERA	= 101,
-			AMBIENT_LIGHT		= 102,
-			DIRECTIONAL_LIGHT	= 103,
-			POINT_LIGHT			= 104,
-			SPOT_LIGHT			= 105,
-			SURFACE				= 106,
-			RENDERER			= 107,
-			BOUNDINGBOX			= 108,
-			ANIMATION			= 109,
-			SKINNING			= 110,
+    namespace serialize
+    {
+        enum ComponentId
+        {
+            TRANSFORM            = 100,
+            PROJECTION_CAMERA    = 101,
+            AMBIENT_LIGHT        = 102,
+            DIRECTIONAL_LIGHT    = 103,
+            POINT_LIGHT            = 104,
+            SPOT_LIGHT            = 105,
+            SURFACE                = 106,
+            RENDERER            = 107,
+            BOUNDINGBOX            = 108,
+            ANIMATION            = 109,
+            SKINNING            = 110,
             PARTICLES           = 60
-		};
+        };
 
-		enum MinkoTypes
-		{
-			MATRIX4X4		= 0,
-			VECTOR4			= 3,
-			VECTOR3			= 1,
-			VECTOR2			= 2,
-			INT				= 4,
-			TEXTURE			= 5,
-			FLOAT			= 6,
-			BOOL			= 7,
-			BLENDING		= 8,
-			TRIANGLECULLING = 9,
-			ENVMAPTYPE		= 10
-		};
+        enum MinkoTypes
+        {
+            MATRIX4X4        = 0,
+            VECTOR4            = 3,
+            VECTOR3            = 1,
+            VECTOR2            = 2,
+            INT                = 4,
+            TEXTURE            = 5,
+            FLOAT            = 6,
+            BOOL            = 7,
+            BLENDING        = 8,
+            TRIANGLECULLING = 9,
+            ENVMAPTYPE        = 10
+        };
 
-		enum AssetType
-		{
-			GEOMETRY_ASSET              = 0,
-			EMBED_GEOMETRY_ASSET        = 10,
-			MATERIAL_ASSET              = 1,
-			EMBED_MATERIAL_ASSET        = 11,
-			TEXTURE_ASSET               = 2,
+        enum AssetType
+        {
+            GEOMETRY_ASSET              = 0,
+            EMBED_GEOMETRY_ASSET        = 10,
+            MATERIAL_ASSET              = 1,
+            EMBED_MATERIAL_ASSET        = 11,
+            TEXTURE_ASSET               = 2,
             EMBED_TEXTURE_ASSET         = 120,
-			EFFECT_ASSET                = 3,
-			EMBED_EFFECT_ASSET          = 13
-		};
+            EFFECT_ASSET                = 3,
+            EMBED_EFFECT_ASSET          = 13
+        };
 
         enum class ImageFormat
         {
@@ -116,5 +116,5 @@ namespace minko
 
             return imageFormatToExtensionPairIt->first;
         }
-	}
+    }
 }

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -34,33 +34,33 @@ namespace minko
             typedef std::shared_ptr<Loader>        Ptr;
 
         private:
-            typedef std::shared_ptr<AbstractParser>											AbsParserPtr;
-			typedef std::unordered_map<std::string, std::shared_ptr<Options>>				FilenameToOptions;
-			typedef std::unordered_map<std::string, std::shared_ptr<File>>					FilenameToFile;
-			typedef std::unordered_map<std::shared_ptr<AbstractProtocol>, float>			ProtocolToProgress;
-			typedef std::vector<Signal<std::shared_ptr<AbstractProtocol>>::Slot>			ProtocolSlots;
-			typedef std::vector<Signal<std::shared_ptr<AbstractProtocol>, float>::Slot>		ProtocolProgressSlots;
-            typedef std::unordered_map<AbsParserPtr, Signal<AbsParserPtr>::Slot>			ParserSlots;
+            typedef std::shared_ptr<AbstractParser>                                            AbsParserPtr;
+            typedef std::unordered_map<std::string, std::shared_ptr<Options>>                FilenameToOptions;
+            typedef std::unordered_map<std::string, std::shared_ptr<File>>                    FilenameToFile;
+            typedef std::unordered_map<std::shared_ptr<AbstractProtocol>, float>            ProtocolToProgress;
+            typedef std::vector<Signal<std::shared_ptr<AbstractProtocol>>::Slot>            ProtocolSlots;
+            typedef std::vector<Signal<std::shared_ptr<AbstractProtocol>, float>::Slot>        ProtocolProgressSlots;
+            typedef std::unordered_map<AbsParserPtr, Signal<AbsParserPtr>::Slot>            ParserSlots;
 
         protected:
             std::shared_ptr<Options>                            _options;
 
-            std::list<std::string>	                            _filesQueue;
-            std::list<std::string>	                            _loading;
-            FilenameToOptions	                                _filenameToOptions;
+            std::list<std::string>                                _filesQueue;
+            std::list<std::string>                                _loading;
+            FilenameToOptions                                    _filenameToOptions;
             FilenameToFile                                      _files;
 
             std::shared_ptr<Signal<Ptr, float>>                 _progress;
             std::shared_ptr<Signal<Ptr>>                        _complete;
             std::shared_ptr<Signal<Ptr, const ParserError&>>    _error;
 
-			ProtocolSlots                                       _protocolSlots;
-			ProtocolProgressSlots                               _protocolProgressSlots;
+            ProtocolSlots                                       _protocolSlots;
+            ProtocolProgressSlots                               _protocolProgressSlots;
             ParserSlots                                         _parserSlots;
 
-			ProtocolToProgress					                _protocolToProgress;
+            ProtocolToProgress                                    _protocolToProgress;
 
-			int									                _numFiles;
+            int                                                    _numFiles;
 
         public:
             inline static
@@ -80,7 +80,7 @@ namespace minko
 
                 return copy;
             }
-            
+
             inline static
             Ptr
             create(Ptr loader)
@@ -128,30 +128,30 @@ namespace minko
             }
 
             inline
-			const std::list<std::string>&
-			filesQueue()
-			{
-				return _filesQueue;
-			}
-
-			inline
-			bool
-			loading() const
-			{
-				return _filesQueue.size() > 0 || _loading.size() > 0;
-			}
-
-            Ptr
-			queue(const std::string& filename);
-
-			Ptr
-			queue(const std::string& filename, std::shared_ptr<Options> options);
-
-			void
-			load();
+            const std::list<std::string>&
+            filesQueue()
+            {
+                return _filesQueue;
+            }
 
             inline
-            const FilenameToFile& 
+            bool
+            loading() const
+            {
+                return _filesQueue.size() > 0 || _loading.size() > 0;
+            }
+
+            Ptr
+            queue(const std::string& filename);
+
+            Ptr
+            queue(const std::string& filename, std::shared_ptr<Options> options);
+
+            void
+            load();
+
+            inline
+            const FilenameToFile&
             files()
             {
                 return _files;
@@ -163,14 +163,14 @@ namespace minko
             void
             protocolErrorHandler(std::shared_ptr<AbstractProtocol> protocol);
 
-			void
-			protocolCompleteHandler(std::shared_ptr<AbstractProtocol> protocol);
-
-			void
-			protocolProgressHandler(std::shared_ptr<AbstractProtocol> protocol, float);
+            void
+            protocolCompleteHandler(std::shared_ptr<AbstractProtocol> protocol);
 
             void
-			finalize();
+            protocolProgressHandler(std::shared_ptr<AbstractProtocol> protocol, float);
+
+            void
+            finalize();
 
             bool
             processData(const std::string&                 filename,

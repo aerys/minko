@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -26,86 +26,86 @@ using namespace minko::component;
 using namespace minko::math;
 
 #define POST_PROCESSING 0
-#define WINDOW_WIDTH  	800
-#define WINDOW_HEIGHT 	600
+#define WINDOW_WIDTH      800
+#define WINDOW_HEIGHT     600
 
 scene::Node::Ptr camera = nullptr;
 
 int main(int argc, char** argv)
 {
-	auto canvas		= Canvas::create("Minko Example - Frustum", WINDOW_WIDTH, WINDOW_HEIGHT);
+    auto canvas        = Canvas::create("Minko Example - Frustum", WINDOW_WIDTH, WINDOW_HEIGHT);
 
-	canvas->context()->errorsEnabled(true);
+    canvas->context()->errorsEnabled(true);
 
-	const clock_t startTime	= clock();
+    const clock_t startTime    = clock();
 
-	auto sceneManager		= SceneManager::create(canvas->context());
-	auto root				= scene::Node::create("root")->addComponent(sceneManager);
+    auto sceneManager        = SceneManager::create(canvas->context());
+    auto root                = scene::Node::create("root")->addComponent(sceneManager);
 
-	auto quadTreeRoot		= scene::Node::create("quadTreeRoot");
-	auto cubeGroup			= scene::Node::create("cubeGroup");
+    auto quadTreeRoot        = scene::Node::create("quadTreeRoot");
+    auto cubeGroup            = scene::Node::create("cubeGroup");
 
-	cubeGroup->addComponent(component::Transform::create());
+    cubeGroup->addComponent(component::Transform::create());
 
-	// setup assets
-	sceneManager->assets()->loader()->options()->generateMipmaps(true);
-	sceneManager->assets()->loader()->options()
+    // setup assets
+    sceneManager->assets()->loader()->options()->generateMipmaps(true);
+    sceneManager->assets()->loader()->options()
                 ->registerParser<file::PNGParser>("png");
 
         sceneManager->assets()->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()));
         sceneManager->assets()->loader()->queue("effect/Basic.effect");
 
 
-	// camera init
-	camera = scene::Node::create("camera")
-		->addComponent(Renderer::create())
-		->addComponent(PerspectiveCamera::create((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT))
-		->addComponent(Culling::create(math::Frustum::create(), "camera.worldToScreenMatrix"))
-		->addComponent(Transform::create(
-			Matrix4x4::create()->lookAt(
-				Vector3::create(0.f, 0.f),
-				Vector3::create(rand() % 200 - 100.f, rand() % 200 - 100.f, rand() % 200 - 100.f))
-		));
+    // camera init
+    camera = scene::Node::create("camera")
+        ->addComponent(Renderer::create())
+        ->addComponent(PerspectiveCamera::create((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT))
+        ->addComponent(Culling::create(math::Frustum::create(), "camera.worldToScreenMatrix"))
+        ->addComponent(Transform::create(
+            Matrix4x4::create()->lookAt(
+                Vector3::create(0.f, 0.f),
+                Vector3::create(rand() % 200 - 100.f, rand() % 200 - 100.f, rand() % 200 - 100.f))
+        ));
 
-	root->addChild(camera);
+    root->addChild(camera);
 
-	auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, unsigned int width, unsigned int height)
-	{
-		camera->component<PerspectiveCamera>()->aspectRatio((float)width / (float)height);
-	});
+    auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, unsigned int width, unsigned int height)
+    {
+        camera->component<PerspectiveCamera>()->aspectRatio((float)width / (float)height);
+    });
 
-	auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr canvas, float time, float deltaTime)
-	{
-		camera->component<Transform>()->matrix()->lock()->appendRotationY(0.02f)->appendRotationZ(-0.014f)->unlock();
-		sceneManager->nextFrame(time, deltaTime);
-		std::cout << "Num drawCalls : " << camera->component<Renderer>()->numDrawCalls() << std::endl;
-	});
+    auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr canvas, float time, float deltaTime)
+    {
+        camera->component<Transform>()->matrix()->lock()->appendRotationY(0.02f)->appendRotationZ(-0.014f)->unlock();
+        sceneManager->nextFrame(time, deltaTime);
+        std::cout << "Num drawCalls : " << camera->component<Renderer>()->numDrawCalls() << std::endl;
+    });
 
-	auto _ = sceneManager->assets()->loader()->complete()->connect([=](file::Loader::Ptr loader)
-	{
-		std::shared_ptr<material::BasicMaterial> material = material::BasicMaterial::create()->diffuseColor(0xFF00FFFF);
+    auto _ = sceneManager->assets()->loader()->complete()->connect([=](file::Loader::Ptr loader)
+    {
+        std::shared_ptr<material::BasicMaterial> material = material::BasicMaterial::create()->diffuseColor(0xFF00FFFF);
 
-		for (uint i = 0; i < 25; ++i)
-		{
-			auto mesh = scene::Node::create("mesh")
-				->addComponent(Transform::create(math::Matrix4x4::create()
-					->appendTranslation(rand() % 200 - 100.f, rand() % 200 - 100.f, rand() % 200 - 100.f)
-					))
-				->addComponent(Surface::create(
-					sceneManager->assets()->geometry("cube"),
-					material,
-					sceneManager->assets()->effect("effect/Basic.effect")
-				));
-			mesh->layouts(mesh->layouts() | scene::Layout::Group::CULLING);
+        for (uint i = 0; i < 25; ++i)
+        {
+            auto mesh = scene::Node::create("mesh")
+                ->addComponent(Transform::create(math::Matrix4x4::create()
+                    ->appendTranslation(rand() % 200 - 100.f, rand() % 200 - 100.f, rand() % 200 - 100.f)
+                    ))
+                ->addComponent(Surface::create(
+                    sceneManager->assets()->geometry("cube"),
+                    material,
+                    sceneManager->assets()->effect("effect/Basic.effect")
+                ));
+            mesh->layouts(mesh->layouts() | scene::Layout::Group::CULLING);
 
-			cubeGroup->addChild(mesh);
-		}
-		root->addChild(cubeGroup);
-	});
+            cubeGroup->addChild(mesh);
+        }
+        root->addChild(cubeGroup);
+    });
 
-	sceneManager->assets()->loader()->load();
+    sceneManager->assets()->loader()->load();
 
-	canvas->run();
+    canvas->run();
 
-	exit(EXIT_SUCCESS);
+    exit(EXIT_SUCCESS);
 }

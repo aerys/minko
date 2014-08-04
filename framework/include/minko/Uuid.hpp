@@ -21,40 +21,40 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	class Uuid
-	{
-	private:
-		static bool			_randSeeded;
+    class Uuid
+    {
+    private:
+        static bool            _randSeeded;
 
-	public:
+    public:
 
-		static
-		std::string
-		getUuid()
-		{
-			return s4() + s4() + "-" + s4() + "-" + s4() + "-" + s4() + "-" + s4() + s4() + s4();
-		}
+        static
+        std::string
+        getUuid()
+        {
+            return s4() + s4() + "-" + s4() + "-" + s4() + "-" + s4() + "-" + s4() + s4() + s4();
+        }
 
-	private:
+    private:
 
-		static
-		std::string
-		s4()
-		{
-			if (!_randSeeded)
-			{
-				std::srand(std::time(0));
-				_randSeeded = true;
-			}
+        static
+        std::string
+        s4()
+        {
+            if (!_randSeeded)
+            {
+                std::srand(std::time(0));
+                _randSeeded = true;
+            }
 
-			int rand = std::rand();
+            int rand = std::rand();
 
-			std::ostringstream os;
-			os << std::hex << rand;
+            std::ostringstream os;
+            os << std::hex << rand;
 
-			return os.str().substr(0, 4);
-		}
-	};
+            return os.str().substr(0, 4);
+        }
+    };
 }
 
 bool minko::Uuid::_randSeeded = false;

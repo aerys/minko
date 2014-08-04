@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -24,208 +24,208 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace math
-	{
-		class Vector2 :
-			public std::enable_shared_from_this<Vector2>,
-			public Convertible<Vector2>
-		{
-		public:
-			typedef std::shared_ptr<Vector2>	Ptr;
+    namespace math
+    {
+        class Vector2 :
+            public std::enable_shared_from_this<Vector2>,
+            public Convertible<Vector2>
+        {
+        public:
+            typedef std::shared_ptr<Vector2>    Ptr;
 
-		protected:
-			float _x;
-			float _y;
+        protected:
+            float _x;
+            float _y;
 
-		public:
-			inline static
-			Ptr
-			create(float x = 0.f, float y = 0.f)
-			{
-				return std::shared_ptr<Vector2>(new Vector2(x, y));
-			}
+        public:
+            inline static
+            Ptr
+            create(float x = 0.f, float y = 0.f)
+            {
+                return std::shared_ptr<Vector2>(new Vector2(x, y));
+            }
 
-			inline static
-			Ptr
-			create(Ptr value)
-			{
-				return create(value->x(), value->y());
-			}
+            inline static
+            Ptr
+            create(Ptr value)
+            {
+                return create(value->x(), value->y());
+            }
 
-			inline static
-			Ptr
-			create(float* data)
-			{
-				return create(*data, *(data + 1));
-			}
+            inline static
+            Ptr
+            create(float* data)
+            {
+                return create(*data, *(data + 1));
+            }
 
-			inline
-			float
-			x()
-			{
-				return _x;
-			}
+            inline
+            float
+            x()
+            {
+                return _x;
+            }
 
-			inline
-			float
-			y()
-			{
-				return _y;
-			}
+            inline
+            float
+            y()
+            {
+                return _y;
+            }
 
-			inline
-			void
-			x(float x)
-			{
-				_x = x;
-			}
+            inline
+            void
+            x(float x)
+            {
+                _x = x;
+            }
 
-			inline
-			void
-			y(float y)
-			{
-				_y = y;
-			}
+            inline
+            void
+            y(float y)
+            {
+                _y = y;
+            }
 
-           	inline
-			Ptr
-			copyFrom(Ptr value)
-			{
-				return setTo(value->_x, value->_y);
-			}
+               inline
+            Ptr
+            copyFrom(Ptr value)
+            {
+                return setTo(value->_x, value->_y);
+            }
 
-			inline
-			Ptr
-			copyFrom(float* data)
-			{
-				return setTo(*data, *(data + 1));
-			}
+            inline
+            Ptr
+            copyFrom(float* data)
+            {
+                return setTo(*data, *(data + 1));
+            }
 
-			inline
-			Ptr
-			setTo(float x, float y)
-			{
-				_x = x;
-				_y = y;
+            inline
+            Ptr
+            setTo(float x, float y)
+            {
+                _x = x;
+                _y = y;
 
-				return std::static_pointer_cast<Vector2>(shared_from_this());
-			}
+                return std::static_pointer_cast<Vector2>(shared_from_this());
+            }
 
-			std::string
-			toString()
-			{
-				std::stringstream stream;
-				
-				stream << "(" << _x << ", " << _y << ")";
+            std::string
+            toString()
+            {
+                std::stringstream stream;
 
-				return stream.str();
-			}
+                stream << "(" << _x << ", " << _y << ")";
 
-			Ptr
-			normalize()
-			{
-				float l = sqrtf(_x * _x + _y * _y);
-				
-				if (l != 0.)
-				{
-					_x /= l;
-					_y /= l;
-				}
+                return stream.str();
+            }
 
-				return shared_from_this();
-			}
+            Ptr
+            normalize()
+            {
+                float l = sqrtf(_x * _x + _y * _y);
 
-			inline
-			Ptr
-			cross(Ptr value)
-			{
-				float x = _y * value->_x - _x * value->_y;
-				float y = _x * value->_y - _y * value->_x;
+                if (l != 0.)
+                {
+                    _x /= l;
+                    _y /= l;
+                }
 
-				_x = x;
-				_y = y;
+                return shared_from_this();
+            }
 
-				return std::static_pointer_cast<Vector2>(shared_from_this());
-			}
+            inline
+            Ptr
+            cross(Ptr value)
+            {
+                float x = _y * value->_x - _x * value->_y;
+                float y = _x * value->_y - _y * value->_x;
 
-			inline
-			float
-			dot(Ptr value) const
-			{
-				return _x * value->_x + _y * value->_y;
-			}
+                _x = x;
+                _y = y;
 
-			inline
-			Ptr
-			operator-()
-			{
-				return create(-_x, -_y);
-			}
+                return std::static_pointer_cast<Vector2>(shared_from_this());
+            }
 
-			inline
-			Ptr
-			operator-(Ptr value)
-			{
-				return create(_x - value->_x, _y - value->_y);
-			}
+            inline
+            float
+            dot(Ptr value) const
+            {
+                return _x * value->_x + _y * value->_y;
+            }
 
-			inline
-			Ptr
-			operator+(Ptr value)
-			{
-				return create(_x + value->_x, _y + value->_y);
-			}
+            inline
+            Ptr
+            operator-()
+            {
+                return create(-_x, -_y);
+            }
 
-			inline
-			Ptr
-			operator+=(Ptr value)
-			{
-				_x += value->_x;
-				_y += value->_y;
+            inline
+            Ptr
+            operator-(Ptr value)
+            {
+                return create(_x - value->_x, _y - value->_y);
+            }
 
-				return std::static_pointer_cast<Vector2>(shared_from_this());
-			}
+            inline
+            Ptr
+            operator+(Ptr value)
+            {
+                return create(_x + value->_x, _y + value->_y);
+            }
 
-			inline
-			Ptr
-			operator-=(Ptr value)
-			{
-				_x -= value->_x;
-				_y -= value->_y;
+            inline
+            Ptr
+            operator+=(Ptr value)
+            {
+                _x += value->_x;
+                _y += value->_y;
 
-				return std::static_pointer_cast<Vector2>(shared_from_this());
-			}
+                return std::static_pointer_cast<Vector2>(shared_from_this());
+            }
 
-			inline
-			Ptr
-			lerp(Ptr target, float ratio)
-			{
-				return setTo(_x + (target->_x - _x) * ratio, _y + (target->_y - _y) * ratio);
-			}
+            inline
+            Ptr
+            operator-=(Ptr value)
+            {
+                _x -= value->_x;
+                _y -= value->_y;
 
-			inline
-			Ptr
-			scaleBy(float scale)
-			{
-				_x *= scale;
-				_y *= scale;
+                return std::static_pointer_cast<Vector2>(shared_from_this());
+            }
 
-				return std::static_pointer_cast<Vector2>(shared_from_this());
-			}
-			
-			bool
-			equals(std::shared_ptr<Vector2> vect2)
-			{
-				return vect2->x() == _x && 
-					   vect2->y() == _y;
-			}
+            inline
+            Ptr
+            lerp(Ptr target, float ratio)
+            {
+                return setTo(_x + (target->_x - _x) * ratio, _y + (target->_y - _y) * ratio);
+            }
 
-		protected:
-			Vector2(float x, float y) :
-				_x(x),
-				_y(y)
-			{
-			}
-		};
-	}
+            inline
+            Ptr
+            scaleBy(float scale)
+            {
+                _x *= scale;
+                _y *= scale;
+
+                return std::static_pointer_cast<Vector2>(shared_from_this());
+            }
+
+            bool
+            equals(std::shared_ptr<Vector2> vect2)
+            {
+                return vect2->x() == _x &&
+                       vect2->y() == _y;
+            }
+
+        protected:
+            Vector2(float x, float y) :
+                _x(x),
+                _y(y)
+            {
+            }
+        };
+    }
 }

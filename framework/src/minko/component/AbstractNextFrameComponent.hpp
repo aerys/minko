@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -26,109 +26,109 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace component
-	{
-		class AbstractNextFrameComponent :
-			public AbstractComponent
-		{
-		public:
-			typedef std::shared_ptr<AbstractNextFrameComponent>	Ptr;
+    namespace component
+    {
+        class AbstractNextFrameComponent :
+            public AbstractComponent
+        {
+        public:
+            typedef std::shared_ptr<AbstractNextFrameComponent>    Ptr;
 
-		private:
-			typedef std::shared_ptr<render::Texture>						TexturePtr;
-			typedef std::shared_ptr<scene::Node>							NodePtr;
-			typedef std::shared_ptr<AbstractComponent>						AbsCmpPtr;
-			typedef std::shared_ptr<SceneManager>							SceneMgrPtr;
-			typedef std::function<void(Ptr, SceneMgrPtr)>					FrameCallback;
-			typedef std::function<void(Ptr, SceneMgrPtr)>					CullingCallback;
-			typedef std::function<void(Ptr, SceneMgrPtr, uint, TexturePtr)>	RenderCallback;
+        private:
+            typedef std::shared_ptr<render::Texture>                        TexturePtr;
+            typedef std::shared_ptr<scene::Node>                            NodePtr;
+            typedef std::shared_ptr<AbstractComponent>                        AbsCmpPtr;
+            typedef std::shared_ptr<SceneManager>                            SceneMgrPtr;
+            typedef std::function<void(Ptr, SceneMgrPtr)>                    FrameCallback;
+            typedef std::function<void(Ptr, SceneMgrPtr)>                    CullingCallback;
+            typedef std::function<void(Ptr, SceneMgrPtr, uint, TexturePtr)>    RenderCallback;
 
-		private:
-			Signal<Ptr>::Ptr							_nextFrameBegin;
-			Signal<Ptr>::Ptr							_nextFrameEnd;
-			Signal<Ptr>::Ptr							_nextCullingBegin;
-			Signal<Ptr>::Ptr							_nextCullingEnd;
-			Signal<Ptr>::Ptr							_nextRenderBegin;
-			Signal<Ptr>::Ptr							_nextRenderEnd;
+        private:
+            Signal<Ptr>::Ptr                            _nextFrameBegin;
+            Signal<Ptr>::Ptr                            _nextFrameEnd;
+            Signal<Ptr>::Ptr                            _nextCullingBegin;
+            Signal<Ptr>::Ptr                            _nextCullingEnd;
+            Signal<Ptr>::Ptr                            _nextRenderBegin;
+            Signal<Ptr>::Ptr                            _nextRenderEnd;
 
-			std::list<Signal<Ptr>::Slot>				_nextFrameBeginSlots;
-			std::list<Signal<Ptr>::Slot>				_nextFrameEndSlots;
-			std::list<Signal<Ptr>::Slot>				_nextCullingBeginSlots;
-			std::list<Signal<Ptr>::Slot>				_nextCullingEndSlots;
-			std::list<Signal<Ptr>::Slot>				_nextRenderBeginSlots;
-			std::list<Signal<Ptr>::Slot>				_nextRenderEndSlots;
+            std::list<Signal<Ptr>::Slot>                _nextFrameBeginSlots;
+            std::list<Signal<Ptr>::Slot>                _nextFrameEndSlots;
+            std::list<Signal<Ptr>::Slot>                _nextCullingBeginSlots;
+            std::list<Signal<Ptr>::Slot>                _nextCullingEndSlots;
+            std::list<Signal<Ptr>::Slot>                _nextRenderBeginSlots;
+            std::list<Signal<Ptr>::Slot>                _nextRenderEndSlots;
 
-			Signal<AbsCmpPtr, NodePtr>::Slot			_targetAddedSlot;
-			Signal<AbsCmpPtr, NodePtr>::Slot			_targetRemovedSlot;
-			Signal<NodePtr, NodePtr, AbsCmpPtr>::Slot	_componentAddedSlot;
-			Signal<NodePtr, NodePtr, AbsCmpPtr>::Slot	_componentRemovedSlot;
+            Signal<AbsCmpPtr, NodePtr>::Slot            _targetAddedSlot;
+            Signal<AbsCmpPtr, NodePtr>::Slot            _targetRemovedSlot;
+            Signal<NodePtr, NodePtr, AbsCmpPtr>::Slot    _componentAddedSlot;
+            Signal<NodePtr, NodePtr, AbsCmpPtr>::Slot    _componentRemovedSlot;
 
-		protected:
-			virtual
-			void
-			initialize();
+        protected:
+            virtual
+            void
+            initialize();
 
-			virtual
-			void
-			targetAddedHandler(AbsCmpPtr cmp, NodePtr target);
+            virtual
+            void
+            targetAddedHandler(AbsCmpPtr cmp, NodePtr target);
 
-			virtual
-			void
-			targetRemovedHandler(AbsCmpPtr cmp, NodePtr target);
+            virtual
+            void
+            targetRemovedHandler(AbsCmpPtr cmp, NodePtr target);
 
-			virtual
-			void
-			componentAddedHandler(NodePtr node, NodePtr target, AbsCmpPtr cmp);
+            virtual
+            void
+            componentAddedHandler(NodePtr node, NodePtr target, AbsCmpPtr cmp);
 
-			virtual
-			void
-			componentRemovedHandler(NodePtr node, NodePtr target, AbsCmpPtr cmp);
+            virtual
+            void
+            componentRemovedHandler(NodePtr node, NodePtr target, AbsCmpPtr cmp);
 
-			inline
-			void
-			nextFrameBegin(std::function<void(Ptr)> f)
-			{
-				_nextFrameBeginSlots.push_front(_nextFrameBegin->connect(f));
-			}
+            inline
+            void
+            nextFrameBegin(std::function<void(Ptr)> f)
+            {
+                _nextFrameBeginSlots.push_front(_nextFrameBegin->connect(f));
+            }
 
-			inline
-			void
-			nextFrameEnd(std::function<void(Ptr)> f)
-			{
-				_nextFrameEndSlots.push_front(_nextFrameEnd->connect(f));
-			}
+            inline
+            void
+            nextFrameEnd(std::function<void(Ptr)> f)
+            {
+                _nextFrameEndSlots.push_front(_nextFrameEnd->connect(f));
+            }
 
-			inline
-			void
-			nextCullingBegin(std::function<void(Ptr)> f)
-			{
-				_nextCullingBeginSlots.push_front(_nextCullingBegin->connect(f));
-			}
+            inline
+            void
+            nextCullingBegin(std::function<void(Ptr)> f)
+            {
+                _nextCullingBeginSlots.push_front(_nextCullingBegin->connect(f));
+            }
 
-			inline
-			void
-			nextCullingEnd(std::function<void(Ptr)> f)
-			{
-				_nextCullingEndSlots.push_front(_nextCullingEnd->connect(f));
-			}
+            inline
+            void
+            nextCullingEnd(std::function<void(Ptr)> f)
+            {
+                _nextCullingEndSlots.push_front(_nextCullingEnd->connect(f));
+            }
 
-			inline
-			void
-			nextRenderBegin(std::function<void(Ptr)> f)
-			{
-				_nextRenderBeginSlots.push_front(_nextRenderBegin->connect(f));
-			}
+            inline
+            void
+            nextRenderBegin(std::function<void(Ptr)> f)
+            {
+                _nextRenderBeginSlots.push_front(_nextRenderBegin->connect(f));
+            }
 
-			inline
-			void
-			nextRenderEnd(std::function<void(Ptr)> f)
-			{
-				_nextRenderEndSlots.push_front(_nextRenderEnd->connect(f));
-			}
+            inline
+            void
+            nextRenderEnd(std::function<void(Ptr)> f)
+            {
+                _nextRenderEndSlots.push_front(_nextRenderEnd->connect(f));
+            }
 
-		private:
-			void
-			setSceneManager(std::shared_ptr<SceneManager> sceneManager);
-		};
-	}
+        private:
+            void
+            setSceneManager(std::shared_ptr<SceneManager> sceneManager);
+        };
+    }
 }

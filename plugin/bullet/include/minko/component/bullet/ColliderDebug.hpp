@@ -26,72 +26,72 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace component
-	{
-		namespace bullet
-		{
-			class ColliderDebug: 
-				public AbstractComponent
-			{
-			public:
-				typedef std::shared_ptr<ColliderDebug>				Ptr;
+    namespace component
+    {
+        namespace bullet
+        {
+            class ColliderDebug:
+                public AbstractComponent
+            {
+            public:
+                typedef std::shared_ptr<ColliderDebug>                Ptr;
 
-			private:
-				typedef std::shared_ptr<scene::Node>				NodePtr;
-				typedef std::shared_ptr<AbstractComponent>			AbsCmpPtr;
-				typedef std::shared_ptr<Collider>					ColliderPtr;
-				typedef std::shared_ptr<math::Matrix4x4>			Matrix4x4Ptr;
-				typedef std::shared_ptr<Surface>					SurfacePtr;
-				typedef std::shared_ptr<file::AssetLibrary>			AssetLibraryPtr;
+            private:
+                typedef std::shared_ptr<scene::Node>                NodePtr;
+                typedef std::shared_ptr<AbstractComponent>            AbsCmpPtr;
+                typedef std::shared_ptr<Collider>                    ColliderPtr;
+                typedef std::shared_ptr<math::Matrix4x4>            Matrix4x4Ptr;
+                typedef std::shared_ptr<Surface>                    SurfacePtr;
+                typedef std::shared_ptr<file::AssetLibrary>            AssetLibraryPtr;
 
-			private:
-				AssetLibraryPtr										_assets;
-				NodePtr												_node;
+            private:
+                AssetLibraryPtr                                        _assets;
+                NodePtr                                                _node;
 
-				Signal<ColliderPtr, Matrix4x4Ptr>::Slot				_physicsTransformChangedSlot;
+                Signal<ColliderPtr, Matrix4x4Ptr>::Slot                _physicsTransformChangedSlot;
 
-				Signal<AbsCmpPtr, NodePtr>::Slot					_targetAddedSlot;
-				Signal<AbsCmpPtr, NodePtr>::Slot					_targetRemovedSlot;
-				Signal<NodePtr, NodePtr, NodePtr>::Slot				_addedSlot;
-				Signal<NodePtr, NodePtr, NodePtr>::Slot				_removedSlot;
+                Signal<AbsCmpPtr, NodePtr>::Slot                    _targetAddedSlot;
+                Signal<AbsCmpPtr, NodePtr>::Slot                    _targetRemovedSlot;
+                Signal<NodePtr, NodePtr, NodePtr>::Slot                _addedSlot;
+                Signal<NodePtr, NodePtr, NodePtr>::Slot                _removedSlot;
 
-			public:
-				inline static
-				Ptr
-				create(AssetLibraryPtr assets)
-				{
-					Ptr ptr = std::shared_ptr<ColliderDebug>(new ColliderDebug(assets));
+            public:
+                inline static
+                Ptr
+                create(AssetLibraryPtr assets)
+                {
+                    Ptr ptr = std::shared_ptr<ColliderDebug>(new ColliderDebug(assets));
 
-					ptr->initialize();
+                    ptr->initialize();
 
-					return ptr;
-				}
+                    return ptr;
+                }
 
-			private:
-				ColliderDebug(AssetLibraryPtr);
+            private:
+                ColliderDebug(AssetLibraryPtr);
 
-				void
-				initialize();
+                void
+                initialize();
 
-				void
-				initializeDisplay();
+                void
+                initializeDisplay();
 
-				void
-				targetAddedHandler(AbsCmpPtr, NodePtr);
+                void
+                targetAddedHandler(AbsCmpPtr, NodePtr);
 
-				void
-				targetRemovedHandler(AbsCmpPtr, NodePtr);
+                void
+                targetRemovedHandler(AbsCmpPtr, NodePtr);
 
-				void
-				addedHandler(NodePtr, NodePtr, NodePtr);
+                void
+                addedHandler(NodePtr, NodePtr, NodePtr);
 
-				void
-				removedHandler(NodePtr, NodePtr, NodePtr);
+                void
+                removedHandler(NodePtr, NodePtr, NodePtr);
 
-				void
-				physicsTransformChangedHandler(ColliderPtr, Matrix4x4Ptr);
-			};
-		}
-	}
+                void
+                physicsTransformChangedHandler(ColliderPtr, Matrix4x4Ptr);
+            };
+        }
+    }
 }
 

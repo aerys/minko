@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -23,182 +23,182 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace data
-	{
+    namespace data
+    {
 
-		class HalfEdge
-		{
-		public :
-			typedef std::shared_ptr<HalfEdge>	HalfEdgePtr;
+        class HalfEdge
+        {
+        public :
+            typedef std::shared_ptr<HalfEdge>    HalfEdgePtr;
 
-		public:
-			inline static
-			HalfEdgePtr	create(unsigned int startNodeId,
-							   unsigned int endNodeId,
-							   unsigned int edgeId)
-			{
-				auto he = std::shared_ptr<HalfEdge>(new HalfEdge(startNodeId, endNodeId, edgeId));
+        public:
+            inline static
+            HalfEdgePtr    create(unsigned int startNodeId,
+                               unsigned int endNodeId,
+                               unsigned int edgeId)
+            {
+                auto he = std::shared_ptr<HalfEdge>(new HalfEdge(startNodeId, endNodeId, edgeId));
 
-				return he;
-			}
+                return he;
+            }
 
-		private:
-			unsigned int				_startNodeId;
-			unsigned int				_endNodeId;
-			unsigned int				_edgeId;
-			HalfEdgePtr					_next;
-			HalfEdgePtr					_prec;
-			HalfEdgePtr					_adjacent;
-			std::vector<HalfEdgePtr>	_face;
-			std::vector<HalfEdgePtr>	_firstReverseFace;
-			std::vector<HalfEdgePtr>	_secondReverseFace;
-			bool						_marked;
+        private:
+            unsigned int                _startNodeId;
+            unsigned int                _endNodeId;
+            unsigned int                _edgeId;
+            HalfEdgePtr                    _next;
+            HalfEdgePtr                    _prec;
+            HalfEdgePtr                    _adjacent;
+            std::vector<HalfEdgePtr>    _face;
+            std::vector<HalfEdgePtr>    _firstReverseFace;
+            std::vector<HalfEdgePtr>    _secondReverseFace;
+            bool                        _marked;
 
-		private :
-			HalfEdge(unsigned int startNodeId,
-					 unsigned int endNodeId,
-					 unsigned int edgeId);
+        private :
+            HalfEdge(unsigned int startNodeId,
+                     unsigned int endNodeId,
+                     unsigned int edgeId);
 
-		public:
-			bool			
-			indiceInEdge(unsigned int indice);
+        public:
+            bool
+            indiceInEdge(unsigned int indice);
 
-			bool
-			indiceInFace(unsigned int indice);
-			
-			unsigned int	
-			getThirdVertex();
+            bool
+            indiceInFace(unsigned int indice);
 
-			inline 
-			bool
-			marked() const
-			{
-				return _marked;
-			}
+            unsigned int
+            getThirdVertex();
 
-			inline 
-			unsigned int 
-			startNodeId() const
-			{
-				return _startNodeId;
-			}
+            inline
+            bool
+            marked() const
+            {
+                return _marked;
+            }
 
-			inline 
-			void 
-			marked(bool value)
-			{
-				_marked = value;
-			}
+            inline
+            unsigned int
+            startNodeId() const
+            {
+                return _startNodeId;
+            }
 
-			inline 
-			unsigned int 
-			endNodeId() const
-			{
-				return _endNodeId;
-			}
+            inline
+            void
+            marked(bool value)
+            {
+                _marked = value;
+            }
 
-			inline 
-			unsigned int 
-			edgeId() const
-			{
-				return _edgeId;
-			}
+            inline
+            unsigned int
+            endNodeId() const
+            {
+                return _endNodeId;
+            }
 
-			inline 
-			HalfEdgePtr 
-			next() const
-			{
-				return _next;
-			}
+            inline
+            unsigned int
+            edgeId() const
+            {
+                return _edgeId;
+            }
 
-			inline 
-			void 
-			next(HalfEdgePtr value)
-			{
-				_next = value;
-			}
+            inline
+            HalfEdgePtr
+            next() const
+            {
+                return _next;
+            }
 
-			inline 
-			HalfEdgePtr 
-			prec() const
-			{
-				return _prec;
-			}
+            inline
+            void
+            next(HalfEdgePtr value)
+            {
+                _next = value;
+            }
 
-			inline 
-			void 
-			prec(HalfEdgePtr value)
-			{
-				_prec = value;
-			}
+            inline
+            HalfEdgePtr
+            prec() const
+            {
+                return _prec;
+            }
 
-			inline 
-			HalfEdgePtr
-			adjacent() const
-			{
-				return _adjacent;
-			}
+            inline
+            void
+            prec(HalfEdgePtr value)
+            {
+                _prec = value;
+            }
 
-			inline 
-			void 
-			adjacent(HalfEdgePtr value)
-			{
-				_adjacent = value;
-			}
+            inline
+            HalfEdgePtr
+            adjacent() const
+            {
+                return _adjacent;
+            }
 
-			inline 
-			const std::vector<HalfEdgePtr>& 
-			face() const
-			{
-				return _face;
-			}
+            inline
+            void
+            adjacent(HalfEdgePtr value)
+            {
+                _adjacent = value;
+            }
 
-			inline 
-			std::vector<HalfEdgePtr>& 
-			face() 
-			{
-				return _face;
-			}
+            inline
+            const std::vector<HalfEdgePtr>&
+            face() const
+            {
+                return _face;
+            }
 
-			void 
-			setFace(HalfEdgePtr he1,
-					HalfEdgePtr he2,
-					HalfEdgePtr he3);
+            inline
+            std::vector<HalfEdgePtr>&
+            face()
+            {
+                return _face;
+            }
 
-			inline 
-			std::vector<HalfEdgePtr>& 
-			secondReverseFace() 
-			{
-				if (_secondReverseFace.size() == 0)
-				{
-					_secondReverseFace.push_back(_face[2]);
-					_secondReverseFace.push_back(_face[0]);
-					_secondReverseFace.push_back(_face[1]);
-				}
+            void
+            setFace(HalfEdgePtr he1,
+                    HalfEdgePtr he2,
+                    HalfEdgePtr he3);
 
-				return _secondReverseFace;
-			}
+            inline
+            std::vector<HalfEdgePtr>&
+            secondReverseFace()
+            {
+                if (_secondReverseFace.size() == 0)
+                {
+                    _secondReverseFace.push_back(_face[2]);
+                    _secondReverseFace.push_back(_face[0]);
+                    _secondReverseFace.push_back(_face[1]);
+                }
 
-			inline 
-			std::vector<HalfEdgePtr>& 
-			firstReverseFace() 
-			{
-				if (_firstReverseFace.size() == 0)
-				{
-					_firstReverseFace.push_back(_face[1]);
-					_firstReverseFace.push_back(_face[2]);
-					_firstReverseFace.push_back(_face[0]);
-				}
+                return _secondReverseFace;
+            }
 
-				return _firstReverseFace;
-			}
-		};
+            inline
+            std::vector<HalfEdgePtr>&
+            firstReverseFace()
+            {
+                if (_firstReverseFace.size() == 0)
+                {
+                    _firstReverseFace.push_back(_face[1]);
+                    _firstReverseFace.push_back(_face[2]);
+                    _firstReverseFace.push_back(_face[0]);
+                }
 
-		// debug
+                return _firstReverseFace;
+            }
+        };
 
-		std::ostream &operator<<(std::ostream &flux, const HalfEdge& halfEdge);
-		std::ostream &operator<<(std::ostream &flux, std::shared_ptr<HalfEdge> halfEdge);
+        // debug
 
-	}
+        std::ostream &operator<<(std::ostream &flux, const HalfEdge& halfEdge);
+        std::ostream &operator<<(std::ostream &flux, std::shared_ptr<HalfEdge> halfEdge);
+
+    }
 }
 

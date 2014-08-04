@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -29,15 +29,15 @@ using namespace minko;
 using namespace minko::component;
 
 MousePicking::MousePicking() :
-	AbstractComponent(scene::Layout::Mask::RAYCASTING_DEFAULT),
-	_move(MouseSignal::create()),
-	_over(MouseSignal::create()),
-	_out(MouseSignal::create()),
-	_rollOver(MouseSignal::create()),
-	_rollOut(MouseSignal::create()),
-	_leftButtonUp(MouseSignal::create()),
-	_leftButtonDown(MouseSignal::create()),
-	_previousRayOrigin(math::Vector3::create())
+    AbstractComponent(scene::Layout::Mask::RAYCASTING_DEFAULT),
+    _move(MouseSignal::create()),
+    _over(MouseSignal::create()),
+    _out(MouseSignal::create()),
+    _rollOver(MouseSignal::create()),
+    _rollOut(MouseSignal::create()),
+    _leftButtonUp(MouseSignal::create()),
+    _leftButtonDown(MouseSignal::create()),
+    _previousRayOrigin(math::Vector3::create())
 {
 
 }
@@ -45,62 +45,62 @@ MousePicking::MousePicking() :
 void
 MousePicking::initialize()
 {
-	/*
-	_targetAddedSlot = targetAdded()->connect([&](AbstractComponent::Ptr cmp, scene::Node::Ptr target)
-	{
+    /*
+    _targetAddedSlot = targetAdded()->connect([&](AbstractComponent::Ptr cmp, scene::Node::Ptr target)
+    {
 
-	});
+    });
 
-	_targetRemovedSlot = targetRemoved()->connect([&](AbstractComponent::Ptr cmp, scene::Node::Ptr target)
-	{
+    _targetRemovedSlot = targetRemoved()->connect([&](AbstractComponent::Ptr cmp, scene::Node::Ptr target)
+    {
 
-	});
-	*/
+    });
+    */
 }
 
 void
-MousePicking::pick(std::shared_ptr<math::Ray>	ray)
+MousePicking::pick(std::shared_ptr<math::Ray>    ray)
 {
-	MousePicking::HitList hits;
+    MousePicking::HitList hits;
 
-	auto descendants = scene::NodeSet::create(targets())
-		->descendants(true)
-		->where([&](scene::Node::Ptr node) 
-		{ 
-			return (node->layouts() & layoutMask()) != 0 
-				&&  node->hasComponent<BoundingBox>(); 
-		}
-	);
-	
-	std::unordered_map<scene::Node::Ptr, float> distance;
+    auto descendants = scene::NodeSet::create(targets())
+        ->descendants(true)
+        ->where([&](scene::Node::Ptr node)
+        {
+            return (node->layouts() & layoutMask()) != 0
+                &&  node->hasComponent<BoundingBox>();
+        }
+    );
 
-	for (auto& descendant : descendants->nodes())
-		for (auto& box : descendant->components<BoundingBox>())
-		{
-			auto distance = 0.f;
+    std::unordered_map<scene::Node::Ptr, float> distance;
 
-			if (box->shape()->cast(ray, distance))
-				hits.push_back(Hit(descendant, distance));
-		}
+    for (auto& descendant : descendants->nodes())
+        for (auto& box : descendant->components<BoundingBox>())
+        {
+            auto distance = 0.f;
 
-	hits.sort([&](Hit& a, Hit& b) { return a.second < b.second; });
+            if (box->shape()->cast(ray, distance))
+                hits.push_back(Hit(descendant, distance));
+        }
 
-	if (!hits.empty())
-	{
-		if (!_previousRayOrigin->equals(ray->origin()))
-		{
-			_move->execute(
-				std::static_pointer_cast<MousePicking>(shared_from_this()), 
-				hits, 
-				ray
-			);
-			_previousRayOrigin->copyFrom(ray->origin());
-		}
+    hits.sort([&](Hit& a, Hit& b) { return a.second < b.second; });
 
-		_over->execute(
-			std::static_pointer_cast<MousePicking>(shared_from_this()), 
-			hits, 
-			ray
-		);
-	}
+    if (!hits.empty())
+    {
+        if (!_previousRayOrigin->equals(ray->origin()))
+        {
+            _move->execute(
+                std::static_pointer_cast<MousePicking>(shared_from_this()),
+                hits,
+                ray
+            );
+            _previousRayOrigin->copyFrom(ray->origin());
+        }
+
+        _over->execute(
+            std::static_pointer_cast<MousePicking>(shared_from_this()),
+            hits,
+            ray
+        );
+    }
 }

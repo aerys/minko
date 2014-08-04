@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -24,31 +24,31 @@ using namespace minko;
 using namespace minko::particle;
 using namespace minko::particle::shape;
 
-Box::Box(float	width,
-		 float 	height,
-		 float	length, 
-		 bool 	limitToSides): 
+Box::Box(float    width,
+         float     height,
+         float    length,
+         bool     limitToSides):
       EmitterShape(),
       _width (width),
-	  _height (height),
-	  _length (length),
-	  _limitToSides (limitToSides)
+      _height (height),
+      _length (length),
+      _limitToSides (limitToSides)
 {}
 
 void
 Box::initPosition(ParticleData& particle) const
 {
-	if (_limitToSides)
-	{
-		particle.x = (tools::rand01() < 0.5f ? -_width : _width) * 0.5f;
-		particle.y = (tools::rand01() < 0.5f ? -_height : _height) * 0.5f;
-		particle.z = (tools::rand01() < 0.5f ? -_length : _length) * 0.5f;
-	}
-	else
-	{
-		particle.x = (tools::rand01() - 0.5f) * _width;
-		particle.y = (tools::rand01() - 0.5f) * _height;
-		particle.z = (tools::rand01() - 0.5f) * _length;
-	}
+    if (_limitToSides)
+    {
+        particle.x = (tools::rand01() < 0.5f ? -_width : _width) * 0.5f;
+        particle.y = (tools::rand01() < 0.5f ? -_height : _height) * 0.5f;
+        particle.z = (tools::rand01() < 0.5f ? -_length : _length) * 0.5f;
+    }
+    else
+    {
+        particle.x = (tools::rand01() - 0.5f) * _width;
+        particle.y = (tools::rand01() - 0.5f) * _height;
+        particle.z = (tools::rand01() - 0.5f) * _length;
+    }
 }
 

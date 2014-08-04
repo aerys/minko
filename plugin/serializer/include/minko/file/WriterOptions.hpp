@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -45,45 +45,45 @@ namespace minko
 
         public:
             inline static
-			Ptr
-			create()
-			{
+            Ptr
+            create()
+            {
                 auto writerOptions = Ptr(new WriterOptions());
 
                 return writerOptions;
-			}
+            }
 
             inline
-			bool
-			embedAll() const
-			{
-				return _embedAll;
-			}
-
-			inline
-			Ptr
-			embedAll(bool value)
-			{
-				_embedAll = value;
-
-				return shared_from_this();
-			}
+            bool
+            embedAll() const
+            {
+                return _embedAll;
+            }
 
             inline
-			bool
-			addBoundingBoxes() const
-			{
-				return _addBoundingBoxes;
-			}
+            Ptr
+            embedAll(bool value)
+            {
+                _embedAll = value;
 
-			inline
-			Ptr
-			addBoundingBoxes(bool value)
-			{
-				_addBoundingBoxes = value;
+                return shared_from_this();
+            }
 
-				return shared_from_this();
-			}
+            inline
+            bool
+            addBoundingBoxes() const
+            {
+                return _addBoundingBoxes;
+            }
+
+            inline
+            Ptr
+            addBoundingBoxes(bool value)
+            {
+                _addBoundingBoxes = value;
+
+                return shared_from_this();
+            }
 
             inline
             const UriFunction&
@@ -102,20 +102,20 @@ namespace minko
             }
 
             inline
-			serialize::ImageFormat
-			imageFormat() const
-			{
-				return _imageFormat;
-			}
+            serialize::ImageFormat
+            imageFormat() const
+            {
+                return _imageFormat;
+            }
 
-			inline
-			Ptr
-			imageFormat(serialize::ImageFormat value)
-			{
-				_imageFormat = value;
+            inline
+            Ptr
+            imageFormat(serialize::ImageFormat value)
+            {
+                _imageFormat = value;
 
-				return shared_from_this();
-			}
+                return shared_from_this();
+            }
 
         private:
             WriterOptions();

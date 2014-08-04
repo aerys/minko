@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -31,74 +31,74 @@ const std::string TEXTURE_FILENAME = "texture/box.png";
 
 int main(int argc, char** argv)
 {
-	auto canvas = Canvas::create("Minko Example - Tasks", 800, 600);
+    auto canvas = Canvas::create("Minko Example - Tasks", 800, 600);
 
-	auto sceneManager = SceneManager::create(canvas->context());
+    auto sceneManager = SceneManager::create(canvas->context());
 
-	// setup assets
-	sceneManager->assets()->loader()->options()->resizeSmoothly(true);
-	sceneManager->assets()->loader()->options()->generateMipmaps(true);
-	sceneManager->assets()->loader()->options()
+    // setup assets
+    sceneManager->assets()->loader()->options()->resizeSmoothly(true);
+    sceneManager->assets()->loader()->options()->generateMipmaps(true);
+    sceneManager->assets()->loader()->options()
                 ->registerParser<file::PNGParser>("png");
 
         sceneManager->assets()->loader()
                 ->queue(TEXTURE_FILENAME)
-		->queue("effect/Basic.effect");
+        ->queue("effect/Basic.effect");
 
-	sceneManager->assets()->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()));
+    sceneManager->assets()->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()));
 
-	auto taskManager	= JobManager::create(60);
+    auto taskManager    = JobManager::create(60);
 
-	auto root = scene::Node::create("root")
-		->addComponent(sceneManager)
-		->addComponent(taskManager);
+    auto root = scene::Node::create("root")
+        ->addComponent(sceneManager)
+        ->addComponent(taskManager);
 
-	auto camera = scene::Node::create("camera")
-		->addComponent(Renderer::create(0x7f7f7fff))
-		->addComponent(Transform::create(
-			Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 3.f))
-		))
-		->addComponent(PerspectiveCamera::create(800.f / 600.f, float(M_PI) * 0.25f, .1f, 1000.f));
-	root->addChild(camera);
+    auto camera = scene::Node::create("camera")
+        ->addComponent(Renderer::create(0x7f7f7fff))
+        ->addComponent(Transform::create(
+            Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 3.f))
+        ))
+        ->addComponent(PerspectiveCamera::create(800.f / 600.f, float(M_PI) * 0.25f, .1f, 1000.f));
+    root->addChild(camera);
 
-	auto mesh = scene::Node::create("mesh")
-		->addComponent(Transform::create());
+    auto mesh = scene::Node::create("mesh")
+        ->addComponent(Transform::create());
 
-	auto _ = sceneManager->assets()->loader()->complete()->connect([=](file::Loader::Ptr loader)
-	{
-		auto cubeGeometry	= geometry::CubeGeometry::create(sceneManager->assets()->context());
+    auto _ = sceneManager->assets()->loader()->complete()->connect([=](file::Loader::Ptr loader)
+    {
+        auto cubeGeometry    = geometry::CubeGeometry::create(sceneManager->assets()->context());
 
-		for (uint i = 0; i < 1000; ++i)
-			taskManager->pushJob(CountJob::create());
+        for (uint i = 0; i < 1000; ++i)
+            taskManager->pushJob(CountJob::create());
 
-		sceneManager->assets()->geometry("cubeGeometry", cubeGeometry);
+        sceneManager->assets()->geometry("cubeGeometry", cubeGeometry);
 
-		mesh->addComponent(Surface::create(
-				sceneManager->assets()->geometry("cubeGeometry"),
-				material::BasicMaterial::create()->diffuseMap(sceneManager->assets()->texture(TEXTURE_FILENAME)),
-				sceneManager->assets()->effect("effect/Basic.effect")
-			));
-		root->addChild(mesh);
-	});
+        mesh->addComponent(Surface::create(
+                sceneManager->assets()->geometry("cubeGeometry"),
+                material::BasicMaterial::create()->diffuseMap(sceneManager->assets()->texture(TEXTURE_FILENAME)),
+                sceneManager->assets()->effect("effect/Basic.effect")
+            ));
+        root->addChild(mesh);
+    });
 
-	auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
-	{
-		camera->component<PerspectiveCamera>()->aspectRatio(float(w) / float(h));
-	});
+    auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
+    {
+        camera->component<PerspectiveCamera>()->aspectRatio(float(w) / float(h));
+    });
 
-	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float deltaTime)
-	{
-		mesh->component<Transform>()->matrix()->appendRotationY(.02f);
+    auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float deltaTime)
+    {
+        mesh->component<Transform>()->matrix()->appendRotationY(.02f);
 
-		sceneManager->nextFrame(time, deltaTime);
-	});
+        sceneManager->nextFrame(time, deltaTime);
+    });
 
 
-	sceneManager->assets()->loader()->load();
+    sceneManager->assets()->loader()->load();
 
-	canvas->run();
+    canvas->run();
 
-	return 0;
+    return 0;
 }
 
 

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -24,216 +24,216 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace data
-	{
-		class Container :
-			public std::enable_shared_from_this<Container>
-		{
+    namespace data
+    {
+        class Container :
+            public std::enable_shared_from_this<Container>
+        {
 
-		public:
-			typedef std::shared_ptr<Container>								Ptr;
-			typedef Signal<Ptr, const std::string&>							PropertyChangedSignal;
+        public:
+            typedef std::shared_ptr<Container>                                Ptr;
+            typedef Signal<Ptr, const std::string&>                            PropertyChangedSignal;
 
-		private:
-			typedef std::shared_ptr<PropertyChangedSignal>					PropertyChangedSignalPtr;
+        private:
+            typedef std::shared_ptr<PropertyChangedSignal>                    PropertyChangedSignalPtr;
 
-			typedef std::shared_ptr<Provider>								ProviderPtr;
-			typedef std::shared_ptr<data::AbstractFilter>					AbsFilterPtr;
-			typedef Signal<ProviderPtr, const std::string&>					ProviderPropertyChangedSignal;
-			typedef ProviderPropertyChangedSignal::Slot						ProviderPropertyChangedSlot;
+            typedef std::shared_ptr<Provider>                                ProviderPtr;
+            typedef std::shared_ptr<data::AbstractFilter>                    AbsFilterPtr;
+            typedef Signal<ProviderPtr, const std::string&>                    ProviderPropertyChangedSignal;
+            typedef ProviderPropertyChangedSignal::Slot                        ProviderPropertyChangedSlot;
 
-			std::list<ProviderPtr>											_providers;
-			std::unordered_map<std::string, ProviderPtr>					_propertyNameToProvider;
-			std::unordered_map<ProviderPtr, uint>							_providersToNumUse;
-			std::unordered_map<ProviderPtr, uint>							_providerToIndex;
+            std::list<ProviderPtr>                                            _providers;
+            std::unordered_map<std::string, ProviderPtr>                    _propertyNameToProvider;
+            std::unordered_map<ProviderPtr, uint>                            _providersToNumUse;
+            std::unordered_map<ProviderPtr, uint>                            _providerToIndex;
 
-			std::shared_ptr<Provider>										_arrayLengths;
+            std::shared_ptr<Provider>                                        _arrayLengths;
 
-			PropertyChangedSignalPtr										_propertyAdded;
-			PropertyChangedSignalPtr										_propertyRemoved;
-			std::unordered_map<std::string, PropertyChangedSignalPtr>		_propValueChanged;
-			std::unordered_map<std::string, PropertyChangedSignalPtr>		_propReferenceChanged;
+            PropertyChangedSignalPtr                                        _propertyAdded;
+            PropertyChangedSignalPtr                                        _propertyRemoved;
+            std::unordered_map<std::string, PropertyChangedSignalPtr>        _propValueChanged;
+            std::unordered_map<std::string, PropertyChangedSignalPtr>        _propReferenceChanged;
 
-			std::unordered_map<ProviderPtr, std::list<Any>>					_propertyAddedOrRemovedSlots;
-			std::unordered_map<ProviderPtr, ProviderPropertyChangedSlot>	_providerValueChangedSlot;
-			std::unordered_map<ProviderPtr, ProviderPropertyChangedSlot>	_providerReferenceChangedSlot;
+            std::unordered_map<ProviderPtr, std::list<Any>>                    _propertyAddedOrRemovedSlots;
+            std::unordered_map<ProviderPtr, ProviderPropertyChangedSlot>    _providerValueChangedSlot;
+            std::unordered_map<ProviderPtr, ProviderPropertyChangedSlot>    _providerReferenceChangedSlot;
 
-			Signal<Ptr, ProviderPtr>::Ptr									_providerAdded;
-			Signal<Ptr, ProviderPtr>::Ptr									_providerRemoved;
+            Signal<Ptr, ProviderPtr>::Ptr                                    _providerAdded;
+            Signal<Ptr, ProviderPtr>::Ptr                                    _providerRemoved;
 
-			static uint CONTAINER_ID;
+            static uint CONTAINER_ID;
 
 
-		public:
-			uint _containerId;
-			static
-			Ptr
-			create()
-			{
-				auto container = std::shared_ptr<Container>(new Container());
+        public:
+            uint _containerId;
+            static
+            Ptr
+            create()
+            {
+                auto container = std::shared_ptr<Container>(new Container());
 
-				container->initialize();
+                container->initialize();
 
-				return container;
-			}
+                return container;
+            }
 
-			void
-			initialize();
+            void
+            initialize();
 
-			void
-			addProvider(std::shared_ptr<Provider> provider);
+            void
+            addProvider(std::shared_ptr<Provider> provider);
 
-			void
-			addProvider(std::shared_ptr<ArrayProvider> provider);
+            void
+            addProvider(std::shared_ptr<ArrayProvider> provider);
 
-			void
-			removeProvider(std::shared_ptr<Provider> provider);
+            void
+            removeProvider(std::shared_ptr<Provider> provider);
 
-			void
-			removeProvider(std::shared_ptr<ArrayProvider> provider);
+            void
+            removeProvider(std::shared_ptr<ArrayProvider> provider);
 
-			bool
-			hasProvider(std::shared_ptr<Provider> provider) const;
+            bool
+            hasProvider(std::shared_ptr<Provider> provider) const;
 
-			bool
-			hasProperty(const std::string&) const;
-			
-			bool
-			isLengthProperty(const std::string&) const;
+            bool
+            hasProperty(const std::string&) const;
 
-			inline
-			int
-			getProviderIndex(ProviderPtr provider) const
-			{
-				auto foundIndexIt = _providerToIndex.find(provider);
+            bool
+            isLengthProperty(const std::string&) const;
 
-				return foundIndexIt != _providerToIndex.end() ? foundIndexIt->second : -1;
-			}
+            inline
+            int
+            getProviderIndex(ProviderPtr provider) const
+            {
+                auto foundIndexIt = _providerToIndex.find(provider);
 
-			template <typename T>
-			T
-			get(const std::string& propertyName) const
-			{
-				assertPropertyExists(propertyName);
+                return foundIndexIt != _providerToIndex.end() ? foundIndexIt->second : -1;
+            }
 
-				const auto& provider = _propertyNameToProvider.find(propertyName)->second;
-				auto unformatedPropertyName = unformatPropertyName(provider, propertyName);
+            template <typename T>
+            T
+            get(const std::string& propertyName) const
+            {
+                assertPropertyExists(propertyName);
 
-				return provider->get<T>(unformatedPropertyName, true);
-			}
+                const auto& provider = _propertyNameToProvider.find(propertyName)->second;
+                auto unformatedPropertyName = unformatPropertyName(provider, propertyName);
 
-			template <typename T>
-			void
-			set(const std::string& propertyName, T value)
-			{
-				assertPropertyExists(propertyName);
+                return provider->get<T>(unformatedPropertyName, true);
+            }
 
-				auto provider = _propertyNameToProvider[propertyName];
-				auto unformatedPropertyName = unformatPropertyName(provider, propertyName);
+            template <typename T>
+            void
+            set(const std::string& propertyName, T value)
+            {
+                assertPropertyExists(propertyName);
 
-				provider->set<T>(unformatedPropertyName, value);
-			}
+                auto provider = _propertyNameToProvider[propertyName];
+                auto unformatedPropertyName = unformatPropertyName(provider, propertyName);
 
-			template <typename T>
-			bool
-			propertyHasType(const std::string& propertyName, bool skipPropertyNameFormatting = false) const
-			{
-				assertPropertyExists(propertyName);
+                provider->set<T>(unformatedPropertyName, value);
+            }
 
-				const auto& provider = _propertyNameToProvider.find(propertyName)->second;
+            template <typename T>
+            bool
+            propertyHasType(const std::string& propertyName, bool skipPropertyNameFormatting = false) const
+            {
+                assertPropertyExists(propertyName);
 
-				auto unformatedPropertyName = unformatPropertyName(provider, propertyName);
+                const auto& provider = _propertyNameToProvider.find(propertyName)->second;
 
-				return provider->propertyHasType<T>(unformatedPropertyName, skipPropertyNameFormatting);
-			}
+                auto unformatedPropertyName = unformatPropertyName(provider, propertyName);
 
-			inline
-			PropertyChangedSignalPtr
-			propertyAdded() const
-			{
-				return _propertyAdded;
-			}
+                return provider->propertyHasType<T>(unformatedPropertyName, skipPropertyNameFormatting);
+            }
 
-			inline
-			PropertyChangedSignalPtr
-			propertyRemoved() const
-			{
-				return _propertyRemoved;
-			}
+            inline
+            PropertyChangedSignalPtr
+            propertyAdded() const
+            {
+                return _propertyAdded;
+            }
 
-			PropertyChangedSignalPtr
-			propertyValueChanged(const std::string& propertyName);
+            inline
+            PropertyChangedSignalPtr
+            propertyRemoved() const
+            {
+                return _propertyRemoved;
+            }
 
-			PropertyChangedSignalPtr
-			propertyReferenceChanged(const std::string& propertyName);
+            PropertyChangedSignalPtr
+            propertyValueChanged(const std::string& propertyName);
 
-			inline
-			Signal<Ptr, Provider::Ptr>::Ptr
-			providerAdded() const
-			{
-				return _providerAdded;
-			}
+            PropertyChangedSignalPtr
+            propertyReferenceChanged(const std::string& propertyName);
 
-			inline
-			Signal<Ptr, Provider::Ptr>::Ptr
-			providerRemoved() const
-			{
-				return _providerRemoved;
-			}
+            inline
+            Signal<Ptr, Provider::Ptr>::Ptr
+            providerAdded() const
+            {
+                return _providerAdded;
+            }
 
-			inline
-			const std::list<ProviderPtr>&
-			providers() const
-			{
-				return _providers;
-			}
+            inline
+            Signal<Ptr, Provider::Ptr>::Ptr
+            providerRemoved() const
+            {
+                return _providerRemoved;
+            }
 
-			Ptr
-			filter(const std::set<AbsFilterPtr>&, Ptr = nullptr) const;
+            inline
+            const std::list<ProviderPtr>&
+            providers() const
+            {
+                return _providers;
+            }
 
-		private:
-			Container();
+            Ptr
+            filter(const std::set<AbsFilterPtr>&, Ptr = nullptr) const;
 
-			void
-			assertPropertyExists(const std::string& propertyName) const;
+        private:
+            Container();
 
-			void
-			providerPropertyAddedHandler(ProviderPtr, const std::string& propertyName);
+            void
+            assertPropertyExists(const std::string& propertyName) const;
 
-			void
-			providerPropertyRemovedHandler(ProviderPtr, const std::string& propertyName);
+            void
+            providerPropertyAddedHandler(ProviderPtr, const std::string& propertyName);
 
-			void 
-			providerValueChangedHandler(ProviderPtr, const std::string& propertyName);
+            void
+            providerPropertyRemovedHandler(ProviderPtr, const std::string& propertyName);
 
-			void
-			providerReferenceChangedHandler(ProviderPtr, const std::string& propertyName);
+            void
+            providerValueChangedHandler(ProviderPtr, const std::string& propertyName);
 
-			std::string
-			formatPropertyName(ProviderPtr  arrayProvider, const std::string&) const;
+            void
+            providerReferenceChangedHandler(ProviderPtr, const std::string& propertyName);
 
-			std::string
-			unformatPropertyName(ProviderPtr  arrayProvider, const std::string&) const;
+            std::string
+            formatPropertyName(ProviderPtr  arrayProvider, const std::string&) const;
 
-			inline
-			void
-			assertProviderDoesNotExist(std::shared_ptr<Provider> provider) const
-			{
+            std::string
+            unformatPropertyName(ProviderPtr  arrayProvider, const std::string&) const;
+
+            inline
+            void
+            assertProviderDoesNotExist(std::shared_ptr<Provider> provider) const
+            {
 #ifdef DEBUG
-				if (std::find(_providers.begin(), _providers.end(), provider) != _providers.end())
-					throw std::invalid_argument("provider");
+                if (std::find(_providers.begin(), _providers.end(), provider) != _providers.end())
+                    throw std::invalid_argument("provider");
 #endif // DEBUG
-			}
+            }
 
-			inline
-			void
-			assertProviderExists(std::shared_ptr<Provider> provider) const
-			{
+            inline
+            void
+            assertProviderExists(std::shared_ptr<Provider> provider) const
+            {
 #ifdef DEBUG
-				if (std::find(_providers.begin(), _providers.end(), provider) == _providers.end())
-					throw std::invalid_argument("provider");
+                if (std::find(_providers.begin(), _providers.end(), provider) == _providers.end())
+                    throw std::invalid_argument("provider");
 #endif // DEBUG
-			}
-		};
-	}
+            }
+        };
+    }
 }

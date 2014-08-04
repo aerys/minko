@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -28,39 +28,39 @@ namespace minko
 {
     namespace component
     {
-	    class DirectionalLight :
+        class DirectionalLight :
             public AbstractDiscreteLight
-	    {
-	    public:
-		    typedef std::shared_ptr<DirectionalLight> Ptr;
+        {
+        public:
+            typedef std::shared_ptr<DirectionalLight> Ptr;
 
-		private:
-			std::shared_ptr<math::Vector3>	_worldDirection;
+        private:
+            std::shared_ptr<math::Vector3>    _worldDirection;
 
-	    public:
-		    inline static
-		    Ptr
-		    create(float diffuse	= 1.0f,
-				   float specular	= 1.0f)
-		    {
+        public:
+            inline static
+            Ptr
+            create(float diffuse    = 1.0f,
+                   float specular    = 1.0f)
+            {
                 auto light = std::shared_ptr<DirectionalLight>(new DirectionalLight(diffuse, specular));
 
                 light->initialize();
 
-			    return light;
-		    }
+                return light;
+            }
 
-		    ~DirectionalLight()
-		    {
-		    }
+            ~DirectionalLight()
+            {
+            }
 
-		protected:
-			void
+        protected:
+            void
             updateModelToWorldMatrix(std::shared_ptr<math::Matrix4x4> modelToWorld);
 
-	    private:
-		    DirectionalLight(float diffuse,
-							 float specular);
-	    };
+        private:
+            DirectionalLight(float diffuse,
+                             float specular);
+        };
     }
 }

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -48,305 +48,305 @@ using namespace minko;
 using namespace minko::deserialize;
 
 std::shared_ptr<component::AbstractComponent>
-ComponentDeserializer::deserializeTransform(std::string&						serializedTransformData,
-											std::shared_ptr<file::AssetLibrary>	assetLibrary,
-											std::shared_ptr<file::Dependency>	dependencies)
+ComponentDeserializer::deserializeTransform(std::string&                        serializedTransformData,
+                                            std::shared_ptr<file::AssetLibrary>    assetLibrary,
+                                            std::shared_ptr<file::Dependency>    dependencies)
 {
-	msgpack::zone								mempool;
-	msgpack::object								deserialized;
-	msgpack::type::tuple<uint, std::string>		dst;
+    msgpack::zone                                mempool;
+    msgpack::object                                deserialized;
+    msgpack::type::tuple<uint, std::string>        dst;
 
-	msgpack::unpack(serializedTransformData.data(), serializedTransformData.size() - 1, NULL, &mempool, &deserialized);
-	deserialized.convert(&dst);
+    msgpack::unpack(serializedTransformData.data(), serializedTransformData.size() - 1, NULL, &mempool, &deserialized);
+    deserialized.convert(&dst);
 
-	std::tuple<uint, std::string&> serializedMatrixTuple(dst.a0, dst.a1);
+    std::tuple<uint, std::string&> serializedMatrixTuple(dst.a0, dst.a1);
 
-	Matrix4x4Ptr transformMatrix = Any::cast<Matrix4x4Ptr>(deserialize::TypeDeserializer::deserializeMatrix4x4(serializedMatrixTuple));
+    Matrix4x4Ptr transformMatrix = Any::cast<Matrix4x4Ptr>(deserialize::TypeDeserializer::deserializeMatrix4x4(serializedMatrixTuple));
 
-	return component::Transform::create(transformMatrix);
+    return component::Transform::create(transformMatrix);
 }
 
 std::shared_ptr<component::AbstractComponent>
-ComponentDeserializer::deserializeProjectionCamera(std::string&							serializedCameraData,
-												   std::shared_ptr<file::AssetLibrary>	assetLibrary,
-												   std::shared_ptr<file::Dependency>	dependencies)
+ComponentDeserializer::deserializeProjectionCamera(std::string&                            serializedCameraData,
+                                                   std::shared_ptr<file::AssetLibrary>    assetLibrary,
+                                                   std::shared_ptr<file::Dependency>    dependencies)
 {
-	msgpack::zone			mempool;
-	msgpack::object			deserialized;
-	std::string				dst;
+    msgpack::zone            mempool;
+    msgpack::object            deserialized;
+    std::string                dst;
 
-	msgpack::unpack(serializedCameraData.data(), serializedCameraData.size() - 1, NULL, &mempool, &deserialized);
+    msgpack::unpack(serializedCameraData.data(), serializedCameraData.size() - 1, NULL, &mempool, &deserialized);
 
-	if (deserialized.type != msgpack::type::RAW)
-		return component::PerspectiveCamera::create(800.f / 600.F);
+    if (deserialized.type != msgpack::type::RAW)
+        return component::PerspectiveCamera::create(800.f / 600.F);
 
-	deserialized.convert(&dst);
+    deserialized.convert(&dst);
 
-	std::vector<float> dstContent = deserialize::TypeDeserializer::deserializeVector<float>(dst);
+    std::vector<float> dstContent = deserialize::TypeDeserializer::deserializeVector<float>(dst);
 
-	return component::PerspectiveCamera::create(dstContent[0], dstContent[1], dstContent[2], dstContent[3]);
+    return component::PerspectiveCamera::create(dstContent[0], dstContent[1], dstContent[2], dstContent[3]);
 }
 
 std::shared_ptr<component::AbstractComponent>
-ComponentDeserializer::deserializeAmbientLight(std::string&							serializedAmbientLight,
-											   std::shared_ptr<file::AssetLibrary>	assetLibrary,
-											   std::shared_ptr<file::Dependency>	dependencies)
+ComponentDeserializer::deserializeAmbientLight(std::string&                            serializedAmbientLight,
+                                               std::shared_ptr<file::AssetLibrary>    assetLibrary,
+                                               std::shared_ptr<file::Dependency>    dependencies)
 {
-	msgpack::zone								mempool;
-	msgpack::object								deserialized;
-	std::string 								dst;
-	std::shared_ptr<component::AmbientLight>	ambientLight = component::AmbientLight::create();
+    msgpack::zone                                mempool;
+    msgpack::object                                deserialized;
+    std::string                                 dst;
+    std::shared_ptr<component::AmbientLight>    ambientLight = component::AmbientLight::create();
 
-	msgpack::unpack(serializedAmbientLight.data(), serializedAmbientLight.size() - 1, NULL, &mempool, &deserialized);
+    msgpack::unpack(serializedAmbientLight.data(), serializedAmbientLight.size() - 1, NULL, &mempool, &deserialized);
 
-	if (deserialized.type != msgpack::type::RAW)
-		return ambientLight;
+    if (deserialized.type != msgpack::type::RAW)
+        return ambientLight;
 
-	deserialized.convert(&dst);
+    deserialized.convert(&dst);
 
-	std::vector<float> dstContent = deserialize::TypeDeserializer::deserializeVector<float>(dst);
+    std::vector<float> dstContent = deserialize::TypeDeserializer::deserializeVector<float>(dst);
 
-	ambientLight->ambient(dstContent[0]);
-	ambientLight->color()->setTo(dstContent[1], dstContent[2], dstContent[3]);
+    ambientLight->ambient(dstContent[0]);
+    ambientLight->color()->setTo(dstContent[1], dstContent[2], dstContent[3]);
 
-	return ambientLight;
+    return ambientLight;
 }
 
 std::shared_ptr<component::AbstractComponent>
-ComponentDeserializer::deserializeDirectionalLight(std::string&							serializedDirectionalLight,
-												   std::shared_ptr<file::AssetLibrary>	assetLibrary,
-												   std::shared_ptr<file::Dependency>	dependencies)
+ComponentDeserializer::deserializeDirectionalLight(std::string&                            serializedDirectionalLight,
+                                                   std::shared_ptr<file::AssetLibrary>    assetLibrary,
+                                                   std::shared_ptr<file::Dependency>    dependencies)
 {
-	msgpack::zone									mempool;
-	msgpack::object									deserialized;
-	std::string										dst;
-	std::shared_ptr<component::DirectionalLight>	directionalLight = component::DirectionalLight::create();
+    msgpack::zone                                    mempool;
+    msgpack::object                                    deserialized;
+    std::string                                        dst;
+    std::shared_ptr<component::DirectionalLight>    directionalLight = component::DirectionalLight::create();
 
-	msgpack::unpack(serializedDirectionalLight.data(), serializedDirectionalLight.size() - 1, NULL, &mempool, &deserialized);
+    msgpack::unpack(serializedDirectionalLight.data(), serializedDirectionalLight.size() - 1, NULL, &mempool, &deserialized);
 
-	if (deserialized.type != msgpack::type::RAW)
-		return directionalLight;
+    if (deserialized.type != msgpack::type::RAW)
+        return directionalLight;
 
-	deserialized.convert(&dst);
+    deserialized.convert(&dst);
 
-	std::vector<float> dstContent = deserialize::TypeDeserializer::deserializeVector<float>(dst);
+    std::vector<float> dstContent = deserialize::TypeDeserializer::deserializeVector<float>(dst);
 
-	directionalLight->diffuse(dstContent[0]);
-	directionalLight->specular(dstContent[1]);
-	directionalLight->color()->setTo(dstContent[2], dstContent[3], dstContent[4]);
+    directionalLight->diffuse(dstContent[0]);
+    directionalLight->specular(dstContent[1]);
+    directionalLight->color()->setTo(dstContent[2], dstContent[3], dstContent[4]);
 
-	return directionalLight;
+    return directionalLight;
 }
 
 std::shared_ptr<component::AbstractComponent>
-ComponentDeserializer::deserializePointLight(std::string&							serializedPointLight,
-											 std::shared_ptr<file::AssetLibrary>	assetLibrary,
-											 std::shared_ptr<file::Dependency>		dependencies)
+ComponentDeserializer::deserializePointLight(std::string&                            serializedPointLight,
+                                             std::shared_ptr<file::AssetLibrary>    assetLibrary,
+                                             std::shared_ptr<file::Dependency>        dependencies)
 {
-	msgpack::zone								mempool;
-	msgpack::object								deserialized;
-	std::string									dst;
-	std::shared_ptr<component::PointLight>		pointLight = component::PointLight::create();
+    msgpack::zone                                mempool;
+    msgpack::object                                deserialized;
+    std::string                                    dst;
+    std::shared_ptr<component::PointLight>        pointLight = component::PointLight::create();
 
-	msgpack::unpack(serializedPointLight.data(), serializedPointLight.size() - 1, NULL, &mempool, &deserialized);
+    msgpack::unpack(serializedPointLight.data(), serializedPointLight.size() - 1, NULL, &mempool, &deserialized);
 
-	if (deserialized.type != msgpack::type::RAW)
-		return pointLight;
+    if (deserialized.type != msgpack::type::RAW)
+        return pointLight;
 
-	deserialized.convert(&dst);
+    deserialized.convert(&dst);
 
-	std::vector<float> dstContent = deserialize::TypeDeserializer::deserializeVector<float>(dst);
+    std::vector<float> dstContent = deserialize::TypeDeserializer::deserializeVector<float>(dst);
 
-	pointLight->diffuse(dstContent[0]);
-	pointLight->specular(dstContent[1]);
-	pointLight->attenuationCoefficients(dstContent[2], dstContent[3], dstContent[4]);
-	pointLight->color()->setTo(dstContent[5], dstContent[6], dstContent[7]);
+    pointLight->diffuse(dstContent[0]);
+    pointLight->specular(dstContent[1]);
+    pointLight->attenuationCoefficients(dstContent[2], dstContent[3], dstContent[4]);
+    pointLight->color()->setTo(dstContent[5], dstContent[6], dstContent[7]);
 
-	return pointLight;
+    return pointLight;
 }
 
 std::shared_ptr<component::AbstractComponent>
-ComponentDeserializer::deserializeSpotLight(std::string&						serializedSpotLight,
-										    std::shared_ptr<file::AssetLibrary>	assetLibrary,
-											std::shared_ptr<file::Dependency>	dependencies)
+ComponentDeserializer::deserializeSpotLight(std::string&                        serializedSpotLight,
+                                            std::shared_ptr<file::AssetLibrary>    assetLibrary,
+                                            std::shared_ptr<file::Dependency>    dependencies)
 {
-	msgpack::zone								mempool;
-	msgpack::object								deserialized;
-	std::string									dst;
-	std::shared_ptr<component::SpotLight>		spotLight = component::SpotLight::create();
+    msgpack::zone                                mempool;
+    msgpack::object                                deserialized;
+    std::string                                    dst;
+    std::shared_ptr<component::SpotLight>        spotLight = component::SpotLight::create();
 
-	msgpack::unpack(serializedSpotLight.data(), serializedSpotLight.size() - 1, NULL, &mempool, &deserialized);
+    msgpack::unpack(serializedSpotLight.data(), serializedSpotLight.size() - 1, NULL, &mempool, &deserialized);
 
-	if (deserialized.type != msgpack::type::RAW)
-		return spotLight;
+    if (deserialized.type != msgpack::type::RAW)
+        return spotLight;
 
-	deserialized.convert(&dst);
+    deserialized.convert(&dst);
 
-	std::vector<float> dstContent = deserialize::TypeDeserializer::deserializeVector<float>(dst);
+    std::vector<float> dstContent = deserialize::TypeDeserializer::deserializeVector<float>(dst);
 
-	spotLight->diffuse(dstContent[0]);
-	spotLight->specular(dstContent[1]);
-	spotLight->attenuationCoefficients(dstContent[2], dstContent[3], dstContent[4]);
-	spotLight->innerConeAngle(dstContent[5]);
-	spotLight->outerConeAngle(dstContent[6]);
-	spotLight->color()->setTo(dstContent[7], dstContent[8], dstContent[9]);
+    spotLight->diffuse(dstContent[0]);
+    spotLight->specular(dstContent[1]);
+    spotLight->attenuationCoefficients(dstContent[2], dstContent[3], dstContent[4]);
+    spotLight->innerConeAngle(dstContent[5]);
+    spotLight->outerConeAngle(dstContent[6]);
+    spotLight->color()->setTo(dstContent[7], dstContent[8], dstContent[9]);
 
-	return spotLight;
+    return spotLight;
 }
 
 std::shared_ptr<component::AbstractComponent>
-ComponentDeserializer::deserializeSurface(std::string&							serializedSurface,
-										  std::shared_ptr<file::AssetLibrary>	assetLibrary,
-										  std::shared_ptr<file::Dependency>		dependencies)
+ComponentDeserializer::deserializeSurface(std::string&                            serializedSurface,
+                                          std::shared_ptr<file::AssetLibrary>    assetLibrary,
+                                          std::shared_ptr<file::Dependency>        dependencies)
 {
-	msgpack::zone																		mempool;
-	msgpack::object																		deserialized;
-	msgpack::type::tuple<unsigned short, unsigned short, unsigned short, std::string>	dst;
-	msgpack::type::tuple<std::vector<SurfaceExtension>>									ext;
+    msgpack::zone                                                                        mempool;
+    msgpack::object                                                                        deserialized;
+    msgpack::type::tuple<unsigned short, unsigned short, unsigned short, std::string>    dst;
+    msgpack::type::tuple<std::vector<SurfaceExtension>>                                    ext;
 
-	msgpack::unpack(serializedSurface.data(), serializedSurface.size() - 1, NULL, &mempool, &deserialized);
-	deserialized.convert(&dst);
+    msgpack::unpack(serializedSurface.data(), serializedSurface.size() - 1, NULL, &mempool, &deserialized);
+    deserialized.convert(&dst);
 
-	geometry::Geometry::Ptr		geometry	= dependencies->getGeometryReference(dst.a0);
-	data::Provider::Ptr			material	= dependencies->getMaterialReference(dst.a1);
-	render::Effect::Ptr			effect		= dependencies->getEffectReference(dst.a2);
-	std::string					technique	= "default";
-	bool						visible		= true;
+    geometry::Geometry::Ptr        geometry    = dependencies->getGeometryReference(dst.a0);
+    data::Provider::Ptr            material    = dependencies->getMaterialReference(dst.a1);
+    render::Effect::Ptr            effect        = dependencies->getEffectReference(dst.a2);
+    std::string                    technique    = "default";
+    bool                        visible        = true;
 
-	if (dst.a3.size() > 0)
-	{
-		msgpack::unpack(dst.a3.data(), dst.a3.size(), NULL, &mempool, &deserialized);
-		deserialized.convert(&ext);
+    if (dst.a3.size() > 0)
+    {
+        msgpack::unpack(dst.a3.data(), dst.a3.size(), NULL, &mempool, &deserialized);
+        deserialized.convert(&ext);
 
-		for (int i = 0; i < ext.a0.size(); ++i)
-		{
-			auto extension = ext.a0[i];
-
-
-			if (extension.a0 == "visible")
-			{
-				visible = TypeDeserializer::deserializeVector<float>(extension.a1)[0] != 0.0;
-			}
-			else if (extension.a0 == "technique")
-			{
-				technique = extension.a1;
-			}
-		}
-	}
+        for (int i = 0; i < ext.a0.size(); ++i)
+        {
+            auto extension = ext.a0[i];
 
 
-	if (material == nullptr && dependencies->options()->material() != nullptr)
-		material = dependencies->options()->material();
+            if (extension.a0 == "visible")
+            {
+                visible = TypeDeserializer::deserializeVector<float>(extension.a1)[0] != 0.0;
+            }
+            else if (extension.a0 == "technique")
+            {
+                technique = extension.a1;
+            }
+        }
+    }
 
-	if (effect == nullptr && dependencies->options()->effect() != nullptr)
-		effect = dependencies->options()->effect();
 
-	std::shared_ptr<component::Surface>	surface = component::Surface::create(
-		"",
-		geometry,
-		(material != nullptr ? material : assetLibrary->material("defaultMaterial")),
-		(effect != nullptr ? effect : assetLibrary->effect("effect/Phong.effect")),
-		technique);
+    if (material == nullptr && dependencies->options()->material() != nullptr)
+        material = dependencies->options()->material();
 
-	surface->visible(visible);
+    if (effect == nullptr && dependencies->options()->effect() != nullptr)
+        effect = dependencies->options()->effect();
 
-	return surface;
+    std::shared_ptr<component::Surface>    surface = component::Surface::create(
+        "",
+        geometry,
+        (material != nullptr ? material : assetLibrary->material("defaultMaterial")),
+        (effect != nullptr ? effect : assetLibrary->effect("effect/Phong.effect")),
+        technique);
+
+    surface->visible(visible);
+
+    return surface;
 }
 
 std::shared_ptr<component::AbstractComponent>
-ComponentDeserializer::deserializeRenderer(std::string&							serializedRenderer,
-										   std::shared_ptr<file::AssetLibrary>	assetLibrary,
-										   std::shared_ptr<file::Dependency>	dependencies)
+ComponentDeserializer::deserializeRenderer(std::string&                            serializedRenderer,
+                                           std::shared_ptr<file::AssetLibrary>    assetLibrary,
+                                           std::shared_ptr<file::Dependency>    dependencies)
 {
-	msgpack::zone							mempool;
-	msgpack::object							deserialized;
-	msgpack::type::tuple<unsigned int>		dst;
-	std::shared_ptr<component::Renderer>	renderer = component::Renderer::create();
+    msgpack::zone                            mempool;
+    msgpack::object                            deserialized;
+    msgpack::type::tuple<unsigned int>        dst;
+    std::shared_ptr<component::Renderer>    renderer = component::Renderer::create();
 
-	msgpack::unpack(serializedRenderer.data(), serializedRenderer.size() - 1, NULL, &mempool, &deserialized);
-	deserialized.convert(&dst);
+    msgpack::unpack(serializedRenderer.data(), serializedRenderer.size() - 1, NULL, &mempool, &deserialized);
+    deserialized.convert(&dst);
 
-	renderer->backgroundColor(dst.a0);
+    renderer->backgroundColor(dst.a0);
 
-	return renderer;
+    return renderer;
 }
 
 
 ComponentDeserializer::AbsComponentPtr
-ComponentDeserializer::deserializeAnimation(std::string&		serializedAnimation,
-											AssetLibraryPtr		assetLibrary,
-											DependencyPtr		dependencies)
+ComponentDeserializer::deserializeAnimation(std::string&        serializedAnimation,
+                                            AssetLibraryPtr        assetLibrary,
+                                            DependencyPtr        dependencies)
 {
-	std::vector<animation::AbstractTimeline::Ptr>									timelines;
-	msgpack::zone																	mempool;
-	msgpack::object																	deserialized;
-	msgpack::type::tuple<uint, std::vector<uint>, VectorOfSerializedMatrix, bool>	dst;
+    std::vector<animation::AbstractTimeline::Ptr>                                    timelines;
+    msgpack::zone                                                                    mempool;
+    msgpack::object                                                                    deserialized;
+    msgpack::type::tuple<uint, std::vector<uint>, VectorOfSerializedMatrix, bool>    dst;
 
-	msgpack::unpack(serializedAnimation.data(), serializedAnimation.size() - 1, NULL, &mempool, &deserialized);
-	deserialized.convert(&dst);
+    msgpack::unpack(serializedAnimation.data(), serializedAnimation.size() - 1, NULL, &mempool, &deserialized);
+    deserialized.convert(&dst);
 
-	std::vector<math::Matrix4x4::Ptr>	matrices;
-	std::vector<uint>					timetable;
-	uint								duration = dst.a0;
-	bool								interpolate = dst.a3;
+    std::vector<math::Matrix4x4::Ptr>    matrices;
+    std::vector<uint>                    timetable;
+    uint                                duration = dst.a0;
+    bool                                interpolate = dst.a3;
 
-	for (size_t i = 0; i < dst.a1.size(); ++i)
-	{
-		std::tuple<uint, std::string&> serializedMatrixTuple(dst.a2[i].a0, dst.a2[i].a1);
+    for (size_t i = 0; i < dst.a1.size(); ++i)
+    {
+        std::tuple<uint, std::string&> serializedMatrixTuple(dst.a2[i].a0, dst.a2[i].a1);
 
-		timetable.push_back(dst.a1[i]);
-		matrices.push_back(Any::cast<Matrix4x4Ptr>(deserialize::TypeDeserializer::deserializeMatrix4x4(serializedMatrixTuple)));
-	}
+        timetable.push_back(dst.a1[i]);
+        matrices.push_back(Any::cast<Matrix4x4Ptr>(deserialize::TypeDeserializer::deserializeMatrix4x4(serializedMatrixTuple)));
+    }
 
-	timelines.push_back(animation::Matrix4x4Timeline::create("transform.matrix", duration, timetable, matrices, interpolate));
+    timelines.push_back(animation::Matrix4x4Timeline::create("transform.matrix", duration, timetable, matrices, interpolate));
 
-	return component::Animation::create(timelines);
+    return component::Animation::create(timelines);
 }
 
 ComponentDeserializer::AbsComponentPtr
-ComponentDeserializer::deserializeSkinning(std::string&		serializedAnimation,
-										   AssetLibraryPtr	assetLibrary,
-										   DependencyPtr	dependencies)
+ComponentDeserializer::deserializeSkinning(std::string&        serializedAnimation,
+                                           AssetLibraryPtr    assetLibrary,
+                                           DependencyPtr    dependencies)
 {
-	msgpack::zone																	mempool;
-	msgpack::object																	deserialized;
-	msgpack::type::tuple<std::vector<msgpack::type::tuple<std::string, std::string, std::string, SerializedMatrix>>, std::string, short>	dst;
+    msgpack::zone                                                                    mempool;
+    msgpack::object                                                                    deserialized;
+    msgpack::type::tuple<std::vector<msgpack::type::tuple<std::string, std::string, std::string, SerializedMatrix>>, std::string, short>    dst;
 
-	msgpack::unpack(serializedAnimation.data(), serializedAnimation.size() - 1, NULL, &mempool, &deserialized);
-	deserialized.convert(&dst);
+    msgpack::unpack(serializedAnimation.data(), serializedAnimation.size() - 1, NULL, &mempool, &deserialized);
+    deserialized.convert(&dst);
 
-	auto duration		= dst.a2;
-	auto skeletonName	= dst.a1;
-	auto root			= dependencies->loadedRoot();
+    auto duration        = dst.a2;
+    auto skeletonName    = dst.a1;
+    auto root            = dependencies->loadedRoot();
 
-	std::vector<std::shared_ptr<geometry::Bone>> bones;
-	auto numBones = dst.a0.size();
+    std::vector<std::shared_ptr<geometry::Bone>> bones;
+    auto numBones = dst.a0.size();
 
-	std::vector<std::vector<uint>> bonesVertexIds;
-	std::vector<std::vector<float>> bonesWeights;
-	std::vector<scene::Node::Ptr> nodes;
-	std::vector<std::shared_ptr<math::Matrix4x4>> offsetMatrices;
+    std::vector<std::vector<uint>> bonesVertexIds;
+    std::vector<std::vector<float>> bonesWeights;
+    std::vector<scene::Node::Ptr> nodes;
+    std::vector<std::shared_ptr<math::Matrix4x4>> offsetMatrices;
 
-	for (uint i = 0; i < numBones; i++)
-	{
-		auto							serializedBone = dst.a0[i];
-		std::tuple<uint, std::string&>	serializedMatrixTuple(serializedBone.a3.a0, serializedBone.a3.a1);
-		std::string						nodeName		= serializedBone.a0;
-		std::vector<uint>				vertexIntIds	= TypeDeserializer::deserializeVector<uint, uint>(serializedBone.a1);
-		std::vector<unsigned short>		vertexShortIds(vertexIntIds.begin(), vertexIntIds.end());
-		std::vector<float>				boneWeight		= TypeDeserializer::deserializeVector<float>(serializedBone.a2);
-		auto							offsetMatrix	= Any::cast<Matrix4x4Ptr>(deserialize::TypeDeserializer::deserializeMatrix4x4(serializedMatrixTuple));
+    for (uint i = 0; i < numBones; i++)
+    {
+        auto                            serializedBone = dst.a0[i];
+        std::tuple<uint, std::string&>    serializedMatrixTuple(serializedBone.a3.a0, serializedBone.a3.a1);
+        std::string                        nodeName        = serializedBone.a0;
+        std::vector<uint>                vertexIntIds    = TypeDeserializer::deserializeVector<uint, uint>(serializedBone.a1);
+        std::vector<unsigned short>        vertexShortIds(vertexIntIds.begin(), vertexIntIds.end());
+        std::vector<float>                boneWeight        = TypeDeserializer::deserializeVector<float>(serializedBone.a2);
+        auto                            offsetMatrix    = Any::cast<Matrix4x4Ptr>(deserialize::TypeDeserializer::deserializeMatrix4x4(serializedMatrixTuple));
 
-		auto nodeSet = scene::NodeSet::create(root)
-			->descendants(true, false)
-			->where([&](scene::Node::Ptr n){ return n->name() == nodeName; });
+        auto nodeSet = scene::NodeSet::create(root)
+            ->descendants(true, false)
+            ->where([&](scene::Node::Ptr n){ return n->name() == nodeName; });
 
-		if (!nodeSet->nodes().empty())
-			bones.push_back(geometry::Bone::create(nodeSet->nodes()[0], offsetMatrix, vertexShortIds, boneWeight));
+        if (!nodeSet->nodes().empty())
+            bones.push_back(geometry::Bone::create(nodeSet->nodes()[0], offsetMatrix, vertexShortIds, boneWeight));
 
-	}
+    }
 
-	return SkinningComponentDeserializer::computeSkinning(
+    return SkinningComponentDeserializer::computeSkinning(
         assetLibrary->loader()->options(),
         assetLibrary->context(),
         bones,
@@ -355,20 +355,20 @@ ComponentDeserializer::deserializeSkinning(std::string&		serializedAnimation,
 }
 
 std::shared_ptr<component::AbstractComponent>
-ComponentDeserializer::deserializeBoundingBox(std::string&							serializedBoundingBox,
-                                              std::shared_ptr<file::AssetLibrary>	assetLibrary,
+ComponentDeserializer::deserializeBoundingBox(std::string&                            serializedBoundingBox,
+                                              std::shared_ptr<file::AssetLibrary>    assetLibrary,
                                               std::shared_ptr<file::Dependency>     dependencies)
 {
     msgpack::zone mempool;
     msgpack::object deserialized;
     std::string dst;
 
-	msgpack::unpack(serializedBoundingBox.data(), serializedBoundingBox.size() - 1, NULL, &mempool, &deserialized);
+    msgpack::unpack(serializedBoundingBox.data(), serializedBoundingBox.size() - 1, NULL, &mempool, &deserialized);
 
-	if (deserialized.type != msgpack::type::RAW)
-		return component::BoundingBox::create();
+    if (deserialized.type != msgpack::type::RAW)
+        return component::BoundingBox::create();
 
-	deserialized.convert(&dst);
+    deserialized.convert(&dst);
 
     auto componentData = deserialize::TypeDeserializer::deserializeVector<float>(dst);
 
@@ -379,5 +379,5 @@ ComponentDeserializer::deserializeBoundingBox(std::string&							serializedBound
                                                                           componentData[1],
                                                                           componentData[2]));
 
-	return component;
+    return component;
 }
