@@ -1,24 +1,23 @@
 #include <time.h>
 
 #include "minko/Minko.hpp"
+#include "minko/MinkoSDL.hpp"
 #include "minko/MinkoPNG.hpp"
 #include "minko/MinkoOffscreen.hpp"
-
-#include <GL/osmesa.h>
-#include <iostream>
 
 using namespace minko;
 using namespace minko::component;
 using namespace minko::math;
+using namespace minko::file;
 
 const uint      WINDOW_WIDTH  = 800;
 const uint      WINDOW_HEIGHT = 600;
 
 int main(int argc, char** argv)
 {
-    MinkoOffscreen::initialize("Minko Example - Offscreen", WINDOW_WIDTH, WINDOW_HEIGHT, true);
+    auto canvas = Canvas::create("Minko Example - Offscreen", WINDOW_WIDTH, WINDOW_HEIGHT, true);
 
-    auto sceneManager   = SceneManager::create(MinkoOffscreen::context());
+    auto sceneManager   = SceneManager::create(canvas->context());
     auto assets         = sceneManager->assets();
     auto mesh           = scene::Node::create("mesh");
 
@@ -42,9 +41,7 @@ int main(int argc, char** argv)
         root->addComponent(sceneManager);
 
         // setup camera
-        auto renderer = Renderer::create();
-        renderer->backgroundColor(0x7F7F7FFF);
-        camera->addComponent(renderer);
+        camera->addComponent(Renderer::create(0x7F7F7FFF));
         camera->addComponent(Transform::create());
         camera->component<Transform>()->matrix()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 3.f));
         camera->addComponent(PerspectiveCamera::create(.785f, 800.f / 600.f, .1f, 1000.f));
@@ -64,16 +61,25 @@ int main(int argc, char** argv)
 
     assets->loader()->load();
 
-    auto enterFrame = MinkoOffscreen::enterFrame()->connect([&](float time, float deltaTime)
+    PNGWriter::Ptr writer = PNGWriter::create();
+    std::shared_ptr<std::vector<unsigned char>> buffer(new std::vector<unsigned char>(canvas->width() * canvas->height() * 4));
+
+    auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float deltaTime)
     {
         mesh->component<Transform>()->matrix()->prependRotationY(.01f);
 
-        static int loop = 0;
-        if (++loop % 100 == 0)
-            MinkoOffscreen::takeScreenshot("screenshot.ppm");
+        static int lastTime = 0;
+
+        if (time - lastTime > 1000)
+        {
+            std::cout << "Taking screenshot (screenshot.png)." << std::endl;
+            lastTime = time;
+            canvas->context()->readPixels(&*buffer->begin());
+            writer->write("screenshot.png", *buffer, canvas->width(), canvas->height());
+        }
 
         sceneManager->nextFrame(time, deltaTime);
     });
 
-    MinkoOffscreen::run();
+    canvas->run();
 }

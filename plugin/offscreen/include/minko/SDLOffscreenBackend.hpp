@@ -48,6 +48,6 @@ namespace minko
 		SDLOffscreenBackend() = default;
 
 	private:
-		std::vector<float> _backBuffer;
+		std::shared_ptr<std::vector<float>> _backBuffer;
 	};
 }

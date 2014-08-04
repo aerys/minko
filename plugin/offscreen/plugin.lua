@@ -23,10 +23,12 @@ minko.plugin.offscreen = {}
 function minko.plugin.offscreen:enable()
 	defines { "MINKO_PLUGIN_OFFSCREEN" }
 
+	minko.plugin.links { "offscreen" }
 	links { "OSMesa" }
+	removelinks { "GL" }
 
 	includedirs {
-		minko.plugin.path("offscreen") .. "/lib/osmesa/include"
+		minko.plugin.path("offscreen") .. "/include"
 	}
 end
 

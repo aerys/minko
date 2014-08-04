@@ -308,9 +308,6 @@ namespace minko
 			return _workers.count(name) != 0;
 		};
 
-		bool
-		takeScreenshot(const std::string& filename);
-
 		void
 		run();
 

@@ -39,7 +39,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 // # include "SDL_syswm.h"
 #elif defined(MINKO_PLUGIN_ANGLE)
 # include "minko/MinkoAngle.hpp"
-// # include "SDL_syswm.h"
 #elif defined(MINKO_PLUGIN_OFFSCREEN)
 # include "minko/MinkoOffscreen.hpp"
 #endif
@@ -126,7 +125,13 @@ Canvas::initializeInputs()
 void
 Canvas::initializeWindow()
 {
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK) < 0)
+#if defined(MINKO_PLUGIN_OFFSCREEN)
+    auto flags = 0;
+#else
+    auto flags = SDL_INIT_VIDEO | SDL_INIT_JOYSTICK;
+#endif
+
+    if (SDL_Init(flags) < 0)
         throw std::runtime_error(SDL_GetError());
 
     if (_useStencil)
@@ -162,11 +167,15 @@ Canvas::initializeWindow()
     );
 
     // Reset window size after window creation because certain platforms (iOS, Android)
-    // ignore passed arguments and use fullscreen window size.
-    int w, h;
-    SDL_GetWindowSize(_window, &w, &h);
-    width(w);
-    height(h);
+    // ignore passed arguments and use fullscreen window size. Not failing if the
+    // window couln't be created (Offscreen support).
+    if (_window)
+    {
+        int w, h;
+        SDL_GetWindowSize(_window, &w, &h);
+        width(w);
+        height(h);
+    }
 #endif
 }
 
@@ -758,61 +767,4 @@ Canvas::getJoystickAxis(input::Joystick::Ptr joy, int axis)
         return -1;
 
     return SDL_JoystickGetAxis(_joysticks[id]->joystick(), axis);
-}
-
-bool
-Canvas::takeScreenshot(const std::string& filename)
-{
-    auto infoSurface    = SDL_GetWindowSurface(_window);
-    auto renderer       = SDL_GetRenderer(_window);
-
-    if (infoSurface == nullptr)
-    {
-        std::cerr << "Failed to create info surface from window in saveScreenshotBMP(string), SDL_GetError() - " << SDL_GetError() << std::endl;
-        return false;
-    }
-    else
-    {
-        static unsigned char* pixels = new (std::nothrow) unsigned char[infoSurface->w * infoSurface->h * infoSurface->format->BytesPerPixel];
-
-        if (pixels == nullptr)
-        {
-            std::cerr << "Unable to allocate memory for screenshot pixel data buffer!\n";
-            return false;
-        }
-        else
-        {
-            if (SDL_RenderReadPixels(renderer, &infoSurface->clip_rect, infoSurface->format->format, pixels, infoSurface->w * infoSurface->format->BytesPerPixel))
-            {
-                std::cerr << "Failed to read pixel data from SDL_Renderer object. SDL_GetError() - " << SDL_GetError() << std::endl;
-                pixels = nullptr;
-                return false;
-            }
-            else
-            {
-                auto format = infoSurface->format;
-                auto saveSurface = SDL_CreateRGBSurfaceFrom(
-                    pixels,
-                    infoSurface->w, infoSurface->h,
-                    format->BitsPerPixel, infoSurface->w * format->BytesPerPixel,
-                    format->Rmask, format->Gmask, format->Bmask, format->Amask
-                );
-
-                if (saveSurface == nullptr)
-                {
-                    std::cerr << "Couldn't create SDL_Surface from renderer pixel data. SDL_GetError() - " << SDL_GetError() << std::endl;
-                    return false;
-                }
-
-                SDL_SaveBMP(saveSurface, filename.c_str());
-                SDL_FreeSurface(saveSurface);
-                saveSurface = nullptr;
-            }
-        }
-
-        SDL_FreeSurface(infoSurface);
-        infoSurface = nullptr;
-    }
-
-    return true;
 }

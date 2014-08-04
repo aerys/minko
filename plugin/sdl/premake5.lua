@@ -29,3 +29,6 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		removeincludedirs { "lib/sdl/include" }
 		includedirs { "SDL" }
 		minko.plugin.enable { "webgl" }
+
+	configuration { "with-offscreen" }
+		minko.plugin.enable { "offscreen" }
