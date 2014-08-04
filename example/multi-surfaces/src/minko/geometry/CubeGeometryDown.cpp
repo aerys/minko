@@ -27,7 +27,8 @@ using namespace minko::render;
 void
 CubeGeometryDown::initialize(std::shared_ptr<AbstractContext> context)
 {
-    float xyzData[] = {
+    float xyzData[] =
+    {
         // top
         0.5f, -1.2f +0.5f, -0.5f,      0.f, 1.f, 0.f,      1.f, 0.f,
         -0.5f,-1.2f + 0.5f, 0.5f,      0.f, 1.f, 0.f,      0.f, 1.f,
@@ -72,7 +73,8 @@ CubeGeometryDown::initialize(std::shared_ptr<AbstractContext> context)
         0.5f,-1.2f + -0.5f, -0.5f,    1.f, 0.f, 0.f,      1.f, 1.f
     };
 
-    unsigned short i[] = {
+    unsigned short i[] =
+    {
         0, 1, 2, 3, 4, 5,
         6, 7, 8, 9, 10, 11,
         12, 13, 14, 15, 16, 17,

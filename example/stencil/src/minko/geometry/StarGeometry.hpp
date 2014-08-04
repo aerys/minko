@@ -35,8 +35,8 @@ namespace minko
         public:
             inline static
             Ptr
-            create(std::shared_ptr<render::AbstractContext>    context,
-                   unsigned int                                numBranches,
+            create(std::shared_ptr<render::AbstractContext> context,
+                   unsigned int                             numBranches,
                    float                                    outerRadius,
                    float                                    innerRadius)
             {
@@ -48,11 +48,11 @@ namespace minko
             }
 
         private:
-            StarGeometry();
+            StarGeometry() = default;
 
             void
-            initialize(std::shared_ptr<render::AbstractContext>    context,
-                       unsigned int                                numBranches,
+            initialize(std::shared_ptr<render::AbstractContext> context,
+                       unsigned int                             numBranches,
                        float                                    outerRadius,
                        float                                    innerRadius);
         };

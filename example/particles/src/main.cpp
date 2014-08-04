@@ -26,9 +26,10 @@ using namespace minko;
 using namespace minko::component;
 using namespace minko::math;
 
-int main(int argc, char** argv)
+int
+main(int argc, char** argv)
 {
-    auto canvas = Canvas::create("Minko Example - Particles", 800, 600);
+    auto canvas = Canvas::create("Minko Example - Particles");
     auto sceneManager = SceneManager::create(canvas->context());
     auto assets = sceneManager->assets();
 
@@ -55,7 +56,8 @@ int main(int argc, char** argv)
         ->addComponent(Transform::create(
             Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 3.f))
         ))
-        ->addComponent(PerspectiveCamera::create(800.f / 600.f, float(M_PI) * 0.25f, .1f, 1000.f));
+        ->addComponent(PerspectiveCamera::create(canvas->aspectRatio()));
+
     root->addChild(camera);
 
     std::cout << "Control the particle system's emittive state with the keyboard" << std::endl;
@@ -88,16 +90,17 @@ int main(int argc, char** argv)
                 particle::sampler::LinearlyInterpolatedValue<float>::create(1.0, 0.0f, 0.0f, 1.0f),
                 particle::sampler::Constant<float>::create(0.0f)
             ))
-        //->add(particle::modifier::ColorOverTime::create(particle::sampler::LinearlyInterpolatedValue<math::Vector3>::create(*startcolor, *endcolor)))
+            // ->add(particle::modifier::ColorOverTime::create(particle::sampler::LinearlyInterpolatedValue<math::Vector3>::create(*startcolor, *endcolor)))
             ->add(particle::modifier::ColorBySpeed::create(particle::sampler::LinearlyInterpolatedValue<math::Vector3>::create(*startcolor, *endcolor, 0.0f, 1.0f)))
             ->add(particle::modifier::SizeBySpeed::create(particle::sampler::LinearlyInterpolatedValue<float>::create(0.05f, 2.0f)))
-        /*->add(particle::modifier::StartRotation::create(particle::sampler::Constant<float>::create(PI * 0.25f)))
-        ->add(particle::modifier::StartColor::create(
-            particle::sampler::Constant<math::Vector3>::create(*color)
-        ))
-        ->add(particle::modifier::StartSprite::create(
-            particle::sampler::RandomValue<float>::create(0.0f, 4.0f),
-            assets->texture("texture/fire_spritesheet.png"), 2, 2))*/
+            // ->add(particle::modifier::StartRotation::create(particle::sampler::Constant<float>::create(PI * 0.25f)))
+            // ->add(particle::modifier::StartColor::create(
+            //     particle::sampler::Constant<math::Vector3>::create(*color)
+            // ))
+            // ->add(particle::modifier::StartSprite::create(
+            //     particle::sampler::RandomValue<float>::create(0.0f, 4.0f),
+            //     assets->texture("texture/fire_spritesheet.png"), 2, 2
+            // ))
             ->play();
 
         particlesNode->addComponent(particles);
@@ -116,7 +119,10 @@ int main(int argc, char** argv)
         {
             auto withParticles = scene::NodeSet::create(root)
                 ->descendants(true)
-                ->where([](scene::Node::Ptr n){ return n->hasComponent<component::ParticleSystem>(); });
+                ->where([](scene::Node::Ptr n)
+            	{
+                	return n->hasComponent<component::ParticleSystem>();
+            	});
 
             for (auto& n : withParticles->nodes())
             {
@@ -125,6 +131,7 @@ int main(int argc, char** argv)
                 particles->emitting(!particles->emitting());
             }
         }
+
         toogleEmitting = false;
 
         sceneManager->nextFrame(time, deltaTime);
@@ -137,8 +144,6 @@ int main(int argc, char** argv)
 
     assets->loader()->load();
     canvas->run();
-
-    return 0;
 }
 
 

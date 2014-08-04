@@ -28,28 +28,26 @@ using namespace minko::math;
 static const std::string TEXTURE_FILENAME = "texture/box.png";
 static const std::string EFFECT_FILENAME = "effect/Phong.effect";
 
-static const int WINDOW_WIDTH = 800;
-static const int WINDOW_HEIGHT = 600;
-
 static const float CAMERA_SPEED = 20.0f;
 
-int main(int argc, char** argv)
+int
+main(int argc, char** argv)
 {
-    auto canvas = Canvas::create("Minko Example - Fog", WINDOW_WIDTH, WINDOW_HEIGHT);
+    auto canvas = Canvas::create("Minko Example - Fog");
 
     auto sceneManager = SceneManager::create(canvas->context());
 
     // setup assets
-    sceneManager->assets()->loader()->options()->resizeSmoothly(true);
-    sceneManager->assets()->loader()->options()->generateMipmaps(true);
     sceneManager->assets()->loader()->options()
-                ->registerParser<file::PNGParser>("png");
+        ->resizeSmoothly(true);
+        ->generateMipmaps(true);
+        ->registerParser<file::PNGParser>("png");
 
-        sceneManager->assets()->loader()
-                ->queue(TEXTURE_FILENAME)
+    sceneManager->assets()->loader()
+        ->queue(TEXTURE_FILENAME)
         ->queue(EFFECT_FILENAME);
 
-    auto _ = sceneManager->assets()->loader()->complete()->connect([=](file::Loader::Ptr loader)
+    auto _ = sceneManager->assets()->loader()->complete()->connect([ = ](file::Loader::Ptr loader)
     {
         std::cout << "Press [L]\tto activate linear fog\nPress [E]\tto activate exponential fog\nPress [F]\tto activate square exponential fog\nPress [N]\tto deactivate fog\nPress [P]\tto to increase fog density\nPress [M]\tto to decrease fog density" << std::endl;
 
@@ -62,9 +60,9 @@ int main(int argc, char** argv)
         auto camera = scene::Node::create("camera")
             ->addComponent(Renderer::create(0x7f7f7fff))
             ->addComponent(Transform::create(
-            Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 1.5f, 6.f))
+                Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 1.5f, 6.f))
             ))
-            ->addComponent(PerspectiveCamera::create(WINDOW_WIDTH / (float)WINDOW_HEIGHT, float(M_PI) * 0.25f, .1f, 1000.f));
+            ->addComponent(PerspectiveCamera::create(canvas->aspectRatio()));
         root->addChild(camera);
 
         auto material = material::PhongMaterial::create()
@@ -87,19 +85,23 @@ int main(int argc, char** argv)
         auto groundNode = scene::Node::create("ground")
             ->addComponent(Transform::create(Matrix4x4::create()->appendScale(16.0f)->appendRotationX(-float(M_PI) / 2.0f)))
             ->addComponent(Surface::create(
-            geometry::QuadGeometry::create(sceneManager->assets()->context()),
-            groundMaterial,
-            sceneManager->assets()->effect(EFFECT_FILENAME)));
+                geometry::QuadGeometry::create(sceneManager->assets()->context()),
+                groundMaterial,
+                sceneManager->assets()->effect(EFFECT_FILENAME)
+            ));
+
         root->addChild(groundNode);
 
         auto ambientLight = scene::Node::create("ambientLight")
             ->addComponent(AmbientLight::create(0.25f));
+
         ambientLight->component<AmbientLight>()->color(Vector4::create(1.0f, 1.0f, 1.0f, 1.0f));
         root->addChild(ambientLight);
 
         auto directionalLight = scene::Node::create("directionalLight")
             ->addComponent(DirectionalLight::create()->diffuse(0.8f)->color(0xFFFFFFFF))
             ->addComponent(Transform::create(Matrix4x4::create()->lookAt(Vector3::create(), Vector3::create(3.0f, 2.0f, 3.0f))));
+
         root->addChild(directionalLight);
 
         std::vector<Matrix4x4::Ptr> keyTransforms;
@@ -111,9 +113,15 @@ int main(int argc, char** argv)
         auto segmentDuration = 1500U;
 
         auto cubeAnimation = Animation::create(
-        { minko::animation::Matrix4x4Timeline::create("transform.matrix", segmentDuration * 3,
-        { segmentDuration * 0, segmentDuration * 1, segmentDuration * 2 },
-        keyTransforms, true) }, true);
+        {
+            minko::animation::Matrix4x4Timeline::create(
+                "transform.matrix",
+                segmentDuration * 3,
+                { segmentDuration * 0, segmentDuration * 1, segmentDuration * 2 },
+                keyTransforms,
+                true
+            )
+        }, true);
 
         mesh->addComponent(cubeAnimation);
 
@@ -197,8 +205,6 @@ int main(int argc, char** argv)
     });
 
     sceneManager->assets()->loader()->load();
-
-    return 0;
 }
 
 

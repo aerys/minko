@@ -29,21 +29,21 @@ using namespace minko::scene;
 using namespace minko::component;
 using namespace minko::math;
 
-const std::string    TEXTURE_FILENAME    = "texture/box.png";
+const std::string      TEXTURE_FILENAME    = "texture/box.png";
 const float            GROUND_WIDTH        = 5.0f;
-const float            GROUND_HEIGHT        = 0.25f;
+const float            GROUND_HEIGHT       = 0.25f;
 const float            GROUND_DEPTH        = 5.0f;
 const float            GROUND_THICK        = 0.05f;
 
 const float            MIN_MASS            = 1.0f;
 const float            MAX_MASS            = 3.0f;
-const float            MIN_SCALE            = 0.2f;
-const float            MAX_SCALE            = 1.0f;
+const float            MIN_SCALE           = 0.2f;
+const float            MAX_SCALE           = 1.0f;
 const float            IMPULSE_STRENGTH    = 3.0f;
-const auto            MIN_DROP_POS        = Vector3::create(-GROUND_WIDTH * 0.5f + 0.5f, 5.0f, -GROUND_DEPTH * 0.5f + 0.5f);
-const auto            MAX_DROP_POS        = Vector3::create( GROUND_WIDTH * 0.5f - 0.5f, 5.0f,  GROUND_DEPTH * 0.5f - 0.5f);
+const auto             MIN_DROP_POS        = Vector3::create(-GROUND_WIDTH * 0.5f + 0.5f, 5.0f, -GROUND_DEPTH * 0.5f + 0.5f);
+const auto             MAX_DROP_POS        = Vector3::create( GROUND_WIDTH * 0.5f - 0.5f, 5.0f,  GROUND_DEPTH * 0.5f - 0.5f);
 
-const unsigned int    MAX_NUM_OBJECTS        = 32;
+const unsigned int     MAX_NUM_OBJECTS     = 32;
 
 Signal<input::Keyboard::Ptr>::Slot keyDown;
 uint numObjects = 0;
@@ -51,9 +51,10 @@ uint numObjects = 0;
 Node::Ptr
 createPhysicsObject(unsigned int id, file::AssetLibrary::Ptr, bool isCube);
 
-int main(int argc, char** argv)
+int
+main(int argc, char** argv)
 {
-    auto canvas            = Canvas::create("Minko Example - Physics", 800, 600);
+    auto canvas            = Canvas::create("Minko Example - Physics");
     auto sceneManager    = SceneManager::create(canvas->context());
 
     // setup assets
@@ -64,9 +65,10 @@ int main(int argc, char** argv)
         ->disposeTextureAfterLoading(true)
         ->disposeVertexBufferAfterLoading(true)
         ->registerParser<file::PNGParser>("png");
+
     sceneManager->assets()
         ->geometry("sphere",    geometry::SphereGeometry::create(sceneManager->assets()->context(), 16, 16))
-        ->geometry("cube",        geometry::CubeGeometry::create(sceneManager->assets()->context()));
+        ->geometry("cube",      geometry::CubeGeometry::create(sceneManager->assets()->context()));
 
     sceneManager->assets()->loader()
 #ifdef DISPLAY_COLLIDERS
@@ -85,9 +87,9 @@ int main(int argc, char** argv)
     auto camera = scene::Node::create("camera")
         ->addComponent(Renderer::create(0x7f7f7fff))
         ->addComponent(Transform::create(
-        Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(5.0f, 1.5f, 5.0f))
+            Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(5.0f, 1.5f, 5.0f))
         ))
-        ->addComponent(PerspectiveCamera::create(800.f / 600.f, float(M_PI) * 0.25f, .1f, 1000.f));
+        ->addComponent(PerspectiveCamera::create(canvas->aspectRatio()));
 
     root->addChild(camera);
 
@@ -176,11 +178,11 @@ int main(int argc, char** argv)
                 auto physicsObjects = NodeSet::create(root)
                     ->descendants(true)
                     ->where([](Node::Ptr n)
-                {
-                    return n->hasComponent<component::bullet::Collider>()
-                        && n->component<component::Transform>()->modelToWorldMatrix()->translation()->length() < 10.0f // still close to the origin
-                        && n->name().find("physicsObject") != std::string::npos;
-                });
+                    {
+                        return n->hasComponent<component::bullet::Collider>()
+                            && n->component<component::Transform>()->modelToWorldMatrix()->translation()->length() < 10.0f // still close to the origin
+                            && n->name().find("physicsObject") != std::string::npos;
+                    });
 
                 if (!physicsObjects->nodes().empty())
                 {
@@ -204,10 +206,7 @@ int main(int argc, char** argv)
     });
 
     sceneManager->assets()->loader()->load();
-
     canvas->run();
-
-    return 0;
 }
 
 

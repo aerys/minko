@@ -46,9 +46,10 @@ moveScene(Node::Ptr, float& tx, float& ty, float& tz);
 void
 toogleParticlesEmittingState(Node::Ptr);
 
-int main(int argc, char** argv)
+int
+main(int argc, char** argv)
 {
-    auto canvas            = Canvas::create("Minko Example - Scene files", 800, 600);
+    auto canvas            = Canvas::create("Minko Example - Scene files");
     auto sceneManager    = SceneManager::create(canvas->context());
     auto defaultLoader    = sceneManager->assets()->loader();
     auto fxLoader        = file::Loader::create(defaultLoader);
@@ -101,9 +102,9 @@ int main(int argc, char** argv)
     auto camera = scene::Node::create("camera")
         ->addComponent(Renderer::create(0x7f7f7fff))
         ->addComponent(Transform::create(
-        Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 20.f))
+            Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 20.f))
         ))
-        ->addComponent(PerspectiveCamera::create(800.f / 600.f, float(M_PI) * 0.25f, .1f, 1000.f));
+        ->addComponent(PerspectiveCamera::create(canvas->aspectRatio()));
 
     root->addChild(camera);
 
@@ -119,7 +120,10 @@ int main(int argc, char** argv)
 #if !defined(DEACTIVATE_PHYSICS) && defined(DEBUG)
         auto withColliders = NodeSet::create(sceneNode)
             ->descendants(true)
-            ->where([](Node::Ptr n) { return n->hasComponent<component::bullet::Collider>(); });
+            ->where([](Node::Ptr n)
+            {
+                return n->hasComponent<component::bullet::Collider>();
+            });
 
         for (auto& n : withColliders->nodes())
             n->addComponent(bullet::ColliderDebug::create(sceneManager->assets()));
@@ -186,6 +190,7 @@ int main(int argc, char** argv)
 
         pitch += cameraRotationXSpeed;
         cameraRotationXSpeed *= 0.9f;
+
         if (pitch > maxPitch)
             pitch = maxPitch;
         else if (pitch < minPitch)
@@ -194,9 +199,9 @@ int main(int argc, char** argv)
         camera->component<Transform>()->matrix()->lookAt(
             lookAt,
             Vector3::create(
-            lookAt->x() + distance * cosf(yaw) * sinf(pitch),
-            lookAt->y() + distance * cosf(pitch),
-            lookAt->z() + distance * sinf(yaw) * sinf(pitch)
+                lookAt->x() + distance * std::cos(yaw) * std::sin(pitch),
+                lookAt->y() + distance * std::cos(pitch),
+                lookAt->z() + distance * std::sin(yaw) * std::sin(pitch)
             )
         );
 
@@ -207,10 +212,7 @@ int main(int argc, char** argv)
     });
 
     fxLoader->load();
-
     canvas->run();
-
-    return 0;
 }
 
 void
@@ -221,7 +223,10 @@ toogleParticlesEmittingState(Node::Ptr root)
 
     auto withParticles = NodeSet::create(root)
         ->descendants(true)
-        ->where([](Node::Ptr n){ return n->hasComponent<component::ParticleSystem>(); });
+        ->where([](Node::Ptr n)
+        {
+            return n->hasComponent<component::ParticleSystem>();
+        });
 
     for (auto& n : withParticles->nodes())
     {
@@ -241,7 +246,10 @@ moveScene(Node::Ptr model, float& tx, float& ty, float& tz)
 #if !defined(DEACTIVATE_PHYSICS) && defined(DEBUG)
         auto withColliders = scene::NodeSet::create(model)
             ->descendants(true)
-            ->where([](scene::Node::Ptr n) { return n->hasComponent<bullet::Collider>(); });
+            ->where([](scene::Node::Ptr n)
+            {
+                return n->hasComponent<bullet::Collider>();
+            });
 
         for (auto& n : withColliders->nodes())
             n->component<bullet::Collider>()->synchronizePhysicsWithGraphics();
@@ -308,7 +316,7 @@ printNodeInfo(std::ostream&    out,
     if (node == nullptr)
         return out;
 
-    out << "\n'" << node->name() << "'" << (node->parent() ? "\t<- '" + node->parent()->name() + "'" : "" ) << std::endl;
+    out << "\n'" << node->name() << "'" << (node->parent() ? "\t<- '" + node->parent()->name() + "'" : "") << std::endl;
 
     if (node->hasComponent<Transform>())
     {

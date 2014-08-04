@@ -42,14 +42,15 @@ updateRedScore();
 void
 updateBlueScore();
 
-int main(int argc, char** argv)
+int
+main(int argc, char** argv)
 {
     auto overlay = HtmlOverlay::create(argc, argv);
 
     redScore = 0;
     blueScore = 0;
 
-    auto canvas = Canvas::create("Minko Example - Overlay", 800, 600);
+    auto canvas = Canvas::create("Minko Example - Overlay");
 
     auto sceneManager = SceneManager::create(canvas->context());
 
@@ -79,9 +80,10 @@ int main(int argc, char** argv)
     auto camera = scene::Node::create("camera")
         ->addComponent(Renderer::create(0x7f7f7fff))
         ->addComponent(Transform::create(
-        Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 3.f))
+            Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 3.f))
         ))
-        ->addComponent(PerspectiveCamera::create(800.f / 600.f, float(M_PI) * 0.25f, .1f, 1000.f));
+        ->addComponent(PerspectiveCamera::create(canvas->aspectRatio()));
+
     root->addChild(camera);
 
     auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
@@ -99,7 +101,7 @@ int main(int argc, char** argv)
             sceneManager->assets()->geometry("cubeGeometry"),
             material,
             sceneManager->assets()->effect("effect/Basic.effect")
-            ));
+        ));
 
         overlay->load("html/interface.html");
     });

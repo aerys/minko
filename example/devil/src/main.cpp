@@ -35,7 +35,8 @@ const std::string TEXTURE_DDS = "texture/bricks.dds";
 
 std::vector<minko::render::Texture::Ptr> textures;
 
-int main(int argc, char** argv)
+int
+main(int argc, char** argv)
 {
     auto canvas = Canvas::create("Minko Example - DevIL", 800, 600);
 
@@ -73,12 +74,13 @@ int main(int argc, char** argv)
     auto camera = scene::Node::create("camera")
         ->addComponent(Renderer::create(0x7f7f7fff))
         ->addComponent(Transform::create(
-        Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 3.f))
+            Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 3.f))
         ))
-        ->addComponent(PerspectiveCamera::create(800.f / 600.f, float(M_PI) * 0.25f, .1f, 1000.f));
+        ->addComponent(PerspectiveCamera::create(canvas->aspectRatio()));
+
     root->addChild(camera);
 
-    auto _ = sceneManager->assets()->loader()->complete()->connect([=](file::Loader::Ptr loader)
+    auto _ = sceneManager->assets()->loader()->complete()->connect([ = ](file::Loader::Ptr loader)
     {
         textures.push_back(sceneManager->assets()->texture(TEXTURE_JPG));
         textures.push_back(sceneManager->assets()->texture(TEXTURE_PNG));
@@ -89,10 +91,10 @@ int main(int argc, char** argv)
         textures.push_back(sceneManager->assets()->texture(TEXTURE_DDS));
 
         mesh->addComponent(Surface::create(
-                geometry::CubeGeometry::create(sceneManager->assets()->context()),
-                material::BasicMaterial::create()->diffuseMap(textures[0]),
-                sceneManager->assets()->effect("effect/Basic.effect")
-            ));
+            geometry::CubeGeometry::create(sceneManager->assets()->context()),
+            material::BasicMaterial::create()->diffuseMap(textures[0]),
+            sceneManager->assets()->effect("effect/Basic.effect")
+        ));
     });
 
     auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)

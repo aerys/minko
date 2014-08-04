@@ -29,25 +29,26 @@ using namespace minko::math;
 
 const std::string TEXTURE_FILENAME = "texture/box.png";
 
-int main(int argc, char** argv)
+int
+main(int argc, char** argv)
 {
-    auto canvas = Canvas::create("Minko Example - Tasks", 800, 600);
+    auto canvas = Canvas::create("Minko Example - Jobs");
 
     auto sceneManager = SceneManager::create(canvas->context());
 
     // setup assets
-    sceneManager->assets()->loader()->options()->resizeSmoothly(true);
-    sceneManager->assets()->loader()->options()->generateMipmaps(true);
     sceneManager->assets()->loader()->options()
-                ->registerParser<file::PNGParser>("png");
+        ->resizeSmoothly(true)
+        ->generateMipmaps(true);
+        ->registerParser<file::PNGParser>("png");
 
-        sceneManager->assets()->loader()
-                ->queue(TEXTURE_FILENAME)
+    sceneManager->assets()->loader()
+        ->queue(TEXTURE_FILENAME)
         ->queue("effect/Basic.effect");
 
     sceneManager->assets()->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()));
 
-    auto taskManager    = JobManager::create(60);
+    auto taskManager = JobManager::create(60);
 
     auto root = scene::Node::create("root")
         ->addComponent(sceneManager)
@@ -58,7 +59,8 @@ int main(int argc, char** argv)
         ->addComponent(Transform::create(
             Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 3.f))
         ))
-        ->addComponent(PerspectiveCamera::create(800.f / 600.f, float(M_PI) * 0.25f, .1f, 1000.f));
+        ->addComponent(PerspectiveCamera::create(canvas->aspectRatio()));
+
     root->addChild(camera);
 
     auto mesh = scene::Node::create("mesh")
@@ -74,10 +76,11 @@ int main(int argc, char** argv)
         sceneManager->assets()->geometry("cubeGeometry", cubeGeometry);
 
         mesh->addComponent(Surface::create(
-                sceneManager->assets()->geometry("cubeGeometry"),
-                material::BasicMaterial::create()->diffuseMap(sceneManager->assets()->texture(TEXTURE_FILENAME)),
-                sceneManager->assets()->effect("effect/Basic.effect")
-            ));
+            sceneManager->assets()->geometry("cubeGeometry"),
+            material::BasicMaterial::create()->diffuseMap(sceneManager->assets()->texture(TEXTURE_FILENAME)),
+            sceneManager->assets()->effect("effect/Basic.effect")
+        ));
+
         root->addChild(mesh);
     });
 
@@ -93,12 +96,8 @@ int main(int argc, char** argv)
         sceneManager->nextFrame(time, deltaTime);
     });
 
-
     sceneManager->assets()->loader()->load();
-
     canvas->run();
-
-    return 0;
 }
 
 

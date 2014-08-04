@@ -32,9 +32,10 @@ using namespace minko::math;
 
 const std::string TEXTURE_FILENAME = "http://static.aerys.in:8080/minko3/http/box.png";
 
-int main(int argc, char** argv)
+int
+main(int argc, char** argv)
 {
-    auto canvas = Canvas::create("Minko Example - HTTP", 800, 600);
+    auto canvas = Canvas::create("Minko Example - HTTP");
 
 #if !defined(EMSCRIPTEN) // FIXME: Automate this in the HTTPLoader
     canvas->registerWorker<net::HTTPWorker>("http");
@@ -68,7 +69,7 @@ int main(int argc, char** argv)
         ->addComponent(Transform::create(
             Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 3.f))
         ))
-        ->addComponent(PerspectiveCamera::create(800.f / 600.f, float(M_PI) * 0.25f, .1f, 1000.f));
+        ->addComponent(PerspectiveCamera::create(canvas->aspectRatio()));
 
     root->addChild(camera);
 
@@ -94,19 +95,14 @@ int main(int argc, char** argv)
         std::cout << "main(): asset complete" << std::endl;
 
         mesh->addComponent(Surface::create(
-                sceneManager->assets()->geometry("cube"),
-                material::BasicMaterial::create()->diffuseMap(sceneManager->assets()->texture(TEXTURE_FILENAME)),
-                sceneManager->assets()->effect("effect/Basic.effect")
-            ));
+            sceneManager->assets()->geometry("cube"),
+            material::BasicMaterial::create()->diffuseMap(sceneManager->assets()->texture(TEXTURE_FILENAME)),
+            sceneManager->assets()->effect("effect/Basic.effect")
+        ));
     });
 
     sceneManager->assets()->loader()->load();
-    std::cout << "main(): after load" << std::endl;
-
     canvas->run();
-    std::cout << "main(): after run" << std::endl;
-
-    return 0;
 }
 
 

@@ -25,9 +25,6 @@ using namespace minko;
 using namespace minko::component;
 using namespace minko::math;
 
-#define WINDOW_WIDTH      800
-#define WINDOW_HEIGHT     600
-
 scene::Node::Ptr camera = nullptr;
 
 Signal<input::Keyboard::Ptr>::Slot keyDown;
@@ -55,9 +52,10 @@ createPointLight(Vector3::Ptr color, Vector3::Ptr position, file::AssetLibrary::
     return pointLight;
 }
 
-int main(int argc, char** argv)
+int
+main(int argc, char** argv)
 {
-    auto canvas = Canvas::create("Minko Example - Light", WINDOW_WIDTH, WINDOW_HEIGHT);
+    auto canvas = Canvas::create("Minko Example - Light");
 
     canvas->context()->errorsEnabled(true);
 
@@ -68,6 +66,7 @@ int main(int argc, char** argv)
         ->shininess(16.f)
         ->specularColor(Vector4::create(1.0f, 1.0f, 1.0f, 1.0f))
         ->diffuseColor(Vector4::create(1.f, 1.f, 1.f, 1.f));
+
     auto lights                = scene::Node::create("lights");
 
     std::cout << "Press [SPACE]\tto toogle normal mapping\nPress [A]\tto add random light\nPress [R]\tto remove random light" << std::endl;
@@ -101,7 +100,6 @@ int main(int argc, char** argv)
                 assets->effect("phong")
             ))
             ->addComponent(Transform::create(Matrix4x4::create()->appendScale(50.f)->appendRotationX(-1.57f)));
-        root->addChild(ground);
 
         // sphere
         auto sphere = scene::Node::create("sphere")
@@ -111,16 +109,19 @@ int main(int argc, char** argv)
                 assets->effect("phong")
             ))
             ->addComponent(Transform::create(Matrix4x4::create()->appendTranslation(0.f, 2.f, 0.f)->prependScale(3.f)));
-        root->addChild(sphere);
 
         // spotLight
         auto spotLight = scene::Node::create("spotLight")
             ->addComponent(SpotLight::create(.15f, .4f))
             ->addComponent(Transform::create(Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(15.f, 20.f, 0.f))));
+
         spotLight->component<SpotLight>()->diffuse(.4f);
-        root->addChild(spotLight);
 
         lights->addComponent(Transform::create());
+
+        root->addChild(ground);
+        root->addChild(sphere);
+        root->addChild(spotLight);
         root->addChild(lights);
 
         // handle keyboard signals
@@ -140,15 +141,16 @@ int main(int argc, char** argv)
                 auto theta = 2.0f * float(M_PI) *  r;
                 auto color = Color::hslaToRgba(r, 1.f, .5f);
                 auto pos = Vector3::create(
-                    cosf(theta) * 5.f + rand() / ((float)RAND_MAX * 3.f),
-                    2.5f + rand() / (float)RAND_MAX,
-                    sinf(theta) * 5.f + rand() / ((float)RAND_MAX * 3.f)
+                    cosf(theta) * 5.f + rand() / (float(RAND_MAX) * 3.f),
+                    2.5f + rand() / float(RAND_MAX),
+                    sinf(theta) * 5.f + rand() / (float(RAND_MAX) * 3.f)
                 );
 
                 lights->addChild(createPointLight(color, pos, sceneManager->assets()));
 
                 std::cout << lights->children().size() << " lights" << std::endl;
             }
+
             if (k->keyIsDown(input::Keyboard::R))
             {
                 if (lights->children().size() == 0)
@@ -187,8 +189,10 @@ int main(int argc, char** argv)
                 else
                     data->set("normalMap", assets->texture("texture/normalmap-cells.png"));
             }
+
             if (k->keyIsDown(input::Keyboard::UP))
                 camera->component<Transform>()->matrix()->prependTranslation(0.f, 0.f, -1.f);
+
             if (k->keyIsDown(input::Keyboard::DOWN))
                 camera->component<Transform>()->matrix()->prependTranslation(0.f, 0.f, 1.f);
         });
@@ -197,28 +201,28 @@ int main(int argc, char** argv)
     // camera init
     camera = scene::Node::create("camera")
         ->addComponent(Renderer::create())
-        ->addComponent(PerspectiveCamera::create((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT))
+        ->addComponent(PerspectiveCamera::create(canvas->aspectRatio()))
         ->addComponent(Transform::create(
             Matrix4x4::create()->lookAt(Vector3::create(0.f, 2.f), Vector3::create(10.f, 10.f, 10.f))
         ));
     root->addChild(camera);
 
-    auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, unsigned int width, unsigned int height)
+    auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, unsigned int w, unsigned int h)
     {
-        camera->component<PerspectiveCamera>()->aspectRatio((float)width / (float)height);
+        camera->component<PerspectiveCamera>()->aspectRatio(float(w) / float(h));
     });
 
-    auto yaw = 0.f;
-    auto pitch = float(M_PI) * .5f;
-    auto minPitch = 0.f + 1e-5;
-    auto maxPitch = float(M_PI) - 1e-5;
-    auto lookAt = Vector3::create(0.f, 2.f, 0.f);
-    auto distance = 20.f;
+    auto yaw        = 0.f;
+    auto pitch      = float(M_PI) * .5f;
+    auto minPitch   = 0.f + 1e-5;
+    auto maxPitch   = float(M_PI) - 1e-5;
+    auto lookAt     = Vector3::create(0.f, 2.f, 0.f);
+    auto distance   = 20.f;
 
     // handle mouse signals
     auto mouseWheel = canvas->mouse()->wheel()->connect([&](input::Mouse::Ptr m, int h, int v)
     {
-        distance += (float)v / 10.f;
+        distance += float(v) / 10.f;
     });
 
     Signal<input::Mouse::Ptr, int, int>::Slot mouseMove;
@@ -229,8 +233,8 @@ int main(int argc, char** argv)
     {
         mouseMove = canvas->mouse()->move()->connect([&](input::Mouse::Ptr, int dx, int dy)
         {
-            cameraRotationYSpeed = (float)dx * .01f;
-            cameraRotationXSpeed = (float)dy * -.01f;
+            cameraRotationYSpeed = float(dx) * .01f;
+            cameraRotationXSpeed = float(dy) * -.01f;
         });
     });
 
@@ -246,6 +250,7 @@ int main(int argc, char** argv)
 
         pitch += cameraRotationXSpeed;
         cameraRotationXSpeed *= 0.9f;
+
         if (pitch > maxPitch)
             pitch = maxPitch;
         else if (pitch < minPitch)
@@ -254,9 +259,9 @@ int main(int argc, char** argv)
         camera->component<Transform>()->matrix()->lookAt(
             lookAt,
             Vector3::create(
-                lookAt->x() + distance * cosf(yaw) * sinf(pitch),
-                lookAt->y() + distance * cosf(pitch),
-                lookAt->z() + distance * sinf(yaw) * sinf(pitch)
+                lookAt->x() + distance * std::cos(yaw) * std::sin(pitch),
+                lookAt->y() + distance * std::cos(pitch),
+                lookAt->z() + distance * std::sin(yaw) * std::sin(pitch)
             )
         );
 
@@ -266,6 +271,5 @@ int main(int argc, char** argv)
     });
 
     assets->loader()->load();
-
     canvas->run();
 }

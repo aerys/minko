@@ -13,14 +13,16 @@ using namespace minko::math;
 const float CAMERA_LIN_SPEED    = 0.05f;
 const float CAMERA_ANG_SPEED    = float(M_PI) * 2.f / 180.0f;
 const float flowMapCycle        = 0.25f;
+
 Signal<input::Keyboard::Ptr>::Slot keyDown;
 
 #define FLOW_MAP // comment to deactivate flowmap
 #define ENABLE_REFLECTION // comment to deactivate reflections
 
-int main(int argc, char** argv)
+int
+main(int argc, char** argv)
 {
-    auto canvas = Canvas::create("Minko Example - Water", 800, 600);
+    auto canvas = Canvas::create("Minko Example - Water");
 
     auto sceneManager = SceneManager::create(canvas->context());
 
@@ -47,9 +49,9 @@ int main(int argc, char** argv)
     auto camera = scene::Node::create("camera")
         ->addComponent(Renderer::create(0x7f7f7fff))
         ->addComponent(Transform::create(
-        Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(3.f, 3.f, 3.f))
+            Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(3.f, 3.f, 3.f))
         ))
-        ->addComponent(PerspectiveCamera::create(800.f / 600.f, float(M_PI) * 0.25f, .1f, 1000.f));
+        ->addComponent(PerspectiveCamera::create(canvas->aspectRatio()));
 
     auto fxLoader = file::Loader::create(sceneManager->assets()->loader())
         ->queue("effect/Basic.effect")
@@ -90,9 +92,9 @@ int main(int argc, char** argv)
         auto waves = scene::Node::create("waves")
             ->addComponent(Transform::create(math::Matrix4x4::create()->appendRotationX(-float(M_PI) / 2.f)))
             ->addComponent(Surface::create(
-            geometry::QuadGeometry::create(sceneManager->assets()->context(), 200, 200, 400, 400),
-            waterMaterial,
-            sceneManager->assets()->effect("effect/Water/Water.effect")
+                geometry::QuadGeometry::create(sceneManager->assets()->context(), 200, 200, 400, 400),
+                waterMaterial,
+                sceneManager->assets()->effect("effect/Water/Water.effect")
             ));
 
         waves->addComponent(component::Water::create(flowMapCycle, waterMaterial));
@@ -187,7 +189,7 @@ int main(int argc, char** argv)
     float    pitch = float(M_PI) * .5f;
     float    minPitch = 0.f + float(1e-5);
     float    maxPitch = float(M_PI) - float(1e-5);
-    auto    lookAt = Vector3::create(0.f, 2.f, 0.f);
+    auto     lookAt = Vector3::create(0.f, 2.f, 0.f);
     float    distance = 80.f;
 
     // handle mouse signals
@@ -221,6 +223,7 @@ int main(int argc, char** argv)
 
         pitch += cameraRotationXSpeed;
         cameraRotationXSpeed *= 0.9f;
+
         if (pitch > maxPitch)
             pitch = maxPitch;
         else if (pitch < minPitch)
@@ -229,19 +232,15 @@ int main(int argc, char** argv)
         camera->component<Transform>()->matrix()->lookAt(
             lookAt,
             Vector3::create(
-            lookAt->x() + distance * cosf(yaw) * sinf(pitch),
-            lookAt->y() + distance * cosf(pitch),
-            lookAt->z() + distance * sinf(yaw) * sinf(pitch)
+                lookAt->x() + distance * cosf(yaw) * sinf(pitch),
+                lookAt->y() + distance * cosf(pitch),
+                lookAt->z() + distance * sinf(yaw) * sinf(pitch)
             )
-            );
+        );
 
         sceneManager->nextFrame(time, deltaTime);
     });
 
     fxLoader->load();
     canvas->run();
-
-    return 0;
 }
-
-

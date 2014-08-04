@@ -26,9 +26,10 @@ using namespace minko::component;
 using namespace minko::math;
 using namespace minko::render;
 
-int main(int argc, char** argv)
+int
+main(int argc, char** argv)
 {
-    auto canvas = Canvas::create("Minko Example - Effect Config", 800, 600);
+    auto canvas = Canvas::create("Minko Example - Effect Config");
     auto sceneManager = SceneManager::create(canvas->context());
 
     // setup assets
@@ -57,7 +58,7 @@ int main(int argc, char** argv)
         ->addComponent(Transform::create(
             Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 3.f))
         ))
-        ->addComponent(PerspectiveCamera::create(800.f / 600.f, float(M_PI) * 0.25f, .1f, 1000.f));
+        ->addComponent(PerspectiveCamera::create(canvas->aspectRatio()));
     root->addChild(camera);
 
     auto mesh = scene::Node::create("mesh")
@@ -70,6 +71,7 @@ int main(int argc, char** argv)
             material::Material::create()->set("diffuseColor", Vector4::one()),
             sceneManager->assets()->effect("effect/PlatformTexture.effect")
         ));
+
         root->addChild(mesh);
     });
 

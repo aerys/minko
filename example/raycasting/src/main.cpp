@@ -26,9 +26,10 @@ using namespace minko::scene;
 using namespace minko::component;
 using namespace minko::math;
 
-int main(int argc, char** argv)
+int
+main(int argc, char** argv)
 {
-    auto canvas = Canvas::create("Minko Example - Ray Casting", 800, 600);
+    auto canvas = Canvas::create("Minko Example - Ray Casting");
 
     auto sceneManager = SceneManager::create(canvas->context());
 
@@ -40,27 +41,28 @@ int main(int argc, char** argv)
     std::cout << "-----------------------------" << std::endl;
 
     bool    toogleGreenBoxLayouts    = false;
-    int        greenBoxLayoutsId        = 0;
-    Layouts greenBoxLayouts[2]        = { Layout::Group::DEFAULT | (1 << 3),  Layout::Group::DEFAULT };
+    int     greenBoxLayoutsId        = 0;
+    Layouts greenBoxLayouts[2]       = { Layout::Group::DEFAULT | (1 << 3),  Layout::Group::DEFAULT };
 
-    Layouts    blueBoxLayouts            = 1 << 2;
+    Layouts blueBoxLayouts           = 1 << 2;
 
-    bool    toogleRedBoxLayouts    = false;
-    int        redBoxLayoutsId        = 0;
-    Layouts    redBoxLayouts[2]    = { Layout::Group::DEFAULT, Layout::Group::IGNORE_RAYCASTING };
+    bool    toogleRedBoxLayouts      = false;
+    int     redBoxLayoutsId          = 0;
+    Layouts redBoxLayouts[2]         = { Layout::Group::DEFAULT, Layout::Group::IGNORE_RAYCASTING };
 
-    bool    tooglePickingMask    = false;
-    int        pickingMaskId        = 0;
-    Layouts    pickingMasks[2]        = { Layout::Mask::RAYCASTING_DEFAULT, blueBoxLayouts };
+    bool    tooglePickingMask        = false;
+    int     pickingMaskId            = 0;
+    Layouts pickingMasks[2]          = { Layout::Mask::RAYCASTING_DEFAULT, blueBoxLayouts };
 
-    bool    toogleRendererMask    = false;
-    int        rendererMaskId        = 0;
-    Layouts rendererMasks[2]    = { Layout::Mask::EVERYTHING, 1 << 3 };
+    bool    toogleRendererMask       = false;
+    int     rendererMaskId           = 0;
+    Layouts rendererMasks[2]         = { Layout::Mask::EVERYTHING, 1 << 3 };
 
     // setup assets
     sceneManager->assets()->loader()->options()
         ->generateMipmaps(true)
         ->registerParser<file::PNGParser>("png");
+
     sceneManager->assets()->loader()
         ->queue("texture/box.png")
         ->queue("effect/Basic.effect")
@@ -75,7 +77,8 @@ int main(int argc, char** argv)
         ->addComponent(Transform::create(
             Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.8f, 3.0f))
         ))
-        ->addComponent(PerspectiveCamera::create(800.f / 600.f, float(M_PI) * 0.25f, .1f, 1000.f));
+        ->addComponent(PerspectiveCamera::create(canvas->aspectRatio()));
+
     root->addChild(camera);
 
     auto redBox = Node::create("redBox")
@@ -99,11 +102,11 @@ int main(int argc, char** argv)
         ))
         ->addComponent(BoundingBox::create());
 
-    auto hitProvider    = data::ArrayProvider::create("material")
+    auto hitProvider = data::ArrayProvider::create("material")
         ->set("depthFunc",    render::CompareMode::ALWAYS)
         ->set("priority",    render::Priority::LAST);
 
-    auto hit            = Node::create("hit")
+    auto hit = Node::create("hit")
         ->addComponent(Transform::create());
 
     root->addComponent(MousePicking::create());
@@ -137,9 +140,10 @@ int main(int argc, char** argv)
             ->lineTo(0.0f, 1.0f, 0.0f);
 
         hit->addComponent(Surface::create(
-                hitGeometry,
-                hitProvider->set("diffuseColor", Vector4::create(1.0f, 1.0f, 1.0f, 1.0f)),
-                assets->effect("line")));
+            hitGeometry,
+            hitProvider->set("diffuseColor", Vector4::create(1.0f, 1.0f, 1.0f, 1.0f)),
+            assets->effect("line")
+        ));
 
         root
             ->addChild(redBox)
@@ -147,39 +151,37 @@ int main(int argc, char** argv)
             ->addChild(blueBox);
     });
 
-    auto mouseOver = root->component<MousePicking>()->move()->connect(
-        [&](MousePicking::Ptr mp, MousePicking::HitList& hits, Ray::Ptr ray)
+    auto mouseOver = root->component<MousePicking>()->move()->connect([&](MousePicking::Ptr mp, MousePicking::HitList & hits, Ray::Ptr ray)
+    {
+        if (hit->parent() != root)
+            root->addChild(hit);
+
+        if (hits.empty())
         {
-            if (hit->parent() != root)
-                root->addChild(hit);
-
-            if (hits.empty())
-            {
-                root->removeChild(hit);
-                return;
-            }
-
-            hit->component<Transform>()->matrix()
-                ->identity()
-                ->appendScale(.1f)
-                ->translation(
-                    ray->origin()->x() + ray->direction()->x() * hits.front().second,
-                    ray->origin()->y() + ray->direction()->y() * hits.front().second,
-                    ray->origin()->z() + ray->direction()->z() * hits.front().second
-                );
-
-            auto hitNode = hits.front().first;
-
-            if (hitNode->name() == "redBox")
-                hitProvider->set("diffuseColor", Vector4::create(1.0f, 0.5f, 0.0f, 1.0f));
-            else if (hitNode->name() == "greenBox")
-                hitProvider->set("diffuseColor", Vector4::create(0.0f, 1.0f, 0.0f, 1.0f));
-            else if (hitNode->name() == "blueBox")
-                hitProvider->set("diffuseColor", Vector4::create(0.0f, 0.75f, 1.0f, 1.0f));
-            else
-                hitProvider->set("diffuseColor", Vector4::create(1.0f, 1.0f, 1.0f, 1.0f));
+            root->removeChild(hit);
+            return;
         }
-    );
+
+        hit->component<Transform>()->matrix()
+            ->identity()
+            ->appendScale(.1f)
+            ->translation(
+                ray->origin()->x() + ray->direction()->x() * hits.front().second,
+                ray->origin()->y() + ray->direction()->y() * hits.front().second,
+                ray->origin()->z() + ray->direction()->z() * hits.front().second
+            );
+
+        auto hitNode = hits.front().first;
+
+        if (hitNode->name() == "redBox")
+            hitProvider->set("diffuseColor", Vector4::create(1.0f, 0.5f, 0.0f, 1.0f));
+        else if (hitNode->name() == "greenBox")
+            hitProvider->set("diffuseColor", Vector4::create(0.0f, 1.0f, 0.0f, 1.0f));
+        else if (hitNode->name() == "blueBox")
+            hitProvider->set("diffuseColor", Vector4::create(0.0f, 0.75f, 1.0f, 1.0f));
+        else
+            hitProvider->set("diffuseColor", Vector4::create(1.0f, 1.0f, 1.0f, 1.0f));
+    });
 
     auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
     {
@@ -263,10 +265,5 @@ int main(int argc, char** argv)
     });
 
     sceneManager->assets()->loader()->load();
-
     canvas->run();
-
-    return 0;
 }
-
-

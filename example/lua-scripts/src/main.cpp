@@ -26,9 +26,10 @@ using namespace minko;
 using namespace minko::component;
 using namespace minko::math;
 
-int main(int argc, char** argv)
+int
+main(int argc, char** argv)
 {
-    auto canvas = Canvas::create("Minko Example - Lua Scripts", 800, 600);
+    auto canvas = Canvas::create("Minko Example - Lua Scripts");
     auto sceneManager = SceneManager::create(canvas->context());
     auto root = scene::Node::create("root")
         ->addComponent(sceneManager)
@@ -48,18 +49,16 @@ int main(int argc, char** argv)
     loader->queue("script/main.lua");
 
     Signal<Canvas::Ptr, float, float>::Slot nextFrame;
-    Signal<file::Loader::Ptr>::Slot loaded = loader->complete()->connect(
-        [&](file::Loader::Ptr assets)
-        {
-            loaded = nullptr;
+    Signal<file::Loader::Ptr>::Slot loaded = loader->complete()->connect([&](file::Loader::Ptr assets)
+    {
+        loaded = nullptr;
 
-            nextFrame = canvas->enterFrame()->connect([&](Canvas::Ptr, float, float)
-            {
-                nextFrame = nullptr;
-                root->addComponent(sceneManager->assets()->script("script/main.lua"));
-            });
-        }
-    );
+        nextFrame = canvas->enterFrame()->connect([&](Canvas::Ptr, float, float)
+        {
+            nextFrame = nullptr;
+            root->addComponent(sceneManager->assets()->script("script/main.lua"));
+        });
+    });
 
     loader->load();
 
@@ -69,8 +68,6 @@ int main(int argc, char** argv)
     });
 
     canvas->run();
-
-    return 0;
 }
 
 

@@ -27,20 +27,21 @@ using namespace minko::math;
 
 const std::string TEXTURE_FILENAME = "texture/box.png";
 
-int main(int argc, char** argv)
+int
+main(int argc, char** argv)
 {
     auto canvas = Canvas::create("Minko Example - Cube", 800, 600);
 
     auto sceneManager = SceneManager::create(canvas->context());
 
     // setup assets
-    sceneManager->assets()->loader()->options()->resizeSmoothly(true);
-    sceneManager->assets()->loader()->options()->generateMipmaps(true);
     sceneManager->assets()->loader()->options()
-                ->registerParser<file::PNGParser>("png");
+        ->resizeSmoothly(true);
+        ->generateMipmaps(true);
+        ->registerParser<file::PNGParser>("png");
 
-        sceneManager->assets()->loader()
-                ->queue(TEXTURE_FILENAME)
+    sceneManager->assets()->loader()
+        ->queue(TEXTURE_FILENAME)
         ->queue("effect/Basic.effect");
 
     sceneManager->assets()->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()));
@@ -54,19 +55,20 @@ int main(int argc, char** argv)
     auto camera = scene::Node::create("camera")
         ->addComponent(Renderer::create(0x7f7f7fff))
         ->addComponent(Transform::create(
-        Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 3.f))
+            Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 3.f))
         ))
-        ->addComponent(PerspectiveCamera::create(800.f / 600.f, float(M_PI) * 0.25f, .1f, 1000.f));
+        ->addComponent(PerspectiveCamera::create(canvas->aspectRatio()));
     root->addChild(camera);
 
-    auto _ = sceneManager->assets()->loader()->complete()->connect([=](file::Loader::Ptr loader)
+    auto _ = sceneManager->assets()->loader()->complete()->connect([ = ](file::Loader::Ptr loader)
     {
         mesh->addComponent(Surface::create(
-                        sceneManager->assets()->geometry("cube"),
+            sceneManager->assets()->geometry("cube"),
             material::BasicMaterial::create()->diffuseMap(
-                          sceneManager->assets()->texture(TEXTURE_FILENAME)),
+                sceneManager->assets()->texture(TEXTURE_FILENAME)
+            ),
             sceneManager->assets()->effect("effect/Basic.effect")
-            ));
+        ));
 
         root->addChild(mesh);
     });

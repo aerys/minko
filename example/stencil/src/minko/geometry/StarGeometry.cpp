@@ -27,54 +27,51 @@ using namespace minko;
 using namespace minko::geometry;
 using namespace minko::render;
 
-StarGeometry::StarGeometry():
-    Geometry()
-{
-}
-
 void
-StarGeometry::initialize(render::AbstractContext::Ptr    context,
-                           unsigned int                    numBranches,
-                           float                        outerRadius,
-                           float                        innerRadius)
+StarGeometry::initialize(render::AbstractContext::Ptr context,
+                         unsigned int                 numBranches,
+                         float                        outerRadius,
+                         float                        innerRadius)
 {
     if (context == nullptr)
         throw std::invalid_argument("context");
+
     if (numBranches < 2)
         throw std::invalid_argument("numBranches");
 
-    const float outRadius    = fabsf(outerRadius);
-    const float inRadius    = std::min(outRadius, fabsf(innerRadius));
+    const float outRadius       = fabsf(outerRadius);
+    const float inRadius        = std::min(outRadius, fabsf(innerRadius));
 
     // vertex buffer initialization
-    static const unsigned int    vertexSize    = 3; // (x y z nx ny nz)
-    const unsigned int            numVertices = 1 + 2*numBranches;
-    std::vector<float>            vertexData(numVertices * vertexSize, 0.0f);
+    static const unsigned int   vertexSize    = 3; // (x y z nx ny nz)
+    const unsigned int          numVertices   = 1 + 2*numBranches;
+    std::vector<float>          vertexData(numVertices * vertexSize, 0.0f);
 
-    const float        step    = float(M_PI) / (float)numBranches;
-    const float        cStep    = cosf(step);
-    const float        sStep    = sinf(step);
+    const float        step     = float(M_PI) / float(numBranches);
+    const float        cStep    = std::cos(step);
+    const float        sStep    = std::sin(step);
 
-    unsigned int    idx        = vertexSize;
-    float            cAng    = 1.0f;
-    float            sAng    = 0.0f;
+    unsigned int       idx      = vertexSize;
+    float              cAng     = 1.0f;
+    float              sAng     = 0.0f;
+
     for (unsigned int i = 0; i < numBranches; ++i)
     {
         vertexData[idx]        = outRadius * cAng;
-        vertexData[idx+1]    = outRadius * sAng;
+        vertexData[idx + 1]    = outRadius * sAng;
         idx                    += vertexSize;
 
-        float c = cAng*cStep - sAng*sStep;
-        float s = sAng*cStep + cAng*sStep;
+        float c = cAng * cStep - sAng * sStep;
+        float s = sAng * cStep + cAng * sStep;
         cAng    = c;
         sAng    = s;
 
         vertexData[idx]        = inRadius * cAng;
-        vertexData[idx+1]    = inRadius * sAng;
+        vertexData[idx + 1]    = inRadius * sAng;
         idx                    += vertexSize;
 
-        c        = cAng*cStep - sAng*sStep;
-        s        = sAng*cStep + cAng*sStep;
+        c       = cAng * cStep - sAng * sStep;
+        s       = sAng * cStep + cAng * sStep;
         cAng    = c;
         sAng    = s;
     }
@@ -87,9 +84,10 @@ StarGeometry::initialize(render::AbstractContext::Ptr    context,
     // index buffer initialization
     const unsigned int numTriangles = 2 * numBranches;
 
-    std::vector<unsigned short> indexData(3*numTriangles);
+    std::vector<unsigned short> indexData(3 * numTriangles);
 
     idx = 0;
+
     for (unsigned int i = 0; i < numTriangles; ++i)
     {
         indexData[idx++] = 0;
@@ -99,5 +97,3 @@ StarGeometry::initialize(render::AbstractContext::Ptr    context,
 
     indices(IndexBuffer::create(context, indexData));
 }
-
-

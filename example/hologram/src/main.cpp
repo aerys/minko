@@ -28,18 +28,17 @@ using namespace minko::component;
 using namespace minko::math;
 
 const std::string MODEL_FILENAME = "model/cellwallerkiller.scene";
-const float WIDTH    = 1024;
-const float HEIGHT    = 1024;
 
-int main(int argc, char** argv)
+int
+main(int argc, char** argv)
 {
-    auto canvas = Canvas::create("Minko Example - Hologram", WIDTH, HEIGHT);
+    auto canvas = Canvas::create("Minko Example - Hologram");
     auto sceneManager = SceneManager::create(canvas->context());
 
     // setup assets
-    sceneManager->assets()->loader()->options()->resizeSmoothly(true);
-    sceneManager->assets()->loader()->options()->generateMipmaps(true);
     sceneManager->assets()->loader()->options()
+        ->resizeSmoothly(true);
+        ->generateMipmaps(true)
         ->registerParser<file::SceneParser>("scene")
         ->registerParser<file::PNGParser>("png");
 
@@ -50,9 +49,12 @@ int main(int argc, char** argv)
 
     auto fxComplete = fxLoader->complete()->connect([&](file::Loader::Ptr l)
     {
-        sceneManager->assets()->loader()->options()->effect(sceneManager->assets()->effect("effect/Hologram/Hologram.effect"));
-        sceneManager->assets()->loader()->queue(MODEL_FILENAME);
-        sceneManager->assets()->loader()->load();
+        sceneManager->assets()->loader()->options()
+            ->effect(sceneManager->assets()->effect("effect/Hologram/Hologram.effect"));
+
+        sceneManager->assets()->loader()
+            ->queue(MODEL_FILENAME);
+            ->load();
     });
 
     auto root = scene::Node::create("root")
@@ -65,15 +67,16 @@ int main(int argc, char** argv)
         ->addComponent(Transform::create());
 
     auto camera = scene::Node::create("camera")
-        ->addComponent(Renderer::create())//0x7f7f7fff))
+        ->addComponent(Renderer::create())
         ->addComponent(Transform::create(
-        Matrix4x4::create()->lookAt(Vector3::create(0.f, 0.8f, 0.f), Vector3::create(0.f, 2.0f, 8.f))
+            Matrix4x4::create()->lookAt(Vector3::create(0.f, 0.8f, 0.f), Vector3::create(0.f, 2.0f, 8.f))
         ))
-        ->addComponent(PerspectiveCamera::create(WIDTH / HEIGHT, float(M_PI) * 0.25f, .1f, 1000.f));
+        ->addComponent(PerspectiveCamera::create(canvas->aspectRatio()));
+
     root->addChild(camera);
 
     // FXAA
-    render::AbstractTexture::Ptr     ppTarget = render::Texture::create(
+    render::AbstractTexture::Ptr ppTarget = render::Texture::create(
         sceneManager->assets()->context(),
         math::clp2(canvas->width()),
         math::clp2(canvas->height()),
@@ -84,11 +87,12 @@ int main(int argc, char** argv)
     ppTarget->upload();
 
     auto ppRenderer = Renderer::create(0x7f7f7fff);
+
     auto ppData = data::Provider::create()
         ->set("backbuffer", ppTarget)
-        ->set("invBackbufferSize", Vector2::create(1.f / (float)ppTarget->width(), 1.f / (float)ppTarget->height()));
+        ->set("invBackbufferSize", Vector2::create(1.f / float(ppTarget->width()), 1.f / float(ppTarget->height())));
 
-    auto _ = sceneManager->assets()->loader()->complete()->connect([=](file::Loader::Ptr loader)
+    auto _ = sceneManager->assets()->loader()->complete()->connect([ = ](file::Loader::Ptr loader)
     {
         auto cubeGeometry = geometry::CubeGeometry::create(sceneManager->assets()->context());
         auto sphereGeometry = geometry::SphereGeometry::create(sceneManager->assets()->context(), 30, 30);
@@ -106,7 +110,7 @@ int main(int argc, char** argv)
             material::Material::create()
                 ->set("diffuseColor", math::Vector4::create(102.f / 255.f, 205.f / 255.f, 50.f / 255.f, 1.f)),
             sceneManager->assets()->effect("effect/Hologram/Hologram.effect")
-            ));
+        ));
 
         mesh2->addComponent(Surface::create(
             sceneManager->assets()->geometry("sphereGeometry"),
@@ -118,14 +122,15 @@ int main(int argc, char** argv)
         mesh->component<Transform>()->matrix()->appendTranslation(2.5f, 0.f, 0.f);
         mesh2->component<Transform>()->matrix()->appendTranslation(-2.5f, 0.f, 0.f);
 
-        auto meshes = scene::NodeSet::create(sceneManager->assets()->symbol(MODEL_FILENAME))->descendants(false, false)->where([=](scene::Node::Ptr node)
+        auto meshes = scene::NodeSet::create(sceneManager->assets()->symbol(MODEL_FILENAME))->descendants(false, false)->where([ = ](scene::Node::Ptr node)
         {
             return node->hasComponent<Surface>();
         });
 
-        root->addChild(mesh);
-        root->addChild(mesh2);
-        root->addChild(sceneManager->assets()->symbol(MODEL_FILENAME));
+        root
+            ->addChild(mesh);
+            ->addChild(mesh2);
+            ->addChild(sceneManager->assets()->symbol(MODEL_FILENAME));
 
         // FXAA
         auto ppFx = sceneManager->assets()->effect("effect/FXAA/FXAA.effect");
@@ -138,8 +143,7 @@ int main(int argc, char** argv)
 
         ppRenderer->backgroundColor(0x7f7f7fff);
 
-        auto ppScene = scene::Node::create();
-        ppScene
+        auto ppScene = scene::Node::create()
             ->addChild(ppQuad)
             ->addComponent(ppRenderer);
     });
@@ -153,7 +157,9 @@ int main(int argc, char** argv)
 
         ppTarget = render::Texture::create(sceneManager->assets()->context(), width, height, false, true);
         ppTarget->upload();
-        ppData->set("backbuffer", ppTarget)
+
+        ppData
+            ->set("backbuffer", ppTarget)
             ->set("invBackbufferSize", Vector2::create(1.f / width, 1.f / height));
     });
 
@@ -169,8 +175,4 @@ int main(int argc, char** argv)
 
     fxLoader->load();
     canvas->run();
-
-    return 0;
 }
-
-

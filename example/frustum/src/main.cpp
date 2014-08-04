@@ -25,19 +25,14 @@ using namespace minko;
 using namespace minko::component;
 using namespace minko::math;
 
-#define POST_PROCESSING 0
-#define WINDOW_WIDTH      800
-#define WINDOW_HEIGHT     600
-
 scene::Node::Ptr camera = nullptr;
 
-int main(int argc, char** argv)
+int
+main(int argc, char** argv)
 {
-    auto canvas        = Canvas::create("Minko Example - Frustum", WINDOW_WIDTH, WINDOW_HEIGHT);
+    auto canvas        = Canvas::create("Minko Example - Frustum");
 
     canvas->context()->errorsEnabled(true);
-
-    const clock_t startTime    = clock();
 
     auto sceneManager        = SceneManager::create(canvas->context());
     auto root                = scene::Node::create("root")->addComponent(sceneManager);
@@ -48,30 +43,31 @@ int main(int argc, char** argv)
     cubeGroup->addComponent(component::Transform::create());
 
     // setup assets
-    sceneManager->assets()->loader()->options()->generateMipmaps(true);
     sceneManager->assets()->loader()->options()
-                ->registerParser<file::PNGParser>("png");
+        ->generateMipmaps(true);
+        ->registerParser<file::PNGParser>("png");
 
-        sceneManager->assets()->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()));
-        sceneManager->assets()->loader()->queue("effect/Basic.effect");
+    sceneManager->assets()->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()));
 
+    sceneManager->assets()->loader()->queue("effect/Basic.effect");
 
     // camera init
     camera = scene::Node::create("camera")
         ->addComponent(Renderer::create())
-        ->addComponent(PerspectiveCamera::create((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT))
+        ->addComponent(PerspectiveCamera::create(canvas->aspectRatio())
         ->addComponent(Culling::create(math::Frustum::create(), "camera.worldToScreenMatrix"))
         ->addComponent(Transform::create(
             Matrix4x4::create()->lookAt(
                 Vector3::create(0.f, 0.f),
-                Vector3::create(rand() % 200 - 100.f, rand() % 200 - 100.f, rand() % 200 - 100.f))
+                Vector3::create(rand() % 200 - 100.f, rand() % 200 - 100.f, rand() % 200 - 100.f)
+            )
         ));
 
     root->addChild(camera);
 
-    auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, unsigned int width, unsigned int height)
+    auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint height)
     {
-        camera->component<PerspectiveCamera>()->aspectRatio((float)width / (float)height);
+        camera->component<PerspectiveCamera>()->aspectRatio(float(w) / float(h));
     });
 
     auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr canvas, float time, float deltaTime)
@@ -90,7 +86,7 @@ int main(int argc, char** argv)
             auto mesh = scene::Node::create("mesh")
                 ->addComponent(Transform::create(math::Matrix4x4::create()
                     ->appendTranslation(rand() % 200 - 100.f, rand() % 200 - 100.f, rand() % 200 - 100.f)
-                    ))
+                ))
                 ->addComponent(Surface::create(
                     sceneManager->assets()->geometry("cube"),
                     material,
@@ -100,12 +96,11 @@ int main(int argc, char** argv)
 
             cubeGroup->addChild(mesh);
         }
+
         root->addChild(cubeGroup);
     });
 
     sceneManager->assets()->loader()->load();
 
     canvas->run();
-
-    exit(EXIT_SUCCESS);
 }

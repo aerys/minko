@@ -119,12 +119,11 @@ main(int argc, char** argv)
         ->addComponent(Transform::create(
             Matrix4x4::create()->lookAt(Vector3::create(0.f, 0.75f, 0.f), Vector3::create(0.25f, 0.75f, 2.5f))
         ))
-        ->addComponent(PerspectiveCamera::create(
-            (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, float(M_PI) * 0.25f, .1f, 1000.f)
+        ->addComponent(PerspectiveCamera::create(canvas->aspectRatio())
         );
     root->addChild(camera);
 
-    auto _ = sceneManager->assets()->loader()->complete()->connect([=](file::Loader::Ptr loader)
+    auto _ = sceneManager->assets()->loader()->complete()->connect([ = ](file::Loader::Ptr loader)
     {
         auto model = sceneManager->assets()->symbol(MODEL_FILENAME);
 
@@ -136,16 +135,19 @@ main(int argc, char** argv)
         });
 
         root->addComponent(AmbientLight::create())
-            ->addComponent(DirectionalLight::create())
-            ->addChild(model);
+        ->addComponent(DirectionalLight::create())
+        ->addChild(model);
 
         auto skinnedNodes = scene::NodeSet::create(model)
             ->descendants(true)
-            ->where([](scene::Node::Ptr n){ return n->hasComponent<Skinning>(); });
+            ->where([](scene::Node::Ptr n)
+        {
+            return n->hasComponent<Skinning>();
+        });
 
         auto skinnedNode = !skinnedNodes->nodes().empty()
-            ? skinnedNodes->nodes().front()
-            : nullptr;
+                           ? skinnedNodes->nodes().front()
+                           : nullptr;
 
         anim = skinnedNode->component<Skinning>()
             ->addLabel(LABEL_RUN_START,        0)
@@ -162,10 +164,10 @@ main(int argc, char** argv)
             ->addLabel(LABEL_STUN_START,    3633)
             ->addLabel(LABEL_STUN_STOP,        5033);
 
-        started        = anim->started()->connect([](AbstractAnimation::Ptr){ std::cout << "\nanimation started" << std::endl; });
-        stopped        = anim->stopped()->connect([](AbstractAnimation::Ptr){ std::cout << "animation stopped" << std::endl; });
-        looped        = anim->looped()->connect([](AbstractAnimation::Ptr){ std::cout << "\nanimation looped" << std::endl; });
-        labelHit    = anim->labelHit()->connect([](AbstractAnimation::Ptr, std::string name, uint time){ std::cout << "label '" << name << "'\thit at t = " << time << std::endl; });
+        started     = anim->started()->connect([](AbstractAnimation::Ptr) { std::cout << "\nanimation started" << std::endl; });
+        stopped     = anim->stopped()->connect([](AbstractAnimation::Ptr) { std::cout << "animation stopped" << std::endl; });
+        looped      = anim->looped()->connect([](AbstractAnimation::Ptr) { std::cout << "\nanimation looped" << std::endl; });
+        labelHit    = anim->labelHit()->connect([](AbstractAnimation::Ptr, std::string name, uint time) { std::cout << "label '" << name << "'\thit at t = " << time << std::endl; });
 
         printAnimationInfo(anim);
         idle(anim);
@@ -267,19 +269,20 @@ main(int argc, char** argv)
         {
             if (speedId == 1)
             {
-                anim->timeFunction([](uint t){ return t / 2; });
+                anim->timeFunction([](uint t) { return t / 2; });
                 std::cout << "animation's speed is decreased" << std::endl;
             }
             else if (speedId == 2)
             {
-                anim->timeFunction([](uint t){ return t; });
+                anim->timeFunction([](uint t) { return t; });
                 std::cout << "animation is back to normal speed" << std::endl;
             }
             else if (speedId == 3)
             {
-                anim->timeFunction([](uint t){ return t * 2; });
+                anim->timeFunction([](uint t) { return t * 2; });
                 std::cout << "animation's speed is increased" << std::endl;
             }
+
             speedId = 0;
         }
     });
@@ -380,6 +383,7 @@ printAnimationInfo(AbstractAnimation::Ptr anim)
         return;
 
     std::cout << "Animation labels\n--------------" << std::endl;
+
     for (uint labelId = 0; labelId < anim->numLabels(); ++labelId)
         std::cout << "\t'" << anim->labelName(labelId) << "'\tat t = " << anim->labelTime(labelId) << std::endl;
 

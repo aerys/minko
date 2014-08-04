@@ -27,19 +27,21 @@ using namespace minko::math;
 
 const std::string TEXTURE_FILENAME = "texture/box.png";
 
-int main(int argc, char** argv)
+int
+main(int argc, char** argv)
 {
-    auto canvas = Canvas::create("Minko Example - Visibility", 800, 600);
+    auto canvas = Canvas::create("Minko Example - Visibility");
 
     auto sceneManager = SceneManager::create(canvas->context());
 
     // setup assets
-    sceneManager->assets()->loader()->options()->resizeSmoothly(true);
-    sceneManager->assets()->loader()->options()->generateMipmaps(true);
     sceneManager->assets()->loader()->options()
-                ->registerParser<file::PNGParser>("png");
-        sceneManager->assets()->loader()
-                ->queue(TEXTURE_FILENAME)
+        ->resizeSmoothly(true)
+        ->generateMipmaps(true)
+        ->registerParser<file::PNGParser>("png");
+
+    sceneManager->assets()->loader()
+        ->queue(TEXTURE_FILENAME)
         ->queue("effect/Basic.effect");
 
     sceneManager->assets()->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()));
@@ -55,7 +57,7 @@ int main(int argc, char** argv)
         ->addComponent(Transform::create(
             Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 17.f))
         ))
-        ->addComponent(PerspectiveCamera::create(800.f / 600.f, float(M_PI) * 0.25f, .1f, 1000.f));
+        ->addComponent(PerspectiveCamera::create(canvas->aspectRatio()));
     root->addChild(camera);
 
     auto cubes = scene::Node::create("cubesContainer");
@@ -69,14 +71,14 @@ int main(int argc, char** argv)
         {
             for (int i = -3; i <= 3; ++i)
             {
-                auto mesh = scene::Node::create("mesh")
+                cube->addChild(scene::Node::create("mesh")
                     ->addComponent(Surface::create(
                         sceneManager->assets()->geometry("cube"),
                         sceneManager->assets()->material("boxMaterial"),
                         sceneManager->assets()->effect("effect/Basic.effect")
                         ))
-                    ->addComponent(Transform::create(Matrix4x4::create()->appendTranslation(i * 2.f, j * 2.f)));
-                cubes->addChild(mesh);
+                    ->addComponent(Transform::create(Matrix4x4::create()->appendTranslation(i * 2.f, j * 2.f)))
+                );
             }
         }
 
@@ -120,10 +122,7 @@ int main(int argc, char** argv)
     });
 
     sceneManager->assets()->loader()->load();
-
     canvas->run();
-
-    return 0;
 }
 
 

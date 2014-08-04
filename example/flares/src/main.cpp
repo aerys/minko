@@ -29,20 +29,22 @@ using namespace minko::math;
 #define WINDOW_WIDTH      800
 #define WINDOW_HEIGHT     600
 
-int main(int argc, char** argv)
+int
+main(int argc, char** argv)
 {
-    auto canvas         = Canvas::create("Minko Example - Flares", WINDOW_WIDTH, WINDOW_HEIGHT);
+    auto canvas         = Canvas::create("Minko Example - Flares");
     auto context        = canvas->context();
-    auto sceneManager    = SceneManager::create(canvas->context());
-    auto assets            = sceneManager->assets();
-    auto defaultLoader    = assets->loader();
-    auto root            = scene::Node::create("root")->addComponent(sceneManager);
+    auto sceneManager   = SceneManager::create(canvas->context());
+    auto assets         = sceneManager->assets();
+    auto defaultLoader  = assets->loader();
+    auto root           = scene::Node::create("root")->addComponent(sceneManager);
 
     defaultLoader->options()
         ->generateMipmaps(true)
         ->resizeSmoothly(true)
         ->registerParser<file::PNGParser>("png")
         ->registerParser<file::JPEGParser>("jpg");
+
     defaultLoader
         ->queue("texture/skybox.jpg", file::Options::create(defaultLoader->options())->isCubeTexture(true))
         ->queue("texture/sprite-pointlight.png")
@@ -76,6 +78,7 @@ int main(int argc, char** argv)
                     ->triangleCulling(render::TriangleCulling::FRONT),
                 assets->effect("effect/Basic.effect")
             ));
+
         root->addChild(sky);
 
         // sprite
@@ -88,19 +91,21 @@ int main(int argc, char** argv)
             ->addComponent(Transform::create(
                 Matrix4x4::create()->appendTranslation(100.f, 100.f, -150.f)->prependScale(100.f)
             ));
+
         root->addChild(sprite);
     });
 
     // camera init
     auto camera = scene::Node::create("camera")
         ->addComponent(Renderer::create())
-        ->addComponent(PerspectiveCamera::create((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT))
+        ->addComponent(PerspectiveCamera::create(canvas->aspectRatio()))
         ->addComponent(Transform::create());
+
     root->addChild(camera);
 
-    auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, unsigned int width, unsigned int height)
+    auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, unsigned int w, unsigned int h)
     {
-        camera->component<PerspectiveCamera>()->aspectRatio((float)width / (float)height);
+        camera->component<PerspectiveCamera>()->aspectRatio(float(w) / float(h));
     });
 
     auto yaw = -4.03f;
@@ -124,8 +129,8 @@ int main(int argc, char** argv)
     {
         mouseMove = canvas->mouse()->move()->connect([&](input::Mouse::Ptr, int dx, int dy)
         {
-            cameraRotationYSpeed = (float)dx * .0025f;
-            cameraRotationXSpeed = (float)dy * -.0025f;
+            cameraRotationYSpeed = float(dx) * .0025f;
+            cameraRotationXSpeed = float(dy) * -.0025f;
         });
     });
 
@@ -141,6 +146,7 @@ int main(int argc, char** argv)
 
         pitch += cameraRotationXSpeed;
         cameraRotationXSpeed *= 0.9f;
+
         if (pitch > maxPitch)
             pitch = maxPitch;
         else if (pitch < minPitch)
@@ -149,9 +155,9 @@ int main(int argc, char** argv)
         camera->component<Transform>()->matrix()->lookAt(
             lookAt,
             Vector3::create(
-                lookAt->x() + distance * cosf(yaw) * sinf(pitch),
-                lookAt->y() + distance * cosf(pitch),
-                lookAt->z() + distance * sinf(yaw) * sinf(pitch)
+                lookAt->x() + distance * std::cosf(yaw) * sinf(pitch),
+                lookAt->y() + distance * std::cosf(pitch),
+                lookAt->z() + distance * std::sinf(yaw) * sinf(pitch)
             )
         );
 
@@ -162,6 +168,4 @@ int main(int argc, char** argv)
     assets->loader()->load();
 
     canvas->run();
-
-    exit(EXIT_SUCCESS);
 }
