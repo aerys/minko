@@ -217,7 +217,7 @@ minko.project.application = function(name)
 		else
 			cmd = cmd .. ' --shell-file "' .. minko.sdk.path('/skeleton/template.html') .. '"'
 		end
-		-- includ the app's 'asset' directory into the file system
+		-- include the app's 'asset' directory into the file system
 		cmd = cmd .. ' --preload-file ${TARGETDIR}/asset'
 
 		postbuildcommands {
@@ -277,6 +277,16 @@ minko.project.application = function(name)
 			minko.action.copy("asset")
 		}
 
+	configuration { "ios", "debug" }
+		libdirs {
+			minko.sdk.path("/framework/bin/ios/debug")
+		}
+
+	configuration { "ios", "release" }
+		libdirs {
+			minko.sdk.path("/framework/bin/ios/release")
+		}
+
 	configuration { "android" }
 
 		kind "SharedLib"
@@ -309,15 +319,8 @@ minko.project.application = function(name)
 			minko.action.copy("asset")
 		}
 
-	configuration { "ios", "debug" }
-		libdirs {
-			minko.sdk.path("/framework/bin/ios/debug")
-		}
-
-	configuration { "ios", "release" }
-		libdirs {
-			minko.sdk.path("/framework/bin/ios/release")
-		}
+        configuration { "with-offscreen" }
+                minko.plugin.enable { "offscreen" }
 
 	configuration { }
 
