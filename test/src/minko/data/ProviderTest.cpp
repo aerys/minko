@@ -111,12 +111,12 @@ TEST_F(ProviderTest, PropertyRemoved)
 	);
 
 	p->set("foo", 42);
-	p->unset("foo");
+    p->unset("foo");
 
 	ASSERT_EQ(v, 42);
 }
 
-TEST_F(ProviderTest, ValueChanged)
+TEST_F(ProviderTest, PropertyChanged)
 {
 	auto p = Provider::create("test");
 	auto v = 0;
@@ -133,25 +133,25 @@ TEST_F(ProviderTest, ValueChanged)
 	ASSERT_EQ(v, 42);
 }
 
-//TEST_F(ProviderTest, ValueChangedNot)
-//{
-//	auto p = Provider::create("test");
-//	auto v = 0;
-//
-//	p->set("foo", 42);
-//
-//	auto _ = p->propertyValueChanged()->connect(
-//		[&](Provider::Ptr provider, const std::string& propertyName)
-//		{
-//			if (provider == p && propertyName == "foo")
-//				v = provider->get<int>("foo");
-//		}
-//	);
-//
-//	p->set("foo", 42);
-//
-//	ASSERT_NE(v, 42);
-//}
+TEST_F(ProviderTest, ValueChangedNot)
+{
+	auto p = Provider::create("test");
+	auto v = 0;
+
+	p->set("foo", 42);
+
+	auto _ = p->propertyChanged()->connect(
+		[&](Provider::Ptr provider, const std::string& propertyName)
+		{
+			if (provider == p && propertyName == "foo")
+				v = provider->get<int>("foo");
+		}
+	);
+
+	p->set("foo", 42);
+
+	ASSERT_NE(v, 42);
+}
 
 TEST_F(ProviderTest, Swap)
 {
@@ -176,4 +176,77 @@ TEST_F(ProviderTest, Swap)
 
 	ASSERT_EQ(vFoo, 24);
 	ASSERT_EQ(vBar, 42);
+}
+
+TEST_F(ProviderTest, IntegerPointerConsistency)
+{
+    auto p = Provider::create("test");
+
+    p->set("integer", 42);
+
+    ASSERT_EQ(p->getPointer<render::TextureSampler>("integer"), p->getPointer<render::TextureSampler>("integer"));
+}
+
+TEST_F(ProviderTest, IntegerPointerConsistency2)
+{
+    auto p = Provider::create("test");
+
+    p->set("integer", 42);
+    auto ptr1 = p->getPointer<int>("integer");
+
+    p->set("integer", 24);
+    auto ptr2 = p->getPointer<int>("integer");
+
+    ASSERT_EQ(ptr1, ptr2);
+}
+
+TEST_F(ProviderTest, TextureSamplerPointerConsistency)
+{
+    auto p = Provider::create("test");
+    auto t1 = render::Texture::create(MinkoTests::context(), 2, 2);
+
+    p->set("texture", t1->sampler());
+
+    ASSERT_EQ(p->getPointer<render::TextureSampler>("texture"), p->getPointer<render::TextureSampler>("texture"));
+}
+
+TEST_F(ProviderTest, TextureSamplerPointerConsistency2)
+{
+    auto p = Provider::create("test");
+    auto t1 = render::Texture::create(MinkoTests::context(), 2, 2);
+    auto t2 = render::Texture::create(MinkoTests::context(), 4, 4);
+
+    p->set("texture", t1->sampler());
+    auto ptr1 = p->getPointer<render::TextureSampler>("texture");
+
+    p->set("texture", t2->sampler());
+    auto ptr2 = p->getPointer<render::TextureSampler>("texture");
+
+    ASSERT_EQ(ptr1, ptr2);
+}
+
+TEST_F(ProviderTest, VertexAttributePointerConsistency)
+{
+    auto p = Provider::create("test");
+    auto g = geometry::CubeGeometry::create(MinkoTests::context());
+    const auto& a1 = g->getVertexAttribute("position");
+
+    p->set("position", g->getVertexAttribute("position"));
+
+    ASSERT_EQ(p->getPointer<render::VertexAttribute>("position"), p->getPointer<render::VertexAttribute>("position"));
+}
+
+TEST_F(ProviderTest, VertexAttributePointerConsistency2)
+{
+    auto p = Provider::create("test");
+    auto cube = geometry::CubeGeometry::create(MinkoTests::context());
+    auto sphere = geometry::SphereGeometry::create(MinkoTests::context());
+
+    p->set("position", cube->getVertexAttribute("position"));
+    auto ptr1 = p->getPointer<render::VertexAttribute>("position");
+
+    p->set("position", sphere->getVertexAttribute("position"));
+    auto ptr2 = p->getPointer<render::VertexAttribute>("position");
+
+    ASSERT_EQ(ptr1, ptr2);
 }

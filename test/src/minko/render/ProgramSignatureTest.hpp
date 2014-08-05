@@ -31,13 +31,13 @@ namespace minko
         class ProgramSignatureTest : public ::testing::Test
         {
         protected:
-            data::Container::Ptr            _targetData;
-            data::Container::Ptr            _rendererData;
-            data::Container::Ptr            _rootData;
-            data::Provider::Ptr             _targetProvider;
-            data::Provider::Ptr             _rendererProvider;
-            data::Provider::Ptr             _rootProvider;
-            data::TranslatedPropertyNameMap _names;
+            data::Container::Ptr                            _targetData;
+            data::Container::Ptr                            _rendererData;
+            data::Container::Ptr                            _rootData;
+            data::Provider::Ptr                             _targetProvider;
+            data::Provider::Ptr                             _rendererProvider;
+            data::Provider::Ptr                             _rootProvider;
+            std::unordered_map<std::string, std::string>    _variables;
 
         protected:
             virtual void SetUp();

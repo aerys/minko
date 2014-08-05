@@ -43,12 +43,9 @@ namespace minko
 			typedef ProviderPropertyChangedSignal::Slot					ProviderPropertyChangedSlot;
 
         private:
-            static uint CONTAINER_ID;
-
 			std::list<ProviderPtr>										_providers;
             std::unordered_map<ProviderPtr, uint>                       _numUses;
 			std::shared_ptr<Provider>									_arrayLengths;
-            std::unordered_map<std::string, ProviderPtr>                _propertyNameToProvider;
 
 			PropertyChangedSignalPtr									_propertyAdded;
 			PropertyChangedSignalPtr									_propertyRemoved;
@@ -60,7 +57,6 @@ namespace minko
             std::unordered_map<std::string, PropertyChangedSignalPtr>	_propertyChangedSlots;
 
 		public:
-			uint _containerId;
 			static
 			Ptr
 			create()
@@ -85,15 +81,18 @@ namespace minko
 			hasProvider(std::shared_ptr<Provider> provider) const;
 
 			bool
-			hasProperty(const std::string&) const;
+			hasProperty(const std::string& propertyName, uint index = 0) const;
+
+            uint
+			countProperty(const std::string& propertyName) const;
 			
             template <typename T>
 			bool
 			propertyHasType(const std::string& propertyName, bool skipPropertyNameFormatting = false) const
 			{
-				assertPropertyExists(propertyName);
+                auto provider = getProviderByPropertyName(propertyName);
 
-				const auto& provider = _propertyNameToProvider.find(propertyName)->second;
+                assert(provider != nullptr);
 
 				return provider->propertyHasType<T>(propertyName, skipPropertyNameFormatting);
 			}
@@ -102,9 +101,9 @@ namespace minko
 			const T&
 			get(const std::string& propertyName) const
 			{
-				assertPropertyExists(propertyName);
+                auto provider = getProviderByPropertyName(propertyName);
 
-				const auto& provider = _propertyNameToProvider.find(propertyName)->second;
+                assert(provider != nullptr);
 
 				return provider->get<T>(propertyName, true);
 			}
@@ -113,9 +112,9 @@ namespace minko
             const T*
             getPointer(const std::string& propertyName) const
             {
-                assertPropertyExists(propertyName);
+                auto provider = getProviderByPropertyName(propertyName);
 
-                const auto& provider = _propertyNameToProvider.find(propertyName)->second;
+                assert(provider != nullptr);
 
                 return provider->getPointer<T>(propertyName, true);
             }
@@ -124,10 +123,9 @@ namespace minko
 			void
 			set(const std::string& propertyName, T value)
 			{
-				assertPropertyExists(propertyName);
+                auto provider = getProviderByPropertyName(propertyName);
 
-				auto provider = _propertyNameToProvider[propertyName];
-
+                assert(provider != nullptr);
 				provider->set<T>(propertyName, value);
 			}
 
@@ -182,8 +180,8 @@ namespace minko
 		private:
 			Container();
 
-			void
-			assertPropertyExists(const std::string& propertyName) const;
+            ProviderPtr
+            getProviderByPropertyName(const std::string& propertyName, uint index = 0) const;
 
 			void
 			providerPropertyAddedHandler(ProviderPtr, const std::string& propertyName);
@@ -193,26 +191,6 @@ namespace minko
 
             void
             providerPropertyChangedHandler(ProviderPtr, const std::string& propertyName);
-
-			inline
-			void
-			assertProviderDoesNotExist(std::shared_ptr<Provider> provider) const
-			{
-#ifdef DEBUG
-				if (std::find(_providers.begin(), _providers.end(), provider) != _providers.end())
-					throw std::invalid_argument("provider");
-#endif // DEBUG
-			}
-
-			inline
-			void
-			assertProviderExists(std::shared_ptr<Provider> provider) const
-			{
-#ifdef DEBUG
-				if (std::find(_providers.begin(), _providers.end(), provider) == _providers.end())
-					throw std::invalid_argument("provider");
-#endif // DEBUG
-			}
 		};
 	}
 }

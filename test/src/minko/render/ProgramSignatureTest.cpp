@@ -19,6 +19,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "ProgramSignatureTest.hpp"
 
+#include "minko/data/MacroBinding.hpp"
+
 using namespace minko;
 using namespace minko::render;
 
@@ -28,87 +30,79 @@ ProgramSignatureTest::SetUp()
     _targetProvider = data::Provider::create("targetData");
     _targetData = data::Container::create();
     _targetData->addProvider(_targetProvider);
-    _names["targetId"] = _targetProvider->uuid();
+    _variables["targetId"] = _targetProvider->uuid();
     _targetProvider->set("foo", 42);
+    _targetProvider->set("foo2", 24);
     _targetProvider->set("bar", true);
     
     _rendererProvider = data::Provider::create("rendererData");
     _rendererData = data::Container::create();
     _rendererData->addProvider(_rendererProvider);
-    _names["rendererId"] = _rendererProvider->uuid();
+    _variables["rendererId"] = _rendererProvider->uuid();
     _rendererProvider->set("foo", 4242);
     _rendererProvider->set("bar", true);
 
     _rootProvider = data::Provider::create("rootData");
     _rootData = data::Container::create();
     _rootData->addProvider(_rootProvider);
-    _names["rootId"] = _rootProvider->uuid();
+    _variables["rootId"] = _rootProvider->uuid();
     _rootProvider->set("foo", 424242);
     _rootProvider->set("bar", true);
 }
 
-TEST_F(ProgramSignatureTest, TargetIntegerValue)
+TEST_F(ProgramSignatureTest, TargetDefinedIntegerValue)
 {
     data::MacroBindingMap macroBindings;
-    std::string defines;
 
     macroBindings["FOO"] = {
         "targetData[${targetId}].foo",
         data::BindingSource::TARGET,
-        data::MacroBindingState::DEFINED_INTEGER_VALUE,
-        data::MacroBindingValue(),
-        0,
-        0
+        data::MacroBinding::State::UNDEFINED,
+        data::MacroBinding::Value()
     };
 
-    ProgramSignature signature(macroBindings, _names, _targetData, _rendererData, _rootData, defines);
+    ProgramSignature signature(macroBindings, _variables, _targetData, _rendererData, _rootData);
 
     ASSERT_EQ(signature.mask(), 0x00000001);
+    ASSERT_EQ(signature.values().size(), 1);
     ASSERT_EQ(signature.values()[0], 42);
-    ASSERT_EQ(signature.states()[0], data::MacroBindingState::DEFINED_INTEGER_VALUE);
-    ASSERT_EQ(defines, "#defines FOO 42");
+    ASSERT_EQ(signature.states().size(), 1);
+    ASSERT_EQ(signature.states()[0], data::MacroBinding::State::DEFINED_INTEGER_VALUE);
 }
 
 TEST_F(ProgramSignatureTest, TargetDefined)
 {
     data::MacroBindingMap macroBindings;
-    std::string defines;
 
     macroBindings["BAR"] = {
         "targetData[${targetId}].bar",
         data::BindingSource::TARGET,
-        data::MacroBindingState::DEFINED_INTEGER_VALUE,
-        data::MacroBindingValue(),
-        0,
-        0
+        data::MacroBinding::State::UNDEFINED,
+        data::MacroBinding::Value()
     };
 
-    ProgramSignature signature(macroBindings, _names, _targetData, _rendererData, _rootData, defines);
+    ProgramSignature signature(macroBindings, _variables, _targetData, _rendererData, _rootData);
 
     ASSERT_EQ(signature.mask(), 0x00000001);
-    ASSERT_EQ(signature.values()[0], 0);
-    ASSERT_EQ(signature.states()[0], data::MacroBindingState::DEFINED);
-    ASSERT_EQ(defines, "#defines BAR");
+    ASSERT_EQ(signature.values().size(), 0);
+    ASSERT_EQ(signature.states().size(), 1);
+    ASSERT_EQ(signature.states()[0], data::MacroBinding::State::DEFINED);
 }
 
 TEST_F(ProgramSignatureTest, TargetUndefined)
 {
     data::MacroBindingMap macroBindings;
-    std::string defines;
 
     macroBindings["BAR"] = {
         "targetData[${targetId}].fooBar",
         data::BindingSource::TARGET,
-        data::MacroBindingState::DEFINED_INTEGER_VALUE,
-        data::MacroBindingValue(),
-        0,
-        0
+        data::MacroBinding::State::UNDEFINED,
+        data::MacroBinding::Value()
     };
 
-    ProgramSignature signature(macroBindings, _names, _targetData, _rendererData, _rootData, defines);
+    ProgramSignature signature(macroBindings, _variables, _targetData, _rendererData, _rootData);
 
     ASSERT_EQ(signature.mask(), 0x00000000);
-    ASSERT_EQ(signature.values()[0], 0);
-    ASSERT_EQ(signature.states()[0], data::MacroBindingState::UNDEFINED);
-    ASSERT_EQ(defines, "");
+    ASSERT_EQ(signature.values().size(), 0);
+    ASSERT_EQ(signature.states().size(), 0);
 }

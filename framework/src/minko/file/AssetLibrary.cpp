@@ -96,6 +96,20 @@ AssetLibrary::texture(const std::string& name, render::Texture::Ptr texture)
 	return std::enable_shared_from_this<AssetLibrary>::shared_from_this();
 }
 
+std::shared_ptr<render::AbstractTexture>
+AssetLibrary::getTextureByUuid(const std::string& uuid)
+{
+    auto it = std::find_if(_textures.begin(), _textures.end(), [&](const std::pair<std::string, TexturePtr>& t)
+    {
+        return t.second->isReady() && t.second->uuid() == uuid;
+    });
+
+    if (it == _textures.end())
+        return nullptr;
+
+    return it->second;
+}
+
 render::CubeTexture::Ptr
 AssetLibrary::cubeTexture(const std::string& name) const
 {
@@ -130,21 +144,6 @@ AssetLibrary::textureName(render::AbstractTexture::Ptr texture)
 
 	throw std::logic_error("AssetLibrary does not reference this texture.");
 }
-
-std::shared_ptr<render::AbstractTexture>
-AssetLibrary::getTextureByResourceId(int id)
-{
-    auto it = std::find_if(_textures.begin(), _textures.end(), [&](const std::pair<std::string, TexturePtr>& t)
-    {
-        return t.second->isReady() && t.second->id() == id;
-    });
-
-    if (it == _textures.end())
-        return nullptr;
-
-    return it->second;
-}
-
 
 scene::Node::Ptr
 AssetLibrary::symbol(const std::string& name)

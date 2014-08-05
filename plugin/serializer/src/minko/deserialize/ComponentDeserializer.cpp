@@ -218,7 +218,7 @@ ComponentDeserializer::deserializeSurface(std::string&							serializedSurface,
 		msgpack::unpack(dst.a3.data(), dst.a3.size(), NULL, &mempool, &deserialized);
 		deserialized.convert(&ext);
 
-		for (int i = 0; i < ext.a0.size(); ++i)
+		for (uint i = 0; i < ext.a0.size(); ++i)
 		{
 			auto extension = ext.a0[i];
 

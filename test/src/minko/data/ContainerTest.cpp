@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "ContainerTest.hpp"
 
 using namespace minko::data;
-
+/*
 TEST_F(ContainerTest, Create)
 {
 	try
@@ -189,3 +189,4 @@ TEST_F(ContainerTest, propertyChangedNot)
 
 	ASSERT_NE(v, 42);
 }
+*/

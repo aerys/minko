@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Common.hpp"
 
 #include "minko/render/AbstractResource.hpp"
+#include "minko/render/TextureSampler.hpp"
 
 namespace minko
 {
@@ -41,6 +42,7 @@ namespace minko
 
 		protected:
 			const TextureType	_type;
+            TextureSampler      _sampler;
 			unsigned int		_width;		
 			unsigned int		_height;	
 			unsigned int		_widthGPU;	// always power of 2
@@ -51,6 +53,13 @@ namespace minko
 			std::string			_filename;			
 
 		public:
+            inline
+            const TextureSampler&
+            sampler()
+            {
+                return _sampler;
+            }
+
 			inline
 			TextureType
 			type() const

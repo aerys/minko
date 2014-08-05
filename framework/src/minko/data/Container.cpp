@@ -25,30 +25,25 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::data;
 
-uint Container::CONTAINER_ID = 0;
-
 Container::Container() :
 	std::enable_shared_from_this<Container>(),
 	_arrayLengths(data::Provider::create("fixme")),
 	_propertyAdded(Container::PropertyChangedSignal::create()),
 	_propertyRemoved(Container::PropertyChangedSignal::create()),
 	_providerAdded(Signal<Ptr, Provider::Ptr>::create()),
-	_providerRemoved(Signal<Ptr, Provider::Ptr>::create()),
-	_containerId(CONTAINER_ID++)
+	_providerRemoved(Signal<Ptr, Provider::Ptr>::create())
 {
 }
 
 void
 Container::initialize()
 {
-	addProvider(_arrayLengths);
+	//addProvider(_arrayLengths);
 }
 
 void
 Container::addProvider(Provider::Ptr provider)
 {
-    //assertProviderDoesNotExist(provider);
-
     if (std::find(_providers.begin(), _providers.end(), provider) != _providers.end())
     {
         _numUses[provider]++;
@@ -88,7 +83,7 @@ Container::addProvider(Provider::Ptr provider)
 void
 Container::removeProvider(Provider::Ptr provider)
 {
-    assertProviderExists(provider);
+    assert(std::find(_providers.begin(), _providers.end(), provider) != _providers.end());
 
     if (_numUses[provider] != 1)
     {
@@ -122,16 +117,27 @@ Container::hasProvider(std::shared_ptr<Provider> provider) const
 }
 
 bool
-Container::hasProperty(const std::string& propertyName) const
+Container::hasProperty(const std::string& propertyName, uint index) const
 {
-	return _propertyNameToProvider.count(propertyName) != 0;
+    for (auto provider : _providers)
+        if (index == 0 && provider->hasProperty(propertyName, false))
+            return true;
+        else
+            --index;
+	
+    return false;
 }
 
-void
-Container::assertPropertyExists(const std::string& propertyName) const
+uint
+Container::countProperty(const std::string& propertyName) const
 {
-	if (!hasProperty(propertyName))
-		throw std::invalid_argument(propertyName);	
+    auto count = 0u;
+
+    for (auto provider : _providers)
+        if (provider->hasProperty(propertyName, false))
+            ++count;
+
+    return count;
 }
 
 void
@@ -145,12 +151,7 @@ void
 Container::providerPropertyAddedHandler(std::shared_ptr<Provider> 	provider,
                                         const std::string& 			propertyName)
 {
-    if (_propertyNameToProvider.count(propertyName) != 0)
-        throw std::logic_error("duplicate property name: " + propertyName);
-
-    _propertyNameToProvider[propertyName] = provider;
     _propertyAdded->execute(shared_from_this(), propertyName);
-
     providerPropertyChangedHandler(provider, propertyName);
 }
 
@@ -159,16 +160,10 @@ void
 Container::providerPropertyRemovedHandler(std::shared_ptr<Provider> provider,
                                           const std::string&		propertyName)
 {
+    if (_propertyChanged.count(propertyName) && _propertyChanged[propertyName]->numCallbacks() == 0)
+        _propertyChanged.erase(propertyName);
 
-    if (_propertyNameToProvider.count(propertyName) != 0)
-    {
-        _propertyNameToProvider.erase(propertyName);
-
-        if (_propertyChanged.count(propertyName) && _propertyChanged[propertyName]->numCallbacks() == 0)
-            _propertyChanged.erase(propertyName);
-
-        _propertyRemoved->execute(shared_from_this(), propertyName);
-    }
+    _propertyRemoved->execute(shared_from_this(), propertyName);
 }
 
 Container::Ptr
@@ -198,4 +193,16 @@ Container::filter(const std::set<data::AbstractFilter::Ptr>&	filters,
 	}
 
 	return output;
+}
+
+Provider::Ptr
+Container::getProviderByPropertyName(const std::string& propertyName, uint index) const
+{
+    for (auto provider : _providers)
+        if (index == 0 && provider->hasProperty(propertyName))
+            return provider;
+        else
+            --index;
+
+    return nullptr;
 }

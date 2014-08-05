@@ -45,7 +45,6 @@ namespace minko
             typedef std::unordered_map<std::string, SamplerState>		SamplerStatesMap;
 			typedef std::shared_ptr<States>								StatesPtr;
 			typedef std::unordered_map<ProgramSignature, ProgramPtr>	SignatureProgramMap;
-			typedef std::shared_ptr<std::function<void(ProgramPtr)>>	OnProgramFunctionPtr;
 			typedef std::list<std::function<void(ProgramPtr)>>			OnProgramFunctionList;	
 			typedef std::unordered_map<std::string, data::MacroBinding> MacroBindingsMap;
 
@@ -62,10 +61,7 @@ namespace minko
 
 			OnProgramFunctionList					_uniformFunctions;
 			OnProgramFunctionList					_attributeFunctions;
-			OnProgramFunctionPtr					_indexFunction;
-			std::set<std::string>					_undefinedMacros;
-			std::set<std::string>					_definedBoolMacros;
-			std::unordered_map<std::string, int>	_definedIntMacros;
+            OnProgramFunctionList                   _macroFunctions;
 
 		public:
 			inline static
@@ -110,7 +106,6 @@ namespace minko
 
 				p->_uniformFunctions = pass->_uniformFunctions;
 				p->_attributeFunctions = pass->_attributeFunctions;
-				p->_indexFunction = pass->_indexFunction;
 	
 				if (pass->_programTemplate->isReady())
 				{
@@ -118,8 +113,6 @@ namespace minko
 						f(pass->_programTemplate);
 					for (auto& f : p->_attributeFunctions)
 						f(pass->_programTemplate);
-					if (p->_indexFunction)
-						p->_indexFunction->operator()(pass->_programTemplate);
 				}
 
 				return p;
@@ -182,10 +175,10 @@ namespace minko
 			}
 
 			std::shared_ptr<Program>
-            selectProgram(const data::TranslatedPropertyNameMap&    translatedPropertyNames,
-						  std::shared_ptr<data::Container>	        targetData,
-						  std::shared_ptr<data::Container>	        rendererData,
-						  std::shared_ptr<data::Container>	        rootData);
+            selectProgram(const std::unordered_map<std::string, std::string>&   translatedPropertyNames,
+						  std::shared_ptr<data::Container>	                    targetData,
+						  std::shared_ptr<data::Container>	                    rendererData,
+						  std::shared_ptr<data::Container>	                    rootData);
 			
 			template <typename... T>
 			void
@@ -219,24 +212,19 @@ namespace minko
 			void
 			define(const std::string& macroName)
 			{
-				if (!macroName.empty())
-					_definedBoolMacros.insert(macroName);
+                _macroFunctions.push_back(std::bind(&Pass::defineOnProgram, std::placeholders::_1, macroName));
+                _programTemplate->define(macroName);
 			}
 
+            template <typename T>
 			inline
 			void
-			define(const std::string& macroName, int macroValue)
+			define(const std::string& macroName, T macroValue)
 			{
-				if (!macroName.empty())
-					_definedIntMacros[macroName] = macroValue;
-			}
-
-			inline
-			void
-			undefine(const std::string& macroName)
-			{
-				if (!macroName.empty())
-					_undefinedMacros.insert(macroName);
+                _macroFunctions.push_back(std::bind(
+                    &Pass::defineOnProgram<T>, std::placeholders::_1, macroName, macroValue
+                ));
+                _programTemplate->define(macroName, macroValue);
 			}
 
 		private:
@@ -263,6 +251,21 @@ namespace minko
 			{
 				program->setAttribute(name, attribute);
 			}
+
+            static
+            void
+            defineOnProgram(std::shared_ptr<Program> program, const std::string& macroName)
+            {
+                program->define(macroName);
+            }
+
+            template <typename T>
+            static
+            void
+            defineOnProgram(std::shared_ptr<Program> program, const std::string& macroName, T value)
+            {
+                program->define(macroName, value);
+            }
 
 			ProgramPtr
 			finalizeProgram(ProgramPtr program);

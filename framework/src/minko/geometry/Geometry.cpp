@@ -506,3 +506,34 @@ Geometry::disposeVertexBufferData()
     for (auto vertexBuffer : _vertexBuffers)
         vertexBuffer->disposeData();
 }
+
+bool
+Geometry::equals(Ptr geom) const
+{
+    bool vertexEquality = _vertexBuffers.size() == geom->_vertexBuffers.size();
+    bool indexEquality = _indexBuffer == geom->_indexBuffer;
+    auto vertexBuffer1Start = _vertexBuffers.begin();
+    auto vertexBuffer2Start = geom->_vertexBuffers.begin();
+
+    if (vertexEquality)
+    {
+        for (uint i = 0; i < _vertexBuffers.size() && vertexEquality; ++i)
+        {
+            vertexEquality = vertexEquality && (*vertexBuffer1Start == *vertexBuffer2Start);
+            std::next(vertexBuffer1Start);
+            std::next(vertexBuffer2Start);
+        }
+    }
+
+    return vertexEquality && indexEquality;
+}
+
+const render::VertexAttribute&
+Geometry::getVertexAttribute(const std::string& attributeName) const
+{
+    for (auto vertexBuffer : _vertexBuffers)
+        if (vertexBuffer->hasAttribute(attributeName))
+            return vertexBuffer->attribute(attributeName);
+
+    throw std::invalid_argument("attributeName = " + attributeName);
+}

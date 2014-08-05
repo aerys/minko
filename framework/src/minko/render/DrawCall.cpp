@@ -148,7 +148,7 @@ DrawCall::bindUniform(Program::Ptr            program,
         case ProgramInputs::Type::sampler2d:
             _samplers.push_back({
                 program->setTextureNames().size() + _samplers.size(),
-                container->getPointer<int>(propertyName),
+                container->getPointer<TextureSampler>(propertyName)->id,
                 input.location
             });
             break;

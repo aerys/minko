@@ -34,6 +34,7 @@ AbstractTexture::AbstractTexture(TextureType			type,
                                 bool					resizeSmoothly,
 								const std::string&		filename) :
 	AbstractResource(context),
+    _sampler(uuid(), &_id),
 	_type(type),
 	_width(width),
 	_height(height),

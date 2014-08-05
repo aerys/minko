@@ -52,14 +52,6 @@ namespace minko
 		bool													_signalListDirty;
 
 	private:
-		Signal() :
-			std::enable_shared_from_this<Signal<A...>>(),
-            _nextSlotId(0),
-			_locked(false),
-			_signalListDirty(false)
-		{
-		}
-
 		void
 		removeConnectionById(const unsigned int connectionId)
 		{
@@ -102,6 +94,14 @@ namespace minko
 		}
 
 	public:
+        Signal() :
+            std::enable_shared_from_this<Signal<A...>>(),
+            _nextSlotId(0),
+            _locked(false),
+            _signalListDirty(false)
+        {
+        }
+
 		static
 		Ptr
 		create()

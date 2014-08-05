@@ -45,12 +45,12 @@ namespace minko
 			typedef std::shared_ptr<render::AbstractContext>	AbsContextPtr;
 
 		private:
-			std::shared_ptr<Shader>								_vertexShader;
-			std::shared_ptr<Shader>								_fragmentShader;
-			ProgramInputs   									_inputs;
+			std::shared_ptr<Shader> _vertexShader;
+			std::shared_ptr<Shader>	_fragmentShader;
+			ProgramInputs   		_inputs;
 
-            std::set<std::string>                               _setTextures;
-            std::set<std::string>                               _setAttributes;
+            std::set<std::string>   _setTextures;
+            std::set<std::string>   _setAttributes;
 
 		public:
 			inline static
@@ -193,6 +193,25 @@ namespace minko
             setAttribute(const std::string& name, const VertexAttribute& attribute)
             {
                 return setAttribute(name, attribute, name);
+            }
+
+            Program&
+            define(const std::string& macroName)
+            {
+                _vertexShader->define(macroName);
+                _fragmentShader->define(macroName);
+
+                return *this;
+            }
+
+            template <typename T>
+            Program&
+            define(const std::string& macroName, T value)
+            {
+                _vertexShader->define(macroName, value);
+                _fragmentShader->define(macroName, value);
+
+                return *this;
             }
 
             Program&

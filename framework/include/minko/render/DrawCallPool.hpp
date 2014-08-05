@@ -72,34 +72,8 @@ namespace minko
                 
                 for (const auto& pass : technique)
                 {
-                    auto program = pass->selectProgram(
-                        translateMacroPropertyNames(pass->macroBindings(), variables),
-                        targetData,
-                        rendererData,
-                        rootData
-                    );
+                    auto program = pass->selectProgram(variables, targetData, rendererData, rootData);
                 }
-            }
-
-            std::unordered_map<std::string, std::string>
-            translateMacroPropertyNames(const data::MacroBindingMap&                        macroBindings,
-                                        const std::unordered_map<std::string, std::string>& variables)
-            {
-                std::unordered_map<std::string, std::string> formattedNames;
-
-                for (const auto& macroBinding : macroBindings)
-                {
-                    for (const auto& variable : variables)
-                    {
-                        auto pos = macroBinding.first.find(variable.first);
-
-                        if (pos != std::string::npos)
-                            formattedNames[macroBinding.first] = macroBinding.first.substr(0, pos)
-                            + variable.second + macroBinding.first.substr(pos + variable.second.size());
-                    }
-                }
-
-                return formattedNames;
             }
 		};
 	}

@@ -22,71 +22,61 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/Pass.hpp"
 #include "minko/data/Container.hpp"
 #include "minko/render/DrawCall.hpp"
+#include "minko/data/MacroBinding.hpp"
 
 using namespace minko;
 using namespace minko::render;
 using namespace minko::data;
 
-//#define DEACTIVATE_FALLBACK // since beta 1
-
-ProgramSignature::ProgramSignature(const data::MacroBindingMap&             macroBindings,
-                                   const data::TranslatedPropertyNameMap&   translatedPropertyNames,
-                                   Container::Ptr			                targetData,
-                                   Container::Ptr			                rendererData,
-                                   Container::Ptr			                rootData,
-                                   std::string&			                    defines) :
-    _mask(0),
-    _values(),
-    _states()
+ProgramSignature::ProgramSignature(const data::MacroBindingMap&                         macroBindings,
+                                   const std::unordered_map<std::string, std::string>&  variables,
+                                   Container::Ptr			                            targetData,
+                                   Container::Ptr			                            rendererData,
+                                   Container::Ptr			                            rootData) :
+    _mask(0)
 {
-	unsigned int macroId	= 0;
+    const uint maxNumMacros = sizeof(MaskType) * 8;
+
+    _values.reserve(maxNumMacros);
+    _macros.reserve(maxNumMacros);
+    _states.reserve(maxNumMacros);
+
+	unsigned int macroId = 0;
 	for (const auto& macroNameAndBinding : macroBindings)
     {
         const auto&	macroName = macroNameAndBinding.first;
         const auto&	macroBinding = macroNameAndBinding.second;
-        auto propertyName = macroBinding.propertyName;
+        auto propertyName = Provider::getActualPropertyName(variables, macroBinding.propertyName);
         auto container = macroBinding.source == BindingSource::TARGET
             ? targetData
             : (macroBinding.source == BindingSource::RENDERER ? rendererData : rootData);
         bool macroIsDefined = container->hasProperty(propertyName);
         bool macroIsInteger = macroIsDefined && container->propertyHasType<int>(propertyName, true);
 
-        if (translatedPropertyNames.count(propertyName) != 0)
-            propertyName = translatedPropertyNames.at(propertyName);
-
-        if (macroIsDefined || macroBinding.defaultState != MacroBindingState::UNDEFINED)
+        if (macroIsDefined || macroBinding.defaultState != MacroBinding::State::UNDEFINED)
 		{
 			// WARNING: we do not support more than 32 macro bindings
-			if (macroId == 32)
+            if (macroId == maxNumMacros)
 				throw;
 
 			_mask |= 1 << macroId; // update program signature
 
-            if (macroIsInteger || macroBinding.defaultState == MacroBindingState::DEFINED_INTEGER_VALUE)
+            _macros.push_back(macroName);
+            if (macroIsInteger || macroBinding.defaultState == MacroBinding::State::DEFINED_INTEGER_VALUE)
 			{
-				int	value = macroIsDefined 
-					? container->get<int>(propertyName)
-					: macroBinding.defaultValue.value;
+				int	value = macroIsDefined ? container->get<int>(propertyName) : macroBinding.defaultValue.value;
 
-				value = std::max(macroBinding.minValue, std::min(macroBinding.maxValue, value)); 
+				value = std::max(macroBinding.minValue, std::min(macroBinding.maxValue, value));
 
 				// update program signature
-				_values[macroId] = value; 
-
-				defines += "#define " + macroName + " " + std::to_string(value) + "\n";
+				_values.push_back(value); 
+                _states.push_back(MacroBinding::State::DEFINED_INTEGER_VALUE);
 			}
-			else
-				defines += "#define " + macroName + "\n";
+            else
+                _states.push_back(MacroBinding::State::DEFINED);
 		}
 		++macroId;
 	}
-
-    while (macroId < 32)
-    {
-        _values[macroId] = 0;
-        _states[macroId] = MacroBindingState::UNDEFINED;
-        ++macroId;
-    }
 }
 
 bool 
@@ -100,4 +90,26 @@ ProgramSignature::operator==(const ProgramSignature& x) const
 			return false;
 
 	return true;
+}
+
+void
+ProgramSignature::updateProgram(Program& program) const
+{
+    auto valueIndex = 0;
+
+    for (auto i = 0u; i < _states.size(); ++i)
+    {
+        switch (_states[i])
+        {
+            case MacroBinding::State::DEFINED:
+                program.define(_macros[i]);
+                break;
+            case MacroBinding::State::DEFINED_INTEGER_VALUE:
+                program.define(_macros[i], _values[valueIndex++]);
+                break;
+            default:
+                //nothing
+                break;
+        }
+    }
 }

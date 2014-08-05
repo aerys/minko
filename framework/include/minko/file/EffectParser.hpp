@@ -27,6 +27,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/Blending.hpp"
 #include "minko/render/Shader.hpp"
 #include "minko/scene/Layout.hpp"
+#include "minko/data/MacroBinding.hpp"
 
 namespace Json
 {

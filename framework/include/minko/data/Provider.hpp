@@ -31,8 +31,8 @@ namespace minko
 			public std::enable_shared_from_this<Provider>
 		{
 		public:
-			typedef std::shared_ptr<Provider>					Ptr;
-			typedef std::shared_ptr<const Provider>				ConstPtr;
+			typedef std::shared_ptr<Provider>		Ptr;
+			typedef std::shared_ptr<const Provider>	ConstPtr;
 
         private:
             template <typename T>
@@ -59,9 +59,6 @@ namespace minko
 			std::shared_ptr<Signal<Ptr, const std::string&>>	_propertyAdded;
             std::shared_ptr<Signal<Ptr, const std::string&>>	_propertyChanged;
 			std::shared_ptr<Signal<Ptr, const std::string&>>	_propertyRemoved;
-
-		public:
-			static const std::string NO_STRUCT_SEP;
 
 		public:
 			static
@@ -144,16 +141,26 @@ namespace minko
             }
 
             template <typename T>
-            inline
             typename std::enable_if<is_valid<T>::value, Ptr>::type
             set(const std::string& name, T value, bool skipPropertyNameFormatting = false)
             {
                 auto formattedPropertyName = skipPropertyNameFormatting ? name : formatPropertyName(name);
 
                 if (_values.count(formattedPropertyName) != 0)
-                    *Any::cast<T>(&_values[formattedPropertyName]) = value;
+                {
+                    auto ptr = Any::cast<T>(&_values[formattedPropertyName]);
+                    auto changed = !(*ptr == value);
+
+                    *ptr = value;
+                    if (changed)
+                        _propertyChanged->execute(shared_from_this(), name);
+                }
                 else
+                {
                     _values[formattedPropertyName] = value;
+                    _propertyAdded->execute(shared_from_this(), name);
+                    _propertyChanged->execute(shared_from_this(), name);
+                }
 
                 return shared_from_this();
             }
@@ -182,10 +189,12 @@ namespace minko
 
 			virtual
 			Ptr
-			unset(const std::string& propertyName);
+            unset(const std::string& propertyName, bool skipPropertyNameFormatting = false);
 
 			Ptr
-			swap(const std::string& propertyName1, const std::string& propertyName2, bool skipPropertyNameFormatting = false);
+			swap(const std::string& propertyName1,
+                 const std::string& propertyName2,
+                 bool               skipPropertyNameFormatting = false);
 
 			Ptr
 			clone();
@@ -193,6 +202,11 @@ namespace minko
 			virtual
 			Ptr
 			copyFrom(Ptr source);
+
+            static
+            const std::string
+            getActualPropertyName(const std::unordered_map<std::string, std::string>&   variables,
+                                  const std::string&                                    propertyName);
 
 		protected:
 			Provider(const std::string& key);

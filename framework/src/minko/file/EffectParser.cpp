@@ -852,7 +852,7 @@ EffectParser::parseMacroBindings(const Json::Value&	contextNode, MacroBindingMap
 			auto macroBindingValue = macroBindingsValue.get(propertyName, 0);
             auto macroBinding = macroBindings[propertyName];
 
-            macroBinding.defaultState = MacroBindingState::UNDEFINED;
+            macroBinding.defaultState = MacroBinding::State::UNDEFINED;
             macroBinding.minValue = -INT_MAX;
             macroBinding.maxValue = INT_MAX;
 
@@ -871,12 +871,12 @@ EffectParser::parseMacroBindings(const Json::Value&	contextNode, MacroBindingMap
 
 				if (defaultValue.isInt())
 				{
-                    macroBinding.defaultState = MacroBindingState::DEFINED_INTEGER_VALUE;
+                    macroBinding.defaultState = MacroBinding::State::DEFINED_INTEGER_VALUE;
 					macroBinding.defaultValue.value = defaultValue.asInt();
 				}
 				else if (defaultValue.isBool())
 				{
-                    macroBinding.defaultState = MacroBindingState::DEFINED;
+                    macroBinding.defaultState = MacroBinding::State::DEFINED;
                     macroBinding.defaultValue.defined = defaultValue.asBool();
 				}
 
@@ -885,12 +885,12 @@ EffectParser::parseMacroBindings(const Json::Value&	contextNode, MacroBindingMap
 			}
 			else if (macroBindingValue.isInt())
 			{
-                macroBinding.defaultState = MacroBindingState::UNDEFINED;
+                macroBinding.defaultState = MacroBinding::State::UNDEFINED;
                 macroBinding.defaultValue.value = macroBindingValue.asInt();
 			}
 			else if (macroBindingValue.isBool())
 			{
-                macroBinding.defaultState = MacroBindingState::DEFINED_INTEGER_VALUE;
+                macroBinding.defaultState = MacroBinding::State::DEFINED_INTEGER_VALUE;
                 macroBinding.defaultValue.defined = macroBindingValue.asBool();
 			}
 		}

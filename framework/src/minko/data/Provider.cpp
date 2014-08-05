@@ -24,8 +24,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::data;
 
-/*static*/ const std::string Provider::NO_STRUCT_SEP = "_";
-
 Provider::Provider(const std::string& key) :
 	enable_shared_from_this(),
     _key(key),
@@ -37,15 +35,14 @@ Provider::Provider(const std::string& key) :
 }
 
 Provider::Ptr
-Provider::unset(const std::string& propertyName)
+Provider::unset(const std::string& propertyName, bool skipPropertyNameFormatting)
 {
-	const auto& formattedPropertyName = formatPropertyName(propertyName);
+	const auto& formattedPropertyName = skipPropertyNameFormatting ? propertyName : formatPropertyName(propertyName);
 	
 	if (_values.count(formattedPropertyName) != 0)
 	{
 		_values.erase(formattedPropertyName);
-
-		_propertyRemoved->execute(shared_from_this(), formattedPropertyName);
+		_propertyRemoved->execute(shared_from_this(), propertyName);
 	}
 
 	return shared_from_this();
@@ -64,11 +61,13 @@ Provider::swap(const std::string& propertyName1, const std::string& propertyName
 
 	if (!hasProperty1 || !hasProperty2)
 	{
-		auto source = hasProperty1 ? formattedPropertyName1 : formattedPropertyName2;
-		auto destination = hasProperty1 ? formattedPropertyName2 : formattedPropertyName1;
+		auto formattedSource = hasProperty1 ? formattedPropertyName1 : formattedPropertyName2;
+		auto formattedDestination = hasProperty1 ? formattedPropertyName2 : formattedPropertyName1;
+        auto source = hasProperty1 ? formattedPropertyName1 : formattedPropertyName2;
+        auto destination = hasProperty1 ? formattedPropertyName2 : formattedPropertyName1;
 
-		_values[destination] = _values[source];
-		_values.erase(source);
+        _values[formattedDestination] = _values[formattedSource];
+        _values.erase(formattedSource);
 
 		_propertyRemoved->execute(shared_from_this(), source);
 		_propertyAdded->execute(shared_from_this(), destination);
@@ -76,17 +75,17 @@ Provider::swap(const std::string& propertyName1, const std::string& propertyName
 	}
 	else
 	{
-		const auto&	value1	= _values[formattedPropertyName1];
-		const auto&	value2	= _values[formattedPropertyName2];
-		const bool	changed = value1 != value2;
+		auto value1	= _values[formattedPropertyName1];
+		auto value2	= _values[formattedPropertyName2];
+		bool changed = value1 != value2;
 
 		_values[formattedPropertyName1] = value2;
 		_values[formattedPropertyName2] = value1;
 
 		if (changed)
 		{
-            _propertyChanged->execute(shared_from_this(), formattedPropertyName1);
-            _propertyChanged->execute(shared_from_this(), formattedPropertyName2);
+            _propertyChanged->execute(shared_from_this(), propertyName1);
+            _propertyChanged->execute(shared_from_this(), propertyName2);
 		}
 	}
 
@@ -107,7 +106,9 @@ Provider::Ptr
 Provider::copyFrom(Provider::Ptr source)
 {
     _key = source->_key;
-	_values = source->_values;
+
+    for (auto nameAndValue : source->_values)
+    	_values[formatPropertyName(unformatPropertyName(nameAndValue.first))] = nameAndValue.second;
 
 	return shared_from_this();
 }
@@ -115,16 +116,31 @@ Provider::copyFrom(Provider::Ptr source)
 std::string
 Provider::formatPropertyName(const std::string& propertyName) const
 {
-    return _key + "['" + _uuid + "']." + propertyName;
+    return _key + "[" + _uuid + "]." + propertyName;
 }
 
 std::string
 Provider::unformatPropertyName(const std::string& propertyName) const
 {
     std::size_t pos = propertyName.find_first_of('.');
-    if (pos == std::string::npos || propertyName.substr(0, pos) != _key)
+    if (pos == std::string::npos)
         return propertyName;
     ++pos;
 
     return propertyName.substr(pos);
+}
+
+const std::string
+Provider::getActualPropertyName(const std::unordered_map<std::string, std::string>& vars, const std::string& propertyName)
+{
+    for (const auto& variableName : vars)
+    {
+        auto pos = propertyName.find("${" + variableName.first + "}");
+
+        if (pos != std::string::npos)
+            return propertyName.substr(0, pos) + variableName.second
+                + propertyName.substr(pos + variableName.first.size() + 3);
+    }
+
+    return propertyName;
 }

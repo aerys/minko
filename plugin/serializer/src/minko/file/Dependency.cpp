@@ -400,37 +400,43 @@ Dependency::serialize(std::shared_ptr<file::AssetLibrary>       assetLibrary,
 
 		std::vector<SerializedAsset> includeDependencies;
 
-		auto res = _geometryWriteFunctions[maxPriority](shared_from_this(),
-														assetLibrary,
-														itGeometry.first,
-														itGeometry.second,
-														options,
-														writerOptions,
-														includeDependencies);
+		auto res = _geometryWriteFunctions[maxPriority](
+            shared_from_this(),
+			assetLibrary,
+			itGeometry.first,
+			itGeometry.second,
+			options,
+			writerOptions,
+			includeDependencies
+        );
 
 		serializedAsset.push_back(res);
 	}
 
     for (const auto& itMaterial : _materialDependencies)
 	{
-		auto res = _materialWriteFunction(shared_from_this(),
-                                          assetLibrary,
-                                          itMaterial.first,
-                                          itMaterial.second,
-                                          options,
-                                          writerOptions);
+		auto res = _materialWriteFunction(
+            shared_from_this(),
+            assetLibrary,
+            itMaterial.first,
+            itMaterial.second,
+            options,
+            writerOptions
+        );
 
 		serializedAsset.push_back(res);
 	}
 
     for (const auto& itTexture : _textureDependencies)
 	{
-		auto res = _textureWriteFunction(shared_from_this(),
-                                         assetLibrary,
-                                         itTexture.first,
-                                         itTexture.second,
-                                         options,
-                                         writerOptions);
+		auto res = _textureWriteFunction(
+            shared_from_this(),
+            assetLibrary,
+            itTexture.first,
+            itTexture.second,
+            options,
+            writerOptions
+        );
 
 		serializedAsset.insert(serializedAsset.begin(), res);
 	}

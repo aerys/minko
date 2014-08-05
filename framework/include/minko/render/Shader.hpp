@@ -90,6 +90,25 @@ namespace minko
 				_source = source;
 			}
 
+            inline
+            void
+            define(const std::string& macroName)
+            {
+                assert(_id != -1);
+
+                _source = "#define " + macroName + "\n";
+            }
+
+            template <typename T>
+            inline
+            void
+            define(const std::string& macroName, T value)
+            {
+                assert(_id != -1);
+
+                _source = "#define " + macroName + " " + std::to_string(value) + "\n";
+            }
+
 			void
 			dispose();
 

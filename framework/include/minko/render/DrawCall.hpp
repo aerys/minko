@@ -34,8 +34,8 @@ namespace minko
             public std::enable_shared_from_this<DrawCall>
 		{
         public:
-            static const unsigned int			MAX_NUM_TEXTURES;
-            static const unsigned int			MAX_NUM_VERTEXBUFFERS;
+            static const unsigned int	MAX_NUM_TEXTURES;
+            static const unsigned int   MAX_NUM_VERTEXBUFFERS;
 
 		private:
             typedef const ProgramInputs::UniformInput&      ConstUniformInputRef;

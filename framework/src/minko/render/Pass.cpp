@@ -49,18 +49,15 @@ Pass::Pass(const std::string&		name,
 	_signatureToProgram(),
 	_uniformFunctions(),
 	_attributeFunctions(),
-	_indexFunction(nullptr),
-	_undefinedMacros(),
-	_definedBoolMacros(),
-	_definedIntMacros()
+    _macroFunctions()
 {
 }
 
 std::shared_ptr<Program>
-Pass::selectProgram(const data::TranslatedPropertyNameMap&  translatedPropertyNames,
-					Container::Ptr			                targetData,
-					Container::Ptr			                rendererData,
-					Container::Ptr			                rootData)
+Pass::selectProgram(const std::unordered_map<std::string, std::string>& vars,
+					Container::Ptr			                            targetData,
+					Container::Ptr			                            rendererData,
+					Container::Ptr			                            rootData)
 {
 	Program::Ptr program;
 
@@ -68,16 +65,7 @@ Pass::selectProgram(const data::TranslatedPropertyNameMap&  translatedPropertyNa
 		program = _programTemplate;
 	else
 	{
-		std::string			defines = "";
-		ProgramSignature	signature(
-            _macroBindings,
-			translatedPropertyNames,
-			targetData,
-			rendererData,
-			rootData,
-			defines
-		);
-
+		ProgramSignature signature(_macroBindings, vars, targetData, rendererData, rootData);
 		const auto foundProgramIt = _signatureToProgram.find(signature);
 
 		if (foundProgramIt != _signatureToProgram.end())
@@ -88,16 +76,18 @@ Pass::selectProgram(const data::TranslatedPropertyNameMap&  translatedPropertyNa
 			auto vs = Shader::create(
 				_programTemplate->context(),
 				Shader::Type::VERTEX_SHADER,
-				defines + _programTemplate->vertexShader()->source()
+				_programTemplate->vertexShader()->source()
 			);
 			auto fs = Shader::create(
 				_programTemplate->context(),
 				Shader::Type::FRAGMENT_SHADER,
-				defines + _programTemplate->fragmentShader()->source()
+                _programTemplate->fragmentShader()->source()
 			);
 
-			program							= Program::create(_programTemplate->context(), vs, fs);
-			_signatureToProgram[signature]	= program;
+			program = Program::create(_programTemplate->context(), vs, fs);
+            signature.updateProgram(*program);
+
+			_signatureToProgram[signature] = program;
 		}
 	}
 
@@ -123,8 +113,6 @@ Pass::finalizeProgram(Program::Ptr program)
 					func(program);
 				for (auto& func : _attributeFunctions)
 					func(program);
-				if (_indexFunction)
-					_indexFunction->operator()(program);
 			}
 		}
 		catch (std::exception& e)

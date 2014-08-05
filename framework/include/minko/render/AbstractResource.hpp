@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
+#include "minko/Uuid.hpp"
 
 namespace minko
 {
@@ -31,10 +32,18 @@ namespace minko
 			typedef std::shared_ptr<AbstractResource> Ptr;
 
 		protected:
+            const std::string                           _uuid;
 			std::shared_ptr<render::AbstractContext>	_context;
 			ResourceId									_id;
 
 		public:
+            inline
+            const std::string&
+            uuid()
+            {
+                return _uuid;
+            }
+
 			inline
 			std::shared_ptr<render::AbstractContext>
 			context()
@@ -69,6 +78,7 @@ namespace minko
 
 		protected:
 			AbstractResource(std::shared_ptr<render::AbstractContext> context) :
+                _uuid(Uuid::getUuid()),
 				_context(context),
 				_id(-1)
 			{

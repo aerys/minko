@@ -122,6 +122,9 @@ namespace minko
 			TexturePtr
 			texture(const std::string& name) const;
 
+            std::shared_ptr<render::AbstractTexture>
+            getTextureByUuid(const std::string& uuid);
+
 			Ptr
 			cubeTexture(const std::string& name, CubeTexturePtr texture);
 
@@ -130,9 +133,6 @@ namespace minko
 
 			const std::string&
 			textureName(AbsTexturePtr texture);
-
-            std::shared_ptr<render::AbstractTexture>
-            getTextureByResourceId(int id);
 
 			std::shared_ptr<material::Material>
 			material(const std::string& name);

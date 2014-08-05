@@ -158,6 +158,9 @@ namespace minko
 									 std::vector<std::vector<float>>&	vertices,
 									 uint								numVertices);
 
+            const render::VertexAttribute&
+            getVertexAttribute(const std::string& attributeName) const;
+
 			bool
 			cast(std::shared_ptr<math::Ray>		ray,
 				 float&							distance,
@@ -175,27 +178,8 @@ namespace minko
             void
             disposeVertexBufferData();
 
-			inline
 			bool
-			equals(Ptr geom)
-			{
-				bool vertexEquality		= _vertexBuffers.size() == geom->_vertexBuffers.size();
-				bool indexEquality		= _indexBuffer == geom->_indexBuffer;
-				auto vertexBuffer1Start = _vertexBuffers.begin();
-				auto vertexBuffer2Start = geom->_vertexBuffers.begin();
-
-				if (vertexEquality)
-				{
-					for (uint i = 0; i < _vertexBuffers.size() && vertexEquality; ++i)
-					{
-						vertexEquality = vertexEquality && (*vertexBuffer1Start == *vertexBuffer2Start);
-						std::next(vertexBuffer1Start);
-						std::next(vertexBuffer2Start);
-					}
-				}
-
-				return vertexEquality && indexEquality;
-			}
+			equals(Ptr geom) const;
 
 		protected:
 			Geometry();

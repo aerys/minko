@@ -49,7 +49,7 @@ namespace minko
 
 			OnPassFunctionList								_uniformFunctions;
 			OnPassFunctionList								_attributeFunctions;
-			OnPassFunctionList								_macroFunctions;
+            OnPassFunctionList                              _macroFunctions;
 
 		public:
 			inline static
@@ -126,16 +126,10 @@ namespace minko
 			void
 			setUniform(const std::string& name, const T&... values)
 			{
-#if defined(EMSCRIPTEN)
-				auto that = shared_from_this();
-				_uniformFunctions.push_back([=](std::shared_ptr<Pass> pass) {
-					that->setUniformOnPass<T...>(pass, name, values...);
-				});
-#else
 				_uniformFunctions.push_back(std::bind(
 					&Effect::setUniformOnPass<T...>, std::placeholders::_1, name, values...
 				));
-#endif
+
 				for (auto& technique : _techniques)
 					for (auto& pass : technique.second)
 						pass->setUniform(name, values...);
@@ -159,39 +153,27 @@ namespace minko
 			void
 			define(const std::string& macroName)
 			{
-				_macroFunctions.push_back(std::bind(
-					&Effect::defineBooleanMacroOnPass, std::placeholders::_1, macroName
-				));
+                _macroFunctions.push_back(std::bind(
+                    &Effect::defineOnPass, std::placeholders::_1, macroName
+                ));
 
 				for (auto& technique : _techniques)
 					for (auto& pass : technique.second)
 						pass->define(macroName);
 			}
 
+            template <typename T>
 			inline
 			void
-			define(const std::string& macroName, int macroValue)
+			define(const std::string& macroName, T macroValue)
 			{
-				_macroFunctions.push_back(std::bind(
-					&Effect::defineIntegerMacroOnPass, std::placeholders::_1, macroName, macroValue
-				));
+                _macroFunctions.push_back(std::bind(
+                    &Effect::defineOnPass<T>, std::placeholders::_1, macroName, macroValue
+                ));
 
 				for (auto& technique : _techniques)
 					for (auto& pass : technique.second)
 						pass->define(macroName, macroValue);
-			}
-
-			inline
-			void
-			undefine(const std::string& macroName)
-			{
-				_macroFunctions.push_back(std::bind(
-					&Effect::undefineMacroOnPass, std::placeholders::_1, macroName
-				));
-
-				for (auto& technique : _techniques)
-					for (auto& pass : technique.second)
-						pass->undefine(macroName);
 			}
 
             void
@@ -207,40 +189,34 @@ namespace minko
 			Effect();
 
 			template <typename... T>
-			inline static 
+			static 
 			void
 			setUniformOnPass(std::shared_ptr<Pass> pass, const std::string& name, const T&... values)
 			{
 				pass->setUniform(name, values...);
 			}
 
-			inline static 
+			static 
 			void
 			setVertexAttributeOnPass(std::shared_ptr<Pass> pass, const std::string& name, const VertexAttribute& attribute)
 			{
 				pass->setAttribute(name, attribute);
 			}
 
-			inline static
-			void 
-			defineBooleanMacroOnPass(std::shared_ptr<Pass> pass, const std::string& macroName)
-			{
-				pass->define(macroName);
-			}
+            static
+            void
+            defineOnPass(std::shared_ptr<Pass> pass, const std::string& macroName)
+            {
+                pass->define(macroName);
+            }
 
-			inline static
-			void 
-			defineIntegerMacroOnPass(std::shared_ptr<Pass> pass, const std::string& macroName, int macroValue)
-			{
-				pass->define(macroName, macroValue);
-			}
-
-			inline static
-			void 
-			undefineMacroOnPass(std::shared_ptr<Pass> pass, const std::string& macroName)
-			{
-				pass->undefine(macroName);
-			}
+            template <typename T>
+            static
+            void
+            defineOnPass(std::shared_ptr<Pass> pass, const std::string& macroName, T macroValue)
+            {
+                pass->define(macroName, macroValue);
+            }
 		};		
 	}
 }

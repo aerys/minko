@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
+#include "minko/data/MacroBinding.hpp"
 
 namespace minko
 {
@@ -27,18 +28,21 @@ namespace minko
 	{
 		class ProgramSignature
 		{
+        private:
+            typedef int MaskType;
+
 		private:
 			uint				                    _mask;
-            std::array<int, 32>	                    _values;
-            std::array<data::MacroBindingState, 32> _states;
+            std::vector<int>	                    _values;
+            std::vector<data::MacroBinding::State>  _states;
+            std::vector<std::string>                _macros;
 
 		public:
-			ProgramSignature(const data::MacroBindingMap&           macroBindings,
-						     const data::TranslatedPropertyNameMap& translatedPropertyNames,
-						     std::shared_ptr<data::Container>       targetData,
-                             std::shared_ptr<data::Container>		rendererData,
-                             std::shared_ptr<data::Container>       rootData,
-						     std::string&			                defines);
+			ProgramSignature(const data::MacroBindingMap&                           macroBindings,
+                             const std::unordered_map<std::string, std::string>&    variables,
+						     std::shared_ptr<data::Container>                       targetData,
+                             std::shared_ptr<data::Container>		                rendererData,
+                             std::shared_ptr<data::Container>                       rootData);
 			
 			bool 
 			operator==(const ProgramSignature&) const;
@@ -51,18 +55,21 @@ namespace minko
 			}
 
 			inline
-			const std::array<int, 32>&
+			const std::vector<int>&
 			values() const
 			{
 				return _values;
 			}
 
             inline
-			const std::array<data::MacroBindingState, 32>&
+			const std::vector<data::MacroBinding::State>&
 			states() const
 			{
 				return _states;
 			}
+
+            void
+            updateProgram(Program& program) const;
 		};
 	}
 }
@@ -77,15 +84,10 @@ namespace std
 		operator()(const minko::render::ProgramSignature& x) const
 		{
 			size_t seed = std::hash<minko::uint>()(x.mask());
+            auto i = 0u;
 
-			for (unsigned int i = 0; i < x.values().size(); ++i)
-			{
-				const int value = (x.mask() >> i) != 0 
-					? x.values()[i]
-					: 0;
-
-				hash_combine(seed, value);
-			}
+            for (auto value : x.values())
+                hash_combine(seed, (x.mask() >> i) != 0 ? value : 0);
 
 			return seed;
 		}

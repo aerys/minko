@@ -129,6 +129,7 @@ namespace minko
 		class AbstractTexture;
 		class Texture;
 		class CubeTexture;
+        struct TextureSampler;
 
 		struct ScissorBox
 		{
@@ -196,6 +197,7 @@ namespace minko
 		class Provider;
 		class Container;
 		class AbstractFilter;
+        class Collection;
 
 		enum class BindingSource
 		{
@@ -221,50 +223,9 @@ namespace minko
             }
         };
 
-        enum class MacroBindingState
-        {
-            UNDEFINED,
-            DEFINED,
-            DEFINED_INTEGER_VALUE
-        };
-
-        union MacroBindingValue
-        {
-            int value;
-            bool defined;
-        };
-
-        struct MacroBinding : public Binding
-        {
-            MacroBindingState   defaultState;
-            MacroBindingValue   defaultValue;
-            int                 minValue;
-            int                 maxValue;
-
-            MacroBinding(const std::string&  propertyName,
-                         BindingSource       source,
-                         MacroBindingState   defaultState,
-                         MacroBindingValue   defaultValue,
-                         int                 min,
-                         int                 max) :
-                Binding(propertyName, source),
-                defaultState(defaultState),
-                defaultValue(defaultValue),
-                minValue(min),
-                maxValue(max)
-            {}
-
-            MacroBinding() :
-                Binding(),
-                defaultState(MacroBindingState::UNDEFINED),
-                defaultValue(),
-                minValue(0),
-                maxValue(0)
-            {}
-        };
+        struct MacroBinding;
 
         typedef std::unordered_map<std::string, Binding>        BindingMap;
-        typedef std::unordered_map<std::string, std::string>    TranslatedPropertyNameMap;
         typedef std::unordered_map<std::string, MacroBinding>   MacroBindingMap;
 
         template<typename T>
