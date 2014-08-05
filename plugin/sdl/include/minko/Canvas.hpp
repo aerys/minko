@@ -139,11 +139,7 @@ namespace minko
         uint
         height();
 
-<<<<<<< HEAD
         float
-=======
-        uint
->>>>>>> Add Canvas::aspectRatio() and set width/height argument default values to 720p.
         aspectRatio()
         {
             return float(width()) / float(height());
