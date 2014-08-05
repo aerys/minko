@@ -38,13 +38,13 @@ main(int argc, char** argv)
     auto root                = scene::Node::create("root")->addComponent(sceneManager);
 
     auto quadTreeRoot        = scene::Node::create("quadTreeRoot");
-    auto cubeGroup            = scene::Node::create("cubeGroup");
+    auto cubeGroup           = scene::Node::create("cubeGroup");
 
     cubeGroup->addComponent(component::Transform::create());
 
     // setup assets
     sceneManager->assets()->loader()->options()
-        ->generateMipmaps(true);
+        ->generateMipmaps(true)
         ->registerParser<file::PNGParser>("png");
 
     sceneManager->assets()->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()));
@@ -54,7 +54,7 @@ main(int argc, char** argv)
     // camera init
     camera = scene::Node::create("camera")
         ->addComponent(Renderer::create())
-        ->addComponent(PerspectiveCamera::create(canvas->aspectRatio())
+        ->addComponent(PerspectiveCamera::create(canvas->aspectRatio()))
         ->addComponent(Culling::create(math::Frustum::create(), "camera.worldToScreenMatrix"))
         ->addComponent(Transform::create(
             Matrix4x4::create()->lookAt(
@@ -65,7 +65,7 @@ main(int argc, char** argv)
 
     root->addChild(camera);
 
-    auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint height)
+    auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
     {
         camera->component<PerspectiveCamera>()->aspectRatio(float(w) / float(h));
     });

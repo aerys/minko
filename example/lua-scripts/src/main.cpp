@@ -69,5 +69,3 @@ main(int argc, char** argv)
 
     canvas->run();
 }
-
-

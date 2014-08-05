@@ -50,9 +50,9 @@ int
 main(int argc, char** argv)
 {
     auto canvas            = Canvas::create("Minko Example - Scene files");
-    auto sceneManager    = SceneManager::create(canvas->context());
-    auto defaultLoader    = sceneManager->assets()->loader();
-    auto fxLoader        = file::Loader::create(defaultLoader);
+    auto sceneManager      = SceneManager::create(canvas->context());
+    auto defaultLoader     = sceneManager->assets()->loader();
+    auto fxLoader          = file::Loader::create(defaultLoader);
 
 #ifndef DEACTIVATE_PHYSICS
     extension::SerializerExtension::activeExtension<extension::PhysicsExtension>();
@@ -132,13 +132,13 @@ main(int argc, char** argv)
         root->addChild(createWorldFrame(5.0f, sceneManager->assets()));
     });
 
-    auto yaw        = float(M_PI) * 0.25f;
-    auto pitch        = float(M_PI) * .25f;
-    auto roll        = 0.f;
-    float minPitch    = 0.f + float(1e-5);
-    float maxPitch    = float(M_PI) - float(1e-5);
-    auto lookAt        = Vector3::create(0.f, 0.f, 0.f);
-    auto distance    = 25.f;
+    auto yaw       = float(M_PI) * 0.25f;
+    auto pitch     = float(M_PI) * .25f;
+    auto roll      = 0.f;
+    float minPitch = 0.f + float(1e-5);
+    float maxPitch = float(M_PI) - float(1e-5);
+    auto lookAt    = Vector3::create(0.f, 0.f, 0.f);
+    auto distance  = 25.f;
 
     Signal<input::Mouse::Ptr, int, int>::Slot mouseMove;
     auto cameraRotationXSpeed = 0.f;
@@ -147,7 +147,7 @@ main(int argc, char** argv)
     // handle mouse signals
     auto mouseWheel = canvas->mouse()->wheel()->connect([&](input::Mouse::Ptr m, int h, int v)
     {
-        distance += (float)v / 5.f;
+        distance += float(v) / 5.f;
     });
 
     mouseMove = canvas->mouse()->move()->connect([&](input::Mouse::Ptr m, int dx, int dy)

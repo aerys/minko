@@ -54,7 +54,7 @@ createObjectGroup(unsigned int                  numObjects,
 void
 animateObjects(float                            moveAmplitude,
                float                            moveSpeed,
-               float&                           prevTime,
+               const float                      currTime,
                const std::vector<AnimData>&     nodeAnimData);
 
 int
@@ -69,7 +69,7 @@ main(int argc, char** argv)
     // setup assets
     loader->options()
         ->resizeSmoothly(true)
-        ->generateMipmaps(true);
+        ->generateMipmaps(true)
         ->registerParser<file::JPEGParser>("jpg");
 
     sceneManager->assets()
@@ -78,7 +78,7 @@ main(int argc, char** argv)
         ->geometry("sphere",    geometry::SphereGeometry::create(sceneManager->assets()->context(), 16, 16));
 
     loader
-        ->queue(CUBE_TEXTURE, file::Options::create(loader->options())->isCubeTexture(true));
+        ->queue(CUBE_TEXTURE, file::Options::create(loader->options())->isCubeTexture(true))
         ->queue("effect/Basic.effect")
         ->queue("effect/OculusVR/OculusVR.effect");
 

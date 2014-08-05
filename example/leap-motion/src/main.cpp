@@ -243,11 +243,11 @@ main(int argc, char** argv)
 
     sceneManager->assets()->loader()->options()
         ->registerParser<file::PNGParser>("png")
-        ->registerParser<file::SceneParser>("scene");
-        ->generateMipmaps(false);
+        ->registerParser<file::SceneParser>("scene")
+        ->generateMipmaps(false)
         ->material(std::static_pointer_cast<Material>(
             Material::create()->set("triangleCulling", render::TriangleCulling::NONE)
-        ));
+        ))
         ->materialFunction([&](const std::string&, Material::Ptr)
     {
         return std::static_pointer_cast<Material>(defaultMaterial);
@@ -264,9 +264,8 @@ main(int argc, char** argv)
         ->queue("effect/Basic.effect")
         ->queue(SCENE_NAME);
 
-    sceneManager->assets()->loader()->options()->effect(sceneManager->assets()->effect("effect/Phong.effect"));
-
-    sceneManager->assets()->loader()
+    sceneManager->assets()->loader()->options()
+        ->effect(sceneManager->assets()->effect("effect/Phong.effect"));
 
     cameraNode
         ->addComponent(PerspectiveCamera::create(canvas->aspectRatio()))

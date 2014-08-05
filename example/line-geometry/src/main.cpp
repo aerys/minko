@@ -24,6 +24,7 @@ using namespace minko;
 using namespace minko::scene;
 using namespace minko::geometry;
 using namespace minko::component;
+using namespace minko::material;
 using namespace minko::data;
 using namespace minko::math;
 using namespace minko::render;
@@ -106,16 +107,16 @@ addStar(Node::Ptr root, file::AssetLibrary::Ptr assets, std::vector<Star>& stars
         return;
     }
 
-    unsigned int    numBranches = 4 + rand() % 4;
-    float            outRadius = 0.9f + 0.2f * (rand() / (float) RAND_MAX - 0.5f);
-    float            inRadius = outRadius * (0.5f + 0.1f * (rand() / (float) RAND_MAX - 0.5f));
+    unsigned int   numBranches = 4 + rand() % 4;
+    float          outRadius = 0.9f + 0.2f * (rand() / float(RAND_MAX) - 0.5f);
+    float          inRadius = outRadius * (0.5f + 0.1f * (rand() / float(RAND_MAX) - 0.5f));
 
     auto starNode = Node::create("star_" + std::to_string(stars.size()))
         ->addComponent(Surface::create(
             createStarLineGeometry(numBranches, inRadius, outRadius, assets->context()),
             ArrayProvider::create("material")
                 ->set("diffuseColor", Color::hslaToRgba(rand() / float(RAND_MAX), 0.75f, 0.6f, 1.0f))
-                ->set("lineThickness", 1.0f + 3.0f * (rand() / float(RAND_MAX)),
+                ->set("lineThickness", 1.0f + 3.0f * (rand() / float(RAND_MAX))),
             assets->effect("line")
         ))
         ->addComponent(Transform::create(Matrix4x4::create()->appendRotationZ(2.0f * float(M_PI) * rand() / (float) RAND_MAX)));
@@ -123,7 +124,7 @@ addStar(Node::Ptr root, file::AssetLibrary::Ptr assets, std::vector<Star>& stars
     stars.push_back(Star());
 
     stars.back().node = starNode;
-    stars.back().angRate = 0.01f + 0.05f * (rand() / (float) RAND_MAX);
+    stars.back().angRate = 0.01f + 0.05f * (rand() / float(RAND_MAX));
 
     root->addChild(stars.back().node);
 }
@@ -134,7 +135,7 @@ createStarLineGeometry(unsigned int numStarBranches, float inRadius, float outRa
     if (context == nullptr)
         throw std::invalid_argument("context");
 
-    const unsigned int    numBranches = std::max(3u, numStarBranches);
+    const unsigned int     numBranches = std::max(3u, numStarBranches);
     const float            innerRadius = std::min(inRadius, outRadius);
     const float            outerRadius = std::max(inRadius, outRadius);
     const float            cStep = cosf(float(M_PI) / (float) numBranches);

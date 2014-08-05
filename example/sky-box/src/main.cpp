@@ -43,8 +43,8 @@ main(int argc, char** argv)
     auto loader = sceneManager->assets()->loader();
 
     loader->options()
-        ->resizeSmoothly(true);
-        ->generateMipmaps(true);
+        ->resizeSmoothly(true)
+        ->generateMipmaps(true)
         ->registerParser<file::PNGParser>("png")
         ->registerParser<file::JPEGParser>("jpg");
 

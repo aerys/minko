@@ -59,6 +59,7 @@ main(int argc, char** argv)
             Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 3.f))
         ))
         ->addComponent(PerspectiveCamera::create(canvas->aspectRatio()));
+
     root->addChild(camera);
 
     auto mesh = scene::Node::create("mesh")

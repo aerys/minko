@@ -58,6 +58,7 @@ main(int argc, char** argv)
             Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 17.f))
         ))
         ->addComponent(PerspectiveCamera::create(canvas->aspectRatio()));
+
     root->addChild(camera);
 
     auto cubes = scene::Node::create("cubesContainer");
@@ -71,7 +72,8 @@ main(int argc, char** argv)
         {
             for (int i = -3; i <= 3; ++i)
             {
-                cube->addChild(scene::Node::create("mesh")
+                cubes
+                    ->addChild(scene::Node::create("mesh")
                     ->addComponent(Surface::create(
                         sceneManager->assets()->geometry("cube"),
                         sceneManager->assets()->material("boxMaterial"),

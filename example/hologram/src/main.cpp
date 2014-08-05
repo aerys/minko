@@ -37,7 +37,7 @@ main(int argc, char** argv)
 
     // setup assets
     sceneManager->assets()->loader()->options()
-        ->resizeSmoothly(true);
+        ->resizeSmoothly(true)
         ->generateMipmaps(true)
         ->registerParser<file::SceneParser>("scene")
         ->registerParser<file::PNGParser>("png");
@@ -53,7 +53,7 @@ main(int argc, char** argv)
             ->effect(sceneManager->assets()->effect("effect/Hologram/Hologram.effect"));
 
         sceneManager->assets()->loader()
-            ->queue(MODEL_FILENAME);
+            ->queue(MODEL_FILENAME)
             ->load();
     });
 
@@ -128,8 +128,8 @@ main(int argc, char** argv)
         });
 
         root
-            ->addChild(mesh);
-            ->addChild(mesh2);
+            ->addChild(mesh)
+            ->addChild(mesh2)
             ->addChild(sceneManager->assets()->symbol(MODEL_FILENAME));
 
         // FXAA

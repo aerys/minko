@@ -74,8 +74,8 @@ main(int argc, char** argv)
 
         root->addChild(camera);
 
-        std::shared_ptr<scene::Node>    currentJoystickCube;
-        shared_ptr<input::Joystick>     currentJoystick;
+        std::shared_ptr<scene::Node>        currentJoystickCube;
+        std::shared_ptr<input::Joystick>    currentJoystick;
 
         joystickAdded = canvas->joystickAdded()->connect([&](AbstractCanvas::Ptr abscanvas, input::Joystick::Ptr joystick)
         {

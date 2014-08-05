@@ -26,9 +26,9 @@ main(int argc, char** argv)
 
     auto sceneManager = SceneManager::create(canvas->context());
 
-    sceneManager->assets()->loader()->options()->resizeSmoothly(true);
-    sceneManager->assets()->loader()->options()->generateMipmaps(true);
     sceneManager->assets()->loader()->options()
+        ->resizeSmoothly(true)
+        ->generateMipmaps(true)
         ->registerParser<file::PNGParser>("png")
         ->registerParser<file::JPEGParser>("jpg")
         ->registerParser<file::PNGParser>("png")
@@ -63,8 +63,9 @@ main(int argc, char** argv)
 
     auto fxComplete = fxLoader->complete()->connect([&](file::Loader::Ptr l)
     {
-        sceneManager->assets()->loader()->queue("model/skybox.scene");
-        sceneManager->assets()->loader()->load();
+        sceneManager->assets()->loader()
+            ->queue("model/skybox.scene")
+            ->load();
     });
 
     auto waterMaterial = material::WaterMaterial::create(5);
