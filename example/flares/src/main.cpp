@@ -60,7 +60,7 @@ int main(int argc, char** argv)
 	{
 		ppScene->addComponent(Surface::create(
 			geometry::QuadGeometry::create(context),
-			data::Provider::create()->set("backbuffer", ppTarget),
+			material::Material::create()->set("backbuffer", ppTarget),
 			assets->effect("effect/PseudoLensFlare/PseudoLensFlare.effect")
 		));
 

@@ -29,7 +29,7 @@ using namespace minko::scene;
 TEST_F(SpotLightTest, Create)
 {
 	auto root = Node::create();
-	auto n1 = Node::create()->addComponent(SpotLight::create((float)PI * 0.25f, -1.0f, 10.f));
+	auto n1 = Node::create()->addComponent(SpotLight::create(float(M_PI) * 0.25f, -1.0f, 10.f));
 	
 	ASSERT_TRUE(n1->hasComponent<SpotLight>());
 	ASSERT_TRUE(n1->component<SpotLight>()->diffuse() == 10.0f);
@@ -41,12 +41,10 @@ TEST_F(SpotLightTest, Clone)
 	auto root = Node::create()->addComponent(sceneManager);
 	auto n1 = Node::create()
 		->addComponent(Transform::create(Matrix4x4::create()))
-		->addComponent(SpotLight::create((float)PI * 0.25f, -1.0f, 10.f));
-	
+		->addComponent(SpotLight::create(float(M_PI) * 0.25f, -1.0f, 10.f));
 
 	auto n2 = n1->clone(CloneOption::DEEP);
 	n2->component<SpotLight>()->diffuse(.1f);
-	
 	
 	root->addChild(n1);
 	root->addChild(n2);

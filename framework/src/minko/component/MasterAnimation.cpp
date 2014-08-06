@@ -141,7 +141,6 @@ void
 MasterAnimation::targetRemovedHandler(AbstractComponent::Ptr cmp,
 										Node::Ptr node)
 {
-	
 }
 
 /*virtual*/
@@ -151,9 +150,6 @@ MasterAnimation::addedHandler(Node::Ptr node,
 								Node::Ptr parent)
 {
 	AbstractAnimation::addedHandler(node, target, parent);
-	findSceneManager();
-
-	
 }
 
 /*virtual*/
@@ -163,11 +159,7 @@ MasterAnimation::removedHandler(Node::Ptr node,
 									Node::Ptr parent)
 {
 	AbstractAnimation::removedHandler(node, target, parent);
-	findSceneManager();
-
-	
 }
-
 
 /*virtual*/
 AbstractAnimation::Ptr

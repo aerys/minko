@@ -99,7 +99,7 @@ int main(int argc, char** argv)
 		))
 		->addComponent(BoundingBox::create());
 
-	auto hitProvider	= data::ArrayProvider::create("material")
+	auto hitProvider	= material::Material::create("material")
 		->set("depthFunc",	render::CompareMode::ALWAYS)
 		->set("priority",	render::Priority::LAST);
 

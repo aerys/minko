@@ -76,10 +76,10 @@ namespace minko
 				return ctrl;
 			}
 
-			~Transform() = default;
-			
 			AbstractComponent::Ptr
 			clone(const CloneOption& option);
+
+			~Transform() = default;
 
 			inline
 			std::shared_ptr<math::Matrix4x4>

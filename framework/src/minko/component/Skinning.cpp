@@ -175,9 +175,9 @@ Skinning::addedHandler(Node::Ptr node, Node::Ptr target, Node::Ptr parent)
 			{
 				geometry->addVertexBuffer(_boneVertexBuffer);
 			
-				UniformArrayPtr<float>	uniformArray(new UniformArray<float>(0, nullptr));
-				geometry->data()->set<UniformArrayPtr<float>>(PNAME_BONE_MATRICES,	uniformArray);
-				geometry->data()->set<int>					 (PNAME_NUM_BONES,		0);
+				UniformArrayPtr<float> uniformArray(new UniformArray<float>(0, nullptr));
+				geometry->data()->set<UniformArrayPtr<float>>(PNAME_BONE_MATRICES, uniformArray);
+				geometry->data()->set<int>(PNAME_NUM_BONES, _skin->numBones());
 			}
 		}
 	}

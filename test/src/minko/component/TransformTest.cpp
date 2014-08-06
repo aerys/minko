@@ -184,7 +184,6 @@ TEST_F(TransformTest, ModelToWorldMultipleUpdatesMultipleFrames)
 	ASSERT_TRUE(updated2);
 }
 
-<<<<<<< HEAD
 TEST_F(TransformTest, NodeHierarchyTransformIssueWithBlockingNode)
 {
 	auto sceneManager = SceneManager::create(MinkoTests::context());
