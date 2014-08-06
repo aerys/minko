@@ -19,6 +19,9 @@ void wait()
 
 int main(int argc, char **argv)
 {
+    // disable exceptions catching
+    //::testing::GTEST_FLAG(throw_on_failure) = true;
+
 #if defined(MINKO_PLUGIN_OFFSCREEN)
 	MinkoOffscreen::initialize("Minko Tests", 640, 480);
 #else

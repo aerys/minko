@@ -38,23 +38,27 @@ namespace minko
 			typedef std::shared_ptr<PropertyChangedSignal>				PropertyChangedSignalPtr;
 
 			typedef std::shared_ptr<Provider>							ProviderPtr;
+            typedef std::shared_ptr<Collection>							CollectionPtr;
 			typedef std::shared_ptr<data::AbstractFilter>				AbsFilterPtr;
 			typedef Signal<ProviderPtr, const std::string&>				ProviderPropertyChangedSignal;
 			typedef ProviderPropertyChangedSignal::Slot					ProviderPropertyChangedSlot;
+            typedef Signal<Collection&, ProviderPtr>::Slot              CollectionChangedSignalSlot;
 
         private:
-			std::list<ProviderPtr>										_providers;
-            std::unordered_map<ProviderPtr, uint>                       _numUses;
-			std::shared_ptr<Provider>									_arrayLengths;
+			std::list<ProviderPtr>										    _providers;
+            std::list<CollectionPtr>                                        _collections;
+            std::unordered_map<ProviderPtr, uint>                           _numUses;
 
-			PropertyChangedSignalPtr									_propertyAdded;
-			PropertyChangedSignalPtr									_propertyRemoved;
-            std::unordered_map<std::string, PropertyChangedSignalPtr>   _propertyChanged;
-            Signal<Ptr, ProviderPtr>::Ptr								_providerAdded;
-            Signal<Ptr, ProviderPtr>::Ptr								_providerRemoved;
+			PropertyChangedSignalPtr									    _propertyAdded;
+			PropertyChangedSignalPtr									    _propertyRemoved;
+            std::unordered_map<std::string, PropertyChangedSignalPtr>       _propertyChanged;
+            Signal<Ptr, ProviderPtr>::Ptr								    _providerAdded;
+            Signal<Ptr, ProviderPtr>::Ptr								    _providerRemoved;
 
-            std::unordered_map<ProviderPtr, std::list<Any>>				_propertySlots;
-            std::unordered_map<std::string, PropertyChangedSignalPtr>	_propertyChangedSlots;
+            std::unordered_map<ProviderPtr, std::list<Any>>				    _propertySlots;
+            std::unordered_map<std::string, PropertyChangedSignalPtr>	    _propertyChangedSlots;
+            std::unordered_map<CollectionPtr, CollectionChangedSignalSlot>  _collectionItemAddedSlots;
+            std::unordered_map<CollectionPtr, CollectionChangedSignalSlot>  _collectionItemRemovedSlots;
 
 		public:
 			static
@@ -77,8 +81,17 @@ namespace minko
 			void
 			removeProvider(std::shared_ptr<Provider> provider);
 
-			bool
-			hasProvider(std::shared_ptr<Provider> provider) const;
+            bool
+            hasProvider(std::shared_ptr<Provider> provider) const;
+
+            void
+            addCollection(std::shared_ptr<Collection> collection);
+
+            void
+            removeCollection(std::shared_ptr<Collection> collection);
+
+            bool
+            hasCollection(std::shared_ptr<Collection> collection);
 
 			bool
 			hasProperty(const std::string& propertyName, uint index = 0) const;

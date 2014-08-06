@@ -30,6 +30,11 @@ namespace minko
     {
         class Collection
         {
+            friend class Container;
+
+        public:
+            typedef std::shared_ptr<Collection>                     Ptr;
+
         private:
             typedef std::shared_ptr<Provider>                       ProviderPtr;
             typedef std::list<ProviderPtr>                          Items;
@@ -37,20 +42,28 @@ namespace minko
             typedef Signal<ProviderPtr, const std::string&>::Slot   PropertySignalSlot;
 
         private:
-            Items                                               _items;
+            std::string                         _name;
+            Items                               _items;
+            ProviderPtr                         _lengthProvider;
 
-            Signal<Collection&, ProviderPtr>                    _itemAdded;
-            Signal<Collection&, ProviderPtr>                    _itemRemoved;
-
-            PropertySignalPtr                                   _propertyAdded;
-            PropertySignalPtr                                   _propertyChanged;
-            PropertySignalPtr                                   _propertyRemoved;
-
-            std::unordered_map<ProviderPtr, PropertySignalSlot> _propertyAddedSlot;
-            std::unordered_map<ProviderPtr, PropertySignalSlot> _propertyChangedSlot;
-            std::unordered_map<ProviderPtr, PropertySignalSlot> _propertyRemovedSlot;
+            Signal<Collection&, ProviderPtr>    _itemAdded;
+            Signal<Collection&, ProviderPtr>    _itemRemoved;
 
         public:
+            static inline
+            Ptr
+            create(const std::string& name)
+            {
+                return std::shared_ptr<Collection>(new Collection(name));
+            }
+
+            inline
+            const std::string&
+            name()
+            {
+                return _name;
+            }
+
             inline
             const Items&
             items()
@@ -73,27 +86,6 @@ namespace minko
             }
 
             inline
-            PropertySignalPtr
-            propertyAdded()
-            {
-                return _propertyAdded;
-            }
-
-            inline
-            PropertySignalPtr
-            propertyChanged()
-            {
-                return _propertyChanged;
-            }
-
-            inline
-            PropertySignalPtr
-            propertyRemoved()
-            {
-                return _propertyRemoved;
-            }
-
-            inline
             ProviderPtr
             front()
             {
@@ -108,90 +100,105 @@ namespace minko
             }
 
             inline
+            Items::const_iterator
+            begin()
+            {
+                return _items.begin();
+            }
+
+            inline
+            Items::const_iterator
+            end()
+            {
+                return _items.end();
+            }
+
+            inline
             Collection&
-            insert(Items::iterator position, ProviderPtr provider)
+            insert(Items::const_iterator position, ProviderPtr provider)
             {
                 _items.insert(position, provider);
                 addProvider(provider);
-                _itemAdded.execute(*this, provider);
 
                 return *this;
             }
 
             inline
             Collection&
-            erase(Items::iterator position)
+            erase(Items::const_iterator position)
             {
+                auto provider = *position;
+
                 _items.erase(position);
-                removeProvider(*position);
-                _itemRemoved.execute(*this, *position);
+                removeProvider(provider);
 
                 return *this;
             }
 
             inline
             Collection&
-            push_back(ProviderPtr provider)
+            pushBack(ProviderPtr provider)
             {
                 _items.push_back(provider);
                 addProvider(provider);
-                _itemAdded.execute(*this, provider);
 
                 return *this;
             }
 
             inline
             Collection&
-            push_front(ProviderPtr provider)
+            pushFront(ProviderPtr provider)
             {
                 _items.push_front(provider);
                 addProvider(provider);
-                _itemAdded.execute(*this, provider);
 
                 return *this;
             }
 
             inline
             Collection&
-            pop_back()
+            popBack()
             {
                 auto provider = _items.back();
 
                 _items.pop_back();
                 removeProvider(provider);
-                _itemRemoved.execute(*this, provider);
 
                 return *this;
             }
 
             inline
             Collection&
-            pop_front()
+            popFront()
             {
                 auto provider = _items.front();
 
                 _items.pop_front();
                 removeProvider(provider);
-                _itemRemoved.execute(*this, provider);
 
                 return *this;
             }
 
         private:
+            Collection(const std::string& name) :
+                _name(name),
+                _lengthProvider(Provider::create(name))
+            {
+                _lengthProvider->set("length", 0u);
+            }
+
             void
             addProvider(ProviderPtr provider)
             {
-                _propertyAddedSlot[provider] = provider->propertyAdded()->connect(_propertyAdded->execute);
-                _propertyChangedSlot[provider] = provider->propertyChanged()->connect(_propertyChanged->execute);
-                _propertyRemovedSlot[provider] = provider->propertyRemoved()->connect(_propertyRemoved->execute);
+                //_lengthProvider->set("length", _items.size());
+                _itemAdded.execute(*this, provider);
             }
 
             void
             removeProvider(ProviderPtr provider)
             {
-                _propertyAddedSlot.erase(provider);
-                _propertyChangedSlot.erase(provider);
-                _propertyRemovedSlot.erase(provider);
+                //_lengthProvider->set("length", _items.size());
+                _itemRemoved.execute(*this, provider);
             }
         };
     }

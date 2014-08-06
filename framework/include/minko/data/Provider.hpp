@@ -148,7 +148,7 @@ namespace minko
 
                 if (_values.count(formattedPropertyName) != 0)
                 {
-                    auto ptr = Any::cast<T>(&_values[formattedPropertyName]);
+                    T* ptr = Any::cast<T>(&_values[formattedPropertyName]);
                     auto changed = !(*ptr == value);
 
                     *ptr = value;

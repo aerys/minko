@@ -133,7 +133,7 @@ namespace minko
 		Slot
 		connect(CallbackFunction callback, float priority = 0)
 		{
-			auto connection = SignalSlot<A...>::create(Signal<A...>::shared_from_this(), _nextSlotId++);
+			auto connection = SignalSlot<A...>::create(this, _nextSlotId++);
 			
 			if (_locked)
 				_toAdd.push_back(std::pair<Callback, unsigned int>(std::pair<float, CallbackFunction>(priority, callback), connection->_id));
@@ -195,6 +195,13 @@ namespace minko
 			_toRemove.clear();
 		}
 
+        inline
+        Slot
+        operator+=(CallbackFunction callback)
+        {
+            return connect(callback);
+        }
+
 	private:
 		template <typename... T>
 		class SignalSlot :
@@ -206,20 +213,17 @@ namespace minko
 			typedef std::shared_ptr<SignalSlot<T...>>	Ptr;
 
 		public:
-			std::shared_ptr<Signal<T...>>
+			const Signal<T...>&
 			signal()
 			{
-				return _signal;
+				return *_signal;
 			}
 
 			void
 			disconnect()
 			{
-				if (_signal != nullptr)
-				{
-					_signal->removeConnectionById(_id);
-					_signal = nullptr;
-				}				
+				_signal->removeConnectionById(_id);
+                _signal = nullptr;
 			}
 
 			~SignalSlot()
@@ -228,18 +232,18 @@ namespace minko
 			}
 
 		private:
-			std::shared_ptr<Signal<T...>>	_signal;
-			const unsigned int				_id;
+			Signal<T...>* 	    _signal;
+			const unsigned int	_id;
 
 		private:
 			inline static
 			Ptr
-			create(std::shared_ptr<Signal<T...>> signal, const unsigned int id)
+			create(Signal<T...>* signal, const unsigned int id)
 			{
 				return std::shared_ptr<SignalSlot<T...>>(new SignalSlot(signal, id));
 			}
 
-			SignalSlot(std::shared_ptr<Signal<T...>> signal, const unsigned int id) :
+			SignalSlot(Signal<T...>* signal, const unsigned int id) :
 				_signal(signal),
 				_id(id)
 			{

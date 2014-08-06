@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/data/Container.hpp"
 
 #include "minko/data/Provider.hpp"
+#include "minko/data/Collection.hpp"
 #include "minko/data/AbstractFilter.hpp"
 
 using namespace minko;
@@ -27,7 +28,6 @@ using namespace minko::data;
 
 Container::Container() :
 	std::enable_shared_from_this<Container>(),
-	_arrayLengths(data::Provider::create("fixme")),
 	_propertyAdded(Container::PropertyChangedSignal::create()),
 	_propertyRemoved(Container::PropertyChangedSignal::create()),
 	_providerAdded(Signal<Ptr, Provider::Ptr>::create()),
@@ -38,7 +38,6 @@ Container::Container() :
 void
 Container::initialize()
 {
-	//addProvider(_arrayLengths);
 }
 
 void
@@ -116,6 +115,42 @@ Container::hasProvider(std::shared_ptr<Provider> provider) const
 	return std::find(_providers.begin(), _providers.end(), provider) != _providers.end();
 }
 
+void
+Container::addCollection(std::shared_ptr<Collection> collection)
+{
+    _collections.push_back(collection);
+
+    _collectionItemAddedSlots[collection] = collection->itemAdded() += std::bind(
+        &Container::addProvider, shared_from_this(), std::placeholders::_2
+    );
+    _collectionItemRemovedSlots[collection] = collection->itemRemoved() += std::bind(
+        &Container::removeProvider, shared_from_this(), std::placeholders::_2
+    );
+
+    for (auto provider : collection->items())
+        addProvider(provider);
+    addProvider(collection->_lengthProvider);
+}
+
+void
+Container::removeCollection(std::shared_ptr<Collection> collection)
+{
+    _collections.remove(collection);
+
+    _collectionItemAddedSlots.erase(collection);
+    _collectionItemRemovedSlots.erase(collection);
+
+    for (auto provider : collection->items())
+        removeProvider(provider);
+    removeProvider(collection->_lengthProvider);
+}
+
+bool
+Container::hasCollection(std::shared_ptr<Collection> collection)
+{
+    return std::find(_collections.begin(), _collections.end(), collection) != _collections.end();
+}
+
 bool
 Container::hasProperty(const std::string& propertyName, uint index) const
 {
@@ -175,9 +210,6 @@ Container::filter(const std::set<data::AbstractFilter::Ptr>&	filters,
 
 	for (auto& p : _providers)
 	{
-		if (p == _arrayLengths)
-			continue;
-
 		bool isProviderRelevant = true;
 		for (auto& f : filters)
 			if (!(*f)(p))
