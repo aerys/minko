@@ -18,6 +18,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "minko/scene/Node.hpp"
+#include "minko/Common.hpp"
+#include "minko/CloneOption.hpp"
 
 #include "minko/component/AbstractComponent.hpp"
 #include "minko/scene/NodeSet.hpp"
@@ -54,6 +56,33 @@ Layouts
 Node::layouts() const
 {
 	return _data->get<Layouts>("layouts");
+}
+
+Node::Ptr
+Node::clone(minko::CloneOption option)
+{
+	if (option == minko::CloneOption::SHALLOW) {
+		Node::Ptr node = Node::create();
+		node->_name = shared_from_this()->name() + "_clone";
+		for (auto component : shared_from_this()->_components)			
+			node->addComponent(component->clone());
+		
+
+		return node;
+	}
+	else if (option == minko::CloneOption::DEEP) {
+		Node::Ptr node = shared_from_this()->clone(CloneOption::SHALLOW);
+		for (auto child : shared_from_this()->children())
+			node->addChild(child->clone(CloneOption::DEEP));
+
+		return node;
+	}
+	else
+	{
+		throw std::logic_error("Unknwown clone option.");
+	}
+
+	//return shared_from_this();
 }
 
 Node::Ptr

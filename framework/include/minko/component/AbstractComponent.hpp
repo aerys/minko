@@ -57,6 +57,14 @@ namespace minko
 			virtual
 			~AbstractComponent() = 0;
 
+			virtual
+			AbstractComponent::Ptr
+			clone()
+			{
+				throw std::logic_error("Missing clone function for a component.");
+				return shared_from_this();
+			}
+
 			inline
 			const std::vector<std::shared_ptr<scene::Node>>&
 			targets() const

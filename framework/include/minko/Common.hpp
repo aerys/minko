@@ -62,6 +62,7 @@ namespace minko
 	template<typename... A>
 	class Signal;
 	class Color;
+	enum class CloneOption;
 	class AbstractCanvas;
     
 	namespace render

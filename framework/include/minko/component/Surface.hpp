@@ -94,6 +94,10 @@ namespace minko
 				return surface;
 			}
 
+
+			AbstractComponent::Ptr
+			clone();
+
 			~Surface()
 			{
 			}

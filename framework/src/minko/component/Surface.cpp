@@ -64,6 +64,14 @@ Surface::Surface(std::string				name,
 		throw std::logic_error("Effect does not provide a '" + _technique + "' technique.");
 }
 
+AbstractComponent::Ptr
+Surface::clone()
+{
+	Surface::Ptr origin = std::static_pointer_cast<Surface>(shared_from_this());
+	Surface::Ptr clone = Surface::create(origin->name(), origin->geometry(), origin->material(), origin->effect(), origin->technique());
+	return clone;
+}
+
 void
 Surface::initialize()
 {

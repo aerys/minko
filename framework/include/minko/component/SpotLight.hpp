@@ -66,6 +66,20 @@ namespace minko
 			    return light;
 			}
 
+			inline static
+			Ptr
+			create(Ptr spotLight)
+			{
+				auto light = std::shared_ptr<SpotLight>(new SpotLight(spotLight));
+
+				light->AbstractDiscreteLight::initialize();
+
+				return light;
+			}
+
+			AbstractComponent::Ptr
+			clone();
+
 			inline
 			float
 			cosInnerConeAngle() const
@@ -109,7 +123,9 @@ namespace minko
 					  float attenuationLinear,
 					  float attenuationQuadratic);
 
-			void
+			SpotLight(Ptr spotlight);
+
+			void 
 			initialize(float innerAngleRadians,
 					   float outerAngleRadians);
 		};

@@ -107,7 +107,10 @@ namespace minko
 
 				return node;
 			}
-
+						
+			Ptr
+			clone(minko::CloneOption option);
+			
 			inline
 			const std::string&
 			name() const
