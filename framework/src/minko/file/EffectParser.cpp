@@ -773,14 +773,14 @@ EffectParser::parsePriority(const Json::Value& contextNode,
 
 static
 bool
-subStringIsNotEmpty(const std::string& str, char endDelimiter, int& offset)
+subStringIsNotEmpty(const std::string& str, char endDelimiter, int& offset, std::string& subString)
 {
     auto endDelimiterOffset = str.find_first_of(endDelimiter);
 
     if (endDelimiterOffset == std::string::npos)
         return false;
 
-    auto subString = str.substr(offset, endDelimiterOffset - offset);
+    subString = str.substr(offset, endDelimiterOffset - offset);
 
     offset = endDelimiterOffset + 1;
 
@@ -791,11 +791,11 @@ static
 bool
 propertyHasVariable(const std::string& propertyName)
 {
-    // match regex: ".*\\[\\$\\{.*\\}\\]\\."
-
     auto offset = 0;
 
-    if (!subStringIsNotEmpty(propertyName, '[', offset))
+    auto subString = std::string();
+
+    if (!subStringIsNotEmpty(propertyName, '[', offset, subString))
         return false;
 
     if (offset < propertyName.size() && propertyName[offset++] != '$')
@@ -804,7 +804,7 @@ propertyHasVariable(const std::string& propertyName)
     if (offset < propertyName.size() && propertyName[offset++] != '{')
         return false;
 
-    if (!subStringIsNotEmpty(propertyName, '}', offset))
+    if (!subStringIsNotEmpty(propertyName, '}', offset, subString))
         return false;
 
     if (offset < propertyName.size() && propertyName[offset++] != ']')
@@ -822,6 +822,8 @@ EffectParser::parseBindingNameAndSource(const Json::Value&	    contextNode,
 										BindingSource&		    source,
 										MacroRegexPredicate&	regex)
 {
+    regex = MacroRegexPredicate();
+
 	source	= BindingSource::TARGET;
 
 	if (contextNode.isString())
@@ -849,13 +851,18 @@ EffectParser::parseBindingNameAndSource(const Json::Value&	    contextNode,
 
 	if (!propertyName.empty())
 	{
-        auto filteredMacroHandler = [](const std::string& macro) -> bool
+        auto filteredMacroHandler = [](const std::string& macro,
+                                       const std::string& sourceName,
+                                       const std::string& propertyName) -> bool
         {
-            // match regex ".*\\[\\d\\]\\.*"
-
             auto offset = 0;
 
-            if (!subStringIsNotEmpty(macro, '[', offset))
+            auto subString = std::string();
+
+            if (!subStringIsNotEmpty(macro, '[', offset, subString))
+                return false;
+
+            if (subString != sourceName)
                 return false;
 
             auto nextOffset = macro.find_first_of(']', offset);
@@ -874,17 +881,19 @@ EffectParser::parseBindingNameAndSource(const Json::Value&	    contextNode,
             if (macro[offset++] != '.')
                 return false;
 
-            if (offset >= macro.size())
-                return false;
+            subString = macro.substr(offset);
 
-            return true;
+            return subString == propertyName;
         };
 
         if (propertyHasVariable(propertyName))
 		{
 			// generate regex to recognize the macro when coming from filtered out data provider
+
+            auto sourceName = propertyName.substr(0, propertyName.find_first_of("["));
+            auto propertyNameWithoutSource = propertyName.substr(propertyName.find_last_of(".") + 1);
 	
-            regex = filteredMacroHandler;
+            regex = std::bind(filteredMacroHandler, std::placeholders::_1, sourceName, propertyNameWithoutSource);
 		}
 	}
 }
